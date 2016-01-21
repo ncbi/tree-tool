@@ -1,0 +1,80 @@
+// common.inc
+// Macros
+// To be included into .cpp-files
+
+#ifndef COMMON_INC
+#define COMMON_INC
+
+
+#define FOR_START(type,i,start,end)  for (type i = (start); i < (end); i++)  
+#define FOR(type,i,end)  FOR_START (type, i, 0, (end))
+#define FOR_REV_END(type,i,end,start)  for (type i = (start); i-- > (end);)  
+#define FOR_REV(type,i,start)  FOR_REV_END(type, i, 0, (start))
+// FOR(type,i,a) and FOR_REV(type,i,a) iterate over the same i
+// FOR_START(type,i,a,b) and FOR_REV_END(type,i,a,b) iterate over the same i
+
+#define FOR_CHAR(i,s,c)  for (size_t i = 0; ((c) = (s) [i]); i++)
+#define FOR_STRING(i,s)  FOR (size_t, i, (s). size ())
+
+#define ITER(ContainerType,iter,container) \
+  for (ContainerType::iterator iter = (container). begin (); iter != (container). end (); iter++)
+#define CONST_ITER(ContainerType,iter,container) \
+  for (ContainerType::const_iterator iter = (container). begin (); iter != (container). end (); iter++)
+#define ITER_REV(ContainerType,iter,container) \
+  for (ContainerType::reverse_iterator iter = (container). rbegin (); iter != (container). rend (); iter++)
+#define CONST_ITER_REV(ContainerType,iter,container) \
+  for (ContainerType::reverse_const_iterator iter = (container). rbegin (); iter != (container). rend (); iter++)
+
+
+// Exceptions
+
+#include <stdexcept>
+#include <sstream>
+
+
+#define WHERE  "\"" __FILE__ "\": line " << __LINE__
+
+
+#define ERROR_MSG(msg)                  \
+  {                                     \
+    std::ostringstream oss_;            \
+    oss_ << msg << endl << WHERE;   \
+    errorExit (oss_. str (). c_str ()); \
+    throw std::runtime_error ("error"); \
+  }
+#define ERROR            ERROR_MSG("")
+#define NOT_IMPLEMENTED  ERROR_MSG("Not implemented: ")
+#define NEVER_CALL       ERROR_MSG("Never call: ")
+
+
+// Logic errors
+#ifdef NDEBUG                                       
+  #define ASSERT(cond)
+#else
+  #define ASSERT(cond)  if (! (cond)) ERROR_MSG (#cond) else {}
+#endif
+
+
+#ifdef NDEBUG                                       
+  #define EXEC_ASSERT(cond)  cond
+#else
+  #define EXEC_ASSERT(cond)  ASSERT (cond)
+#endif
+
+
+#define IMPLY(a,b)  { if (a) { ASSERT (b) }}
+#define ASSERT_EQ(x,y,delta)  ASSERT (abs((x) - (y)) <= (delta) / 2)
+
+
+
+#define MODULE_INIT   static bool run = false; \
+                      if (run)                 \
+                        return true;           \
+                      run = true;
+
+
+#define MAIN_CATCH  catch (const std::exception &e) { cout << "ASSERTION ERROR: " << e.what () << endl; return 1; }
+
+
+
+#endif
