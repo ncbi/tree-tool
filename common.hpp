@@ -6,6 +6,7 @@
 
 #ifdef _MSC_VER
   #pragma warning (disable : 4290)
+  #pragma warning (disable : 4800)
 #endif
 
 #include <time.h>
@@ -54,6 +55,11 @@ template <typename T, typename S>
 template <typename T, typename S>
   T const_static_cast (const S &s)
     { return static_cast <T> (const_cast <S&> (s)); }
+
+
+
+typedef  unsigned int  uint; 
+typedef  unsigned long  ulong; 
 
 
 
