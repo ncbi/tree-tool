@@ -140,66 +140,6 @@ uint powInt (uint a,
 const string noString;
 
 
-string int2str (long int i)
-{
-  ostringstream oss;
-  oss << i;
-  const string s = oss. str ();
-  ASSERT (! s. empty ());
-  ASSERT (s. size () == 1 || s. at (0) != '0');
-  return s;
-}
-
-
-
-int str2int (const string& s)
-{
-  const long i = str2lint (s);
-  if (   i >= numeric_limits<int>::min ()
-      && i <= numeric_limits<int>::max ()
-     )  
-    return (int) i;
-  throw runtime_error ("Converting to int: \"" + s + "\"");
-}
-
- 
-
-long str2lint (const string& s)
-{
-  long i;
-  
-  string s1 (s);
-  trim (s1);
-  if (s1. empty ())
-    throw runtime_error ("Converting to long int: \"" + s + "\"");
-  istringstream iss (s1);
-  iss >> i;
-  if (! iss. eof ())
-    throw runtime_error ("Converting to long int: \"" + s + "\"");
-  
-  return i;
-}
-
- 
-
-double str2double (const string& s)
-{
-  double d;
-
-  string s1 (s);
-  trim (s1);
-  if (s1. empty ())
-    throw runtime_error ("Converting to double: \"" + s + "\"");
-  istringstream iss (s1);
-  iss >> d;
-  if (! iss. eof ())
-    throw runtime_error ("Converting to double: \"" + s + "\"");
-  ASSERT (iss. eof ());
-  
-  return d;
-}
-
- 
 
 bool isRight (const string &s,
                  const string &right)
@@ -272,8 +212,8 @@ bool goodName (const string &name)
   if (*(name. end () - 1) == ' ')
     return false;
 
-  CONST_ITER (string, it, name)
-    if (! printable (*it))
+  for (const char c : name)
+    if (! printable (c))
       return false;
       
   return true;
@@ -283,8 +223,8 @@ bool goodName (const string &name)
 
 bool strBlank (const string &s)
 {
-  CONST_ITER (string, it, s)
-    if (! isspace (*it))
+  for (const char c : s)
+    if (! isspace (c))
       return false;
   return true;
 }
@@ -293,24 +233,24 @@ bool strBlank (const string &s)
 
 void strUpper (string &s)
 {
-  ITER (string, it, s)
-    *it = toUpper (*it);
+  for (char c : s)
+    c = toUpper (c);
 }
 
 
 
 void strLower (string &s)
 {
-  ITER (string, it, s)
-    *it = toLower (*it);
+  for (char c : s)
+    c = toLower (c);
 }
 
 
 
 bool isUpper (const string &s)
 {
-  CONST_ITER (string, it, s)
-    if (! isUpper (*it))
+  for (const char c : s)
+    if (! isUpper (c))
     	return false;
   return true;
 }
@@ -319,8 +259,8 @@ bool isUpper (const string &s)
 
 bool isLower (const string &s)
 {
-  CONST_ITER (string, it, s)
-    if (! isLower (*it))
+  for (const char c : s)
+    if (! isLower (c))
     	return false;
   return true;
 }
@@ -340,11 +280,11 @@ string::const_iterator stringInSet (const string &s,
 
 
 size_t strCountSet (const string &s,
-		              const string &charSet)
+ 		                const string &charSet)
 {
   size_t n = 0;
-	CONST_ITER (string, it, s)
-	  if (charInSet (*it, charSet))		
+  for (const char c : s)
+	  if (charInSet (c, charSet))		
 	    n++;
   return n;
 }
@@ -408,9 +348,9 @@ void replace (string &s,
               char from,
               char to)
 { 
-	ITER (string, it, s)
-	  if (*it == from)
-	  	*it = to;
+  for (char c : s)
+	  if (c == from)
+	  	c = to;
 }
 
 
@@ -419,9 +359,9 @@ void replace (string &s,
               const string &fromChars,
               char to)
 {
-	ITER (string, it, s)
-	  if (charInSet (*it, fromChars))
-	  	*it = to;
+  for (char c : s)
+	  if (charInSet (c, fromChars))
+	  	c = to;
 }
 
 
@@ -451,8 +391,7 @@ void replaceStr (string &s,
 string to_c (const string &s)
 {
   string r;
-  char c;
-  FOR_CHAR (i, s, c)
+  for (const char c : s)
     if (c == '\n')
       r += "\\n";
     else
@@ -498,11 +437,11 @@ string str2streamWord (const string &s,
 string str2sql (const string &s)
 {
 	string r = "'";
-  CONST_ITER (string, it, s)
+  for (const char c : s)
 	{
-	  if (*it == '\'')
+	  if (c == '\'')
 	  	r += "'";
-	  r += *it;
+	  r += c;
 	}
 	r += "'";
 	
@@ -514,11 +453,11 @@ string str2sql (const string &s)
 string sql2escaped (const string &s)
 {
   string s1;
-  CONST_ITER (string, it, s) 
+  for (const char c : s)
   {
-    if (charInSet (*it, "[]*_%\\"))
+    if (charInSet (c, "[]*_%\\"))
       s1 += '\\';
-    s1 += *it;
+    s1 += c;
   }
   
   return s1;
@@ -575,11 +514,11 @@ string list2str (const List<string> &strList,
                  const string &sep) 
 {
 	string s;
-	CONST_ITER (List<string>, it, strList)
+	for (const string& e : strList)
 	{
 		if (! s. empty ())
 			s += sep;
-	  s += *it;
+	  s += e;
 	}
 	return s;
 }
@@ -623,7 +562,7 @@ size_t strMonth2num (const string& month)
 {
   if (isDigit (month [0]))
   {
-    const int m = str2int (month);
+    const int m = str2<int> (month);
     ASSERT (m >= 1);
     ASSERT (m <= 12);
     return (size_t) (m - 1);
@@ -2197,10 +2136,10 @@ void Json::parse (istream& is,
           decimals++;
         }
       }
-      new JsonDouble (str2double (s), decimals, parent, name);
+      new JsonDouble (str2<double> (s), decimals, parent, name);
     }
     else
-      new JsonInt (str2int (s), parent, name); 
+      new JsonInt (str2<int> (s), parent, name); 
   }
   else
     new JsonString (firstToken. name, parent, name);

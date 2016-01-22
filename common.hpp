@@ -58,8 +58,9 @@ template <typename T, typename S>
 
 
 
-typedef  unsigned int  uint; 
+typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
+typedef  long int       lint;
 
 
 
@@ -272,33 +273,33 @@ inline string strQuote (const string &s)
 inline string unQuote (const string &s)
   { return s. substr (1, s. size () - 2); }
 
+bool strBlank (const string &s);
+
 template <typename T>
   string toString (const T t)
-  { ostringstream oss;
-    oss << t;
-    return oss. str ();
-  }
+    { ostringstream oss;
+      oss << t;
+      return oss. str ();
+    }
 
-string int2str (long int i);
+template <typename T>
+  T str2 (const string &s)
+    { T i;
+      istringstream iss (s);
+      iss >> i;
+      if (   Common_sp::strBlank (s)
+          || ! iss. eof ()
+         )
+        throw runtime_error ("Converting \"" + s + "\"");    
+      return i;
+    }
 
-int str2int (const string& s); 
-
-long str2lint (const string& s); 
-
-inline bool str2int (const string& s,
-                     int &i) 
-  { try { i = str2int (s); return true; } 
-      catch (...) { return false; } 
-  }
-
-double str2double (const string& s);
-
-inline bool str2double (const string& s,
-                        double &d) 
-  { try { d = str2double (s); return true; } 
-      catch (...) { return false; } 
-  }
- 
+template <typename T>
+  bool str2 (const string &s,
+             T &t)
+    { try { t = str2<T> (s); return true; } 
+        catch (...) { return false; } 
+    }
 
 inline bool isLeft (const string &s,
                     const string &left)
@@ -323,8 +324,6 @@ bool trimTailAt (string &s,
   // Update: s
 
 bool goodName (const string &name);
-
-bool strBlank (const string &s);
 
 void strUpper (string &s);
 
@@ -1794,8 +1793,8 @@ public:
   struct Error : runtime_error
   { explicit Error (const CharInput &in,
 		                const string &what_arg = string ()) 
-			: runtime_error ("Error at line " + int2str ((int) in. lineNum + 1) 
-		                   + ", pos. " + int2str ((int) in. charNum + 1)
+			: runtime_error ("Error at line " + toString (in. lineNum + 1) 
+		                   + ", pos. " + toString (in. charNum + 1)
 		                   + (what_arg. empty () ? string () : (": " + what_arg + " is expected"))
 		                  )
 	    {}
