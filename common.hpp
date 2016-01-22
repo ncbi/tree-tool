@@ -272,6 +272,13 @@ inline string strQuote (const string &s)
 inline string unQuote (const string &s)
   { return s. substr (1, s. size () - 2); }
 
+template <typename T>
+  string toString (const T t)
+  { ostringstream oss;
+    oss << t;
+    return oss. str ();
+  }
+
 string int2str (long int i);
 
 int str2int (const string& s); 
@@ -721,6 +728,13 @@ public:
 	  }
   bool contains (const T &value) const
     { return constFind (value) != P::end (); }
+  size_t count (const T &value) const
+    { size_t n = 0;
+      for (const T& t : *this)
+        if (value == t)
+          n++;
+      return n;
+    }
   size_t binSearch (const T &value,
                     bool exact = true) const
     // Return: if exact then NO_INDEX or vec[Return] = value else min {i : vec[i] >= value}
@@ -879,6 +893,9 @@ public:
 	VectorOwn (const VectorOwn<T> &x)
 	  : P ()
 	  { *this = x; }
+	VectorOwn (const VectorPtr<T> &x)
+	  : P ()
+	  { P::operator= (x); }
 	VectorOwn<T>& operator= (const VectorOwn<T> &x)
 	  { P::deleteData ();
 	  	P::reserve (x. size ());
