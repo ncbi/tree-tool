@@ -7,7 +7,9 @@
 
 #include <sstream>
 #include <cstring>
-#include <dirent.h>
+#ifndef _MSC_VER
+  #include <dirent.h>
+#endif
 #include <signal.h>  
 
 
@@ -30,11 +32,15 @@ void errorExit (const char* msg,
 	ostream* os = logPtr ? logPtr : & cout; 
 	
 	// time ??
+#ifndef _MSC_VER
 	const char* hostname = getenv ("HOSTNAME");
 	const char* pwd = getenv ("PWD");
+#endif
 	*os << "ASSERTION ERROR: " << msg << endl
+    #ifndef _MSC_VER
 	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
 	    << "PWD: " << (pwd ? pwd : "?") << endl
+    #endif
 	    << "Progam name: " << programName << endl
 	    << "Command line:";
 	 FOR (size_t, i, programArgs. size ())
@@ -1208,7 +1214,8 @@ DiGraph::~DiGraph ()
   while (! nodes. empty ())
   {
     Node* n = nodes. front ();
-    ASSERT (n);
+    if (! n)
+      errorExit ("DiGraph::Node is nullptr", false);
     delete n;
   }
 }
