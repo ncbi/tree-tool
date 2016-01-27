@@ -1111,8 +1111,12 @@ public:
 	  	return static_cast <Set<T>&> (P::operator= (other)); 
 	  }
   bool operator== (const Set<T> &other) const
-    { return    contains (other) 
-    	       && other. contains (*this);
+    { return universal
+               ? other. universal ? true : false
+               : other. universal
+                 ? false
+                 :    P::size () == other. size ()
+                   && contains (other);
     }
 
 
