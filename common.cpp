@@ -782,7 +782,10 @@ void Rand::run ()
 Named::Named (const string& name_arg)
 : name (name_arg) 
 {
-  ASSERT (goodName (name));
+#ifndef NDEBUG
+  if (! goodName (name))
+    ERROR_MSG ("Bad name: \"" + name_arg + "\"");
+#endif
 }
 
 
