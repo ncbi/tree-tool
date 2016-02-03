@@ -38,7 +38,7 @@
 #define ERROR_MSG(msg)                  \
   {                                     \
     std::ostringstream oss_;            \
-    oss_ << msg << endl << WHERE;   \
+    oss_ << msg << endl << WHERE;       \
     errorExit (oss_. str (). c_str ()); \
     throw std::runtime_error ("error"); \
   }
