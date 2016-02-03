@@ -142,7 +142,7 @@ const string noString;
 
 
 bool isRight (const string &s,
-                 const string &right)
+              const string &right)
 {
   if (s. size () < right. size ())
     return false;
@@ -233,7 +233,7 @@ bool strBlank (const string &s)
 
 void strUpper (string &s)
 {
-  for (char c : s)
+  for (char& c : s)
     c = toUpper (c);
 }
 
@@ -241,7 +241,7 @@ void strUpper (string &s)
 
 void strLower (string &s)
 {
-  for (char c : s)
+  for (char& c : s)
     c = toLower (c);
 }
 
@@ -348,7 +348,7 @@ void replace (string &s,
               char from,
               char to)
 { 
-  for (char c : s)
+  for (char& c : s)
 	  if (c == from)
 	  	c = to;
 }
@@ -359,7 +359,7 @@ void replace (string &s,
               const string &fromChars,
               char to)
 {
-  for (char c : s)
+  for (char& c : s)
 	  if (charInSet (c, fromChars))
 	  	c = to;
 }

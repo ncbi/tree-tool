@@ -1185,19 +1185,9 @@ public:
 			{ operator= (other);
 				return;
 			}
-		#if 1
       for (Iter <Set<T> > iter (*this); iter. next (); )
 				if (! other. contains (*iter))
 					iter. erase ();
-		#else
-			typename Set<T>::const_iterator it = P::begin ();
-			while (it != P::end ())
-			{ typename Set<T>::const_iterator curIt = it;
-				it++;
-				if (! other. contains (*curIt))
-					P::erase (curIt);
-			}
-		#endif
 		}
 	size_t intersectSize (const Set<T> &other) const
 	  // Return: universal <=> SIZE_MAX
@@ -1206,7 +1196,6 @@ public:
 			if (universal)
 				return other. size ();
 		  size_t n = 0;
-		//for (typename Set<T>::const_iterator it = P::begin (); it != P::end (); it++)
 		  CONST_ITER (typename Set<T>, it, *this)
 				if (other. contains (*it))
 					n++;
@@ -1220,7 +1209,6 @@ public:
     		P::clear ();
     	}
     	else
-	    //for (typename Set<T>::const_iterator it = other. begin (); it != other. end (); it++)
 	    	CONST_ITER (typename Set<T>, it, other)
 	        if (contains (*it))
 	        { P::erase (*it);
@@ -1876,7 +1864,7 @@ struct OFStream : ofstream
 template <typename T>
   OFStream& operator<< (OFStream &ofs,
                         const List<T> &ts)
-    { for (auto &t : ts)
+    { for (auto& t : ts)
         ofs << t << endl;
       return ofs;
     }
@@ -1885,7 +1873,7 @@ template <typename T>
 template <typename T>
   OFStream& operator<< (OFStream &ofs,
                         const Vector<T> &ts)
-    { for (auto &t : ts)
+    { for (auto& t : ts)
         ofs << t << endl;
       return ofs;
     }
