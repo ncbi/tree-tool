@@ -23,7 +23,7 @@
 #define ITER_REV(ContainerType,iter,container) \
   for (ContainerType::reverse_iterator iter = (container). rbegin (); iter != (container). rend (); iter++)
 #define CONST_ITER_REV(ContainerType,iter,container) \
-  for (ContainerType::reverse_const_iterator iter = (container). rbegin (); iter != (container). rend (); iter++)
+  for (ContainerType::const_reverse_iterator iter = (container). rbegin (); iter != (container). rend (); iter++)
 
 
 // Exceptions
