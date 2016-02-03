@@ -1122,18 +1122,19 @@ public:
 
   bool contains (const T& el) const
     { return universal || P::find (el) != P::end (); }
-  bool contains (const Set<T> &other) const
-    { if (universal)
-    	  return true;
-    	if (other. universal)
-    		return false;
-    	if (other. size () > P::size ())
-    	  return false;
-    	for (typename Set<T>::const_iterator it = other. begin (); it != other. end (); it++)
-        if (! contains (*it))
-          return false;
-      return true;
-    }
+  template <typename U>
+    bool contains (const Set<U> &other) const
+      { if (universal)
+    	    return true;
+    	  if (other. universal)
+    		  return false;
+    	  if (other. size () > P::size ())
+    	    return false;
+        for (const U& u : other)
+          if (! contains (u))
+            return false;
+        return true;
+      }
   bool intersects (const Set<T> &other) const
      { if (universal && other. universal)
      	   return true;
@@ -1147,9 +1148,8 @@ public:
      }
 private:
   bool intersects_ (const Set<T> &other) const
-    { //for (typename Set<T>::const_iterator it = P::begin (); it != P::end (); it++)
-      CONST_ITER (typename Set<T>, it, *this)
-        if (other. contains (*it))
+    { for (const T& t : *this)
+        if (other. contains (t))
           return true;
       return false;
     }
