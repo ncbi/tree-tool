@@ -1314,6 +1314,7 @@ struct DiGraph : Root
       // Return: !contains(this)
     VectorPtr<DiGraph::Node> getChildren () const
       { return getNeighborhood (false); }
+    void deleteNeighborhood (bool out);
   private:
     Node* setScc (size_t &visitedNum,
                   stack<Node*, vector<Node*> > &sccStack);
@@ -1421,6 +1422,7 @@ public:
 
   void connectedComponents ();
     // Output: Node::getConnectedComponent()  
+    // Invokes: DisjointCluster::init()
   void scc (); 
     // Output: Node::{scc,orderDfs}
     // Invokes: Node::setScc()
