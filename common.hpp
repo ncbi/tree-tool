@@ -1312,6 +1312,8 @@ struct DiGraph : Root
     VectorPtr<Node> getNeighborhood () const
       { return getNeighborhood (false) << getNeighborhood (true); }
       // Return: !contains(this)
+    VectorPtr<DiGraph::Node> getChildren () const
+      { return getNeighborhood (false); }
   private:
     Node* setScc (size_t &visitedNum,
                   stack<Node*, vector<Node*> > &sccStack);
@@ -1511,8 +1513,6 @@ struct Tree : DiGraph
 		const Node* getClosestLeaf (size_t &leafDepth) const;
 		  // Return: !0
 		  // Output: leafDepth; 0 <=> Return = this
-    VectorPtr<DiGraph::Node> getChildren () const
-      { return getNeighborhood (false); }
     const Node* getOtherChild (const Node* child) const;
       // Return: May be 0; != child
       // Requires: getChildren().size() <= 2
