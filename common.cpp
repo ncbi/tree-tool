@@ -845,24 +845,7 @@ void DiGraph::Node::attach (DiGraph &graph_arg)
 DiGraph::Node::~Node ()
 {
   FOR (unsigned char, i, 2)
-  {
-  #if 1
-    for (Iter <List<Arc*> > iter (arcs [i]); iter. next (); )
-      delete *iter;  // changes arcs[i]
-  #else
-    List<Arc*>::iterator it = arcs [i]. begin ();
-    while (it != arcs [i]. end ())
-    {
-      List<Arc*>::iterator itNext = it;
-      itNext++;
-  
-      delete *it;  // changes arcs [i]
-  
-      it = itNext;
-    }
-  #endif
-  } 
-
+    deleteNeighborhood (i);
   if (graph)
     const_cast <DiGraph*> (graph) -> nodes. erase (graphIt);
 }
@@ -929,6 +912,14 @@ VectorPtr<DiGraph::Node> DiGraph::Node::getNeighborhood (bool out) const
 }
 
  
+
+void DiGraph::Node::deleteNeighborhood (bool out)
+{
+  for (Iter <List<Arc*> > iter (arcs [out]); iter. next (); )
+    delete *iter;  // changes arcs[i]
+}
+
+
 
 DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
                                       stack<DiGraph::Node*, vector<DiGraph::Node*> > &sccStack)
@@ -1204,9 +1195,9 @@ void DiGraph::qc () const
 
 void DiGraph::saveText (ostream &os) const
 {
-  CONST_ITER (List<Node*>, it, nodes)
+  for (const Node* node : nodes)
   {
-    (*it)->saveText (os);
+    node->saveText (os);
     os << endl;
   }
 }
@@ -1215,12 +1206,12 @@ void DiGraph::saveText (ostream &os) const
 
 void DiGraph::connectedComponents ()
 {
-	ITER (List<Node*>, nodeIt, nodes)
-	  (*nodeIt)->DisjointCluster::init ();
-	ITER (List<Node*>, nodeIt, nodes)
+  for (Node* node : nodes)
+	  node->DisjointCluster::init ();
+  for (Node* node : nodes)
 	  FOR (unsigned char, i, 2)
-	    ITER (List<Arc*>, arcIt, (*nodeIt)->arcs [i])
-	    	(*arcIt)->node [i] -> DisjointCluster::merge (* (*arcIt)->node [! i]);
+      for (Arc* arc : node->arcs [i])
+	    	arc->node [i] -> DisjointCluster::merge (* arc->node [! i]);
 }
 
 
