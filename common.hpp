@@ -809,9 +809,13 @@ public:
 		      else
 		      	break;
     }
-  T pop ()
-    { T t = P::at (P::size () - 1);
-    	P::pop_back ();
+  T pop (size_t n = 1)
+    { T t = T ();
+      while (n)
+      { t = P::at (P::size () - 1);
+    	  P::pop_back ();
+        n--;
+      }
     	return t;
     }
 };
