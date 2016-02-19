@@ -32,21 +32,21 @@ using namespace std;
 
 
 
-extern string programName;
-extern vector<string> programArgs;
-extern ostream* logPtr;
-
-
-
-void errorExit (const char* msg,
-                bool segmFault = false);
-  // Invokes: if segmFault then abort() else exit(1)
-
-
-
 bool initCommon ();
   // Module initialization
   // Invoked automaticallly
+
+
+
+extern vector<string> programArgs;
+extern string programName;
+extern ostream* logPtr;
+
+void errorExit (const char* msg,
+                bool segmFault = false);
+  // Update: *logPtr
+  // Invokes: if segmFault then abort() else exit(1)
+
 
 
 template <typename T, typename S>
@@ -660,9 +660,22 @@ template <typename Key, typename Value>
                         const Key& key)
     { const typename map <Key, const Value*> :: const_iterator it = m. find (key);
     	if (it == m. end ())
-    		return 0;
+    		return nullptr;
     	ASSERT (it->second);
     	return it->second; 
+    }
+
+template <typename Key, typename Value>
+  bool find (const map <Key, Value> &m,
+             const Key& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const typename map <Key, Value> :: const_iterator it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
     }
 
 
@@ -1924,6 +1937,7 @@ void csvLine2vec (const string &line,
 
 
 struct TabDel
+// Usage: {<<field;}* str();
 {
 private:
   ostringstream tabDel;
@@ -1932,21 +1946,15 @@ public:
   TabDel ()
     {}
     
+  template <typename T>
+    TabDel& operator<< (const T &field)
+      { if (tabDel. tellp ())  
+          tabDel << '\t'; 
+        tabDel << field; 
+        return *this; 
+      }    
   string str () const
     { return tabDel. str (); }
-  TabDel& operator<< (const char c)
-    { addTab (); tabDel << c; return *this; }    
-  TabDel& operator<< (const string &s)
-    { addTab (); tabDel << s; return *this; }
-  TabDel& operator<< (const int i)
-    { addTab (); tabDel << i; return *this; }
-  TabDel& operator<< (const size_t i)
-    { addTab (); tabDel << i; return *this; }
-  TabDel& operator<< (const double d)
-    { addTab (); tabDel << d; return *this; }
-private:
-  void addTab ()
-    { if (tabDel. tellp ())  tabDel << '\t'; }
 };
 
 
@@ -2131,7 +2139,7 @@ public:
     : JsonContainer (parent, name)
     {}
   JsonMap ();
-    // Output: app->jRoot = this
+    // Output: jRoot = this
   explicit JsonMap (const string &fName);
 private:
   JsonMap (istream& is,
@@ -2222,6 +2230,36 @@ public:
 
 
 void exec (const string &cmd);
+
+
+
+
+struct Application : Singleton<Application>
+// Usage: int main (argc, argv) { Application app (argc, argv); return app. run (); }
+{  
+protected:
+  map<string/*arg*/,string/*value*/> keyArgs;
+    // keys[flag] = string()
+  Vector<string> positionalArgs;
+  
+  string logFName;
+  string jsonFName;
+public:
+
+
+  Application (int argc, 
+               const char* argv []);
+
+
+  bool getFlag (const string &flag) const
+    { string value;
+      return find (keyArgs, flag, value) && value. empty (); 
+    }
+  int run () const;
+    // Invokes: body()
+private:
+  virtual void body () const = 0;
+};
 
 
 

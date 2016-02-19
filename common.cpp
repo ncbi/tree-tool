@@ -19,44 +19,6 @@ namespace Common_sp
  
 
 
-string programName;
-vector<string> programArgs;
-ostream* logPtr = nullptr;
-
-
-
-void errorExit (const char* msg,
-                bool segmFault)
-// alloc() may not work
-{ 
-	ostream* os = logPtr ? logPtr : & cout; 
-	
-	// time ??
-#ifndef _MSC_VER
-	const char* hostname = getenv ("HOSTNAME");
-	const char* pwd = getenv ("PWD");
-#endif
-	*os << "ASSERTION ERROR: " << msg << endl
-    #ifndef _MSC_VER
-	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
-	    << "PWD: " << (pwd ? pwd : "?") << endl
-    #endif
-	    << "Progam name: " << programName << endl
-	    << "Command line:";
-	 FOR (size_t, i, programArgs. size ())
-	   *os << " " << programArgs [i];
-	 *os << endl;
-//system (("env >> " + logFName). c_str ());
-
-  os->flush ();
-
-  if (segmFault)
-    abort ();
-  exit (1);
-}
-
-
-
 namespace 
 {
 
@@ -94,6 +56,45 @@ bool initCommon ()
 namespace
 {
   const bool init_ = initCommon ();
+}
+
+
+
+
+vector<string> programArgs;
+string programName;
+ostream* logPtr = nullptr;
+
+
+
+void errorExit (const char* msg,
+                bool segmFault)
+// alloc() may not work
+{ 
+	ostream* os = logPtr ? logPtr : & cout; 
+	
+	// time ??
+#ifndef _MSC_VER
+	const char* hostname = getenv ("HOSTNAME");
+	const char* pwd = getenv ("PWD");
+#endif
+	*os << "ASSERTION ERROR: " << msg << endl
+    #ifndef _MSC_VER
+	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
+	    << "PWD: " << (pwd ? pwd : "?") << endl
+    #endif
+	    << "Progam name: " << programName << endl
+	    << "Command line:";
+	 FOR (size_t, i, programArgs. size ())
+	   *os << " " << programArgs [i];
+	 *os << endl;
+//system (("env >> " + logFName). c_str ());
+
+  os->flush ();
+
+  if (segmFault)
+    abort ();
+  exit (1);
 }
 
 
@@ -2357,6 +2358,122 @@ void exec (const string &cmd)
 {
   ASSERT (! cmd. empty ());
   EXEC_ASSERT (system (cmd. c_str ()) == 0);
+}
+
+
+
+
+// Application
+
+Application::Application (int argc, 
+                          const char* argv [])
+{
+  for (int i = 0; i <= argc; i++)  
+    programArgs. push_back (argv [i]);
+  ASSERT (! programArgs. empty ());
+
+    
+  bool first = true;
+  string key;
+  for (string s : programArgs)
+  {
+    if (first)
+    {
+      programName = rfindSplit (s, '/');
+      ASSERT (! programName. empty ());
+    }
+    else
+    {
+      if (s. empty ())
+        if (key. empty ())
+          positionalArgs << s;
+        else
+        {
+          keyArgs [key] = s;
+          key. clear ();
+        }
+      else
+        if (key. empty ())
+          if (s [0] == '-')
+            key = s;
+          else
+            positionalArgs << s;
+        else
+          if (s [0] == '-')
+          {
+            keyArgs [key] = string ();
+            if (s == "-")
+              key. clear ();
+            else
+              key = s. substr (1);
+          }
+          else
+          {
+            keyArgs [key] = s;
+            key. clear ();
+          }
+    }
+    first = false;
+  }
+
+
+	logFName = keyArgs ["log"];
+	ASSERT (! logPtr);
+	if (! logFName. empty ())
+		logPtr = new OFStream ("", logFName, "");
+
+	Verbose vrb (str2<int> (keyArgs ["verbose"]));
+	
+	if (getFlag ("noprogress"))
+		Progress::disable ();
+
+	jsonFName = keyArgs ["json"];
+	ASSERT (! jRoot);
+	if (! jsonFName. empty ())
+	{
+		new JsonMap ();
+	  ASSERT (jRoot);
+	}
+}
+
+
+
+
+int Application::run () const
+{
+	try
+  { 
+  	body ();
+	}
+	catch (const std::exception &e) 
+	{ 
+	  errorExit (e. what ());
+		return 1; 
+  }
+
+  
+	if (! jsonFName. empty ())
+	{
+	  ASSERT (jRoot);
+		OFStream f ("", jsonFName, "");
+    jRoot->print (f);
+    delete jRoot;
+    jRoot = nullptr;
+  }
+
+	if (! logFName. empty ())
+	{
+	  delete logPtr;
+	  logPtr = nullptr;
+	  if (remove (logFName. c_str ()))
+	  {
+	    cout << "Cannot remove log file \"" << logFName << "\"" << endl;
+	    abort ();
+	  }
+  }
+
+
+  return 0;
 }
 
 
