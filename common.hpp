@@ -661,7 +661,7 @@ template <typename Key, typename Value>
              Value &value)
     // Return: success
     // Output: value, if Return
-    { const auto /*typename map <Key, Value> :: const_iterator*/ it = m. find (key);
+    { const auto it = m. find (key);
     	if (it == m. end ())
     		return false;
     	value = it->second; 
@@ -671,14 +671,14 @@ template <typename Key, typename Value>
 template <typename Key, typename Value>
   const Value* findPtr (const map <Key, Value> &m,
                         const Key& key)
-    { const auto /*typename map <Key, Value> :: const_iterator*/ it = m. find (key);
+    { const auto it = m. find (key);
     	if (it == m. end ())
     		return nullptr;
     	return & it->second; 
     }
 
 template <typename Key, typename Value>
-  const Value* findPtr (const map <Key, const Value* /*!0*/> &m,
+  const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
                         const Key& key)
   #if 1
     { const Value* value;
@@ -694,6 +694,14 @@ template <typename Key, typename Value>
     	return it->second; 
     }
   #endif
+
+template <typename Key, typename Value>
+  const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
+                         const Key& key)
+    { if (m. find (key) == m. end ())
+        m [key] = new Value ();
+      return * m [key];
+    }
 
 
 
