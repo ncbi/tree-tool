@@ -656,27 +656,44 @@ template <typename Key, typename Value>
     { return m. find (key) != m. end (); }
 
 template <typename Key, typename Value>
+  bool find (const map <Key, Value> &m,
+             const Key& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto /*typename map <Key, Value> :: const_iterator*/ it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
+template <typename Key, typename Value>
+  const Value* findPtr (const map <Key, Value> &m,
+                        const Key& key)
+    { const auto /*typename map <Key, Value> :: const_iterator*/ it = m. find (key);
+    	if (it == m. end ())
+    		return nullptr;
+    	return & it->second; 
+    }
+
+template <typename Key, typename Value>
   const Value* findPtr (const map <Key, const Value* /*!0*/> &m,
                         const Key& key)
+  #if 1
+    { const Value* value;
+      if (find (m, key, value))
+        return value;
+      return nullptr;
+    }
+  #else
     { const typename map <Key, const Value*> :: const_iterator it = m. find (key);
     	if (it == m. end ())
     		return nullptr;
     	ASSERT (it->second);
     	return it->second; 
     }
-
-template <typename Key, typename Value>
-  bool find (const map <Key, Value> &m,
-             const Key& key,
-             Value &value)
-    // Return: success
-    // Output: value, if Return
-    { const typename map <Key, Value> :: const_iterator it = m. find (key);
-    	if (it == m. end ())
-    		return false;
-    	value = it->second; 
-    	return true;
-    }
+  #endif
 
 
 
