@@ -698,7 +698,7 @@ template <typename Key, typename Value>
 template <typename Key, typename Value>
   const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
                          const Key& key)
-    { if (m. find (key) == m. end ())
+    { if (! contains (m, key))
         m [key] = new Value ();
       return * m [key];
     }
