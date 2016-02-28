@@ -32,15 +32,15 @@
 #include <sstream>
 
 
-#define WHERE  "\"" __FILE__ "\": line " << __LINE__
+#define WHERE  "\"" __FILE__ "\", line " << __LINE__
 
 
 #define ERROR_MSG(msg)                  \
   {                                     \
     std::ostringstream oss_;            \
-    oss_ << msg << endl << WHERE;       \
-    errorExit (oss_. str (). c_str ()); \
-    throw std::runtime_error ("error"); \
+    oss_ << WHERE << ": " << msg;       \
+    /*errorExit (oss_. str (). c_str ());*/ \
+    throw std::runtime_error (oss_. str (). c_str ()); \
   }
 #define ERROR            ERROR_MSG("")
 #define NOT_IMPLEMENTED  ERROR_MSG("Not implemented: ")

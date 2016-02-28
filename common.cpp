@@ -78,7 +78,9 @@ void errorExit (const char* msg,
 	const char* hostname = getenv ("HOSTNAME");
 	const char* pwd = getenv ("PWD");
 #endif
-	*os << "ASSERTION ERROR: " << msg << endl
+	*os << endl
+      << "ERROR" << endl
+      << msg << endl
     #ifndef _MSC_VER
 	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
 	    << "PWD: " << (pwd ? pwd : "?") << endl
@@ -2365,31 +2367,132 @@ void exec (const string &cmd)
 
 // Application
 
-Application::Application (int argc, 
-                          const char* argv [])
+void Application::addKey (const string &key, 
+                          const string &defValue)
 {
-  for (int i = 0; i <= argc; i++)  
+  ASSERT (! key. empty ());
+  ASSERT (! contains (keyArgs, key));
+  ASSERT (! contains (flagArgs, key));
+  ASSERT (! positionalArgs. contains (key));
+  keyArgs [key] = defValue;
+}
+
+
+
+void Application::addFlag (const string &flag)
+{
+  ASSERT (! flag. empty ());
+  ASSERT (! contains (keyArgs, flag));
+  ASSERT (! contains (flagArgs, flag));
+  ASSERT (! positionalArgs. contains (flag));
+  flagArgs [flag] = false;
+}
+
+
+
+void Application::addPositional (const string &positional)
+{
+  ASSERT (! positional. empty ());
+  ASSERT (! contains (keyArgs, positional));
+  ASSERT (! contains (flagArgs, positional));
+  ASSERT (! positionalArgs. contains (positional));
+  positionalArgs << positional;
+}
+
+
+
+void Application::setKey (const string &key, 
+                          const string &value)
+{
+  if (! contains (keyArgs, key))
+    instruction ();
+  keyArgs [key] = value;
+}
+
+
+
+void Application::setFlag (const string &flag)
+{
+  if (! contains (flagArgs, flag))
+    instruction ();
+  flagArgs [flag] = true;
+}
+
+
+
+void Application::setPositional (const string &value)
+{
+  if (positionalValues. size () >= positionalArgs. size ())
+    instruction ();
+  positionalValues << value;
+}
+
+
+
+string Application::getArg (const string &arg) const
+{
+  if (contains (keyArgs, arg))
+    return keyArgs. at (arg);
+  size_t index;
+  if (positionalArgs. find (arg, index))
+    if (index < positionalValues. size ())
+      return positionalValues [index];
+    else
+      return string ();
+  throw runtime_error ("Argument " + arg + " is not found");
+}
+
+
+
+bool Application::getFlag (const string &flag) const
+{
+  ASSERT (contains (flagArgs, flag));
+  return flagArgs. at (flag);
+}
+
+
+
+void Application::instruction () const
+{
+  string instr ("Usage: " + programName);
+  for (const string& s : positionalArgs)
+    instr += " <" + s + ">";
+  for (const auto it : keyArgs)
+    instr += " [-" + it. first + " \"" + it. second + "\"]";
+  for (const auto it : flagArgs)
+    instr += " [-" + it. first + "]";
+
+  errorExit (instr. c_str ());
+}
+
+
+
+int Application::run (int argc, 
+                      const char* argv []) 
+{
+  for (int i = 0; i < argc; i++)  
     programArgs. push_back (argv [i]);
   ASSERT (! programArgs. empty ());
 
     
+  // keyArgs, flagArgs
   bool first = true;
   string key;
   for (string s : programArgs)
   {
     if (first)
     {
-      programName = rfindSplit (s, '/');
+      programName = rfindSplit (s, fileSlash);
       ASSERT (! programName. empty ());
     }
     else
     {
       if (s. empty ())
         if (key. empty ())
-          positionalArgs << s;
+          setPositional (s);
         else
         {
-          keyArgs [key] = s;
+          setKey (key, s);
           key. clear ();
         }
       else
@@ -2397,11 +2500,11 @@ Application::Application (int argc,
           if (s [0] == '-')
             key = s;
           else
-            positionalArgs << s;
+            setPositional (s);
         else
           if (s [0] == '-')
           {
-            keyArgs [key] = string ();
+            setFlag (key);
             if (s == "-")
               key. clear ();
             else
@@ -2409,7 +2512,7 @@ Application::Application (int argc,
           }
           else
           {
-            keyArgs [key] = s;
+            setKey (key, s);
             key. clear ();
           }
     }
@@ -2417,30 +2520,29 @@ Application::Application (int argc,
   }
 
 
-	logFName = keyArgs ["log"];
+  const string logFName = getArg ("log");
 	ASSERT (! logPtr);
-	if (! logFName. empty ())
+  if (! logFName. empty ())
 		logPtr = new OFStream ("", logFName, "");
 
-	Verbose vrb (str2<int> (keyArgs ["verbose"]));
+	Verbose vrb (str2<int> (getArg ("verbose")));
 	
 	if (getFlag ("noprogress"))
 		Progress::disable ();
 
-	jsonFName = keyArgs ["json"];
+	const string jsonFName = getArg ("json");
 	ASSERT (! jRoot);
 	if (! jsonFName. empty ())
 	{
 		new JsonMap ();
 	  ASSERT (jRoot);
 	}
-}
 
 
+  if (programArgs. size () == 1)
+    instruction ();
 
 
-int Application::run () const
-{
 	try
   { 
   	body ();

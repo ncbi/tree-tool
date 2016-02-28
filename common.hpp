@@ -414,6 +414,14 @@ string list2str (const List<string> &strList,
                  const string &sep = " ");
 
 
+const char fileSlash = 
+  #ifdef _MSC_VER
+    '\\'
+  #else  // UNIX
+    '/'
+  #endif
+  ;
+
 
 inline string getFileName (const string &path)  
   { const size_t pos = path. rfind ('/');
@@ -2260,27 +2268,54 @@ void exec (const string &cmd);
 
 
 struct Application : Singleton<Application>
-// Usage: int main (argc, argv) { Application app (argc, argv); return app. run (); }
+// Usage: int main (argc, argv) { Application app; return app. run (argc, argv); }
 {  
-protected:
-  map<string/*arg*/,string/*value*/> keyArgs;
-    // keys[flag] = string()
+private:
+  // arg's are unique
   Vector<string> positionalArgs;
+  Vector<string> positionalValues;
+    // size() = positionalArgs.size()
+    // Default: string()
+  map<string/*arg*/,string/*value*/> keyArgs;
+  map<string/*arg*/,bool/*value*/> flagArgs;
+    // Default: false
+public:
   
-  string logFName;
-  string jsonFName;
+
+protected:
+  Application ()
+    { addKey ("log");
+      addKey ("verbose", "0");
+      addKey ("json");
+      addFlag ("noprogress");
+    }
+    // Invoke: addKey(), addFlag(), addPositional()
+  void addKey (const string &key, 
+               const string &defValue = string ());
+  void addFlag (const string &flag);
+  void addPositional (const string &positional);
 public:
 
 
-  Application (int argc, 
-               const char* argv []);
-
-
-  bool getFlag (const string &flag) const
-    { string value;
-      return find (keyArgs, flag, value) && value. empty (); 
-    }
-  int run () const;
+private:
+  void setKey (const string &key, 
+               const string &value);
+    // Update: keyArgs[key] = value
+  void setFlag (const string &flag);
+    // Update: flagArgs[flag] = true
+  void setPositional (const string &value);
+    // Update: positionalValues << value
+protected:
+  string getArg (const string &arg) const;
+    // Input: keyArgs, positionalArgs, positionalValues
+  bool getFlag (const string &flag) const;
+    // Input: flagArgs
+public:
+  void instruction () const;
+    // Invokes: ERROR_MSG
+  int run (int argc, 
+           const char* argv []);
+    // Update: keyArgs, flagArgs, positionalArgs
     // Invokes: body()
 private:
   virtual void body () const = 0;
