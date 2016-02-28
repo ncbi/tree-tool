@@ -73,8 +73,5 @@
                       run = true;
 
 
-#define MAIN_CATCH  catch (const std::exception &e) { cout << "ASSERTION ERROR: " << e.what () << endl; return 1; }
-
-
 
 #endif
