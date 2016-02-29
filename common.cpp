@@ -2435,10 +2435,12 @@ string Application::getArg (const string &arg) const
     return keyArgs. at (arg);
   size_t index;
   if (positionalArgs. find (arg, index))
+  {
     if (index < positionalValues. size ())
       return positionalValues [index];
     else
       return string ();
+  }
   throw runtime_error ("Argument " + arg + " is not found");
 }
 
