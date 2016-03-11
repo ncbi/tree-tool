@@ -1336,7 +1336,7 @@ void Tree::Node::printNewick_ (ostream &os,
 	}
 	
 	const double dist = getParentDistance ();
-	if (dist != -1)
+	if (dist == dist && dist != -1)
 		os << ":" << fixed << dist;
 }
 
@@ -1345,7 +1345,7 @@ void Tree::Node::printNewick_ (ostream &os,
 string Tree::Node::name2newick (const string &s) 
 {
   string s1 (s);
-  replace (s1, "\"\' ():;,", '_');
+  replace (s1, "\"\' ():;,[]", '_');
   return s1. substr (0, 100 /*50*/ /*PAR*/);
     // Newick allowes the name length <= 50 characters, but http://www.trex.uqam.ca/ breaks with 50
 }
