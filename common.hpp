@@ -5,8 +5,14 @@
 
 
 #ifdef _MSC_VER
-  #pragma warning (disable : 4290)
-  #pragma warning (disable : 4800)
+  #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
+  #pragma warning (disable : 4625)  // copy constructor was implicitly defined as deleted
+  #pragma warning (disable : 4626)  // assignment operator was implicitly defined as deleted
+  #pragma warning (disable : 4710)  // function not inlined
+  #pragma warning (disable : 4800)  // 'const char *': forcing value to bool 'true' or 'false' (performance warning)
+  #pragma warning (disable : 4820)  // '...' bytes padding added after data member '...'
+  #pragma warning (disable : 5026)  // move constructor was implicitly defined as deleted
+  #pragma warning (disable : 5027)  // move assignment operator was implicitly defined as deleted
 #endif
 
 #include <time.h>
@@ -432,7 +438,10 @@ inline string getFileName (const string &path)
 
 bool fileExists (const string &fName);
 
+
+#ifndef _MSC_VER
 bool directoryExists (const string &dirName);
+#endif
 
 
 size_t strMonth2num (const string& month);
@@ -550,7 +559,7 @@ public:
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendent class destructor
   virtual Root* copy () const
-    { NOT_IMPLEMENTED; return nullptr; }
+    { NOT_IMPLEMENTED; }
     // Return: the same type
     
   virtual void qc () const
@@ -566,9 +575,9 @@ public:
     // Human-friendly
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
                         const string& /*name_arg*/) const
-    { NOT_IMPLEMENTED; return nullptr; }
+    { NOT_IMPLEMENTED; }
 	virtual bool empty () const
-	  { NOT_IMPLEMENTED; return true; }
+	  { NOT_IMPLEMENTED; }
   virtual void clear ()
     { NOT_IMPLEMENTED; }
     // Postcondition: empty()
@@ -1867,9 +1876,9 @@ struct Token : Root
 	  {}
 	Token (CharInput &in,
 	       Type expected)
-	  { read (in, expected); }
+	  { readInput (in, expected); }
 	explicit Token (CharInput &in)
-	  { read (in); }
+	  { readInput (in); }
 	void saveText (ostream &os) const
 	  { switch (type)
 	  	{ case eSystem: os << name;                 break;
@@ -1887,13 +1896,13 @@ struct Token : Root
 	    num = (uint) -1;
 	  }
 	  // empty()
-	void read (CharInput &in);
+	void readInput (CharInput &in);
 	  // Postcondition: !empty()
 	  // type != eNumber => !name.empty()
 	  // type = eNumber => num != UINT_MAX
-	void read (CharInput &in,
-	           Type expected);
-	  // Invokes: read()
+	void readInput (CharInput &in,
+	               Type expected);
+	  // Invokes: readInput(in)
 };
 
 
@@ -2267,7 +2276,7 @@ void exec (const string &cmd);
 
 
 
-struct Application : Singleton<Application>
+struct Application : Singleton<Application>, Root
 // Usage: int main (argc, argv) { Application app; return app. run (argc, argv); }
 {  
 private:

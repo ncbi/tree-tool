@@ -58,7 +58,7 @@
 #ifdef NDEBUG                                       
   #define EXEC_ASSERT(cond)  cond
 #else
-  #define EXEC_ASSERT(cond)  ASSERT (cond)
+  #define EXEC_ASSERT(cond)  { const bool c_ = (cond); if (! c_) ERROR_MSG (#cond); }
 #endif
 
 
@@ -71,6 +71,9 @@
                       if (run)                 \
                         return true;           \
                       run = true;
+
+
+#define LESS_COMP(a,b)  { if ((a) < (b)) return true; if ((a) > (b)) return false; }
 
 
 

@@ -532,20 +532,19 @@ bool fileExists (const string &fName)
 {
   ifstream f (fName. c_str ());
   bool ok = f. good ();
+#ifndef _MSC_VER
   if (ok)
     ok = ! directoryExists (fName);
+#endif
 
   return ok;
 }
 
 
 
+#ifndef _MSC_VER
 bool directoryExists (const string &dirName)
 {
-#ifdef _MSC_VER
-  ERROR;
-//return false;
-#else
   DIR* dir = opendir (dirName. c_str ());
   const bool yes = (bool) (dir);
   if (yes)
@@ -554,8 +553,8 @@ bool directoryExists (const string &dirName)
       ERROR;
   }
   return yes;
-#endif
 }
+#endif
 
 
 
@@ -1544,7 +1543,7 @@ void Tree::Node::getArea_ (uint distance,
 {
   area << this;
 
-  size_t degree = prev ? 1 : 0;
+  size_t degree = (size_t) (prev ? 1 : 0);
   if (distance)
   {
     const Node* parent_ = getParent ();
@@ -1870,7 +1869,7 @@ void CharInput::unget ()
 
 // Token
 
-void Token::read (CharInput &in)
+void Token::readInput (CharInput &in)
 {
 	clear ();
 	
@@ -1927,10 +1926,10 @@ void Token::read (CharInput &in)
 
 
 
-void Token::read (CharInput &in,
-                  Type expected)
+void Token::readInput (CharInput &in,
+                       Type expected)
 { 
-	read (in);
+	readInput (in);
 	if (type != expected)
 		switch (expected)
 		{
