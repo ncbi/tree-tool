@@ -1181,6 +1181,8 @@ public:
 
   bool contains (const T& el) const
     { return universal || P::find (el) != P::end (); }
+  T front () const
+    { return * begin (); }
   template <typename U>
     bool contains (const Set<U> &other) const
       { if (universal)
