@@ -957,7 +957,7 @@ DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
     if (inStack)
       return scc;
     else
-      return 0;
+      return nullptr;
   }
   ASSERT (! inStack);
   
@@ -997,7 +997,7 @@ DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
   }
 //cout << endl; 
 
-  return 0;
+  return nullptr;
 }
 
  
@@ -1636,7 +1636,7 @@ const Tree::Node* Tree::getLowestCommonAncestor (const Node* n1,
   if (   ! n1 
   	  || ! n2
   	 )
-  	return 0;
+  	return nullptr;
 	
 	static Vector<const Node*> vec1;  // vec1. reserve (256);  // PAR
 	vec1. clear ();
@@ -1671,7 +1671,7 @@ const Tree::Node* Tree::getLowestCommonAncestor (const Node* n1,
 const Tree::Node* Tree::getLowestCommonAncestor (const VectorPtr<Node> &nodeVec) 
 {
   if (nodeVec. empty ())
-    return 0;
+    return nullptr;
     
 	const Node* n = nodeVec [0];
 	FOR_START (size_t, i, 1, nodeVec. size ())
