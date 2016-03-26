@@ -972,7 +972,7 @@ struct DisjointCluster
 {
 protected:
   DisjointCluster* parentDC;
-    // !0
+    // !nullptr
     // Tree
     // = this <=> root
   size_t rankDC;
@@ -1005,7 +1005,7 @@ private:
   Vector<T> arr;
     // Elements are not owned by arr
   const CompareInt comp;
-    // !0
+    // !nullptr
   typedef void (*SetHeapIndex) (T &item, size_t index);
     // Example: item.heapIndex = index
   const SetHeapIndex setHeapIndex;
@@ -1183,7 +1183,7 @@ public:
     { return universal || P::find (el) != P::end (); }
   T front () const
     { return * P::begin (); }
-  template <typename U>
+  template <typename U /* : T */>
     bool contains (const Set<U> &other) const
       { if (universal)
     	    return true;
@@ -1329,15 +1329,15 @@ struct DiGraph : Root
   public:
 
     explicit Node (DiGraph &graph_arg)
-			: graph (0)
-			, scc (0) 
+			: graph (nullptr)
+			, scc (nullptr) 
 			, orderDfs (0)
 			, inStack (false)
 			{ attach (graph_arg); }
     Node (const Node &other)
       : Root (other)
       , DisjointCluster (other)
-      , graph (0)
+      , graph (nullptr)
       , scc      (other. scc)
       , orderDfs (other. orderDfs)
       , inStack  (other. inStack)
@@ -1411,7 +1411,7 @@ struct DiGraph : Root
     friend struct Node;
    
     Node* node [2 /*bool: out*/];
-      // !0
+      // !nullptr
   private:
     List<Arc*>::iterator arcsIt [2 /*bool: out*/];
       // in node [b] -> arcs [! b]
@@ -1500,7 +1500,7 @@ public:
 		{ const Set<const DiGraph::Node*> ends (getEnds (out));
 			if (ends. size () == 1)
 			  return * ends. begin ();
-			return 0;
+			return nullptr;
 		}
 };
 
@@ -1514,7 +1514,7 @@ struct Tree : DiGraph
 		      Node* parent_arg)
 			: DiGraph::Node (tree)
 			{ setParent (parent_arg); }
-		  // Input: parent_arg: may be 0
+		  // Input: parent_arg: may be nullptr
    	void saveText (ostream &os) const;
    	  // Invokes: getName(), saveContent(), getSaveSubtreeP()
 
@@ -1541,10 +1541,10 @@ struct Tree : DiGraph
 	  const Tree& getTree () const
   	  { return * static_cast <const Tree*> (graph); }
 		const Node* getParent () const
-			{ return arcs [true]. empty () ? 0 : static_cast <Node*> (arcs [true]. front () -> node [true]); }
-		  // Return: 0 <=> root
+			{ return arcs [true]. empty () ? nullptr : static_cast <Node*> (arcs [true]. front () -> node [true]); }
+		  // Return: nullptr <=> root
 		const Node* getSuperParent (size_t height) const;
-		  // Return: may be 0
+		  // Return: may be nullptr
 		  // getSuperParent(0) = this
 		void setParent (Node* newParent);
 		  // Update: *newParent
@@ -1574,10 +1574,10 @@ struct Tree : DiGraph
     void getLeaves (VectorPtr<Node> &leaves) const;
       // Update: leaves
 		const Node* getClosestLeaf (size_t &leafDepth) const;
-		  // Return: !0
-		  // Output: leafDepth; 0 <=> Return = this
+		  // Return: !nullptr
+		  // Output: leafDepth; nullptr <=> Return = this
     const Node* getOtherChild (const Node* child) const;
-      // Return: May be 0; != child
+      // Return: May be nullptr; != child
       // Requires: getChildren().size() <= 2
 	  void childrenUp ();
 	    // Children->setParent(getParent())
@@ -1585,7 +1585,7 @@ struct Tree : DiGraph
 	  Node* isTransient () const
 	    { return arcs [false]. size () == 1 
 	    	        ? static_cast <Node*> (arcs [false]. front () -> node [false]) 
-	    	        : 0; 
+	    	        : nullptr; 
 	    }
 	    // Return: Single child of *this
 	  void isolateChildrenUp ();
@@ -1606,11 +1606,11 @@ struct Tree : DiGraph
 	    // Postcondition: isLeaf()
 	  const Node* makeRoot ();
 	    // Redirect Arc's so that this = getTree()->root
-	    // Return: old getTree()->root, !0
+	    // Return: old getTree()->root, !nullptr
     void getArea (uint distance,
                   VectorPtr<Tree::Node> &area,
                   VectorPtr<Tree::Node> &boundary) const
-      { getArea_ (distance, 0, area, boundary); }
+      { getArea_ (distance, nullptr, area, boundary); }
       // Output: area: connected Node's with one root, distinct
       //         boundary: distinct
       //         area.contain(boundary)
@@ -1634,11 +1634,11 @@ struct Tree : DiGraph
   			}
 	};
 	const Node* root;
-	  // 0 <=> nodes.empty()
+	  // nullptr <=> nodes.empty()
 
 
   Tree ()
-    : root (0)
+    : root (nullptr)
     {}
   void qc () const;
 	void saveText (ostream &os) const
@@ -1650,12 +1650,12 @@ struct Tree : DiGraph
 	
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
-    // Return: 0 <=> !n1 || !n2
+    // Return: nullptr <=> !n1 || !n2
   static const Node* getLowestCommonAncestor (const VectorPtr<Node> &nodeVec);
-    // Return: 0 <= nodeVec.empty()
-    // Input: nodeVec: may be 0
+    // Return: nullptr <= nodeVec.empty()
+    // Input: nodeVec: may be nullptr
   static Set<const Node*> getParents (const VectorPtr<Node> &nodeVec);
-    // Return: !0, !contains(getLowestCommonAncestor(nodeVec)), contains(nodeVec)
+    // Return: !nullptr, !contains(getLowestCommonAncestor(nodeVec)), contains(nodeVec)
     // Invokes: getLowestCommonAncestor(nodeVec)
   static Set<const Node*> getPath (const Node* n1,
                                    const Node* n2)
