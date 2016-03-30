@@ -1183,6 +1183,8 @@ public:
     { return universal || P::find (el) != P::end (); }
   T front () const
     { return * P::begin (); }
+  T back () const
+    { return * std::prev (P::end ()); }
   template <typename U /* : T */>
     bool contains (const Set<U> &other) const
       { if (universal)
@@ -1659,7 +1661,7 @@ struct Tree : DiGraph
     // Invokes: getLowestCommonAncestor(nodeVec)
   static Set<const Node*> getPath (const Node* n1,
                                    const Node* n2)
-    { return getParents (VectorPtr<Node>::make (n1, n2)); }
+    { return move (getParents (VectorPtr<Node>::make (n1, n2))); }
 
   size_t deleteTransients ();
     // Return: # Node's delete'd

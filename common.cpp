@@ -1696,7 +1696,7 @@ Set<const Tree::Node*> Tree::getParents (const VectorPtr<Node> &nodeVec)
 		}
 	}
 
-	return s;
+	return move (s);
 }
 
 
