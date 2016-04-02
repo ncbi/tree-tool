@@ -73,7 +73,9 @@
                       run = true;
 
 
-#define LESS_COMP(a,b)  { if ((a) < (b)) return true; if ((a) > (b)) return false; }
+#define LESS_PART(x,y,part)  { if ((x).part < (y).part) return true; \
+                               if ((x).part > (y).part) return false; }
+
 
 
 
