@@ -697,20 +697,11 @@ template <typename Key, typename Value>
 template <typename Key, typename Value>
   const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
                         const Key& key)
-  #if 1
     { const Value* value;
       if (find (m, key, value))
         return value;
       return nullptr;
     }
-  #else
-    { const typename map <Key, const Value*> :: const_iterator it = m. find (key);
-    	if (it == m. end ())
-    		return nullptr;
-    	ASSERT (it->second);
-    	return it->second; 
-    }
-  #endif
 
 template <typename Key, typename Value>
   const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
@@ -856,7 +847,8 @@ public:
 			ITER (typename P, it, *this)
 	      swap (*it, P::at ((size_t) rand. get ((ulong) P::size ())));
 		}
-  void sortBubble ()  // --> std::sort() ??
+  void sortBubble ()  
+    // Fast if *this is pre-sorted
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
 		      if (P::at (j + 1) > P::at (j))
@@ -1479,9 +1471,8 @@ public:
     // Invokes: Node::delete
     // Time: O(n + m)
   void qc () const;
-
-
   void saveText (ostream &os) const;   
+
 
   void connectedComponents ();
     // Output: Node::getConnectedComponent()  
@@ -1504,6 +1495,12 @@ public:
 			  return * ends. begin ();
 			return nullptr;
 		}
+  typedef  map <const Node*, const Node*>  Node2Node;  
+    // !nullptr
+  static Node2Node reverse (const Node2Node& old2new);
+  void borrowArcs (const Node2Node &node2node,
+                   bool parallelAllowed);
+    // Input: node2node: other node to *this node
 };
 
 
@@ -1615,14 +1612,14 @@ struct Tree : DiGraph
       { getArea_ (distance, nullptr, area, boundary); }
       // Output: area: connected Node's with one root, distinct
       //         boundary: distinct
-      //         area.contain(boundary)
+      //         area.contains(boundary)
   private:
     void getArea_ (uint distance,
                    const Tree::Node* prev,
                    VectorPtr<Tree::Node> &area,
                    VectorPtr<Tree::Node> &boundary) const;
       // Update: area, bounday
-      //         area.contain(boundary)
+      //         area.contains(boundary)
   public:
     template <typename Compare>
     	void sort (const Compare &compare)
@@ -1650,6 +1647,8 @@ struct Tree : DiGraph
     }
 
 	
+  void setRoot ();
+    // Output: root
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
     // Return: nullptr <=> !n1 || !n2

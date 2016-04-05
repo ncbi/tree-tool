@@ -1163,13 +1163,15 @@ void DiGraph::qc () const
   Set<const Arc*> arcs_ [2];
   Set<string> names;
   size_t arcs = 0;
-  CONST_ITER (List<Node*>, nodeIt, nodes)
+//CONST_ITER (List<Node*>, nodeIt, nodes)
+  for (const Node* node : nodes)
   {
-    ASSERT (*nodeIt);
-    nodes_ << *nodeIt;
-    (*nodeIt)->qc ();
+    ASSERT (node);
+    ASSERT (node->graph == this);
+    nodes_ << node;
+    node->qc ();
     FOR (unsigned char, i, 2)
-      CONST_ITER (List<Arc*>, arcIt, (*nodeIt)->arcs [i])
+      CONST_ITER (List<Arc*>, arcIt, node->arcs [i])
       {
         ASSERT (*arcIt);
         arcs_ [i] << *arcIt;
@@ -1180,12 +1182,12 @@ void DiGraph::qc () const
           (*arcIt)->qc ();
         }
       }
-    if (names. contains ((*nodeIt)->getName ()))
+    if (names. contains (node->getName ()))
     {
-      cout << "Duplicate name: " << (*nodeIt)->getName () << endl;
+      cout << "Duplicate name: " << node->getName () << endl;
       ERROR;  
     }
-    names << (*nodeIt)->getName ();
+    names << node->getName ();
   }
   ASSERT (nodes. size () == nodes_. size ());
   FOR (unsigned char, i, 2)
@@ -1272,6 +1274,49 @@ Set<const DiGraph::Node*> DiGraph::getEnds (bool out) const
     if ((*it)->arcs [out]. empty ())
       s << *it;
   return s;
+}
+
+
+
+DiGraph::Node2Node DiGraph::reverse (const Node2Node& old2new)
+{
+  Node2Node new2old;
+  for (const auto it : old2new)
+    new2old [it. second] = it. first;
+    
+  return move (new2old);
+}
+
+
+
+void DiGraph::borrowArcs (const Node2Node &node2node,
+                          bool parallelAllowed)
+{
+#ifndef NDEBUG
+  const DiGraph* otherGraph = nullptr;
+#endif
+  for (const auto it : node2node)
+  {
+    const Node* other = it. first;
+    const Node* from  = it. second;
+    ASSERT (other);
+    ASSERT (from);
+  #ifndef NDEBUG
+    if (otherGraph)
+    { ASSERT (otherGraph == other->graph); }
+    else
+      otherGraph = other->graph;
+  #endif
+    ASSERT (this == from->graph);
+    ASSERT (otherGraph != this);
+    const VectorPtr<Node> otherNeighborhood (other->getNeighborhood (true));
+    for (const Node* otherNeighbor : otherNeighborhood)
+      if (const Node* to = findPtr (node2node, otherNeighbor))
+        if (parallelAllowed || ! from->isIncident (to, true))
+          new Arc ( const_cast <Node*> (from)
+                  , const_cast <Node*> (to)
+                  );
+  }
 }
 
 
@@ -1575,12 +1620,25 @@ void Tree::Node::getArea_ (uint distance,
 void Tree::qc () const
 {
 	DiGraph::qc ();
-		
+
+#ifndef NDEBUG		
   Set<string> names;
-	CONST_ITER (List<DiGraph::Node*>, it, nodes)
+  bool transient = false;
+	for (const DiGraph::Node* node : nodes)
 	{
-	  ASSERT ((*it)->arcs [true]. size () <= 1);
-	  const Node* n = static_cast <const Node*> (*it);
+	  if (node->arcs [true]. size () > 1)
+	  {
+	    cout << "Multiple parents of " << node->getName () << endl;
+	    const VectorPtr<DiGraph::Node> neighbors (node->getNeighborhood (true));
+	    ASSERT (neighbors. size () >= 2);
+	    for (const DiGraph::Node* neighbor : neighbors)
+	      cout << " " << neighbor->getName ();
+	    cout << endl << endl;
+	    if (verbose ())
+	      print (cout);
+	    ERROR;
+	  }
+	  const Node* n = static_cast <const Node*> (node);
 	  if (n->isLeaf ())
 	  {
 	    const string newickName (Node::name2newick (n->getNewickName ()));
@@ -1591,11 +1649,30 @@ void Tree::qc () const
       }
       names << newickName;
     }
+    if (n->isTransient ())
+      transient = true;
 	}
+#endif
 	ASSERT (! root == nodes. empty ());
 	IMPLY (root, getRoot (true) == root);
 	
-	ASSERT (nodes. size () <= 2 * root->getLeavesSize () - 1);
+#ifndef NDEBUG		
+	IMPLY (! transient, nodes. size () <= 2 * root->getLeavesSize () - 1);
+#endif
+}
+
+
+
+void Tree::setRoot ()
+{
+  root = nullptr;
+  for (const DiGraph::Node* node : nodes)
+    if (! static_cast <const Node*> (node) -> getParent ())
+    {
+      ASSERT (! root);
+      const_static_cast <Node*> (node) -> setParent (nullptr);
+    }
+  IMPLY (! nodes. empty (), root);
 }
 
 
