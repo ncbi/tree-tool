@@ -496,7 +496,7 @@ private:
 
 
 
-bool verbose ();
+bool verbose (uint inc = 0);
 
 class Verbose
 {
@@ -1705,8 +1705,10 @@ public:
 	  }
  ~Progress ()
     { if (active)
-    	{ report ();
-    	  cerr << endl;
+    	{ if (! uncaught_exception ())
+    	  { report ();
+    	    cerr << endl;
+    	  }
     	  beingUsed--;
     	}
     }
