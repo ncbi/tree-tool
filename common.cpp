@@ -1303,7 +1303,7 @@ void DiGraph::borrowArcs (const Node2Node &node2node,
     ASSERT (from);
   #ifndef NDEBUG
     if (otherGraph)
-    { ASSERT (otherGraph == other->graph); }
+      { ASSERT (otherGraph == other->graph); }
     else
       otherGraph = other->graph;
   #endif

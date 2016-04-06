@@ -164,7 +164,6 @@ inline bool printable (char c)
   for (Iter<T> iter (t); iter. next (); )
     ...
 */
-// Also: corelib/ncbimisc.hpp
 template <typename T>
 struct Iter
 {
@@ -2214,19 +2213,33 @@ extern JsonMap* jRoot;
 struct Chronometer : Nocopy
 {
   const string name;
-  ostream* os;
-  const clock_t start;
+  ostream& os;
+  clock_t time;
 
   Chronometer (const string &name_arg,
-               ostream* os_arg)
+               ostream& os_arg)
     : name (name_arg)
     , os (os_arg)
-    , start (clock ())
+    , time (0)
     {}
  ~Chronometer ()
-    { *os << name << ": Duration: ";       
-      *os << fixed; os->precision (2); *os << (double) (clock () - start) / CLOCKS_PER_SEC << " sec." << endl; 
+    { os << name << ": Duration: ";       
+      os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl; 
     }
+    
+  struct Measure 
+  {
+  private:
+    Chronometer& chr;
+    const clock_t start;
+  public:
+    explicit Measure (Chronometer &chr_arg)
+      : chr (chr_arg)
+      , start (clock ())
+      {}
+   ~Measure ()
+      { chr. time += clock () - start; }
+  };
 };
 
 
