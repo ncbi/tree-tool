@@ -1263,11 +1263,9 @@ public:
     		P::clear ();
     	}
     	else
-	    	CONST_ITER (typename Set<T>, it, other)
-	        if (contains (*it))
-	        { P::erase (*it);
-	        	n++;
-	        }
+	    //CONST_ITER (typename Set<T>, it, other)
+	    	for (const T t : other)
+	        n += P::erase (t);
       return n;
     }
 };
