@@ -1498,6 +1498,9 @@ public:
   void borrowArcs (const Node2Node &node2node,
                    bool parallelAllowed);
     // Input: node2node: other node to *this node
+    // Time: |node2node| log|node2node| outdegree_max outdegree'_max,
+    //          where outdegree_max = max(outdegree(node2node.keys()),
+    //                outdegree'_max = max(outdegree(node2node.values())
 };
 
 
