@@ -1519,6 +1519,31 @@ const Tree::Node* Tree::Node::getOtherChild (const Node* child) const
 
 
 
+const Tree::Node* Tree::Node::leftmostDescendent () const
+{
+  const Node* n = this;
+  while (! n->isLeaf ())
+    n = static_cast <Node*> (n->arcs [false]. front () -> node [false]);
+  return n;
+}
+
+
+
+const Tree::Node* Tree::Node::rightmostDescendent () const
+{
+  const Node* n = this;
+  while (! n->isLeaf ())
+    n = static_cast <Node*> (n->arcs [false]. back () -> node [false]);
+/*{
+    auto it = n->arcs [false]. end ();
+    it--;
+    n = static_cast <Node*> ((*it) -> node [false]);
+  } */
+  return n;
+}
+
+
+
 void Tree::Node::childrenUp ()
 {
   const VectorPtr<DiGraph::Node> children (getChildren ());
