@@ -26,6 +26,10 @@
   for (ContainerType::const_reverse_iterator iter = (container). rbegin (); iter != (container). rend (); iter++)
 
 
+#define  Case     break; case
+#define  Default  break; default
+
+
 // Exceptions
 
 #include <stdexcept>
