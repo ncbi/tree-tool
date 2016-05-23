@@ -502,13 +502,14 @@ string rfindSplit (string &s,
 
 
 
-List<string> str2list (const string &s) 
+List<string> str2list (const string &s,
+                       char c) 
 {
 	List<string> res;
 	string s1 (s);
 	while (! s1. empty ())
-	  res << findSplit (s1);
-	return res;
+	  res << findSplit (s1, c);
+	return move (res);
 }
 
 

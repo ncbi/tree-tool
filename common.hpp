@@ -249,6 +249,16 @@ public:
   List<T>& operator<< (T t) 
     { P::push_back (t); 
     	return *this;
+    }    
+  T popFront ()
+    { const T t = P::front ();
+      P::pop_front ();
+      return t;
+    }
+  T popBack ()
+    { const T t = P::back ();
+      P::pop_back ();
+      return t;
     }
 };
 
@@ -412,8 +422,9 @@ string rfindSplit (string &s,
 	// Return: suffix of c+s after c
 	// Update: s
 
-List<string> str2list (const string &s);
-  // Invokes: findSplit()
+List<string> str2list (const string &s,
+                       char c = ' ');
+  // Invokes: findSplit(s,c)
 
 string list2str (const List<string> &strList,
                  const string &sep = " ");
@@ -1578,6 +1589,8 @@ struct Tree : DiGraph
     const Node* getOtherChild (const Node* child) const;
       // Return: May be nullptr; != child
       // Requires: getChildren().size() <= 2
+    const Node* leftmostDescendent () const;
+    const Node* rightmostDescendent () const;
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()
