@@ -101,6 +101,10 @@ void errorExit (const char* msg,
 
 
 
+const vector<bool> Bool = {false, true};
+
+
+
 namespace
 {
 	
