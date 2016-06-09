@@ -705,6 +705,13 @@ Verbose::Verbose (int verbose_arg)
 }
 
 
+Verbose::Verbose ()
+: verbose_old (verbose_)
+{
+	verbose_++;
+}
+
+
 Verbose::~Verbose ()
 {
 	verbose_ = verbose_old;

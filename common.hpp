@@ -70,6 +70,8 @@ typedef  long int       lint;
 
 
 
+extern const vector<bool> Bool;  // {false, true}
+
 enum ebool {EFALSE = false, 
             ETRUE = true, 
             UBOOL = true + 1};
@@ -512,7 +514,9 @@ class Verbose
 {
 	int verbose_old;
 public:
-	Verbose (int verbose_arg);
+	explicit Verbose (int verbose_arg);
+	Verbose ();
+	  // Increase verbosity
  ~Verbose ();
 };
 
@@ -1736,7 +1740,11 @@ public:
     }
 private:
 	void report () const
-	  { cerr << '\r' << n; 
+	  { cerr << '\r';
+    #ifndef _MSC_VER
+      cerr << "\33[2K";
+    #endif
+	    cerr << n; 
 	  	if (n_max)
 	  		cerr << " / " << n_max;
 	  	if (! step. empty ())
