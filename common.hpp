@@ -1554,6 +1554,8 @@ struct Tree : DiGraph
     // Input: internalNames <=> print name at each internal node
 	  const Tree& getTree () const
   	  { return * static_cast <const Tree*> (graph); }
+		bool isLeaf () const
+		  { return arcs [false]. empty (); }
 		const Node* getParent () const
 			{ return arcs [true]. empty () ? nullptr : static_cast <Node*> (arcs [true]. front () -> node [true]); }
 		  // Return: nullptr <=> root
@@ -1579,8 +1581,16 @@ struct Tree : DiGraph
 		  		return parent_->descendentOf (ancestor);
 		  	return false;
 		  }
-		bool isLeaf () const
-		  { return arcs [false]. empty (); }
+		const Node* getPrevAncestor (const Node* ancestor) const
+		  { if (! ancestor)
+		      return nullptr;
+		    const Node* parent_ = getParent ();
+		    if (parent_ == ancestor)
+		      return this;
+		    if (! parent_)
+		      return nullptr;
+		    return parent_->getPrevAncestor (ancestor);
+		  }
 		size_t getSubtreeSize () const;
 		  // Does not count *this
 		  // Return: 0 <=> isLeaf()
