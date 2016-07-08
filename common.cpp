@@ -231,7 +231,7 @@ bool goodName (const string &name)
 bool strBlank (const string &s)
 {
   for (const char c : s)
-    if (! isspace (c))
+    if (! isSpace (c))
       return false;
   return true;
 }
@@ -311,7 +311,7 @@ void strDeleteSet (string &s,
 void trimLeading (string &s)
 {
   size_t i = 0;
-  for (; i < s. size () && isspace (s. at (i)); i++)
+  for (; i < s. size () && isSpace (s. at (i)); i++)
     ;
   s. erase (0, i);
 }
@@ -322,7 +322,7 @@ void trimTrailing (string &s)
 {
 	size_t i = s. size ();
 	while (i)
-		if (isspace (s. at (i - 1)))
+		if (isSpace (s. at (i - 1)))
 			i--;
 		else
 			break;
@@ -611,14 +611,40 @@ size_t strMonth2num (const string& month)
 
 // istream
 
+bool getChar (istream &is,
+              char &c)
+{
+  ASSERT (is. good ());
+
+  const int i = is. get ();
+  c = EOF;
+  if (is. eof ())
+  {
+    ASSERT (i == c);
+    return false;
+  }
+  ASSERT (i >= 0 && i <= 255);
+  c = static_cast<char> (i);
+
+  return true;
+}
+
+
+
 void skipLine (istream &is)
 {
+#if 1
+  char c;
+  while (getChar (is, c) && c != '\n')  // UNIX
+    ;
+#else
 	char c = '\0';
 	while (! is. eof () && c != '\n')  // UNIX
   {	
   	ASSERT (is. good ());
 	  c = (char) is. get ();
 	}
+#endif
 }
 
 
@@ -629,9 +655,10 @@ void readLine (istream &is,
   s. clear ();
   for (;;)
   {	
-  	ASSERT (is. good ());
-	  const char c = (char) is. get ();
-	  if (is. eof () || c == '\n')  // UNIX
+    char c;
+    if (! getChar (is, c))
+      break;
+	  if (c == '\n')  // UNIX
 	  	break;
 	  s += c;
 	}
@@ -1898,7 +1925,7 @@ bool LineInput::nextLine ()
 	}
 	
 	readLine (ifs, line);
-	trimTrailing (line);
+  trimTrailing (line); 
 	eof = ifs. eof ();
 	lineNum++;
 
@@ -1991,7 +2018,7 @@ void Token::readInput (CharInput &in)
 	
 	char c = '\0';
 	do { c = in. get (); }
-	  while (! in. eof && isspace (c));
+	  while (! in. eof && isSpace (c));
 	if (in. eof)
 		return;
 		
@@ -2168,7 +2195,7 @@ Token Json::readToken (istream &is)
     is. get (c);
     const bool isDelim = charInSet (c, delim);
     if (spaces)
-      if (isspace (c))
+      if (isSpace (c))
         continue;
       else
       {
@@ -2193,7 +2220,7 @@ Token Json::readToken (istream &is)
         }
       }
       else
-        if (isspace (c) || isDelim)
+        if (isSpace (c) || isDelim)
         {
           is. unget ();
           break;

@@ -6,6 +6,7 @@
 
 #ifdef _MSC_VER
   #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
+  #pragma warning (disable : 4592)  // symbol will be dynamically initialized (implementation limitation)
   #pragma warning (disable : 4625)  // copy constructor was implicitly defined as deleted
   #pragma warning (disable : 4626)  // assignment operator was implicitly defined as deleted
   #pragma warning (disable : 4710)  // function not inlined
@@ -290,6 +291,9 @@ inline string strQuote (const string &s)
 inline string unQuote (const string &s)
   { return s. substr (1, s. size () - 2); }
 
+inline bool isSpace (char c)
+  { return c > '\0' && c <= ' ' && isspace (c); }
+
 bool strBlank (const string &s);
 
 template <typename T>
@@ -462,6 +466,10 @@ size_t strMonth2num (const string& month);
 
 // istream
 
+bool getChar (istream &is,
+              char &c);
+  // Output: s if (bool)Return
+
 void skipLine (istream &is);
 
 void readLine (istream &is,
@@ -601,6 +609,14 @@ public:
 };
 
  
+
+inline ostream& operator<< (ostream &os,
+                            const Root &r) 
+  { r. saveText (os);
+    return os;
+  }
+  
+
 
 template <typename T /*Root*/> 
 struct AutoPtr : unique_ptr<T>
@@ -745,7 +761,10 @@ public:
 	                 const T &value = T ())
 	  : P (n, value)
 	  {}
-  static Vector<T> make (T a)
+  Vector (initializer_list<T> init)
+    : P (init)
+    {}
+/*static Vector<T> make (T a)
     { Vector<T> v (1);
       v [0] = a;
       return v; 
@@ -756,7 +775,7 @@ public:
       v [0] = a;
       v [1] = b;
       return v; 
-    }
+    }*/
 	
 	
   bool find (const T &value,
