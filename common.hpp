@@ -2316,14 +2316,14 @@ public:
 class ONumber
 {
 	ostream &o;
-//const streamsize prec_old;
+  const streamsize prec_old;
 	const ios_base::fmtflags flags_old;
 public:
 	ONumber (ostream &o_arg,
 	         streamsize precision,
 	         bool scientific_arg)
 	  : o (o_arg)
-	//, prec_old (o << setprecision (precision))
+	  , prec_old (o. precision ())
 	  , flags_old (o. flags ())
 	  { if (scientific_arg)
 	  	  o << scientific;
@@ -2332,8 +2332,8 @@ public:
       o. precision (precision);
 	  }
  ~ONumber ()
-    { //o. setprecision (prec_old); 
-      o. flags (flags_old); 
+    { o. flags (flags_old); 
+      o. precision (prec_old); 
     }
 };
 
