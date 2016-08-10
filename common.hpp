@@ -1596,7 +1596,7 @@ struct Tree : DiGraph
         , depth (depth_arg)
         {}
       void saveText (ostream &os) const
-        { os << name << " " << depth; }
+        { os << name << '\t' << depth; }
     };
     TipName getTipName () const;
       // Return: identification of *this by a tip
