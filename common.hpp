@@ -1584,6 +1584,22 @@ struct Tree : DiGraph
 		void setParent (Node* newParent);
 		  // Update: *newParent
 		  //         getTree()->root if !newParent
+    struct TipName : Root
+    { string name; 
+      size_t depth; 
+      TipName ()
+        : depth (0)
+        {}
+      TipName (const string &name_arg,
+               size_t depth_arg)
+        : name (name_arg)
+        , depth (depth_arg)
+        {}
+      void saveText (ostream &os) const
+        { os << name << " " << depth; }
+    };
+    TipName getTipName () const;
+      // Return: identification of *this by a tip
 		size_t getDepth () const
 		  { if (const Node* parent_ = getParent ())
 		  		return parent_->getDepth () + 1;

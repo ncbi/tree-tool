@@ -1470,6 +1470,25 @@ void Tree::Node::setParent (Node* newParent)
 
 
 
+Tree::Node::TipName Tree::Node::getTipName () const
+{ 
+  if (isLeaf ()) 
+    return TipName (getName (), 0);
+    
+  TipName tn_best;
+	for (const DiGraph::Arc* arc : arcs [false])
+	{
+	  const TipName tn = static_cast <Tree::Node*> (arc->node [false]) -> getTipName ();
+	  if (tn_best. name. empty () || tn_best. name > tn. name)
+	    tn_best = tn;
+	}
+	tn_best.depth ++;
+
+	return move (tn_best);
+}
+
+
+
 size_t Tree::Node::getHeight () const
 {
   size_t n = 0;
