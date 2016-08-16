@@ -1746,16 +1746,89 @@ void Tree::qc () const
 
 
 
-void Tree::setRoot ()
+namespace 
 {
-  root = nullptr;
-  for (const DiGraph::Node* node : nodes)
-    if (! static_cast <const Node*> (node) -> getParent ())
+  typedef  map<size_t, string> AsnFeatures;
+  void printAsnFeatures (ostream &os,
+                         const AsnFeatures &features)
+  {
+    if (features. empty ())
+      return;
+    os << ",\n\
+      features {\n";
+    bool first = true;
+    for (const auto it : features)
     {
-      ASSERT (! root);
-      const_static_cast <Node*> (node) -> setParent (nullptr);
+      if (! first)
+        os << ',';
+      os << "\
+        {\n\
+          featureid " << it. first << ",\n\
+          value \"" << it. second << "\"\n\
+        }";
+      first = false;
     }
-  IMPLY (! nodes. empty (), root);
+    os << "\n\
+      }";
+  }
+}
+
+
+
+void Tree::printAsn (ostream &os) const
+{
+  map<const DiGraph::Node*, size_t/*index*/> node2index;
+  size_t index = 0;
+  for (const DiGraph::Node* n : nodes)
+  {
+    node2index [n] = index;
+    index++;
+  }    
+  ASSERT (node2index. size () == nodes. size ());
+
+  os << "BioTreeContainer ::= {fdict {\n\
+    {\n\
+      id 0,\n\
+      name \"label\"\n\
+    },\n\
+    {\n\
+      id 1,\n\
+      name \"dist\"\n\
+    }\n\
+  },\n\
+  nodes {";
+
+  bool first = true;
+  for (const DiGraph::Node* n : nodes)
+  {
+    const Node* node = static_cast <const Node*> (n);
+    const Node* parent = node->getParent ();
+    if (! first)
+      os << ',';
+    os << "\n\
+    {\n\
+      id " << node2index [n];
+    if (parent)
+      os << ",\n\
+      parent " << node2index [parent];
+    AsnFeatures features;
+    if (node->isLeaf ())
+      features [0] = n->getName ();
+    if (parent)
+    {
+      ostringstream oss;
+      oss << node->getParentDistance ();
+      features [1] = oss. str ();
+    }
+    printAsnFeatures (os, features);
+    os << "\n\
+    }";
+    first = false;
+  }
+  os << "\n\
+  }\n\
+}\n\
+";
 }
 
 
@@ -1857,6 +1930,20 @@ Set<const Tree::Node*> Tree::getParents (const VectorPtr<Node> &nodeVec)
 	}
 
 	return move (s);
+}
+
+
+
+void Tree::setRoot ()
+{
+  root = nullptr;
+  for (const DiGraph::Node* node : nodes)
+    if (! static_cast <const Node*> (node) -> getParent ())
+    {
+      ASSERT (! root);
+      const_static_cast <Node*> (node) -> setParent (nullptr);
+    }
+  IMPLY (! nodes. empty (), root);
 }
 
 

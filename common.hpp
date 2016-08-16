@@ -1708,9 +1708,9 @@ struct Tree : DiGraph
       os << endl;
     }
 
-	
-  void setRoot ();
-    // Output: root
+
+  void printAsn (ostream &os) const;	
+    // http://www.ncbi.nlm.nih.gov/tools/treeviewer/biotreecontainer/
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
     // Return: nullptr <=> !n1 || !n2
@@ -1724,6 +1724,8 @@ struct Tree : DiGraph
                                    const Node* n2)
     { return move (getParents (VectorPtr<Node>::make (n1, n2))); }
 
+  void setRoot ();
+    // Output: root
   size_t deleteTransients ();
     // Return: # Node's delete'd
 
