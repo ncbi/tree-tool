@@ -64,6 +64,13 @@ template <typename T, typename S>
     { return static_cast <T> (const_cast <S&> (s)); }
 
 
+template <typename T>
+  inline T* checkPtr (T* t)
+    { if (t)
+        return t;
+      throw runtime_error ("Dereferencing nullptr");
+    }
+
 
 typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
