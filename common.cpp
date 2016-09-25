@@ -32,6 +32,10 @@ void segmFaultHandler (int /*sig_num*/)
 
 
 
+const vector<bool> Bool {false, true};
+
+
+
 bool initCommon ()
 {
   MODULE_INIT
@@ -48,6 +52,7 @@ bool initCommon ()
 #endif
 
   ASSERT (SIZE_MAX == std::numeric_limits<size_t>::max ());
+  ASSERT (Bool. size () == 2);
 
   return true;
 }
@@ -98,10 +103,6 @@ void errorExit (const char* msg,
     abort ();
   exit (1);
 }
-
-
-
-const vector<bool> Bool = {false, true};
 
 
 
