@@ -1,9 +1,9 @@
 // grammar.cpp
 
 #undef NDEBUG
-#include "\Brover\cpp\common.inc"
+#include "common.inc"
 
-#include "grammar.h"
+#include "grammar.hpp"
 
 
 
@@ -16,8 +16,6 @@ bool initGrammar ()
   MODULE_INIT
 
   static_assert (numeric_limits<Char>::is_integer, "Char must be integer");
-  static_assert (numeric_limits<Char>::min () <= eot, "Char must include EndOfText (min)");  
-  static_assert (numeric_limits<Char>::max () >= eot, "Char must include EndOfText (max)");  
 
   return true;
 }
@@ -40,7 +38,9 @@ Sentence::Sentence (const Grammar &grammar,
   FOR (size_t, i, s. size ())
     try 
     { 
-      seq [i + 1]. init (grammar, (Char) s [i]); 
+      const char c = s [i];
+      ASSERT (c != eot);
+      seq [i + 1]. init (grammar, (Char) c); 
     }
     catch (const exception &e) 
       { ERROR_MSG (string ("At position ") + toString (i + 1) + "\n" + e. what ()); }
@@ -112,7 +112,7 @@ void Syntagm::qc () const
 
 size_t Syntagm::size () const
 { 
-  const int diff = & end - & begin;
+  const long int diff = & end - & begin;
   ASSERT (diff >= 0);
   return (size_t) diff; 
 }
@@ -286,13 +286,14 @@ TerminalSyntagm& Position::init (const Grammar &grammar,
                                  Char c_arg)
 {
   c = c_arg;
-  if (isspace (c))
-    c = ' ';   
+/*if (isspace (c))
+    c = ' '; */
   if (const Terminal* t = findPtr (grammar. char2terminal, c))
     return * new TerminalSyntagm (*this, *t); 
   else
     throw runtime_error ("Bad character");
 }
+
 
 
 
@@ -327,7 +328,7 @@ void Rule::Occurrence::saveText (ostream &os) const
 
 size_t Rule::Occurrence::getIndex () const
 { 
-  const int diff = rhsIt - rule. rhs. begin ();
+  const long int diff = rhsIt - rule. rhs. begin ();
   ASSERT (diff >= 0);
   return (size_t) diff; 
 }
@@ -713,7 +714,7 @@ void Symbol::qc () const
 
   // Non-redundant
 #ifndef NDEBUG
-  FOR (char, out, 2)
+  for (const bool out : Bool)
   {
     IMPLY (name != NonTerminal::sigmaS, ! neighbors [out]. empty ());
     ASSERT (! neighbors [out]. contains (nullptr));
@@ -726,7 +727,7 @@ void Symbol::qc () const
 void Symbol::saveText (ostream &os) const
 {
   os << name << ":" << endl;
-  FOR (char, out, 2)
+  for (const bool out : Bool)
   {
     os << (out ? "Next" : "Prev") << ":";
     for (const Symbol* s : neighbors [out])
@@ -865,7 +866,7 @@ void Terminal::qc () const
     ASSERT (lastROs. empty ());
     ASSERT (terminals. size () == 1);
     ASSERT (* terminals. begin () == this);
-    FOR (char, out, 2)
+    for (const bool out : Bool)
       ASSERT (Set<Rule::Occurrence> (terminalNeighbors [out]) == ruleOccurrences);
   }
 #endif
@@ -930,7 +931,7 @@ void NonTerminal::qc () const
 //ASSERT (terminal2rules [false]. size () == terminal2rules [true] . size ());
 #ifndef NDEBUG
   Set<const Rule*> all;
-  FOR (char, b, 2)
+  for (const bool b : Bool)
     for (const auto it : terminal2rules [b])
     {
       const Terminal* t = it. first;
@@ -957,7 +958,7 @@ void NonTerminal::qc () const
     ASSERT (r);
   //ASSERT (r->lhs. grammar == grammar);
     ASSERT (r->erasable);
-    ASSERT (! r->isLeftRecursive ());
+    ASSERT (! r->isLeftRecursive ());  // Otherwise dummy left-recursivity
     all << r;
   }
   ASSERT (all == ruleSet);
@@ -968,11 +969,13 @@ void NonTerminal::qc () const
   // Non-redundant
   ASSERT (! lhsRules. empty ());  
   IMPLY (lhsRules. size () == 1, ! lhsRules [0] -> empty ());
+#if 0
   if (isRoot () != isTransient ())
   {
     cout << name << " " << (int) isRoot () << " " << (int) isTransient () << endl;
     ERROR;
   }
+#endif
   IMPLY (getEmptyRule (), lhsRules. size () > 1);
   ASSERT (! firstROs. empty ());
   ASSERT (! lastROs. empty ());
@@ -1026,7 +1029,7 @@ const Rule* NonTerminal::getEmptyRule () const
 void NonTerminal::setTerminal2rules ()
 {
 #ifndef NDEBUG
-  FOR (size_t, b, 2)
+  for (const bool b : Bool)
     { ASSERT (terminal2rules [b]. empty ()); }
 #endif
   ASSERT (erasableRules. empty ());
@@ -1042,17 +1045,19 @@ void NonTerminal::setTerminal2rules ()
 
 double NonTerminal::getComplexity () const
 {
-  size_t n = 0;
-  FOR (char, b, 2)
+  size_t n = erasableRules. size ();
+  for (const bool b : Bool)
     for (const auto it : terminal2rules [b])
     {
       const VectorPtr<Rule>& rules = it. second;
-      maximize (n, rules. size () + (b ? 0 : erasableRules. size ()));
+      maximize (n, rules. size () /*+ (b ? 0 : erasableRules. size ())*/);
     }
   ASSERT (n);
+#if 0
   if (getEmptyRule ())
     n--;
-  ASSERT (n);
+  ASSERT (n);  
+#endif
   return log (n);
 }
 
@@ -1160,6 +1165,8 @@ void Letter::qc () const
 
 
 
+
+#if 0
 // SymbolTree
 
 void SymbolTree::qc () const
@@ -1192,6 +1199,8 @@ void SymbolTree::saveText (ostream &os) const
     it. second->saveText (os);
   }
 }
+#endif
+
 
 
 
@@ -1206,7 +1215,7 @@ Grammar::Grammar (const string &fName)
 : /*Terminal (commentS, nullptr)
 ,*/ startSymbol (nullptr)
 , eotSymbol (nullptr)
-, symbolTree (* new SymbolTree ())
+//, symbolTree (* new SymbolTree ())
 {
   LineInput li (fName);
   size_t ruleNum = 1;
@@ -1235,6 +1244,7 @@ Grammar::Grammar (const string &fName)
         break;
       rhs << s;
     }
+    ASSERT (lhs != NonTerminal::sigmaS);
     addRule (ruleNum, lhs, rhs);
     ruleNum++;
   }
@@ -1250,7 +1260,7 @@ Grammar::Grammar (const Grammar &other,
 : /*Terminal (other. name, nullptr)
 ,*/ startSymbol (nullptr)
 , eotSymbol (nullptr)
-, symbolTree (* new SymbolTree ())
+//, symbolTree (* new SymbolTree ())
 {
   ASSERT (! newTerminals. empty ());
 #ifndef NDEBUG
@@ -1296,7 +1306,7 @@ Grammar::Grammar (const Grammar &other,
 : /*Terminal (other. name, nullptr)
 ,*/ startSymbol (nullptr)
 , eotSymbol (nullptr)
-, symbolTree (* new SymbolTree ())
+//, symbolTree (* new SymbolTree ())
 {
   ASSERT (other. symbols. contains (universalDelimiter));
 #ifndef NDEBUG
@@ -1377,9 +1387,9 @@ void Grammar::finish (const string &startS)
   setLastROs ();
   setParsingTable ();
   setTerminals ();
-  FOR (char, out, 2)
+  for (const bool out : Bool)
     setNeighbors (out);
-  setSymbolTree ();
+//setSymbolTree ();
 }
 
 
@@ -1428,11 +1438,13 @@ void Grammar::qc () const
     ERROR_MSG (s->name + " is not terminable");
 #endif
 
+#if 0
 #ifndef NDEBUG
   for (const Rule* r : symbolTree. rules)
     ASSERT (r->erasable);
 #endif
   symbolTree. qc ();
+#endif
 }
 
 
@@ -1521,10 +1533,12 @@ void Grammar::saveText (ostream &os) const
       os << "Implied: " << it. first->name << endl;    
   }
 
+#if 0
   os << endl;
   os << "Symbol tree:" << endl;
   symbolTree. saveText (os);
   os << endl;
+#endif
 }
 
 
@@ -1621,6 +1635,7 @@ void Grammar::setNeighbors (bool out)
 
 
 
+#if 0
 void Grammar::setSymbolTree ()
 {
   ASSERT (symbolTree. children. empty ());
@@ -1643,6 +1658,7 @@ void Grammar::setSymbolTree ()
         st->rules << r;
       }
 }
+#endif
 
 
 
@@ -1800,7 +1816,7 @@ void Grammar::splitTerminals () const
 {
   for (const Symbol* symbol : symbols)
     if (const Terminal* t = symbol->asTerminal ())
-      FOR (char, out, 2)
+      for (const bool out : Bool)
         for (const Rule::Occurrence ro : t->ruleOccurrences)
           if (t->differentiated (ro, out))
             cout << " " << ro. getName () << '/' << (out ? "next" : "prev");  // ??
@@ -1864,10 +1880,12 @@ const Terminal* SymbolGraph::Node::getNextTerminal (bool out) const
   const Terminal* res = nullptr;
   for (const DiGraph::Arc* arc : arcs [out])
     if (const Terminal* t = static_cast <const SymbolGraph::Node*> (arc->node [out]) -> symbol. asTerminal ())
+    {
       if (res)
         return nullptr;
       else
         res = t;
+    }
   return res;
 }
 
