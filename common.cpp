@@ -52,7 +52,6 @@ bool initCommon ()
 #endif
 
   ASSERT (SIZE_MAX == std::numeric_limits<size_t>::max ());
-  ASSERT (Bool. size () == 2);
 
   return true;
 }

@@ -32,6 +32,8 @@ const Char eot = 0;
   // "End of text"
 typedef  Set<Char>  Alphabet;
   // !contains(eot)
+string chars2str (const Vector<Char> &vec);
+  // Requires: Char in ASCII
 
 
 
@@ -42,9 +44,14 @@ struct Sentence : Root
   Vector<Position> seq;
 //const Alphabet* alphabet;  ??
 
+  struct BadPos : runtime_error  
+    { size_t pos;  
+      BadPos (size_t pos_arg, const string &what_arg) : runtime_error (what_arg), pos (pos_arg) {}
+    };
   Sentence (const Grammar &grammar,
-            const string &s);
-    // After: grammar.setChar2letter() 
+            const string &s) throw (BadPos);
+    // After: grammar.setChar2terminal() 
+    // Requires: Char in ASCII
   void qc () const;
 
   size_t countWrongTerminalSyntagms () const;
@@ -53,6 +60,7 @@ struct Sentence : Root
     // Input: Syntagm::right
   size_t countRollbacks () const;
     // Input: Position::rollbacks
+  const NonTerminalSyntagm* getLongestSyntagm () const;
 };
 
 
@@ -88,6 +96,7 @@ public:
     { return nullptr; }
 
   size_t size () const;
+  virtual Vector<Char> str () const = 0;
   virtual void setRight () 
     { right = true; }
 };
@@ -110,6 +119,8 @@ public:
 
   const TerminalSyntagm* asTerminalSyntagm () const 
     { return this; }
+
+  Vector<Char> str () const;
 };
 
 
@@ -133,6 +144,7 @@ struct NonTerminalSyntagm : Syntagm
   const NonTerminalSyntagm* asNonTerminalSyntagm () const 
     { return this; }
 
+  Vector<Char> str () const;
   void setRight ();
 };
 
@@ -141,9 +153,8 @@ struct NonTerminalSyntagm : Syntagm
 typedef  VectorOwn<Syntagm>  Syntagms;
   // !nullptr
   // All Syntagm's of a Symbol* starting at Position 
-  //   --> Tree of Syntagm* (children are downstream in seq) ??
   // Different
-  // (\exists s1, s2 \in symbol2syntagms : s1 != s2 & s1->symbol = s2->symbol & s1.end = s2.end) <=> ambiguity
+  // (\exists s1, s2 \in nonTerminal2syntagms : s1 != s2 & s1->symbol = s2->symbol & s1.end = s2.end) <=> ambiguity
 
 
 
@@ -153,7 +164,8 @@ struct Position : Root
   Char c;
 
   // Output
-  map<const Terminal*, const Syntagms*> terminal2syntagms;  // of TerminalSyntagms*
+  // !nullptr
+  map<const Terminal*, const Syntagms*> terminal2syntagms;  // of TerminalSyntagm*
     // !contains(t) <=> Syntagm's for t do not exist
   map<const NonTerminal*, const Syntagms*> nonTerminal2syntagms;  // of NonTerminalSyntagm*
     // !contains(nt) <=> nt has not been parse()'d
@@ -168,6 +180,12 @@ struct Position : Root
     : c (eot)
     , rollbacks (0)
     {}
+ ~Position ()
+    { for (auto it : terminal2syntagms)  
+        delete it. second;
+      for (auto it : nonTerminal2syntagms)  
+        delete it. second;
+    }
   TerminalSyntagm& init (const Grammar &grammar,
                          Char c_arg);
   void qc () const;
@@ -323,7 +341,7 @@ public:
     { return nullptr; }
 #endif
 
-  static string getName (const Symbol* s)   // ??
+  static string getName (const Symbol* s)   
     { return s ? s->name : "#"; }
 
   bool isRoot () const;
@@ -344,7 +362,7 @@ private:
     // nullptr <=> *this is the last Symbol in rule.rhs
 public:
   virtual const Syntagms* parse (const Position &pos) const = 0;
-    // Non-deterministic prefix parser
+    // Non-deterministic (ambiguous) prefix parser
     // Return: pos::Syntagms
     // Update: pos.nonTerminal2syntagms(this) - all Syntagm's of *this starting at pos
 };
@@ -437,7 +455,7 @@ private:
     // Return: >= 0
 public:
   const Syntagms* parse (const Position &pos) const;
-    // Return: NonTerminalSyntagm*
+    // Return: !nullptr, VectorOwn of NonTerminalSyntagm*
 };
 
 
@@ -594,17 +612,20 @@ public:
     // Return: may be nullptr
   double getComplexity () const;
     // Return: >= 0; 0 => Time_parse(s) = O(s.size()), unambiguous grammar
-  const Syntagms* parseSentence (Sentence &sentence) const;
+  struct StdParserError : runtime_error  { StdParserError (const string &what_arg) : runtime_error (what_arg) {} };
+  void prepare () throw (StdParserError);
+    // Invokes: findParseCycle(), getLeftRecursiveErasable()
+  const Syntagms& parseSentence (Sentence &sentence) const;
     // Top-down parser
-    // Return: nullptr => sentence is not parsed completely
+    // Return: may be empty() 
     // Update: sentence.seq::Position
-    // Invokes: Syntagm::setRight()
-    // Requires: !findParseCycle(), !getLeftRecursiveErasable()
+    // Invokes: NonTerminal::parse(), Syntagm::setRight()
+    // Requires: after prepare() 
 
   VectorPtr<NonTerminal> getCutSymbols () const;
   const Terminal* getUniversalDelimiter () const;
     // Return: may be nullptr
-  // Invoke: print() ??
+  // Invoke: only print() ??
   void splitTerminals () const;  
   void terminals4scc () const;
 };
@@ -745,5 +766,4 @@ private:
 
 
 // To do ??
-// Cf. PARSER.PAS
 // first/last --> bool 

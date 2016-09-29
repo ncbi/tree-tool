@@ -28,10 +28,27 @@ namespace
 
 
 
+
+string chars2str (const Vector<Char> &vec)
+{
+  string s;  s. reserve (vec. size ());
+  for (const Char c : vec)
+  {
+    ASSERT (c < 128);
+    s += (char) c;
+  }
+  
+  return move (s);
+}
+
+
+
+
+
 // Sentence
 
 Sentence::Sentence (const Grammar &grammar,
-                    const string &s)
+                    const string &s) throw (BadPos)
 {
   seq. resize (s. size () + 2);
   seq [0]. init (grammar, eot). right = true;
@@ -43,7 +60,7 @@ Sentence::Sentence (const Grammar &grammar,
       seq [i + 1]. init (grammar, (Char) c); 
     }
     catch (const exception &e) 
-      { ERROR_MSG (string ("At position ") + toString (i + 1) + "\n" + e. what ()); }
+      { throw BadPos (i, e. what ()); }
   seq [s. size () + 1]. init (grammar, eot). right = true;
 }
 
@@ -102,6 +119,28 @@ size_t Sentence::countRollbacks () const
 
 
 
+const NonTerminalSyntagm* Sentence::getLongestSyntagm () const
+{
+  size_t size_min = 0;
+  const Syntagm* longestSyntagm = nullptr;
+  for (const Position& pos : seq)
+    for (const auto it : pos. nonTerminal2syntagms)
+      for (const Syntagm* syntagm : *(it. second))
+        if (maximize (size_min, syntagm->size ()))
+          longestSyntagm = syntagm;
+          
+  if (! longestSyntagm)
+    return nullptr;
+    
+  const NonTerminalSyntagm* res = longestSyntagm->asNonTerminalSyntagm ();
+  ASSERT (res);
+  return res;
+}
+
+
+
+
+
 // Syntagm
 
 void Syntagm::qc () const
@@ -143,7 +182,6 @@ TerminalSyntagm::TerminalSyntagm (const Position& begin_arg,
 void TerminalSyntagm::init (const Position& begin_arg, 
                             const Terminal& terminal)
 {
-//ASSERT (begin_arg. c != eot);  
   const_cast <Syntagms&> (findMake (const_cast <Position&> (begin_arg). terminal2syntagms, & terminal)) << this;
 }
 
@@ -167,6 +205,15 @@ void TerminalSyntagm::saveText (ostream &os) const
 
 
 
+Vector<Char> TerminalSyntagm::str () const 
+{ 
+  Vector<Char> vec (1, begin. c); 
+  return move (vec);
+}
+
+
+
+
 // NonTerminalSyntagm
 
 NonTerminalSyntagm::NonTerminalSyntagm (const Position& begin_arg,
@@ -177,7 +224,6 @@ NonTerminalSyntagm::NonTerminalSyntagm (const Position& begin_arg,
 , rule (rule_arg)
 , children (children_arg)  // move() ??
 {
-  IMPLY (symbol. name != NonTerminal::sigmaS, begin. c != eot);  
   const Syntagms* syntagms = findPtr (begin. nonTerminal2syntagms, & rule.lhs);
   ASSERT (syntagms);
   * const_cast <Syntagms*> (syntagms) << this;
@@ -224,12 +270,28 @@ void NonTerminalSyntagm::saveText (ostream &os) const
 
 
 
+Vector<Char> NonTerminalSyntagm::str () const
+{
+  Vector<Char> vec;  vec. reserve (size ());
+  for (const Syntagm* syntagm : children)
+    vec << syntagm->str ();
+/*
+  for (const Position* pos = & begin; pos != & end; pos++)
+    vec << pos->c;    
+*/
+  return move (vec);
+}
+
+
+
+
 void NonTerminalSyntagm::setRight () 
 { 
   Syntagm::setRight ();
   for (const Syntagm* syntagm : children)
     const_cast <Syntagm*> (syntagm) -> setRight ();
 }
+
 
 
 
@@ -586,7 +648,6 @@ void Rule::setFirstTerminalsErasable ()
 void Rule::parseIt (RhsIt rhsIt,
                     const Position &pos,
                     const VectorPtr<Syntagm> &children) const
-// --> Tree ??
 {
   IMPLY (! children. empty (), & children. back () -> end == & pos);
   if (rhsIt == rhs. end ())
@@ -597,7 +658,7 @@ void Rule::parseIt (RhsIt rhsIt,
     // Rule::isLeftRecursive()
     if (lhs. name != NonTerminal::sigmaS)
     {
-      VectorPtr<Syntagm> children_new;  children_new. reserve (1);  // --> Tree ??
+      VectorPtr<Syntagm> children_new;  children_new. reserve (1); 
       children_new << nts;
       for (const auto it : nts->end. terminal2syntagms)
         if (const VectorPtr<Rule>* rules = findPtr (lhs. terminal2rules [true], it. first))
@@ -1064,9 +1125,8 @@ double NonTerminal::getComplexity () const
 
 
 const Syntagms* NonTerminal::parse (const Position& pos) const
+// Use prefix tree of Rule::Rhs's ??
 {
-//ASSERT (pos. c != eot);  
-
   if (const Syntagms* res = findPtr (pos. nonTerminal2syntagms, this))
     return res;
 
@@ -1217,36 +1277,45 @@ Grammar::Grammar (const string &fName)
 , eotSymbol (nullptr)
 //, symbolTree (* new SymbolTree ())
 {
-  LineInput li (fName);
-  size_t ruleNum = 1;
   string startS;
-  while (li. nextLine ())
+
+  LineInput li (fName);
+  try 
   {
-    string& line = li. line;
-    const size_t pos = line. find (commentS);
-    if (pos != string::npos)
-      line. erase (pos);
-    trim (line);
-    if (line. empty ())
-      continue;
-    istringstream iss (line);
-    string lhs, arrow;
-    iss >> lhs >> arrow;
-    ASSERT (arrow == arrowS);
-    if (startS. empty () /*name == commentS*/)
-      startS /*name*/ = lhs;
-    Vector<string> rhs;
-    for (;;)
+    size_t ruleNum = 1;
+    while (li. nextLine ())
     {
-      string s;
-      iss >> s;
-      if (s. empty ())
-        break;
-      rhs << s;
+      string& line = li. line;
+      const size_t pos = line. find (commentS);
+      if (pos != string::npos)
+        line. erase (pos);
+      trim (line);
+      if (line. empty ())
+        continue;
+      istringstream iss (line);
+      string lhs, arrow;
+      iss >> lhs >> arrow;
+      ASSERT (arrow == arrowS);
+      if (startS. empty () /*name == commentS*/)
+        startS /*name*/ = lhs;
+      Vector<string> rhs;
+      for (;;)
+      {
+        string s;
+        iss >> s;
+        if (s. empty ())
+          break;
+        rhs << s;
+      }
+      ASSERT (lhs != NonTerminal::sigmaS);
+      addRule (ruleNum, lhs, rhs);
+      ruleNum++;
     }
-    ASSERT (lhs != NonTerminal::sigmaS);
-    addRule (ruleNum, lhs, rhs);
-    ruleNum++;
+  }
+  catch (...)
+  {
+    cout << "At line " << li. lineNum + 1 << endl;
+    throw;
   }
 
 //ASSERT (name != commentS);
@@ -1487,20 +1556,12 @@ void Grammar::saveText (ostream &os) const
         mainNexts [prev] << s;
         os << s->name << " after " << prev->name << endl;
       }
-    // ??
-    if (s->name == "+")
-    {
-      os << "+:" << endl;
-      for (const Symbol* before : prevs)
-        os << " " << Symbol::getName (before);
-      os << endl;
-    }
   }
   for (const auto it : mainNexts)
   {
     Set<const Symbol*> nexts (it. first->getRuleNexts ());
     nexts. erase (nullptr);
-    os << it. first->name << " " << it. second. size () << " " << nexts. size () << endl;   // ??
+  //os << it. first->name << " " << it. second. size () << " " << nexts. size () << endl;  
     if (it. second == nexts)
       os << "Implied: " << it. first->name << endl;    
   }
@@ -1516,14 +1577,6 @@ void Grammar::saveText (ostream &os) const
         mainPrevs [next] << s;
         os << s->name << " before " << Symbol::getName (next) << endl;
       }
-    // ??
-    if (s->name == "Spaces")
-    {
-      os << "Spaces:" << endl;
-      for (const Symbol* after : nexts)
-        os << " " << Symbol::getName (after);
-      os << endl;
-    }
   }
   for (const auto it : mainPrevs)
   {
@@ -1727,16 +1780,31 @@ double Grammar::getComplexity () const
 
 
 
-const Syntagms* Grammar::parseSentence (Sentence &sentence) const
+void Grammar::prepare () throw (StdParserError)
+{
+  if (const Symbol* s = findParseCycle ())
+    throw StdParserError ("First symbol cycle: " + s->name);
+
+  if (const Rule* r = getLeftRecursiveErasable ())
+  {
+    r->print (cout);
+    throw StdParserError ("Left-recursive erasable rule");
+  }
+
+  setChar2terminal ();
+}
+
+
+
+const Syntagms& Grammar::parseSentence (Sentence &sentence) const
 { 
   ASSERT (! sentence. seq. empty ());
   const Syntagms* syntagms = startSymbol->parse (sentence. seq [0 /*1*/]);
+  ASSERT (syntagms);
   sentence. qc ();
-  if (syntagms)
-    for (const Syntagm* syntagm : *syntagms)
-    //if (syntagm->end. c == eot)
-        const_cast <Syntagm*> (syntagm) -> setRight ();
-  return syntagms;
+  for (const Syntagm* syntagm : *syntagms)
+    const_cast <Syntagm*> (syntagm) -> setRight ();
+  return *syntagms;
 }
 
 
