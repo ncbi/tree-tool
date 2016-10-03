@@ -37,6 +37,9 @@ string chars2str (const Vector<Char> &vec);
 
 
 
+
+// Syntagm
+
 struct Sentence : Root 
 // DAG of Syntagm's
 // Ambiguous text
@@ -60,7 +63,12 @@ struct Sentence : Root
     // Input: Syntagm::right
   size_t countRollbacks () const;
     // Input: Position::rollbacks
-  const NonTerminalSyntagm* getLongestSyntagm () const;
+  const NonTerminalSyntagm* getLastSyntagm () const;
+  void reportError (ostream &os) const;
+    // Requires: Char in ASCII
+  void printWrongSyntagms (ostream &os,
+                           size_t size_min) const;
+  VectorPtr<NonTerminalSyntagm> findSyntagms (const string& symbolName) const;
 };
 
 
@@ -89,6 +97,7 @@ protected:
     {}
 public:
   void qc () const;
+  void saveText (ostream &os) const;
 
   virtual const TerminalSyntagm* asTerminalSyntagm () const 
     { return nullptr; }
@@ -105,9 +114,11 @@ public:
 
 struct TerminalSyntagm : Syntagm
 {
+#if 0
   TerminalSyntagm (const Position& begin_arg,
                    const Position& end_arg,
                    const Terminal& terminal);
+#endif
   TerminalSyntagm (const Position& begin_arg,
                    const Terminal& terminal);
 private:
@@ -115,7 +126,6 @@ private:
              const Terminal& terminal);
 public:
   void qc () const;
-  void saveText (ostream &os) const;
 
   const TerminalSyntagm* asTerminalSyntagm () const 
     { return this; }
@@ -170,9 +180,9 @@ struct Position : Root
   map<const NonTerminal*, const Syntagms*> nonTerminal2syntagms;  // of NonTerminalSyntagm*
     // !contains(nt) <=> nt has not been parse()'d
     // May be empty()
-    // Memoization of NonTerminalSymbol::parse()
+    // Memoization of NonTerminal::parse()
 
-  size_t rollbacks;
+  size_t rollbacks;  // not maintaiend ??
     // --> incomplete Syntagm's in Syntagms ??
 
 
@@ -192,6 +202,9 @@ struct Position : Root
 };
 
 
+
+
+// Grammar
 
 struct Rule : Root
 {
@@ -266,6 +279,9 @@ public:
   Set<const Terminal*> firstTerminals;  
     // In lhs.grammar->symbols
   bool erasable;
+  Vector<bool> singleRhs;
+    // size() = rhs.size()
+    // true <=> all other symbols in rhs are erasable
 
 
   Rule (size_t num_arg,
@@ -275,6 +291,7 @@ public:
     , rhsS (rhsS_arg)
     , lhs (lhs_arg)
     , erasable (false)
+    , singleRhs (rhsS_arg. size (), false)
     {}
 private:
   void finish (Grammar &grammar);
@@ -296,6 +313,8 @@ public:
 private:
   void setFirstTerminalsErasable ();  
     // Input: Symbol::firstROs
+  void setSingleRhs ();
+    // Input: Symbol::erasable
 public:
   void parseIt (RhsIt rhsIt,
                 const Position &pos, 
@@ -315,8 +334,11 @@ struct Symbol : Named
   // In grammar->symbols
   Rule::Occurrences firstROs;  
   Rule::Occurrences lastROs;  
+  // !nullptr
   Set<const Terminal*> terminals;
   Set<const Symbol*> neighbors [2/*bool next*/];
+  Set<const Symbol*> replacements;
+    // contains(x) <=> <x> \in D(<this>)
 
 
 protected:
@@ -423,6 +445,10 @@ struct NonTerminal : Symbol
   VectorPtr<Rule> erasableRules;
     // Rule::erasable
 
+  // !nullptr
+  Set<const Symbol*> regularStar;
+    // contains(x) <=> *this = x* or x+ (regular expression) depending on erasable
+
 
   NonTerminal ()
     : Symbol (sigmaS)
@@ -451,11 +477,15 @@ struct NonTerminal : Symbol
 private:
   friend struct Grammar;
   void setTerminal2rules ();
+  void setRegularStar ();
+    // Input: replacements
   double getComplexity () const;
     // Return: >= 0
 public:
+  bool canEnd (const Position &pos) const;
+    // Requires: pos != Sentence::seq.end()
   const Syntagms* parse (const Position &pos) const;
-    // Return: !nullptr, VectorOwn of NonTerminalSyntagm*
+    // Return: !nullptr, VectorOwn* of NonTerminalSyntagm*
 };
 
 
@@ -587,6 +617,7 @@ public:
   // Invoked in finish()
   void setTerminable ();
   void setErasable ();
+  void setRuleSingleRhs ();
   void setFirstROs ();
     // Input: Symbol::erasable
   void setLastROs ();
@@ -597,6 +628,11 @@ public:
   void setNeighbors (bool out);
     // Output: Symbol::neighbors[], Terminal::terminalNeighbors[]
 //void setSymbolTree ();
+  void setReplacements ();
+    // Output: Symbol::replacements
+  void setRegularStar ();
+    // Input:  Symbol::replacements
+    // Output: NonTerminal::regularStar
 
   // Invoked in qc():
   const Symbol* getNonReachable () const;
@@ -610,11 +646,16 @@ public:
     // Return: Symbol in a parse() cycle; may be nullptr 
   const Rule* getLeftRecursiveErasable () const;
     // Return: may be nullptr
+  struct Ambiguity : runtime_error  { Ambiguity (const string &what_arg) : runtime_error (what_arg) {} };
+  void findAmbiguity ()  const throw (Ambiguity);
+    // Not important for a deterministic parser
+  struct StdParserError : runtime_error  { StdParserError (const string &what_arg) : runtime_error (what_arg) {} };
+  void prepare () throw (StdParserError, Ambiguity);
+    // Invokes: findParseCycle(), getLeftRecursiveErasable(), setChar2terminal(), findAmbiguity()
+    
   double getComplexity () const;
     // Return: >= 0; 0 => Time_parse(s) = O(s.size()), unambiguous grammar
-  struct StdParserError : runtime_error  { StdParserError (const string &what_arg) : runtime_error (what_arg) {} };
-  void prepare () throw (StdParserError);
-    // Invokes: findParseCycle(), getLeftRecursiveErasable()
+
   const Syntagms& parseSentence (Sentence &sentence) const;
     // Top-down parser
     // Return: may be empty() 
@@ -622,6 +663,7 @@ public:
     // Invokes: NonTerminal::parse(), Syntagm::setRight()
     // Requires: after prepare() 
 
+  // Analysis
   VectorPtr<NonTerminal> getCutSymbols () const;
   const Terminal* getUniversalDelimiter () const;
     // Return: may be nullptr
@@ -629,6 +671,25 @@ public:
   void splitTerminals () const;  
   void terminals4scc () const;
 };
+
+
+
+
+// Analysis
+
+/*
+relation:
+  on:
+    symbols * symbols
+    rule occurrences * rule occurrences
+    rule occurrences * symbols
+    terminal symbols * rules
+  property:
+    derivation
+    first/last symbol derivation
+    single symbol derivation
+    prev/next symbol
+*/
 
 
 
@@ -652,6 +713,7 @@ struct SymbolGraph : DiGraph
       { return symbol. name; }
     void setReachable ();
       // From parent to children
+      // Output: this->reachable = true
     const Terminal* getNextTerminal (bool out) const;
       // Return: !nullptr <=> there is one next Terminal
   };
@@ -672,6 +734,10 @@ public:
   const Node* getStartSymbol () const
     { return symbol2node. find (grammar. startSymbol) -> second; }
     // Return: !nullptr
+  void clearReachable ()
+    { for (const DiGraph::Node* node : nodes)
+        const_static_cast <SymbolGraph::Node*> (node) -> reachable = false;
+    }
   const Node* getNonReachable () const; 
     // Return: nullptr <=> not exist
 };
@@ -697,6 +763,19 @@ struct FirstDerivedSymbolGraph : SymbolGraph
     { initArcs (); }
 private:
   void initArcs ();
+};
+
+
+
+struct SingleDerivedSymbolGraph : SymbolGraph
+{
+  explicit SingleDerivedSymbolGraph (const Grammar &grammar_arg)
+    : SymbolGraph (grammar_arg)
+    { initArcs (); }
+private:
+  void initArcs ();
+    // Arcs: {<x,lhs(r)> | r \in R, rhs(r) = \alpha x \beta, \alpha is erasable, \beta is erasable}
+    // Input: Symbol::erasable
 };
 
 
@@ -765,5 +844,7 @@ private:
 #endif
 
 
-// To do ??
-// first/last --> bool 
+
+/* TO DO ??
+  first/last --> bool 
+*/

@@ -119,24 +119,81 @@ size_t Sentence::countRollbacks () const
 
 
 
-const NonTerminalSyntagm* Sentence::getLongestSyntagm () const
+const NonTerminalSyntagm* Sentence::getLastSyntagm () const
 {
-  size_t size_min = 0;
-  const Syntagm* longestSyntagm = nullptr;
-  for (const Position& pos : seq)
+  const Syntagm* lastSyntagm = nullptr;
+  ptrdiff_t index = 0;
+  for (const Position& pos : seq) 
     for (const auto it : pos. nonTerminal2syntagms)
       for (const Syntagm* syntagm : *(it. second))
-        if (maximize (size_min, syntagm->size ()))
-          longestSyntagm = syntagm;
-          
-  if (! longestSyntagm)
-    return nullptr;
-    
-  const NonTerminalSyntagm* res = longestSyntagm->asNonTerminalSyntagm ();
-  ASSERT (res);
+      {
+        const ptrdiff_t diff = & syntagm->end - & seq [0];
+        ASSERT (diff > 0);
+        if (maximize (index, diff))
+          lastSyntagm = syntagm;
+      }
+        
+  if (! lastSyntagm)
+    return nullptr;  
+  const NonTerminalSyntagm* res = lastSyntagm->asNonTerminalSyntagm ();
   return res;
 }
 
+
+
+void Sentence::reportError (ostream &os) const
+{
+  const NonTerminalSyntagm* lastSyntagm = getLastSyntagm ();
+  if (! lastSyntagm)
+    return;
+  size_t index = 0;
+  bool reached = false;
+  for (const Position& pos : seq)
+  {
+    if (& pos == & lastSyntagm->end)
+    {
+      reached = true;
+      os << '|';
+    }
+    os << (char) pos. c;
+    if (! reached)
+      index++;
+  }
+  os << endl;
+  os << "  At: " << index << endl;
+}
+
+
+
+void Sentence::printWrongSyntagms (ostream &os,
+                                   size_t size_min) const
+{
+  for (const Position& pos : seq) 
+    for (const auto it : pos. nonTerminal2syntagms)
+      for (const Syntagm* syntagm : *(it. second))
+        if (! syntagm->right 
+            && syntagm->size () >= size_min
+           )
+        {
+          syntagm->Syntagm::saveText (os);
+          os << endl;
+        }
+}
+
+
+
+VectorPtr<NonTerminalSyntagm> Sentence::findSyntagms (const string& symbolName) const
+{
+  VectorPtr<NonTerminalSyntagm> vec;
+  for (const Position& pos : seq)
+    for (const auto it : pos. nonTerminal2syntagms)
+      for (const Syntagm* syntagm : *(it. second))
+        if (   syntagm->right 
+            && syntagm->symbol. name == symbolName
+           )
+          vec << syntagm->asNonTerminalSyntagm ();
+  return move (vec);
+}
 
 
 
@@ -147,6 +204,14 @@ void Syntagm::qc () const
 {
   ASSERT (begin. c != eot);
 }
+
+
+
+void Syntagm::saveText (ostream &os) const
+{ 
+  os << symbol. name << ": " << chars2str (str ()); 
+}
+
 
 
 size_t Syntagm::size () const
@@ -160,6 +225,7 @@ size_t Syntagm::size () const
 
 // TerminalSyntagm
 
+#if 0
 TerminalSyntagm::TerminalSyntagm (const Position& begin_arg,
                                   const Position& end_arg,
                                   const Terminal& terminal)
@@ -167,6 +233,7 @@ TerminalSyntagm::TerminalSyntagm (const Position& begin_arg,
 {
   init (begin_arg, terminal);
 }
+#endif
 
 
 
@@ -194,13 +261,6 @@ void TerminalSyntagm::qc () const
   ASSERT (symbol. asTerminal ());
   ASSERT (findPtr (begin. terminal2syntagms, symbol. asTerminal ()));
   ASSERT (& begin != & end);
-}
-
-
-
-void TerminalSyntagm::saveText (ostream &os) const
-{ 
-  os << symbol. name; 
 }
 
 
@@ -494,6 +554,7 @@ void Rule::qc () const
   IMPLY (isErasable (), erasable);
   ASSERT (firstTerminals. empty () == erasable);
   ASSERT (! firstTerminals. contains (nullptr));
+  ASSERT (singleRhs. size () == rhs. size ());
 #if 0
 #ifndef NDEBUG
   for (const Symbol* s : rhs)
@@ -513,9 +574,11 @@ void Rule::saveText (ostream &os) const
   for (const Symbol* s : rhs)  
     os << ' ' << s->name; 
 
+#if 0
   os << "  1st:";
   for (const Terminal* t : firstTerminals)
     os << ' ' << t->name;
+#endif
 }
 
 
@@ -645,22 +708,60 @@ void Rule::setFirstTerminalsErasable ()
 
 
 
+
+void Rule::setSingleRhs ()
+{
+  ASSERT (! singleRhs. contains (true));
+  FOR (size_t, i, rhs. size ())
+  {
+    bool single = true;
+    FOR (size_t, j, rhs. size ())
+    if (   j != i
+        && ! rhs. at (j) -> erasable
+       )
+      single = false;
+    singleRhs [i] = single;
+  }
+}
+  
+
+
 void Rule::parseIt (RhsIt rhsIt,
                     const Position &pos,
                     const VectorPtr<Syntagm> &children) const
 {
   IMPLY (! children. empty (), & children. back () -> end == & pos);
+  
+  const Position& begin = children. empty () ? pos : children [0] -> begin;
+
+#if 0
+  if (verbose ())
+  {
+    cout << endl;
+    cout << & pos << "  " << rhsIt - rhs. begin () << "  " << children. size () << "  " << & begin << "  ";
+    print (cout);
+    cout << endl;
+    for (const Syntagm* syntagm : children)
+      cout << syntagm->symbol. name << ": " << chars2str (syntagm->str ()) << '|' << endl;
+  }
+#endif
+      
+  
   if (rhsIt == rhs. end ())
   {
-    const Position& begin = children. empty () ? pos : children [0] -> begin;
+    if (   lhs. name != NonTerminal::sigmaS 
+        && ! lhs. canEnd (pos)
+       )
+      return;
+    
     NonTerminalSyntagm* nts = new NonTerminalSyntagm (begin, pos, *this, children);
 
     // Rule::isLeftRecursive()
-    if (lhs. name != NonTerminal::sigmaS)
+    if (lhs. name != NonTerminal::sigmaS)  // Otherwise pos has no content
     {
       VectorPtr<Syntagm> children_new;  children_new. reserve (1); 
       children_new << nts;
-      for (const auto it : nts->end. terminal2syntagms)
+      for (const auto it : pos. terminal2syntagms)
         if (const VectorPtr<Rule>* rules = findPtr (lhs. terminal2rules [true], it. first))
           for (const Rule* rule : *rules)
           {
@@ -766,11 +867,7 @@ void Symbol::qc () const
   // Non-redundant
   ASSERT (/*(bool) grammar ==*/ found)
 
-  for (const Terminal* t : terminals)
-  {
-    ASSERT (t);
-  //ASSERT (t->grammar == grammar);
-  }
+  ASSERT (! terminals. contains (nullptr));
 #endif
 
   // Non-redundant
@@ -781,6 +878,10 @@ void Symbol::qc () const
     ASSERT (! neighbors [out]. contains (nullptr));
   }
 #endif
+
+
+  ASSERT (! replacements. contains (nullptr));
+  ASSERT (replacements. contains (this));
 }
 
 
@@ -788,6 +889,7 @@ void Symbol::qc () const
 void Symbol::saveText (ostream &os) const
 {
   os << name << ":" << endl;
+  
   for (const bool out : Bool)
   {
     os << (out ? "Next" : "Prev") << ":";
@@ -795,6 +897,11 @@ void Symbol::saveText (ostream &os) const
       os << ' ' << s->name;
     os << endl;
   }
+  
+  os << "Replacements:";
+  for (const Symbol* s : replacements)
+    os << ' ' << s->name;
+  os << endl;  
 }
 
 
@@ -1073,6 +1180,11 @@ void NonTerminal::saveText (ostream &os) const
   for (const Terminal* t : terminals)
     os << ' ' << t->name;
   os << endl;
+  
+  os << "RegularStar:";
+  for (const Symbol* s : regularStar)
+    os << ' ' << s->name;
+  os << endl;
 }
 
 
@@ -1104,8 +1216,27 @@ void NonTerminal::setTerminal2rules ()
 
 
 
+void NonTerminal::setRegularStar ()
+{
+  ASSERT (replacements. contains (this));
+  ASSERT (regularStar. empty ());
+  for (const Symbol* s : replacements)
+    if (const NonTerminal* nt = s->asNonTerminal ())
+      for (const Rule* r : nt->lhsRules)
+        FOR (size_t, i, r->rhs. size ())
+          if (r->singleRhs [i])
+            FOR (size_t, j, r->rhs. size ())
+              if (   j != i
+                  && r->rhs [j] -> replacements. contains (this)
+                 )
+                regularStar << r->rhs [i] -> replacements;
+}
+
+
+
 double NonTerminal::getComplexity () const
 {
+  // Relation to running time ??
   size_t n = erasableRules. size ();
   for (const bool b : Bool)
     for (const auto it : terminal2rules [b])
@@ -1124,11 +1255,36 @@ double NonTerminal::getComplexity () const
 
 
 
+
+bool NonTerminal::canEnd (const Position &pos) const
+{
+  for (const auto it : pos. terminal2syntagms)
+    if (neighbors [true]. contains (it. first))
+      return true;
+  return false;
+}
+
+
+
 const Syntagms* NonTerminal::parse (const Position& pos) const
 // Use prefix tree of Rule::Rhs's ??
 {
   if (const Syntagms* res = findPtr (pos. nonTerminal2syntagms, this))
     return res;
+
+#if 0
+  if (verbose ())
+    cout << & pos << ' ' << (char) pos. c << ' ' << name << endl;
+#endif
+#if 0
+  Common_sp::AutoPtr<Offset> ofs;
+  if (verbose ())
+  {
+    ofs. reset (new Offset ());
+    ofs->newLn (cout);
+    cout << name;
+  }
+#endif
 
   const Syntagms& res = findMake (const_cast <Position&> (pos). nonTerminal2syntagms, this);
   ASSERT (res. empty ());
@@ -1138,13 +1294,11 @@ const Syntagms* NonTerminal::parse (const Position& pos) const
     if (const VectorPtr<Rule>* rules = findPtr (terminal2rules [false], it. first))
       for (const Rule* rule : *rules)
       {
-        // Parse as !Rule::erasable ??
         ASSERT (! rule->isLeftRecursive ());
         rule->parseIt (rule->rhs. begin (), pos, children); 
       }
   for (const Rule* rule : erasableRules)
   {
-    // Parse as Rule::erasable ??
     ASSERT (! rule->isLeftRecursive ());
     rule->parseIt (rule->rhs. begin (), pos, children); 
   }
@@ -1452,6 +1606,7 @@ void Grammar::finish (const string &startS)
 
   setTerminable ();
   setErasable ();
+  setRuleSingleRhs ();
   setFirstROs ();
   setLastROs ();
   setParsingTable ();
@@ -1459,6 +1614,8 @@ void Grammar::finish (const string &startS)
   for (const bool out : Bool)
     setNeighbors (out);
 //setSymbolTree ();
+  setReplacements ();
+  setRegularStar ();
 }
 
 
@@ -1484,7 +1641,8 @@ void Grammar::qc () const
   {
     ASSERT (s);
   //ASSERT (s->grammar == this);
-    s->qc ();
+    try { s->qc (); }
+      catch (...) { cout << s->name << endl; throw; }
     symbolSet << s;
     if (const Terminal /*Letter*/ * let = s->asTerminal /*Letter*/ ())
     {
@@ -1622,6 +1780,16 @@ void Grammar::setErasable ()
 
 
 
+void Grammar::setRuleSingleRhs ()
+{
+  for (const Symbol* s : symbols)
+    if (const NonTerminal* nt = s->asNonTerminal ())
+      for (const Rule* r : nt->lhsRules)
+        const_cast <Rule*> (r) -> setSingleRhs ();
+}
+
+
+
 void Grammar::setFirstROs ()
 { 
   for (const Symbol* s : symbols)
@@ -1684,6 +1852,36 @@ void Grammar::setNeighbors (bool out)
           const_cast <Terminal*> (t) -> terminalNeighbors [out] [ro] << neighborT;
     }
   }
+}
+
+
+
+void Grammar::setReplacements ()
+{
+  SingleDerivedSymbolGraph sdsg (*this);
+  sdsg. qc ();
+  for (const DiGraph::Node* node : sdsg. nodes)
+  {
+    const SymbolGraph::Node* parent = static_cast <const SymbolGraph::Node*> (node);
+    ASSERT (parent->symbol. replacements. empty ());
+    sdsg. clearReachable ();
+		const_cast <SymbolGraph::Node*> (parent) -> setReachable ();
+    for (const DiGraph::Node* childNode : sdsg. nodes)
+    {
+      const SymbolGraph::Node* child = static_cast <const SymbolGraph::Node*> (childNode);
+      if (child->reachable)
+        const_cast <Symbol&> (parent->symbol). replacements << & child->symbol;
+    }
+  }
+}
+
+
+
+void Grammar::setRegularStar ()
+{
+  for (const Symbol* s : symbols)
+    if (const NonTerminal* nt = s->asNonTerminal ())
+      const_cast <NonTerminal*> (nt) -> setRegularStar ();
 }
 
 
@@ -1769,18 +1967,25 @@ const Rule* Grammar::getLeftRecursiveErasable () const
 
 
 
-double Grammar::getComplexity () const
+void Grammar::findAmbiguity () const throw (Ambiguity)
 {
-  double comp = 0;
   for (const Symbol* s : symbols)
     if (const NonTerminal* nt = s->asNonTerminal ())
-      comp += nt->getComplexity ();
-  return comp;
+      if (! nt->regularStar. empty ())
+        for (const Symbol* nextSymbol : nt->neighbors [true])
+          if (const NonTerminal* next = nextSymbol->asNonTerminal ())
+          {
+            Set<const Symbol*> intersection (next->regularStar);
+            intersection. intersect (nt->regularStar);
+            if (! intersection. empty ())
+              throw Ambiguity (intersection. front () -> name + "* tandem");
+          }
+  // Other cases ??
 }
 
 
 
-void Grammar::prepare () throw (StdParserError)
+void Grammar::prepare () throw (StdParserError, Ambiguity)
 {
   if (const Symbol* s = findParseCycle ())
     throw StdParserError ("First symbol cycle: " + s->name);
@@ -1792,6 +1997,19 @@ void Grammar::prepare () throw (StdParserError)
   }
 
   setChar2terminal ();
+  
+  findAmbiguity ();
+}
+
+
+
+double Grammar::getComplexity () const
+{
+  double comp = 0;
+  for (const Symbol* s : symbols)
+    if (const NonTerminal* nt = s->asNonTerminal ())
+      comp += nt->getComplexity ();
+  return comp;
 }
 
 
@@ -1918,7 +2136,7 @@ void Grammar::terminals4scc () const
       }
   }
 
-  // Print ??
+  // Only print ??
   for (const auto it : scc2terminals)
   {
     cout << static_cast <const SymbolGraph::Node*> (it. first) -> symbol. name << ":";
@@ -1927,6 +2145,7 @@ void Grammar::terminals4scc () const
     cout << endl;
   }
 }
+
 
 
 
@@ -1959,6 +2178,7 @@ const Terminal* SymbolGraph::Node::getNextTerminal (bool out) const
 
 
 
+
 // SymbolGraph
 
 const SymbolGraph::Node* SymbolGraph::getNonReachable () const
@@ -1966,13 +2186,12 @@ const SymbolGraph::Node* SymbolGraph::getNonReachable () const
   for (DiGraph::Node* n : nodes)
   {
     const SymbolGraph::Node* n_ = static_cast<SymbolGraph::Node*> (n);
-  //if (& n_->symbol == grammar. eotSymbol)
-    //continue;
     if (! n_->reachable)
       return n_;
   }
   return nullptr;
 }
+
 
 
 
@@ -1998,6 +2217,7 @@ void DerivedSymbolGraph::initArcs ()
 
 
 
+
 // FirstDerivedSymbolGraph
 
 void FirstDerivedSymbolGraph::initArcs ()
@@ -2019,6 +2239,31 @@ void FirstDerivedSymbolGraph::initArcs ()
         }
     }
 }
+
+
+
+
+// SingleDerivedSymbolGraph
+
+void SingleDerivedSymbolGraph::initArcs ()
+{
+  for (const Symbol* s : grammar. symbols)
+    if (const NonTerminal* nt = s->asNonTerminal ())
+    {
+      Node* parent = symbol2node [nt];
+      ASSERT (parent);
+      for (const Rule* r : nt->lhsRules)
+        FOR (size_t, i, r->rhs. size ())
+          if (r->singleRhs [i])
+          {
+            Node* child = symbol2node [r->rhs [i]];
+            ASSERT (child);
+            if (! parent->isIncident (child, false))
+              new DiGraph::Arc (child, parent);
+          }
+    }
+}
+
 
 
 
@@ -2062,6 +2307,7 @@ void FollowSymbolGraph::initArcs ()
 
 
 
+
 // ROGraph::Node
 
 Set<const Terminal*> ROGraph::Node::getNextTerminals (bool out) const
@@ -2072,6 +2318,7 @@ Set<const Terminal*> ROGraph::Node::getNextTerminals (bool out) const
       res << t;
   return res;
 }
+
 
 
 
@@ -2116,3 +2363,8 @@ void FollowROGraph::initArcs ()
 
 }  // namespace
 
+
+
+/* TO DO: ??
+  canEnd() for last rule occurrence
+*/
