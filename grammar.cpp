@@ -1980,6 +1980,7 @@ void Grammar::findAmbiguity () const throw (Ambiguity)
             if (! intersection. empty ())
               throw Ambiguity (intersection. front () -> name + "* tandem");
           }
+  // tandem of the same erasable symbol ??
   // Other cases ??
 }
 
