@@ -5,6 +5,7 @@
 
 
 #ifdef _MSC_VER
+  #pragma warning (disable : 4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
   #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
   #pragma warning (disable : 4592)  // symbol will be dynamically initialized (implementation limitation)
   #pragma warning (disable : 4625)  // copy constructor was implicitly defined as deleted
