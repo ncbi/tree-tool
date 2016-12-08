@@ -2084,7 +2084,6 @@ public:
 
 // Json
 
-
 struct JsonNull;
 struct JsonInt;
 struct JsonDouble;
