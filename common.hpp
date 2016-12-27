@@ -85,15 +85,25 @@ enum ebool {EFALSE = false,
             ETRUE = true, 
             UBOOL = true + 1};
 
+inline ebool toEbool (bool b)
+  { return b ? ETRUE : EFALSE; }
+
+
 inline bool operator<= (ebool a, ebool b)
   { static const char rank [3/*ebool*/] = {0, 2, 1};
   	return rank [a] <= rank [b];
   }
 
-
 inline void toggle (bool &b)
   { b = ! b; }
 
+
+inline void toggle (ebool &b)
+  { if (b == ETRUE)
+      b = EFALSE;
+    else if (b == EFALSE)
+      b = ETRUE;
+  }
 
 inline void advance (size_t &index, 
                      size_t size)
