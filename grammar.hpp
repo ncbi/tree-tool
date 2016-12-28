@@ -4,7 +4,7 @@
 #define GRAMMAR_HPP
 
 #include "common.hpp"
-//#include <iterator>
+
 
 
 namespace Grammar_sp
@@ -114,11 +114,6 @@ public:
 
 struct TerminalSyntagm : Syntagm
 {
-#if 0
-  TerminalSyntagm (const Position& begin_arg,
-                   const Position& end_arg,
-                   const Terminal& terminal);
-#endif
   TerminalSyntagm (const Position& begin_arg,
                    const Terminal& terminal);
 private:
@@ -214,8 +209,7 @@ struct Rule : Root
 
   struct Occurrence;
   struct Occurrences : Set<Occurrence>  
-  {
-    Set<const Symbol*> getSymbols () const;
+  { Set<const Symbol*> getSymbols () const;
       // Return: !contains(nullptr)
   };
 
@@ -396,8 +390,10 @@ typedef  map <Rule::Occurrence, Set<const Terminal*> >  Occurrence2Terminals;
 
 
 struct Terminal : Symbol
+// name: Unicode in quotes or predefined names
 {
-  static const string space;
+  static const string eotName;
+  static const map<string,Char> names;
   Char c;
 
   // Analysis
@@ -406,7 +402,7 @@ struct Terminal : Symbol
 
 
   Terminal ()
-    : Symbol ("EOT")  
+    : Symbol (eotName)  
     , c (eot)
     {}
     // Initial or final symbol of a sentence
@@ -431,6 +427,7 @@ struct Terminal : Symbol
 
 
 struct NonTerminal : Symbol
+// name: no quotes
 {
   static const string sigmaS;
   VectorOwn<Rule> lhsRules;
@@ -574,7 +571,6 @@ public:
     // fName: each line is a rule: 
     //   <NonTerminal> <arrowS> <Symbol>*
     //   space-delimited
-    //   Terminal::space = "space"
     //   '#' starts a comment
     // startSymbol = the <NonTerminal> of the first rule
   // Subgrammars ??

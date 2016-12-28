@@ -822,6 +822,8 @@ void Rule::parse (Pos &pos,
 
 void Symbol::qc () const
 {
+  Named::qc ();
+    
   IMPLY (erasable, terminable);
 
 //IMPLY (! grammar, asGrammar());
@@ -1003,17 +1005,38 @@ Set<const Symbol*> Symbol::getRuleNexts () const
 
 // Terminal
 
-const string Terminal::space ("space");
+const string Terminal::eotName ("EOT");
+
+
+
+namespace
+{
+  map<string,Char> terminalNames ()
+  {
+    map<string,Char> m;
+    m ["space"] = ' ';
+    m ["quote"] = '\"';
+    m ["tab"]   = '\t';
+    return move (m);
+  }
+}
+
+
+
+const map<string,Char> Terminal::names (terminalNames ());
 
 
 
 Terminal::Terminal (const string &name_arg)
 : Symbol (name_arg)
 {
-  if (name == space)
-    c = ' ';
-  else if (name. size () == 1)
-    c = (Char) name [0];
+  if (name [0] == '\"')
+  {
+    ASSERT (name. size () == 3);
+    c = (Char) name [1];  // Other UniCode symbols ??
+  }
+  else if (const Char* c_ptr = findPtr (names, name))
+    c = *c_ptr;
   else
     throw runtime_error ("Bad Terminal " + name);
   ASSERT (c != eot);
@@ -1025,7 +1048,32 @@ void Terminal::qc () const
 {
   Symbol::qc ();
 
+  if (name == eotName)
+    ;
+  else if (name [0] == '\"')
+  {
+    ASSERT (name. size () > 2);    
+    ASSERT (name [name. size () - 1] == '\"');
+    ASSERT (! contains (name. substr (1, name. size () - 2), "\""));
+  }
+  else if (! contains (names, name))
+  {
+    cout << "Unknown terminal: " << name << endl;
+    ERROR;
+  }
+
 #ifndef NDEBUG
+  Set<Char> chars;
+  for (const auto& it : names)
+  {
+    ASSERT (goodName (it. first));
+    ASSERT (! contains (it. first, '\"'));
+    ASSERT (it. first != eotName);
+    ASSERT (it. second != eot);
+    chars << it. second;
+  }
+  ASSERT (chars. size () == names. size ());
+
 //if (grammar)
   {
     ASSERT (! erasable);
@@ -1070,6 +1118,8 @@ const string NonTerminal::sigmaS = "Sigma";
 void NonTerminal::qc () const
 {
   Symbol::qc ();
+
+  ASSERT (! contains (name, "\""));
 
 //ASSERT (grammar);
 #ifndef NDEBUG
