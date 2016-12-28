@@ -1189,7 +1189,7 @@ DiGraph::~DiGraph ()
   {
     Node* n = nodes. front ();
     if (! n)
-      errorExit ("DiGraph::Node is nullptr", false);
+      errorExit ("DiGraph::Node is nullptr");
     delete n;
   }
 }
@@ -2651,7 +2651,7 @@ void Application::setKey (const string &key,
                           const string &value)
 {
   if (! contains (keyArgs, key))
-    instruction ();
+    errorExitStr ("Unknown key: " + key + "\n" + getInstruction ());
   keyArgs [key] = value;
 }
 
@@ -2660,7 +2660,7 @@ void Application::setKey (const string &key,
 void Application::setFlag (const string &flag)
 {
   if (! contains (flagArgs, flag))
-    instruction ();
+    errorExitStr ("Unknown flag: " + flag + "\n" + getInstruction ());
   flagArgs [flag] = true;
 }
 
@@ -2669,7 +2669,7 @@ void Application::setFlag (const string &flag)
 void Application::setPositional (const string &value)
 {
   if (positionalValues. size () >= positionalArgs. size ())
-    instruction ();
+    errorExitStr ("Too many positional arguments\n" + getInstruction ());
   positionalValues << value;
 }
 
@@ -2680,14 +2680,11 @@ string Application::getArg (const string &arg) const
   if (contains (keyArgs, arg))
     return keyArgs. at (arg);
   size_t index;
-  if (positionalArgs. find (arg, index))
-  {
-    if (index < positionalValues. size ())
-      return positionalValues [index];
-    else
-      return string ();
-  }
-  throw runtime_error ("Argument " + arg + " is not found");
+  if (   positionalArgs. find (arg, index)
+      && index < positionalValues. size ()
+     )
+    return positionalValues [index];
+  throw runtime_error ("Argument or key \"" + arg + "\" is not found");
 }
 
 
@@ -2700,17 +2697,26 @@ bool Application::getFlag (const string &flag) const
 
 
 
-void Application::instruction () const
+string Application::getInstruction () const
 {
   string instr ("Usage: " + programName);
   for (const string& s : positionalArgs)
     instr += " <" + s + ">";
   for (const auto it : keyArgs)
-    instr += " [-" + it. first + " \"" + it. second + "\"]";
+  {
+    instr += " [-" + it. first + " "; 
+    const bool quoted = it. second. empty () || contains (it. second, ' ');
+    if (quoted)
+      instr += "\"";
+    instr += it. second;
+    if (quoted)
+      instr += "\"";
+    instr += "]";
+  }
   for (const auto it : flagArgs)
     instr += " [-" + it. first + "]";
 
-  errorExit (instr. c_str ());
+  return move (instr);
 }
 
 
@@ -2718,108 +2724,113 @@ void Application::instruction () const
 int Application::run (int argc, 
                       const char* argv []) 
 {
-  for (int i = 0; i < argc; i++)  
-    programArgs. push_back (argv [i]);
-  ASSERT (! programArgs. empty ());
-
-    
-  // keyArgs, flagArgs
-  bool first = true;
-  string key;
-  for (string s : programArgs)
-  {
-    if (first)
+	try
+  { 
+    for (int i = 0; i < argc; i++)  
+      programArgs. push_back (argv [i]);
+    ASSERT (! programArgs. empty ());
+  
+      
+    // keyArgs, flagArgs
+    bool first = true;
+    string key;
+    for (string s : programArgs)
     {
-      programName = rfindSplit (s, fileSlash);
-      ASSERT (! programName. empty ());
-    }
-    else
-    {
-      if (s. empty ())
-        if (key. empty ())
-          setPositional (s);
-        else
-        {
-          setKey (key, s);
-          key. clear ();
-        }
+      if (first)
+      {
+        programName = rfindSplit (s, fileSlash);
+        ASSERT (! programName. empty ());
+      }
       else
-        if (key. empty ())
-          if (s [0] == '-')
-            key = s;
-          else
+      {
+        if (s. empty ())
+          if (key. empty ())
             setPositional (s);
-        else
-          if (s [0] == '-')
-          {
-            setFlag (key);
-            if (s == "-")
-              key. clear ();
-            else
-              key = s. substr (1);
-          }
           else
           {
             setKey (key, s);
             key. clear ();
           }
+        else
+          if (key. empty ())
+            if (s [0] == '-')
+              key = s. substr (1);
+            else
+              setPositional (s);
+          else
+            if (s [0] == '-')
+            {
+              setFlag (key);
+              if (s == "-")
+                key. clear ();
+              else
+                key = s. substr (1);
+            }
+            else
+            {
+              setKey (key, s);
+              key. clear ();
+            }
+      }
+      first = false;
     }
-    first = false;
-  }
+  
+  
+    const string logFName = getArg ("log");
+  	ASSERT (! logPtr);
+    if (! logFName. empty ())
+  		logPtr = new OFStream ("", logFName, "");
+  
+  	Verbose vrb (str2<int> (getArg ("verbose")));
+  	
+  	if (getFlag ("noprogress"))
+  		Progress::disable ();
+  
+  	const string jsonFName = getArg ("json");
+  	ASSERT (! jRoot);
+  	if (! jsonFName. empty ())
+  	{
+  		new JsonMap ();
+  	  ASSERT (jRoot);
+  	}
+  
+  
+    if (programArgs. size () == 1)
+    {
+      cout << getInstruction () << endl;
+      exit (1);
+    }
+    
+    if (positionalValues. size () < positionalArgs. size ())
+      errorExitStr ("Too few positional arguments\n" + getInstruction ());    
 
 
-  const string logFName = getArg ("log");
-	ASSERT (! logPtr);
-  if (! logFName. empty ())
-		logPtr = new OFStream ("", logFName, "");
-
-	Verbose vrb (str2<int> (getArg ("verbose")));
-	
-	if (getFlag ("noprogress"))
-		Progress::disable ();
-
-	const string jsonFName = getArg ("json");
-	ASSERT (! jRoot);
-	if (! jsonFName. empty ())
-	{
-		new JsonMap ();
-	  ASSERT (jRoot);
-	}
-
-
-  if (programArgs. size () == 1)
-    instruction ();
-
-
-	try
-  { 
   	body ();
+
+  
+  	if (! jsonFName. empty ())
+  	{
+  	  ASSERT (jRoot);
+  		OFStream f ("", jsonFName, "");
+      jRoot->print (f);
+      delete jRoot;
+      jRoot = nullptr;
+    }
+  
+  	if (! logFName. empty ())
+  	{
+  	  delete logPtr;
+  	  logPtr = nullptr;
+  	  if (remove (logFName. c_str ()))
+  	  {
+  	    cout << "Cannot remove log file \"" << logFName << "\"" << endl;
+  	    abort ();
+  	  }
+    }
 	}
 	catch (const std::exception &e) 
 	{ 
 	  errorExit (e. what ());
-		return 1; 
-  }
-
-  
-	if (! jsonFName. empty ())
-	{
-	  ASSERT (jRoot);
-		OFStream f ("", jsonFName, "");
-    jRoot->print (f);
-    delete jRoot;
-    jRoot = nullptr;
-  }
-
-	if (! logFName. empty ())
-	{
-	  delete logPtr;
-	  logPtr = nullptr;
-	  if (remove (logFName. c_str ()))
-	  {
-	    cout << "Cannot remove log file \"" << logFName << "\"" << endl;
-	    abort ();
-	  }
   }
 
 
