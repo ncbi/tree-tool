@@ -670,10 +670,10 @@ struct Named : Root
 
   Named ()
     {}  
-  explicit Named (const string &name_arg); 
+  explicit Named (const string &name_arg);   
   Named* copy () const
-    { return new Named (*this); }
-
+    { return new Named (*this); }    
+  void qc () const;
   void saveText (ostream& os) const
     { os << name; }
 	bool empty () const

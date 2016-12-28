@@ -831,6 +831,14 @@ Named::Named (const string& name_arg)
 
 
 
+void Named::qc () const
+{
+  Root::qc ();
+    
+  ASSERT (goodName (name));
+}
+
+
 
 // DisjointCluster
 
