@@ -54,6 +54,8 @@ void errorExit (const char* msg,
                 bool segmFault = false);
   // Update: *logPtr
   // Invokes: if segmFault then abort() else exit(1)
+inline void errorExitStr (const string &msg)
+  { errorExit (msg. c_str ()); }
 
 
 
@@ -2424,8 +2426,7 @@ protected:
   bool getFlag (const string &flag) const;
     // Input: flagArgs
 public:
-  void instruction () const;
-    // Invokes: ERROR_MSG
+  string getInstruction () const;
   int run (int argc, 
            const char* argv []);
     // Update: keyArgs, flagArgs, positionalArgs
