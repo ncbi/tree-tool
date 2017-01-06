@@ -1838,6 +1838,9 @@ public:
 
 
 
+
+// Input
+
 struct Input : Root, Nocopy
 {
 protected:
@@ -1854,8 +1857,8 @@ public:
 
 
 protected:	
-	Input (const string &fName,
-      	 size_t bufSize,
+  Input (const string &fName,
+         size_t bufSize,
          uint displayPeriod);
 };
 	
@@ -1913,9 +1916,11 @@ struct ObjectInput : Input
 struct CharInput : Input
 {
   uint charNum;
+    // In the current line
+  bool eol;
+    // eof => eol
 private:
   bool ungot;
-  bool eol;
 public:
 
 	
@@ -1924,8 +1929,8 @@ public:
               	      uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
     , charNum ((uint) -1)
-    , ungot (false)
     , eol (false)
+    , ungot (false)
     {}
   
 
@@ -1934,14 +1939,16 @@ public:
 	  // Update: lineNum, charNum
 	void unget ();
 	  // Requires: To be followed by get()
+  string getLine ();
+    // Postcondition: eol
 	  
 
   struct Error : runtime_error
   { explicit Error (const CharInput &in,
-		                const string &what_arg = string ()) 
+		                const string &expected = string ()) 
 			: runtime_error ("Error at line " + toString (in. lineNum + 1) 
 		                   + ", pos. " + toString (in. charNum + 1)
-		                   + (what_arg. empty () ? string () : (": " + what_arg + " is expected"))
+		                   + (expected. empty () ? string () : (": " + expected + " is expected"))
 		                  )
 	    {}
 	};
@@ -1951,12 +1958,23 @@ public:
 
 struct Token : Root
 {
-	enum Type {eSystem, eText, eNumber};
+	static const char quote = '\"';
+	static const uint noNum = (uint) -1;
+	enum Type { eText       // In quote's within one line
+	          , eNumber     // All characters: isDigit()
+	          , eName       // All characters: isLetter()
+	                        // Start: !isDigit()
+	          , eDelimiter  // Does not include ' '
+	          };
 	Type type;
 	string name;
+	  // All characters: printable()
+	  // eText => embracing quote's are removed
 	  // May be: !goodName(name)
 	uint num;
 	  // Valid if type = eNumber
+	uint charNum;	
+	  // First CharInput::charNum of name
 
 	  
 	Token ()
@@ -1965,40 +1983,81 @@ struct Token : Root
 	       Type type_arg)
 	  : type (type_arg)
 	  , name (name_arg)
-	  , num (0)
+	  , num (noNum)
+	  , charNum (0)
 	  {}
-	Token (CharInput &in,
-	       Type expected)
-	  { readInput (in, expected); }
 	explicit Token (CharInput &in)
 	  { readInput (in); }
+	Token (CharInput &in,
+	       Type expected)
+    { readInput (in);
+    	if (empty ())
+ 			  throw CharInput::Error (in, "No token"); 
+    	if (type != expected)
+ 			  throw CharInput::Error (in, type2str (type)); 
+    }
+	Token (CharInput &in,
+	       uint expected)
+    { readInput (in);
+    	if (! isNumber (expected))
+ 			  throw CharInput::Error (in, type2str (eNumber) + " " + toString (expected)); 
+    }
+	Token (CharInput &in,
+	       const string &expected)
+    { readInput (in);
+    	if (! isName (expected))
+ 			  throw CharInput::Error (in, type2str (eName) + " " + expected); 
+    }
+	Token (CharInput &in,
+	       char expected)
+    { readInput (in);
+    	if (! isDelimiter (expected))
+ 			  throw CharInput::Error (in, type2str (eDelimiter) + " " + expected); 
+    }
+private:
+	void readInput (CharInput &in);
+public:
+	void qc () const;
 	void saveText (ostream &os) const
-	  { switch (type)
-	  	{ case eSystem: os << name;                 break;
-	  		case eText:   os << '\"' << name << '\"'; break;
-	  		case eNumber: os << num;                  break;
-	  	}
+	  { if (! empty ())
+  	    switch (type)
+  	  	{ case eText:      os << ' ' << quote << name << quote; break;
+  	  		case eNumber:    os << ' ' << num;                    break;
+  	  		case eName:      os << ' '          << name;          break;
+  	  		case eDelimiter: os                 << name;          break;
+  	  	}
+	  }
+	bool empty () const
+	  { return type == eDelimiter && name. empty (); }
+	void clear ()
+	  { type = eDelimiter;
+	    name. clear ();
+	  	num = noNum;
+	  	charNum = 0;
 	  }
 
-	  
-	bool empty () const
-	  { return type == eSystem && name. empty (); }
-	void clear ()
-	  { name. clear ();
-	  	type = eSystem;
-	    num = (uint) -1;
+
+	static string type2str (Type type) 
+	  { switch (type)
+	  	{ case eText:      return "Text";
+	  		case eNumber:    return "Number";
+	  		case eName:      return "Name";
+	  		case eDelimiter: return "Delimiter";
+	  	}
+	  	return "?";
 	  }
-	  // empty()
-	void readInput (CharInput &in);
-	  // Postcondition: !empty()
-	  // type != eNumber => !name.empty()
-	  // type = eNumber => num != UINT_MAX
-	void readInput (CharInput &in,
-	               Type expected);
-	  // Invokes: readInput(in)
+	bool isNumber (uint n) const
+	  { return ! empty () && type == eNumber && num == n; }
+	bool isName (const string &s) const
+	  { return ! empty () && type == eName && name == s; }
+	bool isDelimiter (char c) const
+	  { return ! empty () && type == eDelimiter && name [0] == c; }
 };
 
 
+
+
+// OFStream
 
 struct OFStream : ofstream
 {
@@ -2068,6 +2127,7 @@ void csvLine2vec (const string &line,
                   Vector<string> &words);
   // Output: words
   // Invokes: Csv
+
 
 
 

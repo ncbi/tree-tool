@@ -2093,6 +2093,7 @@ char CharInput::get ()
 	const char c = (char) ifs. get ();
 
 	eof = ifs. eof ();
+	ASSERT (eof == (c == (char) EOF));
 
 	if (eol)
 	{ 
@@ -2103,9 +2104,9 @@ char CharInput::get ()
   else
 	  charNum++;
 
-	eol = c == '\n';
+	eol = (eof || c == '\n');
 
-	return eof ? (char) EOF : c;
+	return /*eof ? (char) EOF :*/ c;
 }
 
 
@@ -2121,30 +2122,48 @@ void CharInput::unget ()
 
 
 
+string CharInput::getLine ()
+{
+  string s;
+  while (! eof)
+  {
+    const char c = get ();
+    if (eol)
+      break;
+    s += c;
+  }
+  return move (s);
+}
+
+
+
 
 // Token
 
 void Token::readInput (CharInput &in)
 {
 	clear ();
-	
-	const char* delimiters = "`~!@#$%^&*()-=+[{]}\\|;:',<.>/? ";  // PAR
-	
+
+  // Skip spaces
 	char c = '\0';
 	do { c = in. get (); }
 	  while (! in. eof && isSpace (c));
 	if (in. eof)
-		return;
+	{
+	  ASSERT (empty ());
+		return;  
+  }
 		
-	if (c == '\"')
+  charNum = in. charNum;
+	if (c == quote)
 	{
 		type = eText;
 		for (;;)
 		{ 
 			c = in. get (); 
-			if (in. eof)
-				throw CharInput::Error (in, "\"");
-			if (c == '\"')
+			if (in. eol)
+				throw CharInput::Error (in, "ending quote");
+			if (c == quote)
 				break;
 			name += c;
 		}
@@ -2159,14 +2178,13 @@ void Token::readInput (CharInput &in)
 		}
 		if (! in. eof)
 			in. unget ();
-		num = (uint) atoi (name. c_str ());
+		num = str2<uint> (name);
 		ASSERT (num != numeric_limits<uint>::max ());
 	}
-	else if (charInSet (c, delimiters))
-		name = c;
-	else
+	else if (isLetter (c))
 	{
-		while (! in. eof && ! charInSet (c, delimiters))
+		type = eName;
+		while (! in. eof && isLetter (c))
 		{ 
 			name += c;
 			c = in. get (); 
@@ -2174,25 +2192,38 @@ void Token::readInput (CharInput &in)
 		if (! in. eof)
 			in. unget ();
 	}
-	
+	else 
+	{
+	  ASSERT (type == eDelimiter);
+		name = c;
+	}	
 	ASSERT (! empty ());
-	IMPLY (type != eNumber, ! name. empty ());
 }
 
 
 
-void Token::readInput (CharInput &in,
-                       Type expected)
-{ 
-	readInput (in);
-	if (type != expected)
-		switch (expected)
-		{
-			case eSystem: throw CharInput::Error (in, "keyword"); 
-			case eText:   throw CharInput::Error (in, "text");
-			case eNumber: throw CharInput::Error (in, "number");
-			default: ERROR;
-		}
+void Token::qc () const
+{
+  if (! empty ())
+  {
+  	ASSERT (! name. empty ());
+    ASSERT (! contains (name, quote));
+  	IMPLY (type != eText, ! contains (name, ' '));
+  	IMPLY (type != eNumber, num == noNum);
+  	const char c = name [0];
+  	switch (type)
+  	{ 
+  	  case eText:      break;
+  		case eNumber:    ASSERT (isDigit (c)); 
+  		                 ASSERT (num != noNum);
+  		                 break;
+  		case eName:      ASSERT (isLetter (c) && ! isDigit (c)); 
+  		                 break;
+  		case eDelimiter: ASSERT (name. size () == 1); 
+  		                 break;
+  		default: throw runtime_error ("Unknown type");
+  	}
+  }
 }
 
 
@@ -2314,7 +2345,7 @@ Token Json::readToken (istream &is)
       else
       {
         if (isDelim)
-          return Token (string (1, c), Token::eSystem);
+          return Token (string (1, c), Token::eDelimiter);
         spaces = false;
         isC = c == '\'';
       }
@@ -2362,9 +2393,9 @@ void Json::parse (istream& is,
   string s (firstToken. name);
   strLower (s);
   
-  if (firstToken. type == Token::eSystem && s == "{")
+  if (firstToken. type == Token::eDelimiter && s == "{")
     new JsonMap (is, parent, name);
-  else if (firstToken. type == Token::eSystem && s == "[")
+  else if (firstToken. type == Token::eDelimiter && s == "[")
     new JsonArray (is, parent, name);
   else if (firstToken. type == Token::eText && s == "null")
     new JsonNull (parent, name);
@@ -2489,11 +2520,11 @@ JsonArray::JsonArray (istream& is,
   for (;;)
   {
     Token token (readToken (is));
-    if (token. type == Token::eSystem && token. name == "]")
+    if (token. isDelimiter (']'))
       break;
     if (! first)
     {
-      ASSERT (token. type == Token::eSystem && token. name == ",");
+      ASSERT (token. isDelimiter (','));
       token = readToken (is);
     }
     parse (is, token, this, string());
@@ -2536,7 +2567,7 @@ JsonMap::JsonMap (const string &fName)
   if (! ifs. good ())
     ERROR_MSG ("Bad file: " + fName);
   const Token token (readToken (ifs));
-  ASSERT (token. type == Token::eSystem && token. name == "{");
+  ASSERT (token. isDelimiter ('{'));
   parse (ifs);
 }
 
@@ -2550,16 +2581,16 @@ void JsonMap::parse (istream& is)
   for (;;)
   {
     Token token (readToken (is));
-    if (token. type == Token::eSystem && token. name == "}")
+    if (token. isDelimiter ('}'))
       break;
     if (! first)
     {
-      ASSERT (token. type == Token::eSystem && token. name == ",");
+      ASSERT (token. isDelimiter (','));
       token = readToken (is);
     }
     ASSERT (! token. name. empty ());
     const Token colon (readToken (is));
-    ASSERT (colon. type == Token::eSystem && colon. name == ":");
+    ASSERT (colon. isDelimiter (':'));
     Json::parse (is, readToken (is), this, token. name);
     first = false;
   }
