@@ -44,7 +44,6 @@ string chars2str (const Vector<Char> &vec)
 
 
 
-
 // Sentence
 
 Sentence::Sentence (const Grammar &grammar,
@@ -220,6 +219,7 @@ size_t Syntagm::size () const
   ASSERT (diff >= 0);
   return (size_t) diff; 
 }
+
 
 
 
@@ -431,6 +431,7 @@ Set<const Symbol*> Rule::Occurrences::getSymbols () const
 
 
 
+
 // Rule::Occurrence
 
 void Rule::Occurrence::qc () const
@@ -519,6 +520,7 @@ Rule::Occurrences Rule::Occurrence::getLastROs () const
   res << *this;
   return move (res);
 }
+
 
 
 
@@ -818,12 +820,16 @@ void Rule::parse (Pos &pos,
 
 
 
+
 // Symbol
 
 void Symbol::qc () const
 {
   Named::qc ();
     
+  ASSERT (! isLeft  (name, "["));
+  ASSERT (! isRight (name, "]"));
+
   IMPLY (erasable, terminable);
 
 //IMPLY (! grammar, asGrammar());
@@ -1003,43 +1009,39 @@ Set<const Symbol*> Symbol::getRuleNexts () const
 
 
 
+
 // Terminal
 
 const string Terminal::eotName ("EOT");
 
 
 
-namespace
-{
-  map<string,Char> terminalNames ()
-  {
-    map<string,Char> m;
-    m ["space"] = ' ';
-    m ["quote"] = '\"';
-    m ["tab"]   = '\t';
-    return move (m);
-  }
-}
-
-
-
-const map<string,Char> Terminal::names (terminalNames ());
-
-
-
 Terminal::Terminal (const string &name_arg)
 : Symbol (name_arg)
 {
-  if (name [0] == '\"')
+  ASSERT (! name. empty ());
+  try 
   {
-    ASSERT (name. size () == 3);
-    c = (Char) name [1];  // Other UniCode symbols ??
+    if (isDigit (name [0]))
+    {
+      c = str2<Char> (name);
+      ASSERT (c < ' ' || c >= 127);
+    }
+    else
+    {    
+      ASSERT (name. size () == 3);
+      ASSERT (name [0] == Token::quote);
+      ASSERT (name [2] == Token::quote);
+      c = (Char) name [1];
+      ASSERT (c >= ' ')
+      ASSERT (c < 127);
+    }
+    ASSERT (c != eot);
   }
-  else if (const Char* c_ptr = findPtr (names, name))
-    c = *c_ptr;
-  else
-    throw runtime_error ("Bad Terminal " + name);
-  ASSERT (c != eot);
+  catch (const exception &e)
+  {
+    throw runtime_error ("Bad Terminal: " + name + "\n" + e. what ());
+  }
 }
 
 
@@ -1048,32 +1050,7 @@ void Terminal::qc () const
 {
   Symbol::qc ();
 
-  if (name == eotName)
-    ;
-  else if (name [0] == '\"')
-  {
-    ASSERT (name. size () > 2);    
-    ASSERT (name [name. size () - 1] == '\"');
-    ASSERT (! contains (name. substr (1, name. size () - 2), "\""));
-  }
-  else if (! contains (names, name))
-  {
-    cout << "Unknown terminal: " << name << endl;
-    ERROR;
-  }
-
 #ifndef NDEBUG
-  Set<Char> chars;
-  for (const auto& it : names)
-  {
-    ASSERT (goodName (it. first));
-    ASSERT (! contains (it. first, '\"'));
-    ASSERT (it. first != eotName);
-    ASSERT (it. second != eot);
-    chars << it. second;
-  }
-  ASSERT (chars. size () == names. size ());
-
 //if (grammar)
   {
     ASSERT (! erasable);
@@ -1109,6 +1086,7 @@ bool Terminal::differentiated (Rule::Occurrence ro,
 
 
 
+
 // NonTerminal
 
 const string NonTerminal::sigmaS = "Sigma";
@@ -1119,7 +1097,7 @@ void NonTerminal::qc () const
 {
   Symbol::qc ();
 
-  ASSERT (! contains (name, "\""));
+  ASSERT (isAlpha (name [0]));
 
 //ASSERT (grammar);
 #ifndef NDEBUG
@@ -1471,58 +1449,65 @@ void SymbolTree::saveText (ostream &os) const
 // Grammar
 
 const string Grammar::arrowS ("->");
-const string Grammar::commentS ("#");
 
 
 
 Grammar::Grammar (const string &fName)
-: /*Terminal (commentS, nullptr)
-,*/ startSymbol (nullptr)
+: /*Terminal (commentC, nullptr)
+,*/ ruleNum (0)
+, startSymbol (nullptr)
 , eotSymbol (nullptr)
 //, symbolTree (* new SymbolTree ())
 {
   string startS;
 
-  LineInput li (fName);
+  CharInput in (fName);
   try 
   {
-    size_t ruleNum = 1;
-    while (li. nextLine ())
+    List<Token> tokens;
+    for (;;)
     {
-      string& line = li. line;
-      const size_t pos = line. find (commentS);
-      if (pos != string::npos)
-        line. erase (pos);
-      trim (line);
-      if (line. empty ())
-        continue;
-      istringstream iss (line);
-      string lhs, arrow;
-      iss >> lhs >> arrow;
-      ASSERT (arrow == arrowS);
-      if (startS. empty () /*name == commentS*/)
-        startS /*name*/ = lhs;
-      Vector<string> rhs;
-      for (;;)
+      const Token token (in);
+      token. qc ();
+      if (token. isDelimiter (commentC))
       {
-        string s;
-        iss >> s;
-        if (s. empty ())
-          break;
-        rhs << s;
+        in. getLine ();
+        continue;
       }
-      ASSERT (lhs != NonTerminal::sigmaS);
-      addRule (ruleNum, lhs, rhs);
-      ruleNum++;
+      if (   token. charNum == 0
+          || token. empty ()
+         )
+      {
+        if (! tokens. empty ())
+        {
+          ASSERT (tokens. size () >= 3);
+          ASSERT (tokens. front (). type == Token::eName);
+          const string lhs (tokens. popFront (). name);
+          ASSERT (arrowS. size () == 2);
+          ASSERT (tokens. popFront (). isDelimiter (arrowS [0]));
+          ASSERT (tokens. popFront (). isDelimiter (arrowS [1]));
+        #ifndef NDEBUG
+          for (const Token& t : tokens)
+            ASSERT (! contains (t. name, commentC));
+        #endif
+          List<Token>::const_iterator it = tokens. cbegin ();
+          addRule (lhs, it, tokens. cend (), false);
+          if (startS. empty ())
+            startS = lhs;
+        }
+        tokens. clear ();
+      }
+      if (token. empty ())
+        break;
+      tokens << token;
     }
   }
   catch (...)
   {
-    cout << "At line " << li. lineNum + 1 << endl;
+    cout << "At line " << in. lineNum + 1 << endl;
     throw;
   }
 
-//ASSERT (name != commentS);
   finish (startS);
 }
 
@@ -1531,7 +1516,8 @@ Grammar::Grammar (const string &fName)
 Grammar::Grammar (const Grammar &other,
                   const VectorPtr<NonTerminal> &newTerminals)
 : /*Terminal (other. name, nullptr)
-,*/ startSymbol (nullptr)
+,*/ ruleNum (0)
+, startSymbol (nullptr)
 , eotSymbol (nullptr)
 //, symbolTree (* new SymbolTree ())
 {
@@ -1549,7 +1535,6 @@ Grammar::Grammar (const Grammar &other,
   }
   const_cast <SymbolGraph::Node*> (dsg. getStartSymbol ()) -> setReachable ();
 
-  size_t ruleNum = 0;
   for (const Symbol* s : other. symbols)
     if (const NonTerminal* nt = s->asNonTerminal ())
     {
@@ -1564,8 +1549,7 @@ Grammar::Grammar (const Grammar &other,
         Vector<string> rhs;
         for (const Symbol* child : r->rhs)
           rhs << child->name;
-        addRule (ruleNum, r->lhs. name, rhs);
-        ruleNum++;
+        addRule (r->lhs. name, rhs);
       }
     }
 
@@ -1577,7 +1561,8 @@ Grammar::Grammar (const Grammar &other,
 Grammar::Grammar (const Grammar &other,
                   const Terminal* universalDelimiter)
 : /*Terminal (other. name, nullptr)
-,*/ startSymbol (nullptr)
+,*/ ruleNum (0)
+, startSymbol (nullptr)
 , eotSymbol (nullptr)
 //, symbolTree (* new SymbolTree ())
 {
@@ -1586,7 +1571,6 @@ Grammar::Grammar (const Grammar &other,
   other. qc ();
 #endif
 
-  size_t ruleNum = 0;
   for (const Symbol* s : other. symbols)
     if (const NonTerminal* nt = s->asNonTerminal ())
       for (const Rule* r : nt->lhsRules)
@@ -1595,8 +1579,7 @@ Grammar::Grammar (const Grammar &other,
         for (const Symbol* child : r->rhs)
           if (child != universalDelimiter)
             rhs << child->name;
-        addRule (ruleNum, r->lhs. name, rhs);
-        ruleNum++;
+        addRule (r->lhs. name, rhs);
       }
 
   finish (other. startSymbol->name);
@@ -1604,16 +1587,114 @@ Grammar::Grammar (const Grammar &other,
 
 
 
-void Grammar::addRule (size_t num,
-                       const string &lhs,
+void Grammar::addRule (const string &lhs,
                        const Vector<string> &rhs)
 {
 //ASSERT (! startSymbol);
 
   NonTerminal* nt = getSymbol<NonTerminal> (lhs);
   ASSERT (nt);
-  Rule* r = new Rule (num, *nt, rhs);
+  Rule* r = new Rule (ruleNum, *nt, rhs);
   nt->lhsRules << r;
+  ruleNum++;
+}
+
+
+
+void Grammar::addRule (const string &lhs,
+                       List<Token>::const_iterator &rhsIt,
+                       const List<Token>::const_iterator &rhsEnd,
+                       bool optional)
+{
+  ASSERT (! lhs. empty ());
+  ASSERT (lhs != NonTerminal::sigmaS);
+  
+  string ascii ("   ");
+  ASSERT (ascii. size () == 3);
+  ascii [0] = Token::quote;
+  ascii [2] = ascii [0];
+
+  Vector<string> rhs;
+  size_t rhsPart = 1;
+  bool stop = false;
+  bool prevName = false;
+  while (! stop && rhsIt != rhsEnd)
+  {
+    const Token token (*rhsIt);
+    token. qc ();
+    rhsIt++;
+    ASSERT (! token. empty ());
+    bool isName = false;
+    switch (token. type)
+    {
+      case Token::eName: 
+        isName = true;
+      case Token::eNumber: 
+        rhs << token. name; 
+        rhsPart++;
+        break;
+      case Token::eText: 
+        for (const char c : token. name)
+        {
+          ascii [1] = c;
+          rhs << ascii;
+        }
+        rhsPart++;
+        break;
+      case Token::eDelimiter: 
+        {
+          ASSERT (token. name. size () == 1);
+          const char last = token. name [0];
+          switch (last)
+          {
+            case '[': {
+                        const string optionalName (lhs + commentC + toString (rhsPart));
+                        addRule (optionalName, rhsIt, rhsEnd, true); 
+                        addRule (optionalName, Vector<string> ());
+                        rhs << optionalName;
+                        rhsPart++;
+                      }
+                      break;
+            case ']': ASSERT (optional);   
+                      stop = true;                   
+                      break;
+            case '*':
+            case '+': {
+                        ASSERT (prevName);
+                        ASSERT (! rhs. empty ());
+                        const string name (rhs. back ());
+                        const string nameMod (name + last);
+                        rhs. back () = nameMod;
+                        if (! string2Symbol [nameMod])
+                        {
+                          getSymbol<NonTerminal> (nameMod);
+                          List<Token> tokens;
+                          List<Token>::const_iterator it = tokens. cbegin ();
+                          switch (last)
+                          {
+                            case '+': tokens << name << name << '*';
+                                      break;
+                            case '*': addRule (nameMod, it, tokens. cend (), false);
+                                      tokens << name << '+';
+                                      break;
+                            default: ERROR;
+                          }
+                          it = tokens. cbegin ();
+                          addRule (nameMod, it, tokens. cend (), false);
+                        }
+                      }
+                      break;
+            default:  ERROR_MSG ("Unknown special grammar symbol: \'" + token. name + "\'");
+          }
+        }
+        break;
+      default: ERROR;
+    }    
+    prevName = isName;
+  }
+  ASSERT (stop == optional);
+  
+  addRule (lhs, rhs);
 }
 
 
@@ -1638,18 +1719,19 @@ void Grammar::finish (const string &startS)
     ASSERT (s);
     Vector<string> rhs;  rhs. reserve (3);
     rhs << eotSymbol->name << s->name << eotSymbol->name;
-    addRule (0, startSymbol->name, rhs);
+    addRule (startSymbol->name, rhs);
   }
 
-  VectorPtr<NonTerminal> nonTerminals;  
-  for (const Symbol* s : symbols)
-    if (const NonTerminal* nt = s->asNonTerminal ())
-      nonTerminals << nt;
-
   // Rule::finish()
-  for (const NonTerminal* nt : nonTerminals)
-    for (const Rule* r : nt->lhsRules)
-      const_cast <Rule*> (r) -> finish (*this);  // updates symbols
+  {
+    VectorPtr<NonTerminal> nonTerminals;  
+    for (const Symbol* s : symbols)
+      if (const NonTerminal* nt = s->asNonTerminal ())
+        nonTerminals << nt;
+    for (const NonTerminal* nt : nonTerminals)
+      for (const Rule* r : nt->lhsRules)
+        const_cast <Rule*> (r) -> finish (*this);  // updates symbols
+  }
 
   ASSERT (symbols. size () == string2Symbol. size ());
   string2Symbol. clear ();

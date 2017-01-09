@@ -390,10 +390,9 @@ typedef  map <Rule::Occurrence, Set<const Terminal*> >  Occurrence2Terminals;
 
 
 struct Terminal : Symbol
-// name: Unicode in quotes or predefined names
+// name: '<ASCII>' or <Unicode>
 {
   static const string eotName;
-  static const map<string,Char> names;
   Char c;
 
   // Analysis
@@ -545,9 +544,10 @@ struct Grammar : Root
   // !nullptr <=> *this is a symbol grammar
 {
   static const string arrowS;
-  static const string commentS;
+  static const char commentC = '#';
 private:
   friend struct Rule;
+  size_t ruleNum;
   map<string,Symbol*> string2Symbol;
 public:
 
@@ -568,11 +568,18 @@ public:
 
   explicit Grammar (const string &fName);
     // Normal CF-grammar
-    // fName: each line is a rule: 
-    //   <NonTerminal> <arrowS> <Symbol>*
-    //   space-delimited
-    //   '#' starts a comment
-    // startSymbol = the <NonTerminal> of the first rule
+    // Input: fName: sequence of rules 
+    //   <rule> ::= <NonTerminal> <arrowS> <Symbol>*
+    //     space-delimited
+    //     starts from the first position of a line
+    //   '#' starts a comment which ends at the line end
+    //   Special characters: [ ] * +
+    //   Automatically added rules for symbols A* or A+ in r.h.s.:
+    //     A+ -> A A*
+    //     A* ->
+    //     A* -> A+
+    //   <Terminal symbol> ::= <Unicode> | "<sequence of printable ASCII symbols>"
+    // Output: startSymbol = the <NonTerminal> of the first rule
   // Subgrammars ??
 //explicit Grammar (const NonTerminal &nt);
   Grammar (const Grammar &other,
@@ -595,9 +602,15 @@ private:
         ASSERT (res);
         return const_cast <T*> (res);
       }
-  void addRule (size_t num,
-                const string &lhs,
+  void addRule (const string &lhs,
                 const Vector<string> &rhs);
+    // Update: ruleNum
+  void addRule (const string &lhs,
+                List<Token>::const_iterator &rhsIt,
+                const List<Token>::const_iterator &rhsEnd,
+                bool optional);
+    // Update: rhsIt
+    // Invokes: addRule(lhs,rhs)
   void finish (const string &startS);
     // Invokes: Rule::finish(), see below
 public:
