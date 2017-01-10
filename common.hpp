@@ -612,6 +612,11 @@ public:
   void saveFile (const string &fName) const;
     // if fName.empty() then do nothing
     // Invokes: saveText()
+  string str () const
+    { ostringstream oss;
+      saveText (oss);
+      return oss. str ();
+    }
   virtual void print (ostream& os) const
     { saveText (os); }
     // Human-friendly
