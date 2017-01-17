@@ -2177,6 +2177,7 @@ struct JsonNull;
 struct JsonInt;
 struct JsonDouble;
 struct JsonString;
+struct JsonBoolean;
 struct JsonArray;
 struct JsonMap;
   
@@ -2198,6 +2199,8 @@ public:
   virtual const JsonDouble* asJsonDouble () const
     { return nullptr; }  
   virtual const JsonString* asJsonString () const
+    { return nullptr; }  
+  virtual const JsonBoolean* asJsonBoolean () const
     { return nullptr; }  
   virtual const JsonArray* asJsonArray () const
     { return nullptr; }  
@@ -2296,6 +2299,24 @@ struct JsonString : Json
     { os << toStr (s); }
 
   const JsonString* asJsonString () const
+    { return this; }  
+};
+
+
+struct JsonBoolean : Json
+{
+  bool b;
+
+  JsonBoolean (bool b_arg,
+               JsonContainer* parent,
+               const string& name = noString)
+    : Json (parent, name)
+    , b (b_arg)
+    {}
+  void print (ostream& os) const
+    { os << (b ? "true" : "false"); }
+
+  const JsonBoolean* asJsonBoolean () const
     { return this; }  
 };
 
