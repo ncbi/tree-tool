@@ -789,18 +789,6 @@ public:
   Vector (initializer_list<T> init)
     : P (init)
     {}
-/*static Vector<T> make (T a)
-    { Vector<T> v (1);
-      v [0] = a;
-      return v; 
-    }
-  static Vector<T> make (T a,
-                         T b)
-    { Vector<T> v (2);
-      v [0] = a;
-      v [1] = b;
-      return v; 
-    }*/
 	
 	
   bool find (const T &value,
