@@ -2266,7 +2266,11 @@ struct JsonDouble : Json
     , decimals (decimals_arg)
     {}
   void print (ostream& os) const
-    { os << fixed; os. precision ((streamsize) decimals); os << n; }
+    { if (n == n)
+      { os << fixed; os. precision ((streamsize) decimals); os << n; }
+      else
+        os << "null";  // NAN
+    }      
 
   const JsonDouble* asJsonDouble () const
     { return this; }  
