@@ -586,6 +586,22 @@ template <typename T> bool Singleton<T>::beingRun = false;
 
 
 
+template <typename T>
+  class Keep : Nocopy
+  {
+    T* ptr;
+    const T t;
+  public:
+    explicit Keep (T &t_arg)
+      : ptr (& t_arg)
+      , t (t_arg)
+      {}
+   ~Keep ()
+      { *ptr = t; }
+  };
+
+
+
 struct Json;
 struct JsonContainer;
 
