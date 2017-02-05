@@ -2652,86 +2652,85 @@ void exec (const string &cmd)
 
 // Application
 
-void Application::addKey (const string &key, 
-                          const string &defValue)
+Application::Arg::Arg (const string &name_arg,
+                       const string &description_arg)
+: Named (name_arg)
+, description (description_arg)
 {
-  ASSERT (! key. empty ());
-  ASSERT (! contains (keyArgs, key));
-  ASSERT (! contains (flagArgs, key));
-  ASSERT (! positionalArgs. contains (key));
-  keyArgs [key] = defValue;
+  trim (name);
+  ASSERT (! name. empty ());
+  ASSERT (! contains (name, ' '));
+  
+  ASSERT (! description. empty ());
 }
 
 
 
-void Application::addFlag (const string &flag)
+void Application::Key::saveText (ostream &os) const
 {
-  ASSERT (! flag. empty ());
-  ASSERT (! contains (keyArgs, flag));
-  ASSERT (! contains (flagArgs, flag));
-  ASSERT (! positionalArgs. contains (flag));
-  flagArgs [flag] = false;
+  os << "[-" << name; 
+  if (! flag)
+  {
+    os << " ";
+    const bool quoted = value. empty () || contains (value, ' ');
+    if (quoted)
+      os << "\"";
+    os << value;
+    if (quoted)
+      os << "\"";
+  }
+  os << "]";
 }
 
 
 
-void Application::addPositional (const string &positional)
+void Application::addKey (const string &name, 
+                          const string &argDescription,
+                          const string &defaultValue)
 {
-  ASSERT (! positional. empty ());
-  ASSERT (! contains (keyArgs, positional));
-  ASSERT (! contains (flagArgs, positional));
-  ASSERT (! positionalArgs. contains (positional));
-  positionalArgs << positional;
+  ASSERT (! contains (args, name));
+  keys << Key (name, argDescription, defaultValue);
+  args [name] = & keys. back ();
 }
 
 
 
-void Application::setKey (const string &key, 
-                          const string &value)
+void Application::addFlag (const string &name,
+                           const string &argDescription)
 {
-  if (! contains (keyArgs, key))
-    errorExitStr ("Unknown key: " + key + "\n" + getInstruction ());
-  keyArgs [key] = value;
+  ASSERT (! contains (args, name));
+  keys << Key (name, argDescription);
+  args [name] = & keys. back ();
 }
 
 
 
-void Application::setFlag (const string &flag)
+void Application::addPositional (const string &name,
+                                 const string &argDescription)
 {
-  if (! contains (flagArgs, flag))
-    errorExitStr ("Unknown flag: " + flag + "\n" + getInstruction ());
-  flagArgs [flag] = true;
+  ASSERT (! contains (args, name));
+  positionals << Positional (name, argDescription);
+  args [name] = & positionals. back ();
 }
 
 
 
-void Application::setPositional (const string &value)
+string Application::getArg (const string &name) const
 {
-  if (positionalValues. size () >= positionalArgs. size ())
-    errorExitStr ("Too many positional arguments\n" + getInstruction ());
-  positionalValues << value;
+  if (contains (args, name))
+    return args. at (name) -> value;
+  throw runtime_error ("Parameter \"" + name + "\" is not found");
 }
 
 
 
-string Application::getArg (const string &arg) const
+bool Application::getFlag (const string &name) const
 {
-  if (contains (keyArgs, arg))
-    return keyArgs. at (arg);
-  size_t index;
-  if (   positionalArgs. find (arg, index)
-      && index < positionalValues. size ()
-     )
-    return positionalValues [index];
-  throw runtime_error ("Argument or key \"" + arg + "\" is not found");
-}
-
-
-
-bool Application::getFlag (const string &flag) const
-{
-  ASSERT (contains (flagArgs, flag));
-  return flagArgs. at (flag);
+  const string value (getArg (name));
+  const Key* key = args. at (name) -> asKey ();
+  if (! key || ! key->flag)
+    throw runtime_error ("Parameter \"" + name + "\" is not a flag");
+  return value == "true";
 }
 
 
@@ -2739,22 +2738,29 @@ bool Application::getFlag (const string &flag) const
 string Application::getInstruction () const
 {
   string instr ("Usage: " + programName);
-  for (const string& s : positionalArgs)
-    instr += " <" + s + ">";
-  for (const auto it : keyArgs)
-  {
-    instr += " [-" + it. first + " "; 
-    const bool quoted = it. second. empty () || contains (it. second, ' ');
-    if (quoted)
-      instr += "\"";
-    instr += it. second;
-    if (quoted)
-      instr += "\"";
-    instr += "]";
-  }
-  for (const auto it : flagArgs)
-    instr += " [-" + it. first + "]";
+  for (const Positional& p : positionals)
+    instr += " " + p. str ();
+  for (const Key& key : keys)
+    instr += " " + key. str ();
+  
+  instr += string ("\n") + "Help:  " + programName + " -help";
 
+  return move (instr);
+}
+
+
+
+string Application::getHelp () const
+{
+  string instr (getInstruction ());
+  instr += "\n" + description;
+  instr += "\nParameters:";
+  const string par ("\n  ");
+  for (const Positional& p : positionals)
+    instr += par + p. str () + ": " + p. description;
+  for (const Key& key : keys)
+    instr += par + key. str () + ": " + key. description;;
+  
   return move (instr);
 }
 
@@ -2770,9 +2776,10 @@ int Application::run (int argc,
     ASSERT (! programArgs. empty ());
   
       
-    // keyArgs, flagArgs
+    // positionals. positionalValues, keys
     bool first = true;
-    string key;
+    posIt = positionals. begin ();
+    Key* key = nullptr;
     for (string s : programArgs)
     {
       if (first)
@@ -2782,34 +2789,41 @@ int Application::run (int argc,
       }
       else
       {
-        if (s. empty ())
-          if (key. empty ())
-            setPositional (s);
+        if (! s. empty () && s [0] == '-')
+        {
+          if (key)
+            errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
+          const string name (s. substr (1));
+          if (name == "help")
+          {
+            cout << getHelp () << endl;
+            exit (1);
+          }
+          if (! contains (args, name))
+            errorExitStr ("Unknown key: " + name + "\n" + getInstruction ());
+          key = const_cast <Key*> (args [name] -> asKey ());
+          if (! key)
+            errorExitStr (name + " is not a key\n" + getInstruction ());
+          if (key->flag)
+          {
+            key->value = "true";
+            key = nullptr;
+          }
+        }
+        else
+          if (key)
+          {
+            ASSERT (! key->flag);
+            key->value = s;
+            key = nullptr;
+          }
           else
           {
-            setKey (key, s);
-            key. clear ();
+            if (posIt == positionals. end ())
+              errorExitStr ("Too many positional arguments\n" + getInstruction ());
+            (*posIt). value = s;
+            posIt++;
           }
-        else
-          if (key. empty ())
-            if (s [0] == '-')
-              key = s. substr (1);
-            else
-              setPositional (s);
-          else
-            if (s [0] == '-')
-            {
-              setFlag (key);
-              if (s == "-")
-                key. clear ();
-              else
-                key = s. substr (1);
-            }
-            else
-            {
-              setKey (key, s);
-              key. clear ();
-            }
       }
       first = false;
     }
@@ -2840,8 +2854,8 @@ int Application::run (int argc,
       exit (1);
     }
     
-    if (positionalValues. size () < positionalArgs. size ())
-      errorExitStr ("Too few positional arguments\n" + getInstruction ());    
+    if (posIt != positionals. end ())
+      errorExitStr ("Too few positional arguments\n" + getInstruction ());
 
 
   	body ();

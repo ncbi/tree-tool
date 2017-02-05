@@ -2490,51 +2490,92 @@ void exec (const string &cmd);
 struct Application : Singleton<Application>, Root
 // Usage: int main (argc, argv) { Application app; return app. run (argc, argv); }
 {  
+  string description;
+  
 private:
-  // arg's are unique
-  Vector<string> positionalArgs;
-  Vector<string> positionalValues;
-    // size() = positionalArgs.size()
-    // Default: string()
-  map<string/*arg*/,string/*value*/> keyArgs;
-  map<string/*arg*/,bool/*value*/> flagArgs;
-    // Default: false
+  struct Positional;  // forward
+  struct Key;         // forward
+  struct Arg : Named
+  {
+    string description;
+      // !empty()
+    string value;
+      // Init: default
+  protected:
+    Arg (const string &name_arg,
+         const string &description_arg);
+  public:
+    virtual const Positional* asPositional () const
+      { return nullptr; }
+    virtual const Key* asKey () const
+      { return nullptr; }
+  };
+  struct Positional : Arg
+  {
+    Positional (const string &name_arg, 
+                const string &description_arg)
+      : Arg (name_arg, description_arg)
+      {}
+    void saveText (ostream &os) const
+      { os << '<' << name << '>'; }
+    const Positional* asPositional () const
+      { return this; }
+  };  
+  struct Key : Arg
+  {
+    bool flag;
+    Key (const string &name_arg,
+         const string &description_arg,
+         const string &defaultValue)
+      : Arg (name_arg, description_arg)
+      , flag (false)
+      { value = defaultValue; }
+    Key (const string &name_arg,
+         const string &description_arg)
+      : Arg (name_arg, description_arg)
+      , flag (true)
+      {}
+    void saveText (ostream &os) const;
+    const Key* asKey () const
+      { return this; }
+  };
+  List<Positional> positionals;
+  List<Key> keys;
+  map<string/*Arg::name*/,Arg*> args;
+  List<Positional>::iterator posIt;
 public:
   
 
 protected:
-  Application ()
-    { addKey ("log");
-      addKey ("verbose", "0");
-      addKey ("json");
-      addFlag ("noprogress");
+  explicit Application (const string &description_arg)
+    : description (description_arg)
+    , posIt (positionals. begin ())
+    { addKey ("verbose", "Level of verbosity", "0");
+      addFlag ("noprogress", "Turn off progress printout");
+      addKey ("json", "Output file in Json format");
+      addKey ("log", "log file");
     }
-    // Invoke: addKey(), addFlag(), addPositional()
-  void addKey (const string &key, 
-               const string &defValue = string ());
-  void addFlag (const string &flag);
-  void addPositional (const string &positional);
+    // To invoke: addKey(), addFlag(), addPositional()
+  void addKey (const string &name, 
+               const string &argDescription,
+               const string &defaultValue = string ());
+  void addFlag (const string &name,
+                const string &argDescription);
+  void addPositional (const string &name,
+                      const string &argDescription);
 public:
 
 
-private:
-  void setKey (const string &key, 
-               const string &value);
-    // Update: keyArgs[key] = value
-  void setFlag (const string &flag);
-    // Update: flagArgs[flag] = true
-  void setPositional (const string &value);
-    // Update: positionalValues << value
 protected:
-  string getArg (const string &arg) const;
-    // Input: keyArgs, positionalArgs, positionalValues
-  bool getFlag (const string &flag) const;
-    // Input: flagArgs
+  string getArg (const string &name) const;
+    // Input: keys, where Key::flag = false, and positionals
+  bool getFlag (const string &name) const;
+    // Input: keys, where Key::flag = true
 public:
   string getInstruction () const;
+  string getHelp () const;
   int run (int argc, 
            const char* argv []);
-    // Update: keyArgs, flagArgs, positionalArgs
     // Invokes: body()
 private:
   virtual void body () const = 0;
