@@ -2737,7 +2737,8 @@ bool Application::getFlag (const string &name) const
 
 string Application::getInstruction () const
 {
-  string instr ("Usage: " + programName);
+  string instr (description);
+  instr += "\nUsage: " + programName;
   for (const Positional& p : positionals)
     instr += " " + p. str ();
   for (const Key& key : keys)
@@ -2753,7 +2754,6 @@ string Application::getInstruction () const
 string Application::getHelp () const
 {
   string instr (getInstruction ());
-  instr += "\n" + description;
   instr += "\nParameters:";
   const string par ("\n  ");
   for (const Positional& p : positionals)

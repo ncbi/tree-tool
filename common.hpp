@@ -2556,13 +2556,17 @@ protected:
       addKey ("log", "log file");
     }
     // To invoke: addKey(), addFlag(), addPositional()
+  // Command-line parameters
   void addKey (const string &name, 
                const string &argDescription,
                const string &defaultValue = string ());
+    // [-<name> <defaultValue>]
   void addFlag (const string &name,
                 const string &argDescription);
+    // [-<name>]
   void addPositional (const string &name,
                       const string &argDescription);
+    // What if it starts with '-' ??
 public:
 
 
