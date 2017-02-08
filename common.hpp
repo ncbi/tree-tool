@@ -670,16 +670,18 @@ public:
 	  : P (t)
 	  {}
 	AutoPtr (const AutoPtr<T> &t) 
-	  : P (t->copy ())
+	  : P (t. copy ())
 	  {}
 	AutoPtr<T>& operator= (T* t)
 	  { P::reset (t);
 	  	return *this;
 	  }
 	AutoPtr<T>& operator= (const AutoPtr<T> &t)
-	  { P::reset (t->copy ());
+	  { P::reset (t. copy ());
 	  	return *this;
 	  }
+	T* copy () const
+	  { return P::get () ? P::get () -> copy () : nullptr; }
 };
 
 
