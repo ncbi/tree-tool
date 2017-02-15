@@ -660,29 +660,29 @@ inline ostream& operator<< (ostream &os,
 
 
 template <typename T /*Root*/> 
-struct AutoPtr : unique_ptr<T>
-{
-private:
-	typedef  unique_ptr<T>  P;
-public:
-
-	explicit AutoPtr (T* t = nullptr) throw ()
-	  : P (t)
-	  {}
-	AutoPtr (const AutoPtr<T> &t) 
-	  : P (t. copy ())
-	  {}
-	AutoPtr<T>& operator= (T* t)
-	  { P::reset (t);
-	  	return *this;
-	  }
-	AutoPtr<T>& operator= (const AutoPtr<T> &t)
-	  { P::reset (t. copy ());
-	  	return *this;
-	  }
-	T* copy () const
-	  { return P::get () ? P::get () -> copy () : nullptr; }
-};
+  struct AutoPtr : unique_ptr<T>
+  {
+  private:
+  	typedef  unique_ptr<T>  P;
+  public:
+  
+  	explicit AutoPtr (T* t = nullptr) throw ()
+  	  : P (t)
+  	  {}
+  	AutoPtr (const AutoPtr<T> &t) 
+  	  : P (t. copy ())
+  	  {}
+  	AutoPtr<T>& operator= (T* t)
+  	  { P::reset (t);
+  	  	return *this;
+  	  }
+  	AutoPtr<T>& operator= (const AutoPtr<T> &t)
+  	  { P::reset (t. copy ());
+  	  	return *this;
+  	  }
+  	T* copy () const
+  	  { return P::get () ? static_cast<T*> (P::get () -> copy ()) : nullptr; }
+  };
 
 
 
