@@ -882,13 +882,14 @@ public:
     { P::push_back (value);
     	return *this;
     }
-  Vector<T>& operator<< (const vector<T> &other)
-    { P::insert (P::end (), other. begin (), other. end ());
-    	return *this;
-    }
+  template <typename U/*:T*/>
+    Vector<T>& operator<< (const vector<U> &other)
+      { P::insert (P::end (), other. begin (), other. end ());
+      	return *this;
+      }
   void setAll (const T &value)
-    { ITER (typename P, it, *this)
-    	  *it = value;
+    { for (T &t : *this)
+    	  t = value;
     }
   void eraseAt (size_t index)
     { eraseMany (index, index + 1); }
@@ -908,8 +909,8 @@ public:
     }
   void randomOrder (ulong seed)
 		{ Rand rand (seed);
-			ITER (typename P, it, *this)
-	      swap (*it, P::at ((size_t) rand. get ((ulong) P::size ())));
+			for (T &t : *this)
+	      swap (t, P::at ((size_t) rand. get ((ulong) P::size ())));
 		}
   void sortBubble ()  
     // Fast if *this is pre-sorted
@@ -972,8 +973,9 @@ public:
 
   VectorPtr<T>& operator<< (const T* value)
     { return static_cast <VectorPtr<T>&> (P::operator<< (value)); }
-  VectorPtr<T>& operator<< (const vector<const T*> &other)
-    { return static_cast <VectorPtr<T>&> (P::operator<< (other)); }
+  template <typename U/*:T*/>
+    VectorPtr<T>& operator<< (const vector<const U*> &other)
+      { return static_cast <VectorPtr<T>&> (P::operator<< (other)); }
 	void deleteData ()
 	  {	CONST_ITER (typename P, it, *this)
 			  delete *it;
