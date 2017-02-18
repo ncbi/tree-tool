@@ -273,6 +273,16 @@ public:
     { P::push_back (t); 
     	return *this;
     }    
+  template <typename U/*:<T>*/>
+    List<T>& operator<< (const list<U> &other)
+      { P::insert (P::end (), other. begin (), other. end ());
+      	return *this;
+      }
+  template <typename U/*:<T>*/>
+    List<T>& operator<< (const vector<U> &other)
+      { P::insert (P::end (), other. begin (), other. end ());
+      	return *this;
+      }
   T popFront ()
     { const T t = P::front ();
       P::pop_front ();
@@ -882,8 +892,13 @@ public:
     { P::push_back (value);
     	return *this;
     }
-  template <typename U/*:T*/>
+  template <typename U/*:<T>*/>
     Vector<T>& operator<< (const vector<U> &other)
+      { P::insert (P::end (), other. begin (), other. end ());
+      	return *this;
+      }
+  template <typename U/*:<T>*/>
+    Vector<T>& operator<< (const list<U> &other)
       { P::insert (P::end (), other. begin (), other. end ());
       	return *this;
       }
