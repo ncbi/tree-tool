@@ -136,7 +136,7 @@ uint powInt (uint a,
 		if (b)
 			return 0;
 		else
-			throw logic_error ("powInt: 0^0");
+			throw runtime_error ("powInt: 0^0");
 }
 
 
