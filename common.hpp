@@ -236,6 +236,12 @@ public:
 
 	List ()
 	  {}
+  template <typename U/*:<T>*/>
+    explicit List (const list<U> &other)
+      { *this << other; }
+  template <typename U/*:<T>*/>
+    explicit List (const vector<U> &other)
+      { *this << other; }
 	  
 	T at (size_t index) const
 	  { size_t i = 0;
