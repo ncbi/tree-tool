@@ -998,8 +998,8 @@ public:
     VectorPtr<T>& operator<< (const vector<const U*> &other)
       { return static_cast <VectorPtr<T>&> (P::operator<< (other)); }
 	void deleteData ()
-	  {	CONST_ITER (typename P, it, *this)
-			  delete *it;
+	  {	for (const T* t : *this)
+			  delete t;
 			P::clear ();  
 	  }
   void erasePtr (size_t index)
@@ -1036,8 +1036,8 @@ public:
 	VectorOwn<T>& operator= (const VectorOwn<T> &x)
 	  { P::deleteData ();
 	  	P::reserve (x. size ());
-	  	CONST_ITER (typename P, it, x)
-	  	  P::push_back (static_cast <const T*> ((*it)->copy ()));
+	  	for (const T* t : x)
+	  	  P::push_back (static_cast <const T*> (t->copy ()));
 	  	return *this;
 	  }
  ~VectorOwn ()
