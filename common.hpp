@@ -623,6 +623,10 @@ struct JsonContainer;
 
 
 
+class Notype {};
+
+
+
 struct Root
 {
 protected:
