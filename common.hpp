@@ -977,10 +977,16 @@ public:
 	  : P ()
 	  { *this = x; }
 	template <typename U>
-  	VectorPtr (const VectorPtr<U> &x)
+  	VectorPtr (const vector<const U*> &other)
   	  : P ()
-  	  { P::reserve (x. size ());
-  	    insertAll (*this, x);
+  	  { P::reserve (other. size ());
+  	    insertAll (*this, other);
+  	  }	  
+	template <typename U>
+  	VectorPtr (const list<const U*> &other)
+  	  : P ()
+  	  { P::reserve (other. size ());
+  	    insertAll (*this, other);
   	  }	  
   static VectorPtr<T> make (const T* a)
     { VectorPtr<T> v (1);
@@ -1000,7 +1006,14 @@ public:
     { return static_cast <VectorPtr<T>&> (P::operator<< (value)); }
   template <typename U/*:T*/>
     VectorPtr<T>& operator<< (const vector<const U*> &other)
-      { return static_cast <VectorPtr<T>&> (P::operator<< (other)); }
+      { insertAll (*this, other);
+        return *this;
+      }
+  template <typename U/*:T*/>
+    VectorPtr<T>& operator<< (const list<const U*> &other)
+      { insertAll (*this, other);
+        return *this;
+      }
 	void deleteData ()
 	  {	for (const T* t : *this)
 			  delete t;
