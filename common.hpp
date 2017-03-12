@@ -1709,8 +1709,8 @@ struct Tree : DiGraph
     const Node* getOtherChild (const Node* child) const;
       // Return: May be nullptr; != child
       // Requires: getChildren().size() <= 2
-    const Node* leftmostDescendent () const;
-    const Node* rightmostDescendent () const;
+    const Node* getLeftmostDescendent () const;
+    const Node* getRightmostDescendent () const;
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()

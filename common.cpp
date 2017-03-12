@@ -1585,7 +1585,7 @@ const Tree::Node* Tree::Node::getOtherChild (const Node* child) const
 
 
 
-const Tree::Node* Tree::Node::leftmostDescendent () const
+const Tree::Node* Tree::Node::getLeftmostDescendent () const
 {
   const Node* n = this;
   while (! n->isLeaf ())
@@ -1595,7 +1595,7 @@ const Tree::Node* Tree::Node::leftmostDescendent () const
 
 
 
-const Tree::Node* Tree::Node::rightmostDescendent () const
+const Tree::Node* Tree::Node::getRightmostDescendent () const
 {
   const Node* n = this;
   while (! n->isLeaf ())
@@ -1979,13 +1979,14 @@ bool Tree::compare_std (const DiGraph::Node* a,
 	ASSERT (a);
 	ASSERT (b);
 	ASSERT (a->graph == b->graph);
-	const size_t aSize = static_cast <const Node*> (a) -> getLeavesSize ();
-	const size_t bSize = static_cast <const Node*> (b) -> getLeavesSize ();
-	if (aSize > bSize)
-		return true;
-	if (aSize < bSize)
-		return false;
-  return a->getName () < b->getName ();
+	const Node* a_ = static_cast <const Node*> (a);
+	const Node* b_ = static_cast <const Node*> (b);
+
+	LESS_PART (*b_, *a_, getLeavesSize ());
+  LESS_PART (*a_, *b_, getLeftmostDescendent  () -> getName ());
+  LESS_PART (*a_, *b_, getRightmostDescendent () -> getName ());
+
+  return false;
 }
 
 
