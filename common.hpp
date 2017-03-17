@@ -77,7 +77,7 @@ template <typename T>
 
 typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
-typedef  long int       lint;
+//typedef  long int       lint;
 
 
 
