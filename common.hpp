@@ -77,7 +77,6 @@ template <typename T>
 
 typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
-//typedef  long int       lint;
 
 
 
@@ -519,6 +518,11 @@ string getToken (istream &is,
 
 inline void pressAnyKey ()
   { cout << "Press any key..."; char c; cin >> c; }
+
+
+
+inline uint double2decimals (double r)
+  { return max<uint> (0, (uint) (ceil (- log10 (r)))); }
 
 
 
@@ -2321,8 +2325,9 @@ struct JsonDouble : Json
               const string& name = noString)
     : Json (parent, name)
     , n (n_arg)
-    , decimals (decimals_arg)
+    , decimals (decimals_arg == numeric_limits<uint>::max() ? double2decimals (n_arg) : decimals_arg)
     {}
+    // decimals_arg = -1: default
   void print (ostream& os) const
     { if (n == n)
       { os << fixed; os. precision ((streamsize) decimals); os << n; }
