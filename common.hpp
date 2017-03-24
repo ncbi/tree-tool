@@ -522,7 +522,7 @@ inline void pressAnyKey ()
 
 
 inline uint double2decimals (double r)
-  { return max<uint> (0, (uint) (ceil (- log10 (r)))); }
+  { return r ? (uint) max<long> (0, (long) (ceil (- log10 (abs (r)) + 1))) : 0; }
 
 
 
