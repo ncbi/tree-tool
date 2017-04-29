@@ -1926,16 +1926,13 @@ Set<const Tree::Node*> Tree::getParents (const VectorPtr<Node> &nodeVec)
 {
 	Set<const Node*> s;  
   const Node* lca = getLowestCommonAncestor (nodeVec);
-  CONST_ITER (VectorPtr<Node>, it, nodeVec)
-  {
-	  const Node* n = *it;
+  for (const Node* n : nodeVec)
 	  while (n != lca)
 	  {
 	  	ASSERT (n);
 		  s << n;
 		  n = n->getParent ();
 		}
-	}
 
 	return move (s);
 }
