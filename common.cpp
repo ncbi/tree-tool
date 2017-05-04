@@ -1378,8 +1378,8 @@ void Tree::Node::saveText (ostream &os) const
 
   
   bool saveSubtreeP = false;
-	CONST_ITER (List<Arc*>, it, arcs [false])
-	  if (static_cast <Node*> ((*it)->node [false]) -> getSaveSubtreeP ())
+	for (const Arc* arc : arcs [false])
+	  if (static_cast <const Node*> (arc->node [false]) -> getSaveSubtreeP ())
 	  {
 	    saveSubtreeP = true;
 	    break;
@@ -1388,10 +1388,10 @@ void Tree::Node::saveText (ostream &os) const
   if (saveSubtreeP)
   {
   	Offset ofs;
-  	CONST_ITER (List<Arc*>, it, arcs [false])
+  	for (const Arc* arc : arcs [false])
   	{ 
   		Offset::newLn (os);
-  	  static_cast <Node*> ((*it)->node [false]) -> saveText (os);
+  	  static_cast <Node*> (arc->node [false]) -> saveText (os);
   	}
   }
   else
@@ -1412,9 +1412,9 @@ void Tree::Node::printNewick_ (ostream &os,
 	{
 		os << "(";
 		bool first = true;
-		CONST_ITER (List<Arc*>, it, arcs [false])
+		for (const Arc* arc : arcs [false])
 		{
-			const Node* n = static_cast <Node*> ((*it)->node [false]);
+			const Node* n = static_cast <Node*> (arc->node [false]);
 			if (! first)
 			  os << ",";
 			n->printNewick_ (os, internalNames);
@@ -1837,6 +1837,37 @@ void Tree::printAsn (ostream &os) const
   }\n\
 }\n\
 ";
+}
+
+
+
+void Tree::printArcLengths (ostream &os) const
+{
+  for (const DiGraph::Node* n : nodes)
+  {
+    const Node* node = static_cast <const Node*> (n);
+    if (n == root)
+      continue;
+  	const double dist = node->getParentDistance ();
+  	if (dist == dist && dist != -1 && dist > 0)
+  	{
+  		os << fixed << dist;  
+  		double distPar = 0;
+      if (const Node* parent = node->getParent ())
+        if (parent != root)
+        {
+        	distPar = parent->getParentDistance ();
+        	if (distPar == distPar && distPar != -1)
+        	{
+        	  ASSERT (distPar > 0);
+        	  os << " " << fixed << log (distPar) - log (dist); 
+        	}
+        }
+      if (! distPar)
+     	  os << " ?";
+      os << endl;
+    }
+  }  
 }
 
 

@@ -1786,6 +1786,8 @@ struct Tree : DiGraph
 
   void printAsn (ostream &os) const;	
     // http://www.ncbi.nlm.nih.gov/tools/treeviewer/biotreecontainer/
+  void printArcLengths (ostream &os) const;
+    // Requires: getParentDistane() > 0 for all nodes except root
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
     // Return: nullptr <=> !n1 || !n2
