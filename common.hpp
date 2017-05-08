@@ -245,17 +245,17 @@ public:
 	  
 	T at (size_t index) const
 	  { size_t i = 0;
-	  	CONST_ITER (typename List<T>, it, *this)
+	  	for (const T& t : *this)
 	  	  if (i == index)
-	  	  	return *it;
+	  	  	return t;
 	  	  else
 	  	  	i++;
 	  	throw runtime_error ("List index is out of range");
 	  }
 	size_t find (const T &t) const
 	  { size_t i = 0;
-	  	CONST_ITER (typename List<T>, it, *this)
-	  	  if (*it == t)
+	  	for (const T& item : *this)
+	  	  if (item == t)
 	  	  	return i;
 	  	  else
 	  	  	i++;
@@ -1360,8 +1360,8 @@ public:
 			if (universal)
 				return other. size ();
 		  size_t n = 0;
-		  CONST_ITER (typename Set<T>, it, *this)
-				if (other. contains (*it))
+		  for (const T& t : *this)
+				if (other. contains (t))
 					n++;
 			return n;
 		}
@@ -1373,8 +1373,7 @@ public:
     		P::clear ();
     	}
     	else
-	    //CONST_ITER (typename Set<T>, it, other)
-	    	for (const T t : other)
+	    	for (const T& t : other)
 	        n += P::erase (t);
       return n;
     }
@@ -1616,6 +1615,7 @@ public:
 
 
 struct Tree : DiGraph
+// Parent <=> out = true
 {
 	struct Node : DiGraph::Node
 	{
@@ -1683,6 +1683,11 @@ struct Tree : DiGraph
 		  }
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
+	  double getRootDistance () const
+		  { if (const Node* parent_ = getParent ())
+		  		return parent_->getRootDistance () + getParentDistance ();
+		  	return 0;
+		  }
 		bool descendentOf (const Node* ancestor) const
 		  { if (! ancestor)
 		  	  return true;
@@ -1716,6 +1721,8 @@ struct Tree : DiGraph
       // Requires: getChildren().size() <= 2
     const Node* getLeftmostDescendent () const;
     const Node* getRightmostDescendent () const;
+    string getLcaName () const
+      { return getLeftmostDescendent () -> getName () + "-" + getRightmostDescendent () -> getName (); }
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()
@@ -1763,8 +1770,8 @@ struct Tree : DiGraph
     	void sort (const Compare &compare)
   			{ VectorPtr<DiGraph::Node> children (getChildren ());
   				Common_sp::sort (children, compare);
-  				CONST_ITER (VectorPtr<DiGraph::Node>, it, children)
-  				{	Node* s = const_static_cast <Node*> (*it);
+  				for (const DiGraph::Node* child : children)
+  				{	Node* s = const_static_cast <Node*> (child);
   					s->setParent (const_cast <Node*> (s->getParent ()));  // To reorder arcs[false]
   				  s->sort (compare);
   				}
@@ -1788,7 +1795,8 @@ struct Tree : DiGraph
   void printAsn (ostream &os) const;	
     // http://www.ncbi.nlm.nih.gov/tools/treeviewer/biotreecontainer/
   void printArcLengths (ostream &os) const;
-    // Requires: getParentDistane() > 0 for all nodes except root
+    // Output: os: <arc length> <log(<parent arc length>/<arc length>)
+    // Requires: getParentDistance() > 0 for all nodes except root
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
     // Return: nullptr <=> !n1 || !n2
@@ -2146,7 +2154,7 @@ struct OFStream : ofstream
 template <typename T>
   OFStream& operator<< (OFStream &ofs,
                         const List<T> &ts)
-    { for (auto& t : ts)
+    { for (const auto& t : ts)
         ofs << t << endl;
       return ofs;
     }
@@ -2155,7 +2163,7 @@ template <typename T>
 template <typename T>
   OFStream& operator<< (OFStream &ofs,
                         const Vector<T> &ts)
-    { for (auto& t : ts)
+    { for (const auto& t : ts)
         ofs << t << endl;
       return ofs;
     }

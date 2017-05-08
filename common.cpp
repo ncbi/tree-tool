@@ -926,11 +926,11 @@ void DiGraph::Node::saveText (ostream &os) const
   FOR (unsigned char, i, 2)
   {
     os << "  " << (i ? "Out" : "In") << ":" << endl;
-    CONST_ITER (List<Arc*>, it, arcs [i])
+    for (const Arc* arc : arcs [i])
     {
-      os << "    " << (*it)->node [i] -> getName ();
+      os << "    " << arc->node [i] -> getName ();
       os << ": ";
-      (*it)->saveContent (os);
+      arc->saveContent (os);
       os << endl;
     }
   }
@@ -944,8 +944,8 @@ bool DiGraph::Node::isIncident (const DiGraph::Node* n,
 	ASSERT (n);
 	ASSERT (n->graph == graph);
 
-  CONST_ITER (List<Arc*>, it, arcs [out])
-    if ((*it)->node [out] == n)
+  for (const Arc* arc : arcs [out])
+    if (arc->node [out] == n)
     	return true;
   return false;
 }
@@ -955,8 +955,8 @@ bool DiGraph::Node::isIncident (const DiGraph::Node* n,
 VectorPtr<DiGraph::Node> DiGraph::Node::getNeighborhood (bool out) const
 {
 	VectorPtr<Node> s;  s. reserve (arcs [out]. size ());
-  CONST_ITER (List<Arc*>, it, arcs [out])
-    s << (*it)->node [out];
+  for (const Arc* arc : arcs [out])
+    s << arc->node [out];
 	return s;
 }
 
@@ -1016,8 +1016,8 @@ DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
 
   scc = this;
 
-  ITER (List<Arc*>, it, arcs [true])
-    if (Node* lowNode = (*it)->node [true] -> setScc (visitedNum, sccStack))
+  for (Arc* arc : arcs [true])
+    if (Node* lowNode = arc->node [true] -> setScc (visitedNum, sccStack))
       if (lowNode->orderDfs < scc->orderDfs)
         scc = lowNode;
 
@@ -1059,8 +1059,8 @@ void DiGraph::Node::contract (Node* from)
   FOR (unsigned char, i, 2)
   {  
     map <Node*, Arc*> m;
-    CONST_ITER (List<Arc*>, it, arcs [i])
-      m [(*it)->node [i]] = *it;
+    for (Arc* arc : arcs [i])
+      m [arc->node [i]] = arc;
 
   #if 1      
     for (Iter <List<Arc*> > iter (from->arcs [i]); iter. next (); )
@@ -1159,18 +1159,18 @@ void DiGraph::init (const DiGraph &other,
 {
   ASSERT (old2new. empty ());
 
-  CONST_ITER (List<Node*>, nodeIt, other. nodes)
+  for (const Node* node : other. nodes)
   {
-  	Node* n = (*nodeIt)->copy ();
+  	Node* n = node->copy ();
   	n->attach (*this);
-  	old2new [*nodeIt] = n;
+  	old2new [node] = n;
   } 
   ASSERT (old2new. size () == other. nodes. size ());
 
 
-  CONST_ITER (List<Node*>, nodeIt, other. nodes)
+  for (const Node* node : other. nodes)
   {
-  	Node* n = old2new [*nodeIt];
+  	Node* n = old2new [node];
   	ASSERT (n);
   	
   	EXEC_ASSERT (n->parentDC = old2new [static_cast <Node*> (n->parentDC)]);
@@ -1181,10 +1181,10 @@ void DiGraph::init (const DiGraph &other,
 	  	ASSERT (n->scc);
 	  }
   	
-	  CONST_ITER (List<Arc*>, arcIt, (*nodeIt)->arcs [true])
+	  for (const Arc* arc : node->arcs [true])
 	  {
-	  	Arc* a = (*arcIt)->copy ();
-	  	a->attach (n, old2new [(*arcIt)->node [true]]);
+	  	Arc* a = arc->copy ();
+	  	a->attach (n, old2new [arc->node [true]]);
 	  }
   }   
 }
@@ -1210,7 +1210,6 @@ void DiGraph::qc () const
   Set<const Arc*> arcs_ [2];
   Set<string> names;
   size_t arcs = 0;
-//CONST_ITER (List<Node*>, nodeIt, nodes)
   for (const Node* node : nodes)
   {
     ASSERT (node);
@@ -1218,15 +1217,15 @@ void DiGraph::qc () const
     nodes_ << node;
     node->qc ();
     FOR (unsigned char, i, 2)
-      CONST_ITER (List<Arc*>, arcIt, node->arcs [i])
+      for (const Arc* arc : node->arcs [i])
       {
-        ASSERT (*arcIt);
-        arcs_ [i] << *arcIt;
+        ASSERT (arc);
+        arcs_ [i] << arc;
         arcs++;
         if (i)
         {
     	  	Unverbose unv;
-          (*arcIt)->qc ();
+          arc->qc ();
         }
       }
     if (names. contains (node->getName ()))
@@ -1273,12 +1272,11 @@ void DiGraph::scc ()
   vector<Node*> vec (nodes. size ());
   vec. clear ();
   stack<Node*, vector<Node*> > sccStack (vec);
-  ITER (List<Node*>, it, nodes)
+  for (Node* node : nodes)
   {
-    Node* n = *it;
-  //os << n->getName ();  
-    if (! n->orderDfs)
-      n->setScc (visitedNum, sccStack);
+  //os << node->getName ();  
+    if (! node->orderDfs)
+      node->setScc (visitedNum, sccStack);
     ASSERT (sccStack. empty ());
   }
 }
@@ -1317,9 +1315,9 @@ void DiGraph::contractScc ()
 Set<const DiGraph::Node*> DiGraph::getEnds (bool out) const
 {
   Set<const Node*> s;
-  CONST_ITER (List<Node*>, it, nodes)
-    if ((*it)->arcs [out]. empty ())
-      s << *it;
+  for (const Node* node : nodes)
+    if (node->arcs [out]. empty ())
+      s << node;
   return s;
 }
 
@@ -1500,8 +1498,8 @@ Tree::Node::TipName Tree::Node::getTipName () const
 size_t Tree::Node::getHeight () const
 {
   size_t n = 0;
-	CONST_ITER (List<Arc*>, it, arcs [false])
-	  maximize (n, 1 + static_cast <Node*> ((*it)->node [false]) -> getHeight ());
+	for (const Arc* arc : arcs [false])
+	  maximize (n, 1 + static_cast <Node*> (arc->node [false]) -> getHeight ());
 	return n;
 }
 
@@ -1510,8 +1508,8 @@ size_t Tree::Node::getHeight () const
 size_t Tree::Node::getSubtreeSize () const
 {
 	size_t n = 0;
-	CONST_ITER (List<Arc*>, it, arcs [false])
-	  n += 1 + static_cast <Node*> ((*it)->node [false]) -> getSubtreeSize ();
+	for (const Arc* arc : arcs [false])
+	  n += 1 + static_cast <Node*> (arc->node [false]) -> getSubtreeSize ();
 	return n;
 }
 
@@ -1520,8 +1518,8 @@ size_t Tree::Node::getSubtreeSize () const
 size_t Tree::Node::getLeavesSize () const
 {
 	size_t n = 0;
-	CONST_ITER (List<Arc*>, it, arcs [false])
-	  n += static_cast <Node*> ((*it)->node [false]) -> getLeavesSize ();
+	for (const Arc* arc : arcs [false])
+	  n += static_cast <Node*> (arc->node [false]) -> getLeavesSize ();
 	return max<size_t> (n, 1);
 }
 
@@ -1532,8 +1530,8 @@ void Tree::Node::getLeaves (VectorPtr<Node> &leaves) const
   if (arcs [false]. empty ())
     leaves << this;
   else
-  	CONST_ITER (List<Arc*>, it, arcs [false])
-  	  static_cast <Node*> ((*it)->node [false]) -> getLeaves (leaves);
+  	for (const Arc* arc : arcs [false])
+  	  static_cast <Node*> (arc->node [false]) -> getLeaves (leaves);
 }
 
 
@@ -1542,10 +1540,10 @@ const Tree::Node* Tree::Node::getClosestLeaf (size_t &leafDepth) const
 {
 	const Node* leaf = nullptr;
   leafDepth = SIZE_MAX;
-	CONST_ITER (List<Arc*>, it, arcs [false])
+	for (const Arc* arc : arcs [false])
 	{
 		size_t depth1;
-		const Node* leaf1 = static_cast <Node*> ((*it)->node [false]) -> getClosestLeaf (depth1);
+		const Node* leaf1 = static_cast <Node*> (arc->node [false]) -> getClosestLeaf (depth1);
 		if (minimize (leafDepth, depth1))
 			leaf = leaf1;
 	}
@@ -1571,9 +1569,9 @@ const Tree::Node* Tree::Node::getOtherChild (const Node* child) const
   ASSERT (child->getParent () == this);
 
   const Node* otherChild = nullptr;
-	CONST_ITER (List<Arc*>, it, arcs [false])
+	for (const Arc* arc : arcs [false])
 	{
-		const Node* n = static_cast <Node*> ((*it)->node [false]);
+		const Node* n = static_cast <Node*> (arc->node [false]);
 	  if (n != child)
 	  {
 	  	ASSERT (! otherChild);
@@ -1613,9 +1611,9 @@ const Tree::Node* Tree::Node::getRightmostDescendent () const
 void Tree::Node::childrenUp ()
 {
   const VectorPtr<DiGraph::Node> children (getChildren ());
-	CONST_ITER (VectorPtr<DiGraph::Node>, it, children)
+	for (const DiGraph::Node* node : children)
 	{	
-		Node* n = const_static_cast <Node*> (*it);
+		Node* n = const_static_cast <Node*> (node);
 		n->setParent (const_cast <Node*> (getParent ()));  
 	}
 	ASSERT (isLeaf ());
@@ -1638,8 +1636,8 @@ void Tree::Node::isolateChildrenUp ()
 
 void Tree::Node::deleteSubtree ()
 {
-	CONST_ITER (List<DiGraph::Arc*>, it, arcs [false])
-		static_cast <Node*> ((*it)->node [false]) -> deleteSubtree ();
+	for (const DiGraph::Arc* arc : arcs [false])
+		static_cast <Node*> (arc->node [false]) -> deleteSubtree ();
 	while (! arcs [false]. empty ())
 	{
 		Node* n = static_cast <Node*> (arcs [false]. front() -> node [false]);
@@ -1688,9 +1686,9 @@ void Tree::Node::getArea_ (uint distance,
       parent_->getArea_ (distance - 1, this, area, boundary);
       degree++;
     }
-    CONST_ITER (List<Arc*>, it, arcs [false])
+    for (const Arc* arc : arcs [false])
     {
-      const Node* child = static_cast <Node*> ((*it)->node [false]);
+      const Node* child = static_cast <Node*> (arc->node [false]);
       if (child != prev)
       {
         child->getArea_ (distance - 1, this, area, boundary);
@@ -1851,7 +1849,7 @@ void Tree::printArcLengths (ostream &os) const
   	const double dist = node->getParentDistance ();
   	if (dist == dist && dist != -1 && dist > 0)
   	{
-  		os << fixed << dist;  
+  		os << node->getLcaName () << " " << dist << " " << node->getRootDistance ();
   		double distPar = 0;
       if (const Node* parent = node->getParent ())
         if (parent != root)
@@ -1860,7 +1858,7 @@ void Tree::printArcLengths (ostream &os) const
         	if (distPar == distPar && distPar != -1)
         	{
         	  ASSERT (distPar > 0);
-        	  os << " " << fixed << log (distPar) - log (dist); 
+        	  os << " " << log (distPar) - log (dist);
         	}
         }
       if (! distPar)
@@ -2567,12 +2565,12 @@ void JsonArray::print (ostream& os) const
 { 
   os << "[";
   bool first = true;
-  CONST_ITER (VectorOwn <Json>, it, data)
+  for (const Json* j : data)
   {
-    ASSERT (*it);
+    ASSERT (j);
     if (! first)
       os << ",";
-    (*it)->print (os);
+    j->print (os);
     first = false;
   }
   os << "]";
@@ -2629,8 +2627,8 @@ void JsonMap::parse (istream& is)
 
 JsonMap::~JsonMap ()
 { 
-  CONST_ITER (Map, it, data)
-    delete it->second;
+  for (auto it : data)
+    delete it. second;
 }
 
 
@@ -2639,12 +2637,12 @@ void JsonMap::print (ostream& os) const
 { 
   os << "{";
   bool first = true;
-  CONST_ITER (Map, it, data)
+  for (const auto it : data)
   {
     if (! first)
       os << ",";
-    os << toStr (it->first) << ":";
-    const Json* j = it->second;
+    os << toStr (it. first) << ":";
+    const Json* j = it. second;
     ASSERT (j);
     j->print (os);
     first = false;
