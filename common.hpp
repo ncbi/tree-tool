@@ -1957,9 +1957,12 @@ struct LineInput : Input
 	  	}
 	  	return s;
 	  }
-	void setVector (Vector<string> &vec)
-	  { while (nextLine () && ! line. empty ())
-	  	  vec << line;
+	Vector<string> getVector ()
+	  { Vector<string> vec;
+	    while (nextLine ())
+	      if (! line. empty ())
+	  	    vec << line;
+	  	return move (vec);
 	  }
 };
 	
