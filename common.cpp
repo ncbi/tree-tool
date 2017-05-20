@@ -879,8 +879,8 @@ void DiGraph::Node::attach (DiGraph &graph_arg)
 {
   ASSERT (! graph);
 #ifndef NDEBUG
-	FOR (unsigned char, i, 2)
-	  ASSERT (arcs [i]. empty ());
+	for (const bool b : Bool)
+	  ASSERT (arcs [b]. empty ());
 #endif
   
   graph = & graph_arg;
@@ -893,8 +893,8 @@ void DiGraph::Node::attach (DiGraph &graph_arg)
 
 DiGraph::Node::~Node ()
 {
-  FOR (unsigned char, i, 2)
-    deleteNeighborhood (i);
+	for (const bool b : Bool)
+    deleteNeighborhood (b);
   if (graph)
     const_cast <DiGraph*> (graph) -> nodes. erase (graphIt);
 }
@@ -923,12 +923,12 @@ void DiGraph::Node::saveText (ostream &os) const
   }
 
   os << endl;  
-  FOR (unsigned char, i, 2)
+	for (const bool b : Bool)
   {
-    os << "  " << (i ? "Out" : "In") << ":" << endl;
-    for (const Arc* arc : arcs [i])
+    os << "  " << (b ? "Out" : "In") << ":" << endl;
+    for (const Arc* arc : arcs [b])
     {
-      os << "    " << arc->node [i] -> getName ();
+      os << "    " << arc->node [b] -> getName ();
       os << ": ";
       arc->saveContent (os);
       os << endl;
@@ -1056,45 +1056,45 @@ void DiGraph::Node::contract (Node* from)
   
   contractContent (from);
 
-  FOR (unsigned char, i, 2)
+	for (const bool b : Bool)
   {  
     map <Node*, Arc*> m;
-    for (Arc* arc : arcs [i])
-      m [arc->node [i]] = arc;
+    for (Arc* arc : arcs [b])
+      m [arc->node [b]] = arc;
 
   #if 1      
-    for (Iter <List<Arc*> > iter (from->arcs [i]); iter. next (); )
+    for (Iter <List<Arc*> > iter (from->arcs [b]); iter. next (); )
     {
       Arc* arc = *iter;
-      if (m. find (arc->node [i]) == m. end ())
+      if (m. find (arc->node [b]) == m. end ())
       {
         iter. erase ();
-        arc->node [! i] = this;
-        arcs [i]. push_back (arc);
-        arc->arcsIt [! i] = arcs [i]. end ();
-        arc->arcsIt [! i] --;
+        arc->node [! b] = this;
+        arcs [b]. push_back (arc);
+        arc->arcsIt [! b] = arcs [b]. end ();
+        arc->arcsIt [! b] --;
       }
       else
-        m [arc->node [i]] -> contractContent (arc);
+        m [arc->node [b]] -> contractContent (arc);
     }
   #else
-    List<Arc*>::iterator it = from->arcs [i]. begin ();
-    while (it != from->arcs [i]. end ())
+    List<Arc*>::iterator it = from->arcs [b]. begin ();
+    while (it != from->arcs [b]. end ())
     {
       List<Arc*>::iterator next = it;
       next++;
       
       Arc* arc = *it;
-      if (m. find (arc->node [i]) == m. end ())
+      if (m. find (arc->node [b]) == m. end ())
       {
-        from->arcs [i]. erase (it);
-        arc->node [! i] = this;
-        arcs [i]. push_back (arc);
-        arc->arcsIt [! i] = arcs [i]. end ();
-        arc->arcsIt [! i] --;
+        from->arcs [b]. erase (it);
+        arc->node [! b] = this;
+        arcs [b]. push_back (arc);
+        arc->arcsIt [! b] = arcs [b]. end ();
+        arc->arcsIt [! b] --;
       }
       else
-        m [arc->node [i]] -> contractContent (arc);
+        m [arc->node [b]] -> contractContent (arc);
         
       it = next;
     }
@@ -1109,8 +1109,8 @@ void DiGraph::Node::contract (Node* from)
 void DiGraph::Node::remove ()
 {
 #ifndef NDEBUG
-	FOR (unsigned char, i, 2)
-	  ASSERT (arcs [i]. empty ());
+	for (const bool b : Bool)
+	  ASSERT (arcs [b]. empty ());
 #endif
   const_cast <DiGraph*> (graph) -> nodes. erase (graphIt);  
   graph = nullptr;
@@ -1133,11 +1133,11 @@ void DiGraph::Arc::attach (Node* start,
   node [false] = start;
   node [true]  = end;
 
-  FOR (unsigned char, i, 2)  
+	for (const bool b : Bool)
   {
-    node [i] -> arcs [! i]. push_back (this);
-    arcsIt [i] = node [i] -> arcs [! i]. end ();
-    arcsIt [i] --;
+    node [b] -> arcs [! b]. push_back (this);
+    arcsIt [b] = node [b] -> arcs [! b]. end ();
+    arcsIt [b] --;
   }
 }
 
@@ -1145,8 +1145,8 @@ void DiGraph::Arc::attach (Node* start,
 
 DiGraph::Arc::~Arc ()
 {
-  FOR (unsigned char, i, 2)
-    node [i] -> arcs [! i]. erase (arcsIt [i]);
+	for (const bool b : Bool)
+    node [b] -> arcs [! b]. erase (arcsIt [b]);
 }
 
  
@@ -1206,6 +1206,7 @@ DiGraph::~DiGraph ()
 
 void DiGraph::qc () const
 {
+#ifndef NDEBUG
   Set<const Node*> nodes_;
   Set<const Arc*> arcs_ [2];
   Set<string> names;
@@ -1216,13 +1217,13 @@ void DiGraph::qc () const
     ASSERT (node->graph == this);
     nodes_ << node;
     node->qc ();
-    FOR (unsigned char, i, 2)
-      for (const Arc* arc : node->arcs [i])
+  	for (const bool b : Bool)
+      for (const Arc* arc : node->arcs [b])
       {
         ASSERT (arc);
-        arcs_ [i] << arc;
+        arcs_ [b] << arc;
         arcs++;
-        if (i)
+        if (b)
         {
     	  	Unverbose unv;
           arc->qc ();
@@ -1236,9 +1237,10 @@ void DiGraph::qc () const
     names << node->getName ();
   }
   ASSERT (nodes. size () == nodes_. size ());
-  FOR (unsigned char, i, 2)
-    ASSERT (2 * arcs_ [i]. size () == arcs);
+	for (const bool b : Bool)
+    ASSERT (2 * arcs_ [b]. size () == arcs);
   ASSERT (arcs_ [false] == arcs_ [true]);
+#endif
 }
 
  
@@ -1259,9 +1261,9 @@ void DiGraph::connectedComponents ()
   for (Node* node : nodes)
 	  node->DisjointCluster::init ();
   for (Node* node : nodes)
-	  FOR (unsigned char, i, 2)
-      for (Arc* arc : node->arcs [i])
-	    	arc->node [i] -> DisjointCluster::merge (* arc->node [! i]);
+  	for (const bool b : Bool)
+      for (Arc* arc : node->arcs [b])
+	    	arc->node [b] -> DisjointCluster::merge (* arc->node [! b]);
 }
 
 
@@ -1598,11 +1600,6 @@ const Tree::Node* Tree::Node::getRightmostDescendent () const
   const Node* n = this;
   while (! n->isLeaf ())
     n = static_cast <Node*> (n->arcs [false]. back () -> node [false]);
-/*{
-    auto it = n->arcs [false]. end ();
-    it--;
-    n = static_cast <Node*> ((*it) -> node [false]);
-  } */
   return n;
 }
 
@@ -1994,6 +1991,26 @@ size_t Tree::deleteTransients ()
  		if (node->deleteTransient ())
       n++;
   }  
+  return n;
+}
+
+
+
+size_t Tree::restrictLeaves (const Set<string> &leafNames)
+{
+  size_t n = 0;
+ 	Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());
+ 	insertAll (nodeVec, nodes);
+ 	for (DiGraph::Node* node_ : nodeVec)  
+ 	{
+ 	  const Node* node = static_cast <const Node*> (node_);
+    if (node->isLeaf ())
+      if (! leafNames. contains (node->getName ()))
+      {
+        deleteLeaf (const_cast <Node*> (node));
+        n++;
+      }
+  }
   return n;
 }
 

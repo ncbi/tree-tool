@@ -1816,6 +1816,11 @@ struct Tree : DiGraph
     // Output: root
   size_t deleteTransients ();
     // Return: # Node's delete'd
+  virtual void deleteLeaf (Node* leaf) 
+    { delete leaf; }
+  size_t restrictLeaves (const Set<string> &leafNames);
+    // Return: # leaves delete'd
+    // Invokes: deleteLeaf()
 
   template <typename Compare>
     void sort (const Compare &compare)
