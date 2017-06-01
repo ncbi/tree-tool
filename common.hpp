@@ -1624,6 +1624,7 @@ struct Tree : DiGraph
 			: DiGraph::Node (tree)
 			{ setParent (parent_arg); }
 		  // Input: parent_arg: may be nullptr
+		void qc () const;
    	void saveText (ostream &os) const;
    	  // Invokes: getName(), saveContent(), getSaveSubtreeP()
 
@@ -1651,6 +1652,10 @@ struct Tree : DiGraph
   	  { return * static_cast <const Tree*> (graph); }
 		bool isLeaf () const
 		  { return arcs [false]. empty (); }
+		virtual bool isLeafType () const
+		  { return false; }
+		virtual bool isInteriorType () const
+		  { return false; }
 		const Node* getParent () const
 			{ return arcs [true]. empty () ? nullptr : static_cast <Node*> (arcs [true]. front () -> node [true]); }
 		  // Return: nullptr <=> root
@@ -1816,11 +1821,13 @@ struct Tree : DiGraph
     // Output: root
   size_t deleteTransients ();
     // Return: # Node's delete'd
-  virtual void deleteLeaf (Node* leaf) 
+  virtual void deleteLeaf (Node* leaf,
+                           bool /*deleteTransientAncestor*/) 
     { delete leaf; }
-  size_t restrictLeaves (const Set<string> &leafNames);
+  size_t restrictLeaves (const Set<string> &leafNames,
+                         bool deleteTransientAncestor);
     // Return: # leaves delete'd
-    // Invokes: deleteLeaf()
+    // Invokes: isLeafType(), deleteLeaf()
 
   template <typename Compare>
     void sort (const Compare &compare)

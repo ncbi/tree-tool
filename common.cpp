@@ -1371,6 +1371,15 @@ void DiGraph::borrowArcs (const Node2Node &node2node,
 
 // Tree::Node
 
+void Tree::Node::qc () const
+{
+  DiGraph::Node::qc ();
+    
+  ASSERT (! (isLeafType () && isInteriorType ()));
+}
+  
+
+
 void Tree::Node::saveText (ostream &os) const
 {
   os << getName () << ": ";
@@ -1613,7 +1622,7 @@ void Tree::Node::childrenUp ()
 		Node* n = const_static_cast <Node*> (node);
 		n->setParent (const_cast <Node*> (getParent ()));  
 	}
-	ASSERT (isLeaf ());
+	ASSERT (arcs [false]. empty ());
 }
 
 
@@ -1996,7 +2005,8 @@ size_t Tree::deleteTransients ()
 
 
 
-size_t Tree::restrictLeaves (const Set<string> &leafNames)
+size_t Tree::restrictLeaves (const Set<string> &leafNames,
+                             bool deleteTransientAncestor)
 {
   size_t n = 0;
  	Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());
@@ -2004,10 +2014,10 @@ size_t Tree::restrictLeaves (const Set<string> &leafNames)
  	for (DiGraph::Node* node_ : nodeVec)  
  	{
  	  const Node* node = static_cast <const Node*> (node_);
-    if (node->isLeaf ())
+    if (node->isLeafType ())
       if (! leafNames. contains (node->getName ()))
       {
-        deleteLeaf (const_cast <Node*> (node));
+        deleteLeaf (const_cast <Node*> (node), deleteTransientAncestor);
         n++;
       }
   }
