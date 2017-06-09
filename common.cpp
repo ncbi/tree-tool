@@ -1879,6 +1879,63 @@ void Tree::printArcLengths (ostream &os) const
 namespace 
 {
 
+typedef  map <const Tree::Node*, double>  Leaf2dist;
+ 
+
+
+Leaf2dist printNodeLeafDistances (const Tree::Node* node,
+                                  ostream &os) 
+// Output: leaf2dist
+{
+  ASSERT (node);
+  
+  Leaf2dist leaf2dist;
+  if (node->isLeaf ())
+    leaf2dist [node] = 0;
+  else
+		for (const Tree::Arc* arc : node->arcs [false])
+		{
+			const Tree::Node* n = static_cast <Tree::Node*> (arc->node [false]);
+			Leaf2dist nodeLeaf2dist (printNodeLeafDistances (n, os));
+			ASSERT (! nodeLeaf2dist. empty ());
+			const double dist = n->getParentDistance ();
+			ASSERT (dist == dist);  // != NAN
+			for (auto it : nodeLeaf2dist)
+			  nodeLeaf2dist [it. first] += dist;
+		  for (const auto it1 : leaf2dist)
+			  for (const auto it2 : nodeLeaf2dist)
+			  {
+			    string name1 (it1. first->getName ());
+			    string name2 (it2. first->getName ());
+			    ASSERT (name1 != name2);
+			    if (name1 > name2)
+			      swap (name1, name2);
+			    os         << name1 
+			       << '\t' << name2
+			       << '\t' << it1. second + it2.second
+			       << endl;
+			  }
+			for (const auto it : nodeLeaf2dist)
+			  leaf2dist [it. first] = it. second;
+	  }
+    
+  return move (leaf2dist);
+}
+
+}
+
+
+
+void Tree::printLeafDistances (ostream &os) const
+{
+  printNodeLeafDistances (root, os);
+}
+
+
+
+namespace 
+{
+
 bool getParentsOrTarget (const Tree::Node* from,
 			                   const Tree::Node* target,
 			                   Vector<const Tree::Node*> &parents) 
