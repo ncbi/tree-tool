@@ -1876,6 +1876,25 @@ void Tree::printArcLengths (ostream &os) const
 
 
 
+
+Tree::Patristic::Patristic (const Node* leaf1_arg, 
+                            const Node* leaf2_arg,
+                            double distance_arg)
+: leaf1 (leaf1_arg)
+, leaf2 (leaf2_arg)
+, distance (distance_arg)
+{
+  ASSERT (leaf1);
+  ASSERT (leaf2);
+  ASSERT (distance == distance);  // != NAN
+  ASSERT (leaf1->graph == leaf2->graph);
+  ASSERT (leaf1->getName () != leaf2->getName ());
+  if (leaf1->getName () > leaf2->getName ())
+    swap (leaf1, leaf2);
+}
+
+
+
 namespace 
 {
 
@@ -1883,20 +1902,22 @@ typedef  map <const Tree::Node*, double>  Leaf2dist;
  
 
 
-Leaf2dist printNodeLeafDistances (const Tree::Node* node,
-                                  ostream &os) 
+Vector<Tree::Patristic> node2leafDistances (const Tree::Node* node,
+                                            Leaf2dist &leaf2dist) 
 // Output: leaf2dist
 {
   ASSERT (node);
+  ASSERT (leaf2dist. empty ());
   
-  Leaf2dist leaf2dist;
+  Vector<Tree::Patristic> res;
   if (node->isLeaf ())
     leaf2dist [node] = 0;
   else
 		for (const Tree::Arc* arc : node->arcs [false])
 		{
 			const Tree::Node* n = static_cast <Tree::Node*> (arc->node [false]);
-			Leaf2dist nodeLeaf2dist (printNodeLeafDistances (n, os));
+			Leaf2dist nodeLeaf2dist;
+			res << node2leafDistances (n, nodeLeaf2dist);
 			ASSERT (! nodeLeaf2dist. empty ());
 			const double dist = n->getParentDistance ();
 			ASSERT (dist == dist);  // != NAN
@@ -1904,31 +1925,22 @@ Leaf2dist printNodeLeafDistances (const Tree::Node* node,
 			  nodeLeaf2dist [it. first] += dist;
 		  for (const auto it1 : leaf2dist)
 			  for (const auto it2 : nodeLeaf2dist)
-			  {
-			    string name1 (it1. first->getName ());
-			    string name2 (it2. first->getName ());
-			    ASSERT (name1 != name2);
-			    if (name1 > name2)
-			      swap (name1, name2);
-			    os         << name1 
-			       << '\t' << name2
-			       << '\t' << it1. second + it2.second
-			       << endl;
-			  }
+			    res << Tree::Patristic (it1. first, it2. first, it1. second + it2. second);
 			for (const auto it : nodeLeaf2dist)
 			  leaf2dist [it. first] = it. second;
 	  }
     
-  return move (leaf2dist);
+  return move (res);
 }
 
 }
 
 
 
-void Tree::printLeafDistances (ostream &os) const
+Vector<Tree::Patristic> Tree::getLeafDistances () const
 {
-  printNodeLeafDistances (root, os);
+  Leaf2dist leaf2dist;
+  return move (node2leafDistances (root, leaf2dist));
 }
 
 

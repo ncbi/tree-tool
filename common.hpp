@@ -1804,10 +1804,23 @@ struct Tree : DiGraph
     // Requires: getParentDistance() > 0 for all nodes except root
   static string printArcLengthsColumns ()
     { return "<node name> <arc length> <depth length> <log(<parent arc length>/<arc length>)"; }
-  void printLeafDistances (ostream &os) const;
-    // Output: os: <printLeafDistancesColumns()>
-  static string printLeafDistancesColumns () 
-    { return "<leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>"; }
+  struct Patristic
+  {
+    const Node* leaf1;
+    const Node* leaf2;  
+      // != nullptr
+      // leaf1->getName() < leaf2->getName()
+    double distance;
+    Patristic (const Node* leaf1_arg, 
+               const Node* leaf2_arg,
+               double distance_arg);        
+    Patristic ()
+      : leaf1 (nullptr)       
+      , leaf2 (nullptr)
+      , distance (0)
+      {}
+  };
+  Vector<Patristic> getLeafDistances () const;
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
     // Return: nullptr <=> !n1 || !n2
