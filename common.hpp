@@ -2675,6 +2675,7 @@ public:
     // Invokes: body()
 private:
   virtual void body () const = 0;
+    // Requires: to be invoked once
 };
 
 

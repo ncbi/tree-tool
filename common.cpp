@@ -2840,7 +2840,7 @@ void Application::addPositional (const string &name,
 
 string Application::getArg (const string &name) const
 {
-  if (contains (args, name))
+  if (contains (args, name))  
     return args. at (name) -> value;
   throw runtime_error ("Parameter \"" + name + "\" is not found");
 }
@@ -2899,10 +2899,11 @@ int Application::run (int argc,
     ASSERT (! programArgs. empty ());
   
       
-    // positionals. positionalValues, keys
+    // positionals, keys
     bool first = true;
     posIt = positionals. begin ();
     Key* key = nullptr;
+    Set<string> keysRead;
     for (string s : programArgs)
     {
       if (first)
@@ -2927,6 +2928,10 @@ int Application::run (int argc,
           key = const_cast <Key*> (args [name] -> asKey ());
           if (! key)
             errorExitStr (name + " is not a key\n" + getInstruction ());
+          if (keysRead. contains (name))
+            errorExitStr ("Parameter \"" + name + "\" is used more than once");
+          else
+            keysRead << name;
           if (key->flag)
           {
             key->value = "true";
