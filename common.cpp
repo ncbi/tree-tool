@@ -1411,12 +1411,13 @@ void Tree::Node::saveText (ostream &os) const
 
 
 void Tree::Node::printNewick_ (ostream &os,
-	                             bool internalNames) const
+	                             bool internalNames,
+	                             bool minimalLeafName) const
 {
   // Cf. saveText() ??
 
 	if (isLeaf ())
-		os << name2newick (getNewickName ());
+		os << name2newick (getNewickName (minimalLeafName));
 	else
 	{
 		os << "(";
@@ -1426,13 +1427,13 @@ void Tree::Node::printNewick_ (ostream &os,
 			const Node* n = static_cast <Node*> (arc->node [false]);
 			if (! first)
 			  os << ",";
-			n->printNewick_ (os, internalNames);
+			n->printNewick_ (os, internalNames, minimalLeafName);
 			first = false;
 		}
 	  
 		os << ")";
 		if (internalNames)
-			os << name2newick (getNewickName ());
+			os << name2newick (getNewickName (minimalLeafName));
 	}
 	
 	const double dist = getParentDistance ();
@@ -1736,7 +1737,7 @@ void Tree::qc () const
 	  const Node* n = static_cast <const Node*> (node);
 	  if (n->isLeaf ())
 	  {
-	    const string newickName (Node::name2newick (n->getNewickName ()));
+	    const string newickName (Node::name2newick (n->getNewickName (true)));
       if (names. contains (newickName))
       {
         cout << "Duplicate name: " << newickName << endl;

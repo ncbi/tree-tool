@@ -1633,18 +1633,20 @@ struct Tree : DiGraph
 	  virtual double getParentDistance () const
 	    { return -1; }
 	    // Return: -1 || >= 0
-	  virtual string getNewickName () const
+	  virtual string getNewickName (bool /*minimal*/) const
 	    { return getName (); }
 		static string name2newick (const string &s);
 	private:
 	  void printNewick_ (ostream &os,
-	                     bool internalNames) const;
+	                     bool internalNames,
+	                     bool minimalLeafName) const;
 	    // Input: os.setprecision
 	    // Invokes: getParentDistance(), getNewickName(), name2newick()
   public:
     void printNewick (ostream &os,
-                      bool internalNames) const
-      { printNewick_ (os, internalNames);
+                      bool internalNames,
+                      bool minimalLeafName) const
+      { printNewick_ (os, internalNames, minimalLeafName);
       	os << ';';
       }
     // Input: internalNames <=> print name at each internal node
