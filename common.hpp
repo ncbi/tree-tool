@@ -1619,6 +1619,7 @@ struct Tree : DiGraph
 {
 	struct Node : DiGraph::Node
 	{
+	  friend struct Tree;
 		Node (Tree &tree,
 		      Node* parent_arg)
 			: DiGraph::Node (tree)
@@ -1643,13 +1644,6 @@ struct Tree : DiGraph
 	    // Input: os.setprecision
 	    // Invokes: getParentDistance(), getNewickName(), name2newick()
   public:
-    void printNewick (ostream &os,
-                      bool internalNames,
-                      bool minimalLeafName) const
-      { printNewick_ (os, internalNames, minimalLeafName);
-      	os << ';';
-      }
-    // Input: internalNames <=> print name at each internal node
 	  const Tree& getTree () const
   	  { return * static_cast <const Tree*> (graph); }
 		bool isLeaf () const
@@ -1799,6 +1793,13 @@ struct Tree : DiGraph
     }
 
 
+    void printNewick (ostream &os,
+                      bool internalNames,
+                      bool minimalLeafName) const
+      { root->printNewick_ (os, internalNames, minimalLeafName);
+      	os << ';' << endl;
+      }
+    // Input: internalNames <=> print name at each internal node
   void printAsn (ostream &os) const;	
     // http://www.ncbi.nlm.nih.gov/tools/treeviewer/biotreecontainer/
   void printArcLengths (ostream &os) const;
