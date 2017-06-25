@@ -1527,6 +1527,19 @@ size_t Tree::Node::getSubtreeSize () const
 
 
 
+double Tree::Node::getSubtreeLength () const
+{
+	double len = 0;
+	for (const Arc* arc : arcs [false])
+	{
+	  const Node* node = static_cast <Node*> (arc->node [false]);
+	  len += node->getParentDistance () + node->getSubtreeLength ();
+	}
+	return len;
+}
+
+
+
 size_t Tree::Node::getLeavesSize () const
 {
 	size_t n = 0;

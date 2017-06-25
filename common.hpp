@@ -1711,6 +1711,8 @@ struct Tree : DiGraph
 		size_t getSubtreeSize () const;
 		  // Does not count *this
 		  // Return: 0 <=> isLeaf()
+    double getSubtreeLength () const;
+		  // Return: 0 <= isLeaf()
 		size_t getLeavesSize () const;
     void getLeaves (VectorPtr<Node> &leaves) const;
       // Update: leaves
@@ -1793,12 +1795,12 @@ struct Tree : DiGraph
     }
 
 
-    void printNewick (ostream &os,
-                      bool internalNames,
-                      bool minimalLeafName) const
-      { root->printNewick_ (os, internalNames, minimalLeafName);
-      	os << ';' << endl;
-      }
+  void printNewick (ostream &os,
+                    bool internalNames,
+                    bool minimalLeafName) const
+    { root->printNewick_ (os, internalNames, minimalLeafName);
+    	os << ';' << endl;
+    }
     // Input: internalNames <=> print name at each internal node
   void printAsn (ostream &os) const;	
     // http://www.ncbi.nlm.nih.gov/tools/treeviewer/biotreecontainer/
@@ -1807,6 +1809,8 @@ struct Tree : DiGraph
     // Requires: getParentDistance() > 0 for all nodes except root
   static string printArcLengthsColumns ()
     { return "<node name> <arc length> <depth length> <log(<parent arc length>/<arc length>)"; }
+  double getLength () const
+    { return root->getSubtreeLength (); }
   struct Patristic
   {
     const Node* leaf1;
