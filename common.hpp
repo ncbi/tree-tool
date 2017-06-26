@@ -1708,9 +1708,9 @@ struct Tree : DiGraph
 		      return nullptr;
 		    return parent_->getPrevAncestor (ancestor);
 		  }
-		size_t getSubtreeSize () const;
+		size_t getSubtreeSize (bool countLeaves) const;
 		  // Does not count *this
-		  // Return: 0 <=> isLeaf()
+		  // Return: if countLeaves then 0 <=> isLeaf()
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
 		size_t getLeavesSize () const;
@@ -1828,6 +1828,11 @@ struct Tree : DiGraph
       {}
   };
   Vector<Patristic> getLeafDistances () const;
+  size_t size (bool countLeaves) const
+    { return nodes. size () <= 1
+               ? countLeaves
+               : 1 + root->getSubtreeSize (countLeaves); 
+    }
   static const Node* getLowestCommonAncestor (const Node* n1,
                                               const Node* n2);
     // Return: nullptr <=> !n1 || !n2

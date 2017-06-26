@@ -1517,11 +1517,16 @@ size_t Tree::Node::getHeight () const
 
 
 
-size_t Tree::Node::getSubtreeSize () const
+size_t Tree::Node::getSubtreeSize (bool countLeaves) const
 {
 	size_t n = 0;
 	for (const Arc* arc : arcs [false])
-	  n += 1 + static_cast <Node*> (arc->node [false]) -> getSubtreeSize ();
+	{
+	  const Node* child = static_cast <Node*> (arc->node [false]);
+    if (! countLeaves && child->arcs [false]. empty ())
+      continue;
+	  n += 1 + child->getSubtreeSize (countLeaves);
+	}
 	return n;
 }
 
@@ -1764,6 +1769,7 @@ void Tree::qc () const
 #endif
 	ASSERT (! root == nodes. empty ());
 	IMPLY (root, getRoot (true) == root);
+	IMPLY (root, (nodes. size () > 1) == ! root->isLeaf ());
 	
 #ifndef NDEBUG		
 	IMPLY (! transient, nodes. size () <= 2 * root->getLeavesSize () - 1);
