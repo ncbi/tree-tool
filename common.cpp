@@ -513,7 +513,7 @@ List<string> str2list (const string &s,
 	string s1 (s);
 	while (! s1. empty ())
 	  res << findSplit (s1, c);
-	return move (res);
+	return res;
 }
 
 
@@ -1331,7 +1331,7 @@ DiGraph::Node2Node DiGraph::reverse (const Node2Node& old2new)
   for (const auto it : old2new)
     new2old [it. second] = it. first;
     
-  return move (new2old);
+  return new2old;
 }
 
 
@@ -1502,7 +1502,7 @@ Tree::Node::TipName Tree::Node::getTipName () const
 	}
 	tn_best.depth ++;
 
-	return move (tn_best);
+	return tn_best;
 }
 
 
@@ -1950,7 +1950,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::Node* node,
 			  leaf2dist [it. first] = it. second;
 	  }
     
-  return move (res);
+  return res;
 }
 
 }
@@ -1960,7 +1960,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::Node* node,
 Vector<Tree::Patristic> Tree::getLeafDistances () const
 {
   Leaf2dist leaf2dist;
-  return move (node2leafDistances (root, leaf2dist));
+  return node2leafDistances (root, leaf2dist);
 }
 
 
@@ -2058,7 +2058,7 @@ Set<const Tree::Node*> Tree::getParents (const VectorPtr<Node> &nodeVec)
 		  n = n->getParent ();
 		}
 
-	return move (s);
+	return s;
 }
 
 
@@ -2275,7 +2275,7 @@ string CharInput::getLine ()
       break;
     s += c;
   }
-  return move (s);
+  return s;
 }
 
 
@@ -2889,7 +2889,7 @@ string Application::getInstruction () const
   
   instr += string ("\n") + "Help:  " + programName + " -help";
 
-  return move (instr);
+  return instr;
 }
 
 
@@ -2904,7 +2904,7 @@ string Application::getHelp () const
   for (const Key& key : keys)
     instr += par + key. str () + ": " + key. description;;
   
-  return move (instr);
+  return instr;
 }
 
 

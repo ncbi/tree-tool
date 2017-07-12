@@ -1844,7 +1844,7 @@ struct Tree : DiGraph
     // Invokes: getLowestCommonAncestor(nodeVec)
   static Set<const Node*> getPath (const Node* n1,
                                    const Node* n2)
-    { return move (getParents (VectorPtr<Node>::make (n1, n2))); }
+    { return getParents (VectorPtr<Node>::make (n1, n2)); }
 
   void setRoot ();
     // Output: root
@@ -2003,7 +2003,7 @@ struct LineInput : Input
 	    while (nextLine ())
 	      if (! line. empty ())
 	  	    vec << line;
-	  	return move (vec);
+	  	return vec;
 	  }
 };
 	
