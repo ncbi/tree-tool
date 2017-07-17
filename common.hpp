@@ -566,13 +566,13 @@ public:
 	explicit Verbose (int verbose_arg);
 	Verbose ();
 	  // Increase verbosity
- ~Verbose ();
+ ~Verbose () noexcept;
 };
 
 struct Unverbose 
 {
 	Unverbose ();
- ~Unverbose ();
+ ~Unverbose () noexcept;
 };
   
 
@@ -600,7 +600,7 @@ protected:
 	  	  throw runtime_error ("Singleton");
 	  	beingRun = true;
 	  }
- ~Singleton ()  // virtual: segmentation fault
+ ~Singleton () noexcept
     { beingRun = false; }
 };
 template <typename T> bool Singleton<T>::beingRun = false;
@@ -617,7 +617,7 @@ template <typename T>
       : ptr (& t_arg)
       , t (t_arg)
       {}
-   ~Keep ()
+   ~Keep () noexcept
       { *ptr = t; }
   };
 
@@ -638,7 +638,7 @@ protected:
   Root () 
     {}
 public:
-  virtual ~Root () noexcept
+  virtual ~Root () throw (logic_error)
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendent class destructor
   virtual Root* copy () const
@@ -1260,11 +1260,17 @@ public:
 	Set (const Set<T> &other)
 	  : P ()
 	  { *this = other; }
-	template <typename U>
-	  Set (const map<T,U> &other)
+	template <typename U, typename V>
+	  Set (const map<U,V> &other)
 	    : universal (false)
-	    { for (typename map<T,U>::const_iterator it = other. begin (); it != other. end (); it++)
-	        P::insert (it->first);
+	    { for (const auto it : other)
+	        P::insert (it. first);
+	    }
+	template <typename U>
+	  Set (const vector<U> &other)
+	    : universal (false)
+	    { for (const U u : other)
+	        P::insert (u);
 	    }
 	Set<T>& operator= (const Set<T> &other)
 	  { universal = other. universal;
@@ -1896,7 +1902,7 @@ public:
 	  { if (active) 
 	  	  beingUsed++; 
 	  }
- ~Progress ()
+ ~Progress () noexcept
     { if (active)
     	{ if (! uncaught_exception ())
     	  { report ();
@@ -1940,7 +1946,7 @@ public:
 		explicit Start (AutoPtr<Progress> &prog_arg,
 							      uint n_max = 0,
 						        uint displayPeriod = 1);
-	~Start ()
+	~Start () noexcept
 	   { prog. reset (); }
 	};
 };
@@ -2519,7 +2525,7 @@ struct Chronometer : Nocopy
     , os (os_arg)
     , time (0)
     {}
- ~Chronometer ()
+ ~Chronometer () noexcept
     { os << name << ": Duration: ";       
       os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl; 
     }
@@ -2534,7 +2540,7 @@ struct Chronometer : Nocopy
       : chr (chr_arg)
       , start (clock ())
       {}
-   ~Measure ()
+   ~Measure () noexcept
       { chr. time += clock () - start; }
   };
 };
@@ -2550,7 +2556,7 @@ public:
 
 	Offset ()
   	{ size += delta; }
- ~Offset ()
+ ~Offset () noexcept
   	{ size -= delta; }
 
   static void newLn (ostream &os) 
@@ -2577,7 +2583,7 @@ public:
 	  		o << fixed;
       o. precision (precision);
 	  }
- ~ONumber ()
+ ~ONumber () noexcept
     { o. flags (flags_old); 
       o. precision (prec_old); 
     }
