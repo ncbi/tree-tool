@@ -44,7 +44,7 @@
     { std::ostringstream oss_;               \
       oss_ << WHERE << ": " << (msg);        \
       throw std::logic_error (oss_. str ()); \
-    }                                        \
+    } else {}                                \
   }
 #define ERROR            ERROR_MSG("")
 #define NOT_IMPLEMENTED  ERROR_MSG("Not implemented: ")
