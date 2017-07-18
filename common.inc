@@ -40,7 +40,7 @@
 
 
 #define ERROR_MSG(msg)                       \
-  { if (uncaught_exception ())               \
+  { if (! uncaught_exception ())             \
     { std::ostringstream oss_;               \
       oss_ << WHERE << ": " << (msg);        \
       throw std::logic_error (oss_. str ()); \
