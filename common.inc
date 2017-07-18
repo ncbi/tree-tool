@@ -39,11 +39,12 @@
 #define WHERE  "\"" __FILE__ "\", line " << __LINE__
 
 
-#define ERROR_MSG(msg)                     \
-  {                                        \
-    std::ostringstream oss_;               \
-    oss_ << WHERE << ": " << (msg);        \
-    throw std::logic_error (oss_. str ()); \
+#define ERROR_MSG(msg)                       \
+  { if (uncaught_exception ())               \
+    { std::ostringstream oss_;               \
+      oss_ << WHERE << ": " << (msg);        \
+      throw std::logic_error (oss_. str ()); \
+    }                                        \
   }
 #define ERROR            ERROR_MSG("")
 #define NOT_IMPLEMENTED  ERROR_MSG("Not implemented: ")
