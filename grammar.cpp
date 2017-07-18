@@ -118,23 +118,29 @@ size_t Sentence::countRollbacks () const
 
 
 
-const NonTerminalSyntagm* Sentence::getLastSyntagm () const
+const NonTerminalSyntagm* Sentence::getLastLongestSyntagm () const
 {
-  const Syntagm* lastSyntagm = nullptr;
-  ptrdiff_t index = 0;
+  const Syntagm* lastlongestSyntagm = nullptr;
+  ptrdiff_t diff_max = 0;
+  size_t size_max = 0;
   for (const Position& pos : seq) 
     for (const auto it : pos. nonTerminal2syntagms)
-      for (const Syntagm* syntagm : *(it. second))
+      for (const Syntagm* syntagm : *it. second)
       {
         const ptrdiff_t diff = & syntagm->end - & seq [0];
         ASSERT (diff > 0);
-        if (maximize (index, diff))
-          lastSyntagm = syntagm;
+        if (maximize (diff_max, diff))
+          size_max = 0;
+        if (   diff_max == diff 
+            && maximize (size_max, syntagm->size ())
+           )
+          lastlongestSyntagm = syntagm;
       }
         
-  if (! lastSyntagm)
+  if (! lastlongestSyntagm)
     return nullptr;  
-  const NonTerminalSyntagm* res = lastSyntagm->asNonTerminalSyntagm ();
+  const NonTerminalSyntagm* res = lastlongestSyntagm->asNonTerminalSyntagm ();
+  ASSERT (res);
   return res;
 }
 
@@ -142,14 +148,14 @@ const NonTerminalSyntagm* Sentence::getLastSyntagm () const
 
 void Sentence::reportError (ostream &os) const
 {
-  const NonTerminalSyntagm* lastSyntagm = getLastSyntagm ();
-  if (! lastSyntagm)
+  const NonTerminalSyntagm* lastlongestSyntagm = getLastLongestSyntagm ();
+  if (! lastlongestSyntagm)
     return;
   size_t index = 0;
   bool reached = false;
   for (const Position& pos : seq)
   {
-    if (& pos == & lastSyntagm->end)
+    if (& pos == & lastlongestSyntagm->end)
     {
       reached = true;
       os << '|';
@@ -158,8 +164,20 @@ void Sentence::reportError (ostream &os) const
     if (! reached)
       index++;
   }
+  ASSERT (reached);
   os << endl;
   os << "  At: " << index << endl;
+  
+  const Position* pos = & seq. at (1);
+  while (pos <= & seq. back ())
+  {
+    const NonTerminalSyntagm* longestSyntagm = pos->getLongestSyntagm ();
+    if (! longestSyntagm)
+      break;
+    longestSyntagm->print (cout);
+    pos = & longestSyntagm->end;
+  }
+  cout << endl;
 }
 
 
@@ -418,6 +436,24 @@ TerminalSyntagm& Position::init (const Grammar &grammar,
 
 
 
+const NonTerminalSyntagm* Position::getLongestSyntagm () const
+{
+  const Syntagm* longestSyntagm = nullptr;
+  size_t size_max = 0;
+  for (const auto it : nonTerminal2syntagms)
+    for (const Syntagm* syntagm : *it. second)
+      if (maximize (size_max, syntagm->size ()))
+        longestSyntagm = syntagm;
+        
+  if (! longestSyntagm)
+    return nullptr;  
+  const NonTerminalSyntagm* res = longestSyntagm->asNonTerminalSyntagm ();
+  ASSERT (res);
+  return res;
+}
+
+
+
 
 // Rule::Occurrences
 
@@ -484,6 +520,7 @@ bool Rule::Occurrence::ruleCanStartWith () const
     else if (! (*it)->erasable)
       return false;
   NEVER_CALL;
+  return false;
 }
 
 
@@ -501,6 +538,7 @@ bool Rule::Occurrence::ruleCanEndWith () const
   }
   while (it != rule. rhs. begin ());
   NEVER_CALL;
+  return false;
 }
 
 
@@ -575,12 +613,6 @@ void Rule::saveText (ostream &os) const
   os << "Rule# " << num << ":   " << lhs. name << ' ' << Grammar::arrowS;
   for (const Symbol* s : rhs)  
     os << ' ' << s->name; 
-
-#if 0
-  os << "  1st:";
-  for (const Terminal* t : firstTerminals)
-    os << ' ' << t->name;
-#endif
 }
 
 
@@ -1025,6 +1057,7 @@ Terminal::Terminal (const string &name_arg)
     if (isDigit (name [0]))
     {
       c = str2<Char> (name);
+      ASSERT (c > 0);
       ASSERT (c < ' ' || c >= 127);
     }
     else
@@ -1971,17 +2004,18 @@ void Grammar::setNeighbors (bool out)
 //frg. print (cout);
   for (const DiGraph::Node* node : frg. nodes)
   {
-    const Rule::Occurrence ro = static_cast <const ROGraph::Node*> (node) -> ro;
-    const Symbol* symbol = ro. getSymbol ();
+    const Rule::Occurrence prevRo = static_cast <const ROGraph::Node*> (node) -> ro;
+    const Symbol* symbol = prevRo. getSymbol ();
     if (const Terminal* t = symbol->asTerminal ())
-      const_cast <Terminal*> (t) -> terminalNeighbors [out] [ro] = Set<const Terminal*> ();
+      const_cast <Terminal*> (t) -> terminalNeighbors [out] [prevRo] = Set<const Terminal*> ();
     for (const DiGraph::Arc* arc : node->arcs [out])
     {
-      const Symbol* neighbor = static_cast <const ROGraph::Node*> (arc->node [out]) -> ro. getSymbol ();
+      const Rule::Occurrence nextRo = static_cast <const ROGraph::Node*> (arc->node [out]) -> ro;
+      const Symbol* neighbor = nextRo. getSymbol ();
       const_cast <Symbol*> (symbol) -> neighbors [out] << neighbor;
       if (const Terminal* t = symbol->asTerminal ())
         if (const Terminal* neighborT = neighbor->asTerminal ())
-          const_cast <Terminal*> (t) -> terminalNeighbors [out] [ro] << neighborT;
+          const_cast <Terminal*> (t) -> terminalNeighbors [out] [prevRo] << neighborT;
     }
   }
 }
@@ -2110,7 +2144,20 @@ void Grammar::findAmbiguity () const throw (Ambiguity)
             Set<const Symbol*> intersection (next->regularStar);
             intersection. intersect (nt->regularStar);
             if (! intersection. empty ())
-              throw Ambiguity (intersection. front () -> name + "* tandem");
+            {
+              Set<string> tandemSet;
+              const FollowROGraph frg (*this);
+              frg. qc ();
+              for (const DiGraph::Node* node : frg. nodes)
+                if (static_cast <const ROGraph::Node*> (node) -> ro. getSymbol () == s)
+                  for (const DiGraph::Arc* arc : node->arcs [true])
+                    if (static_cast <const ROGraph::Node*> (arc->node [true]) -> ro. getSymbol () == nextSymbol)
+                      tandemSet << static_cast <const ROGraph::Arc*> (arc) -> toString ();
+              ASSERT (! tandemSet. empty ());
+              List<string> tandems;
+              insertAll (tandems, tandemSet);
+              throw Ambiguity (intersection. front () -> name + "* tandem in rule(s):" + "\n" + list2str (tandems, "\n"));
+            }
           }
   // tandem of the same erasable symbol ??
   // Other cases ??
@@ -2455,6 +2502,19 @@ Set<const Terminal*> ROGraph::Node::getNextTerminals (bool out) const
 
 
 
+// ROGraph::Arc
+
+void ROGraph::Arc::qc () const
+{
+  DiGraph::Arc::qc ();
+    
+  ASSERT (rhs_pos1 < rhs_pos2)
+  ASSERT (rhs_pos2 < rule. rhs. size ());
+}
+
+
+
+
 // FollowROGraph
 
 void FollowROGraph::initArcs ()
@@ -2476,16 +2536,16 @@ void FollowROGraph::initArcs ()
               }
             if (! erasable)
               continue;
-            for (const Rule::Occurrence prevRo : Rule::Occurrence (*r, i). getLastROs () /*rhs [i] -> lastROs*/)
+            for (const Rule::Occurrence prevRo : Rule::Occurrence (*r, i). getLastROs ())
             {
               Node* prev = ro2node [prevRo];
               ASSERT (prev);
-              for (const Rule::Occurrence nextRo : Rule::Occurrence (*r, j). getFirstROs () /*rhs [j] -> firstROs*/)
+              for (const Rule::Occurrence nextRo : Rule::Occurrence (*r, j). getFirstROs ())
               {
                 Node* next = ro2node [nextRo];
                 ASSERT (next);
                 if (! prev->isIncident (next, true))
-                  new DiGraph::Arc (prev, next);
+                  new Arc (prev, next, *r, i, j);
               }
             }
           }

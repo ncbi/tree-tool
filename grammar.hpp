@@ -48,8 +48,12 @@ struct Sentence : Root
 //const Alphabet* alphabet;  ??
 
   struct BadPos : runtime_error  
-    { size_t pos;  
-      BadPos (size_t pos_arg, const string &what_arg) : runtime_error (what_arg), pos (pos_arg) {}
+    { size_t pos;
+      BadPos (size_t pos_arg, 
+              const string &what_arg) 
+        : runtime_error (what_arg + " at position " + toString (pos_arg + 1)) 
+        , pos (pos_arg)
+        {}
     };
   Sentence (const Grammar &grammar,
             const string &s) throw (BadPos);
@@ -63,7 +67,8 @@ struct Sentence : Root
     // Input: Syntagm::right
   size_t countRollbacks () const;
     // Input: Position::rollbacks
-  const NonTerminalSyntagm* getLastSyntagm () const;
+  const NonTerminalSyntagm* getLastLongestSyntagm () const;
+    // Return: may be nullptr
   void reportError (ostream &os) const;
     // Requires: Char in ASCII
   void printWrongSyntagms (ostream &os,
@@ -194,6 +199,9 @@ struct Position : Root
   TerminalSyntagm& init (const Grammar &grammar,
                          Char c_arg);
   void qc () const;
+
+  const NonTerminalSyntagm* getLongestSyntagm () const;
+    // Return: may be nullptr
 };
 
 
@@ -820,8 +828,36 @@ struct ROGraph : DiGraph
   };
 
 
+  struct Arc : DiGraph::Arc  
+  {
+    const Rule& rule;
+    size_t rhs_pos1;
+    size_t rhs_pos2;
+      // rhs_pos1 < rhs_pos2 < rule.rhs.size()
+    
+    Arc (Node* start,
+         Node* end,
+         const Rule& rule_arg,
+         size_t rhs_pos1_arg,
+         size_t rhs_pos2_arg)
+      : DiGraph::Arc (start, end)
+      , rule (rule_arg)
+      , rhs_pos1 (rhs_pos1_arg)
+      , rhs_pos2 (rhs_pos2_arg)
+      {}
+    void qc () const;  
+    
+    string toString () const
+      { return rule. str () + " at positions " +
+                         Common_sp::toString (rhs_pos1 + 1)
+                 + "-" + Common_sp::toString (rhs_pos2 + 1);
+      }
+  };
+
+
   const Grammar& grammar;
   map <Rule::Occurrence, Node*> ro2node;
+
 
 protected:
   explicit ROGraph (const Grammar &grammar_arg)
@@ -835,7 +871,7 @@ protected:
 
 
 
-struct FollowROGraph: ROGraph
+struct FollowROGraph : ROGraph
 {
   explicit FollowROGraph (const Grammar &grammar_arg)
     : ROGraph (grammar_arg)

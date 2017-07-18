@@ -642,7 +642,7 @@ public:
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendent class destructor
   virtual Root* copy () const
-    { NOT_IMPLEMENTED; }
+    { NOT_IMPLEMENTED; return nullptr; }
     // Return: the same type
     
   virtual void qc () const
@@ -663,9 +663,9 @@ public:
     // Human-friendly
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
                         const string& /*name_arg*/) const
-    { NOT_IMPLEMENTED; }
+    { NOT_IMPLEMENTED; return nullptr; }
 	virtual bool empty () const
-	  { NOT_IMPLEMENTED; }
+	  { NOT_IMPLEMENTED; return false; }
   virtual void clear ()
     { NOT_IMPLEMENTED; }
     // Postcondition: empty()
