@@ -47,6 +47,57 @@ bool initCommon ();
 
 
 
+struct Nocopy
+{
+protected:
+	Nocopy ()
+	  {}
+  Nocopy (const Nocopy &) = delete;
+  Nocopy (Nocopy&&) = delete;
+  Nocopy& operator= (const Nocopy &) = delete;
+};
+
+
+
+struct Chronometer : Nocopy
+{
+  static bool enabled;
+  clock_t time;
+private:
+  clock_t startTime;
+public:
+  bool on;
+
+  explicit Chronometer (bool on_arg = true)
+    : time (0)
+    , startTime (0)
+    , on (on_arg)
+    {}
+
+  void start ()
+    { if (! enabled || ! on)
+        return;
+      startTime = clock (); 
+    }  
+  void stop () 
+    { if (! enabled || ! on)
+        return;
+      if (! startTime)
+        throw logic_error ("Chronometer is not started");
+      time += clock () - startTime; 
+      startTime = 0;
+    }
+};
+
+
+inline ostream& operator<< (ostream &os,
+                            const Chronometer &c) 
+  { os << fixed; os. precision (2); os << (double) c. time / CLOCKS_PER_SEC << " sec."; 
+    return os;
+  }
+
+
+
 extern vector<string> programArgs;
 extern string programName;
 extern ostream* logPtr;
@@ -188,7 +239,7 @@ inline bool printable (char c)
     ...
 */
 template <typename T>
-struct Iter
+struct Iter : Nocopy
 {
 private:
   T& t;
@@ -196,10 +247,12 @@ private:
 public:
   typename T::iterator it;
     
+
   Iter (T &t_arg)
     : t (t_arg)
     , itNext (t_arg. begin ())
     {}
+
     
   bool next () 
     { it = itNext;
@@ -242,6 +295,9 @@ public:
   template <typename U/*:<T>*/>
     explicit List (const vector<U> &other)
       { *this << other; }
+//List (List<T>&&) noexcept = default;
+//List<T>& operator= (const List&) = default;
+//List<T>& operator= (List&&) = default;
 	  
 	T at (size_t index) const
 	  { size_t i = 0;
@@ -577,18 +633,6 @@ struct Unverbose
   
 
 
-struct Nocopy
-{
-protected:
-	Nocopy ()
-	  {}
-private:
-  Nocopy (const Nocopy &);
-  Nocopy& operator= (const Nocopy &);
-};
-
-
-
 template <typename T>
 struct Singleton : Nocopy
 {
@@ -719,16 +763,16 @@ struct Named : Root
   Named ()
     {}  
   explicit Named (const string &name_arg);   
-  Named* copy () const
+  Named* copy () const override
     { return new Named (*this); }    
-  void qc () const;
-  void saveText (ostream& os) const
+  void qc () const override;
+  void saveText (ostream& os) const override
     { os << name; }
-	bool empty () const
+	bool empty () const override
 	  { return name. empty (); }
-  void clear ()
+  void clear () override
     { name. clear (); }
-  void read (istream &is)
+  void read (istream &is) override
 	  { is >> name; }
 };
 
@@ -831,6 +875,9 @@ public:
 	  {}
   Vector (initializer_list<T> init)
     : P (init)
+    {}
+  Vector (const Vector<T> &other) 
+    : P (other)
     {}
 	
 	
@@ -979,8 +1026,8 @@ public:
 	  : P (n, value)
 	  {}
 	VectorPtr (const VectorPtr<T> &x)
-	  : P ()
-	  { *this = x; }
+	  : P (x)
+	  {}
 	template <typename U>
   	VectorPtr (const vector<const U*> &other)
   	  : P ()
@@ -1008,7 +1055,9 @@ public:
 
 
   VectorPtr<T>& operator<< (const T* value)
-    { return static_cast <VectorPtr<T>&> (P::operator<< (value)); }
+    { P::operator<< (value); 
+      return *this;
+    }
   template <typename U/*:T*/>
     VectorPtr<T>& operator<< (const vector<const U*> &other)
       { insertAll (*this, other);
@@ -1041,10 +1090,10 @@ public:
 
 
 template <typename T /* : Root */>
-struct VectorOwn : VectorPtr <T>
+struct VectorOwn : VectorPtr<T>
 {
 private:
-	typedef  VectorPtr <T>  P;
+	typedef  VectorPtr<T>  P;
 public:
 
   VectorOwn ()
@@ -1052,9 +1101,6 @@ public:
 	VectorOwn (const VectorOwn<T> &x)
 	  : P ()
 	  { *this = x; }
-	VectorOwn (const VectorPtr<T> &x)
-	  : P ()
-	  { P::operator= (x); }
 	VectorOwn<T>& operator= (const VectorOwn<T> &x)
 	  { P::deleteData ();
 	  	P::reserve (x. size ());
@@ -1062,6 +1108,9 @@ public:
 	  	  P::push_back (static_cast <const T*> (t->copy ()));
 	  	return *this;
 	  }
+	VectorOwn (const VectorPtr<T> &x)
+	  : P ()
+	  { P::operator= (x); }
  ~VectorOwn ()
     { P::deleteData (); }
 };
@@ -1260,6 +1309,10 @@ public:
 	Set (const Set<T> &other)
 	  : P ()
 	  { *this = other; }
+	Set<T>& operator= (const Set<T> &other)
+	  { universal = other. universal;
+	  	return static_cast <Set<T>&> (P::operator= (other)); 
+	  }
 	template <typename U, typename V>
 	  Set (const map<U,V> &other)
 	    : universal (false)
@@ -1272,10 +1325,6 @@ public:
 	    { for (const U u : other)
 	        P::insert (u);
 	    }
-	Set<T>& operator= (const Set<T> &other)
-	  { universal = other. universal;
-	  	return static_cast <Set<T>&> (P::operator= (other)); 
-	  }
   bool operator== (const Set<T> &other) const
     { return universal
                ? other. universal ? true : false
@@ -1327,7 +1376,7 @@ public:
 
   Set<T>& operator<< (const T &el)
     { if (! universal)
-    	  P::insert (el);
+    	  P::insert (el);  // Slow
     	return *this;
     }
   Set<T>& operator<< (const Set<T> &other)
@@ -1355,7 +1404,7 @@ public:
 			{ operator= (other);
 				return;
 			}
-      for (Iter <Set<T> > iter (*this); iter. next (); )
+      for (Iter <Set<T>> iter (*this); iter. next (); )
 				if (! other. contains (*iter))
 					iter. erase ();
 		}
@@ -1449,13 +1498,13 @@ struct DiGraph : Root
       , inStack  (other. inStack)
       {}
       // To be followed by: attach()
-    Node* copy () const
+    Node* copy () const override
       { return new Node (*this); }
    ~Node ();
       // Remove this from graph 
       // Time: O(m) for all nodes
-    void qc () const;
-    void saveText (ostream& os) const;
+    void qc () const override;
+    void saveText (ostream& os) const override;
       // Invokes: getName(), saveContent()
   protected:
     virtual void saveContent (ostream &/*os*/) const 
@@ -1623,11 +1672,11 @@ public:
 struct Tree : DiGraph
 // Parent <=> out = true
 {
-	struct Node : DiGraph::Node
+	struct TreeNode : DiGraph::Node
 	{
 	  friend struct Tree;
-		Node (Tree &tree,
-		      Node* parent_arg)
+		TreeNode (Tree &tree,
+		          TreeNode* parent_arg)
 			: DiGraph::Node (tree)
 			{ setParent (parent_arg); }
 		  // Input: parent_arg: may be nullptr
@@ -1658,13 +1707,13 @@ struct Tree : DiGraph
 		  { return false; }
 		virtual bool isInteriorType () const
 		  { return false; }
-		const Node* getParent () const
-			{ return arcs [true]. empty () ? nullptr : static_cast <Node*> (arcs [true]. front () -> node [true]); }
+		const TreeNode* getParent () const
+			{ return arcs [true]. empty () ? nullptr : static_cast <TreeNode*> (arcs [true]. front () -> node [true]); }
 		  // Return: nullptr <=> root
-		const Node* getSuperParent (size_t height) const;
+		const TreeNode* getSuperParent (size_t height) const;
 		  // Return: may be nullptr
 		  // getSuperParent(0) = this
-		void setParent (Node* newParent);
+		void setParent (TreeNode* newParent);
 		  // Update: *newParent
 		  //         getTree()->root if !newParent
     struct TipName : Root
@@ -1684,30 +1733,30 @@ struct Tree : DiGraph
     TipName getTipName () const;
       // Return: identification of *this by a tip
 		size_t getDepth () const
-		  { if (const Node* parent_ = getParent ())
+		  { if (const TreeNode* parent_ = getParent ())
 		  		return parent_->getDepth () + 1;
 		  	return 0;
 		  }
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
 	  double getRootDistance () const
-		  { if (const Node* parent_ = getParent ())
+		  { if (const TreeNode* parent_ = getParent ())
 		  		return parent_->getRootDistance () + getParentDistance ();
 		  	return 0;
 		  }
-		bool descendentOf (const Node* ancestor) const
+		bool descendentOf (const TreeNode* ancestor) const
 		  { if (! ancestor)
 		  	  return true;
 		  	if (this == ancestor)
 		  		return true;
-		  	if (const Node* parent_ = getParent ())
+		  	if (const TreeNode* parent_ = getParent ())
 		  		return parent_->descendentOf (ancestor);
 		  	return false;
 		  }
-		const Node* getPrevAncestor (const Node* ancestor) const
+		const TreeNode* getPrevAncestor (const TreeNode* ancestor) const
 		  { if (! ancestor)
 		      return nullptr;
-		    const Node* parent_ = getParent ();
+		    const TreeNode* parent_ = getParent ();
 		    if (parent_ == ancestor)
 		      return this;
 		    if (! parent_)
@@ -1720,31 +1769,31 @@ struct Tree : DiGraph
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
 		size_t getLeavesSize () const;
-    void getLeaves (VectorPtr<Node> &leaves) const;
+    void getLeaves (VectorPtr<TreeNode> &leaves) const;
       // Update: leaves
-		const Node* getClosestLeaf (size_t &leafDepth) const;
+		const TreeNode* getClosestLeaf (size_t &leafDepth) const;
 		  // Return: !nullptr
 		  // Output: leafDepth; nullptr <=> Return = this
-    const Node* getOtherChild (const Node* child) const;
+    const TreeNode* getOtherChild (const TreeNode* child) const;
       // Return: May be nullptr; != child
       // Requires: getChildren().size() <= 2
-    const Node* getLeftmostDescendent () const;
-    const Node* getRightmostDescendent () const;
+    const TreeNode* getLeftmostDescendent () const;
+    const TreeNode* getRightmostDescendent () const;
     string getLcaName () const
       { return getLeftmostDescendent () -> getName () + "-" + getRightmostDescendent () -> getName (); }
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()
-	  Node* isTransient () const
+	  TreeNode* isTransient () const
 	    { return arcs [false]. size () == 1 
-	    	        ? static_cast <Node*> (arcs [false]. front () -> node [false]) 
+	    	        ? static_cast <TreeNode*> (arcs [false]. front () -> node [false]) 
 	    	        : nullptr; 
 	    }
 	    // Return: Single child of *this
 	  void isolateChildrenUp ();
 	    // Invokes: childrenUp(), remove()
-	  Tree::Node* isolateTransient ()
-			{ Tree::Node* transient = isTransient ();
+	  TreeNode* isolateTransient ()
+			{ TreeNode* transient = isTransient ();
 				if (transient)
 					isolateChildrenUp ();
 			  return transient;
@@ -1757,21 +1806,21 @@ struct Tree : DiGraph
 	    }
 	  void deleteSubtree ();
 	    // Postcondition: isLeaf()
-	  const Node* makeRoot ();
-	    // Redirect Arc's so that this = getTree()->root
+	  const TreeNode* makeRoot ();
+	    // Redirect TreeArc's so that this = getTree()->root
 	    // Return: old getTree()->root, !nullptr
     void getArea (uint distance,
-                  VectorPtr<Tree::Node> &area,
-                  VectorPtr<Tree::Node> &boundary) const
+                  VectorPtr<TreeNode> &area,
+                  VectorPtr<TreeNode> &boundary) const
       { getArea_ (distance, nullptr, area, boundary); }
-      // Output: area: connected Node's with one root, distinct
+      // Output: area: connected TreeNode's with one root, distinct
       //         boundary: distinct
       //         area.contains(boundary)
   private:
     void getArea_ (uint distance,
-                   const Tree::Node* prev,
-                   VectorPtr<Tree::Node> &area,
-                   VectorPtr<Tree::Node> &boundary) const;
+                   const TreeNode* prev,
+                   VectorPtr<TreeNode> &area,
+                   VectorPtr<TreeNode> &boundary) const;
       // Update: area, bounday
       //         area.contains(boundary)
   public:
@@ -1780,13 +1829,13 @@ struct Tree : DiGraph
   			{ VectorPtr<DiGraph::Node> children (getChildren ());
   				Common_sp::sort (children, compare);
   				for (const DiGraph::Node* child : children)
-  				{	Node* s = const_static_cast <Node*> (child);
-  					s->setParent (const_cast <Node*> (s->getParent ()));  // To reorder arcs[false]
+  				{	TreeNode* s = const_static_cast <TreeNode*> (child);
+  					s->setParent (const_cast <TreeNode*> (s->getParent ()));  // To reorder arcs[false]
   				  s->sort (compare);
   				}
   			}
 	};
-	const Node* root;
+	const TreeNode* root;
 	  // nullptr <=> nodes.empty()
 
 
@@ -1819,13 +1868,13 @@ struct Tree : DiGraph
     { return root->getSubtreeLength (); }
   struct Patristic
   {
-    const Node* leaf1;
-    const Node* leaf2;  
+    const TreeNode* leaf1;
+    const TreeNode* leaf2;  
       // != nullptr
       // leaf1->getName() < leaf2->getName()
     double distance;
-    Patristic (const Node* leaf1_arg, 
-               const Node* leaf2_arg,
+    Patristic (const TreeNode* leaf1_arg, 
+               const TreeNode* leaf2_arg,
                double distance_arg);        
     Patristic ()
       : leaf1 (nullptr)       
@@ -1839,24 +1888,23 @@ struct Tree : DiGraph
                ? countLeaves
                : 1 + root->getSubtreeSize (countLeaves); 
     }
-  static const Node* getLowestCommonAncestor (const Node* n1,
-                                              const Node* n2);
+  static const TreeNode* getLowestCommonAncestor (const TreeNode* n1,
+                                                  const TreeNode* n2);
     // Return: nullptr <=> !n1 || !n2
-  static const Node* getLowestCommonAncestor (const VectorPtr<Node> &nodeVec);
+  static const TreeNode* getLowestCommonAncestor (const VectorPtr<TreeNode> &nodeVec);
     // Return: nullptr <= nodeVec.empty()
     // Input: nodeVec: may be nullptr
-  static Set<const Node*> getParents (const VectorPtr<Node> &nodeVec);
+  static Set<const TreeNode*> getParents (const VectorPtr<TreeNode> &nodeVec);
     // Return: !nullptr, !contains(getLowestCommonAncestor(nodeVec)), contains(nodeVec)
     // Invokes: getLowestCommonAncestor(nodeVec)
-  static Set<const Node*> getPath (const Node* n1,
-                                   const Node* n2)
-    { return getParents (VectorPtr<Node>::make (n1, n2)); }
+  static VectorPtr<TreeNode> getPath (const TreeNode* n1,
+                                      const TreeNode* n2);
 
   void setRoot ();
     // Output: root
   size_t deleteTransients ();
-    // Return: # Node's delete'd
-  virtual void deleteLeaf (Node* leaf,
+    // Return: # TreeNode's delete'd
+  virtual void deleteLeaf (TreeNode* leaf,
                            bool /*deleteTransientAncestor*/) 
     { delete leaf; }
   size_t restrictLeaves (const Set<string> &leafNames,
@@ -1867,7 +1915,7 @@ struct Tree : DiGraph
   template <typename Compare>
     void sort (const Compare &compare)
       { if (root)
-      	  const_cast <Node*> (root) -> sort (compare); 
+      	  const_cast <TreeNode*> (root) -> sort (compare); 
       }
 private:
 	static bool compare_std (const DiGraph::Node* a,
@@ -2143,6 +2191,10 @@ struct Token : Root
     	if (! isDelimiter (expected))
  			  throw CharInput::Error (in, type2str (eDelimiter) + " " + expected); 
     }
+//Token (const Token&) = default;
+//Token& operator= (const Token&) = default;
+//Token (Token&&) noexcept = default;
+//Token& operator= (Token&&) = default;
 private:
 	void readInput (CharInput &in);
 public:
@@ -2188,7 +2240,7 @@ public:
 
 // OFStream
 
-struct OFStream : ofstream
+struct OFStream : ofstream, Nocopy
 {
 	OFStream ()
 	  {}
@@ -2232,10 +2284,10 @@ private:
 public:
 
   
-  Csv (const string &s_arg)
-  : s (s_arg)
-  , pos (0)
-  {}
+  explicit Csv (const string &s_arg)
+    : s (s_arg)
+    , pos (0)
+    {}
   
   
   bool goodPos () const
@@ -2351,10 +2403,10 @@ struct JsonNull : Json
                      const string& name = noString)
     : Json (parent, name)
     {}    
-  void print (ostream& os) const
+  void print (ostream& os) const final
     { os << "null"; }
 
-  const JsonNull* asJsonNull () const
+  const JsonNull* asJsonNull () const final
     { return this; }  
 };
 
@@ -2369,10 +2421,10 @@ struct JsonInt : Json
     : Json (parent, name)
     , n (n_arg)
     {}
-  void print (ostream& os) const
+  void print (ostream& os) const final
     { os << n; }
 
-  const JsonInt* asJsonInt () const
+  const JsonInt* asJsonInt () const final
     { return this; }  
 };
 
@@ -2391,14 +2443,14 @@ struct JsonDouble : Json
     , decimals (decimals_arg == numeric_limits<uint>::max() ? double2decimals (n_arg) : decimals_arg)
     {}
     // decimals_arg = -1: default
-  void print (ostream& os) const
+  void print (ostream& os) const final
     { if (n == n)
       { os << fixed; os. precision ((streamsize) decimals); os << n; }
       else
         os << "null";  // NAN
     }      
 
-  const JsonDouble* asJsonDouble () const
+  const JsonDouble* asJsonDouble () const final
     { return this; }  
 };
 
@@ -2413,10 +2465,10 @@ struct JsonString : Json
     : Json (parent, name)
     , s (s_arg)
     {}
-  void print (ostream& os) const
+  void print (ostream& os) const final
     { os << toStr (s); }
 
-  const JsonString* asJsonString () const
+  const JsonString* asJsonString () const final
     { return this; }  
 };
 
@@ -2431,10 +2483,10 @@ struct JsonBoolean : Json
     : Json (parent, name)
     , b (b_arg)
     {}
-  void print (ostream& os) const
+  void print (ostream& os) const final
     { os << (b ? "true" : "false"); }
 
-  const JsonBoolean* asJsonBoolean () const
+  const JsonBoolean* asJsonBoolean () const final
     { return this; }  
 };
 
@@ -2468,9 +2520,9 @@ private:
              JsonContainer* parent,
              const string& name);
 public:
-  void print (ostream& os) const;
+  void print (ostream& os) const final;
 
-  const JsonArray* asJsonArray () const
+  const JsonArray* asJsonArray () const final
     { return this; }
 };
 
@@ -2499,9 +2551,9 @@ private:
   void parse (istream& is);
 public:
  ~JsonMap ();
-  void print (ostream& os) const;
+  void print (ostream& os) const final;
 
-  const JsonMap* asJsonMap () const
+  const JsonMap* asJsonMap () const final
     { return this; }
 };
 
@@ -2512,40 +2564,6 @@ extern JsonMap* jRoot;
 
 
 //
-
-struct Chronometer : Nocopy
-{
-  const string name;
-  ostream& os;
-  clock_t time;
-
-  Chronometer (const string &name_arg,
-               ostream& os_arg)
-    : name (name_arg)
-    , os (os_arg)
-    , time (0)
-    {}
- ~Chronometer () noexcept
-    { os << name << ": Duration: ";       
-      os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl; 
-    }
-    
-  struct Measure 
-  {
-  private:
-    Chronometer& chr;
-    const clock_t start;
-  public:
-    explicit Measure (Chronometer &chr_arg)
-      : chr (chr_arg)
-      , start (clock ())
-      {}
-   ~Measure () noexcept
-      { chr. time += clock () - start; }
-  };
-};
-
-
 
 struct Offset
 {
@@ -2662,6 +2680,7 @@ protected:
     , posIt (positionals. begin ())
     { addKey ("verbose", "Level of verbosity", "0");
       addFlag ("noprogress", "Turn off progress printout");
+      addFlag ("profile", "Use chronometers to profile");
       addKey ("json", "Output file in Json format");
       addKey ("log", "log file");
     }

@@ -19,6 +19,10 @@ namespace Common_sp
  
 
 
+bool Chronometer::enabled = false;
+
+
+
 namespace 
 {
 
@@ -1369,9 +1373,9 @@ void DiGraph::borrowArcs (const Node2Node &node2node,
 
 
 
-// Tree::Node
+// Tree::TreeNode
 
-void Tree::Node::qc () const
+void Tree::TreeNode::qc () const
 {
   DiGraph::Node::qc ();
     
@@ -1380,7 +1384,7 @@ void Tree::Node::qc () const
   
 
 
-void Tree::Node::saveText (ostream &os) const
+void Tree::TreeNode::saveText (ostream &os) const
 {
   os << getName () << ": ";
   saveContent (os);
@@ -1388,7 +1392,7 @@ void Tree::Node::saveText (ostream &os) const
   
   bool saveSubtreeP = false;
 	for (const Arc* arc : arcs [false])
-	  if (static_cast <const Node*> (arc->node [false]) -> getSaveSubtreeP ())
+	  if (static_cast <const TreeNode*> (arc->node [false]) -> getSaveSubtreeP ())
 	  {
 	    saveSubtreeP = true;
 	    break;
@@ -1400,7 +1404,7 @@ void Tree::Node::saveText (ostream &os) const
   	for (const Arc* arc : arcs [false])
   	{ 
   		Offset::newLn (os);
-  	  static_cast <Node*> (arc->node [false]) -> saveText (os);
+  	  static_cast <TreeNode*> (arc->node [false]) -> saveText (os);
   	}
   }
   else
@@ -1410,9 +1414,9 @@ void Tree::Node::saveText (ostream &os) const
 
 
 
-void Tree::Node::printNewick_ (ostream &os,
-	                             bool internalNames,
-	                             bool minimalLeafName) const
+void Tree::TreeNode::printNewick_ (ostream &os,
+	                                 bool internalNames,
+	                                 bool minimalLeafName) const
 {
   // Cf. saveText() ??
 
@@ -1424,7 +1428,7 @@ void Tree::Node::printNewick_ (ostream &os,
 		bool first = true;
 		for (const Arc* arc : arcs [false])
 		{
-			const Node* n = static_cast <Node*> (arc->node [false]);
+			const TreeNode* n = static_cast <TreeNode*> (arc->node [false]);
 			if (! first)
 			  os << ",";
 			n->printNewick_ (os, internalNames, minimalLeafName);
@@ -1443,7 +1447,7 @@ void Tree::Node::printNewick_ (ostream &os,
 
 
 
-string Tree::Node::name2newick (const string &s) 
+string Tree::TreeNode::name2newick (const string &s) 
 {
   string s1 (s);
   replace (s1, "\"\' ():;,[]<>=", '_');
@@ -1453,9 +1457,9 @@ string Tree::Node::name2newick (const string &s)
 
 
 
-const Tree::Node* Tree::Node::getSuperParent (size_t height) const
+const Tree::TreeNode* Tree::TreeNode::getSuperParent (size_t height) const
 {
-  const Node* n = this;
+  const TreeNode* n = this;
   FOR (size_t, i, height)
   {
   	ASSERT (n);
@@ -1466,7 +1470,7 @@ const Tree::Node* Tree::Node::getSuperParent (size_t height) const
 
 
 
-void Tree::Node::setParent (Node* newParent)
+void Tree::TreeNode::setParent (TreeNode* newParent)
 { 
 	ASSERT (newParent != this);
 	
@@ -1488,7 +1492,7 @@ void Tree::Node::setParent (Node* newParent)
 
 
 
-Tree::Node::TipName Tree::Node::getTipName () const
+Tree::TreeNode::TipName Tree::TreeNode::getTipName () const
 { 
   if (isLeaf ()) 
     return TipName (getName (), 0);
@@ -1496,7 +1500,7 @@ Tree::Node::TipName Tree::Node::getTipName () const
   TipName tn_best;
 	for (const DiGraph::Arc* arc : arcs [false])
 	{
-	  const TipName tn = static_cast <Tree::Node*> (arc->node [false]) -> getTipName ();
+	  const TipName tn = static_cast <Tree::TreeNode*> (arc->node [false]) -> getTipName ();
 	  if (tn_best. name. empty () || tn_best. name > tn. name)
 	    tn_best = tn;
 	}
@@ -1507,22 +1511,22 @@ Tree::Node::TipName Tree::Node::getTipName () const
 
 
 
-size_t Tree::Node::getHeight () const
+size_t Tree::TreeNode::getHeight () const
 {
   size_t n = 0;
 	for (const Arc* arc : arcs [false])
-	  maximize (n, 1 + static_cast <Node*> (arc->node [false]) -> getHeight ());
+	  maximize (n, 1 + static_cast <TreeNode*> (arc->node [false]) -> getHeight ());
 	return n;
 }
 
 
 
-size_t Tree::Node::getSubtreeSize (bool countLeaves) const
+size_t Tree::TreeNode::getSubtreeSize (bool countLeaves) const
 {
 	size_t n = 0;
 	for (const Arc* arc : arcs [false])
 	{
-	  const Node* child = static_cast <Node*> (arc->node [false]);
+	  const TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
     if (! countLeaves && child->arcs [false]. empty ())
       continue;
 	  n += 1 + child->getSubtreeSize (countLeaves);
@@ -1532,12 +1536,12 @@ size_t Tree::Node::getSubtreeSize (bool countLeaves) const
 
 
 
-double Tree::Node::getSubtreeLength () const
+double Tree::TreeNode::getSubtreeLength () const
 {
 	double len = 0;
 	for (const Arc* arc : arcs [false])
 	{
-	  const Node* node = static_cast <Node*> (arc->node [false]);
+	  const TreeNode* node = static_cast <TreeNode*> (arc->node [false]);
 	  len += node->getParentDistance () + node->getSubtreeLength ();
 	}
 	return len;
@@ -1545,35 +1549,35 @@ double Tree::Node::getSubtreeLength () const
 
 
 
-size_t Tree::Node::getLeavesSize () const
+size_t Tree::TreeNode::getLeavesSize () const
 {
 	size_t n = 0;
 	for (const Arc* arc : arcs [false])
-	  n += static_cast <Node*> (arc->node [false]) -> getLeavesSize ();
+	  n += static_cast <TreeNode*> (arc->node [false]) -> getLeavesSize ();
 	return max<size_t> (n, 1);
 }
 
 
 
-void Tree::Node::getLeaves (VectorPtr<Node> &leaves) const
+void Tree::TreeNode::getLeaves (VectorPtr<TreeNode> &leaves) const
 {
   if (arcs [false]. empty ())
     leaves << this;
   else
   	for (const Arc* arc : arcs [false])
-  	  static_cast <Node*> (arc->node [false]) -> getLeaves (leaves);
+  	  static_cast <TreeNode*> (arc->node [false]) -> getLeaves (leaves);
 }
 
 
 
-const Tree::Node* Tree::Node::getClosestLeaf (size_t &leafDepth) const
+const Tree::TreeNode* Tree::TreeNode::getClosestLeaf (size_t &leafDepth) const
 {
-	const Node* leaf = nullptr;
+	const TreeNode* leaf = nullptr;
   leafDepth = SIZE_MAX;
 	for (const Arc* arc : arcs [false])
 	{
 		size_t depth1;
-		const Node* leaf1 = static_cast <Node*> (arc->node [false]) -> getClosestLeaf (depth1);
+		const TreeNode* leaf1 = static_cast <TreeNode*> (arc->node [false]) -> getClosestLeaf (depth1);
 		if (minimize (leafDepth, depth1))
 			leaf = leaf1;
 	}
@@ -1593,15 +1597,15 @@ const Tree::Node* Tree::Node::getClosestLeaf (size_t &leafDepth) const
 
 
 
-const Tree::Node* Tree::Node::getOtherChild (const Node* child) const
+const Tree::TreeNode* Tree::TreeNode::getOtherChild (const TreeNode* child) const
 {
   ASSERT (child);
   ASSERT (child->getParent () == this);
 
-  const Node* otherChild = nullptr;
+  const TreeNode* otherChild = nullptr;
 	for (const Arc* arc : arcs [false])
 	{
-		const Node* n = static_cast <Node*> (arc->node [false]);
+		const TreeNode* n = static_cast <TreeNode*> (arc->node [false]);
 	  if (n != child)
 	  {
 	  	ASSERT (! otherChild);
@@ -1613,40 +1617,40 @@ const Tree::Node* Tree::Node::getOtherChild (const Node* child) const
 
 
 
-const Tree::Node* Tree::Node::getLeftmostDescendent () const
+const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendent () const
 {
-  const Node* n = this;
+  const TreeNode* n = this;
   while (! n->isLeaf ())
-    n = static_cast <Node*> (n->arcs [false]. front () -> node [false]);
+    n = static_cast <TreeNode*> (n->arcs [false]. front () -> node [false]);
   return n;
 }
 
 
 
-const Tree::Node* Tree::Node::getRightmostDescendent () const
+const Tree::TreeNode* Tree::TreeNode::getRightmostDescendent () const
 {
-  const Node* n = this;
+  const TreeNode* n = this;
   while (! n->isLeaf ())
-    n = static_cast <Node*> (n->arcs [false]. back () -> node [false]);
+    n = static_cast <TreeNode*> (n->arcs [false]. back () -> node [false]);
   return n;
 }
 
 
 
-void Tree::Node::childrenUp ()
+void Tree::TreeNode::childrenUp ()
 {
   const VectorPtr<DiGraph::Node> children (getChildren ());
 	for (const DiGraph::Node* node : children)
 	{	
-		Node* n = const_static_cast <Node*> (node);
-		n->setParent (const_cast <Node*> (getParent ()));  
+		TreeNode* n = const_static_cast <TreeNode*> (node);
+		n->setParent (const_cast <TreeNode*> (getParent ()));  
 	}
 	ASSERT (arcs [false]. empty ());
 }
 
 
 
-void Tree::Node::isolateChildrenUp ()
+void Tree::TreeNode::isolateChildrenUp ()
 { 
   childrenUp ();
 	if (! arcs [true]. empty ())
@@ -1659,29 +1663,29 @@ void Tree::Node::isolateChildrenUp ()
 
 
 
-void Tree::Node::deleteSubtree ()
+void Tree::TreeNode::deleteSubtree ()
 {
 	for (const DiGraph::Arc* arc : arcs [false])
-		static_cast <Node*> (arc->node [false]) -> deleteSubtree ();
+		static_cast <TreeNode*> (arc->node [false]) -> deleteSubtree ();
 	while (! arcs [false]. empty ())
 	{
-		Node* n = static_cast <Node*> (arcs [false]. front() -> node [false]);
+		TreeNode* n = static_cast <TreeNode*> (arcs [false]. front() -> node [false]);
 		delete n;
 	}
 }
 
 
 
-const Tree::Node* Tree::Node::makeRoot ()
+const Tree::TreeNode* Tree::TreeNode::makeRoot ()
 {
-	const Node* root_old = getTree (). root;
+	const TreeNode* root_old = getTree (). root;
 	ASSERT (root_old);
 	
-	Node* parent_new = nullptr;
-	Node* node = this;
+	TreeNode* parent_new = nullptr;
+	TreeNode* node = this;
 	while (node)
 	{
-		Node* parent_old = const_cast <Node*> (node->getParent ());
+		TreeNode* parent_old = const_cast <TreeNode*> (node->getParent ());
 	  node->setParent (parent_new);
 	  parent_new = node;
 	  node = parent_old;
@@ -1695,17 +1699,17 @@ const Tree::Node* Tree::Node::makeRoot ()
 
 
 
-void Tree::Node::getArea_ (uint distance,
-                           const Tree::Node* prev,
-                           VectorPtr<Tree::Node> &area,
-                           VectorPtr<Tree::Node> &boundary) const
+void Tree::TreeNode::getArea_ (uint distance,
+                               const Tree::TreeNode* prev,
+                               VectorPtr<Tree::TreeNode> &area,
+                               VectorPtr<Tree::TreeNode> &boundary) const
 {
   area << this;
 
   size_t degree = (size_t) (prev ? 1 : 0);
   if (distance)
   {
-    const Node* parent_ = getParent ();
+    const TreeNode* parent_ = getParent ();
     if (parent_ && parent_ != prev)
     {
       parent_->getArea_ (distance - 1, this, area, boundary);
@@ -1713,7 +1717,7 @@ void Tree::Node::getArea_ (uint distance,
     }
     for (const Arc* arc : arcs [false])
     {
-      const Node* child = static_cast <Node*> (arc->node [false]);
+      const TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
       if (child != prev)
       {
         child->getArea_ (distance - 1, this, area, boundary);
@@ -1752,10 +1756,10 @@ void Tree::qc () const
 	      print (cout);
 	    ERROR;
 	  }
-	  const Node* n = static_cast <const Node*> (node);
+	  const TreeNode* n = static_cast <const TreeNode*> (node);
 	  if (n->isLeaf ())
 	  {
-	    const string newickName (Node::name2newick (n->getNewickName (true)));
+	    const string newickName (TreeNode::name2newick (n->getNewickName (true)));
       if (names. contains (newickName))
       {
         cout << "Duplicate name: " << newickName << endl;
@@ -1833,8 +1837,8 @@ void Tree::printAsn (ostream &os) const
   bool first = true;
   for (const DiGraph::Node* n : nodes)
   {
-    const Node* node = static_cast <const Node*> (n);
-    const Node* parent = node->getParent ();
+    const TreeNode* node = static_cast <const TreeNode*> (n);
+    const TreeNode* parent = node->getParent ();
     if (! first)
       os << ',';
     os << "\n\
@@ -1869,7 +1873,7 @@ void Tree::printArcLengths (ostream &os) const
 {
   for (const DiGraph::Node* n : nodes)
   {
-    const Node* node = static_cast <const Node*> (n);
+    const TreeNode* node = static_cast <const TreeNode*> (n);
     if (n == root)
       continue;
   	const double dist = node->getParentDistance ();
@@ -1877,7 +1881,7 @@ void Tree::printArcLengths (ostream &os) const
   	{
   		os << node->getLcaName () << " " << dist << " " << node->getRootDistance ();
   		double distPar = 0;
-      if (const Node* parent = node->getParent ())
+      if (const TreeNode* parent = node->getParent ())
         if (parent != root)
         {
         	distPar = parent->getParentDistance ();
@@ -1897,8 +1901,8 @@ void Tree::printArcLengths (ostream &os) const
 
 
 
-Tree::Patristic::Patristic (const Node* leaf1_arg, 
-                            const Node* leaf2_arg,
+Tree::Patristic::Patristic (const TreeNode* leaf1_arg, 
+                            const TreeNode* leaf2_arg,
                             double distance_arg)
 : leaf1 (leaf1_arg)
 , leaf2 (leaf2_arg)
@@ -1918,11 +1922,11 @@ Tree::Patristic::Patristic (const Node* leaf1_arg,
 namespace 
 {
 
-typedef  map <const Tree::Node*, double>  Leaf2dist;
+typedef  map <const Tree::TreeNode*, double>  Leaf2dist;
  
 
 
-Vector<Tree::Patristic> node2leafDistances (const Tree::Node* node,
+Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
                                             Leaf2dist &leaf2dist) 
 // Output: leaf2dist
 {
@@ -1935,7 +1939,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::Node* node,
   else
 		for (const Tree::Arc* arc : node->arcs [false])
 		{
-			const Tree::Node* n = static_cast <Tree::Node*> (arc->node [false]);
+			const Tree::TreeNode* n = static_cast <Tree::TreeNode*> (arc->node [false]);
 			Leaf2dist nodeLeaf2dist;
 			res << node2leafDistances (n, nodeLeaf2dist);
 			ASSERT (! nodeLeaf2dist. empty ());
@@ -1968,9 +1972,9 @@ Vector<Tree::Patristic> Tree::getLeafDistances () const
 namespace 
 {
 
-bool getParentsOrTarget (const Tree::Node* from,
-			                   const Tree::Node* target,
-			                   Vector<const Tree::Node*> &parents) 
+bool getParentsOrTarget (const Tree::TreeNode* from,
+			                   const Tree::TreeNode* target,
+			                   VectorPtr<Tree::TreeNode> &parents) 
 // Return: true <=> from->descendentOf(target)
 {
 	ASSERT (from)
@@ -1993,8 +1997,8 @@ bool getParentsOrTarget (const Tree::Node* from,
 
 
 
-const Tree::Node* Tree::getLowestCommonAncestor (const Node* n1,
-	                                               const Node* n2) 
+const Tree::TreeNode* Tree::getLowestCommonAncestor (const TreeNode* n1,
+	                                                   const TreeNode* n2) 
 {
   IMPLY (n1 && n2, n1->graph == n2->graph);
   
@@ -2002,20 +2006,23 @@ const Tree::Node* Tree::getLowestCommonAncestor (const Node* n1,
   	  || ! n2
   	 )
   	return nullptr;
+  	
+  if (n1 == n2)
+    return n1;
 	
-	static Vector<const Node*> vec1;  // vec1. reserve (256);  // PAR
+	static VectorPtr<TreeNode> vec1;  
 	vec1. clear ();
 	if (getParentsOrTarget (n1, n2, vec1))
 		return n2;
 	ASSERT (! vec1. empty ());
 
-	static Vector<const Node*> vec2;  // vec2. reserve (256);  // PAR
+	static VectorPtr<TreeNode> vec2; 
 	vec2. clear ();
 	if (getParentsOrTarget (n2, n1, vec2))
 		return n1;
 	ASSERT (! vec2. empty ());
 	
-	const Node* m = nullptr;
+	const TreeNode* m = nullptr;
 	size_t i1 = vec1. size () - 1;
 	size_t i2 = vec2. size () - 1;
 	ASSERT (vec1 [i1] == vec2 [i2]);
@@ -2033,12 +2040,12 @@ const Tree::Node* Tree::getLowestCommonAncestor (const Node* n1,
 
 
 
-const Tree::Node* Tree::getLowestCommonAncestor (const VectorPtr<Node> &nodeVec) 
+const Tree::TreeNode* Tree::getLowestCommonAncestor (const VectorPtr<TreeNode> &nodeVec) 
 {
   if (nodeVec. empty ())
     return nullptr;
     
-	const Node* n = nodeVec [0];
+	const TreeNode* n = nodeVec [0];
 	FOR_START (size_t, i, 1, nodeVec. size ())
     n = getLowestCommonAncestor (n, nodeVec [i]);
 	return n;
@@ -2046,11 +2053,11 @@ const Tree::Node* Tree::getLowestCommonAncestor (const VectorPtr<Node> &nodeVec)
 
 
 
-Set<const Tree::Node*> Tree::getParents (const VectorPtr<Node> &nodeVec) 
+Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec) 
 {
-	Set<const Node*> s;  
-  const Node* lca = getLowestCommonAncestor (nodeVec);
-  for (const Node* n : nodeVec)
+	Set<const TreeNode*> s;  
+  const TreeNode* lca = getLowestCommonAncestor (nodeVec);
+  for (const TreeNode* n : nodeVec)
 	  while (n != lca)
 	  {
 	  	ASSERT (n);
@@ -2063,14 +2070,58 @@ Set<const Tree::Node*> Tree::getParents (const VectorPtr<Node> &nodeVec)
 
 
 
+VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
+                                         const TreeNode* n2)
+{ 
+  ASSERT (n1);
+  ASSERT (n2);
+  ASSERT (n1->graph == n2->graph);
+  
+  if (n1 == n2)
+    return VectorPtr<Tree::TreeNode> ();
+  
+	static VectorPtr<TreeNode> vec1;  
+	vec1. clear ();
+	if (getParentsOrTarget (n1, n2, vec1))
+		return vec1;
+	ASSERT (! vec1. empty ());
+
+	static VectorPtr<TreeNode> vec2; 
+	vec2. clear ();
+	if (getParentsOrTarget (n2, n1, vec2))
+		return vec2;
+	ASSERT (! vec2. empty ());
+
+	size_t i1 = vec1. size () - 1;
+	size_t i2 = vec2. size () - 1;
+	ASSERT (vec1 [i1] == vec2 [i2]);
+	while (vec1 [i1] == vec2 [i2])
+	{
+    vec1. pop_back ();
+    vec2. pop_back ();
+		ASSERT (i1);
+		ASSERT (i2);
+		i1--;
+		i2--;
+	}
+
+  VectorPtr<TreeNode> res;
+  res. reserve (vec1. size () + vec2. size ());
+  res << vec1 << vec2;
+  
+  return res;
+}
+
+
+
 void Tree::setRoot ()
 {
   root = nullptr;
   for (const DiGraph::Node* node : nodes)
-    if (! static_cast <const Node*> (node) -> getParent ())
+    if (! static_cast <const TreeNode*> (node) -> getParent ())
     {
       ASSERT (! root);
-      const_static_cast <Node*> (node) -> setParent (nullptr);
+      const_static_cast <TreeNode*> (node) -> setParent (nullptr);
     }
   IMPLY (! nodes. empty (), root);
 }
@@ -2084,7 +2135,7 @@ size_t Tree::deleteTransients ()
  		   it != nodes. end ();
  		  )
  	{
- 		Node* node = static_cast <Node*> (*it);
+ 		TreeNode* node = static_cast <TreeNode*> (*it);
  		it++;
  		if (node->deleteTransient ())
       n++;
@@ -2102,11 +2153,11 @@ size_t Tree::restrictLeaves (const Set<string> &leafNames,
  	insertAll (nodeVec, nodes);
  	for (DiGraph::Node* node_ : nodeVec)  
  	{
- 	  const Node* node = static_cast <const Node*> (node_);
+ 	  const TreeNode* node = static_cast <const TreeNode*> (node_);
     if (node->isLeafType ())
       if (! leafNames. contains (node->getName ()))
       {
-        deleteLeaf (const_cast <Node*> (node), deleteTransientAncestor);
+        deleteLeaf (const_cast <TreeNode*> (node), deleteTransientAncestor);
         n++;
       }
   }
@@ -2121,8 +2172,8 @@ bool Tree::compare_std (const DiGraph::Node* a,
 	ASSERT (a);
 	ASSERT (b);
 	ASSERT (a->graph == b->graph);
-	const Node* a_ = static_cast <const Node*> (a);
-	const Node* b_ = static_cast <const Node*> (b);
+	const TreeNode* a_ = static_cast <const TreeNode*> (a);
+	const TreeNode* b_ = static_cast <const TreeNode*> (b);
 
 	LESS_PART (*b_, *a_, getLeavesSize ());
   LESS_PART (*a_, *b_, getLeftmostDescendent  () -> getName ());
@@ -2986,6 +3037,8 @@ int Application::run (int argc,
   	
   	if (getFlag ("noprogress"))
   		Progress::disable ();
+  	if (getFlag ("profile"))
+  		Chronometer::enabled = true;;
   
   	const string jsonFName = getArg ("json");
   	ASSERT (! jRoot);
