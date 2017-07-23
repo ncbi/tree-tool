@@ -59,7 +59,7 @@ struct Sentence : Root
             const string &s) throw (BadPos);
     // After: grammar.setChar2terminal() 
     // Requires: Char in ASCII
-  void qc () const;
+  void qc () const final;
 
   size_t countWrongTerminalSyntagms () const;
     // Input: Syntagm::right
@@ -101,8 +101,8 @@ protected:
     , right (false)
     {}
 public:
-  void qc () const;
-  void saveText (ostream &os) const;
+  void qc () const override;
+  void saveText (ostream &os) const override;
 
   virtual const TerminalSyntagm* asTerminalSyntagm () const 
     { return nullptr; }
@@ -125,12 +125,12 @@ private:
   void init (const Position& begin_arg,
              const Terminal& terminal);
 public:
-  void qc () const;
+  void qc () const final;
 
-  const TerminalSyntagm* asTerminalSyntagm () const 
+  const TerminalSyntagm* asTerminalSyntagm () const final
     { return this; }
 
-  Vector<Char> str () const;
+  Vector<Char> str () const final;
 };
 
 
@@ -148,14 +148,14 @@ struct NonTerminalSyntagm : Syntagm
                       const Position& end_arg,
                       const Rule &rule_arg,
                       const VectorPtr<Syntagm> &children_arg);
-  void qc () const;
-  void saveText (ostream &os) const;
+  void qc () const final;
+  void saveText (ostream &os) const final;
 
-  const NonTerminalSyntagm* asNonTerminalSyntagm () const 
+  const NonTerminalSyntagm* asNonTerminalSyntagm () const final
     { return this; }
 
-  Vector<Char> str () const;
-  void setRight ();
+  Vector<Char> str () const final;
+  void setRight () final;
 };
 
 
@@ -198,7 +198,7 @@ struct Position : Root
     }
   TerminalSyntagm& init (const Grammar &grammar,
                          Char c_arg);
-  void qc () const;
+  void qc () const final;
 
   const NonTerminalSyntagm* getLongestSyntagm () const;
     // Return: may be nullptr
@@ -243,8 +243,8 @@ struct Rule : Root
       { return    & rule == & other. rule
                && rhsIt == other. rhsIt;
       }
-    void qc () const;
-    void saveText (ostream &os) const;
+    void qc () const final;
+    void saveText (ostream &os) const final;
 
     size_t getIndex () const;
     string getName () const;
@@ -299,11 +299,11 @@ private:
   void finish (Grammar &grammar);
     // Update: *grammar
 public:
-  void qc () const;
-  void saveText (ostream &os) const;
+  void qc () const final;
+  void saveText (ostream &os) const final;
 
 
-  bool empty () const
+  bool empty () const final
     { return rhs. empty (); }
   bool isLeftRecursive () const;
   bool isRightRecursive () const;
@@ -350,8 +350,8 @@ protected:
     , terminable (false)
     {}
 public:    
-  void qc () const;
-  void saveText (ostream &os) const;
+  void qc () const override;
+  void saveText (ostream &os) const override;
 
 
   virtual const Terminal* asTerminal () const
@@ -370,9 +370,9 @@ public:
 
   bool isRoot () const;
   Set<const Symbol*> getFirstSymbols () const
-    { return move (firstROs. getSymbols () << this); }
+    { return firstROs. getSymbols () << this; }
   Set<const Symbol*> getLastSymbols () const
-    { return move (lastROs. getSymbols () << this); }
+    { return lastROs. getSymbols () << this; }
 private:
   friend struct Grammar;
   void setErasable ();
@@ -414,10 +414,10 @@ struct Terminal : Symbol
     {}
     // Initial or final symbol of a sentence
   explicit Terminal (const string &name_arg);
-  void qc () const;
+  void qc () const final;
 
 
-  const Terminal* asTerminal () const
+  const Terminal* asTerminal () const final
     { return this; }
   static const Terminal* as (const Symbol* s) 
     { return s->asTerminal (); }
@@ -461,11 +461,11 @@ struct NonTerminal : Symbol
                         const Grammar &grammar_arg*/)
     : Symbol (name_arg /*, & grammar_arg*/)
     {}
-  void qc () const;
-  void saveText (ostream &os) const;
+  void qc () const final;
+  void saveText (ostream &os) const final;
 
 
-  const NonTerminal* asNonTerminal () const
+  const NonTerminal* asNonTerminal () const final
     { return this; }
   static const NonTerminal* as (const Symbol* s) 
     { return s->asNonTerminal (); }
@@ -726,7 +726,7 @@ struct SymbolGraph : DiGraph
       , reachable (false)
       {}
 
-    string getName () const
+    string getName () const final
       { return symbol. name; }
     void setReachable ();
       // From parent to children
@@ -822,7 +822,7 @@ struct ROGraph : DiGraph
       , ro (ro_arg)
       {}
 
-    string getName () const
+    string getName () const final
       { return ro. getName (); }
     Set<const Terminal*> getNextTerminals (bool out) const;
   };
@@ -845,7 +845,7 @@ struct ROGraph : DiGraph
       , rhs_pos1 (rhs_pos1_arg)
       , rhs_pos2 (rhs_pos2_arg)
       {}
-    void qc () const;  
+    void qc () const final;  
     
     string toString () const
       { return rule. str () + " at positions " +

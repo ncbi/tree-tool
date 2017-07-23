@@ -38,7 +38,7 @@ string chars2str (const Vector<Char> &vec)
     s += (char) c;
   }
   
-  return move (s);
+  return s;
 }
 
 
@@ -209,7 +209,7 @@ VectorPtr<NonTerminalSyntagm> Sentence::findSyntagms (const string& symbolName) 
             && syntagm->symbol. name == symbolName
            )
           vec << syntagm->asNonTerminalSyntagm ();
-  return move (vec);
+  return vec;
 }
 
 
@@ -286,7 +286,7 @@ void TerminalSyntagm::qc () const
 Vector<Char> TerminalSyntagm::str () const 
 { 
   Vector<Char> vec (1, begin. c); 
-  return move (vec);
+  return vec;
 }
 
 
@@ -300,7 +300,7 @@ NonTerminalSyntagm::NonTerminalSyntagm (const Position& begin_arg,
                                         const VectorPtr<Syntagm> &children_arg)
 : Syntagm (begin_arg, end_arg, rule_arg. lhs)
 , rule (rule_arg)
-, children (children_arg)  // move() ??
+, children (children_arg)  // move ??
 {
   const Syntagms* syntagms = findPtr (begin. nonTerminal2syntagms, & rule.lhs);
   ASSERT (syntagms);
@@ -357,7 +357,7 @@ Vector<Char> NonTerminalSyntagm::str () const
   for (const Position* pos = & begin; pos != & end; pos++)
     vec << pos->c;    
 */
-  return move (vec);
+  return vec;
 }
 
 
@@ -462,7 +462,7 @@ Set<const Symbol*> Rule::Occurrences::getSymbols () const
   Set<const Symbol*> res;
   for (const Rule::Occurrence ro : *this)
     res << ro. getSymbol ();
-  return move (res);
+  return res;
 }
 
 
@@ -547,7 +547,7 @@ Rule::Occurrences Rule::Occurrence::getFirstROs () const
 {
   Occurrences res (getSymbol () -> firstROs);
   res << *this;
-  return move (res);
+  return res;
 }
 
 
@@ -556,7 +556,7 @@ Rule::Occurrences Rule::Occurrence::getLastROs () const
 {
   Occurrences res (getSymbol () -> lastROs);
   res << *this;
-  return move (res);
+  return res;
 }
 
 
@@ -687,7 +687,7 @@ Rule::Occurrences Rule::canStartWith (const Symbol* s) const
       break;
   }
 
-  return move (ros);
+  return ros;
 }
 
 
@@ -708,7 +708,7 @@ Rule::Occurrences Rule::canEndWith (const Symbol* s) const
   }
   while (it != rhs. begin ());
 
-  return move (ros);
+  return ros;
 }
 #endif
 
@@ -2243,7 +2243,7 @@ VectorPtr<NonTerminal> Grammar::getCutSymbols () const
       new DiGraph::Arc (const_cast <DiGraph::Node*> (child), node);
   }
 
-  return move (res);
+  return res;
 }
 
 
