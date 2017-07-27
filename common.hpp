@@ -158,11 +158,19 @@ inline void toggle (ebool &b)
       b = ETRUE;
   }
 
+
+inline int getSign (bool b)
+  { return b ? 1 : -1; }
+
 inline void advance (size_t &index, 
                      size_t size)
   // Update: index: < size
   { index++; if (index == size) index = 0; }
   
+template <typename T> void swapGreater (T &a, T &b)
+  { if (a > b)
+      swap (a, b);
+  }
 
 template <typename T> bool maximize (T &a, T b)
   { if (a < b) { a = b; return true; } return false; }
