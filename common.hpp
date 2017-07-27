@@ -885,7 +885,7 @@ public:
              size_t &index) const
 	  // Output: index: valid if (bool)Return
 	  { for (index = 0; index < P::size (); index++)
-	      if (P::at (index) == value)
+	      if (P::operator[] (index) == value)
 	        return true;
 	    return false;
 	  }
@@ -925,16 +925,16 @@ public:
     	size_t lo = 0;  // vec.at(lo) <= value
     	size_t hi = P::size () - 1;  
     	// lo <= hi
-    	if (value < P::at (lo))
+    	if (value < P::operator[] (lo))
     	  return exact ? NO_INDEX : lo;
-    	if (P::at (hi) < value)
+    	if (P::operator[] (hi) < value)
     	  return NO_INDEX;
     	// at(lo) <= value <= at(hi)
     	for (;;)
     	{
 	    	const size_t m = (lo + hi) / 2;
-	    	if (   P::at (m) == value
-	    		  || P::at (m) <  value
+	    	if (   P::operator[] (m) == value
+	    		  || P::operator[] (m) <  value
 	    		 )
 	    		if (lo == m)  // hi in {lo, lo + 1}
 	    			break;
@@ -943,9 +943,9 @@ public:
 	      else
 	      	hi = m;
 	    }
-	    if (P::at (lo) == value)
+	    if (P::operator[] (lo) == value)
 	    	return lo;
-	    if (! exact || P::at (hi) == value)
+	    if (! exact || P::operator[] (hi) == value)
 	    	return hi;
 	    return NO_INDEX;
     }
@@ -981,27 +981,27 @@ public:
     	{ const size_t j = P::size () - 1 - i;
     		if (i >= j)
     			break;
-    	  swap (P::at (i), P::at (j));
+    	  swap (P::operator[] (i), P::operator[] (j));
     	}
     }
   void randomOrder (ulong seed)
 		{ Rand rand (seed);
 			for (T &t : *this)
-	      swap (t, P::at ((size_t) rand. get ((ulong) P::size ())));
+	      swap (t, P::operator[] ((size_t) rand. get ((ulong) P::size ())));
 		}
   void sortBubble ()  
     // Fast if *this is pre-sorted
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
-		      if (P::at (j + 1) > P::at (j))
-        	  swap (P::at (j), P::at (j + 1));
+		      if (P::operator[] (j + 1) > P::operator[] (j))
+        	  swap (P::operator[] (j), P::operator[] (j + 1));
 		      else
 		      	break;
     }
   T pop (size_t n = 1)
     { T t = T ();
       while (n)
-      { t = P::at (P::size () - 1);
+      { t = P::operator[] (P::size () - 1);
     	  P::pop_back ();
         n--;
       }
@@ -1074,14 +1074,14 @@ public:
 			P::clear ();  
 	  }
   void erasePtr (size_t index)
-    { delete P::at (index);
+    { delete P::operator[] (index);
       P::eraseAt (index);
     }
   void sortBubble ()
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
-		      if (* P::at (j + 1) > * P::at (j))
-        	  swap (P::at (j), P::at (j + 1));
+		      if (* P::operator[] (j + 1) > * P::operator[] (j))
+        	  swap (P::operator[] (j), P::operator[] (j + 1));
 		      else
 		      	break;
     }
@@ -1809,15 +1809,15 @@ struct Tree : DiGraph
 	  const TreeNode* makeRoot ();
 	    // Redirect TreeArc's so that this = getTree()->root
 	    // Return: old getTree()->root, !nullptr
-    void getArea (uint distance,
+    void getArea (uint radius,
                   VectorPtr<TreeNode> &area,
                   VectorPtr<TreeNode> &boundary) const
-      { getArea_ (distance, nullptr, area, boundary); }
+      { getArea_ (radius, nullptr, area, boundary); }
       // Output: area: connected TreeNode's with one root, distinct
       //         boundary: distinct
       //         area.contains(boundary)
   private:
-    void getArea_ (uint distance,
+    void getArea_ (uint radius,
                    const TreeNode* prev,
                    VectorPtr<TreeNode> &area,
                    VectorPtr<TreeNode> &boundary) const;
@@ -1835,12 +1835,11 @@ struct Tree : DiGraph
   				}
   			}
 	};
-	const TreeNode* root;
+	const TreeNode* root {nullptr};
 	  // nullptr <=> nodes.empty()
 
 
   Tree ()
-    : root (nullptr)
     {}
   void qc () const;
 	void saveText (ostream &os) const
@@ -1868,18 +1867,15 @@ struct Tree : DiGraph
     { return root->getSubtreeLength (); }
   struct Patristic
   {
-    const TreeNode* leaf1;
-    const TreeNode* leaf2;  
+    const TreeNode* leaf1 {nullptr};
+    const TreeNode* leaf2 {nullptr};  
       // != nullptr
       // leaf1->getName() < leaf2->getName()
-    double distance;
+    double distance {0};
     Patristic (const TreeNode* leaf1_arg, 
                const TreeNode* leaf2_arg,
                double distance_arg);        
     Patristic ()
-      : leaf1 (nullptr)       
-      , leaf2 (nullptr)
-      , distance (0)
       {}
   };
   Vector<Patristic> getLeafDistances () const;

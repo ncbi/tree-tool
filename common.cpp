@@ -218,7 +218,7 @@ bool goodName (const string &name)
 {
   if (name. empty ())
     return false;
-  if (name. at (0) == ' ')
+  if (name [0] == ' ')
     return false;
   if (*(name. end () - 1) == ' ')
     return false;
@@ -306,7 +306,7 @@ void strDeleteSet (string &s,
 		               const string &charSet)
 {
   FOR_REV (size_t, i, s. size ())
-    if (charInSet (s. at (i), charSet))
+    if (charInSet (s [i], charSet))
     	s. erase (i, 1);
 }
 
@@ -315,7 +315,7 @@ void strDeleteSet (string &s,
 void trimLeading (string &s)
 {
   size_t i = 0;
-  for (; i < s. size () && isSpace (s. at (i)); i++)
+  for (; i < s. size () && isSpace (s [i]); i++)
     ;
   s. erase (0, i);
 }
@@ -326,7 +326,7 @@ void trimTrailing (string &s)
 {
 	size_t i = s. size ();
 	while (i)
-		if (isSpace (s. at (i - 1)))
+		if (isSpace (s [i - 1]))
 			i--;
 		else
 			break;
@@ -1699,7 +1699,7 @@ const Tree::TreeNode* Tree::TreeNode::makeRoot ()
 
 
 
-void Tree::TreeNode::getArea_ (uint distance,
+void Tree::TreeNode::getArea_ (uint radius,
                                const Tree::TreeNode* prev,
                                VectorPtr<Tree::TreeNode> &area,
                                VectorPtr<Tree::TreeNode> &boundary) const
@@ -1707,12 +1707,12 @@ void Tree::TreeNode::getArea_ (uint distance,
   area << this;
 
   size_t degree = (size_t) (prev ? 1 : 0);
-  if (distance)
+  if (radius)
   {
     const TreeNode* parent_ = getParent ();
     if (parent_ && parent_ != prev)
     {
-      parent_->getArea_ (distance - 1, this, area, boundary);
+      parent_->getArea_ (radius - 1, this, area, boundary);
       degree++;
     }
     for (const Arc* arc : arcs [false])
@@ -1720,7 +1720,7 @@ void Tree::TreeNode::getArea_ (uint distance,
       const TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
       if (child != prev)
       {
-        child->getArea_ (distance - 1, this, area, boundary);
+        child->getArea_ (radius - 1, this, area, boundary);
         degree++;
       }
     }
