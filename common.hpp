@@ -1296,12 +1296,11 @@ struct Set : set<T>
 private:
 	typedef  set<T>  P;
 public:
-	bool universal;
+	bool universal {false};
 	  // true => empty()
 	
 
 	Set ()
-	  : universal (false)
 	  {}
 	explicit Set (bool universal_arg)
 	  : universal (universal_arg)
@@ -1464,35 +1463,30 @@ struct DiGraph : Root
   {
     friend struct DiGraph;
     
-    const DiGraph* graph;
+    const DiGraph* graph {nullptr};
   private:
     List<Node*>::iterator graphIt;
       // In graph->nodes
   public:
     List<Arc*> arcs [2 /*bool: out*/];
 
-    Node* scc;  
+    Node* scc {nullptr};  
       // Strongly-connected component
       // = root of SCC-subtree of DFS tree
       // scc->orderDfs <= orderDfs 
-    size_t orderDfs;
+    size_t orderDfs {0};
       // Order by depth-first search
       // 0 <=> not visited by DFS
   private:
-    bool inStack;  // auxiliary
+    bool inStack {false};  // auxiliary
       // => orderDfs
   public:
 
     explicit Node (DiGraph &graph_arg)
-			: graph (nullptr)
-			, scc (nullptr) 
-			, orderDfs (0)
-			, inStack (false)
 			{ attach (graph_arg); }
     Node (const Node &other)
       : Root (other)
       , DisjointCluster (other)
-      , graph (nullptr)
       , scc      (other. scc)
       , orderDfs (other. orderDfs)
       , inStack  (other. inStack)
@@ -1565,10 +1559,10 @@ struct DiGraph : Root
     friend struct DiGraph;
     friend struct Node;
    
-    Node* node [2 /*bool: out*/];
+    array <Node*, 2 /*bool: out*/> node;
       // !nullptr
   private:
-    List<Arc*>::iterator arcsIt [2 /*bool: out*/];
+    array <List<Arc*>::iterator, 2 /*bool: out*/> arcsIt;
       // in node [b] -> arcs [! b]
   public:
 
@@ -1933,7 +1927,7 @@ public:
 	uint n_max;
 	  // 0 <=> unknown
 	bool active;
-	uint n;
+	uint n {0};
 	string step;
 	uint displayPeriod;
 	
@@ -1941,7 +1935,6 @@ public:
 	                   uint displayPeriod_arg = 1)
 	  : n_max (n_max_arg)
 	  , active (! beingUsed && displayPeriod_arg)
-	  , n (0)
 	  , displayPeriod (displayPeriod_arg)
 	  { if (active) 
 	  	  beingUsed++; 
@@ -2276,13 +2269,12 @@ struct Csv : Root
 {
 private:
   const string &s;
-  size_t pos;
+  size_t pos {0};
 public:
 
   
   explicit Csv (const string &s_arg)
     : s (s_arg)
-    , pos (0)
     {}
   
   
