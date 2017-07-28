@@ -17,6 +17,7 @@ all:	\
   attr2_2phylip \
   attr2_multiply \
   attrs \
+  beta1_test \
   bootstrapReport \
   compareTrees \
   clust \
@@ -27,6 +28,10 @@ all:	\
   extractPairs \
   feature2dist \
   grammar_test \
+  linreg \
+  linreg_test \
+  logreg \
+  logreg_test \
 	makeDistTree \
 	makeFeatureTree \
   matrix_test \
@@ -38,6 +43,7 @@ all:	\
 	pairs2attr2 \
 	pairs2Boolean \
 	pca \
+	pca2clusters \
 	printDistTree \
   selColumn \
   setMinus \
@@ -85,6 +91,12 @@ attrs.o:  $(DM_HPP)
 attrsOBJS=attrs.o $(DM_OBJ) 
 attrs:	$(attrsOBJS)
 	$(CXX) -o $@ $(attrsOBJS) $(LIBS)
+	$(ECHO)
+
+beta1_test.o:  $(DM_HPP)
+beta1_testOBJS=beta1_test.o $(DM_OBJ)
+beta1_test:	$(beta1_testOBJS)
+	$(CXX) -o $@ $(beta1_testOBJS) $(LIBS)
 	$(ECHO)
 
 bootstrapReport.o:  $(COMMON_HPP)  
@@ -147,6 +159,30 @@ grammar_test.o:  $(COMMON_HPP) grammar.hpp
 grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(CPP_DIR)/grammar.o
 grammar_test:	$(grammar_testOBJS)
 	$(CXX) -o $@ $(grammar_testOBJS) $(LIBS)
+	$(ECHO)
+
+linreg.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
+linregOBJS=linreg.o $(PREDICT_OBJ)
+linreg:	$(linregOBJS)
+	$(CXX) -o $@ $(linregOBJS) $(LIBS)
+	$(ECHO)
+
+linreg_test.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
+linreg_testOBJS=linreg_test.o $(PREDICT_OBJ)
+linreg_test:	$(linreg_testOBJS)
+	$(CXX) -o $@ $(linreg_testOBJS) $(LIBS)
+	$(ECHO)
+
+logreg.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
+logregOBJS=logreg.o $(PREDICT_OBJ)
+logreg:	$(logregOBJS)
+	$(CXX) -o $@ $(logregOBJS) $(LIBS)
+	$(ECHO)
+
+logreg_test.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
+logreg_testOBJS=logreg_test.o $(PREDICT_OBJ)
+logreg_test:	$(logreg_testOBJS)
+	$(CXX) -o $@ $(logreg_testOBJS) $(LIBS)
 	$(ECHO)
 
 makeDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/dataset.hpp $(CPP_DIR)/distTree.hpp
@@ -213,6 +249,12 @@ pca.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
 pcaOBJS=pca.o $(DM_OBJ) $(CPP_DIR)/prediction.o
 pca:	$(pcaOBJS)
 	$(CXX) -o $@ $(pcaOBJS) $(LIBS)
+	$(ECHO)
+
+pca2clusters.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp
+pca2clustersOBJS=pca2clusters.o $(NUMERIC_OBJ)
+pca2clusters:	$(pca2clustersOBJS)
+	$(CXX) -o $@ $(pca2clustersOBJS) $(LIBS)
 	$(ECHO)
 
 printDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/distTree.hpp
