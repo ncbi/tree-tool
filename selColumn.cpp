@@ -1,9 +1,9 @@
 // selColumn.cpp
 
 #undef NDEBUG
-#include "../cpp/common.inc"
+#include "common.inc"
 
-#include "../cpp/common.hpp"
+#include "common.hpp"
 using namespace Common_sp;
 
 

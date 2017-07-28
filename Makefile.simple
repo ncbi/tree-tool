@@ -12,19 +12,44 @@ LIBS=
 
 all:	\
   algebra \
+  attr2_2pairs \
+  attr2_2paup \
+  attr2_2phylip \
+  attr2_multiply \
+  attrs \
+  bootstrapReport \
+  compareTrees \
+  clust \
   dataset_test \
+  distTriangle \
+  dm2objs \
+  dm2subset \
   extractPairs \
+  feature2dist \
   grammar_test \
+	makeDistTree \
+	makeFeatureTree \
   matrix_test \
+	mds \
+	mergeSimilarity \
+	mergeDistance \
+	mlst2dist \
   numeric_test \
+	pairs2attr2 \
+	pairs2Boolean \
+	pca \
+	printDistTree \
   selColumn \
   setMinus \
   setRandOrd \
+	sim2dist \
   splitList \
   test \
   trav \
-  unCgi
-
+	tree2dist \
+  unCgi \
+	uniKernel
+	
 
 algebra.o:  $(COMMON_HPP) $(CPP_DIR)/expr.hpp
 algebraOBJS=algebra.o $(CPP_DIR)/common.o $(CPP_DIR)/expr.o
@@ -32,10 +57,78 @@ algebra:	$(algebraOBJS)
 	$(CXX) -o $@ $(algebraOBJS) $(LIBS)
 	$(ECHO)
 
-dataset_test.o:  $(COMMON_HPP) $(DM_HPP)
+attr2_2pairs.o:  $(DM_HPP) 
+attr2_2pairsOBJS=attr2_2pairs.o $(DM_OBJ) 
+attr2_2pairs:	$(attr2_2pairsOBJS)
+	$(CXX) -o $@ $(attr2_2pairsOBJS) $(LIBS)
+	$(ECHO)
+
+attr2_2paup.o:  $(DM_HPP) 
+attr2_2paupOBJS=attr2_2paup.o $(DM_OBJ) 
+attr2_2paup:	$(attr2_2paupOBJS)
+	$(CXX) -o $@ $(attr2_2paupOBJS) $(LIBS)
+	$(ECHO)
+
+attr2_2phylip.o:  $(DM_HPP) 
+attr2_2phylipOBJS=attr2_2phylip.o $(DM_OBJ) 
+attr2_2phylip:	$(attr2_2phylipOBJS)
+	$(CXX) -o $@ $(attr2_2phylipOBJS) $(LIBS)
+	$(ECHO)
+
+attr2_multiply.o:  $(DM_HPP) 
+attr2_multiplyOBJS=attr2_multiply.o $(DM_OBJ) 
+attr2_multiply:	$(attr2_multiplyOBJS)
+	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
+	$(ECHO)
+
+attrs.o:  $(DM_HPP) 
+attrsOBJS=attrs.o $(DM_OBJ) 
+attrs:	$(attrsOBJS)
+	$(CXX) -o $@ $(attrsOBJS) $(LIBS)
+	$(ECHO)
+
+bootstrapReport.o:  $(COMMON_HPP)  
+# $(CPP_DIR)/distTree.hpp
+bootstrapReportOBJS=bootstrapReport.o $(CPP_DIR)/common.o
+# $(DISTTREE_OBJ)
+bootstrapReport:	$(bootstrapReportOBJS)
+	$(CXX) -o $@ $(bootstrapReportOBJS) $(LIBS)
+	$(ECHO)
+
+clust.o:  $(DM_HPP) 
+clustOBJS=clust.o $(DM_OBJ) 
+clust:	$(clustOBJS)
+	$(CXX) -o $@ $(clustOBJS) $(LIBS)
+	$(ECHO)
+
+compareTrees.o:  $(COMMON_HPP) $(CPP_DIR)/distTree.hpp $(CPP_DIR)/featureTree.hpp
+compareTreesOBJS=compareTrees.o $(DISTTREE_OBJ) $(CPP_DIR)/featureTree.o
+compareTrees:	$(compareTreesOBJS)
+	$(CXX) -o $@ $(compareTreesOBJS) $(LIBS)
+	$(ECHO)
+	
+dataset_test.o:  $(DM_HPP)
 dataset_testOBJS=dataset_test.o $(DM_OBJ)
 dataset_test:	$(dataset_testOBJS)
 	$(CXX) -o $@ $(dataset_testOBJS) $(LIBS)
+	$(ECHO)
+
+distTriangle.o:  $(DM_HPP) 
+distTriangleOBJS=distTriangle.o $(DM_OBJ) 
+distTriangle:	$(distTriangleOBJS)
+	$(CXX) -o $@ $(distTriangleOBJS) $(LIBS)
+	$(ECHO)
+
+dm2objs.o:  $(DM_HPP) 
+dm2objsOBJS=dm2objs.o $(DM_OBJ) 
+dm2objs:	$(dm2objsOBJS)
+	$(CXX) -o $@ $(dm2objsOBJS) $(LIBS)
+	$(ECHO)
+
+dm2subset.o:  $(DM_HPP) 
+dm2subsetOBJS=dm2subset.o $(DM_OBJ) 
+dm2subset:	$(dm2subsetOBJS)
+	$(CXX) -o $@ $(dm2subsetOBJS) $(LIBS)
 	$(ECHO)
 
 extractPairs.o:  $(COMMON_HPP)  
@@ -44,10 +137,28 @@ extractPairs:	$(extractPairsOBJS)
 	$(CXX) -o $@ $(extractPairsOBJS) $(LIBS)
 	$(ECHO)
 
+feature2dist.o:  $(DM_HPP) 
+feature2distOBJS=feature2dist.o $(DM_OBJ) 
+feature2dist:	$(feature2distOBJS)
+	$(CXX) -o $@ $(feature2distOBJS) $(LIBS)
+	$(ECHO)
+
 grammar_test.o:  $(COMMON_HPP) grammar.hpp
 grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(CPP_DIR)/grammar.o
 grammar_test:	$(grammar_testOBJS)
 	$(CXX) -o $@ $(grammar_testOBJS) $(LIBS)
+	$(ECHO)
+
+makeDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/dataset.hpp $(CPP_DIR)/distTree.hpp
+makeDistTreeOBJS=makeDistTree.o $(DISTTREE_OBJ)
+makeDistTree:	$(makeDistTreeOBJS)
+	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+makeFeatureTree.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/featureTree.hpp
+makeFeatureTreeOBJS=makeFeatureTree.o $(FEATURE_TREE_OBJ)
+makeFeatureTree:	$(makeFeatureTreeOBJS)
+	$(CXX) -o $@ $(makeFeatureTreeOBJS) $(LIBS)
 	$(ECHO)
 
 matrix_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/matrix.hpp
@@ -56,10 +167,58 @@ matrix_test:	$(matrix_testOBJS)
 	$(CXX) -o $@ $(matrix_testOBJS) $(LIBS)
 	$(ECHO)
 
+mds.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
+mdsOBJS=mds.o $(DM_OBJ) $(CPP_DIR)/prediction.o
+mds:	$(mdsOBJS)
+	$(CXX) -o $@ $(mdsOBJS) $(LIBS)
+	$(ECHO)
+
+mergeDistance.o:  $(DM_HPP) 
+mergeDistanceOBJS=mergeDistance.o $(DM_OBJ) 
+mergeDistance:	$(mergeDistanceOBJS)
+	$(CXX) -o $@ $(mergeDistanceOBJS) $(LIBS)
+	$(ECHO)
+
+mergeSimilarity.o:  $(DM_HPP) 
+mergeSimilarityOBJS=mergeSimilarity.o $(DM_OBJ) 
+mergeSimilarity:	$(mergeSimilarityOBJS)
+	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
+	$(ECHO)
+
+mlst2dist.o:  $(DM_HPP) 
+mlst2distOBJS=mlst2dist.o $(DM_OBJ) 
+mlst2dist:	$(mlst2distOBJS)
+	$(CXX) -o $@ $(mlst2distOBJS) $(LIBS)
+	$(ECHO)
+
 numeric_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp
 numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
 numeric_test:	$(numeric_testOBJS)
 	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
+	$(ECHO)
+
+pairs2attr2.o:  $(DM_HPP) 
+pairs2attr2OBJS=pairs2attr2.o $(DM_OBJ) 
+pairs2attr2:	$(pairs2attr2OBJS)
+	$(CXX) -o $@ $(pairs2attr2OBJS) $(LIBS)
+	$(ECHO)
+
+pairs2Boolean.o:  $(DM_HPP) 
+pairs2BooleanOBJS=pairs2Boolean.o $(DM_OBJ) 
+pairs2Boolean:	$(pairs2BooleanOBJS)
+	$(CXX) -o $@ $(pairs2BooleanOBJS) $(LIBS)
+	$(ECHO)
+
+pca.o:  $(DM_HPP) $(CPP_DIR)/prediction.hpp
+pcaOBJS=pca.o $(DM_OBJ) $(CPP_DIR)/prediction.o
+pca:	$(pcaOBJS)
+	$(CXX) -o $@ $(pcaOBJS) $(LIBS)
+	$(ECHO)
+
+printDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/distTree.hpp
+printDistTreeOBJS=printDistTree.o $(DISTTREE_OBJ)
+printDistTree:	$(printDistTreeOBJS)
+	$(CXX) -o $@ $(printDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
 selColumn.o:  $(COMMON_HPP)  
@@ -80,6 +239,12 @@ setRandOrd:	$(setRandOrdOBJS)
 	$(CXX) -o $@ $(setRandOrdOBJS) $(LIBS)
 	$(ECHO)
 
+sim2dist.o:  $(DM_HPP) 
+sim2distOBJS=sim2dist.o $(DM_OBJ) 
+sim2dist:	$(sim2distOBJS)
+	$(CXX) -o $@ $(sim2distOBJS) $(LIBS)
+	$(ECHO)
+
 splitList.o:  $(COMMON_HPP)  
 splitListOBJS=splitList.o $(CPP_DIR)/common.o
 splitList:	$(splitListOBJS)
@@ -98,8 +263,20 @@ trav:	$(travOBJS)
 	$(CXX) -o $@ $(travOBJS) $(LIBS)
 	$(ECHO)
 
+tree2dist.o:  $(COMMON_HPP) $(CPP_DIR)/dataset.hpp $(CPP_DIR)/distTree.hpp
+tree2distOBJS=tree2dist.o $(DISTTREE_OBJ)
+tree2dist:	$(tree2distOBJS)
+	$(CXX) -o $@ $(tree2distOBJS) $(LIBS)
+	$(ECHO)
+
 unCgi.o:  $(COMMON_HPP)  
 unCgiOBJS=unCgi.o $(CPP_DIR)/common.o
 unCgi:	$(unCgiOBJS)
 	$(CXX) -o $@ $(unCgiOBJS) $(LIBS)
+	$(ECHO)
+
+uniKernel.o:  $(DM_HPP) 
+uniKernelOBJS=uniKernel.o $(DM_OBJ) 
+uniKernel:	$(uniKernelOBJS)
+	$(CXX) -o $@ $(uniKernelOBJS) $(LIBS)
 	$(ECHO)

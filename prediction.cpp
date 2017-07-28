@@ -1,7 +1,7 @@
 // prediction.cpp
 
 #undef NDEBUG
-#include "../cpp/common.inc"
+#include "common.inc"
 
 #include "prediction.hpp"
 
