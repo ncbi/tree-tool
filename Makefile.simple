@@ -12,8 +12,11 @@ LIBS=
 
 all:	\
   algebra \
+  dataset_test \
   extractPairs \
   grammar_test \
+  matrix_test \
+  numeric_test \
   selColumn \
   setMinus \
   setRandOrd \
@@ -29,6 +32,12 @@ algebra:	$(algebraOBJS)
 	$(CXX) -o $@ $(algebraOBJS) $(LIBS)
 	$(ECHO)
 
+dataset_test.o:  $(COMMON_HPP) $(DM_HPP)
+dataset_testOBJS=dataset_test.o $(DM_OBJ)
+dataset_test:	$(dataset_testOBJS)
+	$(CXX) -o $@ $(dataset_testOBJS) $(LIBS)
+	$(ECHO)
+
 extractPairs.o:  $(COMMON_HPP)  
 extractPairsOBJS=extractPairs.o $(CPP_DIR)/common.o
 extractPairs:	$(extractPairsOBJS)
@@ -39,6 +48,18 @@ grammar_test.o:  $(COMMON_HPP) grammar.hpp
 grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(CPP_DIR)/grammar.o
 grammar_test:	$(grammar_testOBJS)
 	$(CXX) -o $@ $(grammar_testOBJS) $(LIBS)
+	$(ECHO)
+
+matrix_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/matrix.hpp
+matrix_testOBJS=matrix_test.o $(NUMERIC_OBJ) $(CPP_DIR)/matrix.o
+matrix_test:	$(matrix_testOBJS)
+	$(CXX) -o $@ $(matrix_testOBJS) $(LIBS)
+	$(ECHO)
+
+numeric_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp
+numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
+numeric_test:	$(numeric_testOBJS)
+	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
 	$(ECHO)
 
 selColumn.o:  $(COMMON_HPP)  
