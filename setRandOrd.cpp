@@ -1,0 +1,55 @@
+// setRandOrd.cpp
+
+#undef NDEBUG
+#include "../cpp/common.inc"
+
+#include "../cpp/common.hpp"
+using namespace Common_sp;
+
+
+
+namespace
+{
+
+struct ThisApplication : Application
+{
+  ThisApplication ()
+    : Application ("Print a random reordering of the list\nRequires: Line length < 1024")
+  	{
+  	  addPositional ("items", "File with items (end-of-line separated)");
+  	  addPositional ("seed", "Seed (>0)");
+  	}
+
+
+
+	void body () const final
+	{
+		const string items = getArg ("items");
+		const ulong seed  = str2<ulong> (getArg ("seed"));
+
+
+    Vector<string> vec;
+    {
+	    LineInput in (items, 100 * 1024);  // PAR
+	    vec = in. getVector ();
+	  }
+	  vec. randomOrder (seed);	  
+	  for (const string& s : vec)
+	    cout << s << endl;
+	}
+};
+
+
+
+}  // namespace
+
+
+
+int main (int argc, 
+          const char* argv[])
+{
+  ThisApplication app;
+  return app. run (argc, argv);
+}
+
+

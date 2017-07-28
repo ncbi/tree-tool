@@ -1,0 +1,84 @@
+include $(HOME)/MakeRules
+CPPFLAGS=$(OptCPPFLAGS) 
+#CPPFLAGS=$(DebugCPPFLAGS)
+
+CXX=g++
+COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c 
+LIBS=
+
+
+
+############################### Programs ################################
+
+all:	\
+  algebra \
+  extractPairs \
+  grammar_test \
+  selColumn \
+  setMinus \
+  setRandOrd \
+  splitList \
+  test \
+  trav \
+  unCgi
+
+
+algebra.o:  $(COMMON_HPP) $(CPP_DIR)/expr.hpp
+algebraOBJS=algebra.o $(CPP_DIR)/common.o $(CPP_DIR)/expr.o
+algebra:	$(algebraOBJS)
+	$(CXX) -o $@ $(algebraOBJS) $(LIBS)
+	$(ECHO)
+
+extractPairs.o:  $(COMMON_HPP)  
+extractPairsOBJS=extractPairs.o $(CPP_DIR)/common.o
+extractPairs:	$(extractPairsOBJS)
+	$(CXX) -o $@ $(extractPairsOBJS) $(LIBS)
+	$(ECHO)
+
+grammar_test.o:  $(COMMON_HPP) grammar.hpp
+grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(CPP_DIR)/grammar.o
+grammar_test:	$(grammar_testOBJS)
+	$(CXX) -o $@ $(grammar_testOBJS) $(LIBS)
+	$(ECHO)
+
+selColumn.o:  $(COMMON_HPP)  
+selColumnOBJS=selColumn.o $(CPP_DIR)/common.o
+selColumn:	$(selColumnOBJS)
+	$(CXX) -o $@ $(selColumnOBJS) $(LIBS)
+	$(ECHO)
+
+setMinus.o:  $(COMMON_HPP)  
+setMinusOBJS=setMinus.o $(CPP_DIR)/common.o
+setMinus:	$(setMinusOBJS)
+	$(CXX) -o $@ $(setMinusOBJS) $(LIBS)
+	$(ECHO)
+
+setRandOrd.o:  $(COMMON_HPP)  
+setRandOrdOBJS=setRandOrd.o $(CPP_DIR)/common.o
+setRandOrd:	$(setRandOrdOBJS)
+	$(CXX) -o $@ $(setRandOrdOBJS) $(LIBS)
+	$(ECHO)
+
+splitList.o:  $(COMMON_HPP)  
+splitListOBJS=splitList.o $(CPP_DIR)/common.o
+splitList:	$(splitListOBJS)
+	$(CXX) -o $@ $(splitListOBJS) $(LIBS)
+	$(ECHO)
+
+test.o:  $(COMMON_HPP)  
+testOBJS=test.o $(CPP_DIR)/common.o
+test:	$(testOBJS)
+	$(CXX) -o $@ $(testOBJS) $(LIBS)
+	$(ECHO)
+
+trav.o:  $(COMMON_HPP)  
+travOBJS=trav.o $(CPP_DIR)/common.o
+trav:	$(travOBJS)
+	$(CXX) -o $@ $(travOBJS) $(LIBS)
+	$(ECHO)
+
+unCgi.o:  $(COMMON_HPP)  
+unCgiOBJS=unCgi.o $(CPP_DIR)/common.o
+unCgi:	$(unCgiOBJS)
+	$(CXX) -o $@ $(unCgiOBJS) $(LIBS)
+	$(ECHO)
