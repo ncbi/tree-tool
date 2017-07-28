@@ -22,7 +22,7 @@ enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
                   , varianceType_exp     // Dissimilarity = -ln(P), var P = const
                   , varianceType_linExp  // Dissimilarity = -ln(P), var P = p*(1-p)
                   };
-extern const Vector<string> varianceTypeNames;
+extern const StringVector varianceTypeNames;
 extern VarianceType varianceType;
 
 inline VarianceType str2varianceType (const string &s)
@@ -53,7 +53,6 @@ inline Real dissim_max ()
   }
   // Solution of: dissim2mult(dissim_max) = epsilon
   // dissim < dissim_max() <=> !nullReal(dissim2mult(dissim))
-
 
 
 
@@ -379,7 +378,7 @@ protected:
 	  { os << from->getName () << " (parent = " << (from->getParent () ? from->getParent () -> getName () : "null") << ") -> " << to->getName () 
 	       << "  " << type () 
          << "  improvement = " << improvement; 
-	    // distance (number of arcs) from *from to *to to find the distribution of areaDistance_std ??
+	    // distance (number of arcs) from *from to *to to find the distribution of areaRadius_std ??
 	  }
 public:
 	void print (ostream& os) const override
@@ -637,19 +636,22 @@ private:
 public:
 
 
-	DistTree (const string &dirFile,
+  // Input: dissimFName: dmSuff>-file without <dmSuf>, contains attribute attrName
+	DistTree (const string &treeFName,
 	          const string &dissimFName,
 	          const string &attrName,
 	          bool sparse);
-	  // Input: dissimFName: may be empty(); <dmSuff>-file without <dmSyf>, contains attribute attrName
-	  //        attrName: may be empty
-	  // If dirFile like '%/' then loadTreeDir() else loadTreeFile()
-	  // Invokes: loadDissimDs(), dissimDs2ds()
+	  // Input: dissimFName and attrName: may be both empty
+	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2ds()
+	DistTree (const string &dirName,
+	          const string &dissimFName,
+	          const string &attrName);
+	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
+	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen()
 	DistTree (const string &dissimFName,
-	          const string &attrName,
-	          bool sparse);
-	  // Input: dissimFName: <dmSuff>-file without <dmSyf>, contains attribute attrName
+	          const string &attrName);
 	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin()
+  //
   DistTree (Prob branchProb,
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
@@ -682,6 +684,7 @@ private:
     // Return: a child of parent has been loaded
     // Output: topology, DTNode::len
     // Update: lineNum
+  void setName2leaf ();
   void loadDissimDs (const string &dissimFName,
                      const string &attrName);
     // Output: dissimDs
@@ -706,6 +709,7 @@ private:
   void neighborJoin ();
     // Greedy
     // Requires: star topology
+    // Time: O(n^3)
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
 public:
@@ -815,7 +819,7 @@ public:
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
 	  // Invokes: getBestChange(), applyChanges()
-	  // Time of 1 iteration: O(n^3 log n 2^areaDistance_std)
+	  // Time of 1 iteration: O(n^3 log n 2^areaRadius_std)
 	void optimizeIter (const string &output_tree);
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
@@ -841,7 +845,7 @@ public:
 	  // Return: min. distance to boundary
 	  // Output: boundary
 	  // center may be delete'd
-	  // Invokes: DistTree(center,areaDistance_std,), setAbsCriterion()
+	  // Invokes: DistTree(center,areaRadius_std,), setAbsCriterion()
 	  // Time: O(leaves^2 log leaves)
 private:
   const Change* getBestChange (const DTNode* from);
@@ -913,48 +917,6 @@ public:
                          const RealAttr1* logDiffAttr,
                          ostream &os) const;
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
-};
-
-
-
-
-struct DistTreeApplication : Application
-{
-  DistTreeApplication (const string &description_arg)
-    : Application (description_arg)
-    { // Input
-  	  addPositional ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file");
-  	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does");
-  	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
-  	  { string varianceTypes;
-    	  for (const string& s : varianceTypeNames)
-    	  { if (! varianceTypes. empty ())
-    	      varianceTypes += "|";    	    
-    	    varianceTypes += s;
-    	  }
-    	  addKey ("variance", "Dissimilarity variance: " + varianceTypes, varianceTypeNames [varianceType]);
-    	}
-    }
-    
-  struct DistTreeParam 
-  {
-		string input_tree;
-		string dataFName;
-		string dissimAttrName;
-		explicit DistTreeParam (const DistTreeApplication &app)
-		{ // Input
-		  input_tree     = app. getArg ("input_tree");
-		  dataFName      = app. getArg ("data");
-		  dissimAttrName = app. getArg ("dissim");
-		  // Global
-		  varianceType   = str2varianceType (app. getArg ("variance"));
-		  // QC
-		  if (input_tree. empty ())
-		    throw runtime_error ("No input tree file name");
-		  if (dataFName. empty () != dissimAttrName. empty ())
-		    throw runtime_error ("No disssimilarities file or dissimilarities attribute");
-		}
-  };   
 };
 
 

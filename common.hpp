@@ -1125,6 +1125,33 @@ public:
 
 
 
+struct StringVector : Vector<string>
+{
+private:
+	typedef  Vector<string>  P;
+public:
+	
+
+  StringVector ()
+    {}
+  StringVector (initializer_list<string> init)
+    : P (init)
+    {}
+
+
+  string toString (const string& sep) const
+    { string res;
+  	  for (const string& s : *this)
+  	  { if (! res. empty ())
+  	      res += sep;
+  	    res += s;
+  	  }
+  	  return res;
+  	}
+};
+
+
+
 struct DisjointCluster
 // Cormen, Leiserson, Rivest, Introduction to Algorithms, p. 449
 {
@@ -2049,8 +2076,8 @@ struct LineInput : Input
 	  	}
 	  	return s;
 	  }
-	Vector<string> getVector ()
-	  { Vector<string> vec;
+	StringVector getVector ()
+	  { StringVector vec;
 	    while (nextLine ())
 	      if (! line. empty ())
 	  	    vec << line;
@@ -2301,7 +2328,7 @@ private:
   
   
 void csvLine2vec (const string &line,
-                  Vector<string> &words);
+                  StringVector &words);
   // Output: words
   // Invokes: Csv
 

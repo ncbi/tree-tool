@@ -17,12 +17,16 @@ namespace
 
 
 
-struct ThisApplication : DistTreeApplication
+struct ThisApplication : Application
 {
 	ThisApplication ()
-	: DistTreeApplication ("Optimize topology and compute statistics for a distance tree")
+	: Application ("Optimize topology and compute statistics for a distance tree")
 	{
 		// Input
+	  addPositional ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
+	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does");
+	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
+	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", "Interior node denoted as \'A-B\', which is the LCA of A nd B. Re-root above the LCA in the middle of the arc");
@@ -38,20 +42,15 @@ struct ThisApplication : DistTreeApplication
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	//addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>"); ??
 	}
-
-
-
+	
+	
+	
 	void body () const
   {
-  #if 1
-    const DistTreeParam dtp (*this);
-  #else
-		const string input_tree          = getArg ("input_tree");
-		const string dataFName           = getArg ("data");
-		const string dissimAttrName      = getArg ("dissim");
-		             varianceType        = str2varianceType (getArg ("variance"));
-  #endif
-
+	  const string input_tree          = getArg ("input_tree");
+	  const string dataFName           = getArg ("data");
+	  const string dissimAttrName      = getArg ("dissim");
+	               varianceType        = str2varianceType (getArg ("variance"));  // Global    
 		const bool topology              = getFlag ("topology");
 		const bool reroot                = getFlag ("reroot");
 		      string reroot_at           = getArg ("reroot_at");
@@ -62,79 +61,88 @@ struct ThisApplication : DistTreeApplication
 		const string leaf_errors         = getArg ("leaf_errors");
 		const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
+		IMPLY (sparse_init, ! input_tree. empty () && ! isRight (input_tree, "/"));
 		ASSERT (! (reroot && ! reroot_at. empty ()));
-    
+    if (dataFName. empty () != dissimAttrName. empty ())
+      throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
 
-    DistTree tree (dtp. input_tree, dtp. dataFName, dtp. dissimAttrName, sparse_init);  
+
+    Common_sp::AutoPtr<DistTree> tree (input_tree. empty ()
+                                         ? new DistTree (dataFName, dissimAttrName)
+                                         : isRight (input_tree, "/")
+                                           ? new DistTree (input_tree, dataFName, dissimAttrName)
+                                           : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init)
+                                      );
+    ASSERT (tree. get ());
     if (verbose ())
-      tree. qc ();     
+      tree->qc ();     
       
-    tree. printInput (cout);
+    tree->printInput (cout);
     cout << "Max. possible dissimilarity = " << dissim_max () << endl;
     
-    if (tree. optimizable ())
+    if (tree->optimizable ())
     {
       if (topology)
       {
-        const size_t leaves = tree. root->getLeavesSize ();
+        const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
         {
           if (verbose ())
-            tree. saveFile (output_tree);  
-        //tree. setPrediction ();
-          EXEC_ASSERT (tree. optimizeLen ());
-          tree. finishChanges (); 
-          tree. optimizeLenLocal ();  
-          tree. finishChanges (); 
+            tree->saveFile (output_tree);  
+        //tree->setPrediction ();
+          EXEC_ASSERT (tree->optimizeLen ());
+          tree->finishChanges (); 
+          tree->optimizeLenLocal ();  
+          tree->finishChanges (); 
           if (verbose ())
           {
-            tree. qc ();
-            tree. print (cout);  
+            tree->qc ();
+            tree->print (cout);  
           }
-          tree. reportErrors (cout);
+          tree->reportErrors (cout);
           cout << endl;
-          tree. optimizeIter (output_tree);
-          tree. reroot ();  
+          tree->optimizeIter (output_tree);
+          tree->reroot ();  
         }
         else if (leaves == 3)
-          tree. optimize3 ();
+          tree->optimize3 ();
         else if (leaves == 2)
-          tree. optimize2 ();
+          tree->optimize2 ();
       }
       
-      if (tree. dissimAttr)  
+      if (tree->dissimAttr)  
       {
-        tree. optimizeAdd (sparse_add, output_tree);  
-        tree. reroot ();  
+        tree->optimizeAdd (sparse_add, output_tree);  
+        tree->reroot ();  
         if (verbose ())
-          tree. qc ();
+          tree->qc ();
       }
       // tree and dist-matrix match
 
       if (reroot)
-        tree. reroot ();
+        tree->reroot ();
       if (! reroot_at. empty ())
       {
-        const DTNode* underRoot = tree. lcaName2node (reroot_at);
-        tree. reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
+        const DTNode* underRoot = tree->lcaName2node (reroot_at);
+        tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
       }
         
       cout << endl;      
-      tree. reportErrors (cout);
+      tree->reportErrors (cout);
       cout << endl;
-      tree. printAbsCriterion_halves ();  
-      tree. setHeight ();
-      tree. setLeafAbsCriterion ();
+      tree->printAbsCriterion_halves ();  
+      tree->setHeight ();
+      tree->setLeafAbsCriterion ();
       if (verbose ())
-        tree. qc ();
+        tree->qc ();
 
-      cout << "Relative epsilon2_0 = " << sqrt (tree. setErrorDensities () / tree. dissim2_sum) * 100 << " %" << endl;
+      cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;
         // Must be << "Average arc error"
-      cout << "Mean residual = " << tree. getMeanResidual () << endl;
-      cout << "Correlation between residual^2 and dissimilarity = " << tree. getSqrResidualCorr () << endl;  // ??
+      cout << "Mean residual = " << tree->getMeanResidual () << endl;
+      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
 
       cout << endl << "Outliers:" << endl;
-      const size_t outliers = tree. printLeafRelLenErros (cout, 3);  // PAR
+      const size_t outliers = tree->printLeafRelLenErros (cout, 3);  // PAR
       cout << "# Outliers: " << outliers << endl << endl;
     }
     
@@ -142,36 +150,36 @@ struct ThisApplication : DistTreeApplication
     {
       Unverbose unv;
       if (verbose ())
-        tree. ds. print (cout);
+        tree->ds. print (cout);
     }
     if (verbose ())
     {
-      tree. setPrediction ();
-      tree. checkAbsCriterion ("setPrediction");
+      tree->setPrediction ();
+      tree->checkAbsCriterion ("setPrediction");
     }
   
-  //tree. sort ();
-    tree. saveFile (output_tree);
-    tree. saveFeatureTree (output_feature_tree);
+  //tree->sort ();
+    tree->saveFile (output_tree);
+    tree->saveFeatureTree (output_feature_tree);
     
-    cout << "# Interior nodes = " << tree. size (false) << endl;
-    cout << "Tree length = " << tree. getLength () << endl;
-    cout << "Min. discernable leaf length = " << tree. getMinLeafLen () << endl;
+    cout << "# Interior nodes = " << tree->size (false) << endl;
+    cout << "Tree length = " << tree->getLength () << endl;
+    cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
       // = 0 => epsilon2_0 > 0
       
     if (! leaf_errors. empty ())
     {
       OFStream f ("", leaf_errors, "");
-      tree. setLeafAbsCriterion ();
-      tree. printLeafRelLenErros (f, 0); 
+      tree->setLeafAbsCriterion ();
+      tree->printLeafRelLenErros (f, 0); 
     }
 
     if (! pair_residuals. empty ())
     {
       OFStream f ("", pair_residuals, dmExt);
-      const RealAttr1* resid2Attr   = tree. getResiduals2 ();
-      const RealAttr1* logDiffAttr = tree. getLogPredictionDiff ();
-      tree. pairResiduals2dm (resid2Attr, logDiffAttr, f); 
+      const RealAttr1* resid2Attr   = tree->getResiduals2 ();
+      const RealAttr1* logDiffAttr = tree->getLogPredictionDiff ();
+      tree->pairResiduals2dm (resid2Attr, logDiffAttr, f); 
     }
     
     if (! arc_length_stat. empty ())
@@ -180,7 +188,7 @@ struct ThisApplication : DistTreeApplication
       // cout << arcLenRel.SD after outlier removing ??
       OFStream f ("", arc_length_stat, "");
       ONumber on (f, 6, false);
-      tree. printArcLengths (f);
+      tree->printArcLengths (f);
     }
 	}
 };

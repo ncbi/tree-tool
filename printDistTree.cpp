@@ -15,23 +15,16 @@ namespace
 
 
 
-struct ThisApplication : DistTreeApplication
+struct ThisApplication : Application
 {
 	ThisApplication ()
-	: DistTreeApplication ("Print a tree made by makeDistTree")
+	: Application ("Print a tree made by makeDistTree")
 	{
-  #if 0
     // Input
 	  addPositional ("input_tree", "Tree file");
-	  addKey ("dist", dmSuff + "-file without \"" + dmSuff + "\"");
-	  addKey ("attr", "Dissimilarity attribute name", "dist");
-	  {
-  	  string varianceTypes;
-  	  for (const string& s : varianceTypeNames)
-  	    varianceTypes += " " + s;
-  	  addKey ("variance", "Dissimilarity variance: " + varianceTypes, "exp");
-  	}
-  #endif
+	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\"");
+	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
+	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);  
     // Output
 	  addKey ("format", "newick|ASN", "newick");
 	  addFlag ("min_name", "Minimal leaf names");
@@ -41,25 +34,22 @@ struct ThisApplication : DistTreeApplication
 
 	void body () const
   {
-  #if 1
-    const DistTreeParam dtp (*this);
-  #else
-		const string input_tree     = getArg ("input_tree");
-    const string dataFName      = getArg ("data");
+	  const string input_tree     = getArg ("input_tree");
+	  const string dataFName      = getArg ("data");
 	  const string dissimAttrName = getArg ("dissim");
-  	             varianceType = str2varianceType (getArg ("variance"));
-	#endif
-	  
-	  const string format       = getArg ("format");
-  	const bool min_name       = getFlag ("min_name");
-  //ASSERT (! dtp. input_tree. empty ());
+	               varianceType   = str2varianceType (getArg ("variance"));  // Global    	  
+	  const string format         = getArg ("format");
+  	const bool min_name         = getFlag ("min_name");
+    ASSERT (! input_tree. empty ());
+    if (dataFName. empty () != dissimAttrName. empty ())
+      throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
     
 
     // Reading dissimFName is slow ??!
     // Tree format should contain all quality attributes ??
-    DistTree tree (dtp. input_tree, dtp. dataFName, dtp. dissimAttrName, false);
+    DistTree tree (input_tree, dataFName, dissimAttrName, false);
     tree. sort ();
-    if (! dtp. dataFName. empty ())
+    if (! dataFName. empty ())
       tree. setLeafAbsCriterion ();
     tree. qc ();    
 
@@ -69,7 +59,7 @@ struct ThisApplication : DistTreeApplication
     else if (format == "ASN")
       tree. printAsn (cout);
     else
-      ERROR_MSG ("Unknown format " + format);
+      throw runtime_error ("Unknown format " + format);
 	}
 };
 

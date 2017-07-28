@@ -2483,7 +2483,7 @@ string Csv::getWord ()
   
   
 void csvLine2vec (const string &line,
-                  Vector<string> &words)
+                  StringVector &words)
 {
   words. clear ();
   Csv csv (line);

@@ -15,7 +15,7 @@ namespace DistTree_sp
 
 // VarianceType
 
-const Vector<string> varianceTypeNames {"lin", "exp", "linExp"};
+const StringVector varianceTypeNames {"lin", "exp", "linExp"};
 VarianceType varianceType = varianceType_linExp;
 
 
@@ -1016,32 +1016,21 @@ namespace
 
 
 
-DistTree::DistTree (const string &dirFile,
+DistTree::DistTree (const string &treeFName,
 	                  const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
 : dsSample (ds)
 {
-  ASSERT (! dirFile. empty ());
 	ASSERT (dissimFName. empty () == attrName. empty ());
 
   // Initial tree topology
-  bool lengthsSet = true;
-  if (isRight (dirFile, "/"))  // Directory
-  {
-    loadTreeDir (dirFile);
-    lengthsSet = false;
-  }
-  else
-    loadTreeFile (dirFile);
+  loadTreeFile (treeFName);
   ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
 
-  // name2leaf
-  for (const DiGraph::Node* node : nodes)
-    if (const Leaf* g = static_cast <const DTNode*> (node) -> asLeaf ())
-      name2leaf [g->name] = g;
+  setName2leaf ();
         
   if (dissimFName. empty ())
     setReprLeaves ();
@@ -1054,9 +1043,6 @@ DistTree::DistTree (const string &dirFile,
       throw runtime_error ("Disconnected objects");
   	setDiscernable ();  
   	
-    if (! lengthsSet)
-      setGlobalLen ();    
-
     topology2attrs (nodes);
     setPrediction ();
     setAbsCriterion (); 
@@ -1065,9 +1051,36 @@ DistTree::DistTree (const string &dirFile,
 
 
 
+DistTree::DistTree (const string &dirName,
+	                  const string &dissimFName,
+	                  const string &attrName)
+: dsSample (ds)
+{
+  // Initial tree topology
+  loadTreeDir (dirName);
+  ASSERT (root);
+  ASSERT (nodes. front () == root);
+  ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
+
+  setName2leaf ();
+        
+  loadDissimDs (dissimFName, attrName);
+  dissimDs2ds (false);  
+  if (! getConnected ())
+    throw runtime_error ("Disconnected objects");
+	setDiscernable ();  
+	
+  setGlobalLen ();    
+
+  topology2attrs (nodes);
+  setPrediction ();
+  setAbsCriterion (); 
+}
+
+
+
 DistTree::DistTree (const string &dissimFName,
-	                  const string &attrName,
-	                  bool sparse)
+	                  const string &attrName)
 : dsSample (ds)
 {
   loadDissimDs (dissimFName, attrName);
@@ -1082,12 +1095,9 @@ DistTree::DistTree (const string &dissimFName,
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
 
-  // name2leaf
-  for (const DiGraph::Node* node : nodes)
-    if (const Leaf* g = static_cast <const DTNode*> (node) -> asLeaf ())
-      name2leaf [g->name] = g;
+  setName2leaf ();
         
-  dissimDs2ds (sparse);  
+  dissimDs2ds (false);  
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
 	setDiscernable (); 
@@ -1152,10 +1162,7 @@ DistTree::DistTree (Prob branchProb,
   if (! static_cast <const DTNode*> (root) -> asSteiner ())
     throw runtime_error ("One-node tree");
 
-  // name2leaf
-  for (const DiGraph::Node* node : nodes)
-    if (const Leaf* g = static_cast <const DTNode*> (node) -> asLeaf ())
-      name2leaf [g->name] = g;
+  setName2leaf ();
         
   setReprLeaves ();
 }
@@ -1290,11 +1297,7 @@ DistTree::DistTree (const DTNode* center,
   ASSERT (isNan (static_cast <const DTNode*> (root) -> len));  
 
   
-  // name2leaf[]
-  ASSERT (name2leaf. empty ());
-  for (const DiGraph::Node* node : nodes)
-    if (const Leaf* g = static_cast <const DTNode*> (node) -> asLeaf ())
-      name2leaf [g->name] = g;
+  setName2leaf ();
 
   Set<const TreeNode*> boundarySet;
   boundarySet. insertAll (boundary);
@@ -1419,6 +1422,7 @@ DistTree::DistTree (const DTNode* center,
 void DistTree::loadTreeDir (const string &dir)
 {
 	ASSERT (! dir. empty ());
+  ASSERT (isRight (dir, "/"));
 
   Vector<string> fileNames;  
   {
@@ -1567,6 +1571,16 @@ bool DistTree::loadLines (const Vector<string>& lines,
   }
 	
 	return true;
+}
+
+
+
+void DistTree::setName2leaf ()
+{
+  ASSERT (name2leaf. empty ());
+  for (const DiGraph::Node* node : nodes)
+    if (const Leaf* g = static_cast <const DTNode*> (node) -> asLeaf ())
+      name2leaf [g->name] = g;
 }
 
 
@@ -1741,10 +1755,14 @@ namespace
     // !nullptr, discernable
     array <const DTNode*, 2> nodes;
       // nodes[0] < nodes[1]
-    Real dissim;
+    Real dissim {NAN};
       // !isNan()
-    Real mult;  
+    Real mult {NAN};  
 
+    Neighbors ()
+      { nodes [0] = nullptr;
+        nodes [1] = nullptr;
+      }
     Neighbors (const Leaf* leaf1,
                const Leaf* leaf2,
                Real dissim_arg,
@@ -1756,19 +1774,20 @@ namespace
         nodes [0] = leaf1->getDiscernable ();
         nodes [1] = leaf2->getDiscernable ();
         orderNodes ();
-        ASSERT (positive (dissim));
-        ASSERT (positive (mult));
-      }               
-
+      }
+      
+    void print (ostream &os) const
+      { os << nodes [0] << ' ' << nodes [1] << ' ' << dissim << ' ' << mult << endl; }
+    bool operator== (const Neighbors& other) const
+      { return    nodes [0] == other. nodes [0]
+               && nodes [1] == other. nodes [1];
+      }
     void orderNodes ()
       { swapGreater (nodes [0], nodes [1]); }
     bool same () const
       { return nodes [0] == nodes [1]; }
     bool merge (const Neighbors &from)
-      { if (! (   nodes [0] == from. nodes [0]
-               && nodes [1] == from. nodes [1]
-              )
-           )
+      { if (! (*this == from))
           return false;
         dissim = (dissim * mult + from. dissim * from. mult) / (mult + from. mult);
         mult += from. mult;
@@ -1800,6 +1819,8 @@ void DistTree::neighborJoin ()
 {
   ASSERT (ds. objs. size () >= 2);
   
+  cout << "Neighbor joining..." << endl;
+  
   // DTNode:subtreeLen: dissimilarity from other leaves
 
   clearSubtreeLen ();  
@@ -1807,9 +1828,15 @@ void DistTree::neighborJoin ()
   Vector<Neighbors> neighborsVec;  neighborsVec. reserve (ds. objs. size ());
   FOR (size_t, objNum, ds. objs. size ())
   {
-    Neighbors neighbors (obj2leaf1 [objNum], obj2leaf2 [objNum], (*target) [objNum], ds. objs [objNum] -> mult);
+    Neighbors neighbors ( obj2leaf1 [objNum]
+                        , obj2leaf2 [objNum]
+                        , (*target) [objNum]
+                        , 1  // better than Obj::mult ??
+                        );
     if (neighbors. same ())
       continue;
+    ASSERT (positive (neighbors. dissim));
+    ASSERT (positive (neighbors. mult));
     for (const bool first : Bool)
       neighbors. setNodeDissimAve (first, true);
     neighborsVec << neighbors;
@@ -1819,20 +1846,24 @@ void DistTree::neighborJoin ()
     return;
   
 
-  size_t i_best = NO_INDEX;
+  Progress prog ((uint) nodes. size ());
+  Neighbors neighbors_best;
   for (;;)
   {
+    prog ();
+    
     // Remove duplicate Neighbors 
     {
       Common_sp::sort (neighborsVec, Neighbors::compare);
       size_t toRemove = 0;
-      FOR_START (size_t, i, 1, neighborsVec. size ())
+      FOR (size_t, i, neighborsVec. size ())
       {
         const size_t j = i - toRemove;
         if (j != i)
           neighborsVec [j] = neighborsVec [i];
-        ASSERT (j);
-        if (i == i_best || neighborsVec [j - 1]. merge (neighborsVec [j]))
+        if (   neighborsVec [j] == neighbors_best 
+            || (j > 0 && neighborsVec [j - 1]. merge (neighborsVec [j]))
+           )
           toRemove++;
       }
       while (toRemove)
@@ -1844,23 +1875,40 @@ void DistTree::neighborJoin ()
     
     if (neighborsVec. size () == 1)
       break;
-
-    i_best = NO_INDEX;
+      
     bool first_best = false;
     Real dissim_min = INF;
-    FOR (size_t, i, neighborsVec. size ())
-      for (const bool first : Bool)
-        if (minimize (dissim_min, neighborsVec [i]. getParentDissim (first)))
-        {
-          i_best = i;
-          first_best = first;
-        }
-    ASSERT (i_best != NO_INDEX);
+    {
+      size_t i_best = NO_INDEX;
+      FOR (size_t, i, neighborsVec. size ())
+        for (const bool first : Bool)
+          if (minimize (dissim_min, neighborsVec [i]. getParentDissim (first)))
+          {
+            i_best = i;
+            first_best = first;
+          }
+      ASSERT (i_best != NO_INDEX);
+      neighbors_best = neighborsVec [i_best];
+    }
     ASSERT (dissim_min >= 0);
-    const Neighbors& neighbors_best = neighborsVec [i_best];
     ASSERT (dissim_min < neighbors_best. dissim);
     
-    auto newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [0] -> getParent ()), NAN);
+  #if 0
+    cout << neighborsVec. size () << " " << nodes. size () << " " << dissim_min << endl;  
+    if (nodes. size () > 600)
+    {
+      neighbors_best. print (cout);
+      cout << endl;
+      {
+        OFStream of ("", "neighbors", "");
+        for (const auto& n : neighborsVec)
+          n. print (of);
+      }
+      ERROR;
+    }
+  #endif
+
+    auto newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [first_best] -> getParent ()), 0);
     {
       DTNode* a = const_cast <DTNode*> (neighbors_best. nodes [0]);
       DTNode* b = const_cast <DTNode*> (neighbors_best. nodes [1]);
@@ -1878,8 +1926,10 @@ void DistTree::neighborJoin ()
     
     // neighborsVec
     for (Neighbors& neighbors : neighborsVec)
-      if (& neighbors != & neighbors_best)
+      if (! (neighbors == neighbors_best))
         for (const bool first : Bool)
+        {
+          bool found = false;
           for (const bool best_first : Bool)
             if (neighbors. nodes [first] == neighbors_best. nodes [best_first])
             {
@@ -1888,15 +1938,31 @@ void DistTree::neighborJoin ()
               neighbors. dissim -= neighbors_best. nodes [best_first] -> len;
               maximize (neighbors. dissim, 0.0);
               neighbors. setNodeDissimAve (! first, true);
-              neighbors. orderNodes ();
-              ASSERT (! neighbors. same ());
+              found = true;
             }
+          if (found)
+            neighbors. orderNodes ();
+          ASSERT (! neighbors. same ());
+        }
   }
+  ASSERT (neighborsVec. size () == 1);
   
   
-  // ??
+  Neighbors& neighbors = neighborsVec [0];
+  ASSERT (! neighbors. same ());
+  for (const bool first : Bool)  
+    const_cast <DTNode*> (neighbors. nodes [first]) -> len = neighbors. dissim / 2;  
 
   clearSubtreeLen ();  
+    
+  for (DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    if (! dtNode->attr)
+      dtNode->addAttr ();
+  }
+  
+  finishChanges ();
 }
 
 
@@ -2381,6 +2447,7 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
     {
       const DTNode* dtNode = static_cast <const DTNode*> (node);
       CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
+      ASSERT (attr);
       attr->setCompactBool (objNum, path. contains (dtNode));
     }
   }
