@@ -33,7 +33,9 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Algebraic manipulations")
-    {}
+    {
+      addPositional ("go", "Go");
+    }
 
 
 
