@@ -418,9 +418,11 @@ struct WeightedMeanVar
   Real weightedSum;
   Real weightedSum2;
   Real weights;
+
   
   WeightedMeanVar ()
     { clear (); }
+
     
   void clear ()
     { weightedSum = 0;
