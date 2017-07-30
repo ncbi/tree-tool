@@ -162,7 +162,7 @@ struct ThisApplication : Application
     tree->saveFile (output_tree);
     tree->saveFeatureTree (output_feature_tree);
     
-    cout << "# Interior nodes = " << tree->size (false) << endl;
+    cout << "# Interior nodes (with root) = " << tree->size (false) << endl;
     cout << "Tree length = " << tree->getLength () << endl;
     cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
       // = 0 => epsilon2_0 > 0

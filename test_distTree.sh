@@ -33,6 +33,15 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 
 echo ""
+echo "Perfect tree ..."
+makeDistTree "" -data data/tree4 -dissim dist > tree4.makeDistTree
+if ($?) exit 1
+diff tree4.makeDistTree data/tree4.makeDistTree
+if ($?) exit 1
+rm tree4.makeDistTree
+
+
+echo ""
 echo "mdsTree: Random tree ..."
 rm -r -f data/randomTree.dir/
 mdsTree.sh data/randomTree dist 2 >& /dev/null

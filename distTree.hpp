@@ -708,8 +708,8 @@ private:
     // Output: Leaf::len = 0, Leaf::discernable = false
   void neighborJoin ();
     // Greedy
-    // Requires: star topology
-    // Time: O(n^3)
+    // Requires: no missing dissimilarities, star topology
+    // Time: O(leaves^3)
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
 public:
