@@ -1789,9 +1789,10 @@ namespace
         dissim = (dissim + from. dissim) / 2;
         return true;
       }
-    Real getParentDissim (bool first,
-                          size_t n) const
-      { return 0.5 * max (0.0, dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2) * getSign (first)); }
+    Real getCriterion (size_t n) const
+      { return dissim - (nodes [0] -> len + nodes [1] -> len) / (Real) (n - 2); }
+    Real getParentDissim (size_t n) const
+      { return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); }
     static bool compare (const Neighbors& n1,
                          const Neighbors& n2)
       { LESS_PART (n1, n2, nodes [0]);
@@ -1889,17 +1890,13 @@ void DistTree::neighborJoin ()
     Steiner* newNode = nullptr;
     {
       // neighbors_best
-      bool first_best = false;
-      Real dissim_min = INF;
+      Real dissim_min = NAN;
       {
+        Real criterion = INF;
         size_t i_best = NO_INDEX;
         FOR (size_t, i, neighborsVec. size ())
-          for (const bool first : Bool)
-            if (minimize (dissim_min, neighborsVec [i]. getParentDissim (first, n)))
-            {
-              i_best = i;
-              first_best = first;
-            }
+          if (minimize (criterion, neighborsVec [i]. getCriterion (n)))
+            i_best = i;
         ASSERT (i_best != NO_INDEX);
         neighbors_best = neighborsVec [i_best];
         if (verbose ())
@@ -1907,14 +1904,13 @@ void DistTree::neighborJoin ()
           cout << endl << "Best: ";
           neighbors_best. print (cout);
         }
+        dissim_min = neighbors_best. getParentDissim (n);
       }
       ASSERT (dissim_min >= 0);
-      ASSERT (dissim_min < neighbors_best. dissim);
+      ASSERT (dissim_min <= neighbors_best. dissim);
       {
         DTNode* a = const_cast <DTNode*> (neighbors_best. nodes [0]);
         DTNode* b = const_cast <DTNode*> (neighbors_best. nodes [1]);
-        if (! first_best)
-          swap (a, b);
         const Real dissim_sum_a = a->len;
         const Real dissim_sum_b = b->len;
         a->len = dissim_min;
@@ -1923,7 +1919,7 @@ void DistTree::neighborJoin ()
         const Real dissim_sum = (  dissim_sum_a - neighbors_best. dissim - (Real) (n - 2) * a->len
                                  + dissim_sum_b - neighbors_best. dissim - (Real) (n - 2) * b->len
                                 ) / 2;
-        newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [first_best] -> getParent ()), dissim_sum);
+        newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [0] -> getParent ()), dissim_sum);
         a->setParent (newNode);
         b->setParent (newNode);
         if (verbose ())
@@ -1946,7 +1942,7 @@ void DistTree::neighborJoin ()
               neighbors. dissim -= neighbors_best. nodes [best_first] -> len;
               maximize (neighbors. dissim, 0.0);
               const_cast <DTNode*> (neighbors. nodes [! first]) -> len += neighbors. dissim / 2;  
-                // Will be done twice for neighbors. nodes [! first]
+                // Done twice for neighbors. nodes [! first]
               found = true;
             }
           if (found)
