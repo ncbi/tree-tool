@@ -1791,6 +1791,7 @@ namespace
       }
     Real getCriterion (size_t n) const
       { return dissim - (nodes [0] -> len + nodes [1] -> len) / (Real) (n - 2); }
+      // James A. Studier, Karl J. Keppler, A Note on the Neighbor-Joining Algorithm of Saitou and Nei
     Real getParentDissim (size_t n) const
       { return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); }
     static bool compare (const Neighbors& n1,
