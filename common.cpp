@@ -1318,9 +1318,9 @@ void DiGraph::contractScc ()
 
 
 
-Set<const DiGraph::Node*> DiGraph::getEnds (bool out) const
+VectorPtr<DiGraph::Node> DiGraph::getEnds (bool out) const
 {
-  Set<const Node*> s;
+  VectorPtr<Node> s;
   for (const Node* node : nodes)
     if (node->arcs [out]. empty ())
       s << node;

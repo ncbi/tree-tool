@@ -1917,7 +1917,8 @@ void DistTree::neighborJoin ()
         Real criterion = INF;
         size_t i_best = NO_INDEX;
         FOR (size_t, i, neighborsVec. size ())
-          if (minimize (criterion, neighborsVec [i]. getCriterion (n)))
+          // P (criterion1 < criterion2) ??
+          if (minimize (criterion, neighborsVec [i]. getCriterion (n)))            
             i_best = i;
         ASSERT (i_best != NO_INDEX);
         neighbors_best = neighborsVec [i_best];
@@ -2455,9 +2456,9 @@ const DTNode* DistTree::lcaName2node (const string &lcaName) const
 
 
 
-Set<const DTNode*> DistTree::getDiscernables () const
+VectorPtr<DTNode> DistTree::getDiscernables () const
 {
-  Set<const DTNode*> s;
+  VectorPtr<DTNode> s;
   for (const DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
       s << leaf->getDiscernable ();

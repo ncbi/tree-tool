@@ -1676,11 +1676,12 @@ public:
     // Requires: After scc()
     // Invokes: Node::contract()
     // Time: O(n + m log n)
-  Set<const Node*> getEnds (bool out) const;
+  VectorPtr<Node> getEnds (bool out) const;
+    // Return: distinct, !nullptr
     // Input: out: false - roots
     //             true  - leaves
   const Node* getRoot (bool out) const
-		{ const Set<const DiGraph::Node*> ends (getEnds (out));
+		{ const VectorPtr<DiGraph::Node> ends (getEnds (out));
 			if (ends. size () == 1)
 			  return * ends. begin ();
 			return nullptr;

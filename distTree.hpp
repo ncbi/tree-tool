@@ -735,7 +735,7 @@ public:
     { return dissimDs. get () ? dissimDs->objs. size () - name2leaf. size () : 0; }
   size_t dissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
-  Set<const DTNode*> getDiscernables () const;
+  VectorPtr<DTNode> getDiscernables () const;
 	void printInput (ostream &os) const;
 	bool optimizable () const
 	  { return ! ds. attrs. empty (); }
