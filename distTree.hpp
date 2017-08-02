@@ -652,6 +652,7 @@ public:
 	          const string &attrName);
 	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin()
   //
+  explicit DistTree (const string &newickFName);
   DistTree (Prob branchProb,
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
@@ -710,6 +711,8 @@ private:
     // Greedy
     // Requires: no missing dissimilarities, star topology
     // Time: O(leaves^3)
+  void newick2node (ifstream &f,
+                    Steiner* parent);
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
 public:

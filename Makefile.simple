@@ -39,6 +39,7 @@ all:	\
 	mergeSimilarity \
 	mergeDistance \
 	mlst2dist \
+	newick2tree \
   numeric_test \
 	pairs2attr2 \
 	pairs2Boolean \
@@ -225,6 +226,12 @@ mlst2dist.o:  $(DM_HPP)
 mlst2distOBJS=mlst2dist.o $(DM_OBJ) 
 mlst2dist:	$(mlst2distOBJS)
 	$(CXX) -o $@ $(mlst2distOBJS) $(LIBS)
+	$(ECHO)
+
+newick2tree.o:  $(COMMON_HPP) $(CPP_DIR)/distTree.hpp
+newick2treeOBJS=newick2tree.o $(DISTTREE_OBJ)
+newick2tree:	$(newick2treeOBJS)
+	$(CXX) -o $@ $(newick2treeOBJS) $(LIBS)
 	$(ECHO)
 
 numeric_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp

@@ -1111,6 +1111,27 @@ DistTree::DistTree (const string &dissimFName,
 
 
 
+DistTree::DistTree (const string &newickFName)
+: dsSample (ds)
+{ 
+  {
+    ifstream f (newickFName);
+    newick2node (f, nullptr);
+  }
+
+	ASSERT (root);
+  ASSERT (nodes. front () == root);
+  if (! static_cast <const DTNode*> (root) -> asSteiner ())
+    throw runtime_error ("One-node tree");
+    
+  finishChanges ();
+
+  setName2leaf ();        
+  setReprLeaves ();
+}
+
+
+
 DistTree::DistTree (Prob branchProb,
                     size_t leafNum_max)
 : dsSample (ds)
@@ -1974,6 +1995,55 @@ void DistTree::neighborJoin ()
 
 
 
+void DistTree::newick2node (ifstream &f,
+                            Steiner* parent)
+{
+  char c;
+  f >> c;
+  DTNode* node = nullptr;
+  if (c == '(')
+  {
+    auto st = new Steiner (*this, parent, NAN);
+    for (;;)
+    {
+      newick2node (f, st);
+      f >> c;
+      if (c == ')')
+        break;
+      if (c != ',')
+        throw runtime_error ("Comma expected");
+    }
+    f >> c;
+    node = st;
+  }
+  else
+  {
+    string name;
+    while (c != ':' && c != ';')
+    {
+      name += c;
+      f >> c;
+    }
+    if (name. empty ())
+      throw runtime_error ("Empty name");
+    node = new Leaf (*this, parent, NAN, name);
+  }
+  ASSERT (node);
+  
+  if (c == ';')
+    return;
+  
+  if (c != ':')
+    throw runtime_error ("':' expected");
+
+  Real len;
+  f >> len;
+  node->len = max (0.0, len);
+}
+
+
+
+
 void DistTree::loadDissimFinish ()
 {
   ASSERT (! prediction);
@@ -2585,6 +2655,8 @@ Real DistTree::getAbsCriterion () const
 
 void DistTree::checkAbsCriterion (const string &title) const
 {
+  if (! optimizable ())
+    return;
   cout << "checkAbsCriterion: " << title << endl;
   qc ();
 	const Real absCriterion_new = getAbsCriterion ();
