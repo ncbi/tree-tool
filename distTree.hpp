@@ -584,6 +584,7 @@ struct ChangeToCousin : Swap
 // DistTree
 
 struct DistTree : Tree
+// Least-squares distance tree
 // Of DTNode*
 // Steiner tree
 // nodes.size() >= 2
