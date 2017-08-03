@@ -18,8 +18,10 @@ all:	\
   attr2_multiply \
   attrs \
   beta1_test \
+  binomialCdf \
   bootstrapReport \
   compareTrees \
+  char2attr \
   clust \
   dataset_test \
   distTriangle \
@@ -40,6 +42,7 @@ all:	\
 	mergeDistance \
 	mlst2dist \
 	newick2tree \
+	normalCdf \
   numeric_test \
 	pairs2attr2 \
 	pairs2Boolean \
@@ -52,6 +55,8 @@ all:	\
 	sim2dist \
   splitList \
   test \
+  testZipf \
+  threshold \
   trav \
 	tree2dist \
   unCgi \
@@ -100,12 +105,24 @@ beta1_test:	$(beta1_testOBJS)
 	$(CXX) -o $@ $(beta1_testOBJS) $(LIBS)
 	$(ECHO)
 
+binomialCdf.o:  $(DM_HPP)
+binomialCdfOBJS=binomialCdf.o $(DM_OBJ)
+binomialCdf:	$(binomialCdfOBJS)
+	$(CXX) -o $@ $(binomialCdfOBJS) $(LIBS)
+	$(ECHO)
+
 bootstrapReport.o:  $(COMMON_HPP)  
 # $(CPP_DIR)/distTree.hpp
 bootstrapReportOBJS=bootstrapReport.o $(CPP_DIR)/common.o
 # $(DISTTREE_OBJ)
 bootstrapReport:	$(bootstrapReportOBJS)
 	$(CXX) -o $@ $(bootstrapReportOBJS) $(LIBS)
+	$(ECHO)
+
+char2attr.o:  $(DM_HPP) 
+char2attrOBJS=char2attr.o $(DM_OBJ) 
+char2attr:	$(char2attrOBJS)
+	$(CXX) -o $@ $(char2attrOBJS) $(LIBS)
 	$(ECHO)
 
 clust.o:  $(DM_HPP) 
@@ -234,6 +251,12 @@ newick2tree:	$(newick2treeOBJS)
 	$(CXX) -o $@ $(newick2treeOBJS) $(LIBS)
 	$(ECHO)
 
+normalCdf.o:  $(DM_HPP)
+normalCdfOBJS=normalCdf.o $(DM_OBJ)
+normalCdf:	$(normalCdfOBJS)
+	$(CXX) -o $@ $(normalCdfOBJS) $(LIBS)
+	$(ECHO)
+
 numeric_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp
 numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
 numeric_test:	$(numeric_testOBJS)
@@ -304,6 +327,18 @@ test.o:  $(COMMON_HPP)
 testOBJS=test.o $(CPP_DIR)/common.o
 test:	$(testOBJS)
 	$(CXX) -o $@ $(testOBJS) $(LIBS)
+	$(ECHO)
+
+testZipf.o:  $(DM_HPP) 
+testZipfOBJS=testZipf.o $(DM_OBJ) 
+testZipf:	$(testZipfOBJS)
+	$(CXX) -o $@ $(testZipfOBJS) $(LIBS)
+	$(ECHO)
+
+threshold.o:  $(DM_HPP) 
+thresholdOBJS=threshold.o $(DM_OBJ) 
+threshold:	$(thresholdOBJS)
+	$(CXX) -o $@ $(thresholdOBJS) $(LIBS)
 	$(ECHO)
 
 trav.o:  $(COMMON_HPP)  
