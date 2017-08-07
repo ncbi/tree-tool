@@ -1345,20 +1345,9 @@ DistTree::DistTree (const DTNode* center,
   ASSERT (boundarySet. size () == name2leaf. size ());
 
   // newLeaves2boundary
-  {
-    const Node2Node new2old (DiGraph::reverse (old2new));
-    ASSERT (new2old. size () == old2new. size ());
-    for (const DiGraph::Node* node : nodes)
-    {
-      const DiGraph::Node* node_old = findPtr (new2old, node);  // May be nullptr
-      ASSERT ((bool) static_cast <const DTNode*> (node) -> asLeaf () == boundarySet. contains (static_cast <const TreeNode*> (node_old)));
-      if (static_cast <const DTNode*> (node) -> asLeaf ())
-      {
-        ASSERT (node_old);
-        newLeaves2boundary [node] = node_old;
-      }
-    }
-  }
+  for (const auto it : old2new)
+    if (static_cast <const DTNode*> (it. second) -> asLeaf ())
+      newLeaves2boundary [it. second] = it. first;
   ASSERT (newLeaves2boundary. size () == boundary. size ());
   
 
@@ -1385,28 +1374,29 @@ DistTree::DistTree (const DTNode* center,
 
   // ds.objs[]->mult, *target: sum
   const VectorOwn<Obj>& wholeObjs = wholeTree. ds. objs;
+  VectorPtr<TreeNode> extremes (2);  // temporary
   FOR (size_t, objNum_whole, wholeObjs. size ())
   {
     if (wholeObjs [objNum_whole] -> mult == 0)
       continue;
       
-    const VectorPtr<TreeNode> path (wholeTree. getPath ( wholeTree. obj2leaf1 [objNum_whole]
-                                                       , wholeTree. obj2leaf2 [objNum_whole]
-                                                       )
-                                   );
+    VectorPtr<TreeNode> path (wholeTree. getPath ( wholeTree. obj2leaf1 [objNum_whole]
+                                                 , wholeTree. obj2leaf2 [objNum_whole]
+                                                 )
+                             );
     const Real dist_hat_whole = path2prediction (path);
-    Set<const TreeNode*> pathSet (path);
-    pathSet. intersect (areaSet);
-    pathSet. erase (area_root);    
-    if (pathSet. empty ())
+
+    path. filter ([&] (size_t i) { return ! areaSet. contains (path [i]) || path [i] == area_root; });    
+    if (path. empty ())
       continue;
 
-    VectorPtr<TreeNode> path_new;  path_new. reserve (pathSet. size ());
-    insertAll (path_new, pathSet);
-    const Real dist_hat_sub = path2prediction (path_new);
+    const Real dist_hat_sub = path2prediction (path);
 
-    Set<const TreeNode*> extremes (pathSet);
-    extremes. intersect (boundarySet);
+    // extremes
+    extremes. clear ();
+    for (const TreeNode* node : path)
+      if (boundarySet. contains (node))
+        extremes << node;
     ASSERT (! extremes. empty ());
     ASSERT (extremes. size () <= 2);
     if (extremes. size () == 1)
@@ -1884,26 +1874,13 @@ void DistTree::neighborJoin ()
     prog ();
     
     // Remove duplicate Neighbors 
-    {
-      Common_sp::sort (neighborsVec, Neighbors::compare);
-      size_t toRemove = 0;
-      FOR (size_t, i, neighborsVec. size ())
-      {
-        const size_t j = i - toRemove;
-        if (j != i)
-          neighborsVec [j] = neighborsVec [i];
-        if (   neighborsVec [j] == neighbors_best 
-            || (j > 0 && neighborsVec [j - 1]. merge (neighborsVec [j]))
-           )
-          toRemove++;
-      }
-      while (toRemove)
-      {
-        neighborsVec. pop_back ();
-        toRemove--;
-      }
-    }
-    
+    Common_sp::sort (neighborsVec, Neighbors::compare);
+    neighborsVec. filter ([&] (size_t i) 
+                            { return    neighborsVec [i] == neighbors_best 
+                                     || (i && neighborsVec [i - 1]. merge (neighborsVec [i]));
+                            }
+                         );    
+
     if (neighborsVec. size () == 1)
       break;
     ASSERT (n > 2);

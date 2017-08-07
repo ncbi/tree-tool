@@ -1026,6 +1026,21 @@ public:
       }
     	return t;
     }
+  template <typename Condition /*on index*/>
+    void filter (Condition cond)
+      { size_t toDelete = 0;
+        for (size_t i = 0; i < P::size (); i++)
+        { const size_t j = i - toDelete;
+          if (j != i)
+            (*this) [j] = (*this) [i];
+          if (cond (j))
+            toDelete++;
+        }
+        while (toDelete)
+        { P::pop_back ();
+          toDelete--;
+        }
+      }
 };
 
 

@@ -674,7 +674,7 @@ public:
     //               discernable
     //         area_root: !nullptr
     //         newLeaves2boundary
-	  // Time: O(wholeDs.leaves^2 log wholeDs.leaves) + f(|area|), where wholeDs = center->getDistTree().ds
+	  // Time: O(wholeDs.leaves^2 log(wholeDs.leaves)) + f(|area|), where wholeDs = center->getDistTree().ds
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -774,21 +774,21 @@ private:
   friend struct Swap;
   void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
     // Output: DTNode::attrs
-	  // Time: O(leaves^2 (log leaves + |nodes_arg|))
+	  // Time: O(leaves^2 log(leaves) |nodes_arg|)
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
   void setGlobalLen ();
     // Output: DTNode::subtreeLen, DTNode::len
-	  // Time: O(leaves^2 log leaves)
+	  // Time: O(leaves^2 log(leaves))
 public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len
-	  // Time: O(path.size()) = O(log leaves)
+	  // Time: O(path.size()) = O(log(leaves))
   void setPrediction ();
     // Output: *prediction
     // Invokes: path2prediction()
-	  // Time: O(leaves^2 log leaves)
+	  // Time: O(leaves^2 log(leaves))
   void checkPrediction () const;
     // Input: ds
   Real getAbsCriterion () const;
@@ -819,7 +819,7 @@ public:
     // After: deleteLenZero()
     // Postcondition: (*prediction)[] = 0 => (*target)[] = 0 
     // Not idempotent
-    // Time: O(leaves^3 log leaves)
+    // Time: O(leaves^3 log(leaves))
   // Topology
 	void optimize2 ();
 	  // Optimal solution
@@ -831,7 +831,7 @@ public:
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
 	  // Invokes: getBestChange(), applyChanges()
-	  // Time of 1 iteration: O(leaves^3 log(leaves) 2^areaRadius_std)
+	  // Time of 1 iteration: O(leaves^3 log(leaves) min(leaves, 2^areaRadius_std))
 	void optimizeIter (const string &output_tree);
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
@@ -859,7 +859,7 @@ private:
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter(), setAbsCriterion()
-	  // Time: O(leaves^2 log(leaves) areaRadius_std + Time(optimizeIter,leaves = 2^areaRadius_std))
+	  // Time: O(leaves^2 log(leaves) min(leaves,2^areaRadius_std) + Time(optimizeIter,leaves = 2^areaRadius_std))
   const Change* getBestChange (const DTNode* from);
     // Return: May be nullptr
     // Invokes: tryChange()
@@ -912,7 +912,7 @@ public:
     // Input: prediction
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
-	  // Time: O(leaves^2 log leaves)
+	  // Time: O(leaves^2 log(leaves))
   size_t printLeafRelLenErros (ostream &os,
                                Real relErr_min) const;
     // Return: # outliers
