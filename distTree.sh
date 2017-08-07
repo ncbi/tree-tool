@@ -10,15 +10,16 @@ endif
 
 
 
-mdsTree.sh $1 $2 2 >& /dev/null
-if ($?) exit 1
+#mdsTree.sh $1 $2 2 >& /dev/null
+#if ($?) exit 1
 
 date
 
 set variance = linExp 
-makeDistTree  $1.dir/  -data $1  -dissim $2  -topology  -variance $variance  -output_tree $1.tree  
+makeDistTree  ""  -data $1  -dissim $2  -topology  -variance $variance  -output_tree $1.tree  
+# $1.dir/
 if ($?) exit 1
-rm -r $1.dir/
+#rm -r $1.dir/
 if ($?) exit 1
 makeDistTree  $1.tree  -data $1  -dissim $2  -variance $variance  > $1.makeDistTree
 if ($?) exit 1
