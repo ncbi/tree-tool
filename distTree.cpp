@@ -3532,18 +3532,25 @@ void DistTree::optimizeSubtrees ()
 
   for (;;)
   {
+    size_t steiners = 0;
+    size_t stables  = 0;
     const Steiner* center = nullptr;
     for (DiGraph::Node* node : nodes)
       if (const Steiner* newSt = static_cast <const DTNode*> (node) -> asSteiner ())
-        if (   ! newSt->stable
-            && (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
-           )
-        {
-          center = newSt;
-          break; 
-        }
+      {
+        steiners++;
+        if (newSt->stable)
+          stables++;
+        else
+          if (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
+          {
+            if (! center)
+              center = newSt;
+          }
+      }
     if (! center)
       break;
+    cout << stables << '/' << steiners << endl;
     optimizeSubtree (center);
   }
 

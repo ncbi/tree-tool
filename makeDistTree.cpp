@@ -69,12 +69,15 @@ struct ThisApplication : Application
       throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
 
 
-    Common_sp::AutoPtr<DistTree> tree (input_tree. empty ()
-                                         ? new DistTree (dataFName, dissimAttrName)
-                                         : isRight (input_tree, "/")
-                                           ? new DistTree (input_tree, dataFName, dissimAttrName)
-                                           : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init)
-                                      );
+    Common_sp::AutoPtr<DistTree> tree;
+    {
+      Chronometer_OnePass cop;
+      tree = input_tree. empty ()
+               ? new DistTree (dataFName, dissimAttrName)
+               : isRight (input_tree, "/")
+                 ? new DistTree (input_tree, dataFName, dissimAttrName)
+                 : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init);
+    }
     ASSERT (tree. get ());
     if (verbose ())
       tree->qc ();     
@@ -86,26 +89,32 @@ struct ThisApplication : Application
     {
       if (topology)
       {
+        cout << "Topology optimization: " << (whole ? "whole" : "by subgraphs") << endl;
         const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
         {
           if (verbose ())
             tree->saveFile (output_tree);  
-        //tree->setPrediction ();
-          EXEC_ASSERT (tree->optimizeLen ());
-          tree->finishChanges (); 
-          tree->optimizeLenLocal ();  
-          tree->finishChanges (); 
-          if (verbose ())
           {
-            tree->qc ();
-            tree->print (cout);  
+            Chronometer_OnePass cop;
+            EXEC_ASSERT (tree->optimizeLen ());
+            tree->finishChanges (); 
+            tree->optimizeLenLocal ();  
+            tree->finishChanges (); 
+            if (verbose ())
+            {
+              tree->qc ();
+              tree->print (cout);  
+            }
+            tree->reportErrors (cout);
           }
-          tree->reportErrors (cout);
-          if (whole)
-            tree->optimizeIter (output_tree);
-          else
-            tree->optimizeSubtrees ();  
+          {
+            Chronometer_OnePass cop;
+            if (whole)
+              tree->optimizeIter (output_tree);
+            else
+              tree->optimizeSubtrees ();  
+          }
               // optimizeSubtreesIter () almost does not improve
           tree->reroot ();  
         }
