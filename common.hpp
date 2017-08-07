@@ -804,8 +804,10 @@ template <typename To, typename From>
 template <typename To, typename From>
   void insertIter (To &to,
                    const From &from)
-    { CONST_ITER (typename From, it, from)
-        to << *it;
+    {//CONST_ITER (typename From, it, from)
+      //to << *it;
+      for (const auto x : from)
+        to << x;
     }
 
 template <typename T>
@@ -816,6 +818,15 @@ template <typename T, typename C>
   void sort (T &t,
              C compare)
     { std::sort (t. begin (), t. end (), compare); }
+
+template <typename T, typename U>
+  bool intersects (const T &t,
+                   const U &u)
+    { for (const auto x : t)
+        if (u. find (static_cast <typename U::value_type> (x)) != u. end ())
+          return true;
+      return false;
+    }
 
 template <typename Key, typename Value>
   bool contains (const map <Key, Value> &m,
@@ -1692,7 +1703,7 @@ public:
   void borrowArcs (const Node2Node &node2node,
                    bool parallelAllowed);
     // Input: node2node: other node to *this node
-    // Time: |node2node| log|node2node| outdegree_max outdegree'_max,
+    // Time: O(|node2node| log|node2node| outdegree_max (parallelAllowed ? 1 : outdegree'_max)),
     //          where outdegree_max = max(outdegree(node2node.keys()),
     //                outdegree'_max = max(outdegree(node2node.values())
 };

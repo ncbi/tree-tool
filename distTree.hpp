@@ -56,6 +56,12 @@ inline Real dissim_max ()
 
 
 
+constexpr uint areaRadius_std = 5;   // PAR
+  // The greater then better DistTree::absCriterion
+  // >= 4 <= ChangeToCousin can be applied  
+
+
+
 struct DistTree;
 
 //struct DTNode;
@@ -189,6 +195,7 @@ private:
     // Update: lead2hat_dist: matches *getParent()
     //         closest
     // Time: O(leaves^2)
+public:
 };
 
 
@@ -378,7 +385,6 @@ protected:
 	  { os << from->getName () << " (parent = " << (from->getParent () ? from->getParent () -> getName () : "null") << ") -> " << to->getName () 
 	       << "  " << type () 
          << "  improvement = " << improvement; 
-	    // distance (number of arcs) from *from to *to to find the distribution of areaRadius_std ??
 	  }
 public:
 	void print (ostream& os) const override
@@ -662,12 +668,13 @@ public:
             VectorPtr<TreeNode> &area,
             const DTNode* &area_root,
             Node2Node &newLeaves2boundary);
-    // Subtree of center->getDistTree(); boundary of area are Leaf's of *this
-    // Input: areaRadius: >= 2
-    // Output: area: contains: center, area_root, newLeaves2boundary.values()
+    // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
+    // Input: areaRadius: >= 1
+    // Output: area: contains center, area_root, newLeaves2boundary.values(); getTree() = center->getTree()
+    //               discernable
     //         area_root: !nullptr
     //         newLeaves2boundary
-	  // Time: O(wholeDs.leaves^2 log wholeDs.leaves) + f(|area|), where wholeDs=center->getDistTree()
+	  // Time: O(wholeDs.leaves^2 log wholeDs.leaves) + f(|area|), where wholeDs = center->getDistTree().ds
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -756,7 +763,8 @@ public:
   void reportErrors (ostream &os) const
     { ONumber on (os, 6, false);  // PAR
       os << "absCriterion = " << absCriterion 
-         << "  Error density = " << getErrorDensity () * 100 << " %";
+         << "  Error density = " << getErrorDensity () * 100 << " %"
+         << endl;
     }    
   void saveFeatureTree (const string &fName) const;
 
@@ -823,10 +831,13 @@ public:
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
 	  // Invokes: getBestChange(), applyChanges()
-	  // Time of 1 iteration: O(n^3 log n 2^areaRadius_std)
+	  // Time of 1 iteration: O(leaves^3 log(leaves) 2^areaRadius_std)
 	void optimizeIter (const string &output_tree);
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
+	void optimizeSubtrees ();
+	  // Invokes: optimizeSubtree()
+	  // Time: O(leaves * Time(optimizeSubtree))
 	void optimizeAdd (bool sparse,
 	                  const string &output_tree);
 	  // Input: dissimDs, dissimAttr
@@ -843,15 +854,12 @@ private:
     // Update: DTNode::subtreeLeaves
     // Output: leaf->index
     // Time: O(leaves)
-public:
-	Real optimizeSubtree (const Steiner* center,
-                        Set<const DTNode*> &boundary);
+	Real optimizeSubtree (const Steiner* center);
 	  // Return: min. distance to boundary
-	  // Output: boundary
-	  // center may be delete'd
-	  // Invokes: DistTree(center,areaRadius_std,), setAbsCriterion()
-	  // Time: O(leaves^2 log leaves)
-private:
+	  // Input: center: may be delete'd
+	  // Output: DTNode::stable = true
+	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter(), setAbsCriterion()
+	  // Time: O(leaves^2 log(leaves) areaRadius_std + Time(optimizeIter,leaves = 2^areaRadius_std))
   const Change* getBestChange (const DTNode* from);
     // Return: May be nullptr
     // Invokes: tryChange()
@@ -882,6 +890,7 @@ public:
   void reroot (DTNode* underRoot,
                Real arcLen);
   void reroot ();
+    // Molecular clock
     // Invokes: reroot(,)
   void setHeight ()
     { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (); }

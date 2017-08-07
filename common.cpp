@@ -1333,8 +1333,7 @@ DiGraph::Node2Node DiGraph::reverse (const Node2Node& old2new)
 {
   Node2Node new2old;
   for (const auto it : old2new)
-    new2old [it. second] = it. first;
-    
+    new2old [it. second] = it. first;    
   return new2old;
 }
 
@@ -1706,7 +1705,7 @@ void Tree::TreeNode::getArea_ (uint radius,
 {
   area << this;
 
-  size_t degree = (size_t) (prev ? 1 : 0);
+  size_t degree = (size_t) (prev ? 1 : 0);  // Degree of *this in area
   if (radius)
   {
     const TreeNode* parent_ = getParent ();

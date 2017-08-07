@@ -28,6 +28,7 @@ struct ThisApplication : Application
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
+	  addFlag ("whole", "Optimize whole topology, otherwise by subtrees of radius " + toString (areaRadius_std));
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", "Interior node denoted as \'A-B\', which is the LCA of A nd B. Re-root above the LCA in the middle of the arc");
 	  addFlag ("sparse_init", "Make the initial dissimilarity matrix sparse");
@@ -52,6 +53,7 @@ struct ThisApplication : Application
 	  const string dissimAttrName      = getArg ("dissim");
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global    
 		const bool topology              = getFlag ("topology");
+		const bool whole                 = getFlag ("whole");
 		const bool reroot                = getFlag ("reroot");
 		      string reroot_at           = getArg ("reroot_at");
 		const bool sparse_init           = getFlag ("sparse_init");
@@ -100,8 +102,11 @@ struct ThisApplication : Application
             tree->print (cout);  
           }
           tree->reportErrors (cout);
-          cout << endl;
-          tree->optimizeIter (output_tree);
+          if (whole)
+            tree->optimizeIter (output_tree);
+          else
+            tree->optimizeSubtrees ();  
+              // optimizeSubtreesIter () almost does not improve
           tree->reroot ();  
         }
         else if (leaves == 3)
@@ -129,7 +134,6 @@ struct ThisApplication : Application
         
       cout << endl;      
       tree->reportErrors (cout);
-      cout << endl;
       tree->printAbsCriterion_halves ();  
       tree->setHeight ();
       tree->setLeafAbsCriterion ();
@@ -162,6 +166,7 @@ struct ThisApplication : Application
     tree->saveFile (output_tree);
     tree->saveFeatureTree (output_feature_tree);
     
+  //ONumber on (cout, 6, false);
     cout << "# Interior nodes (with root) = " << tree->size (false) << endl;
     cout << "Tree length = " << tree->getLength () << endl;
     cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
