@@ -2508,20 +2508,21 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
   if (verbose ())
     cout << "Data values ..." << endl;
 
-  Progress prog ((uint) ds. objs. size (), (uint) verbose () * 10000);  // PAR
+  Progress prog ((uint) ds. objs. size (), 10000);  // PAR
   FOR (size_t, objNum, ds. objs. size ())
   {
     prog ();
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                            , obj2leaf2 [objNum]
-                                            )
-                                   );
+    VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
+                                      , obj2leaf2 [objNum]
+                                      )
+                             );
+    Common_sp::sort (path);
     for (const DiGraph::Node* node : nodes_arg)
     {
       const DTNode* dtNode = static_cast <const DTNode*> (node);
       CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
       ASSERT (attr);
-      attr->setCompactBool (objNum, path. contains (dtNode));
+      attr->setCompactBool (objNum, binary_search (path. begin (), path. end (), dtNode) /*path. contains (dtNode)*/);
     }
   }
 }

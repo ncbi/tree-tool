@@ -100,13 +100,16 @@ inline ostream& operator<< (ostream &os,
 
 struct Chronometer_OnePass : Nocopy
 {
+  string name;
   clock_t startTime;
 
-  Chronometer_OnePass ()
-    : startTime (clock ())
+  explicit Chronometer_OnePass (const string &name_arg)
+    : name (name_arg)
+    , startTime (clock ())
     {}
  ~Chronometer_OnePass ()
-    { Chronometer::print (cout, clock () - startTime);
+    { cout << name << ": ";
+      Chronometer::print (cout, clock () - startTime);
       cout << endl;
     }
 };

@@ -21,14 +21,12 @@ endif
 
 set variance = linExp 
 
-date
-makeDistTree  "$input_tree"  -data $1  -dissim $2  -topology  -whole  -variance $variance  -output_tree $1.tree  
+makeDistTree  "$input_tree"  -data $1  -dissim $2  -topology  -variance $variance  -output_tree $1.tree  
 if ($?) exit 1
 if ($mds) then
   rm -r $1.dir/
   if ($?) exit 1
 endif
-date
 
 makeDistTree  $1.tree  -data $1  -dissim $2  -variance $variance  > $1.makeDistTree
 if ($?) exit 1

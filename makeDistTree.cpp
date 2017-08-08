@@ -71,7 +71,7 @@ struct ThisApplication : Application
 
     Common_sp::AutoPtr<DistTree> tree;
     {
-      Chronometer_OnePass cop;
+      Chronometer_OnePass cop ("Initial topology");
       tree = input_tree. empty ()
                ? new DistTree (dataFName, dissimAttrName)
                : isRight (input_tree, "/")
@@ -96,7 +96,7 @@ struct ThisApplication : Application
           if (verbose ())
             tree->saveFile (output_tree);  
           {
-            Chronometer_OnePass cop;
+            Chronometer_OnePass cop ("Initial arc lengths");
             EXEC_ASSERT (tree->optimizeLen ());
             tree->finishChanges (); 
             tree->optimizeLenLocal ();  
@@ -109,7 +109,7 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           {
-            Chronometer_OnePass cop;
+            Chronometer_OnePass cop ("Topology and arc length optimization");
             if (whole)
               tree->optimizeIter (output_tree);
             else
