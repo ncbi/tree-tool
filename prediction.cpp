@@ -851,7 +851,8 @@ void L2LinearNumPrediction::solveUnconstrained ()
   // attrSim
   // --> MultiNormal ??
   {
-    Progress prog ((uint) space. size (), verbose () ? 1 : 0);  
+    Unverbose unv;
+    Progress prog ((uint) space. size ());  
     FOR (size_t, attrNum1, space. size ())
     {
       prog ();

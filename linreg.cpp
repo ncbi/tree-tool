@@ -62,7 +62,7 @@ struct ThisApplication : Application
 
   #if 0   // From LogisticRegression
     cout << endl;
-    cerr << "Importance..." << endl;
+    cerr << "Importance ..." << endl;
     cout << "beta: importance" << endl;
     lr. setAttrImportance ();
     FOR (size_t, i, lr. space. size ())
@@ -73,7 +73,7 @@ struct ThisApplication : Application
     Space1 sp0 (ds, false);
     sp0 << unitAttr << targetAttr;
     LogisticRegression lr0 (sp0, *targetAttr);
-    cerr << "Solving control..." << endl;
+    cerr << "Solving control ..." << endl;
     lr0. solve ();
     lr0. qc ();    
     cout << "-logL = " << lr0. negLogLikelihood << endl;

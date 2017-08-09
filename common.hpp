@@ -2024,7 +2024,7 @@ public:
 	explicit Progress (uint n_max_arg = 0,
 	                   uint displayPeriod_arg = 1)
 	  : n_max (n_max_arg)
-	  , active (! beingUsed && displayPeriod_arg)
+	  , active (! beingUsed && displayPeriod_arg && verbose (1))
 	  , displayPeriod (displayPeriod_arg)
 	  { if (active) 
 	  	  beingUsed++; 

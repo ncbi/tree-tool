@@ -1467,6 +1467,7 @@ void DistTree::loadTreeDir (const string &dir)
   for (string name : fileNames)
   {
     EXEC_ASSERT (trimSuffix (name, dmSuff));    
+    Unverbose unv;
     const Dataset leafDs (dir + name);
     if (leafDs. objs. empty ())
       continue;
@@ -1625,6 +1626,7 @@ void DistTree::loadDissimDs (const string &dissimFName,
 
   // dissimAttr, dissimDs
   {
+    Unverbose unv;
     dissimDs. reset (new Dataset (dissimFName));
     const Attr* attr = dissimDs->name2attr (attrName);
     ASSERT (attr);
@@ -1839,7 +1841,7 @@ void DistTree::neighborJoin ()
   ASSERT (ds. objs. size () >= 2);
   ASSERT (ds. objs. size () == dissimSize_max ());
   
-  cout << "Neighbor joining..." << endl;
+  cout << "Neighbor joining ..." << endl;
   
   // DTNode::len: sum of dissimilarities from other objects (dissim_sum)
 
@@ -2057,7 +2059,8 @@ void DistTree::loadDissimFinish ()
   if (verbose ())
     cout << "Arcs -> data attributes ..." << endl;
   {
-    Progress prog ((uint) nodes. size (), (uint) verbose () * 100);  // PAR
+    Unverbose unv;
+    Progress prog ((uint) nodes. size (), 100);  // PAR
     for (const DiGraph::Node* node : nodes)
     {
       prog ();
@@ -2741,7 +2744,8 @@ bool DistTree::optimizeLen ()
 {
   ASSERT (optimizable ());
   
-  cout << "Optimizing arc lengths..." << endl;
+  if (verbose (1))
+    cout << "Optimizing arc lengths ..." << endl;
 
   DTNode* toSkip = nullptr;  // toSkip->attr is redundant
   DTNode* toRetain = nullptr; 
@@ -3298,7 +3302,7 @@ void DistTree::optimizeAdd (bool sparse,
   saveFile (output_tree);
     
   if (verbose (1))
-    cout << "Optimizing arc lengths..." << endl;
+    cout << "Optimizing arc lengths ..." << endl;
   EXEC_ASSERT (optimizeLen ());   
   finishChanges ();
 }
@@ -3445,7 +3449,7 @@ Real DistTree::optimizeSubtree (const Steiner* center)
     if (const Leaf* leaf = dtNode->asLeaf ())
     {
       if (verbose ())
-        cout << "Re-rooting..." << endl;
+        cout << "Re-rooting ..." << endl;
       auto st = new Steiner (tree, const_static_cast <Steiner*> (leaf->getParent ()), leaf->len);
       EXEC_ASSERT (new2old. erase (leaf) == 1);
       tree. delayDeleteRetainArcs (const_cast <Leaf*> (leaf));
@@ -3520,7 +3524,7 @@ Real DistTree::optimizeSubtree (const Steiner* center)
     checkAbsCriterion ("optimizeSubtree");
   }
 
-  if (verbose (1))
+  if (verbose (2))
     reportErrors (cout);
   	
   if (greaterReal (absCriterion, absCriterion_old, 1e-5)) // PAR
@@ -3560,8 +3564,11 @@ void DistTree::optimizeSubtrees ()
       }
     if (! center)
       break;
-    cout << stables << '/' << steiners << endl;
-    optimizeSubtree (center);
+    cout << stables << '/' << steiners << '\t';
+    {
+      Unverbose unv;
+      optimizeSubtree (center);
+    }
   }
 
 #if 0

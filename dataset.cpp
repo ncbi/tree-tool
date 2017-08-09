@@ -1620,7 +1620,6 @@ void Dataset::load (istream &is)
         trim (obj->comment);
         if (obj->comment == missingStr)
           obj->comment. clear ();
-      //cerr << obj->comment << endl;  
       }
 	  //ASSERT (objCommented ());
 	  }
@@ -5033,7 +5032,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
 
   if (! merge_close)
   {
-    cerr << "Canonical..." << endl;  
+    cerr << "Canonical ..." << endl;  
     const Canonical can (*this);
     can. qc ();
     cout << "Canonical projections = " << can. getOutDim () << endl;
@@ -5090,7 +5089,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
        )
     {
       if (verbose ())
-        cerr << "Canonical for cluster " << i + 1 << "..." << endl;  
+        cerr << "Canonical for cluster " << i + 1 << " ..." << endl;  
 
       Vector<bool> toMerge; 
       FOR (size_t, j, getOutDim ())
