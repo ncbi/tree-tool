@@ -16,6 +16,7 @@ if ($?) exit 1
 /panfs/pan1.be-md.ncbi.nlm.nih.gov/gpipe/ThirdParty/FastME/production/arch/x86_64/bin/fastme -i $1.phylip -o $1.phylip_tree -mO 
 if ($?) exit 1
 rm $1.phylip
+cat $1.phylip_fastme_stat.txt
 rm $1.phylip_fastme_stat.txt
 
 ~jcherry/bin/nw_rename -l $1.phylip_tree $1.map > $1.nw
