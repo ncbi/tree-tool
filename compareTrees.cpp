@@ -219,18 +219,12 @@ struct ThisApplication : Application
       ASSERT (parent);
       if (parent == tree1->root)
       {
-        VectorPtr<Tree::TreeNode> children;  children. reserve (2);
-        {
-          const VectorPtr<DiGraph::Node> children_ (parent->getChildren ());
-          for (const DiGraph::Node* child_ : children_)
-          {
-            const Tree::TreeNode* child = static_cast <const Tree::TreeNode*> (child_);
-            if (child->isInteriorType ())
-              children << child;
-          }
-        }
+        const VectorPtr<DiGraph::Node> children (parent->getChildren ());
+        ASSERT (children. size () >= 2);
         if (   children. size () == 2
-            && min ( getNodeName (children [0]), getNodeName (children [1])) == getNodeName (node)
+            && min ( getNodeName (static_cast <const Tree::TreeNode*> (children [0]))
+                   , getNodeName (static_cast <const Tree::TreeNode*> (children [1]))
+                   ) == getNodeName (node)
            )
           continue;
       }

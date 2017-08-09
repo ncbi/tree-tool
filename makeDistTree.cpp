@@ -178,6 +178,7 @@ struct ThisApplication : Application
     
   //ONumber on (cout, 6, false);
     cout << "# Interior nodes (with root) = " << tree->size (false) << endl;
+    cout << "# Interior undirected arcs = " << tree->interiorUndirectedArcs () << endl;
     cout << "Tree length = " << tree->getLength () << endl;
     cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
       // = 0 => epsilon2_0 > 0

@@ -946,7 +946,7 @@ public:
 	  }
   bool contains (const T &value) const
     { return constFind (value) != P::end (); }
-  size_t count (const T &value) const
+  size_t countValue (const T &value) const
     { size_t n = 0;
       for (const T& t : *this)
         if (value == t)
@@ -1044,10 +1044,18 @@ public:
       }
     	return t;
     }
+  template <typename Condition /*on T*/>
+    size_t count (Condition cond) const
+      { size_t n = 0;
+        for (const T& t : *this)
+          if (cond (t))
+            n++;
+        return n;
+      }
   template <typename Condition /*on index*/>
     void filter (Condition cond)
       { size_t toDelete = 0;
-        for (size_t i = 0; i < P::size (); i++)
+        for (size_t i = 0, end_ = P::size (); i < end_; i++)
         { const size_t j = i - toDelete;
           if (j != i)
             (*this) [j] = (*this) [i];
@@ -1958,6 +1966,8 @@ struct Tree : DiGraph
                ? countLeaves
                : 1 + root->getSubtreeSize (countLeaves); 
     }
+  size_t interiorUndirectedArcs () const
+    { return root->getSubtreeSize (false) - (root->getChildren (). size () <= 2 ? 1 : 0); } 
   static const TreeNode* getLowestCommonAncestor (const TreeNode* n1,
                                                   const TreeNode* n2);
     // Return: nullptr <=> !n1 || !n2
