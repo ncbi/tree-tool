@@ -86,8 +86,10 @@ Real getCorrelationVec (const Matrix &m1,
 
 void distribution2MeanVar (const Matrix &distribution,
                            size_t       DistributionRow,
+                           bool         distributionT,
                            const Matrix &Values,
                            size_t       ValuesRow,
+                           bool         ValuesT,
                            Real         &mean, 
                            Real         &Variance);
   // Requires: distribution.rowsSize(!t) = Values.rowsSize(!t)

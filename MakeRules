@@ -1,7 +1,9 @@
 SimpleCPPFLAGS = -std=gnu++11 -ffloat-store \
-  -Wall -Wextra \
-  -Woverloaded-virtual -pedantic -Wconversion -Wformat -Winit-self -Wmissing-braces -Wmissing-field-initializers -Wmissing-include-dirs \
-  -Wparentheses -Wsequence-point -Wshadow -Wunused -Wuninitialized -Wsign-conversion -Wuseless-cast 
+  -Werror -Wall -Wextra \
+  -Wcast-align -Wconversion -Wdeprecated-declarations -Wformat -Winit-self -Wlogical-op \
+  -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
+  -Woverloaded-virtual -pedantic -Wparentheses -Wpointer-arith -Wsequence-point -Wshadow -Wunused \
+  -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion -Wuseless-cast 
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
   # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
