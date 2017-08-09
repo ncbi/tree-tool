@@ -460,7 +460,7 @@ struct L2LinearNumPrediction : LinearNumPrediction
   void solveUnconstrained () override;
     // Output: attrSim, betaCovariance, betaSD
     // n < p => isNan(absCriterion)
-    // Time: O(p(p+1)n/2 + pn + p^3 + p^2 + p + n)
+    // Time: O(p^2 (n + p))
 #if LIN_PROG
   bool setProblem ();
   bool setWeight ();

@@ -198,7 +198,7 @@ void DTNode::setGlobalLenDown (DTNode* &bestDTNode,
 
 
 
-void DTNode::setSubtreeLeaves (/*const Set<const Leaf*>* superSet*/)
+void DTNode::setSubtreeLeaves ()
 {
   for (const DiGraph::Arc* arc : arcs [false])
   {
@@ -2745,7 +2745,7 @@ bool DistTree::optimizeLen ()
   ASSERT (optimizable ());
   
   if (verbose (1))
-    cout << "Optimizing arc lengths ..." << endl;
+    cout << "Optimizing arc lengths globally ..." << endl;
 
   DTNode* toSkip = nullptr;  // toSkip->attr is redundant
   DTNode* toRetain = nullptr; 
@@ -2811,16 +2811,17 @@ bool DistTree::optimizeLen ()
 
 void DistTree::optimizeLenLocal ()  
 {
-  if (verbose (1))
-    cout << "optimizeLenLocal ..." << endl;
-
   ASSERT (optimizable ());
   
+  if (verbose (1))
+    cout << "Optimizing arc lengths locally ..." << endl;
+
 //cout << "absCriterion (before optimizeLenLocal) = " << absCriterion << endl;  
   Progress prog ((uint) nodes. size ());
   for (const DiGraph::Node* node : nodes)
   {
     prog ();
+
     const DTNode* dtNode = static_cast <const DTNode*> (node);
     if (   dtNode == root
         || dtNode->asLeaf () 

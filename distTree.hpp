@@ -143,7 +143,7 @@ private:
                          WeightedMeanVar &bestGlobalLen);
   void setSubtreeLeaves ();
     // Output: subtreeLeaves
-    // Time: O(leaves^2)
+    // Time: O(n^2)
 public:
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
@@ -194,7 +194,7 @@ private:
     // Input: subtreeLeaves
     // Update: lead2hat_dist: matches *getParent()
     //         closest
-    // Time: O(leaves^2)
+    // Time: O(n^2)
 public:
 };
 
@@ -472,6 +472,7 @@ struct ChangeToSibling : Move
 	  { return valid_ (from, to); }
 private:
 	bool apply_ () final;
+	  // Time: O(p log(n))
 	void restore_ () final;
 	void commit_ () final;
 };
@@ -590,10 +591,11 @@ struct ChangeToCousin : Swap
 // DistTree
 
 struct DistTree : Tree
-// Least-squares distance tree
 // Of DTNode*
+// Least-squares distance tree
 // Steiner tree
 // nodes.size() >= 2
+// For Time: n = # leaves, p = # distances = ds.objs.size()
 {
   map<string/*Leaf::name*/,const Leaf*> name2leaf;
 
@@ -609,9 +611,9 @@ struct DistTree : Tree
     //       objs[i].name = obj2leaf1[i]->name + "-" + obj2leaf2[i]->name
 	  //       objs[i]->mult = dissim2mult(target[i]); positive()
     // attrs: DTNode::attr: 0/1: 1 <=> on the path between the pair of Leaf's    
-    // attrs.size() <= 2*leaves
-    // objs.size() <= leaves*(leaves-1)/2
-    // size = O(leaves^3)
+    // attrs.size() <= 2*n
+    // objs.size() <= n*(n-1)/2
+    // size = O(n^3)
   Sample dsSample;  
   // !nullptr
   const RealAttr1* target {nullptr};
@@ -674,7 +676,7 @@ public:
     //               discernable
     //         area_root: !nullptr
     //         newLeaves2boundary
-	  // Time: O(wholeDs.leaves^2 log(wholeDs.leaves)) + f(|area|), where wholeDs = center->getDistTree().ds
+	  // Time: O(wholeDs.p log(wholeDs.n)) + f(|area|), where wholeDs = center->getDistTree().ds
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -718,7 +720,7 @@ private:
   void neighborJoin ();
     // Greedy
     // Requires: no missing dissimilarities, star topology
-    // Time: O(leaves^3)
+    // Time: O(p n)
   void newick2node (ifstream &f,
                     Steiner* parent);
   void loadDissimFinish ();
@@ -776,26 +778,26 @@ private:
 #endif
   void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
     // Output: DTNode::attrs
-	  // Time: O(leaves^2 (log(leaves) + |nodes_arg|))
+	  // Time: O(p (log(n) + |nodes_arg|))
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
   void setGlobalLen ();
     // Output: DTNode::subtreeLen, DTNode::len
-	  // Time: O(leaves^2 log(leaves))
+	  // Time: O(p log(n))
 public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len
-	  // Time: O(path.size()) = O(log(leaves))
+	  // Time: O(path.size()) = O(log(n))
   void setPrediction ();
     // Output: *prediction
     // Invokes: path2prediction()
-	  // Time: O(leaves^2 log(leaves))
+	  // Time: O(p log(n))
   void checkPrediction () const;
     // Input: ds
   Real getAbsCriterion () const;
     // Input: prediction
-	  // Time: O(leaves^2)
+	  // Time: O(p)
   void setAbsCriterion ()
     { absCriterion = getAbsCriterion (); }
     // More precise than L2LinearNumPrediction::absCriterion and includes !discernable nodes where dissimilarity != 0  
@@ -813,7 +815,7 @@ public:
 	  // Output: prediction, absCriterion
 	  // Invokes: setPrediction(), setAbsCriterion()
 	  // To be followed by: finishChanges()
-	  // Time: O(leaves^3); 3 min./903 leaves: return = 1.04 * optimal
+	  // Time: O(p n); 3 min./903 leaves: return = 1.04 * optimal
   void optimizeLenLocal ();
 	  // Input: DTNode::attr
 	  // Update: DTNode::len
@@ -821,7 +823,7 @@ public:
     // After: deleteLenZero()
     // Postcondition: (*prediction)[] = 0 => (*target)[] = 0 
     // Not idempotent
-    // Time: O(leaves^3 log(leaves))
+    // Time: O(n p log(n))
   // Topology
 	void optimize2 ();
 	  // Optimal solution
@@ -833,38 +835,39 @@ public:
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
 	  // Invokes: getBestChange(), applyChanges()
-	  // Time of 1 iteration: O(leaves^3 log(leaves) min(leaves, 2^areaRadius_std))
+	  // Time of 1 iteration: O(n min(n,2^areaRadius_std) p log(n))  
 	void optimizeIter (const string &output_tree);
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
 	void optimizeSubtrees ();
 	  // Invokes: optimizeSubtree()
-	  // Time: O(leaves * Time(optimizeSubtree))
+	  // Time: O(n * Time(optimizeSubtree))
 	void optimizeAdd (bool sparse,
 	                  const string &output_tree);
 	  // Input: dissimDs, dissimAttr
 	  // Requires: (bool)dissimAttr
 	  // Invokes: addDissim(), optimizeSubtree() if leafRelCriterion is large, root->findClosestNode()
-	  // Time: !sparse: ~30 sec./1 new leaf for 3000 leaves 
-	  //       sparse:    4 sec./1 new leaf for 3500 leaves
+	  // Time: !sparse: ~30 sec./1 new leaf for 3000 leaves ??
+	  //       sparse:    4 sec./1 new leaf for 3500 leaves  ??
 private:
   void setSubtreeLeaves ();
     // Output: DTNode::subtreeLeaves, Leaf::index
     // Invokes: DTNode::setSubtreeLeaves()
-    // Time: O(leaves^2)
+    // Time: O(n^2)
   void addSubtreeLeaf (Leaf* leaf);
     // Update: DTNode::subtreeLeaves
     // Output: leaf->index
-    // Time: O(leaves)
+    // Time: O(n)
 	Real optimizeSubtree (const Steiner* center);
 	  // Return: min. distance to boundary
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter(), setAbsCriterion()
-	  // Time: O(leaves^2 log(leaves) min(leaves,2^areaRadius_std) + Time(optimizeIter,leaves = 2^areaRadius_std))
+	  // Time: O(p (log(n) + min(n,2^areaRadius_std)) + Time(optimizeIter,n = min(this->n,2^areaRadius_std)))
   const Change* getBestChange (const DTNode* from);
     // Return: May be nullptr
     // Invokes: tryChange()
+    // Time: O(min(n,2^areaRadius_std) p log(n))
   bool applyChanges (VectorOwn<Change> &changes);
 	  // Return: false <=> finished
     // Update: topology, changes (sort by Change::improvement descending)
@@ -901,20 +904,20 @@ public:
   // Quality
   Real getMeanResidual () const;
     // Input: prediction
-	  // Time: O(leaves^2)
+	  // Time: O(p)
   Real getMinLeafLen () const;
     // Return: min. length of discernable leaf arcs 
   Real getSqrResidualCorr () const;
     // Return: correlation between squared residual and target
     // Input: prediction
-	  // Time: O(leaves^2)
+	  // Time: O(p)
   Real setErrorDensities ();
     // Requires: linear variance of dissimilarities
     // Return: epsilon2_0
     // Input: prediction
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
-	  // Time: O(leaves^2 log(leaves))
+	  // Time: O(p log(n))
   size_t printLeafRelLenErros (ostream &os,
                                Real relErr_min) const;
     // Return: # outliers
