@@ -110,7 +110,7 @@ struct Chronometer_OnePass : Nocopy
  ~Chronometer_OnePass ()
     { cout << name << ": ";
       Chronometer::print (cout, clock () - startTime);
-      cout << endl;
+      cout << endl << endl;
     }
 };
 	
@@ -1556,10 +1556,10 @@ struct DiGraph : Root
     size_t orderDfs {0};
       // Order by depth-first search
       // 0 <=> not visited by DFS
-  private:
-    bool inStack {false};  // auxiliary
+
+    // Auxiliary      
+    bool inStack {false};  
       // => orderDfs
-  public:
 
     explicit Node (DiGraph &graph_arg)
 			{ attach (graph_arg); }

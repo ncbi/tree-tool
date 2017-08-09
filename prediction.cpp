@@ -327,7 +327,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
 
     
   bool ok = true;
-  Progress prog (0, verbose ());
+  Progress prog;
   FOR (uint, iter, maxIter)
   {
     prog (real2str (errorPrev, 6));  // PAR

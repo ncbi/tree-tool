@@ -2508,22 +2508,28 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
   if (verbose ())
     cout << "Data values ..." << endl;
 
+  for (DiGraph::Node* node : nodes_arg)
+    node->inStack = false;
+
   Progress prog ((uint) ds. objs. size (), 10000);  // PAR
   FOR (size_t, objNum, ds. objs. size ())
   {
     prog ();
-    VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                      , obj2leaf2 [objNum]
-                                      )
-                             );
-    Common_sp::sort (path);
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
+                                            , obj2leaf2 [objNum]
+                                            )
+                                   );
+    for (const TreeNode* node : path)
+      const_cast<TreeNode*> (node) -> inStack = true;
     for (const DiGraph::Node* node : nodes_arg)
     {
       const DTNode* dtNode = static_cast <const DTNode*> (node);
       CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
       ASSERT (attr);
-      attr->setCompactBool (objNum, binary_search (path. begin (), path. end (), dtNode) /*path. contains (dtNode)*/);
+      attr->setCompactBool (objNum, dtNode->inStack);
     }
+    for (const TreeNode* node : path)
+      const_cast<TreeNode*> (node) -> inStack = false;
   }
 }
 
@@ -2734,6 +2740,8 @@ void DistTree::setLeafAbsCriterion ()
 bool DistTree::optimizeLen ()
 {
   ASSERT (optimizable ());
+  
+  cout << "Optimizing arc lengths..." << endl;
 
   DTNode* toSkip = nullptr;  // toSkip->attr is redundant
   DTNode* toRetain = nullptr; 
@@ -3215,6 +3223,7 @@ void DistTree::optimizeAdd (bool sparse,
                                                   )
                                          );
           ASSERT (path. contains (g));
+          // Use Node:;inStack ??
           for (const DiGraph::Node* node : nodes)
           {
             const DTNode* dtNode = static_cast <const DTNode*> (node);

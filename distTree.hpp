@@ -769,12 +769,14 @@ public:
   void saveFeatureTree (const string &fName) const;
 
 private:
+#if 0
   friend struct ChangeToChild;
   friend struct ChangeToSibling;
   friend struct Swap;
+#endif
   void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
     // Output: DTNode::attrs
-	  // Time: O(leaves^2 (log(leaves) + |nodes_arg| log log(leaves)))
+	  // Time: O(leaves^2 (log(leaves) + |nodes_arg|))
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
   void setGlobalLen ();

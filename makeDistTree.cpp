@@ -90,6 +90,7 @@ struct ThisApplication : Application
       if (topology)
       {
         cout << "Topology optimization: " << (whole ? "whole" : "by subgraphs") << endl;
+        cout << endl;
         const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
         {
@@ -114,8 +115,8 @@ struct ThisApplication : Application
               tree->optimizeIter (output_tree);
             else
               tree->optimizeSubtrees ();  
-          }
               // optimizeSubtreesIter () almost does not improve
+          }
           tree->reroot ();  
         }
         else if (leaves == 3)

@@ -1035,18 +1035,15 @@ DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
   // this is the root of a SCC
   ASSERT (scc->orderDfs == orderDfs);  
   ASSERT (scc == this);
-//cout << "SCC: " <<  getName () << ":" << endl; 
   for (;;)
   {
     Node* n = sccStack. top ();
     sccStack. pop ();
     n->inStack = false;
-  //cout << "  " <<  n->getName (); 
     if (n == this)
       break;
     n->scc = this;
   }
-//cout << endl; 
 
   return nullptr;
 }
