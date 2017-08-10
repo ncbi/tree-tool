@@ -714,7 +714,7 @@ private:
                      const string &attrName);
     // Output: dissimDs
   void dissimDs2ds (bool sparse);
-    // Update: dissimDs
+    // Update: dissimDs: delete
     // Output: ds etc.
     //         Tree: if an object is absent in ds then it is deleted from the Tree
     // Invokes: setReprLeaves(), loadDissimFinish()
@@ -726,10 +726,12 @@ private:
   bool getConnected ();
     // Find connected components of leaves where pairs have dissimilarities with positive multiplicity
     // Return: true <=> 1 connected component
-    // Output: (DisjointCluster)Leaf
+    // Input: dissimDs
+    // Output: DisjointCluster
     //         cout: print other connected components
   size_t setDiscernable ();
     // Return: Number of indiscernable leaves
+    // Input: dissimDs
     // Output: Leaf::len = 0, Leaf::discernable = false
   void neighborJoin ();
     // Greedy
@@ -758,7 +760,7 @@ public:
     { return dissimDs. get () ? dissimDs->objs. size () - name2leaf. size () : 0; }
   size_t dissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
-  VectorPtr<DTNode> getDiscernables () const;
+  Set<const DTNode*> getDiscernables () const;
 	void printInput (ostream &os) const;
 	bool optimizable () const
 	  { return ! ds. attrs. empty (); }
