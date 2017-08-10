@@ -20,14 +20,15 @@ if ($mds) then
 endif
 
 set variance = linExp 
+set sparse_init = -sparse_init
 
-makeDistTree  "$input_tree"  -data $1  -dissim $2  -topology  -variance $variance  -output_tree $1.tree  
+makeDistTree  "$input_tree"  -data $1  -dissim $2  -topology  -variance $variance  $sparse_init  -output_tree $1.tree  
 if ($?) exit 1
 if ($mds) then
   rm -r $1.dir/
   if ($?) exit 1
 endif
 
-makeDistTree  $1.tree  -data $1  -dissim $2  -variance $variance  > $1.makeDistTree
+makeDistTree  $1.tree  -data $1  -dissim $2  -variance $variance  $sparse_init > $1.makeDistTree
 if ($?) exit 1
 

@@ -63,7 +63,7 @@ struct ThisApplication : Application
 		const string leaf_errors         = getArg ("leaf_errors");
 		const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
-		IMPLY (sparse_init, ! input_tree. empty () && ! isRight (input_tree, "/"));
+	//IMPLY (sparse_init, ! input_tree. empty () && ! isRight (input_tree, "/"));
 		ASSERT (! (reroot && ! reroot_at. empty ()));
     if (dataFName. empty () != dissimAttrName. empty ())
       throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
@@ -73,7 +73,7 @@ struct ThisApplication : Application
     {
       Chronometer_OnePass cop ("Initial topology");
       tree = input_tree. empty ()
-               ? new DistTree (dataFName, dissimAttrName)
+               ? new DistTree (dataFName, dissimAttrName, sparse_init)
                : isRight (input_tree, "/")
                  ? new DistTree (input_tree, dataFName, dissimAttrName)
                  : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init);
@@ -115,7 +115,7 @@ struct ThisApplication : Application
               tree->optimizeIter (output_tree);
             else
               tree->optimizeSubtrees ();  
-              // optimizeSubtreesIter () almost does not improve
+                // optimizeSubtreesIter () almost does not improve
           }
           tree->reroot ();  
         }

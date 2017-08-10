@@ -34,11 +34,14 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 echo ""
 echo "Perfect tree ..."
-makeDistTree "" -data data/tree4 -dissim dist > tree4.makeDistTree
+makeDistTree "" -data data/tree4 -dissim dist | grep -v '^CHRON: ' > tree4.makeDistTree
 if ($?) exit 1
 diff tree4.makeDistTree data/tree4.makeDistTree
 if ($?) exit 1
 rm tree4.makeDistTree
+echo "Verbose..."
+makeDistTree "" -data data/tree4 -dissim dist -verbose 2 >& /dev/null
+if ($?) exit 1
 
 
 echo ""
@@ -48,10 +51,11 @@ mdsTree.sh data/randomTree dist 2 >& /dev/null
 if ($?) exit 1
 makeDistTree data/randomTree.dir/ -data data/randomTree -dissim dist -variance lin -topology -output_tree random-output.tree >& /dev/null
 if ($?) exit 1
-makeDistTree random-output.tree -data data/randomTree -dissim dist -variance lin  > randomTree.makeDistTree
+makeDistTree random-output.tree -data data/randomTree -dissim dist -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
 if ($?) exit 1
 diff randomTree.makeDistTree data/randomTree.makeDistTree
 if ($?) exit 1
+echo "Verbose..."
 makeDistTree random-output.tree -data data/randomTree -dissim dist -variance lin -verbose 2  >& /dev/null
 if ($?) exit 1
 rm -r data/randomTree.dir/
@@ -59,5 +63,12 @@ rm randomTree.makeDistTree
 rm random-output.tree
 
 
-# Data with indiscernable objects ??
+echo ""
+echo "prot-identical_comm ..."
+# Check time ??
+distTree.sh data/prot-identical_comm cons | grep -v '^CHRON: ' > prot-identical_comm.distTree
+if ($?) exit 1
+diff prot-identical_comm.distTree data/prot-identical_comm.distTree
+if ($?) exit 1
+
 

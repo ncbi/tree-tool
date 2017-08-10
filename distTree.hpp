@@ -672,7 +672,8 @@ public:
 	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen()
 	DistTree (const string &dissimFName,
-	          const string &attrName);
+	          const string &attrName,
+	          bool sparse);
 	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin()
   //
   explicit DistTree (const string &newickFName);
@@ -709,10 +710,29 @@ private:
     // Return: a child of parent has been loaded
     // Output: topology, DTNode::len
     // Update: lineNum
+  void newick2node (ifstream &f,
+                    Steiner* parent);
   void setName2leaf ();
   void loadDissimDs (const string &dissimFName,
                      const string &attrName);
     // Output: dissimDs
+  // Input: dissimDs
+  bool getConnected ();
+    // Find connected components of leaves where pairs have dissimilarities with positive multiplicity
+    // Return: true <=> 1 connected component
+    // Output: DisjointCluster
+    //         cout: print other connected components
+  size_t setDiscernable ();
+    // Return: Number of indiscernable leaves
+    // Output: Leaf::len = 0, Leaf::discernable = false
+  void setGlobalLen ();
+    // Output: DTNode::subtreeLen, DTNode::len
+	  // Time: O(p log(n))
+  void neighborJoin ();
+    // Greedy
+    // Requires: no missing dissimilarities, star topology
+    // Time: O(p n)
+  //
   void dissimDs2ds (bool sparse);
     // Update: dissimDs: delete
     // Output: ds etc.
@@ -723,22 +743,6 @@ private:
                   Real dissim);
 	  // Return: dissim is added
 	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
-  bool getConnected ();
-    // Find connected components of leaves where pairs have dissimilarities with positive multiplicity
-    // Return: true <=> 1 connected component
-    // Input: dissimDs
-    // Output: DisjointCluster
-    //         cout: print other connected components
-  size_t setDiscernable ();
-    // Return: Number of indiscernable leaves
-    // Input: dissimDs
-    // Output: Leaf::len = 0, Leaf::discernable = false
-  void neighborJoin ();
-    // Greedy
-    // Requires: no missing dissimilarities, star topology
-    // Time: O(p n)
-  void newick2node (ifstream &f,
-                    Steiner* parent);
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
 public:
@@ -797,9 +801,6 @@ private:
 	  // Time: O(p (log(n) + |nodes_arg|))
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
-  void setGlobalLen ();
-    // Output: DTNode::subtreeLen, DTNode::len
-	  // Time: O(p log(n))
 public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
@@ -850,6 +851,7 @@ public:
 	bool optimize ();
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
+	  // Requries: getConnected()
 	  // Invokes: getBestChange(), applyChanges()
 	  // Time of 1 iteration: O(n min(n,2^areaRadius_std) p log(n))  
 	void optimizeIter (const string &output_tree);
@@ -864,7 +866,7 @@ public:
 	  // Requires: (bool)dissimAttr
 	  // Invokes: addDissim(), optimizeSubtree() if leafRelCriterion is large, root->findClosestNode(), DTNode::selectRepresentative()
 	  // Time: !sparse: ~30 sec./1 new leaf for 3000 leaves ??
-	  //       sparse:    4 sec./1 new leaf for 3500 leaves  ??
+	  //       sparse:    4 sec./1 new leaf for 3500 leaves ??
 private:
   void setSubtreeLeaves ();
     // Output: DTNode::subtreeLeaves, Leaf::index

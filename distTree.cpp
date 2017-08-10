@@ -1058,12 +1058,12 @@ DistTree::DistTree (const string &treeFName,
   {
   //Verbose verb;
     loadDissimDs (dissimFName, attrName);
+    
     if (! getConnected ())
       throw runtime_error ("Disconnected objects");
   	setDiscernable ();  
 
-    dissimDs2ds (sparse);  
-  	
+    dissimDs2ds (sparse);    	
     topology2attrs (nodes);
     setPrediction ();
     setAbsCriterion (); 
@@ -1077,7 +1077,7 @@ DistTree::DistTree (const string &dirName,
 	                  const string &attrName)
 : dsSample (ds)
 {
-  // Initial tree topology
+  // Initial tree topology, no DTNode::len
   loadTreeDir (dirName);
   ASSERT (root);
   ASSERT (nodes. front () == root);
@@ -1086,14 +1086,14 @@ DistTree::DistTree (const string &dirName,
   setName2leaf ();
         
   loadDissimDs (dissimFName, attrName);
+  
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
 	setDiscernable ();  
 
-  dissimDs2ds (false);  
-	
-  setGlobalLen ();    
+  setGlobalLen ();  
 
+  dissimDs2ds (false);  
   topology2attrs (nodes);
   setPrediction ();
   setAbsCriterion (); 
@@ -1102,7 +1102,8 @@ DistTree::DistTree (const string &dirName,
 
 
 DistTree::DistTree (const string &dissimFName,
-	                  const string &attrName)
+	                  const string &attrName,
+	                  bool sparse)
 : dsSample (ds)
 {
   loadDissimDs (dissimFName, attrName);
@@ -1122,10 +1123,9 @@ DistTree::DistTree (const string &dissimFName,
     throw runtime_error ("Disconnected objects");
 	setDiscernable ();
 
-  dissimDs2ds (false);  
-  	 
   neighborJoin ();
   
+  dissimDs2ds (sparse);    	 
   topology2attrs (nodes);
   setPrediction ();
   setAbsCriterion (); 
@@ -1756,13 +1756,9 @@ bool DistTree::addDissim (const string &name1,
   const Real mult = dissim2mult (dissim);
   if (nullReal (mult))
   {
-    if (nullReal (dissim))
-      ;  // Needed for setDiscernable();  ??
-    else
-    {
+    if (! nullReal (dissim))
       cout << name1 << '-' << name2 << ": " << dissim << endl;
-      return false;
-    }
+    return false;
   }
   
   dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
@@ -1782,224 +1778,6 @@ bool DistTree::addDissim (const string &name1,
          );
   
   return true;
-}
-
-
-
-namespace
-{
-  struct Neighbors
-  {
-    // !nullptr, discernable
-    array <const DTNode*, 2> nodes;
-      // nodes[0] < nodes[1]
-    Real dissim {NAN};
-      // !isNan()
-
-    Neighbors ()
-      { nodes [0] = nullptr;
-        nodes [1] = nullptr;
-      }
-    Neighbors (const Leaf* leaf1,
-               const Leaf* leaf2,
-               Real dissim_arg)
-      : dissim (dissim_arg)
-      { ASSERT (leaf1);
-        ASSERT (leaf2);
-        nodes [0] = leaf1->getDiscernable ();
-        nodes [1] = leaf2->getDiscernable ();
-        orderNodes ();
-      }
-      
-    void print (ostream &os) const
-      { os << nodes [0] -> getLcaName () << ' ' << nodes [1] -> getLcaName () << ' ' << dissim << endl; }
-    bool operator== (const Neighbors& other) const
-      { return    nodes [0] == other. nodes [0]
-               && nodes [1] == other. nodes [1];
-      }
-    void orderNodes ()
-      { swapGreater (nodes [0], nodes [1]); }
-    bool same () const
-      { return nodes [0] == nodes [1]; }
-    bool merge (const Neighbors &from)
-      { if (! (*this == from))
-          return false;
-        dissim = (dissim + from. dissim) / 2;
-        return true;
-      }
-    Real getCriterion (size_t n) const
-      { return dissim - (nodes [0] -> len + nodes [1] -> len) / (Real) (n - 2); }
-      // James A. Studier, Karl J. Keppler, A Note on the Neighbor-Joining Algorithm of Saitou and Nei
-    Real getParentDissim (size_t n) const
-      { return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); }
-    static bool compare (const Neighbors& n1,
-                         const Neighbors& n2)
-      { LESS_PART (n1, n2, nodes [0]);
-        LESS_PART (n1, n2, nodes [1]);
-        return false;  
-      }
-  };
-}
-
-
-
-void DistTree::neighborJoin ()
-{
-  ASSERT (ds. objs. size () >= 2);
-  ASSERT (ds. objs. size () == dissimSize_max ());
-  
-  cout << "Neighbor joining ..." << endl;
-  
-  // DTNode::len: sum of dissimilarities from other objects (dissim_sum)
-
-  size_t n = 0;
-	for (const DiGraph::Arc* arc : root->arcs [false])
-	{
-	  const_static_cast <DTNode*> (arc->node [false]) -> len = 0;
-	  n++;
-	}
-    
-  Vector<Neighbors> neighborsVec;  neighborsVec. reserve (ds. objs. size ());
-  FOR (size_t, objNum, ds. objs. size ())
-  {
-    Neighbors neighbors ( obj2leaf1 [objNum]
-                        , obj2leaf2 [objNum]
-                        , (*target) [objNum]
-                        );
-    if (neighbors. same ())
-      continue;
-    ASSERT (positive (neighbors. dissim));
-    neighborsVec << neighbors;
-  }
-  
-  if (neighborsVec. empty ())
-    return;
-  
-
-  Progress prog ((uint) n - 1);
-  Neighbors neighbors_best;
-  for (;;)
-  {
-    prog ();
-    
-    // Remove duplicate Neighbors 
-    Common_sp::sort (neighborsVec, Neighbors::compare);
-    neighborsVec. filter ([&] (size_t i) 
-                            { return    neighborsVec [i] == neighbors_best 
-                                     || (i && neighborsVec [i - 1]. merge (neighborsVec [i]));
-                            }
-                         );    
-
-    if (neighborsVec. size () == 1)
-      break;
-    ASSERT (n > 2);
-    
-    if (! neighbors_best. nodes [0])  // First iteration
-      for (Neighbors& neighbors : neighborsVec)
-        for (const bool first : Bool)
-          const_cast <DTNode*> (neighbors. nodes [first]) -> len += neighbors. dissim;
-          
-    if (verbose ())  
-    {
-      cout << endl << "Nodes and sum:" << endl;
-    	for (const DiGraph::Arc* arc : root->arcs [false])
-    	{
-    	  const DTNode* node = static_cast <const DTNode*> (arc->node [false]);
-    	  cout << node->getLcaName () << ": " << node->len << endl;
-    	}    	
-    	cout << endl << "Pairs:" << endl;
-      for (const Neighbors& neighbors : neighborsVec)
-        neighbors. print (cout);
-    }
-      
-      
-    Steiner* newNode = nullptr;
-    {
-      // neighbors_best
-      Real dissim_min = NAN;
-      {
-        Real criterion = INF;
-        size_t i_best = NO_INDEX;
-        FOR (size_t, i, neighborsVec. size ())
-          // P (criterion1 < criterion2) ??
-          if (minimize (criterion, neighborsVec [i]. getCriterion (n)))            
-            i_best = i;
-        ASSERT (i_best != NO_INDEX);
-        neighbors_best = neighborsVec [i_best];
-        if (verbose ())
-        {
-          cout << endl << "Best: ";
-          neighbors_best. print (cout);
-        }
-        dissim_min = neighbors_best. getParentDissim (n);
-      }
-      ASSERT (dissim_min >= 0);
-      ASSERT (dissim_min <= neighbors_best. dissim);
-      {
-        DTNode* a = const_cast <DTNode*> (neighbors_best. nodes [0]);
-        DTNode* b = const_cast <DTNode*> (neighbors_best. nodes [1]);
-        const Real dissim_sum_a = a->len;
-        const Real dissim_sum_b = b->len;
-        a->len = dissim_min;
-        b->len = neighbors_best. dissim - dissim_min;
-        // dissim_sum
-        const Real dissim_sum = (  dissim_sum_a - neighbors_best. dissim - (Real) (n - 2) * a->len
-                                 + dissim_sum_b - neighbors_best. dissim - (Real) (n - 2) * b->len
-                                ) / 2;
-        newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [0] -> getParent ()), dissim_sum);
-        a->setParent (newNode);
-        b->setParent (newNode);
-        if (verbose ())
-          cout << "New: " << newNode->getLcaName () << " " << a->len << " " << b->len << " " << newNode->len << endl;
-      }
-    }
-    ASSERT (newNode);
-    
-    // neighborsVec
-    for (Neighbors& neighbors : neighborsVec)
-      if (! (neighbors == neighbors_best))
-        for (const bool first : Bool)
-        {
-          bool found = false;
-          for (const bool best_first : Bool)
-            if (neighbors. nodes [first] == neighbors_best. nodes [best_first])
-            {
-              neighbors. nodes [first] = newNode;
-              const_cast <DTNode*> (neighbors. nodes [! first]) -> len -= neighbors. dissim;
-              neighbors. dissim -= neighbors_best. nodes [best_first] -> len;
-              maximize (neighbors. dissim, 0.0);
-              const_cast <DTNode*> (neighbors. nodes [! first]) -> len += neighbors. dissim / 2;  
-                // Done twice for neighbors. nodes [! first]
-              found = true;
-            }
-          if (found)
-            neighbors. orderNodes ();
-          ASSERT (! neighbors. same ());
-        }
-
-    n--;
-  }
-  ASSERT (neighborsVec. size () == 1);
-  ASSERT (n == 2);
-  
-  
-  Neighbors& neighbors = neighborsVec [0];
-  ASSERT (! neighbors. same ());
-  for (const bool first : Bool)  
-  {
-    DTNode* node = const_cast <DTNode*> (neighbors. nodes [first]);
-    ASSERT (node->getParent () == root);
-    node->len = neighbors. dissim / 2;  
-  }
-
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    if (! dtNode->attr)
-      dtNode->addAttr ();
-  }
-  
-  finishChanges ();
 }
 
 
@@ -2264,6 +2042,275 @@ size_t DistTree::setDiscernable ()
 
   
   return n;
+}
+
+
+
+void DistTree::setGlobalLen ()
+{
+	ASSERT (dissimDs. get ());
+	ASSERT (dissimAttr);
+	ASSERT (! optimizable ());
+
+
+  // DTNode::subtreeLen
+  for (DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->subtreeLen. clear ();
+    if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
+      leaf->subtreeLen. add (0);  
+  }
+  FOR (size_t, row, dissimDs->objs. size ())
+  {
+    const Leaf* leaf1 = name2leaf [dissimDs->objs [row] -> name];
+    ASSERT (leaf1);
+    FOR (size_t, col, row)  // dissimAttr is symmetric
+    {
+      const Leaf* leaf2 = name2leaf [dissimDs->objs [col] -> name];
+      ASSERT (leaf2);
+      const Real d = dissimAttr->get (row, col);
+      if (isNan (d))
+        continue;
+      const TreeNode* ancestor = getLowestCommonAncestor (leaf1, leaf2);
+      ASSERT (ancestor);
+      Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
+      ASSERT (s);
+      s->subtreeLen. add (max (0.0, d) / 2);  // Molecular clock ??
+    }
+  }
+
+  // DTNode::len
+  for (DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    if (dtNode->inDiscernable ())
+      { ASSERT (dtNode->len == 0); }
+    else
+    {
+      if (const DTNode* parent = static_cast <const DTNode*> (dtNode->getParent ()))
+        dtNode->len = max (0.0, parent->subtreeLen. getMean () - dtNode->subtreeLen. getMean ());
+    }
+  }
+
+  finishChanges ();
+}
+
+
+
+namespace
+{
+  struct Neighbors
+  {
+    // !nullptr, discernable
+    array <const DTNode*, 2> nodes;
+      // nodes[0] < nodes[1]
+    Real dissim {NAN};
+      // !isNan()
+
+    Neighbors ()
+      { nodes [0] = nullptr;
+        nodes [1] = nullptr;
+      }
+    Neighbors (const Leaf* leaf1,
+               const Leaf* leaf2,
+               Real dissim_arg)
+      : dissim (dissim_arg)
+      { ASSERT (leaf1);
+        ASSERT (leaf2);
+        nodes [0] = leaf1->getDiscernable ();
+        nodes [1] = leaf2->getDiscernable ();
+        orderNodes ();
+      }
+      
+    void print (ostream &os) const
+      { os << nodes [0] -> getLcaName () << ' ' << nodes [1] -> getLcaName () << ' ' << dissim << endl; }
+    bool operator== (const Neighbors& other) const
+      { return    nodes [0] == other. nodes [0]
+               && nodes [1] == other. nodes [1];
+      }
+    void orderNodes ()
+      { swapGreater (nodes [0], nodes [1]); }
+    bool same () const
+      { return nodes [0] == nodes [1]; }
+    bool merge (const Neighbors &from)
+      { if (! (*this == from))
+          return false;
+        dissim = (dissim + from. dissim) / 2;
+        return true;
+      }
+    Real getCriterion (size_t n) const
+      { return dissim - (nodes [0] -> len + nodes [1] -> len) / (Real) (n - 2); }
+      // James A. Studier, Karl J. Keppler, A Note on the Neighbor-Joining Algorithm of Saitou and Nei
+    Real getParentDissim (size_t n) const
+      { return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); }
+    static bool compare (const Neighbors& n1,
+                         const Neighbors& n2)
+      { LESS_PART (n1, n2, nodes [0]);
+        LESS_PART (n1, n2, nodes [1]);
+        return false;  
+      }
+  };
+}
+
+
+
+void DistTree::neighborJoin ()
+{
+	ASSERT (dissimDs. get ());
+	ASSERT (dissimAttr);
+	ASSERT (! optimizable ());
+  ASSERT (dissimDs->objs. size () >= 2);
+
+  
+  cout << "Neighbor joining ..." << endl;
+  
+  // DTNode::len: sum of dissimilarities from other objects (dissim_sum)
+
+  size_t n = 0;
+	for (const DiGraph::Arc* arc : root->arcs [false])
+	{
+	  const_static_cast <DTNode*> (arc->node [false]) -> len = 0;
+	  n++;
+	}
+    
+  Vector<Neighbors> neighborsVec;  neighborsVec. reserve (dissimSize_max ());
+  FOR (size_t, row, dissimDs->objs. size ())
+  {
+    const Leaf* leaf1 = name2leaf [dissimDs->objs [row] -> name];
+    FOR (size_t, col, row)  // dissimAttr is symmetric
+    {
+      const Leaf* leaf2 = name2leaf [dissimDs->objs [col] -> name];
+      const Neighbors neighbors (leaf1, leaf2, dissimAttr->get (row, col));
+      if (neighbors. same ())
+        continue;
+      ASSERT (positive (neighbors. dissim));
+      neighborsVec << neighbors;
+    }
+  }  
+  if (neighborsVec. empty ())
+    return;
+  
+
+  Progress prog ((uint) n - 1);
+  Neighbors neighbors_best;
+  for (;;)
+  {
+    prog ();
+    
+    // Remove duplicate Neighbors 
+    Common_sp::sort (neighborsVec, Neighbors::compare);
+    neighborsVec. filter ([&] (size_t i) 
+                            { return    neighborsVec [i] == neighbors_best 
+                                     || (i && neighborsVec [i - 1]. merge (neighborsVec [i]));
+                            }
+                         );    
+
+    if (neighborsVec. size () == 1)
+      break;
+    ASSERT (n > 2);
+    
+    if (! neighbors_best. nodes [0])  // First iteration
+      for (Neighbors& neighbors : neighborsVec)
+        for (const bool first : Bool)
+          const_cast <DTNode*> (neighbors. nodes [first]) -> len += neighbors. dissim;
+          
+    if (verbose ())  
+    {
+      cout << endl << "Nodes and sum:" << endl;
+    	for (const DiGraph::Arc* arc : root->arcs [false])
+    	{
+    	  const DTNode* node = static_cast <const DTNode*> (arc->node [false]);
+    	  cout << node->getLcaName () << ": " << node->len << endl;
+    	}    	
+    	cout << endl << "Pairs:" << endl;
+      for (const Neighbors& neighbors : neighborsVec)
+        neighbors. print (cout);
+    }
+      
+      
+    Steiner* newNode = nullptr;
+    {
+      // neighbors_best
+      Real dissim_min = NAN;
+      {
+        Real criterion = INF;
+        size_t i_best = NO_INDEX;
+        FOR (size_t, i, neighborsVec. size ())
+          // P (criterion1 < criterion2) ??
+          if (minimize (criterion, neighborsVec [i]. getCriterion (n)))            
+            i_best = i;
+        ASSERT (i_best != NO_INDEX);
+        neighbors_best = neighborsVec [i_best];
+        if (verbose ())
+        {
+          cout << endl << "Best: ";
+          neighbors_best. print (cout);
+        }
+        dissim_min = neighbors_best. getParentDissim (n);
+      }
+      ASSERT (dissim_min >= 0);
+      ASSERT (dissim_min <= neighbors_best. dissim);
+      {
+        DTNode* a = const_cast <DTNode*> (neighbors_best. nodes [0]);
+        DTNode* b = const_cast <DTNode*> (neighbors_best. nodes [1]);
+        const Real dissim_sum_a = a->len;
+        const Real dissim_sum_b = b->len;
+        a->len = dissim_min;
+        b->len = neighbors_best. dissim - dissim_min;
+        // dissim_sum
+        const Real dissim_sum = (  dissim_sum_a - neighbors_best. dissim - (Real) (n - 2) * a->len
+                                 + dissim_sum_b - neighbors_best. dissim - (Real) (n - 2) * b->len
+                                ) / 2;
+        newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [0] -> getParent ()), dissim_sum);
+        a->setParent (newNode);
+        b->setParent (newNode);
+        if (verbose ())
+          cout << "New: " << newNode->getLcaName () << " " << a->len << " " << b->len << " " << newNode->len << endl;
+      }
+    }
+    ASSERT (newNode);
+    
+    // neighborsVec
+    for (Neighbors& neighbors : neighborsVec)
+      if (! (neighbors == neighbors_best))
+        for (const bool first : Bool)
+        {
+          bool found = false;
+          for (const bool best_first : Bool)
+            if (neighbors. nodes [first] == neighbors_best. nodes [best_first])
+            {
+              neighbors. nodes [first] = newNode;
+              const_cast <DTNode*> (neighbors. nodes [! first]) -> len -= neighbors. dissim;
+              neighbors. dissim -= neighbors_best. nodes [best_first] -> len;
+              maximize (neighbors. dissim, 0.0);
+              const_cast <DTNode*> (neighbors. nodes [! first]) -> len += neighbors. dissim / 2;  
+                // Done twice for neighbors. nodes [! first]
+              found = true;
+            }
+          if (found)
+            neighbors. orderNodes ();
+          ASSERT (! neighbors. same ());
+        }
+
+    n--;
+  }
+  ASSERT (neighborsVec. size () == 1);
+  ASSERT (n == 2);
+  
+  
+  Neighbors& neighbors = neighborsVec [0];
+  ASSERT (! neighbors. same ());
+  for (const bool first : Bool)  
+  {
+    DTNode* node = const_cast <DTNode*> (neighbors. nodes [first]);
+    ASSERT (node->getParent () == root);
+    node->len = neighbors. dissim / 2;  
+  }
+
+  finishChanges ();
+  
+//reroot ();
 }
 
 
@@ -2572,44 +2619,6 @@ void DistTree::clearSubtreeLen ()
 {
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> subtreeLen. clear ();
-}
-
-
-
-void DistTree::setGlobalLen ()
-{
-  // DTNode::subtreeLen
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->subtreeLen. clear ();
-    if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
-      leaf->subtreeLen. add (0);  
-  }
-  FOR (size_t, objNum, obj2leaf1. size ())
-  {
-    const Leaf* g1 = obj2leaf1 [objNum];
-    const Leaf* g2 = obj2leaf2 [objNum];
-    const Real d = max (0.0, (*target) [objNum]);
-    const TreeNode* ancestor = getLowestCommonAncestor (g1, g2);
-    ASSERT (ancestor);
-    Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
-    ASSERT (s);
-    s->subtreeLen. add (d / 2);
-  }
-
-  // DTNode::len
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    if (dtNode->inDiscernable ())
-      { ASSERT (dtNode->len == 0); }
-    else
-    {
-      if (const DTNode* parent = static_cast <const DTNode*> (dtNode->getParent ()))
-        dtNode->len = max (0.0, parent->subtreeLen. getMean () - dtNode->subtreeLen. getMean ());
-    }
-  }
 }
 
 
@@ -3016,7 +3025,7 @@ bool DistTree::optimize ()
 { 
   ASSERT (optimizable ());
   ASSERT (ds. objs. size () >= 2 * root->getLeavesSize () - 2);
-//{(obj2leaf1[obj],obj2leaf2[obj]):obj} must make up a connected graph ??
+
   
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR
 	{
