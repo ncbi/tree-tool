@@ -108,7 +108,7 @@ struct Chronometer_OnePass : Nocopy
     , startTime (clock ())
     {}
  ~Chronometer_OnePass ()
-    { cout << name << ": ";
+    { cout << "CHRON: " << name << ": ";
       Chronometer::print (cout, clock () - startTime);
       cout << endl << endl;
     }
