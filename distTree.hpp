@@ -147,6 +147,9 @@ private:
 public:
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
+  virtual void setRepresentative () = 0;
+    // Output: reprLeaf
+    // Requires: after getDistTree().sort()
   virtual const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const = 0;
     // Return: nullptr or !isNan(leaf2dist [return->index])
     // Depth-first search
@@ -219,6 +222,15 @@ struct Steiner : DTNode
   bool isInteriorType () const final
     { return true; }
 
+  void setRepresentative () final
+    { reprLeaf = nullptr;
+      for (const DiGraph::Arc* arc : arcs [false])
+      { DTNode* node = static_cast <DTNode*> (arc->node [false]);
+        node->setRepresentative ();
+        if (! reprLeaf)
+          reprLeaf = node->reprLeaf;
+      }
+    }
   const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
     { for (const DiGraph::Arc* arc : arcs [false])
         if (const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> selectRepresentative (leaf2dist))
@@ -296,6 +308,8 @@ public:
   bool isLeafType () const final
     { return true; }
 
+  void setRepresentative () final
+    { reprLeaf = this; }
   const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
     { return isNan (leaf2dist [index]) ? nullptr : this; }
 
@@ -636,16 +650,16 @@ struct DistTree : Tree
   VectorPtr<Leaf> obj2leaf1, obj2leaf2;
     // size() = ds.objs.size()
     // obj2leaf1[i]->name < obj2leaf2[i]->name
+    
   Real absCriterion {NAN};
-    // = L2LinearNumPrediction::absCriterion
-  
+    // = L2LinearNumPrediction::absCriterion  
 private:
   Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
 public:
 
 
-  // Input: dissimFName: dmSuff>-file without <dmSuf>, contains attribute attrName
+  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute attrName
 	DistTree (const string &treeFName,
 	          const string &dissimFName,
 	          const string &attrName,
@@ -688,7 +702,7 @@ private:
     // Update: name2steiner
   void loadTreeFile (const string &fName);
     // InvokesL loadLines()
-  bool loadLines (const Vector<string>& lines,
+  bool loadLines (const StringVector &lines,
 		              size_t &lineNum,
 		              Steiner* parent,
 		              size_t expectedOffset);
@@ -846,7 +860,7 @@ public:
 	                  const string &output_tree);
 	  // Input: dissimDs, dissimAttr
 	  // Requires: (bool)dissimAttr
-	  // Invokes: addDissim(), optimizeSubtree() if leafRelCriterion is large, root->findClosestNode()
+	  // Invokes: addDissim(), optimizeSubtree() if leafRelCriterion is large, root->findClosestNode(), DTNode::selectRepresentative()
 	  // Time: !sparse: ~30 sec./1 new leaf for 3000 leaves ??
 	  //       sparse:    4 sec./1 new leaf for 3500 leaves  ??
 private:
@@ -888,7 +902,10 @@ public:
     // Does not delete root
     // Invokes: delayDeleteRetainArcs()
     
-  void setReprLeaves ();
+  void setReprLeaves ()
+    { sort ();
+      const_static_cast<DTNode*> (root) -> setRepresentative ();
+    }  
     // Output: DTNode::reprLeaf
         
   // After optimization

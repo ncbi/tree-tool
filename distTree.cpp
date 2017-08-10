@@ -1058,6 +1058,7 @@ DistTree::DistTree (const string &treeFName,
   {
   //Verbose verb;
     loadDissimDs (dissimFName, attrName);
+
     dissimDs2ds (sparse);  
     if (! getConnected ())
       throw runtime_error ("Disconnected objects");
@@ -1104,7 +1105,6 @@ DistTree::DistTree (const string &dissimFName,
 : dsSample (ds)
 {
   loadDissimDs (dissimFName, attrName);
-  ASSERT (dissimDs. get ());
 
   // Initial tree topology: star topology of indiscernable objects
   ASSERT (! root);
@@ -1118,6 +1118,7 @@ DistTree::DistTree (const string &dissimFName,
   setName2leaf ();
         
   dissimDs2ds (false);  
+  
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
 	setDiscernable (); 
@@ -1453,7 +1454,7 @@ void DistTree::loadTreeDir (const string &dir)
 	ASSERT (! dir. empty ());
   ASSERT (isRight (dir, "/"));
 
-  Vector<string> fileNames;  
+  StringVector fileNames;  
   {
     const string outFName (dir + ".list");
     EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
@@ -1503,7 +1504,7 @@ void DistTree::loadTreeFile (const string &fName)
 {
 	ASSERT (! fName. empty ());
 
-  Vector<string> lines;
+  StringVector lines;
   try
   {
     LineInput in (fName, 10000);  // PAR
@@ -1539,7 +1540,7 @@ namespace
 
 
 
-bool DistTree::loadLines (const Vector<string>& lines,
+bool DistTree::loadLines (const StringVector &lines,
 						              size_t &lineNum,
 						              Steiner* parent,
 						              size_t expectedOffset)
@@ -1684,9 +1685,10 @@ void DistTree::dissimDs2ds (bool sparse)
       if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
       {
         ASSERT (leaf == leaf->reprLeaf);
-        const TreeNode* ancestor = leaf;
+        const DTNode* ancestor = leaf;
         while (ancestor)
         {
+        #if 0
         	for (const DiGraph::Arc* arc : ancestor->arcs [false])
         	{
         	  const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
@@ -1694,7 +1696,11 @@ void DistTree::dissimDs2ds (bool sparse)
         	  if (child->reprLeaf != leaf)
           	  selected << getObjName (leaf->name, child->reprLeaf->name);
         	}
-          ancestor = ancestor->getParent ();
+        #else
+      	  if (ancestor->reprLeaf != leaf)
+        	  selected << getObjName (leaf->name, ancestor->reprLeaf->name);
+        #endif
+          ancestor = static_cast <const DTNode*> (ancestor->getParent ());
         }
       }      
 
@@ -1979,7 +1985,11 @@ void DistTree::neighborJoin ()
   Neighbors& neighbors = neighborsVec [0];
   ASSERT (! neighbors. same ());
   for (const bool first : Bool)  
-    const_cast <DTNode*> (neighbors. nodes [first]) -> len = neighbors. dissim / 2;  
+  {
+    DTNode* node = const_cast <DTNode*> (neighbors. nodes [first]);
+    ASSERT (node->getParent () == root);
+    node->len = neighbors. dissim / 2;  
+  }
 
   for (DiGraph::Node* node : nodes)
   {
@@ -3858,20 +3868,6 @@ size_t DistTree::deleteLenZero ()
  			}
  			
   return n;  
-}
-
-
-
-void DistTree::setReprLeaves ()
-{
-  for (const DiGraph::Node* node : nodes)
-    const_static_cast <DTNode*> (node) -> reprLeaf = nullptr;
-  sort ();
-  for (const DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = const_static_cast <DTNode*> (node);
-    EXEC_ASSERT (dtNode->reprLeaf = static_cast <const DTNode*> (dtNode->getLeftmostDescendent ()) -> asLeaf ());
-  }
 }
 
 
