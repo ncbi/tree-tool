@@ -1966,8 +1966,12 @@ struct Tree : DiGraph
                ? countLeaves
                : 1 + root->getSubtreeSize (countLeaves); 
     }
-  size_t interiorUndirectedArcs () const
-    { return root->getSubtreeSize (false) - (root->getChildren (). size () <= 2 ? 1 : 0); } 
+  size_t countInteriorNodes () const;
+    // Input: TreeNode::isInteriorType()
+  size_t countInteriorUndirectedArcs () const;
+    // Arc is interior <=> arc's nodes are interior
+    // Return: <= countInteriorNodes()
+    // Invokes: countInteriorNodes()
   static const TreeNode* getLowestCommonAncestor (const TreeNode* n1,
                                                   const TreeNode* n2);
     // Return: nullptr <=> !n1 || !n2

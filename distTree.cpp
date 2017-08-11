@@ -1688,7 +1688,7 @@ void DistTree::dissimDs2ds (bool sparse)
   }
 
   Set<string> selected;
-  if (sparse)
+  if (sparse)  // wrong ??
     for (const DiGraph::Node* node : nodes)
       if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
       {
@@ -2553,15 +2553,15 @@ Set<const DTNode*> DistTree::getDiscernables () const
 
 void DistTree::printInput (ostream &os) const
 {
-  os << "# Objects: " << root->getLeavesSize () << endl;
-  os << "# Discernable objects: " << getDiscernables (). size () << endl;
+  os << "# Leaves: " << root->getLeavesSize () << endl;
+  os << "# Discernable leaves: " << getDiscernables (). size () << endl;
   os << "# Nodes: " << nodes. size () << endl;
   if (! optimizable ())
     return;
   os << "# Dissimilarities: " << ds. objs. size () << " (" << (Real) ds. objs. size () / (Real) dissimSize_max () * 100 << " %)" << endl; 
   os << "# Binary attributes: " << ds. attrs. size () - 2 - 5 << endl;  // less target, prediction, for Change
   os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
-  os << "# Objects weighted: " << dsSample. multSum << endl;
+  os << "# Dissimilarities weighted: " << dsSample. multSum << endl;
   os << "# Dissimilarity average: " << getDissim_ave () << endl;
 }
 
@@ -3790,7 +3790,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
 	
 
   const Real improvement = max (0.0, absCriterion_init - absCriterion);
-  if (verbose ())
+  if (verbose (1))
     cout << "Improvement = " << improvement << endl;
   ASSERT (geReal (improvement, - absCriterion_delta));
   ASSERT ((bool) commits == (bool) improvement);

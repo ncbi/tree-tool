@@ -177,8 +177,8 @@ struct ThisApplication : Application
     tree->saveFeatureTree (output_feature_tree);
     
   //ONumber on (cout, 6, false);
-    cout << "# Interior nodes (with root) = " << tree->size (false) << endl;
-    cout << "# Interior undirected arcs = " << tree->interiorUndirectedArcs () << endl;
+    cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
+    cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
     cout << "Tree length = " << tree->getLength () << endl;
     cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
       // = 0 => epsilon2_0 > 0

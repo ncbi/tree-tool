@@ -22,9 +22,9 @@ endif
 # PAR
 set variance    = linExp 
 set sparse_init = ""  # -sparse_init
-set whole       = ""  # -whole
+set whole       = ""  # -whole  
 
-makeDistTree  "$input_tree"  -data $1  -dissim $2  -topology  $whole  -variance $variance  $sparse_init  -output_tree $1.tree  
+makeDistTree  "$input_tree"  -data $1  -dissim $2  -variance $variance  -topology  $whole  $sparse_init  -output_tree $1.tree  
 if ($?) exit 1
 if ($mds) then
   rm -r $1.dir/

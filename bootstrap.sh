@@ -53,4 +53,8 @@ cd ..
 bootstrap_report.sh $1 $replicas
 if ($?) exit 1
 
+rm -r $1.trees/
+if ($?) exit 1
+
+
 

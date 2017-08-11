@@ -120,12 +120,11 @@ void adjustNode2leaves (const Tree &tree,
 
 struct Signature
 {
-  size_t leaves;
+  size_t leaves {0};
   string front;
   string back;
   
   Signature ()
-    : leaves (0)
     {}
   Signature (size_t leaves_arg,
              const string &front_arg,
@@ -207,7 +206,8 @@ struct ThisApplication : Application
     tree2names (*tree2);
 
 
-    VectorPtr<Tree::TreeNode> interiorArcNodes1;  // Does not depend on *tree2
+    VectorPtr<Tree::TreeNode> interiorArcNodes1;  interiorArcNodes1. reserve (tree1->nodes. size ());
+      // Does not depend on *tree2
    	for (const DiGraph::Node* node_ : tree1->nodes)  
    	{
    	  const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (node_);
@@ -221,12 +221,22 @@ struct ThisApplication : Application
       {
         const VectorPtr<DiGraph::Node> children (parent->getChildren ());
         ASSERT (children. size () >= 2);
-        if (   children. size () == 2
-            && min ( getNodeName (static_cast <const Tree::TreeNode*> (children [0]))
-                   , getNodeName (static_cast <const Tree::TreeNode*> (children [1]))
-                   ) == getNodeName (node)
-           )
-          continue;
+        if (children. size () == 2)  // root is transient
+        {
+          VectorPtr<Tree::TreeNode> interiors;  interiors. reserve (2);
+          for (const DiGraph::Node* child : children)
+          {
+            const Tree::TreeNode* treeChild = static_cast <const Tree::TreeNode*> (child);
+            if (treeChild->isInteriorType ())
+              interiors << treeChild;
+          }
+          if (interiors. size () < 2)
+            continue;
+          ASSERT (interiors. size () == 2);
+          ASSERT (interiors. contains (node));
+          if (interiors [0] == node)
+            continue;
+        }
       }
    	  interiorArcNodes1 << node;
    	}
@@ -267,7 +277,7 @@ struct ThisApplication : Application
 
 
     map <const Tree::TreeNode* /*tree1*/, const Tree::TreeNode* /*tree2*/> node2node;  
-      // !nullptr, isInteriorType()
+      // !nullptr
       // value is not deterministic ??
    	for (const Tree::TreeNode* node1 : interiorArcNodes1)  
    	{

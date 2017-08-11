@@ -1376,6 +1376,8 @@ void Tree::TreeNode::qc () const
   DiGraph::Node::qc ();
     
   ASSERT (! (isLeafType () && isInteriorType ()));
+  IMPLY (isLeaf (), isLeafType ());
+  IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
 }
   
 
@@ -1961,6 +1963,45 @@ Vector<Tree::Patristic> Tree::getLeafDistances () const
 {
   Leaf2dist leaf2dist;
   return node2leafDistances (root, leaf2dist);
+}
+
+
+
+size_t Tree::countInteriorNodes () const
+{ 
+  size_t n = 0;
+  for (const DiGraph::Node* node : nodes)
+    if (static_cast <const TreeNode*> (node) -> isInteriorType ())
+      n++;
+  return n;
+} 
+
+
+
+size_t Tree::countInteriorUndirectedArcs () const
+{ 
+  size_t n = countInteriorNodes ();
+  if (root->isInteriorType ())
+    n--;
+
+  const VectorPtr<DiGraph::Node> children (root->getChildren ());
+  switch (children. size ())
+  {
+    case 1: if (static_cast <const TreeNode*> (children [0]) -> isInteriorType ())
+              n--;
+            break;
+    case 2: // root is transient in the undirected tree
+      {
+        size_t m = 0;
+        for (const DiGraph::Node* child : children)
+          if (static_cast <const TreeNode*> (child) -> isInteriorType ())
+            m++;
+        if (m)
+          n--;
+      }
+  }
+
+  return  n;
 }
 
 
