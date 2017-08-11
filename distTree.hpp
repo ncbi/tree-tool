@@ -220,7 +220,7 @@ struct Steiner : DTNode
     { return this; }
 
   bool isInteriorType () const final
-    { return true; }
+    { return childrenDiscernable (); }
 
   void setRepresentative () final
     { reprLeaf = nullptr;
@@ -259,6 +259,7 @@ public:
 
 struct Leaf : DTNode
 {
+  static string non_discernable;
   string name;  
     // !empty()
   string comment;
@@ -287,7 +288,7 @@ public:
         os << "  leaf_error=" << relLenError;
       }
     	if (! discernable)
-    	  os << "  non-discernable";
+    	  os << "  " << non_discernable;
     }
 
 
@@ -708,7 +709,7 @@ private:
 		              Steiner* parent,
 		              size_t expectedOffset);
     // Return: a child of parent has been loaded
-    // Output: topology, DTNode::len
+    // Output: topology, DTNode::len, Leaf::discernable
     // Update: lineNum
   void newick2node (ifstream &f,
                     Steiner* parent);
@@ -724,7 +725,7 @@ private:
     //         cout: print other connected components
   size_t setDiscernable ();
     // Return: Number of indiscernable leaves
-    // Output: Leaf::len = 0, Leaf::discernable = false
+    // Output: Leaf::len = 0, Leaf::discernable = false, topology
   void setGlobalLen ();
     // Output: DTNode::subtreeLen, DTNode::len
 	  // Time: O(p log(n))

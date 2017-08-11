@@ -70,5 +70,7 @@ distTree.sh data/prot-identical_comm cons | grep -v '^CHRON: ' > prot-identical_
 if ($?) exit 1
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 if ($?) exit 1
+rm prot-identical_comm.distTree
+
 
 

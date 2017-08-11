@@ -29,8 +29,9 @@ if ($?) exit 1
 #endif  # ??
 
 
+set replicas = 400  # PAR
 set SEED = 0
-while ($SEED < 100)  # PAR
+while ($SEED < $replicas) 
   @ SEED = $SEED + 1
   set OUT = $1-$SEED.tree
   if (! -e $OUT || -z $OUT) then
@@ -49,7 +50,7 @@ if ($?) exit 1
 
 cd ..
 
-bootstrap_report.sh $1
+bootstrap_report.sh $1 $replicas
 if ($?) exit 1
 
 

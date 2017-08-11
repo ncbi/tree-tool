@@ -483,6 +483,10 @@ const Steiner* Steiner::makeDTRoot ()
 
 // Leaf
 
+string Leaf::non_discernable ("non-discernable");
+
+
+
 Leaf::Leaf (DistTree &tree,
   	        Steiner* parent_arg,
   	        Real len_arg,
@@ -1045,7 +1049,7 @@ DistTree::DistTree (const string &treeFName,
 	ASSERT (dissimFName. empty () == attrName. empty ());
 
   // Initial tree topology
-  loadTreeFile (treeFName);
+  loadTreeFile (treeFName);  
   ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
@@ -1572,10 +1576,12 @@ bool DistTree::loadLines (const StringVector &lines,
   const Real paths        = token2real (s, "paths");
   const Real errorDensity = token2real (s, "err_density");
   const Real leafError    = token2real (s, "leaf_error");
+  const bool indiscernable = contains (s, Leaf::non_discernable);
   DTNode* dtNode = nullptr;
 	if (isLeft (idS, "0x"))
 	{
 	  ASSERT (isNan (leafError));
+	  ASSERT (! indiscernable);
     Steiner* steinerParent = nullptr;
     if (parent)
     {
@@ -1592,6 +1598,7 @@ bool DistTree::loadLines (const StringVector &lines,
 	  ASSERT (parent);
 		auto leaf = new Leaf (*this, parent, len, idS);
 		leaf->relLenError = leafError;
+		leaf->discernable = ! indiscernable;
 		dtNode = leaf;
 	}
 	ASSERT (dtNode);
@@ -1698,7 +1705,9 @@ void DistTree::dissimDs2ds (bool sparse)
           	  selected << getObjName (leaf->name, child->reprLeaf->name);
         	}
         #else
-      	  if (ancestor->reprLeaf != leaf)
+      	  if (   ancestor->reprLeaf != leaf 
+      	      && ancestor->childrenDiscernable ()
+      	     )
         	  selected << getObjName (leaf->name, ancestor->reprLeaf->name);
         #endif
           ancestor = static_cast <const DTNode*> (ancestor->getParent ());
@@ -1940,9 +1949,9 @@ bool DistTree::getConnected ()
 
 size_t DistTree::setDiscernable ()
 {
-	ASSERT (dissimDs. get ());
-	ASSERT (dissimAttr);
 	ASSERT (! optimizable ());
+  ASSERT (dissimDs. get ());
+  ASSERT (dissimAttr);
 
 
   map <const DisjointCluster*, VectorPtr<Leaf>> cluster2leaves;
@@ -3847,7 +3856,6 @@ void DistTree::tryChange (Change* ch,
 void DistTree::delayDeleteRetainArcs (DTNode* s)
 {
 	ASSERT (s);
-	ASSERT (! s->inDiscernable ());
 
   if (verbose ())
     cout << "To delete: " << s->getName () << endl;
@@ -4070,7 +4078,7 @@ Real DistTree::setErrorDensities ()
     DTNode* dtNode = const_static_cast <DTNode*> (node);
     if (! dtNode->getParent ())
       continue;
-    ASSERT (dtNode->paths);
+    ASSERT (dtNode->paths);  
     dtNode->errorDensity = sqrt (dtNode->errorDensity / (Real) dtNode->paths);
   }
   
