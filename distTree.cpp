@@ -1687,8 +1687,10 @@ void DistTree::dissimDs2ds (bool sparse)
       const_cast <Leaf*> (g) -> comment = obj->comment;
   }
 
-  Set<string> selected;
-  if (sparse)  // wrong ??
+  // Sparsing
+  // The graph of comparable objects remains connected (getConnected())
+  Set<string> selectedPairs;
+  if (sparse) 
     for (const DiGraph::Node* node : nodes)
       if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
       {
@@ -1696,20 +1698,13 @@ void DistTree::dissimDs2ds (bool sparse)
         const DTNode* ancestor = leaf;
         while (ancestor)
         {
-        #if 0
         	for (const DiGraph::Arc* arc : ancestor->arcs [false])
         	{
         	  const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
         	  ASSERT (child->reprLeaf);
-        	  if (child->reprLeaf != leaf)
-          	  selected << getObjName (leaf->name, child->reprLeaf->name);
+        	  if (leaf->getDiscernable () != child->reprLeaf->getDiscernable ())
+          	  selectedPairs << getObjName (leaf->name, child->reprLeaf->name);
         	}
-        #else
-      	  if (   ancestor->reprLeaf != leaf 
-      	      && ancestor->childrenDiscernable ()
-      	     )
-        	  selected << getObjName (leaf->name, ancestor->reprLeaf->name);
-        #endif
           ancestor = static_cast <const DTNode*> (ancestor->getParent ());
         }
       }      
@@ -1732,7 +1727,7 @@ void DistTree::dissimDs2ds (bool sparse)
       if (! findPtr (name2leaf, name2))
         continue;
       const Real dissim = dissimAttr->get (row, col);
-      if (positive (dissim) && sparse && ! selected. contains (getObjName (name1, name2)))
+      if (positive (dissim) && sparse && ! selectedPairs. contains (getObjName (name1, name2)))
         continue;
       addDissim (name1, name2, dissim);
     }
@@ -2319,7 +2314,7 @@ void DistTree::neighborJoin ()
 
   finishChanges ();
   
-//reroot ();
+  reroot ();  // Reduces ds.objs.size() if ds is sparse
 }
 
 
@@ -3266,7 +3261,6 @@ void DistTree::optimizeAdd (bool sparse,
           const_cast <CompactBoolAttr1*> (g->attr) -> setCompactBool (objNum, false);
           if (st)
             const_cast <CompactBoolAttr1*> (st->attr) -> setCompactBool (objNum, path. contains (st));
-        //(* const_cast <RealAttr1*> (prediction)) [objNum] = path2prediction (path);  
         }
     
         FOR_START (size_t, objNum, objNum_start, ds. objs. size ())
@@ -3276,7 +3270,7 @@ void DistTree::optimizeAdd (bool sparse,
                                                   )
                                          );
           ASSERT (path. contains (g));
-          // Use Node:;inStack ??
+          // Use Node::inStack ??
           for (const DiGraph::Node* node : nodes)
           {
             const DTNode* dtNode = static_cast <const DTNode*> (node);
@@ -4077,6 +4071,8 @@ Real DistTree::setErrorDensities ()
   {
     DTNode* dtNode = const_static_cast <DTNode*> (node);
     if (! dtNode->getParent ())
+      continue;
+    if (dtNode->inDiscernable ())
       continue;
     ASSERT (dtNode->paths);  
     dtNode->errorDensity = sqrt (dtNode->errorDensity / (Real) dtNode->paths);

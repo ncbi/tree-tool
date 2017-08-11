@@ -732,6 +732,7 @@ private:
   void neighborJoin ();
     // Greedy
     // Requires: no missing dissimilarities, star topology
+    // Invokes: reroot()
     // Time: O(p n)
   //
   void dissimDs2ds (bool sparse);
