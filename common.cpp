@@ -1513,8 +1513,54 @@ size_t Tree::TreeNode::getHeight () const
 {
   size_t n = 0;
 	for (const Arc* arc : arcs [false])
-	  maximize (n, 1 + static_cast <TreeNode*> (arc->node [false]) -> getHeight ());
+	  maximize (n, 1 + static_cast <const TreeNode*> (arc->node [false]) -> getHeight ());
 	return n;
+}
+
+
+
+size_t Tree::TreeNode::getInteriorHeight () const
+{
+  ASSERT (isInteriorType ());
+  
+  size_t n = 0;
+	for (const Arc* arc : arcs [false])
+	{
+	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
+	  if (node->isInteriorType ())
+	    maximize (n, 1 + node->getInteriorHeight ());
+	}
+	return n;
+}
+
+
+
+void Tree::TreeNode::getBifurcatingInteriorBranching (size_t &bifurcatingInteriorNodes,
+                                                      size_t &branches) const
+{
+  ASSERT (isInteriorType ());
+  ASSERT (arcs [false]. size () >= 2);  // transient nodes are prohibited
+
+  // Make *this bifurcating
+  branches                 += arcs [false]. size () - 2;
+  bifurcatingInteriorNodes += arcs [false]. size () - 2;
+
+  size_t interiorArcs = 0;
+	for (const Arc* arc : arcs [false])
+	{
+	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
+	  if (node->isInteriorType ())
+	  {
+	    interiorArcs++;
+	    node->getBifurcatingInteriorBranching (bifurcatingInteriorNodes, branches);
+	  }
+	}  
+	
+	branches += interiorArcs;
+	if (interiorArcs)
+	  bifurcatingInteriorNodes++;
+	ASSERT (branches >= bifurcatingInteriorNodes);
+//ASSERT (branches <= 2 * bifurcatingInteriorNodes);  ??
 }
 
 
@@ -1898,6 +1944,23 @@ void Tree::printArcLengths (ostream &os) const
 
 
 
+double Tree::getAveArcLength () const
+{
+  double len = 0;
+  size_t n = 0;
+  for (const DiGraph::Node* node : nodes)
+  {
+    if (node == root)
+      continue;
+    const double arcLen = static_cast <const TreeNode*> (node) -> getParentDistance ();
+    ASSERT (arcLen >= 0);
+    len += arcLen;
+    n++;
+  }
+  return len / (double) n;
+}
+
+
 
 Tree::Patristic::Patristic (const TreeNode* leaf1_arg, 
                             const TreeNode* leaf2_arg,
@@ -1975,6 +2038,20 @@ size_t Tree::countInteriorNodes () const
       n++;
   return n;
 } 
+
+
+
+double Tree::getBifurcatingInteriorBranching () const
+{ 
+  if (! (root && root->isInteriorType ()))
+    return -1;
+    
+  size_t bifurcatingInteriorNodes = 0;
+  size_t branches = 0;
+  root->getBifurcatingInteriorBranching (bifurcatingInteriorNodes, branches);
+  return (double) branches / (double) bifurcatingInteriorNodes;
+//# Leaves given getBifurcatingInteriorBranching() and depth ??
+}
 
 
 

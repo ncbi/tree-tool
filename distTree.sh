@@ -9,7 +9,11 @@ if ($# != 2) then
 endif
 
 
-set mds = 0  # or 1
+# PAR
+set mds         = 0  # 1
+set variance    = linExp 
+set sparse_init = ""  # -sparse_init
+set whole       = ""  # -whole  
 
 
 set input_tree = ""
@@ -19,18 +23,14 @@ if ($mds) then
   set input_tree = $1.dir/
 endif
 
-# PAR
-set variance    = linExp 
-set sparse_init = ""  # -sparse_init
-set whole       = ""  # -whole  
-
-makeDistTree  "$input_tree"  -data $1  -dissim $2  -variance $variance  -topology  $whole  $sparse_init  -output_tree $1.tree  
+makeDistTree  "$input_tree"  -data $1  -dissim $2  -variance $variance  $sparse_init  -topology  $whole  -output_tree $1.tree  
 if ($?) exit 1
 if ($mds) then
   rm -r $1.dir/
   if ($?) exit 1
 endif
 
+echo ""
 makeDistTree  $1.tree  -data $1  -dissim $2  -variance $variance  $sparse_init > $1.makeDistTree
 if ($?) exit 1
 

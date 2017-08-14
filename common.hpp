@@ -1821,6 +1821,11 @@ struct Tree : DiGraph
 		  }
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
+		size_t getInteriorHeight () const;
+    void getBifurcatingInteriorBranching (size_t &bifurcatingInteriorNodes,
+                                          size_t &branches) const;
+      // Update: bifurcatingInteriorNodes, branches
+      //         branches >= bifurcatingInteriorNodes
 	  double getRootDistance () const
 		  { if (const TreeNode* parent_ = getParent ())
 		  		return parent_->getRootDistance () + getParentDistance ();
@@ -1947,6 +1952,7 @@ struct Tree : DiGraph
     { return "<node name> <arc length> <depth length> <log(<parent arc length>/<arc length>)"; }
   double getLength () const
     { return root->getSubtreeLength (); }
+  double getAveArcLength () const;
   struct Patristic
   {
     const TreeNode* leaf1 {nullptr};
@@ -1968,6 +1974,13 @@ struct Tree : DiGraph
     }
   size_t countInteriorNodes () const;
     // Input: TreeNode::isInteriorType()
+  size_t getInteriorHeight () const
+    { if (root && root->isInteriorType ())
+        return root->getInteriorHeight ();
+      return 0;
+    }
+  double getBifurcatingInteriorBranching () const;
+    // Return: if !root->isInteriotType() then -1 else >= 0
   size_t countInteriorUndirectedArcs () const;
     // Arc is interior <=> arc's nodes are interior
     // Return: <= countInteriorNodes()

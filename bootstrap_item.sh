@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 5) then
-  echo "50%-Bootstrap a distance tree"
+  echo "50%-subsampling bootstrap of a distance tree"
   echo "#1: Input .dm file without .dm in the parent directory"
   echo "#2: Distance attribute in #1"
   echo "#3: Random number generator seed, identifier of the item"
@@ -10,10 +10,6 @@ if ($# != 5) then
   exit 1
 endif
 
-
-
-cp /dev/null $4/$3
-if ($?) exit 1
 
 
 dm2objs ../$1 > $1-$3.all

@@ -83,7 +83,6 @@ struct ThisApplication : Application
       tree->qc ();     
       
     tree->printInput (cout);
-    cout << "Max. possible dissimilarity = " << dissim_max () << endl;
     
     if (tree->optimizable ())
     {
@@ -176,12 +175,22 @@ struct ThisApplication : Application
     tree->saveFile (output_tree);
     tree->saveFeatureTree (output_feature_tree);
     
-  //ONumber on (cout, 6, false);
-    cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
-    cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
-    cout << "Tree length = " << tree->getLength () << endl;
-    cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
-      // = 0 => epsilon2_0 > 0
+    {
+      ONumber on (cout, 4, false);
+      cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
+      cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
+      cout << "Tree length = " << tree->getLength () << endl;
+      cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
+        // = 0 => epsilon2_0 > 0
+      if (sparse_init)  // ??
+      {
+        const size_t missing = tree->selectPairs (). size ();
+        cout << "Missing dissimilarities = " << missing << " (" << (Real) missing / (Real) tree->dissimSize_max () * 100 << " %)" << endl;
+      }
+      cout << "Ave. arc length = " << tree->getAveArcLength () << endl;
+      cout << "Interior height = " << tree->getInteriorHeight () << endl;
+      cout << "Bifurcating interior branching = " << tree->getBifurcatingInteriorBranching () << endl;
+    }
       
     if (! leaf_errors. empty ())
     {

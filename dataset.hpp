@@ -1014,13 +1014,15 @@ public:
     // Return: may be nullptr                        
 
   // objs
+  bool name2objNumSet () const
+    { return ! name2objNum. empty (); }
   void setName2objNum ();
     // Output: name2objNum
   size_t getName2objNum (const string &objName) const;
     // Return: NO_INDEX <=> not found
     // Input: name2objNum
   Set<string> getObjNames () const
-    { Set<string> s (name2objNum);
+    { const Set<string> s (name2objNum);
       return s;
     }
   size_t appendObj (const string &objName = string ());

@@ -95,6 +95,7 @@ private:
     // Init: false
 public:
   size_t paths {0};
+    // Number of paths going through *this arc
   Real errorDensity {NAN};
 protected:
   Vector<bool> subtreeLeaves;  
@@ -153,6 +154,9 @@ public:
   virtual const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const = 0;
     // Return: nullptr or !isNan(leaf2dist [return->index])
     // Depth-first search
+  virtual void getDescendents (VectorPtr<DTNode> &descendents,
+                               size_t depth) const = 0;
+    // Update: descendents
 
   struct Closest : Root
   {
@@ -237,6 +241,8 @@ struct Steiner : DTNode
           return leaf;
       return nullptr;
     }
+  void getDescendents (VectorPtr<DTNode> &descendents,
+                       size_t depth) const final;
 
 private:
   void reverseParent (const Steiner* target, 
@@ -313,6 +319,9 @@ public:
     { reprLeaf = this; }
   const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
     { return isNan (leaf2dist [index]) ? nullptr : this; }
+  void getDescendents (VectorPtr<DTNode> &descendents,
+                       size_t /*depth*/) const final
+    { descendents << this; }
 
   const DTNode* getDiscernable () const;
     // Return: !nullptr
@@ -613,6 +622,7 @@ struct DistTree : Tree
 // For Time: n = # leaves, p = # distances = ds.objs.size()
 {
   map<string/*Leaf::name*/,const Leaf*> name2leaf;
+    // 1-1
 
   // Dissimilarity
   // May be nullptr
@@ -739,7 +749,7 @@ private:
     // Update: dissimDs: delete
     // Output: ds etc.
     //         Tree: if an object is absent in ds then it is deleted from the Tree
-    // Invokes: setReprLeaves(), loadDissimFinish()
+    // Invokes: getSelectedPairs(), loadDissimFinish()
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim);
@@ -748,6 +758,9 @@ private:
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
 public:
+  Set<string> selectPairs ();  // public ??
+    // Return: reroot() reduces size()
+    // Invokes: setReprLeaves()
 	void qc () const override;
 	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
 	void qcAttrs () const;
@@ -919,6 +932,7 @@ public:
                Real arcLen);
   void reroot ();
     // Molecular clock
+    // Optimization criterion ??
     // Invokes: reroot(,)
   void setHeight ()
     { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (); }

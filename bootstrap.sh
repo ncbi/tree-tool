@@ -35,7 +35,10 @@ while ($SEED < $replicas)
   @ SEED = $SEED + 1
   set OUT = $1-$SEED.tree
   if (! -e $OUT || -z $OUT) then
+    cp /dev/null log/$SEED
+    if ($?) exit 1
     $QSUB -N j$SEED "bootstrap_item.sh $1 $2 $SEED log $3" > /dev/null
+    if ($?) exit 1
   endif
 end
 while (1)
