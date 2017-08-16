@@ -47,12 +47,17 @@ typedef  Set<string>  Leaves;
 
 
 
-Leaves tree2leaves (const Tree &tree)
+Leaves tree2leaves (const Tree &tree,
+                    bool frequentOnly)
 {
   Leaves leaves;
  	for (const DiGraph::Node* node : tree. nodes)  
-    if (static_cast <const Tree::TreeNode*> (node) -> isLeafType ())
-      leaves << node->getName ();
+ 	{
+ 	  const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
+    if (tn->isLeafType ())
+      if (! frequentOnly || tn->frequent)
+        leaves << node->getName ();
+  }
   return leaves;
 }
 
@@ -166,7 +171,7 @@ Signature leaves2signature (const Leaves &leaves)
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Compare two trees, print matching and mismatching interior nodes for tree 1")
+	: Application ("Remove " + real2str(DistTree_sp::rareProb, 2) + "-infrequent leaves from tree 1, compare two trees, print matching and mismatching interior nodes for tree 1")
 	{
 		// Input
 	  addPositional ("input_tree1", "Tree 1");
@@ -243,14 +248,17 @@ struct ThisApplication : Application
 
     
     {  
-      const Leaves leaves1 (tree2leaves (*tree1));
-      const Leaves leaves2 (tree2leaves (*tree2));      
+      tree1->setFrequent (DistTree_sp::rareProb); 
+
+      const Leaves leaves1 (tree2leaves (*tree1, true));
+      const Leaves leaves2 (tree2leaves (*tree2, false));
       cout << "# Leaves in " << input_tree1 << ": " << leaves1. size () << endl;
       cout << "# Leaves in " << input_tree2 << ": " << leaves2. size () << endl;
       cout << endl;
       
       cout << "Deleting from " << input_tree1 << endl;
-      const size_t n1 = tree1->restrictLeaves (leaves2, false);
+      const size_t n1 =   tree1->restrictLeaves (leaves1, false)   // Keep only frequent leaves
+                        + tree1->restrictLeaves (leaves2, false);
       cout << "# Deleted: " << n1 << endl;
       cout << endl;
       
@@ -263,7 +271,7 @@ struct ThisApplication : Application
     setNode2leaves (tree1->root);
     setNode2leaves (tree2->root); 
     {
-      const Leaves allLeaves (tree2leaves (*tree1));  // Same for tree2
+      const Leaves allLeaves (tree2leaves (*tree1, false));  // Same for tree2
       adjustNode2leaves (*tree1, allLeaves);   
       adjustNode2leaves (*tree2, allLeaves);   
     }

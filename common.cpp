@@ -1539,13 +1539,13 @@ void Tree::TreeNode::getBifurcatingInteriorBranching (size_t &bifurcatingInterio
                                                       size_t &branches) const
 {
   ASSERT (isInteriorType ());
-  ASSERT (arcs [false]. size () >= 2);  // transient nodes are prohibited
+  ASSERT (/*a*/ arcs [false]. size () >= 2);  // transient nodes are prohibited
 
   // Make *this bifurcating
-  branches                 += arcs [false]. size () - 2;
-  bifurcatingInteriorNodes += arcs [false]. size () - 2;
+  branches                 += arcs [false]. size () - 2;  // b
+  bifurcatingInteriorNodes += arcs [false]. size () - 2;  // n
 
-  size_t interiorArcs = 0;
+  size_t interiorArcs = 0;  // i
 	for (const Arc* arc : arcs [false])
 	{
 	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
@@ -1560,7 +1560,18 @@ void Tree::TreeNode::getBifurcatingInteriorBranching (size_t &bifurcatingInterio
 	if (interiorArcs)
 	  bifurcatingInteriorNodes++;
 	ASSERT (branches >= bifurcatingInteriorNodes);
-//ASSERT (branches <= 2 * bifurcatingInteriorNodes);  ??
+
+  ASSERT (branches <= 2 * bifurcatingInteriorNodes);  
+/*Proof:
+  a >= 2.
+  i <= a.
+  For each parent node:
+  b = a - 2 + i.
+  n = a - 2 + (bool) i.
+  x := 2 n - b = a - 2 + 2 (bool) i - i = (a - i) + 2 ((bool) i - 1).
+  if i > 0 then x = a - i >= 0.
+  if i = 0 then x = a - 2 >= 0.
+*/
 }
 
 
@@ -1601,6 +1612,69 @@ size_t Tree::TreeNode::getLeavesSize () const
 	return max<size_t> (n, 1);
 }
 
+
+
+namespace
+{
+  struct ChildFreq
+  {
+    Tree::TreeNode* node;
+    size_t freq;
+    ChildFreq (Tree::TreeNode* node_arg,
+               size_t freq_arg)
+      : node (node_arg)
+      , freq (freq_arg)
+      { ASSERT (node);
+        ASSERT (freq);
+      }
+    static bool compare (const ChildFreq& a,
+                         const ChildFreq& b)
+      { LESS_PART (b, a, freq);
+        LESS_PART (a, b, node);
+        return false;
+      }
+  };
+}
+
+
+
+void Tree::TreeNode::setChildrenFrequent (double rareProb)
+{
+  ASSERT (rareProb >= 0);
+  ASSERT (rareProb < 0.5);  // => in a bifurcating node at least one child is frequent
+  ASSERT (frequent);  
+  
+  Vector<ChildFreq> childFreqs;
+  {  
+    const VectorPtr<DiGraph::Node> children (getChildren ());
+    childFreqs. reserve (children. size ());
+    for (const DiGraph::Node* child : children)
+    {
+      const TreeNode* node = static_cast <const TreeNode*> (child);
+      childFreqs << ChildFreq (const_cast <TreeNode*> (node), node->getLeavesSize ());  // Time = O(|nodes|^2) ??
+    }
+  }
+  Common_sp::sort (childFreqs, ChildFreq::compare);  // Bifurcatization
+  
+  size_t sum = 0;
+#ifndef NDEBUG
+  size_t freq_prev = numeric_limits<size_t>::max ();
+#endif
+  for (ChildFreq& cf : childFreqs)
+  {
+  #ifndef NDEBUG
+    ASSERT (freq_prev >= cf. freq);
+    freq_prev = cf. freq;
+  #endif
+    sum += cf. freq;
+    ASSERT (sum);
+    if ((double) cf. freq / (double) sum < rareProb)
+      continue;
+    cf. node->frequent = true;      
+    cf. node->setChildrenFrequent (rareProb);    
+  }
+}
+  
 
 
 void Tree::TreeNode::getLeaves (VectorPtr<TreeNode> &leaves) const
@@ -2049,8 +2123,10 @@ double Tree::getBifurcatingInteriorBranching () const
   size_t bifurcatingInteriorNodes = 0;
   size_t branches = 0;
   root->getBifurcatingInteriorBranching (bifurcatingInteriorNodes, branches);
-  return (double) branches / (double) bifurcatingInteriorNodes;
-//# Leaves given getBifurcatingInteriorBranching() and depth ??
+  const double branching = (double) branches / (double) bifurcatingInteriorNodes;
+  ASSERT (branching >= 1);
+  ASSERT (branching <= 2);
+  return branching;
 }
 
 
@@ -2224,6 +2300,36 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
   res << vec1 << vec2;
   
   return res;
+}
+
+
+
+void Tree::setFrequent (double rareProb)
+{ 
+  if (! root)
+    return;
+    
+  for (DiGraph::Node* node : nodes)
+    static_cast <TreeNode*> (node) -> frequent = false;
+  const_cast <TreeNode*> (root) -> frequent = true;
+  const_cast <TreeNode*> (root) -> setChildrenFrequent (rareProb);
+  
+  VectorPtr<TreeNode> transients;  transients. reserve (nodes. size ());
+  for (const DiGraph::Node* node : nodes)
+  {
+    const TreeNode* tn = static_cast <const TreeNode*> (node);
+    if (! tn->frequent)
+      continue;
+    const VectorPtr<DiGraph::Node> children (tn->getChildren ());
+    size_t freqChildren = 0;
+    for (const DiGraph::Node* child : children)
+      if (static_cast <const TreeNode*> (child) -> frequent)
+        freqChildren++;
+    if (freqChildren == 1)  // transient, not leaf
+      transients << tn;
+  }  
+  for (const TreeNode* tn : transients)
+    const_cast <TreeNode*> (tn) -> frequent = false;
 }
 
 

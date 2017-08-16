@@ -1724,8 +1724,7 @@ Set<string> DistTree::selectPairs ()
   setReprLeaves ();  
   
   Set<string> selectedPairs;
- 	constexpr size_t depth = 13;  // PAR ??
- 	VectorPtr<DTNode> descendents;  descendents. reserve (2 * powInt (2, (uint) depth));  // PAR
+ 	VectorPtr<DTNode> descendents;  descendents. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
   for (const DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
     {
@@ -1734,7 +1733,7 @@ Set<string> DistTree::selectPairs ()
       while (ancestor)
       {
       	descendents. clear ();
-      	ancestor->getDescendents (descendents, depth); 
+      	ancestor->getDescendents (descendents, sparsingDepth); 
       	for (const DTNode* descendent : descendents)
       	{
       	  ASSERT (descendent->reprLeaf);
@@ -2590,6 +2589,7 @@ void DistTree::printInput (ostream &os) const
   os << "Max. possible dissimilarity = " << dissim_max () << endl;
 //os << "# Dissimilarities weighted: " << dsSample. multSum << endl;
   os << "Ave. dissimilarity = " << getDissim_ave () << endl;
+  os << "Subgraph radius = " << areaRadius_std << endl;
 }
 
 

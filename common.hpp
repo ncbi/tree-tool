@@ -1757,6 +1757,8 @@ struct Tree : DiGraph
 	struct TreeNode : DiGraph::Node
 	{
 	  friend struct Tree;
+	  bool frequent {false};
+	    // For a directed tree
 		TreeNode (Tree &tree,
 		          TreeNode* parent_arg)
 			: DiGraph::Node (tree)
@@ -1826,6 +1828,7 @@ struct Tree : DiGraph
                                           size_t &branches) const;
       // Update: bifurcatingInteriorNodes, branches
       //         branches >= bifurcatingInteriorNodes
+      //         branches <= 2 bifurcatingInteriorNodes
 	  double getRootDistance () const
 		  { if (const TreeNode* parent_ = getParent ())
 		  		return parent_->getRootDistance () + getParentDistance ();
@@ -1856,6 +1859,9 @@ struct Tree : DiGraph
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
 		size_t getLeavesSize () const;
+		void setChildrenFrequent (double rareProb);
+		  // Output: TreeNode::frequent
+		  // Invokes: isInteriorType(), getLeavesSize()
     void getLeaves (VectorPtr<TreeNode> &leaves) const;
       // Update: leaves
 		const TreeNode* getClosestLeaf (size_t &leafDepth) const;
@@ -1980,7 +1986,10 @@ struct Tree : DiGraph
       return 0;
     }
   double getBifurcatingInteriorBranching () const;
-    // Return: if !root->isInteriotType() then -1 else >= 0
+    // Return: if !root->isInteriotType() then -1 else between 1 and 2
+    // # Bifurcating interior nodes = [1 1]' [[branching 0]' [1 1]']^depth [1 0] = \sum_{i=0}^depth branching^i = branching^{depth+1} - 1
+    //   Vector meaning: [open_nodes closed_nodes]
+    // # Leaves = # Bifurcating interior nodes + 1 = branching^{depth+1}
   size_t countInteriorUndirectedArcs () const;
     // Arc is interior <=> arc's nodes are interior
     // Return: <= countInteriorNodes()
@@ -1996,7 +2005,10 @@ struct Tree : DiGraph
     // Invokes: getLowestCommonAncestor(nodeVec)
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2);
-
+  void setFrequent (double rareProb);
+    // Input: 0 <= rareProb < 0.5
+    // Output: TreeNode::frequent: statistically consistent estimate
+    // Invokes: setChildrenFrequent()
   void setRoot ();
     // Output: root
   size_t deleteTransients ();

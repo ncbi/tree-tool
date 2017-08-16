@@ -56,9 +56,12 @@ inline Real dissim_max ()
 
 
 
-constexpr uint areaRadius_std = 5;   // PAR
+// PAR
+constexpr uint areaRadius_std = 5;  
   // The greater then better DistTree::absCriterion
   // >= 4 <= ChangeToCousin can be applied  
+constexpr size_t sparsingDepth = 13;  // ??
+constexpr Prob rareProb = 0.01; 
 
 
 
@@ -218,6 +221,13 @@ struct Steiner : DTNode
 	         Steiner* parent_arg,
 	         Real len_arg);
 	void qc () const override;
+#if 0
+  void saveContent (ostream& os) const final
+    { DTNode::saveContent (os);
+    	if (frequent)
+    	  os << " " << "frequent";
+    }
+#endif
 
 
   const Steiner* asSteiner () const final
@@ -295,6 +305,8 @@ public:
       }
     	if (! discernable)
     	  os << "  " << non_discernable;
+    //if (frequent)
+    	//os << " " << "frequent";
     }
 
 
@@ -757,10 +769,10 @@ private:
 	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
-public:
-  Set<string> selectPairs ();  // public ??
+  Set<string> selectPairs ();  
     // Return: reroot() reduces size()
     // Invokes: setReprLeaves()
+public:
 	void qc () const override;
 	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
 	void qcAttrs () const;
