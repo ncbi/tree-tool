@@ -88,7 +88,9 @@ struct ThisApplication : Application
     {
       if (topology)
       {
-        cout << "Topology optimization: " << (whole ? "whole" : "by subgraphs") << endl;
+        cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
+        if (sparse_init)
+          cout << "Sparsing depth = " << sparsingDepth << endl;
         cout << endl;
         const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
@@ -172,6 +174,8 @@ struct ThisApplication : Application
     }
   
   //tree->sort ();
+    tree->setFrequent (rareProb);  
+
     tree->saveFile (output_tree);
     tree->saveFeatureTree (output_feature_tree);
     
@@ -182,14 +186,31 @@ struct ThisApplication : Application
       cout << "Tree length = " << tree->getLength () << endl;
       cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
         // = 0 => epsilon2_0 > 0
-      if (sparse_init)  // ??
+    #if 0
+      if (sparse_init) 
       {
         const size_t missing = tree->selectPairs (). size ();
         cout << "Missing dissimilarities = " << missing << " (" << (Real) missing / (Real) tree->dissimSize_max () * 100 << " %)" << endl;
       }
+    #endif
       cout << "Ave. arc length = " << tree->getAveArcLength () << endl;
+        // Check exponential distribution ??
       cout << "Interior height = " << tree->getInteriorHeight () << endl;
-      cout << "Bifurcating interior branching = " << tree->getBifurcatingInteriorBranching () << endl;
+      const Real bifurcatingInteriorBranching = tree->getBifurcatingInteriorBranching ();
+      cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
+      cout << "# Sparsing leaves = " << pow (bifurcatingInteriorBranching, sparsingDepth + 1) << endl;
+      // #dissimilarities = 2 #discernables log_2(#discernables) #sparsing_leaves
+
+      {      
+        size_t freqs = 0;
+        for (const DiGraph::Node* node : tree->nodes)
+        {
+          const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
+          if (tn->isInteriorType () && tn->frequent)
+            freqs++;
+        }
+        cout << "# Frequent interior nodes (rare = " << rareProb * 100 << " %) = " << freqs << endl;
+      }      
     }
       
     if (! leaf_errors. empty ())
