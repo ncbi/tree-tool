@@ -1,0 +1,41 @@
+-logL = 0.0713627
+P(Correct) = 0.931124
+Target_score_min = -17.0763
+Other_score_max  = 2.5034
+------------------------------
+beta: value
+unit: -3.31915
+complete: 3.111
+markers_prod: -0.0704255
+L50: 0.00254601
+n50: 2.74567e-07
+contigs: -0.0705411
+typestrain: 1.53267
+model: 16.1227
+community: 16.4752
+pubmeds: 0.024731
+clusters: 0.000599146
+core_clusters: -0.00140447
+
+beta: importance
+unit: nan
+complete: 0.12533
+markers_prod: 0.00155194
+L50: 0.000153066
+n50: 0.0393563
+contigs: 0.0231418
+typestrain: 0.0800964
+model: 0.0233409
+community: 0.027145
+pubmeds: 0.00063913
+clusters: 0.00233726
+core_clusters: 0.00625322
+
+Control:
+-logL = 0.170688
+P(Correct) = 0.843085
+Target_score_min = inf
+Other_score_max  = -inf
+------------------------------
+beta: value
+unit: -3.15572

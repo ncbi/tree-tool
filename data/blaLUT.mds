@@ -1,0 +1,31 @@
+Matrix size: 6
+Total explained share = 79.437 % ( 1400.30 /  1762.78)
+Total explained variance share = 63.801
+
+Eigen 1:
+Explained share            = 60.962 %
+Cumulative explained share = 60.962 %
+Value = 32.7815
+
+Eigen 2:
+Explained share            = 18.475 %
+Cumulative explained share = 79.437 %
+Value = 18.0464
+Orthogonal: 1
+
+6 2
+2.948e-01	4.412e-04
+6.538e-01	1.722e-01
+9.986e-02	-2.271e-01
+-9.573e-02	-4.063e-01
+-3.968e-01	7.994e-01
+-5.560e-01	-3.386e-01
+
+
+ObjName,Class,Length,PC_1,PC_2
+AAU10324.1|blaLUT-1|2e,blaLUT,296,1.6879,0.0019
+ACN76562.1|blaLUT-2,blaLUT,296,3.7433,0.7315
+ACN76563.1|blaLUT-3,blaLUT,296,0.5717,-0.9648
+ACN76564.1|blaLUT-4,blaLUT,296,-0.5481,-1.7261
+ACN76565.1|blaLUT-5,blaLUT,296,-2.2717,3.3959
+ACN76566.1|blaLUT-6,blaLUT,296,-3.1831,-1.4385
