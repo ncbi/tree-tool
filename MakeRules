@@ -31,8 +31,8 @@ $(CPP_DIR)/numeric.o:	$(CPP_DIR)/numeric.hpp $(COMMON_HPP)
 NUMERIC_OBJ = $(CPP_DIR)/common.o $(CPP_DIR)/numeric.o 
 $(CPP_DIR)/matrix.o: $(CPP_DIR)/matrix.hpp $(COMMON_HPP) $(CPP_DIR)/numeric.hpp 
 $(CPP_DIR)/optim.o:	$(CPP_DIR)/optim.hpp $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/matrix.hpp 
-$(CPP_DIR)/dataset.o:	$(DM_HPP)
 DM_HPP = $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/matrix.hpp $(CPP_DIR)/optim.hpp $(CPP_DIR)/dataset.hpp
+$(CPP_DIR)/dataset.o:	$(DM_HPP)
 DM_OBJ = $(NUMERIC_OBJ) $(CPP_DIR)/matrix.o $(CPP_DIR)/optim.o $(CPP_DIR)/dataset.o
 $(CPP_DIR)/prediction.o: $(CPP_DIR)/prediction.hpp $(DM_HPP)
 PREDICT_OBJ = $(DM_OBJ) $(CPP_DIR)/prediction.o 
