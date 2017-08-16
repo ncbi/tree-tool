@@ -1638,11 +1638,11 @@ namespace
 
 
 
-void Tree::TreeNode::setChildrenFrequent (double rareProb)
+void Tree::TreeNode::children2frequentChild (double rareProb)
 {
   ASSERT (rareProb >= 0);
-  ASSERT (rareProb < 0.5);  // => in a bifurcating node at least one child is frequent
-  ASSERT (frequent);  
+  ASSERT (rareProb < 0.5);  // => in a bifurcating node at least one child is frequentChild
+  ASSERT (frequentChild);  
   
   Vector<ChildFreq> childFreqs;
   {  
@@ -1670,8 +1670,8 @@ void Tree::TreeNode::setChildrenFrequent (double rareProb)
     ASSERT (sum);
     if ((double) cf. freq / (double) sum < rareProb)
       continue;
-    cf. node->frequent = true;      
-    cf. node->setChildrenFrequent (rareProb);    
+    cf. node->frequentChild = true;      
+    cf. node->children2frequentChild (rareProb);    
   }
 }
   
@@ -2304,32 +2304,82 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 
 
 
-void Tree::setFrequent (double rareProb)
+void Tree::setFrequentChild (double rareProb)
 { 
   if (! root)
     return;
     
   for (DiGraph::Node* node : nodes)
-    static_cast <TreeNode*> (node) -> frequent = false;
-  const_cast <TreeNode*> (root) -> frequent = true;
-  const_cast <TreeNode*> (root) -> setChildrenFrequent (rareProb);
+    static_cast <TreeNode*> (node) -> frequentChild = false;
+  const_cast <TreeNode*> (root) -> frequentChild = true;
+  const_cast <TreeNode*> (root) -> children2frequentChild (rareProb);
   
   VectorPtr<TreeNode> transients;  transients. reserve (nodes. size ());
   for (const DiGraph::Node* node : nodes)
   {
     const TreeNode* tn = static_cast <const TreeNode*> (node);
-    if (! tn->frequent)
+    if (! tn->frequentChild)
       continue;
     const VectorPtr<DiGraph::Node> children (tn->getChildren ());
     size_t freqChildren = 0;
     for (const DiGraph::Node* child : children)
-      if (static_cast <const TreeNode*> (child) -> frequent)
+      if (static_cast <const TreeNode*> (child) -> frequentChild)
         freqChildren++;
     if (freqChildren == 1)  // transient, not leaf
       transients << tn;
   }  
   for (const TreeNode* tn : transients)
-    const_cast <TreeNode*> (tn) -> frequent = false;
+    const_cast <TreeNode*> (tn) -> frequentChild = false;
+}
+
+
+
+void Tree::setFrequentDegree (double rareProb)
+{ 
+  ASSERT (rareProb >= 0);
+  ASSERT (rareProb < 0.3);
+  
+  if (! root)
+    return;
+    
+  const size_t allLeaves = root->getLeavesSize ();
+  for (DiGraph::Node* node : nodes)
+  {
+    size_t degree = 0;
+    {
+      size_t sum = 0;
+      const VectorPtr<DiGraph::Node> children (node->getChildren ());
+      for (const DiGraph::Node* child : children)
+      {
+        const TreeNode* tn = static_cast <const TreeNode*> (child);
+        const size_t leaves = tn->getLeavesSize ();  // Time = O(|nodes|^2) ??
+        if ((double) leaves / (double) allLeaves >= rareProb)
+          degree++;
+        sum += leaves;
+      }
+      if (node != root)
+      {
+        ASSERT (allLeaves > sum);
+        if ((double) (allLeaves - sum) / (double) allLeaves >= rareProb)
+          degree++;
+      }
+    }
+    static_cast <TreeNode*> (node) -> frequentDegree = degree;
+  }
+
+  // Leaves
+  for (const DiGraph::Node* node : nodes)
+  {
+    const TreeNode* tn = static_cast <const TreeNode*> (node);
+    if (! tn->isLeafType ())
+      continue;
+    ASSERT (tn->frequentDegree == 1);
+    const TreeNode* parent = tn;
+    while (parent && parent->frequentDegree == 1)
+      parent = parent->getParent ();
+    if (parent && parent->frequentDegree < 3)  // 0 or 2
+      const_cast <TreeNode*> (tn) -> frequentDegree = 0;
+  }  
 }
 
 

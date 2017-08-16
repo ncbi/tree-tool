@@ -15,6 +15,10 @@ using namespace FeatureTree_sp;
 namespace 
 {
   
+  
+bool frequencyDirected = true;
+
+  
 
 map <const Tree::TreeNode* /*isInteriorType()*/, string/*lcaName*/>  node2name;
   // For all Tree's
@@ -55,7 +59,10 @@ Leaves tree2leaves (const Tree &tree,
  	{
  	  const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
     if (tn->isLeafType ())
-      if (! frequentOnly || tn->frequent)
+      if (! frequentOnly || (     (frequencyDirected && tn->frequentChild)
+                             || (! frequencyDirected && tn->frequentDegree == 1)
+                            )
+         )
         leaves << node->getName ();
   }
   return leaves;
@@ -177,6 +184,7 @@ struct ThisApplication : Application
 	  addPositional ("input_tree1", "Tree 1");
 	  addPositional ("input_tree2", "Tree 2");
 	  addKey ("type", "Tree type: dist|feature", "dist");
+	  addKey ("frequency", "Node frequency is computed for directed|undirected tree", "directed");
 	}
 
 
@@ -186,9 +194,20 @@ struct ThisApplication : Application
 		const string input_tree1 = getArg ("input_tree1");
 		const string input_tree2 = getArg ("input_tree2");
 		const string treeType    = getArg ("type");
-		ASSERT (   treeType == "dist" 
-		        || treeType == "feature" 
-		       );
+		const string frequencyS  = getArg ("frequency");
+		if (! (   treeType == "dist" 
+		       || treeType == "feature" 
+		      )
+		   )
+		  throw runtime_error ("Wrong tree type");
+		if (! (   frequencyS == "directed"
+		       || frequencyS == "undirected"  // || "" /*no frequency filtering*/ ??
+		      )
+		   )
+		  throw runtime_error ("Wrong frequency");
+		       
+		       
+		frequencyDirected = (frequencyS == "directed");
     
 
     Common_sp::AutoPtr<Tree> tree1;
@@ -248,7 +267,8 @@ struct ThisApplication : Application
 
     
     {  
-      tree1->setFrequent (DistTree_sp::rareProb); 
+      tree1->setFrequentChild  (DistTree_sp::rareProb); 
+      tree1->setFrequentDegree (DistTree_sp::rareProb); 
 
       const Leaves leaves1 (tree2leaves (*tree1, true));
       const Leaves leaves2 (tree2leaves (*tree2, false));
@@ -257,7 +277,7 @@ struct ThisApplication : Application
       cout << endl;
       
       cout << "Deleting from " << input_tree1 << endl;
-      const size_t n1 =   tree1->restrictLeaves (leaves1, false)   // Keep only frequent leaves
+      const size_t n1 =   tree1->restrictLeaves (leaves1, false)   // Keep only frequent (stable) leaves
                         + tree1->restrictLeaves (leaves2, false);
       cout << "# Deleted: " << n1 << endl;
       cout << endl;

@@ -174,7 +174,8 @@ struct ThisApplication : Application
     }
   
   //tree->sort ();
-    tree->setFrequent (rareProb);  
+    tree->setFrequentChild (rareProb);  
+    tree->setFrequentDegree (rareProb); 
 
     tree->saveFile (output_tree);
     tree->saveFeatureTree (output_feature_tree);
@@ -202,14 +203,22 @@ struct ThisApplication : Application
       // #dissimilarities = 2 #discernables log_2(#discernables) #sparsing_leaves
 
       {      
-        size_t freqs = 0;
+        size_t freqChildren = 0;
+        size_t stableInteriors = 0;
         for (const DiGraph::Node* node : tree->nodes)
         {
           const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
-          if (tn->isInteriorType () && tn->frequent)
-            freqs++;
+          if (tn->isInteriorType ())
+          {
+            if (tn->frequentChild)
+              freqChildren++;
+            if (tn->frequentDegree >= 3)
+              stableInteriors++;
+          }
         }
-        cout << "# Frequent interior nodes (rare = " << rareProb * 100 << " %) = " << freqs << endl;
+        cout << "# Frequent interior children = " << freqChildren << endl;
+        cout << "# Frequent interior nodes = " << stableInteriors << endl;
+        cout << "Rare = " << rareProb * 100 << " %" << endl;
       }      
     }
       

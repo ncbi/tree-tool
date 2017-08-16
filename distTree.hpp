@@ -224,8 +224,9 @@ struct Steiner : DTNode
 #if 0
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
-    	if (frequent)
+    	if (frequentChild)
     	  os << " " << "frequent";
+    	os << " fd=" << frequentDegree;
     }
 #endif
 
@@ -305,8 +306,11 @@ public:
       }
     	if (! discernable)
     	  os << "  " << non_discernable;
-    //if (frequent)
-    	//os << " " << "frequent";
+    #if 0
+      if (frequent)
+    	  os << " " << "frequent";
+     	os << " fd=" << frequentDegree;
+    #endif
     }
 
 

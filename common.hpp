@@ -1745,7 +1745,7 @@ public:
                    bool parallelAllowed);
     // Input: node2node: other node to *this node
     // Time: O(|node2node| log|node2node| outdegree_max (parallelAllowed ? 1 : outdegree'_max)),
-    //          where outdegree_max = max(outdegree(node2node.keys()),
+    //          where outdegree_max  = max(outdegree(node2node.keys()),
     //                outdegree'_max = max(outdegree(node2node.values())
 };
 
@@ -1757,8 +1757,11 @@ struct Tree : DiGraph
 	struct TreeNode : DiGraph::Node
 	{
 	  friend struct Tree;
-	  bool frequent {false};
+	  bool frequentChild {false};
 	    // For a directed tree
+	  size_t frequentDegree {0};
+	    // For an undirected tree
+	    // If isLeafType(): 0 or 1; 0 <=> unstable given rareProb
 		TreeNode (Tree &tree,
 		          TreeNode* parent_arg)
 			: DiGraph::Node (tree)
@@ -1859,8 +1862,8 @@ struct Tree : DiGraph
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
 		size_t getLeavesSize () const;
-		void setChildrenFrequent (double rareProb);
-		  // Output: TreeNode::frequent
+		void children2frequentChild (double rareProb);
+		  // Output: TreeNode::frequentChild
 		  // Invokes: isInteriorType(), getLeavesSize()
     void getLeaves (VectorPtr<TreeNode> &leaves) const;
       // Update: leaves
@@ -2005,10 +2008,14 @@ struct Tree : DiGraph
     // Invokes: getLowestCommonAncestor(nodeVec)
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2);
-  void setFrequent (double rareProb);
+  void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5
-    // Output: TreeNode::frequent: statistically consistent estimate
-    // Invokes: setChildrenFrequent()
+    // Output: TreeNode::frequentChild: statistically consistent estimate
+    // Invokes: children2frequentChild()
+  void setFrequentDegree (double rareProb);
+    // Input: 0 <= rareProb < 0.3
+    // Output: TreeNode::frequentDegree: statistically consistent estimate
+    // Invokes: TreeNode::isLeafType()
   void setRoot ();
     // Output: root
   size_t deleteTransients ();

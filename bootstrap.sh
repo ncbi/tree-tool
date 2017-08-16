@@ -53,7 +53,10 @@ if ($?) exit 1
 
 cd ..
 
-bootstrap_report.sh $1 $replicas
+bootstrap_report.sh $1 $replicas directed
+if ($?) exit 1
+
+bootstrap_report.sh $1 $replicas undirected
 if ($?) exit 1
 
 rm -r $1.trees/

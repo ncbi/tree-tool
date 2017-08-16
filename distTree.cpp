@@ -2033,6 +2033,7 @@ namespace
 
 
 void DistTree::neighborJoin ()
+// Weighbor or BioNJ can significantly improve the criterion ??
 {
 	ASSERT (dissimDs. get ());
 	ASSERT (dissimAttr);
