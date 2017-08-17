@@ -1,11 +1,11 @@
 // featureTree.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
 #include "featureTree.hpp"
 
-#include "optim.hpp"
+#include "../dm/optim.hpp"
 
 
 
