@@ -1,11 +1,11 @@
 // makeFeatureTree.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
+#include "../dm/numeric.hpp"
 using namespace DM_sp;
 #include "featureTree.hpp"
 using namespace FeatureTree_sp;

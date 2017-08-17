@@ -1,12 +1,12 @@
 // mlst2dist.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
-#include "dataset.hpp"
+#include "../dm/numeric.hpp"
+#include "../dm/dataset.hpp"
 using namespace DM_sp;
 
 
