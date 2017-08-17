@@ -1,7 +1,7 @@
 // numeric.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
 #include "numeric.hpp"
 

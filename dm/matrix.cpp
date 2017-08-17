@@ -1,7 +1,7 @@
 // matrix.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
 #include "matrix.hpp"
 using namespace std;
