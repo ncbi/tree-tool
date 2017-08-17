@@ -53,7 +53,7 @@ while (1)
     echo "" >> $TmpFNam.mds
     echo "" >> $TmpFNam.mds
     set L_old = `ls $TmpFNam.tmp/ | wc -l`
-    $EXEC/cpp/mds -verbose $Verbose  -attrType $3  -maxClusters 6  -clusteringDir $TmpFNam.tmp  -attr $2  $TmpFNam.tmp/$F >> $TmpFNam.mds
+    $EXEC/cpp/dm/mds -verbose $Verbose  -attrType $3  -maxClusters 6  -clusteringDir $TmpFNam.tmp  -attr $2  $TmpFNam.tmp/$F >> $TmpFNam.mds
     if ($?) exit 1
     set L_new = `ls $TmpFNam.tmp/ | wc -l`
     if ($L_old == $L_new) then
