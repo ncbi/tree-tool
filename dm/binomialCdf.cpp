@@ -2,9 +2,9 @@
 
 #undef NDEBUG
 
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
