@@ -1,0 +1,48 @@
+Neighbor joining ...
+
+# Leaves: 291
+# Discernable leaves: 285
+# Nodes: 579
+# Dissimilarities: 42188 (99.98 %)
+Dissimilarity variance: linExp
+Max. possible dissimilarity = 18.02
+Ave. dissimilarity = 0.19
+Subgraph radius = 5
+Topology optimization: subgraphs
+
+Optimizing arc lengths globally ...
+# Nodes deleted = 20
+
+Optimizing arc lengths locally ...
+# Nodes deleted = 0
+
+absCriterion = 7.934354  Error density = 1.946361 %
+
+
+
+absCriterion = 7.049272  Error density = 1.834554 %
+absCriterion [0] = 0.8116  Error density [0] = 7.4554 %  Fraction = 6.3478 %
+absCriterion [1] = 6.2377  Error density [1] = 1.7318 %  Fraction = 93.6522 %
+Relative epsilon2_0 = 0.00 %
+Mean residual = 0.00
+Correlation between residual^2 and dissimilarity = 0.07
+
+Outliers:
+SAMN02645767	3.03
+SAMN03477482	4.35
+SAMN04507552	3.16
+# Outliers: 3
+
+# Interior nodes (with root) = 283 (max = 284)
+# Interior undirected arcs = 282
+Tree length = 30.5718
+Min. discernable leaf length = 0.0000
+Ave. arc length = 0.0529
+Interior height = 34
+Bifurcating interior branching = 1.3541
+# Frequent children interior nodes = 278
+# Frequent children leaves = 286
+# Frequent interior nodes = 42
+# Frequent leaves = 52
+Rareness threshold = 1.0000 %
+
