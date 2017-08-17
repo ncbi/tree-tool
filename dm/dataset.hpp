@@ -4,7 +4,7 @@
 #ifndef DATASET_HPP_63472  
 #define DATASET_HPP_63472
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
 #include "numeric.hpp"
 #include "matrix.hpp"

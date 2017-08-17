@@ -1,7 +1,7 @@
 // dataset.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
 #include "dataset.hpp"
 
