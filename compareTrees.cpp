@@ -16,7 +16,7 @@ namespace
 {
   
   
-bool frequencyDirected = true;
+string frequencyS;
 
   
 
@@ -59,8 +59,9 @@ Leaves tree2leaves (const Tree &tree,
  	{
  	  const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
     if (tn->isLeafType ())
-      if (! frequentOnly || (     (frequencyDirected && tn->frequentChild)
-                             || (! frequencyDirected && tn->frequentDegree == 1)
+      if (! frequentOnly || (    frequencyS == "none"
+                             || (frequencyS ==   "directed" && tn->frequentChild)
+                             || (frequencyS == "undirected" && tn->frequentDegree == 1)
                             )
          )
         leaves << node->getName ();
@@ -184,7 +185,7 @@ struct ThisApplication : Application
 	  addPositional ("input_tree1", "Tree 1");
 	  addPositional ("input_tree2", "Tree 2");
 	  addKey ("type", "Tree type: dist|feature", "dist");
-	  addKey ("frequency", "Node frequency is computed for directed|undirected tree", "directed");
+	  addKey ("frequency", "Node frequency is computed for directed|undirected tree; 'none' - not used");
 	}
 
 
@@ -194,22 +195,20 @@ struct ThisApplication : Application
 		const string input_tree1 = getArg ("input_tree1");
 		const string input_tree2 = getArg ("input_tree2");
 		const string treeType    = getArg ("type");
-		const string frequencyS  = getArg ("frequency");
+		             frequencyS  = getArg ("frequency");
 		if (! (   treeType == "dist" 
 		       || treeType == "feature" 
 		      )
 		   )
 		  throw runtime_error ("Wrong tree type");
-		if (! (   frequencyS == "directed"
+		if (! (   frequencyS == "none"
+		       || frequencyS == "directed"
 		       || frequencyS == "undirected"  // || "" /*no frequency filtering*/ ??
 		      )
 		   )
 		  throw runtime_error ("Wrong frequency");
 		       
 		       
-		frequencyDirected = (frequencyS == "directed");
-    
-
     Common_sp::AutoPtr<Tree> tree1;
     if (treeType == "dist")
       tree1 = new DistTree (input_tree1, string (), string (), false);

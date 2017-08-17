@@ -53,6 +53,9 @@ if ($?) exit 1
 
 cd ..
 
+bootstrap_report.sh $1 $replicas none
+if ($?) exit 1
+
 bootstrap_report.sh $1 $replicas directed
 if ($?) exit 1
 

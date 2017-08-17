@@ -759,7 +759,7 @@ private:
     // Greedy
     // Requires: no missing dissimilarities, star topology
     // Invokes: reroot()
-    // Time: O(p n)
+    // Time: O(n^3)
   //
   void dissimDs2ds (bool sparse);
     // Update: dissimDs: delete
@@ -930,8 +930,8 @@ public:
   // Auxiliary
   void delayDeleteRetainArcs (DTNode* s);
     // Invokes: s->isolateChildrenUp()
-  void finishChanges ();
-    // Invokes: deleteLenZero()
+  size_t finishChanges ();
+    // Return: deleteLenZero()
   size_t deleteLenZero ();
     // Delete arcs where len = 0
     // Does not delete root

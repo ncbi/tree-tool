@@ -2033,14 +2033,12 @@ namespace
 
 
 void DistTree::neighborJoin ()
-// Weighbor or BioNJ can significantly improve the criterion ??
 {
 	ASSERT (dissimDs. get ());
 	ASSERT (dissimAttr);
 	ASSERT (! optimizable ());
   ASSERT (dissimDs->objs. size () >= 2);
-
-  
+    
   cout << "Neighbor joining ..." << endl;
   
   // DTNode::len: sum of dissimilarities from other objects (dissim_sum)
@@ -2897,8 +2895,6 @@ void DistTree::optimizeLenLocal ()
   Progress prog ((uint) nodes. size ());
   for (const DiGraph::Node* node : nodes)
   {
-    prog ();
-
     const DTNode* dtNode = static_cast <const DTNode*> (node);
     if (   dtNode == root
         || dtNode->asLeaf () 
@@ -2908,8 +2904,10 @@ void DistTree::optimizeLenLocal ()
       continue;
 
     ASSERT (! dtNode->isTransient ());
-    
+
+  #ifndef NDEBUG    
     const Real absCriterion_old = absCriterion;  
+  #endif
     
     VectorPtr<DiGraph::Node> dtNodes (dtNode->getChildren ());
     dtNodes << dtNode;  
@@ -2964,15 +2962,8 @@ void DistTree::optimizeLenLocal ()
       setAbsCriterion ();  
       ASSERT (leReal (absCriterion, absCriterion_old));
     }
-  #if 0
-    cout << "absCriterion (optimizeLenLocal) = " << absCriterion << endl;  
-    if (absCriterion > absCriterion_old)  
-    {
-      for (const DiGraph::Node* node : dtNodes)
-        cout << " " << node->getName ();
-      cout << endl;
-    }
-  #endif
+
+    prog (real2str (lr. absCriterion, 6));  // PAR
   }
 
   
@@ -3621,6 +3612,7 @@ void DistTree::optimizeSubtrees ()
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = false;
 
+  Progress prog;
   for (;;)
   {
     size_t steiners = 0;
@@ -3641,10 +3633,16 @@ void DistTree::optimizeSubtrees ()
       }
     if (! center)
       break;
-    cout << stables << '/' << steiners << '\t';
     {
-      Unverbose unv;
+      Unverbose unv1;
+      Unverbose unv2;
       optimizeSubtree (center);
+    }
+    {
+      ostringstream oss;
+      ONumber on (oss, 6, false);  // PAR
+      oss << stables << '/' << steiners << ' ' << absCriterion;
+      prog (oss. str ());  
     }
   }
 
@@ -3906,12 +3904,16 @@ void DistTree::delayDeleteRetainArcs (DTNode* s)
 
 
 
-void DistTree::finishChanges ()
+size_t DistTree::finishChanges ()
 {
-  if (const size_t n = deleteLenZero ())
+  const size_t n = deleteLenZero ();
+  if (n)
     if (verbose ())
       cout << "# Nodes with zero arcs deleted = " << n << endl;
+
   toDelete. deleteData ();
+  
+  return n;
 }
 
 

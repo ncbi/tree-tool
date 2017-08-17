@@ -100,9 +100,9 @@ struct ThisApplication : Application
           {
             Chronometer_OnePass cop ("Initial arc lengths");
             EXEC_ASSERT (tree->optimizeLen ());
-            tree->finishChanges (); 
+            cout << "# Nodes deleted = " << tree->finishChanges () << endl << endl;
             tree->optimizeLenLocal ();  
-            tree->finishChanges (); 
+            cout << "# Nodes deleted = " << tree->finishChanges () << endl << endl;
             if (verbose ())
             {
               tree->qc ();
@@ -158,7 +158,7 @@ struct ThisApplication : Application
 
       cout << endl << "Outliers:" << endl;
       const size_t outliers = tree->printLeafRelLenErros (cout, 3);  // PAR
-      cout << "# Outliers: " << outliers << endl << endl;
+      cout << "# Outliers: " << outliers << endl;
     }
     
 
@@ -182,6 +182,7 @@ struct ThisApplication : Application
     
     {
       ONumber on (cout, 4, false);
+      cout << endl;
       cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
@@ -199,26 +200,40 @@ struct ThisApplication : Application
       cout << "Interior height = " << tree->getInteriorHeight () << endl;
       const Real bifurcatingInteriorBranching = tree->getBifurcatingInteriorBranching ();
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
-      cout << "# Sparsing leaves = " << pow (bifurcatingInteriorBranching, sparsingDepth + 1) << endl;
+      if (sparse_init) 
+        cout << "# Sparsing leaves = " << pow (bifurcatingInteriorBranching, sparsingDepth + 1) << endl;
       // #dissimilarities = 2 #discernables log_2(#discernables) #sparsing_leaves
 
       {      
-        size_t freqChildren = 0;
-        size_t stableInteriors = 0;
+        size_t freqChildrenInteriors = 0;
+        size_t freqChildrenLeaves    = 0;
+        size_t stableInteriors       = 0;
+        size_t stableLeaves          = 0;
         for (const DiGraph::Node* node : tree->nodes)
         {
           const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
-          if (tn->isInteriorType ())
+          if (tn->frequentChild)
           {
-            if (tn->frequentChild)
-              freqChildren++;
-            if (tn->frequentDegree >= 3)
-              stableInteriors++;
+            if (tn->isInteriorType ())
+              freqChildrenInteriors++;
+            else
+              if (tn->isLeafType ())
+                freqChildrenLeaves++;
           }
+          if (   tn->isInteriorType ()
+              && tn->frequentDegree >= 3
+             )
+            stableInteriors++;
+          if (   tn->isLeafType ()
+              && tn->frequentDegree == 1
+             )
+            stableLeaves++;
         }
-        cout << "# Frequent interior children = " << freqChildren << endl;
-        cout << "# Frequent interior nodes = " << stableInteriors << endl;
-        cout << "Rare = " << rareProb * 100 << " %" << endl;
+        cout << "# Frequent children interior nodes = " << freqChildrenInteriors << endl;
+        cout << "# Frequent children leaves = "         << freqChildrenLeaves << endl;
+        cout << "# Frequent interior nodes = "          << stableInteriors << endl;
+        cout << "# Frequent leaves = "                  << stableLeaves << endl;
+        cout << "Rareness threshold = " << rareProb * 100 << " %" << endl;
       }      
     }
       
