@@ -1,9 +1,9 @@
 // algebra.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
 #include "expr.hpp"
 using namespace Algebra_sp;
