@@ -1,7 +1,7 @@
 // grammar.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
 #include "grammar.hpp"
 

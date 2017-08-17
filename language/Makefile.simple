@@ -1,0 +1,22 @@
+include $(HOME)/code/cpp/MakeRules
+CPPFLAGS=$(OptCPPFLAGS) 
+#CPPFLAGS=$(DebugCPPFLAGS)
+
+CXX=g++
+COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c 
+LIBS=
+
+
+
+############################### Programs ################################
+
+all:	\
+  grammar_test
+	
+
+grammar_test.o:  $(COMMON_HPP) grammar.hpp
+grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(LANG_DIR)/grammar.o
+grammar_test:	$(grammar_testOBJS)
+	$(CXX) -o $@ $(grammar_testOBJS) $(LIBS)
+	$(ECHO)
+

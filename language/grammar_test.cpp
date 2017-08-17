@@ -1,9 +1,9 @@
 // grammar_test.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
 #include "grammar.hpp"
 using namespace Grammar_sp;

@@ -3,7 +3,7 @@
 #ifndef GRAMMAR_HPP
 #define GRAMMAR_HPP
 
-#include "common.hpp"
+#include "../common.hpp"
 
 
 
