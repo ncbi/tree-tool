@@ -1,0 +1,121 @@
+include $(HOME)/code/cpp/MakeRules
+CPPFLAGS=$(OptCPPFLAGS) 
+#CPPFLAGS=$(DebugCPPFLAGS)
+
+CXX=g++
+COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c 
+LIBS=
+
+
+
+############################### Programs ################################
+
+all:	\
+  attr2_2paup \
+  attr2_2phylip \
+  bootstrapReport \
+  compareTrees \
+  distTriangle \
+  feature2dist \
+	makeDistTree \
+	makeFeatureTree \
+	mergeDistance \
+	mergeSimilarity \
+	mlst2dist \
+	newick2tree \
+	printDistTree \
+	tree2dist
+	
+
+attr2_2paup.o:  $(DM_HPP) 
+attr2_2paupOBJS=attr2_2paup.o $(DM_OBJ) 
+attr2_2paup:	$(attr2_2paupOBJS)
+	$(CXX) -o $@ $(attr2_2paupOBJS) $(LIBS)
+	$(ECHO)
+
+attr2_2phylip.o:  $(DM_HPP) 
+attr2_2phylipOBJS=attr2_2phylip.o $(DM_OBJ) 
+attr2_2phylip:	$(attr2_2phylipOBJS)
+	$(CXX) -o $@ $(attr2_2phylipOBJS) $(LIBS)
+	$(ECHO)
+
+attr2_multiply.o:  $(DM_HPP) 
+attr2_multiplyOBJS=attr2_multiply.o $(DM_OBJ) 
+attr2_multiply:	$(attr2_multiplyOBJS)
+	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
+	$(ECHO)
+
+bootstrapReport.o:  $(COMMON_HPP)  
+# $(PHYL_DIR)/distTree.hpp
+bootstrapReportOBJS=bootstrapReport.o $(CPP_DIR)/common.o
+# $(DISTTREE_OBJ)
+bootstrapReport:	$(bootstrapReportOBJS)
+	$(CXX) -o $@ $(bootstrapReportOBJS) $(LIBS)
+	$(ECHO)
+
+compareTrees.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/featureTree.hpp
+compareTreesOBJS=compareTrees.o $(DISTTREE_OBJ) $(PHYL_DIR)/featureTree.o
+compareTrees:	$(compareTreesOBJS)
+	$(CXX) -o $@ $(compareTreesOBJS) $(LIBS)
+	$(ECHO)
+	
+distTriangle.o:  $(DM_HPP) 
+distTriangleOBJS=distTriangle.o $(DM_OBJ) 
+distTriangle:	$(distTriangleOBJS)
+	$(CXX) -o $@ $(distTriangleOBJS) $(LIBS)
+	$(ECHO)
+
+feature2dist.o:  $(DM_HPP) 
+feature2distOBJS=feature2dist.o $(DM_OBJ) 
+feature2dist:	$(feature2distOBJS)
+	$(CXX) -o $@ $(feature2distOBJS) $(LIBS)
+	$(ECHO)
+
+makeDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
+makeDistTreeOBJS=makeDistTree.o $(DISTTREE_OBJ)
+makeDistTree:	$(makeDistTreeOBJS)
+	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+makeFeatureTree.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(PHYL_DIR)/featureTree.hpp
+makeFeatureTreeOBJS=makeFeatureTree.o $(FEATURE_TREE_OBJ)
+makeFeatureTree:	$(makeFeatureTreeOBJS)
+	$(CXX) -o $@ $(makeFeatureTreeOBJS) $(LIBS)
+	$(ECHO)
+
+mergeDistance.o:  $(DM_HPP) 
+mergeDistanceOBJS=mergeDistance.o $(DM_OBJ) 
+mergeDistance:	$(mergeDistanceOBJS)
+	$(CXX) -o $@ $(mergeDistanceOBJS) $(LIBS)
+	$(ECHO)
+
+mergeSimilarity.o:  $(DM_HPP) 
+mergeSimilarityOBJS=mergeSimilarity.o $(DM_OBJ) 
+mergeSimilarity:	$(mergeSimilarityOBJS)
+	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
+	$(ECHO)
+
+mlst2dist.o:  $(DM_HPP) 
+mlst2distOBJS=mlst2dist.o $(DM_OBJ) 
+mlst2dist:	$(mlst2distOBJS)
+	$(CXX) -o $@ $(mlst2distOBJS) $(LIBS)
+	$(ECHO)
+
+newick2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
+newick2treeOBJS=newick2tree.o $(DISTTREE_OBJ)
+newick2tree:	$(newick2treeOBJS)
+	$(CXX) -o $@ $(newick2treeOBJS) $(LIBS)
+	$(ECHO)
+
+printDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
+printDistTreeOBJS=printDistTree.o $(DISTTREE_OBJ)
+printDistTree:	$(printDistTreeOBJS)
+	$(CXX) -o $@ $(printDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+tree2dist.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
+tree2distOBJS=tree2dist.o $(DISTTREE_OBJ)
+tree2dist:	$(tree2distOBJS)
+	$(CXX) -o $@ $(tree2distOBJS) $(LIBS)
+	$(ECHO)
+

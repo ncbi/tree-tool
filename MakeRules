@@ -9,7 +9,7 @@ SimpleCPPFLAGS = -std=gnu++11 -ffloat-store \
   # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
 # Disable debugging
 OptCPPFLAGS = $(SimpleCPPFLAGS) -O3 
-  # -Ofast: "/home/brovervv/code/dm/numeric.cpp", line 43: isNan (NAN)
+  # -Ofast: "/home/brovervv/code/cpp/dm/numeric.cpp", line 43: isNan (NAN)
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
 
 
@@ -23,31 +23,39 @@ COMMON_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
 $(CPP_DIR)/common.o:	$(COMMON_HPP)
 $(CPP_DIR)/application.o:	$(CPP_DIR)/application.hpp $(COMMON_HPP)
 COMMON = $(CPP_DIR)/common $(CPP_DIR)/application
-$(CPP_DIR)/expr.o:	$(CPP_DIR)/expr.hpp $(COMMON_HPP)
-$(CPP_DIR)/grammar.o: $(CPP_DIR)/grammar.hpp $(COMMON_HPP)
+
+# AI
+AI_DIR = $(CPP_DIR)/AI
+$(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
+
+# language
+LANG_DIR = $(CPP_DIR)/language
+$(LANG_DIR)/grammar.o: $(LANG_DIR)/grammar.hpp $(COMMON_HPP)
 
 # DM
-$(CPP_DIR)/numeric.o:	$(CPP_DIR)/numeric.hpp $(COMMON_HPP)
-NUMERIC_OBJ = $(CPP_DIR)/common.o $(CPP_DIR)/numeric.o 
-$(CPP_DIR)/matrix.o: $(CPP_DIR)/matrix.hpp $(COMMON_HPP) $(CPP_DIR)/numeric.hpp 
-$(CPP_DIR)/optim.o:	$(CPP_DIR)/optim.hpp $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/matrix.hpp 
-DM_HPP = $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(CPP_DIR)/matrix.hpp $(CPP_DIR)/optim.hpp $(CPP_DIR)/dataset.hpp
-$(CPP_DIR)/dataset.o:	$(DM_HPP)
-DM_OBJ = $(NUMERIC_OBJ) $(CPP_DIR)/matrix.o $(CPP_DIR)/optim.o $(CPP_DIR)/dataset.o
-$(CPP_DIR)/prediction.o: $(CPP_DIR)/prediction.hpp $(DM_HPP)
-PREDICT_OBJ = $(DM_OBJ) $(CPP_DIR)/prediction.o 
+DM_DIR = $(CPP_DIR)/dm
+$(DM_DIR)/numeric.o:	$(DM_DIR)/numeric.hpp $(COMMON_HPP)
+NUMERIC_OBJ = $(CPP_DIR)/common.o $(DM_DIR)/numeric.o 
+$(DM_DIR)/matrix.o: $(DM_DIR)/matrix.hpp $(COMMON_HPP) $(DM_DIR)/numeric.hpp 
+$(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
+DM_HPP = $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp $(DM_DIR)/optim.hpp $(DM_DIR)/dataset.hpp
+$(DM_DIR)/dataset.o:	$(DM_HPP)
+DM_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/matrix.o $(DM_DIR)/optim.o $(DM_DIR)/dataset.o
+$(DM_DIR)/prediction.o: $(DM_DIR)/prediction.hpp $(DM_HPP)
+PREDICT_OBJ = $(DM_OBJ) $(DM_DIR)/prediction.o 
 #
-MATRIX = $(CPP_DIR)/matrix $(CPP_DIR)/numeric	$(CPP_DIR)/optim
-DM = $(MATRIX) $(CPP_DIR)/dataset
+MATRIX = $(DM_DIR)/matrix $(DM_DIR)/numeric	$(DM_DIR)/optim
+DM = $(MATRIX) $(DM_DIR)/dataset
 
 # Phylogenetic trees
-$(CPP_DIR)/distTree.o: $(CPP_DIR)/distTree.hpp $(DM_HPP) $(CPP_DIR)/prediction.hpp
-DISTTREE_OBJ = $(DM_OBJ) $(CPP_DIR)/distTree.o $(CPP_DIR)/prediction.o
-$(CPP_DIR)/featureTree.o:	$(CPP_DIR)/featureTree.hpp $(DM_HPP)
-FEATURE_TREE_OBJ = $(DM_OBJ) $(CPP_DIR)/featureTree.o
+PHYL_DIR = $(CPP_DIR)/phylogeny
+$(PHYL_DIR)/distTree.o: $(PHYL_DIR)/distTree.hpp $(DM_HPP) $(DM_DIR)/prediction.hpp
+DISTTREE_OBJ = $(DM_OBJ) $(PHYL_DIR)/distTree.o $(DM_DIR)/prediction.o
+$(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP)
+FEATURE_TREE_OBJ = $(DM_OBJ) $(PHYL_DIR)/featureTree.o
 #
-DISTTREE = $(DM) $(CPP_DIR)/distTree $(CPP_DIR)/prediction  
-FEATURE_TREE = $(DM) $(CPP_DIR)/featureTree 
+DISTTREE = $(DM) $(PHYL_DIR)/distTree $(DM_DIR)/prediction  
+FEATURE_TREE = $(DM) $(PHYL_DIR)/featureTree 
 
 GEN_DIR = $(CODE_DIR)/genetics
 $(GEN_DIR)/asn.o:	$(GEN_DIR)/asn.hpp $(COMMON_HPP)

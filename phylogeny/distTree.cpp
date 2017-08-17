@@ -1,11 +1,11 @@
 // distTree.cpp
 
 #undef NDEBUG
-#include "../cpp/common.inc"
+#include "../common.inc"
 
 #include "distTree.hpp"
 
-#include "prediction.hpp"
+#include "../dm/prediction.hpp"
 
 
 
