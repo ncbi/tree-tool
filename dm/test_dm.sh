@@ -148,8 +148,3 @@ if ($?) exit 1
 rm 363068-2319168-diff.uniKernel
 
 
-echo ""
-echo "DistTree"
-test_distTree.sh go
-if ($?) exit 1
-

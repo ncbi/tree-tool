@@ -3,7 +3,7 @@
 #ifndef PREDICTNUM_HPP_78455
 #define PREDICTNUM_HPP_78455
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
 #include "numeric.hpp"
 #include "matrix.hpp"

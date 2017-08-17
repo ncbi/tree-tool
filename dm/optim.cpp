@@ -1,7 +1,7 @@
 // optim.cpp
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
 #include "optim.hpp"
 
