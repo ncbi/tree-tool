@@ -40,14 +40,11 @@ struct ThisApplication : Application
     Binomial bin;
     bin. setParam ((int) n, p);
     
-    Prob res;
+    Prob res = bin. cdf (m);
     if (reverse)
-      res = 1 - bin. cdf (m - 1);
-    else
-      res = bin. cdf (m);
+      res = 1 - res;
+    cout << res << endl;    
 
-    cout << res << endl;
-    
     if (add_pmf)
       cout << "pmf = " << bin. pdf (m) << endl;
 	}
