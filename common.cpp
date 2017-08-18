@@ -2343,6 +2343,11 @@ void Tree::setFrequentDegree (double rareProb)
     return;
     
   const size_t allLeaves = root->getLeavesSize ();
+#if 0
+  Binomial bin;
+  bin. setParam ((int) allLeaves, rareProb);
+  const double pValue = 0.01;  // PAR
+#endif
   for (DiGraph::Node* node : nodes)
   {
     size_t degree = 0;
@@ -2353,14 +2358,18 @@ void Tree::setFrequentDegree (double rareProb)
       {
         const TreeNode* tn = static_cast <const TreeNode*> (child);
         const size_t leaves = tn->getLeavesSize ();  // Time = O(|nodes|^2) ??
+        ASSERT (leaves);
         if ((double) leaves / (double) allLeaves >= rareProb)
+      //if (1 - bin. cdf ((int) leaves - 1) <= pValue)
           degree++;
         sum += leaves;
       }
       if (node != root)
       {
         ASSERT (allLeaves > sum);
-        if ((double) (allLeaves - sum) / (double) allLeaves >= rareProb)
+        const size_t leaves = allLeaves - sum;
+        if ((double) leaves / (double) allLeaves >= rareProb)
+      //if (1 - bin. cdf ((int) leaves - 1) <= pValue)
           degree++;
       }
     }
