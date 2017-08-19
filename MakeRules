@@ -1,5 +1,5 @@
 SimpleCPPFLAGS = -std=gnu++11 -ffloat-store \
-  -Werror -Wall -Wextra \
+  -Wall -Wextra \
   -Wcast-align -Wconversion -Wdeprecated-declarations -Wformat -Winit-self -Wlogical-op \
   -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
   -Woverloaded-virtual -pedantic -Wparentheses -Wpointer-arith -Wsequence-point -Wshadow -Wunused \
@@ -8,7 +8,7 @@ SimpleCPPFLAGS = -std=gnu++11 -ffloat-store \
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
   # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
 # Disable debugging
-OptCPPFLAGS = $(SimpleCPPFLAGS) -O3 
+OptCPPFLAGS = -Werror $(SimpleCPPFLAGS) -O3 
   # -Ofast: "/home/brovervv/code/cpp/dm/numeric.cpp", line 43: isNan (NAN)
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
 
