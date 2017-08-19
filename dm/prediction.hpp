@@ -44,7 +44,9 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
       // To invoke: resize()
   public:
     void qc () const override
-      { P::qc ();
+      { if (! qc_on)
+          return;
+        P::qc ();
         target. qc ();
         ASSERT (& target. ds == P::sample. ds);
       }
@@ -340,10 +342,10 @@ public:
                                     Real errorRelDiff);
     // Approximation by alternate optimization
     // Return: converged
-    // Input: predictionAttr: may be nullptr
+    // Input: *predictionAttr: may be nullptr
     // Update: beta
     // Output: absCriterion: !isNan()
-    // Requires: & predictionAttr->ds = & space. ds
+    // Requires: &predictionAttr->ds = &space.ds
     // Invokes: solveUnconstrained()
     // Time: O(maxIter * p * n)
   bool solveUnconstrainedFast (const RealAttr1* predictionAttr,

@@ -25,6 +25,8 @@ VarianceType varianceType = varianceType_linExp;
 
 void DTNode::Closest::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (node);
   ASSERT (node->len > 0);
   ASSERT (! node->inDiscernable ());
@@ -65,6 +67,8 @@ DTNode::DTNode (DistTree &tree,
 
 void DTNode::qc () const
 { 
+  if (! qc_on)
+    return;
 	TreeNode::qc ();
 
   if ((bool) getParent () != ! isNan (len))
@@ -414,6 +418,8 @@ Steiner::Steiner (DistTree &tree,
 
 void Steiner::qc () const
 {
+  if (! qc_on)
+    return;
 	DTNode::qc ();
 	  
 	ASSERT (! isLeaf ());	
@@ -517,6 +523,8 @@ Leaf::Leaf (DistTree &tree,
 
 void Leaf::qc () const
 { 
+  if (! qc_on)
+    return;
 	DTNode::qc ();
 	  
   ASSERT (getParent ());
@@ -600,6 +608,8 @@ Change::~Change ()
 
 void Change::qc () const
 {
+  if (! qc_on)
+    return;
   Root::qc ();
     
 	ASSERT (valid ());
@@ -2350,6 +2360,8 @@ void DistTree::loadDissimFinish ()
 
 void DistTree::qc () const
 { 
+  if (! qc_on)
+    return;
 	Tree::qc ();
 
   ASSERT (nodes. size () >= 2);
@@ -2583,12 +2595,7 @@ void DistTree::printInput (ostream &os) const
   if (! optimizable ())
     return;
   os << "# Dissimilarities: " << ds. objs. size () << " (" << (Real) ds. objs. size () / (Real) dissimSize_max () * 100 << " %)" << endl; 
-//os << "# Binary attributes: " << ds. attrs. size () - 2 - 5 << endl;  // less target, prediction, for Change
-  os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
-  os << "Max. possible dissimilarity = " << dissim_max () << endl;
-//os << "# Dissimilarities weighted: " << dsSample. multSum << endl;
   os << "Ave. dissimilarity = " << getDissim_ave () << endl;
-  os << "Subgraph radius = " << areaRadius_std << endl;
 }
 
 
@@ -2944,7 +2951,7 @@ void DistTree::optimizeLenLocal ()
     lr. solveUnconstrained ();
     FOR (size_t, i, lr. beta. size ())
       if (maximize (lr. beta [i], 0.0))
-        solved = false;
+        solved = false;  // ??
     if (verbose ())  
       lr. qc ();
     if (isNan (lr. absCriterion))
@@ -2964,6 +2971,7 @@ void DistTree::optimizeLenLocal ()
     }
 
     prog (real2str (lr. absCriterion, 6));  // PAR
+      // lr.absCriterion does not decrease with iterations ??
   }
 
   

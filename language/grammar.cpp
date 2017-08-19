@@ -67,6 +67,8 @@ Sentence::Sentence (const Grammar &grammar,
 
 void Sentence::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (! seq. empty ());
 #ifndef NDEBUG
   FOR (size_t, i, seq. size ())
@@ -219,6 +221,8 @@ VectorPtr<NonTerminalSyntagm> Sentence::findSyntagms (const string& symbolName) 
 
 void Syntagm::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (begin. c != eot);
 }
 
@@ -274,6 +278,8 @@ void TerminalSyntagm::init (const Position& begin_arg,
 
 void TerminalSyntagm::qc () const
 {
+  if (! qc_on)
+    return;
   Syntagm::qc ();
 
   ASSERT (symbol. asTerminal ());
@@ -311,6 +317,8 @@ NonTerminalSyntagm::NonTerminalSyntagm (const Position& begin_arg,
 
 void NonTerminalSyntagm::qc () const
 {
+  if (! qc_on)
+    return;
   Syntagm::qc ();
 
   ASSERT (symbol. asNonTerminal ());
@@ -377,6 +385,9 @@ void NonTerminalSyntagm::setRight ()
 
 void Position::qc () const
 {
+  if (! qc_on)
+    return;
+    
   ASSERT (! terminal2syntagms. empty ()); 
 #ifndef NDEBUG
   const Syntagm* prev = nullptr;
@@ -472,6 +483,8 @@ Set<const Symbol*> Rule::Occurrences::getSymbols () const
 
 void Rule::Occurrence::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (*rhsIt);
   ASSERT (rhsIt - rule. rhs. begin () >= 0);
 }
@@ -585,6 +598,8 @@ void Rule::finish (Grammar &grammar)
 
 void Rule::qc () const
 {
+  if (! qc_on)
+    return;
   Root::qc ();
 
   ASSERT (! rhs. contains (nullptr));
@@ -857,6 +872,8 @@ void Rule::parse (Pos &pos,
 
 void Symbol::qc () const
 {
+  if (! qc_on)
+    return;
   Named::qc ();
     
   ASSERT (! isLeft  (name, "["));
@@ -1081,6 +1098,8 @@ Terminal::Terminal (const string &name_arg)
 
 void Terminal::qc () const
 {
+  if (! qc_on)
+    return;
   Symbol::qc ();
 
 #ifndef NDEBUG
@@ -1128,6 +1147,8 @@ const string NonTerminal::sigmaS = "Sigma";
 
 void NonTerminal::qc () const
 {
+  if (! qc_on)
+    return;
   Symbol::qc ();
 
   ASSERT (isAlpha (name [0]));
@@ -1430,6 +1451,8 @@ const string Letter::space ("space");
 
 void Letter::qc () const
 {
+  if (! qc_on)
+    return;
   Terminal::qc ();
 
   ASSERT (grammar);
@@ -1446,6 +1469,8 @@ void Letter::qc () const
 
 void SymbolTree::qc () const
 {
+  if (! qc_on)
+    return;
   IMPLY (children. empty (), ! rules. empty ());
 #ifndef NDEBUG
   for (const auto it : children)
@@ -1787,6 +1812,8 @@ void Grammar::finish (const string &startS)
 
 void Grammar::qc () const
 {
+  if (! qc_on)
+    return;
 //Terminal::qc ();
 
 //ASSERT (grammar != this);
@@ -2506,6 +2533,8 @@ Set<const Terminal*> ROGraph::Node::getNextTerminals (bool out) const
 
 void ROGraph::Arc::qc () const
 {
+  if (! qc_on)
+    return;
   DiGraph::Arc::qc ();
     
   ASSERT (rhs_pos1 < rhs_pos2)

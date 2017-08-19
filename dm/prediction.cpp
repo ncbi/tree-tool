@@ -22,6 +22,8 @@ using namespace Common_sp;
 
 void LogisticRegression::qc () const
 {
+  if (! qc_on)
+    return;
   Prediction::qc ();
     
   ASSERT (& target);
@@ -277,6 +279,8 @@ Constraint::Constraint (const LinearNumPrediction &pred_arg)
 
 void LinearNumPrediction::qc () const
 {
+  if (! qc_on)
+    return;
   Prediction::qc ();
 
   ASSERT (& target);
@@ -1106,6 +1110,8 @@ Real L2LinearNumPrediction::getRelTargetCriterion (Real constTarget) const
 
 void EigensLinearRegression::qc () const
 { 
+  if (! qc_on)
+    return;
   ds. qc ();
   lr. qc ();
   ASSERT (lr. beta. size () == 2);  

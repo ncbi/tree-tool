@@ -65,6 +65,7 @@ constexpr Prob rareProb = 0.01;
 
 
 
+
 struct DistTree;
 
 //struct DTNode;
@@ -796,6 +797,11 @@ public:
   size_t dissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   Set<const DTNode*> getDiscernables () const;
+  static void printParam (ostream &os) 
+  { os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
+    os << "Max. possible dissimilarity = " << dissim_max () << endl;
+    os << "Subgraph radius = " << areaRadius_std << endl;
+  }
 	void printInput (ostream &os) const;
 	bool optimizable () const
 	  { return ! ds. attrs. empty (); }

@@ -30,7 +30,9 @@ const string dmSuff ("." + dmExt);
 
 void Obj::qc () const
 { 
-	Named::qc ();
+  if (! qc_on)
+    return;
+  Named::qc ();
 		
   ASSERT (mult >= 0); 
 }
@@ -68,6 +70,8 @@ Attr::~Attr ()
 
 void Attr::qc () const
 {
+  if (! qc_on)
+    return;
   Root::qc ();
   
   ASSERT (*dsIt == this);
@@ -322,6 +326,8 @@ RealAttr1& RealAttr1::operator= (const RealAttr1& other)
 
 void RealAttr1::qc () const
 {
+  if (! qc_on)
+    return;
 	NumAttr1::qc ();
 	
   // values[]
@@ -597,6 +603,8 @@ RealAttr1* RealAttr1::smoothUniform (const string &suffix,
 
 void PositiveAttr1::qc () const
 {
+  if (! qc_on)
+    return;
   RealAttr1::qc ();
 
 #ifndef NDEBUG
@@ -616,6 +624,8 @@ void PositiveAttr1::qc () const
 
 void ProbAttr1::qc () const
 {
+  if (! qc_on)
+    return;
   RealAttr1::qc ();
 
 #ifndef NDEBUG
@@ -675,6 +685,8 @@ IntAttr1& IntAttr1::operator= (const IntAttr1& other)
   
 void IntAttr1::qc () const
 {
+  if (! qc_on)
+    return;
 	NumAttr1::qc ();
 	
   // values[]
@@ -786,6 +798,8 @@ ExtBoolAttr1::ExtBoolAttr1 (const string &name_arg,
 
 void ExtBoolAttr1::qc () const
 {
+  if (! qc_on)
+    return;
 	BoolAttr1::qc ();
 	  
   ASSERT (values. size () == ds. objs. size ());
@@ -833,6 +847,8 @@ CompactBoolAttr1::CompactBoolAttr1 (const string &name_arg,
 
 void CompactBoolAttr1::qc () const
 {
+  if (! qc_on)
+    return;
 	BoolAttr1::qc ();
 	  
   ASSERT (values. size () == ds. objs. size ());
@@ -876,6 +892,8 @@ void CompactBoolAttr1::setAll (bool value)
 
 void NominAttr1::Dependence::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (isProb (pValue));
 }
       
@@ -923,6 +941,8 @@ NominAttr1& NominAttr1::operator= (const NominAttr1& other)
 
 void NominAttr1::qc () const
 {
+  if (! qc_on)
+    return;
 	Attr1::qc ();
 	
 //ASSERT (! categories. empty ());
@@ -1289,6 +1309,8 @@ RealAttr2::RealAttr2 (const string &name_arg,
 
 void RealAttr2::qc () const
 {
+  if (! qc_on)
+    return;
 	Attr2::qc ();
 	
   // matr[][]
@@ -1381,6 +1403,8 @@ size_t RealAttr2::getInfCount () const
 
 void PositiveAttr2::qc () const
 {
+  if (! qc_on)
+    return;
   RealAttr2::qc ();
 
   // values[]
@@ -1673,6 +1697,8 @@ Dataset::Dataset (const Eigens &eigens)
 
 void Dataset::qc () const
 {
+  if (! qc_on)
+    return;
 	Root::qc ();
 
 #ifndef NDEBUG	
@@ -1907,6 +1933,8 @@ void Sample::finish ()
 
 void Sample::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (ds);
   ASSERT (mult. size () == ds->objs. size ());
   for (const Real m : mult)
@@ -2165,6 +2193,8 @@ RealAttr2* getSimilarity (const Space1<RealAttr1> &space,
 
 void Distribution::qc () const 
 {
+  if (! qc_on)
+    return;
   Named::qc ();
 
   if (getParamSet ())
@@ -2337,6 +2367,8 @@ size_t Distribution::getWeakestObjNum () const
 
 void Bernoulli::qc () const
 {
+  if (! qc_on)
+    return;
 	Distribution::qc ();
 		
   IMPLY (getParamSet (), isProb (p));
@@ -2379,6 +2411,8 @@ bool Bernoulli::similar (const Distribution &distr,
 
 void Categorical::qc () const
 {
+  if (! qc_on)
+    return;
 	Distribution::qc ();
 		
   if (getParamSet ())
@@ -2525,6 +2559,8 @@ size_t Categorical::getUniqueCategory () const
 
 void UniDistribution::qc () const
 {
+  if (! qc_on)
+    return;
   Distribution::qc ();
 
   if (getParamSet ())
@@ -2562,6 +2598,8 @@ void UniDistribution::qc () const
 
 void DiscreteDistribution::qc () const
 {
+  if (! qc_on)
+    return;
 	UniDistribution::qc ();
 		
   if (getParamSet ())
@@ -2610,6 +2648,8 @@ Prob DiscreteDistribution::cdfDiscrete_ (int x) const
 
 void Binomial::qc () const
 {
+  if (! qc_on)
+    return;
 	DiscreteDistribution::qc ();		
 		
 	ASSERT (n >= 0);
@@ -2827,6 +2867,8 @@ int Binomial::randDiscrete_ () const
 
 void UniformDiscrete::qc () const
 {
+  if (! qc_on)
+    return;
 	DiscreteDistribution::qc ();
 		
   if (getParamSet ())
@@ -2843,6 +2885,8 @@ void UniformDiscrete::qc () const
 
 void Geometric::qc () const
 {
+  if (! qc_on)
+    return;
 	DiscreteDistribution::qc ();
 
   if (getParamSet ())
@@ -2887,6 +2931,8 @@ Real Geometric::logPmf_ (int x) const
 
 void Zipf::qc () const
 {
+  if (! qc_on)
+    return;
 	DiscreteDistribution::qc ();
 
   if (getParamSet ())
@@ -3025,6 +3071,8 @@ int Zipf::randDiscrete_ () const
 
 void ContinuousDistribution::qc () const
 {
+  if (! qc_on)
+    return;
   UniDistribution::qc ();
 
   IMPLY (nullReal (stdLoBound ()), ! locExists ());
@@ -3056,6 +3104,8 @@ const Real Normal::coeff = log (2 * pi);
 
 void Normal::qc () const
 {
+  if (! qc_on)
+    return;
 	ContinuousDistribution::qc ();
 
 	IMPLY (getParamSet (), stdBounds ());  // ??
@@ -3109,6 +3159,8 @@ Real Normal::rand_ () const
 
 void Cauchy::qc () const
 {
+  if (! qc_on)
+    return;
 	ContinuousDistribution::qc ();
 
 	IMPLY (getParamSet (), stdBounds ());  // ??
@@ -3202,6 +3254,8 @@ void Cauchy::estimate ()
 
 void Beta1::qc () const
 {
+  if (! qc_on)
+    return;
 	ContinuousDistribution::qc ();
 
   if (getParamSet ())
@@ -3238,6 +3292,8 @@ void Beta1::estimate ()
 
 void UniKernel::Point::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (! isNan (value));
   ASSERT (positive (mult));
 }
@@ -3246,6 +3302,8 @@ void UniKernel::Point::qc () const
 
 void UniKernel::qc () const
 {
+  if (! qc_on)
+    return;
   ContinuousDistribution::qc ();
     
     
@@ -3540,6 +3598,8 @@ Real UniKernel::getVar () const
 
 void MultiDistribution::qc () const
 {
+  if (! qc_on)
+    return;
   Distribution::qc ();
     
   if (getParamSet ())
@@ -3570,6 +3630,8 @@ Analysis1* MultiDistribution::createAnalysis (Dataset &ds)
 
 void MultiNormal::qc () const
 {
+  if (! qc_on)
+    return;
   MultiDistribution::qc ();
 
   if (getParamSet ())
@@ -3897,6 +3959,8 @@ bool MultiNormal::inflateSigma ()
 
 void Mixture::Component::qc () const
 {
+  if (! qc_on)
+    return;
 	ASSERT (distr. get ());
 	distr->qc ();
 	ASSERT (isProb (prob));
@@ -3968,6 +4032,8 @@ void Mixture::Component::merge (const Component* comp)
 
 void Mixture::qc () const
 {
+  if (! qc_on)
+    return;
 	Distribution::qc ();
 
 #ifndef NDEBUG		
@@ -4431,6 +4497,8 @@ bool Mixture::deleteComponent (size_t num)
 
 void PrinComp::qc () const
 { 
+  if (! qc_on)
+    return;
   P::qc ();
     
   mn. qc ();
@@ -4711,6 +4779,8 @@ Clustering::Clustering (const Clustering &clustering,
 
 void Clustering::qc () const
 {
+  if (! qc_on)
+    return;
   P::qc ();
    
   mixt. qc ();
@@ -5322,6 +5392,8 @@ Matrix* Canonical::getCholeskyInv (const Matrix &withinSigma)
 
 void Canonical::qc () const
 { 
+  if (! qc_on)
+    return;
   P::qc ();
     
   between. qc ();
@@ -5502,6 +5574,8 @@ Mds::Mds (const Sample &sample_arg,
 
 void Mds::qc () const
 { 
+  if (! qc_on)
+    return;
   Analysis::qc ();
   
 	eigens. qc (); 

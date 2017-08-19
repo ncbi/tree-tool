@@ -31,6 +31,9 @@ Feature::Feature (const Feature::Id &name_arg,
 
 void Feature::qc () const
 {
+  if (! qc_on)
+    return;
+
 	ASSERT (! name. empty ());
 	ASSERT (! contains (name, ";"));
 //IMPLY (isGene, geneId ());
@@ -75,6 +78,8 @@ void Phyl::init ()
 
 void Phyl::qc () const
 { 
+  if (! qc_on)
+    return;
 	TreeNode::qc ();
 
 	const size_t n = getFeatureTree (). features. size ();
@@ -548,6 +553,8 @@ Species::Species (FeatureTree &tree,
 
 void Species::qc () const
 { 
+  if (! qc_on)
+    return;
 	Phyl::qc ();
 	
 	IMPLY (! isNan (time), time >= 0);	
@@ -1129,6 +1136,8 @@ void Species::commitFeatures ()
 
 void Fossil::qc () const
 { 
+  if (! qc_on)
+    return;
 	Species::qc ();
 
 	for (const DiGraph::Arc* arc : arcs [false])
@@ -1179,6 +1188,8 @@ void Strain::saveContent (ostream& os) const
 
 void Strain::qc () const
 {
+  if (! qc_on)
+    return;
   Species::qc ();
   
   ASSERT (arcs [false]. size () == 1);  // Transient
@@ -1583,6 +1594,8 @@ void Genome::init (const map <Feature::Id, size_t/*index*/> &feature2index)
 
 void Genome::qc () const
 { 
+  if (! qc_on)
+    return;
 	Phyl::qc ();
 	  
 	ASSERT (optionalCore. size () == core. size ());
@@ -1964,6 +1977,8 @@ Change::~Change ()
 
 void Change::qc () const
 {
+  if (! qc_on)
+    return;
 	ASSERT (valid ());
 	ASSERT (positive (improvement));
 	ASSERT (! targets. empty ());
@@ -2450,6 +2465,8 @@ void ChangeToCousin::commit_ ()
 
 void ChangeRoot::qc () const
 {
+  if (! qc_on)
+    return;
 	Change::qc ();
 	
 	ASSERT (tree. allTimeZero);
@@ -3086,6 +3103,8 @@ void FeatureTree::finish (const string &coreFeaturesFName)
 
 void FeatureTree::qc () const
 { 
+  if (! qc_on)
+    return;
 	Tree::qc ();
 		
 	ASSERT (root);

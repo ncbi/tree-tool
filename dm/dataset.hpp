@@ -1178,7 +1178,9 @@ template <typename T/*:Attr*/>
   //Space (Space<T>&&) noexcept = default;
   //Space<T>& operator= (Space&&) = default;
     void qc () const
-      { ASSERT (! P::empty ());
+      { if (! qc_on)
+          return;
+        ASSERT (! P::empty ());
         Set<const T*> attrSet;
         for (const T* attr : *this)
         { ASSERT (attr);
@@ -1386,7 +1388,10 @@ protected:
     {}
 public:
   void qc () const override
-    { sample. qc (); }
+    { if (! qc_on)
+        return;
+      sample. qc (); 
+    }
 };
 
 
@@ -1427,7 +1432,9 @@ template <typename T/*:Attr1*/>
       , variable ()
       {}
     void qc () const override
-      { Analysis1::qc();
+      { if (! qc_on)
+          return;
+        Analysis1::qc();
         attr. qc ();
         ASSERT (& attr. ds == sample. ds);
       }
@@ -1458,7 +1465,9 @@ template <typename T/*:Attr1*/>
         , variable (space. size ())
         {}
     void qc () const override
-      { Analysis1::qc();
+      { if (! qc_on)
+          return;
+        Analysis1::qc();
         space. qc ();
         ASSERT (& space. ds == sample. ds);
         ASSERT (space. size () == variable. size ()); 

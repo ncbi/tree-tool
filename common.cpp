@@ -20,6 +20,7 @@ namespace Common_sp
 
 
 bool Chronometer::enabled = false;
+bool qc_on = false;
 
 
 
@@ -799,6 +800,8 @@ ulong Rand::get (ulong max)
 
 void Rand::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (seed > 0);
   ASSERT (seed < max_);
 }
@@ -837,6 +840,8 @@ Named::Named (const string& name_arg)
 
 void Named::qc () const
 {
+  if (! qc_on)
+    return;
   Root::qc ();
     
   ASSERT (goodName (name));
@@ -907,6 +912,8 @@ DiGraph::Node::~Node ()
 
 void DiGraph::Node::qc () const
 {
+  if (! qc_on)
+    return;
   Root::qc ();
     
   ASSERT (*graphIt == this);
@@ -1207,6 +1214,9 @@ DiGraph::~DiGraph ()
 
 void DiGraph::qc () const
 {
+  if (! qc_on)
+    return;
+
 #ifndef NDEBUG
   Set<const Node*> nodes_;
   Set<const Arc*> arcs_ [2];
@@ -1373,6 +1383,8 @@ void DiGraph::borrowArcs (const Node2Node &node2node,
 
 void Tree::TreeNode::qc () const
 {
+  if (! qc_on)
+    return;
   DiGraph::Node::qc ();
     
   ASSERT (! (isLeafType () && isInteriorType ()));
@@ -1855,6 +1867,8 @@ void Tree::TreeNode::getArea_ (uint radius,
 
 void Tree::qc () const
 {
+  if (! qc_on)
+    return;
 	DiGraph::qc ();
 
 #ifndef NDEBUG		
@@ -2677,6 +2691,8 @@ void Token::readInput (CharInput &in)
 
 void Token::qc () const
 {
+  if (! qc_on)
+    return;
   if (! empty ())
   {
   	ASSERT (! name. empty ());
@@ -3312,12 +3328,15 @@ int Application::run (int argc,
     if (! logFName. empty ())
   		logPtr = new OFStream ("", logFName, "");
   
+  	if (getFlag ("qc"))
+  		qc_on = true;
+
   	Verbose vrb (str2<int> (getArg ("verbose")));
   	
   	if (getFlag ("noprogress"))
   		Progress::disable ();
   	if (getFlag ("profile"))
-  		Chronometer::enabled = true;;
+  		Chronometer::enabled = true;
   
   	const string jsonFName = getArg ("json");
   	ASSERT (! jRoot);

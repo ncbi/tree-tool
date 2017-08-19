@@ -218,6 +218,8 @@ void distribution2MeanVar (const Matrix &distribution,
 
 void Determinant::qc () const
 {
+  if (! qc_on)
+    return;
   LogReal::qc ();
     
   ASSERT (size);
@@ -344,6 +346,8 @@ void Matrix::delData ()
 
 void Matrix::qc () const
 {
+  if (! qc_on)
+    return;
   IMPLY (psd, isSymmetric ());
 }
 
@@ -2697,6 +2701,8 @@ MVector& MVector::operator= (const Vector<Real> &vec)
 
 void Eigen::qc () const
 {
+  if (! qc_on)
+    return;
   Root::qc ();
     
   ASSERT (eqReal (getNorm2 (), 1));
@@ -2942,6 +2948,8 @@ Eigens::Eigens (const Matrix &matr,
 
 void Eigens::qc () const
 {
+  if (! qc_on)
+    return;
 	ASSERT (basis. rowsSize (true) == getDim ());
 	ASSERT (values. rowsSize (false) == getDim ());
 	FOR (size_t, i, basis. rowsSize (true))

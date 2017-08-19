@@ -55,6 +55,8 @@ Operation::Operation (const string &name_arg,
 
 void Operation::qc () const
 {
+  if (! qc_on)
+    return;
 	Named::qc ();
 	IMPLY (rank (), prefix () || infix ());
 	IMPLY (rank (), name. size () == 1);
@@ -137,7 +139,9 @@ public:
     : e (& e_arg)
     { qc (); }
   void qc () const
-    { ASSERT (e);
+    { if (! qc_on)
+        return;
+      ASSERT (e);
 	  	ASSERT (*e);
     	ASSERT (! (*e)->isNumber ()); 
     }
@@ -625,6 +629,8 @@ bool Expr::getDenominator (uint &denominator) const
 
 void OperExpr::qc () const
 { 
+  if (! qc_on)
+    return;
 	ASSERT (oper. nArgs == args. size ());
 	CONST_ITER (VectorOwn <Expr>, it, args)
   { 
@@ -787,7 +793,7 @@ bool qc ()
 	{
 		ASSERT (! complexity2oper [(*it)->complexity ()]);
 		complexity2oper [(*it)->complexity ()] = *it;
-		(*it)->qc ();
+		(*it)->qc ();  // !qc_on => always true ??
 	}
 
   // For Rational	

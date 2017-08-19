@@ -731,6 +731,8 @@ void WeightedMeanVar::addValue (Real x)
 
 void MeanVar::qc () const
 {
+  if (! qc_on)
+    return;
   ASSERT (n >= 0);
   ASSERT (s2 >= 0);
   IMPLY (s2 > 0, n > 0);

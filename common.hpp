@@ -47,6 +47,10 @@ bool initCommon ();
 
 
 
+extern bool qc_on;
+
+
+
 struct Nocopy
 {
 protected:
@@ -713,10 +717,10 @@ public:
     // A desrtructor should be virtual to be automatically invoked by a descendent class destructor
   virtual Root* copy () const
     { NOT_IMPLEMENTED; return nullptr; }
-    // Return: the same type
-    
+    // Return: the same type    
   virtual void qc () const
     {}
+    // Input: qc_on
   virtual void saveText (ostream& /*os*/) const 
     { NOT_IMPLEMENTED; }
     // Parsable output
@@ -2792,7 +2796,8 @@ protected:
   explicit Application (const string &description_arg)
     : description (description_arg)
     , posIt (positionals. begin ())
-    { addKey ("verbose", "Level of verbosity", "0");
+    { addFlag ("qc", "Integrity checks (quality control)");
+      addKey ("verbose", "Level of verbosity", "0");
       addFlag ("noprogress", "Turn off progress printout");
       addFlag ("profile", "Use chronometers to profile");
       addKey ("json", "Output file in Json format");
