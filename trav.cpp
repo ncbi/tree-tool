@@ -16,6 +16,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Apply <command> to all items")
   	{
+  	  // Iterations n times: use %n only ??
   	  addPositional ("items", "File with items (end-of-line separated) or a directory (in this case items are files in this directory)");
   	  addPositional ("command", "Text with special symbols: \"%d\" = <items>, \"%f\" - an item, \"%n\" - sequential number");
   	  addFlag ("noerror", "Ignore errors");
