@@ -3480,6 +3480,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
       tree. optimizeLenLocal ();  
       tree. finishChanges (); 
       tree. optimizeIter (string ());
+        // tree. optimizeSubgraphs () if tree is large ??
+          // allows using mdsTree.sh
     }
     else if (leaves == 3)
       tree. optimize3 ();
