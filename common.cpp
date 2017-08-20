@@ -723,9 +723,9 @@ namespace
 }
 
 
-bool verbose (uint inc)
+bool verbose (int inc)
 { 
-	return verbose_ + (int) inc > 0;
+	return verbose_ + inc > 0;
 }
 
 

@@ -643,7 +643,7 @@ private:
 
 
 
-bool verbose (uint inc = 0);
+bool verbose (int inc = 0);
 
 class Verbose
 {
