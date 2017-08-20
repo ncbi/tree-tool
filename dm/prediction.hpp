@@ -342,7 +342,7 @@ public:
                                     Real errorRelDiff);
     // Approximation by alternate optimization
     // Return: converged
-    // Input: *predictionAttr: may be nullptr
+    // Input: predictionAttr: may be nullptr
     // Update: beta
     // Output: absCriterion: !isNan()
     // Requires: &predictionAttr->ds = &space.ds

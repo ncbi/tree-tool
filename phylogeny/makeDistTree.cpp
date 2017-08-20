@@ -69,6 +69,16 @@ struct ThisApplication : Application
       throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
 
 
+    DistTree::printParam (cout);
+    if (topology)
+    {
+      cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
+      if (sparse_init)
+        cout << "Sparsing depth = " << sparsingDepth << endl;
+    }
+    cout << endl;
+
+
     Common_sp::AutoPtr<DistTree> tree;
     {
       Chronometer_OnePass cop ("Initial topology");
@@ -81,17 +91,14 @@ struct ThisApplication : Application
     ASSERT (tree. get ());
     if (verbose ())
       tree->qc ();     
-      
+
     tree->printInput (cout);
+    cout << endl;
     
     if (tree->optimizable ())
     {
       if (topology)
       {
-        cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
-        if (sparse_init)
-          cout << "Sparsing depth = " << sparsingDepth << endl;
-        cout << endl;
         const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
         {
@@ -100,9 +107,9 @@ struct ThisApplication : Application
           {
             Chronometer_OnePass cop ("Initial arc lengths");
             EXEC_ASSERT (tree->optimizeLen ());
-            cout << "# Nodes deleted = " << tree->finishChanges () << endl << endl;
+            cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             tree->optimizeLenLocal ();  
-            cout << "# Nodes deleted = " << tree->finishChanges () << endl << endl;
+            cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             if (verbose ())
             {
               tree->qc ();
@@ -111,6 +118,7 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           {
+            cout << "Optimizing topology ..." << endl;
             Chronometer_OnePass cop ("Topology and arc length optimization");
             if (whole)
               tree->optimizeIter (output_tree);
@@ -143,7 +151,6 @@ struct ThisApplication : Application
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
       }
         
-      cout << endl;      
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  
       tree->setHeight ();
@@ -233,6 +240,7 @@ struct ThisApplication : Application
         cout << "# Frequent children leaves = "         << freqChildrenLeaves << endl;
         cout << "# Frequent interior nodes = "          << stableInteriors << endl;
         cout << "# Frequent leaves = "                  << stableLeaves << endl;
+          // Incertae sedis ??
         cout << "Rareness threshold = " << rareProb * 100 << " %" << endl;
       }      
     }

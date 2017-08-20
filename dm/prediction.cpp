@@ -332,6 +332,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
     
   bool ok = true;
   Progress prog;
+  Space1<NumAttr1> sp (ds, false);
   FOR (uint, iter, maxIter)
   {
     prog (real2str (absCriterion /*errorPrev*/, 6));  // PAR
@@ -340,7 +341,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
       // beta[attrNum]
       // Assume beta[j] are correct for all j != attrNum
       const NumAttr1& predictor = * space. at (attrNum);
-      Space1<NumAttr1> sp (ds, false);
+      sp. clear ();
       sp << & predictor;
       for (Iterator it (sample); it ();)  
         (*target1) [*it] = (*residual) [*it] + beta [attrNum] * predictor. getReal (*it);
@@ -459,7 +460,9 @@ RealAttr1& LinearNumPrediction::makeResidualAttr (const string &attrName,
 
   auto& residual = * new RealAttr1 (attrName, ds, target. decimals); 
   for (Iterator it (sample); it ();)  
-    residual [*it] = predictionAttr ? target [*it] - (*predictionAttr) [*it] : getResidual (*it);
+    residual [*it] = predictionAttr 
+                       ? target [*it] - (*predictionAttr) [*it] 
+                       : getResidual (*it);
 
   return residual;
 }

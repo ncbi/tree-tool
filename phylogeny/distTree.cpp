@@ -2101,7 +2101,7 @@ void DistTree::neighborJoin ()
         for (const bool first : Bool)
           const_cast <DTNode*> (neighbors. nodes [first]) -> len += neighbors. dissim;
           
-    if (verbose ())  
+    if (verbose (-1))  
     {
       cout << endl << "Nodes and sum:" << endl;
     	for (const DiGraph::Arc* arc : root->arcs [false])
@@ -2128,7 +2128,7 @@ void DistTree::neighborJoin ()
             i_best = i;
         ASSERT (i_best != NO_INDEX);
         neighbors_best = neighborsVec [i_best];
-        if (verbose ())
+        if (verbose (-1))
         {
           cout << endl << "Best: ";
           neighbors_best. print (cout);
@@ -2151,7 +2151,7 @@ void DistTree::neighborJoin ()
         newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [0] -> getParent ()), dissim_sum);
         a->setParent (newNode);
         b->setParent (newNode);
-        if (verbose ())
+        if (verbose (-1))
           cout << "New: " << newNode->getLcaName () << " " << a->len << " " << b->len << " " << newNode->len << endl;
       }
     }
@@ -2900,6 +2900,8 @@ void DistTree::optimizeLenLocal ()
 
 //cout << "absCriterion (before optimizeLenLocal) = " << absCriterion << endl;  
   Progress prog ((uint) nodes. size ());
+  Space1<NumAttr1> sp (ds, false); 
+  Vector<Real> lenOld;  
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
@@ -2920,7 +2922,7 @@ void DistTree::optimizeLenLocal ()
     dtNodes << dtNode;  
 
     // lenOld, *target_new
-    Vector<Real> lenOld;  lenOld. reserve (dtNodes. size ());    
+    lenOld. clear (); lenOld. reserve (dtNodes. size ());    
     FOR (size_t, attrNum, dtNodes. size ())
     {
       const DTNode* n = static_cast <const DTNode*> (dtNodes [attrNum]);
@@ -2938,7 +2940,7 @@ void DistTree::optimizeLenLocal ()
       (* const_cast <RealAttr1*> (target_new)) [objNum] = (*target) [objNum] - path2prediction (path);
     }
     
-    Space1<NumAttr1> sp (ds, false);  sp. reserve (dtNodes. size ());
+    sp. clear ();  sp. reserve (dtNodes. size ());
     for (const DiGraph::Node* dtNode1 : dtNodes)
       sp << static_cast <const DTNode*> (dtNode1) -> attr;
 
@@ -2947,18 +2949,11 @@ void DistTree::optimizeLenLocal ()
       cout << "Linear regression ..." << endl;
     L2LinearNumPrediction lr (dsSample, sp, *target_new);
     ASSERT (lr. beta. size () == dtNodes. size ());
-    bool solved = true;
-    lr. solveUnconstrained ();
-    FOR (size_t, i, lr. beta. size ())
-      if (maximize (lr. beta [i], 0.0))
-        solved = false;  // ??
+    FOR (size_t, attrNum, lr. beta. size ())
+      lr. beta [attrNum] = lenOld [attrNum];
+    const bool solved = lr. solveUnconstrainedFast (nullptr, true, 10, 0.01);  // PAR
     if (verbose ())  
       lr. qc ();
-    if (isNan (lr. absCriterion))
-    {
-    //ASSERT (ds. objs. size () < dissimSize_max ());  // Obj::mult = 0 must be skipped
-      solved = false;
-    }
   
     // DTNode::len
     FOR (size_t, attrNum, dtNodes. size ())
@@ -2970,8 +2965,8 @@ void DistTree::optimizeLenLocal ()
       ASSERT (leReal (absCriterion, absCriterion_old));
     }
 
-    prog (real2str (lr. absCriterion, 6));  // PAR
-      // lr.absCriterion does not decrease with iterations ??
+    if (solved)
+      prog (real2str (lr. absCriterion, 6));  // PAR
   }
 
   
@@ -3915,9 +3910,8 @@ void DistTree::delayDeleteRetainArcs (DTNode* s)
 size_t DistTree::finishChanges ()
 {
   const size_t n = deleteLenZero ();
-  if (n)
-    if (verbose ())
-      cout << "# Nodes with zero arcs deleted = " << n << endl;
+  if (n && verbose ())
+    cout << "# Nodes with zero arcs deleted = " << n << endl;
 
   toDelete. deleteData ();
   
