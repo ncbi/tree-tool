@@ -1,28 +1,27 @@
+Dissimilarity variance: linExp
+Max. possible dissimilarity = 18.0218
+Subgraph radius = 5
+Topology optimization: subgraphs
+
 Neighbor joining ...
 
 # Leaves: 291
 # Discernable leaves: 285
 # Nodes: 579
 # Dissimilarities: 42188 (99.98 %)
-Dissimilarity variance: linExp
-Max. possible dissimilarity = 18.02
 Ave. dissimilarity = 0.19
-Subgraph radius = 5
-Topology optimization: subgraphs
 
 Optimizing arc lengths globally ...
 # Nodes deleted = 20
-
 Optimizing arc lengths locally ...
-# Nodes deleted = 0
+# Nodes deleted = 2
+absCriterion = 7.924740  Error density = 1.945181 %
 
-absCriterion = 7.934354  Error density = 1.946361 %
+Optimizing topology ...
 
-
-
-absCriterion = 7.049272  Error density = 1.834554 %
-absCriterion [0] = 0.8116  Error density [0] = 7.4554 %  Fraction = 6.3478 %
-absCriterion [1] = 6.2377  Error density [1] = 1.7318 %  Fraction = 93.6522 %
+absCriterion = 7.048223  Error density = 1.834418 %
+absCriterion [0] = 0.8114  Error density [0] = 7.4545 %  Fraction = 6.3478 %
+absCriterion [1] = 6.2368  Error density [1] = 1.7316 %  Fraction = 93.6522 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.07
@@ -35,7 +34,7 @@ SAMN04507552	3.16
 
 # Interior nodes (with root) = 283 (max = 284)
 # Interior undirected arcs = 282
-Tree length = 30.5718
+Tree length = 30.5720
 Min. discernable leaf length = 0.0000
 Ave. arc length = 0.0529
 Interior height = 34

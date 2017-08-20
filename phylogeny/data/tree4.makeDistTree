@@ -1,13 +1,14 @@
+Dissimilarity variance: linExp
+Max. possible dissimilarity = 18.0218
+Subgraph radius = 5
+
 Neighbor joining ...
 
 # Leaves: 4
 # Discernable leaves: 4
 # Nodes: 7
 # Dissimilarities: 6 (100.00 %)
-Dissimilarity variance: linExp
-Max. possible dissimilarity = 18.02
 Ave. dissimilarity = 3.10
-Subgraph radius = 5
 
 absCriterion = 0.000000  Error density = 0.000000 %
 absCriterion [0] = 0.0000  Error density [0] = 0.0000 %  Fraction = 16.6667 %

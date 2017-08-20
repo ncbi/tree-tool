@@ -1,579 +1,579 @@
-0xa2d950: len=nan  len_mean=4.559890e-01  len_weight=3.057176e+01
-  0x13c1980: len=1.218877e-02  len_mean=4.094499e-01  len_weight=1.524836e+01  err_density=1.224273e-02  paths=17978
-    SAMN02678557: len=3.782741e-01  err_density=1.331460e-02  paths=290  leaf_error=1.930119e+00
-    0xa2b1e0: len=1.781258e-03  len_mean=4.084617e-01  len_weight=1.486830e+01  err_density=1.228754e-02  paths=18090
-      0x139bcb0: len=3.567041e-01  len_mean=1.011077e-02  len_weight=4.612602e-02  err_density=1.810951e-02  paths=2264
-        0x1387970: len=8.134118e-04  len_mean=6.920728e-03  len_weight=2.332566e-02  err_density=1.900076e-02  paths=1430
-          0x13b58b0: len=1.880607e-03  len_mean=6.161479e-03  len_weight=1.633780e-02  err_density=1.942009e-02  paths=864
-            SAMN02843980: len=3.923275e-03  err_density=1.945265e-02  paths=290  leaf_error=1.420119e+00
-            0x12dd4b0: len=1.277527e-03  len_mean=5.591276e-03  len_weight=1.113700e-02  err_density=1.933697e-02  paths=578
-              SAMN03291525: len=5.924630e-03  err_density=1.914119e-02  paths=290  leaf_error=1.530060e+00
-              SAMN04362083: len=5.212370e-03  err_density=1.946466e-02  paths=290  leaf_error=1.470730e+00
-          0x139a830: len=6.262462e-04  len_mean=2.294407e-03  len_weight=4.481000e-03  err_density=2.033298e-02  paths=578
-            SAMN02849843: len=2.588032e-03  err_density=2.106415e-02  paths=290  leaf_error=1.301921e+00
-            SAMN02983193: len=1.892968e-03  err_density=1.950155e-02  paths=290  leaf_error=1.309445e+00
-        0x130b3f0: len=2.916485e-03  len_mean=9.803544e-03  len_weight=1.907047e-02  err_density=1.891867e-02  paths=864
-          SAMN03168728: len=7.399181e-03  err_density=1.887303e-02  paths=290  leaf_error=1.543404e+00
-          0x13b0230: len=9.951289e-03  len_mean=1.376535e-03  len_weight=1.720000e-03  err_density=1.898408e-02  paths=578
-            SAMN04120341: len=1.526498e-03  err_density=1.917116e-02  paths=290  leaf_error=1.180196e+00
-            SAMN04252842: len=1.935018e-04  err_density=1.872889e-02  paths=290  leaf_error=1.148022e+00
-      0x13a3f90: len=1.380451e-02  len_mean=3.958170e-01  len_weight=1.445167e+01  err_density=1.292699e-02  paths=18914
-        0xa25220: len=9.841302e-04  len_mean=3.935101e-01  len_weight=1.392081e+01  err_density=1.291726e-02  paths=19190
-          0x13a3c20: len=3.408299e-01  len_mean=5.659360e-02  len_weight=1.316514e-01  err_density=1.612911e-02  paths=864
-            SAMN03787591: len=6.121303e-02  err_density=1.931321e-02  paths=290  leaf_error=2.856028e+00
-            0x1359a30: len=3.459740e-02  len_mean=1.798179e-02  len_weight=3.584100e-02  err_density=1.433676e-02  paths=578
-              SAMN03487744: len=1.687250e-02  err_density=1.446151e-02  paths=290  leaf_error=2.006017e+00
-              SAMN02664733: len=1.896850e-02  err_density=1.416095e-02  paths=290  leaf_error=1.968974e+00
-          0xa1d8f0: len=5.215800e-03  len_mean=3.881568e-01  len_weight=1.344312e+01  err_density=1.289640e-02  paths=19448
-            0x13c7190: len=2.861537e-03  len_mean=3.840736e-01  len_weight=1.301473e+01  err_density=1.289793e-02  paths=19530
-              0xa2ce60: len=1.801022e-03  len_mean=4.097916e-01  len_weight=2.139061e+00  err_density=1.165059e-02  paths=12798
-                0x13c0720: len=3.470633e-01  len_mean=2.748685e-02  len_weight=8.574959e-02  err_density=1.269701e-02  paths=1988
-                  SAMN01924580: len=2.262395e-02  err_density=1.277934e-02  paths=290  leaf_error=1.472924e+00
-                  0x12f4450: len=1.855915e-02  len_mean=1.067054e-02  len_weight=4.456648e-02  err_density=1.271760e-02  paths=1710
-                    0x133e350: len=4.904899e-03  len_mean=6.276825e-03  len_weight=1.563768e-02  err_density=1.382226e-02  paths=864
-                      0x1420100: len=8.622341e-04  len_mean=3.707220e-03  len_weight=6.841000e-03  err_density=1.365642e-02  paths=578
-                        SAMN04481308: len=4.410815e-03  err_density=1.297551e-02  paths=290  leaf_error=1.108658e+00
-                        SAMN04359408: len=2.430185e-03  err_density=1.425993e-02  paths=290  leaf_error=1.059511e+00
-                      SAMN04014667: len=7.934443e-03  err_density=1.410819e-02  paths=290  leaf_error=1.187096e+00
-                    0x13a6ad0: len=2.215565e-03  len_mean=8.017875e-03  len_weight=2.180834e-02  err_density=1.403464e-02  paths=864
-                      0xa1f870: len=5.639222e-04  len_mean=5.627376e-03  len_weight=1.111900e-02  err_density=1.421320e-02  paths=578
-                        SAMN02345225: len=6.173793e-03  err_density=1.375328e-02  paths=290  leaf_error=1.191532e+00
-                        SAMN02345496: len=4.945207e-03  err_density=1.461109e-02  paths=290  leaf_error=1.171126e+00
-                      SAMN02908576: len=1.012542e-02  err_density=1.401865e-02  paths=290  leaf_error=1.242628e+00
-                0x13822f0: len=7.228811e-03  len_mean=4.115023e-01  len_weight=1.699020e+00  err_density=1.132942e-02  paths=11468
-                  SAMN04916500: len=3.895503e-01  err_density=1.341871e-02  paths=290  leaf_error=1.972216e+00
-                  0x13ad6f0: len=8.323083e-02  len_mean=3.348019e-01  len_weight=1.226238e+00  err_density=1.124489e-02  paths=11270
-                    0x12ca3e0: len=3.013599e-01  len_mean=4.079005e-04  len_weight=7.270000e-04  err_density=1.166828e-02  paths=578
-                      SAMN04255287: len=2.364583e-04  err_density=1.164312e-02  paths=290  leaf_error=6.377946e-01
-                      SAMN01902333: len=4.905417e-04  err_density=1.165317e-02  paths=290  leaf_error=6.379061e-01
-                    0x1320df0: len=1.086767e-01  len_mean=2.369233e-01  len_weight=8.154748e-01  err_density=1.118230e-02  paths=10868
-                      0x1355950: len=2.707343e-01  len_mean=9.084197e-03  len_weight=1.412900e-02  err_density=1.075541e-02  paths=578
-                        SAMN04858537: len=3.287179e-03  err_density=1.097045e-02  paths=290  leaf_error=1.455488e+00
-                        SAMN02849799: len=1.084182e-02  err_density=1.049804e-02  paths=290  leaf_error=1.385121e+00
-                      0x1378b90: len=1.367845e-01  len_mean=7.711018e-02  len_weight=3.938270e-01  err_density=1.117218e-02  paths=10458
-                        0x1348110: len=7.300029e-02  len_mean=9.130921e-03  len_weight=9.130921e-03  err_density=1.439121e-02  paths=578
-                          SAMN03475559: len=0.000000e+00  err_density=2.811620e-02  paths=290  leaf_error=1.040484e+00
-                          SAMN03466276: len=9.130921e-03  err_density=2.799290e-02  paths=290  leaf_error=1.039749e+00
-                        0xa25b20: len=3.059077e-02  len_mean=4.519637e-02  len_weight=2.811050e-01  err_density=1.140270e-02  paths=10040
-                          0xa34f30: len=5.713744e-02  len_mean=7.423353e-03  len_weight=7.576105e-03  err_density=1.318373e-02  paths=578
-                            SAMEA2077841: len=7.716204e-05  err_density=1.378606e-02  paths=290  leaf_error=8.957879e-01
-                            SAMEA2074343: len=7.498943e-03  err_density=1.274345e-02  paths=290  leaf_error=9.028271e-01
-                          0x1356ef0: len=1.276794e-02  len_mean=2.663735e-02  len_weight=2.036235e-01  err_density=1.145008e-02  paths=9614
-                            0xa23120: len=2.089988e-02  len_mean=7.600780e-03  len_weight=4.656371e-02  err_density=1.572827e-02  paths=3080
-                              SAMN03479848: len=1.765957e-03  err_density=2.665227e-02  paths=290  leaf_error=6.752528e-01
-                              0x1332710: len=1.318094e-03  len_mean=6.512698e-03  len_weight=4.347966e-02  err_density=1.486958e-02  paths=2810
-                                0x12a9ef0: len=5.189050e-03  len_mean=1.862141e-03  len_weight=3.630000e-03  err_density=1.417684e-02  paths=578
-                                  SAMN03603763: len=1.522492e-03  err_density=1.435643e-02  paths=290  leaf_error=5.340359e-01
-                                  SAMN04555248: len=2.107508e-03  err_density=1.394534e-02  paths=290  leaf_error=5.436574e-01
-                                0x14226d0: len=3.826637e-04  len_mean=5.993021e-03  len_weight=3.427795e-02  err_density=1.560652e-02  paths=2264
-                                  SAMEA1929846: len=4.872111e-03  err_density=1.448504e-02  paths=290  leaf_error=5.405863e-01
-                                  0xa250a0: len=4.207991e-05  len_mean=6.136659e-03  len_weight=2.936375e-02  err_density=1.598887e-02  paths=1988
-                                    SAMN03468637: len=2.275190e-03  err_density=1.859587e-02  paths=290  leaf_error=4.993015e-01
-                                    0x1339330: len=2.254855e-04  len_mean=6.235501e-03  len_weight=2.686308e-02  err_density=1.586224e-02  paths=1710
-                                      0xa2e930: len=3.675384e-04  len_mean=6.561670e-03  len_weight=1.728191e-02  err_density=1.696153e-02  paths=1148
-                                        0x141ee70: len=1.208644e-03  len_mean=4.502772e-03  len_weight=8.437489e-03  err_density=1.824413e-02  paths=864
-                                          0xa214d0: len=5.313385e-03  err_density=1.515510e-02  paths=578
-                                            SAMN03469668: len=0.000000e+00  err_density=6.793954e-02  paths=289  leaf_error=6.104444e-01  non-discernable
-                                            SAMN03477904: len=0.000000e+00  err_density=6.481387e-02  paths=289  leaf_error=6.103206e-01  non-discernable
-                                          SAMN03477986: len=3.124105e-03  err_density=2.310639e-02  paths=290  leaf_error=6.006446e-01
-                                        SAMEA2018772: len=7.635780e-03  err_density=1.408219e-02  paths=290  leaf_error=5.986166e-01
-                                      0xa34060: len=2.576273e-04  len_mean=4.649021e-03  len_weight=8.956000e-03  err_density=1.505152e-02  paths=578
-                                        SAMEA2157002.r1: len=5.353118e-03  err_density=1.535662e-02  paths=290  leaf_error=5.682337e-01
-                                        SAMN04575060: len=3.602882e-03  err_density=1.468701e-02  paths=290  leaf_error=5.328323e-01
-                            0x13f1030: len=1.050905e-02  len_mean=1.520509e-02  len_weight=1.256509e-01  err_density=1.362644e-02  paths=7128
-                              0xa21960: len=1.596157e-03  len_mean=1.471948e-02  len_weight=1.013814e-01  err_density=1.656521e-02  paths=5420
-                                SAMN03165677: len=8.912984e-03  err_density=2.032932e-02  paths=290  leaf_error=5.631205e-01
-                                0x13c4640: len=2.160174e-03  len_mean=1.311900e-02  len_weight=9.030825e-02  err_density=1.690762e-02  paths=5168
-                                  SAMN04125349: len=8.002904e-03  err_density=2.618412e-02  paths=290  leaf_error=5.729001e-01
-                                  0xa253a0: len=4.050635e-04  len_mean=1.321139e-02  len_weight=8.190028e-02  err_density=1.715823e-02  paths=4914
-                                    0x1352e10: len=2.141048e-03  len_mean=1.146005e-02  len_weight=5.622612e-02  err_density=1.837226e-02  paths=3614
-                                      0x133a8d0: len=1.352259e-03  len_mean=7.409855e-03  len_weight=2.105122e-02  err_density=1.994635e-02  paths=864
-                                        0x1346b70: len=6.478496e-04  len_mean=7.412343e-03  len_weight=1.477600e-02  err_density=1.911716e-02  paths=578
-                                          SAMN04993486: len=6.963922e-03  err_density=2.034652e-02  paths=290  leaf_error=5.677453e-01
-                                          SAMN05201334: len=7.812078e-03  err_density=1.773219e-02  paths=290  leaf_error=5.534326e-01
-                                        SAMN03477652: len=5.627369e-03  err_density=2.138031e-02  paths=290  leaf_error=5.308149e-01
-                                      0x12c9d30: len=6.364762e-03  len_mean=6.882346e-03  len_weight=2.745788e-02  err_density=1.860873e-02  paths=2810
-                                        SAMN02847074: len=6.384134e-03  err_density=2.078176e-02  paths=290  leaf_error=5.134969e-01
-                                        0x13c47c0: len=2.896847e-03  len_mean=4.136429e-03  len_weight=1.817689e-02  err_density=1.906819e-02  paths=2538
-                                          SAMN02839498: len=1.362942e-03  err_density=3.129541e-02  paths=290  leaf_error=4.744091e-01
-                                          0xa247a0: len=1.369831e-03  len_mean=2.991418e-03  len_weight=1.544412e-02  err_density=2.043607e-02  paths=2264
-                                            SAMN03573304: len=2.416078e-03  err_density=3.535550e-02  paths=290  leaf_error=4.990894e-01
-                                            0xa1dd70: len=2.581126e-04  len_mean=2.840003e-03  len_weight=1.276993e-02  err_density=2.234177e-02  paths=1988
-                                              SAMN03604088: len=1.668260e-03  err_density=3.687991e-02  paths=290  leaf_error=4.529922e-01
-                                              0xa27600: len=3.277779e-04  len_mean=2.688304e-03  len_weight=1.077389e-02  err_density=2.124138e-02  paths=1710
-                                                0x12b20b0: len=5.215663e-04  len_mean=2.355341e-03  len_weight=9.006634e-03  err_density=1.953998e-02  paths=1430
-                                                  0x13c4310: len=6.392501e-05  len_mean=2.426251e-03  len_weight=8.277137e-03  err_density=1.979194e-02  paths=1148
-                                                    0x13c5be0: len=1.419618e-04  len_mean=2.140783e-03  len_weight=5.415655e-03  err_density=2.006826e-02  paths=864
-                                                      0x13543b0: len=6.690071e-04  len_mean=1.732736e-03  len_weight=3.376000e-03  err_density=2.006890e-02  paths=578
-                                                        SAMN03259189: len=1.413201e-03  err_density=1.997486e-02  paths=290  leaf_error=4.192554e-01
-                                                        SAMN03010420: len=1.962799e-03  err_density=2.009350e-02  paths=290  leaf_error=4.349877e-01
-                                                      SAMN02767965: len=1.370648e-03  err_density=2.011123e-02  paths=290  leaf_error=3.812786e-01
-                                                    SAMN02688943: len=2.719520e-03  err_density=1.895654e-02  paths=290  leaf_error=4.266506e-01
-                                                  SAMN04217429: len=6.655724e-04  err_density=1.904563e-02  paths=290  leaf_error=3.481871e-01
-                                                SAMN05514340: len=1.245694e-03  err_density=2.841996e-02  paths=290  leaf_error=4.169155e-01
-                                    0x1358490: len=6.347309e-03  len_mean=5.897534e-03  len_weight=1.718581e-02  err_density=3.101500e-02  paths=1430
-                                      0x1301ba0: len=9.790034e-04  len_mean=5.197647e-03  len_weight=1.529585e-02  err_density=2.069394e-02  paths=1148
-                                        0x134ac50: len=1.130490e-03  len_mean=3.810407e-03  len_weight=8.527841e-03  err_density=1.933278e-02  paths=864
-                                          SAMN05366840: len=4.924964e-03  err_density=1.735088e-02  paths=290  leaf_error=5.326031e-01
-                                          0x13c4910: len=8.988768e-04  len_mean=1.387982e-03  len_weight=2.704000e-03  err_density=2.086149e-02  paths=578
-                                            SAMN02937341: len=1.131437e-03  err_density=2.277700e-02  paths=290  leaf_error=4.648775e-01
-                                            SAMN02905670: len=1.572563e-03  err_density=1.867112e-02  paths=290  leaf_error=4.906355e-01
-                                        SAMN02676312: len=5.637518e-03  err_density=2.514472e-02  paths=290  leaf_error=5.302290e-01
-                                      SAMN03098713: len=9.109609e-04  err_density=6.227043e-02  paths=290  leaf_error=1.271051e+00
-                              0x12c9570: len=4.986803e-03  len_mean=5.174402e-03  len_weight=1.768653e-02  err_density=2.109440e-02  paths=1988
-                                0x12c4f70: len=5.563602e-04  len_mean=4.835868e-03  len_weight=1.258569e-02  err_density=2.058724e-02  paths=1710
-                                  SAMN03480170: len=2.965180e-03  err_density=2.528053e-02  paths=290  leaf_error=5.021540e-01
-                                  0x13c1330: len=2.300229e-03  len_mean=3.112212e-03  len_weight=7.320278e-03  err_density=2.142984e-02  paths=1430
-                                    0x13671a0: len=2.618693e-03  len_mean=7.353883e-04  len_weight=1.450000e-03  err_density=2.217273e-02  paths=578
-                                      SAMN02368563: len=6.382157e-04  err_density=2.274742e-02  paths=290  leaf_error=4.666715e-01
-                                      SAMN03152367: len=8.117843e-04  err_density=2.150404e-02  paths=290  leaf_error=4.585572e-01
-                                    0x13c14a0: len=2.247217e-03  len_mean=5.623452e-04  len_weight=1.004368e-03  err_density=2.136765e-02  paths=864
-                                      0xa21650: len=6.759999e-04  err_density=2.052092e-02  paths=578
-                                        SAMN03479881: len=0.000000e+00  err_density=1.362793e-01  paths=289  leaf_error=4.708835e-01  non-discernable
-                                        SAMN03479916: len=0.000000e+00  err_density=1.071212e-01  paths=289  leaf_error=4.338314e-01  non-discernable
-                                      SAMN03478080: len=3.283684e-04  err_density=2.286434e-02  paths=290  leaf_error=4.049034e-01
-                                SAMN03478042: len=4.544478e-03  err_density=2.802846e-02  paths=290  leaf_error=6.485025e-01
-              0x12f9ad0: len=2.568591e-03  len_mean=3.760870e-01  len_weight=1.087129e+01  err_density=1.339807e-02  paths=20988
-                SAMN02918780: len=2.599708e-01  err_density=1.695562e-02  paths=290  leaf_error=2.021683e+00
-                0x94e650: len=2.227336e-03  len_mean=3.767045e-01  len_weight=1.060910e+01  err_density=1.340544e-02  paths=20960
-                  SAMN04507552: len=3.874542e-01  err_density=2.191931e-02  paths=290  leaf_error=3.163513e+00
-                  0x14013b0: len=1.026606e-03  len_mean=3.752704e-01  len_weight=1.022062e+01  err_density=1.347081e-02  paths=20930
-                    0x13c6de0: len=3.578503e-01  len_mean=7.922375e-03  len_weight=1.525200e-02  err_density=1.314247e-02  paths=578
-                      SAMN04867491: len=9.129382e-03  err_density=1.321098e-02  paths=290  leaf_error=1.667026e+00
-                      SAMN03169295: len=6.122618e-03  err_density=1.302796e-02  paths=290  leaf_error=1.635851e+00
-                    0xa20470: len=1.743333e-03  len_mean=3.738869e-01  len_weight=9.845770e+00  err_density=1.350468e-02  paths=20864
-                      0xa29d20: len=1.231815e-01  len_mean=2.726728e-01  len_weight=5.938439e-01  err_density=1.285364e-02  paths=1710
-                        0xa292a0: len=2.461500e-01  len_mean=4.006040e-02  len_weight=8.967415e-02  err_density=1.187517e-02  paths=1148
-                          0x139bbc0: len=2.994911e-02  len_mean=9.487068e-03  len_weight=1.891715e-02  err_density=1.182729e-02  paths=864
-                            SAMN03225509: len=9.977705e-03  err_density=1.220984e-02  paths=290  leaf_error=1.467205e+00
-                            0xa211d0: len=8.939448e-03  err_density=1.160204e-02  paths=578
-                              SAMN02900075: len=0.000000e+00  err_density=3.898496e-02  paths=289  leaf_error=1.521997e+00  non-discernable
-                              SAMN02900103: len=0.000000e+00  err_density=3.881804e-02  paths=289  leaf_error=1.520246e+00  non-discernable
-                          SAMN02900125: len=4.080789e-02  err_density=1.220706e-02  paths=290  leaf_error=1.679718e+00
-                        0xa34e00: len=2.502958e-01  len_mean=4.757333e-03  len_weight=7.724000e-03  err_density=1.446836e-02  paths=578
-                          SAMN03478272: len=2.002491e-03  err_density=1.422401e-02  paths=290  leaf_error=1.611430e+00
-                          SAMN02843583: len=5.721509e-03  err_density=1.465949e-02  paths=290  leaf_error=1.668979e+00
-                      0x131a0e0: len=2.543399e-04  len_mean=3.719071e-01  len_weight=9.128490e+00  err_density=1.366015e-02  paths=20618
-                        0x12dfff0: len=2.930702e-03  len_mean=3.688781e-01  len_weight=8.751351e+00  err_density=1.368203e-02  paths=20570
-                          0xa226a0: len=1.316325e-03  len_mean=3.698464e-01  len_weight=6.869044e+00  err_density=1.409256e-02  paths=20048
-                            0x1399290: len=2.091408e-03  len_mean=3.804484e-01  len_weight=2.174862e+00  err_density=1.159078e-02  paths=5670
-                              SAMN03476465: len=3.713203e-01  err_density=1.418650e-02  paths=290  leaf_error=1.993470e+00
-                              0x12dbe20: len=8.547554e-03  len_mean=3.737801e-01  len_weight=1.794994e+00  err_density=1.141835e-02  paths=5420
-                                0xa28f60: len=1.918991e-01  len_mean=1.683555e-01  len_weight=5.564827e-01  err_density=1.179195e-02  paths=2538
-                                  SAMN02844313: len=1.747178e-01  err_density=2.222447e-02  paths=290  leaf_error=2.350858e+00
-                                  0x13a5530: len=1.240382e-02  len_mean=1.530400e-01  len_weight=3.693612e-01  err_density=1.368230e-02  paths=2264
-                                    0x1314b50: len=1.293153e-01  len_mean=2.458047e-02  len_weight=8.823217e-02  err_density=1.126657e-02  paths=1988
-                                      SAMN02845628: len=2.590703e-02  err_density=1.435841e-02  paths=290  leaf_error=1.293225e+00
-                                      0x136f430: len=2.272259e-03  len_mean=2.175680e-02  len_weight=6.005288e-02  err_density=1.188456e-02  paths=1710
-                                        0xa29710: len=1.162845e-02  len_mean=1.196011e-02  len_weight=3.123546e-02  err_density=1.212148e-02  paths=1430
-                                          SAMN03199655: len=8.973051e-03  err_density=1.591099e-02  paths=290  leaf_error=1.151297e+00
-                                          0xa2b660: len=4.457146e-03  len_mean=8.706917e-03  len_weight=1.780526e-02  err_density=1.219257e-02  paths=1148
-                                            0x137e210: len=7.581828e-03  len_mean=2.529734e-03  len_weight=4.425455e-03  err_density=1.264239e-02  paths=864
-                                              SAMN02182928: len=6.523231e-04  err_density=1.344739e-02  paths=290  leaf_error=7.108219e-01
-                                              0xa1f9f0: len=3.771319e-04  len_mean=2.477180e-03  len_weight=3.396000e-03  err_density=1.340331e-02  paths=578
-                                                SAMN03002010: len=5.477616e-04  err_density=1.278844e-02  paths=290  leaf_error=6.962336e-01
-                                                SAMN03856959: len=2.848238e-03  err_density=1.394683e-02  paths=290  leaf_error=8.001446e-01
-                                            SAMN03938881: len=5.797981e-03  err_density=1.104292e-02  paths=290  leaf_error=1.008814e+00
-                                        SAMN02368620: len=1.718897e-02  err_density=1.229249e-02  paths=290  leaf_error=1.204740e+00
-                                    SAMN05605405: len=1.518137e-01  err_density=2.436895e-02  paths=290  leaf_error=2.728096e+00
-                                0x13b2c80: len=1.476746e-02  len_mean=3.686841e-01  len_weight=1.031845e+00  err_density=1.079808e-02  paths=3080
-                                  0xa2c840: len=2.979450e-01  len_mean=6.218699e-02  len_weight=3.507372e-01  err_density=1.053190e-02  paths=2810
-                                    0xa1fff0: len=1.207434e-02  len_mean=5.313030e-02  len_weight=3.081841e-01  err_density=1.111822e-02  paths=2538
-                                      SAMEA1571872: len=6.041047e-02  err_density=1.473783e-02  paths=290  leaf_error=1.411552e+00
-                                      0xa2ab40: len=3.121331e-03  len_mean=4.823397e-02  len_weight=2.446523e-01  err_density=1.121667e-02  paths=2264
-                                        SAMN05416124.r1: len=6.513268e-02  err_density=1.525867e-02  paths=290  leaf_error=1.439051e+00
-                                        0xa21aa0: len=4.318411e-03  len_mean=3.778442e-02  len_weight=1.752012e-01  err_density=1.131468e-02  paths=1988
-                                          0x129b020: len=2.442950e-03  len_mean=3.316972e-02  len_weight=1.285406e-01  err_density=1.149727e-02  paths=1710
-                                            0x13441f0: len=1.971344e-03  len_mean=3.233881e-02  len_weight=8.684597e-02  err_density=1.262451e-02  paths=864
-                                              SAMN02595865: len=2.543745e-02  err_density=1.516128e-02  paths=290  leaf_error=1.279517e+00
-                                              0x14232f0: len=8.918511e-03  len_mean=2.627908e-02  len_weight=5.249000e-02  err_density=1.142803e-02  paths=578
-                                                SAMN02344850: len=2.719070e-02  err_density=1.065736e-02  paths=290  leaf_error=1.227380e+00
-                                                SAMN04859028: len=2.529930e-02  err_density=1.211280e-02  paths=290  leaf_error=1.238355e+00
-                                            0xa217d0: len=2.332544e-02  len_mean=7.294361e-03  len_weight=1.639784e-02  err_density=1.156776e-02  paths=864
-                                              0xa29ba0: len=3.297683e-03  len_mean=2.315464e-03  len_weight=4.340000e-03  err_density=1.151845e-02  paths=578
-                                                SAMN04076030: len=2.731834e-03  err_density=1.147154e-02  paths=290  leaf_error=9.450810e-01
-                                                SAMN04407122: len=1.608166e-03  err_density=1.152555e-02  paths=290  leaf_error=9.502545e-01
-                                              SAMN04517035: len=8.760154e-03  err_density=1.216012e-02  paths=290  leaf_error=1.063721e+00
-                                          SAMN02847378.r3: len=4.421770e-02  err_density=1.150106e-02  paths=290  leaf_error=1.281565e+00
-                                    SAMN03465942: len=3.047868e-02  err_density=1.565362e-02  paths=290  leaf_error=1.384241e+00
-                                  SAMN02844793.r2: len=3.831626e-01  err_density=1.281090e-02  paths=290  leaf_error=1.908294e+00
-                            0x972df0: len=4.489962e-03  len_mean=3.594672e-01  len_weight=4.687601e+00  err_density=1.486332e-02  paths=18200
-                              0xa2bb90: len=8.914214e-02  len_mean=2.673801e-01  len_weight=5.347270e-01  err_density=1.745560e-02  paths=864
-                                0xa2dee0: len=2.646882e-01  len_mean=5.704287e-04  len_weight=5.704287e-04  err_density=1.843989e-02  paths=578
-                                  SAMN04535377: len=5.704287e-04  err_density=5.289427e-02  paths=290  leaf_error=6.227126e-01
-                                  SAMN04485948: len=0.000000e+00  err_density=5.285907e-02  paths=290  leaf_error=6.094908e-01
-                                SAMN02265266: len=2.694684e-01  err_density=1.517996e-02  paths=290  leaf_error=2.068628e+00
-                              0xa2d5e0: len=2.055497e-03  len_mean=3.578638e-01  len_weight=4.061676e+00  err_density=1.512624e-02  paths=17864
-                                0xa1f6f0: len=2.800837e-01  len_mean=5.827810e-02  len_weight=1.174813e-01  err_density=1.084888e-02  paths=1148
-                                  0xa22520: len=6.195482e-02  len_mean=5.862711e-03  len_weight=1.622324e-02  err_density=1.033657e-02  paths=864
-                                    0xa1f4d0: len=5.958129e-04  len_mean=4.226888e-03  len_weight=8.453000e-03  err_density=1.045626e-02  paths=578
-                                      SAMN04218163: len=4.266979e-03  err_density=1.040166e-02  paths=290  leaf_error=1.021023e+00
-                                      SAMN02640840: len=4.186021e-03  err_density=1.047464e-02  paths=290  leaf_error=1.034752e+00
-                                    SAMN03468522: len=7.174432e-03  err_density=1.079285e-02  paths=290  leaf_error=1.089367e+00
-                                  SAMN03169114: len=3.930322e-02  err_density=1.219334e-02  paths=290  leaf_error=1.550173e+00
-                                0xa254b0: len=1.444107e-03  len_mean=3.585357e-01  len_weight=3.662667e+00  err_density=1.531431e-02  paths=17388
-                                  0x1416db0: len=7.411936e-03  len_mean=3.398969e-01  len_weight=1.017212e+00  err_density=1.538737e-02  paths=1988
-                                    0xa2d2c0: len=1.083779e-02  len_mean=3.280911e-01  len_weight=6.645640e-01  err_density=1.596959e-02  paths=1710
-                                      0x12ac940: len=2.896637e-01  len_mean=2.295104e-02  len_weight=3.226796e-02  err_density=1.667470e-02  paths=1430
-                                        SAMN03478846: len=0.000000e+00  err_density=8.083610e-02  paths=290  leaf_error=1.749430e+00
-                                        0x9725a0: len=6.068731e-03  len_mean=1.688231e-02  len_weight=2.619923e-02  err_density=4.296943e-02  paths=1148
-                                          0x13b4310: len=2.725250e-03  len_mean=1.573596e-02  len_weight=2.086441e-02  err_density=6.106931e-02  paths=864
-                                            SAMN04102293.r2: len=0.000000e+00  err_density=8.621990e-02  paths=290  leaf_error=1.433550e+00
-                                            0x13ac150: len=8.752412e-03  len_mean=6.983546e-03  len_weight=1.211200e-02  err_density=6.738750e-02  paths=578
-                                              SAMN02368790: len=8.426067e-03  err_density=6.476399e-02  paths=290  leaf_error=1.846073e+00
-                                              SAMN03002022: len=3.685933e-03  err_density=6.968829e-02  paths=290  leaf_error=1.690283e+00
-                                          SAMN03838256.r2: len=2.609570e-03  err_density=7.887007e-02  paths=290  leaf_error=1.554222e+00
-                                      SAMN02843630: len=3.426324e-01  err_density=1.179066e-02  paths=290  leaf_error=1.627897e+00
-                                    SAMN05506867: len=3.418098e-01  err_density=1.111933e-02  paths=290  leaf_error=1.509460e+00
-                                  0x1305d70: len=2.611974e-03  len_mean=3.602842e-01  len_weight=2.635432e+00  err_density=1.582135e-02  paths=16478
-                                    SAMN05001792: len=3.505698e-01  err_density=1.475511e-02  paths=290  leaf_error=2.008678e+00
-                                    0x1309c70: len=1.122742e-02  len_mean=3.505473e-01  len_weight=2.273635e+00  err_density=1.593206e-02  paths=16340
-                                      SAMN01902385: len=3.291566e-01  err_density=2.173833e-02  paths=290  leaf_error=2.900259e+00
-                                      0x141f4f0: len=3.780624e-02  len_mean=3.163621e-01  len_weight=1.906672e+00  err_density=1.601445e-02  paths=16200
-                                        0x1333cb0: len=1.556491e-01  len_mean=1.650222e-01  len_weight=3.931509e-01  err_density=1.799512e-02  paths=4140
-                                          SAMN02645767: len=1.737125e-01  err_density=2.273654e-02  paths=290  leaf_error=3.028452e+00
-                                          0xa24240: len=1.443384e-01  len_mean=1.380443e-02  len_weight=7.510006e-02  err_density=1.753133e-02  paths=3878
-                                            SAMEA1692321: len=1.375079e-02  err_density=3.736238e-02  paths=290  leaf_error=1.355478e+00
-                                            0xa2dd60: len=1.209593e-03  len_mean=1.260686e-02  len_weight=6.013968e-02  err_density=1.995527e-02  paths=3614
-                                              SAMN03218223: len=9.417983e-03  err_density=4.879698e-02  paths=290  leaf_error=1.293946e+00
-                                              0x141f180: len=2.329403e-03  len_mean=1.086956e-02  len_weight=4.839229e-02  err_density=2.422541e-02  paths=3348
-                                                0xa2ad60: len=1.469371e-03  len_mean=9.400189e-03  len_weight=4.692292e-02  err_density=3.311925e-02  paths=3080
-                                                  0x1322390: len=2.792229e-03  len_mean=6.921399e-03  len_weight=4.225400e-02  err_density=2.720414e-02  paths=2810
-                                                    SAMN03892264: len=3.180137e-03  err_density=6.004179e-02  paths=290  leaf_error=9.331963e-01
-                                                    0x137f7b0: len=3.449728e-04  len_mean=6.880920e-03  len_weight=3.872889e-02  err_density=2.248718e-02  paths=2538
-                                                      0xa2d760: len=3.288103e-03  len_mean=4.260435e-03  len_weight=1.171807e-02  err_density=2.579988e-02  paths=864
-                                                        0xa2ede0: len=3.629964e-04  len_mean=3.019728e-03  len_weight=6.038000e-03  err_density=2.721878e-02  paths=578
-                                                          SAMN02894037: len=3.065869e-03  err_density=2.673541e-02  paths=290  leaf_error=9.793876e-01
-                                                          SAMN03842395: len=2.972131e-03  err_density=2.760131e-02  paths=290  leaf_error=9.858379e-01
-                                                        SAMN02709124: len=5.317074e-03  err_density=2.264358e-02  paths=290  leaf_error=1.028802e+00
-                                                      0xa22c60: len=3.012712e-04  len_mean=6.157336e-03  len_weight=2.342145e-02  err_density=2.194698e-02  paths=1710
-                                                        0xa1fbf0: len=8.220450e-04  len_mean=5.733242e-03  len_weight=1.812914e-02  err_density=2.193385e-02  paths=1430
-                                                          0xa22fa0: len=3.062957e-04  len_mean=6.761332e-03  len_weight=1.145697e-02  err_density=2.140630e-02  paths=864
-                                                            SAMN02403416: len=1.362672e-03  err_density=2.420047e-02  paths=290  leaf_error=8.234969e-01
-                                                            0xa2afb0: len=4.460294e-03  len_mean=3.029826e-03  len_weight=5.634000e-03  err_density=1.977851e-02  paths=578
-                                                              SAMN03795478: len=3.591294e-03  err_density=1.978830e-02  paths=290  leaf_error=9.907792e-01
-                                                              SAMN03360857: len=2.042706e-03  err_density=1.970035e-02  paths=290  leaf_error=9.705387e-01
-                                                          0x141b3a0: len=7.087374e-05  len_mean=3.196606e-03  len_weight=6.295000e-03  err_density=2.267046e-02  paths=578
-                                                            SAMN02368381: len=2.754358e-03  err_density=1.917731e-02  paths=290  leaf_error=8.645552e-01
-                                                            SAMN04240610: len=3.540642e-03  err_density=2.562393e-02  paths=290  leaf_error=8.904152e-01
-                                                        SAMN04208172: len=4.470267e-03  err_density=2.435842e-02  paths=290  leaf_error=9.904841e-01
-                                                  SAMN03400415: len=1.876689e-03  err_density=7.377697e-02  paths=290  leaf_error=1.048327e+00
-                                                SAMN03154403: len=0.000000e+00  err_density=9.866975e-02  paths=290  leaf_error=1.172167e+00
-                                        0x13de170: len=1.029208e-01  len_mean=2.116997e-01  len_weight=1.254951e+00  err_density=1.589660e-02  paths=13860
-                                          0x13ffe10: len=1.954060e-01  len_mean=8.026685e-03  len_weight=1.424000e-02  err_density=1.990351e-02  paths=578
-                                            SAMN03269497: len=4.579214e-03  err_density=1.952694e-02  paths=290  leaf_error=1.997358e+00
-                                            SAMN02261158: len=9.660786e-03  err_density=2.020560e-02  paths=290  leaf_error=2.071005e+00
-                                          0x14052b0: len=8.954185e-02  len_mean=1.238158e-01  len_weight=9.557631e-01  err_density=1.566374e-02  paths=13514
-                                            0xa308c0: len=7.547409e-02  len_mean=3.874412e-02  len_weight=1.120558e-01  err_density=1.208728e-02  paths=1148
-                                              SAMN03466085: len=2.840564e-02  err_density=1.028702e-02  paths=290  leaf_error=8.330397e-01
-                                              0xa32820: len=2.154081e-04  len_mean=4.203942e-02  len_weight=8.343476e-02  err_density=1.275871e-02  paths=864
-                                                0x12c9050: len=4.139051e-02  len_mean=3.992211e-03  len_weight=3.992211e-03  err_density=1.254559e-02  paths=578
-                                                  SAMN03168702: len=3.992211e-03  err_density=1.376077e-02  paths=290  leaf_error=6.905408e-01
-                                                  SAMN04893593: len=0.000000e+00  err_density=1.656006e-02  paths=290  leaf_error=8.726000e-01
-                                                SAMN03466369: len=3.805204e-02  err_density=1.333079e-02  paths=290  leaf_error=1.055737e+00
-                                            0xa31660: len=7.319136e-02  len_mean=5.296731e-02  len_weight=6.950419e-01  err_density=1.614757e-02  paths=12798
-                                              0x12a0720: len=3.426915e-03  len_mean=5.351101e-02  len_weight=5.993405e-01  err_density=1.774482e-02  paths=9614
-                                                SAMN04915620.r2: len=3.995046e-02  err_density=2.685886e-02  paths=290  leaf_error=9.269728e-01
-                                                0x142b890: len=2.185090e-03  len_mean=5.229438e-02  len_weight=5.572050e-01  err_density=1.762496e-02  paths=9398
-                                                  0x133dc60: len=2.178550e-03  len_mean=3.626607e-02  len_weight=1.332034e-01  err_density=1.911702e-02  paths=4400
-                                                    SAMN02699918: len=2.366552e-02  err_density=2.624596e-02  paths=290  leaf_error=8.328681e-01
-                                                    0x12ca1e0: len=7.787616e-04  len_mean=3.820964e-02  len_weight=1.087591e-01  err_density=1.860454e-02  paths=4140
-                                                      SAMN03479844: len=3.427467e-02  err_density=2.076183e-02  paths=290  leaf_error=7.829695e-01
-                                                      0xa37230: len=2.994584e-02  len_mean=1.007451e-02  len_weight=4.453862e-02  err_density=1.839886e-02  paths=3878
-                                                        SAMN03480186: len=0.000000e+00  err_density=8.763827e-02  paths=290  leaf_error=1.333860e+00
-                                                        0xa300d0: len=3.815503e-03  len_mean=6.259006e-03  len_weight=4.072312e-02  err_density=2.721838e-02  paths=3614
-                                                          SAMN03475818: len=0.000000e+00  err_density=4.752794e-02  paths=290  leaf_error=4.229344e-01
-                                                          0xa341e0: len=9.744348e-04  len_mean=5.284571e-03  len_weight=3.974869e-02  err_density=3.055689e-02  paths=3348
-                                                            SAMN03468986: len=9.265162e-04  err_density=4.542600e-02  paths=290  leaf_error=3.405343e-01
-                                                            0x971d60: len=5.694694e-04  len_mean=4.819110e-03  len_weight=3.825270e-02  err_density=3.012472e-02  paths=3080
-                                                              0x14053c0: len=2.464876e-04  len_mean=5.154976e-03  len_weight=2.232882e-02  err_density=2.334239e-02  paths=1710
-                                                                0xa2eed0: len=3.791823e-04  len_mean=2.252858e-03  len_weight=4.505000e-03  err_density=2.563031e-02  paths=578
-                                                                  SAMEA3573046: len=2.280892e-03  err_density=2.644296e-02  paths=290  leaf_error=4.257777e-01
-                                                                  SAMN02849720: len=2.224108e-03  err_density=2.469950e-02  paths=290  leaf_error=3.804851e-01
-                                                                0x13ee310: len=1.133903e-03  len_mean=4.727450e-03  len_weight=1.631074e-02  err_density=2.238804e-02  paths=1148
-                                                                  SAMN02367605: len=3.578665e-03  err_density=2.271081e-02  paths=290  leaf_error=4.422800e-01
-                                                                  0x12b6190: len=5.164209e-04  len_mean=4.533923e-03  len_weight=1.221565e-02  err_density=2.226936e-02  paths=864
-                                                                    SAMN02595821: len=5.750349e-03  err_density=2.110367e-02  paths=290  leaf_error=4.858669e-01
-                                                                    0xa30730: len=1.283039e-04  len_mean=3.323711e-03  len_weight=6.337000e-03  err_density=2.278708e-02  paths=578
-                                                                      SAMN02699904.r2: len=2.467226e-03  err_density=2.272911e-02  paths=290  leaf_error=4.159928e-01
-                                                                      SAMN03357128: len=3.869774e-03  err_density=2.276639e-02  paths=290  leaf_error=4.742771e-01
-                                                              0x13c6700: len=4.958137e-04  len_mean=3.484711e-03  len_weight=1.518158e-02  err_density=3.712333e-02  paths=1430
-                                                                0xa33a60: len=5.825166e-05  len_mean=3.428627e-03  len_weight=1.164591e-02  err_density=3.696813e-02  paths=1148
-                                                                  SAMN02595845: len=4.279808e-03  err_density=3.093704e-02  paths=290  leaf_error=4.683080e-01
-                                                                  0x1415810: len=1.444926e-04  len_mean=2.789588e-03  len_weight=7.221612e-03  err_density=3.870850e-02  paths=864
-                                                                    SAMEA3572983: len=1.273033e-03  err_density=4.513709e-02  paths=290  leaf_error=4.100242e-01
-                                                                    0x142bb60: len=1.205793e-04  len_mean=2.993560e-03  len_weight=5.828000e-03  err_density=3.494950e-02  paths=578
-                                                                      SAMEA3572928: len=2.432503e-03  err_density=3.363175e-02  paths=290  leaf_error=4.264509e-01
-                                                                      SAMEA3572879: len=3.395497e-03  err_density=3.610286e-02  paths=290  leaf_error=4.509808e-01
-                                                                SAMN03359723: len=3.477412e-03  err_density=3.751289e-02  paths=290  leaf_error=4.758106e-01
-                                                  0xa28820: len=1.226266e-02  len_mean=4.447674e-02  len_weight=4.095603e-01  err_density=2.091568e-02  paths=5670
-                                                    0xa28e40: len=1.983389e-02  len_mean=1.502766e-02  len_weight=2.675300e-02  err_density=3.724082e-02  paths=578
-                                                      SAMN03992688: len=8.676851e-03  err_density=4.771406e-02  paths=290  leaf_error=1.830116e+00
-                                                      SAMN03169683: len=1.807615e-02  err_density=2.208078e-02  paths=290  leaf_error=8.064869e-01
-                                                    0xa20100: len=2.493046e-03  len_mean=4.321778e-02  len_weight=3.604804e-01  err_density=1.976560e-02  paths=5168
-                                                      0xa2e440: len=2.035793e-02  len_mean=3.017253e-02  len_weight=1.025862e-01  err_density=2.219960e-02  paths=1430
-                                                        SAMN04544370: len=2.368316e-02  err_density=1.726837e-02  paths=290  leaf_error=7.160897e-01
-                                                        0x12fdaf0: len=1.115702e-03  len_mean=3.100465e-02  len_weight=7.778729e-02  err_density=2.365724e-02  paths=1148
-                                                          0x13cb200: len=1.472336e-02  len_mean=1.720578e-02  len_weight=3.357332e-02  err_density=2.603404e-02  paths=864
-                                                            0x1344710: len=5.661771e-03  len_mean=8.472407e-03  len_weight=8.472407e-03  err_density=3.062942e-02  paths=578
-                                                              SAMEA1692323: len=8.472407e-03  err_density=5.542822e-02  paths=290  leaf_error=8.096088e-01
-                                                              SAMEA1692308: len=0.000000e+00  err_density=6.378102e-02  paths=290  leaf_error=1.698712e+00
-                                                            SAMN03476674: len=1.943915e-02  err_density=1.773162e-02  paths=290  leaf_error=7.867578e-01
-                                                          SAMEA1692230: len=2.949061e-02  err_density=1.437351e-02  paths=290  leaf_error=6.865467e-01
-                                                      0x13a3ae0: len=4.930766e-04  len_mean=3.893981e-02  len_weight=2.370432e-01  err_density=1.981055e-02  paths=3878
-                                                        0xa2e1e0: len=1.749962e-02  len_mean=3.731457e-02  len_weight=7.462100e-02  err_density=1.988849e-02  paths=578
-                                                          SAMN04942969: len=3.770040e-02  err_density=2.356033e-02  paths=290  leaf_error=1.145523e+00
-                                                          SAMN03476228: len=3.692060e-02  err_density=1.527375e-02  paths=290  leaf_error=7.911047e-01
-                                                        0xa1fb00: len=1.932943e-03  len_mean=2.691624e-02  len_weight=1.429897e-01  err_density=1.986660e-02  paths=3348
-                                                          0xa26ff0: len=1.058991e-02  len_mean=2.045476e-02  len_weight=4.727884e-02  err_density=1.516636e-02  paths=864
-                                                            SAMN03477934: len=1.678534e-02  err_density=1.517602e-02  paths=290  leaf_error=6.259614e-01
-                                                            0xa29fe0: len=1.407250e-02  len_mean=8.402118e-03  len_weight=1.642100e-02  err_density=1.513719e-02  paths=578
-                                                              SAMEA1929873: len=9.464804e-03  err_density=1.444437e-02  paths=290  leaf_error=6.102540e-01
-                                                              SAMN04575080: len=6.956196e-03  err_density=1.574956e-02  paths=290  leaf_error=6.378495e-01
-                                                          0xa305e0: len=2.701649e-03  len_mean=2.140792e-02  len_weight=8.241928e-02  err_density=2.136046e-02  paths=2538
-                                                            0x13e0cb0: len=2.798679e-02  len_mean=3.443177e-04  len_weight=4.700000e-04  err_density=1.838490e-02  paths=578
-                                                              SAMN05004731: len=7.472005e-05  err_density=1.832201e-02  paths=290  leaf_error=3.921956e-01
-                                                              SAMN04511637: len=3.952799e-04  err_density=1.838429e-02  paths=290  leaf_error=3.986801e-01
-                                                            0x13de260: len=5.613541e-03  len_mean=1.214349e-02  len_weight=4.834895e-02  err_density=2.212456e-02  paths=1988
-                                                              SAMN05726875: len=9.178789e-03  err_density=2.386018e-02  paths=290  leaf_error=7.893848e-01
-                                                              0x13455b0: len=1.392370e-03  len_mean=1.144584e-02  len_weight=3.777779e-02  err_density=2.194639e-02  paths=1710
-                                                                0x13c6f40: len=1.278155e-03  len_mean=1.115522e-02  len_weight=2.183700e-02  err_density=2.122328e-02  paths=578
-                                                                  SAMN03269408: len=9.310827e-03  err_density=2.132767e-02  paths=290  leaf_error=6.193695e-01
-                                                                  SAMN02849803: len=1.252617e-02  err_density=2.104471e-02  paths=290  leaf_error=6.997159e-01
-                                                                0x13c5aa0: len=5.023367e-03  len_mean=4.865651e-03  len_weight=9.639268e-03  err_density=2.268949e-02  paths=1148
-                                                                  0x131e2b0: len=3.643611e-03  len_mean=6.833464e-04  len_weight=6.900061e-04  err_density=2.312251e-02  paths=864
-                                                                    SAMN02182870: len=3.346055e-06  err_density=2.416581e-02  paths=290  leaf_error=4.121063e-01
-                                                                    0xa21050: len=6.866600e-04  err_density=2.255228e-02  paths=578
-                                                                      SAMN02182869: len=0.000000e+00  err_density=1.493962e-01  paths=289  leaf_error=5.056225e-01  non-discernable
-                                                                      SAMN03002080: len=0.000000e+00  err_density=1.445777e-01  paths=289  leaf_error=5.068711e-01  non-discernable
-                                                                  SAMN01902307: len=5.305651e-03  err_density=2.131857e-02  paths=290  leaf_error=6.064092e-01
-                                              0xa1e910: len=7.078632e-03  len_mean=1.995132e-02  len_weight=8.519581e-02  err_density=2.860296e-02  paths=4400
-                                                0xa24620: len=4.114917e-03  len_mean=1.619471e-02  len_weight=3.270427e-02  err_density=5.054336e-02  paths=1710
-                                                  SAMN03988423: len=0.000000e+00  err_density=1.169227e-01  paths=290  leaf_error=2.611553e+00
-                                                  0xa2b470: len=1.032929e-02  len_mean=5.865428e-03  len_weight=2.237498e-02  err_density=3.745350e-02  paths=1430
-                                                    SAMN05416394: len=2.594358e-03  err_density=3.362863e-02  paths=290  leaf_error=5.611553e-01
-                                                    0xa2e340: len=5.584165e-04  len_mean=5.736034e-03  len_weight=1.922221e-02  err_density=4.037472e-02  paths=1148
-                                                      0x1384e30: len=1.327326e-03  len_mean=4.577461e-03  len_weight=1.260309e-02  err_density=3.654798e-02  paths=864
-                                                        SAMN05771768: len=2.738311e-03  err_density=3.708709e-02  paths=290  leaf_error=7.379809e-01
-                                                        0x13cc830: len=2.767749e-04  len_mean=4.811206e-03  len_weight=9.588000e-03  err_density=3.627424e-02  paths=578
-                                                          SAMN04577446: len=4.506793e-03  err_density=3.181536e-02  paths=290  leaf_error=7.629374e-01
-                                                          SAMN02378198: len=5.081207e-03  err_density=4.012915e-02  paths=290  leaf_error=9.561747e-01
-                                                      SAMN04255327: len=5.291798e-03  err_density=4.985439e-02  paths=290  leaf_error=9.521597e-01
-                                                0xa311e0: len=5.255847e-03  len_mean=1.442277e-02  len_weight=4.312078e-02  err_density=4.115464e-02  paths=2810
-                                                  SAMN04577362: len=1.379869e-02  err_density=3.791904e-02  paths=290  leaf_error=9.364795e-01
-                                                  0xa32970: len=4.382026e-03  len_mean=1.033443e-02  len_weight=2.494006e-02  err_density=4.198058e-02  paths=2538
-                                                    0xa2cce0: len=4.648666e-03  len_mean=5.685768e-03  len_weight=2.029140e-02  err_density=6.275077e-02  paths=2264
-                                                      0x14387d0: len=1.757431e-03  len_mean=3.928337e-03  len_weight=1.853397e-02  err_density=6.602090e-02  paths=1988
-                                                        SAMN03475597: len=1.657199e-03  err_density=5.296827e-02  paths=290  leaf_error=5.007664e-01
-                                                        0xa30e20: len=4.721258e-04  len_mean=3.679224e-03  len_weight=1.640464e-02  err_density=6.952301e-02  paths=1710
-                                                          SAMN03465648: len=2.467405e-03  err_density=5.969550e-02  paths=290  leaf_error=5.335994e-01
-                                                          0xa32ce0: len=2.670594e-04  len_mean=3.626701e-03  len_weight=1.367018e-02  err_density=7.138952e-02  paths=1430
-                                                            SAMN03476809: len=2.094967e-03  err_density=6.809377e-02  paths=290  leaf_error=6.412229e-01
-                                                            0xa31ae0: len=4.150784e-04  len_mean=3.488847e-03  len_weight=1.116013e-02  err_density=7.205708e-02  paths=1148
-                                                              SAMN03758659: len=2.107640e-03  err_density=9.820198e-02  paths=290  leaf_error=8.701021e-01
-                                                              0x13e8e50: len=5.893244e-04  len_mean=3.221101e-03  len_weight=8.463168e-03  err_density=6.069853e-02  paths=864
-                                                                0xa317e0: len=7.447011e-04  len_mean=2.832038e-03  len_weight=5.496000e-03  err_density=6.100711e-02  paths=578
-                                                                  SAMN04576535: len=3.228558e-03  err_density=6.225224e-02  paths=290  leaf_error=7.617566e-01
-                                                                  SAMN03468887: len=2.267442e-03  err_density=5.952080e-02  paths=290  leaf_error=7.446008e-01
-                                                                SAMN03359687: len=2.222467e-03  err_density=6.046289e-02  paths=290  leaf_error=7.831751e-01
-                                                      SAMN03478279: len=0.000000e+00  err_density=5.647904e-02  paths=290  leaf_error=7.522023e-01
-                                                    SAMN04388342.r1: len=0.000000e+00  err_density=1.642808e-01  paths=290  leaf_error=2.184865e+00
-                          0x13aec90: len=3.715630e-03  len_mean=3.568176e-01  len_weight=1.877275e+00  err_density=1.380179e-02  paths=2538
-                            0xa1d470: len=1.334393e-03  len_mean=3.530567e-01  len_weight=1.509131e+00  err_density=1.402674e-02  paths=2264
-                              SAMN02844310: len=3.657491e-01  err_density=1.104067e-02  paths=290  leaf_error=1.553031e+00
-                              0xa2cfe0: len=6.639807e-03  len_mean=3.423568e-01  len_weight=1.136742e+00  err_density=1.436596e-02  paths=1988
-                                0xa2d460: len=8.317057e-03  len_mean=3.300485e-01  len_weight=7.771433e-01  err_density=1.441252e-02  paths=1710
-                                  0x13a9610: len=2.087028e-01  len_mean=1.200494e-01  len_weight=2.313330e-01  err_density=1.378535e-02  paths=578
-                                    SAMN02345157: len=9.315083e-02  err_density=1.463022e-02  paths=290  leaf_error=1.933116e+00
-                                    SAMN03098814: len=1.381822e-01  err_density=1.283425e-02  paths=290  leaf_error=1.783119e+00
-                                  0xa1e1f0: len=3.239165e-01  len_mean=7.824002e-03  len_weight=1.319097e-02  err_density=1.463390e-02  paths=1148
-                                    0x12e1590: len=4.111784e-03  len_mean=3.712218e-03  len_weight=9.079188e-03  err_density=2.069406e-02  paths=864
-                                      SAMN02345542: len=2.109512e-03  err_density=1.908899e-02  paths=290  leaf_error=1.156144e+00
-                                      0xa1ed30: len=1.364676e-03  len_mean=2.832634e-03  len_weight=5.605000e-03  err_density=2.343129e-02  paths=578
-                                        SAMN03357945: len=2.511899e-03  err_density=2.677287e-02  paths=290  leaf_error=1.163945e+00
-                                        SAMN05851807: len=3.093101e-03  err_density=1.942879e-02  paths=290  leaf_error=1.196123e+00
-                                    SAMN02844829: len=0.000000e+00  err_density=2.895147e-02  paths=290  leaf_error=1.169115e+00
-                                SAMN03469785: len=3.512813e-01  err_density=1.393272e-02  paths=290  leaf_error=1.938887e+00
-                            SAMN02843511: len=3.668098e-01  err_density=1.151438e-02  paths=290  leaf_error=1.623329e+00
-                        SAMN02845227: len=3.742081e-01  err_density=1.560672e-02  paths=290  leaf_error=2.209638e+00
-            SAMN03102396: len=4.255295e-01  err_density=1.130604e-02  paths=290  leaf_error=1.743542e+00
-        0xa1dbf0: len=3.312393e-01  len_mean=9.933180e-02  len_weight=1.986290e-01  err_density=1.048554e-02  paths=864
-          0x13b2d70: len=9.133931e-02  len_mean=1.184443e-03  len_weight=1.931000e-03  err_density=1.033535e-02  paths=578
-            SAMN03112876: len=1.425271e-03  err_density=1.030280e-02  paths=290  leaf_error=8.694308e-01
-            SAMN03069674: len=5.057291e-04  err_density=1.033220e-02  paths=290  leaf_error=8.716780e-01
-          SAMN03702048: len=1.053587e-01  err_density=1.071342e-02  paths=290  leaf_error=1.664157e+00
-  0xa21350: len=4.264669e-01  err_density=1.250297e-02  paths=864
-    SAMN03018178: len=0.000000e+00  err_density=4.533224e-02  paths=288  leaf_error=1.991404e+00  non-discernable
-    SAMN03018180: len=0.000000e+00  err_density=4.534202e-02  paths=288  leaf_error=1.991058e+00  non-discernable
-    SAMN03018204: len=0.000000e+00  err_density=4.438991e-02  paths=288  leaf_error=1.972806e+00  non-discernable
-  0x138e590: len=7.991103e-03  len_mean=4.840613e-01  len_weight=1.487676e+01  err_density=1.223711e-02  paths=17630
-    0x133e790: len=5.567464e-03  len_mean=4.816003e-01  len_weight=1.451307e+01  err_density=1.228309e-02  paths=17510
-      0x133e530: len=1.686939e-02  len_mean=4.489318e-01  len_weight=1.328872e+01  err_density=1.238113e-02  paths=17264
-        0x12d6890: len=2.305349e-02  len_mean=4.731826e-01  len_weight=6.754012e+00  err_density=1.211617e-02  paths=8960
-          0x141d650: len=9.876872e-02  len_mean=3.179756e-01  len_weight=6.359300e-01  err_density=1.586906e-02  paths=578
-            SAMN02844820: len=3.161281e-01  err_density=1.574831e-02  paths=290  leaf_error=2.543728e+00
-            SAMN04594792: len=3.198019e-01  err_density=1.593449e-02  paths=290  leaf_error=2.583207e+00
-          0x9726d0: len=4.975953e-02  len_mean=4.303117e-01  len_weight=5.969554e+00  err_density=1.183072e-02  paths=8514
-            0xa28220: len=8.904127e-02  len_mean=3.420777e-01  len_weight=5.460876e+00  err_density=1.179526e-02  paths=8288
-              0x1317690: len=5.541146e-03  len_mean=3.428200e-01  len_weight=6.856120e-01  err_density=1.165055e-02  paths=578
-                SAMN02844506: len=3.406140e-01  err_density=1.199879e-02  paths=290  leaf_error=2.031815e+00
-                SAMN05464605: len=3.449980e-01  err_density=1.125004e-02  paths=290  leaf_error=1.923882e+00
-              0x973150: len=4.661842e-03  len_mean=3.365053e-01  len_weight=4.765061e+00  err_density=1.185239e-02  paths=7830
-                0xa29100: len=1.943967e-01  len_mean=1.699958e-01  len_weight=4.112537e-01  err_density=1.259454e-02  paths=864
-                  0xa289a0: len=1.002064e-01  len_mean=7.295209e-02  len_weight=1.457580e-01  err_density=1.203434e-02  paths=578
-                    SAMN03160363: len=7.518695e-02  err_density=1.184739e-02  paths=290  leaf_error=2.059297e+00
-                    SAMN02698319: len=7.057105e-02  err_density=1.217749e-02  paths=290  leaf_error=2.075000e+00
-                  SAMN02845510.r1: len=1.652893e-01  err_density=1.363312e-02  paths=290  leaf_error=2.329455e+00
-                0x9732d0: len=1.387849e-02  len_mean=3.185662e-01  len_weight=4.145532e+00  err_density=1.189421e-02  paths=7128
-                  0x12bcdb0: len=1.307104e-03  len_mean=3.181242e-01  len_weight=2.511468e+00  err_density=1.246403e-02  paths=4400
-                    0x9720d0: len=7.366925e-03  len_mean=3.083213e-01  len_weight=1.330170e+00  err_density=1.274179e-02  paths=3080
-                      SAMN03024512: len=2.700545e-01  err_density=1.590961e-02  paths=290  leaf_error=2.431685e+00
-                      0x13c6c00: len=1.306548e-02  len_mean=3.050040e-01  len_weight=1.047050e+00  err_density=1.264916e-02  paths=2810
-                        0xa28b20: len=2.888347e-01  len_mean=1.661608e-02  len_weight=4.467419e-02  err_density=1.334955e-02  paths=864
-                          0xa1e4f0: len=3.041178e-03  len_mean=1.532106e-02  len_weight=2.994500e-02  err_density=1.359139e-02  paths=578
-                            SAMN02698254: len=1.725698e-02  err_density=1.383484e-02  paths=290  leaf_error=1.988199e+00
-                            SAMN02314169: len=1.268802e-02  err_density=1.329567e-02  paths=290  leaf_error=1.876484e+00
-                          SAMN02802264: len=1.168802e-02  err_density=1.278571e-02  paths=290  leaf_error=1.802082e+00
-                        0xa29530: len=1.392600e-01  len_mean=1.655351e-01  len_weight=5.742808e-01  err_density=1.229171e-02  paths=1988
-                          0x133be50: len=1.554129e-01  len_mean=3.424779e-03  len_weight=6.346000e-03  err_density=2.044720e-02  paths=578
-                            SAMN04308849: len=2.279190e-03  err_density=2.044262e-02  paths=290  leaf_error=1.880858e+00
-                            SAMN02699690: len=4.066810e-03  err_density=2.038117e-02  paths=290  leaf_error=1.875235e+00
-                          0x13631f0: len=2.487644e-02  len_mean=1.432849e-01  len_weight=3.876454e-01  err_density=1.640746e-02  paths=1430
-                            0xa37500: len=1.416012e-01  len_mean=5.970945e-03  len_weight=1.274155e-02  err_density=1.515930e-02  paths=864
-                              0xa21c20: len=4.429810e-03  len_mean=9.463169e-04  len_weight=1.776000e-03  err_density=1.524887e-02  paths=578
-                                SAMN05416571: len=6.604358e-04  err_density=1.516137e-02  paths=290  leaf_error=1.081109e+00
-                                SAMN05771798: len=1.115564e-03  err_density=1.528350e-02  paths=290  leaf_error=1.092523e+00
-                              SAMN03269489: len=6.535737e-03  err_density=1.487877e-02  paths=290  leaf_error=1.647105e+00
-                            0xa1d5f0: len=4.455674e-02  len_mean=9.589194e-02  len_weight=1.887460e-01  err_density=1.908850e-02  paths=578
-                              SAMN03474009: len=8.240026e-02  err_density=2.337056e-02  paths=290  leaf_error=2.702932e+00
-                              SAMN03169268: len=1.063457e-01  err_density=1.341811e-02  paths=290  leaf_error=2.109155e+00
-                    0x1383890: len=8.681496e-03  len_mean=3.122182e-01  len_weight=1.165250e+00  err_density=1.333564e-02  paths=1430
-                      0x1371f70: len=1.236345e-01  len_mean=1.814145e-01  len_weight=4.229473e-01  err_density=1.400507e-02  paths=864
-                        0x14216c0: len=1.187027e-01  len_mean=5.928998e-02  len_weight=1.184620e-01  err_density=1.365396e-02  paths=578
-                          SAMN02844693: len=6.110003e-02  err_density=1.478247e-02  paths=290  leaf_error=2.286031e+00
-                          SAMN04992708: len=5.736197e-02  err_density=1.237151e-02  paths=290  leaf_error=1.945902e+00
-                        SAMN03787606: len=1.857826e-01  err_density=1.473278e-02  paths=290  leaf_error=2.348134e+00
-                      0x12c9f40: len=1.747983e-02  len_mean=3.010723e-01  len_weight=6.011880e-01  err_density=1.276404e-02  paths=578
-                        SAMN05225548: len=2.886033e-01  err_density=1.110660e-02  paths=290  leaf_error=1.835003e+00
-                        SAMN02847573: len=3.125847e-01  err_density=1.419019e-02  paths=290  leaf_error=2.368343e+00
-                  0x12e2b30: len=4.190651e-03  len_mean=3.130440e-01  len_weight=1.628567e+00  err_density=1.254218e-02  paths=3080
-                    0x13709d0: len=1.110498e-01  len_mean=2.054467e-01  len_weight=7.766395e-01  err_density=1.272121e-02  paths=2264
-                      0x12dea50: len=3.153801e-02  len_mean=1.658902e-01  len_weight=3.306243e-01  err_density=1.606888e-02  paths=864
-                        SAMN03476177: len=1.547970e-01  err_density=1.841384e-02  paths=290  leaf_error=2.517084e+00
-                        0x136de90: len=1.735233e-01  len_mean=2.133382e-03  len_weight=2.304000e-03  err_density=1.469369e-02  paths=578
-                          SAMN02844935: len=8.872575e-05  err_density=1.478311e-02  paths=290  leaf_error=1.301589e+00
-                          SAMN03120969: len=2.215274e-03  err_density=1.455264e-02  paths=290  leaf_error=1.294263e+00
-                      0xa34580: len=2.643508e-02  len_mean=1.860180e-01  len_weight=3.880422e-01  err_density=1.397527e-02  paths=1430
-                        0x141d0e0: len=1.799908e-01  len_mean=9.654858e-03  len_weight=2.071844e-02  err_density=1.377081e-02  paths=864
-                          0x13b97b0: len=4.029940e-03  len_mean=3.835024e-03  len_weight=5.507000e-03  err_density=1.418353e-02  paths=578
-                            SAMN03252940: len=4.479182e-03  err_density=1.399213e-02  paths=290  leaf_error=1.451320e+00
-                            SAMN03265729: len=1.027818e-03  err_density=1.432403e-02  paths=290  leaf_error=1.454256e+00
-                          SAMN03573258: len=1.118150e-02  err_density=1.432313e-02  paths=290  leaf_error=1.717187e+00
-                        0xa25c30: len=1.768619e-01  len_mean=5.269413e-03  len_weight=1.047100e-02  err_density=1.416927e-02  paths=578
-                          SAMN03269475: len=4.814130e-03  err_density=1.422095e-02  paths=290  leaf_error=1.775598e+00
-                          SAMN02902776: len=5.656870e-03  err_density=1.406828e-02  paths=290  leaf_error=1.769482e+00
-                    0xa1be90: len=1.914299e-02  len_mean=2.897645e-01  len_weight=7.217347e-01  err_density=1.231589e-02  paths=864
-                      0xa1ec20: len=1.438083e-01  len_mean=1.480595e-01  len_weight=2.913560e-01  err_density=1.221750e-02  paths=578
-                        SAMN03466157: len=1.270517e-01  err_density=1.185453e-02  paths=290  leaf_error=1.882998e+00
-                        SAMN02908580: len=1.643043e-01  err_density=1.252898e-02  paths=290  leaf_error=2.075109e+00
-                      SAMN02844558: len=2.865704e-01  err_density=1.248761e-02  paths=290  leaf_error=2.015338e+00
-            SAMN04451118: len=4.196361e-01  err_density=1.203951e-02  paths=290  leaf_error=2.088540e+00
-        0x13a3d60: len=9.153517e-03  len_mean=3.905460e-01  len_weight=6.502499e+00  err_density=1.354629e-02  paths=11664
-          0xa29420: len=3.589058e-01  len_mean=1.331878e-02  len_weight=4.376520e-02  err_density=1.450159e-02  paths=1148
-            0xa31960: len=4.047102e-03  len_mean=9.688511e-03  len_weight=1.915700e-02  err_density=1.477567e-02  paths=578
-              SAMN02368054: len=1.060502e-02  err_density=1.480925e-02  paths=290  leaf_error=1.771657e+00
-              SAMN05800187: len=8.551979e-03  err_density=1.469086e-02  paths=290  leaf_error=1.755052e+00
-            0x133e620: len=4.239103e-03  len_mean=8.609268e-03  len_weight=1.632200e-02  err_density=1.461123e-02  paths=578
-              SAMN04577413: len=6.248328e-03  err_density=1.425445e-02  paths=290  leaf_error=1.653954e+00
-              SAMN04964206: len=1.007367e-02  err_density=1.491022e-02  paths=290  leaf_error=1.782524e+00
-          0x12ba270: len=1.252061e-03  len_mean=3.905034e-01  len_weight=6.098576e+00  err_density=1.350536e-02  paths=10868
-            0xa2b360: len=1.751993e-02  len_mean=3.766074e-01  len_weight=1.218918e+00  err_density=1.435858e-02  paths=2264
-              0xa1fe70: len=1.567368e-01  len_mean=2.152733e-01  len_weight=4.305080e-01  err_density=1.291750e-02  paths=578
-                SAMN03478866: len=2.132165e-01  err_density=1.189201e-02  paths=290  leaf_error=1.817473e+00
-                SAMN05414068: len=2.172915e-01  err_density=1.382582e-02  paths=290  leaf_error=2.114199e+00
-              0x13aabb0: len=1.577111e-01  len_mean=2.231702e-01  len_weight=4.739619e-01  err_density=1.482854e-02  paths=1710
-                0x1397cf0: len=1.888689e-01  len_mean=3.347594e-02  len_weight=6.100243e-02  err_density=1.480710e-02  paths=1430
-                  0xa1def0: len=5.555212e-03  len_mean=2.792073e-02  len_weight=5.544721e-02  err_density=5.743920e-02  paths=1148
-                    0x141e030: len=1.050547e-02  len_mean=1.741526e-02  len_weight=4.494174e-02  err_density=4.115781e-02  paths=864
-                      SAMN02844681: len=2.184987e-02  err_density=1.604483e-02  paths=290  leaf_error=1.775385e+00
-                      0x972fd0: len=3.343870e-03  len_mean=9.875294e-03  len_weight=1.974800e-02  err_density=4.940702e-02  paths=578
-                        SAMN02844477: len=9.987022e-03  err_density=5.706718e-02  paths=290  leaf_error=2.081927e+00
-                        SAMN02843948: len=9.760978e-03  err_density=4.010747e-02  paths=290  leaf_error=1.840121e+00
-                    SAMN04363882: len=0.000000e+00  err_density=9.259603e-02  paths=290  leaf_error=1.874853e+00
-                  SAMN03475395: len=0.000000e+00  err_density=1.115619e-01  paths=290  leaf_error=2.241417e+00
-                SAMN03344538: len=2.240905e-01  err_density=1.472121e-02  paths=290  leaf_error=2.287358e+00
-            0x138cff0: len=6.030301e-03  len_mean=3.835515e-01  len_weight=4.856108e+00  err_density=1.339896e-02  paths=9180
-              0xa27480: len=1.977092e-02  len_mean=3.766626e-01  len_weight=1.860285e+00  err_density=1.234624e-02  paths=2264
-                SAMN02777077: len=3.917702e-01  err_density=1.371575e-02  paths=290  leaf_error=2.211523e+00
-                0x139b520: len=4.519066e-03  len_mean=3.681132e-01  len_weight=1.463995e+00  err_density=1.210840e-02  paths=1988
-                  0x1388f10: len=3.678109e-01  len_mean=3.792159e-03  len_weight=6.223000e-03  err_density=1.204914e-02  paths=578
-                    SAMN03576989: len=4.566790e-03  err_density=1.194109e-02  paths=290  leaf_error=1.418244e+00
-                    SAMN03577101: len=1.656210e-03  err_density=1.211498e-02  paths=290  leaf_error=1.435187e+00
-                  0x138fb30: len=3.115486e-03  len_mean=3.638001e-01  len_weight=1.086846e+00  err_density=1.204982e-02  paths=1430
-                    0x141e7a0: len=9.335705e-03  len_mean=3.573876e-01  len_weight=7.147750e-01  err_density=1.246060e-02  paths=578
-                      SAMN03477732: len=3.571846e-01  err_density=1.256908e-02  paths=290  leaf_error=1.975739e+00
-                      SAMN02698439: len=3.575904e-01  err_density=1.230774e-02  paths=290  leaf_error=1.923025e+00
-                    0xa2bf20: len=3.514266e-01  len_mean=6.537921e-03  len_weight=1.130861e-02  err_density=1.169334e-02  paths=864
-                      0x1397c00: len=1.621609e-03  len_mean=4.916311e-03  len_weight=9.687000e-03  err_density=1.519906e-02  paths=578
-                        SAMN03098813: len=5.437353e-03  err_density=1.198492e-02  paths=290  leaf_error=1.249227e+00
-                        SAMN04544931: len=4.249647e-03  err_density=1.779864e-02  paths=290  leaf_error=1.171350e+00
-                      SAMN03466492: len=0.000000e+00  err_density=1.797003e-02  paths=290  leaf_error=1.125112e+00
-              0x12b0b10: len=9.130505e-03  len_mean=3.662830e-01  len_weight=2.966922e+00  err_density=1.366563e-02  paths=7364
-                0x972850: len=2.415067e-03  len_mean=3.687779e-01  len_weight=1.891747e+00  err_density=1.174161e-02  paths=5420
-                  0x12eac70: len=9.525557e-03  len_mean=3.598908e-01  len_weight=1.142903e+00  err_density=1.162337e-02  paths=4400
-                    SAMN03002065: len=3.612081e-01  err_density=1.211659e-02  paths=290  leaf_error=1.856781e+00
-                    0x971f00: len=6.555844e-03  len_mean=3.527263e-01  len_weight=7.751393e-01  err_density=1.155079e-02  paths=4140
-                      0x138ba50: len=3.480798e-01  len_mean=1.229256e-02  len_weight=8.396139e-02  err_density=1.132623e-02  paths=3878
-                        0xa1ccf0: len=7.071839e-03  len_mean=2.345188e-03  len_weight=2.345188e-03  err_density=2.239695e-02  paths=578
-                          SAMN03282145: len=0.000000e+00  err_density=2.738657e-02  paths=290  leaf_error=7.639952e-01
-                          SAMN03289448: len=2.345188e-03  err_density=2.669663e-02  paths=290  leaf_error=7.678616e-01
-                        0xa36df0: len=2.416064e-03  len_mean=1.023976e-02  len_weight=7.212830e-02  err_density=1.362825e-02  paths=3348
-                          SAMN04217283: len=1.059045e-02  err_density=1.596787e-02  paths=290  leaf_error=8.603534e-01
-                          0xa1c570: len=4.289352e-04  len_mean=9.750469e-03  len_weight=6.110892e-02  err_density=1.394530e-02  paths=3080
-                            0xa1c0f0: len=1.219892e-03  len_mean=8.896053e-03  len_weight=5.302849e-02  err_density=1.487864e-02  paths=2810
-                              0x973a10: len=3.802396e-04  len_mean=6.996048e-03  len_weight=2.742151e-02  err_density=1.825375e-02  paths=1710
-                                0xa2c710: len=4.498336e-04  len_mean=6.113201e-03  len_weight=1.893177e-02  err_density=1.835472e-02  paths=1430
-                                  SAMN02640842: len=6.196600e-03  err_density=1.749285e-02  paths=290  leaf_error=7.594813e-01
-                                  0x141cf10: len=2.687460e-03  len_mean=3.385160e-03  len_weight=1.004771e-02  err_density=1.854625e-02  paths=1148
-                                    SAMN02894104: len=3.868986e-03  err_density=1.795205e-02  paths=290  leaf_error=7.140246e-01
-                                    0x12d52f0: len=1.110424e-03  len_mean=1.971775e-03  len_weight=5.068300e-03  err_density=1.873025e-02  paths=864
-                                      0x12c7ab0: len=5.089927e-04  len_mean=1.377269e-03  len_weight=2.466000e-03  err_density=1.858094e-02  paths=578
-                                        SAMN02645798: len=1.654762e-03  err_density=1.864571e-02  paths=290  leaf_error=6.185012e-01
-                                        SAMN02894101: len=8.112379e-04  err_density=1.845154e-02  paths=290  leaf_error=6.036734e-01
-                                      SAMN02767018: len=2.093307e-03  err_density=1.895691e-02  paths=290  leaf_error=6.506609e-01
-                                SAMN02646876: len=8.039905e-03  err_density=1.753012e-02  paths=290  leaf_error=8.010116e-01
-                              0xa1f380: len=4.069224e-03  len_mean=6.501723e-03  len_weight=2.115752e-02  err_density=2.221331e-02  paths=1148
-                                SAMN05201703: len=5.592359e-03  err_density=4.018525e-02  paths=290  leaf_error=1.037822e+00
-                                0xa24b90: len=9.653373e-04  len_mean=5.863108e-03  len_weight=1.459983e-02  err_density=1.804557e-02  paths=864
-                                  SAMN02640780: len=2.840799e-03  err_density=2.075323e-02  paths=290  leaf_error=7.388679e-01
-                                  0x130df30: len=7.510277e-04  len_mean=5.842224e-03  len_weight=1.100800e-02  err_density=1.657453e-02  paths=578
-                                    SAMN02261133: len=4.139601e-03  err_density=1.810582e-02  paths=290  leaf_error=7.629030e-01
-                                    SAMN05274319: len=6.868399e-03  err_density=1.482278e-02  paths=290  leaf_error=7.739477e-01
-                            SAMN02766982: len=6.860528e-03  err_density=1.975160e-02  paths=290  leaf_error=7.886564e-01
-                      SAMN02645760: len=3.430981e-01  err_density=1.382223e-02  paths=290  leaf_error=2.084823e+00
-                  0xa2a160: len=4.211965e-03  len_mean=3.635707e-01  len_weight=7.351063e-01  err_density=1.164743e-02  paths=1148
-                    0xa24da0: len=3.538147e-01  len_mean=5.945514e-03  len_weight=1.390689e-02  err_density=1.206016e-02  paths=864
-                      SAMN02699772: len=2.052510e-03  err_density=1.302734e-02  paths=290  leaf_error=1.269360e+00
-                      0x138a4b0: len=8.243847e-04  len_mean=5.795178e-03  len_weight=1.103000e-02  err_density=1.249280e-02  paths=578
-                        SAMN03169710: len=6.758054e-03  err_density=1.248067e-02  paths=290  leaf_error=1.348087e+00
-                        SAMN04942620: len=4.271946e-03  err_density=1.246181e-02  paths=290  leaf_error=1.274001e+00
-                    SAMN04600250: len=3.673847e-01  err_density=1.018437e-02  paths=290  leaf_error=1.569245e+00
-                0x973bb0: len=6.091322e-03  len_mean=3.515222e-01  len_weight=1.066668e+00  err_density=1.801920e-02  paths=2264
-                  0x973d50: len=3.454547e-01  len_mean=4.612786e-03  len_weight=9.205000e-03  err_density=1.173305e-02  paths=578
-                    SAMN02844434: len=4.384915e-03  err_density=1.174847e-02  paths=290  leaf_error=1.457994e+00
-                    SAMN05771731: len=4.820085e-03  err_density=1.167701e-02  paths=290  leaf_error=1.448939e+00
-                  0x137cc40: len=1.830290e-02  len_mean=3.339440e-01  len_weight=6.937058e-01  err_density=1.966213e-02  paths=1710
-                    0xa29ea0: len=2.908003e-01  len_mean=4.568179e-02  len_weight=7.174011e-02  err_density=2.074082e-02  paths=1430
-                      0x13c0ee0: len=2.350519e-02  len_mean=2.217661e-02  len_weight=4.823492e-02  err_density=6.804681e-02  paths=1148
-                        0x14222c0: len=1.274179e-02  len_mean=4.909678e-03  len_weight=9.458000e-03  err_density=9.467469e-02  paths=578
-                          SAMN04255291: len=3.804648e-03  err_density=9.380687e-02  paths=290  leaf_error=2.876106e+00
-                          SAMN01902483: len=5.653352e-03  err_density=9.521055e-02  paths=290  leaf_error=2.997675e+00
-                        0x9735d0: len=1.902160e-02  len_mean=7.013529e-03  len_weight=7.013529e-03  err_density=2.448986e-02  paths=578
-                          SAMN03468630: len=7.013529e-03  err_density=2.887864e-02  paths=290  leaf_error=1.580169e+00
-                          SAMN03780291: len=0.000000e+00  err_density=1.932240e-02  paths=290  leaf_error=1.363307e+00
-                      SAMN03477482: len=0.000000e+00  err_density=1.354088e-01  paths=290  leaf_error=4.349000e+00
-                    SAMN05833261: len=3.311654e-01  err_density=1.285762e-02  paths=290  leaf_error=1.887480e+00
-      0xa280a0: len=8.671587e-02  len_mean=5.689789e-01  len_weight=1.120764e+00  err_density=1.261249e-02  paths=578
-        SAMN03468721: len=6.297907e-01  err_density=1.042011e-02  paths=290  leaf_error=2.421080e+00
-        SAMN03702076: len=4.909733e-01  err_density=1.443863e-02  paths=290  leaf_error=2.856619e+00
-    SAMN03469212: len=3.581213e-01  err_density=1.356742e-02  paths=290  leaf_error=1.978263e+00
+0x2f9f5a0: len=nan  len_mean=4.559841e-01  len_weight=3.057200e+01
+  0x2e2b0a0: len=1.219602e-02  len_mean=4.094281e-01  len_weight=1.524833e+01  err_density=1.224194e-02  paths=17978
+    SAMN02678557: len=3.782663e-01  err_density=1.331511e-02  paths=290  leaf_error=1.930327e+00
+    0x2591310: len=1.768981e-03  len_mean=4.084518e-01  len_weight=1.486830e+01  err_density=1.228682e-02  paths=18090
+      0x2e10020: len=1.380600e-02  len_mean=3.958052e-01  len_weight=1.445166e+01  err_density=1.292644e-02  paths=18914
+        0x2e50d80: len=9.816278e-04  len_mean=3.935003e-01  len_weight=1.392081e+01  err_density=1.291676e-02  paths=19190
+          0x2597a90: len=3.408349e-01  len_mean=5.659357e-02  len_weight=1.316514e-01  err_density=1.612830e-02  paths=864
+            0x2e5fc00: len=3.459591e-02  len_mean=1.798176e-02  len_weight=3.584100e-02  err_density=1.433637e-02  paths=578
+              SAMN03487744: len=1.687278e-02  err_density=1.446066e-02  paths=290  leaf_error=2.006061e+00
+              SAMN02664733: len=1.896822e-02  err_density=1.416103e-02  paths=290  leaf_error=1.969138e+00
+            SAMN03787591: len=6.121450e-02  err_density=1.931179e-02  paths=290  leaf_error=2.856048e+00
+          0x259b200: len=5.220227e-03  len_mean=3.881420e-01  len_weight=1.344310e+01  err_density=1.289584e-02  paths=19448
+            0x2ea1070: len=2.858954e-03  len_mean=3.840609e-01  len_weight=1.301471e+01  err_density=1.289745e-02  paths=19530
+              0x2ef1a90: len=2.572427e-03  len_mean=3.760676e-01  len_weight=1.087133e+01  err_density=1.339590e-02  paths=20988
+                0x2f56ce0: len=2.226197e-03  len_mean=3.766857e-01  len_weight=1.060913e+01  err_density=1.340344e-02  paths=20960
+                  SAMN04507552: len=3.874526e-01  err_density=2.192052e-02  paths=290  leaf_error=3.163895e+00
+                  0x2594bd0: len=1.027572e-03  len_mean=3.752500e-01  len_weight=1.022065e+01  err_density=1.346884e-02  paths=20930
+                    0x2ea9fe0: len=3.578479e-01  len_mean=7.922805e-03  len_weight=1.525200e-02  err_density=1.314440e-02  paths=578
+                      SAMN03169295: len=6.121529e-03  err_density=1.302994e-02  paths=290  leaf_error=1.636155e+00
+                      SAMN04867491: len=9.130471e-03  err_density=1.321286e-02  paths=290  leaf_error=1.667319e+00
+                    0x2f670d0: len=1.256773e-03  len_mean=3.743524e-01  len_weight=9.846298e+00  err_density=1.350288e-02  paths=20864
+                      SAMN02845227: len=3.742482e-01  err_density=1.559285e-02  paths=290  leaf_error=2.208571e+00
+                      0x2eab700: len=6.145192e-04  len_mean=3.737420e-01  len_weight=9.471435e+00  err_density=1.352883e-02  paths=20828
+                        0x2e95d00: len=1.231727e-01  len_mean=2.726714e-01  len_weight=5.938440e-01  err_density=1.284963e-02  paths=1710
+                          0x2e88c60: len=2.503036e-01  len_mean=4.757363e-03  len_weight=7.724000e-03  err_density=1.442162e-02  paths=578
+                            SAMN03478272: len=2.002460e-03  err_density=1.417828e-02  paths=290  leaf_error=1.606193e+00
+                            SAMN02843583: len=5.721540e-03  err_density=1.461191e-02  paths=290  leaf_error=1.663490e+00
+                          0x2e46120: len=2.461422e-01  len_mean=4.006038e-02  len_weight=8.967413e-02  err_density=1.189731e-02  paths=1148
+                            0x2f27110: len=2.994896e-02  len_mean=9.487062e-03  len_weight=1.891715e-02  err_density=1.184973e-02  paths=864
+                              SAMN03225509: len=9.977648e-03  err_density=1.223076e-02  paths=290  leaf_error=1.469883e+00
+                              0x2587300: len=8.939505e-03  err_density=1.162518e-02  paths=578
+                                SAMN02900075: len=0.000000e+00  err_density=3.914064e-02  paths=289  leaf_error=1.525237e+00  non-discernable
+                                SAMN02900103: len=0.000000e+00  err_density=3.897304e-02  paths=289  leaf_error=1.523488e+00  non-discernable
+                            SAMN02900125: len=4.080802e-02  err_density=1.222755e-02  paths=290  leaf_error=1.682730e+00
+                        0x2593a10: len=3.055640e-03  len_mean=3.688761e-01  len_weight=8.751363e+00  err_density=1.368077e-02  paths=20570
+                          0x2f29220: len=1.317404e-03  len_mean=3.698451e-01  len_weight=6.869057e+00  err_density=1.409120e-02  paths=20048
+                            0x258f9d0: len=2.096207e-03  len_mean=3.804474e-01  len_weight=2.174868e+00  err_density=1.158721e-02  paths=5670
+                              SAMN03476465: len=3.713238e-01  err_density=1.418269e-02  paths=290  leaf_error=1.993077e+00
+                              0x2587bd0: len=8.544143e-03  len_mean=3.737817e-01  len_weight=1.795000e+00  err_density=1.141481e-02  paths=5420
+                                0x2f7cee0: len=1.477101e-02  len_mean=3.686829e-01  len_weight=1.031846e+00  err_density=1.079370e-02  paths=3080
+                                  0x2586120: len=2.979420e-01  len_mean=6.218519e-02  len_weight=3.507372e-01  err_density=1.052721e-02  paths=2810
+                                    SAMN03465942: len=3.048070e-02  err_density=1.564900e-02  paths=290  leaf_error=1.383631e+00
+                                    0x2ee4340: len=1.207270e-02  len_mean=5.312999e-02  len_weight=3.081838e-01  err_density=1.111403e-02  paths=2538
+                                      SAMEA1571872: len=6.041093e-02  err_density=1.473333e-02  paths=290  leaf_error=1.410899e+00
+                                      0x25823a0: len=3.120634e-03  len_mean=4.823415e-02  len_weight=2.446522e-01  err_density=1.121281e-02  paths=2264
+                                        0x2ea0cc0: len=4.318639e-03  len_mean=3.778460e-02  len_weight=1.752012e-01  err_density=1.131107e-02  paths=1988
+                                          SAMN02847378.r3: len=4.421759e-02  err_density=1.149745e-02  paths=290  leaf_error=1.281166e+00
+                                          0x2ec6c60: len=2.443052e-03  len_mean=3.316989e-02  len_weight=1.285406e-01  err_density=1.149381e-02  paths=1710
+                                            0x25829c0: len=2.332514e-02  len_mean=7.294378e-03  len_weight=1.639784e-02  err_density=1.156528e-02  paths=864
+                                              0x2583ba0: len=3.297683e-03  len_mean=2.315497e-03  len_weight=4.340000e-03  err_density=1.151581e-02  paths=578
+                                                SAMN04076030: len=2.731897e-03  err_density=1.146911e-02  paths=290  leaf_error=9.449439e-01
+                                                SAMN04407122: len=1.608103e-03  err_density=1.152270e-02  paths=290  leaf_error=9.500868e-01
+                                              SAMN04517035: len=8.760158e-03  err_density=1.215791e-02  paths=290  leaf_error=1.063549e+00
+                                            0x2592690: len=1.971608e-03  len_mean=3.233891e-02  len_weight=8.684596e-02  err_density=1.262055e-02  paths=864
+                                              SAMN02595865: len=2.543730e-02  err_density=1.515733e-02  paths=290  leaf_error=1.278985e+00
+                                              0x258e950: len=8.918655e-03  len_mean=2.627911e-02  len_weight=5.249000e-02  err_density=1.142426e-02  paths=578
+                                                SAMN04859028: len=2.529887e-02  err_density=1.210970e-02  paths=290  leaf_error=1.238003e+00
+                                                SAMN02344850: len=2.719113e-02  err_density=1.065281e-02  paths=290  leaf_error=1.226899e+00
+                                        SAMN05416124.r1: len=6.513237e-02  err_density=1.525510e-02  paths=290  leaf_error=1.438462e+00
+                                  SAMN02844793.r2: len=3.831672e-01  err_density=1.280910e-02  paths=290  leaf_error=1.908236e+00
+                                0x2e0d4e0: len=1.918996e-01  len_mean=1.683554e-01  len_weight=5.564828e-01  err_density=1.178947e-02  paths=2538
+                                  SAMN02844313: len=1.747179e-01  err_density=2.222041e-02  paths=290  leaf_error=2.350285e+00
+                                  0x2e80210: len=1.240366e-02  len_mean=1.530399e-01  len_weight=3.693612e-01  err_density=1.368073e-02  paths=2264
+                                    SAMN05605405: len=1.518139e-01  err_density=2.437088e-02  paths=290  leaf_error=2.728616e+00
+                                    0x2591760: len=1.293148e-01  len_mean=2.458056e-02  len_weight=8.823247e-02  err_density=1.126379e-02  paths=1988
+                                      0x2585b20: len=2.272767e-03  len_mean=2.175656e-02  len_weight=6.005301e-02  err_density=1.188192e-02  paths=1710
+                                        SAMN02368620: len=1.718926e-02  err_density=1.228824e-02  paths=290  leaf_error=1.204279e+00
+                                        0x2ed5560: len=1.162828e-02  len_mean=1.195986e-02  len_weight=3.123546e-02  err_density=1.211918e-02  paths=1430
+                                          SAMN03199655: len=8.973236e-03  err_density=1.591039e-02  paths=290  leaf_error=1.151280e+00
+                                          0x2f56170: len=4.456945e-03  len_mean=8.706732e-03  len_weight=1.780528e-02  err_density=1.219015e-02  paths=1148
+                                            0x2e41f50: len=7.581915e-03  len_mean=2.529371e-03  len_weight=4.425406e-03  err_density=1.264012e-02  paths=864
+                                              0x258dd30: len=3.769468e-04  len_mean=2.477000e-03  len_weight=3.396000e-03  err_density=1.340041e-02  paths=578
+                                                SAMN03856959: len=2.848105e-03  err_density=1.394476e-02  paths=290  leaf_error=8.000742e-01
+                                                SAMN03002010: len=5.478947e-04  err_density=1.278466e-02  paths=290  leaf_error=6.960992e-01
+                                              SAMN02182928: len=6.524597e-04  err_density=1.344331e-02  paths=290  leaf_error=7.107053e-01
+                                            SAMN03938881: len=5.797962e-03  err_density=1.103959e-02  paths=290  leaf_error=1.008591e+00
+                                      SAMN02845628: len=2.590670e-02  err_density=1.435645e-02  paths=290  leaf_error=1.293006e+00
+                            0x258fb00: len=4.488284e-03  len_mean=3.594651e-01  len_weight=4.687605e+00  err_density=1.486253e-02  paths=18200
+                              0x2582500: len=8.913996e-02  len_mean=2.673800e-01  len_weight=5.347270e-01  err_density=1.745852e-02  paths=864
+                                0x2e6d440: len=2.646952e-01  len_mean=5.703811e-04  len_weight=5.703811e-04  err_density=1.844293e-02  paths=578
+                                  SAMN04485948: len=0.000000e+00  err_density=5.285558e-02  paths=290  leaf_error=6.096767e-01
+                                  SAMN04535377: len=5.703811e-04  err_density=5.288992e-02  paths=290  leaf_error=6.228145e-01
+                                SAMN02265266: len=2.694614e-01  err_density=1.518262e-02  paths=290  leaf_error=2.069147e+00
+                              0x2f353d0: len=2.055501e-03  len_mean=3.578618e-01  len_weight=4.061683e+00  err_density=1.512534e-02  paths=17864
+                                0x2ecbe00: len=2.800838e-01  len_mean=5.827807e-02  len_weight=1.174813e-01  err_density=1.085565e-02  paths=1148
+                                  SAMN03169114: len=3.930323e-02  err_density=1.219800e-02  paths=290  leaf_error=1.550813e+00
+                                  0x2eff3c0: len=6.195477e-02  len_mean=5.862709e-03  len_weight=1.622325e-02  err_density=1.034417e-02  paths=864
+                                    SAMN03468522: len=7.174334e-03  err_density=1.079969e-02  paths=290  leaf_error=1.090209e+00
+                                    0x2e1c2c0: len=5.959171e-04  len_mean=4.226884e-03  len_weight=8.453000e-03  err_density=1.046358e-02  paths=578
+                                      SAMN04218163: len=4.266778e-03  err_density=1.040903e-02  paths=290  leaf_error=1.021845e+00
+                                      SAMN02640840: len=4.186222e-03  err_density=1.048189e-02  paths=290  leaf_error=1.035567e+00
+                                0x2583ea0: len=1.438969e-03  len_mean=3.585386e-01  len_weight=3.662679e+00  err_density=1.531308e-02  paths=17388
+                                  0x2f12280: len=2.611937e-03  len_mean=3.602889e-01  len_weight=2.635454e+00  err_density=1.581980e-02  paths=16478
+                                    0x2f814d0: len=1.122722e-02  len_mean=3.505528e-01  len_weight=2.273656e+00  err_density=1.593050e-02  paths=16340
+                                      SAMN01902385: len=3.291570e-01  err_density=2.173979e-02  paths=290  leaf_error=2.900697e+00
+                                      0x2f63400: len=3.781185e-02  len_mean=3.163628e-01  len_weight=1.906687e+00  err_density=1.601285e-02  paths=16200
+                                        0x2ee58e0: len=1.556481e-01  len_mean=1.650264e-01  len_weight=3.931431e-01  err_density=1.798967e-02  paths=4140
+                                          0x25893d0: len=1.443398e-01  len_mean=1.381057e-02  len_weight=7.509110e-02  err_density=1.752600e-02  paths=3878
+                                            0x2e99de0: len=1.207170e-03  len_mean=1.261718e-02  len_weight=6.013484e-02  err_density=1.999025e-02  paths=3614
+                                              0x2591080: len=2.334742e-03  len_mean=1.087676e-02  len_weight=4.838429e-02  err_density=2.430983e-02  paths=3348
+                                                0x2edd450: len=1.457342e-03  len_mean=9.419422e-03  len_weight=4.692694e-02  err_density=3.315938e-02  paths=3080
+                                                  SAMN03400415: len=1.877428e-03  err_density=7.415983e-02  paths=290  leaf_error=1.048619e+00
+                                                  0x2588da0: len=2.788896e-03  len_mean=6.944837e-03  len_weight=4.226062e-02  err_density=2.724852e-02  paths=2810
+                                                    0x2e884c0: len=1.506134e-04  len_mean=7.100803e-03  len_weight=3.891963e-02  err_density=2.243017e-02  paths=2538
+                                                      0x2f1a440: len=4.150505e-04  len_mean=7.025765e-03  len_weight=3.400426e-02  err_density=2.329469e-02  paths=2264
+                                                        0x2587ed0: len=3.242651e-03  len_mean=4.260083e-03  len_weight=1.171803e-02  err_density=2.510582e-02  paths=864
+                                                          0x2585c30: len=3.674047e-04  len_mean=3.019707e-03  len_weight=6.038000e-03  err_density=2.641434e-02  paths=578
+                                                            SAMN03842395: len=2.972807e-03  err_density=2.671977e-02  paths=290  leaf_error=9.853738e-01
+                                                            SAMN02894037: len=3.065193e-03  err_density=2.601301e-02  paths=290  leaf_error=9.791908e-01
+                                                          SAMN02709124: len=5.312621e-03  err_density=2.221495e-02  paths=290  leaf_error=1.027972e+00
+                                                        0x2e843e0: len=9.125790e-04  len_mean=5.738479e-03  len_weight=1.813100e-02  err_density=2.214164e-02  paths=1430
+                                                          0x25882d0: len=3.106497e-04  len_mean=6.765673e-03  len_weight=1.145689e-02  err_density=2.126497e-02  paths=864
+                                                            SAMN02403416: len=1.358957e-03  err_density=2.423277e-02  paths=290  leaf_error=8.232847e-01
+                                                            0x2595460: len=4.463931e-03  len_mean=3.029365e-03  len_weight=5.634000e-03  err_density=1.952932e-02  paths=578
+                                                              SAMN03795478: len=3.590454e-03  err_density=1.976857e-02  paths=290  leaf_error=9.905678e-01
+                                                              SAMN03360857: len=2.043546e-03  err_density=1.921878e-02  paths=290  leaf_error=9.697675e-01
+                                                          0x2f947e0: len=6.846401e-05  len_mean=3.196029e-03  len_weight=6.295000e-03  err_density=2.335324e-02  paths=578
+                                                            SAMN04240610: len=3.538326e-03  err_density=2.668718e-02  paths=290  leaf_error=8.914919e-01
+                                                            SAMN02368381: len=2.756674e-03  err_density=1.935927e-02  paths=290  leaf_error=8.645992e-01
+                                                      SAMN04208172: len=4.500324e-03  err_density=2.591417e-02  paths=290  leaf_error=9.899030e-01
+                                                    SAMN03892264: len=3.190374e-03  err_density=5.956169e-02  paths=290  leaf_error=9.320393e-01
+                                                SAMN03154403: len=0.000000e+00  err_density=9.855802e-02  paths=290  leaf_error=1.171454e+00
+                                              SAMN03218223: len=9.415814e-03  err_density=4.909795e-02  paths=290  leaf_error=1.295791e+00
+                                            SAMEA1692321: len=1.374908e-02  err_density=3.762507e-02  paths=290  leaf_error=1.357198e+00
+                                          SAMN02645767: len=1.737122e-01  err_density=2.273571e-02  paths=290  leaf_error=3.028373e+00
+                                        0x2594d90: len=1.029205e-01  len_mean=2.116997e-01  len_weight=1.254976e+00  err_density=1.589837e-02  paths=13860
+                                          0x2585800: len=1.954060e-01  len_mean=8.026700e-03  len_weight=1.424000e-02  err_density=1.990340e-02  paths=578
+                                            SAMN03269497: len=4.579193e-03  err_density=1.952747e-02  paths=290  leaf_error=1.997525e+00
+                                            SAMN02261158: len=9.660807e-03  err_density=2.020486e-02  paths=290  leaf_error=2.071040e+00
+                                          0x2e63bf0: len=8.954174e-02  len_mean=1.238159e-01  len_weight=9.557880e-01  err_density=1.566559e-02  paths=13514
+                                            0x2f442a0: len=7.547419e-02  len_mean=3.874725e-02  len_weight=1.120625e-01  err_density=1.208838e-02  paths=1148
+                                              SAMN03466085: len=2.840563e-02  err_density=1.028677e-02  paths=290  leaf_error=8.328374e-01
+                                              0x2f84d80: len=2.153874e-04  len_mean=4.204335e-02  len_weight=8.344149e-02  err_density=1.276114e-02  paths=864
+                                                0x2594310: len=4.138382e-02  len_mean=4.005643e-03  len_weight=4.005643e-03  err_density=1.255015e-02  paths=578
+                                                  SAMN03168702: len=4.005643e-03  err_density=1.388624e-02  paths=290  leaf_error=6.907923e-01
+                                                  SAMN04893593: len=0.000000e+00  err_density=1.667081e-02  paths=290  leaf_error=8.729195e-01
+                                                SAMN03466369: len=3.805203e-02  err_density=1.333099e-02  paths=290  leaf_error=1.055744e+00
+                                            0x25832e0: len=7.319132e-02  len_mean=5.296671e-02  len_weight=6.950599e-01  err_density=1.614958e-02  paths=12798
+                                              0x2597310: len=3.426967e-03  len_mean=5.351003e-02  len_weight=5.993492e-01  err_density=1.776396e-02  paths=9614
+                                                SAMN04915620.r2: len=3.995055e-02  err_density=2.686623e-02  paths=290  leaf_error=9.270790e-01
+                                                0x2f66d10: len=2.184014e-03  len_mean=5.229440e-02  len_weight=5.572146e-01  err_density=1.764376e-02  paths=9398
+                                                  0x2ea1160: len=1.226276e-02  len_mean=4.447682e-02  len_weight=4.095695e-01  err_density=2.092620e-02  paths=5670
+                                                    0x2f63220: len=1.983396e-02  len_mean=1.502775e-02  len_weight=2.675300e-02  err_density=3.724278e-02  paths=578
+                                                      SAMN03169683: len=1.807628e-02  err_density=2.208452e-02  paths=290  leaf_error=8.066101e-01
+                                                      SAMN03992688: len=8.676715e-03  err_density=4.771539e-02  paths=290  leaf_error=1.830166e+00
+                                                    0x2595690: len=2.493002e-03  len_mean=4.321787e-02  len_weight=3.604896e-01  err_density=1.977755e-02  paths=5168
+                                                      0x2f63310: len=2.035799e-02  len_mean=3.017295e-02  len_weight=1.025885e-01  err_density=2.220171e-02  paths=1430
+                                                        0x2f81800: len=1.115651e-03  len_mean=3.100519e-02  len_weight=7.778968e-02  err_density=2.365891e-02  paths=1148
+                                                          SAMEA1692230: len=2.949059e-02  err_density=1.438074e-02  paths=290  leaf_error=6.869329e-01
+                                                          0x2582c60: len=1.472342e-02  len_mean=1.720655e-02  len_weight=3.357566e-02  err_density=2.603490e-02  paths=864
+                                                            0x2f1e470: len=5.659609e-03  len_mean=8.476912e-03  len_weight=8.476912e-03  err_density=3.063043e-02  paths=578
+                                                              SAMEA1692308: len=0.000000e+00  err_density=6.381174e-02  paths=290  leaf_error=1.698837e+00
+                                                              SAMEA1692323: len=8.476912e-03  err_density=5.545704e-02  paths=290  leaf_error=8.098196e-01
+                                                            SAMN03476674: len=1.943914e-02  err_density=1.773852e-02  paths=290  leaf_error=7.871085e-01
+                                                        SAMN04544370: len=2.368316e-02  err_density=1.727479e-02  paths=290  leaf_error=7.165596e-01
+                                                      0x2f9f240: len=4.930995e-04  len_mean=3.893970e-02  len_weight=2.370500e-01  err_density=1.982593e-02  paths=3878
+                                                        0x2588a60: len=1.749966e-02  len_mean=3.731457e-02  len_weight=7.462100e-02  err_density=1.989287e-02  paths=578
+                                                          SAMN04942969: len=3.770040e-02  err_density=2.356247e-02  paths=290  leaf_error=1.145526e+00
+                                                          SAMN03476228: len=3.692060e-02  err_density=1.528180e-02  paths=290  leaf_error=7.914691e-01
+                                                        0x2f0b450: len=1.932883e-03  len_mean=2.691657e-02  len_weight=1.429964e-01  err_density=1.988371e-02  paths=3348
+                                                          0x2e0a6e0: len=2.701551e-03  len_mean=2.140872e-02  len_weight=8.242607e-02  err_density=2.137789e-02  paths=2538
+                                                            0x2f9ac40: len=2.798682e-02  len_mean=3.443017e-04  len_weight=4.700000e-04  err_density=1.840215e-02  paths=578
+                                                              SAMN04511637: len=3.952682e-04  err_density=1.840179e-02  paths=290  leaf_error=3.989171e-01
+                                                              SAMN05004731: len=7.473178e-05  err_density=1.833895e-02  paths=290  leaf_error=3.924244e-01
+                                                            0x258acc0: len=5.613585e-03  len_mean=1.214510e-02  len_weight=4.835566e-02  err_density=2.214196e-02  paths=1988
+                                                              0x2f44390: len=1.392309e-03  len_mean=1.144775e-02  len_weight=3.778442e-02  err_density=2.196395e-02  paths=1710
+                                                                0x2f81710: len=1.278184e-03  len_mean=1.115522e-02  len_weight=2.183700e-02  err_density=2.124306e-02  paths=578
+                                                                  SAMN02849803: len=1.252619e-02  err_density=2.106073e-02  paths=290  leaf_error=7.002259e-01
+                                                                  SAMN03269408: len=9.310809e-03  err_density=2.135109e-02  paths=290  leaf_error=6.199881e-01
+                                                                0x2e0a990: len=5.023311e-03  len_mean=4.871289e-03  len_weight=9.645926e-03  err_density=2.270708e-02  paths=1148
+                                                                  0x25884a0: len=3.627523e-03  len_mean=7.126632e-04  len_weight=7.126632e-04  err_density=2.314589e-02  paths=864
+                                                                    0x2587180: len=7.126632e-04  err_density=2.258379e-02  paths=578
+                                                                      SAMN02182869: len=0.000000e+00  err_density=1.498658e-01  paths=289  leaf_error=5.058398e-01  non-discernable
+                                                                      SAMN03002080: len=0.000000e+00  err_density=1.449300e-01  paths=289  leaf_error=5.070578e-01  non-discernable
+                                                                    SAMN02182870: len=0.000000e+00  err_density=2.412769e-02  paths=290  leaf_error=4.122705e-01
+                                                                  SAMN01902307: len=5.305740e-03  err_density=2.134573e-02  paths=290  leaf_error=6.067178e-01
+                                                              SAMN05726875: len=9.178927e-03  err_density=2.387453e-02  paths=290  leaf_error=7.897180e-01
+                                                          0x2589030: len=1.058999e-02  len_mean=2.045478e-02  len_weight=4.727884e-02  err_density=1.518042e-02  paths=864
+                                                            SAMN03477934: len=1.678528e-02  err_density=1.519067e-02  paths=290  leaf_error=6.262681e-01
+                                                            0x2f6b3e0: len=1.407255e-02  len_mean=8.402107e-03  len_weight=1.642100e-02  err_density=1.515087e-02  paths=578
+                                                              SAMEA1929873: len=9.464770e-03  err_density=1.445945e-02  paths=290  leaf_error=6.108373e-01
+                                                              SAMN04575080: len=6.956230e-03  err_density=1.576195e-02  paths=290  leaf_error=6.384806e-01
+                                                  0x2588950: len=2.176306e-03  len_mean=3.626754e-02  len_weight=1.332061e-01  err_density=1.912294e-02  paths=4400
+                                                    0x258a750: len=7.788660e-04  len_mean=3.821126e-02  len_weight=1.087617e-01  err_density=1.860887e-02  paths=4140
+                                                      0x2587fc0: len=3.004022e-02  len_mean=9.982479e-03  len_weight=4.444691e-02  err_density=1.840211e-02  paths=3878
+                                                        0x2586230: len=3.648994e-03  len_mean=6.333485e-03  len_weight=4.079791e-02  err_density=2.681693e-02  paths=3614
+                                                          0x25958f0: len=1.047170e-03  len_mean=5.286314e-03  len_weight=3.975074e-02  err_density=2.996007e-02  paths=3348
+                                                            SAMN03468986: len=9.264115e-04  err_density=4.342459e-02  paths=290  leaf_error=3.395107e-01
+                                                            0x24d8430: len=5.708421e-04  len_mean=4.819506e-03  len_weight=3.825349e-02  err_density=2.974752e-02  paths=3080
+                                                              0x2595a00: len=4.958157e-04  len_mean=3.484756e-03  len_weight=1.518195e-02  err_density=3.685569e-02  paths=1430
+                                                                SAMN03359723: len=3.478056e-03  err_density=3.717114e-02  paths=290  leaf_error=4.751177e-01
+                                                                0x2f95250: len=5.801452e-05  len_mean=3.428733e-03  len_weight=1.164588e-02  err_density=3.672103e-02  paths=1148
+                                                                  0x2f7b940: len=1.437381e-04  len_mean=2.789990e-03  len_weight=7.221662e-03  err_density=3.848760e-02  paths=864
+                                                                    SAMEA3572983: len=1.272749e-03  err_density=4.489620e-02  paths=290  leaf_error=4.092898e-01
+                                                                    0x25990b0: len=1.209126e-04  len_mean=2.993685e-03  len_weight=5.828000e-03  err_density=3.473946e-02  paths=578
+                                                                      SAMEA3572928: len=2.432125e-03  err_density=3.343548e-02  paths=290  leaf_error=4.260458e-01
+                                                                      SAMEA3572879: len=3.395875e-03  err_density=3.588044e-02  paths=290  leaf_error=4.503904e-01
+                                                                  SAMN02595845: len=4.280484e-03  err_density=3.059146e-02  paths=290  leaf_error=4.676209e-01
+                                                              0x24d8680: len=2.468119e-04  len_mean=5.155295e-03  len_weight=2.232891e-02  err_density=2.281981e-02  paths=1710
+                                                                0x2f0adc0: len=3.787813e-04  len_mean=2.252864e-03  len_weight=4.505000e-03  err_density=2.498774e-02  paths=578
+                                                                  SAMEA3573046: len=2.281130e-03  err_density=2.577370e-02  paths=290  leaf_error=4.252708e-01
+                                                                  SAMN02849720: len=2.223870e-03  err_density=2.408702e-02  paths=290  leaf_error=3.800843e-01
+                                                                0x2599b90: len=1.134329e-03  len_mean=4.727465e-03  len_weight=1.631080e-02  err_density=2.194721e-02  paths=1148
+                                                                  SAMN02367605: len=3.578730e-03  err_density=2.220361e-02  paths=290  leaf_error=4.418202e-01
+                                                                  0x259a310: len=5.164132e-04  len_mean=4.533938e-03  len_weight=1.221565e-02  err_density=2.185403e-02  paths=864
+                                                                    0x25957a0: len=1.281819e-04  len_mean=3.323708e-03  len_weight=6.337000e-03  err_density=2.232876e-02  paths=578
+                                                                      SAMN02699904.r2: len=2.467232e-03  err_density=2.218050e-02  paths=290  leaf_error=4.154963e-01
+                                                                      SAMN03357128: len=3.869768e-03  err_density=2.239942e-02  paths=290  leaf_error=4.739370e-01
+                                                                    SAMN02595821: len=5.750470e-03  err_density=2.078409e-02  paths=290  leaf_error=4.854707e-01
+                                                          SAMN03475818: len=0.000000e+00  err_density=4.683901e-02  paths=290  leaf_error=4.228026e-01
+                                                        SAMN03480186: len=0.000000e+00  err_density=8.596133e-02  paths=290  leaf_error=1.333838e+00
+                                                      SAMN03479844: len=3.427453e-02  err_density=2.077845e-02  paths=290  leaf_error=7.833754e-01
+                                                    SAMN02699918: len=2.366553e-02  err_density=2.624765e-02  paths=290  leaf_error=8.331014e-01
+                                              0x2f9f120: len=7.078874e-03  len_mean=1.995482e-02  len_weight=8.520489e-02  err_density=2.861725e-02  paths=4400
+                                                0x2f94c80: len=4.061336e-03  len_mean=1.625791e-02  len_weight=3.276399e-02  err_density=5.070120e-02  paths=1710
+                                                  SAMN03988423: len=0.000000e+00  err_density=1.175537e-01  paths=290  leaf_error=2.611833e+00
+                                                  0x2f56640: len=1.041247e-02  len_mean=5.845449e-03  len_weight=2.235152e-02  err_density=3.760409e-02  paths=1430
+                                                    0x2eeaf60: len=5.355955e-04  len_mean=5.736721e-03  len_weight=1.922231e-02  err_density=4.052565e-02  paths=1148
+                                                      SAMN04255327: len=5.290545e-03  err_density=5.006825e-02  paths=290  leaf_error=9.529513e-01
+                                                      0x2f5f320: len=1.328554e-03  len_mean=4.577601e-03  len_weight=1.260321e-02  err_density=3.667165e-02  paths=864
+                                                        0x2e7ab40: len=2.769344e-04  len_mean=4.811221e-03  len_weight=9.588000e-03  err_density=3.638550e-02  paths=578
+                                                          SAMN02378198: len=5.081325e-03  err_density=4.021747e-02  paths=290  leaf_error=9.564363e-01
+                                                          SAMN04577446: len=4.506675e-03  err_density=3.195675e-02  paths=290  leaf_error=7.632961e-01
+                                                        SAMN05771768: len=2.738275e-03  err_density=3.723306e-02  paths=290  leaf_error=7.383888e-01
+                                                    SAMN05416394: len=2.593620e-03  err_density=3.377235e-02  paths=290  leaf_error=5.614703e-01
+                                                0x2f0e1a0: len=5.247054e-03  len_mean=1.443038e-02  len_weight=4.313251e-02  err_density=4.124196e-02  paths=2810
+                                                  0x2598950: len=4.395974e-03  len_mean=1.033157e-02  len_weight=2.493789e-02  err_density=4.206958e-02  paths=2538
+                                                    0x2e26de0: len=4.662979e-03  len_mean=5.668592e-03  len_weight=2.027491e-02  err_density=6.278886e-02  paths=2264
+                                                      SAMN03478279: len=0.000000e+00  err_density=5.653887e-02  paths=290  leaf_error=7.525588e-01
+                                                      0x2ea12b0: len=1.735008e-03  len_mean=3.933584e-03  len_weight=1.853991e-02  err_density=6.605419e-02  paths=1988
+                                                        SAMN03475597: len=1.656810e-03  err_density=5.315618e-02  paths=290  leaf_error=5.012535e-01
+                                                        0x2f4ebe0: len=4.780759e-04  len_mean=3.678937e-03  len_weight=1.640502e-02  err_density=6.952993e-02  paths=1710
+                                                          SAMN03465648: len=2.467509e-03  err_density=5.970649e-02  paths=290  leaf_error=5.337883e-01
+                                                          0x2e5a580: len=2.671769e-04  len_mean=3.626233e-03  len_weight=1.367033e-02  err_density=7.139556e-02  paths=1430
+                                                            SAMN03476809: len=2.095372e-03  err_density=6.807267e-02  paths=290  leaf_error=6.413694e-01
+                                                            0x2598e10: len=4.147941e-04  len_mean=3.488565e-03  len_weight=1.116017e-02  err_density=7.206968e-02  paths=1148
+                                                              0x2597c10: len=5.890546e-04  len_mean=3.221008e-03  len_weight=8.463168e-03  err_density=6.071817e-02  paths=864
+                                                                0x2f6b4f0: len=7.445241e-04  len_mean=2.832064e-03  len_weight=5.496000e-03  err_density=6.103062e-02  paths=578
+                                                                  SAMN04576535: len=3.228633e-03  err_density=6.226118e-02  paths=290  leaf_error=7.619582e-01
+                                                                  SAMN03468887: len=2.267367e-03  err_density=5.955948e-02  paths=290  leaf_error=7.448597e-01
+                                                                SAMN03359687: len=2.222644e-03  err_density=6.047461e-02  paths=290  leaf_error=7.833703e-01
+                                                              SAMN03758659: len=2.107945e-03  err_density=9.820271e-02  paths=290  leaf_error=8.701808e-01
+                                                    SAMN04388342.r1: len=0.000000e+00  err_density=1.643095e-01  paths=290  leaf_error=2.185183e+00
+                                                  SAMN04577362: len=1.379864e-02  err_density=3.794764e-02  paths=290  leaf_error=9.369323e-01
+                                    SAMN05001792: len=3.505701e-01  err_density=1.475455e-02  paths=290  leaf_error=2.008736e+00
+                                  0x2591d70: len=7.412139e-03  len_mean=3.398949e-01  len_weight=1.017201e+00  err_density=1.539217e-02  paths=1988
+                                    0x2e276d0: len=1.083785e-02  len_mean=3.280880e-01  len_weight=6.645533e-01  err_density=1.597526e-02  paths=1710
+                                      0x2ec9190: len=2.896941e-01  len_mean=2.291402e-02  len_weight=3.222704e-02  err_density=1.668016e-02  paths=1430
+                                        SAMN03478846: len=0.000000e+00  err_density=8.077788e-02  paths=290  leaf_error=1.749021e+00
+                                        0x24d9b40: len=6.028763e-03  len_mean=1.688526e-02  len_weight=2.619827e-02  err_density=4.294109e-02  paths=1148
+                                          SAMN03838256.r2: len=2.606193e-03  err_density=7.897318e-02  paths=290  leaf_error=1.554684e+00
+                                          0x2588650: len=2.730249e-03  len_mean=1.573241e-02  len_weight=2.086183e-02  err_density=6.098179e-02  paths=864
+                                            0x2f27200: len=8.749832e-03  len_mean=6.982573e-03  len_weight=1.211200e-02  err_density=6.730768e-02  paths=578
+                                              SAMN03002022: len=3.687176e-03  err_density=6.960214e-02  paths=290  leaf_error=1.689823e+00
+                                              SAMN02368790: len=8.424824e-03  err_density=6.469117e-02  paths=290  leaf_error=1.845877e+00
+                                            SAMN04102293.r2: len=0.000000e+00  err_density=8.614353e-02  paths=290  leaf_error=1.433032e+00
+                                      SAMN02843630: len=3.426321e-01  err_density=1.179859e-02  paths=290  leaf_error=1.629119e+00
+                                    SAMN05506867: len=3.418098e-01  err_density=1.111719e-02  paths=290  leaf_error=1.509312e+00
+                          0x2584320: len=3.715619e-03  len_mean=3.568095e-01  len_weight=1.877273e+00  err_density=1.380365e-02  paths=2538
+                            0x2593b90: len=1.333467e-03  len_mean=3.530475e-01  len_weight=1.509129e+00  err_density=1.402926e-02  paths=2264
+                              SAMN02844310: len=3.657499e-01  err_density=1.103925e-02  paths=290  leaf_error=1.552928e+00
+                              0x259c0a0: len=6.641195e-03  len_mean=3.423430e-01  len_weight=1.136738e+00  err_density=1.436895e-02  paths=1988
+                                SAMN03469785: len=3.512815e-01  err_density=1.393359e-02  paths=290  leaf_error=1.939126e+00
+                                0x24d9e60: len=8.284624e-03  len_mean=3.300608e-01  len_weight=7.771721e-01  err_density=1.441599e-02  paths=1710
+                                  0x2ecd3a0: len=2.086988e-01  len_mean=1.200489e-01  len_weight=2.313330e-01  err_density=1.378178e-02  paths=578
+                                    SAMN03098814: len=1.381809e-01  err_density=1.282807e-02  paths=290  leaf_error=1.782461e+00
+                                    SAMN02345157: len=9.315206e-02  err_density=1.462893e-02  paths=290  leaf_error=1.933036e+00
+                                  0x2f850d0: len=3.240144e-01  len_mean=7.760193e-03  len_weight=1.312586e-02  err_density=1.464069e-02  paths=1148
+                                    0x2e283c0: len=4.047250e-03  len_mean=3.712943e-03  len_weight=9.078608e-03  err_density=2.055446e-02  paths=864
+                                      0x2e476c0: len=1.366134e-03  len_mean=2.832165e-03  len_weight=5.605000e-03  err_density=2.313343e-02  paths=578
+                                        SAMN03357945: len=2.514167e-03  err_density=2.641960e-02  paths=290  leaf_error=1.163753e+00
+                                        SAMN05851807: len=3.090833e-03  err_density=1.919963e-02  paths=290  leaf_error=1.196233e+00
+                                      SAMN02345542: len=2.107474e-03  err_density=1.939145e-02  paths=290  leaf_error=1.156846e+00
+                                    SAMN02844829: len=0.000000e+00  err_density=2.865353e-02  paths=290  leaf_error=1.169533e+00
+                            SAMN02843511: len=3.668099e-01  err_density=1.150968e-02  paths=290  leaf_error=1.622775e+00
+                SAMN02918780: len=2.599685e-01  err_density=1.695386e-02  paths=290  leaf_error=2.021564e+00
+              0x24d8ff0: len=1.802588e-03  len_mean=4.097928e-01  len_weight=2.139007e+00  err_density=1.164656e-02  paths=12798
+                0x25853a0: len=3.470627e-01  len_mean=2.748669e-02  len_weight=8.574933e-02  err_density=1.268771e-02  paths=1988
+                  0x2f18ea0: len=1.855894e-02  len_mean=1.067054e-02  len_weight=4.456647e-02  err_density=1.270843e-02  paths=1710
+                    0x2ec5100: len=2.215676e-03  len_mean=8.017875e-03  len_weight=2.180834e-02  err_density=1.402628e-02  paths=864
+                      SAMN02908576: len=1.012542e-02  err_density=1.401044e-02  paths=290  leaf_error=1.241803e+00
+                      0x2f14dc0: len=5.639191e-04  len_mean=5.627375e-03  len_weight=1.111900e-02  err_density=1.420492e-02  paths=578
+                        SAMN02345225: len=6.173788e-03  err_density=1.374477e-02  paths=290  leaf_error=1.190763e+00
+                        SAMN02345496: len=4.945212e-03  err_density=1.460305e-02  paths=290  leaf_error=1.170357e+00
+                    0x2f84fe0: len=4.904776e-03  len_mean=6.276821e-03  len_weight=1.563768e-02  err_density=1.381408e-02  paths=864
+                      0x2f85a50: len=8.622395e-04  len_mean=3.707216e-03  len_weight=6.841000e-03  err_density=1.364816e-02  paths=578
+                        SAMN04481308: len=4.410809e-03  err_density=1.296689e-02  paths=290  leaf_error=1.107947e+00
+                        SAMN04359408: len=2.430191e-03  err_density=1.425200e-02  paths=290  leaf_error=1.058802e+00
+                      SAMN04014667: len=7.934436e-03  err_density=1.410022e-02  paths=290  leaf_error=1.186303e+00
+                  SAMN01924580: len=2.262392e-02  err_density=1.276982e-02  paths=290  leaf_error=1.471876e+00
+                0x25835a0: len=7.228425e-03  len_mean=4.115047e-01  len_weight=1.698967e+00  err_density=1.132658e-02  paths=11468
+                  0x2ebba80: len=8.323279e-02  len_mean=3.348039e-01  len_weight=1.226186e+00  err_density=1.124186e-02  paths=11270
+                    0x2e86f20: len=1.086754e-01  len_mean=2.369271e-01  len_weight=8.154204e-01  err_density=1.117906e-02  paths=10868
+                      0x2eae240: len=2.707361e-01  len_mean=9.084232e-03  len_weight=1.412900e-02  err_density=1.075691e-02  paths=578
+                        SAMN02849799: len=1.084185e-02  err_density=1.049825e-02  paths=290  leaf_error=1.385256e+00
+                        SAMN04858537: len=3.287146e-03  err_density=1.097320e-02  paths=290  leaf_error=1.455970e+00
+                      0x2f0cc00: len=1.367824e-01  len_mean=7.711456e-02  len_weight=3.937729e-01  err_density=1.116872e-02  paths=10458
+                        0x2e181e0: len=7.299987e-02  len_mean=9.131072e-03  len_weight=9.131072e-03  err_density=1.438780e-02  paths=578
+                          SAMN03475559: len=0.000000e+00  err_density=2.811485e-02  paths=290  leaf_error=1.040099e+00
+                          SAMN03466276: len=9.131072e-03  err_density=2.799246e-02  paths=290  leaf_error=1.039548e+00
+                        0x2ea4ae0: len=3.059175e-02  len_mean=4.520079e-02  len_weight=2.810502e-01  err_density=1.139941e-02  paths=10040
+                          0x259af10: len=5.719300e-02  len_mean=7.405748e-03  len_weight=7.465555e-03  err_density=1.317947e-02  paths=578
+                            SAMEA2074343: len=7.435531e-03  err_density=1.264975e-02  paths=290  leaf_error=9.025808e-01
+                            SAMEA2077841: len=3.002426e-05  err_density=1.370082e-02  paths=290  leaf_error=8.955484e-01
+                          0x2ebd020: len=1.276721e-02  len_mean=2.663740e-02  len_weight=2.036245e-01  err_density=1.144656e-02  paths=9614
+                            0x258b4d0: len=2.089949e-02  len_mean=7.600852e-03  len_weight=4.656380e-02  err_density=1.572369e-02  paths=3080
+                              0x2e9f460: len=1.317952e-03  len_mean=6.512906e-03  len_weight=4.347999e-02  err_density=1.486479e-02  paths=2810
+                                0x258fcd0: len=5.189158e-03  len_mean=1.862125e-03  len_weight=3.630000e-03  err_density=1.417199e-02  paths=578
+                                  SAMN03603763: len=1.522543e-03  err_density=1.435141e-02  paths=290  leaf_error=5.338598e-01
+                                  SAMN04555248: len=2.107457e-03  err_density=1.394068e-02  paths=290  leaf_error=5.434628e-01
+                                0x258d8b0: len=3.832015e-04  len_mean=5.992719e-03  len_weight=3.427763e-02  err_density=1.560188e-02  paths=2264
+                                  SAMEA1929846: len=4.872033e-03  err_density=1.448046e-02  paths=290  leaf_error=5.403848e-01
+                                  0x2eba4e0: len=4.179640e-05  len_mean=6.136602e-03  len_weight=2.936380e-02  err_density=1.598448e-02  paths=1988
+                                    SAMN03468637: len=2.275196e-03  err_density=1.859156e-02  paths=290  leaf_error=4.991143e-01
+                                    0x2e27aa0: len=2.255004e-04  len_mean=6.235424e-03  len_weight=2.686310e-02  err_density=1.585828e-02  paths=1710
+                                      0x2e89220: len=3.674109e-04  len_mean=6.561634e-03  len_weight=1.728195e-02  err_density=1.695783e-02  paths=1148
+                                        SAMEA2018772: len=7.635755e-03  err_density=1.407843e-02  paths=290  leaf_error=5.984316e-01
+                                        0x2f13820: len=1.208710e-03  len_mean=4.502668e-03  len_weight=8.437489e-03  err_density=1.824081e-02  paths=864
+                                          SAMN03477986: len=3.124303e-03  err_density=2.310283e-02  paths=290  leaf_error=6.004280e-01
+                                          0x2587600: len=5.313186e-03  err_density=1.515185e-02  paths=578
+                                            SAMN03469668: len=0.000000e+00  err_density=6.790941e-02  paths=289  leaf_error=6.102368e-01  non-discernable
+                                            SAMN03477904: len=0.000000e+00  err_density=6.478702e-02  paths=289  leaf_error=6.101099e-01  non-discernable
+                                      0x258b1d0: len=2.577387e-04  len_mean=4.649022e-03  len_weight=8.956000e-03  err_density=1.504854e-02  paths=578
+                                        SAMN04575060: len=3.602879e-03  err_density=1.468419e-02  paths=290  leaf_error=5.326983e-01
+                                        SAMEA2157002.r1: len=5.353121e-03  err_density=1.535350e-02  paths=290  leaf_error=5.680736e-01
+                              SAMN03479848: len=1.765857e-03  err_density=2.664910e-02  paths=290  leaf_error=6.750757e-01
+                            0x258bf50: len=1.050937e-02  len_mean=1.520502e-02  len_weight=1.256518e-01  err_density=1.362305e-02  paths=7128
+                              0x258a450: len=1.596158e-03  len_mean=1.471939e-02  len_weight=1.013822e-01  err_density=1.655900e-02  paths=5420
+                                0x2f55f60: len=2.160530e-03  len_mean=1.311853e-02  len_weight=9.030871e-02  err_density=1.690085e-02  paths=5168
+                                  0x2eb0d80: len=4.043527e-04  len_mean=1.321159e-02  len_weight=8.190155e-02  err_density=1.715045e-02  paths=4914
+                                    0x2ec68e0: len=6.351604e-03  len_mean=5.894993e-03  len_weight=1.718298e-02  err_density=3.099733e-02  paths=1430
+                                      SAMN03098713: len=9.107120e-04  err_density=6.222794e-02  paths=290  leaf_error=1.271117e+00
+                                      0x2ec71c0: len=9.761890e-04  len_mean=5.197759e-03  len_weight=1.529608e-02  err_density=2.069245e-02  paths=1148
+                                        SAMN02676312: len=5.637484e-03  err_density=2.516114e-02  paths=290  leaf_error=5.300695e-01
+                                        0x2ebe5c0: len=1.130582e-03  len_mean=3.810521e-03  len_weight=8.528017e-03  err_density=1.932362e-02  paths=864
+                                          SAMN05366840: len=4.925132e-03  err_density=1.735285e-02  paths=290  leaf_error=5.324724e-01
+                                          0x2e27bd0: len=8.988853e-04  len_mean=1.387967e-03  len_weight=2.704000e-03  err_density=2.084811e-02  paths=578
+                                            SAMN02905670: len=1.572515e-03  err_density=1.866492e-02  paths=290  leaf_error=4.904942e-01
+                                            SAMN02937341: len=1.131485e-03  err_density=2.275765e-02  paths=290  leaf_error=4.646844e-01
+                                    0x2ec55f0: len=2.140324e-03  len_mean=1.146037e-02  len_weight=5.622664e-02  err_density=1.836469e-02  paths=3614
+                                      0x2eb8f40: len=6.364822e-03  len_mean=6.882783e-03  len_weight=2.745843e-02  err_density=1.860195e-02  paths=2810
+                                        SAMN02847074: len=6.384230e-03  err_density=2.077435e-02  paths=290  leaf_error=5.133686e-01
+                                        0x2581da0: len=2.896950e-03  len_mean=4.136865e-03  len_weight=1.817725e-02  err_density=1.906160e-02  paths=2538
+                                          SAMN02839498: len=1.362888e-03  err_density=3.128931e-02  paths=290  leaf_error=4.743243e-01
+                                          0x259b690: len=1.370214e-03  len_mean=2.991496e-03  len_weight=1.544415e-02  err_density=2.042986e-02  paths=2264
+                                            SAMN03573304: len=2.415969e-03  err_density=3.535072e-02  paths=290  leaf_error=4.991689e-01
+                                            0x258a8d0: len=2.582471e-04  len_mean=2.839976e-03  len_weight=1.276993e-02  err_density=2.233613e-02  paths=1988
+                                              0x2eacca0: len=3.277498e-04  len_mean=2.688300e-03  len_weight=1.077389e-02  err_density=2.123689e-02  paths=1710
+                                                0x2eb6430: len=5.215519e-04  len_mean=2.355351e-03  len_weight=9.006633e-03  err_density=1.953651e-02  paths=1430
+                                                  0x259bc00: len=6.393407e-05  len_mean=2.426251e-03  len_weight=8.277137e-03  err_density=1.978866e-02  paths=1148
+                                                    SAMN02688943: len=2.719517e-03  err_density=1.895333e-02  paths=290  leaf_error=4.265654e-01
+                                                    0x2f27b50: len=1.419651e-04  len_mean=2.140782e-03  len_weight=5.415655e-03  err_density=2.006498e-02  paths=864
+                                                      SAMN02767965: len=1.370650e-03  err_density=2.010874e-02  paths=290  leaf_error=3.812046e-01
+                                                      0x2594440: len=6.690049e-04  len_mean=1.732736e-03  len_weight=3.376000e-03  err_density=2.006526e-02  paths=578
+                                                        SAMN03259189: len=1.413202e-03  err_density=1.997123e-02  paths=290  leaf_error=4.191694e-01
+                                                        SAMN03010420: len=1.962798e-03  err_density=2.008987e-02  paths=290  leaf_error=4.348925e-01
+                                                  SAMN04217429: len=6.655615e-04  err_density=1.904155e-02  paths=290  leaf_error=3.481435e-01
+                                                SAMN05514340: len=1.245704e-03  err_density=2.841201e-02  paths=290  leaf_error=4.168876e-01
+                                              SAMN03604088: len=1.668295e-03  err_density=3.687143e-02  paths=290  leaf_error=4.529927e-01
+                                      0x2f55cb0: len=1.352161e-03  len_mean=7.409954e-03  len_weight=2.105122e-02  err_density=1.993731e-02  paths=864
+                                        SAMN03477652: len=5.627214e-03  err_density=2.136825e-02  paths=290  leaf_error=5.306048e-01
+                                        0x2f26e50: len=6.480084e-04  len_mean=7.412351e-03  len_weight=1.477600e-02  err_density=1.910982e-02  paths=578
+                                          SAMN04993486: len=6.963847e-03  err_density=2.033961e-02  paths=290  leaf_error=5.675611e-01
+                                          SAMN05201334: len=7.812153e-03  err_density=1.772433e-02  paths=290  leaf_error=5.532137e-01
+                                  SAMN04125349: len=8.002804e-03  err_density=2.617431e-02  paths=290  leaf_error=5.726981e-01
+                                SAMN03165677: len=8.912965e-03  err_density=2.031905e-02  paths=290  leaf_error=5.629101e-01
+                              0x2ee8420: len=4.986857e-03  len_mean=5.174355e-03  len_weight=1.768661e-02  err_density=2.108477e-02  paths=1988
+                                0x2f862a0: len=5.563478e-04  len_mean=4.835793e-03  len_weight=1.258571e-02  err_density=2.057758e-02  paths=1710
+                                  0x2edecc0: len=2.300126e-03  len_mean=3.112210e-03  len_weight=7.320292e-03  err_density=2.142110e-02  paths=1430
+                                    0x2e88a40: len=2.247194e-03  len_mean=5.623168e-04  len_weight=1.004368e-03  err_density=2.135869e-02  paths=864
+                                      0x2587780: len=6.759589e-04  err_density=2.051191e-02  paths=578
+                                        SAMN03479881: len=0.000000e+00  err_density=1.361619e-01  paths=289  leaf_error=4.707512e-01  non-discernable
+                                        SAMN03479916: len=0.000000e+00  err_density=1.070248e-01  paths=289  leaf_error=4.336871e-01  non-discernable
+                                      SAMN03478080: len=3.284094e-04  err_density=2.285552e-02  paths=290  leaf_error=4.047521e-01
+                                    0x2f23320: len=2.618730e-03  len_mean=7.353850e-04  len_weight=1.450000e-03  err_density=2.216457e-02  paths=578
+                                      SAMN03152367: len=8.117704e-04  err_density=2.149527e-02  paths=290  leaf_error=4.583936e-01
+                                      SAMN02368563: len=6.382296e-04  err_density=2.273987e-02  paths=290  leaf_error=4.665396e-01
+                                  SAMN03480170: len=2.965288e-03  err_density=2.527118e-02  paths=290  leaf_error=5.019701e-01
+                                SAMN03478042: len=4.544558e-03  err_density=2.802034e-02  paths=290  leaf_error=6.483933e-01
+                    0x2e88840: len=3.013628e-01  len_mean=4.078936e-04  len_weight=7.270000e-04  err_density=1.167000e-02  paths=578
+                      SAMN04255287: len=2.364683e-04  err_density=1.164468e-02  paths=290  leaf_error=6.379203e-01
+                      SAMN01902333: len=4.905317e-04  err_density=1.165504e-02  paths=290  leaf_error=6.380483e-01
+                  SAMN04916500: len=3.895481e-01  err_density=1.342235e-02  paths=290  leaf_error=1.972900e+00
+            SAMN03102396: len=4.255294e-01  err_density=1.130531e-02  paths=290  leaf_error=1.743533e+00
+        0x2f07570: len=3.312414e-01  len_mean=9.933176e-02  len_weight=1.986290e-01  err_density=1.048977e-02  paths=864
+          SAMN03702048: len=1.053582e-01  err_density=1.071778e-02  paths=290  leaf_error=1.664957e+00
+          0x25895d0: len=9.133980e-02  len_mean=1.184491e-03  len_weight=1.931000e-03  err_density=1.033950e-02  paths=578
+            SAMN03069674: len=5.056781e-04  err_density=1.033638e-02  paths=290  leaf_error=8.721001e-01
+            SAMN03112876: len=1.425322e-03  err_density=1.030692e-02  paths=290  leaf_error=8.698480e-01
+      0x2583a20: len=3.567088e-01  len_mean=1.011076e-02  len_weight=4.612602e-02  err_density=1.811007e-02  paths=2264
+        0x2f1b9e0: len=8.130067e-04  len_mean=6.920631e-03  len_weight=2.332566e-02  err_density=1.900136e-02  paths=1430
+          0x2e435e0: len=1.880500e-03  len_mean=6.161463e-03  len_weight=1.633780e-02  err_density=1.942054e-02  paths=864
+            SAMN02843980: len=3.923292e-03  err_density=1.945298e-02  paths=290  leaf_error=1.420246e+00
+            0x259a490: len=1.277509e-03  len_mean=5.591271e-03  len_weight=1.113700e-02  err_density=1.933748e-02  paths=578
+              SAMN03291525: len=5.924593e-03  err_density=1.914196e-02  paths=290  leaf_error=1.530238e+00
+              SAMN04362083: len=5.212407e-03  err_density=1.946491e-02  paths=290  leaf_error=1.470860e+00
+          0x2ef46c0: len=6.263562e-04  len_mean=2.294407e-03  len_weight=4.481000e-03  err_density=2.033377e-02  paths=578
+            SAMN02849843: len=2.588033e-03  err_density=2.106457e-02  paths=290  leaf_error=1.302031e+00
+            SAMN02983193: len=1.892967e-03  err_density=1.950273e-02  paths=290  leaf_error=1.309634e+00
+        0x2e71520: len=2.916891e-03  len_mean=9.803577e-03  len_weight=1.907047e-02  err_density=1.891955e-02  paths=864
+          SAMN03168728: len=7.399167e-03  err_density=1.887399e-02  paths=290  leaf_error=1.543593e+00
+          0x2f16360: len=9.951304e-03  len_mean=1.376579e-03  len_weight=1.720000e-03  err_density=1.898493e-02  paths=578
+            SAMN04120341: len=1.526527e-03  err_density=1.917167e-02  paths=290  leaf_error=1.180307e+00
+            SAMN04252842: len=1.934732e-04  err_density=1.873010e-02  paths=290  leaf_error=1.148184e+00
+  0x2587480: len=4.264663e-01  err_density=1.250351e-02  paths=864
+    SAMN03018178: len=0.000000e+00  err_density=4.533582e-02  paths=288  leaf_error=1.991625e+00  non-discernable
+    SAMN03018180: len=0.000000e+00  err_density=4.534628e-02  paths=288  leaf_error=1.991294e+00  non-discernable
+    SAMN03018204: len=0.000000e+00  err_density=4.439378e-02  paths=288  leaf_error=1.973034e+00  non-discernable
+  0x24b4780: len=7.993201e-03  len_mean=4.840635e-01  len_weight=1.487701e+01  err_density=1.223627e-02  paths=17630
+    0x2f275d0: len=5.565937e-03  len_mean=4.816041e-01  len_weight=1.451332e+01  err_density=1.228225e-02  paths=17510
+      0x2f86180: len=8.671642e-02  len_mean=5.689793e-01  len_weight=1.120764e+00  err_density=1.261391e-02  paths=578
+        SAMN03702076: len=4.909719e-01  err_density=1.443975e-02  paths=290  leaf_error=2.857036e+00
+        SAMN03468721: len=6.297921e-01  err_density=1.042198e-02  paths=290  leaf_error=2.421688e+00
+      0x2ef5c60: len=1.686902e-02  len_mean=4.489365e-01  len_weight=1.328897e+01  err_density=1.238030e-02  paths=17264
+        0x2f07670: len=2.305362e-02  len_mean=4.731836e-01  len_weight=6.754011e+00  err_density=1.211538e-02  paths=8960
+          0x2ee99c0: len=4.976124e-02  len_mean=4.303112e-01  len_weight=5.969553e+00  err_density=1.182991e-02  paths=8514
+            SAMN04451118: len=4.196366e-01  err_density=1.203808e-02  paths=290  leaf_error=2.088433e+00
+            0x2edd720: len=8.904046e-02  len_mean=3.420779e-01  len_weight=5.460876e+00  err_density=1.179447e-02  paths=8288
+              0x2efde20: len=5.540850e-03  len_mean=3.428200e-01  len_weight=6.856120e-01  err_density=1.164932e-02  paths=578
+                SAMN05464605: len=3.449975e-01  err_density=1.124833e-02  paths=290  leaf_error=1.923719e+00
+                SAMN02844506: len=3.406145e-01  err_density=1.199801e-02  paths=290  leaf_error=2.031840e+00
+              0x24d9280: len=4.661594e-03  len_mean=3.365059e-01  len_weight=4.765061e+00  err_density=1.185165e-02  paths=7830
+                0x258f230: len=1.943960e-01  len_mean=1.699958e-01  len_weight=4.112537e-01  err_density=1.259365e-02  paths=864
+                  SAMN02845510.r1: len=1.652893e-01  err_density=1.363337e-02  paths=290  leaf_error=2.329654e+00
+                  0x258b860: len=1.002064e-01  len_mean=7.295208e-02  len_weight=1.457580e-01  err_density=1.203279e-02  paths=578
+                    SAMN02698319: len=7.057120e-02  err_density=1.217605e-02  paths=290  leaf_error=2.074886e+00
+                    SAMN03160363: len=7.518680e-02  err_density=1.184574e-02  paths=290  leaf_error=2.059143e+00
+                0x2590d10: len=1.387919e-02  len_mean=3.185663e-01  len_weight=4.145532e+00  err_density=1.189353e-02  paths=7128
+                  0x2e48c60: len=4.191101e-03  len_mean=3.130441e-01  len_weight=1.628567e+00  err_density=1.254215e-02  paths=3080
+                    0x2ed6b00: len=1.110494e-01  len_mean=2.054466e-01  len_weight=7.766394e-01  err_density=1.272174e-02  paths=2264
+                      0x24d7d80: len=3.153869e-02  len_mean=1.658902e-01  len_weight=3.306243e-01  err_density=1.606862e-02  paths=864
+                        SAMN03476177: len=1.547963e-01  err_density=1.841370e-02  paths=290  leaf_error=2.517280e+00
+                        0x2582290: len=1.735240e-01  len_mean=2.133127e-03  len_weight=2.304000e-03  err_density=1.469335e-02  paths=578
+                          SAMN02844935: len=8.886399e-05  err_density=1.478301e-02  paths=290  leaf_error=1.301689e+00
+                          SAMN03120969: len=2.215136e-03  err_density=1.455207e-02  paths=290  leaf_error=1.294310e+00
+                      0x2e44b80: len=2.643435e-02  len_mean=1.860180e-01  len_weight=3.880421e-01  err_density=1.397608e-02  paths=1430
+                        0x2f269c0: len=1.768625e-01  len_mean=5.269417e-03  len_weight=1.047100e-02  err_density=1.417110e-02  paths=578
+                          SAMN03269475: len=4.814104e-03  err_density=1.422337e-02  paths=290  leaf_error=1.776138e+00
+                          SAMN02902776: len=5.656896e-03  err_density=1.406949e-02  paths=290  leaf_error=1.769831e+00
+                        0x2e16c40: len=1.799902e-01  len_mean=9.654992e-03  len_weight=2.071845e-02  err_density=1.377092e-02  paths=864
+                          SAMN03573258: len=1.118137e-02  err_density=1.432344e-02  paths=290  leaf_error=1.717319e+00
+                          0x2ed3fc0: len=4.030071e-03  len_mean=3.835372e-03  len_weight=5.507000e-03  err_density=1.418394e-02  paths=578
+                            SAMN03265729: len=1.027541e-03  err_density=1.432441e-02  paths=290  leaf_error=1.454398e+00
+                            SAMN03252940: len=4.479459e-03  err_density=1.399257e-02  paths=290  leaf_error=1.451482e+00
+                    0x2e7d7c0: len=1.914337e-02  len_mean=2.897648e-01  len_weight=7.217347e-01  err_density=1.231438e-02  paths=864
+                      SAMN02844558: len=2.865696e-01  err_density=1.248440e-02  paths=290  leaf_error=2.014944e+00
+                      0x25841a0: len=1.438091e-01  len_mean=1.480599e-01  len_weight=2.913560e-01  err_density=1.221688e-02  paths=578
+                        SAMN03466157: len=1.270504e-01  err_density=1.185321e-02  paths=290  leaf_error=1.882938e+00
+                        SAMN02908580: len=1.643056e-01  err_density=1.252901e-02  paths=290  leaf_error=2.075261e+00
+                  0x2e3c9c0: len=1.307025e-03  len_mean=3.181241e-01  len_weight=2.511467e+00  err_density=1.246302e-02  paths=4400
+                    0x2e22ee0: len=8.681648e-03  len_mean=3.122183e-01  len_weight=1.165250e+00  err_density=1.333436e-02  paths=1430
+                      0x2ea1890: len=1.747960e-02  len_mean=3.010723e-01  len_weight=6.011880e-01  err_density=1.276238e-02  paths=578
+                        SAMN02847573: len=3.125840e-01  err_density=1.418920e-02  paths=290  leaf_error=2.368358e+00
+                        SAMN05225548: len=2.886040e-01  err_density=1.110405e-02  paths=290  leaf_error=1.834713e+00
+                      0x2e74060: len=1.236351e-01  len_mean=1.814144e-01  len_weight=4.229473e-01  err_density=1.400403e-02  paths=864
+                        SAMN03787606: len=1.857837e-01  err_density=1.473321e-02  paths=290  leaf_error=2.348368e+00
+                        0x258c3b0: len=1.187016e-01  len_mean=5.929000e-02  len_weight=1.184620e-01  err_density=1.365214e-02  paths=578
+                          SAMN04992708: len=5.736165e-02  err_density=1.236858e-02  paths=290  leaf_error=1.945553e+00
+                          SAMN02844693: len=6.110035e-02  err_density=1.478157e-02  paths=290  leaf_error=2.286044e+00
+                    0x258ade0: len=7.365936e-03  len_mean=3.083219e-01  len_weight=1.330170e+00  err_density=1.274107e-02  paths=3080
+                      0x2eaa140: len=1.306670e-02  len_mean=3.050036e-01  len_weight=1.047049e+00  err_density=1.264796e-02  paths=2810
+                        0x258ead0: len=1.392591e-01  len_mean=1.655353e-01  len_weight=5.742808e-01  err_density=1.229110e-02  paths=1988
+                          0x258ebe0: len=1.554122e-01  len_mean=3.424730e-03  len_weight=6.346000e-03  err_density=2.044575e-02  paths=578
+                            SAMN02699690: len=4.066722e-03  err_density=2.037971e-02  paths=290  leaf_error=1.875125e+00
+                            SAMN04308849: len=2.279278e-03  err_density=2.044118e-02  paths=290  leaf_error=1.880754e+00
+                          0x24d9390: len=2.487704e-02  len_mean=1.432848e-01  len_weight=3.876455e-01  err_density=1.640756e-02  paths=1430
+                            0x2ed2930: len=4.455652e-02  len_mean=9.589182e-02  len_weight=1.887460e-01  err_density=1.908759e-02  paths=578
+                              SAMN03169268: len=1.063453e-01  err_density=1.341657e-02  paths=290  leaf_error=2.109029e+00
+                              SAMN03474009: len=8.240073e-02  err_density=2.336996e-02  paths=290  leaf_error=2.702997e+00
+                            0x2587d50: len=1.416014e-01  len_mean=5.970947e-03  len_weight=1.274154e-02  err_density=1.516031e-02  paths=864
+                              SAMN03269489: len=6.535938e-03  err_density=1.487956e-02  paths=290  leaf_error=1.647352e+00
+                              0x2edaa00: len=4.429607e-03  len_mean=9.462737e-04  len_weight=1.776000e-03  err_density=1.524999e-02  paths=578
+                                SAMN05771798: len=1.115480e-03  err_density=1.528494e-02  paths=290  leaf_error=1.092746e+00
+                                SAMN05416571: len=6.605203e-04  err_density=1.516215e-02  paths=290  leaf_error=1.081268e+00
+                        0x2584620: len=2.888354e-01  len_mean=1.661600e-02  len_weight=4.467417e-02  err_density=1.334717e-02  paths=864
+                          0x24d8200: len=3.041171e-03  len_mean=1.532097e-02  len_weight=2.994500e-02  err_density=1.358893e-02  paths=578
+                            SAMN02698254: len=1.725668e-02  err_density=1.383273e-02  paths=290  leaf_error=1.988033e+00
+                            SAMN02314169: len=1.268832e-02  err_density=1.329285e-02  paths=290  leaf_error=1.876206e+00
+                          SAMN02802264: len=1.168800e-02  err_density=1.278361e-02  paths=290  leaf_error=1.801910e+00
+                      SAMN03024512: len=2.700535e-01  err_density=1.591278e-02  paths=290  leaf_error=2.432391e+00
+          0x258c250: len=9.876752e-02  len_mean=3.179756e-01  len_weight=6.359300e-01  err_density=1.586862e-02  paths=578
+            SAMN02844820: len=3.161282e-01  err_density=1.574798e-02  paths=290  leaf_error=2.543853e+00
+            SAMN04594792: len=3.198018e-01  err_density=1.593395e-02  paths=290  leaf_error=2.583300e+00
+        0x2f10ce0: len=9.153056e-03  len_mean=3.905568e-01  len_weight=6.502755e+00  err_density=1.354402e-02  paths=11664
+          0x258ffd0: len=3.589067e-01  len_mean=1.331877e-02  len_weight=4.376520e-02  err_density=1.449954e-02  paths=1148
+            0x2f276c0: len=4.239301e-03  len_mean=8.609260e-03  len_weight=1.632200e-02  err_density=1.460898e-02  paths=578
+              SAMN04577413: len=6.248344e-03  err_density=1.425183e-02  paths=290  leaf_error=1.653780e+00
+              SAMN04964206: len=1.007366e-02  err_density=1.490832e-02  paths=290  leaf_error=1.782445e+00
+            0x2590b90: len=4.046903e-03  len_mean=9.688520e-03  len_weight=1.915700e-02  err_density=1.477395e-02  paths=578
+              SAMN02368054: len=1.060506e-02  err_density=1.480770e-02  paths=290  leaf_error=1.771616e+00
+              SAMN05800187: len=8.551942e-03  err_density=1.468897e-02  paths=290  leaf_error=1.754970e+00
+          0x2f815e0: len=1.251121e-03  len_mean=3.905158e-01  len_weight=6.098832e+00  err_density=1.350279e-02  paths=10868
+            0x259aa90: len=1.751960e-02  len_mean=3.766225e-01  len_weight=1.218942e+00  err_density=1.434331e-02  paths=2264
+              0x24d9100: len=1.577253e-01  len_mean=2.231849e-01  len_weight=4.739721e-01  err_density=1.480898e-02  paths=1710
+                0x258e350: len=1.896337e-01  len_mean=3.273858e-02  len_weight=6.024744e-02  err_density=1.478449e-02  paths=1430
+                  0x2e284c0: len=3.856725e-03  len_mean=2.888186e-02  len_weight=5.639071e-02  err_density=6.875275e-02  paths=1148
+                    0x2e280c0: len=1.148335e-02  len_mean=1.739851e-02  len_weight=4.490736e-02  err_density=4.034924e-02  paths=864
+                      SAMN02844681: len=2.183227e-02  err_density=1.558977e-02  paths=290  leaf_error=1.772438e+00
+                      0x2583d20: len=3.327097e-03  len_mean=9.876451e-03  len_weight=1.974800e-02  err_density=4.846194e-02  paths=578
+                        SAMN02843948: len=9.718424e-03  err_density=3.976738e-02  paths=290  leaf_error=1.833316e+00
+                        SAMN02844477: len=1.002958e-02  err_density=5.567296e-02  paths=290  leaf_error=2.055087e+00
+                    SAMN04363882: len=0.000000e+00  err_density=1.208247e-01  paths=290  leaf_error=1.887065e+00
+                  SAMN03475395: len=0.000000e+00  err_density=1.345997e-01  paths=290  leaf_error=2.256411e+00
+                SAMN03344538: len=2.240910e-01  err_density=1.472605e-02  paths=290  leaf_error=2.287939e+00
+              0x2eaf7e0: len=1.567369e-01  len_mean=2.152733e-01  len_weight=4.305080e-01  err_density=1.291785e-02  paths=578
+                SAMN05414068: len=2.172914e-01  err_density=1.382687e-02  paths=290  leaf_error=2.114495e+00
+                SAMN03478866: len=2.132166e-01  err_density=1.189154e-02  paths=290  leaf_error=1.817564e+00
+            0x2590290: len=6.031236e-03  len_mean=3.835624e-01  len_weight=4.856339e+00  err_density=1.340028e-02  paths=9180
+              0x24da000: len=1.977100e-02  len_mean=3.766640e-01  len_weight=1.860283e+00  err_density=1.234733e-02  paths=2264
+                0x2587a50: len=4.523522e-03  len_mean=3.681108e-01  len_weight=1.463990e+00  err_density=1.211000e-02  paths=1988
+                  0x2eef040: len=3.113796e-03  len_mean=3.637980e-01  len_weight=1.086841e+00  err_density=1.205153e-02  paths=1430
+                    0x259a770: len=9.334045e-03  len_mean=3.573876e-01  len_weight=7.147750e-01  err_density=1.246214e-02  paths=578
+                      SAMN02698439: len=3.575943e-01  err_density=1.230850e-02  paths=290  leaf_error=1.923338e+00
+                      SAMN03477732: len=3.571807e-01  err_density=1.257138e-02  paths=290  leaf_error=1.976206e+00
+                    0x2591490: len=3.514176e-01  len_mean=6.543994e-03  len_weight=1.131454e-02  err_density=1.169514e-02  paths=864
+                      0x2efdd30: len=1.627538e-03  len_mean=4.916456e-03  len_weight=9.687000e-03  err_density=1.521889e-02  paths=578
+                        SAMN03098813: len=5.437944e-03  err_density=1.197315e-02  paths=290  leaf_error=1.249565e+00
+                        SAMN04544931: len=4.249056e-03  err_density=1.784028e-02  paths=290  leaf_error=1.171712e+00
+                      SAMN03466492: len=0.000000e+00  err_density=1.800140e-02  paths=290  leaf_error=1.125350e+00
+                  0x2e0ea80: len=3.678122e-01  len_mean=3.792346e-03  len_weight=6.223000e-03  err_density=1.205043e-02  paths=578
+                    SAMN03576989: len=4.566990e-03  err_density=1.194234e-02  paths=290  leaf_error=1.418501e+00
+                    SAMN03577101: len=1.656010e-03  err_density=1.211629e-02  paths=290  leaf_error=1.435450e+00
+                SAMN02777077: len=3.917693e-01  err_density=1.371370e-02  paths=290  leaf_error=2.211390e+00
+              0x258e1d0: len=9.129036e-03  len_mean=3.663020e-01  len_weight=2.967156e+00  err_density=1.366692e-02  paths=7364
+                0x24d9a00: len=6.090614e-03  len_mean=3.515749e-01  len_weight=1.066901e+00  err_density=1.802121e-02  paths=2264
+                  0x2f7a3a0: len=3.454560e-01  len_mean=4.612787e-03  len_weight=9.205000e-03  err_density=1.173670e-02  paths=578
+                    SAMN02844434: len=4.384906e-03  err_density=1.175245e-02  paths=290  leaf_error=1.458540e+00
+                    SAMN05771731: len=4.820094e-03  err_density=1.168034e-02  paths=290  leaf_error=1.449412e+00
+                  0x2e203a0: len=1.830564e-02  len_mean=3.340193e-01  len_weight=6.939344e-01  err_density=1.966398e-02  paths=1710
+                    SAMN05833261: len=3.311667e-01  err_density=1.286174e-02  paths=290  leaf_error=1.888236e+00
+                    0x2e01150: len=2.908413e-01  len_mean=4.578215e-02  len_weight=7.192647e-02  err_density=2.074226e-02  paths=1430
+                      0x2e98750: len=2.346190e-02  len_mean=2.232025e-02  len_weight=4.846456e-02  err_density=6.800245e-02  paths=1148
+                        0x24d9700: len=1.873505e-02  len_mean=7.532220e-03  len_weight=7.532220e-03  err_density=2.485523e-02  paths=578
+                          SAMN03468630: len=7.532220e-03  err_density=2.985209e-02  paths=290  leaf_error=1.580391e+00
+                          SAMN03780291: len=0.000000e+00  err_density=2.069083e-02  paths=290  leaf_error=1.363509e+00
+                        0x258b9b0: len=1.273929e-02  len_mean=4.910226e-03  len_weight=9.458000e-03  err_density=9.467501e-02  paths=578
+                          SAMN04255291: len=3.803247e-03  err_density=9.381012e-02  paths=290  leaf_error=2.875918e+00
+                          SAMN01902483: len=5.654753e-03  err_density=9.520799e-02  paths=290  leaf_error=2.997409e+00
+                      SAMN03477482: len=0.000000e+00  err_density=1.353369e-01  paths=290  leaf_error=4.349904e+00
+                0x2594820: len=2.416522e-03  len_mean=3.687777e-01  len_weight=1.891748e+00  err_density=1.174222e-02  paths=5420
+                  0x2585fa0: len=9.526331e-03  len_mean=3.598899e-01  len_weight=1.142904e+00  err_density=1.162394e-02  paths=4400
+                    0x2ea0e00: len=6.553785e-03  len_mean=3.527267e-01  len_weight=7.751410e-01  err_density=1.155119e-02  paths=4140
+                      0x2f81ac0: len=3.480818e-01  len_mean=1.229257e-02  len_weight=8.396276e-02  err_density=1.132663e-02  paths=3878
+                        0x2e3f500: len=7.070159e-03  len_mean=2.348033e-03  len_weight=2.348033e-03  err_density=2.240606e-02  paths=578
+                          SAMN03282145: len=0.000000e+00  err_density=2.743631e-02  paths=290  leaf_error=7.640243e-01
+                          SAMN03289448: len=2.348033e-03  err_density=2.674273e-02  paths=290  leaf_error=7.679574e-01
+                        0x24d89e0: len=2.416085e-03  len_mean=1.023965e-02  len_weight=7.212848e-02  err_density=1.363140e-02  paths=3348
+                          SAMN04217283: len=1.059063e-02  err_density=1.597016e-02  paths=290  leaf_error=8.604254e-01
+                          0x2e1ad20: len=4.288068e-04  len_mean=9.750436e-03  len_weight=6.110905e-02  err_density=1.394836e-02  paths=3080
+                            0x2582e20: len=1.219833e-03  len_mean=8.896070e-03  len_weight=5.302862e-02  err_density=1.488142e-02  paths=2810
+                              0x258a630: len=3.802652e-04  len_mean=6.996040e-03  len_weight=2.742157e-02  err_density=1.825553e-02  paths=1710
+                                SAMN02646876: len=8.039981e-03  err_density=1.753143e-02  paths=290  leaf_error=8.010489e-01
+                                0x2e29b00: len=4.497982e-04  len_mean=6.113189e-03  len_weight=1.893179e-02  err_density=1.835659e-02  paths=1430
+                                  0x2f56bf0: len=2.687394e-03  len_mean=3.385176e-03  len_weight=1.004773e-02  err_density=1.854791e-02  paths=1148
+                                    SAMN02894104: len=3.868987e-03  err_density=1.795372e-02  paths=290  leaf_error=7.141241e-01
+                                    0x25826a0: len=1.110434e-03  len_mean=1.971790e-03  len_weight=5.068304e-03  err_density=1.873194e-02  paths=864
+                                      0x2f272f0: len=5.089600e-04  len_mean=1.377298e-03  len_weight=2.466000e-03  err_density=1.858299e-02  paths=578
+                                        SAMN02645798: len=1.654805e-03  err_density=1.864811e-02  paths=290  leaf_error=6.186013e-01
+                                        SAMN02894101: len=8.111950e-04  err_density=1.845323e-02  paths=290  leaf_error=6.037293e-01
+                                      SAMN02767018: len=2.093344e-03  err_density=1.895796e-02  paths=290  leaf_error=6.507167e-01
+                                  SAMN02640842: len=6.196668e-03  err_density=1.749553e-02  paths=290  leaf_error=7.595615e-01
+                              0x2e2f180: len=4.069265e-03  len_mean=6.501700e-03  len_weight=2.115752e-02  err_density=2.221547e-02  paths=1148
+                                0x258d710: len=9.653160e-04  len_mean=5.863092e-03  len_weight=1.459982e-02  err_density=1.804802e-02  paths=864
+                                  0x2e88dc0: len=7.510165e-04  len_mean=5.842216e-03  len_weight=1.100800e-02  err_density=1.657701e-02  paths=578
+                                    SAMN05274319: len=6.868382e-03  err_density=1.482564e-02  paths=290  leaf_error=7.741807e-01
+                                    SAMN02261133: len=4.139618e-03  err_density=1.810801e-02  paths=290  leaf_error=7.629844e-01
+                                  SAMN02640780: len=2.840808e-03  err_density=2.075559e-02  paths=290  leaf_error=7.389806e-01
+                                SAMN05201703: len=5.592380e-03  err_density=4.018677e-02  paths=290  leaf_error=1.037996e+00
+                            SAMN02766982: len=6.860598e-03  err_density=1.975338e-02  paths=290  leaf_error=7.887454e-01
+                      SAMN02645760: len=3.430965e-01  err_density=1.382260e-02  paths=290  leaf_error=2.085014e+00
+                    SAMN03002065: len=3.612087e-01  err_density=1.211953e-02  paths=290  leaf_error=1.857384e+00
+                  0x258f550: len=4.211702e-03  len_mean=3.635708e-01  len_weight=7.351062e-01  err_density=1.164815e-02  paths=1148
+                    SAMN04600250: len=3.673847e-01  err_density=1.018417e-02  paths=290  leaf_error=1.569340e+00
+                    0x259bdf0: len=3.538147e-01  len_mean=5.945683e-03  len_weight=1.390687e-02  err_density=1.206114e-02  paths=864
+                      SAMN02699772: len=2.052292e-03  err_density=1.302825e-02  paths=290  leaf_error=1.269518e+00
+                      0x2ed27d0: len=8.245821e-04  len_mean=5.795133e-03  len_weight=1.103000e-02  err_density=1.249411e-02  paths=578
+                        SAMN04942620: len=4.272047e-03  err_density=1.246329e-02  paths=290  leaf_error=1.274241e+00
+                        SAMN03169710: len=6.757953e-03  err_density=1.248180e-02  paths=290  leaf_error=1.348301e+00
+    SAMN03469212: len=3.581233e-01  err_density=1.357056e-02  paths=290  leaf_error=1.978841e+00

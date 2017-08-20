@@ -40,7 +40,7 @@ diff tree4.makeDistTree data/tree4.makeDistTree
 if ($?) exit 1
 rm tree4.makeDistTree
 echo "Verbose..."
-makeDistTree "" -data data/tree4 -dissim dist -verbose 2 >& /dev/null
+makeDistTree "" -data data/tree4 -dissim dist -qc >& /dev/null
 if ($?) exit 1
 
 
@@ -56,7 +56,7 @@ if ($?) exit 1
 diff randomTree.makeDistTree data/randomTree.makeDistTree
 if ($?) exit 1
 echo "Verbose..."
-makeDistTree random-output.tree -data data/randomTree -dissim dist -variance lin -verbose 2  >& /dev/null
+makeDistTree random-output.tree -data data/randomTree -dissim dist -variance lin -qc  >& /dev/null
 if ($?) exit 1
 rm -r data/randomTree.dir/
 rm randomTree.makeDistTree

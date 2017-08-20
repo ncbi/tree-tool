@@ -2101,7 +2101,7 @@ void DistTree::neighborJoin ()
         for (const bool first : Bool)
           const_cast <DTNode*> (neighbors. nodes [first]) -> len += neighbors. dissim;
           
-    if (verbose (-1))  
+    if (verbose (-2))  
     {
       cout << endl << "Nodes and sum:" << endl;
     	for (const DiGraph::Arc* arc : root->arcs [false])
@@ -2453,6 +2453,9 @@ void DistTree::qc () const
 
 void DistTree::qcAttrs () const
 {
+  if (! qc_on)
+    return;
+  
   Set<const Attr*> nodeAttrs;
  	for (DiGraph::Node* node : nodes)
  	{
@@ -2899,7 +2902,7 @@ void DistTree::optimizeLenLocal ()
     cout << "Optimizing arc lengths locally ..." << endl;
 
 //cout << "absCriterion (before optimizeLenLocal) = " << absCriterion << endl;  
-  Progress prog ((uint) nodes. size ());
+  Progress prog ((uint) countInteriorNodes ());  // Upper bound
   Space1<NumAttr1> sp (ds, false); 
   Vector<Real> lenOld;  
   for (const DiGraph::Node* node : nodes)
@@ -2918,19 +2921,19 @@ void DistTree::optimizeLenLocal ()
     const Real absCriterion_old = absCriterion;  
   #endif
     
-    VectorPtr<DiGraph::Node> dtNodes (dtNode->getChildren ());
-    dtNodes << dtNode;  
+    VectorPtr<DiGraph::Node> star (dtNode->getChildren ());
+    star << dtNode;  
 
     // lenOld, *target_new
-    lenOld. clear (); lenOld. reserve (dtNodes. size ());    
-    FOR (size_t, attrNum, dtNodes. size ())
+    lenOld. clear (); lenOld. reserve (star. size ());    
+    FOR (size_t, attrNum, star. size ())
     {
-      const DTNode* n = static_cast <const DTNode*> (dtNodes [attrNum]);
+      const DTNode* n = static_cast <const DTNode*> (star [attrNum]);
       ASSERT (! n->inDiscernable ());
       lenOld << n->len;
       const_cast <DTNode*> (n) -> len = 0;
     }
-    ASSERT (lenOld. size () == dtNodes. size ());
+    ASSERT (lenOld. size () == star. size ());
     FOR (size_t, objNum, ds. objs. size ())
     {
       const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
@@ -2940,15 +2943,16 @@ void DistTree::optimizeLenLocal ()
       (* const_cast <RealAttr1*> (target_new)) [objNum] = (*target) [objNum] - path2prediction (path);
     }
     
-    sp. clear ();  sp. reserve (dtNodes. size ());
-    for (const DiGraph::Node* dtNode1 : dtNodes)
+    sp. clear ();  sp. reserve (star. size ());
+    for (const DiGraph::Node* dtNode1 : star)
       sp << static_cast <const DTNode*> (dtNode1) -> attr;
 
     // lr
+    Unverbose unv;
     if (verbose ())
       cout << "Linear regression ..." << endl;
     L2LinearNumPrediction lr (dsSample, sp, *target_new);
-    ASSERT (lr. beta. size () == dtNodes. size ());
+    ASSERT (lr. beta. size () == star. size ());
     FOR (size_t, attrNum, lr. beta. size ())
       lr. beta [attrNum] = lenOld [attrNum];
     const bool solved = lr. solveUnconstrainedFast (nullptr, true, 10, 0.01);  // PAR
@@ -2956,9 +2960,9 @@ void DistTree::optimizeLenLocal ()
       lr. qc ();
   
     // DTNode::len
-    FOR (size_t, attrNum, dtNodes. size ())
-      const_static_cast <DTNode*> (dtNodes [attrNum]) -> len = solved ? lr. beta [attrNum] : lenOld [attrNum];
-    if (verbose ())
+    FOR (size_t, attrNum, star. size ())
+      const_static_cast <DTNode*> (star [attrNum]) -> len = solved ? lr. beta [attrNum] : lenOld [attrNum];
+    if (qc_on && verbose ())
     {
       setPrediction ();
       setAbsCriterion ();  
@@ -3092,7 +3096,7 @@ bool DistTree::optimize ()
 
 void DistTree::optimizeIter (const string &output_tree)
 {
-  if (verbose ())
+  if (qc_on && verbose ())
   {
     checkPrediction ();
     checkAbsCriterion ("optimizeIter");
@@ -3107,7 +3111,7 @@ void DistTree::optimizeIter (const string &output_tree)
     if (! optimize ())
       break;	    
     saveFile (output_tree);
-    if (verbose ())   
+    if (qc_on && verbose ())   
     {
       checkPrediction ();
       checkAbsCriterion ("optimize");
@@ -3335,7 +3339,7 @@ void DistTree::optimizeAdd (bool sparse,
       {
         Unverbose unv;
       //VectorPtr<DTNode> boundary;  boundary. reserve (nodes. size ());
-        optimizeSubtree (const_static_cast <Steiner*> (g->getParent ()) /*, boundary*/);
+        optimizeSubgraph (const_static_cast <Steiner*> (g->getParent ()) /*, boundary*/);
         setSubtreeLeaves ();
       }
       if (verbose (1))
@@ -3432,7 +3436,7 @@ void DistTree::addSubtreeLeaf (Leaf* leaf)
 
 
 
-Real DistTree::optimizeSubtree (const Steiner* center)  
+Real DistTree::optimizeSubgraph (const Steiner* center)  
 {
   ASSERT (center);
   ASSERT (center->graph);
@@ -3588,14 +3592,14 @@ Real DistTree::optimizeSubtree (const Steiner* center)
   setPrediction ();
   finishChanges ();
   setAbsCriterion ();
-  if (verbose ())
+  if (qc_on && verbose ())
   {
     cout << "absCriterion = " << absCriterion << endl;
     checkPrediction ();
-    checkAbsCriterion ("optimizeSubtree");
+    checkAbsCriterion ("optimizeSubgraph");
   }
 
-  if (verbose (2))
+  if (verbose (1))
     reportErrors (cout);
   	
   if (greaterReal (absCriterion, absCriterion_old, 1e-5)) // PAR
@@ -3610,7 +3614,7 @@ Real DistTree::optimizeSubtree (const Steiner* center)
 
 
 
-void DistTree::optimizeSubtrees ()
+void DistTree::optimizeSubgraphs ()
 {
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = false;
@@ -3637,9 +3641,8 @@ void DistTree::optimizeSubtrees ()
     if (! center)
       break;
     {
-      Unverbose unv1;
-      Unverbose unv2;
-      optimizeSubtree (center);
+      Unverbose unv;
+      optimizeSubgraph (center);
     }
     {
       ostringstream oss;
@@ -3765,7 +3768,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   	  const bool first = ch_ == changes. front ();  
   	#endif
   
-  	  if (verbose ())
+  	  if (qc_on && verbose ())
   	    checkAbsCriterion ("Before");
   	    
    	  const Real absCriterion_old = absCriterion;
@@ -3787,7 +3790,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   	      cout << "Restore" << endl;
   	  	ch->restore ();
   	  	ASSERT (eqReal (absCriterion, absCriterion_old));
-        if (verbose ())
+        if (qc_on && verbose ())
     	  	checkAbsCriterion ("restore");
   	  }
   	  else
@@ -3795,7 +3798,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
        	ch->commit ();
        	commits++;
         setAbsCriterion ();
-    	  if (verbose ())
+    	  if (qc_on && verbose ())
     	  {
      	    cout << "absCriterion = " << absCriterion << endl;
     	    checkAbsCriterion ("commit");
@@ -3865,7 +3868,7 @@ void DistTree::tryChange (Change* ch,
   ch->restore ();
 
   Unverbose unv;
-  if (verbose ())
+  if (qc_on && verbose ())
   {
     ch->print (cout); 
   	checkAbsCriterion ("tryChange");

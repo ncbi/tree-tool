@@ -894,14 +894,14 @@ public:
 	void optimizeIter (const string &output_tree);
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
-	void optimizeSubtrees ();
-	  // Invokes: optimizeSubtree()
-	  // Time: O(n * Time(optimizeSubtree))
+	void optimizeSubgraphs ();
+	  // Invokes: optimizeSubgraph()
+	  // Time: O(n * Time(optimizeSubgraph))
 	void optimizeAdd (bool sparse,
 	                  const string &output_tree);
 	  // Input: dissimDs, dissimAttr
 	  // Requires: (bool)dissimAttr
-	  // Invokes: addDissim(), optimizeSubtree() if leafRelCriterion is large, root->findClosestNode(), DTNode::selectRepresentative()
+	  // Invokes: addDissim(), optimizeSubgraph() if leafRelCriterion is large, root->findClosestNode(), DTNode::selectRepresentative()
 	  // Time: !sparse: ~30 sec./1 new leaf for 3000 leaves ??
 	  //       sparse:    4 sec./1 new leaf for 3500 leaves ??
 private:
@@ -913,7 +913,7 @@ private:
     // Update: DTNode::subtreeLeaves
     // Output: leaf->index
     // Time: O(n)
-	Real optimizeSubtree (const Steiner* center);
+	Real optimizeSubgraph (const Steiner* center);
 	  // Return: min. distance to boundary
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true

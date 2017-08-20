@@ -123,7 +123,7 @@ struct ThisApplication : Application
             if (whole)
               tree->optimizeIter (output_tree);
             else
-              tree->optimizeSubtrees ();  
+              tree->optimizeSubgraphs ();  
                 // optimizeSubtreesIter () almost does not improve
           }
           tree->reroot ();  
