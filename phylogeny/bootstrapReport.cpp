@@ -78,6 +78,8 @@ struct ThisApplication : Application
     
   #if 1 
     double sum = 0;
+    double varSum = 0;
+    size_t n = 0;
     for (const auto it : node2support)
     {
  	    const size_t replicas = it. second [0] + it. second [1];
@@ -87,10 +89,13 @@ struct ThisApplication : Application
  	      cout << it. first << ' ' << replicas << endl;
  	      ERROR;
  	    }
+ 	    // Probability of a Bernoulli random variable
  	    const double support = (double) it. second [1] / (double) replicas;
  	    if (support < support_min)
  	      continue;
  	    sum += support;
+ 	    varSum += support * (1 - support);
+ 	    n++;
  	    if (print_nodes)
         cout        << it. first 
              << ' ' << it. second [0] 
@@ -100,6 +105,7 @@ struct ThisApplication : Application
     }
     ONumber on (cout, 3, false);
     cout << "Sum: " << sum << endl;
+    cout << "Var: " << varSum / (double) n << endl;
   #else
    	for (const DiGraph::Node* node : tree. nodes)  
    	  if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
