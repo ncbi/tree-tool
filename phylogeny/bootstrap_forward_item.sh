@@ -22,9 +22,6 @@ set PROG      = $7
 
 set BASE = $INPUT-$BASE_SEED
 
-cp ../$BASE.list $BASE-$SEED.list
-if ($?) exit 1
-
 set BASE_SIZE = `wc -l ../$BASE.list`
 if ($SIZE < $BASE_SIZE[1]) then
   echo "Sample size < base sample size"
@@ -32,6 +29,8 @@ if ($SIZE < $BASE_SIZE[1]) then
 endif
 @ N = $SIZE - $BASE_SIZE[1]
 
+cp ../$BASE.list $BASE-$SEED.list
+if ($?) exit 1
 setRandOrd ../$BASE.rest $SEED | head -$N >> $BASE-$SEED.list
 set S = $?
 if ($S != 141 && $S != 0) then
