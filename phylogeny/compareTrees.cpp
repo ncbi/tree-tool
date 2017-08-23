@@ -185,7 +185,7 @@ struct ThisApplication : Application
 	  addPositional ("input_tree1", "Tree 1");
 	  addPositional ("input_tree2", "Tree 2");
 	  addKey ("type", "Tree type: dist|feature", "dist");
-	  addKey ("frequency", "Node frequency is computed for directed|undirected tree; 'none' - not used");
+	  addKey ("frequency", "Node frequency is computed for directed|undirected tree; 'none' - not used", "none");
 	}
 
 
