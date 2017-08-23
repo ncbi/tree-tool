@@ -15,7 +15,6 @@ if ($?) exit 1
 
 echo ""
 echo "Bootstrapping..."
-#if (0) then  # ??
 # Directory for bootstrap .tree-files
 mkdir $1.trees
 if ($?) exit 1
@@ -26,7 +25,6 @@ if ($?) exit 1
 # Error file log
 mkdir log
 if ($?) exit 1
-#endif  # ??
 
 
 set replicas = 400  # PAR
