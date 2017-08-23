@@ -1964,6 +1964,8 @@ void DistTree::setGlobalLen ()
       Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
       ASSERT (s);
       s->subtreeLen. add (max (0.0, d) / 2);  // Molecular clock ??
+        // map<const Steiner*, Vector<pair<const Leaf*, const Leaf*>>>
+        // Use quartets
     }
   }
 
@@ -3480,7 +3482,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
       tree. optimizeLenLocal ();  
       tree. finishChanges (); 
       tree. optimizeIter (string ());
-        // tree. optimizeSubgraphs () if tree is large ??
+        // tree.neighborJoin(), tree.optimizeSubgraphs() if tree is large ??
           // allows using mdsTree.sh
     }
     else if (leaves == 3)

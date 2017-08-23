@@ -108,6 +108,7 @@ struct ThisApplication : Application
             Chronometer_OnePass cop ("Initial arc lengths");
             EXEC_ASSERT (tree->optimizeLen ());
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
+            cout << endl;
             tree->optimizeLenLocal ();  
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             if (verbose ())
