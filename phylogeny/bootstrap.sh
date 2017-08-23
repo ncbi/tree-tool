@@ -2,7 +2,7 @@
 
 if ($# != 3) then
   echo "Build and bootstrap a distance tree"
-  echo "#1: Input .dm file without .dm; #1.tree must exist"
+  echo "#1: Input .dm file without .dm"
   echo "#2: Distance attribute in #1"
   echo "#3: Tree building program with parameters #1, #2"
   exit 1
@@ -21,11 +21,9 @@ if ($?) exit 1
 cd $1.trees
 if ($?) exit 1
 
-
 # Error file log
 mkdir log
 if ($?) exit 1
-
 
 set replicas = 400  # PAR
 set SEED = 0
@@ -48,8 +46,8 @@ end
 rmdir log
 if ($?) exit 1
 
-
 cd ..
+
 
 bootstrap_report.sh $1 $replicas none
 if ($?) exit 1

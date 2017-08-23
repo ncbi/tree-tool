@@ -2,9 +2,9 @@
 
 if ($# != 3) then
   echo "Subsampling bootstrap"
-  echo "#1: Input: #1.tree, #1.trees/. Output: #1.bootstrap"
+  echo "#1: Input: #1.tree, #1.trees/. Output: #1.bootstrap-#2-#3"
   echo "#2: # replicas"
-  echo "#3: tree for frequent nodes identification: directed|undirected"
+  echo "#3: Frequent nodes filtering: none|directed|undirected"
   exit 1
 endif
 
