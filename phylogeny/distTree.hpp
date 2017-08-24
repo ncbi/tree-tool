@@ -953,7 +953,7 @@ public:
   void reroot (DTNode* underRoot,
                Real arcLen);
   void reroot ();
-    // Molecular clock
+    // Local molecular clock ??
     // Optimization criterion ??
     // Invokes: reroot(,)
   void setHeight ()
