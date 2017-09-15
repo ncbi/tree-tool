@@ -12,7 +12,7 @@ endif
 # PAR
 set mds         = 0  # 1
 set variance    = linExp 
-set sparse_init = ""  # -sparse_init
+set sparse_init = -sparse_init  # ""
 set whole       = ""  # -whole  
 
 
