@@ -24,6 +24,7 @@ struct ThisApplication : Application
 	  addPositional ("bootstrap", "Bootstrap result: file with lines: <N> match[+-]: <node LCA-name>");
 	  addKey ("replicas", "# replicas (match+ + match-) - for QC", "0");
 	  addKey ("support_min", "Min. match+ / (match+ + match-) to report a node", "0.333");   // =1.0/3.0
+	  addKey ("stable_min", "Min. match+ / (match+ + match-) for a node to be stable", "0.92");   // PAR
 	  addFlag ("print_nodes", "Print support for each interior arc identified by a child node");
 	}
 
@@ -35,9 +36,13 @@ struct ThisApplication : Application
 		const string bootstrap         = getArg ("bootstrap");
 		const size_t replicas_expected = str2<size_t> (getArg ("replicas"));
 		const double support_min       = str2<double> (getArg ("support_min"));
+		const double stable_min        = str2<double> (getArg ("stable_min"));
 		const bool print_nodes         = getFlag ("print_nodes");
 		ASSERT (replicas_expected);
 		ASSERT (support_min >= 0);
+		ASSERT (support_min <= 1);
+		ASSERT (stable_min >= 0);
+		ASSERT (stable_min <= 1);
     
 
   #if 0
@@ -78,7 +83,7 @@ struct ThisApplication : Application
     
   #if 1 
     double supportSum = 0;
-    size_t supported = 0;
+    size_t stable = 0;
     double varSum = 0;
     size_t n = 0;
     for (const auto it : node2support)
@@ -92,8 +97,8 @@ struct ThisApplication : Application
  	    }
  	    // Probability of a Bernoulli random variable
  	    const double support = (double) it. second [1] / (double) replicas;
- 	    if (support > 0.5)
- 	      supported++;
+ 	    if (support >= stable_min)  
+ 	      stable++;
  	    varSum += support * (1 - support);
  	    n++;
  	    if (support < support_min)
@@ -106,11 +111,11 @@ struct ThisApplication : Application
              << ' ' << support
              << endl;
     }
-    ASSERT (supported <= n);
+    ASSERT (stable <= n);
     ONumber on (cout, 3, false);
     cout << "Sum: " << supportSum << endl;
     cout << "Var: " << varSum / (double) n << endl;
-    cout << "Supported fraction: " << (double) supported / (double) n << endl;
+    cout << "Stable: " << stable << endl;
   #else
    	for (const DiGraph::Node* node : tree. nodes)  
    	  if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
