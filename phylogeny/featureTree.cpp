@@ -4546,6 +4546,8 @@ void FeatureTree::saveDatabasePhen (Server &db)
 /*
 TODO: ??
 
+MLE should sum over internal states
+
 Borrow Change's from distTree
 Local Change's involving more than 1 node
   
