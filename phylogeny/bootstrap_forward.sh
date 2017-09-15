@@ -14,7 +14,7 @@ endif
 set INPUT      = $1
 set ATTR       = $2
 set PROG       = $3
-set BASE_SEED       = $4
+set BASE_SEED  = $4
 set BASE_SIZE  = $5
 set SUPER_SIZE = $6
 
@@ -70,26 +70,28 @@ mkdir log
 if ($?) exit 1
 
 
-set replicas = 400  # PAR 
-set SEED = 0
-while ($SEED < $replicas) 
-  @ SEED = $SEED + 1
-  set OUT = $BASE-$SEED.tree
-  if (! -e $OUT || -z $OUT) then
-    cp /dev/null log/$SEED
-    if ($?) exit 1
-    $QSUB -N j$SEED "bootstrap_forward_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
-    if ($?) exit 1
-  endif
-end
 while (1)
-  sleep 15  # PAR
-  set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
-  if ($Q[1] == 0)  break
-end
+  set replicas = 400  # PAR 
+  set SEED = 0
+  while ($SEED < $replicas) 
+    @ SEED = $SEED + 1
+    set OUT = $BASE-$SEED.tree
+    if (! -e $OUT || -z $OUT) then
+      cp /dev/null log/$SEED
+      if ($?) exit 1
+      $QSUB -N j$SEED "bootstrap_forward_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
+      if ($?) exit 1
+    endif
+  end
+  while (1)
+    sleep 15  # PAR
+    set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
+    if ($Q[1] == 0)  break
+  end
 
-rmdir log
-if ($?) exit 1
+  rmdir log
+  if ($? == 0) break
+end
 
 
 cd ..
