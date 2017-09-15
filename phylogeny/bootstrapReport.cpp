@@ -115,7 +115,7 @@ struct ThisApplication : Application
     ONumber on (cout, 3, false);
     cout << "Sum: " << supportSum << endl;
     cout << "Var: " << varSum / (double) n << endl;
-    cout << "Stable: " << stable << endl;
+    cout << stable_min * 100 << "%-Stable: " << stable << endl;
   #else
    	for (const DiGraph::Node* node : tree. nodes)  
    	  if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
