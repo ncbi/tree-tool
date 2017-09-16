@@ -89,6 +89,7 @@ while (1)
     if ($Q[1] == 0)  break
   end
 
+ #rm -f log/*.core
   rmdir log
   if ($? == 0) break
 end
@@ -103,11 +104,11 @@ rm $BASE.rest
 bootstrap_report.sh $BASE $replicas none
 if ($?) exit 1
 
-bootstrap_report.sh $BASE $replicas directed
-if ($?) exit 1
+#bootstrap_report.sh $BASE $replicas directed
+#if ($?) exit 1
 
-bootstrap_report.sh $BASE $replicas undirected
-if ($?) exit 1
+#bootstrap_report.sh $BASE $replicas undirected
+#if ($?) exit 1
 
 rm -r $BASE.trees/
 if ($?) exit 1
