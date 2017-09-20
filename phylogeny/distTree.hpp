@@ -74,7 +74,7 @@ struct DistTree;
 
 
 
-typedef  Vector<Real>  Leaf2dist;  // Leaf2dissim ??
+typedef  Vector<Real>  Leaf2dist;  
   // Index: Leaf::index
 
 
@@ -104,6 +104,7 @@ public:
 protected:
   Vector<bool> subtreeLeaves;  
     // Indexed by Leaf::index
+  Real dissimSum {0};
 public:
   const Leaf* reprLeaf {nullptr};
     // In subtree
@@ -163,18 +164,16 @@ public:
     // Update: descendents
 
   struct Closest : Root
+  // New Leaf* leaf: leaf->getParent() is on the node arc
   {
-    const DTNode* node;
-    Real absCriterion_delta;
-    Real leafLen;      
-    Real arcLen;
-      // From node to node->getParent()
+    const DTNode* node {nullptr};
+    Real absCriterion_delta {INF};
+      // To be minimized, >= 0
+    Real leafLen {NAN};
+    Real arcLen {NAN};
+      // From node to leaf->getParent()
       
     Closest ()
-      : node (nullptr)
-      , absCriterion_delta (INF)
-      , leafLen (NAN)
-      , arcLen (NAN)
       {}
     Closest (const DTNode* node_arg,
              Real absCriterion_delta_arg,
@@ -656,6 +655,8 @@ struct DistTree : Tree
     // attrs.size() <= 2*n
     // objs.size() <= n*(n-1)/2
     // size = O(n^3)
+  bool completeDs {true};
+    // No missing dissimilarities
   Sample dsSample;  
   // !nullptr
   const RealAttr1* target {nullptr};
@@ -754,11 +755,13 @@ private:
     // Return: Number of indiscernable leaves
     // Output: Leaf::len = 0, Leaf::discernable = false, topology
   void setGlobalLen ();
+    // Molecular clock 
     // Output: DTNode::subtreeLen, DTNode::len
 	  // Time: O(p log(n))
   void neighborJoin ();
     // Greedy
-    // Requires: no missing dissimilarities, star topology
+    // Assumes: Obj::mult = 1
+    // Requires: completeDs, star topology
     // Invokes: reroot()
     // Time: O(n^3)
   //
@@ -771,7 +774,7 @@ private:
                   const string &name2,
                   Real dissim);
 	  // Return: dissim is added
-	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
+	  // Update: ds.objs, completeDs, dissim2_sum, *target, objLeaf1, objLeaf2
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
   Set<string> selectPairs ();  
@@ -797,8 +800,10 @@ public:
   size_t dissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   Set<const DTNode*> getDiscernables () const;
+    // Logical leaves
   static void printParam (ostream &os) 
-  { os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
+  { os << "PARAMETERS:" << endl;
+    os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
     os << "Max. possible dissimilarity = " << dissim_max () << endl;
     os << "Subgraph radius = " << areaRadius_std << endl;
   }
@@ -862,6 +867,12 @@ public:
     // Output: Leaf::{absCriterion,relLenError}
 	  
   // Optimization	  
+  void quartet2arcLen ();
+    // Assumes: Obj::mult = 1
+    // Output: DTNode::dissimSum, DTNode::len
+    // Requires: completeDs
+    // Invokes: setLeaves()
+	  // Time: O(p log(n) + n)
 	bool optimizeLen ();
 	  // Return: success
 	  // Input: DTNode::attr

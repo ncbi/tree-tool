@@ -66,7 +66,7 @@ rm random-output.tree
 echo ""
 echo "prot-identical_comm ..."
 # Check time ??
-distTree.sh data/prot-identical_comm cons | grep -v '^CHRON: ' > prot-identical_comm.distTree
+makeDistTree  ""  -data data/prot-identical_comm  -dissim cons  -topology | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 if ($?) exit 1

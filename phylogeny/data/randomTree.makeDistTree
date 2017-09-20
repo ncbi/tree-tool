@@ -1,14 +1,17 @@
+PARAMETERS:
 Dissimilarity variance: lin
 Max. possible dissimilarity = 6.71089e+07
 Subgraph radius = 5
 
 
+INPUT:
 # Leaves: 50
 # Discernable leaves: 50
 # Nodes: 98
 # Dissimilarities: 1225 (100.00 %)
 Ave. dissimilarity = 4.99
 
+OUTPUT:
 absCriterion = 8.350348  Error density = 3.374084 %
 absCriterion [0] = 3.7455  Error density [0] = 5.0492 %  Fraction = 34.0408 %
 absCriterion [1] = 4.6048  Error density [1] = 2.8019 %  Fraction = 65.9592 %

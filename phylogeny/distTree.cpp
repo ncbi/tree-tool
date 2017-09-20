@@ -244,7 +244,7 @@ void DTNode::findClosestNode (const Leaf2dist &leaf2dist,
   // Depth-first order
   if (leaf2hat_dist. empty ())
   {
-    if (arcs [false]. empty ())
+    if (arcs [false]. empty ())  // can it be done at root ??
     {
       leaf2hat_dist. resize (leaf2dist. size (), NAN);
       const Leaf* leaf = asLeaf();
@@ -1072,7 +1072,8 @@ DistTree::DistTree (const string &treeFName,
 	                  const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
-: dsSample (ds)
+: completeDs (! sparse)
+, dsSample (ds)
 {
 	ASSERT (dissimFName. empty () == attrName. empty ());
 
@@ -1133,7 +1134,8 @@ DistTree::DistTree (const string &dirName,
 DistTree::DistTree (const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
-: dsSample (ds)
+: completeDs (! sparse)
+, dsSample (ds)
 {
   loadDissimDs (dissimFName, attrName);
 
@@ -1163,7 +1165,8 @@ DistTree::DistTree (const string &dissimFName,
 
 
 DistTree::DistTree (const string &newickFName)
-: dsSample (ds)
+: completeDs (false)
+, dsSample (ds)
 { 
   {
     ifstream f (newickFName);
@@ -1184,7 +1187,8 @@ DistTree::DistTree (const string &newickFName)
 
 DistTree::DistTree (Prob branchProb,
                     size_t leafNum_max)
-: dsSample (ds)
+: completeDs (false)
+, dsSample (ds)
 {
 	ASSERT (isProb (branchProb));
 	ASSERT (branchProb < 1);
@@ -1462,8 +1466,10 @@ DistTree::DistTree (const DTNode* center,
     if (mult == 0)
       const_cast <RealAttr1*> (target) -> setMissing (objNum);
     else
+    {
       (* const_cast <RealAttr1*> (target)) [objNum] /= mult;
-    dissim2_sum += mult * sqr ((*target) [objNum]);  // max (0.0, dist);
+      dissim2_sum += mult * sqr ((*target) [objNum]);  // max (0.0, dist);
+    }
   }
     
 
@@ -1963,9 +1969,7 @@ void DistTree::setGlobalLen ()
       ASSERT (ancestor);
       Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
       ASSERT (s);
-      s->subtreeLen. add (max (0.0, d) / 2);  // Molecular clock ??
-        // map<const Steiner*, Vector<pair<const Leaf*, const Leaf*>>>
-        // Use quartets
+      s->subtreeLen. add (max (0.0, d) / 2);  
     }
   }
 
@@ -2050,6 +2054,7 @@ void DistTree::neighborJoin ()
 	ASSERT (dissimAttr);
 	ASSERT (! optimizable ());
   ASSERT (dissimDs->objs. size () >= 2);
+  ASSERT (completeDs);
     
   cout << "Neighbor joining ..." << endl;
   
@@ -2072,7 +2077,10 @@ void DistTree::neighborJoin ()
       const Neighbors neighbors (leaf1, leaf2, dissimAttr->get (row, col));
       if (neighbors. same ())
         continue;
-      ASSERT (positive (neighbors. dissim));
+      if (! positive (neighbors. dissim))
+        throw runtime_error ("No distance for " + leaf1->name + "-" + leaf2->name);
+      if (neighbors. dissim == INF)
+        throw runtime_error ("Infinite distance for " + leaf1->name + "-" + leaf2->name);
       neighborsVec << neighbors;
     }
   }  
@@ -2238,7 +2246,7 @@ void DistTree::dissimDs2ds (bool sparse)
   // ds.objs, *target, obj2leaf1, obj2leaf2, dissim2_sum
   if (verbose ())
     cout << "Leaf pairs -> data objects ..." << endl;
-  ds. objs. reserve (name2leaf. size () * (name2leaf. size () - 1) / 2);
+  ds. objs. reserve (dissimSize_max ());
   target = new RealAttr1 ("Target", ds, dissimAttr->decimals); 
   obj2leaf1. reserve (ds. objs. capacity ());
   obj2leaf2. reserve (ds. objs. capacity ());
@@ -2284,6 +2292,7 @@ bool DistTree::addDissim (const string &name1,
      )
   {
     cout << name1 << '-' << name2 << ": " << dissim << endl;
+    completeDs = false;
     return false;  
   }
     
@@ -2433,7 +2442,12 @@ void DistTree::qc () const
     }
   }
 
-  ASSERT (ds. objs. size () <= (leaves * (leaves - 1)) / 2);
+//ASSERT (ds. objs. size () <= (leaves * (leaves - 1)) / 2);
+  const size_t discernables = getDiscernables (). size ();
+  ASSERT (discernables <= leaves);
+  const size_t pairs_max = (discernables * (discernables - 1)) / 2;
+  ASSERT (ds. objs. size () <= pairs_max);
+  IMPLY (completeDs, ds. objs. size () == pairs_max);
 
  	ASSERT (fromAttr_new);
  	ASSERT (toAttr_new);
@@ -2594,6 +2608,7 @@ Set<const DTNode*> DistTree::getDiscernables () const
 
 void DistTree::printInput (ostream &os) const
 {
+  os << "INPUT:" << endl;
   os << "# Leaves: " << root->getLeavesSize () << endl;
   os << "# Discernable leaves: " << getDiscernables (). size () << endl;
   os << "# Nodes: " << nodes. size () << endl;
@@ -2827,6 +2842,97 @@ void DistTree::setLeafAbsCriterion ()
 
 
 
+void DistTree::quartet2arcLen ()  
+{
+	ASSERT (optimizable ());
+	ASSERT (completeDs);
+
+
+  if (verbose (1))
+    cout << "Optimizing arc lengths by quartets ..." << endl;
+
+
+  for (DiGraph::Node* node : nodes)
+    static_cast <DTNode*> (node) -> dissimSum = 0;
+  FOR (size_t, objNum, ds. objs. size ())
+  {
+    const Real d = (*target) [objNum];    
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
+                                            , obj2leaf2 [objNum]
+                                            )
+                                   );
+    for (const TreeNode* node : path)
+      const_static_cast <DTNode*> (node) -> dissimSum += d;
+  }
+
+
+  setLeaves ();
+  const size_t allLeaves = root->leaves;
+  ASSERT (allLeaves == name2leaf. size ());
+  
+
+  for (DiGraph::Node* node : nodes)   // wrong ??
+  {
+    DTNode* a = static_cast <DTNode*> (node);
+    if (a->inDiscernable ())
+      continue;
+    if (a == root)
+      continue;
+      
+  	ASSERT (a->leaves);
+
+    const DTNode* b = static_cast <const DTNode*> (a->getParent ());
+    ASSERT (b);
+    if (b == root && b->arcs [false]. size () == 2)
+      b = static_cast <const DTNode*> (root->getOtherChild (a));
+    ASSERT (b);
+    ASSERT (a != b);
+
+    // Estimatating the length of arc (a,b)
+      
+    Real belowSum = 0;
+  	for (const Arc* arc : a->arcs [false])
+  	  belowSum += static_cast <const DTNode*> (arc->node [false]) -> dissimSum;
+  	if (a->leaves > 1)
+  	  belowSum -= a->dissimSum;
+  	belowSum /= 2;
+  	ASSERT (! negative (belowSum));
+  	IMPLY (a->leaves == 1, belowSum == 0);
+
+    Real aboveSum = 0;
+  	for (const Arc* arc : b->arcs [false])
+  	{
+  	  const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+  	  if (child != a)
+  	    aboveSum += child->dissimSum;
+  	}
+	  if (b == a->getParent () && b != root)
+  	  aboveSum += b->dissimSum;
+  	aboveSum -= a->dissimSum;
+  	aboveSum /= 2;
+  	ASSERT (! negative (aboveSum));
+  	
+  	ASSERT (allLeaves > a->leaves);
+  	const Real bLeaves = (Real) (allLeaves - a->leaves);
+  	
+    // quartet
+  	a->len = (a->dissimSum - belowSum * bLeaves - aboveSum * (Real) a->leaves) / ((Real) a->leaves * bLeaves);
+  	maximize (a->len, 0.0);
+  	
+  	if (b != a->getParent ())
+  	{
+  	  a->len /= 2;
+  	  const_cast <DTNode*> (b) -> len = a->len;
+  	}
+  }
+  
+
+  setPrediction ();
+  setAbsCriterion ();  
+}
+
+
+
 bool DistTree::optimizeLen ()
 {
   ASSERT (optimizable ());
@@ -2873,7 +2979,7 @@ bool DistTree::optimizeLen ()
     // lr.beta must be equal to DTNode::len
   FOR (size_t, attrNum, dtNodes. size ())
     lr. beta [attrNum] = dtNodes [attrNum] -> len;
-  /*const bool solved =*/ lr. solveUnconstrainedFast (prediction, true, 10, 0.01);  // PAR  // Time = O(leaves^3) 
+  /*const bool solved =*/ lr. solveUnconstrainedFast (prediction, true, 10, 0.01);  // PAR  // Time = O(n^3) 
   if (verbose ())
     lr. qc ();
   if (/*! solved ||*/ isNan (lr. absCriterion))
@@ -3229,7 +3335,7 @@ void DistTree::optimizeAdd (bool sparse,
       }
       addSubtreeLeaf (g);
       
-      Set<const Leaf*> representatives;  // size = O(log leaves)
+      Set<const Leaf*> representatives;  // size = O(log n)
       if (sparse)
       {
         if (! positive (dissim_min))
@@ -3472,15 +3578,17 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   }
 #endif
 
-  const size_t leaves = tree. root->getLeavesSize ();
+  const size_t leaves = tree. name2leaf. size ();
   {
     Unverbose unv;
     if (leaves > 3)
     {
+      // Can be skipped ??
       EXEC_ASSERT (tree. optimizeLen ());
       tree. finishChanges (); 
       tree. optimizeLenLocal ();  
       tree. finishChanges (); 
+      //
       tree. optimizeIter (string ());
         // tree.neighborJoin(), tree.optimizeSubgraphs() if tree is large ??
           // allows using mdsTree.sh
@@ -4071,6 +4179,7 @@ Real DistTree::setErrorDensities ()
 {
   ASSERT (optimizable ());
 
+
   for (const DiGraph::Node* node : nodes)
   {
     DTNode* dtNode = const_static_cast <DTNode*> (node);
@@ -4078,6 +4187,7 @@ Real DistTree::setErrorDensities ()
     dtNode->errorDensity = 0;
   }
   
+
   Real epsilon2_0 = 0;
   FOR (size_t, objNum, obj2leaf1. size ())
   {
@@ -4111,6 +4221,7 @@ Real DistTree::setErrorDensities ()
       dtNode->errorDensity += a;
     }
   }
+
 
   for (const DiGraph::Node* node : nodes)
   {
@@ -4229,7 +4340,7 @@ not solved LinearRegression
 optimizeAdd():
   sparse() each new N genomes  
     Dataset::sparse()
-
+    
 non-stability of results
 
 */

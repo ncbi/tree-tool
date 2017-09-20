@@ -1616,6 +1616,22 @@ double Tree::TreeNode::getSubtreeLength () const
 
 
 
+void Tree::TreeNode::setLeaves () 
+{
+	leaves = 0;
+	for (const Arc* arc : arcs [false])
+	{
+	  TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
+	  child->setLeaves ();
+	  ASSERT (child->leaves);
+	  leaves += child->leaves;
+	}
+	if (! leaves)
+	  leaves = 1;
+}
+
+
+
 size_t Tree::TreeNode::getLeavesSize () const
 {
 	size_t n = 0;
@@ -1689,13 +1705,13 @@ void Tree::TreeNode::children2frequentChild (double rareProb)
   
 
 
-void Tree::TreeNode::getLeaves (VectorPtr<TreeNode> &leaves) const
+void Tree::TreeNode::getLeaves (VectorPtr<TreeNode> &leafVec) const
 {
   if (arcs [false]. empty ())
-    leaves << this;
+    leafVec << this;
   else
   	for (const Arc* arc : arcs [false])
-  	  static_cast <TreeNode*> (arc->node [false]) -> getLeaves (leaves);
+  	  static_cast <TreeNode*> (arc->node [false]) -> getLeaves (leafVec);
 }
 
 

@@ -62,7 +62,7 @@ rm blaLUT.mds
 
 echo ""
 echo "mds: Enterobacteriaceae"
-mds  -attrType 2  -maxClusters 5  -attr Conservation  data/Enterobacteriaceae  > Enterobacteriaceae.mds
+mds  -attrType 2  -maxClusters 5  -attr Conservation  ../phylogeny/data/Enterobacteriaceae  > Enterobacteriaceae.mds
 if ($?) exit 1
 diff Enterobacteriaceae.mds data/Enterobacteriaceae.mds
 if ($?) exit 1

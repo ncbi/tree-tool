@@ -106,6 +106,8 @@ struct ThisApplication : Application
             tree->saveFile (output_tree);  
           {
             Chronometer_OnePass cop ("Initial arc lengths");
+          //tree->quartet2arcLen ();
+          //cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             EXEC_ASSERT (tree->optimizeLen ());
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             cout << endl;
@@ -151,7 +153,8 @@ struct ThisApplication : Application
         const DTNode* underRoot = tree->lcaName2node (reroot_at);
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
       }
-        
+      
+      cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  
       tree->setHeight ();

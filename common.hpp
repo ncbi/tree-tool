@@ -1766,6 +1766,8 @@ struct Tree : DiGraph
 	  size_t frequentDegree {0};
 	    // For an undirected tree
 	    // If isLeafType(): 0 or 1; 0 <=> unstable given rareProb
+	  size_t leaves {0};
+
 		TreeNode (Tree &tree,
 		          TreeNode* parent_arg)
 			: DiGraph::Node (tree)
@@ -1865,12 +1867,14 @@ struct Tree : DiGraph
 		  // Return: if countLeaves then 0 <=> isLeaf()
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
+		void setLeaves ();
+		  // Output: leaves
 		size_t getLeavesSize () const;
 		void children2frequentChild (double rareProb);
 		  // Output: TreeNode::frequentChild
 		  // Invokes: isInteriorType(), getLeavesSize()
-    void getLeaves (VectorPtr<TreeNode> &leaves) const;
-      // Update: leaves
+    void getLeaves (VectorPtr<TreeNode> &leafVec) const;
+      // Update: leafVec
 		const TreeNode* getClosestLeaf (size_t &leafDepth) const;
 		  // Return: !nullptr
 		  // Output: leafDepth; nullptr <=> Return = this
@@ -1980,6 +1984,10 @@ struct Tree : DiGraph
       {}
   };
   Vector<Patristic> getLeafDistances () const;
+  void setLeaves ()
+    { if (root)
+        const_cast <TreeNode*> (root) -> setLeaves (); 
+    }
   size_t size (bool countLeaves) const
     { return nodes. size () <= 1
                ? countLeaves
