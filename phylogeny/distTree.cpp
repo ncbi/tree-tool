@@ -656,8 +656,8 @@ void Change::commit ()
 
 
 
-bool Change::compare (const Change* a, 
-	                    const Change* b)
+bool Change::strictlyLess (const Change* a, 
+	                         const Change* b)
 { 
   ASSERT (a);
   ASSERT (! isNan (a->improvement));
@@ -2038,8 +2038,8 @@ namespace
       // James A. Studier, Karl J. Keppler, A Note on the Neighbor-Joining Algorithm of Saitou and Nei
     Real getParentDissim (size_t n) const
       { return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); }
-    static bool compare (const Neighbors& n1,
-                         const Neighbors& n2)
+    static bool strictlyLess (const Neighbors& n1,
+                              const Neighbors& n2)
       { LESS_PART (n1, n2, nodes [0]);
         LESS_PART (n1, n2, nodes [1]);
         return false;  
@@ -2096,7 +2096,7 @@ void DistTree::neighborJoin ()
     prog ();
     
     // Remove duplicate Neighbors 
-    Common_sp::sort (neighborsVec, Neighbors::compare);
+    Common_sp::sort (neighborsVec, Neighbors::strictlyLess);
     neighborsVec. filter ([&] (size_t i) 
                             { return    neighborsVec [i] == neighbors_best 
                                      || (i && neighborsVec [i - 1]. merge (neighborsVec [i]));
@@ -3182,12 +3182,29 @@ void DistTree::quartet2arcLen ()
 
 
 
+namespace
+{
+
+bool DTNode_len_strictlyLess (const DTNode* a,
+                              const DTNode* b)
+{
+  ASSERT (a);
+  ASSERT (b);
+  ASSERT (! isNan (a->len));
+  ASSERT (! isNan (b->len));
+  return a->len > b->len;  
+}
+
+}
+
+
+
 bool DistTree::optimizeLenArc ()
 {
   ASSERT (optimizable ());
   
   if (verbose (1))
-    cout << "Optimizing single arc lengths ..." << endl;
+    cout << "Optimizing arc lengths at each arc ..." << endl;
   
   DTNode* toSkip = nullptr;  
   DTNode* toRetain = nullptr; 
@@ -3204,6 +3221,7 @@ bool DistTree::optimizeLenArc ()
       dtNodes << dtNode;
     IMPLY (dtNode->inDiscernable (), dtNode->len == 0);
   }
+  Common_sp::sort (dtNodes, DTNode_len_strictlyLess);
 
   Space1<NumAttr1> sp (ds, false);  sp. reserve (dtNodes. size ());
   for (const DTNode* dtNode : dtNodes)
@@ -3240,6 +3258,42 @@ bool DistTree::optimizeLenArc ()
 
 
 
+namespace
+{
+  
+struct NodeStar
+{
+  const Steiner* st;
+  VectorPtr<DiGraph::Node> star;
+  Real lenSum;
+  
+  explicit NodeStar (const Steiner* st_arg)
+    : st     (st_arg)
+    , star   (st->getChildren ())
+    , lenSum (0)
+    {
+      ASSERT (st);
+      ASSERT (! st->isTransient ());
+      star << st;
+      ASSERT (star. size () >= 3);
+      for (const DiGraph::Node* node : star)
+        lenSum += static_cast <const DTNode*> (node) -> len;
+      ASSERT (lenSum >= 0);
+    }
+   
+  static bool strictlyLess (const NodeStar &a,
+                            const NodeStar &b)
+    {
+      ASSERT (! isNan (a. lenSum));
+      ASSERT (! isNan (b. lenSum));
+      return a. lenSum > b. lenSum;  
+    }
+};
+  
+}
+
+
+
 void DistTree::optimizeLenNode ()  
 {
   ASSERT (optimizable ());
@@ -3248,9 +3302,9 @@ void DistTree::optimizeLenNode ()
     cout << "Optimizing arc lengths at each node ..." << endl;
 
 //cout << "absCriterion (before optimizeLenLocal) = " << absCriterion << endl;  
-  Progress prog ((uint) countInteriorNodes ());  // Upper bound
-  Space1<NumAttr1> sp (ds, false); 
-  Vector<Real> lenOld;  
+
+
+  Vector<NodeStar> dtNodes;  dtNodes. reserve (nodes. size ());
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
@@ -3260,21 +3314,27 @@ void DistTree::optimizeLenNode ()
         || ! dtNode->childrenDiscernable ()
        )
       continue;
+    dtNodes << NodeStar (dtNode->asSteiner ());
+  }
+  Common_sp::sort (dtNodes, NodeStar::strictlyLess);  
 
-    ASSERT (! dtNode->isTransient ());
 
+  Progress prog ((uint) countInteriorNodes ());  // Upper bound
+  Space1<NumAttr1> sp (ds, false); 
+  Vector<Real> lenOld;  
+  for (const NodeStar& ns : dtNodes)
+  {
   #ifndef NDEBUG    
     const Real absCriterion_old = absCriterion;  
   #endif
     
-    VectorPtr<DiGraph::Node> star (dtNode->getChildren ());
-    star << dtNode;  
+    const VectorPtr<DiGraph::Node>& star = ns. star;
 
     // lenOld, *target_new
     lenOld. clear (); lenOld. reserve (star. size ());    
-    FOR (size_t, attrNum, star. size ())
+    for (const DiGraph::Node* node : star)
     {
-      const DTNode* n = static_cast <const DTNode*> (star [attrNum]);
+      const DTNode* n = static_cast <const DTNode*> (node);
       ASSERT (! n->inDiscernable ());
       lenOld << n->len;
       const_cast <DTNode*> (n) -> len = 0;
@@ -4096,7 +4156,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   size_t commits = 0;
   {
     Unverbose un;
-    Common_sp::sort (changes, Change::compare);	
+    Common_sp::sort (changes, Change::strictlyLess);	
     size_t nChange = 0;
     Progress prog ((uint) changes. size ());
   	for (const Change* ch_ : changes)
@@ -4224,7 +4284,7 @@ void DistTree::tryChange (Change* ch,
   	checkAbsCriterion ("tryChange");
   }
   
-	if (Change::compare (ch, bestChange))
+	if (Change::strictlyLess (ch, bestChange))
 	{
 		delete bestChange;
   	bestChange = ch;

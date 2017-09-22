@@ -465,8 +465,8 @@ private:
 	virtual void commit_ () = 0;
     // May invoke: tree.delayDeleteRetainArcs()
 public:
-	static bool compare (const Change* a, 
-	                     const Change* b);
+	static bool strictlyLess (const Change* a, 
+	                          const Change* b);
     // Requires: (bool)a
 };
 

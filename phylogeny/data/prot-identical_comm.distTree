@@ -13,38 +13,38 @@ INPUT:
 # Dissimilarities: 42188 (99.98 %)
 Ave. dissimilarity = 0.19
 
-Optimizing single arc lengths ...
-# Nodes deleted = 20
+Optimizing arc lengths at each arc ...
+# Nodes deleted = 14
 
 Optimizing arc lengths at each node ...
-# Nodes deleted = 2
-absCriterion = 7.924740  Error density = 1.945181 %
+# Nodes deleted = 3
+absCriterion = 7.943967  Error density = 1.947540 %
 
 Optimizing topology ...
 
 OUTPUT:
-absCriterion = 7.048223  Error density = 1.834418 %
-absCriterion [0] = 0.8114  Error density [0] = 7.4549 %  Fraction = 6.3478 %
-absCriterion [1] = 6.2368  Error density [1] = 1.7316 %  Fraction = 93.6522 %
+absCriterion = 7.062142  Error density = 1.836229 %
+absCriterion [0] = 0.8100  Error density [0] = 7.4482 %  Fraction = 6.3478 %
+absCriterion [1] = 6.2521  Error density [1] = 1.7338 %  Fraction = 93.6522 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.07
 
 Outliers:
 SAMN02645767	3.03
-SAMN03477482	4.35
+SAMN03477482	4.34
 SAMN04507552	3.16
 # Outliers: 3
 
 # Interior nodes (with root) = 283 (max = 284)
 # Interior undirected arcs = 282
-Tree length = 30.5720
+Tree length = 30.5746
 Min. discernable leaf length = 0.0000
 Ave. arc length = 0.0529
-Interior height = 34
-Bifurcating interior branching = 1.3541
+Interior height = 36
+Bifurcating interior branching = 1.3671
 # Frequent children interior nodes = 278
 # Frequent children leaves = 286
-# Frequent interior nodes = 42
-# Frequent leaves = 52
+# Frequent interior nodes = 43
+# Frequent leaves = 55
 Rareness threshold = 1.0000 %
