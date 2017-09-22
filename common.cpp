@@ -1419,7 +1419,7 @@ void Tree::TreeNode::saveText (ostream &os) const
   }
   else
     if (! isLeaf ())
-      os << " (" << getLeavesSize () << ")";
+      os << " (" << getLeavesSize () << ")";  // Time ??
 }
 
 
@@ -1655,8 +1655,8 @@ namespace
       { ASSERT (node);
         ASSERT (freq);
       }
-    static bool compare (const ChildFreq& a,
-                         const ChildFreq& b)
+    static bool strictlyLess (const ChildFreq& a,
+                              const ChildFreq& b)
       { LESS_PART (b, a, freq);
         LESS_PART (a, b, node);
         return false;
@@ -1679,10 +1679,11 @@ void Tree::TreeNode::children2frequentChild (double rareProb)
     for (const DiGraph::Node* child : children)
     {
       const TreeNode* node = static_cast <const TreeNode*> (child);
-      childFreqs << ChildFreq (const_cast <TreeNode*> (node), node->getLeavesSize ());  // Time = O(|nodes|^2) ??
+      ASSERT (node->leaves);
+      childFreqs << ChildFreq (const_cast <TreeNode*> (node), node->leaves); 
     }
   }
-  Common_sp::sort (childFreqs, ChildFreq::compare);  // Bifurcatization
+  Common_sp::sort (childFreqs, ChildFreq::strictlyLess);  // Bifurcatization
   
   size_t sum = 0;
 #ifndef NDEBUG
@@ -2325,9 +2326,10 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 		i2--;
 	}
 
-  VectorPtr<TreeNode> res;
-  res. reserve (vec1. size () + vec2. size ());
-  res << vec1 << vec2;
+  VectorPtr<TreeNode> res;  res. reserve (vec1. size () + vec2. size ());
+  res << vec1;
+  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec2)
+    res << *it;
   
   return res;
 }
@@ -2338,6 +2340,8 @@ void Tree::setFrequentChild (double rareProb)
 { 
   if (! root)
     return;
+    
+  setLeaves ();
     
   for (DiGraph::Node* node : nodes)
     static_cast <TreeNode*> (node) -> frequentChild = false;
@@ -2372,7 +2376,9 @@ void Tree::setFrequentDegree (double rareProb)
   if (! root)
     return;
     
-  const size_t allLeaves = root->getLeavesSize ();
+  setLeaves ();
+    
+  const size_t allLeaves = root->leaves;
 #if 0
   Binomial bin;
   bin. setParam ((int) allLeaves, rareProb);
@@ -2387,7 +2393,7 @@ void Tree::setFrequentDegree (double rareProb)
       for (const DiGraph::Node* child : children)
       {
         const TreeNode* tn = static_cast <const TreeNode*> (child);
-        const size_t leaves = tn->getLeavesSize ();  // Time = O(|nodes|^2) ??
+        const size_t leaves = tn->leaves /*getLeavesSize ()*/; 
         ASSERT (leaves);
         if ((double) leaves / (double) allLeaves >= rareProb)
       //if (1 - bin. cdf ((int) leaves - 1) <= pValue)
@@ -2475,8 +2481,8 @@ size_t Tree::restrictLeaves (const Set<string> &leafNames,
 
 
 
-bool Tree::compare_std (const DiGraph::Node* a,
-	                      const DiGraph::Node* b)
+bool Tree::strictlyLess_std (const DiGraph::Node* a,
+	                           const DiGraph::Node* b)
 {
 	ASSERT (a);
 	ASSERT (b);
@@ -2484,7 +2490,9 @@ bool Tree::compare_std (const DiGraph::Node* a,
 	const TreeNode* a_ = static_cast <const TreeNode*> (a);
 	const TreeNode* b_ = static_cast <const TreeNode*> (b);
 
-	LESS_PART (*b_, *a_, getLeavesSize ());
+  ASSERT (a_->leaves);
+  ASSERT (b_->leaves);
+	LESS_PART (*b_, *a_, leaves);
   LESS_PART (*a_, *b_, getLeftmostDescendent  () -> getName ());
   LESS_PART (*a_, *b_, getRightmostDescendent () -> getName ());
 

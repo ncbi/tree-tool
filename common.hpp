@@ -189,22 +189,33 @@ inline void advance (size_t &index,
   // Update: index: < size
   { index++; if (index == size) index = 0; }
   
-template <typename T> void swapGreater (T &a, T &b)
-  { if (a > b)
-      swap (a, b);
-  }
+template <typename T> 
+  void swapGreater (T &a, T &b)
+    { if (a > b)
+        swap (a, b);
+    }
 
-template <typename T> bool maximize (T &a, T b)
-  { if (a < b) { a = b; return true; } return false; }
+template <typename T> 
+  bool maximize (T &a, T b)
+    { if (a < b) { a = b; return true; } return false; }
 
-template <typename T> bool minimize (T &a, T b)
-  { if (a > b) { a = b; return true; } return false; }
+template <typename T> 
+  bool minimize (T &a, T b)
+    { if (a > b) { a = b; return true; } return false; }
 
-template <typename T /*:number*/> bool between (T x, T low, T high)
-  { return x >= low && x < high; }
+template <typename T /*:number*/> 
+  bool between (T x, T low, T high)
+    { return x >= low && x < high; }
 
-template <typename T/*:number*/> bool betweenEqual (T x, T low, T high)
-  { return x >= low && x <= high; }
+template <typename T/*:number*/> 
+  bool betweenEqual (T x, T low, T high)
+    { return x >= low && x <= high; }
+  
+template <typename T/*:integer*/> 
+  bool even (T x)
+    { static_assert (numeric_limits<T>::is_integer, "Must be integer");
+      return x % 2 == 0; 
+    }
 
 inline bool divisible (uint n,
                        uint divisor)
@@ -836,10 +847,10 @@ template <typename T>
   void sort (T &t)
     { std::sort (t. begin (), t. end ()); }
 
-template <typename T, typename C>
+template <typename T, typename StrictlyLess>
   void sort (T &t,
-             C compare)
-    { std::sort (t. begin (), t. end (), compare); }
+             const StrictlyLess &strictlyLess)
+    { std::sort (t. begin (), t. end (), strictlyLess); }
 
 template <typename T, typename U>
   bool intersects (const T &t,
@@ -1871,8 +1882,9 @@ struct Tree : DiGraph
 		  // Output: leaves
 		size_t getLeavesSize () const;
 		void children2frequentChild (double rareProb);
+		  // Input: leaves
 		  // Output: TreeNode::frequentChild
-		  // Invokes: isInteriorType(), getLeavesSize()
+		  // Invokes: isInteriorType()
     void getLeaves (VectorPtr<TreeNode> &leafVec) const;
       // Update: leafVec
 		const TreeNode* getClosestLeaf (size_t &leafDepth) const;
@@ -1928,14 +1940,14 @@ struct Tree : DiGraph
       // Update: area, bounday
       //         area.contains(boundary)
   public:
-    template <typename Compare>
-    	void sort (const Compare &compare)
+    template <typename StrictlyLess>
+    	void sort (const StrictlyLess &strictlyLess)
   			{ VectorPtr<DiGraph::Node> children (getChildren ());
-  				Common_sp::sort (children, compare);
+  				Common_sp::sort (children, strictlyLess);
   				for (const DiGraph::Node* child : children)
   				{	TreeNode* s = const_static_cast <TreeNode*> (child);
   					s->setParent (const_cast <TreeNode*> (s->getParent ()));  // To reorder arcs[false]
-  				  s->sort (compare);
+  				  s->sort (strictlyLess);
   				}
   			}
 	};
@@ -2020,14 +2032,15 @@ struct Tree : DiGraph
     // Invokes: getLowestCommonAncestor(nodeVec)
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2);
+    // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
   void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5
     // Output: TreeNode::frequentChild: statistically consistent estimate
-    // Invokes: children2frequentChild()
+    // Invokes: setLeaves(), children2frequentChild()
   void setFrequentDegree (double rareProb);
     // Input: 0 <= rareProb < 0.3
     // Output: TreeNode::frequentDegree: statistically consistent estimate
-    // Invokes: TreeNode::isLeafType()
+    // Invokes: setLeaves(), TreeNode::isLeafType()
   void setRoot ();
     // Output: root
   size_t deleteTransients ();
@@ -2040,18 +2053,20 @@ struct Tree : DiGraph
     // Return: # leaves delete'd
     // Invokes: isLeafType(), deleteLeaf()
 
-  template <typename Compare>
-    void sort (const Compare &compare)
+  template <typename StrictlyLess>
+    void sort (const StrictlyLess &strictlyLess)
       { if (root)
-      	  const_cast <TreeNode*> (root) -> sort (compare); 
+      	  const_cast <TreeNode*> (root) -> sort (strictlyLess); 
       }
 private:
-	static bool compare_std (const DiGraph::Node* a,
-	                         const DiGraph::Node* b);
+	static bool strictlyLess_std (const DiGraph::Node* a,
+	                              const DiGraph::Node* b);
 
 public:
   void sort ()
-    { sort (compare_std); }
+    { setLeaves ();
+      sort (strictlyLess_std); 
+    }
 };
 
 
