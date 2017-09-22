@@ -127,9 +127,9 @@ struct Matrix : Root
 {
 protected:
   Vector <Vector <Real> /*columns*/> rows;
-  size_t colsSize;
+  size_t colsSize {0};
 public:  
-  bool psd;
+  bool psd {false};
 
  
   Matrix (bool t,
@@ -144,7 +144,6 @@ public:
   Matrix () 
     { init (false, 0, 0); }
   Matrix (const Matrix &source) 
-    : colsSize (0)
     { init (false, source. rowsSize (false), source. rowsSize (true));
       copyDataCheck (false, source, false);
     }

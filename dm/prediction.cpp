@@ -880,11 +880,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
   if (   ! betaCovariance. inverse (). get ()
       || ! attrSim. checkInverse (betaCovariance, false)
      )
-  {
-  //attrSim. saveText (cout);
-  //ERROR;  
     return;
-  }
         
   // xy
   MVector xy (space. size ());
@@ -898,20 +894,9 @@ void L2LinearNumPrediction::solveUnconstrained ()
  	}
 
   // beta
-#if 0
-  Real* Solution = SolveSystem (betaCovariance, space. size ());  
-  ASSERT (Solution);
-  // beta []
-  {
-    For (i, space. size ())
-      beta [i] = Solution [i];
-  }
-  delete [] Solution;
-#else
   beta. multiply (false, 
                   betaCovariance, false, 
                   xy,             false);
-#endif
 
   // absCriterion
   const Real yHat2 = multiplyVec (beta, true, 0, 

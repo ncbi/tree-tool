@@ -345,6 +345,7 @@ public:
     // Input: predictionAttr: may be nullptr
     // Update: beta
     // Output: absCriterion: !isNan()
+    // Depends on space ordering
     // Requires: &predictionAttr->ds = &space.ds
     // Invokes: solveUnconstrained()
     // Time: O(maxIter * p * n)
@@ -431,7 +432,7 @@ struct L2LinearNumPrediction : LinearNumPrediction
 // targetConst = average of target
 {
   Matrix attrSim;
-    // Attribute similarity matrix: X^t * W * X
+    // Attribute similarity matrix: X^t * X
     // size = (space.size(), space.size())
   Matrix betaCovariance;
     // size = (space.size(), space.size())
