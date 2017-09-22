@@ -94,6 +94,7 @@ struct ThisApplication : Application
 
     tree->printInput (cout);
     cout << endl;
+
     
     if (tree->optimizable ())
     {
@@ -106,13 +107,26 @@ struct ThisApplication : Application
             tree->saveFile (output_tree);  
           {
             Chronometer_OnePass cop ("Initial arc lengths");
-          //tree->quartet2arcLen ();
-          //cout << "# Nodes deleted = " << tree->finishChanges () << endl;
-            EXEC_ASSERT (tree->optimizeLen ());
+
+          #if 0
+            tree->reportErrors (cout);  
+            cout << endl;
+          #endif
+
+          #if 0
+            EXEC_ASSERT (tree->optimizeLenAll ());
+            tree->reportErrors (cout);  
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             cout << endl;
-            tree->optimizeLenLocal ();  
+          #endif
+
+            EXEC_ASSERT (tree->optimizeLenArc ());
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
+            cout << endl;
+            
+            tree->optimizeLenNode ();  
+            cout << "# Nodes deleted = " << tree->finishChanges () << endl;
+            
             if (verbose ())
             {
               tree->qc ();
@@ -136,6 +150,7 @@ struct ThisApplication : Application
         else if (leaves == 2)
           tree->optimize2 ();
       }
+
       
       if (tree->dissimAttr)  
       {

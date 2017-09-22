@@ -91,7 +91,7 @@ struct DTNode : Tree::TreeNode
     // In getDistTree().ds
     // ~DTNode() does not delete
     // ExtBoolAttr1: makes faster by 5 % 
-  WeightedMeanVar subtreeLen;
+  WeightedMeanVar subtreeLen;  // --> temporary variable ??
     // Global len = len from *this to the leaves
     // weights = sum of DTNode::len in the subtree excluding *this
 private:
@@ -105,10 +105,16 @@ protected:
   Vector<bool> subtreeLeaves;  
     // Indexed by Leaf::index
   Real dissimSum {0};
+  Real dissimWeightedSum {0};
 public:
   const Leaf* reprLeaf {nullptr};
     // In subtree
     // For sparse *getDistTree().dissimAttr
+#if 0
+private:
+  size_t index {NO_INDEX};
+public:
+#endif
 
 
 protected:
@@ -867,21 +873,21 @@ public:
     // Output: Leaf::{absCriterion,relLenError}
 	  
   // Optimization	  
-  void quartet2arcLen ();
-    // Assumes: Obj::mult = 1
-    // Output: DTNode::dissimSum, DTNode::len
-    // Requires: completeDs
-    // Invokes: setLeaves()
-	  // Time: O(p log(n) + n)
-	bool optimizeLen ();
+  void getSkipRetain (DTNode* &toSkip,
+                      DTNode* &toRetain);
+    // Output: toSkip, toRetain; may be nullptr
+    // Update: {toSkip,toRetain}->len
+    // toSkip->attr is redundant
+    // toSkip->getparent() = toRetain->getParent() = root: the only children
+	bool optimizeLenArc ();
 	  // Return: success
 	  // Input: DTNode::attr
 	  // Update: DTNode::len
 	  // Output: prediction, absCriterion
 	  // Invokes: setPrediction(), setAbsCriterion()
 	  // To be followed by: finishChanges()
-	  // Time: O(p n); 3 min./903 leaves: return = 1.04 * optimal
-  void optimizeLenLocal ();
+	  // Time: O(p n); return = 1.04 * optimal
+  void optimizeLenNode ();
 	  // Input: DTNode::attr
 	  // Update: DTNode::len
 	  // Output: prediction, absCriterion

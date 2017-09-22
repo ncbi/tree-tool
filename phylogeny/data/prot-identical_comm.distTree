@@ -13,10 +13,10 @@ INPUT:
 # Dissimilarities: 42188 (99.98 %)
 Ave. dissimilarity = 0.19
 
-Optimizing arc lengths globally ...
+Optimizing single arc lengths ...
 # Nodes deleted = 20
 
-Optimizing arc lengths locally ...
+Optimizing arc lengths at each node ...
 # Nodes deleted = 2
 absCriterion = 7.924740  Error density = 1.945181 %
 
@@ -24,7 +24,7 @@ Optimizing topology ...
 
 OUTPUT:
 absCriterion = 7.048223  Error density = 1.834418 %
-absCriterion [0] = 0.8114  Error density [0] = 7.4547 %  Fraction = 6.3478 %
+absCriterion [0] = 0.8114  Error density [0] = 7.4549 %  Fraction = 6.3478 %
 absCriterion [1] = 6.2368  Error density [1] = 1.7316 %  Fraction = 93.6522 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
