@@ -54,12 +54,12 @@ struct RealScale
   typedef  Real  Value;
   static const Value missing;  
     // NAN
-  uint decimals;
+  streamsize decimals;
     // Purposes: display, data precision
 
 
 protected:    
-  RealScale (uint decimals_arg)
+  RealScale (streamsize decimals_arg)
     : decimals (decimals_arg)
     {}
 public:
@@ -72,7 +72,7 @@ public:
 
 
 
-const uint decimals_def = 4;  // PAR
+const streamsize decimals_def = 4;  // PAR
     
   
 
@@ -258,7 +258,7 @@ struct NumAttr1 : Attr1, RealScale
 protected:
   NumAttr1 (const string &name_arg,
             Dataset &ds_arg,
-            uint decimals_arg)
+            streamsize decimals_arg)
     : Attr1 (name_arg, ds_arg, true)
     , RealScale (decimals_arg)
     {}
@@ -311,7 +311,7 @@ public:
   
   RealAttr1 (const string &name_arg,
              Dataset &ds_arg,
-             uint decimals_arg = decimals_def); 
+             streamsize decimals_arg = decimals_def); 
   RealAttr1 (const string &name_arg,
              Dataset &ds_arg,
              const RealAttr1 &from);
@@ -367,7 +367,7 @@ struct PositiveAttr1 : RealAttr1
 {
   PositiveAttr1 (const string &name_arg,
                  Dataset &ds_arg,
-                 uint decimals_arg = decimals_def)  
+                 streamsize decimals_arg = decimals_def)  
     : RealAttr1 (name_arg, ds_arg, decimals_arg)
     {}
   PositiveAttr1 (const string &name_arg,
@@ -397,7 +397,7 @@ struct ProbAttr1 : RealAttr1
 {
   ProbAttr1 (const string &name_arg,
              Dataset &ds_arg,
-             uint decimals_arg = decimals_def)
+             streamsize decimals_arg = decimals_def)
     : RealAttr1 (name_arg, ds_arg, decimals_arg)
     {}
   ProbAttr1 (const string &name_arg,
@@ -711,10 +711,10 @@ public:
     { 
       Real mean; 
       Real sd; 
-      uint decimals;
+      streamsize decimals;
       NormalParam (Real mean_arg, 
                    Real sd_arg,
-                   uint decimals_arg)
+                   streamsize decimals_arg)
         : mean (mean_arg)
         , sd (sd_arg)
         , decimals (decimals_arg)
@@ -836,7 +836,7 @@ struct RealAttr2 : Attr2, RealScale
   
   RealAttr2 (const string &name_arg,
              Dataset &ds_arg,
-             uint decimals_arg = decimals_def);
+             streamsize decimals_arg = decimals_def);
   RealAttr2 (const string &name_arg,
              Dataset &ds_arg,
              const RealAttr2 &from)
@@ -909,7 +909,7 @@ struct PositiveAttr2 : RealAttr2
 {
   PositiveAttr2 (const string &name_arg,
                  Dataset &ds_arg,
-                 uint decimals_arg = decimals_def)
+                 streamsize decimals_arg = decimals_def)
     : RealAttr2 (name_arg, ds_arg, decimals_arg)
     {}
   PositiveAttr2 (const string &name_arg,
@@ -3361,7 +3361,7 @@ public:
                                Dataset &ds) const;
     // Input: prob_min: min. class membership probability to produce a non-missing value
   ProbAttr1* createProbAttr (const string &attrName,
-                             uint decimals,
+                             streamsize decimals,
                              Dataset &ds) const;
 
   bool mergeClose (NominAttr1 &nominAttr,

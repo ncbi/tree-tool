@@ -295,7 +295,7 @@ const RealScale::Value RealScale::missing = NAN;
 
 RealAttr1::RealAttr1 (const string &name_arg,
 						          Dataset &ds_arg,
-						          uint decimals_arg)
+						          streamsize decimals_arg)
 : NumAttr1 (name_arg, ds_arg, decimals_arg)
 , values (ds. objs. size (), missing)
 { 
@@ -374,7 +374,7 @@ void RealAttr1::multiply (Real coeff)
   FOR (size_t, objNum, ds. objs. size ())
     if (! isMissing (objNum))
       (*this) [objNum] = (*this) [objNum] * coeff;
-  decimals += (uint) max<long> (0, DM_sp::round (- log10 (coeff)));
+  decimals += (streamsize) max<long> (0, DM_sp::round (- log10 (coeff)));
 }
 
 
@@ -1293,7 +1293,7 @@ void Attr2::save (ostream &os,
 
 RealAttr2::RealAttr2 (const string &name_arg,
 						          Dataset &ds_arg,
-						          uint decimals_arg)
+						          streamsize decimals_arg)
 : Attr2 (name_arg, ds_arg, true)
 , RealScale (decimals_arg)
 , matr ( false
@@ -1519,33 +1519,29 @@ void Dataset::load (istream &is)
   
       // Attr
       Attr* attr = nullptr;
+      streamsize decimals;
       if (type == "REAL")
       {
-        uint decimals;
         is >> decimals;
         attr = new RealAttr1 (attrName, *this, decimals);
       }
       else if (type == "REAL2")
       {
-        uint decimals;
         is >> decimals;
         attr = new RealAttr2 (attrName, *this, decimals);
       }
       else if (type == "POSITIVE")
       {
-        uint decimals;
         is >> decimals;
         attr = new PositiveAttr1 (attrName, *this, decimals);
       }
       else if (type == "POSITIVE2")
       {
-        uint decimals;
         is >> decimals;
         attr = new PositiveAttr2 (attrName, *this, decimals);
       }
       else if (type == "PROBABILITY")
       {
-        uint decimals;
         is >> decimals;
         attr = new ProbAttr1 (attrName, *this, decimals);
       }
@@ -4914,7 +4910,7 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
 
 
 ProbAttr1* Clustering::createProbAttr (const string &attrName,
-                                       uint decimals,
+                                       streamsize decimals,
                                        Dataset &ds) const
 {
 	auto attr = new ProbAttr1 (attrName, ds, decimals);  

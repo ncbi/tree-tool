@@ -66,10 +66,10 @@ namespace
 
 
 string real2str (Real x,
-                 uint decimals)
+                 streamsize decimals)
 {
 	ostringstream os;
-	os << fixed; os. precision ((streamsize) decimals); os << x;
+	os << fixed; os. precision (decimals); os << x;
 	return os. str ();
 }
 

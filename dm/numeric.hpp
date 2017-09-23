@@ -62,7 +62,7 @@ typedef double Real;
 /////////////////////////////////////////////////////
 
 string real2str (Real x,
-                 uint decimals = 2);
+                 streamsize decimals = 2);
 
 Real str2real (const string& s);
 
@@ -452,7 +452,7 @@ struct WeightedMeanVar
 
 struct MeanVar : Root
 {
-  uint decimals;
+  streamsize decimals;
   int n;
   Real s;
   Real s2;
@@ -460,7 +460,7 @@ struct MeanVar : Root
   Real v_max;
   
 
-  explicit MeanVar (uint decimals_arg = 2)
+  explicit MeanVar (streamsize decimals_arg = 2)
     : decimals (decimals_arg)
     { clear (); }
   void qc () const override;
