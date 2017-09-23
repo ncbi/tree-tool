@@ -619,8 +619,8 @@ inline void pressAnyKey ()
 
 
 
-inline uint double2decimals (double r)
-  { return r ? (uint) max<long> (0, (long) (ceil (- log10 (abs (r)) + 1))) : 0; }
+inline streamsize double2decimals (double r)
+  { return r ? (streamsize) max<long> (0, (long) (ceil (- log10 (abs (r)) + 1))) : 0; }
 
 
 
@@ -2573,15 +2573,15 @@ struct JsonInt : Json
 struct JsonDouble : Json
 {
   double n;
-  uint decimals;
+  streamsize decimals;
 
   JsonDouble (double n_arg,
-              uint decimals_arg,
+              streamsize decimals_arg,
               JsonContainer* parent,
               const string& name = noString)
     : Json (parent, name)
     , n (n_arg)
-    , decimals (decimals_arg == numeric_limits<uint>::max() ? double2decimals (n_arg) : decimals_arg)
+    , decimals (decimals_arg == numeric_limits<streamsize>::max() ? double2decimals (n_arg) : decimals_arg)
     {}
     // decimals_arg = -1: default
   void print (ostream& os) const final
