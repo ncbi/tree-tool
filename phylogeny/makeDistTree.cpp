@@ -23,16 +23,16 @@ struct ThisApplication : Application
 	: Application ("Optimize topology and compute statistics for a distance tree")
 	{
 		// Input
-	  addPositional ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
-	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does");
+	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
+	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subtrees of radius " + toString (areaRadius_std));
+	  addFlag ("sparse_init", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", "Interior node denoted as \'A-B\', which is the LCA of A nd B. Re-root above the LCA in the middle of the arc");
-	  addFlag ("sparse_init", "Make the initial dissimilarity matrix sparse");
-	  addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");
+	//addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");  // ??
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
@@ -41,7 +41,7 @@ struct ThisApplication : Application
 	  addKey ("leaf_errors", "File with relative errors of leaves");
 	  addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair");
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
-	//addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>"); ??
+	  addKey ("output_dissim", "Dissimilarities used in the tree, line format: <obj1> <obj2> <dissim>");
 	}
 	
 	
@@ -57,16 +57,25 @@ struct ThisApplication : Application
 		const bool reroot                = getFlag ("reroot");
 		      string reroot_at           = getArg ("reroot_at");
 		const bool sparse_init           = getFlag ("sparse_init");
-		const bool sparse_add            = getFlag ("sparse_add");
+	//const bool sparse_add            = getFlag ("sparse_add");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
 		const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
-	//IMPLY (sparse_init, ! input_tree. empty () && ! isRight (input_tree, "/"));
+		const string output_dissim       = getArg ("output_dissim");
+	  IMPLY (isRight (input_tree, "/"), ! sparse_init);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
-    if (dataFName. empty () != dissimAttrName. empty ())
-      throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
+    if (isRight (dataFName, "/"))
+    {
+      if (! input_tree. empty ())
+        throw runtime_error ("Input tree is in " + dataFName);
+      if (! dissimAttrName. empty ())
+        throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
+    }
+    else
+      if (dataFName. empty () != dissimAttrName. empty ())
+        throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
 
 
     DistTree::printParam (cout);
@@ -82,11 +91,13 @@ struct ThisApplication : Application
     Common_sp::AutoPtr<DistTree> tree;
     {
       Chronometer_OnePass cop ("Initial topology");
-      tree = input_tree. empty ()
-               ? new DistTree (dataFName, dissimAttrName, sparse_init)
-               : isRight (input_tree, "/")
-                 ? new DistTree (input_tree, dataFName, dissimAttrName)
-                 : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init);
+      tree = isRight (dataFName, "/")
+               ? new DistTree (DistTree::Incremental (), dataFName)
+               : input_tree. empty ()
+                 ? new DistTree (dataFName, dissimAttrName, sparse_init)
+                 : isRight (input_tree, "/")
+                   ? new DistTree (input_tree, dataFName, dissimAttrName)
+                   : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init);
     }
     ASSERT (tree. get ());
     if (verbose ())
@@ -152,7 +163,8 @@ struct ThisApplication : Application
       }
 
       
-      if (tree->dissimAttr)  
+    #if 0
+      if (tree->dissimAttr)   // ??
       {
         tree->optimizeAdd (sparse_add, output_tree);  
         tree->reroot ();  
@@ -160,6 +172,7 @@ struct ThisApplication : Application
           tree->qc ();
       }
       // tree and dist-matrix match
+    #endif
 
       if (reroot)
         tree->reroot ();
@@ -207,7 +220,7 @@ struct ThisApplication : Application
     tree->saveFeatureTree (output_feature_tree);
     
     {
-      ONumber on (cout, 4, false);
+      const ONumber on (cout, 4, false);
       cout << endl;
       cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
@@ -284,8 +297,14 @@ struct ThisApplication : Application
       // dm-file ??
       // cout << arcLenRel.SD after outlier removing ??
       OFStream f ("", arc_length_stat, "");
-      ONumber on (f, 6, false);
+      const ONumber on (f, tree->dissimDecimals, false);
       tree->printArcLengths (f);
+    }
+    
+    if (! output_dissim. empty ())
+    {
+      OFStream f ("", output_dissim, "");
+      tree->printDissim (f);
     }
 	}
 };

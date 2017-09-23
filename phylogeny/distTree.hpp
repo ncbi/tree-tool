@@ -81,8 +81,8 @@ typedef  Vector<Real>  Leaf2dist;
 
 struct DTNode : Tree::TreeNode 
 {
-  friend struct DistTree;
-  friend struct Leaf;
+  friend DistTree;
+  friend Leaf;
 
   // For optimization
 	Real len;
@@ -282,7 +282,7 @@ public:
 
 struct Leaf : DTNode
 {
-  static string non_discernable;
+  static const string non_discernable;
   string name;  
     // !empty()
   string comment;
@@ -290,8 +290,8 @@ struct Leaf : DTNode
     // false => getParent()->getChildren() is an equivalence class of indiscernables
   Real relLenError {NAN};
 private:
-  friend struct DistTree;
-  friend struct DTNode;
+  friend DistTree;
+  friend DTNode;
   size_t index {NO_INDEX};
 public:
   
@@ -307,7 +307,7 @@ public:
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
       if (! isNan (relLenError))
-      { ONumber oNum (os, 6, true);  // PAR
+      { const ONumber oNum (os, 6, true);  // PAR
         os << "  leaf_error=" << relLenError;
       }
     	if (! discernable)
@@ -646,13 +646,17 @@ struct DistTree : Tree
   map<string/*Leaf::name*/,const Leaf*> name2leaf;
     // 1-1
 
+private:
+  // Temporary
   // Dissimilarity
   // May be nullptr
   Common_sp::AutoPtr<Dataset> dissimDs;
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
+public:
 
+  streamsize dissimDecimals {6};  // PAR
   Dataset ds;
     // objs: pairs of Leaf's
     //       objs[i].name = obj2leaf1[i]->name + "-" + obj2leaf2[i]->name
@@ -679,8 +683,7 @@ struct DistTree : Tree
   const RealAttr1* target_new {nullptr};
   const RealAttr1* prediction_old {nullptr};
   
-  // Tree-ds relations
-  size_t attrNum_max {0};
+  // ds-tree relations
   // !nullptr
   VectorPtr<Leaf> obj2leaf1, obj2leaf2;
     // size() = ds.objs.size()
@@ -689,6 +692,8 @@ struct DistTree : Tree
   Real absCriterion {NAN};
     // = L2LinearNumPrediction::absCriterion  
 private:
+  friend DTNode;
+  size_t attrNum_max {0};
   Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
 public:
@@ -710,8 +715,28 @@ public:
 	          const string &attrName,
 	          bool sparse);
 	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin()
-  //
-  explicit DistTree (const string &newickFName);
+  class Incremental {};
+	DistTree (Incremental,
+	          const string &dataDirName);
+	  // Input: dataDirName: ends with '/'
+	  //        directory contains files:
+	  //          file name       line format, tab-delimited     meaning
+	  //          ---------       -----------------------------  -------
+	  //          tree                                           
+	  //          dissim          <obj1> <obj2> <dissimilarity>  <ob1>, <ob2> are tree leaves
+    //
+	  //          ??
+	  //          new             <obj>
+	  //          dissim.new      <obj1> <obj2> <dissimilarity>
+	  //          dissim.new.req  <obj1> <obj2>                  request to compute dissimilarity for "new"
+	  //          dissim.req      <obj1> <obj2>                  request to compute dissimilarity
+	  //
+	  //          outlier         <obj> <obj1> <obj2>            approximate node of attachment 
+	  //          deleted         <obj>
+  //  
+  class Newick {};
+  DistTree (Newick, 
+            const string &newickFName);
   DistTree (Prob branchProb,
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
@@ -776,6 +801,8 @@ private:
     // Output: ds etc.
     //         Tree: if an object is absent in ds then it is deleted from the Tree
     // Invokes: getSelectedPairs(), loadDissimFinish()
+  void loadDissimPrepare (size_t pairs_max,
+                          streamsize target_decimals);
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim);
@@ -831,7 +858,7 @@ public:
     }
     // Requires: linear variance of dissimilarities  ??
   void reportErrors (ostream &os) const
-    { ONumber on (os, 6, false);  // PAR
+    { const ONumber on (os, 6, false);  // PAR
       os << "absCriterion = " << absCriterion 
          << "  Error density = " << getErrorDensity () * 100 << " %"
          << endl;
@@ -840,9 +867,9 @@ public:
 
 private:
 #if 0
-  friend struct ChangeToChild;
-  friend struct ChangeToSibling;
-  friend struct Swap;
+  friend ChangeToChild;
+  friend ChangeToSibling;
+  friend Swap;
 #endif
   void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
     // Output: DTNode::attrs
@@ -1011,6 +1038,7 @@ public:
                          const RealAttr1* logDiffAttr,
                          ostream &os) const;
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
+  void printDissim (ostream &os) const;
 };
 
 

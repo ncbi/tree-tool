@@ -88,12 +88,15 @@ void DTNode::qc () const
 
 void DTNode::saveContent (ostream& os) const
 { 
-  ONumber oNum (os, 6, true);  // PAR
   {
-		os << "len=" << len;
+    const ONumber oLen (os, getDistTree (). dissimDecimals, true);
+    os << "len=" << len;
 		if (subtreeLen. weights)
-		  os << "  len_mean=" << getHeight () << "  len_weight=" << subtreeLen. weights;
-	}
+		  os << "  len_mean=" << getHeight ();
+  }
+  const ONumber oNum (os, 6, true);  // PAR
+	if (subtreeLen. weights)
+	  os << "  len_weight=" << subtreeLen. weights;
   if (paths)
 	  os << "  err_density=" << errorDensity << "  paths=" << paths;
 //os << "  " << dissimSum << ' ' << dissimWeightedSum;  
@@ -134,7 +137,7 @@ void DTNode::saveFeatureTree (ostream &os,
 {
   FOR (size_t, i, offset)
     os << ' ';
-  ONumber on (os, 6, true);
+  const ONumber on (os, getDistTree (). dissimDecimals, true);
   string s = (asLeaf () ? "s" : "") + getName ();
   os << s << ": t=" << (isNan (len) ? 0 : len) << "  C=0  dC=+0-0" << endl;
   if (asLeaf ())
@@ -508,7 +511,7 @@ const Steiner* Steiner::makeDTRoot ()
 
 // Leaf
 
-string Leaf::non_discernable ("non-discernable");
+const string Leaf::non_discernable ("non-discernable");
 
 
 
@@ -1073,8 +1076,7 @@ DistTree::DistTree (const string &treeFName,
 	                  const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
-: completeDs (! sparse)
-, dsSample (ds)
+: dsSample (ds)
 {
 	ASSERT (dissimFName. empty () == attrName. empty ());
 
@@ -1135,8 +1137,7 @@ DistTree::DistTree (const string &dirName,
 DistTree::DistTree (const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
-: completeDs (! sparse)
-, dsSample (ds)
+: dsSample (ds)
 {
   loadDissimDs (dissimFName, attrName);
 
@@ -1165,7 +1166,72 @@ DistTree::DistTree (const string &dissimFName,
 
 
 
-DistTree::DistTree (const string &newickFName)
+DistTree::DistTree (Incremental,
+ 	                  const string &dataDirName)
+: completeDs (false)
+, dsSample (ds)
+{
+	ASSERT (! dataDirName. empty ());
+	ASSERT (dataDirName. back () == '/');
+
+  // Initial tree topology
+  loadTreeFile (dataDirName + "tree");  
+  ASSERT (root);
+  ASSERT (nodes. front () == root);
+  ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
+
+  setName2leaf ();
+          
+#if 0
+  if (! getConnected ())
+    throw runtime_error ("Disconnected objects");
+  setDiscernable ();  
+  dissimDs2ds (sparse);    	
+#endif
+
+  dissimDecimals = 0;
+  loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 10), 0);  // PAR
+  {
+    const string fName (dataDirName + "dissim");
+    cout << "Loading " << fName << " ..." << endl;
+    LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
+    while (f. nextLine ())
+    {
+      const string name1 = findSplit (f. line, '\t');
+      const string name2 = findSplit (f. line, '\t');
+      if (! name2leaf [name1])
+        throw runtime_error ("No object " + name1);
+      if (! name2leaf [name2])
+        throw runtime_error ("No object " + name2);
+      const Real dissim = str2<Real> (f. line);
+      ASSERT (! f. line. empty ());
+      if (   contains (f. line, 'e')
+          || contains (f. line, 'E')
+         )
+        throw runtime_error ("Dissimilarities must be in a fixed pount format");
+      const size_t dot = f. line. find ('.');
+      if (dot != string::npos)
+        maximize (dissimDecimals, (streamsize) (f. line. size () - 1 - dot));
+      EXEC_ASSERT (addDissim (name1, name2, dissim));
+    }
+  }
+  ASSERT (target);
+  const_cast <RealAttr1*> (target) -> decimals = dissimDecimals;
+
+  loadDissimFinish ();      
+
+  topology2attrs (nodes);
+  setPrediction ();
+  setAbsCriterion (); 
+
+  ASSERT (! dissimDs. get ());
+  ASSERT (! dissimAttr);
+}
+
+
+
+DistTree::DistTree (Newick,
+                    const string &newickFName)
 : completeDs (false)
 , dsSample (ds)
 { 
@@ -1684,6 +1750,8 @@ void DistTree::loadDissimDs (const string &dissimFName,
            << endl;
   }
   dissimDs->setName2objNum ();
+  
+  dissimDecimals = dissimAttr->decimals;
 }
 
 
@@ -2245,12 +2313,7 @@ void DistTree::dissimDs2ds (bool sparse)
     selectedPairs = selectPairs ();
 
   // ds.objs, *target, obj2leaf1, obj2leaf2, dissim2_sum
-  if (verbose ())
-    cout << "Leaf pairs -> data objects ..." << endl;
-  ds. objs. reserve (dissimSize_max ());
-  target = new RealAttr1 ("Target", ds, dissimAttr->decimals); 
-  obj2leaf1. reserve (ds. objs. capacity ());
-  obj2leaf2. reserve (ds. objs. capacity ());
+  loadDissimPrepare (dissimSize_max (), dissimAttr->decimals);
   FOR (size_t, row, dissimDs->objs. size ())
   {
     const string name1 = dissimDs->objs [row] -> name;
@@ -2282,6 +2345,23 @@ void DistTree::dissimDs2ds (bool sparse)
     ds. setName2objNum ();
 }
 
+
+
+void DistTree::loadDissimPrepare (size_t pairs_max,
+                                  streamsize target_decimals)
+{
+  ASSERT (! target);
+  ASSERT (ds. objs. empty ());
+  
+  if (verbose ())
+    cout << "Leaf pairs -> data objects ..." << endl;
+
+  ds. objs. reserve (pairs_max);
+  target = new RealAttr1 ("Target", ds, target_decimals); 
+  obj2leaf1. reserve (ds. objs. capacity ());
+  obj2leaf2. reserve (ds. objs. capacity ());
+}
+  
 
 
 bool DistTree::addDissim (const string &name1,
@@ -2726,7 +2806,7 @@ void DistTree::checkPrediction () const
   FOR (size_t, objNum, obj2leaf1. size ())
     if (! eqReal ((* const_cast <RealAttr1*> (prediction)) [objNum], lr. predict (objNum), dissim_ave * 1e-2))  // PAR 
     {
-      ONumber on (cout, 6, true);
+      const ONumber on (cout, dissimDecimals, true);
       cout << (* const_cast <RealAttr1*> (prediction)) [objNum] << " " << lr. predict (objNum) << "  objNum = " << objNum << endl;
       cout << obj2leaf1 [objNum] -> getName () << " " << obj2leaf2 [objNum] -> getName () << endl;
       cout << "Path: ";
@@ -2803,7 +2883,7 @@ void DistTree::printAbsCriterion_halves () const
     
   for (const bool half2 : Bool)
   {
-    ONumber on (cout, 4, false);  // PAR
+    const ONumber on (cout, 4, false);  // PAR
     cout << "absCriterion [" << half2 << "] = " << absCriterion_half [half2];
     const Prob unexplainedFrac = absCriterion_half [half2] / dissim2_half [half2];
     const Prob r = 1 - unexplainedFrac;
@@ -3169,7 +3249,7 @@ void DistTree::quartet2arcLen ()
   	}
 
   #if 0
-  	ONumber on (cout, 6, false);  // ??
+  	const ONumber on (cout, dissimDecimals, false);  // ??
   	cout << a->getName () << ": " << len_old << " -> " << a->len << " " << (a->len - len_old) / len_old * 100 << " %" << endl;  
   #endif
   }
@@ -3589,7 +3669,7 @@ void DistTree::optimizeAdd (bool sparse,
       ASSERT (DM_sp::finite (dissim_min));
       if (verbose (1))
       {
-        ONumber on (cerr, 3, false);  // PAR
+        const ONumber on (cerr, dissimDecimals, false); 
         cerr << " dissim_min = " << dissim_min << "  ";
       }
   
@@ -3737,7 +3817,7 @@ void DistTree::optimizeAdd (bool sparse,
       setLeafAbsCriterion (); 
       const Real leafRelCriterion = g->getRelLenError ();
       {
-        ONumber on (cerr, 1, false);
+        const ONumber on (cerr, 1, false);
         cerr << "rel.absCriterion = " << leafRelCriterion << "  ";
       }
       
@@ -4014,7 +4094,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   	
   if (greaterReal (absCriterion, absCriterion_old, 1e-5)) // PAR
   {
-    ONumber on (cout, 9, true);
+    const ONumber on (cout, 9, true);
     cout << absCriterion << " " << absCriterion_old << endl;
     ERROR;
   }
@@ -4056,7 +4136,7 @@ void DistTree::optimizeSubgraphs ()
     }
     {
       ostringstream oss;
-      ONumber on (oss, 6, false);  // PAR
+      const ONumber on (oss, 6, false);  // PAR
       oss << stables << '/' << steiners << ' ' << absCriterion;
       prog (oss. str ());  
     }
@@ -4064,9 +4144,9 @@ void DistTree::optimizeSubgraphs ()
 
 #if 0
   // Almost no improvement
-  EXEC_ASSERT (optimizeLen ()); 
+  EXEC_ASSERT (optimizeLenArc ()); 
   finishChanges ();
-  optimizeLenLocal ();  
+  optimizeLenNode ();  
   finishChanges ();
   if (verbose (1))
     reportErrors (cout);
@@ -4620,6 +4700,23 @@ void DistTree::pairResiduals2dm (const RealAttr1* resid2Attr,
   VectorPtr<Attr> attrs;
   attrs << target << prediction << resid2Attr << logDiffAttr;
   dsSample. save (attrs, os);
+}
+
+
+
+void DistTree::printDissim (ostream &os) const
+{
+  ASSERT (optimizable ());
+
+  const ONumber on (os, dissimDecimals, false);
+  FOR (size_t, objNum, ds. objs. size ())
+  {
+    ASSERT (ds. objs [objNum] -> mult);
+    os         << obj2leaf1 [objNum] -> name
+       << '\t' << obj2leaf2 [objNum] -> name
+       << '\t' << (*target) [objNum]
+       << endl;
+  }
 }
 
 
