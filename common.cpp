@@ -2752,7 +2752,7 @@ void OFStream::open (const string &dirName,
 	ASSERT (! pathName. empty ());
 	
 	string name;
-	if (! dirName. empty ())
+	if (! dirName. empty () && ! isRight (dirName, "/"))
 	  name = dirName + "/";
 	name += pathName;
 	if (! extension. empty ())
@@ -2767,7 +2767,8 @@ void OFStream::open (const string &dirName,
 	if (bad ())
 		cout << "bad" << endl;
 */	
-	ASSERT (good ());	
+	if (! good ())
+	  throw runtime_error ("Cannot create file \"" + name + "\"");
 }
 
 
