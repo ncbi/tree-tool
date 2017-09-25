@@ -3165,10 +3165,10 @@ void exec (const string &cmd)
 
 //
 
-FileItemGenerator::FileItemGenerator (const string& fName_arg,
-                                      bool isDir_arg)
-: fName( fName_arg)
-, isDir (isDir_arg)
+FileItemGenerator::FileItemGenerator (bool isDir_arg,
+                                      const string& fName_arg)
+: isDir (isDir_arg)
+, fName( fName_arg)
 { 
   if (isDir)
   { 

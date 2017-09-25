@@ -2771,14 +2771,14 @@ struct ItemGenerator
 
 struct FileItemGenerator : ItemGenerator, Nocopy
 {
+  const bool isDir;
 private:
   string fName;
-  const bool isDir;
   ifstream f;
 public:
   
-  FileItemGenerator (const string& fName_arg,
-                     bool isDir_arg);
+  FileItemGenerator (bool isDir_arg,
+                     const string& fName_arg);
  ~FileItemGenerator ()
     { if (isDir)
 	      remove (fName. c_str ());

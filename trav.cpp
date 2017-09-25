@@ -48,7 +48,7 @@ struct ThisApplication : Application
   	  const bool isFile = fileExists (items);
   	  const bool isDir = directoryExists (items);
   	  if (isFile || isDir)
-  	    gen. reset (new FileItemGenerator (items, isDir));
+  	    gen. reset (new FileItemGenerator (isDir, items));
       else 
         if (isdigit (items [0]))
           gen. reset (new NumberItemGenerator (items));	  
