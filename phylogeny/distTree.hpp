@@ -169,50 +169,6 @@ public:
   virtual void getDescendents (VectorPtr<DTNode> &descendents,
                                size_t depth) const = 0;
     // Update: descendents
-
-  struct Closest : Root
-  // New Leaf* leaf: leaf->getParent() is on the node arc
-  {
-    const DTNode* node {nullptr};
-    Real absCriterion_delta {INF};
-      // To be minimized, >= 0
-    Real leafLen {NAN};
-    Real arcLen {NAN};
-      // From node to leaf->getParent()
-      
-    Closest ()
-      {}
-    Closest (const DTNode* node_arg,
-             Real absCriterion_delta_arg,
-             Real leafLen_arg,
-             Real arcLen_arg)
-      : node (node_arg)
-      , absCriterion_delta (absCriterion_delta_arg)
-      , leafLen (leafLen_arg)
-      , arcLen (arcLen_arg)
-      {}
-    void qc () const;
-      // Invokes: ASSERT(node)
-    void saveText (ostream &os) const
-      { os <<         (node ? node->getName () : "<none>")
-           << "  " << "absCriterion_delta = " << absCriterion_delta 
-           << "  " << "leafLen = " << leafLen 
-           << "  " << "arcLen = " << arcLen;
-      }
-
-    Steiner* insert ();
-      // Return: new
-      // Update: *node
-  };
-private:
-  void findClosestNode (const Leaf2dist &leaf2dist,
-                        Leaf2dist &leaf2hat_dist,
-                        Closest &closest) const;
-    // Input: subtreeLeaves
-    // Update: lead2hat_dist: matches *getParent()
-    //         closest
-    // Time: O(n^2)
-public:
 };
 
 
@@ -726,7 +682,7 @@ public:
     //
     //          new/<obj_new/                                                Initialization of <obj_new>
     //          new/<obj_new>/dissim  <obj_new> <obj> <dissimilarity>
-    //          new/<obj_new>/loc     <obj_new> <obj> <len_inter> <len_new>
+    //          new/<obj_new>/loc     <obj1>-<obj2> <leaf_len> <arc_len>
     //          new/<obj_new>/request <obj_new> <obj>
     //
     //          attach/dissim
@@ -944,13 +900,6 @@ public:
 	void optimizeSubgraphs ();
 	  // Invokes: optimizeSubgraph()
 	  // Time: O(n * Time(optimizeSubgraph))
-	void optimizeAdd (bool sparse,
-	                  const string &output_tree);
-	  // Input: dissimDs, dissimAttr
-	  // Requires: (bool)dissimAttr
-	  // Invokes: addDissim(), optimizeSubgraph() if leafRelCriterion is large, root->findClosestNode(), DTNode::selectRepresentative()
-	  // Time: !sparse: ~30 sec./1 new leaf for 3000 leaves ??
-	  //       sparse:    4 sec./1 new leaf for 3500 leaves ??
 private:
   void setSubtreeLeaves ();
     // Output: DTNode::subtreeLeaves, Leaf::index

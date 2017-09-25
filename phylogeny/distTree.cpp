@@ -21,39 +21,6 @@ VarianceType varianceType = varianceType_linExp;
 
 
 
-// DTNode::Closest
-
-void DTNode::Closest::qc () const
-{
-  if (! qc_on)
-    return;
-  ASSERT (node);
-  ASSERT (node->len > 0);
-  ASSERT (! node->inDiscernable ());
-  ASSERT (node != node->getTree (). root);
-  ASSERT (absCriterion_delta >= 0);
-  ASSERT (leafLen >= 0);
-  ASSERT (arcLen >= 0);
-  ASSERT (arcLen <= node->len);
-}
-
-
-
-Steiner* DTNode::Closest::insert () 
-{
-  auto st = new Steiner ( const_cast <DistTree&> (node->getDistTree ())
-                        , const_static_cast <Steiner*> (node->getParent ())
-                        , node->len - arcLen
-                        );
-  const_cast <DTNode*> (node) -> setParent (st);
-  const_cast <DTNode*> (node) -> len = arcLen;
-  st->subtreeLeaves = node->subtreeLeaves;
-  return st;
-}
-
-
-
-
 // DTNode
 
 DTNode::DTNode (DistTree &tree,
@@ -217,161 +184,6 @@ void DTNode::setSubtreeLeaves ()
       if (child->subtreeLeaves [i])
         subtreeLeaves [i] = true;
   }
-}
-
-
-
-void DTNode::findClosestNode (const Leaf2dist &leaf2dist,
-                              Leaf2dist &leaf2hat_dist,
-                              Closest &closest) const
-{
-  ASSERT (! leaf2dist. empty ());
-  ASSERT (leaf2dist. size () == subtreeLeaves. size ());
-  ASSERT (leaf2hat_dist. empty () || leaf2hat_dist. size () == leaf2dist.size ());
-
-
-  bool foundSubLeaf   = false;
-  bool foundSuperLeaf = false;
-	FOR (size_t, i, leaf2dist. size ())
-	  if (! isNan (leaf2dist [i]))
-	  {
-	    if (subtreeLeaves [i])
-	      foundSubLeaf = true;
-	    if (! subtreeLeaves [i])
-	      foundSuperLeaf = true;
-	  }
-	if (! foundSubLeaf)
-	  return;
-
-
-  // leaf2hat_dist
-  // Depth-first order
-  if (leaf2hat_dist. empty ())
-  {
-    if (arcs [false]. empty ())  // can it be done at root ??
-    {
-      leaf2hat_dist. resize (leaf2dist. size (), NAN);
-      const Leaf* leaf = asLeaf();
-      ASSERT (leaf);
-      ASSERT (leaf->index != NO_INDEX);
-      ASSERT (! isNan (leaf2dist [leaf->index]));
-      for (const DiGraph::Node* node : getTree (). nodes)
-        if (const Leaf* g = static_cast <const DTNode*> (node) -> asLeaf ())
-          if (   g->index != NO_INDEX
-              && ! isNan (leaf2dist [g->index])
-             )
-            leaf2hat_dist [g->index] = DistTree::path2prediction (DistTree::getPath (leaf, g));
-    }
-  }
-  else
-    // *getParent() --> *this
-  	FOR (size_t, i, leaf2dist. size ())
-  	{
-  	  const Real u = subtreeLeaves [i] ? 1 : -1;
-  	  leaf2hat_dist [i] -= len * u;
-  	}
-
-#ifndef NDEBUG
-  Leaf2dist leaf2hat_dist_ (leaf2hat_dist);
-#endif
-  for (const DiGraph::Arc* arc : arcs [false])
-  {
-    const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
-    if (const Leaf* g = child->asLeaf ())
-      if (g->index == NO_INDEX)
-        continue;
-    const_cast <DTNode*> (child) -> findClosestNode (leaf2dist, leaf2hat_dist, closest);
-  #ifndef NDEBUG
-    if (leaf2hat_dist_. empty ())
-      leaf2hat_dist_ = leaf2hat_dist;
-    else
-    {
-      ASSERT (leaf2hat_dist. size () == leaf2hat_dist_. size ());
-    	FOR (size_t, i, leaf2hat_dist. size ())
-      {
-        ASSERT (isNan (leaf2hat_dist [i]) == isNan (leaf2hat_dist_ [i]));
-        if (! isNan (leaf2hat_dist [i]))
-          { ASSERT_EQ (leaf2hat_dist [i], leaf2hat_dist_ [i], 1e-3); } // PAR
-      }
-    }
-  #endif
-  }
-  ASSERT (! leaf2hat_dist. empty ());
-	  
-
-	if (this == getTree (). root)
-	  return;
-	  
-
-	if (len > 0 && foundSuperLeaf)
-	{
-  	Real mult_sum = 0;
-  	Real u_avg = 0;	
-  	Real delta_avg = 0;
-  	FOR (size_t, i, leaf2dist. size ())
-  	{
-  	  const Real dist = leaf2dist [i];
-	    if (isNan (dist))
-	      continue;
-  	  ASSERT (positive (dist));
-  	  const Real mult = dissim2mult (dist);
-  	  mult_sum += mult;
-  	  const Real u = subtreeLeaves [i] ? 1 : -1;
-  	  const Real delta = dist - leaf2hat_dist [i];
-  	  u_avg     += mult * u;
-  	  delta_avg += mult * delta;
-  	}
-  	ASSERT (positive (mult_sum));
-  	u_avg     /= mult_sum;
-  	delta_avg /= mult_sum;
-  	
-  	Real u_var = 0;
-  	Real delta_u_cov = 0;
-  	FOR (size_t, i, leaf2dist. size ())
-  	{
-  	  const Real dist = leaf2dist [i];
-	    if (isNan (dist))
-	      continue;
-  	  const Real mult = dissim2mult (dist);
-  	  const Real u = subtreeLeaves [i] ? 1 : -1;
-  	  const Real delta = dist - leaf2hat_dist [i];
-  	  delta_u_cov += mult * (delta - delta_avg) * (u - u_avg);
-  	  u_var       += mult * sqr (u - u_avg);
-  	}
-  	u_var       /= mult_sum;
-  	delta_u_cov /= mult_sum;  	
-  	ASSERT (u_var > 0);
-
-  	const Real arcLen = min (max (0.0, delta_u_cov / u_var), len);
-  	const Real leafLen = max (0.0, delta_avg - u_avg * arcLen);
-  	
-  	Real absCriterion_delta = 0;
-  	FOR (size_t, i, leaf2dist. size ())
-  	{
-  	  const Real dist = leaf2dist [i];
-	    if (isNan (dist))
-	      continue;
-  	  const Real mult = dissim2mult (dist);
-  	  const Real u = subtreeLeaves [i] ? 1 : -1;
-  	  const Real delta = dist - leaf2hat_dist [i];
-  	  absCriterion_delta += mult * sqr (delta - arcLen * u - leafLen);
-  	}
-  	ASSERT (absCriterion_delta >= 0);
-  	
-  	if (absCriterion_delta < closest. absCriterion_delta)
-  	{
-  	  closest = Closest (this, absCriterion_delta, leafLen, arcLen);
-  	  closest. qc ();
-  	}
-  }
-
-
-  // *this --> *getParent()
-	FOR (size_t, i, leaf2dist. size ())
-	{
-	  const Real u = subtreeLeaves [i] ? 1 : -1;
-	  leaf2hat_dist [i] += len * u;
-	}
 }
 
 
@@ -2714,7 +2526,7 @@ void DistTree::saveFeatureTree (const string &fName) const
   if (fName. empty ())
     return;
   
-  OFStream f ("", fName, "");
+  OFStream f (fName);
   static_cast <const DTNode*> (root) -> saveFeatureTree (f, 0);
 }
 
@@ -3605,8 +3417,14 @@ void DistTree::optimizeIter (const string &output_tree)
 
 
 
+#if 0
 void DistTree::optimizeAdd (bool sparse,
                             const string &output_tree)
+// Input: dissimDs, dissimAttr
+// Requires: (bool)dissimAttr
+// Invokes: addDissim(), optimizeSubgraph() if leafRelCriterion is large, root->findClosestNode(), DTNode::selectRepresentative()
+// Time: !sparse: ~30 sec./1 new leaf for 3000 leaves ??
+//       sparse:    4 sec./1 new leaf for 3500 leaves ??
 {
   ASSERT (! nodes. empty ());
   ASSERT (dissimDs. get ());
@@ -3863,6 +3681,7 @@ void DistTree::optimizeAdd (bool sparse,
   EXEC_ASSERT (optimizeLenArc ());   
   finishChanges ();
 }
+#endif
 
 
 
@@ -4728,10 +4547,6 @@ void DistTree::printDissim (ostream &os) const
 
 not solved LinearRegression
   
-optimizeAdd():
-  sparse() each new N genomes  
-    Dataset::sparse()
-    
 non-stability of results
 
 */
