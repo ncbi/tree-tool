@@ -57,6 +57,7 @@ inline Real dissim_max ()
 
 
 // PAR
+constexpr streamsize dissimDecimals = 6;
 constexpr uint areaRadius_std = 5;  
   // The greater then better DistTree::absCriterion
   // >= 4 <= ChangeToCousin can be applied  
@@ -656,7 +657,6 @@ private:
     // In *dissimDs
 public:
 
-  streamsize dissimDecimals {6};  // PAR
   Dataset ds;
     // objs: pairs of Leaf's
     //       objs[i].name = obj2leaf1[i]->name + "-" + obj2leaf2[i]->name
@@ -715,28 +715,30 @@ public:
 	          const string &attrName,
 	          bool sparse);
 	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin()
-  class Incremental {};
-	DistTree (Incremental,
-	          const string &dataDirName);
+	DistTree (const string &dataDirName,
+	          bool loadDissim);
 	  // Input: dataDirName: ends with '/'
 	  //        directory contains files:
-	  //          file name       line format, tab-delimited     meaning
-	  //          ---------       -----------------------------  -------
+	  //          file name             line format, tab-delimited             meaning
+	  //          ---------             -----------------------------          -------
 	  //          tree                                           
-	  //          dissim          <obj1> <obj2> <dissimilarity>  <ob1>, <ob2> are tree leaves
+	  //          dissim                <obj1> <obj2> <dissimilarity>          <ob1>, <ob2> are tree leaves
     //
+    //          new/<obj_new/                                                Initialization of <obj_new>
+    //          new/<obj_new>/dissim  <obj_new> <obj> <dissimilarity>
+    //          new/<obj_new>/loc     <obj_new> <obj> <len_inter> <len_new>
+    //          new/<obj_new>/request <obj_new> <obj>
+    //
+    //          attach/dissim
+    //          attach/loc
+	  //          
 	  //          ??
-	  //          new             <obj>
-	  //          dissim.new      <obj1> <obj2> <dissimilarity>
-	  //          dissim.new.req  <obj1> <obj2>                  request to compute dissimilarity for "new"
 	  //          dissim.req      <obj1> <obj2>                  request to compute dissimilarity
 	  //
 	  //          outlier         <obj> <obj1> <obj2>            approximate node of attachment 
 	  //          deleted         <obj>
   //  
-  class Newick {};
-  DistTree (Newick, 
-            const string &newickFName);
+  explicit DistTree (const string &newickFName);
   DistTree (Prob branchProb,
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
@@ -803,6 +805,7 @@ private:
     // Invokes: getSelectedPairs(), loadDissimFinish()
   void loadDissimPrepare (size_t pairs_max,
                           streamsize target_decimals);
+    // Output: target
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim);

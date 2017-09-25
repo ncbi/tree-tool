@@ -89,7 +89,7 @@ void DTNode::qc () const
 void DTNode::saveContent (ostream& os) const
 { 
   {
-    const ONumber oLen (os, getDistTree (). dissimDecimals, true);
+    const ONumber oLen (os, dissimDecimals, true);
     os << "len=" << len;
 		if (subtreeLen. weights)
 		  os << "  len_mean=" << getHeight ();
@@ -137,7 +137,7 @@ void DTNode::saveFeatureTree (ostream &os,
 {
   FOR (size_t, i, offset)
     os << ' ';
-  const ONumber on (os, getDistTree (). dissimDecimals, true);
+  const ONumber on (os, dissimDecimals, true);
   string s = (asLeaf () ? "s" : "") + getName ();
   os << s << ": t=" << (isNan (len) ? 0 : len) << "  C=0  dC=+0-0" << endl;
   if (asLeaf ())
@@ -1166,8 +1166,8 @@ DistTree::DistTree (const string &dissimFName,
 
 
 
-DistTree::DistTree (Incremental,
- 	                  const string &dataDirName)
+DistTree::DistTree (const string &dataDirName,
+ 	                  bool loadDissim)
 : completeDs (false)
 , dsSample (ds)
 {
@@ -1182,47 +1182,44 @@ DistTree::DistTree (Incremental,
 
   setName2leaf ();
           
-#if 0
-  if (! getConnected ())
-    throw runtime_error ("Disconnected objects");
-  setDiscernable ();  
-  dissimDs2ds (sparse);    	
-#endif
 
-  dissimDecimals = 0;
-  loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 10), 0);  // PAR
+  if (loadDissim)
   {
-    const string fName (dataDirName + "dissim");
-    cout << "Loading " << fName << " ..." << endl;
-    LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
-    while (f. nextLine ())
+    loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 10), dissimDecimals);  // PAR
     {
-      const string name1 = findSplit (f. line, '\t');
-      const string name2 = findSplit (f. line, '\t');
-      if (! name2leaf [name1])
-        throw runtime_error ("No object " + name1);
-      if (! name2leaf [name2])
-        throw runtime_error ("No object " + name2);
-      const Real dissim = str2<Real> (f. line);
-      ASSERT (! f. line. empty ());
-      if (   contains (f. line, 'e')
-          || contains (f. line, 'E')
-         )
-        throw runtime_error ("Dissimilarities must be in a fixed pount format");
-      const size_t dot = f. line. find ('.');
-      if (dot != string::npos)
-        maximize (dissimDecimals, (streamsize) (f. line. size () - 1 - dot));
-      EXEC_ASSERT (addDissim (name1, name2, dissim));
+      const string fName (dataDirName + "dissim");
+      cout << "Loading " << fName << " ..." << endl;
+      LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
+      while (f. nextLine ())
+      {
+        const string name1 = findSplit (f. line, '\t');
+        const string name2 = findSplit (f. line, '\t');
+        if (! name2leaf [name1])
+          throw runtime_error ("Tree has no object " + name1);
+        if (! name2leaf [name2])
+          throw runtime_error ("Tree has no object " + name2);
+        const Real dissim = str2<Real> (f. line);
+      #if 0
+        ASSERT (! f. line. empty ());
+        if (   contains (f. line, 'e')
+            || contains (f. line, 'E')
+           )
+          throw runtime_error ("Dissimilarities must be in a fixed point format");
+        const size_t dot = f. line. find ('.');
+        if (dot != string::npos)
+          maximize (dissimDecimals, (streamsize) (f. line. size () - 1 - dot));
+      #endif
+        EXEC_ASSERT (addDissim (name1, name2, dissim));
+      }
     }
+  
+    loadDissimFinish ();      
+  
+    topology2attrs (nodes);
+    setPrediction ();
+    setAbsCriterion (); 
   }
-  ASSERT (target);
-  const_cast <RealAttr1*> (target) -> decimals = dissimDecimals;
-
-  loadDissimFinish ();      
-
-  topology2attrs (nodes);
-  setPrediction ();
-  setAbsCriterion (); 
+  
 
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
@@ -1230,8 +1227,7 @@ DistTree::DistTree (Incremental,
 
 
 
-DistTree::DistTree (Newick,
-                    const string &newickFName)
+DistTree::DistTree (const string &newickFName)
 : completeDs (false)
 , dsSample (ds)
 { 
@@ -1751,7 +1747,7 @@ void DistTree::loadDissimDs (const string &dissimFName,
   }
   dissimDs->setName2objNum ();
   
-  dissimDecimals = dissimAttr->decimals;
+//dissimDecimals = dissimAttr->decimals;
 }
 
 
@@ -3249,7 +3245,7 @@ void DistTree::quartet2arcLen ()
   	}
 
   #if 0
-  	const ONumber on (cout, dissimDecimals, false);  // ??
+  	const ONumber on (cout, dissimDecimals, true); 
   	cout << a->getName () << ": " << len_old << " -> " << a->len << " " << (a->len - len_old) / len_old * 100 << " %" << endl;  
   #endif
   }
@@ -3669,7 +3665,7 @@ void DistTree::optimizeAdd (bool sparse,
       ASSERT (DM_sp::finite (dissim_min));
       if (verbose (1))
       {
-        const ONumber on (cerr, dissimDecimals, false); 
+        const ONumber on (cerr, dissimDecimals, true); 
         cerr << " dissim_min = " << dissim_min << "  ";
       }
   
@@ -4708,7 +4704,7 @@ void DistTree::printDissim (ostream &os) const
 {
   ASSERT (optimizable ());
 
-  const ONumber on (os, dissimDecimals, false);
+  const ONumber on (os, dissimDecimals, true);
   FOR (size_t, objNum, ds. objs. size ())
   {
     ASSERT (ds. objs [objNum] -> mult);

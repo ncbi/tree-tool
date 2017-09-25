@@ -92,7 +92,7 @@ struct ThisApplication : Application
     {
       Chronometer_OnePass cop ("Initial topology");
       tree = isRight (dataFName, "/")
-               ? new DistTree (DistTree::Incremental (), dataFName)
+               ? new DistTree (/*DistTree::Incremental (),*/ dataFName, true)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse_init)
                  : isRight (input_tree, "/")
@@ -297,7 +297,7 @@ struct ThisApplication : Application
       // dm-file ??
       // cout << arcLenRel.SD after outlier removing ??
       OFStream f ("", arc_length_stat, "");
-      const ONumber on (f, tree->dissimDecimals, false);
+      const ONumber on (f, dissimDecimals, true);
       tree->printArcLengths (f);
     }
     
