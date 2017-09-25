@@ -3163,6 +3163,38 @@ void exec (const string &cmd)
 
 
 
+//
+
+FileItemGenerator::FileItemGenerator (const string& fName_arg,
+                                      bool isDir_arg)
+: fName( fName_arg)
+, isDir (isDir_arg)
+{ 
+  if (isDir)
+  { 
+    if (isRight (fName,  "/"))
+    	fName. erase (fName. size () - 1);
+	  char lsfName [4096] = {'\0'};
+  #ifdef _MSC_VER
+    throw runtime_error ("Windows");  // ??
+  #else
+    strcpy (lsfName, P_tmpdir);
+    strcat (lsfName, "/XXXXXX");
+    EXEC_ASSERT (mkstemp (lsfName) != -1);
+    ASSERT (lsfName [0]);
+    const int res = system (("ls " + fName + " > " + lsfName). c_str ());
+  //printf ("res = %d\n", res);
+    ASSERT (! res);
+    fName = lsfName;
+  #endif
+  }      
+  f. open (fName);
+  ASSERT (f. good ()); 
+}
+
+
+
+
 // Application
 
 Application::Arg::Arg (const string &name_arg,

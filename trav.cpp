@@ -12,76 +12,6 @@ namespace
 {
   
   
-struct ItemGenerator
-{
-  virtual uint steps () const 
-    { return 0; }
-  virtual bool next (string &item) = 0;
-    // Return: false <=> end of items
-    // Output: item; may be empty()
-};
-
-
-
-struct FileItemGenerator : ItemGenerator
-{
-private:
-  const string fName;
-  ifstream f;
-  const bool temp;
-public:
-  
-  FileItemGenerator (const string& fName_arg,
-                     bool temp_arg)
-    : fName( fName_arg)
-    , f (fName_arg)
-    , temp (temp_arg)
-    { ASSERT (f. good ()); }
- ~FileItemGenerator ()
-    { if (temp)
-	      remove (fName. c_str ());
-	  }
-  
-  bool next (string &item) final
-    { if (f. eof ())
-        return false;
-    	readLine (f, item);
-      if (temp)
-      { const size_t pos = item. rfind ('/');
-      	if (pos != string::npos)
-          item. erase (0, pos + 1);
-      }
-      trim (item);
-    	return true;
-    }    
-};
-
-  
-
-struct NumberItemGenerator : ItemGenerator
-{
-private:
-  const uint n;
-  uint i {0};
-public:
-  
-  explicit NumberItemGenerator (const string& name)
-    : n (str2<uint> (name))
-    {}
-  
-  uint steps () const final
-    { return n; }
-  bool next (string &item) final
-    { if (i == n)
-        return false;
-      i++;
-      item = toString (i);
-      return true;
-    }
-};
-
-  
-
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -114,28 +44,16 @@ struct ThisApplication : Application
     
 
 	  Common_sp::AutoPtr<ItemGenerator> gen;
-	  if (fileExists (items))
-	    gen. reset (new FileItemGenerator (items, false));
-	  else
-    {
-	    if (items. at (items. size () - 1) == '/')
-	    	items. erase (items. size () - 1);
-      if (directoryExists (items))
-      {
-    	  char lsfName [4096] = {'\0'};
-        strcpy (lsfName, P_tmpdir);
-        strcat (lsfName, "/XXXXXX");
-        EXEC_ASSERT (mkstemp (lsfName) != -1);
-        ASSERT (lsfName [0]);
-  
-        const int res = system (("ls " + items + " > " + lsfName). c_str ());
-      //printf ("res = %d\n", res);
-        ASSERT (! res);
-        
-	      gen. reset (new FileItemGenerator (lsfName, true));
-      }
-      else
-	      gen. reset (new NumberItemGenerator (items));
+	  {
+  	  const bool isFile = fileExists (items);
+  	  const bool isDir = directoryExists (items);
+  	  if (isFile || isDir)
+  	    gen. reset (new FileItemGenerator (items, isDir));
+      else 
+        if (isdigit (items [0]))
+          gen. reset (new NumberItemGenerator (items));	  
+        else
+          throw runtime_error ("File " + items + " does not exist");
     }
     ASSERT (gen. get ());
 	

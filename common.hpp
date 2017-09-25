@@ -2756,6 +2756,77 @@ void exec (const string &cmd);
 
 
 
+///////////////////////////////////////////////////////////////////////////
+
+struct ItemGenerator
+{
+  virtual uint steps () const 
+    { return 0; }
+  virtual bool next (string &item) = 0;
+    // Return: false <=> end of items
+    // Output: item; may be empty()
+};
+
+
+
+struct FileItemGenerator : ItemGenerator, Nocopy
+{
+private:
+  string fName;
+  const bool isDir;
+  ifstream f;
+public:
+  
+  FileItemGenerator (const string& fName_arg,
+                     bool isDir_arg);
+ ~FileItemGenerator ()
+    { if (isDir)
+	      remove (fName. c_str ());
+	  }
+  
+  bool next (string &item) final
+    { if (f. eof ())
+        return false;
+    	readLine (f, item);
+      if (isDir)
+      { const size_t pos = item. rfind ('/');
+      	if (pos != string::npos)
+          item. erase (0, pos + 1);
+      }
+      trim (item);
+    	return true;
+    }    
+};
+
+  
+
+struct NumberItemGenerator : ItemGenerator
+{
+private:
+  const uint n;
+  uint i {0};
+public:
+  
+  explicit NumberItemGenerator (const string& name)
+    : n (str2<uint> (name))
+    {}
+  
+  uint steps () const final
+    { return n; }
+  bool next (string &item) final
+    { if (i == n)
+        return false;
+      i++;
+      item = toString (i);
+      return true;
+    }
+};
+
+  
+
+
+///////////////////////////////////////////////////////////////////////////
+
 struct Application : Singleton<Application>, Root
 // Usage: int main (argc, argv) { Application app; return app. run (argc, argv); }
 {  
