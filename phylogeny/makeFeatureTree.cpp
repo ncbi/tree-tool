@@ -226,7 +226,7 @@ struct ThisApplication : Application
     
     if (! phen_gains. empty ())
     {
-      OFStream of ("", phen_gains, "");
+      OFStream of (phen_gains);
      	for (const DiGraph::Node* node : tree. nodes)
      	{
      		const Phyl* phyl = static_cast <const Phyl*> (node);
@@ -242,7 +242,7 @@ struct ThisApplication : Application
     
     if (! newick. empty ())
     {
-      OFStream os ("", newick, ""); 
+      OFStream os (newick); 
     	os << fixed << setprecision (6);  // PAR
       tree. printNewick (os, true, min_newick_name);
     }
@@ -250,7 +250,7 @@ struct ThisApplication : Application
 
     if (! arc_length_stat. empty ())
     {
-      OFStream f ("", arc_length_stat, "");
+      OFStream f (arc_length_stat);
       ONumber on (f, 6, false);  // PAR
       tree. printArcLengths (f);
     }
@@ -259,7 +259,7 @@ struct ThisApplication : Application
     if (! patrDistFName. empty ())
     {
       const Vector<Tree::Patristic> patrs (tree. getLeafDistances ());
-      OFStream f ("", patrDistFName, "");
+      OFStream f (patrDistFName);
       ONumber on (f, 6, false);  // PAR
       for (const auto patr : patrs)
         f         << patr. leaf1->getName ()

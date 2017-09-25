@@ -772,7 +772,7 @@ void Root::saveFile (const string &fName) const
 	if (fName. empty ())
 		return;
   
-  OFStream f ("", fName, "");
+  OFStream f (fName);
   saveText (f);
 }
 
@@ -3406,7 +3406,7 @@ int Application::run (int argc,
     const string logFName = getArg ("log");
   	ASSERT (! logPtr);
     if (! logFName. empty ())
-  		logPtr = new OFStream ("", logFName, "");
+  		logPtr = new OFStream (logFName);
   
   	if (getFlag ("qc"))
   		qc_on = true;
@@ -3443,7 +3443,7 @@ int Application::run (int argc,
   	if (! jsonFName. empty ())
   	{
   	  ASSERT (jRoot);
-  		OFStream f ("", jsonFName, "");
+  		OFStream f (jsonFName);
       jRoot->print (f);
       delete jRoot;
       jRoot = nullptr;

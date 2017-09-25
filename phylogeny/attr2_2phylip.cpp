@@ -47,7 +47,7 @@ struct ThisApplication : Application
 
     Matrix& matr = const_cast <RealAttr2*> (dist) -> matr;
     
-    OFStream f ("", mapFName, "");    
+    OFStream f (mapFName);
 
     cout << ds. objs. size () << endl;
     ONumber on (cout, 5, false);

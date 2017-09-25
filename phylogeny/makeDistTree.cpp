@@ -279,7 +279,7 @@ struct ThisApplication : Application
       
     if (! leaf_errors. empty ())
     {
-      OFStream f ("", leaf_errors, "");
+      OFStream f (leaf_errors);
       tree->setLeafAbsCriterion ();
       tree->printLeafRelLenErros (f, 0); 
     }
@@ -296,14 +296,14 @@ struct ThisApplication : Application
     {
       // dm-file ??
       // cout << arcLenRel.SD after outlier removing ??
-      OFStream f ("", arc_length_stat, "");
+      OFStream f (arc_length_stat);
       const ONumber on (f, dissimDecimals, true);
       tree->printArcLengths (f);
     }
     
     if (! output_dissim. empty ())
     {
-      OFStream f ("", output_dissim, "");
+      OFStream f (output_dissim);
       tree->printDissim (f);
     }
 	}

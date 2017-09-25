@@ -2390,6 +2390,8 @@ struct OFStream : ofstream, Nocopy
 	          const string &pathName,
 	          const string &extension)
 	  { open (dirName, pathName, extension); }
+	explicit OFStream (const string &pathName)
+	  { open ("", pathName, ""); }
 	void open (const string &dirName,
 	           const string &pathName,
 	           const string &extension);

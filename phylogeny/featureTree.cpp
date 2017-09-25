@@ -4060,7 +4060,7 @@ void FeatureTree::saveRootCore (const string &coreFeaturesFName) const
     if (rootCore [i])
       s << features [i]. name;
       
-  OFStream f ("", coreFeaturesFName, "");
+  OFStream f (coreFeaturesFName);
   for (const Feature::Id& fId : s)
     f << fId << endl;
 }
