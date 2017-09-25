@@ -3163,11 +3163,13 @@ void exec (const string &cmd)
 
 
 
-//
+// FileItemGenerator
 
-FileItemGenerator::FileItemGenerator (bool isDir_arg,
+FileItemGenerator::FileItemGenerator (uint progress_displayPeriod,
+                                      bool isDir_arg,
                                       const string& fName_arg)
-: isDir (isDir_arg)
+: ItemGenerator (0, progress_displayPeriod)
+, isDir (isDir_arg)
 , fName( fName_arg)
 { 
   if (isDir)
@@ -3191,6 +3193,28 @@ FileItemGenerator::FileItemGenerator (bool isDir_arg,
   f. open (fName);
   ASSERT (f. good ()); 
 }
+
+
+
+bool FileItemGenerator::next (string &item)
+{ 
+  if (f. eof ())
+    return false;
+    
+	readLine (f, item);
+  if (isDir)
+  { const size_t pos = item. rfind ('/');
+  	if (pos != string::npos)
+      item. erase (0, pos + 1);
+  }
+  trim (item);
+  if (item. empty () && f. eof ())
+    return false;
+
+  prog (item);
+  
+	return true;
+}    
 
 
 

@@ -2760,11 +2760,17 @@ void exec (const string &cmd);
 
 struct ItemGenerator
 {
-  virtual uint steps () const 
-    { return 0; }
+  Progress prog;
+  
+  ItemGenerator (uint progress_n_max,
+	               uint progress_displayPeriod)
+	  : prog (progress_n_max, progress_displayPeriod)
+	  {}
+  
   virtual bool next (string &item) = 0;
     // Return: false <=> end of items
     // Output: item; may be empty()
+    // Invokes: prog()
 };
 
 
@@ -2777,25 +2783,15 @@ private:
   ifstream f;
 public:
   
-  FileItemGenerator (bool isDir_arg,
+  FileItemGenerator (uint progress_displayPeriod,
+                     bool isDir_arg,
                      const string& fName_arg);
  ~FileItemGenerator ()
     { if (isDir)
 	      remove (fName. c_str ());
 	  }
   
-  bool next (string &item) final
-    { if (f. eof ())
-        return false;
-    	readLine (f, item);
-      if (isDir)
-      { const size_t pos = item. rfind ('/');
-      	if (pos != string::npos)
-          item. erase (0, pos + 1);
-      }
-      trim (item);
-    	return true;
-    }    
+  bool next (string &item) final;
 };
 
   
@@ -2807,17 +2803,18 @@ private:
   uint i {0};
 public:
   
-  explicit NumberItemGenerator (const string& name)
-    : n (str2<uint> (name))
+  NumberItemGenerator (uint progress_displayPeriod,
+                       const string& name)
+    : ItemGenerator (str2<uint> (name), progress_displayPeriod)
+    , n (prog. n_max)
     {}
   
-  uint steps () const final
-    { return n; }
   bool next (string &item) final
     { if (i == n)
         return false;
       i++;
       item = toString (i);
+      prog (item);
       return true;
     }
 };

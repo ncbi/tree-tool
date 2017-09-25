@@ -48,12 +48,12 @@ struct ThisApplication : Application
   	  const bool isFile = fileExists (items);
   	  const bool isDir = directoryExists (items);
   	  if (isFile || isDir)
-  	    gen. reset (new FileItemGenerator (isDir, items));
+  	    gen. reset (new FileItemGenerator (step, isDir, items));
       else 
         if (isdigit (items [0]))
-          gen. reset (new NumberItemGenerator (items));	  
+          gen. reset (new NumberItemGenerator (step, items));	  
         else
-          throw runtime_error ("File " + items + " does not exist");
+          throw runtime_error ("File \"" + items + "\" does not exist");
     }
     ASSERT (gen. get ());
 	
@@ -62,16 +62,12 @@ struct ThisApplication : Application
 	  replaceStr (cmd, "%d", items);
 	
 	
-	  Progress prog (gen->steps (), step);
 	  string item;
 	  while (gen->next (item))
     {
-      if (item. empty ())
-        continue;
 	    FOR (uint, i, blank_lines)
 	      cout << " " << endl;
-      prog (item);
-      if (prog. n < start)
+      if (gen->prog. n < start)
         continue;
 
       // Preparing item for using it in a shell command
@@ -83,7 +79,7 @@ struct ThisApplication : Application
 
       string thisCmd (cmd);
       replaceStr (thisCmd, "%f", item);
-      replaceStr (thisCmd, "%n", toString (prog. n));  
+      replaceStr (thisCmd, "%n", toString (gen->prog. n));  
       if (verbose ())
       	cerr << thisCmd << endl;
       const int exitStatus = system (thisCmd. c_str ());
