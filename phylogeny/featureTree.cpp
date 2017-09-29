@@ -2160,7 +2160,7 @@ void ChangeToSibling::apply_ ()
   
   // Species::parent2core[]
   oldParentRepr->assignFeaturesUp (lca);  
-  if (! oldParentRepr->descendentOf (fromSibling))
+  if (! oldParentRepr->descendantOf (fromSibling))
     fromSibling->assignFeaturesUp (inter);
   const_cast <Species*> (from) -> assignFeaturesUp (nullptr);
 }
@@ -2183,7 +2183,7 @@ void ChangeToSibling::restore_ ()
 
   // Species::parent2core[]
   const_cast <Species*> (from) -> restoreFeaturesUp (nullptr);
-  if (! oldParentRepr->descendentOf (fromSibling))
+  if (! oldParentRepr->descendantOf (fromSibling))
     fromSibling->restoreFeaturesUp (inter);
   oldParentRepr->restoreFeaturesUp (lca);  
   
@@ -2233,7 +2233,7 @@ void ChangeToSibling::commit_ ()
 
   // Species::parent2core[]
   oldParentRepr->commitFeaturesUp (lca);
-  if (! oldParentRepr->descendentOf (fromSibling))
+  if (! oldParentRepr->descendantOf (fromSibling))
     fromSibling->commitFeaturesUp (inter);
   const_cast <Species*> (from) -> commitFeaturesUp (nullptr);
 }

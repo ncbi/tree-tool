@@ -725,7 +725,7 @@ protected:
 public:
   virtual ~Root () throw (logic_error)
     {}
-    // A desrtructor should be virtual to be automatically invoked by a descendent class destructor
+    // A desrtructor should be virtual to be automatically invoked by a descendant class destructor
   virtual Root* copy () const
     { NOT_IMPLEMENTED; return nullptr; }
     // Return: the same type    
@@ -1854,13 +1854,13 @@ struct Tree : DiGraph
 		  		return parent_->getRootDistance () + getParentDistance ();
 		  	return 0;
 		  }
-		bool descendentOf (const TreeNode* ancestor) const
+		bool descendantOf (const TreeNode* ancestor) const
 		  { if (! ancestor)
 		  	  return true;
 		  	if (this == ancestor)
 		  		return true;
 		  	if (const TreeNode* parent_ = getParent ())
-		  		return parent_->descendentOf (ancestor);
+		  		return parent_->descendantOf (ancestor);
 		  	return false;
 		  }
 		const TreeNode* getPrevAncestor (const TreeNode* ancestor) const
@@ -1893,10 +1893,10 @@ struct Tree : DiGraph
     const TreeNode* getOtherChild (const TreeNode* child) const;
       // Return: May be nullptr; != child
       // Requires: getChildren().size() <= 2
-    const TreeNode* getLeftmostDescendent () const;
-    const TreeNode* getRightmostDescendent () const;
+    const TreeNode* getLeftmostDescendant () const;
+    const TreeNode* getRightmostDescendant () const;
     string getLcaName () const
-      { return getLeftmostDescendent () -> getName () + "-" + getRightmostDescendent () -> getName (); }
+      { return getLeftmostDescendant () -> getName () + "-" + getRightmostDescendant () -> getName (); }
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()

@@ -1764,7 +1764,7 @@ const Tree::TreeNode* Tree::TreeNode::getOtherChild (const TreeNode* child) cons
 
 
 
-const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendent () const
+const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendant () const
 {
   const TreeNode* n = this;
   while (! n->isLeaf ())
@@ -1774,7 +1774,7 @@ const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendent () const
 
 
 
-const Tree::TreeNode* Tree::TreeNode::getRightmostDescendent () const
+const Tree::TreeNode* Tree::TreeNode::getRightmostDescendant () const
 {
   const TreeNode* n = this;
   while (! n->isLeaf ())
@@ -2196,7 +2196,7 @@ namespace
 bool getParentsOrTarget (const Tree::TreeNode* from,
 			                   const Tree::TreeNode* target,
 			                   VectorPtr<Tree::TreeNode> &parents) 
-// Return: true <=> from->descendentOf(target)
+// Return: true <=> from->descendantOf(target)
 {
 	ASSERT (from)
 	ASSERT (target)
@@ -2493,8 +2493,8 @@ bool Tree::strictlyLess_std (const DiGraph::Node* a,
   ASSERT (a_->leaves);
   ASSERT (b_->leaves);
 	LESS_PART (*b_, *a_, leaves);
-  LESS_PART (*a_, *b_, getLeftmostDescendent  () -> getName ());
-  LESS_PART (*a_, *b_, getRightmostDescendent () -> getName ());
+  LESS_PART (*a_, *b_, getLeftmostDescendant  () -> getName ());
+  LESS_PART (*a_, *b_, getRightmostDescendant () -> getName ());
 
   return false;
 }

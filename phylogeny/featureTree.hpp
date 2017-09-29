@@ -827,7 +827,7 @@ protected:
 	  { return    Change::valid_ (from_arg)
 	           && to_arg
 	  	       && to_arg->graph == from_arg->graph
-	  	       && ! to_arg->descendentOf (from_arg);
+	  	       && ! to_arg->descendantOf (from_arg);
 	  }
 public:
   void saveText (ostream& os) const;
@@ -1009,8 +1009,8 @@ struct ChangeToUncle : ChangeTo
 	                    const Species* to_arg)
 	  { return    ChangeTo::valid_ (from_arg, to_arg)
 	  	       && to_arg->getParent ()
-	  	       && from_arg->getParent () -> descendentOf (to_arg->getParent ())
-	  	       && ! from_arg->getParent () -> descendentOf (to_arg)
+	  	       && from_arg->getParent () -> descendantOf (to_arg->getParent ())
+	  	       && ! from_arg->getParent () -> descendantOf (to_arg)
 	  	       && from_arg->getParent () != to_arg->getParent ();
 	  }
 private:
