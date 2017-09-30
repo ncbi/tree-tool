@@ -1390,6 +1390,7 @@ void Tree::TreeNode::qc () const
   ASSERT (! (isLeafType () && isInteriorType ()));
   IMPLY (isLeaf (), isLeafType ());
   IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
+  ASSERT (! contains (getName (), objNameSeparator));
 }
   
 

@@ -1896,7 +1896,7 @@ struct Tree : DiGraph
     const TreeNode* getLeftmostDescendant () const;
     const TreeNode* getRightmostDescendant () const;
     string getLcaName () const
-      { return getLeftmostDescendant () -> getName () + "-" + getRightmostDescendant () -> getName (); }
+      { return getLeftmostDescendant () -> getName () + objNameSeparator + getRightmostDescendant () -> getName (); }
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()
@@ -1953,6 +1953,7 @@ struct Tree : DiGraph
 	};
 	const TreeNode* root {nullptr};
 	  // nullptr <=> nodes.empty()
+  static const char objNameSeparator {':'};
 
 
   Tree ()

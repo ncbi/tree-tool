@@ -31,7 +31,7 @@ struct ThisApplication : Application
 	  addFlag ("whole", "Optimize whole topology, otherwise by subtrees of radius " + toString (areaRadius_std));
 	  addFlag ("sparse_init", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("reroot", "Re-root");
-	  addKey  ("reroot_at", "Interior node denoted as \'A-B\', which is the LCA of A nd B. Re-root above the LCA in the middle of the arc");
+	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	//addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");  // ??
 
     // Output
