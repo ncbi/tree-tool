@@ -12,11 +12,11 @@ rm -r -f data/Enterobacteriaceae.dir/
 mdsTree.sh data/Enterobacteriaceae Conservation 2 >& /dev/null
 if ($?) exit 1
 
-makeDistTree -input_tree data/Enterobacteriaceae.dir/ -data data/Enterobacteriaceae -dissim Conservation -topology -output_tree Enterobacteriaceae.tree > /dev/null
+makeDistTree -qc -input_tree data/Enterobacteriaceae.dir/ -data data/Enterobacteriaceae -dissim Conservation -topology -output_tree Enterobacteriaceae.tree > /dev/null
 if ($?) exit 1
 rm -r data/Enterobacteriaceae.dir/
 
-printDistTree -data data/Enterobacteriaceae -dissim Conservation Enterobacteriaceae.tree > Enterobacteriaceae.nw
+printDistTree -qc -data data/Enterobacteriaceae -dissim Conservation Enterobacteriaceae.tree > Enterobacteriaceae.nw
 if ($?) exit 1
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 if ($?) exit 1
@@ -34,13 +34,13 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 echo ""
 echo "Perfect tree ..."
-makeDistTree -data data/tree4 -dissim dist | grep -v '^CHRON: ' > tree4.makeDistTree
+makeDistTree -qc -data data/tree4 -dissim dist | grep -v '^CHRON: ' > tree4.makeDistTree
 if ($?) exit 1
 diff tree4.makeDistTree data/tree4.makeDistTree
 if ($?) exit 1
 rm tree4.makeDistTree
 echo "Verbose..."
-makeDistTree -data data/tree4 -dissim dist -qc >& /dev/null
+makeDistTree -qc -data data/tree4 -dissim dist  >& /dev/null
 if ($?) exit 1
 
 
@@ -49,14 +49,14 @@ echo "mdsTree: Random tree ..."
 rm -r -f data/randomTree.dir/
 mdsTree.sh data/randomTree dist 2 >& /dev/null
 if ($?) exit 1
-makeDistTree -input_tree data/randomTree.dir/ -data data/randomTree -dissim dist -variance lin -topology -output_tree random-output.tree >& /dev/null
+makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -topology  -output_tree random-output.tree >& /dev/null
 if ($?) exit 1
-makeDistTree -input_tree random-output.tree -data data/randomTree -dissim dist -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
+makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
 if ($?) exit 1
 diff randomTree.makeDistTree data/randomTree.makeDistTree
 if ($?) exit 1
 echo "Verbose..."
-makeDistTree -input_tree random-output.tree -data data/randomTree -dissim dist -variance lin -qc  >& /dev/null
+makeDistTree  -qc  -verbose 2  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin  >& /dev/null
 if ($?) exit 1
 rm -r data/randomTree.dir/
 rm randomTree.makeDistTree
@@ -66,7 +66,7 @@ rm random-output.tree
 echo ""
 echo "prot-identical_comm ..."
 # Check time ??
-makeDistTree  -data data/prot-identical_comm  -dissim cons  -topology | grep -v '^CHRON: ' > prot-identical_comm.distTree
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 if ($?) exit 1

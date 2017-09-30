@@ -10,23 +10,23 @@ endif
 
 echo ""
 echo "numeric"
-numeric_test go 
+numeric_test -qc go 
 if ($?) exit 1
 
 echo ""
 echo "matrix"
-matrix_test go
+matrix_test -qc go
 if ($?) exit 1
 
 echo ""
 echo "dataset"
-dataset_test $1
+dataset_test -qc $1
 if ($?) exit 1
 
 echo ""
 echo "pca: pca"
 # 2 1 0
-pca  -maxTotalExpl 1  -minExpl 0  data/pca pca  
+pca  -qc  -maxTotalExpl 1  -minExpl 0  data/pca pca  
 if ($?) exit 1
 rm data/pca-pca.*
 
@@ -34,7 +34,7 @@ echo ""
 echo "pca: Listeria_monocytogenes-qc"
 cp data/Listeria_monocytogenes-qc.dm .
 # -attr_pvalue 1e-5  5 1 0.07
-pca  -maxClusters 4  -mds  Listeria_monocytogenes-qc pc 
+pca  -qc  -maxClusters 4  -mds  Listeria_monocytogenes-qc pc 
 if ($?) exit 1
 diff Listeria_monocytogenes-qc-pc.txt data/Listeria_monocytogenes-qc-pc.txt
 if ($?) exit 1
@@ -46,7 +46,7 @@ rm Listeria_monocytogenes-qc*
 
 echo ""
 echo "mds: cities"
-mds  -attrType 1  -maxAttr 2  -maxTotalExpl 1  -minExpl 0  -attr Dist  data/cities > cities.mds
+mds  -qc  -attrType 1  -maxAttr 2  -maxTotalExpl 1  -minExpl 0  -attr Dist  data/cities > cities.mds
 if ($?) exit 1
 diff cities.mds data/cities.mds
 if ($?) exit 1
@@ -54,7 +54,7 @@ rm cities.mds
 
 echo ""
 echo "mds: blaLUT"
-mds  -attrType 0  -maxAttr 2  -maxTotalExpl 1  -minExpl 0  -attr Similarity  data/blaLUT  > blaLUT.mds
+mds  -qc  -attrType 0  -maxAttr 2  -maxTotalExpl 1  -minExpl 0  -attr Similarity  data/blaLUT  > blaLUT.mds
 if ($?) exit 1
 diff blaLUT.mds data/blaLUT.mds
 if ($?) exit 1
@@ -62,7 +62,7 @@ rm blaLUT.mds
 
 echo ""
 echo "mds: Enterobacteriaceae"
-mds  -attrType 2  -maxClusters 5  -attr Conservation  ../phylogeny/data/Enterobacteriaceae  > Enterobacteriaceae.mds
+mds  -qc  -attrType 2  -maxClusters 5  -attr Conservation  ../phylogeny/data/Enterobacteriaceae  > Enterobacteriaceae.mds
 if ($?) exit 1
 diff Enterobacteriaceae.mds data/Enterobacteriaceae.mds
 if ($?) exit 1
@@ -70,7 +70,7 @@ rm Enterobacteriaceae.mds
 
 echo ""
 echo "mds: Peptostreptococcaceae"
-mds  -attrType 2  -maxClusters 4  -attr Conservation  data/Peptostreptococcaceae  > Peptostreptococcaceae.mds
+mds  -qc  -attrType 2  -maxClusters 4  -attr Conservation  data/Peptostreptococcaceae  > Peptostreptococcaceae.mds
 if ($?) exit 1
 diff Peptostreptococcaceae.mds data/Peptostreptococcaceae.mds
 if ($?) exit 1
@@ -78,7 +78,7 @@ rm Peptostreptococcaceae.mds
 
 echo ""
 echo "mds: Bacteria"
-mds  -attrType 2  -maxClusters 4  -attr Conservation  data/Bacteria  > Bacteria.mds
+mds  -qc  -attrType 2  -maxClusters 4  -attr Conservation  data/Bacteria  > Bacteria.mds
 if ($?) exit 1
 diff Bacteria.mds data/Bacteria.mds
 if ($?) exit 1
@@ -86,7 +86,7 @@ rm Bacteria.mds
 
 echo ""
 echo "mds: bla-A"
-mds  -attrType 0  -maxClusters 4  -class Class  -attr Similarity  data/bla-A  > bla-A.mds
+mds  -qc  -attrType 0  -maxClusters 4  -class Class  -attr Similarity  data/bla-A  > bla-A.mds
 if ($?) exit 1
 diff bla-A.mds data/bla-A.mds
 if ($?) exit 1
@@ -94,7 +94,7 @@ rm bla-A.mds
 
 echo ""
 echo "clust"
-clust  data/hmmScore 100 10 0.5 > hmmScore.clust
+clust  -qc  data/hmmScore 100 10 0.5 > hmmScore.clust
 if ($?) exit 1
 diff hmmScore.clust data/hmmScore.clust
 if ($?) exit 1
@@ -102,21 +102,21 @@ rm hmmScore.clust
 
 echo ""
 echo "linreg"
-linreg_test  $1
+linreg_test  -qc  $1
 if ($?) exit 1
-linreg_test  -lin_dep  $1
+linreg_test  -qc  -lin_dep  $1
 if ($?) exit 1
 
 echo ""
 echo "logreg"
-logreg_test  $1
+logreg_test  -qc  $1
 if ($?) exit 1
-logreg_test  -lin_dep  $1
+logreg_test  -qc  -lin_dep  $1
 if ($?) exit 1
 
 echo ""
 echo "logreg GENOME.dm"
-logreg  data/GENOME target > logreg.out
+logreg  -qc  data/GENOME target > logreg.out
 if ($?) exit 1
 diff logreg.out data/GENOME.logreg
 if ($?) exit 1
@@ -124,24 +124,24 @@ rm logreg.out
 
 echo ""
 echo "Beta1"
-beta1_test  1000 $1 
+beta1_test  -qc  1000 $1 
 if ($?) exit 1
 
 #echo ""
 #echo "Zipf" ??
-#testZipf  1000 $1
+#testZipf  -qc  1000 $1
 #if ($?) exit 1
 
 echo ""
 echo "uniKernel"
-uniKernel  data/bimodal Z1_1 > bimodal.unikernel
+uniKernel  -qc  data/bimodal Z1_1 > bimodal.unikernel
 if ($?) exit 1
 diff bimodal.unikernel data/bimodal.unikernel
 if ($?) exit 1
 rm bimodal.unikernel
 
 echo ""
-uniKernel  data/363068-2319168-diff JK > 363068-2319168-diff.uniKernel
+uniKernel  -qc  data/363068-2319168-diff JK > 363068-2319168-diff.uniKernel
 if ($?) exit 1
 diff 363068-2319168-diff.uniKernel data/363068-2319168-diff.uniKernel
 if ($?) exit 1
