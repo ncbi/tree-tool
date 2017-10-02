@@ -75,7 +75,7 @@ struct DistTree;
 
 
 
-typedef  Vector<Real>  Leaf2dist;  
+//typedef  Vector<Real>  Leaf2dist;  
   // Index: Leaf::index
 
 
@@ -103,10 +103,11 @@ public:
     // Number of paths going through *this arc
   Real errorDensity {NAN};
 protected:
-  Vector<bool> subtreeLeaves;  
+//Vector<bool> subtreeLeaves;  
     // Indexed by Leaf::index
-  Real dissimSum {0};
-  Real dissimWeightedSum {0};
+    // size() = getTree().root->getLeavesSize()
+//Real dissimSum {0};
+//Real dissimWeightedSum {0};
 public:
   const Leaf* reprLeaf {nullptr};
     // In subtree
@@ -154,7 +155,7 @@ private:
   void setGlobalLenDown (DTNode* &bestDTNode,
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
-  void setSubtreeLeaves ();
+//void setSubtreeLeaves ();
     // Output: subtreeLeaves
     // Time: O(n^2)
 public:
@@ -163,12 +164,14 @@ public:
   virtual void setRepresentative () = 0;
     // Output: reprLeaf
     // Requires: after getDistTree().sort()
+#if 0
   virtual const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const = 0;
     // Return: nullptr or !isNan(leaf2dist [return->index])
     // Depth-first search
-  virtual void getDescendents (VectorPtr<DTNode> &descendents,
+#endif
+  virtual void getDescendants (VectorPtr<DTNode> &descendants,
                                size_t depth) const = 0;
-    // Update: descendents
+    // Update: descendants
 };
 
 
@@ -176,7 +179,7 @@ public:
 struct Steiner : DTNode
 // Steiner node
 {
-  size_t bootstrap [2/*bool*/];  // not used ??
+//size_t bootstrap [2/*bool*/]; 
     // 0 - # mismatches, 1 - # matches
   
   
@@ -209,13 +212,15 @@ struct Steiner : DTNode
           reprLeaf = node->reprLeaf;
       }
     }
+#if 0
   const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
     { for (const DiGraph::Arc* arc : arcs [false])
         if (const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> selectRepresentative (leaf2dist))
           return leaf;
       return nullptr;
     }
-  void getDescendents (VectorPtr<DTNode> &descendents,
+#endif
+  void getDescendants (VectorPtr<DTNode> &descendants,
                        size_t depth) const final;
 
 private:
@@ -224,7 +229,7 @@ private:
     // Until target
     // Input: target: !nullptr
     //        child: nullptr <=> *this becomes getTree().root
-    // Requires: descendentOf(target)
+    // Requires: descendantOf(target)
     // Invokes: setParent(child)
 public:
   void makeRoot (Steiner* ancestor2descendant);
@@ -246,11 +251,12 @@ struct Leaf : DTNode
   bool discernable {true}; 
     // false => getParent()->getChildren() is an equivalence class of indiscernables
   Real relLenError {NAN};
+#if 0
 private:
   friend DistTree;
-  friend DTNode;
   size_t index {NO_INDEX};
 public:
+#endif
   
   WeightedMeanVar absCriterion;
     // sum = contribution to 2*getTree().absCriterion
@@ -296,11 +302,13 @@ public:
 
   void setRepresentative () final
     { reprLeaf = this; }
+#if 0
   const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
     { return isNan (leaf2dist [index]) ? nullptr : this; }
-  void getDescendents (VectorPtr<DTNode> &descendents,
+#endif
+  void getDescendants (VectorPtr<DTNode> &descendants,
                        size_t /*depth*/) const final
-    { descendents << this; }
+    { descendants << this; }
 
   const DTNode* getDiscernable () const;
     // Return: !nullptr
@@ -308,7 +316,7 @@ public:
     { return sqrt (absCriterion. getMean ()); }
   Real getRelLenError () const;
     // Invokes: getLenError()
-  Steiner* collapse (Leaf* other);
+//Steiner* collapse (Leaf* other);
     // Return: new; may be nullptr
     // Output: discernable = false
     // Requires: !positive(distance(this,other))
@@ -463,7 +471,7 @@ struct ChangeToSibling : Move
 	                    const DTNode* to_arg)
 	  { return    Move::valid_ (from_arg, to_arg)
     	       && from_arg->getParent ()
-	  	       && ! to_arg->descendentOf (from_arg)
+	  	       && ! to_arg->descendantOf (from_arg)
 	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () == 2)  
 	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () == 2); 
 	  }
@@ -496,7 +504,7 @@ struct ChangeToChild : Move
 	                    const DTNode* to_arg)
 	  { return    Move::valid_ (from_arg, to_arg)
 	           && from_arg->asSteiner ()
-	  	       && to_arg->descendentOf (from_arg)
+	  	       && to_arg->descendantOf (from_arg)
 	  	     //&& ! (to_arg->getParent() == from_arg && from_arg -> arcs [false]. size () == 2)
 	  	       && to_arg->getParent () != from_arg;  // *this is redundant given ChildToSibling: from_arg->getParent()=to_arg
 	  }
@@ -527,7 +535,7 @@ protected:
 	                    const DTNode* to_arg)
 	  { return    Change::valid_ (from_arg, to_arg)
     	       && from_arg->getParent ()
-	  	       && ! to_arg->descendentOf (from_arg)
+	  	       && ! to_arg->descendantOf (from_arg)
 	  	       && from_arg->getParent () != to_arg->getParent ();
 	  }
 
@@ -552,8 +560,8 @@ struct ChangeToUncle : Swap
 	static bool valid_ (const DTNode* from_arg,
 	                    const DTNode* to_arg)
 	  { return    Swap::valid_ (from_arg, to_arg)
-	  	       && from_arg->getParent () -> descendentOf (to_arg->getParent ())
-	  	       && ! from_arg->getParent () -> descendentOf (to_arg);
+	  	       && from_arg->getParent () -> descendantOf (to_arg->getParent ())
+	  	       && ! from_arg->getParent () -> descendantOf (to_arg);
 	  }
 
 
@@ -591,7 +599,7 @@ struct ChangeToCousin : Swap
 
 
 
-// DistTree
+///////////////////////////////////////////////////////////////////////////
 
 struct DistTree : Tree
 // Of DTNode*
@@ -615,7 +623,7 @@ public:
 
   Dataset ds;
     // objs: pairs of Leaf's
-    //       objs[i].name = obj2leaf1[i]->name + "-" + obj2leaf2[i]->name
+    //       objs[i].name = obj2leaf1[i]->name + objNameSeparator + obj2leaf2[i]->name
 	  //       objs[i]->mult = dissim2mult(target[i]); positive()
     // attrs: DTNode::attr: 0/1: 1 <=> on the path between the pair of Leaf's    
     // attrs.size() <= 2*n
@@ -674,25 +682,28 @@ public:
 	DistTree (const string &dataDirName,
 	          bool loadDissim);
 	  // Input: dataDirName: ends with '/'
-	  //        directory contains files:
-	  //          file name             line format, tab-delimited             meaning
-	  //          ---------             -----------------------------          -------
+	  //          files: tree, leaf, dissim
+	  //        <dataDirName/> contains:
+	  //          file name                 line format, tab-delimited                    meaning
+	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
-	  //          dissim                <obj1> <obj2> <dissimilarity>          <ob1>, <ob2> are tree leaves
-    //
-    //          new/<obj_new/                                                Initialization of <obj_new>
-    //          new/<obj_new>/dissim  <obj_new> <obj> <dissimilarity>
-    //          new/<obj_new>/loc     <obj1>-<obj2> <leaf_len> <arc_len>
-    //          new/<obj_new>/request <obj_new> <obj>
-    //
-    //          attach/dissim
-    //          attach/loc
+	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
+    //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
+    //         [dissim.add]
+    //          new/<obj_new>                                                           Initialization of <obj_new>
+    //          search/<obj_new>/                                                       Initialization of search for <obj_new> location
+    //        [ search/<obj_new>/dissim   <obj_new> <obj> <dissimilarity>        
+    //          search/<obj_new>/leaf     = as in leaf 
+    //         [search/<obj_new>/request  <obj_new> <obj>]                              request to compute dissimilarity
+    //        ]
 	  //          
 	  //          ??
-	  //          dissim.req      <obj1> <obj2>                  request to compute dissimilarity
-	  //
-	  //          outlier         <obj> <obj1> <obj2>            approximate node of attachment 
+	  //          request         <obj1> <obj2>                                           request to compute dissimilarity
+	  //          outlier         = as in leaf                                            
 	  //          deleted         <obj>
+	  //
+	  //       <dissimilarity>: >= 0, < INF
+	  // Invokes: optimizeSubgraph() for each added Leaf
   //  
   explicit DistTree (const string &newickFName);
   DistTree (Prob branchProb,
@@ -769,9 +780,6 @@ private:
 	  // Update: ds.objs, completeDs, dissim2_sum, *target, objLeaf1, objLeaf2
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
-  Set<string> selectPairs ();  
-    // Return: reroot() reduces size()
-    // Invokes: setReprLeaves()
 public:
 	void qc () const override;
 	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
@@ -786,7 +794,7 @@ public:
                             const string &name2);
   const DTNode* lcaName2node (const string &lcaName) const;
     // Return: !nullptr
-    // Input: lcaName: <leaf1 name>-<leaf2 name>
+    // Input: lcaName: <leaf1 name> <objNameSeparator> <leaf2 name>
   size_t extraObjs () const
     { return dissimDs. get () ? dissimDs->objs. size () - name2leaf. size () : 0; }
   size_t dissimSize_max () const
@@ -901,14 +909,16 @@ public:
 	  // Invokes: optimizeSubgraph()
 	  // Time: O(n * Time(optimizeSubgraph))
 private:
-  void setSubtreeLeaves ();
+//void setSubtreeLeaves ();
     // Output: DTNode::subtreeLeaves, Leaf::index
     // Invokes: DTNode::setSubtreeLeaves()
     // Time: O(n^2)
+#if 0
   void addSubtreeLeaf (Leaf* leaf);
     // Update: DTNode::subtreeLeaves
     // Output: leaf->index
     // Time: O(n)
+#endif
 	Real optimizeSubgraph (const Steiner* center);
 	  // Return: min. distance to boundary
 	  // Input: center: may be delete'd
@@ -944,6 +954,12 @@ public:
       const_static_cast<DTNode*> (root) -> setRepresentative ();
     }  
     // Output: DTNode::reprLeaf
+  Set<string> selectPairs ();  
+    // Return: pairs of Leaf->name's 
+    //         O(log(n)) pairs for each Leaf
+    //         not in ds.objs
+    //         reroot() reduces size()
+    // Invokes: setReprLeaves(), ds.setName2objNum(), getObjName()
         
   // After optimization
   void reroot (DTNode* underRoot,
@@ -991,6 +1007,118 @@ public:
                          ostream &os) const;
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
   void printDissim (ostream &os) const;
+};
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+struct NewLeaf : Named
+// To become Leaf
+// name = Leaf::name
+{
+private:
+  const DistTree& tree;
+    // !nullptr
+  const string dataDir;
+public:
+  
+
+  struct Location : Root
+  {
+    const DTNode* anchor {nullptr};
+      // Current best position of NewLeaf
+      // New Leaf* leaf: leaf->getParent() is on the anchor arc
+    Real leafLen {NAN};
+    Real arcLen {NAN};
+      // From anchor to leaf->getParent()
+    Real absCriterion_delta {INF};
+      // To be minimized, >= 0
+      
+    void qc () const;
+    void saveText (ostream &os) const
+      { const ONumber on (os, dissimDecimals, true);
+        os         << anchor->getLcaName ()
+           << '\t' << leafLen 
+           << '\t' << arcLen;
+      }
+  };
+  Location location;
+
+
+  struct Leaf2dissim
+  {
+    const Leaf* leaf {nullptr};
+    Real dissim {NAN};
+      // Between NewLeaf and leaf
+    Real mult {NAN};
+      // Function of dissim
+      
+    // Function of NewLeaf::Location::anchor
+    Real dist_hat {NAN};
+      // From leaf to NewLeaf::Location::anchor
+    bool leafIsBelow {false};
+    
+    Leaf2dissim (const Leaf* leaf_arg,
+                 Real dissim_arg,
+                 const DTNode* anchor);
+      // Input: anchor = NewLeaf::Location::anchor
+    explicit Leaf2dissim (const Leaf* leaf_arg)
+      : leaf (leaf_arg)
+      {}
+      
+    Real getDelta () const
+      { return dissim - dist_hat; }
+    Real getU () const
+      { return leafIsBelow ? 1 : -1; }
+    Real getEpsilon (const NewLeaf& nl) const
+      { const Real leaf_dist_hat = dist_hat + nl. location. arcLen * getU () + nl. location. leafLen;
+        return dissim - leaf_dist_hat;
+      }
+      
+    bool operator< (const Leaf2dissim &other) const
+      { return leaf < other. leaf; }
+    bool operator== (const Leaf2dissim &other) const
+      { return leaf == other. leaf; }
+  };
+  Vector<Leaf2dissim> leaf2dissims;
+    // Leaf2dissim::leaf: distinct, ordered
+    // Assumption: size() = O(log(n))
+
+
+  NewLeaf (const DistTree &tree_arg,
+           const string &dataDir_arg,
+           const string &name_arg,
+           bool init);
+private:
+  string getNameDir () const       { return dataDir + "/" + name + "/"; }
+  string getDissimFName () const   { return getNameDir () + "dissim"; }
+  string getLeafFName ( )const     { return getNameDir () + "leaf"; }
+  string getRequestFName () const  { return getNameDir () + "request"; }
+  void saveLeaf () const
+    { OFStream of (getLeafFName ());
+      of << name << '\t';
+      location. saveText (of);
+      of << endl;
+    }
+  void saveRequest () const;
+    // Input: location.anchor
+    // Output: file getRequestFName()
+    // Time: O(log^2(n))
+  void optimize ();
+    // Time: O(log^3(n))
+    // Invokes: setLocation(), descend()
+  void setLocation ();
+    // Output: location.{leafLen,arcLen,absCriterion_delta}
+    // Time: O(log(n))
+  bool descend (const DTNode* anchor_new);
+    // Return: true <=> location.anchor has leaves in leaf2dissims
+    // Update: leaf2dissims
+    // Output: location.anchor
+    // Time: O(log^2(n))
+public:
+  void qc () const;
 };
 
 

@@ -29,10 +29,10 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subtrees of radius " + toString (areaRadius_std));
-	  addFlag ("sparse_init", "Make the initial dissimilarity matrix sparse");
+	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
-	//addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");  // ??
+	//addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");  
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
@@ -41,7 +41,8 @@ struct ThisApplication : Application
 	  addKey ("leaf_errors", "File with relative errors of leaves");
 	  addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair");
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
-	  addKey ("output_dissim", "Dissimilarities used in the tree, line format: <obj1> <obj2> <dissim>");
+	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
+	  addKey ("dissim_request", "File with requests to comoute dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	}
 	
 	
@@ -55,8 +56,8 @@ struct ThisApplication : Application
 		const bool topology              = getFlag ("topology");
 		const bool whole                 = getFlag ("whole");
 		const bool reroot                = getFlag ("reroot");
-		      string reroot_at           = getArg ("reroot_at");
-		const bool sparse_init           = getFlag ("sparse_init");
+		const string reroot_at           = getArg ("reroot_at");
+		const bool sparse                = getFlag ("sparse");
 	//const bool sparse_add            = getFlag ("sparse_add");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
@@ -64,14 +65,18 @@ struct ThisApplication : Application
 		const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
 		const string output_dissim       = getArg ("output_dissim");
-	  IMPLY (isRight (input_tree, "/"), ! sparse_init);
+		const string dissim_request      = getArg ("dissim_request");
+		
+	  IMPLY (isRight (input_tree, "/"), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
     if (isRight (dataFName, "/"))
     {
       if (! input_tree. empty ())
-        throw runtime_error ("Input tree is in " + dataFName);
+        throw runtime_error ("Input tree must be in " + dataFName);
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
+      if (sparse)
+        throw runtime_error ("Sparsing " + dataFName + " cannot be done");
     }
     else
       if (dataFName. empty () != dissimAttrName. empty ())
@@ -82,7 +87,7 @@ struct ThisApplication : Application
     if (topology)
     {
       cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
-      if (sparse_init)
+      if (sparse)
         cout << "Sparsing depth = " << sparsingDepth << endl;
     }
     cout << endl;
@@ -92,12 +97,12 @@ struct ThisApplication : Application
     {
       Chronometer_OnePass cop ("Initial topology");
       tree = isRight (dataFName, "/")
-               ? new DistTree (/*DistTree::Incremental (),*/ dataFName, true)
+               ? new DistTree (dataFName, true)
                : input_tree. empty ()
-                 ? new DistTree (dataFName, dissimAttrName, sparse_init)
+                 ? new DistTree (dataFName, dissimAttrName, sparse)
                  : isRight (input_tree, "/")
                    ? new DistTree (input_tree, dataFName, dissimAttrName)
-                   : new DistTree (input_tree, dataFName, dissimAttrName, sparse_init);
+                   : new DistTree (input_tree, dataFName, dissimAttrName, sparse);
     }
     ASSERT (tree. get ());
     if (verbose ())
@@ -116,6 +121,8 @@ struct ThisApplication : Application
         {
           if (verbose ())
             tree->saveFile (output_tree);  
+            
+          if (! isRight (dataFName, "/"))
           {
             Chronometer_OnePass cop ("Initial arc lengths");
 
@@ -145,6 +152,7 @@ struct ThisApplication : Application
             }
             tree->reportErrors (cout);
           }
+          
           {
             cout << "Optimizing topology ..." << endl;
             Chronometer_OnePass cop ("Topology and arc length optimization");
@@ -154,6 +162,7 @@ struct ThisApplication : Application
               tree->optimizeSubgraphs ();  
                 // optimizeSubtreesIter () almost does not improve
           }
+          
           tree->reroot ();  
         }
         else if (leaves == 3)
@@ -164,7 +173,7 @@ struct ThisApplication : Application
 
       
     #if 0
-      if (tree->dissimAttr)   // ??
+      if (tree->dissimAttr)  
       {
         tree->optimizeAdd (sparse_add, output_tree);  
         tree->reroot ();  
@@ -228,7 +237,7 @@ struct ThisApplication : Application
       cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
         // = 0 => epsilon2_0 > 0
     #if 0
-      if (sparse_init) 
+      if (sparse) 
       {
         const size_t missing = tree->selectPairs (). size ();
         cout << "Missing dissimilarities = " << missing << " (" << (Real) missing / (Real) tree->dissimSize_max () * 100 << " %)" << endl;
@@ -239,7 +248,7 @@ struct ThisApplication : Application
       cout << "Interior height = " << tree->getInteriorHeight () << endl;
       const Real bifurcatingInteriorBranching = tree->getBifurcatingInteriorBranching ();
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
-      if (sparse_init) 
+      if (sparse) 
         cout << "# Sparsing leaves = " << pow (bifurcatingInteriorBranching, sparsingDepth + 1) << endl;
       // #dissimilarities = 2 #discernables log_2(#discernables) #sparsing_leaves
 
@@ -305,6 +314,18 @@ struct ThisApplication : Application
     {
       OFStream f (output_dissim);
       tree->printDissim (f);
+    }
+    
+    if (! dissim_request. empty ())
+    {
+      OFStream f (dissim_request);
+      const Set<string> pairs (tree->selectPairs ());
+      for (const string& s : pairs)
+      {
+        string s1 (s);
+        replace (s1, Tree::objNameSeparator, '\t');
+        f << s1 << endl;
+      }
     }
 	}
 };
