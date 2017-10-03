@@ -1468,14 +1468,14 @@ string Tree::TreeNode::name2newick (const string &s)
 
 
 
-const Tree::TreeNode* Tree::TreeNode::getSuperParent (size_t height) const
+const Tree::TreeNode* Tree::TreeNode::getAncestor (size_t height) const
 {
   const TreeNode* n = this;
   FOR (size_t, i, height)
-  {
-  	ASSERT (n);
-    n = n->getParent ();
-  }
+  	if (n)
+      n = n->getParent ();
+    else
+      return getTree(). root;
   return n;
 }
 

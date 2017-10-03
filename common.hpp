@@ -1814,9 +1814,9 @@ struct Tree : DiGraph
 		const TreeNode* getParent () const
 			{ return arcs [true]. empty () ? nullptr : static_cast <TreeNode*> (arcs [true]. front () -> node [true]); }
 		  // Return: nullptr <=> root
-		const TreeNode* getSuperParent (size_t height) const;
+		const TreeNode* getAncestor (size_t height) const;
 		  // Return: may be nullptr
-		  // getSuperParent(0) = this
+		  // getAncestor(0) = this
 		void setParent (TreeNode* newParent);
 		  // Update: *newParent
 		  //         getTree()->root if !newParent
