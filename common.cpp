@@ -1475,8 +1475,10 @@ const Tree::TreeNode* Tree::TreeNode::getAncestor (size_t height) const
   	if (n)
       n = n->getParent ();
     else
-      return getTree(). root;
-  return n;
+      break;
+  if (n)
+    return n;
+  return getTree(). root;  
 }
 
 
