@@ -19,7 +19,6 @@ dm2objs $INPUT | sort > $INPUT.list
 if ($?) exit 1
 
 setRandOrd $INPUT.list $BASE_SEED | head -$BASE_SIZE | sort > $BASE.list
-#if ($?) exit 1
 rm $INPUT.list
 
 dm2subset $INPUT $BASE.list > $BASE.dm

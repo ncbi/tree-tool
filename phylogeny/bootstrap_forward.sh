@@ -35,7 +35,6 @@ if ($SUPER_SIZE > $N[1]) then
 endif
 
 setRandOrd $INPUT.list $BASE_SEED | head -$BASE_SIZE | sort > $BASE.list
-#if ($?) exit 1
 
 setMinus $INPUT.list $BASE.list > $BASE.rest
 if ($?) exit 1
