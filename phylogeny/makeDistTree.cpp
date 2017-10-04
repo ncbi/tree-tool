@@ -105,7 +105,7 @@ struct ThisApplication : Application
                    : new DistTree (input_tree, dataFName, dissimAttrName, sparse);
     }
     ASSERT (tree. get ());
-    if (verbose ())
+  //if (verbose ())
       tree->qc ();     
 
     tree->printInput (cout);
@@ -145,11 +145,9 @@ struct ThisApplication : Application
             tree->optimizeLenNode ();  
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             
+            tree->qc ();
             if (verbose ())
-            {
-              tree->qc ();
               tree->print (cout);  
-            }
             tree->reportErrors (cout);
           }
           
@@ -177,7 +175,7 @@ struct ThisApplication : Application
       {
         tree->optimizeAdd (sparse_add, output_tree);  
         tree->reroot ();  
-        if (verbose ())
+      //if (verbose ())
           tree->qc ();
       }
       // tree and dist-matrix match
@@ -196,7 +194,7 @@ struct ThisApplication : Application
       tree->printAbsCriterion_halves ();  
       tree->setHeight ();
       tree->setLeafAbsCriterion ();
-      if (verbose ())
+    //if (verbose ())
         tree->qc ();
 
       cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;

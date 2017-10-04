@@ -220,16 +220,21 @@ struct ThisApplication : Application
       throw runtime_error ("\"" + dataDir + "\" must end with '/'");
 
 
-    DistTree::printParam (cout);
-    cout << endl;
+    if (verbose ())
+    {
+      DistTree::printParam (cout);
+      cout << endl;
+    }
 
     DistTree tree (dataDir, false);
     tree. setReprLeaves ();  
-    if (verbose ())
-      tree. qc ();     
+    tree. qc ();     
 
-    tree. printInput (cout);
-    cout << endl;
+    if (verbose ())
+    {
+      tree. printInput (cout);
+      cout << endl;
+    }
     
     cout << "Processing new objects ..." << endl;
     const string newDir (dataDir + "search/");

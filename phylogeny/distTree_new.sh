@@ -12,8 +12,9 @@ set QC = ""  # -qc
 
 echo "new/ -> search/ ..."
 
+sync
+
 set N = `ls $1/search/ | head -1`
-if ($?) exit 1
 if ("$N") then
   echo "$1/search/ is not empty"
   exit 1
@@ -30,7 +31,6 @@ echo "To add: $INC"
 ls $1/new/ > new.list
 if ($?) exit 1
 setRandOrd new.list 1 | head -$INC > search.list
-if ($?) exit 1
 rm new.list
 
 trav search.list "mkdir $1/search/%f"
@@ -61,8 +61,8 @@ if ($?) exit 1
 #   where n = # leaves in the tree
 set Iter = 0
 while (1)
+  sync
   set N = `ls $1/search/ | head -1`
-  if ($?) exit 1
   if ("$N" == "")  break  
 
   @ Iter = $Iter + 1
@@ -100,7 +100,8 @@ rm $1/dissim.add
 # Time: O(n log^2(n)) 
 makeDistTree $QC  -data $1/  -output_tree $1/tree.new
 if ($?) exit 1
-mv $1/leaf $1/leaf.old
+echo ""     >> $1/leaf.old  # ??
+cat $1/leaf >> $1/leaf.old  # ??
 if ($?) exit 1
 cp /dev/null $1/leaf
 if ($?) exit 1

@@ -316,11 +316,14 @@ public:
     { return sqrt (absCriterion. getMean ()); }
   Real getRelLenError () const;
     // Invokes: getLenError()
-//Steiner* collapse (Leaf* other);
-    // Return: new; may be nullptr
+private:
+  friend DistTree;
+  Steiner* collapse (Leaf* other);
+    // Return: new, may be nullptr
     // Output: discernable = false
-    // Requires: !positive(distance(this,other))
     // Invokes: setParent()
+    // To be followed by: DistTree::clean()
+public:
 };
 
 
@@ -629,8 +632,6 @@ public:
     // attrs.size() <= 2*n
     // objs.size() <= n*(n-1)/2
     // size = O(n^3)
-  bool completeDs {true};
-    // No missing dissimilarities
   Sample dsSample;  
   // !nullptr
   const RealAttr1* target {nullptr};
@@ -754,6 +755,8 @@ private:
   size_t setDiscernable ();
     // Return: Number of indiscernable leaves
     // Output: Leaf::len = 0, Leaf::discernable = false, topology
+    // Invokes: clean()
+  void clean ();
   void setGlobalLen ();
     // Molecular clock 
     // Output: DTNode::subtreeLen, DTNode::len
@@ -761,7 +764,7 @@ private:
   void neighborJoin ();
     // Greedy
     // Assumes: Obj::mult = 1
-    // Requires: completeDs, star topology
+    // Requires: complete *dissimAttr, star topology
     // Invokes: reroot()
     // Time: O(n^3)
   //
@@ -777,7 +780,7 @@ private:
                   const string &name2,
                   Real dissim);
 	  // Return: dissim is added
-	  // Update: ds.objs, completeDs, dissim2_sum, *target, objLeaf1, objLeaf2
+	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
 public:
@@ -797,7 +800,7 @@ public:
     // Input: lcaName: <leaf1 name> <objNameSeparator> <leaf2 name>
   size_t extraObjs () const
     { return dissimDs. get () ? dissimDs->objs. size () - name2leaf. size () : 0; }
-  size_t dissimSize_max () const
+  size_t getDissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   Set<const DTNode*> getDiscernables () const;
     // Logical leaves
@@ -1033,7 +1036,7 @@ public:
     Real leafLen {NAN};
     Real arcLen {NAN};
       // From anchor to leaf->getParent()
-    Real absCriterion_delta {INF};
+    Real absCriterion_leaf {INF};
       // To be minimized, >= 0
       
     void qc () const;
@@ -1041,10 +1044,12 @@ public:
       { const ONumber on (os, dissimDecimals, true);
         os         << anchor->getLcaName ()
            << '\t' << leafLen 
-           << '\t' << arcLen;
+           << '\t' << arcLen;  // report more ??
       }
   };
   Location location;
+  bool optimized {false};
+    // Locally
 
 
   struct Leaf2dissim
@@ -1107,10 +1112,12 @@ private:
     // Output: file getRequestFName()
     // Time: O(log^2(n))
   void optimize ();
+    // Output: location, optimized
+    // Update: leaf2dissims.{dist_hat,leafIsBelow}
     // Time: O(log^3(n))
     // Invokes: setLocation(), descend()
   void setLocation ();
-    // Output: location.{leafLen,arcLen,absCriterion_delta}
+    // Output: location.{leafLen,arcLen,absCriterion_leaf}
     // Time: O(log(n))
   bool descend (const DTNode* anchor_new);
     // Return: true <=> location.anchor has leaves in leaf2dissims
