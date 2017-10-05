@@ -27,9 +27,9 @@ struct ThisApplication : Application
 	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subtrees of radius " + toString (areaRadius_std));
-	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	//addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");  

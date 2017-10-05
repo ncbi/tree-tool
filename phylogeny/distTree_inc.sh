@@ -10,9 +10,7 @@ endif
 
 
 rm -f $1.log
-rm -f $1/leaf.old  # ??
 while (1)
-  sync
   set N = `ls $1/new/ | wc -l`
   echo "# New: $N[1]  `date`" >> $1.log  
   if ($N[1] == 0)  break

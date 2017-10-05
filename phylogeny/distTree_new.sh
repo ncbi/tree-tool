@@ -12,8 +12,6 @@ set QC = ""  # -qc
 
 echo "new/ -> search/ ..."
 
-sync
-
 set N = `ls $1/search/ | head -1`
 if ("$N") then
   echo "$1/search/ is not empty"
@@ -61,7 +59,6 @@ if ($?) exit 1
 #   where n = # leaves in the tree
 set Iter = 0
 while (1)
-  sync
   set N = `ls $1/search/ | head -1`
   if ("$N" == "")  break  
 
@@ -85,11 +82,18 @@ echo ""
 echo ""
 echo "leaf, dissim -> tree, dissim ..."
 
+set VERSION = `cat $1/version`
+if ($?) exit 1
+
 # Time: O(n log(n)) 
 cp $1/dissim $1/dissim.old
 if ($?) exit 1
 # Time: O(n) 
-cp $1/tree $1/tree.old
+cp $1/tree $1/old/tree.$VERSION
+if ($?) exit 1
+
+@ VERSION = $VERSION + 1
+echo $VERSION > $1/version
 if ($?) exit 1
 
 wc -l $1/dissim.add
@@ -98,12 +102,13 @@ if ($?) exit 1
 rm $1/dissim.add
 
 # Time: O(n log^2(n)) 
-makeDistTree $QC  -data $1/  -output_tree $1/tree.new
+makeDistTree $QC  -data $1/  -output_tree $1/tree.new > $1/old/makeDistTree.$VERSION
 if ($?) exit 1
-echo ""     >> $1/leaf.old  # ??
-cat $1/leaf >> $1/leaf.old  # ??
+mv $1/leaf $1/old/leaf.$VERSION
 if ($?) exit 1
 cp /dev/null $1/leaf
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
+
+

@@ -947,7 +947,7 @@ DistTree::DistTree (const string &dirName,
     throw runtime_error ("Disconnected objects");
 	setDiscernable ();  
 
-  setGlobalLen ();  
+  setGlobalLen ();  // --> after dissim2Ds(), use obj2leaf[] ??
 
   dissimDs2ds (false);  
   topology2attrs (nodes);
@@ -1013,7 +1013,7 @@ DistTree::DistTree (const string &dataDirName,
     {
       istringstream iss (f. line);
       iss >> leafName >> anchorName >> leafLen >> arcLen;
-      ASSERT (iss. eof ());
+    //ASSERT (iss. eof ());  // Extra fields
       DTNode* anchor = const_cast <DTNode*> (lcaName2node (anchorName));
       ASSERT (anchor);
       // Attach a leaf
@@ -1342,6 +1342,7 @@ DistTree::DistTree (const DTNode* center,
 
 
   // ds.objs[]->mult, *target: sum
+  // Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing, do not invoke getPath() ??!
   const VectorOwn<Obj>& wholeObjs = wholeTree. ds. objs;
   VectorPtr<TreeNode> extremes (2);  // temporary
   FOR (size_t, objNum_whole, wholeObjs. size ())
@@ -4194,7 +4195,7 @@ size_t DistTree::printLeafRelLenErros (ostream &os,
       {
         os << leaf->getName () << '\t' << relErr << endl;
         n++;
-      //ASSERT (relErr < 10);  // ??
+      //ASSERT (relErr < 10);  
       }
     }
     
@@ -4496,7 +4497,6 @@ void NewLeaf::saveRequest () const
       ancestor = static_cast <const DTNode*> (ancestor->getParent ());
     }
   }
-  IMPLY (requested. empty (), optimized);
   
   {
     OFStream of (getRequestFName ());
@@ -4516,14 +4516,18 @@ void NewLeaf::optimize ()
 	    location. leafLen = 0;
 	    location. arcLen = 0;
 	    location. absCriterion_leaf = 0;
-	    optimized = true;
 	    return;
 	  }
 
 
-  setLocation ();
   Location location_best (location);
   Vector<Leaf2dissim> leaf2dissims_best (leaf2dissims);
+#if 1
+  optimizeAnchor (location_best, leaf2dissims_best);
+  location = location_best;
+  leaf2dissims = leaf2dissims_best;
+#else
+  setLocation ();
   optimized = true;
   while (location. arcLen == 0 && location. anchor->childrenDiscernable ())
   {
@@ -4563,6 +4567,35 @@ void NewLeaf::optimize ()
   	       << endl;  
   	}
   }
+#endif
+}
+
+
+
+void NewLeaf::optimizeAnchor (Location &location_best,
+                              Vector<Leaf2dissim> &leaf2dissims_best)
+{
+  setLocation ();
+  if (minimize (location_best. absCriterion_leaf, location. absCriterion_leaf))
+  {
+    location_best = location;
+    leaf2dissims_best = leaf2dissims;
+  }
+
+  if (! location. anchor->childrenDiscernable ())
+    return;
+    
+  VectorPtr<DiGraph::Arc> arcs;  arcs. reserve (location. anchor->arcs [false]. size ());
+  insertAll (arcs, location. anchor->arcs [false]);
+	for (const DiGraph::Arc* arc : arcs)
+	{
+	  const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+    ASSERT (! child->inDiscernable ());
+    const Keep<Location> location_old (location);
+	  const Keep<Vector<Leaf2dissim>> leaf2dissims_old (leaf2dissims);
+	  if (descend (child))
+	    optimizeAnchor (location_best, leaf2dissims_best);
+	}
 }
 
 

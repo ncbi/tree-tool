@@ -92,7 +92,7 @@ struct DTNode : Tree::TreeNode
     // In getDistTree().ds
     // ~DTNode() does not delete
     // ExtBoolAttr1: makes faster by 5 % 
-  WeightedMeanVar subtreeLen;  // --> temporary variable ??
+  WeightedMeanVar subtreeLen; 
     // Global len = len from *this to the leaves
     // weights = sum of DTNode::len in the subtree excluding *this
 private:
@@ -697,12 +697,15 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              request to compute dissimilarity
     //        ]
-	  //          
 	  //          ??
 	  //          request         <obj1> <obj2>                                           request to compute dissimilarity
 	  //          outlier         = as in leaf                                            
 	  //          deleted         <obj>
 	  //
+	  //          version                   <natural number>
+	  //          old/                                                                    Old versions of data
+	  //          old/tree.<version>
+	  //          old/leaf.<version>
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
   //  
@@ -970,7 +973,7 @@ public:
   void reroot ();
     // Local molecular clock ??
     // Optimization criterion ??
-    // Invokes: reroot(,)
+    // Invokes: setGloballenDown(), reroot(,)
   void setHeight ()
     { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (); }
     // Input: DTNode::len
@@ -1044,12 +1047,13 @@ public:
       { const ONumber on (os, dissimDecimals, true);
         os         << anchor->getLcaName ()
            << '\t' << leafLen 
-           << '\t' << arcLen;  // report more ??
+           << '\t' << arcLen  
+           // Not used 
+           << '\t' << anchor->len
+           << '\t' << absCriterion_leaf;
       }
   };
   Location location;
-  bool optimized {false};
-    // Locally
 
 
   struct Leaf2dissim
@@ -1104,7 +1108,7 @@ private:
   void saveLeaf () const
     { OFStream of (getLeafFName ());
       of << name << '\t';
-      location. saveText (of);
+      location. saveText (of);      
       of << endl;
     }
   void saveRequest () const;
@@ -1112,9 +1116,14 @@ private:
     // Output: file getRequestFName()
     // Time: O(log^2(n))
   void optimize ();
-    // Output: location, optimized
+    // Output: location
     // Update: leaf2dissims.{dist_hat,leafIsBelow}
-    // Time: O(log^3(n))
+    // Time: average: O(log^3(n))
+    // Invokes: setLocation(), descend()
+  void optimizeAnchor (Location &location_best,
+                       Vector<Leaf2dissim> &leaf2dissims_best);
+    // Update: location, leaf2dissims, location_best
+    // Output: leaf2dissims_best
     // Invokes: setLocation(), descend()
   void setLocation ();
     // Output: location.{leafLen,arcLen,absCriterion_leaf}
