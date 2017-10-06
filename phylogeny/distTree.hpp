@@ -75,11 +75,6 @@ struct DistTree;
 
 
 
-//typedef  Vector<Real>  Leaf2dist;  
-  // Index: Leaf::index
-
-
-
 struct DTNode : Tree::TreeNode 
 {
   friend DistTree;
@@ -92,12 +87,12 @@ struct DTNode : Tree::TreeNode
     // In getDistTree().ds
     // ~DTNode() does not delete
     // ExtBoolAttr1: makes faster by 5 % 
-  WeightedMeanVar subtreeLen; 
-    // Global len = len from *this to the leaves
-    // weights = sum of DTNode::len in the subtree excluding *this
+
 private:
   bool stable {false};
     // Init: false
+  WeightedMeanVar subtreeLen; 
+    // Temporary
 public:
   size_t paths {0};
     // Number of paths going through *this arc
@@ -147,14 +142,18 @@ public:
     { return arcs [false]. empty () || ! static_cast <DTNode*> ((*arcs [false]. begin ()) -> node [false]) -> inDiscernable (); }
   Real getHeight () const
     { return subtreeLen. getMean (); }    
+    // Requires: after DistTree::setHeight()
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
   void setSubtreeLenUp ();
-    // Output: subtreeLen
+    // Output: subtreeLen: average subtree height 
+    //                     weights = sum of DTNode::len in the subtree excluding *this
   void setGlobalLenDown (DTNode* &bestDTNode,
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
+    // Output: subtreeLen: Global len = average path length from *this to all leaves
+    //                     weights = sum of DTNode::len in the subtree excluding *this
 //void setSubtreeLeaves ();
     // Output: subtreeLeaves
     // Time: O(n^2)
@@ -322,7 +321,7 @@ private:
     // Return: new, may be nullptr
     // Output: discernable = false
     // Invokes: setParent()
-    // To be followed by: DistTree::clean()
+    // To be followed by: DistTree::cleanTopology()
 public:
 };
 
@@ -758,11 +757,12 @@ private:
   size_t setDiscernable ();
     // Return: Number of indiscernable leaves
     // Output: Leaf::len = 0, Leaf::discernable = false, topology
-    // Invokes: clean()
-  void clean ();
+    // Invokes: cleanTopology()
+  void cleanTopology ();
   void setGlobalLen ();
     // Molecular clock 
-    // Output: DTNode::subtreeLen, DTNode::len
+    // Output: DTNode::len
+    // Temporary: DTNode::subtreeLen
 	  // Time: O(p log(n))
   void neighborJoin ();
     // Greedy
@@ -971,12 +971,13 @@ public:
   void reroot (DTNode* underRoot,
                Real arcLen);
   void reroot ();
-    // Local molecular clock ??
-    // Optimization criterion ??
+    // Center of the tree w.r.t. DTNode::setGlobalLenDown()
     // Invokes: setGloballenDown(), reroot(,)
   void setHeight ()
     { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (); }
     // Input: DTNode::len
+    // Output: DTNode::subtreeLen
+    // Invokes: DTNode::setSubtreeLenUp()
     
   // Quality
   Real getMeanResidual () const;

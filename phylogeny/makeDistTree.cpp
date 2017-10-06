@@ -192,7 +192,7 @@ struct ThisApplication : Application
       cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  
-      tree->setHeight ();
+    //tree->setHeight ();
       tree->setLeafAbsCriterion ();
     //if (verbose ())
         tree->qc ();
@@ -275,8 +275,11 @@ struct ThisApplication : Application
              )
             stableLeaves++;
         }
+        
+        // Depend on root ??
         cout << "# Frequent children interior nodes = " << freqChildrenInteriors << endl;
         cout << "# Frequent children leaves = "         << freqChildrenLeaves << endl;
+        
         cout << "# Frequent interior nodes = "          << stableInteriors << endl;
         cout << "# Frequent leaves = "                  << stableLeaves << endl;
           // Incertae sedis ??

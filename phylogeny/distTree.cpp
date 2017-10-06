@@ -63,12 +63,16 @@ void DTNode::saveContent (ostream& os) const
   {
     const ONumber oLen (os, dissimDecimals, true);
     os << "len=" << len;
+  #if 0
 		if (subtreeLen. weights)
 		  os << "  len_mean=" << getHeight ();
+  #endif
   }
   const ONumber oNum (os, 6, true);  // PAR
+#if 0
 	if (subtreeLen. weights)
 	  os << "  len_weight=" << subtreeLen. weights;
+#endif
   if (paths)
 	  os << "  err_density=" << errorDensity << "  paths=" << paths;
 //os << "  " << dissimSum << ' ' << dissimWeightedSum;  
@@ -1071,7 +1075,7 @@ DistTree::DistTree (const string &dataDirName,
   } 
   
   
-  clean ();
+  cleanTopology ();
    
   
   if (loadDissim)
@@ -1805,7 +1809,7 @@ size_t DistTree::setDiscernable ()
   
   
   if (n)
-    clean ();
+    cleanTopology ();
 
   
   return n;
@@ -1813,7 +1817,7 @@ size_t DistTree::setDiscernable ()
 
 
 
-void DistTree::clean ()
+void DistTree::cleanTopology ()
 {
  	Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());
 
@@ -1898,6 +1902,8 @@ void DistTree::setGlobalLen ()
         dtNode->len = max (0.0, parent->subtreeLen. getMean () - dtNode->subtreeLen. getMean ());
     }
   }
+
+  clearSubtreeLen ();
 
   finishChanges ();
 }
@@ -4054,6 +4060,8 @@ void DistTree::reroot ()
   }
   
   reroot (bestDTNode, bestDTNodeLen_new);
+  
+  clearSubtreeLen ();
 }
 
 
