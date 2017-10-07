@@ -1018,6 +1018,7 @@ public:
     { return ! name2objNum. empty (); }
   void setName2objNum ();
     // Output: name2objNum
+    // If duplicate names then throw
   size_t getName2objNum (const string &objName) const;
     // Return: NO_INDEX <=> not found
     // Input: name2objNum

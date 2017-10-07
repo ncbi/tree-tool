@@ -1,43 +1,43 @@
 Matrix size: 1200
-Total explained share = 97.566 % (117474328415.94 / 120405329468.00)
-Total explained variance share = 69.060
+Total explained fraction = 97.566 % (117474328415.94 / 120405329468.00)
+Total explained variance fraction = 69.060 %
 
 Eigen 1:
-Explained share            = 68.866 %
-Cumulative explained share = 68.866 %
+Explained fraction            = 68.866 %
+Cumulative explained fraction = 68.866 %
 Value = 287955.0432
 
 Eigen 2:
-Explained share            = 11.800 %
-Cumulative explained share = 80.666 %
+Explained fraction            = 11.800 %
+Cumulative explained fraction = 80.666 %
 Value = 119199.1002
 
 Eigen 3:
-Explained share            = 10.382 %
-Cumulative explained share = 91.048 %
+Explained fraction            = 10.382 %
+Cumulative explained fraction = 91.048 %
 Value = 111805.4681
 
 Eigen 4:
-Explained share            = 2.893 %
-Cumulative explained share = 93.942 %
+Explained fraction            = 2.893 %
+Cumulative explained fraction = 93.942 %
 Value = 59022.8634
 
 Eigen 5:
-Explained share            = 2.026 %
-Cumulative explained share = 95.968 %
+Explained fraction            = 2.026 %
+Cumulative explained fraction = 95.968 %
 Value = 49391.2032
 
 Eigen 6:
-Explained share            = 1.050 %
-Cumulative explained share = 97.017 %
+Explained fraction            = 1.050 %
+Cumulative explained fraction = 97.017 %
 Value = 35550.7786
 
 Eigen 7:
-Explained share            = 0.548 %
-Cumulative explained share = 97.566 %
+Explained fraction            = 0.548 %
+Cumulative explained fraction = 97.566 %
 Value = 25696.0330
 
-Next explained share       = 0.449 %
+Next explained fraction = 0.449 %
 Orthogonal: 1
 
 1200 7

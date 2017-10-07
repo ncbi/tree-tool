@@ -2976,24 +2976,24 @@ void Eigens::saveText (ostream& os) const
 {
 	os << fixed;
   os << "Matrix size: " << getInitSize () << endl;
-  os << "Total explained share = ";
+  os << "Total explained fraction = ";
   os << fixed; os. precision (3); os << totalExplainedFrac () * 100 << " % (";
   os. width (8); os << fixed; os. precision (2); os << totalExplainedFrac () * totalExplained_max << " / ";
   os. width (8); os << fixed; os. precision (2); os << totalExplained_max << ")" << endl;
 
-  os << "Total explained variance share = ";
-  os << fixed; os. precision (3); os << explainedVarianceFrac * 100 << endl;
+  os << "Total explained variance fraction = ";
+  os << fixed; os. precision (3); os << explainedVarianceFrac * 100 << " %" << endl;
   
   FOR (size_t, i, getDim ())
   { 
     os << endl << "Eigen " << i + 1 << ':' << endl;
-    os << "Explained share            = " << fixed; os. precision (3); os << explainedFrac (i) * 100 << " %" << endl;
-    os << "Cumulative explained share = " << fixed; os. precision (3); os << cumulativeExplainedFrac (i) * 100 << " %" << endl;
+    os << "Explained fraction            = " << fixed; os. precision (3); os << explainedFrac (i) * 100 << " %" << endl;
+    os << "Cumulative explained fraction = " << fixed; os. precision (3); os << cumulativeExplainedFrac (i) * 100 << " %" << endl;
     os << "Value = " << fixed; os. precision (4); os << values [i] << endl;
   }
   if (! isNan (explainedFrac_next))
   {
-    os << endl << "Next explained share       = " << fixed; os. precision (3); os << explainedFrac_next * 100 << " %" << endl;
+    os << endl << "Next explained fraction = " << fixed; os. precision (3); os << explainedFrac_next * 100 << " %" << endl;
   }
   os << "Orthogonal: " << orthogonal << endl;
 //os << "Negative eigenvalue: " << eigenValue_negative << endl;

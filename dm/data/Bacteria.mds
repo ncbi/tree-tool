@@ -1,78 +1,78 @@
 Matrix size: 326
-Total explained share = 92.863 % (8736899.42 / 9408346.97)
-Total explained variance share = 53.614
+Total explained fraction = 92.863 % (8736899.42 / 9408346.97)
+Total explained variance fraction = 53.614 %
 
 Eigen 1:
-Explained share            = 44.007 %
-Cumulative explained share = 44.007 %
+Explained fraction            = 44.007 %
+Cumulative explained fraction = 44.007 %
 Value = 2034.7820
 
 Eigen 2:
-Explained share            = 26.725 %
-Cumulative explained share = 70.732 %
+Explained fraction            = 26.725 %
+Cumulative explained fraction = 70.732 %
 Value = 1585.6867
 
 Eigen 3:
-Explained share            = 5.936 %
-Cumulative explained share = 76.669 %
+Explained fraction            = 5.936 %
+Cumulative explained fraction = 76.669 %
 Value = 747.3323
 
 Eigen 4:
-Explained share            = 3.735 %
-Cumulative explained share = 80.403 %
+Explained fraction            = 3.735 %
+Cumulative explained fraction = 80.403 %
 Value = 592.7759
 
 Eigen 5:
-Explained share            = 2.419 %
-Cumulative explained share = 82.822 %
+Explained fraction            = 2.419 %
+Cumulative explained fraction = 82.822 %
 Value = 477.0497
 
 Eigen 6:
-Explained share            = 1.992 %
-Cumulative explained share = 84.814 %
+Explained fraction            = 1.992 %
+Cumulative explained fraction = 84.814 %
 Value = 432.8698
 
 Eigen 7:
-Explained share            = 1.863 %
-Cumulative explained share = 86.677 %
+Explained fraction            = 1.863 %
+Cumulative explained fraction = 86.677 %
 Value = 418.6492
 
 Eigen 8:
-Explained share            = 1.373 %
-Cumulative explained share = 88.050 %
+Explained fraction            = 1.373 %
+Cumulative explained fraction = 88.050 %
 Value = 359.4483
 
 Eigen 9:
-Explained share            = 1.165 %
-Cumulative explained share = 89.215 %
+Explained fraction            = 1.165 %
+Cumulative explained fraction = 89.215 %
 Value = 331.0818
 
 Eigen 10:
-Explained share            = 0.954 %
-Cumulative explained share = 90.169 %
+Explained fraction            = 0.954 %
+Cumulative explained fraction = 90.169 %
 Value = 299.5715
 
 Eigen 11:
-Explained share            = 0.784 %
-Cumulative explained share = 90.953 %
+Explained fraction            = 0.784 %
+Cumulative explained fraction = 90.953 %
 Value = 271.6141
 
 Eigen 12:
-Explained share            = 0.709 %
-Cumulative explained share = 91.662 %
+Explained fraction            = 0.709 %
+Cumulative explained fraction = 91.662 %
 Value = 258.1951
 
 Eigen 13:
-Explained share            = 0.701 %
-Cumulative explained share = 92.362 %
+Explained fraction            = 0.701 %
+Cumulative explained fraction = 92.362 %
 Value = 256.7252
 
 Eigen 14:
-Explained share            = 0.501 %
-Cumulative explained share = 92.863 %
+Explained fraction            = 0.501 %
+Cumulative explained fraction = 92.863 %
 Value = 217.1237
 
-Next explained share       = 0.452 %
+Next explained fraction = 0.452 %
 Orthogonal: 1
 
 326 14
