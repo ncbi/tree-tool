@@ -1017,8 +1017,10 @@ DistTree::DistTree (const string &dataDirName,
     {
       istringstream iss (f. line);
       iss >> leafName >> anchorName >> leafLen >> arcLen;
+      ASSERT (leafLen >= 0);
+      ASSERT (arcLen >= 0);
     //ASSERT (iss. eof ());  // Extra fields
-      DTNode* anchor = const_cast <DTNode*> (lcaName2node (anchorName));
+      const DTNode* anchor = lcaName2node (anchorName);
       ASSERT (anchor);
       // Attach a leaf
       Leaf* leaf = nullptr;
@@ -1029,15 +1031,26 @@ DistTree::DistTree (const string &dataDirName,
       }
       else
       {
-        auto st = new Steiner ( *this
-                              , const_static_cast <Steiner*> (anchor->getParent ())
-                              , max (0.0, anchor->len - arcLen)
-                              );
-        anchor->setParent (st);
-        anchor->len = arcLen;
-        leaf = new Leaf (*this, st, leafLen, leafName);
-        if (leafLen == 0 && arcLen == 0)
-          leaf->collapse (const_cast <Leaf*> (anchor->asLeaf ()));      
+        Real arcLen_ = arcLen;
+        while (anchor != root && greaterReal (arcLen_, anchor->len))
+        {
+          arcLen_ -= anchor->len;
+          anchor = static_cast <const DTNode*> (anchor->getParent ());
+        }
+        if (anchor == root)
+          leaf = new Leaf (*this, const_static_cast <Steiner*> (root), leafLen, leafName);
+        else
+        {        
+          auto st = new Steiner ( *this
+                                , const_static_cast <Steiner*> (anchor->getParent ())
+                                , max (0.0, anchor->len - arcLen_)
+                                );
+          const_cast <DTNode*> (anchor) -> setParent (st);
+          const_cast <DTNode*> (anchor) -> len = arcLen_;
+          leaf = new Leaf (*this, st, leafLen, leafName);
+          if (leafLen == 0 && arcLen == 0)
+            leaf->collapse (const_cast <Leaf*> (anchor->asLeaf ()));      
+        }
       }
       ASSERT (leaf);
       name2leaf [leaf->name] = leaf;
@@ -1072,6 +1085,7 @@ DistTree::DistTree (const string &dataDirName,
           { EXEC_ASSERT (addDissim (name1, name2, dissim)); }
       }
     }
+    // Pairs of <leaf1,leaf2> may be not unique in ds ??
   } 
   
   
@@ -3501,7 +3515,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
       tree. finishChanges (); 
       //
       tree. optimizeIter (string ());
-        // tree.neighborJoin(), tree.optimizeSubgraphs() if tree is large ??
+        // Invoke: tree.neighborJoin(), tree.optimizeSubgraphs() if tree is large ??
           // allows using mdsTree.sh
     }
     else if (leaves == 3)

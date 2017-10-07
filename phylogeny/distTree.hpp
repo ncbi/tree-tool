@@ -61,7 +61,7 @@ constexpr streamsize dissimDecimals = 6;
 constexpr uint areaRadius_std = 5;  
   // The greater then better DistTree::absCriterion
   // >= 4 <= ChangeToCousin can be applied  
-constexpr size_t sparsingDepth = 13;  // ??
+constexpr size_t sparsingDepth = 2 * areaRadius_std;  // Cannot be less
 constexpr Prob rareProb = 0.01; 
 
 
@@ -748,6 +748,7 @@ private:
   void loadDissimDs (const string &dissimFName,
                      const string &attrName);
     // Output: dissimDs
+    // invokes: dissimDs->setName2objNum()
   // Input: dissimDs
   bool getConnected ();
     // Find connected components of leaves where pairs have dissimilarities with positive multiplicity

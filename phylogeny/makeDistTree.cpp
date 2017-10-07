@@ -57,7 +57,7 @@ struct ThisApplication : Application
 		const bool whole                 = getFlag ("whole");
 		const bool reroot                = getFlag ("reroot");
 		const string reroot_at           = getArg ("reroot_at");
-		const bool sparse                = getFlag ("sparse");
+		      bool sparse                = getFlag ("sparse");
 	//const bool sparse_add            = getFlag ("sparse_add");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
@@ -76,7 +76,8 @@ struct ThisApplication : Application
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
       if (sparse)
-        throw runtime_error ("Sparsing " + dataFName + " cannot be done");
+        throw runtime_error ("Further sparsing of " + dataFName + " cannot be done");
+      sparse = true;
     }
     else
       if (dataFName. empty () != dissimAttrName. empty ())
@@ -84,12 +85,10 @@ struct ThisApplication : Application
 
 
     DistTree::printParam (cout);
+    if (sparse)
+      cout << "Sparsing depth = " << sparsingDepth << endl;
     if (topology)
-    {
       cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
-      if (sparse)
-        cout << "Sparsing depth = " << sparsingDepth << endl;
-    }
     cout << endl;
 
 
@@ -170,17 +169,6 @@ struct ThisApplication : Application
       }
 
       
-    #if 0
-      if (tree->dissimAttr)  
-      {
-        tree->optimizeAdd (sparse_add, output_tree);  
-        tree->reroot ();  
-      //if (verbose ())
-          tree->qc ();
-      }
-      // tree and dist-matrix match
-    #endif
-
       if (reroot)
         tree->reroot ();
       if (! reroot_at. empty ())
@@ -192,7 +180,6 @@ struct ThisApplication : Application
       cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  
-    //tree->setHeight ();
       tree->setLeafAbsCriterion ();
     //if (verbose ())
         tree->qc ();
@@ -282,7 +269,6 @@ struct ThisApplication : Application
         
         cout << "# Frequent interior nodes = "          << stableInteriors << endl;
         cout << "# Frequent leaves = "                  << stableLeaves << endl;
-          // Incertae sedis ??
         cout << "Rareness threshold = " << rareProb * 100 << " %" << endl;
       }      
     }

@@ -8,6 +8,7 @@ endif
 
 
 set QC = ""  # -qc  
+set RATE = 0.01   # PAR
 
 
 echo "new/ -> search/ ..."
@@ -19,11 +20,11 @@ if ("$N") then
 endif
 
 # Time: O(n) 
-set OBJS = `grep -vc '^ *0x' subset500/tree`
+set OBJS = `grep -vc '^ *0x' $1/tree`
 if ($?) exit 1
 echo "# Objects: $OBJS"  
 
-set INC = `echo "$OBJS * 0.005 + 1" | bc -l | sed 's/\..*$//1'`  # PAR
+set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 echo "To add: $INC"
 
 ls $1/new/ > new.list
