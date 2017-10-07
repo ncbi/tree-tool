@@ -257,7 +257,7 @@ struct ThisApplication : Application
     sp1 << *spMds_;
     
 
-    if (maxClusters > 1 && mds. getOutDim ())
+    if (maxClusters > 1 && mds. getOutDim () && positive (globalSD))
 	  {
       cerr << "Clustering ..." << endl;
       Space1<NumAttr1> spMds (*spMds_);
