@@ -61,7 +61,7 @@ constexpr streamsize dissimDecimals = 6;
 constexpr uint areaRadius_std = 5;  
   // The greater then better DistTree::absCriterion
   // >= 4 <= ChangeToCousin can be applied  
-constexpr size_t sparsingDepth = 2 * areaRadius_std;  // Cannot be less
+constexpr size_t sparsingDepth = 2 * areaRadius_std;  
 constexpr Prob rareProb = 0.01; 
 
 

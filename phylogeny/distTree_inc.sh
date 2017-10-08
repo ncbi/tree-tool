@@ -2,6 +2,7 @@
 
 if ($# != 1) then
   echo "Build a distance tree incrementally"
+  echo "Update: #1/"
   echo "Output: #1.log"
   echo "#1: distance tree data"
   exit 1
