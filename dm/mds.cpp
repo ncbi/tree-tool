@@ -18,6 +18,7 @@ namespace
 
 
 const string clusterAttrName = "Cluster";
+constexpr uint noAttrType = 3;
 
 
 
@@ -29,7 +30,7 @@ struct ThisApplication : Application
 	  // Input
 	  addPositional ("file", dmSuff + "-file without the extension");
 	  addKey ("attr", "Attribute name of real-valued object-object comparison table in the " + dmSuff + "-file, if empty then the PCA of all attributes except <class> is done", "");
-	  addKey ("attrType", "<attr> type: 0-similarity, 1-distance, 2-squared distance (generalized)", "0");
+	  addKey ("attrType", "<attr> type: 0-similarity, 1-dissimilarity, 2-squared dissimilarity", toString (noAttrType));
     // Cf. pca.cpp
 	  // Stopping criteria
 	  addKey ("maxAttr", "Max. # attributes (0 - to be determined automatically)", "100"); 
@@ -67,8 +68,7 @@ struct ThisApplication : Application
 	  //    
 		const Prob attrPValue         = str2<Prob>   (getArg ("attrPValue"));      
 
-    IMPLY (attrName. empty (), attrType == 0);
-		ASSERT (attrType <= 2);
+    IMPLY (attrName. empty (), attrType == noAttrType);
 		ASSERT (maxAttr);
 		ASSERT (isProb (maxTotalExpl));
 		ASSERT (isProb (minExpl));		
@@ -177,7 +177,7 @@ struct ThisApplication : Application
                   break;
           case 2: matr. sqrDistance2centeredSimilarity (rowMean, totalMean);
           	      break;
-          default: ERROR;
+          default: throw runtime_error ("Wrong attrType");
         }
         delete rowMean;
       }
@@ -290,8 +290,11 @@ struct ThisApplication : Application
       mds. eigens. toJson (jRoot, "eigens");
       elr. toJson (jRoot, "eigenValueLR");
 
-      new JsonString (attrName, jRoot, "distAttr");  
-      new JsonInt ((int) attrType, jRoot, "distType");  
+      if (! attrName. empty ())
+      {
+        new JsonString (attrName, jRoot, "distAttr");  
+        new JsonInt ((int) attrType, jRoot, "distType");  
+      }
 
       new JsonString (classAttrName, jRoot, "class");  // May be ""
       ds. comments2Json (jRoot, "comments");
