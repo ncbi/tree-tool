@@ -386,7 +386,7 @@ struct ThisApplication : Application
 		  {
 		    cout << endl;
 		    cl. print (cout);
-		    Common_sp::AutoPtr <Space1<ProbAttr1>> spOut (cl. createSpace (ds));
+		    const Space1<ProbAttr1> spOut (cl. createSpace (ds));
 		    cout << endl;
 		    ds. print (cout);
 		  }

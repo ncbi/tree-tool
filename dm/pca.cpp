@@ -125,7 +125,7 @@ struct ThisApplication : Application
     pc. qc ();
     pc. print (osPar);
     
-    Common_sp::AutoPtr <const Space1<RealAttr1>> spOut (pc. createSpace ("PC_", ds));
+    const Space1<RealAttr1> spOut (pc. createSpace ("PC_", ds));
     
     const size_t eValueDecimals = 5; // PAR
 
@@ -183,13 +183,13 @@ struct ThisApplication : Application
     sm. finish ();
 
 
-    Space1<Attr1> sp1 (*spOut);
+    Space1<Attr1> sp1 (spOut);
 
 
 	  if (maxClusters > 1 && pc. getOutDim ())
 	  {
       cerr << "Clustering ..." << endl;
-      Space1<NumAttr1> spPC (*spOut);
+      Space1<NumAttr1> spPC (spOut);
       spPC. removeConstants ();
       const Real globalSD = sqrt ((Real) spStnd->size ());
   	  const Clustering cl (sm, spPC, maxClusters, globalSD * minClusteringSDRel, /*true*/ false, 0.001);  // PAR
@@ -211,16 +211,15 @@ struct ThisApplication : Application
     {
       cerr << "MDS of attributes ..." << endl;
       Vector<Real> quality;
-    	Common_sp::AutoPtr <Dataset> dsMds (pc. createAttrMds ("PC_", quality));    	
-    	ASSERT (dsMds. get ());
-    	ASSERT (quality. size () == dsMds->attrs. size ());
+    	const Dataset dsMds (pc. createAttrMds ("PC_", quality));    	
+    	ASSERT (quality. size () == dsMds. attrs. size ());
       OFStream osMds ("", outFName, "mds");
-    	dsMds->print (osMds);
+    	dsMds. print (osMds);
     	if (jRoot)
     	{
         auto jMds = new JsonMap (jRoot, "attr_mds");
-        const Sample smMds (*dsMds);
-        const Space1<RealAttr1> spMds (*dsMds, true);
+        const Sample smMds (dsMds);
+        const Space1<RealAttr1> spMds (dsMds, true);
         spMds. toJson (smMds, jMds, "objs");
         // Cf. Eigens::toJson()
         {

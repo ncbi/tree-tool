@@ -177,7 +177,7 @@ struct ThisApplication : Application
                   break;
           case 2: matr. sqrDistance2centeredSimilarity (rowMean, totalMean);
           	      break;
-          default: throw runtime_error ("Wrong attrType");
+          default: throw runtime_error ("No attrType");
         }
         delete rowMean;
       }
@@ -246,21 +246,21 @@ struct ThisApplication : Application
     mds. print (cout);
     cout << endl;
     
-    Common_sp::AutoPtr<const Space1<RealAttr1>> spMds_ (mds. createSpace ("PC_", "IM_", ds));
+    const Space1<RealAttr1> spMds_ (mds. createSpace ("PC_", "IM_", ds));
     ds. qc ();
     
-    if (spMds_->empty ())
+    if (spMds_. empty ())
       return;
         
     // outliers, see pca.cpp ??
         
-    sp1 << *spMds_;
+    sp1 << spMds_;
     
 
     if (maxClusters > 1 && mds. getOutDim () && positive (globalSD))
 	  {
       cerr << "Clustering ..." << endl;
-      Space1<NumAttr1> spMds (*spMds_);
+      Space1<NumAttr1> spMds (spMds_);
       spMds. removeConstants ();
   	  const Clustering cl (sm, spMds, maxClusters, globalSD * minClusteringSDRel, /*true*/ false, 0.001);  // PAR
       cl. qc ();

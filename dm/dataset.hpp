@@ -944,7 +944,7 @@ struct PositiveAttr2 : RealAttr2
 
 
 
-struct Dataset : Root, Nocopy
+struct Dataset : Root
 // Object-attribute table
 // Time series: the greater objNum the later time point
 {
@@ -1175,9 +1175,6 @@ template <typename T/*:Attr*/>
         : P (other)
         , ds (other. ds)
         {}
-  //Space (const Space<T>&) = default;
-  //Space (Space<T>&&) noexcept = default;
-  //Space<T>& operator= (Space&&) = default;
     void qc () const
       { if (! qc_on)
           return;
@@ -1253,8 +1250,7 @@ template <typename T/*:Attr*/>
       { return & ds; }
   };
   
-  
-  
+    
 
 template <typename T/*:Attr1*/>
   struct Space1 : Space<T>
@@ -1270,9 +1266,6 @@ template <typename T/*:Attr1*/>
       Space1 (const Space<U> &other)
         : P (other)
         {}
-  //Space1 (const Space1<T>&) = default;
-  //Space1 (Space1<T>&&) noexcept = default;
-  //Space1<T>& operator= (Space1<T>&&) = default;
 
 
     void printCsv (const Sample &sample,
@@ -3282,17 +3275,16 @@ struct PrinComp : MultiVariate<NumAttr1>
     { data2variable (objNum);
       project (variable, projection);
     }
-  Space1<RealAttr1>* createSpace (const string &attrPrefix,
-                                  Dataset &ds) const;
-    // Return: new
-    // Sum d^2 of *createSpace() is equal to sum d^2 of the original space
+  Space1<RealAttr1> createSpace (const string &attrPrefix,
+                                 Dataset &ds) const;
+    // Sum d^2 of createSpace() is equal to sum d^2 of the original space
     // Invokes: project()
   Real getAttrMds (size_t attrNum,
                    size_t eigenNum) const
     { return eigens. getMds (attrNum, eigenNum, false) / sqrt_2; }
-  Dataset* createAttrMds (const string &attrPrefix,
-                          Vector<Real> &quality) const;
-    // Return !nullptr, RealAttr1->name = attrPrefix + <i>
+  Dataset createAttrMds (const string &attrPrefix,
+                         Vector<Real> &quality) const;
+    // Return RealAttr1->name = attrPrefix + <i>
     // Output: quality; size() = Return->attrs.size()
     // Invokes: getAttrMds(), new RealAttr1
   Real getChi2 (size_t objNum) const;
@@ -3355,7 +3347,7 @@ public:
     
   // Return !nullptr
   // Update: mixt.space->ds
-  Space1<ProbAttr1>* createSpace (Dataset &ds) const;
+  Space1<ProbAttr1> createSpace (Dataset &ds) const;
     // new ProbAttr1() for each cluster
   NominAttr1* createNominAttr (const string &attrName,
                                Prob prob_min,
@@ -3453,8 +3445,8 @@ public:
     { data2variable (objNum);
       project (variable, projection);
     }
-  Space1<RealAttr1>* createSpace (const string &attrPrefix,
-                                  Dataset &ds) const;
+  Space1<RealAttr1> createSpace (const string &attrPrefix,
+                                 Dataset &ds) const;
 };
 
 
@@ -3495,10 +3487,9 @@ struct Mds : Analysis
                 size_t row,
                 size_t attrNum) const
     { return multiplyVec (eigens. basis, true, attrNum, similarity, t, row) / sqrt (eigens. values [attrNum]); }
-  Space1<RealAttr1>* createSpace (const string &realAttrPrefix,
-                                  const string &imaginaryAttrPrefix,
-                                  Dataset &ds) const;
-    // Return new
+  Space1<RealAttr1> createSpace (const string &realAttrPrefix,
+                                 const string &imaginaryAttrPrefix,
+                                 Dataset &ds) const;
     // Update: ds
 };
 

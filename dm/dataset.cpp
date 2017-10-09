@@ -4527,22 +4527,22 @@ void PrinComp::project (const PrinComp::P::Value &x,
 
 
 
-Space1<RealAttr1>* PrinComp::createSpace (const string &attrPrefix,
-                                          Dataset &ds) const
+Space1<RealAttr1> PrinComp::createSpace (const string &attrPrefix,
+                                         Dataset &ds) const
 {
 	ASSERT (! attrPrefix. empty ());
 	ASSERT (& ds == sample. ds);
 	
-	auto sp = new Space1<RealAttr1> (ds, false);
+	Space1<RealAttr1> sp (ds, false);
 	FOR (size_t, i, getOutDim ())
-	  *sp << new RealAttr1 (attrPrefix + toString (i + 1), ds);
+	  sp << new RealAttr1 (attrPrefix + toString (i + 1), ds);
 	
   MVector projection (getOutDim ());  
   FOR (size_t, i, ds. objs. size ())
   {
     project (i, projection);
   	FOR (size_t, col, projection. size ())
-  	  (* const_cast <RealAttr1*> ((*sp) [col])) [i] = projection [col];
+  	  (* const_cast <RealAttr1*> (sp [col])) [i] = projection [col];
   }
 	
 	return sp;
@@ -4550,17 +4550,17 @@ Space1<RealAttr1>* PrinComp::createSpace (const string &attrPrefix,
 
 
 
-Dataset* PrinComp::createAttrMds (const string &attrPrefix,
-                                  Vector<Real> &quality) const
+Dataset PrinComp::createAttrMds (const string &attrPrefix,
+                                 Vector<Real> &quality) const
 {
   ASSERT (quality. empty ());
   
-	auto ds = new Dataset ();
+	Dataset ds;
 	FOR (size_t, attrNum, mn. mu. rowsSize (false))
-	  ds->appendObj (space [attrNum] -> name);
+	  ds. appendObj (space [attrNum] -> name);
 	FOR (size_t, eigenNum, getOutDim ())
   {
-	  auto attr = new RealAttr1 (attrPrefix + toString (eigenNum + 1), *ds);
+	  auto attr = new RealAttr1 (attrPrefix + toString (eigenNum + 1), ds);
 	  FOR (size_t, attrNum, mn. mu. rowsSize (false))
 	    (*attr) [attrNum] = getAttrMds (attrNum, eigenNum);
 	  quality << eigens. explainedFrac (eigenNum);
@@ -4863,17 +4863,17 @@ void Clustering::splitCluster (size_t num)
 
 
 
-Space1<ProbAttr1>* Clustering::createSpace (Dataset &ds) const
+Space1<ProbAttr1> Clustering::createSpace (Dataset &ds) const
 {
   ASSERT (& ds == & space. ds);
   
-	auto sp = new Space1<ProbAttr1> (ds, false);
+	Space1<ProbAttr1> sp (ds, false);
 	FOR (size_t, i, getOutDim ())
-	  *sp << new ProbAttr1 ( "Cluster" + toString (i + 1), ds, 2/*PAR*/);
+	  sp << new ProbAttr1 ( "Cluster" + toString (i + 1), ds, 2/*PAR*/);
 	
   for (Iterator it (sample); it ();)  
   	FOR (size_t, col, getOutDim ())
-  	  (* const_cast <ProbAttr1*> ((*sp) [col])) [*it] = mixt. components [col] -> objProb [*it];
+  	  (* const_cast <ProbAttr1*> (sp [col])) [*it] = mixt. components [col] -> objProb [*it];
 	
 	return sp;
 }
@@ -5103,10 +5103,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
     can. qc ();
     cout << "Canonical projections = " << can. getOutDim () << endl;
     if (can. getOutDim ())
-    {
-      Common_sp::AutoPtr <const Space1<RealAttr1>> spCan (can. createSpace ("CC_", ds));
-      sp1 << *spCan;
-    }
+      sp1 << can. createSpace ("CC_", ds);
   }
   
 
@@ -5215,9 +5212,9 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         ASSERT (can. getOutDim () == 1);
         const string attrPrefix ("CC" + toString (i + 1) + "_");
         
-        Common_sp::AutoPtr <const Space1<RealAttr1>> spCan (can. createSpace (attrPrefix, ds));
-        ASSERT (spCan->size () == 1);
-        sp1 << *spCan;
+        const Space1<RealAttr1> spCan (can. createSpace (attrPrefix, ds));
+        ASSERT (spCan. size () == 1);
+        sp1 << spCan;
         if (verbose ())
         {
           cout << "Separating cluster " << i + 1 << ": " << can. eigenValues [0] << endl;
@@ -5226,14 +5223,14 @@ void Clustering::processSubclusters (const string &clusterAttrName,
       #if 0
         Real average = NAN;
         Real scatter = NAN;
-        spCan->at (0) -> getAverageScatter (sample, average, scatter);
+        spCan [0] -> getAverageScatter (sample, average, scatter);
         ASSERT (eqReal (average, 0, 1e-2));
       //ASSERT (eqReal (scatter, eigenValues [0] + 1, 1e-2));
       #endif
         if (jClust)
           new JsonDouble (/*scatter*/ can. eigenValues [0], 1, jClust, "canonical");  // PAR
 
-        const RealAttr1& attr = * spCan->at (0); 
+        const RealAttr1& attr = * spCan [0]; 
         const UniVariate<NumAttr1> analysis (sample, attr);
         UniKernel uniKernel (analysis);
         uniKernel. estimate ();
@@ -5499,30 +5496,30 @@ void Canonical::project (const Canonical::P::Value &x,
 
 
 
-Space1<RealAttr1>* Canonical::createSpace (const string &attrPrefix,
-                                           Dataset &ds) const
+Space1<RealAttr1> Canonical::createSpace (const string &attrPrefix,
+                                          Dataset &ds) const
 {
 	ASSERT (! attrPrefix. empty ());
 	ASSERT (& ds == sample. ds);
 	
-	auto sp = new Space1<RealAttr1> (ds, false);
+	Space1<RealAttr1> sp (ds, false);
 	FOR (size_t, i, getOutDim ())
-	  *sp << new RealAttr1 (attrPrefix + toString (i + 1), ds);
+	  sp << new RealAttr1 (attrPrefix + toString (i + 1), ds);
 	
   MVector projection (getOutDim ());  
   FOR (size_t, i, ds. objs. size ())
   {
     project (i, projection);  
   	FOR (size_t, col, projection. size ())
-  	  (* const_cast <RealAttr1*> ((*sp) [col])) [i] = projection [col];
+  	  (* const_cast <RealAttr1*> (sp [col])) [i] = projection [col];
   }
 	
 #ifndef NDEBUG
-  if (sp->size () == 1)
+  if (sp. size () == 1)
   {
     Real average = NAN;
     Real scatter = NAN;
-    sp->at (0) -> getAverageScatter (sample, average, scatter);
+    sp [0] -> getAverageScatter (sample, average, scatter);
     ASSERT (eqReal (average, 0, 1e-2));
   //ASSERT (eqReal (scatter, eigenValues [0] + 1, 1e-2));
       // Requires: basis is used in project()
@@ -5580,27 +5577,27 @@ void Mds::qc () const
 
 
 
-Space1<RealAttr1>* Mds::createSpace (const string &realAttrPrefix,
-                                     const string &imaginaryAttrPrefix,
-                                     Dataset &ds) const
+Space1<RealAttr1> Mds::createSpace (const string &realAttrPrefix,
+                                    const string &imaginaryAttrPrefix,
+                                    Dataset &ds) const
 {
   ASSERT (! realAttrPrefix. empty ());
   ASSERT (! imaginaryAttrPrefix. empty ());
   ASSERT (realAttrPrefix != imaginaryAttrPrefix);
 	ASSERT (& ds == sample. ds);
 	
-	auto sp = new Space1<RealAttr1> (ds, false);
+	Space1<RealAttr1> sp (ds, false);
 	Vector<RealAttr1*> realAttrs;  realAttrs. reserve (getOutDim ());
 	Vector<RealAttr1*> imaginaryAttrs (getOutDim (), nullptr);
 	FOR (size_t, i, getOutDim ())
 	{
 	  auto realAttr = new RealAttr1 (realAttrPrefix + toString (i + 1), ds);;
-	  *sp << realAttr;
+	  sp << realAttr;
 	  realAttrs << realAttr;
 	  if (eigens. imaginaryMdsAttr (i))
 	  {
   	  auto imaginaryAttr = new RealAttr1 (imaginaryAttrPrefix + toString (i + 1), ds);;
-  	  *sp << imaginaryAttr;
+  	  sp << imaginaryAttr;
 	    imaginaryAttrs [i] = imaginaryAttr;
 	  }
 	}

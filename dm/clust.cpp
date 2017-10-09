@@ -43,10 +43,7 @@ struct ThisApplication : Application
     cl. print (cout);
     
     VectorPtr<Attr1> attrs;
-    {
-      Common_sp::AutoPtr <const Space1<ProbAttr1>> spOut (cl. createSpace (ds));
-      attrs << *spOut;
-    }
+    attrs << cl. createSpace (ds);
     if (prob_min)
       attrs << cl. createNominAttr ("Cluster", prob_min, ds);
 
