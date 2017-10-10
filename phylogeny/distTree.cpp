@@ -453,7 +453,8 @@ void Leaf::remove ()
     const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ();
     ASSERT (leaf);
     Leaf* leaf_ = const_cast <Leaf*> (leaf);
-    leaf_->detach ();  
+    leaf_->isolateChildrenUp ();  
+    ASSERT (! leaf->graph);
   	delete leaf_->attr;
   	leaf_->attr = nullptr;
   	tree. detachedLeaves << leaf;
@@ -491,6 +492,8 @@ void Leaf::remove ()
     ASSERT (parent);
     tree. optimizeSubgraph (static_cast <const Steiner*> (parent->getAncestor (areaRadius_std)));  // PAR
   }
+
+  tree. toDelete. deleteData ();
 }
 
 
@@ -2403,7 +2406,7 @@ void DistTree::qc () const
  	}
 
   const size_t leaves = root->getLeavesSize ();
-  ASSERT (name2leaf. size () == leaves);
+  ASSERT (name2leaf. size () == leaves + detachedLeaves. size ());
   
   if (! optimizable ())
     return;

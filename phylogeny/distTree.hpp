@@ -326,8 +326,8 @@ private:
 public:
   
   void remove ();
-    // Invokes: detach(), getDistTree().optimizeSubgraph()
-    // Update: getDistTree().{toDelete,detachedLeaves}
+    // Invokes: isolateChildrenUp(), getDistTree().{optimizeSubgraph(),toDelete.deleteData()}
+    // Update: getDistTree().detachedLeaves
 };
 
 
