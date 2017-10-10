@@ -1580,9 +1580,11 @@ struct DiGraph : Root
       // Order by depth-first search
       // 0 <=> not visited by DFS
 
+  private:
     // Auxiliary      
     bool inStack {false};  
       // => orderDfs
+  public:
 
     explicit Node (DiGraph &graph_arg)
 			{ attach (graph_arg); }
@@ -1649,7 +1651,7 @@ struct DiGraph : Root
       // Requires: from != this
       //           No parallel arcs
       // Time: O(n + m log n) for all nodes
-    void remove ();
+    void detach ();
       // Output: graph = nullptr
       // Requires: No Arc's
       // Invokes: list::erase()
@@ -1907,7 +1909,7 @@ struct Tree : DiGraph
 	    }
 	    // Return: Single child of *this
 	  void isolateChildrenUp ();
-	    // Invokes: childrenUp(), remove()
+	    // Invokes: childrenUp(), detach()
 	  TreeNode* isolateTransient ()
 			{ TreeNode* transient = isTransient ();
 				if (transient)

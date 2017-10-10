@@ -1114,7 +1114,7 @@ void DiGraph::Node::contract (Node* from)
 
 
 
-void DiGraph::Node::remove ()
+void DiGraph::Node::detach ()
 {
 #ifndef NDEBUG
 	for (const bool b : Bool)
@@ -1808,7 +1808,7 @@ void Tree::TreeNode::isolateChildrenUp ()
 		Arc* a = arcs [true]. front ();
 		delete a;
   }
-  remove ();
+  detach ();
 }
 
 
