@@ -2099,7 +2099,7 @@ void Sample::save (const VectorPtr<Attr> &attrs,
 
 ////////////////////////////////////// Iterator ///////////////////////////////////
 
-bool Iterator::operator() ()
+inline bool Iterator::operator() ()
 {
   if (objNum == mult_. size ())
     return false;
