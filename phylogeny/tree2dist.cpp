@@ -70,6 +70,7 @@ struct ThisApplication : Application
     for (const auto it : tree->name2leaf)
     {
       ds. appendObj (it. first);
+      ASSERT (it. second->graph);
       leaves << it. second;
     }
     ASSERT (ds. objs. size () == leaves. size ());

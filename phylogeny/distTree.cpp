@@ -1429,15 +1429,11 @@ DistTree::DistTree (const DTNode* center,
 
   // ds.objs[]->mult, *target: sum
   // Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing, do not invoke getPath() ??!
-  const VectorOwn<Obj>& wholeObjs = wholeTree. ds. objs;
   VectorPtr<TreeNode> extremes (2);  // temporary
-  FOR (size_t, objNum_whole, wholeObjs. size ())
+  for (Iterator it (wholeTree. dsSample); it ();)  
   {
-    if (wholeObjs [objNum_whole] -> mult == 0)
-      continue;
-      
-    VectorPtr<TreeNode> path (wholeTree. getPath ( wholeTree. obj2leaf1 [objNum_whole]
-                                                 , wholeTree. obj2leaf2 [objNum_whole]
+    VectorPtr<TreeNode> path (wholeTree. getPath ( wholeTree. obj2leaf1 [*it]
+                                                 , wholeTree. obj2leaf2 [*it]
                                                  )
                              );
     const Real dist_hat_whole = path2prediction (path);
@@ -1459,9 +1455,9 @@ DistTree::DistTree (const DTNode* center,
       extremes << area_root;
     ASSERT (extremes. size () == 2);
     
-    const Real dist_whole = (* wholeTree. target) [objNum_whole] - (dist_hat_whole - dist_hat_sub);
+    const Real dist_whole = (* wholeTree. target) [*it] - (dist_hat_whole - dist_hat_sub);
       // May be < 0
-    const Real mult_whole = wholeObjs [objNum_whole] -> mult;
+    const Real mult_whole = it. mult; 
     ASSERT (mult_whole > 0);
     
     // objNum  
@@ -2221,6 +2217,7 @@ void DistTree::dissimDs2ds (bool sparse)
 	ASSERT (dissimAttr);
 	ASSERT (! optimizable ());
 	ASSERT (! ds. name2objNumSet ());
+	ASSERT (detachedLeaves. empty ());
 
 
   const Set<string> objNames (dissimDs->getObjNames ());
@@ -2303,6 +2300,8 @@ bool DistTree::addDissim (const string &name1,
                           const string &name2,
                           Real dissim)
 {
+  ASSERT (detachedLeaves. empty ());
+
   if (   isNan (dissim)  // prediction must be large ??
       || ! DM_sp::finite (dissim)  
      )
@@ -2432,25 +2431,27 @@ void DistTree::qc () const
   ASSERT (obj2leaf1. size () == obj2leaf2. size ());
   ASSERT (obj2leaf1. size () == ds. objs. size ());
   Set<pair<const Leaf*,const Leaf*> > leafSet;
-  FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const Leaf* g1 = obj2leaf1 [objNum];
-    const Leaf* g2 = obj2leaf2 [objNum];
-    ASSERT (g1);
-    ASSERT (g2);
-    ASSERT (g1->name < g2->name);
-    leafSet. checkUnique (pair<const Leaf*,const Leaf*> (g1, g2));
-  //ASSERT ((*target) [objNum] >= 0);
-    IMPLY (ds. objs [objNum] -> mult && (*target) [objNum] == 0, 
-           ! g1->discernable && ! g2->discernable && g1->getParent () == g2->getParent ()
+    const Leaf* leaf1 = obj2leaf1 [*it];
+    const Leaf* leaf2 = obj2leaf2 [*it];
+    ASSERT (leaf1);
+    ASSERT (leaf2);
+    ASSERT (leaf1->graph);
+    ASSERT (leaf2->graph);
+    ASSERT (leaf1->name < leaf2->name);
+    leafSet. checkUnique (pair<const Leaf*,const Leaf*> (leaf1, leaf2));
+  //ASSERT ((*target) [*it] >= 0);
+    IMPLY (ds. objs [*it] -> mult && (*target) [*it] == 0, 
+           ! leaf1->discernable && ! leaf2->discernable && leaf1->getParent () == leaf2->getParent ()
           );
-    if (! isNan ((*prediction) [objNum]))
+    if (! isNan ((*prediction) [*it]))
     {
-      ASSERT ((*prediction) [objNum] >= 0);
+      ASSERT ((*prediction) [*it] >= 0);
     /*
-      if (topologyOptimized && nullReal ((*prediction) [objNum]) && ! nullReal ((*target) [objNum]))
+      if (topologyOptimized && nullReal ((*prediction) [*it]) && ! nullReal ((*target) [*it]))
       {
-        cout << g1->name << " " << g2->name << endl;
+        cout << leaf1->name << " " << leaf2->name << endl;
         ERROR;
       }
     */
@@ -2519,20 +2520,23 @@ void DistTree::qcAttrs () const
       pathAttrs. checkUnique (attr);
   ASSERT (nodeAttrs == pathAttrs);
 
-  FOR (size_t, objNum, ds. objs. size ())
+//FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const Leaf* g1 = obj2leaf1 [objNum];
-    const Leaf* g2 = obj2leaf2 [objNum];
-    ASSERT (g1);
-    ASSERT (g2);
+    const Leaf* leaf1 = obj2leaf1 [*it];
+    const Leaf* leaf2 = obj2leaf2 [*it];
+    ASSERT (leaf1);
+    ASSERT (leaf2);
+    ASSERT (leaf1->graph);
+    ASSERT (leaf2->graph);
     Unverbose unv;
     if (verbose ())
     {
-      const VectorPtr<TreeNode> path (getPath (g1, g2));
+      const VectorPtr<TreeNode> path (getPath (leaf1, leaf2));
       for (const DiGraph::Node* node : nodes)
       {
         const DTNode* dtNode = static_cast <const DTNode*> (node);
-        ASSERT ((*dtNode->attr) [objNum] == path. contains (dtNode));
+        ASSERT ((*dtNode->attr) [*it] == path. contains (dtNode));
       }
     }
   }
@@ -2669,11 +2673,11 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
     const_static_cast <DTNode*> (node) -> inPath = false;
 
   Progress prog ((uint) ds. objs. size (), 10000);  // PAR
-  FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
   {
     prog ();
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                            , obj2leaf2 [objNum]
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                            , obj2leaf2 [*it]
                                             )
                                    );
     for (const TreeNode* node : path)
@@ -2683,7 +2687,7 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
       const DTNode* dtNode = static_cast <const DTNode*> (node);
       CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
       ASSERT (attr);
-      attr->setCompactBool (objNum, dtNode->inPath);
+      attr->setCompactBool (*it, dtNode->inPath);
     }
     for (const TreeNode* node : path)
       const_static_cast <DTNode*> (node) -> inPath = false;
@@ -2702,13 +2706,13 @@ void DistTree::clearSubtreeLen ()
 
 void DistTree::setPrediction () 
 {
-  FOR (size_t, objNum, obj2leaf1. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                            , obj2leaf2 [objNum]
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                            , obj2leaf2 [*it]
                                             )
                                    );
-    (* const_cast <RealAttr1*> (prediction)) [objNum] = path2prediction (path);  
+    (* const_cast <RealAttr1*> (prediction)) [*it] = path2prediction (path);  
   }
 }
 
@@ -2737,15 +2741,15 @@ void DistTree::checkPrediction () const
     lr. beta [attrNum] = dtNodes [attrNum] -> len;
 
   const Real dissim_ave = getDissim_ave ();
-  FOR (size_t, objNum, obj2leaf1. size ())
-    if (! eqReal ((* const_cast <RealAttr1*> (prediction)) [objNum], lr. predict (objNum), dissim_ave * 1e-2))  // PAR 
+  for (Iterator it (dsSample); it ();)  
+    if (! eqReal ((* const_cast <RealAttr1*> (prediction)) [*it], lr. predict (*it), dissim_ave * 1e-2))  // PAR 
     {
       const ONumber on (cout, dissimDecimals, true);
-      cout << (* const_cast <RealAttr1*> (prediction)) [objNum] << " " << lr. predict (objNum) << "  objNum = " << objNum << endl;
-      cout << obj2leaf1 [objNum] -> getName () << " " << obj2leaf2 [objNum] -> getName () << endl;
+      cout << (* const_cast <RealAttr1*> (prediction)) [*it] << " " << lr. predict (*it) << "  objNum = " << *it << endl;
+      cout << obj2leaf1 [*it] -> getName () << " " << obj2leaf2 [*it] -> getName () << endl;
       cout << "Path: ";
       FOR (size_t, attrNum, dtNodes. size ())
-        if ((* dtNodes [attrNum] -> attr) [objNum])
+        if ((* dtNodes [attrNum] -> attr) [*it])
           cout << " " << dtNodes [attrNum] -> getName ();
       cout << endl;
       print (cout);
@@ -2801,7 +2805,6 @@ void DistTree::printAbsCriterion_halves () const
   size_t size_half       [2/*bool*/] = {0, 0};
   Real absCriterion_half [2/*bool*/] = {0, 0};
   Real dissim2_half      [2/*bool*/] = {0, 0};
-//FOR (size_t, objNum, ds. objs. size ())
   for (Iterator it (dsSample); it ();)  
   {
     const Real d = (*target) [*it];
@@ -2918,7 +2921,6 @@ bool DistTree::optimizeLenAll ()
   matr. putAll (0);
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> dissimSum = 0;
-//FOR (size_t, objNum, ds. objs. size ())
   for (Iterator it (dsSample); it ();)  
   {
     const Real dissim = (*target) [*it];    
@@ -3020,7 +3022,6 @@ void DistTree::quartet2arcLen ()
     dtNode->dissimSum = 0;
     dtNode->dissimWeightedSum = 0;
   }
-//FOR (size_t, objNum, ds. objs. size ())
   for (Iterator it (dsSample); it ();)  
   {
     const Real dissim = (*target) [*it];    
@@ -4270,6 +4271,8 @@ Real DistTree::setErrorDensities ()
 
 VectorPtr<Leaf> DistTree::findOutliers () const
 {
+  ASSERT (detachedLeaves. empty ());
+
 	Dataset leafDs;
   auto attr = new RealAttr1 ("LeafCriterion", leafDs);
   
@@ -4428,13 +4431,13 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 , dist_hat (0)
 , leafIsBelow (false)
 { 
-  ASSERT (anchor);
-  
   ASSERT (leaf);
-  
+    
   ASSERT (dissim >= 0);
   ASSERT (dissim < INF);
   
+  ASSERT (anchor);
+
   ASSERT (mult >= 0);
   
   // dist_hat, leafIsBelow
