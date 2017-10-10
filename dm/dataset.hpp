@@ -1128,14 +1128,12 @@ struct Iterator : Nocopy
 private:
   const Vector<Real>& mult_;
   // Output
-  size_t objNum;  
+  size_t objNum {NO_INDEX};
 public:
-  Real mult;
+  Real mult {NAN};
 
   explicit Iterator (const Sample &sample)
     : mult_ (sample. mult)
-    , objNum (NO_INDEX)  
-    , mult (NAN)
     {}
 
   bool operator() ();
