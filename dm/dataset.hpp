@@ -26,7 +26,7 @@ extern const char* missingStr;
 struct Obj : Named, DisjointCluster
 // Object
 {
-  Real mult;
+  Real mult {1};
     // >= 0
     // Multiplicity (absolute frequency)
     // --> Sample Dataset::sample, remove extra Sample's ??
@@ -35,18 +35,11 @@ struct Obj : Named, DisjointCluster
 
   explicit Obj (const string &name_arg) 
     : Named (name_arg)
-    , mult (1)
-    {}
-  Obj () 
-    : Named ()
-    , mult (1)
     {}
   void qc () const override;
 };
 
 
-
-// Scale
 
 struct RealScale
 // Real numbers, finite()
@@ -73,6 +66,7 @@ public:
 
 
 const streamsize decimals_def = 4;  // PAR
+
     
   
 
