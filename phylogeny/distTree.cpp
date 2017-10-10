@@ -428,6 +428,74 @@ Steiner* Leaf::collapse (Leaf* other)
 
 
 
+void Leaf::remove ()
+{
+  if (! graph)
+    return;
+    
+  DistTree& tree = const_cast <DistTree&> (getDistTree ());
+    
+  ASSERT (! tree. dissimDs. get ());
+  ASSERT (! tree. dissimAttr);
+  
+  const TreeNode* parent = getParent ();
+  ASSERT (parent);
+    
+  // Consistency with Leaf::discernable
+  VectorPtr<DiGraph::Node> vec;  
+  vec << this;
+  if (! discernable)
+    vec = parent->getChildren ();
+      
+  // tree.detachedLeaves
+  for (const DiGraph::Node* node : vec)
+  {
+    const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ();
+    ASSERT (leaf);
+    Leaf* leaf_ = const_cast <Leaf*> (leaf);
+    leaf_->detach ();  
+  	delete leaf_->attr;
+  	leaf_->attr = nullptr;
+  	tree. detachedLeaves << leaf;
+  }
+
+  // Clean topology, parent
+  if (parent->isLeaf ())
+  {
+    ASSERT (parent->graph); 
+    ASSERT (! discernable);
+    Steiner* st = const_static_cast <Steiner*> (parent);
+	  parent = parent->getParent ();
+		tree. delayDeleteRetainArcs (st);
+  }
+	if (parent && parent->isTransient ())
+	{
+    ASSERT (parent->graph); 
+	  Steiner* st = const_static_cast <Steiner*> (parent);
+	  parent = parent->getParent ();
+		tree. delayDeleteRetainArcs (st);
+  }  
+  if (! parent)
+    parent = tree. root;
+    
+  FOR (size_t, objNum, tree. ds. objs. size ())
+    if (   tree. obj2leaf1 [objNum] == this
+        || tree. obj2leaf2 [objNum] == this
+       )
+      const_cast <Obj*> (tree. ds. objs [objNum]) -> mult = 0;
+  tree. dsSample = Sample (tree. ds);
+
+  tree. setAbsCriterion ();
+  {
+    Unverbose unv;
+    ASSERT (parent);
+    tree. optimizeSubgraph (static_cast <const Steiner*> (parent->getAncestor (areaRadius_std)));
+  }
+}
+
+
+
+
 // Change
 
 Change::~Change ()
@@ -556,30 +624,30 @@ bool ChangeToSibling::apply_ ()
   fromAttr_new->setAll (false);
   toAttr_new  ->setAll (false);
   interAttr   ->setAll (false);
-  FOR (size_t, objNum, tree. ds. objs. size ())
+  for (Iterator it (tree. dsSample); it ();)  
   {
-    const VectorPtr<Tree::TreeNode> path (tree. getPath ( tree. obj2leaf1 [objNum]
-                                                        , tree. obj2leaf2 [objNum]
+    const VectorPtr<Tree::TreeNode> path (tree. getPath ( tree. obj2leaf1 [*it]
+                                                        , tree. obj2leaf2 [*it]
                                                         )
                                          );
-    (*target_new) [objNum] = (* tree. target) [objNum] - tree. path2prediction (path);  
+    (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);  
       // redundant <= map paths in the old tree to path in the new tree ??
     const bool fromUsed = path. contains (from);
-    fromAttr_new->setCompactBool (objNum, fromUsed);
+    fromAttr_new->setCompactBool (*it, fromUsed);
     if (fromUsed)
     {
       const bool toVia    = path. contains (to);
       const bool interVia = path. contains (inter);
       ASSERT (toVia != interVia);
-      toAttr_new->setCompactBool (objNum, toVia);
-      interAttr ->setCompactBool (objNum, interVia);
+      toAttr_new->setCompactBool (*it, toVia);
+      interAttr ->setCompactBool (*it, interVia);
     }
     else
     {
       const bool toUsed = path. contains (to);
       ASSERT (toUsed == path. contains (inter));
-      toAttr_new->setCompactBool (objNum, toUsed);
-      interAttr ->setCompactBool (objNum, toUsed);
+      toAttr_new->setCompactBool (*it, toUsed);
+      interAttr ->setCompactBool (*it, toUsed);
     }
   }
 
@@ -612,8 +680,8 @@ bool ChangeToSibling::apply_ ()
   }
 
   // tree.prediction
-  FOR (size_t, objNum, tree. ds. objs. size ())
-    (* const_cast <RealAttr1*> (tree. prediction)) [objNum] = (* tree. target) [objNum] - lr. getResidual (objNum);
+  for (Iterator it (tree. dsSample); it ();)  
+    (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
     
   return true;
 }
@@ -711,29 +779,29 @@ bool ChangeToChild::apply_ ()
   arcEnd_new->setAll (false);
   toAttr_new->setAll (false);
   interAttr ->setAll (false);
-  FOR (size_t, objNum, tree. ds. objs. size ())
+  for (Iterator it (tree. dsSample); it ();)  
   {
-    const VectorPtr<Tree::TreeNode> path (tree. getPath ( tree. obj2leaf1 [objNum]
-                                                        , tree. obj2leaf2 [objNum]
+    const VectorPtr<Tree::TreeNode> path (tree. getPath ( tree. obj2leaf1 [*it]
+                                                        , tree. obj2leaf2 [*it]
                                                         )
                                          );
-    (*target_new) [objNum] = (* tree. target) [objNum] - tree. path2prediction (path);
+    (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);
     const bool interUsed = path. contains (inter);
-    interAttr->setCompactBool (objNum, interUsed);
+    interAttr->setCompactBool (*it, interUsed);
     if (interUsed)
     {
       const bool toVia     = path. contains (to);
       const bool arcEndVia = path. contains (arcEnd);
       ASSERT (toVia != arcEndVia);
-      toAttr_new->setCompactBool (objNum, toVia);
-      arcEnd_new->setCompactBool (objNum, arcEndVia);
+      toAttr_new->setCompactBool (*it, toVia);
+      arcEnd_new->setCompactBool (*it, arcEndVia);
     }
     else
     {
       const bool toUsed = path. contains (to);
       ASSERT (toUsed == path. contains (arcEnd));
-      toAttr_new->setCompactBool (objNum, toUsed);
-      arcEnd_new->setCompactBool (objNum, toUsed);
+      toAttr_new->setCompactBool (*it, toUsed);
+      arcEnd_new->setCompactBool (*it, toUsed);
     }
   }
 
@@ -766,8 +834,8 @@ bool ChangeToChild::apply_ ()
   }
 
   // tree.prediction
-  FOR (size_t, objNum, tree. ds. objs. size ())
-    (* const_cast <RealAttr1*> (tree. prediction)) [objNum] = (* tree. target) [objNum] - lr. getResidual (objNum);
+  for (Iterator it (tree. dsSample); it ();)  
+    (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
 
   return true;
 }
@@ -841,15 +909,15 @@ bool Swap::apply_ ()
   RealAttr1* target_new          = const_cast <RealAttr1*>        (tree. target_new);
   fromAttr_new->setAll (false);
   toAttr_new  ->setAll (false);
-  FOR (size_t, objNum, tree. ds. objs. size ())
+  for (Iterator it (tree. dsSample); it ();)  
   {
-    const VectorPtr<Tree::TreeNode> path (tree. getPath ( tree. obj2leaf1 [objNum]
-                                                        , tree. obj2leaf2 [objNum]
+    const VectorPtr<Tree::TreeNode> path (tree. getPath ( tree. obj2leaf1 [*it]
+                                                        , tree. obj2leaf2 [*it]
                                                         )
                                          );
-    fromAttr_new->setCompactBool (objNum, path. contains (from));
-    toAttr_new  ->setCompactBool (objNum, path. contains (to));
-    (*target_new) [objNum] = (* tree. target) [objNum] - tree. path2prediction (path);
+    fromAttr_new->setCompactBool (*it, path. contains (from));
+    toAttr_new  ->setCompactBool (*it, path. contains (to));
+    (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);
   }
 
   Space1<NumAttr1> sp (tree. ds, false);  sp. reserve (2);
@@ -870,8 +938,8 @@ bool Swap::apply_ ()
   const_cast <DTNode*> (to)   -> len = lr. beta [1];
 
   // tree.prediction
-  FOR (size_t, objNum, tree. ds. objs. size ())
-    (* const_cast <RealAttr1*> (tree. prediction)) [objNum] = (* tree. target) [objNum] - lr. getResidual (objNum);
+  for (Iterator it (tree. dsSample); it ();)  
+    (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
 
   return true;
 }
@@ -1416,7 +1484,7 @@ DistTree::DistTree (const DTNode* center,
 
   // *target: finish
   // dissim2_sum
-  FOR_REV (size_t, objNum, ds. objs. size ())
+  FOR (size_t, objNum, ds. objs. size ())
   {
     const Real mult = ds. objs [objNum] -> mult;
     if (mult == 0)
@@ -1424,7 +1492,7 @@ DistTree::DistTree (const DTNode* center,
     else
     {
       (* const_cast <RealAttr1*> (target)) [objNum] /= mult;
-      dissim2_sum += mult * sqr ((*target) [objNum]);  // max (0.0, dist);
+      dissim2_sum += mult * sqr ((*target) [objNum]);  
     }
   }
     
@@ -1838,7 +1906,7 @@ void DistTree::cleanTopology ()
  	// delete isLeaf() && Steiner
  	insertAll (nodeVec, nodes);
  	for (DiGraph::Node* node : nodeVec)  
-	  if (const Steiner* s = static_cast <DTNode*> (node) ->asSteiner ())
+	  if (const Steiner* s = static_cast <DTNode*> (node) -> asSteiner ())
 	    while (s && s->isLeaf ())
 	    {
 	      ASSERT (s->graph); 
@@ -2248,7 +2316,7 @@ bool DistTree::addDissim (const string &name1,
   {
     if (dissim > 0)
       cout << "Too large dissimilarity: " << name1 << " - " << name2 << ": " << dissim << endl;
-    return false;
+  //return false;
   }
   
   dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
@@ -2407,6 +2475,9 @@ void DistTree::qc () const
  	}
 
   ASSERT (absCriterion_delta > 0);
+  
+  for (const Leaf* leaf : detachedLeaves)
+    ASSERT (! leaf->graph);
 }
 
 
@@ -2595,7 +2666,7 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
     cout << "Data values ..." << endl;
 
   for (DiGraph::Node* node : nodes_arg)
-    node->inStack = false;
+    const_static_cast <DTNode*> (node) -> inPath = false;
 
   Progress prog ((uint) ds. objs. size (), 10000);  // PAR
   FOR (size_t, objNum, ds. objs. size ())
@@ -2606,16 +2677,16 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
                                             )
                                    );
     for (const TreeNode* node : path)
-      const_cast<TreeNode*> (node) -> inStack = true;
+      const_static_cast <DTNode*> (node) -> inPath = true;
     for (const DiGraph::Node* node : nodes_arg)
     {
       const DTNode* dtNode = static_cast <const DTNode*> (node);
       CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
       ASSERT (attr);
-      attr->setCompactBool (objNum, dtNode->inStack);
+      attr->setCompactBool (objNum, dtNode->inPath);
     }
     for (const TreeNode* node : path)
-      const_cast<TreeNode*> (node) -> inStack = false;
+      const_static_cast <DTNode*> (node) -> inPath = false;
   }
 }
 
@@ -2689,15 +2760,14 @@ Real DistTree::getAbsCriterion () const
   ASSERT (optimizable ());
 
   Real absCriterion_ = 0;
-  FOR (size_t, objNum, ds. objs. size ())
-    if (const Real mult = ds. objs [objNum] -> mult)
-    {
-      const Real d = (*target) [objNum];
-    //ASSERT (d >= 0);
-      const Real dHat = (*prediction) [objNum];
-      ASSERT (! isNan (dHat));
-      absCriterion_ += mult * sqr (dHat - d);
-    }
+  for (Iterator it (dsSample); it ();)  
+  {
+    const Real d = (*target) [*it];
+  //ASSERT (d >= 0);
+    const Real dHat = (*prediction) [*it];
+    ASSERT (! isNan (dHat));
+    absCriterion_ += it. mult * sqr (dHat - d);
+  }
   ASSERT (DM_sp::finite (absCriterion_));
   
   return absCriterion_;
@@ -2731,18 +2801,18 @@ void DistTree::printAbsCriterion_halves () const
   size_t size_half       [2/*bool*/] = {0, 0};
   Real absCriterion_half [2/*bool*/] = {0, 0};
   Real dissim2_half      [2/*bool*/] = {0, 0};
-  FOR (size_t, objNum, ds. objs. size ())
-    if (const Real mult = ds. objs [objNum] -> mult)
-    {
-      const Real d = (*target) [objNum];
-      const Real dHat = (*prediction) [objNum];
-      ASSERT (! isNan (dHat));
-      const bool half2 = d > dissim_ave;
-      pairs++;
-      size_half [half2] ++;
-      absCriterion_half [half2] += mult * sqr (dHat - d);
-      dissim2_half      [half2] += mult * sqr (d);
-    }
+//FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
+  {
+    const Real d = (*target) [*it];
+    const Real dHat = (*prediction) [*it];
+    ASSERT (! isNan (dHat));
+    const bool half2 = d > dissim_ave;
+    pairs++;
+    size_half [half2] ++;
+    absCriterion_half [half2] += it. mult * sqr (dHat - d);
+    dissim2_half      [half2] += it. mult * sqr (d);
+  }
     
   for (const bool half2 : Bool)
   {
@@ -2766,18 +2836,17 @@ void DistTree::setLeafAbsCriterion ()
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
       const_cast <Leaf*> (leaf) -> absCriterion. clear ();
 
-  FOR (size_t, objNum, ds. objs. size ())
-    if (const Real mult = ds. objs [objNum] -> mult)
-    {
-      const Real d = (*target) [objNum];
-    //ASSERT (d >= 0);
-      const Real dHat = (*prediction) [objNum];
-      ASSERT (! isNan (dHat));
-      const Real residual = sqr (dHat - d);      
-      ASSERT (DM_sp::finite (residual));
-      const_cast <Leaf*> (obj2leaf1 [objNum]) -> absCriterion. add (residual, mult);
-      const_cast <Leaf*> (obj2leaf2 [objNum]) -> absCriterion. add (residual, mult);
-    }
+  for (Iterator it (dsSample); it ();)  
+  {
+    const Real d = (*target) [*it];
+  //ASSERT (d >= 0);
+    const Real dHat = (*prediction) [*it];
+    ASSERT (! isNan (dHat));
+    const Real residual = sqr (dHat - d);      
+    ASSERT (DM_sp::finite (residual));
+    const_cast <Leaf*> (obj2leaf1 [*it]) -> absCriterion. add (residual, it. mult);
+    const_cast <Leaf*> (obj2leaf2 [*it]) -> absCriterion. add (residual, it. mult);
+  }
 
   for (DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
@@ -2849,12 +2918,12 @@ bool DistTree::optimizeLenAll ()
   matr. putAll (0);
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> dissimSum = 0;
-  FOR (size_t, objNum, ds. objs. size ())
+//FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const Real dissim = (*target) [objNum];    
-    const Real mult = ds. objs [objNum] -> mult;
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                            , obj2leaf2 [objNum]
+    const Real dissim = (*target) [*it];    
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                            , obj2leaf2 [*it]
                                             )
                                    );
     for (const TreeNode* node1 : path)
@@ -2862,7 +2931,7 @@ bool DistTree::optimizeLenAll ()
       DTNode* dtNode1 = const_static_cast <DTNode*> (node1);
       if (dtNode1->index == NO_INDEX)
         continue;
-      dtNode1->dissimSum += dissim * mult;
+      dtNode1->dissimSum += dissim * it. mult;
       for (const TreeNode* node2 : path)
       {
         const DTNode* dtNode2 = static_cast <const DTNode*> (node2);
@@ -2870,7 +2939,7 @@ bool DistTree::optimizeLenAll ()
           matr. putInc ( false
                        , dtNode1->index
                        , dtNode2->index
-                       , mult
+                       , it. mult
                        );
       }
     }
@@ -2951,11 +3020,12 @@ void DistTree::quartet2arcLen ()
     dtNode->dissimSum = 0;
     dtNode->dissimWeightedSum = 0;
   }
-  FOR (size_t, objNum, ds. objs. size ())
+//FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const Real dissim = (*target) [objNum];    
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                            , obj2leaf2 [objNum]
+    const Real dissim = (*target) [*it];    
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                            , obj2leaf2 [*it]
                                             )
                                    );
     FOR (size_t, i, path. size ())
@@ -3281,13 +3351,13 @@ void DistTree::optimizeLenNode ()
       const_cast <DTNode*> (n) -> len = 0;
     }
     ASSERT (lenOld. size () == star. size ());
-    FOR (size_t, objNum, ds. objs. size ())
+    for (Iterator it (dsSample); it ();)  
     {
-      const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                              , obj2leaf2 [objNum]
+      const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                              , obj2leaf2 [*it]
                                               )
                                      );
-      (* const_cast <RealAttr1*> (target_new)) [objNum] = (*target) [objNum] - path2prediction (path);
+      (* const_cast <RealAttr1*> (target_new)) [*it] = (*target) [*it] - path2prediction (path);
     }
     
     sp. clear ();  sp. reserve (star. size ());
@@ -4085,15 +4155,14 @@ Real DistTree::getMeanResidual () const
   ASSERT (optimizable ());
 
   Real s = 0;
-  FOR (size_t, objNum, ds. objs. size ())
-    if (const Real mult = ds. objs [objNum] -> mult)
-    {
-      const Real d = (*target) [objNum];
-    //ASSERT (d >= 0);
-      const Real dHat = (*prediction) [objNum];
-      ASSERT (! isNan (dHat));
-      s += mult * (dHat - d);
-    }
+  for (Iterator it (dsSample); it ();)  
+  {
+    const Real d = (*target) [*it];
+  //ASSERT (d >= 0);
+    const Real dHat = (*prediction) [*it];
+    ASSERT (! isNan (dHat));
+    s += it. mult * (dHat - d);
+  }
   
   return s / dsSample. mult_sum;
 }
@@ -4121,11 +4190,11 @@ Real DistTree::getSqrResidualCorr () const
   ASSERT (optimizable ());
 
   Correlation corr;
-  FOR (size_t, objNum, ds. objs. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const Real d = (*target) [objNum];
+    const Real d = (*target) [*it];
   //ASSERT (d >= 0);
-    const Real dHat = (*prediction) [objNum];
+    const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
     const Real residual2 = sqr (dHat - d);
     corr. add (d, residual2);
@@ -4150,29 +4219,28 @@ Real DistTree::setErrorDensities ()
   
 
   Real epsilon2_0 = 0;
-  FOR (size_t, objNum, obj2leaf1. size ())
+  for (Iterator it (dsSample); it ();)  
   {
-    const Real mult = ds. objs [objNum] -> mult;
-    const Real d = (*target) [objNum];
+    const Real d = (*target) [*it];
   //ASSERT (d >= 0);
-    const Real dHat = (*prediction) [objNum];
+    const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
     if (nullReal (dHat))
     {
-      epsilon2_0 += mult * sqr (d);
+      epsilon2_0 += it. mult * sqr (d);
       continue;
     }
 
     ASSERT (positive (d));
-    const Real a = mult * sqr (dHat - d) / dHat;
+    const Real a = it. mult * sqr (dHat - d) / dHat;
     if (! DM_sp::finite (a))
     {
-      cout << obj2leaf1 [objNum] -> getName () << " " << obj2leaf2 [objNum] -> getName () << ": " << d << " " << dHat << endl;
+      cout << obj2leaf1 [*it] -> getName () << " " << obj2leaf2 [*it] -> getName () << ": " << d << " " << dHat << endl;
       ERROR;
     }
     
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [objNum]
-                                            , obj2leaf2 [objNum]
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                            , obj2leaf2 [*it]
                                             )
                                    );
     for (const TreeNode* node : path)
@@ -4241,17 +4309,16 @@ RealAttr1* DistTree::getResiduals2 ()
   ASSERT (optimizable ());
 
   Common_sp::AutoPtr<RealAttr1> resid2Attr (new RealAttr1 ("resid2", ds, target->decimals + 1));
-  FOR (size_t, objNum, ds. objs. size ())
-    if (ds. objs [objNum] -> mult)
-    {
-      const Real d = (*target) [objNum];
-    //ASSERT (d >= 0);
-      const Real dHat = (*prediction) [objNum];
-      ASSERT (! isNan (dHat));
-      const Real residual = abs (dHat - d);      
-      ASSERT (DM_sp::finite (residual));
-      (*resid2Attr) [objNum] = sqr (residual);
-    }
+  for (Iterator it (dsSample); it ();)  
+  {
+    const Real d = (*target) [*it];
+  //ASSERT (d >= 0);
+    const Real dHat = (*prediction) [*it];
+    ASSERT (! isNan (dHat));
+    const Real residual = abs (dHat - d);      
+    ASSERT (DM_sp::finite (residual));
+    (*resid2Attr) [*it] = sqr (residual);
+  }
     
   return resid2Attr. release ();
 }
@@ -4263,18 +4330,17 @@ RealAttr1* DistTree::getLogPredictionDiff ()
   ASSERT (optimizable ());
 
   Common_sp::AutoPtr<RealAttr1> logDiffAttr (new RealAttr1 ("logDiff", ds, target->decimals + 1));
-  FOR (size_t, objNum, ds. objs. size ())
-    if (ds. objs [objNum] -> mult)
-    {
-      const Real d = (*target) [objNum];
-    //ASSERT (d >= 0);
-      const Real dHat = (*prediction) [objNum];
-      ASSERT (! isNan (dHat));
-      if (   positive (d)
-          && positive (dHat)
-         )
-        (*logDiffAttr) [objNum] = log (d) - log (dHat);
-    }
+  for (Iterator it (dsSample); it ();)  
+  {
+    const Real d = (*target) [*it];
+  //ASSERT (d >= 0);
+    const Real dHat = (*prediction) [*it];
+    ASSERT (! isNan (dHat));
+    if (   positive (d)
+        && positive (dHat)
+       )
+      (*logDiffAttr) [*it] = log (d) - log (dHat);
+  }
     
   return logDiffAttr. release ();
 }
@@ -4298,19 +4364,19 @@ void DistTree::pairResiduals2dm (const RealAttr1* resid2Attr,
 
 
 
-void DistTree::printDissim (ostream &os) const
+void DistTree::saveDissim (ostream &os) const
 {
   ASSERT (optimizable ());
 
   const ONumber on (os, dissimDecimals, true);
   FOR (size_t, objNum, ds. objs. size ())
-  {
-    ASSERT (ds. objs [objNum] -> mult);
-    os         << obj2leaf1 [objNum] -> name
-       << '\t' << obj2leaf2 [objNum] -> name
-       << '\t' << (*target) [objNum]
-       << endl;
-  }
+    if (   obj2leaf1 [objNum] -> graph
+        && obj2leaf2 [objNum] -> graph
+       )
+      os         << obj2leaf1 [objNum] -> name
+         << '\t' << obj2leaf2 [objNum] -> name
+         << '\t' << (*target) [objNum]
+         << endl;
 }
 
 

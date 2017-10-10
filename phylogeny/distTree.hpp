@@ -89,6 +89,7 @@ struct DTNode : Tree::TreeNode
     // ExtBoolAttr1: makes faster by 5 % 
 
 private:
+  bool inPath {false};
   bool stable {false};
     // Init: false
   WeightedMeanVar subtreeLen; 
@@ -323,6 +324,10 @@ private:
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:
+  
+  void remove ();
+    // Invokes: detach(), getDistTree().optimizeSubgraph()
+    // Update: getDistTree().{toDelete,detachedLeaves}
 };
 
 
@@ -621,8 +626,9 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
-public:
 
+  friend Change;
+  friend ChangeToSibling;
   Dataset ds;
     // objs: pairs of Leaf's
     //       objs[i].name = obj2leaf1[i]->name + objNameSeparator + obj2leaf2[i]->name
@@ -632,11 +638,14 @@ public:
     // objs.size() <= n*(n-1)/2
     // size = O(n^3)
   Sample dsSample;  
+    // = Sample(ds)
   // !nullptr
   const RealAttr1* target {nullptr};
     // target[i] = dissimilarity between obj2leaf1[i] and obj2leaf2[i]; !isMissing()
+public:
   Real dissim2_sum {0};
     // = sum target[i]^2 * mult
+private:
   // For optimization
   const RealAttr1* prediction {nullptr};
     // Tree distances
@@ -652,14 +661,17 @@ public:
   VectorPtr<Leaf> obj2leaf1, obj2leaf2;
     // size() = ds.objs.size()
     // obj2leaf1[i]->name < obj2leaf2[i]->name
+public:
     
   Real absCriterion {NAN};
     // = L2LinearNumPrediction::absCriterion  
 private:
   friend DTNode;
+  friend Leaf;
   size_t attrNum_max {0};
   Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
+	VectorOwn<Leaf> detachedLeaves;
 public:
 
 
@@ -698,7 +710,7 @@ public:
     //        ]
 	  //          ??
 	  //          request         <obj1> <obj2>                                           request to compute dissimilarity
-	  //          outlier         = as in leaf                                            
+	  //          outlier         <obj>                                            
 	  //          deleted         <obj>
 	  //
 	  //          version                   <natural number>
@@ -847,6 +859,7 @@ private:
 #endif
   void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
     // Output: DTNode::attrs
+    // Temporary: DTNode::inPath
 	  // Time: O(p (log(n) + |nodes_arg|))
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
@@ -1011,7 +1024,7 @@ public:
                          const RealAttr1* logDiffAttr,
                          ostream &os) const;
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
-  void printDissim (ostream &os) const;
+  void saveDissim (ostream &os) const;
 };
 
 
