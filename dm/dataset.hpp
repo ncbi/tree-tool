@@ -359,6 +359,9 @@ public:
     
   void multiply (Real coeff);
   void logarithmize ();
+  Real normal2max (const Sample &sample) const;
+    // Model: distribution of *this = if value <= c then truncated Normal else Uniform
+    // Return: c, may be NAN
 };
 
 
@@ -1075,7 +1078,7 @@ struct Sample : Root
     // !nullptr
   Vector<Real> mult;
     // size() = ds.objs.size()
-  Real multSum {0};
+  Real mult_sum {0};
     // >= 0
   size_t nEffective {0};
 
@@ -1084,7 +1087,7 @@ struct Sample : Root
     // Invokes: finish()
   void finish ();
     // Input: mult[]
-    // Output: multSum, nEffective
+    // Output: mult_sum, nEffective
   void qc () const override;
   bool empty () const override
     { return mult. empty (); }
@@ -1093,7 +1096,7 @@ struct Sample : Root
   size_t size () const
     { return mult. size (); } 
   Real getMult_avg () const
-    { return multSum / (Real) nEffective; }
+    { return mult_sum / (Real) nEffective; }
   Real getMaxMult () const;
   size_t getObjNameLen_max () const;  
   void save (const VectorPtr<Attr> &attrs,
@@ -1697,7 +1700,7 @@ public:
     
   Real getLogLikelihood () const;
   Real getEntropy_est () const
-    { return - getLogLikelihood () / getAnalysisCheck () -> sample. multSum; }
+    { return - getLogLikelihood () / getAnalysisCheck () -> sample. mult_sum; }
   bool minimizeEntropy (Real &entropy_best,
                         Real delta) const
     { const Real entropy = getEntropy_est ();
@@ -2827,9 +2830,9 @@ private:
     // Return: max{index : x >= points[index].value}; may be NO_INDEX
     // Time: O(log(analysis->sample->nEffective))
   Real getHeight () const
-    { return 1 / (checkPtr (analysis) -> sample. multSum * 2 * halfWindow); }
+    { return 1 / (checkPtr (analysis) -> sample. mult_sum * 2 * halfWindow); }
     // Kernel
-    // Integral over (2 * halfWindow) = 1 / analysis->sample. multSum
+    // Integral over (2 * halfWindow) = 1 / analysis->sample. mult_sum
   Real getUniformHeight () const
     { return 1 / getRange (); }
     // Integral over getRange() = 1
@@ -3476,7 +3479,7 @@ struct Mds : Analysis
   Real getQuality () const
     { return eigens. totalExplainedFrac (); }
   Real getVariance (size_t attrNum) const
-    { return eigens. values [attrNum] / sample. multSum; }
+    { return eigens. values [attrNum] / sample. mult_sum; }
   // attrNum < eigens.values.size()
   Real get (size_t objNum,
             size_t attrNum,

@@ -823,7 +823,7 @@ public:
 	    return average;
 	  }
   Real getLenError () const
-    { return sqrt (absCriterion / dsSample. multSum); }
+    { return sqrt (absCriterion / dsSample. mult_sum); }
   Prob getUnexplainedFrac () const
     { return absCriterion / dissim2_sum; }
   Real getErrorDensity () const
@@ -997,11 +997,8 @@ public:
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
-  size_t printLeafRelLenErros (ostream &os,
-                               Real relErr_min) const;
-    // Return: # outliers
-    // Input: relErr_min >= 0
-    // Requires: after setLeafAbsCriterion()
+  VectorPtr<Leaf> findOutliers () const;
+    // Requires: after setLeafAbsCriterion()    
 
   // Statistics
   RealAttr1* getResiduals2 ();

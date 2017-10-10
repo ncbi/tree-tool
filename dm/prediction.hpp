@@ -473,7 +473,7 @@ struct L2LinearNumPrediction : LinearNumPrediction
   void setAbsCriterion () override;
   void setAbsCriterion (const RealAttr1& residual) override;
   Real absCriterion2Error () const override
-    { return sqrt (absCriterion / sample. multSum); }
+    { return sqrt (absCriterion / sample. mult_sum); }
     // MSE
   Real getConstTarget () const override;
   Real getRelTargetCriterion (Real constTarget) const override;

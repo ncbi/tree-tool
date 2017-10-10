@@ -83,7 +83,7 @@ struct ThisApplication : Application
     ds. qc ();
     
     const Sample sm (ds);
-    if (! positive (sm. multSum))
+    if (! positive (sm. mult_sum))
       exit (1);
 
     const NominAttr1* classAttr = nullptr;

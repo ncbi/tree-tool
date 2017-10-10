@@ -2283,7 +2283,7 @@ void DistTree::loadDissimFinish ()
   
 
   dsSample = Sample (ds);
-  absCriterion_delta = dsSample. multSum * 1e-5;  // PAR
+  absCriterion_delta = dsSample. mult_sum * 1e-5;  // PAR
 
   // ds.attrs, DTNode::attr
   if (verbose ())
@@ -2352,7 +2352,7 @@ void DistTree::qc () const
   ASSERT (ds. objs. size () <= getDissimSize_max ());
 	ASSERT (dsSample. ds == & ds);
 	ASSERT (dsSample. size () == ds. objs. size ());
- 	ASSERT (positive (dsSample. multSum));
+ 	ASSERT (positive (dsSample. mult_sum));
  	
   
   ASSERT (target);
@@ -4095,7 +4095,7 @@ Real DistTree::getMeanResidual () const
       s += mult * (dHat - d);
     }
   
-  return s / dsSample. multSum;
+  return s / dsSample. mult_sum;
 }
 
 
@@ -4200,30 +4200,40 @@ Real DistTree::setErrorDensities ()
 
 
 
-size_t DistTree::printLeafRelLenErros (ostream &os,
-                                       Real relErr_min) const
+VectorPtr<Leaf> DistTree::findOutliers () const
 {
-  ASSERT (os. good ());
-  ASSERT (relErr_min >= 0);
+	Dataset leafDs;
+  auto attr = new RealAttr1 ("LeafCriterion", leafDs);
   
-  ASSERT (optimizable ());
+  leafDs. objs. reserve (name2leaf. size ());
+  for (const auto& it : name2leaf)
+  {
+    const Real relErr = it. second->getRelLenError ();
+    if (! positive (relErr))
+      continue;
+	  const size_t index = leafDs. appendObj (it. first);
+	  (*attr) [index] = relErr;
+  }
+  
+  const Sample sample (leafDs);
+  const Real good_max = attr->normal2max (sample);
 
-  size_t n = 0;
-  for (const DiGraph::Node* node : nodes)
-    if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
-    {
-      const Real relErr = leaf->getRelLenError ();
-      if (geReal (relErr, relErr_min)) 
-      {
-        os << leaf->getName () << '\t' << relErr << endl;
-        n++;
-      //ASSERT (relErr < 10);  
-      }
-    }
-    
-  return n;
+  if (verbose ())  
+    cout << "Max. rel. leaf error: " << good_max << endl;
+
+  VectorPtr<Leaf> res;
+  for (const auto& it : name2leaf)
+  {
+    const Real relErr = it. second->getRelLenError ();
+    if (! positive (relErr))
+      continue;
+    if (greaterReal (relErr, good_max))
+      res << it. second;
+  }
+      
+	return res;
 }
-
+  
 
 
 RealAttr1* DistTree::getResiduals2 () 

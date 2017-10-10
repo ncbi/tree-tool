@@ -72,7 +72,7 @@ Real LogisticRegression::getNegLogLikelihood_ave () const
     s += it. mult * (log (exp (z) + 1) - z * target. getBool (*it));
   }
   ASSERT (s >= 0);
-  return s / sample. multSum;
+  return s / sample. mult_sum;
 }
 
 
@@ -109,7 +109,7 @@ struct LogRegFuncMult : FuncMult
         FOR (size_t, argNum, maxArgNum)
       		gradient. putInc (false, argNum, 0, a * lr. space [argNum] -> getReal (*it));
       }
-      gradient. putProdAll (1 / lr. sample. multSum);
+      gradient. putProdAll (1 / lr. sample. mult_sum);
     }
     
 
@@ -129,7 +129,7 @@ struct LogRegFuncMult : FuncMult
         		hessian. putInc (false, argNum1, argNum2, a * x1 * lr. space [argNum2] -> getReal (*it));
         }
       }
-      hessian. putProdAll (1 / lr. sample. multSum);
+      hessian. putProdAll (1 / lr. sample. mult_sum);
     }
 };
 
@@ -347,7 +347,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
         (*target1) [*it] = (*residual) [*it] + beta [attrNum] * predictor. getReal (*it);
       Unverbose unv;
       Common_sp::AutoPtr<LinearNumPrediction> lp (makeLinearNumPrediction (sample, sp, *target1));
-      ASSERT (eqReal (lp->sample. multSum, sample. multSum));
+      ASSERT (eqReal (lp->sample. mult_sum, sample. mult_sum));
       lp->solveUnconstrained ();
       lp->qc ();
       ASSERT (! isNan (lp->absCriterion));
@@ -919,7 +919,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
   Table () -> getObjWeight (objSize, objWeight);
   const Real epsilonVar = absCriterion / (objSize - GetPredictorNum ());
 #else
-  const Real epsilonVar = absCriterion / sample. multSum;
+  const Real epsilonVar = absCriterion / sample. mult_sum;
 #endif
   betaCovariance. putProdAll (epsilonVar);  // ??
   

@@ -32,7 +32,7 @@ struct ThisApplication : Application
 
     const Dataset ds (inFName);
     const Sample sample (ds);
-    cout << "multSum: " << sample. multSum << endl << endl;
+    cout << "mult_sum: " << sample. mult_sum << endl << endl;
     
     cout << "AttrName\tDefintion\tMissings\tStatistics" << endl;
     for (const auto attrRaw : ds. attrs)

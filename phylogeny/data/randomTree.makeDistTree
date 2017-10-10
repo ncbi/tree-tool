@@ -19,8 +19,8 @@ Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.08
 
-Outliers:
-# Outliers: 0
+# Outliers: 1
+18	1.26
 
 # Interior nodes (with root) = 48 (max = 49)
 # Interior undirected arcs = 47

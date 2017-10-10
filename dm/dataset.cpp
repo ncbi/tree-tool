@@ -389,6 +389,69 @@ void RealAttr1::logarithmize ()
 
 
 
+namespace
+{
+
+struct ObjNum_Real
+{
+  size_t objNum;
+  Real value;
+  
+  bool operator< (const ObjNum_Real &other) const
+    { return value < other. value; }
+};
+
+}
+
+
+
+Real RealAttr1::normal2max (const Sample &sample) const
+{
+  Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
+  for (Iterator it (sample); it ();)  
+    if (! isMissing (*it))
+      vec << ObjNum_Real {*it, getReal (*it)};
+  if (vec. size () <= 2)
+    return NAN;
+    
+  Common_sp::sort (vec);
+    
+  size_t objNum_threshold = NO_INDEX;
+  Real negLogLikelihood_min = INF;
+  const Real x_max = vec. back (). value;
+  Real mult_sum = 0;
+  Real s = 0;
+  Real s2 = 0;
+  Normal normal;
+  const Real coeff = log (2 * pi) + 1;
+  for (const auto& it : vec)
+  {
+    if (it. value == x_max)
+      break;
+    const Real mult = ds. objs [it. objNum] -> mult;
+    mult_sum += mult;
+    const Real x = it. value;
+    s  += mult * x;
+    s2 += mult * sqr (x);
+    const Real mean = s / mult_sum;
+    const Real var = s2 / mult_sum - sqr (mean);
+    ASSERT (! negative (var));
+    if (! positive (var))
+      continue;
+    normal. setParam (mean, sqrt (var));
+    ASSERT (geReal (sample. mult_sum, mult_sum));
+    const Real negLogLikelihood = 
+        mult_sum / 2 * (coeff + log (var)) 
+      + (sample. mult_sum - mult_sum) * (log ((x_max - x) / (1 - normal. cdf (x))));
+    if (minimize (negLogLikelihood_min, negLogLikelihood))
+      objNum_threshold = it. objNum;
+  }
+  
+  return objNum_threshold == NO_INDEX ? NAN : getReal (objNum_threshold);
+}
+
+
+
 #if 0
 Real RealAttr1::getSkew (Real mult,
                          Real mean,
@@ -1915,11 +1978,11 @@ Sample::Sample (const Dataset &ds_arg)
 
 void Sample::finish ()
 {
-  multSum = 0;
+  mult_sum = 0;
   nEffective = 0;
   for (const Real m : mult)
   {
-    multSum += m;
+    mult_sum += m;
     if (m)
       nEffective++;
   }
@@ -1935,7 +1998,7 @@ void Sample::qc () const
   ASSERT (mult. size () == ds->objs. size ());
   for (const Real m : mult)
     ASSERT (m >= 0);
-  ASSERT (positive (multSum));  
+  ASSERT (positive (mult_sum));  
 }
 
 
@@ -2309,7 +2372,7 @@ Normal Distribution::getEntropyDistribution () const
 	// mean, sigma
 	Real mean, var;
   info_meanVar (100000/*PAR*/, mean, var); 
-  const Real sigma = sqrt (var / getAnalysisCheck () -> sample. multSum);
+  const Real sigma = sqrt (var / getAnalysisCheck () -> sample. mult_sum);
 
   Normal normal;
   normal. setParam (mean, sigma);
@@ -3304,7 +3367,7 @@ void UniKernel::qc () const
     
     
   ASSERT (analysis);
-  ASSERT (positive (analysis->sample. multSum));
+  ASSERT (positive (analysis->sample. mult_sum));
   ASSERT (points.  size () <= analysis->sample. size ());
   ASSERT (multSum. size () <= analysis->sample. size ());
   ASSERT (points. size () == multSum. size ());
@@ -3402,7 +3465,7 @@ Real UniKernel::setPoints ()
   if (verbose ())
     cout << "SD = " << mv. getSD () << endl;  
     
-  const_cast <An*> (analysis) -> sample. multSum = multSum. back ();
+  const_cast <An*> (analysis) -> sample. mult_sum = multSum. back ();
 
   // attr_min, attr_max
   attr. getMinMax (analysis->sample, attr_min, attr_max);
@@ -3438,7 +3501,7 @@ void UniKernel::estimate_ (Real halfWindow_lo,
     for (const Point& point : points)
     {
       const Real pdfValue = pdf (point. value) - (1 - uniform_prob) * point. mult * height;
-        // Correct for: checkPtr (analysis) -> sample. multSum -= p. mult ??
+        // Correct for: checkPtr (analysis) -> sample. mult_sum -= p. mult ??
       ASSERT (pdfValue >= 0);
       logLikelihood. add (log (pdfValue) * point. mult);
     }
@@ -3475,7 +3538,7 @@ void UniKernel::set_uniform_prob ()
         && (i == points. size () - 1 || geReal (points [i + 1]. value - points [i].     value, halfWindow))
        )
       outlierMult += points [i]. mult;
-  uniform_prob = outlierMult / checkPtr (analysis) -> sample. multSum;
+  uniform_prob = outlierMult / checkPtr (analysis) -> sample. mult_sum;
 #else
   for (;;)
   {
@@ -3488,7 +3551,7 @@ void UniKernel::set_uniform_prob ()
       const Prob p = (uniform_prob * getUniformHeight ()) / pdfValue;
       uniform_mult += p * point. mult;
     }
-    const Prob uniform_prob_new = uniform_mult / checkPtr (analysis) -> sample. multSum;
+    const Prob uniform_prob_new = uniform_mult / checkPtr (analysis) -> sample. mult_sum;
     ASSERT (isProb (uniform_prob_new));
     if (eqReal (uniform_prob, uniform_prob_new, 1e-5))  // PAR
       break;
@@ -3990,8 +4053,8 @@ void Mixture::Component::estimate ()
   Sample& sample = const_cast <Analysis1*> (distr->getAnalysisCheck ()) -> sample;
   const Component2Sample c2s (sample, *this);  
   if (verbose ())
-    cout << "multSum = " << sample. multSum << endl;
-//if (sample. multSum < 0.001)  // PAR
+    cout << "multSum = " << sample. mult_sum << endl;
+//if (sample. mult_sum < 0.001)  // PAR
   //return false;
 	distr->estimate (); 
 	ASSERT (distr->getParamSet ());
@@ -4378,7 +4441,7 @@ Prob Mixture::getConfusion () const
   	s += p_max * it. mult;
   }
   
-  const Prob p = 1 - s / analysis->sample. multSum;
+  const Prob p = 1 - s / analysis->sample. mult_sum;
   ASSERT (isProb (p));
   
   return p;
@@ -4681,7 +4744,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	             << " entropy = " << work. mixt. getEntropy_est ()  
   	  	             << "  confusion = " << work. mixt. getConfusion ()
   	  	             << "  paramCout = " << work. mixt. paramCount ()
-  	  	             << "  multSum = " << sample. multSum
+  	  	             << "  mult_sum = " << sample. mult_sum
   	  	             << "  entropy_best = " << entropy_best
   	  	             << endl;
   	  	    work. mixt. print (cout);
@@ -4713,7 +4776,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	             << " entropy = " << work. mixt. getEntropy_est ()  
   	  	             << "  confusion = " << work. mixt. getConfusion ()
   	  	             << "  paramCout = " << work. mixt. paramCount ()
-  	  	             << "  multSum = " << sample. multSum
+  	  	             << "  mult_sum = " << sample. mult_sum
   	  	             << "  entropy_best = " << entropy_best
   	  	             << endl;
   	  	    work. mixt. print (cout);
