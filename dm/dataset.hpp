@@ -353,9 +353,13 @@ public:
     
   void multiply (Real coeff);
   void logarithmize ();
-  Real normal2max (const Sample &sample) const;
-    // Model: distribution of *this = if value <= c then truncated Normal else Uniform
-    // Return: c, may be NAN
+  Real normal_likelihood2max (const Sample &sample) const;
+    // Model: distribution of *this = if value <= t then truncated Normal else Uniform
+    // Return: t, may be NAN
+  Real normal2outlier (const Sample &sample,
+                       Real outlier_EValue_max) const;
+    // Return: min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN
+    // Idempotent after removing outliers
 };
 
 

@@ -405,7 +405,7 @@ struct ObjNum_Real
 
 
 
-Real RealAttr1::normal2max (const Sample &sample) const
+Real RealAttr1::normal_likelihood2max (const Sample &sample) const
 {
   Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)  
@@ -426,8 +426,6 @@ Real RealAttr1::normal2max (const Sample &sample) const
   const Real coeff = log (2 * pi) + 1;
   for (const auto& it : vec)
   {
-    if (it. value == x_max)
-      break;
     const Real mult = ds. objs [it. objNum] -> mult;
     mult_sum += mult;
     const Real x = it. value;
@@ -440,14 +438,65 @@ Real RealAttr1::normal2max (const Sample &sample) const
       continue;
     normal. setParam (mean, sqrt (var));
     ASSERT (geReal (sample. mult_sum, mult_sum));
+    const Real rest = sample. mult_sum - mult_sum;
     const Real negLogLikelihood = 
         mult_sum / 2 * (coeff + log (var)) 
-      + (sample. mult_sum - mult_sum) * (log ((x_max - x) / (1 - normal. cdf (x))));
+      + (nullReal (rest)
+           ? 0
+           : eqReal (x, x_max) 
+             ? INF
+             : rest * (log ((x_max - x) / (1 - normal. cdf (x))))
+        );
     if (minimize (negLogLikelihood_min, negLogLikelihood))
       objNum_threshold = it. objNum;
   }
   
   return objNum_threshold == NO_INDEX ? NAN : getReal (objNum_threshold);
+}
+
+
+
+Real RealAttr1::normal2outlier (const Sample &sample,
+                                Real outlier_EValue_max) const
+{
+  Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
+  for (Iterator it (sample); it ();)  
+    if (! isMissing (*it))
+      vec << ObjNum_Real {*it, getReal (*it)};
+  if (vec. size () <= 2)
+    return NAN;
+    
+  Common_sp::sort (vec);
+    
+  Real mult_sum = 0;
+  Real s = 0;
+  Real s2 = 0;
+  Real mean = NAN;
+  Real var = 0;
+  Normal normal;
+  for (const auto& it : vec)
+  {
+    const Real x = it. value;
+
+    if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)
+    {
+      normal. setParam (mean, sqrt (var));
+      const Prob p = 1 - normal. cdf (x);
+      if (leReal (p * mult_sum, outlier_EValue_max))
+        return x;
+    }
+
+    const Real mult = ds. objs [it. objNum] -> mult;
+    mult_sum += mult;
+    ASSERT (geReal (sample. mult_sum, mult_sum));
+    s  += mult * x;
+    s2 += mult * sqr (x);
+    mean = s / mult_sum;
+    var = s2 / mult_sum - sqr (mean);
+    ASSERT (! negative (var));
+  }
+  
+  return NAN;  
 }
 
 

@@ -489,7 +489,7 @@ void Leaf::remove ()
   {
     Unverbose unv;
     ASSERT (parent);
-    tree. optimizeSubgraph (static_cast <const Steiner*> (parent->getAncestor (areaRadius_std)));
+    tree. optimizeSubgraph (static_cast <const Steiner*> (parent->getAncestor (areaRadius_std)));  // PAR
   }
 }
 
@@ -1177,7 +1177,7 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (real2str (absCriterion, 6));
         Unverbose unv;
-        optimizeSubgraph (static_cast <const Steiner*> (leaf->getAncestor (areaRadius_std)));
+        optimizeSubgraph (static_cast <const Steiner*> (leaf->getAncestor (areaRadius_std)));  // PAR
       }
     }
   }  
@@ -4271,36 +4271,32 @@ Real DistTree::setErrorDensities ()
 
 VectorPtr<Leaf> DistTree::findOutliers () const
 {
-  ASSERT (detachedLeaves. empty ());
-
 	Dataset leafDs;
   auto attr = new RealAttr1 ("LeafCriterion", leafDs);
   
   leafDs. objs. reserve (name2leaf. size ());
   for (const auto& it : name2leaf)
-  {
-    const Real relErr = it. second->getRelLenError ();
-    if (! positive (relErr))
-      continue;
-	  const size_t index = leafDs. appendObj (it. first);
-	  (*attr) [index] = relErr;
-  }
+    if (it. second->graph)
+    {
+      const Real relErr = it. second->getRelLenError ();
+  	  const size_t index = leafDs. appendObj (it. first);
+  	  (*attr) [index] = relErr;
+    }
   
   const Sample sample (leafDs);
-  const Real good_max = attr->normal2max (sample);
-
+  const Real outlier_min = attr->normal2outlier (sample, 0.1);  // PAR
   if (verbose ())  
-    cout << "Max. rel. leaf error: " << good_max << endl;
+    cout << "Min. outlier rel. leaf error: " << outlier_min << endl;
 
   VectorPtr<Leaf> res;
-  for (const auto& it : name2leaf)
-  {
-    const Real relErr = it. second->getRelLenError ();
-    if (! positive (relErr))
-      continue;
-    if (greaterReal (relErr, good_max))
-      res << it. second;
-  }
+  if (! isNan (outlier_min))
+    for (const auto& it : name2leaf)
+      if (it. second->graph)
+      {
+        const Real relErr = it. second->getRelLenError ();
+        if (geReal (relErr, outlier_min))
+          res << it. second;
+      }
       
 	return res;
 }

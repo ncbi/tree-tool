@@ -1011,7 +1011,9 @@ public:
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
   VectorPtr<Leaf> findOutliers () const;
+    // Idempotent
     // Requires: after setLeafAbsCriterion()    
+    // Invokes: RealAttr2::normal2outlier()
 
   // Statistics
   RealAttr1* getResiduals2 ();
