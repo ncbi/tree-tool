@@ -2236,7 +2236,7 @@ bool DistTree::addDissim (const string &name1,
   {
     if (dissim > 0)
       cout << "Too large dissimilarity: " << name1 << " - " << name2 << ": " << dissim << endl;
-  //return false;
+  //return false;  // Needed for saveDissim()
   }
   
   dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
@@ -4353,10 +4353,11 @@ void DistTree::saveDissim (ostream &os) const
     if (   obj2leaf1 [objNum] -> graph
         && obj2leaf2 [objNum] -> graph
        )
-      os         << obj2leaf1 [objNum] -> name
-         << '\t' << obj2leaf2 [objNum] -> name
-         << '\t' << (*target) [objNum]
-         << endl;
+      if (ds. objs [objNum] -> mult || (*target) [objNum] == 0)
+        os         << obj2leaf1 [objNum] -> name
+           << '\t' << obj2leaf2 [objNum] -> name
+           << '\t' << (*target) [objNum]
+           << endl;
 }
 
 
