@@ -1062,6 +1062,13 @@ DistTree::DistTree (const string &dataDirName,
 
   if (loadDissim)
   {
+    StringVector outliers;
+    {
+      const string fName (dataDirName + "outlier");
+      LineInput f (fName);
+      outliers = f. getVector ();
+    }
+    Common_sp::sort (outliers);
     loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 10), dissimDecimals);  // PAR
     {
       const string fName (dataDirName + "dissim");
@@ -1071,12 +1078,18 @@ DistTree::DistTree (const string &dataDirName,
       {
         const string name1 = findSplit (f. line, '\t');
         const string name2 = findSplit (f. line, '\t');
+        if (outliers. binSearch (name1) != NO_INDEX)
+          continue;
+        if (outliers. binSearch (name2) != NO_INDEX)
+          continue;
         const Leaf* leaf1 = name2leaf [name1];
         if (! leaf1)
           throw runtime_error ("Tree has no object " + name1);
+        const_cast <Leaf*> (leaf1) -> paths ++;
         const Leaf* leaf2 = name2leaf [name2];
         if (! leaf2)
           throw runtime_error ("Tree has no object " + name2);
+        const_cast <Leaf*> (leaf2) -> paths ++;
         const Real dissim = str2<Real> (f. line);
         ASSERT (dissim >= 0);
         ASSERT (dissim < INF);
@@ -1086,6 +1099,11 @@ DistTree::DistTree (const string &dataDirName,
           { EXEC_ASSERT (addDissim (name1, name2, dissim)); }
       }
     }
+    // qc
+    for (const DiGraph::Node* node : nodes)
+      if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
+        if (! leaf->paths)
+          throw runtime_error ("No dissimilarities for object " + leaf->name);
     // Pairs of <leaf1,leaf2> may be not unique in ds ??
   } 
   

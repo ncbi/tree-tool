@@ -14,13 +14,15 @@ rm -f $1.log
 while (1)
   set N = `ls $1/new/ | wc -l`
   echo "# New: $N[1]  `date`" >> $1.log  
-  if ($N[1] == 0)  break
+ #if ($N[1] == 0)  break
   
   echo ""
   echo ""
   echo ""
   echo "Adding $N[1] leaves ..."
   distTree_new.sh $1
-  if ($?) exit 1
+  set S = $?
+  if ($S == 2) break
+  if ($S) exit 1
 end
   

@@ -36,23 +36,23 @@ struct ThisApplication : Application
 	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+	  
+	  // Processing
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
-	  addFlag ("whole", "Optimize whole topology, otherwise by subtrees of radius " + toString (areaRadius_std));
+	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
-	//addFlag ("sparse_add", "Add the dissimilarities to the dissimilarity matrix sparsely");  
+	  addKey ("remove_outliers", "Remove outliers and save them in the indicated file");
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
-
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("leaf_errors", "File with relative errors of leaves");
 	  addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair");
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
 	  addKey ("dissim_request", "File with requests to comoute dissimilarities, tab-delimited line format: <obj1> <obj2>");
-	  addKey ("remove_outliers", "Remove outliers and save them in this file");
 	}
 	
 	
@@ -68,7 +68,6 @@ struct ThisApplication : Application
 		const bool reroot                = getFlag ("reroot");
 		const string reroot_at           = getArg ("reroot_at");
 		      bool sparse                = getFlag ("sparse");
-	//const bool sparse_add            = getFlag ("sparse_add");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
@@ -93,6 +92,7 @@ struct ThisApplication : Application
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
+    IMPLY (whole, topology);
 
 
     DistTree::printParam (cout);

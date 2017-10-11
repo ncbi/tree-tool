@@ -3,6 +3,7 @@
 if ($# != 1) then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: distance tree data"
+  echo "exit: 2 - too few new objects"
   exit 1
 endif
 
@@ -29,6 +30,13 @@ echo "To add: $INC"
 
 ls $1/new/ > new.list
 if ($?) exit 1
+set N = `wc -l new.list`
+if ($N[1] < $INC) then
+  echo "New objects: $N[1]  Minimum: $INC"
+  rm new.list
+  exit 2
+endif
+
 setRandOrd new.list 1 | head -$INC > search.list
 rm new.list
 
@@ -83,18 +91,18 @@ echo ""
 echo ""
 echo "leaf, dissim -> tree, dissim ..."
 
-set VERSION = `cat $1/version`
+set VER = `cat $1/version`
 if ($?) exit 1
 
 # Time: O(n log(n)) 
 cp $1/dissim $1/dissim.old
 if ($?) exit 1
 # Time: O(n) 
-cp $1/tree $1/old/tree.$VERSION
+cp $1/tree $1/old/tree.$VER
 if ($?) exit 1
 
-@ VERSION = $VERSION + 1
-echo $VERSION > $1/version
+@ VER = $VER + 1
+echo $VER > $1/version
 if ($?) exit 1
 
 wc -l $1/dissim.add
@@ -103,13 +111,14 @@ if ($?) exit 1
 rm $1/dissim.add
 
 # Time: O(n log^2(n)) 
-makeDistTree $QC  -data $1/  -output_tree $1/tree.new > $1/old/makeDistTree.$VERSION
+makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.$VER -output_tree $1/tree.new > $1/old/makeDistTree.$VER
 if ($?) exit 1
-mv $1/leaf $1/old/leaf.$VERSION
+mv $1/leaf $1/old/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
-
-
+cat $1/outlier.$VER >> $1/outlier
+if ($?) exit 1
+mv $1/outlier.$VER $1/old/

@@ -696,6 +696,7 @@ public:
 	  //          file name                 line format, tab-delimited                    meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
+	  //          outlier                   <obj>                                            
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
     //         [dissim.add]
@@ -705,11 +706,8 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              request to compute dissimilarity
     //        ]
-	  //          ??
-	  //          request         <obj1> <obj2>                                           request to compute dissimilarity
-	  //          outlier         <obj>                                            
-	  //          deleted         <obj>
-	  //
+	  //       ?? request                   <obj1> <obj2>                                 request to compute dissimilarity
+	  //       ?? deleted                   <obj>
 	  //          version                   <natural number>
 	  //          old/                                                                    Old versions of data
 	  //          old/tree.<version>
