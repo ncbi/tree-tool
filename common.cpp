@@ -953,6 +953,7 @@ bool DiGraph::Node::isIncident (const DiGraph::Node* n,
                                 bool out) const
 {
 	ASSERT (n);
+	ASSERT (graph);
 	ASSERT (n->graph == graph);
 
   for (const Arc* arc : arcs [out])
@@ -1116,6 +1117,7 @@ void DiGraph::Node::contract (Node* from)
 
 void DiGraph::Node::detach ()
 {
+  ASSERT (graph);
 #ifndef NDEBUG
 	for (const bool b : Bool)
 	  ASSERT (arcs [b]. empty ());
@@ -1134,6 +1136,7 @@ void DiGraph::Arc::attach (Node* start,
 {      
   ASSERT (start);
   ASSERT (end);
+  ASSERT (start->graph);
   ASSERT (start->graph == end->graph);
   ASSERT (! node [false]);
   ASSERT (! node [true]);
@@ -2080,6 +2083,7 @@ Tree::Patristic::Patristic (const TreeNode* leaf1_arg,
   ASSERT (leaf1);
   ASSERT (leaf2);
   ASSERT (distance == distance);  // != NAN
+  ASSERT (leaf1->graph);
   ASSERT (leaf1->graph == leaf2->graph);
   ASSERT (leaf1->getName () != leaf2->getName ());
   if (leaf1->getName () > leaf2->getName ())
@@ -2203,6 +2207,7 @@ bool getParentsOrTarget (const Tree::TreeNode* from,
 {
 	ASSERT (from)
 	ASSERT (target)
+	ASSERT (from->graph);
   ASSERT (from->graph == target->graph);
   ASSERT (parents. empty ());
   
@@ -2224,7 +2229,7 @@ bool getParentsOrTarget (const Tree::TreeNode* from,
 const Tree::TreeNode* Tree::getLowestCommonAncestor (const TreeNode* n1,
 	                                                   const TreeNode* n2) 
 {
-  IMPLY (n1 && n2, n1->graph == n2->graph);
+  IMPLY (n1 && n2, n1->graph && n1->graph == n2->graph);
   
   if (   ! n1 
   	  || ! n2
@@ -2299,6 +2304,7 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 { 
   ASSERT (n1);
   ASSERT (n2);
+  ASSERT (n1->graph);
   ASSERT (n1->graph == n2->graph);
   
   if (n1 == n2)
@@ -2489,6 +2495,7 @@ bool Tree::strictlyLess_std (const DiGraph::Node* a,
 {
 	ASSERT (a);
 	ASSERT (b);
+	ASSERT (a->graph);
 	ASSERT (a->graph == b->graph);
 	const TreeNode* a_ = static_cast <const TreeNode*> (a);
 	const TreeNode* b_ = static_cast <const TreeNode*> (b);
