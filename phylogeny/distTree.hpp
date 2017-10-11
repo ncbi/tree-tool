@@ -693,7 +693,7 @@ public:
 	  // Input: dataDirName: ends with '/'
 	  //          files: tree, leaf, dissim
 	  //        <dataDirName/> contains:
-	  //          file name                 line format, tab-delimited                    meaning
+	  //          file name                 line format                                   meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
 	  //          outlier                   <obj>                                            
@@ -709,9 +709,7 @@ public:
 	  //       ?? request                   <obj1> <obj2>                                 request to compute dissimilarity
 	  //       ?? deleted                   <obj>
 	  //          version                   <natural number>
-	  //          old/                                                                    Old versions of data
-	  //          old/tree.<version>
-	  //          old/leaf.<version>
+	  //          old/{tree,makeDistTree,leaf,outlier}.<version>                          Old versions of data
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
   //  
