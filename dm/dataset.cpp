@@ -1835,7 +1835,7 @@ void Dataset::qc () const
 
 void Dataset::saveText (ostream &os) const
 { 
-  VectorPtr<Attr> vec;
+  VectorPtr<Attr> vec;  vec. reserve (attrs. size ());
   insertAll (vec, attrs);
   const Sample sample (*this);
   sample. save (vec, os);
