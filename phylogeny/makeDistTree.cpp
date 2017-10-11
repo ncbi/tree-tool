@@ -206,14 +206,17 @@ struct ThisApplication : Application
       if (! remove_outliers. empty ())
       {
         cout << endl << "Removing outliers ..." << endl;
-        OFStream f (remove_outliers);
-        Progress prog ((uint) outliers. size ());
-        for (const Leaf* leaf : outliers)
         {
-          f << leaf->name << endl;
-          const_cast <Leaf*> (leaf) -> remove ();
-          prog (real2str (tree->absCriterion, 6));
+          OFStream f (remove_outliers);
+          Progress prog ((uint) outliers. size ());
+          for (const Leaf* leaf : outliers)
+          {
+            f << leaf->name << endl;
+            tree->removeLeaf (const_cast <Leaf*> (leaf));
+            prog (real2str (tree->absCriterion, 6));
+          }
         }
+        tree->reportErrors (cout);
         tree->qc ();
       }
     }

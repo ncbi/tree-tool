@@ -324,10 +324,6 @@ private:
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:
-  
-  void remove ();
-    // Invokes: isolateChildrenUp(), getDistTree().{optimizeSubgraph(),toDelete.deleteData()}
-    // Update: getDistTree().detachedLeaves
 };
 
 
@@ -675,7 +671,8 @@ private:
 public:
 
 
-  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute attrName
+  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute attrName,
+  //                     may contain more objects than *this contains leaves
 	DistTree (const string &treeFName,
 	          const string &dissimFName,
 	          const string &attrName,
@@ -968,6 +965,10 @@ public:
     // Delete arcs where len = 0
     // Does not delete root
     // Invokes: delayDeleteRetainArcs()
+  void removeLeaf (Leaf* leaf);
+    // Invokes: leaf->isolateChildrenUp(), optimizeSubgraph(), toDelete.deleteData()
+    // Update: detachedLeaves
+	  // Time: Time(optimizeSubgraph)
     
   void setReprLeaves ()
     { sort ();

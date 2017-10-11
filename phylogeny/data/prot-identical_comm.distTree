@@ -24,7 +24,7 @@ Optimizing topology ...
 
 OUTPUT:
 absCriterion = 7.062142  Error density = 1.836229 %
-absCriterion [0] = 0.810008  Error density [0] = 7.448215 %  Fraction = 6.347777 %
+absCriterion [0] = 0.810008  Error density [0] = 7.448216 %  Fraction = 6.347777 %
 absCriterion [1] = 6.252133  Error density [1] = 1.733771 %  Fraction = 93.652223 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
@@ -34,6 +34,7 @@ Correlation between residual^2 and dissimilarity = 0.07
 SAMN03477482	4.34
 
 Removing outliers ...
+absCriterion = 6.570846  Error density = 1.771186 %
 
 # Interior nodes (with root) = 283 (max = 283)
 # Interior undirected arcs = 281

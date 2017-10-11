@@ -68,12 +68,12 @@ echo "prot-identical_comm ..."
 # Check time ??
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology  -remove_outliers prot-identical_comm.outliers | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
-diff prot-identical_comm.distTree data/prot-identical_comm.distTree
-if ($?) exit 1
-rm prot-identical_comm.distTree
 diff prot-identical_comm.outliers data/prot-identical_comm.outliers
 if ($?) exit 1
 rm prot-identical_comm.outliers
+diff prot-identical_comm.distTree data/prot-identical_comm.distTree
+if ($?) exit 1
+rm prot-identical_comm.distTree
 
 
 

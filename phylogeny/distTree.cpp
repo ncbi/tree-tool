@@ -428,76 +428,6 @@ Steiner* Leaf::collapse (Leaf* other)
 
 
 
-void Leaf::remove ()
-{
-  if (! graph)
-    return;
-    
-  DistTree& tree = const_cast <DistTree&> (getDistTree ());
-    
-  ASSERT (! tree. dissimDs. get ());
-  ASSERT (! tree. dissimAttr);
-  
-  const TreeNode* parent = getParent ();
-  ASSERT (parent);
-    
-  // Consistency with Leaf::discernable
-  VectorPtr<DiGraph::Node> vec;  
-  vec << this;
-  if (! discernable)
-    vec = parent->getChildren ();
-      
-  // tree.detachedLeaves
-  for (const DiGraph::Node* node : vec)
-  {
-    const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ();
-    ASSERT (leaf);
-    Leaf* leaf_ = const_cast <Leaf*> (leaf);
-    leaf_->isolateChildrenUp ();  
-    ASSERT (! leaf->graph);
-  	delete leaf_->attr;
-  	leaf_->attr = nullptr;
-  	tree. detachedLeaves << leaf;
-  }
-
-  // Clean topology, parent
-  if (parent->isLeaf ())
-  {
-    ASSERT (parent->graph); 
-    ASSERT (! discernable);
-    Steiner* st = const_static_cast <Steiner*> (parent);
-	  parent = parent->getParent ();
-		tree. delayDeleteRetainArcs (st);
-  }
-	if (parent && parent->isTransient ())
-	{
-    ASSERT (parent->graph); 
-	  Steiner* st = const_static_cast <Steiner*> (parent);
-	  parent = parent->getParent ();
-		tree. delayDeleteRetainArcs (st);
-  }  
-  if (! parent)
-    parent = tree. root;
-    
-  FOR (size_t, objNum, tree. ds. objs. size ())
-    if (   tree. obj2leaf1 [objNum] == this
-        || tree. obj2leaf2 [objNum] == this
-       )
-      const_cast <Obj*> (tree. ds. objs [objNum]) -> mult = 0;
-  tree. dsSample = Sample (tree. ds);
-
-  tree. setAbsCriterion ();
-  {
-    Unverbose unv;
-    ASSERT (parent);
-    tree. optimizeSubgraph (static_cast <const Steiner*> (parent->getAncestor (areaRadius_std)));  // PAR
-  }
-
-  tree. toDelete. deleteData ();
-}
-
-
-
 
 // Change
 
@@ -1778,17 +1708,11 @@ bool DistTree::getConnected ()
    	    leaf->DisjointCluster::init ();
    	}
     FOR (size_t, row, dissimDs->objs. size ())
-    {
-      const Leaf* leaf1 = name2leaf [dissimDs->objs [row] -> name];
-      ASSERT (leaf1);
-      FOR (size_t, col, row)  // dissimAttr is symmetric
-        if (dissimAttr->get (row, col) < INF)
-        {
-          const Leaf* leaf2 = name2leaf [dissimDs->objs [col] -> name];
-          ASSERT (leaf2);
-          const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
-        }
-    }
+      if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
+        FOR (size_t, col, row)  // dissimAttr is symmetric
+          if (dissimAttr->get (row, col) < INF)
+            if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
+              const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
     // cluster2leaves
    	for (DiGraph::Node* node : nodes)
    	{
@@ -1844,17 +1768,11 @@ size_t DistTree::setDiscernable ()
    	  }
    	}
     FOR (size_t, row, dissimDs->objs. size ())
-    {
-      const Leaf* leaf1 = name2leaf [dissimDs->objs [row] -> name];
-      ASSERT (leaf1);
-      FOR (size_t, col, row)  // dissimAttr is symmetric
-        if (! positive (dissimAttr->get (row, col)))
-        {
-          const Leaf* leaf2 = name2leaf [dissimDs->objs [col] -> name];
-          ASSERT (leaf2);
-          const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
-        }
-    }
+      if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
+        FOR (size_t, col, row)  // dissimAttr is symmetric
+          if (! positive (dissimAttr->get (row, col)))
+            if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
+              const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
     // cluster2leaves
    	for (DiGraph::Node* node : nodes)
    	{
@@ -1953,23 +1871,21 @@ void DistTree::setGlobalLen ()
       leaf->subtreeLen. add (0);  
   }
   FOR (size_t, row, dissimDs->objs. size ())
-  {
-    const Leaf* leaf1 = name2leaf [dissimDs->objs [row] -> name];
-    ASSERT (leaf1);
-    FOR (size_t, col, row)  // dissimAttr is symmetric
-    {
-      const Leaf* leaf2 = name2leaf [dissimDs->objs [col] -> name];
-      ASSERT (leaf2);
-      const Real d = dissimAttr->get (row, col);
-      if (isNan (d))
-        continue;
-      const TreeNode* ancestor = getLowestCommonAncestor (leaf1, leaf2);
-      ASSERT (ancestor);
-      Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
-      ASSERT (s);
-      s->subtreeLen. add (max (0.0, d) / 2);  
-    }
-  }
+    if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
+      FOR (size_t, col, row)  // dissimAttr is symmetric
+      {
+        if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
+        {
+          const Real d = dissimAttr->get (row, col);
+          if (isNan (d))
+            continue;
+          const TreeNode* ancestor = getLowestCommonAncestor (leaf1, leaf2);
+          ASSERT (ancestor);
+          Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
+          ASSERT (s);
+          s->subtreeLen. add (max (0.0, d) / 2);  
+        }
+      }
 
   // DTNode::len
   for (DiGraph::Node* node : nodes)
@@ -2073,10 +1989,12 @@ void DistTree::neighborJoin ()
   Vector<Neighbors> neighborsVec;  neighborsVec. reserve (getDissimSize_max ());
   FOR (size_t, row, dissimDs->objs. size ())
   {
-    const Leaf* leaf1 = name2leaf [dissimDs->objs [row] -> name];
+    const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name);
+    ASSERT (leaf1);
     FOR (size_t, col, row)  // dissimAttr is symmetric
     {
-      const Leaf* leaf2 = name2leaf [dissimDs->objs [col] -> name];
+      const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name);
+      ASSERT (leaf2);
       const Neighbors neighbors (leaf1, leaf2, dissimAttr->get (row, col));
       if (neighbors. same ())
         continue;
@@ -2086,7 +2004,7 @@ void DistTree::neighborJoin ()
         throw runtime_error ("Infinite distance for " + leaf1->name + " - " + leaf2->name);
       neighborsVec << neighbors;
     }
-  }  
+  }
   if (neighborsVec. empty ())
     return;
   
@@ -2406,7 +2324,12 @@ void DistTree::qc () const
  	}
 
   const size_t leaves = root->getLeavesSize ();
-  ASSERT (name2leaf. size () == leaves + detachedLeaves. size ());
+  ASSERT (name2leaf. size () == leaves);
+  for (const auto it : name2leaf)
+  {
+    ASSERT (it. second);
+    ASSERT (it. second->graph);
+  }
   
   if (! optimizable ())
     return;
@@ -2419,10 +2342,10 @@ void DistTree::qc () const
   }
 
   ds. qc ();
-  ASSERT (ds. objs. size () <= getDissimSize_max ());
 	ASSERT (dsSample. ds == & ds);
 	ASSERT (dsSample. size () == ds. objs. size ());
  	ASSERT (positive (dsSample. mult_sum));
+  ASSERT (dsSample. nEffective <= getDissimSize_max ());
  	
   
   ASSERT (target);
@@ -4051,6 +3974,61 @@ size_t DistTree::deleteLenZero ()
  			}
  			
   return n;  
+}
+
+
+
+void DistTree::removeLeaf (Leaf* leaf)
+{
+  ASSERT (leaf);
+  
+  if (! leaf->graph)
+    return;
+    
+  ASSERT (! dissimDs. get ());
+  ASSERT (! dissimAttr);
+  
+  const TreeNode* parent = leaf->getParent ();
+  ASSERT (parent);
+    
+  // tree.detachedLeaves
+  leaf->isolateChildrenUp ();  
+  ASSERT (! leaf->graph);
+	delete leaf->attr;
+	leaf->attr = nullptr;
+	detachedLeaves << leaf;
+
+  name2leaf. erase (leaf->name);
+
+  // Clean topology, parent, Leaf::discernable consistency
+  ASSERT (! parent->isLeaf ());
+  if (const TreeNode* child = parent->isTransient ())
+	{
+    ASSERT (parent->graph); 
+    if (const Leaf* childLeaf = static_cast <const DTNode*> (child) -> asLeaf ())
+      const_cast <Leaf*> (childLeaf) -> discernable = true;
+	  Steiner* st = const_static_cast <Steiner*> (parent);
+	  parent = parent->getParent ();
+		delayDeleteRetainArcs (st);
+    if (! parent)
+      parent = root;
+  }  
+    
+  FOR (size_t, objNum, ds. objs. size ())
+    if (   obj2leaf1 [objNum] == leaf
+        || obj2leaf2 [objNum] == leaf
+       )
+      const_cast <Obj*> (ds. objs [objNum]) -> mult = 0;
+  dsSample = Sample (ds);
+
+  setAbsCriterion ();
+  {
+    Unverbose unv;
+    ASSERT (parent);
+    optimizeSubgraph (static_cast <const Steiner*> (parent->getAncestor (areaRadius_std)));  // PAR
+  }
+
+  toDelete. deleteData ();
 }
 
 
