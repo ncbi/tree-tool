@@ -356,10 +356,12 @@ public:
   Real normal_likelihood2max (const Sample &sample) const;
     // Model: distribution of *this = if value <= t then truncated Normal else Uniform
     // Return: t, may be NAN
+    // Time: O(n log(n))
   Real normal2outlier (const Sample &sample,
                        Real outlier_EValue_max) const;
     // Return: min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN
     // Idempotent after removing outliers
+    // Time: O(n log(n))
 };
 
 
