@@ -63,7 +63,7 @@ endif
 
 distTree_new $QC $1/ -init
 if ($?) exit 1
-# Time of distTree_request.sh: O(log(n)) per one new object
+# Time of distTree_inc_request.sh: O(log(n)) per one new object
 # Time: O(log^4(n)) per one new object
 #   where n = # leaves in the tree
 set Iter = 0
@@ -78,7 +78,7 @@ while (1)
   
   echo ""
   # qsub ??
-  trav -step 1 $1/search "distTree_request.sh $1 %f"
+  trav -step 1 $1/search "distTree_inc_request.sh $1 %f"
   if ($?) exit 1
   
   echo ""
@@ -111,7 +111,7 @@ if ($?) exit 1
 rm $1/dissim.add
 
 # Time: O(n log^2(n)) 
-makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.$VER -output_tree $1/tree.new > $1/old/makeDistTree.$VER
+makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.$VER  -output_tree $1/tree.new > $1/old/makeDistTree.$VER
 if ($?) exit 1
 mv $1/leaf $1/old/leaf.$VER
 if ($?) exit 1
