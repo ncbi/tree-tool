@@ -34,9 +34,9 @@ all:	\
 	pca \
 	pca2clusters \
 	sim2dist \
-  testZipf \
   threshold \
-	uniKernel
+	uniKernel \
+	zipf_test
 	
 
 attr2_2pairs.o:  $(DM_HPP) 
@@ -177,12 +177,6 @@ sim2dist:	$(sim2distOBJS)
 	$(CXX) -o $@ $(sim2distOBJS) $(LIBS)
 	$(ECHO)
 
-testZipf.o:  $(DM_HPP) 
-testZipfOBJS=testZipf.o $(DM_OBJ) 
-testZipf:	$(testZipfOBJS)
-	$(CXX) -o $@ $(testZipfOBJS) $(LIBS)
-	$(ECHO)
-
 threshold.o:  $(DM_HPP) 
 thresholdOBJS=threshold.o $(DM_OBJ) 
 threshold:	$(thresholdOBJS)
@@ -194,3 +188,10 @@ uniKernelOBJS=uniKernel.o $(DM_OBJ)
 uniKernel:	$(uniKernelOBJS)
 	$(CXX) -o $@ $(uniKernelOBJS) $(LIBS)
 	$(ECHO)
+
+zipf_test.o:  $(DM_HPP) 
+zipf_testOBJS=zipf_test.o $(DM_OBJ) 
+zipf_test:	$(zipf_testOBJS)
+	$(CXX) -o $@ $(zipf_testOBJS) $(LIBS)
+	$(ECHO)
+
