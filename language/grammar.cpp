@@ -929,7 +929,7 @@ void Symbol::qc () const
 
   // Non-redundant
 #ifndef NDEBUG
-  for (const bool out : Bool)
+  for (const bool out : {false, true})
   {
     IMPLY (name != NonTerminal::sigmaS, ! neighbors [out]. empty ());
     ASSERT (! neighbors [out]. contains (nullptr));
@@ -947,7 +947,7 @@ void Symbol::saveText (ostream &os) const
 {
   os << name << ":" << endl;
   
-  for (const bool out : Bool)
+  for (const bool out : {false, true})
   {
     os << (out ? "Next" : "Prev") << ":";
     for (const Symbol* s : neighbors [out])
@@ -1111,7 +1111,7 @@ void Terminal::qc () const
     ASSERT (lastROs. empty ());
     ASSERT (terminals. size () == 1);
     ASSERT (* terminals. begin () == this);
-    for (const bool out : Bool)
+    for (const bool out : {false, true})
       ASSERT (Set<Rule::Occurrence> (terminalNeighbors [out]) == ruleOccurrences);
   }
 #endif
@@ -1181,7 +1181,7 @@ void NonTerminal::qc () const
 //ASSERT (terminal2rules [false]. size () == terminal2rules [true] . size ());
 #ifndef NDEBUG
   Set<const Rule*> all;
-  for (const bool b : Bool)
+  for (const bool b : {false, true})
     for (const auto it : terminal2rules [b])
     {
       const Terminal* t = it. first;
@@ -1284,7 +1284,7 @@ const Rule* NonTerminal::getEmptyRule () const
 void NonTerminal::setTerminal2rules ()
 {
 #ifndef NDEBUG
-  for (const bool b : Bool)
+  for (const bool b : {false, true})
     { ASSERT (terminal2rules [b]. empty ()); }
 #endif
   ASSERT (erasableRules. empty ());
@@ -1320,7 +1320,7 @@ double NonTerminal::getComplexity () const
 {
   // Relation to running time ??
   size_t n = erasableRules. size ();
-  for (const bool b : Bool)
+  for (const bool b : {false, true})
     for (const auto it : terminal2rules [b])
     {
       const VectorPtr<Rule>& rules = it. second;
@@ -1801,7 +1801,7 @@ void Grammar::finish (const string &startS)
   setLastROs ();
   setParsingTable ();
   setTerminals ();
-  for (const bool out : Bool)
+  for (const bool out : {false, true})
     setNeighbors (out);
 //setSymbolTree ();
   setReplacements ();
@@ -2309,7 +2309,7 @@ void Grammar::splitTerminals () const
 {
   for (const Symbol* symbol : symbols)
     if (const Terminal* t = symbol->asTerminal ())
-      for (const bool out : Bool)
+      for (const bool out : {false, true})
         for (const Rule::Occurrence ro : t->ruleOccurrences)
           if (t->differentiated (ro, out))
             cout << " " << ro. getName () << '/' << (out ? "next" : "prev");  // ??

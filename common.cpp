@@ -37,9 +37,6 @@ void segmFaultHandler (int /*sig_num*/)
 
 
 
-const vector<bool> Bool {false, true};
-
-
 
 bool initCommon ()
 {
@@ -888,7 +885,7 @@ void DiGraph::Node::attach (DiGraph &graph_arg)
 {
   ASSERT (! graph);
 #ifndef NDEBUG
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
 	  ASSERT (arcs [b]. empty ());
 #endif
   
@@ -902,7 +899,7 @@ void DiGraph::Node::attach (DiGraph &graph_arg)
 
 DiGraph::Node::~Node ()
 {
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
     deleteNeighborhood (b);
   if (graph)
     const_cast <DiGraph*> (graph) -> nodes. erase (graphIt);
@@ -916,7 +913,10 @@ void DiGraph::Node::qc () const
     return;
   Root::qc ();
     
-  ASSERT (*graphIt == this);
+  IMPLY (graph, *graphIt == this);
+  if (! graph)
+  	for (const bool b : {false, true})
+  	  ASSERT (arcs [b]. empty ());
 }
 
 
@@ -934,7 +934,7 @@ void DiGraph::Node::saveText (ostream &os) const
   }
 
   os << endl;  
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
   {
     os << "  " << (b ? "Out" : "In") << ":" << endl;
     for (const Arc* arc : arcs [b])
@@ -1065,7 +1065,7 @@ void DiGraph::Node::contract (Node* from)
   
   contractContent (from);
 
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
   {  
     map <Node*, Arc*> m;
     for (Arc* arc : arcs [b])
@@ -1119,10 +1119,11 @@ void DiGraph::Node::detach ()
 {
   ASSERT (graph);
 #ifndef NDEBUG
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
 	  ASSERT (arcs [b]. empty ());
 #endif
   const_cast <DiGraph*> (graph) -> nodes. erase (graphIt);  
+  graphIt = const_cast <DiGraph*> (graph) -> nodes. end (); 
   graph = nullptr;
 }
 
@@ -1144,7 +1145,7 @@ void DiGraph::Arc::attach (Node* start,
   node [false] = start;
   node [true]  = end;
 
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
   {
     node [b] -> arcs [! b]. push_back (this);
     arcsIt [b] = node [b] -> arcs [! b]. end ();
@@ -1156,7 +1157,7 @@ void DiGraph::Arc::attach (Node* start,
 
 DiGraph::Arc::~Arc ()
 {
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
     node [b] -> arcs [! b]. erase (arcsIt [b]);
 }
 
@@ -1231,7 +1232,7 @@ void DiGraph::qc () const
     ASSERT (node->graph == this);
     nodes_ << node;
     node->qc ();
-  	for (const bool b : Bool)
+  	for (const bool b : {false, true})
       for (const Arc* arc : node->arcs [b])
       {
         ASSERT (arc);
@@ -1251,7 +1252,7 @@ void DiGraph::qc () const
     names << node->getName ();
   }
   ASSERT (nodes. size () == nodes_. size ());
-	for (const bool b : Bool)
+	for (const bool b : {false, true})
     ASSERT (2 * arcs_ [b]. size () == arcs);
   ASSERT (arcs_ [false] == arcs_ [true]);
 #endif
@@ -1275,7 +1276,7 @@ void DiGraph::connectedComponents ()
   for (Node* node : nodes)
 	  node->DisjointCluster::init ();
   for (Node* node : nodes)
-  	for (const bool b : Bool)
+  	for (const bool b : {false, true})
       for (Arc* arc : node->arcs [b])
 	    	arc->node [b] -> DisjointCluster::merge (* arc->node [! b]);
 }
@@ -1390,9 +1391,12 @@ void Tree::TreeNode::qc () const
     return;
   DiGraph::Node::qc ();
     
-  ASSERT (! (isLeafType () && isInteriorType ()));
-  IMPLY (isLeaf (), isLeafType ());
-  IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
+  if (graph)
+  {
+    ASSERT (! (isLeafType () && isInteriorType ()));
+    IMPLY (isLeaf (), isLeafType ());
+    IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
+  }
   ASSERT (! contains (getName (), objNameSeparator));
 }
   

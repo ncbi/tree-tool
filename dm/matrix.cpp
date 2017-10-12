@@ -489,7 +489,7 @@ void Matrix::deleteObject (size_t objNum)
   ASSERT (objNum < rowsSize (false));
 
   Keep<bool> kp (psd);
-  for (const bool b : Bool)
+  for (const bool b : {false, true})
     deleteRows (b, objNum, 1);
 }
 

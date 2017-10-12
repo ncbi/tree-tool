@@ -134,10 +134,10 @@ inline void errorExitStr (const string &msg)
 
 
 template <typename T, typename S>
-  T const_static_cast (const S* s)
+  inline T const_static_cast (const S* s)
     { return static_cast <T> (const_cast <S*> (s)); }
 template <typename T, typename S>
-  T const_static_cast (const S &s)
+  inline T const_static_cast (const S &s)
     { return static_cast <T> (const_cast <S&> (s)); }
 
 
@@ -153,8 +153,6 @@ typedef  unsigned int   uint;
 typedef  unsigned long  ulong; 
 
 
-
-extern const vector<bool> Bool;  // {false, true}
 
 enum ebool {EFALSE = false, 
             ETRUE = true, 
@@ -190,29 +188,29 @@ inline void advance (size_t &index,
   { index++; if (index == size) index = 0; }
   
 template <typename T> 
-  void swapGreater (T &a, T &b)
+  inline void swapGreater (T &a, T &b)
     { if (a > b)
         swap (a, b);
     }
 
 template <typename T> 
-  bool maximize (T &a, T b)
+  inline bool maximize (T &a, T b)
     { if (a < b) { a = b; return true; } return false; }
 
 template <typename T> 
-  bool minimize (T &a, T b)
+  inline bool minimize (T &a, T b)
     { if (a > b) { a = b; return true; } return false; }
 
 template <typename T /*:number*/> 
-  bool between (T x, T low, T high)
+  inline bool between (T x, T low, T high)
     { return x >= low && x < high; }
 
 template <typename T/*:number*/> 
-  bool betweenEqual (T x, T low, T high)
+  inline bool betweenEqual (T x, T low, T high)
     { return x >= low && x <= high; }
   
 template <typename T/*:integer*/> 
-  bool even (T x)
+  inline bool even (T x)
     { static_assert (numeric_limits<T>::is_integer, "Must be integer");
       return x % 2 == 0; 
     }
@@ -830,26 +828,24 @@ typedef int (*CompareInt) (const void*, const void*);
 // STL algorithms
 
 template <typename To, typename From>
-  void insertAll (To &to,
-                  const From &from)
+  inline void insertAll (To &to,
+                         const From &from)
     { to. insert (to. begin (), from. begin (), from. end ()); }
 
 template <typename To, typename From>
-  void insertIter (To &to,
-                   const From &from)
-    {//CONST_ITER (typename From, it, from)
-      //to << *it;
-      for (const auto x : from)
+  inline void insertIter (To &to,
+                          const From &from)
+    { for (const auto x : from)
         to << x;
     }
 
 template <typename T>
-  void sort (T &t)
+  inline void sort (T &t)
     { std::sort (t. begin (), t. end ()); }
 
 template <typename T, typename StrictlyLess>
-  void sort (T &t,
-             const StrictlyLess &strictlyLess)
+  inline void sort (T &t,
+                    const StrictlyLess &strictlyLess)
     { std::sort (t. begin (), t. end (), strictlyLess); }
 
 template <typename T, typename U>
@@ -862,8 +858,8 @@ template <typename T, typename U>
     }
 
 template <typename Key, typename Value>
-  bool contains (const map <Key, Value> &m,
-                 const Key& key)
+  inline bool contains (const map <Key, Value> &m,
+                        const Key& key)
     { return m. find (key) != m. end (); }
 
 template <typename Key, typename Value>
@@ -1566,6 +1562,7 @@ struct DiGraph : Root
     friend struct DiGraph;
     
     const DiGraph* graph {nullptr};
+      // nullptr <=> *this is detach()'ed
   private:
     List<Node*>::iterator graphIt;
       // In graph->nodes
