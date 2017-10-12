@@ -179,10 +179,6 @@ public:
 struct Steiner : DTNode
 // Steiner node
 {
-//size_t bootstrap [2/*bool*/]; 
-    // 0 - # mismatches, 1 - # matches
-  
-  
 	Steiner (DistTree &tree,
 	         Steiner* parent_arg,
 	         Real len_arg);
@@ -266,6 +262,10 @@ public:
 	      Steiner* parent_arg,
 	      Real len_arg,
 	      const string &name_arg);
+	Leaf (DistTree &tree,
+	      Leaf* other,
+	      const string &name_arg);
+	  // Invokes: collapse(other)
 	void qc () const final;
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
@@ -316,10 +316,15 @@ public:
     { return sqrt (absCriterion. getMean ()); }
   Real getRelLenError () const;
     // Invokes: getLenError()
+  bool getCollapsed (const Leaf* other) const
+    { return    other
+             && getParent () == other->getParent ()
+             && ! discernable
+             && ! other->discernable;
+    }
 private:
   friend DistTree;
-  Steiner* collapse (Leaf* other);
-    // Return: new, may be nullptr
+  void collapse (Leaf* other);
     // Output: discernable = false
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
