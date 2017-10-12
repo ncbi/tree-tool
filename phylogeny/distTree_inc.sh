@@ -20,7 +20,7 @@ while (1)
   echo ""
   echo ""
   echo "Adding $N[1] leaves ..."
-  distTree_new.sh $1
+  distTree_inc_new.sh $1
   set S = $?
   if ($S == 2) break
   if ($S) exit 1
