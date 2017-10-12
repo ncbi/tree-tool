@@ -778,7 +778,7 @@ private:
   void neighborJoin ();
     // Greedy
     // Assumes: Obj::mult = 1
-    // Requires: complete *dissimAttr, star topology
+    // Requires: complete *dissimAttr, isStar()
     // Invokes: reroot()
     // Time: O(n^3)
   //

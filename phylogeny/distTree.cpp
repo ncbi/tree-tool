@@ -1000,7 +1000,7 @@ DistTree::DistTree (const string &dissimFName,
 {
   loadDissimDs (dissimFName, attrName);
 
-  // Initial tree topology: star topology of indiscernable objects
+  // Initial tree topology: star topology 
   ASSERT (! root);
   auto root_ = new Steiner (*this, nullptr, NAN);
   for (const Obj* obj : dissimDs->objs)
@@ -1120,7 +1120,7 @@ DistTree::DistTree (const string &dataDirName,
         const_cast <Leaf*> (leaf2) -> paths ++;
         const Real dissim = str2<Real> (f. line);
         ASSERT (dissim < INF);
-        if (dissim == 0)
+        if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
           const_cast <Leaf*> (leaf1) -> collapse (const_cast <Leaf*> (leaf2));
         EXEC_ASSERT (addDissim (name1, name2, dissim)); 
       }
@@ -2017,6 +2017,7 @@ namespace
 
 void DistTree::neighborJoin ()
 {
+  ASSERT (isStar ());
 	ASSERT (dissimDs. get ());
 	ASSERT (dissimAttr);
 	ASSERT (! optimizable ());

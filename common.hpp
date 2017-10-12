@@ -2007,6 +2007,8 @@ struct Tree : DiGraph
     }
   size_t countInteriorNodes () const;
     // Input: TreeNode::isInteriorType()
+  bool isStar () const
+    { return countInteriorNodes () == 1; }
   size_t getInteriorHeight () const
     { if (root && root->isInteriorType ())
         return root->getInteriorHeight ();
