@@ -583,7 +583,7 @@ struct CompactBoolAttr1 : BoolAttr1
 {
 private:
   vector<bool> values;
-    // Init: empty()
+    // Init: false
 public:
     
 
