@@ -956,7 +956,7 @@ DistTree::DistTree (const string &treeFName,
   	setDiscernable ();  
 
     dissimDs2ds (sparse);    	
-    topology2attrs (nodes);
+    topology2attrs_init ();
     setPrediction ();
     setAbsCriterion (); 
   }
@@ -986,7 +986,7 @@ DistTree::DistTree (const string &dirName,
   setGlobalLen ();  // --> after dissim2Ds(), use obj2leaf[] ??
 
   dissimDs2ds (false);  
-  topology2attrs (nodes);
+  topology2attrs_init ();
   setPrediction ();
   setAbsCriterion (); 
 }
@@ -1018,7 +1018,7 @@ DistTree::DistTree (const string &dissimFName,
   neighborJoin ();
   
   dissimDs2ds (sparse);    	 
-  topology2attrs (nodes);
+  topology2attrs_init ();
   setPrediction ();
   setAbsCriterion (); 
 }
@@ -1144,7 +1144,7 @@ DistTree::DistTree (const string &dataDirName,
   {
     loadDissimFinish ();      
   
-    topology2attrs (nodes);
+    topology2attrs_init ();
     setPrediction ();
     setAbsCriterion (); 
 
@@ -1475,7 +1475,7 @@ DistTree::DistTree (const DTNode* center,
 
   loadDissimFinish ();
 //ASSERT (setDiscernable () == 0);
-  topology2attrs (nodes);
+  topology2attrs_init ();
   setPrediction ();
   setAbsCriterion (); 
 }
@@ -2348,6 +2348,33 @@ void DistTree::loadDissimFinish ()
 
 
 	ASSERT (optimizable ());
+}
+
+
+
+void DistTree::topology2attrs_init ()
+{
+  ASSERT (optimizable ());
+
+  if (verbose ())
+    cout << "Data values ..." << endl;
+
+  Progress prog ((uint) ds. objs. size (), 10000);  // PAR
+  for (Iterator it (dsSample); it ();)  
+  {
+    prog ();
+    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
+                                            , obj2leaf2 [*it]
+                                            )
+                                   );
+    for (const TreeNode* node : path)
+    {
+      const DTNode* dtNode = static_cast <const DTNode*> (node);
+      CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
+      ASSERT (attr);
+      attr->setCompactBool (*it, true);
+    }
+  }
 }
 
 
@@ -3675,7 +3702,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
 
   setRoot ();
 
-  topology2attrs (addedNodes); 
+  topology2attrs (addedNodes);  // assign only true's ??
   setPrediction ();
   finishChanges ();
   setAbsCriterion ();
@@ -3916,7 +3943,8 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
 
   if (commits)
   {
-    topology2attrs (nodes); 
+    // ??
+    topology2attrs (nodes);  
     EXEC_ASSERT (optimizeLenArc ()); 
     finishChanges ();
     optimizeLenNode ();  

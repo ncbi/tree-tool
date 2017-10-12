@@ -683,16 +683,16 @@ public:
 	          const string &attrName,
 	          bool sparse);
 	  // Input: dissimFName and attrName: may be both empty
-	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2ds()
+	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2ds(), topology2attrs_init()
 	DistTree (const string &dirName,
 	          const string &dissimFName,
 	          const string &attrName);
 	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
-	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen()
+	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen(), topology2attrs_init()
 	DistTree (const string &dissimFName,
 	          const string &attrName,
 	          bool sparse);
-	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin()
+	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin(), topology2attrs_init()
 	DistTree (const string &dataDirName,
 	          bool loadDissim);
 	  // Input: dataDirName: ends with '/'
@@ -716,12 +716,13 @@ public:
 	  //          version                   <natural number>
 	  //          old/{tree,makeDistTree,leaf,outlier}.<version>                          Old versions of data
 	  //       <dissimilarity>: >= 0, < INF
-	  // Invokes: optimizeSubgraph() for each added Leaf
+	  // Invokes: topology2attrs_init(), optimizeSubgraph() for each added Leaf
   //  
   explicit DistTree (const string &newickFName);
   DistTree (Prob branchProb,
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
+    // Time: O(n)
   DistTree (const DTNode* center,
             uint areaRadius,
             VectorPtr<TreeNode> &area,
@@ -797,6 +798,11 @@ private:
 	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
+    // Invokes: addAttr()
+    // Time: O(p n)
+  void topology2attrs_init ();
+    // Output: DTNode::attrs
+	  // Time: O(p log(n))
 public:
 	void qc () const override;
 	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
