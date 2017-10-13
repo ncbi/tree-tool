@@ -80,7 +80,7 @@ struct ThisApplication : Application
     {
       auto attr = new CompactBoolAttr1 (name, ds);
       name2attr [name] = attr;
-      attr->setAll (false);
+    //attr->setAll (false);
     }
     
     {
