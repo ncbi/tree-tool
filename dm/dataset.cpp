@@ -868,6 +868,22 @@ BoolAttr1::Value& BoolAttr1::operator[] (size_t objNum)
 
 
 
+void BoolAttr1::getStat (const Sample &sample,
+                         array<size_t,3/*ebool*/> &stat) const
+{
+	stat. fill (0);
+  for (Iterator it (sample); it ();)  
+  	switch (getBool (*it))
+  	{
+  	  case EFALSE: stat [0] ++; break;
+  	  case ETRUE:  stat [1] ++; break;
+  	  case UBOOL:  stat [2] ++; break;
+  	  default: ERROR;
+  	}
+}
+
+
+
 Prob BoolAttr1::getProb (const Sample &sample) const
 {
 	Real n = 0;
@@ -994,6 +1010,7 @@ CompactBoolAttr1& CompactBoolAttr1::operator= (const CompactBoolAttr1& other)
 
 void CompactBoolAttr1::setAll (bool value)
 {
+  values. resize (0, value); 
   values. resize (ds. objs. size (), value); 
 }
 
@@ -1980,32 +1997,6 @@ void Dataset::addAttr (Attr* attr)
   ASSERT (attr->dsIt != attrs. end ()); 
 }
 
-
-
-
-#if 0
-RealAttr1* Dataset::addRealAttr1Unit (const string &attrName)
-{ 
-  auto attr = new RealAttr1 (attrName, *this, 0);
-  attr->setAll (1);
-
-  EXEC_ASSERT (attrs. pop () == attr);
-  attrs. insert (attrs. cbegin (), attr);
-  
-  return attr;
-}
-
-
-
-void Dataset::popDeleteAttr (Attr* attr)
-{
-  ASSERT (attr);
-  ASSERT (& attr->ds == this);
-  
-  EXEC_ASSERT (attrs. pop () == attr);
-  delete attr;
-}
-#endif
 
 
 

@@ -525,6 +525,9 @@ public:
   Value& operator[] (size_t objNum);
 
   // Properties
+  void getStat (const Sample &sample,
+                array<size_t,3/*ebool*/> &stat) const;
+    // Output: stat
   Prob getProb (const Sample &sample) const;
 };
 
