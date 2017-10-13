@@ -57,6 +57,11 @@ void DTNode::qc () const
   
   IMPLY (! isNan (len), len >= 0);	  
   IMPLY (paths, errorDensity >= 0);
+#if 0
+  // Is done in DistTree::qcAttrs()
+  if (attr)
+    attr->qc ();
+#endif
 }
 
 
@@ -99,6 +104,7 @@ void DTNode::addAttr ()
   ASSERT (tree. attrNum_max);
   const string name ("v" + toString (tree. attrNum_max));
   attr = new CompactBoolAttr1 (name, tree. ds);
+  attr->qc ();
 }
 
 
@@ -956,7 +962,7 @@ DistTree::DistTree (const string &treeFName,
   	setDiscernable ();  
 
     dissimDs2ds (sparse);    	
-    topology2attrs_init ();
+    topology2attrs ();
     setPrediction ();
     setAbsCriterion (); 
   }
@@ -986,7 +992,7 @@ DistTree::DistTree (const string &dirName,
   setGlobalLen ();  // --> after dissim2Ds(), use obj2leaf[] ??
 
   dissimDs2ds (false);  
-  topology2attrs_init ();
+  topology2attrs ();
   setPrediction ();
   setAbsCriterion (); 
 }
@@ -1018,7 +1024,7 @@ DistTree::DistTree (const string &dissimFName,
   neighborJoin ();
   
   dissimDs2ds (sparse);    	 
-  topology2attrs_init ();
+  topology2attrs ();
   setPrediction ();
   setAbsCriterion (); 
 }
@@ -1133,7 +1139,7 @@ DistTree::DistTree (const string &dataDirName,
           throw runtime_error ("No dissimilarities for object " + leaf->name);
         const_cast <Leaf*> (leaf) -> paths = 0;
       }
-    // Pairs of <leaf1,leaf2> may be not unique in ds ??
+    // qc: pairs of <leaf1,leaf2> must be unique in ds ??
   } 
   
   
@@ -1142,9 +1148,9 @@ DistTree::DistTree (const string &dataDirName,
   
   if (loadDissim)
   {
+    // DTNode::attr is not needed for *this ??
     loadDissimFinish ();      
   
-    topology2attrs_init ();
     setPrediction ();
     setAbsCriterion (); 
 
@@ -1475,7 +1481,7 @@ DistTree::DistTree (const DTNode* center,
 
   loadDissimFinish ();
 //ASSERT (setDiscernable () == 0);
-  topology2attrs_init ();
+  topology2attrs ();
   setPrediction ();
   setAbsCriterion (); 
 }
@@ -2352,33 +2358,6 @@ void DistTree::loadDissimFinish ()
 
 
 
-void DistTree::topology2attrs_init ()
-{
-  ASSERT (optimizable ());
-
-  if (verbose ())
-    cout << "Data values ..." << endl;
-
-  Progress prog ((uint) ds. objs. size (), 10000);  // PAR
-  for (Iterator it (dsSample); it ();)  
-  {
-    prog ();
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
-                                            , obj2leaf2 [*it]
-                                            )
-                                   );
-    for (const TreeNode* node : path)
-    {
-      const DTNode* dtNode = static_cast <const DTNode*> (node);
-      CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
-      ASSERT (attr);
-      attr->setCompactBool (*it, true);
-    }
-  }
-}
-
-
-
 void DistTree::qc () const
 { 
   if (! qc_on)
@@ -2494,9 +2473,9 @@ void DistTree::qcAttrs () const
     return;
   
   Set<const Attr*> nodeAttrs;
- 	for (DiGraph::Node* node : nodes)
+ 	for (const DiGraph::Node* node : nodes)
  	{
- 	  const DTNode* dtNode = static_cast <DTNode*> (node);
+ 	  const DTNode* dtNode = static_cast <const DTNode*> (node);
  		if (dtNode->attr)
  		{
  		  nodeAttrs. checkUnique (dtNode->attr);
@@ -2509,6 +2488,8 @@ void DistTree::qcAttrs () const
  		      cout << ds. objs [objNum] -> name << '\t' << ds. objs [objNum] -> mult << '\t' << (*target) [objNum] << endl;
  		    ERROR;
  		  }
+ 		  dtNode->attr->qc ();
+ 		  ASSERT (& dtNode->attr->ds == & ds);
  		}
  	}
 
@@ -2667,6 +2648,30 @@ void DistTree::saveFeatureTree (const string &fName) const
 
 
 
+void DistTree::topology2attrs ()
+{
+  ASSERT (optimizable ());
+
+  if (verbose ())
+    cout << "Data values ..." << endl;
+
+  Progress prog ((uint) ds. objs. size (), 10000);  // PAR
+  for (Iterator it (dsSample); it ();)  
+  {
+    prog ();
+    const VectorPtr<TreeNode> path (getPath (obj2leaf1 [*it], obj2leaf2 [*it]));
+    for (const TreeNode* node : path)
+    {
+      const DTNode* dtNode = static_cast <const DTNode*> (node);
+      CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
+      ASSERT (attr);
+      attr->setCompactBool (*it, true);
+    }
+  }
+}
+
+
+
 void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
 {
   ASSERT (optimizable ());
@@ -2674,26 +2679,29 @@ void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
   if (verbose ())
     cout << "Data values ..." << endl;
 
-  for (DiGraph::Node* node : nodes_arg)
-    const_static_cast <DTNode*> (node) -> inPath = false;
+  for (const DiGraph::Node* node : nodes_arg)
+  {
+    const DTNode* dtNode = static_cast <const DTNode*> (node);
+    CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
+    ASSERT (attr);
+    attr->setAll (false);
+    const_cast <DTNode*> (dtNode) -> inPath = false;
+  }
 
   Progress prog ((uint) ds. objs. size (), 10000);  // PAR
   // Use LCA for each dissim ??
   for (Iterator it (dsSample); it ();)  
   {
     prog ();
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
-                                            , obj2leaf2 [*it]
-                                            )
-                                   );
+    const VectorPtr<TreeNode> path (getPath (obj2leaf1 [*it], obj2leaf2 [*it]));
     for (const TreeNode* node : path)
       const_static_cast <DTNode*> (node) -> inPath = true;
     for (const DiGraph::Node* node : nodes_arg)
     {
       const DTNode* dtNode = static_cast <const DTNode*> (node);
       CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
-      ASSERT (attr);
-      attr->setCompactBool (*it, dtNode->inPath);
+      if (dtNode->inPath)
+        attr->setCompactBool (*it, true);
     }
     for (const TreeNode* node : path)
       const_static_cast <DTNode*> (node) -> inPath = false;
@@ -2714,10 +2722,7 @@ void DistTree::setPrediction ()
 {
   for (Iterator it (dsSample); it ();)  
   {
-    const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
-                                            , obj2leaf2 [*it]
-                                            )
-                                   );
+    const VectorPtr<TreeNode> path (getPath (obj2leaf1 [*it], obj2leaf2 [*it]));
     (* const_cast <RealAttr1*> (prediction)) [*it] = path2prediction (path);  
   }
 }
@@ -3224,6 +3229,10 @@ bool DistTree::optimizeLenArc ()
   
   if (verbose (1))
     cout << "Optimizing arc lengths at each arc ..." << endl;
+    
+#ifndef NDENUG
+  const Real absCriterion_old = absCriterion;
+#endif
   
   DTNode* toSkip = nullptr;  
   DTNode* toRetain = nullptr; 
@@ -3270,6 +3279,7 @@ bool DistTree::optimizeLenArc ()
   
   setPrediction ();
   setAbsCriterion ();  
+  ASSERT (leReal (absCriterion, absCriterion_old));
   
   return true;
 }
@@ -3319,8 +3329,9 @@ void DistTree::optimizeLenNode ()
   if (verbose (1))
     cout << "Optimizing arc lengths at each node ..." << endl;
 
-//cout << "absCriterion (before optimizeLenLocal) = " << absCriterion << endl;  
-
+#ifndef NDENUG
+  const Real absCriterion_old1 = absCriterion;
+#endif
 
   Vector<NodeStar> dtNodes;  dtNodes. reserve (nodes. size ());
   for (const DiGraph::Node* node : nodes)
@@ -3360,10 +3371,7 @@ void DistTree::optimizeLenNode ()
     ASSERT (lenOld. size () == star. size ());
     for (Iterator it (dsSample); it ();)  
     {
-      const VectorPtr<TreeNode> path (getPath ( obj2leaf1 [*it]
-                                              , obj2leaf2 [*it]
-                                              )
-                                     );
+      const VectorPtr<TreeNode> path (getPath (obj2leaf1 [*it], obj2leaf2 [*it]));
       (* const_cast <RealAttr1*> (target_new)) [*it] = (*target) [*it] - path2prediction (path);
     }
     
@@ -3390,6 +3398,8 @@ void DistTree::optimizeLenNode ()
     {
       setPrediction ();
       setAbsCriterion ();  
+      ONumber on (cout, 6, false);
+    //cout << "Optimizing " << ns. st->getName () << ": " << absCriterion_old << " -> " << absCriterion << endl;
       ASSERT (leReal (absCriterion, absCriterion_old));
     }
 
@@ -3400,6 +3410,14 @@ void DistTree::optimizeLenNode ()
   
   setPrediction ();
   setAbsCriterion ();  
+#ifndef NDEBUG
+  if (verbose ())
+  {
+    ONumber on (cout, 6, false);
+    cout << absCriterion_old1 << " -> " << absCriterion << endl;
+  }
+  ASSERT (leReal (absCriterion, absCriterion_old1));
+#endif
 }
 
 
@@ -3557,11 +3575,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   const DTNode* area_root = nullptr;
   Node2Node new2old;  // Initially: newLeaves2boundary
   DistTree tree (center, areaRadius_std, area, area_root, new2old);
-//if (verbose ())
-  {
-    tree. qc ();
-    tree. qcAttrs ();
-  }
+  tree. qc ();
+  tree. qcAttrs ();
   ASSERT (area_root);
   ASSERT (area_root->graph == this);
   ASSERT (area. contains (center));
@@ -3658,8 +3673,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
       ASSERT (! tree. optimizable ());
     }
   ASSERT (new2old. size () == boundary2new. size ());
-//if (verbose ())
-    tree. Tree::qc ();
+  tree. Tree::qc ();
 
   // nodes: delete
   // center may be delete'd
@@ -3702,7 +3716,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
 
   setRoot ();
 
-  topology2attrs (addedNodes);  // assign only true's ??
+  topology2attrs (addedNodes);  
   setPrediction ();
   finishChanges ();
   setAbsCriterion ();
@@ -3937,18 +3951,21 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
 
   const Real improvement = max (0.0, absCriterion_init - absCriterion);
   if (verbose (1))
-    cout << "Improvement = " << improvement << endl;
+  {
+    ONumber on (cout, 6, false);
+    cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
+  }
   ASSERT (geReal (improvement, - absCriterion_delta));
   ASSERT ((bool) commits == (bool) improvement);
 
   if (commits)
   {
-    // ??
-    topology2attrs (nodes);  
+    resetAttrs ();
+    topology2attrs (); 
     EXEC_ASSERT (optimizeLenArc ()); 
     finishChanges ();
     optimizeLenNode ();  
-    finishChanges ();
+    finishChanges ();  
     if (verbose (1))
       reportErrors (cout);
   }

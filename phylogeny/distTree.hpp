@@ -137,6 +137,7 @@ public:
 
   void addAttr ();
     // Output: attr
+    // Time: O(p)
   const Leaf* inDiscernable () const;
     // Return: this or nullptr
   bool childrenDiscernable () const
@@ -414,7 +415,7 @@ public:
 
 	virtual const char* type () const = 0;
 	virtual bool valid () const = 0;
-  // Update: Topology, DTNode::{attr,len}, tree.prediction
+  // Update: Topology, DTNode::len, tree.prediction
 	bool apply ();
 	  // Return: success
 	  // Minimum change to compute tree.absCriterion
@@ -615,6 +616,7 @@ struct DistTree : Tree
 // Steiner tree
 // nodes.size() >= 2
 // For Time: n = # leaves, p = # distances = ds.objs.size()
+//           p >= n
 {
   map<string/*Leaf::name*/,const Leaf*> name2leaf;
     // 1-1
@@ -683,16 +685,16 @@ public:
 	          const string &attrName,
 	          bool sparse);
 	  // Input: dissimFName and attrName: may be both empty
-	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2ds(), topology2attrs_init()
+	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2ds(), topology2attrs()
 	DistTree (const string &dirName,
 	          const string &dissimFName,
 	          const string &attrName);
 	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
-	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen(), topology2attrs_init()
+	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen(), topology2attrs()
 	DistTree (const string &dissimFName,
 	          const string &attrName,
 	          bool sparse);
-	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin(), topology2attrs_init()
+	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin(), topology2attrs()
 	DistTree (const string &dataDirName,
 	          bool loadDissim);
 	  // Input: dataDirName: ends with '/'
@@ -716,7 +718,9 @@ public:
 	  //          version                   <natural number>
 	  //          old/{tree,makeDistTree,leaf,outlier}.<version>                          Old versions of data
 	  //       <dissimilarity>: >= 0, < INF
-	  // Invokes: topology2attrs_init(), optimizeSubgraph() for each added Leaf
+	  // Invokes: optimizeSubgraph() for each added Leaf
+	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)
+	  //       if !loadDissim then O(n + new_leaves)
   //  
   explicit DistTree (const string &newickFName);
   DistTree (Prob branchProb,
@@ -800,9 +804,6 @@ private:
     // Output: dsSample, absCriterion_delta
     // Invokes: addAttr()
     // Time: O(p n)
-  void topology2attrs_init ();
-    // Output: DTNode::attrs
-	  // Time: O(p log(n))
 public:
 	void qc () const override;
 	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
@@ -831,7 +832,7 @@ public:
     os << "Subgraph radius = " << areaRadius_std << endl;
   }
 	void printInput (ostream &os) const;
-	bool optimizable () const
+	bool optimizable () const  // ??
 	  { return ! ds. attrs. empty (); }
 	Real getDissim_ave () const
 	  { Real average, scatter;
@@ -861,8 +862,17 @@ private:
   friend ChangeToSibling;
   friend Swap;
 #endif
+  void resetAttrs ()
+    { for (DiGraph::Node* node : nodes)
+     	  const_cast <CompactBoolAttr1*> (static_cast <DTNode*> (node) -> attr) -> setAll (false);
+    }
+    // Time: O(p n)
+  void topology2attrs ();
+    // Output: DTNode::attr
+	  // Time: O(p log(n))
   void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
-    // Output: DTNode::attrs
+    // Input: nodes_arg: subset of nodes
+    // Output: DTNode::attr
     // Temporary: DTNode::inPath
 	  // Time: O(p (log(n) + |nodes_arg|))
   void clearSubtreeLen ();
@@ -877,7 +887,7 @@ public:
     // Invokes: path2prediction()
 	  // Time: O(p log(n))
   void checkPrediction () const;
-    // Input: ds
+    // Input: ds, DTNode::attr
   Real getAbsCriterion () const;
     // Input: prediction
 	  // Time: O(p)
@@ -885,7 +895,7 @@ public:
     { absCriterion = getAbsCriterion (); }
     // More precise than L2LinearNumPrediction::absCriterion and includes !discernable nodes where dissimilarity != 0  
   void checkAbsCriterion (const string &title) const;
-    // Invokes: qc(), checkPrediction(), getAbsCriterion()
+    // Invokes: qc(), getAbsCriterion()
   void printAbsCriterion_halves () const;
   void setLeafAbsCriterion ();
     // Output: Leaf::{absCriterion,relLenError}
@@ -946,6 +956,7 @@ private:
 	Real optimizeSubgraph (const Steiner* center);
 	  // Return: min. distance to boundary
 	  // Input: center: may be delete'd
+	  // Update: DTNode::attr
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter(), setAbsCriterion()
 	  // Time: O(p (log(n) + min(n,2^areaRadius_std)) + Time(optimizeIter,n = min(this->n,2^areaRadius_std)))
