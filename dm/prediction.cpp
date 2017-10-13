@@ -324,8 +324,8 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
   Common_sp::AutoPtr<RealAttr1> residual (& makeResidualAttr ("_res", predictionAttr, ds));  
 
   setAbsCriterion (*residual);
-  Real errorPrev = absCriterion2Error ();
-  ASSERT (! isNan (errorPrev));
+  const Real errorPrev_init = absCriterion2Error ();
+  ASSERT (! isNan (errorPrev_init));  
   
   Common_sp::AutoPtr<RealAttr1> target1 (new RealAttr1 ("_target", ds)); 
 
@@ -333,6 +333,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
   bool ok = true;
   Progress prog;
   Space1<NumAttr1> sp (ds, false);
+  Real errorPrev = errorPrev_init;
   FOR (uint, iter, maxIter)
   {
     prog (real2str (absCriterion /*errorPrev*/, 6));  // PAR
@@ -362,12 +363,16 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
     }
     setAbsCriterion (*residual);
     const Real error = absCriterion2Error ();
-    if (errorPrev / error - 1 <= errorRelDiff) 
-      goto quit;
     {
       Unverbose unv;
       if (verbose ())
         cout << error << " " << errorPrev << endl;
+    }
+    if (errorPrev / error - 1 <= errorRelDiff) 
+    {
+      if (error >= errorPrev_init)
+        ok = false;
+      goto quit;
     }
     errorPrev = error;
   }
