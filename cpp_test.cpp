@@ -63,9 +63,24 @@ struct ThisApplication : Application
 
 	void body () const
 	{
+	#if 0
 	//const S s3 (g ());
 	  vector<int> v;
 	  cout << v [5] << endl;
+	#endif
+	  
+	  vector<bool> vec;
+	  vec. resize (5, false);
+	  cout << vec. size () << endl;
+	  FOR (size_t, i, 5)
+	    cout << vec [i];
+	  cout << endl;
+
+	  vec. resize (10, true);
+	  cout << vec. size () << endl;
+	  FOR (size_t, i, 10)
+	    cout << vec [i];
+	  cout << endl;
 	}
 };
 

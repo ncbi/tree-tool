@@ -11,15 +11,21 @@ LIBS=
 ############################### Programs ################################
 
 all:	\
+  cpp_test \
   extractPairs \
   selColumn \
   setMinus \
   setRandOrd \
   splitList \
-  test \
   trav \
   unCgi
 	
+
+cpp_test.o:  $(COMMON_HPP)  
+cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
+cpp_test:	$(cpp_testOBJS)
+	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS)
+	$(ECHO)
 
 extractPairs.o:  $(COMMON_HPP)  
 extractPairsOBJS=extractPairs.o $(CPP_DIR)/common.o
@@ -49,12 +55,6 @@ splitList.o:  $(COMMON_HPP)
 splitListOBJS=splitList.o $(CPP_DIR)/common.o
 splitList:	$(splitListOBJS)
 	$(CXX) -o $@ $(splitListOBJS) $(LIBS)
-	$(ECHO)
-
-test.o:  $(COMMON_HPP)  
-testOBJS=test.o $(CPP_DIR)/common.o
-test:	$(testOBJS)
-	$(CXX) -o $@ $(testOBJS) $(LIBS)
 	$(ECHO)
 
 trav.o:  $(COMMON_HPP)  
