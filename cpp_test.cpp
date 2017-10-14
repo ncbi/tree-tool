@@ -68,7 +68,9 @@ struct ThisApplication : Application
 	  vector<int> v;
 	  cout << v [5] << endl;
 	#endif
-	  
+
+
+  #if 0	  
 	  vector<bool> vec;
 	  vec. resize (5, false);
 	  cout << vec. size () << endl;
@@ -81,6 +83,9 @@ struct ThisApplication : Application
 	  FOR (size_t, i, 10)
 	    cout << vec [i];
 	  cout << endl;
+	#endif
+	
+	  cout << sizeof (size_t) << endl;
 	}
 };
 
