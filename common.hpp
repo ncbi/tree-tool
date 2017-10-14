@@ -1078,6 +1078,17 @@ public:
           toDelete--;
         }
       }
+  void uniq ()
+    // Requires: sorted
+    { size_t j = 0;  // j <= i
+      FOR (size_t, i, P::size ())
+      { if (j < i && (*this) [i] != (*this) [i - 1])
+        { (*this) [j] = (*this) [i];
+          j++;
+        }
+      }
+      P::resize (j);
+    }
 };
 
 
