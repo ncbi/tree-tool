@@ -84,7 +84,7 @@ struct DTNode : Tree::TreeNode
 	Real len;
 	  // Arc length between *this and *getParent()
 	const CompactBoolAttr1* attr {nullptr};
-    // In getDistTree().ds
+    // If !nullptr then in getDistTree().ds
     // ~DTNode() does not delete
     // ExtBoolAttr1: makes faster by 5 % 
 
@@ -639,7 +639,7 @@ private:
     // attrs: DTNode::attr: 0/1: 1 <=> on the path between the pair of Leaf's    
     // attrs.size() <= 2*n
     // objs.size() <= n*(n-1)/2
-    // size = O(n^3)
+    // size = O(p)
   Sample dsSample;  
     // = Sample(ds)
   // !nullptr
@@ -658,6 +658,7 @@ private:
   const CompactBoolAttr1* interAttr {nullptr};
   const RealAttr1* target_new {nullptr};
   const RealAttr1* prediction_old {nullptr};
+  bool nodeAttrExist {false};
   
   // ds-tree relations
   // !nullptr
@@ -807,7 +808,6 @@ private:
 public:
 	void qc () const override;
 	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
-	void qcAttrs () const;
 
 
   void deleteLeaf (TreeNode* leaf,
@@ -832,8 +832,8 @@ public:
     os << "Subgraph radius = " << areaRadius_std << endl;
   }
 	void printInput (ostream &os) const;
-	bool optimizable () const  // ??
-	  { return ! ds. attrs. empty (); }
+	bool optimizable () const  
+	  { return ! ds. objs. empty (); }
 	Real getDissim_ave () const
 	  { Real average, scatter;
 	    target->getAverageScatter (dsSample, average, scatter);
@@ -862,10 +862,7 @@ private:
   friend ChangeToSibling;
   friend Swap;
 #endif
-  void resetAttrs ()
-    { for (DiGraph::Node* node : nodes)
-     	  const_cast <CompactBoolAttr1*> (static_cast <DTNode*> (node) -> attr) -> setAll (false);
-    }
+  void resetAttrs ();
     // Time: O(p n)
   void topology2attrs ();
     // Output: DTNode::attr
@@ -886,8 +883,6 @@ public:
     // Output: *prediction
     // Invokes: path2prediction()
 	  // Time: O(p log(n))
-  void checkPrediction () const;
-    // Input: ds, DTNode::attr
   Real getAbsCriterion () const;
     // Input: prediction
 	  // Time: O(p)
@@ -901,28 +896,31 @@ public:
     // Output: Leaf::{absCriterion,relLenError}
 	  
   // Optimization	  
+  // Input: DTNode::attr
+private:
   void getSkipRetain (DTNode* &toSkip,
                       DTNode* &toRetain);
     // Output: toSkip, toRetain; may be nullptr
     // Update: {toSkip,toRetain}->len
     // toSkip->attr is redundant
     // toSkip->getparent() = toRetain->getParent() = root: the only children
+public:
 	bool optimizeLenArc ();
 	  // Return: success
-	  // Input: DTNode::attr
 	  // Update: DTNode::len
 	  // Output: prediction, absCriterion
 	  // Invokes: setPrediction(), setAbsCriterion()
 	  // To be followed by: finishChanges()
 	  // Time: O(p n); return = 1.04 * optimal
   void optimizeLenNode ();
-	  // Input: DTNode::attr
 	  // Update: DTNode::len
 	  // Output: prediction, absCriterion
     // After: deleteLenZero()
     // Postcondition: (*prediction)[] = 0 => (*target)[] = 0 
     // Not idempotent
     // Time: O(n p log(n))
+  void checkAttrPrediction () const;
+    // Input: ds, DTNode::attr
   // Topology
 	void optimize2 ();
 	  // Optimal solution

@@ -10,6 +10,7 @@ INPUT:
 # Nodes: 98
 # Dissimilarities: 1225 (100.00 %)
 Ave. dissimilarity = 4.99
+Arc length is optimizable globally
 
 OUTPUT:
 absCriterion = 8.350348  Error density = 3.374084 %
