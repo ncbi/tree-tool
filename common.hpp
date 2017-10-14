@@ -1080,13 +1080,13 @@ public:
       }
   void uniq ()
     // Requires: sorted
-    { size_t j = 0;  // j <= i
-      FOR (size_t, i, P::size ())
-      { if (j < i && (*this) [i] != (*this) [i - 1])
-        { (*this) [j] = (*this) [i];
+    { size_t j = 1;  
+      FOR_START (size_t, i, 1, P::size ())
+        if ((*this) [i] != (*this) [i - 1])
+        { if (j != i)
+            (*this) [j] = (*this) [i];
           j++;
         }
-      }
       P::resize (j);
     }
 };
