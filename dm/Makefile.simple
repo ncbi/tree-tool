@@ -19,6 +19,7 @@ all:	\
   char2attr \
   clust \
   dataset_test \
+  distTriangle \
   dm2objs \
   dm2subset \
   linreg \
@@ -85,6 +86,12 @@ dataset_test.o:  $(DM_HPP)
 dataset_testOBJS=dataset_test.o $(DM_OBJ)
 dataset_test:	$(dataset_testOBJS)
 	$(CXX) -o $@ $(dataset_testOBJS) $(LIBS)
+	$(ECHO)
+
+distTriangle.o:  $(DM_HPP) 
+distTriangleOBJS=distTriangle.o $(DM_OBJ) 
+distTriangle:	$(distTriangleOBJS)
+	$(CXX) -o $@ $(distTriangleOBJS) $(LIBS)
 	$(ECHO)
 
 dm2objs.o:  $(DM_HPP) 

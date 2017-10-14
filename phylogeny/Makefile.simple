@@ -16,7 +16,6 @@ all:	\
   bootstrapReport \
   compareTrees \
   distTree_new \
-  distTriangle \
   feature2dist \
 	makeDistTree \
 	makeFeatureTree \
@@ -64,12 +63,6 @@ distTree_new.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 distTree_newOBJS=distTree_new.o $(DISTTREE_OBJ)
 distTree_new:	$(distTree_newOBJS)
 	$(CXX) -o $@ $(distTree_newOBJS) $(LIBS)
-	$(ECHO)
-
-distTriangle.o:  $(DM_HPP) 
-distTriangleOBJS=distTriangle.o $(DM_OBJ) 
-distTriangle:	$(distTriangleOBJS)
-	$(CXX) -o $@ $(distTriangleOBJS) $(LIBS)
 	$(ECHO)
 
 feature2dist.o:  $(DM_HPP) 
