@@ -57,7 +57,7 @@ rm $BASE.dm
 
 echo ""
 echo ""
-echo "Bootstrapping..."
+echo "Bootstrapping ..."
 # Directory for bootstrap .tree-files
 mkdir $BASE.trees
 if ($?) exit 1

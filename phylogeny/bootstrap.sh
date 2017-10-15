@@ -14,7 +14,7 @@ if ($?) exit 1
 
 
 echo ""
-echo "Bootstrapping..."
+echo "Bootstrapping ..."
 # Directory for bootstrap .tree-files
 mkdir $1.trees
 if ($?) exit 1
