@@ -2424,6 +2424,14 @@ struct OFStream : ofstream, Nocopy
 };
 
 
+template <typename T, typename U>
+  inline OFStream& operator<< (OFStream &ofs,
+                               const pair<T,U> &p) 
+    { ofs << p. first << '\t' << p. second;
+      return ofs;
+    }
+    
+  
 template <typename T>
   OFStream& operator<< (OFStream &ofs,
                         const List<T> &ts)
