@@ -1089,6 +1089,18 @@ public:
         }
       P::resize (j);
     }
+  size_t getIntersectSize (const Vector<T> &other) const
+    // Input: *this, vec: sorted, unique
+    { size_t n = 0;
+      size_t j = 0;
+      for (const T& x : *this)
+      { while (other [j] < x)
+          j++;
+        if (other [j] == x)
+          n++;
+      }
+      return n;
+    }
 };
 
 
