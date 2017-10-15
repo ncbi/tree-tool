@@ -1,4 +1,4 @@
-// mlst2dist.cpp
+// mlst2dissim.cpp
 
 #undef NDEBUG
 #include "../common.inc"
@@ -18,7 +18,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert MLST distance data to a distance and print a " + dmSuff + "-file")
+    : Application ("Convert MLST data to a dissimilarity and print a " + dmSuff + "-file")
     {
   	  addPositional ("biosamples", "File with a list of BioSamples");
   	  addPositional ("pairs", "File with tab-delimited lines: <obj1> <obj2> <X1> <X2> <X3> <X4> <Result> <number of loci in common with same allele> <number of loci in common with different allele> ...");
@@ -54,7 +54,7 @@ struct ThisApplication : Application
       ds. appendObj (name);
     ds. setName2objNum ();
     
-    auto attr = new PositiveAttr2 ("dist", ds, 4);
+    auto attr = new PositiveAttr2 ("dist", ds, 6);  // PAR
     {
       LineInput f (pairsFName);
       while (f. nextLine ())

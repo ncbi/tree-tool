@@ -17,11 +17,12 @@ all:	\
   compareTrees \
   distTree_new \
   feature2dist \
+  hash2dissim \
 	makeDistTree \
 	makeFeatureTree \
 	mergeDistance \
 	mergeSimilarity \
-	mlst2dist \
+	mlst2dissim \
 	newick2tree \
 	printDistTree \
 	tree2dist
@@ -71,6 +72,12 @@ feature2dist:	$(feature2distOBJS)
 	$(CXX) -o $@ $(feature2distOBJS) $(LIBS)
 	$(ECHO)
 
+hash2dissim.o:  $(DM_HPP) 
+hash2dissimOBJS=hash2dissim.o $(DM_OBJ) 
+hash2dissim:	$(hash2dissimOBJS)
+	$(CXX) -o $@ $(hash2dissimOBJS) $(LIBS)
+	$(ECHO)
+
 makeDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
 makeDistTreeOBJS=makeDistTree.o $(DISTTREE_OBJ)
 makeDistTree:	$(makeDistTreeOBJS)
@@ -95,10 +102,10 @@ mergeSimilarity:	$(mergeSimilarityOBJS)
 	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
 	$(ECHO)
 
-mlst2dist.o:  $(DM_HPP) 
-mlst2distOBJS=mlst2dist.o $(DM_OBJ) 
-mlst2dist:	$(mlst2distOBJS)
-	$(CXX) -o $@ $(mlst2distOBJS) $(LIBS)
+mlst2dissim.o:  $(DM_HPP) 
+mlst2dissimOBJS=mlst2dissim.o $(DM_OBJ) 
+mlst2dissim:	$(mlst2dissimOBJS)
+	$(CXX) -o $@ $(mlst2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 newick2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
