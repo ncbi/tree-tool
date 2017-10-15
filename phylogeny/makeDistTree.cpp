@@ -179,15 +179,6 @@ struct ThisApplication : Application
       }
 
       
-      if (reroot)
-        tree->reroot ();
-      else 
-        if (! reroot_at. empty ())
-        {
-          const DTNode* underRoot = tree->lcaName2node (reroot_at);
-          tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
-        }
-      
       cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  
@@ -222,6 +213,15 @@ struct ThisApplication : Application
     }
     
 
+    if (reroot)
+      tree->reroot ();
+    else 
+      if (! reroot_at. empty ())
+      {
+        const DTNode* underRoot = tree->lcaName2node (reroot_at);
+        tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
+      }
+      
   //tree->sort ();
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
