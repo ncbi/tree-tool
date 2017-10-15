@@ -1080,7 +1080,9 @@ public:
       }
   void uniq ()
     // Requires: sorted
-    { size_t j = 1;  
+    { if (P::size () <= 1)
+        return;
+      size_t j = 1;  
       FOR_START (size_t, i, 1, P::size ())
         if ((*this) [i] != (*this) [i - 1])
         { if (j != i)
@@ -1091,11 +1093,16 @@ public:
     }
   size_t getIntersectSize (const Vector<T> &other) const
     // Input: *this, vec: sorted, unique
-    { size_t n = 0;
+    { if (other. empty ())
+        return 0;
+      size_t n = 0;
       size_t j = 0;
       for (const T& x : *this)
       { while (other [j] < x)
-          j++;
+        { j++;
+          if (j == other. size ())
+            return n;
+        }
         if (other [j] == x)
           n++;
       }
