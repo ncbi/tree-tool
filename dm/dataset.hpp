@@ -52,7 +52,7 @@ struct RealScale
 
 
 protected:    
-  RealScale (streamsize decimals_arg)
+  explicit RealScale (streamsize decimals_arg)
     : decimals (decimals_arg)
     {}
 public:
