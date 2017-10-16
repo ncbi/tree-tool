@@ -14,7 +14,7 @@ namespace
 {
 
 
-const string distName = "dist";
+const string distName = "cons";
 
 
 
@@ -36,6 +36,7 @@ struct ThisApplication : Application
 		
 		
 		typedef  Set<string/*feature*/>  Features;
+		  // --> Vector<string>: sorted, uniq ??
 		
     Dataset ds;
     Vector<Features> obj2features;  
@@ -79,17 +80,11 @@ struct ThisApplication : Application
       {
         const Features& f2 = obj2features [j];
         const size_t intersection = f1. intersectSize (f2);
-      #if 0
-        const Prob c1 = (Real) intersection / (Real) f1. size ();
-        const Prob c2 = (Real) intersection / (Real) f2. size ();
-        const Real dist = -10 * (log (c1) + log (c2));
-      #else
         Features f (f2);
         f << f1;
         const Prob jaccard = (Real) intersection / (Real) f. size ();
         ASSERT (isProb (jaccard));
         const Real dist = -10 * log (jaccard);
-      #endif
         attr->putSymm (i, j, dist);
       }
     }
