@@ -76,8 +76,6 @@ while (1)
   
   mkdir $1/log
   if ($?) exit 1
- #trav -step 1 $1/search "distTree_inc_request.sh $1 %f %n" 
-  if ($?) exit 1
   while (1)
     trav $1/search "distTree_inc_search.sh $1 %f %n"
     if ($?) exit 1

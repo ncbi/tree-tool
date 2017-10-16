@@ -13,7 +13,7 @@ endif
 rm -f $1.log
 while (1)
   set N = `ls $1/new/ | wc -l`
-  echo "# New: $N[1]  `date`" >> $1.log  
+  echo "# New left: $N[1]  `date`  `date +%s`" >> $1.log  
  #if ($N[1] == 0)  break
   
   echo ""
