@@ -19,7 +19,7 @@ while (1)
   echo ""
   echo ""
   echo ""
-  echo "Adding $N[1] leaves ..."
+  echo "Adding total $N[1] leaves ..."
   distTree_inc_new.sh $1
   set S = $?
   if ($S == 2) break

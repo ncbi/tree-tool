@@ -714,6 +714,7 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              request to compute dissimilarity
     //        ]
+    //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
 	  //       ?? request                   <obj1> <obj2>                                 request to compute dissimilarity
 	  //       ?? deleted                   <obj>
 	  //          version                   <natural number>

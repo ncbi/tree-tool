@@ -18,6 +18,7 @@ all:	\
   distTree_new \
   feature2dist \
   hash2dissim \
+  hash_request2dissim \
 	makeDistTree \
 	makeFeatureTree \
 	mergeDistance \
@@ -76,6 +77,12 @@ hash2dissim.o:  $(DM_HPP)
 hash2dissimOBJS=hash2dissim.o $(DM_OBJ) 
 hash2dissim:	$(hash2dissimOBJS)
 	$(CXX) -o $@ $(hash2dissimOBJS) $(LIBS)
+	$(ECHO)
+
+hash_request2dissim.o:  $(COMMON_HPP)  
+hash_request2dissimOBJS=hash_request2dissim.o $(CPP_DIR)/common.o
+hash_request2dissim:	$(hash_request2dissimOBJS)
+	$(CXX) -o $@ $(hash_request2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 makeDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp

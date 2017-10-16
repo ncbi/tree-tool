@@ -64,8 +64,7 @@ endif
 distTree_new $QC $1/ -init
 if ($?) exit 1
 # Time of distTree_inc_request.sh: O(log(n)) per one new object
-# Time: O(log^4(n)) per one new object
-#   where n = # leaves in the tree
+# Time: O(log^4(n)) per one new object, where n = # leaves in the tree
 set Iter = 0
 while (1)
   set N = `ls $1/search/ | head -1`
@@ -73,15 +72,25 @@ while (1)
 
   @ Iter = $Iter + 1
   echo ""
-  echo ""
   echo "Iteration $Iter ..."
   
-  echo ""
-  # qsub ??
-  trav -step 1 $1/search "distTree_inc_request.sh $1 %f"
+  mkdir $1/log
   if ($?) exit 1
-  
-  echo ""
+ #trav -step 1 $1/search "distTree_inc_request.sh $1 %f %n" 
+  if ($?) exit 1
+  while (1)
+    trav $1/search "distTree_inc_search.sh $1 %f %n"
+    if ($?) exit 1
+    while (1)
+      sleep 10  # PAR
+      set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
+      if ($Q[1] == 0)  break
+    end
+    
+    rmdir $1/log
+    if ($? == 0) break
+  end
+
   distTree_new $QC $1/
   if ($?) exit 1
 end
