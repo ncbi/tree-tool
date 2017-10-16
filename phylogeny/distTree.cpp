@@ -2290,7 +2290,7 @@ bool DistTree::addDissim (const string &name1,
   ASSERT (detachedLeaves. empty ());
 
   if (   isNan (dissim)  // prediction must be large ??
-      || ! DM_sp::finite (dissim)  
+    //|| ! DM_sp::finite (dissim)  // For selectPairs()
      )
   {
     cout << name1 << " - " << name2 << ": " << dissim << endl;
@@ -2300,7 +2300,8 @@ bool DistTree::addDissim (const string &name1,
   ASSERT (dissim >= 0);
     
   const Real mult = dissim2mult (dissim);  
-  dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
+  if (mult)
+    dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
   
   const size_t objNum = ds. appendObj (getObjName (name1, name2));
   
@@ -4568,7 +4569,10 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
   ASSERT (! name. empty ());
   
   if (fileExists (getRequestFName ()))
-    throw runtime_error ("File \"" + getRequestFName () + "\" exists");
+  {
+    cout << "File \"" << getRequestFName () << "\" exists" << endl;
+    return;
+  }
     
   location. anchor = static_cast <const DTNode*> (tree. root);
   location. leafLen = 0;
@@ -4600,22 +4604,21 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
       throw runtime_error ("File \"" + getDissimFName () + "\" does not exist");
     {
       LineInput f (getDissimFName ());
-      string name1, name2;
-      Real dissim;
+      string name1, name2, dissimS;
       while (f. nextLine ())
         try
         {
           istringstream iss (f. line);
-          iss >> name1 >> name2 >> dissim;
+          iss >> name1 >> name2 >> dissimS;
           ASSERT (iss. eof ());
           ASSERT (name1 != name2);
           if (name1 != name)
             throw runtime_error ("First object in " + getDissimFName () + " must be " + name);
+          const Real dissim = str2real (dissimS);
           if (dissim < 0)
             throw runtime_error ("Dissimilarity must be non-negative");
-          if (! DM_sp::finite (dissim))
-            throw runtime_error ("Dissimilarity must be finite");
-          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, location. anchor);
+          if (DM_sp::finite (dissim))
+            leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, location. anchor);
         }          
         catch (...)
         {
