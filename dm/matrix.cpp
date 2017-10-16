@@ -1283,7 +1283,7 @@ Determinant Matrix::getDeterminant () const
 
 bool Matrix::getEigen (Eigen &eigen,
                        Real error,
-				 	             size_t maxIter) const
+				 	             size_t iter_max) const
 {
 	ASSERT (defined ());
 	{
@@ -1299,12 +1299,12 @@ bool Matrix::getEigen (Eigen &eigen,
   ASSERT (eigen. vec. size () == rowsSize (false));
 	ASSERT (eqReal (eigen. vec. sumSqr (), 1));
   ASSERT (! negative (error));
-  ASSERT (maxIter >= 1);
+  ASSERT (iter_max >= 1);
 
 
   MVector vec (rowsSize (false));
   Real diff = INF;  
-  FOR (size_t, iteration, maxIter)
+  FOR (size_t, iteration, iter_max)
   {                                        
     vec. multiply (false, 
                    *this, false, 
@@ -2256,7 +2256,7 @@ Real Matrix::ipfp (bool         t,
                    const Matrix &sumColVector,
                    bool         sumColT,
                    Real         minError,
-                   size_t       maxIter)
+                   size_t       iter_max)
 {
   ASSERT (rowsSize (t)   == sumColVector. rowsSize (sumColT));
   ASSERT (rowsSize (! t) == sumRowVector. rowsSize (! sumRowT));
@@ -2267,7 +2267,7 @@ Real Matrix::ipfp (bool         t,
   Common_sp::maximize (minError, abs (sumRowVector. sum () - sumColVector. sum ()));
 
   Real error = NAN;
-  FOR (size_t, i, maxIter)
+  FOR (size_t, i, iter_max)
   {
     const Real sumDeviation = balanceVec (  t, sumColVector,   sumColT) +
                               balanceVec (! t, sumRowVector, ! sumRowT);
@@ -2748,7 +2748,7 @@ Eigens::Eigens (const Matrix &matr,
                 Prob totalExplainedFrac_max,
                 Prob explainedFrac_min,
                 Real relError,
-                size_t maxIter)
+                size_t iter_max)
 : psd (matr. psd)
 , error (relError / sqrt ((Real) matr. rowsSize (false)))
 , totalExplained_max (matr. psd ? matr. getTrace () : matr. sumSqr ())
@@ -2834,7 +2834,7 @@ Eigens::Eigens (const Matrix &matr,
     }
 
     ASSERT (work. psd == matr. psd);
-    if (   ! work. getEigen (*eigen, error, maxIter)
+    if (   ! work. getEigen (*eigen, error, iter_max)
         && ! eigen->getNorm2 ()
        )
     {

@@ -23,6 +23,10 @@ extern const char* missingStr;
 
 
 
+// For time: n = Dataset::objs.size()
+
+
+
 struct Obj : Named, DisjointCluster
 // Object
 {
@@ -3468,6 +3472,7 @@ struct Mds : Analysis
        Prob explainedFrac_min);
     // Requires: attr2.matr: defined(), symmetric, centered
     //           space.ds.getUnitMult() ??
+    // Time: O(n^2 outDim_max)
   Mds* copy () const
     { return new Mds (*this); }
   void qc () const;

@@ -124,6 +124,7 @@ struct Eigen;
 
 struct Matrix : Root
 // Matrix of Real
+// For time: n - # rows in a square matrix
 {
 protected:
   Vector <Vector <Real> /*columns*/> rows;
@@ -149,8 +150,6 @@ public:
     }
   void operator= (const Matrix &source)
     { copyData (source); }
-//Matrix (Matrix&&) noexcept = default;
-//Matrix& operator= (Matrix&&) = default;
   Matrix* copy () const override
     { return new Matrix (*this); }
   Matrix (bool t,
@@ -543,7 +542,8 @@ public:
     // Invokes: source.gaussElimination ()
   bool getEigen (Eigen &eigen,
                  Real error,
-				 	       size_t maxIter) const;
+				 	       size_t iter_max) const;
+    // Approximation
     // Return: Success
     // Input: error: max. average absolute difference between eigen.vec and (*this)*eigen.vec
     // Update: eigen.vec: normalized
@@ -551,6 +551,7 @@ public:
     // Requires: eigen.vec is normalized
     //           eigen.vec.rowsSize(eigen.t) = rowsSize(false)
     //           isSymmetric(), defined()
+    // Time: O(n^2 iter_max) 
   Matrix* getCholesky (bool t) const;
     // Return: Lower-triangle matrix
     //         (*Return)^t * (*Return)^(!t) = *this
@@ -802,7 +803,7 @@ public:
              const Matrix &sumColVector,
              bool         sumColT,
              Real         minError,
-             size_t       maxIter);
+             size_t       iter_max);
     // See Kiruta, Shevyakov
     // Update: *this: balance to sumColVector and sumRowVector
     // Return: Error: > 0
@@ -884,10 +885,6 @@ struct MVector : Matrix
   explicit MVector (size_t maxRow = 0) 
     : Matrix (false, maxRow, 1)
     {}
-//MVector (const MVector &vec) = default;
-//MVector& operator= (const MVector&) = default;
-//MVector (MVector&& other) noexcept = default;
-//MVector& operator= (MVector&&) = default;
   explicit MVector (const Vector<Real> &vec)
     : Matrix (false, vec. size (), 1)
     { operator= (vec); }
@@ -921,8 +918,6 @@ struct Eigen : Root
     : value (0)
     , vec (vectorLen)
     {}
-//Eigen (Eigen&&) noexcept = default;
-//Eigen& operator= (Eigen&&) = default;
   void qc () const override;
   void saveText (ostream& os) const override;
 
@@ -940,6 +935,7 @@ struct Eigen : Root
 // Eigens
 
 struct Eigens : Root 
+// For time: n = # rows in matr
 {
   // INPUT
   bool psd;
@@ -965,7 +961,7 @@ struct Eigens : Root
           Prob totalExplainedFrac_max,
           Prob explainedFrac_min,
           Real relError,
-          size_t maxIter);
+          size_t iter_max);
     // Randomized algorithm
     // Input: matr: defined(), isSymmetric()
     // Output: totalExplained_max = psd ? matr.getTrace() : matr.sumSqr()
@@ -973,13 +969,10 @@ struct Eigens : Root
     //                  rowsSize(true) <= dim_max
     //                  totalExplainedFrac() <= totalExplainedFrac_max 
     //                  explainedFrac() > explainedFrac_min 
-    // Invokes: matr.getEigen(error,maxIter)
-//Eigens (const Eigens&) = default;
-//Eigens& operator= (const Eigens&) = default;    
+    // Invokes: matr.getEigen(error,iter_max)
+    // Time: O(n^2 iter_max dim_max)
   Eigens* copy () const final
     { return new Eigens (*this); }
-//Eigens (Eigens&&) noexcept = default;
-//Eigens& operator= (Eigens&&) = default;    
   void qc () const override;
   void saveText (ostream& os) const override;
   JsonMap* toJson (JsonContainer* parent,
