@@ -697,6 +697,7 @@ public:
 	          bool sparse);
 	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin(), topology2attrs()
 	DistTree (const string &dataDirName,
+            bool loadNewLeaves,
 	          bool loadDissim);
 	  // Input: dataDirName: ends with '/'
 	  //          files: tree, leaf, dissim

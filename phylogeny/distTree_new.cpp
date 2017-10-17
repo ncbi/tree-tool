@@ -42,7 +42,7 @@ struct ThisApplication : Application
       cout << endl;
     }
 
-    DistTree tree (dataDir, false);
+    DistTree tree (dataDir, false, false);
     tree. setReprLeaves ();  
     tree. qc ();     
 

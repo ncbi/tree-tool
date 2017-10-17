@@ -1044,6 +1044,7 @@ DistTree::DistTree (const string &dissimFName,
 
 
 DistTree::DistTree (const string &dataDirName,
+                    bool loadNewLeaves,
  	                  bool loadDissim)
 : dsSample (ds)
 {
@@ -1060,6 +1061,7 @@ DistTree::DistTree (const string &dataDirName,
 
 
   VectorPtr<Leaf> newLeaves;  newLeaves. reserve (nodes. size ());
+  if (loadNewLeaves)
   {
     LineInput f (dataDirName + "leaf", 10 * 1024, 1);  // PAR
     string leafName, anchorName;
