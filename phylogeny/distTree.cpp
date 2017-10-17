@@ -1138,8 +1138,8 @@ DistTree::DistTree (const string &dataDirName,
         if (! leaf2)
           throw runtime_error ("Tree has no object " + name2);
         const_cast <Leaf*> (leaf2) -> paths ++;
-        const Real dissim = str2<Real> (f. line);
-        ASSERT (dissim < INF);
+        const Real dissim = str2real (f. line);
+      //ASSERT (dissim < INF);
         if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
           const_cast <Leaf*> (leaf1) -> collapse (const_cast <Leaf*> (leaf2));
         EXEC_ASSERT (addDissim (name1, name2, dissim)); 
@@ -4514,7 +4514,7 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
   ASSERT (leaf);
     
   ASSERT (dissim >= 0);
-  ASSERT (dissim < INF);
+//ASSERT (dissim < INF);
   
   ASSERT (anchor);
 
@@ -4619,7 +4619,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
           const Real dissim = str2real (dissimS);
           if (dissim < 0)
             throw runtime_error ("Dissimilarity must be non-negative");
-          if (DM_sp::finite (dissim))
+        //if (DM_sp::finite (dissim))
             leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, location. anchor);
         }          
         catch (...)
@@ -4702,55 +4702,11 @@ void NewLeaf::optimize ()
 	    return;
 	  }
 
-
   Location location_best (location);
   Vector<Leaf2dissim> leaf2dissims_best (leaf2dissims);
-#if 1
   optimizeAnchor (location_best, leaf2dissims_best);
   location = location_best;
   leaf2dissims = leaf2dissims_best;
-#else
-  setLocation ();
-  optimized = true;
-  while (location. arcLen == 0 && location. anchor->childrenDiscernable ())
-  {
-    VectorPtr<DiGraph::Arc> arcs;  arcs. reserve (location. anchor->arcs [false]. size ());
-    insertAll (arcs, location. anchor->arcs [false]);
-  	for (const DiGraph::Arc* arc : arcs)
-  	{
-  	  const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
-      ASSERT (! child->inDiscernable ());
-  	  const Location location_old (location);
-  	  const Vector<Leaf2dissim> leaf2dissims_old (leaf2dissims);
-  	  if (descend (child))
-  	  {
-    	  setLocation ();
-    	  if (minimize (location_best. absCriterion_leaf, location. absCriterion_leaf))
-    	  {
-    	    location_best = location;
-          leaf2dissims_best = leaf2dissims;
-    	  }
-    	}
-    	else
-    	  optimized = false;
-  	  location = location_old;
-  	  leaf2dissims = leaf2dissims_old;
-  	}
-    if (! optimized || location_best. anchor == location. anchor)
-      break;
-    location = location_best;
-    leaf2dissims = leaf2dissims_best;
-    if (verbose ())  
-    {
-  	  cout << "Location: "; 
-  	  location. saveText (cout); 
-  	  cout << '\t' << "anchor = " << location. anchor->len 
-  	       << '\t' << "# dissims = " << leaf2dissims. size ()
-  	       << '\t' << "criterion = " << location. absCriterion_leaf 
-  	       << endl;  
-  	}
-  }
-#endif
 }
 
 
@@ -4791,10 +4747,12 @@ void NewLeaf::setLocation ()
 	for (const Leaf2dissim& ld : leaf2dissims)
 	{
 	  ASSERT (ld. dissim > 0);
-	  mult_sum  += ld. mult;
-	  u_avg     += ld. mult * ld. getU ();
-	  delta_avg += ld. mult * ld. getDelta ();
-	  
+	  if (ld. mult)
+	  {
+  	  mult_sum  += ld. mult;
+  	  u_avg     += ld. mult * ld. getU ();
+  	  delta_avg += ld. mult * ld. getDelta ();
+	  }
 	}	
 	ASSERT (positive (mult_sum));
 	u_avg     /= mult_sum;
@@ -4803,29 +4761,27 @@ void NewLeaf::setLocation ()
 	Real u_var = 0;
 	Real delta_u_cov = 0;
 	for (const Leaf2dissim& ld : leaf2dissims)
-	{
-	  delta_u_cov += ld. mult * (ld. getDelta () - delta_avg) * (ld. getU () - u_avg);
-	  u_var       += ld. mult * sqr (ld. getU () - u_avg);
-	}
+	  if (ld. mult)
+  	{
+  	  delta_u_cov += ld. mult * (ld. getDelta () - delta_avg) * (ld. getU () - u_avg);
+  	  u_var       += ld. mult * sqr (ld. getU () - u_avg);
+  	}
 	u_var       /= mult_sum;
 	delta_u_cov /= mult_sum;  	
 
+  location. arcLen = 0;
   if (location. anchor == tree. root)
-  {
-  	ASSERT (u_var == 0);
-    location. arcLen = 0;
-  }
+    {	ASSERT (u_var == 0); }
   else
-  {
-  	ASSERT (u_var > 0);
-  	location. arcLen = min (max (0.0, delta_u_cov / u_var), location. anchor->len);
-  }
+    if (u_var > 0)  // dissimilarity to all leaves may be INF
+    	location. arcLen = min (max (0.0, delta_u_cov / u_var), location. anchor->len);
 
 	location. leafLen = max (0.0, delta_avg - u_avg * location. arcLen);
 	
 	location. absCriterion_leaf = 0;
 	for (const Leaf2dissim& ld : leaf2dissims)
-	  location. absCriterion_leaf += ld. mult * sqr (ld. getEpsilon (*this));
+	  if (ld. mult)
+  	  location. absCriterion_leaf += ld. mult * sqr (ld. getEpsilon (*this));
 	ASSERT (location. absCriterion_leaf >= 0);
 }
 
@@ -4843,7 +4799,8 @@ bool NewLeaf::descend (const DTNode* anchor_new)
   {
     if (ld. leafIsBelow)
       ld. leafIsBelow = ld. leaf->descendantOf (location. anchor);
-    ld. dist_hat -= location. anchor->len * ld. getU ();
+	  if (ld. mult)
+      ld. dist_hat -= location. anchor->len * ld. getU ();
     if (ld. leafIsBelow)
       hasLeaves = true;
   }

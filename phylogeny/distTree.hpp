@@ -1152,7 +1152,7 @@ private:
     // Output: location
     // Update: leaf2dissims.{dist_hat,leafIsBelow}
     // Time: average: O(log^3(n))
-    // Invokes: setLocation(), descend()
+    // Invokes: optimizeAnchor()
   void optimizeAnchor (Location &location_best,
                        Vector<Leaf2dissim> &leaf2dissims_best);
     // Update: location, leaf2dissims, location_best
