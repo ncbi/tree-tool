@@ -107,7 +107,7 @@ struct ThisApplication : Application
     {
       Chronometer_OnePass cop ("Initial topology");
       tree = isRight (dataFName, "/")
-               ? new DistTree (dataFName, true)
+               ? new DistTree (dataFName, true, true)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse)
                  : isRight (input_tree, "/")
