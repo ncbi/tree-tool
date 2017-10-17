@@ -61,7 +61,7 @@ if (! -z $1/leaf) then
   exit 1
 endif
 
-distTree_new $QC $1/ -init
+distTree_new $QC $1/ -init  
 if ($?) exit 1
 # Time of distTree_inc_request.sh: O(log(n)) per one new object
 # Time: O(log^4(n)) per one new object, where n = # leaves in the tree
@@ -74,6 +74,7 @@ while (1)
   echo ""
   echo "Iteration $Iter ..."
   
+  rm -rf $1/log
   mkdir $1/log
   if ($?) exit 1
   while (1)
@@ -86,11 +87,13 @@ while (1)
     end
     
     rmdir $1/log
-    if ($? == 0) break
+    set S = $?
+    
+    distTree_new $QC $1/
+    if ($?) exit 1
+    
+    if ($S == 0) break
   end
-
-  distTree_new $QC $1/
-  if ($?) exit 1
 end
 
 
