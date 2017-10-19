@@ -2563,16 +2563,23 @@ bool LineInput::nextLine ()
 	  return false;
 	}
 	
-	readLine (ifs, line);
-  trimTrailing (line); 
-	eof = ifs. eof ();
-	lineNum++;
-
-	const bool end = line. empty () && eof;
-	if (! end)
-		prog ();
-		
-	return ! end;
+	try 
+	{
+  	readLine (ifs, line);
+    trimTrailing (line); 
+  	eof = ifs. eof ();
+  	lineNum++;
+  
+  	const bool end = line. empty () && eof;
+  	if (! end)
+  		prog ();
+  		
+  	return ! end;
+  }
+  catch (const exception &e)
+  {
+    throw runtime_error ("Reading line " + toString (lineNum) + ":\n" + line + "\n" + e. what ());
+  }
 }
 
 
