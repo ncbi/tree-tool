@@ -61,8 +61,8 @@ struct ThisApplication : Application
 		
 		
     // Cf. hash2dissim.cpp
-    Hashes h1;  h1. reserve (10000);  // PAR   
-    string name_main; 
+  //Hashes h1;  h1. reserve (10000);  // PAR   
+  //string name_main; 
     LineInput input (pairsFName);
     OFStream output (out);
     ONumber on (output, 6, true);  // PAR
@@ -72,6 +72,7 @@ struct ThisApplication : Application
       string name1, name2;
       iss >> name1 >> name2;
       ASSERT (name1 != name2);
+    #if 0
       if (name_main. empty ())
       {
         name_main = name1;
@@ -80,6 +81,9 @@ struct ThisApplication : Application
       }
       else
         ASSERT (name_main == name1);
+    #else
+      const Hashes h1 (getHashes (hash_dir + "/" + name1));
+    #endif
       const Hashes h2 (getHashes (hash_dir + "/" + name2));
       const size_t prots = h1.  getIntersectSize (h2);
       ASSERT (prots <= h1. size ());
