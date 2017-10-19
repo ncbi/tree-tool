@@ -2,8 +2,9 @@
 
 if ($# != 2) then
   echo "Process new objects for a distance tree"
-  echo "Update: append: #1/{leaf,dissim}"
-  echo "        delete: #1/search/#2/"
+  echo "Update: append: #1/search/#2/dissim"
+  echo "                #1/log/#2"
+  echo "        delete: #1/search/#2/request"
   echo "#1: Directory containing search/"
   echo "#2: New object"
   exit 1

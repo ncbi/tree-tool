@@ -3,7 +3,6 @@
 if ($# != 1) then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: distance tree data"
-  echo "exit: 2 - too few new objects"
   exit 1
 endif
 
@@ -26,28 +25,27 @@ if ($?) exit 1
 echo "# Objects: $OBJS"  
 
 set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
-echo "To add: $INC"
+echo "To add at this step: $INC"
 
 ls $1/new/ > new.list
 if ($?) exit 1
 set N = `wc -l new.list`
-if ($N[1] < $INC) then
-  echo "New objects: $N[1]  Minimum: $INC"
+if ($N[1] == 0) then
+ #echo "New objects: $N[1]  Minimum: $INC"
   rm new.list
-  exit 2
+  exit 
 endif
 
 setRandOrd new.list 1 | head -$INC > search.list
 rm new.list
 
-trav search.list "mkdir $1/search/%f"
+trav -noprogress search.list "mkdir $1/search/%f"
 if ($?) exit 1
-trav search.list "rm $1/new/%f"
+trav -noprogress search.list "rm $1/new/%f"
 if ($?) exit 1
 rm search.list
 
 
-echo ""
 echo ""
 echo "search/ -> leaf, dissim ..."
 
@@ -55,16 +53,19 @@ if (-e $1/dissim.add) then
   echo "$1/dissim.add exists"
   exit 1
 endif
+cp /dev/null $1/dissim.add
+if ($?) exit 1
 
 if (! -z $1/leaf) then
   echo "$1/leaf is not empty"
   exit 1
 endif
 
+
 distTree_new $QC $1/ -init  
 if ($?) exit 1
 # Time of distTree_inc_request.sh: O(log(n)) per one new object
-# Time: O(log^4(n)) per one new object, where n = # leaves in the tree
+# Time: O(log^4(n)) per one new object, where n = # objects in the tree
 set Iter = 0
 while (1)
   set N = `ls $1/search/ | head -1`
@@ -74,32 +75,42 @@ while (1)
   echo ""
   echo "Iteration $Iter ..."
   
+  set REQ_MAX = 2000  # PAR
+ #set REQ = `cat $1/search/*/request | head -$REQ_MAX | wc -l`  
+  set REQ = `cat $1/search/*/request | wc -l`
+  echo "# Requests: $REQ[1]"
+  set GRID = 1
+  if ($REQ[1] < $REQ_MAX)  set GRID = 0  
+
   rm -rf $1/log
   mkdir $1/log
   if ($?) exit 1
-  while (1)
-    trav $1/search "distTree_inc_search.sh $1 %f %n"
-    if ($?) exit 1
-    while (1)
-      sleep 10  # PAR
-      set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
-      if ($Q[1] == 0)  break
-    end
-    
-    rmdir $1/log
-    set S = $?
-    
-    distTree_new $QC $1/
-    if ($?) exit 1
-    
-    if ($S == 0) break
+
+  trav $1/search "distTree_inc_search.sh $1 %f %n $GRID"
+  if ($?) exit 1
+  while ($GRID)
+    sleep 10  # PAR
+    set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
+    if ($Q[1] == 0)  break
   end
+  
+  set L = `ls $1/log`
+  if ($#L) then
+    echo "# Failed grid tasks: $L[1]"
+    trav $1/log "distTree_inc_unsearch.sh $1 %f"
+    if ($?) exit 1
+  endif
+  
+  rm -r $1/log
+  if ($?) exit 1
+      
+  distTree_new $QC $1/
+  if ($?) exit 1
 end
 
 
 echo ""
-echo ""
-echo "leaf, dissim -> tree, dissim ..."
+echo "leaf, dissim.add -> tree, dissim ..."
 
 set VER = `cat $1/version`
 if ($?) exit 1
@@ -107,9 +118,13 @@ if ($?) exit 1
 # Time: O(n log(n)) 
 cp $1/dissim $1/dissim.old
 if ($?) exit 1
+
 # Time: O(n) 
 cp $1/tree $1/old/tree.$VER
 if ($?) exit 1
+
+#cp $1/outlier $1/outlier.old  
+#if ($?) exit 1
 
 @ VER = $VER + 1
 echo $VER > $1/version
@@ -120,8 +135,10 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 
+#set VER = 161  
+
 # Time: O(n log^2(n)) 
-makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.$VER  -output_tree $1/tree.new > $1/old/makeDistTree.$VER
+makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.add  -output_tree $1/tree.new > $1/old/makeDistTree.$VER
 if ($?) exit 1
 mv $1/leaf $1/old/leaf.$VER
 if ($?) exit 1
@@ -129,6 +146,7 @@ cp /dev/null $1/leaf
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
-cat $1/outlier.$VER >> $1/outlier
+
+trav $1/outlier.add "cp /dev/null $1/outlier/%f"
 if ($?) exit 1
-mv $1/outlier.$VER $1/old/
+rm $1/outlier.add
