@@ -49,6 +49,7 @@ struct XmlTag : Root
   bool comment {false};
   bool whole {false};
   Common_sp::AutoPtr <const XmlSentense> sentense;
+    // --> unique_ptr ??
 
 
   XmlTag (istream &is,
