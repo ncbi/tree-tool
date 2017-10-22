@@ -780,12 +780,19 @@ template <typename T /*Root*/>
   	AutoPtr (const AutoPtr<T> &t) 
   	  : P (t. copy ())
   	  {}
+  	AutoPtr (AutoPtr<T> &t) 
+  	  : P (t. release ())
+  	  {}
   	AutoPtr<T>& operator= (T* t)
   	  { P::reset (t);
   	  	return *this;
   	  }
   	AutoPtr<T>& operator= (const AutoPtr<T> &t)
   	  { P::reset (t. copy ());
+  	  	return *this;
+  	  }
+  	AutoPtr<T>& operator= (AutoPtr<T> &t)
+  	  { P::reset (t. release ());
   	  	return *this;
   	  }
   	T* copy () const
