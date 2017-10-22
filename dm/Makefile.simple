@@ -13,6 +13,7 @@ LIBS=
 all:	\
   attr2_2pairs \
   attr2_multiply \
+  attr2log \
   attrs \
   beta1_test \
   binomialCdf \
@@ -50,6 +51,12 @@ attr2_multiply.o:  $(DM_HPP)
 attr2_multiplyOBJS=attr2_multiply.o $(DM_OBJ) 
 attr2_multiply:	$(attr2_multiplyOBJS)
 	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
+	$(ECHO)
+
+attr2log.o:  $(DM_HPP) 
+attr2logOBJS=attr2log.o $(DM_OBJ) 
+attr2log:	$(attr2logOBJS)
+	$(CXX) -o $@ $(attr2logOBJS) $(LIBS)
 	$(ECHO)
 
 attrs.o:  $(DM_HPP) 
