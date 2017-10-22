@@ -15,6 +15,7 @@ using namespace Common_sp;
 
 
 string readPhrase (istream &is)
+// Return: empty() | <[^ ].*[^>] | [^<>].* | >
 {
   char c = '\0';
 
@@ -48,7 +49,6 @@ string readPhrase (istream &is)
 
 
 
-
 XmlTag::XmlTag (istream &is,
                 string phrase)
 { 
@@ -57,24 +57,20 @@ XmlTag::XmlTag (istream &is,
   ASSERT (phrase. size () > 1);
   ASSERT (! isspace (phrase [1]));
   ASSERT (phrase [1] != '/');
-  const bool comment = isLeft (phrase, "<!--");
-  const bool whole = comment
-                       ? isRight (phrase, "--")  
-                       : isRight (phrase, "/");
+  comment = isLeft (phrase, "<!--");
+  whole = comment
+            ? isRight (phrase, "--")  
+            : isRight (phrase, "/");
   name = findSplit (phrase). substr (1);
   text = phrase;
-//cout << "Start: " << name << ' ' << comment << ' ' << whole << endl;  
   if (whole)
     return;
-  const string end ("</" + name);
   phrase = readPhrase (is);
   if (isLeft (phrase, "<"))
   {
     auto tags = new XmlTags;
     sentense = tags;
-    while (   (  comment && ! isRight (phrase, "--"))
-           || (! comment && phrase != end)
-          )
+    while (! isEnd (phrase))
     {
       if (! isLeft (phrase, "<"))
         throw runtime_error ("'<' expected");
@@ -89,32 +85,34 @@ XmlTag::XmlTag (istream &is,
     sentense = new XmlText (phrase);
     phrase = readPhrase (is);
     ASSERT (isLeft (phrase, "<"));
-    if (comment)
-      { ASSERT (isRight (phrase, "--")); }
-    else
-      { ASSERT (phrase == end); }
+    ASSERT (isEnd (phrase));
   }
   ASSERT (sentense);
-//cout << "End: " << name << endl; 
 }
 
     
 
-#if 0
 void XmlTag::printSiblings (const string &name1,
                             const string &name2) const
 {
-  if (! sentense)
+  if (! sentense. get ())
     return;
   const XmlTags* tags = sentense->asXmlTags ();
   if (! tags)
     return;
+    
   StringVector vec1;
   StringVector vec2;
-  for (const const XmlTag* tag : tags->vec)
-    if 
+  for (const XmlTag& tag : tags->vec)
+         if (tag. name == name1)  vec1 << checkPtr (tag. sentense->asXmlText ()) -> text;
+    else if (tag. name == name2)  vec2 << checkPtr (tag. sentense->asXmlText ()) -> text;
+    else 
+      tag. printSiblings (name1, name2);      
+  
+  for (const string& s1 : vec1)
+  for (const string& s2 : vec2)
+    cout << s1 << '\t' << s2 << endl;
 }
-#endif
 
   
 

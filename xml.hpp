@@ -12,11 +12,6 @@ namespace XML_sp
 {
 
 
-string readPhrase (istream &is);
-  // Return: empty() | <[^ ].*[^>] | [^<>].* | >
-
-
-
 struct XmlText;
 struct XmlTags;
 
@@ -51,7 +46,9 @@ struct XmlTag : Root
   string name;
     // empty() <=> comment
   string text;
-  Common_sp::AutoPtr<const XmlSentense> sentense;
+  bool comment {false};
+  bool whole {false};
+  Common_sp::AutoPtr <const XmlSentense> sentense;
 
 
   XmlTag (istream &is,
@@ -61,6 +58,15 @@ struct XmlTag : Root
     , text (other. text)
     , sentense (const_cast <XmlTag&> (other). sentense)
     {}
+
+
+  bool isEnd (const string& phrase) const
+    { if (comment)
+        return isRight (phrase, "--");
+      return phrase == "</" + name;
+    }
+  void printSiblings (const string &name1,
+                      const string &name2) const;
 };
 
 
