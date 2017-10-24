@@ -13,17 +13,18 @@ echo""
 set OBJS = `grep -vc '^ *0x' $1/tree`
 echo "# Objects: $OBJS"  
 
-set N = `ls $1/new/ | wc -l`
-echo "# New: $N[1]"
+set N = `wc -l $1/leaf`
+echo "# Being added: $N[1]"
 
 set N = `ls $1/search/ | wc -l`
 echo "# Being searched: $N[1]"
 
-set N = `wc -l $1/leaf`
-echo "# Being added: $N[1]"
-
 set N = `ls $1/outlier/ | wc -l`
 echo "# Outliers: $N[1]"
+
+echo ""
+set N = `ls $1/new/ | wc -l`
+echo "# New: $N[1]"
 
 echo ""
 wc -l $1/dissim
