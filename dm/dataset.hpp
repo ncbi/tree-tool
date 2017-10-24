@@ -363,7 +363,7 @@ public:
     // Time: O(n log(n))
   Real normal2outlier (const Sample &sample,
                        Real outlier_EValue_max) const;
-    // Return: min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN
+    // Return: min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN or INF
     // Idempotent after removing outliers
     // Time: O(n log(n))
 };

@@ -496,7 +496,7 @@ Real RealAttr1::normal2outlier (const Sample &sample,
     ASSERT (! negative (var));
   }
   
-  return NAN;  
+  return INF;  
 }
 
 
