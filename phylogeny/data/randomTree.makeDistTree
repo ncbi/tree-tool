@@ -14,13 +14,14 @@ Arc length is optimizable globally
 
 OUTPUT:
 absCriterion = 8.350348  Error density = 3.374084 %
-absCriterion [0] = 3.745612  Error density [0] = 5.049247 %  Fraction = 34.040816 %
-absCriterion [1] = 4.604735  Error density [1] = 2.801830 %  Fraction = 65.959184 %
+absCriterion [0] = 3.745558  Error density [0] = 5.049211 %  Fraction = 34.040816 %
+absCriterion [1] = 4.604789  Error density [1] = 2.801847 %  Fraction = 65.959184 %
 Relative epsilon2_0 = 0.00 %
-Mean residual = 0.00
+Mean residual = -0.00
 Correlation between residual^2 and dissimilarity = 0.08
 
 # Outliers: 0
+Min. log (rel. leaf error) of outliers: inf
 
 # Interior nodes (with root) = 48 (max = 49)
 # Interior undirected arcs = 47

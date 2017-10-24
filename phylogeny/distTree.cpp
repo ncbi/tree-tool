@@ -407,9 +407,9 @@ const DTNode* Leaf::getDiscernable () const
 
 
 
-Real Leaf::getRelLenError () const
+Real Leaf::getRelCriterion () const
 { 
-  return getLenError () / getDistTree (). getLenError ();
+  return absCriterion / getDistTree (). getLeafAbsCriterion (); 
 }
 
 
@@ -1075,6 +1075,8 @@ DistTree::DistTree (const string &dataDirName,
     //ASSERT (iss. eof ());  // Extra fields
       const DTNode* anchor = lcaName2node (anchorName);
       ASSERT (anchor);
+      // Use absCriterion_leaf in f to test if leafName is an outlier
+      //   if leafName is an outlier then do not add leafName to *this, but add leafName to outleirs ??
       // Attach a leaf
       Leaf* leaf = nullptr;
       if (const Leaf* anchorLeaf = anchor->asLeaf ())
@@ -1082,22 +1084,22 @@ DistTree::DistTree (const string &dataDirName,
           leaf = new Leaf (*this, const_cast <Leaf*> (anchorLeaf), leafName);
       if (! leaf)
       {
-        Real arcLen_ = arcLen;
-        while (anchor != root && greaterReal (arcLen_, anchor->len))
+        while (anchor != root && greaterReal (arcLen, anchor->len))
         {
-          arcLen_ -= anchor->len;
+          arcLen -= anchor->len;
           anchor = static_cast <const DTNode*> (anchor->getParent ());
         }
-        if (anchor == root)
-          leaf = new Leaf (*this, const_static_cast <Steiner*> (root), leafLen, leafName);
+        if (anchor == root)  
+          leaf = new Leaf (*this, const_static_cast <Steiner*> (root), arcLen + leafLen, leafName);
         else
-        {        
+        {
           auto st = new Steiner ( *this
                                 , const_static_cast <Steiner*> (anchor->getParent ())
-                                , max (0.0, anchor->len - arcLen_)
+                                , max (0.0, anchor->len - arcLen)
                                 );
+          ASSERT (st);
           const_cast <DTNode*> (anchor) -> setParent (st);
-          const_cast <DTNode*> (anchor) -> len = arcLen_;
+          const_cast <DTNode*> (anchor) -> len = arcLen;
           leaf = new Leaf (*this, st, leafLen, leafName);
         }
       }
@@ -1112,9 +1114,10 @@ DistTree::DistTree (const string &dataDirName,
   {
     StringVector outliers;
     {
-      const string fName (dataDirName + "outlier");
-      LineInput f (fName);
-      outliers = f. getVector ();
+      FileItemGenerator fig (0, true, dataDirName + "outlier");  
+  	  string item;
+  	  while (fig. next (item))
+  	    outliers << item;
     }
     Common_sp::sort (outliers);
     loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 10), dissimDecimals);  // PAR
@@ -1130,16 +1133,17 @@ DistTree::DistTree (const string &dataDirName,
           continue;
         if (outliers. binSearch (name2) != NO_INDEX)
           continue;
-        const Leaf* leaf1 = name2leaf [name1];
+        const Leaf* leaf1 = findPtr (name2leaf, name1);
         if (! leaf1)
-          throw runtime_error ("Tree has no object " + name1);
+          continue;
+        //throw runtime_error ("Tree has no object " + name1);
         const_cast <Leaf*> (leaf1) -> paths ++;
-        const Leaf* leaf2 = name2leaf [name2];
+        const Leaf* leaf2 = findPtr (name2leaf, name2);
         if (! leaf2)
-          throw runtime_error ("Tree has no object " + name2);
+          continue;
+        //throw runtime_error ("Tree has no object " + name2);
         const_cast <Leaf*> (leaf2) -> paths ++;
         const Real dissim = str2real (f. line);
-      //ASSERT (dissim < INF);
         if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
           const_cast <Leaf*> (leaf1) -> collapse (const_cast <Leaf*> (leaf2));
         EXEC_ASSERT (addDissim (name1, name2, dissim)); 
@@ -1170,13 +1174,14 @@ DistTree::DistTree (const string &dataDirName,
     qc ();     
 
     {  
+      const Chronometer_OnePass cop ("Optimizing new leaves");  // ??
       cout << "Optimizing new leaves ..." << endl;
       Progress prog ((uint) newLeaves. size ());
       for (const Leaf* leaf : newLeaves)
       {
         prog (real2str (absCriterion, 6));
         Unverbose unv;
-        optimizeSubgraph (static_cast <const Steiner*> (leaf->getAncestor (areaRadius_std)));  // PAR
+        optimizeSubgraph (static_cast <const Steiner*> (leaf->getAncestor (areaRadius_std)));  // PAR ??
       }
     }
   }  
@@ -1646,7 +1651,7 @@ bool DistTree::loadLines (const StringVector &lines,
 	{
 	  ASSERT (parent);
 		auto leaf = new Leaf (*this, parent, len, idS);
-		leaf->relLenError = leafError;
+  //leaf->relLenError = leafError;
 		leaf->discernable = ! indiscernable;
 		dtNode = leaf;
 	}
@@ -2623,7 +2628,7 @@ Set<const DTNode*> DistTree::getDiscernables () const
 void DistTree::printInput (ostream &os) const
 {
   os << "INPUT:" << endl;
-  os << "# Leaves: " << root->getLeavesSize () << endl;
+  os << "# Leaves: " << name2leaf. size () << endl;
   os << "# Discernable leaves: " << getDiscernables (). size () << endl;
   os << "# Nodes: " << nodes. size () << endl;
   if (! optimizable ())
@@ -2829,7 +2834,7 @@ void DistTree::setLeafAbsCriterion ()
   
   for (DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
-      const_cast <Leaf*> (leaf) -> absCriterion. clear ();
+      const_cast <Leaf*> (leaf) -> absCriterion = 0;
 
   for (Iterator it (dsSample); it ();)  
   {
@@ -2839,13 +2844,15 @@ void DistTree::setLeafAbsCriterion ()
     ASSERT (! isNan (dHat));
     const Real residual = sqr (dHat - d);      
     ASSERT (DM_sp::finite (residual));
-    const_cast <Leaf*> (obj2leaf1 [*it]) -> absCriterion. add (residual, it. mult);
-    const_cast <Leaf*> (obj2leaf2 [*it]) -> absCriterion. add (residual, it. mult);
+    const_cast <Leaf*> (obj2leaf1 [*it]) -> absCriterion += residual * it. mult;
+    const_cast <Leaf*> (obj2leaf2 [*it]) -> absCriterion += residual * it. mult;
   }
 
+#if 0
   for (DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
       const_cast <Leaf*> (leaf) -> relLenError = leaf->getRelLenError ();
+#endif
 }
 
 
@@ -3519,7 +3526,7 @@ void DistTree::optimize3 ()
 bool DistTree::optimize () 
 { 
   ASSERT (nodeAttrExist);
-  ASSERT (ds. objs. size () >= 2 * root->getLeavesSize () - 2);
+  ASSERT (ds. objs. size () >= 2 * name2leaf. size () - 2);
 
   
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR
@@ -4343,8 +4350,7 @@ Real DistTree::setErrorDensities ()
       continue;
     if (dtNode->inDiscernable ())
       continue;
-    ASSERT (dtNode->paths);  
-    dtNode->errorDensity = sqrt (dtNode->errorDensity / (Real) dtNode->paths);
+    dtNode->errorDensity = dtNode->paths ? sqrt (dtNode->errorDensity / (Real) dtNode->paths) : INF;
   }
   
   return epsilon2_0;
@@ -4352,7 +4358,7 @@ Real DistTree::setErrorDensities ()
 
 
 
-VectorPtr<Leaf> DistTree::findOutliers () const
+VectorPtr<Leaf> DistTree::findOutliers (Real &outlier_min) const
 {
 	Dataset leafDs;
   auto criterionAttr = new RealAttr1 ("LeafCriterion", leafDs);
@@ -4360,26 +4366,22 @@ VectorPtr<Leaf> DistTree::findOutliers () const
   leafDs. objs. reserve (name2leaf. size ());
   for (const auto& it : name2leaf)
     if (it. second->graph)
-    {
-      const Real relErr = it. second->getRelLenError ();
-  	  const size_t index = leafDs. appendObj (it. first);
-  	  (*criterionAttr) [index] = relErr;
-    }
+      if (const Real relErr = it. second->getRelCriterion ())
+      {
+    	  const size_t index = leafDs. appendObj (it. first);
+    	  (*criterionAttr) [index] = log (relErr);
+      }
   
   const Sample sample (leafDs);
-  const Real outlier_min = criterionAttr->normal2outlier (sample, 0.1);  // PAR
-  if (verbose ())  
-    cout << "Min. outlier rel. leaf error: " << outlier_min << endl;
+  outlier_min = criterionAttr->normal2outlier (sample, 0.1);  // PAR
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))
     for (const auto& it : name2leaf)
       if (it. second->graph)
-      {
-        const Real relErr = it. second->getRelLenError ();
-        if (geReal (relErr, outlier_min))
-          res << it. second;
-      }
+        if (const Real relErr = it. second->getRelCriterion ())
+          if (geReal (log (relErr), outlier_min))
+            res << it. second;
       
 	return res;
 }
@@ -4512,12 +4514,8 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 , leafIsBelow (false)
 { 
   ASSERT (leaf);
-    
   ASSERT (dissim >= 0);
-//ASSERT (dissim < INF);
-  
   ASSERT (anchor);
-
   ASSERT (mult >= 0);
   
   // dist_hat, leafIsBelow
@@ -4619,8 +4617,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
           const Real dissim = str2real (dissimS);
           if (dissim < 0)
             throw runtime_error ("Dissimilarity must be non-negative");
-        //if (DM_sp::finite (dissim))
-            leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, location. anchor);
+          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, location. anchor);
         }          
         catch (...)
         {
@@ -4684,7 +4681,10 @@ void NewLeaf::saveRequest () const
   {
     OFStream of (getRequestFName ());
     for (const Leaf* leaf : requested)
+    {
+      ASSERT (name != leaf->name);
       of << name << '\t' << leaf->name << endl;
+    }
   }
 }
 
@@ -4692,15 +4692,29 @@ void NewLeaf::saveRequest () const
 
 void NewLeaf::optimize ()
 {
+  bool dissimExists = false;
 	for (const Leaf2dissim& ld : leaf2dissims)
-	  if (ld. dissim == 0)
-	  {
-	    location. anchor = ld. leaf;
-	    location. leafLen = 0;
-	    location. arcLen = 0;
-	    location. absCriterion_leaf = 0;
-	    return;
-	  }
+	  if (ld. dissim != INF)
+  	{
+  	  dissimExists = true;
+  	  if (ld. dissim == 0)  // if all dissim = INF ??
+  	  {
+  	    location. anchor = ld. leaf;
+  	    location. leafLen = 0;
+  	    location. arcLen = 0;
+  	    location. absCriterion_leaf = 0;
+  	    return;
+  	  }
+  	}
+  	
+  if (! dissimExists)
+  {
+    location. anchor = static_cast <const DTNode*> (tree. root);
+    location. leafLen = INF;
+    location. arcLen = INF;
+    location. absCriterion_leaf = 0;
+    return;
+  }
 
   Location location_best (location);
   Vector<Leaf2dissim> leaf2dissims_best (leaf2dissims);

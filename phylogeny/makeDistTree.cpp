@@ -105,7 +105,7 @@ struct ThisApplication : Application
 
     Common_sp::AutoPtr<DistTree> tree;
     {
-      Chronometer_OnePass cop ("Initial topology");
+      const Chronometer_OnePass cop ("Initial topology");
       tree = isRight (dataFName, "/")
                ? new DistTree (dataFName, true, true)
                : input_tree. empty ()
@@ -133,7 +133,7 @@ struct ThisApplication : Application
             
           if (! isRight (dataFName, "/"))
           {
-            Chronometer_OnePass cop ("Initial arc lengths");
+            const Chronometer_OnePass cop ("Initial arc lengths");
 
           #if 0
             tree->reportErrors (cout);  
@@ -162,7 +162,7 @@ struct ThisApplication : Application
           
           {
             cout << "Optimizing topology ..." << endl;
-            Chronometer_OnePass cop ("Topology and arc length optimization");
+            const Chronometer_OnePass cop ("Topology and arc length optimization");
             if (whole)
               tree->optimizeIter (output_tree);
             else
@@ -190,10 +190,15 @@ struct ThisApplication : Application
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
 
-      const VectorPtr<Leaf> outliers (tree->findOutliers ());
+      Real outlier_min = NAN;
+      const VectorPtr<Leaf> outliers (tree->findOutliers (outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
+      cout << "Min. log (rel. leaf error) of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
-        cout << leaf->name << '\t' << leaf->getRelLenError () << endl;
+        cout         << leaf->name 
+             << '\t' << leaf->getRelCriterion () 
+             << '\t' << leaf->absCriterion
+             << endl;
       if (! remove_outliers. empty ())
       {
         cout << endl << "Removing outliers ..." << endl;
@@ -297,7 +302,7 @@ struct ThisApplication : Application
       OFStream f (leaf_errors);
     //tree->setLeafAbsCriterion ();   // Done above
       for (const auto& it : tree->name2leaf)
-        f << it. first << '\t' << it. second->getRelLenError () << endl;  
+        f << it. first << '\t' << it. second->getRelCriterion () << endl;  
     }
 
     if (! pair_residuals. empty ())

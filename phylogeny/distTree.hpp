@@ -98,21 +98,9 @@ public:
   size_t paths {0};
     // Number of paths going through *this arc
   Real errorDensity {NAN};
-protected:
-//Vector<bool> subtreeLeaves;  
-    // Indexed by Leaf::index
-    // size() = getTree().root->getLeavesSize()
-//Real dissimSum {0};
-//Real dissimWeightedSum {0};
-public:
   const Leaf* reprLeaf {nullptr};
     // In subtree
     // For sparse *getDistTree().dissimAttr
-#if 0
-private:
-  size_t index {NO_INDEX};
-public:
-#endif
 
 
 protected:
@@ -241,21 +229,15 @@ public:
 
 struct Leaf : DTNode
 {
-  static const string non_discernable;
   string name;  
     // !empty()
   string comment;
+  
+  static const string non_discernable;
   bool discernable {true}; 
     // false => getParent()->getChildren() is an equivalence class of indiscernables
-  Real relLenError {NAN};
-#if 0
-private:
-  friend DistTree;
-  size_t index {NO_INDEX};
-public:
-#endif
   
-  WeightedMeanVar absCriterion;
+  Real absCriterion {NAN};
     // sum = contribution to 2*getTree().absCriterion
   
 
@@ -270,9 +252,9 @@ public:
 	void qc () const final;
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
-      if (! isNan (relLenError))
+      if (! isNan (absCriterion))
       { const ONumber oNum (os, 6, true);  // PAR
-        os << "  leaf_error=" << relLenError;
+        os << "  leaf_error=" << getRelCriterion ();
       }
     	if (! discernable)
     	  os << "  " << non_discernable;
@@ -294,8 +276,8 @@ public:
     { if (minimal)
         return name;
       string s = name + prepend (" ", comment); 
-      if (absCriterion. weights)
-        s += " " + real2str (getRelLenError (), 1);  // PAR
+      if (! isNan (absCriterion))
+        s += " " + real2str (getRelCriterion (), 1);  // PAR
       return s;
     }
   bool isLeafType () const final
@@ -313,10 +295,9 @@ public:
 
   const DTNode* getDiscernable () const;
     // Return: !nullptr
-  Real getLenError () const
-    { return sqrt (absCriterion. getMean ()); }
-  Real getRelLenError () const;
-    // Invokes: getLenError()
+  Real getRelCriterion () const;
+    // Return: average over all Leaf's = 1
+    //         If getDistTree().ds.objs has no all pairs of Leaf's then approximate
   bool getCollapsed (const Leaf* other) const
     { return    other
              && getParent () == other->getParent ()
@@ -705,21 +686,21 @@ public:
 	  //          file name                 line format                                   meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
-	  //          outlier                   <obj>                                            
+	  //          outlier/<obj>             <obj>                                         Outliers. Their dissimilarities are either in dissim or in dissim.outlier
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
     //         [dissim.add]
-    //          new/<obj_new>                                                           Initialization of <obj_new>
+    //          new/<obj>                                                               Ne wobjects to add to the tree
     //          search/<obj_new>/                                                       Initialization of search for <obj_new> location
     //        [ search/<obj_new>/dissim   <obj_new> <obj> <dissimilarity>        
     //          search/<obj_new>/leaf     = as in leaf 
-    //         [search/<obj_new>/request  <obj_new> <obj>]                              request to compute dissimilarity
+    //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
     //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
-	  //       ?? request                   <obj1> <obj2>                                 request to compute dissimilarity
+	  //       ?? request                   <obj1> <obj2>                                 Request to compute dissimilarity
 	  //       ?? deleted                   <obj>
 	  //          version                   <natural number>
-	  //          old/{tree,makeDistTree,leaf,outlier}.<version>                          Old versions of data
+	  //          old/{tree,makeDistTree,leaf}.<version>                                  Old versions of data
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)
@@ -828,11 +809,11 @@ public:
   Set<const DTNode*> getDiscernables () const;
     // Logical leaves
   static void printParam (ostream &os) 
-  { os << "PARAMETERS:" << endl;
-    os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
-    os << "Max. possible dissimilarity = " << dissim_max () << endl;
-    os << "Subgraph radius = " << areaRadius_std << endl;
-  }
+    { os << "PARAMETERS:" << endl;
+      os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
+      os << "Max. possible dissimilarity = " << dissim_max () << endl;
+      os << "Subgraph radius = " << areaRadius_std << endl;
+    }
 	void printInput (ostream &os) const;
 	bool optimizable () const  
 	  { return ! ds. objs. empty (); }
@@ -841,8 +822,8 @@ public:
 	    target->getAverageScatter (dsSample, average, scatter);
 	    return average;
 	  }
-  Real getLenError () const
-    { return sqrt (absCriterion / dsSample. mult_sum); }
+  Real getLeafAbsCriterion () const
+    { return 2 * absCriterion / (Real) name2leaf. size (); }
   Prob getUnexplainedFrac () const
     { return absCriterion / dissim2_sum; }
   Real getErrorDensity () const
@@ -895,7 +876,7 @@ public:
     // Invokes: qc(), getAbsCriterion()
   void printAbsCriterion_halves () const;
   void setLeafAbsCriterion ();
-    // Output: Leaf::{absCriterion,relLenError}
+    // Output: Leaf::absCriterion
 	  
   // Optimization	  
   // Input: DTNode::attr
@@ -1029,10 +1010,11 @@ public:
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
-  VectorPtr<Leaf> findOutliers () const;
+  VectorPtr<Leaf> findOutliers (Real &outlier_min) const;
     // Idempotent
+    // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
-    // Invokes: RealAttr2::normal2outlier()
+    // Invokes: log(Leaf::getRelCriterion()), RealAttr2::normal2outlier()
 
   // Statistics
   RealAttr1* getResiduals2 ();
