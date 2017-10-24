@@ -11,43 +11,11 @@ set QC = ""  # -qc
 set RATE = 0.01   # PAR
 
 
-echo "new/ -> search/ ..."
-
 set N = `ls $1/search/ | head -1`
 if ("$N") then
   echo "$1/search/ is not empty"
   exit 1
 endif
-
-# Time: O(n) 
-set OBJS = `grep -vc '^ *0x' $1/tree`
-if ($?) exit 1
-echo "# Objects: $OBJS"  
-
-set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
-echo "To add at this step: $INC"
-
-ls $1/new/ > new.list
-if ($?) exit 1
-set N = `wc -l new.list`
-if ($N[1] == 0) then
- #echo "New objects: $N[1]  Minimum: $INC"
-  rm new.list
-  exit 
-endif
-
-setRandOrd new.list 1 | head -$INC > search.list
-rm new.list
-
-trav -noprogress search.list "mkdir $1/search/%f"
-if ($?) exit 1
-trav -noprogress search.list "rm $1/new/%f"
-if ($?) exit 1
-rm search.list
-
-
-echo ""
-echo "search/ -> leaf, dissim ..."
 
 if (-e $1/dissim.add) then
   echo "$1/dissim.add exists"
@@ -60,6 +28,39 @@ if (! -z $1/leaf) then
   echo "$1/leaf is not empty"
   exit 1
 endif
+
+
+echo "new/ -> search/ ..."
+
+# Time: O(n) 
+set OBJS = `grep -vc '^ *0x' $1/tree`
+if ($?) exit 1
+echo "# Objects: $OBJS"  
+
+set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
+echo "To add at this step: $INC"
+
+ls $1/new/ > $1/new.list
+if ($?) exit 1
+set N = `wc -l $1/new.list`
+if ($N[1] == 0) then
+ #echo "New objects: $N[1]  Minimum: $INC"
+  rm $1/new.list
+  exit 
+endif
+
+setRandOrd $1/new.list 1 | head -$INC > $1/search.list
+rm $1/new.list
+
+trav -noprogress $1/search.list "mkdir $1/search/%f"
+if ($?) exit 1
+trav -noprogress $1/search.list "rm $1/new/%f"
+if ($?) exit 1
+rm $1/search.list
+
+
+echo ""
+echo "search/ -> leaf, dissim ..."
 
 
 distTree_new $QC $1/ -init  
@@ -76,8 +77,7 @@ while (1)
   echo "Iteration $Iter ..."
   
   set REQ_MAX = 2000  # PAR
- #set REQ = `cat $1/search/*/request | head -$REQ_MAX | wc -l`  
-  set REQ = `cat $1/search/*/request | wc -l`
+  set REQ = `trav -noprogress $1/search "cat %d/%f/request" | wc -l`
   echo "# Requests: $REQ[1]"
   set GRID = 1
   if ($REQ[1] < $REQ_MAX)  set GRID = 0  
@@ -94,8 +94,8 @@ while (1)
     if ($Q[1] == 0)  break
   end
   
-  set L = `ls $1/log`
-  if ($#L) then
+  set L = `ls $1/log | wc -l`
+  if ($L[1]) then
     echo "# Failed grid tasks: $L[1]"
     trav $1/log "distTree_inc_unsearch.sh $1 %f"
     if ($?) exit 1
@@ -123,9 +123,6 @@ if ($?) exit 1
 cp $1/tree $1/old/tree.$VER
 if ($?) exit 1
 
-#cp $1/outlier $1/outlier.old  
-#if ($?) exit 1
-
 @ VER = $VER + 1
 echo $VER > $1/version
 if ($?) exit 1
@@ -147,6 +144,6 @@ if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
 
-trav $1/outlier.add "cp /dev/null $1/outlier/%f"
+trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
 if ($?) exit 1
 rm $1/outlier.add

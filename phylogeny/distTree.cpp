@@ -1174,7 +1174,7 @@ DistTree::DistTree (const string &dataDirName,
     qc ();     
 
     {  
-      const Chronometer_OnePass cop ("Optimizing new leaves");  // ??
+      const Chronometer_OnePass cop ("Optimizing new leaves");  
       cout << "Optimizing new leaves ..." << endl;
       Progress prog ((uint) newLeaves. size ());
       for (const Leaf* leaf : newLeaves)

@@ -14,7 +14,7 @@ set OBJS = `grep -vc '^ *0x' $1/tree`
 echo "# Objects: $OBJS"  
 
 set N = `ls $1/new/ | wc -l`
-echo "# To add: $N[1]"
+echo "# New: $N[1]"
 
 set N = `ls $1/search/ | wc -l`
 echo "# Being searched: $N[1]"
@@ -22,20 +22,21 @@ echo "# Being searched: $N[1]"
 set N = `wc -l $1/leaf`
 echo "# Being added: $N[1]"
 
-wc -l $1/outlier
+set N = `ls $1/outlier/ | wc -l`
+echo "# Outliers: $N[1]"
 
 echo ""
 wc -l $1/dissim
 
 echo ""
-grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | sed 's/:18:/ /1' | grep -v ':19:' | sort -n | head
+grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':21:' | sort -n | head -5
 echo "..."
-grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | sed 's/:18:/ /1' | grep -v ':19:' | sort -n | tail
+grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':21:' | sort -n | tail -5
 
 echo ""
-head $1.log
+head -5 $1.log
 echo "..."
-tail $1.log
+tail -5 $1.log
 
 
 

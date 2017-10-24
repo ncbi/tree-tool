@@ -14,11 +14,10 @@ rm -f $1.log
 while (1)
   set N = `ls $1/new/ | wc -l`
   echo "# To add: $N[1]  `date`  `date +%s`" >> $1.log  
-  if ($N[1] == 0) break
-  
   echo ""
   echo ""
   echo "# Total objects to add: $N[1] ..."
+  if ($N[1] == 0) break  
   distTree_inc_new.sh $1
   if ($?) exit 1
 end

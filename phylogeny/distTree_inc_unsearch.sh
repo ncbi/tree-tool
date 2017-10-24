@@ -11,6 +11,11 @@ endif
 set DIR = $1/search/$2
 
 
+if (! -z $1/log/$2) then
+  ls -laF $1/log/$2
+  exit 1
+endif
+
 if (! -e $DIR/request) then
   echo "$DIR/request does not exist" 
   exit 1
