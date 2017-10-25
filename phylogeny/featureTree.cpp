@@ -20,9 +20,6 @@ Feature::Feature (const Feature::Id &name_arg,
 	                bool isGene_arg)
 : Named (name_arg)
 , isGene (isGene_arg)
-, genomes (0)
-, gains (0)
-, losses (0)
 {
   qc ();
 }
@@ -52,7 +49,6 @@ Phyl::Phyl (FeatureTree &tree,
 : TreeNode (tree, parent_arg)  // FeatureTree must be declared
 , index_init (tree. nodeIndex_max++)
 //, hasPhenChange (false)
-, stable (false)
 {
 	FOR (unsigned char, i, 2)
 		FOR (unsigned char, j, 2)
@@ -614,7 +610,10 @@ string Species::getNewickName (bool /*minimal*/) const
 
 void Species::setWeight ()
 {
-  if (getFeatureTree (). allTimeZero || ! getFeatureTree (). genesExist)
+  if (   getFeatureTree (). allTimeZero 
+      || ! getFeatureTree (). featuresExist ()
+      || isNan (getFeatureTree (). lambda0)
+     )
 		FOR (unsigned char, parentCore, 2)
 	  {
 	  	// Parsimony method
@@ -1024,7 +1023,7 @@ Real Species::feature2treeLength (size_t featureIndex) const
   // Cf. feature2parentCore()
   return FeatureTree::emptyRoot 
            ? parent2core [false] [featureIndex]. treeLen
-           : getFeatureTree (). allTimeZero || ! getFeatureTree (). genesExist
+           : getFeatureTree (). allTimeZero || ! getFeatureTree (). featuresExist ()
            	     ? min ( parent2core [false] [featureIndex]. treeLen 
       		             , parent2core [true]  [featureIndex]. treeLen
       		             )
@@ -1285,16 +1284,6 @@ Genome::Genome (FeatureTree &tree,
 				        const string &id_arg)
 : Phyl (tree, parent_arg)
 , id (id_arg)
-, hasPhens (true)
-, coreNonSingletons (0)
-#if 0
-, L50 (0)
-, oddCdss (0)
-, project_id (0)
-, tax_id (0)
-, pubmed (0)
-, outbreakYear (0)
-#endif
 { 
 	ASSERT (parent_arg);
 	ASSERT (! id. empty ()); 
@@ -1466,8 +1455,8 @@ void Genome::initDir (const string &geneDir,
 
  
   // geneDir
+  if (! geneDir. empty ())
   {
-    ASSERT (! geneDir. empty ());
     ifstream f (geneDir + "/" + id);
     ASSERT (f. good ());
     // coreSet
@@ -1476,7 +1465,10 @@ void Genome::initDir (const string &geneDir,
     	Feature::Id geneName;
     	f >> geneName;
   	  if (f. eof ())
+  	  {
+      	ASSERT (geneName. empty ());
   	  	break;
+  	  }
     	ASSERT (! geneName. empty ());
       coreSet << geneName; 
     }
@@ -1531,7 +1523,7 @@ void Genome::initDir (const string &geneDir,
       if (phen == "nophenotypes")
       {
         hasPhens = false;
-        continue;
+        break;
       }
       ss >> optional;
       addPhen (phen, optional);
@@ -1549,7 +1541,7 @@ void Genome::initDir (const string &geneDir,
 
 void Genome::init (const map <Feature::Id, size_t/*index*/> &feature2index)
 {
-	IMPLY ( ! coreSet. empty (), getFeatureTree (). genesExist);
+	IMPLY ( ! coreSet. empty (), getFeatureTree (). featuresExist ());
 
 	Phyl::init ();
 
@@ -1661,7 +1653,10 @@ void Genome::saveContent (ostream& os) const
 
 void Genome::setWeight ()
 {
-  if (getFeatureTree (). allTimeZero || ! getFeatureTree (). genesExist)
+  if (   getFeatureTree (). allTimeZero 
+      || ! getFeatureTree (). featuresExist ()
+      || isNan (getFeatureTree (). lambda0)
+     )
 		FOR (unsigned char, parentCore, 2)
 	  {
 	  	// Parsimony method
@@ -1935,7 +1930,7 @@ void Genome::addPhen (const Feature::Id &phen,
 void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
                             Set<Feature::Id> &nonSingletons) const
 { 
-	if (getFeatureTree (). genesExist && coreSet. empty ())
+	if (getFeatureTree (). featuresExist () && coreSet. empty ())
 	{
 	  cout << getName () << endl;  
 	  ERROR;
@@ -2646,29 +2641,15 @@ namespace
 
 
 // PAR
-const Real FeatureTree::len_delta = 1e-2;  
+//const Real FeatureTree::len_delta = 1e-2;  
 
 
 
 #if 0
 FeatureTree::FeatureTree (int root_species_id,
-	                  const string &treeFName,
-	                  Server &db)
+	                        const string &treeFName,
+	                        Server &db)
 : inputTreeFName (treeFName)
-, genesExist (true)
-, allTimeZero (false)
-, timeOptimFrac (1)  
-, lambda0 (NAN)
-, time_init (NAN)
-, genes (0)
-, globalSingletonsSize (0)
-, genomeGenes_ave (0)
-, len (NAN)
-, len_min (NAN)
-, lenInflation (0)
-, nodeIndex_max (0)
-, coreSynced (false)
-, savePhenChangesOnly (false)
 {
 	ASSERT (root_species_id > 0);
 	
@@ -2717,32 +2698,19 @@ FeatureTree::FeatureTree (int root_species_id,
 FeatureTree::FeatureTree (const string &treeFName,
       						        const string &geneDir,
       						        const string &phenDir,
-      						        const string &coreFeaturesFName,
-      	                  bool genesExist_arg)
+      						        const string &coreFeaturesFName)
 : inputTreeFName (treeFName)
-, genesExist (genesExist_arg)
-, allTimeZero (false)
-, timeOptimFrac (1)
-, lambda0 (NAN)
-, time_init (NAN)
-, genes (0)
-, globalSingletonsSize (0)
-, genomeGenes_ave (0)
-, len (NAN)
-, len_min (NAN)
-, lenInflation (0)
-, nodeIndex_max (0)
-, coreSynced (false)
 {
 	ASSERT (! treeFName. empty ());
-	IMPLY (genesExist, ! geneDir. empty ());
 
  	loadPhylFile (treeFName);
   ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const Phyl*> (root) -> asSpecies ());
 
-  if (! genesExist)
+  if (   geneDir. empty () 
+      && phenDir. empty ()
+     )
     return;
     
   {
@@ -2763,8 +2731,8 @@ FeatureTree::FeatureTree (const string &treeFName,
 
 #if 0
 void FeatureTree::loadPhylDb (Server &db,
-	                         int species_id,
-                           Fossil* parent)
+  	                          int species_id,
+                              Fossil* parent)
 {
 	ASSERT (species_id > 0);
 
@@ -2858,9 +2826,9 @@ namespace
 
 
 bool FeatureTree::loadPhylLines (const Vector<string>& lines,
-						                  size_t &lineNum,
-						                  Species* parent,
-						                  size_t expectedOffset)
+  						                   size_t &lineNum,
+  						                   Species* parent,
+  						                   size_t expectedOffset)
 { 
 	ASSERT (lineNum <= lines. size ());
 
@@ -3008,7 +2976,7 @@ void FeatureTree::finish (const string &coreFeaturesFName)
       
   for (const Feature::Id& fId : commonCore)
     nonSingletons. erase (fId);    
-  if (genesExist && nonSingletons. empty ())
+  if (featuresExist () && nonSingletons. empty ())
   	throw runtime_error ("All genes are singletons or common core");
   	
   // features, feature2index
@@ -3077,7 +3045,7 @@ void FeatureTree::finish (const string &coreFeaturesFName)
  	  }
   genomeGenes_ave /= genomes;
 
-  if (! allTimeZero && genesExist)
+  if (! allTimeZero && featuresExist ())
     loadRootCoreFile (coreFeaturesFName);
  	for (DiGraph::Node* node : nodes)  
  		static_cast <Phyl*> (node) -> setWeight ();
@@ -3112,7 +3080,7 @@ void FeatureTree::qc () const
 	const Species* root_ = static_cast <const Phyl*> (root) -> asSpecies ();
 	ASSERT (root_);
 //ASSERT (nodes. size () <= numeric_limits<unsigned short>::max ());  // To fit Phyl::CoreEval::treeLen
-	if (! allTimeZero && genesExist)
+	if (! allTimeZero && featuresExist ())
   {
     ASSERT (root_->time == getRootTime ());
     if (! emptyRoot)
@@ -3136,7 +3104,7 @@ void FeatureTree::qc () const
  	}
  	ASSERT (n == globalSingletonsSize);
 
-  if (allTimeZero || ! genesExist)
+  if (allTimeZero || ! featuresExist ())
   { 
     ASSERT (timeOptimWhole ());
     ASSERT (isNan (lambda0)); 
@@ -3162,13 +3130,12 @@ void FeatureTree::qc () const
 		prevFeature = f;
 	}
 
-  ASSERT ((bool) genes == genesExist);	
 	ASSERT (genes <= features. size ());
 	
 	ASSERT (geReal (len, len_min));
 	ASSERT (len_min >= 0);
 	
-	IMPLY (genesExist, genomeGenes_ave > 0);
+	IMPLY (genes, genomeGenes_ave > 0);
 	ASSERT (genomeGenes_ave <= getTotalGenes ());
 	
 	ASSERT ((bool) distDistr. get () == (bool) depthDistr. get ());
@@ -3179,7 +3146,7 @@ void FeatureTree::qc () const
 			FOR (size_t, i, root_->core. size ())
 			{
 			  ASSERT (root_->core [i] == root_->feature2parentCore (i));
-			  IMPLY (! allTimeZero && genesExist, root_->core [i] == rootCore [i]);
+			  IMPLY (! allTimeZero && featuresExist (), root_->core [i] == rootCore [i]);
 			}
 		const Real subtreeLen = static_cast <const Phyl*> (root) -> getSubtreeLength ();
 		if (! eqReal (len, subtreeLen, len_delta)) 
@@ -3203,7 +3170,7 @@ void FeatureTree::saveText (ostream& os) const
 { 
   ASSERT (coreSynced);
   
-  if (! allTimeZero && genesExist)
+  if (! allTimeZero && featuresExist ())
   {
   	ONumber oN (os, 6, true);  // PAR
     if (! timeOptimWhole ())
@@ -3448,7 +3415,7 @@ void FeatureTree::optimizeLambdaTime ()
 void FeatureTree::useTime (const string &coreFeaturesFName)
 { 
 	ASSERT (allTimeZero);
-	ASSERT (genesExist);
+	ASSERT (featuresExist ());
 
 	allTimeZero = false;
   loadRootCoreFile (coreFeaturesFName);
@@ -4023,29 +3990,34 @@ select prot \
 
 void FeatureTree::loadRootCoreFile (const string &coreFeaturesFName)
 { 
-	ASSERT (! coreFeaturesFName. empty ());
 	ASSERT (! allTimeZero);
 	ASSERT (rootCore. empty ());
 	  
+  rootCore. resize (features. size (), false);
+
+	if (coreFeaturesFName. empty ())
+	  return;
+
   typedef  map<Feature::Id, size_t>  Feature2index;
   Feature2index feature2index;
   FOR (size_t, i, features. size ())
     feature2index [features [i]. name] = i;
   ASSERT (feature2index. size () == features. size ());
 
-  rootCore. resize (features. size (), false);
-	LineInput f (coreFeaturesFName, 10 * 1024);  // PAR
-	size_t miss = 0;
-	while (f. nextLine ())
-	{
-	  trim (f. line);
-	  Feature2index::const_iterator it = feature2index. find (f. line);
-	  if (it == feature2index. end ())
-	    miss++;
-	  else
-	    rootCore [it->second] = true;
-	}
-	ASSERT (miss == commonCore. size ());
+  {
+  	LineInput f (coreFeaturesFName, 10 * 1024);  // PAR
+  	size_t miss = 0;
+  	while (f. nextLine ())
+  	{
+  	  trim (f. line);
+  	  Feature2index::const_iterator it = feature2index. find (f. line);
+  	  if (it == feature2index. end ())
+  	    miss++;
+  	  else
+  	    rootCore [it->second] = true;
+  	}
+  	ASSERT (miss == commonCore. size ());
+  }
 }
 
 

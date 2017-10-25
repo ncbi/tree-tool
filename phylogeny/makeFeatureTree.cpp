@@ -25,9 +25,8 @@ struct ThisApplication : Application
 		// Input
 	  addKey ("input_tree", "Input file with the tree");
 	  addKey ("gene_dir", "Input directory with genes for each genome");
-	  addKey ("phen_dir", "Input directory with phenotypes for each genome");
+	  addKey ("phen_dir", "Input directory with phenotypes for each genome. Line format: <phenotype> <optional (0/1)>");
 	  addKey ("input_core", "Input file with root core feature ids");
-	  addFlag ("no_genes", "No gene data");
 	    
 	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
 	//addFlag ("bad_nodes_to_root", "Move bad nodes to root");
@@ -60,7 +59,6 @@ struct ThisApplication : Application
 		const string gene_dir        = getArg ("gene_dir");
 		const string phen_dir        = getArg ("phen_dir");
 		const string input_core      = getArg ("input_core");
-		const bool no_genes          = getFlag ("no_genes");
 
 		const bool use_time          = getFlag ("use_time");  
 		const int optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
@@ -88,7 +86,7 @@ struct ThisApplication : Application
 		ASSERT (optim_iter_max >= -1);
 		
 		
-    FeatureTree tree (/*species_id,*/ input_tree, gene_dir, phen_dir, input_core, ! no_genes);
+    FeatureTree tree (/*species_id,*/ input_tree, gene_dir, phen_dir, input_core);
     tree. printInput (cout);
     tree. qc ();    
     
@@ -107,6 +105,7 @@ struct ThisApplication : Application
       cout << "# Bad nodes moved to root: " << n << endl;
     }
   #endif
+
     
     if (optim_iter_max)  
     {
@@ -155,8 +154,10 @@ struct ThisApplication : Application
       tree. saveRootCore (output_core);
     }
 
-    // Output
     tree. qc ();
+
+
+    // Output
   #if 0
     if (save_phen_only)
       tree. savePhenChangesOnly = true;
@@ -172,6 +173,7 @@ struct ThisApplication : Application
 	  }
     tree. loadTargetFeatures (save_features);	  
   #endif
+
     tree. dump (output_tree, set_node_ids);
 
 
@@ -232,10 +234,7 @@ struct ThisApplication : Application
      		const Phyl* phyl = static_cast <const Phyl*> (node);
         FOR_START (size_t, i, tree. genes, tree. features. size ())
           if ((! phyl->feature2parentCore (i) || phyl == tree. root) && phyl->core [i])  
-          {
-            phyl->getTipName (). saveText (of);
-            of << '\t' << tree. features [i]. name << endl;
-          }
+            of << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
       }
     }
 

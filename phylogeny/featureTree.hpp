@@ -20,27 +20,23 @@ struct Feature : Named
 // name: key
 {
   typedef string Id;
-  bool isGene;
+  bool isGene {true};
     // Otherwise a phenotype
   // For FeatureTree::len
   // Valid if !allTimeZero
 //Prob lambda_0;  ??
   // Stats
-  size_t genomes;
-  size_t gains;
-  size_t losses;
+  size_t genomes {0};
+  size_t gains {0};
+  size_t losses {0};
 
 
+  Feature ()
+    {}
 	Feature (const Id &name_arg,
 	         bool isGene_arg);
-	Feature ()
-	  : isGene (true)
-	  , genomes (0)
-	  , gains (0)
-	  , losses (0)
-	  {}
-	void qc () const;
-	void saveText (ostream& os) const
+	void qc () const override;
+	void saveText (ostream& os) const override
 	  { os << name << " +" << gains << " -" << losses << " / " << genomes << endl; }
 
 	
@@ -78,9 +74,9 @@ struct TargetFeature : Named
 {
   Feature::Id featureId;
     // !empty()
-  size_t index;
+  size_t index {NO_INDEX};
     // May be NO_INDEX      
-  size_t serial;
+  size_t serial {0};
 
   TargetFeature ()
     : index (NO_INDEX)
@@ -135,14 +131,12 @@ struct Phyl : Tree::TreeNode
   // For FeatureTree::len
 	struct CoreEval
 	{
-		Real treeLen;
+		Real treeLen {0};
 		  // >= 0
-		ebool core;
+		ebool core {EFALSE};
 		
-		CoreEval ()
-		  : treeLen (0)
-		  , core (EFALSE)
-		  {}
+    CoreEval ()
+      {}
 		CoreEval (Real treeLen_arg,
 		          ebool core_arg)
 		  : treeLen (treeLen_arg)
@@ -168,8 +162,7 @@ struct Phyl : Tree::TreeNode
 	  // Phenotype is changed in the subtree inclusive
 #endif
 private:
-  bool stable;
-    // Init: false
+  bool stable {false};
   friend struct FeatureTree;
 public:
 
@@ -180,9 +173,9 @@ protected:
 	  // To be followed by setWeight()
 public:
 	void init ();
-  void qc () const;
+  void qc () const override;
 protected:
-  void saveContent (ostream& os) const;
+  void saveContent (ostream& os) const override;
     // Input: core
 public:
 #if 0
@@ -351,18 +344,18 @@ protected:
 	         Real time_arg);
 	  // To be followed by: init()
 public:
-  void qc () const;
-  void saveContent (ostream& os) const;
+  void qc () const override;
+  void saveContent (ostream& os) const override;
 
 
-  const Species* asSpecies () const
+  const Species* asSpecies () const final
     { return this; }
 
 
-  string getName () const
+  string getName () const override
     { return id. empty () ? Phyl::getName () : id; }
-	double getParentDistance () const;
-  string getNewickName (bool minimal) const;
+	double getParentDistance () const final;
+  string getNewickName (bool minimal) const override;
   void setWeight ();
     // Input: time, getFeatureTree().lambda0
 	void setCore ();
@@ -445,13 +438,13 @@ struct Fossil : Species
 	        Real time_arg)
 		: Species (tree, parent_arg, id_arg, time_arg)
 		{}
-	void qc () const;
+	void qc () const override;
 
 
-  const Fossil* asFossil () const
+  const Fossil* asFossil () const final
     { return this; }
 
-  bool isInteriorType () const
+  bool isInteriorType () const final
     { return true; }
 
   Real getPooledSubtreeDistance () const;
@@ -466,12 +459,12 @@ struct Fossil : Species
 struct Strain : Species
 // Distance from children to *this depends on Genome quality
 {
-  bool singletonsInCore;
+  bool singletonsInCore {true};
     // getGenome()->singletons: true <=> in this->core, false <=> annotation errors in Genome
     // Init: true
     // Analog of parent2core[false] and core
 private:
-  bool singletonsInCore_old;
+  bool singletonsInCore_old {true};
 public:
 
 
@@ -480,20 +473,18 @@ public:
 	        const string &id_arg,
 	        Real time_arg)
 		: Species (tree, parent_arg, id_arg, time_arg)
-    , singletonsInCore (true)
-    , singletonsInCore_old (true)
 		{}
-  void qc () const;
-  void saveContent (ostream& os) const;
+  void qc () const override;
+  void saveContent (ostream& os) const override;
 
 
-  const Strain* asStrain () const
+  const Strain* asStrain () const final
     { return this; }
 
 
-  string getName () const 
+  string getName () const final
     { return "s" + id; }
-  string getNewickName (bool /*minimal*/) const
+  string getNewickName (bool /*minimal*/) const final
     { return string (); }
 
   void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const;
@@ -529,13 +520,13 @@ struct Genome : Phyl
   
 	Vector<bool> optionalCore;
     // size() = getFeatureTree().features.size()
-  bool hasPhens;
+  bool hasPhens {true};
 private:
   Set<Feature::Id> coreSet;
   map<Feature::Id,bool/*optional*/> phens; 
   friend struct FeatureTree;
 public:
-  size_t coreNonSingletons;
+  size_t coreNonSingletons {0};
     // Includes optionalCore[]
   Set<Feature::Id> singletons;
 //Set<Feature::Id> missedCore;  ??
@@ -544,7 +535,7 @@ public:
 #if 0
   // Quality    
   // For annotProb
-  uint L50;    
+  uint L50 {0};    
   // "System" phenotypes
   Feature::Id genus;
   Feature::Id taxSpecies;
@@ -554,14 +545,14 @@ public:
   Feature::Id continent;
 
   // For human
-  size_t oddCdss;  
-  uint project_id;
-  uint tax_id;
+  size_t oddCdss {0};  
+  uint project_id {0};
+  uint tax_id {0};
   string taxName;  
   string sequencer;
-  uint pubmed;
+  uint pubmed {0};
   string outbreakName;
-  uint outbreakYear;
+  uint outbreakYear {0};
   string phylogeneticClass;
   string isolate;
 #endif
@@ -578,10 +569,9 @@ public:
 	void initDir (const string &geneDir,
                 const string &phenDir);
 	  // Input: file "geneDir/id" with the format: 
-	  //          <gene>*
+	  //          {<gene> \n}*
 	  //        file "phenDir/id" with the format: 
-	  //   [nophenotypes]
-	  //   <phenotype> {0|1}*  // 1 <=> optional
+	  //          {nophenotypes] | {<phenotype> {0|1} \n}*}  // 1 <=> optional
 	  // Output: coreSet, phens, coreNonSingletons
 	  // Invokes: addPhen()
 #if 0
@@ -598,22 +588,22 @@ public:
 #endif
 	void init (const map <Feature::Id, size_t/*index*/> &feature2index);
 	  // Output: CoreEval::core, core
-	void qc () const;
-	void saveContent (ostream& os) const;
+	void qc () const override;
+	void saveContent (ostream& os) const override;
 
 
-  const Genome* asGenome () const
+  const Genome* asGenome () const final
     { return this; }
 
 
-  string getName () const 
+  string getName () const final
     { return "g" + id; }
-	double getParentDistance () const
+	double getParentDistance () const final
 	  { return 0; }
-  string getNewickName (bool /*minimal*/) const
+  string getNewickName (bool /*minimal*/) const final
 	  { return id /*+ " " + taxName + getNameExtra ()*/; 
 	  }
-  bool isLeafType () const
+  bool isLeafType () const final
     { return true; }
 
   void setWeight ();
@@ -738,18 +728,18 @@ protected:
     // Requires: parameters are the same as in the constructor
 public:
  ~Change ();
-	void qc () const;
+	void qc () const override;
 	  // Invokes: valid()
-  void saveText (ostream& os) const;
+  void saveText (ostream& os) const override;
     // W/o endl
     // Requires: tree topology has not changed after loading the tree
-	void print (ostream& os) const
+	void print (ostream& os) const override
 	  { os << from->getName () << " -> " << type () << "  improvement = ";
 	    ONumber oNum (os, 1, false);  // PAR
 	    os << improvementDeinflated () << endl; 
 	  }
 protected:
-  void clear ()
+  void clear () override
     { status = eInit;
       isolatedTransient = nullptr;
 		  isolatedTransientChild = nullptr;
@@ -830,14 +820,14 @@ protected:
 	  	       && ! to_arg->descendantOf (from_arg);
 	  }
 public:
-  void saveText (ostream& os) const;
-	void print (ostream& os) const
+  void saveText (ostream& os) const override;
+	void print (ostream& os) const override
 	  { os << from->getName () << " ->(" << type () << ") " << to->getName ()
 	  	   << "  improvement = " << improvementDeinflated () << endl; 
 	  }
 
 
-  const ChangeTo* asChangeTo () const  
+  const ChangeTo* asChangeTo () const final
     { return this; }
 
 
@@ -851,10 +841,10 @@ struct Move : ChangeTo
   // status fields
 protected:
 	// !nullptr
-	const Fossil* lca;
-	Fossil* oldParent;
+	const Fossil* lca {nullptr};
+	Fossil* oldParent {nullptr};
 	  // Old from->getParent()
-	Species* oldParentRepr;
+	Species* oldParentRepr {nullptr};
 	  // Representative of oldParent
 public:
 
@@ -868,7 +858,7 @@ protected:
 	      istream &is)
 	  : ChangeTo (tree_arg, is)
 	  {}
-  void clear ()
+  void clear () override
     { ChangeTo::clear ();
       lca = nullptr;
 		  oldParent = nullptr;
@@ -884,9 +874,9 @@ struct ChangeToSibling : Move
 {
   // status fields
 private:
-	const Fossil* inter;
+	const Fossil* inter {nullptr};
 	  // !nullptr <=> after apply_()
-	Fossil* arcEnd;
+	Fossil* arcEnd {nullptr};
 public:
 
 	
@@ -910,7 +900,7 @@ public:
 	  	       && ! (from_arg->getParent() == to_arg              && to_arg              -> arcs [false]. size () == 2);
 	  }
 private:
-	void clear ()
+	void clear () final
 	  { Move::clear ();
 		  inter = nullptr;
 		  arcEnd = nullptr;
@@ -1087,7 +1077,7 @@ struct ChangeRoot : Change
 {
   // status fields
 private:
-	Species* root_old;
+	Species* root_old {nullptr};
 	  // !nullptr
 public:
 	
@@ -1107,14 +1097,14 @@ public:
 		}
 #endif
 private:
-	void clear ()
+	void clear () override
 	  { Change::clear ();
 	    root_old = nullptr;
 	  }
 	VectorPtr<Tree::TreeNode> getTargets () const
 		{ return VectorPtr<Tree::TreeNode>::make (from, nullptr); }
 public:
-	void qc () const;
+	void qc () const override;
 
 
   static const char* type_ ()
@@ -1142,7 +1132,7 @@ struct ChangeDel : Change
 private:
 	VectorPtr<DiGraph::Node> fromChildren;
 	  // = from.getChildren()
-	Fossil* oldParent;
+	Fossil* oldParent {nullptr};
 	  // Of from
 public:
 	
@@ -1159,7 +1149,7 @@ public:
 		  targets << from->getParent (); 
 		}
 private:
-	void clear ()
+	void clear () override
 	  { Change::clear ();
 		  fromChildren. clear ();
 		  oldParent = nullptr;
@@ -1191,50 +1181,46 @@ public:
 struct FeatureTree : Tree
 // Of Phyl*
 {
-  static const Real len_delta;
+  static constexpr Real len_delta {1e-2};
 
 	string inputTreeFName;
 	  // May be empty()
-	bool genesExist;
 
   // For FeatureTree::len
   static const bool emptyRoot = false;
-//Topology
-	bool allTimeZero; 
+	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
 	  // Init: isNan(Species::time) 
-	Prob timeOptimFrac;
+	Prob timeOptimFrac {1};
 	  // Annealing
-	  // Init: 1
 	  // allTimeZero => 1
 	  // To be increased
   // Valid if !allTimeZero
   Vector<bool> rootCore;
     // size() == features.size()
-  Prob lambda0;
+  Prob lambda0 {NAN};
 		// > 0
-  Real time_init;   
+  Real time_init {NAN};
     // > 0    
 	
 	Vector<Feature> features;
 	  // Genes and phenotypes in this order
 	  // Feature::name's are unique
-	size_t genes;
+	size_t genes {0};
 	  // <= features.size()
 	Set<Feature::Id> commonCore;
-	size_t globalSingletonsSize;  
-	size_t genomeGenes_ave;
+	size_t globalSingletonsSize {0};  
+	size_t genomeGenes_ave {0};
   List<string> taxNamePrefix;  // ??
-	Real len;
+	Real len {NAN};
 	  // >= len_min
-	Real len_min;
+	Real len_min {NAN};
 	  // >= 0
-	Prob lenInflation;
-	  // Init: 0
+	Prob lenInflation {0};
 
   // Internal
-	size_t nodeIndex_max;
-	bool coreSynced;
+	size_t nodeIndex_max {0};
+	bool coreSynced {false};
 	  // Phyl::core[] corresponds to Phyl::parent2core[]
 private:
 	Common_sp::AutoPtr <Progress> prog_;
@@ -1246,8 +1232,7 @@ public:
 
 
 #if 0
-  bool savePhenChangesOnly;
-    // Init: false
+  bool savePhenChangesOnly {false};
   Vector<TargetFeature> targetFeatures;
     // Same name => different serial
 #endif
@@ -1255,16 +1240,16 @@ public:
 	  
 #if 0
 	FeatureTree (int root_species_id,
-            const string &treeFName,
-            Server &db);
+               const string &treeFName,
+               Server &db);
 	   // Input: treeFName: may be empty()
 	   // Invokes: if treeFName.empty() then loadPhylDb() else loadPhylLines(), Genome::initDb(), abbreviate(), finish()
 #endif
 	FeatureTree (const string &treeFName,
-	          const string &geneDir,
-	          const string &phenDir,
-	          const string &coreFeaturesFName,
-	          bool genesExist_arg);
+  	           const string &geneDir,
+  	           const string &phenDir,
+  	           const string &coreFeaturesFName/*,
+  	           bool featuresExist_arg*/);
 	   // Invokes: loadPhylFile(), Genome::initDir(), finish()
 private:
 #if 0
@@ -1289,19 +1274,19 @@ private:
     // Input: db or coreFeaturesFName if !allTimeZero
     // Invokes: setLenGlobal(), setCore()
 public:
-	void qc () const;
-	void saveText (ostream& os) const;
+	void qc () const override;
+	void saveText (ostream& os) const override;
 	  // os <<: if !allTimeZero
 	  //          if !timeOptimWhole() then timeOptimFrac
 	  //          lambda0
 	  //          time_init
 	  //        topology
 	  // Requires: coreSynced
-	void print (ostream& os) const;
+	void print (ostream& os) const override;
 
 	
   void deleteLeaf (TreeNode* leaf,
-                   bool deleteTransientAncestor);
+                   bool deleteTransientAncestor) override;
     // Requires: features.empty()
 
 	void printInput (ostream& os) const;
@@ -1313,6 +1298,8 @@ public:
 	  	  (*prog_) (step);
 	  }
 	  // Requires: after Progress::Start
+	bool featuresExist () const
+	  { return ! features. empty (); }
 	size_t getTotalGenes () const
 	  { return commonCore. size () + genes + globalSingletonsSize; }  
   Real getLength () const
@@ -1405,7 +1392,7 @@ public:
     { const Species* root_ = static_cast <const Species*> (root);
       return emptyRoot 
            	   ? false
-           	   : allTimeZero || ! genesExist
+           	   : allTimeZero || ! featuresExist ()
            	     ? root_->parent2core [false] [featureIndex]. treeLen >
   	    	         root_->parent2core [true]  [featureIndex]. treeLen
   	    	           // Lesser |core| is preferred: tie => false 

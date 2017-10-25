@@ -38,6 +38,6 @@ if ($?) exit 1
 
 
 
-# To distance tree for loadign into Phyl
+# To distance tree for loading into Phyl
 # mv genomes299.tree genomes299.featureTree
 # tail -n +3 genomes299.featureTree | sed 's/: t=/: len=/1' | grep -v '^ *g' | sed 's/^\( *\)s/\1/1' | sed 's/^1: len=0.000000e+00/1: len=nan/1' | sed 's/^\( *\)\([1-9]\)/\10x\2/1' > genomes299.tree
