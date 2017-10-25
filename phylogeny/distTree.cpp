@@ -1129,6 +1129,8 @@ DistTree::DistTree (const string &dataDirName,
       {
         const string name1 = findSplit (f. line, '\t');
         const string name2 = findSplit (f. line, '\t');
+        if (name2. empty ())
+          throw runtime_error ("Empty name2");
         if (outliers. binSearch (name1) != NO_INDEX)
           continue;
         if (outliers. binSearch (name2) != NO_INDEX)
