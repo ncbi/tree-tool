@@ -1527,9 +1527,11 @@ public:
   template <typename From>
     void insertAll (const From &from)
       { P::insert (from. begin (), from. end ()); }
-  Set<T>& checkUnique (const T& el)
-    { ASSERT (! contains (el));
-      return operator<< (el);
+  bool checkUnique (const T& el)
+    { if (contains (el))
+        return false;
+      operator<< (el);
+      return true;
     }
 	void intersect (const Set<T> &other) 
 		{ if (other. universal)
