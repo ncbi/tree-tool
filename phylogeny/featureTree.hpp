@@ -16,12 +16,17 @@ namespace FeatureTree_sp
 
 
 
+typedef  Set<string>  Nominal;
+typedef  map<string/*nominal attribute name*/, Nominal>  Nominals;
+
+
+
 struct Feature : Named
+// Boolean attribute of Genome
+// Gene or phenotype
 // name: key
 {
   typedef string Id;
-  bool isGene {true};
-    // Otherwise a phenotype
   // For FeatureTree::len
   // Valid if !allTimeZero
 //Prob lambda_0;  ??
@@ -33,31 +38,17 @@ struct Feature : Named
 
   Feature ()
     {}
-	Feature (const Id &name_arg,
-	         bool isGene_arg);
+	explicit Feature (const Id &name_arg);
 	void qc () const override;
 	void saveText (ostream& os) const override
 	  { os << name << " +" << gains << " -" << losses << " / " << genomes << endl; }
 
 	
   bool operator== (const Feature &other) const
-    { return    name   == other. name
-             && isGene == other. isGene; 
+    { return name == other. name;
     }
   bool operator< (const Feature &other) const
-    { if (isGene > other. isGene)
-        return true;
-      if (isGene < other. isGene)
-        return false;      
-      return name < other. name; 
-    }
-#if 0
-  static int id2geneId (const Id &id)
-    { return str2<int> (id); }  
-  int geneId () const
-    { return id2geneId (name); }  
-    // For the database
-#endif
+    { return name < other. name; }
   size_t mutations () const
     { return gains + losses; }
   bool better (const Feature* other) const
@@ -66,47 +57,6 @@ struct Feature : Named
              || (mutations () == other->mutations () && name.size () > other->name. size ());
     }
 };
-
-
-
-#if 0
-struct TargetFeature : Named  
-{
-  Feature::Id featureId;
-    // !empty()
-  size_t index {NO_INDEX};
-    // May be NO_INDEX      
-  size_t serial {0};
-
-  TargetFeature ()
-    : index (NO_INDEX)
-    , serial (0)
-    {}
-  TargetFeature (const string &name_arg,
-                 const Feature::Id &featureId_arg,
-                 size_t index_arg)
-    : Named (name_arg)
-    , featureId (featureId_arg)
-    , index (index_arg)
-    , serial (0)
-    {}
-  bool empty () const
-    { return Named::empty () && featureId. empty (); }
-  void clear ()
-    { Named::clear ();
-      featureId. clear ();
-      index = NO_INDEX;
-      serial = 0;
-    }
-  void read (istream &is)
-	  { is >> featureId;
-	    Named::read (is); 
-	  }
-	  
-	string getName () const
-	  { return name + (serial ? toString (serial) : ""); }
-};
-#endif
 
 
 
@@ -157,10 +107,6 @@ struct Phyl : Tree::TreeNode
     // size() = getFeatureTree().features.size()
 	size_t index_init;
 	  // !getFeatureTree().inputTreeFName.empty() => matches the orginial node number in DFS
-#if 0
-	bool hasPhenChange;
-	  // Phenotype is changed in the subtree inclusive
-#endif
 private:
   bool stable {false};
   friend struct FeatureTree;
@@ -271,30 +217,6 @@ public:
 	Real getPooledDistance () const;
     // Distance to getParent() for features not in getFeatureTree().features
     // Invokes: getParent2corePooled()
-
-#if 0
-  string getPhenChange (bool skipSingleNonSystems) const;
-    // Return: ';'-delimited
-    // Input: Features:<Stats>
-protected:
-  virtual string getTargetFeatureChange (const TargetFeature &tf) const;
-public:
-  string getTargetFeaturesChange () const;
-  void setHasPhenChange ();
-    // Output: hasPhenChange
-    // Invokes: getPhenChange(), getTargetFeaturesChange()
-#endif
-
-#if 0
-  // Requires: getFeatureTree().coreSynced
-  virtual void saveDatabaseTopology (Server &db,
-                                     bool &parent_STRAIN) = 0;
-    // Update: parent_STRAIN: valid if getParent()
-  virtual void saveDatabaseNode (Server &db) const = 0;
-    // Does not insert into *_PHEN tables
-  virtual void saveDatabasePhen (Server &db) const = 0;
-    // Insert into *_PHEN tables
-#endif
 };
 
 
@@ -355,7 +277,7 @@ public:
   string getName () const override
     { return id. empty () ? Phyl::getName () : id; }
 	double getParentDistance () const final;
-  string getNewickName (bool minimal) const override;
+//string getNewickName (bool minimal) const override;
   void setWeight ();
     // Input: time, getFeatureTree().lambda0
 	void setCore ();
@@ -377,13 +299,6 @@ protected:
       pooledSubtreeDistance = getPooledSubtreeDistance ();
     }
 public:
-#if 0
-  void saveDatabaseTopology (Server &db,
-                             bool &parent_STRAIN);
-    // Output: id: incremented in DFS preorder
-  void saveDatabaseNode (Server &db) const;
-  void saveDatabasePhen (Server &db) const;
-#endif
 
   // Sankoff algorithm
 private:
@@ -499,9 +414,6 @@ private:
 	  { singletonsInCore = singletonsInCore_old;
 	    Species::restoreFeatures ();
 	  }
-#if 0
-  string getTargetFeatureChange (const TargetFeature &tf) const;
-#endif
 public:
 
   const Genome* getGenome () const
@@ -518,74 +430,34 @@ struct Genome : Phyl
     // GENOME.id
     // !empty()
   
+  Set<string> nominals;
+    // Subset of getFeatureTree().nominals
 	Vector<bool> optionalCore;
     // size() = getFeatureTree().features.size()
-  bool hasPhens {true};
 private:
-  Set<Feature::Id> coreSet;
-  map<Feature::Id,bool/*optional*/> phens; 
+  map<Feature::Id,bool/*optional*/> coreSet; 
   friend struct FeatureTree;
 public:
   size_t coreNonSingletons {0};
-    // Includes optionalCore[]
+    // Includes optionalCore[]  
   Set<Feature::Id> singletons;
 //Set<Feature::Id> missedCore;  ??
     // Opposite to singletons
 
-#if 0
-  // Quality    
-  // For annotProb
-  uint L50 {0};    
-  // "System" phenotypes
-  Feature::Id genus;
-  Feature::Id taxSpecies;
-  Feature::Id subspecies;
-  Feature::Id serovar;
-  Feature::Id pathovar;
-  Feature::Id continent;
 
-  // For human
-  size_t oddCdss {0};  
-  uint project_id {0};
-  uint tax_id {0};
-  string taxName;  
-  string sequencer;
-  uint pubmed {0};
-  string outbreakName;
-  uint outbreakYear {0};
-  string phylogeneticClass;
-  string isolate;
-#endif
-  
-    
 	Genome (FeatureTree &tree,
 	        Strain* parent_arg,
 	        const string &id_arg);
 	  // To be followed by: {initDb()|initDir()}, init()
-#if 0
-	void initDb (Server &db);
-	  // Output: coreSet, phens, coreNonSingletons
-#endif
-	void initDir (const string &geneDir,
-                const string &phenDir);
-	  // Input: file "geneDir/id" with the format: 
-	  //          {<gene> \n}*
-	  //        file "phenDir/id" with the format: 
-	  //          {nophenotypes] | {<phenotype> {0|1} \n}*}  // 1 <=> optional
-	  // Output: coreSet, phens, coreNonSingletons
-	  // Invokes: addPhen()
-#if 0
-private:
-  void addSystemPhens ()
-    { addPhen (subspecies, false);
-      addPhen (taxSpecies, false);
-      addPhen (genus,      false);
-      addPhen (serovar,    false);
-      addPhen (pathovar,   false);
-      addPhen (continent,  false);
-    }
-public:
-#endif
+  static string geneLineFormat ()
+    { return "{{<gene> [<optional (0|1)>]} | {<nominal name>:<value>} \\n}*"; }
+	void initDir (const string &geneDir);
+	  // Input: file "geneDir/id" with the format: `geneLineFormat()`
+	  // Output: coreSet, coreNonSingletons
+	void coreSet2nominals (Nominals &globalNominals);
+	  // Update: globalNominals, nominals
+	void nominals2coreSet ();
+	  // Update: coreSet
 	void init (const map <Feature::Id, size_t/*index*/> &feature2index);
 	  // Output: CoreEval::core, core
 	void qc () const override;
@@ -594,7 +466,6 @@ public:
 
   const Genome* asGenome () const final
     { return this; }
-
 
   string getName () const final
     { return "g" + id; }
@@ -615,65 +486,31 @@ private:
 	                  CoreEval ce)
 	  {	parent2core [parentCore] [featureIndex] = ce; }
 	void assignFeature (size_t featureIndex);
-#if 0
-  string getTargetFeatureChange (const TargetFeature &tf) const;
-#endif
 public:
-#if 0
-  void saveDatabaseTopology (Server &db,
-                             bool &parent_STRAIN);
-    // Invokes: SPECIES_redo()
-  void saveDatabaseNode (Server &db) const;    
-  void saveDatabasePhen (Server &db) const;
-#endif
-
-#if 0
-  string getNameExtra () const
-    { string s;
-     	if (! outbreakName. empty ())
-		    s += "  " + outbreakName + " (" + toString (outbreakYear) + ")";
-      if (! isolate. empty ())
-      	s += "  " + isolate;
-      if (! pathovar. empty ())
-      	s += "  " + pathovar;
-      return s;
-    }
-#endif
   const Strain* getStrain () const
     { return static_cast <const Phyl*> (getParent ()) -> asStrain (); }
     // Return: !nullptr
-#if 0
-  bool isSystemPhen (const string &phenName) const
-    { return    phenName == subspecies
-             || phenName == taxSpecies
-             || phenName == genus
-             || phenName == serovar
-             || phenName == pathovar
-             || phenName == continent;
-    }
-#endif
   void saveFeatures (const string &dir) const;
     // Save Feature::name's
     // Input: dir: !empty()
-private:
-  void addPhen (const Feature::Id &phen,
-                bool optional);
-    // Update: phens
-public:
   size_t getGenes () const
     { return coreNonSingletons + singletons. size (); }
-  // Use optionalCore[] ??
 	void getSingletons (Set<Feature::Id> &globalSingletons,
 	                    Set<Feature::Id> &nonSingletons) const;
     // Update: globalSingletons, nonSingletons: !intersect()
 	void getCommonCore (Set<Feature::Id> &commonCore) const
     { commonCore. intersect (coreSet); }
 	size_t removeFromCoreSet (const Set<Feature::Id> &toRemove)
-    { return coreSet. setMinus (toRemove); }
+    { size_t n = 0;
+      for (const Feature::Id& f : toRemove)
+	      n += coreSet. erase (f);
+	    return n;
+    }
 	void setSingletons (const Set<Feature::Id> &globalSingletons)
     { singletons = coreSet;
       singletons. intersect (globalSingletons);
-      coreSet. setMinus (singletons); 
+      for (const Feature::Id& f : singletons)
+	      coreSet. erase (f);
     }
 };
 
@@ -1203,15 +1040,13 @@ struct FeatureTree : Tree
   Real time_init {NAN};
     // > 0    
 	
+  Nominals nominals;
+  
 	Vector<Feature> features;
-	  // Genes and phenotypes in this order
 	  // Feature::name's are unique
-	size_t genes {0};
-	  // <= features.size()
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
 	size_t genomeGenes_ave {0};
-  List<string> taxNamePrefix;  // ??
 	Real len {NAN};
 	  // >= len_min
 	Real len_min {NAN};
@@ -1230,34 +1065,12 @@ public:
 	Common_sp::AutoPtr <const Normal> distDistr;
 	Common_sp::AutoPtr <const Normal> depthDistr;
 
-
-#if 0
-  bool savePhenChangesOnly {false};
-  Vector<TargetFeature> targetFeatures;
-    // Same name => different serial
-#endif
 	  
-	  
-#if 0
-	FeatureTree (int root_species_id,
-               const string &treeFName,
-               Server &db);
-	   // Input: treeFName: may be empty()
-	   // Invokes: if treeFName.empty() then loadPhylDb() else loadPhylLines(), Genome::initDb(), abbreviate(), finish()
-#endif
 	FeatureTree (const string &treeFName,
   	           const string &geneDir,
-  	           const string &phenDir,
-  	           const string &coreFeaturesFName/*,
-  	           bool featuresExist_arg*/);
+  	           const string &coreFeaturesFName);
 	   // Invokes: loadPhylFile(), Genome::initDir(), finish()
 private:
-#if 0
-  void loadPhylDb (Server &db,
-                   int species_id,
-                   Fossil* parent);
-    // Output: topology, Species::time
-#endif
   bool loadPhylLines (const Vector<string>& lines,
 		                  size_t &lineNum,
 		                  Species* parent,
@@ -1301,7 +1114,7 @@ public:
 	bool featuresExist () const
 	  { return ! features. empty (); }
 	size_t getTotalGenes () const
-	  { return commonCore. size () + genes + globalSingletonsSize; }  
+	  { return commonCore. size () + features. size () + globalSingletonsSize; }  
   Real getLength () const
     { return static_cast <const Species*> (root) -> root2treeLength (); }
   Real getLength_min ()  
@@ -1380,10 +1193,6 @@ public:
     // Output: coreChange[]: !core2nonCore = nonCore2core
 	  // Requires: !allTimeZero, coreSynced
 private:
-#if 0
-  void loadRootCoreDb (Server* db);
-    // Requires: (bool)db
-#endif
   void loadRootCoreFile (const string &coreFeaturesFName);
     // Requires: !coreFeaturesFName.empty()
 public:
@@ -1403,9 +1212,6 @@ public:
     // Invokes: Phyl::getNeighborDistance()
   void clearStats ();
     // Output: Stats
-//size_t badNodesToRoot ();
-    // Return: # bad nodes moved to root
-    // Invokes: setDistr()
 	void delayDelete (Species* s);
 private:
 	void tryChange (Change* ch,
@@ -1420,35 +1226,8 @@ private:
     // Return: # Fossil's delete'd
 public:
 		
-//size_t addStrains ();
-	  // Return: # strains added
-
-#if 0	
-private:	
-	void abbreviate ();
-	  // Update: Genome::taxName's
-	  // Output: taxNamePrefix
-	  // Idempotent
-public:
-	string abbreviationLegend () const;
-#endif
-    
   const Genome* findGenome (const string& genomeId) const;
     // Return: May be nullptr
-    
-#if 0
-  void loadTargetFeatures (const string &fName);
-    // fName file line format: <Feature::name> <Print name>
-#endif
-
-#if 0
-  // Update: prog_
-  void saveDatabase (Server &db,
-                     int root_species_id);
-    // Update: Fossil::id
-    // Invokes: saveDatabasePhen()
-  void saveDatabasePhen (Server &db);
-#endif
 };
 
 

@@ -14,11 +14,11 @@ if ($?) exit 1
 
 # Add comments to $1.dm
 
-distTree.sh $1 dist 
+distTree.sh $1 cons 
 if ($?) exit 1 
 
 # Gain/loss tree
-makeDistTree  $1.tree  -output_feature_tree $1.featureTree
+makeDistTree  -input_tree $1.tree  -output_feature_tree $1.featureTree
 if ($?) exit 1 
 mv $1.tree $1.distTree  
 
@@ -27,13 +27,12 @@ cat $1.featureTree | sed 's/: t=\([^ ]\+\) /: t=nan /1' > $1-init.tree
 if ($?) exit 1 
 rm $1.featureTree
 
-# was: "t1" - "maxParsimony"
-makeFeatureTree  -input_tree $1-init.tree  -gene_dir $2  -output_tree $1-maxParsimony.tree  -output_core $1-maxParsimony.core  -optim_iter_max 100
+makeFeatureTree  -input_tree $1-init.tree  -genes $2  -output_tree $1-maxParsimony.tree  -output_core $1-maxParsimony.core  -optim_iter_max 100
 if ($?) exit 1 
 rm $1-init.tree
 
 # MLE
-makeFeatureTree  -input_tree $1-maxParsimony.tree  -gene_dir $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
+makeFeatureTree  -input_tree $1-maxParsimony.tree  -genes $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
 if ($?) exit 1 
 
 

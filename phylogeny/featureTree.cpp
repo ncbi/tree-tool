@@ -16,10 +16,9 @@ namespace FeatureTree_sp
 
 // Feature
 
-Feature::Feature (const Feature::Id &name_arg,
-	                bool isGene_arg)
+Feature::Feature (const Feature::Id &name_arg)
 : Named (name_arg)
-, isGene (isGene_arg)
+//, isGene (isGene_arg)
 {
   qc ();
 }
@@ -48,10 +47,9 @@ Phyl::Phyl (FeatureTree &tree,
 	          Species* parent_arg)
 : TreeNode (tree, parent_arg)  // FeatureTree must be declared
 , index_init (tree. nodeIndex_max++)
-//, hasPhenChange (false)
 {
-	FOR (unsigned char, i, 2)
-		FOR (unsigned char, j, 2)
+	for (const bool i : {false, true})
+  	for (const bool j : {false, true})
 		  weight [i] [j] = NAN;
 }
 
@@ -60,7 +58,7 @@ Phyl::Phyl (FeatureTree &tree,
 void Phyl::init () 
 { 
 	const size_t n = getFeatureTree (). features. size ();
-	FOR (unsigned char, parentCore, 2)
+	for (const bool parentCore : {false, true})
 	{
 	  ASSERT (parent2core [parentCore]. empty ());
 		parent2core [parentCore]. resize (n); 
@@ -79,16 +77,12 @@ void Phyl::qc () const
 	TreeNode::qc ();
 
 	const size_t n = getFeatureTree (). features. size ();
-	FOR (unsigned char, parentCore, 2)
+	for (const bool parentCore : {false, true})
   	ASSERT (parent2core [parentCore]. size () == n);
 	ASSERT (core. size () == n);
-	FOR (unsigned char, i, 2)
-	  FOR (unsigned char, j, 2)
+	for (const bool i : {false, true})
+  	for (const bool j : {false, true})
 	    ASSERT (weight [i] [j] >= 0);
-#if 0
-	if (const Phyl* p = static_cast <const Phyl*> (getParent ()))
-	  IMPLY (hasPhenChange, p->hasPhenChange);
-#endif
 
 	FOR (size_t, i, core. size ())
 	{
@@ -110,12 +104,12 @@ void Phyl::qc () const
 	if (verbose ())
 	{
 		Real weight_ [2] [2];
-		FOR (unsigned char, i, 2)
-		  FOR (unsigned char, j, 2)
+  	for (const bool i : {false, true})
+    	for (const bool j : {false, true})
 		    weight_ [i] [j] = weight [i] [j];
 		const_cast <Phyl*> (this) -> setWeight ();
-		FOR (unsigned char, i, 2)
-		  FOR (unsigned char, j, 2)
+  	for (const bool i : {false, true})
+    	for (const bool j : {false, true})
 		    if (! eqReal (weight_ [i] [j], weight [i] [j], 1e-3))
 		    {
 		    	ONumber oNum (cout, 5, false);
@@ -143,47 +137,7 @@ void Phyl::saveContent (ostream& os) const
 	os << "  dC="
 	   << '+' << getCoreChange (true)
 	   << '-' << getCoreChange (false);
-
-#if 0	   
-	const string phenChange (getPhenChange (true));
-	if (! phenChange. empty ())
-	  os << "  (" << phenChange + ")";
-	   
-	Real neighborDistance_stnd;
-	Real depth_stnd;
-	if (badNeighborDistance (neighborDistance_stnd, depth_stnd))
-	{
-		ONumber oNum (os, 1, false);  // PAR
-	  os << "  distNghb=" << neighborDistance_stnd << "(depth=" << depth_stnd << ")";
-	}
-
-  const string targetFeaturesChange (getTargetFeaturesChange ());
-  if (! targetFeaturesChange. empty ())
-    os << "  " << targetFeaturesChange;
-
-	if (verbose ())
-	{
-		ONumber oNum (os, 1, false);  // PAR
-	  os << "  dist=" << getDistance ();
-	}
-#endif
-	
-#if 0
-	os << fixed << setprecision (3);  // PAR
-	FOR (unsigned char, j, 2)
-	  FOR (unsigned char, i, 2)
-	    os << " w[" << (int) i << "][" << (int) j << "]=" << weight [i] [j];
-#endif
 }
-
-
-
-#if 0
-bool Phyl::getSaveSubtreeP () const 
-{ 
-  return ! getFeatureTree (). savePhenChangesOnly || hasPhenChange;
-}
-#endif
 
 
 
@@ -218,7 +172,7 @@ size_t Phyl::getCoreSize () const
   ASSERT (getFeatureTree (). coreSynced);   
 
   size_t n = getFeatureTree (). commonCore. size ();
-  FOR (size_t, i, getFeatureTree (). genes)
+  FOR (size_t, i, getFeatureTree (). features. size ())
     if (core [i])
     	n++;
   return n;
@@ -231,7 +185,7 @@ size_t Phyl::getCoreChange (bool gain) const
 	ASSERT (getFeatureTree (). coreSynced);
 
 	size_t d = 0;
-	FOR (size_t, i, getFeatureTree (). genes)
+	FOR (size_t, i, getFeatureTree (). features. size ())
 	  if (   core [i]               == gain
 	  	  && feature2parentCore (i) != gain
 	  	 )
@@ -246,7 +200,7 @@ Real Phyl::getDistance () const
 	ASSERT (getFeatureTree (). coreSynced);
 
 	Real d = getPooledDistance ();
-	FOR (size_t, i, getFeatureTree (). genes)
+	FOR (size_t, i, getFeatureTree (). features. size ())
   	d += feature2weight (i, core [i], feature2parentCore (i));
   ASSERT (d >= 0);
 #ifndef NDEBUG
@@ -255,8 +209,8 @@ Real Phyl::getDistance () const
   	cout << getName () << "  " << endl;
   	saveContent (cout);
   	cout << endl;
-  	FOR (unsigned char, i, 2)
-	  	FOR (unsigned char, j, 2)
+  	for (const bool i : {false, true})
+    	for (const bool j : {false, true})
 	  	  cout << "weight [" << (int) i << "][" << (int) j << "] = " << weight [i] [j] << endl;
   	ERROR;
   }
@@ -279,8 +233,8 @@ Real Phyl::getSubtreeLength () const
 
 void Phyl::getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const
 {
-  FOR (unsigned char, thisCore, 2)
-    FOR (unsigned char, parentCore, 2)
+	for (const bool thisCore : {false, true})
+  	for (const bool parentCore : {false, true})
       parent2corePooled [thisCore] [parentCore] = 0;
   parent2corePooled [true] [getParent () ? true : ! FeatureTree::emptyRoot] = getFeatureTree (). commonCore. size ();
   parent2corePooled [false] [false] = getFeatureTree (). globalSingletonsSize;
@@ -294,18 +248,18 @@ Real Phyl::getPooledDistance () const
   getParent2corePooled (parent2corePooled);
 
   Real d = 0;
-  FOR (unsigned char, thisCore, 2)
-    FOR (unsigned char, parentCore, 2)
+	for (const bool thisCore : {false, true})
+  	for (const bool parentCore : {false, true})
       d += multiplyLog ((Real) parent2corePooled [thisCore] [parentCore], feature2weight (thisCore, parentCore));
   
   if (! (d >= 0))
   {
     cout << getName () << " " << d << endl;
-    FOR (unsigned char, thisCore, 2)
-      FOR (unsigned char, parentCore, 2)
+  	for (const bool thisCore : {false, true})
+    	for (const bool parentCore : {false, true})
         cout << "parent2corePooled [" << (int) thisCore << "] [" << (int) parentCore << "] = " << parent2corePooled [thisCore] [parentCore] << endl;
-    FOR (unsigned char, thisCore, 2)
-      FOR (unsigned char, parentCore, 2)
+  	for (const bool thisCore : {false, true})
+    	for (const bool parentCore : {false, true})
         cout << "feature2weight ["    << (int) thisCore << "] [" << (int) parentCore << "] = " << feature2weight (thisCore, parentCore) << endl;
     ERROR;
   }
@@ -381,17 +335,17 @@ void Phyl::assignFeature (size_t featureIndex)
   const_cast <FeatureTree&> (getFeatureTree ()). coreSynced = false;
 
 	Real childrenCoreDistance [2/*bool thisCore*/];
-	FOR (unsigned char, thisCore, 2)
+	for (const bool thisCore : {false, true})
 	{
     childrenCoreDistance [thisCore] = 0;
 		for (const DiGraph::Arc* arc : arcs [false])
 			childrenCoreDistance [thisCore] += static_cast <Phyl*> (arc->node [false]) -> parent2core [thisCore] [featureIndex]. treeLen;
   }
   
-	FOR (unsigned char, parentCore, 2)
+	for (const bool parentCore : {false, true})
 	{
 		Real distance [2/*bool thisCore*/];
-		FOR (unsigned char, thisCore, 2)
+  	for (const bool thisCore : {false, true})
 		  distance [thisCore] =   childrenCoreDistance [thisCore] 
 		                        + feature2weight (featureIndex, thisCore, parentCore);
 		const ebool featureCore = eqReal (distance [false], distance [true])
@@ -420,103 +374,6 @@ void Phyl::assignFeaturesDown ()
 
 
 
-#if 0
-string Phyl::getPhenChange (bool skipSingleNonSystems) const
-{ 
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (getFeatureTree (). distDistr. get ());
-
-	string s;
-	FOR_START (size_t, i, getFeatureTree (). genes, core. size ())
-	  if (core [i] != feature2parentCore (i))
-	  {
-	    const Feature& f (getFeatureTree (). features [i]);
-	    f. qc ();
-	    if (f. genomes == 1)
-	    {
-        const Strain* st = asStrain ();
-	      const Genome* g = asGenome ();
-	      if (st)
-	        g = st->getGenome ();
-	      if (getFeatureTree (). allTimeZero)
-	      {
-  	      ASSERT (   st 
-  	              && core [i] 
-  	              &&   st->getGenome () -> core [i] 
-  	              && ! st->getGenome () -> optionalCore [i]
-  	             );
-  	    }
-  	    else 
-	      {
- 	        ASSERT (g);
-  	      if (! (core [i] && ! g->optionalCore [i]))
-  	      {
-  	        cout << getName () << " " << (int) core [i] << endl;
-  	        cout << " " << (int) g->optionalCore [i] << endl;
-  	        ERROR;
-  	      }
-  	    }
-        ASSERT (g);
-	      if (skipSingleNonSystems && ! g->isSystemPhen (f. name))
-	        continue;
-	    }
-	    if (! s. empty ())
-	      s += ";";
-	  	s += f. name;
-	  	if (! core [i])
-	  	  s += "-";
-	  }
-	return s;
-}
-
-
-
-string Phyl::getTargetFeatureChange (const TargetFeature &tf) const
-{ 
-  if (   tf. index == NO_INDEX
-      || core [tf. index] == feature2parentCore (tf. index)
-     )
-    return string ();
-  return tf. getName () + (core [tf. index] ? "" : "-");
-}
-
-
-
-string Phyl::getTargetFeaturesChange () const
-{ 
-  string s;
-  for (const TargetFeature& tf : getFeatureTree (). targetFeatures)
-  {
-    const string c (getTargetFeatureChange (tf));
-    if (c. empty ())
-      continue;
-    if (! s. empty ())
-      s += ",";
-    s += c;
-  }
-  return s;
-}
-
-
-
-void Phyl::setHasPhenChange ()
-{
-  const string phenChange (! getFeatureTree (). targetFeatures. empty ()
-                             ? getTargetFeaturesChange ()
-                             : getPhenChange (true)
-                          );
-  hasPhenChange = ! phenChange. empty ();
-	for (DiGraph::Arc* arc : arcs [false])
-	{
-	  Phyl* s = static_cast <Phyl*> (arc->node [false]);
-	  s->setHasPhenChange ();
-	  maximize (hasPhenChange, s->hasPhenChange);
-	}
-}
-#endif
-
-
-
 
 // Species
 
@@ -540,8 +397,8 @@ Species::Species (FeatureTree &tree,
 , pooledSubtreeDistance_old (NAN)
 , movementsOn (false)
 {
-	FOR (unsigned char, i, 2)
-		FOR (unsigned char, j, 2)
+	for (const bool i : {false, true})
+  	for (const bool j : {false, true})
 		  weight_old [i] [j] = NAN;
 }
 
@@ -585,6 +442,7 @@ double Species::getParentDistance () const
 
 
 
+#if 0
 string Species::getNewickName (bool /*minimal*/) const
 {
 	ASSERT (getFeatureTree (). coreSynced);
@@ -605,6 +463,7 @@ string Species::getNewickName (bool /*minimal*/) const
 
 	return bestF ? bestF->name : string ();  
 }
+#endif
 
 
 
@@ -614,7 +473,7 @@ void Species::setWeight ()
       || ! getFeatureTree (). featuresExist ()
       || isNan (getFeatureTree (). lambda0)
      )
-		FOR (unsigned char, parentCore, 2)
+  	for (const bool parentCore : {false, true})
 	  {
 	  	// Parsimony method
 	    weight [  parentCore] [parentCore] = 0;
@@ -625,11 +484,11 @@ void Species::setWeight ()
 	  ASSERT (time >= 0);
 	 	const Prob a = 1 - exp (- time);
 	 	ASSERT (isProb (a));
-		FOR (unsigned char, parentCore, 2)
+  	for (const bool parentCore : {false, true})
 	  {
 	  	const Prob changeProb = negateProb (getFeatureTree (). lambda0, parentCore) * a;
 			ASSERT (isProb (changeProb));
-		  FOR (unsigned char, thisCore, 2)
+    	for (const bool thisCore : {false, true})
 		  {
 		  	const Prob p = negateProb (changeProb, parentCore == thisCore); 
 		  	const Real w = - log (p);
@@ -652,236 +511,6 @@ void Species::setCore ()
 
 
 
-#if 0
-void Species::saveDatabaseTopology (Server &db,
-	                                  bool &parent_STRAIN)
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	
-	const_cast <FeatureTree&> (getFeatureTree ()). progInternal ();
-
-	
-  bool this_STRAIN = true;
-  if (const Fossil* f = static_cast <const Fossil*> (getParent ()))
-  {
-  	// SPECIES, STRAIN
-  	ASSERT (f->id);
-	  CQuery query (db.NewQuery());
-    query.SetParameter("@id", 0, eSDB_Int4, eSP_InOut);
-	  if (parent_STRAIN)
-	  {
-		  query.SetParameter("@strain_id", (int) f->id);
-		  query.ExecuteSP("STRAIN_split");
-		}
-	  else
-	  {
-		  query.SetParameter("@species_id", (int) f->id);
-		  query.ExecuteSP("SPECIES_split");
-		}
-	  id = (uint) query.GetParameter("@id").AsInt4();
-	  parent_STRAIN = false;
-  }
-  else
-  {
-    ASSERT (id);
-	  CQuery query (db.NewQuery());
-	  query.SetSql("select null from STRAIN where id = @id");
-	  query.SetParameter("@id", (int) id);
- 	  this_STRAIN = exists (query);
-	}
-  ASSERT (id);
-
-
-#ifndef NDEBUG
-  uint prevId = id;
-#endif  
-	for (const DiGraph::Arc* arc : arcs [false])
-	{
-		Phyl* s = static_cast <Phyl*> (arc->node [false]);
-	  s->saveDatabaseTopology (db, this_STRAIN);
-	#ifndef NDEBUG
-	  if (const Fossil* f = s->asFossil ())
-	  {
-		  ASSERT (f->id > prevId);
-		  prevId = f->id;
-		}
-	#endif  
-	}
-}
-
-
-
-void Species::saveDatabaseNode (Server &db) const
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (id);
-
-	
-	FeatureTree& tree = const_cast <FeatureTree&> (getFeatureTree ());
-	
-	tree. progInternal (getName ());
-  
-
-  // SPECIES  
-  {
-	  CQuery speciesQuery (db.NewQuery());
-	  speciesQuery.SetSql("\
-update SPECIES \
-  set core_size = @core_size \
-    , [time] = @time \
-  where id = @id");
-	  speciesQuery.SetParameter("@id", (int) id);
-	  speciesQuery.SetParameter("@core_size", (int) getCoreSize ());
-	  speciesQuery.SetParameter("@time", time);
-	  speciesQuery.Execute();
-	  ASSERT (speciesQuery.GetRowCount() == 1);
-	}
-
-
-  // SPECIES_PROT
-  {
-    CQuery insQuery (db.NewQuery());
-    insQuery.SetSql("\
-insert into SPECIES_PROT \
-         ( species,  prot, gain) \
-  values (@species, @prot,    1)");
-  	insQuery.SetParameter("@species", (int) id);
-  	//
-    CQuery delQuery (db.NewQuery());
-    delQuery.SetSql("\
-update SPECIES_PROT \
-  set gain = 0 \
-  where     species = @species \
-        and prot    = @prot");
-  	delQuery.SetParameter("@species", (int) id);
-  	if (const Fossil* parent_ = static_cast <const Fossil*> (getParent ()))
-  	{
-  		ASSERT (parent_->id);
-  		{
-  		  CQuery borrowQuery (db.NewQuery());
-  		  borrowQuery.SetSql("\
-insert into SPECIES_PROT ( species, prot) \
-  select                           @species, prot \
-    from SPECIES_PROT \
-    where     species = @parent_id \
-          and isnull(gain,1) = 1");
-  			borrowQuery.SetParameter("@species", (int) id);
-  			borrowQuery.SetParameter("@parent_id", (int) parent_->id);
-  	    borrowQuery.Execute();
-  		}
-  	  FOR (size_t, i, tree. genes)
-  	    if (core [i] && ! parent_->core [i])
-  	    {
-  		    insQuery.SetParameter("@prot", tree. features [i]. geneId ());
-  	      insQuery.Execute();
-  	    }
-  	    else if (! core [i] && parent_->core [i])
-  	    {
-  		    delQuery.SetParameter("@prot", tree. features [i]. geneId ());
-  	      delQuery.Execute();
-  	    }
-  	}
-  	else
-  	{
-  		for (const Feature::Id& fId : tree. commonCore)
-  	  {
-  	    insQuery.SetParameter("@prot", str2<int> (fId));
-  	    insQuery.Execute();
-  	  }
-  	  FOR (size_t, i, tree. genes)
-  	    if (core [i])
-  	    {
-  		    insQuery.SetParameter("@prot", tree. features [i]. geneId ());
-  	      insQuery.Execute();
-  	    }
-  	}
-  }
-
-
-	for (const DiGraph::Arc* arc : arcs [false])
-		static_cast <Phyl*> (arc->node [false]) -> saveDatabaseNode (db);
-}
-
-
-
-void Species::saveDatabasePhen (Server &db) const
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (id);
-
-	
-	FeatureTree& tree = const_cast <FeatureTree&> (getFeatureTree ());
-	
-	tree. progInternal (getName ());
-  
-
-  // SPECIES_PHEN
-  {
-    CQuery query (db.NewQuery());
-    query.SetSql("delete from SPECIES_PHEN where species = @species");
-  	query.SetParameter("@species", (int) id);
-  	query.Execute();
-  }
-  // Cf. SPECIES_PROT
-  {
-    CQuery insQuery (db.NewQuery());
-    insQuery.SetSql("\
-insert into SPECIES_PHEN \
-         ( species,  phen, gain) \
-  values (@species, @phen,    1)");
-  	insQuery.SetParameter("@species", (int) id);
-  	//
-    CQuery delQuery (db.NewQuery());
-    delQuery.SetSql("\
-update SPECIES_PHEN \
-  set gain = 0 \
-  where     species = @species \
-        and phen    = @phen");
-  	delQuery.SetParameter("@species", (int) id);
-  	if (const Fossil* parent_ = static_cast <const Fossil*> (getParent ()))
-  	{
-  		ASSERT (parent_->id);
-  		{
-  		  CQuery borrowQuery (db.NewQuery());
-  		  borrowQuery.SetSql("\
-insert into SPECIES_PHEN ( species, phen) \
-  select                  @species, phen \
-    from SPECIES_PHEN \
-    where     species = @parent_id \
-          and isnull(gain,1) = 1");
-  			borrowQuery.SetParameter("@species", (int) id);
-  			borrowQuery.SetParameter("@parent_id", (int) parent_->id);
-  	    borrowQuery.Execute();
-  		}
-  	  FOR_START (size_t, i, tree. genes, core. size ())
-  	    if (core [i] && ! parent_->core [i])
-  	    {
-  		    insQuery.SetParameter("@phen", tree. features [i]. name);
-  	      insQuery.Execute();
-  	    }
-  	    else if (! core [i] && parent_->core [i])
-  	    {
-  		    delQuery.SetParameter("@phen", tree. features [i]. name);
-  	      delQuery.Execute();
-  	    }
-  	}
-  	else
-  	  FOR_START (size_t, i, tree. genes, core. size ())
-  	    if (core [i])
-  	    {
-  		    insQuery.SetParameter("@phen", tree. features [i]. name);
-  	      insQuery.Execute();
-  	    }
-  }
-
-
-	for (const DiGraph::Arc* arc : arcs [false])
-		static_cast <Phyl*> (arc->node [false]) -> saveDatabasePhen (db);
-}
-#endif
-
-
-
 namespace {
 
 struct TimeFunc : Func1
@@ -900,8 +529,8 @@ struct TimeFunc : Func1
 		{
       ASSERT (! tree. allTimeZero);
     //ASSERT (nodes);
-   	  FOR (unsigned char, i, 2)
-   	    FOR (unsigned char, j, 2)
+    	for (const bool i : {false, true})
+      	for (const bool j : {false, true})
    	      parent2core [i] [j] = (Real) parent2core_arg [i] [j];
    	//parent2core [false] [false] +=        tree->commonMissings      * (Real) nodes;
 	  //parent2core [true] [true]   += (Real) tree->commonCore. size () /* * (Real) nodes*/;
@@ -915,7 +544,7 @@ struct TimeFunc : Func1
   	const Prob a = 1 - exp (- x);
   	
   	Real lhs = 0;
-  	FOR (unsigned char, c, 2)
+  	for (const bool c : {false, true})
   		if (const Prob denomin = a)
   	    lhs += parent2core [! c] [c] / denomin;
   	  else
@@ -923,7 +552,7 @@ struct TimeFunc : Func1
   	ASSERT (lhs >= 0);
   	  
   	Real rhs = 0;
-  	FOR (unsigned char, c, 2)
+  	for (const bool c : {false, true})
   		if (const Real denomin = 1 / negateProb (tree. lambda0, c) - a)
   	    rhs += parent2core [c] [c] / denomin;
   	  else
@@ -979,7 +608,7 @@ Real Species::getTime () const
 
   size_t parent2core_ [2/*thisCore*/] [2/*parentCore*/];
   getParent2corePooled (parent2core_);	  
-	FOR (size_t, i, getFeatureTree (). genes)
+	FOR (size_t, i, getFeatureTree (). features. size ())
 	  parent2core_ [core [i]] [feature2parentCore (i)] ++;
 	  
   const Real t = coreChange2time (getFeatureTree (), parent2core_ /*, 1*/);
@@ -995,8 +624,8 @@ void Species::assignTime ()
 	IMPLY (! getFeatureTree (). allTimeZero, ! isNan (time));
 	
 	time_old = time;
-	FOR (unsigned char, i, 2)
-		FOR (unsigned char, j, 2)
+	for (const bool i : {false, true})
+  	for (const bool j : {false, true})
 		  weight_old [i] [j] = weight [i] [j];
 
   setTimeWeight ();
@@ -1009,8 +638,8 @@ void Species::restoreTime ()
 	IMPLY (! getFeatureTree (). allTimeZero, ! isNan (time_old));
 	
 	time = time_old;
-	FOR (unsigned char, i, 2)
-		FOR (unsigned char, j, 2)
+	for (const bool i : {false, true})
+  	for (const bool j : {false, true})
 		  weight [i] [j] = weight_old [i] [j];
 	
 	commitTime ();
@@ -1035,7 +664,7 @@ Real Species::feature2treeLength (size_t featureIndex) const
 Real Species::root2treeLength () const
 {
   Real s = pooledSubtreeDistance;
-  FOR (size_t, i, getFeatureTree (). genes)
+  FOR (size_t, i, getFeatureTree (). features. size ())
     s += feature2treeLength (i);
   return s;
 }
@@ -1087,7 +716,7 @@ void Species::rememberAllFeatures ()
   rememberFeatures ();
 
   movements. reserve (2 * parent2core [false]. size ());
-  FOR (unsigned char, parentCore, 2)
+	for (const bool parentCore : {false, true})
     FOR (size_t, featureIndex, parent2core [parentCore]. size ())
       movements << Movement (parentCore, featureIndex, parent2core [parentCore] [featureIndex]);
 }
@@ -1224,7 +853,7 @@ void Strain::assignFeatures ()
   // singletonsInCore
 	Real distance [2/*bool thisCore*/];
 	const Genome* g = getGenome ();
-	FOR (unsigned char, thisCore, 2)
+	for (const bool thisCore : {false, true})
 	  distance [thisCore] =   g->feature2weight (true,     thisCore)
 	                        +    feature2weight (thisCore, false);
   singletonsInCore = leReal (distance [true], distance [false]);  
@@ -1241,21 +870,6 @@ Real Strain::getPooledSubtreeDistance () const
 
 
 
-#if 0
-string Strain::getTargetFeatureChange (const TargetFeature &tf) const
-{ 
-  if (tf. index == NO_INDEX)
-    if (singletonsInCore && getGenome () -> singletons. contains (tf. featureId))
-      return tf. getName ();
-    else
-      return string ();
-  else
-    return Species::getTargetFeatureChange (tf);
-}
-#endif
-
-
-
 size_t Strain::orphans () const
 {
   ASSERT (getFeatureTree (). coreSynced);
@@ -1264,7 +878,7 @@ size_t Strain::orphans () const
   if (const Fossil* p = static_cast <const Fossil*> (getParent ()))
   {
     const Genome* g = getGenome ();
-    FOR (size_t, i, getFeatureTree (). genes)
+    FOR (size_t, i, getFeatureTree (). features. size ())
       if (   p->core [i] == g->core [i] 
           && p->core [i] !=    core [i]
          )
@@ -1292,249 +906,72 @@ Genome::Genome (FeatureTree &tree,
 
 
 
-#if 0
-void Genome::initDb (Server &db)
+void Genome::initDir (const string &geneDir)
 {
-  ASSERT (coreSet. empty ());
-  ASSERT (id);
-  ASSERT (! coreNonSingletons);
-
-	{
-	  CQuery query (db.NewQuery());
-		query.SetSql ("\
-select /* 1*/ GENOME.serovar \
-     , /* 2*/ GENOME.pathovar \
-     , /* 3*/ GENOME.odd_cdss \
-     , /* 4*/ GENOME.project_id \
-     , /* 5*/ GENOME.tax \
-     , /* 6*/ TAX.name \
-     , /* 7*/ SUBSP.name \
-     , /* 8*/ SP.name \
-     , /* 9*/ GENUS.name \
-     , /*10*/ COUNTRY.continent \
-     , /*11*/ GENOME.L50 \
-     , /*12*/ GENOME.sequencer \
-     , /*13*/ GENOME.pubmed \
-     , /*14*/ OUTBREAK.name \
-     , /*15*/ OUTBREAK.year \
-     , /*16*/ GENOME.class \
-  from           GENOME \
-            join TAX on TAX.id = GENOME.tax \
-            join GENOMETAX on GENOMETAX.id = GENOME.tax \
-       left join TAXSPECIES on TAXSPECIES.id = GENOMETAX.taxspecies \
-       left join TAX SUBSP on SUBSP.id = GENOMETAX.subspecies \
-       left join TAX SP on SP.id = GENOMETAX.taxspecies \
-       left join TAX GENUS on GENUS.id = TAXSPECIES.genus \
-       left join COUNTRY on COUNTRY.id = GENOME.country \
-       left join OUTBREAK on OUTBREAK.id = GENOME.outbreak \
-  where GENOME.id = @id");
-	  query.SetParameter("@id", (int) id);
-	  query.Execute();
-	  ITERATE(CQuery, row, query) 
-	  {
-	    ASSERT (! project_id);
-      serovar           =          row[ 1].AsString();
-      pathovar          =          row[ 2].AsString();
-      oddCdss           = (size_t) row[ 3].AsInt4();  
-      project_id        = (uint)   row[ 4].AsInt4();
-      tax_id            = (uint)   row[ 5].AsInt4();
-      taxName           =          row[ 6].AsString();
-      subspecies        =          row[ 7].AsString();
-      taxSpecies        =          row[ 8].AsString();
-      genus             =          row[ 9].AsString();
-      continent         =          row[10].AsString();
-      L50               = (uint)   row[11].AsInt4();
-      sequencer         =          row[12].AsString();
-      pubmed            = (uint)   row[13].AsInt4();
-      outbreakName      =          row[14].AsString();
-      outbreakYear      = (uint)   row[15].AsInt4();
-      phylogeneticClass =          row[16].AsString();
-    }
-  }
-  
-  // subspecies
-  if (! taxSpecies. empty () && isLeft (subspecies, taxSpecies + " "))
-    subspecies. erase (0, taxSpecies. size () + 1);
-
-  // taxSpecies    
-  if (! genus. empty () && isLeft (taxSpecies, genus + " "))
-    taxSpecies. erase (0, genus. size () + 1);
-
-#if 0
-  // subspecies
-  const string subsp ("subsp. ");
-  if (isLeft (subspecies, subsp))
-    subspecies. erase (0, subsp. size ());
-  if (! subspecies. empty () && subspecies == taxSpecies)
-    subspecies = subsp + subspecies;
-#endif
-    
-  // isolate
-  if (project_id)
-	{
-	  CQuery query (db.NewQuery());
-		query.SetSql ("\
-select distinct isolate \
-  from BIOPROJECT \
-  where     gb = @gb \
-        and isolate is not null");
-	  query.SetParameter("@gb", (int) project_id);
-	  query.Execute();
-	  ITERATE(CQuery, row, query) 
-	  {
-	    ASSERT (isolate. empty ());
-	    isolate = row[1].AsString();
-	  }
-  }
-
-  // coreSet
-  // Load partial CDSs as optionalCore[] = true ??
-  {
-	  CQuery query (db.NewQuery());
-		query.SetSql ("\
-select distinct ORF.prot \
-  from      ORF \
-       join GDNA on GDNA.nucl_gi = ORF.gdna \
-  where     GDNA.genome = @genome \
-        and ORF.consistent = 1 \
-  option (loop join)");
-	  query.SetParameter("@genome", (int) id);
-	  query.Execute();
-	  ITERATE(CQuery, row, query) 
-	    coreSet << toString (row[1].AsInt4());
-	}
-
-  coreNonSingletons = coreSet. size ();  // Includes singletons and common core
-  
-  // phens
-  {
-	  CQuery query (db.NewQuery());
-		query.SetSql ("\
-select GENOME_PHEN.phen, GENOME_PHEN.optional \
-  from           GENOME_PHEN \
-            join GENOME on GENOME.id = GENOME_PHEN.genome \
-       left join PAN_PHEN on     PAN_PHEN.pan = GENOME.pan \
-                             and PAN_PHEN.phen = GENOME_PHEN.phen \
-  where     GENOME_PHEN.genome = @genome \
-        and (   PAN_PHEN.pan is null \
-             or GENOME_PHEN.optional = 0 \
-            )");
-	  query.SetParameter("@genome", (int) id);
-	  query.Execute();
-	  ITERATE(CQuery, row, query) 
-	    addPhen (row[1].AsString(), 
-	             row[2].AsInt4());
-	}
-  {
-	  CQuery query (db.NewQuery());
-		query.SetSql ("\
-select PAN_PHEN.phen \
-  from           GENOME \
-            join PAN_PHEN on PAN_PHEN.pan = GENOME.pan \
-       left join GENOME_PHEN on     GENOME_PHEN.genome = GENOME.id \
-                                and GENOME_PHEN.phen = PAN_PHEN.phen \
-  where     GENOME.id = @genome \
-        and GENOME_PHEN.genome is null");
-	  query.SetParameter("@genome", (int) id);
-	  query.Execute();
-	  ITERATE(CQuery, row, query) 
-	    addPhen (row[1].AsString(), true);
-	}
-	addSystemPhens ();
-}
-#endif
-
-
-
-void Genome::initDir (const string &geneDir,
-                      const string &phenDir)
-{
-  ASSERT (coreSet. empty ());
   ASSERT (! id. empty ());
+  ASSERT (coreSet. empty ());
   ASSERT (! coreNonSingletons);
-
  
-  // geneDir
   if (! geneDir. empty ())
   {
-    ifstream f (geneDir + "/" + id);
-    ASSERT (f. good ());
+    LineInput f (geneDir + "/" + id);
     // coreSet
-    for (;;)
+    while (f. nextLine ())
     {
-    	Feature::Id geneName;
-    	f >> geneName;
-  	  if (f. eof ())
-  	  {
-      	ASSERT (geneName. empty ());
-  	  	break;
-  	  }
-    	ASSERT (! geneName. empty ());
-      coreSet << geneName; 
-    }
-  }
-  if (verbose ())
-    cout << id << ": core=" << coreSet. size () << endl;
-
-
-  // phenDir
-  if (! phenDir. empty ())
-  {
-    ifstream f (phenDir + "/" + id);
-    ASSERT (f. good ());
-
-    const size_t len = 1024;  // PAR
-    char s [len];
-  
-  #if 0
-    #define READ(P)   { f. getline (s, len); stringstream ss (string (s). substr (strlen (#P "="))); ss >> P; }
-    #define READS(P)  { f. getline (s, len); stringstream ss (string (s). substr (strlen (#P "="))); P = ss. str (); trim (P); }
-    READS (subspecies);
-    READS (taxSpecies);
-    READS (genus);
-    READS (serovar);
-    READS (pathovar);
-    READS (continent);
-    READ  (oddCdss);
-    READ  (project_id);
-    READ  (tax_id);
-    READS (taxName);  
-    READ  (L50);
-    READS (sequencer);
-    READ  (pubmed);
-    READS (outbreakName);
-    READ  (outbreakYear);
-    READS (phylogeneticClass);
-    READS (isolate);
-    #undef READ
-    #undef READS
-    f. getline (s, len);
-    ASSERT (strlen (s) == 0);
-  #endif
-    
-    // phens
-    while (! f. eof ())
-    {
-      f. getline (s, len);
-      stringstream ss (s);
-      Feature::Id phen;
-      bool optional;
-      ss >> phen;
-      if (phen == "nophenotypes")
+      Feature::Id geneName;
+      bool optional = false;
+      trim (f. line);
+      replace (f. line, '\t', ' ');
+      if (! contains (f. line, ' '))
+        geneName = f. line;
+      else
       {
-        hasPhens = false;
-        break;
+        stringstream ss (f. line);
+        ss >> geneName >> optional;
       }
-      ss >> optional;
-      addPhen (phen, optional);
+      ASSERT (! geneName. empty ());
+      if (contains (coreSet, geneName))
+        ERROR_MSG ("Gene \"" + geneName + "\" already exists in genome " + getName ());
+      coreSet [geneName] = optional;
     }
-  #if 0
-    addSystemPhens ();
-  #endif
   }
-
   
   coreNonSingletons = coreSet. size ();  // Includes singletons and common core
+}
+
+
+
+void Genome::coreSet2nominals (Nominals &globalNominals) 
+{
+  ASSERT (nominals. empty ());
+	for (const auto it : coreSet)
+	{
+	  const string& geneName = it. first;
+	  if (it. second)
+	    throw runtime_error ("Optional nominal attribute " + geneName);
+	  const size_t pos = geneName. find (':');
+	  if (pos == string::npos)
+	    continue;
+	  const string attrName = geneName. substr (0, pos);
+	  const string value    = geneName. substr (pos + 1);
+	  if (attrName. empty ())
+	    throw runtime_error ("Empty nominal attribute name: " + geneName);
+	  if (value. empty ())
+	    throw runtime_error ("Empty nominal attribute value: " + geneName);
+	  if (! nominals. checkUnique (attrName))
+	    throw runtime_error ("Duplicate nominal attribute: " + attrName);
+	  globalNominals [attrName] << value;
+	}
+}
+
+
+
+void Genome::nominals2coreSet ()
+{
+  for (const auto it : getFeatureTree (). nominals)
+    if (! nominals. contains (it. first))
+      for (const string& value : it. second)
+        coreSet [it. first + ":" + value] = true;
 }
 
 
@@ -1547,39 +984,17 @@ void Genome::init (const map <Feature::Id, size_t/*index*/> &feature2index)
 
 	ASSERT (optionalCore. empty ());
 	optionalCore. resize (core. size (), false); 
-
-  // coreSet
-  // optionalCore[] ??
-	for (const Feature::Id& fId : coreSet)
+	for (const auto it : coreSet)
 	{
-		ASSERT (feature2index. find (fId) != feature2index. end ());
-		const size_t featureIndex = feature2index. at (fId);
-		FOR (unsigned char, parentCore, 2)
+		ASSERT (contains (feature2index, it. first));
+		const size_t featureIndex = feature2index. at (it. first);
+		for (const bool parentCore : {false, true})
 	    parent2core [parentCore] [featureIndex]. core = ETRUE;
 	  core [featureIndex] = true;
+    optionalCore [featureIndex] = it. second;
 	}
 
-  // phens
-  if (hasPhens)
-  	for (const auto it : phens)
-  	{
-  		ASSERT (feature2index. find (it. first) != feature2index. end ());
-  		const size_t featureIndex = feature2index. at (it. first);
-  		FOR (unsigned char, parentCore, 2)
-  	    parent2core [parentCore] [featureIndex]. core = ETRUE;
-  	  core [featureIndex] = true;
-  	  if (it. second)
-  	    optionalCore [featureIndex] = true;
-  	}
-  else
-  {
-    ASSERT (phens. empty ());
-    FOR_START (size_t, i, getFeatureTree (). genes, optionalCore.size ())
-      optionalCore [i] = true;
-  }
-
 	coreSet. clear ();
-	phens. clear ();
 }
 
 
@@ -1603,25 +1018,15 @@ void Genome::qc () const
 //ASSERT (leReal (weight [false] [false], weight [true] [true]));
 
   ASSERT (! id. empty ());
+  ASSERT (! contains (id, ' '));
   ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
 	ASSERT (coreSet. empty ());
 	IMPLY (getFeatureTree (). coreSynced, coreNonSingletons >= getCoreSize ());
-	ASSERT (phens. empty ());
 	
 	ASSERT (! singletons. intersects (getFeatureTree (). commonCore));
 	
-	IMPLY (! hasPhens, phens. empty ());
-
-#if 0
-//ASSERT (project_id);
-//ASSERT (tax_id);
-//ASSERT (! taxName. empty ());
-	ASSERT (outbreakName. empty () == ! outbreakYear);
-//ASSERT (L50);
-	
-//ASSERT (! contains (serovar, ":"));
-	ASSERT (! contains (pathovar, ":"));
-#endif
+	for (const string& attrName : nominals)
+	  ASSERT (contains (getFeatureTree (). nominals, attrName));
 }
 
 
@@ -1657,7 +1062,7 @@ void Genome::setWeight ()
       || ! getFeatureTree (). featuresExist ()
       || isNan (getFeatureTree (). lambda0)
      )
-		FOR (unsigned char, parentCore, 2)
+  	for (const bool parentCore : {false, true})
 	  {
 	  	// Parsimony method
 	    weight [  parentCore] [parentCore] = 0;
@@ -1717,212 +1122,12 @@ void Genome::assignFeature (size_t featureIndex)
   if (optionalCore [featureIndex])
     Phyl::assignFeature (featureIndex);
   else
-  	FOR (unsigned char, parentCore, 2)
+  	for (const bool parentCore : {false, true})
     {
     	const ebool core_old = parent2core [parentCore] [featureIndex]. core;
     	ASSERT (core_old != UBOOL);
     	setCoreEval (featureIndex, parentCore, CoreEval (feature2weight (featureIndex, core_old, parentCore), core_old));
     }
-}
-
-
-
-#if 0
-string Genome::getTargetFeatureChange (const TargetFeature &tf) const
-{ 
-  if (tf. index == NO_INDEX)
-    if (! getStrain () -> singletonsInCore && singletons. contains (tf. featureId))
-      return tf. getName ();
-    else
-      return string ();
-  else
-    return Phyl::getTargetFeatureChange (tf);
-}
-#endif
-
-
-
-#if 0
-void Genome::saveDatabaseTopology (Server &db,
-	                                 bool &parent_STRAIN)
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (parent_STRAIN);
-  const Strain* f = getStrain ();
- 	ASSERT (f->id);
-
-	const_cast <FeatureTree&> (getFeatureTree ()). progInternal ();
-
-  CQuery query (db.NewQuery());
-  query.SetParameter("@genome", (int) id);
-  query.SetParameter("@strain", (int) f->id);
-  query.ExecuteSP("GENOME_strain");
-}
-
-
-
-void Genome::saveDatabaseNode (Server &db) const
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (id);
-	
-	FeatureTree& tree = const_cast <FeatureTree&> (getFeatureTree ());	
-	tree. progInternal (getName ());  
-
-	const Strain* st = getStrain ();
-	ASSERT (st->id);
-
-  // GENOME
-  {
-    CQuery query (db.NewQuery());
-    query.SetSql("\
-update GENOME \
-  set missed_prots = @missed_prots \
-    , extra_prots = @extra_prots \
-    , singleton_prots = @singleton_prots \
-    , singleton_prots_in_core = @singleton_prots_in_core \
-  where id = @id");
-    query.SetParameter("@id", (int) id);
-    query.SetParameter("@missed_prots", (int) getCoreChange (false));
-    query.SetParameter("@extra_prots",  (int) getCoreChange (true));
-    query.SetParameter("@singleton_prots",  (int) singletons. size ());
-    query.SetParameter("@singleton_prots_in_core",  (int) st->singletonsInCore);
-    query.Execute();
-    ASSERT (query.GetRowCount() == 1);
-  }
-  
-  // STRAIN_PROT 
-  {
-    CQuery query (db.NewQuery());
-    query.SetSql("\
-insert into STRAIN_PROT \
-         ( strain,  prot,  gain) \
-  values (@strain, @prot, @gain)");
-  	query.SetParameter("@strain", (int) st->id);
-    FOR (size_t, i, tree. genes)
-      if (core [i] != st->core [i])
-      {
-  	    query.SetParameter("@prot", tree. features [i]. geneId ());
-  	    query.SetParameter("@gain", core [i]);
-        query.Execute();
-      }
-    query.SetParameter("@gain", 1);
-    for (const Feature::Id& fId : singletons)
-    {
-	    query.SetParameter("@prot", Feature::id2geneId (fId));
-      query.Execute();
-    }
-  }
-}
-
-
-
-void Genome::saveDatabasePhen (Server &db) const
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (id);
-	
-	FeatureTree& tree = const_cast <FeatureTree&> (getFeatureTree ());	
-	tree. progInternal (getName ());  
-
-	const Strain* st = getStrain ();
-	ASSERT (st->id);
-
-  // STRAIN_PHEN
-  {
-    CQuery query (db.NewQuery());
-    query.SetSql("delete from STRAIN_PHEN where strain = @strain");
-  	query.SetParameter("@strain", (int) st->id);
-  	query.Execute();
-  }
-  {
-    CQuery query (db.NewQuery());
-    query.SetSql("\
-insert into STRAIN_PHEN \
-         ( strain,  phen,  gain) \
-  values (@strain, @phen, @gain)");
-  	query.SetParameter("@strain", (int) st->id);
-	  FOR_START (size_t, i, tree. genes, core. size ())
-      if (core [i] != st->core [i])
-      {
-  	    query.SetParameter("@phen", tree. features [i]. name);
-  	    query.SetParameter("@gain", core [i]);
-        query.Execute();
-      }
-  }
-}
-
-
-
-void Genome::saveFeatures (const string &dir) const
-{
-	ASSERT (! dir. empty ());
-	
-	OFStream f (dir, toString (id), "");
-
-  #define WRITE(P)  f << #P "=" << P << endl
-  WRITE (subspecies);
-  WRITE (taxSpecies);
-  WRITE (genus);
-  WRITE (serovar);
-  WRITE (pathovar);
-  WRITE (continent);
-  WRITE (oddCdss);
-  WRITE (project_id);
-  WRITE (tax_id);
-  WRITE (taxName);  
-  WRITE (L50);
-  WRITE (sequencer);
-  WRITE (pubmed);
-  WRITE (outbreakName);
-  WRITE (outbreakYear);
-  WRITE (phylogeneticClass);
-  WRITE (isolate);
-  #undef WRITE
-  f << endl;
-	
-	// Phenotypes
-	FOR_START (size_t, i, getFeatureTree (). genes, core. size ())  
-	{
-	  const Feature::Id phenName (getFeatureTree (). features [i]. name);
-	  ASSERT (! singletons. contains (phenName));
-	  if (isSystemPhen (phenName))
-	    continue;
-	  if (optionalCore [i])
-	  	f << phenName << " 1" << endl;
-	  else if (core [i])
-	  	f << phenName << " 0" << endl;
-	}
-  f << endl;
-
-  // Genes
-  // optionalCore[] ??
-	FOR (size_t, i, getFeatureTree (). genes)
- 	{
-	  const Feature::Id geneName (getFeatureTree (). features [i]. name);
-	  ASSERT (! singletons. contains (geneName));
-	  if (core [i])
-	  	f << geneName << endl;
-	}
-	for (const Feature::Id& fId : getFeatureTree (). commonCore)
-		f << fId << endl;
-	for (const Feature::Id& fId : singletons)
-		f << fId << endl;
-}
-#endif
-
-
-
-void Genome::addPhen (const Feature::Id &phen,
-                      bool optional)
-{
-  if (phen. empty ())
-    return;
-  ASSERT (phen [0]);
-  ASSERT (phen [phen. size () - 1]);
-  if (phens. find (phen) != phens. end ())
-    ERROR_MSG ("Phenotype \"" + phen + "\" already exists in genome " + getName ());
-  phens [phen] = optional;
 }
 
 
@@ -1936,13 +1141,13 @@ void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
 	  ERROR;
 	}
 	
-	for (const Feature::Id& fId : coreSet)
-	  if (nonSingletons. contains (fId))
+	for (const auto it : coreSet)
+	  if (nonSingletons. contains (it. first))
 	  	;
-	  else if (globalSingletons. contains (fId))
-	  	setMove (& globalSingletons, & nonSingletons, fId);
+	  else if (globalSingletons. contains (it. first))
+	  	setMove (& globalSingletons, & nonSingletons, it. first);
 	  else
-	  	EXEC_ASSERT (globalSingletons. insert (fId). second);
+	  	EXEC_ASSERT (globalSingletons. insert (it. first). second);
 }
 
 
@@ -2640,64 +1845,8 @@ namespace
 
 
 
-// PAR
-//const Real FeatureTree::len_delta = 1e-2;  
-
-
-
-#if 0
-FeatureTree::FeatureTree (int root_species_id,
-	                        const string &treeFName,
-	                        Server &db)
-: inputTreeFName (treeFName)
-{
-	ASSERT (root_species_id > 0);
-	
-	
-	if (treeFName. empty ())
-	{
-		{
-  	  CQuery query (db.NewQuery());
-  		query.SetSql ("select lambda0, time_init from PAN where id = (select T.pan from SPECIES T where T.id = @species)");
-  	  query.SetParameter("@species", root_species_id);
-  	  query.Execute();
-  	  ITERATE(CQuery, row, query) 
-  	  {
-  	    ASSERT (isNan (lambda0));
-  	    lambda0   = AsDoubleNan (row[1]);
-  	    time_init = AsDoubleNan (row[2]);
-		  }
-		}
-		loadPhylDb (db, root_species_id, 0);
-  	}
-  else
-  	loadPhylFile (root_species_id, treeFName);
-  ASSERT (root);
-  ASSERT (nodes. front () == root);
-	ASSERT (static_cast <const Species*> (root) -> id == (uint) root_species_id);	
-
-  cerr << "Genomes ..." << endl;
-  {
-	  Progress prog;
-	 	for (const DiGraph::Node* node : nodes)
-	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-	 		{
-	 			prog (g->getName ());
-	      const_cast <Genome*> (g) -> initDb (db);
-	    }
-	}
-
-  abbreviate ();
-
-  finish (& db, string ());  
-}
-#endif
-
-
-
 FeatureTree::FeatureTree (const string &treeFName,
       						        const string &geneDir,
-      						        const string &phenDir,
       						        const string &coreFeaturesFName)
 : inputTreeFName (treeFName)
 {
@@ -2708,9 +1857,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const Phyl*> (root) -> asSpecies ());
 
-  if (   geneDir. empty () 
-      && phenDir. empty ()
-     )
+  if (geneDir. empty ())
     return;
     
   {
@@ -2720,92 +1867,12 @@ FeatureTree::FeatureTree (const string &treeFName,
 	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
 	 		{
 	 			prog (g->getName ());
-	      const_cast <Genome*> (g) -> initDir (geneDir, phenDir);
+	      const_cast <Genome*> (g) -> initDir (geneDir);
 	    }
 	}
 
   finish (coreFeaturesFName);  
 }
-
-
-
-#if 0
-void FeatureTree::loadPhylDb (Server &db,
-  	                          int species_id,
-                              Fossil* parent)
-{
-	ASSERT (species_id > 0);
-
-  Real time = NAN;	
-	{
-	  CQuery query (db.NewQuery());
-		query.SetSql ("select [time] from SPECIES where id = @species_id");
-	  query.SetParameter("@species_id", species_id);
-	  query.Execute();
-	  ITERATE(CQuery, row, query) 
-	  {
-	    ASSERT (isNan (time));
-	    time = AsDoubleNan (row[1]);
-	  }
-	}
-
-	bool isStrain = false;	
-	{
-	  CQuery query (db.NewQuery());
-		query.SetSql ("select null from STRAIN where id = @species_id");
-	  query.SetParameter("@species_id", species_id);
-    isStrain = exists (query);;
-	}
-	
-	if (isStrain)
-	{
-	  Vector<uint> ids;  
-	  {
-  	  CQuery query (db.NewQuery());
-  		query.SetSql ("\
-select id \
-  from GENOME \
-  where strain = @species_id");
-  	  query.SetParameter("@species_id", species_id);
-  	  query.Execute();
-  	  ITERATE(CQuery, row, query) 
-  	  	ids << (uint) row[1].AsInt4();
-  	}
-  	ASSERT (! ids. empty ());
-  	if (ids. size () == 1)
-  	{
-      auto s = new Strain (*this, parent, toString (isNan (time) ? ids [0] : (uint) species_id), time);  
-        // isNan(time) => there may be GENOME.id = species_id => duplicate Strain::getName()
-	  	new Genome (*this, s, toString (ids [0]));
-  	}
-  	else
-  	{
-	    auto phyl = new Fossil (*this, parent, toString (species_id), time);
-  	  for (const uint id : ids)
-  	  {
-    	  auto s = new Strain (*this, phyl, toString (id), isNan (phyl->time) ? NAN : 0.0);
-  	  	new Genome (*this, s, toString (it));
-  	  }
-  	}
-	}
-	else
-	{
-    auto f = new Fossil (*this, parent, toString (species_id), time);
-		Vector<int> subspecies;
-	  {
-		  CQuery query (db.NewQuery());
-			query.SetSql ("select id from SPECIES where parent = @species_id");
-		  query.SetParameter("@species_id", species_id);
-		  query.Execute();
-		  ITERATE(CQuery, row, query) 
-		    subspecies << row[1].AsInt4();
-	  }
-	  ASSERT (! subspecies. empty ());
-	  for (const int i : subspecies)
-	  	loadPhylDb (db, i, f);
-	}
-}
-#endif
 
 
 
@@ -2945,6 +2012,19 @@ void FeatureTree::loadPhylFile (/*int root_species_id,*/
 
 void FeatureTree::finish (const string &coreFeaturesFName)
 {
+  // nominals, Genome::nominals
+  ASSERT (nominals. empty ());
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  try { const_cast <Genome*> (g) -> coreSet2nominals (nominals); }
+ 		    catch (const exception &e)
+ 		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
+
+  // Genome::coreSet
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  const_cast <Genome*> (g) -> nominals2coreSet (); 
+
   // optionalCore[i] in all Genome's => remove Feature i ??
 
   // globalSingletons, nonSingletons
@@ -2982,7 +2062,6 @@ void FeatureTree::finish (const string &coreFeaturesFName)
   // features, feature2index
   ASSERT (features. empty ());
   map<Feature::Id, size_t/*index*/> feature2index;
-  // Feature::isGene
 #ifndef NDEBUG
   Feature::Id prevFeature;
 #endif
@@ -2990,26 +2069,13 @@ void FeatureTree::finish (const string &coreFeaturesFName)
   {
   	ASSERT (prevFeature < fId);
   	feature2index [fId] = features. size ();
-  	features << Feature (fId, true);
+  	features << Feature (fId);
   #ifndef NDEBUG
   	prevFeature = fId;
   #endif
   }
-  genes = features. size ();
-  ASSERT (genes == nonSingletons. size ());
-  // !Feature::isGene
-  {
-    Set<Feature::Id> phens;
-   	for (const DiGraph::Node* node : nodes)
-   		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-   	    for (const auto phenIt : g->phens)
-   	      phens << phenIt. first; 
-   	for (const Feature::Id& fId : phens)
-   	{
-  	  feature2index [fId] = features. size ();
-   	  features << Feature (fId, false);
-   	}
-  }
+//genes = features. size ();
+  ASSERT (features. size () == nonSingletons. size ());
   ASSERT (feature2index. size () == features. size ());
 
   // allTimeZero, Phyl::init()      
@@ -3084,7 +2150,7 @@ void FeatureTree::qc () const
   {
     ASSERT (root_->time == getRootTime ());
     if (! emptyRoot)
-    	FOR (unsigned char, i, 2)
+    	for (const bool i : {false, true})
     	{
     	  ASSERT (root_->weight [i] [  i] == 0);
     	  ASSERT (root_->weight [i] [! i] == INF);
@@ -3124,18 +2190,18 @@ void FeatureTree::qc () const
 	{
 	  const Feature f (features [i]);
 	  f. qc ();
-		IMPLY (prevFeature. isGene == f. isGene, prevFeature. name < f. name);
-		ASSERT (prevFeature. isGene >= f. isGene);
-		ASSERT (f. isGene == (i < genes));
+		ASSERT (/*prevFeature. isGene == f. isGene,*/ prevFeature. name < f. name);
+	//ASSERT (prevFeature. isGene >= f. isGene);
+	//ASSERT (f. isGene == (i < genes));
 		prevFeature = f;
 	}
 
-	ASSERT (genes <= features. size ());
+//ASSERT (genes <= features. size ());
 	
 	ASSERT (geReal (len, len_min));
 	ASSERT (len_min >= 0);
 	
-	IMPLY (genes, genomeGenes_ave > 0);
+	IMPLY (! features. empty (), genomeGenes_ave > 0);
 	ASSERT (genomeGenes_ave <= getTotalGenes ());
 	
 	ASSERT ((bool) distDistr. get () == (bool) depthDistr. get ());
@@ -3160,8 +2226,6 @@ void FeatureTree::qc () const
 			ERROR;
 		}
 	}
-	
-//IMPLY (! targetFeatures. empty (), savePhenChangesOnly);	
 }
 
 
@@ -3252,8 +2316,7 @@ void FeatureTree::printInput (ostream& os) const
   os << "# Species: " << nodes. size () - genomes << endl;
   os << "# Common core genes: " << commonCore. size () << endl;
   os << "# Singleton genes:   " << globalSingletonsSize << endl;
-  os << "# Other genes:       " << genes << endl;
-  os << "# Phenotypes:        " << features. size () - genes << endl;
+  os << "# Other genes:       " << features. size () << endl;
   os << "Genome size ave.:    " << genomeGenes_ave << endl;
 
   os << "Time: " << (allTimeZero ? "Not used" : "Used") << endl;
@@ -3266,7 +2329,7 @@ void FeatureTree::printInput (ostream& os) const
     if (! rootCore. empty ())
     {
       size_t n = commonCore. size ();
-      FOR (size_t, i, genes)
+      FOR (size_t, i, features. size ())
         if (rootCore [i])
           n++;
       os << "# Root core genes = " << n << endl;
@@ -3284,9 +2347,11 @@ void FeatureTree::printInput (ostream& os) const
 void FeatureTree::dump (const string &fName,
                         bool setIds)
 { 
+#if 0
  	ONumber oNum (cout, 0, false);  // PAR
   cout << "Tree length = " << len << endl;  
   cout. flush ();
+#endif
   setCore ();
   sort ();
   setStats ();
@@ -3426,8 +2491,8 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
   size_t parent2core [2/*thisCore*/] [2/*parentCore*/];
   getParent2core_sum (parent2core);
 	if (verbose ())
-    FOR (unsigned char, i, 2)
-      FOR (unsigned char, j, 2)
+  	for (const bool i : {false, true})
+    	for (const bool j : {false, true})
         cout << "parent2core[" << (int) i << "][" << (int) j << "]=" << parent2core [i] [j] << endl;
 
   Real len_old;  
@@ -3494,8 +2559,8 @@ void FeatureTree::getParent2core_sum (size_t parent2core [2/*thisCore*/] [2/*par
 {
   ASSERT (coreSynced);
 
-  FOR (unsigned char, i, 2)
-    FOR (unsigned char, j, 2)
+	for (const bool i : {false, true})
+  	for (const bool j : {false, true})
       parent2core [i] [j] = 0;
  	for (const DiGraph::Node* node : nodes)  
  		if (const Species* s = static_cast <const Phyl*> (node) -> asSpecies ())
@@ -3505,11 +2570,11 @@ void FeatureTree::getParent2core_sum (size_t parent2core [2/*thisCore*/] [2/*par
   
       size_t parent2core_ [2/*thisCore*/] [2/*parentCore*/];
       s->getParent2corePooled (parent2core_);	  
-  		FOR (size_t, i, genes)
+  		FOR (size_t, i, features. size ())
   		  parent2core_ [s->core [i]] [s->feature2parentCore (i)] ++;
   
-      FOR (unsigned char, i, 2)
-        FOR (unsigned char, j, 2)
+    	for (const bool i : {false, true})
+      	for (const bool j : {false, true})
           parent2core [i] [j] += parent2core_ [i] [j];
   	}
 }
@@ -3531,8 +2596,8 @@ struct LambdaCommonTimeFunc : Func1
 		{
       ASSERT (time > 0);
       ASSERT (time < INF);
-   	  FOR (unsigned char, i, 2)
-   	    FOR (unsigned char, j, 2)
+    	for (const bool i : {false, true})
+      	for (const bool j : {false, true})
    	      parent2core [i] [j] = (Real) parent2core_arg [i] [j];
     }
 
@@ -3863,7 +2928,7 @@ void FeatureTree::findRoot ()
 
   const Species* bestFrom = nullptr;
  	size_t bestCoreSize = 0;
-  FOR (size_t, i, genes)
+  FOR (size_t, i, features. size ())
     if (static_cast <const Species*> (root) -> core [i])
       bestCoreSize++;
  	for (const DiGraph::Node* node : nodes)
@@ -3874,7 +2939,7 @@ void FeatureTree::findRoot ()
    		  continue;
    	 	ASSERT (from != root);
       size_t coreSize = 0;
-      FOR (size_t, i, genes)
+      FOR (size_t, i, features. size ())
         if (   from  ->core [i] 
             && parent->core [i]
            )
@@ -3912,7 +2977,7 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
   ASSERT (! allTimeZero);
   ASSERT (coreSynced);
   
- 	FOR (unsigned char, b, 2)
+	for (const bool b : {false, true})
  	  coreChange [b] = 0;
 
 	const Species* root_ = static_cast <const Species*> (root);
@@ -3932,14 +2997,14 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
   	  if (rootCore [i])
   	  {
   	    rootCore [i] = false;
-  	    if (i < genes)
+  	  //if (i < genes)
   	      coreChange [true] ++;
   	  }
   	if (n == root_->arcs [false]. size ())
   	  if (! rootCore [i])
   	  {
   	    rootCore [i] = true;
-  	    if (i < genes)
+  	  //if (i < genes)
   	      coreChange [false] ++;
   	  }
   }
@@ -3948,43 +3013,6 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
   setCore ();
   clearStats ();
 }
-
-
-
-#if 0
-void FeatureTree::loadRootCoreDb (Server* db)
-{ 
-  ASSERT (db);
-	ASSERT (! allTimeZero);
-	ASSERT (rootCore. empty ());
-	    
-  typedef  map<Feature::Id, size_t>  Feature2index;
-  Feature2index feature2index;
-  FOR (size_t, i, features. size ())
-    feature2index [features [i]. name] = i;
-  ASSERT (feature2index. size () == features. size ());
-
-  rootCore. resize (features. size (), false);
-	size_t miss = 0;
-  CQuery query (db->NewQuery());
-  query.SetSql("\
-select prot \
-  from SPECIES_PROT \
-  where     species = @species \
-        and isnull(gain,1) = 1");
-	query.SetParameter("@species", (int) static_cast <const Species*> (root) -> id);
-  query.Execute();
-  ITERATE(CQuery, row, query) 
-	{
-	  Feature2index::const_iterator it = feature2index. find (toString (row [1].AsInt4()));
-	  if (it == feature2index. end ())
-	    miss++;
-	  else
-	    rootCore [it->second] = true;
-	}
-	ASSERT (miss == commonCore. size ());
-}
-#endif
 
 
 
@@ -4090,10 +3118,6 @@ void FeatureTree::setStats ()
     depthDistr_->estimate ();
     depthDistr. reset (depthDistr_);
   }
-  
-#if 0
-  const_static_cast <Species*> (root) -> setHasPhenChange ();
-#endif
 }
   
 
@@ -4109,65 +3133,8 @@ void FeatureTree::clearStats ()
   
   distDistr. reset (nullptr);
   depthDistr. reset (nullptr);
-
-#if 0  
- 	for (DiGraph::Node* node : nodes)
- 		static_cast <Phyl*> (node) -> hasPhenChange = false;
-#endif
 }
   
-
-
-#if 0
-size_t FeatureTree::badNodesToRoot ()  
-{
-  setDistr ();
-  
-  VectorPtr<Phyl> badNodes;  
-  const_static_cast <Species*> (root) -> getBadNodes (badNodes, false);
-  
-  for (const Phyl* phyl : badNodes)
-  {
-    ASSERT (phyl->getParent ());
-    if (phyl->getParent () == root)
-      continue;
-    ChangeToParent ch (const_cast <Phyl*> (phyl), const_static_cast <Species*> (root));
-    ch. qc ();
-    ch. apply ();
-	  len = getLength ();
-    ch. commit ();
-  }
-  
-  optimizeTime ();
-
-	VectorOwn<Change> changes;  changes. reserve (badNodes. size ());  
-  {
-		Progress prog ((uint) badNodes. size ());
-	 	for (const Phyl* phyl : badNodes)  
-	 	  if (phyl->graph)  
-  	 	{
-  	   	prog ();
-  	  //cout << endl;  
-  		 	if (const Change* bestChange = getBestChange (phyl))
-  		  { 
-  		  	ASSERT (positive (bestChange->improvement));
-  		  	changes << bestChange;
-  		  //bestChange->print (cout); 
-  		  }
-  		//else
-  		  //cout << (*it)->getName () << ": no change" << endl;  
-  	  }
-  	}
-
-  finishChanges ();
-  setCore ();
-  
-  qc ();
-  
-  return badNodes. size ();
-}
-#endif
-
 
 
 void FeatureTree::delayDelete (Species* s)
@@ -4378,136 +3345,6 @@ const Genome* FeatureTree::findGenome (const string &genomeId) const
  				return g;
   return nullptr;
 }
-
-
-
-#if 0
-void FeatureTree::loadTargetFeatures (const string &fName)
-{
-  ASSERT (targetFeatures. empty ());
-  
-  if (fName. empty ())
-    return;
-  
-  ObjectInput in (fName, 1024);  // PAR
-  TargetFeature tf;
-  while (in. next (tf))
-  {
-    tf. index = features. binSearch (Feature (tf. featureId, true));
-    FOR_REV (size_t, i, targetFeatures. size ())
-      if (targetFeatures [i]. name == tf. name)
-      {
-        tf. serial = targetFeatures [i]. serial + 1;
-        break;
-      }
-    targetFeatures << tf;
-  }
-
-  if (! targetFeatures. empty ())
-    savePhenChangesOnly = true;
-}
-#endif
-
-
-
-#if 0
-void FeatureTree::saveDatabase (Server &db,
-                             int root_species_id)
-{
-	ASSERT (root_species_id > 0);
-	ASSERT (coreSynced);
-	ASSERT (! allTimeZero);
-	ASSERT (timeOptimWhole ());
-
-
-  {	
-   	Transaction tr (db);
-  
-    {
-    	cerr << "SPECIES,STRAIN ..." << endl;
-  		bool parent_STRAIN = true;  // Ignored for root
-  		const_static_cast <Species*> (root) -> id = (uint) root_species_id;
-  		Progress::Start progStart (prog_, (uint) nodes. size ());
-  	  const_static_cast <Species*> (root) -> saveDatabaseTopology (db, parent_STRAIN);
-  	    // Genome::saveDatabaseTopology() invokes SPECIES_redo() which delete's from SPECIES_PROT
-  	}
-  
-    {
-  	  CQuery query (db.NewQuery());
-    	query.SetParameter("@id", root_species_id);
-  	  query.ExecuteSP("SPECIES_redo");
-  	}
-  }
-
-
-  {	
-   	Transaction tr (db);
-  
-    {
-      CQuery query (db.NewQuery());
-      query.SetSql("\
-  update PAN \
-    set dat = sysdatetime() \
-      , lambda0 = @lambda0 \
-      , time_init = @time_init \
-      , genes_ave = @genes_ave \
-    where id = (select T.pan from SPECIES T where T.id = @id)");
-    	query.SetParameter("@id", (int) root_species_id);
-    	query.SetParameter("@lambda0", lambda0);
-    	query.SetParameter("@time_init", time_init);
-    	query.SetParameter("@genes_ave", (int) genomeGenes_ave);
-    	query.Execute();
-  	  ASSERT (query.GetRowCount() == 1);
-    }
-   	
-    {
-    	cerr << "{SPECIES|STRAIN}_PROT ..." << endl;
-  		Progress::Start progStart (prog_, (uint) (nodes. size ()));
-  	  const_static_cast <Species*> (root) -> saveDatabaseNode (db);
-  	}
-  
-    {
-    	cerr << "SPECIES_finish ..." << endl;
-  	  CQuery query (db.NewQuery());
-  	  query.ExecuteSP("SPECIES_finish");
-  	    // Deletes the old topology
-  	}
-  }
-
-  	
-  {
-  	cerr << "SPECIES_length ..." << endl;
-	  CQuery query (db.NewQuery());
-  	query.SetParameter("@root_species", root_species_id);
-	  query.ExecuteSP("SPECIES_length");
-	}
-
-    
-  saveDatabasePhen (db);
-}
-
-
-
-void FeatureTree::saveDatabasePhen (Server &db) 
-{
-	ASSERT (coreSynced);
-	ASSERT (timeOptimWhole ());
-
- 	Transaction tr (db);
-
-  {
-  	cerr << "{SPECIES|STRAIN}_PHEN ..." << endl;
-  	Progress::Start progStart (prog_, (uint) (nodes. size ()));
-    const_static_cast <Species*> (root) -> saveDatabasePhen (db);
-  }
-
-  {
-  	cerr << "SPECIES_PHEN_length ..." << endl;
-	  CQuery query (db.NewQuery());
-	  query.ExecuteSP("SPECIES_PHEN_length");
-	}
-}
-#endif
 
 
 

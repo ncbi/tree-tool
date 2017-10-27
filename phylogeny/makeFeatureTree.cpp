@@ -24,12 +24,10 @@ struct ThisApplication : Application
 	{
 		// Input
 	  addKey ("input_tree", "Input file with the tree");
-	  addKey ("gene_dir", "Input directory with genes for each genome");
-	  addKey ("phen_dir", "Input directory with phenotypes for each genome. Line format: <phenotype> <optional (0/1)>");
+	  addKey ("genes", "Input directory with genes for each genome. Line format: " + Genome::geneLineFormat ());
 	  addKey ("input_core", "Input file with root core feature ids");
 	    
 	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
-	//addFlag ("bad_nodes_to_root", "Move bad nodes to root");
 	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
 
     // Output	    
@@ -37,16 +35,10 @@ struct ThisApplication : Application
 	  addFlag ("set_node_ids", "Set node ids in the output tree");  
 	  addKey ("output_core", "Output file with root core feature ids");
 	    
-	#if 0
-	  addFlag ("save_phen_only", "Save phenotype changes only");
-	  addKey ("save_feature", "Save changes only for a feature");
-	  addKey ("save_features", "Save changes only for a set of features in the file with line format: <Feature name> <Print name>");
-	#endif
-
 	  addKey ("newick", "Output file with the tree in the Newick format");
 	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
-	  addFlag ("qual", "Print the quality statistics measured by phenotype consistency");
-	  addKey ("phen_gains", "File name to save nodes where phenotypes are gained");
+	  addFlag ("qual", "Print the quality statistics measured by gene consistency");
+	  addKey ("gain_nodes", "File name to save nodes where genes are gained");
 	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
 	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
 	}
@@ -56,8 +48,7 @@ struct ThisApplication : Application
 	void body () const
   {
 		const string input_tree      = getArg ("input_tree");
-		const string gene_dir        = getArg ("gene_dir");
-		const string phen_dir        = getArg ("phen_dir");
+		const string gene_dir        = getArg ("genes");
 		const string input_core      = getArg ("input_core");
 
 		const bool use_time          = getFlag ("use_time");  
@@ -67,16 +58,10 @@ struct ThisApplication : Application
 		const bool set_node_ids      = getFlag ("set_node_ids");  
 		const string output_core     = getArg ("output_core");
 
-	#if 0
-		const bool save_phen_only    = getFlag ("save_phen_only");  
-		const string save_feature    = getArg ("save_feature");
-		const string save_features   = getArg ("save_features");
-  #endif
-
 		const string newick          = getArg ("newick");
 		const bool min_newick_name   = getFlag ("min_newick_name");
 		const bool qual              = getFlag ("qual");  
-		const string phen_gains      = getArg ("phen_gains");  
+		const string gain_nodes      = getArg ("gain_nodes");  
 		const string arc_length_stat = getArg ("arc_length_stat");
 		const string patrDistFName   = getArg ("patr_dist");
 
@@ -86,9 +71,21 @@ struct ThisApplication : Application
 		ASSERT (optim_iter_max >= -1);
 		
 		
-    FeatureTree tree (/*species_id,*/ input_tree, gene_dir, phen_dir, input_core);
+    FeatureTree tree (/*species_id,*/ input_tree, gene_dir, input_core);
     tree. printInput (cout);
     tree. qc ();    
+    
+  #if 0
+    cout << "NOMINALS:" << endl;
+    for (const auto it : tree. nominals)
+    {
+      cout << it. first << ": ";
+      for (const string& value : it. second)
+        cout << ' ' << value;
+      cout << endl;
+    }
+    cout << endl;
+  #endif
     
    	if (use_time && tree. allTimeZero)
     {
@@ -158,22 +155,6 @@ struct ThisApplication : Application
 
 
     // Output
-  #if 0
-    if (save_phen_only)
-      tree. savePhenChangesOnly = true;
-    if (! save_feature. empty ())
-    {
-      TargetFeature tf ( save_feature
-	                     , "GENE"
-	                     , tree. features. binSearch (Feature (save_feature, true))
-	                     );
-	    ASSERT (tf. index != NO_INDEX);
-	    tree. targetFeatures << tf;
-      tree. savePhenChangesOnly = true;
-	  }
-    tree. loadTargetFeatures (save_features);	  
-  #endif
-
     tree. dump (output_tree, set_node_ids);
 
 
@@ -181,58 +162,58 @@ struct ThisApplication : Application
     {    
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
-      cout << "Phenotype gains:" << endl;
-      size_t monoPhens = 0;  // Monophyletic
-      size_t phenGains = 0;
-      size_t phenLosses = 0;
-      size_t optionalPhens = 0;
-      size_t commonPhens = 0;
-      size_t singlePhens = 0;
+      cout << "Gene gains:" << endl;
+      size_t monos = 0;  // Monophyletic
+      size_t gains = 0;
+      size_t losses = 0;
+      size_t optionals = 0;
+      size_t commons = 0;
+      size_t singles = 0;
       const size_t genomes = tree. root->getLeavesSize ();
-      FOR_START (size_t, i, tree. genes, tree. features. size ())
+      FOR (size_t, i, tree. features. size ())
       {
         const Feature& f = tree. features [i];
         f. qc ();
         if (f. genomes == 0)
-          optionalPhens++;
+          optionals++;
         else if (f. genomes == genomes)
         {
           ASSERT (f. gains == 1);
           ASSERT (f. losses == 0);
-          commonPhens++;
+          commons++;
         }
         else if (f. genomes == 1)
-          singlePhens++;
-        else   // Non-trivial phenotype
+          singles++;
+        else   // Non-trivial gene
         {
           if (! f. gains)
           {
             f. print (cout);
             ERROR;
           }
-          phenGains += f. gains - 1;
-          phenLosses += f. losses;
+          gains += f. gains - 1;
+          losses += f. losses;
           if (f. gains == 1)
-            monoPhens++;
+            monos++;
           f. print (cout);
         }
       }
-      cout << "# Paraphyletic phenotypes: " << monoPhens   << endl;  // Better: more
-      cout << "# Non-paraphyletic gains:  " << phenGains   << endl;  // Better: less
-      cout << "# Losses:  "                 << phenLosses  << endl;  // Better: less
-      cout << "# Common phenotypes:       " << commonPhens << endl;
-      cout << "# Single phenotypes:       " << singlePhens << endl;
-      cout << "# Optional phenotypes:     " << optionalPhens << endl;
+      cout << "# Paraphyletic genes:     " << monos   << endl;  // Better: more
+      cout << "# Non-paraphyletic gains: " << gains   << endl;  // Better: less
+      cout << "# Losses:                 " << losses  << endl;  // Better: less
+      cout << "# Common genes:           " << commons << endl;
+      cout << "# Single genes:           " << singles << endl;
+      cout << "# Optional genes:         " << optionals << endl;
     }
 
     
-    if (! phen_gains. empty ())
+    if (! gain_nodes. empty ())
     {
-      OFStream of (phen_gains);
+      OFStream of (gain_nodes);
      	for (const DiGraph::Node* node : tree. nodes)
      	{
      		const Phyl* phyl = static_cast <const Phyl*> (node);
-        FOR_START (size_t, i, tree. genes, tree. features. size ())
+        FOR (size_t, i, tree. features. size ())
           if ((! phyl->feature2parentCore (i) || phyl == tree. root) && phyl->core [i])  
             of << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
       }
