@@ -21,7 +21,7 @@ const string distName = "cons";
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert feature sets to a distance '" + distName + "' and print a " + dmSuff + "-file")
+    : Application ("Convert feature sets to a Jaccard conservation distance '" + distName + "' and print a " + dmSuff + "-file")
     {
   	  addPositional ("objects", "File with a list of object files with features");
   	  addPositional ("objects_dir", "Directory with <object> files containing features");
@@ -35,8 +35,7 @@ struct ThisApplication : Application
 		const string objects_dir  = getArg ("objects_dir");
 		
 		
-		typedef  Set<string/*feature*/>  Features;
-		  // --> Vector<string>: sorted, uniq ??
+		typedef  StringVector Features;
 		
     Dataset ds;
     Vector<Features> obj2features;  
@@ -58,6 +57,8 @@ struct ThisApplication : Application
             features << featF. line;
           }
         }
+        Common_sp::sort (features);
+        features. uniq ();
         obj2features << features;
         minimize (features_min, features. size  ());
         maximize (features_max, features. size  ());
@@ -70,7 +71,7 @@ struct ThisApplication : Application
     ASSERT (features_min);
 
 
-    auto attr = new PositiveAttr2 (distName, ds, 4);  // PAR
+    auto attr = new PositiveAttr2 (distName, ds, 6);  // PAR
     Progress prog ((uint) ds. objs. size ());
     FOR (size_t, i, ds. objs. size ())
     {
@@ -79,12 +80,14 @@ struct ThisApplication : Application
       FOR_START (size_t, j, i + 1, ds. objs. size ())
       {
         const Features& f2 = obj2features [j];
-        const size_t intersection = f1. intersectSize (f2);
+        const size_t intersection = f1. getIntersectSize (f2);
         Features f (f2);
         f << f1;
+        Common_sp::sort (f);
+        f. uniq ();
         const Prob jaccard = (Real) intersection / (Real) f. size ();
         ASSERT (isProb (jaccard));
-        const Real dist = -10 * log (jaccard);
+        const Real dist = - log (jaccard);
         attr->putSymm (i, j, dist);
       }
     }
