@@ -454,8 +454,8 @@ public:
 	void initDir (const string &geneDir);
 	  // Input: file "geneDir/id" with the format: `geneLineFormat()`
 	  // Output: coreSet, coreNonSingletons
-	void coreSet2nominals (Nominals &globalNominals);
-	  // Update: globalNominals, nominals
+	void coreSet2nominals ();
+	  // Update: getFeatureTree().nominals, nominals
 	void nominals2coreSet ();
 	  // Update: coreSet
 	void init (const map <Feature::Id, size_t/*index*/> &feature2index);

@@ -941,7 +941,7 @@ void Genome::initDir (const string &geneDir)
 
 
 
-void Genome::coreSet2nominals (Nominals &globalNominals) 
+void Genome::coreSet2nominals () 
 {
   ASSERT (nominals. empty ());
 	for (const auto it : coreSet)
@@ -960,7 +960,7 @@ void Genome::coreSet2nominals (Nominals &globalNominals)
 	    throw runtime_error ("Empty nominal attribute value: " + geneName);
 	  if (! nominals. checkUnique (attrName))
 	    throw runtime_error ("Duplicate nominal attribute: " + attrName);
-	  globalNominals [attrName] << value;
+	  const_cast <FeatureTree&> (getFeatureTree ()). nominals [attrName] << value;
 	}
 }
 
@@ -2016,7 +2016,7 @@ void FeatureTree::finish (const string &coreFeaturesFName)
   ASSERT (nominals. empty ());
  	for (const DiGraph::Node* node : nodes)
  		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  try { const_cast <Genome*> (g) -> coreSet2nominals (nominals); }
+ 		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
  		    catch (const exception &e)
  		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
 
