@@ -198,9 +198,9 @@ struct ThisApplication : Application
           f. print (cout);
         }
       }
-      cout << "# Paraphyletic genes:     " << monos   << endl;  // Better: more
-      cout << "# Non-paraphyletic gains: " << gains   << endl;  // Better: less
-      cout << "# Losses:                 " << losses  << endl;  // Better: less
+      cout << "# Paraphyletic genes:     " << monos   << " ^" << endl;  // Better: more
+      cout << "# Non-paraphyletic gains: " << gains   << " v" << endl;  // Better: less
+      cout << "# Losses:                 " << losses  << " v" << endl;  // Better: less
       cout << "# Common genes:           " << commons << endl;
       cout << "# Single genes:           " << singles << endl;
       cout << "# Optional genes:         " << optionals << endl;
