@@ -204,7 +204,7 @@ struct ThisApplication : Application
       Real outlier_min = NAN;
       const VectorPtr<Leaf> outliers (tree->findOutliers (strong_outliers, outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
-      cout << "Min. " << (strong_outliers ? "log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
+      cout << "Min." << (strong_outliers ? " log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
         cout         << leaf->name 
              << '\t' << leaf->getRelCriterion () 

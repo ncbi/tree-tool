@@ -78,6 +78,7 @@ struct DistTree;
 struct DTNode : Tree::TreeNode 
 {
   friend DistTree;
+  friend Steiner;
   friend Leaf;
 
   // For optimization
@@ -92,8 +93,12 @@ private:
   bool inPath {false};
   bool stable {false};
     // Init: false
+public:
+protected:
   WeightedMeanVar subtreeLen; 
     // Temporary
+    // Average subtree height 
+    // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
   size_t paths {0};
     // Number of paths going through *this arc
@@ -136,15 +141,13 @@ public:
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
-  void setSubtreeLenUp (bool topological);
-    // Output: subtreeLen: average subtree height 
-    //                     weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
+  virtual void setSubtreeLenUp (bool topological) = 0;
+    // Output: subtreeLen
   void setGlobalLenDown (bool topological,
                          DTNode* &bestDTNode,
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
     // Output: subtreeLen: Global len = average path length from *this to all leaves
-    //                     weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 //void setSubtreeLeaves ();
     // Output: subtreeLeaves
     // Time: O(n^2)
@@ -189,6 +192,7 @@ struct Steiner : DTNode
   bool isInteriorType () const final
     { return childrenDiscernable (); }
 
+  void setSubtreeLenUp (bool topological) final;
   void setRepresentative () final
     { reprLeaf = nullptr;
       for (const DiGraph::Arc* arc : arcs [false])
@@ -286,6 +290,11 @@ struct Leaf : DTNode
   bool isLeafType () const final
     { return true; }
 
+  void setSubtreeLenUp (bool topological) final
+    { subtreeLen. clear ();
+      if (topological)
+    	  subtreeLen. add (0, 1);
+    }
   void setRepresentative () final
     { reprLeaf = this; }
 #if 0
@@ -771,7 +780,7 @@ private:
     // Greedy
     // Assumes: Obj::mult = 1
     // Requires: complete *dissimAttr, isStar()
-    // Invokes: reroot()
+    // Invokes: reroot(true)
     // Time: O(n^3)
   //
   void dissimDs2ds (bool sparse);
@@ -981,7 +990,7 @@ public:
     // Return: pairs of Leaf->name's 
     //         O(log(n)) pairs for each Leaf
     //         not in ds.objs
-    //         reroot() reduces size()
+    //         reroot(true) reduces size()
     // Invokes: setReprLeaves(), ds.setName2objNum(), getObjName()
         
   // After optimization

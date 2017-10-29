@@ -132,23 +132,6 @@ void DTNode::saveFeatureTree (ostream &os,
 
 
 
-void DTNode::setSubtreeLenUp (bool topological)
-{
-  subtreeLen. clear ();
-  if (! isLeaf ())
-  	for (const DiGraph::Arc* arc : arcs [false])
-  	{
-  	  DTNode* child = static_cast <DTNode*> (arc->node [false]);
-  	  child->setSubtreeLenUp (topological);
-  	  if (topological)
-    	  subtreeLen. add (child->subtreeLen. getMean () + 1,          child->asLeaf () ? 1 : child->subtreeLen. weights);
-  	  else
-    	  subtreeLen. add (child->subtreeLen. getMean () + child->len, child->subtreeLen. weights + child->len);
-  	}
-}
-
-
-
 void DTNode::setGlobalLenDown (bool topological,
                                DTNode* &bestDTNode,
                                Real &bestDTNodeLen_new,
@@ -159,17 +142,25 @@ void DTNode::setGlobalLenDown (bool topological,
     WeightedMeanVar parentSubtreeLen (parent_->subtreeLen /*global len*/);  
     {
       WeightedMeanVar subtreeLen1;
-      subtreeLen1. add (subtreeLen. getMean () + (topological ? 1 : len), subtreeLen. weights + (topological ? 0 : len));
+      if (topological)
+      {
+        subtreeLen1 = subtreeLen;
+        subtreeLen1. addValue (1);
+      }
+      else
+        subtreeLen1. add (subtreeLen. getMean () + len, subtreeLen. weights + len);
       parentSubtreeLen. subtract (subtreeLen1);  
     }
-      // Subtree goes upward from *parent_
+    // Subtree goes upward from *parent_
+      
     WeightedMeanVar globalLen;
     Real lenDelta = NAN;
     if (topological)
     {
       lenDelta = len / 2;
-      globalLen. add (      subtreeLen. getMean () + 1,       subtreeLen. weights);
-      globalLen. add (parentSubtreeLen. getMean () + 1, parentSubtreeLen. weights);
+      globalLen. add (      subtreeLen);
+      globalLen. add (parentSubtreeLen);
+      globalLen. addValue (1);
     }
     else
     {
@@ -184,6 +175,7 @@ void DTNode::setGlobalLenDown (bool topological,
       globalLen. add (parentSubtreeLen. getMean () + (len - lenDelta), parentSubtreeLen. weights + (len - lenDelta));
     }
     ASSERT (! isNan (lenDelta));
+    
     if (   ! bestDTNode 
         || bestGlobalLen. getMean () > globalLen. getMean ()
        )
@@ -192,9 +184,17 @@ void DTNode::setGlobalLenDown (bool topological,
       bestDTNodeLen_new = lenDelta;
       bestGlobalLen = globalLen;
     }
-    subtreeLen. add (parentSubtreeLen. getMean () + (topological ? 1 : len), parentSubtreeLen. weights + (topological ? 0 : len));
-      // global len
+    
+    if (topological)
+    {
+      parentSubtreeLen. addValue (1);
+      subtreeLen. add (parentSubtreeLen);
+    }
+    else
+      subtreeLen. add (parentSubtreeLen. getMean () + 1, parentSubtreeLen. weights + len);
+    // global len
   }
+
 
 	for (const DiGraph::Arc* arc : arcs [false])
 	  static_cast <DTNode*> (arc->node [false]) -> setGlobalLenDown (topological, bestDTNode, bestDTNodeLen_new, bestGlobalLen);
@@ -239,6 +239,26 @@ void Steiner::qc () const
 	  
 	ASSERT (! isLeaf ());	
 //IMPLY (reprLeaf, getChildren (). contains (reprLeaf));
+}
+
+
+
+void Steiner::setSubtreeLenUp (bool topological)
+{
+  subtreeLen. clear ();
+	for (const DiGraph::Arc* arc : arcs [false])
+	{
+	  DTNode* child = static_cast <DTNode*> (arc->node [false]);
+	  child->setSubtreeLenUp (topological);
+	  if (topological)
+	  {
+	    WeightedMeanVar childSubtreeLen (child->subtreeLen);
+	    childSubtreeLen. addValue (1);
+  	  subtreeLen. add (childSubtreeLen);
+  	}
+	  else
+  	  subtreeLen. add (child->subtreeLen. getMean () + child->len, child->subtreeLen. weights + child->len);
+	}
 }
 
 
@@ -1058,7 +1078,7 @@ DistTree::DistTree (const string &dataDirName,
       const DTNode* anchor = lcaName2node (anchorName);
       ASSERT (anchor);
       // Use absCriterion_leaf in f to test if leafName is an outlier
-      //   if leafName is an outlier then do not add leafName to *this, but add leafName to outleirs ??
+      //   if leafName is an outlier then do not add leafName to *this, but add leafName to outliers ??
       // Attach a leaf
       Leaf* leaf = nullptr;
       if (const Leaf* anchorLeaf = anchor->asLeaf ())

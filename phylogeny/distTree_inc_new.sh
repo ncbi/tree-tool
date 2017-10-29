@@ -135,7 +135,7 @@ rm $1/dissim.add
 #set VER = 161  
 
 # Time: O(n log^2(n)) 
-makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.add  -reroot  -root_topological  -output_tree $1/tree.new > $1/old/makeDistTree.$VER
+makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.add  -reroot  -root_topological  -output_tree $1/tree.new  > $1/old/makeDistTree.$VER
 if ($?) exit 1
 mv $1/leaf $1/old/leaf.$VER
 if ($?) exit 1

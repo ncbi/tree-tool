@@ -30,9 +30,9 @@ echo ""
 wc -l $1/dissim
 
 echo ""
-grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':21:' | sort -n | head -5
+grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':22:' | sort -n | head -5
 echo "..."
-grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':21:' | sort -n | tail -5
+grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':22:' | sort -n | tail -5
 
 echo ""
 head -5 $1.log
