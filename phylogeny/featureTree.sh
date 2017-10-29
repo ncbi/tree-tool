@@ -18,20 +18,19 @@ distTree.sh $1 cons
 if ($?) exit 1 
 
 # Gain/loss tree
-makeDistTree  -input_tree $1.tree  -output_feature_tree $1.featureTree
+makeDistTree  -input_tree $1.tree  -output_feature_tree $1-init.tree  
 if ($?) exit 1 
 mv $1.tree $1.distTree  
 
-# Make all times = 0
-cat $1.featureTree | sed 's/: t=\([^ ]\+\) /: t=nan /1' > $1-init.tree
-if ($?) exit 1 
-rm $1.featureTree
-
+echo ""
+echo ""
 makeFeatureTree  -input_tree $1-init.tree  -genes $2  -output_tree $1-maxParsimony.tree  -output_core $1-maxParsimony.core  -optim_iter_max 100
 if ($?) exit 1 
 rm $1-init.tree
 
 # MLE
+echo ""
+echo ""
 makeFeatureTree  -input_tree $1-maxParsimony.tree  -genes $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
 if ($?) exit 1 
 

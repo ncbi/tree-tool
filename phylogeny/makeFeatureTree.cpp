@@ -117,7 +117,7 @@ struct ThisApplication : Application
           if (iter >= optim_iter_max)
           	break;
           iter++;
-    	    cout << endl << "Iter = " << iter << endl;
+    	    cout << "Iter = " << iter << endl;
           if (! tree. optimize ())
           	break;	    
         }
@@ -134,8 +134,8 @@ struct ThisApplication : Application
     {
       if (tree. allTimeZero)
       {
-        cout << "Finding root ..." << endl;
-        tree. findRoot ();
+        cout << "Old root: " << tree. root->getLcaName () << endl;
+        cout << "New root: " << tree. findRoot () << endl;
       }
       else
       {

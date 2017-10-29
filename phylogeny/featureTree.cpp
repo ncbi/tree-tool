@@ -18,7 +18,6 @@ namespace FeatureTree_sp
 
 Feature::Feature (const Feature::Id &name_arg)
 : Named (name_arg)
-//, isGene (isGene_arg)
 {
   qc ();
 }
@@ -236,7 +235,7 @@ void Phyl::getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*pa
 	for (const bool thisCore : {false, true})
   	for (const bool parentCore : {false, true})
       parent2corePooled [thisCore] [parentCore] = 0;
-  parent2corePooled [true] [getParent () ? true : ! FeatureTree::emptyRoot] = getFeatureTree (). commonCore. size ();
+  parent2corePooled [true] [getParent () ? true : ! getFeatureTree (). emptyRoot] = getFeatureTree (). commonCore. size ();
   parent2corePooled [false] [false] = getFeatureTree (). globalSingletonsSize;
 }
 
@@ -310,7 +309,7 @@ void Phyl::getBadNodes (VectorPtr<Phyl> &badNodes,
 
 
 
-#ifndef NDEBUG
+#if 0
 Real Phyl::getFeatureDistance (size_t featureIndex) const
 { 
 	ASSERT (getFeatureTree (). coreSynced);
@@ -439,31 +438,6 @@ double Species::getParentDistance () const
              : time 
            : -1; 
 }
-
-
-
-#if 0
-string Species::getNewickName (bool /*minimal*/) const
-{
-	ASSERT (getFeatureTree (). coreSynced);
-	ASSERT (getFeatureTree (). distDistr. get ());
-
-  if (! getParent ())
-    return string ();
-
-	const Feature* bestF = nullptr;
-	FOR_START (size_t, i, getFeatureTree (). genes, core. size ())
-	  if (core [i] && ! feature2parentCore (i))
-	  {
-	    const Feature& f (getFeatureTree (). features [i]);
-	    f. qc ();
-	    if (f. better (bestF))
-	      bestF = & f;
-	  }
-
-	return bestF ? bestF->name : string ();  
-}
-#endif
 
 
 
@@ -650,9 +624,9 @@ void Species::restoreTime ()
 Real Species::feature2treeLength (size_t featureIndex) const
 { 
   // Cf. feature2parentCore()
-  return FeatureTree::emptyRoot 
+  return getFeatureTree (). emptyRoot 
            ? parent2core [false] [featureIndex]. treeLen
-           : getFeatureTree (). allTimeZero || ! getFeatureTree (). featuresExist ()
+           : getFeatureTree (). allTimeZero 
            	     ? min ( parent2core [false] [featureIndex]. treeLen 
       		             , parent2core [true]  [featureIndex]. treeLen
       		             )
@@ -2347,11 +2321,6 @@ void FeatureTree::printInput (ostream& os) const
 void FeatureTree::dump (const string &fName,
                         bool setIds)
 { 
-#if 0
- 	ONumber oNum (cout, 0, false);  // PAR
-  cout << "Tree length = " << len << endl;  
-  cout. flush ();
-#endif
   setCore ();
   sort ();
   setStats ();
@@ -2460,17 +2429,12 @@ void FeatureTree::optimizeLambdaTime ()
   
  	ASSERT (leReal (len, len_old + len_delta));
   	
-	if (! allTimeZero)
+	if (verbose () && ! allTimeZero)
 	{
-		{
-		  ONumber oNum (cout, 3, true);  // PAR
-		  cout << "lambda0 = " << lambda0;
-		}
-		{
-		  ONumber oNum (cout, 3, false);  // PAR
-	    cout << "  len = " << len
-	         << endl;
-	  }
+	  ONumber oNum (cout, 3, true);  // PAR
+	  cout << "lambda0 = " << lambda0
+         << "  len = " << len
+         << endl;
   }
 }
 #endif
@@ -2690,7 +2654,7 @@ const Change* FeatureTree::getBestChange (const Species* from)
  		{
    	  TRY_CHANGE (ChangeToSibling, (from, to));  
    	  TRY_CHANGE (ChangeToUncle,   (from, to));   
-      TRY_CHANGE (ChangeToCousin,  (from, to));  
+    //TRY_CHANGE (ChangeToCousin,  (from, to));  
    	//TRY_CHANGE (ChangeToParent,  (from, to));  
   	  if (verbose ())
   	  {
@@ -2701,30 +2665,6 @@ const Change* FeatureTree::getBestChange (const Species* from)
   
 //TRY_CHANGE (ChangeRoot, (from));
   TRY_CHANGE (ChangeDel,  (from));  
-
-#if 0  
-  // From DistTree:
-  if (   ! bestChange 
-      && area. size () < 100  // PAR
-     )
-  {
-    if (verbose (1))
-      cerr << "more ";
-   	for (const Tree::TreeNode* node : area)  
-   	{
-   		DTNode* to = const_static_cast <DTNode*> (node);
- 	    // Applied rarely
- 	    TRY_CHANGE (ChangeToChild,  (from, to));  
-   	  TRY_CHANGE (ChangeToUncle,  (from, to));  
-      TRY_CHANGE (ChangeToCousin, (from, to));  
-  	  if (verbose ())
-  	  {
-    	  ASSERT (to->graph);
-  	    to->qc ();
-  	  }
-    }
-  }
-#endif
 
   #undef TRY_CHANGE
   
@@ -2757,8 +2697,6 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
     static_cast <Phyl*> (node) -> stable = true;
 	
 	
-//cout << endl;	    
-
   const Real len_init = len;
 
 
@@ -2785,8 +2723,11 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
 	  if (bad)
 	  	continue;
 
-	  cout << "Apply: ";
-	  ch->print (cout);
+    if (verbose ())
+    {
+  	  cout << "Apply: ";
+  	  ch->print (cout);
+  	}
 		ch->qc ();  
 	#ifndef NDEBUG
 	  const bool first = ch == changes. front ();  
@@ -2795,8 +2736,11 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
   	Real len_old = len;
     ch->apply ();
 	  len = getLength ();
-	  ONumber on (cout, 0, false);
-	  cout << "len = " << len << endl;
+	  if (verbose ())
+	  {
+  	  ONumber on (cout, 0, false);
+  	  cout << "len = " << len << endl;
+  	}
 	  IMPLY (first, eqTreeLen (len, len_old - ch->improvement));  // Should be: old improvement ??
 	  if (verbose ())
 	  {
@@ -2818,8 +2762,11 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
 	  	ch->restore ();
 	  	ASSERT (! first);
 	    len = getLength ();
-	    cout << "restore" << endl;
-		  cout << "len = " << len << endl;
+	    if (verbose ())
+	    {
+  	    cout << "restore" << endl;
+  		  cout << "len = " << len << endl;
+  		}
 	  	break;  // ??
 	  }
 	  else
@@ -2839,7 +2786,8 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
 
   	len_old = len;
     optimizeTime (); 
-	  cout << "len = " << len << endl;
+    if (verbose ())
+	    cout << "len = " << len << endl;
     if (! leReal (len, len_old + len_delta)) 
     {
     	if (timeOptimWhole ())
@@ -2857,6 +2805,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
 
   const Real improvement = max (0.0, len_init - len);
   cout << "Improvement = " << improvement << endl;
+  cout << "len = " << len << endl;
   IMPLY (timeOptimWhole (), geReal (improvement, - len_delta));
 
   const Prob improvementRel = improvement / (len_init - len_min);
@@ -2874,7 +2823,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
     	optimizeLambda0 ();  
   		timeOptimFrac += 0.1;  // PAR 
   		minimize (timeOptimFrac, 1.0);
-	  	cout << "timeOptimFrac = " << timeOptimFrac << endl;
+	  	cout << endl << "timeOptimFrac = " << timeOptimFrac << endl;
 	  	cout. flush ();
     	optimizeTime ();
     	finishChanges ();
@@ -2920,9 +2869,11 @@ bool FeatureTree::optimize ()
 
 
 
-void FeatureTree::findRoot () 
+string FeatureTree::findRoot () 
 {
   ASSERT (allTimeZero);
+
+  string rootLcaName;
 
   setCore ();
 
@@ -2950,6 +2901,7 @@ void FeatureTree::findRoot ()
 
   if (bestFrom)
   {
+  	rootLcaName = bestFrom->getLcaName ();
     {
       ChangeRoot ch (bestFrom);    
       ch. apply ();
@@ -2968,6 +2920,8 @@ void FeatureTree::findRoot ()
       rootCore [i] = true;
       
   setCore ();
+
+  return rootLcaName;
 }
 
 
@@ -3148,7 +3102,7 @@ void FeatureTree::delayDelete (Species* s)
 
 
 void FeatureTree::tryChange (Change* ch,
-	                        const Change* &bestChange)
+	                           const Change* &bestChange)
 { 
 	ASSERT (ch);
 	ASSERT (ch->from->graph == this);
@@ -3224,7 +3178,7 @@ size_t FeatureTree::deleteTimeZero ()
  			
   setLenGlobal ();
   
- 	if (verbose ())
+ 	if (qc_on)
  	  if (! eqReal (len, len_old, 1e-3))
  	  {
  	  	cout << len << " " << len_old << endl;

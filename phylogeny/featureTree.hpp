@@ -180,7 +180,7 @@ public:
     // Invokes: getPooledDistance()
 	Real getSubtreeLength () const;  
 	  // Return: sum_{n \in subtree} n->getDistance() 
-#ifndef NDEBUG
+#if 0
 	Real getFeatureDistance (size_t featureIndex) const;
 	Real getFeatureSubtreeLength (size_t featureIndex) const;  
 	Real getFeatureTreeLen (size_t featureIndex) const
@@ -277,10 +277,9 @@ public:
   string getName () const override
     { return id. empty () ? Phyl::getName () : id; }
 	double getParentDistance () const final;
-//string getNewickName (bool minimal) const override;
-  void setWeight ();
+  void setWeight () final;
     // Input: time, getFeatureTree().lambda0
-	void setCore ();
+	void setCore () final;
 private:
 	void setCoreEval (size_t featureIndex,
 	                  bool parentCore,
@@ -477,9 +476,9 @@ public:
   bool isLeafType () const final
     { return true; }
 
-  void setWeight ();
+  void setWeight () final;
   void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const;
-	void setCore ();
+	void setCore () final;
 private:
 	void setCoreEval (size_t featureIndex,
 	                  bool parentCore,
@@ -557,13 +556,13 @@ protected:
     // Requires: valid_()
 	Change (const FeatureTree &tree_arg,
 	        istream &is);
+public:
 	static bool valid_ (const Species* from_arg)
     { return    from_arg
              && from_arg->graph
     	       && from_arg->getParent ();   // Not needed for ChangeToSibling ??
     }
     // Requires: parameters are the same as in the constructor
-public:
  ~Change ();
 	void qc () const override;
 	  // Invokes: valid()
@@ -924,15 +923,6 @@ public:
 		{ clear ();
 		  targets = getTargets (); 
 		}
-#if 0
-	ChangeRoot (const FeatureTree &tree_arg,
-		          istream &is)
-		: Change (tree_arg, is)
-	  , root_old (nullptr)
-		{ clear ();
-		  targets = getTargets (); 
-		}
-#endif
 private:
 	void clear () override
 	  { Change::clear ();
@@ -1017,6 +1007,7 @@ public:
 
 struct FeatureTree : Tree
 // Of Phyl*
+// !allTimeZero => effectively unrooted 
 {
   static constexpr Real len_delta {1e-2};
 
@@ -1024,7 +1015,7 @@ struct FeatureTree : Tree
 	  // May be empty()
 
   // For FeatureTree::len
-  static const bool emptyRoot = false;
+  static constexpr bool emptyRoot {false};  // PAR
 	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
 	  // Init: isNan(Species::time) 
@@ -1177,13 +1168,15 @@ public:
 	  // Return: false <=> finished
     // Update: topology, timeOptimFrac, changes (sort by Change::improvement descending), cout
     // Output: DTNode::stable
+    // Print: len, timeOptimFrac
     // Invokes: optimizeTime(), finishChanges()
 	bool optimize ();
 	  // Return: false <=> finished
 	  // Update: Phyl::stable
 	  // Invokes: getBestChange(), applyChanges()
-	void findRoot ();
+	string findRoot ();
     // Idempotent
+    // Return: new root LCA name in the old tree
 	  // Output: topology, rootCore
 	  // Invokes: setCore()
 	  // Requires: allTimeZero
@@ -1201,7 +1194,7 @@ public:
     { const Species* root_ = static_cast <const Species*> (root);
       return emptyRoot 
            	   ? false
-           	   : allTimeZero || ! featuresExist ()
+           	   : allTimeZero 
            	     ? root_->parent2core [false] [featureIndex]. treeLen >
   	    	         root_->parent2core [true]  [featureIndex]. treeLen
   	    	           // Lesser |core| is preferred: tie => false 
