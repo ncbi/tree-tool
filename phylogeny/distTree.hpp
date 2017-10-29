@@ -239,6 +239,8 @@ struct Leaf : DTNode
   
   Real absCriterion {NAN};
     // sum = contribution to 2*getTree().absCriterion
+  Real relCriterion {NAN};
+    // !isNan() => = getRelCriterion()
   
 
 	Leaf (DistTree &tree,
@@ -1010,11 +1012,13 @@ public:
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
-  VectorPtr<Leaf> findOutliers (Real &outlier_min) const;
+  VectorPtr<Leaf> findOutliers (bool strong,
+                                Real &outlier_min) const;
     // Idempotent
+    // Input: strong: use log(Leaf::getRelCriterion())
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
-    // Invokes: log(Leaf::getRelCriterion()), RealAttr2::normal2outlier()
+    // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
 
   // Statistics
   RealAttr1* getResiduals2 ();

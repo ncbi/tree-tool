@@ -126,7 +126,7 @@ void DTNode::saveFeatureTree (ostream &os,
     os << ' ';
   const ONumber on (os, dissimDecimals, true);
   string s = (asLeaf () ? "s" : "") + getName ();
-  os << s << ": t=" << (isNan (len) ? 0 : len) << "  C=0  dC=+0-0" << endl;
+  os << s << ": " << /*" t=" << (isNan (len) ? 0 : len) <<*/ "  C=0  dC=+0-0" << endl;
   if (asLeaf ())
   {
     FOR (size_t, i, offset + 2)
@@ -1653,7 +1653,7 @@ bool DistTree::loadLines (const StringVector &lines,
 	{
 	  ASSERT (parent);
 		auto leaf = new Leaf (*this, parent, len, idS);
-  //leaf->relLenError = leafError;
+    leaf->relCriterion = leafError;
 		leaf->discernable = ! indiscernable;
 		dtNode = leaf;
 	}
@@ -4360,7 +4360,8 @@ Real DistTree::setErrorDensities ()
 
 
 
-VectorPtr<Leaf> DistTree::findOutliers (Real &outlier_min) const
+VectorPtr<Leaf> DistTree::findOutliers (bool strong,
+                                        Real &outlier_min) const
 {
 	Dataset leafDs;
   auto criterionAttr = new RealAttr1 ("LeafCriterion", leafDs);
@@ -4371,18 +4372,18 @@ VectorPtr<Leaf> DistTree::findOutliers (Real &outlier_min) const
       if (const Real relErr = it. second->getRelCriterion ())
       {
     	  const size_t index = leafDs. appendObj (it. first);
-    	  (*criterionAttr) [index] = log (relErr);
+    	  (*criterionAttr) [index] = strong ? log (relErr) : relErr;
       }
   
   const Sample sample (leafDs);
-  outlier_min = criterionAttr->normal2outlier (sample, 0.1);  // PAR
+  outlier_min = criterionAttr->normal2outlier (sample, 0.1);  // PAR  
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))
     for (const auto& it : name2leaf)
       if (it. second->graph)
         if (const Real relErr = it. second->getRelCriterion ())
-          if (geReal (log (relErr), outlier_min))
+          if (geReal (strong ? log (relErr) : relErr, outlier_min))
             res << it. second;
       
 	return res;

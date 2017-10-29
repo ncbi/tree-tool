@@ -26,6 +26,10 @@ void checkOptimizable (const DistTree& tree,
 
 
 
+const string outlierCriterion ("rel. leaf error");
+
+
+
 struct ThisApplication : Application
 {
 	ThisApplication ()
@@ -43,7 +47,8 @@ struct ThisApplication : Application
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("reroot", "Re-root");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
-	  addKey ("remove_outliers", "Remove outliers and save them in the indicated file");
+	  addKey ("remove_outliers", "Remove outliers by " + outlierCriterion + " and save them in the indicated file");
+	  addFlag ("strong_outliers", "Use log(" + outlierCriterion + ") as the outlier criterion to produce fewer of them");
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
@@ -63,11 +68,13 @@ struct ThisApplication : Application
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global    
-		const bool topology              = getFlag ("topology");
-		const bool whole                 = getFlag ("whole");
-		const bool reroot                = getFlag ("reroot");
+		      bool   sparse              = getFlag ("sparse");
+		const bool   topology            = getFlag ("topology");
+		const bool   whole               = getFlag ("whole");
+		const bool   reroot              = getFlag ("reroot");
 		const string reroot_at           = getArg ("reroot_at");
-		      bool sparse                = getFlag ("sparse");
+		const string remove_outliers     = getArg ("remove_outliers");
+		const bool   strong_outliers     = getFlag ("strong_outliers");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
@@ -75,7 +82,6 @@ struct ThisApplication : Application
 		const string arc_length_stat     = getArg ("arc_length_stat");
 		const string output_dissim       = getArg ("output_dissim");
 		const string dissim_request      = getArg ("dissim_request");
-		const string remove_outliers     = getArg ("remove_outliers");
 		
 	  IMPLY (isRight (input_tree, "/"), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
@@ -191,9 +197,9 @@ struct ThisApplication : Application
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
 
       Real outlier_min = NAN;
-      const VectorPtr<Leaf> outliers (tree->findOutliers (outlier_min));
+      const VectorPtr<Leaf> outliers (tree->findOutliers (strong_outliers, outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
-      cout << "Min. log (rel. leaf error) of outliers: " << outlier_min << endl;
+      cout << "Min. " << (strong_outliers ? "log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
         cout         << leaf->name 
              << '\t' << leaf->getRelCriterion () 
