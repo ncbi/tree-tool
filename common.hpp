@@ -2054,6 +2054,7 @@ struct Tree : DiGraph
       return 0;
     }
   double getBifurcatingInteriorBranching () const;
+    // For unrooted tree
     // Return: if !root->isInteriotType() then -1 else between 1 and 2
     // # Bifurcating interior nodes = [1 1]' [[branching 0]' [1 1]']^depth [1 0] = \sum_{i=0}^depth branching^i = branching^{depth+1} - 1
     //   Vector meaning: [open_nodes closed_nodes]
