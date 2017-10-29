@@ -46,6 +46,7 @@ struct ThisApplication : Application
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("reroot", "Re-root");
+	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  addKey ("remove_outliers", "Remove outliers by " + outlierCriterion + " and save them in the indicated file");
 	  addFlag ("strong_outliers", "Use log(" + outlierCriterion + ") as the outlier criterion to produce fewer of them");
@@ -72,6 +73,7 @@ struct ThisApplication : Application
 		const bool   topology            = getFlag ("topology");
 		const bool   whole               = getFlag ("whole");
 		const bool   reroot              = getFlag ("reroot");
+		const bool   root_topological    = getFlag ("root_topological");
 		const string reroot_at           = getArg ("reroot_at");
 		const string remove_outliers     = getArg ("remove_outliers");
 		const bool   strong_outliers     = getFlag ("strong_outliers");
@@ -106,6 +108,7 @@ struct ThisApplication : Application
       cout << "Sparsing depth = " << sparsingDepth << endl;
     if (topology)
       cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
+    cout << "Root: " << (root_topological ? "topological" : "by length") << endl;
     cout << endl;
 
 
@@ -176,7 +179,7 @@ struct ThisApplication : Application
                 // optimizeSubtreesIter () almost does not improve
           }
           
-          tree->reroot ();  
+          cout << endl << "Radius: " << tree->reroot (root_topological) << endl;
         }
         else if (leaves == 3)
           tree->optimize3 ();
@@ -196,6 +199,8 @@ struct ThisApplication : Application
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
 
+
+      // Outliers
       Real outlier_min = NAN;
       const VectorPtr<Leaf> outliers (tree->findOutliers (strong_outliers, outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
@@ -225,7 +230,7 @@ struct ThisApplication : Application
     
 
     if (reroot)
-      tree->reroot ();
+      cout << endl << "Radius: " << tree->reroot (root_topological) << endl;
     else 
       if (! reroot_at. empty ())
       {

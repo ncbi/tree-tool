@@ -71,16 +71,8 @@ void DTNode::saveContent (ostream& os) const
   {
     const ONumber oLen (os, dissimDecimals, true);
     os << "len=" << len;
-  #if 0
-		if (subtreeLen. weights)
-		  os << "  len_mean=" << getHeight ();
-  #endif
   }
   const ONumber oNum (os, 6, true);  // PAR
-#if 0
-	if (subtreeLen. weights)
-	  os << "  len_weight=" << subtreeLen. weights;
-#endif
   if (paths)
 	  os << "  err_density=" << errorDensity << "  paths=" << paths;
 //os << "  " << dissimSum << ' ' << dissimWeightedSum;  
@@ -140,21 +132,25 @@ void DTNode::saveFeatureTree (ostream &os,
 
 
 
-void DTNode::setSubtreeLenUp ()
+void DTNode::setSubtreeLenUp (bool topological)
 {
   subtreeLen. clear ();
   if (! isLeaf ())
   	for (const DiGraph::Arc* arc : arcs [false])
   	{
   	  DTNode* child = static_cast <DTNode*> (arc->node [false]);
-  	  child->setSubtreeLenUp ();
-  	  subtreeLen. add (child->getHeight () + child->len, child->subtreeLen. weights + child->len);
+  	  child->setSubtreeLenUp (topological);
+  	  if (topological)
+    	  subtreeLen. add (child->subtreeLen. getMean () + 1,          child->asLeaf () ? 1 : child->subtreeLen. weights);
+  	  else
+    	  subtreeLen. add (child->subtreeLen. getMean () + child->len, child->subtreeLen. weights + child->len);
   	}
 }
 
 
 
-void DTNode::setGlobalLenDown (DTNode* &bestDTNode,
+void DTNode::setGlobalLenDown (bool topological,
+                               DTNode* &bestDTNode,
                                Real &bestDTNodeLen_new,
                                WeightedMeanVar &bestGlobalLen)
 {
@@ -163,19 +159,31 @@ void DTNode::setGlobalLenDown (DTNode* &bestDTNode,
     WeightedMeanVar parentSubtreeLen (parent_->subtreeLen /*global len*/);  
     {
       WeightedMeanVar subtreeLen1;
-      subtreeLen1. add (getHeight () + len, subtreeLen. weights + len);
+      subtreeLen1. add (subtreeLen. getMean () + (topological ? 1 : len), subtreeLen. weights + (topological ? 0 : len));
       parentSubtreeLen. subtract (subtreeLen1);  
     }
       // Subtree goes upward from *parent_
-    Real lenDelta =   len / 2 
-                    + (  (parentSubtreeLen. getMean () + parentSubtreeLen. weights)
-                       - (      subtreeLen. getMean () +       subtreeLen. weights)
-                      ) / 4;
-    maximize (lenDelta, 0.0);
-    minimize (lenDelta, len);
     WeightedMeanVar globalLen;
-    globalLen. add (      subtreeLen. getMean () + lenDelta,               subtreeLen. weights + lenDelta);
-    globalLen. add (parentSubtreeLen. getMean () + (len - lenDelta), parentSubtreeLen. weights + (len - lenDelta));
+    Real lenDelta = NAN;
+    if (topological)
+    {
+      lenDelta = len / 2;
+      globalLen. add (      subtreeLen. getMean () + 1,       subtreeLen. weights);
+      globalLen. add (parentSubtreeLen. getMean () + 1, parentSubtreeLen. weights);
+    }
+    else
+    {
+      // Optimal
+      lenDelta =   len / 2 
+                 + (  (parentSubtreeLen. getMean () + parentSubtreeLen. weights)
+                    - (      subtreeLen. getMean () +       subtreeLen. weights)
+                   ) / 4;
+      maximize (lenDelta, 0.0);
+      minimize (lenDelta, len);
+      globalLen. add (      subtreeLen. getMean () + lenDelta,               subtreeLen. weights + lenDelta);
+      globalLen. add (parentSubtreeLen. getMean () + (len - lenDelta), parentSubtreeLen. weights + (len - lenDelta));
+    }
+    ASSERT (! isNan (lenDelta));
     if (   ! bestDTNode 
         || bestGlobalLen. getMean () > globalLen. getMean ()
        )
@@ -184,11 +192,12 @@ void DTNode::setGlobalLenDown (DTNode* &bestDTNode,
       bestDTNodeLen_new = lenDelta;
       bestGlobalLen = globalLen;
     }
-    subtreeLen. add (parentSubtreeLen. getMean () + len, parentSubtreeLen. weights + len);
+    subtreeLen. add (parentSubtreeLen. getMean () + (topological ? 1 : len), parentSubtreeLen. weights + (topological ? 0 : len));
       // global len
   }
+
 	for (const DiGraph::Arc* arc : arcs [false])
-	  static_cast <DTNode*> (arc->node [false]) -> setGlobalLenDown (bestDTNode, bestDTNodeLen_new, bestGlobalLen);
+	  static_cast <DTNode*> (arc->node [false]) -> setGlobalLenDown (topological, bestDTNode, bestDTNodeLen_new, bestGlobalLen);
 }
 
 
@@ -204,33 +213,6 @@ void DTNode::setSubtreeLeaves ()
     FOR (size_t, i, subtreeLeaves. size ())
       if (child->subtreeLeaves [i])
         subtreeLeaves [i] = true;
-  }
-}
-
-
-
-void DTNode::getCenters (size_t depth,
-                         VectorPtr<Steiner> &centers) const
-{
-  static_assert (areaRadius_std > 1, "areaRadius_std > 1");
-  ASSERT (depth < areaRadius_std);
-  
-  if (depth == 0)
-  {
-    const Steiner* st = asSteiner ();
-    if (! st)
-      st = static_cast <const Steiner*> (getParent ());
-    centers << st;
-  }
-
-  depth++;
-  if (depth == areaRadius_std)
-    depth = 0;
-    
-  for (const DiGraph::Arc* arc : arcs [false])
-  {
-    const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
-    child->getCenters (depth, centers);
   }
 }
 #endif
@@ -2202,7 +2184,7 @@ void DistTree::neighborJoin ()
 
   finishChanges ();
   
-  reroot ();  // Reduces ds.objs.size() if ds is sparse
+  reroot (true);  // Reduces ds.objs.size() if ds is sparse
 }
 
 
@@ -4217,20 +4199,23 @@ void DistTree::reroot (DTNode* underRoot,
 
 
 
-void DistTree::reroot ()
+Real DistTree::reroot (bool topological)
 {
   DTNode* root_ = const_static_cast<DTNode*> (root);
   
   if (! root_->childrenDiscernable ())
-    return;
+    return 0;
   
-  root_->setSubtreeLenUp ();
+  root_->setSubtreeLenUp (topological);
+//cout << "Old radius: " << root_->getHeight_ave () << endl;  
   
   DTNode* bestDTNode = nullptr;
   Real bestDTNodeLen_new = NAN;
   WeightedMeanVar bestGlobalLen;
-  root_->setGlobalLenDown (bestDTNode, bestDTNodeLen_new, bestGlobalLen);
+  root_->setGlobalLenDown (topological, bestDTNode, bestDTNodeLen_new, bestGlobalLen);
   ASSERT (bestDTNode);
+  
+  const Real height = bestGlobalLen. getMean ();
   
   if (verbose ())
   {
@@ -4242,6 +4227,8 @@ void DistTree::reroot ()
   reroot (bestDTNode, bestDTNodeLen_new);
   
   clearSubtreeLen ();
+  
+  return height;
 }
 
 

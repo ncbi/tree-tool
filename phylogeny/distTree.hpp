@@ -130,20 +130,21 @@ public:
     // Return: this or nullptr
   bool childrenDiscernable () const
     { return arcs [false]. empty () || ! static_cast <DTNode*> ((*arcs [false]. begin ()) -> node [false]) -> inDiscernable (); }
-  Real getHeight () const
+  Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
     // Requires: after DistTree::setHeight()
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
-  void setSubtreeLenUp ();
+  void setSubtreeLenUp (bool topological);
     // Output: subtreeLen: average subtree height 
-    //                     weights = sum of DTNode::len in the subtree excluding *this
-  void setGlobalLenDown (DTNode* &bestDTNode,
+    //                     weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
+  void setGlobalLenDown (bool topological,
+                         DTNode* &bestDTNode,
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
     // Output: subtreeLen: Global len = average path length from *this to all leaves
-    //                     weights = sum of DTNode::len in the subtree excluding *this
+    //                     weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 //void setSubtreeLeaves ();
     // Output: subtreeLeaves
     // Time: O(n^2)
@@ -984,16 +985,16 @@ public:
     // Invokes: setReprLeaves(), ds.setName2objNum(), getObjName()
         
   // After optimization
-  void reroot (DTNode* underRoot,
-               Real arcLen);
-  void reroot ();
-    // Center of the tree w.r.t. DTNode::setGlobalLenDown()
-    // Invokes: setGloballenDown(), reroot(,)
   void setHeight ()
-    { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (); }
+    { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (false); }
     // Input: DTNode::len
     // Output: DTNode::subtreeLen
-    // Invokes: DTNode::setSubtreeLenUp()
+  void reroot (DTNode* underRoot,
+               Real arcLen);
+  Real reroot (bool topological);
+    // Center of the tree w.r.t. DTNode::setGlobalLenDown()
+    // Return: root->getHeight()
+    // Invokes: setGloballenDown(), reroot(,)
     
   // Quality
   Real getMeanResidual () const;
