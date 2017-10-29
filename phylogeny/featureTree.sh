@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 2) then
-  echo "Output: #1.dm - distances, #1.distTree, #1-maxParsimony.{tree,core}, #1.{tree,core} - feature tree"
+  echo "Output: #1.{tree,core} - feature tree"
   echo "#1: #1.list - list of genomes"
   echo "#2: directory with features of genomes"
   exit 1
@@ -12,15 +12,15 @@ endif
 feature2dist $1.list $2 > $1.dm
 if ($?) exit 1
 
-# Add comments to $1.dm
-
 distTree.sh $1 cons 
 if ($?) exit 1 
+rm $1.dm
+rm $1.makeDistTree
 
 # Gain/loss tree
 makeDistTree  -input_tree $1.tree  -output_feature_tree $1-init.tree  
 if ($?) exit 1 
-mv $1.tree $1.distTree  
+rm $1.tree 
 
 echo ""
 echo ""
@@ -33,7 +33,8 @@ echo ""
 echo ""
 makeFeatureTree  -input_tree $1-maxParsimony.tree  -genes $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
 if ($?) exit 1 
-
+rm $1-maxParsimony.tree 
+rm $1-maxParsimony.core
 
 
 # To distance tree for loading into Phyl
