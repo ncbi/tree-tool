@@ -718,14 +718,6 @@ void WeightedMeanVar::subtract (const WeightedMeanVar& other)
 
 
 
-void WeightedMeanVar::addValue (Real x)
-{
-  weightedSum2 += 2 * x * weightedSum + sqr (x) * weights;
-  weightedSum  += x * weights;
-}
-
-
-
 
 // MeanVar
 

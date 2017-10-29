@@ -435,7 +435,11 @@ struct WeightedMeanVar
     // Invariant: { add (x, weight); add (x, - weight); }
   void add (const WeightedMeanVar& other);
   void subtract (const WeightedMeanVar& other);
-  void addValue (Real x);
+  void addValue (Real x)
+    { weightedSum2 += 2 * x * weightedSum + sqr (x) * weights;
+      weightedSum  += x * weights;
+    }
+    // {for (i) add (x_i, w_i); addValue (x); } = {for (i) add (x_i + x, w_i); }
   Real getMean () const
     { return weightedSum ? weightedSum / weights : 0; }
   Real getVar () const
