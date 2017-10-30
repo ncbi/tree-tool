@@ -9,13 +9,16 @@ endif
 
 
 
-set L1 = `grep '^# Leaves: ' $1/old/makeDistTree.$2`
+set Leaves = `grep '^# Leaves: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
-set L2 = `grep '^CHRON: Optimizing new leaves: ' $1/old/makeDistTree.$2`
+set CHRON_Leaves = `grep '^CHRON: Optimizing new leaves: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
-set L3 = `grep '^CHRON: Initial topology: ' $1/old/makeDistTree.$2`
+set CHRON_topology = `grep '^CHRON: Initial topology: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
-echo $L1[3] $L2[5] $L3[4]
+set Radius = `grep '^Ave. radius: ' $1/old/makeDistTree.$2`
+if ($?) exit 1
+
+echo $Leaves[3] $CHRON_Leaves[5] $CHRON_topology[4] $Radius[2]
