@@ -2,6 +2,7 @@ PARAMETERS:
 Dissimilarity variance: lin
 Max. possible dissimilarity = 6.71089e+07
 Subgraph radius = 5
+Root: by length
 
 
 INPUT:
@@ -21,7 +22,7 @@ Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.08
 
 # Outliers: 0
-Min.  rel. leaf error of outliers: inf
+Min. rel. leaf error of outliers: inf
 
 # Interior nodes (with root) = 48 (max = 49)
 # Interior undirected arcs = 47

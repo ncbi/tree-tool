@@ -2,6 +2,7 @@ PARAMETERS:
 Dissimilarity variance: linExp
 Max. possible dissimilarity = 18.0218
 Subgraph radius = 5
+Root: by length
 
 Neighbor joining ...
 
@@ -22,7 +23,7 @@ Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = -nan
 
 # Outliers: 0
-Min.  rel. leaf error of outliers: nan
+Min. rel. leaf error of outliers: nan
 
 # Interior nodes (with root) = 3 (max = 3)
 # Interior undirected arcs = 1

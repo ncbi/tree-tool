@@ -191,7 +191,7 @@ void DTNode::setGlobalLenDown (bool topological,
       subtreeLen. add (parentSubtreeLen);
     }
     else
-      subtreeLen. add (parentSubtreeLen. getMean () + 1, parentSubtreeLen. weights + len);
+      subtreeLen. add (parentSubtreeLen. getMean () + len, parentSubtreeLen. weights + len);
     // global len
   }
 

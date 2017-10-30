@@ -3,13 +3,14 @@ Dissimilarity variance: linExp
 Max. possible dissimilarity = 18.0218
 Subgraph radius = 5
 Topology optimization: subgraphs
+Root: by length
 
 Neighbor joining ...
 
 INPUT:
 # Leaves: 291
 # Discernable leaves: 285
-# Nodes: 579
+# Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
 Ave. dissimilarity = 0.19
 Arc length is optimizable globally
@@ -19,38 +20,40 @@ Optimizing arc lengths at each arc ...
 
 Optimizing arc lengths at each node ...
 # Nodes deleted = 3
-absCriterion = 7.943967  Error density = 1.947540 %
+absCriterion = 7.930861  Error density = 1.945932 %
 
 Optimizing topology ...
 
+
+Radius: 0.46
 OUTPUT:
-absCriterion = 7.062142  Error density = 1.836229 %
-absCriterion [0] = 0.810010  Error density [0] = 7.448223 %  Fraction = 6.347777 %
-absCriterion [1] = 6.252132  Error density [1] = 1.733771 %  Fraction = 93.652223 %
+absCriterion = 7.056319  Error density = 1.835471 %
+absCriterion [0] = 0.810000  Error density [0] = 7.448175 %  Fraction = 6.347777 %
+absCriterion [1] = 6.246319  Error density [1] = 1.732964 %  Fraction = 93.652223 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.07
 
 # Outliers: 15
-Min.  rel. leaf error of outliers: 2.02
-SAMEA1692308	2.98	0.14
-SAMN01902385	2.06	0.10
+Min. rel. leaf error of outliers: 2.02
+SAMEA1692308	2.99	0.15
+SAMN01902385	2.07	0.10
 SAMN01902483	4.06	0.20
 SAMN02645767	2.38	0.12
-SAMN03098713	3.01	0.15
+SAMN03098713	3.02	0.15
 SAMN03154403	2.23	0.11
-SAMN03475395	2.15	0.10
-SAMN03477482	9.23	0.45
+SAMN03475395	2.16	0.10
+SAMN03477482	9.24	0.45
 SAMN03478846	2.02	0.10
-SAMN03480186	4.97	0.24
-SAMN03988423	10.14	0.49
-SAMN03992688	2.88	0.14
+SAMN03480186	4.98	0.24
+SAMN03988423	10.15	0.49
+SAMN03992688	2.89	0.14
 SAMN04255291	3.76	0.18
-SAMN04388342.r1	13.61	0.66
+SAMN04388342.r1	13.63	0.66
 SAMN04507552	2.24	0.11
 
 Removing outliers ...
-absCriterion = 3.832812  Error density = 1.352645 %
+absCriterion = 3.832782  Error density = 1.352640 %
 
 # Interior nodes (with root) = 269 (max = 269)
 # Interior undirected arcs = 267
