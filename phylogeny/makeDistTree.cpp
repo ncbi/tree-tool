@@ -179,7 +179,7 @@ struct ThisApplication : Application
                 // optimizeSubtreesIter () almost does not improve
           }
           
-          cout << endl << "Radius: " << tree->reroot (root_topological) << endl;
+          cout << endl << "Ave. radius: " << tree->reroot (root_topological) << endl;
         }
         else if (leaves == 3)
           tree->optimize3 ();
@@ -230,7 +230,7 @@ struct ThisApplication : Application
     
 
     if (reroot)
-      cout << endl << "Radius: " << tree->reroot (root_topological) << endl;
+      cout << endl << "Ave. radius: " << tree->reroot (root_topological) << endl;
     else 
       if (! reroot_at. empty ())
       {
