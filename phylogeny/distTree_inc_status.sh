@@ -26,6 +26,8 @@ echo ""
 set N = `ls $1/new/ | wc -l`
 echo "# New: $N[1]"
 
+cat $1/strong_outliers
+
 echo ""
 wc -l $1/dissim
 
