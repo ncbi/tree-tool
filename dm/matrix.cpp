@@ -1260,12 +1260,12 @@ bool Matrix::checkInverse (const Matrix &inverseM,
 
 
 
-Matrix* Matrix::getDiagVector (bool VecT) const
+Matrix Matrix::getDiagVector (bool VecT) const
 {
   ASSERT (isSquare ());
 
-  Matrix* diagVec = new Matrix (VecT, rowsSize (false), 1);
-  diagVec->diag2row (! VecT, 0, *this);
+  Matrix diagVec (VecT, rowsSize (false), 1);
+  diagVec. diag2row (! VecT, 0, *this);
   return diagVec;
 }
 
@@ -2652,13 +2652,35 @@ void Matrix::similarity2sqrDistance ()
   ASSERT (isSymmetric ());
 	ASSERT (defined ());
 
-  Common_sp::AutoPtr <Matrix> DiagVec (getDiagVector (false));
+  const Matrix diagVec (getDiagVector (false));
   FOR (size_t, row, rowsSize (false))
   FOR (size_t, col, rowsSize (false))
-    put (false, row, col,   DiagVec->get (false, row, 0) 
-                          + DiagVec->get (false, col, 0) 
+    put (false, row, col,   diagVec. get (false, row, 0) 
+                          + diagVec. get (false, col, 0) 
                           - 2 * get (false, row, col)
         );
+}
+
+
+
+void Matrix::similarity2evolutionDistance ()
+{
+  ASSERT (isSymmetric ());
+	ASSERT (defined ());
+
+  const Matrix diagVec (getDiagVector (false));
+  FOR (size_t, row, rowsSize (false))
+  FOR (size_t, col, rowsSize (false))
+  {
+    const Real sim = get (false, row, col);
+    ASSERT (sim > 0);
+    const Real d2 =   diagVec. get (false, row, 0) 
+                    + diagVec. get (false, col, 0) 
+                    - 2 * sim;
+    ASSERT (d2 >= 0);
+    const Prob jaccard = sim / (d2 + sim);
+    put (false, row, col, - log (jaccard));
+  }
 }
 
 

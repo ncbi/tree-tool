@@ -532,7 +532,7 @@ public:
   bool checkInverse (const Matrix &inverseM,
                      bool         inverseMT) const;
     // Return: false if inverseM is not the inverse of *this
-  Matrix* getDiagVector (bool VecT) const;
+  Matrix getDiagVector (bool VecT) const;
     // Requires: isSquare()
     // Invokes: diag2Row()
 //Find minimal subsets of linearly dependent rows ??
@@ -870,6 +870,9 @@ public:
   void similarity2sqrDistance ();
     // x_i^t x_j -> |x_i - x_j|^2
     // Requires: isSymmetric(), defined()
+  void similarity2evolutionDistance ();
+    // = - log (Jaccard(x,y)), where Jaccard(x,y) = s(x,y)/(d^2(x,y) + s(x,y))
+    // Requires: isSymmetric(), defined(), min() > 0
   void centerSimilarity (Matrix* &rowMean,
                          Real    &totalMean); 
     // Output: rowMean, totalMean - sufficient statistics
