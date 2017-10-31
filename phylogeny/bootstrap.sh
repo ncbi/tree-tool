@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 3) then
-  echo "Build and bootstrap a distance tree"
+  echo "Build and subsampling-bootstrap a distance tree"
   echo "#1: Input .dm file without .dm"
   echo "#2: Distance attribute in #1"
   echo "#3: Tree building program with parameters #1, #2"
