@@ -12,6 +12,7 @@ set DIR = $1/search/$2
 
 
 if (! -z $1/log/$2) then
+  echo "Non-empty log:"
   ls -laF $1/log/$2
   exit 1
 endif
