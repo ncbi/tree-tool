@@ -25,7 +25,7 @@ absCriterion = 7.930861  Error density = 1.945932 %
 Optimizing topology ...
 
 
-Radius: 0.46
+Ave. radius: 0.46
 OUTPUT:
 absCriterion = 7.056319  Error density = 1.835471 %
 absCriterion [0] = 0.810000  Error density [0] = 7.448175 %  Fraction = 6.347777 %
