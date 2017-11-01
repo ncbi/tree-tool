@@ -870,8 +870,7 @@ public:
   void similarity2sqrDistance ();
     // x_i^t x_j -> |x_i - x_j|^2
     // Requires: isSymmetric(), defined()
-  void similarity2evolutionDistance ();
-    // = - log (Jaccard(x,y)), where Jaccard(x,y) = s(x,y)/(d^2(x,y) + s(x,y))
+  void similarity2evolutionDistance (Prob p_chance);
     // Requires: isSymmetric(), defined(), min() > 0
   void centerSimilarity (Matrix* &rowMean,
                          Real    &totalMean); 

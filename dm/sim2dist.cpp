@@ -71,13 +71,14 @@ struct ThisApplication : Application
     auto dist = new PositiveAttr2 (sim->name + "_dist", ds, sim->decimals); 
   //dist->decimals += 4;  // PAR
     dist->matr = sim->matr;
-   #if 0
-      dist->matr. similarity2evolutionDistance ();
-   #else
+    if (false)
+      dist->matr. similarity2evolutionDistance (1.0/20.0);  // PAR
+    else
+    {
       dist->matr. similarity2sqrDistance ();
       if (! makeSqr)
         dist->matr. sqrtAll ();
-   #endif
+    }
     
     delete sim;
     
