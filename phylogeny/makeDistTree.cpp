@@ -374,8 +374,8 @@ struct ThisApplication : Application
 
     if (! remove_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "remove_outliers");  
-    if (! removeFName. empty ())  // Parameter is performed above
-      checkOptimizable (*tree, "remove");  
+    if (! removeFName. empty ())  // Parameter is performed above  
+      checkOptimizable (*tree, "remove");  // ??
 	}
 };
 
