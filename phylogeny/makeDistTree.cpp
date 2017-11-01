@@ -42,14 +42,15 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  
 	  // Processing
+	  addKey ("remove", "Remove leaves whose names are in the indicated file");
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
-	  addKey ("remove_outliers", "Remove outliers by " + outlierCriterion + " and save them in the indicated file");
 	  addFlag ("strong_outliers", "Use log(" + outlierCriterion + ") as the outlier criterion to produce fewer of them");
+	  addKey ("remove_outliers", "Remove outliers by " + outlierCriterion + " and save them in the indicated file");
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
@@ -69,14 +70,15 @@ struct ThisApplication : Application
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global    
+		const string removeFName         = getArg ("remove");
 		      bool   sparse              = getFlag ("sparse");
 		const bool   topology            = getFlag ("topology");
 		const bool   whole               = getFlag ("whole");
 		const bool   reroot              = getFlag ("reroot");
 		const bool   root_topological    = getFlag ("root_topological");
 		const string reroot_at           = getArg ("reroot_at");
-		const string remove_outliers     = getArg ("remove_outliers");
 		const bool   strong_outliers     = getFlag ("strong_outliers");
+		const string remove_outliers     = getArg ("remove_outliers");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
@@ -132,6 +134,23 @@ struct ThisApplication : Application
     
     if (tree->optimizable ())
     {
+      if (! removeFName. empty ())
+      {
+        cout << endl << "Removing ..." << endl;
+        LineInput f (removeFName, 10000, 1);
+        while (f. nextLine ())
+        {
+          trim (f. line);
+          const Leaf * leaf = findPtr (tree->name2leaf, f. line);
+          if (! leaf)
+            throw runtime_error ("Leaf " + f. line + " not found");
+          tree->removeLeaf (const_cast <Leaf*> (leaf));
+        }
+        tree->reportErrors (cout);
+        tree->qc ();
+      }
+
+
       if (topology)
       {
         const size_t leaves = tree->root->getLeavesSize ();
@@ -220,7 +239,7 @@ struct ThisApplication : Application
           {
             f << leaf->name << endl;
             tree->removeLeaf (const_cast <Leaf*> (leaf));
-            prog (real2str (tree->absCriterion, 6));
+            prog (real2str (tree->absCriterion, 6));  // PAR
           }
         }
         tree->reportErrors (cout);
@@ -355,6 +374,8 @@ struct ThisApplication : Application
 
     if (! remove_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "remove_outliers");  
+    if (! removeFName. empty ())  // Parameter is performed above
+      checkOptimizable (*tree, "remove");  
 	}
 };
 
