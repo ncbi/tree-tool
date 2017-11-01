@@ -23,7 +23,7 @@ struct ThisApplication : Application
     {
   	  addPositional ("file", dmSuff + "-file without the extension");
   	  addPositional ("attrName", "Attribute name of real-valued object-object table in the " + dmSuff + "-file");
-  	  addFlag ("sqr", "Make squared didtances");
+  	  addFlag ("sqr", "Make squared distances");
   	}
 
 
@@ -69,15 +69,20 @@ struct ThisApplication : Application
 	
 
     auto dist = new PositiveAttr2 (sim->name + "_dist", ds, sim->decimals); 
-  //dist->decimals += 4;  // PAR
     dist->matr = sim->matr;
     if (false)
+    {
       dist->matr. similarity2evolutionDistance (1.0/20.0);  // PAR
+      dist->decimals += 4;  // PAR
+    }
     else
     {
       dist->matr. similarity2sqrDistance ();
       if (! makeSqr)
+      {
         dist->matr. sqrtAll ();
+        dist->decimals += 4;  // PAR
+      }
     }
     
     delete sim;
