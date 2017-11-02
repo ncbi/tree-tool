@@ -206,21 +206,10 @@ struct ThisApplication : Application
           tree->optimize2 ();
       }
 
-      
-      cout << "OUTPUT:" << endl;  
-      tree->reportErrors (cout);
-      tree->printAbsCriterion_halves ();  
-      tree->setLeafAbsCriterion ();
-      tree->qc ();
-
-      cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;
-        // Must be << "Average arc error"
-      cout << "Mean residual = " << tree->getMeanResidual () << endl;
-      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
-
 
       // Outliers
       Real outlier_min = NAN;
+      tree->setLeafAbsCriterion ();
       const VectorPtr<Leaf> outliers (tree->findOutliers (strong_outliers, outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
       cout << "Min." << (strong_outliers ? " log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
@@ -245,6 +234,18 @@ struct ThisApplication : Application
         tree->reportErrors (cout);
         tree->qc ();
       }
+
+      
+      cout << endl << "OUTPUT:" << endl;  
+      tree->reportErrors (cout);
+      tree->printAbsCriterion_halves ();  
+      tree->setLeafAbsCriterion ();
+      tree->qc ();
+
+      cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;
+        // Must be << "Average arc error"
+      cout << "Mean residual = " << tree->getMeanResidual () << endl;
+      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
     }
     
 
