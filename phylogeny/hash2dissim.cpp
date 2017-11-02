@@ -1,4 +1,4 @@
-// hash2dissim.cpp
+// hash2dissim.cpp  --> feature2dissim.cpp ??
 
 #undef NDEBUG
 #include "../common.inc"
