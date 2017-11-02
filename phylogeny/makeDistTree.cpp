@@ -226,7 +226,7 @@ struct ThisApplication : Application
       cout << "Min." << (strong_outliers ? " log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
         cout         << leaf->name 
-             << '\t' << leaf->getRelCriterion () 
+             << '\t' << (strong_outliers ? log (leaf->getRelCriterion ()) : leaf->getRelCriterion ())
              << '\t' << leaf->absCriterion
              << endl;
       if (! remove_outliers. empty ())
