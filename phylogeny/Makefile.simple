@@ -16,7 +16,7 @@ all:	\
   bootstrapReport \
   compareTrees \
   distTree_new \
-  feature2dist \
+  feature2dissim \
   hash2dissim \
   hash_request2dissim \
 	makeDistTree \
@@ -67,10 +67,10 @@ distTree_new:	$(distTree_newOBJS)
 	$(CXX) -o $@ $(distTree_newOBJS) $(LIBS)
 	$(ECHO)
 
-feature2dist.o:  $(DM_HPP) 
-feature2distOBJS=feature2dist.o $(DM_OBJ) 
-feature2dist:	$(feature2distOBJS)
-	$(CXX) -o $@ $(feature2distOBJS) $(LIBS)
+feature2dissim.o:  $(DM_HPP) 
+feature2dissimOBJS=feature2dissim.o $(DM_OBJ) 
+feature2dissim:	$(feature2dissimOBJS)
+	$(CXX) -o $@ $(feature2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 hash2dissim.o:  $(DM_HPP) 

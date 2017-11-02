@@ -9,7 +9,7 @@ endif
 
 
 
-feature2dist $1.list $2 > $1.dm
+feature2dissim $1.list $2 > $1.dm
 if ($?) exit 1
 
 distTree.sh $1 cons 
