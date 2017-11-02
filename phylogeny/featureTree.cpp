@@ -896,13 +896,18 @@ void Genome::initDir (const string &geneDir)
       bool optional = false;
       trim (f. line);
       replace (f. line, '\t', ' ');
-      if (! contains (f. line, ' '))
+      if (contains (f. line, ':'))
         geneName = f. line;
-      else
+      else if (   isRight (f. line, " 0")
+               || isRight (f. line, " 1")
+         )
       {
-        stringstream ss (f. line);
-        ss >> geneName >> optional;
+        optional = isRight (f. line, " 1");
+        geneName = f. line. substr (0, f. line. size () - 2);
       }
+      else
+        geneName = f. line;
+      trim (geneName);
       ASSERT (! geneName. empty ());
       if (contains (coreSet, geneName))
         ERROR_MSG ("Gene \"" + geneName + "\" already exists in genome " + getName ());
