@@ -1002,7 +1002,7 @@ public:
   void reroot (DTNode* underRoot,
                Real arcLen);
   Real reroot (bool topological);
-    // Center of the tree w.r.t. DTNode::setGlobalLenDown()
+    // Center of the tree w.r.t. DTNode::setGlobalLenDown(); !topological => molecular clock
     // Return: root->getHeight()
     // Invokes: setGloballenDown(), reroot(,)
     
