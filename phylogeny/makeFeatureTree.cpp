@@ -37,7 +37,7 @@ struct ThisApplication : Application
 	    
 	  addKey ("newick", "Output file with the tree in the Newick format");
 	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
-	  addFlag ("qual", "Print the quality statistics measured by gene consistency");
+	  addKey ("qual", "Print the summary gain/loss statistics measured by gene consistency, save gain/loss statistcis per gene in the indicated file");
 	  addKey ("gain_nodes", "File name to save nodes where genes are gained");
 	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
 	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
@@ -60,7 +60,7 @@ struct ThisApplication : Application
 
 		const string newick          = getArg ("newick");
 		const bool min_newick_name   = getFlag ("min_newick_name");
-		const bool qual              = getFlag ("qual");  
+		const string qual            = getArg ("qual");  
 		const string gain_nodes      = getArg ("gain_nodes");  
 		const string arc_length_stat = getArg ("arc_length_stat");
 		const string patrDistFName   = getArg ("patr_dist");
@@ -158,8 +158,9 @@ struct ThisApplication : Application
     tree. dump (output_tree, set_node_ids);
 
 
-    if (qual)
+    if (! qual. empty ())
     {    
+      OFStream out (qual);
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
       cout << "Gene gains:" << endl;
@@ -195,7 +196,7 @@ struct ThisApplication : Application
           losses += f. losses;
           if (f. gains == 1)
             monos++;
-          f. print (cout);
+          f. print (out);
         }
       }
       cout << "# Paraphyletic genes:     " << monos   << " ^" << endl;  // Better: more
