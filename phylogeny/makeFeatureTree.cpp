@@ -24,21 +24,22 @@ struct ThisApplication : Application
   	{
   		// Input
   	  addKey ("input_tree", "Input file with the tree");
-  	  addKey ("genes", "Input directory with genes for each genome. Line format: " + Genome::geneLineFormat ());
+  	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::geneLineFormat ());
   	  addKey ("input_core", "Input file with root core feature ids");
   	    
+  	  // Optimization
   	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
   	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
+  	  addKey ("output_core", "Find root, set root core and output file with root core feature ids");  	    
   
       // Output	    
   	  addKey ("output_tree", "Output file with the tree");
-  	  addKey ("report_gene", "Gene name to report in the output tree");
+  	  addKey ("report_feature", "Feature name to report in the output tree");
   	//addFlag ("set_node_ids", "Set node ids in the output tree");  
-  	  addKey ("output_core", "Output file with root core feature ids");  	    
   	  addKey ("newick", "Output file with the tree in the Newick format");
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
-  	  addKey ("qual", "Print the summary gain/loss statistics measured by gene consistency, save gain/loss statistcis per gene in the indicated file");
-  	  addKey ("gain_nodes", "File name to save nodes where genes are gained");
+  	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file");
+  	  addKey ("gain_nodes", "File name to save nodes where features are gained");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
   	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
   	}
@@ -48,14 +49,14 @@ struct ThisApplication : Application
 	void body () const final
   {
 		const string input_tree      = getArg ("input_tree");
-		const string gene_dir        = getArg ("genes");
+		const string feature_dir     = getArg ("features");
 		const string input_core      = getArg ("input_core");
 
 		const bool use_time          = getFlag ("use_time");  
 		const int optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
 
 		const string output_tree     = getArg ("output_tree");
-		const string report_gene     = getArg ("report_gene");
+		const string report_feature  = getArg ("report_feature");
 	//const bool set_node_ids      = getFlag ("set_node_ids");  
 		const string output_core     = getArg ("output_core");
 		const string newick          = getArg ("newick");
@@ -71,29 +72,18 @@ struct ThisApplication : Application
 		ASSERT (optim_iter_max >= -1);
 		
 		
-    FeatureTree tree (/*species_id,*/ input_tree, gene_dir, input_core);
+    FeatureTree tree (/*species_id,*/ input_tree, feature_dir, input_core);
     tree. printInput (cout);
     tree. qc ();    
     
-    if (! report_gene. empty ())
+    if (! report_feature. empty ())
     {
-      tree. reportFeature = tree. findFeature (report_gene);
+      tree. reportFeature = tree. findFeature (report_feature);
       if (tree. reportFeature == NO_INDEX)
-        throw runtime_error ("Gene " + report_gene + " is not found");
+        throw runtime_error ("Feature " + report_feature + " is not found");
     }
     
-  #if 0
-    cout << "NOMINALS:" << endl;
-    for (const auto it : tree. nominals)
-    {
-      cout << it. first << ": ";
-      for (const string& value : it. second)
-        cout << ' ' << value;
-      cout << endl;
-    }
-    cout << endl;
-  #endif
-    
+
    	if (use_time && tree. allTimeZero)
     {
    		tree. useTime (input_core);
@@ -101,15 +91,6 @@ struct ThisApplication : Application
       tree. printInput (cout);
     }
     
-  #if 0
-    if (bad_nodes_to_root)
-    {
-      const size_t n = tree. badNodesToRoot ();
-      cout << endl;
-      cout << "# Bad nodes moved to root: " << n << endl;
-    }
-  #endif
-
     
     if (optim_iter_max)  
     {
@@ -136,6 +117,7 @@ struct ThisApplication : Application
         tree. optimizeTime ();
       }
     }
+
 
     if (! output_core. empty ())
     {
@@ -170,7 +152,7 @@ struct ThisApplication : Application
       OFStream out (qual);
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
-      cout << "Gene gains:" << endl;
+      cout << "Feature gains:" << endl;
       size_t monos = 0;  // Monophyletic
       size_t gains = 0;
       size_t losses = 0;
@@ -192,7 +174,7 @@ struct ThisApplication : Application
         }
         else if (f. genomes == 1)
           singles++;
-        else   // Non-trivial gene
+        else   // Non-trivial features
         {
           if (! f. gains)
           {
@@ -207,12 +189,12 @@ struct ThisApplication : Application
           f. print (out);
         }
       }
-      cout << "# Paraphyletic genes:     " << monos   << " ^" << endl;  // Better: more
+      cout << "# Paraphyletic features:  " << monos   << " ^" << endl;  // Better: more
       cout << "# Non-paraphyletic gains: " << gains   << " v" << endl;  // Better: less
       cout << "# Losses:                 " << losses  << " v" << endl;  // Better: less
-      cout << "# Common genes:           " << commons << endl;
-      cout << "# Single genes:           " << singles << endl;
-      cout << "# Optional genes:         " << optionals << endl;
+      cout << "# Common features:        " << commons << endl;
+      cout << "# Single features:        " << singles << endl;
+      cout << "# Optional features:      " << optionals << endl;
     }
 
     

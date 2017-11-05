@@ -24,14 +24,14 @@ rm $1.tree
 
 echo ""
 echo ""
-makeFeatureTree  -input_tree $1-init.tree  -genes $2  -output_tree $1-maxParsimony.tree  -output_core $1-maxParsimony.core  -optim_iter_max 100
+makeFeatureTree  -input_tree $1-init.tree  -features $2  -output_tree $1-maxParsimony.tree  -output_core $1-maxParsimony.core  -optim_iter_max 100
 if ($?) exit 1 
 rm $1-init.tree
 
 # MLE
 echo ""
 echo ""
-makeFeatureTree  -input_tree $1-maxParsimony.tree  -genes $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
+makeFeatureTree  -input_tree $1-maxParsimony.tree  -features $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
 if ($?) exit 1 
 rm $1-maxParsimony.tree 
 rm $1-maxParsimony.core
