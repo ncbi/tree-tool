@@ -136,6 +136,16 @@ void Phyl::saveContent (ostream& os) const
 	os << "  dC="
 	   << '+' << getCoreChange (true)
 	   << '-' << getCoreChange (false);
+	 
+	const size_t reportFeature = getFeatureTree (). reportFeature;
+	if (reportFeature != NO_INDEX)
+	{
+	  os << "  " << getFeatureTree (). features [reportFeature]. name 
+	     << ": core=" << core [reportFeature];
+	  for (const bool parentCore : {false, true})
+	    os << " coreEval[" << parentCore << "]=" << parent2core [parentCore] [reportFeature]. core 
+	       << " len["      << parentCore << "]=" << parent2core [parentCore] [reportFeature]. treeLen;	        
+	}
 }
 
 
@@ -2323,18 +2333,20 @@ void FeatureTree::printInput (ostream& os) const
 
 
 
-void FeatureTree::dump (const string &fName,
-                        bool setIds)
+void FeatureTree::dump (const string &fName/*,
+                        bool setIds*/)
 { 
   setCore ();
   sort ();
   setStats ();
+#if 0
   if (setIds)
     if (const Fossil* f = static_cast <const Species*> (root) -> asFossil ())
     { 
       uint id = 1;  // 0 means "unknown"
       const_cast <Fossil*> (f) -> setId (id);
     }
+#endif
   qc ();      
   saveFile (fName);
 }
@@ -3050,9 +3062,10 @@ void FeatureTree::setStats ()
     FOR (size_t, i, features. size ())
     {
       if (g)
-        if (! g->optionalCore [i])
-          if (g->core [i])
-            features [i]. genomes++;
+        if (   g->core [i]
+            && ! g->optionalCore [i]
+           )
+          features [i]. genomes++;
       if ((! phyl->feature2parentCore (i) || phyl == root) && phyl->core [i])  // use unrooted tree ??
         features [i]. gains++;
       if (phyl->feature2parentCore (i) && ! phyl->core [i])
@@ -3303,6 +3316,16 @@ const Genome* FeatureTree::findGenome (const string &genomeId) const
  			if (g->id == genomeId)
  				return g;
   return nullptr;
+}
+
+
+
+size_t FeatureTree::findFeature (const  Feature::Id &featureName) const
+{
+  FOR (size_t, i, features. size ())
+    if (features [i]. name == featureName)
+      return i;
+  return NO_INDEX;
 }
 
 

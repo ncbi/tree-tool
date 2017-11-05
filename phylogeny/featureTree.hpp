@@ -1055,6 +1055,8 @@ public:
   // Stats
 	Common_sp::AutoPtr <const Normal> distDistr;
 	Common_sp::AutoPtr <const Normal> depthDistr;
+	  
+	size_t reportFeature {NO_INDEX};
 
 	  
 	FeatureTree (const string &treeFName,
@@ -1094,8 +1096,8 @@ public:
     // Requires: features.empty()
 
 	void printInput (ostream& os) const;
-	void dump (const string &fName,
-	           bool setIds);
+	void dump (const string &fName/*,
+	           bool setIds*/);
 	  // Invokes: setStats()
 	void progInternal (const string& step = string ())
 	  { if (prog_. get ()) 
@@ -1219,8 +1221,10 @@ private:
     // Return: # Fossil's delete'd
 public:
 		
-  const Genome* findGenome (const string& genomeId) const;
+  const Genome* findGenome (const string &genomeId) const;
     // Return: May be nullptr
+  size_t findFeature (const Feature::Id &featureName) const;
+    // Return: may be NO_INDEX
 };
 
 

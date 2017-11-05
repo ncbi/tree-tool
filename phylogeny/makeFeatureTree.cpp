@@ -20,32 +20,32 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Optimize a feature tree")
-	{
-		// Input
-	  addKey ("input_tree", "Input file with the tree");
-	  addKey ("genes", "Input directory with genes for each genome. Line format: " + Genome::geneLineFormat ());
-	  addKey ("input_core", "Input file with root core feature ids");
-	    
-	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
-	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
+  	: Application ("Optimize a feature tree")
+  	{
+  		// Input
+  	  addKey ("input_tree", "Input file with the tree");
+  	  addKey ("genes", "Input directory with genes for each genome. Line format: " + Genome::geneLineFormat ());
+  	  addKey ("input_core", "Input file with root core feature ids");
+  	    
+  	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
+  	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
+  
+      // Output	    
+  	  addKey ("output_tree", "Output file with the tree");
+  	  addKey ("report_gene", "Gene name to report in the output tree");
+  	//addFlag ("set_node_ids", "Set node ids in the output tree");  
+  	  addKey ("output_core", "Output file with root core feature ids");  	    
+  	  addKey ("newick", "Output file with the tree in the Newick format");
+  	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
+  	  addKey ("qual", "Print the summary gain/loss statistics measured by gene consistency, save gain/loss statistcis per gene in the indicated file");
+  	  addKey ("gain_nodes", "File name to save nodes where genes are gained");
+  	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
+  	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
+  	}
 
-    // Output	    
-	  addKey ("output_tree", "Output file with the tree");
-	  addFlag ("set_node_ids", "Set node ids in the output tree");  
-	  addKey ("output_core", "Output file with root core feature ids");
-	    
-	  addKey ("newick", "Output file with the tree in the Newick format");
-	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
-	  addKey ("qual", "Print the summary gain/loss statistics measured by gene consistency, save gain/loss statistcis per gene in the indicated file");
-	  addKey ("gain_nodes", "File name to save nodes where genes are gained");
-	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
-	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
-	}
 
 
-
-	void body () const
+	void body () const final
   {
 		const string input_tree      = getArg ("input_tree");
 		const string gene_dir        = getArg ("genes");
@@ -55,9 +55,9 @@ struct ThisApplication : Application
 		const int optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
 
 		const string output_tree     = getArg ("output_tree");
-		const bool set_node_ids      = getFlag ("set_node_ids");  
+		const string report_gene     = getArg ("report_gene");
+	//const bool set_node_ids      = getFlag ("set_node_ids");  
 		const string output_core     = getArg ("output_core");
-
 		const string newick          = getArg ("newick");
 		const bool min_newick_name   = getFlag ("min_newick_name");
 		const string qual            = getArg ("qual");  
@@ -74,6 +74,13 @@ struct ThisApplication : Application
     FeatureTree tree (/*species_id,*/ input_tree, gene_dir, input_core);
     tree. printInput (cout);
     tree. qc ();    
+    
+    if (! report_gene. empty ())
+    {
+      tree. reportFeature = tree. findFeature (report_gene);
+      if (tree. reportFeature == NO_INDEX)
+        throw runtime_error ("Gene " + report_gene + " is not found");
+    }
     
   #if 0
     cout << "NOMINALS:" << endl;
@@ -113,7 +120,7 @@ struct ThisApplication : Application
         for (;;)
         {
     	    cout << endl;
-    	    tree. dump (output_tree, true);  // Redundant
+    	    tree. dump (output_tree /*, true*/);  // Redundant
           if (iter >= optim_iter_max)
           	break;
           iter++;
@@ -121,7 +128,7 @@ struct ThisApplication : Application
           if (! tree. optimize ())
           	break;	    
         }
-        tree. dump (output_tree, true);  // Redundant
+        tree. dump (output_tree /*, true*/);  // Redundant
       }
       else
       {
@@ -155,7 +162,7 @@ struct ThisApplication : Application
 
 
     // Output
-    tree. dump (output_tree, set_node_ids);
+    tree. dump (output_tree/*, set_node_ids*/);
 
 
     if (! qual. empty ())
@@ -192,10 +199,11 @@ struct ThisApplication : Application
             f. print (cout);
             ERROR;
           }
-          gains += f. gains - 1;
-          losses += f. losses;
           if (f. gains == 1)
             monos++;
+          gains  += f. gains - 1;
+          losses += f. losses;
+          //
           f. print (out);
         }
       }
