@@ -130,6 +130,13 @@ struct ThisApplication : Application
 
     tree->printInput (cout);
     cout << endl;
+    
+    if (Chronometer::enabled)
+    {
+      cout << "CHRON: Tree -> subgraph: "      << chron_tree2subgraph << endl;
+      cout << "CHRON: Subgraph optimization: " << chron_subgraphOptimize << endl; 
+      cout << "CHRON: Subgraph -> tree: "      << chron_subgraph2tree << endl; 
+    }
 
     
     if (tree->optimizable ())

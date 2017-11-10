@@ -16,6 +16,12 @@ namespace DistTree_sp
 
 
 
+extern Chronometer chron_tree2subgraph;
+extern Chronometer chron_subgraphOptimize;
+extern Chronometer chron_subgraph2tree;
+
+
+
 // --> DistTree ??
 // Dissimilarity variance
 enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson

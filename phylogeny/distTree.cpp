@@ -13,6 +13,13 @@ namespace DistTree_sp
 {
 
 
+
+Chronometer chron_tree2subgraph;
+Chronometer chron_subgraphOptimize;
+Chronometer chron_subgraph2tree;
+
+
+
 // VarianceType
 
 const StringVector varianceTypeNames {"lin", "exp", "linExp"};
@@ -3599,6 +3606,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   ASSERT (center->graph);
   ASSERT (& center->getTree () == this);
 
+  chron_tree2subgraph. start ();
   VectorPtr<TreeNode> area;
   const DTNode* area_root = nullptr;
   Node2Node new2old;  // Initially: newLeaves2boundary
@@ -3623,7 +3631,9 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   }
 #endif
   ASSERT (tree. nodeAttrExist);
+  chron_tree2subgraph. stop ();
 
+  chron_subgraphOptimize. start ();
   const size_t leaves = tree. name2leaf. size ();
   {
     Unverbose unv;
@@ -3646,6 +3656,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     {
       if (verbose (1))
         cout << "Singleton" << endl;
+      chron_subgraphOptimize. stop ();  
       return INF;
     }
   }
@@ -3655,6 +3666,9 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     cout << "Subtree: ";
     tree. reportErrors (cout);
   }
+  chron_subgraphOptimize. stop (); 
+   
+  chron_subgraph2tree. start ();
   
   const Real leafLen_min = tree. getMinLeafLen ();  
 
@@ -3754,6 +3768,9 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     ERROR;
   }
   
+
+  chron_subgraph2tree. stop ();
+
   return leafLen_min;
 }
 
