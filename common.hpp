@@ -70,25 +70,24 @@ struct Chronometer : Nocopy
 private:
   clock_t startTime {0};
 public:
-  bool on;
 
-  explicit Chronometer (bool on_arg = true)
-    : on (on_arg)
-    {}
 
   void start ()
-    { if (! enabled || ! on)
+    { if (! enabled)
         return;
+      if (startTime)
+        throw logic_error ("Chronometer is not stopped");
       startTime = clock (); 
     }  
   void stop () 
-    { if (! enabled || ! on)
+    { if (! enabled)
         return;
       if (! startTime)
         throw logic_error ("Chronometer is not started");
       time += clock () - startTime; 
       startTime = 0;
     }
+
   static void print (ostream &os,
                      clock_t time_arg)
     { os << fixed; os. precision (2); os << (double) time_arg / CLOCKS_PER_SEC << " sec."; }
