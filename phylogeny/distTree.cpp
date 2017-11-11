@@ -1287,7 +1287,8 @@ DistTree::DistTree (const DTNode* center,
                     VectorPtr<TreeNode> &area,
                     const DTNode* &area_root,
                     Node2Node &newLeaves2boundary,
-                    Vector<size_t> &wholeDissimObjs)
+                    Vector<size_t> &wholeDissimObjs,
+                    Real &localAbsCriterion)
 : dsSample (ds)
 {
   ASSERT (center);
@@ -1297,6 +1298,8 @@ DistTree::DistTree (const DTNode* center,
   ASSERT (area. empty ());
   ASSERT (newLeaves2boundary. empty ());
   ASSERT (wholeDissimObjs. empty ());
+  
+  localAbsCriterion = 0;
   
   const DistTree& wholeTree = center->getDistTree ();
   
@@ -1463,6 +1466,7 @@ DistTree::DistTree (const DTNode* center,
       continue;
       
     wholeDissimObjs << *it;
+    localAbsCriterion += wholeTree. getAbsCriterion (*it);
       
     const Real dist_hat_sub = path2prediction (path);
 
@@ -2765,19 +2769,24 @@ void DistTree::setPrediction (const Vector<size_t> &wholeDissimObjs)
 
 
 
-Real DistTree::getAbsCriterion () const
+Real DistTree::getAbsCriterion (size_t objNum) const
 {
   ASSERT (optimizable ());
 
+  const Real d = (*target) [objNum];
+//ASSERT (d >= 0);
+  const Real dHat = (*prediction) [objNum];
+  ASSERT (! isNan (dHat));
+  return ds. objs [objNum] -> mult * sqr (dHat - d);
+}
+
+
+
+Real DistTree::getAbsCriterion () const
+{
   Real absCriterion_ = 0;
   for (Iterator it (dsSample); it ();)  
-  {
-    const Real d = (*target) [*it];
-  //ASSERT (d >= 0);
-    const Real dHat = (*prediction) [*it];
-    ASSERT (! isNan (dHat));
-    absCriterion_ += it. mult * sqr (dHat - d);
-  }
+    absCriterion_ += getAbsCriterion (*it);  // it. mult * sqr (dHat - d);
   ASSERT (DM_sp::finite (absCriterion_));
   
   return absCriterion_;
@@ -2791,13 +2800,7 @@ Real DistTree::getAbsCriterion (const Vector<size_t> &wholeDissimObjs) const
 
   Real absCriterion_ = 0;
   for (const size_t objNum : wholeDissimObjs)
-  {
-    const Real d = (*target) [objNum];
-  //ASSERT (d >= 0);
-    const Real dHat = (*prediction) [objNum];
-    ASSERT (! isNan (dHat));
-    absCriterion_ += ds. objs [objNum] -> mult * sqr (dHat - d);
-  }
+    absCriterion_ += getAbsCriterion (objNum);
   ASSERT (DM_sp::finite (absCriterion_));
   
   return absCriterion_;
@@ -3628,7 +3631,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   const DTNode* area_root = nullptr;
   Node2Node new2old;  // Initially: newLeaves2boundary
   Vector<size_t> wholeDissimObjs;  wholeDissimObjs. reserve (ds. objs. size ());
-  DistTree tree (center, areaRadius_std, area, area_root, new2old, wholeDissimObjs);
+  Real localAbsCriterion = NAN;
+  DistTree tree (center, areaRadius_std, area, area_root, new2old, wholeDissimObjs, localAbsCriterion);
   tree. qc ();
   ASSERT (area_root);
   ASSERT (area_root->graph == this);
@@ -3766,11 +3770,17 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     setRoot ();
     
 
-  chron_subgraph2tree. start ();  // optimize time ??
-  setPrediction (wholeDissimObjs);
+  chron_subgraph2tree. start ();  
+  setPrediction (wholeDissimObjs);  // optimize time ??
   finishChanges (/*area ??*/);
-  setAbsCriterion (/*wholeDissimObjs ??*/);
+#if 0
+  setAbsCriterion ();
+#else
+  absCriterion -= localAbsCriterion;
+  absCriterion += getAbsCriterion (wholeDissimObjs);
+#endif
   chron_subgraph2tree. stop ();
+  
   if (qc_on && verbose ())
   {
     cout << "absCriterion = " << absCriterion << endl;

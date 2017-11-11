@@ -734,14 +734,16 @@ public:
             VectorPtr<TreeNode> &area,
             const DTNode* &area_root,
             Node2Node &newLeaves2boundary,
-            Vector<size_t> &wholeDissimObjs);
+            Vector<size_t> &wholeDissimObjs,
+            Real &localAbsCriterion);
     // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
     // Input: areaRadius: >= 1
     // Output: area: contains center, area_root, newLeaves2boundary.values(); getTree() = center->getTree()
     //               discernable
     //         area_root: !nullptr
     //         newLeaves2boundary
-    //        wholeDissimObjs: indices of center->getDistTree().ds.objs whose dissimilarities pass through *this
+    //         wholeDissimObjs: indices of center->getDistTree().ds.objs whose dissimilarities pass through *this
+    //         localAbsCriterion: center->getDistTree().absCriterion restricted to wholeDissimObjs[]
 	  // Time: O(wholeDs.p log(wholeDs.n)) + f(|area|), where wholeDs = center->getDistTree().ds
 private:
   void loadTreeDir (const string &dir);
@@ -883,6 +885,7 @@ public:
     // Output: *prediction
     // Invokes: path2prediction()
 	  // Time: O(|wholeDissimObjs| log(n))
+  Real getAbsCriterion (size_t objNum) const;
   Real getAbsCriterion () const;
     // Input: *prediction
 	  // Time: O(p)
