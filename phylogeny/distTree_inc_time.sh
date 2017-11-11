@@ -13,20 +13,28 @@ endif
 set Leaves = `grep '^# Leaves: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
-set CHRON_Leaves = `grep '^CHRON: Optimizing new leaves: ' $1/old/makeDistTree.$2`
+set Dissim = `grep '^# Dissimilarities: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
 set CHRON_topology = `grep '^CHRON: Initial topology: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
+set CHRON_Leaves = `grep '^CHRON: Optimizing new leaves: ' $1/old/makeDistTree.$2`
+if ($?) exit 1
+
 
 set CHRON_tree2subgraph = 0
+set CHRON_tree2subgraphDissim = 0
 set CHRON_subgraph = 0
 set CHRON_subgraph2tree = 0
 if ($3) then
   set L = `grep '^CHRON: Tree -> subgraph: ' $1/old/makeDistTree.$2`
   if ($?) exit 1
   set CHRON_tree2subgraph = $L[5]
+  
+  set L = `grep '^CHRON: Tree -> subgraph dissim: ' $1/old/makeDistTree.$2`
+  if ($?) exit 1
+  set CHRON_tree2subgraphDissim = $L[6]
   
   set L = `grep '^CHRON: Subgraph optimization: ' $1/old/makeDistTree.$2`
   if ($?) exit 1
@@ -41,5 +49,6 @@ endif
 set Radius = `grep '^Ave. radius: ' $1/old/makeDistTree.$2`
 if ($?) exit 1
 
-#     #Leaves          topology           Leaves           tree2subgraph        subgraph        subgraph2tree     Radius   
-echo $Leaves[3] $CHRON_topology[4] $CHRON_Leaves[5] $CHRON_tree2subgraph $CHRON_subgraph $CHRON_subgraph2tree $Radius[3]
+
+#     #Leaves   #Dissim           topology           Leaves           tree2subgraph        tree2subgraphDissim        subgraph        subgraph2tree  Radius   
+echo $Leaves[3] $Dissim[3] $CHRON_topology[4] $CHRON_Leaves[5] $CHRON_tree2subgraph $CHRON_tree2subgraphDissim $CHRON_subgraph $CHRON_subgraph2tree $Radius[3]

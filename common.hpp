@@ -66,10 +66,16 @@ protected:
 struct Chronometer : Nocopy
 {
   static bool enabled;
+  string name;
   clock_t time {0};
 private:
   clock_t startTime {0};
 public:
+
+
+  explicit Chronometer (const string &name_arg)
+    : name (name_arg)
+    {}
 
 
   void start ()
@@ -88,32 +94,21 @@ public:
       startTime = 0;
     }
 
-  static void print (ostream &os,
-                     clock_t time_arg)
-    { os << fixed; os. precision (2); os << (double) time_arg / CLOCKS_PER_SEC << " sec."; }
+  void print (ostream &os) const
+    { os << "CHRON: " << name << ": ";
+      os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl << endl;
+    }
 };
 
 
-inline ostream& operator<< (ostream &os,
-                            const Chronometer &c) 
-  { Chronometer::print (os, c. time);
-    return os;
-  }
-
-
-struct Chronometer_OnePass : Nocopy
+struct Chronometer_OnePass : Chronometer
 {
-  string name;
-  clock_t startTime;
-
   explicit Chronometer_OnePass (const string &name_arg)
-    : name (name_arg)
-    , startTime (clock ())
-    {}
+    : Chronometer (name_arg)
+    { start (); }
  ~Chronometer_OnePass ()
-    { cout << "CHRON: " << name << ": ";
-      Chronometer::print (cout, clock () - startTime);
-      cout << endl << endl;
+    { stop ();
+      print (cout); 
     }
 };
 	

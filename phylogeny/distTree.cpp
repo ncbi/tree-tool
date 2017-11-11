@@ -14,10 +14,11 @@ namespace DistTree_sp
 
 
 
-Chronometer chron_tree2subgraph;
-Chronometer chron_tree2subgraphDissim;
-Chronometer chron_subgraphOptimize;
-Chronometer chron_subgraph2tree;
+Chronometer chron_getBestChange ("getBestChange");
+Chronometer chron_tree2subgraph ("tree2subgraph");
+Chronometer chron_tree2subgraphDissim ("tree2subgraphDissim");
+Chronometer chron_subgraphOptimize ("subgraphOptimize");
+Chronometer chron_subgraph2tree ("subgraph2tree");
 
 
 
@@ -1285,7 +1286,8 @@ DistTree::DistTree (const DTNode* center,
                     uint areaRadius,
                     VectorPtr<TreeNode> &area,
                     const DTNode* &area_root,
-                    Node2Node &newLeaves2boundary)
+                    Node2Node &newLeaves2boundary,
+                    Vector<size_t> &wholeDissimObjs)
 : dsSample (ds)
 {
   ASSERT (center);
@@ -1294,6 +1296,7 @@ DistTree::DistTree (const DTNode* center,
   ASSERT (areaRadius >= 1);  
   ASSERT (area. empty ());
   ASSERT (newLeaves2boundary. empty ());
+  ASSERT (wholeDissimObjs. empty ());
   
   const DistTree& wholeTree = center->getDistTree ();
   
@@ -1458,6 +1461,8 @@ DistTree::DistTree (const DTNode* center,
     path. filter ([&] (size_t i) { return ! areaSet. contains (path [i]) || path [i] == area_root; });    
     if (path. empty ())
       continue;
+      
+    wholeDissimObjs << *it;
       
     const Real dist_hat_sub = path2prediction (path);
 
@@ -2715,6 +2720,9 @@ void DistTree::topology2attrs ()
 
 void DistTree::removeTopologyAttrs ()
 {
+ 	if (! nodeAttrExist)
+ 	  return;
+
   for (DiGraph::Node* node : nodes)
   {
  	  const CompactBoolAttr1* attr = static_cast <DTNode*> (node) -> attr;
@@ -2746,6 +2754,17 @@ void DistTree::setPrediction ()
 
 
 
+void DistTree::setPrediction (const Vector<size_t> &wholeDissimObjs) 
+{
+  for (const size_t objNum : wholeDissimObjs)
+  {
+    const VectorPtr<TreeNode> path (getPath (obj2leaf1 [objNum], obj2leaf2 [objNum]));
+    (* const_cast <RealAttr1*> (prediction)) [objNum] = path2prediction (path);  
+  }
+}
+
+
+
 Real DistTree::getAbsCriterion () const
 {
   ASSERT (optimizable ());
@@ -2758,6 +2777,26 @@ Real DistTree::getAbsCriterion () const
     const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
     absCriterion_ += it. mult * sqr (dHat - d);
+  }
+  ASSERT (DM_sp::finite (absCriterion_));
+  
+  return absCriterion_;
+}
+
+
+
+Real DistTree::getAbsCriterion (const Vector<size_t> &wholeDissimObjs) const
+{
+  ASSERT (optimizable ());
+
+  Real absCriterion_ = 0;
+  for (const size_t objNum : wholeDissimObjs)
+  {
+    const Real d = (*target) [objNum];
+  //ASSERT (d >= 0);
+    const Real dHat = (*prediction) [objNum];
+    ASSERT (! isNan (dHat));
+    absCriterion_ += ds. objs [objNum] -> mult * sqr (dHat - d);
   }
   ASSERT (DM_sp::finite (absCriterion_));
   
@@ -3531,17 +3570,14 @@ bool DistTree::optimize ()
 		Progress prog ((uint) nodeVec. size ());
 	 	for (const DTNode* node : nodeVec)  
 	 	{
-	 	  static Chronometer chr;
-	 	  chr. start ();
 	   	prog ();
+	 	  chron_getBestChange. start ();
 		 	if (const Change* bestChange = getBestChange (node)) 
 		  { 
 		  	ASSERT (positive (bestChange->improvement));
 		  	changes << bestChange;
 		  }
-		  chr. stop ();
-		  if (Chronometer::enabled)
-		    cerr << ' ' << chr << endl;
+		  chron_getBestChange. stop ();
  	  }
   }
     
@@ -3591,12 +3627,14 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   VectorPtr<TreeNode> area;
   const DTNode* area_root = nullptr;
   Node2Node new2old;  // Initially: newLeaves2boundary
-  DistTree tree (center, areaRadius_std, area, area_root, new2old);
+  Vector<size_t> wholeDissimObjs;  wholeDissimObjs. reserve (ds. objs. size ());
+  DistTree tree (center, areaRadius_std, area, area_root, new2old, wholeDissimObjs);
   tree. qc ();
   ASSERT (area_root);
   ASSERT (area_root->graph == this);
   ASSERT (area. contains (center));
   ASSERT (area. contains (area_root));
+  ASSERT (! wholeDissimObjs. empty ());
 #ifndef NDEBUG
   for (const auto it : new2old)
   {
@@ -3650,8 +3688,6 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   chron_subgraphOptimize. stop (); 
    
 
-  chron_subgraph2tree. start ();
-  
   const Real leafLen_min = tree. getMinLeafLen ();  
 
 
@@ -3696,7 +3732,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     if (! contains (boundary2new, static_cast <const DiGraph::Node*> (node)))
     {
       DTNode* dtNode = const_static_cast <DTNode*> (node);
-      delete dtNode->attr;
+      ASSERT (! dtNode->attr);
       delete dtNode;
     }
     // Between boundary TreeNode's there are no Arc's
@@ -3728,10 +3764,13 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
 
 //if (rootInArea)  ??
     setRoot ();
+    
 
-  setPrediction ();
-  finishChanges ();
-  setAbsCriterion ();
+  chron_subgraph2tree. start ();  // optimize time ??
+  setPrediction (wholeDissimObjs);
+  finishChanges (/*area ??*/);
+  setAbsCriterion (/*wholeDissimObjs ??*/);
+  chron_subgraph2tree. stop ();
   if (qc_on && verbose ())
   {
     cout << "absCriterion = " << absCriterion << endl;
@@ -3749,8 +3788,6 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     ERROR;
   }
   
-
-  chron_subgraph2tree. stop ();
 
   return leafLen_min;
 }

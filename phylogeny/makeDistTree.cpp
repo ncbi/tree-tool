@@ -133,10 +133,11 @@ struct ThisApplication : Application
     
     if (Chronometer::enabled)
     {
-      cout << "CHRON: Tree -> subgraph: "        << chron_tree2subgraph << endl;
-      cout << "CHRON: Tree -> subgraph dissim: " << chron_tree2subgraphDissim << endl;
-      cout << "CHRON: Subgraph optimization: "   << chron_subgraphOptimize << endl; 
-      cout << "CHRON: Subgraph -> tree: "        << chron_subgraph2tree << endl; 
+      chron_getBestChange.       print (cout);
+      chron_tree2subgraph.       print (cout);
+      chron_tree2subgraphDissim. print (cout);
+      chron_subgraphOptimize.    print (cout); 
+      chron_subgraph2tree.       print (cout); 
     }
 
     

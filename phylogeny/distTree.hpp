@@ -16,6 +16,7 @@ namespace DistTree_sp
 
 
 
+extern Chronometer chron_getBestChange;
 extern Chronometer chron_tree2subgraph;
 extern Chronometer chron_tree2subgraphDissim;
 extern Chronometer chron_subgraphOptimize;
@@ -732,13 +733,15 @@ public:
             uint areaRadius,
             VectorPtr<TreeNode> &area,
             const DTNode* &area_root,
-            Node2Node &newLeaves2boundary);
+            Node2Node &newLeaves2boundary,
+            Vector<size_t> &wholeDissimObjs);
     // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
     // Input: areaRadius: >= 1
     // Output: area: contains center, area_root, newLeaves2boundary.values(); getTree() = center->getTree()
     //               discernable
     //         area_root: !nullptr
     //         newLeaves2boundary
+    //        wholeDissimObjs: indices of center->getDistTree().ds.objs whose dissimilarities pass through *this
 	  // Time: O(wholeDs.p log(wholeDs.n)) + f(|area|), where wholeDs = center->getDistTree().ds
 private:
   void loadTreeDir (const string &dir);
@@ -876,9 +879,16 @@ public:
     // Output: *prediction
     // Invokes: path2prediction()
 	  // Time: O(p log(n))
+  void setPrediction (const Vector<size_t> &wholeDissimObjs);
+    // Output: *prediction
+    // Invokes: path2prediction()
+	  // Time: O(|wholeDissimObjs| log(n))
   Real getAbsCriterion () const;
-    // Input: prediction
+    // Input: *prediction
 	  // Time: O(p)
+  Real getAbsCriterion (const Vector<size_t> &wholeDissimObjs) const;
+    // Input: *prediction
+	  // Time: O(|wholeDissimObjs|)
   void setAbsCriterion ()
     { absCriterion = getAbsCriterion (); }
     // More precise than L2LinearNumPrediction::absCriterion and includes !discernable nodes where dissimilarity != 0  
