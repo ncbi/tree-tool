@@ -133,9 +133,10 @@ struct ThisApplication : Application
     
     if (Chronometer::enabled)
     {
-      cout << "CHRON: Tree -> subgraph: "      << chron_tree2subgraph << endl;
-      cout << "CHRON: Subgraph optimization: " << chron_subgraphOptimize << endl; 
-      cout << "CHRON: Subgraph -> tree: "      << chron_subgraph2tree << endl; 
+      cout << "CHRON: Tree -> subgraph: "        << chron_tree2subgraph << endl;
+      cout << "CHRON: Tree -> subgraph dissim: " << chron_tree2subgraphDissim << endl;
+      cout << "CHRON: Subgraph optimization: "   << chron_subgraphOptimize << endl; 
+      cout << "CHRON: Subgraph -> tree: "        << chron_subgraph2tree << endl; 
     }
 
     
@@ -201,8 +202,11 @@ struct ThisApplication : Application
             if (whole)
               tree->optimizeIter (output_tree);
             else
+            {
+              tree->removeTopologyAttrs ();
               tree->optimizeSubgraphs ();  
                 // optimizeSubtreesIter () almost does not improve
+            }
           }
           
           cout << endl << "Ave. radius: " << tree->reroot (root_topological) << endl;

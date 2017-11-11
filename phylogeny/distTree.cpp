@@ -15,6 +15,7 @@ namespace DistTree_sp
 
 
 Chronometer chron_tree2subgraph;
+Chronometer chron_tree2subgraphDissim;
 Chronometer chron_subgraphOptimize;
 Chronometer chron_subgraph2tree;
 
@@ -1444,6 +1445,7 @@ DistTree::DistTree (const DTNode* center,
 
   // ds.objs[]->mult, *target: sum
   // Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing, do not invoke getPath() ??!
+  chron_tree2subgraphDissim. start ();
   VectorPtr<TreeNode> extremes (2);  // temporary
   for (Iterator it (wholeTree. dsSample); it ();)  
   {
@@ -1456,7 +1458,7 @@ DistTree::DistTree (const DTNode* center,
     path. filter ([&] (size_t i) { return ! areaSet. contains (path [i]) || path [i] == area_root; });    
     if (path. empty ())
       continue;
-
+      
     const Real dist_hat_sub = path2prediction (path);
 
     // extremes
@@ -1491,6 +1493,7 @@ DistTree::DistTree (const DTNode* center,
     const_cast <Obj*> (ds. objs [objNum]) -> mult += mult_whole;
     (* const_cast <RealAttr1*> (target)) [objNum] += mult_whole * dist_whole;
   }
+  chron_tree2subgraphDissim. stop ();
 
 
   // *target: finish
@@ -2693,6 +2696,7 @@ void DistTree::topology2attrs ()
     cout << "Data values ..." << endl;
 
   Progress prog ((uint) ds. objs. size (), 10000);  // PAR
+  // Use LCA for each dissim ??
   for (Iterator it (dsSample); it ();)  
   {
     prog ();
@@ -2709,41 +2713,16 @@ void DistTree::topology2attrs ()
 
 
 
-void DistTree::topology2attrs (const List<DiGraph::Node*>& nodes_arg)
+void DistTree::removeTopologyAttrs ()
 {
-  if (! nodeAttrExist)
-    return;
-
-  if (verbose ())
-    cout << "Data values ..." << endl;
-
-  for (const DiGraph::Node* node : nodes_arg)
+  for (DiGraph::Node* node : nodes)
   {
-    const DTNode* dtNode = static_cast <const DTNode*> (node);
-    CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
-    ASSERT (attr);
-    attr->setAll (false);
-    const_cast <DTNode*> (dtNode) -> inPath = false;
-  }
-
-  Progress prog ((uint) ds. objs. size (), 10000);  // PAR
-  // Use LCA for each dissim ??
-  for (Iterator it (dsSample); it ();)  
-  {
-    prog ();
-    const VectorPtr<TreeNode> path (getPath (obj2leaf1 [*it], obj2leaf2 [*it]));
-    for (const TreeNode* node : path)
-      const_static_cast <DTNode*> (node) -> inPath = true;
-    for (const DiGraph::Node* node : nodes_arg)
-    {
-      const DTNode* dtNode = static_cast <const DTNode*> (node);
-      CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
-      if (dtNode->inPath)
-        attr->setCompactBool (*it, true);
-    }
-    for (const TreeNode* node : path)
-      const_static_cast <DTNode*> (node) -> inPath = false;
-  }
+ 	  const CompactBoolAttr1* attr = static_cast <DTNode*> (node) -> attr;
+ 	  delete attr;
+ 	  static_cast <DTNode*> (node) -> attr = nullptr;
+ 	}
+ 	
+ 	nodeAttrExist = false;
 }
 
 
@@ -3605,6 +3584,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   ASSERT (center);
   ASSERT (center->graph);
   ASSERT (& center->getTree () == this);
+  ASSERT (optimizable ());
+  ASSERT (! nodeAttrExist);
 
   chron_tree2subgraph. start ();
   VectorPtr<TreeNode> area;
@@ -3668,6 +3649,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   }
   chron_subgraphOptimize. stop (); 
    
+
   chron_subgraph2tree. start ();
   
   const Real leafLen_min = tree. getMinLeafLen ();  
@@ -3706,6 +3688,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   ASSERT (new2old. size () == boundary2new. size ());
 //tree. qc ();
 
+//const bool rootInArea = area. contains (root);  ??
+
   // nodes: delete
   // center may be delete'd
   for (const TreeNode* node : area)
@@ -3718,16 +3702,13 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     // Between boundary TreeNode's there are no Arc's
 
   // nodes, new2old[]: new
-  List<DiGraph::Node*> addedNodes;
   for (const DiGraph::Node* node_new : tree. nodes)
   {
     DTNode* node = const_static_cast <DTNode*> (findPtr (new2old, node_new));
     if (! node)
     {
       node = new Steiner (*this, nullptr, NAN);
-      node->addAttr ();
       new2old [node_new] = node;
-      addedNodes << node;
       node->stable = true;
     }
     ASSERT (node);
@@ -3745,9 +3726,9 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   
   borrowArcs (new2old, true);  // Arc's are not parallel
 
-  setRoot ();
+//if (rootInArea)  ??
+    setRoot ();
 
-  topology2attrs (addedNodes);  
   setPrediction ();
   finishChanges ();
   setAbsCriterion ();

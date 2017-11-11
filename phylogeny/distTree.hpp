@@ -17,6 +17,7 @@ namespace DistTree_sp
 
 
 extern Chronometer chron_tree2subgraph;
+extern Chronometer chron_tree2subgraphDissim;
 extern Chronometer chron_subgraphOptimize;
 extern Chronometer chron_subgraph2tree;
 
@@ -154,9 +155,6 @@ private:
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
     // Output: subtreeLen: Global len = average path length from *this to all leaves
-//void setSubtreeLeaves ();
-    // Output: subtreeLeaves
-    // Time: O(n^2)
 public:
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
@@ -859,24 +857,17 @@ public:
   void saveFeatureTree (const string &fName) const;
 
 private:
-#if 0
-  friend ChangeToChild;
-  friend ChangeToSibling;
-  friend Swap;
-#endif
   void resetAttrs ();
     // Time: O(p n)
   void topology2attrs ();
     // Output: DTNode::attr
 	  // Time: O(p log(n))
-  void topology2attrs (const List<DiGraph::Node*>& nodes_arg);
-    // Input: nodes_arg: subset of nodes
-    // Output: DTNode::attr
-    // Temporary: DTNode::inPath
-	  // Time: O(p (log(n) + |nodes_arg|))
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
 public:
+	void removeTopologyAttrs ();
+    // Output: DTNode::attr, nodeAttrExist
+	  // Time: O(n)
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len
@@ -941,18 +932,9 @@ public:
 	  // Invokes: optimize(), saveFile(output_tree)
 	void optimizeSubgraphs ();
 	  // Invokes: optimizeSubgraph()
+	  // Requires: !nodeAttrExist
 	  // Time: O(n * Time(optimizeSubgraph))
 private:
-//void setSubtreeLeaves ();
-    // Output: DTNode::subtreeLeaves, Leaf::index
-    // Invokes: DTNode::setSubtreeLeaves()
-    // Time: O(n^2)
-#if 0
-  void addSubtreeLeaf (Leaf* leaf);
-    // Update: DTNode::subtreeLeaves
-    // Output: leaf->index
-    // Time: O(n)
-#endif
 	Real optimizeSubgraph (const Steiner* center);
 	  // Return: min. distance to boundary
 	  // Input: center: may be delete'd
