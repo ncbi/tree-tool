@@ -1221,7 +1221,6 @@ void DiGraph::qc () const
   if (! qc_on)
     return;
 
-#ifndef NDEBUG
   Set<const Node*> nodes_;
   Set<const Arc*> arcs_ [2];
   Set<string> names;
@@ -1255,7 +1254,6 @@ void DiGraph::qc () const
 	for (const bool b : {false, true})
     ASSERT (2 * arcs_ [b]. size () == arcs);
   ASSERT (arcs_ [false] == arcs_ [true]);
-#endif
 }
 
  
@@ -1898,7 +1896,6 @@ void Tree::qc () const
     return;
 	DiGraph::qc ();
 
-#ifndef NDEBUG		
   Set<string> names;
   bool transient = false;
 	for (const DiGraph::Node* node : nodes)
@@ -1929,14 +1926,11 @@ void Tree::qc () const
     if (n->isTransient ())
       transient = true;
 	}
-#endif
 	ASSERT (! root == nodes. empty ());
 	IMPLY (root, getRoot (true) == root);
 	IMPLY (root, (nodes. size () > 1) == ! root->isLeaf ());
 	
-#ifndef NDEBUG		
 	IMPLY (! transient, nodes. size () <= 2 * root->getLeavesSize () - 1);
-#endif
 }
 
 
