@@ -65,11 +65,12 @@ protected:
 
 struct Chronometer : Nocopy
 {
+  static constexpr clock_t noclock {-1};
   static bool enabled;
   string name;
   clock_t time {0};
 private:
-  clock_t startTime {0};
+  clock_t startTime {noclock};
 public:
 
 
@@ -81,24 +82,25 @@ public:
   void start ()
     { if (! enabled)
         return;
-      if (startTime)
-        throw logic_error ("Chronometer is not stopped");
+      if (startTime != noclock)
+        throw logic_error ("Chronometer \""  + name + "\" is not stopped");
       startTime = clock (); 
     }  
   void stop () 
     { if (! enabled)
         return;
-      if (! startTime)
-        throw logic_error ("Chronometer is not started");
+      if (startTime == noclock)
+        throw logic_error ("Chronometer \"" + name + "\" is not started");
       time += clock () - startTime; 
-      startTime = 0;
+      startTime = noclock;
     }
 
   void print (ostream &os) const
     { os << "CHRON: " << name << ": ";
-      os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl << endl;
+      os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl;
     }
 };
+
 
 
 struct Chronometer_OnePass : Chronometer
@@ -107,8 +109,11 @@ struct Chronometer_OnePass : Chronometer
     : Chronometer (name_arg)
     { start (); }
  ~Chronometer_OnePass ()
-    { stop ();
+    { if (uncaught_exception ())
+        return;
+      stop ();
       print (cout); 
+      cout << endl;
     }
 };
 	
@@ -1962,14 +1967,14 @@ struct Tree : DiGraph
                   VectorPtr<TreeNode> &boundary) const
       { getArea_ (radius, nullptr, area, boundary); }
       // Output: area: connected TreeNode's with one root, distinct
-      //         boundary: distinct
+      //         boundary: distinct; degree = 1 in the subgraph
       //         area.contains(boundary)
   private:
     void getArea_ (uint radius,
                    const TreeNode* prev,
                    VectorPtr<TreeNode> &area,
                    VectorPtr<TreeNode> &boundary) const;
-      // Update: area, bounday
+      // Update: area, boundary
       //         area.contains(boundary)
   public:
     template <typename StrictlyLess>
@@ -2069,6 +2074,11 @@ struct Tree : DiGraph
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2);
     // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
+  static VectorPtr<TreeNode> getPath (const TreeNode* n1,
+                                      const TreeNode* n2,
+                                      const TreeNode* lca);
+    // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
+    // Requires: lca is the LCA of n1 and n2
   void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5
     // Output: TreeNode::frequentChild: statistically consistent estimate

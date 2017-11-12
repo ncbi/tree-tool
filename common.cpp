@@ -2349,6 +2349,59 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 
 
 
+VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
+                                         const TreeNode* n2,
+                                         const TreeNode* lca)
+{ 
+  ASSERT (n1);
+  ASSERT (n2);
+  ASSERT (lca);
+  ASSERT (n1->graph);
+  ASSERT (n1->graph == n2->graph);
+  ASSERT (n1->graph == lca->graph);
+  
+  if (n1 == n2)
+  {
+    ASSERT (n1 == lca);
+    return VectorPtr<Tree::TreeNode> ();
+  }
+  
+  const TreeNode* n1_init = n1;
+  
+	static VectorPtr<TreeNode> vec1;  
+	vec1. clear ();
+	while (n1 != lca)
+	{
+	  ASSERT (n1);
+		vec1 << n1;
+		n1 = n1->getParent ();
+	}
+	if (n2 == lca)
+		return vec1;
+	ASSERT (! vec1. empty ());
+
+	static VectorPtr<TreeNode> vec2; 
+	vec2. clear ();
+	while (n2 != lca)
+	{
+	  ASSERT (n2);
+		vec2 << n2;
+		n2 = n2->getParent ();
+	}
+	if (n1_init == lca)
+		return vec2;
+	ASSERT (! vec2. empty ());
+
+  VectorPtr<TreeNode> res;  res. reserve (vec1. size () + vec2. size ());
+  res << vec1;
+  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec2)
+    res << *it;
+  
+  return res;
+}
+
+
+
 void Tree::setFrequentChild (double rareProb)
 { 
   if (! root)
