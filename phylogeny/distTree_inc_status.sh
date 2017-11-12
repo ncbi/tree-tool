@@ -7,6 +7,9 @@ if ($# != 1) then
 endif
 
 
+set tmp = `mktemp`
+
+
 echo "Version: `cat $1/version`"
 echo""
 
@@ -32,9 +35,10 @@ echo ""
 wc -l $1/dissim
 
 echo ""
-grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':22:' | sort -n | head -5
+grep '^OUTPUT:' -A 1 -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[1-9]\+-/ /1' | sort -n -k 1 > $tmp
+head -5 $tmp
 echo "..."
-grep 'absCriterion =' -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':22:' | sort -n | tail -5
+tail -5 $tmp
 
 echo ""
 head -5 $1.log
@@ -42,4 +46,4 @@ echo "..."
 tail -5 $1.log
 
 
-
+rm -f $tmp*
