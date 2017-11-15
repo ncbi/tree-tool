@@ -15,7 +15,6 @@ namespace DistTree_sp
 {
 
 
-
 extern Chronometer chron_getBestChange;
 extern Chronometer chron_tree2subgraph;
 extern Chronometer chron_tree2subgraphDissim;
@@ -74,12 +73,13 @@ constexpr Prob rareProb = 0.01;
 
 
 
-
 struct DistTree;
 
 //struct DTNode;
   struct Steiner;
   struct Leaf;
+
+struct NewLeaf;
 
 
 
@@ -88,6 +88,7 @@ struct DTNode : Tree::TreeNode
   friend DistTree;
   friend Steiner;
   friend Leaf;
+  friend NewLeaf;
 
   // For optimization
 	Real len;
@@ -98,13 +99,17 @@ struct DTNode : Tree::TreeNode
     // ExtBoolAttr1: makes faster by 5 % 
 
 private:
-  bool inPath {false};
   bool stable {false};
     // Init: false
 public:
+
+  // Temporary
+private:
+  const DTNode* tarjanLca {nullptr};
+  bool inPath {false};
+public:
 protected:
   WeightedMeanVar subtreeLen; 
-    // Temporary
     // Average subtree height 
     // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
@@ -146,6 +151,8 @@ public:
   Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
     // Requires: after DistTree::setHeight()
+  Real getEpsilon2 () const
+    { return (Real) paths * sqr (errorDensity) * len; }
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
@@ -156,20 +163,15 @@ private:
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
     // Output: subtreeLen: Global len = average path length from *this to all leaves
-public:
-  Real getEpsilon2 () const
-    { return (Real) paths * sqr (errorDensity) * len; }
   virtual void setRepresentative () = 0;
     // Output: reprLeaf
     // Requires: after getDistTree().sort()
-#if 0
-  virtual const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const = 0;
-    // Return: nullptr or !isNan(leaf2dist [return->index])
-    // Depth-first search
-#endif
   virtual void getDescendants (VectorPtr<DTNode> &descendants,
                                size_t depth) const = 0;
     // Update: descendants
+  virtual void setLca ();
+    // Off-line LCA algorithm by Tarjan
+    // Requires: !tarjanLca 
 };
 
 
@@ -197,6 +199,7 @@ struct Steiner : DTNode
   bool isInteriorType () const final
     { return childrenDiscernable (); }
 
+private:
   void setSubtreeLenUp (bool topological) final;
   void setRepresentative () final
     { reprLeaf = nullptr;
@@ -207,18 +210,10 @@ struct Steiner : DTNode
           reprLeaf = node->reprLeaf;
       }
     }
-#if 0
-  const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
-    { for (const DiGraph::Arc* arc : arcs [false])
-        if (const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> selectRepresentative (leaf2dist))
-          return leaf;
-      return nullptr;
-    }
-#endif
   void getDescendants (VectorPtr<DTNode> &descendants,
                        size_t depth) const final;
+  void setLca () final;
 
-private:
   void reverseParent (const Steiner* target, 
                       Steiner* child);
     // Until target
@@ -243,10 +238,14 @@ struct Leaf : DTNode
     // !empty()
   string comment;
   
+  Vector <size_t/*objNum*/> dissimObjNums; // --> DTNode ??
+    // getDistTree().dissims[objNum].hasLeaf(this)
+  
   static const string non_discernable;
   bool discernable {true}; 
     // false => getParent()->getChildren() is an equivalence class of indiscernables
-  
+    
+  // Temporary
   Real absCriterion {NAN};
     // sum = contribution to 2*getTree().absCriterion
   Real relCriterion {NAN};
@@ -266,7 +265,7 @@ struct Leaf : DTNode
     { DTNode::saveContent (os);
       if (! isNan (absCriterion))
       { const ONumber oNum (os, 6, true);  // PAR
-        os << "  leaf_error=" << getRelCriterion ();
+        os << "  leaf_error=" << getRelCriterion (true);
       }
     	if (! discernable)
     	  os << "  " << non_discernable;
@@ -289,12 +288,13 @@ struct Leaf : DTNode
         return name;
       string s = name + prepend (" ", comment); 
       if (! isNan (absCriterion))
-        s += " " + real2str (getRelCriterion (), 1);  // PAR
+        s += " " + real2str (getRelCriterion (true), 1);  // PAR
       return s;
     }
   bool isLeafType () const final
     { return true; }
 
+private:
   void setSubtreeLenUp (bool topological) final
     { subtreeLen. clear ();
       if (topological)
@@ -302,17 +302,17 @@ struct Leaf : DTNode
     }
   void setRepresentative () final
     { reprLeaf = this; }
-#if 0
-  const Leaf* selectRepresentative (const Leaf2dist &leaf2dist) const final
-    { return isNan (leaf2dist [index]) ? nullptr : this; }
-#endif
   void getDescendants (VectorPtr<DTNode> &descendants,
                        size_t /*depth*/) const final
     { descendants << this; }
+  void setLca () final;
+public:
 
+  const Leaf* getDissimOther (size_t objNum) const;
+    // Return: !nullptr; != this
   const DTNode* getDiscernable () const;
     // Return: !nullptr
-  Real getRelCriterion () const;
+  Real getRelCriterion (bool strong) const;
     // Return: average over all Leaf's = 1
     //         If getDistTree().ds.objs has no all pairs of Leaf's then approximate
   bool getCollapsed (const Leaf* other) const
@@ -608,6 +608,26 @@ struct ChangeToCousin : Swap
 
 ///////////////////////////////////////////////////////////////////////////
 
+struct Dissim
+{
+  const Leaf* leaf1 {nullptr};
+  const Leaf* leaf2 {nullptr};
+    // !nullptr
+    // leaf1->name < leaf2->name
+  const Steiner* lca {nullptr};
+  
+  Dissim (const Leaf* leaf1_arg,
+          const Leaf* leaf2_arg);
+          
+  bool hasLeaf (const Leaf* leaf) const
+    { return    leaf == leaf1
+             || leaf == leaf2;
+    }
+  string getObjName () const;
+};
+
+
+
 struct DistTree : Tree
 // Of DTNode*
 // Least-squares distance tree
@@ -632,7 +652,7 @@ private:
   friend ChangeToSibling;
   Dataset ds;
     // objs: pairs of Leaf's
-    //       objs[i].name = obj2leaf1[i]->name + objNameSeparator + obj2leaf2[i]->name
+    //       objs[i].name = dissims[i].getName()
 	  //       objs[i]->mult = dissim2mult(target[i]); positive()
     // attrs: DTNode::attr: 0/1: 1 <=> on the path between the pair of Leaf's    
     // attrs.size() <= 2*n
@@ -642,7 +662,7 @@ private:
     // = Sample(ds)
   // !nullptr
   const RealAttr1* target {nullptr};
-    // target[i] = dissimilarity between obj2leaf1[i] and obj2leaf2[i]; !isMissing()
+    // target[i] = dissimilarity between dissims[i].leaf1 and dissims[i].leaf2; !isMissing()
 public:
   Real dissim2_sum {0};
     // = sum target[i]^2 * mult
@@ -659,10 +679,8 @@ private:
   bool nodeAttrExist {false};
   
   // ds-tree relations
-  // !nullptr
-  VectorPtr<Leaf> obj2leaf1, obj2leaf2;
+  Vector<Dissim> dissims;
     // size() = ds.objs.size()
-    // obj2leaf1[i]->name < obj2leaf2[i]->name
 public:
     
   Real absCriterion {NAN};
@@ -674,6 +692,7 @@ private:
   Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
 	VectorOwn<Leaf> detachedLeaves;
+	  // !Leaf::graph
 public:
 
 
@@ -801,6 +820,8 @@ private:
   void loadDissimPrepare (size_t pairs_max,
                           streamsize target_decimals);
     // Output: target
+  size_t leaves2dissims (Leaf* leaf1,
+                         Leaf* leaf2);
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim);
@@ -864,9 +885,19 @@ public:
 private:
   void resetAttrs ();
     // Time: O(p n)
+  void setLca ();
+    // Input: Leaf::dissimObjNums
   void topology2attrs ();
     // Output: DTNode::attr
 	  // Time: O(p log(n))
+  VectorPtr<TreeNode> dissim2path (size_t objNum) const  // ??
+    { const Dissim& dissim = dissims [objNum];
+      return getPath (dissim. leaf1, dissim. leaf2);
+    }
+  VectorPtr<TreeNode> dissimLca2path (size_t objNum) const  
+    { const Dissim& dissim = dissims [objNum];
+      return getPath (dissim. leaf1, dissim. leaf2, dissim. lca);
+    }
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
 public:
@@ -900,6 +931,7 @@ public:
   void printAbsCriterion_halves () const;
   void setLeafAbsCriterion ();
     // Output: Leaf::absCriterion
+    // Time: O(p)
 	  
   // Optimization	  
   // Input: DTNode::attr
@@ -1000,12 +1032,14 @@ public:
     { const_static_cast<DTNode*> (root) -> setSubtreeLenUp (false); }
     // Input: DTNode::len
     // Output: DTNode::subtreeLen
+    // Time: O(n)
   void reroot (DTNode* underRoot,
                Real arcLen);
   Real reroot (bool topological);
     // Center of the tree w.r.t. DTNode::setGlobalLenDown(); !topological => molecular clock
     // Return: root->getHeight()
-    // Invokes: setGloballenDown(), reroot(,)
+    // Invokes: setGlobalLenDown(), reroot(,)
+    // Time: O(n)
     
   // Quality
   Real getMeanResidual () const;
@@ -1027,10 +1061,10 @@ public:
   VectorPtr<Leaf> findOutliers (bool strong,
                                 Real &outlier_min) const;
     // Idempotent
-    // Input: strong: use log(Leaf::getRelCriterion())
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
     // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
+    // Time: O(n log(N))
 
   // Statistics
   RealAttr1* getResiduals2 ();

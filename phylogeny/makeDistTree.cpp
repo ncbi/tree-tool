@@ -15,8 +15,8 @@ using namespace DistTree_sp;
 namespace 
 {
   
-  
-  
+
+
 void checkOptimizable (const DistTree& tree,
                        const string &parameter)
 {
@@ -116,7 +116,7 @@ struct ThisApplication : Application
 
     Common_sp::AutoPtr<DistTree> tree;
     {
-      const Chronometer_OnePass cop ("Initial topology");
+      const Chronometer_OnePass cop ("Initial topology");  
       tree = isRight (dataFName, "/")
                ? new DistTree (dataFName, true, true)
                : input_tree. empty ()
@@ -227,7 +227,7 @@ struct ThisApplication : Application
       cout << "Min." << (strong_outliers ? " log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
         cout         << leaf->name 
-             << '\t' << (strong_outliers ? log (leaf->getRelCriterion ()) : leaf->getRelCriterion ())
+             << '\t' << leaf->getRelCriterion (strong_outliers)
              << '\t' << leaf->absCriterion
              << endl;
       if (! remove_outliers. empty ())
@@ -345,7 +345,7 @@ struct ThisApplication : Application
       OFStream f (leaf_errors);
     //tree->setLeafAbsCriterion ();   // Done above
       for (const auto& it : tree->name2leaf)
-        f << it. first << '\t' << it. second->getRelCriterion () << endl;  
+        f << it. first << '\t' << it. second->getRelCriterion (strong_outliers) << endl;  
     }
 
     if (! pair_residuals. empty ())
