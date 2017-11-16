@@ -271,13 +271,13 @@ void NumAttr1::getMinMax (const Sample &sample,
 
 NumAttr1::Value NumAttr1::getMedian (const Sample &sample) const
 {
-  Vector <Value> vec;  vec. reserve (ds. objs. size ());
+  Vector<Value> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)
     vec << getReal (*it);
   if (vec. empty ())
   	return NAN;
   // Time: --> linear ??
-  sort (vec);
+  vec. sort ();
   return vec [vec. size () / 2];
 }
 
@@ -414,7 +414,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
   if (vec. size () <= 2)
     return NAN;
     
-  Common_sp::sort (vec);
+  vec. sort ();
     
   size_t objNum_threshold = NO_INDEX;
   Real negLogLikelihood_min = INF;
@@ -466,7 +466,7 @@ Real RealAttr1::normal2outlier (const Sample &sample,
   if (vec. size () <= 2)
     return NAN;
     
-  Common_sp::sort (vec);
+  vec. sort ();
     
   Real mult_sum = 0;
   Real s = 0;
@@ -578,7 +578,7 @@ Real histogramLikelihood (const Vector <Real> &vec,
 
 void RealAttr1::histogram (ostream &f) const
 {
-  Vector <Real> vec (ds->objs. size ());
+  Vector<Real> vec (ds->objs. size ());
   size_t i = 0;
   for (Iterator it (this); it (); )
   {
@@ -589,7 +589,7 @@ void RealAttr1::histogram (ostream &f) const
   if (i <= 2)
     return;
 
-  sort (vec. begin (), vec. end ());
+  vec. sort ();
 
   const Real range = vec [vec. size () - 1] - vec [0];
   Real delta = range * 1.1;
@@ -3489,7 +3489,7 @@ Real UniKernel::setPoints ()
        )
     	points << Point (attr. getReal (*it), it. mult);
   ASSERT (! points. empty ());
-  Common_sp::sort (points);
+  points. sort ();
 
   multSum. clear ();
   WeightedMeanVar mv;
@@ -4448,7 +4448,7 @@ void Mixture::estimate ()
   while (minimizeEntropy (entropyEst_best, 1e-4));  // PAR  
   
 
-  Common_sp::sort (components, componentComp);
+  components. sort (componentComp);
   
   
   setParam ();

@@ -1084,6 +1084,20 @@ public:
           toDelete--;
         }
       }
+  void sort ()
+    { Common_sp::sort (*this); }
+  template <typename StrictlyLess>
+    void sort (const StrictlyLess &strictlyLess)
+      { Common_sp::sort (*this, strictlyLess); }    
+  bool isUniq () const
+    // Requires: sorted
+    { if (P::size () <= 1)
+        return true;
+      FOR_START (size_t, i, 1, P::size ())
+        if ((*this) [i] == (*this) [i - 1])
+          return false;
+      return true;
+    }
   void uniq ()
     // Requires: sorted
     { if (P::size () <= 1)

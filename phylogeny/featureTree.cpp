@@ -2717,7 +2717,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
   const Real len_init = len;
 
 
-  Common_sp::sort (changes, Change::compare);	
+  changes. sort (Change::compare);	
   Set<const TreeNode*> changedNodes;  	
 	for (const Change* ch_ : changes)
 	{
