@@ -1881,7 +1881,7 @@ namespace
 
 
 
-bool FeatureTree::loadPhylLines (const Vector<string>& lines,
+bool FeatureTree::loadPhylLines (const StringVector& lines,
   						                   size_t &lineNum,
   						                   Species* parent,
   						                   size_t expectedOffset)
@@ -1970,7 +1970,7 @@ void FeatureTree::loadPhylFile (/*int root_species_id,*/
 	ASSERT (! treeFName. empty ());
 	
 		
-  Vector<string> lines;
+  StringVector lines;
   {
     LineInput in (treeFName, 10000);  // PAR
     lines = in. getVector ();

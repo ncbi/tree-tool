@@ -1098,8 +1098,8 @@ string NominAttr1::getTypeStr () const
 {
 	string s;
 	s = "Nominal";
-	CONST_ITER (Vector <string>, it, categories)
-	  s += " " + *it;
+	for (const string& cat : categories)
+	  s += " " + cat;
 	  
 	return s;
 }

@@ -2540,7 +2540,7 @@ size_t Tree::deleteTransients ()
 
 
 
-size_t Tree::restrictLeaves (const Set<string> &leafNames,
+size_t Tree::restrictLeaves (const StringVector &leafNames,
                              bool deleteTransientAncestor)
 {
   size_t n = 0;
@@ -2550,7 +2550,7 @@ size_t Tree::restrictLeaves (const Set<string> &leafNames,
  	{
  	  const TreeNode* node = static_cast <const TreeNode*> (node_);
     if (node->isLeafType ())
-      if (! leafNames. contains (node->getName ()))
+      if (! leafNames. containsFast (node->getName ()))
       {
         deleteLeaf (const_cast <TreeNode*> (node), deleteTransientAncestor);
         n++;

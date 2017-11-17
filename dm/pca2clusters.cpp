@@ -36,7 +36,7 @@ struct ThisApplication : Application
     JsonMap jClust (fName);
   //jClust. print (cout);
     
-    Vector<Vector<string>> clusters (jClust. at ("clusters") -> getSize ());
+    Vector<StringVector> clusters (jClust. at ("clusters") -> getSize ());
     const size_t nObjs = jClust. at ("objs") -> getSize ();
     size_t skipped = 0;
     FOR (size_t, i, nObjs)

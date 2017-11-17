@@ -1604,7 +1604,7 @@ Grammar::Grammar (const Grammar &other,
         continue;
       for (const Rule* r : nt->lhsRules)
       {
-        Vector<string> rhs;
+        StringVector rhs;
         for (const Symbol* child : r->rhs)
           rhs << child->name;
         addRule (r->lhs. name, rhs);
@@ -1633,7 +1633,7 @@ Grammar::Grammar (const Grammar &other,
     if (const NonTerminal* nt = s->asNonTerminal ())
       for (const Rule* r : nt->lhsRules)
       {
-        Vector<string> rhs;
+        StringVector rhs;
         for (const Symbol* child : r->rhs)
           if (child != universalDelimiter)
             rhs << child->name;
@@ -1646,7 +1646,7 @@ Grammar::Grammar (const Grammar &other,
 
 
 void Grammar::addRule (const string &lhs,
-                       const Vector<string> &rhs)
+                       const StringVector &rhs)
 {
 //ASSERT (! startSymbol);
 
@@ -1672,7 +1672,7 @@ void Grammar::addRule (const string &lhs,
   ascii [0] = Token::quote;
   ascii [2] = ascii [0];
 
-  Vector<string> rhs;
+  StringVector rhs;
   size_t rhsPart = 1;
   bool stop = false;
   bool prevName = false;
@@ -1708,7 +1708,7 @@ void Grammar::addRule (const string &lhs,
             case '[': {
                         const string optionalName (lhs + commentC + toString (rhsPart));
                         addRule (optionalName, rhsIt, rhsEnd, true); 
-                        addRule (optionalName, Vector<string> ());
+                        addRule (optionalName, StringVector ());
                         rhs << optionalName;
                         rhsPart++;
                       }
@@ -1775,7 +1775,7 @@ void Grammar::finish (const string &startS)
   {
     Symbol* s = string2Symbol [startS /*name*/];
     ASSERT (s);
-    Vector<string> rhs;  rhs. reserve (3);
+    StringVector rhs;  rhs. reserve (3);
     rhs << eotSymbol->name << s->name << eotSymbol->name;
     addRule (startSymbol->name, rhs);
   }

@@ -381,7 +381,7 @@ public:
 ??
 struct Function 
 {
-	Vector <string> args;
+	StringVector args;
 	const Expr* expr;
 	  // !0
 };

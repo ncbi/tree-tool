@@ -973,7 +973,7 @@ public:
   size_t binSearch (const T &value,
                     bool exact = true) const
     // Return: if exact then NO_INDEX or vec[Return] = value else min {i : vec[i] >= value}
-    // Requires: *this is sorted ascending
+    // Requires: *this is sort()'ed
     { if (P::empty ())
     	  return NO_INDEX;
     	size_t lo = 0;  // vec.at(lo) <= value
@@ -1003,6 +1003,37 @@ public:
 	    	return hi;
 	    return NO_INDEX;
     }
+  template <typename U /* : T */>
+    bool containsFast (const U &value) const
+      { return binSearch (value) != NO_INDEX; }
+  template <typename U /* : T */>
+    bool containsFastAll (const Vector<U> &other) const
+      { if (other. size () > P::size ())
+    	    return false;
+        for (const U& u : other)
+          if (! containsFast (u))
+            return false;
+        return true;
+      }
+  template <typename U /* : T */>
+    bool containsFastAll (const set<U> &other) const
+      { if (other. size () > P::size ())
+    	    return false;
+        for (const U& u : other)
+          if (! containsFast (u))
+            return false;
+        return true;
+      }
+  template <typename U /* : T */>
+    bool intersectsFast (const Vector<U> &other) const
+      { for (const U& u : other)
+          if (containsFast (u))
+            return true;
+        return false;
+      }
+  template <typename U /* : T */>
+    void setMinus (const Vector<U> &other)
+      { filter ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
 
   Vector<T>& operator<< (const T &value)
     { P::push_back (value);
@@ -1602,6 +1633,21 @@ template <typename T>
 
 
 
+template <typename T, typename U /* : T */>
+  bool containsFastAll (const Vector<T> &vec,
+                        const Set<U> &other)
+    { if (other. universal)
+  		  return false;
+  	  if (other. size () > vec. size ())
+  	    return false;
+      for (const U& u : other)
+        if (! vec. containsFast (u))
+          return false;
+      return true;
+    }
+
+
+
 struct DiGraph : Root
 // Directed graph
 // Bi-directional access
@@ -2113,9 +2159,10 @@ struct Tree : DiGraph
   virtual void deleteLeaf (TreeNode* leaf,
                            bool /*deleteTransientAncestor*/) 
     { delete leaf; }
-  size_t restrictLeaves (const Set<string> &leafNames,
+  size_t restrictLeaves (const StringVector &leafNames,
                          bool deleteTransientAncestor);
     // Return: # leaves delete'd
+    // Input: leafNames: sort()'ed
     // Invokes: isLeafType(), deleteLeaf()
 
   template <typename StrictlyLess>

@@ -268,7 +268,7 @@ struct Rule : Root
 
 private:
   friend struct Grammar;
-  Vector<string> rhsS;  
+  StringVector rhsS;  
     // Temporary
 public:
   const NonTerminal& lhs;
@@ -288,7 +288,7 @@ public:
 
   Rule (size_t num_arg,
         const NonTerminal& lhs_arg,
-        const Vector<string> &rhsS_arg)
+        const StringVector &rhsS_arg)
     : num (num_arg)
     , rhsS (rhsS_arg)
     , lhs (lhs_arg)
@@ -611,7 +611,7 @@ private:
         return const_cast <T*> (res);
       }
   void addRule (const string &lhs,
-                const Vector<string> &rhs);
+                const StringVector &rhs);
     // Update: ruleNum
   void addRule (const string &lhs,
                 List<Token>::const_iterator &rhsIt,

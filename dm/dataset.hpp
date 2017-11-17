@@ -648,7 +648,7 @@ struct NominAttr1 : Attr1
     // Category index
   static const Value missing;  
     // NO_INDEX
-  Vector<string> categories;
+  StringVector categories;
     // Index: Value
 private:
   typedef map<string,Value> CategMap;
@@ -1032,9 +1032,12 @@ public:
   size_t getName2objNum (const string &objName) const;
     // Return: NO_INDEX <=> not found
     // Input: name2objNum
-  Set<string> getObjNames () const
-    { const Set<string> s (name2objNum);
-      return s;
+  StringVector getObjNames () const
+    { StringVector names;  names. reserve (name2objNum. size ());
+      for (const auto it : name2objNum)
+        names << it. first;
+      names. sort ();
+      return names;
     }
   size_t appendObj (const string &objName = string ());
     // Return: objNum

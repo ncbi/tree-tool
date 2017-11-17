@@ -1064,7 +1064,7 @@ public:
   	           const string &coreFeaturesFName);
 	   // Invokes: loadPhylFile(), Genome::initDir(), finish()
 private:
-  bool loadPhylLines (const Vector<string>& lines,
+  bool loadPhylLines (const StringVector& lines,
 		                  size_t &lineNum,
 		                  Species* parent,
 		                  size_t expectedOffset);

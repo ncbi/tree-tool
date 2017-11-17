@@ -28,7 +28,7 @@ struct ThisApplication : Application
 		const ulong seed  = str2<ulong> (getArg ("seed"));
 
 
-    Vector<string> vec;
+    StringVector vec;
     {
 	    LineInput in (items, 100 * 1024);  // PAR
 	    vec = in. getVector ();
