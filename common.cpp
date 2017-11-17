@@ -1348,13 +1348,13 @@ DiGraph::Node2Node DiGraph::reverse (const Node2Node& old2new)
 
 
 
-void DiGraph::borrowArcs (const Node2Node &node2node,
+void DiGraph::borrowArcs (const Node2Node &other2this,
                           bool parallelAllowed)
 {
 #ifndef NDEBUG
   const DiGraph* otherGraph = nullptr;
 #endif
-  for (const auto it : node2node)
+  for (const auto it : other2this)
   {
     const Node* other = it. first;
     const Node* from  = it. second;
@@ -1370,7 +1370,7 @@ void DiGraph::borrowArcs (const Node2Node &node2node,
     ASSERT (otherGraph != this);
     const VectorPtr<Node> otherNeighborhood (other->getNeighborhood (true));
     for (const Node* otherNeighbor : otherNeighborhood)
-      if (const Node* to = findPtr (node2node, otherNeighbor))
+      if (const Node* to = findPtr (other2this, otherNeighbor))
         if (parallelAllowed || ! from->isIncident (to, true))
           new Arc ( const_cast <Node*> (from)
                   , const_cast <Node*> (to)
@@ -2345,18 +2345,18 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 
 VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
                                          const TreeNode* n2,
-                                         const TreeNode* lca)
+                                         const TreeNode* ca,
+                                         const TreeNode* &lca)
 { 
   ASSERT (n1);
   ASSERT (n2);
-  ASSERT (lca);
   ASSERT (n1->graph);
   ASSERT (n1->graph == n2->graph);
-  ASSERT (n1->graph == lca->graph);
+  IMPLY (ca, n1->graph == ca->graph);
   
   if (n1 == n2)
   {
-    ASSERT (n1 == lca);
+    lca = n1;
     return VectorPtr<Tree::TreeNode> ();
   }
   
@@ -2364,27 +2364,47 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
   
 	static VectorPtr<TreeNode> vec1;  
 	vec1. clear ();
-	while (n1 != lca)
+	while (n1 != ca && n1 != n2)
 	{
 	  ASSERT (n1);
 		vec1 << n1;
 		n1 = n1->getParent ();
 	}
-	if (n2 == lca)
+	if (n1 == n2)
+	{
+    lca = n2;
 		return vec1;
+  }
 	ASSERT (! vec1. empty ());
 
 	static VectorPtr<TreeNode> vec2; 
 	vec2. clear ();
-	while (n2 != lca)
+	while (n2 != ca && n2 != n1_init)
 	{
 	  ASSERT (n2);
 		vec2 << n2;
 		n2 = n2->getParent ();
 	}
-	if (n1_init == lca)
+	if (n2 == n1_init)
+	{
+    lca = n1_init;
 		return vec2;
+  }
 	ASSERT (! vec2. empty ());
+
+  lca = ca;  
+	size_t i1 = vec1. size () - 1;
+	size_t i2 = vec2. size () - 1;
+	while (vec1 [i1] == vec2 [i2])
+	{
+	  lca = vec1 [i1];
+    vec1. pop_back ();
+    vec2. pop_back ();
+		ASSERT (i1);
+		ASSERT (i2);
+		i1--;
+		i2--;
+	}
 
   VectorPtr<TreeNode> res;  res. reserve (vec1. size () + vec2. size ());
   res << vec1;

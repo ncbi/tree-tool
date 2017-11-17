@@ -863,14 +863,14 @@ template <typename T, typename U>
       return false;
     }
 
-template <typename Key, typename Value>
+template <typename Key, typename Value, typename KeyParent>
   inline bool contains (const map <Key, Value> &m,
-                        const Key& key)
+                        const KeyParent& key)
     { return m. find (key) != m. end (); }
 
-template <typename Key, typename Value>
+template <typename Key, typename Value, typename KeyParent>
   bool find (const map <Key, Value> &m,
-             const Key& key,
+             const KeyParent& key,
              Value &value)
     // Return: success
     // Output: value, if Return
@@ -881,18 +881,18 @@ template <typename Key, typename Value>
     	return true;
     }
 
-template <typename Key, typename Value>
+template <typename Key, typename Value, typename KeyParent>
   const Value* findPtr (const map <Key, Value> &m,
-                        const Key& key)
+                        const KeyParent& key)
     { const auto it = m. find (key);
     	if (it == m. end ())
     		return nullptr;
     	return & it->second; 
     }
 
-template <typename Key, typename Value>
+template <typename Key, typename Value, typename KeyParent>
   const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
-                        const Key& key)
+                        const KeyParent& key)
     { const Value* value;
       if (find (m, key, value))
         return value;
@@ -1010,12 +1010,14 @@ public:
     }
   template <typename U/*:<T>*/>
     Vector<T>& operator<< (const vector<U> &other)
-      { P::insert (P::end (), other. begin (), other. end ());
+      { P::reserve (P::size () + other. size ());
+        P::insert (P::end (), other. begin (), other. end ());
       	return *this;
       }
   template <typename U/*:<T>*/>
     Vector<T>& operator<< (const list<U> &other)
-      { P::insert (P::end (), other. begin (), other. end ());
+      { P::reserve (P::size () + other. size ());
+        P::insert (P::end (), other. begin (), other. end ());
       	return *this;
       }
   void setAll (const T &value)
@@ -1478,7 +1480,7 @@ public:
                : other. universal
                  ? false
                  :    P::size () == other. size ()
-                   && contains (other);
+                   && containsAll (other);
     }
 
 
@@ -1489,7 +1491,7 @@ public:
   T back () const
     { return * std::prev (P::end ()); }
   template <typename U /* : T */>
-    bool contains (const Set<U> &other) const
+    bool containsAll (const Set<U> &other) const
       { if (universal)
     	    return true;
     	  if (other. universal)
@@ -1807,12 +1809,12 @@ public:
   typedef  map <const Node*, const Node*>  Node2Node;  
     // !nullptr
   static Node2Node reverse (const Node2Node& old2new);
-  void borrowArcs (const Node2Node &node2node,
+  void borrowArcs (const Node2Node &other2this,
                    bool parallelAllowed);
-    // Input: node2node: other node to *this node
-    // Time: O(|node2node| log|node2node| outdegree_max (parallelAllowed ? 1 : outdegree'_max)),
-    //          where outdegree_max  = max(outdegree(node2node.keys()),
-    //                outdegree'_max = max(outdegree(node2node.values())
+    // Input: other2this: other node to *this node
+    // Time: O(|other2this| log|other2this| outdegree_max (parallelAllowed ? 1 : outdegree'_max)),
+    //          where outdegree_max  = max(outdegree(other2this.keys()),
+    //                outdegree'_max = max(outdegree(other2this.values())
 };
 
 
@@ -2090,9 +2092,12 @@ struct Tree : DiGraph
     // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2,
-                                      const TreeNode* lca);
+                                      const TreeNode* ca,
+                                      const TreeNode* &lca);
     // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
-    // Requires: lca is the LCA of n1 and n2
+    // Input: ca: may be nullptr
+    // Output: lca: !nullptr
+    // Requires: ca is the common ancestor of n1 and n2
   void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5
     // Output: TreeNode::frequentChild: statistically consistent estimate
