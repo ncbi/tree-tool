@@ -69,25 +69,27 @@ struct Chronometer : Nocopy
   static bool enabled;
   string name;
   clock_t time {0};
-private:
+protected:
+  bool on;
   clock_t startTime {noclock};
 public:
 
 
   explicit Chronometer (const string &name_arg)
     : name (name_arg)
+    , on (enabled)
     {}
 
 
   void start ()
-    { if (! enabled)
+    { if (! on)
         return;
       if (startTime != noclock)
         throw logic_error ("Chronometer \""  + name + "\" is not stopped");
       startTime = clock (); 
     }  
   void stop () 
-    { if (! enabled)
+    { if (! on)
         return;
       if (startTime == noclock)
         throw logic_error ("Chronometer \"" + name + "\" is not started");
@@ -96,7 +98,9 @@ public:
     }
 
   void print (ostream &os) const
-    { os << "CHRON: " << name << ": ";
+    { if (! on)
+        return;
+      os << "CHRON: " << name << ": ";
       os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl;
     }
 };
@@ -107,7 +111,9 @@ struct Chronometer_OnePass : Chronometer
 {
   explicit Chronometer_OnePass (const string &name_arg)
     : Chronometer (name_arg)
-    { start (); }
+    { on = true;
+      start (); 
+    }
  ~Chronometer_OnePass ()
     { if (uncaught_exception ())
         return;
@@ -935,6 +941,8 @@ public:
     {}
 	
 	
+  void reserveInc (size_t inc)
+    { P::reserve (P::size () + inc); }
   bool find (const T &value,
              size_t &index) const
 	  // Output: index: valid if (bool)Return
@@ -1041,13 +1049,13 @@ public:
     }
   template <typename U/*:<T>*/>
     Vector<T>& operator<< (const vector<U> &other)
-      { P::reserve (P::size () + other. size ());
+      { reserveInc (other. size ());
         P::insert (P::end (), other. begin (), other. end ());
       	return *this;
       }
   template <typename U/*:<T>*/>
     Vector<T>& operator<< (const list<U> &other)
-      { P::reserve (P::size () + other. size ());
+      { reserveInc (other. size ());
         P::insert (P::end (), other. begin (), other. end ());
       	return *this;
       }
