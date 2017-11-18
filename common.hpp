@@ -70,26 +70,29 @@ struct Chronometer : Nocopy
   string name;
   clock_t time {0};
 protected:
-  bool on;
+  const bool profiling;
   clock_t startTime {noclock};
 public:
 
 
-  explicit Chronometer (const string &name_arg)
+  Chronometer (const string &name_arg,
+               bool profiling_arg = true)
     : name (name_arg)
-    , on (enabled)
+    , profiling (profiling_arg)
     {}
 
 
+  bool on () const
+    { return ! profiling || enabled; }
   void start ()
-    { if (! on)
+    { if (! on ())
         return;
       if (startTime != noclock)
         throw logic_error ("Chronometer \""  + name + "\" is not stopped");
       startTime = clock (); 
     }  
   void stop () 
-    { if (! on)
+    { if (! on ())
         return;
       if (startTime == noclock)
         throw logic_error ("Chronometer \"" + name + "\" is not started");
@@ -98,7 +101,7 @@ public:
     }
 
   void print (ostream &os) const
-    { if (! on)
+    { if (! on ())
         return;
       os << "CHRON: " << name << ": ";
       os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl;
@@ -110,10 +113,8 @@ public:
 struct Chronometer_OnePass : Chronometer
 {
   explicit Chronometer_OnePass (const string &name_arg)
-    : Chronometer (name_arg)
-    { on = true;
-      start (); 
-    }
+    : Chronometer (name_arg, false)
+    { start (); }
  ~Chronometer_OnePass ()
     { if (uncaught_exception ())
         return;
