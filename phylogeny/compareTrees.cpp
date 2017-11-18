@@ -47,14 +47,15 @@ string getNodeName (const Tree::TreeNode* node)
 
   
   
-typedef  Set<string>  Leaves;
+typedef  StringVector  Leaves;
+  // searchSorted
 
 
 
 Leaves tree2leaves (const Tree &tree,
                     bool frequentOnly)
 {
-  Leaves leaves;
+  Leaves leaves;  leaves. reserve (tree. nodes. size ());
  	for (const DiGraph::Node* node : tree. nodes)  
  	{
  	  const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
@@ -66,6 +67,7 @@ Leaves tree2leaves (const Tree &tree,
          )
         leaves << node->getName ();
   }
+  leaves. sort ();
   return leaves;
 }
 
@@ -92,6 +94,7 @@ void setNode2leaves (const Tree::TreeNode* node)
   	  setNode2leaves (child);
   	  node2leaves [node] << node2leaves [child];
   	}
+  node2leaves [node]. sort ();
 }
 
 
@@ -117,15 +120,18 @@ void adjustNode2leaves (const Tree &tree,
   	const size_t size = leaves. size ();
   	ASSERT (size <= all);
   	if (   size > all / 2
-  	    || (even (all) && size == all / 2 && ! leaves. contains (allLeaves. front ()))
+  	    || (even (all) && size == all / 2 && ! leaves. containsFast (allLeaves. front ()))
   	   )
   	{
   	  Leaves s (allLeaves);
+      ASSERT (s. searchSorted);  
+      ASSERT (leaves. searchSorted);  
   	  s. setMinus (leaves);
   	  leaves = s;
+      ASSERT (leaves. searchSorted);  
   	}
   	ASSERT (leaves. size () <= all / 2);
-  	IMPLY (even (all) && leaves. size () == all / 2, leaves. contains (allLeaves. front ()));
+  	IMPLY (even (all) && leaves. size () == all / 2, leaves. containsFast (allLeaves. front ()));
   }
 }
 
@@ -291,7 +297,7 @@ struct ThisApplication : Application
     setNode2leaves (tree1->root);
     setNode2leaves (tree2->root); 
     {
-      const Leaves allLeaves (tree2leaves (*tree1, false));  // Same for tree2
+      const Leaves allLeaves (tree2leaves (*tree1, false));  // Same for *tree2
       adjustNode2leaves (*tree1, allLeaves);   
       adjustNode2leaves (*tree2, allLeaves);   
     }

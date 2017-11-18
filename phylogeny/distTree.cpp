@@ -2710,6 +2710,8 @@ void DistTree::qc () const
         {
           ASSERT (! attr->existsMissing ());
         }
+
+    ASSERT (absCriterion_delta > 0);
   }
   
 
@@ -2717,8 +2719,6 @@ void DistTree::qc () const
   const size_t discernables = getDiscernables (). size ();
   ASSERT (discernables <= leaves);
 
-  ASSERT (absCriterion_delta > 0);
-  
   for (const Leaf* leaf : detachedLeaves)
   {
     ASSERT (leaf);

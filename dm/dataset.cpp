@@ -2554,6 +2554,7 @@ void Categorical::setParamFunc ()
 	  s += probs [i];
 	  probSum [i] = s;
 	}
+	probSum. searchSorted = true;
 }
 
 

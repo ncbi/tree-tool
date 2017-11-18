@@ -921,24 +921,31 @@ struct Vector : vector<T>
 private:
 	typedef  vector<T>  P;
 public:
+  bool searchSorted {false};
 	
 
 	Vector ()
 	  {}
-	Vector (const vector<T> &x)
-	  { *this = x; }
-	Vector<T>& operator= (const vector<T> &x)
-	  { return P::operator= (x); }
 	explicit Vector (size_t n, 
 	                 const T &value = T ())
 	  : P (n, value)
 	  {}
-  Vector (initializer_list<T> init)
+  explicit Vector (initializer_list<T> init)
     : P (init)
     {}
+	Vector (const vector<T> &other)
+    : P (other)
+	  {}
   Vector (const Vector<T> &other) 
     : P (other)
+    , searchSorted (other. searchSorted)
     {}
+	Vector<T>& operator= (const Vector<T> &other)
+	  { searchSorted = other. searchSorted;
+	    P::reserve (other. size ());
+	    P::operator= (other); 
+	    return *this;
+	  }
 	
 	
   void reserveInc (size_t inc)
@@ -978,12 +985,113 @@ public:
           n++;
       return n;
     }
+  Vector<T>& operator<< (const T &value)
+    { P::push_back (value);
+      searchSorted = false;
+    	return *this;
+    }
+  template <typename U/*:<T>*/>
+    Vector<T>& operator<< (const vector<U> &other)
+      { reserveInc (other. size ());
+        P::insert (P::end (), other. begin (), other. end ());
+        searchSorted = false;
+      	return *this;
+      }
+  template <typename U/*:<T>*/>
+    Vector<T>& operator<< (const list<U> &other)
+      { reserveInc (other. size ());
+        P::insert (P::end (), other. begin (), other. end ());
+        searchSorted = false;
+      	return *this;
+      }
+  void setAll (const T &value)
+    { for (T &t : *this)
+    	  t = value;
+    	searchSorted = false;
+    }
+  void eraseAt (size_t index)
+    { eraseMany (index, index + 1); }
+  void eraseMany (size_t from,
+                  size_t to)
+    { P::erase ( P::begin () + (ptrdiff_t) from
+    	         , P::begin () + (ptrdiff_t) to
+    	         ); 
+    }
+  void reverse ()
+    { for (size_t i = 0; i < P::size (); i++)
+    	{ const size_t j = P::size () - 1 - i;
+    		if (i >= j)
+    			break;
+    	  swap (P::operator[] (i), P::operator[] (j));
+    	}
+    	searchSorted = false;
+    }
+  void randomOrder (ulong seed)
+		{ Rand rand (seed);
+			for (T &t : *this)
+	      swap (t, P::operator[] ((size_t) rand. get ((ulong) P::size ())));
+    	searchSorted = false;
+		}
+  T pop (size_t n = 1)
+    { T t = T ();
+      while (n)
+      { t = P::operator[] (P::size () - 1);
+    	  P::pop_back ();
+        n--;
+      }
+    	return t;
+    }
+  template <typename Condition /*on T*/>
+    size_t count (Condition cond) const
+      { size_t n = 0;
+        for (const T& t : *this)
+          if (cond (t))
+            n++;
+        return n;
+      }
+  template <typename Condition /*on index*/>
+    void filter (Condition cond)
+      { size_t toDelete = 0;
+        for (size_t i = 0, end_ = P::size (); i < end_; i++)
+        { const size_t j = i - toDelete;
+          if (j != i)
+            (*this) [j] = (*this) [i];
+          if (cond (j))
+            toDelete++;
+        }
+        while (toDelete)
+        { P::pop_back ();
+          toDelete--;
+        }
+      }
+
+  void sort ()
+    { Common_sp::sort (*this); 
+      searchSorted = true;
+    }
+  template <typename StrictlyLess>
+    void sort (const StrictlyLess &strictlyLess)
+      { Common_sp::sort (*this, strictlyLess); 
+        searchSorted = false;
+      }    
+  void sortBubble ()  
+    // Fast if *this is almost sort()'ed
+    { FOR_START (size_t, i, 1, P::size ())
+		    FOR_REV (size_t, j, i)
+		      if (P::operator[] (j + 1) > P::operator[] (j))
+        	  swap (P::operator[] (j), P::operator[] (j + 1));
+		      else
+		      	break;
+    	searchSorted = true;
+    }
+
   size_t binSearch (const T &value,
                     bool exact = true) const
     // Return: if exact then NO_INDEX or vec[Return] = value else min {i : vec[i] >= value}
-    // Requires: *this is sort()'ed
     { if (P::empty ())
     	  return NO_INDEX;
+    	if (! searchSorted)
+    	  throw logic_error ("Vector is not sorted for search");
     	size_t lo = 0;  // vec.at(lo) <= value
     	size_t hi = P::size () - 1;  
     	// lo <= hi
@@ -1042,96 +1150,9 @@ public:
   template <typename U /* : T */>
     void setMinus (const Vector<U> &other)
       { filter ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
-
-  Vector<T>& operator<< (const T &value)
-    { P::push_back (value);
-    	return *this;
-    }
-  template <typename U/*:<T>*/>
-    Vector<T>& operator<< (const vector<U> &other)
-      { reserveInc (other. size ());
-        P::insert (P::end (), other. begin (), other. end ());
-      	return *this;
-      }
-  template <typename U/*:<T>*/>
-    Vector<T>& operator<< (const list<U> &other)
-      { reserveInc (other. size ());
-        P::insert (P::end (), other. begin (), other. end ());
-      	return *this;
-      }
-  void setAll (const T &value)
-    { for (T &t : *this)
-    	  t = value;
-    }
-  void eraseAt (size_t index)
-    { eraseMany (index, index + 1); }
-  void eraseMany (size_t from,
-                  size_t to)
-    { P::erase ( P::begin () + (ptrdiff_t) from
-    	         , P::begin () + (ptrdiff_t) to
-    	         ); 
-    }
-  void reverse ()
-    { for (size_t i = 0; i < P::size (); i++)
-    	{ const size_t j = P::size () - 1 - i;
-    		if (i >= j)
-    			break;
-    	  swap (P::operator[] (i), P::operator[] (j));
-    	}
-    }
-  void randomOrder (ulong seed)
-		{ Rand rand (seed);
-			for (T &t : *this)
-	      swap (t, P::operator[] ((size_t) rand. get ((ulong) P::size ())));
-		}
-  void sortBubble ()  
-    // Fast if *this is pre-sorted
-    { FOR_START (size_t, i, 1, P::size ())
-		    FOR_REV (size_t, j, i)
-		      if (P::operator[] (j + 1) > P::operator[] (j))
-        	  swap (P::operator[] (j), P::operator[] (j + 1));
-		      else
-		      	break;
-    }
-  T pop (size_t n = 1)
-    { T t = T ();
-      while (n)
-      { t = P::operator[] (P::size () - 1);
-    	  P::pop_back ();
-        n--;
-      }
-    	return t;
-    }
-  template <typename Condition /*on T*/>
-    size_t count (Condition cond) const
-      { size_t n = 0;
-        for (const T& t : *this)
-          if (cond (t))
-            n++;
-        return n;
-      }
-  template <typename Condition /*on index*/>
-    void filter (Condition cond)
-      { size_t toDelete = 0;
-        for (size_t i = 0, end_ = P::size (); i < end_; i++)
-        { const size_t j = i - toDelete;
-          if (j != i)
-            (*this) [j] = (*this) [i];
-          if (cond (j))
-            toDelete++;
-        }
-        while (toDelete)
-        { P::pop_back ();
-          toDelete--;
-        }
-      }
-  void sort ()
-    { Common_sp::sort (*this); }
-  template <typename StrictlyLess>
-    void sort (const StrictlyLess &strictlyLess)
-      { Common_sp::sort (*this, strictlyLess); }    
+      
+  // Requires: sorted
   bool isUniq () const
-    // Requires: sorted
     { if (P::size () <= 1)
         return true;
       FOR_START (size_t, i, 1, P::size ())
@@ -1140,7 +1161,6 @@ public:
       return true;
     }
   void uniq ()
-    // Requires: sorted
     { if (P::size () <= 1)
         return;
       size_t j = 1;  
@@ -1153,7 +1173,7 @@ public:
       P::resize (j);
     }
   size_t getIntersectSize (const Vector<T> &other) const
-    // Input: *this, vec: sorted, unique
+    // Input: *this, vec: unique
     { if (other. empty ())
         return 0;
       size_t n = 0;

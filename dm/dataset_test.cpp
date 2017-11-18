@@ -162,19 +162,19 @@ struct ThisApplication : Application
     if (verbose ())
     	cout << "Altenative distributions:" << endl;
     for (const Distribution* distrTry : distributions)
-    if (distrTry != distrBest)
-    {
-      const_cast <Distribution*> (distrTry) -> shareAnalysis (distr);
-	    if (! distrTry->getAnalysis ())
-	      continue;
-    	const Prob pVal = distrTry->getFitness_entropy (entropyBest);
-    	ASSERT (pVal <= 0.001);
-		  if (verbose ())
-		  {
-		    distrTry->print (cout);
-     	  cout << "  p-value: " << pVal << endl;
-		  }
-    }
+      if (distrTry != distrBest)
+      {
+        const_cast <Distribution*> (distrTry) -> shareAnalysis (distr);
+  	    if (! distrTry->getAnalysis ())
+  	      continue;
+      	const Prob pVal = distrTry->getFitness_entropy (entropyBest);
+      	ASSERT (pVal <= 0.001);
+  		  if (verbose ())
+  		  {
+  		    distrTry->print (cout);
+       	  cout << "  p-value: " << pVal << endl;
+  		  }
+      }
 
     if (verbose ())
       cout << endl;
