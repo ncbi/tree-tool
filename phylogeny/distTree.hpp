@@ -344,20 +344,11 @@ public:
 
 
 
-
-//struct Change
-  //struct Move
-    //struct ChangeToSibling
-    //struct ChangeToChild
-  //struct Swap
-    //struct ChangeToUncle
-    //struct ChangeToCousin
-
-
-
-struct Change : Root  
+struct Change : Root
 // Of topology
 // Input: tree.dsSample
+// *to becomes a sibling of *from
+// Enough to transform any topology to any topology. Proof: by induction by node depth descending
 {
 protected:
 	const DistTree& tree;
@@ -382,8 +373,17 @@ private:
   Status status;
 public:
 	
-	
 protected:
+	// !nullptr
+	Steiner* oldParent {nullptr};
+	  // Old from->getParent()
+	Steiner* arcEnd {nullptr};
+	  // Old to->getParent()
+	Steiner* inter {nullptr};
+	  // Between *to and *arcEnd
+public:
+
+	
 	Change (const DTNode* from_arg,
 				  const DTNode* to_arg)
 		: tree (const_cast <DistTree&> (from_arg->getDistTree ()))
@@ -394,19 +394,22 @@ protected:
 		{ targets. clear ();
 		  targets << from << to; 
 		}
-    // Requires: valid_()
-	static bool valid_ (const DTNode* from_arg,
-	                    const DTNode* to_arg)
+    // Requires: valid()
+	static bool valid (const DTNode* from_arg,
+	                   const DTNode* to_arg)
 	  { return    from_arg
              && from_arg->graph
              && ! from_arg->inDiscernable ()
 	           && to_arg
 	  	       && to_arg->graph == from_arg->graph
 	  	       && to_arg != from_arg
-             && ! to_arg->inDiscernable ();
+             && ! to_arg->inDiscernable ()
+    	       && from_arg->getParent ()
+	  	       && ! to_arg->descendantOf (from_arg)
+	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () == 2)  
+	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () == 2); 
 	  }
     // Requires: parameters are the same as in the constructor
-public:
  ~Change ();
 	void qc () const override;
 	  // Invokes: valid()
@@ -423,8 +426,10 @@ public:
 	  }
 
 
-	virtual const char* type () const = 0;
-	virtual bool valid () const = 0;
+  bool valid () const
+    { return valid (from, to); }
+	const char* type () const 
+	  { return "sibling"; }
   // Update: Topology, DTNode::len, tree.prediction
 	bool apply ();
 	  // Return: success
@@ -442,178 +447,17 @@ public:
 private:
   // Update: Tree::tree
   // Output: DTNode::len, *tree.prediction
-	virtual bool apply_ () = 0;
+	bool apply_ ();
 	  // Return: success  
 	  // Output: *tree.prediction
-	virtual void restore_ () = 0;
-	virtual void commit_ () = 0;
+	void restore_ ();
+	void commit_ ();
     // May invoke: tree.delayDeleteRetainArcs()
 public:
 	static bool strictlyLess (const Change* a, 
 	                          const Change* b);
     // Requires: (bool)a
 };
-
-
-
-struct Move : Change
-{
-protected:
-	// !nullptr
-	Steiner* oldParent {nullptr};
-	  // Old from->getParent()
-	Steiner* arcEnd {nullptr};
-	  // Old to->getParent()
-	Steiner* inter {nullptr};
-	  // Between *to and *arcEnd
-public:
-
-
-protected:	
-	Move (const DTNode* from_arg,
-			  const DTNode* to_arg)
-		: Change (from_arg, to_arg)
-		{}
-};
-
-
-
-struct ChangeToSibling : Move
-// *to becomes a sibling of *from
-// This Change is enough to transform any topology to any topology. Proof: by induction by node depth descending
-{
-	ChangeToSibling (const DTNode* from_arg,
-					         const DTNode* to_arg)
-		: Move (from_arg, to_arg)
-		{}
-	static bool valid_ (const DTNode* from_arg,
-	                    const DTNode* to_arg)
-	  { return    Move::valid_ (from_arg, to_arg)
-    	       && from_arg->getParent ()
-	  	       && ! to_arg->descendantOf (from_arg)
-	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () == 2)  
-	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () == 2); 
-	  }
-
-
-	const char* type () const final
-	  { return "sibling"; }
-	bool valid () const final
-	  { return valid_ (from, to); }
-private:
-	bool apply_ () final;
-	  // Time: O(p log(n))
-	void restore_ () final;
-	void commit_ () final;
-};
-
-
-
-#if 0   // Error density: increase by 0.004; time: decrease by 30 %
-struct ChangeToChild : Move
-// New graph: *to -> *inter -> *oldParent
-// Similarity: ChangeToSibling: from ->setParent(inter)
-//             ChangetoChild:   inter->setParent(from->getParent())
-{
-	ChangeToChild (const DTNode* from_arg,
-					       const DTNode* to_arg)
-		: Move (from_arg, to_arg)
-		{}
-	static bool valid_ (const DTNode* from_arg,
-	                    const DTNode* to_arg)
-	  { return    Move::valid_ (from_arg, to_arg)
-	           && from_arg->asSteiner ()
-	  	       && to_arg->descendantOf (from_arg)
-	  	     //&& ! (to_arg->getParent() == from_arg && from_arg -> arcs [false]. size () == 2)
-	  	       && to_arg->getParent () != from_arg;  // *this is redundant given ChildToSibling: from_arg->getParent()=to_arg
-	  }
-
-
-	const char* type () const final
-	  { return "child"; }
-	bool valid () const final
-	  { return valid_ (from, to); }
-private:
-	bool apply_ () final;
-	void restore_ () final;
-	void commit_ () final;
-};
-
-
-
-
-struct Swap : Change
-// Swap *from and *to
-{
-protected:
-	Swap (const DTNode* from_arg,
-			  const DTNode* to_arg)
-		: Change (from_arg, to_arg)
-		{}
-	static bool valid_ (const DTNode* from_arg,
-	                    const DTNode* to_arg)
-	  { return    Change::valid_ (from_arg, to_arg)
-    	       && from_arg->getParent ()
-	  	       && ! to_arg->descendantOf (from_arg)
-	  	       && from_arg->getParent () != to_arg->getParent ();
-	  }
-
-
-private:
-	bool apply_ () final;
-	void restore_ () final;
-	void commit_ () final
-	  {}
-};
-
-
-
-struct ChangeToUncle : Swap
-// *to = uncle
-// Includes the Felsenstein "swap" change
-{
-	ChangeToUncle (const DTNode* from_arg,
-					       const DTNode* to_arg)
-		: Swap (from_arg, to_arg)
-		{}
-	static bool valid_ (const DTNode* from_arg,
-	                    const DTNode* to_arg)
-	  { return    Swap::valid_ (from_arg, to_arg)
-	  	       && from_arg->getParent () -> descendantOf (to_arg->getParent ())
-	  	       && ! from_arg->getParent () -> descendantOf (to_arg);
-	  }
-
-
-	const char* type () const final
-	  { return "uncle"; }
-	bool valid () const final
-	  { return valid_ (from, to); }
-};
-
-
-
-struct ChangeToCousin : Swap
-// *to = first cousin
-{
-	ChangeToCousin (const DTNode* from_arg,
-  					      const DTNode* to_arg)
-		: Swap (from_arg, to_arg)
-		{}
-	static bool valid_ (const DTNode* from_arg,
-	                    const DTNode* to_arg)
-	  { return    Swap::valid_ (from_arg, to_arg)
-	  	       && to_arg->getParent ()  
-	  	       && from_arg->getParent () -> getParent () == to_arg->getParent () -> getParent ()
-	  	       && from_arg < to_arg;
-	  }
-
-
-	const char* type () const final
-	  { return "cousin"; }
-	bool valid () const final
-	  { return valid_ (from, to); }
-};
-#endif
 
 
 
@@ -684,7 +528,6 @@ private:
     // In *dissimDs
 
   friend Change;
-  friend ChangeToSibling;
   Dataset ds;
     // objs: pairs of Leaf's
     //       objs[i].name = dissims[i].getName()

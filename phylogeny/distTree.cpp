@@ -636,9 +636,9 @@ bool Change::strictlyLess (const Change* a,
 
 
 
-// ChangeToSibling
+// Change
 
-bool ChangeToSibling::apply_ ()
+bool Change::apply_ ()
 {
   ASSERT (targets. size () == 2);
   ASSERT (! oldParent);
@@ -743,7 +743,7 @@ bool ChangeToSibling::apply_ ()
 
 
 
-void ChangeToSibling::restore_ ()
+void Change::restore_ ()
 {
   ASSERT (oldParent);
 //ASSERT (arcEnd);
@@ -770,7 +770,7 @@ void ChangeToSibling::restore_ ()
 
 
 
-void ChangeToSibling::commit_ ()
+void Change::commit_ ()
 {
   ASSERT (oldParent);
 //ASSERT (arcEnd);
@@ -780,242 +780,6 @@ void ChangeToSibling::commit_ ()
   if (oldParent->isTransient ())
     const_cast <DistTree&> (tree). delayDeleteRetainArcs (oldParent);
 }
-
-
-
-
-#if 0
-// ChangeToChild
-
-bool ChangeToChild::apply_ ()
-{
-  ASSERT (targets. size () == 2);
-  ASSERT (! oldParent);
-  ASSERT (! arcEnd);
-  ASSERT (! inter);
-  
-  Steiner* from_ = const_cast <Steiner*> (from->asSteiner ());
-  ASSERT (from_);
-  
-  oldParent = const_static_cast <Steiner*> (from->getParent ());
-    // May be nullptr
-  arcEnd = const_static_cast <Steiner*> (to->getParent ());
-  ASSERT (arcEnd);
-  // May be: arcEnd == from
-  ASSERT (oldParent != arcEnd);
-
-  // targets  
-  if (oldParent)
-    targets << oldParent;
-  targets << arcEnd;
-
-  toLen = to->len;
-
-  // Topology
-  inter = new Steiner (const_cast <DistTree&> (tree), arcEnd, 0);
-  const_cast <DTNode*> (to) -> setParent (inter);
-  ASSERT (! inter->attr);
-  inter->makeRoot (from_);
-//ASSERT (to->attr);
-  ASSERT (inter->attr);
-//ASSERT ((bool) from->attr == (from != arcEnd));
-  
-    
-  // DTNode::len
-  const_cast <DTNode*> (to) -> len = 0;
-  ASSERT (arcEnd->len == 0);
-  inter->len = 0;
-
-  // tree.{arcEnd_new,toAttr_new,interAttr,target_new}
-  CompactBoolAttr1* arcEnd_new = const_cast <CompactBoolAttr1*> (tree. fromAttr_new);
-  CompactBoolAttr1* toAttr_new = const_cast <CompactBoolAttr1*> (tree. toAttr_new);
-  CompactBoolAttr1* interAttr  = const_cast <CompactBoolAttr1*> (tree. interAttr);
-  RealAttr1* target_new        = const_cast <RealAttr1*>        (tree. target_new);
-  arcEnd_new->setAll (false);
-  toAttr_new->setAll (false);
-  interAttr ->setAll (false);
-  for (Iterator it (tree. dsSample); it ();)  
-  {
-    const VectorPtr<Tree::TreeNode> path (tree. getPath (tree. dissim2path (*it));
-    (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);
-    if (path. contains (inter))
-    {
-      interAttr->setCompactBool (*it, true);
-      const bool toVia     = path. contains (to);
-      const bool arcEndVia = path. contains (arcEnd);
-      ASSERT (toVia != arcEndVia);
-      if (toVia)
-        toAttr_new->setCompactBool (*it, true);
-      if (arcEndVia)
-        arcEnd_new->setCompactBool (*it, true);
-    }
-    else
-    {
-      const bool toUsed = path. contains (to);
-      ASSERT (toUsed == path. contains (arcEnd));
-      if (toUsed)
-      {
-        toAttr_new->setCompactBool (*it, true);
-        arcEnd_new->setCompactBool (*it, true);
-      }
-    }
-  }
-
-  Space1<NumAttr1> sp (tree. ds, false);  sp. reserve (3);
-  sp << toAttr_new;   // 0
-  if (oldParent)
-    sp << arcEnd_new  // 1
-       << interAttr;  // 2
-  L2LinearNumPrediction lr (tree. dsSample, sp, *target_new);
-  lr. solveUnconstrained ();
-  if (verbose ())
-    lr. qc ();  
-  if (isNan (lr. absCriterion))
-    return false;
-
-  FOR (size_t, i, lr. beta. size ())
-    maximize (lr. beta [i], 0.0);
-
-  if (oldParent)
-  {
-    const_cast <DTNode*> (to) -> len = lr. beta [0];
-    arcEnd                    -> len = lr. beta [1];
-    inter                     -> len = lr. beta [2];
-  }
-  else
-  {
-    const_cast <DTNode*> (to) -> len = lr. beta [0] / 2;
-    arcEnd                    -> len = to->len;
-    inter                     -> len = NAN;
-  }
-
-  // tree.prediction
-  for (Iterator it (tree. dsSample); it ();)  
-    (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
-
-  return true;
-}
-
-
-
-void ChangeToChild::restore_ ()
-{
-  ASSERT (arcEnd);
-  ASSERT (inter);
-
-  if (oldParent)
-    targets. pop ();
-  targets. pop ();
-
-  // DTNode::len
-  const_cast <DTNode*> (to) -> len = toLen;  
-  inter->len = fromLen;
-
-  // Topology
-  const_cast <Steiner*> (from->asSteiner ()) -> makeRoot (inter);  // from->len = inter->len
-  const_cast <DTNode*> (to) -> setParent (arcEnd);
-  ASSERT (! inter->attr);
-  delete inter;
-    
-  ASSERT (sameReal (from->len, fromLen));
-  
-  oldParent = nullptr;
-  arcEnd = nullptr;
-  inter = nullptr;
-}
-
-
-
-void ChangeToChild::commit_ ()
-{
-  ASSERT (arcEnd);
-  ASSERT (inter);
-
-  arcEnd->addAttr ();
-  if (from->isTransient ())
-    const_cast <DistTree&> (tree). delayDeleteRetainArcs (const_cast <DTNode*> (from));
-}
-
-
-
-
-// Swap
-
-bool Swap::apply_ ()
-{
-  Steiner* fromParent = const_static_cast <Steiner*> (from->getParent ());
-  ASSERT (fromParent);
-  Steiner* toParent = const_static_cast <Steiner*> (to->getParent ());
-  ASSERT (toParent);
-
-  toLen = to->len;
-
-  // Topology
-  const_cast <DTNode*> (from) -> setParent (toParent); 
-  const_cast <DTNode*> (to)   -> setParent (fromParent); 
-
-
-  // DTNode::len
-  const_cast <DTNode*> (from) -> len = 0;
-  const_cast <DTNode*> (to)   -> len = 0;
-
-  // tree.{fromAttr_new,toAttr_new,target_new}
-  CompactBoolAttr1* fromAttr_new = const_cast <CompactBoolAttr1*> (tree. fromAttr_new);
-  CompactBoolAttr1* toAttr_new   = const_cast <CompactBoolAttr1*> (tree. toAttr_new);
-  RealAttr1* target_new          = const_cast <RealAttr1*>        (tree. target_new);
-  fromAttr_new->setAll (false);
-  toAttr_new  ->setAll (false);
-  for (Iterator it (tree. dsSample); it ();)  
-  {
-    const VectorPtr<Tree::TreeNode> path (tree. getPath (tree. dissim2path (*it));
-    if (path. contains (from))
-      fromAttr_new->setCompactBool (*it, true);
-    if (path. contains (to))
-      toAttr_new  ->setCompactBool (*it, true);
-    (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);
-  }
-
-  Space1<NumAttr1> sp (tree. ds, false);  sp. reserve (2);
-  sp << fromAttr_new   // 0
-     << toAttr_new     // 1
-     ;
-  L2LinearNumPrediction lr (tree. dsSample, sp, *target_new);
-  lr. solveUnconstrained ();
-  if (verbose ())
-    lr. qc ();  
-  if (isNan (lr. absCriterion))
-    return false;
-
-  FOR (size_t, i, lr. beta. size ())
-    maximize (lr. beta [i], 0.0);
-
-  const_cast <DTNode*> (from) -> len = lr. beta [0];
-  const_cast <DTNode*> (to)   -> len = lr. beta [1];
-
-  // tree.prediction
-  for (Iterator it (tree. dsSample); it ();)  
-    (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
-
-  return true;
-}
-
-
-
-void Swap::restore_ ()
-{
-  // DTNode::len
-  const_cast <DTNode*> (from) -> len = fromLen;
-  const_cast <DTNode*> (to)   -> len = toLen;
-
-  // Topology
-  Steiner* fromParent = const_static_cast <Steiner*> (to->getParent ());
-  ASSERT (fromParent);
-  Steiner* toParent = const_static_cast <Steiner*> (from->getParent ());
-  ASSERT (toParent);
-  const_cast <DTNode*> (from) -> setParent (fromParent); 
-  const_cast <DTNode*> (to)   -> setParent (toParent); 
-}
-#endif
 
 
 
@@ -1586,7 +1350,7 @@ DistTree::DistTree (const DTNode* center,
 
 
   // ds.objs[]->mult, *target: sum
-  // Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing, do not invoke getPath() ??!
+  // Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing ??
   chron_tree2subgraphDissim. start ();
   VectorPtr<TreeNode> extremes (2);  // temporary
   for (SubPath& subPath : subPaths)
@@ -4075,8 +3839,6 @@ const Change* DistTree::getBestChange (const DTNode* from)
 	
  	const Change* bestChange = nullptr;
  	
- 	#define TRY_CHANGE(T,P)  if (T::valid_ P) tryChange (new T P, bestChange)
-
   VectorPtr<TreeNode> area;      area.     reserve (nodes. size ()); 
   VectorPtr<TreeNode> boundary;  boundary. reserve (nodes. size ()); 
   from->getArea (areaRadius_std, area, boundary);  
@@ -4086,7 +3848,8 @@ const Change* DistTree::getBestChange (const DTNode* from)
  	for (const TreeNode* node : area)  
  	{
  		DTNode* to = const_static_cast <DTNode*> (node);
- 	  TRY_CHANGE (ChangeToSibling, (from, to));  
+ 	  if (Change::valid (from, to))
+ 	    tryChange (new Change (from, to), bestChange);
 	  if (verbose ())
 	  {
   	  ASSERT (to->graph);
@@ -4094,31 +3857,6 @@ const Change* DistTree::getBestChange (const DTNode* from)
 	  }
   }
   
-#if 0
-  if (   ! bestChange 
-      && area. size () < 100  // PAR
-     )
-  {
-    if (verbose (1))
-      cerr << "more ";
-   	for (const Tree::TreeNode* node : area)  
-   	{
-   		DTNode* to = const_static_cast <DTNode*> (node);
- 	    // Applied rarely
- 	    TRY_CHANGE (ChangeToChild,  (from, to));  
-   	  TRY_CHANGE (ChangeToUncle,  (from, to));  
-      TRY_CHANGE (ChangeToCousin, (from, to));  
-  	  if (verbose ())
-  	  {
-    	  ASSERT (to->graph);
-  	    to->qc ();
-  	  }
-    }
-  }
-#endif
-  
-  #undef TRY_CHANGE
-      
   if (bestChange)
   {
     if (verbose (1))
