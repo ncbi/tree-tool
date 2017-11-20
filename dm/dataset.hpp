@@ -27,9 +27,11 @@ extern const char* missingStr;
 
 
 
-struct Obj : Named, DisjointCluster
+struct Obj : Root, DisjointCluster
 // Object
 {
+  string name;
+    // Me be empty()
   Real mult {1};
     // >= 0
     // Multiplicity (absolute frequency)
@@ -38,7 +40,7 @@ struct Obj : Named, DisjointCluster
 
 
   explicit Obj (const string &name_arg) 
-    : Named (name_arg)
+    : name (name_arg)
     {}
   void qc () const override;
 };

@@ -32,8 +32,9 @@ void Obj::qc () const
 { 
   if (! qc_on)
     return;
-  Named::qc ();
+  Root::qc ();
 		
+  IMPLY (! name. empty (), goodName (name));
   ASSERT (mult >= 0); 
 }
 
