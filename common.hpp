@@ -1067,7 +1067,9 @@ public:
       }
 
   void sort ()
-    { Common_sp::sort (*this); 
+    { if (searchSorted)
+        return;
+      Common_sp::sort (*this); 
       searchSorted = true;
     }
   template <typename StrictlyLess>
@@ -1077,7 +1079,9 @@ public:
       }    
   void sortBubble ()  
     // Fast if *this is almost sort()'ed
-    { FOR_START (size_t, i, 1, P::size ())
+    { if (searchSorted)
+        return;
+      FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
 		      if (P::operator[] (j + 1) > P::operator[] (j))
         	  swap (P::operator[] (j), P::operator[] (j + 1));
@@ -1166,7 +1170,7 @@ public:
         return;
       size_t j = 1;  
       FOR_START (size_t, i, 1, P::size ())
-        if ((*this) [i] != (*this) [i - 1])
+        if (! ((*this) [i] == (*this) [i - 1]))
         { if (j != i)
             (*this) [j] = (*this) [i];
           j++;
