@@ -1781,6 +1781,8 @@ struct DiGraph : Root
       // Requires: from != this
       //           No parallel arcs
       // Time: O(n + m log n) for all nodes
+    void isolate ();
+      // Make degree = 0
     void detach ();
       // Output: graph = nullptr
       // Requires: No Arc's
@@ -2038,12 +2040,12 @@ struct Tree : DiGraph
 	    	        : nullptr; 
 	    }
 	    // Return: Single child of *this
-	  void isolateChildrenUp ();
+	  void detachChildrenUp ();
 	    // Invokes: childrenUp(), detach()
 	  TreeNode* isolateTransient ()
 			{ TreeNode* transient = isTransient ();
 				if (transient)
-					isolateChildrenUp ();
+					detachChildrenUp ();
 			  return transient;
 			}
 	  bool deleteTransient ()

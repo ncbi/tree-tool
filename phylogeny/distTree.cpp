@@ -16,7 +16,6 @@ namespace DistTree_sp
 
 Chronometer chron_getBestChange ("getBestChange");
 Chronometer chron_tree2subgraph ("tree2subgraph");
-Chronometer chron_tree2subgraphDissim ("tree2subgraphDissim");
 Chronometer chron_subgraphOptimize ("subgraphOptimize");
 Chronometer chron_subgraph2tree ("subgraph2tree");
 
@@ -658,6 +657,47 @@ bool Change::apply_ ()
     targets << arcEnd;
 
   toLen = to->len;
+  
+
+#if 0
+  // subgraph
+  Subgraph subgraph (const_cast <DistTree&> (tree));
+  VectorPtr<Tree::TreeNode>& area     = subgraph. area;
+  VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
+  const Tree::TreeNode* areaRoot_ = nullptr;
+  area = DistTree::getPath (from, to, from->getAncestor (areaRadius_std), areaRoot_);
+  ASSERT (area. size () >= 2);
+  ASSERT (areaRoot_);
+  const Steiner* areaRoot = static_cast <const DTNode*> (areaRoot_) -> asSteiner ();
+  ASSERT (areaRoot);
+  if (   area. front () == from
+      || area. front () == to
+     )
+    area. eraseAt (0);
+  if (   area. back () == from
+      || area. back () == to
+     )
+    area. eraseAt (area. size () - 1);
+  area << areaRoot;
+  area. sort ();
+  area. uniq ();
+  boundary. reserve (area. size ());
+  for (const Tree::TreeNode* node : area)
+  {
+    const VectorPtr<DiGraph::Node> children (node->getChildren ());
+    for (const DiGraph::Node* child : children)
+      boundary << static_cast <const Tree::TreeNode*> (child);
+  }
+  boundary. sort ();
+  boundary. uniq ();
+  boundary. setMinus (area);
+  subgraph. addSubPaths (from->pathObjNums);
+  subgraph. addSubPaths (to  ->pathObjNums);
+  subgraph. subPaths. sort ();
+  subgraph. subPaths. uniq ();
+  subgraph. finishSubPaths ();
+#endif
+  
 
   // Topology
   inter = new Steiner (const_cast <DistTree&> (tree), arcEnd, 0);
@@ -670,74 +710,177 @@ bool Change::apply_ ()
   const_cast <DTNode*> (to)   -> len = 0;
   ASSERT (inter->len == 0);
 
-  // tree.{fromAttr_new,toAttr_new,interAttr,target_new}
-  CompactBoolAttr1* fromAttr_new = const_cast <CompactBoolAttr1*> (tree. fromAttr_new);
-  CompactBoolAttr1* toAttr_new   = const_cast <CompactBoolAttr1*> (tree. toAttr_new);
-  CompactBoolAttr1* interAttr    = const_cast <CompactBoolAttr1*> (tree. interAttr);
-  RealAttr1* target_new = const_cast <RealAttr1*> (tree. target_new);
-  fromAttr_new->setAll (false);
-  toAttr_new  ->setAll (false);
-  interAttr   ->setAll (false);
-  for (Iterator it (tree. dsSample); it ();)  
+  // ??
   {
-    const VectorPtr<Tree::TreeNode> path (tree. dissim2path (*it));
-    (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);  
-      // redundant <= map paths in the old tree to path in the new tree ??
-    if (path. contains (from))
+    // tree.{fromAttr_new,toAttr_new,interAttr,target_new}
+    CompactBoolAttr1* fromAttr_new = const_cast <CompactBoolAttr1*> (tree. fromAttr_new);
+    CompactBoolAttr1* toAttr_new   = const_cast <CompactBoolAttr1*> (tree. toAttr_new);
+    CompactBoolAttr1* interAttr    = const_cast <CompactBoolAttr1*> (tree. interAttr);
+    RealAttr1* target_new = const_cast <RealAttr1*> (tree. target_new);
+    fromAttr_new->setAll (false);
+    toAttr_new  ->setAll (false);
+    interAttr   ->setAll (false);
+    for (Iterator it (tree. dsSample); it ();)  
     {
-      fromAttr_new->setCompactBool (*it, true);
-      const bool toVia    = path. contains (to);
-      const bool interVia = path. contains (inter);
-      ASSERT (toVia != interVia);
-      if (toVia)
-        toAttr_new->setCompactBool (*it, true);
-      if (interVia)
-        interAttr ->setCompactBool (*it, true);
+      const VectorPtr<Tree::TreeNode> path (tree. dissim2path (*it));
+      (*target_new) [*it] = (* tree. target) [*it] - tree. path2prediction (path);  
+        // redundant <= map paths in the old tree to path in the new tree ??
+      if (path. contains (from))
+      {
+        fromAttr_new->setCompactBool (*it, true);
+        const bool toVia    = path. contains (to);
+        const bool interVia = path. contains (inter);
+        ASSERT (toVia != interVia);
+        if (toVia)
+          toAttr_new->setCompactBool (*it, true);
+        if (interVia)
+          interAttr ->setCompactBool (*it, true);
+      }
+      else
+      {
+        const bool toUsed = path. contains (to);
+        ASSERT (toUsed == path. contains (inter));
+        if (toUsed)
+        {
+          toAttr_new->setCompactBool (*it, true);
+          interAttr ->setCompactBool (*it, true);
+        }
+      }
+    }
+  
+    Space1<NumAttr1> sp (tree. ds, false);  sp. reserve (3);
+    sp << fromAttr_new;  // 0
+    if (arcEnd)
+      sp << toAttr_new   // 1
+         << interAttr;   // 2
+    L2LinearNumPrediction lr (tree. dsSample, sp, *target_new);
+    lr. solveUnconstrained ();
+    if (verbose ())
+      lr. qc ();  
+    if (isNan (lr. absCriterion))
+      return false;
+  
+    FOR (size_t, i, lr. beta. size ())
+      maximize (lr. beta [i], 0.0);
+  
+    if (arcEnd)
+    {
+      const_cast <DTNode*> (from) -> len = lr. beta [0];
+      const_cast <DTNode*> (to)   -> len = lr. beta [1];
+      inter                       -> len = lr. beta [2];
     }
     else
     {
-      const bool toUsed = path. contains (to);
-      ASSERT (toUsed == path. contains (inter));
+      const_cast <DTNode*> (from) -> len = lr. beta [0] / 2;
+      const_cast <DTNode*> (to)   -> len = from->len;
+      inter                       -> len = NAN;
+      ASSERT (inter == tree. root);
+    }
+  
+    // tree.prediction
+    for (Iterator it (tree. dsSample); it ();)  
+      (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
+  }
+    
+
+#if 0
+  Dataset ds;
+  ds. objs. reserve (subgraph. subPaths. size ());
+  auto target    = new RealAttr1 ("target", ds);
+  for (const SubPath& subPath : subgraph. subPaths)
+  {
+    const size_t wholeObjNum = subPath. objNum;
+    const size_t objNum = ds. appendObj ();
+    const_cast <Obj*> (ds. objs [objNum]) -> mult = tree. ds. objs [wholeObjNum] -> mult; 
+    (*target) [objNum] = (* tree. target) [wholeObjNum] - subPath. dist_hat_tails;
+  }
+  auto fromAttr  = new ExtBoolAttr1 ("from", ds);
+  auto toAttr    = new ExtBoolAttr1 ("to", ds);
+  auto interAttr = new ExtBoolAttr1 ("inter", ds);
+  fromAttr ->setAll (EFALSE);
+  toAttr   ->setAll (EFALSE);
+  interAttr->setAll (EFALSE);
+  FOR (size_t, objNum, subgraph. subPaths. size ())
+  {
+    const SubPath& subPath = subgraph. subPaths [objNum];
+    const Tree::TreeNode* lca_ = nullptr;
+    VectorPtr<Tree::TreeNode> path (DistTree::getPath (subPath. node1, subPath. node2, subgraph. area_root, lca_));
+    path. sort ();
+    if (path. containsFast (from))
+    {
+      (*fromAttr) [objNum] = ETRUE;
+      const bool toVia    = path. containsFast (to);
+      const bool interVia = path. containsFast (inter);
+      ASSERT (toVia != interVia);
+      if (toVia)
+        (*toAttr) [objNum] = ETRUE;
+      if (interVia)
+        (*interAttr) [objNum] = ETRUE;
+    }
+    else
+    {
+      const bool toUsed = path. containsFast (to);
+      ASSERT (toUsed == path. containsFast (inter));
       if (toUsed)
       {
-        toAttr_new->setCompactBool (*it, true);
-        interAttr ->setCompactBool (*it, true);
+        (*toAttr) [objNum] = ETRUE;
+        (*interAttr) [objNum] = ETRUE;
       }
     }
   }
-
-  Space1<NumAttr1> sp (tree. ds, false);  sp. reserve (3);
-  sp << fromAttr_new;  // 0
+  
+  Space1<NumAttr1> sp (ds, false);  sp. reserve (3);
+  sp << fromAttr;  // 0
   if (arcEnd)
-    sp << toAttr_new   // 1
-       << interAttr;   // 2
-  L2LinearNumPrediction lr (tree. dsSample, sp, *target_new);
+    sp << toAttr      // 1
+       << interAttr;  // 2
+  const Sample sample (ds);
+  L2LinearNumPrediction lr (sample, sp, *target);
   lr. solveUnconstrained ();
   if (verbose ())
     lr. qc ();  
-  if (isNan (lr. absCriterion))
-    return false;
+  ASSERT (! isNan (lr. absCriterion));
 
   FOR (size_t, i, lr. beta. size ())
     maximize (lr. beta [i], 0.0);
 
   if (arcEnd)
   {
+  #if 0
+    ??
     const_cast <DTNode*> (from) -> len = lr. beta [0];
     const_cast <DTNode*> (to)   -> len = lr. beta [1];
     inter                       -> len = lr. beta [2];
+  #else
+    cout << from ->len << ' ' << lr. beta [0] << endl;
+    cout << to   ->len << ' ' << lr. beta [1] << endl;
+    cout << inter->len << ' ' << lr. beta [2] << endl;
+  #endif
   }
   else
   {
+  #if 0
+    ??
     const_cast <DTNode*> (from) -> len = lr. beta [0] / 2;
     const_cast <DTNode*> (to)   -> len = from->len;
     inter                       -> len = NAN;
+  #else
+    cout << from ->len << ' ' << lr. beta [0] / 2 << endl;
+    cout << to   ->len << ' ' << lr. beta [0] / 2 << endl;
+    cout << inter->len << endl;
+  #endif
+    ASSERT (inter == tree. root);
   }
 
+#if 0
+  ??
   // tree.prediction
   for (Iterator it (tree. dsSample); it ();)  
     (* const_cast <RealAttr1*> (tree. prediction)) [*it] = (* tree. target) [*it] - lr. getResidual (*it);
-    
+#endif
+#endif
+
+
   return true;
 }
 
@@ -823,6 +966,216 @@ void SubPath::qc () const
   ASSERT (node1->graph == node2->graph);
   
   ASSERT (dist_hat_tails >= 0);
+}
+
+
+
+
+// Subgraph
+
+Subgraph::Subgraph (const DistTree &tree_arg)
+: tree (tree_arg)
+{ 
+  subPaths. reserve (tree. dissims. size ()); 
+}
+
+
+
+void Subgraph::qc () const 
+{
+  if (! qc_on)
+    return;
+    
+  // area
+  ASSERT (area. searchSorted);
+  ASSERT (area. size () >= 2);
+  for (const Tree::TreeNode* node : area)
+  {
+    ASSERT (node);
+    ASSERT (node->graph == & tree);
+    ASSERT (! static_cast <const DTNode*> (node) -> inDiscernable ());
+  }
+    
+  // boundary
+  ASSERT (boundary. searchSorted);
+  ASSERT (area. containsFastAll (boundary));
+
+  // area_root
+  ASSERT (area_root);
+  ASSERT (area_root->graph == & tree);
+  ASSERT (area. containsFast (area_root));
+  ASSERT (! area. containsFast (area_root->getParent ()));
+
+  // area_underRoot
+  if (area_underRoot)
+  {
+    ASSERT (area_underRoot->getParent () == area_root);
+    ASSERT (area. containsFast (area_underRoot));
+  }
+
+  // subPaths
+  ASSERT (! subPaths. empty ());
+  {
+    Vector<size_t> objNums;  objNums. reserve (subPaths. size ());
+    for (const SubPath& subPath : subPaths)
+    {
+      subPath. qc ();
+      ASSERT (boundary. containsFast (subPath. node1));
+      ASSERT (boundary. containsFast (subPath. node2));
+      ASSERT (tree. dissims [subPath. objNum]. valid ());
+      objNums << subPath. objNum;
+    }
+    objNums. sort ();
+    ASSERT (objNums. isUniq ());
+  }
+}  
+
+
+
+void Subgraph::finish ()
+{
+  area. sort ();
+  boundary. sort ();
+  
+  // area_root
+  ASSERT (! area_root);
+  for (const Tree::TreeNode* node : area)
+  {
+    ASSERT (node);
+    if (! area. containsFast (node->getParent ()))
+    {
+      ASSERT (! area_root);
+      area_root = static_cast <const DTNode*> (node);
+    }
+  }
+  ASSERT (area_root);
+  
+  // area_underRoot
+  ASSERT (! area_underRoot);
+  if (boundary. containsFast (area_root))
+  {
+    const VectorPtr<DiGraph::Node> children (area_root->getChildren ());
+    for (const DiGraph::Node* child_ : children)
+    {
+      const DTNode* child = static_cast <const DTNode*> (child_);
+      if (area. containsFast (child))
+      {
+        ASSERT (! area_underRoot);
+        area_underRoot = child;
+      }
+    }
+    ASSERT (area_underRoot);
+  }
+}
+
+
+
+void Subgraph::addSubPaths (const Vector<size_t> &objNums)
+{ 
+  for (const size_t objNum : objNums)
+    if (tree. dissims [objNum]. valid ())
+      subPaths << SubPath (objNum);
+}
+
+
+
+void Subgraph::area2subPaths ()
+// Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing ??
+{
+  ASSERT (subPaths. empty ());
+  for (const Tree::TreeNode* node : area)
+    if (! boundary. containsFast (node))
+    {
+      const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
+      ASSERT (st);
+      addSubPaths (st->lcaObjNums);
+    }
+  if (area_underRoot)
+    addSubPaths (area_underRoot->pathObjNums);
+}
+
+
+
+void Subgraph::finishSubPaths ()
+{
+  ASSERT (isNan (localAbsCriterion));
+  
+  localAbsCriterion = 0;
+  VectorPtr<Tree::TreeNode> extremes (2);  // temporary
+  for (SubPath& subPath : subPaths)
+  {
+    const size_t wholeObjNum = subPath. objNum;
+    VectorPtr<Tree::TreeNode> path (tree. dissimLca2path (wholeObjNum));
+    localAbsCriterion += tree. getAbsCriterion (wholeObjNum);
+      
+    const Real dist_hat_whole = DistTree::path2prediction (path);
+
+    path. filter ([&] (size_t i) { return ! area. containsFast (path [i]) || path [i] == area_root; });    
+    ASSERT (path. size () >= 2);
+      
+    const Real dist_hat_sub = DistTree::path2prediction (path);
+    ASSERT (isNan (subPath. dist_hat_tails));
+    subPath. dist_hat_tails = dist_hat_whole - dist_hat_sub;
+
+    // extremes
+    extremes. clear ();
+    if (boundary. containsFast (path. front ()))
+      extremes << path. front ();
+    if (boundary. containsFast (path. back ()))
+      extremes << path. back ();
+    ASSERT (! extremes. empty ());
+    ASSERT (extremes. size () <= 2);
+    if (extremes. size () == 1)
+      extremes << area_root;
+    ASSERT (extremes. size () == 2);
+    
+    subPath. node1 = static_cast <const DTNode*> (extremes. front ());
+    subPath. node2 = static_cast <const DTNode*> (extremes. back ());      
+    
+    subPath. qc ();
+  }
+}
+
+
+
+void Subgraph::subPaths2tree ()
+{
+  chron_subgraph2tree. start ();  
+
+  DistTree& tree_ = const_cast <DistTree&> (tree);
+  
+  const DTNode* area_root_ = area_root->graph ? area_root: nullptr;
+
+  tree_. absCriterion -= localAbsCriterion;
+  for (const SubPath& subPath : subPaths)
+  {
+    subPath. qc ();
+    ASSERT (subPath. node1->graph == & tree);
+    ASSERT (subPath. node2->graph == & tree);
+    const size_t objNum = subPath. objNum;
+    const Tree::TreeNode* lca_ = nullptr;
+    const VectorPtr<Tree::TreeNode> path (DistTree::getPath (subPath. node1, subPath. node2, area_root_, lca_));
+    ASSERT (lca_);
+    if (! viaRoot (subPath))
+    {
+      const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
+      ASSERT (lca);
+      tree_. dissims [objNum]. lca = lca;
+      const_cast <Steiner*> (lca) -> lcaObjNums << objNum;
+    }
+    for (const Tree::TreeNode* node : path)
+      if (! boundary. containsFast (node))
+      {
+        const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
+        ASSERT (st);
+        const_cast <Steiner*> (st) -> pathObjNums << objNum;
+      }
+    (* const_cast <RealAttr1*> (tree. prediction)) [objNum] = subPath. dist_hat_tails + DistTree::path2prediction (path);  
+    tree_. absCriterion += tree. getAbsCriterion (objNum);
+  }
+  ASSERT (DM_sp::finite (tree. absCriterion));
+
+  chron_subgraph2tree. stop ();
 }
 
 
@@ -1147,39 +1500,35 @@ DistTree::DistTree (Prob branchProb,
 
 DistTree::DistTree (const DTNode* center,
                     uint areaRadius,
-                    VectorPtr<TreeNode> &area,
-                    const DTNode* &area_root,
-                    Node2Node &newLeaves2boundary,
-                    Vector<SubPath> &subPaths,
-                    Real &localAbsCriterion)
+                    Subgraph& subgraph,
+                    Node2Node &newLeaves2boundary)
 : dsSample (ds)
 {
   ASSERT (center);
   ASSERT (center->graph != this);
   ASSERT (! center->inDiscernable ());
   ASSERT (areaRadius >= 1);  
-  ASSERT (area. empty ());
   ASSERT (newLeaves2boundary. empty ());
-  ASSERT (subPaths. empty ());
-  
-  localAbsCriterion = 0;
   
   const DistTree& wholeTree = center->getDistTree ();
-  
-  // area
-  VectorPtr<TreeNode> boundary;
+
+
+  // subgraph
+  ASSERT (subgraph. empty ());
+  ASSERT (& wholeTree == & subgraph. tree);
+  VectorPtr<TreeNode>& area     = subgraph. area;
+  VectorPtr<TreeNode>& boundary = subgraph. boundary;
+  const DTNode* &area_root      = subgraph. area_root;
+
+  // area, boundary
   center->getArea (areaRadius, area, boundary);  
   ASSERT (! area. empty ());
   if (area. size () == 1)
     throw runtime_error ("Singleton tree");
-  // Remove !discernable
+  // area: remove !discernable
   for (Iter<VectorPtr<TreeNode>> iter (area); iter. next (); )
     if (static_cast <const DTNode*> (*iter) -> inDiscernable ())
       iter. erase ();
-
-  area. sort ();
-  ASSERT (area. containsFast (center));
-
   // boundary: remove !discernable
   {
     Set<const TreeNode*> newBoundary; 
@@ -1192,32 +1541,26 @@ DistTree::DistTree (const DTNode* center,
         newBoundary << node->getParent ();
       }
     }
-    ASSERT (containsFastAll (area, newBoundary));
-  #ifndef NDEBUG
-    for (const TreeNode* node : boundary)
-      ASSERT (! newBoundary. contains (node));
-  #endif
+    if (qc_on)
+      for (const TreeNode* node : boundary)
+        ASSERT (! newBoundary. contains (node));
     for (const TreeNode* node : newBoundary)
       boundary << node;    
   }
-#ifndef NDEBUG
-  for (const TreeNode* node : boundary)
-    ASSERT (! static_cast <const DTNode*> (node) -> inDiscernable ());
-#endif
+  
+  subgraph. finish ();
+  ASSERT (area. containsFast (center));
+  subgraph. area2subPaths ();    
+  subgraph. finishSubPaths ();
+  subgraph. qc ();
 
 
-  // nodes, area_root
+  // nodes
   Node2Node old2new;  // 1-1
-  area_root = nullptr;  
   size_t leafNum = 0;
   for (const TreeNode* node_old : area)
   {
     ASSERT (node_old);
-    if (! area. containsFast (node_old->getParent ()))
-    {
-      ASSERT (! area_root);
-      area_root = static_cast <const DTNode*> (node_old);
-    }
     DTNode* node_new = nullptr;
     {
       const Real len = static_cast <const DTNode*> (node_old) -> len;
@@ -1234,10 +1577,6 @@ DistTree::DistTree (const DTNode* center,
     ASSERT (node_new);
     old2new [node_old] = node_new;
   }
-//ASSERT (areaSet. size () == area. size ());
-  ASSERT (area_root);
-  ASSERT (area. containsFast (area_root));
-  ASSERT (! area. containsFast (area_root->getParent ()));
   ASSERT (nodes. size () == area. size ());
   ASSERT (nodes. size () == old2new. size ());
   
@@ -1246,6 +1585,7 @@ DistTree::DistTree (const DTNode* center,
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
   ASSERT (findPtr (old2new, area_root) == root);
   
+  // subgraph.area_root --> Leaf
   {
     const VectorPtr<DiGraph::Node> children (root->getChildren ());
     ASSERT (! children. empty ());
@@ -1280,8 +1620,6 @@ DistTree::DistTree (const DTNode* center,
 
   
   setName2leaf ();
-
-  boundary. sort ();
   ASSERT (boundary. size () == name2leaf. size ());
 
   // newLeaves2boundary
@@ -1289,46 +1627,7 @@ DistTree::DistTree (const DTNode* center,
     if (static_cast <const DTNode*> (it. second) -> asLeaf ())
       newLeaves2boundary [it. second] = it. first;
   ASSERT (newLeaves2boundary. size () == boundary. size ());
-  
-  const DTNode* area_underRoot = nullptr;
-  if (boundary. containsFast (area_root))
-  {
-    const VectorPtr<DiGraph::Node> children (area_root->getChildren ());
-    for (const DiGraph::Node* child_ : children)
-    {
-      const DTNode* child = static_cast <const DTNode*> (child_);
-      if (area. containsFast (child))
-      {
-        ASSERT (! area_underRoot);
-        area_underRoot = child;
-      }
-    }
-    ASSERT (area_underRoot);
-  }
-  
-  // subPaths
-  for (const TreeNode* node : area)
-    if (! boundary. containsFast (node))
-    {
-      const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
-      ASSERT (st);
-      for (const size_t objNum : st->lcaObjNums)
-        if (wholeTree. dissims [objNum]. valid ())
-          subPaths << SubPath (objNum, false);
-    }
-  if (area_underRoot)
-    for (const size_t objNum : area_underRoot->pathObjNums)
-      if (wholeTree. dissims [objNum]. valid ())
-        subPaths << SubPath (objNum, true);
-  if (qc_on)
-  {
-    Vector<size_t> objNums;  objNums. reserve (subPaths. size ());
-    for (const SubPath& partialDissim : subPaths)
-      objNums << partialDissim. objNum;
-    objNums. sort ();
-    ASSERT (objNums. isUniq ());
-  }
-  
+    
 
   // ds.objs[]->mult, *target, dissims: init
   // For some leaf pairs the dissimilarity may be missing
@@ -1350,40 +1649,12 @@ DistTree::DistTree (const DTNode* center,
 
 
   // ds.objs[]->mult, *target: sum
-  // Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing ??
-  chron_tree2subgraphDissim. start ();
-  VectorPtr<TreeNode> extremes (2);  // temporary
-  for (SubPath& subPath : subPaths)
+  for (const SubPath& subPath : subgraph. subPaths)
   {
     const size_t wholeObjNum = subPath. objNum;
-    VectorPtr<TreeNode> path (wholeTree. dissimLca2path (wholeObjNum));
-    localAbsCriterion += wholeTree. getAbsCriterion (wholeObjNum);
-      
-    const Real dist_hat_whole = path2prediction (path);
-
-    path. filter ([&] (size_t i) { return ! area. containsFast (path [i]) || path [i] == area_root; });    
-    ASSERT (path. size () >= 2);
-      
-    const Real dist_hat_sub = path2prediction (path);
-    subPath. dist_hat_tails = dist_hat_whole - dist_hat_sub;
-
-    // extremes
-    extremes. clear ();
-    if (boundary. containsFast (path. front ()))
-      extremes << path. front ();
-    if (boundary. containsFast (path. back ()))
-      extremes << path. back ();
-    ASSERT (! extremes. empty ());
-    ASSERT (extremes. size () <= 2);
-    if (extremes. size () == 1)
-      extremes << area_root;
-    ASSERT (extremes. size () == 2);
-    
-    subPath. node1 = static_cast <const DTNode*> (extremes. front ());
-    subPath. node2 = static_cast <const DTNode*> (extremes. back ());      
-    subPath. qc ();
     
     const Real dist_whole = (* wholeTree. target) [wholeObjNum] - subPath. dist_hat_tails;
+    ASSERT (! isNan (dist_whole));
       // May be < 0
     const Real mult_whole = wholeTree. ds. objs [wholeObjNum] -> mult; 
     ASSERT (mult_whole > 0);
@@ -1404,11 +1675,9 @@ DistTree::DistTree (const DTNode* center,
     const_cast <Obj*> (ds. objs [objNum]) -> mult += mult_whole;
     (* const_cast <RealAttr1*> (target)) [objNum] += mult_whole * dist_whole;
   }
-  chron_tree2subgraphDissim. stop ();
 
 
-  // *target: finish
-  // dissim2_sum
+  // *target, dissim2_sum
   FOR (size_t, objNum, ds. objs. size ())
   {
     const Real mult = ds. objs [objNum] -> mult;
@@ -2362,7 +2631,8 @@ void DistTree::qc () const
   IMPLY (nodeAttrExist, optimizable ());
 
 
-  size_t dissims_total = 0;
+  size_t leafDissims = 0;
+  size_t lcaDissims = 0;
 	if (optimizable ())
 	{
    	ASSERT (positive (dsSample. mult_sum));
@@ -2447,8 +2717,10 @@ void DistTree::qc () const
    		  ASSERT (& dtNode->attr->ds == & ds);
    		}
    		if (const Leaf* leaf = dtNode->asLeaf ())
-   		  dissims_total += leaf->pathObjNums. size ();
-   	}
+   		  leafDissims += leaf->pathObjNums. size ();
+  		if (const Steiner* st = dtNode->asSteiner ())
+  		  lcaDissims += st->lcaObjNums. size ();
+  	}
   
     Set<const Attr*> pathAttrs;
     for (const Attr* attr : ds. attrs)
@@ -2488,10 +2760,11 @@ void DistTree::qc () const
     ASSERT (leaf);
     ASSERT (! leaf->graph);
     leaf->qc ();
-	  dissims_total += leaf->pathObjNums. size ();
+	  leafDissims += leaf->pathObjNums. size ();
   }
 
- 	ASSERT (2 * ds. objs. size () == dissims_total);
+ 	ASSERT (leafDissims == 2 * ds. objs. size ());
+//ASSERT (lcaDissims == ds. objs. size ());  ??
 }
 
 
@@ -2600,6 +2873,13 @@ void DistTree::saveFeatureTree (const string &fName) const
   
   OFStream f (fName);
   static_cast <const DTNode*> (root) -> saveFeatureTree (f, 0);
+}
+
+
+
+void DistTree::qcPaths () const
+{
+  // ??
 }
 
 
@@ -3541,19 +3821,14 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   ASSERT (optimizable ());
   ASSERT (! nodeAttrExist);
 
+
   chron_tree2subgraph. start ();
-  VectorPtr<TreeNode> area;
-  const DTNode* area_root = nullptr;
+  Subgraph subgraph (*this);
   Node2Node new2old;  // Initially: newLeaves2boundary
-  Vector<SubPath> subPaths;  subPaths. reserve (ds. objs. size ());
-  Real localAbsCriterion = NAN;
-  DistTree tree (center, areaRadius_std, area, area_root, new2old, subPaths, localAbsCriterion);
+  DistTree tree (center, areaRadius_std, subgraph, new2old);
   tree. qc ();
-  ASSERT (area_root);
-  ASSERT (area_root->graph == this);
-  ASSERT (area. contains (center));
-  ASSERT (area. contains (area_root));
-  ASSERT (! subPaths. empty ());
+  ASSERT (subgraph. area_root->graph == this);
+  ASSERT (subgraph. area. contains (center));
 #ifndef NDEBUG
   for (const auto it : new2old)
   {
@@ -3571,8 +3846,10 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   ASSERT (tree. nodeAttrExist);
   chron_tree2subgraph. stop ();
   
+
   const TreeNode* root_old = root;
-  const bool rootInArea = (area_root == root);
+  const bool rootInArea = (subgraph. area_root == root);
+
 
   chron_subgraphOptimize. start ();
   const size_t leaves = tree. name2leaf. size ();
@@ -3620,7 +3897,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
 
   // tree
   // new2old: newBoundary2oldBoundary
-  if (const DTNode* dtNode = static_cast <const DTNode*> (findPtr (boundary2new, area_root)))
+  if (const DTNode* dtNode = static_cast <const DTNode*> (findPtr (boundary2new, subgraph. area_root)))
   {
   //ASSERT (! rootInArea);
     const Leaf* leaf = dtNode->asLeaf ();
@@ -3632,8 +3909,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     tree. delayDeleteRetainArcs (const_cast <Leaf*> (leaf));
     ASSERT (isNan (static_cast <const DTNode*> (tree. root) -> len));
     const Steiner* root_ = st->makeDTRoot ();
-    boundary2new [area_root] = st;
-    new2old [st] = area_root;
+    boundary2new [subgraph. area_root] = st;
+    new2old [st] = subgraph. area_root;
     ASSERT (root_ != st);
     ASSERT (! isNan (root_->len));
     if (root_->isTransient ())
@@ -3642,19 +3919,20 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     ASSERT (st == tree. root);
     ASSERT (isNan (st->len));
   }
-  else
-    area_root = nullptr;  // to be delete'd
   ASSERT (new2old. size () == boundary2new. size ());
+  ASSERT (subgraph. boundary. size () == boundary2new. size ());
 //tree. qc ();
 
   // nodes: delete
   // center may be delete'd
-  for (const TreeNode* node : area)
+  for (const TreeNode* node : subgraph. area)
     if (! contains (boundary2new, node))
     {
       DTNode* dtNode = const_static_cast <DTNode*> (node);
       ASSERT (! dtNode->attr);
-      delete dtNode;
+      dtNode->isolate ();
+      dtNode->detach ();
+      toDelete << dtNode;
     }
     // Between boundary TreeNode's there are no Arc's
 
@@ -3706,43 +3984,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   ASSERT (root);
 
    
-  chron_subgraph2tree. start ();  
-
   // Topology, absCriterion
-  absCriterion -= localAbsCriterion;
-  for (const SubPath& subPath : subPaths)
-  {
-    ASSERT (subPath. viaRoot == (subPath. node1 == area_root || subPath. node2 == area_root));
-    if (qc_on)
-    {
-      ASSERT (contains (boundary2new, subPath. node1));
-      ASSERT (contains (boundary2new, subPath. node2));
-    }
-    const size_t objNum = subPath. objNum;
-    ASSERT (dissims [objNum]. valid ());
-    const TreeNode* lca_ = nullptr;
-    const VectorPtr<TreeNode> path (getPath (subPath. node1, subPath. node2, area_root, lca_));
-    ASSERT (lca_);
-    if (! subPath. viaRoot)
-    {
-      const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
-      ASSERT (lca);
-      dissims [objNum]. lca = lca;
-      const_cast <Steiner*> (lca) -> lcaObjNums << objNum;
-    }
-    for (const TreeNode* node : path)
-      if (! contains (boundary2new, node))
-      {
-        const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
-        ASSERT (st);
-        const_cast <Steiner*> (st) -> pathObjNums << objNum;
-      }
-    (* const_cast <RealAttr1*> (prediction)) [objNum] = subPath. dist_hat_tails + path2prediction (path);  
-    absCriterion += getAbsCriterion (objNum);
-  }
-  ASSERT (DM_sp::finite (absCriterion));
-
-  chron_subgraph2tree. stop ();
+  subgraph. subPaths2tree ();
 
   
   // deleteLenZero
@@ -3751,6 +3994,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     DTNode* node = const_static_cast <DTNode*> (it. second);
     deleteLenZero (node);
   }
+  
   toDelete. deleteData ();
 
 
@@ -4063,7 +4307,7 @@ void DistTree::delayDeleteRetainArcs (DTNode* node)
       ASSERT (st->lcaObjNums. empty ());
   }
 
-	node->isolateChildrenUp ();
+	node->detachChildrenUp ();
 	ASSERT (! node->graph);
 	
 	toDelete << node;
@@ -4129,7 +4373,7 @@ void DistTree::removeLeaf (Leaf* leaf)
   ASSERT (parent);
     
   // tree.detachedLeaves
-  leaf->isolateChildrenUp ();  
+  leaf->detachChildrenUp ();  
   ASSERT (! leaf->graph);
 	delete leaf->attr;
 	leaf->attr = nullptr;

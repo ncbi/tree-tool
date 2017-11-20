@@ -17,7 +17,6 @@ namespace DistTree_sp
 
 extern Chronometer chron_getBestChange;
 extern Chronometer chron_tree2subgraph;
-extern Chronometer chron_tree2subgraphDissim;
 extern Chronometer chron_subgraphOptimize;
 extern Chronometer chron_subgraph2tree;
 
@@ -67,7 +66,6 @@ inline Real dissim_max ()
 constexpr streamsize dissimDecimals = 6;
 constexpr uint areaRadius_std = 5;  
   // The greater then better DistTree::absCriterion
-  // >= 4 <= ChangeToCousin can be applied  
 constexpr size_t sparsingDepth = 2 * areaRadius_std;  
 constexpr Prob rareProb = 0.01; 
 
@@ -111,7 +109,6 @@ public:
   // Temporary
 private:
   const DTNode* tarjanLca {nullptr};
-  bool inPath {false};
 public:
 protected:
   WeightedMeanVar subtreeLen; 
@@ -119,6 +116,7 @@ protected:
     // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
   Vector <size_t/*objNum*/> pathObjNums; 
+    // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
     // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
     //             aggregate size = 2 p
@@ -190,6 +188,7 @@ struct Steiner : DTNode
 // Steiner node
 {
   Vector <size_t/*objNum*/> lcaObjNums; 
+    // Paths: function of getDistTree().dissims
     // Dissimilarity paths whose lca = this
     // Aggregate size = p
 
@@ -471,6 +470,7 @@ struct Dissim
     // !nullptr
     // leaf1->name < leaf2->name
   const Steiner* lca {nullptr};
+    // Paths
   
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg);
@@ -493,18 +493,66 @@ struct SubPath
 {
   size_t objNum {NO_INDEX};    
     // Index of DistTree::dissims
-  bool viaRoot;
   const DTNode* node1 {nullptr};
   const DTNode* node2 {nullptr};
     // !nullptr, different
   Real dist_hat_tails {NAN};
     
-  SubPath (size_t objNum_arg,
-           bool viaRoot_arg)
-    : objNum (objNum_arg)
-    , viaRoot (viaRoot_arg)
+  SubPath ()
     {}
+  explicit SubPath (size_t objNum_arg)
+    : objNum (objNum_arg)
+    {}
+  bool operator== (const SubPath &other) const
+    { return    objNum == other. objNum
+             && node1 == other. node1
+             && node2 == other. node2;
+    }
+  bool operator< (const SubPath &other) const
+    { return objNum < other. objNum; }
   void qc () const;
+};
+
+
+
+struct Subgraph : Root
+{
+  const DistTree& tree;
+  // !nullptr
+  VectorPtr<Tree::TreeNode> area;  
+  VectorPtr<Tree::TreeNode> boundary;
+  const DTNode* area_root {nullptr};
+  const DTNode* area_underRoot {nullptr};
+    // May be nullptr
+  Vector<SubPath> subPaths;
+    // Paths of tree.dissims passing through area
+  Real localAbsCriterion {NAN};
+    // tree.absCriterion restricted to subPaths[]
+  
+  
+  explicit Subgraph (const DistTree &tree_arg);
+  void qc () const override;
+  bool empty () const override
+    { return    area. empty ()
+             && boundary. empty ()
+             && ! area_root
+             && ! area_underRoot
+             && subPaths. empty () 
+             && isNan (localAbsCriterion); 
+    }
+  void finish ();
+
+
+  bool viaRoot (const SubPath &subPath) const
+    { return    subPath. node1 == area_root 
+             || subPath. node2 == area_root;
+    }
+  void addSubPaths (const Vector<size_t> &objNums);
+  void area2subPaths ();
+    // Invokes: addSubPaths()
+  void finishSubPaths ();
+  void subPaths2tree ();
+    // Update: tree
 };
 
 
@@ -528,7 +576,8 @@ private:
     // In *dissimDs
 
   friend Change;
-  Dataset ds;
+  friend Subgraph;
+  Dataset ds;  // --> dissims ??
     // objs: pairs of Leaf's
     //       objs[i].name = dissims[i].getName()
 	  //       objs[i]->mult = dissim2mult(target[i]); positive()
@@ -555,7 +604,7 @@ private:
   const CompactBoolAttr1* interAttr {nullptr};
   const RealAttr1* target_new {nullptr};
   const RealAttr1* prediction_old {nullptr};
-  bool nodeAttrExist {false};  // ??
+  bool nodeAttrExist {false};  // --> lcaObjNumsExist ??
   
   // ds-tree relations
   Vector<Dissim> dissims;
@@ -629,19 +678,13 @@ public:
     // Time: O(n)
   DistTree (const DTNode* center,
             uint areaRadius,
-            VectorPtr<TreeNode> &area,
-            const DTNode* &area_root,
-            Node2Node &newLeaves2boundary,
-            Vector<SubPath> &subPaths,
-            Real &localAbsCriterion);
+            Subgraph& subgraph,
+            Node2Node &newLeaves2boundary);
     // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
     // Input: areaRadius: >= 1
-    // Output: area: contains center, area_root, newLeaves2boundary.values(); getTree() = center->getTree()
-    //               discernable
-    //         area_root: !nullptr
+    // Output: subgraph: tree = center->getTree()
+    //                   area: contains center, newLeaves2boundary.values(); discernable
     //         newLeaves2boundary
-    //         subPaths: paths of center->getDistTree().dissims passing through area
-    //         localAbsCriterion: center->getDistTree().absCriterion restricted to subPaths[]
 	  // Time: O(wholeDs.p log(wholeDs.n)) + f(|area|), where wholeDs = center->getDistTree().ds
 private:
   void loadTreeDir (const string &dir);
@@ -762,6 +805,7 @@ public:
   void saveFeatureTree (const string &fName) const;
 
 private:
+  void qcPaths () const;
   void resetAttrs ();
     // Time: O(p n)
   void setLca ();
@@ -874,7 +918,7 @@ private:
 public:	
   // Auxiliary
   void delayDeleteRetainArcs (DTNode* node);
-    // Invokes: s->isolateChildrenUp()
+    // Invokes: s->detachChildrenUp()
   size_t finishChanges ();
     // Return: deleteLenZero()
   size_t deleteLenZero ();
@@ -886,7 +930,7 @@ private:
     // Return: success
 public:
   void removeLeaf (Leaf* leaf);
-    // Invokes: leaf->isolateChildrenUp(), optimizeSubgraph(), toDelete.deleteData()
+    // Invokes: leaf->detachChildrenUp(), optimizeSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
 	  // Time: Time(optimizeSubgraph)
     

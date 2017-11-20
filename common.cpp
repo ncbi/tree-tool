@@ -1115,6 +1115,18 @@ void DiGraph::Node::contract (Node* from)
 
 
 
+void DiGraph::Node::isolate ()
+{ 
+  for (const bool b : {false, true})
+  	while (! arcs [b]. empty ())
+  	{ 
+  		Arc* a = arcs [b]. front ();
+  		delete a;
+    }
+}
+
+
+
 void DiGraph::Node::detach ()
 {
   ASSERT (graph);
@@ -1805,7 +1817,7 @@ void Tree::TreeNode::childrenUp ()
 
 
 
-void Tree::TreeNode::isolateChildrenUp ()
+void Tree::TreeNode::detachChildrenUp ()
 { 
   childrenUp ();
 	if (! arcs [true]. empty ())

@@ -1756,7 +1756,7 @@ void ChangeDel::apply_ ()
 	ASSERT (fromChildren. size () >= 2);
 	
   // Topology
-	const_cast <Species*> (from) -> isolateChildrenUp ();
+	const_cast <Species*> (from) -> detachChildrenUp ();
 	ASSERT (static_cast <const Species*> (fromChildren. front ()) -> getParent () == oldParent);
 
   // Species::time
@@ -2274,14 +2274,14 @@ void FeatureTree::deleteLeaf (TreeNode* node,
   const Fossil* grandparent = static_cast <const Phyl*> (parent->getParent ()) -> asFossil ();
   ASSERT (grandparent);
   
-  const_cast <Genome*> (leaf) -> isolateChildrenUp ();
+  const_cast <Genome*> (leaf) -> detachChildrenUp ();
   
-	const_cast <Strain*> (parent) -> isolateChildrenUp ();
+	const_cast <Strain*> (parent) -> detachChildrenUp ();
 	delayDelete (const_cast <Strain*> (parent));
 
   if (deleteTransientAncestor && grandparent->isTransient ())
   {
-  	const_cast <Fossil*> (grandparent) -> isolateChildrenUp ();
+  	const_cast <Fossil*> (grandparent) -> detachChildrenUp ();
   	delayDelete (const_cast <Fossil*> (grandparent));
   }
 	
@@ -3189,7 +3189,7 @@ size_t FeatureTree::deleteTimeZero ()
  			{
  			  if (verbose ())
  			    cout << "To delete:" << f->getName () << endl;
- 				const_cast <Fossil*> (f) -> isolateChildrenUp ();
+ 				const_cast <Fossil*> (f) -> detachChildrenUp ();
  				delayDelete (const_cast <Fossil*> (f));
  				n++;
  			}
