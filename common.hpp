@@ -408,6 +408,10 @@ public:
 
 extern const string noString;
 
+inline string ifS (bool cond,
+                   const string &s)
+  { return cond ? s : string (); }
+
 inline string nvl (const string& s,
                    const string& nullS = "-")
   { return s. empty () ? nullS : s; }
