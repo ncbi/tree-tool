@@ -1241,20 +1241,6 @@ public:
     }
 
 
-  VectorPtr<T>& operator<< (const T* value)
-    { P::operator<< (value); 
-      return *this;
-    }
-  template <typename U/*:T*/>
-    VectorPtr<T>& operator<< (const vector<const U*> &other)
-      { insertAll (*this, other);
-        return *this;
-      }
-  template <typename U/*:T*/>
-    VectorPtr<T>& operator<< (const list<const U*> &other)
-      { insertAll (*this, other);
-        return *this;
-      }
 	void deleteData ()
 	  {	for (const T* t : *this)
 			  delete t;
@@ -1264,7 +1250,7 @@ public:
     { delete P::operator[] (index);
       P::eraseAt (index);
     }
-  void sortBubble ()
+  void sortBubblePtr ()
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
 		      if (* P::operator[] (j + 1) > * P::operator[] (j))
@@ -1293,6 +1279,7 @@ public:
 	  	P::reserve (x. size ());
 	  	for (const T* t : x)
 	  	  P::push_back (static_cast <const T*> (t->copy ()));
+	  	P::searchSorted = x. searchSorted;
 	  	return *this;
 	  }
 	VectorOwn (const VectorPtr<T> &x)

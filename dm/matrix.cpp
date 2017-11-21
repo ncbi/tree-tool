@@ -2956,7 +2956,7 @@ Eigens::Eigens (const Matrix &matr,
   eigen. release ();
   
 
-  vecs. sortBubble ();    
+  vecs. sortBubblePtr ();    
 
   basis. resize (false, len, vecs. size ());
   values. resize (vecs. size ());
