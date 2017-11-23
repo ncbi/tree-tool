@@ -1522,6 +1522,21 @@ void Tree::TreeNode::setParent (TreeNode* newParent)
 
 
 
+void Tree::TreeNode::printAncestors (const TreeNode* end) const
+{
+  const TreeNode* node = this;
+  for (;;)
+  {
+    cout << ' ' << node;
+    if (! node || node == end)
+      break;
+    node = node->getParent ();
+  }
+  cout << endl;
+}
+
+
+
 Tree::TreeNode::TipName Tree::TreeNode::getTipName () const
 { 
   if (isLeaf ()) 
@@ -2387,7 +2402,6 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
     lca = n2;
 		return vec1;
   }
-	ASSERT (! vec1. empty ());
 
 	static VectorPtr<TreeNode> vec2; 
 	vec2. clear ();
@@ -2402,6 +2416,8 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
     lca = n1_init;
 		return vec2;
   }
+
+	ASSERT (! vec1. empty ());
 	ASSERT (! vec2. empty ());
 
   lca = ca;  

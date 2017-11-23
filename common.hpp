@@ -1945,6 +1945,7 @@ struct Tree : DiGraph
 		void setParent (TreeNode* newParent);
 		  // Update: *newParent
 		  //         getTree()->root if !newParent
+    void printAncestors (const TreeNode* end) const;
     struct TipName : Root
     { string name; 
       size_t depth; 
