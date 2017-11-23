@@ -131,11 +131,10 @@ struct ThisApplication : Application
     tree->printInput (cout);
     cout << endl;
     
-    chron_getBestChange.       print (cout);
-    chron_tree2subgraph.       print (cout);
-    chron_tree2subgraphDissim. print (cout);
-    chron_subgraphOptimize.    print (cout); 
-    chron_subgraph2tree.       print (cout); 
+    chron_getBestChange.    print (cout);
+    chron_tree2subgraph.    print (cout);
+    chron_subgraphOptimize. print (cout); 
+    chron_subgraph2tree.    print (cout); 
 
     
     if (tree->optimizable ())

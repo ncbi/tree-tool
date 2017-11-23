@@ -187,12 +187,6 @@ private:
 struct Steiner : DTNode
 // Steiner node
 {
-  Vector <size_t/*objNum*/> lcaObjNums; 
-    // Paths: function of getDistTree().dissims
-    // Dissimilarity paths whose lca = this
-    // Aggregate size = p
-
-
 	Steiner (DistTree &tree,
 	         Steiner* parent_arg,
 	         Real len_arg);
@@ -469,15 +463,18 @@ struct Dissim
   const Leaf* leaf2 {nullptr};
     // !nullptr
     // leaf1->name < leaf2->name
+  Real mult {NAN};
   const Steiner* lca {nullptr};
     // Paths
   
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg);
+  void qc () const;
           
   bool valid () const
     { return    leaf1->graph
-             && leaf2->graph;
+             && leaf2->graph
+             && mult > 0;
     }
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
@@ -504,13 +501,16 @@ struct SubPath
     : objNum (objNum_arg)
     {}
   bool operator== (const SubPath &other) const
-    { return    objNum == other. objNum
-             && node1 == other. node1
-             && node2 == other. node2;
+    { return objNum == other. objNum;
     }
   bool operator< (const SubPath &other) const
     { return objNum < other. objNum; }
   void qc () const;
+  
+  bool contains (const DTNode* node) const
+    { return    node1 == node
+             || node2 == node;
+    }
 };
 
 
@@ -519,15 +519,17 @@ struct Subgraph : Root
 {
   const DistTree& tree;
   // !nullptr
+//VectorPtr<Tree::TreeNode> changedLcas;
+//const DTNode* changedLcas_root {nullptr};
+    // nullptr <= changedLcas.empty()
   VectorPtr<Tree::TreeNode> area;  
   VectorPtr<Tree::TreeNode> boundary;
   const DTNode* area_root {nullptr};
   const DTNode* area_underRoot {nullptr};
     // May be nullptr
   Vector<SubPath> subPaths;
-    // Paths of tree.dissims passing through area
-  Real localAbsCriterion {NAN};
-    // tree.absCriterion restricted to subPaths[]
+    // Some paths of tree.dissims passing through area
+  Real subPathsAbsCriterion {NAN};
   
   
   explicit Subgraph (const DistTree &tree_arg);
@@ -538,7 +540,7 @@ struct Subgraph : Root
              && ! area_root
              && ! area_underRoot
              && subPaths. empty () 
-             && isNan (localAbsCriterion); 
+             && isNan (subPathsAbsCriterion); 
     }
   void finish ();
 
@@ -552,7 +554,7 @@ struct Subgraph : Root
     // Invokes: addSubPaths()
   void finishSubPaths ();
   void subPaths2tree ();
-    // Update: tree
+    // Update: tree: topology, absCriterion
 };
 
 
