@@ -65,7 +65,8 @@ inline Real dissim_max ()
 // PAR
 constexpr streamsize dissimDecimals = 6;
 constexpr uint areaRadius_std = 5;  
-  // The greater then better DistTree::absCriterion
+  // The greater the better DistTree::absCriterion
+constexpr uint subgraphDepth = areaRadius_std;  
 constexpr size_t sparsingDepth = 2 * areaRadius_std;  
 constexpr Prob rareProb = 0.01; 
 
@@ -115,7 +116,7 @@ protected:
     // Average subtree height 
     // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
-  Vector <size_t/*objNum*/> pathObjNums; 
+  Vector<size_t/*objNum*/> pathObjNums; 
     // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
     // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
@@ -180,6 +181,9 @@ private:
   virtual void setLca ();
     // Off-line LCA algorithm by Tarjan
     // Requires: !tarjanLca 
+  Vector<size_t/*objNum*/> getLcaObjNums ();
+    // Return: objNum's s.t. getDistTree().dissims[objNum].lca = this
+    // Invokes: DTNode::pathObjNums.sort()
 };
 
 
@@ -481,6 +485,8 @@ struct Dissim
              || leaf == leaf2;
     }
   string getObjName () const;
+  void print () const
+    { cout << leaf1 << ' ' << leaf2 << ' ' << mult << ' ' << lca << endl; }
 };
 
 
@@ -494,19 +500,21 @@ struct SubPath
   const DTNode* node2 {nullptr};
     // !nullptr, different
   Real dist_hat_tails {NAN};
+
     
   SubPath ()
     {}
   explicit SubPath (size_t objNum_arg)
     : objNum (objNum_arg)
     {}
+  void qc () const;
+
+  
   bool operator== (const SubPath &other) const
     { return objNum == other. objNum;
     }
   bool operator< (const SubPath &other) const
     { return objNum < other. objNum; }
-  void qc () const;
-  
   bool contains (const DTNode* node) const
     { return    node1 == node
              || node2 == node;
@@ -523,13 +531,15 @@ struct Subgraph : Root
 //const DTNode* changedLcas_root {nullptr};
     // nullptr <= changedLcas.empty()
   VectorPtr<Tree::TreeNode> area;  
+    // Connected area
   VectorPtr<Tree::TreeNode> boundary;
+    // Make boundary and area disjoint ??
   const DTNode* area_root {nullptr};
   const DTNode* area_underRoot {nullptr};
     // May be nullptr
   Vector<SubPath> subPaths;
     // Some paths of tree.dissims passing through area
-  Real subPathsAbsCriterion {NAN};
+  Real subPathsAbsCriterion {0};
   
   
   explicit Subgraph (const DistTree &tree_arg);
@@ -540,10 +550,18 @@ struct Subgraph : Root
              && ! area_root
              && ! area_underRoot
              && subPaths. empty () 
-             && isNan (subPathsAbsCriterion); 
+             && ! subPathsAbsCriterion; 
     }
+  
+  // Usage
+  // Time ??
+//set asea, boundary
   void finish ();
-
+//set subPaths
+  void finishSubPaths ();
+//change topology of tree within area
+  void subPaths2tree ();
+    // Update: tree: topology, absCriterion
 
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
@@ -552,9 +570,6 @@ struct Subgraph : Root
   void addSubPaths (const Vector<size_t> &objNums);
   void area2subPaths ();
     // Invokes: addSubPaths()
-  void finishSubPaths ();
-  void subPaths2tree ();
-    // Update: tree: topology, absCriterion
 };
 
 
@@ -606,7 +621,7 @@ private:
   const CompactBoolAttr1* interAttr {nullptr};
   const RealAttr1* target_new {nullptr};
   const RealAttr1* prediction_old {nullptr};
-  bool nodeAttrExist {false};  // --> lcaObjNumsExist ??
+  bool nodeAttrExist {false};  // ??
   
   // ds-tree relations
   Vector<Dissim> dissims;
