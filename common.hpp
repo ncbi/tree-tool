@@ -1055,13 +1055,28 @@ public:
         return n;
       }
   template <typename Condition /*on index*/>
-    void filter (Condition cond)
+    void filterIndex (const Condition cond)
       { size_t toDelete = 0;
         for (size_t i = 0, end_ = P::size (); i < end_; i++)
         { const size_t j = i - toDelete;
           if (j != i)
             (*this) [j] = (*this) [i];
           if (cond (j))
+            toDelete++;
+        }
+        while (toDelete)
+        { P::pop_back ();
+          toDelete--;
+        }
+      }
+  template <typename Condition /*on index*/>
+    void filterValue (const Condition cond)
+      { size_t toDelete = 0;
+        for (size_t i = 0, end_ = P::size (); i < end_; i++)
+        { const size_t j = i - toDelete;
+          if (j != i)
+            (*this) [j] = (*this) [i];
+          if (cond ((*this) [j]))
             toDelete++;
         }
         while (toDelete)
@@ -1158,7 +1173,7 @@ public:
       }
   template <typename U /* : T */>
     void setMinus (const Vector<U> &other)
-      { filter ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
+      { filterIndex ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
       
   // Requires: sorted
   bool isUniq () const
