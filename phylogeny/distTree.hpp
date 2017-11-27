@@ -341,6 +341,99 @@ public:
 
 
 
+struct SubPath
+// Path going through a connected subgraph
+{
+  size_t objNum {NO_INDEX};    
+    // Index of DistTree::dissims
+  const DTNode* node1 {nullptr};
+  const DTNode* node2 {nullptr};
+    // !nullptr, different
+  Real dist_hat_tails {NAN};
+
+    
+  SubPath ()
+    {}
+  explicit SubPath (size_t objNum_arg)
+    : objNum (objNum_arg)
+    {}
+  void qc () const;
+
+  
+  bool operator== (const SubPath &other) const
+    { return objNum == other. objNum;
+    }
+  bool operator< (const SubPath &other) const
+    { return objNum < other. objNum; }
+  bool contains (const DTNode* node) const
+    { return    node1 == node
+             || node2 == node;
+    }
+};
+
+
+
+struct Subgraph : Root
+{
+  const DistTree& tree;
+  // !nullptr
+  VectorPtr<Tree::TreeNode> area;  
+    // Connected area
+  VectorPtr<Tree::TreeNode> boundary;
+    // Make boundary and area disjoint ??
+  const DTNode* area_root {nullptr};
+    // ??
+    // May be nullptr
+    // boundary.contains(area_root)
+  const DTNode* area_underRoot {nullptr};
+    // May be nullptr
+    // area.contains(area_underRoot)
+  // (bool) area_underRoot = (bool) area_root
+  Vector<SubPath> subPaths;
+    // Some paths of tree.dissims passing through area
+  Real subPathsAbsCriterion {0};
+  
+  
+  explicit Subgraph (const DistTree &tree_arg);
+  void qc () const override;
+  bool empty () const override
+    { return    area. empty ()
+             && boundary. empty ()
+             && ! area_root
+             && ! area_underRoot
+             && subPaths. empty () 
+             && ! subPathsAbsCriterion; 
+    }
+  void clear () override
+    { area. clear ();
+      boundary. clear ();
+      area_root = nullptr;
+      area_underRoot = nullptr;
+      subPaths. clear ();
+      subPathsAbsCriterion = 0;
+    }
+  
+  // Usage
+  // Time ??
+//set asea, boundary
+  void finish ();
+//set subPaths
+  void finishSubPaths ();
+//change topology of tree within area
+  void subPaths2tree ();
+    // Update: tree: Paths, absCriterion, *prediction
+
+  bool viaRoot (const SubPath &subPath) const
+    { return    subPath. node1 == area_root 
+             || subPath. node2 == area_root;
+    }
+  void addSubPaths (const Vector<size_t> &objNums);
+  void area2subPaths ();
+    // Invokes: addSubPaths()
+};
+
+
+
 struct Change : Root
 // Of topology
 // Input: tree.dsSample
@@ -378,6 +471,7 @@ protected:
 	  // Old to->getParent()
 	Steiner* inter {nullptr};
 	  // Between *to and *arcEnd
+  Subgraph subgraph;
 public:
 
 	
@@ -388,6 +482,7 @@ public:
 		, to (to_arg)
 		, targets (4, nullptr)  
 		, status (eInit)
+		, subgraph (tree)
 		{ targets. clear ();
 		  targets << from << to; 
 		}
@@ -478,7 +573,8 @@ struct Dissim
   bool valid () const
     { return    leaf1->graph
              && leaf2->graph
-             && mult > 0;
+           //&& mult > 0
+             ;
     }
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
@@ -487,89 +583,6 @@ struct Dissim
   string getObjName () const;
   void print () const
     { cout << leaf1 << ' ' << leaf2 << ' ' << mult << ' ' << lca << endl; }
-};
-
-
-
-struct SubPath
-// Path going through a connected subgraph
-{
-  size_t objNum {NO_INDEX};    
-    // Index of DistTree::dissims
-  const DTNode* node1 {nullptr};
-  const DTNode* node2 {nullptr};
-    // !nullptr, different
-  Real dist_hat_tails {NAN};
-
-    
-  SubPath ()
-    {}
-  explicit SubPath (size_t objNum_arg)
-    : objNum (objNum_arg)
-    {}
-  void qc () const;
-
-  
-  bool operator== (const SubPath &other) const
-    { return objNum == other. objNum;
-    }
-  bool operator< (const SubPath &other) const
-    { return objNum < other. objNum; }
-  bool contains (const DTNode* node) const
-    { return    node1 == node
-             || node2 == node;
-    }
-};
-
-
-
-struct Subgraph : Root
-{
-  const DistTree& tree;
-  // !nullptr
-//VectorPtr<Tree::TreeNode> changedLcas;
-//const DTNode* changedLcas_root {nullptr};
-    // nullptr <= changedLcas.empty()
-  VectorPtr<Tree::TreeNode> area;  
-    // Connected area
-  VectorPtr<Tree::TreeNode> boundary;
-    // Make boundary and area disjoint ??
-  const DTNode* area_root {nullptr};
-  const DTNode* area_underRoot {nullptr};
-    // May be nullptr
-  Vector<SubPath> subPaths;
-    // Some paths of tree.dissims passing through area
-  Real subPathsAbsCriterion {0};
-  
-  
-  explicit Subgraph (const DistTree &tree_arg);
-  void qc () const override;
-  bool empty () const override
-    { return    area. empty ()
-             && boundary. empty ()
-             && ! area_root
-             && ! area_underRoot
-             && subPaths. empty () 
-             && ! subPathsAbsCriterion; 
-    }
-  
-  // Usage
-  // Time ??
-//set asea, boundary
-  void finish ();
-//set subPaths
-  void finishSubPaths ();
-//change topology of tree within area
-  void subPaths2tree ();
-    // Update: tree: topology, absCriterion
-
-  bool viaRoot (const SubPath &subPath) const
-    { return    subPath. node1 == area_root 
-             || subPath. node2 == area_root;
-    }
-  void addSubPaths (const Vector<size_t> &objNums);
-  void area2subPaths ();
-    // Invokes: addSubPaths()
 };
 
 
@@ -822,7 +835,8 @@ public:
   void saveFeatureTree (const string &fName) const;
 
 private:
-  void qcPaths () const;
+  void qcPaths ();
+    // Sort: DTNode::pathObjNums ??
   void resetAttrs ();
     // Time: O(p n)
   void setLca ();
