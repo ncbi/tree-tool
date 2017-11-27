@@ -623,19 +623,19 @@ void Subgraph::qc () const
   ASSERT (boundary. searchSorted);
   ASSERT (area. containsFastAll (boundary));
 
-  // area_root
-  ASSERT (area_root);
-  ASSERT (area_root->graph == & tree);
-  ASSERT (area. containsFast (area_root));
-  ASSERT (! area. containsFast (area_root->getParent ()));
-  
-  // area_underRoot
-  if (area_underRoot)
+  ASSERT ((bool) area_root == (bool) area_underRoot);
+
+  if (area_root)
   {
+    // area_root
+    ASSERT (area_root->graph == & tree);
+    ASSERT (area. containsFast (area_root));
+    ASSERT (! area. containsFast (area_root->getParent ()));
+    ASSERT (boundary. containsFast (area_root));  
+    // area_underRoot
     ASSERT (area_underRoot->getParent () == area_root);
     ASSERT (area. containsFast (area_underRoot));
   }
-  ASSERT (boundary. containsFast (area_root) == (bool) area_underRoot);
 
   // subPaths
   ASSERT (! subPaths. empty ());
@@ -660,7 +660,6 @@ void Subgraph::finish ()
 {
   area. sort ();
   boundary. sort ();
-//changedLcas. sort ();
   
   // area_root
   ASSERT (! area_root);
@@ -674,10 +673,12 @@ void Subgraph::finish ()
     }
   }
   ASSERT (area_root);
+  if (! boundary. containsFast (area_root))
+    area_root = nullptr;
   
   // area_underRoot
   ASSERT (! area_underRoot);
-  if (boundary. containsFast (area_root))
+  if (area_root)
   {
     const VectorPtr<DiGraph::Node> children (area_root->getChildren ());
     for (const DiGraph::Node* child_ : children)
@@ -788,13 +789,18 @@ void Subgraph::subPaths2tree ()
   chron_subgraph2tree. start ();  
 
   DistTree& tree_ = const_cast <DistTree&> (tree);
-  
+
+  Vector<bool> subPathDissims (tree. dissims. size (), false);
+  for (const SubPath& subPath : subPaths)
+    subPathDissims [subPath. objNum] = true;
+    
   for (const Tree::TreeNode* node : area)
     if (! boundary. containsFast (node))
-      const_static_cast <DTNode*> (node) -> pathObjNums. filterValue ([&] (size_t objNum) { const SubPath subPath (objNum); return subPaths. containsFast (subPath); });
+      const_static_cast <DTNode*> (node) -> pathObjNums. filterValue 
+      //([&] (size_t objNum) { const SubPath subPath (objNum); return subPaths. containsFast (subPath); });
+          // Faster if n >> 0
+        ([&] (size_t objNum) { return subPathDissims [objNum]; });
   
-  const DTNode* area_root_ = boundary. containsFast (area_root) ? area_root : nullptr;
-
   tree_. absCriterion -= subPathsAbsCriterion;
   for (const SubPath& subPath : subPaths)
   {
@@ -803,7 +809,7 @@ void Subgraph::subPaths2tree ()
     ASSERT (subPath. node2->graph == & tree);
     const size_t objNum = subPath. objNum;
     const Tree::TreeNode* lca_ = nullptr;
-    const VectorPtr<Tree::TreeNode> path (DistTree::getPath (subPath. node1, subPath. node2, area_root_, lca_));
+    const VectorPtr<Tree::TreeNode> path (DistTree::getPath (subPath. node1, subPath. node2, area_root, lca_));
     ASSERT (lca_);
     if (! viaRoot (subPath))
     {
@@ -823,7 +829,7 @@ void Subgraph::subPaths2tree ()
         }
         const_cast <Steiner*> (st) -> pathObjNums << objNum;
       }
-    (* const_cast <RealAttr1*> (tree. prediction)) [objNum] = subPath. dist_hat_tails + DistTree::path2prediction (path);  
+    (* const_cast <RealAttr1*> (tree. prediction)) [objNum] = subPath. dist_hat_tails + DistTree::path2prediction (path);
     ASSERT (! isNan ((* tree. prediction) [objNum]));
     tree_. absCriterion += tree. getAbsCriterion (objNum);
   }
@@ -1029,7 +1035,7 @@ bool Change::apply_ ()
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
     const Tree::TreeNode* lca_ = nullptr;        
-    const VectorPtr<Tree::TreeNode> path (DistTree::getPath (subPath. node1, subPath. node2, subgraph. boundary. containsFast (subgraph. area_root) ? subgraph. area_root : nullptr, lca_));
+    const VectorPtr<Tree::TreeNode> path (DistTree::getPath (subPath. node1, subPath. node2, subgraph. area_root, lca_));
     if (path. contains (from))
     {
       (*fromAttr) [objNum] = ETRUE;
@@ -1074,7 +1080,6 @@ bool Change::apply_ ()
   FOR (size_t, i, lr. beta. size ())
     maximize (lr. beta [i], 0.0);
 
-  ONumber on (cout, 6, false);  // ??
   if (arcEnd)
   {
     const_cast <DTNode*> (from) -> len = lr. beta [0];
@@ -1594,7 +1599,7 @@ DistTree::DistTree (const DTNode* center,
   borrowArcs (old2new, true);  // Arc's are not parallel
   setRoot ();
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
-  ASSERT (findPtr (old2new, area_root) == root);
+  IMPLY (area_root, findPtr (old2new, area_root) == root);
   
   // subgraph.area_root --> Leaf
   {
@@ -1602,6 +1607,7 @@ DistTree::DistTree (const DTNode* center,
     ASSERT (! children. empty ());
     if (children. size () == 1)
     {
+      ASSERT (area_root);
       // old2new[area_root] --> Leaf
       DTNode* child = const_static_cast <DTNode*> (children. front ());
       ASSERT (child);
@@ -1622,9 +1628,7 @@ DistTree::DistTree (const DTNode* center,
     }
     else
     { 
-      ASSERT (static_cast <const DTNode*> (findPtr (old2new, area_root)) -> asSteiner ());
-      ASSERT (area_root == wholeTree. root);
-      ASSERT (children. size () == area_root->getChildren (). size ()); 
+      ASSERT (! area_root);
     }
   }
   ASSERT (isNan (static_cast <const DTNode*> (root) -> len));  
@@ -3879,7 +3883,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   Node2Node new2old;  // Initially: newLeaves2boundary
   DistTree tree (center, areaRadius_std, subgraph, new2old);
   tree. qc ();
-  ASSERT (subgraph. area_root->graph == this);
+  IMPLY (subgraph. area_root, subgraph. area_root->graph == this);
   ASSERT (subgraph. area. containsFast (center));
 #ifndef NDEBUG
   for (const auto it : new2old)
@@ -3900,7 +3904,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   
 
   const TreeNode* root_old = root;
-  const bool rootInArea = (subgraph. area_root == root);
+  const bool rootInArea = (! subgraph. area_root || subgraph. area_root == root);
 
 
   // Optimization
@@ -3954,6 +3958,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   if (const DTNode* dtNode = static_cast <const DTNode*> (findPtr (boundary2new, subgraph. area_root)))
   {
   //ASSERT (! rootInArea);
+    ASSERT (subgraph. area_root);
     const Leaf* leaf = dtNode->asLeaf ();
     ASSERT (leaf);
     if (verbose ())

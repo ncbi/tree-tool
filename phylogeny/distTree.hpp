@@ -382,7 +382,6 @@ struct Subgraph : Root
   VectorPtr<Tree::TreeNode> boundary;
     // Make boundary and area disjoint ??
   const DTNode* area_root {nullptr};
-    // ??
     // May be nullptr
     // boundary.contains(area_root)
   const DTNode* area_underRoot {nullptr};
@@ -553,9 +552,6 @@ public:
 
 
 
-
-///////////////////////////////////////////////////////////////////////////
-
 struct Dissim
 {
   const Leaf* leaf1 {nullptr};
@@ -566,16 +562,17 @@ struct Dissim
   const Steiner* lca {nullptr};
     // Paths
   
+
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg);
   void qc () const;
+
           
   bool valid () const
     { return    leaf1->graph
-             && leaf2->graph
-           //&& mult > 0
-             ;
+             && leaf2->graph;
     }
+    // For topology
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
              || leaf == leaf2;
@@ -586,6 +583,9 @@ struct Dissim
 };
 
 
+
+
+///////////////////////////////////////////////////////////////////////////
 
 struct DistTree : Tree
 // Of DTNode*
