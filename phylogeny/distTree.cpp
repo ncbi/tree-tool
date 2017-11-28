@@ -75,7 +75,7 @@ void DTNode::saveContent (ostream& os) const
     const ONumber oLen (os, dissimDecimals, true);
     os << "len=" << len;
   }
-  const ONumber oNum (os, 6, true);  // PAR
+  const ONumber oNum (os, criterionDecimals, true);  // PAR
   if (paths)
 	  os << "  err_density=" << errorDensity << "  paths=" << paths;
 //os << "  " << dissimSum << ' ' << dissimWeightedSum;  
@@ -239,22 +239,29 @@ Vector<size_t> DTNode::getLcaObjNums ()
     return lcaObjNums;
     
   lcaObjNums. reserve ((size_t) log (getDistTree (). dissims. size ()));  // PAR
-  const VectorPtr<DiGraph::Node> children (getChildren ());
 
 #if 0
-  Vector<bool> subPathDissims (tree. dissims. size (), false);  // ??
-  for (const SubPath& subPath : subPaths)
-    subPathDissims [subPath. objNum] = true;
+  Vector<bool> childDissims (tree. dissims. size (), false);  // Faster for small n
 #endif
 
+  const VectorPtr<DiGraph::Node> children (getChildren ());
   FOR_REV (size_t, i, children. size ())
   {
     Vector<size_t>& childPathObjNums (const_static_cast <DTNode*> (children [i]) -> pathObjNums);
+  #if 0
+    // Faster for small n
+    for (const size_t objNum : childPathObjNums)
+      if (childDissims [objNum])
+        lcaObjNums << objNum;
+      else
+        childDissims [objNum] = true;
+  #else
     childPathObjNums. sort ();
     FOR (size_t, j, i)
       for (const size_t objNum : static_cast <const DTNode*> (children [j]) -> pathObjNums)
         if (childPathObjNums. containsFast (objNum))
           lcaObjNums << objNum;
+  #endif
   }
         
   return lcaObjNums;
@@ -745,7 +752,7 @@ void Subgraph::finishSubPaths ()
         continue;
       const SubPath subPath_ (objNum);
       const size_t index = subPaths. binSearch (subPath_);
-      if (index == NO_INDEX)  // impossible ??
+      if (index == NO_INDEX)  // impossible for optimizeSubgraph() ??
         continue;
       SubPath& subPath = subPaths [index];
       ASSERT (subPath. objNum == objNum);
@@ -839,8 +846,7 @@ void Subgraph::subPaths2tree ()
 
   chron_subgraph2tree. stop ();
   
-  if (verbose ())
-    const_cast <DistTree&> (tree). qcPaths (); 
+  const_cast <DistTree&> (tree). qcPaths (); 
 }
 
 
@@ -1406,7 +1412,7 @@ DistTree::DistTree (const string &dataDirName,
       Progress prog ((uint) newLeaves. size ());
       for (const Leaf* leaf : newLeaves)
       {
-        prog (real2str (absCriterion, 6));
+        prog (real2str (absCriterion, criterionDecimals));
         Unverbose unv;
         optimizeSubgraph (static_cast <const Steiner*> (leaf->getAncestor (subgraphDepth)));  
       }
@@ -2890,18 +2896,28 @@ void DistTree::qcPaths ()
   if (! qc_on)
     return;
 
-  size_t m = 0;
+  size_t pathObjNums_checked = 0;
+  size_t lcaObjNums_checked = 0;
   for (DiGraph::Node* node : nodes)
   {
-    Vector<size_t>& pathObjNums = static_cast <DTNode*> (node) -> pathObjNums;
+    DTNode* dtNode = const_static_cast <DTNode*> (node);
+    Vector<size_t>& pathObjNums = dtNode->pathObjNums;
     pathObjNums. sort ();
     ASSERT (pathObjNums. isUniq ());
     for (const size_t objNum : pathObjNums)
       if (dissims [objNum]. valid ())
-        m++;
+        pathObjNums_checked++;
+    const Vector<size_t> lcaObjNums (dtNode->getLcaObjNums ());
+    for (const size_t objNum : lcaObjNums)
+      if (dissims [objNum]. valid ())
+      {
+        ASSERT (dissims [objNum]. lca == dtNode->asSteiner ());
+        lcaObjNums_checked++;
+      }
   }
         
-  size_t n = 0;
+  size_t pathObjNums_all = 0;
+  size_t lcaObjNums_all = 0;
   FOR (size_t, objNum, dissims. size ())
     if (dissims [objNum]. valid ())
     {
@@ -2909,13 +2925,13 @@ void DistTree::qcPaths ()
       for (const Tree::TreeNode* node : path)
       {
         ASSERT (static_cast <const DTNode*> (node) -> pathObjNums. containsFast (objNum));
-        n++;
+        pathObjNums_all++;
       }
+      lcaObjNums_all++;
     }
 
-  ASSERT (n == m);
-  
-  // check Dissim.lca ??
+  ASSERT (pathObjNums_all == pathObjNums_checked);
+  ASSERT (lcaObjNums_all == lcaObjNums_checked);
 }
 
 
@@ -3090,7 +3106,7 @@ void DistTree::printAbsCriterion_halves () const
     
   for (const bool half2 : {false, true})
   {
-    const ONumber on (cout, 6, false);  // PAR
+    const ONumber on (cout, criterionDecimals, false);  // PAR
     cout << "absCriterion [" << half2 << "] = " << absCriterion_half [half2];
     const Prob unexplainedFrac = absCriterion_half [half2] / dissim2_half [half2];
     const Prob r = 1 - unexplainedFrac;
@@ -3650,14 +3666,14 @@ void DistTree::optimizeLenNode ()
     {
       setPrediction ();
       setAbsCriterion ();  
-      ONumber on (cout, 6, false);
+      ONumber on (cout, criterionDecimals, false);
     //cout << "Optimizing " << ns. st->getName () << ": " << absCriterion_old << " -> " << absCriterion << endl;
       ASSERT (leReal (absCriterion, absCriterion_old));
     }
   #endif
 
     if (solved)
-      prog (real2str (lr. absCriterion, 6));  // PAR
+      prog (real2str (lr. absCriterion, criterionDecimals));  // PAR
   }
 
   
@@ -3666,7 +3682,7 @@ void DistTree::optimizeLenNode ()
 #ifndef NDEBUG
   if (verbose ())
   {
-    ONumber on (cout, 6, false);
+    ONumber on (cout, criterionDecimals, false);
     cout << absCriterion_old1 << " -> " << absCriterion << endl;
   }
   ASSERT (leReal (absCriterion, absCriterion_old1));
@@ -4060,7 +4076,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
   	
   if (greaterReal (absCriterion, absCriterion_old, 1e-5)) // PAR
   {
-    const ONumber on (cout, 9, true);
+    const ONumber on (cout, criterionDecimals + 3, true);
     cout << absCriterion << " " << absCriterion_old << endl;
     ERROR;
   }
@@ -4105,7 +4121,7 @@ void DistTree::optimizeSubgraphs ()
     }
     {
       ostringstream oss;
-      const ONumber on (oss, 6, false);  // PAR
+      const ONumber on (oss, criterionDecimals, false);  // PAR
       oss << stables << '/' << steiners << ' ' << absCriterion;
       prog (oss. str ());  
     }
@@ -4205,10 +4221,8 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   	#endif
   
   	  if (qc_on && verbose ())
-  	  {
   	    checkAbsCriterion ("Before");
-        qcPaths (); 
-      }
+      qcPaths (); 
   	    
    	  const Real absCriterion_old = absCriterion;
   
@@ -4258,7 +4272,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   const Real improvement = max (0.0, absCriterion_init - absCriterion);
   if (verbose (1))
   {
-    ONumber on (cout, 6, false);
+    ONumber on (cout, criterionDecimals, false);
     cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
   }
   ASSERT (geReal (improvement, - absCriterion_delta));
@@ -4446,8 +4460,7 @@ void DistTree::removeLeaf (Leaf* leaf)
       const_cast <Obj*> (ds. objs [objNum]) -> mult = 0;
   dsSample = Sample (ds);
 
-  if (verbose ())
-    qcPaths (); 
+  qcPaths (); 
 
   setAbsCriterion ();
   {
@@ -4533,8 +4546,7 @@ void DistTree::reroot (DTNode* underRoot,
 
   finishChanges ();
 
-  if (verbose ())
-    qcPaths ();  
+  qcPaths ();  
 }
 
 

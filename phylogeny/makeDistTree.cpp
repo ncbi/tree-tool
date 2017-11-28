@@ -276,7 +276,7 @@ struct ThisApplication : Application
 
     
     {
-      const ONumber on (cout, 4, false);
+      const ONumber on (cout, criterionDecimals, false);
       cout << endl;
       cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;

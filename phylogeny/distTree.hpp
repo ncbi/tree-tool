@@ -64,6 +64,7 @@ inline Real dissim_max ()
 
 // PAR
 constexpr streamsize dissimDecimals = 6;
+constexpr streamsize criterionDecimals = 4;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
@@ -273,7 +274,7 @@ struct Leaf : DTNode
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
       if (! isNan (absCriterion))
-      { const ONumber oNum (os, 6, true);  // PAR
+      { const ONumber oNum (os, criterionDecimals, true);  // PAR
         os << "  leaf_error=" << getRelCriterion (true);
       }
     	if (! discernable)
@@ -602,18 +603,17 @@ private:
   Sample dsSample;  
     // = Sample(ds)
   // !nullptr
-  const RealAttr1* target {nullptr};
+  const RealAttr1* target {nullptr};  // --> Dissim ??
     // target[i] = dissimilarity between dissims[i].leaf1 and dissims[i].leaf2; !isMissing()
 public:
   Real dissim2_sum {0};
     // = sum target[i]^2 * mult
 private:
   // For optimization
-  const RealAttr1* prediction {nullptr};
+  const RealAttr1* prediction {nullptr};  // --> Dissim ??
     // Tree distances
   // For Change
-  // --> ExtBoolAttr ??
-  const RealAttr1* target_new {nullptr};
+  const RealAttr1* target_new {nullptr};  // ??
   bool nodeAttrExist {false};  // ??
   
   // ds-tree relations
@@ -807,7 +807,7 @@ public:
     }
     // Requires: linear variance of dissimilarities  ??
   void reportErrors (ostream &os) const
-    { const ONumber on (os, 6, false);  // PAR
+    { const ONumber on (os, criterionDecimals, false);  // PAR
       os << "absCriterion = " << absCriterion 
          << "  Error density = " << getErrorDensity () * 100 << " %"
          << endl;
@@ -816,7 +816,7 @@ public:
 
 private:
   void qcPaths ();
-    // Sort: DTNode::pathObjNums ??
+    // Sort: DTNode::pathObjNums 
   void resetAttrs ();
     // Time: O(p n)
   void setLca ();
