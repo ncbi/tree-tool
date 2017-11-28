@@ -507,7 +507,6 @@ public:
 protected:
 	void saveText (ostream& os) const override
 	  { os << from->getName () << " (parent = " << (from->getParent () ? from->getParent () -> getName () : "null") << ") -> " << to->getName () 
-	       << "  " << type () 
          << "  improvement = " << improvement; 
 	  }
 public:
@@ -519,32 +518,17 @@ public:
 
   bool valid () const
     { return valid (from, to); }
-	const char* type () const 
-	  { return "sibling"; }
-  // Update: Topology, DTNode::len, tree.prediction
+  // Update: tree topology, DTNode::len, *tree.prediction
 	bool apply ();
 	  // Return: success
 	  // Minimum change to compute tree.absCriterion
-	  // Output: *tree.prediction_old
 	  // status: eInit --> eApplied|eFail
-	  // Invokes: apply_()
 	void restore ();
 	  // Output: *tree.prediction
 	  // status: eApplied --> eInit
-	  // Invokes: restore_()
 	void commit ();
 	  // status: eApplied --> eDone
-	  // Invokes: commit_()
-private:
-  // Update: Tree::tree
-  // Output: DTNode::len, *tree.prediction
-	bool apply_ ();
-	  // Return: success  
-	  // Output: *tree.prediction
-	void restore_ ();
-	void commit_ ();
     // May invoke: tree.delayDeleteRetainArcs()
-public:
 	static bool strictlyLess (const Change* a, 
 	                          const Change* b);
     // Requires: (bool)a
@@ -629,11 +613,7 @@ private:
     // Tree distances
   // For Change
   // --> ExtBoolAttr ??
-  const CompactBoolAttr1* fromAttr_new {nullptr};
-  const CompactBoolAttr1* toAttr_new {nullptr};
-  const CompactBoolAttr1* interAttr {nullptr};
   const RealAttr1* target_new {nullptr};
-  const RealAttr1* prediction_old {nullptr};
   bool nodeAttrExist {false};  // ??
   
   // ds-tree relations
@@ -853,7 +833,7 @@ private:
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
 public:
-	void removeTopologyAttrs ();
+  void removeTopologyAttrs ();
     // Output: DTNode::attr, nodeAttrExist
 	  // Time: O(n)
   static Real path2prediction (const VectorPtr<TreeNode> &path);
@@ -864,7 +844,10 @@ public:
     // Output: *prediction
     // Invokes: path2prediction()
 	  // Time: O(p log(n))
-  Real getAbsCriterion (size_t objNum) const;
+  Real getAbsCriterion (size_t objNum,
+                        Real dHat) const;
+  Real getAbsCriterion (size_t objNum) const
+    { return getAbsCriterion (objNum, (*prediction) [objNum]); }
   Real getAbsCriterion () const;
     // Input: *prediction
 	  // Time: O(p)
@@ -930,7 +913,7 @@ private:
 	  // Input: center: may be delete'd
 	  // Update: DTNode::attr
 	  // Output: DTNode::stable = true
-	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter(), setAbsCriterion()
+	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter()
 	  // Time: O(p (log(n) + min(n,2^areaRadius_std)) + Time(optimizeIter(),n = min(this->n,2^areaRadius_std)))
 	  //       average ??
   const Change* getBestChange (const DTNode* from);

@@ -229,6 +229,7 @@ struct ThisApplication : Application
       if (! remove_outliers. empty ())
       {
         cout << endl << "Removing outliers ..." << endl;
+        tree->removeTopologyAttrs ();
         {
           OFStream f (remove_outliers);
           Progress prog ((uint) outliers. size ());

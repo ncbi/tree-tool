@@ -48,12 +48,7 @@ void DTNode::qc () const
 
   if (graph)
   {
-    if ((bool) getParent () != ! isNan (len))
-    {
-      cout << getName () << endl;
-      getTree (). print (cout);
-      ERROR;
-    }
+    ASSERT ((bool) getParent () == ! isNan (len));
     if (! childrenDiscernable ())
     {
       ASSERT (! inDiscernable ());
@@ -245,6 +240,13 @@ Vector<size_t> DTNode::getLcaObjNums ()
     
   lcaObjNums. reserve ((size_t) log (getDistTree (). dissims. size ()));  // PAR
   const VectorPtr<DiGraph::Node> children (getChildren ());
+
+#if 0
+  Vector<bool> subPathDissims (tree. dissims. size (), false);  // ??
+  for (const SubPath& subPath : subPaths)
+    subPathDissims [subPath. objNum] = true;
+#endif
+
   FOR_REV (size_t, i, children. size ())
   {
     Vector<size_t>& childPathObjNums (const_static_cast <DTNode*> (children [i]) -> pathObjNums);
@@ -870,74 +872,16 @@ void Change::qc () const
 bool Change::apply ()
 {
   ASSERT (status == eInit);
-  
-  * const_cast <RealAttr1*> (tree. prediction_old) = * tree. prediction;  // ??
-  fromLen = from->len;
-  const bool ok = apply_ ();  
-  status = eApplied;
-  
-  return ok;
-}
-
-
-
-void Change::restore ()
-{
-  ASSERT (status == eApplied);
-  status = eInit;
-
-  restore_ ();
-  * const_cast <RealAttr1*> (tree. prediction) = * tree. prediction_old;  // ??
-}
-
-
-
-void Change::commit ()
-{
-  ASSERT (status == eApplied);
-	status = eDone;
-
-  commit_ ();
-}
-
-
-
-bool Change::strictlyLess (const Change* a, 
-	                         const Change* b)
-{ 
-  ASSERT (a);
-  ASSERT (! isNan (a->improvement));
-  
-  if (! positive (a->improvement))
-    return false;
-  
-  if (a == b)  
-    return false;
-  if (! b)  
-    return positive (a->improvement);
-  ASSERT (positive (b->improvement));
-    
-  if (a->improvement > b->improvement)  return true;  
-  if (a->improvement < b->improvement)  return false;
-  const int cmp = strcmp (a->type (), b->type ());
-  if (cmp < 0)  return true; 
-  if (cmp > 0)  return false; 
-  if (a < b)  return true;  // non-stable result ??
-    
-  return false;
-}
-
-
-
-
-// Change
-
-bool Change::apply_ ()
-{
   ASSERT (targets. size () == 2);
   ASSERT (! oldParent);
   ASSERT (! arcEnd);
   ASSERT (! inter);
+  
+
+  status = eApplied;
+  const bool tried = ! isNan (improvement);
+  improvement = 0;
+
   
   oldParent = const_static_cast <Steiner*> (from->getParent ());
   ASSERT (oldParent);
@@ -951,6 +895,7 @@ bool Change::apply_ ()
   if (arcEnd)
     targets << arcEnd;
 
+  fromLen = from->len;
   toLen = to->len;
   
 
@@ -960,7 +905,7 @@ bool Change::apply_ ()
     VectorPtr<Tree::TreeNode>& area     = subgraph. area;
     VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
     const Tree::TreeNode* lca_ = nullptr;
-    area = DistTree::getPath (from, to, from->getAncestor (subgraphDepth), lca_);
+    area = DistTree::getPath (from, to, tried ? nullptr : from->getAncestor (subgraphDepth), lca_);  
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
     const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
@@ -1094,12 +1039,14 @@ bool Change::apply_ ()
     ASSERT (inter == tree. root);
   }
 
-  // ??
+  Real subPathsAbsCriterion = 0;
   FOR (size_t, objNum, subgraph. subPaths. size ())
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
-    (* const_cast <RealAttr1*> (tree. prediction)) [subPath. objNum] = (* tree. target) [subPath. objNum] - lr. getResidual (objNum);
+    const Real prediction = (* tree. target) [subPath. objNum] - lr. getResidual (objNum);
+    subPathsAbsCriterion += tree. getAbsCriterion (subPath. objNum, prediction);
   }    
+  improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);
 
 
   return true;
@@ -1107,11 +1054,14 @@ bool Change::apply_ ()
 
 
 
-void Change::restore_ ()
+void Change::restore ()
 {
+  ASSERT (status == eApplied);
   ASSERT (oldParent);
 //ASSERT (arcEnd);
   ASSERT (inter);
+
+  status = eInit;
 
   // targets  
   targets. pop ();
@@ -1136,10 +1086,13 @@ void Change::restore_ ()
 
 
 
-void Change::commit_ ()
+void Change::commit ()
 {
+  ASSERT (status == eApplied);
   ASSERT (oldParent);
   ASSERT (inter);
+
+	status = eDone;
 
   if (arcEnd)
     inter->pathObjNums = to->pathObjNums;
@@ -1156,6 +1109,35 @@ void Change::commit_ ()
   inter->addAttr ();  
   if (oldParent->isTransient ())
     const_cast <DistTree&> (tree). delayDeleteRetainArcs (oldParent);
+}
+
+
+
+bool Change::strictlyLess (const Change* a, 
+	                         const Change* b)
+{ 
+  ASSERT (a);
+  ASSERT (! isNan (a->improvement));
+  
+  if (! positive (a->improvement))
+    return false;
+  
+  if (a == b)  
+    return false;
+  if (! b)  
+    return positive (a->improvement);
+  ASSERT (positive (b->improvement));
+    
+  if (a->improvement > b->improvement)  return true;  
+  if (a->improvement < b->improvement)  return false;
+#if 0
+  const int cmp = strcmp (a->type (), b->type ());
+  if (cmp < 0)  return true; 
+  if (cmp > 0)  return false; 
+#endif
+  if (a < b)  return true;  // non-stable result ??
+    
+  return false;
 }
 
 
@@ -1827,7 +1809,7 @@ bool DistTree::loadLines (const StringVector &lines,
 	if (offset != expectedOffset)
 	{
 		cout << "Line " << lineNum + 1 << ": " << line << endl;
-		ERROR;
+		throw runtime_error ("Tree file is damaged");
 	}
 	
 	lineNum++;
@@ -2554,11 +2536,13 @@ void DistTree::loadDissimFinish ()
 {
 	ASSERT (optimizable ());
   ASSERT (! prediction);
+#if 0
   ASSERT (! fromAttr_new);
   ASSERT (! toAttr_new);
   ASSERT (! interAttr);
-  ASSERT (! target_new);
   ASSERT (! prediction_old);
+#endif
+  ASSERT (! target_new);
   
 
   dsSample = Sample (ds);
@@ -2580,12 +2564,14 @@ void DistTree::loadDissimFinish ()
   
   prediction = new RealAttr1 ("Prediction", ds, target->decimals); 
   
+#if 0
   fromAttr_new = new CompactBoolAttr1 ("from_new", ds);
   toAttr_new   = new CompactBoolAttr1 ("to_new", ds);
   interAttr    = new CompactBoolAttr1 ("inter", ds);
 
-  target_new     = new RealAttr1 ("target_new",    ds, target->decimals);
   prediction_old = new RealAttr1 ("PredictionOld", ds, target->decimals); 
+#endif
+  target_new     = new RealAttr1 ("target_new",    ds, target->decimals);
 
   setLca ();  
 //for (Iterator it (dsSample); it ();)  
@@ -2701,11 +2687,13 @@ void DistTree::qc () const
     for (const Dissim &dissim : dissims)
       dissim. qc ();
   
+  #if 0
    	ASSERT (fromAttr_new);
    	ASSERT (toAttr_new);
    	ASSERT (interAttr);
-   	ASSERT (target_new);
    	ASSERT (prediction_old);
+  #endif
+   	ASSERT (target_new);
    	
    	if (! isNan (absCriterion))
    	{
@@ -2925,11 +2913,7 @@ void DistTree::qcPaths ()
       }
     }
 
-  if (n != m)
-  {
-    cout << n << ' ' << m << endl;
-    ERROR;
-  }
+  ASSERT (n == m);
   
   // check Dissim.lca ??
 }
@@ -3035,7 +3019,8 @@ void DistTree::setPrediction ()
 
 
 
-Real DistTree::getAbsCriterion (size_t objNum) const
+Real DistTree::getAbsCriterion (size_t objNum,
+                                Real dHat) const
 {
   ASSERT (optimizable ());
 
@@ -3043,10 +3028,11 @@ Real DistTree::getAbsCriterion (size_t objNum) const
   ASSERT (mult >= 0);
   if (mult == 0)
     return 0;
+
+  ASSERT (dHat >= 0);
   const Real d = (*target) [objNum];
 //ASSERT (d >= 0);
-  const Real dHat = (*prediction) [objNum];
-  ASSERT (! isNan (dHat));
+
   return mult * sqr (dHat - d);
 }
 
@@ -3056,7 +3042,7 @@ Real DistTree::getAbsCriterion () const
 {
   Real absCriterion_ = 0;
   for (Iterator it (dsSample); it ();)  
-    absCriterion_ += getAbsCriterion (*it);  // it. mult * sqr (dHat - d);
+    absCriterion_ += getAbsCriterion (*it);  
   ASSERT (DM_sp::finite (absCriterion_));
   
   return absCriterion_;
@@ -4231,18 +4217,14 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   	    cout << "Apply " << nChange << "/" << changes. size () << ": ";
      	  ch->print (cout);  
      	}
-  	  const bool success = ch->apply ();    
-  	  const Real absCriterion_new = getAbsCriterion ();
-      if (verbose ())
-    	  cout << "absCriterion_new = " << absCriterion_new << endl;
-  	  IMPLY (first, success && eqReal (absCriterion_new, absCriterion - ch->improvement));
-  	  if (! success || geReal (absCriterion_new, absCriterion))
+  	  const bool success = ch->apply ();
+  	  IMPLY (first, success && ch->improvement > 0);
+  	  if (! success || ch->improvement <= 0)
   	  {
   	  //ASSERT (! first);
         if (verbose (1))
   	      cout << "Restore" << endl;
   	  	ch->restore ();
-  	  	ASSERT (eqReal (absCriterion, absCriterion_old));
         if (qc_on && verbose ())
     	  	checkAbsCriterion ("restore");
   	  }
@@ -4250,7 +4232,6 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   	  {
        	ch->commit ();
        	commits++;
-        setAbsCriterion ();
     	  if (qc_on && verbose ())
     	  {
      	    cout << "absCriterion = " << absCriterion << endl;
@@ -4317,7 +4298,7 @@ void DistTree::tryChange (Change* ch,
     ch->qc ();
   }
 
-  ch->improvement = ch->apply () ? absCriterion - getAbsCriterion () : 0;  // ??
+  ch->apply ();
   ASSERT (! isNan (ch->improvement));
   ch->restore ();
 

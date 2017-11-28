@@ -12,11 +12,11 @@ rm -r -f data/Enterobacteriaceae.dir/
 mdsTree.sh data/Enterobacteriaceae Conservation 2 >& /dev/null
 if ($?) exit 1
 
-makeDistTree -qc -input_tree data/Enterobacteriaceae.dir/ -data data/Enterobacteriaceae -dissim Conservation -topology -output_tree Enterobacteriaceae.tree > /dev/null
+makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -topology  -output_tree Enterobacteriaceae.tree > /dev/null
 if ($?) exit 1
 rm -r data/Enterobacteriaceae.dir/
 
-printDistTree -qc -data data/Enterobacteriaceae -dissim Conservation Enterobacteriaceae.tree > Enterobacteriaceae.nw
+printDistTree  -qc  -data data/Enterobacteriaceae  -dissim Conservation Enterobacteriaceae.tree > Enterobacteriaceae.nw
 if ($?) exit 1
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 if ($?) exit 1
@@ -64,7 +64,7 @@ rm random-output.tree
 
 
 echo ""
-echo "prot-identical_comm ..."
+echo "prot-identical_comm (subgraphs) ..."
 # Check time ??
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology  -remove_outliers prot-identical_comm.outliers | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
@@ -76,5 +76,16 @@ if ($?) exit 1
 rm prot-identical_comm.distTree
 
 
+echo ""
+echo "prot-identical_comm (whole) ..."
+# Time: 4 min.
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology  -whole  -remove_outliers prot-identical_comm.outliers-whole | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
+if ($?) exit 1
+diff prot-identical_comm.outliers-whole data/prot-identical_comm.outliers-whole
+if ($?) exit 1
+rm prot-identical_comm.outliers-whole
+diff prot-identical_comm.distTree-whole data/prot-identical_comm.distTree-whole
+if ($?) exit 1
+rm prot-identical_comm.distTree-whole
 
 
