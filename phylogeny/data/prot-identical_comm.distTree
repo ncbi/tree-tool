@@ -23,6 +23,7 @@ Optimizing arc lengths at each node ...
 absCriterion = 7.9309  Error density = 1.9459 %
 
 Optimizing topology ...
+absCriterion = 7.0563  Error density = 1.8355 %
 
 
 Ave. radius: 0.46

@@ -613,7 +613,6 @@ private:
   const RealAttr1* prediction {nullptr};  // --> Dissim ??
     // Tree distances
   // For Change
-  const RealAttr1* target_new {nullptr};  // ??
   bool nodeAttrExist {false};  // ??
   
   // ds-tree relations
