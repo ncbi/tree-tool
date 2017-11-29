@@ -204,6 +204,7 @@ struct ThisApplication : Application
               tree->optimizeSubgraphs ();  
                 // optimizeSubtreesIter () almost does not improve
             }
+            tree->reportErrors (cout);
           }
           
           cout << endl << "Ave. radius: " << tree->reroot (root_topological) << endl;
