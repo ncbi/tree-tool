@@ -200,7 +200,6 @@ struct ThisApplication : Application
               tree->optimizeIter (output_tree);
             else
             {
-              tree->removeTopologyAttrs ();
               tree->optimizeSubgraphs ();  
                 // optimizeSubtreesIter () almost does not improve
             }
@@ -230,7 +229,6 @@ struct ThisApplication : Application
       if (! remove_outliers. empty ())
       {
         cout << endl << "Removing outliers ..." << endl;
-        tree->removeTopologyAttrs ();
         {
           OFStream f (remove_outliers);
           Progress prog ((uint) outliers. size ());

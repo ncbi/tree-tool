@@ -64,7 +64,7 @@ inline Real dissim_max ()
 
 // PAR
 constexpr streamsize dissimDecimals = 6;
-constexpr streamsize criterionDecimals = 4;
+constexpr streamsize criterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
@@ -98,7 +98,7 @@ struct DTNode : Tree::TreeNode
   // For optimization
 	Real len;
 	  // Arc length between *this and *getParent()
-	const CompactBoolAttr1* attr {nullptr};  // ??
+//const CompactBoolAttr1* attr {nullptr};  // ??
     // If !nullptr then in getDistTree().ds
     // ~DTNode() does not delete
     // ExtBoolAttr1: makes faster by 5 % 
@@ -151,9 +151,6 @@ public:
 
   const DistTree& getDistTree () const;
 
-  void addAttr ();
-    // Output: attr
-    // Time: O(p)
   const Leaf* inDiscernable () const;
     // Return: this or nullptr
   bool childrenDiscernable () const
@@ -613,7 +610,6 @@ private:
   const RealAttr1* prediction {nullptr};  // --> Dissim ??
     // Tree distances
   // For Change
-  bool nodeAttrExist {false};  // ??
   
   // ds-tree relations
   Vector<Dissim> dissims;
@@ -625,7 +621,6 @@ public:
 private:
   friend DTNode;
   friend Leaf;
-  size_t attrNum_max {0};
   Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
 	VectorOwn<Leaf> detachedLeaves;
@@ -760,7 +755,6 @@ private:
 	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
   void loadDissimFinish ();
     // Output: dsSample, absCriterion_delta
-    // Invokes: addAttr()
     // Time: O(p n)
 public:
 	void qc () const override;
@@ -826,15 +820,9 @@ private:
       return getPath (dissim. leaf1, dissim. leaf2);
     }
   VectorPtr<TreeNode> dissimLca2path (size_t objNum) const;
-//void topology2attrs ();
-    // Output: DTNode::attr
-	  // Time: O(p log(n))
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
 public:
-  void removeTopologyAttrs ();
-    // Output: DTNode::attr, nodeAttrExist
-	  // Time: O(n)
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len
@@ -861,15 +849,6 @@ public:
     // Time: O(p)
 	  
   // Optimization	  
-  // Input: DTNode::attr
-private:
-  void getSkipRetain (DTNode* &toSkip,
-                      DTNode* &toRetain);
-    // Output: toSkip, toRetain; may be nullptr
-    // Update: {toSkip,toRetain}->len
-    // toSkip->attr is redundant
-    // toSkip->getparent() = toRetain->getParent() = root: the only children
-public:
 	void optimizeLenArc ();
 	  // Return: success
 	  // Update: DTNode::len
@@ -883,8 +862,6 @@ public:
     // Postcondition: (*prediction)[] = 0 => (*target)[] = 0 
     // Not idempotent
     // Time: O(n p log(n))
-  void checkAttrPrediction () const;
-    // Input: ds, DTNode::attr
   // Topology
 	void optimize2 ();
 	  // Optimal solution
@@ -903,13 +880,11 @@ public:
 	  // Invokes: optimize(), saveFile(output_tree)
 	void optimizeSubgraphs ();
 	  // Invokes: optimizeSubgraph()
-	  // Requires: !nodeAttrExist
 	  // Time: O(n * Time(optimizeSubgraph))
 private:
 	Real optimizeSubgraph (const Steiner* center);
 	  // Return: min. distance to boundary
 	  // Input: center: may be delete'd
-	  // Update: DTNode::attr
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter()
 	  // Time: O(p (log(n) + min(n,2^areaRadius_std)) + Time(optimizeIter(),n = min(this->n,2^areaRadius_std)))
