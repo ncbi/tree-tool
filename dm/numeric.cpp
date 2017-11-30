@@ -686,11 +686,12 @@ Real zetaLn (Real alpha,
 void WeightedMeanVar::add (Real x,
                            Real weight)
 { 
-  ASSERT (! isNan (x));
-  ASSERT (! isNan (weight));
+  ASSERT (! isNan (weight));  
+  if (weight == 0)
+    return;
 
-  const Real x2 = sqr (x);
-  
+  ASSERT (! isNan (x));
+  const Real x2 = sqr (x);  
   weightedSum  += x  * weight;
   weightedSum2 += x2 * weight;
   weights      +=      weight;
