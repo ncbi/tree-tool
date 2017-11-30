@@ -723,10 +723,10 @@ void Subgraph::area2subPaths ()
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
     const Vector<size_t>& pathObjNums = dtNode == area_root /* && area_underRoot */
-                                          ? area_underRoot->pathObjNums  // redundant ??
+                                          ? area_underRoot->pathObjNums  
                                           : dtNode        ->pathObjNums;
     if (first)
-      first = false;  // pathObjNums are redundant
+      first = false;  // One of pathObjNums is redundant given the others
     else
       addSubPaths (pathObjNums);
   }
@@ -1217,7 +1217,6 @@ DistTree::DistTree (const string &treeFName,
 
     nodeAttrExist = true;
     dissimDs2ds (sparse);    	
-    topology2attrs ();
   }
 }
 
@@ -1246,7 +1245,6 @@ DistTree::DistTree (const string &dirName,
 
   nodeAttrExist = true;
   dissimDs2ds (false);  
-  topology2attrs ();
 }
 
 
@@ -1277,7 +1275,6 @@ DistTree::DistTree (const string &dissimFName,
   
   nodeAttrExist = true;
   dissimDs2ds (sparse);    	 
-  topology2attrs ();
 }
 
 
@@ -1710,7 +1707,6 @@ DistTree::DistTree (const DTNode* center,
   nodeAttrExist = true;
   loadDissimFinish ();
 //ASSERT (setDiscernable () == 0);
-  topology2attrs ();
 }
 
 
@@ -2942,31 +2938,6 @@ VectorPtr<Tree::TreeNode> DistTree::dissimLca2path (size_t objNum) const
 
 
 
-void DistTree::topology2attrs ()
-{
-  ASSERT (nodeAttrExist);
-
-  if (verbose ())
-    cout << "Data values ..." << endl;
-
-  Progress prog ((uint) ds. objs. size (), 10000);  // PAR
-  setLca ();
-  for (Iterator it (dsSample); it ();)  
-  {
-    prog ();
-    const VectorPtr<TreeNode> path (dissimLca2path (*it));
-    for (const TreeNode* node : path)
-    {
-      const DTNode* dtNode = static_cast <const DTNode*> (node);
-      CompactBoolAttr1* attr = const_cast <CompactBoolAttr1*> (dtNode->attr);
-      ASSERT (attr);
-      attr->setCompactBool (*it, true);
-    }
-  }
-}
-
-
-
 void DistTree::removeTopologyAttrs ()
 {
  	if (! nodeAttrExist)
@@ -3458,65 +3429,69 @@ bool DTNode_len_strictlyLess (const DTNode* a,
 
 
 
-bool DistTree::optimizeLenArc ()
+void DistTree::optimizeLenArc ()
 {
   ASSERT (nodeAttrExist);
   
   if (verbose (1))
     cout << "Optimizing arc lengths at each arc ..." << endl;
     
-#ifndef NDENUG
-  const Real absCriterion_old = absCriterion;
-#endif
-  
-  DTNode* toSkip = nullptr;  
-  DTNode* toRetain = nullptr; 
-  getSkipRetain (toSkip, toRetain);
-
   VectorPtr<DTNode> dtNodes;  dtNodes. reserve (nodes. size ());
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
     if (   dtNode != root
-        && dtNode != toSkip
         && ! dtNode->inDiscernable ()
        )
       dtNodes << dtNode;
     IMPLY (dtNode->inDiscernable (), dtNode->len == 0);
   }
   dtNodes. sort (DTNode_len_strictlyLess);
-
-  Space1<NumAttr1> sp (ds, false);  sp. reserve (dtNodes. size ());
-  for (const DTNode* dtNode : dtNodes)
-    sp << dtNode->attr;
   
-  // lr
-  if (verbose ())
-    cout << "Linear regression ..." << endl;
-  L2LinearNumPrediction lr (dsSample, sp, *target);
-  ASSERT (lr. beta. size () == dtNodes. size ());
-    // lr.beta must be equal to DTNode::len
-  FOR (size_t, attrNum, dtNodes. size ())
-    lr. beta [attrNum] = dtNodes [attrNum] -> len;
-  /*const bool solved =*/ lr. solveUnconstrainedFast (prediction, true, 10, 0.01);  // PAR  // Time = O(p n) 
-  lr. qc ();
-  if (/*! solved ||*/ isNan (lr. absCriterion))
-    return false;
 
-  // DTNode::len
-  FOR (size_t, attrNum, dtNodes. size ())
-    const_cast <DTNode*> (dtNodes [attrNum]) -> len = lr. beta [attrNum];
-  if (toSkip)
+  const uint iters = 10;  // PAR
+  Progress prog ((uint) iters);  
+  FOR (uint, iter, iters)
   {
-    toSkip->len = toRetain->len / 2;
-    toRetain->len = toSkip->len;
+    Real absCriterion_prev = absCriterion;
+    for (const DTNode* node : dtNodes)
+    {
+    #ifndef NDEBUG    
+      const Real absCriterion_old = absCriterion;  
+    #endif
+    
+      Real arcAbsCriterion_old = 0;
+      WeightedMeanVar mv;
+      for (const size_t objNum : node->pathObjNums)
+        if (dissims [objNum]. valid ())
+        {
+          const Real dist_hat_tails = max (0.0, (*prediction) [objNum] - node->len);
+          const Real arcTarget = (*target) [objNum] - dist_hat_tails;
+          mv. add (arcTarget, ds. objs [objNum] -> mult);
+          arcAbsCriterion_old += getAbsCriterion (objNum);
+        }
+      const Real len_new = max (0.0, mv. getMean ());
+      
+      Real arcAbsCriterion_new = 0;
+      for (const size_t objNum : node->pathObjNums)
+        if (dissims [objNum]. valid ())
+        {
+          (* const_cast <RealAttr1*> (prediction)) [objNum] = max (0.0, (*prediction) [objNum] - node->len + len_new);
+          arcAbsCriterion_new += getAbsCriterion (objNum);
+        }
+      ASSERT (leReal (arcAbsCriterion_new, arcAbsCriterion_old));
+      
+      const_cast <DTNode*> (node) -> len = len_new;
+      absCriterion -= arcAbsCriterion_old;
+      absCriterion += arcAbsCriterion_new;
+      ASSERT (leReal (absCriterion, absCriterion_old));
+    }
+  
+    prog (real2str (absCriterion, criterionDecimals));   
+    if (absCriterion_prev / absCriterion - 1 <= 0.01)   // PAR
+      break;
+    absCriterion_prev = absCriterion;  
   }
-  
-  setPrediction ();
-  setAbsCriterion ();  
-  ASSERT (leReal (absCriterion, absCriterion_old));
-  
-  return true;
 }
 
 
@@ -3573,19 +3548,18 @@ void DistTree::optimizeLenNode ()
   Vector<Star> stars;  stars. reserve (nodes. size ());
   for (const DiGraph::Node* node : nodes)
   {
-    const DTNode* dtNode = static_cast <const DTNode*> (node);
-    if (   dtNode == root
-        || dtNode->asLeaf () 
-        || ! dtNode->childrenDiscernable ()
+    const DTNode* center = static_cast <const DTNode*> (node);
+    if (   center == root
+        || center->asLeaf () 
+        || ! center->childrenDiscernable ()
        )
       continue;
-    stars << Star (dtNode->asSteiner ());
+    stars << Star (center->asSteiner ());
   }
   stars. sort (Star::strictlyLess);  
 
 
-  Progress prog ((uint) countInteriorNodes ());  // Upper bound
-  Vector<Real> lenOld;  
+  Progress prog ((uint) stars. size ());  
   for (const Star& star : stars)
   {
   #ifndef NDEBUG    
@@ -3902,7 +3876,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
     Unverbose unv;
     if (leaves > 3)
     {
-      EXEC_ASSERT (tree. optimizeLenArc ());
+      tree. optimizeLenArc ();
       tree. finishChanges (); 
       tree. optimizeLenNode ();  
       tree. finishChanges (); 
@@ -4117,7 +4091,7 @@ void DistTree::optimizeSubgraphs ()
   // Almost no improvement
   if (nodeAttrExist)
   {
-    EXEC_ASSERT (optimizeLenArc ()); 
+    optimizeLenArc (); 
     finishChanges ();
     optimizeLenNode ();  
     finishChanges ();
@@ -4240,7 +4214,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
     	    if (verbose ())
     	      qc ();
     	  }
-        ASSERT (absCriterion < absCriterion_old);
+        ASSERT (leReal (absCriterion, absCriterion_old));
         // DTNode::stable
         for (const TreeNode* node : ch->targets)
     	    if (node->graph)  
@@ -4266,10 +4240,8 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
 
   if (commits && nodeAttrExist)
   {
-    resetAttrs ();
-    topology2attrs (); 
     setPrediction ();
-    EXEC_ASSERT (optimizeLenArc ()); 
+    optimizeLenArc (); 
     finishChanges ();
     optimizeLenNode ();  
     finishChanges ();  
@@ -5031,7 +5003,7 @@ void NewLeaf::optimize ()
 	  if (ld. dissim != INF)
   	{
   	  dissimExists = true;
-  	  if (ld. dissim == 0)  // if all dissim = INF ??
+  	  if (ld. dissim == 0)  // if all dissim's = INF ??
   	  {
   	    location. anchor = ld. leaf;
   	    location. leafLen = 0;

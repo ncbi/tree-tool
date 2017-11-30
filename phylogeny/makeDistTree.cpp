@@ -180,7 +180,7 @@ struct ThisApplication : Application
             cout << endl;
           #endif
 
-            EXEC_ASSERT (tree->optimizeLenArc ());
+            tree->optimizeLenArc ();
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
             cout << endl;
             

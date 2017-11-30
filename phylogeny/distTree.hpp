@@ -826,7 +826,7 @@ private:
       return getPath (dissim. leaf1, dissim. leaf2);
     }
   VectorPtr<TreeNode> dissimLca2path (size_t objNum) const;
-  void topology2attrs ();
+//void topology2attrs ();
     // Output: DTNode::attr
 	  // Time: O(p log(n))
   void clearSubtreeLen ();
@@ -870,11 +870,10 @@ private:
     // toSkip->attr is redundant
     // toSkip->getparent() = toRetain->getParent() = root: the only children
 public:
-	bool optimizeLenArc ();
+	void optimizeLenArc ();
 	  // Return: success
 	  // Update: DTNode::len
 	  // Output: prediction, absCriterion
-	  // Invokes: setPrediction(), setAbsCriterion()
 	  // To be followed by: finishChanges()
 	  // Time: O(p n); return = 1.04 * optimal
   void optimizeLenNode ();
