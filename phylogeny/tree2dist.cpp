@@ -83,10 +83,8 @@ struct ThisApplication : Application
       distAttr->put (row, row, 0);
       FOR (size_t, col, row)
       {
-        const VectorPtr<Tree::TreeNode> path (tree->getPath ( leaves [row]
-                                                            , leaves [col]
-                                                            )
-                                             );
+        const Tree::TreeNode* lca = nullptr;
+        const VectorPtr<Tree::TreeNode> path (tree->getPath (leaves [row], leaves [col], nullptr, lca));
         Real dist = tree->path2prediction (path);
         if (noise)
           dist += norm. rand ();
