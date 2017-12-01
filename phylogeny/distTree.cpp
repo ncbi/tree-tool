@@ -1559,7 +1559,7 @@ DistTree::DistTree (const DTNode* center,
   subgraph. qc ();
 
 
-  // nodes
+  // nodes, leafNum
   Node2Node old2new;  // 1-1
   size_t leafNum = 0;
   for (const TreeNode* node_old : area)
@@ -1574,8 +1574,10 @@ DistTree::DistTree (const DTNode* center,
         node_new = new Steiner (*this, nullptr, len);
       else  
       {
+        auto leaf = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
+        leaf->index = leafNum;
         leafNum++;
-        node_new = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
+        node_new = leaf;
       }
     }
     ASSERT (node_new);
@@ -1605,8 +1607,9 @@ DistTree::DistTree (const DTNode* center,
       child->len /= 2;
       ASSERT (root_->getChildren (). empty ());
       delete root_;
-      leafNum++;  
       auto leaf = new Leaf (*this, inter, child->len, "L" + toString (leafNum));
+      leaf->index = leafNum;
+      leafNum++;  
       old2new [area_root] = leaf;  
       ASSERT (inter == root);
       ASSERT (nodes. size () == area. size () + 1/*inter*/);
@@ -1635,8 +1638,7 @@ DistTree::DistTree (const DTNode* center,
   // dissims[] 
   // For some leaf pairs the dissimilarity may be missing
   dissims. reserve (getDissimSize_max ());
-  typedef  pair<const Leaf*,const Leaf*>  LeafPair;
- 	map <LeafPair, size_t/*objNum*/> leaves2objNum;  // --> Vector ??
+ 	Vector<size_t/*objNum*/> leaves2objNum (leafNum * leafNum, NO_INDEX);
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -1649,8 +1651,12 @@ DistTree::DistTree (const DTNode* center,
       if (it1. first == it2. first)
         break;
       ASSERT (it1. first < it2. first);
-      const size_t objNum = leaves2dissims (const_cast <Leaf*> (it1. second), const_cast <Leaf*> (it2. second), 0, 0);
-      leaves2objNum [LeafPair (it1. second, it2. second)] = objNum;
+      const Leaf* leaf1 = it1. second;
+      const Leaf* leaf2 = it2. second;
+      const size_t objNum = leaves2dissims (const_cast <Leaf*> (leaf1), const_cast <Leaf*> (leaf2), 0, 0);
+      ASSERT (leaf1->index < NO_INDEX);
+      ASSERT (leaf2->index < NO_INDEX);
+      leaves2objNum [leaf1->index * leafNum + leaf2->index] = objNum;
     }
 
 
@@ -1675,12 +1681,11 @@ DistTree::DistTree (const DTNode* center,
     const Leaf* leaf1 = node1->asLeaf ();
     const Leaf* leaf2 = node2->asLeaf ();
     ASSERT (leaf1);
-    ASSERT (leaf2);
-    
-    size_t objNum = NO_INDEX;
+    ASSERT (leaf2);    
     if (leaf2->name < leaf1->name)
       swap (leaf2, leaf1);
-    EXEC_ASSERT (find (leaves2objNum, LeafPair (leaf1, leaf2), objNum));
+
+    const size_t objNum = leaves2objNum [leaf1->index * leafNum + leaf2->index];
     ASSERT (objNum != NO_INDEX);
     
     dissims [objNum]. mult   += mult;

@@ -251,6 +251,7 @@ struct Leaf : DTNode
     // sum = contribution to 2*getTree().absCriterion
   Real relCriterion {NAN};
     // !isNan() => = getRelCriterion()
+  size_t index {NO_INDEX};
   
 
 	Leaf (DistTree &tree,
