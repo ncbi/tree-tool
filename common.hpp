@@ -1234,6 +1234,9 @@ public:
 	VectorPtr (const VectorPtr<T> &x)
 	  : P (x)
 	  {}
+  explicit VectorPtr (initializer_list<const T*> init)
+    : P (init)
+    {}
 	template <typename U>
   	VectorPtr (const vector<const U*> &other)
   	  : P ()
@@ -1246,18 +1249,6 @@ public:
   	  { P::reserve (other. size ());
   	    insertAll (*this, other);
   	  }	  
-  static VectorPtr<T> make (const T* a)
-    { VectorPtr<T> v (1);
-      v [0] = a;
-      return v; 
-    }
-  static VectorPtr<T> make (const T* a,
-                            const T* b)
-    { VectorPtr<T> v (2);
-      v [0] = a;
-      v [1] = b;
-      return v; 
-    }
 
 
 	void deleteData ()

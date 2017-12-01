@@ -742,7 +742,7 @@ private:
 		  arcEnd = nullptr;
 	  }
 	VectorPtr<Tree::TreeNode> getTargets () const
-		{ return VectorPtr<Tree::TreeNode>::make (from->getParent (), to->getParent ()); }
+		{ return VectorPtr<Tree::TreeNode> {from->getParent (), to->getParent ()}; }
 public:
 
 
@@ -790,7 +790,7 @@ struct ChangeToParent : Move
 	  }
 private:
 	VectorPtr<Tree::TreeNode> getTargets () const
-		{ return VectorPtr<Tree::TreeNode>::make (from->getParent (), to); }
+		{ return VectorPtr<Tree::TreeNode> {from->getParent (), to}; }
 public:
 
 
@@ -841,7 +841,7 @@ struct ChangeToUncle : ChangeTo
 	  }
 private:
 	VectorPtr<Tree::TreeNode> getTargets () const
-		{ return VectorPtr<Tree::TreeNode>::make (from->getParent ()); }
+		{ return VectorPtr<Tree::TreeNode> {from->getParent ()}; }
 public:
 
 
@@ -887,7 +887,7 @@ struct ChangeToCousin : ChangeTo
 	  }
 private:
 	VectorPtr<Tree::TreeNode> getTargets () const
-		{ return VectorPtr<Tree::TreeNode>::make (from->getParent (), to->getParent ()); }
+		{ return VectorPtr<Tree::TreeNode> {from->getParent (), to->getParent ()}; }
 public:
 
 
@@ -929,7 +929,7 @@ private:
 	    root_old = nullptr;
 	  }
 	VectorPtr<Tree::TreeNode> getTargets () const
-		{ return VectorPtr<Tree::TreeNode>::make (from, nullptr); }
+		{ return VectorPtr<Tree::TreeNode> {from, nullptr}; }
 public:
 	void qc () const override;
 
