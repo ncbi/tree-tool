@@ -56,7 +56,7 @@ struct ThisApplication : Application
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("leaf_errors", "File with relative errors of leaves");
-	  addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair");
+	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
 	  addKey ("dissim_request", "File with requests to comoute dissimilarities, tab-delimited line format: <obj1> <obj2>");
@@ -82,7 +82,7 @@ struct ThisApplication : Application
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
-		const string pair_residuals      = getArg ("pair_residuals");
+	//const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
 		const string output_dissim       = getArg ("output_dissim");
 		const string dissim_request      = getArg ("dissim_request");
@@ -344,6 +344,8 @@ struct ThisApplication : Application
         f << it. first << '\t' << it. second->getRelCriterion (strong_outliers) << endl;  
     }
 
+  #if 0
+    ??
     if (! pair_residuals. empty ())
     {
       checkOptimizable (*tree, "pair_residuals");
@@ -352,6 +354,7 @@ struct ThisApplication : Application
       const RealAttr1* logDiffAttr = tree->getLogPredictionDiff ();
       tree->pairResiduals2dm (resid2Attr, logDiffAttr, f); 
     }
+  #endif
     
     if (! arc_length_stat. empty ())
     {

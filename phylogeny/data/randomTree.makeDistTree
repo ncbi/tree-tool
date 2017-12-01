@@ -11,29 +11,28 @@ INPUT:
 # Nodes: 98
 # Dissimilarities: 1225 (100.00 %)
 Ave. dissimilarity = 4.99
-Arc length is optimizable globally
 
 
 # Outliers: 0
 Min. rel. leaf error of outliers: inf
 
 OUTPUT:
-absCriterion = 8.3503  Error density = 3.3741 %
-absCriterion [0] = 3.7456  Error density [0] = 5.0492 %  Fraction = 34.0408 %
-absCriterion [1] = 4.6048  Error density [1] = 2.8018 %  Fraction = 65.9592 %
+absCriterion = 8.350  Error density = 3.374 %
+absCriterion [0] = 3.746  Error density [0] = 5.049 %  Fraction = 34.041 %
+absCriterion [1] = 4.605  Error density [1] = 2.802 %  Fraction = 65.959 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.08
 
 # Interior nodes (with root) = 48 (max = 49)
 # Interior undirected arcs = 47
-Tree length = 64.3408
-Min. discernable leaf length = 0.7793
-Ave. arc length = 0.6633
+Tree length = 64.341
+Min. discernable leaf length = 0.779
+Ave. arc length = 0.663
 Interior height = 11
-Bifurcating interior branching = 1.3714
+Bifurcating interior branching = 1.371
 # Frequent children interior nodes = 48
 # Frequent children leaves = 50
 # Frequent interior nodes = 48
 # Frequent leaves = 50
-Rareness threshold = 1.0000 %
+Rareness threshold = 1.000 %

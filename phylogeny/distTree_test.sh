@@ -78,7 +78,7 @@ rm prot-identical_comm.distTree
 
 echo ""
 echo "prot-identical_comm (whole) ..."
-# Time: 4 min.
+# Time: 7 min.
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology  -whole  -remove_outliers prot-identical_comm.outliers-whole | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
 if ($?) exit 1
 diff prot-identical_comm.outliers-whole data/prot-identical_comm.outliers-whole

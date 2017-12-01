@@ -68,7 +68,7 @@ constexpr streamsize criterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
-constexpr size_t sparsingDepth = 2 * areaRadius_std;  
+constexpr size_t sparsingDepth = 10;  
 constexpr Prob rareProb = 0.01; 
 
 
@@ -83,7 +83,7 @@ struct NewLeaf;
 
 
 
-// For Time: n = # Tree leaves, p = # distances = DistTree::ds.objs.size()
+// For Time: n = # Tree leaves, p = # distances = DistTree::dissims.size()
 //           p >= n
 
 
@@ -95,14 +95,14 @@ struct DTNode : Tree::TreeNode
   friend Leaf;
   friend NewLeaf;
 
-  // For optimization
 	Real len;
 	  // Arc length between *this and *getParent()
-//const CompactBoolAttr1* attr {nullptr};  // ??
-    // If !nullptr then in getDistTree().ds
-    // ~DTNode() does not delete
-    // ExtBoolAttr1: makes faster by 5 % 
-
+  Vector<size_t/*objNum*/> pathObjNums; 
+    // Paths: function of getDistTree().dissims
+    // Dissimilarity paths passing through *this arc
+    // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
+    //             aggregate size = 2 p
+    // !asLeaf(): aggregate size = O(p log(n))
 private:
   bool stable {false};
     // Init: false
@@ -117,12 +117,6 @@ protected:
     // Average subtree height 
     // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
-  Vector<size_t/*objNum*/> pathObjNums; 
-    // Paths: function of getDistTree().dissims
-    // Dissimilarity paths passing through *this arc
-    // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
-    //             aggregate size = 2 p
-    // !asLeaf(): aggregate size = O(p log(n))
   size_t paths {0};  // = pathObjNums.size() ??
     // Number of paths going through *this arc
   Real errorDensity {NAN};
@@ -321,7 +315,7 @@ public:
     // Return: !nullptr
   Real getRelCriterion (bool strong) const;
     // Return: average over all Leaf's = 1
-    //         If getDistTree().ds.objs has no all pairs of Leaf's then approximate
+    //         If getDistTree().dissims has no all pairs of Leaf's then approximate
   bool getCollapsed (const Leaf* other) const
     { return    other
              && getParent () == other->getParent ()
@@ -418,7 +412,7 @@ struct Subgraph : Root
   void finishSubPaths ();
 //change topology of tree within area
   void subPaths2tree ();
-    // Update: tree: Paths, absCriterion, *prediction
+    // Update: tree: Paths, absCriterion, Dissim::prediction
 
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
@@ -433,34 +427,25 @@ struct Subgraph : Root
 
 struct Change : Root
 // Of topology
-// Input: tree.dsSample
 // *to becomes a sibling of *from
 // Enough to transform any topology to any topology. Proof: by induction by node depth descending
 {
-protected:
+private:
 	const DistTree& tree;
 public:
 	const DTNode* from;
 	  // !nullptr
+	const DTNode* to;
+	  // !nullptr
+	// Output of apply_()
+	VectorPtr<DTNode> targets;  
+	  // DTNode's whose len may be changed 
 	Real improvement {NAN};
 	  // isNan() or positive()
     // Too small values are noise => not stable in bootstrap
-	// Output of apply_()
-protected:
-	Real fromLen {NAN};
-	const DTNode* to;
-	  // !nullptr
-	Real toLen {NAN};
-public:
-	VectorPtr<Tree::TreeNode> targets;  
-	  // DTNode's whose len may be changed 
-	//
 private:
-  enum Status {eInit, eApplied, eDone};
-  Status status;
-public:
-	
-protected:
+	Real fromLen {NAN};
+	Real toLen {NAN};
 	// !nullptr
 	Steiner* oldParent {nullptr};
 	  // Old from->getParent()
@@ -469,6 +454,8 @@ protected:
 	Steiner* inter {nullptr};
 	  // Between *to and *arcEnd
   Subgraph subgraph;
+  enum Status {eInit, eApplied, eDone};
+  Status status {eInit};
 public:
 
 	
@@ -477,12 +464,9 @@ public:
 		: tree (const_cast <DistTree&> (from_arg->getDistTree ()))
 		, from (from_arg)
 		, to (to_arg)
-		, targets (4, nullptr)  
-		, status (eInit)
+		, targets {from, to}
 		, subgraph (tree)
-		{ targets. clear ();
-		  targets << from << to; 
-		}
+		{}
     // Requires: valid()
 	static bool valid (const DTNode* from_arg,
 	                   const DTNode* to_arg)
@@ -498,7 +482,6 @@ public:
 	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () == 2)  
 	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () == 2); 
 	  }
-    // Requires: parameters are the same as in the constructor
  ~Change ();
 	void qc () const override;
 	  // Invokes: valid()
@@ -516,13 +499,13 @@ public:
 
   bool valid () const
     { return valid (from, to); }
-  // Update: tree topology, DTNode::len, *tree.prediction
+  // Update: tree topology, DTNode::len, tree.dissims[].prediction
 	bool apply ();
 	  // Return: success
 	  // Minimum change to compute tree.absCriterion
 	  // status: eInit --> eApplied|eFail
 	void restore ();
-	  // Output: *tree.prediction
+	  // Output: tree.dissims[].prediction
 	  // status: eApplied --> eInit
 	void commit ();
 	  // status: eApplied --> eDone
@@ -540,13 +523,20 @@ struct Dissim
   const Leaf* leaf2 {nullptr};
     // !nullptr
     // leaf1->name < leaf2->name
+  Real target {NAN};
+    // Dissimilarity between leaf1 and leaf2; !isNan()
   Real mult {NAN};
+  
+  Real prediction {NAN};
+    // Tree distance
   const Steiner* lca {nullptr};
     // Paths
   
 
   Dissim (const Leaf* leaf1_arg,
-          const Leaf* leaf2_arg);
+          const Leaf* leaf2_arg,
+          Real target_arg,
+          Real mult_arg);
   void qc () const;
 
           
@@ -562,6 +552,12 @@ struct Dissim
   string getObjName () const;
   void print () const
     { cout << leaf1 << ' ' << leaf2 << ' ' << mult << ' ' << lca << endl; }
+  VectorPtr<Tree::TreeNode> getPath () const;
+  Real getResidual () const
+    { return prediction - target; }
+  Real getAbsCriterion (Real prediction_arg) const;
+  Real getAbsCriterion () const
+    { return getAbsCriterion (prediction); }
 };
 
 
@@ -575,6 +571,11 @@ struct DistTree : Tree
 // Steiner tree
 // nodes.size() >= 2
 {
+  friend DTNode;
+  friend Leaf;
+  friend Change;
+  friend Subgraph;
+
   map<string/*Leaf::name*/,const Leaf*> name2leaf;
     // 1-1
 
@@ -586,41 +587,14 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
-
-  friend Change;
-  friend Subgraph;
-  Dataset ds;  // --> dissims ??
-    // objs: pairs of Leaf's
-    //       objs[i].name = dissims[i].getName()
-	  //       objs[i]->mult = dissim2mult(target[i]); positive()
-    // attrs: DTNode::attr: 0/1: 1 <=> on the path between the pair of Leaf's    
-    // attrs.size() <= 2*n
-    // objs.size() <= n*(n-1)/2
-    // size = O(p)
-  Sample dsSample;  
-    // = Sample(ds)
-  // !nullptr
-  const RealAttr1* target {nullptr};  // --> Dissim ??
-    // target[i] = dissimilarity between dissims[i].leaf1 and dissims[i].leaf2; !isMissing()
+    
+  Vector<Dissim> dissims;
 public:
   Real dissim2_sum {0};
-    // = sum target[i]^2 * mult
-private:
-  // For optimization
-  const RealAttr1* prediction {nullptr};  // --> Dissim ??
-    // Tree distances
-  // For Change
-  
-  // ds-tree relations
-  Vector<Dissim> dissims;
-    // size() = ds.objs.size()
-public:
-    
+    // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NAN};
     // = L2LinearNumPrediction::absCriterion  
 private:
-  friend DTNode;
-  friend Leaf;
   Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
 	VectorOwn<Leaf> detachedLeaves;
@@ -635,16 +609,16 @@ public:
 	          const string &attrName,
 	          bool sparse);
 	  // Input: dissimFName and attrName: may be both empty
-	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2ds(), topology2attrs()
+	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2dissims()
 	DistTree (const string &dirName,
 	          const string &dissimFName,
 	          const string &attrName);
 	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
-	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2ds(), setGlobalLen(), topology2attrs()
+	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
 	          const string &attrName,
 	          bool sparse);
-	  // Invokes: loadDissimDs(), dissimDs2ds(), neighborJoin(), topology2attrs()
+	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
 	          bool loadDissim);
@@ -689,7 +663,7 @@ public:
     // Output: subgraph: tree = center->getTree()
     //                   area: contains center, newLeaves2boundary.values(); discernable
     //         newLeaves2boundary
-	  // Time: O(wholeDs.p log(wholeDs.n)) + f(|area|), where wholeDs = center->getDistTree().ds
+	  // Time: O(wholeTree.p log(wholeTree.n)) + f(|area|), where wholeTree = center->getDistTree()
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -738,27 +712,29 @@ private:
     // Invokes: reroot(true)
     // Time: O(n^3)
   //
-  void dissimDs2ds (bool sparse);
+  void dissimDs2dissims (bool sparse);
     // Update: dissimDs: delete
-    // Output: ds etc.
-    //         Tree: if an object is absent in ds then it is deleted from the Tree
+    // Output: dissims etc.
+    //         if an object is absent in dissimDs then it is deleted from the Tree
     // Invokes: getSelectedPairs(), loadDissimFinish()
-  void loadDissimPrepare (size_t pairs_max,
-                          streamsize target_decimals);
-    // Output: target
+  void loadDissimPrepare (size_t pairs_max);
+    // Output: Dissim::target
   size_t leaves2dissims (Leaf* leaf1,
-                         Leaf* leaf2);
+                         Leaf* leaf2,
+                         Real target,
+                         Real mult);
+    // Append: dissims[]
+    // Return: dissims.size() - 1
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim);
 	  // Return: dissim is added
-	  // Update: ds.objs, dissim2_sum, *target, objLeaf1, objLeaf2
+	  // Update: Dissim, dissim2_sum
   void loadDissimFinish ();
-    // Output: dsSample, absCriterion_delta
+    // Output: absCriterion_delta
     // Time: O(p n)
 public:
 	void qc () const override;
-	  // Invokes: ASSERT (eqReal (absCriterion, getAbsCriterion ()))
 
 
   void deleteLeaf (TreeNode* leaf,
@@ -784,11 +760,12 @@ public:
     }
 	void printInput (ostream &os) const;
 	bool optimizable () const  
-	  { return ! ds. objs. empty (); }
+	  { return ! dissims. empty (); }
 	Real getDissim_ave () const
-	  { Real average, scatter;
-	    target->getAverageScatter (dsSample, average, scatter);
-	    return average;
+	  { WeightedMeanVar mv;
+	    for (const Dissim& dissim : dissims)
+	      mv. add (dissim. target, dissim. mult);
+	    return mv. getMean ();
 	  }
   Real getLeafAbsCriterion () const
     { return 2 * absCriterion / (Real) name2leaf. size (); }
@@ -810,16 +787,9 @@ public:
 private:
   void qcPaths ();
     // Sort: DTNode::pathObjNums 
-  void resetAttrs ();
-    // Time: O(p n)
   void setLca ();
     // Input: Leaf::pathObjNums
     // Output: Dissim::lca
-  VectorPtr<TreeNode> dissim2path (size_t objNum) const  // ??
-    { const Dissim& dissim = dissims [objNum];
-      return getPath (dissim. leaf1, dissim. leaf2);
-    }
-  VectorPtr<TreeNode> dissimLca2path (size_t objNum) const;
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
 public:
@@ -827,22 +797,6 @@ public:
     // Return: >= 0
 	  // Input: DTNode::len
 	  // Time: O(path.size()) = O(log(n))
-  void setPrediction ();
-    // Output: *prediction
-    // Invokes: path2prediction()
-	  // Time: O(p log(n))
-  Real getAbsCriterion (size_t objNum,
-                        Real dHat) const;
-  Real getAbsCriterion (size_t objNum) const
-    { return getAbsCriterion (objNum, (*prediction) [objNum]); }
-  Real getAbsCriterion () const;
-    // Input: *prediction
-	  // Time: O(p)
-  void setAbsCriterion ()
-    { absCriterion = getAbsCriterion (); }
-    // More precise than L2LinearNumPrediction::absCriterion and includes !discernable nodes where dissimilarity != 0  
-  void checkAbsCriterion (const string &title) const;
-    // Invokes: qc(), getAbsCriterion()
   void printAbsCriterion_halves () const;
   void setLeafAbsCriterion ();
     // Output: Leaf::absCriterion
@@ -852,14 +806,14 @@ public:
 	void optimizeLenArc ();
 	  // Return: success
 	  // Update: DTNode::len
-	  // Output: prediction, absCriterion
+	  // Output: Dissim::prediction, absCriterion
 	  // To be followed by: finishChanges()
 	  // Time: O(p n); return = 1.04 * optimal
   void optimizeLenNode ();
 	  // Update: DTNode::len
-	  // Output: prediction, absCriterion
+	  // Output: Dissim::prediction, absCriterion
     // After: deleteLenZero()
-    // Postcondition: (*prediction)[] = 0 => (*target)[] = 0 
+    // Postcondition: Dissim: prediction = 0 => target = 0 
     // Not idempotent
     // Time: O(n p log(n))
   // Topology
@@ -929,9 +883,9 @@ public:
   Set<string> selectPairs ();  
     // Return: pairs of Leaf->name's 
     //         O(log(n)) pairs for each Leaf
-    //         not in ds.objs
+    //         not in dissims
     //         reroot(true) reduces size()
-    // Invokes: setReprLeaves(), ds.setName2objNum(), getObjName()
+    // Invokes: setReprLeaves(), getObjName()
         
   // After optimization
   void setHeight ()
@@ -949,18 +903,18 @@ public:
     
   // Quality
   Real getMeanResidual () const;
-    // Input: prediction
+    // Input: Dissim::prediction
 	  // Time: O(p)
   Real getMinLeafLen () const;
     // Return: min. length of discernable leaf arcs 
   Real getSqrResidualCorr () const;
-    // Return: correlation between squared residual and target
-    // Input: prediction
+    // Return: correlation between squared residual and Dissim::target
+    // Input: Dissim::prediction
 	  // Time: O(p)
   Real setErrorDensities ();
     // Requires: linear variance of dissimilarities
     // Return: epsilon2_0
-    // Input: prediction
+    // Input: Dissim::prediction
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
@@ -973,6 +927,8 @@ public:
     // Time: O(n log(N))
 
   // Statistics
+#if 0
+  ??
   RealAttr1* getResiduals2 ();
     // Non-weighted squared residuals
     // Return: !nullptr
@@ -983,6 +939,7 @@ public:
                          const RealAttr1* logDiffAttr,
                          ostream &os) const;
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
+#endif
   void saveDissim (ostream &os) const;
 };
 
