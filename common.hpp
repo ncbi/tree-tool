@@ -2176,9 +2176,6 @@ struct Tree : DiGraph
     // Return: !nullptr, !contains(getLowestCommonAncestor(nodeVec)), contains(nodeVec)
     // Invokes: getLowestCommonAncestor(nodeVec)
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
-                                      const TreeNode* n2);
-    // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
-  static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2,
                                       const TreeNode* ca,
                                       const TreeNode* &lca);

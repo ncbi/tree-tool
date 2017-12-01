@@ -2325,52 +2325,6 @@ Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec)
 
 
 VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
-                                         const TreeNode* n2)
-{ 
-  ASSERT (n1);
-  ASSERT (n2);
-  ASSERT (n1->graph);
-  ASSERT (n1->graph == n2->graph);
-  
-  if (n1 == n2)
-    return VectorPtr<Tree::TreeNode> ();
-  
-	static VectorPtr<TreeNode> vec1;  
-	vec1. clear ();
-	if (getParentsOrTarget (n1, n2, vec1))
-		return vec1;
-	ASSERT (! vec1. empty ());
-
-	static VectorPtr<TreeNode> vec2; 
-	vec2. clear ();
-	if (getParentsOrTarget (n2, n1, vec2))
-		return vec2;
-	ASSERT (! vec2. empty ());
-
-	size_t i1 = vec1. size () - 1;
-	size_t i2 = vec2. size () - 1;
-	ASSERT (vec1 [i1] == vec2 [i2]);
-	while (vec1 [i1] == vec2 [i2])
-	{
-    vec1. pop_back ();
-    vec2. pop_back ();
-		ASSERT (i1);
-		ASSERT (i2);
-		i1--;
-		i2--;
-	}
-
-  VectorPtr<TreeNode> res;  res. reserve (vec1. size () + vec2. size ());
-  res << vec1;
-  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec2)
-    res << *it;
-  
-  return res;
-}
-
-
-
-VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
                                          const TreeNode* n2,
                                          const TreeNode* ca,
                                          const TreeNode* &lca)
