@@ -2,6 +2,7 @@
 
 if ($# != 1) then
   echo "#1: go"
+  echo "Time: 12 min."
   exit 1
 endif
 
@@ -21,7 +22,12 @@ if ($?) exit 1
 featureTree.sh obj gene
 if ($?) exit 1
 
+makeFeatureTree -input_tree obj.tree -features gene -input_core obj.core -use_time > obj.featureTree
+if ($?) exit 1
+ 
 diff obj.core $DIR/obj.core
+if ($?) exit 1
+diff obj.featureTree $DIR/obj.featureTree
 if ($?) exit 1
 diff obj.tree $DIR/obj.tree
 if ($?) exit 1
