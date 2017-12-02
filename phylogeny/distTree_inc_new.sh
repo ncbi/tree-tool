@@ -132,9 +132,11 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 
-#set VER = 161  
+#set VER = 212  
+
 
 # Time: O(n log^2(n)) 
+# -profile
 makeDistTree $QC  -data $1/  -remove_outliers $1/outlier.add  `cat $1/strong_outliers`  -reroot  -root_topological  -output_tree $1/tree.new  > $1/old/makeDistTree.$VER
 if ($?) exit 1
 mv $1/leaf $1/old/leaf.$VER
