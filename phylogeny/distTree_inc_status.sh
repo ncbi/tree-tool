@@ -11,6 +11,7 @@ set tmp = `mktemp`
 
 
 echo "Version: `cat $1/version`"
+echo "Outliers parameter: `cat $1/strong_outliers`"
 echo""
 
 set OBJS = `grep -vc '^ *0x' $1/tree`
@@ -28,8 +29,6 @@ echo "# Outliers: $N[1]"
 echo ""
 set N = `ls $1/new/ | wc -l`
 echo "# New: $N[1]"
-
-cat $1/strong_outliers
 
 echo ""
 wc -l $1/dissim
