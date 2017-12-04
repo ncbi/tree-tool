@@ -680,35 +680,6 @@ void Subgraph::finish ()
 
 
 
-void Subgraph::addSubPaths (const Vector<size_t> &objNums)
-{ 
-  for (const size_t objNum : objNums)
-    if (tree. dissims [objNum]. valid ())
-      subPaths << SubPath (objNum);
-}
-
-
-
-void Subgraph::area2subPaths ()
-// Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing ??
-{
-  ASSERT (subPaths. empty ());
-  bool first = true;
-  for (const Tree::TreeNode* node : boundary)
-  {
-    const DTNode* dtNode = static_cast <const DTNode*> (node);
-    const Vector<size_t>& pathObjNums = dtNode == area_root /* && area_underRoot */
-                                          ? area_underRoot->pathObjNums  
-                                          : dtNode        ->pathObjNums;
-    if (first)
-      first = false;  // One of pathObjNums is redundant given the others
-    else
-      addSubPaths (pathObjNums);
-  }
-}
-
-
-
 void Subgraph::finishSubPaths ()
 {
   ASSERT (subPathsAbsCriterion == 0);
@@ -810,7 +781,7 @@ void Subgraph::subPaths2tree ()
       {
         const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
         ASSERT (st);
-        if (verbose ())
+        if (qc_on && verbose ())
         {
         //ASSERT (area. containsFast (st));  
           ASSERT (! st->pathObjNums. contains (objNum));  
@@ -825,6 +796,36 @@ void Subgraph::subPaths2tree ()
   chron_subgraph2tree. stop ();
   
   const_cast <DistTree&> (tree). qcPaths (); 
+}
+
+
+
+void Subgraph::node2subPaths (const DTNode* node)
+{ 
+  ASSERT (node);
+  ASSERT (node->graph == & tree);
+  for (const size_t objNum : node->pathObjNums)
+    if (tree. dissims [objNum]. valid ())
+      subPaths << SubPath (objNum);
+}
+
+
+
+void Subgraph::area2subPaths ()
+// Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing ??
+{
+  ASSERT (subPaths. empty ());
+  bool first = true;
+  for (const Tree::TreeNode* node : boundary)
+  {
+    const DTNode* dtNode = static_cast <const DTNode*> (node);
+    if (dtNode == area_root)
+      dtNode = area_underRoot;
+    if (first)
+      first = false;  // One of dtNode's is redundant given the others
+    else
+      node2subPaths (dtNode);
+  }
 }
 
 
@@ -924,8 +925,8 @@ bool Change::apply ()
     ASSERT (subgraph. area. containsFast (to));
     IMPLY (arcEnd, subgraph. area. containsFast (arcEnd));
 
-    subgraph. addSubPaths (from->pathObjNums);
-    subgraph. addSubPaths (to  ->pathObjNums);
+    subgraph. node2subPaths (from);
+    subgraph. node2subPaths (to);
     subgraph. finishSubPaths ();
 
     subgraph. qc ();
@@ -4660,7 +4661,7 @@ void NewLeaf::saveRequest () const
     // Cf. DistTree::selectPairs()
     VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
     const DTNode* ancestor = location. anchor;
-    while (ancestor)
+    while (ancestor)  // limit by # ancestors ??
     {
     	descendants. clear ();
     	ancestor->getDescendants (descendants, sparsingDepth); 

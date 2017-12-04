@@ -103,6 +103,7 @@ struct DTNode : Tree::TreeNode
     // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
     //             aggregate size = 2 p
     // !asLeaf(): aggregate size = O(p log(n))
+    // Distribution of size ??
 private:
   bool stable {false};
     // Init: false
@@ -380,9 +381,10 @@ struct Subgraph : Root
   const DTNode* area_underRoot {nullptr};
     // May be nullptr
     // area.contains(area_underRoot)
-  // (bool) area_underRoot = (bool) area_root
+  // (bool)area_underRoot = (bool)area_root
   Vector<SubPath> subPaths;
     // Some paths of tree.dissims passing through area
+    // Size = O(|bounadry| p/n log(n))
   Real subPathsAbsCriterion {0};
   
   
@@ -405,23 +407,27 @@ struct Subgraph : Root
       subPathsAbsCriterion = 0;
     }
   
-  // Usage
-  // Time ??
+  // Usage:
 //set asea, boundary
   void finish ();
+    // Time: O(|area| log(|area|))
 //set subPaths
   void finishSubPaths ();
+    // Time: O(|boundary| p/n log(n) log(|subPaths|) + |subPaths| log(|area|))
 //change topology of tree within area
   void subPaths2tree ();
     // Update: tree: Paths, absCriterion, Dissim::prediction
+    // Time: O(|area| log(|subPaths|) + |subPaths| |area| log(|area|))
 
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
              || subPath. node2 == area_root;
     }
-  void addSubPaths (const Vector<size_t> &objNums);
+  void node2subPaths (const DTNode* node);
+    // Time: O(p/n log(n))
   void area2subPaths ();
-    // Invokes: addSubPaths()
+    // Invokes: node2subPaths()
+    // Time: O(|boundary| p/n log(n))
 };
 
 
@@ -505,6 +511,7 @@ public:
 	  // Return: success
 	  // Minimum change to compute tree.absCriterion
 	  // status: eInit --> eApplied|eFail
+	  // Time: O(log^4(n))
 	void restore ();
 	  // Output: tree.dissims[].prediction
 	  // status: eApplied --> eInit
@@ -664,7 +671,7 @@ public:
     // Output: subgraph: tree = center->getTree()
     //                   area: contains center, newLeaves2boundary.values(); discernable
     //         newLeaves2boundary
-	  // Time: O(wholeTree.p log(wholeTree.n)) + f(|area|), where wholeTree = center->getDistTree()
+	  // Time: O(log^2(wholeTree.n)) + f(|area|), where wholeTree = center->getDistTree()
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -733,7 +740,7 @@ private:
 	  // Update: Dissim, dissim2_sum
   void loadDissimFinish ();
     // Output: absCriterion_delta
-    // Time: O(p n)
+    // Time: O(p log(n))
 public:
 	void qc () const override;
 
@@ -797,7 +804,7 @@ public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len
-	  // Time: O(path.size()) = O(log(n))
+	  // Time: O(|path|)
   void printAbsCriterion_halves () const;
   void setLeafAbsCriterion ();
     // Output: Leaf::absCriterion
@@ -809,14 +816,14 @@ public:
 	  // Update: DTNode::len
 	  // Output: Dissim::prediction, absCriterion
 	  // To be followed by: finishChanges()
-	  // Time: O(p n); return = 1.04 * optimal
+	  // Time: O(p log(n)); return = 1.04 * optimal
   void optimizeLenNode ();
 	  // Update: DTNode::len
 	  // Output: Dissim::prediction, absCriterion
     // After: deleteLenZero()
     // Postcondition: Dissim: prediction = 0 => target = 0 
     // Not idempotent
-    // Time: O(n p log(n))
+    // Time: O(n log^4(n))
   // Topology
 	void optimize2 ();
 	  // Optimal solution
@@ -829,7 +836,7 @@ public:
 	  // Return: false <=> finished
 	  // Requries: getConnected()
 	  // Invokes: getBestChange(), applyChanges()
-	  // Time of 1 iteration: O(n min(n,2^areaRadius_std) p log(n))  
+	  // Time of 1 iteration: O(n Time(getBestChange))  
 	void optimizeIter (const string &output_tree);
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
@@ -842,12 +849,11 @@ private:
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter()
-	  // Time: O(p (log(n) + min(n,2^areaRadius_std)) + Time(optimizeIter(),n = min(this->n,2^areaRadius_std)))
-	  //       average ??
+	  // Time: O(log^2(n) + Time(optimizeIter(),n = min(this->n,2^areaRadius_std))
   const Change* getBestChange (const DTNode* from);
     // Return: May be nullptr
     // Invokes: tryChange()
-    // Time: O(min(n,2^areaRadius_std) p log(n))
+    // Time: O(min(n,2^areaRadius_std) log^4(n))
   bool applyChanges (VectorOwn<Change> &changes);
 	  // Return: false <=> finished
     // Update: topology, changes (sort by Change::improvement descending)
@@ -925,7 +931,7 @@ public:
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
     // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
-    // Time: O(n log(N))
+    // Time: O(n log(n))
 
   // Statistics
 #if 0
