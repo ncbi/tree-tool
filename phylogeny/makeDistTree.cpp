@@ -182,7 +182,6 @@ struct ThisApplication : Application
 
             tree->optimizeLenArc ();
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
-            cout << endl;
             
             tree->optimizeLenNode ();  
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;

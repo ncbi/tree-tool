@@ -16,7 +16,6 @@ Ave. dissimilarity = 0.19
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 18
-
 Optimizing arc lengths at each node ...
 # Nodes deleted = 2
 absCriterion = 7.899  Error density = 1.942 %
