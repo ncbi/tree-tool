@@ -268,7 +268,7 @@ struct Leaf : DTNode
     { DTNode::saveContent (os);
       if (! isNan (absCriterion))
       { const ONumber oNum (os, criterionDecimals, true);  // PAR
-        os << "  leaf_error=" << getRelCriterion (true);
+        os << "  leaf_error=" << getRelCriterion (false);
       }
     	if (! discernable)
     	  os << "  " << non_discernable;
@@ -291,7 +291,7 @@ struct Leaf : DTNode
         return name;
       string s = name + prepend (" ", comment); 
       if (! isNan (absCriterion))
-        s += " " + real2str (getRelCriterion (true), 1);  // PAR
+        s += " " + real2str (getRelCriterion (false), 1);  // PAR
       return s;
     }
   bool isLeafType () const final
@@ -1036,9 +1036,9 @@ public:
            const string &name_arg,
            bool init);
 private:
-  string getNameDir () const       { return dataDir + "/" + name + "/"; }
-  string getDissimFName () const   { return getNameDir () + "dissim"; }
-  string getLeafFName ( )const     { return getNameDir () + "leaf"; }
+  string getNameDir      () const  { return dataDir + "/" + name + "/"; }
+  string getDissimFName  () const  { return getNameDir () + "dissim"; }
+  string getLeafFName    () const  { return getNameDir () + "leaf"; }
   string getRequestFName () const  { return getNameDir () + "request"; }
   void saveLeaf () const
     { OFStream of (getLeafFName ());
