@@ -4143,6 +4143,7 @@ void DistTree::removeLeaf (Leaf* leaf)
 
 
 Set<string> DistTree::selectPairs ()
+// Use sparsingDepth ancestors of ancestor if ancestor->reprLeaf = leaf ??!
 {
   setReprLeaves ();  
   Set<string> dissimNames;
@@ -4661,7 +4662,8 @@ void NewLeaf::saveRequest () const
     // Cf. DistTree::selectPairs()
     VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
     const DTNode* ancestor = location. anchor;
-    while (ancestor)  // limit by # ancestors ??
+    size_t depth = 0;
+    while (ancestor && depth <= sparsingDepth)  
     {
     	descendants. clear ();
     	ancestor->getDescendants (descendants, sparsingDepth); 
@@ -4673,6 +4675,7 @@ void NewLeaf::saveRequest () const
     	    requested << descendant->reprLeaf;
     	}
       ancestor = static_cast <const DTNode*> (ancestor->getParent ());
+      depth++;
     }
   }
   
