@@ -44,7 +44,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Compute hash dissimilarities for requested pairs")
     {
-  	  addPositional ("pairs", "File with pairs of objects, where first obejct is the same for all pairs");
+  	  addPositional ("pairs", "File with pairs of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
   	  addPositional ("out", "Output file");
   	}
