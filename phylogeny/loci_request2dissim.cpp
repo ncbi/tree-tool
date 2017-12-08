@@ -19,6 +19,7 @@ typedef array<size_t,locus_max> Loci;
 
 Loci getLoci (const string &fName)
 {
+  static_assert (sizeof (size_t) == 8, "sizeof (size_t) == 8");
   LineInput f (fName);
   Loci loci;  
   loci. fill (0);
