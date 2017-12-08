@@ -407,6 +407,7 @@ Leaf::Leaf (DistTree &tree,
          , 0
          )  
 , name (name_arg)
+, discernable (other->discernable)
 {
   collapse (other);
 }
@@ -515,20 +516,38 @@ void Leaf::collapse (Leaf* other)
   ASSERT (graph);
   ASSERT (graph == other->graph);
   
+#if 0
+  printAncestors (nullptr);
+  other->printAncestors (nullptr);
+  cout << discernable << ' ' << other->discernable << endl;
+  cout << name << ' ' << other->name << endl;
+  getParent () -> saveText (cout);
+#endif
+  
   Vector<Leaf*> indiscernables (1, this);
   {
     const Steiner* oldParent = static_cast <const Steiner*> (getParent ()); 
     ASSERT (oldParent);
-    if (! oldParent->childrenDiscernable ())
+    if (! discernable)   //  discernable == oldParent->childrenDiscernable ()
     {
       indiscernables. clear ();
       indiscernables. reserve (oldParent->arcs [false]. size ());
       for (const DiGraph::Arc* arc : oldParent->arcs [false])
-        indiscernables << static_cast <Leaf*> (arc->node [false]);
+      {
+        const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+        ASSERT (child);
+        ASSERT (! child->discernable);
+        indiscernables << const_cast <Leaf*> (child);
+      }
       ASSERT (indiscernables. size () >= 2);
     }
   }
-  ASSERT (! indiscernables. empty ());
+  ASSERT (indiscernables. contains (this));
+#if 0
+  for (const Leaf* leaf : indiscernables)
+    cout << ' ' << leaf;
+  cout << endl;
+#endif
     
   if (other->discernable)
   {
@@ -549,9 +568,22 @@ void Leaf::collapse (Leaf* other)
       for (Leaf* leaf : indiscernables)
         leaf->setParent (const_static_cast <Steiner*> (other->getParent ()));
   }
+  
+  discernable = false;
 
+  ASSERT (getParent () == other->getParent ());
+  if (qc_on)
+    for (const DiGraph::Arc* arc : getParent () -> arcs [false])
+    {
+      const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+      ASSERT (child);
+      ASSERT (! child->discernable);
+    }
+
+#if 0
   for (Leaf* leaf : indiscernables)
     leaf->discernable = false;
+#endif
 }
 
 
@@ -1296,7 +1328,7 @@ DistTree::DistTree (const string &dataDirName,
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
   
-  setName2leaf ();
+  setName2leaf ();  
 
 
   VectorPtr<Leaf> newLeaves;  newLeaves. reserve (nodes. size ());
@@ -1319,8 +1351,14 @@ DistTree::DistTree (const string &dataDirName,
       // Attach a leaf
       Leaf* leaf = nullptr;
       if (const Leaf* anchorLeaf = anchor->asLeaf ())
+      {
         if (leafLen == 0 && arcLen == 0)
           leaf = new Leaf (*this, const_cast <Leaf*> (anchorLeaf), leafName);
+        else
+          if (! anchorLeaf->discernable)
+            anchor = static_cast <const DTNode*> (anchor->getParent ());
+      }
+      ASSERT (anchor);
       if (! leaf)
       {
         while (anchor != root && greaterReal (arcLen, anchor->len))
@@ -1359,7 +1397,7 @@ DistTree::DistTree (const string &dataDirName,
   	    outliers << item;
     }
     outliers. sort ();
-    loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 10));  // PAR
+    loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 70));  // PAR
     {
       const string fName (dataDirName + "dissim");
       cout << "Loading " << fName << " ..." << endl;
@@ -1389,6 +1427,8 @@ DistTree::DistTree (const string &dataDirName,
           const_cast <Leaf*> (leaf1) -> collapse (const_cast <Leaf*> (leaf2));
         EXEC_ASSERT (addDissim (name1, name2, dissim)); 
       }
+      if (! f. lineNum)
+        throw runtime_error ("Empty " + fName);
     }
     // qc
     for (const DiGraph::Node* node : nodes)
@@ -1715,7 +1755,7 @@ DistTree::DistTree (const DTNode* center,
 void DistTree::loadTreeDir (const string &dir)
 {
 	ASSERT (! dir. empty ());
-  ASSERT (isRight (dir, "/"));
+  ASSERT (isDirName (dir));
 
   StringVector fileNames;  
   {
@@ -4564,7 +4604,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
 , tree (tree_arg)
 , dataDir (dataDir_arg)
 {
-  ASSERT (isRight (dataDir, "/"));
+  ASSERT (isDirName (dataDir));
   ASSERT (! name. empty ());
   
   if (fileExists (getRequestFName ()))

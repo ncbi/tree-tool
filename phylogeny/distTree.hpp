@@ -314,7 +314,7 @@ public:
   const Leaf* getDissimOther (size_t objNum) const;
     // Return: !nullptr; != this
   const DTNode* getDiscernable () const;
-    // Return: !nullptr
+    // Return: this or getParent(); !nullptr
   Real getRelCriterion (bool strong) const;
     // Return: average over all Leaf's = 1
     //         If getDistTree().dissims has no all pairs of Leaf's then approximate
