@@ -593,6 +593,9 @@ inline string getFileName (const string &path)
   	return path. substr (pos + 1);
   }
 
+inline bool isDirName (const string &path)
+  { return isRight (path, "/"); }
+
 bool fileExists (const string &fName);
 
 
@@ -2294,9 +2297,8 @@ protected:
 	AutoPtr <char> buf;
 	ifstream ifs;
 public:
-	bool eof;
-	  // Init: false
-	uint lineNum;
+	bool eof {false};
+	uint lineNum {0};
 	  // # lines read
 protected:
 	Progress prog;

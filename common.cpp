@@ -2589,13 +2589,11 @@ Input::Input (const string &fName,
 	            size_t bufSize,
 	            uint displayPeriod)
 : buf (new char [bufSize])
-, ifs (fName. c_str ())
-, eof (false)
-, lineNum (0)
+, ifs (fName)
 , prog (0, displayPeriod)  
 { 
   if (! ifs. good ())
-    ERROR_MSG ("Bad file: " + fName);
+    throw runtime_error ("Bad file: " + fName);
   EXEC_ASSERT (ifs. rdbuf () -> pubsetbuf (buf. get (), (long) bufSize));   
 }
  
@@ -2822,7 +2820,7 @@ void OFStream::open (const string &dirName,
 	ASSERT (! pathName. empty ());
 	
 	string name;
-	if (! dirName. empty () && ! isRight (dirName, "/"))
+	if (! dirName. empty () && ! isDirName (dirName))
 	  name = dirName + "/";
 	name += pathName;
 	if (! extension. empty ())
@@ -3245,8 +3243,7 @@ FileItemGenerator::FileItemGenerator (uint progress_displayPeriod,
 { 
   if (isDir)
   { 
-    if (isRight (fName,  "/"))
-    	fName. erase (fName. size () - 1);
+    trimSuffix (fName,  "/");
 	  char lsfName [4096] = {'\0'};
   #ifdef _MSC_VER
     throw runtime_error ("Windows");  // ??
