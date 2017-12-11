@@ -2525,11 +2525,12 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
   dissims. reserve (pairs_max);
 
+  const size_t reserve_size = 10 * (size_t) log (nodes. size ());  // PAR
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
  	  ASSERT (dtNode->pathObjNums. empty ());
- 	  const_cast <DTNode*> (dtNode) -> pathObjNums. reserve (10 * (size_t) log (nodes. size ()));  // PAR
+ 	  const_cast <DTNode*> (dtNode) -> pathObjNums. reserve (reserve_size);  
  	}
 }
   
@@ -2597,7 +2598,7 @@ void DistTree::loadDissimFinish ()
 
   setLca ();  
   absCriterion = 0;
-  FOR (size_t, objNum, dissims. size ())
+  FOR (size_t, objNum, dissims. size ())  // Progress ??
   {
     Dissim& dissim = dissims [objNum];
     ASSERT (dissim. valid ());
@@ -3872,8 +3873,9 @@ const Change* DistTree::getBestChange (const DTNode* from)
 	
  	const Change* bestChange = nullptr;
  	
-  VectorPtr<TreeNode> area;      area.     reserve (nodes. size ()); 
-  VectorPtr<TreeNode> boundary;  boundary. reserve (nodes. size ()); 
+ 	const size_t reserve_size = min ((size_t) pow (2, areaRadius_std + 1), 2 * name2leaf. size ());
+  VectorPtr<TreeNode> area;      area.     reserve (reserve_size); 
+  VectorPtr<TreeNode> boundary;  boundary. reserve (reserve_size); 
   from->getArea (areaRadius_std, area, boundary);  
   if (verbose (1))
     cerr << " area=" << area. size () << " ";
@@ -4702,7 +4704,7 @@ void NewLeaf::saveRequest () const
     // Cf. DistTree::selectPairs()
     VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
     const DTNode* ancestor = location. anchor;
-    size_t depth = 0;
+    size_t depth = 0;  // start when ancestor->reprLeaf = location.anchor->reprLeaf ??!
     while (ancestor && depth <= sparsingDepth)  
     {
     	descendants. clear ();
