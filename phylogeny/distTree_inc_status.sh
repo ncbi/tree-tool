@@ -24,7 +24,8 @@ set N = `ls $1/search/ | wc -l`
 echo "# Being searched: $N[1]"
 
 set N = `ls $1/outlier/ | wc -l`
-echo "# Outliers: $N[1]"
+set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
+echo "# Outliers: $N[1] ($outliers_percent %)"
 
 echo ""
 set N = `ls $1/new/ | wc -l`
@@ -34,7 +35,7 @@ echo ""
 wc -l $1/dissim
 
 echo ""
-grep '^OUTPUT:' -A 1 -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[1-9]\+-/ /1' | sort -n -k 1 > $tmp
+grep '^OUTPUT:' -A 1 -n $1/old/makeDistTree.* | sed 's|^'$1'/old/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $tmp
 head -5 $tmp
 echo "..."
 tail -5 $tmp
