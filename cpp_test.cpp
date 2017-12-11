@@ -85,7 +85,22 @@ struct ThisApplication : Application
 	  cout << endl;
 	#endif
 	
-	  cout << sizeof (size_t) << endl;
+	//cout << sizeof (size_t) << endl;
+	  
+	  size_t n = 1;
+	  FOR (size_t, iter, 9)
+	  {
+      n *= 10;
+      cout << endl << "n = " << n << endl;
+	    map<size_t,size_t> nums;
+	    FOR (size_t, i, n)
+	      nums [i] = i;
+	    {
+        const Chronometer_OnePass chron ("Chron");  
+  	    cout << nums. size () << endl;
+  	  }
+	  }
+	  
 	}
 };
 
