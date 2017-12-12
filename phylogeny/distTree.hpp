@@ -603,7 +603,6 @@ public:
   Real absCriterion {NAN};
     // = L2LinearNumPrediction::absCriterion  
 private:
-  Real absCriterion_delta {NAN};
 	VectorOwn<DTNode> toDelete;
 	VectorOwn<Leaf> detachedLeaves;
 	  // !Leaf::graph
@@ -739,7 +738,8 @@ private:
 	  // Return: dissim is added
 	  // Update: Dissim, dissim2_sum
   void loadDissimFinish ();
-    // Output: absCriterion_delta
+    // Output: dissims::Dissim, DTNode::pathObjNums, absCriterion
+    // Invokes: setLca()
     // Time: O(p log(n))
 public:
 	void qc () const override;
@@ -837,7 +837,9 @@ public:
 	  // Requries: getConnected()
 	  // Invokes: getBestChange(), applyChanges()
 	  // Time of 1 iteration: O(n Time(getBestChange))  
-	void optimizeIter (const string &output_tree);
+	void optimizeIter (uint iter_max,
+	                   const string &output_tree);
+	  // Input: iter_max: 0 <=> infinity
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
 	void optimizeSubgraphs ();

@@ -1331,7 +1331,7 @@ DistTree::DistTree (const string &dataDirName,
   setName2leaf ();  
 
 
-  VectorPtr<Leaf> newLeaves;  newLeaves. reserve (nodes. size ());
+  VectorPtr<Leaf> newLeaves;  newLeaves. reserve (name2leaf. size () / 10 + 1);  // PAR
   if (loadNewLeaves)
   {
     LineInput f (dataDirName + "leaf", 10 * 1024, 1);  // PAR
@@ -1397,7 +1397,7 @@ DistTree::DistTree (const string &dataDirName,
   	    outliers << item;
     }
     outliers. sort ();
-    loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size () * 70));  // PAR
+    loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size ()) * 70);  // PAR
     {
       const string fName (dataDirName + "dissim");
       cout << "Loading " << fName << " ..." << endl;
@@ -2525,7 +2525,7 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
   dissims. reserve (pairs_max);
 
-  const size_t reserve_size = 10 * (size_t) log (nodes. size ());  // PAR
+  const size_t reserve_size = 10 * (size_t) log (name2leaf. size ());  // PAR
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -2591,15 +2591,12 @@ void DistTree::loadDissimFinish ()
 {
 	ASSERT (optimizable ());
   
-  absCriterion_delta = 0;
-  for (const Dissim& dissim : dissims)
-    absCriterion_delta += dissim. mult;
-  absCriterion_delta *= 1e-5;  // PAR
-
   setLca ();  
   absCriterion = 0;
-  FOR (size_t, objNum, dissims. size ())  // Progress ??
+  Progress prog ((uint) dissims. size (), 1e5);  // PAR
+  FOR (size_t, objNum, dissims. size ()) 
   {
+    prog ();
     Dissim& dissim = dissims [objNum];
     ASSERT (dissim. valid ());
     const VectorPtr<TreeNode> path (dissim. getPath ());
@@ -2658,7 +2655,11 @@ void DistTree::qc () const
       leafSet. checkUnique (pair<const Leaf*,const Leaf*> (dissim. leaf1, dissim. leaf2));
     }
     
-   	IMPLY (! isNan (absCriterion), absCriterion >= 0);
+   	if (! isNan (absCriterion))
+   	{
+   	  ASSERT (absCriterion >= 0);
+    //ASSERT (absCriterion_delta >= 0);
+    }
    	
    	   	
    	for (const DiGraph::Node* node : nodes)
@@ -2667,9 +2668,7 @@ void DistTree::qc () const
       ASSERT ((dtNode == root) == dtNode->pathObjNums. empty ());  
    		if (const Leaf* leaf = dtNode->asLeaf ())
    		  leafDissims += leaf->pathObjNums. size ();
-  	}
-  
-    ASSERT (absCriterion_delta > 0);
+  	}  
   }
   
 
@@ -2966,7 +2965,7 @@ bool DistTree::optimizeLenAll ()
   // DTNode::index, dtNodes, arcs
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> index = NO_INDEX;
-  VectorPtr<DTNode> dtNodes;  dtNodes. reserve (nodes. size ());
+  VectorPtr<DTNode> dtNodes;  dtNodes. reserve (2 * name2leaf. size ());
   size_t arcs = 0;
   for (DiGraph::Node* node : nodes)
   {
@@ -3279,7 +3278,7 @@ void DistTree::optimizeLenArc ()
   if (verbose (1))
     cout << "Optimizing arc lengths at each arc ..." << endl;
     
-  VectorPtr<DTNode> dtNodes;  dtNodes. reserve (nodes. size ());
+  VectorPtr<DTNode> dtNodes;  dtNodes. reserve (2 * name2leaf. size ());
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -3392,7 +3391,7 @@ void DistTree::optimizeLenNode ()
   const Real absCriterion_old1 = absCriterion;
 #endif
 
-  Vector<Star> stars;  stars. reserve (nodes. size ());
+  Vector<Star> stars;  stars. reserve (2 * name2leaf. size ());
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* center = static_cast <const DTNode*> (node);
@@ -3564,7 +3563,7 @@ bool DistTree::optimize ()
   
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR
 	{
-	 	Vector<DTNode*> nodeVec;  nodeVec. reserve (nodes. size ());
+	 	Vector<DTNode*> nodeVec;  nodeVec. reserve (2 * name2leaf. size ());
     for (DiGraph::Node* node : nodes)
     {
       DTNode* dtNode = static_cast <DTNode*> (node);
@@ -3590,10 +3589,11 @@ bool DistTree::optimize ()
 
 
 
-void DistTree::optimizeIter (const string &output_tree)
+void DistTree::optimizeIter (uint iter_max,
+                             const string &output_tree)
 {
   uint iter = 0;
-  for (;;)
+  while (! iter_max || iter < iter_max)
   {
     iter++;
     if (verbose (1))
@@ -3639,7 +3639,8 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
 #endif
   chron_tree2subgraph. stop ();
   
-
+//cerr << "  " << tree. nodes. size () << ' ' << tree. getLength () << ' ' << tree. absCriterion << endl;
+  
   const TreeNode* root_old = root;
   const bool rootInArea = (! subgraph. area_root || subgraph. area_root == root);
 
@@ -3656,7 +3657,7 @@ Real DistTree::optimizeSubgraph (const Steiner* center)
       tree. optimizeLenNode ();  
       tree. finishChanges (); 
       //
-      tree. optimizeIter (string ());
+      tree. optimizeIter (20, string ());  // PAR
         // Invoke: tree.neighborJoin(), tree.optimizeSubgraphs() if tree is large ??
           // allows using mdsTree.sh
     }
@@ -3873,7 +3874,7 @@ const Change* DistTree::getBestChange (const DTNode* from)
 	
  	const Change* bestChange = nullptr;
  	
- 	const size_t reserve_size = min ((size_t) pow (2, areaRadius_std + 1), 2 * name2leaf. size ());
+ 	const size_t reserve_size = (size_t) min (pow (2, areaRadius_std + 1), 2 * (Real) name2leaf. size ());
   VectorPtr<TreeNode> area;      area.     reserve (reserve_size); 
   VectorPtr<TreeNode> boundary;  boundary. reserve (reserve_size); 
   from->getArea (areaRadius_std, area, boundary);  
@@ -3911,6 +3912,8 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
 	
 	
   const Real absCriterion_init = absCriterion;
+  const Real absCriterion_delta = absCriterion * 1e-4;  // PAR
+  ASSERT (absCriterion_delta >= 0);
 
 
   // DTNode::stable: init
@@ -3956,7 +3959,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
      	}
   	  const bool success = ch->apply ();
   	  IMPLY (first, success && ch->improvement > 0);
-  	  if (! success || ch->improvement <= 0)
+  	  if (! success || ch->improvement <= absCriterion_delta)  // was: <= 0
   	  {
   	  //ASSERT (! first);
         if (verbose (1))
@@ -3995,7 +3998,6 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
     ONumber on (cout, criterionDecimals, false);
     cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
   }
-  ASSERT (geReal (improvement, - absCriterion_delta));
   ASSERT ((bool) commits == (bool) improvement);
 
   if (commits)
@@ -4102,7 +4104,7 @@ size_t DistTree::finishChanges ()
 size_t DistTree::deleteLenZero ()
 {
   size_t n = 0;
- 	Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());
+ 	Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (2 * name2leaf. size ());
  	insertAll (nodeVec, nodes);
  	for (DiGraph::Node* node :  nodeVec)  
  	  if (deleteLenZero (static_cast <DTNode*> (node)))
