@@ -1952,7 +1952,7 @@ struct Tree : DiGraph
 		  // Return: !nullptr
 		  // getAncestor(0) = this
 		void setParent (TreeNode* newParent);
-		  // Update: *newParent
+		  // Update: *newParent; makes *this the last child of *newParent
 		  //         getTree()->root if !newParent
     void printAncestors (const TreeNode* end) const;
     struct TipName : Root

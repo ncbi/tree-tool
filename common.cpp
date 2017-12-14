@@ -1503,6 +1503,12 @@ const Tree::TreeNode* Tree::TreeNode::getAncestor (size_t height) const
 void Tree::TreeNode::setParent (TreeNode* newParent)
 { 
 	ASSERT (newParent != this);
+
+#if 0	
+  // Breaks sort()'ing
+	if (newParent && getParent () == newParent)
+	  return;
+#endif
 	
 	if (! arcs [true]. empty ())
 	{
