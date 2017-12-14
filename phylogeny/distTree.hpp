@@ -68,6 +68,7 @@ constexpr streamsize criterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
+constexpr uint area_size_max_std = 100;  
 constexpr size_t sparsingDepth = 10;  
 constexpr Prob rareProb = 0.01; 
 
@@ -409,6 +410,7 @@ struct Subgraph : Root
   
   // Usage:
 //set asea, boundary
+  void removeIndiscernables ();
   void finish ();
     // Time: O(|area| log(|area|))
 //set subPaths
@@ -428,6 +430,11 @@ struct Subgraph : Root
   void area2subPaths ();
     // Invokes: node2subPaths()
     // Time: O(|boundary| p/n log(n))
+  VectorPtr<Tree::TreeNode> getPath (const SubPath &subPath) const
+    { const Tree::TreeNode* lca_ = nullptr;
+      return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_);
+    }
+    // Requires: subPath in subPaths
 };
 
 
@@ -662,11 +669,11 @@ public:
     // Random tree: DTNode::len = 1
     // Time: O(n)
   DistTree (const DTNode* center,
-            uint areaRadius,
-            Subgraph& subgraph,
+            uint &areaRadius,
+            Subgraph &subgraph,
             Node2Node &newLeaves2boundary);
     // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
-    // Input: areaRadius: >= 1
+    // Update: areaRadius: >= 1; may be decreased
     // Output: subgraph: tree = center->getTree()
     //                   area: contains center, newLeaves2boundary.values(); discernable
     //         newLeaves2boundary
@@ -846,8 +853,9 @@ public:
 	  // Invokes: optimizeSubgraph()
 	  // Time: O(n * Time(optimizeSubgraph))
 private:
-	Real optimizeSubgraph (const Steiner* center);
-	  // Return: min. distance to boundary
+	uint optimizeSubgraph (const DTNode* center,
+	                       uint areaRadius);
+	  // Return: adjusted areaRadius
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter()
