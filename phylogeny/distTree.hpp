@@ -68,7 +68,7 @@ constexpr streamsize criterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
-constexpr uint area_size_max_std = 100;  
+constexpr uint boundary_size_max_std = 500;  // was: 100
 constexpr size_t sparsingDepth = 10;  
 constexpr Prob rareProb = 0.01; 
 
@@ -376,7 +376,7 @@ struct Subgraph : Root
     // Connected area
   VectorPtr<Tree::TreeNode> boundary;
     // Make boundary and area disjoint ??
-  const DTNode* area_root {nullptr};
+  const Steiner* area_root {nullptr};
     // May be nullptr
     // boundary.contains(area_root)
   const DTNode* area_underRoot {nullptr};
@@ -385,7 +385,7 @@ struct Subgraph : Root
   // (bool)area_underRoot = (bool)area_root
   Vector<SubPath> subPaths;
     // Some paths of tree.dissims passing through area
-    // Size = O(|bounadry| p/n log(n))
+    // Size: O(|bounadry| p/n log(n))
   Real subPathsAbsCriterion {0};
   
   
@@ -397,7 +397,7 @@ struct Subgraph : Root
              && ! area_root
              && ! area_underRoot
              && subPaths. empty () 
-             && ! subPathsAbsCriterion; 
+             && ! subPathsAbsCriterion;
     }
   void clear () override
     { area. clear ();
@@ -417,10 +417,13 @@ struct Subgraph : Root
   void finishSubPaths ();
     // Time: O(|boundary| p/n log(n) log(|subPaths|) + |subPaths| log(|area|))
 //change topology of tree within area
+  Real getImprovement (const DiGraph::Node2Node &boundary2new) const;
+    // Time: O(|subPaths| (log(|boundary2new|) + log(|area|)))
   void subPaths2tree ();
     // Update: tree: Paths, absCriterion, Dissim::prediction
     // Time: O(|area| log(|subPaths|) + |subPaths| |area| log(|area|))
 
+  bool large () const;
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
              || subPath. node2 == area_root;
@@ -432,6 +435,7 @@ struct Subgraph : Root
     // Time: O(|boundary| p/n log(n))
   VectorPtr<Tree::TreeNode> getPath (const SubPath &subPath) const
     { const Tree::TreeNode* lca_ = nullptr;
+      // tree.dissims[subPath.objNum].lca can be used instead of area_root if viaRoot(subPath) and tree topology has not been changed ??
       return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_);
     }
     // Requires: subPath in subPaths
@@ -730,7 +734,7 @@ private:
     // Update: dissimDs: delete
     // Output: dissims etc.
     //         if an object is absent in dissimDs then it is deleted from the Tree
-    // Invokes: getSelectedPairs(), loadDissimFinish()
+    // Invokes: getSelectedPairs(), setPaths()
   void loadDissimPrepare (size_t pairs_max);
     // Output: Dissim::target
   size_t leaves2dissims (Leaf* leaf1,
@@ -744,7 +748,7 @@ private:
                   Real dissim);
 	  // Return: dissim is added
 	  // Update: Dissim, dissim2_sum
-  void loadDissimFinish ();
+  void setPaths ();
     // Output: dissims::Dissim, DTNode::pathObjNums, absCriterion
     // Invokes: setLca()
     // Time: O(p log(n))
@@ -849,7 +853,7 @@ public:
 	  // Input: iter_max: 0 <=> infinity
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
-	void optimizeSubgraphs ();
+	void optimizeSubgraphs (uint areaRadius);
 	  // Invokes: optimizeSubgraph()
 	  // Time: O(n * Time(optimizeSubgraph))
 private:
@@ -858,8 +862,8 @@ private:
 	  // Return: adjusted areaRadius
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true
-	  // Invokes: DistTree(center,areaRadius_std,).optimizeIter()
-	  // Time: O(log^2(n) + Time(optimizeIter(),n = min(this->n,2^areaRadius_std))
+	  // Invokes: DistTree(center,areaRadius,).optimizeIter()
+	  // Time: O(log^2(n) + Time(optimizeIter(),n = min(this->n,2^areaRadius))
   const Change* getBestChange (const DTNode* from);
     // Return: May be nullptr
     // Invokes: tryChange()
