@@ -351,7 +351,8 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
       ASSERT (eqReal (lp->sample. mult_sum, sample. mult_sum));
       lp->solveUnconstrained ();
       lp->qc ();
-      ASSERT (! isNan (lp->absCriterion));
+      if (isNan (lp->absCriterion))
+        continue;
       if (betaNonNegative)
         maximize (lp->beta [0], 0.0);
       const Real betaDelta = beta [attrNum] - lp->beta [0];
