@@ -156,6 +156,13 @@ inline bool minimizeReal (Real &a,
  	  return true;
   }
 
+inline Real nonNegative (Real x)
+  { if (negative (x))
+      throw logic_error ("negative x = " + toString (x));
+    else
+      return max (0.0, x);
+  }
+
 Real log2 (Real x);
 
 
