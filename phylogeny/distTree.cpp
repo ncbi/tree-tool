@@ -13,17 +13,6 @@ namespace DistTree_sp
 {
 
 
-// --> numeric.hpp ??
-inline Real nonNegative (Real x)
-  { if (negative (x))
-      throw logic_error ("negative x = " + toString (x));
-    else
-      return max (0.0, x);
-  }
-
-
-
-
 Chronometer chron_getBestChange ("getBestChange");
 Chronometer chron_tree2subgraph ("tree2subgraph");
 Chronometer chron_subgraphOptimize ("subgraphOptimize");
@@ -582,17 +571,13 @@ void Leaf::collapse (Leaf* other)
   discernable = false;
 
   ASSERT (getParent () == other->getParent ());
-  if (qc_on)
-    for (const DiGraph::Arc* arc : getParent () -> arcs [false])
-    {
-      const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
-      ASSERT (child);
-      ASSERT (! child->discernable);
-    }
-
-#if 0
-  for (Leaf* leaf : indiscernables)
-    leaf->discernable = false;
+#ifndef NDEBUG
+  for (const DiGraph::Arc* arc : getParent () -> arcs [false])
+  {
+    const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+    ASSERT (child);
+    ASSERT (! child->discernable);
+  }
 #endif
 }
 
@@ -1522,6 +1507,19 @@ DistTree::DistTree (const string &dataDirName,
         prog (real2str (absCriterion, criterionDecimals));
         Unverbose unv;
         optimizeSubgraph (leaf->getDiscernable (), 2 * areaRadius_std /*static_cast <const Steiner*> (leaf->getAncestor (subgraphDepth))*/);
+      #ifndef NDEBUG
+        // ??
+       	for (const DiGraph::Node* node : nodes)
+       	{
+       	  const DTNode* dtNode = static_cast <const DTNode*> (node);
+          if (dtNode->isTransient ())
+          {
+            cout << dtNode << endl;
+            dtNode->getParent () -> saveText (cout);
+            ERROR;
+          }
+        }
+      #endif
       }
     }
   }  
@@ -1611,6 +1609,7 @@ DistTree::DistTree (const DTNode* center,
                     uint &areaRadius,
                     Subgraph &subgraph,
                     Node2Node &newLeaves2boundary)
+: subDepth (center->getDistTree (). subDepth + 1)
 {
   ASSERT (center);
   ASSERT (center->graph != this);
@@ -2743,11 +2742,11 @@ void DistTree::qc () const
 	const Steiner* root_ = static_cast <const DTNode*> (root) -> asSteiner ();
   ASSERT (root_);
 
- 	for (DiGraph::Node* node : nodes)
+ 	for (const DiGraph::Node* node : nodes)
  	{
- 	  const DTNode* dtNode = static_cast <DTNode*> (node);
- 		ASSERT (! dtNode->isTransient ());
- 	}
+ 	  const DTNode* dtNode = static_cast <const DTNode*> (node);
+    ASSERT (! dtNode->isTransient ());
+  }
 
   const size_t leaves = root->getLeavesSize ();
   ASSERT (name2leaf. size () == leaves);
@@ -3685,6 +3684,8 @@ void DistTree::optimize3 ()
         dissim. prediction += leaf->len;
     absCriterion += dissim. getAbsCriterion ();
   }
+  
+  cleanTopology ();
 
   setPaths ();
 }
@@ -3778,10 +3779,10 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
 #endif
   chron_tree2subgraph. stop ();
   
-  cerr << "  " << areaRadius 
-       << ' ' << subgraph. boundary. size () 
-       << ' ' << subgraph. area. size () - subgraph. boundary. size () 
-       << endl;  // ??
+  if (verbose ())
+    cerr << "  " << areaRadius 
+         << ' ' << subgraph. boundary. size () 
+         << ' ' << subgraph. area. size () - subgraph. boundary. size ();
   
   const TreeNode* root_old = root;
   const bool rootInArea = (! subgraph. area_root || subgraph. area_root == root);
@@ -3798,7 +3799,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
     {
       if (subgraph. dense ())
       {
-        cerr << " NJ";  // ??
+      //cerr << " NJ";  
         // A bifurcating tree is needed for speed
         tree. neighborJoin ();
         neighborJoinP = true;
@@ -3808,14 +3809,20 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
       tree. optimizeLenNode ();  
       tree. finishChanges (); 
       if (subgraph. large () && areaRadius > 1)
-        tree. optimizeSubgraphs (areaRadius / 2);
+        tree. optimizeSubgraphs (areaRadius / 2);  // areaRadius - 1 ??
       else
         tree. optimizeIter (20, string ());  // PAR
     }
     else if (leaves == 3)
+    {
       tree. optimize3 ();
+      neighborJoinP = true;
+    }
     else if (leaves == 2)
+    {
       tree. optimize2 ();
+      neighborJoinP = true;
+    }
   }
   tree. qc ();
   if (verbose ())
@@ -3828,7 +3835,9 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
 
   Node2Node boundary2new (DiGraph::reverse (new2old));
   ASSERT (boundary2new. size () == new2old. size ());
+#ifndef NDEBUG
   const Real absCriterion_old = absCriterion;  
+#endif
   if (   neighborJoinP   // Subgraph::getImprovement() is slow
       && subgraph. getImprovement (boundary2new) <= 1e-5  // PAR
      )
@@ -3836,7 +3845,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
     for (const Tree::TreeNode* node : subgraph. area)
       if (! subgraph. boundary. containsFast (node))
         const_static_cast <DTNode*> (node) -> stable = true;
-    cerr << " no improvement" << endl;  // ??
+  //cerr << " no improvement" << endl;  
   }     
   else
   {
@@ -3877,6 +3886,9 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
   
     // nodes: delete
     // center may be delete'd
+  #ifndef NDEBUG
+    size_t deleted = 0;
+  #endif
     for (const TreeNode* node : subgraph. area)
       if (! contains (boundary2new, node))
       {
@@ -3884,10 +3896,14 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
         dtNode->isolate ();
         dtNode->detach ();
         toDelete << dtNode;
+        deleted++;
       }
       // Between boundary TreeNode's there are no Arc's
   
     // nodes, new2old[]: new
+  #ifndef NDEBUG
+    size_t created = 0;
+  #endif
     for (const DiGraph::Node* node_new : tree. nodes)
     {
       DTNode* node = const_static_cast <DTNode*> (findPtr (new2old, node_new));
@@ -3896,22 +3912,17 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
         node = new Steiner (*this, nullptr, NAN);
         new2old [node_new] = node;
         node->stable = true;
+        created++;
       }
       ASSERT (node);
       if (node_new != tree. root)
         node->len = static_cast <const DTNode*> (node_new) -> len;
     }
     ASSERT (new2old. size () == tree. nodes. size ());
-
-  #if 0  
-    if (contains (boundary2new, center))
-    {
-      ASSERT (center->graph);
-      ASSERT (& center->getTree () == this);
-      const_cast <DTNode*> (center) -> stable = true;
-    }
-  #endif
     
+    ASSERT ((bool) deleted == (bool) created);
+    ASSERT ((bool) deleted == (subgraph. area. size () > 2));
+
     if (subgraph. area. size () > 2)
       borrowArcs (new2old, true);  // Arc's are not parallel
     
@@ -3951,8 +3962,10 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
 
     qc ();
 
+  #if 0
     if (neighborJoinP)    
-      cerr << "Improved" << endl;  // ??
+      cerr << "Improved" << endl;  
+  #endif
   }
 
 
@@ -3967,14 +3980,15 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
   if (verbose (1))
     reportErrors (cout);
   	
-  if (qc_on)
-    if (greaterReal (absCriterion, absCriterion_old, 1e-5))   // PAR
-    {
-      const ONumber on (cout, criterionDecimals + 3, true);
-      cout << absCriterion << " " << absCriterion_old << endl;
-      ERROR;
-    }
-  
+#ifndef NDEBUG
+  if (greaterReal (absCriterion, absCriterion_old, 1e-5))   // PAR
+  {
+    const ONumber on (cout, criterionDecimals + 3, true);
+    cout << absCriterion << " " << absCriterion_old << endl;
+    ERROR;
+  }
+#endif
+ 
 
   return areaRadius;
 }
@@ -4135,7 +4149,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
   	  {
        	ch->commit ();
        	commits++;
-    	  if (qc_on && verbose ())
+    	  if (verbose ())
     	  {
      	    cout << "absCriterion = " << absCriterion << endl;
     	    Unverbose unv;
@@ -4201,7 +4215,7 @@ void DistTree::tryChange (Change* ch,
   ch->restore ();
 
   Unverbose unv;
-  if (qc_on && verbose ())
+  if (verbose ())
     ch->print (cout); 
   
 	if (Change::strictlyLess (ch, bestChange))
