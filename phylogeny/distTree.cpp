@@ -13,6 +13,16 @@ namespace DistTree_sp
 {
 
 
+// --> numeric.hpp ??
+inline Real nonNegative (Real x)
+  { if (negative (x))
+      throw logic_error ("negative x = " + toString (x));
+    else
+      return max (0.0, x);
+  }
+
+
+
 
 Chronometer chron_getBestChange ("getBestChange");
 Chronometer chron_tree2subgraph ("tree2subgraph");
@@ -882,13 +892,6 @@ void Subgraph::subPaths2tree ()
 
 
 
-bool Subgraph::large () const
-{ 
-  return /*! tree. subgraphTree &&*/ boundary. size () > 64;  // PAR
-}
-
-
-
 void Subgraph::node2subPaths (const DTNode* node)
 { 
   ASSERT (node);
@@ -1117,7 +1120,7 @@ bool Change::apply ()
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
     const Dissim& dissim = tree. dissims [subPath. objNum];
-    const Real prediction = dissim. target - lr. getResidual (objNum);
+    const Real prediction = nonNegative (dissim. target - lr. getResidual (objNum));
     subPathsAbsCriterion += dissim. getAbsCriterion (prediction);
   }    
   improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);
@@ -1280,7 +1283,11 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
   ASSERT (mult >= 0);
   if (mult == 0)
     return 0;
-  ASSERT (prediction_arg >= 0);
+  if (! (prediction_arg >= 0))
+  {
+    cout << prediction_arg << ' ' << prediction << ' ' << mult << ' ' << target << endl;
+    ERROR;
+  }
   return mult * sqr (prediction_arg - target);
 }
 
@@ -1645,8 +1652,9 @@ DistTree::DistTree (const DTNode* center,
   Node2Node old2new;  // 1-1
   size_t leafNum = 0;
   ASSERT (nodes. empty ());
-  if (subgraph. large ())
+  if (subgraph. dense ())
   {
+    // Star topology
     auto st = new Steiner (*this, nullptr, NAN);
     root = st;
     if (area_root)
@@ -2295,7 +2303,7 @@ void DistTree::setGlobalLen ()
 
 namespace
 {
-  struct Neighbors
+  struct LeafPair
   {
     // !nullptr, discernable
     array <const DTNode*, 2> nodes;
@@ -2303,13 +2311,13 @@ namespace
     Real dissim {NAN};
       // !isNan()
 
-    Neighbors ()
+    LeafPair ()
       { nodes [0] = nullptr;
         nodes [1] = nullptr;
       }
-    Neighbors (const Leaf* leaf1,
-               const Leaf* leaf2,
-               Real dissim_arg)
+    LeafPair (const Leaf* leaf1,
+              const Leaf* leaf2,
+              Real dissim_arg)
       : dissim (dissim_arg)
       { ASSERT (leaf1);
         ASSERT (leaf2);
@@ -2324,7 +2332,7 @@ namespace
            << ' ' << dissim 
            << endl; 
       }
-    bool operator== (const Neighbors& other) const
+    bool operator== (const LeafPair& other) const
       { return    nodes [0] == other. nodes [0]
                && nodes [1] == other. nodes [1];
       }
@@ -2332,7 +2340,7 @@ namespace
       { swapGreater (nodes [0], nodes [1]); }
     bool same () const
       { return nodes [0] == nodes [1]; }
-    bool merge (const Neighbors &from)
+    bool merge (const LeafPair &from)
       { if (! (*this == from))
           return false;
         dissim = (dissim + from. dissim) / 2;
@@ -2343,8 +2351,8 @@ namespace
       // James A. Studier, Karl J. Keppler, A Note on the Neighbor-Joining Algorithm of Saitou and Nei
     Real getParentDissim (size_t n) const
       { return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); }
-    static bool strictlyLess (const Neighbors& n1,
-                              const Neighbors& n2)
+    static bool strictlyLess (const LeafPair& n1,
+                              const LeafPair& n2)
       { LESS_PART (n1, n2, nodes [0]);
         LESS_PART (n1, n2, nodes [1]);
         return false;  
@@ -2368,21 +2376,25 @@ void DistTree::neighborJoin ()
 	  n++;
 	}
     
-  Vector<Neighbors> neighborsVec;  neighborsVec. reserve (getDissimSize_max ());
+  size_t missing = 0;
+  Vector<LeafPair> leafPairs;  leafPairs. reserve (getDissimSize_max ());
   if (optimizable ())
   {
     ASSERT (dissims. size () == getDissimSize_max ());
     for (const Dissim& dissim : dissims)
     {
       if (isNan (dissim. target))
+      {
       //throw runtime_error ("No distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
+        missing++;
         continue;
-      const Neighbors neighbors (dissim. leaf1, dissim. leaf2, max (0.0, dissim. target));
-      if (neighbors. same ())
+      }
+      const LeafPair leafPair (dissim. leaf1, dissim. leaf2, max (0.0, dissim. target));  // max ??
+      if (leafPair. same ())
         continue;
-      if (neighbors. dissim == INF)
+      if (leafPair. dissim == INF)
         throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
-      neighborsVec << neighbors;
+      leafPairs << leafPair;
     }
   }
   else
@@ -2398,43 +2410,43 @@ void DistTree::neighborJoin ()
       {
         const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name);
         ASSERT (leaf2);
-        const Neighbors neighbors (leaf1, leaf2, dissimAttr->get (row, col));
-        if (neighbors. same ())
+        const LeafPair leafPair (leaf1, leaf2, dissimAttr->get (row, col));
+        if (leafPair. same ())
           continue;
-        if (! positive (neighbors. dissim))
+        if (! positive (leafPair. dissim))
           throw runtime_error ("No distance for " + leaf1->name + " - " + leaf2->name);
-        if (neighbors. dissim == INF)
+        if (leafPair. dissim == INF)
           throw runtime_error ("Infinite distance for " + leaf1->name + " - " + leaf2->name);
-        neighborsVec << neighbors;
+        leafPairs << leafPair;
       }
     }
   }
-  if (neighborsVec. empty ())
+  if (leafPairs. empty ())
     return;
   
 
   Progress prog ((uint) n - 1);
-  Neighbors neighbors_best;
+  LeafPair leafPair_best;
   for (;;)
   {
     prog ();
     
-    // Remove duplicate Neighbors 
-    neighborsVec. sort (Neighbors::strictlyLess);
-    neighborsVec. filterIndex ([&] (size_t i) 
-                                 { return    neighborsVec [i] == neighbors_best 
-                                          || (i && neighborsVec [i - 1]. merge (neighborsVec [i]));
+    // Remove duplicate LeafPair 
+    leafPairs. sort (LeafPair::strictlyLess);
+    leafPairs. filterIndex ([&] (size_t i) 
+                                 { return    leafPairs [i] == leafPair_best 
+                                          || (i && leafPairs [i - 1]. merge (leafPairs [i]));
                                  }
                               );    
 
-    if (neighborsVec. size () == 1)
+    if (leafPairs. size () == 1)
       break;
     ASSERT (n > 2);
     
-    if (! neighbors_best. nodes [0])  // First iteration
-      for (Neighbors& neighbors : neighborsVec)
+    if (! leafPair_best. nodes [0])  // First iteration
+      for (LeafPair& leafPair : leafPairs)
         for (const bool first : {false, true})
-          const_cast <DTNode*> (neighbors. nodes [first]) -> len += neighbors. dissim;
+          const_cast <DTNode*> (leafPair. nodes [first]) -> len += leafPair. dissim;
           
     if (verbose (-2))  
     {
@@ -2445,45 +2457,45 @@ void DistTree::neighborJoin ()
     	  cout << node->getLcaName () << ": " << node->len << endl;
     	}    	
     	cout << endl << "Pairs:" << endl;
-      for (const Neighbors& neighbors : neighborsVec)
-        neighbors. print (cout);
+      for (const LeafPair& leafPair : leafPairs)
+        leafPair. print (cout);
     }
       
       
     Steiner* newNode = nullptr;
     {
-      // neighbors_best
+      // leafPair_best
       Real dissim_min = NAN;
       {
         Real criterion = INF;
         size_t i_best = NO_INDEX;
-        FOR (size_t, i, neighborsVec. size ())
+        FOR (size_t, i, leafPairs. size ())
           // P (criterion1 < criterion2) ??
-          if (minimize (criterion, neighborsVec [i]. getCriterion (n)))            
+          if (minimize (criterion, leafPairs [i]. getCriterion (n)))            
             i_best = i;
         ASSERT (i_best != NO_INDEX);
-        neighbors_best = neighborsVec [i_best];
+        leafPair_best = leafPairs [i_best];
         if (verbose (-1))
         {
           cout << endl << "Best: ";
-          neighbors_best. print (cout);
+          leafPair_best. print (cout);
         }
-        dissim_min = neighbors_best. getParentDissim (n);
+        dissim_min = leafPair_best. getParentDissim (n);
       }
       ASSERT (dissim_min >= 0);
-      ASSERT (dissim_min <= neighbors_best. dissim);
+      ASSERT (dissim_min <= leafPair_best. dissim);
       {
-        DTNode* a = const_cast <DTNode*> (neighbors_best. nodes [0]);
-        DTNode* b = const_cast <DTNode*> (neighbors_best. nodes [1]);
+        DTNode* a = const_cast <DTNode*> (leafPair_best. nodes [0]);
+        DTNode* b = const_cast <DTNode*> (leafPair_best. nodes [1]);
         const Real dissim_sum_a = a->len;
         const Real dissim_sum_b = b->len;
         a->len = dissim_min;
-        b->len = neighbors_best. dissim - dissim_min;
+        b->len = leafPair_best. dissim - dissim_min;
         // dissim_sum
-        const Real dissim_sum = (  dissim_sum_a - neighbors_best. dissim - (Real) (n - 2) * a->len
-                                 + dissim_sum_b - neighbors_best. dissim - (Real) (n - 2) * b->len
+        const Real dissim_sum = (  dissim_sum_a - leafPair_best. dissim - (Real) (n - 2) * a->len
+                                 + dissim_sum_b - leafPair_best. dissim - (Real) (n - 2) * b->len
                                 ) / 2;
-        newNode = new Steiner (*this, const_static_cast <Steiner*> (neighbors_best. nodes [0] -> getParent ()), dissim_sum);
+        newNode = new Steiner (*this, const_static_cast <Steiner*> (leafPair_best. nodes [0] -> getParent ()), dissim_sum);
         a->setParent (newNode);
         b->setParent (newNode);
         if (verbose (-1))
@@ -2492,46 +2504,56 @@ void DistTree::neighborJoin ()
     }
     ASSERT (newNode);
     
-    // neighborsVec
-    for (Neighbors& neighbors : neighborsVec)
-      if (! (neighbors == neighbors_best))
+    // leafPairs
+    for (LeafPair& leafPair : leafPairs)
+      if (! (leafPair == leafPair_best))
         for (const bool first : {false, true})
         {
           bool found = false;
           for (const bool best_first : {false, true})
-            if (neighbors. nodes [first] == neighbors_best. nodes [best_first])
+            if (leafPair. nodes [first] == leafPair_best. nodes [best_first])
             {
-              neighbors. nodes [first] = newNode;
-              const_cast <DTNode*> (neighbors. nodes [! first]) -> len -= neighbors. dissim;
-              neighbors. dissim -= neighbors_best. nodes [best_first] -> len;
-              maximize (neighbors. dissim, 0.0);
-              const_cast <DTNode*> (neighbors. nodes [! first]) -> len += neighbors. dissim / 2;  
-                // Done twice for neighbors. nodes [! first]
+              leafPair. nodes [first] = newNode;
+              const_cast <DTNode*> (leafPair. nodes [! first]) -> len -= leafPair. dissim;
+              leafPair. dissim -= leafPair_best. nodes [best_first] -> len;
+              maximize (leafPair. dissim, 0.0);
+              const_cast <DTNode*> (leafPair. nodes [! first]) -> len += leafPair. dissim / 2;  
+                // Done twice for leafPair.nodes[!first]
               found = true;
             }
           if (found)
-            neighbors. orderNodes ();
-          ASSERT (! neighbors. same ());
+            leafPair. orderNodes ();
+          ASSERT (! leafPair. same ());
         }
 
     n--;
   }
-  ASSERT (neighborsVec. size () == 1);
-  if (n != 2)
-  {
-    cout << n << endl;
-    ERROR;
-  }
+  ASSERT (leafPairs. size () == 1);
+  ASSERT (n >= 2); 
+  IMPLY (! missing, n == 2);
   
   
-  Neighbors& neighbors = neighborsVec [0];
-  ASSERT (! neighbors. same ());
+  LeafPair& leafPair = leafPairs [0];
+  ASSERT (! leafPair. same ());
   for (const bool first : {false, true})  
   {
-    DTNode* node = const_cast <DTNode*> (neighbors. nodes [first]);
+    DTNode* node = const_cast <DTNode*> (leafPair. nodes [first]);
     ASSERT (node->getParent () == root);
-    node->len = neighbors. dissim / 2;  
+    node->len = leafPair. dissim / 2;  
   }
+  // If dissims is not complete
+	for (const DiGraph::Arc* arc : root->arcs [false])
+	{
+	  DTNode* node = const_static_cast <DTNode*> (arc->node [false]);
+	/*
+	  if (   leafPair. nodes [false] == node
+	      || leafPair. nodes [true]  == node
+	     )
+	    continue;	
+	  node->len = 0;
+	*/
+	  ASSERT (node->len >= 0);
+	}
   
   if (optimizable ())
     setPaths ();
@@ -2684,6 +2706,10 @@ void DistTree::setPaths ()
 {
 	ASSERT (optimizable ());
   
+ 	for (DiGraph::Node* node : nodes)
+    if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
+      const_cast <Steiner*> (st) -> pathObjNums. clear ();
+
   setLca ();  
   absCriterion = 0;
   Progress prog ((uint) dissims. size (), 1e5);  // PAR
@@ -2698,6 +2724,7 @@ void DistTree::setPaths ()
     for (const TreeNode* node : path)
       if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
         const_cast <Steiner*> (st) -> pathObjNums << objNum;  
+    dissim. qc ();
   }
 }
 
@@ -3592,12 +3619,14 @@ void DistTree::optimize2 ()
   }
   ASSERT (leaves. size () == 2);  
 
-  const Real t = max (0.0, dissim. target);
+  const Real t = isNan (dissim. target) ? 0 : max (0.0, dissim. target);
   for (const Leaf* leaf : leaves)
     const_cast <Leaf*> (leaf) -> len = t / 2;
   
   dissim. prediction = t;
   absCriterion = dissim. getAbsCriterion ();
+
+//setPaths ();
 }
 
 
@@ -3629,7 +3658,7 @@ void DistTree::optimize3 ()
   {
     Dissim& dissim = dissims [i];
     dissim. prediction = 0;
-    const Real t = dissim. target;
+    const Real t = isNan (dissim. target) ? 0 : dissim. target;
     for (const Leaf* leaf_ : leaves)
     {
       Leaf* leaf = const_cast <Leaf*> (leaf_);
@@ -3656,6 +3685,8 @@ void DistTree::optimize3 ()
         dissim. prediction += leaf->len;
     absCriterion += dissim. getAbsCriterion ();
   }
+
+  setPaths ();
 }
 
 
@@ -3749,6 +3780,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
   
   cerr << "  " << areaRadius 
        << ' ' << subgraph. boundary. size () 
+       << ' ' << subgraph. area. size () - subgraph. boundary. size () 
        << endl;  // ??
   
   const TreeNode* root_old = root;
@@ -3759,28 +3791,24 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
   chron_subgraphOptimize. start ();
   const size_t leaves = tree. name2leaf. size ();
   ASSERT (leaves >= 2);
-  bool large = false;
+  bool neighborJoinP = false;
   {
     Unverbose unv;
     if (leaves > 3)
     {
-      if (subgraph. large () && areaRadius > 1 /*??*/)
-        large = true;
-      if (large)
+      if (subgraph. dense ())
       {
-        cerr << " Large";  // ??
+        cerr << " NJ";  // ??
         // A bifurcating tree is needed for speed
         tree. neighborJoin ();
+        neighborJoinP = true;
       }
       tree. optimizeLenArc ();
       tree. finishChanges (); 
       tree. optimizeLenNode ();  
       tree. finishChanges (); 
-      if (large)
-      {
-        ASSERT (areaRadius > 1);
+      if (subgraph. large () && areaRadius > 1)
         tree. optimizeSubgraphs (areaRadius / 2);
-      }
       else
         tree. optimizeIter (20, string ());  // PAR
     }
@@ -3801,7 +3829,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
   Node2Node boundary2new (DiGraph::reverse (new2old));
   ASSERT (boundary2new. size () == new2old. size ());
   const Real absCriterion_old = absCriterion;  
-  if (   large   // Subgraph::getImprovement() is slow
+  if (   neighborJoinP   // Subgraph::getImprovement() is slow
       && subgraph. getImprovement (boundary2new) <= 1e-5  // PAR
      )
   {
@@ -3923,7 +3951,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
 
     qc ();
 
-    if (large)    
+    if (neighborJoinP)    
       cerr << "Improved" << endl;  // ??
   }
 
@@ -4051,8 +4079,6 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
 	
 	
   const Real absCriterion_init = absCriterion;
-//const Real absCriterion_delta = absCriterion * 1e-4;  // PAR
-//ASSERT (absCriterion_delta >= 0);
 
 
   // DTNode::stable: init
@@ -4098,7 +4124,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes)
      	}
   	  const bool success = ch->apply ();
   	  IMPLY (first, success && ch->improvement > 0);
-  	  if (! success || ch->improvement <= 0 /*absCriterion_delta*/) 
+  	  if (! success || ch->improvement <= 0) 
   	  {
   	  //ASSERT (! first);
         if (verbose (1))
@@ -4504,7 +4530,7 @@ Real DistTree::setErrorDensities ()
       const Real d = dissim. target;
     //ASSERT (d >= 0);
       const Real dHat = dissim. prediction;
-      ASSERT (! isNan (dHat));
+      ASSERT (dHat >= 0);
       if (nullReal (dHat))
       {
         epsilon2_0 += dissim. mult * sqr (d);

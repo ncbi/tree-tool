@@ -423,7 +423,10 @@ struct Subgraph : Root
     // Update: tree: Paths, absCriterion, Dissim::prediction
     // Time: O(|area| log(|subPaths|) + |subPaths| |area| log(|area|))
 
-  bool large () const;
+  bool large () const
+    { return boundary. size () > 64; } // PAR
+  bool dense () const
+    { return (Real) area. size () / (Real) boundary. size () <= 1.2; }  // PAR 
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
              || subPath. node2 == area_root;
@@ -677,6 +680,7 @@ public:
             Subgraph &subgraph,
             Node2Node &newLeaves2boundary);
     // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
+    // If subgraph.dense() then *this has a star topology
     // Update: areaRadius: >= 1; may be decreased
     // Output: subgraph: tree = center->getTree()
     //                   area: contains center, newLeaves2boundary.values(); discernable
