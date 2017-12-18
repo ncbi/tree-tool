@@ -427,6 +427,7 @@ struct Subgraph : Root
     { return boundary. size () > 64; } // PAR
   bool dense () const
     { return (Real) area. size () / (Real) boundary. size () <= 1.2; }  // PAR 
+    // Return: 1..2; 2 <=> sparse
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
              || subPath. node2 == area_root;
@@ -598,6 +599,8 @@ struct DistTree : Tree
   friend Change;
   friend Subgraph;
 
+  const uint subDepth {0};
+    // > 0 => *this is a subgraph of a tree with subDepth - 1
   map<string/*Leaf::name*/,const Leaf*> name2leaf;
     // 1-1
 
