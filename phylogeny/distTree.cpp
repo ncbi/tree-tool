@@ -394,7 +394,10 @@ Leaf::Leaf (DistTree &tree,
   	        const string &name_arg)
 : DTNode (tree, parent_arg, len_arg)  // DistTree must be declared
 , name (name_arg)
-{}
+, index (getDistTree (). leafNum)
+{
+  const_cast <DistTree&> (getDistTree ()). leafNum ++;  
+}
 
 
 
@@ -407,7 +410,9 @@ Leaf::Leaf (DistTree &tree,
          )  
 , name (name_arg)
 , discernable (other->discernable)
+, index (getDistTree (). leafNum)
 {
+  const_cast <DistTree&> (getDistTree ()). leafNum ++;  
   collapse (other);
 }
 
@@ -431,6 +436,7 @@ void Leaf::qc () const
     }
     for (const size_t objNum : pathObjNums)
       ASSERT (getDistTree (). dissims [objNum]. hasLeaf (this));
+    IMPLY (getDistTree (). subDepth, discernable);
   }
 
   ASSERT (! name. empty());
@@ -1565,7 +1571,7 @@ DistTree::DistTree (Prob branchProb,
   Bernoulli bernoulli;
   bernoulli. setParam (branchProb);
   size_t leafIndex = 0;
-  size_t leafNum = 1;  // isLeaf()
+  size_t leaves = 1;  // isLeaf()
   while (! open. empty ())
   {
     auto it = open. begin ();
@@ -1573,10 +1579,10 @@ DistTree::DistTree (Prob branchProb,
     Steiner* st = *it;
     ASSERT (st);
     bernoulli. randVariable ();
-    if (leafNum < leafNum_max && bernoulli. variable)
+    if (leaves < leafNum_max && bernoulli. variable)
     {
       if (! st->isLeaf ())
-        leafNum++;
+        leaves++;
       open << new Steiner (*this, st, len);
     }
     else
@@ -1647,10 +1653,10 @@ DistTree::DistTree (const DTNode* center,
   subgraph. qc ();
 
 
-  // nodes, leafNum
+  // nodes
   Node2Node old2new;  // 1-1
-  size_t leafNum = 0;
   ASSERT (nodes. empty ());
+  ASSERT (leafNum == 0);
   if (subgraph. dense ())
   {
     // Star topology
@@ -1659,8 +1665,6 @@ DistTree::DistTree (const DTNode* center,
     if (area_root)
     {
       auto leaf = new Leaf (*this, st, 0, "L" + toString (leafNum));
-      leaf->index = leafNum;
-      leafNum++;  
       old2new [area_root] = leaf;  
     }
     for (const TreeNode* node_old : area)
@@ -1670,8 +1674,6 @@ DistTree::DistTree (const DTNode* center,
       if (! children. intersectsFast (area))
       {
         auto leaf = new Leaf (*this, st, 0, "L" + toString (leafNum));
-        leaf->index = leafNum;
-        leafNum++;
         old2new [node_old] = leaf;
       }
     }
@@ -1688,12 +1690,7 @@ DistTree::DistTree (const DTNode* center,
       if (children. intersectsFast (area))
         node_new = new Steiner (*this, nullptr, len);
       else  
-      {
-        auto leaf = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
-        leaf->index = leafNum;
-        leafNum++;
-        node_new = leaf;
-      }
+        node_new = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
       ASSERT (node_new);
       old2new [node_old] = node_new;
     }
@@ -1722,8 +1719,6 @@ DistTree::DistTree (const DTNode* center,
         ASSERT (root_->getChildren (). empty ());
         delete root_;
         auto leaf = new Leaf (*this, inter, child->len, "L" + toString (leafNum));
-        leaf->index = leafNum;
-        leafNum++;  
         old2new [area_root] = leaf;  
         ASSERT (inter == root);
         ASSERT (nodes. size () == area. size () + 1/*inter*/);

@@ -620,6 +620,8 @@ public:
   Real absCriterion {NAN};
     // = L2LinearNumPrediction::absCriterion  
 private:
+  size_t leafNum {0};
+    // For Leaf::index
 	VectorOwn<DTNode> toDelete;
 	VectorOwn<Leaf> detachedLeaves;
 	  // !Leaf::graph
