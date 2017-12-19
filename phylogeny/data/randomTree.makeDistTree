@@ -14,7 +14,7 @@ Ave. dissimilarity = 4.99
 
 
 # Outliers: 0
-Min. rel. leaf error of outliers: inf
+Min. log rel. leaf error of outliers: inf
 
 OUTPUT:
 absCriterion = 8.350  Error density = 3.374 %

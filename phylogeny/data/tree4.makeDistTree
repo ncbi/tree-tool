@@ -15,7 +15,7 @@ Ave. dissimilarity = 3.10
 
 
 # Outliers: 0
-Min. rel. leaf error of outliers: nan
+Min. log rel. leaf error of outliers: nan
 
 OUTPUT:
 absCriterion = 0.000  Error density = 0.000 %

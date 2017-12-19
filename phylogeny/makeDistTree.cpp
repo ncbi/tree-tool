@@ -49,7 +49,7 @@ struct ThisApplication : Application
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
-	  addFlag ("strong_outliers", "Use log(" + outlierCriterion + ") as the outlier criterion to produce fewer of them");
+	//addFlag ("strong_outliers", "Use log(" + outlierCriterion + ") as the outlier criterion to produce fewer of them"); 
 	  addKey ("remove_outliers", "Remove outliers by " + outlierCriterion + " and save them in the indicated file");
 
     // Output
@@ -77,7 +77,7 @@ struct ThisApplication : Application
 		const bool   reroot              = getFlag ("reroot");
 		const bool   root_topological    = getFlag ("root_topological");
 		const string reroot_at           = getArg ("reroot_at");
-		const bool   strong_outliers     = getFlag ("strong_outliers");
+  //const bool   strong_outliers     = getFlag ("strong_outliers");
 		const string remove_outliers     = getArg ("remove_outliers");
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
@@ -87,9 +87,9 @@ struct ThisApplication : Application
 		const string output_dissim       = getArg ("output_dissim");
 		const string dissim_request      = getArg ("dissim_request");
 		
-	  IMPLY (isRight (input_tree, "/"), ! sparse);
+	  IMPLY (isDirName (input_tree), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
-    if (isRight (dataFName, "/"))
+    if (isDirName (dataFName))
     {
       if (! input_tree. empty ())
         throw runtime_error ("Input tree must be in " + dataFName);
@@ -117,11 +117,11 @@ struct ThisApplication : Application
     Common_sp::AutoPtr<DistTree> tree;
     {
       const Chronometer_OnePass cop ("Initial topology");  
-      tree = isRight (dataFName, "/")
+      tree = isDirName (dataFName)
                ? new DistTree (dataFName, true, true)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse)
-                 : isRight (input_tree, "/")
+                 : isDirName (input_tree)
                    ? new DistTree (input_tree, dataFName, dissimAttrName)
                    : new DistTree (input_tree, dataFName, dissimAttrName, sparse);
     }
@@ -164,21 +164,9 @@ struct ThisApplication : Application
           if (verbose ())
             tree->saveFile (output_tree);  
             
-          if (! isRight (dataFName, "/"))
+          if (! isDirName (dataFName))  // ??
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
-
-          #if 0
-            tree->reportErrors (cout);  
-            cout << endl;
-          #endif
-
-          #if 0
-            EXEC_ASSERT (tree->optimizeLenAll ());
-            tree->reportErrors (cout);  
-            cout << "# Nodes deleted = " << tree->finishChanges () << endl;
-            cout << endl;
-          #endif
 
             tree->optimizeLenArc ();
             cout << "# Nodes deleted = " << tree->finishChanges () << endl;
@@ -196,10 +184,10 @@ struct ThisApplication : Application
             cout << "Optimizing topology ..." << endl;
             const Chronometer_OnePass cop ("Topology and arc length optimization");
             if (whole)
-              tree->optimizeIter (output_tree);
+              tree->optimizeIter (0, output_tree);
             else
             {
-              tree->optimizeSubgraphs ();  
+              tree->optimizeSubgraphs (areaRadius_std);  
                 // optimizeSubtreesIter () almost does not improve
             }
             tree->reportErrors (cout);
@@ -217,12 +205,12 @@ struct ThisApplication : Application
       // Outliers
       Real outlier_min = NAN;
       tree->setLeafAbsCriterion ();
-      const VectorPtr<Leaf> outliers (tree->findOutliers (strong_outliers, outlier_min));
+      const VectorPtr<Leaf> outliers (tree->findOutliers (true /*strong_outliers*/, outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
-      cout << "Min." << (strong_outliers ? " log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
+      cout << "Min." << (true /*strong_outliers*/ ? " log" : "") << " " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
         cout         << leaf->name 
-             << '\t' << leaf->getRelCriterion (strong_outliers)
+             << '\t' << leaf->getRelCriterion (true /*strong_outliers*/)
              << '\t' << leaf->absCriterion
              << endl;
       if (! remove_outliers. empty ())
@@ -235,7 +223,7 @@ struct ThisApplication : Application
           {
             f << leaf->name << endl;
             tree->removeLeaf (const_cast <Leaf*> (leaf));
-            prog (real2str (tree->absCriterion, 6));  // PAR
+            prog (real2str (tree->absCriterion, criterionDecimals));  
           }
         }
         tree->reportErrors (cout);
@@ -245,7 +233,7 @@ struct ThisApplication : Application
       
       cout << endl << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
-      tree->printAbsCriterion_halves ();  
+      tree->printAbsCriterion_halves ();  // skip if isDirName(dataFName) ??
       tree->setLeafAbsCriterion ();
       tree->qc ();
 
@@ -269,7 +257,7 @@ struct ThisApplication : Application
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
 
-    tree->saveFile (output_tree);
+    tree->saveFile (output_tree);  // make size to be O(n) - extended Newick !??
     tree->saveFeatureTree (output_feature_tree);
 
     
@@ -340,7 +328,7 @@ struct ThisApplication : Application
       OFStream f (leaf_errors);
     //tree->setLeafAbsCriterion ();   // Done above
       for (const auto& it : tree->name2leaf)
-        f << it. first << '\t' << it. second->getRelCriterion (strong_outliers) << endl;  
+        f << it. first << '\t' << it. second->getRelCriterion (true /*strong_outliers*/) << endl;  
     }
 
   #if 0

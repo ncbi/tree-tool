@@ -49,7 +49,7 @@ echo "mdsTree: Random tree ..."
 rm -r -f data/randomTree.dir/
 mdsTree.sh data/randomTree dist 2 >& /dev/null
 if ($?) exit 1
-makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -topology  -output_tree random-output.tree >& /dev/null
+makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -topology  -output_tree random-output.tree > /dev/null
 if ($?) exit 1
 makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
 if ($?) exit 1
@@ -88,4 +88,10 @@ diff prot-identical_comm.distTree-whole data/prot-identical_comm.distTree-whole
 if ($?) exit 1
 rm prot-identical_comm.distTree-whole
 
+
+# ??
+if (0) then
+  makeDistTree -data data/sample299-prot_core -dissim cons -variance lin -topology -whole
+  # was: absCriterion = 75.64
+endif
 
