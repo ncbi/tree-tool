@@ -426,8 +426,10 @@ struct Subgraph : Root
   bool large () const
     { return boundary. size () > 64; } // PAR
   bool dense () const
-    { return (Real) area. size () / (Real) boundary. size () <= 1.2; }  // PAR 
-    // Return: 1..2; 2 <=> sparse
+    { const Real density = (Real) area. size () / (Real) boundary. size ();
+        // 1..2; 2 <=> sparse
+      return density <= 1.2;   // PAR 
+    }
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
              || subPath. node2 == area_root;
