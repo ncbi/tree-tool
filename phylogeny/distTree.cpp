@@ -2383,7 +2383,7 @@ void DistTree::neighborJoin ()
         missing++;
         continue;
       }
-      const LeafPair leafPair (dissim. leaf1, dissim. leaf2, max (0.0, dissim. target));  // max ??
+      const LeafPair leafPair (dissim. leaf1, dissim. leaf2, /*max (0.0,*/ dissim. target/*)*/);  
       if (leafPair. same ())
         continue;
       if (leafPair. dissim == INF)
@@ -3600,6 +3600,7 @@ void DistTree::optimize2 ()
 {
   ASSERT (dissims. size () == 1);
   Dissim& dissim = dissims [0];
+  ASSERT (! isNan (dissim. target));  // otherwise tree is disconnected
 
   VectorPtr<Leaf> leaves;
   for (DiGraph::Node* node : nodes)
@@ -3613,7 +3614,7 @@ void DistTree::optimize2 ()
   }
   ASSERT (leaves. size () == 2);  
 
-  const Real t = isNan (dissim. target) ? 0 : max (0.0, dissim. target);
+  const Real t =  max (0.0, dissim. target);
   for (const Leaf* leaf : leaves)
     const_cast <Leaf*> (leaf) -> len = t / 2;
   
@@ -3814,10 +3815,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
       neighborJoinP = true;
     }
     else if (leaves == 2)
-    {
       tree. optimize2 ();
-      neighborJoinP = true;
-    }
   }
   tree. qc ();
   if (verbose ())
