@@ -755,9 +755,7 @@ void Subgraph::finishSubPaths ()
   for (const Tree::TreeNode* node : boundary)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
-    const Vector<size_t>& pathObjNums = dtNode == area_root /* && area_underRoot */
-                                          ? area_underRoot->pathObjNums
-                                          : dtNode        ->pathObjNums;
+    const Vector<size_t>& pathObjNums = boundary2pathObjNums (dtNode);
     for (const size_t objNum : pathObjNums)
     {
       if (! tree. dissims [objNum]. valid ())
@@ -1001,7 +999,7 @@ bool Change::apply ()
       boundary << lcaParent;
     boundary. sort ();
     ASSERT (boundary. isUniq ());
-    ASSERT (! area. intersectsFast (boundary));
+    ASSERT (! area. intersectsFast2 (boundary));
     area << boundary;  // Real area
     subgraph. finish ();
     ASSERT (subgraph. boundary. containsFast (from));
@@ -1671,7 +1669,7 @@ DistTree::DistTree (const DTNode* center,
     {
       VectorPtr<DiGraph::Node> children (node_old->getChildren ());
       children. sort ();
-      if (! children. intersectsFast (area))
+      if (! children. intersectsFast2 (area))
       {
         auto leaf = new Leaf (*this, st, 0, "L" + toString (leafNum));
         old2new [node_old] = leaf;
@@ -1687,7 +1685,7 @@ DistTree::DistTree (const DTNode* center,
       const Real len = static_cast <const DTNode*> (node_old) -> len;
       VectorPtr<DiGraph::Node> children (node_old->getChildren ());
       children. sort ();
-      if (children. intersectsFast (area))
+      if (children. intersectsFast2 (area))
         node_new = new Steiner (*this, nullptr, len);
       else  
         node_new = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
@@ -2591,7 +2589,7 @@ void DistTree::dissimDs2dissims (bool sparse)
   if (sparse)
   {
     ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
-    selectedPairs = selectPairs ();
+    selectedPairs = getSparseLeafPairs ();
   }
 
   // dissims[], dissim2_sum
@@ -2671,7 +2669,7 @@ bool DistTree::addDissim (const string &name1,
   ASSERT (detachedLeaves. empty ());
 
   if (   isNan (dissim)  // prediction must be large ??
-    //|| ! DM_sp::finite (dissim)  // For selectPairs()
+    //|| ! DM_sp::finite (dissim)  // For getSparseLeafPairs()
      )
   {
     cout << name1 << " - " << name2 << ": " << dissim << endl;
@@ -2763,7 +2761,7 @@ void DistTree::qc () const
   size_t leafDissims = 0;
 	if (optimizable ())
 	{
-    Set<pair<const Leaf*,const Leaf*> > leafSet;
+    Set<pair<const Leaf*,const Leaf*>> leafSet;
     for (const Dissim& dissim : dissims)
     {
       dissim. qc ();
@@ -4364,7 +4362,7 @@ void DistTree::removeLeaf (Leaf* leaf)
 
 
 
-Set<string> DistTree::selectPairs ()
+Set<string> /*Set<pair<const Leaf*,const Leaf*>> ??*/ DistTree::getSparseLeafPairs ()
 // Use sparsingDepth ancestors of ancestor if ancestor->reprLeaf = leaf ??!
 {
   setReprLeaves ();  
@@ -4382,14 +4380,13 @@ Set<string> DistTree::selectPairs ()
       while (ancestor)
       {
       	descendants. clear ();
-      	ancestor->getDescendants (descendants, sparsingDepth); 
+      	ancestor->getDescendants (descendants, sparsingDepth /*??*/);  
       	for (const DTNode* descendant : descendants)
       	{
       	  ASSERT (descendant->reprLeaf);
       	  if (leaf->getDiscernable () != descendant->reprLeaf->getDiscernable ())
       	  {
       	    const string objName (getObjName (leaf->name, descendant->reprLeaf->name));
-      	  //if (ds. getName2objNum (objName) == NO_INDEX)
       	    if (! dissimNames. contains (objName))
         	    selectedPairs << objName;
         	}
@@ -4398,6 +4395,58 @@ Set<string> DistTree::selectPairs ()
       }
     }          
   return selectedPairs;
+}
+
+
+
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs () 
+{
+  if (verbose (1))
+    cerr << endl << "Finding missing leaf pairs ..." << endl;
+
+  setReprLeaves ();  
+  
+  Vector<Pair<const Leaf*>> pairs;
+  {
+    Subgraph subgraph (*this);
+    Progress prog ((uint) nodes. size (), 100);  // PAR
+    for (const DiGraph::Node* node : nodes)
+    {
+      prog (toString (pairs. size ()));
+      const DTNode* center = static_cast <const DTNode*> (node);
+      if (center->inDiscernable ())
+        continue;
+      subgraph. clear ();
+      center->getArea (areaRadius_std, subgraph. area, subgraph. boundary);
+      subgraph. removeIndiscernables ();  
+      subgraph. finish ();
+      for (const TreeNode* node2 : subgraph. boundary)
+      {      
+        const DTNode* dtNode2 = static_cast <const DTNode*> (node2);
+        const Vector<size_t>& pathObjNums2 = subgraph. boundary2pathObjNums (dtNode2);
+        const_cast <Vector<size_t>&> (pathObjNums2). sort ();
+        for (const TreeNode* node1 : subgraph. boundary)
+        {
+          if (node1 == node2)
+            break;
+          const DTNode* dtNode1 = static_cast <const DTNode*> (node1);
+          const Vector<size_t>& pathObjNums1 = subgraph. boundary2pathObjNums (dtNode1);
+          if (pathObjNums1. intersectsFast2 (pathObjNums2))
+            continue;
+     	    Pair<const Leaf*> leafPair (subgraph. getReprLeaf (dtNode1), subgraph. getReprLeaf (dtNode2));
+     	    ASSERT (leafPair. first);
+     	    ASSERT (leafPair. second);
+     	    ASSERT (! leafPair. same ());
+     	    if (leafPair. first->name > leafPair. second->name)
+     	      leafPair. swap ();
+     	    pairs << leafPair;
+        }
+      }
+    }
+  }
+  pairs. sort ();
+  pairs. uniq ();      
+  return pairs;
 }
 
 
@@ -4881,7 +4930,7 @@ void NewLeaf::saveRequest () const
 {	
   Set<const Leaf*> requested;
   {
-    // Cf. DistTree::selectPairs()
+    // Cf. DistTree::getSparseLeafPairs()
     VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
     const DTNode* ancestor = location. anchor;
     size_t depth = 0;  // start when ancestor->reprLeaf = location.anchor->reprLeaf ??!

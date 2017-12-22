@@ -445,6 +445,16 @@ struct Subgraph : Root
       return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_);
     }
     // Requires: subPath in subPaths
+  const Vector<size_t>& boundary2pathObjNums (const DTNode* dtNode) const
+    { return dtNode == area_root /* && area_underRoot */
+               ? area_underRoot->pathObjNums
+               : dtNode        ->pathObjNums;
+    }
+  const Leaf* getReprLeaf (const DTNode* dtNode) const
+    { return dtNode == area_root /* && area_underRoot */
+               ? static_cast <const DTNode*> (dtNode->getDifferentChild (area_underRoot)) -> reprLeaf
+               : dtNode->reprLeaf;
+    }
 };
 
 
@@ -912,12 +922,14 @@ public:
       const_static_cast<DTNode*> (root) -> setRepresentative ();
     }  
     // Output: DTNode::reprLeaf
-  Set<string> selectPairs ();  
+  Set<string> getSparseLeafPairs ();  
     // Return: pairs of Leaf->name's 
     //         O(log(n)) pairs for each Leaf
     //         not in dissims
     //         reroot(true) reduces size()
     // Invokes: setReprLeaves(), getObjName()
+  Vector<Pair<const Leaf*>> getMissingLeafPairs ();
+    // Invokes: setReprLeaves()
         
   // After optimization
   void setHeight ()
