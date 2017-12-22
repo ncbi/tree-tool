@@ -1805,6 +1805,22 @@ const Tree::TreeNode* Tree::TreeNode::getOtherChild (const TreeNode* child) cons
 
 
 
+const Tree::TreeNode* Tree::TreeNode::getDifferentChild (const TreeNode* child) const
+{
+  ASSERT (child);
+  ASSERT (child->getParent () == this);
+
+	for (const Arc* arc : arcs [false])
+	{
+		const TreeNode* n = static_cast <TreeNode*> (arc->node [false]);
+	  if (n != child)
+	    return n;
+	}
+  throw runtime_error ("getDifferentChild(): Transient parent");
+}
+
+
+
 const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendant () const
 {
   const TreeNode* n = this;

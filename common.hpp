@@ -326,6 +326,29 @@ public:
 
 
 template <typename T>
+struct Pair : pair <T, T>
+{
+private:
+	typedef  pair <T, T>  P;
+public:
+  
+  Pair (const T &a,
+        const T &b)
+    : P (a, b)
+    {}
+  Pair ()
+    : P ()
+    {}
+    
+  bool same () const
+    { return P::first == P::second; }
+  void swap ()
+    { std::swap (P::first, P::second); }
+};
+
+
+
+template <typename T>
 struct List : list<T>
 {
 private:
@@ -1172,6 +1195,24 @@ public:
       { for (const U& u : other)
           if (containsFast (u))
             return true;
+        return false;
+      }
+  template <typename U>
+    bool intersectsFast2 (const Vector<U> &other) const
+      { if (! searchSorted)
+      	  throw logic_error ("Vector is not sorted for search");
+      	if (! other. searchSorted)
+      	  throw logic_error ("Other Vector is not sorted for search");
+      	size_t i = 0;
+      	const size_t otherSize = other. size ();
+        for (const T& t : *this)
+        { while (i < otherSize && other [i] < t)
+            i++;
+          if (i == otherSize)
+            return false;
+          if (other [i] == t)
+            return true;
+        }
         return false;
       }
   template <typename U /* : T */>
@@ -2028,6 +2069,8 @@ struct Tree : DiGraph
     const TreeNode* getOtherChild (const TreeNode* child) const;
       // Return: May be nullptr; != child
       // Requires: getChildren().size() <= 2
+    const TreeNode* getDifferentChild (const TreeNode* child) const;
+      // Return: !nullptr; != child
     const TreeNode* getLeftmostDescendant () const;
     const TreeNode* getRightmostDescendant () const;
     string getLcaName () const
