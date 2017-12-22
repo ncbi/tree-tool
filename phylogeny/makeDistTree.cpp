@@ -142,14 +142,21 @@ struct ThisApplication : Application
       if (! removeFName. empty ())
       {
         cout << endl << "Removing ..." << endl;
-        LineInput f (removeFName, 10000, 1);
-        while (f. nextLine ())
         {
-          trim (f. line);
-          const Leaf * leaf = findPtr (tree->name2leaf, f. line);
-          if (! leaf)
-            throw runtime_error ("Leaf " + f. line + " not found");
-          tree->removeLeaf (const_cast <Leaf*> (leaf));
+          LineInput f (removeFName, 10000, 1);
+          Progress prog;
+          while (f. nextLine ())
+          {
+            trim (f. line);
+            const Leaf * leaf = findPtr (tree->name2leaf, f. line);
+            if (! leaf)
+            {
+              cout << "Leaf " << f. line << " not found" << endl;
+              continue;
+            }
+            tree->removeLeaf (const_cast <Leaf*> (leaf));
+            prog (real2str (tree->absCriterion, criterionDecimals));  
+          }
         }
         tree->reportErrors (cout);
         tree->qc ();
@@ -164,7 +171,6 @@ struct ThisApplication : Application
           if (verbose ())
             tree->saveFile (output_tree);  
             
-          if (! isDirName (dataFName))  // ??
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
 
