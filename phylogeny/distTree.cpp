@@ -2476,15 +2476,16 @@ void DistTree::neighborJoin ()
         }
         dissim_min = leafPair_best. getParentDissim (n);
       }
-      ASSERT (dissim_min >= 0);
+    //ASSERT (dissim_min >= 0);
+      ASSERT (! isNan (dissim_min));
       ASSERT (dissim_min <= leafPair_best. dissim);
       {
         DTNode* a = const_cast <DTNode*> (leafPair_best. nodes [0]);
         DTNode* b = const_cast <DTNode*> (leafPair_best. nodes [1]);
         const Real dissim_sum_a = a->len;
         const Real dissim_sum_b = b->len;
-        a->len = dissim_min;
-        b->len = leafPair_best. dissim - dissim_min;
+        a->len = max (0.0, dissim_min);
+        b->len = max (0.0, leafPair_best. dissim - dissim_min);
         // dissim_sum
         const Real dissim_sum = (  dissim_sum_a - leafPair_best. dissim - (Real) (n - 2) * a->len
                                  + dissim_sum_b - leafPair_best. dissim - (Real) (n - 2) * b->len
@@ -2883,7 +2884,9 @@ void DistTree::printInput (ostream &os) const
   if (! optimizable ())
     return;
   os << "# Dissimilarities: " << dissims. size () << " (" << (Real) dissims. size () / (Real) getDissimSize_max () * 100 << " %)" << endl; 
+  ONumber on (os, dissimDecimals, false);
   os << "Ave. dissimilarity = " << getDissim_ave () << endl;
+  reportErrors (os);
 }
 
 
@@ -3994,6 +3997,7 @@ void DistTree::optimizeSubgraphs (uint areaRadius)
   
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = false;
+  // sort nodes: cf. optimizeLenNode() ??
 
   Progress prog;
   for (;;)

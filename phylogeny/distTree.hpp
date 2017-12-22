@@ -669,7 +669,7 @@ public:
     //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
     //          strong_outliers           ""|-strong_outliers                           makeDistTree parameter
 	  //       ?? request                   <obj1> <obj2>                                 Request to compute dissimilarity
-	  //       ?? deleted                   <obj>
+	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
 	  //          old/{tree,makeDistTree,leaf}.<version>                                  Old versions of data
 	  //       <dissimilarity>: >= 0, < INF
