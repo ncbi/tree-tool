@@ -59,7 +59,7 @@ struct ThisApplication : Application
 	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
-	  addKey ("dissim_request", "File with requests to comoute dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addKey ("dissim_request", "File with requests to compute dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	}
 	
 	
@@ -275,13 +275,6 @@ struct ThisApplication : Application
       cout << "Tree length = " << tree->getLength () << endl;
       cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
         // = 0 => epsilon2_0 > 0
-    #if 0
-      if (sparse) 
-      {
-        const size_t missing = tree->selectPairs (). size ();
-        cout << "Missing dissimilarities = " << missing << " (" << (Real) missing / (Real) tree->dissimSize_max () * 100 << " %)" << endl;
-      }
-    #endif
       cout << "Ave. arc length = " << tree->getAveArcLength () << endl;
         // Check exponential distribution ??
       cout << "Interior height = " << tree->getInteriorHeight () << endl;
@@ -368,13 +361,9 @@ struct ThisApplication : Application
     if (! dissim_request. empty ())
     {
       OFStream f (dissim_request);
-      const Set<string> pairs (tree->selectPairs ());
-      for (const string& s : pairs)
-      {
-        string s1 (s);
-        replace (s1, Tree::objNameSeparator, '\t');
-        f << s1 << endl;
-      }
+      const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs ());
+      for (const auto& p : pairs)
+        f << p. first->name << '\t' << p. second->name << endl;
     }
 
     if (! remove_outliers. empty ())  // Parameter is performed above

@@ -12,7 +12,8 @@ INPUT:
 # Discernable leaves: 285
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
-Ave. dissimilarity = 0.19
+Ave. dissimilarity = 0.185037
+absCriterion = 20.558  Error density = 3.134 %
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 18

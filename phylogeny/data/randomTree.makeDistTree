@@ -10,7 +10,8 @@ INPUT:
 # Discernable leaves: 50
 # Nodes: 98
 # Dissimilarities: 1225 (100.00 %)
-Ave. dissimilarity = 4.99
+Ave. dissimilarity = 4.986726
+absCriterion = 8.350  Error density = 3.374 %
 
 
 # Outliers: 0
