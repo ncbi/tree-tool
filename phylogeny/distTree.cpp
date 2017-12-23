@@ -512,7 +512,7 @@ Real Leaf::getRelCriterion (bool strong) const
 void Leaf::collapse (Leaf* other)
 {
   ASSERT (this != other);
-  ASSERT (len == 0);
+//ASSERT (len == 0);
 //ASSERT (discernable);
 
   if (! other)
@@ -574,6 +574,7 @@ void Leaf::collapse (Leaf* other)
         leaf->setParent (const_static_cast <Steiner*> (other->getParent ()));
   }
   
+  len = 0;
   discernable = false;
 
   ASSERT (getParent () == other->getParent ());
@@ -4401,9 +4402,6 @@ Set<string> /*Set<pair<const Leaf*,const Leaf*>> ??*/ DistTree::getSparseLeafPai
 
 Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs () 
 {
-  if (verbose (1))
-    cerr << endl << "Finding missing leaf pairs ..." << endl;
-
   setReprLeaves ();  
   
   Vector<Pair<const Leaf*>> pairs;
@@ -4412,7 +4410,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs ()
     Progress prog ((uint) nodes. size (), 100);  // PAR
     for (const DiGraph::Node* node : nodes)
     {
-      prog (toString (pairs. size ()));
+      prog ();
       const DTNode* center = static_cast <const DTNode*> (node);
       if (center->inDiscernable ())
         continue;
