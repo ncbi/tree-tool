@@ -360,8 +360,10 @@ struct ThisApplication : Application
     
     if (! dissim_request. empty ())
     {
+      cout << endl << "Finding missing leaf pairs ..." << endl;
       OFStream f (dissim_request);
       const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs ());
+      cout << "# Requests: " << pairs. size () << endl;
       for (const auto& p : pairs)
         f << p. first->name << '\t' << p. second->name << endl;
     }
