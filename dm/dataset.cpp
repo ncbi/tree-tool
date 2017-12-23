@@ -457,8 +457,9 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
 
 
 
-Real RealAttr1::normal2outlier (const Sample &sample,
-                                Real outlier_EValue_max) const
+Real RealAttr1::distr2outlier (const Sample &sample,
+                               LocScaleDistribution &distr,
+                               Real outlier_EValue_max) const
 {
   Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)  
@@ -474,15 +475,16 @@ Real RealAttr1::normal2outlier (const Sample &sample,
   Real s2 = 0;
   Real mean = NAN;
   Real var = 0;
-  Normal normal;
+//Normal normal;
   for (const auto& it : vec)
   {
     const Real x = it. value;
 
     if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)
     {
-      normal. setParam (mean, sqrt (var));
-      const Prob p = 1 - normal. cdf (x);
+    //normal. setParam (mean, sqrt (var));
+      distr. setMeanVar (mean, var);
+      const Prob p = 1 - distr /*normal*/. cdf (x);
       if (leReal (p * mult_sum, outlier_EValue_max))
         return x;
     }
@@ -496,6 +498,8 @@ Real RealAttr1::normal2outlier (const Sample &sample,
     var = s2 / mult_sum - sqr (mean);
     ASSERT (! negative (var));
   }
+  if (verbose ())
+    cout << "mean = " << mean << ' ' << "SD = " << sqrt (var) << endl;
   
   return INF;  
 }
@@ -3170,20 +3174,6 @@ int Zipf::randDiscrete_ () const
 
 // ContinuousDistribution
 
-void ContinuousDistribution::qc () const
-{
-  if (! qc_on)
-    return;
-  UniDistribution::qc ();
-
-  IMPLY (nullReal (stdLoBound ()), ! locExists ());
-  IMPLY (! locExists (), isNan (loc));
-  IMPLY (! scaleExists (), isNan (loc));
-  IMPLY (! isNan (scale), scale >= 0);
-}
-
-
-
 Analysis1* ContinuousDistribution::createAnalysis (Dataset &ds)
 {
   auto attr = new RealAttr1 ("X", ds);  
@@ -3192,6 +3182,20 @@ Analysis1* ContinuousDistribution::createAnalysis (Dataset &ds)
   analysis = analysis_;
   
   return analysis_;
+}
+
+
+
+
+// LocScaleDistribution
+
+void LocScaleDistribution::qc () const
+{
+  if (! qc_on)
+    return;
+  ContinuousDistribution::qc ();
+
+  IMPLY (! isNan (scale), scale >= 0);
 }
 
 
@@ -3207,7 +3211,7 @@ void Normal::qc () const
 {
   if (! qc_on)
     return;
-	ContinuousDistribution::qc ();
+	LocScaleDistribution::qc ();
 
 	IMPLY (getParamSet (), stdBounds ());  // ??
 }
@@ -3256,13 +3260,52 @@ Real Normal::rand_ () const
 
 
 
+// Exponential
+
+void Exponential::qc () const
+{
+  if (! qc_on)
+    return;
+	LocScaleDistribution::qc ();
+
+	if (getParamSet ())
+	{
+	  ASSERT (stdBounds ());  // ??
+  	ASSERT (loc >= 0);
+  	ASSERT (scale == loc);
+  }
+}
+	
+	
+
+void Exponential::estimate ()
+{
+  ASSERT (analysis);
+	const NumAttr1& attr = analysis->attr;
+	
+	Real n = 0;
+	Real s = 0;
+  for (Iterator it (analysis->sample); it ();)  
+    if (! attr. isMissing (*it))
+    {
+    	const An::Value x = attr. getReal (*it);
+    	n += it. mult;
+    	s += it. mult * x;
+    }
+  
+  setParam (s / n);
+}
+
+
+
+
 // Cauchy
 
 void Cauchy::qc () const
 {
   if (! qc_on)
     return;
-	ContinuousDistribution::qc ();
+	LocScaleDistribution::qc ();
 
 	IMPLY (getParamSet (), stdBounds ());  // ??
 }
