@@ -1430,7 +1430,7 @@ public:
     { arr. reserve (toReserve); }
 
 
-  bool empty () const
+  bool empty () const final
     { return arr. empty (); }
   Heap& operator<< (T item)
     { arr << item;
@@ -1863,7 +1863,7 @@ struct DiGraph : Root
       	node [true]  = nullptr;
       }
       // To be followed by: attach()
-    Arc* copy () const
+    Arc* copy () const override
       { return new Arc (*this); }
    ~Arc ();
       // Remove this from node->graph
@@ -1897,13 +1897,13 @@ private:
              Old2new &old2new);
     // Output: old2new
 public:
-  DiGraph* copy () const
+  DiGraph* copy () const override
     { return new DiGraph (*this); }
  ~DiGraph ();
     // Invokes: Node::delete
     // Time: O(n + m)
-  void qc () const;
-  void saveText (ostream &os) const;   
+  void qc () const override;
+  void saveText (ostream &os) const override;
 
 
   void connectedComponents ();
@@ -1959,8 +1959,8 @@ struct Tree : DiGraph
 			: DiGraph::Node (tree)
 			{ setParent (parent_arg); }
 		  // Input: parent_arg: may be nullptr
-		void qc () const;
-   	void saveText (ostream &os) const;
+		void qc () const override;
+   	void saveText (ostream &os) const override;
    	  // Invokes: getName(), saveContent(), getSaveSubtreeP()
 
     virtual bool getSaveSubtreeP () const 
@@ -1998,16 +1998,15 @@ struct Tree : DiGraph
     void printAncestors (const TreeNode* end) const;
     struct TipName : Root
     { string name; 
-      size_t depth; 
+      size_t depth {0}; 
       TipName ()
-        : depth (0)
         {}
       TipName (const string &name_arg,
                size_t depth_arg)
         : name (name_arg)
         , depth (depth_arg)
         {}
-      void saveText (ostream &os) const
+      void saveText (ostream &os) const override
         { os << name << '\t' << depth; }
     };
     TipName getTipName () const;
@@ -2136,8 +2135,8 @@ struct Tree : DiGraph
 
   Tree ()
     {}
-  void qc () const;
-	void saveText (ostream &os) const
+  void qc () const override;
+	void saveText (ostream &os) const override
 	  { if (root)
 	  	  root->saveText (os);
       os << endl;
@@ -2527,8 +2526,8 @@ struct Token : Root
 private:
 	void readInput (CharInput &in);
 public:
-	void qc () const;
-	void saveText (ostream &os) const
+	void qc () const override;
+	void saveText (ostream &os) const override
 	  { if (! empty ())
   	    switch (type)
   	  	{ case eText:      os << ' ' << quote << name << quote; break;
@@ -2537,9 +2536,9 @@ public:
   	  		case eDelimiter: os                 << name;          break;
   	  	}
 	  }
-	bool empty () const
+	bool empty () const override
 	  { return type == eDelimiter && name. empty (); }
-	void clear ()
+	void clear () override
 	  { type = eDelimiter;
 	    name. clear ();
 	  	num = noNum;
@@ -2693,7 +2692,7 @@ protected:
   Json ()
     {};
 public:  
-  virtual void print (ostream& os) const = 0;
+  void print (ostream& os) const override = 0;
   
   virtual const JsonNull* asJsonNull () const
     { return nullptr; }  
@@ -3050,9 +3049,9 @@ private:
                 const string &description_arg)
       : Arg (name_arg, description_arg)
       {}
-    void saveText (ostream &os) const
+    void saveText (ostream &os) const override
       { os << '<' << name << '>'; }
-    const Positional* asPositional () const
+    const Positional* asPositional () const final
       { return this; }
   };  
   struct Key : Arg
@@ -3069,8 +3068,8 @@ private:
       : Arg (name_arg, description_arg)
       , flag (true)
       {}
-    void saveText (ostream &os) const;
-    const Key* asKey () const
+    void saveText (ostream &os) const override;
+    const Key* asKey () const final
       { return this; }
   };
   List<Positional> positionals;
