@@ -2273,8 +2273,8 @@ bool getParentsOrTarget (const Tree::TreeNode* from,
 
 
 
-const Tree::TreeNode* Tree::getLowestCommonAncestor (const TreeNode* n1,
-	                                                   const TreeNode* n2) 
+const Tree::TreeNode* Tree::getLca (const TreeNode* n1,
+	                                  const TreeNode* n2) 
 {
   IMPLY (n1 && n2, n1->graph && n1->graph == n2->graph);
   
@@ -2316,14 +2316,14 @@ const Tree::TreeNode* Tree::getLowestCommonAncestor (const TreeNode* n1,
 
 
 
-const Tree::TreeNode* Tree::getLowestCommonAncestor (const VectorPtr<TreeNode> &nodeVec) 
+const Tree::TreeNode* Tree::getLca (const VectorPtr<TreeNode> &nodeVec) 
 {
   if (nodeVec. empty ())
     return nullptr;
     
 	const TreeNode* n = nodeVec [0];
 	FOR_START (size_t, i, 1, nodeVec. size ())
-    n = getLowestCommonAncestor (n, nodeVec [i]);
+    n = getLca (n, nodeVec [i]);
 	return n;
 }
 
@@ -2332,7 +2332,7 @@ const Tree::TreeNode* Tree::getLowestCommonAncestor (const VectorPtr<TreeNode> &
 Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec) 
 {
 	Set<const TreeNode*> s;  
-  const TreeNode* lca = getLowestCommonAncestor (nodeVec);
+  const TreeNode* lca = getLca (nodeVec);
   for (const TreeNode* n : nodeVec)
 	  while (n != lca)
 	  {

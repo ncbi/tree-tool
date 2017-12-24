@@ -2202,15 +2202,15 @@ struct Tree : DiGraph
     // Arc is interior <=> arc's nodes are interior
     // Return: <= countInteriorNodes()
     // Invokes: countInteriorNodes()
-  static const TreeNode* getLowestCommonAncestor (const TreeNode* n1,
+  static const TreeNode* getLca (const TreeNode* n1,
                                                   const TreeNode* n2);
     // Return: nullptr <=> !n1 || !n2
-  static const TreeNode* getLowestCommonAncestor (const VectorPtr<TreeNode> &nodeVec);
+  static const TreeNode* getLca (const VectorPtr<TreeNode> &nodeVec);
     // Return: nullptr <= nodeVec.empty()
     // Input: nodeVec: may be nullptr
   static Set<const TreeNode*> getParents (const VectorPtr<TreeNode> &nodeVec);
-    // Return: !nullptr, !contains(getLowestCommonAncestor(nodeVec)), contains(nodeVec)
-    // Invokes: getLowestCommonAncestor(nodeVec)
+    // Return: !nullptr, !contains(getLca(nodeVec)), contains(nodeVec)
+    // Invokes: getLca(nodeVec)
   static VectorPtr<TreeNode> getPath (const TreeNode* n1,
                                       const TreeNode* n2,
                                       const TreeNode* ca,
