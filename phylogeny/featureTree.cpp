@@ -1338,7 +1338,7 @@ void ChangeToSibling::apply_ ()
   
   Species* fromSibling = const_cast <Species*> (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
   ASSERT (fromSibling);
-	lca = static_cast <const Phyl*> (Tree::getLowestCommonAncestor (oldParentRepr, inter)) -> asFossil ();
+	lca = static_cast <const Phyl*> (Tree::getLca (oldParentRepr, inter)) -> asFossil ();
 	ASSERT (lca);
   
   // Species::time
@@ -1457,7 +1457,7 @@ void ChangeToParent::apply_ ()
   }
   ASSERT (oldParentRepr);
   
-	lca = static_cast <const Phyl*> (Tree::getLowestCommonAncestor (oldParentRepr, to)) -> asFossil ();
+	lca = static_cast <const Phyl*> (Tree::getLca (oldParentRepr, to)) -> asFossil ();
 	ASSERT (lca);
 
   // Species::time
