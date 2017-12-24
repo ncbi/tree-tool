@@ -929,7 +929,7 @@ public:
     //         reroot(true) reduces size()
     // Invokes: setReprLeaves(), getObjName()
   Vector<Pair<const Leaf*>> getMissingLeafPairs ();
-    // Invokes: setReprLeaves()
+    // Invokes: setReprLeaves(), findTooLongArcs()
         
   // After optimization
   void setHeight ()
@@ -969,6 +969,8 @@ public:
     // Requires: after setLeafAbsCriterion()    
     // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
     // Time: O(n log(n))
+  VectorPtr<DTNode> findTooLongArcs (Real &arcLen_outlier_min) const;
+    // Output: arcLen_outlier_min
 
   // Statistics
 #if 0

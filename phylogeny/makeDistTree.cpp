@@ -266,6 +266,19 @@ struct ThisApplication : Application
     tree->saveFile (output_tree);  // make size to be O(n) - extended Newick !??
     tree->saveFeatureTree (output_feature_tree);
 
+
+    if (true)  // ??
+    {
+      Real arcLen_min = NAN;
+      const VectorPtr<DTNode> tooLongArcs (tree->findTooLongArcs (arcLen_min));
+      cout << "# Too long arcs: " << tooLongArcs. size () << endl;
+      cout << "Min. length of too long arcs: " << arcLen_min << endl;
+      for (const DTNode* node : tooLongArcs)
+        cout         << node->getLcaName ()
+             << '\t' << node->len
+             << endl;
+    }
+
     
     {
       const ONumber on (cout, criterionDecimals, false);

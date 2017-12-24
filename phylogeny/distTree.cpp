@@ -504,7 +504,6 @@ Real Leaf::getRelCriterion (bool strong) const
              ? NAN 
              : log (x)
            : x;
-  
 }
 
 
@@ -2266,7 +2265,7 @@ void DistTree::setGlobalLen ()
           const Real d = dissimAttr->get (row, col);
           if (isNan (d))
             continue;
-          const TreeNode* ancestor = getLowestCommonAncestor (leaf1, leaf2);
+          const TreeNode* ancestor = getLca (leaf1, leaf2);
           ASSERT (ancestor);
           Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
           ASSERT (s);
@@ -2855,7 +2854,7 @@ const DTNode* DistTree::lcaName2node (const string &lcaName) const
   ASSERT (leaf1);
   const Leaf* leaf2 = findPtr (name2leaf, s);
   ASSERT (leaf2);
-  const DTNode* node = static_cast<const DTNode*> (getLowestCommonAncestor (leaf1, leaf2));
+  const DTNode* node = static_cast<const DTNode*> (getLca (leaf1, leaf2));
   ASSERT (node);
   
   return node;
@@ -3033,6 +3032,8 @@ void DistTree::setLeafAbsCriterion ()
       const_cast <Leaf*> (dissim. leaf1) -> absCriterion += residual2 * dissim. mult;
       const_cast <Leaf*> (dissim. leaf2) -> absCriterion += residual2 * dissim. mult;
     }
+    
+  // /= mult_sum ??
 }
 
 
@@ -4442,6 +4443,39 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs ()
       }
     }
   }
+  
+  Real arcLen_outlier_min = NAN;
+  const VectorPtr<DTNode> tooLongArcs (findTooLongArcs (arcLen_outlier_min));
+  {
+    Progress prog ((uint) tooLongArcs. size (), 100);  // PAR
+    for (const DTNode* node2 : tooLongArcs)
+    {
+      prog ();
+      ASSERT (node2 != root);
+      ASSERT (! node2->inDiscernable ());
+      const_cast <Vector<size_t>&> (node2->pathObjNums). sort ();
+      for (const DTNode* node1 : tooLongArcs)
+      {
+        ASSERT (node1 != root);
+        if (node1 == node2)
+          break;
+        if (node1->pathObjNums. intersectsFast2 (node2->pathObjNums))
+          continue;
+        const TreeNode* lca = getLca (node1, node2);
+        ASSERT (lca);
+        const DTNode* reprNode1 = lca == node1 ? static_cast <const DTNode*> (node1->getParent () -> getDifferentChild (node1)) : node1;
+        const DTNode* reprNode2 = lca == node2 ? static_cast <const DTNode*> (node2->getParent () -> getDifferentChild (node2)) : node2;
+   	    Pair<const Leaf*> leafPair (reprNode1->reprLeaf, reprNode2->reprLeaf);
+   	    ASSERT (leafPair. first);
+   	    ASSERT (leafPair. second);
+   	    ASSERT (! leafPair. same ());
+   	    if (leafPair. first->name > leafPair. second->name)
+   	      leafPair. swap ();
+   	    pairs << leafPair;
+      }
+    }
+  }
+  
   pairs. sort ();
   pairs. uniq ();      
   return pairs;
@@ -4627,23 +4661,24 @@ Real DistTree::setErrorDensities ()
 VectorPtr<Leaf> DistTree::findOutliers (bool strong,
                                         Real &outlier_min) const
 {
-	Dataset leafDs;
-  auto criterionAttr = new RealAttr1 ("LeafCriterion", leafDs);
+	Dataset ds;
+  auto criterionAttr = new RealAttr1 ("LeafCriterion", ds);
   
-  leafDs. objs. reserve (name2leaf. size ());
+  ds. objs. reserve (name2leaf. size () / 10 + 1);  // PAR
   for (const auto& it : name2leaf)
     if (it. second->graph)
     {
       const Real relErr = it. second->getRelCriterion (strong);
       if (! isNan (relErr))
       {
-    	  const size_t index = leafDs. appendObj (it. first);
+    	  const size_t index = ds. appendObj ();
     	  (*criterionAttr) [index] = relErr;
       }
     }
   
-  const Sample sample (leafDs);
-  outlier_min = criterionAttr->normal2outlier (sample, 0.1);  // PAR  
+  const Sample sample (ds);
+  Normal normal;
+  outlier_min = criterionAttr->distr2outlier (sample, normal, 0.1);  // PAR  
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))
@@ -4651,6 +4686,60 @@ VectorPtr<Leaf> DistTree::findOutliers (bool strong,
       if (it. second->graph)
         if (geReal (it. second->getRelCriterion (strong), outlier_min))
           res << it. second;
+      
+	return res;
+}
+  
+
+
+VectorPtr<DTNode> DistTree::findTooLongArcs (Real &arcLen_outlier_min) const
+{
+  VectorPtr<DTNode> res;  res. reserve (name2leaf. size () / 1000 + 1);
+  
+  VectorPtr<DTNode> nodes_;  nodes_. reserve (2 * name2leaf. size () / 10 + 1);  // PAR
+  for (const DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = const_static_cast <DTNode*> (node);
+    if (! dtNode->getParent ())
+      continue;
+    if (dtNode->inDiscernable ())
+      continue;
+    ASSERT (dtNode->len >= 0);
+    if (dtNode->len == 0)  
+      continue;
+    nodes_ << dtNode;
+  }
+
+	Dataset ds;
+  auto lenAttr = new PositiveAttr1 ("ArcLength", ds);
+  ds. objs. reserve (nodes_. capacity ());
+  for (const DTNode* dtNode : nodes_)
+  {
+	  const size_t index = ds. appendObj ();
+	  (*lenAttr) [index] = dtNode->len; 
+  }
+  ASSERT (nodes_. size () == ds. objs. size ());
+  Sample sample (ds);
+  
+  Exponential distr;
+  
+  arcLen_outlier_min = lenAttr->distr2outlier (sample, distr, 0.1);  // PAR  
+
+  if (isNan (arcLen_outlier_min))
+    return res;
+    
+  sample. mult. setAll (0);
+  FOR (size_t, objNum, nodes_. size ())
+    if (geReal (nodes_ [objNum] -> len, arcLen_outlier_min))  
+      sample. mult [objNum] = 1;
+  sample. finish ();
+  
+  if (sample. mult_sum >= (Real) name2leaf. size () * 0.001)  // PAR
+    arcLen_outlier_min = lenAttr->distr2outlier (sample, distr, 10);  // PAR
+
+  for (const DTNode* dtNode : nodes_)
+    if (geReal (dtNode->len, arcLen_outlier_min))  
+      res << dtNode;
       
 	return res;
 }
