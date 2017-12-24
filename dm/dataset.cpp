@@ -475,16 +475,14 @@ Real RealAttr1::distr2outlier (const Sample &sample,
   Real s2 = 0;
   Real mean = NAN;
   Real var = 0;
-//Normal normal;
   for (const auto& it : vec)
   {
     const Real x = it. value;
 
     if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)
     {
-    //normal. setParam (mean, sqrt (var));
       distr. setMeanVar (mean, var);
-      const Prob p = 1 - distr /*normal*/. cdf (x);
+      const Prob p = 1 - distr. cdf (x);
       if (leReal (p * mult_sum, outlier_EValue_max))
         return x;
     }
