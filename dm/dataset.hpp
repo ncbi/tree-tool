@@ -2529,7 +2529,7 @@ public:
       return false;
     }
   // UniDistribution
-  string nameParam () const final
+  string nameParam () const override
     { return  name + "(" + real2str (loc, 3) + "," + real2str (scale, 3) + ")"; }
 private:
   Real pdf_ (Real x) const final
@@ -2669,7 +2669,11 @@ private:
   Real getInfoMeanStnd () const final
     { return 1; }
   Real getInfoVar_ () const final
-    { NOT_IMPLEMENTED; return NAN; }  // ??
+    { return 1; } 
+  string nameParam () const final
+    { return  name + "(" + real2str (loc, 3) + ")"; }
+  Real stdLoBound () const final
+    { return 0; }
 public:
 
   void setMeanVar (Real mean,

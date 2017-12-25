@@ -47,7 +47,7 @@ struct ThisApplication : Application
 	// Update: distr.randGen
 	{
 	  if (verbose ())
-	    cout << distr. name << endl;
+	    cout << "Estimating: " << distr. name << endl;
 	  
 		distr. qc ();
 		
@@ -117,6 +117,8 @@ struct ThisApplication : Application
 	void findDistribution (Distribution &distr,
 	                       Real delta) const
 	{
+	  if (verbose ())
+	    cout << "Searching: " << distr. name << endl;
 		distr. qc ();
 		if (const UniDistribution* ud = distr. asUniDistribution ())
       if (! ud->stdBounds ())
@@ -157,7 +159,12 @@ struct ThisApplication : Application
 	    if (minimize (entropyBest, entropy_est))
 	    	distrBest = distrTry;
 	  }
-    IMPLY (distrBest, distrBest->similar (distr, delta));
+    if (distrBest && ! distrBest->similar (distr, delta))
+    {
+      distr. print (cout);
+      distrBest->print (cout);
+      ERROR;
+    }
 
     if (verbose ())
     	cout << "Altenative distributions:" << endl;
@@ -194,6 +201,7 @@ struct ThisApplication : Application
 		              << new Geometric ()
 		              << new Zipf ()
 		              << new Normal ()
+		              << new Exponential ()
 		              << new Cauchy ()
 		              << new Beta1 ()
 		              << new MultiNormal ()
