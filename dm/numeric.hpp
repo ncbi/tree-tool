@@ -457,6 +457,8 @@ struct WeightedMeanVar
     { const Real bias = getMean () - mean;
     	return getVar () + sqr (bias); 
     }
+  Real getOutlier_min (Real zScore = 3) const
+    { return getMean () + zScore * getSD (); }
 };
 
 
