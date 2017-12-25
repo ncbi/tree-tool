@@ -16,7 +16,7 @@ absCriterion = 0.000  Error density = 0.000 %
 
 
 # Outliers: 0
-Min. log rel. leaf error of outliers: nan
+Min. rel. average leaf error of outliers: nan
 
 OUTPUT:
 absCriterion = 0.000  Error density = 0.000 %

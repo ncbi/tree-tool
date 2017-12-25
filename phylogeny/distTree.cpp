@@ -156,14 +156,16 @@ void DTNode::setGlobalLenDown (bool topological,
     }
     ASSERT (! isNan (lenDelta));
     
-    if (   ! bestDTNode 
-        || bestGlobalLen. getMean () > globalLen. getMean ()
-       )
-    {
-      bestDTNode = this;
-      bestDTNodeLen_new = lenDelta;
-      bestGlobalLen = globalLen;
-    }
+    const Real zScore = 3;  // PAR
+    if (! inDiscernable ())
+      if (   ! bestDTNode 
+          || bestGlobalLen. getOutlier_min (zScore) /*getMean ()*/ > globalLen. getOutlier_min (zScore) /*getMean ()*/
+         )
+      {
+        bestDTNode = this;
+        bestDTNodeLen_new = lenDelta;
+        bestGlobalLen = globalLen;
+      }
     
     if (topological)
     {
@@ -493,17 +495,9 @@ const DTNode* Leaf::getDiscernable () const
 
 
 
-Real Leaf::getRelCriterion (bool strong) const
+Real Leaf::getRelCriterion () const
 { 
-  const Real x = absCriterion / getDistTree (). getLeafAbsCriterion (); 
-  if (isNan (x))
-    return x;
-  ASSERT (x >= 0);
-  return strong 
-           ? x == 0 
-             ? NAN 
-             : log (x)
-           : x;
+  return absCriterion_ave / getDistTree (). getLeafAbsCriterion (); 
 }
 
 
@@ -1803,7 +1797,8 @@ DistTree::DistTree (const DTNode* center,
   }
   
   
-  // Dissim::target, dissim2_sum
+  // Dissim::target, mult_sum, dissim2_sum
+  ASSERT (mult_sum == 0);
   ASSERT (dissim2_sum == 0);
   for (Dissim& dissim : dissims)
     if (dissim. mult == 0)
@@ -1811,6 +1806,7 @@ DistTree::DistTree (const DTNode* center,
     else
     {
       dissim. target /= dissim. mult;
+      mult_sum    += dissim. mult;
       dissim2_sum += dissim. mult * sqr (dissim. target); 
     }
     
@@ -2280,10 +2276,8 @@ void DistTree::setGlobalLen ()
     if (dtNode->inDiscernable ())
       { ASSERT (dtNode->len == 0); }
     else
-    {
       if (const DTNode* parent = static_cast <const DTNode*> (dtNode->getParent ()))
         dtNode->len = max (0.0, parent->subtreeLen. getMean () - dtNode->subtreeLen. getMean ());
-    }
   }
 
   clearSubtreeLen ();
@@ -2592,7 +2586,7 @@ void DistTree::dissimDs2dissims (bool sparse)
     selectedPairs = getSparseLeafPairs ();
   }
 
-  // dissims[], dissim2_sum
+  // dissims[], mult_sum, dissim2_sum
   loadDissimPrepare (getDissimSize_max () /*, dissimAttr->decimals*/);
   FOR (size_t, row, dissimDs->objs. size ())
   {
@@ -2680,7 +2674,10 @@ bool DistTree::addDissim (const string &name1,
     
   const Real mult = dissim2mult (dissim);  
   if (mult)
+  {
+    mult_sum    += mult;
     dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
+  }
   
   const Leaf* leaf1 = findPtr (name2leaf, name1);
   const Leaf* leaf2 = findPtr (name2leaf, name2);
@@ -3021,19 +3018,39 @@ void DistTree::setLeafAbsCriterion ()
   ASSERT (optimizable ());
   
   for (DiGraph::Node* node : nodes)
-    if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
-      const_cast <Leaf*> (leaf) -> absCriterion = 0;
+    if (Leaf* leaf = const_cast <Leaf*> (static_cast <DTNode*> (node) -> asLeaf ()))
+    {
+      leaf->absCriterion = 0;
+      leaf->absCriterion_ave = 0;  // tepmorary: = mult
+    }
 
   for (const Dissim& dissim : dissims)
     if (dissim. mult)
     {
       const Real residual2 = sqr (dissim. getResidual ());      
       ASSERT (DM_sp::finite (residual2));
-      const_cast <Leaf*> (dissim. leaf1) -> absCriterion += residual2 * dissim. mult;
-      const_cast <Leaf*> (dissim. leaf2) -> absCriterion += residual2 * dissim. mult;
+
+      Leaf* leaf1 = const_cast <Leaf*> (dissim. leaf1);
+      Leaf* leaf2 = const_cast <Leaf*> (dissim. leaf2);
+
+      leaf1->absCriterion += residual2 * dissim. mult;
+      leaf2->absCriterion += residual2 * dissim. mult;
+
+      leaf1->absCriterion_ave += dissim. mult;
+      leaf2->absCriterion_ave += dissim. mult;
     }
-    
-  // /= mult_sum ??
+
+//OFStream f ("leaf_criterion");  
+  for (DiGraph::Node* node : nodes)
+    if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
+    {
+      const_cast <Leaf*> (leaf) -> absCriterion_ave = leaf->absCriterion == 0 ? 0 : leaf->absCriterion / leaf->absCriterion_ave;
+      ASSERT (leaf->absCriterion_ave >= 0);
+    #if 0
+      if (leaf->absCriterion_ave > 0)
+        f << leaf->name << '\t' << leaf->absCriterion_ave << '\t' << log (leaf->absCriterion_ave) << endl;
+    #endif
+    }
 }
 
 
@@ -4443,7 +4460,8 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs ()
       }
     }
   }
-  
+
+#if 0  
   Real arcLen_outlier_min = NAN;
   const VectorPtr<DTNode> tooLongArcs (findTooLongArcs (arcLen_outlier_min));
   {
@@ -4475,6 +4493,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs ()
       }
     }
   }
+#endif
   
   pairs. sort ();
   pairs. uniq ();      
@@ -4558,12 +4577,12 @@ Real DistTree::getMeanResidual () const
   ASSERT (optimizable ());
 
   Real s = 0;
-  Real mult_sum = 0;
+//Real mult_sum = 0;
   for (const Dissim& dissim : dissims)
     if (dissim. mult)
     {
       s += dissim. mult * dissim. getResidual ();
-      mult_sum += dissim. mult;
+    //mult_sum += dissim. mult;
     }
     ASSERT (! isNan (s));
   
@@ -4658,8 +4677,7 @@ Real DistTree::setErrorDensities ()
 
 
 
-VectorPtr<Leaf> DistTree::findOutliers (bool strong,
-                                        Real &outlier_min) const
+VectorPtr<Leaf> DistTree::findOutliers (Real &outlier_min) const
 {
 	Dataset ds;
   auto criterionAttr = new RealAttr1 ("LeafCriterion", ds);
@@ -4668,23 +4686,31 @@ VectorPtr<Leaf> DistTree::findOutliers (bool strong,
   for (const auto& it : name2leaf)
     if (it. second->graph)
     {
-      const Real relErr = it. second->getRelCriterion (strong);
+      const Real relErr = it. second->getRelCriterion ();
+    #if 0
       if (! isNan (relErr))
       {
     	  const size_t index = ds. appendObj ();
     	  (*criterionAttr) [index] = relErr;
       }
+    #else
+      if (relErr > 0)
+      {
+    	  const size_t index = ds. appendObj ();
+    	  (*criterionAttr) [index] = log (relErr);
+      }
+    #endif
     }
   
   const Sample sample (ds);
-  Normal normal;
-  outlier_min = criterionAttr->distr2outlier (sample, normal, 0.1);  // PAR  
+  Normal /*Exponential*/ distr;
+  outlier_min = exp (criterionAttr->distr2outlier (sample, distr, 0.1));  // PAR  
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))
     for (const auto& it : name2leaf)
       if (it. second->graph)
-        if (geReal (it. second->getRelCriterion (strong), outlier_min))
+        if (geReal (it. second->getRelCriterion (), outlier_min))
           res << it. second;
       
 	return res;
@@ -4694,7 +4720,7 @@ VectorPtr<Leaf> DistTree::findOutliers (bool strong,
 
 VectorPtr<DTNode> DistTree::findTooLongArcs (Real &arcLen_outlier_min) const
 {
-  VectorPtr<DTNode> res;  res. reserve (name2leaf. size () / 1000 + 1);
+  VectorPtr<DTNode> res;  
   
   VectorPtr<DTNode> nodes_;  nodes_. reserve (2 * name2leaf. size () / 10 + 1);  // PAR
   for (const DiGraph::Node* node : nodes)
@@ -4735,8 +4761,10 @@ VectorPtr<DTNode> DistTree::findTooLongArcs (Real &arcLen_outlier_min) const
   sample. finish ();
   
   if (sample. mult_sum >= (Real) name2leaf. size () * 0.001)  // PAR
-    arcLen_outlier_min = lenAttr->distr2outlier (sample, distr, 10);  // PAR
+    // Mixture of 2 types of Arc's (> 2 ??)
+    arcLen_outlier_min = lenAttr->distr2outlier (sample, distr, 10);  // PAR ??
 
+  res. reserve (name2leaf. size () / 1000 + 1);
   for (const DTNode* dtNode : nodes_)
     if (geReal (dtNode->len, arcLen_outlier_min))  
       res << dtNode;

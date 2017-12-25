@@ -251,6 +251,7 @@ struct Leaf : DTNode
   // Temporary
   Real absCriterion {NAN};
     // sum = contribution to 2*getTree().absCriterion
+  Real absCriterion_ave {NAN};
   Real relCriterion {NAN};
     // !isNan() => = getRelCriterion()
   size_t index {NO_INDEX};
@@ -269,7 +270,7 @@ struct Leaf : DTNode
     { DTNode::saveContent (os);
       if (! isNan (absCriterion))
       { const ONumber oNum (os, criterionDecimals, true);  // PAR
-        os << "  leaf_error=" << getRelCriterion (false);
+        os << "  leaf_error=" << getRelCriterion ();
       }
     	if (! discernable)
     	  os << "  " << non_discernable;
@@ -292,7 +293,7 @@ struct Leaf : DTNode
         return name;
       string s = name + prepend (" ", comment); 
       if (! isNan (absCriterion))
-        s += " " + real2str (getRelCriterion (false), 1);  // PAR
+        s += " " + real2str (getRelCriterion (), 1);  // PAR
       return s;
     }
   bool isLeafType () const final
@@ -316,9 +317,7 @@ public:
     // Return: !nullptr; != this
   const DTNode* getDiscernable () const;
     // Return: this or getParent(); !nullptr
-  Real getRelCriterion (bool strong) const;
-    // Return: average over all Leaf's = 1
-    //         If getDistTree().dissims has no all pairs of Leaf's then approximate
+  Real getRelCriterion () const;
   bool getCollapsed (const Leaf* other) const
     { return    other
              && getParent () == other->getParent ()
@@ -626,6 +625,7 @@ private:
     // In *dissimDs
     
   Vector<Dissim> dissims;
+  Real mult_sum {0};
 public:
   Real dissim2_sum {0};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
@@ -768,7 +768,7 @@ private:
                   const string &name2,
                   Real dissim);
 	  // Return: dissim is added
-	  // Update: Dissim, dissim2_sum
+	  // Update: Dissim, mult_sum, dissim2_sum
   void setPaths ();
     // Output: dissims::Dissim, DTNode::pathObjNums, absCriterion
     // Invokes: setLca()
@@ -808,7 +808,8 @@ public:
 	    return mv. getMean ();
 	  }
   Real getLeafAbsCriterion () const
-    { return 2 * absCriterion / (Real) name2leaf. size (); }
+  //{ return 2 * absCriterion / (Real) name2leaf. size (); }
+    { return absCriterion / mult_sum; }
   Prob getUnexplainedFrac () const
     { return absCriterion / dissim2_sum; }
   Real getErrorDensity () const
@@ -962,8 +963,7 @@ public:
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
-  VectorPtr<Leaf> findOutliers (bool strong,
-                                Real &outlier_min) const;
+  VectorPtr<Leaf> findOutliers (Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    

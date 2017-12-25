@@ -16,42 +16,49 @@ Ave. dissimilarity = 0.185037
 absCriterion = 20.558  Error density = 3.134 %
 
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 18
+# Nodes deleted = 17
 Optimizing arc lengths at each node ...
 # Nodes deleted = 2
-absCriterion = 7.899  Error density = 1.942 %
+absCriterion = 7.910  Error density = 1.943 %
 
 Optimizing topology ...
 
 Topology optimization iter = 1
-# Changes: 146
-Improvement = 0.697
+# Changes: 145
+Improvement = 0.674
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
-absCriterion = 7.102  Error density = 1.841 %
+absCriterion = 7.134  Error density = 1.846 %
 
 Topology optimization iter = 2
 # Changes: 48
-Improvement = 0.045
+Improvement = 0.077
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.052  Error density = 1.835 %
 
 Topology optimization iter = 3
-# Changes: 11
-Improvement = 0.002
+# Changes: 17
+Improvement = 0.003
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
-absCriterion = 7.050  Error density = 1.835 %
+absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 4
-# Changes: 6
-Improvement = 0.001
+# Changes: 5
+Improvement = 0.000
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 5
+# Changes: 3
+Improvement = 0.000
+Optimizing arc lengths at each arc ...
+Optimizing arc lengths at each node ...
+absCriterion = 7.048  Error density = 1.834 %
+
+Topology optimization iter = 6
 # Changes: 0
 Improvement = 0.000
 absCriterion = 7.048  Error density = 1.834 %
@@ -59,35 +66,29 @@ absCriterion = 7.048  Error density = 1.834 %
 
 Ave. radius: 0.46
 
-# Outliers: 6
-Min. log rel. leaf error of outliers: 1.33
-SAMN01902483	1.40	0.20
-SAMN03477482	2.22	0.45
-SAMN03480186	1.61	0.24
-SAMN03988423	2.32	0.49
-SAMN04255291	1.33	0.18
-SAMN04388342.r1	2.61	0.66
+# Outliers: 0
+Min. rel. average leaf error of outliers: inf
 
 Removing outliers ...
-absCriterion = 4.858  Error density = 1.523 %
+absCriterion = 7.048  Error density = 1.834 %
 
 OUTPUT:
-absCriterion = 4.858  Error density = 1.523 %
-absCriterion [0] = 0.427  Error density [0] = 5.577 %  Fraction = 6.208 %
-absCriterion [1] = 4.431  Error density [1] = 1.488 %  Fraction = 93.792 %
+absCriterion = 7.048  Error density = 1.834 %
+absCriterion [0] = 0.810  Error density [0] = 7.447 %  Fraction = 6.348 %
+absCriterion [1] = 6.238  Error density [1] = 1.732 %  Fraction = 93.652 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.09
+Correlation between residual^2 and dissimilarity = 0.07
 
-# Interior nodes (with root) = 277 (max = 278)
-# Interior undirected arcs = 276
-Tree length = 30.560
+# Interior nodes (with root) = 283 (max = 284)
+# Interior undirected arcs = 282
+Tree length = 30.572
 Min. discernable leaf length = 0.000
-Ave. arc length = 0.054
+Ave. arc length = 0.053
 Interior height = 34
-Bifurcating interior branching = 1.365
-# Frequent children interior nodes = 272
-# Frequent children leaves = 280
+Bifurcating interior branching = 1.354
+# Frequent children interior nodes = 278
+# Frequent children leaves = 286
 # Frequent interior nodes = 42
-# Frequent leaves = 56
+# Frequent leaves = 52
 Rareness threshold = 1.000 %
