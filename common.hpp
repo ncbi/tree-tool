@@ -342,6 +342,15 @@ public:
     
   bool same () const
     { return P::first == P::second; }
+  bool has (const T &t) const
+    { return    P::first  == t 
+             || P::second == t;
+    }
+  T& findOther (const T &t) const
+    { if (P::first == t)
+        return P::second;
+      return P::first;
+    }
   void swap ()
     { std::swap (P::first, P::second); }
 };
