@@ -248,6 +248,36 @@ Vector<size_t> DTNode::getLcaObjNums ()
 
 
 
+VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max) const
+{
+  static_assert (sparsingDepth >= 2 * areaRadius_std, "sparsingDepth is too small to guarantee all paths between leaves in a subgraph of radius areRadius_std");
+  ASSERT (reprLeaf);
+
+  VectorPtr<Leaf> matches;  matches. reserve (getDistTree (). getSparseDissims_size ());  // PAR
+ 	VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
+  size_t depth = 0;  
+  const DTNode* ancestor = this;
+  while (ancestor && (! depth_max || depth <= depth_max))
+  {
+  	descendants. clear ();
+  	ancestor->getDescendants (descendants, sparsingDepth);  
+  	for (const DTNode* descendant : descendants)
+  	{
+  	  ASSERT (descendant->reprLeaf);
+  	  if (descendant->reprLeaf != reprLeaf)
+  	    matches << descendant->reprLeaf;
+  	}
+    ancestor = static_cast <const DTNode*> (ancestor->getParent ());
+    depth++;
+  }
+  matches. sort ();
+  matches. uniq ();
+
+  return matches;
+}
+
+
+
 
 // Steiner
 
@@ -1443,7 +1473,7 @@ DistTree::DistTree (const string &dataDirName,
   	    outliers << item;
     }
     outliers. sort ();
-    loadDissimPrepare (name2leaf. size () * (size_t) log ((Real) name2leaf. size ()) * 70);  // PAR
+    loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
     {
       const string fName (dataDirName + "dissim");
       cout << "Loading " << fName << " ..." << endl;
@@ -2579,11 +2609,11 @@ void DistTree::dissimDs2dissims (bool sparse)
   }
 
   // Sparsing
-  Set<string> selectedPairs;
+  Vector<Pair<const Leaf*>> selectedPairs;
   if (sparse)
   {
     ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
-    selectedPairs = getSparseLeafPairs ();
+    selectedPairs = getMissingLeafPairs_ancestors ();
   }
 
   // dissims[], mult_sum, dissim2_sum
@@ -2591,15 +2621,21 @@ void DistTree::dissimDs2dissims (bool sparse)
   FOR (size_t, row, dissimDs->objs. size ())
   {
     const string name1 = dissimDs->objs [row] -> name;
-    if (! findPtr (name2leaf, name1))
+    const Leaf* leaf1 = findPtr (name2leaf, name1);
+    if (! leaf1)
       continue;
     FOR (size_t, col, row)  // dissimAttr is symmetric
     {
-      string name2 = dissimDs->objs [col] -> name;
-      if (! findPtr (name2leaf, name2))
+      const string name2 = dissimDs->objs [col] -> name;
+      const Leaf* leaf2 = findPtr (name2leaf, name2);
+      if (! leaf2)
         continue;
       const Real dissim = dissimAttr->get (row, col);
-      if (sparse && ! selectedPairs. contains (getObjName (name1, name2)))
+      Pair<const Leaf*> p (leaf1, leaf2);
+      ASSERT (! p. same ());
+      if (p. first->name > p. second->name)
+        p. swap ();
+      if (sparse && ! selectedPairs. containsFast (p /*getObjName (name1, name2)*/))
         continue;
           // The graph of comparable objects remains connected (getConnected())
       addDissim (name1, name2, dissim);
@@ -4381,8 +4417,8 @@ void DistTree::removeLeaf (Leaf* leaf)
 
 
 
-Set<string> /*Set<pair<const Leaf*,const Leaf*>> ??*/ DistTree::getSparseLeafPairs ()
-// Use sparsingDepth ancestors of ancestor if ancestor->reprLeaf = leaf ??!
+#if 0
+Set<string> /*Vector<Pair<const Leaf*>> ??*/ DistTree::getMissingLeafPairs_ancestors ()
 {
   setReprLeaves ();  
   Set<string> dissimNames;
@@ -4415,14 +4451,50 @@ Set<string> /*Set<pair<const Leaf*,const Leaf*>> ??*/ DistTree::getSparseLeafPai
     }          
   return selectedPairs;
 }
-
-
-
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs () 
+#else
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors ()
 {
   setReprLeaves ();  
   
-  Vector<Pair<const Leaf*>> pairs;
+  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
+  {
+    Progress prog ((uint) name2leaf. size (), 100);  // PAR
+    for (const auto it : name2leaf)
+    {
+      prog ();
+      const Leaf* leaf = it. second;
+      ASSERT (leaf);
+      if (! leaf->graph)
+        continue;
+      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (0));
+      for (const Leaf* match : matches)
+    	  if (leaf->getDiscernable () != match->getDiscernable ())
+    	  {
+      	  Pair<const Leaf*> p (leaf, match);
+      	  ASSERT (! p. same ());
+      	  if (p. first->name > p. second->name)
+      	    p. swap ();
+      	  pairs << p;
+        }
+    }
+  }
+  pairs. sort ();
+  pairs. uniq ();
+       
+  dissims. sort ();
+  pairs. filterValue ([&] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
+
+  return pairs;
+}
+#endif
+
+
+
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () 
+{
+  setReprLeaves ();  
+  
+  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ());  // PAR
   {
     Subgraph subgraph (*this);
     Progress prog ((uint) nodes. size (), 100);  // PAR
@@ -4461,7 +4533,6 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs ()
     }
   }
 
-#if 0  
   Real arcLen_outlier_min = NAN;
   const VectorPtr<DTNode> tooLongArcs (findTooLongArcs (arcLen_outlier_min));
   {
@@ -4493,7 +4564,6 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs ()
       }
     }
   }
-#endif
   
   pairs. sort ();
   pairs. uniq ();      
@@ -5043,13 +5113,14 @@ void NewLeaf::qc () const
 
 void NewLeaf::saveRequest () const
 {	
-  Set<const Leaf*> requested;
+#if 0
+  VectorPtr<Leaf> requested;  requested. reserve (tree. getSparseDissims_size ());
   {
     // Cf. DistTree::getSparseLeafPairs()
     VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
     const DTNode* ancestor = location. anchor;
-    size_t depth = 0;  // start when ancestor->reprLeaf = location.anchor->reprLeaf ??!
-    while (ancestor && depth <= sparsingDepth)  
+  //size_t depth = 0;  
+    while (ancestor /*&& depth <= sparsingDepth*/)  
     {
     	descendants. clear ();
     	ancestor->getDescendants (descendants, sparsingDepth); 
@@ -5061,9 +5132,15 @@ void NewLeaf::saveRequest () const
     	    requested << descendant->reprLeaf;
     	}
       ancestor = static_cast <const DTNode*> (ancestor->getParent ());
-      depth++;
+    //depth++;
     }
   }
+  requested. sort ();
+  requested. uniq ();
+#else
+  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth));
+  requested. filterValue ([&] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
+#endif
   
   {
     OFStream of (getRequestFName ());

@@ -69,7 +69,7 @@ constexpr uint areaRadius_std = 5;
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
 constexpr uint boundary_size_max_std = 500;  // was: 100
-constexpr size_t sparsingDepth = 10;  
+constexpr size_t sparsingDepth = 2 * areaRadius_std;  
 constexpr Prob rareProb = 0.01; 
 
 
@@ -178,6 +178,11 @@ private:
   Vector<size_t/*objNum*/> getLcaObjNums ();
     // Return: objNum's s.t. getDistTree().dissims[objNum].lca = this
     // Invokes: DTNode::pathObjNums.sort()
+  VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max) const;
+    // Return: size = O(log(n)); !contains(this->reprLeaf); sort()'ed, uniq()'ed
+    //         getDistTree().reroot(true) reduces size()
+    // Input: depth_max: 0 <=> no restriction
+    // Requires: after getDistTree().setReprLeaves()
 };
 
 
@@ -569,8 +574,8 @@ struct Dissim
 
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg,
-          Real target_arg,
-          Real mult_arg);
+          Real target_arg = NAN,
+          Real mult_arg = 0);
   void qc () const;
 
           
@@ -592,6 +597,11 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
+
+  bool operator< (const Dissim &other) const
+    { return Pair<const Leaf*> (leaf1, leaf2) < Pair<const Leaf*> (other. leaf1, other. leaf2); }
+  bool operator== (const Dissim &other) const
+    { return Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2); }
 };
 
 
@@ -790,6 +800,8 @@ public:
     { return dissimDs. get () ? dissimDs->objs. size () - name2leaf. size () : 0; }
   size_t getDissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
+  size_t getSparseDissims_size () const
+    { return (size_t) log ((Real) name2leaf. size ()) * 70; }  // PAR
   Set<const DTNode*> getDiscernables () const;
     // Logical leaves
   static void printParam (ostream &os) 
@@ -923,13 +935,10 @@ public:
       const_static_cast<DTNode*> (root) -> setRepresentative ();
     }  
     // Output: DTNode::reprLeaf
-  Set<string> getSparseLeafPairs ();  
-    // Return: pairs of Leaf->name's 
-    //         O(log(n)) pairs for each Leaf
-    //         not in dissims
-    //         reroot(true) reduces size()
-    // Invokes: setReprLeaves(), getObjName()
-  Vector<Pair<const Leaf*>> getMissingLeafPairs ();
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors ();
+    // Return: not in dissims
+    // Invokes: setReprLeaves(), dissims.sort(), DTNode::getSparseLeafPairs()
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs ();
     // Invokes: setReprLeaves(), findTooLongArcs()
         
   // After optimization

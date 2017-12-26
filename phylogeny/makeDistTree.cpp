@@ -373,7 +373,7 @@ struct ThisApplication : Application
     {
       cout << endl << "Finding missing leaf pairs ..." << endl;
       OFStream f (dissim_request);
-      const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs ());
+      const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_subgraphs ());
       cout << "# Requests: " << pairs. size () << endl;
       for (const auto& p : pairs)
         f << p. first->name << '\t' << p. second->name << endl;
