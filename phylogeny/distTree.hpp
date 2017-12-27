@@ -67,9 +67,10 @@ constexpr streamsize dissimDecimals = 6;
 constexpr streamsize criterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
+constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
 constexpr uint subgraphDepth = areaRadius_std;  
 constexpr uint boundary_size_max_std = 500;  // was: 100
-constexpr size_t sparsingDepth = 2 * areaRadius_std;  // must be: >= areaRadius_std
+constexpr size_t sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
 constexpr Prob rareProb = 0.01; 
 
 
@@ -856,13 +857,13 @@ public:
     // Time: O(p)
 	  
   // Optimization	  
-	void optimizeLenArc ();
-	  // Return: success
+	size_t optimizeLenArc ();
+	  // Return: # nodes delete'd
 	  // Update: DTNode::len
 	  // Output: Dissim::prediction, absCriterion
-	  // To be followed by: finishChanges()
 	  // Time: O(p log(n)); return = 1.04 * optimal
-  void optimizeLenNode ();
+  size_t optimizeLenNode ();
+	  // Return: # nodes delete'd
 	  // Update: DTNode::len
 	  // Output: Dissim::prediction, absCriterion
     // After: deleteLenZero()
@@ -911,8 +912,6 @@ private:
 	                const Change* &bestChange);
     // Update: bestChange: positive(improvement)
     // Invokes: Change::{apply(),restore()}
-public:	
-  // Auxiliary
   void delayDeleteRetainArcs (DTNode* node);
     // Invokes: s->detachChildrenUp()
   size_t finishChanges ();
@@ -921,25 +920,18 @@ public:
     // Delete arcs where len = 0
     // Does not delete root
     // Invokes: deleteLenZero(node), delayDeleteRetainArcs()
-private:
   bool deleteLenZero (DTNode* node);
     // Return: success
 public:
   void removeLeaf (Leaf* leaf);
     // Invokes: leaf->detachChildrenUp(), optimizeSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
-	  // Time: Time(optimizeSubgraph)
-    
+	  // Time: Time(optimizeSubgraph)    
   void setReprLeaves ()
     { sort ();
       const_static_cast<DTNode*> (root) -> setRepresentative ();
     }  
     // Output: DTNode::reprLeaf
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max);
-    // Return: not in dissims
-    // Invokes: setReprLeaves(), dissims.sort(), DTNode::getSparseLeafPairs()
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs ();
-    // Invokes: setReprLeaves(), findTooLongArcs()
         
   // After optimization
   void setHeight ()
@@ -972,7 +964,9 @@ public:
     // Output: DTNode::{paths,errorDensity}
     // Requires: Leaf::discernable is set
 	  // Time: O(p log(n))
-  VectorPtr<Leaf> findOutliers (Real &outlier_min) const;
+
+  // Outliers
+  VectorPtr<Leaf> findCriterionOutliers (Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
@@ -983,8 +977,19 @@ public:
                                      Real &dissimOutlier_min) const;
     // Output: dissimOutlier_min
 #endif
+  VectorPtr<Leaf> findDepthOutliers () const;
+    // Requires: after setReprLeaves()
+    
+  // Missing dissimilarities
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max);
+    // Return: not in dissims; almost a superset of getMissingLeafPairs_subgraphs()
+    // Invokes: setReprLeaves(), dissims.sort(), DTNode::getSparseLeafPairs()
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs ();
+    // Invokes: setReprLeaves(), findTooLongArcs() ??
 
   // Statistics
+//void findTopologicalClusters ();
+    // Output: DisjointCluster::<Leaf>
 #if 0
   ??
   RealAttr1* getResiduals2 ();
@@ -998,6 +1003,7 @@ public:
                          ostream &os) const;
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
 #endif
+
   void saveDissim (ostream &os) const;
 };
 
