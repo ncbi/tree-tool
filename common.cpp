@@ -851,6 +851,8 @@ void Named::qc () const
 void DisjointCluster::merge (DisjointCluster &other)
 // Trying to keep rank's small
 { 
+  if (this == & other)
+    return;
   DisjointCluster* root1 =        getDisjointCluster ();
   DisjointCluster* root2 = other. getDisjointCluster ();
 	if (root1->rankDC > root2->rankDC)
