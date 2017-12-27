@@ -131,7 +131,7 @@ struct ThisApplication : Application
     ds. qc ();
 
     Common_sp::AutoPtr<const Analysis1> an (distr. getAnalysisCheck ());
-    distr. qc ();
+    an->qc ();
 
 
     if (verbose ())
