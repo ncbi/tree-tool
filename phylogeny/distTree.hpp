@@ -69,7 +69,7 @@ constexpr uint areaRadius_std = 5;
   // The greater the better DistTree::absCriterion
 constexpr uint subgraphDepth = areaRadius_std;  
 constexpr uint boundary_size_max_std = 500;  // was: 100
-constexpr size_t sparsingDepth = 2 * areaRadius_std;  
+constexpr size_t sparsingDepth = 2 * areaRadius_std;  // must be: >= areaRadius_std
 constexpr Prob rareProb = 0.01; 
 
 
@@ -633,10 +633,10 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
+public:
     
   Vector<Dissim> dissims;
   Real mult_sum {0};
-public:
   Real dissim2_sum {0};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NAN};
@@ -935,7 +935,7 @@ public:
       const_static_cast<DTNode*> (root) -> setRepresentative ();
     }  
     // Output: DTNode::reprLeaf
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors ();
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max);
     // Return: not in dissims
     // Invokes: setReprLeaves(), dissims.sort(), DTNode::getSparseLeafPairs()
   Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs ();
@@ -978,8 +978,11 @@ public:
     // Requires: after setLeafAbsCriterion()    
     // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
     // Time: O(n log(n))
-  VectorPtr<DTNode> findTooLongArcs (Real &arcLen_outlier_min) const;
-    // Output: arcLen_outlier_min
+#if 0
+  VectorPtr<DTNode> findOutlierArcs (Real outlier_EValue_max,
+                                     Real &dissimOutlier_min) const;
+    // Output: dissimOutlier_min
+#endif
 
   // Statistics
 #if 0

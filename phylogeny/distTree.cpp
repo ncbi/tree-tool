@@ -250,17 +250,27 @@ Vector<size_t> DTNode::getLcaObjNums ()
 
 VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max) const
 {
-  static_assert (sparsingDepth >= 2 * areaRadius_std, "sparsingDepth is too small to guarantee all paths between leaves in a subgraph of radius areRadius_std");
+  IMPLY (depth_max, depth_max >= sparsingDepth);
   ASSERT (reprLeaf);
 
   VectorPtr<Leaf> matches;  matches. reserve (getDistTree (). getSparseDissims_size ());  // PAR
  	VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
   size_t depth = 0;  
   const DTNode* ancestor = this;
-  while (ancestor && (! depth_max || depth <= depth_max))
+  while (ancestor)
   {
   	descendants. clear ();
-  	ancestor->getDescendants (descendants, sparsingDepth);  
+  	size_t searchDepth = sparsingDepth;
+  	if (depth_max && depth > depth_max)
+  	{
+  	  const size_t dec = depth - depth_max;
+  	  if (searchDepth > dec)
+  	    searchDepth -= dec;
+  	  else
+  	    searchDepth = 1;
+  	}
+  	ASSERT (searchDepth);
+  	ancestor->getDescendants (descendants, searchDepth);  
   	for (const DTNode* descendant : descendants)
   	{
   	  ASSERT (descendant->reprLeaf);
@@ -2412,6 +2422,7 @@ void DistTree::neighborJoin ()
         throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
       leafPairs << leafPair;
     }
+    // non-complete dissimilarity matrix ??
   }
   else
   {
@@ -2613,7 +2624,7 @@ void DistTree::dissimDs2dissims (bool sparse)
   if (sparse)
   {
     ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
-    selectedPairs = getMissingLeafPairs_ancestors ();
+    selectedPairs = getMissingLeafPairs_ancestors (0);
   }
 
   // dissims[], mult_sum, dissim2_sum
@@ -4417,42 +4428,7 @@ void DistTree::removeLeaf (Leaf* leaf)
 
 
 
-#if 0
-Set<string> /*Vector<Pair<const Leaf*>> ??*/ DistTree::getMissingLeafPairs_ancestors ()
-{
-  setReprLeaves ();  
-  Set<string> dissimNames;
-  for (const Dissim& dissim : dissims)
-    dissimNames << dissim. getObjName ();
-  
-  Set<string> selectedPairs;
- 	VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
-  for (const DiGraph::Node* node : nodes)
-    if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
-    {
-      ASSERT (leaf == leaf->reprLeaf);
-      const DTNode* ancestor = leaf;
-      while (ancestor)
-      {
-      	descendants. clear ();
-      	ancestor->getDescendants (descendants, sparsingDepth /*??*/);  
-      	for (const DTNode* descendant : descendants)
-      	{
-      	  ASSERT (descendant->reprLeaf);
-      	  if (leaf->getDiscernable () != descendant->reprLeaf->getDiscernable ())
-      	  {
-      	    const string objName (getObjName (leaf->name, descendant->reprLeaf->name));
-      	    if (! dissimNames. contains (objName))
-        	    selectedPairs << objName;
-        	}
-      	}
-        ancestor = static_cast <const DTNode*> (ancestor->getParent ());
-      }
-    }          
-  return selectedPairs;
-}
-#else
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors ()
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max)
 {
   setReprLeaves ();  
   
@@ -4466,7 +4442,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors ()
       ASSERT (leaf);
       if (! leaf->graph)
         continue;
-      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (0));
+      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (depth_max));
       for (const Leaf* match : matches)
     	  if (leaf->getDiscernable () != match->getDiscernable ())
     	  {
@@ -4486,7 +4462,6 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors ()
 
   return pairs;
 }
-#endif
 
 
 
@@ -4533,8 +4508,9 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs ()
     }
   }
 
+#if 0
   Real arcLen_outlier_min = NAN;
-  const VectorPtr<DTNode> tooLongArcs (findTooLongArcs (arcLen_outlier_min));
+  const VectorPtr<DTNode> tooLongArcs (findOutlierArcs (0.1, arcLen_outlier_min));  // PAR
   {
     Progress prog ((uint) tooLongArcs. size (), 100);  // PAR
     for (const DTNode* node2 : tooLongArcs)
@@ -4564,6 +4540,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs ()
       }
     }
   }
+#endif
   
   pairs. sort ();
   pairs. uniq ();      
@@ -4785,62 +4762,99 @@ VectorPtr<Leaf> DistTree::findOutliers (Real &outlier_min) const
       
 	return res;
 }
+
+
+
+#if 0
+namespace
+{
+
+struct NodeDissim
+{
+  const DTNode* node {nullptr};
+  Real dissim_min {INF};
   
+  explicit NodeDissim (const DTNode* node_arg)
+    : node (node_arg)
+    {
+      ASSERT (node);
+      const DistTree& tree = node->getDistTree ();
+      for (const size_t objNum : node->pathObjNums)
+      {
+        const Dissim& dissim = tree. dissims [objNum];
+        if (dissim. valid ())
+          minimize (dissim_min, dissim. target);
+      }
+    }
+    
+  void print (ostream &os) const
+    { ONumber on (os, 6, true);
+      os << node->getLcaName () << '\t' << dissim_min << endl; 
+    }
+};
+
+}
 
 
-VectorPtr<DTNode> DistTree::findTooLongArcs (Real &arcLen_outlier_min) const
+
+VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
+                                             Real &dissimOutlier_min) const
 {
   VectorPtr<DTNode> res;  
   
-  VectorPtr<DTNode> nodes_;  nodes_. reserve (2 * name2leaf. size () / 10 + 1);  // PAR
+  Vector<NodeDissim> nodeDissims;  nodeDissims. reserve (2 * name2leaf. size () / 10 + 1);  // PAR
+    // Distinct NodeDissim::node's
   for (const DiGraph::Node* node : nodes)
   {
-    DTNode* dtNode = const_static_cast <DTNode*> (node);
+    const DTNode* dtNode = static_cast <const DTNode*> (node);
     if (! dtNode->getParent ())
       continue;
     if (dtNode->inDiscernable ())
       continue;
-    ASSERT (dtNode->len >= 0);
-    if (dtNode->len == 0)  
-      continue;
-    nodes_ << dtNode;
+    const NodeDissim nd (dtNode);
+    if (nd. dissim_min < INF)
+      nodeDissims << nd;
   }
 
 	Dataset ds;
   auto lenAttr = new PositiveAttr1 ("ArcLength", ds);
-  ds. objs. reserve (nodes_. capacity ());
-  for (const DTNode* dtNode : nodes_)
+  ds. objs. reserve (nodeDissims. capacity ());
+  for (const NodeDissim& nd : nodeDissims)
   {
 	  const size_t index = ds. appendObj ();
-	  (*lenAttr) [index] = dtNode->len; 
+	  (*lenAttr) [index] = nd. dissim_min; 
   }
-  ASSERT (nodes_. size () == ds. objs. size ());
+  ASSERT (nodeDissims. size () == ds. objs. size ());
   Sample sample (ds);
   
-  Exponential distr;
-  
-  arcLen_outlier_min = lenAttr->distr2outlier (sample, distr, 0.1);  // PAR  
+  Exponential distr;  
 
-  if (isNan (arcLen_outlier_min))
+  dissimOutlier_min = lenAttr->distr2outlier (sample, distr, 1e-6 /*outlier_EValue_max*/);  // PAR
+
+  if (isNan (dissimOutlier_min))
     return res;
     
+  // Mixture of 2 types of dissimilarities (> 2 ??)
   sample. mult. setAll (0);
-  FOR (size_t, objNum, nodes_. size ())
-    if (geReal (nodes_ [objNum] -> len, arcLen_outlier_min))  
+//OFStream f ("arc_len");  
+  FOR (size_t, objNum, nodeDissims. size ())
+    if (geReal (nodeDissims [objNum]. dissim_min, dissimOutlier_min))  
+    {
       sample. mult [objNum] = 1;
+    //nodeDissims [objNum]. print (f);  
+    }
   sample. finish ();
-  
   if (sample. mult_sum >= (Real) name2leaf. size () * 0.001)  // PAR
-    // Mixture of 2 types of Arc's (> 2 ??)
-    arcLen_outlier_min = lenAttr->distr2outlier (sample, distr, 10);  // PAR ??
+    dissimOutlier_min = lenAttr->distr2outlier (sample, distr, outlier_EValue_max);  // PAR ??
 
-  res. reserve (name2leaf. size () / 1000 + 1);
-  for (const DTNode* dtNode : nodes_)
-    if (geReal (dtNode->len, arcLen_outlier_min))  
-      res << dtNode;
+  res. reserve (name2leaf. size () / 1000 + 1);  // PAR
+  for (const NodeDissim& nd : nodeDissims)
+    if (geReal (nd. dissim_min, dissimOutlier_min))  
+      res << nd. node;
       
 	return res;
 }
+#endif
   
 
 
