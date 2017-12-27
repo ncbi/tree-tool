@@ -2212,7 +2212,7 @@ struct Tree : DiGraph
     // Return: <= countInteriorNodes()
     // Invokes: countInteriorNodes()
   static const TreeNode* getLca (const TreeNode* n1,
-                                                  const TreeNode* n2);
+                                 const TreeNode* n2);
     // Return: nullptr <=> !n1 || !n2
   static const TreeNode* getLca (const VectorPtr<TreeNode> &nodeVec);
     // Return: nullptr <= nodeVec.empty()
