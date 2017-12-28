@@ -296,7 +296,7 @@ bool Phyl::badNeighborDistance (Real &neighborDistance_stnd,
   if (! distDistr)
     return false;
   neighborDistance_stnd = distDistr->stnd (getNeighborDistance ());
-  depth_stnd = getFeatureTree (). depthDistr->stnd ((Real) getDepth ());
+  depth_stnd = getFeatureTree (). depthDistr->stnd ((Real) getTopologicalDepth ());
   // PAR
   return    neighborDistance_stnd >= 3.5  
          && depth_stnd > -2.0  
@@ -3057,7 +3057,7 @@ void FeatureTree::setStats ()
  		const Phyl* phyl = static_cast <const Phyl*> (node);
   	const size_t n = ds. appendObj (phyl->getName ());
     (*dist)  [n] = phyl->getNeighborDistance ();
-    (*depth) [n] = (Real) phyl->getDepth ();
+    (*depth) [n] = (Real) phyl->getTopologicalDepth ();
     const Genome* g = phyl->asGenome ();
     FOR (size_t, i, features. size ())
     {
