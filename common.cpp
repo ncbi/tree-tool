@@ -1553,13 +1553,32 @@ Tree::TreeNode::TipName Tree::TreeNode::getTipName () const
   TipName tn_best;
 	for (const DiGraph::Arc* arc : arcs [false])
 	{
-	  const TipName tn = static_cast <Tree::TreeNode*> (arc->node [false]) -> getTipName ();
+	  const TipName tn = static_cast <const TreeNode*> (arc->node [false]) -> getTipName ();
 	  if (tn_best. name. empty () || tn_best. name > tn. name)
 	    tn_best = tn;
 	}
 	tn_best.depth ++;
 
 	return tn_best;
+}
+
+
+
+void Tree::TreeNode::getSubtreeDepths (Vector<Tree::TreeNode::NodeDepth> &nodeDepths) const
+{
+  if (isLeaf ())
+    return;
+
+  double depth = 0;
+	for (const DiGraph::Arc* arc : arcs [false])
+	{
+	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
+	  const double dist = node->getParentDistance ();
+	  ASSERT (dist >= 0);
+	  node->getSubtreeDepths (nodeDepths);
+	  maximize (depth, dist + (node->isLeaf () ? 0 : nodeDepths. back (). depth));
+  }
+  nodeDepths << NodeDepth {this, depth};
 }
 
 

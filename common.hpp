@@ -2020,11 +2020,20 @@ struct Tree : DiGraph
     };
     TipName getTipName () const;
       // Return: identification of *this by a tip
-		size_t getDepth () const
+		size_t getTopologicalDepth () const
 		  { if (const TreeNode* parent_ = getParent ())
-		  		return parent_->getDepth () + 1;
+		  		return parent_->getTopologicalDepth () + 1;
 		  	return 0;
 		  }
+		struct NodeDepth
+		{ const TreeNode* node;
+		  double depth;
+		  bool operator< (const NodeDepth &other) const
+		    { return depth < other. depth; }
+		};
+		void getSubtreeDepths (Vector<NodeDepth> &nodeDepths) const;
+		  // Append: nodeDepths
+		  // Invokes: getParentDistance()
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
 		size_t getInteriorHeight () const;
