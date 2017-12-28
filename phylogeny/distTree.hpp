@@ -966,26 +966,31 @@ public:
 	  // Time: O(p log(n))
 
   // Outliers
+  // Return: distinct
   VectorPtr<Leaf> findCriterionOutliers (Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
     // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
     // Time: O(n log(n))
+  VectorPtr<Leaf> findDepthOutliers () const;
+    // Requires: after setReprLeaves()
 #if 0
   VectorPtr<DTNode> findOutlierArcs (Real outlier_EValue_max,
                                      Real &dissimOutlier_min) const;
     // Output: dissimOutlier_min
 #endif
-  VectorPtr<Leaf> findDepthOutliers () const;
-    // Requires: after setReprLeaves()
     
   // Missing dissimilarities
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max);
-    // Return: not in dissims; almost a superset of getMissingLeafPairs_subgraphs()
-    // Invokes: setReprLeaves(), dissims.sort(), DTNode::getSparseLeafPairs()
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs ();
-    // Invokes: setReprLeaves(), findTooLongArcs() ??
+  // Return: not in dissims; sort()'ed, uniq()'ed
+  // After: setReprLeaves()
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max) const;
+    // Return: almost a superset of getMissingLeafPairs_subgraphs()
+    // After: dissims.sort()
+    // Invokes: DTNode::getSparseLeafPairs()
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs () const;
+  Vector<Pair<const Leaf*>> outliers2missingLeafPairs (const VectorPtr<Leaf> &outliers) const;
+    // After: dissims.sort()
 
   // Statistics
 //void findTopologicalClusters ();

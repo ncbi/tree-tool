@@ -1496,6 +1496,7 @@ DistTree::DistTree (const string &dataDirName,
         const string name2 = findSplit (f. line, '\t');
         if (name2. empty ())
           throw runtime_error ("Empty name2");
+        ASSERT (name1 < name2);
         if (outliers. containsFast (name1))
           continue;
         if (outliers. containsFast (name2))
@@ -2624,6 +2625,7 @@ void DistTree::dissimDs2dissims (bool sparse)
   if (sparse)
   {
     ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
+    setReprLeaves ();
     selectedPairs = getMissingLeafPairs_ancestors (0);
   }
 
@@ -4787,10 +4789,8 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
   
 
 
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max)
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max) const
 {
-  setReprLeaves ();  
-  
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
   {
     Progress prog ((uint) name2leaf. size (), 100);  // PAR
@@ -4816,19 +4816,17 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
   pairs. sort ();
   pairs. uniq ();
        
-  dissims. sort ();
-  pairs. filterValue ([&] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
+  if (! dissims. empty ())
+    pairs. filterValue ([&] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
 
   return pairs;
 }
 
 
 
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () 
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
 {
-  setReprLeaves ();  
-  
-  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ());  // PAR
+  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ()); 
   {
     Subgraph subgraph (*this);
     Progress prog ((uint) nodes. size (), 100);  // PAR
@@ -4909,19 +4907,17 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs ()
 
 
 
-#if 0
-Vector<Pair<const Leaf*>> DistTree::outliers2missingLeafPairs () 
+Vector<Pair<const Leaf*>> DistTree::outliers2missingLeafPairs (const VectorPtr<Leaf> &outliers) const
 {
-  const VectorPtr<Leaf> depthOutliers (findDepthOutliers ());
+  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ());  
   {
-    Progress prog ((uint) depthOutliers. size (), 100);  // PAR
-    for (const Leaf* leaf2 : depthOutliers)
+    Progress prog ((uint) outliers. size (), 100);  // PAR
+    for (const Leaf* leaf2 : outliers)
     {
       prog ();
-      for (const Leaf* leaf1 : depthOutliers)
+      for (const Leaf* leaf1 : outliers)
       {
-        ASSERT (node1 != root);
-        if (node1 == node2)
+        if (leaf1 == leaf2)
           break;
    	    Pair<const Leaf*> leafPair (leaf1, leaf2);
    	    ASSERT (! leafPair. same ());
@@ -4932,9 +4928,18 @@ Vector<Pair<const Leaf*>> DistTree::outliers2missingLeafPairs ()
     }
   }
   
-  ??
+  pairs. sort ();
+  pairs. uniq ();
+       
+  if (! dissims. empty ())
+    pairs. filterValue ([&] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
+
+  return pairs;
 }
-#endif
+
+
+
+
 
 
 
@@ -5294,7 +5299,11 @@ void NewLeaf::saveRequest () const
     for (const Leaf* leaf : requested)
     {
       ASSERT (name != leaf->name);
-      of << name << '\t' << leaf->name << endl;
+      const string* n1 = & name;
+      const string* n2 = & leaf->name;
+      if (*n1 > *n2)
+        swap (n1, n2);
+      of << *n1 << '\t' << *n2 << endl;
     }
   }
 }

@@ -128,7 +128,8 @@ struct ThisApplication : Application
 
     tree->printInput (cout);
     cout << endl;
-    
+
+    // Invocations in a constructor
     chron_getBestChange.    print (cout);
     chron_tree2subgraph.    print (cout);
     chron_subgraphOptimize. print (cout); 
@@ -172,11 +173,11 @@ struct ThisApplication : Application
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
 
-            tree->optimizeLenArc ();
-            cout << "# Nodes deleted = " << tree->finishChanges () << endl;
-            
-            tree->optimizeLenNode ();  
-            cout << "# Nodes deleted = " << tree->finishChanges () << endl;
+            const size_t lenArc_deleted = tree->optimizeLenArc ();
+            cout << "# Nodes deleted = " << lenArc_deleted << endl;
+
+            const size_t lenNode_deleted = tree->optimizeLenNode ();
+            cout << "# Nodes deleted = " << lenNode_deleted << endl;
             
             tree->qc ();
             if (verbose ())
@@ -192,7 +193,7 @@ struct ThisApplication : Application
             else
             {
               tree->optimizeSubgraphs (areaRadius_std);  
-                // optimizeSubtreesIter () almost does not improve
+                // optimizeSubtgraphsIter() ??
             }
             tree->reportErrors (cout);
           }
@@ -209,7 +210,7 @@ struct ThisApplication : Application
       // Outliers
       Real outlier_min = NAN;
       tree->setLeafAbsCriterion ();
-      const VectorPtr<Leaf> outliers (tree->findOutliers ( outlier_min));
+      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (outlier_min));
       cout << endl << "# Outliers: " << outliers. size () << endl;
       cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
@@ -265,19 +266,41 @@ struct ThisApplication : Application
     tree->saveFeatureTree (output_feature_tree);
 
 
-    if (false)  
+  #if 0
     {
       Real arcLen_min = NAN;
-      const VectorPtr<DTNode> tooLongArcs (tree->findTooLongArcs (arcLen_min));
-      cout << endl << "# Too long arcs: " << tooLongArcs. size () << endl;
-      cout << "Min. length of too long arcs: " << arcLen_min << endl;
-      for (const DTNode* node : tooLongArcs)
-        cout         << node->getLcaName ()
-             << '\t' << node->len
-             << endl;
+      Real outlier_EValue_max = 10;  // ??
+      while (outlier_EValue_max >= 1e-6)
+      {
+        const VectorPtr<DTNode> tooLongArcs (tree->findOutlierArcs (outlier_EValue_max, arcLen_min));
+        cout << endl;
+        {
+          ONumber on (cout, 1, true);
+          cout << "outlier_EValue_max: " << outlier_EValue_max << endl;
+        }
+        cout << "# Too long arcs: " << tooLongArcs. size () << endl;
+        cout << "Min. length of too long arcs: " << arcLen_min << endl;
+        outlier_EValue_max /= 10;
+        break;  // ??
+      }
     }
+  #endif
+  //tree->findTopologicalClusters ();
+  #if 0
+    {
+      Real outlier_EValue_max = 0.001;  
+      while (outlier_EValue_max >= 1e-10)
+      {
+        ONumber on (cout, 1, true);
+        cout << "outlier_EValue_max: " << outlier_EValue_max << endl;
+        tree->findDepthOutliers (outlier_EValue_max);  
+        outlier_EValue_max /= 10;
+      }
+    }
+  #endif
 
     
+    // Statistics
     {
       const ONumber on (cout, criterionDecimals, false);
       cout << endl;
@@ -372,11 +395,23 @@ struct ThisApplication : Application
     if (! dissim_request. empty ())
     {
       cout << endl << "Finding missing leaf pairs ..." << endl;
-      OFStream f (dissim_request);
-      const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_subgraphs ());
-      cout << "# Requests: " << pairs. size () << endl;
-      for (const auto& p : pairs)
-        f << p. first->name << '\t' << p. second->name << endl;
+      tree->setReprLeaves ();
+      tree->dissims. sort ();
+      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
+      cout << "# Ancestor-based requests: " << pairs. size () << endl;
+      const VectorPtr<Leaf> depthOutliers (tree->findDepthOutliers ());
+    //cout << "# Depth outliers: " << depthOutliers. size () << endl;
+      const Vector<Pair<const Leaf*>> depthPairs (tree->outliers2missingLeafPairs (depthOutliers));
+      cout << "# Depth-based requests: " << depthPairs. size () << endl;
+      pairs << depthPairs;  // --> unionFast () ??
+      pairs. sort ();
+      pairs. uniq ();      
+      cout << "# Total requests: " << pairs. size () << endl;
+      {
+        OFStream f (dissim_request);      
+        for (const auto& p : pairs)
+          f << p. first->name << '\t' << p. second->name << endl;
+      }
     }
 
     if (! remove_outliers. empty ())  // Parameter is performed above
