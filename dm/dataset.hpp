@@ -2469,7 +2469,9 @@ public:
     { return stdBounds () ? getInfoVar_ () : NAN; }
 
   // Unbounded support
-//virtual Real quantile (Prob p) const = 0;  ??
+  virtual Real getQuantile (Prob /*p*/) const 
+    { NOT_IMPLEMENTED; return NAN; }
+    // Return: inverse cdf()
   virtual Real getInfoMean_ () const
     { return NAN; }
   virtual Real getInfoVar_ () const
@@ -2610,10 +2612,13 @@ private:
                  : -INF
                : - 0.5 * (coeff + sqr (xStnd)); 
     }
-  Real getInfoMeanStnd () const final
-    { return 0.5 * (1 + coeff); }
+public:
+  Real getQuantile (Prob p) const final;
+private:
   Real getInfoVar_ () const final
     { return 0.5; }
+  Real getInfoMeanStnd () const final
+    { return 0.5 * (1 + coeff); }
 public:
   
   void setMeanVar (Real mean,

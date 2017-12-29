@@ -257,6 +257,13 @@ struct ThisApplication : Application
     	ASSERT_EQ (normal. cdf (1.393), 0.918190, 1e-6);
     	ASSERT_EQ (normal. cdf (-1.555), 1-0.940027, 1e-6);
     	ASSERT_EQ (normal. cdf (2.444), 0.992737, 1e-6);
+    	// getQuantile()
+    	for (Real val = -5; val <= 5; val += 0.1)
+    	{
+      	const Prob p = normal. cdf (val);  
+      	const Real quantile = normal. getQuantile (p);
+      	ASSERT_EQ (val, quantile, 1e-6);
+      }
 	    Normal* other = normal. copy ();
 	    delete other;
     }
