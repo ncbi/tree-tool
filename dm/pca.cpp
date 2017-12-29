@@ -192,7 +192,7 @@ struct ThisApplication : Application
       Space1<NumAttr1> spPC (spOut);
       spPC. removeConstants ();
       const Real globalSD = sqrt ((Real) spStnd->size ());
-  	  const Clustering cl (sm, spPC, maxClusters, globalSD * minClusteringSDRel, /*true*/ false, 0.001);  // PAR
+  	  const Clustering cl (sm, spPC, maxClusters, globalSD * minClusteringSDRel, /*true*/ false); 
       cl. qc ();
   	  if (verbose ()) 
         cl. print (cout);

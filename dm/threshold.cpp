@@ -171,7 +171,7 @@ struct ThisApplication : Application
     sp << scoreAttr;
     const Sample sm (ds);
         
-	  const Clustering cl (sm, sp, 20, sd_min, false, 0.001);  // PAR  0: may hang
+	  const Clustering cl (sm, sp, 20, sd_min, false);  // PAR  entropyDimensionPrecision = 0: may hang
     cl. qc ();
 
     NominAttr1* clusterAttr = cl. createNominAttr ("Cluster", 0, ds);

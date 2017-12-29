@@ -262,7 +262,7 @@ struct ThisApplication : Application
       cerr << "Clustering ..." << endl;
       Space1<NumAttr1> spMds (spMds_);
       spMds. removeConstants ();
-  	  const Clustering cl (sm, spMds, maxClusters, globalSD * minClusteringSDRel, /*true*/ false, 0.001);  // PAR
+  	  const Clustering cl (sm, spMds, maxClusters, globalSD * minClusteringSDRel, /*true*/ false);
       cl. qc ();
   	  if (verbose ())
         cl. print (cout);

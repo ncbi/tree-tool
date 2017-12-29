@@ -39,7 +39,7 @@ struct ThisApplication : Application
     const Sample sm (ds);
     const Space1<NumAttr1> sp (ds, true);
 
-	  const Clustering cl (sm, sp, clusters_max, sd_min, false, 0.05);  // PAR
+	  const Clustering cl (sm, sp, clusters_max, sd_min, false);  
     cl. print (cout);
     
     VectorPtr<Attr1> attrs;
