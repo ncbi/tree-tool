@@ -2278,10 +2278,8 @@ public:
 
 struct Progress : Nocopy
 {
-private:
 	static size_t beingUsed;
-	  // Singleton
-public: 
+
 	uint n_max;
 	  // 0 <=> unknown
 	bool active;
@@ -2289,6 +2287,7 @@ public:
 	string step;
 	uint displayPeriod;
 	
+
 	explicit Progress (uint n_max_arg = 0,
 	                   uint displayPeriod_arg = 1)
 	  : n_max (n_max_arg)
@@ -2307,6 +2306,7 @@ public:
     	}
     }
     
+
   void operator() (const string& step_arg = string ())
     { n++;
     	step = step_arg;
