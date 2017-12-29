@@ -989,12 +989,16 @@ public:
     // After: dissims.sort()
     // Invokes: DTNode::getSparseLeafPairs()
   Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs () const;
-  Vector<Pair<const Leaf*>> outliers2missingLeafPairs (const VectorPtr<Leaf> &outliers) const;
+  Vector<Pair<const Leaf*>> leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const;
     // After: dissims.sort()
 
-  // Statistics
+  // Clustering
 //void findTopologicalClusters ();
     // Output: DisjointCluster::<Leaf>
+  VectorPtr<DTNode> findDepthClusters (size_t clusters_min) const;
+    // Return: connected subgraph including root
+
+  // Statistics
 #if 0
   ??
   RealAttr1* getResiduals2 ();

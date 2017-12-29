@@ -129,12 +129,6 @@ struct ThisApplication : Application
     tree->printInput (cout);
     cout << endl;
 
-    // Invocations in a constructor
-    chron_getBestChange.    print (cout);
-    chron_tree2subgraph.    print (cout);
-    chron_subgraphOptimize. print (cout); 
-    chron_subgraph2tree.    print (cout); 
-
     
     if (tree->optimizable ())
     {
@@ -258,6 +252,13 @@ struct ThisApplication : Application
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
       }
       
+
+    chron_getBestChange.    print (cout);
+    chron_tree2subgraph.    print (cout);
+    chron_subgraphOptimize. print (cout); 
+    chron_subgraph2tree.    print (cout); 
+
+
   //tree->sort ();
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
@@ -397,15 +398,38 @@ struct ThisApplication : Application
       cout << endl << "Finding missing leaf pairs ..." << endl;
       tree->setReprLeaves ();
       tree->dissims. sort ();
+      
       Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
       cout << "# Ancestor-based requests: " << pairs. size () << endl;
-      const VectorPtr<Leaf> depthOutliers (tree->findDepthOutliers ());
-    //cout << "# Depth outliers: " << depthOutliers. size () << endl;
-      const Vector<Pair<const Leaf*>> depthPairs (tree->outliers2missingLeafPairs (depthOutliers));
-      cout << "# Depth-based requests: " << depthPairs. size () << endl;
-      pairs << depthPairs;  // --> unionFast () ??
+
+      {      
+        const VectorPtr<Leaf> depthOutliers (tree->findDepthOutliers ());
+        const Vector<Pair<const Leaf*>> depthPairs (tree->leaves2missingLeafPairs (depthOutliers));
+        cout << "# Depth-outlier-based requests: " << depthPairs. size () << endl;
+        pairs << depthPairs;  // --> unionFast () ??
+      }
+      
+      {
+        const VectorPtr<DTNode> depthClusters (tree->findDepthClusters (100));  // PAR
+        cout << "# Depth clusters: " << depthClusters. size () << endl;
+        VectorPtr<Leaf> leaves;  leaves. reserve (depthClusters. size () * 4);
+        for (const DTNode* node : depthClusters)
+        {
+          leaves << node->reprLeaf;
+        	for (const DiGraph::Arc* arc : node->arcs [false])
+        	  leaves <<  static_cast <const DTNode*> (arc->node [false]) -> reprLeaf;
+        }
+        leaves. sort ();
+        leaves. uniq ();
+        cout << "# Depth leaves: " << leaves. size () << endl;
+        const Vector<Pair<const Leaf*>> depthPairs (tree->leaves2missingLeafPairs (leaves));
+        cout << "# Depth-based requests: " << depthPairs. size () << endl;
+        pairs << depthPairs;  // --> unionFast () ??        
+      }
+      
       pairs. sort ();
       pairs. uniq ();      
+      
       cout << "# Total requests: " << pairs. size () << endl;
       {
         OFStream f (dissim_request);      

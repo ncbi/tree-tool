@@ -4793,7 +4793,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
 {
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
   {
-    Progress prog ((uint) name2leaf. size (), 100);  // PAR
+    Progress prog ((uint) name2leaf. size (), 1000);  // PAR
     for (const auto it : name2leaf)
     {
       prog ();
@@ -4907,15 +4907,15 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
 
 
 
-Vector<Pair<const Leaf*>> DistTree::outliers2missingLeafPairs (const VectorPtr<Leaf> &outliers) const
+Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const
 {
-  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ());  
+  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (leaves. size () * (leaves. size () - 1) / 2);  
   {
-    Progress prog ((uint) outliers. size (), 100);  // PAR
-    for (const Leaf* leaf2 : outliers)
+    Progress prog ((uint) leaves. size (), 100);  // PAR
+    for (const Leaf* leaf2 : leaves)
     {
       prog ();
-      for (const Leaf* leaf1 : outliers)
+      for (const Leaf* leaf1 : leaves)
       {
         if (leaf1 == leaf2)
           break;
@@ -4993,6 +4993,42 @@ void DistTree::findTopologicalClusters ()
   }
 }
 #endif
+
+
+
+VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
+// --> Tree ??
+{
+  ASSERT (clusters_min >= 2);
+
+  Vector<Tree::TreeNode::NodeDepth> nodeDepths;  nodeDepths. reserve (name2leaf. size ());
+  root->getSubtreeDepths (nodeDepths);
+  nodeDepths. sort ();
+  
+  // Use outlier analysis ??
+  size_t i_best = NO_INDEX;
+  Real diff_max = 0;
+  FOR (size_t, i, nodeDepths. size ())
+    if (i && maximize (diff_max, nodeDepths [i]. depth - nodeDepths [i - 1]. depth))
+      i_best = i;
+  ASSERT (i_best != NO_INDEX);
+  
+  if (nodeDepths. size () - i_best < clusters_min)
+    i_best = nodeDepths. size () - clusters_min;
+    
+  VectorPtr<DTNode> clusters;  clusters. reserve (nodeDepths. size () - i_best + 1);
+  FOR_START (size_t, i, i_best, nodeDepths. size ())
+    clusters << static_cast <const DTNode*> (nodeDepths [i]. node);
+    
+#ifndef NDEBUG
+  clusters. sort ();
+  for (const DTNode* node : clusters)
+    if (const TreeNode* parent = node->getParent ())
+      { ASSERT (clusters. containsFast (static_cast <const DTNode*> (parent))); }
+#endif
+  
+  return clusters;
+}
 
 
 
