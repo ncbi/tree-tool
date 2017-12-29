@@ -3475,55 +3475,61 @@ size_t DistTree::optimizeLenArc ()
   
 
   const uint iters = 10;  // PAR
-  Progress prog ((uint) iters);  
   FOR (uint, iter, iters)
   {
     Real absCriterion_prev = absCriterion;
-    for (const DTNode* node : dtNodes)
     {
-    #ifndef NDEBUG    
-      const Real absCriterion_old = absCriterion;  
-    #endif
-    
-      Real arcAbsCriterion_old = 0;
-      WeightedMeanVar mv;
-      for (const size_t objNum : node->pathObjNums)
+      Progress prog ((uint) dtNodes. size (), (dtNodes. size () >= 10000) * 100);  // PAR
+      for (const DTNode* node : dtNodes)
       {
-        const Dissim& dissim = dissims [objNum];
-        if (dissim. valid ())
-        {
-          const Real dist_hat_tails = max (0.0, dissim. prediction - node->len);
-          const Real arcTarget = dissim. target - dist_hat_tails;
-          mv. add (arcTarget, dissim. mult);
-          arcAbsCriterion_old += dissim. getAbsCriterion ();
-        }
-      }
-      const Real len_new = max (0.0, mv. getMean ());
+        prog ();
+      #ifndef NDEBUG    
+        const Real absCriterion_old = absCriterion;  
+      #endif
       
-      Real arcAbsCriterion_new = 0;
-      for (const size_t objNum : node->pathObjNums)
-      {
-        Dissim& dissim = dissims [objNum];
-        if (dissim. valid ())
+        Real arcAbsCriterion_old = 0;
+        WeightedMeanVar mv;
+        for (const size_t objNum : node->pathObjNums)
         {
-          dissim. prediction = max (0.0, dissim. prediction - node->len + len_new);
-          arcAbsCriterion_new += dissim. getAbsCriterion ();
+          const Dissim& dissim = dissims [objNum];
+          if (dissim. valid ())
+          {
+            const Real dist_hat_tails = max (0.0, dissim. prediction - node->len);
+            const Real arcTarget = dissim. target - dist_hat_tails;
+            mv. add (arcTarget, dissim. mult);
+            arcAbsCriterion_old += dissim. getAbsCriterion ();
+          }
         }
+        const Real len_new = max (0.0, mv. getMean ());
+        
+        Real arcAbsCriterion_new = 0;
+        for (const size_t objNum : node->pathObjNums)
+        {
+          Dissim& dissim = dissims [objNum];
+          if (dissim. valid ())
+          {
+            dissim. prediction = max (0.0, dissim. prediction - node->len + len_new);
+            arcAbsCriterion_new += dissim. getAbsCriterion ();
+          }
+        }
+        ASSERT (leReal (arcAbsCriterion_new, arcAbsCriterion_old));
+        
+        const_cast <DTNode*> (node) -> len = len_new;
+        absCriterion -= arcAbsCriterion_old;
+        absCriterion += arcAbsCriterion_new;
+        ASSERT (leReal (absCriterion, absCriterion_old));
+        maximize (absCriterion, 0.0);
       }
-      ASSERT (leReal (arcAbsCriterion_new, arcAbsCriterion_old));
-      
-      const_cast <DTNode*> (node) -> len = len_new;
-      absCriterion -= arcAbsCriterion_old;
-      absCriterion += arcAbsCriterion_new;
-      ASSERT (leReal (absCriterion, absCriterion_old));
-      maximize (absCriterion, 0.0);
     }
   
-    prog (real2str (absCriterion, criterionDecimals));   
+    if (! Progress::beingUsed)
+      cerr << '\r' << iter << " / " << (uint) iters << " " << real2str (absCriterion, criterionDecimals);
     if (absCriterion_prev / absCriterion - 1 <= 0.01)   // PAR
       break;
     absCriterion_prev = absCriterion;  
   }
+  if (! Progress::beingUsed)
+    cerr << endl;
 
 
   return finishChanges ();
@@ -4604,8 +4610,11 @@ Real DistTree::setErrorDensities ()
 
 
 
-VectorPtr<Leaf> DistTree::findCriterionOutliers (Real &outlier_min) const
+VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
+                                                 Real &outlier_min) const
 {
+#undef CRITERION_OUTLIERS_DM  
+  
 	Dataset ds;
   auto criterionAttr = new RealAttr1 ("LeafCriterion", ds);
   
@@ -4614,24 +4623,53 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real &outlier_min) const
     if (it. second->graph)
     {
       const Real relErr = it. second->getRelCriterion ();
-    #if 0
-      if (! isNan (relErr))
-      {
-    	  const size_t index = ds. appendObj ();
-    	  (*criterionAttr) [index] = relErr;
-      }
-    #else
       if (relErr > 0)
       {
-    	  const size_t index = ds. appendObj ();
+    	  const size_t index = ds. appendObj 
+    	    (
+    	    #ifdef CRITERION_OUTLIERS_DM
+    	      it. second->name
+    	    #endif
+    	    );
     	  (*criterionAttr) [index] = log (relErr);
       }
-    #endif
     }
-  
+    
+#ifdef CRITERION_OUTLIERS_DM
+  {
+    OFStream f ("criterion_outliers");
+    ds. saveText (f);
+  }
+#endif
+#undef CRITERION_OUTLIERS_DM
+
   const Sample sample (ds);
+  
+//#if 0
   Normal /*Exponential*/ distr;
-  outlier_min = exp (criterionAttr->distr2outlier (sample, distr, 0.1));  // PAR  
+  outlier_min = exp (criterionAttr->distr2outlier (sample, distr, outlier_EValue_max));  
+//#else
+  if (false)
+  { // ??
+    const Space1<NumAttr1> sp (ds, true);
+    const Clustering cl (sample, sp, 2, 0.5, false);  // PAR
+    const Mixture::Component* comp_main = nullptr;
+    Prob p = 0;
+    for (const Mixture::Component* comp : cl. mixt. components)
+      if (maximize (p, comp->prob))
+        comp_main = comp;
+    ASSERT (comp_main);
+    const MultiNormal* mn = comp_main->distr->asMultiNormal ();
+    ASSERT (mn);
+    const Real mean = mn->mu [0];
+    const Real var  = mn->sigmaExact. get (false, 0, 0);
+    Normal normal;
+    normal. setMeanVar (mean, var);
+    normal. print (cout);  // ??
+    cout << endl;
+    cout << p << endl;  // ??
+  }
+//#endif
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))

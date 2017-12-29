@@ -967,7 +967,8 @@ public:
 
   // Outliers
   // Return: distinct
-  VectorPtr<Leaf> findCriterionOutliers (Real &outlier_min) const;
+  VectorPtr<Leaf> findCriterionOutliers (Real outlier_EValue_max,
+                                         Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
