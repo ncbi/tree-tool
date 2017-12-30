@@ -4644,13 +4644,14 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 #undef CRITERION_OUTLIERS_DM
 
   const Sample sample (ds);
-  
-//#if 0
-  Normal /*Exponential*/ distr;
-  outlier_min = exp (criterionAttr->distr2outlier (sample, distr, outlier_EValue_max));  
-//#else
-  if (false)
-  { // ??
+
+  if (ds. objs. size () <= 30)  // PAR  
+  {  
+    Normal /*Exponential*/ distr;
+    outlier_min = exp (criterionAttr->distr2outlier (sample, distr, outlier_EValue_max));  
+  }
+  else
+  { 
     const Space1<NumAttr1> sp (ds, true);
     const Clustering cl (sample, sp, 2, 0.5, false);  // PAR
     const Mixture::Component* comp_main = nullptr;
@@ -4665,11 +4666,9 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
     const Real var  = mn->sigmaExact. get (false, 0, 0);
     Normal normal;
     normal. setMeanVar (mean, var);
-    normal. print (cout);  // ??
-    cout << endl;
-    cout << p << endl;  // ??
+    outlier_min = exp (normal. getQuantile (1 - outlier_EValue_max / (Real) ds. objs. size ()));
+  //cl. mixt. print (cerr);  
   }
-//#endif
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))

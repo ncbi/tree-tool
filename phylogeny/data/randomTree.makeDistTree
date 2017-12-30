@@ -15,7 +15,7 @@ absCriterion = 8.350  Error density = 3.374 %
 
 
 # Outliers: 0
-Min. rel. average leaf error of outliers: inf
+Min. rel. average leaf error of outliers: 1.91
 
 OUTPUT:
 absCriterion = 8.350  Error density = 3.374 %

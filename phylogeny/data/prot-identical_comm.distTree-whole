@@ -67,7 +67,7 @@ absCriterion = 7.048  Error density = 1.834 %
 Ave. radius: 0.46
 
 # Outliers: 0
-Min. rel. average leaf error of outliers: inf
+Min. rel. average leaf error of outliers: 21.14
 
 Removing outliers ...
 absCriterion = 7.048  Error density = 1.834 %
