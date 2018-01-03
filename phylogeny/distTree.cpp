@@ -3883,7 +3883,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
       tree. optimizeLenArc ();
       tree. optimizeLenNode ();  
       if (subgraph. large () && areaRadius > 1)
-        tree. optimizeSubgraphs (areaRadius / 2);  // areaRadius - 1 ??
+        tree. optimizeSubgraphs (areaRadius / 2); 
       else
         tree. optimizeIter (20, string ());  // PAR
     }
