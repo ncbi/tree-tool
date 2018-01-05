@@ -1564,21 +1564,43 @@ Tree::TreeNode::TipName Tree::TreeNode::getTipName () const
 
 
 
-void Tree::TreeNode::getSubtreeDepths (Vector<Tree::TreeNode::NodeDepth> &nodeDepths) const
+void Tree::TreeNode::getSubtreeHeights (Vector<Tree::TreeNode::NodeDist> &nodeHeights) const
 {
   if (isLeaf ())
     return;
 
-  double depth = 0;
+  double height = 0;
 	for (const DiGraph::Arc* arc : arcs [false])
 	{
 	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
 	  const double dist = node->getParentDistance ();
 	  ASSERT (dist >= 0);
-	  node->getSubtreeDepths (nodeDepths);
-	  maximize (depth, dist + (node->isLeaf () ? 0 : nodeDepths. back (). depth));
+	  node->getSubtreeHeights (nodeHeights);
+	  maximize (height, dist + (node->isLeaf () ? 0 : nodeHeights. back (). dist));
   }
-  nodeDepths << NodeDepth {this, depth};
+  nodeHeights << NodeDist {this, height};
+}
+
+
+
+void Tree::TreeNode::getLeafDepths (Vector<Tree::TreeNode::NodeDist> &leafDepths,
+                                    bool first) const
+{
+  const size_t start = leafDepths. size ();
+  if (isLeaf ())
+    leafDepths << NodeDist {this, 0};
+  else
+  	for (const DiGraph::Arc* arc : arcs [false])
+  	{
+  	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
+  	  node->getLeafDepths (leafDepths, false);
+    }
+  if (! first)
+  {
+    const double parentDistance = getParentDistance ();
+    FOR_START (size_t, i, start, leafDepths. size ())
+      leafDepths [i]. dist += parentDistance;
+  }
 }
 
 

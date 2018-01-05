@@ -2025,14 +2025,23 @@ struct Tree : DiGraph
 		  		return parent_->getTopologicalDepth () + 1;
 		  	return 0;
 		  }
-		struct NodeDepth
+		struct NodeDist
 		{ const TreeNode* node;
-		  double depth;
-		  bool operator< (const NodeDepth &other) const
-		    { return depth < other. depth; }
+		  double dist;
+		  static bool distLess (const NodeDist &x,
+		                        const NodeDist &y) 
+		    { return x. dist < y. dist; }
+		  bool operator< (const NodeDist &other) const
+		    { return node < other. node; }
+		  bool operator== (const NodeDist &other) const
+		    { return node == other. node; }
 		};
-		void getSubtreeDepths (Vector<NodeDepth> &nodeDepths) const;
-		  // Append: nodeDepths
+		void getSubtreeHeights (Vector<NodeDist> &nodeHeights) const;
+		  // Append: nodeHeights: interior nodes
+		  // Invokes: getParentDistance()
+    void getLeafDepths (Vector<NodeDist> &leafDepths,
+                        bool first = true) const;
+		  // Append: leafDepths: leaves
 		  // Invokes: getParentDistance()
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
