@@ -7,6 +7,8 @@
 #ifdef _MSC_VER
   #pragma warning (disable : 4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
   #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
+  #pragma warning (disable : 4521)  // multiple copy constructors specified
+  #pragma warning (disable : 4522)  // multiple assignment operators specified
   #pragma warning (disable : 4592)  // symbol will be dynamically initialized (implementation limitation)
   #pragma warning (disable : 4625)  // copy constructor was implicitly defined as deleted
   #pragma warning (disable : 4626)  // assignment operator was implicitly defined as deleted
@@ -22,6 +24,7 @@
 #include <string>
 #include <stdexcept>
 #include <limits>
+#include <array>
 #include <list>
 #include <vector>
 #include <stack>
@@ -2989,6 +2992,8 @@ struct ItemGenerator
 	               uint progress_displayPeriod)
 	  : prog (progress_n_max, progress_displayPeriod)
 	  {}
+  virtual ~ItemGenerator ()
+    {}
   
   virtual bool next (string &item) = 0;
     // Return: false <=> end of items
