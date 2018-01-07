@@ -184,6 +184,7 @@ private:
     //         getDistTree().reroot(true) reduces size()
     // Input: depth_max: 0 <=> no restriction
     // Requires: after getDistTree().setReprLeaves()
+    // Time: O(log(n))
 };
 
 
@@ -802,7 +803,7 @@ public:
   size_t getDissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   size_t getSparseDissims_size () const
-    { return (size_t) log ((Real) name2leaf. size ()) * 70; }  // PAR
+    { return ((size_t) log (name2leaf. size ()) + 1) * 70; }  // PAR
   Set<const DTNode*> getDiscernables () const;
     // Logical leaves
   static void printParam (ostream &os) 
@@ -877,6 +878,11 @@ public:
 	void optimize3 ();
 	  // Optimal solution, does not depend on Obj::mult
 	  // Requires: 3 leaves
+  bool optimizeReinsert ();
+    // Re-inserts subtrees with small DTNode::pathObjNums.size()
+	  // Return: false <=> finished
+    // Invokes: NewLeaf(DTNode*), Change, applyChanges()
+    // Time: O(n log^3(n))
 	bool optimize ();
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
@@ -888,6 +894,22 @@ public:
 	  // Input: iter_max: 0 <=> infinity
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
+private:
+  const Change* getBestChange (const DTNode* from);
+    // Return: May be nullptr
+    // Invokes: tryChange()
+    // Time: O(min(n,2^areaRadius_std) log^4(n))
+  bool applyChanges (VectorOwn<Change> &changes,
+                     bool byNewLeaf);
+	  // Return: false <=> finished
+    // Update: topology, changes (sort by Change::improvement descending)
+    // Output: DTNode::stable
+    // Invokes: once: finishChanges(), optimizeLen(), optimizeLenLocal()
+	void tryChange (Change* ch,
+	                const Change* &bestChange);
+    // Update: bestChange: positive(improvement)
+    // Invokes: Change::{apply(),restore()}
+public:
 	void optimizeSubgraphs (uint areaRadius);
 	  // Invokes: optimizeSubgraph()
 	  // Time: O(n * Time(optimizeSubgraph))
@@ -899,19 +921,6 @@ private:
 	  // Output: DTNode::stable = true
 	  // Invokes: DistTree(center,areaRadius,).optimizeIter()
 	  // Time: O(log^2(n) + Time(optimizeIter(),n = min(this->n,2^areaRadius))
-  const Change* getBestChange (const DTNode* from);
-    // Return: May be nullptr
-    // Invokes: tryChange()
-    // Time: O(min(n,2^areaRadius_std) log^4(n))
-  bool applyChanges (VectorOwn<Change> &changes);
-	  // Return: false <=> finished
-    // Update: topology, changes (sort by Change::improvement descending)
-    // Output: DTNode::stable
-    // Invokes: once: finishChanges(), optimizeLen(), optimizeLenLocal()
-	void tryChange (Change* ch,
-	                const Change* &bestChange);
-    // Update: bestChange: positive(improvement)
-    // Invokes: Change::{apply(),restore()}
   void delayDeleteRetainArcs (DTNode* node);
     // Invokes: s->detachChildrenUp()
   size_t finishChanges ();
@@ -1025,11 +1034,13 @@ public:
 struct NewLeaf : Named
 // To become Leaf
 // name = Leaf::name
+// For time: q = leaf2dissims.size()
 {
 private:
   const DistTree& tree;
     // !nullptr
   const string dataDir;
+  const DTNode* node_orig {nullptr};
 public:
   
 
@@ -1054,6 +1065,8 @@ public:
            << '\t' << anchor->len
            << '\t' << absCriterion_leaf;
       }
+      
+    void setAbsCriterion (const NewLeaf& nl);
   };
   Location location;
 
@@ -1064,7 +1077,7 @@ public:
     Real dissim {NAN};
       // Between NewLeaf and leaf
     Real mult {NAN};
-      // Function of dissim
+    Real treeAbsCriterion {NAN};
       
     // Function of NewLeaf::Location::anchor
     Real dist_hat {NAN};
@@ -1073,18 +1086,21 @@ public:
     
     Leaf2dissim (const Leaf* leaf_arg,
                  Real dissim_arg,
+                 Real mult_arg,
                  const DTNode* anchor);
       // Input: anchor = NewLeaf::Location::anchor
     explicit Leaf2dissim (const Leaf* leaf_arg)
       : leaf (leaf_arg)
+      {}
+    Leaf2dissim ()
       {}
       
     Real getDelta () const
       { return dissim - dist_hat; }
     Real getU () const
       { return leafIsBelow ? 1 : -1; }
-    Real getEpsilon (const NewLeaf& nl) const
-      { const Real leaf_dist_hat = dist_hat + nl. location. arcLen * getU () + nl. location. leafLen;
+    Real getEpsilon (const Location& loc) const
+      { const Real leaf_dist_hat = dist_hat + loc. arcLen * getU () + loc. leafLen;
         return dissim - leaf_dist_hat;
       }
       
@@ -1092,16 +1108,23 @@ public:
       { return leaf < other. leaf; }
     bool operator== (const Leaf2dissim &other) const
       { return leaf == other. leaf; }
+
+    static bool multLess (const Leaf2dissim &ld1,
+                          const Leaf2dissim &ld2)
+      { return ld1. mult > ld2. mult; }
   };
   Vector<Leaf2dissim> leaf2dissims;
     // Leaf2dissim::leaf: distinct, sort()'ed
-    // Assumption: size() = O(log(n))
 
 
   NewLeaf (const DistTree &tree_arg,
            const string &dataDir_arg,
            const string &name_arg,
            bool init);
+  NewLeaf (const DTNode* dtNode,
+           size_t q_max,
+           Real &nodeAbsCriterion_old);
+    // q = q_max
 private:
   string getNameDir      () const  { return dataDir + "/" + name + "/"; }
   string getDissimFName  () const  { return getNameDir () + "dissim"; }
@@ -1116,27 +1139,29 @@ private:
   void saveRequest () const;
     // Input: location.anchor
     // Output: file getRequestFName()
-    // Time: O(log^2(n))
+    // Invokes: DTNode::getSparseLeafMatches()
+    // Time: O(log(n) log(q))
   void optimize ();
     // Output: location
     // Update: leaf2dissims.{dist_hat,leafIsBelow}
-    // Time: average: O(log^3(n))
     // Invokes: optimizeAnchor()
   void optimizeAnchor (Location &location_best,
                        Vector<Leaf2dissim> &leaf2dissims_best);
+    // Depth-first search
     // Update: location, leaf2dissims, location_best
     // Output: leaf2dissims_best
     // Invokes: setLocation(), descend()
+    // Time: O(q log^2(n))
   void setLocation ();
     // Output: location.{leafLen,arcLen,absCriterion_leaf}
-    // Time: O(log(n))
+    // Time: O(q)
   bool descend (const DTNode* anchor_new);
     // Return: true <=> location.anchor has leaves in leaf2dissims
     // Update: leaf2dissims
     // Output: location.anchor
-    // Time: O(log^2(n))
+    // Time: O(q log(n))
 public:
-  void qc () const;
+  void qc () const override;
 };
 
 
