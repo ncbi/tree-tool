@@ -1,0 +1,62 @@
+// tree2clusters.cpp
+
+#undef NDEBUG
+#include "../common.inc"
+
+#include "../common.hpp"
+using namespace Common_sp;
+#include "distTree.hpp"
+using namespace DistTree_sp;
+
+
+
+namespace 
+{
+
+
+const string distName = "dist"; 
+
+
+
+struct ThisApplication : Application
+{
+	ThisApplication ()
+	: Application ("Print indiscernibility clusters of a distance tree")
+	{
+	  // Input
+	  addPositional ("input_tree", "File with the tree and arc lengths");
+	}
+
+
+
+	void body () const
+  {
+		const string input_tree   = getArg ("input_tree");
+    
+    DistTree tree (input_tree, string (), string (), false); 
+    tree. setReprLeaves ();
+    tree. qc (); 
+    
+    for (const auto it : tree. name2leaf)
+    {
+      const Leaf* leaf = it. second;
+      if (! leaf->discernible)
+        cout << leaf->name << '\t' << static_cast <const DTNode*> (leaf->getParent ()) -> reprLeaf->name << endl;
+    }
+	}
+};
+
+
+
+}  // namespace
+
+
+
+int main (int argc, 
+          const char* argv[])
+{
+  ThisApplication app;
+  return app. run (argc, argv);
+}
+
+
