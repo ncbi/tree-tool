@@ -1398,9 +1398,7 @@ struct Analysis : Root
 protected:
   explicit Analysis (const Sample &sample_arg)
     : sample (sample_arg)
-    { if (! sample. nEffective)
-        throw runtime_error ("No data for analysis");
-    }
+    {}
 public:
   void qc () const override
     { if (! qc_on)

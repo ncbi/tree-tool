@@ -85,6 +85,9 @@ void Attr::moveAfter (const Attr* pred)
   IMPLY (pred, & pred->ds == & ds);
   ASSERT (pred != this);
   
+  if (pred && std::next (pred->dsIt) == dsIt)
+    return;
+  
   Dataset& ds_ = const_cast <Dataset&> (ds);
 
   auto it = pred ? pred->dsIt : ds_. attrs. begin ();
