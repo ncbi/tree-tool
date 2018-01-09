@@ -43,11 +43,13 @@ bool initNumeric ()
   ASSERT (isNan (NAN));
   ASSERT (isNan (INF - INF));
   ASSERT (isNan (INF / INF));
-
-  const Real zero = 0;
-  ASSERT (isNan (zero / zero));
 #ifdef _MSC_VER
   #pragma warning (default : 4127)
+#endif
+
+#ifndef _MSC_VER
+  const Real zero = 0;
+  ASSERT (isNan (zero / zero));
 #endif
 
   log_2  = log (2);

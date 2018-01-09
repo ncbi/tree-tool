@@ -86,10 +86,12 @@ void Attr::moveAfter (const Attr* pred)
   ASSERT (pred != this);
   
   Dataset& ds_ = const_cast <Dataset&> (ds);
+
+  auto it = pred ? pred->dsIt : ds_. attrs. begin ();
+  it++;  // Visual C++: should be done before erase()
+
   ds_. attrs. erase (dsIt);
   
-  auto it = pred ? pred->dsIt : ds_. attrs. begin ();
-  it++;
   dsIt = ds_. attrs. insert (it, this);
 }
 

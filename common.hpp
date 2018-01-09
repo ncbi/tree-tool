@@ -1320,7 +1320,7 @@ public:
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
 		      if (* P::operator[] (j + 1) > * P::operator[] (j))
-        	  swap (P::operator[] (j), P::operator[] (j + 1));
+        	  std::swap (P::operator[] (j), P::operator[] (j + 1));
 		      else
 		      	break;
     }
