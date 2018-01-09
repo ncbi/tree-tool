@@ -46,6 +46,7 @@ struct ThisApplication : Application
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
+	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
@@ -72,6 +73,7 @@ struct ThisApplication : Application
 		const string removeFName         = getArg ("remove");
 		      bool   sparse              = getFlag ("sparse");
 		const bool   topology            = getFlag ("topology");
+		const bool   skip_len            = getFlag ("skip_len");
 		const bool   whole               = getFlag ("whole");
 		const bool   reroot              = getFlag ("reroot");
 		const bool   root_topological    = getFlag ("root_topological");
@@ -101,6 +103,7 @@ struct ThisApplication : Application
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
     IMPLY (whole, topology);
+    IMPLY (skip_len, topology);
 
 
     DistTree::printParam (cout);
@@ -129,7 +132,7 @@ struct ThisApplication : Application
     tree->printInput (cout);
     cout << endl;
 
-    
+
     if (tree->optimizable ())
     {
       if (! removeFName. empty ())
@@ -163,7 +166,8 @@ struct ThisApplication : Application
         {
           if (verbose ())
             tree->saveFile (output_tree);  
-            
+
+          if (! skip_len)            
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
 
@@ -180,8 +184,15 @@ struct ThisApplication : Application
           }
           
           {
-            cout << "Optimizing topology ..." << endl;
-            const Chronometer_OnePass cop ("Topology and arc length optimization");
+            cout << "Optimizing topology: re-insert ..." << endl;
+            const Chronometer_OnePass cop ("Topology and arc length optimization: re-insert");
+            tree->optimizeReinsert ();  
+            tree->reportErrors (cout);
+          }
+          
+          {
+            cout << "Optimizing topology: local ..." << endl;
+            const Chronometer_OnePass cop ("Topology and arc length optimization: local");
             if (whole)
               tree->optimizeIter (0, output_tree);
             else
@@ -204,7 +215,7 @@ struct ThisApplication : Application
       // Outliers
       Real outlier_min = NAN;
       tree->setLeafAbsCriterion ();
-      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (outlier_min));
+      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
       cout << endl << "# Outliers: " << outliers. size () << endl;
       cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
       for (const Leaf* leaf : outliers)
@@ -410,8 +421,9 @@ struct ThisApplication : Application
       }
       
       {
+        // Clusters of diameter <= diameter_max ??
         const VectorPtr<DTNode> depthClusters (tree->findDepthClusters (100));  // PAR
-        cout << "# Depth clusters: " << depthClusters. size () << endl;
+      //cout << "# Depth clusters: " << depthClusters. size () << endl;
         VectorPtr<Leaf> leaves;  leaves. reserve (depthClusters. size () * 4);
         for (const DTNode* node : depthClusters)
         {
