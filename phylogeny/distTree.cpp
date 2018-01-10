@@ -1215,6 +1215,8 @@ void Change::commit ()
   
   if (oldParent->isTransient ())
     const_cast <DistTree&> (tree). delayDeleteRetainArcs (oldParent);
+
+  subgraph. clear ();
 }
 
 
