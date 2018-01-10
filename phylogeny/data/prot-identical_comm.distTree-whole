@@ -2,14 +2,13 @@ PARAMETERS:
 Dissimilarity variance: linExp
 Max. possible dissimilarity = 18.0218
 Subgraph radius = 5
-Topology optimization: whole
 Root: by length
 
 Neighbor joining ...
 
 INPUT:
 # Leaves: 291
-# Discernable leaves: 285
+# Discernible leaves: 285
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
 Ave. dissimilarity = 0.185037
@@ -22,43 +21,42 @@ Optimizing arc lengths at each node ...
 absCriterion = 7.910  Error density = 1.943 %
 
 Optimizing topology: re-insert ...
-# Changes: 107
-Improvement = 0.691
-absCriterion = 7.219  Error density = 1.856 %
-absCriterion = 7.219  Error density = 1.856 %
+# Changes: 2
+Improvement = 0.000
+absCriterion = 7.910  Error density = 1.943 %
 
-Optimizing topology: local ...
+Optimizing topology: neighbors ...
 
 Topology optimization iter = 1
-# Changes: 87
-Improvement = 0.076
+# Changes: 145
+Improvement = 0.673
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
-absCriterion = 7.088  Error density = 1.840 %
+absCriterion = 7.134  Error density = 1.846 %
 
 Topology optimization iter = 2
-# Changes: 38
-Improvement = 0.036
+# Changes: 50
+Improvement = 0.077
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
-absCriterion = 7.049  Error density = 1.835 %
+absCriterion = 7.052  Error density = 1.835 %
 
 Topology optimization iter = 3
-# Changes: 12
-Improvement = 0.001
+# Changes: 18
+Improvement = 0.003
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 4
-# Changes: 3
+# Changes: 4
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 5
-# Changes: 2
+# Changes: 3
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -89,7 +87,7 @@ Correlation between residual^2 and dissimilarity = 0.07
 # Interior nodes (with root) = 283 (max = 284)
 # Interior undirected arcs = 282
 Tree length = 30.572
-Min. discernable leaf length = 0.000
+Min. discernible leaf length = 0.000
 Ave. arc length = 0.053
 Interior height = 34
 Bifurcating interior branching = 1.354

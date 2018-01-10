@@ -109,8 +109,6 @@ struct ThisApplication : Application
     DistTree::printParam (cout);
     if (sparse)
       cout << "Sparsing depth = " << sparsingDepth << endl;
-    if (topology)
-      cout << "Topology optimization: " << (whole ? "whole" : "subgraphs") << endl;
     cout << "Root: " << (root_topological ? "topological" : "by length") << endl;
     cout << endl;
 
@@ -191,7 +189,7 @@ struct ThisApplication : Application
           }
           
           {
-            cout << "Optimizing topology: local ..." << endl;
+            cout << string ("Optimizing topology: ") + (whole ? "neighbors" : "subgraphs") + " ..." << endl;
             const Chronometer_OnePass cop ("Topology and arc length optimization: local");
             if (whole)
               tree->optimizeIter (0, output_tree);
@@ -293,7 +291,6 @@ struct ThisApplication : Application
         cout << "# Too long arcs: " << tooLongArcs. size () << endl;
         cout << "Min. length of too long arcs: " << arcLen_min << endl;
         outlier_EValue_max /= 10;
-        break;  // ??
       }
     }
   #endif
@@ -316,10 +313,10 @@ struct ThisApplication : Application
     {
       const ONumber on (cout, criterionDecimals, false);
       cout << endl;
-      cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernables (). size () - 1 << ')' << endl;
+      cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernibles (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
-      cout << "Min. discernable leaf length = " << tree->getMinLeafLen () << endl;
+      cout << "Min. discernible leaf length = " << tree->getMinLeafLen () << endl;
         // = 0 => epsilon2_0 > 0
       cout << "Ave. arc length = " << tree->getAveArcLength () << endl;
         // Check exponential distribution ??
@@ -328,7 +325,7 @@ struct ThisApplication : Application
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
       if (sparse) 
         cout << "# Sparsing leaves = " << pow (bifurcatingInteriorBranching, sparsingDepth + 1) << endl;
-      // #dissimilarities = 2 #discernables log_2(#discernables) #sparsing_leaves
+      // #dissimilarities = 2 #discernibles log_2(#discernibles) #sparsing_leaves
 
       {      
         size_t freqChildrenInteriors = 0;
@@ -413,6 +410,7 @@ struct ThisApplication : Application
       Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
       cout << "# Ancestor-based requests: " << pairs. size () << endl;
 
+    #if 0
       {      
         const VectorPtr<Leaf> depthOutliers (tree->findDepthOutliers ());
         const Vector<Pair<const Leaf*>> depthPairs (tree->leaves2missingLeafPairs (depthOutliers));
@@ -443,6 +441,7 @@ struct ThisApplication : Application
       pairs. uniq ();      
       
       cout << "# Total requests: " << pairs. size () << endl;
+    #endif
       {
         OFStream f (dissim_request);      
         for (const auto& p : pairs)

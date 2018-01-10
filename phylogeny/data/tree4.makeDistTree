@@ -8,7 +8,7 @@ Neighbor joining ...
 
 INPUT:
 # Leaves: 4
-# Discernable leaves: 4
+# Discernible leaves: 4
 # Nodes: 7
 # Dissimilarities: 6 (100.00 %)
 Ave. dissimilarity = 3.096390
@@ -29,7 +29,7 @@ Correlation between residual^2 and dissimilarity = -nan
 # Interior nodes (with root) = 3 (max = 3)
 # Interior undirected arcs = 1
 Tree length = 15.000
-Min. discernable leaf length = 1.000
+Min. discernible leaf length = 1.000
 Ave. arc length = 2.500
 Interior height = 1
 Bifurcating interior branching = 2.000

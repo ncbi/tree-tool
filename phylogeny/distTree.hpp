@@ -99,7 +99,7 @@ struct DTNode : Tree::TreeNode
 
 	Real len;
 	  // Arc length between *this and *getParent()
-  Vector<size_t/*objNum*/> pathObjNums; 
+  Vector<uint/*objNum*/> pathObjNums; 
     // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
     // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
@@ -148,10 +148,10 @@ public:
 
   const DistTree& getDistTree () const;
 
-  const Leaf* inDiscernable () const;
+  const Leaf* inDiscernible () const;
     // Return: this or nullptr
-  bool childrenDiscernable () const
-    { return arcs [false]. empty () || ! static_cast <DTNode*> ((*arcs [false]. begin ()) -> node [false]) -> inDiscernable (); }
+  bool childrenDiscernible () const
+    { return arcs [false]. empty () || ! static_cast <DTNode*> ((*arcs [false]. begin ()) -> node [false]) -> inDiscernible (); }
   Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
     // Requires: after DistTree::setHeight()
@@ -176,7 +176,7 @@ private:
   virtual void setLca ();
     // Off-line LCA algorithm by Tarjan
     // Requires: !tarjanLca 
-  Vector<size_t/*objNum*/> getLcaObjNums ();
+  Vector<uint/*objNum*/> getLcaObjNums ();
     // Return: objNum's s.t. getDistTree().dissims[objNum].lca = this
     // Invokes: DTNode::pathObjNums.sort()
   VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max) const;
@@ -210,7 +210,7 @@ struct Steiner : DTNode
     { return this; }
 
   bool isInteriorType () const final
-    { return childrenDiscernable (); }
+    { return childrenDiscernible (); }
 
 private:
   void setSubtreeLenUp (bool topological) final;
@@ -251,9 +251,9 @@ struct Leaf : DTNode
     // !empty()
   string comment;
   
-  static const string non_discernable;
-  bool discernable {true}; 
-    // false => getParent()->getChildren() is an equivalence class of indiscernables
+  static const string non_discernible;
+  bool discernible {true}; 
+    // false => getParent()->getChildren() is an equivalence class of indiscernibles
     
   // Temporary
   Real absCriterion {NAN};
@@ -279,8 +279,8 @@ struct Leaf : DTNode
       { const ONumber oNum (os, criterionDecimals, true);  // PAR
         os << "  leaf_error=" << getRelCriterion ();
       }
-    	if (! discernable)
-    	  os << "  " << non_discernable;
+    	if (! discernible)
+    	  os << "  " << non_discernible;
     #if 0
       if (frequent)
     	  os << " " << "frequent";
@@ -322,19 +322,19 @@ public:
 
   const Leaf* getDissimOther (size_t objNum) const;
     // Return: !nullptr; != this
-  const DTNode* getDiscernable () const;
+  const DTNode* getDiscernible () const;
     // Return: this or getParent(); !nullptr
   Real getRelCriterion () const;
   bool getCollapsed (const Leaf* other) const
     { return    other
              && getParent () == other->getParent ()
-             && ! discernable
-             && ! other->discernable;
+             && ! discernible
+             && ! other->discernible;
     }
 private:
   friend DistTree;
   void collapse (Leaf* other);
-    // Output: discernable = false
+    // Output: discernible = false
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:
@@ -345,7 +345,7 @@ public:
 struct SubPath
 // Path going through a connected subgraph
 {
-  size_t objNum {NO_INDEX};    
+  uint objNum {(uint) -1};    
     // Index of DistTree::dissims
   const DTNode* node1 {nullptr};
   const DTNode* node2 {nullptr};
@@ -355,7 +355,7 @@ struct SubPath
     
   SubPath ()
     {}
-  explicit SubPath (size_t objNum_arg)
+  explicit SubPath (uint objNum_arg)
     : objNum (objNum_arg)
     {}
   void qc () const;
@@ -407,16 +407,20 @@ struct Subgraph : Root
     }
   void clear () override
     { area. clear ();
+      area. shrink_to_fit ();        
       boundary. clear ();
+      boundary. shrink_to_fit ();
       area_root = nullptr;
       area_underRoot = nullptr;
       subPaths. clear ();
+      subPaths. shrink_to_fit ();
       subPathsAbsCriterion = 0;
     }
   
   // Usage:
-//set asea, boundary
-  void removeIndiscernables ();
+//set area, boundary
+  void reserve ();
+  void removeIndiscernibles ();
   void finish ();
     // Time: O(|area| log(|area|))
 //set subPaths
@@ -451,7 +455,7 @@ struct Subgraph : Root
       return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_);
     }
     // Requires: subPath in subPaths
-  const Vector<size_t>& boundary2pathObjNums (const DTNode* dtNode) const
+  const Vector<uint>& boundary2pathObjNums (const DTNode* dtNode) const
     { return dtNode == area_root /* && area_underRoot */
                ? area_underRoot->pathObjNums
                : dtNode        ->pathObjNums;
@@ -512,11 +516,11 @@ public:
 	                   const DTNode* to_arg)
 	  { return    from_arg
              && from_arg->graph
-             && ! from_arg->inDiscernable ()
+             && ! from_arg->inDiscernible ()
 	           && to_arg
 	  	       && to_arg->graph == from_arg->graph
 	  	       && to_arg != from_arg
-             && ! to_arg->inDiscernable ()
+             && ! to_arg->inDiscernible ()
     	       && from_arg->getParent ()
 	  	       && ! to_arg->descendantOf (from_arg)
 	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () == 2)  
@@ -712,7 +716,7 @@ public:
     // If subgraph.dense() then *this has a star topology
     // Update: areaRadius: >= 1; may be decreased
     // Output: subgraph: tree = center->getTree()
-    //                   area: contains center, newLeaves2boundary.values(); discernable
+    //                   area: contains center, newLeaves2boundary.values(); discernible
     //         newLeaves2boundary
 	  // Time: O(log^2(wholeTree.n)) + f(|area|), where wholeTree = center->getDistTree()
 private:
@@ -731,7 +735,7 @@ private:
 		              Steiner* parent,
 		              size_t expectedOffset);
     // Return: a child of parent has been loaded
-    // Output: topology, DTNode::len, Leaf::discernable
+    // Output: topology, DTNode::len, Leaf::discernible
     // Update: lineNum
   void newick2node (ifstream &f,
                     Steiner* parent);
@@ -746,9 +750,9 @@ private:
     // Return: true <=> 1 connected component
     // Output: DisjointCluster
     //         cout: print other connected components
-  size_t setDiscernable ();
-    // Return: Number of indiscernable leaves
-    // Output: Leaf::len = 0, Leaf::discernable = false, topology
+  size_t setDiscernible ();
+    // Return: Number of indiscernible leaves
+    // Output: Leaf::len = 0, Leaf::discernible = false, topology
     // Invokes: cleanTopology()
   void cleanTopology ();
   void setGlobalLen ();
@@ -770,10 +774,10 @@ private:
     // Invokes: getSelectedPairs(), setPaths()
   void loadDissimPrepare (size_t pairs_max);
     // Output: Dissim::target
-  size_t leaves2dissims (Leaf* leaf1,
-                         Leaf* leaf2,
-                         Real target,
-                         Real mult);
+  uint leaves2dissims (Leaf* leaf1,
+                       Leaf* leaf2,
+                       Real target,
+                       Real mult);
     // Append: dissims[]
     // Return: dissims.size() - 1
   bool addDissim (const string &name1,
@@ -804,7 +808,7 @@ public:
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   size_t getSparseDissims_size () const
     { return ((size_t) log (name2leaf. size ()) + 1) * 70; }  // PAR
-  Set<const DTNode*> getDiscernables () const;
+  Set<const DTNode*> getDiscernibles () const;
     // Logical leaves
   static void printParam (ostream &os) 
     { os << "PARAMETERS:" << endl;
@@ -830,7 +834,9 @@ public:
     { const Prob r = 1 - getUnexplainedFrac ();   
       return sqrt ((1 - r) / r);   
     }
-    // Requires: linear variance of dissimilarities  ??
+    // Requires: interpretation <= linear variance of dissimilarities  ??
+  string absCriterion2str () const
+    { return real2str (absCriterion, criterionDecimals); }
   void reportErrors (ostream &os) const
     { const ONumber on (os, criterionDecimals, false);  // PAR
       os << "absCriterion = " << absCriterion 
@@ -883,18 +889,18 @@ public:
 	  // Return: false <=> finished
     // Invokes: NewLeaf(DTNode*), Change, applyChanges()
     // Time: O(n log^3(n))
-	bool optimize ();
-	  // Update: DTNode::stable
-	  // Return: false <=> finished
-	  // Requries: getConnected()
-	  // Invokes: getBestChange(), applyChanges()
-	  // Time of 1 iteration: O(n Time(getBestChange))  
 	void optimizeIter (uint iter_max,
 	                   const string &output_tree);
 	  // Input: iter_max: 0 <=> infinity
 	  // Update: cout
 	  // Invokes: optimize(), saveFile(output_tree)
 private:
+	bool optimize ();
+	  // Update: DTNode::stable
+	  // Return: false <=> finished
+	  // Requries: getConnected()
+	  // Invokes: getBestChange(), applyChanges()
+	  // Time of 1 iteration: O(n Time(getBestChange))  
   const Change* getBestChange (const DTNode* from);
     // Return: May be nullptr
     // Invokes: tryChange()
@@ -961,7 +967,7 @@ public:
     // Input: Dissim::prediction
 	  // Time: O(p)
   Real getMinLeafLen () const;
-    // Return: min. length of discernable leaf arcs 
+    // Return: min. length of discernible leaf arcs 
   Real getSqrResidualCorr () const;
     // Return: correlation between squared residual and Dissim::target
     // Input: Dissim::prediction
@@ -971,7 +977,7 @@ public:
     // Return: epsilon2_0
     // Input: Dissim::prediction
     // Output: DTNode::{paths,errorDensity}
-    // Requires: Leaf::discernable is set
+    // Requires: Leaf::discernible is set
 	  // Time: O(p log(n))
 
   // Outliers
@@ -997,7 +1003,7 @@ public:
   Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max) const;
     // Return: almost a superset of getMissingLeafPairs_subgraphs()
     // After: dissims.sort()
-    // Invokes: DTNode::getSparseLeafPairs()
+    // Invokes: DTNode::getSparseLeafMatches()
   Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs () const;
   Vector<Pair<const Leaf*>> leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const;
     // After: dissims.sort()
@@ -1117,6 +1123,7 @@ public:
     // Leaf2dissim::leaf: distinct, sort()'ed
 
 
+  // Find best location, greedy
   NewLeaf (const DistTree &tree_arg,
            const string &dataDir_arg,
            const string &name_arg,
@@ -1147,7 +1154,7 @@ private:
     // Invokes: optimizeAnchor()
   void optimizeAnchor (Location &location_best,
                        Vector<Leaf2dissim> &leaf2dissims_best);
-    // Depth-first search
+    // Depth-first search, greedy
     // Update: location, leaf2dissims, location_best
     // Output: leaf2dissims_best
     // Invokes: setLocation(), descend()
