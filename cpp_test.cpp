@@ -48,8 +48,7 @@ inline S g ()
   return f ();
 }
 
- 
-  
+
 
 struct ThisApplication : Application
 {
@@ -63,44 +62,25 @@ struct ThisApplication : Application
 
 	void body () const
 	{
-	#if 0
-	//const S s3 (g ());
-	  vector<int> v;
-	  cout << v [5] << endl;
-	#endif
-
-
-  #if 0	  
-	  vector<bool> vec;
-	  vec. resize (5, false);
+	  Vector<double> vec;  vec. reserve (1000000);
+	  cout << vec. capacity () << endl;
+	  Rand rand;
+	  FOR (size_t, i, vec. capacity ())
+	    vec << rand. getProb ();
+	  cout << vec. capacity () << endl;
 	  cout << vec. size () << endl;
-	  FOR (size_t, i, 5)
-	    cout << vec [i];
-	  cout << endl;
-
-	  vec. resize (10, true);
-	  cout << vec. size () << endl;
-	  FOR (size_t, i, 10)
-	    cout << vec [i];
-	  cout << endl;
-	#endif
 	
-	//cout << sizeof (size_t) << endl;
-	  
-	  size_t n = 1;
-	  FOR (size_t, iter, 9)
-	  {
-      n *= 10;
-      cout << endl << "n = " << n << endl;
-	    map<size_t,size_t> nums;
-	    FOR (size_t, i, n)
-	      nums [i] = i;
-	    {
-        const Chronometer_OnePass chron ("Chron");  
-  	    cout << nums. size () << endl;
-  	  }
-	  }
-	  
+	  {    
+      const Chronometer_OnePass chron ("sort");
+  	  for (size_t i = 0; i < 100000; i++)
+  	    vec. sort ();
+  	}
+
+	  {    
+      const Chronometer_OnePass chron ("nth_element");
+  	  for (size_t i = 0; i < 1000; i++)
+  	    std::nth_element (vec. begin (), vec. begin () + 7000, vec. end ());
+  	}
 	}
 };
 
