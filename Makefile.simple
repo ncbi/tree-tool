@@ -13,6 +13,7 @@ LIBS=
 all:	\
   cpp_test \
   extractPairs \
+  graph_test \
   selColumn \
   setMinus \
   setRandOrd \
@@ -31,6 +32,12 @@ extractPairs.o:  $(COMMON_HPP)
 extractPairsOBJS=extractPairs.o $(CPP_DIR)/common.o
 extractPairs:	$(extractPairsOBJS)
 	$(CXX) -o $@ $(extractPairsOBJS) $(LIBS)
+	$(ECHO)
+
+graph_test.o:  $(COMMON_HPP)  
+graph_testOBJS=graph_test.o $(CPP_DIR)/common.o
+graph_test:	$(graph_testOBJS)
+	$(CXX) -o $@ $(graph_testOBJS) $(LIBS)
 	$(ECHO)
 
 selColumn.o:  $(COMMON_HPP)  
