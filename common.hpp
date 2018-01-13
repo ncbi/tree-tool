@@ -17,6 +17,10 @@
   #pragma warning (disable : 4820)  // '...' bytes padding added after data member '...'
   #pragma warning (disable : 5026)  // move constructor was implicitly defined as deleted
   #pragma warning (disable : 5027)  // move assignment operator was implicitly defined as deleted
+
+  #pragma warning (disable : 4005)  // macro redefinition
+  #define _HAS_ITERATOR_DEBUGGING 0
+  #pragma warning (default : 4005)  
 #endif
 
 #include <time.h>
