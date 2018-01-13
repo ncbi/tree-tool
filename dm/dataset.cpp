@@ -5,9 +5,6 @@
 
 #include "dataset.hpp"
 
-#include <cmath>
-#include <algorithm>
-
 #include "optim.hpp"
 
 
@@ -87,14 +84,16 @@ void Attr::moveAfter (const Attr* pred)
   
   if (pred && std::next (pred->dsIt) == dsIt)
     return;
+  if (! pred && ds. attrs. begin () == dsIt)
+    return;
   
   Dataset& ds_ = const_cast <Dataset&> (ds);
 
-  auto it = pred ? pred->dsIt : ds_. attrs. begin ();
-  it++;  // Visual C++: should be done before erase()
-
   ds_. attrs. erase (dsIt);
   
+  ASSERT (! ds. attrs. empty ());
+  auto it = pred ? pred->dsIt : ds_. attrs. begin ();
+  it++;  // Visual C++: "expression: list iterator not incrementable" <= sentinel of an empty list
   dsIt = ds_. attrs. insert (it, this);
 }
 
