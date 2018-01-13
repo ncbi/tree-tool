@@ -91,7 +91,7 @@ void Attr::moveAfter (const Attr* pred)
   Dataset& ds_ = const_cast <Dataset&> (ds);
 
   auto it = pred ? pred->dsIt : ds_. attrs. begin ();
-  it++;  // Visual C++: should be done before erase()
+  it++;  // Visual C++: should be done before erase()  ??
 
   ds_. attrs. erase (dsIt);
   
