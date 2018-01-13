@@ -257,7 +257,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max) const
  	VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
   size_t depth = 0;  
   const DTNode* ancestor = this;
-  while (ancestor)  
+  while (ancestor)  // make fewer by using only reprLeaf's ??
   {
   	descendants. clear ();
   	size_t searchDepth = sparsingDepth;
@@ -3955,6 +3955,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
 
   	  if (! ch->valid ())
     		continue;
+      // do not Change over non-stable Node's !??
 
       Unverbose un;  
       if (verbose ())
@@ -4014,6 +4015,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
   if (verbose (1))
   {
     ONumber on (cout, criterionDecimals, false);
+    cout << "# Commits = " << commits << endl;
     cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
   }
   ASSERT ((bool) commits == (improvement > 0));

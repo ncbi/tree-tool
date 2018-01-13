@@ -20,15 +20,11 @@ Optimizing arc lengths at each node ...
 # Nodes deleted = 2
 absCriterion = 7.910  Error density = 1.943 %
 
-Optimizing topology: re-insert ...
-# Changes: 2
-Improvement = 0.000
-absCriterion = 7.910  Error density = 1.943 %
-
 Optimizing topology: neighbors ...
 
 Topology optimization iter = 1
 # Changes: 145
+# Commits = 58
 Improvement = 0.673
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -36,6 +32,7 @@ absCriterion = 7.134  Error density = 1.846 %
 
 Topology optimization iter = 2
 # Changes: 50
+# Commits = 22
 Improvement = 0.077
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -43,6 +40,7 @@ absCriterion = 7.052  Error density = 1.835 %
 
 Topology optimization iter = 3
 # Changes: 18
+# Commits = 8
 Improvement = 0.003
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -50,6 +48,7 @@ absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 4
 # Changes: 4
+# Commits = 3
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -57,6 +56,7 @@ absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 5
 # Changes: 3
+# Commits = 1
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -64,6 +64,7 @@ absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 6
 # Changes: 0
+# Commits = 0
 Improvement = 0.000
 absCriterion = 7.048  Error density = 1.834 %
 

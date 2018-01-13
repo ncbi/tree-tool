@@ -47,6 +47,7 @@ struct ThisApplication : Application
 	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("skip_len", "Skip length-only optimization");
+	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
@@ -64,7 +65,7 @@ struct ThisApplication : Application
 	
 	
 	
-	void body () const
+	void body () const final
   {
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
@@ -74,6 +75,7 @@ struct ThisApplication : Application
 		      bool   sparse              = getFlag ("sparse");
 		const bool   topology            = getFlag ("topology");
 		const bool   skip_len            = getFlag ("skip_len");
+		const bool   reinsert            = getFlag ("reinsert");
 		const bool   whole               = getFlag ("whole");
 		const bool   reroot              = getFlag ("reroot");
 		const bool   root_topological    = getFlag ("root_topological");
@@ -102,8 +104,9 @@ struct ThisApplication : Application
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
-    IMPLY (whole, topology);
+    IMPLY (whole,    topology);
     IMPLY (skip_len, topology);
+    IMPLY (reinsert, topology);
 
 
     DistTree::printParam (cout);
@@ -181,11 +184,11 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           
+          if (reinsert)
           {
             cout << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology and arc length optimization: re-insert");
             tree->optimizeReinsert ();  
-            tree->reportErrors (cout);
           }
           
           {

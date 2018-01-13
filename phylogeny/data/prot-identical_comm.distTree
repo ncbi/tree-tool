@@ -20,11 +20,6 @@ Optimizing arc lengths at each node ...
 # Nodes deleted = 2
 absCriterion = 7.910  Error density = 1.943 %
 
-Optimizing topology: re-insert ...
-# Changes: 2
-Improvement = 0.000
-absCriterion = 7.910  Error density = 1.943 %
-
 Optimizing topology: subgraphs ...
 absCriterion = 7.067  Error density = 1.837 %
 
@@ -39,8 +34,8 @@ absCriterion = 7.067  Error density = 1.837 %
 
 OUTPUT:
 absCriterion = 7.067  Error density = 1.837 %
-absCriterion [0] = 0.831  Error density [0] = 7.545 %  Fraction = 6.348 %
-absCriterion [1] = 6.236  Error density [1] = 1.732 %  Fraction = 93.652 %
+absCriterion [0] = 0.831  Error density [0] = 7.544 %  Fraction = 6.348 %
+absCriterion [1] = 6.237  Error density [1] = 1.732 %  Fraction = 93.652 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.07

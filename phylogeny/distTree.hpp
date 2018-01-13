@@ -910,7 +910,7 @@ private:
 	  // Return: false <=> finished
     // Update: topology, changes (sort by Change::improvement descending)
     // Output: DTNode::stable
-    // Invokes: once: finishChanges(), optimizeLen(), optimizeLenLocal()
+    // Invokes: once: finishChanges(), optimizeLen(), optimizeLenLocal(), reportErrors(cout)
 	void tryChange (Change* ch,
 	                const Change* &bestChange);
     // Update: bestChange: positive(improvement)
