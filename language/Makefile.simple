@@ -14,8 +14,8 @@ all:	\
   grammar_test
 	
 
-grammar_test.o:  $(COMMON_HPP) grammar.hpp
-grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(LANG_DIR)/grammar.o
+grammar_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp grammar.hpp
+grammar_testOBJS=grammar_test.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o $(LANG_DIR)/grammar.o
 grammar_test:	$(grammar_testOBJS)
 	$(CXX) -o $@ $(grammar_testOBJS) $(LIBS)
 	$(ECHO)

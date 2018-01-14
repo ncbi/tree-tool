@@ -23,6 +23,7 @@ COMMON_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
 $(CPP_DIR)/common.o:	$(COMMON_HPP)
 $(CPP_DIR)/application.o:	$(CPP_DIR)/application.hpp $(COMMON_HPP)
 $(CPP_DIR)/xml.o: $(CPP_DIR)/xml.hpp $(COMMON_HPP)
+$(CPP_DIR)/graph.o:	$(COMMON_HPP) $(CPP_DIR)/graph.hpp
 COMMON = $(CPP_DIR)/common $(CPP_DIR)/application
 
 # AI
@@ -31,7 +32,7 @@ $(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
 
 # language
 LANG_DIR = $(CPP_DIR)/language
-$(LANG_DIR)/grammar.o: $(LANG_DIR)/grammar.hpp $(COMMON_HPP)
+$(LANG_DIR)/grammar.o: $(LANG_DIR)/grammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 
 # DM
 DM_DIR = $(CPP_DIR)/dm
@@ -50,12 +51,12 @@ DM = $(MATRIX) $(DM_DIR)/dataset
 
 # Phylogenetic trees
 PHYL_DIR = $(CPP_DIR)/phylogeny
-$(PHYL_DIR)/distTree.o: $(PHYL_DIR)/distTree.hpp $(DM_HPP) $(DM_DIR)/prediction.hpp
-DISTTREE_OBJ = $(DM_OBJ) $(PHYL_DIR)/distTree.o $(DM_DIR)/prediction.o
+$(PHYL_DIR)/distTree.o: $(PHYL_DIR)/distTree.hpp $(DM_HPP) $(DM_DIR)/prediction.hpp $(CPP_DIR)/graph.hpp
+DISTTREE_OBJ = $(DM_OBJ) $(DM_DIR)/prediction.o $(CPP_DIR)/graph.o $(PHYL_DIR)/distTree.o 
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP)
-FEATURE_TREE_OBJ = $(DM_OBJ) $(PHYL_DIR)/featureTree.o
+FEATURE_TREE_OBJ = $(DM_OBJ) $(CPP_DIR)/graph.o $(PHYL_DIR)/featureTree.o
 #
-DISTTREE = $(DM) $(PHYL_DIR)/distTree $(DM_DIR)/prediction  
+DISTTREE = $(DM) $(PHYL_DIR)/distTree $(CPP_DIR)/graph $(DM_DIR)/prediction  
 FEATURE_TREE = $(DM) $(PHYL_DIR)/featureTree 
 
 GEN_DIR = $(CODE_DIR)/genetics

@@ -34,8 +34,8 @@ extractPairs:	$(extractPairsOBJS)
 	$(CXX) -o $@ $(extractPairsOBJS) $(LIBS)
 	$(ECHO)
 
-graph_test.o:  $(COMMON_HPP)  
-graph_testOBJS=graph_test.o $(CPP_DIR)/common.o
+graph_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp
+graph_testOBJS=graph_test.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 graph_test:	$(graph_testOBJS)
 	$(CXX) -o $@ $(graph_testOBJS) $(LIBS)
 	$(ECHO)

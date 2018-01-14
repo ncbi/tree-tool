@@ -4,6 +4,7 @@
 #include "common.inc"
 
 #include "common.hpp"
+#include "graph.hpp"
 using namespace Common_sp;
 
 

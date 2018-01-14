@@ -93,13 +93,13 @@ loci_request2dissim:	$(loci_request2dissimOBJS)
 	$(CXX) -o $@ $(loci_request2dissimOBJS) $(LIBS)
 	$(ECHO)
 
-makeDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
+makeDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
 makeDistTreeOBJS=makeDistTree.o $(DISTTREE_OBJ)
 makeDistTree:	$(makeDistTreeOBJS)
 	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-makeFeatureTree.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(PHYL_DIR)/featureTree.hpp
+makeFeatureTree.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/numeric.hpp $(PHYL_DIR)/featureTree.hpp 
 makeFeatureTreeOBJS=makeFeatureTree.o $(FEATURE_TREE_OBJ)
 makeFeatureTree:	$(makeFeatureTreeOBJS)
 	$(CXX) -o $@ $(makeFeatureTreeOBJS) $(LIBS)

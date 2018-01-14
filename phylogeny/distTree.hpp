@@ -4,6 +4,7 @@
 #define DISTTREE_HPP
 
 #include "../common.hpp"
+#include "../graph.hpp"
 using namespace Common_sp;
 #include "../dm/numeric.hpp"
 #include "../dm/dataset.hpp"

@@ -4,6 +4,7 @@
 #define GRAMMAR_HPP
 
 #include "../common.hpp"
+#include "../graph.hpp"
 
 
 
