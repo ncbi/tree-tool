@@ -1749,7 +1749,7 @@ int Application::run (int argc,
           if (name == "help")
           {
             cout << getHelp () << endl;
-            exit (1);
+            return 0;
           }
           if (! contains (args, name))
             errorExitStr ("Unknown key: " + name + "\n" + getInstruction ());
@@ -1812,7 +1812,7 @@ int Application::run (int argc,
     if (programArgs. size () == 1)
     {
       cout << getInstruction () << endl;
-      exit (1);
+      return 1;
     }
     
     if (posIt != positionals. end ())
@@ -1842,6 +1842,11 @@ int Application::run (int argc,
   	  }
     }
 	}
+	catch (const std::runtime_error &e) 
+	{ 
+	  cout << endl << e. what () << endl;
+	  return 1;
+  }
 	catch (const std::exception &e) 
 	{ 
 	  errorExit (e. what ());
