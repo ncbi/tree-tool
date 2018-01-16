@@ -25,7 +25,7 @@ struct ThisApplication : Application
 
 	void body () const final
 	{
-	  Matrix pd (false, 4, 4);
+	  Matrix pd (4);
 	  {
 		  Matrix m (false, pd, false);
 		  m. putAll (0);
@@ -82,7 +82,7 @@ struct ThisApplication : Application
     {
       if (verbose ())
         cout << "eigens2" << endl;
-  	  Matrix pd2 (false, 4, 4);  // Rank = 2
+  	  Matrix pd2 (4);  // Rank = 2
   	  {
   		  Matrix m (false, 2, 4);
   		  m. putAll (0);
@@ -111,7 +111,7 @@ struct ThisApplication : Application
 		{
       if (verbose ())
         cout << "eigens3" << endl;
-  	  Matrix m (false, 3, 3);  
+  	  Matrix m (3);  
 		  m. put (false, 0, 0, 5);
 		  m. put (false, 0, 1, -3);
 		  m. put (false, 0, 2, 7);
@@ -143,7 +143,7 @@ struct ThisApplication : Application
 		
 		{
 			// http://en.wikipedia.org/wiki/Fisher's_exact_test
-			Matrix mat (false, 2, 2);
+			Matrix mat (2);
 			mat. put (false, 0, 0,  1);
 			mat. put (false, 0, 1,  9);
 			mat. put (false, 1, 0, 11);
@@ -154,7 +154,7 @@ struct ThisApplication : Application
 
 		{
 			// J.G.Upton, Analysis of Cross-Tabluated Data, table 2.3
-			Matrix mat (false, 2, 2);
+			Matrix mat (2);
 			mat. put (false, 1, 0, 10);
 			mat. put (false, 1, 1, 20);
 			mat. put (false, 0, 0,  5);
@@ -184,6 +184,39 @@ struct ThisApplication : Application
 			mat. put (false, 4, 2,  2);
 			const Real chi2 = mat. getChi2 ();
 			ASSERT_EQ (chi2, 40.9748, 1e-4);
+		}
+		
+		
+		{
+			ifstream f ("data/masten_60.txt");
+		  Matrix mat (false, f, true);
+		  mat. psd = true;
+		  mat. qc ();
+		 
+		  { 
+			  const Matrix res (mat. getSqrt ());
+	      if (false)
+			  {
+				  OFStream out ("res.mat");
+				  res. saveText (out);
+				}
+				
+	      Matrix test (mat. rowsSize ());
+	      test. multiply (false, res, true, res, false);
+	      ASSERT (mat. maxAbsDiff (false, test, false) < 1e-5);  // PAR
+	      if (false)
+	      {
+				  OFStream out ("test.mat");
+				  test. saveText (out);      	
+	      }
+	    }
+
+      if (false)
+      {
+	      const Chronometer_OnePass cop ("sqrt(matrix)");  
+	      FOR (size_t, i, 100)
+				  mat. getSqrt ();
+		  }
 		}
 	}
 };

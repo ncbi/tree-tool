@@ -137,6 +137,8 @@ public:
           size_t maxRow,
           size_t maxCol) 
     { init (t, maxRow, maxCol); }          
+  explicit Matrix (size_t maxRow) 
+    { init (false, maxRow, maxRow); }          
   Matrix (bool t,
           const Matrix &source,
           bool sourceT) 
@@ -278,11 +280,10 @@ public:
   // processRow2Col
   typedef Real (Matrix::*ProcessRowFunc) (bool /*t*/,
                                           size_t /*row*/) const;
-  Matrix* processRow2Col (bool t,
-                          ProcessRowFunc processRow) const;
-    // Return: !nullptr
-    //         Result->rowsSize(t)  == rowsSize(t)
-    //         Result->rowsSize(!t) == 1
+  Matrix processRow2Col (bool t,
+                         ProcessRowFunc processRow) const;
+    // Return: Result.rowsSize(t)  == rowsSize(t)
+    //         Result.rowsSize(!t) == 1
     // To avoid warning invoke processRow as & Matrix::processRow
 
   // Basic info
@@ -307,6 +308,8 @@ public:
   // Square matrix
   bool isSquare () const
     { return rowsSize (false) == rowsSize (true); }
+  size_t rowsSize () const;
+    // Requires: isSquare()
   bool isSymmetric (size_t &row,
              		    size_t &col) const;
     // Output: row, col - a non-symmetric element
@@ -557,6 +560,8 @@ public:
     //         (*Return)^t * (*Return)^(!t) = *this
     //         nullptr <=> numerical problem
     // Requires: psd
+  Matrix getSqrt () const;
+    // Requires: psd
 
   // Dependence
   Real getChi2 () const;
@@ -655,7 +660,7 @@ public:
                      Real InitValue, 
                      Real delta);
     // put series: InitValue, InitValue + delta, ...
-  Matrix* centerRows (bool t);
+  Matrix centerRows (bool t);
     // Metric L_2
   void negateRow (bool t,
                   size_t row);
@@ -860,8 +865,8 @@ public:
   void putSquaredDistances (const Matrix& source,
                             bool          sourceT);
     // Output: *this contains squared distances in metric L_2 between rows of source
-  void sqrDistance2centeredSimilarity (Matrix* &rowMean,
-                                       Real    &totalMean)
+  void sqrDistance2centeredSimilarity (Matrix &rowMean,
+                                       Real &totalMean)
     // |x_i - x_j|^2  ->  x_i^t x_j
     // Similarities (attributes) are centered
     { centerSimilarity (rowMean, totalMean);
@@ -872,8 +877,8 @@ public:
     // Requires: isSymmetric(), defined()
   void similarity2evolutionDistance (Prob p_chance);
     // Requires: isSymmetric(), defined(), min() > 0
-  void centerSimilarity (Matrix* &rowMean,
-                         Real    &totalMean); 
+  void centerSimilarity (Matrix &rowMean,
+                         Real &totalMean); 
     // Output: rowMean, totalMean - sufficient statistics
     //         rowMean rowsSize = rowsSize(false) * 1
     //         totalMean = mean of rowMean[]

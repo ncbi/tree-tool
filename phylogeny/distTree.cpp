@@ -1555,6 +1555,7 @@ DistTree::DistTree (const string &dataDirName,
         prog (absCriterion2str ());
         Unverbose unv;
         optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std /*static_cast <const Steiner*> (leaf->getAncestor (subgraphDepth))*/);
+        // reinsert ??
       #ifndef NDEBUG
         // ??
        	for (const DiGraph::Node* node : nodes)
@@ -2753,7 +2754,7 @@ bool DistTree::addDissim (const string &name1,
 
 void DistTree::setPaths ()
 {
-	ASSERT (optimizable ());
+//ASSERT (optimizable ());
   
  	for (DiGraph::Node* node : nodes)
     if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
@@ -3179,7 +3180,7 @@ bool DistTree::optimizeLenAll ()
   ASSERT (arcs == dtNodes. size ());
 
   // DTNode::dissimSum, matr
-  Matrix matr (false, arcs, arcs /*+ 1*/);
+  Matrix matr (arcs);
   matr. putAll (0);
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> dissimSum = 0;
@@ -3955,8 +3956,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
 
   	  if (! ch->valid ())
     		continue;
-      // do not Change over non-stable Node's !??
-
+    		
       Unverbose un;  
       if (verbose ())
   		  ch->qc ();  
@@ -4018,7 +4018,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
     cout << "# Commits = " << commits << endl;
     cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
   }
-  ASSERT ((bool) commits == (improvement > 0));
+  ASSERT ((! commits) == (improvement == 0));
 
   if (commits)
   {
@@ -4688,6 +4688,8 @@ Real DistTree::setErrorDensities ()
 VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
                                                  Real &outlier_min) const
 {
+	ASSERT (optimizable ());
+	
 #undef CRITERION_OUTLIERS_DM  
   
 	Dataset ds;
@@ -4737,6 +4739,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
     ASSERT (comp_main);
     const MultiNormal* mn = comp_main->distr->asMultiNormal ();
     ASSERT (mn);
+    // Use the last cluster ??!
     const Real mean = mn->mu [0];
     const Real var  = mn->sigmaExact. get (false, 0, 0);
     Normal normal;

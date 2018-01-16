@@ -498,14 +498,14 @@ void Matrix::deleteObject (size_t objNum)
 
 // processRow2Col
 
-Matrix* Matrix::processRow2Col (bool           t,
-                                ProcessRowFunc ProcessRow) const
+Matrix Matrix::processRow2Col (bool t,
+                               ProcessRowFunc ProcessRow) const
 {
-  Matrix* target = new Matrix (t, rowsSize (t), 1);
+  Matrix target (t, rowsSize (t), 1);
   FOR (size_t, row, rowsSize (t))
   {
     const Real a = (this->*ProcessRow) (t, row);
-    target->put (t, row, 0, a);
+    target. put (t, row, 0, a);
   }
     
   return target;
@@ -587,6 +587,14 @@ bool Matrix::isInteger () const
       if (! DM_sp::isInteger (x))
     	  return false;
   return true;
+}
+
+
+
+size_t Matrix::rowsSize () const
+{
+  ASSERT (isSquare ());
+  return rowsSize (false);
 }
 
 
@@ -749,13 +757,13 @@ size_t Matrix::prevColDefined (bool  t,
 
 Matrix* Matrix::deleteUndefinedRows (bool t) const
 {
-  Matrix* M = 0;
+  Matrix* m = nullptr;
   {
     size_t s = 0;
     FOR (size_t, row, rowsSize (t))
       if (definedRow (t, row))
         s++;
-    M = new Matrix (false, s, rowsSize (! t));
+    m = new Matrix (false, s, rowsSize (! t));
   }
 
   {
@@ -763,12 +771,12 @@ Matrix* Matrix::deleteUndefinedRows (bool t) const
     FOR (size_t, row, rowsSize (t))
       if (definedRow (t, row))
       {
-        M->copyRow (false, s, *this, t, row);
+        m->copyRow (false, s, *this, t, row);
         s++;
       }
   }
     
-  return M;
+  return m;
 }
 
 
@@ -1239,7 +1247,7 @@ bool Matrix::checkInverse (const Matrix &inverseM,
   ASSERT (rowsSize (false) == inverseM. rowsSize (false));
 
 
-  Matrix Ident (false, rowsSize (false), rowsSize (false));
+  Matrix Ident (rowsSize (false));
   
   Ident. multiply (false, *this, false, inverseM, inverseMT);
   
@@ -1368,14 +1376,14 @@ Real Matrix::getChi2 () const
 	ASSERT (! negative (min ()));
 	
 	Real chi2 = 0;
-  Common_sp::AutoPtr <Matrix> rowSum (processRow2Col (false, & Matrix::sumRow));
-  Common_sp::AutoPtr <Matrix> colSum (processRow2Col (true,  & Matrix::sumRow));
-  const Real s = rowSum->sumRow (true, 0);
+  const Matrix rowSum (processRow2Col (false, & Matrix::sumRow));
+  const Matrix colSum (processRow2Col (true,  & Matrix::sumRow));
+  const Real s = rowSum. sumRow (true, 0);
   ASSERT (s > 0);
   FOR (size_t, row, rowsSize (false))
     FOR (size_t, col, rowsSize (true))
-    	if (const Real expect =   rowSum->get (false, row, 0) 
-    		                      * colSum->get (false, 0, col)
+    	if (const Real expect =   rowSum. get (false, row, 0) 
+    		                      * colSum. get (false, 0, col)
     		                      / s
     		  )
     	  chi2 += sqr (get (false, row, col) - expect) / expect;
@@ -1670,14 +1678,14 @@ size_t Matrix::undefined2ValueAll (Real r)
 size_t Matrix::undefined2mean ()
 { 
   size_t n = 0;
-  Common_sp::AutoPtr <Matrix> rowMean (processRow2Col (false, & Matrix::meanRow));
-  Common_sp::AutoPtr <Matrix> colMean (processRow2Col (true,  & Matrix::meanRow));
+  const Matrix rowMean (processRow2Col (false, & Matrix::meanRow));
+  const Matrix colMean (processRow2Col (true,  & Matrix::meanRow));
   FOR (size_t, row, rowsSize (false))
     FOR (size_t, col, rowsSize (true))
       if (isNan (get (false, row, col)))
       {
-        const Real r = (  rowMean->get (false, row, 0) 
-                        + colMean->get (true,  col, 0)
+        const Real r = (  rowMean. get (false, row, 0) 
+                        + colMean. get (true,  col, 0)
                        ) / 2;
         put (false, row, col, r);
         n++;
@@ -1753,11 +1761,11 @@ void Matrix::putIncSeries (bool  t,
 
 
 
-Matrix* Matrix::centerRows (bool t)
+Matrix Matrix::centerRows (bool t)
 {
-  Matrix* rowMean = processRow2Col (t, & Matrix::meanRow);
+  Matrix rowMean (processRow2Col (t, & Matrix::meanRow));
   FOR (size_t, row, rowsSize (t))
-    putIncRow (t, row, - rowMean->get (t, row, 0));
+    putIncRow (t, row, - rowMean. get (t, row, 0));
   return rowMean;
 }
 
@@ -2405,6 +2413,24 @@ Matrix* Matrix::getCholesky (bool t) const
 
 
 
+Matrix Matrix::getSqrt () const
+{
+	ASSERT (isSymmetric ());
+	ASSERT (defined ());
+	ASSERT (psd);
+
+  Eigens ei (*this, rowsSize (), 1, 0, 1e-5, 10000);   // PAR
+  ei. qc ();
+  ei. values. sqrtAll ();		  
+
+  Matrix res (rowsSize ());
+  ei. restore (res);  
+
+  return res;
+}
+
+
+
 Determinant Matrix::inverse ()
 {
   ASSERT (isSquare ());
@@ -2610,10 +2636,10 @@ Real Matrix::sqrDistance2centeredSimilarity ()
 
   // sum_i x_i = 0
   
-  Common_sp::AutoPtr <Matrix> rowSum (processRow2Col (false, & Matrix::sumRow));
+  const Matrix rowSum (processRow2Col (false, & Matrix::sumRow));
   
   // = sum_i |x_i|^2
-  const Real normSum = rowSum->sum () / (2 * (Real) rowsSize (false));
+  const Real normSum = rowSum. sum () / (2 * (Real) rowsSize (false));
   rowSum->putIncAll (- normSum);
   rowSum->putProdAll (1.0 / (Real) rowsSize (false));
   // rowSum: |x_i|^2
@@ -2621,8 +2647,8 @@ Real Matrix::sqrDistance2centeredSimilarity ()
   // x_i^t * x_j
   FOR (size_t, row, rowsSize (false))
   FOR (size_t, col, rowsSize (false))
-    put (false, row, col, (  rowSum->get (false, row, 0) 
-                           + rowSum->get (false, col, 0) 
+    put (false, row, col, (  rowSum. get (false, row, 0) 
+                           + rowSum. get (false, col, 0) 
                            - get (false, row, col)
                           ) / 2
         );
@@ -2698,22 +2724,22 @@ void Matrix::similarity2evolutionDistance (Prob p_chance)
 
 
 
-void Matrix::centerSimilarity (Matrix* &rowMean,
+void Matrix::centerSimilarity (Matrix &rowMean,
                                Real &totalMean)
 {
   ASSERT (isSymmetric ());
 	ASSERT (defined ());
       
   rowMean = processRow2Col (false, & Matrix::sumRow);
-  rowMean->putProdAll (1.0 / (Real) rowsSize (false));
+  rowMean. putProdAll (1.0 / (Real) rowsSize (false));
 
-  totalMean = rowMean->sum () / (Real) rowsSize (false);
+  totalMean = rowMean. sum () / (Real) rowsSize (false);
 
   FOR (size_t, row, rowsSize (false))
   FOR (size_t, col, rowsSize (false))
     putInc (false, row, col, (  totalMean
-                              - rowMean->get (false, row, 0) 
-                              - rowMean->get (false, col, 0)));
+                              - rowMean. get (false, row, 0) 
+                              - rowMean. get (false, col, 0)));
 }
 
 

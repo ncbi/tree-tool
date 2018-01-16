@@ -4133,7 +4133,7 @@ void MultiNormal::estimate ()
   sigmaExact. lower2upper (false);
   
   // Centering
-  Matrix mu2 (false, getDim (), getDim ());
+  Matrix mu2 (getDim ());
   mu2. multiply (false, mu, false, mu, true);
   sigmaExact. add (false, mu2, false, -1);
   
@@ -4481,7 +4481,7 @@ void Mixture::getVC (Matrix &vc) const
   NOT_IMPLEMENTED;
 #else	
 	vc. putAll (0);
-	Matrix vcComp (false, getDim (), getDim ());
+	Matrix vcComp (getDim ());
 	for (const Component* comp : components)
 	{
 		comp->distr->getVC (vcComp);
@@ -5671,7 +5671,7 @@ void Canonical::qc () const
     
     if (false)  // --> getError () ??
     {
-      Matrix m (false, getOutDim (), getOutDim ());
+      Matrix m (getOutDim ());
       
       m. multiplyBilinear (false, within. sigmaExact, false, basis, false);
       FOR (size_t, row, getOutDim ())

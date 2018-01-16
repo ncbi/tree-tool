@@ -75,10 +75,11 @@ struct ThisApplication : Application
 
         Matrix& matr = const_cast <RealAttr2*> (sim) -> matr;
         ASSERT (matr. defined ());
-        Matrix* rowMean = nullptr;
-        Real totalMean;
-        matr. centerSimilarity (rowMean, totalMean);
-        delete rowMean;
+        {
+	        Matrix rowMean;
+	        Real totalMean;
+	        matr. centerSimilarity (rowMean, totalMean);
+	      }
         
         // Normalization
         const Real k = matr. getTrace () / (Real) ds. objs. size ();

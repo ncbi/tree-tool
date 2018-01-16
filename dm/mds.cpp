@@ -166,7 +166,7 @@ struct ThisApplication : Application
         Matrix& matr = sim->matr;
         if (const size_t missings = matr. undefined2mean ())
           ds. comments << "# Missings converted to row/column means: " + toString (missings);
-        Matrix* rowMean = nullptr;
+        Matrix rowMean;
         Real totalMean;
     	  switch (attrType)
         {
@@ -179,7 +179,6 @@ struct ThisApplication : Application
           	      break;
           default: throw runtime_error ("No attrType");
         }
-        delete rowMean;
       }
     }
     ASSERT (sim);
@@ -213,10 +212,9 @@ struct ThisApplication : Application
       }
       RealAttr2* simExtra = getSimilarity (sp, "simExtra", ds);
       sim->matr. add (false, simExtra->matr, false, 1);
-      Matrix* rowMean = nullptr;
+      Matrix rowMean;
       Real totalMean;
       sim->matr. centerSimilarity (rowMean, totalMean);
-      delete rowMean;
     }
 
     if (false)
@@ -232,10 +230,9 @@ struct ThisApplication : Application
           matr. putInc (false, row, col, norm. rand ());
           matr. put (false, col, row, matr. get (false, row, col));
         }
-      Matrix* rowMean = nullptr;
+      Matrix rowMean;
       Real totalMean;
       matr. centerSimilarity (rowMean, totalMean);
-      delete rowMean;
       matr. print (cout);
     }
     

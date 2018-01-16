@@ -576,7 +576,7 @@ bool FuncMult::optimizeMarquardt (bool         Min,
 
 
   MVector Gradient (maxArgNum);
-  Matrix Hessian (false, maxArgNum, maxArgNum);
+  Matrix Hessian (maxArgNum);
   MVector XNew (maxArgNum);
   bool Stop = false;
   unsigned short iter;
