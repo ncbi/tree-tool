@@ -187,6 +187,7 @@ struct ThisApplication : Application
 		}
 		
 		
+		// MATLAB: ~4000 times faster (with 8 cores)
 		{
 			ifstream f ("data/masten_60.txt");
 		  Matrix mat (false, f, true);
@@ -211,11 +212,52 @@ struct ThisApplication : Application
 	      }
 	    }
 
-      if (false)
+      if (Chronometer::enabled)
       {
 	      const Chronometer_OnePass cop ("sqrt(matrix)");  
 	      FOR (size_t, i, 100)
 				  mat. getSqrt ();
+		  }
+		  
+		  
+		  if (false)
+		  {
+			  Eigens ei (mat, mat. rowsSize (), 1, 0, 1e-5, 10000);   // PAR
+			  ei. values. print (cout);
+			  cout << endl;
+		  			  	
+		  	// Choleski iterations
+	      const Chronometer_OnePass cop ("Choleski iterations");  
+	      FOR (size_t, tries, 100)
+	      {
+	        Matrix prod (mat);
+	        size_t iter = 0;
+	        for (;;)
+	        {
+	        	iter++;
+				  	Common_sp::AutoPtr<Matrix> ch (prod. getCholesky (false));
+		        prod. multiply (false, *ch, true, *ch, false);
+		        // Sum of off-diagonal elements
+		        Real s = 0;
+		        FOR (size_t, i, prod. rowsSize (false))
+			        FOR (size_t, j, prod. rowsSize (false))
+			          if (i != j)
+			          	s += abs (prod. get (false, i, j));
+			      if (s / sqr ((Real) prod. rowsSize (false)) < 1e-6)  // PAR   
+			      	break;
+			    }
+			    cout << iter << endl;  // ??
+			    Vector<Real> vec;  vec. reserve (prod. rowsSize (false)); 
+	        FOR (size_t, i, prod. rowsSize (false))
+	          vec << prod. getDiag (i);
+	        vec. sort ();
+	        if (false)
+ 	        {
+		        for (const Real x : vec)
+		          cout << ' ' << x;
+		        cout << endl;
+		      }
+	      }
 		  }
 		}
 	}
