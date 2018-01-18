@@ -1556,7 +1556,8 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (absCriterion2str ());
         Unverbose unv;
-        optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std /*static_cast <const Steiner*> (leaf->getAncestor (subgraphDepth))*/);
+      //if (! topology)  ??
+        optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
         // reinsert ??
       #ifndef NDEBUG
         // ??
@@ -4491,22 +4492,27 @@ void DistTree::removeLeaf (Leaf* leaf)
     if (! parent)
       parent = root;
   }  
+
     
-  for (Dissim& dissim : dissims)
-    if (dissim. hasLeaf (leaf))
-    {
-      absCriterion -= dissim. getAbsCriterion ();
-      dissim. mult = 0;
-    }
-  maximize (absCriterion, 0.0);
-
-  qcPaths (); 
-
+  if (optimizable ())
   {
-    Unverbose unv;
-    ASSERT (parent);
-    optimizeSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), 2 * areaRadius_std /*static_cast <const Steiner*> (parent->getAncestor (subgraphDepth))*/);  
-  }
+	  for (Dissim& dissim : dissims)
+	    if (dissim. hasLeaf (leaf))
+	    {
+	      absCriterion -= dissim. getAbsCriterion ();
+	      dissim. mult = 0;
+	    }
+	  maximize (absCriterion, 0.0);
+	
+	  qcPaths (); 
+	
+	  {
+	    Unverbose unv;
+	    ASSERT (parent);
+	    optimizeSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), 2 * areaRadius_std);  
+	  }
+	}
+
 
   toDelete. deleteData ();
 }

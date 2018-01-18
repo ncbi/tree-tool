@@ -134,32 +134,36 @@ struct ThisApplication : Application
     cout << endl;
 
 
+    if (! removeFName. empty ())
+    {
+      cout << endl << "Removing ..." << endl;
+      {
+        LineInput f (removeFName, 10000, 1);
+        Progress prog;
+        while (f. nextLine ())
+        {
+          trim (f. line);
+          const Leaf * leaf = findPtr (tree->name2leaf, f. line);
+          if (! leaf)
+          {
+            cout << "Leaf " << f. line << " not found" << endl;
+            continue;
+          }
+          tree->removeLeaf (const_cast <Leaf*> (leaf));
+          if (tree->optimizable ())
+            prog (tree->absCriterion2str ());
+          else
+          	prog ();
+        }
+      }
+	    if (tree->optimizable ())
+        tree->reportErrors (cout);
+      tree->qc ();
+    }
+
+
     if (tree->optimizable ())
     {
-      if (! removeFName. empty ())
-      {
-        cout << endl << "Removing ..." << endl;
-        {
-          LineInput f (removeFName, 10000, 1);
-          Progress prog;
-          while (f. nextLine ())
-          {
-            trim (f. line);
-            const Leaf * leaf = findPtr (tree->name2leaf, f. line);
-            if (! leaf)
-            {
-              cout << "Leaf " << f. line << " not found" << endl;
-              continue;
-            }
-            tree->removeLeaf (const_cast <Leaf*> (leaf));
-            prog (real2str (tree->absCriterion, criterionDecimals));  
-          }
-        }
-        tree->reportErrors (cout);
-        tree->qc ();
-      }
-
-
       if (topology)
       {
         const size_t leaves = tree->root->getLeavesSize ();
@@ -234,7 +238,7 @@ struct ThisApplication : Application
           {
             f << leaf->name << endl;
             tree->removeLeaf (const_cast <Leaf*> (leaf));
-            prog (real2str (tree->absCriterion, criterionDecimals));  
+            prog (tree->absCriterion2str ());
           }
         }
         tree->reportErrors (cout);
@@ -454,8 +458,6 @@ struct ThisApplication : Application
 
     if (! remove_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "remove_outliers");  
-    if (! removeFName. empty ())  // Parameter is performed above  
-      checkOptimizable (*tree, "remove");  // ??
 	}
 };
 
