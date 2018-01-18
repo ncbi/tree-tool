@@ -1499,11 +1499,13 @@ DistTree::DistTree (const string &dataDirName,
       LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
       while (f. nextLine ())
       {
-        const string name1 = findSplit (f. line, '\t');
-        const string name2 = findSplit (f. line, '\t');
+      	replace (f. line, '\t', ' ');
+        const string name1 = findSplit (f. line);
+        const string name2 = findSplit (f. line);
         if (name2. empty ())
-          throw runtime_error ("Empty name2");
-        ASSERT (name1 < name2);
+          throw runtime_error ("Line " + toString (f. lineNum) + ": Empty name2");
+        if (name1 >= name2)
+          throw runtime_error ("Line " + toString (f. lineNum) + ": name1 >= name2");
         if (outliers. containsFast (name1))
           continue;
         if (outliers. containsFast (name2))
@@ -3630,6 +3632,7 @@ size_t DistTree::optimizeLenNode ()
     subgraph. area2subPaths ();
     subgraph. finishSubPaths ();
     subgraph. qc ();    
+    // subpaths --> arc pairs ??
   
     Dataset starDs;
     starDs. objs. reserve (subgraph. subPaths. size ());
@@ -4722,7 +4725,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 
   const Sample sample (ds);
 
-  if (ds. objs. size () <= 30)  // PAR  
+  if (ds. objs. size () <= 30)  // PAR  // use always ??
   {  
     Normal /*Exponential*/ distr;
     outlier_min = exp (criterionAttr->distr2outlier (sample, distr, outlier_EValue_max));  
