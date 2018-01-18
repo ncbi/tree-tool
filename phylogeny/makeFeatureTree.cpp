@@ -30,7 +30,7 @@ struct ThisApplication : Application
   	  // Optimization
   	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
   	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
-  	  addKey ("output_core", "Find root, set root core and output file with root core feature ids");  	    
+  	  addKey ("output_core", "Find root, set root core and save file with root core feature ids");  	    
   
       // Output	    
   	  addKey ("output_tree", "Output file with the tree");
