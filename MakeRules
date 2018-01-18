@@ -1,4 +1,5 @@
-SimpleCPPFLAGS = -std=gnu++11 -ffloat-store \
+SimpleCPPFLAGS = -std=gnu++11 \
+  -malign-double -fno-math-errno \
   -Wall -Wextra \
   -Wcast-align -Wconversion -Wdeprecated-declarations -Wformat -Winit-self -Wlogical-op \
   -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
@@ -7,9 +8,10 @@ SimpleCPPFLAGS = -std=gnu++11 -ffloat-store \
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
   # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
+	# -ffloat-store  # slows down two-fold
+	# -ffinite-math-only: NAN problem
 # Disable debugging
 OptCPPFLAGS = -Werror $(SimpleCPPFLAGS) -O3 
-  # -Ofast: "/home/brovervv/code/cpp/dm/numeric.cpp", line 43: isNan (NAN)
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
 
 
