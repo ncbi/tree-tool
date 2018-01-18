@@ -223,8 +223,8 @@ public:
   Real get (bool t,
             size_t row,
             size_t col) const
-    { swapRowCol (t, row, col);
-      return rows [row] [col]; 
+    { //swapRowCol (t, row, col);
+      return t ? rows [col] [row] : rows [row] [col]; 
     }
   bool get (bool t,
             size_t row, 
@@ -240,8 +240,11 @@ public:
             size_t row,
             size_t col,
             Real a)
-    { swapRowCol (t, row, col);
-      rows [row] [col] = a;
+    { //swapRowCol (t, row, col);
+    	if (t)
+    		rows [col] [row] = a;
+      else
+        rows [row] [col] = a;
       psd = false;
     }
   void putDiag (size_t row,
