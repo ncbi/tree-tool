@@ -19,6 +19,7 @@ all:	\
   binomialCdf \
   char2attr \
   clust \
+  count \
   dataset_test \
   distTriangle \
   dm2objs \
@@ -83,10 +84,16 @@ char2attr:	$(char2attrOBJS)
 	$(CXX) -o $@ $(char2attrOBJS) $(LIBS)
 	$(ECHO)
 
-clust.o:  $(DM_HPP) 
+clust.o:	$(DM_HPP) 
 clustOBJS=clust.o $(DM_OBJ) 
 clust:	$(clustOBJS)
 	$(CXX) -o $@ $(clustOBJS) $(LIBS)
+	$(ECHO)
+
+count.o:	$(DM_DIR)/numeric.hpp $(COMMON_HPP)
+countOBJS=count.o $(NUMERIC_OBJ) 
+count:	$(countOBJS)
+	$(CXX) -o $@ $(countOBJS) $(LIBS)
 	$(ECHO)
 
 dataset_test.o:  $(DM_HPP)

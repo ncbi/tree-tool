@@ -1809,7 +1809,7 @@ int Application::run (int argc,
   	}
   
   
-    if (programArgs. size () == 1)
+    if (! positionals. empty () && programArgs. size () == 1)
     {
       cout << getInstruction () << endl;
       return 1;
