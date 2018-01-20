@@ -8,13 +8,17 @@
 
 #define FOR_START(type,i,start,end)  for (type i = (start); i < (end); i++)  
 #define FOR(type,i,end)  FOR_START (type, i, 0, (end))
+// Fast FOR: precomputed end
+#define FFOR_START(type,i,start,end)  for (type i = (start), i ## _end_ = (end); i < i ## _end_; i++)  
+#define FFOR(type,i,end)  FFOR_START (type, i, 0, (end))
+//
 #define FOR_REV_END(type,i,end,start)  for (type i = (start); i-- > (end);)  
 #define FOR_REV(type,i,start)  FOR_REV_END(type, i, 0, (start))
 // FOR(type,i,a) and FOR_REV(type,i,a) iterate over the same i
 // FOR_START(type,i,a,b) and FOR_REV_END(type,i,a,b) iterate over the same i
 
-#define FOR_CHAR(i,s,c)  for (size_t i = 0; ((c) = (s) [i]); i++)
-#define FOR_STRING(i,s)  FOR (size_t, i, (s). size ())
+//#define FOR_CHAR(i,s,c)  for (size_t i = 0; ((c) = (s) [i]); i++)
+//#define FOR_STRING(i,s)  FOR (size_t, i, (s). size ())
 
 #define ITER(ContainerType,iter,container) \
   for (ContainerType::iterator iter = (container). begin (); iter != (container). end (); iter++)
