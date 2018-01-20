@@ -22,6 +22,10 @@ namespace Common_sp
 bool Chronometer::enabled = false;
 bool qc_on = false;
 
+vector<string> programArgs;
+string programName;
+ostream* logPtr = nullptr;
+
 
 
 namespace 
@@ -34,7 +38,6 @@ void segmFaultHandler (int /*sig_num*/)
 }
 
 }
-
 
 
 
@@ -66,13 +69,6 @@ namespace
 
 
 
-
-vector<string> programArgs;
-string programName;
-ostream* logPtr = nullptr;
-
-
-
 void errorExit (const char* msg,
                 bool segmFault)
 // alloc() may not work
@@ -93,8 +89,8 @@ void errorExit (const char* msg,
     #endif
 	    << "Progam name: " << programName << endl
 	    << "Command line:";
-	 FOR (size_t, i, programArgs. size ())
-	   *os << " " << programArgs [i];
+	 for (const string& s : programArgs)
+	   *os << " " << s;
 	 *os << endl;
 //system (("env >> " + logFName). c_str ());
 
@@ -1720,6 +1716,7 @@ string Application::getHelp () const
 int Application::run (int argc, 
                       const char* argv []) 
 {
+  ASSERT (programArgs. empty ());
 	try
   { 
     for (int i = 0; i < argc; i++)  

@@ -52,9 +52,21 @@ bool initCommon ();
   // Module initialization
   // Invoked automaticallly
 
-
-
 extern bool qc_on;
+
+
+extern vector<string> programArgs;
+extern string programName;
+extern ostream* logPtr;
+
+void errorExit (const char* msg,
+                bool segmFault = false);
+  // Input: programArgs, programName, logptr
+	// Update: *logPtr
+	// Invokes: if segmFault then abort() else exit(1)
+
+inline void errorExitStr (const string &msg)
+  { errorExit (msg. c_str ()); }
 
 
 
@@ -132,18 +144,6 @@ struct Chronometer_OnePass : Chronometer
 };
 	
 	
-
-extern vector<string> programArgs;
-extern string programName;
-extern ostream* logPtr;
-
-void errorExit (const char* msg,
-                bool segmFault = false);
-  // Update: *logPtr
-  // Invokes: if segmFault then abort() else exit(1)
-inline void errorExitStr (const string &msg)
-  { errorExit (msg. c_str ()); }
-
 
 
 template <typename T, typename S>
