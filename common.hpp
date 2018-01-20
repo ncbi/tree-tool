@@ -145,14 +145,12 @@ struct Chronometer_OnePass : Chronometer
 	
 	
 
-
 template <typename T, typename S>
   inline T const_static_cast (const S* s)
     { return static_cast <T> (const_cast <S*> (s)); }
 template <typename T, typename S>
   inline T const_static_cast (const S &s)
     { return static_cast <T> (const_cast <S&> (s)); }
-
 
 template <typename T>
   inline T* checkPtr (T* t)
@@ -162,10 +160,26 @@ template <typename T>
     }
 
 
+
 typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
 
 
+
+// bool
+
+inline void toggle (bool &b)
+  { b = ! b; }
+
+inline int getSign (bool b)
+  { return b ? 1 : -1; }
+
+inline bool boolPow (bool x, bool power)
+  { return power ? x : ! x; }
+
+
+
+// ebool - extended bool
 
 enum ebool {EFALSE = false, 
             ETRUE = true, 
@@ -180,10 +194,6 @@ inline bool operator<= (ebool a, ebool b)
   	return rank [a] <= rank [b];
   }
 
-inline void toggle (bool &b)
-  { b = ! b; }
-
-
 inline void toggle (ebool &b)
   { if (b == ETRUE)
       b = EFALSE;
@@ -192,8 +202,6 @@ inline void toggle (ebool &b)
   }
 
 
-inline int getSign (bool b)
-  { return b ? 1 : -1; }
 
 inline void advance (size_t &index, 
                      size_t size)
@@ -255,7 +263,9 @@ uint powInt (uint a,
   // Time: O(log(b))
 
 
+
 const size_t NO_INDEX = SIZE_MAX;
+
 
 
 // char
