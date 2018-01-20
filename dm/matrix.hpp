@@ -9,7 +9,7 @@
 
 #include "../common.hpp"
 #include "numeric.hpp"
-
+#include <valarray>
 
 
 namespace DM_sp
@@ -127,7 +127,8 @@ struct Matrix : Root
 // For time: n - # rows in a square matrix
 {
 protected:
-  Vector <Vector <Real> /*columns*/> rows;
+  valarray<Real> data;
+  size_t rowsSize_ {0};
   size_t colsSize {0};
 public:  
   bool psd {false};
@@ -136,35 +137,50 @@ public:
   Matrix (bool t,
           size_t maxRow,
           size_t maxCol) 
-    { init (t, maxRow, maxCol); }          
+    : data (maxRow * maxCol)
+    , rowsSize_ (t ? maxCol : maxRow)
+    , colsSize  (t ? maxRow : maxCol)
+    , psd (maxRow == maxCol)
+    {}
   explicit Matrix (size_t maxRow) 
-    { init (false, maxRow, maxRow); }          
+    : data (sqr (maxRow))
+    , rowsSize_ (maxRow)
+    , colsSize  (maxRow)
+    , psd (true)
+    {}
   Matrix (bool t,
           const Matrix &source,
           bool sourceT) 
-    { init (t, source. rowsSize (sourceT), source. rowsSize (! sourceT)); }
+    : data (  source. rowsSize (  sourceT) 
+    	      * source. rowsSize (! sourceT)
+    	     )
+    , rowsSize_ (source. rowsSize (boolPow (! sourceT, t)))
+    , colsSize  (source. rowsSize (boolPow (  sourceT, t)))
+    , psd (source. psd)
+    {}
     // Rows are not copied
   Matrix () 
-    { init (false, 0, 0); }
-  Matrix (const Matrix &source) 
-    { init (false, source. rowsSize (false), source. rowsSize (true));
-      copyDataCheck (false, source, false);
+    {}
+  Matrix (const Matrix &other) 
+    : data      (other. data)
+    , rowsSize_ (other. rowsSize_)
+    , colsSize  (other. colsSize)
+    , psd       (other. psd)
+    {}
+  void operator= (const Matrix &other)
+    { data      = other. data;
+      rowsSize_ = other. rowsSize_;
+      colsSize  = other. colsSize;
+      psd       = other. psd;
     }
-  void operator= (const Matrix &source)
-    { copyData (source); }
   Matrix* copy () const override
     { return new Matrix (*this); }
   Matrix (bool t,
           istream &f,
           bool square);
-    // Invokes: init(), loadSize(), loadData()
+    // Invokes: loadSize(), loadData()
     // See formatInstruction()
 private:
-  void init (bool t,
-             size_t maxRow,
-             size_t maxCol);
-    // rows[][] = 0
-    // psd = isSquare()
   void loadSize (istream &f,
                  bool square,
                  size_t &maxRow,
@@ -177,15 +193,9 @@ public:
              istream &f,
              bool square);
     // Invokes: loadSize(), loadData()
-  void reserve (bool t,
-                size_t maxRow,
-                size_t maxCol);
 	void resize (bool t,
                size_t maxRow,
-               size_t maxCol)
-    { // delData ();
-    	init (t, maxRow, maxCol);
-    }
+               size_t maxCol);
   static string formatInstruction (const string &fName) 
 	  { return   "Format of <" + fName + ">:\n" 
 	           + "  <# Rows> [<# Cols>]\n" 
@@ -223,9 +233,7 @@ public:
   Real get (bool t,
             size_t row,
             size_t col) const
-    { //swapRowCol (t, row, col);
-      return t ? rows [col] [row] : rows [row] [col]; 
-    }
+    { return data [t ? (col * colsSize + row) : (row * colsSize + col)]; }
   bool get (bool t,
             size_t row, 
             size_t col,
@@ -240,11 +248,7 @@ public:
             size_t row,
             size_t col,
             Real a)
-    { //swapRowCol (t, row, col);
-    	if (t)
-    		rows [col] [row] = a;
-      else
-        rows [row] [col] = a;
+    { data [t ? (col * colsSize + row) : (row * colsSize + col)] = a;
       psd = false;
     }
   void putDiag (size_t row,
@@ -291,7 +295,7 @@ public:
 
   // Basic info
   size_t rowsSize (bool t) const  
-    { return t ? colsSize : rows. size (); }
+    { return t ? colsSize : rowsSize_; }
   size_t minSize () const
     { return std::min (rowsSize (false), rowsSize (true)); }
   bool equalValueRow (bool t,
@@ -594,10 +598,6 @@ public:
                       const Matrix &source,
                       bool         sourceT);
     // Requires: equalLen()
-  void copyData (const Matrix &source)
-    { resize (false, source. rowsSize (false), source. rowsSize (true));
-      copyDataCheck (false, source, false);
-    }
   void copyShift (bool         t,
                   size_t       firstRow, 
                   size_t       firstCol,
@@ -905,12 +905,12 @@ struct MVector : Matrix
  
   size_t size () const
     { return rowsSize (false); }
-  void resize/*Vec*/ (size_t maxRow)
+  void resize (size_t maxRow)
     { Matrix::resize (false, maxRow, 1); }
   Real operator[] (size_t row) const
-    { return get (false, row, 0); }
+    { return data [row]; }
   Real& operator[] (size_t row)
-    { return rows [row] [0]; }
+    { return data [row]; }
 };
 
 

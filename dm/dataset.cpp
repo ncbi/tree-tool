@@ -1432,12 +1432,8 @@ RealAttr2::RealAttr2 (const string &name_arg,
 						          streamsize decimals_arg)
 : Attr2 (name_arg, ds_arg, true)
 , RealScale (decimals_arg)
-, matr ( false
-       , ds. objs. size ()
-       , ds. objs. size ()
-       )
+, matr (ds. objs. size ())
 { 
-  matr. reserve (false, ds. objs. capacity (), ds. objs. capacity ());
 	setMissingAll (); 
 }
 
@@ -4018,7 +4014,7 @@ void MultiNormal::setParamFunc ()
 	if (! cholesky. get ())
 	  return;
 
-  sigmaInv. copyData (sigmaInflated); 
+  sigmaInv = sigmaInflated; 
 	const Determinant det (sigmaInv. inverse ());
 	if (   det. get () <= 0
 	    || nullReal (det. getAverage () /*, 1e-5*/)  // PAR  

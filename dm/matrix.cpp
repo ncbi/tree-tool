@@ -230,35 +230,20 @@ void Determinant::qc () const
 
 ///////////////////////////////// Matrix ///////////////////////////////
 
-void Matrix::init (bool t,
-                   size_t maxRow,
-                   size_t maxCol)
-{
-//ASSERT (rows. empty ());
-
-  swapRowCol (t, maxRow, maxCol);
-  
-  rows. resize (maxRow);
-  FOR (size_t, row, maxRow)
-    rows [row]. resize (maxCol, NAN);
-    
-  colsSize = maxCol;
-  
-  psd = isSquare ();  
-}
-
-
-
 Matrix::Matrix (bool t,
                 istream &f,
                 bool square) 
 {
-  ASSERT (rows. empty ());
+  ASSERT (! data. size ());
 
   size_t maxRow, maxCol;
   loadSize (f, square, maxRow, maxCol); 
 
-  init (t, maxRow, maxCol);
+  swapRowCol (t, maxRow, maxCol);  
+  data. resize (maxRow * maxCol);
+  rowsSize_ = maxRow;    
+  colsSize = maxCol;  
+  psd = isSquare ();  
 
   loadData (t, f);
 }
@@ -292,13 +277,13 @@ void Matrix::loadData (bool t,
   ASSERT (! f. bad ());
 
   FOR (size_t, row, rowsSize (false))
-  FOR (size_t, col, rowsSize (true))
-  {
-    Real r;
-    if (! (f >> r). good ())
-      throw ios_base::failure (string("row ") + toString (row) + ", col " + toString (col));
-    put (t, row, col, r);
-  }
+	  FOR (size_t, col, rowsSize (true))
+	  {
+	    Real r;
+	    if (! (f >> r). good ())
+	      throw ios_base::failure (string("row ") + toString (row) + ", col " + toString (col));
+	    put (t, row, col, r);
+	  }
 }
 
 
@@ -319,25 +304,28 @@ void Matrix::load (bool t,
 
 
 
-void Matrix::reserve (bool t,
-                      size_t maxRow,
-                      size_t maxCol)
+void Matrix::resize (bool t,
+			               size_t maxRow,
+			               size_t maxCol)
 {
-  swapRowCol (t, maxRow, maxCol);
-  
-  rows. reserve (maxRow);
-  FOR (size_t, row, rowsSize (false))
-    rows [row]. reserve (maxCol);
+	Matrix m (t, maxRow, maxCol);
+	m. psd =    psd 
+	         && m. isSquare () 
+	         && maxRow <= rowsSize (false);
+	
+	FFOR (size_t, row, std::min (rowsSize_, m. rowsSize_))  
+	  FFOR (size_t, col, std::min (colsSize, m. colsSize))
+	    m. put (false, row, col, get (false, row, col));
+	
+	*this = m;
 }
 
 
 
 void Matrix::delData ()
 {
-  FOR (size_t, row, rowsSize (false))
-    rows [row]. clear ();
-  rows. clear ();
-  
+  data. resize (0);
+  rowsSize_ = 0;  
   colsSize = 0;
   psd = true;
 }
@@ -348,6 +336,7 @@ void Matrix::qc () const
 {
   if (! qc_on)
     return;
+  ASSERT (data. size () == rowsSize_ * colsSize);
   IMPLY (psd, isSymmetric ());
 }
 
@@ -416,33 +405,14 @@ void Matrix::insertRows (bool t,
   if (rowInc == 0)
     return;
 
-  const size_t oldSize = rowsSize (t);
-  ASSERT (firstRow <= oldSize);
-  if (t)
+  Matrix m (t, rowsSize (t) + rowInc, rowsSize (! t));
+  FOR (size_t, row, rowsSize (t))
   {
-    FOR (size_t, row, rowsSize (false))
-    {
-    //const size_t oldRowSize = rowsSize (false); ??
-      rows [row]. resize (oldSize + rowInc, NAN);  
-      FOR_REV_END (size_t, col, firstRow, oldSize)
-        rows [row] [col + rowInc] = rows [row] [col];
-      FOR_START (size_t, col, firstRow, firstRow + rowInc)
-        rows [row] [col] = NAN;
-    }
-    colsSize += rowInc;
-  }
-  else
-  {
-    const size_t colSize_ = rowsSize (true);
-    rows. resize (oldSize + rowInc);  
-    FOR_REV_END (size_t, row, firstRow, oldSize)
-      rows [row + rowInc] = rows [row];      
-    FOR_START (size_t, row, firstRow, firstRow + rowInc)
-      if (row >= oldSize)
-        rows [row]. resize (colSize_, NAN);
-      else
-        putRow (false, row, NAN);
-  }
+  	const size_t to_row = row + (row < firstRow ? 0 : rowInc);
+	  FOR (size_t, col, rowsSize (! t))
+	    m. put (t, to_row, col, get (t, row, col));
+	}
+	*this = m;
   
   psd = false;
 }
@@ -457,13 +427,16 @@ void Matrix::deleteRows (bool t,
     return;
 
   ASSERT (firstRow + rowDec <= rowsSize (t));
-  ASSERT (rowDec < rowsSize (t));
+  ASSERT (rowDec <= rowsSize (t));
   
-  if (t)
-    FOR (size_t, row, rowsSize (false))
-      rows [row]. eraseMany (firstRow, firstRow + rowDec);
-  else
-    rows. eraseMany (firstRow, firstRow + rowDec);
+  Matrix m (t, rowsSize (t) - rowDec, rowsSize (! t));
+  FOR (size_t, row, m. rowsSize (t))
+  {
+  	const size_t from_row = row + (row < firstRow ? 0 : rowDec);
+	  FOR (size_t, col, m. rowsSize (! t))
+	    m. put (t, row, col, get (t, from_row, col));
+	}
+	*this = m;
 
   psd = false;
 }
@@ -2891,7 +2864,10 @@ Eigens::Eigens (const Matrix &matr,
     {
       Unverbose unv1;
       if (verbose ())
+      {
         work. saveText (cout);
+        eigen->saveText (cout);
+      }
     }
 
     ASSERT (work. psd == matr. psd);
