@@ -10,6 +10,7 @@ using namespace DM_sp;
 
 
 
+
 namespace
 {
 
@@ -45,35 +46,49 @@ struct ThisApplication : Application
 		  m. put (false, 3, 1, -9);
 		  m. put (false, 3, 2, 2);
 		  m. put (false, 3, 3, 1);
+		  m. qc ();
 		  pd. multiply (false, m, false, m, true);
+		  pd. qc ();
   	  if (verbose ())
 		  {
-		  	cout << endl << "PD: " << endl;
+		  	cout << endl << "PD:" << endl;
 	  	  pd. print (cout);
 	  	}
 		}
 	  
-	  Common_sp::AutoPtr <Matrix> L (pd. getCholesky (false));
-	  ASSERT (L. get ());
-	  if (verbose ())
-	    L->print (cout);
-	  
-	  Matrix m1 (false, pd, false);
-	  m1. multiply (false, *L, false, *L, true);
-	  if (verbose ())
-  	  m1. print (cout);
-	  ASSERT (pd. maxAbsDiff (false, m1, false) < 1e-3);
-	  
-	  {
-	    if (verbose ())
-	      cout << "eigens1" << endl;
-	    ASSERT (pd. psd);
-		  Eigens eigens (pd, 4, 1, 0, 1e-6, 1000/*, true*/);
-		  Matrix back (false, pd, false);
-		  eigens. restore (back);
+    {
+		  Common_sp::AutoPtr <const Matrix> L (pd. getCholesky (false));
+		  ASSERT (L. get ());
+		  L->qc ();
 		  if (verbose ())
 		  {
-		  	cout << endl << "back: " << endl;
+		  	cout << endl << "Choleski:" << endl;
+		    L->print (cout);
+		  }
+	  
+		  Matrix m1 (false, pd, false);
+		  m1. multiply (false, *L, false, *L, true);
+		  m1. qc ();
+		  if (verbose ())
+		  {
+		  	cout << endl << "Back to PD:" << endl;
+	  	  m1. print (cout);
+	  	}
+		  ASSERT (pd. maxAbsDiff (false, m1, false) < 1e-3);
+		}
+			  
+	  {
+		  if (verbose ())
+		  	cout << endl << "Eigens1:" << endl;
+	    ASSERT (pd. psd);
+		  const Eigens eigens (pd, 4, 1, 0, 1e-6, 1000/*, true*/);
+		  eigens. qc ();
+		  Matrix back (false, pd, false);
+		  eigens. restore (back);
+		  back. qc ();
+		  if (verbose ())
+		  {
+		  	cout << "Back form eigens to PD: " << endl;
 		    back. print (cout);
 		  }
 		  ASSERT (pd. maxAbsDiff (false, back, false) < 1e-3);
@@ -81,7 +96,7 @@ struct ThisApplication : Application
 
     {
       if (verbose ())
-        cout << "eigens2" << endl;
+        cout << endl << "eigens2" << endl;
   	  Matrix pd2 (4);  // Rank = 2
   	  {
   		  Matrix m (false, 2, 4);
@@ -97,6 +112,7 @@ struct ThisApplication : Application
   		  pd2. multiply (false, m, true, m, false);
   		}
   		ASSERT (pd2. psd);
+  		pd2. qc ();
   		Eigens eigens (pd2, 4, 1, 0, 1e-6, 1000/*, true*/);
   		eigens. qc ();
       ASSERT (eigens. getDim () == 2);
@@ -110,7 +126,7 @@ struct ThisApplication : Application
 		
 		{
       if (verbose ())
-        cout << "eigens3" << endl;
+        cout << endl << "eigens3" << endl;
   	  Matrix m (3);  
 		  m. put (false, 0, 0, 5);
 		  m. put (false, 0, 1, -3);
@@ -128,6 +144,7 @@ struct ThisApplication : Application
 		  if (verbose ())
 		    m. print (cout);
 		  ASSERT (! m. psd);
+		  m. qc ();
   		Eigens eigens (m, 3, 1, 0, 1e-6, 1000/*, false*/);
   		eigens. qc ();
   	  if (verbose ())
@@ -148,6 +165,7 @@ struct ThisApplication : Application
 			mat. put (false, 0, 1,  9);
 			mat. put (false, 1, 0, 11);
 			mat. put (false, 1, 1,  3);
+			mat. qc ();
 			const Prob pValue = exp (mat. getLnFisherExact (true));
 			ASSERT_EQ (pValue, 0.00137973, 1e-8);
 		}
@@ -159,6 +177,7 @@ struct ThisApplication : Application
 			mat. put (false, 1, 1, 20);
 			mat. put (false, 0, 0,  5);
 			mat. put (false, 0, 1, 25);
+			mat. qc ();
 			const Prob pValue = exp (mat. getLnFisherExact (true));
 			ASSERT_EQ (pValue, 0.1163, 1e-4);
 			const Real chi2 = mat. getChi2 ();
@@ -182,14 +201,15 @@ struct ThisApplication : Application
 			mat. put (false, 4, 0, 19);
 			mat. put (false, 4, 1, 17);
 			mat. put (false, 4, 2,  2);
+			mat. qc ();
 			const Real chi2 = mat. getChi2 ();
 			ASSERT_EQ (chi2, 40.9748, 1e-4);
 		}
 		
 		
-		// MATLAB: ~4000 times faster (with 8 cores)
+		// MATLAB: ~1000 times faster (with 8 cores)
 		{
-			ifstream f ("data/masten_60.txt");
+			ifstream f ("data/masten_60.mat");
 		  Matrix mat (false, f, true);
 		  mat. psd = true;
 		  mat. qc ();
@@ -218,7 +238,6 @@ struct ThisApplication : Application
 	      FOR (size_t, i, 100)
 				  mat. getSqrt ();
 		  }
-		  
 		  
 		  if (false)
 		  {

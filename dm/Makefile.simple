@@ -147,7 +147,7 @@ logreg_test:	$(logreg_testOBJS)
 matrix_test.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
 matrix_testOBJS=matrix_test.o $(NUMERIC_OBJ) $(DM_DIR)/matrix.o
 matrix_test:	$(matrix_testOBJS)
-	$(CXX) -o $@ $(matrix_testOBJS) $(LIBS)
+	$(CXX) -o $@ $(matrix_testOBJS) $(LIBS)  
 	$(ECHO)
 
 mds.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
