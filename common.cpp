@@ -574,30 +574,18 @@ size_t strMonth2num (const string& month)
   }
   
 	size_t i = NO_INDEX;
-	     if (month == "Jan")
-		i = 0;
-  else if (month == "Feb")
-		i = 1;
-  else if (month == "Mar")
-		i = 2;
-  else if (month == "Apr")
-		i = 3;
-  else if (month == "May")
-		i = 4;
-  else if (month == "Jun")
-		i = 5;
-  else if (month == "Jul")
-		i = 6;
-  else if (month == "Aug")
-		i = 7;
-  else if (month == "Sep")
-		i = 8;
-  else if (month == "Oct")
-		i = 9;
-  else if (month == "Nov")
-		i = 10;
-  else if (month == "Dec")
-		i = 11;
+	     if (month == "Jan")  i = 0;
+  else if (month == "Feb")  i = 1;
+  else if (month == "Mar")  i = 2;
+  else if (month == "Apr")  i = 3;
+  else if (month == "May")  i = 4;
+  else if (month == "Jun")  i = 5;
+  else if (month == "Jul")  i = 6;
+  else if (month == "Aug")  i = 7;
+  else if (month == "Sep")  i = 8;
+  else if (month == "Oct")  i = 9;
+  else if (month == "Nov")  i = 10;
+  else if (month == "Dec")  i = 11;
   else 
   	ERROR;
   	
