@@ -767,16 +767,6 @@ Real Matrix::sumRow (bool t,
 
 
 
-Real Matrix::sum () const
-{
-  Real s = 0.0;
-  FOR (size_t, row, rowsSize (false))
-    s += sumRow (false, row);
-  return s;
-}
-
-
-
 void Matrix::posNegSumRow (bool  t,
                            size_t row,
                            Real &PosSum, 
@@ -849,26 +839,6 @@ Real Matrix::getMinRow (bool t,
     if (get (t, row, col, a))
       Common_sp::minimize (r, a);
   return r;
-}
-
-
-
-Real Matrix::max () const
-{
-  Real maxValue = - INF;
-  FOR (size_t, row, rowsSize (false))
-    Common_sp::maximize (maxValue, getMaxRow (false, row));
-  return maxValue;
-}
-
-
-
-Real Matrix::min () const
-{
-  Real minValue = INF;
-  FOR (size_t, row, rowsSize (false))
-    Common_sp::minimize (minValue, getMinRow (false, row));
-  return minValue;
 }
 
 
@@ -1610,15 +1580,6 @@ void Matrix::putRow (bool t,
 
 
 
-void Matrix::putAll (Real r)
-{
-  FOR (size_t, row, rowsSize (false))
-    putRow (false, row, r);
-  psd = isSquare () && (isNan (r) || r >= 0);
-}
-
-
-
 size_t Matrix::undefined2ValueRow (bool t,
 	                                 size_t row,
 	                                 Real r)
@@ -1706,15 +1667,6 @@ void Matrix::putIncRow (bool  t,
 {
   FOR (size_t, col, rowsSize (! t))
     putInc (t, row, col, delta);
-}
-
-
-
-void Matrix::putIncAll (Real delta)
-{
-  Keep<bool> kp (psd);
-  FOR (size_t, row, rowsSize (false))
-    putIncRow (false, row, delta);
 }
 
 
@@ -1842,15 +1794,6 @@ void Matrix::putProdRow (bool  t,
 {
   FOR (size_t, col, rowsSize (! t))
     putProd (t, row, col, factor);
-}
-
-
-
-void Matrix::putProdAll (Real factor)
-{
-  Keep<bool> kp (psd);
-  FOR (size_t, row, rowsSize (false))
-    putProdRow (false, row, factor);
 }
 
 

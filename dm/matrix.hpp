@@ -386,7 +386,8 @@ public:
   // Sum
   Real sumRow (bool t,
                size_t row) const;
-  Real sum () const;
+  Real sum () const
+    { return data. sum (); }
   void posNegSumRow (bool t,
                      size_t row,
                      Real &PosSum, 
@@ -410,8 +411,10 @@ public:
                   size_t row) const;
   Real getMinRow (bool t,
                   size_t row) const;
-  Real max () const;
-  Real min () const;
+  Real max () const
+    { return data. size () ? data. max () : -INF; }
+  Real min () const
+    { return data. size () ? data. min () : INF; }
   Real maxAbsRow (bool t,
                   size_t row) const;
   Real minAbsRow (bool t,
@@ -633,7 +636,10 @@ public:
   void putRow (bool t,
                size_t row,
                Real r);
-  void putAll (Real R);
+  void putAll (Real r)
+		{ data = r;
+		  psd = isSquare () && (isNan (r) || r >= 0);
+		}
   void clear ()
     { putAll (NAN); }
   size_t undefined2ValueRow (bool t,
@@ -657,7 +663,8 @@ public:
   void putIncRow (bool t,
                   size_t row,
                   Real delta);
-  void putIncAll (Real delta);
+  void putIncAll (Real delta)
+    { data += delta; }
   void putIncSeries (bool t,
                      size_t row,
                      Real InitValue, 
@@ -697,7 +704,8 @@ public:
   void putProdRow (bool t,
                    size_t row,
                    Real factor);
-  void putProdAll (Real factor);
+  void putProdAll (Real factor)
+    { data *= factor; }
   void multiply (bool         t,
                  const Matrix &m1, 
                  bool         t1,
