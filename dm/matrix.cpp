@@ -1762,12 +1762,28 @@ void Matrix::add (bool         t,
   
   const bool psd_new = psd && source. psd && factor >= 0;
 
+  if (t == sourceT)
+  {
+  	if (factor == 1)
+  	{
+  		data += source. data;
+  		goto done;
+  	}
+    else
+    	if (factor == -1)
+    	{
+	  		data -= source. data;
+	  		goto done;
+	  	}
+	}
+
   FOR (size_t, row, rowsSize (t)) 
     addRow (         t,       row
            , source, sourceT, row
            , factor
            );
 
+done:
   psd = psd_new;
 }
 
