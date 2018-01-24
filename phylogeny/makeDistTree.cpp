@@ -202,8 +202,12 @@ struct ThisApplication : Application
               tree->optimizeIter (0, output_tree);
             else
             {
-              tree->optimizeSubgraphs (areaRadius_std);  
-                // optimizeSubtgraphsIter() ??
+            	const size_t iter_max = (size_t) log2 ((Real) leaves) / areaRadius_std + 1;  // PAR
+            	FOR (size_t, iter, iter_max)
+            	{
+            		cout << "Iteration " << iter + 1 << '/' << iter_max << " ..." << endl;
+	              tree->optimizeSubgraphs (areaRadius_std);  
+	            }
             }
             tree->reportErrors (cout);
           }
@@ -418,6 +422,7 @@ struct ThisApplication : Application
       cout << "# Ancestor-based requests: " << pairs. size () << endl;
 
     #if 0
+      ??
       {      
         const VectorPtr<Leaf> depthOutliers (tree->findDepthOutliers ());
         const Vector<Pair<const Leaf*>> depthPairs (tree->leaves2missingLeafPairs (depthOutliers));
