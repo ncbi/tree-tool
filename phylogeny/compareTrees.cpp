@@ -68,6 +68,7 @@ Leaves tree2leaves (const Tree &tree,
         leaves << node->getName ();
   }
   leaves. sort ();
+  ASSERT (leaves. isUniq ());
   return leaves;
 }
 
@@ -82,11 +83,9 @@ void setNode2leaves (const Tree::TreeNode* node)
 // Output: node2leaves
 {
   ASSERT (node);
+  ASSERT (node2leaves [node]. empty ());
   if (node->isLeafType ())
-  {
-    ASSERT (node2leaves [node]. empty ());
     node2leaves [node] << node->getName ();
-  }
   else 
   	for (const DiGraph::Arc* arc : node->arcs [false])
   	{
@@ -95,6 +94,7 @@ void setNode2leaves (const Tree::TreeNode* node)
   	  node2leaves [node] << node2leaves [child];
   	}
   node2leaves [node]. sort ();
+  ASSERT (node2leaves [node]. isUniq ());
 }
 
 
@@ -110,10 +110,13 @@ void adjustNode2leaves (const Tree &tree,
                         const Leaves &allLeaves)
 // Update: node2leaves
 {
+  ASSERT (allLeaves. searchSorted);
+  
  	const size_t all = allLeaves. size ();
   for (auto it : node2leaves)
   {
     const Tree::TreeNode* node = it. first;
+    ASSERT (node->graph);
     if (& node->getTree () != & tree)
       continue;
     Leaves& leaves = it. second;
@@ -172,6 +175,7 @@ bool operator< (const Signature &a,
 
 Signature leaves2signature (const Leaves &leaves)
 {
+  ASSERT (leaves. searchSorted);
   return leaves. empty () 
            ? Signature ()
            : Signature (leaves. size (), leaves. front (), leaves. back ());
@@ -185,7 +189,7 @@ Signature leaves2signature (const Leaves &leaves)
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Remove " + real2str(DistTree_sp::rareProb, 2) + "-infrequent leaves from tree 1, compare two trees, print matching and mismatching interior nodes for tree 1")
+	: Application ("Remove " + real2str(DistTree_sp::rareProb, 2) + "-infrequent leaves from tree 1, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1")
 	{
 		// Input
 	  addPositional ("input_tree1", "Tree 1");
@@ -289,11 +293,20 @@ struct ThisApplication : Application
       cout << endl;
       
       cout << "Deleting from " << input_tree2 << endl;
-      const size_t n2 = tree2->restrictLeaves (leaves1, false);
+      const size_t n2 = tree2->restrictLeaves (leaves1, true);
       cout << "# Deleted: " << n2 << endl;
       cout << endl;
+      
+    //tree1->qc ();
+      tree2->qc ();
     }
-    
+    {
+    	const auto pred = [] (const DiGraph::Node* n) { return static_cast <const Tree::TreeNode*> (n) -> isLeafType (); };
+      const auto leaf_num_1 = Common_sp::count_if (tree1->nodes, pred);
+      const auto leaf_num_2 = Common_sp::count_if (tree2->nodes, pred);
+      ASSERT (leaf_num_1 == leaf_num_2);
+    }
+        
     setNode2leaves (tree1->root);
     setNode2leaves (tree2->root); 
     {
@@ -311,17 +324,23 @@ struct ThisApplication : Application
 
 
     map <const Tree::TreeNode* /*tree1*/, const Tree::TreeNode* /*tree2*/> node2node;  
-      // !nullptr
-      // value is not deterministic ??
+      // key: !nullptr
+      // value: not deterministic <= Leaf's in tree2 are removed 
    	for (const Tree::TreeNode* node1 : interiorArcNodes1)  
    	{
-   	  const VectorPtr<Tree::TreeNode> nodes2 (signature2nodes2 [leaves2signature (node2leaves [node1])]);
-   	  for (const Tree::TreeNode* node2 : nodes2)
-     	  if (node2leaves [node1] == node2leaves [node2])
-   	    {
- 	        node2node [node1] = node2;
-   	      break;
-   	    }
+   		const Signature sig (leaves2signature (node2leaves [node1]));
+      if (sig. leaves)
+      {
+	   	  const VectorPtr<Tree::TreeNode> nodes2 (signature2nodes2 [sig]);
+	   	  for (const Tree::TreeNode* node2 : nodes2)
+	     	  if (node2leaves [node1] == node2leaves [node2])
+	   	    {
+	 	        node2node [node1] = node2;
+	   	      break;  
+	   	    }
+	   	}
+	   	else 
+	   		node2node [node1] = nullptr;
    	}
 
    	
@@ -333,7 +352,6 @@ struct ThisApplication : Application
     // Correlation between arc lengths of node2node keys and values
     // Distribution of arc lengths of non-matching node2node keys
     // Distribution of arc lengths of non-matching node2node values
-    // Test on an artificial random tree
 	}
 };
 
