@@ -360,8 +360,9 @@ struct Tree : DiGraph
 		    return parent_->getPrevAncestor (ancestor);
 		  }
 		size_t getSubtreeSize (bool countLeaves) const;
-		  // Does not count *this
-		  // Return: if countLeaves then 0 <=> isLeaf()
+		  // Return: # Arc's in the subtree
+		  //         0 <= isLeaf()
+		  // Input: !countLeaves => leaf arcs are ignored
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
 		void setLeaves ();
