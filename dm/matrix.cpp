@@ -29,7 +29,7 @@ Real multiplyVec (const Matrix &m1,
 
   Real s = 0.0;
   Real r1, r2;
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
@@ -50,7 +50,7 @@ Real sumSqrDifferenceVec (const Matrix &m1,
 
   Real s = 0;
   Real r1, r2;
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
@@ -71,7 +71,7 @@ Real sumAbsDifferenceVec (const Matrix &m1,
 
   Real s = 0;
   Real r1, r2;
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
@@ -92,7 +92,7 @@ Real maxAbsDifferenceVec (const Matrix &m1,
 
   Real s = 0;
   Real r1, r2;
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
@@ -103,12 +103,12 @@ Real maxAbsDifferenceVec (const Matrix &m1,
 
 
 Real getCovarianceVec (const Matrix &m1,
-                            bool      t1,
-                            size_t         row1,
-                            const Matrix &m2,
-                            bool      t2,
-                            size_t         row2,
-                            bool      Biased)
+                       bool         t1,
+                       size_t       row1,
+                       const Matrix &m2,
+                       bool         t2,
+                       size_t       row2,
+                       bool         biased)
 {
   ASSERT (m1. rowsSize (! t1) == m2. rowsSize (! t2));
 
@@ -117,7 +117,7 @@ Real getCovarianceVec (const Matrix &m1,
   Real Sx  = 0.0;
   Real Sy  = 0.0;
   Real r1, r2;
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2))
     {
@@ -127,11 +127,11 @@ Real getCovarianceVec (const Matrix &m1,
       Sy  += r2;
     }
 
-  const size_t Correction = ! Biased;
-  if (n <= Correction)
+  const size_t correction = ! biased;
+  if (n <= correction)
     return NAN;
   const Real a = Sxy - Sx * Sy / (Real) n;
-  return a / ((int) n - (int) Correction);
+  return a / ((int) n - (int) correction);
 }
 
 
@@ -153,7 +153,7 @@ Real getCorrelationVec (const Matrix  &m1,
   Real Sy  = 0.0;
   Real Sy2 = 0.0;
   Real r1, r2;
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2))
     {
@@ -194,7 +194,7 @@ void distribution2MeanVar (const Matrix &distribution,
 
   // mean
   mean = 0.0;
-  FOR (size_t, col, distribution. rowsSize (! distributionT))
+  FFOR (size_t, col, distribution. rowsSize (! distributionT))
   {
     const Real r = distribution. get (distributionT, distributionRow, col);
     if (! nullReal (r))
@@ -203,7 +203,7 @@ void distribution2MeanVar (const Matrix &distribution,
 
   // StDev
   Variance = 0.0;
-  FOR (size_t, col, distribution. rowsSize (! distributionT))
+  FFOR (size_t, col, distribution. rowsSize (! distributionT))
   {
     const Real r = distribution. get (distributionT, distributionRow, col);
     if (! nullReal (r))
@@ -276,8 +276,8 @@ void Matrix::loadData (bool t,
 {
   ASSERT (! f. bad ());
 
-  FOR (size_t, row, rowsSize (false))
-	  FOR (size_t, col, rowsSize (true))
+  FFOR (size_t, row, rowsSize (false))
+	  FFOR (size_t, col, rowsSize (true))
 	  {
 	    Real r;
 	    if (! (f >> r). good ())
@@ -358,7 +358,7 @@ void Matrix::printRow (bool t,
                        ostream &f) const
 {
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
   {
     if (col)
       f << '\t';
@@ -389,7 +389,7 @@ void Matrix::saveFile_ (bool t,
   else
     f << rowsSize (false) << ' ' << rowsSize (true) << endl;
 
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
     printRow (t, row, f);
     f << endl;
@@ -406,10 +406,10 @@ void Matrix::insertRows (bool t,
     return;
 
   Matrix m (t, rowsSize (t) + rowInc, rowsSize (! t));
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
   	const size_t to_row = row + (row < firstRow ? 0 : rowInc);
-	  FOR (size_t, col, rowsSize (! t))
+	  FFOR (size_t, col, rowsSize (! t))
 	    m. put (t, to_row, col, get (t, row, col));
 	}
 	*this = m;
@@ -430,10 +430,10 @@ void Matrix::deleteRows (bool t,
   ASSERT (rowDec <= rowsSize (t));
   
   Matrix m (t, rowsSize (t) - rowDec, rowsSize (! t));
-  FOR (size_t, row, m. rowsSize (t))
+  FFOR (size_t, row, m. rowsSize (t))
   {
   	const size_t from_row = row + (row < firstRow ? 0 : rowDec);
-	  FOR (size_t, col, m. rowsSize (! t))
+	  FFOR (size_t, col, m. rowsSize (! t))
 	    m. put (t, row, col, get (t, from_row, col));
 	}
 	*this = m;
@@ -475,7 +475,7 @@ Matrix Matrix::processRow2Col (bool t,
                                ProcessRowFunc ProcessRow) const
 {
   Matrix target (t, rowsSize (t), 1);
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
     const Real a = (this->*ProcessRow) (t, row);
     target. put (t, row, 0, a);
@@ -494,7 +494,7 @@ bool Matrix::equalValueRow (bool t,
                             Real value) const
 {
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, r) 
     	  && ! eqReal (r, value)
     	 )
@@ -506,7 +506,7 @@ bool Matrix::equalValueRow (bool t,
 
 bool Matrix::equalValue (Real value) const
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     if (! equalValueRow (false, row, value))
       return false;
   return true;
@@ -519,7 +519,7 @@ size_t Matrix::maxValueLenRow (bool t,
 {
   size_t ValueLen = string (undefStr). size ();
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
     {
       ostringstream oss;
@@ -534,7 +534,7 @@ size_t Matrix::maxValueLenRow (bool t,
 size_t Matrix::maxValueLen () const
 {
   size_t ValueLen = 0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     Common_sp::maximize (ValueLen, maxValueLenRow (false, row));
   return ValueLen;
 }
@@ -544,7 +544,7 @@ size_t Matrix::maxValueLen () const
 size_t* Matrix::getMaxValueLenCol (bool t) const
 {
   size_t* maxValueLenCol = new size_t [rowsSize (t)];
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
     maxValueLenCol [row] = maxValueLenRow (t, row);
   return maxValueLenCol;
 }
@@ -554,11 +554,11 @@ size_t* Matrix::getMaxValueLenCol (bool t) const
 bool Matrix::isInteger () const
 {
 	Real x;
-  FOR (size_t, row, rowsSize (false))
-  FOR (size_t, col, rowsSize (true))
-    if (get (false, row, col, x))
-      if (! DM_sp::isInteger (x))
-    	  return false;
+  FFOR (size_t, row, rowsSize (false))
+	  FFOR (size_t, col, rowsSize (true))
+	    if (get (false, row, col, x))
+	      if (! DM_sp::isInteger (x))
+	    	  return false;
   return true;
 }
 
@@ -635,7 +635,7 @@ size_t Matrix::getDefinedNumRow (bool t,
 {
   size_t s = 0;
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
       s++;
   return s;
@@ -646,7 +646,7 @@ size_t Matrix::getDefinedNumRow (bool t,
 size_t Matrix::getDefinedNum () const
 {
   size_t s = 0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     s += getDefinedNumRow (false, row);
   return s;
 }
@@ -655,7 +655,7 @@ size_t Matrix::getDefinedNum () const
 
 bool Matrix::defined () const
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     if (! definedRow (false, row))
       return false;
   return true;
@@ -668,14 +668,14 @@ bool Matrix::existsMissing (bool t,
 				                    size_t &MissingCol) const
 {
   Real r;
-  FOR (size_t, row, rowsSize (t))
-  FOR (size_t, col, rowsSize (! t))
-    if (! get (t, row, col, r))
-    {
-      MissingRow = row;
-      MissingCol = col;
-      return true;
-    }
+  FFOR (size_t, row, rowsSize (t))
+	  FFOR (size_t, col, rowsSize (! t))
+	    if (! get (t, row, col, r))
+	    {
+	      MissingRow = row;
+	      MissingCol = col;
+	      return true;
+	    }
   return false;
 }
 
@@ -683,7 +683,7 @@ bool Matrix::existsMissing (bool t,
 
 size_t Matrix::firstEmptyRow (bool t) const
 {
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
     if (emptyRow (t, row))
       return row;
 
@@ -694,7 +694,7 @@ size_t Matrix::firstEmptyRow (bool t) const
 
 bool Matrix::empty () const
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     if (! emptyRow (false, row))
       return false;
   return true;
@@ -733,7 +733,7 @@ Matrix* Matrix::deleteUndefinedRows (bool t) const
   Matrix* m = nullptr;
   {
     size_t s = 0;
-    FOR (size_t, row, rowsSize (t))
+    FFOR (size_t, row, rowsSize (t))
       if (definedRow (t, row))
         s++;
     m = new Matrix (false, s, rowsSize (! t));
@@ -741,7 +741,7 @@ Matrix* Matrix::deleteUndefinedRows (bool t) const
 
   {
     size_t s = 0;
-    FOR (size_t, row, rowsSize (t))
+    FFOR (size_t, row, rowsSize (t))
       if (definedRow (t, row))
       {
         m->copyRow (false, s, *this, t, row);
@@ -759,7 +759,7 @@ Real Matrix::sumRow (bool t,
 {
   Real s = 0.0;
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
       s += r;
   return s;
@@ -775,7 +775,7 @@ void Matrix::posNegSumRow (bool  t,
   PosSum = 0.0;
   NegSum = 0.0;
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
     {
       if (r > 0.0)
@@ -794,7 +794,7 @@ void Matrix::getPosNegSumCols (bool   t,
   ASSERT (tagret. rowsSize (  tagretT) == rowsSize (t));
   ASSERT (tagret. rowsSize (! tagretT) == 2);
   
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
     Real PosSum, NegSum;
     posNegSumRow (t, row, PosSum, NegSum);
@@ -810,7 +810,7 @@ Real Matrix::getTrace () const
   ASSERT (isSquare ());
   
   Real s = 0.0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     s += get (false, row, row);
   return s;
 }
@@ -822,7 +822,7 @@ Real Matrix::getMaxRow (bool t,
 {
   Real r = - INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       Common_sp::maximize (r, a);
   return r;
@@ -835,7 +835,7 @@ Real Matrix::getMinRow (bool t,
 {
   Real r = INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       Common_sp::minimize (r, a);
   return r;
@@ -848,7 +848,7 @@ Real Matrix::maxAbsRow (bool t,
 {
   Real r = - INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       Common_sp::maximize (r, abs (a));
   return r;
@@ -861,7 +861,7 @@ Real Matrix::minAbsRow (bool t,
 {
   Real r = INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       Common_sp::minimize (r, abs (a));
   return r;
@@ -872,7 +872,7 @@ Real Matrix::minAbsRow (bool t,
 Real Matrix::maxAbs () const
 {
   Real maxValue = - INF;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     Common_sp::maximize (maxValue, maxAbsRow (false, row));
   return maxValue;
 }
@@ -882,7 +882,7 @@ Real Matrix::maxAbs () const
 Real Matrix::minAbs () const
 {
   Real minValue = INF;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     Common_sp::minimize (minValue, minAbsRow (false, row));
   return minValue;
 }
@@ -906,7 +906,7 @@ Real Matrix::closestZeroRow (bool t,
 {
   Real r = INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       Common_sp::minimize (r, abs (a));
   return r;
@@ -918,7 +918,7 @@ Real Matrix::firstNonZeroRow (bool t,
                               size_t row) const
 {
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, a) 
         && ! nullReal (a)
        )
@@ -934,7 +934,7 @@ size_t Matrix::argMaxRow (bool t,
   size_t max_ = NO_INDEX;
   Real r = - INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, a) 
         && Common_sp::maximize (r, a)
        )
@@ -950,7 +950,7 @@ size_t Matrix::argMinRow (bool t,
   size_t min_ = NO_INDEX;
   Real r = INF;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, a) 
         && Common_sp::minimize (r, a)
        )
@@ -965,7 +965,7 @@ size_t Matrix::greatestColLess (bool  t,
 	                              Real value) const
 {
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, r) 
         && r >= value
        )
@@ -983,7 +983,7 @@ void Matrix::meanDefinedNumRow (bool t,
   definedNum = 0;
   Real s = 0.0;
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
     {
       definedNum++;
@@ -1001,7 +1001,7 @@ Real Matrix::sumSqrDevRow (bool  t,
 {
   Real s = 0.0;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       s += sqr (a - centerValue);
   return s;
@@ -1012,7 +1012,7 @@ Real Matrix::sumSqrDevRow (bool  t,
 Real Matrix::sumSqrDev (Real centerValue) const
 {
   Real s = 0.0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     s += sumSqrDevRow (false, row, centerValue);
   return s;
 }
@@ -1025,7 +1025,7 @@ Real Matrix::sumAbsDevRow (bool t,
 {
   Real s = 0.0;
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       s += abs (a - centerValue);
   return s;
@@ -1036,7 +1036,7 @@ Real Matrix::sumAbsDevRow (bool t,
 Real Matrix::sumAbsDev (Real centerValue) const
 {
   Real s = 0.0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     s += sumAbsDevRow (false, row, centerValue);
   return s;
 }
@@ -1068,7 +1068,7 @@ Real Matrix::entropyRow (bool t,
 {
   Real s = 0.0;
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, r) 
         && ! nullReal (r)
        )
@@ -1085,8 +1085,8 @@ void Matrix::makeCovarianceMatrix (bool   t,
   ASSERT (tagret. isSquare ());
   ASSERT (rowsSize (t) == tagret. rowsSize (false));
 
-  FOR (size_t, row1, rowsSize (t))
-    FOR_START (size_t, row2, row1, rowsSize (t))
+  FFOR (size_t, row1, rowsSize (t))
+    FFOR_START (size_t, row2, row1, rowsSize (t))
       tagret. putSymmetric (row1, row2, getCovariance (t, row1, row2, Biased));
 }
 
@@ -1097,13 +1097,13 @@ void Matrix::covariance2correlation ()
   ASSERT (isSquare ()); 
 
   Matrix StDev (false, 1, rowsSize (true));
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     StDev. put (false, 0, row, sqrt (get (false, row, row)));
 
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
   {
     putDiag (row, 1);
-    FOR_START (size_t, col, row + 1, rowsSize (true))
+    FFOR_START (size_t, col, row + 1, rowsSize (true))
     {
       const Real a = StDev. get (false, 0, row) *
                      StDev. get (false, 0, col);
@@ -1121,8 +1121,8 @@ bool Matrix::isSimilarity () const
 	if (! isSymmetric ())
 		return false;
 		
-	FOR (size_t, row, rowsSize (false))
-  	FOR (size_t, col, rowsSize (true))
+	FFOR (size_t, row, rowsSize (false))
+  	FFOR (size_t, col, rowsSize (true))
   	  if (greaterReal (sqr (get (false, row, col)), getDiag (row) * getDiag (col)))
   	  {
   	  //if (verbose ())
@@ -1147,8 +1147,8 @@ Real Matrix::getBilinear (bool t,
   ASSERT (m2. rowsSize (! t2) == rowsSize (! t));
   
   Real s = 0;
-  FOR (size_t, row, rowsSize (t)) 
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, row, rowsSize (t)) 
+  FFOR (size_t, col, rowsSize (! t))
     s +=       get (t, row, col) 
          * m1. get (t1, row1, row) 
          * m2. get (t2, row2, col);
@@ -1168,7 +1168,7 @@ Real Matrix::getMahalanobis (bool t,
 	ASSERT (m1. rowsSize (! t1) == m2. rowsSize (! t2));
 	
   MVector x (m1. rowsSize (! t1));
-  FOR (size_t, col, m1. rowsSize (! t1))
+  FFOR (size_t, col, m1. rowsSize (! t1))
     x [col] =   m1. get (t1, row1, col) 
               - m2. get (t2, row2, col);
 	
@@ -1195,8 +1195,8 @@ bool Matrix::checkInverse (const Matrix &inverseM,
   Ident. multiply (false, *this, false, inverseM, inverseMT);
   
   const Real error = 0.1;  // PAR ??
-  FOR (size_t, row, rowsSize (false))
-    FOR (size_t, col, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
+    FFOR (size_t, col, rowsSize (false))
       if (row == col)
       {
         if (abs (Ident. get (false, row, col) - 1.0) >= error)
@@ -1263,7 +1263,7 @@ bool Matrix::getEigen (Eigen &eigen,
       
     // eigen.value
     WeightedMeanVar mv;
-    FOR (size_t, row, vec. size ())
+    FFOR (size_t, row, vec. size ())
     {
       const Real a =        vec [row];
       const Real b = eigen. vec [row];
@@ -1323,8 +1323,8 @@ Real Matrix::getChi2 () const
   const Matrix colSum (processRow2Col (true,  & Matrix::sumRow));
   const Real s = rowSum. sumRow (true, 0);
   ASSERT (s > 0);
-  FOR (size_t, row, rowsSize (false))
-    FOR (size_t, col, rowsSize (true))
+  FFOR (size_t, row, rowsSize (false))
+    FFOR (size_t, col, rowsSize (true))
     	if (const Real expect =   rowSum. get (false, row, 0) 
     		                      * colSum. get (false, 0, col)
     		                      / s
@@ -1347,8 +1347,8 @@ Real Matrix::getLnFisherExact (bool oneTail) const
   
   Real threshold = 0;
   if (! oneTail)
-	  FOR (size_t, row, rowsSize (false))
-	  FOR (size_t, col, rowsSize (true))
+	  FFOR (size_t, row, rowsSize (false))
+	  FFOR (size_t, col, rowsSize (true))
 	    threshold += lnFactorial ((uint) round (get (false, row, col)));
   
   
@@ -1401,8 +1401,8 @@ Real Matrix::getLnFisherExact (bool oneTail) const
       const uint sum20 = (uint) round (sumRow (false, 1));
       ASSERT (sum01 + sum02 + sum03 == sum00);
       ASSERT (sum10 + sum20 == sum00);
-      FOR (uint, sum11, std::min (sum01, sum10) + 1)
-      FOR_START (uint, sum12, 
+      FFOR (uint, sum11, std::min (sum01, sum10) + 1)
+      FFOR_START (uint, sum12, 
                  sum10 <= (sum11 + sum03) ? 0 : sum10 - (sum11 + sum03),
                  std::min (sum02, sum10 - sum11) + 1
                 )
@@ -1442,8 +1442,8 @@ Real Matrix::maxAbsDiff (bool         t,
 
   Real diff = 0;
   Real a, b;
-  FOR (size_t, i, rowsSize (t)) 
-  FOR (size_t, j, rowsSize (! t))
+  FFOR (size_t, i, rowsSize (t)) 
+  FFOR (size_t, j, rowsSize (! t))
     if (   get (t, i, j, a)
     	  && source. get (sourceT, i, j, b)
     	 )
@@ -1462,8 +1462,8 @@ Real Matrix::meanRelativeError (bool         t,
   size_t C = 0;
   Real s = 0.0;
   Real r;
-  FOR (size_t, i, rowsSize (t)) 
-	  FOR (size_t, j, rowsSize (! t))
+  FFOR (size_t, i, rowsSize (t)) 
+	  FFOR (size_t, j, rowsSize (! t))
 	    if (get (t, i, j, r))
 	    {
 	      if (r == 0.0) 
@@ -1500,11 +1500,11 @@ void Matrix::copyShift (bool         t,
                         const Matrix &source,
                         bool         sourceT)
 {
-  FOR (size_t, sourceRow, source. rowsSize (sourceT))
+  FFOR (size_t, sourceRow, source. rowsSize (sourceT))
   {
     const size_t row = firstRow + sourceRow;
     if (between (row, (size_t) 0, rowsSize (t)))
-	    FOR (size_t, sourceCol, source. rowsSize (! sourceT))
+	    FFOR (size_t, sourceCol, source. rowsSize (! sourceT))
 	    {
 	      const size_t col = firstCol + sourceCol;
 	      if (between (col, (size_t) 0, rowsSize (! t)))
@@ -1522,7 +1522,7 @@ void Matrix::copyRow (bool         t,
                       size_t       sourceRow)
 {
   ASSERT (rowsSize (! t) == source. rowsSize (! sourceT));
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     put (t, row, col, source. get (sourceT, sourceRow, col));
 }
 
@@ -1545,8 +1545,8 @@ void Matrix::copyDefined (bool      t,
 
  
   Real r;
-  FOR (size_t, row, rowsSize (t))
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, row, rowsSize (t))
+  FFOR (size_t, col, rowsSize (! t))
     if (source. get (sourceT, row, col, r))
       put (t, row, col, r);
 }
@@ -1560,7 +1560,7 @@ void Matrix::swapRows (bool t,
   if (row1 == row2)
     return;
 
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
   {
     const Real r = get (t, row1, col);
     put (t, row1, col, get (t, row2, col));
@@ -1574,7 +1574,7 @@ void Matrix::putRow (bool t,
                      size_t row,
                      Real r)
 {
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     put (t, row, col, r);
 }
 
@@ -1587,7 +1587,7 @@ size_t Matrix::undefined2ValueRow (bool t,
   ASSERT (! isNan (r));
 
   size_t n = 0;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (isNan (get (t, row, col)))
     {
       put (t, row, col, r);
@@ -1602,7 +1602,7 @@ size_t Matrix::undefined2ValueRow (bool t,
 size_t Matrix::undefined2ValueAll (Real r)
 { 
   size_t n = 0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     n += undefined2ValueRow (false, row, r);
   return n;
 }
@@ -1614,8 +1614,8 @@ size_t Matrix::undefined2mean ()
   size_t n = 0;
   const Matrix rowMean (processRow2Col (false, & Matrix::meanRow));
   const Matrix colMean (processRow2Col (true,  & Matrix::meanRow));
-  FOR (size_t, row, rowsSize (false))
-    FOR (size_t, col, rowsSize (true))
+  FFOR (size_t, row, rowsSize (false))
+    FFOR (size_t, col, rowsSize (true))
       if (isNan (get (false, row, col)))
       {
         const Real r = (  rowMean. get (false, row, 0) 
@@ -1632,7 +1632,7 @@ size_t Matrix::undefined2mean ()
 void Matrix::reverseOrderRow (bool t,
                               size_t row)
 {
-  FOR (size_t, col, rowsSize (! t) / 2)
+  FFOR (size_t, col, rowsSize (! t) / 2)
     swap ( t
          , row, col
          , row, rowsSize (! t) - 1 - col
@@ -1643,7 +1643,7 @@ void Matrix::reverseOrderRow (bool t,
 
 void Matrix::reverseOrder (bool t)
 {
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
     reverseOrderRow (t, row);
 }
 
@@ -1665,7 +1665,7 @@ void Matrix::putIncRow (bool  t,
                         size_t  row,
                         Real delta)
 {
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     putInc (t, row, col, delta);
 }
 
@@ -1677,7 +1677,7 @@ void Matrix::putIncSeries (bool  t,
                            Real delta)
 {
   Real r = InitValue;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
   {
     put (t, row, col, r);
     r += delta;
@@ -1689,7 +1689,7 @@ void Matrix::putIncSeries (bool  t,
 Matrix Matrix::centerRows (bool t)
 {
   Matrix rowMean (processRow2Col (t, & Matrix::meanRow));
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
     putIncRow (t, row, - rowMean. get (t, row, 0));
   return rowMean;
 }
@@ -1700,7 +1700,7 @@ void Matrix::negateRow (bool t,
                         size_t row)  
 {
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       put (t, row, col, - a);
 }
@@ -1709,7 +1709,7 @@ void Matrix::negateRow (bool t,
 
 void Matrix::negate ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     negateRow (false, row);
 }
 
@@ -1719,7 +1719,7 @@ void Matrix::absRow (bool t,
                      size_t row)  
 {
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       put (t, row, col, abs (a));
 }
@@ -1728,7 +1728,7 @@ void Matrix::absRow (bool t,
 
 void Matrix::absAll ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     absRow (false, row);
 }
 
@@ -1738,7 +1738,7 @@ void Matrix::roundRow (bool t,
                        size_t row)  
 {
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       put (t, row, col, std::round (a));
 }
@@ -1747,7 +1747,7 @@ void Matrix::roundRow (bool t,
 
 void Matrix::roundAll ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     roundRow (false, row);
 }
 
@@ -1777,7 +1777,7 @@ void Matrix::add (bool         t,
 	  	}
 	}
 
-  FOR (size_t, row, rowsSize (t)) 
+  FFOR (size_t, row, rowsSize (t)) 
     addRow (         t,       row
            , source, sourceT, row
            , factor
@@ -1798,7 +1798,7 @@ void Matrix::addRow (bool         t,
 {
   ASSERT (equalLen (t, source, sourceT));
 
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     putInc (t, row, col, factor * source. get (sourceT, sourceRow, col));  	
 }
 
@@ -1808,7 +1808,7 @@ void Matrix::putProdRow (bool  t,
                          size_t  row,
                          Real factor)
 {
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     putProd (t, row, col, factor);
 }
 
@@ -1826,8 +1826,8 @@ void Matrix::multiply (bool         t,
   ASSERT (    rowsSize (! t)  == m2. rowsSize (! t2));
   ASSERT (m1. rowsSize (! t1) == m2. rowsSize (t2));
 
-  FOR (size_t, row, rowsSize (t)) 
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, row, rowsSize (t)) 
+  FFOR (size_t, col, rowsSize (! t))
     put (t, row, col, multiplyVec (m1, t1,   row,
                                    m2, ! t2, col));
   psd = & m1 == & m2 && t1 != t2;
@@ -1839,7 +1839,7 @@ void Matrix::expRow (bool t,
                      size_t row)
 {
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
       put (t, row, col, exp (r));
 }
@@ -1848,7 +1848,7 @@ void Matrix::expRow (bool t,
 
 void Matrix::expAll ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     expRow (false, row);
 }
 
@@ -1858,7 +1858,7 @@ void Matrix::logRow (bool t,
                      size_t row)
 {
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
       put (t, row, col, log (r));
 }
@@ -1867,7 +1867,7 @@ void Matrix::logRow (bool t,
 
 void Matrix::logAll ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     logRow (false, row);
 }
 
@@ -1912,7 +1912,7 @@ size_t Matrix::maximizeRow (bool t,
 	                          Real value)
 {
   size_t n = 0;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (maximize (t, row, col, value))
       n++;
   return n;
@@ -1925,7 +1925,7 @@ size_t Matrix::minimizeRow (bool t,
 	                          Real value)
 {
   size_t n = 0;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (minimize (t, row, col, value))
       n++;
   return n;
@@ -1936,7 +1936,7 @@ size_t Matrix::minimizeRow (bool t,
 size_t Matrix::maximizeAll (Real value)
 {
   size_t n = 0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     n += maximizeRow (false, row, value);
   return n;
 }
@@ -1946,7 +1946,7 @@ size_t Matrix::maximizeAll (Real value)
 size_t Matrix::minimizeAll (Real value)
 {
   size_t n = 0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     n += minimizeRow (false, row, value);
   return n;
 }
@@ -1957,7 +1957,7 @@ void Matrix::putRandomRow (bool t,
                            size_t row,
                            Rand &rand)
 {
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     put (t, row, col, rand. getProb () - 0.5);
 }
 
@@ -1985,11 +1985,11 @@ bool Matrix::subtractProjectionRow (bool         t,
 
 void Matrix::cumulate (bool t)
 {
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
     Real currentSum = 0.0;
     Real a;
-    FOR (size_t, col, rowsSize (! t))
+    FFOR (size_t, col, rowsSize (! t))
       if (get (t, row, col, a))
       {
         currentSum += a;
@@ -2018,7 +2018,7 @@ Real Matrix::balance (bool  t,
                       Real rowSum)
 {
   Real s = 0.0;
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
     s += sqr (balanceRow (t, row, rowSum));
   return s;
 }
@@ -2033,7 +2033,7 @@ Real Matrix::balanceVec (bool         t,
   ASSERT (rowsSize (t) <= sumColVector. rowsSize (sumColT));
 
   Real sumSqrDeviation = 0.0;
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
     Real r;
     EXEC_ASSERT (sumColVector. get (sumColT, row, 0, r));
@@ -2056,7 +2056,7 @@ void Matrix::expBalanceLogRow (bool  t,
   // s
   Real s = 0.0;
   Real r;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, r))
       s += exp (r);
   if (s < 1.0)
@@ -2074,7 +2074,7 @@ void Matrix::expBalanceLogRow (bool  t,
 void Matrix::expBalanceLog (bool  t,
                             Real expRowSum)
 {
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
     expBalanceLogRow (t, row, expRowSum);
 }
 
@@ -2101,7 +2101,7 @@ bool Matrix::normalize (bool  t,
 {     
   bool Ok = true;
   sumSqrNorma = 0.0;
-  FOR (size_t, row, rowsSize (t))
+  FFOR (size_t, row, rowsSize (t))
   {
     Real sqrNorma;
     if (! normalizeRow (t, row, sqrNorma))
@@ -2118,7 +2118,7 @@ void Matrix::sqrRow (bool t,
                      size_t row)
 {
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       put (t, row, col, sqr (a));
 }
@@ -2127,7 +2127,7 @@ void Matrix::sqrRow (bool t,
 
 void Matrix::sqrAll ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     sqrRow (false, row);
 }
 
@@ -2137,7 +2137,7 @@ void Matrix::sqrtRow (bool t,
                       size_t row)
 {
   Real a;
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
       put (t, row, col, sqrt (a));
 }
@@ -2146,7 +2146,7 @@ void Matrix::sqrtRow (bool t,
 
 void Matrix::sqrtAll ()
 {
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     sqrtRow (false, row);
 }
 
@@ -2158,7 +2158,7 @@ Determinant Matrix::gaussElimination (bool t)
 
   Determinant d (std::min (rowsSize (t), rowsSize (! t)));
   // Use partial pivoting ??
-  FOR (size_t, row, d. size)
+  FFOR (size_t, row, d. size)
   {
     size_t row1 = row;
     while (row1 < rowsSize (t) &&
@@ -2227,7 +2227,7 @@ void Matrix::diag2row (bool t,
   ASSERT (source. isSquare ());
   ASSERT (source. rowsSize (false) == rowsSize (! t));
 
-  FOR (size_t, col, rowsSize (! t))
+  FFOR (size_t, col, rowsSize (! t))
     put (t, row, col, source. getDiag (col));
 }
 
@@ -2240,7 +2240,7 @@ void Matrix::row2diag (const Matrix &source,
 {
   ASSERT (source. rowsSize (! sourceT) == minSize ());
   
-  FOR (size_t, col, source. rowsSize (! sourceT))
+  FFOR (size_t, col, source. rowsSize (! sourceT))
     putDiag (col, source. get (sourceT, sourceRow, col) * factor);
 }
 
@@ -2256,10 +2256,10 @@ void Matrix::addVecVecT (bool         t,
   ASSERT (rowsSize (false) == source. rowsSize (! sourceT));
   
   Keep<bool> kp (psd);
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
   {
     const Real a = factor * source. get (sourceT, sourceRow, row);
-    FOR (size_t, col, rowsSize (false))
+    FFOR (size_t, col, rowsSize (false))
       putInc (t, row, col, a * source. get (sourceT, sourceRow, col));
   }
 }
@@ -2306,8 +2306,8 @@ Matrix* Matrix::getCholesky (bool t) const
 	Common_sp::AutoPtr <Matrix> m (new Matrix (false, *this, false));
 	
 	const Real abs_max = maxAbs ();
-	FOR (size_t, row, rowsSize (false))
-	  FOR (size_t, col, rowsSize (false))
+	FFOR (size_t, row, rowsSize (false))
+	  FFOR (size_t, col, rowsSize (false))
 	    if (col < row)
 	    	m->put (t, col, row, 0);
 	    else
@@ -2474,7 +2474,7 @@ Determinant Matrix::inverse ()
   // C = U^{-1}
   // Make in time O(n^2) -??
   Matrix C (false, U, false);
-  FOR (size_t, col, C. rowsSize (true))
+  FFOR (size_t, col, C. rowsSize (true))
   {
     Matrix b (false, U. rowsSize (false), U. rowsSize (true) + 1);
     
@@ -2505,7 +2505,7 @@ Real Matrix::symmetrize (Real &maxCorrection,
   maxCorrection  = 0;
   Real corrected = 0;
   Real a, b;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
     FOR_START (size_t, col, row + 1, rowsSize (false))
       if (get (false, row, col, a) &&
           get (false, col, row, b)
@@ -2536,7 +2536,7 @@ void Matrix::lower2upper (bool t)
 {
 	ASSERT (isSquare ());
 	
-	FOR (size_t, row, rowsSize (false))
+	FFOR (size_t, row, rowsSize (false))
   	FOR (size_t, col, row)
   	  put (t, col, row, get (t, row, col));
 }
@@ -2549,7 +2549,7 @@ void Matrix::putSquaredDistances (const Matrix& source,
   ASSERT (isSquare ());
   ASSERT (rowsSize (false) == source. rowsSize (false));
   
-  FOR (size_t, row1, source. rowsSize (false))
+  FFOR (size_t, row1, source. rowsSize (false))
   {
     putDiag (row1, 0.0);
     FOR_START (size_t, row2, row1 + 1, source. rowsSize (false))
@@ -2577,8 +2577,8 @@ Real Matrix::sqrDistance2centeredSimilarity ()
   // rowSum: |x_i|^2
 
   // x_i^t * x_j
-  FOR (size_t, row, rowsSize (false))
-  FOR (size_t, col, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
+  FFOR (size_t, col, rowsSize (false))
     put (false, row, col, (  rowSum. get (false, row, 0) 
                            + rowSum. get (false, col, 0) 
                            - get (false, row, col)
@@ -2587,7 +2587,7 @@ Real Matrix::sqrDistance2centeredSimilarity ()
 
   Real defect = 0;
   Real diagSum = 0;
-  FOR (size_t, row, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
   {
     Real x = getDiag (row);    
     if (x < 0)
@@ -2611,8 +2611,8 @@ void Matrix::similarity2sqrDistance ()
 	ASSERT (defined ());
 
   const Matrix diagVec (getDiagVector (false));
-  FOR (size_t, row, rowsSize (false))
-  FOR (size_t, col, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
+  FFOR (size_t, col, rowsSize (false))
     put (false, row, col,   diagVec. get (false, row, 0) 
                           + diagVec. get (false, col, 0) 
                           - 2 * get (false, row, col)
@@ -2629,8 +2629,8 @@ void Matrix::similarity2evolutionDistance (Prob p_chance)
 	ASSERT (p_chance < 1);
 
   const Matrix diagVec (getDiagVector (false));
-  FOR (size_t, row, rowsSize (false))
-  FOR (size_t, col, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
+  FFOR (size_t, col, rowsSize (false))
   {
     const Real sim = get (false, row, col);
     ASSERT (sim > 0);
@@ -2667,8 +2667,8 @@ void Matrix::centerSimilarity (Matrix &rowMean,
 
   totalMean = rowMean. sum () / (Real) rowsSize (false);
 
-  FOR (size_t, row, rowsSize (false))
-  FOR (size_t, col, rowsSize (false))
+  FFOR (size_t, row, rowsSize (false))
+  FFOR (size_t, col, rowsSize (false))
     putInc (false, row, col, (  totalMean
                               - rowMean. get (false, row, 0) 
                               - rowMean. get (false, col, 0)));
@@ -2682,7 +2682,7 @@ void Matrix::centerSimilarity (Matrix &rowMean,
 MVector& MVector::operator= (const Vector<Real> &vec)
 {
   ASSERT (size () == vec. size ());
-  FOR (size_t, i, size ())
+  FFOR (size_t, i, size ())
     (*this) [i] = vec [i];
   return *this;
 }
@@ -2714,7 +2714,7 @@ void Eigen::saveText (ostream& os) const
 
 bool Eigen::makePositiveVec ()
 {
-  FOR (size_t, i, vec. size ())
+  FFOR (size_t, i, vec. size ())
   {
     const Real a = vec [i];
     if (nullReal (a))
@@ -2922,7 +2922,7 @@ Eigens::Eigens (const Matrix &matr,
   basis. resize (false, len, vecs. size ());
   values. resize (vecs. size ());
   explainedVarianceFrac = 0;
-  FOR (size_t, col, vecs. size ())
+  FFOR (size_t, col, vecs. size ())
   {
     FOR (size_t, row, len)
       basis. put (false, row, col, vecs [col] -> vec [row]);
@@ -2948,7 +2948,7 @@ void Eigens::qc () const
     return;
 	ASSERT (basis. rowsSize (true) == getDim ());
 	ASSERT (values. rowsSize (false) == getDim ());
-	FOR (size_t, i, basis. rowsSize (true))
+	FFOR (size_t, i, basis. rowsSize (true))
 	{
 	  ASSERT (eqReal (basis. sumSqrRow (true, i), 1));
 	  IMPLY (psd, values [i] >= 0);
@@ -2980,7 +2980,7 @@ void Eigens::saveText (ostream& os) const
   os << "Total explained variance fraction = ";
   os << fixed; os. precision (3); os << explainedVarianceFrac * 100 << " %" << endl;
   
-  FOR (size_t, i, getDim ())
+  FFOR (size_t, i, getDim ())
   { 
     os << endl << "Eigen " << i + 1 << ':' << endl;
     os << "Explained fraction            = " << fixed; os. precision (3); os << explainedFrac (i) * 100 << " %" << endl;
@@ -3011,7 +3011,7 @@ JsonMap* Eigens::toJson (JsonContainer* parent,
 
   {
     JsonArray* jArr = new JsonArray (j, "explained");  
-    FOR (size_t, i, getDim ())
+    FFOR (size_t, i, getDim ())
       new JsonDouble (explainedFrac (i) * (values [i] >= 0 ? 1 : -1), decimals, jArr); 
   }
 
@@ -3028,7 +3028,7 @@ JsonMap* Eigens::toJson (JsonContainer* parent,
 Prob Eigens::cumulativeExplainedFrac (size_t eigenNum) const
 {
   Real s = 0;
-  FOR (size_t, i, eigenNum + 1)
+  FFOR (size_t, i, eigenNum + 1)
     s += explainedFrac (i);
   return s;
 }
@@ -3038,7 +3038,7 @@ Prob Eigens::cumulativeExplainedFrac (size_t eigenNum) const
 Real Eigens::cumulativeValues (size_t eigenNum) const
 {
   Real s = 0;
-  FOR (size_t, i, eigenNum + 1)
+  FFOR (size_t, i, eigenNum + 1)
     s += values [i];
   return s;
 }
@@ -3085,7 +3085,7 @@ void Eigens::restore (Matrix &matr) const
 	ASSERT (matr. rowsSize (false) == getInitSize ());
 
 	Matrix a (basis);
-	FOR (size_t, col, values. size ())
+	FFOR (size_t, col, values. size ())
 	  a. putProdRow (true, col, values [col]);
 	  
   matr. multiply (false, a, false, basis, true);

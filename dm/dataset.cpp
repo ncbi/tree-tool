@@ -102,7 +102,7 @@ void Attr::moveAfter (const Attr* pred)
 size_t Attr::countMissings () const
 {
   size_t n = 0;
-  FOR (size_t, objNum, ds. objs. size ())
+  FFOR (size_t, objNum, ds. objs. size ())
     if (isMissing (objNum))
       n++;
   return n;
@@ -124,7 +124,7 @@ bool Attr::existsMissing (size_t &objNum) const
 
 bool Attr::missingsAll () const
 {
-  FOR (size_t, objNum, ds. objs. size ())
+  FFOR (size_t, objNum, ds. objs. size ())
     if (! isMissing (objNum))
       return false;
   return true;
@@ -149,7 +149,7 @@ void Attr::summary (ostream &f) const
 
 void Attr1::setMissingAll ()
 {
-  FOR (size_t, objNum, ds. objs. size ())
+  FFOR (size_t, objNum, ds. objs. size ())
     setMissing (objNum);
 }
 
@@ -158,7 +158,7 @@ void Attr1::setMissingAll ()
 size_t Attr1::getWidth_max () const
 {
   size_t width = string (missingStr). size ();  
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
       maximize (width, value2str (i). size ());
    
@@ -345,7 +345,7 @@ bool RealAttr1::isConstant () const
 {
   Real x_min = INF;
   Real x_max = -INF;
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
     	minimize (x_min, values [i]);
@@ -366,7 +366,7 @@ void RealAttr1::appendObj ()
 size_t RealAttr1::getInfCount () const
 {
   size_t n = 0;
-  FOR (size_t, objNum, ds. objs. size ())
+  FFOR (size_t, objNum, ds. objs. size ())
     if (! finite ((*this) [objNum]))
       n++;
   return n;
@@ -376,7 +376,7 @@ size_t RealAttr1::getInfCount () const
 
 void RealAttr1::multiply (Real coeff)
 {
-  FOR (size_t, objNum, ds. objs. size ())
+  FFOR (size_t, objNum, ds. objs. size ())
     if (! isMissing (objNum))
       (*this) [objNum] = (*this) [objNum] * coeff;
   decimals += (streamsize) max<long> (0, DM_sp::round (- log10 (coeff)));
@@ -386,7 +386,7 @@ void RealAttr1::multiply (Real coeff)
 
 void RealAttr1::logarithmize ()
 {
-  FOR (size_t, objNum, ds. objs. size ())
+  FFOR (size_t, objNum, ds. objs. size ())
     if (! isMissing (objNum))
       (*this) [objNum] = log ((*this) [objNum]);
   decimals++;
@@ -728,7 +728,7 @@ void PositiveAttr1::qc () const
 
 #ifndef NDEBUG
   // values[]
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
       ASSERT (values [i] >= 0);
@@ -749,7 +749,7 @@ void ProbAttr1::qc () const
 
 #ifndef NDEBUG
   // values[]
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     IMPLY (! isMissing (i), isProb (values [i]));
 #endif
 }
@@ -811,7 +811,7 @@ void IntAttr1::qc () const
   // values[]
   ASSERT (values. size () == ds. objs. size ());
 #ifndef NDEBUG
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
       ASSERT (finite (values [i]));
@@ -825,7 +825,7 @@ bool IntAttr1::isConstant () const
 {
   Value x_min = numeric_limits<Value>::max ();
   Value x_max = numeric_limits<Value>::min ();
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
     	minimize (x_min, values [i]);
@@ -946,7 +946,7 @@ bool ExtBoolAttr1::isConstant () const
 { 
   ebool x_min = ETRUE;
   ebool x_max = EFALSE;
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
     	minimize (x_min, values [i]);
@@ -1086,7 +1086,7 @@ void NominAttr1::qc () const
 	for (const string &cat : categories)
 	  ASSERT (! cat. empty ());
 	  
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i) && ! ((*this) [i] < categories. size ()))
     {
       cout << i << ": " << (*this) [i] << ' ' << categories. size () << endl;
@@ -1094,7 +1094,7 @@ void NominAttr1::qc () const
     }
     
   ASSERT (categories. size () == categMap. size ());
-  FOR (size_t, i, categories. size ())
+  FFOR (size_t, i, categories. size ())
     ASSERT ((* categMap. find (categories [i])). second == i);
 #endif
 }
@@ -1126,7 +1126,7 @@ void NominAttr1::str2value (size_t objNum,
                             const string &s)
 {
 	size_t index = missing;
-  FOR (size_t, i, categories. size ())
+  FFOR (size_t, i, categories. size ())
     if (categories [i] == s)
     {
     	index = i;
@@ -1151,14 +1151,14 @@ Vector<NumAttr1*> NominAttr1::toNumAttr1 ()
   if (categories. size () >= 2)
   {
     vec. reserve (categories. size () - 1);
-    FOR (size_t, i, categories. size () - 1)
+    FFOR (size_t, i, categories. size () - 1)
       vec << new ExtBoolAttr1 (name + "_" + categories. at (i), const_cast <Dataset&> (ds));
-    FOR (size_t, objNum, ds. objs. size ())
+    FFOR (size_t, objNum, ds. objs. size ())
       if (! isMissing (objNum))
       {
         const size_t value = (*this) [objNum];
         ASSERT (value <= vec. size ());
-        FOR (size_t, i, vec. size ())
+        FFOR (size_t, i, vec. size ())
         {
           ExtBoolAttr1* a = const_cast <ExtBoolAttr1*> (vec [i] -> asExtBoolAttr1 ());
           ASSERT (a);
@@ -1199,7 +1199,7 @@ size_t NominAttr1::category2index (const string &category)
 void NominAttr1::rebuildCategMap ()
 {
   categMap. clear ();
-  FOR (size_t, i, categories. size ())
+  FFOR (size_t, i, categories. size ())
     categMap [categories [i]] = i;
 }
 
@@ -1217,7 +1217,7 @@ Categorical* NominAttr1::getCategorical (const Sample &sample) const
   categ2num. balanceRow (true, 0, 1);
 
   cat->probs. resize (categories. size ());
-  FOR (size_t, i, categories. size ())
+  FFOR (size_t, i, categories. size ())
     cat->probs [i] = categ2num [i];
     
   cat->setParam ();
@@ -1242,7 +1242,7 @@ void NominAttr1::deleteEmptyCategories (const Sample &sample)
   {
     Common_sp::AutoPtr <const Categorical> cat (getCategorical (sample));
     ASSERT (categories. size () == cat->probs. size ());
-    FOR (size_t, i, cat->probs. size ())
+    FFOR (size_t, i, cat->probs. size ())
       if (! nullReal (cat->probs [i]))
       {
         newCat [i] = catNum;
@@ -1361,7 +1361,7 @@ void Attr2::saveText (ostream &os) const
 
 bool Attr2::isMissing (size_t objNum) const
 {
-  FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, col, ds. objs. size ())
     if (isMissing2 (objNum, col))
       return true;
   return false;
@@ -1371,8 +1371,8 @@ bool Attr2::isMissing (size_t objNum) const
 
 void Attr2::setMissingAll ()
 {
-  FOR (size_t, row, ds. objs. size ())
-  FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+  FFOR (size_t, col, ds. objs. size ())
     setMissing (row, col);
 }
 
@@ -1398,8 +1398,8 @@ bool Attr2::existsMissing2 (size_t &row,
 size_t Attr2::getWidth_max () const
 {
   size_t width = string (missingStr). size ();  
-  FOR (size_t, row, ds. objs. size ())
-	  FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+	  FFOR (size_t, col, ds. objs. size ())
 	    if (! isMissing2 (row, col))
 		    maximize (width, value2str (row, col). size ());
   return width;
@@ -1449,8 +1449,8 @@ void RealAttr2::qc () const
   ASSERT (matr. isSquare ());
   ASSERT (matr. rowsSize (false) == ds. objs. size ());
 #if 0
-  FOR (size_t, row, ds. objs. size ())
-  FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+  FFOR (size_t, col, ds. objs. size ())
     if (   ! isMissing2 (row, col)
         && ! finite (get (row, col))
        )
@@ -1467,8 +1467,8 @@ bool RealAttr2::isConstant () const
 {
   Real x_min = INF;
   Real x_max = -INF;
-  FOR (size_t, row, ds. objs. size ())
-  FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+  FFOR (size_t, col, ds. objs. size ())
     if (! isMissing2 (row, col))
     {
     	minimize (x_min, get (row, col));
@@ -1484,7 +1484,7 @@ void RealAttr2::appendObj ()
 	const size_t objNum_max_old = matr. rowsSize (false);
 	FOR (char, b, 2)
     matr. insertRows (b, objNum_max_old, 1);
-  FOR (size_t, objNum, objNum_max_old + 1)
+  FFOR (size_t, objNum, objNum_max_old + 1)
   {
     setMissing (objNum, objNum_max_old);
     setMissing (objNum_max_old, objNum);
@@ -1521,8 +1521,8 @@ bool RealAttr2::existsLessThan (Real minValue,
 size_t RealAttr2::getInfCount () const
 {
   size_t n = 0;
-  FOR (size_t, row, ds. objs. size ())
-    FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+    FFOR (size_t, col, ds. objs. size ())
       if (! finite (get (row, col)))
         n++;
   return n;
@@ -1540,8 +1540,8 @@ void PositiveAttr2::qc () const
   RealAttr2::qc ();
 
   // values[]
-  FOR (size_t, row, ds. objs. size ())
-    FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+    FFOR (size_t, col, ds. objs. size ())
       if (! isMissing2 (row, col))
       {
         ASSERT (get (row, col) >= 0);
@@ -1552,8 +1552,8 @@ void PositiveAttr2::qc () const
 
 void PositiveAttr2::inf2missing ()
 {
-  FOR (size_t, row, ds. objs. size ())
-    FOR (size_t, col, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
+    FFOR (size_t, col, ds. objs. size ())
       if (! finite (get (row, col)))
       {
         if (verbose ())
@@ -1719,7 +1719,7 @@ void Dataset::load (istream &is)
   // objs, Obj::data
   {
     Progress prog ((uint) objs. size (), max<uint> (1, 10000 / (uint) attrs. size ()));  // PAR
-    FOR (size_t, i, objs. size ())
+    FFOR (size_t, i, objs. size ())
     {
       prog ();
       
@@ -1783,8 +1783,8 @@ void Dataset::load (istream &is)
   	  Attr2* attr2 = const_cast <Attr2*> (attr->asAttr2 ());
   	  ASSERT (attr2);
       string val;
-  	  FOR (size_t, row, objs. size ())
-  	  FOR (size_t, col, objs. size ())
+  	  FFOR (size_t, row, objs. size ())
+  	  FFOR (size_t, col, objs. size ())
       {
         is >> val;
         if (val. empty ())
@@ -1809,12 +1809,12 @@ void Dataset::load (istream &is)
 
 Dataset::Dataset (const Eigens &eigens)
 {
-  FOR (size_t, i, eigens. getDim ())
+  FFOR (size_t, i, eigens. getDim ())
     appendObj ();
   addRealAttr1Unit ();
   auto orderAttr = new RealAttr1 ("Order", *this);  
   auto eigenValueFracAttr = new RealAttr1 ("EigenValueFrac", *this, 4);  // PAR
-  FOR (size_t, i, eigens. getDim ())
+  FFOR (size_t, i, eigens. getDim ())
   {
     (*orderAttr)          [i] = log (i + 1);
     (*eigenValueFracAttr) [i] = log (eigens. explainedFrac (i));
@@ -1885,7 +1885,7 @@ void Dataset::setName2objNum ()
 {
   name2objNum. clear ();
   
-  FOR (size_t, i, objs. size ())
+  FFOR (size_t, i, objs. size ())
   {
     const string& objName = objs [i] -> name;
     if (contains (name2objNum, objName))
@@ -1924,7 +1924,7 @@ size_t Dataset::appendObj (const string &objName)
 void Dataset::list2ObjNames (const VectorPtr<Named> &names)
 {
   ASSERT (names. size () == objs. size ());
-  FOR (size_t, i, objs. size ())
+  FFOR (size_t, i, objs. size ())
     const_cast <Obj*> (objs [i]) -> name = names [i] -> name;
 }
 
@@ -1942,7 +1942,7 @@ void Dataset::attr2mult (const RealAttr1* attr)
 {
   ASSERT (attr);
   ASSERT (& attr->ds == this);
-  FOR (size_t, i, objs. size ())
+  FFOR (size_t, i, objs. size ())
     const_cast <Obj*> (objs [i]) -> mult = (*attr) [i];
 }
 
@@ -1951,7 +1951,7 @@ void Dataset::attr2mult (const RealAttr1* attr)
 void Dataset::objInterval2Active (size_t startObjNum,
                                   size_t endObjNum)
 {
-  FOR (size_t, i, objs. size ())
+  FFOR (size_t, i, objs. size ())
     const_cast <Obj*> (objs [i]) -> mult = between (i, startObjNum, endObjNum);
 }
 
@@ -1959,7 +1959,7 @@ void Dataset::objInterval2Active (size_t startObjNum,
 
 bool Dataset::getUnitMult () const
 {
-  FOR (size_t, i, objs. size ())
+  FFOR (size_t, i, objs. size ())
     if (! eqReal (objs [i] -> mult, 1))
     	return false;
   return true;
@@ -2011,7 +2011,7 @@ Sample::Sample (const Dataset &ds_arg)
 , mult (ds_arg. objs. size (), NAN)
 {
   const VectorOwn<Obj>& objs = ds_arg. objs;
-  FOR (size_t, i, objs. size ())
+  FFOR (size_t, i, objs. size ())
     mult [i] = objs [i] -> mult;
 
   finish ();
@@ -2171,7 +2171,7 @@ PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
   ASSERT (! space. empty ());
 
   auto dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
-  FOR (size_t, row, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
   {
   	dist->matr. putDiag (row, 0);
     FOR (size_t, col, row)
@@ -2205,15 +2205,15 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
 	MVector c (getDim ());  
 	if (normalize)
 	{
-  	FOR (size_t, attrNum, getDim ())
+  	FFOR (size_t, attrNum, getDim ())
   	{
   	  const RealAttr1* attr = getRealAttr1 (attrNum);
   	  c [attrNum] = 0;
-		  FOR (size_t, row, ds. objs. size ())
+		  FFOR (size_t, row, ds. objs. size ())
   	    c [attrNum] += (*attr) [row];
   	  c [attrNum] /= (Real) ds. objs. size ();
   	}
-  	FOR (size_t, attrNum, getDim ())
+  	FFOR (size_t, attrNum, getDim ())
   	{
   	  c [attrNum] -= sqr (c [attrNum]);
   	  ASSERT (isProb (c [attrNum]));
@@ -2223,7 +2223,7 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
 		
 	
   auto dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
-  FOR (size_t, row, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
   {
   	dist->matr. putDiag (row, 0);
     FOR (size_t, col, row)
@@ -2260,10 +2260,10 @@ RealAttr2* getSimilarity (const Space1<RealAttr1> &space,
 
   auto sim = new RealAttr2 (attrName, ds, 4);  // PAR
   Progress prog ((uint) ds. objs. size (), max<uint> (1, 10000 / (uint) space. size ()));  // PAR
-  FOR (size_t, row, ds. objs. size ())
+  FFOR (size_t, row, ds. objs. size ())
   {
     prog ();
-    FOR_START (size_t, col, row, ds. objs. size ())
+    FFOR_START (size_t, col, row, ds. objs. size ())
     {
     	Real s = 0;  
       for (const RealAttr1* attr : space)
@@ -2552,7 +2552,7 @@ void Categorical::setParamFunc ()
   // probSum
 	probSum. resize (probs. size ());
 	Prob s = 0;
-	FOR (size_t, i, probs. size ())
+	FFOR (size_t, i, probs. size ())
   {
 	  s += probs [i];
 	  probSum [i] = s;
@@ -2582,7 +2582,7 @@ void Categorical::setParam (const DiscreteDistribution &distr,
 Analysis1* Categorical::createAnalysis (Dataset &ds)
 {
   auto attr = new NominAttr1 ("X", ds);  
-  FOR (size_t, i, probs. size ())
+  FFOR (size_t, i, probs. size ())
     attr->category2index ("C" + toString (i + 1));
 
   const Sample sm (ds);
@@ -2601,7 +2601,7 @@ bool Categorical::similar (const Distribution &distr,
 	{
 	  if (cat->probs. size () != probs. size ())
 	  	return false;
-	  FOR (size_t, i, probs. size ())
+	  FFOR (size_t, i, probs. size ())
 	    if (! eqReal (probs [i], cat->probs [i], delta))
 	    	return false;
 	  return true;
@@ -2644,7 +2644,7 @@ void Categorical::balanceProb ()
 size_t Categorical::getUniqueCategory () const
 {
   size_t unique = NO_INDEX;
-  FOR (size_t, i, probs. size ())
+  FFOR (size_t, i, probs. size ())
     if (! nullReal (probs [i]))
     {
       if (unique == NO_INDEX)
@@ -2832,7 +2832,7 @@ void Binomial::estimate ()
 				const int hiBound_ = real2int (getHiBoundEffective ());
 				Real sum = 0;
 				Real sumLog = 0;
-				FOR_START (int, x, loBound_, hiBound_ + 1)
+				FFOR_START (int, x, loBound_, hiBound_ + 1)
 				{
 					const Real y = pmf_ (x);
 				//if (verbose ())
@@ -2940,7 +2940,7 @@ Prob Binomial::cdfDiscrete_ (int x) const
 	}
 
 	Sum sum; 
-	FOR_START (int, i, x_start, x_end + 1)
+	FFOR_START (int, i, x_start, x_end + 1)
 	  sum. add (pmf_ (i));
 	Prob s = min (sum. get (), 1.0);
 	 
@@ -3722,7 +3722,7 @@ void UniKernel::set_uniform_prob ()
   
 #if 1  
   Real outlierMult = 0;
-  FOR (size_t, i, points. size ())
+  FFOR (size_t, i, points. size ())
     if (   (i == 0                   || geReal (points [i].     value - points [i - 1]. value, halfWindow))
         && (i == points. size () - 1 || geReal (points [i + 1]. value - points [i].     value, halfWindow))
        )
@@ -3862,7 +3862,7 @@ void MultiDistribution::qc () const
 Analysis1* MultiDistribution::createAnalysis (Dataset &ds)
 {
   Space1<NumAttr1> space (ds, false);
-  FOR (size_t, i, getDim ())
+  FFOR (size_t, i, getDim ())
     space << new RealAttr1 ("X" + toString (i + 1), ds);  
   const Sample sm (ds);
   auto analysis_ = new An (sm, space);
@@ -4048,7 +4048,7 @@ void MultiNormal::setParamFunc ()
 void MultiNormal::setSeed (ulong seed) const
 {
 	MultiDistribution::setSeed (seed);
-	FOR (ulong, i, zs. size ())
+	FFOR (ulong, i, zs. size ())
 	  zs [i]. setSeed (seed + i + 1);
 }
 
@@ -4059,12 +4059,12 @@ void MultiNormal::randVariable () const
 	ASSERT (cholesky. get ());
 	
   MVector zVec (zs. size ());
-	FOR (size_t, i, zs. size ())
+	FFOR (size_t, i, zs. size ())
 	  zVec [i] = zs [i]. rand ();
 	x_field. multiply (false, *cholesky, false, zVec, false);
 	x_field. add (false, mu, false, 1);
 	
-  FOR (size_t, i, variable. size ())	
+  FFOR (size_t, i, variable. size ())	
 	  variable [i] = x_field [i];
 }
 
@@ -4088,14 +4088,14 @@ void MultiNormal::estimate ()
       prog ();
     	data2variable (*it);
     	const Real m = it. mult;
-    	FOR (size_t, row, mu. rowsSize (false))
+    	FFOR (size_t, row, mu. rowsSize (false))
     	{
     	  const Real a = variable [row];
     	  if (isNan (a))
     	    continue;
     	  mu.      putInc (false, row, 0, a * m);
     	  muCount. putInc (false, row, 0, m);
-      	FOR (size_t, col, row + 1)
+      	FFOR (size_t, col, row + 1)
       	{
   	  	  const Real b = variable [col];
   	  	  if (isNan (b))
@@ -4107,7 +4107,7 @@ void MultiNormal::estimate ()
     }
   }
   
-	FOR (size_t, row, sigmaExact. rowsSize (false))
+	FFOR (size_t, row, sigmaExact. rowsSize (false))
 	{
 	  {
   	  const Real n = muCount [row];
@@ -4116,7 +4116,7 @@ void MultiNormal::estimate ()
   	  else
   	    mu. putProd (false, row, 0, 1 / n);
   	}
-  	FOR (size_t, col, row + 1)
+  	FFOR (size_t, col, row + 1)
   	{
   	  const Real n = sigmaCount. get (false, row, col);
   	  if (nullReal (n))
@@ -4175,7 +4175,7 @@ bool MultiNormal::inflateSigma ()
 	}
 	if (isNan (eigens. explainedVarianceFrac))
 	{
-  	FOR (size_t, i, sigmaExact. rowsSize (false))
+  	FFOR (size_t, i, sigmaExact. rowsSize (false))
   	  sigmaInflated. putDiag (i, variance_min [i]);
   	return true;
 	}
@@ -4184,7 +4184,7 @@ bool MultiNormal::inflateSigma ()
 
 	bool changed = false;
 	ASSERT (sigmaInflated. rowsSize (false) == eigens. getDim ());
-  FOR (size_t, i, sigmaInflated. rowsSize (false))
+  FFOR (size_t, i, sigmaInflated. rowsSize (false))
     if (maximize (eigens. values [i], variance_min [i]))
     {
     	changed = true;
@@ -4269,7 +4269,7 @@ void Mixture::Component::merge (const Component* comp)
   makeProb (prob);
   
   ASSERT (objProb. size () == comp->objProb. size ());
-  FOR (size_t, i, objProb. size ())
+  FFOR (size_t, i, objProb. size ())
   {
     objProb [i] += comp->objProb [i];
     makeProb (objProb [i]);
@@ -4330,7 +4330,7 @@ void Mixture::qc () const
 
 void Mixture::saveText (ostream& os) const
 {
-	FOR (size_t, i, components. size ())
+	FFOR (size_t, i, components. size ())
 	{
 		os << i + 1 << ": ";
 		components [i] -> saveText (os);
@@ -4374,7 +4374,7 @@ void Mixture::setSeed (ulong seed) const
   Distribution::setSeed (seed);
     
 	cat. setSeed (seed + 1);
-	FOR (size_t, i, components. size ())
+	FFOR (size_t, i, components. size ())
 	  components [i] -> distr. get () -> setSeed (seed + 2 + i);
 }
 
@@ -4415,7 +4415,7 @@ bool Mixture::similar (const Distribution &distr,
 	{
 		if (components. size () != mixt->components. size ())
 			return false;
-		FOR (size_t, i, components. size ())
+		FFOR (size_t, i, components. size ())
 		  if (! components [i] -> distr->similar (* mixt->components [i] -> distr, delta))
 		  	return false;
 		return true;
@@ -4540,12 +4540,12 @@ void Mixture::estimate ()
   		  	data2variable (*it);
   		  //ASSERT (! variable. contains (NAN));
   		  	// Bayes' theorem
-  				FOR (size_t, i, components. size ())
+  				FFOR (size_t, i, components. size ())
   				  vec [i] = components [i] -> logPdfProb ();				
   				vec. expBalanceLogRow (true, 0, 1);
   				vec. expRow (true, 0);
   				ASSERT (eqReal (vec. sumRow (true, 0), 1));
-  				FOR (size_t, i, components. size ())
+  				FFOR (size_t, i, components. size ())
   				{
   					const Prob newObjProb = vec [i];
   					ASSERT (isProb (newObjProb));
@@ -4580,10 +4580,10 @@ void Mixture::estimate ()
 	  // Component::prob
 	  {
 		  MVector vec (components. size ());
-			FOR (size_t, i, components. size ())
+			FFOR (size_t, i, components. size ())
 		    vec [i] = components [i] -> getMult ();
 	  	vec. balanceRow (true, 0, 1);
-	  	FOR (size_t, i, components. size ())
+	  	FFOR (size_t, i, components. size ())
 	  	{
 	  	  const_cast <Component*> (components [i]) -> prob = toProb (vec [i]);
 	  	  if (verbose ())
@@ -4679,7 +4679,7 @@ void Mixture::balanceProb ()
 
 void Mixture::mergeComponents ()
 {
-  FOR (size_t, i, components. size ())
+  FFOR (size_t, i, components. size ())
   {
 	  const Component* comp = components [i];
   	FOR_REV_END (size_t, j, i + 1, components. size ())
@@ -4786,14 +4786,14 @@ Space1<RealAttr1> PrinComp::createSpace (const string &attrPrefix,
 	ASSERT (& ds == sample. ds);
 	
 	Space1<RealAttr1> sp (ds, false);
-	FOR (size_t, i, getOutDim ())
+	FFOR (size_t, i, getOutDim ())
 	  sp << new RealAttr1 (attrPrefix + toString (i + 1), ds);
 	
   MVector projection (getOutDim ());  
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
   {
     project (i, projection);
-  	FOR (size_t, col, projection. size ())
+  	FFOR (size_t, col, projection. size ())
   	  (* const_cast <RealAttr1*> (sp [col])) [i] = projection [col];
   }
 	
@@ -4808,12 +4808,12 @@ Dataset PrinComp::createAttrMds (const string &attrPrefix,
   ASSERT (quality. empty ());
   
 	Dataset ds;
-	FOR (size_t, attrNum, mn. mu. rowsSize (false))
+	FFOR (size_t, attrNum, mn. mu. rowsSize (false))
 	  ds. appendObj (space [attrNum] -> name);
-	FOR (size_t, eigenNum, getOutDim ())
+	FFOR (size_t, eigenNum, getOutDim ())
   {
 	  auto attr = new RealAttr1 (attrPrefix + toString (eigenNum + 1), ds);
-	  FOR (size_t, attrNum, mn. mu. rowsSize (false))
+	  FFOR (size_t, attrNum, mn. mu. rowsSize (false))
 	    (*attr) [attrNum] = getAttrMds (attrNum, eigenNum);
 	  quality << eigens. explainedFrac (eigenNum);
 	}
@@ -4828,7 +4828,7 @@ Real PrinComp::getChi2 (size_t objNum) const
   MVector projection (getOutDim ());  
   project (objNum, projection);
   Real chi2 = 0;
-  FOR (size_t, i, getOutDim ())
+  FFOR (size_t, i, getOutDim ())
   {
     const Real coeff = eigens. values [i];
     ASSERT (positive (coeff));
@@ -4859,7 +4859,7 @@ Clustering::Clustering (const Sample &sample_arg,
   // variance_min
   {
     const Real var_rel_min = sqr (sd_min);
-    FOR (size_t, i, space. size ())
+    FFOR (size_t, i, space. size ())
     {
       Real var = 1;
       if (sd_min_is_relative)
@@ -4920,7 +4920,7 @@ Clustering::Clustering (const Sample &sample_arg,
 	  	// Splitting a cluster
 	  	if (mixt. components. size () < clusters_max)
 	  	{
-  	  	FOR (size_t, i, mixt. components. size ())
+  	  	FFOR (size_t, i, mixt. components. size ())
   	  	{
   	  		Clustering work (*this);
   	  		work. setAnalysis ();  // --> Clustering copy constructor ??
@@ -4951,7 +4951,7 @@ Clustering::Clustering (const Sample &sample_arg,
 	    // Deleting a cluster
 	    if (mixt. components. size () >= 2)
 	    {
-  	  	FOR (size_t, i, mixt. components. size ())
+  	  	FFOR (size_t, i, mixt. components. size ())
   	  	{
   	  		Clustering work (*this);
   	  		work. setAnalysis ();
@@ -5004,7 +5004,7 @@ Clustering::Clustering (const Clustering &clustering,
   mixt = clustering. mixt;
   
   size_t compNum1 = NO_INDEX;
-  FOR (size_t, i, mixt. components. size ())
+  FFOR (size_t, i, mixt. components. size ())
     if (toMerge [i])
     {
       compNum1 = i;
@@ -5052,7 +5052,7 @@ void Clustering::saveText (ostream &os) const
       td << "Cluster" << "Mean" << "Var" << "P";
       os << td. str () << endl;
     }
-    FOR (size_t, i, mixt. components. size ())
+    FFOR (size_t, i, mixt. components. size ())
     {
       TabDel td;
       const MultiNormal* mn = getMultiNormal (i);
@@ -5069,7 +5069,7 @@ void Clustering::saveText (ostream &os) const
 
 void Clustering::setAnalysis ()
 { 
-  FOR (size_t, i, getOutDim ())
+  FFOR (size_t, i, getOutDim ())
     const_cast <MultiNormal*> (getMultiNormal (i)) -> analysis = this;
 }
 
@@ -5120,11 +5120,11 @@ Space1<ProbAttr1> Clustering::createSpace (Dataset &ds) const
   ASSERT (& ds == & space. ds);
   
 	Space1<ProbAttr1> sp (ds, false);
-	FOR (size_t, i, getOutDim ())
+	FFOR (size_t, i, getOutDim ())
 	  sp << new ProbAttr1 ( "Cluster" + toString (i + 1), ds, 2/*PAR*/);
 	
   for (Iterator it (sample); it ();)  
-  	FOR (size_t, col, getOutDim ())
+  	FFOR (size_t, col, getOutDim ())
   	  (* const_cast <ProbAttr1*> (sp [col])) [*it] = mixt. components [col] -> objProb [*it];
 	
 	return sp;
@@ -5140,7 +5140,7 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
 //ASSERT (prob_min >= 0.5);
 	
 	auto attr = new NominAttr1 (attrName, ds);
- 	FOR (size_t, col, getOutDim ())
+ 	FFOR (size_t, col, getOutDim ())
  	  EXEC_ASSERT (attr->category2index ("C" + toString (col + 1)) == col);
   ASSERT (! attr->categories. empty ());
 
@@ -5148,7 +5148,7 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
   {
   	size_t col_best = NO_INDEX;
   	Prob p_max = 0;
-  	FOR (size_t, col, getOutDim ())
+  	FFOR (size_t, col, getOutDim ())
   	  if (maximize (p_max, mixt. components [col] -> objProb [*it]))
   	  	col_best = col;
   	ASSERT (col_best != NO_INDEX);
@@ -5170,7 +5170,7 @@ ProbAttr1* Clustering::createProbAttr (const string &attrName,
   for (Iterator it (sample); it ();)  
   {
   	Prob p_max = 0;
-  	FOR (size_t, col, getOutDim ())
+  	FFOR (size_t, col, getOutDim ())
   	  maximize (p_max, mixt. components [col] -> objProb [*it]);
   	(*attr) [*it] = p_max;
   }
@@ -5203,10 +5203,10 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
   ASSERT (& probAttr.  ds == sample. ds);
 
   VectorOwn<CategoryCluster> clusters;  clusters. reserve (mixt. components. size ());
-  FOR (size_t, i, mixt. components. size ())
+  FFOR (size_t, i, mixt. components. size ())
     clusters << new CategoryCluster (i);
   ASSERT (clusters. size () == mixt. components. size ());
-  FOR (size_t, i, mixt. components. size ())
+  FFOR (size_t, i, mixt. components. size ())
   	FOR (size_t, j, i)
   	{
   	  const Prob confused = mixt. getOverlap (i, j);
@@ -5217,7 +5217,7 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
     }
 
   map<const DisjointCluster*, Vector<size_t>> cluster2categories;
-  FOR (size_t, i, clusters. size ())
+  FFOR (size_t, i, clusters. size ())
     cluster2categories [const_cast <CategoryCluster*> (clusters [i]) -> getDisjointCluster ()] << i;
   ASSERT (! cluster2categories. empty ());
 
@@ -5240,7 +5240,7 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
       ASSERT (nominAttr [*it] >= mainCategory);
       nominAttr [*it] = mainCategory;
       Prob p = 0;
-      FOR (size_t, i, categories. size ())
+      FFOR (size_t, i, categories. size ())
         p += mixt. components [categories [i]] -> objProb [*it];
       makeProb (p);
       probAttr [*it] = p;
@@ -5359,12 +5359,12 @@ void Clustering::processSubclusters (const string &clusterAttrName,
   }
   
 
-  FOR (size_t, i, clustNominAttr->categories. size ())
+  FFOR (size_t, i, clustNominAttr->categories. size ())
   {
     ostringstream oss;
     {
       Sample subset (sample);
-      FOR (size_t, row, space. ds. objs. size ())
+      FFOR (size_t, row, space. ds. objs. size ())
         if ((*clustNominAttr) [row] != i)
           subset. mult [row] = 0;
       subset. finish ();    
@@ -5407,7 +5407,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         cerr << "Canonical for cluster " << i + 1 << " ..." << endl;  
 
       Vector<bool> toMerge; 
-      FOR (size_t, j, getOutDim ())
+      FFOR (size_t, j, getOutDim ())
         toMerge. push_back (i != j);
                 
       const Clustering cl (*this, toMerge); 
@@ -5510,8 +5510,8 @@ void Clustering::processSubclusters (const string &clusterAttrName,
     cout << endl;
     cout << clusterAttrName << " Class N" << endl;
     ONumber on (cout, 0, false);
-    FOR (size_t, row, contTab. rowsSize (false))
-      FOR (size_t, col, contTab. rowsSize (true))
+    FFOR (size_t, row, contTab. rowsSize (false))
+      FFOR (size_t, col, contTab. rowsSize (true))
         if (const Real v = contTab. get (false, row, col))
           cout << clustNominAttr->categories [row] << " " << classAttr->categories [col] << " " << v << endl;
   }
@@ -5575,7 +5575,7 @@ MultiNormal Canonical::getBetween (const Clustering &clustering)
   
   for (const Mixture::Component* comp : clustering. mixt. components)
     const_cast <Obj*> (ds. objs [ds. appendObj ()]) -> mult = comp->prob;
-  FOR (size_t, i, clustering. space. size ())
+  FFOR (size_t, i, clustering. space. size ())
     attrs << new RealAttr1 (clustering. space. at (i) -> name, ds); 
 
   size_t objNum = 0;
@@ -5583,7 +5583,7 @@ MultiNormal Canonical::getBetween (const Clustering &clustering)
   {
     const MultiNormal* compMn = comp->distr->asMultiNormal ();
     ASSERT (ds. attrs. size () == compMn->mu. size ());
-    FOR (size_t, i, clustering. space. size ())
+    FFOR (size_t, i, clustering. space. size ())
       (*attrs [i]) [objNum] = compMn->mu [i];
     objNum++;
   }
@@ -5670,8 +5670,8 @@ void Canonical::qc () const
       Matrix m (getOutDim ());
       
       m. multiplyBilinear (false, within. sigmaExact, false, basis, false);
-      FOR (size_t, row, getOutDim ())
-        FOR (size_t, col, getOutDim ())
+      FFOR (size_t, row, getOutDim ())
+        FFOR (size_t, col, getOutDim ())
         {
           const Real a = m. get (false, row, col);
           if (row == col) 
@@ -5691,8 +5691,8 @@ void Canonical::qc () const
         }   
         
       m. multiplyBilinear (false, between. sigmaExact, false, basis, false);
-      FOR (size_t, row, getOutDim ())
-        FOR (size_t, col, getOutDim ())
+      FFOR (size_t, row, getOutDim ())
+        FFOR (size_t, col, getOutDim ())
         {
           const Real a = m. get (false, row, col);
           if (row == col) 
@@ -5755,14 +5755,14 @@ Space1<RealAttr1> Canonical::createSpace (const string &attrPrefix,
 	ASSERT (& ds == sample. ds);
 	
 	Space1<RealAttr1> sp (ds, false);
-	FOR (size_t, i, getOutDim ())
+	FFOR (size_t, i, getOutDim ())
 	  sp << new RealAttr1 (attrPrefix + toString (i + 1), ds);
 	
   MVector projection (getOutDim ());  
-  FOR (size_t, i, ds. objs. size ())
+  FFOR (size_t, i, ds. objs. size ())
   {
     project (i, projection);  
-  	FOR (size_t, col, projection. size ())
+  	FFOR (size_t, col, projection. size ())
   	  (* const_cast <RealAttr1*> (sp [col])) [i] = projection [col];
   }
 	
@@ -5804,7 +5804,7 @@ Mds::Mds (const Sample &sample_arg,
   ASSERT (sample. ds->getUnitMult ());
 #if 0
 #ifndef NDEBUG
-  FOR (size_t, objNum, sample. ds->objs. size ())
+  FFOR (size_t, objNum, sample. ds->objs. size ())
   	if (negative (attr2. matr. getDiag (objNum)))
   	{
   	  cout << "matr[" << objNum << "," << objNum << "] = " << attr2. matr. getDiag (objNum) << endl;
@@ -5841,7 +5841,7 @@ Space1<RealAttr1> Mds::createSpace (const string &realAttrPrefix,
 	Space1<RealAttr1> sp (ds, false);
 	Vector<RealAttr1*> realAttrs;  realAttrs. reserve (getOutDim ());
 	Vector<RealAttr1*> imaginaryAttrs (getOutDim (), nullptr);
-	FOR (size_t, i, getOutDim ())
+	FFOR (size_t, i, getOutDim ())
 	{
 	  auto realAttr = new RealAttr1 (realAttrPrefix + toString (i + 1), ds);;
 	  sp << realAttr;
@@ -5855,7 +5855,7 @@ Space1<RealAttr1> Mds::createSpace (const string &realAttrPrefix,
 	}
 	
   for (Iterator it (sample); it ();)  
-  	FOR (size_t, attrNum, eigens. values. size ())
+  	FFOR (size_t, attrNum, eigens. values. size ())
   	{
   	  const Real x = get (*it, attrNum, false);
   	  if (isNan (x))
