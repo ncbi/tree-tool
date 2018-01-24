@@ -110,11 +110,6 @@ long round (Real a)
 }
 
 
-Real log2 (Real x)
-{
-  return log (x) / log_2;
-}
-
 
 
 /////////////////////////////////// Sum ///////////////////////////////////
@@ -756,7 +751,7 @@ Histogram::Histogram (Real start_arg,
 void Histogram::saveText (ostream &os) const
 { 
   os << "bin\tcount" << endl;
-  FOR (size_t, i, bins. size ())
+  FFOR (size_t, i, bins. size ())
     os << start + binRange * (Real) i << '\t' << bins [i] << endl;
 }
 

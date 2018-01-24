@@ -7,6 +7,7 @@
 
 #include <limits>
 #include <cmath>
+#include <math.h>
 #include "../common.hpp"
 
 
@@ -29,10 +30,8 @@ template <class T>
   inline T divide (T n, 
                    T divisor,
                    T &remainder)
-  {
-    if (n >= 0)
-    {
-      remainder = n % divisor;
+  { if (n >= 0)
+    { remainder = n % divisor;
       return n / divisor;
     }
     const T absN = abs (n);
@@ -162,9 +161,6 @@ inline Real nonNegative (Real x)
     else
       return max (0.0, x);
   }
-
-Real log2 (Real x);
-
 
 inline void sqrEquation (Real a,
                          Real b,
