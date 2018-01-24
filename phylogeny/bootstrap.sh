@@ -61,7 +61,7 @@ if ($?) exit 1
 #bootstrap_report.sh $1 $replicas undirected
 #if ($?) exit 1
 
-rm -r $1.trees/
+rm -r $1.trees/  
 if ($?) exit 1
 
 
