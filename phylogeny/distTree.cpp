@@ -192,7 +192,7 @@ void DTNode::setSubtreeLeaves ()
     const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
     const_cast <DTNode*> (child) -> setSubtreeLeaves ();
     ASSERT (subtreeLeaves. size () == child->subtreeLeaves. size ());
-    FOR (size_t, i, subtreeLeaves. size ())
+    FFOR (size_t, i, subtreeLeaves. size ())
       if (child->subtreeLeaves [i])
         subtreeLeaves [i] = true;
   }
@@ -1075,7 +1075,7 @@ bool Change::apply ()
   Dataset ds;
   ds. objs. reserve (subgraph. subPaths. size ());
   auto target = new RealAttr1 ("target", ds);
-  FOR (size_t, objNum, subgraph. subPaths. size ())
+  FFOR (size_t, objNum, subgraph. subPaths. size ())
     ds. appendObj ();
   auto fromAttr  = new ExtBoolAttr1 ("from",  ds);
   auto toAttr    = new ExtBoolAttr1 ("to",    ds);
@@ -1083,7 +1083,7 @@ bool Change::apply ()
   fromAttr ->setAll (EFALSE);
   toAttr   ->setAll (EFALSE);
   interAttr->setAll (EFALSE);
-  FOR (size_t, objNum, subgraph. subPaths. size ())
+  FFOR (size_t, objNum, subgraph. subPaths. size ())
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
     const VectorPtr<Tree::TreeNode> path (subgraph. getPath (subPath));
@@ -1128,7 +1128,7 @@ bool Change::apply ()
   if (isNan (lr. absCriterion))
     return false;
 
-  FOR (size_t, i, lr. beta. size ())
+  FFOR (size_t, i, lr. beta. size ())
     maximize (lr. beta [i], 0.0);
 
   if (arcEnd)
@@ -1146,7 +1146,7 @@ bool Change::apply ()
   }
 
   Real subPathsAbsCriterion = 0;
-  FOR (size_t, objNum, subgraph. subPaths. size ())
+  FFOR (size_t, objNum, subgraph. subPaths. size ())
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
     const Dissim& dissim = tree. dissims [subPath. objNum];
@@ -2141,7 +2141,7 @@ bool DistTree::getConnected ()
  	  if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
  	    leaf->DisjointCluster::init ();
  	}
-  FOR (size_t, row, dissimDs->objs. size ())
+  FFOR (size_t, row, dissimDs->objs. size ())
     if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
       FOR (size_t, col, row)  // dissimAttr is symmetric
         if (dissimAttr->get (row, col) < INF)
@@ -2201,7 +2201,7 @@ size_t DistTree::setDiscernible ()
    	    leaf->DisjointCluster::init ();
    	  }
    	}
-    FOR (size_t, row, dissimDs->objs. size ())
+    FFOR (size_t, row, dissimDs->objs. size ())
       if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
         FOR (size_t, col, row)  // dissimAttr is symmetric
           if (! positive (dissimAttr->get (row, col)))
@@ -2304,7 +2304,7 @@ void DistTree::setGlobalLen ()
     if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
       leaf->subtreeLen. add (0);  
   }
-  FOR (size_t, row, dissimDs->objs. size ())
+  FFOR (size_t, row, dissimDs->objs. size ())
     if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
       FOR (size_t, col, row)  // dissimAttr is symmetric
       {
@@ -2441,7 +2441,7 @@ void DistTree::neighborJoin ()
     cout << "Neighbor joining ..." << endl;  
   	ASSERT (dissimDs. get ());
   	ASSERT (dissimAttr);
-    FOR (size_t, row, dissimDs->objs. size ())
+    FFOR (size_t, row, dissimDs->objs. size ())
     {
       const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name);
       ASSERT (leaf1);
@@ -2508,7 +2508,7 @@ void DistTree::neighborJoin ()
       {
         Real criterion = INF;
         size_t i_best = NO_INDEX;
-        FOR (size_t, i, leafPairs. size ())
+        FFOR (size_t, i, leafPairs. size ())
           // P (criterion1 < criterion2) ??
           if (minimize (criterion, leafPairs [i]. getCriterion (n)))            
             i_best = i;
@@ -2642,7 +2642,7 @@ void DistTree::dissimDs2dissims (bool sparse)
 
   // dissims[], mult_sum, dissim2_sum
   loadDissimPrepare (getDissimSize_max () /*, dissimAttr->decimals*/);
-  FOR (size_t, row, dissimDs->objs. size ())
+  FFOR (size_t, row, dissimDs->objs. size ())
   {
     const string name1 = dissimDs->objs [row] -> name;
     const Leaf* leaf1 = findPtr (name2leaf, name1);
@@ -2766,7 +2766,7 @@ void DistTree::setPaths ()
   setLca ();  
   absCriterion = 0;
   Progress prog ((uint) dissims. size (), 1e5);  // PAR
-  FOR (size_t, objNum, dissims. size ()) 
+  FFOR (size_t, objNum, dissims. size ()) 
   {
     prog ();
     if (objNum > numeric_limits<uint>::max())
@@ -3001,7 +3001,7 @@ void DistTree::qcPaths ()
         
   size_t pathObjNums_all = 0;
   size_t lcaObjNums_all = 0;
-  FOR (size_t, objNum, dissims. size ())
+  FFOR (size_t, objNum, dissims. size ())
     if (dissims [objNum]. valid ())
     {
       const VectorPtr<TreeNode> path (dissims [objNum]. getPath ());
@@ -3240,7 +3240,7 @@ bool DistTree::optimizeLenAll ()
   beta. solveSystem (false, 0, matr, false);
 #endif
         
-  FOR (size_t, i, dtNodes. size ())
+  FFOR (size_t, i, dtNodes. size ())
     const_cast <DTNode*> (dtNodes [i]) -> len = max (0.0, beta [i]);
       
   if (toSkip)
@@ -3289,7 +3289,7 @@ void DistTree::quartet2arcLen ()
   {
     const Real dissim = (*target) [*it];    
     const VectorPtr<TreeNode> path (dissim2path (*it));
-    FOR (size_t, i, path. size ())
+    FFOR (size_t, i, path. size ())
     {
       DTNode* dtNode = const_static_cast <DTNode*> (path [i]);
       ASSERT (dtNode != root);
@@ -3638,20 +3638,20 @@ size_t DistTree::optimizeLenNode ()
     Dataset starDs;
     starDs. objs. reserve (subgraph. subPaths. size ());
     auto targetAttr = new RealAttr1 ("target", starDs);
-    FOR (size_t, objNum, subgraph. subPaths. size ())
+    FFOR (size_t, objNum, subgraph. subPaths. size ())
       starDs. appendObj ();
     Space1<NumAttr1> sp (starDs, false);  sp. reserve (star. arcNodes. size ());
-    FOR (size_t, i, star. arcNodes. size ())
+    FFOR (size_t, i, star. arcNodes. size ())
     {
       auto attr = new ExtBoolAttr1 ("X" + toString (i + 1), starDs);;
       sp << attr;
       attr->setAll (EFALSE);
     }
-    FOR (size_t, objNum, subgraph. subPaths. size ())
+    FFOR (size_t, objNum, subgraph. subPaths. size ())
     {
       const SubPath& subPath = subgraph. subPaths [objNum];
       const VectorPtr<TreeNode> path (subgraph. getPath (subPath));
-      FOR (size_t, i, star. arcNodes. size ())
+      FFOR (size_t, i, star. arcNodes. size ())
         if (path. contains (static_cast <const TreeNode*> (star. arcNodes [i])))
           (* const_static_cast <ExtBoolAttr1*> (sp [i])) [objNum] = ETRUE;        
       const size_t wholeObjNum = subPath. objNum;
@@ -3664,7 +3664,7 @@ size_t DistTree::optimizeLenNode ()
     
     L2LinearNumPrediction lr (sample, sp, *targetAttr);
     ASSERT (lr. beta. size () == arcNodes. size ());
-    FOR (size_t, attrNum, lr. beta. size ())
+    FFOR (size_t, attrNum, lr. beta. size ())
       lr. beta [attrNum] = static_cast <const DTNode*> (arcNodes [attrNum]) -> len;
     const bool solved = lr. solveUnconstrainedFast (nullptr, true, 10, 0.01);  // PAR
     lr. qc ();
@@ -3672,7 +3672,7 @@ size_t DistTree::optimizeLenNode ()
     // DTNode::len
     if (solved)
     {
-      FOR (size_t, attrNum, arcNodes. size ())
+      FFOR (size_t, attrNum, arcNodes. size ())
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
       subgraph. subPaths2tree ();
       prog (absCriterion2str ()); 
@@ -4731,10 +4731,13 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 
   const Sample sample (ds);
 
-  if (ds. objs. size () <= 30)  // PAR  // use always ??
+#if 0
+  if (ds. objs. size () <= 30)  // PAR  
   {  
+#endif
     Normal /*Exponential*/ distr;
     outlier_min = exp (criterionAttr->distr2outlier (sample, distr, outlier_EValue_max));  
+#if 0
   }
   else
   { 
@@ -4756,6 +4759,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
     outlier_min = exp (normal. getQuantile (1 - outlier_EValue_max / (Real) ds. objs. size ()));
   //cl. mixt. print (cerr);  
   }
+#endif
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))
@@ -4841,7 +4845,7 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
   // Mixture of 2 types of dissimilarities (> 2 ??)
   sample. mult. setAll (0);
 //OFStream f ("arc_len");  
-  FOR (size_t, objNum, nodeDissims. size ())
+  FFOR (size_t, objNum, nodeDissims. size ())
     if (geReal (nodeDissims [objNum]. dissim_min, dissimOutlier_min))  
     {
       sample. mult [objNum] = 1;
@@ -4901,7 +4905,7 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
     const Real outlier_min = lenAttr->distr2outlier (sample, distr, outlier_EValue_max); 
     if (isNan (outlier_min))
       continue;
-    FOR (size_t, objNum, ds. objs. size ())
+    FFOR (size_t, objNum, ds. objs. size ())
       if (geReal ((*lenAttr) [objNum], outlier_min))
         outliers << descendants [objNum] -> reprLeaf;
   }  
@@ -5133,7 +5137,7 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
   // Use outlier analysis ??
   size_t i_best = NO_INDEX;
   Real diff_max = 0;
-  FOR (size_t, i, nodeHeights. size ())
+  FFOR (size_t, i, nodeHeights. size ())
     if (i && maximize (diff_max, nodeHeights [i]. dist - nodeHeights [i - 1]. dist))
       i_best = i;
   ASSERT (i_best != NO_INDEX);
@@ -5142,7 +5146,7 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
     i_best = nodeHeights. size () - clusters_min;
     
   VectorPtr<DTNode> clusters;  clusters. reserve (nodeHeights. size () - i_best + 1);
-  FOR_START (size_t, i, i_best, nodeHeights. size ())
+  FFOR_START (size_t, i, i_best, nodeHeights. size ())
     clusters << static_cast <const DTNode*> (nodeHeights [i]. node);
     
 #ifndef NDEBUG
