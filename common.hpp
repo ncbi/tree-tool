@@ -374,12 +374,95 @@ public:
 
 
 
+// STL algorithms
+
+template <typename To, typename From>
+  inline void insertAll (To &to,
+                         const From &from)
+    { to. insert (to. begin (), from. begin (), from. end ()); }
+
+template <typename To, typename From>
+  inline void insertIter (To &to,
+                          const From &from)
+    { for (const auto x : from)
+        to << x;
+    }
+
+template <typename T>
+  inline void sort (T &t)
+    { std::sort (t. begin (), t. end ()); }
+
+template <typename T, typename StrictlyLess>
+  inline void sort (T &t,
+                    const StrictlyLess &strictlyLess)
+    { std::sort (t. begin (), t. end (), strictlyLess); }
+
+template <typename T, typename U>
+  bool intersects (const T &t,
+                   const U &u)
+    { for (const auto x : t)
+        if (u. find (static_cast <typename U::value_type> (x)) != u. end ())
+          return true;
+      return false;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  inline bool contains (const map <Key, Value> &m,
+                        const KeyParent& key)
+    { return m. find (key) != m. end (); }
+
+template <typename Key, typename Value, typename KeyParent>
+  bool find (const map <Key, Value> &m,
+             const KeyParent& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const map <Key, Value> &m,
+                        const KeyParent& key)
+    { const auto it = m. find (key);
+    	if (it == m. end ())
+    		return nullptr;
+    	return & it->second; 
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
+                        const KeyParent& key)
+    { const Value* value;
+      if (find (m, key, value))
+        return value;
+      return nullptr;
+    }
+
+template <typename Key, typename Value>
+  const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
+                         const Key& key)
+    { if (! contains (m, key))
+        m [key] = new Value ();
+      return * m [key];
+    }
+
+template <typename T, typename UnaryPredicate>
+  inline long count_if (T &t, UnaryPredicate pred)
+    { return std::count_if (t. begin (), t. end (), pred); }
+
+
+
 template <typename T>
 struct List : list<T>
 {
 private:
 	typedef  list<T>  P;
 public:
+
 
 	List ()
 	  {}
@@ -389,9 +472,7 @@ public:
   template <typename U/*:<T>*/>
     explicit List (const vector<U> &other)
       { *this << other; }
-//List (List<T>&&) noexcept = default;
-//List<T>& operator= (const List&) = default;
-//List<T>& operator= (List&&) = default;
+
 	  
 	T at (size_t index) const
 	  { size_t i = 0;
@@ -891,84 +972,6 @@ inline string named2name (const Named* n)
 
 
 typedef int (*CompareInt) (const void*, const void*);
-
-
-
-// STL algorithms
-
-template <typename To, typename From>
-  inline void insertAll (To &to,
-                         const From &from)
-    { to. insert (to. begin (), from. begin (), from. end ()); }
-
-template <typename To, typename From>
-  inline void insertIter (To &to,
-                          const From &from)
-    { for (const auto x : from)
-        to << x;
-    }
-
-template <typename T>
-  inline void sort (T &t)
-    { std::sort (t. begin (), t. end ()); }
-
-template <typename T, typename StrictlyLess>
-  inline void sort (T &t,
-                    const StrictlyLess &strictlyLess)
-    { std::sort (t. begin (), t. end (), strictlyLess); }
-
-template <typename T, typename U>
-  bool intersects (const T &t,
-                   const U &u)
-    { for (const auto x : t)
-        if (u. find (static_cast <typename U::value_type> (x)) != u. end ())
-          return true;
-      return false;
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  inline bool contains (const map <Key, Value> &m,
-                        const KeyParent& key)
-    { return m. find (key) != m. end (); }
-
-template <typename Key, typename Value, typename KeyParent>
-  bool find (const map <Key, Value> &m,
-             const KeyParent& key,
-             Value &value)
-    // Return: success
-    // Output: value, if Return
-    { const auto it = m. find (key);
-    	if (it == m. end ())
-    		return false;
-    	value = it->second; 
-    	return true;
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  const Value* findPtr (const map <Key, Value> &m,
-                        const KeyParent& key)
-    { const auto it = m. find (key);
-    	if (it == m. end ())
-    		return nullptr;
-    	return & it->second; 
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
-                        const KeyParent& key)
-    { const Value* value;
-      if (find (m, key, value))
-        return value;
-      return nullptr;
-    }
-
-template <typename Key, typename Value>
-  const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
-                         const Key& key)
-    { if (! contains (m, key))
-        m [key] = new Value ();
-      return * m [key];
-    }
 
 
 
