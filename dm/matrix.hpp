@@ -136,23 +136,27 @@ public:
  
   Matrix (bool t,
           size_t maxRow,
-          size_t maxCol) 
-    : data (maxRow * maxCol)
+          size_t maxCol,
+          Real init_val = NAN) 
+    : data (init_val, maxRow * maxCol)
     , rowsSize_ (t ? maxCol : maxRow)
     , colsSize  (t ? maxRow : maxCol)
     , psd (maxRow == maxCol)
     {}
-  explicit Matrix (size_t maxRow) 
-    : data (sqr (maxRow))
+  explicit Matrix (size_t maxRow,
+                   Real init_val = NAN) 
+    : data (init_val, sqr (maxRow))
     , rowsSize_ (maxRow)
     , colsSize  (maxRow)
     , psd (true)
     {}
   Matrix (bool t,
           const Matrix &source,
-          bool sourceT) 
-    : data (  source. rowsSize (  sourceT) 
-    	      * source. rowsSize (! sourceT)
+          bool sourceT,
+          Real init_val = NAN) 
+    : data ( init_val
+    	     ,   source. rowsSize (  sourceT) 
+    	       * source. rowsSize (! sourceT)
     	     )
     , rowsSize_ (source. rowsSize (boolPow (! sourceT, t)))
     , colsSize  (source. rowsSize (boolPow (  sourceT, t)))
@@ -900,8 +904,9 @@ public:
 
 struct MVector : Matrix
 {
-  explicit MVector (size_t maxRow = 0) 
-    : Matrix (false, maxRow, 1)
+  explicit MVector (size_t maxRow = 0,
+                    Real init_val = NAN) 
+    : Matrix (false, maxRow, 1, init_val)
     {}
   explicit MVector (const Vector<Real> &vec)
     : Matrix (false, vec. size (), 1)

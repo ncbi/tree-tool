@@ -3183,8 +3183,8 @@ bool DistTree::optimizeLenAll ()
   ASSERT (arcs == dtNodes. size ());
 
   // DTNode::dissimSum, matr
-  Matrix matr (arcs);
-  matr. putAll (0);
+  Matrix matr (arcs, 0);
+//matr. putAll (0);
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> dissimSum = 0;
   for (Iterator it (dsSample); it ();)  
@@ -3218,7 +3218,7 @@ bool DistTree::optimizeLenAll ()
     return false;
         
   MVector xy (arcs);
-  xy. putAll (NAN);
+//xy. putAll (NAN);
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);

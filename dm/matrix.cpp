@@ -240,7 +240,7 @@ Matrix::Matrix (bool t,
   loadSize (f, square, maxRow, maxCol); 
 
   swapRowCol (t, maxRow, maxCol);  
-  data. resize (maxRow * maxCol);
+  data. resize (maxRow * maxCol, NAN);
   rowsSize_ = maxRow;    
   colsSize = maxCol;  
   psd = isSquare ();  
@@ -1827,9 +1827,9 @@ void Matrix::multiply (bool         t,
   ASSERT (m1. rowsSize (! t1) == m2. rowsSize (t2));
 
   FFOR (size_t, row, rowsSize (t)) 
-  FFOR (size_t, col, rowsSize (! t))
-    put (t, row, col, multiplyVec (m1, t1,   row,
-                                   m2, ! t2, col));
+	  FFOR (size_t, col, rowsSize (! t))
+	    put (t, row, col, multiplyVec (m1, t1,   row,
+                                     m2, ! t2, col));
   psd = & m1 == & m2 && t1 != t2;
 }
 

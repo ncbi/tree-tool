@@ -1209,8 +1209,8 @@ Categorical* NominAttr1::getCategorical (const Sample &sample) const
 {
   auto cat = new Categorical ();
 
-  MVector categ2num (categories. size ());
-  categ2num. putAll (0);
+  MVector categ2num (categories. size (), 0);
+//categ2num. putAll (0);
   for (Iterator it (sample); it ();)
     if (! isMissing (*it))
       categ2num [(*this) [*it]] += it. mult;
@@ -5278,15 +5278,15 @@ void Clustering::merge (size_t compNum1,
   const Prob p1 = comp1->prob;
   const Prob p2 = comp2->prob;
   
-  MVector mu (mn1->mu. size ());
-  mu. putAll (0);
+  MVector mu (mn1->mu. size (), 0);
+//mu. putAll (0);
   mu. add (false, mn1->mu, false, p1);
   mu. add (false, mn2->mu, false, p2);
   mu. putProdAll (1 / (p1 + p2));
   
-  Matrix sigma (false, mn1->sigmaExact, false);
+  Matrix sigma (false, mn1->sigmaExact, false, 0);
   {
-    sigma. putAll (0);
+  //sigma. putAll (0);
     Matrix raw (false, mn1->sigmaExact, false);
     mn1->getSigmaRaw (raw);
     sigma. add (false, raw, false, p1);
@@ -5500,8 +5500,8 @@ void Clustering::processSubclusters (const string &clusterAttrName,
 #if 0
   if (classAttr)
   {
-    Matrix contTab (false, clustNominAttr->categories. size (), classAttr->categories. size ());
-    contTab. putAll (0);
+    Matrix contTab (false, clustNominAttr->categories. size (), classAttr->categories. size (), 0);
+  //contTab. putAll (0);
     AttrAnalysis an (clustNominAttr, classAttr);
     for (Iterator it (an); it ();)  
       contTab. putInc (false, (*clustNominAttr) [*it], (*classAttr) [*it], 1);
