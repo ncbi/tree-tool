@@ -56,9 +56,9 @@ struct ThisApplication : Application
     
 
     auto sim_new = new RealAttr2 (attrName, ds_new, 6);  // PAR
-    sim_new->matr. putAll (0);
-    Matrix count (false, sim_new->matr, false);
-    count. putAll (0);
+    sim_new->setAll (0);
+    Matrix count (false, sim_new->matr, false, 0);
+  //count. putAll (0);
     {
       // Pass 2
       LineInput li (file_list);
