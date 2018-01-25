@@ -152,7 +152,7 @@ struct ThisApplication : Application
       OFStream out (qual);
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
-      cout << "Feature gains:" << endl;
+      cout << "Feature statistics:" << endl;
       size_t monos = 0;  // Monophyletic
       size_t gains = 0;
       size_t losses = 0;
@@ -160,7 +160,7 @@ struct ThisApplication : Application
       size_t commons = 0;
       size_t singles = 0;
       const size_t genomes = tree. root->getLeavesSize ();
-      FOR (size_t, i, tree. features. size ())
+      FFOR (size_t, i, tree. features. size ())
       {
         const Feature& f = tree. features [i];
         f. qc ();
@@ -195,6 +195,8 @@ struct ThisApplication : Application
       cout << "# Common features:        " << commons << endl;
       cout << "# Single features:        " << singles << endl;
       cout << "# Optional features:      " << optionals << endl;
+      cout << endl;
+      cout << "Feature agreement:        " << (int) monos - (int) (gains + losses) << endl;  // Better: more
     }
 
     
@@ -204,7 +206,7 @@ struct ThisApplication : Application
      	for (const DiGraph::Node* node : tree. nodes)
      	{
      		const Phyl* phyl = static_cast <const Phyl*> (node);
-        FOR (size_t, i, tree. features. size ())
+        FFOR (size_t, i, tree. features. size ())
           if ((! phyl->feature2parentCore (i) || phyl == tree. root) && phyl->core [i])  
             of << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
       }
