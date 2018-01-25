@@ -699,6 +699,7 @@ public:
 	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
 	  //          old/{tree,makeDistTree,leaf}.<version>                                  Old versions of data
+	  //          feature/                                                                Link to a directory with features for makeFeatureTree
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)
