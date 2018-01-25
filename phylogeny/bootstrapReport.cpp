@@ -20,7 +20,7 @@ struct ThisApplication : Application
 		// Input
 	  addPositional ("bootstrap", "Bootstrap result: file with lines: <N> match[+-]: <node LCA-name>");
 	  addKey ("replicas", "# replicas (match+ + match-) - for QC", "0");
-	  addKey ("support_min", "Min. match+ / (match+ + match-) to report a node", "0.3333333");   // =1.0/3.0
+	//addKey ("support_min", "Min. match+ / (match+ + match-) to report a node", "0.3333333");   // =1.0/3.0
 	  addKey ("stable_min", "Min. match+ / (match+ + match-) for a node to be stable", "0.92");   // PAR
 	  addFlag ("print_nodes", "Print support for each interior arc identified by a child node");
 	}
@@ -31,12 +31,12 @@ struct ThisApplication : Application
   {
 		const string bootstrap         = getArg ("bootstrap");
 		const size_t replicas_expected = str2<size_t> (getArg ("replicas"));
-		const double support_min       = str2<double> (getArg ("support_min"));
+  //const double support_min       = str2<double> (getArg ("support_min"));
 		const double stable_min        = str2<double> (getArg ("stable_min"));
 		const bool print_nodes         = getFlag ("print_nodes");
 		ASSERT (replicas_expected);
-		ASSERT (support_min >= 0);
-		ASSERT (support_min <= 1);
+	//ASSERT (support_min >= 0);
+	//ASSERT (support_min <= 1);
 		ASSERT (stable_min >= 0);
 		ASSERT (stable_min <= 1);
     
@@ -80,7 +80,7 @@ struct ThisApplication : Application
  	      stable++;
  	    varSum += support * (1 - support);
  	    n++;
- 	    if (support < support_min)
+ 	    if (support < 1.0/3.0 /*support_min*/)
  	      continue;
  	    supportSum += support;
  	    if (print_nodes)
@@ -92,7 +92,7 @@ struct ThisApplication : Application
     }
     ASSERT (stable <= n);
     const ONumber on (cout, 3, false);
-    cout << "Sum: " << supportSum << endl;
+    cout << "RF sum: " << supportSum << endl;
     cout << "Var: " << varSum / (double) n << endl;
     cout << stable_min * 100 << "%-Stable: " << stable << endl;
 	}
