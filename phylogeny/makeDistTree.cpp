@@ -33,7 +33,7 @@ const string outlierCriterion ("rel. average leaf error");
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Optimize topology and compute statistics for a distance tree")
+	: Application ("Optimize topology and compute statistics for a least-squares distance tree")
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
@@ -120,7 +120,7 @@ struct ThisApplication : Application
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree = isDirName (dataFName)
-               ? new DistTree (dataFName, true, true)
+               ? new DistTree (dataFName, true, true, ! topology)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse)
                  : isDirName (input_tree)
@@ -191,15 +191,15 @@ struct ThisApplication : Application
           if (reinsert)
           {
             cout << "Optimizing topology: re-insert ..." << endl;
-            const Chronometer_OnePass cop ("Topology and arc length optimization: re-insert");
+            const Chronometer_OnePass cop ("Topology optimization: re-insert");
             tree->optimizeReinsert ();  
           }
           
           {
             cout << string ("Optimizing topology: ") + (whole ? "neighbors" : "subgraphs") + " ..." << endl;
-            const Chronometer_OnePass cop ("Topology and arc length optimization: local");
+            const Chronometer_OnePass cop ("Topology optimization: local");
             if (whole)
-              tree->optimizeIter (0, output_tree);
+              tree->optimizeWholeIter (0, output_tree);
             else
             {
             	const size_t iter_max = (size_t) log2 ((Real) leaves) / areaRadius_std + 1;  // PAR
@@ -283,7 +283,7 @@ struct ThisApplication : Application
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
 
-    tree->saveFile (output_tree);  // make size to be O(n) - extended Newick !??
+    tree->saveFile (output_tree);  
     tree->saveFeatureTree (output_feature_tree);
 
 
@@ -327,8 +327,11 @@ struct ThisApplication : Application
       cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernibles (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
-      cout << "Min. discernible leaf length = " << tree->getMinLeafLen () << endl;
-        // = 0 => epsilon2_0 > 0
+      {
+      	const ONumber on1 (cout, true, 3);  // PAR
+        cout << "Min. discernible leaf length = " << tree->getMinLeafLen () << endl;
+          // = 0 => epsilon2_0 > 0
+      }
       cout << "Ave. arc length = " << tree->getAveArcLength () << endl;
         // Check exponential distribution ??
       cout << "Interior height = " << tree->getInteriorHeight () << endl;

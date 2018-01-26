@@ -1412,10 +1412,13 @@ DistTree::DistTree (const string &dissimFName,
 
 DistTree::DistTree (const string &dataDirName,
                     bool loadNewLeaves,
- 	                  bool loadDissim)
+ 	                  bool loadDissim,
+ 	                  bool optimize)
 {
 	ASSERT (! dataDirName. empty ());
 	ASSERT (dataDirName. back () == '/');
+	IMPLY (optimize, loadDissim);
+	
 
   // Initial tree topology
   loadTreeFile (dataDirName + "tree");  
@@ -1556,9 +1559,9 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (absCriterion2str ());
         Unverbose unv;
-      //if (! topology)  ??
-        optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
-        // reinsert ??
+        if (optimize)
+          optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
+          // reinsert ??
       #ifndef NDEBUG
         // ??
        	for (const DiGraph::Node* node : nodes)
@@ -3218,7 +3221,6 @@ bool DistTree::optimizeLenAll ()
     return false;
         
   MVector xy (arcs);
-//xy. putAll (NAN);
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
@@ -3833,8 +3835,8 @@ bool DistTree::optimizeReinsert ()
 
 
 
-void DistTree::optimizeIter (uint iter_max,
-                             const string &output_tree)
+void DistTree::optimizeWholeIter (uint iter_max,
+                                  const string &output_tree)
 {
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = false;
@@ -3845,7 +3847,7 @@ void DistTree::optimizeIter (uint iter_max,
     iter++;
     if (verbose (1))
       cout << endl << "Topology optimization iter = " << iter << endl;
-    if (! optimize ())
+    if (! optimizeWhole ())
       break;	    
     saveFile (output_tree);
     if (verbose (1))
@@ -3855,7 +3857,7 @@ void DistTree::optimizeIter (uint iter_max,
 
 
 
-bool DistTree::optimize () 
+bool DistTree::optimizeWhole () 
 { 
   ASSERT (dissims. size () >= 2 * name2leaf. size () - 2);
 
@@ -4195,7 +4197,7 @@ uint DistTree::optimizeSubgraph (const DTNode* center,
       if (subgraph. large () && areaRadius > 1)
         tree. optimizeSubgraphs (areaRadius / 2); 
       else
-        tree. optimizeIter (20, string ());  // PAR
+        tree. optimizeWholeIter (20, string ());  // PAR
     }
     else if (leaves == 3)
     {

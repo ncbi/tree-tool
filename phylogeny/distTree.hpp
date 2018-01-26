@@ -676,7 +676,8 @@ public:
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
-	          bool loadDissim);
+	          bool loadDissim,
+	          bool optimize);
 	  // Input: dataDirName: ends with '/'
 	  //          files: tree, leaf, dissim
 	  //        <dataDirName/> contains:
@@ -686,20 +687,19 @@ public:
 	  //          outlier/<obj>             <obj>                                         Outliers. Their dissimilarities are either in dissim or in dissim.outlier
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
-    //         [dissim.add]
-    //          new/<obj>                                                               Ne wobjects to add to the tree
+    //         [dissim.add[-req]]
+    //          new/<obj>                                                               New objects to add to the tree
     //          search/<obj_new>/                                                       Initialization of search for <obj_new> location
     //        [ search/<obj_new>/dissim   <obj_new> <obj> <dissimilarity>        
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
     //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
-    //          strong_outliers           ""|-strong_outliers                           makeDistTree parameter
-	  //       ?? request                   <obj1> <obj2>                                 Request to compute dissimilarity
+	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
 	  //          old/{tree,makeDistTree,leaf}.<version>                                  Old versions of data
-	  //          feature/                                                                Link to a directory with features for makeFeatureTree
+	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)
@@ -891,13 +891,13 @@ public:
 	  // Return: false <=> finished
     // Invokes: NewLeaf(DTNode*), Change, applyChanges()
     // Time: O(n log^3(n))
-	void optimizeIter (uint iter_max,
-	                   const string &output_tree);
+	void optimizeWholeIter (uint iter_max,
+	                        const string &output_tree);
 	  // Input: iter_max: 0 <=> infinity
 	  // Update: cout
-	  // Invokes: optimize(), saveFile(output_tree)
+	  // Invokes: optimizeWhole(), saveFile(output_tree)
 private:
-	bool optimize ();
+	bool optimizeWhole ();
 	  // Update: DTNode::stable
 	  // Return: false <=> finished
 	  // Requries: getConnected()
@@ -927,8 +927,8 @@ private:
 	  // Return: adjusted areaRadius
 	  // Input: center: may be delete'd
 	  // Output: DTNode::stable = true
-	  // Invokes: DistTree(center,areaRadius,).optimizeIter()
-	  // Time: O(log^2(n) + Time(optimizeIter(),n = min(this->n,2^areaRadius))
+	  // Invokes: DistTree(center,areaRadius,).optimizeWholeIter()
+	  // Time: O(log^2(n) + Time(optimizeWholeIter(),n = min(this->n,2^areaRadius))
   void delayDeleteRetainArcs (DTNode* node);
     // Invokes: s->detachChildrenUp()
   size_t finishChanges ();
