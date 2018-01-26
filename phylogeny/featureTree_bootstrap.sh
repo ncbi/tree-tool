@@ -30,11 +30,7 @@ while ($SEED < 100)  # PAR
     $QSUB -N j$SEED "featureTree_bootstrap_item.sh $1 $SEED log" > /dev/null
   endif
 end
-while (1)
-  sleep 15  # PAR
-  set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
-  if ($Q[1] == 0)  break
-end
+qstat_wait.sh
 
 rmdir log
 if ($?) exit 1
