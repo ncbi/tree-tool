@@ -14,7 +14,6 @@ namespace
 {
 
 
-
 struct ThisApplication : Application
 {
 	ThisApplication ()
@@ -27,7 +26,7 @@ struct ThisApplication : Application
 	
 	
 	
-	void body () const
+	void body () const final
   {
 	  const string dataDir      = getArg ("data");
 	  const bool init           = getFlag ("init");
