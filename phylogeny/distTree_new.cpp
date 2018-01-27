@@ -51,7 +51,6 @@ struct ThisApplication : Application
       cout << endl;
     }
     
-    cout << "Processing new objects ..." << endl;
     const string newDir (dataDir + "search/");
     FileItemGenerator fig (1, true, newDir);  // PAR
 	  string item;
