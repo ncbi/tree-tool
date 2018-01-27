@@ -49,7 +49,7 @@ echo "Complete optimization  ..."
 list2pairs $tmp.test > $tmp.pairs
 if ($?) exit 1
 
-distTree_inc_dissim_request.sh $1 $tmp.pairs $tmp.dissim
+distTree_inc_request2dissim.sh $1 $tmp.pairs $tmp.dissim
 if ($?) exit 1
 
 pairs2attr2 $tmp.dissim 1 cons 6 -distance > $tmp.dm
