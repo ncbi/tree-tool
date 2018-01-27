@@ -28,7 +28,7 @@ Correlation between residual^2 and dissimilarity = 0.08
 # Interior nodes (with root) = 48 (max = 49)
 # Interior undirected arcs = 47
 Tree length = 64.341
-Min. discernible leaf length = 0.779
+Min. discernible leaf length = 7.8e-01
 Ave. arc length = 0.663
 Interior height = 13
 Bifurcating interior branching = 1.371

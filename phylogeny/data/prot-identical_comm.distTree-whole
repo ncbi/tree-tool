@@ -40,14 +40,14 @@ absCriterion = 7.052  Error density = 1.835 %
 
 Topology optimization iter = 3
 # Changes: 18
-# Commits = 9
+# Commits = 8
 Improvement = 0.003
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 4
-# Changes: 5
+# Changes: 4
 # Commits = 3
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
@@ -56,7 +56,7 @@ absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 5
 # Changes: 3
-# Commits = 2
+# Commits = 1
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
@@ -72,7 +72,7 @@ absCriterion = 7.048  Error density = 1.834 %
 Ave. radius: 0.46
 
 # Outliers: 0
-Min. rel. average leaf error of outliers: 21.14
+Min. rel. average leaf error of outliers: inf
 
 Removing outliers ...
 absCriterion = 7.048  Error density = 1.834 %
