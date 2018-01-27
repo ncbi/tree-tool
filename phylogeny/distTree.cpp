@@ -5378,18 +5378,6 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
   }
   else
   {
-  #if 0
-    {
-      ifstream f (getLeafFName ());
-      string name1, lcaName, tmp;
-      f >> name1 >> lcaName >> location. leafLen >> location. arcLen >> tmp;
-      ASSERT (name1 == name);
-      ASSERT (tmp. empty ());
-      location. anchor = tree. lcaName2node (lcaName);
-    }
-  #endif
-    if (! fileExists (getLeafFName ()))
-      throw runtime_error ("File \"" + getLeafFName () + "\" does not exist");
     if (! fileExists (getDissimFName ()))
       throw runtime_error ("File \"" + getDissimFName () + "\" does not exist");
     {
@@ -5403,7 +5391,9 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
           ASSERT (iss. eof ());
           ASSERT (name1 != name2);
           if (name1 != name)
-            throw runtime_error ("First object in " + getDissimFName () + " must be " + name);
+          	swap (name1, name2);
+          if (name1 != name)
+            throw runtime_error (getDissimFName () + " must contain " + name);
           const Real dissim = str2real (dissimS);
           if (dissim < 0)
             throw runtime_error ("Dissimilarity must be non-negative");
@@ -5414,18 +5404,18 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
           cout << f. line << endl;
           throw;
         }
-      leaf2dissims. sort ();
-    #ifndef NDEBUG
-      // Check uniqueness
-      const Leaf2dissim* prev = nullptr;
-      for (const Leaf2dissim& ld : leaf2dissims)
-      {
-        IMPLY (prev, prev->leaf < ld. leaf);
-        prev = & ld;
-      }
-    #endif
-      optimize ();
     }
+    leaf2dissims. sort ();
+  #ifndef NDEBUG
+    // Check uniqueness
+    const Leaf2dissim* prev = nullptr;
+    for (const Leaf2dissim& ld : leaf2dissims)
+    {
+      IMPLY (prev, prev->leaf < ld. leaf);
+      prev = & ld;
+    }
+  #endif
+    optimize ();
   }
 
   saveLeaf ();

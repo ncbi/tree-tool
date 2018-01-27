@@ -202,6 +202,7 @@ struct ThisApplication : Application
               tree->optimizeWholeIter (0, output_tree);
             else
             {
+            	// stop if absCriterion has no improvement ??
             	const size_t iter_max = (size_t) log2 ((Real) leaves) / areaRadius_std + 1;  // PAR
             	FOR (size_t, iter, iter_max)
             	{

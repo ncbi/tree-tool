@@ -680,7 +680,7 @@ public:
 	          bool optimize);
 	  // Input: dataDirName: ends with '/'
 	  //          files: tree, leaf, dissim
-	  //        <dataDirName/> contains:
+	  //          <dataDirName/> contains:
 	  //          file name                 line format                                   meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
@@ -695,6 +695,8 @@ public:
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
     //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
+    //         [objects_in_tree.sh]       executable with parameters: list of objects, 0/1
+    //         [request_closest.sh]       executable with parameter: object; output; pairs of objects to request dissimilarities for
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
@@ -1140,10 +1142,10 @@ private:
   string getLeafFName    () const  { return getNameDir () + "leaf"; }
   string getRequestFName () const  { return getNameDir () + "request"; }
   void saveLeaf () const
-    { OFStream of (getLeafFName ());
-      of << name << '\t';
-      location. saveText (of);      
-      of << endl;
+    { OFStream f (getLeafFName ());
+      f << name << '\t';
+      location. saveText (f);
+      f << endl;
     }
   void saveRequest () const;
     // Input: location.anchor
