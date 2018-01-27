@@ -14,9 +14,9 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the pairs of words from a list")
+    : Application ("Print the pairs of words from a list. In each pair: word1 < word2")
   	{
-  	  addPositional ("list", "File with words");
+  	  addPositional ("list", "File with different words");
   	}
 
 
@@ -31,6 +31,8 @@ struct ThisApplication : Application
       LineInput f (listFName);
       words = f. getVector ();
     }
+    words. sort ();
+    ASSERT (words. isUniq ());
     
     {
     	Progress prog ((uint) words. size ());
@@ -41,7 +43,14 @@ struct ThisApplication : Application
 	    		if (& w1 == & w2)
 	    			break;
 	    	  else
-	    	  	cout << w1 << '\t' << w2 << endl;
+	    	  {
+	    	  	ASSERT (w1 != w2);
+	    	  	const string* p1 = & w1;
+	    	  	const string* p2 = & w2;
+	    	  	if (*p1 > *p2)
+	    	  		swap (p1, p2);
+	    	  	cout << *p1 << '\t' << *p2 << endl;
+	    	  }
 	    }
 	  }
 	}
