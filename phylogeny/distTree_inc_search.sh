@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 4) then
-  echo "Process new objects for a distance tree"
+  echo "Process a new object for a distance tree"
   echo "Update: append: #1/{leaf,dissim.add}"
   echo "        delete: #1/search/#2/"
   echo "#1: Directory containing search/"

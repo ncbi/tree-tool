@@ -15,7 +15,6 @@ set DIR = $1/search/$2
 set LOG = $1/log/$2
 
 
-# PAR
 $1/request2dissim.sh $DIR/request $DIR/dissim.add >> $LOG
 if ($?) exit 1
 if (-z $DIR/dissim.add) then
