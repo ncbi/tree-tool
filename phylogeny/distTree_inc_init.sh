@@ -71,6 +71,9 @@ if ($?) exit 1
 mkdir $1/old
 if ($?) exit 1
 
+cp /dev/null $1/log
+if ($?) exit 1
+
 
 echo ""
 echo "Initial tree ..."
