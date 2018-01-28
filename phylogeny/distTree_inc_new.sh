@@ -71,6 +71,7 @@ if (-e $1/request_closest.sh) then
   # Use grid ??
   trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
   if ($?) exit 1  
+  # use grid ??
 else
 	distTree_new $QC $1/ -init  
 	if ($?) exit 1
@@ -98,9 +99,7 @@ while (1)
 
   trav  -step 1  $1/search "distTree_inc_search.sh $1 %f %n $GRID"
   if ($?) exit 1
-  if ($GRID) then
-    qstat_wait.sh
-  endif
+  if ($GRID)  qstat_wait.sh
   
   set L = `ls $1/log | wc -l`
   if ($L[1]) then
@@ -162,6 +161,7 @@ mv $1/tree.new $1/tree
 if ($?) exit 1
 
 if (-e $1/objects_in_tree.sh) then
+  echo ""
 	cut -f 1 $1/old/leaf.$VER > $1/leaf.list
 	if ($?) exit 1
 	$1/objects_in_tree.sh $1/leaf.list 1
@@ -171,6 +171,7 @@ if (-e $1/objects_in_tree.sh) then
 	if ($?) exit 1
 endif
 
+echo ""
 trav  -noprogress  $1/outlier.add "cp /dev/null $1/outlier/%f"
 if ($?) exit 1
 rm $1/outlier.add
