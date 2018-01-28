@@ -702,6 +702,8 @@ public:
 	  //          version                   <natural number>
 	  //          old/{tree,makeDistTree,leaf}.<version>                                  Old versions of data
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
+	  //          log                                                                     Invocations of distTree_inc_new.sh
+	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)

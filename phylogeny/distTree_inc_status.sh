@@ -41,9 +41,9 @@ echo "..."
 tail -5 $tmp
 
 echo ""
-head -5 $1.log
+head -5 $1/log
 echo "..."
-tail -5 $1.log
+tail -5 $1/log
 
 
 rm -f $tmp*
