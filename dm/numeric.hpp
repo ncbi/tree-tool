@@ -474,7 +474,7 @@ struct MeanVar : Root
     { clear (); }
   void qc () const override;
   void saveText (ostream &os) const override
-    { os << fixed; os. precision ((streamsize) decimals);
+    { os << fixed; os. precision (decimals);
       os << "[" << v_min << " .. " << getMean () << " +- " << getSD () << " .. " << v_max << "] N = " << n;
     }
   void clear () override
