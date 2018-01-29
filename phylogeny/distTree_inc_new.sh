@@ -93,7 +93,7 @@ while (1)
   set GRID = 1
   if ($REQ[1] < $REQ_MAX)  set GRID = 0  
 
-  rm -rf $1/log
+  rm -rf $1/log/
   mkdir $1/log
   if ($?) exit 1
 
@@ -108,7 +108,7 @@ while (1)
     if ($?) exit 1
   endif
   
-  rm -r $1/log
+  rm -r $1/log/
   if ($?) exit 1
       
   echo "Processing new objects ..."
