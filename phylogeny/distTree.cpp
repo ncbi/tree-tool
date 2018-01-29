@@ -1496,8 +1496,8 @@ DistTree::DistTree (const string &dataDirName,
     }
     outliers. sort ();
     loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
+    const string fName (dataDirName + "dissim");
     {
-      const string fName (dataDirName + "dissim");
       cout << "Loading " << fName << " ..." << endl;
       LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
       while (f. nextLine ())
@@ -1539,7 +1539,21 @@ DistTree::DistTree (const string &dataDirName,
           throw runtime_error ("No dissimilarities for object " + leaf->name);
         const_cast <Leaf*> (leaf) -> paths = 0;
       }
-    // qc: pairs of <leaf1,leaf2> must be unique in dissims ??
+    // qc: pairs of <leaf1,leaf2> must be unique in dissims
+    if (qc_on)
+    {
+	    Vector<Pair<const Leaf*>> pairs;  pairs. reserve (dissims. size ());
+	    for (const Dissim& d : dissims)
+	    	pairs << Pair<const Leaf*> (d. leaf1, d. leaf2);
+	    const size_t size_init = pairs. size ();
+	    pairs. sort ();
+	    pairs. uniq ();
+	    if (pairs. size () != size_init)
+	    {
+	    	cout << size_init << " -> " << pairs. size () << endl;
+	    	throw runtime_error (fName + ": non-unique pairs");
+	    }
+	  }
   } 
   
   
@@ -5389,7 +5403,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
           istringstream iss (f. line);
           iss >> name1 >> name2 >> dissimS;
           ASSERT (iss. eof ());
-          ASSERT (name1 != name2);
+          ASSERT (name1 < name2);
           if (name1 != name)
           	swap (name1, name2);
           if (name1 != name)
