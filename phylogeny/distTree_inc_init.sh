@@ -71,17 +71,16 @@ if ($?) exit 1
 mkdir $1/old
 if ($?) exit 1
 
-cp /dev/null $1/log
+cp /dev/null $1/runlog
 if ($?) exit 1
 
 
 echo ""
-echo "Initial tree ..."
+echo "Dissimilarities ..."
 setRandOrd $2 $4 | head -$3 | sort > $1/list.init
 
 list2pairs $1/list.init > $1/dissim_request
 if ($?) exit 1
-wc -l $1/dissim_request
 
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim
 if ($?) exit 1
@@ -90,6 +89,8 @@ rm $1/dissim_request
 pairs2attr2 $1/dissim 1 cons 6 -distance > $1/data.dm
 if ($?) exit 1
 
+echo ""
+echo "Tree ..."
 makeDistTree  -data $1/data  -dissim cons  -topology  -reroot  -root_topological  -remove_outliers $1/outlier.add  -output_tree $1/tree > $1/old/makeDistTree.1
 if ($?) exit 1
 trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
