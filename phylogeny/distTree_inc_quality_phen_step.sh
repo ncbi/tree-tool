@@ -17,7 +17,7 @@ set tmp = $4
 echo ""
 echo "Target: $3"
 
-tree2obj.sh $1/old/tree.$3 > $tmp.target
+tree2obj.sh $1/hist/tree.$3 > $tmp.target
 if ($?) exit 1
 
 # QC
@@ -28,7 +28,7 @@ if (! -z $tmp.zero)  exit 1
 setMinus $tmp.target $2 > $tmp.remove
 if ($?) exit 1
 
-makeDistTree  -input_tree $1/old/tree.$3  -remove $tmp.remove  -output_tree $tmp.trees/$3.tree  -output_feature_tree $tmp.feature_tree > /dev/null
+makeDistTree  -input_tree $1/hist/tree.$3  -remove $tmp.remove  -output_tree $tmp.trees/$3.tree  -output_feature_tree $tmp.feature_tree > /dev/null
 if ($?) exit 1
 
 makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual | grep "Feature agreement:"

@@ -23,7 +23,7 @@ if ($mds) then
   set input_tree = "-input_tree $1.dir/"
 endif
 
-makeDistTree  $input_tree  -data $1  -dissim $2  -variance $variance  $sparse  -topology  $whole  -output_tree $1.tree  
+makeDistTree  $input_tree  -data $1  -dissim $2  -variance $variance  $sparse  -optimize  $whole  -output_tree $1.tree  
 if ($?) exit 1
 if ($mds) then
   rm -r $1.dir/

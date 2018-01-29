@@ -22,9 +22,9 @@ if ($?) exit 1
 echo $tmp
 
 
-tree2obj.sh $1/old/tree.$2 > $tmp.start
+tree2obj.sh $1/hist/tree.$2 > $tmp.start
 if ($?) exit 1
-tree2obj.sh $1/old/tree.1 > $tmp.init
+tree2obj.sh $1/hist/tree.1 > $tmp.init
 if ($?) exit 1
 setMinus $tmp.start $tmp.init > $tmp.start-new
 if ($?) exit 1
@@ -55,7 +55,7 @@ if ($?) exit 1
 pairs2attr2 $tmp.dissim 1 cons 6 -distance > $tmp.dm
 if ($?) exit 1
 
-makeDistTree  -data $tmp  -dissim cons  -topology  -output_tree $tmp.tree  -output_feature_tree $tmp.feature_tree1 | grep "# Discernible leaves:"
+makeDistTree  -data $tmp  -dissim cons  -optimize  -output_tree $tmp.tree  -output_feature_tree $tmp.feature_tree1 | grep "# Discernible leaves:"
 if ($?) exit 1
 
 makeFeatureTree  -input_tree $tmp.feature_tree1  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual  

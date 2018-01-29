@@ -37,17 +37,22 @@ struct ThisApplication : Application
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
-	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data");
+	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  
 	  // Processing
 	  addKey ("remove", "Remove leaves whose names are in the indicated file");
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
-	  addFlag ("topology", "Optimize topology, arc lengths and re-root");
+
+	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees");
+	  addFlag ("skip_topology", "Skip topology optimization");
+	  
+	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");
+
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
@@ -70,17 +75,23 @@ struct ThisApplication : Application
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
-	               varianceType        = str2varianceType (getArg ("variance"));  // Global    
+	               varianceType        = str2varianceType (getArg ("variance"));  // Global
+	               
 		const string removeFName         = getArg ("remove");
 		      bool   sparse              = getFlag ("sparse");
-		const bool   topology            = getFlag ("topology");
+		      
+		const bool   optimize            = getFlag ("optimize");
+		const bool   whole               = getFlag ("whole");
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
-		const bool   whole               = getFlag ("whole");
-		const bool   reroot              = getFlag ("reroot");
+		const bool   skip_topology       = getFlag ("skip_topology");
+		const bool   new_only            = getFlag ("new_only");
+		
+		const bool   reroot              = getFlag ("reroot");		
 		const bool   root_topological    = getFlag ("root_topological");
 		const string reroot_at           = getArg ("reroot_at");
 		const string remove_outliers     = getArg ("remove_outliers");
+		
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
@@ -104,9 +115,11 @@ struct ThisApplication : Application
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
-    IMPLY (whole,    topology);
-    IMPLY (skip_len, topology);
-    IMPLY (reinsert, topology);
+    IMPLY (whole,         optimize);
+    IMPLY (skip_len,      optimize);
+    IMPLY (reinsert,      optimize);
+    IMPLY (skip_topology, optimize);
+    IMPLY (new_only, ! optimize);
 
 
     DistTree::printParam (cout);
@@ -120,7 +133,7 @@ struct ThisApplication : Application
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree = isDirName (dataFName)
-               ? new DistTree (dataFName, true, true, ! topology)
+               ? new DistTree (dataFName, true, true, new_only)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse)
                  : isDirName (input_tree)
@@ -164,7 +177,7 @@ struct ThisApplication : Application
 
     if (tree->optimizable ())
     {
-      if (topology)
+      if (optimize)
       {
         const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
@@ -195,6 +208,7 @@ struct ThisApplication : Application
             tree->optimizeReinsert ();  
           }
           
+          if (! skip_topology)
           {
             cout << string ("Optimizing topology: ") + (whole ? "neighbors" : "subgraphs") + " ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
@@ -213,7 +227,8 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           
-          cout << endl << "Ave. radius: " << tree->reroot (root_topological) << endl;
+          const Real radius_ave = tree->reroot (root_topological);
+          cout << endl << "Ave. radius: " << radius_ave << endl;
         }
         else if (leaves == 3)
           tree->optimize3 ();

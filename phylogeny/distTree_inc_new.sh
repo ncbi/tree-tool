@@ -123,12 +123,8 @@ echo "leaf, dissim.add -> tree, dissim ..."
 set VER = `cat $1/version`
 if ($?) exit 1
 
-# Time: O(n log(n)) 
-#cp $1/dissim $1/dissim.old
-#if ($?) exit 1
-
 # Time: O(n) 
-cp $1/tree $1/old/tree.$VER
+cp $1/tree $1/hist/tree.$VER
 if ($?) exit 1
 
 @ VER = $VER + 1
@@ -146,14 +142,14 @@ rm $1/dissim.add
 # Time: O(n log^2(n)) 
 # -profile
 makeDistTree $QC  -data $1/ \
-  -topology  -skip_len \
+  -optimize  -skip_len \
   -reroot  -root_topological \
   -remove_outliers $1/outlier.add \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
-  > $1/old/makeDistTree.$VER
+  > $1/hist/makeDistTree.$VER
 if ($?) exit 1
-mv $1/leaf $1/old/leaf.$VER
+mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
 if ($?) exit 1
@@ -162,7 +158,7 @@ if ($?) exit 1
 
 if (-e $1/objects_in_tree.sh) then
   echo ""
-	cut -f 1 $1/old/leaf.$VER > $1/leaf.list
+	cut -f 1 $1/hist/leaf.$VER > $1/leaf.list
 	if ($?) exit 1
 	$1/objects_in_tree.sh $1/leaf.list 1
 	if ($?) exit 1

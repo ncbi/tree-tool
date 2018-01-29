@@ -68,7 +68,7 @@ endif
 echo "1" >> $1/version
 if ($?) exit 1
 
-mkdir $1/old
+mkdir $1/hist
 if ($?) exit 1
 
 cp /dev/null $1/runlog
@@ -91,7 +91,7 @@ if ($?) exit 1
 
 echo ""
 echo "Tree ..."
-makeDistTree  -data $1/data  -dissim cons  -topology  -reroot  -root_topological  -remove_outliers $1/outlier.add  -output_tree $1/tree > $1/old/makeDistTree.1
+makeDistTree  -data $1/data  -dissim cons  -optimize  -reroot  -root_topological  -remove_outliers $1/outlier.add  -output_tree $1/tree > $1/hist/makeDistTree.1
 if ($?) exit 1
 trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
 if ($?) exit 1

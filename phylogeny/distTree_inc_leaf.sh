@@ -6,6 +6,6 @@ if ($# != 1) then
   exit 1
 endif
 
-cat $1/old/leaf* | sort -k 6 -g
+cat $1/hist/leaf* | sort -k 6 -g
 if ($?) exit 1
 

@@ -12,7 +12,7 @@ rm -r -f data/Enterobacteriaceae.dir/
 mdsTree.sh data/Enterobacteriaceae Conservation 2 >& /dev/null
 if ($?) exit 1
 
-makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -topology  -output_tree Enterobacteriaceae.tree > /dev/null
+makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
 if ($?) exit 1
 rm -r data/Enterobacteriaceae.dir/
 
@@ -49,7 +49,7 @@ echo "mdsTree: Random tree ..."
 rm -r -f data/randomTree.dir/
 mdsTree.sh data/randomTree dist 2 >& /dev/null
 if ($?) exit 1
-makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -topology  -output_tree random-output.tree > /dev/null
+makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -optimize  -output_tree random-output.tree > /dev/null
 if ($?) exit 1
 makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
 if ($?) exit 1
@@ -66,7 +66,7 @@ rm random-output.tree
 echo ""
 echo "prot-identical_comm (subgraphs) ..."
 # Check time ??
-makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology  -remove_outliers prot-identical_comm.outliers | grep -v '^CHRON: ' > prot-identical_comm.distTree
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -remove_outliers prot-identical_comm.outliers | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
 diff prot-identical_comm.outliers data/prot-identical_comm.outliers
 if ($?) exit 1
@@ -79,7 +79,7 @@ rm prot-identical_comm.distTree
 echo ""
 echo "prot-identical_comm (whole) ..."
 # Time: 7 min.
-makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -topology  -whole  -remove_outliers prot-identical_comm.outliers-whole | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -whole  -remove_outliers prot-identical_comm.outliers-whole | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
 if ($?) exit 1
 diff prot-identical_comm.outliers-whole data/prot-identical_comm.outliers-whole
 if ($?) exit 1
@@ -91,7 +91,7 @@ rm prot-identical_comm.distTree-whole
 
 # ??
 if (0) then
-  makeDistTree -data data/sample299-prot_core -dissim cons -variance lin -topology -whole
+  makeDistTree -data data/sample299-prot_core -dissim cons -variance lin -optimize -whole
   # was: absCriterion = 75.64
 endif
 
