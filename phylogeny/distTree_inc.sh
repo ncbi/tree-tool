@@ -16,6 +16,7 @@ while (1)
     echo "Stopped"
     exit 2
   endif
+  
   set N = `ls $1/new/ | wc -l`
   echo "# To add: $N[1]  `date`  `date +%s`" >> $1/runlog  
   echo ""
