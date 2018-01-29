@@ -700,7 +700,7 @@ public:
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
-	  //          old/{tree,makeDistTree,leaf}.<version>                                  Old versions of data
+	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Hostoric versions of data
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
