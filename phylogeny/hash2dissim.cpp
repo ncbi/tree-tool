@@ -26,7 +26,8 @@ struct ThisApplication : Application
     {
   	  addPositional ("objects", "File with a list of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
-  	  addPositional ("out", "Output " + dmSuff + "-file");
+  	  addPositional ("out", "Output " + dmSuff + "-file without " + dmSuff);
+  	  addKey ("hashes_min", "Min. number of hashes to compute distance", "10");
   	}
 
 
@@ -36,6 +37,7 @@ struct ThisApplication : Application
 		const string objectsFName = getArg  ("objects");
 		const string hash_dir     = getArg  ("hash_dir");
 		const string out          = getArg  ("out");
+		const size_t hashes_min   = str2<size_t> (getArg ("hashes_min"));
 		ASSERT (! out. empty ());
 		
 		
@@ -79,8 +81,8 @@ struct ThisApplication : Application
           hashes << hash;
           prev = hash;
         } 
-        if (hashes. empty ())
-          throw runtime_error ("No hashes for " + ds. objs [objNum] -> name);
+      //if (hashes. empty ())
+        //throw runtime_error ("No hashes for " + ds. objs [objNum] -> name);
       }
     }
     
@@ -94,15 +96,17 @@ struct ThisApplication : Application
         FOR (size_t, col, row)
         {
           const Hashes& hash2 = obj2hashes [col];
-          const size_t prots = hash1.  getIntersectSize (hash2);
-          ASSERT (prots <= hash1. size ());
-          ASSERT (prots <= hash2. size ());
+          const size_t common = hash1.  getIntersectSize (hash2);
+          ASSERT (common <= hash1. size ());
+          ASSERT (common <= hash2. size ());
         #if 0
-          const Real dissim = - log ((Real) prots / (Real) min (hash1. size (), hash2. size ()));
+          const Real dissim = - log ((Real) common / (Real) min (hash1. size (), hash2. size ()));
         #else
-          const Real dissim = - 0.5 * (  log ((Real) prots / (Real) hash1. size ()) 
-                                       + log ((Real) prots / (Real) hash2. size ()) 
-                                      );
+          const Real dissim = min (hash1. size (), hash2. size ()) >= hashes_min
+                                ? - 0.5 * (  log ((Real) common / (Real) hash1. size ()) 
+                                           + log ((Real) common / (Real) hash2. size ()) 
+                                          )
+                                : NAN;
         #endif
           attr->putSymm (row, col, dissim);
         }
