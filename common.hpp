@@ -2518,14 +2518,15 @@ public:
 struct Application : Singleton<Application>, Root
 // Usage: int main (argc, argv) { Application app; return app. run (argc, argv); }
 {  
-  string description;
+  const string description;
+  const bool needsArg;
   
 private:
   struct Positional;  // forward
   struct Key;         // forward
   struct Arg : Named
   {
-    string description;
+    const string description;
       // !empty()
     string value;
       // Init: default
@@ -2551,7 +2552,7 @@ private:
   };  
   struct Key : Arg
   {
-    bool flag;
+    const bool flag;
     Key (const string &name_arg,
          const string &description_arg,
          const string &defaultValue)
@@ -2575,8 +2576,10 @@ public:
   
 
 protected:
-  explicit Application (const string &description_arg)
+  explicit Application (const string &description_arg,
+                        bool needsArg_arg = true)               
     : description (description_arg)
+    , needsArg (needsArg_arg)
     , posIt (positionals. begin ())
     { addFlag ("qc", "Integrity checks (quality control)");
       addKey ("verbose", "Level of verbosity", "0");

@@ -17,7 +17,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Statistics of a series of numbers from cin")
+    : Application ("Statistics of a series of numbers from cin", false)
     {}
 
 
