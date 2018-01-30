@@ -19,6 +19,7 @@ all:	\
   setMinus \
   setRandOrd \
   splitList \
+  str2hash \
   trav \
   unCgi
 	
@@ -69,6 +70,12 @@ splitList.o:  $(COMMON_HPP)
 splitListOBJS=splitList.o $(CPP_DIR)/common.o
 splitList:	$(splitListOBJS)
 	$(CXX) -o $@ $(splitListOBJS) $(LIBS)
+	$(ECHO)
+
+str2hash.o:  $(COMMON_HPP)  
+str2hashOBJS=str2hash.o $(CPP_DIR)/common.o
+str2hash:	$(str2hashOBJS)
+	$(CXX) -o $@ $(str2hashOBJS) $(LIBS)
 	$(ECHO)
 
 trav.o:  $(COMMON_HPP)  
