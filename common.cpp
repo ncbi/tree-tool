@@ -1794,7 +1794,7 @@ int Application::run (int argc,
   	}
   
   
-    if (programArgs. size () == 1 && ! (positionals. empty () || needsArg))
+    if (programArgs. size () == 1 && (! positionals. empty () || needsArg))
     {
       cout << getInstruction () << endl;
       return 1;
