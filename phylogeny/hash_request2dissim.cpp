@@ -51,7 +51,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string pairsFName = getArg  ("pairs");
 		const string hash_dir   = getArg  ("hash_dir");
