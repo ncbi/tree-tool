@@ -43,7 +43,7 @@ inline VarianceType str2varianceType (const string &s)
 inline Real dissim2mult (Real dissim)
   { switch (varianceType)
     { case varianceType_lin:    return positive (dissim) ? 1 / dissim : 0;
-      case varianceType_exp:    return exp (- 2 * max (0.0, dissim)); 
+      case varianceType_exp:    return exp (- 2 * max (dissim, 0.0)); 
       case varianceType_linExp: return positive (dissim) ? 1 / (exp (dissim) - 1) : 0; 
     }  
     throw logic_error ("Unknown dissimilarity variance");
@@ -127,6 +127,7 @@ public:
   const Leaf* reprLeaf {nullptr};
     // In subtree
     // For sparse *getDistTree().dissimAttr
+    // Random ??
 
 
 protected:
