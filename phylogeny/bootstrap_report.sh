@@ -16,7 +16,7 @@ if ($N[1] != $2) then
   echo "# Files: $N[1]  Should be: $2"
   exit 1
 endif
-trav -step 1 $1.trees "compareTrees $1.tree %d/%f -frequency $3" | grep '^match[+-] ' | sort | uniq -c > $1.bootstrap-$2-$3
+trav -step 1 $1.trees "compareTrees $1.tree %d/%f -frequency $3" | grep '^match[+-]' | sort | uniq -c > $1.bootstrap-$2-$3
 if ($?) exit 1
 bootstrapReport  $1.bootstrap-$2-$3  -replicas $2  
 if ($?) exit 1
