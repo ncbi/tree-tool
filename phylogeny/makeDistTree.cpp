@@ -441,6 +441,7 @@ struct ThisApplication : Application
       cout << "# Ancestor-based requests: " << pairs. size () << endl;
 
     #if 0
+      // Needed if closest objects are not available
       ??
       {      
         const VectorPtr<Leaf> depthOutliers (tree->findDepthOutliers ());

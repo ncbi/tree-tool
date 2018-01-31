@@ -875,7 +875,7 @@ public:
 	  // Return: # nodes delete'd
 	  // Update: DTNode::len
 	  // Output: Dissim::prediction, absCriterion
-	  // Time: O(p log(n)); return = 1.04 * optimal
+	  // Time: O(p log(n))
   size_t optimizeLenNode ();
 	  // Return: # nodes delete'd
 	  // Update: DTNode::len
