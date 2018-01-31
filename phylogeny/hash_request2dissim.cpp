@@ -80,7 +80,9 @@ struct ThisApplication : Application
                                     );
       output << name1 << '\t' << name2 << '\t' << dissim;
       if (verbose ())
-        output << '\t' << intersection;
+        output << '\t' << intersection 
+               << '\t' << h1. size ()
+               << '\t' << h2. size ();
       output << endl;
     }
 	}
