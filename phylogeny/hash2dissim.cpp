@@ -27,7 +27,7 @@ struct ThisApplication : Application
   	  addPositional ("objects", "File with a list of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
   	  addPositional ("out", "Output " + dmSuff + "-file without " + dmSuff);
-  	  addKey ("hashes_min", "Min. number of hashes to compute distance", "10");
+  	  addKey ("hashes_min", "Min. number of common hashes to compute distance", "50");
   	}
 
 
@@ -102,7 +102,7 @@ struct ThisApplication : Application
         #if 0
           const Real dissim = - log ((Real) common / (Real) min (hash1. size (), hash2. size ()));
         #else
-          const Real dissim = min (hash1. size (), hash2. size ()) >= hashes_min
+          const Real dissim = common >= hashes_min
                                 ? - 0.5 * (  log ((Real) common / (Real) hash1. size ()) 
                                            + log ((Real) common / (Real) hash2. size ()) 
                                           )
