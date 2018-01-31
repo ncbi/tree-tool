@@ -5,12 +5,12 @@ if ($# != 2) then
   echo "Update: #1/"
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
-  echo 'Time: ??'
   exit 1
 endif
 
 
 
+# Time: O(n log^3(n))
 while (1)
   if (-e $1/stop) then
     echo "Stopped"
@@ -27,3 +27,9 @@ while (1)
   if ($?) exit 1
 end
   
+
+echo ""
+echo "Complete optimization..."
+# Time: O(n log^4(n))
+makeDistTree  -data $1/  -optimize  -reinsert  -output_tree $1/tree.opt
+if ($?) exit 1

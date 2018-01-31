@@ -4,6 +4,7 @@ if ($# != 2) then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
+  echo "Time: O(n log^2(n))"
   exit 1
 endif
 
