@@ -342,6 +342,16 @@ public:
 
 
 
+
+template <typename T, typename U>
+  inline ostream& operator<< (ostream &os,
+                              const pair<T,U> &p) 
+    { os << p. first << '\t' << p. second;
+      return os;
+    }
+
+
+
 template <typename T>
 struct Pair : pair <T, T>
 {
@@ -453,6 +463,17 @@ template <typename Key, typename Value>
 template <typename T, typename UnaryPredicate>
   inline long count_if (T &t, UnaryPredicate pred)
     { return std::count_if (t. begin (), t. end (), pred); }
+
+
+
+
+template <typename T>
+  ostream& operator<< (ostream &os,
+                       const list<T> &ts)
+    { for (const auto& t : ts)
+        os << t << endl;
+      return os;
+    }
 
 
 
@@ -972,6 +993,16 @@ inline string named2name (const Named* n)
 
 
 typedef int (*CompareInt) (const void*, const void*);
+
+
+
+template <typename T>
+  ostream& operator<< (ostream &os,
+                       const vector<T> &ts)
+    { for (const auto& t : ts)
+        os << t << endl;
+      return os;
+    }
 
 
 
@@ -2076,33 +2107,6 @@ struct OFStream : ofstream, Nocopy
 	           const string &extension);
 	  // Input: !pathName.empty()
 };
-
-
-template <typename T, typename U>
-  inline OFStream& operator<< (OFStream &ofs,
-                               const pair<T,U> &p) 
-    { ofs << p. first << '\t' << p. second;
-      return ofs;
-    }
-    
-  
-template <typename T>
-  OFStream& operator<< (OFStream &ofs,
-                        const List<T> &ts)
-    { for (const auto& t : ts)
-        ofs << t << endl;
-      return ofs;
-    }
-
-
-template <typename T>
-  OFStream& operator<< (OFStream &ofs,
-                        const Vector<T> &ts)
-    { for (const auto& t : ts)
-        ofs << t << endl;
-      return ofs;
-    }
-
 
 
 
