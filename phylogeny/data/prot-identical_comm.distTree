@@ -36,7 +36,7 @@ absCriterion = 7.048  Error density = 1.834 %
 
 OUTPUT:
 absCriterion = 7.048  Error density = 1.834 %
-absCriterion [0] = 0.810  Error density [0] = 7.449 %  Fraction = 6.348 %
+absCriterion [0] = 0.810  Error density [0] = 7.448 %  Fraction = 6.348 %
 absCriterion [1] = 6.238  Error density [1] = 1.732 %  Fraction = 93.652 %
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
@@ -45,7 +45,7 @@ Correlation between residual^2 and dissimilarity = 0.07
 # Interior nodes (with root) = 283 (max = 284)
 # Interior undirected arcs = 282
 Tree length = 30.572
-Min. discernible leaf length = 0.0e+00
+Min. discernible leaf length = 0.000e+00
 Ave. arc length = 0.053
 Interior height = 34
 Bifurcating interior branching = 1.354

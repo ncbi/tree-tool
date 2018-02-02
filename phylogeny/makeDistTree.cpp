@@ -344,7 +344,7 @@ struct ThisApplication : Application
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
       {
-      	const ONumber on1 (cout, true, 3);  // PAR
+      	const ONumber on1 (cout, 3, true);  // PAR
         cout << "Min. discernible leaf length = " << tree->getMinLeafLen () << endl;
           // = 0 => epsilon2_0 > 0
       }
