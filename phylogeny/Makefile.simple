@@ -14,6 +14,7 @@ all:	\
   attr2_2paup \
   attr2_2phylip \
   bootstrapReport \
+  combine_dissims \
   compareTrees \
   distTree_new \
   feature2dissim \
@@ -55,6 +56,12 @@ bootstrapReportOBJS=bootstrapReport.o $(CPP_DIR)/common.o
 # $(DISTTREE_OBJ)
 bootstrapReport:	$(bootstrapReportOBJS)
 	$(CXX) -o $@ $(bootstrapReportOBJS) $(LIBS)
+	$(ECHO)
+
+combine_dissims.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
+combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
+combine_dissims:	$(combine_dissimsOBJS)
+	$(CXX) -o $@ $(combine_dissimsOBJS) $(LIBS)
 	$(ECHO)
 
 compareTrees.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/featureTree.hpp
