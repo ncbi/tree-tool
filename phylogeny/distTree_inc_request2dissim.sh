@@ -34,7 +34,9 @@ else
 	
 	trav -step 100 $1/dr.out "cat %d/%f" > $3
 	if ($?) exit 1
-	wc -l $3
+	
+	set N_new = `wc -l $3`
+	if ($N[1] != $N_new[1])  exit 1
 	
 	rm -r $1/dr.out
 	rm -r $1/dr
