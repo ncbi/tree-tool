@@ -2448,7 +2448,11 @@ void DistTree::neighborJoin ()
       if (leafPair. same ())
         continue;
       if (leafPair. dissim == INF)
-        throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
+      {
+      //throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
+        missing++;
+        continue;  
+      }
       leafPairs << leafPair;
     }
     // non-complete dissimilarity matrix ??
@@ -2471,8 +2475,12 @@ void DistTree::neighborJoin ()
           continue;
         if (! positive (leafPair. dissim))
           throw runtime_error ("No distance for " + leaf1->name + " - " + leaf2->name);
-        if (leafPair. dissim == INF)
-          throw runtime_error ("Infinite distance for " + leaf1->name + " - " + leaf2->name);
+	      if (leafPair. dissim == INF)
+	      {
+	      //throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
+	        missing++;
+	        continue;  
+	      }
         leafPairs << leafPair;
       }
     }
