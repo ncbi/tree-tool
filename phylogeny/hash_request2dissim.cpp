@@ -75,9 +75,11 @@ struct ThisApplication : Application
       const size_t intersection = h1.  getIntersectSize (h2);
       ASSERT (intersection <= h1. size ());
       ASSERT (intersection <= h2. size ());
-      const double dissim = - 0.5 * (  log ((double) intersection / (double) h1. size ()) 
-                                     + log ((double) intersection / (double) h2. size ()) 
-                                    );
+      const double dissim = max (h1.size (), h2. size ()) / min (h1.size (), h2. size ()) > 2  // PAR
+                              ? NAN
+                              : - 0.5 * (  log ((double) intersection / (double) h1. size ()) 
+		                                     + log ((double) intersection / (double) h2. size ()) 
+		                                    );
       output << name1 << '\t' << name2 << '\t' << dissim;
       if (verbose ())
         output << '\t' << intersection 
