@@ -2,7 +2,7 @@
 
 if ($# != 5) then
   echo "Phenotypic quality of an incremental tree"
-  echo "Requires: no adding outliers"
+  echo "Requires: no added outliers"
   echo "#1: incremental tree"
   echo "#2: start tree version"
   echo "#3: target tree version (>= #2)"
@@ -14,7 +14,7 @@ endif
 
 if ($2 > $3)  exit 1
 if ($4 < 1)   exit 1
-if ($5 <= 0)  exit 1
+if ($5 <= 0)   exit 1
 
 
 set tmp = `mktemp`

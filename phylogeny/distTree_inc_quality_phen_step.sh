@@ -1,12 +1,18 @@
 #!/bin/csh -f
 
 if ($# != 4) then
-  echo "Phenotypic quality of an incremental tree"
+  echo "Phenotypic quality of an incremental tree vs. #4.tree"
   echo "Requires: no adding outliers"
   echo "#1: incremental tree"
   echo "#2: test objects"
   echo "#3: target tree version"
   echo "#4: temporary file prefix"
+  exit 1
+endif
+
+
+if (! -e $1/phen) then
+  echo "Directory $1/phen does not exist"
   exit 1
 endif
 
@@ -35,5 +41,5 @@ makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core 
 if ($?) exit 1
 
 echo "match+:"
-compareTrees $tmp.tree $tmp.trees/$3.tree -frequency none | grep -c '^match+'
+compareTrees $tmp.tree $tmp.trees/$3.tree  -frequency none | grep -c '^match+'
 if ($?) exit 1
