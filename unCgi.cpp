@@ -64,10 +64,13 @@ struct ThisApplication : Application
         ERROR;
       if (verbose ())
         cout << Len << endl;
+      if (! Len)
+      	throw runtime_error ("Zero CONTENT_LENGTH");
     }
     else
     {
-      ASSERT (! QueryString. empty ());
+      if (QueryString. empty ())
+      	throw runtime_error ("Empty QUERY_STRING");
     }
     
   
@@ -131,7 +134,7 @@ struct ThisApplication : Application
             FNamePos = 0;
             ASSERT (F);
             fclose (F);
-            F = 0;
+            F = nullptr;
             break;
 
           case '+':
@@ -174,7 +177,8 @@ struct ThisApplication : Application
 
       i++;
     }
-    fclose (F);
+    if (F)
+      fclose (F);
     ASSERT (! IsFName);
     ASSERT (! Special);
   }
