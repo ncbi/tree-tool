@@ -31,6 +31,7 @@ else
 	if ($?) exit 1
 	
 	qstat_wait.sh
+	if ($?) exit 1
 	
 	trav -step 100 $1/dr.out "cat %d/%f" > $3
 	if ($?) exit 1

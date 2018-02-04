@@ -9,18 +9,17 @@ endif
 
 
 #if (0) then 
+set DIR = `pwd`
 # Directory for bootstrap .tree-files
 mkdir $1.trees
 if ($?) exit 1
 cd $1.trees
 if ($?) exit 1
 
-
 # Error file log
 mkdir log
 if ($?) exit 1
 #endif  
-
 
 set SEED = 0
 while ($SEED < 100)  # PAR
@@ -31,12 +30,13 @@ while ($SEED < 100)  # PAR
   endif
 end
 qstat_wait.sh
+if ($?) exit 1
 
 rmdir log
 if ($?) exit 1
 
+cd $DIR
 
-cd ..
 
 ls $1.trees/*.tree | sed 's|^.*/||1' | grep -vw maxParsimony > $1-trees.list
 trav $1-trees.list "compareTrees $1.tree $1.trees/%f  -type feature" | grep '^match[+-] ' | sort | uniq -c > $1-time.bootstrap

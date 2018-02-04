@@ -58,6 +58,7 @@ rm $BASE.dm
 echo ""
 echo ""
 echo "Bootstrapping ..."
+set DIR = `pwd`
 # Directory for bootstrap .tree-files
 mkdir $BASE.trees
 if ($?) exit 1
@@ -68,29 +69,26 @@ if ($?) exit 1
 mkdir log
 if ($?) exit 1
 
-
-while (1)
-  set replicas = 400  # PAR 
-  set SEED = 0
-  while ($SEED < $replicas) 
-    @ SEED = $SEED + 1
-    set OUT = $BASE-$SEED.tree
-    if (! -e $OUT || -z $OUT) then
-      cp /dev/null log/$SEED
-      if ($?) exit 1
-      $QSUB -N j$SEED "bootstrap_forward_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
-      if ($?) exit 1
-    endif
-  end
-  qstat_wait.sh
-
- #rm -f log/*.core
-  rmdir log
-  if ($? == 0) break
+set replicas = 400  # PAR 
+set SEED = 0
+while ($SEED < $replicas) 
+  @ SEED = $SEED + 1
+  set OUT = $BASE-$SEED.tree
+  if (! -e $OUT || -z $OUT) then
+    cp /dev/null log/$SEED
+    if ($?) exit 1
+    $QSUB -N j$SEED "bootstrap_forward_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
+    if ($?) exit 1
+  endif
 end
+qstat_wait.sh
+if ($?) exit 1
 
+rmdir log
+if ($?) exit 1
 
-cd ..
+cd $DIR
+
 
 rm $BASE.list
 rm $BASE.rest
