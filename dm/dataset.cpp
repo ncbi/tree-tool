@@ -2140,28 +2140,6 @@ void Sample::save (const VectorPtr<Attr> &attrs,
 
 
 
-////////////////////////////////////// Iterator ///////////////////////////////////
-
-inline bool Iterator::operator() ()
-{
-  if (objNum == mult_. size ())
-    return false;
-  for (objNum = objNum == NO_INDEX ? 0 : objNum + 1; 
-       objNum < mult_. size (); 
-       objNum++
-      )
-  {
-    mult = mult_ [objNum];
-    if (mult)
-      return true;
-  }
-  
-  return false;
-}
-
-
-
-
 //////////////////////////////////////////////////////////////////////////////////////
 
 PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,

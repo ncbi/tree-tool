@@ -1158,9 +1158,21 @@ public:
     : mult_ (sample. mult)
     {}
 
-  bool operator() ();
+  bool operator() ()
     // Update: objNum, mult
     // Return: true => mult
+		{ if (objNum == mult_. size ())
+		    return false;
+		  for (objNum = objNum == NO_INDEX ? 0 : objNum + 1; 
+		       objNum < mult_. size (); 
+		       objNum++
+		      )
+		  { mult = mult_ [objNum];
+		    if (mult)
+		      return true;
+		  }
+		  return false;
+		}
   size_t operator* () const 
     { return objNum; }
     // Valid if operator()
