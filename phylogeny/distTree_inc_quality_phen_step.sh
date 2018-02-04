@@ -37,7 +37,7 @@ if ($?) exit 1
 makeDistTree  -input_tree $1/hist/tree.$3  -remove $tmp.remove  -output_tree $tmp.trees/$3.tree  -output_feature_tree $tmp.feature_tree > /dev/null
 if ($?) exit 1
 
-makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual | grep "Feature agreement:"
+makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual | grep "Feature disagreement:"
 if ($?) exit 1
 
 echo "match+:"
