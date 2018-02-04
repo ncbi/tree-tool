@@ -100,7 +100,10 @@ while (1)
 
   trav  -step 1  $1/search "distTree_inc_search.sh $1 %f %n $GRID"
   if ($?) exit 1
-  if ($GRID)  qstat_wait.sh
+  if ($GRID) then
+    qstat_wait.sh
+	  if ($?) exit 1
+  endif
   
   set L = `ls $1/log | wc -l`
   if ($L[1]) then
