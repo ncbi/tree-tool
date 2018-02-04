@@ -10,28 +10,31 @@ endif
 
 
 
+set BASE = `basename $1`
+if ($?) exit 1
+
 cp /dev/null $3/$2
 if ($?) exit 1
 
 
-set N = `wc -l ../$1.list`
+set N = `wc -l ../$BASE.list`
 @ N = $N[1] / 2
 
-setRandOrd ../$1.list $2 | head -$N > $1-$2.list
+setRandOrd ../$BASE.list $2 | head -$N > $BASE-$2.list
 set S = $?
 if ($S != 141 && $S != 0) then
   echo "subset $S" >> $3/$2
   exit 1
 endif
 
-featureTree.sh $1-$2 ../$1 > $1-$2.out
+featureTree.sh $BASE-$2 ../$BASE > $BASE-$2.out
 if ($?) then
-  cat $1-$2.featureTree >> $3/$2
+  cat $BASE-$2.featureTree >> $3/$2
   exit 1
 endif
-rm $1-$2.out
-rm $1-$2.dm
-rm $1-$2.list
+rm $BASE-$2.out
+rm $BASE-$2.dm
+rm $BASE-$2.list
 
 
 rm $3/$2

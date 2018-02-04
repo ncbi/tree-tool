@@ -11,7 +11,7 @@ if ($# != 7) then
   exit 1
 endif
 
-set INPUT     = $1
+set INPUT     = `basename $1`
 set ATTR      = $2
 set BASE_SEED = $3
 set SEED      = $4
