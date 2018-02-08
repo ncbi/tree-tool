@@ -3589,12 +3589,14 @@ void UniKernel::estimate ()
     Real step = pow (halfWindow_hi / halfWindow_lo, 0.01);  // PAR
     if (verbose ())
       cout << halfWindow_lo << " <= halfWindow <= " << halfWindow_hi << "  step = " << step << endl;
+    Progress prog;
     while (greaterReal (halfWindow_hi, halfWindow_lo, /*getRange () * */ 1e-4))  // PAR
     {
       estimate_ (halfWindow_lo, halfWindow_hi, step);
       halfWindow_lo = halfWindow / pow (step, 10);
       halfWindow_hi = halfWindow * pow (step, 10);
       step = sqrt (step);
+      prog (toString (halfWindow_hi - halfWindow_lo));
     }
     ASSERT (positive (halfWindow));
   }  
