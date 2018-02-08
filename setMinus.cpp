@@ -22,7 +22,7 @@ struct Item
 	Position pos;
 	// Valid if pos == NORMAL
   string s;  // Valid if !num
-	int i;     // Valid if  num
+	size_t i;     // Valid if  num
 	
 
 	explicit Item (bool num_arg)
@@ -105,7 +105,7 @@ struct Item
 		  if (pos == NORMAL)
 		  {
   		  if (num)
-		  	  i = str2<int> (s);
+		  	  i = str2<size_t> (s);
 		  	if (*this == itOld)
 		  		throw runtime_error ("File: " + fName + ": Not unique: " + name ());
 		  	if (*this < itOld)
@@ -179,8 +179,8 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 		  if (! getMatch (vec2, j, *it))
 		    cout << *it << endl;          
   #else
-	  ifstream f1 (list1Name. c_str ());
-	  ifstream f2 (list2Name. c_str ());
+	  ifstream f1 (list1Name);
+	  ifstream f2 (list2Name);
 	  Item it1 (num);
 	  Item it2 (num);
 	  Item it1old (num);
