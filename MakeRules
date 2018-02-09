@@ -65,6 +65,7 @@ GEN_DIR = $(CODE_DIR)/genetics
 $(GEN_DIR)/asn.o:	$(GEN_DIR)/asn.hpp $(COMMON_HPP)
 $(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_HPP)
 $(GEN_DIR)/align.o:	$(GEN_DIR)/align.hpp $(COMMON_HPP) $(GEN_DIR)/seq.hpp	
+$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(COMMON_HPP)
 $(GEN_DIR)/GenomeTab.o:	$(GEN_DIR)/GenomeTab.hpp $(COMMON_HPP)
 SEQ_OBJ = $(CPP_DIR)/common.o $(GEN_DIR)/seq.o
 
