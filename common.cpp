@@ -1827,11 +1827,13 @@ int Application::run (int argc,
   	  }
     }
 	}
+#if 0
 	catch (const std::runtime_error &e) 
 	{ 
 	  cout << endl << e. what () << endl;
 	  return 1;
   }
+#endif
 	catch (const std::exception &e) 
 	{ 
 	  errorExit (e. what ());
