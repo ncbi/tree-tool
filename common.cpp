@@ -1773,7 +1773,7 @@ int Application::run (int argc,
     const string logFName = getArg ("log");
   	ASSERT (! logPtr);
     if (! logFName. empty ())
-  		logPtr = new OFStream (logFName);
+  		logPtr = new ofstream (logFName, ios_base::app);
   
   	if (getFlag ("qc"))
   		qc_on = true;
@@ -1820,20 +1820,8 @@ int Application::run (int argc,
   	{
   	  delete logPtr;
   	  logPtr = nullptr;
-  	  if (remove (logFName. c_str ()))
-  	  {
-  	    cout << "Cannot remove log file \"" << logFName << "\"" << endl;
-  	    abort ();
-  	  }
     }
 	}
-#if 0
-	catch (const std::runtime_error &e) 
-	{ 
-	  cout << endl << e. what () << endl;
-	  return 1;
-  }
-#endif
 	catch (const std::exception &e) 
 	{ 
 	  errorExit (e. what ());
