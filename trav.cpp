@@ -19,7 +19,7 @@ struct ThisApplication : Application
   	{
   	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory), or a natural number");
   	  addPositional ("command", "Text with special symbols: \"%d\" = <items>, \"%f\" - an item, \"%n\" - sequential number, \"%q\" - double quote");
-  	  addFlag ("noerror", "Ignore errors");
+  	  addKey ("errors", "Ignore errors and save error items into this file");
   	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "1000");
@@ -30,13 +30,13 @@ struct ThisApplication : Application
 
 	void body () const
 	{
-		      string items     = getArg ("items");
-		const string cmd_      = getArg ("command");
-		const bool ignoreError = getFlag ("noerror");
-		const bool quote       = getFlag ("quote");
-		const uint blank_lines = str2<uint> (getArg ("blank_lines"));
-		const uint step        = str2<uint> (getArg ("step"));
-		const uint start       = str2<uint> (getArg ("start"));
+		      string items       = getArg ("items");
+		const string cmd_        = getArg ("command");
+		const string errorsFName = getArg ("errors");
+		const bool quote         = getFlag ("quote");
+		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
+		const uint step          = str2<uint> (getArg ("step"));
+		const uint start         = str2<uint> (getArg ("start"));
     ASSERT (! items. empty ());
 
 
@@ -62,6 +62,10 @@ struct ThisApplication : Application
 	  replaceStr (cmd, "%d", items);
     replaceStr (cmd, "%q", "\"");  
 	
+
+    Common_sp::AutoPtr<OFStream> errors;
+    if (! errorsFName. empty ())
+    	errors = new OFStream (errorsFName);
 	
 	  string item;
 	  while (gen->next (item))
@@ -86,16 +90,21 @@ struct ThisApplication : Application
       const int exitStatus = system (thisCmd. c_str ());
       if (exitStatus)
       {
-        if (! ignoreError)
+        if (errors. get ())
+        {
+        	*errors << item << endl;
+	        if (exitStatus == -1)  // ??
+	          ERROR;
+        }
+        else
         {
         	cout << endl 
         	     << "item=" << item 
         	     << "  status=" << exitStatus 
         	     << endl;
           cout << thisCmd << endl;
-        }
-        if (exitStatus == -1 || ! ignoreError)
           ERROR;
+        }
       }
     }
 	}
