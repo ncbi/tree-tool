@@ -198,6 +198,8 @@ A node with an empty set of leaves matches.")
 	  addKey ("type", "Tree type: dist|feature", "dist");
 	  addKey ("frequency", "Node frequency is computed for directed|undirected tree; 'none' - not used", "none");
 	    // "local"|"global" ??
+	//addFlag ("skip_empty", "Skip arcs with empty sets of leaves");
+	  addFlag ("arc_info", "Print arc information: length, depth, # leaves");
 	}
 
 
@@ -208,6 +210,9 @@ A node with an empty set of leaves matches.")
 		const string input_tree2 = getArg ("input_tree2");
 		const string treeType    = getArg ("type");
 		             frequencyS  = getArg ("frequency");
+	//const bool   skip_empty  = getFlag ("skip_empty");
+	  const bool   arc_info    = getFlag ("arc_info");
+		             
 		if (! (   treeType == "dist" 
 		       || treeType == "feature" 
 		      )
@@ -340,13 +345,27 @@ A node with an empty set of leaves matches.")
 	   	      break;  
 	   	    }
 	   	}
-	   	else 
+	   	else /*if (! skip_empty)*/
 	   		node2node [node1] = nullptr;
    	}
 
    	
+   	MeanVar mv;
    	for (const Tree::TreeNode* node1 : interiorArcNodes1)  
-      cout << "match" << (contains (node2node, node1) ? '+' : '-') << ' ' << getNodeName (node1) << endl;
+   	{
+      cout << "match" << (contains (node2node, node1) ? '+' : '-') 
+      	   << '\t' << getNodeName (node1);
+      if (arc_info)
+      	cout 
+      	   << '\t' << node2leaves [node1]. size ()
+      	   << '\t' << node1->getParentDistance ()
+      	   << '\t' << node1->getRootDistance ();
+      cout << endl;
+      mv << node1->getRootDistance ();
+    }
+    cout << endl << "Depth" << '\t';
+    mv. saveText (cout);
+    cout << endl;
         
       
     // ??
