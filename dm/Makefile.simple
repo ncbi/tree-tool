@@ -19,6 +19,7 @@ all:	\
   binomialCdf \
   char2attr \
   clust \
+  clust_binomial \
   count \
   dataset_test \
   distTriangle \
@@ -88,6 +89,12 @@ clust.o:	$(DM_HPP)
 clustOBJS=clust.o $(DM_OBJ) 
 clust:	$(clustOBJS)
 	$(CXX) -o $@ $(clustOBJS) $(LIBS)
+	$(ECHO)
+
+clust_binomial.o:  $(DM_HPP) 
+clust_binomialOBJS=clust_binomial.o $(DM_OBJ) 
+clust_binomial:	$(clust_binomialOBJS)
+	$(CXX) -o $@ $(clust_binomialOBJS) $(LIBS)
 	$(ECHO)
 
 count.o:	$(DM_DIR)/numeric.hpp $(COMMON_HPP)
