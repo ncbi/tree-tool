@@ -61,10 +61,12 @@ struct ThisApplication : Application
     bin_good->setParam (bin_n, 0.9);  // PAR
     mixt. addComponent (bin_good, bin_prob);  
     
+  #if 0
     auto bin_bad = new Binomial;
     bin_bad->analysis = & an;
     bin_bad->setParam (bin_n, 0.5);  // PAR
     mixt. addComponent (bin_bad, (1 - bin_prob) / 2);  
+  #endif
 
     auto ud = new UniformDiscrete;
     ud->analysis = & an;
