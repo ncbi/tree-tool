@@ -481,9 +481,10 @@ Prob toProb (Real x)
 string prob2str (Prob x)
 {
   ASSERT (isProb (x));  
+  const streamsize decimals = 4;  // PAR
   if (x < 0.9)
-  	return real2str (x, 3);
-  return "1-" + real2str (1 - x, 3);
+  	return real2str (x, decimals);
+  return "1-" + real2str (1 - x, decimals);
 }
 
 
