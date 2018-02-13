@@ -1005,10 +1005,9 @@ private:
     //      {<Object comment>}
     //   ]
     //
-    // where <Type> ::= Real <# decimals> |
-    //                  Positive <# decimals> |
-    //                  {Nominal | Ordinal}  {<Category name>}+   // line may wrap if ended with "\"
-    //                  Boolean 
+    // where <Type> ::= {Real | Positive | Probability} <# decimals> |
+    //                  Nominal {<Category name>}+   // line may wrap if ended with "\"
+    //                  {Integer | Boolean | CompactBoolean}
     //
     // All keywords are case-insensitive
     // Missings are coded by <missing>
@@ -2243,7 +2242,9 @@ struct UniformDiscrete : DiscreteDistribution
       finish ();
     }
   void estimate () final
-    { NOT_IMPLEMENTED; }    
+    { if (! getParamSet ())  // ??
+    	  NOT_IMPLEMENTED; 
+    } 
   bool getParamSet () const 
     { return min <= max; }
   size_t paramCount () const
@@ -3140,7 +3141,7 @@ struct Mixture : Distribution
     void qc () const override;
     void saveText (ostream& os) const override
       { distr->saveText (os); 
-        os << "P=" << prob << endl;
+        os << " P=" << prob << endl;
       }
       
     // Input: Parameters
@@ -3233,6 +3234,8 @@ public:
   // Parameters
   Component* addComponent (Distribution* distr,
                            Prob prob = NAN);
+    // Return: !nullptr
+    // Append: components (may be re-ordered later)
 //distr->setParam()
   void setParam ()
     { finish (); }
@@ -3241,6 +3244,7 @@ private:
 public:   
   void estimate () final;
     // Input: Component::{parameters, prob} or Component::objProb
+    // Invokes: components.sort()
   bool getParamSet () const;
     // Input: Component::{parameters, prob}
   size_t getDim () const 

@@ -1632,10 +1632,11 @@ void Dataset::load (istream &is)
     Progress prog (0, 10000);  // PAR
     for (;;)
     {
-      // AttrName
+      // attrName
       string attrName;
       is >> attrName;
-      ASSERT (isAlpha (attrName [0]));
+      if (! isAlpha (attrName [0]))
+      	throw runtime_error ("Bad protein name: \"" + attrName + "\"");
       string dataS = attrName;
       strUpper (dataS);
       if (dataS == "DATA")
@@ -4313,8 +4314,10 @@ void Mixture::saveText (ostream& os) const
 	FFOR (size_t, i, components. size ())
 	{
 		os << i + 1 << ": ";
-		components [i] -> saveText (os);
-		os << endl;
+		const Component* comp = components [i];
+		comp->saveText (os);
+		if (! comp->distr->asUniDistribution ())
+		  os << endl;
 	}
 }
 
