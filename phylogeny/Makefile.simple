@@ -13,7 +13,6 @@ LIBS=
 all:	\
   attr2_2paup \
   attr2_2phylip \
-  bootstrapReport \
   combine_dissims \
   compareTrees \
   distTree_new \
@@ -28,6 +27,7 @@ all:	\
 	mlst2dissim \
 	newick2tree \
 	printDistTree \
+  sampleReport \
 	tree2clusters \
 	tree2dist
 	
@@ -50,15 +50,7 @@ attr2_multiply:	$(attr2_multiplyOBJS)
 	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
 	$(ECHO)
 
-bootstrapReport.o:  $(COMMON_HPP)  
-# $(PHYL_DIR)/distTree.hpp
-bootstrapReportOBJS=bootstrapReport.o $(CPP_DIR)/common.o
-# $(DISTTREE_OBJ)
-bootstrapReport:	$(bootstrapReportOBJS)
-	$(CXX) -o $@ $(bootstrapReportOBJS) $(LIBS)
-	$(ECHO)
-
-combine_dissims.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
+combine_dissims.o:  $(NUMERIC_HPP)
 combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
 combine_dissims:	$(combine_dissimsOBJS)
 	$(CXX) -o $@ $(combine_dissimsOBJS) $(LIBS)
@@ -82,14 +74,14 @@ feature2dissim:	$(feature2dissimOBJS)
 	$(CXX) -o $@ $(feature2dissimOBJS) $(LIBS)
 	$(ECHO)
 
-hash2dissim.o:  $(DM_HPP) 
-hash2dissimOBJS=hash2dissim.o $(DM_OBJ) 
+hash2dissim.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp
+hash2dissimOBJS=hash2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
 hash2dissim:	$(hash2dissimOBJS)
 	$(CXX) -o $@ $(hash2dissimOBJS) $(LIBS)
 	$(ECHO)
 
-hash_request2dissim.o:  $(COMMON_HPP)  
-hash_request2dissimOBJS=hash_request2dissim.o $(CPP_DIR)/common.o
+hash_request2dissim.o:  $(NUMERIC_HPP) $(PHYL_DIR)/evolution.hpp
+hash_request2dissimOBJS=hash_request2dissim.o $(NUMERIC_OBJ) $(PHYL_DIR)/evolution.o
 hash_request2dissim:	$(hash_request2dissimOBJS)
 	$(CXX) -o $@ $(hash_request2dissimOBJS) $(LIBS)
 	$(ECHO)
@@ -106,7 +98,7 @@ makeDistTree:	$(makeDistTreeOBJS)
 	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-makeFeatureTree.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/numeric.hpp $(PHYL_DIR)/featureTree.hpp 
+makeFeatureTree.o:  $(NUMERIC_HPP) $(CPP_DIR)/graph.hpp $(PHYL_DIR)/featureTree.hpp 
 makeFeatureTreeOBJS=makeFeatureTree.o $(FEATURE_TREE_OBJ)
 makeFeatureTree:	$(makeFeatureTreeOBJS)
 	$(CXX) -o $@ $(makeFeatureTreeOBJS) $(LIBS)
@@ -140,6 +132,14 @@ printDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 printDistTreeOBJS=printDistTree.o $(DISTTREE_OBJ)
 printDistTree:	$(printDistTreeOBJS)
 	$(CXX) -o $@ $(printDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+sampleReport.o:  $(COMMON_HPP)  
+# $(PHYL_DIR)/distTree.hpp
+sampleReportOBJS=sampleReport.o $(CPP_DIR)/common.o
+# $(DISTTREE_OBJ)
+sampleReport:	$(sampleReportOBJS)
+	$(CXX) -o $@ $(sampleReportOBJS) $(LIBS)
 	$(ECHO)
 
 tree2clusters.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp

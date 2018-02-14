@@ -5,6 +5,8 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "evolution.hpp"
+using namespace DistTree_sp;
 
 
 
@@ -12,40 +14,16 @@ namespace
 {
 
 
-typedef Vector<size_t> Hashes;
-
-
-
-Hashes getHashes (const string &fName)
-{
-  LineInput hf (fName);
-  Hashes hashes;  hashes. reserve (10000);  // PAR
-  size_t prev = 0;
-  while (hf. nextLine ())
-  {
-    const size_t hash = str2<size_t> (hf. line);
-    ASSERT (hash);
-    if (hash <= prev)
-      throw runtime_error ("Hash " + hf. line + " is not greater than the previous hash " + toString (prev));
-    hashes << hash;
-    prev = hash;
-  } 
-  if (hashes. empty ())
-    throw runtime_error ("No hashes for " + fName);
-    
-  return hashes;
-}
-    
-
-
-
 struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Compute hash dissimilarities for requested pairs")
     {
+    	// Input
   	  addPositional ("pairs", "File with pairs of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
+  	  addKey ("hashes_min", "Min. number of common hashes to compute distance", "50");
+  	  // Output
   	  addPositional ("out", "Output file");
   	}
 
@@ -55,36 +33,31 @@ struct ThisApplication : Application
 	{
 		const string pairsFName = getArg  ("pairs");
 		const string hash_dir   = getArg  ("hash_dir");
+		const size_t hashes_min = str2<size_t> (getArg ("hashes_min"));
 		const string out        = getArg  ("out");
 		ASSERT (! hash_dir. empty ());
 		ASSERT (! out. empty ());
 		
 		
     // Cf. hash2dissim.cpp
-    LineInput input (pairsFName);
+    LineInput input (pairsFName, 100 * 1024, 1000);  // PAR
     OFStream output (out);
     ONumber on (output, 6, true);  // PAR
+    map<string/*fName*/,Hashes> name2hashes;
     while (input. nextLine ())
     {
       istringstream iss (input. line);
       string name1, name2;
       iss >> name1 >> name2;
       ASSERT (name1 != name2);
-      const Hashes h1 (getHashes (hash_dir + "/" + name1));
-      const Hashes h2 (getHashes (hash_dir + "/" + name2));
-      const size_t intersection = h1.  getIntersectSize (h2);
-      ASSERT (intersection <= h1. size ());
-      ASSERT (intersection <= h2. size ());
-      const double dissim = max (h1.size (), h2. size ()) / min (h1.size (), h2. size ()) > 2  // PAR
-                              ? NAN
-                              : - 0.5 * (  log ((double) intersection / (double) h1. size ()) 
-		                                     + log ((double) intersection / (double) h2. size ()) 
-		                                    );
+      const string fName1 (hash_dir + "/" + name1);
+      const string fName2 (hash_dir + "/" + name2);
+      if (! contains (name2hashes, fName1))  name2hashes [fName1] = Hashes (fName1);
+      if (! contains (name2hashes, fName2))  name2hashes [fName2] = Hashes (fName2);
+      const Hashes& h1 = name2hashes [fName1];
+      const Hashes& h2 = name2hashes [fName2];
+      const double dissim = h1. getDissim (h2, hashes_min);
       output << name1 << '\t' << name2 << '\t' << dissim;
-      if (verbose ())
-        output << '\t' << intersection 
-               << '\t' << h1. size ()
-               << '\t' << h2. size ();
       output << endl;
     }
 	}
@@ -102,7 +75,6 @@ int main (int argc,
 {
   ThisApplication app;
   return app. run (argc, argv);
-
 }
 
 

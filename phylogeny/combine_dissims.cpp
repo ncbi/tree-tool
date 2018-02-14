@@ -14,20 +14,6 @@ namespace
 {
 	
 	
-#if 0
-constexpr Real INF = numeric_limits<Real>::infinity ();
-
-
-inline bool isNan (Real x)
-  { return ! (x == x); }
-  
-
-inline Real sqr (Real x)
-  { return x * x; }
-#endif
-
-
-
 struct ObjPair
 {
 	string name1;
@@ -54,7 +40,7 @@ struct ThisApplication : Application
     : Application ("Combine different dissimilarities for the same pairs of objects. Dissimilarities must have linear-exponential variance")
     {
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
-  	  addPositional ("scales", "File with equalizing scales for each dissimilarity");
+  	  addPositional ("scales", "File with equalizing scales for each dissimilarity, ordered by scale descending, first scale = 1");
   	}
 
 
@@ -69,14 +55,18 @@ struct ThisApplication : Application
 		{
 		  ifstream f (scaleFName);
       Real scale;		
+      Real scale_prev = INF;
 		  while (f >> scale)
 		  {
 		  	ASSERT (scale > 0);
-		  	ASSERT (scale < INF);
+		  	ASSERT (scale <= 1);
 		    scales << scale;
+		    ASSERT (scale_prev > scale);
+		    scale_prev = scale;
 		  }
 		}
 		ASSERT (scales. size () >= 2);
+		ASSERT (scales [0] == 1);
 
       
     Vector<ObjPair> objPairs;  objPairs. reserve (1000);  // PAR
@@ -96,7 +86,7 @@ struct ThisApplication : Application
 	  	dissims. clear ();
 	  	vars.    clear ();
 	  	weights. clear ();
-	    Real dissim_prev_max = 0;
+	  	Real dissim_first = NAN;
   	  FFOR (size_t, j, scales. size ())
       {
       	const size_t k = i + j * n;
@@ -104,28 +94,26 @@ struct ThisApplication : Application
         ASSERT (objPairs [k]. name2 == objPairs [i]. name2);
 
         const Real coeff = 1 / scales [j];
-        ASSERT (coeff > 0);
+        ASSERT (coeff >= 1);
 
-        const Real dissim_raw = objPairs [k]. dissim;
+        const Real dissim = objPairs [k]. dissim * coeff;
+        dissims << dissim;
+        
+        if (isNan (dissim_first) && ! isNan (dissim))
+        	dissim_first = dissim;
 
-        Real var = /* N * */ exp (dissim_raw) - 1;  // Linear-exponential variance   // PAR
+        const Real dissim_raw_corrected = dissim_first / coeff;
+        Real var = /* N * */ exp (dissim_raw_corrected) - 1;  // Linear-exponential variance   // PAR
         if (isNan (var))
         	var = INF;
         ASSERT (var >= 0);
         vars << var;
 
-        const Real dissim = dissim_raw * coeff;
-        dissims << dissim;
-
-        const Real absWeight = 1 / (sqr (coeff) * var);
+        const Real absWeight = isNan (dissim) || dissim == INF
+                                  ? 0 
+                                  : (1 / (sqr (coeff) * var));
         ASSERT (absWeight >= 0);
-        ASSERT ((isNan (dissim) || dissim == INF) == (absWeight == 0));
-        weights << (dissim < dissim_prev_max * 0.5 ? 0 : absWeight);  // PAR
-
-        if (absWeight)
-          maximize (dissim_prev_max, dissim);
-        ASSERT (dissim_prev_max >= 0);
-        ASSERT (dissim_prev_max < INF);
+        weights << absWeight;
       }
 
 	  	Real dissim = 0;
@@ -133,7 +121,18 @@ struct ThisApplication : Application
       Real weight_sum = 0;
       for (const Real w : weights)
     		weight_sum += w;
-    	if (weight_sum)
+      ASSERT (weight_sum >= 0);
+    	if (weight_sum == 0)
+	    {
+	    	dissim = NAN;
+	    	for (const Real d : dissims)
+	    		if (! isNan (d))
+	    		{
+	    			dissim = d;
+	    			break;
+	    		}
+	    }
+	    else if (weight_sum < INF)
     	{
 	      // Relative weights
 	      for (Real &w : weights)
@@ -153,15 +152,6 @@ struct ThisApplication : Application
 	      ASSERT (var > 0);
 	    }
 	    else
-	    {
-	    	dissim = NAN;
-	    	for (const Real d : dissims)
-	    		if (! isNan (d))
-	    		{
-	    			dissim = d;
-	    			break;
-	    		}
-	    }
       if ((isNan (dissim) || dissim == INF || dissim == 0) != (var == 0))
       {
       	cout << objPairs [i]. name1 << ' ' << objPairs [i]. name2 << endl;

@@ -1,4 +1,4 @@
-// hash2dissim.cpp  --> feature2dissim.cpp ??
+// hash2dissim.cpp  
 
 #undef NDEBUG
 #include "../common.inc"
@@ -8,6 +8,8 @@ using namespace Common_sp;
 #include "../dm/numeric.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "evolution.hpp"
+using namespace DistTree_sp;
 
 
 
@@ -24,10 +26,12 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert hashes to a dissimilarity named \"" + attrName + "\" and print a " + dmSuff + "-file")
     {
+    	// Input
   	  addPositional ("objects", "File with a list of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
-  	  addPositional ("out", "Output " + dmSuff + "-file without " + dmSuff);
   	  addKey ("hashes_min", "Min. number of common hashes to compute distance", "50");
+  	  // Output
+  	  addPositional ("out", "Output " + dmSuff + "-file without " + dmSuff);
   	}
 
 
@@ -59,14 +63,14 @@ struct ThisApplication : Application
     ds. qc ();
     
     
-    typedef Vector<size_t> Hashes;
-    
-    Vector<Hashes> obj2hashes  (ds. objs. size ());
+    Vector<Hashes> obj2hashes;  obj2hashes. reserve (ds. objs. size ());
     {
       Progress prog ((uint) ds. objs. size ());
-      FOR (size_t, objNum, ds. objs. size ())
+      FFOR (size_t, objNum, ds. objs. size ())
       {
         prog (ds. objs [objNum] -> name);
+        obj2hashes [objNum] << Hashes (hash_dir + "/" + ds. objs [objNum] -> name);
+      #if 0
         LineInput hf (hash_dir + "/" + ds. objs [objNum] -> name);
         auto& hashes = obj2hashes [objNum];
         ASSERT (hashes. empty ());
@@ -83,25 +87,25 @@ struct ThisApplication : Application
         } 
       //if (hashes. empty ())
         //throw runtime_error ("No hashes for " + ds. objs [objNum] -> name);
+      #endif
       }
     }
     
     auto attr = new PositiveAttr2 (attrName, ds, 6);  // PAR
     {
       Progress prog ((uint) ds. objs. size ());
-      FOR (size_t, row, ds. objs. size ())
+      FFOR (size_t, row, ds. objs. size ())
       {
         prog (ds. objs [row] -> name);
         const Hashes& hash1 = obj2hashes [row];
         FOR (size_t, col, row)
         {
           const Hashes& hash2 = obj2hashes [col];
+          const Real dissim = hash1. getDissim (hash2, hashes_min);
+        #if 0
           const size_t common = hash1.  getIntersectSize (hash2);
           ASSERT (common <= hash1. size ());
           ASSERT (common <= hash2. size ());
-        #if 0
-          const Real dissim = - log ((Real) common / (Real) min (hash1. size (), hash2. size ()));
-        #else
           const Real dissim = common >= hashes_min
                                 ? - 0.5 * (  log ((Real) common / (Real) hash1. size ()) 
                                            + log ((Real) common / (Real) hash2. size ()) 
@@ -134,7 +138,6 @@ int main (int argc,
 {
   ThisApplication app;
   return app. run (argc, argv);
-
 }
 
 

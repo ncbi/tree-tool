@@ -38,11 +38,12 @@ $(LANG_DIR)/grammar.o: $(LANG_DIR)/grammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hp
 
 # DM
 DM_DIR = $(CPP_DIR)/dm
-$(DM_DIR)/numeric.o:	$(DM_DIR)/numeric.hpp $(COMMON_HPP)
+NUMERIC_HPP = $(CPP_DIR)/common.hpp $(DM_DIR)/numeric.hpp
+$(DM_DIR)/numeric.o:	$(NUMERIC_HPP)
 NUMERIC_OBJ = $(CPP_DIR)/common.o $(DM_DIR)/numeric.o 
-$(DM_DIR)/matrix.o: $(DM_DIR)/matrix.hpp $(COMMON_HPP) $(DM_DIR)/numeric.hpp 
-$(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
-DM_HPP = $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp $(DM_DIR)/optim.hpp $(DM_DIR)/dataset.hpp
+$(DM_DIR)/matrix.o: $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
+$(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp 
+DM_HPP = $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp $(DM_DIR)/optim.hpp $(DM_DIR)/dataset.hpp
 $(DM_DIR)/dataset.o:	$(DM_HPP)
 DM_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/matrix.o $(DM_DIR)/optim.o $(DM_DIR)/dataset.o
 $(DM_DIR)/prediction.o: $(DM_DIR)/prediction.hpp $(DM_HPP)
@@ -55,6 +56,7 @@ DM = $(MATRIX) $(DM_DIR)/dataset
 PHYL_DIR = $(CPP_DIR)/phylogeny
 $(PHYL_DIR)/distTree.o: $(PHYL_DIR)/distTree.hpp $(DM_HPP) $(DM_DIR)/prediction.hpp $(CPP_DIR)/graph.hpp
 DISTTREE_OBJ = $(DM_OBJ) $(DM_DIR)/prediction.o $(CPP_DIR)/graph.o $(PHYL_DIR)/distTree.o 
+$(PHYL_DIR)/evolution.o:	$(PHYL_DIR)/evolution.hpp $(NUMERIC_HPP)
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP)
 FEATURE_TREE_OBJ = $(DM_OBJ) $(CPP_DIR)/graph.o $(PHYL_DIR)/featureTree.o
 #
