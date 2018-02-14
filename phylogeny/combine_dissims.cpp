@@ -151,7 +151,7 @@ struct ThisApplication : Application
 		     		var += sqr (weights [j] / scales [j]) * vars [j];
 	      ASSERT (var > 0);
 	    }
-	    else
+
       if ((isNan (dissim) || dissim == INF || dissim == 0) != (var == 0))
       {
       	cout << objPairs [i]. name1 << ' ' << objPairs [i]. name2 << endl;
