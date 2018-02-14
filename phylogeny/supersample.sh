@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 6) then
-  echo "Build and supersampling-bootstrap a distance tree"
+  echo "Build and evaluate by supersampling a distance tree"
   echo "#1: Input .dm file without .dm"
   echo "#2: Distance attribute in #1"
   echo "#3: Tree building program with parameters #1, #2"
@@ -57,9 +57,9 @@ rm $BASE.dm
 
 echo ""
 echo ""
-echo "Bootstrapping ..."
+echo "Supersampling ..."
 set DIR = `pwd`
-# Directory for bootstrap .tree-files
+# Directory for supersampling .tree-files
 mkdir $BASE.trees
 if ($?) exit 1
 cd $BASE.trees
@@ -77,7 +77,7 @@ while ($SEED < $replicas)
   if (! -e $OUT || -z $OUT) then
     cp /dev/null log/$SEED
     if ($?) exit 1
-    $QSUB -N j$SEED "bootstrap_forward_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
+    $QSUB -N j$SEED "supersample_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
     if ($?) exit 1
   endif
 end
@@ -94,13 +94,13 @@ rm $BASE.list
 rm $BASE.rest
 
 
-bootstrap_report.sh $BASE $replicas none
+sample_report.sh $BASE $replicas none
 if ($?) exit 1
 
-#bootstrap_report.sh $BASE $replicas directed
+#sample_report.sh $BASE $replicas directed
 #if ($?) exit 1
 
-#bootstrap_report.sh $BASE $replicas undirected
+#sample_report.sh $BASE $replicas undirected
 #if ($?) exit 1
 
 rm -r $BASE.trees/

@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 4) then
-  echo "Build and subsampling-bootstrap a distance tree"
+  echo "Build and evaluate by subsampling a distance tree"
   echo "#1: Input .dm file without .dm"
   echo "#2: Distance attribute in #1"
   echo "#3: Tree building program with parameters #1, #2"
@@ -17,8 +17,8 @@ endif
 
 
 echo ""
-echo "Bootstrapping ..."
-# Directory for bootstrap .tree-files
+echo "Subsampling ..."
+# Directory for subsampling .tree-files
 mkdir $1.trees
 if ($?) exit 1
 set DIR = `pwd`
@@ -37,7 +37,7 @@ while ($SEED < $replicas)
   if (! -e $OUT || -z $OUT) then
     cp /dev/null log/$SEED
     if ($?) exit 1
-    $QSUB -N j$SEED "bootstrap_item.sh $1 $2 $SEED log $3" > /dev/null
+    $QSUB -N j$SEED "subsample_item.sh $1 $2 $SEED log $3" > /dev/null
     if ($?) exit 1
   endif
 end
@@ -50,13 +50,13 @@ if ($?) exit 1
 cd $DIR
 
 
-bootstrap_report.sh $1 $replicas none
+sample_report.sh $1 $replicas none
 if ($?) exit 1
 
-#bootstrap_report.sh $1 $replicas directed
+#sample_report.sh $1 $replicas directed
 #if ($?) exit 1
 
-#bootstrap_report.sh $1 $replicas undirected
+#sample_report.sh $1 $replicas undirected
 #if ($?) exit 1
 
 rm -r $1.trees/  

@@ -488,7 +488,7 @@ public:
 	  // DTNode's whose len may be changed 
 	Real improvement {NAN};
 	  // isNan() or positive()
-    // Too small values are noise => not stable in bootstrap
+    // Too small values are noise => not stable in tree sampling
 private:
 	Real fromLen {NAN};
 	Real toLen {NAN};

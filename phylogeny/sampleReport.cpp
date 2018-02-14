@@ -1,4 +1,4 @@
-// bootstrapReport.cpp
+// sampleReport.cpp
 
 #undef NDEBUG
 #include "../common.inc"
@@ -15,10 +15,10 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Analyze bootstrap result")
+	: Application ("Analyze tree sampling result")
 	{
 		// Input
-	  addPositional ("bootstrap", "Bootstrap result: file with lines: <N> match[+-]: <node LCA-name>");
+	  addPositional ("sampling", "Tree sampling result: file with lines: <N> match[+-]: <node LCA-name>");
 	  addKey ("replicas", "# replicas (match+ + match-) - for QC", "0");
 	//addKey ("support_min", "Min. match+ / (match+ + match-) to report a node", "0.3333333");   // =1.0/3.0
 	  addKey ("stable_min", "Min. match+ / (match+ + match-) for a node to be stable", "0.92");   // PAR
@@ -29,7 +29,7 @@ struct ThisApplication : Application
 
 	void body () const
   {
-		const string bootstrap         = getArg ("bootstrap");
+		const string sampling          = getArg ("sampling");
 		const size_t replicas_expected = str2<size_t> (getArg ("replicas"));
   //const double support_min       = str2<double> (getArg ("support_min"));
 		const double stable_min        = str2<double> (getArg ("stable_min"));
@@ -44,7 +44,7 @@ struct ThisApplication : Application
     typedef  Vector<size_t>  Support;  // size() = 2
     map <string/*node name*/, Support>  node2support;
     {
-      LineInput f (bootstrap);
+      LineInput f (sampling);
       while (f. nextLine ())
       {
         istringstream oss (f. line);

@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 1) then
-  echo "Bootstrap a feature tree"
+  echo "Evaluate a feature tree by subsampling"
   echo "#1: #1.list - list of genomes; #1/ - directory with features of the genomes; #1.tree"
   exit 1
 endif
@@ -10,7 +10,7 @@ endif
 
 #if (0) then 
 set DIR = `pwd`
-# Directory for bootstrap .tree-files
+# Directory for subsample .tree-files
 mkdir $1.trees
 if ($?) exit 1
 cd $1.trees
@@ -26,7 +26,7 @@ while ($SEED < 100)  # PAR
   @ SEED = $SEED + 1
   set OUT = $1-$SEED.tree
   if (! -e $OUT || -z $OUT) then
-    $QSUB -N j$SEED "featureTree_bootstrap_item.sh $1 $SEED log" > /dev/null
+    $QSUB -N j$SEED "featureTree_subsample_item.sh $1 $SEED log" > /dev/null
   endif
 end
 qstat_wait.sh
@@ -39,16 +39,16 @@ cd $DIR
 
 
 ls $1.trees/*.tree | sed 's|^.*/||1' | grep -vw maxParsimony > $1-trees.list
-trav $1-trees.list "compareTrees $1.tree $1.trees/%f  -type feature" | grep '^match[+-] ' | sort | uniq -c > $1-time.bootstrap
+trav $1-trees.list "compareTrees $1.tree $1.trees/%f  -type feature" | grep '^match[+-] ' | sort | uniq -c > $1-time.subsample
 if ($?) exit 1
 rm $1-trees.list
-bootstrapReport  $1-time.bootstrap  -replicas 100 | sort -k 4 -n -r
+sampleReport  $1-time.subsample  -replicas 100 | sort -k 4 -n -r
 if ($?) exit 1
 
 ls $1.trees/*.tree | sed 's|^.*/||1' | grep -w maxParsimony > $1-trees.list
-trav $1-trees.list "compareTrees $1-maxParsimony.tree $1.trees/%f  -type feature" | grep '^match[+-] ' | sort | uniq -c > $1-changes.bootstrap
+trav $1-trees.list "compareTrees $1-maxParsimony.tree $1.trees/%f  -type feature" | grep '^match[+-] ' | sort | uniq -c > $1-changes.subsample
 if ($?) exit 1
 rm $1-trees.list
-bootstrapReport  $1-changes.bootstrap  -replicas 100 | sort -k 4 -n -r
+sampleReport  $1-changes.subsample  -replicas 100 | sort -k 4 -n -r
 if ($?) exit 1
 
