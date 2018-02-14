@@ -1114,6 +1114,7 @@ struct Sample : Root
     { return mult_sum / (Real) nEffective; }
   Real getMaxMult () const;
   size_t getObjNameLen_max () const;  
+  void missing2mult (const Attr1* attr1);
   void save (const VectorPtr<Attr> &attrs,
              ostream &os) const;
     // <dmSuff>-format
@@ -1162,7 +1163,7 @@ public:
     // Return: true => mult
 		{ if (objNum == mult_. size ())
 		    return false;
-		  for (objNum = objNum == NO_INDEX ? 0 : objNum + 1; 
+		  for (objNum = objNum == NO_INDEX ? 0 : (objNum + 1); 
 		       objNum < mult_. size (); 
 		       objNum++
 		      )

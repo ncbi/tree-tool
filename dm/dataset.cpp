@@ -2067,6 +2067,19 @@ size_t Sample::getObjNameLen_max () const
 
 
 
+void Sample::missing2mult (const Attr1* attr1)
+{
+  ASSERT (attr1);
+  ASSERT (& attr1->ds == ds);
+  ASSERT (attr1->ds. objs. size () == mult. size ());
+  
+  FFOR (size_t, i, mult. size ())
+    if (attr1->isMissing (i))
+    	mult [i] = 0;
+}
+
+
+
 void Sample::save (const VectorPtr<Attr> &attrs,
                    ostream &os) const
 {
