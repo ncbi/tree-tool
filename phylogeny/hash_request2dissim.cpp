@@ -22,7 +22,8 @@ struct ThisApplication : Application
     	// Input
   	  addPositional ("pairs", "File with pairs of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
-  	  addKey ("hashes_min", "Min. number of common hashes to compute distance", "50");
+  	  addKey ("intersection_min", "Min. number of common hashes to compute distance", "50");
+  	  addKey ("ratio_min", "Min. ratio of hash sizes (0..1)", "0.5");
   	  // Output
   	  addPositional ("out", "Output file");
   	}
@@ -31,11 +32,13 @@ struct ThisApplication : Application
 
 	void body () const final
 	{
-		const string pairsFName = getArg  ("pairs");
-		const string hash_dir   = getArg  ("hash_dir");
-		const size_t hashes_min = str2<size_t> (getArg ("hashes_min"));
-		const string out        = getArg  ("out");
+		const string pairsFName       = getArg  ("pairs");
+		const string hash_dir         = getArg  ("hash_dir");
+		const size_t intersection_min = str2<size_t> (getArg ("intersection_min"));
+		const Prob   hashes_ratio_min = str2real (getArg ("ratio_min"));
+		const string out              = getArg  ("out");
 		ASSERT (! hash_dir. empty ());
+		ASSERT (isProb (hashes_ratio_min));
 		ASSERT (! out. empty ());
 		
 		
@@ -56,7 +59,7 @@ struct ThisApplication : Application
       if (! contains (name2hashes, fName2))  name2hashes [fName2] = Hashes (fName2);
       const Hashes& h1 = name2hashes [fName1];
       const Hashes& h2 = name2hashes [fName2];
-      const double dissim = h1. getDissim (h2, hashes_min);
+      const double dissim = h1. getDissim (h2, intersection_min, hashes_ratio_min);
       output << name1 << '\t' << name2 << '\t' << dissim;
       output << endl;
     }

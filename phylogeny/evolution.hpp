@@ -21,7 +21,8 @@ struct Hashes : Vector<size_t>
 	  {}
 	
 	Real getDissim (const Hashes &other,
-	                size_t intersection_min) const;
+	                size_t intersection_min,
+	                Prob hashes_ratio_min) const;
 	  // Symmetric
 	  // Return: >= 0; may be NAN
 };

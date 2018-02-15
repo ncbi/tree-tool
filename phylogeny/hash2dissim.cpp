@@ -29,7 +29,8 @@ struct ThisApplication : Application
     	// Input
   	  addPositional ("objects", "File with a list of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");
-  	  addKey ("hashes_min", "Min. number of common hashes to compute distance", "50");
+  	  addKey ("intersection_min", "Min. number of common hashes to compute distance", "50");
+  	  addKey ("ratio_min", "Min. ratio of hash sizes (0..1)", "0.5");
   	  // Output
   	  addPositional ("out", "Output " + dmSuff + "-file without " + dmSuff);
   	}
@@ -38,10 +39,12 @@ struct ThisApplication : Application
 
 	void body () const
 	{
-		const string objectsFName = getArg  ("objects");
-		const string hash_dir     = getArg  ("hash_dir");
-		const string out          = getArg  ("out");
-		const size_t hashes_min   = str2<size_t> (getArg ("hashes_min"));
+		const string objectsFName     = getArg  ("objects");
+		const string hash_dir         = getArg  ("hash_dir");
+		const size_t intersection_min = str2<size_t> (getArg ("intersection_min"));
+		const Prob   hashes_ratio_min = str2real (getArg ("ratio_min"));
+		const string out              = getArg ("out");
+		ASSERT (isProb (hashes_ratio_min));
 		ASSERT (! out. empty ());
 		
 		
@@ -101,12 +104,12 @@ struct ThisApplication : Application
         FOR (size_t, col, row)
         {
           const Hashes& hash2 = obj2hashes [col];
-          const Real dissim = hash1. getDissim (hash2, hashes_min);
+          const Real dissim = hash1. getDissim (hash2, intersection_min, hashes_ratio_min);
         #if 0
           const size_t common = hash1.  getIntersectSize (hash2);
           ASSERT (common <= hash1. size ());
           ASSERT (common <= hash2. size ());
-          const Real dissim = common >= hashes_min
+          const Real dissim = common >= intersection_min
                                 ? - 0.5 * (  log ((Real) common / (Real) hash1. size ()) 
                                            + log ((Real) common / (Real) hash2. size ()) 
                                           )

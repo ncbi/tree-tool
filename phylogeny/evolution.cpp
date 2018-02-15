@@ -36,8 +36,13 @@ Hashes::Hashes (const string &fName)
 
 
 
+// Read Hashes from a binary file ??
+
+
+
 Real Hashes::getDissim (const Hashes &other,
-	                      size_t intersection_min) const
+	                      size_t intersection_min,
+	                      Prob hashes_ratio_min) const
 {
   const size_t intersection = getIntersectSize (other);
   ASSERT (intersection <=        size ());
@@ -49,11 +54,18 @@ Real Hashes::getDissim (const Hashes &other,
          << '\t' << other. size ()
          << endl;
          
-  return intersection >= intersection_min
-           ? - 0.5 * (  log ((Real) intersection / (Real)        size ()) 
-                      + log ((Real) intersection / (Real) other. size ()) 
-                     )
-           : NAN;
+  if (  (Real) min (size (), other. size ()) 
+  	  / (Real) max (size (), other. size ())
+  	    < hashes_ratio_min
+  	 )
+  	return NAN;
+         
+  if (intersection < intersection_min)
+  	return NAN;
+         
+  return - 0.5 * (  log ((Real) intersection / (Real)        size ()) 
+                  + log ((Real) intersection / (Real) other. size ()) 
+                 );
 }
 
 
