@@ -95,17 +95,24 @@ struct ThisApplication : Application
 
         const Real coeff = 1 / scales [j];
         ASSERT (coeff >= 1);
+        
+        const Real dissim_raw = objPairs [k]. dissim;
 
-        const Real dissim = objPairs [k]. dissim * coeff;
+        const Real dissim = dissim_raw * coeff;
         dissims << dissim;
         
         if (isNan (dissim_first) && ! isNan (dissim))
         	dissim_first = dissim;
 
-        const Real dissim_raw_corrected = dissim_first / coeff;
-        Real var = /* N * */ exp (dissim_raw_corrected) - 1;  // Linear-exponential variance   // PAR
+        const Real dissim_raw_predicted = dissim_first / coeff;
+        Real var = /* N * */ exp (dissim_raw_predicted) - 1;  // Linear-exponential variance   // PAR
+        var += sqr (dissim_raw - dissim_raw_predicted);
         if (isNan (var))
         	var = INF;
+      #if 0
+        if (j)  
+          var = 1000;  
+      #endif
         ASSERT (var >= 0);
         vars << var;
 
