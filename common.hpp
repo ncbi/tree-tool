@@ -1194,14 +1194,17 @@ public:
 		      	break;
     	searchSorted = true;
     }
+  void checkSorted () const
+    { if (! searchSorted)
+    	  throw logic_error ("Vector is not sorted for search");
+    }
 
   size_t binSearch (const T &value,
                     bool exact = true) const
     // Return: if exact then NO_INDEX or vec[Return] = value else min {i : vec[i] >= value}
     { if (P::empty ())
     	  return NO_INDEX;
-    	if (! searchSorted)
-    	  throw logic_error ("Vector is not sorted for search");
+    	checkSorted ();
     	size_t lo = 0;  // vec.at(lo) <= value
     	size_t hi = P::size () - 1;  
     	// lo <= hi
@@ -1259,10 +1262,8 @@ public:
       }
   template <typename U>
     bool intersectsFast2 (const Vector<U> &other) const
-      { if (! searchSorted)
-      	  throw logic_error ("Vector is not sorted for search");
-      	if (! other. searchSorted)
-      	  throw logic_error ("Other Vector is not sorted for search");
+      { checkSorted ();
+      	other. checkSorted ();
       	size_t i = 0;
       	const size_t otherSize = other. size ();
         for (const T& t : *this)
@@ -1279,7 +1280,6 @@ public:
     void setMinus (const Vector<U> &other)
       { filterIndex ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
       
-  // Requires: sorted
   bool isUniq () const
     { if (P::size () <= 1)
         return true;
@@ -1304,6 +1304,8 @@ public:
     // Input: *this, vec: unique
     { if (other. empty ())
         return 0;
+      checkSorted ();
+      other. checkSorted ();      
       size_t n = 0;
       size_t j = 0;
       for (const T& x : *this)
@@ -1417,6 +1419,8 @@ public:
   StringVector (initializer_list<string> init)
     : P (init)
     {}
+  StringVector (const string &fName,
+                size_t reserve_size);
 
 
   string toString (const string& sep) const

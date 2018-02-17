@@ -830,6 +830,29 @@ void Named::qc () const
 
 
 
+
+// StringVector
+
+StringVector::StringVector (const string &fName,
+                            size_t reserve_size)
+{
+	reserve (reserve_size);
+	searchSorted = true;
+	ifstream f (fName);
+	string s;
+	string prev;
+	while (f >> s)
+	{
+	  *this << s;
+	  if (s < prev)
+	  	searchSorted = false;
+	  prev = s;
+	}
+}
+
+
+
+
 // DisjointCluster
 
 void DisjointCluster::merge (DisjointCluster &other)
