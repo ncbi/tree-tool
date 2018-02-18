@@ -475,6 +475,17 @@ RealAttr1& LinearNumPrediction::makeResidualAttr (const string &attrName,
 
 
 
+#if 0
+void LinearNumPrediction::removeTargetOutlierValues ()
+{
+	??
+  Normal /*Exponential*/ distr;
+  outlier_min = exp (residualAttr->distr2outlier (sample, distr, outlier_EValue_max));  
+}
+#endif
+
+
+
 #if LIN_PROG
 // Problem
 
@@ -859,6 +870,7 @@ Real L1_LINEAR_NUM_PREDICT::GetRelCriterion (Real ConstTarget) const
 void L2LinearNumPrediction::solveUnconstrained ()
 {
   absCriterion = NAN;
+  const bool existsMissing = getExistsMissing ();
 
 
   // attrSim
@@ -866,17 +878,32 @@ void L2LinearNumPrediction::solveUnconstrained ()
   {
     Unverbose unv;
     Progress prog ((uint) space. size ());  
-    FOR (size_t, attrNum1, space. size ())
+    FFOR (size_t, attrNum1, space. size ())
     {
       prog ();
       const NumAttr1& a1 = * space. at (attrNum1);
-  	  FOR (size_t, attrNum2, attrNum1 + 1)
+  	  FFOR (size_t, attrNum2, attrNum1 + 1)
       {
         const NumAttr1& a2 = * space. at (attrNum2);
         Real s = 0;
-        for (Iterator it (sample); it ();)  
-          s += a1. getReal (*it) * a2. getReal (*it) * it. mult;
-        attrSim. putSymmetric (attrNum1, attrNum2, s);
+        Real mult_sum = 0;
+        FFOR (size_t, i, sample. mult. size ())
+          if (const Real mult = sample. mult [i])
+          {
+          	const Real x1 = a1. getReal (i);
+          	const Real x2 = a2. getReal (i);
+          	if (existsMissing)
+            {
+	          	if (isNan (x1))
+	          		continue;
+	          	if (isNan (x2))
+	          		continue;
+	            mult_sum += mult;
+	          }
+            s += x1 * x2 * mult;
+          }
+        ASSERT (! isNan (s));
+        attrSim. putSymmetric (attrNum1, attrNum2, existsMissing ? (mult_sum ? s / mult_sum : 0) : s);
       }
    	}
   }
@@ -890,13 +917,29 @@ void L2LinearNumPrediction::solveUnconstrained ()
         
   // xy
   MVector xy (space. size ());
-  FOR (size_t, attrNum, space. size ())
+  FFOR (size_t, attrNum, space. size ())
   {
     const NumAttr1& a = * space. at (attrNum);
     Real s = 0;
-    for (Iterator it (sample); it ();)  
-      s += a. getReal (*it) * target [*it] * it. mult;
-    xy [attrNum] = s;
+    Real mult_sum = 0;
+    FFOR (size_t, i, sample. mult. size ())
+      if (const Real mult = sample. mult [i])
+      {
+      	const Real x = a. getReal (i);
+      	if (existsMissing)
+        {
+	      	if (isNan (x))
+	      		continue;
+	      	if (isNan (target [i]))
+	      		continue;
+	        mult_sum += mult;
+	      }
+        s += x * target [i] * mult;
+      }
+    ASSERT (! isNan (s));
+    xy [attrNum] = existsMissing 
+                     ? mult_sum ? s / mult_sum : 0
+                     : s;
  	}
 
   // beta
@@ -909,25 +952,34 @@ void L2LinearNumPrediction::solveUnconstrained ()
                                   xy,   true, 0);
 
   Real y2 = 0;
-  for (Iterator it (sample); it ();)  
-    y2 += sqr (target [*it]) * it. mult;
+  {
+	  Real mult_sum = 0;
+	  FFOR (size_t, i, sample. mult. size ())
+	    if (const Real mult = sample. mult [i])
+	    	if (! isNan (target [i]))
+	    	{
+	    		mult_sum += mult;
+			    y2 += sqr (target [i]) * mult;
+			  }
+		if (existsMissing)
+			y2 /= mult_sum;
+	}
 
   absCriterion = y2 - yHat2;
   if (! positive (absCriterion))
-    setAbsCriterion ();
+  {
+  	if (existsMissing)
+  		absCriterion = 0;
+  	else
+      setAbsCriterion ();
+  }
   ASSERT (! negative (absCriterion));
 
   // betaCovariance  
-#if 0
-  // Unbiased
-  size_t objSize;
-  Real objWeight;
-  Table () -> getObjWeight (objSize, objWeight);
-  const Real epsilonVar = absCriterion / (objSize - GetPredictorNum ());
-#else
-  const Real epsilonVar = absCriterion / sample. mult_sum;
-#endif
-  betaCovariance. putProdAll (epsilonVar);  // ??
+  Real epsilonVar = absCriterion;
+  if (! existsMissing)
+  	epsilonVar /= sample. mult_sum;  // biased
+  betaCovariance. putProdAll (epsilonVar);  
   
   // betaSD
   betaSD. diag2row (true, 0, betaCovariance);
@@ -1068,9 +1120,9 @@ void L2LinearNumPrediction::setAbsCriterion (const RealAttr1& residual)
   
 
 
-Real L2LinearNumPrediction::getConstTarget () const
+Real L2LinearNumPrediction::getConstTarget (Real &scatter) const
 { 
-  Real average, scatter; 
+  Real average; 
   target. getAverageScatter (sample, average, scatter);
   ASSERT (! isNan (scatter));
   return average;
@@ -1091,9 +1143,9 @@ Real L2LinearNumPrediction::getRelTargetCriterion (Real constTarget) const
     maxAbsCriterion += it. mult * sqr (target [*it] - constTarget);
 
   if (nullReal (maxAbsCriterion))
-    return -INF;
+    return INF;
   else
-    return 1 - absCriterion / maxAbsCriterion;
+    return absCriterion / maxAbsCriterion;
 }
 
 

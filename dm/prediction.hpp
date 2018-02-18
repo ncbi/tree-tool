@@ -64,6 +64,10 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
     bool isOverfit () const
       { return P::space. size () > P::space. ds. objs. size (); }
     size_t getMaxPredictorNameLen () const;
+    bool getExistsMissing () const
+      { size_t badObjNum;
+      	return P::space. existsMissing () || target. existsMissing (badObjNum); 
+      }
   };
 
 
@@ -72,7 +76,7 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
 struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
 {
   // Output
-  Real negLogLikelihood_ave;
+  Real negLogLikelihood_ave {NAN};
     // !isNan() <=> solve() is successul
     // Init: NAN
     // >= 0
@@ -80,8 +84,8 @@ struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
     // rowsSize(true) = space.size()
     // Precision ??
     // getSeparated(), beta *= k, k > 1 => negLogLikelihood_ave is improved
-  Real target_score_min;
-  Real non_target_score_max;
+  Real target_score_min {NAN};
+  Real non_target_score_max {NAN};
   MVector attrImportance;
     // = negLogLikelihood_ave(without attr) / negLogLikelihood_ave(with attr) - 1
     // May be < 0 if separated()
@@ -232,7 +236,7 @@ struct LinearNumPrediction : Prediction<NumAttr1,RealAttr1>
   VectorOwn<Constraint> constraints;  
 
   // OUTPUT
-  Real absCriterion;
+  Real absCriterion {NAN};
     // >= 0, -> min
     // May be NAN
     // Init: NAN
@@ -322,16 +326,18 @@ public:
   virtual Real absCriterion2Error () const = 0;
     // Return: >= 0
     // Input: absCriterion
-  virtual Real getConstTarget () const = 0;
+  virtual Real getConstTarget (Real &scatter) const = 0;
     // Return: Prediction of target as a constant
+    // Output: scatter
   virtual Real getRelTargetCriterion (Real constTarget) const = 0;
     // Input: absCriterion
     // Return: Criterion relative to the prediction of target by constTarget
-    //         0..1
-    //         If cannot be computed then -INF
-    //         If no intercept in beta then INF -??
+    //         = absCriterion / maxAbsCriterion
+    //         If maxAbsCriterion = 0 then INF
   Real getRelCriterion () const
-    { return getRelTargetCriterion (getConstTarget ()); }
+    { Real scatter;
+    	return getRelTargetCriterion (getConstTarget (scatter)); 
+    }
    	// "R2"
   virtual LinearNumPrediction* makeLinearNumPrediction (const Sample &sample_arg,
                                                         const Space1<NumAttr1> &space_arg,
@@ -437,7 +443,7 @@ struct L2LinearNumPrediction : LinearNumPrediction
   Matrix betaCovariance;
     // size = (space.size(), space.size())
 #if LIN_PROG
-  Real absCriterionUnconstrained;
+  Real absCriterionUnconstrained {NAN};
     // Init: NAN
   MVector betaUnconstrained;
     // size = space.size()
@@ -449,7 +455,6 @@ struct L2LinearNumPrediction : LinearNumPrediction
                          const RealAttr1 &target_arg)
     : LinearNumPrediction (sample_arg, space_arg, target_arg)
   #if LIN_PROG
-    , absCriterionUnconstrained (NAN)
     , betaUnconstrained (space_arg. size ())
   #endif
     { resize (); }
@@ -460,7 +465,7 @@ struct L2LinearNumPrediction : LinearNumPrediction
       attrSim.        resize (false, space. size (), space. size ());
       betaCovariance. resize (false, space. size (), space. size ());
     }
-  void solveUnconstrained () override;
+  void solveUnconstrained () final;
     // Output: attrSim, betaCovariance, betaSD
     // n < p => isNan(absCriterion)
     // Time: O(p^2 (n + p))
@@ -470,16 +475,16 @@ struct L2LinearNumPrediction : LinearNumPrediction
     // Input: attrSim
   void problem2Result ();
 #endif
-  void setAbsCriterion () override;
-  void setAbsCriterion (const RealAttr1& residual) override;
-  Real absCriterion2Error () const override
+  void setAbsCriterion () final;
+  void setAbsCriterion (const RealAttr1& residual) final;
+  Real absCriterion2Error () const final
     { return sqrt (absCriterion / sample. mult_sum); }
     // MSE
-  Real getConstTarget () const override;
-  Real getRelTargetCriterion (Real constTarget) const override;
+  Real getConstTarget (Real &scatter) const final;
+  Real getRelTargetCriterion (Real constTarget) const final;
   L2LinearNumPrediction* makeLinearNumPrediction (const Sample &sample_arg,
                                                   const Space1<NumAttr1> &space_arg,
-                                                  const RealAttr1 &target_arg) const override
+                                                  const RealAttr1 &target_arg) const final
     { return new L2LinearNumPrediction (sample_arg, space_arg, target_arg); }
 };
 
