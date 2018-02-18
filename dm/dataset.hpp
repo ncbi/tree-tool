@@ -1145,7 +1145,7 @@ public:
 
 
 
-struct Iterator : Nocopy
+struct Iterator : Nocopy  // --> FOR ??
 {
 private:
   const Vector<Real>& mult_;
@@ -1257,6 +1257,10 @@ template <typename T/*:Attr*/>
             return attr;
         badObjNum = NO_INDEX;
         return nullptr;
+      }
+    bool existsMissing () const
+      { size_t badObjNum;
+      	return existsMissing (badObjNum); 
       }
     VectorPtr<T> removeConstants ()
       { VectorPtr<T> erased;

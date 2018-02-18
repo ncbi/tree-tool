@@ -5347,6 +5347,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
   if (! merge_close)
   {
     cerr << "Canonical ..." << endl;  
+    Unverbose unv;
     const Canonical can (*this);
     can. qc ();
     cout << "Canonical projections = " << can. getOutDim () << endl;
