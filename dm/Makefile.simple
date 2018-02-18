@@ -11,6 +11,7 @@ LIBS=
 ############################### Programs ################################
 
 all:	\
+	analyzePositives \
   attr2_2pairs \
   attr2_multiply \
   attr2log \
@@ -42,6 +43,12 @@ all:	\
 	uniKernel \
 	zipf_test
 	
+
+analyzePositives.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
+analyzePositivesOBJS=analyzePositives.o $(PREDICT_OBJ)
+analyzePositives:	$(analyzePositivesOBJS)
+	$(CXX) -o $@ $(analyzePositivesOBJS) $(LIBS)
+	$(ECHO)
 
 attr2_2pairs.o:  $(DM_HPP) 
 attr2_2pairsOBJS=attr2_2pairs.o $(DM_OBJ) 
