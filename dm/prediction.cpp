@@ -910,8 +910,8 @@ void L2LinearNumPrediction::solveUnconstrained ()
 
   // betaCovariance: temporary
   betaCovariance = attrSim;
-  if (   ! betaCovariance. inverse (). get ()
-      || ! attrSim. checkInverse (betaCovariance, false)
+  if (   betaCovariance. inverse (). isZero ()
+    //|| ! attrSim. checkInverse (betaCovariance, false)
      )
     return;
         
@@ -948,8 +948,8 @@ void L2LinearNumPrediction::solveUnconstrained ()
                   xy,             false);
 
   // absCriterion
-  const Real yHat2 = multiplyVec (beta, true, 0, 
-                                  xy,   true, 0);
+  const Real yHat2 = beta. multiplyVec (xy);
+  ASSERT (yHat2 >= 0);
 
   Real y2 = 0;
   {
@@ -964,22 +964,18 @@ void L2LinearNumPrediction::solveUnconstrained ()
 		if (existsMissing)
 			y2 /= mult_sum;
 	}
+	ASSERT (y2 >= 0);
 
   absCriterion = y2 - yHat2;
+  if (existsMissing)
+  	absCriterion *= sample. mult_sum;
   if (! positive (absCriterion))
-  {
-  	if (existsMissing)
-  		absCriterion = 0;
-  	else
-      setAbsCriterion ();
-  }
-  ASSERT (! negative (absCriterion));
+    setAbsCriterion ();
+  ASSERT (absCriterion >= 0);
 
   // betaCovariance  
-  Real epsilonVar = absCriterion;
-  if (! existsMissing)
-  	epsilonVar /= sample. mult_sum;  // biased
-  betaCovariance. putProdAll (epsilonVar);  
+  const Real epsilonVar = absCriterion / sample. mult_sum;  // biased
+  betaCovariance. putProdAll (existsMissing ? absCriterion : epsilonVar);  
   
   // betaSD
   betaSD. diag2row (true, 0, betaCovariance);
@@ -1104,8 +1100,18 @@ void L2LinearNumPrediction::Problem2Result ()
 void L2LinearNumPrediction::setAbsCriterion ()
 {
   absCriterion = 0;
-  for (Iterator it (sample); it ();)  
-    absCriterion += sqr (getResidual (*it)) * it. mult;
+  Real mult_sum = 0;
+  FFOR (size_t, i, sample. mult. size ())
+    if (const Real mult = sample. mult [i])
+    	{
+    		const Real x = getResidual (i);
+    		if (! isNan (x))
+    		{
+	        absCriterion += sqr (x) * mult; 
+	        mult_sum += mult;
+	      }
+	    }
+  absCriterion *= sample. mult_sum / mult_sum;
 }
 
 
@@ -1114,8 +1120,18 @@ void L2LinearNumPrediction::setAbsCriterion (const RealAttr1& residual)
   ASSERT (& residual. ds == & space. ds);
   
   absCriterion = 0;
-  for (Iterator it (sample); it ();)  
-    absCriterion += sqr (residual [*it]) * it. mult;  
+  Real mult_sum = 0;
+  FFOR (size_t, i, sample. mult. size ())
+    if (const Real mult = sample. mult [i])
+    	{
+    		const Real x = residual [i];
+    		if (! isNan (x))
+    		{
+	        absCriterion += sqr (x) * mult; 
+	        mult_sum += mult;
+	      }
+	    }
+  absCriterion *= sample. mult_sum / mult_sum;
 }
   
 

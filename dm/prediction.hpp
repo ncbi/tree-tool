@@ -437,9 +437,11 @@ struct L2LinearNumPrediction : LinearNumPrediction
 // absCriterion = weighted sum of squares of residuals ("MSD")
 // targetConst = average of target
 {
+private:
   Matrix attrSim;
     // Attribute similarity matrix: X^t * X
     // size = (space.size(), space.size())
+public:
   Matrix betaCovariance;
     // size = (space.size(), space.size())
 #if LIN_PROG
