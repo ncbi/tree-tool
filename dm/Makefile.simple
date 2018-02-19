@@ -11,7 +11,6 @@ LIBS=
 ############################### Programs ################################
 
 all:	\
-	analyzePositives \
   attr2_2pairs \
   attr2_multiply \
   attr2log \
@@ -38,17 +37,12 @@ all:	\
 	pairs2Boolean \
 	pca \
 	pca2clusters \
+	positives2weights \
 	sim2dist \
   threshold \
 	uniKernel \
 	zipf_test
 	
-
-analyzePositives.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
-analyzePositivesOBJS=analyzePositives.o $(PREDICT_OBJ)
-analyzePositives:	$(analyzePositivesOBJS)
-	$(CXX) -o $@ $(analyzePositivesOBJS) $(LIBS)
-	$(ECHO)
 
 attr2_2pairs.o:  $(DM_HPP) 
 attr2_2pairsOBJS=attr2_2pairs.o $(DM_OBJ) 
@@ -204,6 +198,12 @@ pca2clusters.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
 pca2clustersOBJS=pca2clusters.o $(NUMERIC_OBJ)
 pca2clusters:	$(pca2clustersOBJS)
 	$(CXX) -o $@ $(pca2clustersOBJS) $(LIBS)
+	$(ECHO)
+
+positives2weights.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
+positives2weightsOBJS=positives2weights.o $(PREDICT_OBJ)
+positives2weights:	$(positives2weightsOBJS)
+	$(CXX) -o $@ $(positives2weightsOBJS) $(LIBS)
 	$(ECHO)
 
 sim2dist.o:  $(DM_HPP) 
