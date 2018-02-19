@@ -2410,14 +2410,12 @@ Determinant Matrix::inverse ()
     if (q == NO_INDEX || 
         r == NO_INDEX) 
       return Determinant (rowsSize (false), 0);
-    //throw runtime_error ("Inverse: no r or q");
     const Real f = get (false, r, q);
     // XMax = abs (f)
     U [q] = r;
     V [r] = q;
     if (nullReal (f)) 
       return Determinant (rowsSize (false), 0);
-    //throw runtime_error ("Inverse: f=0");
     const Real coeff = 1.0 / f;
 
     // data
