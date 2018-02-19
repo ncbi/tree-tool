@@ -179,17 +179,15 @@ inline void sqrEquation (Real a,
 
 struct LogReal : Root
 {
-  bool sign;
+  bool sign {true};
     // false <=> negative
-  Real n;
+  Real n {0};
   
   LogReal ()
-    : sign (true)
-    , n (0)
     {}
   explicit LogReal (Real r)
     : sign (r >= 0)
-    , n (log (r))
+    , n (log (abs (r)))
     {}
     
   LogReal& operator*= (Real x)
@@ -202,6 +200,8 @@ struct LogReal : Root
     }
   Real get () const
     { return exp (n) * (sign ? 1 : -1); }
+  bool isZero () const
+    { return n == -INF; }
   bool nullReal () const
     { return DM_sp::nullReal (exp (n)); }
 };
