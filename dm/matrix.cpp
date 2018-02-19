@@ -179,6 +179,7 @@ Real getCorrelationVec (const Matrix  &m1,
 
 
 
+#if 0
 void distribution2MeanVar (const Matrix &distribution,
                            size_t       distributionRow,
                            bool         distributionT,
@@ -210,6 +211,7 @@ void distribution2MeanVar (const Matrix &distribution,
       Variance += r * sqr (Values. get (ValuesT, ValuesRow, col) - mean);
   }
 }
+#endif
 
 
 
@@ -1280,8 +1282,7 @@ bool Matrix::getEigen (Eigen &eigen,
       return false;
     }
     
-    diff = maxAbsDifferenceVec (       vec, true, 0,
-                                eigen. vec, true, 0);
+    diff = vec. maxAbsDifferenceVec (eigen. vec);
                       
     eigen. vec. copyDataCheck (false, vec, false);
     
@@ -2890,10 +2891,7 @@ Eigens::Eigens (const Matrix &matr,
     // orthogonal
     for (const Eigen* other : vecs)
     {
-    	const Real prod = abs (multiplyVec (other->vec, true, 0,
-                                          eigen->vec, true, 0) 
-									           / (Real) len
-									          );
+    	const Real prod = abs (other->vec. multiplyVec (eigen->vec) / (Real) len);
       if (greaterReal (prod, 0.05))  // PAR  
       {
         if (verbose ())

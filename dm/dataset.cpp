@@ -5430,9 +5430,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
                       , can. between. mu, true, 0  // global center
                       , -1.0
                       );
-      	  (*attr) [*it] = multiplyVec ( vec,    true, 0
-   	                                  , center, true, 0
-   	                                  );
+      	  (*attr) [*it] = vec. multiplyVec (center);
         }
         
         MVector center_diff (cl. getMultiNormal (0) -> mu);

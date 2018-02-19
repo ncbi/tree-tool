@@ -84,6 +84,7 @@ Real getCorrelationVec (const Matrix &m1,
   // Requires: m1.rowsSize(!t1) = m2.rowsSize(!t2)
 
 
+#if 0
 void distribution2MeanVar (const Matrix &distribution,
                            size_t       DistributionRow,
                            bool         distributionT,
@@ -95,6 +96,7 @@ void distribution2MeanVar (const Matrix &distribution,
   // Requires: distribution.rowsSize(!t) = Values.rowsSize(!t)
   //           distribution.definedRow ()
   //           distribution must be normalized
+#endif
 
 
 
@@ -924,6 +926,39 @@ struct MVector : Matrix
     { return data [row]; }
   Real& operator[] (size_t row)
     { return data [row]; }
+
+  Real multiplyVec (const MVector &other) const
+    { return DM_sp::multiplyVec ( *this, true, 0
+			    	                    , other, true, 0
+			    	                    );
+    }
+  Real sumSqrDifferenceVec (const MVector &other) const
+    { return DM_sp::sumSqrDifferenceVec ( *this, true, 0
+				    	                          , other, true, 0
+				    	                          );
+	  }
+	Real sumAbsDifferenceVec (const MVector &other) const
+	  { return DM_sp::sumAbsDifferenceVec ( *this, true, 0
+							    	                    , other, true, 0
+							    	                    );
+	  }
+	Real maxAbsDifferenceVec (const MVector &other) const
+	  { return DM_sp::maxAbsDifferenceVec ( *this, true, 0
+				    	                          , other, true, 0
+				    	                          );
+	  }
+	Real getCovarianceVec (const MVector &other,
+	                       bool biased) const
+	  { return DM_sp::getCovarianceVec ( *this, true, 0
+				    	                       , other, true, 0
+				    	                       , biased
+				    	                       );
+	  }
+	Real getCorrelationVec (const MVector &other) const
+	  { return DM_sp::getCorrelationVec ( *this, true, 0
+			     	                          , other, true, 0
+				   	                          );
+	  }
 };
 
 
