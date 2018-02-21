@@ -2150,15 +2150,45 @@ void csvLine2vec (const string &line,
 
 
 
+class ONumber
+{
+	ostream &o;
+  const streamsize prec_old;
+	const ios_base::fmtflags flags_old;
+public:
+	ONumber (ostream &o_arg,
+	         streamsize precision,
+	         bool scientific_arg)
+	  : o (o_arg)
+	  , prec_old (o. precision ())
+	  , flags_old (o. flags ())
+	  { if (scientific_arg)
+	  	  o << scientific;
+	  	else
+	  		o << fixed;
+      o. precision (precision);
+	  }
+ ~ONumber () noexcept
+    { o. flags (flags_old); 
+      o. precision (prec_old); 
+    }
+};
+
+
+
+
 struct TabDel
 // Usage: {<<field;}* str();
 {
 private:
   ostringstream tabDel;
+  ONumber on;
 public:
   
-  TabDel ()
-    {}
+  TabDel (streamsize precision = 6,
+	        bool scientific = false)
+	  : on (tabDel, precision, scientific)
+	  {}
     
   template <typename T>
     TabDel& operator<< (const T &field)
@@ -2418,33 +2448,6 @@ public:
   static void newLn (ostream &os) 
     { os << endl << string (size, ' '); }
 };
-
-
-
-class ONumber
-{
-	ostream &o;
-  const streamsize prec_old;
-	const ios_base::fmtflags flags_old;
-public:
-	ONumber (ostream &o_arg,
-	         streamsize precision,
-	         bool scientific_arg)
-	  : o (o_arg)
-	  , prec_old (o. precision ())
-	  , flags_old (o. flags ())
-	  { if (scientific_arg)
-	  	  o << scientific;
-	  	else
-	  		o << fixed;
-      o. precision (precision);
-	  }
- ~ONumber () noexcept
-    { o. flags (flags_old); 
-      o. precision (prec_old); 
-    }
-};
-
 
 
 
