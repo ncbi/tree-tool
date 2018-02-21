@@ -278,7 +278,11 @@ NumAttr1::Value NumAttr1::getMedian (const Sample &sample) const
 {
   Vector<Value> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)
-    vec << getReal (*it);
+  {
+  	const Real x = getReal (*it);
+  	if (! isNan (x))
+    	vec << x;
+  }
   if (vec. empty ())
   	return NAN;
   // Time: --> linear ??
