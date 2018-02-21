@@ -56,7 +56,7 @@ DM = $(MATRIX) $(DM_DIR)/dataset
 PHYL_DIR = $(CPP_DIR)/phylogeny
 $(PHYL_DIR)/distTree.o: $(PHYL_DIR)/distTree.hpp $(DM_HPP) $(DM_DIR)/prediction.hpp $(CPP_DIR)/graph.hpp
 DISTTREE_OBJ = $(DM_OBJ) $(DM_DIR)/prediction.o $(CPP_DIR)/graph.o $(PHYL_DIR)/distTree.o 
-$(PHYL_DIR)/evolution.o:	$(PHYL_DIR)/evolution.hpp $(NUMERIC_HPP)
+$(PHYL_DIR)/evolution.o:	$(PHYL_DIR)/evolution.hpp $(DM_HPP)
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP)
 FEATURE_TREE_OBJ = $(DM_OBJ) $(CPP_DIR)/graph.o $(PHYL_DIR)/featureTree.o
 #
