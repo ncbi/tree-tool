@@ -37,7 +37,6 @@ all:	\
 	pairs2Boolean \
 	pca \
 	pca2clusters \
-	positives2weights \
 	sim2dist \
   threshold \
 	uniKernel \
@@ -198,12 +197,6 @@ pca2clusters.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
 pca2clustersOBJS=pca2clusters.o $(NUMERIC_OBJ)
 pca2clusters:	$(pca2clustersOBJS)
 	$(CXX) -o $@ $(pca2clustersOBJS) $(LIBS)
-	$(ECHO)
-
-positives2weights.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
-positives2weightsOBJS=positives2weights.o $(PREDICT_OBJ)
-positives2weights:	$(positives2weightsOBJS)
-	$(CXX) -o $@ $(positives2weightsOBJS) $(LIBS)
 	$(ECHO)
 
 sim2dist.o:  $(DM_HPP) 

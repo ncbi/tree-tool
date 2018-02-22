@@ -13,6 +13,7 @@ LIBS=
 all:	\
   attr2_2paup \
   attr2_2phylip \
+  calibrateDissims \
   combine_dissims \
   compareTrees \
   distTree_new \
@@ -50,6 +51,12 @@ attr2_multiply:	$(attr2_multiplyOBJS)
 	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
 	$(ECHO)
 
+calibrateDissims.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp
+calibrateDissimsOBJS=calibrateDissims.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
+calibrateDissims:	$(calibrateDissimsOBJS)
+	$(CXX) -o $@ $(calibrateDissimsOBJS) $(LIBS)
+	$(ECHO)
+
 combine_dissims.o:  $(NUMERIC_HPP)
 combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
 combine_dissims:	$(combine_dissimsOBJS)
@@ -81,7 +88,7 @@ hash2dissim:	$(hash2dissimOBJS)
 	$(ECHO)
 
 hash_request2dissim.o:  $(NUMERIC_HPP) $(PHYL_DIR)/evolution.hpp
-hash_request2dissimOBJS=hash_request2dissim.o $(NUMERIC_OBJ) $(PHYL_DIR)/evolution.o
+hash_request2dissimOBJS=hash_request2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
 hash_request2dissim:	$(hash_request2dissimOBJS)
 	$(CXX) -o $@ $(hash_request2dissimOBJS) $(LIBS)
 	$(ECHO)
