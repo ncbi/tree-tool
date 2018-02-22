@@ -892,8 +892,6 @@ public:
   void similarity2sqrDistance ();
     // x_i^t x_j -> |x_i - x_j|^2
     // Requires: isSymmetric(), defined()
-  void similarity2evolutionDistance (Prob p_chance);
-    // Requires: isSymmetric(), defined(), min() > 0
   void centerSimilarity (Matrix &rowMean,
                          Real &totalMean); 
     // Output: rowMean, totalMean - sufficient statistics

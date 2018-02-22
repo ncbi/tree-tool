@@ -2620,41 +2620,6 @@ void Matrix::similarity2sqrDistance ()
 
 
 
-void Matrix::similarity2evolutionDistance (Prob p_chance)
-{
-  ASSERT (isSymmetric ());
-	ASSERT (defined ());
-	ASSERT (isProb (p_chance));
-	ASSERT (p_chance < 1);
-
-  const Matrix diagVec (getDiagVector (false));
-  FFOR (size_t, row, rowsSize (false))
-  FFOR (size_t, col, rowsSize (false))
-  {
-    const Real sim = get (false, row, col);
-    ASSERT (sim > 0);
-  #if 0
-    const Real d2 =   diagVec. get (false, row, 0) 
-                    + diagVec. get (false, col, 0) 
-                    - 2 * sim;
-    ASSERT (d2 >= 0);    
-    const Prob ratio = sim / (d2 + sim);  // Jaccard index
-  #else
-    const Real sim_ave = 0.5 * (  diagVec. get (false, row, 0) 
-                                + diagVec. get (false, col, 0) 
-                               );
-    const Prob ident_ave = sim / sim_ave;
-    ASSERT (isProb (ident_ave));
-    ASSERT (ident_ave >= p_chance);    
-    const Prob ratio = (ident_ave - p_chance) / (1 - p_chance);
-  #endif
-    ASSERT (isProb (ratio));
-    put (false, row, col, - log (ratio));
-  }
-}
-
-
-
 void Matrix::centerSimilarity (Matrix &rowMean,
                                Real &totalMean)
 {
