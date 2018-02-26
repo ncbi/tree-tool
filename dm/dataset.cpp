@@ -224,14 +224,29 @@ void NumAttr1::getAverageScatter (const Sample &sample,
 
 
 
-Vector<RealAttr1*> NumAttr1::standardize (const Sample &sample) 
+Vector<NumAttr1*> NumAttr1::toNumAttr1 (Dataset &ds_arg) const 
 {
+  Vector<NumAttr1*> vec;
+  auto a = new RealAttr1 (name + "_num", ds_arg);  
+  vec << a;
+  FOR (size_t, i, ds. objs. size ())
+    (*a) [i] = getReal (i);
+  return vec;
+}
+
+
+
+Vector<RealAttr1*> NumAttr1::standardize (Dataset &ds_arg,
+	                                        const Sample &sample) const
+{
+	ASSERT (& ds_arg == & ds);
+	
   Vector<RealAttr1*> vec;
   Real average, scatter;
   getAverageScatter (sample, average, scatter);
   if (! isNan (scatter) && ! nullReal (scatter))
   {
-    auto a = new RealAttr1 (name + "_std", const_cast <Dataset&> (ds));  
+    auto a = new RealAttr1 (name + "_std", ds_arg);  
     vec << a;
     ASSERT (positive (scatter));
     const Real sd = sqrt (scatter);
@@ -378,22 +393,31 @@ size_t RealAttr1::getInfCount () const
 
 
 
+size_t RealAttr1::inf2missing ()
+{
+	size_t n = 0;
+  FFOR (size_t, row, ds. objs. size ())
+    if (! finite ((*this) [row]))
+    {
+      if (verbose ())
+        cout << "Infinity:" 
+             << ' ' << ds. objs [row] -> name 
+             << ' ' << (*this) [row]
+             << endl;
+      setMissing (row);
+      n++;
+    }
+  return n;
+}
+
+
+
 void RealAttr1::multiply (Real coeff)
 {
   FFOR (size_t, objNum, ds. objs. size ())
     if (! isMissing (objNum))
       (*this) [objNum] = (*this) [objNum] * coeff;
   decimals += (streamsize) max<long> (0, DM_sp::round (- log10 (coeff)));
-}
-
-
-
-void RealAttr1::logarithmize ()
-{
-  FFOR (size_t, objNum, ds. objs. size ())
-    if (! isMissing (objNum))
-      (*this) [objNum] = log ((*this) [objNum]);
-  decimals++;
 }
 
 
@@ -738,6 +762,71 @@ void PositiveAttr1::qc () const
       ASSERT (values [i] >= 0);
     }
 #endif
+}
+
+
+
+Vector<RealAttr1*> PositiveAttr1::standardize (Dataset &ds_arg,
+	                                             const Sample &sample) const 
+{
+	ASSERT (& ds_arg == & ds);
+	
+	RealAttr1* attr = logarithmize (ds_arg, "_log_std");
+	
+  Vector<RealAttr1*> vec;
+  Real average, scatter;
+  attr->getAverageScatter (sample, average, scatter);
+  if (isNan (scatter) || nullReal (scatter))
+  	delete attr;
+  else
+  {
+    vec << attr;
+    ASSERT (positive (scatter));
+    const Real sd = sqrt (scatter);
+    for (Iterator it (sample); it ();)  
+      if (! isMissing (*it))
+        (*attr) [*it] = ((*attr) [*it] - average) / sd;
+  }
+  return vec;
+}
+
+
+
+PositiveAttr1* PositiveAttr1::standardizePositive (Dataset &ds_arg,
+	                                                 const Sample &sample) const 
+{
+	ASSERT (& ds_arg == & ds);
+	
+  Real average, scatter;
+  getAverageScatter (sample, average, scatter);
+  if (isNan (average) || nullReal (average))
+  	return nullptr;
+  else
+  {
+		auto attr = new PositiveAttr1 (name + "_pos_std", ds_arg, decimals);
+    ASSERT (positive (average));
+    for (Iterator it (sample); it ();)  
+      if (! isMissing (*it))
+        (*attr) [*it] = (*this) [*it] / average;
+	  return attr;
+  }
+}
+
+
+
+RealAttr1* PositiveAttr1::logarithmize (Dataset &ds_arg,
+                                        const string &suffix) const
+{
+	ASSERT (& ds_arg == & ds);
+		
+	auto attr = new RealAttr1 (name + suffix, ds_arg, decimals + 1);  // PAR
+  FFOR (size_t, objNum, ds. objs. size ())
+  {
+  	const Real x = (*this) [objNum];
+    if (x > 0)
+      (*attr) [objNum] = log (x);
+  }
+  return attr;
 }
 
 
@@ -1149,14 +1238,16 @@ void NominAttr1::str2value (size_t objNum,
 
 
 
-Vector<NumAttr1*> NominAttr1::toNumAttr1 () 
+Vector<NumAttr1*> NominAttr1::toNumAttr1 (Dataset &ds_arg) const
 {
+	ASSERT (& ds_arg == & ds);
+	
   Vector<NumAttr1*> vec;
   if (categories. size () >= 2)
   {
     vec. reserve (categories. size () - 1);
     FFOR (size_t, i, categories. size () - 1)
-      vec << new ExtBoolAttr1 (name + "_" + categories. at (i), const_cast <Dataset&> (ds));
+      vec << new ExtBoolAttr1 (name + "_" + categories [i], ds_arg);
     FFOR (size_t, objNum, ds. objs. size ())
       if (! isMissing (objNum))
       {
@@ -1175,7 +1266,8 @@ Vector<NumAttr1*> NominAttr1::toNumAttr1 ()
 
 
 
-Vector<RealAttr1*> NominAttr1::standardize (const Sample &/*sample*/) 
+Vector<RealAttr1*> NominAttr1::standardize (Dataset &/*ds_arg*/,
+	                                          const Sample &/*sample*/) const
 {
   NOT_IMPLEMENTED;
   return Vector<RealAttr1*> ();
@@ -1534,6 +1626,27 @@ size_t RealAttr2::getInfCount () const
 
 
 
+size_t RealAttr2::inf2missing ()
+{
+	size_t n = 0;
+  FFOR (size_t, row, ds. objs. size ())
+    FFOR (size_t, col, ds. objs. size ())
+      if (! finite (get (row, col)))
+      {
+        if (verbose ())
+          cout << "Infinity:" 
+               << ' ' << ds. objs [row] -> name 
+               << ' ' << ds. objs [col] -> name 
+               << ' ' << get (row, col)
+               << endl;
+        setMissing (row, col);
+        n++;
+      }
+  return n;
+}
+
+
+
 
 // PositiveAttr2
 
@@ -1549,24 +1662,6 @@ void PositiveAttr2::qc () const
       if (! isMissing2 (row, col))
       {
         ASSERT (get (row, col) >= 0);
-      }
-}
-
-
-
-void PositiveAttr2::inf2missing ()
-{
-  FFOR (size_t, row, ds. objs. size ())
-    FFOR (size_t, col, ds. objs. size ())
-      if (! finite (get (row, col)))
-      {
-        if (verbose ())
-          cout << "Infinity:" 
-               << ' ' << ds. objs [row] -> name 
-               << ' ' << ds. objs [col] -> name 
-               << ' ' << get (row, col)
-               << endl;
-        setMissing (row, col);
       }
 }
 
@@ -4086,13 +4181,13 @@ void MultiNormal::estimate ()
       prog ();
     	data2variable (*it);
     	const Real m = it. mult;
-    	FFOR (size_t, row, mu. rowsSize (false))
+    	FFOR (size_t, row, mu. size ())
     	{
     	  const Real a = variable [row];
     	  if (isNan (a))
     	    continue;
-    	  mu.      putInc (false, row, 0, a * m);
-    	  muCount. putInc (false, row, 0, m);
+    	  mu      [row] += a * m;
+    	  muCount [row] += m;
       	FFOR (size_t, col, row + 1)
       	{
   	  	  const Real b = variable [col];
@@ -4110,9 +4205,9 @@ void MultiNormal::estimate ()
 	  {
   	  const Real n = muCount [row];
   	  if (nullReal (n))
-  	    mu. put (false, row, 0, 0);
+  	    mu [row] = 0;
   	  else
-  	    mu. putProd (false, row, 0, 1 / n);
+  	    mu [row] /= n;
   	}
   	FFOR (size_t, col, row + 1)
   	{
@@ -4702,14 +4797,14 @@ bool Mixture::deleteComponent (size_t num)
 {
   const Analysis1* analysis = getAnalysisCheck ();
 
-	const Component* comp_del = components. at (num);
+	const Component* comp_del = components [num];
 	
 	const Prob p_del = comp_del->prob;
 
 	if (eqReal (p_del, 1))
 	  return false;
   for (Iterator it (analysis->sample); it ();)  
-  	if (eqReal (comp_del->objProb. at (*it), 1))
+  	if (eqReal (comp_del->objProb [*it], 1))
   	  return false;
 
   for (const Component* c : components)
@@ -4721,7 +4816,7 @@ bool Mixture::deleteComponent (size_t num)
     }
   for (Iterator it (analysis->sample); it ();)  
   {
-    const Prob p_obj_del = comp_del->objProb. at (*it);
+    const Prob p_obj_del = comp_del->objProb [*it];
   	ASSERT (lessReal (p_obj_del, 1));
 	  for (const Component* c : components)
       if (c != comp_del)
@@ -4808,12 +4903,12 @@ Dataset PrinComp::createAttrMds (const string &attrPrefix,
   ASSERT (quality. empty ());
   
 	Dataset ds;
-	FFOR (size_t, attrNum, mn. mu. rowsSize (false))
+	FFOR (size_t, attrNum, mn. mu. size ())
 	  ds. appendObj (space [attrNum] -> name);
 	FFOR (size_t, eigenNum, getOutDim ())
   {
 	  auto attr = new RealAttr1 (attrPrefix + toString (eigenNum + 1), ds);
-	  FFOR (size_t, attrNum, mn. mu. rowsSize (false))
+	  FFOR (size_t, attrNum, mn. mu. size ())
 	    (*attr) [attrNum] = getAttrMds (attrNum, eigenNum);
 	  quality << eigens. explainedFrac (eigenNum);
 	}
@@ -4864,7 +4959,7 @@ Clustering::Clustering (const Sample &sample_arg,
       Real var = 1;
       if (sd_min_is_relative)
       {
-        const UniVariate<NumAttr1> an (sample, * space. at (i));
+        const UniVariate<NumAttr1> an (sample, * space [i]);
         Normal normal;
         normal. analysis = & an;
         normal. estimate ();
@@ -5057,7 +5152,7 @@ void Clustering::saveText (ostream &os) const
       TabDel td;
       const MultiNormal* mn = getMultiNormal (i);
       ASSERT (mn);
-      td << (i + 1) << mn->mu [0] << mn->sigmaInflated. get (false, 0, 0) << mixt. components. at (i) -> prob;      
+      td << (i + 1) << mn->mu [0] << mn->sigmaInflated. get (false, 0, 0) << mixt. components [i] -> prob;      
       os << td. str () << endl;
     }
   }
@@ -5376,7 +5471,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
     if (jClusts)
     {
       jClust = new JsonMap (jClusts);
-      new JsonString (clustNominAttr->categories. at (i), jClust, "name");
+      new JsonString (clustNominAttr->categories [i], jClust, "name");
       auto jDeps = new JsonArray (jClust, "dependencies");
       for (const Attr* attr : attrs_orig)
         if (const RealAttr1* attr1 = attr->asRealAttr1 ())
@@ -5575,7 +5670,7 @@ MultiNormal Canonical::getBetween (const Clustering &clustering)
   for (const Mixture::Component* comp : clustering. mixt. components)
     const_cast <Obj*> (ds. objs [ds. appendObj ()]) -> mult = comp->prob;
   FFOR (size_t, i, clustering. space. size ())
-    attrs << new RealAttr1 (clustering. space. at (i) -> name, ds); 
+    attrs << new RealAttr1 (clustering. space [i] -> name, ds); 
 
   size_t objNum = 0;
   for (const Mixture::Component* comp : clustering. mixt. components)

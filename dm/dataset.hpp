@@ -247,9 +247,10 @@ public:
     // Return: new
     // Requires: !isMissing(objNum)
 
-  virtual Vector<NumAttr1*> toNumAttr1 () = 0;
+  virtual Vector<NumAttr1*> toNumAttr1 (Dataset &ds_arg) const = 0;
     // Invokes: new NumAttr1(,ds,)
-  virtual Vector<RealAttr1*> standardize (const Sample &sample) = 0;
+  virtual Vector<RealAttr1*> standardize (Dataset &ds_arg,
+                                          const Sample &sample) const = 0;
     // Make attributes centered and normalized
     // Invokes: new RealAttr1(,ds,)
 };
@@ -277,11 +278,9 @@ public:
   static const NumAttr1* as (const Attr* attr)
     { return attr->asNumAttr1 (); }
     
-  Vector<NumAttr1*> toNumAttr1 ()
-    { const Vector<NumAttr1*> vec (1, this); 
-      return vec;
-    }
-  Vector<RealAttr1*> standardize (const Sample &sample);
+  Vector<NumAttr1*> toNumAttr1 (Dataset &ds_arg) const final;
+  Vector<RealAttr1*> standardize (Dataset &ds_arg,
+                                  const Sample &sample) const override;
   virtual Value getReal (size_t objNum) const = 0;
 
   Value operator[] (size_t objNum) const
@@ -359,9 +358,10 @@ public:
   void setAll (Real value)
     { values. setAll (value); }
   size_t getInfCount () const;
+  size_t inf2missing ();
+    // Return: number of replacements
     
   void multiply (Real coeff);
-  void logarithmize ();
   Real normal_likelihood2max (const Sample &sample) const;
     // Model: distribution of *this = if value <= t then truncated Normal else Uniform
     // Return: t, may be NAN
@@ -402,6 +402,17 @@ struct PositiveAttr1 : RealAttr1
     
   string getTypeStr () const final
     { return "Positive " + toString (decimals); }
+  Vector<RealAttr1*> standardize (Dataset &ds_arg,
+                                  const Sample &sample) const final;
+    // Invokes: logarithmize()
+
+  PositiveAttr1* standardizePositive (Dataset &ds_arg,
+	                                    const Sample &sample) const;
+	  // Return: nullptr <=> no data
+	  //         average = 1
+  RealAttr1* logarithmize (Dataset &ds_arg,
+                           const string &suffix = "_log") const;
+    // 0 --> missing
 };
 
 
@@ -694,8 +705,9 @@ public:
   JsonString* value2json (JsonContainer* parent,
                           size_t objNum) const final
     { return new JsonString (value2str (objNum), parent, name); }
-  Vector<NumAttr1*> toNumAttr1 () final;
-  Vector<RealAttr1*> standardize (const Sample &sample) final;
+  Vector<NumAttr1*> toNumAttr1 (Dataset &ds_arg) const final;
+  Vector<RealAttr1*> standardize (Dataset &ds_arg,
+                                  const Sample &sample) const final;
 
   Value operator[] (size_t objNum) const
     { return values [objNum]; }
@@ -917,6 +929,8 @@ struct RealAttr2 : Attr2, RealScale
   void setAll (Value value)
     { matr. putAll (value); }
   size_t getInfCount () const;
+  size_t inf2missing ();
+    // Return: number of replacements
 };
 
 
@@ -948,7 +962,6 @@ struct PositiveAttr2 : RealAttr2
   string getTypeStr () const final
     { return "Positive2 " + toString (decimals); }
 
-  void inf2missing ();
   bool areClose (size_t row,
                  size_t col,
                  Real distance_max) const
@@ -1352,25 +1365,25 @@ template <typename T/*:Attr1*/>
         return jObjs;
       }
 
-    Space1<NumAttr1>* toNumAttr1 (Dataset &ds_arg) const
+    Space1<NumAttr1> toNumAttr1 (Dataset &ds_arg) const
       { ASSERT (P::dsPtr () == & ds_arg);
-        auto sp = new Space1<NumAttr1> (ds_arg, false);
+        Space1<NumAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
-        { const Vector<NumAttr1*> vec (const_cast <T*> (attr) -> toNumAttr1 ());
+        { const Vector<NumAttr1*> vec (attr->toNumAttr1 (ds_arg));
           for (const NumAttr1* attr_new : vec)
-            *sp << attr_new;
+            sp << attr_new;
         }
         return sp;
       }
-    Space1<RealAttr1>* standardize (const Sample &sample,
-                                    Dataset &ds_arg) const
+    Space1<RealAttr1> standardize (const Sample &sample,
+                                   Dataset &ds_arg) const
       { ASSERT (P::dsPtr () == sample. ds);
         ASSERT (P::dsPtr () == & ds_arg);
-        auto sp = new Space1<RealAttr1> (ds_arg, false);
+        Space1<RealAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
-          { const Vector<RealAttr1*> vec (const_cast <T*> (attr) -> standardize (sample));
+          { const Vector<RealAttr1*> vec (attr->standardize (ds_arg, sample));
             for (const RealAttr1* attr_new : vec)
-              *sp << attr_new;
+              sp << attr_new;
           }
         return sp;
       }
@@ -1396,7 +1409,7 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
 RealAttr2* getSimilarity (const Space1<RealAttr1> &space,
                           const string &attrName,
                           Dataset &ds);
-  
+
 
 
   
@@ -1523,6 +1536,40 @@ template <typename T/*:Attr1*/>
       { const VectorPtr<Attr> attrs (space);
         sample. save (attrs, os);
       }
+
+
+    // Requires: T:NumAttr1
+	  void setAttrSim (Matrix &attrSim,
+	                   bool existsMissing) const
+		  {	ASSERT (attrSim. rowsSize () == space. size ());
+		    Unverbose unv;
+		    Progress prog ((uint) space. size ());  
+		    FFOR (size_t, attrNum1, space. size ())
+		    { prog ();
+		      const NumAttr1& a1 = * space [attrNum1];
+		  	  FFOR (size_t, attrNum2, attrNum1 + 1)
+		      { const NumAttr1& a2 = * space [attrNum2];
+		        Real s = 0;
+		        Real mult_sum = 0;
+		        FFOR (size_t, i, sample. mult. size ())
+		          if (const Real mult = sample. mult [i])
+		          { const Real x1 = a1. getReal (i);
+		          	const Real x2 = a2. getReal (i);
+		          	if (existsMissing)
+		            {
+			          	if (isNan (x1))
+			          		continue;
+			          	if (isNan (x2))
+			          		continue;
+			            mult_sum += mult;
+			          }
+		            s += x1 * x2 * mult;
+		          }
+		        ASSERT (! isNan (s));
+		        attrSim. putSymmetric (attrNum1, attrNum2, existsMissing ? (mult_sum ? s / mult_sum : 0) : s);
+		      }
+		   	}
+		  }
   };    
 
 
@@ -3087,8 +3134,8 @@ public:
       if (coeff == INF)
         return nullReal (x_field. maxAbsDiff (false, mu, false)) ? 0 : -INF;  // PAR
       const Real mah = sigmaInv. getMahalanobis ( false
-                                                , x_field,  true, 0
-                                                , mu, true, 0
+                                                , x_field, true, 0
+                                                , mu,      true, 0
                                                 );
       return -0.5 * mah - coeff;
     }
@@ -3268,7 +3315,7 @@ public:
   Real logPdfVariable () const;
   void randVariable () const
     { cat. randVariable ();
-      Distribution* distr = components. at (cat. variable) -> distr. get ();
+      Distribution* distr = components [cat. variable] -> distr. get ();
       distr->randVariable (); 
       variable2analysis ();
       analysis2variable ();
@@ -3416,7 +3463,7 @@ public:
     { return mixt. components. size (); }
     // Return: >= 1
   const MultiNormal* getMultiNormal (size_t i) const
-    { return mixt. components. at (i) -> distr->asMultiNormal (); }
+    { return mixt. components [i] -> distr->asMultiNormal (); }
     // Return !nullptr
     
   // Return !nullptr
