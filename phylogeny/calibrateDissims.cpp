@@ -49,9 +49,12 @@ struct ThisApplication : Application
 	  	Real center = NAN;
 	  	Real scatter = NAN;
 	  	attr->getAverageScatter (sm, center, scatter);
+	  	// center = INF
 	  #else
 	    const Real center = attr->getMedian (sm);
 	  #endif
+	    ASSERT (center > 0);
+	    ASSERT (center < INF);
 	  	dissimAve. attrs << DissimAverage::DissimAttr (attr, center);
 	  }
 	  ds. qc ();

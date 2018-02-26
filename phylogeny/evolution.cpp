@@ -76,8 +76,8 @@ Real Hashes::getDissim (const Hashes &other,
 DissimAverage::DissimAttr::DissimAttr (const PositiveAttr1* attr_arg,
 		                                   Real center_arg)
 : Named (attr_arg->name)
-, center (center_arg)
 , attr (attr_arg)
+, center (center_arg)
 { 
 	ASSERT (center > 0);
 	ASSERT (attr);
@@ -231,7 +231,7 @@ Real DissimAverage::get () const
     ave = sum / weights;
   //cout << ave << endl;
     
-    if (abs (ave - ave_prev) < 1e-6)  // PAR
+    if (isNan (ave) || abs (ave - ave_prev) < 1e-6)  // PAR
     	break;
     
     for (const DissimAttr& attr : attrs)

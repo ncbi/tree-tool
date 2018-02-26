@@ -36,11 +36,11 @@ struct DissimAverage : Root
 {
 	struct DissimAttr : Named
 	{
+		const PositiveAttr1* attr {nullptr};
 		Real center {NAN};
 			// > 0
-		const PositiveAttr1* attr {nullptr};
 
-		// Below measurements are for cenetered value's
+		// For centered value's
 		Real var {NAN};
 			// >= 0
 		Real value {NAN};
@@ -73,7 +73,7 @@ struct DissimAverage : Root
 		Real getSD () const
 		  { return sqrt (var); }
 		bool bad () const
-		  { return getSD () >= 0.9; }  // PAR
+		  { return getSD () >= 0.8; }  // PAR
 		Real getWeight () const
 		  { return 1 / (var /* * value2var (value)*/); }
 		void setOutlier (Real value_target) const;
