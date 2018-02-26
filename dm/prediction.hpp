@@ -184,7 +184,7 @@ T* selectAttrs (const Sample &sample,
     Real importance_min = INF;
     FOR (size_t, i, t->space. size ())
       if (minimize (importance_min, t->attrImportance [i]))
-      { attr_bad = t->space. at (i);
+      { attr_bad = t->space [i];
         i_bad = i;
       }
     if (importance_min >= attrImportance_min)
@@ -338,7 +338,7 @@ public:
     { Real scatter;
     	return getRelTargetCriterion (getConstTarget (scatter)); 
     }
-   	// "R2"
+   	// Return: 1 - R2
   virtual LinearNumPrediction* makeLinearNumPrediction (const Sample &sample_arg,
                                                         const Space1<NumAttr1> &space_arg,
                                                         const RealAttr1 &target_arg) const = 0;

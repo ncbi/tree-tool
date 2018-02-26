@@ -285,8 +285,8 @@ void LinearNumPrediction::qc () const
 
   ASSERT (& target);
   
-  FOR (size_t, i, space. size ())
-    ASSERT (space. at (i));
+  for (const auto attr : space)
+    ASSERT (attr);
 
   for (const Constraint* cons : constraints)
     ASSERT (& cons->pred == this);
@@ -341,7 +341,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
     {
       // beta[attrNum]
       // Assume beta[j] are correct for all j != attrNum
-      const NumAttr1& predictor = * space. at (attrNum);
+      const NumAttr1& predictor = * space [attrNum];
       sp. clear ();
       sp << & predictor;
       for (Iterator it (sample); it ();)  
@@ -873,40 +873,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
   const bool existsMissing = getExistsMissing ();
 
 
-  // attrSim
-  // --> MultiNormal ??
-  {
-    Unverbose unv;
-    Progress prog ((uint) space. size ());  
-    FFOR (size_t, attrNum1, space. size ())
-    {
-      prog ();
-      const NumAttr1& a1 = * space. at (attrNum1);
-  	  FFOR (size_t, attrNum2, attrNum1 + 1)
-      {
-        const NumAttr1& a2 = * space. at (attrNum2);
-        Real s = 0;
-        Real mult_sum = 0;
-        FFOR (size_t, i, sample. mult. size ())
-          if (const Real mult = sample. mult [i])
-          {
-          	const Real x1 = a1. getReal (i);
-          	const Real x2 = a2. getReal (i);
-          	if (existsMissing)
-            {
-	          	if (isNan (x1))
-	          		continue;
-	          	if (isNan (x2))
-	          		continue;
-	            mult_sum += mult;
-	          }
-            s += x1 * x2 * mult;
-          }
-        ASSERT (! isNan (s));
-        attrSim. putSymmetric (attrNum1, attrNum2, existsMissing ? (mult_sum ? s / mult_sum : 0) : s);
-      }
-   	}
-  }
+  setAttrSim (attrSim, existsMissing);
 
   // betaCovariance: temporary
   betaCovariance = attrSim;
@@ -919,7 +886,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
   MVector xy (space. size ());
   FFOR (size_t, attrNum, space. size ())
   {
-    const NumAttr1& a = * space. at (attrNum);
+    const NumAttr1& a = * space [attrNum];
     Real s = 0;
     Real mult_sum = 0;
     FFOR (size_t, i, sample. mult. size ())
@@ -1188,7 +1155,7 @@ JsonMap* EigensLinearRegression::toJson (JsonContainer* parent,
 
   const size_t decimals = 4;  // PAR
   JsonMap* jLr = new JsonMap (parent, name);
-  new JsonDouble (lr. getRelCriterion (), decimals, jLr, "log_scale_R2");  
+  new JsonDouble (1 - lr. getRelCriterion (), decimals, jLr, "log_scale_R2");  
   new JsonDouble (exp (lr. beta [0]), decimals, jLr, "intercept");  
   new JsonDouble (lr. beta [1], decimals, jLr, "coeff");  
   
