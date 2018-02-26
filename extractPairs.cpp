@@ -17,7 +17,7 @@ struct ThisApplication : Application
     : Application ("A\\tB1<delim>B2<delim>B3... -> A\\tB1\\nA\\tB2\\nA\\tB3\\n...")
   	{
   	  addPositional("in", "Input file");
-  	  addPositional("delim", "Delimiter");
+  	  addKey("delim", "Delimiter", " ");
   	}
 
 

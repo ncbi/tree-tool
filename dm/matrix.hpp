@@ -202,6 +202,8 @@ public:
 	void resize (bool t,
                size_t maxRow,
                size_t maxCol);
+  void resize (size_t maxRow)
+    { resize (false, maxRow, maxRow); }
   static string formatInstruction (const string &fName) 
 	  { return   "Format of <" + fName + ">:\n" 
 	           + "  <# Rows> [<# Cols>]\n" 

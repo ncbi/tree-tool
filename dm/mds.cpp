@@ -49,7 +49,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string fName            =               getArg ("file");              
 		const string attrName         =               getArg ("attr");          
@@ -109,8 +109,8 @@ struct ThisApplication : Application
         sp1 << classAttr;
         spRaw. removeAttr (*classAttr);
       }
-      Common_sp::AutoPtr<const Space1<RealAttr1>> spStnd (spRaw. standardize (sm, ds));
-      sim = getSimilarity (*spStnd, attrName + "_sim", ds);
+      const Space1<RealAttr1> spStnd (spRaw. standardize (sm, ds));
+      sim = getSimilarity (spStnd, attrName + "_sim", ds);
     }
     else
     {

@@ -42,12 +42,12 @@ struct ThisApplication : Application
     
     Space1<Attr1> spRaw (ds, true);
     spRaw. removeAttr (*targetAttr);
-    const Common_sp::AutoPtr<const Space1<NumAttr1>> sp (spRaw. toNumAttr1 (ds));
+    const Space1<NumAttr1> sp (spRaw. toNumAttr1 (ds));
       
     const Sample sm (ds);
     
    
-    LogisticRegression lr (sm, *sp, *targetAttr);
+    LogisticRegression lr (sm, sp, *targetAttr);
     lr. qc ();
     cerr << "Solving ..." << endl;
     lr. solve ();
@@ -56,7 +56,7 @@ struct ThisApplication : Application
           
     LogisticRegression* lrFinal = & lr;
     Common_sp::AutoPtr<LogisticRegression> lrSel;
-    Space1<NumAttr1> spSel (*sp);  // Is used by lrSel
+    Space1<NumAttr1> spSel (sp);  // Is used by lrSel
     if (importance_min)
     {
       cerr << "Removing attributes ..." << endl;

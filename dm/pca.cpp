@@ -46,7 +46,7 @@ struct ThisApplication : Application
 	
 	
 	
-	void body () const
+	void body () const final
 	{
 		const string inFName          =             getArg("file");
 		const string suf              =             getArg("suf");
@@ -83,10 +83,8 @@ struct ThisApplication : Application
 
     Dataset ds (inFName);
     
-    if (ds. objs. size () <= 1)
-      ERROR_MSG ("Too small data size");
     if (ds. attrs. size () <= 0)
-      ERROR_MSG ("No attributes");
+      throw runtime_error ("No attributes");
     
     const NominAttr1* classAttr = nullptr;
     if (! classAttrName. empty ())
@@ -100,16 +98,16 @@ struct ThisApplication : Application
     const Sample sm_orig (ds);
     Sample sm (ds);
     if (! positive (sm. mult_sum))
-      return;
+      throw runtime_error ("Too small data size");
 
     Space1<Attr1> spRaw (ds, true);
     spRaw. removeAttr (*classAttr);
 
     const VectorPtr<Attr> attrsOrig (spRaw);
 
-    Common_sp::AutoPtr<const Space1<RealAttr1>> spStnd (spRaw. standardize (sm, ds));
+    const Space1<RealAttr1> spStnd (spRaw. standardize (sm, ds));
         
-    const MultiVariate<NumAttr1> an (sm, *spStnd);
+    const MultiVariate<NumAttr1> an (sm, spStnd);
 
     MultiNormal mn; 
     {
@@ -163,7 +161,7 @@ struct ThisApplication : Application
             osPar << "Outlier: " << ds. objs [*it] -> name << " " << eValue << ": ";
             ONumber on (osPar, 1, false);
             bool first = true;
-            for (const RealAttr1* attr : *spStnd)
+            for (const RealAttr1* attr : spStnd)
             {
               const Real value = (*attr) [*it];                
               if (abs (value) >= 4.0)  // PAR
@@ -191,7 +189,7 @@ struct ThisApplication : Application
       cerr << "Clustering ..." << endl;
       Space1<NumAttr1> spPC (spOut);
       spPC. removeConstants ();
-      const Real globalSD = sqrt ((Real) spStnd->size ());
+      const Real globalSD = sqrt ((Real) spStnd. size ());
   	  const Clustering cl (sm, spPC, maxClusters, globalSD * minClusteringSDRel, /*true*/ false); 
       cl. qc ();
   	  if (verbose ()) 
@@ -266,10 +264,10 @@ struct ThisApplication : Application
 
 
 
-int main(int argc, 
-         const char* argv[])
+
+int main (int argc, 
+          const char* argv[])
 {
-//return ThisApplication().AppMain(argc, argv); 
   ThisApplication app;
   return app. run (argc, argv);
 }

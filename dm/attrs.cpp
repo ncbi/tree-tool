@@ -61,6 +61,7 @@ struct ThisApplication : Application
 
     // Correlations
     // Only for NumAttr1 ??
+    // Requires: no missings ??
     {
       cout << endl;
       const Space1<NumAttr1> space (ds, true);

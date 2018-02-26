@@ -429,7 +429,6 @@ void Matrix::deleteRows (bool t,
     return;
 
   ASSERT (firstRow + rowDec <= rowsSize (t));
-  ASSERT (rowDec <= rowsSize (t));
   
   Matrix m (t, rowsSize (t) - rowDec, rowsSize (! t));
   FFOR (size_t, row, m. rowsSize (t))
@@ -2808,7 +2807,7 @@ Eigens::Eigens (const Matrix &matr,
 
     if (psd)
     { 
-      if (negative (eigen->value / totalExplained_max, 1e-3))  // PAR
+      if (negative (eigen->value / totalExplained_max, 1e-2))  // PAR
       {
         cout << eigen->value << ' ' << totalExplained_max << endl;
         ERROR;
