@@ -25,13 +25,12 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		MeanVar mv;
-		for (;;)
+		string s;
+		while (cin >> s)
 		{
-			Real x = NAN;
-			cin >> x;
-			if (cin. eof () && isNan (x))
-				break;
-			mv << x;
+			const Real x = str2real (s);
+			if (! isNan (x))
+				mv << x;
 		}
 		
 		cout << "count" << '\t' << mv. n          << endl
