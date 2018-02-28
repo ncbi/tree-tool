@@ -20,12 +20,16 @@ struct ThisApplication : Application
     : Application ("Test matrix.cpp")
     {
       addPositional ("go", "Go");
+      addFlag ("eigens", "test Eigens");
     }
 
 	
 
 	void body () const final
 	{
+    const bool eigensP = getFlag ("eigens");
+    
+
 	  Matrix pd (4);
 	  {
 		  Matrix m (false, pd, false);
@@ -239,7 +243,8 @@ struct ThisApplication : Application
 				  mat. getSqrt ();
 		  }
 		  
-		  if (false)
+
+		  if (eigensP)
 		  {
 			  Eigens ei (mat, mat. rowsSize (), 1, 0, 1e-5, 10000);   // PAR
 			  ei. values. print (cout);
