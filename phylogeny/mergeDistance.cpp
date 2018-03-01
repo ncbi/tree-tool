@@ -21,15 +21,15 @@ struct ThisApplication : Application
     : Application ("Print a " + dmSuff + "-file with merged <Distance> attrributes of a list of " + dmSuff + "-files")
     {
       // Input
-  	  addPositional ("file_list", "List of " + dmSuff + "-files without \"" + dmSuff + "\" with a binary <Distance> attribute");
+  	  addPositional ("file_list", "List of " + dmSuff + "-files without \"" + dmSuff + "\" with a 2-way <attr> attribute");
   	  addPositional ("attr", "Distance attribute");
   	  // Output
-  	  addPositional ("output", dmSuff + "-file without \"" + dmSuff);
+  	  addPositional ("output", dmSuff + "-file without \"" + dmSuff + "\"");
   	}
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string file_list = getArg ("file_list");
 		const string attrName  = getArg ("attr");
@@ -64,6 +64,17 @@ struct ThisApplication : Application
     ASSERT (ds_new. objs. size () == objNames. size ());
     
 
+    Dataset ds_sqr;
+    for (const string& objName1 : objNames)
+	    for (const string& objName2 : objNames)
+	    	if (& objName1 == & objName2)
+	    		break;
+	    	else
+	        ds_sqr. appendObj (objName1 + "-" + objName2);
+	  Sample sm_sqr (ds_sqr);
+  	VectorPtr<Attr> attrs_sqr;
+
+
 		Vector<PositiveAttr2*> dists;  dists. reserve (fileNum);
 		Vector<Real> means;            means. reserve (fileNum);
     {
@@ -80,12 +91,14 @@ struct ThisApplication : Application
         ASSERT (dist);
         auto dist1 = new PositiveAttr2 (attrName + "_" + toString (li. lineNum), ds_new, dist->decimals);
         dists << dist1;
+        auto dist_sqr = new PositiveAttr1 (attrName + "_" + toString (li. lineNum), ds_sqr, dist->decimals);
+        attrs_sqr << dist_sqr;
         MeanVar mv;        
-        FOR (size_t, row, ds. objs. size ())
+        FFOR (size_t, row, ds. objs. size ())
         {
           const size_t row_new = ds_new. getName2objNum (ds. objs [row] -> name);
           ASSERT (row_new != NO_INDEX);
-          FOR (size_t, col, ds. objs. size ())
+          FFOR (size_t, col, ds. objs. size ())
           {
             const size_t col_new = ds_new. getName2objNum (ds. objs [col] -> name);
             ASSERT (col_new != NO_INDEX);
@@ -94,30 +107,51 @@ struct ThisApplication : Application
             {
               dist1->put (row_new, col_new, val);  
               if (row_new < col_new)
-                mv << val;
+              	if (DM_sp::finite (val))
+                  mv << val;
             }
           }
         }
         const Real mean = mv. getMean (); 
         means << mean;
-        cout << dist1->name << ": " << "Average = " << mean << endl;
+        cout << dist1->name << ": " << mv << endl;
         ASSERT (positive (mean));
-        FOR (size_t, row, ds_new. objs. size ())
-          FOR (size_t, col, ds_new. objs. size ())
+        size_t row_sqr = 0;
+        FFOR (size_t, row, ds_new. objs. size ())
+          FFOR (size_t, col, ds_new. objs. size ())
+          {
+            if (col < row)
+            {
+            	ASSERT (ds_sqr. objs [row_sqr] -> name == ds_new. objs [row] -> name + "-" + ds_new. objs [col] -> name);
+            	(*dist_sqr) [row_sqr] = dist1->get (row, col);
+            	row_sqr++;
+            }
             if (! dist1->isMissing2 (row, col))
               dist1->put (row, col, dist1->get (row, col) / mean);
+          }
+        sm_sqr. missing2mult (dist_sqr);
       }
     }
     ASSERT (dists. size () == fileNum);
     ASSERT (means. size () == fileNum);    
+    
+    // ??
+    {
+    	sm_sqr. finish ();
+      OFStream f ("", output, dmExt);  
+      sm_sqr. save (attrs_sqr, f);
+    }
+    
+    
+    return; // ??
     
     
     auto dist_new = new PositiveAttr2 (attrName, ds_new, 6);  // PAR
     Vector<Real> vars (fileNum, 1);    
     for (;;)
     {
-      FOR (size_t, row, ds_new. objs. size ())
-        FOR (size_t, col, ds_new. objs. size ())
+      FFOR (size_t, row, ds_new. objs. size ())
+        FFOR (size_t, col, ds_new. objs. size ())
         {
           Real val = 0;
           Real wSum = 0;
@@ -138,12 +172,12 @@ struct ThisApplication : Application
         }
         
       Real varDiff = 0;
-      FOR (size_t, i, dists. size ())
+      FFOR (size_t, i, dists. size ())
       {
         const PositiveAttr2* dist1 = dists [i];
         Real resid2 = 0;
         size_t n = 0;
-        FOR (size_t, row, ds_new. objs. size ())
+        FFOR (size_t, row, ds_new. objs. size ())
           FOR (size_t, col, row)
             if (! dist1->isMissing2 (row, col))
             {
@@ -172,8 +206,8 @@ struct ThisApplication : Application
       wSum += weight;
     }
     mean /= wSum;  // geometric average ??
-    FOR (size_t, row, ds_new. objs. size ())
-      FOR (size_t, col, ds_new. objs. size ())
+    FFOR (size_t, row, ds_new. objs. size ())
+      FFOR (size_t, col, ds_new. objs. size ())
         if (! dist_new->isMissing2 (row, col))
           dist_new->put (row, col, dist_new->get (row, col) * mean);
       
