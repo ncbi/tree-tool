@@ -11,6 +11,48 @@ namespace DistTree_sp
 {
 
 
+Real intersection2dissim (size_t size1,
+                          size_t size2,
+                          size_t intersection,
+                          size_t intersection_min,
+	                        Prob sizes_ratio_min,
+	                        bool ave_arithP)
+{
+  ASSERT (intersection <= size1);
+  ASSERT (intersection <= size2);
+  ASSERT (isProb (sizes_ratio_min));
+  
+  
+  if (verbose ())
+    cout << '\t' << intersection 
+         << '\t' << size1 
+         << '\t' << size2 
+         << endl;
+         
+  if (  (Real) min (size1, size2) 
+  	  / (Real) max (size1, size2)
+  	    < sizes_ratio_min
+  	 )
+  	return NAN;
+         
+  if (intersection < intersection_min)
+  	return NAN;
+  	
+  const Real dissim1 = log ((Real) size1 / (Real) intersection);
+  const Real dissim2 = log ((Real) size2 / (Real) intersection);
+  ASSERT (dissim1 >= 0);
+  ASSERT (dissim2 >= 0);
+  
+  if (ave_arithP)
+    return ave_arith (dissim1, dissim2);
+  //return ave_geom  (dissim1, dissim2);
+  else
+    return ave_harm  (dissim1, dissim2);
+}
+
+
+
+
 // Hashes
 
 Hashes::Hashes (const string &fName)
@@ -28,6 +70,7 @@ Hashes::Hashes (const string &fName)
     *this << hash;
     prev = hash;
   } 
+  searchSorted = true;
 /*
   if (empty ())
     throw runtime_error ("No hashes for " + fName);
@@ -37,36 +80,6 @@ Hashes::Hashes (const string &fName)
 
 
 // Read Hashes from a binary file ??
-
-
-
-Real Hashes::getDissim (const Hashes &other,
-	                      size_t intersection_min,
-	                      Prob hashes_ratio_min) const
-{
-  const size_t intersection = getIntersectSize (other);
-  ASSERT (intersection <=        size ());
-  ASSERT (intersection <= other. size ());
-  
-  if (verbose ())
-    cout << '\t' << intersection 
-         << '\t' <<        size ()
-         << '\t' << other. size ()
-         << endl;
-         
-  if (  (Real) min (size (), other. size ()) 
-  	  / (Real) max (size (), other. size ())
-  	    < hashes_ratio_min
-  	 )
-  	return NAN;
-         
-  if (intersection < intersection_min)
-  	return NAN;
-         
-  return - 0.5 * (  log ((Real) intersection / (Real)        size ()) 
-                  + log ((Real) intersection / (Real) other. size ()) 
-                 );
-}
 
 
 
@@ -94,8 +107,12 @@ DissimAverage::DissimAttr::DissimAttr (const string &line,
 	if (loadStat)
 	{
 		iss >> center >> var;
-		ASSERT (center > 0);
-		ASSERT (var >= 0);
+		if (! (center > 0))
+			throw runtime_error ("Center should be > 0");
+    if (! (center < INF))
+			throw runtime_error ("Center should be finite");
+		if (! (var >= 0))
+			throw runtime_error ("Variance should be >= 0");
 	}
 }
 
@@ -117,8 +134,8 @@ void DissimAverage::DissimAttr::qc () const
 
 void DissimAverage::DissimAttr::setOutlier (Real value_target) const
 { 
-	outlier =    value > 1   // PAR
-	          && /*abs*/ (value - value_target) / getSD () > 3;   // PAR
+	outlier =    /*value > 1   // PAR
+	          &&*/ /*abs*/ (value - value_target) / getSD () > 1;   // PAR
 }
 
 

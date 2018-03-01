@@ -16,6 +16,17 @@ namespace DistTree_sp
 {
 
 
+Real intersection2dissim (size_t size1,
+                          size_t size2,
+                          size_t intersection,
+                          size_t intersection_min,
+	                        Prob sizes_ratio_min,
+	                        bool ave_arithP);
+  // Return: >= 0; may be NAN
+  // Symmetric
+
+
+
 struct Hashes : Vector<size_t>
 {
 	explicit Hashes (const string &fName);
@@ -24,9 +35,8 @@ struct Hashes : Vector<size_t>
 	
 	Real getDissim (const Hashes &other,
 	                size_t intersection_min,
-	                Prob hashes_ratio_min) const;
-	  // Symmetric
-	  // Return: >= 0; may be NAN
+	                Prob hashes_ratio_min) const
+		{ return intersection2dissim (size (), other. size (), getIntersectSize (other), intersection_min, hashes_ratio_min, false); }
 };
 
 

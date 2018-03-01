@@ -45,7 +45,8 @@ struct ThisApplication : Application
 	  		throw runtime_error (attr_->name + " should be Positive");
 	  	
 	    const Sample sm (ds);
-	  #if 0
+	  #if 0  // PAR
+	    const_cast <PositiveAttr1*> (attr) -> inf2missing ();
 	  	Real center = NAN;
 	  	Real scatter = NAN;
 	  	attr->getAverageScatter (sm, center, scatter);
@@ -53,8 +54,6 @@ struct ThisApplication : Application
 	  #else
 	    const Real center = attr->getMedian (sm);
 	  #endif
-	    ASSERT (center > 0);
-	    ASSERT (center < INF);
 	  	dissimAve. attrs << DissimAverage::DissimAttr (attr, center);
 	  }
 	  ds. qc ();

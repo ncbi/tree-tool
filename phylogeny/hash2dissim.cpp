@@ -73,24 +73,6 @@ struct ThisApplication : Application
       {
         prog (ds. objs [objNum] -> name);
         obj2hashes [objNum] << Hashes (hash_dir + "/" + ds. objs [objNum] -> name);
-      #if 0
-        LineInput hf (hash_dir + "/" + ds. objs [objNum] -> name);
-        auto& hashes = obj2hashes [objNum];
-        ASSERT (hashes. empty ());
-        hashes. reserve (10000);  // PAR
-        size_t prev = 0;
-        while (hf. nextLine ())
-        {
-          const size_t hash = str2<size_t> (hf. line);
-          ASSERT (hash);
-          if (hash <= prev)
-            throw runtime_error ("Hash " + hf. line + " is not greater than the previous hash " + toString (prev));
-          hashes << hash;
-          prev = hash;
-        } 
-      //if (hashes. empty ())
-        //throw runtime_error ("No hashes for " + ds. objs [objNum] -> name);
-      #endif
       }
     }
     
@@ -105,16 +87,6 @@ struct ThisApplication : Application
         {
           const Hashes& hash2 = obj2hashes [col];
           const Real dissim = hash1. getDissim (hash2, intersection_min, hashes_ratio_min);
-        #if 0
-          const size_t common = hash1.  getIntersectSize (hash2);
-          ASSERT (common <= hash1. size ());
-          ASSERT (common <= hash2. size ());
-          const Real dissim = common >= intersection_min
-                                ? - 0.5 * (  log ((Real) common / (Real) hash1. size ()) 
-                                           + log ((Real) common / (Real) hash2. size ()) 
-                                          )
-                                : NAN;
-        #endif
           attr->putSymm (row, col, dissim);
         }
         attr->put (row, row, 0);
