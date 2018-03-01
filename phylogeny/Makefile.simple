@@ -23,7 +23,6 @@ all:	\
   loci_request2dissim \
 	makeDistTree \
 	makeFeatureTree \
-	mergeDistance \
 	mergeSimilarity \
 	mlst2dissim \
 	newick2tree \
@@ -109,12 +108,6 @@ makeFeatureTree.o:  $(NUMERIC_HPP) $(CPP_DIR)/graph.hpp $(PHYL_DIR)/featureTree.
 makeFeatureTreeOBJS=makeFeatureTree.o $(FEATURE_TREE_OBJ)
 makeFeatureTree:	$(makeFeatureTreeOBJS)
 	$(CXX) -o $@ $(makeFeatureTreeOBJS) $(LIBS)
-	$(ECHO)
-
-mergeDistance.o:  $(DM_HPP) 
-mergeDistanceOBJS=mergeDistance.o $(DM_OBJ) 
-mergeDistance:	$(mergeDistanceOBJS)
-	$(CXX) -o $@ $(mergeDistanceOBJS) $(LIBS)
 	$(ECHO)
 
 mergeSimilarity.o:  $(DM_HPP) 
