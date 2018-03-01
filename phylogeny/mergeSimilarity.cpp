@@ -26,7 +26,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string file_list = getArg ("file_list");
 		const string attrName  = getArg ("attr");
