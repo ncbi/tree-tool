@@ -43,22 +43,19 @@ struct ThisApplication : Application
 		
     Dataset ds (fName);
     
-    // dist
     const RealAttr2* dist = nullptr;
     {
       const Attr* attr = ds. name2attr (attr2Name);
       ASSERT (attr);
       dist = attr->asRealAttr2 ();
     }
-    ASSERT (dist);
+    if (! dist)
+    	throw runtime_error ("Two-way attribute " + attr2Name + " is not found");
 
-    // Similarity -> distance ??
+    const Matrix& matr = const_cast <RealAttr2*> (dist) -> matr;
     
-    Matrix& matr = const_cast <RealAttr2*> (dist) -> matr;
-  //matr. similarity2sqrDistance ();
-    
-    FOR (size_t, row, ds. objs. size ())
     FOR (size_t, col, ds. objs. size ())
+    FOR (size_t, row, ds. objs. size ())
       if (! symmetric || ds. objs [row] -> name <= ds. objs [col] -> name)
         if (row != col || diagonal)
           cout         << ds. objs [row] -> name 
