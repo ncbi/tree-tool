@@ -11,7 +11,6 @@ while (1)
     set N = 0
     set L = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  r  ' | sed 's/^ *//1' | cut -f 1 -d ' '`
     echo "Re-submitting $#L grid jobs ..."
-    if (! $#L)  exit 1
     while ($#L)
       qresub $L[1]
       qdel $L[1]
