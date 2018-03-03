@@ -903,16 +903,20 @@ void L2LinearNumPrediction::solveUnconstrained ()
 	      }
         s += x * target [i] * mult;
       }
-    ASSERT (! isNan (s));
-    xy [attrNum] = existsMissing 
-                     ? mult_sum ? s / mult_sum : 0
-                     : s;
+    if (existsMissing)
+	    xy [attrNum] = mult_sum > 0 ? s / mult_sum : 0;
+	  else
+	  {
+	    ASSERT (! isNan (s));
+	    xy [attrNum] = s;
+	  }
  	}
 
   // beta
   beta. multiply (false, 
                   betaCovariance, false, 
                   xy,             false);
+
 
   // absCriterion
   const Real yHat2 = beta. multiplyVec (xy);
@@ -939,6 +943,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
   if (! positive (absCriterion))
     setAbsCriterion ();
   ASSERT (absCriterion >= 0);
+
 
   // betaCovariance  
   const Real epsilonVar = absCriterion / sample. mult_sum;  // biased
