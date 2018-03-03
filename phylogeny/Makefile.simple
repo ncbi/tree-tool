@@ -50,8 +50,8 @@ attr2_multiply:	$(attr2_multiplyOBJS)
 	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
 	$(ECHO)
 
-calibrateDissims.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp
-calibrateDissimsOBJS=calibrateDissims.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
+calibrateDissims.o:  $(PREDICT_HPP) $(PHYL_DIR)/evolution.hpp
+calibrateDissimsOBJS=calibrateDissims.o $(PREDICT_OBJ) $(PHYL_DIR)/evolution.o
 calibrateDissims:	$(calibrateDissimsOBJS)
 	$(CXX) -o $@ $(calibrateDissimsOBJS) $(LIBS)
 	$(ECHO)
@@ -81,13 +81,13 @@ feature2dissim:	$(feature2dissimOBJS)
 	$(ECHO)
 
 hash2dissim.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp
-hash2dissimOBJS=hash2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
+hash2dissimOBJS=hash2dissim.o $(PREDICT_OBJ) $(PHYL_DIR)/evolution.o
 hash2dissim:	$(hash2dissimOBJS)
 	$(CXX) -o $@ $(hash2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 hash_request2dissim.o:  $(NUMERIC_HPP) $(PHYL_DIR)/evolution.hpp
-hash_request2dissimOBJS=hash_request2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
+hash_request2dissimOBJS=hash_request2dissim.o $(PREDICT_OBJ) $(PHYL_DIR)/evolution.o
 hash_request2dissim:	$(hash_request2dissimOBJS)
 	$(CXX) -o $@ $(hash_request2dissimOBJS) $(LIBS)
 	$(ECHO)

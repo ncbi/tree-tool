@@ -141,25 +141,25 @@ dm2subset:	$(dm2subsetOBJS)
 	$(CXX) -o $@ $(dm2subsetOBJS) $(LIBS)
 	$(ECHO)
 
-linreg.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
+linreg.o:  $(PREDICT_HPP)
 linregOBJS=linreg.o $(PREDICT_OBJ)
 linreg:	$(linregOBJS)
 	$(CXX) -o $@ $(linregOBJS) $(LIBS)
 	$(ECHO)
 
-linreg_test.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
+linreg_test.o:  $(PREDICT_HPP)
 linreg_testOBJS=linreg_test.o $(PREDICT_OBJ)
 linreg_test:	$(linreg_testOBJS)
 	$(CXX) -o $@ $(linreg_testOBJS) $(LIBS)
 	$(ECHO)
 
-logreg.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
+logreg.o:  $(PREDICT_HPP)
 logregOBJS=logreg.o $(PREDICT_OBJ)
 logreg:	$(logregOBJS)
 	$(CXX) -o $@ $(logregOBJS) $(LIBS)
 	$(ECHO)
 
-logreg_test.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
+logreg_test.o:  $(PREDICT_HPP)
 logreg_testOBJS=logreg_test.o $(PREDICT_OBJ)
 logreg_test:	$(logreg_testOBJS)
 	$(CXX) -o $@ $(logreg_testOBJS) $(LIBS)
@@ -171,8 +171,8 @@ matrix_test:	$(matrix_testOBJS)
 	$(CXX) -o $@ $(matrix_testOBJS) $(LIBS)  
 	$(ECHO)
 
-mds.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
-mdsOBJS=mds.o $(DM_OBJ) $(DM_DIR)/prediction.o
+mds.o:  $(PREDICT_HPP)
+mdsOBJS=mds.o $(PREDICT_OBJ)
 mds:	$(mdsOBJS)
 	$(CXX) -o $@ $(mdsOBJS) $(LIBS)
 	$(ECHO)
@@ -201,8 +201,8 @@ pairs2Boolean:	$(pairs2BooleanOBJS)
 	$(CXX) -o $@ $(pairs2BooleanOBJS) $(LIBS)
 	$(ECHO)
 
-pca.o:  $(DM_HPP) $(DM_DIR)/prediction.hpp
-pcaOBJS=pca.o $(DM_OBJ) $(DM_DIR)/prediction.o
+pca.o:  $(PREDICT_HPP)
+pcaOBJS=pca.o $(PREDICT_OBJ)
 pca:	$(pcaOBJS)
 	$(CXX) -o $@ $(pcaOBJS) $(LIBS)
 	$(ECHO)

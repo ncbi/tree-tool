@@ -46,7 +46,8 @@ $(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp
 DM_HPP = $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp $(DM_DIR)/optim.hpp $(DM_DIR)/dataset.hpp
 $(DM_DIR)/dataset.o:	$(DM_HPP)
 DM_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/matrix.o $(DM_DIR)/optim.o $(DM_DIR)/dataset.o
-$(DM_DIR)/prediction.o: $(DM_DIR)/prediction.hpp $(DM_HPP)
+PREDICT_HPP = $(DM_HPP) $(DM_DIR)/prediction.hpp 
+$(DM_DIR)/prediction.o: $(PREDICT_HPP)
 PREDICT_OBJ = $(DM_OBJ) $(DM_DIR)/prediction.o 
 #
 MATRIX = $(DM_DIR)/matrix $(DM_DIR)/numeric	$(DM_DIR)/optim
