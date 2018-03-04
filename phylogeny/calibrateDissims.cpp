@@ -1,4 +1,4 @@
-// calibrateDissims.cpp
+// calibrateDissims.cpp  // --> dm/convex.cpp ??
 
 #undef NDEBUG
 #include "../common.inc"
@@ -20,17 +20,20 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Analyze proportional dissimilarities: centralize to 1, find variance")
+    : Application ("Analyze proportional homoscedastic dissimilarities: centralize to 1, find variances")
     {
       // Input
   	  addPositional ("file", dmSuff + "-file without \"" + dmSuff + "\"");
+  	  // Output
+  	  addKey ("output_dissim", "Output merged dissimilarity");
   	}
 
 
 
 	void body () const final
 	{
-		const string inFName = getArg ("file");
+		const string inFName            = getArg ("file");
+		const string output_dissimFName = getArg ("output_dissim");
 
 
     Dataset ds (inFName);
@@ -43,10 +46,10 @@ struct ThisApplication : Application
 	  	const PositiveAttr1* attr = attr_->asPositiveAttr1 (); 
 	  	if (! attr)
 	  		throw runtime_error (attr_->name + " should be Positive");
+	    const_cast <PositiveAttr1*> (attr) -> inf2missing ();
 	  	
 	    const Sample sm (ds);
 	  #if 0  // PAR
-	    const_cast <PositiveAttr1*> (attr) -> inf2missing ();
 	  	Real center = NAN;
 	  	Real scatter = NAN;
 	  	attr->getAverageScatter (sm, center, scatter);
@@ -61,8 +64,15 @@ struct ThisApplication : Application
 
 	  	  
     auto averageAttr = new PositiveAttr1 ("average", ds, 6);  // PAR
-    dissimAve. calibrate (averageAttr);
+    dissimAve. calibrate (*averageAttr);
 	 	dissimAve. print (cout);
+	 	
+	 	if (! output_dissimFName. empty ())
+	 	{
+	 		OFStream f (output_dissimFName);
+	 		const Sample sm (ds);
+	 	  sm. save (VectorPtr<Attr> {averageAttr}, f);
+	 	}
 	}
 };
 
