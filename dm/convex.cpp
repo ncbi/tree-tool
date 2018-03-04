@@ -54,7 +54,15 @@ struct Convex : MultiVariate<PositiveAttr1>
 
 		  Space1<PositiveAttr1> comboSp (ds, false); 
 		  comboSp << combo;
+		  
+		#if 0
+		  MVector sqr_ave (beta. size ());
+		  FFOR (size_t, i, space. size ())
+		    sqr_ave [i] = space [i] -> getSqr_ave (sample);
+		#endif
+		    		  
 
+      // Outliers ??
       Progress prog;
       for (;;)
       {
@@ -70,7 +78,9 @@ struct Convex : MultiVariate<PositiveAttr1>
 				  lr. qc ();  
 				  if (isNan (lr. absCriterion))
 				    throw runtime_error ("No data in " + space [i] -> name);
-				  xy [i] = lr. beta [0];
+				  if (lr. beta [0] < 0)
+				  	throw runtime_error (space [i] -> name + " is negatively correlated");
+				  xy [i] = lr. beta [0] /* * sqr_ave [i]*/;
 			  }
 			  
 			  beta. multiply (false, attrSim, false, xy, false);
@@ -132,9 +142,9 @@ struct Convex : MultiVariate<PositiveAttr1>
 struct ThisApplication : Application
 {	
   ThisApplication ()
-	  : Application ("Convex components. Infinities are replaced by NANs.")
+	  : Application ("Convex combination of homoscedastic Positive attributes. Infinities are replaced by NANs.")
 		{
-		  addPositional ("file", dmSuff + "-file without the extension with Positive attributes");	  
+		  addPositional ("file", dmSuff + "-file without the extension");
 		  // Output
 		  addKey ("output", "Output combined attribute");
 		}
