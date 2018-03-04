@@ -224,6 +224,23 @@ void NumAttr1::getAverageScatter (const Sample &sample,
 
 
 
+Real NumAttr1::getSqr_ave (const Sample &sample) const
+{
+	Real n = 0;
+	Real s = 0;
+  for (Iterator it (sample); it ();)  
+    if (! isMissing (*it))
+    {
+    	const Real x = getReal (*it);
+    	n += it. mult;
+    	s += it. mult * sqr (x);
+    }
+  
+  return s / n;
+}
+
+
+
 Vector<NumAttr1*> NumAttr1::toNumAttr1 (Dataset &ds_arg) const 
 {
   Vector<NumAttr1*> vec;

@@ -298,6 +298,8 @@ public:
   void getAverageScatter (const Sample &sample,
                           Real &average,
                           Real &scatter) const;
+  Real getSqr_ave (const Sample &sample) const;
+    // Return: >= 0
   Value getMedian (const Sample &sample) const;
 };
 
