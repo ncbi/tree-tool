@@ -1540,14 +1540,15 @@ template <typename T/*:Attr1*/>
 
     // Requires: T:NumAttr1
 	  void setAttrSim (Matrix &attrSim,
-	                   bool existsMissing) const
+	                   bool vc) const
+	    // Input: vc: variance-covariance: allows missing values
 		  {	ASSERT (attrSim. rowsSize () == space. size ());
 		    Unverbose unv;
 		    Progress prog ((uint) space. size ());  
 		    FFOR (size_t, attrNum1, space. size ())
 		    { prog ();
 		      const NumAttr1& a1 = * space [attrNum1];
-		  	  FFOR (size_t, attrNum2, attrNum1 + 1)
+		  	  FFOR_START (size_t, attrNum2, attrNum1, space. size ())
 		      { const NumAttr1& a2 = * space [attrNum2];
 		        Real s = 0;
 		        Real mult_sum = 0;
@@ -1555,7 +1556,7 @@ template <typename T/*:Attr1*/>
 		          if (const Real mult = sample. mult [i])
 		          { const Real x1 = a1. getReal (i);
 		          	const Real x2 = a2. getReal (i);
-		          	if (existsMissing)
+		          	if (vc)
 		            {
 			          	if (isNan (x1))
 			          		continue;
@@ -1566,7 +1567,7 @@ template <typename T/*:Attr1*/>
 		            s += x1 * x2 * mult;
 		          }
 		        ASSERT (! isNan (s));
-		        attrSim. putSymmetric (attrNum1, attrNum2, existsMissing ? (mult_sum ? s / mult_sum : 0) : s);
+		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0) : s);
 		      }
 		   	}
 		  }
