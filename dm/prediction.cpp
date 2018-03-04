@@ -939,9 +939,15 @@ void L2LinearNumPrediction::solveUnconstrained ()
 
   absCriterion = y2 - yHat2;
   if (existsMissing)
+  {
   	absCriterion *= sample. mult_sum;
-  if (! positive (absCriterion))
-    setAbsCriterion ();
+  	maximize (absCriterion, 0.0);
+  }
+  else
+  {
+	  if (! positive (absCriterion))
+	    setAbsCriterion ();
+	}
   ASSERT (absCriterion >= 0);
 
 
@@ -1101,6 +1107,8 @@ void L2LinearNumPrediction::setAbsCriterion (const RealAttr1& residual)
     		{
 	        absCriterion += sqr (x) * mult; 
 	        mult_sum += mult;
+	        ASSERT (! isNan (absCriterion));
+	        ASSERT (! isNan (mult_sum));	        
 	      }
 	    }
   absCriterion *= sample. mult_sum / mult_sum;
