@@ -47,9 +47,9 @@ struct DissimAverage : Root
 	struct DissimAttr : Named
 	{
 		const PositiveAttr1* attr {nullptr};
+
 		Real center {NAN};
 			// > 0
-
 		// For centered value's
 		Real var {NAN};
 			// >= 0
@@ -90,7 +90,7 @@ struct DissimAverage : Root
 	    // Output: outlier
     void setValue (size_t objNum);
 	    // Output: value
-    void setVar (const PositiveAttr1* averageAttr);
+    void setVar (const PositiveAttr1& averageAttr);
       // Output: var
 	};
 	Vector<DissimAttr> attrs;
@@ -110,17 +110,22 @@ struct DissimAverage : Root
   Real get () const;
     // Input: DissimAttr::value
     // Output: DissimAttr::outlier
-  void calibrate (PositiveAttr1* averageAttr);
-    // Output: (*averageAttr)[], DissimAttr::{var,mv}
+  void calibrate (PositiveAttr1& averageAttr);
+    // Output: (averageAttr)[], DissimAttr::{var,mv}
 private:
 	MVector getVars () const;
   void setValues (size_t objNum)
     { for (DissimAttr& dissimAttr : attrs)
 		    dissimAttr. setValue (objNum);
 		}
-  void setVars (const PositiveAttr1* averageAttr)
-    { for (DissimAttr& dissimAttr : attrs)
-		    dissimAttr. setVar (averageAttr);
+  Real setVars (const PositiveAttr1& averageAttr)
+    { MeanVar mv;
+    	for (DissimAttr& dissimAttr : attrs)
+    	{ dissimAttr. setVar (averageAttr);
+		    if (! dissimAttr. bad ())
+		    	mv << dissimAttr. getSD ();
+		  }
+		  return mv. getMean ();
 		}
 public:
 };

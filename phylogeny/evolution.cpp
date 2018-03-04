@@ -148,18 +148,17 @@ void DissimAverage::DissimAttr::setValue (size_t objNum)
 
 
 
-void DissimAverage::DissimAttr::setVar (const PositiveAttr1* averageAttr)
+void DissimAverage::DissimAttr::setVar (const PositiveAttr1& averageAttr)
 {
-	ASSERT (averageAttr);
 	ASSERT (attr);
-	ASSERT (& averageAttr->ds == & attr->ds);
+	ASSERT (& averageAttr. ds == & attr->ds);
 		
 	var = 0;
 	Real mult_sum = 0;
 	FFOR (size_t, i, attr->ds. objs. size ())
 	{
-		const Real x = (*attr)        [i];
-		const Real y = (*averageAttr) [i];
+		const Real x = (*attr)     [i];
+		const Real y = averageAttr [i];
 		if (! goodValue (x))
 			continue;
 		if (! goodValue (y))
@@ -263,10 +262,8 @@ Real DissimAverage::get () const
 
 
 
-void DissimAverage::calibrate (PositiveAttr1* averageAttr)
+void DissimAverage::calibrate (PositiveAttr1& averageAttr)
 {
-	ASSERT (averageAttr);
-	
   for (DissimAttr& attr : attrs)
   {
   	attr. var = 0.1;  
@@ -277,11 +274,11 @@ void DissimAverage::calibrate (PositiveAttr1* averageAttr)
   Progress prog;
   for (;;)
   {
-    // *averageAttr
-  	FFOR (size_t, i, averageAttr->ds. objs. size ())
+    // averageAttr
+  	FFOR (size_t, i, averageAttr. ds. objs. size ())
   	{
   		setValues (i);
-  		(*averageAttr) [i] = get ();
+  		averageAttr [i] = get ();
 		  for (DissimAttr& attr : attrs)
 		  	if (   ! attr. bad ()
 		  		  && DissimAttr::goodValue (attr. value)
@@ -292,10 +289,10 @@ void DissimAverage::calibrate (PositiveAttr1* averageAttr)
     const MVector vars_old (getVars ());
 
     // DissimAttr::var
-    setVars (averageAttr);
+    const Real sd = setVars (averageAttr);
  		
  		const Real diff = getVars (). maxAbsDifferenceVec (vars_old);
-    prog (toString (diff));
+    prog (toString (diff) + " " + toString (sd));
  		if (diff < 1e-6)  // PAR
  			break;
  	}
