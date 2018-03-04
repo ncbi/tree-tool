@@ -296,6 +296,7 @@ void DissimAverage::calibrate (PositiveAttr1& averageAttr)
  		if (diff < 1e-6)  // PAR
  			break;
  	}
+ 	// setCenter(): does not converge ??
 }
 
 
