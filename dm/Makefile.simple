@@ -20,7 +20,6 @@ all:	\
   char2attr \
   clust \
   clust_binomial \
-	convex \
   count \
   dataset_test \
   distTriangle \
@@ -99,6 +98,7 @@ clust_binomial:	$(clust_binomialOBJS)
 	$(CXX) -o $@ $(clust_binomialOBJS) $(LIBS)
 	$(ECHO)
 
+# ??
 convex.o:  $(PREDICT_HPP) 
 convexOBJS=convex.o $(PREDICT_OBJ) 
 convex:	$(convexOBJS)
