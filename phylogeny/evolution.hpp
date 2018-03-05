@@ -56,7 +56,7 @@ struct DissimAverage : Root
 		Real value {NAN};
 			// >= 0
 		mutable bool outlier {false};
-		WeightedMeanVar mv;  
+		WeightedMeanVar outlierMV;  
 		  // outlier's statistic
 		
 
@@ -69,23 +69,20 @@ struct DissimAverage : Root
 		  { os         << name
  		       << '\t' << center
  		       << '\t' << var
- 		       << '\t' << mv. getMean ()
+ 		       << '\t' << outlierMV. getMean ()
  		       << endl;
  		  }
 
 		  
 		static bool goodValue (Real value) 
 		  { return ! isNan (value) && value != INF; }
-	#if 0
-		static Real value2var (Real value) 
-		  { return exp (value) - 1; }  
-	#endif
 		Real getSD () const
 		  { return sqrt (var); }
 		bool bad () const
 		  { return getSD () >= 0.8; }  // PAR
 		Real getWeight () const
-		  { return 1 / (var /* * value2var (value)*/); }
+		  { return 1 / var; }
+		  // Assumption: DissimAttr's are independent, which allows re-weighting of DissimAttr's if some value's are missing
 		void setOutlier (Real value_target) const;
 	    // Output: outlier
     void setValue (size_t objNum);
@@ -111,7 +108,14 @@ struct DissimAverage : Root
     // Input: DissimAttr::value
     // Output: DissimAttr::outlier
   void calibrate (PositiveAttr1& averageAttr);
-    // Output: (averageAttr)[], DissimAttr::{var,mv}
+    // Output: (averageAttr)[], DissimAttr::{var,outlierMV}
+  Real getVar () const
+    { Real var = 0;
+    	for (const DissimAttr& dissimAttr : attrs)
+    		if (! dissimAttr. bad ())
+    		  var += dissimAttr. getWeight ();
+    	return 1 / var;
+    }    	
 private:
 	MVector getVars () const;
   void setValues (size_t objNum)

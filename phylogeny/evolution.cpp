@@ -268,7 +268,7 @@ void DissimAverage::calibrate (PositiveAttr1& averageAttr)
   {
   	attr. var = 0.1;  
   	ASSERT (! attr. bad ());
-  	attr. mv. clear ();
+  	attr. outlierMV. clear ();
   }
 
   Progress prog;
@@ -283,20 +283,19 @@ void DissimAverage::calibrate (PositiveAttr1& averageAttr)
 		  	if (   ! attr. bad ()
 		  		  && DissimAttr::goodValue (attr. value)
 		  		 )
-		  		attr. mv. add (attr. outlier);
+		  		attr. outlierMV. add (attr. outlier);
   	}  	
 
     const MVector vars_old (getVars ());
 
     // DissimAttr::var
-    const Real sd = setVars (averageAttr);
+    /*const Real sd =*/ setVars (averageAttr);
  		
  		const Real diff = getVars (). maxAbsDifferenceVec (vars_old);
-    prog (toString (diff) + " " + toString (sd));
+    prog (toString (diff) + " " + toString (getVar ()));
  		if (diff < 1e-6)  // PAR
  			break;
  	}
- 	// setCenter(): does not converge ??
 }
 
 
