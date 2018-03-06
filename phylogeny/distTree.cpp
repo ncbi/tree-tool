@@ -4760,7 +4760,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
   {  
 #endif
     Normal /*Exponential*/ distr;
-    outlier_min = exp (criterionAttr->distr2outlier (sample, distr, outlier_EValue_max));  
+    outlier_min = exp (criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max));  
 #if 0
   }
   else
@@ -4861,7 +4861,7 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
   
   Exponential distr;  
 
-  dissimOutlier_min = lenAttr->distr2outlier (sample, distr, 1e-6 /*outlier_EValue_max*/);  // PAR
+  dissimOutlier_min = lenAttr->distr2outlier (sample, distr, true, 1e-6 /*outlier_EValue_max*/);  // PAR
 
   if (isNan (dissimOutlier_min))
     return res;
@@ -4877,7 +4877,7 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
     }
   sample. finish ();
   if (sample. mult_sum >= (Real) name2leaf. size () * 0.001)  // PAR
-    dissimOutlier_min = lenAttr->distr2outlier (sample, distr, outlier_EValue_max);  // PAR ??
+    dissimOutlier_min = lenAttr->distr2outlier (sample, distr, true, outlier_EValue_max);  // PAR ??
 
   res. reserve (name2leaf. size () / 1000 + 1);  // PAR
   for (const NodeDissim& nd : nodeDissims)
@@ -4926,7 +4926,7 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
   	ASSERT (descendants. size () == ds. objs. size ());
     Sample sample (ds);    
     Normal distr;   
-    const Real outlier_min = lenAttr->distr2outlier (sample, distr, outlier_EValue_max); 
+    const Real outlier_min = lenAttr->distr2outlier (sample, distr, true, outlier_EValue_max); 
     if (isNan (outlier_min))
       continue;
     FFOR (size_t, objNum, ds. objs. size ())

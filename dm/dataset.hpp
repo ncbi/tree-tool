@@ -301,6 +301,13 @@ public:
   Real getSqr_ave (const Sample &sample) const;
     // Return: >= 0
   Value getMedian (const Sample &sample) const;
+  Real distr2outlier (const Sample &sample,
+                      LocScaleDistribution &distr,
+                      bool rightTail,
+                      Real outlier_EValue_max) const;
+    // Return: (if rightTail) min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN or INF
+    // Idempotent after removing outliers
+    // Time: O(n log(n))
 };
 
 
@@ -367,12 +374,6 @@ public:
   Real normal_likelihood2max (const Sample &sample) const;
     // Model: distribution of *this = if value <= t then truncated Normal else Uniform
     // Return: t, may be NAN
-    // Time: O(n log(n))
-  Real distr2outlier (const Sample &sample,
-                      LocScaleDistribution &distr,
-                      Real outlier_EValue_max) const;
-    // Return: min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN or INF
-    // Idempotent after removing outliers
     // Time: O(n log(n))
 };
 

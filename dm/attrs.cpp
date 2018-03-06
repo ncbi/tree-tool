@@ -19,7 +19,8 @@ struct ThisApplication : Application
     : Application ("Print the description of attributes")
     {
       addPositional ("file", dmSuff + "-file");
-      addPositional ("corr_min", "Minimum correlation between two attributes to report");
+      addKey ("corr_min", "Min. correlation between two attributes to report", "nan");
+      addKey ("outlier_evalue_max", "Max. outlier e-value", "0.1");
     }
 	
 	
@@ -28,6 +29,8 @@ struct ThisApplication : Application
 	{
 		const string inFName = getArg ("file");
 		const Real corr_min  = str2real (getArg ("corr_min"));
+		const Prob outlier_eValue_max = str2real (getArg ("outlier_evalue_max"));
+		ASSERT (isProb (outlier_eValue_max));
 
 
     const Dataset ds (inFName);
@@ -40,12 +43,18 @@ struct ThisApplication : Application
     	cout << attrRaw->name << '\t' << attrRaw->getTypeStr () << '\t' << attrRaw->countMissings ();
       if (const NumAttr1* num = attrRaw->asNumAttr1 ())
 	    {
+	    	const ONumber on (cout, num->decimals + 1, false);
 	      Normal normal;
 	      const UniVariate<NumAttr1> an (sample, *num);
 	      normal. analysis = & an;
 	      normal. estimate ();
-	      normal. qc ();
-	      cout << '\t' << normal. loc << '\t' << normal. scale;
+	      normal. qc ();	      
+	      cout << '\t' << normal. loc 
+	           << '\t' << normal. scale;
+		    Normal distr;
+		    if (! isNan (outlier_eValue_max))
+			    for (const bool rightTail : {false, true})
+			      cout << '\t' << num->distr2outlier (sample, distr, rightTail, outlier_eValue_max);  	      
 	    }
       else if (const BoolAttr1* boolean = attrRaw->asBoolAttr1 ())
 	      cout << '\t' << boolean->getProb (sample);
@@ -62,6 +71,7 @@ struct ThisApplication : Application
     // Correlations
     // Only for NumAttr1 ??
     // Requires: no missings ??
+    if (! isNan (corr_min))
     {
       cout << endl;
       const Space1<NumAttr1> space (ds, true);

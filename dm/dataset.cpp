@@ -170,6 +170,22 @@ size_t Attr1::getWidth_max () const
 
 // NumAttr1
 
+namespace
+{
+
+struct ObjNum_Real
+{
+  size_t objNum;
+  Real value;
+  
+  bool operator< (const ObjNum_Real &other) const
+    { return value < other. value; }
+};
+
+}
+
+
+
 NumAttr1::NumAttr1 (const string &name_arg,
                     Dataset &ds_arg,
                     const NumAttr1 &from)
@@ -324,6 +340,54 @@ NumAttr1::Value NumAttr1::getMedian (const Sample &sample) const
 
 
 
+Real NumAttr1::distr2outlier (const Sample &sample,
+                              LocScaleDistribution &distr,
+                              bool rightTail,
+                              Real outlier_EValue_max) const
+{
+  Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
+  for (Iterator it (sample); it ();)  
+    if (! isMissing (*it))
+      vec << ObjNum_Real {*it, getSign (rightTail) * getReal (*it)};
+  if (vec. size () <= 2)
+    return NAN;
+    
+  vec. sort ();
+    
+  Real mult_sum = 0;
+  Real s = 0;
+  Real s2 = 0;
+  Real mean = NAN;
+  Real var = 0;
+  for (const auto& it : vec)
+  {
+    const Real x = it. value;
+
+    if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)
+    {
+      distr. setMeanVar (mean, var);
+      const Prob p = 1 - distr. cdf (x);
+      if (leReal (p * mult_sum, outlier_EValue_max))
+        return getSign (rightTail) * x;
+    }
+
+    const Real mult = ds. objs [it. objNum] -> mult;
+    mult_sum += mult;
+    ASSERT (geReal (sample. mult_sum, mult_sum));
+    s  += mult * x;
+    s2 += mult * sqr (x);
+    mean = s / mult_sum;
+    var = s2 / mult_sum - sqr (mean);
+    ASSERT (! negative (var));
+  }
+  if (verbose ())
+    cout << "mean = " << mean << ' ' << "SD = " << sqrt (var) << endl;
+  
+  return getSign (rightTail) * INF;  
+}
+
+
+
 
 // RealScale
 
@@ -439,22 +503,6 @@ void RealAttr1::multiply (Real coeff)
 
 
 
-namespace
-{
-
-struct ObjNum_Real
-{
-  size_t objNum;
-  Real value;
-  
-  bool operator< (const ObjNum_Real &other) const
-    { return value < other. value; }
-};
-
-}
-
-
-
 Real RealAttr1::normal_likelihood2max (const Sample &sample) const
 {
   Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
@@ -502,53 +550,6 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
   }
   
   return objNum_threshold == NO_INDEX ? NAN : getReal (objNum_threshold);
-}
-
-
-
-Real RealAttr1::distr2outlier (const Sample &sample,
-                               LocScaleDistribution &distr,
-                               Real outlier_EValue_max) const
-{
-  Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
-  for (Iterator it (sample); it ();)  
-    if (! isMissing (*it))
-      vec << ObjNum_Real {*it, getReal (*it)};
-  if (vec. size () <= 2)
-    return NAN;
-    
-  vec. sort ();
-    
-  Real mult_sum = 0;
-  Real s = 0;
-  Real s2 = 0;
-  Real mean = NAN;
-  Real var = 0;
-  for (const auto& it : vec)
-  {
-    const Real x = it. value;
-
-    if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)
-    {
-      distr. setMeanVar (mean, var);
-      const Prob p = 1 - distr. cdf (x);
-      if (leReal (p * mult_sum, outlier_EValue_max))
-        return x;
-    }
-
-    const Real mult = ds. objs [it. objNum] -> mult;
-    mult_sum += mult;
-    ASSERT (geReal (sample. mult_sum, mult_sum));
-    s  += mult * x;
-    s2 += mult * sqr (x);
-    mean = s / mult_sum;
-    var = s2 / mult_sum - sqr (mean);
-    ASSERT (! negative (var));
-  }
-  if (verbose ())
-    cout << "mean = " << mean << ' ' << "SD = " << sqrt (var) << endl;
-  
-  return INF;  
 }
 
 
