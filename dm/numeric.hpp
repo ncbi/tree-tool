@@ -24,9 +24,7 @@ bool initNumeric ();
   // Invokes: initCommon()
 
 
-// T: integer
-
-template <class T>  
+template <class T /*:intgeer*/>  
   inline T divide (T n, 
                    T divisor,
                    T &remainder)
@@ -40,8 +38,8 @@ template <class T>
     return result;
   }
   
-template <class T>  
-  inline int getSign (T t)
+template <class T /*: number*/>  
+  inline int num2sign (T t)
     { return t > 0 ? 1 : (t < 0 ? -1 : 0); }
 
 template <class T>  
@@ -126,10 +124,6 @@ inline bool betweenReal (Real x, Real lo, Real hi, Real delta = epsilon)
 
 inline bool betweenEqualReal (Real x, Real lo, Real hi, Real delta = epsilon) 
   { return geReal (x, lo, delta) && leReal (x, hi, delta); }
-
-inline int getSign (Real x)
-  // Return: -1, 0, 1
-  { return positive (x) ? 1 : (negative (x) ? -1 : 0); }
 
 long round (Real x);
   // NAN -> numeric_limits::min()
