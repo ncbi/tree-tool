@@ -51,10 +51,27 @@ struct ThisApplication : Application
 	      normal. qc ();	      
 	      cout << '\t' << normal. loc 
 	           << '\t' << normal. scale;
-		    Normal distr;
 		    if (! isNan (outlier_eValue_max))
+		    {
+			    Sample sample_pure (ds);
 			    for (const bool rightTail : {false, true})
-			      cout << '\t' << num->distr2outlier (sample, distr, rightTail, outlier_eValue_max);  	      
+			    {
+			    	const Real threshold = num->distr2outlier (sample, normal, rightTail, outlier_eValue_max);
+			      cout << '\t' << threshold;
+			      FFOR (size_t, i, sample_pure. mult. size ())
+			        if (   (  rightTail && (*num) [i] > threshold)
+			        	  || (! rightTail && (*num) [i] < threshold)
+			        	 )
+			        	sample_pure. mult [i] = 0;
+			    }
+		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
+		      normal. analysis = & an_pure;
+		      normal. estimate ();
+          const Prob pVal = normal. getFitness_entropy ();
+		      cout << '\t' << normal. loc 
+		           << '\t' << normal. scale
+		           << '\t' << pVal;
+			  }
 	    }
       else if (const BoolAttr1* boolean = attrRaw->asBoolAttr1 ())
 	      cout << '\t' << boolean->getProb (sample);
