@@ -14,6 +14,40 @@ namespace
 {
 	
 	
+struct Scale
+{
+	Real unit {INF};
+	Real raw_min {0};
+	Real raw_max {0};
+	
+	explicit Scale (const string &line)
+	  {
+	  	istringstream iss (line);
+	  	iss >> unit >> raw_min >> raw_max;
+	  	ASSERT (unit > 0);
+	  	ASSERT (unit <= 1);
+	  	ASSERT (raw_min >= 0);
+	  	ASSERT (raw_min < raw_max);
+	  }
+	Scale ()
+	  {}
+	  
+	Real raw2dissim (Real raw) const
+	  { if (isNan (raw))
+	  	  return NAN;
+	  	ASSERT (raw >= 0);
+	  	if (raw < raw_min)
+	  	  return NAN;
+	  	if (raw > raw_max)
+	  	  return NAN;
+	  	return raw / unit; 
+	  }
+	Real dissim_max () const
+	  { return raw2dissim (raw_max); }
+};
+	
+	
+	
 struct ObjPair
 {
 	string name1;
@@ -34,13 +68,15 @@ struct ObjPair
 
 
 
+
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Combine different dissimilarities for the same pairs of objects. Dissimilarities must have linear-exponential variance")
+    : Application ("Combine different dissimilarities for the same pairs of objects")
     {
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
-  	  addPositional ("scales", "File with equalizing scales for each dissimilarity, ordered by scale descending, first scale = 1");
+  	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending, first scale = 1.\n\
+Line format: <unit> <max>");
   	}
 
 
@@ -51,22 +87,21 @@ struct ThisApplication : Application
 		const string scaleFName  = getArg ("scales");
 		
 		
-		Vector<Real> scales;  scales. reserve (16); // PAR
+		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
-		  ifstream f (scaleFName);
-      Real scale;		
-      Real scale_prev = INF;
-		  while (f >> scale)
-		  {
-		  	ASSERT (scale > 0);
-		  	ASSERT (scale <= 1);
-		    scales << scale;
-		    ASSERT (scale_prev > scale);
+      Scale scale_prev;
+			LineInput f (scaleFName);
+			while (f. nextLine ())
+			{
+	      const Scale scale (f. line);
+	      scales << scale;
+		  //ASSERT (scale. unit          < scale_prev. unit);
+		    ASSERT (scale. dissim_max () > scale_prev. dissim_max ());
 		    scale_prev = scale;
 		  }
 		}
 		ASSERT (scales. size () >= 2);
-		ASSERT (scales [0] == 1);
+		ASSERT (scales [0]. unit == 1);
 
       
     Vector<ObjPair> objPairs;  objPairs. reserve (1000);  // PAR
@@ -75,110 +110,45 @@ struct ThisApplication : Application
     	while (f. nextLine ())
     		objPairs << ObjPair (f. line);
     }
+
     ASSERT (objPairs. size () % scales. size () == 0);
     const size_t n = objPairs. size () / scales. size ();  // # Pairs
-    Vector<Real> dissims (scales. size ());
-    Vector<Real> vars    (scales. size ());
-    Vector<Real> weights (scales. size ());
+    
     const ONumber on (cout, 6, true);
+    Progress prog ((uint) n, 1000);  // PAR
 	  FOR (size_t, i, n)
 	  {
-	  	dissims. clear ();
-	  	vars.    clear ();
-	  	weights. clear ();
-	  	Real dissim_first = NAN;
+	  	prog ();
+	  #if 1
+	    Real dissim = NAN;
+	  #else
+	    Real dissim_sum = 0;
+	    Real weight_sum = 0;
+	  #endif
   	  FFOR (size_t, j, scales. size ())
       {
       	const size_t k = i + j * n;
-        ASSERT (objPairs [k]. name1 == objPairs [i]. name1);
+        if (objPairs [k]. name1 != objPairs [i]. name1)
+        	throw runtime_error ("Object " + toString (i + 1) + ", scale " + toString (j + 1) 
+        	                     + " has a different name1: " + objPairs [k]. name1 + " vs. " + objPairs [i]. name1
+        	                    );
         ASSERT (objPairs [k]. name2 == objPairs [i]. name2);
-
-        const Real coeff = 1 / scales [j];
-        ASSERT (coeff >= 1);
-        
-        const Real dissim_raw = objPairs [k]. dissim;
-
-        const Real dissim = dissim_raw * coeff;
-        dissims << dissim;
-        
-        if (isNan (dissim_first) && ! isNan (dissim))
-        	dissim_first = dissim;
-
-        const Real dissim_raw_predicted = dissim_first / coeff;
-        Real var = /* N * */ exp (dissim_raw_predicted) - 1;  // Linear-exponential variance   // PAR
-        var += sqr (dissim_raw - dissim_raw_predicted);
-        if (isNan (var))
-        	var = INF;
-      #if 0
-        if (j)  
-          var = 1000;  
+        const Real raw = objPairs [k]. dissim;
+        /*const Real*/ dissim = scales [j]. raw2dissim (raw);
+      #if 1
+        if (! isNan (dissim))
+          break;
+      #else
+        if (isNan (dissim))
+        	continue;
+        ASSERT (dissim >= 0);
+        dissim_sum += dissim;
+        weight_sum += 1;
       #endif
-        ASSERT (var >= 0);
-        vars << var;
-
-        const Real absWeight = isNan (dissim) || dissim == INF
-                                  ? 0 
-                                  : (1 / (sqr (coeff) * var));
-        ASSERT (absWeight >= 0);
-        weights << absWeight;
       }
-
-	  	Real dissim = 0;
-      Real var = 0;
-      Real weight_sum = 0;
-      for (const Real w : weights)
-    		weight_sum += w;
-      ASSERT (weight_sum >= 0);
-    	if (weight_sum == 0)
-	    {
-	    	dissim = NAN;
-	    	for (const Real d : dissims)
-	    		if (! isNan (d))
-	    		{
-	    			dissim = d;
-	    			break;
-	    		}
-	    }
-	    else if (weight_sum < INF)
-    	{
-	      // Relative weights
-	      for (Real &w : weights)
-	      {
-	      	w /= weight_sum;
-	      	ASSERT (w >= 0);
-	      }
-	      // dissim
-	  	  FFOR (size_t, j, scales. size ())
-	  	    if (weights [j])
-	     		  dissim += dissims [j] * weights [j];
-	     	ASSERT (dissim > 0);
-	      // var
-	  	  FFOR (size_t, j, scales. size ())
-	  	    if (weights [j])
-		     		var += sqr (weights [j] / scales [j]) * vars [j];
-	      ASSERT (var > 0);
-	    }
-
-      if ((isNan (dissim) || dissim == INF || dissim == 0) != (var == 0))
-      {
-      	cout << objPairs [i]. name1 << ' ' << objPairs [i]. name2 << endl;
-      	cout << dissim << ' ' << var << endl;
-	  	  FFOR (size_t, j, scales. size ())
-	  	    cout << dissims [j] << '\t' << vars [j] << '\t' << weights [j] << endl;
-      	ERROR;
-      }
-      
-    #if 0
-      cout << dissims;  
-      cout << endl;
-      cout << weights; 
-      cout << endl;
-      cout << dissim << endl;
-    #endif      
       cout         << objPairs [i]. name1 
            << '\t' << objPairs [i]. name2
-           << '\t' << dissim
-           << '\t' << var
+           << '\t' << dissim /*dissim_sum / weight_sum*/
            << endl;
     }
 	}
