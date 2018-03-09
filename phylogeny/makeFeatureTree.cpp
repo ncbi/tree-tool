@@ -38,7 +38,7 @@ struct ThisApplication : Application
   	//addFlag ("set_node_ids", "Set node ids in the output tree");  
   	  addKey ("newick", "Output file with the tree in the Newick format");
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
-  	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file");
+  	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
   	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
@@ -202,13 +202,13 @@ struct ThisApplication : Application
     
     if (! gain_nodes. empty ())
     {
-      OFStream of (gain_nodes);
+      OFStream f (gain_nodes);
      	for (const DiGraph::Node* node : tree. nodes)
      	{
      		const Phyl* phyl = static_cast <const Phyl*> (node);
         FFOR (size_t, i, tree. features. size ())
           if ((! phyl->feature2parentCore (i) || phyl == tree. root) && phyl->core [i])  
-            of << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
+            f << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
       }
     }
 
