@@ -10,6 +10,10 @@ using namespace DM_sp;
 
 
 
+#undef WEIGHT 
+
+
+
 namespace 
 {
 	
@@ -19,15 +23,25 @@ struct Scale
 	Real unit {INF};
 	Real raw_min {0};
 	Real raw_max {0};
+#ifdef WEIGHT
+	Real weight {NAN};
+#endif
 	
 	explicit Scale (const string &line)
 	  {
 	  	istringstream iss (line);
-	  	iss >> unit >> raw_min >> raw_max;
+	  	iss >> unit >> raw_min >> raw_max 
+        #ifdef WEIGHT
+	  	    >> weight
+	  	  #endif
+	  	  ;
 	  	ASSERT (unit > 0);
 	  	ASSERT (unit <= 1);
 	  	ASSERT (raw_min >= 0);
-	  	ASSERT (raw_min < raw_max);
+	  	ASSERT (raw_min <= raw_max);
+    #ifdef WEIGHT
+	  	ASSERT (weight > 0);
+	  #endif
 	  }
 	Scale ()
 	  {}
@@ -89,16 +103,9 @@ Line format: <unit> <max>");
 		
 		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
-      Scale scale_prev;
 			LineInput f (scaleFName);
 			while (f. nextLine ())
-			{
-	      const Scale scale (f. line);
-	      scales << scale;
-		  //ASSERT (scale. unit          < scale_prev. unit);
-		    ASSERT (scale. dissim_max () > scale_prev. dissim_max ());
-		    scale_prev = scale;
-		  }
+	      scales << Scale (f. line);
 		}
 		ASSERT (scales. size () >= 2);
 		ASSERT (scales [0]. unit == 1);
@@ -119,11 +126,11 @@ Line format: <unit> <max>");
 	  FOR (size_t, i, n)
 	  {
 	  	prog ();
-	  #if 1
-	    Real dissim = NAN;
-	  #else
+	  #ifdef WEIGHT
 	    Real dissim_sum = 0;
 	    Real weight_sum = 0;
+	  #else
+	    Real dissim = NAN;
 	  #endif
   	  FFOR (size_t, j, scales. size ())
       {
@@ -134,21 +141,29 @@ Line format: <unit> <max>");
         	                    );
         ASSERT (objPairs [k]. name2 == objPairs [i]. name2);
         const Real raw = objPairs [k]. dissim;
-        /*const Real*/ dissim = scales [j]. raw2dissim (raw);
-      #if 1
-        if (! isNan (dissim))
-          break;
-      #else
+  	  #ifdef WEIGHT
+        const Real 
+      #endif
+          dissim = scales [j]. raw2dissim (raw);
+      #ifdef WEIGHT
         if (isNan (dissim))
         	continue;
         ASSERT (dissim >= 0);
-        dissim_sum += dissim;
-        weight_sum += 1;
+        dissim_sum += scales [j]. weight * dissim;
+        weight_sum += scales [j]. weight;
+      #else
+        if (! isNan (dissim))
+          break;
       #endif
       }
       cout         << objPairs [i]. name1 
            << '\t' << objPairs [i]. name2
-           << '\t' << dissim /*dissim_sum / weight_sum*/
+           << '\t' << 
+		       #ifdef WEIGHT
+             dissim_sum / weight_sum
+           #else
+             dissim 
+           #endif
            << endl;
     }
 	}
