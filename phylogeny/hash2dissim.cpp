@@ -37,7 +37,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string objectsFName     = getArg  ("objects");
 		const string hash_dir         = getArg  ("hash_dir");
