@@ -701,7 +701,8 @@ public:
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
-	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Hostoric versions of data
+	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Historic versions of data
+    //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
