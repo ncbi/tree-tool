@@ -5,7 +5,7 @@ if ($# != 4) then
   echo "Requires: no adding outliers"
   echo "#1: incremental tree"
   echo "#2: test objects"
-  echo "#3: target tree version"
+  echo "#3: target tree version|'opt'"
   echo "#4: temporary file prefix"
   exit 1
 endif
@@ -17,13 +17,22 @@ if (! -e $1/phen) then
 endif
 
 
+
 set tmp = $4
 
+
+if (! -e $tmp.trees/) then
+  echo "Directory $tmp.trees/ does not exist"
+  exit 1
+endif
 
 echo ""
 echo "Target: $3"
 
-tree2obj.sh $1/hist/tree.$3 > $tmp.target
+set INTREE = $1/hist/tree.$3
+if ("$3" == opt)  set INTREE = $1/tree.opt
+
+tree2obj.sh $INTREE > $tmp.target
 if ($?) exit 1
 
 # QC
@@ -34,7 +43,7 @@ if (! -z $tmp.zero)  exit 1
 setMinus $tmp.target $2 > $tmp.remove
 if ($?) exit 1
 
-makeDistTree  -input_tree $1/hist/tree.$3  -remove $tmp.remove  -output_tree $tmp.trees/$3.tree  -output_feature_tree $tmp.feature_tree > /dev/null
+makeDistTree  -input_tree $INTREE  -remove $tmp.remove  -output_tree $tmp.trees/$3.tree  -output_feature_tree $tmp.feature_tree > /dev/null
 if ($?) exit 1
 
 makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual | grep "Feature disagreement:"
