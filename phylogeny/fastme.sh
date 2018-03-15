@@ -4,7 +4,7 @@ if ($# != 2) then
   echo "Make a distance tree"
   echo "Output: #1.tree"
   echo "#1: Input .dm file without .dm"
-  echo "#2: Distance attribute in #1"
+  echo "#2: Dissimilarity attribute in #1"
   exit 1
 endif
 

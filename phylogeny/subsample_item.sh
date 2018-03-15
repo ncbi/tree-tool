@@ -3,7 +3,7 @@
 if ($# != 5) then
   echo "50%-subsampling evaluation of a distance tree"
   echo "#1: Input .dm file without .dm in the parent directory"
-  echo "#2: Distance attribute in #1"
+  echo "#2: Dissimilarity attribute in #1"
   echo "#3: Random number generator seed, identifier of the item"
   echo "#4: Error log directory"
   echo "#5: Tree building program with parameters #1, #2"

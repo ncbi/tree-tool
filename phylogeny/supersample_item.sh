@@ -2,7 +2,7 @@
 
 if ($# != 7) then
   echo "#1: Input .dm file without .dm in the parent directory, #1-#4.list, #1-#4.rest"
-  echo "#2: Distance attribute in #1"
+  echo "#2: Dissimilarity attribute in #1"
   echo "#3: Base sample seed"
   echo "#4: Sample seed"
   echo "#5: Sample size"

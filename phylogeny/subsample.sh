@@ -3,7 +3,7 @@
 if ($# != 4) then
   echo "Build and evaluate by subsampling a distance tree"
   echo "#1: Input .dm file without .dm"
-  echo "#2: Distance attribute in #1"
+  echo "#2: Dissimilarity attribute in #1"
   echo "#3: Tree building program with parameters #1, #2"
   echo "#4: #1.tree exists (0/1)"
   exit 1

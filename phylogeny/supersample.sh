@@ -3,7 +3,7 @@
 if ($# != 6) then
   echo "Build and evaluate by supersampling a distance tree"
   echo "#1: Input .dm file without .dm"
-  echo "#2: Distance attribute in #1"
+  echo "#2: Dissimilarity attribute in #1"
   echo "#3: Tree building program with parameters #1, #2"
   echo "#4: Base sample seed"
   echo "#5: Base sample size"

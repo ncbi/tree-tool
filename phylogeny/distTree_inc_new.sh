@@ -13,6 +13,7 @@ if ($2 <= 0)  exit 1
 if ((-e $1/objects_in_tree.sh) != (-e $1/request_closest.sh))  exit 1
 
 
+set GRID_MIN = `cat $1/grid_min`
 set QC = ""  # -qc  
 set RATE = 0.01   # PAR
 
@@ -88,11 +89,10 @@ while (1)
   echo ""
   echo "Iteration $Iter ..."
   
-  set REQ_MAX = 2000  # PAR
   set REQ = `trav -noprogress $1/search "cat %d/%f/request" | wc -l`
   echo "# Requests: $REQ[1]"
   set GRID = 1
-  if ($REQ[1] < $REQ_MAX)  set GRID = 0  
+  if ($REQ[1] < $GRID_MIN)  set GRID = 0  
 
   rm -rf $1/log/
   mkdir $1/log
@@ -176,7 +176,7 @@ trav  -noprogress  $1/outlier.add "cp /dev/null $1/outlier/%f"
 if ($?) exit 1
 rm $1/outlier.add
 
-distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req
+distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
 if ($?) exit 1
 wc -l $1/dissim.add-req
 cat $1/dissim.add-req >> $1/dissim

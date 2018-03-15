@@ -12,22 +12,23 @@ endif
 set N = `wc -l $2`
 echo "$N[1] $2"
 
+set GRID_MIN = `cat $1/grid_min`
 
-set M = 2000  # PAR
-if ($N[1] <= $M) then  # PAR
-  $1/request2dissim.sh $2 $3
+
+if ($N[1] <= $GRID_MIN) then  # PAR
+  $1/request2dissim.sh $2 $3 >& /dev/null
   if ($?) exit 1
 else
 	mkdir $1/dr
 	if ($?) exit 1
 	
-	splitList $2 $M $1/dr
+	splitList $2 $GRID_MIN $1/dr
 	if ($?) exit 1
 	
 	mkdir $1/dr.out
 	if ($?) exit 1
 	
-	trav -step 1 $1/dr "$QSUB -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f%q > /dev/null" 
+	trav -step 1 $1/dr "$QSUB -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f%q > /dev/null"
 	if ($?) exit 1
 	
 	qstat_wait.sh

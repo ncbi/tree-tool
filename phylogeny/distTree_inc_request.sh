@@ -15,7 +15,7 @@ set DIR = $1/search/$2
 set LOG = $1/log/$2
 
 
-$1/request2dissim.sh $DIR/request $DIR/dissim.add >> $LOG
+$1/request2dissim.sh $DIR/request $DIR/dissim.add >& /dev/null
 if ($?) exit 1
 if (-z $DIR/dissim.add) then
   echo "Empty $DIR/dissim.add" >> $LOG
@@ -31,4 +31,4 @@ rm $DIR/dissim.add
 if ($?) exit 1
 
 
-rm $LOG
+rm -f $LOG

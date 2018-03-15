@@ -23,7 +23,7 @@ while (1)
   echo ""
   echo "# Total objects to add: $N[1] ..."
   if ($N[1] == 0) break  
-  distTree_inc_new.sh $1 $2
+  distTree_inc_new.sh $1 $2 
   if ($?) exit 1
 end
   
