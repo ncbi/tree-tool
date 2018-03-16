@@ -19,7 +19,7 @@ struct ThisApplication : Application
   	{
   	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory), or a natural number");
   	  addPositional ("command", "Text with special symbols: \"%d\" = <items>, \"%f\" - an item, \"%n\" - sequential number, \"%q\" - double quote");
-  	  addKey ("errors", "Ignore errors and save error items into this file");
+  	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "1000");
