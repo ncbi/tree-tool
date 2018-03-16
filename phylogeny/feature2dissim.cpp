@@ -57,7 +57,7 @@ struct ThisApplication : Application
             features << featF. line;
           }
         }
-        Common_sp::sort (features);
+        features. sort ();
         features. uniq ();
         obj2features << features;
         minimize (features_min, features. size  ());
@@ -83,7 +83,7 @@ struct ThisApplication : Application
         const size_t intersection = f1. getIntersectSize (f2);
         Features f (f2);
         f << f1;
-        Common_sp::sort (f);
+        f. sort ();
         f. uniq ();
         const Prob jaccard = (Real) intersection / (Real) f. size ();
         ASSERT (isProb (jaccard));

@@ -200,7 +200,7 @@ Save clusters in " + dmSuff + "-files\
             objNeighbors << ObjNeighbors (row, n);
           }
         ASSERT (objNeighbors. size () <= ds. objs. size ());
-        Common_sp::sort (objNeighbors);
+        objNeighbors. sort ();
         Obj* mainObj = nullptr;
         for (const ObjNeighbors on : objNeighbors)
           if (mainObj)
