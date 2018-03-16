@@ -271,11 +271,6 @@ struct ThisApplication : Application
       tree->printAbsCriterion_halves ();  // skip if isDirName(dataFName) ??
       tree->setLeafAbsCriterion ();
       tree->qc ();
-
-      cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;
-        // Must be << "Average arc error"
-      cout << "Mean residual = " << tree->getMeanResidual () << endl;
-      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
     }
     
 
@@ -289,6 +284,16 @@ struct ThisApplication : Application
       }
       
 
+    if (tree->optimizable ())
+    {
+      cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;
+        // Must be << "Average arc error"
+      cout << "Mean residual = " << tree->getMeanResidual () << endl;
+      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
+    }
+    tree->qc ();
+    
+    
     chron_getBestChange.    print (cout);
     chron_tree2subgraph.    print (cout);
     chron_subgraphOptimize. print (cout); 
