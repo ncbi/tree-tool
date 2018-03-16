@@ -164,7 +164,7 @@ protected:
 	bool feature2core (size_t featureIndex) const
 	  { const bool parentCore = feature2parentCore (featureIndex);
 			const ebool c = parent2core [parentCore] [featureIndex]. core;
-		  return c == UBOOL ? parentCore /*PAR*/ : (bool) c;
+		  return c == UBOOL ? true /*parentCore*/ /*PAR*/ : (bool) c;
 	  }
 public:
 	size_t getCoreSize () const;  
