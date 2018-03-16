@@ -2,7 +2,7 @@
 
 if ($# != 1) then
   echo "#1: go"
-  echo "Time: 12 min."
+  echo "Time: 8 min."
   exit 1
 endif
 
