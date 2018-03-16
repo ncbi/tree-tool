@@ -2597,7 +2597,7 @@ protected:
       addFlag ("noprogress", "Turn off progress printout");
       addFlag ("profile", "Use chronometers to profile");
       addKey ("json", "Output file in Json format");
-      addKey ("log", "log file");
+      addKey ("log", "Error log file");
     }
     // To invoke: addKey(), addFlag(), addPositional()
   // Command-line parameters
