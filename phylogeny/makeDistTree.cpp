@@ -286,7 +286,8 @@ struct ThisApplication : Application
 
     if (tree->optimizable ())
     {
-      cout << "Relative epsilon2_0 = " << sqrt (tree->setErrorDensities () / tree->dissim2_sum) * 100 << " %" << endl;
+    	const Real dissim_var = tree->setErrorDensities ();
+      cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->dissim2_sum) * 100 << " %" << endl;
         // Must be << "Average arc error"
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
