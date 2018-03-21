@@ -868,7 +868,7 @@ public:
 	  // Time: O(|path|)
   void printAbsCriterion_halves () const;
   void setLeafAbsCriterion ();
-    // Output: Leaf::absCriterion
+    // Output: Leaf::{absCriterion,absCriterion_ave}
     // Time: O(p)
 	  
   // Optimization	  
