@@ -100,7 +100,7 @@ Save clusters in " + dmSuff + "-files\
   	  addPositional ("attrName", "Attribute name of a distance in the <file>");
   	  addKey ("clustering_dir", "If specified then save the data of each non-singleton cluster in this directory");
   	  addFlag("max_cliques", "Clusters must be maximal cliques");
-  	  addKey ("fraction_min", "Min. (d_xy - (d_xz + d_zy)) / d_xy to report", "0.1");
+  	  addKey ("fraction_min", "Min. (d_xy - (d_xz + d_zy)) / d_xy to report; 1 - no reportng", "0.1");
   	  addKey ("distance_max", "Max. distance to merge into the same cluster; 0 - infinity", "0");
   	  addKey ("objName", "Object name to print violations for");
   	}
