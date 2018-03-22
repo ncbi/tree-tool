@@ -2221,7 +2221,7 @@ size_t DistTree::setDiscernible ()
     FFOR (size_t, row, dissimDs->objs. size ())
       if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
         FOR (size_t, col, row)  // dissimAttr is symmetric
-          if (! positive (dissimAttr->get (row, col)))
+          if (dissimAttr->get (row, col) <= 0)  // => !isNan()
             if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
               const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
     // cluster2leaves
@@ -2476,9 +2476,9 @@ void DistTree::neighborJoin ()
         const LeafPair leafPair (leaf1, leaf2, dissimAttr->get (row, col));
         if (leafPair. same ())
           continue;
-        if (! positive (leafPair. dissim))
-          throw runtime_error ("No distance for " + leaf1->name + " - " + leaf2->name);
-	      if (leafPair. dissim == INF)
+        if (leafPair. dissim < 0)
+          throw runtime_error ("negative distance for " + leaf1->name + " - " + leaf2->name);
+	      if (leafPair. dissim == INF || isNan (leafPair. dissim))
 	      {
 	      //throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
 	        missing++;
@@ -2757,7 +2757,8 @@ bool DistTree::addDissim (const string &name1,
     //|| ! DM_sp::finite (dissim)  // For getSparseLeafPairs()
      )
   {
-    cout << name1 << " - " << name2 << ": " << dissim << endl;
+  	if (verbose ())
+      cout << name1 << " - " << name2 << ": " << dissim << endl;
     return false;  
   }
   
