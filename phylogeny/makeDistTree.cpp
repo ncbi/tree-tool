@@ -47,6 +47,7 @@ struct ThisApplication : Application
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
+	  addFlag ("subgraph_fast", "Limit the number of iterations over the whole tree for subgraph optimizations");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("skip_topology", "Skip topology optimization");
@@ -82,6 +83,7 @@ struct ThisApplication : Application
 		      
 		const bool   optimize            = getFlag ("optimize");
 		const bool   whole               = getFlag ("whole");
+		const bool   subgraph_fast       = getFlag ("subgraph_fast");
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
 		const bool   skip_topology       = getFlag ("skip_topology");
@@ -116,9 +118,11 @@ struct ThisApplication : Application
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
     IMPLY (whole,         optimize);
+    IMPLY (subgraph_fast, optimize);
     IMPLY (skip_len,      optimize);
     IMPLY (reinsert,      optimize);
     IMPLY (skip_topology, optimize);
+    IMPLY (subgraph_fast, ! whole);
     IMPLY (new_only, ! optimize);
 
 
@@ -216,12 +220,23 @@ struct ThisApplication : Application
               tree->optimizeWholeIter (0, output_tree);
             else
             {
-            	// stop if absCriterion has no improvement ??
-            	const size_t iter_max = (size_t) log2 ((Real) leaves) / areaRadius_std + 1;  // PAR
-            	FOR (size_t, iter, iter_max)
+              const size_t iter_max = (size_t) log2 ((Real) leaves) / areaRadius_std + 1;  // PAR
+              size_t iter = 0;
+            	for (;;)
             	{
-            		cout << "Iteration " << iter + 1 << '/' << iter_max << " ..." << endl;
+	              iter++;
+            		if (subgraph_fast)
+            		{
+            			if (iter > iter_max)
+            			  break;
+            	    cout << "Iteration " << iter << '/' << iter_max << " ..." << endl;
+            	  }
+            		const Real absCriterion_old = tree->absCriterion;
 	              tree->optimizeSubgraphs (areaRadius_std);  
+	              if (tree->absCriterion == 0)
+	              	break;
+	              if ((absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-6)  // PAR
+	              	break;
 	            }
             }
             tree->reportErrors (cout);

@@ -146,7 +146,7 @@ rm $1/dissim.add
 # Time: O(n log^2(n)) 
 # -profile
 makeDistTree $QC  -data $1/ \
-  -optimize  -skip_len \
+  -optimize  -skip_len  -subgraph_fast \
   -reroot  -root_topological \
   -remove_outliers $1/outlier.add \
   -output_tree $1/tree.new \
