@@ -401,7 +401,8 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
   ASSERT (beta_init. defined ());
   IMPLY (betaNonNegative, ! negative (beta. min ()));
   
-  absCriterion = NAN;
+  setAbsCriterion ();
+  const Real absCriterion_old = absCriterion;
   
   if (beta. size () /*p*/ <= 2 * maxIter)  
   {
@@ -423,21 +424,16 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
     if (verbose ())
       cout << "Alternate optimization ..." << endl;
     beta = beta_init;
-  #if 0
-    // Use corrected beta after solveUnconstrained() ??
-    setAbsCriterion ();
-    const Real absCriterion_old = absCriterion;
-  #endif
     solved = solveUnconstrainedAlternate (predictionAttr, betaNonNegative, maxIter, errorRelDiff);  // Time = O(maxIter * p * n)
-  #if 0
-    if (absCriterion > absCriterion_old)
-    {
-      beta = beta_init;
-      solved = solveUnconstrainedAlternate (predictionAttr, betaNonNegative, maxIter, errorRelDiff);  // Time = O(maxIter * p * n)
-    }
-  #endif
   }
   
+  if (! solved || absCriterion > absCriterion_old)
+  {
+    beta = beta_init;
+    absCriterion = NAN;
+    solved = false;
+  }
+
   return solved;
 }
 

@@ -3623,10 +3623,6 @@ size_t DistTree::optimizeLenNode ()
   if (verbose (1))
     cout << "Optimizing arc lengths at each node ..." << endl;
 
-#ifndef NDENUG
-  const Real absCriterion_old1 = absCriterion;
-#endif
-
   Vector<Star> stars;  stars. reserve (2 * name2leaf. size ());
   for (const DiGraph::Node* node : nodes)
   {
@@ -3642,6 +3638,9 @@ size_t DistTree::optimizeLenNode ()
 
 
   Progress prog ((uint) stars. size ());  
+#ifndef NDEBUG
+  const Real absCriterion_old1 = absCriterion;
+#endif
   for (const Star& star : stars)
   {
     const VectorPtr<DiGraph::Node>& arcNodes = star. arcNodes;
@@ -3701,7 +3700,9 @@ size_t DistTree::optimizeLenNode ()
     {
       FFOR (size_t, attrNum, arcNodes. size ())
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
+      const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
+      ASSERT (leReal (absCriterion, absCriterion_old));
       prog (absCriterion2str ()); 
     }
   }
@@ -3710,12 +3711,13 @@ size_t DistTree::optimizeLenNode ()
 #ifndef NDEBUG
   if (verbose ())
   {
-    ONumber on (cout, criterionDecimals, false);
+    const ONumber on (cout, criterionDecimals, false);
     cout << absCriterion_old1 << " -> " << absCriterion << endl;
   }
   if (! leReal (absCriterion, absCriterion_old1))
   {
-  	cout << absCriterion << ' ' << absCriterion_old1 << endl;
+    const ONumber on (cout, 6, true);
+  	cout << absCriterion_old1 << ' ' << absCriterion << endl;
   	ERROR;
   }
 #endif
