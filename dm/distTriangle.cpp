@@ -281,7 +281,7 @@ Save clusters in " + dmSuff + "-files\
               continue;
             const Prob fraction = DM_sp::finite (d) ? deviation / d : 1;
             ASSERT (! isNan (fraction));
-            if (fraction < fraction_min)
+            if (fraction < fraction_min || fraction_min == 1)
               continue;
             const Violation violation (x, y, z);
             violations << violation;
@@ -312,11 +312,11 @@ Save clusters in " + dmSuff + "-files\
         {
           endViolations.    setAll (0);
           middleViolations. setAll (0);
-          CONST_ITER (List<Violation>, it, violations)
+          for (Violation& v : violations)
           {
-            endViolations    [it->x] ++;
-            endViolations    [it->y] ++;
-            middleViolations [it->z] ++;
+            endViolations    [v. x] ++;
+            endViolations    [v. y] ++;
+            middleViolations [v. z] ++;
           }
           size_t a = 0;
           FOR (size_t, i, endViolations. size ())
