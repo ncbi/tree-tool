@@ -2232,6 +2232,9 @@ size_t DistTree::setDiscernible ()
         cluster2leaves [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
    	}
   }
+  
+  if (cluster2leaves. size () == 1)
+  	throw runtime_error ("No discernible objects");
  
   size_t n = 0;   
   for (const auto it : cluster2leaves)
@@ -3710,7 +3713,11 @@ size_t DistTree::optimizeLenNode ()
     ONumber on (cout, criterionDecimals, false);
     cout << absCriterion_old1 << " -> " << absCriterion << endl;
   }
-  ASSERT (leReal (absCriterion, absCriterion_old1));
+  if (! leReal (absCriterion, absCriterion_old1))
+  {
+  	cout << absCriterion << ' ' << absCriterion_old1 << endl;
+  	ERROR;
+  }
 #endif
 
   return finishChanges ();
