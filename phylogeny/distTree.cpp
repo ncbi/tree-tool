@@ -2477,7 +2477,7 @@ void DistTree::neighborJoin ()
         if (leafPair. same ())
           continue;
         if (leafPair. dissim < 0)
-          throw runtime_error ("negative distance for " + leaf1->name + " - " + leaf2->name);
+          throw runtime_error ("Negative distance for " + leaf1->name + " - " + leaf2->name);
 	      if (leafPair. dissim == INF || isNan (leafPair. dissim))
 	      {
 	      //throw runtime_error ("Infinite distance for " + dissim. leaf1->name + " - " + dissim. leaf2->name);
