@@ -28,6 +28,7 @@ all:	\
 	newick2tree \
 	printDistTree \
   sampleReport \
+  sim2dissim \
 	tree2clusters \
 	tree2dist
 	
@@ -140,6 +141,12 @@ sampleReportOBJS=sampleReport.o $(CPP_DIR)/common.o
 # $(DISTTREE_OBJ)
 sampleReport:	$(sampleReportOBJS)
 	$(CXX) -o $@ $(sampleReportOBJS) $(LIBS)
+	$(ECHO)
+
+sim2dissim.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp
+sim2dissimOBJS=sim2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
+sim2dissim:	$(sim2dissimOBJS)
+	$(CXX) -o $@ $(sim2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 tree2clusters.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
