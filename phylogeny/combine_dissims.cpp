@@ -131,6 +131,7 @@ Line format: <unit> <max>");
 	    Real weight_sum = 0;
 	  #else
 	    Real dissim = NAN;
+	  //Real dissim_max_prev = 0;
 	  #endif
   	  FFOR (size_t, j, scales. size ())
       {
@@ -142,18 +143,20 @@ Line format: <unit> <max>");
         ASSERT (objPairs [k]. name2 == objPairs [i]. name2);
         const Real raw = objPairs [k]. dissim;
   	  #ifdef WEIGHT
-        const Real 
-      #endif
-          dissim = scales [j]. raw2dissim (raw);
-      #ifdef WEIGHT
+        const Real dissim = scales [j]. raw2dissim (raw);
         if (isNan (dissim))
         	continue;
         ASSERT (dissim >= 0);
         dissim_sum += scales [j]. weight * dissim;
         weight_sum += scales [j]. weight;
       #else
+        dissim = scales [j]. raw2dissim (raw);
         if (! isNan (dissim))
+        {
+        //maximize (dissim, dissim_max_prev);
           break;
+        }
+      //dissim_max_prev = scales [j]. dissim_max ();
       #endif
       }
       cout         << objPairs [i]. name1 
