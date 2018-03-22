@@ -11,10 +11,10 @@ namespace DistTree_sp
 {
 
 
-Real intersection2dissim (size_t size1,
-                          size_t size2,
-                          size_t intersection,
-                          size_t intersection_min,
+Real intersection2dissim (Real size1,
+                          Real size2,
+                          Real intersection,
+                          Real intersection_min,
 	                        Prob sizes_ratio_min,
 	                        bool ave_arithP)
 {
@@ -29,8 +29,8 @@ Real intersection2dissim (size_t size1,
          << '\t' << size2 
          << endl;
          
-  if (  (Real) min (size1, size2) 
-  	  / (Real) max (size1, size2)
+  if (  min (size1, size2) 
+  	  / max (size1, size2)
   	    < sizes_ratio_min
   	 )
   	return NAN;
@@ -38,8 +38,8 @@ Real intersection2dissim (size_t size1,
   if (intersection < intersection_min)
   	return NAN;
   	
-  const Real dissim1 = log ((Real) size1 / (Real) intersection);
-  const Real dissim2 = log ((Real) size2 / (Real) intersection);
+  const Real dissim1 = log (size1 / intersection);
+  const Real dissim2 = log (size2 / intersection);
   ASSERT (dissim1 >= 0);
   ASSERT (dissim2 >= 0);
   
