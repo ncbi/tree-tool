@@ -1021,6 +1021,9 @@ public:
     // Output: DisjointCluster::<Leaf>
   VectorPtr<DTNode> findDepthClusters (size_t clusters_min) const;
     // Return: connected subgraph including root
+  void findSpecies (Real species_dist_max);
+    // Output: DTNode::DisjointCluster
+    // Print speices under species
 
   // Statistics
 #if 0

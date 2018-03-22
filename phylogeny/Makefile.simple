@@ -30,7 +30,8 @@ all:	\
   sampleReport \
   sim2dissim \
 	tree2clusters \
-	tree2dist
+	tree2dist \
+	tree2species
 	
 
 attr2_2paup.o:  $(DM_HPP) 
@@ -159,5 +160,11 @@ tree2dist.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
 tree2distOBJS=tree2dist.o $(DISTTREE_OBJ)
 tree2dist:	$(tree2distOBJS)
 	$(CXX) -o $@ $(tree2distOBJS) $(LIBS)
+	$(ECHO)
+
+tree2species.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
+tree2speciesOBJS=tree2species.o $(DISTTREE_OBJ)
+tree2species:	$(tree2speciesOBJS)
+	$(CXX) -o $@ $(tree2speciesOBJS) $(LIBS)
 	$(ECHO)
 

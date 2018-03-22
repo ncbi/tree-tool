@@ -5191,6 +5191,50 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
 
 
 
+void DistTree::findSpecies (Real species_dist_max) 
+{
+  ASSERT (species_dist_max > 0);
+  ASSERT (species_dist_max < INF);
+
+  // DTNode::DisjointCluster
+  VectorPtr<Leaf> leaves;  leaves. reserve (nodes. size ());
+ 	for (DiGraph::Node* node : nodes)
+ 	{
+ 	  DTNode* dtNode = const_static_cast <DTNode*> (node);
+    dtNode->DisjointCluster::init ();
+ 	  if (const Leaf* leaf = dtNode->asLeaf ())
+ 	    leaves << leaf;
+ 	}
+  FFOR (size_t, row, leaves. size ())
+    FOR (size_t, col, row)  
+    {
+    	const TreeNode* lca = nullptr;
+    	const VectorPtr<TreeNode> path (getPath (leaves [row], leaves [col], nullptr, lca));
+      ASSERT (lca);
+    	const Real dist = path2prediction (path);
+    	if (leReal (dist, species_dist_max))
+    		for (const TreeNode* node : path)
+          const_cast <TreeNode*> (lca) -> DisjointCluster::merge (* const_cast <TreeNode*> (node));
+    }
+  
+  map <const DisjointCluster*, size_t> clusters;
+ 	for (DiGraph::Node* node : nodes)
+ 		clusters [node->DisjointCluster::getDisjointCluster ()] ++;
+  
+ 	for (DiGraph::Node* node_ : nodes)
+ 	{
+ 		TreeNode* node = const_static_cast <TreeNode*> (node_);
+ 		if (TreeNode* parent = const_cast <TreeNode*> (node->getParent ()))
+ 			if (   clusters [parent->DisjointCluster::getDisjointCluster ()] > 1
+ 				  &&    node   -> DisjointCluster::getDisjointCluster () 
+ 				     != parent -> DisjointCluster::getDisjointCluster ()
+ 				 )
+ 				cout << node->getLcaName () << " - " << parent->getLcaName () << endl;
+  }
+}
+
+
+
 #if 0
 RealAttr1* DistTree::getResiduals2 () 
 {
