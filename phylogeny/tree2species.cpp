@@ -18,11 +18,11 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Find species in a distance tree. Print species under species")
-	{
-	  addPositional ("input_tree", "Tree file");
-	  addPositional ("species_dist", "Max. distance between objects of the same species");
-	}
+		: Application ("Find species in a distance tree. Print species under species")
+		{
+		  addPositional ("input_tree", "Tree file");
+		  addPositional ("species_dist", "Max. distance between objects of the same species");
+		}
 
 
 
