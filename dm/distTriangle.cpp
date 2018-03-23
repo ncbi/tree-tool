@@ -96,13 +96,15 @@ Remove distance outliers by the triangle inequality analysis.\n\
 Save clusters in " + dmSuff + "-files\
 ")
   	{
+  		// Input
   	  addPositional ("file", dmSuff + "-file without the extension");
   	  addPositional ("attrName", "Attribute name of a distance in the <file>");
-  	  addKey ("clustering_dir", "If specified then save the data of each non-singleton cluster in this directory");
   	  addFlag("max_cliques", "Clusters must be maximal cliques");
   	  addKey ("fraction_min", "Min. (d_xy - (d_xz + d_zy)) / d_xy to report; 1 - no reportng", "0.1");
   	  addKey ("distance_max", "Max. distance to merge into the same cluster; 0 - infinity", "0");
   	  addKey ("objName", "Object name to print violations for");
+  	  // Output
+  	  addKey ("clustering_dir", "If specified then save the data of each non-singleton cluster in this directory");
   	}
 
 
@@ -145,16 +147,24 @@ Save clusters in " + dmSuff + "-files\
    	  size_t row, col;
   	  if (dist->matr. existsMissing (false, row, col))
       {
-        cout << dist->name << "[" << row + 1 << "] [" << col + 1 << "] is missing" << endl;
+      #if 0
+      	const_cast <Matrix&> (dist->matr). put (false, row, col, INF);
+      #else
+        cout << dist->name << " [" << row + 1 << "] [" << col + 1 << "] is missing" << endl;
         exit (1);
+      #endif
       }
     }
 	  {
   	  size_t row;
       if (! dist->matr. zeroDiagonal (row))
       {
-       	cout << dist->name << "[" << row + 1 << "] [" << row + 1 << "] != 0" << endl;
+      #if 0
+      	const_cast <Matrix&> (dist->matr). put (false, row, row, 0);
+      #else
+       	cout << dist->name << " [" << row + 1 << "] [" << row + 1 << "] = " << dist->matr. get (false, row, row) << " != 0" << endl;
        	exit (1);
+      #endif
       }
     }
     
