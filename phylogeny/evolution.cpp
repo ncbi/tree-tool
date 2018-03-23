@@ -18,6 +18,8 @@ Real intersection2dissim (Real size1,
 	                        Prob sizes_ratio_min,
 	                        bool ave_arithP)
 {
+	ASSERT (size1 >= 0);
+	ASSERT (size2 >= 0);
   ASSERT (intersection <= size1);
   ASSERT (intersection <= size2);
   ASSERT (isProb (sizes_ratio_min));
@@ -29,6 +31,9 @@ Real intersection2dissim (Real size1,
          << '\t' << size2 
          << endl;
          
+  if (nullReal (max (size1, size2)))
+  	return NAN;
+
   if (  min (size1, size2) 
   	  / max (size1, size2)
   	    < sizes_ratio_min
