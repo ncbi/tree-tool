@@ -91,9 +91,11 @@ Hashes::Hashes (const string &fName)
 
 // DissimAverage::DissimAttr
 
-DissimAverage::DissimAttr::DissimAttr (const PositiveAttr1* attr_arg,
+DissimAverage::DissimAttr::DissimAttr (const DissimAverage &da_arg,
+		                                   const PositiveAttr1* attr_arg,
 		                                   Real center_arg)
 : Named (attr_arg->name)
+, da (da_arg)
 , attr (attr_arg)
 , center (center_arg)
 { 
@@ -103,8 +105,10 @@ DissimAverage::DissimAttr::DissimAttr (const PositiveAttr1* attr_arg,
 
 
 
-DissimAverage::DissimAttr::DissimAttr (const string &line,
+DissimAverage::DissimAttr::DissimAttr (const DissimAverage &da_arg,
+		                                   const string &line,
 		                                   bool loadStat)
+: da (da_arg)
 {
 	// Cf. saveText()
 	istringstream iss (line);
@@ -145,12 +149,9 @@ void DissimAverage::DissimAttr::setOutlier (Real value_target) const
 
 
 
-void DissimAverage::DissimAttr::setValue (Real power,
-	                                        size_t objNum)
+void DissimAverage::DissimAttr::setValue (Real value_arg)
 {
-	ASSERT (power > 0);
-	ASSERT (attr);
-	value = pow ((*attr) [objNum] / center, power);
+	value = pow (value_arg / center, da. power);
 }
 
 
@@ -164,9 +165,9 @@ void DissimAverage::DissimAttr::setVar (const PositiveAttr1& averageAttr)
 	Real mult_sum = 0;
 	FFOR (size_t, i, attr->ds. objs. size ())
 	{
-		const Real x = (*attr)     [i];
+	  setValue (i);
 		const Real y = averageAttr [i];
-		if (! goodValue (x))
+		if (! goodValue (value))
 			continue;
 		if (! goodValue (y))
 			continue;
@@ -174,7 +175,7 @@ void DissimAverage::DissimAttr::setVar (const PositiveAttr1& averageAttr)
 		ASSERT (weight >= 0);
 		if (weight != INF)
 		{
-			var      += weight * sqr (x - y);  
+			var      += weight * sqr (value - y);  
 			mult_sum += weight;  
 		}
 	}
@@ -199,9 +200,9 @@ DissimAverage::DissimAverage (Real power_arg,
 	while (f. nextLine ())
 	  if (! f. line. empty ())
 		{ 
-			const DissimAttr attr (f. line, loadStat);
-			attr. qc ();
-		  attrs << attr;
+			const DissimAttr dissimAttr (*this, f. line, loadStat);
+			dissimAttr. qc ();
+		  dissimAttrs << dissimAttr;
 		}
 }    
 
@@ -214,7 +215,7 @@ void DissimAverage::qc () const
   ASSERT (power > 0);
 	
 	const Dataset* ds = nullptr;
-	for (const DissimAttr& dissimAttr : attrs)
+	for (const DissimAttr& dissimAttr : dissimAttrs)
 	{
 		dissimAttr. qc ();
 	  if (ds)
@@ -228,10 +229,10 @@ void DissimAverage::qc () const
 
 Real DissimAverage::get () const
 {
-	ASSERT (! attrs. empty ());
+	ASSERT (! dissimAttrs. empty ());
 
-  for (const DissimAttr& attr : attrs)
-   	attr. outlier = false;
+  for (const DissimAttr& dissimAttr : dissimAttrs)
+   	dissimAttr. outlier = false;
 
 	Real ave = NAN;
 	for (;;)
@@ -240,18 +241,18 @@ Real DissimAverage::get () const
 		
     Real sum = 0;
     Real weights = 0;
-    for (const DissimAttr& attr : attrs)
-    	if (   DissimAttr::goodValue (attr. value)
-    		  && ! attr. outlier
-    		  && ! attr. bad ()
+    for (const DissimAttr& dissimAttr : dissimAttrs)
+    	if (   DissimAttr::goodValue (dissimAttr. value)
+    		  && ! dissimAttr. outlier
+    		  && ! dissimAttr. bad ()
     		 )
     	{
-    		ASSERT (attr. value >= 0);
-    		const Real weight = attr. getWeight ();
+    		ASSERT (dissimAttr. value >= 0);
+    		const Real weight = dissimAttr. getWeight ();
     		ASSERT (weight >= 0);
     		if (weight != INF)
     		{
-	    		sum     += weight * attr. value;
+	    		sum     += weight * dissimAttr. value;
 	    		weights += weight;
 	    	}
     	}  		
@@ -261,10 +262,10 @@ Real DissimAverage::get () const
     if (isNan (ave) || abs (ave - ave_prev) < 1e-6)  // PAR
     	break;
     
-    for (const DissimAttr& attr : attrs)
+    for (const DissimAttr& dissimAttr : dissimAttrs)
     {
-    	attr. setOutlier (ave);
-  	//cout << attr. ave << '\t' << attr. getSD () << '\t' << attr. outlier << endl;
+    	dissimAttr. setOutlier (ave);
+  	//cout << dissimAttr. ave << '\t' << dissimAttr. getSD () << '\t' << dissimAttr. outlier << endl;
     }
   }
   
@@ -275,11 +276,11 @@ Real DissimAverage::get () const
 
 void DissimAverage::calibrate (PositiveAttr1& averageAttr)
 {
-  for (DissimAttr& attr : attrs)
+  for (DissimAttr& dissimAttr : dissimAttrs)
   {
-  	attr. var = 0.1;  
-  	ASSERT (! attr. bad ());
-  	attr. outlierMV. clear ();
+  	dissimAttr. var = 0.1;  
+  	ASSERT (! dissimAttr. bad ());
+  	dissimAttr. outlierMV. clear ();
   }
 
   Progress prog;
@@ -290,11 +291,11 @@ void DissimAverage::calibrate (PositiveAttr1& averageAttr)
   	{
   		setValues (i);
   		averageAttr [i] = get ();
-		  for (DissimAttr& attr : attrs)
-		  	if (   ! attr. bad ()
-		  		  && DissimAttr::goodValue (attr. value)
+		  for (DissimAttr& dissimAttr : dissimAttrs)
+		  	if (   ! dissimAttr. bad ()
+		  		  && DissimAttr::goodValue (dissimAttr. value)
 		  		 )
-		  		attr. outlierMV. add (attr. outlier);
+		  		dissimAttr. outlierMV. add (dissimAttr. outlier);
   	}  	
 
     const MVector vars_old (getVars ());
@@ -313,9 +314,9 @@ void DissimAverage::calibrate (PositiveAttr1& averageAttr)
 
 MVector DissimAverage::getVars () const
 { 
-	MVector vars (attrs. size ());
-	FFOR (size_t, i, attrs. size ())
-	  vars [i] = attrs [i]. var;
+	MVector vars (dissimAttrs. size ());
+	FFOR (size_t, i, dissimAttrs. size ())
+	  vars [i] = dissimAttrs [i]. var;
 	return vars;
 }
 

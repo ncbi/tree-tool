@@ -42,7 +42,7 @@ struct ThisApplication : Application
     ds. qc ();
     
 
-	  DissimAverage dissimAve (power);  dissimAve. attrs. reserve (ds. attrs. size ());
+	  DissimAverage dissimAve (power);  dissimAve. dissimAttrs. reserve (ds. attrs. size ());
 	  for (const Attr* attr_ : ds. attrs)
 	  {
 	  	const PositiveAttr1* attr = attr_->asPositiveAttr1 (); 
@@ -59,7 +59,7 @@ struct ThisApplication : Application
 	  #else
 	    const Real center = attr->getMedian (sm);
 	  #endif
-	  	dissimAve. attrs << DissimAverage::DissimAttr (attr, center);
+	  	dissimAve. dissimAttrs << DissimAverage::DissimAttr (dissimAve, attr, center);
 	  }
 	  ds. qc ();
     dissimAve. qc ();

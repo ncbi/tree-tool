@@ -49,6 +49,7 @@ struct DissimAverage : Root
 	
 	struct DissimAttr : Named
 	{
+		const DissimAverage& da;
 		const PositiveAttr1* attr {nullptr};
 
 		Real center {NAN};
@@ -63,9 +64,11 @@ struct DissimAverage : Root
 		  // outlier's statistic
 		
 
-		DissimAttr (const PositiveAttr1* attr_arg,
+		DissimAttr (const DissimAverage &da_arg,
+		            const PositiveAttr1* attr_arg,
 		            Real center_arg);
-		DissimAttr (const string &line,
+		DissimAttr (const DissimAverage &da_arg,
+		            const string &line,
 		            bool loadStat);
 		void qc () const override;
 		void saveText (ostream &os) const override
@@ -86,15 +89,18 @@ struct DissimAverage : Root
 		Real getWeight () const
 		  { return 1 / var; }
 		  // Assumption: DissimAttr's are independent, which allows re-weighting of DissimAttr's if some value's are missing
+		void setValue (Real value_arg);
+	    // Output: value
+	private:
+		friend struct DissimAverage;
 		void setOutlier (Real value_target) const;
 	    // Output: outlier
-    void setValue (Real power,
-                   size_t objNum);
-	    // Output: value
+    void setValue (size_t objNum)
+			{ setValue ((* checkPtr<const PositiveAttr1> (attr)) [objNum]); }
     void setVar (const PositiveAttr1& averageAttr);
       // Output: var
 	};
-	Vector<DissimAttr> attrs;
+	Vector<DissimAttr> dissimAttrs;
 	
 	
 	explicit DissimAverage (Real power_arg)
@@ -105,7 +111,7 @@ struct DissimAverage : Root
 	               bool loadStat);
   void qc () const override;
 	void saveText (ostream &os) const override
-    { for (const DissimAttr& dissimAttr : attrs)
+    { for (const DissimAttr& dissimAttr : dissimAttrs)
     	  if (! dissimAttr. bad ())
 		      dissimAttr. saveText (os);
 		}
@@ -117,7 +123,7 @@ struct DissimAverage : Root
     // Output: (averageAttr)[], DissimAttr::{var,outlierMV}
   Real getVar () const
     { Real var = 0;
-    	for (const DissimAttr& dissimAttr : attrs)
+    	for (const DissimAttr& dissimAttr : dissimAttrs)
     		if (! dissimAttr. bad ())
     		  var += dissimAttr. getWeight ();
     	return 1 / var;
@@ -125,12 +131,12 @@ struct DissimAverage : Root
 private:
 	MVector getVars () const;
   void setValues (size_t objNum)
-    { for (DissimAttr& dissimAttr : attrs)
-		    dissimAttr. setValue (power, objNum);
+    { for (DissimAttr& dissimAttr : dissimAttrs)
+		    dissimAttr. setValue (objNum);
 		}
   Real setVars (const PositiveAttr1& averageAttr)
     { MeanVar mv;
-    	for (DissimAttr& dissimAttr : attrs)
+    	for (DissimAttr& dissimAttr : dissimAttrs)
     	{ dissimAttr. setVar (averageAttr);
 		    if (! dissimAttr. bad ())
 		    	mv << dissimAttr. getSD ();
