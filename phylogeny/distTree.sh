@@ -11,13 +11,14 @@ endif
 
 # PAR
 set mds      = 0  # 1
-set variance = linExp 
+set variance = linExp # lin
 set sparse   = ""  # -sparse  
 set whole    = ""  # -whole  
 
 
 set input_tree = ""
 if ($mds) then
+  echo "mdsTree.sh ..."
   mdsTree.sh $1 $2 2 >& /dev/null
   if ($?) exit 1
   set input_tree = "-input_tree $1.dir/"
