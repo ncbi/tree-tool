@@ -20,7 +20,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Analyze proportional homoscedastic dissimilarities: centralize to 1, find variances")
+    : Application ("Analyze proportional homoscedastic dissimilarities: centralize to 1, find variances. Print dissimilarity attributes statistics")
     {
       // Input
   	  addPositional ("file", dmSuff + "-file without \"" + dmSuff + "\"");
