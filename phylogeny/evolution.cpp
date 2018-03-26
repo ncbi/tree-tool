@@ -145,10 +145,12 @@ void DissimAverage::DissimAttr::setOutlier (Real value_target) const
 
 
 
-void DissimAverage::DissimAttr::setValue (size_t objNum)
+void DissimAverage::DissimAttr::setValue (Real power,
+	                                        size_t objNum)
 {
+	ASSERT (power > 0);
 	ASSERT (attr);
-	value = (*attr) [objNum] / center;
+	value = pow ((*attr) [objNum] / center, power);
 }
 
 
@@ -188,8 +190,10 @@ void DissimAverage::DissimAttr::setVar (const PositiveAttr1& averageAttr)
 
 // DissimAverage
 
-DissimAverage::DissimAverage (const string &fName,
+DissimAverage::DissimAverage (Real power_arg,
+	                            const string &fName,
                               bool loadStat)
+: power (power_arg)
 { 
 	LineInput f (fName);
 	while (f. nextLine ())
@@ -206,6 +210,8 @@ void DissimAverage::qc () const
 {
 	if (! qc_on)
 		return;
+
+  ASSERT (power > 0);
 	
 	const Dataset* ds = nullptr;
 	for (const DissimAttr& dissimAttr : attrs)

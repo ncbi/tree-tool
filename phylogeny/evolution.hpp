@@ -44,6 +44,9 @@ struct Hashes : Vector<size_t>
 // --> dataset.hpp ??
 struct DissimAverage : Root
 {
+	Real power {NAN};
+	
+	
 	struct DissimAttr : Named
 	{
 		const PositiveAttr1* attr {nullptr};
@@ -85,7 +88,8 @@ struct DissimAverage : Root
 		  // Assumption: DissimAttr's are independent, which allows re-weighting of DissimAttr's if some value's are missing
 		void setOutlier (Real value_target) const;
 	    // Output: outlier
-    void setValue (size_t objNum);
+    void setValue (Real power,
+                   size_t objNum);
 	    // Output: value
     void setVar (const PositiveAttr1& averageAttr);
       // Output: var
@@ -93,9 +97,11 @@ struct DissimAverage : Root
 	Vector<DissimAttr> attrs;
 	
 	
-	DissimAverage ()
+	explicit DissimAverage (Real power_arg)
+	  : power (power_arg)
 	  {}
-	DissimAverage (const string &fName,
+	DissimAverage (Real power_arg,
+	               const string &fName,
 	               bool loadStat);
   void qc () const override;
 	void saveText (ostream &os) const override
@@ -120,7 +126,7 @@ private:
 	MVector getVars () const;
   void setValues (size_t objNum)
     { for (DissimAttr& dissimAttr : attrs)
-		    dissimAttr. setValue (objNum);
+		    dissimAttr. setValue (power, objNum);
 		}
   Real setVars (const PositiveAttr1& averageAttr)
     { MeanVar mv;

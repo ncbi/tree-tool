@@ -24,6 +24,7 @@ struct ThisApplication : Application
     {
       // Input
   	  addPositional ("file", dmSuff + "-file without \"" + dmSuff + "\"");
+  	  addPositional ("power", "Power for raw dissimilarities to be raised to");
   	  // Output
   	  addKey ("output_dissim", "Output merged dissimilarity");
   	}
@@ -33,6 +34,7 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string inFName            = getArg ("file");
+		const Real power                = str2real (getArg ("power"));
 		const string output_dissimFName = getArg ("output_dissim");
 
 
@@ -40,7 +42,7 @@ struct ThisApplication : Application
     ds. qc ();
     
 
-	  DissimAverage dissimAve;  dissimAve. attrs. reserve (ds. attrs. size ());
+	  DissimAverage dissimAve (power);  dissimAve. attrs. reserve (ds. attrs. size ());
 	  for (const Attr* attr_ : ds. attrs)
 	  {
 	  	const PositiveAttr1* attr = attr_->asPositiveAttr1 (); 
@@ -69,7 +71,7 @@ struct ThisApplication : Application
 	 	
 	 	if (! output_dissimFName. empty ())
 	 	{
-	 		OFStream f (output_dissimFName);
+	 		OFStream f (output_dissimFName + dmSuff);
 	 		const Sample sm (ds);
 	 	  sm. save (VectorPtr<Attr> {averageAttr}, f);
 	 	}
