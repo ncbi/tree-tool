@@ -24,8 +24,12 @@ endif
 
 $1/request_closest.sh $2 > $DIR/request
 if ($?) exit 1
-if (-z $DIR/request)  exit 1
-
-cp /dev/null $DIR/dissim
-if ($?) exit 1
-
+if (-z $DIR/request) then
+  cp /dev/null $1/outlier/$2
+	if ($?) exit 1
+  rm -r $1/search/$2/
+	if ($?) exit 1
+else
+	cp /dev/null $DIR/dissim
+	if ($?) exit 1
+endif
