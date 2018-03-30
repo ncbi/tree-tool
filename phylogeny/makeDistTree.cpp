@@ -40,6 +40,7 @@ struct ThisApplication : Application
 	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>");
 	  
 	  // Processing
 	  addKey ("remove", "Remove leaves whose names are in the indicated file");
@@ -66,7 +67,8 @@ struct ThisApplication : Application
 	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
-	  addKey ("dissim_request", "File with requests to compute dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addKey ("dissim_request", "File with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addKey ("output_dist", "File with tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
 	}
 	
 	
@@ -77,6 +79,7 @@ struct ThisApplication : Application
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
+		const string dist_request        = getArg ("dist_request");
 	               
 		const string removeFName         = getArg ("remove");
 		      bool   sparse              = getFlag ("sparse");
@@ -101,6 +104,7 @@ struct ThisApplication : Application
 		const string arc_length_stat     = getArg ("arc_length_stat");
 		const string output_dissim       = getArg ("output_dissim");
 		const string dissim_request      = getArg ("dissim_request");
+		const string output_dist         = getArg ("output_dist");
 		
 	  IMPLY (isDirName (input_tree), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
@@ -117,6 +121,8 @@ struct ThisApplication : Application
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
+    if (! dist_request. empty () && output_dist. empty ())
+    	throw runtime_error ("dist_request exist, but no output_dist");
     IMPLY (whole,         optimize);
     IMPLY (subgraph_fast, optimize);
     IMPLY (skip_len,      optimize);
@@ -452,6 +458,7 @@ struct ThisApplication : Application
       tree->saveDissim (f);
     }
     
+    
     if (! dissim_request. empty ())
     {
       cout << endl << "Finding missing leaf pairs ..." << endl;
@@ -501,6 +508,62 @@ struct ThisApplication : Application
           f << p. first->name << '\t' << p. second->name << endl;
       }
     }
+
+
+    Vector<Pair<const Leaf*>> distRequestPairs;  distRequestPairs. reserve (tree->dissims. size ());
+    if (! dist_request. empty ())
+    {
+    	LineInput f (dist_request);
+    	while (f. nextLine ())
+    	{
+    		istringstream iss (f. line);
+    		string name1, name2;
+    		iss >> name1 >> name2;
+        const Leaf* leaf1 = findPtr (tree->name2leaf, name1);
+        if (! leaf1)
+        	throw runtime_error ("Object " + name1 + " is not found");
+        const Leaf* leaf2 = findPtr (tree->name2leaf, name2);
+        if (! leaf2)
+        	throw runtime_error ("Object " + name2 + " is not found");
+			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
+    	}
+    }
+    
+    
+    if (! output_dist. empty ())
+    {
+    	// distRequestPairs
+    	if (dist_request. empty ())
+    	{
+	    	VectorPtr<Leaf> leaves;  leaves. reserve (tree->nodes. size ());
+	 	    for (const DiGraph::Node* node : tree->nodes)
+	        if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
+	        	leaves << leaf;
+	      FFOR (size_t, i, leaves. size ())
+	        FOR (size_t, j, i)
+	        {
+	        	const Leaf* leaf1 = leaves [i];
+	        	const Leaf* leaf2 = leaves [j];
+					  if (leaf1->name > leaf2->name)
+					    swap (leaf1, leaf2);
+					  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
+					}
+    	}
+
+    	OFStream f (output_dist);
+    	for (const auto p : distRequestPairs)
+    	{
+    		const Leaf* leaf1 = p. first;
+    		const Leaf* leaf2 = p. second;
+			  const Tree::TreeNode* lca_ = nullptr;
+			  const VectorPtr<Tree::TreeNode> path (Tree::getPath (leaf1, leaf2, nullptr, lca_));
+		  	f         << leaf1->name 
+		  	  << '\t' << leaf2->name
+		  	  << '\t' << DistTree::path2prediction (path)
+		  	  << endl;
+		  }
+    }
+
 
     if (! remove_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "remove_outliers");  
