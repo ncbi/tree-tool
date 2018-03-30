@@ -6,7 +6,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "../dm/numeric.hpp"
-#include "../dm/matrix.hpp"
+//#include "../dm/matrix.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
 
