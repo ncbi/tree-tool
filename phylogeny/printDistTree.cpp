@@ -32,7 +32,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
   {
 	  const string input_tree     = getArg ("input_tree");
 	  const string dataFName      = getArg ("data");
