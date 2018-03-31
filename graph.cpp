@@ -1757,7 +1757,7 @@ bool Tree::strictlyLess_std (const DiGraph::Node* a,
   ASSERT (b_->leaves);
 	LESS_PART (*b_, *a_, leaves);
   LESS_PART (*a_, *b_, getLeftmostDescendant  () -> getName ());
-  LESS_PART (*a_, *b_, getRightmostDescendant () -> getName ());
+//LESS_PART (*a_, *b_, getRightmostDescendant () -> getName ());
 
   return false;
 }
