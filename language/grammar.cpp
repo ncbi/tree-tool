@@ -2141,7 +2141,7 @@ const Symbol* Grammar::findParseCycle () const
   FirstDerivedSymbolGraph fdsg (*this);
   fdsg. scc ();
   for (DiGraph::Node* n : fdsg. nodes)
-    if (n->getConnectedComponent () != n)  // There exists a cycle which is not a self-loop
+    if (n->getDisjointCluster () != n)  // There exists a cycle which is not a self-loop
       return  & static_cast <FirstDerivedSymbolGraph::Node*> (n) -> symbol;
   return nullptr;
 }
@@ -2253,11 +2253,11 @@ VectorPtr<NonTerminal> Grammar::getCutSymbols () const
     node->deleteNeighborhood (false);
 
     dsg. connectedComponents ();
-    const DiGraph::Node* root = const_cast <SymbolGraph::Node*> (dsg. getStartSymbol ()) -> getConnectedComponent ();
+    const DiGraph::Node* root = const_cast <SymbolGraph::Node*> (dsg. getStartSymbol ()) -> getDisjointCluster ();
     size_t terminalNum = 0;
     for (DiGraph::Node* node1 : dsg. nodes)
       if (const Terminal* t = static_cast <SymbolGraph::Node*> (node1) -> symbol. asTerminal ())
-        if (/*t != eotSymbol &&*/ node1->getConnectedComponent () != root)
+        if (/*t != eotSymbol &&*/ node1->getDisjointCluster () != root)
         {
           ASSERT (nt->terminals. contains (t));
           terminalNum++;

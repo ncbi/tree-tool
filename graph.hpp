@@ -73,6 +73,8 @@ struct DiGraph : Root
       {}
   public:
 
+    Node* getDisjointCluster ()
+      { return static_cast <Node*> (DisjointCluster::getDisjointCluster ()); }
   	void attach (DiGraph &graph_arg);
       // Requires: !graph; no Arc's
       // Invokes: graph_arg.nodes.push_back(this)
@@ -107,8 +109,6 @@ struct DiGraph : Root
     virtual void contractContent (const Node* /*from*/) {}
       // Required time: O(1)
   public:      
-  	Node* getConnectedComponent ()
-  	  { return static_cast <Node*> (getDisjointCluster ()); }
     void contract (Node* from);
       // Update: this: No parallel arcs
       // Invokes: contractContent(from), Arc::contractContent(), delete from
