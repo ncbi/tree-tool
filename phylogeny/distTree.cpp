@@ -5216,21 +5216,6 @@ void DistTree::findSpecies (Real species_dist_max)
     		for (const TreeNode* node : path)
           const_cast <TreeNode*> (lca) -> DisjointCluster::merge (* const_cast <TreeNode*> (node));
     }
-  
-  map <const DisjointCluster*, size_t> clusters;
- 	for (DiGraph::Node* node : nodes)
- 		clusters [node->DisjointCluster::getDisjointCluster ()] ++;
-  
- 	for (DiGraph::Node* node_ : nodes)
- 	{
- 		TreeNode* node = const_static_cast <TreeNode*> (node_);
- 		if (TreeNode* parent = const_cast <TreeNode*> (node->getParent ()))
- 			if (   clusters [parent->DisjointCluster::getDisjointCluster ()] > 1
- 				  &&    node   -> DisjointCluster::getDisjointCluster () 
- 				     != parent -> DisjointCluster::getDisjointCluster ()
- 				 )
- 				cout << node->getLcaName () << " - " << parent->getLcaName () << endl;
-  }
 }
 
 

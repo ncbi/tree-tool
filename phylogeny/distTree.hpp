@@ -1023,7 +1023,6 @@ public:
     // Return: connected subgraph including root
   void findSpecies (Real species_dist_max);
     // Output: DTNode::DisjointCluster
-    // Print speices under species
 
   // Statistics
 #if 0
