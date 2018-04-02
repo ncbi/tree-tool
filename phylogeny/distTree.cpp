@@ -27,6 +27,9 @@ VarianceType varianceType = varianceType_linExp;
 
 
 
+static const string rel_errorS ("rel_error");
+
+
 
 // DTNode
 
@@ -71,7 +74,8 @@ void DTNode::saveContent (ostream& os) const
   const ONumber oNum (os, criterionDecimals, true);  // PAR
   if (paths)
 	  os << "  err_density=" << errorDensity << "  paths=" << paths;
-//os << "  " << dissimSum << ' ' << dissimWeightedSum;  
+  if (! isNan (absCriterion_ave))
+    os << "  " << rel_errorS << "=" << getRelCriterion ();
 }
 
 
@@ -87,6 +91,13 @@ const Leaf* DTNode::inDiscernible () const
 { 
   const Leaf* g = asLeaf ();
   return g && ! g->discernible ? g : nullptr; 
+}
+
+
+
+Real DTNode::getRelCriterion () const
+{ 
+  return absCriterion_ave / getDistTree (). getLeafAbsCriterion (); 
 }
 
 
@@ -531,13 +542,6 @@ const DTNode* Leaf::getDiscernible () const
   if (const Leaf* leaf = inDiscernible ())
     return static_cast <const DTNode*> (leaf->getParent ());
   return this;
-}
-
-
-
-Real Leaf::getRelCriterion () const
-{ 
-  return absCriterion_ave / getDistTree (). getLeafAbsCriterion (); 
 }
 
 
@@ -2009,13 +2013,13 @@ bool DistTree::loadLines (const StringVector &lines,
   const Real len          = token2real (s, "len");
   const Real paths        = token2real (s, "paths");
   const Real errorDensity = token2real (s, "err_density");
-  const Real leafError    = token2real (s, "leaf_error");
+  const Real relCriterion = token2real (s, rel_errorS);
   const bool indiscernible = contains (s, Leaf::non_discernible);
   IMPLY (parent, len >= 0);
   DTNode* dtNode = nullptr;
 	if (isLeft (idS, "0x"))
 	{
-	  ASSERT (isNan (leafError));
+	//ASSERT (isNan (leafError));
 	  ASSERT (! indiscernible);
     Steiner* steinerParent = nullptr;
     if (parent)
@@ -2032,7 +2036,7 @@ bool DistTree::loadLines (const StringVector &lines,
 	{
 	  ASSERT (parent);
 		auto leaf = new Leaf (*this, parent, len, idS);
-    leaf->relCriterion = leafError;
+  //leaf->relCriterion = leafError;
 		leaf->discernible = ! indiscernible;
 		dtNode = leaf;
 	}
@@ -2043,6 +2047,8 @@ bool DistTree::loadLines (const StringVector &lines,
   	dtNode->paths = (size_t) DM_sp::round (paths);
   	dtNode->errorDensity = errorDensity;
   }
+  if (! isNan (relCriterion))
+  	dtNode->relCriterion = relCriterion;
 	
 	return true;
 }
@@ -3107,7 +3113,10 @@ void DistTree::printAbsCriterion_halves () const
 
 
 
-void DistTree::setLeafAbsCriterion () 
+#if 0
+void DistTree::setLeafAbsCriterion ()  
+// Output: Leaf::{absCriterion,absCriterion_ave}
+// Time: O(p)
 {
   ASSERT (optimizable ());
   
@@ -3145,6 +3154,46 @@ void DistTree::setLeafAbsCriterion ()
         f << leaf->name << '\t' << leaf->absCriterion_ave << '\t' << log (leaf->absCriterion_ave) << endl;
     #endif
     }
+}
+#endif
+
+
+
+void DistTree::setNodeAbsCriterion () 
+{
+  ASSERT (optimizable ());
+  
+  for (DiGraph::Node* node : nodes)
+  {
+  	DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->absCriterion = 0;
+    dtNode->absCriterion_ave = 0;  // tepmorary: = mult
+  }
+
+  for (const Dissim& dissim : dissims)
+    if (dissim. mult)
+    {
+      const Real residual2 = sqr (dissim. getResidual ());      
+      ASSERT (DM_sp::finite (residual2));
+      
+      ASSERT (dissim. lca);	
+    	VectorPtr<TreeNode> path (dissim. getPath ());
+    	path << dissim. lca;
+    	
+    	for (const TreeNode* node : path)
+    	{
+		  	DTNode* dtNode = const_static_cast <DTNode*> (node);
+	      dtNode->absCriterion     += dissim. mult * residual2;
+	      dtNode->absCriterion_ave += dissim. mult;
+    	}
+    }
+
+  for (DiGraph::Node* node : nodes)
+  {
+  	DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->absCriterion_ave = dtNode->absCriterion == 0 ? 0 : dtNode->absCriterion / dtNode->absCriterion_ave;
+    ASSERT (dtNode->absCriterion_ave >= 0);
+  }
 }
 
 

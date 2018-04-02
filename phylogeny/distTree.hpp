@@ -128,6 +128,11 @@ public:
     // In subtree
     // For sparse *getDistTree().dissimAttr
     // Random ??
+  Real absCriterion {NAN};
+    // sum = contribution to 2*getTree().absCriterion
+  Real absCriterion_ave {NAN};
+  Real relCriterion {NAN};
+    // !isNan() => = getRelCriterion()
 
 
 protected:
@@ -159,6 +164,7 @@ public:
     // Requires: after DistTree::setHeight()
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
+  Real getRelCriterion () const;
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
@@ -258,11 +264,6 @@ struct Leaf : DTNode
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
     
   // Temporary
-  Real absCriterion {NAN};
-    // sum = contribution to 2*getTree().absCriterion
-  Real absCriterion_ave {NAN};
-  Real relCriterion {NAN};
-    // !isNan() => = getRelCriterion()
   size_t index {NO_INDEX};
   
 
@@ -277,17 +278,8 @@ struct Leaf : DTNode
 	void qc () const final;
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
-      if (! isNan (absCriterion))
-      { const ONumber oNum (os, criterionDecimals, true);  // PAR
-        os << "  leaf_error=" << getRelCriterion ();
-      }
     	if (! discernible)
     	  os << "  " << non_discernible;
-    #if 0
-      if (frequent)
-    	  os << " " << "frequent";
-     	os << " fd=" << frequentDegree;
-    #endif
     }
 
 
@@ -326,7 +318,6 @@ public:
     // Return: !nullptr; != this
   const DTNode* getDiscernible () const;
     // Return: this or getParent(); !nullptr
-  Real getRelCriterion () const;
   bool getCollapsed (const Leaf* other) const
     { return    other
              && getParent () == other->getParent ()
@@ -867,9 +858,9 @@ public:
 	  // Input: DTNode::len
 	  // Time: O(|path|)
   void printAbsCriterion_halves () const;
-  void setLeafAbsCriterion ();
-    // Output: Leaf::{absCriterion,absCriterion_ave}
-    // Time: O(p)
+	void setNodeAbsCriterion ();
+    // Output: DTNode::{absCriterion,absCriterion_ave}
+    // Time: O(p log(n))
 	  
   // Optimization	  
 	size_t optimizeLenArc ();

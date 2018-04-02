@@ -260,7 +260,7 @@ struct ThisApplication : Application
 
       // Outliers
       Real outlier_min = NAN;
-      tree->setLeafAbsCriterion ();
+      tree->setNodeAbsCriterion ();
       const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
       cout << endl << "# Outliers: " << outliers. size () << endl;
       cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
@@ -290,7 +290,7 @@ struct ThisApplication : Application
       cout << endl << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  // skip if isDirName(dataFName) ??
-      tree->setLeafAbsCriterion ();
+      tree->setNodeAbsCriterion ();
       tree->qc ();
     }
     
@@ -425,7 +425,7 @@ struct ThisApplication : Application
     {
       checkOptimizable (*tree, "leaf_errors");
       OFStream f (leaf_errors);
-    //tree->setLeafAbsCriterion ();   // Done above
+    //tree->setNodeAbsCriterion ();   // Done above
       for (const auto& it : tree->name2leaf)
         f << it. first << '\t' << it. second->getRelCriterion () << endl;  
     }

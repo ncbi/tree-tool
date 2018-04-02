@@ -50,7 +50,7 @@ struct ThisApplication : Application
     DistTree tree (input_tree, dataFName, dissimAttrName, false);
     tree. sort ();
     if (! dataFName. empty ())
-      tree. setLeafAbsCriterion ();
+      tree. setNodeAbsCriterion ();
     tree. qc ();    
 
    	cout << fixed << setprecision (6);  // PAR
