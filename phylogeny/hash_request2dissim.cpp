@@ -60,8 +60,7 @@ struct ThisApplication : Application
       const Hashes& h1 = name2hashes [fName1];
       const Hashes& h2 = name2hashes [fName2];
       const double dissim = h1. getDissim (h2, intersection_min, hashes_ratio_min);
-      output << name1 << '\t' << name2 << '\t' << dissim;
-      output << endl;
+      output << name1 << '\t' << name2 << '\t' << dissim << endl;
     }
 	}
 };
