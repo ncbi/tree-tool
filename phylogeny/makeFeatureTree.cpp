@@ -196,7 +196,7 @@ struct ThisApplication : Application
       cout << "# Single features:        " << singles << endl;
       cout << "# Optional features:      " << optionals << endl;
       cout << endl;
-      cout << "Feature disagreement: " << gains + losses << endl;  // Better: less
+      cout << "Feature disagreement: " << gains + losses << endl;  // Better: less  // core affects this ??
     }
 
     
