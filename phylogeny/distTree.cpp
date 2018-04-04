@@ -1530,7 +1530,8 @@ DistTree::DistTree (const string &dataDirName,
         const Real dissim = str2real (f. line);
         if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
           const_cast <Leaf*> (leaf1) -> collapse (const_cast <Leaf*> (leaf2));
-        EXEC_ASSERT (addDissim (name1, name2, dissim)); 
+        if (! isNan (dissim) && ! addDissim (name1, name2, dissim))
+        	throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
       }
       if (! f. lineNum)
         throw runtime_error ("Empty " + fName);
