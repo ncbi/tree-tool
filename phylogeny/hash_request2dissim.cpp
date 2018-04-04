@@ -25,7 +25,7 @@ struct ThisApplication : Application
   	  addKey ("intersection_min", "Min. number of common hashes to compute distance", "50");
   	  addKey ("ratio_min", "Min. ratio of hash sizes (0..1)", "0.5");
   	  // Output
-  	  addPositional ("out", "Output file");
+  	  addPositional ("out", "Output file with lines: <obj1> <obj2> <dissimlarity>; <obj1> < <obj2>");
   	}
 
 
@@ -52,7 +52,11 @@ struct ThisApplication : Application
       istringstream iss (input. line);
       string name1, name2;
       iss >> name1 >> name2;
+      if (name2. empty ())
+      	throw runtime_error ("Bad request: '" + name1 + "' - '" + name2 + "'");
       ASSERT (name1 != name2);
+      if (name1 > name2)
+      	swap (name1, name2);
       const string fName1 (hash_dir + "/" + name1);
       const string fName2 (hash_dir + "/" + name2);
       if (! contains (name2hashes, fName1))  name2hashes [fName1] = Hashes (fName1);
