@@ -688,7 +688,7 @@ public:
     //        ]
     //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
     //         [objects_in_tree.sh]       executable with parameters: list of objects, 0/1
-    //         [request_closest.sh]       executable with parameter: object; output; pairs of objects to request dissimilarities for
+    //         [request_closest.sh]       executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
