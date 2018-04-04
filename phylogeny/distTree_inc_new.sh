@@ -107,9 +107,12 @@ while (1)
   
   set L = `ls $1/log | wc -l`
   if ($L[1]) then
-    echo "# Failed grid tasks: $L[1]"
+    echo "# Failed tasks: $L[1]"
+   #exit 2
+    if (! $GRID) exit 1
     trav $1/log "distTree_inc_unsearch.sh $1 %f"
     if ($?) exit 1
+    trav $1/log "echo %d/%f; tail -20 %d/%f" | head -21
   endif
   
   rm -r $1/log/
