@@ -516,18 +516,15 @@ struct ThisApplication : Application
     Vector<Pair<const Leaf*>> distRequestPairs;  distRequestPairs. reserve (tree->dissims. size ());
     if (! dist_request. empty ())
     {
-    	LineInput f (dist_request);
-    	while (f. nextLine ())
+    	PairFile f (dist_request);
+    	while (f. next ())
     	{
-    		istringstream iss (f. line);
-    		string name1, name2;
-    		iss >> name1 >> name2;
-        const Leaf* leaf1 = findPtr (tree->name2leaf, name1);
+        const Leaf* leaf1 = findPtr (tree->name2leaf, f. name1);
         if (! leaf1)
-        	throw runtime_error ("Object " + name1 + " is not found");
-        const Leaf* leaf2 = findPtr (tree->name2leaf, name2);
+        	throw runtime_error ("Object " + f. name1 + " is not found");
+        const Leaf* leaf2 = findPtr (tree->name2leaf, f. name2);
         if (! leaf2)
-        	throw runtime_error ("Object " + name2 + " is not found");
+        	throw runtime_error ("Object " + f. name2 + " is not found");
 			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
     	}
     }

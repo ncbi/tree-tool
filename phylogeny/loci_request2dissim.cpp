@@ -57,11 +57,12 @@ struct ThisApplication : Application
   	  addPositional ("pairs", "File with pairs of objects");
   	  addPositional ("loci_dir", "Directory with a file of loci for each object. File line format: G<locus number> <allele number>");
   	  addPositional ("out", "Output file");
+  	//check min. number of loci ??
   	}
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string pairsFName = getArg  ("pairs");
 		const string loci_dir   = getArg  ("loci_dir");
@@ -70,18 +71,13 @@ struct ThisApplication : Application
 		ASSERT (! out. empty ());
 		
 		
-    LineInput input (pairsFName, 100 * 1024, 1000);  // PAR
     OFStream output (out);
     ONumber on (output, 6, true);  // PAR
-    while (input. nextLine ())
+    PairFile input (pairsFName);
+    while (input. next ())
     {
-      istringstream iss (input. line);
-      string name1, name2;
-      iss >> name1 >> name2;
-      if (name1 == name2)
-        continue;
-      const Loci loci1 (getLoci (loci_dir + "/" + name1));
-      const Loci loci2 (getLoci (loci_dir + "/" + name2));
+      const Loci loci1 (getLoci (loci_dir + "/" + input. name1));
+      const Loci loci2 (getLoci (loci_dir + "/" + input. name2));
       size_t sameLoci = 0;
       size_t diffLoci = 0;
       FOR (size_t, i, locus_max)
@@ -99,7 +95,7 @@ struct ThisApplication : Application
                               ? log ((double) (sameLoci + diffLoci) / (double) sameLoci)
                               : numeric_limits<double>::infinity ();        
       ASSERT (dissim >= 0);        
-      output << name1 << '\t' << name2 << '\t' << dissim;
+      output << input. name1 << '\t' << input. name2 << '\t' << dissim;
       if (verbose ())
         output << '\t' << sameLoci << '\t' << diffLoci;
       output << endl;

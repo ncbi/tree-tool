@@ -2010,6 +2010,36 @@ public:
 	
 
 
+struct PairFile : Root
+{
+private:
+	LineInput f;
+public:
+	string name1;
+	string name2;
+	// name1 < name2
+	
+	explicit PairFile (const string &fName)
+	  : f (fName, 100 * 1024, 1000)  // PAR
+	  {}
+	  
+	bool next ()
+	  { if (! f. nextLine ())
+	  	  return false;
+      istringstream iss (f. line);
+      iss >> name1 >> name2;
+      if (name2. empty ())
+      	throw runtime_error ("Bad request: '" + name1 + "' - '" + name2 + "'");
+      if (name1 == name2)
+      	throw runtime_error ("Same name: " + name1);
+      if (name1 > name2)
+      	swap (name1, name2);
+      return true;
+	  }
+};
+
+
+
 struct Token : Root
 {
 	static const char quote = '\"';

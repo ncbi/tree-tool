@@ -43,28 +43,20 @@ struct ThisApplication : Application
 		
 		
     // Cf. hash2dissim.cpp
-    LineInput input (pairsFName, 100 * 1024, 1000);  // PAR
     OFStream output (out);
     ONumber on (output, 6, true);  // PAR
     map<string/*fName*/,Hashes> name2hashes;
-    while (input. nextLine ())
+    PairFile input (pairsFName);
+    while (input. next ())
     {
-      istringstream iss (input. line);
-      string name1, name2;
-      iss >> name1 >> name2;
-      if (name2. empty ())
-      	throw runtime_error ("Bad request: '" + name1 + "' - '" + name2 + "'");
-      ASSERT (name1 != name2);
-      if (name1 > name2)
-      	swap (name1, name2);
-      const string fName1 (hash_dir + "/" + name1);
-      const string fName2 (hash_dir + "/" + name2);
+      const string fName1 (hash_dir + "/" + input. name1);
+      const string fName2 (hash_dir + "/" + input. name2);
       if (! contains (name2hashes, fName1))  name2hashes [fName1] = Hashes (fName1);
       if (! contains (name2hashes, fName2))  name2hashes [fName2] = Hashes (fName2);
       const Hashes& h1 = name2hashes [fName1];
       const Hashes& h2 = name2hashes [fName2];
       const double dissim = h1. getDissim (h2, intersection_min, hashes_ratio_min);
-      output << name1 << '\t' << name2 << '\t' << dissim << endl;
+      output << input. name1 << '\t' << input. name2 << '\t' << dissim << endl;
     }
 	}
 };
