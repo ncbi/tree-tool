@@ -31,7 +31,7 @@ end
 
 
 echo ""
-echo "Complete optimization..."
+echo "Complete optimization ..."
 echo "# Complete optimization  `date`  `date +%s`" >> $1/runlog  
 
 set VER = `cat $1/version`
@@ -50,3 +50,21 @@ makeDistTree  -data $1/  -optimize  -reinsert  -output_tree $1/tree.new > $1/his
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
+
+
+if (-e $1/phen) then
+	echo ""
+	echo "Quality ..."
+	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER
+	if ($?) exit 1
+	cat $1/hist/tree_quality_phen.$VER
+	if ($?) exit 1
+	set new_root = `grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1' | sed 's/^g//1' | sed 's/:g/:/1'`
+	if ($?) exit 1
+	set date = `date +%Y%m%d`
+	if ($?) exit 1
+	makeDistTree  -data $1/  -reroot_at $new_root  -output_tree $1/tree.$date
+	if ($?) exit 1
+	tree_quality_phen.sh $1/tree.$date $1/phen
+	if ($?) exit 1
+endif
