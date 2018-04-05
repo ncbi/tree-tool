@@ -258,9 +258,11 @@ struct ThisApplication : Application
       }
 
 
+      tree->setNodeAbsCriterion ();
+
+
       // Outliers
       Real outlier_min = NAN;
-      tree->setNodeAbsCriterion ();
       const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
       cout << endl << "# Outliers: " << outliers. size () << endl;
       cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
@@ -283,6 +285,7 @@ struct ThisApplication : Application
           }
         }
         tree->reportErrors (cout);
+	      tree->setNodeAbsCriterion ();
         tree->qc ();
       }
 
@@ -290,7 +293,6 @@ struct ThisApplication : Application
       cout << endl << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  // skip if isDirName(dataFName) ??
-      tree->setNodeAbsCriterion ();
       tree->qc ();
     }
     
@@ -302,6 +304,7 @@ struct ThisApplication : Application
       {
         const DTNode* underRoot = tree->lcaName2node (reroot_at);
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
+	      tree->setNodeAbsCriterion ();
       }
       
 
