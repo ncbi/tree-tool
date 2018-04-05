@@ -632,6 +632,8 @@ void Leaf::collapse (Leaf* other)
 
 void SubPath::qc () const
 {
+  if (! qc_on)
+  	return;
 //ASSERT (objNum != NO_INDEX);
   
   ASSERT (node1);
@@ -1275,10 +1277,14 @@ Dissim::Dissim (const Leaf* leaf1_arg,
 
 void Dissim::qc () const
 {
+	if (! qc_on)
+		return;
+	
   ASSERT (leaf1);
   ASSERT (leaf2);
   ASSERT (leaf1 != leaf2);
   ASSERT (leaf1->name < leaf2->name);
+  ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
   
   ASSERT (mult >= 0);
   ASSERT (prediction >= 0);
@@ -1287,7 +1293,7 @@ void Dissim::qc () const
   {
     ASSERT (valid ());
     ASSERT (! isNan (target));
-    IMPLY (target == 0, ! leaf1->discernible && ! leaf2->discernible && leaf1->getParent () == leaf2->getParent ());
+    IMPLY (! leaf1->getDistTree (). subDepth && target == 0, ! leaf1->discernible && ! leaf2->discernible && leaf1->getParent () == leaf2->getParent ());
   }
 
   ASSERT (lca);
