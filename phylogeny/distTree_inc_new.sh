@@ -5,6 +5,7 @@ if ($# != 2) then
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
   echo "Time: O(n log^2(n))"
+  echo "Cumulative time: O(n log^4(n))"
   exit 1
 endif
 
@@ -73,7 +74,6 @@ if (-e $1/request_closest.sh) then
   # Use grid ??
   trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
   if ($?) exit 1  
-  # use grid ??
 else
 	distTree_new $QC $1/ -init  
 	if ($?) exit 1
@@ -143,7 +143,7 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 
-#set VER = 212  
+#set VER = 54
 
 
 # Time: O(n log^2(n)) 
