@@ -46,7 +46,7 @@ echo $VER > $1/version
 if ($?) exit 1
 
 # Time: O(n log^4(n))
-makeDistTree  -data $1/  -optimize  -reinsert  -output_tree $1/tree.new > $1/hist/makeDistTree.$VER
+makeDistTree  -data $1/  -optimize  -reinsert  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
