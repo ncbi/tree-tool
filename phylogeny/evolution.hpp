@@ -22,6 +22,7 @@ Real intersection2dissim (Real size1,
                           Real intersection_min,
 	                        Prob sizes_ratio_min,
 	                        bool ave_arithP);
+  // Input: ave_arithP; false <=> ave_harm()
   // Return: >= 0; may be NAN
   // Symmetric
 
@@ -36,7 +37,14 @@ struct Hashes : Vector<size_t>
 	Real getDissim (const Hashes &other,
 	                size_t intersection_min,
 	                Prob hashes_ratio_min) const
-		{ return intersection2dissim ((Real) size (), (Real) other. size (), (Real) getIntersectSize (other), (Real) intersection_min, hashes_ratio_min, false); }
+		{ return intersection2dissim ( (Real) size ()
+			                           , (Real) other. size ()
+			                           , (Real) getIntersectSize (other)
+			                           , (Real) intersection_min
+			                           , hashes_ratio_min
+			                           , false  // PAR
+			                           ); 
+		}
 };
 
 
