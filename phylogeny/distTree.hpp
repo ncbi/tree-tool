@@ -669,7 +669,7 @@ public:
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
 	          bool loadDissim,
-	          bool optimize);
+	          bool optimizeP);
 	  // Input: dataDirName: ends with '/'
 	  //          files: tree, leaf, dissim
 	  //          <dataDirName/> contains:
@@ -937,7 +937,8 @@ private:
   bool deleteLenZero (DTNode* node);
     // Return: success
 public:
-  void removeLeaf (Leaf* leaf);
+  void removeLeaf (Leaf* leaf,
+                   bool optimizeP);
     // Invokes: leaf->detachChildrenUp(), optimizeSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
 	  // Time: Time(optimizeSubgraph)    

@@ -172,7 +172,7 @@ struct ThisApplication : Application
             cout << "Leaf " << f. line << " not found" << endl;
             continue;
           }
-          tree->removeLeaf (const_cast <Leaf*> (leaf));
+          tree->removeLeaf (const_cast <Leaf*> (leaf), false);
           if (tree->optimizable ())
             prog (tree->absCriterion2str ());
           else
@@ -280,7 +280,7 @@ struct ThisApplication : Application
           for (const Leaf* leaf : outliers)
           {
             f << leaf->name << endl;
-            tree->removeLeaf (const_cast <Leaf*> (leaf));
+            tree->removeLeaf (const_cast <Leaf*> (leaf), true);
             prog (tree->absCriterion2str ());
           }
         }

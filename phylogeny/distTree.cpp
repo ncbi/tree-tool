@@ -1423,11 +1423,11 @@ DistTree::DistTree (const string &dissimFName,
 DistTree::DistTree (const string &dataDirName,
                     bool loadNewLeaves,
  	                  bool loadDissim,
- 	                  bool optimize)
+ 	                  bool optimizeP)
 {
 	ASSERT (! dataDirName. empty ());
 	ASSERT (dataDirName. back () == '/');
-	IMPLY (optimize, loadDissim);
+	IMPLY (optimizeP, loadDissim);
 	
 
   // Initial tree topology
@@ -1584,7 +1584,7 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (absCriterion2str ());
         Unverbose unv;
-        if (optimize)
+        if (optimizeP)
           optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
           // reinsert ??
       #ifndef NDEBUG
@@ -4549,7 +4549,8 @@ bool DistTree::deleteLenZero (DTNode* node)
 
 
 
-void DistTree::removeLeaf (Leaf* leaf)
+void DistTree::removeLeaf (Leaf* leaf,
+	                         bool optimizeP)
 {
   ASSERT (leaf);
   
@@ -4596,10 +4597,11 @@ void DistTree::removeLeaf (Leaf* leaf)
 	
 	  qcPaths (); 
 	
+	  if (optimizeP)
 	  {
 	    Unverbose unv;
 	    ASSERT (parent);
-	    optimizeSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), 2 * areaRadius_std);  
+	    optimizeSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), 2 * areaRadius_std);  // PAR 
 	  }
 	}
 
