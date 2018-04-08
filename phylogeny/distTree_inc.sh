@@ -63,7 +63,7 @@ if (-e $1/phen) then
 	if ($?) exit 1
 	set date = `date +%Y%m%d`
 	if ($?) exit 1
-	makeDistTree  -data $1/  -reroot_at $new_root  -output_tree $1/tree.$date
+	makeDistTree  -data $1/  -reroot_at "$new_root"  -output_tree $1/tree.$date
 	if ($?) exit 1
 	tree_quality_phen.sh $1/tree.$date $1/phen
 	if ($?) exit 1
