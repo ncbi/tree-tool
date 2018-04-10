@@ -134,12 +134,12 @@ struct ThisApplication : Application
         cout << "Adjusting root core ..." << endl;
         tree. setCore ();
         size_t coreChange [2/*core2nonCore*/];
-        tree. resetRootCore (coreChange);
+        tree. resetSuperRootCore (coreChange);
         cout << "# Core to non-core: " << coreChange [true]  << endl;
         cout << "# Non-core to core: " << coreChange [false] << endl;
       }
       // Output
-      tree. saveRootCore (output_core);
+      tree. saveSuperRootCore (output_core);
     }
 
     tree. qc ();
@@ -178,14 +178,10 @@ struct ThisApplication : Application
           singles++;
         else   // Non-trivial features
         {
-          if (! f. gains)
-          {
-            f. print (cout);
-            ERROR;
-          }
-          if (f. gains == 1)
+          if (f. gains <= 1)
             monos++;
-          gains  += f. gains - 1;
+          else
+            gains += f. gains - 1;
           losses += f. losses;
           //
           f. print (out);
@@ -198,7 +194,7 @@ struct ThisApplication : Application
       cout << "# Single features:        " << singles << endl;
       cout << "# Optional features:      " << optionals << endl;
       cout << endl;
-      cout << "Feature disagreement: " << gains + losses << endl;  // Better: less  // core affects this ??
+      cout << "Feature disagreement: " << gains + losses << endl;  // Better: less  
     }
 
     
