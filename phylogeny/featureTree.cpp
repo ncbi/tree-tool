@@ -83,7 +83,7 @@ void Phyl::qc () const
   	for (const bool j : {false, true})
 	    ASSERT (weight [i] [j] >= 0);
 
-	FOR (size_t, i, core. size ())
+	FFOR (size_t, i, core. size ())
 	{
  	  ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core); 
  	//IMPLY (getFeatureTree (). allTimeZero, abs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
@@ -181,7 +181,7 @@ size_t Phyl::getCoreSize () const
   ASSERT (getFeatureTree (). coreSynced);   
 
   size_t n = getFeatureTree (). commonCore. size ();
-  FOR (size_t, i, getFeatureTree (). features. size ())
+  FFOR (size_t, i, getFeatureTree (). features. size ())
     if (core [i])
     	n++;
   return n;
@@ -194,7 +194,7 @@ size_t Phyl::getCoreChange (bool gain) const
 	ASSERT (getFeatureTree (). coreSynced);
 
 	size_t d = 0;
-	FOR (size_t, i, getFeatureTree (). features. size ())
+	FFOR (size_t, i, getFeatureTree (). features. size ())
 	  if (   core [i]               == gain
 	  	  && feature2parentCore (i) != gain
 	  	 )
@@ -209,7 +209,7 @@ Real Phyl::getDistance () const
 	ASSERT (getFeatureTree (). coreSynced);
 
 	Real d = getPooledDistance ();
-	FOR (size_t, i, getFeatureTree (). features. size ())
+	FFOR (size_t, i, getFeatureTree (). features. size ())
   	d += feature2weight (i, core [i], feature2parentCore (i));
   ASSERT (d >= 0);
 #ifndef NDEBUG
@@ -368,7 +368,7 @@ void Phyl::assignFeature (size_t featureIndex)
 
 void Phyl::assignFeatures ()
 { 
-  FOR (size_t, i, parent2core [false]. size ())
+  FFOR (size_t, i, parent2core [false]. size ())
     assignFeature (i);
 }
 
@@ -487,7 +487,7 @@ void Species::setWeight ()
 
 void Species::setCore ()
 {
-	FOR (size_t, i, core. size ())
+	FFOR (size_t, i, core. size ())
 	  core [i] = feature2core (i);
 	for (DiGraph::Arc* arc : arcs [false])
 	  static_cast <Phyl*> (arc->node [false]) -> setCore ();
@@ -592,7 +592,7 @@ Real Species::getTime () const
 
   size_t parent2core_ [2/*thisCore*/] [2/*parentCore*/];
   getParent2corePooled (parent2core_);	  
-	FOR (size_t, i, getFeatureTree (). features. size ())
+	FFOR (size_t, i, getFeatureTree (). features. size ())
 	  parent2core_ [core [i]] [feature2parentCore (i)] ++;
 	  
   const Real t = coreChange2time (getFeatureTree (), parent2core_ /*, 1*/);
@@ -648,7 +648,7 @@ Real Species::feature2treeLength (size_t featureIndex) const
 Real Species::root2treeLength () const
 {
   Real s = pooledSubtreeDistance;
-  FOR (size_t, i, getFeatureTree (). features. size ())
+  FFOR (size_t, i, getFeatureTree (). features. size ())
     s += feature2treeLength (i);
   return s;
 }
@@ -701,7 +701,7 @@ void Species::rememberAllFeatures ()
 
   movements. reserve (2 * parent2core [false]. size ());
 	for (const bool parentCore : {false, true})
-    FOR (size_t, featureIndex, parent2core [parentCore]. size ())
+    FFOR (size_t, featureIndex, parent2core [parentCore]. size ())
       movements << Movement (parentCore, featureIndex, parent2core [parentCore] [featureIndex]);
 }
 
@@ -811,7 +811,7 @@ void Strain::qc () const
 	
 	const Species* p = static_cast <const Species*> (getParent ());
 	const Genome* g = getGenome ();
-	FOR (size_t, i, core. size ())
+	FFOR (size_t, i, core. size ())
 	  IMPLY (p->core [i] == g->core [i], p->core [i] == core [i]);  // <= (time <= time_max) ??
 }
 
@@ -862,7 +862,7 @@ size_t Strain::orphans () const
   if (const Fossil* p = static_cast <const Fossil*> (getParent ()))
   {
     const Genome* g = getGenome ();
-    FOR (size_t, i, getFeatureTree (). features. size ())
+    FFOR (size_t, i, getFeatureTree (). features. size ())
       if (   p->core [i] == g->core [i] 
           && p->core [i] !=    core [i]
          )
@@ -1099,7 +1099,7 @@ void Genome::getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*
 
 void Genome::setCore ()
 {
-	FOR (size_t, i, core. size ())
+	FFOR (size_t, i, core. size ())
     if (optionalCore [i])
 	    core [i] = feature2core (i);
 }
@@ -1318,7 +1318,7 @@ void ChangeToSibling::apply_ ()
   inter = inter_;
   inter_->init ();
   // PAR
-  FOR (size_t, i, inter_->core. size ())
+  FFOR (size_t, i, inter_->core. size ())
     inter_->core [i] = (arcEnd ? arcEnd->core [i] : false) + from->core [i] + to->core [i] >= 2;
   inter_->setTimeWeight ();
   const_cast <Species*> (from) -> setParent (inter_); 
@@ -1671,7 +1671,7 @@ void ChangeRoot::apply_ ()
   // Topology
   auto inter = new Fossil (const_cast <FeatureTree&> (tree), const_static_cast <Fossil*> (from->getParent ()), string (), NAN);
   inter->init ();
-  FOR (size_t, i, inter->core. size ())
+  FFOR (size_t, i, inter->core. size ())
     inter->core [i] = from->core [i];  // PAR
   inter->setTimeWeight ();
   const_cast <Species*> (from) -> setParent (inter); 
@@ -2175,7 +2175,7 @@ void FeatureTree::qc () const
 	}
 
 	Feature prevFeature;
-	FOR (size_t, i, features. size ())
+	FFOR (size_t, i, features. size ())
 	{
 	  const Feature f (features [i]);
 	  f. qc ();
@@ -2198,7 +2198,7 @@ void FeatureTree::qc () const
 	if (coreSynced) 
 	{
 		if (! emptyRoot)
-			FOR (size_t, i, root_->core. size ())
+			FFOR (size_t, i, root_->core. size ())
 			{
 			  ASSERT (root_->core [i] == root_->feature2parentCore (i));
 			  IMPLY (! allTimeZero && featuresExist (), root_->core [i] == rootCore [i]);
@@ -2318,7 +2318,7 @@ void FeatureTree::printInput (ostream& os) const
     if (! rootCore. empty ())
     {
       size_t n = commonCore. size ();
-      FOR (size_t, i, features. size ())
+      FFOR (size_t, i, features. size ())
         if (rootCore [i])
           n++;
       os << "# Root core genes = " << n << endl;
@@ -2551,7 +2551,7 @@ void FeatureTree::getParent2core_sum (size_t parent2core [2/*thisCore*/] [2/*par
   
       size_t parent2core_ [2/*thisCore*/] [2/*parentCore*/];
       s->getParent2corePooled (parent2core_);	  
-  		FOR (size_t, i, features. size ())
+  		FFOR (size_t, i, features. size ())
   		  parent2core_ [s->core [i]] [s->feature2parentCore (i)] ++;
   
     	for (const bool i : {false, true})
@@ -2896,7 +2896,7 @@ string FeatureTree::findRoot ()
 
   const Species* bestFrom = nullptr;
  	size_t bestCoreSize = 0;
-  FOR (size_t, i, features. size ())
+  FFOR (size_t, i, features. size ())
     if (static_cast <const Species*> (root) -> core [i])
       bestCoreSize++;
  	for (const DiGraph::Node* node : nodes)
@@ -2907,7 +2907,7 @@ string FeatureTree::findRoot ()
    		  continue;
    	 	ASSERT (from != root);
       size_t coreSize = 0;
-      FOR (size_t, i, features. size ())
+      FFOR (size_t, i, features. size ())
         if (   from  ->core [i] 
             && parent->core [i]
            )
@@ -2932,7 +2932,7 @@ string FeatureTree::findRoot ()
   // rootCore
   ASSERT (rootCore. empty ());
   rootCore. resize (features. size (), false);
-  FOR (size_t, i, features. size ())
+  FFOR (size_t, i, features. size ())
     if (getRootCore (i))
       rootCore [i] = true;
       
@@ -2955,7 +2955,7 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
 	if (root_->arcs [false]. size () < 2)
 	  return;
 	  
-  FOR (size_t, i, rootCore. size ())
+  FFOR (size_t, i, rootCore. size ())
   {
     size_t n = 0;
   	for (const DiGraph::Arc* arc : root_->arcs [false])
@@ -2999,7 +2999,7 @@ void FeatureTree::loadRootCoreFile (const string &coreFeaturesFName)
 
   typedef  map<Feature::Id, size_t>  Feature2index;
   Feature2index feature2index;
-  FOR (size_t, i, features. size ())
+  FFOR (size_t, i, features. size ())
     feature2index [features [i]. name] = i;
   ASSERT (feature2index. size () == features. size ());
 
@@ -3027,7 +3027,7 @@ void FeatureTree::saveRootCore (const string &coreFeaturesFName) const
   ASSERT (! rootCore. empty ());
 
  	Set<Feature::Id> s (commonCore);
-  FOR (size_t, i, features. size ())
+  FFOR (size_t, i, features. size ())
     if (rootCore [i])
       s << features [i]. name;
       
@@ -3059,7 +3059,7 @@ void FeatureTree::setStats ()
     (*dist)  [n] = phyl->getNeighborDistance ();
     (*depth) [n] = (Real) phyl->getTopologicalDepth ();
     const Genome* g = phyl->asGenome ();
-    FOR (size_t, i, features. size ())
+    FFOR (size_t, i, features. size ())
     {
       if (g)
         if (   g->core [i]
@@ -3322,7 +3322,7 @@ const Genome* FeatureTree::findGenome (const string &genomeId) const
 
 size_t FeatureTree::findFeature (const  Feature::Id &featureName) const
 {
-  FOR (size_t, i, features. size ())
+  FFOR (size_t, i, features. size ())
     if (features [i]. name == featureName)
       return i;
   return NO_INDEX;
