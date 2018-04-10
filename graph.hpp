@@ -85,6 +85,8 @@ struct DiGraph : Root
 		  	oss << this;
 			  return oss. str ();
 		  }
+		virtual string getLeafName () const
+		  { return getName (); }
     bool isIncident (const Node* n,
                      bool out) const;
       // Return: n is among arcs[out]->node[out]
@@ -385,7 +387,12 @@ struct Tree : DiGraph
     const TreeNode* getLeftmostDescendant () const;
     const TreeNode* getRightmostDescendant () const;
     string getLcaName () const
-      { return getLeftmostDescendant () -> getName () + objNameSeparator + getRightmostDescendant () -> getName (); }
+      { const TreeNode* left  = getLeftmostDescendant ();
+      	const TreeNode* right = getRightmostDescendant ();
+      	if (left == right)
+      		return left->getLeafName ();
+      	return left->getLeafName () + objNameSeparator + right->getLeafName (); 
+      }
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()
