@@ -286,7 +286,7 @@ public:
 private:
 	void setCoreEval (size_t featureIndex,
 	                  bool parentCore,
-	                  CoreEval ce)
+	                  CoreEval ce) final
 	  {	CoreEval& ce_old = parent2core [parentCore] [featureIndex];
 		  if (ce_old == ce)
 		  	return;
@@ -296,7 +296,7 @@ private:
 	  }
 public:
 protected:
-  void assignFeatures ()
+  void assignFeatures () override
     { Phyl::assignFeatures ();
       pooledSubtreeDistance = getPooledSubtreeDistance ();
     }
@@ -356,7 +356,7 @@ struct Fossil : Species
   bool isInteriorType () const final
     { return true; }
 
-  Real getPooledSubtreeDistance () const;
+  Real getPooledSubtreeDistance () const final;
 
   void setId (uint &id_arg);
     // Output: id
@@ -396,15 +396,15 @@ public:
   string getNewickName (bool /*minimal*/) const final
     { return string (); }
 
-  void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const;
-	void assignFeatures ();
-	Real getPooledSubtreeDistance () const;
+  void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const final;
+	void assignFeatures () final;
+	Real getPooledSubtreeDistance () const final;
 private:
-	void rememberFeatures ()
+	void rememberFeatures () final
 	  { Species::rememberFeatures ();
 	    singletonsInCore_old = singletonsInCore;
 	  }
-	void restoreFeatures ()
+	void restoreFeatures () final
 	  { singletonsInCore = singletonsInCore_old;
 	    Species::restoreFeatures ();
 	  }
@@ -463,6 +463,8 @@ public:
 
   string getName () const final
     { return "g" + id; }
+  string getLeafName () const final
+    { return id; }
 	double getParentDistance () const final
 	  { return 0; }
   string getNewickName (bool /*minimal*/) const final
@@ -472,14 +474,14 @@ public:
     { return true; }
 
   void setWeight () final;
-  void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const;
+  void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const final;
 	void setCore () final;
 private:
 	void setCoreEval (size_t featureIndex,
 	                  bool parentCore,
-	                  CoreEval ce)
+	                  CoreEval ce) final
 	  {	parent2core [parentCore] [featureIndex] = ce; }
-	void assignFeature (size_t featureIndex);
+	void assignFeature (size_t featureIndex) final;
 public:
   const Strain* getStrain () const
     { return static_cast <const Phyl*> (getParent ()) -> asStrain (); }
@@ -662,7 +664,7 @@ public:
     { return this; }
 
 
-  bool better (const Change* other) const;
+  bool better (const Change* other) const final;
 };
 
 
@@ -743,14 +745,14 @@ public:
 
   static const char* type_ ()
 	  { return "sibling"; }
-	const char* type () const 
+	const char* type () const final
 	  { return type_ (); }
-	bool valid () const
+	bool valid () const final
 	  { return valid_ (from, to); }
 private:
-	void apply_ ();
-	void restore_ ();
-	void commit_ ();
+	void apply_ () final;
+	void restore_ () final;
+	void commit_ () final;
 public:
 };
 
@@ -791,14 +793,14 @@ public:
 
   static const char* type_ ()
 	  { return "parent"; }
-	const char* type () const 
+	const char* type () const final
 	  { return type_ (); }
-	bool valid () const
+	bool valid () const final
 	  { return valid_ (from, to); }
 private:
-	void apply_ ();
-	void restore_ ();
-	void commit_ ();
+	void apply_ () final;
+	void restore_ () final;
+	void commit_ () final;
 public:
 };
 
@@ -842,14 +844,14 @@ public:
 
   static const char* type_ ()
 	  { return "uncle"; }
-	const char* type () const 
+	const char* type () const final
 	  { return type_ (); }
-	bool valid () const
+	bool valid () const final
 	  { return valid_ (from, to); }
 private:
-	void apply_ ();
-	void restore_ ();
-	void commit_ ();
+	void apply_ () final;
+	void restore_ () final;
+	void commit_ () final;
 public:
 };
 
@@ -888,14 +890,14 @@ public:
 
   static const char* type_ ()
 	  { return "cousin"; }
-	const char* type () const 
+	const char* type () const final
 	  { return type_ (); }
-	bool valid () const
+	bool valid () const final
 	  { return valid_ (from, to); }
 private:
-	void apply_ ();
-	void restore_ ();
-	void commit_ ();
+	void apply_ () final;
+	void restore_ () final;
+	void commit_ () final;
 public:
 };
 
@@ -931,16 +933,16 @@ public:
 
   static const char* type_ ()
 	  { return "root"; }
-	const char* type () const 
+	const char* type () const final
 	  { return type_ (); }
-	bool valid () const
+	bool valid () const final
 	  { return valid_ (from); }
 	Set<const Tree::TreeNode*> getCoreChanged () const
     { return Change::getCoreChanged () << nullptr; }
 private:
-	void apply_ ();
-	void restore_ ();
-	void commit_ ();
+	void apply_ () final;
+	void restore_ () final;
+	void commit_ () final;
 public:
 };
 
@@ -985,16 +987,16 @@ public:
 
   static const char* type_ ()
 	  { return "del"; }
-	const char* type () const 
+	const char* type () const final
 	  { return type_ (); }
-	bool valid () const
+	bool valid () const final
 	  { return valid_ (from); }
 	Set<const Tree::TreeNode*> getCoreChanged () const
     { return Set<const Tree::TreeNode*> () << targets [0]; }
 private:
-	void apply_ ();
-	void restore_ ();
-	void commit_ ();
+	void apply_ () final;
+	void restore_ () final;
+	void commit_ () final;
 public:
 };
 
