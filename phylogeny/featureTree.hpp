@@ -52,6 +52,8 @@ struct Feature : Named
     { return name < other. name; }
   size_t mutations () const
     { return gains + losses; }
+  bool monophyletic () const
+    { return gains == 1 && losses == 0; }
   bool better (const Feature* other) const
     { return    ! other 
              || mutations () < other->mutations ()
@@ -1178,6 +1180,7 @@ public:
 	  // Update: Phyl::stable
 	  // Invokes: getBestChange(), applyChanges()
 	string findRoot ();
+	  // arg min_node core size
     // Idempotent
     // Return: new root LCA name in the old tree
 	  // Output: topology, rootCore
