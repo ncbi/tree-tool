@@ -40,6 +40,7 @@ struct ThisApplication : Application
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
   	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained");
+  	  addKey ("disagreement_nodes", "File name to save nodes where features are not gained monophyletically");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
   	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
   	}
@@ -48,23 +49,24 @@ struct ThisApplication : Application
 
 	void body () const final
   {
-		const string input_tree      = getArg ("input_tree");
-		const string feature_dir     = getArg ("features");
-		const string input_core      = getArg ("input_core");
+		const string input_tree         = getArg ("input_tree");
+		const string feature_dir        = getArg ("features");
+		const string input_core         = getArg ("input_core");
 
-		const bool use_time          = getFlag ("use_time");  
-		const int optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
+		const bool use_time             = getFlag ("use_time");  
+		const int optim_iter_max        = str2<int> (getArg ("optim_iter_max"));
 
-		const string output_tree     = getArg ("output_tree");
-		const string report_feature  = getArg ("report_feature");
-	//const bool set_node_ids      = getFlag ("set_node_ids");  
-		const string output_core     = getArg ("output_core");
-		const string newick          = getArg ("newick");
-		const bool min_newick_name   = getFlag ("min_newick_name");
-		const string qual            = getArg ("qual");  
-		const string gain_nodes      = getArg ("gain_nodes");  
-		const string arc_length_stat = getArg ("arc_length_stat");
-		const string patrDistFName   = getArg ("patr_dist");
+		const string output_tree        = getArg ("output_tree");
+		const string report_feature     = getArg ("report_feature");
+	//const bool set_node_ids         = getFlag ("set_node_ids");  
+		const string output_core        = getArg ("output_core");
+		const string newick             = getArg ("newick");
+		const bool min_newick_name      = getFlag ("min_newick_name");
+		const string qual               = getArg ("qual");  
+		const string gain_nodes         = getArg ("gain_nodes");  
+		const string disagreement_nodes = getArg ("disagreement_nodes");  
+		const string arc_length_stat    = getArg ("arc_length_stat");
+		const string patrDistFName      = getArg ("patr_dist");
 
 		IMPLY (! input_core. empty () && ! output_core. empty (), input_core != output_core);
 	//ASSERT (save_feature. empty () || save_features. empty ());
@@ -209,6 +211,21 @@ struct ThisApplication : Application
         FFOR (size_t, i, tree. features. size ())
           if ((! phyl->feature2parentCore (i) || phyl == tree. root) && phyl->core [i])  
             f << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
+      }
+    }
+
+    
+    if (! disagreement_nodes. empty ())
+    {
+      OFStream f (disagreement_nodes);
+     	for (const DiGraph::Node* node : tree. nodes)
+     	{
+     		const Phyl* phyl = static_cast <const Phyl*> (node);
+        FFOR (size_t, i, tree. features. size ())
+          if ((! phyl->feature2parentCore (i) || phyl == tree. root) == phyl->core [i]
+          	  && ! tree. features [i]. monophyletic ()
+          	 )
+            f << phyl->getLcaName () << '\t' << tree. features [i]. name << '\t' << phyl->core [i] << endl;
       }
     }
 
