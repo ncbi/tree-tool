@@ -53,7 +53,7 @@ struct Feature : Named
   size_t mutations () const
     { return gains + losses; }
   bool monophyletic () const
-    { return gains == 1 && losses == 0; }
+    { return gains <= 1 && losses == 0; }
   bool better (const Feature* other) const
     { return    ! other 
              || mutations () < other->mutations ()
@@ -225,7 +225,7 @@ public:
 
 
 struct Species : Phyl
-// core: Function of getFeatureTree().rootCore[] and Phyl::parent2core[]
+// core: Function of getFeatureTree().superRootCore[] and Phyl::parent2core[]
 {
   string id;
     // !empty() => SPECIES.id
@@ -234,14 +234,14 @@ struct Species : Phyl
 	  // isNan() || >= 0
     // Exponential distribution, if yes then use P_{prior} ??
 //Real timeVariance;  // Read the MLE theory ??
-	Real pooledSubtreeDistance;  
+	Real pooledSubtreeDistance {INF};  
 	  // Part of the arc (this,getParent()) length due to FeatureTree::commonCore and Genome::singletons
 	  // >= 0
 private:
 	Real weight_old [2/*thisCore*/] [2/*parentCore*/];
-  Real time_old;
+  Real time_old {NAN};
     // May be NAN
-	Real pooledSubtreeDistance_old;  
+	Real pooledSubtreeDistance_old {NAN};  
   struct Movement
   {
   	bool parentCore;
@@ -256,7 +256,7 @@ private:
 			{}
 	  void undo (Species* a) const;
   };
-  bool movementsOn;
+  bool movementsOn {false};
   Vector<Movement> movements;
     // Valid if movementsOn
 public:
@@ -301,14 +301,6 @@ protected:
       pooledSubtreeDistance = getPooledSubtreeDistance ();
     }
 public:
-
-  // Sankoff algorithm
-private:
-	Real feature2treeLength (size_t featureIndex) const;
-	  // Requires: this == getFeatureTree().root
-public:
-	Real root2treeLength () const;
-	  // Tree length if *this is the root
 
 private:
   Real getTime () const;
@@ -529,9 +521,9 @@ struct Change : Root
 protected:
 	const FeatureTree& tree;
 public:
-	const Species* from;
+	const Species* from {nullptr};
 	  // !nullptr
-	Real improvement;
+	Real improvement {INF};
 	  // > 0
 	VectorPtr<Tree::TreeNode> targets; 
 	  // Lowest Phyl's whose parent2core may be changed
@@ -639,7 +631,7 @@ public:
 
 struct ChangeTo : Change  
 {
-	const Species* to;
+	const Species* to {nullptr};
 	  // !nullptr
 
 
@@ -1018,7 +1010,7 @@ struct FeatureTree : Tree
 	  // May be empty()
 
   // For FeatureTree::len
-  static constexpr bool emptyRoot {false};  // PAR
+  static constexpr bool emptySuperRoot {false};  // PAR
 	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
 	  // Init: isNan(Species::time) 
@@ -1027,7 +1019,7 @@ struct FeatureTree : Tree
 	  // allTimeZero => 1
 	  // To be increased
   // Valid if !allTimeZero
-  Vector<bool> rootCore;
+  Vector<bool> superRootCore;
     // size() == features.size()
   Prob lambda0 {NAN};
 		// > 0
@@ -1043,6 +1035,7 @@ struct FeatureTree : Tree
 	size_t genomeGenes_ave {0};
 	Real len {NAN};
 	  // >= len_min
+	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
 	Real len_min {NAN};
 	  // >= 0
 	Prob lenInflation {0};
@@ -1111,19 +1104,22 @@ public:
 	  { return ! features. empty (); }
 	size_t getTotalGenes () const
 	  { return commonCore. size () + features. size () + globalSingletonsSize; }  
-  Real getLength () const
-    { return static_cast <const Species*> (root) -> root2treeLength (); }
   Real getLength_min ()  
-    { if (! emptyRoot)
+    { if (! emptySuperRoot)
         return 0;
       // Needed for E. coli pan ??
       if (allTimeZero)  
     		return (Real) getTotalGenes ();
       // Simplistic model: all Genome::core's are the same, all Species::time = 0 except root
     	const Species* s = static_cast <const Species*> (root);
-    	return   (Real) getTotalGenes () * s->feature2weight (true,  false)
+    	return (Real) getTotalGenes () * s->feature2weight (true,  false)
     	     /*+ commonMissings   * s->feature2weight (false, false)*/;
     }
+  // Sankoff algorithm
+private:
+	Real feature2treeLength (size_t featureIndex) const;
+public:
+  Real getLength () const;
 
   // OPTIMIZATION 
   // Phyl::parent2core[]
@@ -1138,7 +1134,7 @@ public:
     }
   // Phyl::{time,weight[][]}
   Real getRootTime () const
-    { return emptyRoot ? INF : 0; }
+    { return emptySuperRoot ? INF : 0; }
 private:
   void setTimeWeight ();
     // Idempotent
@@ -1149,9 +1145,9 @@ public:
     // Invokes: setTimeWeight(),setLenGlobal()
     // timeOptimWhole() => local optimum is over-stable
 	void useTime (const string &coreFeaturesFName);
-	  // Output: allTimeZero, rootCore
+	  // Output: allTimeZero, superRootCore
 	  // Requires: allTimeZero
-	  // Invokes: loadRootCoreFile(coreFeaturesFName)
+	  // Invokes: loadSuperRootCoreFile(coreFeaturesFName)
 private:
   void getParent2core_sum (size_t parent2core [2/*thisCore*/] [2/*parentCore*/]) const;
     // Input: Species-nodes
@@ -1183,28 +1179,28 @@ public:
 	  // arg min_node core size
     // Idempotent
     // Return: new root LCA name in the old tree
-	  // Output: topology, rootCore
+	  // Output: topology, superRootCore
 	  // Invokes: setCore()
 	  // Requires: allTimeZero
-  void resetRootCore (size_t coreChange [2/*core2nonCore*/]);
+  void resetSuperRootCore (size_t coreChange [2/*core2nonCore*/]);
     // Idempotent
-    // Update: rootCore, Phyl::core
+    // Update: superRootCore, Phyl::core
     // Output: coreChange[]: !core2nonCore = nonCore2core
 	  // Requires: !allTimeZero, coreSynced
 private:
-  void loadRootCoreFile (const string &coreFeaturesFName);
+  void loadSuperRootCoreFile (const string &coreFeaturesFName);
     // Requires: !coreFeaturesFName.empty()
 public:
-  void saveRootCore (const string &coreFeaturesFName) const;
-  bool getRootCore (size_t featureIndex) const
-    { const Species* root_ = static_cast <const Species*> (root);
-      return emptyRoot 
+  void saveSuperRootCore (const string &coreFeaturesFName) const;
+  bool getSuperRootCore (size_t featureIndex) const
+    { const auto parent2core = static_cast <const Species*> (root) -> parent2core;
+      return emptySuperRoot 
            	   ? false
            	   : allTimeZero 
-           	     ? root_->parent2core [false] [featureIndex]. treeLen >
-  	    	         root_->parent2core [true]  [featureIndex]. treeLen
-  	    	           // Lesser |core| is preferred: tie => false 
-  	    	       : rootCore [featureIndex];
+           	     ? geReal ( parent2core [false] [featureIndex]. treeLen
+           	              , parent2core [true]  [featureIndex]. treeLen
+           	              )  // gain is less probable than loss
+  	    	       : superRootCore [featureIndex];
     }
   void setStats ();
     // Output: Stats

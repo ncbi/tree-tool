@@ -171,7 +171,7 @@ Real Phyl::feature2weight (size_t /*featureIndex ??*/,
 bool Phyl::feature2parentCore (size_t featureIndex) const
 { 
   const Species* s = static_cast <const Species*> (getParent ());
-  return s ? s->core [featureIndex] : getFeatureTree (). getRootCore (featureIndex);
+  return s ? s->core [featureIndex] : getFeatureTree (). getSuperRootCore (featureIndex);
 }
 
 
@@ -245,7 +245,7 @@ void Phyl::getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*pa
 	for (const bool thisCore : {false, true})
   	for (const bool parentCore : {false, true})
       parent2corePooled [thisCore] [parentCore] = 0;
-  parent2corePooled [true] [getParent () ? true : ! getFeatureTree (). emptyRoot] = getFeatureTree (). commonCore. size ();
+  parent2corePooled [true] [getParent () ? true : ! getFeatureTree (). emptySuperRoot] = getFeatureTree (). commonCore. size ();
   parent2corePooled [false] [false] = getFeatureTree (). globalSingletonsSize;
 }
 
@@ -401,10 +401,6 @@ Species::Species (FeatureTree &tree,
 : Phyl (tree, parent_arg)  // FeatureTree must be declared
 , id (id_arg)
 , time (tree. allTimeZero ? NAN : time_arg)
-, pooledSubtreeDistance (INF)
-, time_old (NAN)
-, pooledSubtreeDistance_old (NAN)
-, movementsOn (false)
 {
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
@@ -627,30 +623,6 @@ void Species::restoreTime ()
 		  weight [i] [j] = weight_old [i] [j];
 	
 	commitTime ();
-}
-
-
-
-Real Species::feature2treeLength (size_t featureIndex) const
-{ 
-  // Cf. feature2parentCore()
-  return getFeatureTree (). emptyRoot 
-           ? parent2core [false] [featureIndex]. treeLen
-           : getFeatureTree (). allTimeZero 
-           	     ? min ( parent2core [false] [featureIndex]. treeLen 
-      		             , parent2core [true]  [featureIndex]. treeLen
-      		             )
-  		           : parent2core [getFeatureTree (). rootCore [featureIndex]] [featureIndex]. treeLen;
-}
-
-
-
-Real Species::root2treeLength () const
-{
-  Real s = pooledSubtreeDistance;
-  FFOR (size_t, i, getFeatureTree (). features. size ())
-    s += feature2treeLength (i);
-  return s;
 }
 
 
@@ -1147,8 +1119,6 @@ void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
 Change::Change (const FeatureTree &tree_arg,
                 istream &is)
 : tree (tree_arg)
-, from (nullptr)
-, improvement (INF)
 { 
   size_t fromIndex; 
   is >> fromIndex >> improvement;
@@ -1256,7 +1226,6 @@ Real Change::improvementDeinflated () const
 ChangeTo::ChangeTo (const FeatureTree &tree_arg,
                     istream &is)
 : Change (tree_arg, is)
-, to (nullptr)
 { 
   size_t toIndex; 
   is >> toIndex;
@@ -2101,7 +2070,7 @@ void FeatureTree::finish (const string &coreFeaturesFName)
   genomeGenes_ave /= genomes;
 
   if (! allTimeZero && featuresExist ())
-    loadRootCoreFile (coreFeaturesFName);
+    loadSuperRootCoreFile (coreFeaturesFName);
  	for (DiGraph::Node* node : nodes)  
  		static_cast <Phyl*> (node) -> setWeight ();
   setLenGlobal ();
@@ -2138,7 +2107,7 @@ void FeatureTree::qc () const
 	if (! allTimeZero && featuresExist ())
   {
     ASSERT (root_->time == getRootTime ());
-    if (! emptyRoot)
+    if (! emptySuperRoot)
     	for (const bool i : {false, true})
     	{
     	  ASSERT (root_->weight [i] [  i] == 0);
@@ -2167,7 +2136,7 @@ void FeatureTree::qc () const
   }
   else
   {
-    ASSERT (rootCore. size () == features. size ());
+    ASSERT (superRootCore. size () == features. size ());
     ASSERT (isProb (timeOptimFrac));
 	  ASSERT (isProb (lambda0));
 	  ASSERT (lambda0 < 1 /*0.5*/);
@@ -2197,11 +2166,11 @@ void FeatureTree::qc () const
 	
 	if (coreSynced) 
 	{
-		if (! emptyRoot)
+		if (! emptySuperRoot)
 			FFOR (size_t, i, root_->core. size ())
 			{
 			  ASSERT (root_->core [i] == root_->feature2parentCore (i));
-			  IMPLY (! allTimeZero && featuresExist (), root_->core [i] == rootCore [i]);
+			  IMPLY (! allTimeZero && featuresExist (), root_->core [i] == superRootCore [i]);
 			}
 		const Real subtreeLen = static_cast <const Phyl*> (root) -> getSubtreeLength ();
 		if (! eqReal (len, subtreeLen, len_delta)) 
@@ -2315,11 +2284,11 @@ void FeatureTree::printInput (ostream& os) const
     os << "Lambda_0          = " << lambda0 << endl;
     os << "Initial time      = " << time_init << endl;
     os << "timeOptimFrac     = " << timeOptimFrac << endl;
-    if (! rootCore. empty ())
+    if (! superRootCore. empty ())
     {
       size_t n = commonCore. size ();
       FFOR (size_t, i, features. size ())
-        if (rootCore [i])
+        if (superRootCore [i])
           n++;
       os << "# Root core genes = " << n << endl;
     }
@@ -2349,6 +2318,31 @@ void FeatureTree::dump (const string &fName/*,
 #endif
   qc ();      
   saveFile (fName);
+}
+
+
+
+Real FeatureTree::feature2treeLength (size_t featureIndex) const
+{ 
+  // Cf. Phyl:;feature2parentCore()
+  const auto parent2core = static_cast <const Species*> (root) -> parent2core;
+  return emptySuperRoot 
+           ? parent2core [false] [featureIndex]. treeLen
+           : allTimeZero 
+           	     ? min ( parent2core [false] [featureIndex]. treeLen 
+      		             , parent2core [true]  [featureIndex]. treeLen
+      		             )
+  		           : parent2core [superRootCore [featureIndex]] [featureIndex]. treeLen;
+}
+
+
+
+Real FeatureTree::getLength () const
+{
+  Real s = static_cast <const Species*> (root) -> pooledSubtreeDistance;
+  FFOR (size_t, i, features. size ())
+    s += feature2treeLength (i);
+  return s;
 }
 
 
@@ -2464,7 +2458,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
 	ASSERT (featuresExist ());
 
 	allTimeZero = false;
-  loadRootCoreFile (coreFeaturesFName);
+  loadSuperRootCoreFile (coreFeaturesFName);
   setCore ();
   timeOptimFrac = 0;
 
@@ -2929,12 +2923,12 @@ string FeatureTree::findRoot ()
     finishChanges ();
   }    
   
-  // rootCore
-  ASSERT (rootCore. empty ());
-  rootCore. resize (features. size (), false);
+  // superRootCore
+  ASSERT (superRootCore. empty ());
+  superRootCore. resize (features. size (), false);
   FFOR (size_t, i, features. size ())
-    if (getRootCore (i))
-      rootCore [i] = true;
+    if (getSuperRootCore (i))
+      superRootCore [i] = true;
       
   setCore ();
 
@@ -2943,7 +2937,7 @@ string FeatureTree::findRoot ()
 
 
 
-void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
+void FeatureTree::resetSuperRootCore (size_t coreChange [2/*core2nonCore*/])
 {
   ASSERT (! allTimeZero);
   ASSERT (coreSynced);
@@ -2955,7 +2949,7 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
 	if (root_->arcs [false]. size () < 2)
 	  return;
 	  
-  FFOR (size_t, i, rootCore. size ())
+  FFOR (size_t, i, superRootCore. size ())
   {
     size_t n = 0;
   	for (const DiGraph::Arc* arc : root_->arcs [false])
@@ -2965,16 +2959,16 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
   	    n++;
   	}
   	if (n <= 1)
-  	  if (rootCore [i])
+  	  if (superRootCore [i])
   	  {
-  	    rootCore [i] = false;
+  	    superRootCore [i] = false;
   	  //if (i < genes)
   	      coreChange [true] ++;
   	  }
   	if (n == root_->arcs [false]. size ())
-  	  if (! rootCore [i])
+  	  if (! superRootCore [i])
   	  {
-  	    rootCore [i] = true;
+  	    superRootCore [i] = true;
   	  //if (i < genes)
   	      coreChange [false] ++;
   	  }
@@ -2987,12 +2981,12 @@ void FeatureTree::resetRootCore (size_t coreChange [2/*core2nonCore*/])
 
 
 
-void FeatureTree::loadRootCoreFile (const string &coreFeaturesFName)
+void FeatureTree::loadSuperRootCoreFile (const string &coreFeaturesFName)
 { 
 	ASSERT (! allTimeZero);
-	ASSERT (rootCore. empty ());
+	ASSERT (superRootCore. empty ());
 	  
-  rootCore. resize (features. size (), false);
+  superRootCore. resize (features. size (), false);
 
 	if (coreFeaturesFName. empty ())
 	  return;
@@ -3013,7 +3007,7 @@ void FeatureTree::loadRootCoreFile (const string &coreFeaturesFName)
   	  if (it == feature2index. end ())
   	    miss++;
   	  else
-  	    rootCore [it->second] = true;
+  	    superRootCore [it->second] = true;
   	}
   	ASSERT (miss == commonCore. size ());
   }
@@ -3021,14 +3015,14 @@ void FeatureTree::loadRootCoreFile (const string &coreFeaturesFName)
 
 
 
-void FeatureTree::saveRootCore (const string &coreFeaturesFName) const
+void FeatureTree::saveSuperRootCore (const string &coreFeaturesFName) const
 {
   ASSERT (! coreFeaturesFName. empty ());
-  ASSERT (! rootCore. empty ());
+  ASSERT (! superRootCore. empty ());
 
  	Set<Feature::Id> s (commonCore);
   FFOR (size_t, i, features. size ())
-    if (rootCore [i])
+    if (superRootCore [i])
       s << features [i]. name;
       
   OFStream f (coreFeaturesFName);
@@ -3066,7 +3060,7 @@ void FeatureTree::setStats ()
             && ! g->optionalCore [i]
            )
           features [i]. genomes++;
-      if ((! phyl->feature2parentCore (i) || phyl == root) && phyl->core [i])  // use unrooted tree ??
+      if ((! phyl->feature2parentCore (i) /*|| phyl == root*/) && phyl->core [i])  
         features [i]. gains++;
       if (phyl->feature2parentCore (i) && ! phyl->core [i])
         features [i]. losses++;
