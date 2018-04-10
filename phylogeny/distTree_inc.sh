@@ -59,7 +59,7 @@ if (-e $1/phen) then
 	if ($?) exit 1
 	cat $1/hist/tree_quality_phen.$VER
 	if ($?) exit 1
-	set new_root = `grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1' | sed 's/^g//1' | sed 's/:g/:/1'`
+	set new_root = `grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 	if ($?) exit 1
 	set date = `date +%Y%m%d`
 	if ($?) exit 1
