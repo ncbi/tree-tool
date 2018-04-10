@@ -221,7 +221,7 @@ struct ThisApplication : Application
           if ((! phyl->feature2parentCore (i) || phyl == tree. root) == phyl->core [i]
           	  && ! tree. features [i]. monophyletic ()
           	 )
-            f << phyl->getLcaName () << '\t' << tree. features [i]. name << '\t' << phyl->core [i] << endl;
+            f << phyl->getLcaName () << '\t' << tree. features [i]. name << '\t' << (phyl->core [i] ? "gain" : "loss") << endl;
       }
     }
 
