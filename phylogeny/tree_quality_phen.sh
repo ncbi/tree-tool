@@ -16,8 +16,15 @@ if ($?) exit 1
 makeDistTree  -input_tree $1  -output_feature_tree $tmp.feature_tree > /dev/null
 if ($?) exit 1
 
-makeFeatureTree  -input_tree $tmp.feature_tree  -features $2  -output_core core  -qual qual  -gain_nodes gain_nodes
+makeFeatureTree  -input_tree $tmp.feature_tree  -features $2  \
+  -output_core core  \
+  -qual qual  \
+  -gain_nodes gain_nodes  \
+  -disagreement_nodes disagreement_nodes
 if ($?) exit 1
+cut -f 1 disagreement_nodes | sort |uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
+if ($?) exit 1
+wc -l disagreement_nodes.txt
 
 
 rm -f $tmp*
