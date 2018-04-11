@@ -87,6 +87,7 @@ Real str2real (const string& s)
 	  return -INF;
 	if (   s1 == "nan"
 	    || s1 == "-nan"
+	    || s1 == "?"
 	   )
 	  return NAN;
   return str2<double> (s1); 
