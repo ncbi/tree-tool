@@ -304,7 +304,7 @@ void DissimAverage::calibrate (PositiveAttr1& averageAttr)
     /*const Real sd =*/ setVars (averageAttr);
  		
  		const Real diff = getVars (). maxAbsDifferenceVec (vars_old);
-    prog (toString (diff) + " " + toString (getVar ()));
+    prog (toString (diff) /*+ " " + toString (getVar ())*/);
  		if (diff < 1e-6)  // PAR
  			break;
  	}
