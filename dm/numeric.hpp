@@ -176,7 +176,7 @@ inline Real ave_arith (Real x, Real y)
 inline Real ave_geom (Real x, Real y)
   { return sqrt (x * y); }
 inline Real ave_harm (Real x, Real y)   // harmonic
-  { return 1 / (1 / x + 1 / y); }
+  { return 2 / (1 / x + 1 / y); }
 
 
 
