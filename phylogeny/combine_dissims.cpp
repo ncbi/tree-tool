@@ -36,7 +36,7 @@ struct Scale
 	  	  #endif
 	  	  ;
 	  	ASSERT (unit > 0);
-	  	ASSERT (unit <= 1);
+	  //ASSERT (unit <= 1); ??
 	  	ASSERT (raw_min >= 0);
 	  	ASSERT (raw_min <= raw_max);
     #ifdef WEIGHT
@@ -108,7 +108,7 @@ Line format: <unit> <max>");
 	      scales << Scale (f. line);
 		}
 		ASSERT (scales. size () >= 2);
-		ASSERT (scales [0]. unit == 1);
+	//ASSERT (scales [0]. unit == 1);  ??
 
       
     Vector<ObjPair> objPairs;  objPairs. reserve (1000);  // PAR
