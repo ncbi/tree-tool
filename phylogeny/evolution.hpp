@@ -136,6 +136,17 @@ struct DissimAverage : Root
     		  var += dissimAttr. getWeight ();
     	return 1 / var;
     }    	
+  Real getEffectiveAttrs () const
+    { Real s = 0;
+    	for (const DissimAttr& dissimAttr : dissimAttrs)
+    		if (! dissimAttr. bad ())
+    		  s += dissimAttr. getWeight ();
+    	Real s2 = 0;
+    	for (const DissimAttr& dissimAttr : dissimAttrs)
+    		if (! dissimAttr. bad ())
+    		  s2 += sqr (dissimAttr. getWeight () / s);
+    	return 1 / s2;
+    }
 private:
 	MVector getVars () const;
   void setValues (size_t objNum)

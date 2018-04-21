@@ -63,12 +63,14 @@ struct ThisApplication : Application
 	  }
 	  ds. qc ();
     dissimAve. qc ();
-
+    
 	  	  
     auto averageAttr = new PositiveAttr1 ("average", ds, 6);  // PAR
     dissimAve. calibrate (*averageAttr);
 	 	dissimAve. print (cout);
 	 	
+    cerr << "Effective number of attributes: " << dissimAve. getEffectiveAttrs () << endl;
+
 	 	if (! output_dissimFName. empty ())
 	 	{
 	 		OFStream f (output_dissimFName + dmSuff);
