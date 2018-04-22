@@ -20,6 +20,7 @@ struct ThisApplication : Application
     {
       addPositional ("file", dmSuff + "-file");
       addPositional ("attr", "Attribute name");
+      addFlag ("inf2nan", "Convert -INF to NAN");
     }
 	
 	
@@ -28,6 +29,7 @@ struct ThisApplication : Application
 	{
 		const string inFName  = getArg ("file");
 		const string attrName = getArg ("attr");
+		const bool inf2nan    = getFlag ("inf2nan");
 
 
     Dataset ds (inFName);    
@@ -36,14 +38,17 @@ struct ThisApplication : Application
     const RealAttr1* attr = attr_->asRealAttr1 ();
     ASSERT (attr);
     
-    auto logAttr = new RealAttr1 ("log_" + attrName, ds, attr->decimals);
+    auto logAttr = new RealAttr1 ("log_" + attrName, ds, attr->decimals + 1);
     FOR (size_t, objNum, ds. objs. size ())
     {
       const Real r = (*attr) [objNum];
       if (isNan (r))
         continue;
       ASSERT (r >= 0);
-      (*logAttr) [objNum] = log (r);
+      Real res = log (r);
+      if (inf2nan && res == -INF)
+      	res = NAN;
+      (*logAttr) [objNum] = res;
     }
     
     ds. print (cout);
