@@ -36,7 +36,8 @@ struct ThisApplication : Application
 		cout << "count" << '\t' << mv. n          << endl
 		     << "mean"  << '\t' << mv. getMean () << endl
 		     << "var"   << '\t' << mv. getVar ()  << endl
-		     << "SD"    << '\t' << mv. getSD ()   << endl;
+		     << "SD"    << '\t' << mv. getSD ()   << endl
+		     << "sum"   << '\t' << mv. s          << endl;
 	}
 };
 
