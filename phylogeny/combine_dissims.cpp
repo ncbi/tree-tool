@@ -54,7 +54,7 @@ struct Scale
 	  	  return NAN;
 	  	if (raw > raw_max)
 	  	  return NAN;
-	  	return raw / unit; 
+	  	return raw * unit; 
 	  }
 	Real dissim_max () const
 	  { return raw2dissim (raw_max); }
@@ -90,7 +90,7 @@ struct ThisApplication : Application
     {
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending, first scale = 1.\n\
-Line format: <unit> <max>");
+Line format: <unit> <raw_min> <raw_max>");
   	}
 
 
