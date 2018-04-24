@@ -22,7 +22,7 @@ makeFeatureTree  -input_tree $tmp.feature_tree  -features $2  \
   -gain_nodes gain_nodes  \
   -disagreement_nodes disagreement_nodes
 if ($?) exit 1
-cut -f 1 disagreement_nodes | sort |uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
+cut -f 1 disagreement_nodes | sort | uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
 if ($?) exit 1
 wc -l disagreement_nodes.txt
 
