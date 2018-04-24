@@ -676,7 +676,7 @@ public:
 	  //          file name                 line format                                   meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
-	  //          outlier/<obj>             <obj>                                         Outliers. Their dissimilarities are either in dissim or in dissim.outlier
+	  //         -outlier/<obj>             <obj>                                         Outliers. Their dissimilarities are either in dissim or in dissim.outlier
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
     //         [dissim.add[-req]]
@@ -686,17 +686,17 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-    //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
-    //         [objects_in_tree.sh]       executable with parameters: list of objects, 0/1
-    //         [request_closest.sh]       executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
-	  //       ?? delete                    <obj>
 	  //          version                   <natural number>
 	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Historic versions of data
     //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
+	  //          // scripts
+    //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
+    //          objects_in_tree.sh        executable with parameters: list of objects, 0/1
+    //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSubgraph() for each added Leaf
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)
