@@ -22,13 +22,13 @@ struct ThisApplication : Application
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
-  	  addKey ("step", "# Items processed to output the progress for", "1000");
+  	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
   	}
   
 
 
-	void body () const
+	void body () const final
 	{
 		      string items       = getArg ("items");
 		const string cmd_        = getArg ("command");
