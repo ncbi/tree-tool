@@ -151,16 +151,17 @@ struct ThisApplication : Application
 
     if (! qual. empty ())
     {    
+    	// Independent of tree.root
       OFStream out (qual);
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
       cout << "Feature statistics:" << endl;
-      size_t monos = 0;  // Monophyletic
-      size_t gains = 0;
-      size_t losses = 0;
+      size_t paraphyletics = 0;  
+      size_t nonParaphyletics = 0;  
+      size_t extraMutations = 0;
       size_t optionals = 0;
-      size_t commons = 0;
-      size_t singles = 0;
+      size_t commons = 0;  // f may be optional
+      size_t singles = 0;  // f may be optional
       const size_t genomes = tree. root->getLeavesSize ();
       FFOR (size_t, i, tree. features. size ())
       {
@@ -170,7 +171,7 @@ struct ThisApplication : Application
           optionals++;
         else if (f. genomes == genomes)
         {
-          ASSERT (f. gains == 1);
+          ASSERT (f. gains <= 1);
           ASSERT (f. losses == 0);
           commons++;
         }
@@ -178,24 +179,28 @@ struct ThisApplication : Application
           singles++;
         else   // Non-trivial features
         {
-          if (f. gains <= 1)
-            monos++;
+        	ASSERT (f. mutations () >= 1);
+          if (f. mutations () == 1)
+            paraphyletics++;
           else
-            gains += f. gains - 1;
-          losses += f. losses;
+          {
+            extraMutations += f. mutations () - 1;
+            nonParaphyletics++;
+          }
           //
           f. print (out);
         }
       }
-      cout << "# Paraphyletic features:  " << monos   << " ^" << endl;  // Better: more
-      cout << "# Non-paraphyletic gains: " << gains   << " v" << endl;  // Better: less
-      cout << "# Losses:                 " << losses  << " v" << endl;  // Better: less
-      cout << "# Common features:        " << commons << endl;
-      cout << "# Single features:        " << singles << endl;
-      cout << "# Optional features:      " << optionals << endl;
-      cout << endl;
-      cout << "Feature disagreement: " << gains + losses << endl;  // Better: less  
-        // --> tree. len ??
+      cout << "# Paraphyletic features:          " << paraphyletics   << " ^" << endl;  
+      cout << "# Non-paraphyletic features:      " << nonParaphyletics << " V" << endl;  
+    //cout << "# Non-paraphyletic gains:         " << gains   << " v" << endl;  
+    //cout << "# Losses:                         " << losses  << " v" << endl;  
+      cout << "# Non-paraphyletic disagreements: " << extraMutations << " V !" << endl;  
+      cout << "# Common features:                " << commons << endl;
+      cout << "# Single features:                " << singles << endl;
+      cout << "# Optional features:              " << optionals << endl;
+      ASSERT (optionals + commons + singles + paraphyletics + nonParaphyletics == tree. features. size ());
+      IMPLY (! use_time, (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize == paraphyletics + nonParaphyletics + extraMutations + singles);
     }
 
     
