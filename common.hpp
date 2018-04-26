@@ -2162,6 +2162,9 @@ public:
 
 struct OFStream : ofstream, Nocopy
 {
+	string fName;
+	
+	
 	OFStream ()
 	  {}
 	OFStream (const string &dirName,
@@ -2170,6 +2173,9 @@ struct OFStream : ofstream, Nocopy
 	  { open (dirName, pathName, extension); }
 	explicit OFStream (const string &pathName)
 	  { open ("", pathName, ""); }
+ ~OFStream ();
+
+	  
 	void open (const string &dirName,
 	           const string &pathName,
 	           const string &extension);
