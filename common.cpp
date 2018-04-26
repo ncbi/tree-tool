@@ -1188,7 +1188,7 @@ void OFStream::open (const string &dirName,
 	if (bad ())
 		cout << "bad" << endl;
 */	
-	if (! good ())
+	if (! (is_open () && good ()))
 	  throw runtime_error ("Cannot create file \"" + name + "\"");
 }
 
