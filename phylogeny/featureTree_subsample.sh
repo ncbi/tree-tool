@@ -26,7 +26,7 @@ while ($SEED < 100)  # PAR
   @ SEED = $SEED + 1
   set OUT = $1-$SEED.tree
   if (! -e $OUT || -z $OUT) then
-    $QSUB -N j$SEED "featureTree_subsample_item.sh $1 $SEED log" > /dev/null
+    $QSUB_5 -N j$SEED "featureTree_subsample_item.sh $1 $SEED log" > /dev/null
   endif
 end
 qstat_wait.sh

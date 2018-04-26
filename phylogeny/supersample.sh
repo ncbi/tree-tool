@@ -77,7 +77,7 @@ while ($SEED < $replicas)
   if (! -e $OUT || -z $OUT) then
     cp /dev/null log/$SEED
     if ($?) exit 1
-    $QSUB -N j$SEED "supersample_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
+    $QSUB_5 -N j$SEED "supersample_item.sh $INPUT $ATTR $BASE_SEED $SEED $SUPER_SIZE log $PROG" > /dev/null
     if ($?) exit 1
   endif
 end
