@@ -694,7 +694,7 @@ public:
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
 	  //          // scripts
-    //          request2dissim.sh         executable with parameters: search/<obj_new>/request search/<obj_new>/dissim.add
+    //          request2dissim.sh         executable with parameters: request dissim.add log
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //       <dissimilarity>: >= 0, < INF
