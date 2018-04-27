@@ -13,14 +13,11 @@ INPUT:
 Ave. dissimilarity = 4.986726
 absCriterion = 8.350  Error density = 3.374 %
 
-
-# Outliers: 0
-Min. rel. average leaf error of outliers: inf
-
 OUTPUT:
 absCriterion = 8.350  Error density = 3.374 %
 absCriterion [0] = 3.746  Error density [0] = 5.049 %  Fraction = 34.041 %
 absCriterion [1] = 4.605  Error density [1] = 2.802 %  Fraction = 65.959 %
+
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.08

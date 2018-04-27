@@ -159,7 +159,7 @@ struct ThisApplication : Application
 
     if (! removeFName. empty ())
     {
-      cout << endl << "Removing ..." << endl;
+      cout << "Removing ..." << endl;
       {
         LineInput f (removeFName, 10000, 1);
         Progress prog;
@@ -182,6 +182,7 @@ struct ThisApplication : Application
 	    if (tree->optimizable ())
         tree->reportErrors (cout);
       tree->qc ();
+      cout << endl;
     }
 
 
@@ -248,8 +249,10 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           
+          cout << "Re-rooting ..." << endl;
           const Real radius_ave = tree->reroot (root_topological);
-          cout << endl << "Ave. radius: " << radius_ave << endl;
+          cout << "Ave. radius: " << radius_ave << endl;
+          cout << endl;
         }
         else if (leaves == 3)
           tree->optimize3 ();
@@ -262,18 +265,19 @@ struct ThisApplication : Application
 
 
       // Outliers
-      Real outlier_min = NAN;
-      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
-      cout << endl << "# Outliers: " << outliers. size () << endl;
-      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
-      for (const Leaf* leaf : outliers)
-        cout         << leaf->name 
-             << '\t' << leaf->getRelCriterion ()
-             << '\t' << leaf->absCriterion
-             << endl;
       if (! remove_outliers. empty ())
       {
-        cout << endl << "Removing outliers ..." << endl;
+	      Real outlier_min = NAN;
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
+	      cout << "# Outliers: " << outliers. size () << endl;
+	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
+	      for (const Leaf* leaf : outliers)
+	        cout         << leaf->name 
+	             << '\t' << leaf->getRelCriterion ()
+	             << '\t' << leaf->absCriterion
+	             << endl;
+	      cout << endl;
+        cout << "Removing outliers ..." << endl;
         {
           OFStream f (remove_outliers);
           Progress prog ((uint) outliers. size ());
@@ -287,18 +291,24 @@ struct ThisApplication : Application
         tree->reportErrors (cout);
 	      tree->setNodeAbsCriterion ();
         tree->qc ();
+        cout << endl;
       }
 
       
-      cout << endl << "OUTPUT:" << endl;  
+      cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  // skip if isDirName(dataFName) ??
       tree->qc ();
+      cout << endl;
     }
     
 
     if (reroot)
-      cout << endl << "Ave. radius: " << tree->reroot (root_topological) << endl;
+    {
+      cout << "Re-rooting ..." << endl;
+      cout << "Ave. radius: " << tree->reroot (root_topological) << endl;
+      cout << endl;
+    }
     else 
       if (! reroot_at. empty ())
       {
@@ -315,6 +325,7 @@ struct ThisApplication : Application
         // Must be << "Average arc error"
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
+      cout << endl;
     }
     tree->qc ();
     
@@ -369,7 +380,6 @@ struct ThisApplication : Application
     // Statistics
     {
       const ONumber on (cout, criterionDecimals, false);
-      cout << endl;
       cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernibles (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
