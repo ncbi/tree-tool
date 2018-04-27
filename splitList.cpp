@@ -24,7 +24,7 @@ Parts are named <out_dir>/<i>")
 	}
 
 
-	void body () const
+	void body () const final
 	{
 		const string in       = getArg ("in");
 		const streamsize size = str2<streamsize> (getArg ("size"));
