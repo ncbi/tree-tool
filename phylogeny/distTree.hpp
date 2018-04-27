@@ -1130,6 +1130,7 @@ public:
            const string &dataDir_arg,
            const string &name_arg,
            bool init);
+    // Invokes: saveLeaf(), saveRequest()
   NewLeaf (const DTNode* dtNode,
            size_t q_max,
            Real &nodeAbsCriterion_old);

@@ -1497,6 +1497,7 @@ DistTree::DistTree (const string &dataDirName,
 
   if (loadDissim)
   {
+  #if 0
     StringVector outliers;
     {
       FileItemGenerator fig (0, true, dataDirName + "outlier");  
@@ -1505,6 +1506,7 @@ DistTree::DistTree (const string &dataDirName,
   	    outliers << item;
     }
     outliers. sort ();
+  #endif
     loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
     const string fName (dataDirName + "dissim");
     {
@@ -1519,10 +1521,12 @@ DistTree::DistTree (const string &dataDirName,
           throw runtime_error ("Line " + toString (f. lineNum) + ": Empty name2");
         if (name1 >= name2)
           throw runtime_error ("Line " + toString (f. lineNum) + ": name1 >= name2");
+      #if 0
         if (outliers. containsFast (name1))
           continue;
         if (outliers. containsFast (name2))
           continue;
+      #endif
         const Leaf* leaf1 = findPtr (name2leaf, name1);
         if (! leaf1)
           continue;
@@ -2956,7 +2960,7 @@ const DTNode* DistTree::lcaName2node (const string &lcaName) const
   const string name1 = findSplit (s, objNameSeparator);
   const Leaf* leaf1 = findPtr (name2leaf, name1);
   ASSERT (leaf1);
-  const Leaf* leaf2 = findPtr (name2leaf, s);
+  const Leaf* leaf2 = s. empty () ? leaf1 : findPtr (name2leaf, s);
   ASSERT (leaf2);
   const DTNode* node = static_cast<const DTNode*> (getLca (leaf1, leaf2));
   ASSERT (node);
