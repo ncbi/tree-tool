@@ -2160,27 +2160,24 @@ public:
 
 // OFStream
 
-struct OFStream : ofstream, Nocopy
+struct OFStream : ofstream
 {
-	string fName;
-	
-	
 	OFStream ()
 	  {}
 	OFStream (const string &dirName,
-	          const string &pathName,
+	          const string &fileName,
 	          const string &extension)
-	  { open (dirName, pathName, extension); }
+	  { open (dirName, fileName, extension); }
 	explicit OFStream (const string &pathName)
 	  { open ("", pathName, ""); }
- ~OFStream ();
 
-	  
+
 	void open (const string &dirName,
-	           const string &pathName,
+	           const string &fileName,
 	           const string &extension);
-	  // Input: !pathName.empty()
+	  // Input: !fileName.empty()
 };
+
 
 
 

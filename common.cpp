@@ -1165,46 +1165,24 @@ void Token::qc () const
 
 // OFStream
 
-OFStream::~OFStream ()
-{ 
-	if (fName. empty ())
-		return;
-	
-	rdbuf () -> pubsync ();
-	flush (); 
-	close ();
-	
-	{
-		ifstream f (fName);
-	}
-}
-
-
-
 void OFStream::open (const string &dirName,
-					           const string &pathName,
-					           const string &extension)
+	                   const string &fileName,
+	                   const string &extension)
 { 
-	ASSERT (! is_open ());	
-	ASSERT (! pathName. empty ());
+	ASSERT (! fileName. empty ());
+	ASSERT (! is_open ());
 	
+	string pathName;
 	if (! dirName. empty () && ! isDirName (dirName))
-	  fName = dirName + "/";
-	fName += pathName;
+	  pathName = dirName + "/";
+	pathName += fileName;
 	if (! extension. empty ())
-		fName += "." + extension;
-	
-	ofstream::open (fName. c_str ());
-/*	
-	if (eof ())
-		cout << "eof" << endl;
-	if (fail ())
-		cout << "fail" << endl;
-	if (bad ())
-		cout << "bad" << endl;
-*/	
-	if (! (is_open () && good ()))
-	  throw runtime_error ("Cannot create file \"" + fName + "\"");
+		pathName += "." + extension;
+		
+	ofstream::open (pathName);
+
+	if (! good ())
+	  throw runtime_error ("Cannot create file \"" + pathName + "\"");
 }
 
 
