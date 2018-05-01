@@ -41,7 +41,7 @@ while ($SEED < $replicas)
     if ($?) exit 1
   endif
 end
-qstat_wait.sh
+qstat_wait.sh 1
 if ($?) exit 1
 
 rmdir log
