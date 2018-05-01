@@ -24,6 +24,7 @@ Chronometer chron_subgraph2tree ("subgraph2tree");
 
 const StringVector varianceTypeNames {"lin", "exp", "linExp"};
 VarianceType varianceType = varianceType_linExp;
+Real dissim_coeff = 1;
 
 
 
@@ -2768,6 +2769,7 @@ bool DistTree::addDissim (const string &name1,
                           const string &name2,
                           Real dissim)
 {
+  ASSERT (dissim_coeff > 0);
   ASSERT (detachedLeaves. empty ());
 
   if (   isNan (dissim)  // prediction must be large ??
@@ -2780,6 +2782,7 @@ bool DistTree::addDissim (const string &name1,
   }
   
   ASSERT (dissim >= 0);
+  dissim *= dissim_coeff;  	
     
   const Real mult = dissim2mult (dissim);  
   if (mult)

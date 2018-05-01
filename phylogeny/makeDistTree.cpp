@@ -39,6 +39,7 @@ struct ThisApplication : Application
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
+	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>");
 	  
@@ -78,6 +79,7 @@ struct ThisApplication : Application
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
+	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 		const string dist_request        = getArg ("dist_request");
 	               
@@ -121,6 +123,7 @@ struct ThisApplication : Application
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
+    ASSERT (dissim_coeff > 0);
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exist, but no output_dist");
     IMPLY (whole,         optimize);
@@ -441,6 +444,7 @@ struct ThisApplication : Application
     //tree->setNodeAbsCriterion ();   // Done above
       for (const auto& it : tree->name2leaf)
         f << it. first << '\t' << it. second->getRelCriterion () << endl;  
+    // --> .dm-file with a log(getRelCriterion()) attribute ??
     }
 
   #if 0

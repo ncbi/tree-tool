@@ -31,6 +31,7 @@ enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
                   };
 extern const StringVector varianceTypeNames;
 extern VarianceType varianceType;
+extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
 
 inline VarianceType str2varianceType (const string &s)
   { size_t index = 0;
@@ -987,7 +988,7 @@ public:
     // Idempotent
     // Output: outlier_min
     // Requires: after setLeafAbsCriterion()    
-    // Invokes: Leaf::getRelCriterion(), RealAttr2::normal2outlier()
+    // Invokes: log(Leaf::getRelCriterion()), RealAttr2::normal2outlier()
     // Time: O(n log(n))
   VectorPtr<Leaf> findDepthOutliers () const;
     // Requires: after setReprLeaves()
