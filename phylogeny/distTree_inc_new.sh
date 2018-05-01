@@ -11,7 +11,6 @@ endif
 
 
 if ($2 <= 0)  exit 1
-if ((-e $1/objects_in_tree.sh) != (-e $1/request_closest.sh))  exit 1
 
 
 set GRID_MIN = `cat $1/grid_min`
@@ -70,14 +69,10 @@ rm $1/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-if (-e $1/request_closest.sh) then
-  # Use grid ??
-  trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
-  if ($?) exit 1  
-else
-	distTree_new $QC $1/ -init  
-	if ($?) exit 1
-endif
+# Use grid ??
+trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
+if ($?) exit 1  
+
 
 # Time: O(log^4(n)) per one new object, where n = # objects in the tree
 set Iter = 0
@@ -101,7 +96,7 @@ while (1)
   trav  -step 1  $1/search "distTree_inc_search.sh $1 %f %n $GRID"
   if ($?) exit 1
   if ($GRID) then
-    qstat_wait.sh
+    qstat_wait.sh 0
 	  if ($?) exit 1
   endif
   
@@ -110,6 +105,7 @@ while (1)
     echo "# Failed tasks: $L[1]"
    #exit 2
     if (! $GRID) exit 1
+	  # Try to fix grid problems
     trav $1/log "distTree_inc_unsearch.sh $1 %f"
     if ($?) exit 1
     trav $1/log "echo %d/%f; tail -20 %d/%f" | head -21
@@ -151,11 +147,11 @@ rm $1/dissim.add
 makeDistTree $QC  -data $1/ \
   -optimize  -skip_len  -subgraph_fast \
   -reroot  -root_topological \
-  -remove_outliers $1/outlier.add \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
 if ($?) exit 1
+  # -remove_outliers $1/outlier.add \
 mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
@@ -163,21 +159,21 @@ if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
 
-if (-e $1/objects_in_tree.sh) then
-  echo ""
-	cut -f 1 $1/hist/leaf.$VER > $1/leaf.list
-	if ($?) exit 1
-	$1/objects_in_tree.sh $1/leaf.list 1
-	if ($?) exit 1
-	rm $1/leaf.list
-	$1/objects_in_tree.sh $1/outlier.add 0
-	if ($?) exit 1
-endif
-
 echo ""
-trav  -noprogress  $1/outlier.add "cp /dev/null $1/outlier/%f"
+cut -f 1 $1/hist/leaf.$VER > $1/leaf.list
 if ($?) exit 1
-rm $1/outlier.add
+$1/objects_in_tree.sh $1/leaf.list 1
+if ($?) exit 1
+rm $1/leaf.list
+#$1/objects_in_tree.sh $1/outlier.add 0
+#if ($?) exit 1
+
+if (0) then
+	echo ""
+	trav  -noprogress  $1/outlier.add "cp /dev/null $1/outlier/%f"
+	if ($?) exit 1
+	rm $1/outlier.add
+endif
 
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
 if ($?) exit 1

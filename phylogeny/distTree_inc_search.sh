@@ -4,6 +4,7 @@ if ($# != 4) then
   echo "Process a new object for a distance tree"
   echo "Update: append: #1/{leaf,dissim.add}"
   echo "        delete: #1/search/#2/"
+  echo "        use: #1/log/#2"
   echo "#1: Directory containing search/"
   echo "#2: New object"
   echo "#3: Job number"
@@ -37,7 +38,7 @@ else
   cp /dev/null $1/log/$2
   if ($?) exit 1
   if ($4) then
-    $QSUB -N j$3 "distTree_inc_request.sh $1 $2" > /dev/null  
+    $QSUB_5 -N j$3 "distTree_inc_request.sh $1 $2" > /dev/null  
   else
     distTree_inc_request.sh $1 $2
   endif

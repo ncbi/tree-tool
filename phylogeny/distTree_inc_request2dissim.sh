@@ -16,7 +16,7 @@ set GRID_MIN = `cat $1/grid_min`
 
 
 if ($N[1] <= $GRID_MIN) then  # PAR
-  $1/request2dissim.sh $2 $3 >& /dev/null
+  $1/request2dissim.sh $2 $3 $3.log >& /dev/null
   if ($?) exit 1
 else
 	mkdir $1/dr
@@ -28,13 +28,13 @@ else
 	mkdir $1/dr.out
 	if ($?) exit 1
 	
-	trav -step 1 $1/dr "$QSUB -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f%q > /dev/null"
+	trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"
 	if ($?) exit 1
 	
-	qstat_wait.sh
+	qstat_wait.sh 1
 	if ($?) exit 1
 	
-	trav -step 100 $1/dr.out "cat %d/%f" > $3
+	trav $1/dr.out "cat %d/%f" > $3
 	if ($?) exit 1
 	
 	set N_new = `wc -l $3`

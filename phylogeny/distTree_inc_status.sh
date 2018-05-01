@@ -23,9 +23,11 @@ echo "# Being added: $N[1]"
 set N = `ls $1/search/ | wc -l`
 echo "# Being searched: $N[1]"
 
-set N = `ls $1/outlier/ | wc -l`
-set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
-echo "# Outliers: $N[1] ($outliers_percent %)"
+if (0) then
+	set N = `ls $1/outlier/ | wc -l`
+	set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
+	echo "# Outliers: $N[1] ($outliers_percent %)"
+endif
 
 echo ""
 set N = `ls $1/new/ | wc -l`

@@ -17,16 +17,17 @@ if (! -z $1/log/$2) then
   exit 1
 endif
 
-if (! -e $DIR/request) then
-  echo "$DIR/request does not exist" 
-  exit 1
-endif
-
 if (! -e $DIR/dissim) then
   echo "$DIR/dissim does not exist" 
   exit 1
 endif
 
+if (0) then
+	if (! -e $DIR/request) then
+	  echo "$DIR/request does not exist" 
+	  exit 1
+	endif
+endif
 
 cp /dev/null $1/new/$2
 if ($?) exit 1
