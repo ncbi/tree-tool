@@ -3,7 +3,7 @@
 if ($# != 3) then
   echo "Phenotypic quality of an incremental tree"
   echo "Requires: no added outliers"
-  echo "#1: incremental tree"
+  echo "#1: incremental tree data structure"
   echo "#2: target tree version"
   echo "#3: version increment (>= 1)"
   exit 1

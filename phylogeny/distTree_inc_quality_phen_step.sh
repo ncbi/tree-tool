@@ -3,7 +3,7 @@
 if ($# != 4) then
   echo "Phenotypic quality of an incremental tree vs. #4.tree"
   echo "Requires: no adding outliers"
-  echo "#1: incremental tree"
+  echo "#1: incremental tree data structure"
   echo "#2: test objects"
   echo "#3: target tree version|'opt'"
   echo "#4: temporary file prefix"
@@ -46,7 +46,7 @@ if ($?) exit 1
 makeDistTree  -input_tree $INTREE  -remove $tmp.remove  -output_tree $tmp.trees/$3.tree  -output_feature_tree $tmp.feature_tree > /dev/null
 if ($?) exit 1
 
-makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual | grep "Feature disagreement:"
+makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $tmp.qual | grep "Non-paraphyletic disagreements:"
 if ($?) exit 1
 
 echo "match+:"
