@@ -1728,7 +1728,7 @@ string Application::getInstruction () const
   for (const Key& key : keys)
     instr += " " + key. str ();
   
-  instr += string ("\n") + "Help:  " + programName + " -help";
+  instr += string ("\n") + "Help:  " + programName + " -help|-h";
 
   return instr;
 }
@@ -1780,7 +1780,9 @@ int Application::run (int argc,
           if (key)
             errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
           const string name (s. substr (1));
-          if (name == "help")
+          if (   name == "help"
+          	  || name == "h"
+          	 )
           {
             cout << getHelp () << endl;
             return 0;
