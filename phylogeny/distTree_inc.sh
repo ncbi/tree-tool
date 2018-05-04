@@ -46,7 +46,10 @@ echo $VER > $1/version
 if ($?) exit 1
 
 set delete = ""
-if (-e $1/delete)   set delete = "-delete $1/delete"
+if (-e $1/delete) then
+  wc -l $1/delete
+  set delete = "-delete $1/delete"
+endif
 
 # Time: O(n log^4(n))
 makeDistTree  -data $1/  $delete  -optimize  -reinsert  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
