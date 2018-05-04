@@ -38,7 +38,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
   {
 		const string input_tree   = getArg ("input_tree");
 		const Real branch_prob    = str2<Prob> (getArg ("branch_prob"));
