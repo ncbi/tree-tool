@@ -64,7 +64,7 @@ struct ThisApplication : Application
     // Output
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
-	  addKey ("leaf_errors", "File with relative errors of leaves");
+	  addKey ("leaf_errors", dmSuff + "-file without \"" + dmSuff + "\" with relative errors of leaves");
 	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
