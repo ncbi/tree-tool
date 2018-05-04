@@ -694,6 +694,7 @@ public:
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
+	  //         [delete]                   <obj>                                         Objects to delete
 	  //          // scripts
     //          request2dissim.sh         executable with parameters: request dissim.add log
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1

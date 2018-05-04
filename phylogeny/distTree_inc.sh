@@ -45,11 +45,22 @@ if ($?) exit 1
 echo $VER > $1/version
 if ($?) exit 1
 
+set delete = ""
+if (-e $1/delete)   set delete = "-delete $1/delete"
+
 # Time: O(n log^4(n))
-makeDistTree  -data $1/  -optimize  -reinsert  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
+makeDistTree  -data $1/  $delete  -optimize  -reinsert  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
+
+if (-e $1/delete) then
+  $1/objects_in_tree.sh $1/delete 0
+	if ($?) exit 1
+  mv $1/delete $1/hist/delete.$VER
+	if ($?) exit 1
+endif
+
 
 
 if (-e $1/phen) then
