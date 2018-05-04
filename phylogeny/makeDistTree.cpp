@@ -44,7 +44,7 @@ struct ThisApplication : Application
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>");
 	  
 	  // Processing
-	  addKey ("remove", "Remove leaves whose names are in the indicated file");
+	  addKey ("delete", "Delete leaves whose names are in the indicated file");
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
@@ -83,7 +83,7 @@ struct ThisApplication : Application
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 		const string dist_request        = getArg ("dist_request");
 	               
-		const string removeFName         = getArg ("remove");
+		const string deleteFName         = getArg ("delete");
 		      bool   sparse              = getFlag ("sparse");
 		      
 		const bool   optimize            = getFlag ("optimize");
@@ -160,11 +160,11 @@ struct ThisApplication : Application
     cout << endl;
 
 
-    if (! removeFName. empty ())
+    if (! deleteFName. empty ())
     {
       cout << "Removing ..." << endl;
       {
-        LineInput f (removeFName, 10000, 1);
+        LineInput f (deleteFName, 10000, 1);
         Progress prog;
         while (f. nextLine ())
         {
@@ -440,11 +440,19 @@ struct ThisApplication : Application
     if (! leaf_errors. empty ())
     {
       checkOptimizable (*tree, "leaf_errors");
-      OFStream f (leaf_errors);
     //tree->setNodeAbsCriterion ();   // Done above
+      Dataset ds;
+	    auto attr = new RealAttr1 ("leaf_error", ds);
       for (const auto& it : tree->name2leaf)
-        f << it. first << '\t' << it. second->getRelCriterion () << endl;  
-    // --> .dm-file with a log(getRelCriterion()) attribute ??
+      {
+      	const Real relCriterion = it. second->getRelCriterion ();
+      	if (relCriterion <= 0)
+      		continue;
+ 	      const size_t index = ds. appendObj (it. first);
+ 	      (*attr) [index] = log (relCriterion);
+      }
+      OFStream f (leaf_errors + dmSuff);
+	    ds. saveText (f);    
     }
 
   #if 0
