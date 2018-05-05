@@ -2325,7 +2325,7 @@ void FeatureTree::dump (const string &fName/*,
 Real FeatureTree::feature2treeLength (size_t featureIndex) const
 { 
   // Cf. Phyl:;feature2parentCore()
-  const auto parent2core = static_cast <const Species*> (root) -> parent2core;
+  const auto& parent2core = static_cast <const Species*> (root) -> parent2core;
   return emptySuperRoot 
            ? parent2core [false] [featureIndex]. treeLen
            : allTimeZero 
@@ -2880,30 +2880,34 @@ bool FeatureTree::optimize ()
 
 
 
-string FeatureTree::findRoot () 
+string FeatureTree::findRoot (size_t &bestCoreSize) 
 {
   ASSERT (allTimeZero);
 
   string rootLcaName;
 
   setCore ();
+  sort ();
 
   const Species* bestFrom = nullptr;
- 	size_t bestCoreSize = 0;
+ 	bestCoreSize = 0;
   FFOR (size_t, i, features. size ())
     if (static_cast <const Species*> (root) -> core [i])
       bestCoreSize++;
+//cout << "Init. bestCoreSize = " << bestCoreSize << endl;  
  	for (const DiGraph::Node* node : nodes)
  		if (const Species* from = static_cast <const Phyl*> (node) -> asSpecies ())
  		{
+ 		#if 0
    		const Species* parent = static_cast <const Species*> (from->getParent ());
    		if (! parent)
    		  continue;
    	 	ASSERT (from != root);
+   	#endif
       size_t coreSize = 0;
       FFOR (size_t, i, features. size ())
         if (   from  ->core [i] 
-            && parent->core [i]
+          //&& parent->core [i]
            )
         coreSize++;
       if (minimize (bestCoreSize, coreSize))
