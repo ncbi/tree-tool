@@ -166,7 +166,7 @@ protected:
 	bool feature2core (size_t featureIndex) const
 	  { const bool parentCore = feature2parentCore (featureIndex);
 			const ebool c = parent2core [parentCore] [featureIndex]. core;
-		  return c == UBOOL ? true /*parentCore*/ /*PAR*/ : (bool) c;
+		  return c == UBOOL ? true /*parentCore*/ /*PAR*/ : (bool) c;  // gain is less probable than loss
 	  }
 public:
 	size_t getCoreSize () const;  
@@ -1177,12 +1177,12 @@ public:
 	  // Return: false <=> finished
 	  // Update: Phyl::stable
 	  // Invokes: getBestChange(), applyChanges()
-	string findRoot ();
+	string findRoot (size_t &bestCoreSize);
 	  // arg min_node core size
     // Idempotent
-    // Return: new root LCA name in the old tree
-	  // Output: topology, superRootCore
-	  // Invokes: setCore()
+    // Return: new root LCA name in the old tree; "" if new root = old root
+	  // Output: bestCoreSize, topology, superRootCore
+	  // Invokes: setCore(), sort()
 	  // Requires: allTimeZero
   void resetSuperRootCore (size_t coreChange [2/*core2nonCore*/]);
     // Idempotent
@@ -1195,13 +1195,13 @@ private:
 public:
   void saveSuperRootCore (const string &coreFeaturesFName) const;
   bool getSuperRootCore (size_t featureIndex) const
-    { const auto parent2core = static_cast <const Species*> (root) -> parent2core;
+    { const auto& parent2core = static_cast <const Species*> (root) -> parent2core;
       return emptySuperRoot 
            	   ? false
            	   : allTimeZero 
-           	     ? geReal ( parent2core [false] [featureIndex]. treeLen
-           	              , parent2core [true]  [featureIndex]. treeLen
-           	              )  // gain is less probable than loss
+           	     ? lessReal ( parent2core [true]  [featureIndex]. treeLen
+           	                , parent2core [false] [featureIndex]. treeLen
+           	                )  // superRoot should be minimal
   	    	       : superRootCore [featureIndex];
     }
   void setStats ();
