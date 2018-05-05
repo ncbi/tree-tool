@@ -77,10 +77,22 @@ if (-e $1/phen) then
 	if ($?) exit 1
 	set date = `date +%Y%m%d`
 	if ($?) exit 1
+
 	echo ""
-	makeDistTree  -data $1/  -reroot_at "$new_root"  -output_tree $1/tree.$date
+	echo ""
+	echo "New root: $new_root"
+	echo ""
+	echo ""
+	makeDistTree  -data $1/  -reroot_at "$new_root"  -output_tree $1/tree.$date > /dev/null
 	if ($?) exit 1
 	echo ""
-	tree_quality_phen.sh $1/tree.$date $1/phen
+	tree_quality_phen.sh $1/tree.$date $1/phen > $1/hist/tree_quality_phen.$VER-rooted
 	if ($?) exit 1
+	cat $1/hist/tree_quality_phen.$VER-rooted
+	if ($?) exit 1
+	set new_root = `grep '^New root: ' $1/hist/tree_quality_phen.$VER-rooted | sed 's/^New root: //1'`
+	if ("$new_root" != "") then
+	  echo "Re-rooting must be idempotent"
+	  exit 1
+	endif
 endif
