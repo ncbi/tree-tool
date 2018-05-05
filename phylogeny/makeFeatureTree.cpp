@@ -126,7 +126,9 @@ struct ThisApplication : Application
       if (tree. allTimeZero)
       {
         cout << "Old root: " << tree. root->getLcaName () << endl;
-        cout << "New root: " << tree. findRoot () << endl;
+        size_t bestCoreSize = 0;
+        cout << "New root: " << tree. findRoot (bestCoreSize) << endl;
+      //cout << "Core size: " << bestCoreSize << endl;
       }
       else
       {
