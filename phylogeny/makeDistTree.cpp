@@ -339,11 +339,12 @@ struct ThisApplication : Application
     chron_subgraph2tree.    print (cout); 
 
 
-  //tree->sort ();
+    tree->sort ();  // Makes reroot() idempotent
+
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
 
-    tree->saveFile (output_tree);  
+    tree->saveFile (output_tree); 
     tree->saveFeatureTree (output_feature_tree);
 
 
