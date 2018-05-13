@@ -25,21 +25,21 @@ Optimizing topology: neighbors ...
 Topology optimization iter = 1
 # Changes: 145
 # Commits = 58
-Improvement = 0.673
+Improvement = 0.674
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.134  Error density = 1.846 %
 
 Topology optimization iter = 2
-# Changes: 50
-# Commits = 22
+# Changes: 48
+# Commits = 20
 Improvement = 0.077
 Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 absCriterion = 7.052  Error density = 1.835 %
 
 Topology optimization iter = 3
-# Changes: 18
+# Changes: 17
 # Commits = 8
 Improvement = 0.003
 Optimizing arc lengths at each arc ...
@@ -47,7 +47,7 @@ Optimizing arc lengths at each node ...
 absCriterion = 7.048  Error density = 1.834 %
 
 Topology optimization iter = 4
-# Changes: 6
+# Changes: 5
 # Commits = 3
 Improvement = 0.000
 Optimizing arc lengths at each arc ...
