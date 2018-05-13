@@ -1322,18 +1322,21 @@ public:
     }
   bool isUniq () const
     { return findDuplicate () == NO_INDEX; }
-  void uniq ()
-    { if (P::size () <= 1)
-        return;
-      size_t j = 1;  
-      FOR_START (size_t, i, 1, P::size ())
-        if (! ((*this) [i] == (*this) [i - 1]))
-        { if (j != i)
-            (*this) [j] = (*this) [i];
-          j++;
-        }
-      P::resize (j);
-    }
+  template <typename Equal /*bool equal (const T &a, const T &b)*/>
+	  void uniq (const Equal &equal)
+	    { if (P::size () <= 1)
+	        return;
+	      size_t j = 1;  
+	      FOR_START (size_t, i, 1, P::size ())
+	        if (! equal ((*this) [i], (*this) [i - 1]))
+	        { if (j != i)
+	            (*this) [j] = (*this) [i];
+	          j++;
+	        }
+	      P::resize (j);
+	    }
+	void uniq ()
+	  { uniq ([] (const T& a, const T& b) { return a == b; }); }
   size_t getIntersectSize (const Vector<T> &other) const
     // Input: *this, vec: unique
     { if (other. empty ())
@@ -1352,6 +1355,15 @@ public:
           n++;
       }
       return n;
+    }
+
+  bool operator< (const Vector<T> &other) const
+    // Lexicographic comparison
+    { FFOR (size_t, i, std::min (P::size (), other. size ()))
+    	{ if (P::operator[] (i) < other [i]) return true;
+    		if (other [i] < P::operator[] (i)) return false;
+      }
+      return P::size () < other. size ();
     }
 };
 
