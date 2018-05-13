@@ -29,8 +29,6 @@ diff obj.core $DIR/obj.core
 if ($?) exit 1
 diff obj.featureTree $DIR/obj.featureTree
 if ($?) exit 1
-diff obj.tree $DIR/obj.tree
-if ($?) exit 1
 
 rm obj.list
 rm obj.tree
