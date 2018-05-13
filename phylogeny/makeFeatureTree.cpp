@@ -27,18 +27,19 @@ struct ThisApplication : Application
   	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::geneLineFormat ());
   	  addKey ("input_core", "Input file with root core feature ids");
   	    
-  	  // Optimization
+  	  // Process
   	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
   	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
-  	  addKey ("output_core", "Find root, set root core and save file with root core feature ids");  	    
   
       // Output	    
   	  addKey ("output_tree", "Output file with the tree");
+  	  addKey ("output_core", "Find root, set root core and save file with root core feature ids");  	    
   	  addKey ("report_feature", "Feature name to report in the output tree");
   	//addFlag ("set_node_ids", "Set node ids in the output tree");  
   	  addKey ("newick", "Output file with the tree in the Newick format");
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
   	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
+  	  addFlag ("qual_nonredundant", "Non-redundify features by removing identical ones for the summary gain/loss statistics");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained");
   	  addKey ("disagreement_nodes", "File name to save nodes where features are not gained monophyletically");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
@@ -57,12 +58,13 @@ struct ThisApplication : Application
 		const int optim_iter_max        = str2<int> (getArg ("optim_iter_max"));
 
 		const string output_tree        = getArg ("output_tree");
+		const string output_core        = getArg ("output_core");
 		const string report_feature     = getArg ("report_feature");
 	//const bool set_node_ids         = getFlag ("set_node_ids");  
-		const string output_core        = getArg ("output_core");
 		const string newick             = getArg ("newick");
 		const bool min_newick_name      = getFlag ("min_newick_name");
 		const string qual               = getArg ("qual");  
+		const bool qual_nonredundant    = getFlag ("qual_nonredundant");
 		const string gain_nodes         = getArg ("gain_nodes");  
 		const string disagreement_nodes = getArg ("disagreement_nodes");  
 		const string arc_length_stat    = getArg ("arc_length_stat");
@@ -70,11 +72,11 @@ struct ThisApplication : Application
 
 		IMPLY (! input_core. empty () && ! output_core. empty (), input_core != output_core);
 	//ASSERT (save_feature. empty () || save_features. empty ());
-	//ASSERT (species_id > 0);
 		ASSERT (optim_iter_max >= -1);
+		IMPLY (qual_nonredundant, ! qual. empty ());
 		
 		
-    FeatureTree tree (/*species_id,*/ input_tree, feature_dir, input_core);
+    FeatureTree tree (input_tree, feature_dir, input_core);
     tree. printInput (cout);
     tree. qc ();    
     
@@ -119,8 +121,8 @@ struct ThisApplication : Application
         tree. optimizeTime ();
       }
     }
-
-
+    
+    
     if (! output_core. empty ())
     {
       if (tree. allTimeZero)
@@ -154,6 +156,14 @@ struct ThisApplication : Application
     if (! qual. empty ())
     {    
     	// Independent of tree.root
+
+    	Vector<Feature> features = tree. features;
+	    if (qual_nonredundant)
+	    {
+	    	features. sort (Feature::statLess);
+	    	features. uniq (Feature::statEqual);
+	    }
+	
       OFStream out (qual);
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
@@ -165,16 +175,16 @@ struct ThisApplication : Application
       size_t commons = 0;  // f may be optional
       size_t singles = 0;  // f may be optional
       const size_t genomes = tree. root->getLeavesSize ();
-      FFOR (size_t, i, tree. features. size ())
+      FFOR (size_t, i, features. size ())
       {
-        const Feature& f = tree. features [i];
+        const Feature& f = features [i];
         f. qc ();
         if (f. genomes == 0)
           optionals++;
         else if (f. genomes == genomes)
         {
-          ASSERT (f. gains <= 1);
-          ASSERT (f. losses == 0);
+          ASSERT (f. gains. size () <= 1);
+          ASSERT (f. losses. empty ());
           commons++;
         }
         else if (f. genomes == 1)
@@ -201,8 +211,8 @@ struct ThisApplication : Application
       cout << "# Common features:                " << commons << endl;
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
-      ASSERT (optionals + commons + singles + paraphyletics + nonParaphyletics == tree. features. size ());
-      IMPLY (! use_time, (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize == paraphyletics + nonParaphyletics + extraMutations + singles);
+      ASSERT (optionals + commons + singles + paraphyletics + nonParaphyletics == features. size ());
+      IMPLY (! qual_nonredundant && ! use_time, (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize == paraphyletics + nonParaphyletics + extraMutations + singles);
     }
 
     

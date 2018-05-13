@@ -17,8 +17,11 @@ namespace FeatureTree_sp
 
 
 
-typedef  Set<string>  Nominal;
-typedef  map<string/*nominal attribute name*/, Nominal>  Nominals;
+struct Phyl;
+  struct Species;
+    struct Fossil;
+    struct Strain;
+  struct Genome;
 
 
 
@@ -33,8 +36,8 @@ struct Feature : Named
 //Prob lambda_0;  ??
   // Stats
   size_t genomes {0};
-  size_t gains {0};
-  size_t losses {0};
+  VectorPtr<Phyl> gains;
+  VectorPtr<Phyl> losses;
 
 
   Feature ()
@@ -42,18 +45,24 @@ struct Feature : Named
 	explicit Feature (const Id &name_arg);
 	void qc () const override;
 	void saveText (ostream& os) const override
-	  { os << name << " +" << gains << " -" << losses << " / " << genomes << endl; }
+	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << endl; }
 
 	
   bool operator== (const Feature &other) const
-    { return name == other. name;
-    }
+    { return name == other. name; }
   bool operator< (const Feature &other) const
     { return name < other. name; }
+  static bool statEqual (const Feature& a,
+                         const Feature& b)
+    { return    a. gains  == b. gains
+    	       && a. losses == b. losses;
+    }
+  static bool statLess (const Feature& a,
+                        const Feature& b);
   size_t mutations () const
-    { return gains + losses; }
+    { return gains. size () + losses. size (); }
   bool monophyletic () const
-    { return gains <= 1 && losses == 0; }
+    { return gains. size () <= 1 && losses. empty (); }
   bool better (const Feature* other) const
     { return    ! other 
              || mutations () < other->mutations ()
@@ -70,14 +79,6 @@ inline bool eqTreeLen (Real len1,
 
 
 struct FeatureTree;
-
-//struct Phyl;
-  struct Species;
-    struct Fossil;
-    struct Strain;
-  struct Genome;
-
-
 
 struct Phyl : Tree::TreeNode 
 {
@@ -1002,6 +1003,11 @@ public:
 
 
 
+typedef  Set<string>  Nominal;
+typedef  map<string/*nominal attribute name*/, Nominal>  Nominals;
+
+
+
 struct FeatureTree : Tree
 // Of Phyl*
 // !allTimeZero => effectively unrooted 
@@ -1031,7 +1037,7 @@ struct FeatureTree : Tree
   Nominals nominals;
   
 	Vector<Feature> features;
-	  // Feature::name's are unique
+	  // Feature::name's are sorted, unique
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
 	size_t genomeGenes_ave {0};

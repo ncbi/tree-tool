@@ -32,9 +32,19 @@ void Feature::qc () const
 	ASSERT (! name. empty ());
 	ASSERT (! contains (name, ";"));
 //IMPLY (isGene, geneId ());
-	ASSERT (gains <= genomes);
-	IMPLY (genomes, gains);
-	IMPLY (genomes <= 1, ! losses);
+	ASSERT (gains. size () <= genomes);
+	IMPLY (genomes, ! gains. empty ());
+	IMPLY (genomes <= 1, losses. empty ());
+}
+
+
+
+bool Feature::statLess (const Feature& a,
+                        const Feature& b)
+{ 
+	LESS_PART (a, b, gains);
+	LESS_PART (a, b, losses);
+	return false;
 }
 
 
@@ -2032,6 +2042,7 @@ void FeatureTree::finish (const string &coreFeaturesFName)
   	prevFeature = fId;
   #endif
   }
+  features. searchSorted = true;
 //genes = features. size ();
   ASSERT (features. size () == nonSingletons. size ());
   ASSERT (feature2index. size () == features. size ());
@@ -2153,6 +2164,7 @@ void FeatureTree::qc () const
 	//ASSERT (f. isGene == (i < genes));
 		prevFeature = f;
 	}
+	ASSERT (features. searchSorted);
 
 //ASSERT (genes <= features. size ());
 	
@@ -3043,8 +3055,8 @@ void FeatureTree::setStats ()
   for (Feature& f : features)
   {
     f. genomes = 0;
-    f. gains = 0;
-    f. losses = 0;
+    f. gains. clear ();
+    f. losses. clear ();
   }
   
   Dataset ds;
@@ -3065,12 +3077,20 @@ void FeatureTree::setStats ()
            )
           features [i]. genomes++;
       if ((! phyl->feature2parentCore (i) /*|| phyl == root*/) && phyl->core [i])  
-        features [i]. gains++;
+        features [i]. gains << phyl;
       if (phyl->feature2parentCore (i) && ! phyl->core [i])
-        features [i]. losses++;
+        features [i]. losses << phyl;
     }
   }
   
+  for (Feature& f : features)
+  {
+  	f. gains. sort ();
+  	ASSERT (f. gains. isUniq ());
+   	f. losses. sort ();
+  	ASSERT (f. losses. isUniq ());
+  }
+    
   const Sample sample (ds);
 
   {
@@ -3097,8 +3117,8 @@ void FeatureTree::clearStats ()
   for (Feature& f : features)
   {
     f. genomes = 0;
-    f. gains = 0;
-    f. losses = 0;
+    f. gains. clear ();
+    f. losses. clear ();
   }
   
   distDistr. reset (nullptr);
