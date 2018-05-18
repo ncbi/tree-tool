@@ -1832,6 +1832,8 @@ void Dataset::load (istream &is)
       }
     }
   }
+  if (attrs. empty ())
+  	throw runtime_error ("No attributes");
     
     
   // objs, Obj::data
