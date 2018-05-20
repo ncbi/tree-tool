@@ -629,7 +629,8 @@ template <typename T>
 
 template <typename T>
   T str2 (const string &s)
-    { T i;
+    { static_assert (numeric_limits<T>::max() > 256, "str2 does not work on chars");
+    	T i;
       istringstream iss (s);
       iss >> i;
       if (   Common_sp::strBlank (s)
@@ -1945,6 +1946,14 @@ struct LineInput : Input
 	bool nextLine ();
   	// Output: eof, line
   	// Update: lineNum
+	bool expectPrefix (const string &prefix,
+	                   bool eofAllowed)
+		{ if (nextLine () && trimPrefix (line, prefix))
+		  	return true;  
+			if (eof && eofAllowed)
+				return false;
+		  throw runtime_error ("No \"" + prefix + "\"");
+		}
 	string getString ()
 	  { string s; 
 	  	while (nextLine ())
