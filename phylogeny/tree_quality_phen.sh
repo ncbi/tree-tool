@@ -11,9 +11,10 @@ endif
 
 set tmp = `mktemp`
 if ($?) exit 1
+echo $tmp
 
 
-makeDistTree  -input_tree $1  -output_feature_tree $tmp.feature_tree > /dev/null
+makeDistTree  -input_tree $1  -output_feature_tree $tmp.feature_tree  > $tmp.distTree
 if ($?) exit 1
 
 makeFeatureTree  -input_tree $tmp.feature_tree  -features $2  -output_core core \
