@@ -27,7 +27,8 @@ struct Scale
 	Real weight {NAN};
 #endif
 	
-	explicit Scale (const string &line)
+	Scale (const string &line,
+	       Real coeff)
 	  {
 	  	istringstream iss (line);
 	  	iss >> unit >> raw_min >> raw_max 
@@ -35,6 +36,7 @@ struct Scale
 	  	    >> weight
 	  	  #endif
 	  	  ;
+	  	unit *= coeff;
 	  	ASSERT (unit > 0);
 	  //ASSERT (unit <= 1); 
 	  	ASSERT (raw_min >= 0);
@@ -91,6 +93,7 @@ struct ThisApplication : Application
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending, first scale = 1.\n\
 Line format: <unit> <raw_min> <raw_max>");
+      addPositional ("coeff", "Coefficient to multiply all dissimilarities, > 0");
   	}
 
 
@@ -99,13 +102,15 @@ Line format: <unit> <raw_min> <raw_max>");
 	{
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
+		const Real coeff         = str2real (getArg ("coeff"));
+		ASSERT (coeff > 0);
 		
 		
 		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
 			LineInput f (scaleFName);
 			while (f. nextLine ())
-	      scales << Scale (f. line);
+	      scales << Scale (f. line, coeff);
 		}
 		ASSERT (scales. size () >= 2);
 	//ASSERT (scales [0]. unit == 1);  
