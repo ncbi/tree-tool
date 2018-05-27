@@ -230,7 +230,7 @@ struct ThisApplication : Application
               tree->optimizeWholeIter (0, output_tree);
             else
             {
-              const size_t iter_max = (size_t) log2 ((Real) leaves) / areaRadius_std + 1;  // PAR
+              const size_t iter_max = max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std);  // PAR
               size_t iter = 0;
             	for (;;)
             	{
