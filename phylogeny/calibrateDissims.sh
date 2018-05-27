@@ -1,6 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 2) then
+  echo "Input: sm1K-univ-calibrate.dm"
   echo "#1: power"
   echo "#2: phen/"
   exit 1
