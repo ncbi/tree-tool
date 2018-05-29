@@ -54,7 +54,7 @@ struct ThisApplication : Application
 	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("skip_topology", "Skip topology optimization");
 	  
-	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");
+	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  // --> optimize_new ??
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
