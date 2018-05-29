@@ -177,7 +177,6 @@ endif
 
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
 if ($?) exit 1
-wc -l $1/dissim.add-req
 cat $1/dissim.add-req >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add-req
