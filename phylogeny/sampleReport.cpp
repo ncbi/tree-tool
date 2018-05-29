@@ -27,7 +27,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
   {
 		const string sampling          = getArg ("sampling");
 		const size_t replicas_expected = str2<size_t> (getArg ("replicas"));
