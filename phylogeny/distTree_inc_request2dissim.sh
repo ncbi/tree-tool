@@ -25,20 +25,25 @@ else
 	splitList $2 $GRID_MIN $1/dr
 	if ($?) exit 1
 	
-	mkdir $1/dr.out
-	if ($?) exit 1
-	
-	trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"
-	if ($?) exit 1
-	
-	qstat_wait.sh 1
-	if ($?) exit 1
-	
-	trav $1/dr.out "cat %d/%f" > $3
-	if ($?) exit 1
-	
-	set N_new = `wc -l $3`
-	if ($N[1] != $N_new[1])  exit 1
+  while (1)
+    rm -rf $1/dr.out
+		mkdir $1/dr.out
+		if ($?) exit 1
+		
+		trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"
+		if ($?) exit 1
+		
+		qstat_wait.sh 1
+		if ($?) exit 1
+		
+		trav $1/dr.out "cat %d/%f" > $3
+		if ($?) exit 1
+		wc -l $3
+		
+		set N_new = `wc -l $3`
+		if ($N[1] == $N_new[1]) break
+		echo "Redo ..."
+	end
 	
 	rm -r $1/dr.out
 	rm -r $1/dr
