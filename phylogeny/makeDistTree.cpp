@@ -49,12 +49,12 @@ struct ThisApplication : Application
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
-	  addFlag ("subgraph_fast", "Limit the number of iterations over the whole tree for subgraph optimizations");
+	  addKey ("max_subgraph_iter", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("skip_topology", "Skip topology optimization");
 	  
-	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  // --> optimize_new ??
+	//addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
@@ -70,6 +70,7 @@ struct ThisApplication : Application
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
 	  addKey ("dissim_request", "File with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	  addKey ("output_dist", "File with tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
+	  addFlag ("noqual", "Do not compute quality statitistics");
 	}
 	
 	
@@ -88,11 +89,11 @@ struct ThisApplication : Application
 		      
 		const bool   optimize            = getFlag ("optimize");
 		const bool   whole               = getFlag ("whole");
-		const bool   subgraph_fast       = getFlag ("subgraph_fast");
+		const size_t max_subgraph_iter   = str2<size_t> (getArg ("max_subgraph_iter"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
 		const bool   skip_topology       = getFlag ("skip_topology");
-		const bool   new_only            = getFlag ("new_only");
+	//const bool   new_only            = getFlag ("new_only");
 		
 		const bool   reroot              = getFlag ("reroot");		
 		const bool   root_topological    = getFlag ("root_topological");
@@ -107,6 +108,7 @@ struct ThisApplication : Application
 		const string output_dissim       = getArg ("output_dissim");
 		const string dissim_request      = getArg ("dissim_request");
 		const string output_dist         = getArg ("output_dist");
+		const bool noqual                = getFlag ("noqual");
 		
 	  IMPLY (isDirName (input_tree), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
@@ -126,13 +128,14 @@ struct ThisApplication : Application
     ASSERT (dissim_coeff > 0);
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exist, but no output_dist");
-    IMPLY (whole,         optimize);
-    IMPLY (subgraph_fast, optimize);
-    IMPLY (skip_len,      optimize);
-    IMPLY (reinsert,      optimize);
-    IMPLY (skip_topology, optimize);
-    IMPLY (subgraph_fast, ! whole);
-    IMPLY (new_only, ! optimize);
+    IMPLY (whole,             optimize);
+    IMPLY (max_subgraph_iter, optimize);
+    IMPLY (skip_len,          optimize);
+    IMPLY (reinsert,          optimize);
+    IMPLY (skip_topology,     optimize);
+    IMPLY (max_subgraph_iter, ! whole);
+  //IMPLY (new_only, ! optimize);
+    IMPLY (! leaf_errors. empty (), ! noqual);
 
 
     DistTree::printParam (cout);
@@ -146,7 +149,7 @@ struct ThisApplication : Application
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree = isDirName (dataFName)
-               ? new DistTree (dataFName, true, true, new_only)
+               ? new DistTree (dataFName, true, true, optimize /*new_only*/)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse)
                  : isDirName (input_tree)
@@ -230,16 +233,17 @@ struct ThisApplication : Application
               tree->optimizeWholeIter (0, output_tree);
             else
             {
-              const size_t iter_max = max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std);  // PAR
+            //const size_t iter_max = max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std);  // PAR
+            //ASSERT (iter_max);
               size_t iter = 0;
             	for (;;)
             	{
 	              iter++;
-            		if (subgraph_fast)
+            		if (max_subgraph_iter)
             		{
-            			if (iter > iter_max)
+            			if (iter > max_subgraph_iter)
             			  break;
-            	    cout << "Iteration " << iter << '/' << iter_max << " ..." << endl;
+            	    cerr << "Iteration " << iter << '/' << max_subgraph_iter << " ..." << endl;
             	  }
             		const Real absCriterion_old = tree->absCriterion;
 	              tree->optimizeSubgraphs (areaRadius_std);  
@@ -264,12 +268,10 @@ struct ThisApplication : Application
       }
 
 
-      tree->setNodeAbsCriterion ();
-
-
       // Outliers
       if (! remove_outliers. empty ())
       {
+	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NAN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
 	      cout << "# Outliers: " << outliers. size () << endl;
@@ -292,10 +294,11 @@ struct ThisApplication : Application
           }
         }
         tree->reportErrors (cout);
-	      tree->setNodeAbsCriterion ();
-        tree->qc ();
         cout << endl;
       }
+      if (! noqual)
+        tree->setNodeAbsCriterion ();
+      tree->qc ();
 
       
       cout << "OUTPUT:" << endl;  
@@ -317,13 +320,14 @@ struct ThisApplication : Application
       {
         const DTNode* underRoot = tree->lcaName2node (reroot_at);
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
-	      tree->setNodeAbsCriterion ();
+        if (! noqual)
+	        tree->setNodeAbsCriterion ();
       }
       
 
-    if (tree->optimizable ())
+    if (! noqual && tree->optimizable ())
     {
-    	const Real dissim_var = tree->setErrorDensities ();
+    	const Real dissim_var = tree->setErrorDensities ();  
       cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->dissim2_sum) * 100 << " %" << endl;
         // Must be << "Average arc error"
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
