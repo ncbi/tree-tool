@@ -1581,6 +1581,7 @@ DistTree::DistTree (const string &dataDirName,
     setPaths ();        
     qc ();     
 
+    if (optimizeP)
     {  
       const Chronometer_OnePass cop ("Optimizing new leaves");  
       cout << "Optimizing new leaves ..." << endl;
@@ -1589,8 +1590,7 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (absCriterion2str ());
         Unverbose unv;
-        if (optimizeP)
-          optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
+        optimizeSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
           // reinsert ??
       #ifndef NDEBUG
         // ??
