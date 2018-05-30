@@ -988,7 +988,7 @@ public:
                                          Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
-    // Requires: after setLeafAbsCriterion()    
+    // Requires: after setNodeAbsCriterion()    
     // Invokes: log(Leaf::getRelCriterion()), RealAttr2::normal2outlier()
     // Time: O(n log(n))
   VectorPtr<Leaf> findDepthOutliers () const;
