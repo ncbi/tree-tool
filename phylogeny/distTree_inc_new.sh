@@ -145,8 +145,9 @@ rm $1/dissim.add
 # Time: O(n log^2(n)) 
 # -profile
 makeDistTree $QC  -data $1/ \
-  -optimize  -skip_len  -subgraph_fast \
+  -optimize  -skip_len  -max_subgraph_iter 1 \
   -reroot  -root_topological \
+  -noqual \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
