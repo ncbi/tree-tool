@@ -146,13 +146,13 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 
-#set VER = 54
+#set VER = 254
 
 
 # Time: O(n log^2(n)) 
 # -profile
 makeDistTree $QC  -data $1/ \
-  -optimize  -skip_len  -subgraph_fast \
+  -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 2 \
   -reroot  -root_topological \
   -noqual \
   -output_tree $1/tree.new \
