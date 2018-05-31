@@ -69,9 +69,16 @@ rm $1/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-# Use grid ??
-trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
-if ($?) exit 1  
+set REQ = `ls $1/search | wc -l`
+if ($REQ[1] > 200) then  # PAR
+	trav  -step 1  $1/search "$QSUB_5 -N j%n %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
+	if ($?) exit 1  
+	qstat_wait.sh 1
+	if ($?) exit 1
+else
+	trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
+	if ($?) exit 1  
+endif
 
 
 # Time: O(log^4(n)) per one new object, where n = # objects in the tree
@@ -145,7 +152,7 @@ rm $1/dissim.add
 # Time: O(n log^2(n)) 
 # -profile
 makeDistTree $QC  -data $1/ \
-  -optimize  -skip_len  -max_subgraph_iter 1 \
+  -optimize  -skip_len  -subgraph_fast \
   -reroot  -root_topological \
   -noqual \
   -output_tree $1/tree.new \

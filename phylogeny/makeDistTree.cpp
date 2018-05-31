@@ -49,7 +49,7 @@ struct ThisApplication : Application
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
-	  addKey ("max_subgraph_iter", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
+	  addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("skip_topology", "Skip topology optimization");
@@ -89,7 +89,7 @@ struct ThisApplication : Application
 		      
 		const bool   optimize            = getFlag ("optimize");
 		const bool   whole               = getFlag ("whole");
-		const size_t max_subgraph_iter   = str2<size_t> (getArg ("max_subgraph_iter"));
+		const bool   subgraph_fast       = getFlag ("subgraph_fast");
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
 		const bool   skip_topology       = getFlag ("skip_topology");
@@ -128,12 +128,12 @@ struct ThisApplication : Application
     ASSERT (dissim_coeff > 0);
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exist, but no output_dist");
-    IMPLY (whole,             optimize);
-    IMPLY (max_subgraph_iter, optimize);
-    IMPLY (skip_len,          optimize);
-    IMPLY (reinsert,          optimize);
-    IMPLY (skip_topology,     optimize);
-    IMPLY (max_subgraph_iter, ! whole);
+    IMPLY (whole,         optimize);
+    IMPLY (subgraph_fast, optimize);
+    IMPLY (skip_len,      optimize);
+    IMPLY (reinsert,      optimize);
+    IMPLY (skip_topology, optimize);
+    IMPLY (subgraph_fast, ! whole);
   //IMPLY (new_only, ! optimize);
     IMPLY (! leaf_errors. empty (), ! noqual);
 
@@ -233,17 +233,17 @@ struct ThisApplication : Application
               tree->optimizeWholeIter (0, output_tree);
             else
             {
-            //const size_t iter_max = max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std);  // PAR
-            //ASSERT (iter_max);
+              const size_t iter_max = max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std);  // PAR
+              ASSERT (iter_max);
               size_t iter = 0;
             	for (;;)
             	{
 	              iter++;
-            		if (max_subgraph_iter)
+            		if (subgraph_fast)
             		{
-            			if (iter > max_subgraph_iter)
+            			if (iter > iter_max)
             			  break;
-            	    cerr << "Iteration " << iter << '/' << max_subgraph_iter << " ..." << endl;
+            	    cerr << "Iteration " << iter << '/' << iter_max << " ..." << endl;
             	  }
             		const Real absCriterion_old = tree->absCriterion;
 	              tree->optimizeSubgraphs (areaRadius_std);  
