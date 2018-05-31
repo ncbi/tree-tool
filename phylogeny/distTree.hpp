@@ -687,6 +687,7 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
+	  //          outlier/<obj>                                                           Outlier objects
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
 	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Historic versions of data

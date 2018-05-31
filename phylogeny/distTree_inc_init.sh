@@ -33,6 +33,9 @@ if ($?) exit 1
 mkdir $1/search
 if ($?) exit 1
 
+mkdir $1/outlier
+if ($?) exit 1
+
 echo "1" > $1/version
 if ($?) exit 1
 
