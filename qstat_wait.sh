@@ -6,6 +6,13 @@ if ($# != 1) then
 endif
 
 
+while (1)
+  sleep 10  # PAR
+  set Q = `qstat | grep -v '^job-ID' | grep -v '^---' | grep '   qw   ' | head -1 | wc -l`
+  if ($Q[1] == 0)  break
+end
+
+
 set N = 0
 while (1)
   sleep 10  # PAR
