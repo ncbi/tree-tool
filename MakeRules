@@ -1,4 +1,4 @@
-SimpleCPPFLAGS = -std=gnu++11 \
+SimpleCPPFLAGS = -std=gnu++11 -pthread \
   -malign-double -fno-math-errno \
   -Wall -Wextra \
   -Wcast-align -Wconversion -Wdeprecated-declarations -Wformat -Winit-self -Wlogical-op \
@@ -15,7 +15,11 @@ OptCPPFLAGS = -Werror $(SimpleCPPFLAGS) -O3
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
 
 
+CXX=g++
+COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c 
+LIBS=-pthread
 ECHO = echo ""; echo ""
+
 
 CODE_DIR = $(HOME)/code
 

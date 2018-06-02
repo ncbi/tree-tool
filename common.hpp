@@ -71,6 +71,7 @@
 #include <iomanip>
 #include <memory>
 #include <algorithm>
+#include <thread>
 
 
 
@@ -85,6 +86,7 @@ bool initCommon ();
   // Invoked automaticallly
 
 extern bool qc_on;
+extern size_t threads_max;
 
 
 extern vector<string> programArgs;
@@ -506,6 +508,38 @@ template <typename T>
         os << t << endl;
       return os;
     }
+
+
+
+template <typename Func, typename... Args>
+  void runThreads (const Func& func,
+                   size_t i_max,
+                   Args&&... args)
+  // Input: func (from, to, args...)
+  // Optimial thread_num minimizes (Time_SingleCPU/thread_num + Time_openCloseThread * (thread_num - 1)), which is sqrt(Time_SingleCPU/Time_openCloseThread)
+  {
+  	ASSERT (threads_max >= 1);
+		size_t chunk = max<size_t> (1, i_max / threads_max);
+		if (chunk * threads_max < i_max)
+			chunk++;
+		ASSERT (chunk * threads_max >= i_max);
+	  vector<thread> threads;  threads.  reserve (threads_max);
+		FFOR (size_t, tn, threads_max)
+	  {
+	    const size_t from = tn * chunk;
+	  	if (from >= i_max)
+	  		break;
+	    const size_t to = from + chunk;
+	    if (to >= i_max)
+	    {
+	    	func (from, i_max, forward<Args>(args)...);
+	    	break;
+	    }
+		  threads. push_back (thread (func, from, to, forward<Args>(args)...));
+		}
+		for (auto& t : threads)  
+			t. join ();
+  }
 
 
 
@@ -2684,6 +2718,7 @@ protected:
       addKey ("verbose", "Level of verbosity", "0");
       addFlag ("noprogress", "Turn off progress printout");
       addFlag ("profile", "Use chronometers to profile");
+      addKey ("threads", "Max. number of threads", "1");
       addKey ("json", "Output file in Json format");
       addKey ("log", "Error log file, appended");
     }

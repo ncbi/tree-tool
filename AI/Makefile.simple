@@ -2,9 +2,6 @@ include $(HOME)/code/cpp/MakeRules
 CPPFLAGS=$(OptCPPFLAGS) 
 #CPPFLAGS=$(DebugCPPFLAGS)
 
-CXX=g++
-COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c 
-LIBS=
 
 
 
