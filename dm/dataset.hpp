@@ -1554,9 +1554,9 @@ template <typename T/*:Attr1*/>
       { variable = attr [objNum]; }
     void variable2data (size_t objNum) final
       { const_cast <T&> (attr) [objNum] = variable; }
-  };    
-
-
+  };
+  
+  
 
 template <typename T/*:Attr1*/>
   struct MultiVariate : Analysis1
@@ -1607,11 +1607,50 @@ template <typename T/*:Attr1*/>
 
 
     // Requires: T:NumAttr1
+  private:
+	  static void setAttrSim_ (size_t from,
+					                   size_t to,
+					                   const Space1<T> &space,  
+	                           const Sample &sample,
+	                           Matrix &attrSim,
+				                     bool vc) 
+	    // Input: vc: variance-covariance: allows missing values
+		  {	ASSERT (attrSim. rowsSize () == space. size ());
+		    FFOR_START (size_t, attrNum1, from, to)
+		    { const NumAttr1& a1 = * space [attrNum1];
+		  	  FFOR_START (size_t, attrNum2, attrNum1, space. size ())
+		      { const NumAttr1& a2 = * space [attrNum2];
+		        Real s = 0;
+		        Real mult_sum = 0;
+		        FFOR (size_t, i, sample. mult. size ())
+		          if (const Real mult = sample. mult [i])
+		          { const Real x1 = a1. getReal (i);
+		          	const Real x2 = a2. getReal (i);
+		          	if (vc)
+		            {
+			          	if (isNan (x1))
+			          		continue;
+			          	if (isNan (x2))
+			          		continue;
+			            mult_sum += mult;
+			          }
+		            s += x1 * x2 * mult;
+		          }
+		        ASSERT (! isNan (s));
+		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0) : s);
+		      }
+		   	}
+		  }		
+		public:
 	  void setAttrSim (Matrix &attrSim,
 	                   bool vc) const
 	    // Input: vc: variance-covariance: allows missing values
 		  {	ASSERT (attrSim. rowsSize () == space. size ());
 		    Unverbose unv;
+		  #if 0
+		    // thread_num depends on sqrt(sample.mult.size ())
+		    runThreads (setAttrSim_, space. size (), std::cref (space), std::cref (sample), std::ref (attrSim), vc);
+		  #else
 		    Progress prog ((uint) space. size ());  
 		    FFOR (size_t, attrNum1, space. size ())
 		    { prog ();
@@ -1638,6 +1677,7 @@ template <typename T/*:Attr1*/>
 		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0) : s);
 		      }
 		   	}
+			#endif
 		  }
   };    
 
