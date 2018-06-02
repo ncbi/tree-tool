@@ -18,6 +18,9 @@ set QC = ""  # -qc
 set RATE = 0.01   # PAR
 
 
+date
+
+
 set N = `ls $1/search/ | head -1`
 if ("$N") then
   echo "$1/search/ is not empty"
@@ -149,7 +152,7 @@ rm $1/dissim.add
 #set VER = 254
 
 
-# Time: O(n log^2(n)) 
+# Time: O(n log^2(n))  ??
 # -profile
 makeDistTree $QC  -data $1/ \
   -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 2 \
