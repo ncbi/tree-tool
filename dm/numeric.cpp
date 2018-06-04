@@ -21,6 +21,7 @@ Real log_10 = NAN;
 Real sqrt_2 = NAN;
 
 
+
 bool initNumeric ()
 {
   MODULE_INIT
@@ -55,6 +56,9 @@ bool initNumeric ()
   log_2  = log (2);
   log_10 = log (10);
   sqrt_2 = sqrt (2);
+  
+  // Initialize local static variables
+  lnFactorial (200 - 1);
   
   return true;
 }
@@ -373,12 +377,12 @@ Real lnGamma (Real x)
   ASSERT (x > 0);
 
 
-  static const Real c [6] = { 76.18009172947146,
-                              -86.50532032941677,
-                               24.01409824083091,
-                               -1.231739572450155,
-                                0.001208650973866179,
-                               -0.5395239384953e-5};
+  static constexpr Real c [6] = { 76.18009172947146,
+	                               -86.50532032941677,
+	                                24.01409824083091,
+	                                -1.231739572450155,
+	                                 0.001208650973866179,
+	                                -0.5395239384953e-5};
                          
 
   const Real a = x + 4.5;
@@ -493,7 +497,7 @@ string prob2str (Prob x)
 Real lnFactorial (uint n)
 // William H. Press et al, Numerical Recipes
 {
-  const size_t resMax = 200;  
+  constexpr size_t resMax = 200;  // Cf. initNumeric()
   static Real res [resMax] = {log(1.), log(1.), log(2.), log(6.), log(24.), log(120.), log(720.)};
                             //     0        1        2        3         4          5          6
   static size_t resN = 6;  // res[0..resN] are defined
@@ -568,14 +572,16 @@ Real zeta (Real alpha,
 {
   ASSERT (greaterReal (alpha, 1));
   
-  const size_t size = 1000;  // PAR
+  constexpr size_t size = 1000;  // PAR
 	static Real res [size];
-  static bool init = false;
-	if (! init)
 	{
-		FOR (size_t, i, size)
-		  res [i] = 0;
-		init = true;
+	  static bool init = false;
+		if (! init)
+		{
+			FOR (size_t, i, size)
+			  res [i] = 0;
+			init = true;
+		}
 	}
 	size_t index = NO_INDEX;
   if (from == 1 && alpha > 1 && alpha < 2)
@@ -638,14 +644,16 @@ Real zetaLn (Real alpha,
 {
   ASSERT (greaterReal (alpha, 1));
 
-  const size_t size = 1000;  // PAR
+  constexpr size_t size = 1000;  // PAR
 	static Real res [size];
-  static bool init = false;
-	if (! init)
 	{
-		FOR (size_t, i, size)
-		  res [i] = 0;
-		init = true;
+	  static bool init = false;
+		if (! init)
+		{
+			FOR (size_t, i, size)
+			  res [i] = 0;
+			init = true;
+		}
 	}
 	size_t index = NO_INDEX;
   if (from == 1 && alpha > 1 && alpha < 2)
