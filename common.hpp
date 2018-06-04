@@ -255,6 +255,10 @@ template <typename T>
 template <typename T> 
   inline bool minimize (T &a, T b)
     { if (a > b) { a = b; return true; } return false; }
+    	
+template <typename T>
+  inline T difference (T a, T b)
+    { if (a > b) return a - b; return b - a; }
 
 template <typename T /*:number*/> 
   inline bool between (T x, T low, T high)
@@ -523,7 +527,7 @@ template <typename Func, typename... Args>
 		if (chunk * threads_max < i_max)
 			chunk++;
 		ASSERT (chunk * threads_max >= i_max);
-	  vector<thread> threads;  threads.  reserve (threads_max);
+	  vector<thread> threads;  threads. reserve (threads_max);
 		FFOR (size_t, tn, threads_max)
 	  {
 	    const size_t from = tn * chunk;
@@ -2555,7 +2559,7 @@ extern JsonMap* jRoot;
 
 //
 
-struct Offset
+struct Offset : Singleton<Offset>
 {
 private:
 	static size_t size;
