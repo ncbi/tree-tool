@@ -1564,7 +1564,6 @@ JsonMap* jRoot = nullptr;
 // Offset
 
 size_t Offset::size = 0;
-const size_t Offset::delta = 2;
 
 
 

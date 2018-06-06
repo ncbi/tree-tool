@@ -2559,12 +2559,13 @@ extern JsonMap* jRoot;
 
 //
 
-struct Offset : Singleton<Offset>
+struct Offset 
+// Linked to the ostream os
 {
 private:
 	static size_t size;
 public:
-	static const size_t delta;
+	static constexpr size_t delta = 2;
 
 	Offset ()
   	{ size += delta; }
