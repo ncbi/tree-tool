@@ -589,7 +589,9 @@ public:
 	virtual const char* type () const = 0;
 	virtual bool valid () const = 0;
 	virtual Set<const Tree::TreeNode*> getCoreChanged () const
-    { return Tree::getParents (targets); }
+    { Tree::LcaBuffer buf;
+    	return Tree::getParents (targets, buf); 
+    }
 	  // Return: Phyl whose core is supposed to be changed
   // Update: tree
 	void apply ();
@@ -938,7 +940,7 @@ public:
 	  { return type_ (); }
 	bool valid () const final
 	  { return valid_ (from); }
-	Set<const Tree::TreeNode*> getCoreChanged () const
+	Set<const Tree::TreeNode*> getCoreChanged () const override
     { return Change::getCoreChanged () << nullptr; }
 private:
 	void apply_ () final;
@@ -992,7 +994,7 @@ public:
 	  { return type_ (); }
 	bool valid () const final
 	  { return valid_ (from); }
-	Set<const Tree::TreeNode*> getCoreChanged () const
+	Set<const Tree::TreeNode*> getCoreChanged () const override
     { return Set<const Tree::TreeNode*> () << targets [0]; }
 private:
 	void apply_ () final;

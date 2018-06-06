@@ -521,23 +521,36 @@ struct Tree : DiGraph
     // Arc is interior <=> arc's nodes are interior
     // Return: <= countInteriorNodes()
     // Invokes: countInteriorNodes()
+    
+  struct LcaBuffer
+  { VectorPtr<TreeNode> vec1;
+  	VectorPtr<TreeNode> vec2;
+  	void clear ()  
+  	  { vec1. clear (); vec2. clear (); }
+  };
   static const TreeNode* getLca (const TreeNode* n1,
-                                 const TreeNode* n2);
+                                 const TreeNode* n2,
+                                 LcaBuffer &buf);
     // Return: nullptr <=> !n1 || !n2
-  static const TreeNode* getLca (const VectorPtr<TreeNode> &nodeVec);
+  static const TreeNode* getLca (const VectorPtr<TreeNode> &nodeVec,   
+	                               Tree::LcaBuffer &buf);
     // Return: nullptr <= nodeVec.empty()
     // Input: nodeVec: may be nullptr
-  static Set<const TreeNode*> getParents (const VectorPtr<TreeNode> &nodeVec);
+  static Set<const TreeNode*> getParents (const VectorPtr<TreeNode> &nodeVec, 
+	                                        Tree::LcaBuffer &buf);
     // Return: !nullptr, !contains(getLca(nodeVec)), contains(nodeVec)
     // Invokes: getLca(nodeVec)
-  static VectorPtr<TreeNode> getPath (const TreeNode* n1,
-                                      const TreeNode* n2,
-                                      const TreeNode* ca,
-                                      const TreeNode* &lca);
-    // Return: sequential arcs on the path from n1 to n2, distinct, !nullptr
+  static void getPath (const TreeNode* n1,
+                       const TreeNode* n2,
+                       const TreeNode* ca,
+                       VectorPtr<Tree::TreeNode> &path,
+	                     const TreeNode* &lca,
+                       LcaBuffer &buf);
     // Input: ca: may be nullptr
-    // Output: lca: !nullptr
+    // Output: path: sequential arcs on the path from n1 to n2, distinct, !nullptr
+    //         lca: !nullptr
     // Requires: ca is the common ancestor of n1 and n2
+
   void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5
     // Output: TreeNode::frequentChild: statistically consistent estimate

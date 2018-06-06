@@ -1452,7 +1452,8 @@ bool getParentsOrTarget (const Tree::TreeNode* from,
 
 
 const Tree::TreeNode* Tree::getLca (const TreeNode* n1,
-	                                  const TreeNode* n2) 
+	                                  const TreeNode* n2,
+                                    LcaBuffer &buf) 
 {
   IMPLY (n1 && n2, n1->graph && n1->graph == n2->graph);
   
@@ -1464,14 +1465,14 @@ const Tree::TreeNode* Tree::getLca (const TreeNode* n1,
   if (n1 == n2)
     return n1;
 	
-	static VectorPtr<TreeNode> vec1;  
-	vec1. clear ();
+  buf. clear ();
+  auto& vec1 = buf. vec1;
+  auto& vec2 = buf. vec2;
+
 	if (getParentsOrTarget (n1, n2, vec1))
 		return n2;
 	ASSERT (! vec1. empty ());
 
-	static VectorPtr<TreeNode> vec2; 
-	vec2. clear ();
 	if (getParentsOrTarget (n2, n1, vec2))
 		return n1;
 	ASSERT (! vec2. empty ());
@@ -1494,23 +1495,25 @@ const Tree::TreeNode* Tree::getLca (const TreeNode* n1,
 
 
 
-const Tree::TreeNode* Tree::getLca (const VectorPtr<TreeNode> &nodeVec) 
+const Tree::TreeNode* Tree::getLca (const VectorPtr<TreeNode> &nodeVec,   
+	                                  Tree::LcaBuffer &buf) 
 {
   if (nodeVec. empty ())
     return nullptr;
     
 	const TreeNode* n = nodeVec [0];
 	FOR_START (size_t, i, 1, nodeVec. size ())
-    n = getLca (n, nodeVec [i]);
+    n = getLca (n, nodeVec [i], buf);
 	return n;
 }
 
 
 
-Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec) 
+Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec,   
+	                                           Tree::LcaBuffer &buf) 
 {
 	Set<const TreeNode*> s;  
-  const TreeNode* lca = getLca (nodeVec);
+  const TreeNode* lca = getLca (nodeVec, buf);
   for (const TreeNode* n : nodeVec)
 	  while (n != lca)
 	  {
@@ -1524,10 +1527,12 @@ Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec)
 
 
 
-VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
-                                         const TreeNode* n2,
-                                         const TreeNode* ca,
-                                         const TreeNode* &lca)
+void Tree::getPath (const TreeNode* n1,
+                    const TreeNode* n2,
+                    const TreeNode* ca,
+                    VectorPtr<Tree::TreeNode> &path,
+	                  const TreeNode* &lca,
+                    LcaBuffer &buf)
 { 
   ASSERT (n1);
   ASSERT (n2);
@@ -1535,30 +1540,31 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
   ASSERT (n1->graph == n2->graph);
   IMPLY (ca, n1->graph == ca->graph);
   
+  path. clear ();
+
   if (n1 == n2)
   {
     lca = n1;
-    return VectorPtr<Tree::TreeNode> ();
+    return;
   }
   
   const TreeNode* n1_init = n1;
   
-	static VectorPtr<TreeNode> vec1;  
-	vec1. clear ();
 	while (n1 != ca && n1 != n2)
 	{
 	  ASSERT (n1);
-		vec1 << n1;
+		path << n1;
 		n1 = n1->getParent ();
 	}
 	if (n1 == n2)
 	{
     lca = n2;
-		return vec1;
+		return;
   }
 
-	static VectorPtr<TreeNode> vec2; 
-	vec2. clear ();
+  buf. clear ();
+  auto& vec2 = buf. vec2;
+  
 	while (n2 != ca && n2 != n1_init)
 	{
 	  ASSERT (n2);
@@ -1568,19 +1574,20 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 	if (n2 == n1_init)
 	{
     lca = n1_init;
-		return vec2;
+    path = vec2;
+		return;
   }
 
-	ASSERT (! vec1. empty ());
+	ASSERT (! path. empty ());
 	ASSERT (! vec2. empty ());
 
   lca = ca;  
-	size_t i1 = vec1. size () - 1;
+	size_t i1 = path. size () - 1;
 	size_t i2 = vec2. size () - 1;
-	while (vec1 [i1] == vec2 [i2])
+	while (path [i1] == vec2 [i2])
 	{
-	  lca = vec1 [i1];
-    vec1. pop_back ();
+	  lca = path [i1];
+    path. pop_back ();
     vec2. pop_back ();
 		ASSERT (i1);
 		ASSERT (i2);
@@ -1588,12 +1595,8 @@ VectorPtr<Tree::TreeNode> Tree::getPath (const TreeNode* n1,
 		i2--;
 	}
 
-  VectorPtr<TreeNode> res;  res. reserve (vec1. size () + vec2. size ());
-  res << vec1;
   CONST_ITER_REV (VectorPtr<TreeNode>, it, vec2)
-    res << *it;
-  
-  return res;
+    path << *it;
 }
 
 

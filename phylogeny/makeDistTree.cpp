@@ -144,7 +144,7 @@ struct ThisApplication : Application
 
     DistTree::printParam (cout);
     if (sparse)
-      cout << "Sparsing depth = " << sparsingDepth << endl;
+      cout << "Sparsing depth: " << sparsingDepth << endl;
     cout << "Root: " << (root_topological ? "topological" : "by length") << endl;
     cout << endl;
 
@@ -324,7 +324,8 @@ struct ThisApplication : Application
     else 
       if (! reroot_at. empty ())
       {
-        const DTNode* underRoot = tree->lcaName2node (reroot_at);
+			  Tree::LcaBuffer buf;
+        const DTNode* underRoot = tree->lcaName2node (reroot_at, buf);
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
         if (! noqual)
 	        tree->setNodeAbsCriterion ();
@@ -584,12 +585,14 @@ struct ThisApplication : Application
     	}
 
     	OFStream f (output_dist);
+    	VectorPtr<Tree::TreeNode> path;
+    	Tree::LcaBuffer buf;
     	for (const auto p : distRequestPairs)
     	{
     		const Leaf* leaf1 = p. first;
     		const Leaf* leaf2 = p. second;
 			  const Tree::TreeNode* lca_ = nullptr;
-			  const VectorPtr<Tree::TreeNode> path (Tree::getPath (leaf1, leaf2, nullptr, lca_));
+			  Tree::getPath (leaf1, leaf2, nullptr, path, lca_, buf);
 		  	f         << leaf1->name 
 		  	  << '\t' << leaf2->name
 		  	  << '\t' << DistTree::path2prediction (path)
