@@ -201,6 +201,16 @@ private:
 struct Steiner : DTNode
 // Steiner node
 {
+#if 0
+private:
+  size_t threadNum {NO_INDEX};
+  // Temporary
+  size_t lcaNum {0};  
+  size_t subTreeWeight {0};  // union ??
+public:
+#endif
+
+
 	Steiner (DistTree &tree,
 	         Steiner* parent_arg,
 	         Real len_arg);
@@ -250,6 +260,17 @@ public:
   const Steiner* makeDTRoot ();
     // Return: Old root, !nullptr
     // Invokes: makeRoot(getTree().root)
+
+#if 0
+private:
+	friend DistTree;
+  void setSubTreeWeight ();
+    // Input: lcaNum
+    // Update: subTreeWeight
+  // Update: threadNum
+  void threadNum2subTree (size_t threadNum_arg);
+  void threadNum2ancestors (size_t threadNum_arg);
+#endif
 };
 
 
@@ -443,10 +464,12 @@ struct Subgraph : Root
   void area2subPaths ();
     // Invokes: node2subPaths()
     // Time: O(|boundary| p/n log(n))
-  VectorPtr<Tree::TreeNode> getPath (const SubPath &subPath) const
+  VectorPtr<Tree::TreeNode>& getPath (const SubPath &subPath,
+  	                                  Tree::LcaBuffer &buf) const
+    // Return: reference to buf
     { const Tree::TreeNode* lca_ = nullptr;
       // tree.dissims[subPath.objNum].lca can be used instead of area_root if viaRoot(subPath) and tree topology has not been changed ??
-      return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_);
+      return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_, buf);
     }
     // Requires: subPath in subPaths
   const Vector<uint>& boundary2pathObjNums (const DTNode* dtNode) const
@@ -591,13 +614,18 @@ struct Dissim
   string getObjName () const;
   void print () const
     { cout << leaf1 << ' ' << leaf2 << ' ' << mult << ' ' << lca << endl; }
-  VectorPtr<Tree::TreeNode> getPath () const;
+  VectorPtr<Tree::TreeNode>& getPath (Tree::LcaBuffer &buf) const;
+  	// Return: reference to buf
   Real getResidual () const
     { return prediction - target; }
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
-
+  Real process (size_t objNum,
+                Tree::LcaBuffer &buf);
+    // Return: getAbsCriterion()
+    // Output: prediction, Steiner::pathObjNums
+    
   bool operator< (const Dissim &other) const
     { return Pair<const Leaf*> (leaf1, leaf2) < Pair<const Leaf*> (other. leaf1, other. leaf2); }
   bool operator== (const Dissim &other) const
@@ -780,13 +808,22 @@ private:
                        Leaf* leaf2,
                        Real target,
                        Real mult);
-    // Append: dissims[]
     // Return: dissims.size() - 1
-  bool addDissim (const string &name1,
-                  const string &name2,
+    // Append: dissims[], Leaf::pathObjNums
+  bool addDissim (Leaf* leaf1,
+                  Leaf* leaf2,
                   Real dissim);
 	  // Return: dissim is added
 	  // Update: Dissim, mult_sum, dissim2_sum
+	  // Invokes: leaves2dissims()
+  bool addDissim (const string &name1,
+                  const string &name2,
+                  Real dissim)
+    { return addDissim ( const_cast <Leaf*> (findPtr (name2leaf, name1))
+    	                 , const_cast <Leaf*> (findPtr (name2leaf, name2))
+    	                 , dissim
+    	                 );
+    }
   void setPaths ();
     // Output: dissims::Dissim, DTNode::pathObjNums, absCriterion
     // Invokes: setLca()
@@ -801,7 +838,8 @@ public:
     
   static string getObjName (const string &name1,
                             const string &name2);
-  const DTNode* lcaName2node (const string &lcaName) const;
+  const DTNode* lcaName2node (const string &lcaName,   
+                              Tree::LcaBuffer &buf) const;
     // Return: !nullptr
     // Input: lcaName: <leaf1 name> <objNameSeparator> <leaf2 name>
   size_t extraObjs () const
@@ -815,8 +853,9 @@ public:
   static void printParam (ostream &os) 
     { os << "PARAMETERS:" << endl;
       os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
-      os << "Max. possible dissimilarity = " << dissim_max () << endl;
-      os << "Subgraph radius = " << areaRadius_std << endl;
+      os << "Max. possible dissimilarity: " << dissim_max () << endl;
+      os << "Subgraph radius: " << areaRadius_std << endl;
+      os << "# Threads: " << threads_max << endl;
     }
 	void printInput (ostream &os) const;
 	bool optimizable () const  

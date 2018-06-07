@@ -435,6 +435,47 @@ const Steiner* Steiner::makeDTRoot ()
 
 
 
+#if 0
+void Steiner::setSubTreeWeight ()
+{
+	subTreeWeight = lcaNum;
+	for (const DiGraph::Arc* arc : arcs [false])
+	  if (const Steiner* child = static_cast <DTNode*> (arc->node [false]) -> asSteiner ())
+	  {
+		  const_cast <Steiner*> (child) -> setSubTreeWeight ();
+		  subTreeWeight += child->subTreeWeight;
+		}
+}
+
+
+
+void Steiner::threadNum2subTree (size_t threadNum_arg)
+{
+	ASSERT (threadNum_arg != NO_INDEX);
+	
+  threadNum = threadNum_arg;
+	for (const DiGraph::Arc* arc : arcs [false])
+	  if (Steiner* child = const_cast <Steiner*> (static_cast <DTNode*> (arc->node [false]) -> asSteiner ()))
+		  child->threadNum2subTree (threadNum_arg);
+}
+
+
+
+void Steiner::threadNum2ancestors (size_t threadNum_arg)
+{
+	ASSERT (threadNum_arg != NO_INDEX);
+
+	Steiner* n = this;
+  while (Steiner* parent = const_static_cast<Steiner*> (n->getParent ()))
+  {
+  	parent->threadNum = threadNum_arg;
+  	n = parent;
+  }
+}
+#endif
+
+
+
 
 // Leaf
 
@@ -825,13 +866,14 @@ void Subgraph::finishSubPaths ()
 
 
   // subPathsAbsCriterion, SubPath::dist_hat_tails
+  Tree::LcaBuffer buf;
   for (SubPath& subPath : subPaths)
   {
     const Dissim& dissim = tree. dissims [subPath. objNum];
 
     subPathsAbsCriterion += dissim. getAbsCriterion ();
 
-    VectorPtr<Tree::TreeNode> path (getPath (subPath));
+    const VectorPtr<Tree::TreeNode>& path = getPath (subPath, buf);
     ASSERT (! path. empty ());
     const Real dist_hat_sub = DistTree::path2prediction (path);
 
@@ -848,18 +890,19 @@ void Subgraph::finishSubPaths ()
 Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
 {
   Real s = 0;
+  Tree::LcaBuffer buf;
   for (const SubPath& subPath : subPaths)
   {
     const Dissim& dissim = tree. dissims [subPath. objNum];
     if (dissim. mult == 0)
       continue;      
     const Tree::TreeNode* lca_ = nullptr;
-    const VectorPtr<Tree::TreeNode> path (Tree::getPath ( static_cast <const Tree::TreeNode*> (findPtr (boundary2new, subPath. node1))
-                                                        , static_cast <const Tree::TreeNode*> (findPtr (boundary2new, subPath. node2))
-                                                        , nullptr
-                                                        , lca_
-                                                        )
-                                         );
+    const VectorPtr<Tree::TreeNode>& path = Tree::getPath ( static_cast <const Tree::TreeNode*> (findPtr (boundary2new, subPath. node1))
+																				                  , static_cast <const Tree::TreeNode*> (findPtr (boundary2new, subPath. node2))
+																				                  , nullptr
+																				                  , lca_
+																				                  , buf
+																				                  );
     ASSERT (! path. empty ());
     const Real dist_hat_sub = DistTree::path2prediction (path);
     s += dissim. mult * sqr ((dissim. target - subPath. dist_hat_tails) - dist_hat_sub);
@@ -888,6 +931,7 @@ void Subgraph::subPaths2tree ()
         ([&] (uint objNum) { return subPathDissims [objNum]; });
   
   tree_. absCriterion -= subPathsAbsCriterion;
+  Tree::LcaBuffer buf;
   for (const SubPath& subPath : subPaths)
   {
     subPath. qc ();
@@ -895,7 +939,7 @@ void Subgraph::subPaths2tree ()
     ASSERT (subPath. node2->graph == & tree);
     const uint objNum = subPath. objNum;
     const Tree::TreeNode* lca_ = nullptr;
-    const VectorPtr<Tree::TreeNode> path (Tree::getPath (subPath. node1, subPath. node2, area_root, lca_));
+    const VectorPtr<Tree::TreeNode>& path = Tree::getPath (subPath. node1, subPath. node2, area_root, lca_, buf);
     ASSERT (lca_);
     Dissim& dissim = tree_. dissims [objNum];
     if (! viaRoot (subPath))
@@ -1020,7 +1064,8 @@ bool Change::apply ()
     VectorPtr<Tree::TreeNode>& area     = subgraph. area;
     VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
     const Tree::TreeNode* lca_ = nullptr;
-    area = DistTree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_);  
+	  Tree::LcaBuffer buf;
+    area = DistTree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
     const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
@@ -1090,10 +1135,11 @@ bool Change::apply ()
   fromAttr ->setAll (EFALSE);
   toAttr   ->setAll (EFALSE);
   interAttr->setAll (EFALSE);
+  Tree::LcaBuffer buf;
   FFOR (size_t, objNum, subgraph. subPaths. size ())
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
-    const VectorPtr<Tree::TreeNode> path (subgraph. getPath (subPath));
+    const VectorPtr<Tree::TreeNode>& path = subgraph. getPath (subPath, buf);
     if (path. contains (from))
     {
       (*fromAttr) [objNum] = ETRUE;
@@ -1309,13 +1355,12 @@ string Dissim::getObjName () const
 
 
 
-VectorPtr<Tree::TreeNode> Dissim::getPath () const  
+VectorPtr<Tree::TreeNode>& Dissim::getPath (Tree::LcaBuffer &buf) const  
 { 
   ASSERT (lca);
   const Tree::TreeNode* lca_ = nullptr;
-  const VectorPtr<Tree::TreeNode> path (Tree::getPath (leaf1, leaf2, lca, lca_));
+  VectorPtr<Tree::TreeNode>& path = Tree::getPath (leaf1, leaf2, lca, lca_, buf);
   ASSERT (lca_ == lca);
-  
   return path;
 }
 
@@ -1335,6 +1380,21 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
 }
 
 
+
+Real Dissim::process (size_t objNum,
+	                    Tree::LcaBuffer &buf)
+{
+  ASSERT (valid ());
+  const VectorPtr<Tree::TreeNode>& path = getPath (buf);
+  prediction = DistTree::path2prediction (path);  
+  for (const Tree::TreeNode* node : path)
+    if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
+      const_cast <Steiner*> (st) -> pathObjNums << (uint) objNum;  
+  qc ();
+  return getAbsCriterion ();
+}
+	
+	
 
 
 // DistTree
@@ -1446,6 +1506,7 @@ DistTree::DistTree (const string &dataDirName,
     LineInput f (dataDirName + "leaf", 10 * 1024, 1);  // PAR
     string leafName, anchorName;
     Real leafLen, arcLen;
+	  Tree::LcaBuffer buf;
     while (f. nextLine ())
     {
       istringstream iss (f. line);
@@ -1453,7 +1514,7 @@ DistTree::DistTree (const string &dataDirName,
       ASSERT (leafLen >= 0);
       ASSERT (arcLen >= 0);
     //ASSERT (iss. eof ());  // Extra fields
-      const DTNode* anchor = lcaName2node (anchorName);
+      const DTNode* anchor = lcaName2node (anchorName, buf);
       ASSERT (anchor);
       // Use absCriterion_leaf in f to test if leafName is an outlier
       //   if leafName is an outlier then do not add leafName to *this, but add leafName to outliers ??
@@ -1515,6 +1576,7 @@ DistTree::DistTree (const string &dataDirName,
       LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
       while (f. nextLine ())
       {
+      	// thread's start
       	replace (f. line, '\t', ' ');
         const string name1 = findSplit (f. line);
         const string name2 = findSplit (f. line);
@@ -1528,20 +1590,21 @@ DistTree::DistTree (const string &dataDirName,
         if (outliers. containsFast (name2))
           continue;
       #endif
-        const Leaf* leaf1 = findPtr (name2leaf, name1);
+        Leaf* leaf1 = const_cast <Leaf*> (findPtr (name2leaf, name1));
         if (! leaf1)
           continue;
         //throw runtime_error ("Tree has no object " + name1);
-        const_cast <Leaf*> (leaf1) -> paths ++;
-        const Leaf* leaf2 = findPtr (name2leaf, name2);
+        leaf1->paths = 1;  // temporary
+        Leaf* leaf2 = const_cast <Leaf*> (findPtr (name2leaf, name2));
         if (! leaf2)
           continue;
         //throw runtime_error ("Tree has no object " + name2);
-        const_cast <Leaf*> (leaf2) -> paths ++;
+        leaf2->paths = 1;  // temporary
         const Real dissim = str2real (f. line);
+      	// thread's end
         if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
-          const_cast <Leaf*> (leaf1) -> collapse (const_cast <Leaf*> (leaf2));
-        if (! isNan (dissim) && ! addDissim (name1, name2, dissim))
+          leaf1->collapse (leaf2);
+        if (! isNan (dissim) && ! addDissim (leaf1, leaf2, dissim))
         	throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
       }
       if (! f. lineNum)
@@ -2342,6 +2405,7 @@ void DistTree::setGlobalLen ()
     if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
       leaf->subtreeLen. add (0);  
   }
+  Tree::LcaBuffer buf;
   FFOR (size_t, row, dissimDs->objs. size ())
     if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
       FOR (size_t, col, row)  // dissimAttr is symmetric
@@ -2351,7 +2415,7 @@ void DistTree::setGlobalLen ()
           const Real d = dissimAttr->get (row, col);
           if (isNan (d))
             continue;
-          const TreeNode* ancestor = getLca (leaf1, leaf2);
+          const TreeNode* ancestor = getLca (leaf1, leaf2, buf);
           ASSERT (ancestor);
           Steiner* s = const_cast <Steiner*> (static_cast <const DTNode*> (ancestor) -> asSteiner ());
           ASSERT (s);
@@ -2630,14 +2694,7 @@ void DistTree::neighborJoin ()
   // If dissims is not complete
 	for (const DiGraph::Arc* arc : root->arcs [false])
 	{
-	  DTNode* node = const_static_cast <DTNode*> (arc->node [false]);
-	/*
-	  if (   leafPair. nodes [false] == node
-	      || leafPair. nodes [true]  == node
-	     )
-	    continue;	
-	  node->len = 0;
-	*/
+	  const DTNode* node = static_cast <const DTNode*> (arc->node [false]);
 	  ASSERT (node->len >= 0);
 	}
   
@@ -2733,7 +2790,7 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
   dissims. reserve (pairs_max);
 
-  const size_t reserve_size = 10 * (size_t) log (name2leaf. size ());  // PAR
+  const size_t reserve_size = 10 * (size_t) log (name2leaf. size () + 1);  
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -2765,19 +2822,23 @@ uint DistTree::leaves2dissims (Leaf* leaf1,
 
 
 
-bool DistTree::addDissim (const string &name1,
-                          const string &name2,
+bool DistTree::addDissim (Leaf* leaf1,
+                          Leaf* leaf2,
                           Real dissim)
 {
+  ASSERT (leaf1);
+  ASSERT (leaf2);
   ASSERT (dissim_coeff > 0);
   ASSERT (detachedLeaves. empty ());
+  IMPLY (dissim == 0, leaf1->getCollapsed (leaf2));
 
+  
   if (   isNan (dissim)  // prediction must be large ??
     //|| ! DM_sp::finite (dissim)  // For getSparseLeafPairs()
      )
   {
   	if (verbose ())
-      cout << name1 << " - " << name2 << ": " << dissim << endl;
+      cout << leaf1->name << " - " << leaf2->name << ": " << dissim << endl;
     return false;  
   }
   
@@ -2791,45 +2852,176 @@ bool DistTree::addDissim (const string &name1,
     dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
   }
   
-  const Leaf* leaf1 = findPtr (name2leaf, name1);
-  const Leaf* leaf2 = findPtr (name2leaf, name2);
-  ASSERT (leaf1);
-  ASSERT (leaf2);
-  IMPLY (dissim == 0, leaf1->getCollapsed (leaf2));
-  
-  leaves2dissims (const_cast <Leaf*> (leaf1), const_cast <Leaf*> (leaf2), dissim, mult);
+  leaves2dissims (leaf1, leaf2, dissim, mult);
   
   return true;
 }
 
 
 
+#if 0
+namespace
+{
+	
+constexpr size_t smallDissims = 1e5;  // PAR
+
+
+void setPaths_ (const Vector<size_t> &subTree,
+                Vector<Dissim> &dissims,
+                Real &absCriterion)
+// Update: dissims, absCriterion
+{
+	if (subTree. empty ())
+		return;
+  Progress prog ((uint) subTree. size (), smallDissims); 
+  if (prog. active)
+  	cerr << "One thread ..." << endl;
+  Tree::LcaBuffer buf;
+  for (const size_t objNum : subTree) 
+  {
+    prog ();
+    absCriterion += dissims [objNum]. process (objNum, buf);
+  }
+}
+	
+}
+#endif
+
+
+
 void DistTree::setPaths ()
 {
 //ASSERT (optimizable ());
-  
+  if (dissims. size () > numeric_limits<uint>::max())
+    throw runtime_error ("setPaths: Too large objNum");
+    
  	for (DiGraph::Node* node : nodes)
-    if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
-      const_cast <Steiner*> (st) -> pathObjNums. clear ();
+    if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
+    {
+      st->pathObjNums. clear ();
+    //st->lcaNum = 0;
+    }
 
   setLca ();  
+
   absCriterion = 0;
-  Progress prog ((uint) dissims. size (), 1e5);  // PAR
-  FFOR (size_t, objNum, dissims. size ()) 
+  
+  Tree::LcaBuffer buf;
+#if 0
+  if (   subDepth 
+  	  || threads_max == 1 
+  	  || dissims. size () < smallDissims
+  	 )
+#endif
   {
-    prog ();
-    if (objNum > numeric_limits<uint>::max())
-      throw runtime_error ("setPaths: Too large objNum");
-    Dissim& dissim = dissims [objNum];
-    ASSERT (dissim. valid ());
-    const VectorPtr<TreeNode> path (dissim. getPath ());
-    dissim. prediction = path2prediction (path);  
-    absCriterion += dissim. getAbsCriterion ();
-    for (const TreeNode* node : path)
-      if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
-        const_cast <Steiner*> (st) -> pathObjNums << (uint) objNum;  
-    dissim. qc ();
-  }
+	  Progress prog ((uint) dissims. size (), /*smallDissims*/ 1e5); 
+	  FFOR (size_t, objNum, dissims. size ()) 
+	  {
+	  	prog ();
+	    absCriterion += dissims [objNum]. process (objNum, buf);
+	  }
+	}
+#if 0
+	else
+  {    
+	  for (Dissim& dissim : dissims)
+	  {
+	  	ASSERT (dissim. lca);
+		  const_cast <Steiner*> (dissim. lca) -> lcaNum++;
+	  }
+	
+	  VectorPtr<Steiner> cut_best;  cut_best. reserve (100);  // PAR
+	  {
+		  const Steiner* root_ = static_cast <const Steiner*> (root);
+		  const_cast <Steiner*> (root_) -> setSubTreeWeight ();
+		  size_t weight_min = root_->subTreeWeight;
+		  ASSERT (weight_min == dissims. size ());
+		  size_t upWeight = 0;
+		  List<const Steiner*> cut; 
+		  cut << root_;
+		  List<const Steiner*>::const_iterator it_max = cut. begin ();
+			while (cut. size () <= threads_max)
+			{
+				for (const DiGraph::Arc* arc : (*it_max)->arcs [false])
+				  if (const Steiner* child = static_cast <DTNode*> (arc->node [false]) -> asSteiner ())
+				  	cut << child;
+				upWeight += (*it_max)->lcaNum;
+				cut. erase (it_max);
+			  size_t downWeight_max = 0;
+			  CONST_ITER (List<const Steiner*>, it, cut)
+			  	if (maximize (downWeight_max, (*it)->subTreeWeight))
+			  		it_max = it;
+			  if (! minimize (weight_min, downWeight_max + upWeight))
+			  	break;
+			  cut_best = VectorPtr<Steiner> (cut);
+			}
+		}
+		ASSERT (cut_best. size () <= threads_max);
+		
+		if (cut_best. size () == 1)
+		{
+		  Progress prog ((uint) dissims. size (), smallDissims);  
+		  FFOR (size_t, objNum, dissims. size ()) 
+		  {
+		    prog ();
+		    absCriterion += dissims [objNum]. process (objNum, buf);
+		  }
+		}
+		else
+		{
+			size_t threadNum = 0;
+			for (const Steiner* st : cut_best)
+			{
+				threadNum++;
+			  ASSERT (threadNum);
+			  const_cast <Steiner*> (st) -> threadNum2subTree (threadNum);
+			  const_cast <Steiner*> (st) -> threadNum2ancestors (0);
+			}
+	
+		  // Due to tree disbalance, time reduction is < 10% 
+		  // ??
+		  cout << "root->lcaNum:" << static_cast <const Steiner*> (root) -> lcaNum << endl; 
+		  cout << "root->subTreeWeight:" << static_cast <const Steiner*> (root) -> subTreeWeight << endl; 
+			for (const Steiner* st : cut_best)
+				cout << st->subTreeWeight << endl;
+		
+		  Vector<Vector<size_t>> subTrees (cut_best. size () + 1);
+		  for (Vector<size_t>& subTree : subTrees)
+		  	subTree. reserve (dissims. size ());  
+		  FFOR (size_t, objNum, dissims. size ()) 
+		  {
+		    Dissim& dissim = dissims [objNum];
+		    const Steiner* st = dissim. lca;
+		    ASSERT (st);
+		  	ASSERT (st->threadNum <= cut_best. size ());
+		 		subTrees [st->threadNum] << objNum;
+		  }
+		  
+		  // ??
+		  cout << endl;
+		  cout << "dissims:" << dissims. size () << endl;
+		  for (const auto& subTree: subTrees)
+		    cout << subTree. size () << endl;  
+		  
+		  vector<thread> threads;  threads. reserve (cut_best. size () - 1);
+		  MVector absCriteria (cut_best. size () - 1, 0);
+		  size_t processed = 0;
+		  FFOR_START (size_t, i, 1, subTrees. size () - 1)
+		    if (! subTrees [i]. empty ())
+			  {
+				  threads. push_back (thread (setPaths_, cref (subTrees [i]), ref (dissims), ref (absCriteria [i - 1])));	
+				  processed += subTrees [i]. size ();
+				}
+			ASSERT (processed + subTrees [0]. size () + subTrees [cut_best. size ()]. size () == dissims. size ());
+		  setPaths_ (subTrees [cut_best. size ()], dissims, absCriterion);
+			for (auto& t : threads)  
+				t. join ();
+		  absCriterion += absCriteria. sum ();
+		  	  
+		  setPaths_ (subTrees [0], dissims, absCriterion);
+    }
+	}
+#endif
 }
 
 
@@ -2955,7 +3147,8 @@ string DistTree::getObjName (const string &name1,
 
 
 
-const DTNode* DistTree::lcaName2node (const string &lcaName) const
+const DTNode* DistTree::lcaName2node (const string &lcaName,   
+	                                    Tree::LcaBuffer &buf) const
 {
   ASSERT (! lcaName. empty ());
 
@@ -2965,7 +3158,7 @@ const DTNode* DistTree::lcaName2node (const string &lcaName) const
   ASSERT (leaf1);
   const Leaf* leaf2 = s. empty () ? leaf1 : findPtr (name2leaf, s);
   ASSERT (leaf2);
-  const DTNode* node = static_cast<const DTNode*> (getLca (leaf1, leaf2));
+  const DTNode* node = static_cast<const DTNode*> (getLca (leaf1, leaf2, buf));
   ASSERT (node);
   
   return node;
@@ -3050,10 +3243,11 @@ void DistTree::qcPaths ()
         
   size_t pathObjNums_all = 0;
   size_t lcaObjNums_all = 0;
+  Tree::LcaBuffer buf;
   FFOR (size_t, objNum, dissims. size ())
     if (dissims [objNum]. valid ())
     {
-      const VectorPtr<TreeNode> path (dissims [objNum]. getPath ());
+      const VectorPtr<TreeNode>& path = dissims [objNum]. getPath (buf);
       for (const Tree::TreeNode* node : path)
       {
         ASSERT (static_cast <const DTNode*> (node) -> pathObjNums. containsFast ((uint) objNum));
@@ -3184,6 +3378,7 @@ void DistTree::setNodeAbsCriterion ()
     dtNode->absCriterion_ave = 0;  // tepmorary: = mult
   }
 
+  Tree::LcaBuffer buf;
   for (const Dissim& dissim : dissims)
     if (dissim. mult)
     {
@@ -3191,7 +3386,7 @@ void DistTree::setNodeAbsCriterion ()
       ASSERT (DM_sp::finite (residual2));
       
       ASSERT (dissim. lca);	
-    	VectorPtr<TreeNode> path (dissim. getPath ());
+    	VectorPtr<TreeNode>& path = dissim. getPath (buf);
     	path << dissim. lca;
     	
     	for (const TreeNode* node : path)
@@ -3705,6 +3900,7 @@ size_t DistTree::optimizeLenNode ()
 #ifndef NDEBUG
   const Real absCriterion_old1 = absCriterion;
 #endif
+  Tree::LcaBuffer buf;
   for (const Star& star : stars)
   {
     const VectorPtr<DiGraph::Node>& arcNodes = star. arcNodes;
@@ -3740,7 +3936,7 @@ size_t DistTree::optimizeLenNode ()
     FFOR (size_t, objNum, subgraph. subPaths. size ())
     {
       const SubPath& subPath = subgraph. subPaths [objNum];
-      const VectorPtr<TreeNode> path (subgraph. getPath (subPath));
+      const VectorPtr<TreeNode>& path = subgraph. getPath (subPath, buf);
       FFOR (size_t, i, star. arcNodes. size ())
         if (path. contains (static_cast <const TreeNode*> (star. arcNodes [i])))
           (* const_static_cast <ExtBoolAttr1*> (sp [i])) [objNum] = ETRUE;        
@@ -3890,6 +4086,7 @@ bool DistTree::optimizeReinsert ()
     const size_t nodesSize = nodes. size ();
     const size_t q_max = 10 * getSparseDissims_size ();  // PAR
     Progress prog ((uint) nodesSize);
+	  Tree::LcaBuffer buf;
     for (const DiGraph::Node* node : nodes)
     {
       const DTNode* from = static_cast <const DTNode*> (node);
@@ -3913,7 +4110,7 @@ bool DistTree::optimizeReinsert ()
    	  if (! Change::valid (from, to))
    	    continue;
    	  const TreeNode* lca = nullptr;
-   	  const size_t arcDist = getPath (from, to, nullptr, lca). size ();
+   	  const size_t arcDist = getPath (from, to, nullptr, lca, buf). size ();
    	  ASSERT (arcDist > 1);
    	  if (verbose ())
         cout << from->getLcaName () << " -> " << to->getLcaName () << ' ' << improvement << ' ' << arcDist << endl;
@@ -4751,6 +4948,7 @@ Real DistTree::setErrorDensities ()
   
 
   Real epsilon2_0 = 0;
+  Tree::LcaBuffer buf;
   for (const Dissim& dissim : dissims)
     if (dissim. mult)
     {
@@ -4768,7 +4966,7 @@ Real DistTree::setErrorDensities ()
       const Real a = dissim. mult * sqr (dHat - d) / dHat;
       ASSERT (DM_sp::finite (a));
       
-      const VectorPtr<TreeNode> path (dissim. getPath ());
+  		const VectorPtr<TreeNode>& path = dissim. getPath (buf);
       for (const TreeNode* node : path)
       {
         DTNode* dtNode = const_static_cast <DTNode*> (node);
@@ -5270,11 +5468,12 @@ void DistTree::findSpecies (Real species_dist_max)
  	  if (const Leaf* leaf = dtNode->asLeaf ())
  	    leaves << leaf;
  	}
+  Tree::LcaBuffer buf;
   FFOR (size_t, row, leaves. size ())
     FOR (size_t, col, row)  
     {
     	const TreeNode* lca = nullptr;
-    	const VectorPtr<TreeNode> path (getPath (leaves [row], leaves [col], nullptr, lca));
+		 	const VectorPtr<TreeNode>& path = getPath (leaves [row], leaves [col], nullptr, lca, buf);
       ASSERT (lca);
     	const Real dist = path2prediction (path);
     	if (leReal (dist, species_dist_max))
@@ -5689,31 +5888,8 @@ void NewLeaf::optimizeAnchor (Location &location_best,
 {
   setLocation ();
 
-#if 0
-  const Real crit_old = location_best. absCriterion_leaf;  
-  static Vector<Location> locations;
-  if (crit_old == INF)
-    locations. clear ();
-#endif
-
   if (minimize (location_best. absCriterion_leaf, location. absCriterion_leaf))
   {
-  #if 0
-    locations << location; 
-    if (location. anchor != tree. root && ! (location. anchor->len > 0))
-    {
-      ONumber on (cout, 8, true);
-      cout << crit_old << ' ' << location. absCriterion_leaf << endl;
-      location. anchor->getParent () -> saveText (cout);
-      cout << endl;
-      for (const auto& loc : locations)
-      {
-        loc. saveText (cout);
-        cout << endl;
-      }
-      ERROR;
-    }
-  #endif
     location_best = location;
     leaf2dissims_best = leaf2dissims;
     if (location. anchor->len == 0)
@@ -5727,12 +5903,7 @@ void NewLeaf::optimizeAnchor (Location &location_best,
   if (! location. anchor->childrenDiscernible ())
     return;
     
-#if 0
-  VectorPtr<DiGraph::Arc> arcs;  arcs. reserve (location. anchor->arcs [false]. size ());
-  insertAll (arcs, location. anchor->arcs [false]);  
-#else
   const auto& arcs = location. anchor->arcs [false];
-#endif
 	for (const DiGraph::Arc* arc : arcs)
 	{
 	  const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
