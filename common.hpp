@@ -2561,6 +2561,7 @@ extern JsonMap* jRoot;
 
 struct Offset 
 // Linked to the ostream os
+// Not thread-safe
 {
 private:
 	static size_t size;
