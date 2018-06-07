@@ -540,14 +540,14 @@ struct Tree : DiGraph
 	                                        Tree::LcaBuffer &buf);
     // Return: !nullptr, !contains(getLca(nodeVec)), contains(nodeVec)
     // Invokes: getLca(nodeVec)
-  static void getPath (const TreeNode* n1,
-                       const TreeNode* n2,
-                       const TreeNode* ca,
-                       VectorPtr<Tree::TreeNode> &path,
-	                     const TreeNode* &lca,
-                       LcaBuffer &buf);
+  static VectorPtr<TreeNode>& getPath (const TreeNode* n1,
+								                       const TreeNode* n2,
+								                       const TreeNode* ca,
+									                     const TreeNode* &lca,
+								                       LcaBuffer &buf);
+    // Return: reference to buf (buf.vec1 or buf.vec2)
     // Input: ca: may be nullptr
-    // Output: path: sequential arcs on the path from n1 to n2, distinct, !nullptr
+    // Output: path: sequential arcs on the path from n1 to n2 or reversed, distinct, !nullptr
     //         lca: !nullptr
     // Requires: ca is the common ancestor of n1 and n2
 

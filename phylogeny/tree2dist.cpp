@@ -78,7 +78,6 @@ struct ThisApplication : Application
     auto distAttr = new PositiveAttr2 (distName, ds);
     Normal norm;
     norm. setParam (0, noise); 
-    VectorPtr<Tree::TreeNode> path;
     Tree::LcaBuffer buf;
     FOR (size_t, row, ds. objs. size ())
     {
@@ -86,7 +85,7 @@ struct ThisApplication : Application
       FOR (size_t, col, row)
       {
         const Tree::TreeNode* lca = nullptr;
-        tree->getPath (leaves [row], leaves [col], nullptr, path, lca, buf);
+        const VectorPtr<Tree::TreeNode>& path = Tree::getPath (leaves [row], leaves [col], nullptr, lca, buf);
         Real dist = tree->path2prediction (path);
         if (noise)
           dist += norm. rand ();

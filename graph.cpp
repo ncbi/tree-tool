@@ -1527,12 +1527,11 @@ Set<const Tree::TreeNode*> Tree::getParents (const VectorPtr<TreeNode> &nodeVec,
 
 
 
-void Tree::getPath (const TreeNode* n1,
-                    const TreeNode* n2,
-                    const TreeNode* ca,
-                    VectorPtr<Tree::TreeNode> &path,
-	                  const TreeNode* &lca,
-                    LcaBuffer &buf)
+VectorPtr<Tree::TreeNode>& Tree::getPath (const TreeNode* n1,
+											                    const TreeNode* n2,
+											                    const TreeNode* ca,
+												                  const TreeNode* &lca,
+											                    LcaBuffer &buf)
 { 
   ASSERT (n1);
   ASSERT (n2);
@@ -1540,12 +1539,14 @@ void Tree::getPath (const TreeNode* n1,
   ASSERT (n1->graph == n2->graph);
   IMPLY (ca, n1->graph == ca->graph);
   
-  path. clear ();
+  buf. clear ();
+  auto& vec1 = buf. vec1;
+  auto& vec2 = buf. vec2;
 
   if (n1 == n2)
   {
     lca = n1;
-    return;
+    return vec1;
   }
   
   const TreeNode* n1_init = n1;
@@ -1553,17 +1554,15 @@ void Tree::getPath (const TreeNode* n1,
 	while (n1 != ca && n1 != n2)
 	{
 	  ASSERT (n1);
-		path << n1;
+		vec1 << n1;
 		n1 = n1->getParent ();
 	}
 	if (n1 == n2)
 	{
     lca = n2;
-		return;
+		return vec1;
   }
 
-  buf. clear ();
-  auto& vec2 = buf. vec2;
   
 	while (n2 != ca && n2 != n1_init)
 	{
@@ -1574,29 +1573,37 @@ void Tree::getPath (const TreeNode* n1,
 	if (n2 == n1_init)
 	{
     lca = n1_init;
-    path = vec2;
-		return;
+		return vec2;
   }
 
-	ASSERT (! path. empty ());
+	ASSERT (! vec1. empty ());
 	ASSERT (! vec2. empty ());
 
   lca = ca;  
-	size_t i1 = path. size () - 1;
+	size_t i1 = vec1. size () - 1;
 	size_t i2 = vec2. size () - 1;
-	while (path [i1] == vec2 [i2])
+	while (vec1 [i1] == vec2 [i2])
 	{
-	  lca = path [i1];
-    path. pop_back ();
+	  lca = vec1 [i1];
+    vec1. pop_back ();
     vec2. pop_back ();
 		ASSERT (i1);
 		ASSERT (i2);
 		i1--;
 		i2--;
 	}
-
-  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec2)
-    path << *it;
+	if (vec1. size () < vec2. size ())
+	{
+	  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec1)
+	    vec2 << *it;
+	  return vec2;
+  }
+	else
+	{
+	  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec2)
+	    vec1 << *it;
+	  return vec1;
+  }
 }
 
 

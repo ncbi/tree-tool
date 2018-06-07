@@ -585,14 +585,13 @@ struct ThisApplication : Application
     	}
 
     	OFStream f (output_dist);
-    	VectorPtr<Tree::TreeNode> path;
     	Tree::LcaBuffer buf;
     	for (const auto p : distRequestPairs)
     	{
     		const Leaf* leaf1 = p. first;
     		const Leaf* leaf2 = p. second;
 			  const Tree::TreeNode* lca_ = nullptr;
-			  Tree::getPath (leaf1, leaf2, nullptr, path, lca_, buf);
+	    	const VectorPtr<Tree::TreeNode>& path = Tree::getPath (leaf1, leaf2, nullptr, lca_, buf);
 		  	f         << leaf1->name 
 		  	  << '\t' << leaf2->name
 		  	  << '\t' << DistTree::path2prediction (path)
