@@ -84,7 +84,11 @@ string real2str (Real x,
 Real str2real (const string& s)
 { 
   string s1 (s);
+  trim (s1);
+  if (s1. empty ())
+  	throw runtime_error ("Cannot convert an empty string to number");
   strLower (s1);
+
   if (s1 == "inf")
 	  return INF;
   if (s1 == "-inf")
@@ -94,7 +98,29 @@ Real str2real (const string& s)
 	    || s1 == "?"
 	   )
 	  return NAN;
-  return str2<double> (s1); 
+
+#if 0
+  return str2<double> (s1);  // slow
+#else
+	// 0
+	trimSuffix (s1, "e+00");
+  while (! s1. empty () && s1 [0] == '0')
+    s1. erase (0, 1);
+  if (! contains (s1, 'e') && contains (s1, '.'))
+	  while (! s1. empty () && s1. back () == '0')
+	    s1. erase (s1. size () - 1);
+  if (   s1. empty () 
+  	  || s1 == "."
+  	  || s1 == "-0."
+  	 )
+  	return 0;  	  
+
+  const double res = atof (s1. c_str ());  
+  if (res == 0)
+  	throw runtime_error ("Cannot convert " + s + " to number");
+  	
+  return res;
+#endif
 }
 
 
