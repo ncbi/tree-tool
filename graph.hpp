@@ -229,6 +229,7 @@ public:
   void borrowArcs (const Node2Node &other2this,
                    bool parallelAllowed);
     // Input: other2this: other node to *this node
+    // Invokes: new Arc
     // Time: O(|other2this| log|other2this| outdegree_max (parallelAllowed ? 1 : outdegree'_max)),
     //          where outdegree_max  = max(outdegree(other2this.keys()),
     //                outdegree'_max = max(outdegree(other2this.values())
@@ -362,13 +363,17 @@ struct Tree : DiGraph
 		    return parent_->getPrevAncestor (ancestor);
 		  }
 		size_t getSubtreeSize (bool countLeaves) const;
-		  // Return: # Arc's in the subtree
+		  // Return: number of Arc's in the subtree
 		  //         0 <= isLeaf()
 		  // Input: !countLeaves => leaf arcs are ignored
     double getSubtreeLength () const;
 		  // Return: 0 <= isLeaf()
+		// Output: leaves in the subtree
+		void subtreeSize2leaves ();
+		  // Output: leaves: number of Arc's in the subtree
 		void setLeaves ();
-		  // Output: leaves
+    void setLeaves (size_t leaves_arg);
+    //
 		size_t getLeavesSize () const;
 		void children2frequentChild (double rareProb);
 		  // Input: leaves
@@ -436,6 +441,12 @@ struct Tree : DiGraph
       // Update: area, boundary
       //         area.contains(boundary)
   public:
+    void getSubtreeArea (const VectorPtr<Tree::TreeNode> &possibleBoundary,
+	                       VectorPtr<Tree::TreeNode> &area,
+                         VectorPtr<Tree::TreeNode> &boundary) const;
+      // Output: area: connected TreeNode's with one root, distinct
+      //         boundary: distinct; degree = 1 in the subgraph
+      //         area.contains(boundary)
     template <typename StrictlyLess>
     	void sort (const StrictlyLess &strictlyLess)
   			{ VectorPtr<DiGraph::Node> children (getChildren ());

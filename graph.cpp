@@ -507,6 +507,8 @@ void DiGraph::borrowArcs (const Node2Node &other2this,
     const Node* from  = it. second;
     ASSERT (other);
     ASSERT (from);
+    ASSERT (other->graph);
+    ASSERT (from ->graph);
   #ifndef NDEBUG
     if (otherGraph)
       { ASSERT (otherGraph == other->graph); }
@@ -822,6 +824,19 @@ size_t Tree::TreeNode::getSubtreeSize (bool countLeaves) const
 
 
 
+void Tree::TreeNode::subtreeSize2leaves () 
+{
+	leaves = 0;
+	for (const Arc* arc : arcs [false])
+	{
+	  const TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
+	  const_cast <TreeNode*> (child) -> subtreeSize2leaves ();
+	  leaves += 1 + child->leaves;
+	}
+}
+
+
+
 double Tree::TreeNode::getSubtreeLength () const
 {
 	double len = 0;
@@ -847,6 +862,18 @@ void Tree::TreeNode::setLeaves ()
 	}
 	if (! leaves)
 	  leaves = 1;
+}
+
+
+
+void Tree::TreeNode::setLeaves (size_t leaves_arg) 
+{
+	leaves = leaves_arg;
+	for (const Arc* arc : arcs [false])
+	{
+	  TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
+	  child->setLeaves (leaves_arg);
+	}
 }
 
 
@@ -1099,7 +1126,7 @@ void Tree::TreeNode::getArea_ (uint radius,
     }
     for (const Arc* arc : arcs [false])
     {
-      const TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
+      const TreeNode* child = static_cast <const TreeNode*> (arc->node [false]);
       if (child != prev)
       {
         child->getArea_ (radius - 1, this, area, boundary);
@@ -1110,6 +1137,23 @@ void Tree::TreeNode::getArea_ (uint radius,
   
   if (degree <= 1)
     boundary << this;
+}
+
+
+
+void Tree::TreeNode::getSubtreeArea (const VectorPtr<Tree::TreeNode> &possibleBoundary,
+	                                   VectorPtr<Tree::TreeNode> &area,
+                                     VectorPtr<Tree::TreeNode> &boundary) const
+{
+	area << this;
+	if (possibleBoundary. contains (this))
+		boundary << this;
+  else
+  	if (arcs [false]. empty ())
+  		boundary << this;
+  	else
+		  for (const Arc* arc : arcs [false])
+		    static_cast <const TreeNode*> (arc->node [false]) -> getSubtreeArea (possibleBoundary, area, boundary);
 }
 
 
