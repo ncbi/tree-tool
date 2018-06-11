@@ -4759,8 +4759,8 @@ void DistTree::optimizeLargeSubgraphs ()
 		{
 			const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
 			ASSERT (static_cast <const Steiner*> (root) -> leaves + 1 == nodes. size ());
-			const Real divisor = (Real) threads_max /*- 1 + 0.3*/;  // PAR
-			const size_t goalSize = (size_t) max<Real> (large_min, (Real) static_cast <const Steiner*> (root) -> leaves / divisor);
+		//const Real divisor = (Real) threads_max /*- 1 + 0.3*/;  // PAR
+			const size_t goalSize = max (large_min, static_cast <const Steiner*> (root) -> leaves / threads_max);
 			FFOR (size_t, threadNum, threads_max - 1)
 			{
 				const Steiner* st_best = nullptr;
@@ -4840,11 +4840,12 @@ void DistTree::optimizeLargeSubgraphs ()
 		}
 		{
 			Progress prog ((uint) images. size () + 1);
-			prog ();
+			prog (absCriterion2str ());
+			Unverbose unv;
 			mainImage. apply ();  
 		  for (const Image* image : images)
 		  {
-		  	prog ();
+				prog (absCriterion2str ());
 		  	const_cast <Image*> (image) -> apply ();
 		  }
 		}
