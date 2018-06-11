@@ -729,70 +729,6 @@ string getToken (istream &is,
  
 
 
-// verbose
-
-namespace
-{
-	int verbose_ = 0;
-}
-
-
-bool verbose (int inc)
-{ 
-	return verbose_ + inc > 0;
-}
-
-
-
-Verbose::Verbose (int verbose_arg)
-: verbose_old (verbose_)
-{
-	verbose_ = verbose_arg;
-}
-
-
-Verbose::Verbose ()
-: verbose_old (verbose_)
-{
-	verbose_++;
-}
-
-
-Verbose::~Verbose ()
-{
-	verbose_ = verbose_old;
-}
-
-
-
-Unverbose::Unverbose ()
-{
-  verbose_--;
-}
-
-
-Unverbose::~Unverbose ()
-{
-  verbose_++;
-}
-
-
-
-
-// Root
-
-void Root::saveFile (const string &fName) const
-{
-	if (fName. empty ())
-		return;
-  
-  OFStream f (fName);
-  saveText (f);
-}
-
-
-
-
 // Rand
 
 const long Rand::max_ = 2147483647;
@@ -834,6 +770,81 @@ void Rand::run ()
   seed = ia * (seed - k * iq) - ir * k;
   if (seed < 0)
   	seed += max_;
+}
+
+
+
+
+// Threads
+
+size_t Threads::threadsToStart = 0;
+	
+	
+
+
+// verbose
+
+namespace
+{
+	int verbose_ = 0;
+}
+
+
+bool verbose (int inc)
+{ 
+	return Verbose::enabled () ? (verbose_ + inc > 0) : false;
+}
+
+
+Verbose::Verbose (int verbose_arg)
+: verbose_old (verbose_)
+{
+	if (enabled ())
+	  verbose_ = verbose_arg;
+}
+
+
+Verbose::Verbose ()
+: verbose_old (verbose_)
+{
+	if (enabled ())
+		verbose_++;
+}
+
+
+Verbose::~Verbose ()
+{
+	if (enabled ())
+		verbose_ = verbose_old;
+}
+
+
+
+Unverbose::Unverbose ()
+{
+	if (Verbose::enabled ())
+	  verbose_--;
+}
+
+
+Unverbose::~Unverbose ()
+{
+	if (Verbose::enabled ())
+	  verbose_++;
+}
+
+
+
+
+// Root
+
+void Root::saveFile (const string &fName) const
+{
+	if (fName. empty ())
+		return;
+  
+  OFStream f (fName);
+  saveText (f);
 }
 
 
@@ -1839,6 +1850,9 @@ int Application::run (int argc,
   	threads_max = str2<size_t> (getArg ("threads"));
   	if (! threads_max)
   		throw runtime_error ("Number of threads cannot be 0");
+
+  	if (threads_max > 1 && Chronometer::enabled)
+  		throw runtime_error ("Cannot profile with threads");
   
   	const string jsonFName = getArg ("json");
   	ASSERT (! jRoot);

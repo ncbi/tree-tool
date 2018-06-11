@@ -87,6 +87,7 @@ bool initCommon ();
 
 extern bool qc_on;
 extern size_t threads_max;
+  // >= 1
 
 
 extern vector<string> programArgs;
@@ -116,27 +117,51 @@ protected:
 
 
 
+class ONumber
+{
+	ostream &o;
+  const streamsize prec_old;
+	const ios_base::fmtflags flags_old;
+public:
+	ONumber (ostream &o_arg,
+	         streamsize precision,
+	         bool scientific_arg)
+	  : o (o_arg)
+	  , prec_old (o. precision ())
+	  , flags_old (o. flags ())
+	  { if (scientific_arg)
+	  	  o << scientific;
+	  	else
+	  		o << fixed;
+      o. precision (precision);
+	  }
+ ~ONumber () noexcept
+    { o. flags (flags_old); 
+      o. precision (prec_old); 
+    }
+};
+
+
+
 struct Chronometer : Nocopy
+// Requires: no thread is used
 {
   static constexpr clock_t noclock {-1};
   static bool enabled;
-  string name;
+  const string name;
   clock_t time {0};
 protected:
-  const bool profiling;
   clock_t startTime {noclock};
 public:
 
 
-  Chronometer (const string &name_arg,
-               bool profiling_arg = true)
+  explicit Chronometer (const string &name_arg)
     : name (name_arg)
-    , profiling (profiling_arg)
     {}
 
 
   bool on () const
-    { return ! profiling || enabled; }
+    { return enabled && threads_max == 1; }
   void start ()
     { if (! on ())
         return;
@@ -155,24 +180,31 @@ public:
 
   void print (ostream &os) const
     { if (! on ())
-        return;
+        return;       
       os << "CHRON: " << name << ": ";
-      os << fixed; os. precision (2); os << (double) time / CLOCKS_PER_SEC << " sec." << endl;
+      const ONumber onm (os, 2, false);
+      os << (double) time / CLOCKS_PER_SEC << " sec." << endl;
     }
 };
 
 
 
-struct Chronometer_OnePass : Chronometer
+struct Chronometer_OnePass : Nocopy
 {
+	const string name;
+	const time_t start;
+	
   explicit Chronometer_OnePass (const string &name_arg)
-    : Chronometer (name_arg, false)
-    { start (); }
+    : name (name_arg)
+    , start (time (nullptr))
+    {}
  ~Chronometer_OnePass ()
     { if (uncaught_exception ())
         return;
-      stop ();
-      print (cout); 
+      const time_t stop = time (nullptr);
+      cout << "CHRON: " << name << ": ";
+      const ONumber onm (cout, 0, false);
+      cout << difftime (stop, start) << " sec." << endl;
       cout << endl;
     }
 };
@@ -224,7 +256,7 @@ inline ebool toEbool (bool b)
 
 
 inline bool operator<= (ebool a, ebool b)
-  { static const char rank [3/*ebool*/] = {0, 2, 1};
+  { static constexpr char rank [3/*ebool*/] = {0, 2, 1};
   	return rank [a] <= rank [b];
   }
 
@@ -515,37 +547,7 @@ template <typename T>
 
 
 
-template <typename Func, typename... Args>
-  void runThreads (const Func& func,
-                   size_t i_max,
-                   Args&&... args)
-  // Input: func (from, to, args...)
-  // Optimial thread_num minimizes (Time_SingleCPU/thread_num + Time_openCloseThread * (thread_num - 1)), which is sqrt(Time_SingleCPU/Time_openCloseThread)
-  {
-  	ASSERT (threads_max >= 1);
-		size_t chunk = max<size_t> (1, i_max / threads_max);
-		if (chunk * threads_max < i_max)
-			chunk++;
-		ASSERT (chunk * threads_max >= i_max);
-	  vector<thread> threads;  threads. reserve (threads_max);
-		FFOR (size_t, tn, threads_max)
-	  {
-	    const size_t from = tn * chunk;
-	  	if (from >= i_max)
-	  		break;
-	    const size_t to = from + chunk;
-	    if (to >= i_max)
-	    {
-	    	func (from, i_max, forward<Args>(args)...);
-	    	break;
-	    }
-		  threads. push_back (thread (func, from, to, forward<Args>(args)...));
-		}
-		for (auto& t : threads)  
-			t. join ();
-  }
-
-
+//
 
 template <typename T>
 struct List : list<T>
@@ -886,27 +888,6 @@ private:
 
 
 
-
-bool verbose (int inc = 0);
-
-class Verbose
-{
-	int verbose_old;
-public:
-	explicit Verbose (int verbose_arg);
-	Verbose ();
-	  // Increase verbosity
- ~Verbose () noexcept;
-};
-
-struct Unverbose 
-{
-	Unverbose ();
- ~Unverbose () noexcept;
-};
-  
-
-
 template <typename T>
 struct Singleton : Nocopy
 {
@@ -938,6 +919,98 @@ template <typename T>
    ~Keep () noexcept
       { *ptr = t; }
   };
+
+
+
+// Threads
+
+struct Threads : Singleton<Threads>
+// Usage: { Threads th; th << ...; main_thread_process(); }
+{
+private:
+	static size_t threadsToStart;
+	vector<thread> threads;
+public:
+
+  explicit Threads (size_t threadsToStart_arg)
+    { threadsToStart = threadsToStart_arg;
+    	if (threadsToStart >= threads_max)
+    		throw runtime_error ("Too many threads to start");
+    	threads. reserve (threadsToStart);
+		  cout << "# Threads started: " << threadsToStart + 1 << endl;
+    }	
+ ~Threads ()
+    { for (auto& t : threads)  
+			  t. join ();
+			threads. clear ();
+			threadsToStart = 0;
+			cout << "Threads finished" << endl;
+		}
+  	
+	static bool empty () 
+	  { return ! threadsToStart; }
+	Threads& operator<< (thread &&t)
+	  { threads. push_back (move (t)); 
+	  	return *this;
+	  }
+};
+
+
+
+template <typename Func, typename... Args>
+  void runThreads (const Func& func,
+                   size_t i_max,
+                   Args&&... args)
+  // Input: func (from, to, args...)
+  // Optimial thread_num minimizes (Time_SingleCPU/thread_num + Time_openCloseThread * (thread_num - 1)), which is sqrt(Time_SingleCPU/Time_openCloseThread)
+  {
+  	ASSERT (threads_max >= 1);
+		size_t chunk = max<size_t> (1, i_max / threads_max);
+		if (chunk * threads_max < i_max)
+			chunk++;
+		ASSERT (chunk * threads_max >= i_max);
+		Threads th;
+		FFOR (size_t, tn, threads_max)
+	  {
+	    const size_t from = tn * chunk;
+	  	if (from >= i_max)
+	  		break;
+	    const size_t to = from + chunk;
+	    if (to >= i_max)
+	    {
+	    	func (from, i_max, forward<Args>(args)...);
+	    	break;
+	    }
+		  th << thread (func, from, to, forward<Args>(args)...);
+		}
+  }
+
+
+
+//
+
+bool verbose (int inc = 0);
+
+class Verbose
+{
+	int verbose_old;
+public:
+	
+	explicit Verbose (int verbose_arg);
+	Verbose ();
+	  // Increase verbosity
+ ~Verbose () noexcept;
+ 
+  static bool enabled ()
+    { return Threads::empty (); }
+};
+
+struct Unverbose 
+{
+	Unverbose ();
+ ~Unverbose () noexcept;
+};
+  
 
 
 
@@ -1873,7 +1946,9 @@ template <typename T, typename U /* : T */>
 
 struct Progress : Nocopy
 {
+private:
 	static size_t beingUsed;
+public:
 
 	uint n_max;
 	  // 0 <=> unknown
@@ -1886,7 +1961,7 @@ struct Progress : Nocopy
 	explicit Progress (uint n_max_arg = 0,
 	                   uint displayPeriod_arg = 1)
 	  : n_max (n_max_arg)
-	  , active (! beingUsed && displayPeriod_arg && verbose (1))
+	  , active (enabled () && displayPeriod_arg)
 	  , displayPeriod (displayPeriod_arg)
 	  { if (active) 
 	  	  beingUsed++; 
@@ -1926,6 +2001,8 @@ private:
 public:
 	static void disable ()
 	  { beingUsed++; }
+	static bool enabled ()
+	  { return ! beingUsed && verbose (1); }
 	  
 	  
 	struct Start : Nocopy  
@@ -2103,8 +2180,8 @@ public:
 
 struct Token : Root
 {
-	static const char quote = '\"';
-	static const uint noNum = (uint) -1;
+	static constexpr char quote = '\"';
+	static constexpr uint noNum = (uint) -1;
 	enum Type { eText       // In quote's within one line
 	          , eNumber     // All characters: isDigit()
 	          , eName       // All characters: isLetter()
@@ -2276,33 +2353,6 @@ void csvLine2vec (const string &line,
 
 
 
-class ONumber
-{
-	ostream &o;
-  const streamsize prec_old;
-	const ios_base::fmtflags flags_old;
-public:
-	ONumber (ostream &o_arg,
-	         streamsize precision,
-	         bool scientific_arg)
-	  : o (o_arg)
-	  , prec_old (o. precision ())
-	  , flags_old (o. flags ())
-	  { if (scientific_arg)
-	  	  o << scientific;
-	  	else
-	  		o << fixed;
-      o. precision (precision);
-	  }
- ~ONumber () noexcept
-    { o. flags (flags_old); 
-      o. precision (prec_old); 
-    }
-};
-
-
-
-
 struct TabDel
 // Usage: {<<field;}* str();
 {
@@ -2438,8 +2488,9 @@ struct JsonDouble : Json
     {}
     // decimals_arg = -1: default
   void print (ostream& os) const final
-    { if (n == n)
-      { os << fixed; os. precision ((streamsize) decimals); os << n; }
+    { const ONumber on (os, (streamsize) decimals, false);
+    	if (n == n)
+        os << n; 
       else
         os << "null";  // NAN
     }      
