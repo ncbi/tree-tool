@@ -1,8 +1,8 @@
 PARAMETERS:
+# Threads: 1
 Dissimilarity variance: linExp
 Max. possible dissimilarity: 18.0218
 Subgraph radius: 5
-# Threads: 1
 Root: by length
 
 Neighbor joining ...

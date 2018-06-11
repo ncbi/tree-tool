@@ -154,7 +154,8 @@ rm $1/dissim.add
 
 # Time: O(n log^2(n))  ??
 # -profile
-makeDistTree $QC  -data $1/ \
+makeDistTree $QC  -threads 20 \
+  -data $1/ \
   -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 2 \
   -reroot  -root_topological \
   -noqual \

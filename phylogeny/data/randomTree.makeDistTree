@@ -1,8 +1,8 @@
 PARAMETERS:
+# Threads: 1
 Dissimilarity variance: lin
 Max. possible dissimilarity: 6.71089e+07
 Subgraph radius: 5
-# Threads: 1
 Root: by length
 
 

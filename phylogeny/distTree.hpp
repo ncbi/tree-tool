@@ -65,7 +65,7 @@ inline Real dissim_max ()
 
 
 // PAR
-constexpr streamsize dissimDecimals = 6;
+constexpr streamsize dissimDecimals = 6;  
 constexpr streamsize criterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
@@ -78,6 +78,7 @@ constexpr Prob rareProb = 0.01;
 
 
 struct DistTree;
+struct Image;
 
 //struct DTNode;
   struct Steiner;
@@ -95,6 +96,7 @@ struct NewLeaf;
 struct DTNode : Tree::TreeNode 
 {
   friend DistTree;
+  friend Image;
   friend Steiner;
   friend Leaf;
   friend NewLeaf;
@@ -436,6 +438,7 @@ struct Subgraph : Root
 //set area, boundary
   void reserve ();
   void removeIndiscernibles ();
+    // Update: area, boundary
   void finish ();
     // Time: O(|area| log(|area|))
 //set subPaths
@@ -450,10 +453,10 @@ struct Subgraph : Root
 
   bool large () const
     { return boundary. size () > 64; } // PAR
-  bool dense () const
-    { const Real density = (Real) area. size () / (Real) boundary. size ();
-        // 1..2; 2 <=> sparse
-      return density <= 1.2;   // PAR 
+  bool unresolved () const
+    { const Real resolution = (Real) area. size () / (Real) boundary. size ();
+        // 1..2; 2 <=> completely resolved
+      return resolution <= 1.2;   // PAR 
     }
   bool viaRoot (const SubPath &subPath) const
     { return    subPath. node1 == area_root 
@@ -581,6 +584,7 @@ public:
 
 struct Dissim
 {
+	// Input
   const Leaf* leaf1 {nullptr};
   const Leaf* leaf2 {nullptr};
     // !nullptr
@@ -589,6 +593,7 @@ struct Dissim
     // Dissimilarity between leaf1 and leaf2; !isNan()
   Real mult {NAN};
   
+  // Output
   Real prediction {NAN};
     // Tree distance
   const Steiner* lca {nullptr};
@@ -635,6 +640,37 @@ struct Dissim
 
 
 
+struct Image
+// Tree subgraph replica
+{
+  Subgraph subgraph;
+  DiGraph::Node2Node new2old;  
+    // Initially: newLeaves2boundary
+  unique_ptr<DistTree> tree;
+  const DTNode* center {nullptr};
+    // In subgraph.tree
+    // May be delete'd
+  bool rootInArea {false};
+  bool neighborJoinP {false};
+
+  
+  explicit Image (const DistTree &mainTree);
+
+
+  void processSmall (const DTNode* center_arg,
+			               uint areaRadius);
+	  // Invokes: DistTree(subgraph).optimizeWholeIter()
+	  // Time: O(log^2(n) + Time(optimizeWholeIter(),n = min(mainTree.n,2^areaRadius))
+	void processLarge (const Steiner* subTreeRoot,
+	                   const VectorPtr<Tree::TreeNode> &possibleBoundary);
+  void apply ();
+	  // Output: DTNode::stable = true
+    // Time: ??
+};
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////
 
 struct DistTree : Tree
@@ -647,6 +683,7 @@ struct DistTree : Tree
   friend Leaf;
   friend Change;
   friend Subgraph;
+  friend Image;
 
   const uint subDepth {0};
     // > 0 => *this is a subgraph of a tree with subDepth - 1
@@ -729,8 +766,8 @@ public:
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //       <dissimilarity>: >= 0, < INF
-	  // Invokes: optimizeSubgraph() for each added Leaf
-	  // Time: if loadDissim then O(p log(n) + Time(optimizeSubgraph) * new_leaves)
+	  // Invokes: optimizeSmallSubgraph() for each added Leaf
+	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
 	  //       if !loadDissim then O(n + new_leaves)
   //  
   explicit DistTree (const string &newickFName);
@@ -738,15 +775,12 @@ public:
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
     // Time: O(n)
-  DistTree (const DTNode* center,
-            uint &areaRadius,
-            Subgraph &subgraph,
+  DistTree (Subgraph &subgraph,
             Node2Node &newLeaves2boundary);
-    // Connected subgraph of center->getTree(); boundary of area are Leaf's of *this
-    // If subgraph.dense() then *this has a star topology
-    // Update: areaRadius: >= 1; may be decreased
-    // Output: subgraph: tree = center->getTree()
-    //                   area: contains center, newLeaves2boundary.values(); discernible
+    // Connected subgraph of subgraph.tree: boundary of subgraph.area are Leaf's of *this
+    // If subgraph.unresolved() then the topology of *this is changed to a star
+    // Input: subgraph: !empty(), not finish()'ed
+    // Output: subgraph: area: contains newLeaves2boundary.values(); discernible
     //         newLeaves2boundary
 	  // Time: O(log^2(wholeTree.n)) + f(|area|), where wholeTree = center->getDistTree()
 private:
@@ -852,10 +886,10 @@ public:
     // Logical leaves
   static void printParam (ostream &os) 
     { os << "PARAMETERS:" << endl;
+      os << "# Threads: " << threads_max << endl;
       os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
       os << "Max. possible dissimilarity: " << dissim_max () << endl;
       os << "Subgraph radius: " << areaRadius_std << endl;
-      os << "# Threads: " << threads_max << endl;
     }
 	void printInput (ostream &os) const;
 	bool optimizable () const  
@@ -894,6 +928,9 @@ private:
     // Output: Dissim::lca
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
+  void setPredictionAbsCriterion ();
+    // Output: Dissim::prediction, absCriterion
+  void qcPredictionAbsCriterion () const;
 public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
@@ -957,17 +994,16 @@ private:
     // Update: bestChange: positive(improvement)
     // Invokes: Change::{apply(),restore()}
 public:
-	void optimizeSubgraphs (uint areaRadius);
-	  // Invokes: optimizeSubgraph()
-	  // Time: O(n * Time(optimizeSubgraph))
+  void optimizeLargeSubgraphs ();
+    // Invokes: optimizeSmallSubgraphs()
+    // Time: ??
 private:
-	uint optimizeSubgraph (const DTNode* center,
-	                       uint areaRadius);
-	  // Return: adjusted areaRadius
-	  // Input: center: may be delete'd
-	  // Output: DTNode::stable = true
-	  // Invokes: DistTree(center,areaRadius,).optimizeWholeIter()
-	  // Time: O(log^2(n) + Time(optimizeWholeIter(),n = min(this->n,2^areaRadius))
+	void optimizeSmallSubgraphs (uint areaRadius,
+	                             bool unstableOnly);
+	  // Invokes: optimizeSmallSubgraph()
+	  // Time: O(n * Time(optimizeSmallSubgraph))
+	void optimizeSmallSubgraph (const DTNode* center,
+	                            uint areaRadius);
   void delayDeleteRetainArcs (DTNode* node);
     // Invokes: s->detachChildrenUp()
   size_t finishChanges ();
@@ -981,9 +1017,9 @@ private:
 public:
   void removeLeaf (Leaf* leaf,
                    bool optimizeP);
-    // Invokes: leaf->detachChildrenUp(), optimizeSubgraph(), toDelete.deleteData()
+    // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
-	  // Time: Time(optimizeSubgraph)    
+	  // Time: Time(optimizeSmallSubgraph)    
   void setReprLeaves ()
     { sort ();
       const_static_cast<DTNode*> (root) -> setRepresentative ();

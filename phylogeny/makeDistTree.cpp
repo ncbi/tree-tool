@@ -252,7 +252,7 @@ struct ThisApplication : Application
             	    cerr << "Iteration " << iter << '/' << iter_max << " ..." << endl;
             	  }
             		const Real absCriterion_old = tree->absCriterion;
-	              tree->optimizeSubgraphs (areaRadius_std);  
+	              tree->optimizeLargeSubgraphs ();  
 	              if (tree->absCriterion == 0)
 	              	break;
 	              if ((absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-6)  // PAR
@@ -264,6 +264,7 @@ struct ThisApplication : Application
           
           cout << "Re-rooting ..." << endl;
           const Real radius_ave = tree->reroot (root_topological);
+				  const ONumber on (cout, dissimDecimals, false);
           cout << "Ave. radius: " << radius_ave << endl;
           cout << endl;
         }
@@ -334,6 +335,7 @@ struct ThisApplication : Application
 
     if (! noqual && tree->optimizable ())
     {
+		  const ONumber on (cout, 2, false);  // PAR
     	const Real dissim_var = tree->setErrorDensities ();  
       cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->dissim2_sum) * 100 << " %" << endl;
         // Must be << "Average arc error"

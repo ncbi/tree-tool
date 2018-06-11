@@ -75,6 +75,11 @@ diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 if ($?) exit 1
 rm prot-identical_comm.distTree
 
+echo ""
+echo "prot-identical_comm (subgraphs) with threads ..."
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -threads 3 > /dev/null
+if ($?) exit 1
+
 
 echo ""
 echo "prot-identical_comm (whole) ..."
