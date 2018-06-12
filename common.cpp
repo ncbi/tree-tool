@@ -114,7 +114,7 @@ void errorExit (const char* msg,
 	const char* pwd = getenv ("PWD");
 #endif
 	*os << endl
-      << "ERROR" << endl
+      << "*** ERROR ***" << endl
       << msg << endl
     #ifndef _MSC_VER
 	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
