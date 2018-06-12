@@ -5,7 +5,7 @@ if ($# != 2) then
   echo "Update: #1/"
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
-  echo "Time: O(n log^4(n))"
+  echo "Time: O(n log^5(n))"
   exit 1
 endif
 
@@ -51,7 +51,7 @@ if (-e $1/delete) then
   set delete = "-delete $1/delete"
 endif
 
-# Time: O(n log^4(n))
+# Time: O(n log^5(n))
 makeDistTree  -data $1/  $delete  -optimize  -reinsert  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 if ($?) exit 1
 mv $1/tree.new $1/tree

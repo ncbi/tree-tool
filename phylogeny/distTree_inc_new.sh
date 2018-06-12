@@ -5,7 +5,7 @@ if ($# != 2) then
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
   echo "Time: O(n log^2(n))"
-  echo "Cumulative time: O(n log^4(n))"
+  echo "Cumulative time: O(n log^5(n))"
   exit 1
 endif
 
@@ -19,6 +19,9 @@ set RATE = 0.01   # PAR
 
 
 date
+echo ""
+top -b -n 1 | head -20
+echo ""
 
 
 set N = `ls $1/search/ | head -1`
@@ -152,8 +155,7 @@ rm $1/dissim.add
 #set VER = 254
 
 
-# Time: O(n log^2(n))  ??
-# -profile
+# Time: O(n log^4(n)) 
 makeDistTree $QC  -threads 20 \
   -data $1/ \
   -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 2 \
