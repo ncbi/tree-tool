@@ -88,8 +88,10 @@ struct NewLeaf;
 
 
 
-// For Time: n = # Tree leaves, p = # distances = DistTree::dissims.size()
-//           p >= n
+// For Time: 
+//   n = # Tree leaves, p = # distances = DistTree::dissims.size()
+//   p >= n
+//   ~O(): p/n = log(n)        
 
 
 
@@ -408,7 +410,7 @@ struct Subgraph : Root
   // (bool)area_underRoot = (bool)area_root
   Vector<SubPath> subPaths;
     // Some paths of tree.dissims passing through area
-    // Size: O(|bounadry| p/n log(n))
+    // Size: O(|bounadry| p/n log(n)) ~ O(|area| log^2(n))
   Real subPathsAbsCriterion {0};
   
   
@@ -433,6 +435,7 @@ struct Subgraph : Root
       subPaths. shrink_to_fit ();
       subPathsAbsCriterion = 0;
     }
+
   
   // Usage:
 //set area, boundary
@@ -443,13 +446,15 @@ struct Subgraph : Root
     // Time: O(|area| log(|area|))
 //set subPaths
   void finishSubPaths ();
-    // Time: O(|boundary| p/n log(n) log(|subPaths|) + |subPaths| log(|area|))
+    // Time: O(|boundary| p/n log(n) log(|subPaths|) + |subPaths| log(|area|)) 
+    //       ~ O(|area| log(|area| log^2(n)))
 //change topology of tree within area
   Real getImprovement (const DiGraph::Node2Node &boundary2new) const;
-    // Time: O(|subPaths| (log(|boundary2new|) + log(|area|)))
+    // Time: O(|subPaths| (log(|boundary|) + log(|area|)))
   void subPaths2tree ();
     // Update: tree: Paths, absCriterion, Dissim::prediction
-    // Time: O(|area| log(|subPaths|) + |subPaths| |area| log(|area|))
+    // Time: O(p/*fast*/ + |area| (log(|boundary|) + p/n log(n)) + |subPaths| log(|area|) log(|boundary|)) 
+    //       ~ O(|area| log^2(|area|) log^2(n))
 
   bool large () const
     { return boundary. size () > 64; } // PAR
@@ -575,6 +580,7 @@ public:
 	void commit ();
 	  // status: eApplied --> eDone
     // May invoke: tree.delayDeleteRetainArcs()
+    // Time: O(log^2(n))
 	static bool strictlyLess (const Change* a, 
 	                          const Change* b);
     // Requires: (bool)a
@@ -640,32 +646,34 @@ struct Dissim
 
 
 
-struct Image
+struct Image : Nocopy
 // Tree subgraph replica
 {
   Subgraph subgraph;
-  DiGraph::Node2Node new2old;  
-    // Initially: newLeaves2boundary
-  unique_ptr<DistTree> tree;
   const DTNode* center {nullptr};
     // In subgraph.tree
     // May be delete'd
+  DistTree* tree {nullptr};
+  DiGraph::Node2Node new2old;  
+    // Initially: newLeaves2boundary
   bool rootInArea {false};
   bool neighborJoinP {false};
 
   
   explicit Image (const DistTree &mainTree);
+ ~Image ();
 
 
   void processSmall (const DTNode* center_arg,
 			               uint areaRadius);
 	  // Invokes: DistTree(subgraph).optimizeWholeIter()
-	  // Time: O(log^2(n) + Time(optimizeWholeIter(),n = min(mainTree.n,2^areaRadius))
+	  // Time: ~ O(|area| (log(|area|) log^2(n) + |area|) + Time(optimizeWholeIter(|area|)))
 	void processLarge (const Steiner* subTreeRoot,
 	                   const VectorPtr<Tree::TreeNode> &possibleBoundary);
+    // Time: ~ O(n^2 / threads_max^2)
   void apply ();
 	  // Output: DTNode::stable = true
-    // Time: ??
+    // Time: ~ O(|area| log^2(|area|) log^2(n))
 };
 
 
@@ -782,7 +790,7 @@ public:
     // Input: subgraph: !empty(), not finish()'ed
     // Output: subgraph: area: contains newLeaves2boundary.values(); discernible
     //         newLeaves2boundary
-	  // Time: O(log^2(wholeTree.n)) + f(|area|), where wholeTree = center->getDistTree()
+	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + |area| /*fast*/))
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -930,6 +938,7 @@ private:
     // Invokes: DTNode::subtreeLen.clear()
   void setPredictionAbsCriterion ();
     // Output: Dissim::prediction, absCriterion
+    // Time: O(p log(n))
   void qcPredictionAbsCriterion () const;
 public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);
@@ -996,12 +1005,12 @@ private:
 public:
   void optimizeLargeSubgraphs ();
     // Invokes: optimizeSmallSubgraphs()
-    // Time: ??
+    // Time: ~ O(n^2 / threads_max^2 + threads_max n log^4(n))
 private:
 	void optimizeSmallSubgraphs (uint areaRadius,
 	                             bool unstableOnly);
 	  // Invokes: optimizeSmallSubgraph()
-	  // Time: O(n * Time(optimizeSmallSubgraph))
+	  // Time: ~ O(n * Time(optimizeSmallSubgraph))
 	void optimizeSmallSubgraph (const DTNode* center,
 	                            uint areaRadius);
   void delayDeleteRetainArcs (DTNode* node);
