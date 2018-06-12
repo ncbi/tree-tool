@@ -1414,11 +1414,18 @@ Image::Image (const DistTree &mainTree)
 	        
 
 
+Image::~Image ()
+{ 
+	delete tree; 
+}
+
+
+
 void Image::processSmall (const DTNode* center_arg,
 			                    uint areaRadius)
 { 
   ASSERT (subgraph. empty ());
-	ASSERT (! tree. get ());    	   	  	
+	ASSERT (! tree);    	   	  	
   ASSERT (! center);
 
   
@@ -1452,7 +1459,7 @@ void Image::processSmall (const DTNode* center_arg,
     areaRadius--;
   }
 
-  tree. reset (new DistTree (subgraph, new2old));
+  tree = new DistTree (subgraph, new2old);
   tree->qc ();
   rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
@@ -1463,7 +1470,7 @@ void Image::processSmall (const DTNode* center_arg,
   {
     // New
     ASSERT (it. first);
-    ASSERT (it. first->graph == tree. get ());
+    ASSERT (it. first->graph == tree);
     ASSERT (static_cast <const DTNode*> (it. first) -> asLeaf ());
     ASSERT (! static_cast <const DTNode*> (it. first) -> inDiscernible ());
     // Old = boundary  
@@ -1527,7 +1534,7 @@ void Image::processLarge (const Steiner* subTreeRoot,
 	                        const VectorPtr<Tree::TreeNode> &possibleBoundary)
 {
   ASSERT (subgraph. empty ());
-	ASSERT (! tree. get ());    	   	  	
+	ASSERT (! tree);    	   	  	
   ASSERT (! center);
 #ifndef NDEBUG
   for (const Tree::TreeNode* node : possibleBoundary)
@@ -1556,7 +1563,7 @@ void Image::processLarge (const Steiner* subTreeRoot,
   subgraph. removeIndiscernibles ();
 //cout << "Subgraph size: " << subgraph. area. size () << endl;
   
-  tree. reset (new DistTree (subgraph, new2old));
+  tree = new DistTree (subgraph, new2old);
   tree->qc ();
   rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
@@ -1570,7 +1577,7 @@ void Image::processLarge (const Steiner* subTreeRoot,
 
 void Image::apply ()
 {
-	ASSERT (tree. get ());
+	ASSERT (tree);
 	subgraph. qc ();
 	
 
@@ -1982,7 +1989,7 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (absCriterion2str ());
         Unverbose unv;
-        optimizeSmallSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);
+        optimizeSmallSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);  // PAR
           // reinsert ??
       #ifndef NDEBUG
         // ??
@@ -4742,137 +4749,139 @@ void DistTree::optimizeLargeSubgraphs ()
   ASSERT (large_min > 1);
 
 
-	if (   threads_max == 1
-		  || name2leaf. size () <= 2 * large_min  // PAR
-		 )
+	if (threads_max == 1)
+		goto small_tree;
+	if (name2leaf. size () <= 2 * large_min)  // PAR
 	{
-		if (threads_max > 1)
-		  cout << "Too small tree" << endl;
-		optimizeSmallSubgraphs (areaRadius_std, false);
-		return;
+	  cout << "Too small tree" << endl;
+		goto small_tree;
 	}
 	
 	
-	VectorPtr<Steiner> boundary;  boundary. reserve (threads_max);   // isTransient()
 	{
-		VectorPtr<Steiner> cuts;  cuts. reserve (threads_max);
+		VectorPtr<Steiner> boundary;  boundary. reserve (threads_max);   // isTransient()
 		{
-			const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
-			ASSERT (static_cast <const Steiner*> (root) -> leaves + 1 == nodes. size ());
-		//const Real divisor = (Real) threads_max /*- 1 + 0.3*/;  // PAR
-			const size_t goalSize = max (large_min, static_cast <const Steiner*> (root) -> leaves / threads_max);
-			FFOR (size_t, threadNum, threads_max - 1)
+			VectorPtr<Steiner> cuts;  cuts. reserve (threads_max);
 			{
-				const Steiner* st_best = nullptr;
-				size_t diff = numeric_limits<size_t>::max ();
-		    for (const DiGraph::Node* node : nodes)
-		    	if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
-		  	    if (   st->leaves > max<size_t> (large_min, goalSize / 2)  // PAR
-		  	    	  && st->childrenDiscernible ()
-		  	    	  && minimize (diff, difference (st->leaves, goalSize))
-		  	    	 )
-		  	    	st_best = st;
-		  	if (! st_best)
-		  		break;
-		  	if (st_best == root)
-		  		break;
-		    cuts << st_best;
-		    const size_t leaves_best = st_best->leaves;
-		    ASSERT (leaves_best);
-		    const Steiner* st = st_best;
-		    while (st)
-		    {
-		    	if (st->leaves)
-		    	{
-			    	ASSERT (st->leaves >= leaves_best);
-			    	const_cast <Steiner*> (st) -> leaves -= leaves_best;
+				const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
+				ASSERT (static_cast <const Steiner*> (root) -> leaves + 1 == nodes. size ());
+				const size_t goalSize = max (large_min, static_cast <const Steiner*> (root) -> leaves / threads_max);
+				FFOR (size_t, threadNum, threads_max - 1)
+				{
+					const Steiner* st_best = nullptr;
+					size_t diff = numeric_limits<size_t>::max ();
+			    for (const DiGraph::Node* node : nodes)
+			    	if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
+			  	    if (   st->leaves > max<size_t> (large_min, goalSize / 2)  // PAR
+			  	    	  && st->childrenDiscernible ()
+			  	    	  && minimize (diff, difference (st->leaves, goalSize))
+			  	    	 )
+			  	    	st_best = st;
+			  	if (! st_best)
+			  		break;
+			  	if (st_best == root)
+			  		break;
+			    cuts << st_best;
+			    const size_t leaves_best = st_best->leaves;
+			    ASSERT (leaves_best);
+			    const Steiner* st = st_best;
+			    while (st)
+			    {
+			    	if (st->leaves)
+			    	{
+				    	ASSERT (st->leaves >= leaves_best);
+				    	const_cast <Steiner*> (st) -> leaves -= leaves_best;
+				    }
+			    	st = static_cast <const Steiner*> (st->getParent ());
 			    }
-		    	st = static_cast <const Steiner*> (st->getParent ());
-		    }
-		    const_cast <Steiner*> (st_best) -> setLeaves (0);
-		    if (TreeNode* parent = const_cast <TreeNode*> (st_best->getParent ()))
-		    	parent->leaves = 0;  // To prevent neighboring boundary nodes
+			    const_cast <Steiner*> (st_best) -> setLeaves (0);
+			    if (TreeNode* parent = const_cast <TreeNode*> (st_best->getParent ()))
+			    	parent->leaves = 0;  // To prevent neighboring boundary nodes
+				}
 			}
-		}
-		ASSERT (boundary. empty ());
-		for (const Steiner* cut : cuts)
-		{
-			ASSERT (cut);
-	    auto inter = new Steiner (*this, const_static_cast <Steiner*> (cut->getParent ()), 0);
-	    inter->pathObjNums = cut->pathObjNums;
-	    const_cast <Steiner*> (cut) -> setParent (inter);
-	    ASSERT (inter->getParent ());
-	    boundary << inter;
-		}
-		ASSERT (boundary. size () == cuts. size ());
-	}
-	if (boundary. empty ()) 
-	{
-		cout << "No cuts found" << endl;
-		optimizeSmallSubgraphs (areaRadius_std, false);
-		return;
-	}
-//qc ();  // will break due to transients
-
-
-  {
-		VectorOwn<Image> images;  images. reserve (threads_max);
-	  Image mainImage (*this);  
-		{
-			Threads th (boundary. size ());
-		//vector<thread> threads;  threads. reserve (threads_max - 1);
-			VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
-			for (const Steiner* cut : boundary)
+			ASSERT (boundary. empty ());
+			for (const Steiner* cut : cuts)
 			{
 				ASSERT (cut);
-		  	ASSERT (cut->isTransient ());
-				auto image = new Image (*this);
-				images << image;
-				ASSERT (cut->isTransient ());
-			#if 1
-			  th << thread (processLargeImage, ref (*image), cut, possibleBoundary);
-			#else
-			  image->processLarge (cut, possibleBoundary);
-			#endif
-			  possibleBoundary << cut;
-		  }	  
-		  mainImage. processLarge (nullptr, possibleBoundary);
+		    auto inter = new Steiner (*this, const_static_cast <Steiner*> (cut->getParent ()), 0);
+		    inter->pathObjNums = cut->pathObjNums;
+		    const_cast <Steiner*> (cut) -> setParent (inter);
+		    ASSERT (inter->getParent ());
+		    boundary << inter;
+			}
+			ASSERT (boundary. size () == cuts. size ());
 		}
+		if (boundary. empty ()) 
 		{
-			Progress prog ((uint) images. size () + 1);
-			prog (absCriterion2str ());
-			Unverbose unv;
-			mainImage. apply ();  
-		  for (const Image* image : images)
-		  {
-				prog (absCriterion2str ());
-		  	const_cast <Image*> (image) -> apply ();
-		  }
+			cout << "No cuts found" << endl;
+			goto small_tree;
 		}
-	}
-  
-  // delete transients
-  for (const Steiner* st : boundary)
-  {
-  	ASSERT (st->graph == this);
-  	if (st->isTransient ())
-  	{
-	  	if (const TreeNode* parent = st->getParent ())
-	  		const_static_cast <DTNode*> (parent) -> stable = false;
-	 	  delayDeleteRetainArcs (const_cast <Steiner*> (st));
+	//qc ();  // will break due to transients
+	
+	
+	  {
+			VectorOwn<Image> images;  images. reserve (threads_max);
+		  Image mainImage (*this);  
+			{
+				Threads th (boundary. size ());
+				VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
+				for (const Steiner* cut : boundary)
+				{
+					ASSERT (cut);
+			  	ASSERT (cut->isTransient ());
+					auto image = new Image (*this);
+					images << image;
+					ASSERT (cut->isTransient ());
+				#if 1
+				  th << thread (processLargeImage, ref (*image), cut, possibleBoundary);
+				#else
+				  image->processLarge (cut, possibleBoundary);
+				#endif
+				  possibleBoundary << cut;
+			  }	  
+			  mainImage. processLarge (nullptr, possibleBoundary);
+			}
+			{
+				Progress prog ((uint) images. size () + 1);
+				prog (absCriterion2str ()); 
+				Unverbose unv;
+				mainImage. apply ();  
+			  for (const Image* image : images)
+			  {
+					prog (absCriterion2str () + " approx."); 
+			  	const_cast <Image*> (image) -> apply ();
+			  }
+			}
+		}
+	  
+	  // delete transients
+	  for (const Steiner* st : boundary)
+	  {
+	  	ASSERT (st->graph == this);
+	  	if (st->isTransient ())
+	  	{
+		  	if (const TreeNode* parent = st->getParent ())
+		  		const_static_cast <DTNode*> (parent) -> stable = false;
+		 	  delayDeleteRetainArcs (const_cast <Steiner*> (st));
+		 	}
+		 	else
+		  	const_cast <Steiner*> (st) -> stable = false;
 	 	}
-	 	else
-	  	const_cast <Steiner*> (st) -> stable = false;
- 	}
-  toDelete. deleteData ();
+	  toDelete. deleteData ();
+	  
+	  setPredictionAbsCriterion ();
+	  qc ();
+	  
+	  cout << "Optimizing cut nodes ..." << endl;
+	  optimizeSmallSubgraphs (areaRadius_std, true);  // PAR
+	  qc ();
+	  qcPredictionAbsCriterion ();
+	}  
+  return;
+
   
-  setPredictionAbsCriterion ();
-  qc ();
-  
-  cout << "Optimizing cut nodes ..." << endl;
-  optimizeSmallSubgraphs (/* 2 * */ areaRadius_std, true);  // PAR
-  qc ();
-  qcPredictionAbsCriterion ();
+small_tree:
+	optimizeSmallSubgraphs (areaRadius_std, false);
 }
 
 
