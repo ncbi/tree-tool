@@ -923,19 +923,22 @@ void Subgraph::subPaths2tree ()
 
   DistTree& tree_ = const_cast <DistTree&> (tree);
 
-  Vector<bool> subPathDissims (tree. dissims. size (), false);
+  // Time: O(p + |subPaths|)
+  Vector<bool> subPathDissims (tree. dissims. size (), false);  
   for (const SubPath& subPath : subPaths)
     subPathDissims [subPath. objNum] = true;
-    
+  
+  // Time: O(|area| (log(|boundary|) + p/n log(n)))  
   for (const Tree::TreeNode* node : area)
     if (! boundary. containsFast (node))
       const_static_cast <DTNode*> (node) -> pathObjNums. filterValue 
       //([&] (uint objNum) { const SubPath subPath (objNum); return subPaths. containsFast (subPath); });
-          // Faster if n >> 0
+          // Faster if n >> 0 <= O(p) above is not needed
         ([&] (uint objNum) { return subPathDissims [objNum]; });
   
   tree_. absCriterion -= subPathsAbsCriterion;
   Tree::LcaBuffer buf;
+  // Time: O(|subPaths| log(|area|) log(|boundary|))
   for (const SubPath& subPath : subPaths)
   {
     subPath. qc ();
@@ -4765,7 +4768,17 @@ void DistTree::optimizeLargeSubgraphs ()
 			{
 				const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
 				ASSERT (static_cast <const Steiner*> (root) -> leaves + 1 == nodes. size ());
-				const size_t goalSize = max (large_min, static_cast <const Steiner*> (root) -> leaves / threads_max);
+			  // cuts nodes should vary after tree addition
+				Real goalSize_ = NAN;
+				{
+					goalSize_ = (Real) static_cast <const Steiner*> (root) -> leaves / (Real) threads_max;
+					Normal normal;
+					normal. setParam (0, max<Real> (1, goalSize_ / 20));  // PAR
+					normal. setSeed (name2leaf. size ());
+					goalSize_ += normal. rand (); 
+				}
+				ASSERT (goalSize_ > 0);
+				const size_t goalSize = max (large_min, (size_t) max<Real> (0, goalSize_));
 				FFOR (size_t, threadNum, threads_max - 1)
 				{
 					const Steiner* st_best = nullptr;
@@ -4848,7 +4861,7 @@ void DistTree::optimizeLargeSubgraphs ()
 				mainImage. apply ();  
 			  for (const Image* image : images)
 			  {
-					prog (absCriterion2str () + " approx."); 
+					prog (absCriterion2str () + " (approx.)"); 
 			  	const_cast <Image*> (image) -> apply ();
 			  }
 			}
