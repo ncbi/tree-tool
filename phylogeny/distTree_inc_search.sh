@@ -16,6 +16,9 @@ endif
 set DIR = $1/search/$2
 
 
+# Already done
+if (! -e $DIR/request && -e $DIR/dissim && ! -z $DIR/dissim)  exit 0
+
 if (! -e $DIR/request) then
   echo "$DIR/request does not exist" 
   exit 1

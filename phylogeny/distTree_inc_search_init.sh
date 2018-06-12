@@ -11,8 +11,11 @@ endif
 set DIR = $1/search/$2
 
 
-$1/request_closest.sh $2 > $DIR/request
-if ($?) exit 1
+while (1) 
+	$1/request_closest.sh $2 > $DIR/request
+	if ($? == 0) break
+	sleep 30
+end
 
 if (-z $DIR/request) then
   wc -l $DIR/request
