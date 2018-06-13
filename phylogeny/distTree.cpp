@@ -4767,20 +4767,16 @@ void DistTree::optimizeLargeSubgraphs ()
 			VectorPtr<Steiner> cuts;  cuts. reserve (threads_max);
 			{
 				const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
-				ASSERT (static_cast <const Steiner*> (root) -> leaves + 1 == nodes. size ());
-			  // cuts nodes should vary after tree addition
-				Real goalSize_ = NAN;
-				{
-					goalSize_ = (Real) static_cast <const Steiner*> (root) -> leaves / (Real) threads_max;
-					Normal normal;
-					normal. setParam (0, max<Real> (1, goalSize_ / 20));  // PAR
-					normal. setSeed (name2leaf. size ());
-					goalSize_ += normal. rand (); 
-				}
-				ASSERT (goalSize_ > 0);
-				const size_t goalSize = max (large_min, (size_t) max<Real> (0, goalSize_));
+				const size_t rootLeaves = static_cast <const Steiner*> (root) -> leaves;
+				ASSERT (rootLeaves + 1 == nodes. size ());
+				Normal normal;
+				normal. setSeed (rootLeaves);
+				const Real goalSize_init = (Real) rootLeaves / (Real) threads_max;
+				normal. setParam (0, max<Real> (1, goalSize_init * 0.02));  // PAR
 				FFOR (size_t, threadNum, threads_max - 1)
 				{
+				  // cuts nodes should vary after tree addition
+					const size_t goalSize = max (large_min, (size_t) max<Real> (0, goalSize_init + normal. rand ()));
 					const Steiner* st_best = nullptr;
 					size_t diff = numeric_limits<size_t>::max ();
 			    for (const DiGraph::Node* node : nodes)
