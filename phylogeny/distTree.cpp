@@ -1855,8 +1855,6 @@ DistTree::DistTree (const string &dataDirName,
     //ASSERT (iss. eof ());  // Extra fields
       const DTNode* anchor = lcaName2node (anchorName, buf);
       ASSERT (anchor);
-      // Use absCriterion_leaf in f to test if leafName is an outlier
-      //   if leafName is an outlier then do not add leafName to *this, but add leafName to outliers ??
       // Attach a leaf
       Leaf* leaf = nullptr;
       if (const Leaf* anchorLeaf = anchor->asLeaf ())
@@ -1992,6 +1990,7 @@ DistTree::DistTree (const string &dataDirName,
       {
         prog (absCriterion2str ());
         Unverbose unv;
+        // Use Threads, do not run apply() for intersecting subgraphs, iterate until all leaves are optimized ??
         optimizeSmallSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);  // PAR
           // reinsert ??
       #ifndef NDEBUG
@@ -3601,7 +3600,7 @@ void DistTree::setPredictionAbsCriterion ()
 {
   absCriterion = 0;
   LcaBuffer buf;
-  // Use thread's ??!
+  // Use Threads ??!
   Progress prog ((uint) dissims. size (), 1e5);  // PAR: cf. setPaths()
   for (Dissim& dissim : dissims)
     if (dissim. valid ())
@@ -4447,6 +4446,7 @@ void DistTree::optimize3 ()
 
 bool DistTree::optimizeReinsert ()
 {
+	// Threads ??
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR
 	{
     const size_t nodesSize = nodes. size ();
@@ -4770,7 +4770,7 @@ void DistTree::optimizeLargeSubgraphs ()
 				const size_t rootLeaves = static_cast <const Steiner*> (root) -> leaves;
 				ASSERT (rootLeaves + 1 == nodes. size ());
 				Normal normal;
-				normal. setSeed (rootLeaves);
+				normal. setSeed ((ulong) clock ());
 				const Real goalSize_init = (Real) rootLeaves / (Real) threads_max;
 				normal. setParam (0, max<Real> (1, goalSize_init * 0.02));  // PAR
 				FFOR (size_t, threadNum, threads_max - 1)
@@ -4852,13 +4852,13 @@ void DistTree::optimizeLargeSubgraphs ()
 			}
 			{
 				Progress prog ((uint) images. size () + 1);
-				prog (absCriterion2str ()); 
 				Unverbose unv;
 				mainImage. apply ();  
+				prog (absCriterion2str ()); 
 			  for (const Image* image : images)
 			  {
-					prog (absCriterion2str () + " (approx.)"); 
 			  	const_cast <Image*> (image) -> apply ();
+					prog (absCriterion2str () + " (approx.)"); 
 			  }
 			}
 		}
