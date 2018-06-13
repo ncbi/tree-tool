@@ -750,7 +750,6 @@ public:
 	  //          file name                 line format                                   meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
-	  //         -outlier/<obj>             <obj>                                         Outliers. Their dissimilarities are either in dissim or in dissim.outlier
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
     //         [dissim.add[-req]]
@@ -760,7 +759,7 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-	  //          outlier/<obj>                                                           Outlier objects
+	  //          outlier/<obj>                                                           Outlier objects, they have no dissimilarities
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
 	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Historic versions of data
