@@ -2677,9 +2677,11 @@ void DistTree::cleanTopology ()
  	insertAll (nodeVec, nodes);
  	for (DiGraph::Node* node : nodeVec)  
 	  if (const Steiner* s = static_cast <DTNode*> (node) -> asSteiner ())
-	    while (s && s->isLeaf ())
+	    while (   s 
+	           && s->isLeaf () 
+	           && s->graph
+	          )
 	    {
-	      ASSERT (s->graph); 
    		  ASSERT (! s->inDiscernible ());
    		  ASSERT (s->childrenDiscernible ());  // Actually no children
    		  const Steiner* parent = static_cast <const DTNode*> (s->getParent ()) -> asSteiner ();
