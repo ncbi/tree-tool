@@ -18,6 +18,7 @@ set QC = ""  # -qc
 set RATE = 0.01   # PAR
 
 
+if (1) then   
 date
 echo ""
 top -b -n 1 | head -20
@@ -151,8 +152,9 @@ wc -l $1/dissim.add
 cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
-
-#set VER = 254
+else
+  set VER = 296  # PAR ??
+endif
 
 
 # Time: O(n log^4(n)) 
