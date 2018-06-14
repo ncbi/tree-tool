@@ -4742,7 +4742,10 @@ void DistTree::tryChange (Change* ch,
 void processLargeImage (Image &image,
                         const Steiner* subTreeRoot,
 	                      const VectorPtr<Tree::TreeNode> possibleBoundary)  // needs a copy
-	{ image. processLarge (subTreeRoot, possibleBoundary); }
+// For thread()
+{ 
+	image. processLarge (subTreeRoot, possibleBoundary); 
+}
 	                      
 
 
@@ -4773,7 +4776,7 @@ void DistTree::optimizeLargeSubgraphs ()
 				ASSERT (rootLeaves + 1 == nodes. size ());
 				Normal normal;
 				normal. setSeed ((ulong) clock ());
-				const Real goalSize_init = (Real) rootLeaves / (Real) threads_max;
+				const Real goalSize_init = (Real) rootLeaves / ((Real) threads_max - 1 + 0.5/*for main_thread*/);  // PAR
 				normal. setParam (0, max<Real> (1, goalSize_init * 0.02));  // PAR
 				FFOR (size_t, threadNum, threads_max - 1)
 				{
@@ -4844,14 +4847,17 @@ void DistTree::optimizeLargeSubgraphs ()
 					images << image;
 					ASSERT (cut->isTransient ());
 				#if 1
+				  // Use functional ??
 				  th << thread (processLargeImage, ref (*image), cut, possibleBoundary);
 				#else
+				  // Time: improves even without Threads
 				  image->processLarge (cut, possibleBoundary);
 				#endif
 				  possibleBoundary << cut;
 			  }	  
 			  mainImage. processLarge (nullptr, possibleBoundary);
 			}
+			// Image::apply() can be done by Threads if in the order of cuts and for sibling subtrees ??!
 			{
 				Progress prog ((uint) images. size () + 1);
 				Unverbose unv;
@@ -4865,7 +4871,11 @@ void DistTree::optimizeLargeSubgraphs ()
 			}
 		}
 	  
-	  // delete transients
+	  // DTNode::stable
+	  for (DiGraph::Node* node : nodes)
+	    static_cast <DTNode*> (node) -> stable = true;
+
+	  // delete transients, DTNode::stable
 	  for (const Steiner* st : boundary)
 	  {
 	  	ASSERT (st->graph == this);
