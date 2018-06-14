@@ -272,17 +272,19 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max) const
   while (ancestor)  // make fewer by using only reprLeaf's ??
   {
   	descendants. clear ();
-  	size_t searchDepth = sparsingDepth;
-  	if (depth_max && depth > depth_max)
   	{
-  	  const size_t dec = depth - depth_max;
-  	  if (searchDepth > dec)
-  	    searchDepth -= dec;
-  	  else
-  	    searchDepth = 1;
-  	}
-  	ASSERT (searchDepth);
-  	ancestor->getDescendants (descendants, searchDepth);  
+	  	size_t searchDepth = sparsingDepth;
+	  	if (depth_max && depth > depth_max)
+	  	{
+	  	  const size_t dec = depth - depth_max;
+	  	  if (searchDepth > dec)
+	  	    searchDepth -= dec;
+	  	  else
+	  	    searchDepth = 1;
+	  	}
+	  	ASSERT (searchDepth);
+	  	ancestor->getDescendants (descendants, searchDepth);  
+	  }
   	for (const DTNode* descendant : descendants)
   	{
   	  ASSERT (descendant->reprLeaf);

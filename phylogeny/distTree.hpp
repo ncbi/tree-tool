@@ -166,7 +166,7 @@ public:
     { return arcs [false]. empty () || ! static_cast <DTNode*> ((*arcs [false]. begin ()) -> node [false]) -> inDiscernible (); }
   Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
-    // Requires: after DistTree::setHeight()
+    // After: DistTree::setHeight()
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
   Real getRelCriterion () const;
@@ -182,7 +182,7 @@ private:
     // Output: subtreeLen: Global len = average path length from *this to all leaves
   virtual void setRepresentative () = 0;
     // Output: reprLeaf
-    // Requires: after getDistTree().sort()
+    // After: getDistTree().sort()
   virtual void getDescendants (VectorPtr<DTNode> &descendants,
                                size_t depth) const = 0;
     // Update: descendants
@@ -196,7 +196,7 @@ private:
     // Return: size = O(log(n)); !contains(this->reprLeaf); sort()'ed, uniq()'ed
     //         getDistTree().reroot(true) reduces size()
     // Input: depth_max: 0 <=> no restriction
-    // Requires: after getDistTree().setReprLeaves()
+    // After: getDistTree().setReprLeaves()
     // Time: O(log(n))
 };
 
@@ -1073,11 +1073,11 @@ public:
                                          Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
-    // Requires: after setNodeAbsCriterion()    
+    // After: setNodeAbsCriterion()    
     // Invokes: log(Leaf::getRelCriterion()), RealAttr2::normal2outlier()
     // Time: O(n log(n))
   VectorPtr<Leaf> findDepthOutliers () const;
-    // Requires: after setReprLeaves()
+    // After: setReprLeaves()
 #if 0
   VectorPtr<DTNode> findOutlierArcs (Real outlier_EValue_max,
                                      Real &dissimOutlier_min) const;

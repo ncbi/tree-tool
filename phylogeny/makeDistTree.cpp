@@ -504,7 +504,7 @@ struct ThisApplication : Application
       tree->setReprLeaves ();
       tree->dissims. sort ();
       
-      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
+      const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
       cout << "# Ancestor-based requests: " << pairs. size () << endl;
 
     #if 0
