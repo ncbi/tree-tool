@@ -91,7 +91,7 @@ struct NewLeaf;
 // For Time: 
 //   n = # Tree leaves, p = # distances = DistTree::dissims.size()
 //   p >= n
-//   ~O(): p/n = log(n)        
+//   ~ O(): p/n = log(n)        
 
 
 
@@ -654,6 +654,7 @@ struct Image : Nocopy
     // In subgraph.tree
     // May be delete'd
   DistTree* tree {nullptr};
+    // Subgraph tree
   DiGraph::Node2Node new2old;  
     // Initially: newLeaves2boundary
   bool rootInArea {false};
@@ -666,7 +667,7 @@ struct Image : Nocopy
 
   void processSmall (const DTNode* center_arg,
 			               uint areaRadius);
-	  // Invokes: DistTree(subgraph).optimizeWholeIter()
+	  // Invokes: tree->{optimizeLenArc(),optimizeLenNode(),optimizeWholeIter() or optimizeSmallSubgraphs()}
 	  // Time: ~ O(|area| (log(|area|) log^2(n) + |area|) + Time(optimizeWholeIter(|area|)))
 	void processLarge (const Steiner* subTreeRoot,
 	                   const VectorPtr<Tree::TreeNode> &possibleBoundary);
@@ -1003,7 +1004,7 @@ private:
     // Invokes: Change::{apply(),restore()}
 public:
   void optimizeLargeSubgraphs ();
-    // Invokes: optimizeSmallSubgraphs()
+    // Invokes: optimizeSmallSubgraphs(), Threads
     // Time: ~ O(n^2 / threads_max^2 + threads_max n log^4(n))
 private:
 	void optimizeSmallSubgraphs (uint areaRadius,
