@@ -160,13 +160,14 @@ endif
 # Time: O(n log^4(n)) 
 makeDistTree $QC  -threads 20 \
   -data $1/ \
-  -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 2 \
-  -reroot  -root_topological \
+  -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 1 \
   -noqual \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
 if ($?) exit 1
+  # -max_subgraph_iter 2
+	# -reroot  -root_topological \
   # -remove_outliers $1/outlier.add \
 mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
