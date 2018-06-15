@@ -4778,7 +4778,8 @@ void DistTree::optimizeLargeSubgraphs ()
 				ASSERT (rootLeaves + 1 == nodes. size ());
 				Normal normal;
 				normal. setSeed ((ulong) clock ());
-				const Real goalSize_init = (Real) rootLeaves / ((Real) threads_max - 1 + 0.5/*for main_thread*/);  // PAR
+				constexpr Prob topSubgraphFrac = 0.2;  // PAR  // was: 0.5
+				const Real goalSize_init = (Real) rootLeaves / ((Real) threads_max - 1 + topSubgraphFrac);  
 				normal. setParam (0, max<Real> (1, goalSize_init * 0.02));  // PAR
 				FFOR (size_t, threadNum, threads_max - 1)
 				{
@@ -4857,6 +4858,7 @@ void DistTree::optimizeLargeSubgraphs ()
 				#endif
 				  possibleBoundary << cut;
 			  }	  
+			  // Top subgraph
 			  mainImage. processLarge (nullptr, possibleBoundary);
 			}
 			// Image::apply() can be done by Threads if in the order of cuts and for sibling subtrees ??!
