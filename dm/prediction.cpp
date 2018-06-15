@@ -916,7 +916,8 @@ void L2LinearNumPrediction::solveUnconstrained ()
 
   // absCriterion
   const Real yHat2 = beta. multiplyVec (xy);
-  ASSERT (yHat2 >= 0);
+  if (yHat2 < 0) 
+  	return;  // betaCovariance determinant = 0
 
   Real y2 = 0;
   {
