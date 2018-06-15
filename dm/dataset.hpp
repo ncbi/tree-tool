@@ -71,7 +71,7 @@ public:
 
 
 
-const streamsize decimals_def = 4;  // PAR
+constexpr streamsize decimals_def = 4;  // PAR
 
     
   
