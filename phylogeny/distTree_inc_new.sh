@@ -153,12 +153,12 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 296  # PAR ??
+  set VER = 307  # PAR ??
 endif
 
 
 # Time: O(n log^4(n)) 
-makeDistTree $QC  -threads 20 \
+makeDistTree $QC  -threads 15 \
   -data $1/ \
   -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 1 \
   -noqual \
@@ -166,6 +166,7 @@ makeDistTree $QC  -threads 20 \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
 if ($?) exit 1
+  # -threads 20  # bad_alloc 
   # -max_subgraph_iter 2
 	# -reroot  -root_topological \
   # -remove_outliers $1/outlier.add \
