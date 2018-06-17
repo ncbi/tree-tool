@@ -86,6 +86,8 @@ struct Image;
 
 struct NewLeaf;
 
+struct DissimLine;
+
 
 
 // For Time: 
@@ -351,7 +353,7 @@ public:
              && ! other->discernible;
     }
 private:
-  friend DistTree;
+  friend DissimLine;
   void collapse (Leaf* other);
     // Output: discernible = false
     // Invokes: setParent()
@@ -693,6 +695,7 @@ struct DistTree : Tree
   friend Change;
   friend Subgraph;
   friend Image;
+  friend DissimLine;
 
   const uint subDepth {0};
     // > 0 => *this is a subgraph of a tree with subDepth - 1

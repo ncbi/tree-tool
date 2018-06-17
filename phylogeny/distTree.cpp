@@ -1822,6 +1822,121 @@ DistTree::DistTree (const string &dissimFName,
 
 
 
+struct DissimLine
+{
+	// Input
+	string name1;
+	string name2;
+	Real dissim {NAN};
+	// Output
+  Leaf* leaf1 {nullptr};
+	Leaf* leaf2 {nullptr};
+	
+
+	DissimLine (string &line,
+	            uint lineNum)
+		{ replace (line, '\t', ' ');
+      name1 = findSplit (line);
+      name2 = findSplit (line);
+      if (name2. empty ())
+        throw runtime_error ("Line " + toString (lineNum) + ": Empty name2");
+      if (name1 >= name2)
+        throw runtime_error ("Line " + toString (lineNum) + ": name1 >= name2");
+    #if 0
+      if (outliers. containsFast (name1))
+        continue;
+      if (outliers. containsFast (name2))
+        continue;
+    #endif
+      dissim = str2real (line);
+		}
+		
+
+	void process (const map<string/*Leaf::name*/,const Leaf*> &name2leaf)
+	  {
+			ASSERT (! leaf1);
+			ASSERT (! leaf2);
+			
+		  leaf1 = const_cast <Leaf*> (findPtr (name2leaf, name1));
+		  if (! leaf1)
+		    return;
+		  //throw runtime_error ("Tree has no object " + name1);
+		  leaf1->paths = 1;  // temporary
+		
+		  leaf2 = const_cast <Leaf*> (findPtr (name2leaf, name2));
+		  if (! leaf2)
+		    return;
+		  //throw runtime_error ("Tree has no object " + name2);
+		  leaf2->paths = 1;  // temporary
+	  }
+	  
+	  
+	void apply (DistTree &tree) const
+    { if (! leaf1)
+        return;
+      if (! leaf2)
+        return;
+      if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
+        leaf1->collapse (leaf2);
+      if (! isNan (dissim) && ! tree. addDissim (leaf1, leaf2, dissim))
+      	throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
+    }
+};
+
+
+
+void processDissimLine (size_t from,
+                        size_t to,
+                        Notype /*&res*/,
+                        Vector<DissimLine> &dls,
+                        const map<string/*Leaf::name*/,const Leaf*> &name2leaf)
+{
+	FOR_START (size_t, i, from, to)
+		dls [i]. process (name2leaf);
+}
+
+
+
+struct OptimizeSmallSubgraph
+{
+  Image image;
+	const DTNode* center;
+	const uint radius;
+	
+	OptimizeSmallSubgraph (DistTree &tree,
+	                       const DTNode* center_arg,
+	                       uint radius_arg)
+	  : image (tree)
+	  , center (center_arg)
+	  , radius (radius_arg)
+	  { ASSERT (center);
+	  	ASSERT (radius);
+	  	ASSERT (center->graph == & image. subgraph. tree);
+	  }
+	  
+	bool close (const OptimizeSmallSubgraph &oss) const
+	  { Tree::LcaBuffer buf; 
+	  	const Tree::TreeNode* lca = nullptr;
+   	  const size_t arcDist = Tree::getPath (center, oss. center, nullptr, lca, buf). size ();
+   	  return arcDist <= radius + oss. radius + 1;  // ??
+   	}
+  void process ()
+    { image. processSmall (center, radius); }
+  void apply ()
+    { Unverbose unv;
+    	image. apply (); 
+    }
+};
+
+
+
+void processOptimizeSmallSubgraph (OptimizeSmallSubgraph &oss)
+{
+	oss. process ();
+}
+
+
+
 DistTree::DistTree (const string &dataDirName,
                     bool loadNewLeaves,
  	                  bool loadDissim,
@@ -1911,43 +2026,26 @@ DistTree::DistTree (const string &dataDirName,
     loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
     const string fName (dataDirName + "dissim");
     {
-      cout << "Loading " << fName << " ..." << endl;
-      LineInput f (fName, 10 * 1024 * 1024, 100000);  // PAR
-      while (f. nextLine ())
-      {
-      	// thread's can start
-      	replace (f. line, '\t', ' ');
-        const string name1 = findSplit (f. line);
-        const string name2 = findSplit (f. line);
-        if (name2. empty ())
-          throw runtime_error ("Line " + toString (f. lineNum) + ": Empty name2");
-        if (name1 >= name2)
-          throw runtime_error ("Line " + toString (f. lineNum) + ": name1 >= name2");
-      #if 0
-        if (outliers. containsFast (name1))
-          continue;
-        if (outliers. containsFast (name2))
-          continue;
-      #endif
-        Leaf* leaf1 = const_cast <Leaf*> (findPtr (name2leaf, name1));
-        if (! leaf1)
-          continue;
-        //throw runtime_error ("Tree has no object " + name1);
-        leaf1->paths = 1;  // temporary
-        Leaf* leaf2 = const_cast <Leaf*> (findPtr (name2leaf, name2));
-        if (! leaf2)
-          continue;
-        //throw runtime_error ("Tree has no object " + name2);
-        leaf2->paths = 1;  // temporary
-        const Real dissim = str2real (f. line);
-      	// thread's can end
-        if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
-          leaf1->collapse (leaf2);
-        if (! isNan (dissim) && ! addDissim (leaf1, leaf2, dissim))
-        	throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
-      }
-      if (! f. lineNum)
-        throw runtime_error ("Empty " + fName);
+	    Vector<DissimLine> dissimLines;  dissimLines. reserve (dissims. capacity ());
+	    constexpr uint displayPeriod = 100000;  // PAR
+	    {
+	      cout << "Loading " << fName << " ..." << endl;
+	      LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
+	      while (f. nextLine ())
+	      	dissimLines << DissimLine (f. line, f. lineNum);
+	      if (! f. lineNum)
+	        throw runtime_error ("Empty " + fName);
+	    }
+	    vector<Notype> notypes;
+	    arrayThreads (processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
+	    {
+	    	Progress prog ((uint) dissimLines. size (), displayPeriod);
+		    for (const DissimLine &dl : dissimLines)
+		    {
+		    	prog ();
+		    	dl. apply (*this);
+		    }
+		  }
     }
     // qc
     for (const DiGraph::Node* node : nodes)
@@ -1987,28 +2085,75 @@ DistTree::DistTree (const string &dataDirName,
     {  
       const Chronometer_OnePass cop ("Optimizing new leaves");  
       cout << "Optimizing new leaves ..." << endl;
-      Progress prog ((uint) newLeaves. size ());
-      for (const Leaf* leaf : newLeaves)
+      constexpr uint radius = 2 * areaRadius_std;  // PAR
+      if (threads_max > 1)
       {
-        prog (absCriterion2str ());
-        Unverbose unv;
-        // Use Threads, do not run apply() for intersecting subgraphs, iterate until all leaves are optimized ??
-        optimizeSmallSubgraph (leaf->getDiscernible (), 2 * areaRadius_std);  // PAR
-          // reinsert ??
-      #ifndef NDEBUG
-        // ??
-       	for (const DiGraph::Node* node : nodes)
-       	{
-       	  const DTNode* dtNode = static_cast <const DTNode*> (node);
-          if (dtNode->isTransient ())
-          {
-            cout << dtNode << endl;
-            dtNode->getParent () -> saveText (cout);
-            ERROR;
-          }
-        }
-      #endif
-      }
+      	{
+		      Progress prog ((uint) newLeaves. size ());
+		      while (! newLeaves. empty ())
+		      {
+			      VectorOwn<OptimizeSmallSubgraph> osss;  osss. reserve (newLeaves. size ());
+			      FFOR (size_t, i, newLeaves. size ())
+			      {
+			      	if (osss. size () >= threads_max)
+			      		break;
+			      	auto oss = new OptimizeSmallSubgraph (*this, newLeaves [i] -> getDiscernible (), radius);  
+			      	for (const OptimizeSmallSubgraph* oss1 : osss)
+			     			if (oss->close (*oss1))
+			     			{
+			     				delete oss;
+			     				oss = nullptr;
+			     				break;
+			     			}
+			     		if (! oss)
+			     			continue;
+			     		osss << oss;
+			     		newLeaves [i] = nullptr;
+			      }
+			      ASSERT (! osss. empty ());
+						{
+							Unverbose unv;
+							Threads th (osss. size () - 1);
+							FFOR_START (size_t, i, 1, osss. size ())						
+							  th << thread (processOptimizeSmallSubgraph, ref (* const_cast <OptimizeSmallSubgraph*> (osss [i])));
+			      	const_cast <OptimizeSmallSubgraph*> (osss [0]) -> process ();
+						}
+						newLeaves. filterValue ([] (const Leaf* leaf) { return ! leaf; });
+						// Use Threads for apply() for sibling subtrees ??
+		      	for (const OptimizeSmallSubgraph* oss : osss)
+		      	{
+		      		const_cast <OptimizeSmallSubgraph*> (oss) -> apply ();
+			        prog (absCriterion2str ());
+		      	}
+			    }
+			  }
+			  setPredictionAbsCriterion ();
+			  reportErrors (cerr);
+		  }
+      else
+      {
+	      Progress prog ((uint) newLeaves. size ());
+	      for (const Leaf* leaf : newLeaves)
+	      {
+	        Unverbose unv;
+	        optimizeSmallSubgraph (leaf->getDiscernible (), radius);  
+	          // reinsert ??
+	        prog (absCriterion2str ());
+	      #ifndef NDEBUG
+	        // ??
+	       	for (const DiGraph::Node* node : nodes)
+	       	{
+	       	  const DTNode* dtNode = static_cast <const DTNode*> (node);
+	          if (dtNode->isTransient ())
+	          {
+	            cout << dtNode << endl;
+	            dtNode->getParent () -> saveText (cout);
+	            ERROR;
+	          }
+	        }
+	      #endif
+	      }
+	    }
     }
   }  
 
@@ -3600,11 +3745,38 @@ void DistTree::clearSubtreeLen ()
 
 
 
+void setPredictionAbsCriterion_thread (size_t from,
+								                       size_t to,
+								                       Real &absCriterion,
+								                       Vector<Dissim> &dissims)
+{
+  absCriterion = 0;
+  Tree::LcaBuffer buf;
+  Progress prog ((uint) dissims. size (), 1e5);  // PAR: cf. setPaths()
+	FOR_START (size_t, i, from, to)
+	{
+		Dissim& dissim = dissims [i];
+    if (! dissim. valid ())
+    	continue;
+    prog ();
+	  const VectorPtr<Tree::TreeNode>& path = dissim. getPath (buf);
+	  dissim. prediction = DistTree::path2prediction (path);  
+    absCriterion += dissim. getAbsCriterion ();
+	}
+}
+
+
+
 void DistTree::setPredictionAbsCriterion ()
 {
   absCriterion = 0;
+#if 1
+  vector<Real> absCriteria;
+  arrayThreads (setPredictionAbsCriterion_thread, dissims. size (), absCriteria, ref (dissims)); 
+  for (const Real x : absCriteria)
+  	absCriterion += x;
+#else
   LcaBuffer buf;
-  // Use Threads ??!
   Progress prog ((uint) dissims. size (), 1e5);  // PAR: cf. setPaths()
   for (Dissim& dissim : dissims)
     if (dissim. valid ())
@@ -3614,6 +3786,7 @@ void DistTree::setPredictionAbsCriterion ()
 		  dissim. prediction = path2prediction (path);  
       absCriterion += dissim. getAbsCriterion ();
     }
+#endif
 }
 
 
@@ -4744,7 +4917,7 @@ void DistTree::tryChange (Change* ch,
 void processLargeImage (Image &image,
                         const Steiner* subTreeRoot,
 	                      const VectorPtr<Tree::TreeNode> possibleBoundary)  // needs a copy
-// For thread()
+// For Threads
 { 
 	image. processLarge (subTreeRoot, possibleBoundary); 
 }
