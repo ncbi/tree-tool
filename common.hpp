@@ -922,6 +922,12 @@ template <typename T>
 
 
 
+//
+
+bool verbose (int inc = 0);
+
+
+
 // Threads
 
 struct Threads : Singleton<Threads>
@@ -933,63 +939,78 @@ private:
 public:
 
   explicit Threads (size_t threadsToStart_arg)
-    { threadsToStart = threadsToStart_arg;
+    { if (! empty ())
+    	  throw logic_error ("Previous threads have not finished");
+    	threadsToStart = threadsToStart_arg;
     	if (threadsToStart >= threads_max)
-    		throw runtime_error ("Too many threads to start");
+    		throw logic_error ("Too many threads to start");
     	threads. reserve (threadsToStart);
-		  cout << "# Threads started: " << threadsToStart + 1 << endl;
+    	if (verbose (1))
+		    cout << "# Threads started: " << threadsToStart + 1 << endl;
     }	
  ~Threads ()
     { for (auto& t : threads)  
 			  t. join ();
 			threads. clear ();
 			threadsToStart = 0;
-			cout << "Threads finished" << endl;
+    	if (verbose (1))
+				cout << "Threads finished" << endl;
 		}
   	
 	static bool empty () 
 	  { return ! threadsToStart; }
 	Threads& operator<< (thread &&t)
-	  { threads. push_back (move (t)); 
+	  { if (threads. size () >= threadsToStart)
+	  	  throw logic_error ("Too many threads created");
+	  	threads. push_back (move (t)); 
 	  	return *this;
 	  }
 };
 
 
 
-template <typename Func, typename... Args>
-  void runThreads (const Func& func,
-                   size_t i_max,
-                   Args&&... args)
-  // Input: func (from, to, args...)
+template <typename Func, typename Res, typename... Args>
+  void arrayThreads (const Func& func,
+                     size_t i_max,
+                     vector<Res> &results,
+                     Args&&... args)
+  // Input: func (size_t from, size_t to, Res& res, Args...)
   // Optimial thread_num minimizes (Time_SingleCPU/thread_num + Time_openCloseThread * (thread_num - 1)), which is sqrt(Time_SingleCPU/Time_openCloseThread)
   {
   	ASSERT (threads_max >= 1);
+		results. clear ();
+		results. reserve (threads_max);
+  	if (threads_max == 1)
+  	{
+  		results. push_back (Res ());
+    	func (0, i_max, results. front (), forward<Args>(args)...);
+  		return;
+  	}
 		size_t chunk = max<size_t> (1, i_max / threads_max);
 		if (chunk * threads_max < i_max)
 			chunk++;
 		ASSERT (chunk * threads_max >= i_max);
-		Threads th;
+		Threads th (threads_max - 1);
 		FFOR (size_t, tn, threads_max)
 	  {
 	    const size_t from = tn * chunk;
 	  	if (from >= i_max)
 	  		break;
 	    const size_t to = from + chunk;
+	    results. push_back (Res ());
+	    Res& res = results. back ();
 	    if (to >= i_max)
 	    {
-	    	func (from, i_max, forward<Args>(args)...);
+	    	func (from, i_max, res, forward<Args>(args)...);
 	    	break;
 	    }
-		  th << thread (func, from, to, forward<Args>(args)...);
+		  th << thread (func, from, to, ref (res), forward<Args>(args)...);
 		}
   }
 
 
 
 //
-
-bool verbose (int inc = 0);
 
 class Verbose
 {
@@ -1222,6 +1243,11 @@ public:
     }
   Vector<T>& operator<< (const T &value)
     { P::push_back (value);
+      searchSorted = false;
+    	return *this;
+    }
+  Vector<T>& operator<< (T &&value)
+    { P::push_back (move (value));
       searchSorted = false;
     	return *this;
     }
