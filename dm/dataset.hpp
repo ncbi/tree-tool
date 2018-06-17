@@ -1649,7 +1649,7 @@ template <typename T/*:Attr1*/>
 		    Unverbose unv;
 		  #if 0
 		    // thread_num depends on sqrt(sample.mult.size ())
-		    runThreads (setAttrSim_, space. size (), std::cref (space), std::cref (sample), std::ref (attrSim), vc);
+		    arrayThreads (setAttrSim_, space. size (), std::cref (space), std::cref (sample), std::ref (attrSim), vc);
 		  #else
 		    Progress prog ((uint) space. size ());  
 		    FFOR (size_t, attrNum1, space. size ())
