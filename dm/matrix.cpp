@@ -2750,7 +2750,7 @@ Eigens::Eigens (const Matrix &matr,
   const size_t len = matr. rowsSize (false);
   if (verbose ())
     cout << "dim_max = " << dim_max << "  len = " << len << endl;
-  Progress prog ((uint) min (dim_max, len), len >= 300 ? 1 : 0);  // PAR
+  Progress prog (min (dim_max, len), len >= 300 ? 1 : 0);  // PAR
   while (vecs. size () < min (dim_max, len))
   {
     prog ();

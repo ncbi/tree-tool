@@ -2875,7 +2875,7 @@ bool FeatureTree::optimize ()
       if (! phyl->stable)
         nodeVec << phyl;
     }
-		Progress prog ((uint) nodeVec. size ());
+		Progress prog (nodeVec. size ());
 	 	for (const DiGraph::Node* node : nodeVec)  
 	 	{
 	   	prog ();

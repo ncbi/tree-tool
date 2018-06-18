@@ -35,7 +35,7 @@ struct ThisApplication : Application
     ASSERT (words. isUniq ());
     
     {
-    	Progress prog ((uint) words. size ());
+    	Progress prog (words. size ());
 	    for (const string& w1 : words)
 	    {
 	    	prog (w1);

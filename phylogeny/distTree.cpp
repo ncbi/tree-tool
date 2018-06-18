@@ -2039,7 +2039,7 @@ DistTree::DistTree (const string &dataDirName,
 	    vector<Notype> notypes;
 	    arrayThreads (processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
 	    {
-	    	Progress prog ((uint) dissimLines. size (), displayPeriod);
+	    	Progress prog (dissimLines. size (), displayPeriod);
 		    for (const DissimLine &dl : dissimLines)
 		    {
 		    	prog ();
@@ -2089,7 +2089,7 @@ DistTree::DistTree (const string &dataDirName,
       if (threads_max > 1)
       {
       	{
-		      Progress prog ((uint) newLeaves. size ());
+		      Progress prog (newLeaves. size ());
 		      while (! newLeaves. empty ())
 		      {
 			      VectorOwn<OptimizeSmallSubgraph> osss;  osss. reserve (newLeaves. size ());
@@ -2132,7 +2132,7 @@ DistTree::DistTree (const string &dataDirName,
 		  }
       else
       {
-	      Progress prog ((uint) newLeaves. size ());
+	      Progress prog (newLeaves. size ());
 	      for (const Leaf* leaf : newLeaves)
 	      {
 	        Unverbose unv;
@@ -3041,7 +3041,7 @@ void DistTree::neighborJoin ()
     return;
   
 
-  Progress prog ((uint) n - 1);
+  Progress prog (n - 1);
   LeafPair leafPair_best;
   for (;;)
   {
@@ -3340,7 +3340,7 @@ void setPaths_ (const Vector<size_t> &subTree,
 {
 	if (subTree. empty ())
 		return;
-  Progress prog ((uint) subTree. size (), smallDissims); 
+  Progress prog (subTree. size (), smallDissims); 
   if (prog. active)
   	cerr << "One thread ..." << endl;
   Tree::LcaBuffer buf;
@@ -3381,7 +3381,7 @@ void DistTree::setPaths ()
   	 )
 #endif
   {
-	  Progress prog ((uint) dissims. size (), /*smallDissims*/ 1e5); 
+	  Progress prog (dissims. size (), /*smallDissims*/ 1e5); 
 	  FFOR (size_t, objNum, dissims. size ()) 
 	  {
 	  	prog ();
@@ -3427,7 +3427,7 @@ void DistTree::setPaths ()
 		
 		if (cut_best. size () == 1)
 		{
-		  Progress prog ((uint) dissims. size (), smallDissims);  
+		  Progress prog (dissims. size (), smallDissims);  
 		  FFOR (size_t, objNum, dissims. size ()) 
 		  {
 		    prog ();
@@ -3565,11 +3565,16 @@ void DistTree::qc () const
     leaf->qc ();
 	  leafDissims += leaf->pathObjNums. size ();
   }
-
   const size_t allLeaves = leaves + detachedLeaves. size ();
   ASSERT (dissims. size () <= (allLeaves * (allLeaves - 1)) / 2);
 
  	ASSERT (leafDissims == 2 * dissims. size ());
+
+/*
+  // May happen due to deleteLeaf()
+  for (const DTNode* dtNode : toDelete)
+  	ASSERT (! dtNode->asLeaf ());
+*/
 }
 
 
@@ -3752,7 +3757,7 @@ void setPredictionAbsCriterion_thread (size_t from,
 {
   absCriterion = 0;
   Tree::LcaBuffer buf;
-  Progress prog ((uint) dissims. size (), 1e5);  // PAR: cf. setPaths()
+  Progress prog (dissims. size (), 1e5);  // PAR: cf. setPaths()
 	FOR_START (size_t, i, from, to)
 	{
 		Dissim& dissim = dissims [i];
@@ -3777,7 +3782,7 @@ void DistTree::setPredictionAbsCriterion ()
   	absCriterion += x;
 #else
   LcaBuffer buf;
-  Progress prog ((uint) dissims. size (), 1e5);  // PAR: cf. setPaths()
+  Progress prog (dissims. size (), 1e5);  // PAR: cf. setPaths()
   for (Dissim& dissim : dissims)
     if (dissim. valid ())
     {
@@ -4323,7 +4328,7 @@ size_t DistTree::optimizeLenArc ()
   {
     Real absCriterion_prev = absCriterion;
     {
-      Progress prog ((uint) dtNodes. size (), (dtNodes. size () >= 10000) * 100);  // PAR
+      Progress prog (dtNodes. size (), (dtNodes. size () >= 10000) * 100);  // PAR
       for (const DTNode* node : dtNodes)
       {
         prog (absCriterion2str ());
@@ -4438,7 +4443,7 @@ size_t DistTree::optimizeLenNode ()
   stars. sort (Star::strictlyLess);  
 
 
-  Progress prog ((uint) stars. size ());  
+  Progress prog (stars. size ());  
 #ifndef NDEBUG
   const Real absCriterion_old1 = absCriterion;
 #endif
@@ -4628,7 +4633,7 @@ bool DistTree::optimizeReinsert ()
 	{
     const size_t nodesSize = nodes. size ();
     const size_t q_max = 10 * getSparseDissims_size ();  // PAR
-    Progress prog ((uint) nodesSize);
+    Progress prog (nodesSize);
 	  Tree::LcaBuffer buf;
     for (const DiGraph::Node* node : nodes)
     {
@@ -4706,7 +4711,7 @@ bool DistTree::optimizeWhole ()
       if (! dtNode->stable)
         nodeVec << dtNode;
     }
-		Progress prog ((uint) nodeVec. size ());
+		Progress prog (nodeVec. size ());
 	 	for (const DTNode* node : nodeVec)  
 	 	{
 	   	prog ();
@@ -4785,7 +4790,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
   //Unverbose un;
     changes. sort (Change::strictlyLess);	
     size_t nChange = 0;
-    Progress prog ((uint) changes. size ());
+    Progress prog (changes. size ());
   	for (const Change* ch_ : changes)
   	{
   	  prog (absCriterion2str ());
@@ -4914,10 +4919,9 @@ void DistTree::tryChange (Change* ch,
 
 
 
-void processLargeImage (Image &image,
-                        const Steiner* subTreeRoot,
-	                      const VectorPtr<Tree::TreeNode> possibleBoundary)  // needs a copy
-// For Threads
+void processLargeImage_thread (Image &image,
+				                       const Steiner* subTreeRoot,
+					                     const VectorPtr<Tree::TreeNode> possibleBoundary)  // needs a copy
 { 
 	image. processLarge (subTreeRoot, possibleBoundary); 
 }
@@ -5024,9 +5028,8 @@ void DistTree::optimizeLargeSubgraphs ()
 					ASSERT (cut->isTransient ());
 				#if 1
 				  // Use functional ??
-				  th << thread (processLargeImage, ref (*image), cut, possibleBoundary);
+				  th << thread (processLargeImage_thread, ref (*image), cut, possibleBoundary);
 				#else
-				  // Time: improves even without Threads
 				  image->processLarge (cut, possibleBoundary);
 				#endif
 				  possibleBoundary << cut;
@@ -5036,7 +5039,7 @@ void DistTree::optimizeLargeSubgraphs ()
 			}
 			// Image::apply() can be done by Threads if in the order of cuts and for sibling subtrees ??!
 			{
-				Progress prog ((uint) images. size () + 1);
+				Progress prog (images. size () + 1);
 				Unverbose unv;
 				mainImage. apply ();  
 				prog (absCriterion2str ()); 
@@ -5168,6 +5171,7 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
 void DistTree::delayDeleteRetainArcs (DTNode* node)
 {
 	ASSERT (node);
+	ASSERT (node->graph == this);
 
   if (verbose ())
     cout << "To delete: " << node->getName () << endl;
@@ -5262,10 +5266,9 @@ void DistTree::removeLeaf (Leaf* leaf,
   const TreeNode* parent = leaf->getParent ();
   ASSERT (parent);
     
-  // tree.detachedLeaves
   leaf->detachChildrenUp ();  
   ASSERT (! leaf->graph);
-	detachedLeaves << leaf;
+	detachedLeaves << leaf;  
 
   name2leaf. erase (leaf->name);
 
@@ -5278,9 +5281,9 @@ void DistTree::removeLeaf (Leaf* leaf,
       const_cast <Leaf*> (childLeaf) -> discernible = true;
 	  Steiner* st = const_static_cast <Steiner*> (parent);
 	  parent = parent->getParent ();
-		delayDeleteRetainArcs (st);
     if (! parent)
       parent = root;
+		delayDeleteRetainArcs (st);
   }  
 
     
@@ -5305,7 +5308,7 @@ void DistTree::removeLeaf (Leaf* leaf,
 	}
 
 
-  toDelete. deleteData ();
+  toDelete. deleteData (); 
 }
 
 
@@ -5713,7 +5716,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
 {
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
   {
-    Progress prog ((uint) name2leaf. size (), 1000);  // PAR
+    Progress prog (name2leaf. size (), 1000);  // PAR
     for (const auto it : name2leaf)
     {
       prog ();
@@ -5750,7 +5753,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
   {
     Subgraph subgraph (*this);
     subgraph. reserve ();
-    Progress prog ((uint) nodes. size (), 100);  // PAR
+    Progress prog (nodes. size (), 100);  // PAR
     for (const DiGraph::Node* node : nodes)
     {
       prog ();
@@ -5790,7 +5793,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
   Real arcLen_outlier_min = NAN;
   const VectorPtr<DTNode> tooLongArcs (findOutlierArcs (0.1, arcLen_outlier_min));  // PAR
   {
-    Progress prog ((uint) tooLongArcs. size (), 100);  // PAR
+    Progress prog (tooLongArcs. size (), 100);  // PAR
     for (const DTNode* node2 : tooLongArcs)
     {
       prog ();
@@ -5832,7 +5835,7 @@ Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Lea
 {
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (leaves. size () * (leaves. size () - 1) / 2);  
   {
-    Progress prog ((uint) leaves. size (), 100);  // PAR
+    Progress prog (leaves. size (), 100);  // PAR
     for (const Leaf* leaf2 : leaves)
     {
       prog ();

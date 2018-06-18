@@ -1651,7 +1651,7 @@ template <typename T/*:Attr1*/>
 		    // thread_num depends on sqrt(sample.mult.size ())
 		    arrayThreads (setAttrSim_, space. size (), std::cref (space), std::cref (sample), std::ref (attrSim), vc);
 		  #else
-		    Progress prog ((uint) space. size ());  
+		    Progress prog (space. size ());  
 		    FFOR (size_t, attrNum1, space. size ())
 		    { prog ();
 		      const NumAttr1& a1 = * space [attrNum1];

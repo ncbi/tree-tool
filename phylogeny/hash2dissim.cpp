@@ -68,7 +68,7 @@ struct ThisApplication : Application
     
     Vector<Hashes> obj2hashes;  obj2hashes. reserve (ds. objs. size ());
     {
-      Progress prog ((uint) ds. objs. size ());
+      Progress prog (ds. objs. size ());
       FFOR (size_t, objNum, ds. objs. size ())
       {
         prog (ds. objs [objNum] -> name);
@@ -78,7 +78,7 @@ struct ThisApplication : Application
     
     auto attr = new PositiveAttr2 (attrName, ds, 6);  // PAR
     {
-      Progress prog ((uint) ds. objs. size ());
+      Progress prog (ds. objs. size ());
       FFOR (size_t, row, ds. objs. size ())
       {
         prog (ds. objs [row] -> name);

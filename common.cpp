@@ -936,19 +936,6 @@ size_t Progress::beingUsed = 0;
 
 
 
-#if 0
-Progress::Start::Start (AutoPtr<Progress> &prog_arg,
-									      uint n_max,
-								        uint displayPeriod)
-: prog (prog_arg)
-{
-	ASSERT (! prog. get ());
-	prog. reset (new Progress (n_max, displayPeriod));
-}
-#endif
-
-
-
 
 // Input
 
@@ -961,7 +948,8 @@ Input::Input (const string &fName,
 { 
   if (! ifs. good ())
     throw runtime_error ("Bad file: '" + fName  + "'");
-  EXEC_ASSERT (ifs. rdbuf () -> pubsetbuf (buf. get (), (long) bufSize));   
+  if (! ifs. rdbuf () -> pubsetbuf (buf. get (), (long) bufSize))
+  	throw runtime_error ("Cannot allocate buffer to '" + fName + "'");
 }
  
 
@@ -1594,7 +1582,7 @@ void exec (const string &cmd)
 
 // FileItemGenerator
 
-FileItemGenerator::FileItemGenerator (uint progress_displayPeriod,
+FileItemGenerator::FileItemGenerator (size_t progress_displayPeriod,
                                       bool isDir_arg,
                                       const string& fName_arg)
 : ItemGenerator (0, progress_displayPeriod)

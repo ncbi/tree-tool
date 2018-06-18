@@ -171,7 +171,7 @@ T* selectAttrs (const Sample &sample,
 // Return: final T
 // Update: space
 // Time: O(p * time(setAttrImportance))
-{ Progress prog ((uint) space. size ());
+{ Progress prog (space. size ());
   for (;;)
   { Common_sp::AutoPtr<T> t (new T (sample, space, target));
     t->solve ();

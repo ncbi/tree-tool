@@ -72,7 +72,7 @@ struct ThisApplication : Application
 
 
     auto attr = new PositiveAttr2 (dissimName, ds, 6);  // PAR
-    Progress prog ((uint) ds. objs. size ());
+    Progress prog (ds. objs. size ());
     FOR (size_t, i, ds. objs. size ())
     {
       prog ();

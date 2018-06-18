@@ -98,7 +98,7 @@ struct ThisApplication : Application
       mn. analysis = & an;
       mn. estimate ();
       mn. qc ();
-      Progress prog ((uint) space. size (), 0);
+      Progress prog (space. size (), 0);
       FOR (size_t, i, space. size ())
       {
         prog (space [i] -> name);

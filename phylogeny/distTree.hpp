@@ -777,7 +777,7 @@ public:
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //       <dissimilarity>: >= 0, < INF
-	  // Invokes: optimizeSmallSubgraph() for each added Leaf
+	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
 	  //       if !loadDissim then O(n + new_leaves)
   //  
@@ -941,7 +941,8 @@ private:
     // Invokes: DTNode::subtreeLen.clear()
   void setPredictionAbsCriterion ();
     // Output: Dissim::prediction, absCriterion
-    // Time: O(p log(n))
+    // Invokes: Threads
+    // Time: O(p log(n) / threads_max)
   void qcPredictionAbsCriterion () const;
 public:
   static Real path2prediction (const VectorPtr<TreeNode> &path);

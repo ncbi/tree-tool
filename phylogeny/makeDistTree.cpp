@@ -292,7 +292,7 @@ struct ThisApplication : Application
         cout << "Removing outliers ..." << endl;
         {
           OFStream f (remove_outliers);
-          Progress prog ((uint) outliers. size ());
+          Progress prog (outliers. size ());
           for (const Leaf* leaf : outliers)
           {
             f << leaf->name << endl;

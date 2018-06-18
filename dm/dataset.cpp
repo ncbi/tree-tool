@@ -1838,7 +1838,7 @@ void Dataset::load (istream &is)
     
   // objs, Obj::data
   {
-    Progress prog ((uint) objs. size (), max<uint> (1, 10000 / (uint) attrs. size ()));  // PAR
+    Progress prog (objs. size (), max<size_t> (1, 10000 / attrs. size ()));  // PAR
     FFOR (size_t, i, objs. size ())
     {
       prog ();
@@ -2370,7 +2370,7 @@ RealAttr2* getSimilarity (const Space1<RealAttr1> &space,
   ASSERT (! space. empty ());
 
   auto sim = new RealAttr2 (attrName, ds, 4);  // PAR
-  Progress prog ((uint) ds. objs. size (), max<uint> (1, 10000 / (uint) space. size ()));  // PAR
+  Progress prog (ds. objs. size (), max<size_t> (1, 10000 / space. size ()));  // PAR
   FFOR (size_t, row, ds. objs. size ())
   {
     prog ();
@@ -4195,7 +4195,7 @@ void MultiNormal::estimate ()
   MVector muCount (mu);
   Matrix sigmaCount (sigmaExact);
   {
-    Progress prog ((uint) analysis->sample. nEffective, analysis->size (1, 2) > 1e7);   // PAR
+    Progress prog (analysis->sample. nEffective, analysis->size (1, 2) > 1e7);   // PAR
     for (Iterator it (analysis->sample); it ();)  
     {
       prog ();

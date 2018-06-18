@@ -127,7 +127,7 @@ Line format: <unit> <raw_min> <raw_max>");
     const size_t n = objPairs. size () / scales. size ();  // # Pairs
     
     const ONumber on (cout, 6, true);
-    Progress prog ((uint) n, 1000);  // PAR
+    Progress prog (n, 1000);  // PAR
 	  FOR (size_t, i, n)
 	  {
 	  	prog ();

@@ -1976,16 +1976,16 @@ private:
 	static size_t beingUsed;
 public:
 
-	uint n_max;
+	size_t n_max;
 	  // 0 <=> unknown
 	bool active;
-	uint n {0};
+	size_t n {0};
 	string step;
-	uint displayPeriod;
+	size_t displayPeriod;
 	
 
-	explicit Progress (uint n_max_arg = 0,
-	                   uint displayPeriod_arg = 1)
+	explicit Progress (size_t n_max_arg = 0,
+	                   size_t displayPeriod_arg = 1)
 	  : n_max (n_max_arg)
 	  , active (enabled () && displayPeriod_arg)
 	  , displayPeriod (displayPeriod_arg)
@@ -2031,20 +2031,6 @@ public:
 	  { beingUsed++; }
 	static bool enabled ()
 	  { return ! beingUsed && verbose (1); }
-	  
-/*	  
-	struct Start : Nocopy  
-	{
-	private:
-		AutoPtr <Progress>& prog;
-	public:
-		explicit Start (AutoPtr<Progress> &prog_arg,
-							      uint n_max = 0,
-						        uint displayPeriod = 1);
-	~Start () noexcept
-	   { prog. reset (); }
-	};
-*/
 };
 
 
@@ -2670,8 +2656,8 @@ struct ItemGenerator
 {
   Progress prog;
   
-  ItemGenerator (uint progress_n_max,
-	               uint progress_displayPeriod)
+  ItemGenerator (size_t progress_n_max,
+	               size_t progress_displayPeriod)
 	  : prog (progress_n_max, progress_displayPeriod)
 	  {}
   virtual ~ItemGenerator ()
@@ -2693,7 +2679,7 @@ private:
   ifstream f;
 public:
   
-  FileItemGenerator (uint progress_displayPeriod,
+  FileItemGenerator (size_t progress_displayPeriod,
                      bool isDir_arg,
                      const string& fName_arg);
  ~FileItemGenerator ()
@@ -2709,13 +2695,13 @@ public:
 struct NumberItemGenerator : ItemGenerator
 {
 private:
-  const uint n;
-  uint i {0};
+  const size_t n;
+  size_t i {0};
 public:
   
-  NumberItemGenerator (uint progress_displayPeriod,
+  NumberItemGenerator (size_t progress_displayPeriod,
                        const string& name)
-    : ItemGenerator (str2<uint> (name), progress_displayPeriod)
+    : ItemGenerator (str2<size_t> (name), progress_displayPeriod)
     , n (prog. n_max)
     {}
   
