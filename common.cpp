@@ -936,6 +936,7 @@ size_t Progress::beingUsed = 0;
 
 
 
+#if 0
 Progress::Start::Start (AutoPtr<Progress> &prog_arg,
 									      uint n_max,
 								        uint displayPeriod)
@@ -944,6 +945,7 @@ Progress::Start::Start (AutoPtr<Progress> &prog_arg,
 	ASSERT (! prog. get ());
 	prog. reset (new Progress (n_max, displayPeriod));
 }
+#endif
 
 
 

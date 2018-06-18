@@ -1991,6 +1991,8 @@ public:
 	  , displayPeriod (displayPeriod_arg)
 	  { if (active) 
 	  	  beingUsed++; 
+	  	if (active)
+	  	  report ();
 	  }
  ~Progress () noexcept
     { if (active)
@@ -2030,7 +2032,7 @@ public:
 	static bool enabled ()
 	  { return ! beingUsed && verbose (1); }
 	  
-	  
+/*	  
 	struct Start : Nocopy  
 	{
 	private:
@@ -2042,6 +2044,7 @@ public:
 	~Start () noexcept
 	   { prog. reset (); }
 	};
+*/
 };
 
 
