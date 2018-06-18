@@ -1066,7 +1066,7 @@ void Tree::TreeNode::detachChildrenUp ()
 	{ 
 		Arc* a = arcs [true]. front ();
 		delete a;
-  }
+  }  
   detach ();
 }
 
