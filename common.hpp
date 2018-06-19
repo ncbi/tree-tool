@@ -135,7 +135,7 @@ public:
 	  		o << fixed;
       o. precision (precision);
 	  }
- ~ONumber () noexcept
+ ~ONumber () 
     { o. flags (flags_old); 
       o. precision (prec_old); 
     }
@@ -899,7 +899,7 @@ protected:
 	  	  throw runtime_error ("Singleton");
 	  	beingRun = true;
 	  }
- ~Singleton () noexcept
+ ~Singleton () 
     { beingRun = false; }
 };
 template <typename T> bool Singleton<T>::beingRun = false;
@@ -916,7 +916,7 @@ template <typename T>
       : ptr (& t_arg)
       , t (t_arg)
       {}
-   ~Keep () noexcept
+   ~Keep () 
       { *ptr = t; }
   };
 
@@ -1020,7 +1020,7 @@ public:
 	explicit Verbose (int verbose_arg);
 	Verbose ();
 	  // Increase verbosity
- ~Verbose () noexcept;
+ ~Verbose ();
  
   static bool enabled ()
     { return Threads::empty (); }
@@ -1029,7 +1029,7 @@ public:
 struct Unverbose 
 {
 	Unverbose ();
- ~Unverbose () noexcept;
+ ~Unverbose ();
 };
   
 
@@ -1994,7 +1994,7 @@ public:
 	  	if (active)
 	  	  report ();
 	  }
- ~Progress () noexcept
+ ~Progress () 
     { if (active)
     	{ if (! uncaught_exception ())
     	  { report ();
@@ -2262,10 +2262,6 @@ struct Token : Root
     	if (! isDelimiter (expected))
  			  throw CharInput::Error (in, type2str (eDelimiter) + " " + expected); 
     }
-//Token (const Token&) = default;
-//Token& operator= (const Token&) = default;
-//Token (Token&&) noexcept = default;
-//Token& operator= (Token&&) = default;
 private:
 	void readInput (CharInput &in);
 public:
@@ -2636,7 +2632,7 @@ public:
 
 	Offset ()
   	{ size += delta; }
- ~Offset () noexcept
+ ~Offset () 
   	{ size -= delta; }
 
   static void newLn (ostream &os) 
