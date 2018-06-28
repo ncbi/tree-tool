@@ -27,30 +27,39 @@ absCriterion = 7.048  Error density = 1.834 %
 Re-rooting ...
 Ave. radius: 0.455985
 
-# Outliers: 0
-Min. rel. average leaf error of outliers: inf
+# Outliers: 9
+Min. relative unweighted average leaf error of outliers: 2.88959
+SAMEA1692308	2.99466	0.145064
+SAMN01902483	4.06374	0.196851
+SAMN03098713	3.02624	0.146594
+SAMN03477482	9.25199	0.448175
+SAMN03480186	4.98669	0.24156
+SAMN03988423	10.1581	0.492067
+SAMN03992688	2.88959	0.139974
+SAMN04255291	3.76309	0.182287
+SAMN04388342.r1	13.6458	0.661013
 
 Removing outliers ...
-absCriterion = 7.048  Error density = 1.834 %
+absCriterion = 4.395  Error density = 1.449 %
 
 OUTPUT:
-absCriterion = 7.048  Error density = 1.834 %
-absCriterion [0] = 0.810  Error density [0] = 7.447 %  Fraction = 6.348 %
-absCriterion [1] = 6.238  Error density [1] = 1.732 %  Fraction = 93.652 %
+absCriterion = 4.395  Error density = 1.449 %
+absCriterion [0] = 0.322  Error density [0] = 5.016 %  Fraction = 5.988 %
+absCriterion [1] = 4.073  Error density [1] = 1.440 %  Fraction = 94.012 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.07
+Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 283 (max = 284)
-# Interior undirected arcs = 282
-Tree length = 30.572
+# Interior nodes (with root) = 275 (max = 275)
+# Interior undirected arcs = 273
+Tree length = 30.543
 Min. discernible leaf length = 0.000e+00
-Ave. arc length = 0.053
+Ave. arc length = 0.054
 Interior height = 34
-Bifurcating interior branching = 1.354
-# Frequent children interior nodes = 278
-# Frequent children leaves = 286
+Bifurcating interior branching = 1.370
+# Frequent children interior nodes = 270
+# Frequent children leaves = 277
 # Frequent interior nodes = 42
-# Frequent leaves = 52
+# Frequent leaves = 60
 Rareness threshold = 1.000 %

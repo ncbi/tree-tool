@@ -26,7 +26,7 @@ void checkOptimizable (const DistTree& tree,
 
 
 
-const string outlierCriterion ("rel. average leaf error");
+const string outlierCriterion ("relative unweighted average leaf error");
 
 
 
@@ -65,7 +65,7 @@ struct ThisApplication : Application
     // Output
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
-	  addKey ("leaf_errors", dmSuff + "-file without \"" + dmSuff + "\" with relative errors of leaves");
+	  addKey ("leaf_errors", dmSuff + "-file without \"" + dmSuff + "\" with " + outlierCriterion + " for each leaf");
 	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
@@ -280,13 +280,13 @@ struct ThisApplication : Application
       {
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NAN;
-	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.1, outlier_min));  // PAR
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001 /*0.1 ??*/, outlier_min));  // PAR
 	      cout << "# Outliers: " << outliers. size () << endl;
 	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
 	      for (const Leaf* leaf : outliers)
 	        cout         << leaf->name 
 	             << '\t' << leaf->getRelCriterion ()
-	             << '\t' << leaf->absCriterion
+	             << '\t' << leaf->absCriterion  
 	             << endl;
 	      cout << endl;
         cout << "Removing outliers ..." << endl;
@@ -455,16 +455,7 @@ struct ThisApplication : Application
     {
       checkOptimizable (*tree, "leaf_errors");
     //tree->setNodeAbsCriterion ();   // Done above
-      Dataset ds;
-	    auto attr = new RealAttr1 ("leaf_error", ds);
-      for (const auto& it : tree->name2leaf)
-      {
-      	const Real relCriterion = it. second->getRelCriterion ();
-      	if (relCriterion <= 0)
-      		continue;
- 	      const size_t index = ds. appendObj (it. first);
- 	      (*attr) [index] = log (relCriterion);
-      }
+      const Dataset ds (tree->getLeafErrorDataset ());
       OFStream f (leaf_errors + dmSuff);
 	    ds. saveText (f);    
     }

@@ -1340,7 +1340,6 @@ void Dissim::qc () const
   ASSERT (leaf2);
   ASSERT (leaf1 != leaf2);
   ASSERT (leaf1->name < leaf2->name);
-  ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
   
   ASSERT (mult >= 0);
   ASSERT (prediction >= 0);
@@ -1349,6 +1348,7 @@ void Dissim::qc () const
   {
     ASSERT (valid ());
     ASSERT (! isNan (target));
+	  ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
     IMPLY (! leaf1->getDistTree (). subDepth && target == 0, ! leaf1->discernible && ! leaf2->discernible && leaf1->getParent () == leaf2->getParent ());
   }
 
@@ -3904,10 +3904,6 @@ void DistTree::setLeafAbsCriterion ()
     {
       const_cast <Leaf*> (leaf) -> absCriterion_ave = leaf->absCriterion == 0 ? 0 : leaf->absCriterion / leaf->absCriterion_ave;
       ASSERT (leaf->absCriterion_ave >= 0);
-    #if 0
-      if (leaf->absCriterion_ave > 0)
-        f << leaf->name << '\t' << leaf->absCriterion_ave << '\t' << log (leaf->absCriterion_ave) << endl;
-    #endif
     }
 }
 #endif
@@ -3922,27 +3918,29 @@ void DistTree::setNodeAbsCriterion ()
   {
   	DTNode* dtNode = static_cast <DTNode*> (node);
     dtNode->absCriterion = 0;
-    dtNode->absCriterion_ave = 0;  // tepmorary: = mult
+    dtNode->absCriterion_ave = 0;  // tepmorary: = count
   }
 
   Tree::LcaBuffer buf;
   for (const Dissim& dissim : dissims)
-    if (dissim. mult)
-    {
-      const Real residual2 = sqr (dissim. getResidual ());      
-      ASSERT (DM_sp::finite (residual2));
-      
-      ASSERT (dissim. lca);	
-    	VectorPtr<TreeNode>& path = dissim. getPath (buf);
-    	path << dissim. lca;
-    	
-    	for (const TreeNode* node : path)
-    	{
+  	if (dissim. mult)
+	  {
+	  	const Real criterion = dissim. getAbsCriterion ();
+	    ASSERT (DM_sp::finite (criterion));
+	    ASSERT (criterion >= 0);
+	    
+	    // For interior nodes ??
+	    ASSERT (dissim. lca);	
+	  	VectorPtr<TreeNode>& path = dissim. getPath (buf);
+	  	path << dissim. lca;
+	  	
+	  	for (const TreeNode* node : path)
+	  	{
 		  	DTNode* dtNode = const_static_cast <DTNode*> (node);
-	      dtNode->absCriterion     += dissim. mult * residual2;
-	      dtNode->absCriterion_ave += dissim. mult;
-    	}
-    }
+	      dtNode->absCriterion     += criterion;  
+	      dtNode->absCriterion_ave += 1; 
+	  	}
+	  }
 
   for (DiGraph::Node* node : nodes)
   {
@@ -5489,79 +5487,54 @@ Real DistTree::setErrorDensities ()
 
 
 
-VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
-                                                 Real &outlier_min) const
+Dataset DistTree::getLeafErrorDataset () const
 {
 	ASSERT (optimizable ());
 	
-#undef CRITERION_OUTLIERS_DM  
-  
 	Dataset ds;
-  auto criterionAttr = new RealAttr1 ("LeafCriterion", ds);
-  
   ds. objs. reserve (name2leaf. size () / 10 + 1);  // PAR
+  auto criterionAttr = new PositiveAttr1 ("leaf_error", ds);  
   for (const auto& it : name2leaf)
-    if (it. second->graph)
-    {
-      const Real relErr = it. second->getRelCriterion ();
-      if (relErr > 0)
-      {
-    	  const size_t index = ds. appendObj 
-    	    (
-    	    #ifdef CRITERION_OUTLIERS_DM
-    	      it. second->name
-    	    #endif
-    	    );
-    	  (*criterionAttr) [index] = log (relErr);
-      }
-    }
-    
-#ifdef CRITERION_OUTLIERS_DM
   {
-    OFStream f ("criterion_outliers");
-    ds. saveText (f);
+  	const Leaf* leaf = it. second;
+  	ASSERT (leaf);
+    if (leaf->graph)
+    {
+      const Real err = leaf->getRelCriterion ();
+      ASSERT (err >= 0);
+  	  const size_t index = ds. appendObj (it. first);
+  	  (*criterionAttr) [index] = err;
+    }
   }
-#endif
-#undef CRITERION_OUTLIERS_DM
 
+  return ds;
+}
+
+
+
+VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
+                                                 Real &outlier_min) const
+{
+  const Dataset ds (getLeafErrorDataset ());
+  ASSERT (ds. attrs. size () == 1)
+
+  const PositiveAttr1* criterionAttr = ds. attrs. front () -> asPositiveAttr1 ();
+  ASSERT (criterionAttr);
+  
   const Sample sample (ds);
 
-#if 0
-  if (ds. objs. size () <= 30)  // PAR  
-  {  
-#endif
-    Normal /*Exponential*/ distr;
-    outlier_min = exp (criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max));  
-#if 0
-  }
-  else
-  { 
-    const Space1<NumAttr1> sp (ds, true);
-    const Clustering cl (sample, sp, 2, 0.5, false);  // PAR
-    const Mixture::Component* comp_main = nullptr;
-    Prob p = 0;
-    for (const Mixture::Component* comp : cl. mixt. components)
-      if (maximize (p, comp->prob))
-        comp_main = comp;
-    ASSERT (comp_main);
-    const MultiNormal* mn = comp_main->distr->asMultiNormal ();
-    ASSERT (mn);
-    // Use the last cluster ??!
-    const Real mean = mn->mu [0];
-    const Real var  = mn->sigmaExact. get (false, 0, 0);
-    Normal normal;
-    normal. setMeanVar (mean, var);
-    outlier_min = exp (normal. getQuantile (1 - outlier_EValue_max / (Real) ds. objs. size ()));
-  //cl. mixt. print (cerr);  
-  }
-#endif
+  Normal distr;  // Power law ??
+  outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
 
   VectorPtr<Leaf> res;
   if (! isNan (outlier_min))
     for (const auto& it : name2leaf)
-      if (it. second->graph)
-        if (geReal (it. second->getRelCriterion (), outlier_min))
-          res << it. second;
+    {
+	  	const Leaf* leaf = it. second;
+      if (leaf->graph)
+        if (geReal (leaf->getRelCriterion (), outlier_min))
+          res << leaf;
+    }
       
 	return res;
 }

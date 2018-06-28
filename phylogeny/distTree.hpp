@@ -114,6 +114,7 @@ struct DTNode : Tree::TreeNode
     //             aggregate size = 2 p
     // !asLeaf(): aggregate size = O(p log(n))
     // Distribution of size ??
+    // Max. size() is at about the topological center
 private:
   bool stable {false};
     // Init: false
@@ -136,8 +137,10 @@ public:
     // For sparse *getDistTree().dissimAttr
     // Random ??
   Real absCriterion {NAN};
-    // sum = contribution to 2*getTree().absCriterion
+    // = sum(dissim.getAbsCriterion())
+    // For Leaf's: sum = 2*getTree().absCriterion
   Real absCriterion_ave {NAN};
+    // = absCriterion/count
   Real relCriterion {NAN};
     // !isNan() => = getRelCriterion()
 
@@ -634,6 +637,7 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
+    // LSE is MLE <= sqrt(mult)*(prediction-target) ~ N(0,sigma^2)
   Real process (size_t objNum,
                 Tree::LcaBuffer &buf);
     // Return: getAbsCriterion()
@@ -912,8 +916,8 @@ public:
 	    return mv. getMean ();
 	  }
   Real getLeafAbsCriterion () const
-  //{ return 2 * absCriterion / (Real) name2leaf. size (); }
-    { return absCriterion / mult_sum; }
+    { return absCriterion / (Real) dissims. size (); }
+    // Approximate: includes !Dissim::valid() ?? 
   Prob getUnexplainedFrac () const
     { return absCriterion / dissim2_sum; }
   Real getErrorDensity () const
@@ -1073,12 +1077,14 @@ public:
 
   // Outliers
   // Return: distinct
+  Dataset getLeafErrorDataset () const;
+    // Return: attrs = {PositiveAttr1}
+    // After: setNodeAbsCriterion()    
   VectorPtr<Leaf> findCriterionOutliers (Real outlier_EValue_max,
                                          Real &outlier_min) const;
     // Idempotent
     // Output: outlier_min
-    // After: setNodeAbsCriterion()    
-    // Invokes: log(Leaf::getRelCriterion()), RealAttr2::normal2outlier()
+    // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
   VectorPtr<Leaf> findDepthOutliers () const;
     // After: setReprLeaves()
