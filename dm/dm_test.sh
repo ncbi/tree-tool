@@ -20,7 +20,7 @@ if ($?) exit 1
 
 echo ""
 echo "dataset"
-dataset_test -qc $1
+dataset_test -qc  -seed $1  go
 if ($?) exit 1
 
 echo ""
@@ -102,16 +102,16 @@ rm hmmScore.clust
 
 echo ""
 echo "linreg"
-linreg_test  -qc  $1
+linreg_test  -qc  -seed $1
 if ($?) exit 1
-linreg_test  -qc  -lin_dep  $1
+linreg_test  -qc  -lin_dep  -seed $1
 if ($?) exit 1
 
 echo ""
 echo "logreg"
-logreg_test  -qc  $1
+logreg_test  -qc  -seed $1
 if ($?) exit 1
-logreg_test  -qc  -lin_dep  $1
+logreg_test  -qc  -lin_dep  -seed $1
 if ($?) exit 1
 
 echo ""
@@ -124,12 +124,12 @@ rm logreg.out
 
 echo ""
 echo "Beta1"
-beta1_test  -qc  1000 $1 
+beta1_test  -qc  1000  -seed $1 
 if ($?) exit 1
 
 #echo ""
 #echo "Zipf" ??
-#testZipf  -qc  1000 $1
+#testZipf  -qc  1000  -seed $1
 #if ($?) exit 1
 
 echo ""

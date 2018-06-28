@@ -41,7 +41,7 @@ set S_max = 300  # PAR
 if ($S > $S_max)  set S = $S_max
 echo "Sample size: $S"
 
-setRandOrd $tmp.start-good $5 | head -$S > $tmp.test
+setRandOrd $tmp.start-good  -seed $5 | head -$S > $tmp.test
 if (-z $tmp.test) then
 	cp $tmp.init $tmp.test
 	if ($?) exit 1

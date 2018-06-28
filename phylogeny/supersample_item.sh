@@ -31,7 +31,7 @@ endif
 
 cp ../$BASE.list $BASE-$SEED.list
 if ($?) exit 1
-setRandOrd ../$BASE.rest $SEED | head -$N >> $BASE-$SEED.list
+setRandOrd ../$BASE.rest  -seed $SEED | head -$N >> $BASE-$SEED.list
 set S = $?
 if ($S != 141 && $S != 0) then
   echo "subset $S" >> $LOG/$SEED

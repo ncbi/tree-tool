@@ -19,7 +19,7 @@ struct ThisApplication : Application
     : Application ("Test Zipf estimation")
   	{
   	  addPositional ("size", "Data size");
-  	  addPositional ("seed", "Seed for random numbres (> 0)");
+  	//addPositional ("seed", "Seed for random numbers (> 0)");
   	}
 
 
@@ -27,7 +27,7 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const size_t dataSize = str2<size_t> (getArg ("size"));
-		const ulong  seed     = str2<ulong> (getArg ("seed"));
+	//const ulong  seed     = str2<ulong> (getArg ("seed"));
 
 
   #if 0
@@ -41,7 +41,7 @@ struct ThisApplication : Application
 	  map <uint/*category*/, uint/*freq*/> categs;
     {
 	    Zipf zipf;
-	    zipf. setSeed (seed);
+	    zipf. setSeed (seed_global);
 	    zipf. setParam (1.5 /*, 10000*/);  // PAR
 	  //ASSERT_EQ (zipf. c, 1/zeta(1.5), 1e-6); 
       FOR (size_t, i, dataSize)  

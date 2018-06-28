@@ -52,7 +52,7 @@ endif
 setMinus $tmp.opt $tmp.init > $tmp.remove
 if ($?) exit 1
 
-makeDistTree  -input_tree $1/tree.opt  -remove $tmp.remove  -output_tree $tmp-last.tree  > /dev/null
+makeDistTree  -input_tree $1/tree.opt  -delete $tmp.remove  -output_tree $tmp-last.tree  > /dev/null
 if ($?) exit 1
 
 mv $tmp.dm $tmp-last.dm

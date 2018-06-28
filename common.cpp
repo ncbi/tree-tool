@@ -51,13 +51,15 @@ namespace Common_sp
  
 
 
-bool Chronometer::enabled = false;
-bool qc_on = false;
-size_t threads_max = 1;
-
 vector<string> programArgs;
 string programName;
 ostream* logPtr = nullptr;
+
+bool qc_on = false;
+size_t threads_max = 1;
+ulong seed_global = 1;
+
+bool Chronometer::enabled = false;
 
 
 
@@ -1837,6 +1839,10 @@ int Application::run (int argc,
   	if (getFlag ("profile"))
   		Chronometer::enabled = true;
   			
+  	seed_global = str2<ulong> (getArg ("seed"));
+  	if (! seed_global)
+  		throw runtime_error ("Seed cannot be 0");
+
   	threads_max = str2<size_t> (getArg ("threads"));
   	if (! threads_max)
   		throw runtime_error ("Number of threads cannot be 0");

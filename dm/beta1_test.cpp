@@ -19,7 +19,7 @@ struct ThisApplication : Application
     : Application ("Test Beta1 estimation")
   	{
   	  addPositional ("size", "Data size");
-  	  addPositional ("seed", "Seed for random numbres (> 0)");
+  	//addPositional ("seed", "Seed for random numbres (> 0)");
   	}
 
 
@@ -27,7 +27,7 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const size_t dataSize = str2<size_t> (getArg ("size"));
-		const ulong seed      = str2<ulong>  (getArg ("seed"));
+  //const ulong seed      = str2<ulong>  (getArg ("seed"));
 
 
     Dataset ds;
@@ -36,7 +36,7 @@ struct ThisApplication : Application
     const Real beta1alpha = 0.07;  // PAR
     {
 	    Beta1 beta1;
-	    beta1. setSeed (seed);
+	    beta1. setSeed (seed_global);
 	    beta1. setParam (beta1alpha);  
 	  //cout << beta1. cdf (1.0/(Real)dataSize) << endl;  
 	    FOR (size_t, i, dataSize)  

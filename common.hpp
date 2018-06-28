@@ -81,18 +81,25 @@ using namespace std;
 
 
 
+typedef  unsigned int   uint; 
+typedef  unsigned long  ulong; 
+
+
+
 bool initCommon ();
   // Module initialization
   // Invoked automaticallly
 
-extern bool qc_on;
-extern size_t threads_max;
-  // >= 1
-
-
 extern vector<string> programArgs;
 extern string programName;
 extern ostream* logPtr;
+
+extern bool qc_on;
+extern size_t threads_max;
+  // >= 1
+extern ulong seed_global;
+  // >= 1
+
 
 void errorExit (const char* msg,
                 bool segmFault = false);
@@ -224,11 +231,6 @@ template <typename T>
         return t;
       throw runtime_error ("Dereferencing nullptr");
     }
-
-
-
-typedef  unsigned int   uint; 
-typedef  unsigned long  ulong; 
 
 
 
@@ -2786,6 +2788,7 @@ protected:
       addKey ("verbose", "Level of verbosity", "0");
       addFlag ("noprogress", "Turn off progress printout");
       addFlag ("profile", "Use chronometers to profile");
+      addKey ("seed", "Integer positive seed for random number generator", "1");
       addKey ("threads", "Max. number of threads", "1");
       addKey ("json", "Output file in Json format");
       addKey ("log", "Error log file, appended");

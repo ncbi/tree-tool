@@ -22,7 +22,7 @@ struct ThisApplication : Application
   	{
   	  addFlag("lin_dep", "There is a linear dependence bwteen two input variables");
   	//addFlag("perfect", "There is a separating hyperplane between the true and false objects");
-  	  addPositional ("seed", "Seed for random numbers");
+  	//addPositional ("seed", "Seed for random numbers");
   	}
 	
 	
@@ -31,7 +31,7 @@ struct ThisApplication : Application
 	{
 		const bool lin_dep = getFlag ("lin_dep");
   //const bool perfect = getFlag ("perfect");
-		const ulong seed   = str2<ulong> (getArg ("seed"));
+	//const ulong seed   = str2<ulong> (getArg ("seed"));
 		
 		
 		// PAR
@@ -44,7 +44,7 @@ struct ThisApplication : Application
  
     Normal norm;
     norm. setParam (0, 1);
-    norm. setSeed (seed);
+    norm. setSeed (seed_global);
 
     Dataset ds;
     FOR (size_t, objNum, maxObjNum)

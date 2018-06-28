@@ -17,7 +17,7 @@ struct ThisApplication : Application
     : Application ("Print a random reordering of the list\nRequires: Line length < 1024")
   	{
   	  addPositional ("items", "File with items (end-of-line separated)");
-  	  addPositional ("seed", "Seed (>0)");
+  	//addPositional ("seed", "Seed (>0)");
   	}
 
 
@@ -25,7 +25,7 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string items = getArg ("items");
-		const ulong seed  = str2<ulong> (getArg ("seed"));
+//const ulong seed  = str2<ulong> (getArg ("seed"));
 
 
     StringVector vec;
@@ -33,7 +33,7 @@ struct ThisApplication : Application
 	    LineInput in (items, 100 * 1024);  // PAR
 	    vec = in. getVector ();
 	  }
-	  vec. randomOrder (seed);	  
+	  vec. randomOrder (seed_global);	  
 	  for (const string& s : vec)
 	    cout << s << endl;
 	}

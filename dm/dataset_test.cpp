@@ -14,7 +14,6 @@ namespace
 {
 
 const size_t dataSize = 30000;  // PAR
-ulong seed = 0;
 VectorOwn <Distribution> distributions;
 	
 	
@@ -24,7 +23,8 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test dataset.cpp")
   	{
-  	  addPositional ("seed", "Seed for random numbers");
+  	//addPositional ("seed", "Seed for random numbers");
+  	  addPositional ("go", "Go");
   	}
 	
 	
@@ -51,7 +51,7 @@ struct ThisApplication : Application
 	  
 		distr. qc ();
 		
-    distr. setSeed (seed);
+    distr. setSeed (seed_global);
 
     bool checkEntropyOk = true;
     if (const UniDistribution* distr1 = distr. asUniDistribution ())
@@ -124,7 +124,7 @@ struct ThisApplication : Application
       if (! ud->stdBounds ())
     	  return;
 		
-    distr. setSeed (seed);
+    distr. setSeed (seed_global);
 
     Dataset ds;
     distr. simulate (ds, dataSize);
@@ -191,9 +191,6 @@ struct ThisApplication : Application
 
 	void body () const final
 	{
-		seed = str2<ulong> (getArg ("seed"));
-		
-		
 		distributions << new Bernoulli ()
 		              << new Categorical ()
 		              << new Binomial ()
@@ -358,7 +355,7 @@ struct ThisApplication : Application
 		  	mn. sigmaExact. putSymmetric (1, 0, 0);
   	    ASSERT (mn. sigmaExact. psd);
 		  	mn. setParam ();
-    		mn. setSeed (seed);
+    		mn. setSeed (seed_global);
 		    FOR (size_t, i, 100)  
 		    {
 		    	const size_t objNum = ds. appendObj ("1_" + toString (i + 1));
@@ -378,7 +375,7 @@ struct ThisApplication : Application
 		  	mn. sigmaExact. putSymmetric (1, 0, 0);
 	  	  ASSERT (mn. sigmaExact. psd);
 		  	mn. setParam ();
-    		mn. setSeed (seed + 1);
+    		mn. setSeed (seed_global + 1);
 		    FOR (size_t, i, 100)  
 		    {
 		    	const size_t objNum = ds. appendObj ("2_" + toString (i + 1));
