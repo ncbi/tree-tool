@@ -113,7 +113,7 @@ void adjustNode2leaves (const Tree &tree,
   ASSERT (allLeaves. searchSorted);
   
  	const size_t all = allLeaves. size ();
-  for (auto it : node2leaves)
+  for (auto& it : node2leaves)
   {
     const Tree::TreeNode* node = it. first;
     ASSERT (node->graph);
