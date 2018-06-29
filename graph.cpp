@@ -1387,8 +1387,8 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
 			ASSERT (! nodeLeaf2dist. empty ());
 			const double dist = n->getParentDistance ();
 			ASSERT (dist == dist);  // != NAN
-			for (auto it : nodeLeaf2dist)
-			  nodeLeaf2dist [it. first] += dist;
+			for (auto& it : nodeLeaf2dist)
+			  it. second += dist;
 		  for (const auto it1 : leaf2dist)
 			  for (const auto it2 : nodeLeaf2dist)
 			    res << Tree::Patristic (it1. first, it2. first, it1. second + it2. second);
