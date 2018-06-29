@@ -53,9 +53,8 @@ struct ThisApplication : Application
 	  addKey ("max_subgraph_iter", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees");
-	  addFlag ("skip_topology", "Skip topology optimization");
-	  
-	//addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
+	  addFlag ("skip_topology", "Skip topology optimization");	  
+	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
@@ -95,7 +94,7 @@ struct ThisApplication : Application
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
 		const bool   skip_topology       = getFlag ("skip_topology");
-	//const bool   new_only            = getFlag ("new_only");
+	  const bool   new_only            = getFlag ("new_only");
 		
 		const bool   reroot              = getFlag ("reroot");		
 		const bool   root_topological    = getFlag ("root_topological");
@@ -138,7 +137,7 @@ struct ThisApplication : Application
     IMPLY (skip_topology,     optimize);
     IMPLY (subgraph_fast,     ! whole);
     IMPLY (max_subgraph_iter, ! whole);
-  //IMPLY (new_only, ! optimize);
+    IMPLY (new_only, ! optimize);
     IMPLY (! leaf_errors. empty (), ! noqual);
 
 
@@ -153,7 +152,7 @@ struct ThisApplication : Application
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree = isDirName (dataFName)
-               ? new DistTree (dataFName, true, true, optimize /*new_only*/)
+               ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
                : input_tree. empty ()
                  ? new DistTree (dataFName, dissimAttrName, sparse)
                  : isDirName (input_tree)
@@ -281,6 +280,7 @@ struct ThisApplication : Application
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NAN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001 /*0.1 ??*/, outlier_min));  // PAR
+	      const ONumber on (cout, 3, false);  // PAR
 	      cout << "# Outliers: " << outliers. size () << endl;
 	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
 	      for (const Leaf* leaf : outliers)
@@ -491,10 +491,7 @@ struct ThisApplication : Application
     
     if (! dissim_request. empty ())
     {
-      cout << endl << "Finding missing leaf pairs ..." << endl;
-      tree->setReprLeaves ();
-      tree->dissims. sort ();
-      
+      cout << endl << "Finding missing leaf pairs ..." << endl;      
       const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
       cout << "# Ancestor-based requests: " << pairs. size () << endl;
 
