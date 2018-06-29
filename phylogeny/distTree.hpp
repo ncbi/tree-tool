@@ -132,10 +132,6 @@ public:
   size_t paths {0};  // = pathObjNums.size() ??
     // Number of paths going through *this arc
   Real errorDensity {NAN};
-  const Leaf* reprLeaf {nullptr};
-    // In subtree
-    // For sparse *getDistTree().dissimAttr
-    // Random ??
   Real absCriterion {NAN};
     // = sum(dissim.getAbsCriterion())
     // For Leaf's: sum = 2*getTree().absCriterion
@@ -175,6 +171,10 @@ public:
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
   Real getRelCriterion () const;
+  virtual const Leaf* getReprLeaf () const = 0;
+    // Return: !nullptr, in subtree
+    // For sparse *getDistTree().dissimAttr
+    // Invokes: getDistTree().rand
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
@@ -185,11 +185,9 @@ private:
                          Real &bestDTNodeLen_new,
                          WeightedMeanVar &bestGlobalLen);
     // Output: subtreeLen: Global len = average path length from *this to all leaves
-  virtual void setRepresentative () = 0;
-    // Output: reprLeaf
-    // After: getDistTree().sort()
   virtual void getDescendants (VectorPtr<DTNode> &descendants,
-                               size_t depth) const = 0;
+                               size_t depth,
+                               const DTNode* exclude) const = 0;
     // Update: descendants
   virtual void setLca ();
     // Off-line LCA algorithm by Tarjan
@@ -197,12 +195,12 @@ private:
   Vector<uint/*objNum*/> getLcaObjNums ();
     // Return: objNum's s.t. getDistTree().dissims[objNum].lca = this
     // Invokes: DTNode::pathObjNums.sort()
-  VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max) const;
-    // Return: size = O(log(n)); !contains(this->reprLeaf); sort()'ed, uniq()'ed
+  VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max,
+                                        bool subtractDissims) const;
+    // Return: size = O(log(n)); sort()'ed, uniq()'ed
     //         getDistTree().reroot(true) reduces size()
     // Input: depth_max: 0 <=> no restriction
-    // After: getDistTree().setReprLeaves()
-    // Time: O(log(n))
+    // Time: O(log^2(n)) ??
 };
 
 
@@ -241,18 +239,11 @@ public:
     { return childrenDiscernible (); }
 
 private:
+  const Leaf* getReprLeaf () const final;
   void setSubtreeLenUp (bool topological) final;
-  void setRepresentative () final
-    { reprLeaf = nullptr;
-      for (const DiGraph::Arc* arc : arcs [false])
-      { DTNode* node = static_cast <DTNode*> (arc->node [false]);
-        node->setRepresentative ();
-        if (! reprLeaf)
-          reprLeaf = node->reprLeaf;
-      }
-    }
   void getDescendants (VectorPtr<DTNode> &descendants,
-                       size_t depth) const final;
+                       size_t depth,
+                       const DTNode* exclude) const final;
   void setLca () final;
 
   void reverseParent (const Steiner* target, 
@@ -332,16 +323,19 @@ struct Leaf : DTNode
     { return true; }
 
 private:
+  const Leaf* getReprLeaf () const final
+    { return this; }
   void setSubtreeLenUp (bool topological) final
     { subtreeLen. clear ();
       if (topological)
     	  subtreeLen. add (0, 1);
     }
-  void setRepresentative () final
-    { reprLeaf = this; }
   void getDescendants (VectorPtr<DTNode> &descendants,
-                       size_t /*depth*/) const final
-    { descendants << this; }
+                       size_t /*depth*/,
+                       const DTNode* exclude) const final
+    { if (this != exclude)
+    	  descendants << this; 
+    }
   void setLca () final;
 public:
 
@@ -491,9 +485,9 @@ struct Subgraph : Root
                : dtNode        ->pathObjNums;
     }
   const Leaf* getReprLeaf (const DTNode* dtNode) const
-    { return dtNode == area_root /* && area_underRoot */
-               ? static_cast <const DTNode*> (dtNode->getDifferentChild (area_underRoot)) -> reprLeaf
-               : dtNode->reprLeaf;
+    { return dtNode == area_root 
+               ? static_cast <const DTNode*> (dtNode->getDifferentChild (area_underRoot)) -> getReprLeaf ()
+               : dtNode->getReprLeaf ();
     }
 };
 
@@ -596,10 +590,11 @@ public:
 struct Dissim
 {
 	// Input
+  // !nullptr
+  // leaf1->name < leaf2->name
   const Leaf* leaf1 {nullptr};
   const Leaf* leaf2 {nullptr};
-    // !nullptr
-    // leaf1->name < leaf2->name
+  //
   Real target {NAN};
     // Dissimilarity between leaf1 and leaf2; !isNan()
   Real mult {NAN};
@@ -626,6 +621,11 @@ struct Dissim
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
              || leaf == leaf2;
+    }
+  const Leaf* getOtherLeaf (const Leaf* leaf) const
+    { if (leaf == leaf1) return leaf2;
+    	if (leaf == leaf2) return leaf1;
+    	throw logic_error ("getOtherLeaf");
     }
   string getObjName () const;
   void print () const
@@ -695,6 +695,7 @@ struct DistTree : Tree
 // nodes.size() >= 2
 {
   friend DTNode;
+  friend Steiner;
   friend Leaf;
   friend Change;
   friend Subgraph;
@@ -728,6 +729,7 @@ private:
 	VectorOwn<DTNode> toDelete;
 	VectorOwn<Leaf> detachedLeaves;
 	  // !Leaf::graph
+	mutable Rand rand;
 public:
 
 
@@ -767,7 +769,7 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-	  //          outlier/<obj>                                                           Outlier objects, they have no dissimilarities
+	  //          outlier/<obj>                                                           Tree outlier objects
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
 	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Historic versions of data
@@ -778,7 +780,7 @@ public:
 	  //         [delete]                   <obj>                                         Objects to delete
 	  //          // scripts
     //          request2dissim.sh         executable with parameters: request dissim.add log
-    //          objects_in_tree.sh        executable with parameters: list of objects, 0/1
+    //          objects_in_tree.sh        executable with parameters: list of objects, 0/1, 0/1
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
@@ -1037,11 +1039,6 @@ public:
     // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
 	  // Time: Time(optimizeSmallSubgraph)    
-  void setReprLeaves ()
-    { sort ();
-      const_static_cast<DTNode*> (root) -> setRepresentative ();
-    }  
-    // Output: DTNode::reprLeaf
         
   // After optimization
   void setHeight ()
@@ -1087,7 +1084,7 @@ public:
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
   VectorPtr<Leaf> findDepthOutliers () const;
-    // After: setReprLeaves()
+    // Invokes: DTNode;:getReprLeaf()
 #if 0
   VectorPtr<DTNode> findOutlierArcs (Real outlier_EValue_max,
                                      Real &dissimOutlier_min) const;
@@ -1096,10 +1093,8 @@ public:
     
   // Missing dissimilarities
   // Return: not in dissims; sort()'ed, uniq()'ed
-  // After: setReprLeaves()
   Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max) const;
     // Return: almost a superset of getMissingLeafPairs_subgraphs()
-    // After: dissims.sort()
     // Invokes: DTNode::getSparseLeafMatches()
   Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs () const;
   Vector<Pair<const Leaf*>> leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const;

@@ -260,16 +260,38 @@ Vector<uint> DTNode::getLcaObjNums ()
 
 
 
-VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max) const
+VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
+                                              bool subtractDissims) const
 {
   IMPLY (depth_max, depth_max >= sparsingDepth);
-  ASSERT (reprLeaf);
+  IMPLY (subtractDissims, asLeaf ());
+
+  map <const Steiner* /*lca*/, VectorPtr<Leaf>>  lca2leaves;  
+  if (subtractDissims)
+  {
+	  for (const uint objNum : pathObjNums)
+	  {
+	  	const Dissim& dissim = getDistTree (). dissims [objNum];
+	  	if (! dissim. mult)
+	  		continue;
+	  	ASSERT (dissim. lca);
+	  	lca2leaves [dissim. lca] << dissim. getOtherLeaf (asLeaf ());
+	  }
+	  for (auto& it : lca2leaves)
+	  {
+	  	VectorPtr<Leaf>& otherLeaves = it. second;
+	  	ASSERT (! otherLeaves. empty ());
+	  	otherLeaves. sort ();
+	  	ASSERT (otherLeaves. isUniq ());
+	  }
+	}
 
   VectorPtr<Leaf> matches;  matches. reserve (getDistTree (). getSparseDissims_size ());  // PAR
  	VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
   size_t depth = 0;  
   const DTNode* ancestor = this;
-  while (ancestor)  // make fewer by using only reprLeaf's ??
+  const DTNode* ancestor_prev = nullptr;
+  while (ancestor) 
   {
   	descendants. clear ();
   	{
@@ -283,14 +305,31 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max) const
 	  	    searchDepth = 1;
 	  	}
 	  	ASSERT (searchDepth);
-	  	ancestor->getDescendants (descendants, searchDepth);  
+	  	ancestor->getDescendants (descendants, searchDepth, ancestor_prev);  
 	  }
-  	for (const DTNode* descendant : descendants)
-  	{
-  	  ASSERT (descendant->reprLeaf);
-  	  if (descendant->reprLeaf != reprLeaf)
-  	    matches << descendant->reprLeaf;
-  	}
+	  ASSERT (! descendants. empty ());
+	  {
+		  size_t added = 0;
+		  const VectorPtr<Leaf>* otherLeaves = nullptr;
+		  if (subtractDissims)
+		  	if (const Steiner* st = ancestor->asSteiner ())
+		  	  otherLeaves = findPtr (lca2leaves, st);
+	  	for (const DTNode* descendant : descendants)
+	  	{
+	  		if (otherLeaves && otherLeaves->size () + added >= descendants. size ())
+	  			break;
+	  		const Leaf* repr = descendant->getReprLeaf ();
+	  		ASSERT (repr);
+	  		if (   ! otherLeaves 
+	  			  || ! otherLeaves->containsFast (repr)
+	  			 )
+				{
+	        matches << repr;
+	        added++;
+	      }
+	 	  }
+	 	}
+	 	ancestor_prev = ancestor;
     ancestor = static_cast <const DTNode*> (ancestor->getParent ());
     depth++;
   }
@@ -321,7 +360,16 @@ void Steiner::qc () const
 	DTNode::qc ();
 	  
 	ASSERT (! isLeaf ());	
-//IMPLY (reprLeaf, getChildren (). contains (reprLeaf));
+}
+
+
+
+const Leaf* Steiner::getReprLeaf () const
+{ 
+	const size_t n = arcs [false]. size ();
+	ASSERT (n);
+	const size_t index = getDistTree (). rand. get (n);
+	return static_cast <const DTNode*> (arcs [false]. at (index) -> node [false]) -> getReprLeaf ();
 }
 
 
@@ -347,19 +395,19 @@ void Steiner::setSubtreeLenUp (bool topological)
 
 
 void Steiner::getDescendants (VectorPtr<DTNode> &descendants,
-                              size_t depth) const
+                              size_t depth,
+                              const DTNode* exclude) const
 {
-  if (depth)
-    if (childrenDiscernible ())
-      for (const DiGraph::Arc* arc : arcs [false])
-      {
-        const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
-        child->getDescendants (descendants, depth - 1);
-      }
-    else
+  if (depth && childrenDiscernible ())
+    for (const DiGraph::Arc* arc : arcs [false])
+    {
+      const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+      if (child != exclude)
+        child->getDescendants (descendants, depth - 1, exclude);
+    }
+  else  
+    if (this != exclude)
       descendants << this;  
-  else
-    descendants << this;  
 }
 
 
@@ -543,7 +591,7 @@ void Leaf::qc () const
     cout << getName () << " " << len << endl;
     ERROR;
   }  
-  IMPLY (reprLeaf, reprLeaf == this);
+  ASSERT (getReprLeaf () == this);
 }
 
 
@@ -934,9 +982,9 @@ void Subgraph::subPaths2tree ()
   for (const Tree::TreeNode* node : area)
     if (! boundary. containsFast (node))
       const_static_cast <DTNode*> (node) -> pathObjNums. filterValue 
-      //([&] (uint objNum) { const SubPath subPath (objNum); return subPaths. containsFast (subPath); });
+      //([this] (uint objNum) { const SubPath subPath (objNum); return subPaths. containsFast (subPath); });
           // Faster if n >> 0 <= O(p) above is not needed
-        ([&] (uint objNum) { return subPathDissims [objNum]; });
+        ([&subPathDissims] (uint objNum) { return subPathDissims [objNum]; });
   
   tree_. absCriterion -= subPathsAbsCriterion;
   Tree::LcaBuffer buf;
@@ -994,7 +1042,7 @@ void Subgraph::node2subPaths (const DTNode* node)
 
 
 void Subgraph::area2subPaths ()
-// Parameter sparse: Use O(boundary.size()) dissimilarities, use reprLeaf's like in sparsing ??
+// Parameter sparse: Use O(boundary.size()) dissimilarities, use getReprLeaf()'s like in sparsing ??
 {
   ASSERT (subPaths. empty ());
   bool first = true;
@@ -1744,6 +1792,7 @@ DistTree::DistTree (const string &treeFName,
 	                  const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
+: rand (seed_global)
 {
 	ASSERT (dissimFName. empty () == attrName. empty ());
 
@@ -1772,6 +1821,7 @@ DistTree::DistTree (const string &treeFName,
 DistTree::DistTree (const string &dirName,
 	                  const string &dissimFName,
 	                  const string &attrName)
+: rand (seed_global)
 {
   // Initial tree topology, no DTNode::len
   loadTreeDir (dirName);
@@ -1797,6 +1847,7 @@ DistTree::DistTree (const string &dirName,
 DistTree::DistTree (const string &dissimFName,
 	                  const string &attrName,
 	                  bool sparse)
+: rand (seed_global)
 {
   loadDissimDs (dissimFName, attrName);
 
@@ -1833,6 +1884,8 @@ struct DissimLine
 	Leaf* leaf2 {nullptr};
 	
 
+  DissimLine ()
+    {}
 	DissimLine (string &line,
 	            uint lineNum)
 		{ replace (line, '\t', ' ');
@@ -1880,6 +1933,17 @@ struct DissimLine
         leaf1->collapse (leaf2);
       if (! isNan (dissim) && ! tree. addDissim (leaf1, leaf2, dissim))
       	throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
+    }
+
+
+  bool operator< (const DissimLine &other) const
+    { LESS_PART (*this, other, name1);
+    	LESS_PART (*this, other, name2);
+    	return false;
+    }
+  bool operator== (const DissimLine &other) const
+    { return    name1 == other. name1
+    	       && name2 == other. name2;
     }
 };
 
@@ -1941,6 +2005,7 @@ DistTree::DistTree (const string &dataDirName,
                     bool loadNewLeaves,
  	                  bool loadDissim,
  	                  bool optimizeP)
+: rand (seed_global)
 {
 	ASSERT (! dataDirName. empty ());
 	ASSERT (dataDirName. back () == '/');
@@ -2030,11 +2095,15 @@ DistTree::DistTree (const string &dataDirName,
 	    constexpr uint displayPeriod = 100000;  // PAR
 	    {
 	      cout << "Loading " << fName << " ..." << endl;
-	      LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
-	      while (f. nextLine ())
-	      	dissimLines << DissimLine (f. line, f. lineNum);
-	      if (! f. lineNum)
-	        throw runtime_error ("Empty " + fName);
+	      {
+		      LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
+		      while (f. nextLine ())
+		      	dissimLines << DissimLine (f. line, f. lineNum);
+		      if (! f. lineNum)
+		        throw runtime_error ("Empty " + fName);
+		    }
+	      dissimLines. sort ();
+	      dissimLines. uniq ();
 	    }
 	    vector<Notype> notypes;
 	    arrayThreads (processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
@@ -2165,6 +2234,7 @@ DistTree::DistTree (const string &dataDirName,
 
 
 DistTree::DistTree (const string &newickFName)
+: rand (seed_global)
 { 
   {
     ifstream f (newickFName);
@@ -2185,6 +2255,7 @@ DistTree::DistTree (const string &newickFName)
 
 DistTree::DistTree (Prob branchProb,
                     size_t leafNum_max)
+: rand (seed_global)
 {
 	ASSERT (isProb (branchProb));
 	ASSERT (branchProb < 1);
@@ -2241,6 +2312,7 @@ DistTree::DistTree (Prob branchProb,
 DistTree::DistTree (Subgraph &subgraph,
                     Node2Node &newLeaves2boundary)
 : subDepth (subgraph. tree. subDepth + 1)
+, rand (seed_global)
 {
   ASSERT (! subgraph. empty ());
   ASSERT (subgraph. subPaths. empty ());  // not finish()'ed
@@ -3049,7 +3121,7 @@ void DistTree::neighborJoin ()
     
     // Remove duplicate LeafPair 
     leafPairs. sort (LeafPair::strictlyLess);
-    leafPairs. filterIndex ([&] (size_t i) 
+    leafPairs. filterIndex ([&leafPairs, &leafPair_best] (size_t i) 
                                  { return    leafPairs [i] == leafPair_best 
                                           || (i && leafPairs [i - 1]. merge (leafPairs [i]));
                                  }
@@ -3206,7 +3278,6 @@ void DistTree::dissimDs2dissims (bool sparse)
   if (sparse)
   {
     ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
-    setReprLeaves ();
     selectedPairs = getMissingLeafPairs_ancestors (0);
   }
 
@@ -5523,7 +5594,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
   
   const Sample sample (ds);
 
-  Normal distr;  // Power law ??
+  Normal distr;  // Beta1 ??
   outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
 
   VectorPtr<Leaf> res;
@@ -5648,7 +5719,7 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
     if (! dtNode->childrenDiscernible ())
       continue;
   	descendants. clear ();
-  	dtNode->getDescendants (descendants, areaDiameter_std);  
+  	dtNode->getDescendants (descendants, areaDiameter_std, nullptr);  
   	if (descendants. size () <= areaDiameter_std)
   	  continue;
   	Dataset ds;
@@ -5675,7 +5746,7 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
       continue;
     FFOR (size_t, objNum, ds. objs. size ())
       if (geReal ((*lenAttr) [objNum], outlier_min))
-        outliers << descendants [objNum] -> reprLeaf;
+        outliers << descendants [objNum] -> getReprLeaf ();
   }  
   outliers. sort ();
   outliers. uniq ();
@@ -5697,7 +5768,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
       ASSERT (leaf);
       if (! leaf->graph)
         continue;
-      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (depth_max));
+      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (depth_max, true));
       for (const Leaf* match : matches)
     	  if (leaf->getDiscernible () != match->getDiscernible ())
     	  {
@@ -5712,9 +5783,6 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
   pairs. sort ();
   pairs. uniq ();
        
-  if (! dissims. empty ())
-    pairs. filterValue ([&] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
-
   return pairs;
 }
 
@@ -5784,7 +5852,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
         ASSERT (lca);
         const DTNode* reprNode1 = lca == node1 ? static_cast <const DTNode*> (node1->getParent () -> getDifferentChild (node1)) : node1;
         const DTNode* reprNode2 = lca == node2 ? static_cast <const DTNode*> (node2->getParent () -> getDifferentChild (node2)) : node2;
-   	    Pair<const Leaf*> leafPair (reprNode1->reprLeaf, reprNode2->reprLeaf);
+   	    Pair<const Leaf*> leafPair (reprNode1->getReprLeaf (), reprNode2->getReprLeaf ());
    	    ASSERT (leafPair. first);
    	    ASSERT (leafPair. second);
    	    ASSERT (! leafPair. same ());
@@ -5829,7 +5897,7 @@ Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Lea
   pairs. uniq ();
        
   if (! dissims. empty ())
-    pairs. filterValue ([&] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
+    pairs. filterValue ([this] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second); return dissims. containsFast (dissim); });
 
   return pairs;
 }
@@ -6094,7 +6162,8 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 , dist_hat (0)
 , leafIsBelow (false)
 { 
-  ASSERT (leaf);
+  if (! leaf)
+  	throw runtime_error ("No other leaf found for a new leaf placement");
 //ASSERT (dissim >= 0);
   ASSERT (! isNan (dissim));
   ASSERT (anchor);
@@ -6274,46 +6343,18 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
 
 void NewLeaf::saveRequest () const
 {	
-#if 0
-  VectorPtr<Leaf> requested;  requested. reserve (tree. getSparseDissims_size ());
-  {
-    // Cf. DistTree::getSparseLeafPairs()
-    VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
-    const DTNode* ancestor = location. anchor;
-  //size_t depth = 0;  
-    while (ancestor /*&& depth <= sparsingDepth*/)  
-    {
-    	descendants. clear ();
-    	ancestor->getDescendants (descendants, sparsingDepth); 
-    	for (const DTNode* descendant : descendants)
-    	{
-    	  ASSERT (descendant->reprLeaf);
-    	  const Leaf2dissim ld (descendant->reprLeaf);
-    	  if (! leaf2dissims. containsFast (ld))
-    	    requested << descendant->reprLeaf;
-    	}
-      ancestor = static_cast <const DTNode*> (ancestor->getParent ());
-    //depth++;
-    }
-  }
-  requested. sort ();
-  requested. uniq ();
-#else
-  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth));
-  requested. filterValue ([&] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
-#endif
+  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth, false));
+  requested. filterValue ([this] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
   
+  OFStream f (getRequestFName ());
+  for (const Leaf* leaf : requested)
   {
-    OFStream f (getRequestFName ());
-    for (const Leaf* leaf : requested)
-    {
-      ASSERT (name != leaf->name);
-      const string* n1 = & name;
-      const string* n2 = & leaf->name;
-      if (*n1 > *n2)
-        swap (n1, n2);
-      f << *n1 << '\t' << *n2 << endl;
-    }
+    ASSERT (name != leaf->name);
+    const string* n1 = & name;
+    const string* n2 = & leaf->name;
+    if (*n1 > *n2)
+      swap (n1, n2);
+    f << *n1 << '\t' << *n2 << endl;
   }
 }
 
