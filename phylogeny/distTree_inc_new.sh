@@ -63,7 +63,7 @@ if ($N[1] == 0) then
   exit 
 endif
 
-setRandOrd $1/new.list $2 | head -$INC > $1/search.list
+setRandOrd $1/new.list  -seed $2 | head -$INC > $1/search.list
 rm $1/new.list
 
 trav -noprogress $1/search.list "mkdir $1/search/%f"
@@ -153,7 +153,7 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 307  # PAR ??
+  set VER = 2  # PAR ??
 endif
 
 
@@ -162,6 +162,7 @@ makeDistTree $QC  -threads 15 \
   -data $1/ \
   -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 1 \
   -noqual \
+  -remove_outliers $1/outlier.add \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
@@ -169,7 +170,6 @@ if ($?) exit 1
   # -threads 20  # bad_alloc 
   # -max_subgraph_iter 2
 	# -reroot  -root_topological \
-  # -remove_outliers $1/outlier.add \
 mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
@@ -183,14 +183,18 @@ if ($?) exit 1
 $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
 rm $1/leaf.list
-#$1/objects_in_tree.sh $1/outlier.add 0
-#if ($?) exit 1
 
-if (0) then
-	echo ""
-	trav  -noprogress  $1/outlier.add "cp /dev/null $1/outlier/%f"
+if (-z $1/outlier.add) then
+  rm $1/outlier.add
 	if ($?) exit 1
-	rm $1/outlier.add
+else
+	echo "Outliers ..."
+	$1/objects_in_tree.sh $1/outlier.add 0
+	if ($?) exit 1
+	trav  $1/outlier.add "cp /dev/null $1/outlier/%f"
+	if ($?) exit 1
+	mv $1/outlier.add $1/hist/outlier.$VER
+	if ($?) exit 1
 endif
 
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
@@ -201,3 +205,28 @@ rm $1/dissim.add-req
 rm $1/dissim_request
 
 
+
+if (-e $1/phen) then
+  echo ""
+  echo "Quality ..."
+	tree2obj.sh $1/hist/tree.1 > $1/_init.list
+	if ($?) exit 1	
+	tree2obj.sh $1/tree > $1/_cur.list
+	if ($?) exit 1	
+	setMinus $1/_cur.list $1/_init.list >  $1/_remove.list
+	if ($?) exit 1
+	setMinus $1/_init.list $1/_cur.list >> $1/_remove.list
+	if ($?) exit 1	
+	rm $1/_init.list 
+	rm $1/_cur.list
+	makeDistTree  -input_tree $1/tree  -delete $1/_remove.list  -output_feature_tree $1/_feature_tree >& /dev/null
+	if ($?) exit 1	
+	rm $1/_remove.list
+	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.$VER
+	if ($?) exit 1
+	rm $1/_feature_tree
+	rm $1/_core
+	rm $1/_qual
+	grep ' !' $1/hist/makeFeatureTree.$VER
+	if ($?) exit 1
+endif

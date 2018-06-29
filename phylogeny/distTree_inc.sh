@@ -52,13 +52,16 @@ if (-e $1/delete) then
 endif
 
 # Time: O(n log^5(n))
-makeDistTree  -data $1/  $delete  -optimize  -reinsert  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
+makeDistTree  -threads 15  -data $1/  \
+  $delete  \
+  -optimize  -skip_len  -reinsert  -subgraph_fast  -max_subgraph_iter 1  \
+  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
 
 if (-e $1/delete) then
-  $1/objects_in_tree.sh $1/delete 0
+  $1/objects_in_tree.sh $1/delete null
 	if ($?) exit 1
   mv $1/delete $1/hist/delete.$VER
 	if ($?) exit 1
