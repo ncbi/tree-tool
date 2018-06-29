@@ -2510,7 +2510,7 @@ private:
 
 
 
-struct Zipf : DiscreteDistribution 
+struct Zipf : DiscreteDistribution   // not a distribution ??
 // = Zeta 
 // Zipf -> data -> frequency ranks ~ Zipf ??
 // Zipf -> data -> frequencies !~ Zipf

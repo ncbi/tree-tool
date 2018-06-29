@@ -172,7 +172,7 @@ typedef  VectorOwn<Syntagm>  Syntagms;
 struct Position : Root
 // In Sentence
 {
-  Char c;
+  Char c {eot};
 
   // Output
   // !nullptr
@@ -183,13 +183,11 @@ struct Position : Root
     // May be empty()
     // Memoization of NonTerminal::parse()
 
-  size_t rollbacks;  // not maintaiend ??
+  size_t rollbacks {0};  // not maintaiend ??
     // --> incomplete Syntagm's in Syntagms ??
 
 
   Position ()
-    : c (eot)
-    , rollbacks (0)
     {}
  ~Position ()
     { for (auto it : terminal2syntagms)  
@@ -281,7 +279,7 @@ public:
   // isLeftRecursive() => rhs[0] is skipped
   Set<const Terminal*> firstTerminals;  
     // In lhs.grammar->symbols
-  bool erasable;
+  bool erasable {false};
   Vector<bool> singleRhs;
     // size() = rhs.size()
     // true <=> all other symbols in rhs are erasable
@@ -293,7 +291,6 @@ public:
     : num (num_arg)
     , rhsS (rhsS_arg)
     , lhs (lhs_arg)
-    , erasable (false)
     , singleRhs (rhsS_arg. size (), false)
     {}
 private:
@@ -332,8 +329,8 @@ struct Symbol : Named
   // Analysis
   Rule::Occurrences ruleOccurrences;
     // Occurrence::getSymbol() = this
-  bool erasable;
-  bool terminable;
+  bool erasable {false};
+  bool terminable {false};
   // In grammar->symbols
   Rule::Occurrences firstROs;  
   Rule::Occurrences lastROs;  
@@ -347,8 +344,6 @@ struct Symbol : Named
 protected:
   explicit Symbol (const string &name_arg)
     : Named (name_arg)
-    , erasable (false)
-    , terminable (false)
     {}
 public:    
   void qc () const override;
@@ -402,7 +397,7 @@ struct Terminal : Symbol
 // name: '<ASCII>' or <Unicode>
 {
   static const string eotName;
-  Char c;
+  Char c {eot};
 
   // Analysis
   Occurrence2Terminals terminalNeighbors [2/*bool next*/];  
@@ -411,7 +406,6 @@ struct Terminal : Symbol
 
   Terminal ()
     : Symbol (eotName)  
-    , c (eot)
     {}
     // Initial or final symbol of a sentence
   explicit Terminal (const string &name_arg);

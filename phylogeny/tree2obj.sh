@@ -1,6 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 1) then
+  echo "Print objects of a distance tree, sorted"
   echo "#1: Distance tree"
   exit 1
 endif

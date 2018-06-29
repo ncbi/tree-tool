@@ -1523,8 +1523,8 @@ public:
 	                    const T* value = nullptr)
 	  : P (n, value)
 	  {}
-	VectorPtr (const VectorPtr<T> &x)
-	  : P (x)
+	VectorPtr (const VectorPtr<T> &other)
+	  : P (other)
 	  {}
   explicit VectorPtr (initializer_list<const T*> init)
     : P (init)

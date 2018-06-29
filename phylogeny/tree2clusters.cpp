@@ -29,19 +29,21 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
   {
 		const string input_tree   = getArg ("input_tree");
     
     DistTree tree (input_tree, string (), string (), false); 
-    tree. setReprLeaves ();
+  //tree. setReprLeaves ();
     tree. qc (); 
     
     for (const auto it : tree. name2leaf)
     {
       const Leaf* leaf = it. second;
       if (! leaf->discernible)
-        cout << leaf->name << '\t' << static_cast <const DTNode*> (leaf->getParent ()) -> reprLeaf->name << endl;
+        cout << leaf->name 
+             << '\t' << static_cast <const DTNode*> (leaf->getParent ()) -> getLeftmostDescendant () -> getName ()
+             << endl;
     }
 	}
 };

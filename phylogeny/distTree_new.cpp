@@ -17,12 +17,12 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Find location of new objects in a distance tree")
-	{
-	  addPositional ("data", "Directory with data");
-	  addFlag ("init", "Initialize search");
-	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
-	}
+		: Application ("Find location of new objects in a distance tree")
+		{
+		  addPositional ("data", "Directory with data");
+		  addFlag ("init", "Initialize search");
+		  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+		}
 	
 	
 	
@@ -42,7 +42,6 @@ struct ThisApplication : Application
     }
 
     DistTree tree (dataDir, false, false, false);
-    tree. setReprLeaves ();  
     tree. qc ();     
 
     if (verbose ())
