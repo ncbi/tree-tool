@@ -32,27 +32,29 @@ if ($?) exit 1
 
 echo ""
 echo "Tree ..."
+set remove_outliers = ""
+if (-e $1/outlier)  set remove_outliers = "-remove_outliers $1/outlier.add"
 makeDistTree  -threads 5  \
   -data $1/data  -dissim cons  \
-  -optimize  -remove_outliers $1/outlier.add  \
+  -optimize  \
+  $remove_outliers \
   -output_tree $1/tree \
   > $1/hist/makeDistTree.1
 if ($?) exit 1
 rm $1/data.dm
 
 
-echo ""
-echo "Database ..."
 $1/objects_in_tree.sh $2 1
 if ($?) exit 1
-$1/objects_in_tree.sh $1/outlier.add 0
-if ($?) exit 1
 
-trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
-if ($?) exit 1
-mv $1/outlier.add $1/hist/outlier.1
-if ($?) exit 1
-
+if (-e $1/outlier.add) then
+	$1/objects_in_tree.sh $1/outlier.add 0
+	if ($?) exit 1
+	trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
+	if ($?) exit 1
+	mv $1/outlier.add $1/hist/outlier.1
+	if ($?) exit 1
+endif
 
 
 

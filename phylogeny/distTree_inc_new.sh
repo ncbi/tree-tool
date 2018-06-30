@@ -158,11 +158,13 @@ endif
 
 
 # Time: O(n log^4(n)) 
+set remove_outliers = ""
+if (-e $1/outlier)  set remove_outliers = "-remove_outliers $1/outlier.add"
 makeDistTree $QC  -threads 15 \
   -data $1/ \
   -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 1 \
   -noqual \
-  -remove_outliers $1/outlier.add \
+  $remove_outliers \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
@@ -184,17 +186,19 @@ $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
 rm $1/leaf.list
 
-if (-z $1/outlier.add) then
-  rm $1/outlier.add
-	if ($?) exit 1
-else
-	echo "Outliers ..."
-	$1/objects_in_tree.sh $1/outlier.add 0
-	if ($?) exit 1
-	trav  $1/outlier.add "cp /dev/null $1/outlier/%f"
-	if ($?) exit 1
-	mv $1/outlier.add $1/hist/outlier.$VER
-	if ($?) exit 1
+if (-e $1/outlier.add) then
+	if (-z $1/outlier.add) then
+	  rm $1/outlier.add
+		if ($?) exit 1
+	else
+		echo "Outliers ..."
+		$1/objects_in_tree.sh $1/outlier.add 0
+		if ($?) exit 1
+		trav  $1/outlier.add "cp /dev/null $1/outlier/%f"
+		if ($?) exit 1
+		mv $1/outlier.add $1/hist/outlier.$VER
+		if ($?) exit 1
+	endif
 endif
 
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 

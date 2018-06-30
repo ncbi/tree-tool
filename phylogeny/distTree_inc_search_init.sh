@@ -19,7 +19,7 @@ end
 
 if (-z $DIR/request) then
   wc -l $DIR/request
-  cp /dev/null $1/outlier/$2
+  echo $2 >> $1/alien 
   if ($?) exit 1
   rm -r $DIR/
   if ($?) exit 1

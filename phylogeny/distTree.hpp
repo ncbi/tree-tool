@@ -93,7 +93,7 @@ struct DissimLine;
 // For Time: 
 //   n = # Tree leaves, p = # distances = DistTree::dissims.size()
 //   p >= n
-//   ~ O(): p/n = log(n)        
+//   ~ O(): p/n = log(n); log log --> 1
 
 
 
@@ -175,6 +175,7 @@ public:
     // Return: !nullptr, in subtree
     // For sparse *getDistTree().dissimAttr
     // Invokes: getDistTree().rand
+    // Time: ~ O(log(n))
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
@@ -200,7 +201,7 @@ private:
     // Return: size = O(log(n)); sort()'ed, uniq()'ed
     //         getDistTree().reroot(true) reduces size()
     // Input: depth_max: 0 <=> no restriction
-    // Time: O(log^2(n)) ??
+    // Time: O(log^2(n)) 
 };
 
 
@@ -757,22 +758,25 @@ public:
 	  // Input: dataDirName: ends with '/'
 	  //          files: tree, leaf, dissim
 	  //          <dataDirName/> contains:
-	  //          file name                 line format                                   meaning
+	  //          file name                 line/file format                              meaning
 	  //          ---------                 -----------------------------                 ----------------------------
 	  //          tree                                           
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
     //         [dissim.add[-req]]
-    //          new/<obj>                                                               New objects to add to the tree
+    //          new/                      <obj>                                         New objects to add to the tree
     //          search/<obj_new>/                                                       Initialization of search for <obj_new> location
     //        [ search/<obj_new>/dissim   <obj_new> <obj> <dissimilarity>        
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-	  //          outlier/<obj>                                                           Tree outlier objects
+    //          alien                                                                   Objects similar to no other objects
+	  //         [outlier/]                 <obj>                                         Tree outlier objects
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
-	  //          hist/{tree,makeDistTree,leaf}.<version>                                 Historic versions of data
+	  //          hist/                     {tree,makeDistTree,leaf,outlier,
+	  //                                     makeFeatureTree
+	  //                                    }.<version>                                   Historic versions of data
     //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
@@ -1096,6 +1100,7 @@ public:
   Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max) const;
     // Return: almost a superset of getMissingLeafPairs_subgraphs()
     // Invokes: DTNode::getSparseLeafMatches()
+    // Time: ~ O(n log^2(n))
   Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs () const;
   Vector<Pair<const Leaf*>> leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const;
     // After: dissims.sort()

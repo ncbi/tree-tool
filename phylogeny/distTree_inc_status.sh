@@ -23,10 +23,11 @@ echo "# Being added: $N[1]"
 set N = `ls $1/search/ | wc -l`
 echo "# Being searched: $N[1]"
 
-set N = `ls $1/outlier/ | wc -l`
-#set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
-#echo "# Outliers: $N[1] ($outliers_percent %)"
-echo "# Outliers: $N[1]"
+if (-e $1/outlier) then
+	set N = `ls $1/outlier/ | wc -l`
+	set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
+	echo "# Outliers: $N[1] ($outliers_percent %)"
+endif
 
 echo ""
 set N = `ls $1/new/ | wc -l`
@@ -45,6 +46,12 @@ echo ""
 head -5 $1/runlog
 echo "..."
 tail -5 $1/runlog
+
+echo ""
+grep ' V !' $1/hist/makeFeatureTree.* | sed 's|^'$1'/hist/makeFeatureTree\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $tmp
+head -5 $tmp
+echo "..."
+tail -5 $tmp
 
 
 rm -f $tmp*
