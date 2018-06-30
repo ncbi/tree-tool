@@ -175,7 +175,7 @@ struct ThisApplication : Application
         while (f. nextLine ())
         {
           trim (f. line);
-          const Leaf * leaf = findPtr (tree->name2leaf, f. line);
+          const Leaf* leaf = findPtr (tree->name2leaf, f. line);
           if (! leaf)
           {
             cout << "Leaf " << f. line << " not found" << endl;
