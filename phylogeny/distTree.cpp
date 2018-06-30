@@ -269,6 +269,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
   map <const Steiner* /*lca*/, VectorPtr<Leaf>>  lca2leaves;  
   if (subtractDissims)
   {
+  	// Time: ~ O(p/n) ~ O(log(n))
 	  for (const uint objNum : pathObjNums)
 	  {
 	  	const Dissim& dissim = getDistTree (). dissims [objNum];
@@ -277,6 +278,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
 	  	ASSERT (dissim. lca);
 	  	lca2leaves [dissim. lca] << dissim. getOtherLeaf (asLeaf ());
 	  }
+  	// Time: ~ O(log(n) p/(n log(n))) = O(p/n) ~ O(log(n))
 	  for (auto& it : lca2leaves)
 	  {
 	  	VectorPtr<Leaf>& otherLeaves = it. second;
@@ -291,6 +293,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
   size_t depth = 0;  
   const DTNode* ancestor = this;
   const DTNode* ancestor_prev = nullptr;
+  // Time: ~ O(log^2(n))
   while (ancestor) 
   {
   	descendants. clear ();
@@ -3724,13 +3727,15 @@ void DistTree::printInput (ostream &os) const
 {
   os << "INPUT:" << endl;
   os << "# Leaves: " << name2leaf. size () << endl;
-  os << "# Discernible leaves: " << getDiscernibles (). size () << endl;
+  const size_t discernibles = getDiscernibles (). size ();
+  os << "# Discernible leaves: " << discernibles << endl;
   os << "# Nodes: " << nodes. size () << endl;
   if (! optimizable ())
     return;
   {
 	  const ONumber on (os, 2, false);  // PAR
 	  os << "# Dissimilarities: " << dissims. size () << " (" << (Real) dissims. size () / (Real) getDissimSize_max () * 100 << " %)" << endl; 
+	  os << "# Dissimilarities per leaf: " << (Real) dissims. size () / (Real) discernibles << endl;
 	}
 	{
 	  const ONumber on (os, dissimDecimals, false);
@@ -5017,6 +5022,7 @@ void DistTree::optimizeLargeSubgraphs ()
 	{
 		VectorPtr<Steiner> boundary;  boundary. reserve (threads_max);   // isTransient()
 		{
+			// Improves speed without thread's ??!
 			VectorPtr<Steiner> cuts;  cuts. reserve (threads_max);
 			{
 				const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
