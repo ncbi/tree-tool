@@ -64,7 +64,7 @@ rm random-output.tree
 
 
 echo ""
-echo "prot-identical_comm (subgraphs) ..."
+echo "prot-identical_comm: subgraphs ..."
 # Check time ??
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -remove_outliers prot-identical_comm.outliers | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
@@ -76,13 +76,17 @@ if ($?) exit 1
 rm prot-identical_comm.distTree
 
 echo ""
-echo "prot-identical_comm (subgraphs) with threads ..."
+echo "prot-identical_comm: subgraphs, threads ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -threads 3 > /dev/null
 if ($?) exit 1
 
+echo ""
+echo "prot-identical_comm: subgraphs, delete ..."
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
+if ($?) exit 1
 
 echo ""
-echo "prot-identical_comm (whole) ..."
+echo "prot-identical_comm: whole ..."
 # Time: 7 min.
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -whole  -remove_outliers prot-identical_comm.outliers-whole | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
 if ($?) exit 1
