@@ -3735,7 +3735,7 @@ void DistTree::printInput (ostream &os) const
   {
 	  const ONumber on (os, 2, false);  // PAR
 	  os << "# Dissimilarities: " << dissims. size () << " (" << (Real) dissims. size () / (Real) getDissimSize_max () * 100 << " %)" << endl; 
-	  os << "# Dissimilarities per leaf: " << (Real) dissims. size () / (Real) discernibles << endl;
+	  os << "Dissimilarities factor: " << (Real) dissims. size () / ((Real) discernibles * log ((Real) discernibles)) << endl;
 	}
 	{
 	  const ONumber on (os, dissimDecimals, false);
