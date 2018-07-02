@@ -19,7 +19,7 @@ end
 
 if (-z $DIR/request) then
   wc -l $DIR/request
-  echo $2 >> $1/alien 
+  flock $1/alien -c "echo $2 >> $1/alien"
   if ($?) exit 1
   rm -r $DIR/
   if ($?) exit 1
