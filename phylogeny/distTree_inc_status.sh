@@ -29,6 +29,11 @@ if (-e $1/outlier) then
 	echo "# Outliers: $N[1] ($outliers_percent %)"
 endif
 
+if (-e $1/alien) then
+	set N = `wc -l $1/alien`
+  echo "# Aliens $N[1]"
+endif
+
 echo ""
 set N = `ls $1/new/ | wc -l`
 echo "# New: $N[1]"
@@ -38,19 +43,13 @@ wc -l $1/dissim
 
 echo ""
 grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree.* | sed 's|^'$1'/hist/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $tmp
-head -5 $tmp
-echo "..."
 tail -5 $tmp
 
 echo ""
-head -5 $1/runlog
-echo "..."
 tail -5 $1/runlog
 
 echo ""
 grep ' V !' $1/hist/makeFeatureTree.* | sed 's|^'$1'/hist/makeFeatureTree\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $tmp
-head -5 $tmp
-echo "..."
 tail -5 $tmp
 
 
