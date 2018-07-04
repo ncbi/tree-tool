@@ -1280,6 +1280,10 @@ public:
     	         , P::begin () + (ptrdiff_t) to
     	         ); 
     }
+  void wipe ()
+    { P::clear ();
+    	P::shrink_to_fit ();
+    }
   void reverse ()
     { for (size_t i = 0; i < P::size (); i++)
     	{ const size_t j = P::size () - 1 - i;
