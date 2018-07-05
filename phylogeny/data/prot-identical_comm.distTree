@@ -12,7 +12,7 @@ INPUT:
 # Discernible leaves: 285
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
-# Dissimilarities per leaf: 148.05
+Dissimilarities factor: 26.19
 Ave. dissimilarity = 0.185037
 absCriterion = 20.558  Error density = 3.134 %
 
@@ -39,8 +39,11 @@ SAMN03988423	10.158	0.492
 SAMN03992688	2.890	0.140
 SAMN04255291	3.763	0.182
 SAMN04388342.r1	13.646	0.661
+Deleting ...
+absCriterion = 4.395  Error density = 1.449 %
 
-Removing outliers ...
+# Hybrids: 0
+Deleting ...
 absCriterion = 4.395  Error density = 1.449 %
 
 OUTPUT:

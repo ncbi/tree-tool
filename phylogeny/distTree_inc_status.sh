@@ -11,8 +11,7 @@ set tmp = `mktemp`
 
 
 echo "Version: `cat $1/version`"
-#echo "Outliers parameter: `cat $1/strong_outliers`"
-echo""
+echo ""
 
 set OBJS = `grep -vc '^ *0x' $1/tree`
 echo "# Objects: $OBJS"  

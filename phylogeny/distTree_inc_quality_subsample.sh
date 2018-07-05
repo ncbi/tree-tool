@@ -49,10 +49,10 @@ if (! -z $tmp.zero) then
   ls -laF $tmp.zero
   exit 1
 endif
-setMinus $tmp.opt $tmp.init > $tmp.remove
+setMinus $tmp.opt $tmp.init > $tmp.delete
 if ($?) exit 1
 
-makeDistTree  -input_tree $1/tree.opt  -delete $tmp.remove  -output_tree $tmp-last.tree  > /dev/null
+makeDistTree  -input_tree $1/tree.opt  -delete $tmp.delete  -output_tree $tmp-last.tree  > /dev/null
 if ($?) exit 1
 
 mv $tmp.dm $tmp-last.dm

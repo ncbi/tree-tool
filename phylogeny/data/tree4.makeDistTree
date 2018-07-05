@@ -12,7 +12,7 @@ INPUT:
 # Discernible leaves: 4
 # Nodes: 7
 # Dissimilarities: 6 (100.00 %)
-# Dissimilarities per leaf: 1.50
+Dissimilarities factor: 1.08
 Ave. dissimilarity = 3.096390
 absCriterion = 0.000  Error density = 0.000 %
 

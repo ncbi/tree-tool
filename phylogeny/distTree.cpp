@@ -98,7 +98,7 @@ const Leaf* DTNode::inDiscernible () const
 
 Real DTNode::getRelCriterion () const
 { 
-  return absCriterion_ave / getDistTree (). getLeafAbsCriterion (); 
+  return absCriterion_ave / getDistTree (). getAbsCriterion_ave (); 
 }
 
 
@@ -2634,7 +2634,6 @@ bool DistTree::loadLines (const StringVector &lines,
   DTNode* dtNode = nullptr;
 	if (isLeft (idS, "0x"))
 	{
-	//ASSERT (isNan (leafError));
 	  ASSERT (! indiscernible);
     Steiner* steinerParent = nullptr;
     if (parent)
@@ -2651,7 +2650,6 @@ bool DistTree::loadLines (const StringVector &lines,
 	{
 	  ASSERT (parent);
 		auto leaf = new Leaf (*this, parent, len, idS);
-  //leaf->relCriterion = leafError;
 		leaf->discernible = ! indiscernible;
 		dtNode = leaf;
 	}
@@ -3352,7 +3350,7 @@ uint DistTree::leaves2dissims (Leaf* leaf1,
   
   const size_t objNum_ = dissims. size ();
   dissims << Dissim (leaf1, leaf2, target, mult);
-  if (objNum_ > (size_t) numeric_limits<uint>::max())
+  if (objNum_ > (size_t) dissims_max)
     throw runtime_error ("leaves2dissims: Too large objNum");
   const uint objNum = (uint) objNum_;
   leaf1->pathObjNums << objNum;
@@ -3433,7 +3431,7 @@ void setPaths_ (const Vector<size_t> &subTree,
 void DistTree::setPaths ()
 {
 //ASSERT (optimizable ());
-  if (dissims. size () > numeric_limits<uint>::max())
+  if (dissims. size () > dissims_max)
     throw runtime_error ("setPaths: Too large objNum");
     
  	for (DiGraph::Node* node : nodes)
@@ -5590,7 +5588,7 @@ Dataset DistTree::getLeafErrorDataset () const
 
 
 VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
-                                                 Real &outlier_min) const
+                                                  Real &outlier_min) const
 {
   const Dataset ds (getLeafErrorDataset ());
   ASSERT (ds. attrs. size () == 1)
@@ -5614,6 +5612,93 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
     }
       
 	return res;
+}
+
+
+
+VectorPtr<Leaf> DistTree::findHybrids (Real outlier_EValue_max,
+	                                     Real hybridness_min) const
+{
+	ASSERT (optimizable ());
+	ASSERT (hybridness_min > 1);
+	
+  VectorPtr<Leaf> res;
+
+	Real outlier_min = NAN;
+	{
+		Dataset ds;
+	  ds. objs. reserve (dissims. size ());  // PAR
+	  auto criterionAttr = new PositiveAttr1 ("dissim_error", ds);  
+	  for (const Dissim& dissim : dissims)  	
+	  	if (dissim. mult)
+		  {
+	      const Real err = dissim. getAbsCriterion ();
+	      ASSERT (err >= 0);
+	  	  const size_t index = ds. appendObj ();
+	  	  (*criterionAttr) [index] = err;
+		  }
+	  const Sample sample (ds);	
+	  Normal distr;  // Beta1 ??
+	  // Time: O(p log(p))
+	  outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
+	}
+	if (isNan (outlier_min))
+		return res;
+	if (verbose ())
+	  cout << "outlier_min = " << outlier_min << endl;  
+		
+  for (const auto& it : name2leaf)
+  {
+  	Leaf* leaf = const_cast <Leaf*> (it. second);
+  	ASSERT (leaf);
+  	leaf->badNeighbors. clear ();
+  	leaf->hybridness = 1;  // PAR
+  	leaf->hybridParentsDissimObjNum = dissims_max;
+  }
+	
+  for (const Dissim& dissim : dissims)  	
+  	if (   dissim. mult
+  		  && dissim. getAbsCriterion () >= outlier_min
+  		  && dissim. target < dissim. prediction  // <= hybrid
+  		 )
+    {
+    	const_cast <Leaf*> (dissim. leaf1) -> badNeighbors << Leaf::BadNeighbor {dissim. leaf2, dissim. target};
+    	const_cast <Leaf*> (dissim. leaf2) -> badNeighbors << Leaf::BadNeighbor {dissim. leaf1, dissim. target};
+    }  
+    
+  for (const auto& it : name2leaf)
+  {
+  	const_cast <Leaf*> (it. second) -> badNeighbors. sort ();
+  	ASSERT (it. second->badNeighbors. isUniq ());
+  }
+
+  FFOR (size_t, objNum, dissims. size ())
+	{
+		const Dissim& dissim = dissims [objNum];
+		if (! dissim. mult)
+			continue;
+		ASSERT (dissim. target > 0);
+  	for (const Leaf::BadNeighbor& hybrid : dissim. leaf1->badNeighbors)
+  	{
+    	Leaf* hybridLeaf = const_cast <Leaf*> (hybrid. leaf);
+    	const size_t index = hybridLeaf->badNeighbors. binSearch (Leaf::BadNeighbor {dissim. leaf2, NAN});
+    	if (index == NO_INDEX)
+    		continue;
+    	if (maximize (hybridLeaf->hybridness, dissim. target / (hybrid. target + hybridLeaf->badNeighbors [index]. target)))
+    		hybridLeaf->hybridParentsDissimObjNum = (uint) objNum;
+    }
+  }
+
+  for (const auto& it : name2leaf)
+  {
+  	const Leaf* leaf = it. second;
+  	ASSERT (leaf->hybridness >= 1);
+  	if (leaf->hybridness >= hybridness_min)  
+  		res << leaf;
+  	const_cast <Leaf*> (leaf) -> badNeighbors. wipe ();
+  }
+  
+  return res;
 }
 
 

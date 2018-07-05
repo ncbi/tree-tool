@@ -278,6 +278,8 @@ private:
 
 struct Leaf : DTNode
 {
+	friend DistTree;
+	
   string name;  
     // !empty()
   string comment;
@@ -286,8 +288,32 @@ struct Leaf : DTNode
   bool discernible {true}; 
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
     
+private:
   // Temporary
   size_t index {NO_INDEX};
+public:
+
+  // Hybrid
+private:
+  struct BadNeighbor 
+  { 
+  	const Leaf* leaf; 
+  	Real target;
+  	  // Dissimilarity between *this and leaf
+  	bool operator< (const BadNeighbor &other) const
+  	  { return leaf < other. leaf; }
+  	bool operator== (const BadNeighbor &other) const
+  	  { return leaf == other. leaf; }
+  };
+  Vector<BadNeighbor> badNeighbors;
+    // BadNeighbor::leaf is unique
+public:
+  Real hybridness {1};
+    // >= 1    
+    // = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
+    // > 1 => triangle inqquality violation
+  uint hybridParentsDissimObjNum;
+    // hybridness > 1 => in DistTree::dissims
   
 
 	Leaf (DistTree &tree,
@@ -316,7 +342,9 @@ struct Leaf : DTNode
     { if (minimal)
         return name;
       string s = name + prepend (" ", comment); 
-      if (! isNan (absCriterion))
+      if (! isNan (relCriterion))
+        s += " " + real2str (relCriterion, 1);  // PAR
+      else if (! isNan (absCriterion))
         s += " " + real2str (getRelCriterion (), 1);  // PAR
       return s;
     }
@@ -425,14 +453,11 @@ struct Subgraph : Root
              && ! subPathsAbsCriterion;
     }
   void clear () override
-    { area. clear ();
-      area. shrink_to_fit ();        
-      boundary. clear ();
-      boundary. shrink_to_fit ();
+    { area. wipe ();
+      boundary. wipe ();
       area_root = nullptr;
       area_underRoot = nullptr;
-      subPaths. clear ();
-      subPaths. shrink_to_fit ();
+      subPaths. wipe ();
       subPathsAbsCriterion = 0;
     }
 
@@ -718,6 +743,7 @@ private:
     // In *dissimDs
 public:
     
+  constexpr static uint dissims_max {numeric_limits<uint>::max ()};
   Vector<Dissim> dissims;
   Real mult_sum {0};
   Real dissim2_sum {0};
@@ -921,7 +947,7 @@ public:
 	      mv. add (dissim. target, dissim. mult);
 	    return mv. getMean ();
 	  }
-  Real getLeafAbsCriterion () const
+  Real getAbsCriterion_ave () const
     { return absCriterion / (Real) dissims. size (); }
     // Approximate: includes !Dissim::valid() ?? 
   Prob getUnexplainedFrac () const
@@ -1087,6 +1113,11 @@ public:
     // Output: outlier_min
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
+  VectorPtr<Leaf> findHybrids (Real outlier_EValue_max,
+                               Real hybridness_min) const;
+    // Output: Leaf::{hybridness,hybridParentsDissimObjNum}
+    // Invokes: RealAttr2::normal2outlier() 
+    // Time: ~ O(n log^2(n))
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode;:getReprLeaf()
 #if 0

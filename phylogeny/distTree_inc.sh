@@ -54,10 +54,12 @@ endif
 # Time: O(n log^5(n))
 makeDistTree  -threads 15  -data $1/  \
   $delete  \
-  -optimize  -skip_len  -reinsert  -subgraph_fast  -max_subgraph_iter 1  \
+  -optimize  -skip_len  -reinsert  -subgraph_fast  \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 if ($?) exit 1
 mv $1/tree.new $1/tree
+if ($?) exit 1
+tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 if ($?) exit 1
 
 if (-e $1/delete) then

@@ -66,11 +66,18 @@ rm random-output.tree
 echo ""
 echo "prot-identical_comm: subgraphs ..."
 # Check time ??
-makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -remove_outliers prot-identical_comm.outliers | grep -v '^CHRON: ' > prot-identical_comm.distTree
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  \
+  -optimize  \
+  -delete_outliers prot-identical_comm.outliers \
+  -find_hybrids prot-identical_comm.hybrids  -delete_hybrids \
+  | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
 diff prot-identical_comm.outliers data/prot-identical_comm.outliers
 if ($?) exit 1
 rm prot-identical_comm.outliers
+diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
+if ($?) exit 1
+rm prot-identical_comm.hybrids
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 if ($?) exit 1
 rm prot-identical_comm.distTree
@@ -88,7 +95,10 @@ if ($?) exit 1
 echo ""
 echo "prot-identical_comm: whole ..."
 # Time: 7 min.
-makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -whole  -remove_outliers prot-identical_comm.outliers-whole | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  \
+  -optimize  -whole  \
+  -delete_outliers prot-identical_comm.outliers-whole \
+  | grep -v '^CHRON: ' > prot-identical_comm.distTree-whole
 if ($?) exit 1
 diff prot-identical_comm.outliers-whole data/prot-identical_comm.outliers-whole
 if ($?) exit 1

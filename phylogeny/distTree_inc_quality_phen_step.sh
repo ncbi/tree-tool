@@ -41,12 +41,12 @@ setMinus $2 $tmp.target > $tmp.zero
 if ($?) exit 1
 #if (! -z $tmp.zero)  exit 1
 set N = `wc -l $tmp.zero`
-echo "# Outliers removed: $N[1]"
+echo "# Outliers deleted: $N[1]"
 
-setMinus $tmp.target $2 > $tmp.remove
+setMinus $tmp.target $2 > $tmp.delete
 if ($?) exit 1
 
-makeDistTree  -input_tree $INTREE  -delete $tmp.remove  -output_tree $5/$3.tree  -output_feature_tree $tmp.feature_tree > $5/$3.makeDistTree
+makeDistTree  -input_tree $INTREE  -delete $tmp.delete  -output_tree $5/$3.tree  -output_feature_tree $tmp.feature_tree > $5/$3.makeDistTree
 if ($?) exit 1
 
 makeFeatureTree  -input_tree $tmp.feature_tree  -features $1/phen  -output_core $tmp.core  -qual $5/$3.qual > $5/$3.makeFeatureTree

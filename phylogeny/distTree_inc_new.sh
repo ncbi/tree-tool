@@ -77,7 +77,7 @@ echo ""
 echo "search/ -> leaf, dissim ..."
 
 set REQ = `ls $1/search | wc -l`
-if ($REQ[1] > 200) then  # PAR
+if ($REQ[1] > 50) then  # PAR
 	trav  -step 1  $1/search "$QSUB_5 -N j%n %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
 	if ($?) exit 1  
 	qstat_wait.sh 1
@@ -158,13 +158,13 @@ endif
 
 
 # Time: O(n log^4(n)) 
-set remove_outliers = ""
-if (-e $1/outlier)  set remove_outliers = "-remove_outliers $1/outlier.add"
+set delete_hybrids = ""
+if (-e $1/outlier)  set delete_hybrids = "-find_hybrids $1/hybrid  -delete_hybrids"
 makeDistTree $QC  -threads 15 \
   -data $1/ \
-  -optimize  -skip_len  -subgraph_fast  -max_subgraph_iter 1 \
+  -optimize  -skip_len  -max_subgraph_iter 1 \
   -noqual \
-  $remove_outliers \
+  $delete_hybrids \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
@@ -186,19 +186,18 @@ $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
 rm $1/leaf.list
 
-if (-e $1/outlier.add) then
-	if (-z $1/outlier.add) then
-	  rm $1/outlier.add
-		if ($?) exit 1
-	else
-		echo "Outliers ..."
-		$1/objects_in_tree.sh $1/outlier.add 0
-		if ($?) exit 1
-		trav  $1/outlier.add "cp /dev/null $1/outlier/%f"
-		if ($?) exit 1
-		mv $1/outlier.add $1/hist/outlier.$VER
-		if ($?) exit 1
-	endif
+if (-e $1/hybrid) then
+	echo "Hybrids ..."
+  cut -f 1 $1/hybrid > $1/outlier.add
+	if ($?) exit 1
+	$1/objects_in_tree.sh $1/outlier.add 0
+	if ($?) exit 1
+	trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
+	if ($?) exit 1
+	rm $1/outlier.add
+	if ($?) exit 1
+	mv $1/hybrid $1/hist/hybrid.$VER
+	if ($?) exit 1
 endif
 
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
@@ -209,7 +208,6 @@ rm $1/dissim.add-req
 rm $1/dissim_request
 
 
-
 if (-e $1/phen) then
   echo ""
   echo "Quality ..."
@@ -217,15 +215,15 @@ if (-e $1/phen) then
 	if ($?) exit 1	
 	tree2obj.sh $1/tree > $1/_cur.list
 	if ($?) exit 1	
-	setMinus $1/_cur.list $1/_init.list >  $1/_remove.list
+	setMinus $1/_cur.list $1/_init.list >  $1/_delete.list
 	if ($?) exit 1
-	setMinus $1/_init.list $1/_cur.list >> $1/_remove.list
+	setMinus $1/_init.list $1/_cur.list >> $1/_delete.list
 	if ($?) exit 1	
 	rm $1/_init.list 
 	rm $1/_cur.list
-	makeDistTree  -input_tree $1/tree  -delete $1/_remove.list  -output_feature_tree $1/_feature_tree >& /dev/null
+	makeDistTree  -input_tree $1/tree  -delete $1/_delete.list  -output_feature_tree $1/_feature_tree >& /dev/null
 	if ($?) exit 1	
-	rm $1/_remove.list
+	rm $1/_delete.list
 	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.$VER
 	if ($?) exit 1
 	rm $1/_feature_tree
