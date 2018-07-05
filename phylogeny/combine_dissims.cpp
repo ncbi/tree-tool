@@ -91,7 +91,7 @@ struct ThisApplication : Application
     : Application ("Combine different dissimilarities for the same pairs of objects")
     {
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
-  	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending, first scale = 1.\n\
+  	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending.\n\
 Line format: <unit> <raw_min> <raw_max>");
       addPositional ("coeff", "Coefficient to multiply all dissimilarities, > 0");
   	}
@@ -110,7 +110,11 @@ Line format: <unit> <raw_min> <raw_max>");
 		{
 			LineInput f (scaleFName);
 			while (f. nextLine ())
+			{
 	      scales << Scale (f. line, coeff);
+	      if (scales. size () >= 2 && scales [scales. size () - 2]. unit > scales [scales. size () - 1]. unit)
+	      	throw runtime_error ("Scale units must increase");
+	    }
 		}
 		ASSERT (scales. size () >= 2);
 	//ASSERT (scales [0]. unit == 1);  

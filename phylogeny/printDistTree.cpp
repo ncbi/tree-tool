@@ -22,7 +22,7 @@ struct ThisApplication : Application
 	{
     // Input
 	  addPositional ("input_tree", "Tree file");
-	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\"");
+	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\" to read object comments");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);  
     // Output
@@ -45,8 +45,6 @@ struct ThisApplication : Application
       throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
     
 
-    // Reading dissimFName is slow ??!
-    // Tree format should contain all quality attributes ??
     DistTree tree (input_tree, dataFName, dissimAttrName, false);
     tree. sort ();
     if (! dataFName. empty ())
