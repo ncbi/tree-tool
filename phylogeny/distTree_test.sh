@@ -93,6 +93,14 @@ makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/de
 if ($?) exit 1
 
 echo ""
+echo "Saccharomyces hybrids ..."
+makeDistTree  -qc  -threads 3  -data data/Saccharomyces  -dissim cons  -optimize  -subgraph_fast  -find_hybrids Saccharomyces.hybrid > /dev/null
+if ($?) exit 1
+diff Saccharomyces.hybrid data/Saccharomyces.hybrid
+if ($?) exit 1
+rm Saccharomyces.hybrid
+
+echo ""
 echo "prot-identical_comm: whole ..."
 # Time: 7 min.
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  \
