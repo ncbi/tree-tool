@@ -796,22 +796,26 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-    //          alien                                                                   Objects similar to no other objects
-	  //         [outlier/]                 <obj>                                         Tree outlier objects
+    //         [alien]                                                                  Objects similar to no other objects
+	  //          outlier/                  <obj>                                         Tree outlier objects
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
 	  //          hist/                     {tree,makeDistTree,leaf,outlier,
 	  //                                     makeFeatureTree
 	  //                                    }.<version>                                   Historic versions of data
+	  //          hybridness_min            <number>                                      Min. hybridness, >1
     //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
 	  //         [delete]                   <obj>                                         Objects to delete
+	  //          delete-hybrid             <obj>                                         Hybrid objects to delete
 	  //          // scripts
     //          request2dissim.sh         executable with parameters: request dissim.add log
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1, 0/1
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
+    //          hybrid2db.sh              executable with parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
+    //          db2hybrid.sh              executable with parameter: <Obj>; output: empty or <inter_parent_dissim>\n<parent1>\n<parent2>
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
