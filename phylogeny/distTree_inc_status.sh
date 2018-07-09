@@ -22,15 +22,21 @@ echo "# Being added: $N[1]"
 set N = `ls $1/search/ | wc -l`
 echo "# Being searched: $N[1]"
 
-if (-e $1/outlier) then
-	set N = `ls $1/outlier/ | wc -l`
-	set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
-	echo "# Outliers: $N[1] ($outliers_percent %)"
+set N = `ls $1/outlier/ | wc -l`
+set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
+echo "# Outliers: $N[1] ($outliers_percent %)"
+
+set N = `wc -l $1/delete-hybrid`
+echo "# To delete hybrids: $N[1]"
+
+if (-e $1/delete) then
+	set N = `wc -l $1/delete`
+  echo "# To delete: $N[1]"
 endif
 
 if (-e $1/alien) then
 	set N = `wc -l $1/alien`
-  echo "# Aliens $N[1]"
+  echo "# Aliens: $N[1]"
 endif
 
 echo ""
