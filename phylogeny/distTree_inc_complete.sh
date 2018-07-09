@@ -32,12 +32,11 @@ if ($?) exit 1
 
 echo ""
 echo "Tree ..."
-set delete_hybrids = ""
-if (-e $1/outlier)  set delete_hybrids = "-find_hybrids $1/hybrid  -delete_hybrids"
+set HYBRIDNESS_MIN = `cat $1/hybridness_min`
 makeDistTree  -threads 5  \
   -data $1/data  -dissim cons  \
   -optimize  \
-  $delete_hybrids \
+  -find_hybrids $1/hybrid  -delete_hybrids  -hybridness_min $HYBRIDNESS_MIN \
   -output_tree $1/tree \
   > $1/hist/makeDistTree.1
 if ($?) exit 1
@@ -48,19 +47,6 @@ echo "Database ..."
 $1/objects_in_tree.sh $2 1
 if ($?) exit 1
 
-# Cf. distTree_inc_new.sh
-if (-e $1/hybrid) then
-  cut -f 1 $1/hybrid > $1/outlier.add
-	if ($?) exit 1
-	$1/objects_in_tree.sh $1/outlier.add 0
-	if ($?) exit 1
-	trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
-	if ($?) exit 1
-	rm $1/outlier.add
-	if ($?) exit 1
-	mv $1/hybrid $1/hist/hybrid.1
-	if ($?) exit 1
-endif
-
-
+distTree_inc_hybrid.sh $1 1 $2
+if ($?) exit 1
 

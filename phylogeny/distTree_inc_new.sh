@@ -2,10 +2,10 @@
 
 if ($# != 2) then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
+  echo "exit 2: increments are completed"
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
-  echo "Time: O(n log^2(n))"
-  echo "Cumulative time: O(n log^5(n))"
+  echo "Time: O(n log^4(n))"
   exit 1
 endif
 
@@ -31,15 +31,13 @@ if ("$N") then
   exit 1
 endif
 
-if (-e $1/dissim.add) then
-  echo "$1/dissim.add exists"
-  exit 1
-endif
-cp /dev/null $1/dissim.add
-if ($?) exit 1
-
 if (! -z $1/leaf) then
   echo "$1/leaf is not empty"
+  exit 1
+endif
+
+if (-e $1/dissim.add) then
+  echo "$1/dissim.add exists"
   exit 1
 endif
 
@@ -54,14 +52,16 @@ echo "# Objects: $OBJS"
 set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 echo "To add at this step: $INC"
 
+set VER = `cat $1/version`
 ls $1/new/ > $1/new.list
 if ($?) exit 1
-set N = `wc -l $1/new.list`
-if ($N[1] == 0) then
- #echo "New objects: $N[1]  Minimum: $INC"
+if (-z $1/new.list && -z $1/delete-hybrid && ! -e $1/hist/hybrid.$VER) then
   rm $1/new.list
-  exit 
+  exit 2
 endif
+
+cp /dev/null $1/dissim.add
+if ($?) exit 1
 
 setRandOrd $1/new.list  -seed $2 | head -$INC > $1/search.list
 rm $1/new.list
@@ -77,7 +77,7 @@ echo ""
 echo "search/ -> leaf, dissim ..."
 
 set REQ = `ls $1/search | wc -l`
-if ($REQ[1] > 50) then  # PAR
+if ($REQ[1] > 20) then  # PAR
 	trav  -step 1  $1/search "$QSUB_5 -N j%n %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
 	if ($?) exit 1  
 	qstat_wait.sh 1
@@ -117,7 +117,6 @@ while (1)
   set L = `ls $1/log | wc -l`
   if ($L[1]) then
     echo "# Failed tasks: $L[1]"
-   #exit 2
     if (! $GRID) exit 1
 	  # Try to fix grid problems
     trav $1/log "distTree_inc_unsearch.sh $1 %f"
@@ -153,25 +152,23 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 2  # PAR ??
+  set VER = 44  # PAR 
 endif
 
 
 # Time: O(n log^4(n)) 
-set delete_hybrids = ""
-if (-e $1/outlier)  set delete_hybrids = "-find_hybrids $1/hybrid  -delete_hybrids"
+set HYBRIDNESS_MIN = `cat $1/hybridness_min`
 makeDistTree $QC  -threads 15 \
   -data $1/ \
-  -optimize  -skip_len  -max_subgraph_iter 1 \
+  -delete $1/delete-hybrid \
+  -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
-  $delete_hybrids \
+  -find_hybrids $1/hybrid  -delete_hybrids  -hybridness_min $HYBRIDNESS_MIN \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
 if ($?) exit 1
   # -threads 20  # bad_alloc 
-  # -max_subgraph_iter 2
-	# -reroot  -root_topological \
 mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
@@ -179,27 +176,21 @@ if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
 
+mv $1/delete-hybrid $1/hist/delete-hybrid.$VER
+if ($?) exit 1
+cp /dev/null $1/delete-hybrid
+
 echo ""
-cut -f 1 $1/hist/leaf.$VER > $1/leaf.list
+cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
 if ($?) exit 1
 $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
+
+distTree_inc_hybrid.sh $1 $VER $1/leaf.list 
+if ($?) exit 1
 rm $1/leaf.list
 
-if (-e $1/hybrid) then
-	echo "Hybrids ..."
-  cut -f 1 $1/hybrid > $1/outlier.add
-	if ($?) exit 1
-	$1/objects_in_tree.sh $1/outlier.add 0
-	if ($?) exit 1
-	trav -noprogress $1/outlier.add "cp /dev/null $1/outlier/%f"
-	if ($?) exit 1
-	rm $1/outlier.add
-	if ($?) exit 1
-	mv $1/hybrid $1/hist/hybrid.$VER
-	if ($?) exit 1
-endif
-
+echo ""
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
 if ($?) exit 1
 cat $1/dissim.add-req >> $1/dissim
