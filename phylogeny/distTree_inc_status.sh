@@ -17,17 +17,17 @@ set OBJS = `grep -vc '^ *0x' $1/tree`
 echo "# Objects: $OBJS"  
 
 set N = `wc -l $1/leaf`
-echo "# Being added: $N[1]"
+if ($N[1])  echo "# Being added: $N[1]"
 
 set N = `ls $1/search/ | wc -l`
-echo "# Being searched: $N[1]"
+if ($N[1])  echo "# Being searched: $N[1]"
 
 set N = `ls $1/outlier/ | wc -l`
 set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
-echo "# Outliers: $N[1] ($outliers_percent %)"
+if ($N[1])  echo "# Outliers: $N[1] ($outliers_percent %)"
 
 set N = `wc -l $1/delete-hybrid`
-echo "# To delete hybrids: $N[1]"
+if ($N[1])  echo "# Hybrids To delete: $N[1]"
 
 if (-e $1/delete) then
 	set N = `wc -l $1/delete`
@@ -39,9 +39,9 @@ if (-e $1/alien) then
   echo "# Aliens: $N[1]"
 endif
 
-echo ""
 set N = `ls $1/new/ | wc -l`
-echo "# New: $N[1]"
+if ($N[1])  echo "# New: $N[1]"
+
 
 echo ""
 wc -l $1/dissim

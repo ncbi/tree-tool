@@ -10,7 +10,6 @@ if ($# != 2) then
 endif
 
 
-
 # Time: O(n log^5(n))
 while (1)
   if (-e $1/stop) then
@@ -28,7 +27,7 @@ while (1)
 end
   
 
-
+echo ""
 echo ""
 echo "Complete optimization ..."
 echo "# Complete optimization  `date`  `date +%s`" >> $1/runlog  
@@ -74,8 +73,6 @@ if (-e $1/phen) then
 	echo ""
 	echo "Quality ..."
 	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER 
-	if ($?) exit 1
-	cat $1/hist/tree_quality_phen.$VER
 	if ($?) exit 1
 	set new_root = `grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 	if ($?) exit 1
