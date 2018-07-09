@@ -322,7 +322,7 @@ struct ThisApplication : Application
    
       if (! find_hybrids. empty ())
       {
-        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.001, hybridness_min));  // PAR
+        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.01, hybridness_min));  // PAR
 	      cout << "# Hybrids: " << hybrids. size () << endl;
         {
           OFStream f (find_hybrids);
