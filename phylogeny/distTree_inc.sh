@@ -11,20 +11,19 @@ endif
 
 
 
-# Time: O(n log^4(n))
+# Time: O(n log^5(n))
 while (1)
   if (-e $1/stop) then
     echo "Stopped"
     exit 2
   endif
   
-  set N = `ls $1/new/ | wc -l`
-  echo "# To add: $N[1]  `date`  `date +%s`" >> $1/runlog  
+  set ADD = `ls $1/new/ | wc -l`
+  echo "# Add: $ADD[1]  `date`  `date +%s`" >> $1/runlog  
   echo ""
   echo ""
-  echo "# Total objects to add: $N[1] ..."
-  if ($N[1] == 0) break  
   distTree_inc_new.sh $1 $2 
+  if ($? == 2) break
   if ($?) exit 1
 end
   
@@ -74,7 +73,7 @@ endif
 if (-e $1/phen) then
 	echo ""
 	echo "Quality ..."
-	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER
+	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER 
 	if ($?) exit 1
 	cat $1/hist/tree_quality_phen.$VER
 	if ($?) exit 1
