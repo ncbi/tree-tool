@@ -42,6 +42,18 @@ if (-e $1/dissim.add) then
 endif
 
 
+set VER_OLD = `cat $1/version`
+if ($?) exit 1
+
+# Time: O(n) 
+cp $1/tree $1/hist/tree.$VER_OLD
+if ($?) exit 1
+
+@ VER = $VER_OLD + 1
+echo $VER > $1/version
+if ($?) exit 1
+
+
 echo "new/ -> search/ ..."
 
 # Time: O(n) 
@@ -52,10 +64,9 @@ echo "# Objects: $OBJS"
 set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 echo "To add at this step: $INC"
 
-set VER = `cat $1/version`
 ls $1/new/ > $1/new.list
 if ($?) exit 1
-if (-z $1/new.list && -z $1/delete-hybrid && ! -e $1/hist/hybrid.$VER) then
+if (-z $1/new.list && -z $1/delete-hybrid && ! -e $1/hist/hybrid.$VER_OLD) then
   rm $1/new.list
   exit 2
 endif
@@ -76,6 +87,9 @@ rm $1/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
+cp /dev/null $1/hybrid
+if ($?) exit 1
+
 set REQ = `ls $1/search | wc -l`
 if ($REQ[1] > 20) then  # PAR
 	trav  -step 1  $1/search "$QSUB_5 -N j%n %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
@@ -86,6 +100,10 @@ else
 	trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
 	if ($?) exit 1  
 endif
+
+distTree_inc_hybrid.sh $1 $VER "" 
+if ($?) exit 1
+if (-e $1/hist/hybrid.$VER)  mv $1/hist/hybrid.$VER $1/hist/hybrid-new.$VER
 
 
 # Time: O(log^4(n)) per one new object, where n = # objects in the tree
@@ -136,17 +154,6 @@ end
 echo ""
 echo "leaf, dissim.add -> tree, dissim ..."
 
-set VER = `cat $1/version`
-if ($?) exit 1
-
-# Time: O(n) 
-cp $1/tree $1/hist/tree.$VER
-if ($?) exit 1
-
-@ VER = $VER + 1
-echo $VER > $1/version
-if ($?) exit 1
-
 wc -l $1/dissim.add
 cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
@@ -180,15 +187,30 @@ mv $1/delete-hybrid $1/hist/delete-hybrid.$VER
 if ($?) exit 1
 cp /dev/null $1/delete-hybrid
 
-echo ""
 cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
 if ($?) exit 1
 $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
 
+echo ""
 distTree_inc_hybrid.sh $1 $VER $1/leaf.list 
 if ($?) exit 1
 rm $1/leaf.list
+
+$1/db2unhybrid.sh $1/unhybrid
+if ($?) exit 1
+if (-z $1/unhybrid) then
+  rm $1/unhybrid
+else
+  echo ""
+  wc -l $1/unhybrid
+  trav $1/unhybrid "mv $1/outlier/%f $1/new/"
+	if ($?) exit 1
+  $1/objects_in_tree.sh $1/unhybrid null
+	if ($?) exit 1
+	mv $1/unhybrid $1/hist/unhybrid.$VER
+	if ($?) exit 1
+endif
 
 echo ""
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 

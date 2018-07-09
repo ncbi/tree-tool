@@ -816,6 +816,7 @@ public:
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
     //          hybrid2db.sh              executable with parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
     //          db2hybrid.sh              executable with parameter: <Obj>; output: empty or <inter_parent_dissim>\n<parent1>\n<parent2>
+    //          db2unhybrid.sh            executable: output: <Obj> list to move to new/
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)

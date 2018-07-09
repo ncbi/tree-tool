@@ -2,15 +2,16 @@
 
 if ($# != 3) then
   echo "Process #1/hybrid"
-  echo "Output: #1/delete-hybrid"
+  echo "Output: #1/delete-hybrid if #3 exists"
   echo "#1: incremental distance tree directory"
   echo "#2: tree version"
-  echo "#3: List of objects to test hybridness against #1/hybrid, sorted"
+  echo "#3: List of objects to test hybridness against #1/hybrid, sorted | ''"
   exit 1
 endif
 
 
 if (! -z $1/delete-hybrid)  exit 1
+
 
 if (! -e $1/hybrid) exit 0
 
@@ -32,19 +33,23 @@ if ($?) exit 1
 mv $1/hybrid $1/hist/hybrid.$2
 if ($?) exit 1
 
+if ("$3" == "") then
+	rm $1/outlier.add
+  exit 0
+endif
+
 setMinus $3 $1/outlier.add > $1/test.list
 if ($?) exit 1
 
 rm $1/outlier.add
 
 # hybrid-add
-set HYBRIDNESS_MIN = `cat $1/hybridness_min`
 mkdir $1/hybrid
 if ($?) exit 1
 mkdir $1/log
 if ($?) exit 1
 # grid ??
-trav $1/test.list "distTree_inc_new2hybrid.sh %f $1 $HYBRIDNESS_MIN $1/hybrid/%f $1/log/%f"
+trav $1/test.list "distTree_inc_new2hybrid.sh $1 %f $1/hybrid/%f $1/log/%f"
 if ($?) exit 1
 rmdir $1/log
 if ($?) exit 1

@@ -70,3 +70,8 @@ echo "exit 1" > $1/db2hybrid.sh
 if ($?) exit 1
 chmod a+x $1/db2hybrid.sh
 if ($?) exit 1
+
+echo "exit 1" > $1/db2unhybrid.sh
+if ($?) exit 1
+chmod a+x $1/db2unhybrid.sh
+if ($?) exit 1
