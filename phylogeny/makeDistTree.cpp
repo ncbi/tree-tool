@@ -50,7 +50,7 @@ struct ThisApplication : Application
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
-	  addKey ("max_subgraph_iter", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
+	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
@@ -62,8 +62,8 @@ struct ThisApplication : Application
 	  	
 	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");
 	  
-	  addKey ("min_hybridness", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), >= 1", "1.25");
-	  addKey ("find_hybrids", "Find hybrid objects with hybridness > min_hybridness and save them in the indicated file. Line format: hybrid hybridness(>1) parent1 parent2 inter-parent_dissimilarity");
+	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), >= 1", "1.25");
+	  addKey ("find_hybrids", "Find hybrid objects with hybridness > hybridness_min and save them in the tab-delimited indicated file. Line format: hybrid hybridness(>1) parent1 parent2 inter-parent_dissimilarity");
 	  addFlag ("delete_hybrids", "Delete the found hybrid objects");
 
     // Output
@@ -95,7 +95,7 @@ struct ThisApplication : Application
 		const bool   optimize            = getFlag ("optimize");
 		const bool   whole               = getFlag ("whole");
 		const bool   subgraph_fast       = getFlag ("subgraph_fast");
-		const size_t max_subgraph_iter   = str2<size_t> (getArg ("max_subgraph_iter"));
+		const size_t subgraph_iter_max   = str2<size_t> (getArg ("subgraph_iter_max"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
 		const bool   skip_topology       = getFlag ("skip_topology");
@@ -107,7 +107,7 @@ struct ThisApplication : Application
 
 		const string delete_outliers     = getArg ("delete_outliers");
 
-		const Real   hybridness_min      = str2real (getArg ("min_hybridness"));
+		const Real   hybridness_min      = str2real (getArg ("hybridness_min"));
 		const string find_hybrids        = getArg ("find_hybrids");
 		const bool   delete_hybrids      = getFlag ("delete_hybrids");
 		
@@ -141,12 +141,12 @@ struct ThisApplication : Application
     	throw runtime_error ("dist_request exist, but no output_dist");
     IMPLY (whole,             optimize);
     IMPLY (subgraph_fast,     optimize);
-    IMPLY (max_subgraph_iter, optimize);
+    IMPLY (subgraph_iter_max, optimize);
     IMPLY (skip_len,          optimize);
     IMPLY (reinsert,          optimize);
     IMPLY (skip_topology,     optimize);
     IMPLY (subgraph_fast,     ! whole);
-    IMPLY (max_subgraph_iter, ! whole);
+    IMPLY (subgraph_iter_max, ! whole);
     IMPLY (new_only, ! optimize);
     ASSERT (hybridness_min >= 1);
     if (delete_hybrids && find_hybrids. empty ())
@@ -252,14 +252,14 @@ struct ThisApplication : Application
               size_t iter_max = numeric_limits<size_t>::max ();
               if (subgraph_fast)
                 minimize (iter_max, max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std));  // PAR
-              if (max_subgraph_iter)
-              	minimize (iter_max, max_subgraph_iter);
+              if (subgraph_iter_max)
+              	minimize (iter_max, subgraph_iter_max);
               ASSERT (iter_max);
               size_t iter = 0;
             	for (;;)
             	{
 	              iter++;
-            		if (subgraph_fast || max_subgraph_iter)
+            		if (subgraph_fast || subgraph_iter_max)
             		{
             			if (iter > iter_max)
             			  break;
@@ -269,7 +269,7 @@ struct ThisApplication : Application
 	              tree->optimizeLargeSubgraphs ();  
 	              if (tree->absCriterion == 0)
 	              	break;
-	              if (! max_subgraph_iter && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-6)  // PAR
+	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-6)  // PAR
 	              	break;
 	            }
             }
@@ -329,8 +329,11 @@ struct ThisApplication : Application
 		      const ONumber on (f, 3, false);  // PAR
           for (const Leaf* leaf : hybrids)
           {
+          	ASSERT (leaf->hybridness >= hybridness_min);
 						ASSERT (leaf->hybridParentsDissimObjNum < DistTree::dissims_max);
 						const Dissim& dissim = tree->dissims [leaf->hybridParentsDissimObjNum];
+          	ASSERT (dissim. leaf1->hybridness < hybridness_min);
+          	ASSERT (dissim. leaf2->hybridness < hybridness_min);
 						f         << leaf->name 
 				      << '\t' << leaf->hybridness 
 				      << '\t' << dissim. leaf1->name
