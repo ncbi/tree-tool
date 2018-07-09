@@ -5758,7 +5758,7 @@ VectorPtr<Leaf> DistTree::findHybrids (Real outlier_EValue_max,
   	const_cast <Leaf*> (leaf) -> badNeighbors. wipe ();
   }
   
-  return realHybrids << quasiHybrids;
+  return realHybrids;
 }
 
 
