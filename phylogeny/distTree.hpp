@@ -1118,7 +1118,7 @@ public:
     // Output: outlier_min
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
-  VectorPtr<Leaf> findHybrids (Real outlier_EValue_max,
+  VectorPtr<Leaf> findHybrids (Real dissimOutlierEValue_max,
                                Real hybridness_min) const;
     // Output: Leaf::{hybridness,hybridParentsDissimObjNum}
     // Invokes: RealAttr2::normal2outlier() 

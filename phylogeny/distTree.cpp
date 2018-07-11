@@ -4581,7 +4581,7 @@ size_t DistTree::optimizeLenNode ()
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
       const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
-      ASSERT (leReal (absCriterion, absCriterion_old));
+      ASSERT (leReal (absCriterion, absCriterion_old, 1e-4));  // PAR
       prog (absCriterion2str ()); 
     }
   }
@@ -5616,7 +5616,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 
 
 
-VectorPtr<Leaf> DistTree::findHybrids (Real outlier_EValue_max,
+VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	                                     Real hybridness_min) const
 {
 	constexpr Real hybridness_min_init = 1;  // PAR
@@ -5641,7 +5641,7 @@ VectorPtr<Leaf> DistTree::findHybrids (Real outlier_EValue_max,
 	  const Sample sample (ds);	
 	  Normal distr;  // Beta1 ??
 	  // Time: O(p log(p))
-	  outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
+	  outlier_min = criterionAttr->distr2outlier (sample, distr, true, dissimOutlierEValue_max);
 	}
 	if (isNan (outlier_min))
 		return VectorPtr<Leaf> ();
