@@ -22,8 +22,9 @@ while (1)
   echo ""
   echo ""
   distTree_inc_new.sh $1 $2 
-  if ($? == 2) break
-  if ($?) exit 1
+  set S = $?
+  if ($S == 2) break
+  if ($S) exit 1
 end
   
 

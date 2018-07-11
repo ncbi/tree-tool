@@ -1,9 +1,10 @@
 #!/bin/csh -f
 
-if ($# != 2) then
+if ($# != 3) then
   echo "Initialize an incremental distance tree"
   echo "#1: Output directory"
-  echo "#2: grid_min (> 0)"
+  echo "#2: hybridness_min (> 1)"
+  echo "#3: grid_min (> 0)"
   exit 1
 endif
 
@@ -40,7 +41,10 @@ if ($?) exit 1
 mkdir $1/hist
 if ($?) exit 1
 
-echo $2 > $1/grid_min
+echo $2 > $1/hybridness_min
+if ($?) exit 1
+
+echo $3 > $1/grid_min
 if ($?) exit 1
 
 cp /dev/null $1/runlog

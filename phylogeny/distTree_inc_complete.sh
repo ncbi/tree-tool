@@ -38,6 +38,7 @@ makeDistTree  -threads 5  \
   -optimize  \
   -find_hybrids $1/hybrid  -delete_hybrids  -hybridness_min $HYBRIDNESS_MIN \
   -output_tree $1/tree \
+  -output_feature_tree $1/_feature_tree \
   > $1/hist/makeDistTree.1
 if ($?) exit 1
 rm $1/data.dm
@@ -50,3 +51,18 @@ if ($?) exit 1
 distTree_inc_hybrid.sh $1 1 $2
 if ($?) exit 1
 
+distTree_inc_unhybrid.sh $1 1
+if ($?) exit 1
+
+
+if (-e $1/phen) then
+  echo ""
+  echo "Quality ..."
+	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.1
+	if ($?) exit 1
+	rm $1/_core
+	rm $1/_qual
+	grep ' !' $1/hist/makeFeatureTree.1
+	if ($?) exit 1
+endif
+rm $1/_feature_tree
