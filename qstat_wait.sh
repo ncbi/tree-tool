@@ -22,7 +22,7 @@ while (1)
   @ N = $N + 1
   if ($N > 200) then  # PAR
     set N = 0
-    set L = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rT]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`
+    set L = `qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rTt]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`
     echo "Re-submitting $#L grid jobs ..."
     while ($#L)
       if ($1) then
