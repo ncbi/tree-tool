@@ -5616,13 +5616,44 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 
 
 
+namespace
+{
+
+struct RequestCandidate
+{
+	const Leaf* leaf1 {nullptr};
+	const Leaf* leaf2 {nullptr};
+	bool inDissims {false};
+	
+	RequestCandidate (const Leaf* leaf1_arg,
+	                  const Leaf* leaf2_arg)
+	  : leaf1 (leaf1_arg)
+	  , leaf2 (leaf2_arg)
+	  {}
+	RequestCandidate ()
+	  {}
+	  
+	bool operator< (const RequestCandidate &other) const
+    { return Pair<const Leaf*> (leaf1, leaf2) < Pair<const Leaf*> (other. leaf1, other. leaf2); }
+  bool operator== (const RequestCandidate &other) const
+    { return Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2); }
+};
+
+}
+
+
+
 VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
-	                                     Real hybridness_min) const
+	                                     Real hybridness_min,
+	                                     VectorPtr<Leaf> &quasiHybrids,
+	                                     Vector<Pair<const Leaf*>> &dissimRequests) const
 {
 	constexpr Real hybridness_min_init = 1;  // PAR
 		
 	ASSERT (optimizable ());
 	ASSERT (hybridness_min > hybridness_min_init);
+	ASSERT (quasiHybrids. empty ());
+	ASSERT (dissimRequests. empty ());
 	
 
 	Real outlier_min = NAN;
@@ -5675,14 +5706,14 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 
 
   VectorPtr<Leaf> realHybrids;
-  VectorPtr<Leaf> quasiHybrids;
+  VectorPtr<Leaf> quasiHybrids_;
   size_t iter = 0;
   for (;;)
   {
   	iter++;
   	
 	  realHybrids. sort ();
-	  quasiHybrids. sort ();
+	  quasiHybrids_. sort ();
 	  FFOR (size_t, objNum, dissims. size ())
 		{
 			const Dissim& dissim = dissims [objNum];
@@ -5693,14 +5724,14 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 				continue;
 			if (realHybrids. containsFast (dissim. leaf2))
 				continue;
-			if (quasiHybrids. containsFast (dissim. leaf1))
+			if (quasiHybrids_. containsFast (dissim. leaf1))
 				continue;
-			if (quasiHybrids. containsFast (dissim. leaf2))
+			if (quasiHybrids_. containsFast (dissim. leaf2))
 				continue;
 	  	for (const Leaf::BadNeighbor& hybrid : dissim. leaf1->badNeighbors)
 	  	{
 	    	Leaf* hybridLeaf = const_cast <Leaf*> (hybrid. leaf);
-	    	if (! quasiHybrids. empty () && ! quasiHybrids. containsFast (hybridLeaf))
+	    	if (! quasiHybrids_. empty () && ! quasiHybrids_. containsFast (hybridLeaf))
 	    		continue;
 	    	const size_t index = hybridLeaf->badNeighbors. binSearch (Leaf::BadNeighbor {dissim. leaf2, NAN});
 	    	if (index == NO_INDEX)
@@ -5712,7 +5743,7 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	  // After 1st iteration: Leaf::hybridness is an upper bound
 	
 	  realHybrids. clear ();
-	  quasiHybrids. clear ();
+	  quasiHybrids_. clear ();
 	  for (const auto& it : name2leaf)
 	  {
 	  	const Leaf* leaf = it. second;
@@ -5726,24 +5757,16 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 				 )
 				realHybrids << leaf;
 			else
-				quasiHybrids << leaf;
+			{
+				quasiHybrids  << leaf;
+				quasiHybrids_ << leaf;
+			}
 	  }
 	  
-	#if 0
-	  cout << "realHybrids: ";
-	  for (const Leaf* leaf : realHybrids)
-	  	cout << ' ' << leaf->name;
-	  cout << endl;
-	  cout << "quasiHybrids: ";
-	  for (const Leaf* leaf : quasiHybrids)
-	  	cout << ' ' << leaf->name;
-	  cout << endl;
-	#endif
-	  
-	  if (quasiHybrids. empty ())
+	  if (quasiHybrids_. empty ())
 	  	break;
 	  	
-	  for (const Leaf* leaf : quasiHybrids)
+	  for (const Leaf* leaf : quasiHybrids_)
 		{
 	  	const_cast <Leaf*> (leaf) -> hybridness = hybridness_min_init;  
 	  	const_cast <Leaf*> (leaf) -> hybridParentsDissimObjNum = dissims_max;		
@@ -5752,12 +5775,71 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	ASSERT (iter <= 2);
 
   
+  realHybrids. sort ();
+  quasiHybrids. sort ();
+  quasiHybrids. uniq ();
+  quasiHybrids. setMinus (realHybrids);
+  
+  
+  Vector<RequestCandidate> requests;  requests. reserve (name2leaf. size () / 10); // PAR
+  LcaBuffer buf;
+  for (const auto& it : name2leaf)
+  {
+  	const Leaf* leaf = it. second;
+  	if (leaf->badNeighbors. size () <= 1)
+  		continue;
+  	if (realHybrids. containsFast (leaf))
+  		continue;
+  	Real hybridness_tree = hybridness_min;
+  	RequestCandidate req;
+  	for (const Leaf::BadNeighbor& badNeighbor1 : leaf->badNeighbors)
+	  	for (const Leaf::BadNeighbor& badNeighbor2 : leaf->badNeighbors)
+	  	{
+	  		if (& badNeighbor1 == & badNeighbor2)
+	  			break;
+		    const TreeNode* lca_ = nullptr;
+		    const VectorPtr<TreeNode>& path = getPath ( badNeighbor1. leaf
+																						      , badNeighbor2. leaf
+																                  , nullptr
+																                  , lca_
+																                  , buf
+																                  );
+		    ASSERT (! path. empty ());
+		    const Real hybridness = path2prediction (path) / (badNeighbor1. target + badNeighbor2. target);
+		    if (maximize (hybridness_tree, hybridness))
+		    {
+		    	req. leaf1 = badNeighbor1. leaf;
+		    	req. leaf2 = badNeighbor2. leaf;
+		    }
+	    }
+	  if (req. leaf1)
+	  	requests << req;
+  }
+  if (verbose ())
+    cout << "# Requests: " << requests. size () << endl;  
+  for (RequestCandidate& req : requests)
+  	if (req. leaf1->name > req. leaf2->name)
+  		swap (req. leaf1, req. leaf2);
+  requests. sort ();
+  for (const Dissim& dissim : dissims)  	
+  {
+  	const RequestCandidate req (dissim. leaf1, dissim. leaf2);
+  	const size_t index = requests. binSearch (req);
+  	if (index != NO_INDEX)
+  		requests [index]. inDissims = true;
+  }
+  for (const RequestCandidate& req : requests)
+  	if (! req. inDissims)
+  		dissimRequests << Pair<const Leaf*> (req. leaf1, req. leaf2);
+    
+  
   for (const auto& it : name2leaf)
   {
   	const Leaf* leaf = it. second;
   	const_cast <Leaf*> (leaf) -> badNeighbors. wipe ();
   }
   
+
   return realHybrids;
 }
 

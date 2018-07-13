@@ -208,6 +208,7 @@ struct ThisApplication : Application
     }
 
 
+    Vector<Pair<const Leaf*>> hybridDissimRequests;
     if (tree->optimizable ())
     {
       if (optimize)
@@ -322,7 +323,8 @@ struct ThisApplication : Application
    
       if (! find_hybrids. empty ())
       {
-        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.1 /*0.01 ??*/, hybridness_min));  // PAR
+      	VectorPtr<Leaf> quasiHybrids;      	
+        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.1, hybridness_min, quasiHybrids, hybridDissimRequests));  // PAR
 	      cout << "# Hybrids: " << hybrids. size () << endl;
         {
           OFStream f (find_hybrids);
@@ -332,16 +334,22 @@ struct ThisApplication : Application
           	ASSERT (leaf->hybridness >= hybridness_min);
 						ASSERT (leaf->hybridParentsDissimObjNum < DistTree::dissims_max);
 						const Dissim& dissim = tree->dissims [leaf->hybridParentsDissimObjNum];
-          	ASSERT (dissim. leaf1->hybridness < hybridness_min);
-          	ASSERT (dissim. leaf2->hybridness < hybridness_min);
+						ASSERT (dissim. leaf1->hybridness < hybridness_min);
+						ASSERT (dissim. leaf2->hybridness < hybridness_min);
 						f         << leaf->name 
-				      << '\t' << leaf->hybridness 
-				      << '\t' << dissim. leaf1->name
-				      << '\t' << dissim. leaf2->name
-				      << '\t' << dissim. target
-				      << endl;
+					    << '\t' << leaf->hybridness 
+					    << '\t' << dissim. leaf1->name
+						  << '\t' << dissim. leaf2->name
+						  << '\t' << dissim. target
+						  << endl;
           }
         }
+	      cout << "# Quasi-hybrids: " << quasiHybrids. size () << endl;
+	    #if 0
+        for (const Leaf* leaf : quasiHybrids)
+        	cout << leaf->name << endl;
+      #endif
+	      cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests. size () << endl;
 	      if (delete_hybrids)
         {
           cout << "Deleting ..." << endl;
@@ -549,8 +557,8 @@ struct ThisApplication : Application
     if (! dissim_request. empty ())
     {
       cout << endl << "Finding missing leaf pairs ..." << endl;      
-      const Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
-      cout << "# Ancestor-based requests: " << pairs. size () << endl;
+      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
+      cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
 
     #if 0
       // Needed if closest objects are not available
@@ -580,12 +588,13 @@ struct ThisApplication : Application
         cout << "# Depth-based requests: " << depthPairs. size () << endl;
         pairs << depthPairs;  // --> unionFast () ??        
       }
-      
+    #endif
+    
+      pairs << hybridDissimRequests;      
       pairs. sort ();
       pairs. uniq ();      
       
       cout << "# Total requests: " << pairs. size () << endl;
-    #endif
       {
         OFStream f (dissim_request);      
         for (const auto& p : pairs)

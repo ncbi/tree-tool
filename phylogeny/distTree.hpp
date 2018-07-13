@@ -384,7 +384,7 @@ private:
     // Output: discernible = false
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
-public:
+public:	
 };
 
 
@@ -1119,10 +1119,15 @@ public:
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
   VectorPtr<Leaf> findHybrids (Real dissimOutlierEValue_max,
-                               Real hybridness_min) const;
-    // Output: Leaf::{hybridness,hybridParentsDissimObjNum}
+                               Real hybridness_min,
+	                             VectorPtr<Leaf> &quasiHybrids,
+	                             Vector<Pair<const Leaf*>> &dissimRequests) const;
+    // Return: hybridization parents are not hybrid
+    // Output: quasiHybrids: one of hybridization parents is hybrid
+    //         dissimRequests
+    //         Leaf::{hybridness,hybridParentsDissimObjNum}
     // Invokes: RealAttr2::normal2outlier() 
-    // Time: ~ O(n log^2(n))
+    // Time: ~ O(n log^3(n))
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode;:getReprLeaf()
 #if 0
