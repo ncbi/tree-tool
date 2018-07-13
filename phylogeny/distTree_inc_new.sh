@@ -193,8 +193,9 @@ $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
 
 echo ""
-distTree_inc_hybrid.sh $1 $VER $1/leaf.list 
+distTree_inc_hybrid.sh $1 $VER ""
 if ($?) exit 1
+  # was: X X $1/leaf.list 
 rm $1/leaf.list
 
 distTree_inc_unhybrid.sh $1 $VER 
