@@ -92,7 +92,7 @@ if ($?) exit 1
 
 set REQ = `ls $1/search | wc -l`
 if ($REQ[1] > 20) then  # PAR
-	trav  -step 1  $1/search "$QSUB_5 -N j%n %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
+	trav  -step 1  $1/search "$QSUB_5,ul1=30  -N j%n  %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
 	if ($?) exit 1  
 	qstat_wait.sh 1
 	if ($?) exit 1
