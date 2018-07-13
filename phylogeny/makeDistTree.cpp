@@ -323,8 +323,7 @@ struct ThisApplication : Application
    
       if (! find_hybrids. empty ())
       {
-      	VectorPtr<Leaf> quasiHybrids;      	
-        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.1, hybridness_min, quasiHybrids, hybridDissimRequests));  // PAR
+        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.1, hybridness_min, hybridDissimRequests));  // PAR
 	      cout << "# Hybrids: " << hybrids. size () << endl;
         {
           OFStream f (find_hybrids);
@@ -334,8 +333,8 @@ struct ThisApplication : Application
           	ASSERT (leaf->hybridness >= hybridness_min);
 						ASSERT (leaf->hybridParentsDissimObjNum < DistTree::dissims_max);
 						const Dissim& dissim = tree->dissims [leaf->hybridParentsDissimObjNum];
-						ASSERT (dissim. leaf1->hybridness < hybridness_min);
-						ASSERT (dissim. leaf2->hybridness < hybridness_min);
+						ASSERT (! hybrids. containsFast (dissim. leaf1));
+						ASSERT (! hybrids. containsFast (dissim. leaf2));
 						f         << leaf->name 
 					    << '\t' << leaf->hybridness 
 					    << '\t' << dissim. leaf1->name
@@ -344,11 +343,6 @@ struct ThisApplication : Application
 						  << endl;
           }
         }
-	      cout << "# Quasi-hybrids: " << quasiHybrids. size () << endl;
-	    #if 0
-        for (const Leaf* leaf : quasiHybrids)
-        	cout << leaf->name << endl;
-      #endif
 	      cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests. size () << endl;
 	      if (delete_hybrids)
         {
@@ -592,9 +586,8 @@ struct ThisApplication : Application
     
       pairs << hybridDissimRequests;      
       pairs. sort ();
-      pairs. uniq ();      
-      
-      cout << "# Total requests: " << pairs. size () << endl;
+      pairs. uniq ();            
+      cout << "# Total dissimilarity requests: " << pairs. size () << endl;
       {
         OFStream f (dissim_request);      
         for (const auto& p : pairs)

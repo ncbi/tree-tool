@@ -1120,11 +1120,9 @@ public:
     // Time: O(n log(n))
   VectorPtr<Leaf> findHybrids (Real dissimOutlierEValue_max,
                                Real hybridness_min,
-	                             VectorPtr<Leaf> &quasiHybrids,
 	                             Vector<Pair<const Leaf*>> &dissimRequests) const;
-    // Return: hybridization parents are not hybrid
-    // Output: quasiHybrids: one of hybridization parents is hybrid
-    //         dissimRequests
+    // Return: hybridization parents are not hybrid; sort()'ed
+    // Output: dissimRequests
     //         Leaf::{hybridness,hybridParentsDissimObjNum}
     // Invokes: RealAttr2::normal2outlier() 
     // Time: ~ O(n log^3(n))

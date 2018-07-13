@@ -92,6 +92,7 @@ echo "prot-identical_comm: subgraphs, delete ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
 if ($?) exit 1
 
+
 echo ""
 echo ""
 echo "Saccharomyces hybrids ..."
@@ -119,6 +120,7 @@ diff Saccharomyces.hybrid.all data/Saccharomyces.hybrid.all
 if ($?) exit 1
 rm Saccharomyces.hybrid.all
 rm Saccharomyces.dm
+
 
 echo ""
 echo ""

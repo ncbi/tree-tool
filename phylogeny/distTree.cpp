@@ -1045,7 +1045,7 @@ void Subgraph::node2subPaths (const DTNode* node)
 
 
 void Subgraph::area2subPaths ()
-// Parameter sparse: Use O(boundary.size()) dissimilarities, use getReprLeaf()'s like in sparsing ??
+// Approximation: parameter sparse: Use O(boundary.size()) dissimilarities, use getReprLeaf()'s like in sparsing ??
 {
   ASSERT (subPaths. empty ());
   bool first = true;
@@ -5110,7 +5110,7 @@ void DistTree::optimizeLargeSubgraphs ()
 			  // Top subgraph
 			  mainImage. processLarge (nullptr, possibleBoundary);
 			}
-			// Image::apply() can be done by Threads if in the order of cuts and for sibling subtrees ??!
+			// Image::apply() can be done by Threads if it is done in the order of cuts and for sibling subtrees ??!
 			{
 				Progress prog (images. size () + 1);
 				Unverbose unv;
@@ -5639,21 +5639,36 @@ struct RequestCandidate
     { return Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2); }
 };
 
+
+
+struct LeafNode : DiGraph::Node
+{
+	const Leaf* leaf;
+	
+	LeafNode (DiGraph &graph_arg,
+	          const Leaf* leaf_arg)
+	  : DiGraph::Node (graph_arg)
+	  , leaf (leaf_arg)
+	  { ASSERT (leaf); }
+
+  string getName () const final
+    { return leaf->name; }
+};
+
+
 }
 
 
 
 VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	                                     Real hybridness_min,
-	                                     VectorPtr<Leaf> &quasiHybrids,
 	                                     Vector<Pair<const Leaf*>> &dissimRequests) const
 {
-	constexpr Real hybridness_min_init = 1;  // PAR
-		
 	ASSERT (optimizable ());
-	ASSERT (hybridness_min > hybridness_min_init);
-	ASSERT (quasiHybrids. empty ());
 	ASSERT (dissimRequests. empty ());
+
+	constexpr Real hybridness_min_init = 1;  // PAR		
+	ASSERT (hybridness_min > hybridness_min_init);
 	
 
 	Real outlier_min = NAN;
@@ -5706,80 +5721,157 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 
 
   VectorPtr<Leaf> realHybrids;
-  VectorPtr<Leaf> quasiHybrids_;
-  size_t iter = 0;
-  for (;;)
   {
-  	iter++;
-  	
-	  realHybrids. sort ();
-	  quasiHybrids_. sort ();
-	  FFOR (size_t, objNum, dissims. size ())
-		{
-			const Dissim& dissim = dissims [objNum];
-			if (! dissim. mult)
-				continue;
-			ASSERT (dissim. target > 0);
-			if (realHybrids. containsFast (dissim. leaf1))
-				continue;
-			if (realHybrids. containsFast (dissim. leaf2))
-				continue;
-			if (quasiHybrids_. containsFast (dissim. leaf1))
-				continue;
-			if (quasiHybrids_. containsFast (dissim. leaf2))
-				continue;
-	  	for (const Leaf::BadNeighbor& hybrid : dissim. leaf1->badNeighbors)
-	  	{
-	    	Leaf* hybridLeaf = const_cast <Leaf*> (hybrid. leaf);
-	    	if (! quasiHybrids_. empty () && ! quasiHybrids_. containsFast (hybridLeaf))
-	    		continue;
-	    	const size_t index = hybridLeaf->badNeighbors. binSearch (Leaf::BadNeighbor {dissim. leaf2, NAN});
-	    	if (index == NO_INDEX)
-	    		continue;
-	    	if (maximize (hybridLeaf->hybridness, dissim. target / (hybrid. target + hybridLeaf->badNeighbors [index]. target)))
-	    		hybridLeaf->hybridParentsDissimObjNum = (uint) objNum;
-	    }
-	  }
-	  // After 1st iteration: Leaf::hybridness is an upper bound
-	
-	  realHybrids. clear ();
-	  quasiHybrids_. clear ();
-	  for (const auto& it : name2leaf)
+	  VectorPtr<Leaf> quasiHybrids;
+	  // pass = 0: all Leaf's --> realHybrids, quasiHybrids
+	  // pass = 1: process quasiHybrids --> realHybrids
+	  // pass = 2: process quasiHybrids
+	  FOR (size_t, pass, 3)
 	  {
-	  	const Leaf* leaf = it. second;
-	  	ASSERT (leaf->hybridness >= hybridness_min_init);
-	  	if (leaf->hybridness < hybridness_min)  
-	  		continue;
-			ASSERT (leaf->hybridParentsDissimObjNum < dissims_max);
-			const Dissim& dissim = dissims [leaf->hybridParentsDissimObjNum];
-			if (   dissim. leaf1->hybridness < hybridness_min
-				  && dissim. leaf2->hybridness < hybridness_min
-				 )
-				realHybrids << leaf;
-			else
+		  FFOR (size_t, objNum, dissims. size ())
 			{
-				quasiHybrids  << leaf;
-				quasiHybrids_ << leaf;
-			}
-	  }
-	  
-	  if (quasiHybrids_. empty ())
-	  	break;
-	  	
-	  for (const Leaf* leaf : quasiHybrids_)
+				const Dissim& dissim = dissims [objNum];
+				if (! dissim. mult)
+					continue;
+				ASSERT (dissim. target > 0);
+				if (realHybrids. containsFast (dissim. leaf1))
+					continue;
+				if (realHybrids. containsFast (dissim. leaf2))
+					continue;
+				if (pass < 2 && quasiHybrids. containsFast (dissim. leaf1))
+					continue;
+				if (pass < 2 && quasiHybrids. containsFast (dissim. leaf2))
+					continue;
+		  	for (const Leaf::BadNeighbor& hybrid : dissim. leaf1->badNeighbors)
+		  	{
+		    	Leaf* hybridLeaf = const_cast <Leaf*> (hybrid. leaf);
+		    	if (! quasiHybrids. empty () && ! quasiHybrids. containsFast (hybridLeaf))
+		    		continue;
+		    	const size_t index = hybridLeaf->badNeighbors. binSearch (Leaf::BadNeighbor {dissim. leaf2, NAN});
+		    	if (index == NO_INDEX)
+		    		continue;
+		    	if (maximize (hybridLeaf->hybridness, dissim. target / (hybrid. target + hybridLeaf->badNeighbors [index]. target)))
+		    		hybridLeaf->hybridParentsDissimObjNum = (uint) objNum;
+		    }
+		  }
+		  // After 1st iteration: Leaf::hybridness is an upper bound
+		
+	  #ifndef NDEBUG
+	    const size_t realHybridSize_old = realHybrids. size ();
+	  #endif
+		  realHybrids. clear ();
+		  if (pass != 1)
+		  	quasiHybrids. clear ();
+		  for (const auto& it : name2leaf)
+		  {
+		  	const Leaf* leaf = it. second;
+		  	ASSERT (leaf->hybridness >= hybridness_min_init);
+		  	if (leaf->hybridness < hybridness_min)  
+		  		continue;
+				ASSERT (leaf->hybridParentsDissimObjNum < dissims_max);
+				const Dissim& dissim = dissims [leaf->hybridParentsDissimObjNum];
+				if (   dissim. leaf1->hybridness < hybridness_min
+					  && dissim. leaf2->hybridness < hybridness_min
+					 )
+					realHybrids << leaf;
+				else 
+					if (pass != 1)
+					  quasiHybrids << leaf;
+		  }
+		  ASSERT (realHybridSize_old <= realHybrids. size ());
+		  
+		  realHybrids. sort ();
+		  quasiHybrids. sort ();
+		  
+		  if (pass == 1)
+			  quasiHybrids. setMinus (realHybrids);
+		  		  	  
+		  if (quasiHybrids. empty ())
+		  	break;	  	
+		  if (pass == 2)
+		  	break;
+	
+		  for (const Leaf* leaf : quasiHybrids)
+			{
+		  	const_cast <Leaf*> (leaf) -> hybridness = hybridness_min_init;  
+		  	const_cast <Leaf*> (leaf) -> hybridParentsDissimObjNum = dissims_max;		
+		  }
+		}
+		ASSERT (realHybrids. isUniq ());
+		ASSERT (quasiHybrids. isUniq ());
+		
+		
+		// Append: realHybrids
+		if (! quasiHybrids. empty ())
 		{
-	  	const_cast <Leaf*> (leaf) -> hybridness = hybridness_min_init;  
-	  	const_cast <Leaf*> (leaf) -> hybridParentsDissimObjNum = dissims_max;		
-	  }
+			DiGraph g;
+			map <const Leaf*, LeafNode*> leaf2node;
+		  for (const Leaf* leaf : quasiHybrids)
+			{
+				ASSERT (! realHybrids. containsFast (leaf));
+				auto node = new LeafNode (g, leaf);
+				leaf2node [leaf] = node;
+			}
+			ASSERT (g. nodes. size () == leaf2node. size ());
+		  for (const Leaf* leaf : quasiHybrids)
+			{
+				auto node1 = leaf2node [leaf];
+				ASSERT (node1);
+				const Dissim& dissim = dissims [leaf->hybridParentsDissimObjNum];
+				ASSERT (dissim. leaf1 != dissim. leaf2);
+				ASSERT (! realHybrids. containsFast (dissim. leaf1));
+				if (quasiHybrids. containsFast (dissim. leaf1))
+				{
+					auto node2 = leaf2node [dissim. leaf1];
+					ASSERT (node2);
+					new DiGraph::Arc (node1, node2);
+				}
+				ASSERT (! realHybrids. containsFast (dissim. leaf2));
+				if (quasiHybrids. containsFast (dissim. leaf2))
+				{
+					auto node2 = leaf2node [dissim. leaf2];
+					ASSERT (node2);
+					new DiGraph::Arc (node1, node2);
+				}
+				ASSERT (! node1->arcs [true]. empty ());
+				if (verbose ())
+				  cout << node1->leaf->name << ' ' << dissim. leaf1->name << ' ' << dissim. leaf2->name << endl;  
+			}
+			ASSERT (g. nodes. size () > 1);
+			
+			while (! g. nodes. empty ())
+			{
+				size_t degree_max = 0;
+				const LeafNode* node_best = nullptr;
+			  for (const DiGraph::Node* node_ : g. nodes)
+			  {
+			  	const LeafNode* node = static_cast <const LeafNode*> (node_);
+			  	if (maximize (degree_max, node->getDegree ()) || ! degree_max)
+			  		node_best = node;
+			  }
+				ASSERT (node_best);
+				realHybrids << node_best->leaf;
+				// qc
+				{
+					const Dissim& dissim = dissims [node_best->leaf->hybridParentsDissimObjNum];
+					ASSERT (! realHybrids. contains (dissim. leaf1));
+					ASSERT (! realHybrids. contains (dissim. leaf2));
+				}
+				VectorPtr<DiGraph::Node> neighbors (node_best->getNeighborhood ());
+				neighbors. sort ();
+				neighbors. uniq ();
+				for (const DiGraph::Node* neighbor : neighbors)
+				{
+					ASSERT (neighbor != node_best);
+					delete neighbor;
+				}
+				delete node_best;
+			}
+			
+			realHybrids. sort ();
+		}
 	}
-	ASSERT (iter <= 2);
 
-  
-  realHybrids. sort ();
-  quasiHybrids. sort ();
-  quasiHybrids. uniq ();
-  quasiHybrids. setMinus (realHybrids);
-  
   
   Vector<RequestCandidate> requests;  requests. reserve (name2leaf. size () / 10); // PAR
   LcaBuffer buf;
@@ -5821,6 +5913,7 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
   	if (req. leaf1->name > req. leaf2->name)
   		swap (req. leaf1, req. leaf2);
   requests. sort ();
+  requests. uniq ();
   for (const Dissim& dissim : dissims)  	
   {
   	const RequestCandidate req (dissim. leaf1, dissim. leaf2);
