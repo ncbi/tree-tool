@@ -90,11 +90,15 @@ struct DiGraph : Root
     bool isIncident (const Node* n,
                      bool out) const;
       // Return: n is among arcs[out]->node[out]
+    size_t getDegree () const
+      { return   arcs [false]. size () 
+      	       + arcs [true].  size (); 
+      }
     VectorPtr<Node> getNeighborhood (bool out) const;
     VectorPtr<Node> getNeighborhood () const
       { return getNeighborhood (false) << getNeighborhood (true); }
-      // Return: !contains(this)
-    VectorPtr<DiGraph::Node> getChildren () const
+      // Return: may have duplicates
+    VectorPtr<Node> getChildren () const
       { return getNeighborhood (false); }
     void deleteNeighborhood (bool out);
   private:
@@ -218,7 +222,7 @@ public:
     // Input: out: false - roots
     //             true  - leaves
   const Node* getRoot (bool out) const
-		{ const VectorPtr<DiGraph::Node> ends (getEnds (out));
+		{ const VectorPtr<Node> ends (getEnds (out));
 			if (ends. size () == 1)
 			  return * ends. begin ();
 			return nullptr;

@@ -24,8 +24,8 @@ struct City : DiGraph::Node
     , name (name_arg)
     {}
 
-  void saveContent (ostream &os) const final
-    { os << ' ' << name; }
+  string getName () const final
+    { return name; }
 };
 
 

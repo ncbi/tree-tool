@@ -294,8 +294,9 @@ void DiGraph::Arc::attach (Node* start,
 
 	for (const bool b : {false, true})
   {
-    node [b] -> arcs [! b]. push_back (this);
-    arcsIt [b] = node [b] -> arcs [! b]. end ();
+  	auto& arcs = node [b] -> arcs [! b];
+    arcs. push_back (this);
+    arcsIt [b] = arcs. end ();
     arcsIt [b] --;
   }
 }
