@@ -18,7 +18,14 @@ struct ThisApplication : Application
     : Application ("Apply <command> to all items")
   	{
   	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory), or a natural number");
-  	  addPositional ("command", "Text with special symbols: \"%d\" = <items>, \"%f\" - an item, \"%n\" - sequential number, \"%q\" - single quote, \"%Q\" - double quote, \"%D\" - $");
+  	  addPositional ("command", "Text with special symbols: \
+\"%d\" = <items>, \
+\"%f\" - an item, \
+\"%n\" - sequential number, \
+\"%q\" - single quote, \
+\"%Q\" - double quote, \
+\"%D\" - $, \
+\"%G\" - `");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
@@ -63,6 +70,7 @@ struct ThisApplication : Application
     replaceStr (cmd, "%q", "'");  
     replaceStr (cmd, "%Q", "\"");  
     replaceStr (cmd, "%D", "$");  
+    replaceStr (cmd, "%G", "`");
 	
 
     Common_sp::AutoPtr<OFStream> errors;
