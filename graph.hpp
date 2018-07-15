@@ -337,6 +337,8 @@ struct Tree : DiGraph
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
 		size_t getInteriorHeight () const;
+		double getDistanceHeight () const;
+		  // Invokes: getParentDistance()
     void getBifurcatingInteriorBranching (size_t &bifurcatingInteriorNodes,
                                           size_t &branches) const;
       // Update: bifurcatingInteriorNodes, branches

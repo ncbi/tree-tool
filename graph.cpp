@@ -769,6 +769,21 @@ size_t Tree::TreeNode::getInteriorHeight () const
 
 
 
+double Tree::TreeNode::getDistanceHeight () const
+{
+  double n = 0;
+	for (const Arc* arc : arcs [false])
+	{
+		const TreeNode* child = static_cast <const TreeNode*> (arc->node [false]);
+		const double parentDistance = child->getParentDistance ();
+		ASSERT (parentDistance >= 0);
+	  maximize (n, parentDistance + child->getDistanceHeight ());
+	}
+	return n;
+}
+
+
+
 void Tree::TreeNode::getBifurcatingInteriorBranching (size_t &bifurcatingInteriorNodes,
                                                       size_t &branches) const
 {
