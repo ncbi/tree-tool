@@ -5813,6 +5813,7 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 				leaf2node [leaf] = node;
 			}
 			ASSERT (g. nodes. size () == leaf2node. size ());
+			ASSERT (g. nodes. size () == quasiHybrids. size ());
 		  for (const Leaf* leaf : quasiHybrids)
 			{
 				auto node1 = leaf2node [leaf];
