@@ -203,11 +203,12 @@ struct ThisApplication : Application
           f. print (out);
         }
       }
-      cout << "# Paraphyletic features:          " << paraphyletics   << " ^" << endl;  
-      cout << "# Non-paraphyletic features:      " << nonParaphyletics << " V" << endl;  
+      const ONumber on (cout, 2, false);  // PAR
+      cout << "# Paraphyletic features:          " << paraphyletics    << " (" << (Real) paraphyletics    / (Real) genomes << ") ^" << endl;  
+      cout << "# Non-paraphyletic features:      " << nonParaphyletics << " (" << (Real) nonParaphyletics / (Real) genomes << ") V" << endl;  
     //cout << "# Non-paraphyletic gains:         " << gains   << " v" << endl;  
     //cout << "# Losses:                         " << losses  << " v" << endl;  
-      cout << "# Non-paraphyletic disagreements: " << extraMutations << " V !" << endl;  
+      cout << "# Non-paraphyletic disagreements: " << extraMutations   << " (" << (Real) extraMutations   / (Real) genomes << ") V !" << endl;  
       cout << "# Common features:                " << commons << endl;
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
