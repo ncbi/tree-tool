@@ -21,7 +21,7 @@ set RATE = 0.01   # PAR
 if (1) then   
 date
 echo ""
-top -b -n 1 | head -20
+top -b -n 1 | head -15
 echo ""
 
 
@@ -66,7 +66,7 @@ echo "To add at this step: $INC"
 
 ls $1/new/ > $1/new.list
 if ($?) exit 1
-if (-z $1/new.list && -z $1/delete-hybrid && ! -e $1/hist/hybrid.$VER_OLD) then
+if (-z $1/new.list) then
   rm $1/new.list
   exit 2
 endif
@@ -101,7 +101,7 @@ else
 	if ($?) exit 1  
 endif
 
-distTree_inc_hybrid.sh $1 $VER "" 
+distTree_inc_hybrid.sh $1 $VER 
 if ($?) exit 1
 if (-e $1/hist/hybrid.$VER)  mv $1/hist/hybrid.$VER $1/hist/hybrid-new.$VER
 
@@ -159,7 +159,7 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 44  # PAR 
+  set VER = 250  # PAR 
 endif
 
 
@@ -167,15 +167,15 @@ endif
 set HYBRIDNESS_MIN = `cat $1/hybridness_min`
 makeDistTree $QC  -threads 15 \
   -data $1/ \
-  -delete $1/delete-hybrid \
-  -optimize  -skip_len  -subgraph_iter_max 1 \
+  -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
-  -find_hybrids $1/hybrid  -delete_hybrids  -hybridness_min $HYBRIDNESS_MIN \
+  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
 if ($?) exit 1
   # -threads 20  # bad_alloc 
+  # -subgraph_iter_max 1
 mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
@@ -183,20 +183,15 @@ if ($?) exit 1
 mv $1/tree.new $1/tree
 if ($?) exit 1
 
-mv $1/delete-hybrid $1/hist/delete-hybrid.$VER
-if ($?) exit 1
-cp /dev/null $1/delete-hybrid
-
 cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
 if ($?) exit 1
 $1/objects_in_tree.sh $1/leaf.list 1
 if ($?) exit 1
+rm $1/leaf.list
 
 echo ""
-distTree_inc_hybrid.sh $1 $VER ""
+distTree_inc_hybrid.sh $1 $VER 
 if ($?) exit 1
-  # was: X X $1/leaf.list 
-rm $1/leaf.list
 
 distTree_inc_unhybrid.sh $1 $VER 
 if ($?) exit 1

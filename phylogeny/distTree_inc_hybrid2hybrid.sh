@@ -32,9 +32,7 @@ while (1)
 	if ($? == 0) break
 	sleep 30
 end
-sort $tmp.objs > $tmp.objs1
-if ($?) exit 1
-mv $tmp.objs1 $tmp.objs
+sort.sh $tmp.objs 
 if ($?) exit 1
 
 

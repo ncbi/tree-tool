@@ -1,7 +1,7 @@
 #!/bin/csh -f
 
 if ($# != 4) then
-  echo "Print hybridness information of a genome in the format of makeDistTree if it is hybrid"
+  echo "Print hybridness information of an object in the format of makeDistTree if it is hybrid"
   echo "#1: Incremental distance tree directory"
   echo "#2: Object id"
   echo "#3: Output file"
@@ -17,9 +17,6 @@ set LOG = $4
 
 
 set tmp = `mktemp`
-
-
-set HYBRIDNESS_MIN = `cat $INC/hybridness_min`
 
 
 while (1) 
@@ -46,6 +43,7 @@ echo $OBJ $P2 >> $tmp.request
 
 $INC/request2dissim.sh $tmp.request $tmp.dissim $LOG >& /dev/null
 if ($?) exit 1
+# Lines of $tmp.dissim may not match those of $tmp.request
 
 set N = `wc -l $tmp.dissim`
 if ($?) exit 1
@@ -57,12 +55,13 @@ set D_AH = $L[3]
 set L = `tail -1 $tmp.dissim`
 set D_BH = $L[3]
 
-# PAR
+set HYBRIDNESS_MIN = `cat $INC/hybridness_min`
+
 set Hybridness = `echo "$D_AB / ($D_AH + $D_BH)" | sed -E 's/([+-]?[0-9.]+)[eE]\+?(-?)([0-9]+)/(\1*10^\2\3)/g' | bc -l`
 set IsHybrid = `echo "$Hybridness >= $HYBRIDNESS_MIN" | bc -l`
 if ($IsHybrid) then
   echo $OBJ $Hybridness $P1 $P2 $D_AB | tr ' ' '\t' > $OUT
-  if ($N[1] != 2)  exit 1
+  if ($?) exit 1
 endif
 
 

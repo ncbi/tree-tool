@@ -721,6 +721,147 @@ void Leaf::collapse (Leaf* other)
 }
 
 
+namespace
+{
+
+struct HybridParent 
+{ 
+	const Leaf* leaf; 
+	  // !nullptr
+	Real target;
+	  // >= 0
+	  
+	bool operator< (const HybridParent &other) const
+	  { return leaf < other. leaf; }
+	bool operator== (const HybridParent &other) const
+	  { return leaf == other. leaf; }
+};
+
+}
+
+
+
+Real Leaf::getHybridness (Real height_min,
+	                        const Leaf* &parent1,
+	                        const Leaf* &parent2,
+	                        Real &parentDissimilarity) const
+{
+	ASSERT (graph);
+	
+	parent1 = nullptr;
+	parent2 = nullptr;
+	parentDissimilarity = NAN;
+	
+	
+  if (! possibleHybrid ())
+  	return 0;
+  	
+  if (getDiscernible () -> getParent () -> getDistanceHeight () < height_min)
+  	return 0;
+
+  	
+  const auto& dissims = getDistTree (). dissims;
+
+  Vector<HybridParent> hybridParents;  hybridParents. reserve (pathObjNums. size ());
+    // HybridParent::leaf is unique
+	  // HybridParent::target: dissimilarity between *this and leaf
+	for (const uint objNum : pathObjNums)
+	{
+		const Dissim& dissim = dissims [objNum];
+		if (   dissim. mult
+  		//&& dissim. target < dissim. prediction  // <= hybrid
+  		 )
+  	{
+  		const Leaf* other = dissim. getOtherLeaf (this);
+  		if (! other->possibleHybrid ())
+		    hybridParents << HybridParent {other, dissim. target};
+		}
+	}
+	hybridParents. sort ();
+	ASSERT (hybridParents. isUniq ());
+	
+#if 0
+	if (name == "2752238")
+	{
+		bool found = false;
+		for (const HybridParent& hybridParent : hybridParents)
+			if (hybridParent. leaf->name == "2789808")
+				found = true;
+		if (! found)
+		{
+			const Leaf* other = findPtr (getDistTree (). name2leaf, "2789808");
+			ASSERT (other);
+			cout << other-> possibleHybrid () << endl;
+			ERROR;
+		}
+	}
+#endif
+	
+	Real hybridness = 1;
+	for (const HybridParent& hybridParent1 : hybridParents)
+	{
+		const Leaf* parent1_ = hybridParent1. leaf;
+		ASSERT (parent1_ != this);
+		for (const uint objNum : parent1_->pathObjNums)
+		{
+			const Dissim& dissim = dissims [objNum];
+			if (! dissim. mult)
+				continue;
+			if (! dissim. target)
+				continue;
+  		const Leaf* parent2_ = dissim. getOtherLeaf (parent1_);
+			if (parent2_ == this)
+			  continue;
+    	const size_t i = hybridParents. binSearch (HybridParent {parent2_, NAN});
+    	if (i == NO_INDEX)
+    		continue;
+    	if (maximize (hybridness, dissim. target / (hybridParent1. target + hybridParents [i]. target)))
+      {
+    		parent1 = parent1_;
+    		parent2 = parent2_;
+    		parentDissimilarity = dissim. target;
+    	}
+		}
+	}
+	ASSERT ((bool) parent1 == (bool) parent2);
+	ASSERT ((bool) parent1 == ! isNan (parentDissimilarity));
+	
+	if (parent1)
+	{
+		ASSERT (hybridness > 1);
+		return hybridness;
+	}
+	
+
+  Tree::LcaBuffer buf;
+	for (const HybridParent& hybridParent1 : hybridParents)
+  	for (const HybridParent& hybridParent2 : hybridParents)
+  	{
+  		if (& hybridParent1 == & hybridParent2)
+  			break;
+	    const TreeNode* lca_ = nullptr;
+	    const VectorPtr<TreeNode>& path = Tree::getPath ( hybridParent1. leaf
+																								      , hybridParent2. leaf
+																		                  , nullptr
+																		                  , lca_
+																		                  , buf
+																		                  );
+	    ASSERT (! path. empty ());
+	    const Real hybridness_tree = DistTree::path2prediction (path) / (hybridParent1. target + hybridParent2. target);
+	    if (maximize (hybridness, hybridness_tree))
+	    {
+	    	parent1 = hybridParent1. leaf;
+	    	parent2 = hybridParent2. leaf;
+	    }
+    }    
+	ASSERT ((bool) parent1 == (bool) parent2);
+	ASSERT (isNan (parentDissimilarity));  
+
+	
+  return NAN;
+}
+
+
 
 
 // SubPath
@@ -5362,12 +5503,25 @@ void DistTree::removeLeaf (Leaf* leaf,
     
   if (optimizable ())
   {
+  #if 1
+		for (const uint objNum : leaf->pathObjNums)
+		{
+			Dissim& dissim = dissims [objNum];
+			ASSERT (dissim. hasLeaf (leaf));
+			if (dissim. mult)
+	  	{
+	      absCriterion -= dissim. getAbsCriterion ();	      
+	      dissim. mult = 0;
+	    }
+    }
+  #else
 	  for (Dissim& dissim : dissims)
 	    if (dissim. hasLeaf (leaf))
 	    {
 	      absCriterion -= dissim. getAbsCriterion ();
 	      dissim. mult = 0;
 	    }
+	#endif
 	  maximize (absCriterion, 0.0);
 	
 	  qcPaths (); 
@@ -5629,7 +5783,12 @@ struct RequestCandidate
 	                  const Leaf* leaf2_arg)
 	  : leaf1 (leaf1_arg)
 	  , leaf2 (leaf2_arg)
-	  {}
+	  { ASSERT (leaf1);
+	  	ASSERT (leaf2);
+	  	ASSERT (leaf1 != leaf2);
+			if (leaf1->name > leaf2->name)
+		  	swap (leaf1, leaf2);	
+	  }
 	RequestCandidate ()
 	  {}
 	  
@@ -5641,6 +5800,7 @@ struct RequestCandidate
 
 
 
+#if 0
 struct LeafNode : DiGraph::Node
 {
 	const Leaf* leaf;
@@ -5654,12 +5814,14 @@ struct LeafNode : DiGraph::Node
   string getName () const final
     { return leaf->name; }
 };
+#endif
 
 
 }
 
 
 
+#if 0
 VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	                                     Real hybridness_min,
 	                                     Vector<Pair<const Leaf*>> &dissimRequests) const
@@ -5715,8 +5877,9 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
     
   for (const auto& it : name2leaf)
   {
-  	const_cast <Leaf*> (it. second) -> badNeighbors. sort ();
-  	ASSERT (it. second->badNeighbors. isUniq ());
+  	Leaf* leaf = const_cast <Leaf*> (it. second);
+  	leaf->badNeighbors. sort ();
+  	ASSERT (leaf->badNeighbors. isUniq ());
   }
 
 
@@ -5765,6 +5928,8 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
 		  for (const auto& it : name2leaf)
 		  {
 		  	const Leaf* leaf = it. second;
+		  	if (! leaf->graph)
+		  		continue;
 		  	ASSERT (leaf->hybridness >= hybridness_min_init);
 		  	if (leaf->hybridness < hybridness_min)  
 		  		continue;
@@ -5879,6 +6044,8 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
   for (const auto& it : name2leaf)
   {
   	const Leaf* leaf = it. second;
+  	if (! leaf->graph)
+  		continue;
   	if (leaf->badNeighbors. size () <= 1)
   		continue;
   	if (realHybrids. containsFast (leaf))
@@ -5935,6 +6102,96 @@ VectorPtr<Leaf> DistTree::findHybrids (Real dissimOutlierEValue_max,
   
 
   return realHybrids;
+}
+#endif
+
+
+
+DistTree::Hybrid::Hybrid (const Leaf* leaf_arg,
+							  	        Real triangleInequalityViolation_arg,
+											  	const Leaf* parent1_arg,
+											  	const Leaf* parent2_arg,
+											  	Real parentDissim_arg)
+: leaf (leaf_arg)
+, triangleInequalityViolation (triangleInequalityViolation_arg)
+, parent1 (parent1_arg)
+, parent2 (parent2_arg)
+, parentDissim (parentDissim_arg)
+{
+	ASSERT (leaf);
+	ASSERT (parent1);
+	ASSERT (parent2);
+	ASSERT (leaf != parent1);
+	ASSERT (leaf != parent2);
+	ASSERT (parent1 != parent2);
+	ASSERT (triangleInequalityViolation > 1);
+	ASSERT (parentDissim > 0);
+	if (parent1->name > parent2->name)
+  	swap (parent1, parent2);	
+}
+
+
+
+void DistTree::Hybrid::print (ostream &os) const
+{
+  const ONumber on (os, 3, false);  // PAR  
+	os        << leaf->name 
+    << '\t' << triangleInequalityViolation 
+    << '\t' << parent1->name
+	  << '\t' << parent2->name
+	  << '\t' << parentDissim
+	  << endl;	
+}
+
+
+
+Vector<DistTree::Hybrid> DistTree::findHybrids (Real hybridness_min,
+	                                              Vector<Pair<const Leaf*>> &dissimRequests) const
+{
+	ASSERT (optimizable ());
+	ASSERT (hybridness_min > 1);
+
+	const Real height_min = getAveArcLength () * 0.1;  // PAR
+	ASSERT (height_min > 0);
+
+  Vector<Hybrid> hybrids;
+  Vector<RequestCandidate> requests;  
+  for (const auto& it : name2leaf)
+  {
+  	Leaf* leaf = const_cast <Leaf*> (it. second);
+  	ASSERT (leaf);
+  	if (! leaf->graph)
+  		continue;
+  	const Leaf* parent1 = nullptr;
+  	const Leaf* parent2 = nullptr;
+  	Real parentDissimilarity = NAN;
+  	const Real hybridness = leaf->getHybridness (height_min, parent1, parent2, parentDissimilarity);
+  	if (hybridness < hybridness_min)
+  		continue;  	
+  	if (isNan (hybridness))
+  		requests << RequestCandidate (parent1, parent2);
+  	else
+  	  hybrids << Hybrid (leaf, hybridness, parent1, parent2, parentDissimilarity);
+  }
+  
+  // Instead: search in dissims ??
+  if (! requests. empty ())
+  {
+	  requests. sort ();
+	  requests. uniq ();
+	  for (const Dissim& dissim : dissims)  	
+	  {
+	  	const RequestCandidate req (dissim. leaf1, dissim. leaf2);
+	  	const size_t index = requests. binSearch (req);
+	  	if (index != NO_INDEX)
+	  		requests [index]. inDissims = true;
+	  }
+	  for (const RequestCandidate& req : requests)
+	  	if (! req. inDissims)
+	  		dissimRequests << Pair<const Leaf*> (req. leaf1, req. leaf2);
+  }    
+    
+  return hybrids;
 }
 
 

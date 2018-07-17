@@ -26,9 +26,6 @@ if ($?) exit 1
 mkdir $1/new
 if ($?) exit 1
 
-cp /dev/null $1/delete-hybrid
-if ($?) exit 1
-
 mkdir $1/search
 if ($?) exit 1
 

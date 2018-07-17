@@ -26,9 +26,6 @@ set N = `ls $1/outlier/ | wc -l`
 set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
 if ($N[1])  echo "# Outliers: $N[1] ($outliers_percent %)"
 
-set N = `wc -l $1/delete-hybrid`
-if ($N[1])  echo "# Hybrids To delete: $N[1]"
-
 if (-e $1/delete) then
 	set N = `wc -l $1/delete`
   echo "# To delete: $N[1]"
@@ -59,3 +56,6 @@ tail -5 $tmp
 
 
 rm -f $tmp*
+
+
+# grep '# Non-paraphyletic disagreements:' inc/hist/makeFeatureTree.* | sed 's|^inc/hist/makeFeatureTree\.||1' | tr ":" ' ' | sort -k 1 -n

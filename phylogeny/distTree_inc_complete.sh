@@ -36,7 +36,7 @@ set HYBRIDNESS_MIN = `cat $1/hybridness_min`
 makeDistTree  -threads 5  \
   -data $1/data  -dissim cons  \
   -optimize  \
-  -find_hybrids $1/hybrid  -delete_hybrids  -hybridness_min $HYBRIDNESS_MIN \
+  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN \
   -output_tree $1/tree \
   -output_feature_tree $1/_feature_tree \
   > $1/hist/makeDistTree.1
@@ -48,7 +48,7 @@ echo "Database ..."
 $1/objects_in_tree.sh $2 1
 if ($?) exit 1
 
-distTree_inc_hybrid.sh $1 1 $2
+distTree_inc_hybrid.sh $1 1 
 if ($?) exit 1
 
 distTree_inc_unhybrid.sh $1 1
@@ -66,3 +66,5 @@ if (-e $1/phen) then
 	if ($?) exit 1
 endif
 rm $1/_feature_tree
+
+

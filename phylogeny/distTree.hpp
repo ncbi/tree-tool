@@ -107,6 +107,7 @@ struct DTNode : Tree::TreeNode
 
 	Real len;
 	  // Arc length between *this and *getParent()
+	  // *this is root => NAN
   Vector<uint/*objNum*/> pathObjNums; 
     // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
@@ -293,7 +294,8 @@ private:
   size_t index {NO_INDEX};
 public:
 
-  // Hybrid
+#if 0
+  // Hybrid 
 private:
   struct BadNeighbor 
   { 
@@ -311,9 +313,10 @@ public:
   Real hybridness {1};
     // >= 1    
     // = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
-    // > 1 => triangle inqquality violation
+    // > 1 => triangle inequality violation
   uint hybridParentsDissimObjNum;
     // hybridness > 1 => in DistTree::dissims
+#endif
   
 
 	Leaf (DistTree &tree,
@@ -385,6 +388,18 @@ private:
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:	
+	bool possibleHybrid () const
+	  { return getDiscernible () -> len == 0; }
+  Real getHybridness (Real height_min,
+	                    const Leaf* &parent1,
+	                    const Leaf* &parent2,
+	                    Real &parentDissimilarity) const;
+		// Return: 0: not a hybrid
+		//         > 1: hybrid
+		//                = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
+		//                triangle inequality violation
+		//         NAN: request of the dissimilarity between parent1 and parent2
+	  // Time: ~ O(log^3(n))
 };
 
 
@@ -809,7 +824,6 @@ public:
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
 	  //         [delete]                   <obj>                                         Objects to delete
-	  //          delete-hybrid             <obj>                                         Hybrid objects to delete
 	  //          // scripts
     //          request2dissim.sh         executable with parameters: request dissim.add log
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1, 0/1
@@ -1118,6 +1132,7 @@ public:
     // Output: outlier_min
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
+#if 0
   VectorPtr<Leaf> findHybrids (Real dissimOutlierEValue_max,
                                Real hybridness_min,
 	                             Vector<Pair<const Leaf*>> &dissimRequests) const;
@@ -1125,6 +1140,29 @@ public:
     // Output: dissimRequests
     //         Leaf::{hybridness,hybridParentsDissimObjNum}
     // Invokes: RealAttr2::normal2outlier() 
+    // Time: ~ O(n log^3(n))
+#endif
+  struct Hybrid
+  { // !nullptr
+  	const Leaf* leaf;
+  	Real triangleInequalityViolation;
+  	  // > 1
+  	const Leaf* parent1;
+  	  // !possibleHybrid()
+  	const Leaf* parent2;
+  	  // !possibleHybrid()
+  	Real parentDissim;
+  	  // > 0
+  	Hybrid (const Leaf* leaf_arg,
+  	        Real triangleInequalityViolation_arg,
+				  	const Leaf* parent1_arg,
+				  	const Leaf* parent2_arg,
+				  	Real parentDissim_arg);
+		void print (ostream &os) const;
+  };
+  Vector<Hybrid> findHybrids (Real hybridness_min,
+                              Vector<Pair<const Leaf*>> &dissimRequests) const;
+    // Update (append): dissimRequests
     // Time: ~ O(n log^3(n))
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode;:getReprLeaf()

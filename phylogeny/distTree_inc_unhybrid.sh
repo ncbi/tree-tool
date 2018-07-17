@@ -2,7 +2,6 @@
 
 if ($# != 2) then
   echo "Process #1/hybrid"
-  echo "Output: #1/delete-hybrid if #3 exists"
   echo "#1: incremental distance tree directory"
   echo "#2: tree version"
   exit 1

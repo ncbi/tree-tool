@@ -6,6 +6,7 @@ if ($# != 1) then
 endif
 
 
+#if (0) then 
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -r -f data/Enterobacteriaceae.dir/
@@ -69,7 +70,7 @@ echo "prot-identical_comm: subgraphs ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  \
   -optimize  \
   -delete_outliers prot-identical_comm.outliers \
-  -find_hybrids prot-identical_comm.hybrids  -delete_hybrids \
+  -delete_hybrids prot-identical_comm.hybrids \
   | grep -v '^CHRON: ' > prot-identical_comm.distTree
 if ($?) exit 1
 diff prot-identical_comm.outliers data/prot-identical_comm.outliers
@@ -81,6 +82,7 @@ rm prot-identical_comm.hybrids
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 if ($?) exit 1
 rm prot-identical_comm.distTree
+#endif  
 
 echo ""
 echo "prot-identical_comm: subgraphs, threads ..."
@@ -92,37 +94,17 @@ echo "prot-identical_comm: subgraphs, delete ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
 if ($?) exit 1
 
-
-echo ""
 echo ""
 echo "Saccharomyces hybrids ..."
-cp data/Saccharomyces.dm .
+makeDistTree -threads 3  -data data/Saccharomyces  -dissim cons  \
+  -optimize  -subgraph_iter_max 2 \
+  -delete_hybrids Saccharomyces.hybrid  -delete_all_hybrids > /dev/null
 if ($?) exit 1
-cp /dev/null Saccharomyces.hybrid.all
-while (1)
-	echo ""
-	makeDistTree  -threads 3  -data Saccharomyces  -dissim cons  -optimize  -subgraph_iter_max 3  -find_hybrids Saccharomyces.hybrid > /dev/null
-	if ($?) exit 1
-	wc -l Saccharomyces.hybrid
-	if (-z Saccharomyces.hybrid) break
-	cat Saccharomyces.hybrid | sort >> Saccharomyces.hybrid.all
-	if ($?) exit 1
-	cut -f 1 Saccharomyces.hybrid > Saccharomyces.hybrid.list
-	if ($?) exit 1
-	dm2subset Saccharomyces Saccharomyces.hybrid.list -exclude > Saccharomyces1.dm
-	if ($?) exit 1
-	rm Saccharomyces.hybrid.list
-	mv Saccharomyces1.dm Saccharomyces.dm
-	if ($?) exit 1
-end
+sort.sh Saccharomyces.hybrid
+diff Saccharomyces.hybrid data/Saccharomyces.hybrid
+if ($?) exit 1
 rm Saccharomyces.hybrid
-diff Saccharomyces.hybrid.all data/Saccharomyces.hybrid.all
-if ($?) exit 1
-rm Saccharomyces.hybrid.all
-rm Saccharomyces.dm
 
-
-echo ""
 echo ""
 echo "prot-identical_comm: whole ..."
 # Time: 7 min.
