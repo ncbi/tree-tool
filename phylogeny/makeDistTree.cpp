@@ -63,8 +63,8 @@ struct ThisApplication : Application
 	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");
 	  
 	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), >= 1", "1.25");
-	  addKey ("find_hybrids", "Find hybrid objects with hybridness > hybridness_min and save them in the tab-delimited indicated file. Line format: hybrid hybridness(>1) parent1 parent2 inter-parent_dissimilarity");
-	  addFlag ("delete_hybrids", "Delete the found hybrid objects");
+	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: hybrid hybridness(>1) parent1 parent2 inter-parent_dissimilarity");
+	  addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
@@ -76,6 +76,54 @@ struct ThisApplication : Application
 	  addKey ("dissim_request", "File with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	  addKey ("output_dist", "File with tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
 	  addFlag ("noqual", "Do not compute quality statitistics");
+	}
+	
+	
+	
+	bool deleteHybrids (DistTree &tree,
+	                    OFStream &os,
+	                    Real hybridness_min,
+	                    Vector<Pair<const Leaf*>> &hybridDissimRequests) const
+	// Return: true <=> hybrids are deleted
+	// Append: hybridDissimRequests
+	{
+    const Vector<DistTree::Hybrid> hybrids (tree. findHybrids (hybridness_min, hybridDissimRequests));
+    cout << "# Hybrids: " << hybrids. size () << endl;
+    cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests. size () << endl;
+
+    {
+    #ifndef NDEBUG
+      VectorPtr<Leaf> hybridLeaves;  hybridLeaves. reserve (hybrids. size ());
+      for (const DistTree::Hybrid& hybrid : hybrids)
+      	hybridLeaves << hybrid. leaf;
+      hybridLeaves. sort ();
+      ASSERT (hybridLeaves. isUniq ());
+    #endif
+      for (const DistTree::Hybrid& hybrid : hybrids)
+      {
+				ASSERT (hybrid. triangleInequalityViolation >= hybridness_min);
+				ASSERT (! hybridLeaves. containsFast (hybrid. parent1));
+				ASSERT (! hybridLeaves. containsFast (hybrid. parent2));
+      	hybrid. print (os);
+      }
+    }
+
+    cout << "Deleting ..." << endl;
+    bool deleted = false;
+    {
+      Progress prog (hybrids. size ());
+      for (const DistTree::Hybrid& hybrid : hybrids)
+      {
+        tree. removeLeaf (const_cast <Leaf*> (hybrid. leaf), true);
+        prog (tree. absCriterion2str ());
+        deleted = true;
+      }
+    }
+    tree. reportErrors (cout);
+    cout << endl;
+    tree. qc ();
+    
+    return deleted;
 	}
 	
 	
@@ -108,8 +156,8 @@ struct ThisApplication : Application
 		const string delete_outliers     = getArg ("delete_outliers");
 
 		const Real   hybridness_min      = str2real (getArg ("hybridness_min"));
-		const string find_hybrids        = getArg ("find_hybrids");
-		const bool   delete_hybrids      = getFlag ("delete_hybrids");
+		const string delete_hybrids      = getArg ("delete_hybrids");
+		const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
 		
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
@@ -149,8 +197,8 @@ struct ThisApplication : Application
     IMPLY (subgraph_iter_max, ! whole);
     IMPLY (new_only, ! optimize);
     ASSERT (hybridness_min >= 1);
-    if (delete_hybrids && find_hybrids. empty ())
-    	throw runtime_error ("Cannot -delete_hybrids without -find_hybrids");
+    if (delete_all_hybrids && delete_hybrids. empty ())
+    	throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
     IMPLY (! leaf_errors. empty (), ! noqual);
 
 
@@ -209,6 +257,9 @@ struct ThisApplication : Application
 
 
     Vector<Pair<const Leaf*>> hybridDissimRequests;
+    unique_ptr<OFStream> hybridF;
+    if (! delete_hybrids. empty ())
+    	hybridF. reset (new OFStream (delete_hybrids));
     if (tree->optimizable ())
     {
       if (optimize)
@@ -256,18 +307,20 @@ struct ThisApplication : Application
               if (subgraph_iter_max)
               	minimize (iter_max, subgraph_iter_max);
               ASSERT (iter_max);
-              size_t iter = 0;
-            	for (;;)
+              bool hybridDeleted = true;
+              for (size_t iter = 0; iter < iter_max || (delete_all_hybrids && hybridDeleted); iter++)
             	{
-	              iter++;
-            		if (subgraph_fast || subgraph_iter_max)
-            		{
-            			if (iter > iter_max)
-            			  break;
-            	    cerr << "Iteration " << iter << '/' << iter_max << " ..." << endl;
-            	  }
+	              cerr << "Iteration " << iter + 1;
+            		if (iter_max < numeric_limits<size_t>::max ())
+            	    cerr << " / " << iter_max; 
+            	  cerr << " ..." << endl;
             		const Real absCriterion_old = tree->absCriterion;
 	              tree->optimizeLargeSubgraphs ();  
+              	hybridDeleted = false;
+	              if (hybridF. get ())
+	              	hybridDeleted = deleteHybrids (*tree, *hybridF, hybridness_min, hybridDissimRequests);
+	              if (hybridDeleted)
+	              	continue;
 	              if (tree->absCriterion == 0)
 	              	break;
 	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-6)  // PAR
@@ -296,7 +349,7 @@ struct ThisApplication : Application
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NAN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001 /*0.1 ??*/, outlier_min));  // PAR
-	      const ONumber on (cout, 3, false);  // PAR
+	      const ONumber on (cout, criterionDecimals, false);  
 	      cout << "# Outliers: " << outliers. size () << endl;
 	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
 	      for (const Leaf* leaf : outliers)
@@ -319,45 +372,6 @@ struct ThisApplication : Application
         cout << endl;
       }
       tree->qc ();
-
-   
-      if (! find_hybrids. empty ())
-      {
-        const VectorPtr<Leaf> hybrids (tree->findHybrids (0.1, hybridness_min, hybridDissimRequests));  // PAR
-	      cout << "# Hybrids: " << hybrids. size () << endl;
-        {
-          OFStream f (find_hybrids);
-		      const ONumber on (f, 3, false);  // PAR
-          for (const Leaf* leaf : hybrids)
-          {
-          	ASSERT (leaf->hybridness >= hybridness_min);
-						ASSERT (leaf->hybridParentsDissimObjNum < DistTree::dissims_max);
-						const Dissim& dissim = tree->dissims [leaf->hybridParentsDissimObjNum];
-						ASSERT (! hybrids. containsFast (dissim. leaf1));
-						ASSERT (! hybrids. containsFast (dissim. leaf2));
-						f         << leaf->name 
-					    << '\t' << leaf->hybridness 
-					    << '\t' << dissim. leaf1->name
-						  << '\t' << dissim. leaf2->name
-						  << '\t' << dissim. target
-						  << endl;
-          }
-        }
-	      cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests. size () << endl;
-	      if (delete_hybrids)
-        {
-          cout << "Deleting ..." << endl;
-          Progress prog (hybrids. size ());
-          for (const Leaf* leaf : hybrids)
-          {
-            tree->removeLeaf (const_cast <Leaf*> (leaf), true);
-            prog (tree->absCriterion2str ());
-          }
-	        tree->reportErrors (cout);
-        }
-        cout << endl;
-	      tree->qc ();
-      }
     
       
       if (! noqual)
@@ -429,7 +443,7 @@ struct ThisApplication : Application
         const VectorPtr<DTNode> tooLongArcs (tree->findOutlierArcs (outlier_EValue_max, arcLen_min));
         cout << endl;
         {
-          ONumber on (cout, 1, true);
+          ONumber on (cout, 1, true);  // PAR
           cout << "outlier_EValue_max: " << outlier_EValue_max << endl;
         }
         cout << "# Too long arcs: " << tooLongArcs. size () << endl;
@@ -444,7 +458,7 @@ struct ThisApplication : Application
       Real outlier_EValue_max = 0.001;  
       while (outlier_EValue_max >= 1e-10)
       {
-        ONumber on (cout, 1, true);
+        ONumber on (cout, 1, true);  // PAR
         cout << "outlier_EValue_max: " << outlier_EValue_max << endl;
         tree->findDepthOutliers (outlier_EValue_max);  
         outlier_EValue_max /= 10;
@@ -460,7 +474,7 @@ struct ThisApplication : Application
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
       {
-      	const ONumber on1 (cout, 3, true);  // PAR
+      	const ONumber on1 (cout, dissimDecimals, true); 
         cout << "Min. discernible leaf length = " << tree->getMinLeafLen () << endl;
           // = 0 => epsilon2_0 > 0
       }
@@ -651,8 +665,8 @@ struct ThisApplication : Application
 
     if (! delete_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "delete_outliers");  
-    if (! find_hybrids. empty ())  // Parameter is performed above
-      checkOptimizable (*tree, "find_hybrids");  
+    if (! delete_hybrids. empty ())  // Parameter is performed above
+      checkOptimizable (*tree, "delete_hybrids");  
 	}
 };
 
