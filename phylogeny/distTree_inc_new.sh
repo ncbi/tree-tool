@@ -167,7 +167,7 @@ endif
 set HYBRIDNESS_MIN = `cat $1/hybridness_min`
 makeDistTree $QC  -threads 15 \
   -data $1/ \
-  -optimize  -skip_len  -subgraph_iter_max 2 \
+  -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
   -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN \
   -output_tree $1/tree.new \
@@ -175,7 +175,6 @@ makeDistTree $QC  -threads 15 \
   > $1/hist/makeDistTree.$VER
 if ($?) exit 1
   # -threads 20  # bad_alloc 
-  # -subgraph_iter_max 1
 mv $1/leaf $1/hist/leaf.$VER
 if ($?) exit 1
 cp /dev/null $1/leaf
