@@ -159,7 +159,7 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 250  # PAR 
+  set VER = 38  # PAR 
 endif
 
 
