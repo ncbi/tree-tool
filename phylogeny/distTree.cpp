@@ -6169,7 +6169,10 @@ Vector<DistTree::Hybrid> DistTree::findHybrids (Real hybridness_min,
   	if (hybridness < hybridness_min)
   		continue;  	
   	if (isNan (hybridness))
-  		requests << RequestCandidate (parent1, parent2);
+  	{
+  		if (parent1)
+  		  requests << RequestCandidate (parent1, parent2);
+  	}
   	else
   	  hybrids << Hybrid (leaf, hybridness, parent1, parent2, parentDissimilarity);
   }

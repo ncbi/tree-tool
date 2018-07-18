@@ -398,7 +398,7 @@ public:
 		//         > 1: hybrid
 		//                = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
 		//                triangle inequality violation
-		//         NAN: request of the dissimilarity between parent1 and parent2
+		//         NAN: request of the dissimilarity between parent1 and parent2, if (bool)parent1
 	  // Time: ~ O(log^3(n))
 };
 
