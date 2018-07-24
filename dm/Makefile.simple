@@ -25,6 +25,7 @@ all:	\
   dm2objs \
   dm2space \
   dm2subset \
+  dm_merge \
   linreg \
   linreg_test \
   logreg \
@@ -150,6 +151,12 @@ dm2subset.o:  $(DM_HPP)
 dm2subsetOBJS=dm2subset.o $(DM_OBJ) 
 dm2subset:	$(dm2subsetOBJS)
 	$(CXX) -o $@ $(dm2subsetOBJS) $(LIBS)
+	$(ECHO)
+
+dm_merge.o:  $(DM_HPP) 
+dm_mergeOBJS=dm_merge.o $(DM_OBJ) 
+dm_merge:	$(dm_mergeOBJS)
+	$(CXX) -o $@ $(dm_mergeOBJS) $(LIBS)
 	$(ECHO)
 
 linreg.o:  $(PREDICT_HPP)

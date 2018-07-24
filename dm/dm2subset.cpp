@@ -33,7 +33,7 @@ struct ThisApplication : Application
 		const string objNameFName = getArg ("objNameFName");
 		
 		
-    Dataset ds (fName);
+    const Dataset ds (fName);
     
     Set<string> objNames;
     {

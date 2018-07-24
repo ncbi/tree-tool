@@ -33,7 +33,7 @@ struct ThisApplication : Application
 		const bool   exclude       = getFlag ("exclude");
 		
 		
-    Dataset ds (fName);
+    const Dataset ds (fName);
     
     Set<string> attrNames;
     {

@@ -192,7 +192,7 @@ NumAttr1::NumAttr1 (const string &name_arg,
 : Attr1 (name_arg, ds_arg, true)
 , RealScale (from. decimals)
 { 
-  ASSERT (& ds_arg == & from. ds);
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 
@@ -415,7 +415,7 @@ RealAttr1::RealAttr1 (const string &name_arg,
 : NumAttr1 (name_arg, ds_arg, from)
 , values (from. values)
 { 
-  ASSERT (& ds_arg == & from. ds);
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 
@@ -899,7 +899,7 @@ IntAttr1::IntAttr1 (const string &name_arg,
 : NumAttr1 (name_arg, ds_arg, from)
 , values (from. values)
 { 
-  ASSERT (& ds_arg == & from. ds);
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 
@@ -1037,7 +1037,7 @@ ExtBoolAttr1::ExtBoolAttr1 (const string &name_arg,
 : BoolAttr1 (name_arg, ds_arg)
 , values (from. values)
 {
-  ASSERT (& ds_arg == & from. ds); 
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 
@@ -1086,7 +1086,7 @@ CompactBoolAttr1::CompactBoolAttr1 (const string &name_arg,
 : BoolAttr1 (name_arg, ds_arg)
 , values (from. values)
 {
-  ASSERT (& ds_arg == & from. ds); 
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 
@@ -1171,7 +1171,7 @@ NominAttr1::NominAttr1 (const string &name_arg,
 , categories (from. categories)
 , values (from. values)
 {
-  ASSERT (& ds_arg == & from. ds);
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 
@@ -1549,6 +1549,18 @@ RealAttr2::RealAttr2 (const string &name_arg,
 , matr (ds. objs. size ())
 { 
 	setMissingAll (); 
+}
+
+
+
+RealAttr2::RealAttr2 (const string &name_arg,
+					            Dataset &ds_arg,
+					            const RealAttr2 &from)
+: Attr2 (name_arg, ds_arg, true)
+, RealScale (from. decimals)
+, matr (from. matr)
+{
+  ASSERT (ds_arg. objs. size () == from. ds. objs. size ());
 }
 
 

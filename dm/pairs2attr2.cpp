@@ -63,7 +63,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string pairsFName = getArg ("pairs");
 		      size_t attr_num   = str2<size_t> (getArg ("attr_num"));

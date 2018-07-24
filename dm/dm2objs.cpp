@@ -30,7 +30,7 @@ struct ThisApplication : Application
 		const bool comments  = getFlag ("comments");
 
 
-    Dataset ds (inFName);
+    const Dataset ds (inFName);
     
     for (const Obj* obj : ds. objs)
     {

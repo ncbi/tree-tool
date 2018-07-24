@@ -181,6 +181,7 @@ public:
     // Requires: Corresponds to <dmSuff>-format
     
   virtual Attr* copyAttr (const string &name_arg) const = 0;
+  virtual Attr* copyToDataset (Dataset &other) const = 0;
     
   // Position
   void moveAfter (const Attr* pred);
@@ -232,8 +233,6 @@ public:
   static const Attr1* as (const Attr* attr)
     { return attr->asAttr1 (); }
 
-  virtual Attr1* copyAttr (const string &name_arg) const = 0;
-
   void setMissingAll () final;
     // Invokes: setMissing()
   virtual void setMissing (size_t objNum) = 0;
@@ -282,8 +281,6 @@ public:
   static const NumAttr1* as (const Attr* attr)
     { return attr->asNumAttr1 (); }
     
-  virtual NumAttr1* copyAttr (const string &name_arg) const = 0;
-
   Vector<NumAttr1*> toNumAttr1 (Dataset &ds_arg) const final;
   Vector<RealAttr1*> standardize (Dataset &ds_arg,
                                   const Sample &sample) const override;
@@ -342,10 +339,9 @@ public:
     { return attr->asRealAttr1 (); }
     
   RealAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new RealAttr1 (name_arg, const_cast <Dataset&> (ds), decimals);
-    	attr->values = values;
-    	return attr;
-    }
+    { return new RealAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  RealAttr1* copyToDataset (Dataset &other) const override
+    { return new RealAttr1 (name, other, *this); }
 
   string getTypeStr () const override
     { return "Real " + toString (decimals); }
@@ -415,11 +411,11 @@ struct PositiveAttr1 : RealAttr1
   static const PositiveAttr1* as (const Attr* attr)
     { return attr->asPositiveAttr1 (); }
     
-  PositiveAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new PositiveAttr1 (name_arg, const_cast <Dataset&> (ds), decimals);
-    	attr->values = values;
-    	return attr;
-    }
+  PositiveAttr1* copyAttr (const string &name_arg) const final
+    { return new PositiveAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  PositiveAttr1* copyToDataset (Dataset &other) const final
+    { return new PositiveAttr1 (name, other, *this); }
+    
   string getTypeStr () const final
     { return "Positive " + toString (decimals); }
   Vector<RealAttr1*> standardize (Dataset &ds_arg,
@@ -461,11 +457,10 @@ struct ProbAttr1 : RealAttr1
   static const ProbAttr1* as (const Attr* attr)
     { return attr->asProbAttr1 (); }
     
-  ProbAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new ProbAttr1 (name_arg, const_cast <Dataset&> (ds), decimals);
-    	attr->values = values;
-    	return attr;
-    }
+  ProbAttr1* copyAttr (const string &name_arg) const final
+    { return new ProbAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  ProbAttr1* copyToDataset (Dataset &other) const final
+    { return new ProbAttr1 (name, other, *this); }
 
   string getTypeStr () const final
     { return "Probability " + toString (decimals); }
@@ -498,11 +493,10 @@ public:
   static const IntAttr1* as (const Attr* attr)
     { return attr->asIntAttr1 (); }
     
-  IntAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new IntAttr1 (name_arg, const_cast <Dataset&> (ds));
-    	attr->values = values;
-    	return attr;
-    }
+  IntAttr1* copyAttr (const string &name_arg) const final
+    { return new IntAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  IntAttr1* copyToDataset (Dataset &other) const final
+    { return new IntAttr1 (name, other, *this); }
 
   string getTypeStr () const final
     { return "Integer"; }
@@ -557,8 +551,6 @@ public:
   static const BoolAttr1* as (const Attr* attr)
     { return attr->asBoolAttr1 (); }
     
-  virtual BoolAttr1* copyAttr (const string &name_arg) const = 0;
-
   void str2value (size_t objNum,
                   const string &s) final
     { setBool (objNum, (ebool) str2bool (s)); }
@@ -609,11 +601,10 @@ public:
   static const ExtBoolAttr1* as (const Attr* attr)
     { return attr->asExtBoolAttr1 (); }
     
-  ExtBoolAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new ExtBoolAttr1 (name_arg, const_cast <Dataset&> (ds));
-    	attr->values = values;
-    	return attr;
-    }
+  ExtBoolAttr1* copyAttr (const string &name_arg) const final
+    { return new ExtBoolAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  ExtBoolAttr1* copyToDataset (Dataset &other) const final
+    { return new ExtBoolAttr1 (name, other, *this); }
 
   string getTypeStr () const final
     { return "Boolean"; }
@@ -667,11 +658,10 @@ public:
   static const CompactBoolAttr1* as (const Attr* attr)
     { return attr->asCompactBoolAttr1 (); }
         
-  CompactBoolAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new CompactBoolAttr1 (name_arg, const_cast <Dataset&> (ds));
-    	attr->values = values;
-    	return attr;
-    }
+  CompactBoolAttr1* copyAttr (const string &name_arg) const final
+    { return new CompactBoolAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  CompactBoolAttr1* copyToDataset (Dataset &other) const final
+    { return new CompactBoolAttr1 (name, other, *this); }
 
   string getTypeStr () const final
     { return "CompactBoolean"; }
@@ -735,13 +725,10 @@ public:
   static const NominAttr1* as (const Attr* attr)
     { return attr->asNominAttr1 (); }
     
-  NominAttr1* copyAttr (const string &name_arg) const override
-    { auto attr = new NominAttr1 (name_arg, const_cast <Dataset&> (ds));
-    	attr->categories = categories;
-    	attr->categMap   = categMap;
-    	attr->values     = values;
-    	return attr;
-    }
+  NominAttr1* copyAttr (const string &name_arg) const final
+    { return new NominAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+  NominAttr1* copyToDataset (Dataset &other) const final
+    { return new NominAttr1 (name, other, *this); }
 
   string getTypeStr () const final;
   bool isConstant () const final
@@ -882,8 +869,6 @@ public:
   static const Attr2* as (const Attr* attr)
     { return attr->asAttr2 (); }
 
-  virtual Attr2* copyAttr (const string &name_arg) const = 0;
-
   bool isMissing (size_t objNum) const final;
   void setMissingAll () final;
     // Invokes: setMissing()
@@ -923,11 +908,7 @@ struct RealAttr2 : Attr2, RealScale
              streamsize decimals_arg = decimals_def);
   RealAttr2 (const string &name_arg,
              Dataset &ds_arg,
-             const RealAttr2 &from)
-    : Attr2 (name_arg, ds_arg, true)
-    , RealScale (from. decimals)
-    , matr (from. matr)
-    {}
+             const RealAttr2 &from);
   RealAttr2& operator= (const RealAttr2& other);
   void qc () const override;
   void saveText (ostream &os) const final
@@ -943,10 +924,9 @@ struct RealAttr2 : Attr2, RealScale
     { return attr->asRealAttr2 (); }
     
   RealAttr2* copyAttr (const string &name_arg) const override
-    { auto attr = new RealAttr2 (name_arg, const_cast <Dataset&> (ds), decimals);
-    	attr->matr = matr;
-    	return attr;
-    }
+    { return new RealAttr2 (name_arg, const_cast <Dataset&> (ds), *this); }
+  RealAttr2* copyToDataset (Dataset &other) const override
+    { return new RealAttr2 (name, other, *this); }
 
   string getTypeStr () const override
     { return "Real2 " + toString (decimals); }
@@ -1021,11 +1001,10 @@ struct PositiveAttr2 : RealAttr2
   static const PositiveAttr2* as (const Attr* attr)
     { return attr->asPositiveAttr2 (); }
     
-  PositiveAttr2* copyAttr (const string &name_arg) const override
-    { auto attr = new PositiveAttr2 (name_arg, const_cast <Dataset&> (ds), decimals);
-    	attr->matr = matr;
-    	return attr;
-    }
+  PositiveAttr2* copyAttr (const string &name_arg) const final
+    { return new PositiveAttr2 (name_arg, const_cast <Dataset&> (ds), *this); }
+  PositiveAttr2* copyToDataset (Dataset &other) const final
+    { return new PositiveAttr2 (name, other, *this); }
 
   string getTypeStr () const final
     { return "Positive2 " + toString (decimals); }
