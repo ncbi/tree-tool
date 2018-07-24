@@ -772,7 +772,6 @@ string to_c (const string &s);
   // " --> \", etc.
 
 void collapseSpace (string &s);
-
   
 string str2streamWord (const string &s,
                        size_t wordNum);
@@ -794,6 +793,8 @@ string rfindSplit (string &s,
                    char c = ' ');
 	// Return: suffix of c+s after c
 	// Update: s
+
+void reverse (string &s);
 
 List<string> str2list (const string &s,
                        char c = ' ');

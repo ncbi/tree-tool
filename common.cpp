@@ -539,6 +539,14 @@ string rfindSplit (string &s,
 
 
 
+void reverse (string &s)
+{
+  FFOR (size_t, i, s. size () / 2)
+    swap (s [i], s [s. size () - 1 - i]);
+}
+
+
+
 List<string> str2list (const string &s,
                        char c) 
 {
