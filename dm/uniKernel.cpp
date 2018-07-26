@@ -18,7 +18,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-  : Application ("Kernel p.d.f. estimation. Print distribution with the step = window")
+  : Application ("Kernel p.d.f. estimation. Parameters: (prob_uniform, half_window). Print distribution with the step = window")
   { 
 	  addPositional ("file", dmSuff + "-file without the extension");
 	  addPositional ("attrName", "name of a real attribute");
@@ -26,7 +26,7 @@ struct ThisApplication : Application
   }
 
 
-	void body () const
+	void body () const final
 	{
 		const string fName    = getArg ("file");  
 		const string attrName = getArg ("attrName");
@@ -76,10 +76,10 @@ struct ThisApplication : Application
 
 
 
-int main(int argc, 
-         const char* argv[])
+
+int main (int argc, 
+          const char* argv[])
 {
-//return ThisApplication().AppMain(argc, argv); 
   ThisApplication app;
   return app. run (argc, argv);
 }
