@@ -10,14 +10,23 @@ using namespace DM_sp;
 
 
 
+
 namespace 
 {
+	
+	
+template <typename T>
+	void report (const string &attr,
+	             T value)
+	  {	cout << attr << '\t' << value << endl; }
+
+	
 
 
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Statistics of a series of numbers from cin", false)
+    : Application ("Statistics of a sequence of numbers from cin", false)
     {}
 
 
@@ -33,17 +42,19 @@ struct ThisApplication : Application
 				mv << x;
 		}
 		
-		cout << "count" << '\t' << mv. n          << endl
-		     << "mean"  << '\t' << mv. getMean () << endl
-		     << "var"   << '\t' << mv. getVar ()  << endl
-		     << "SD"    << '\t' << mv. getSD ()   << endl
-		     << "sum"   << '\t' << mv. s          << endl;
+		report ("count",   mv. n);
+		report ("mean",    mv. getMean ());
+		report ("var",     mv. getVar ());
+		report ("SD",      mv. getSD ());
+		report ("sum",     mv. s);
+		report ("mean SD", mv. getSD () / sqrt (mv. n));
 	}
 };
 
 
 
 }  // namespace
+
 
 
 
