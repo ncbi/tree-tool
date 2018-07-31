@@ -125,7 +125,23 @@ void errorExit (const char* msg,
 	    << "Progam name: " << programName << endl
 	    << "Command line:";
 	 for (const string& s : programArgs)
-	   *os << " " << (s. empty () || contains (s, ' ') ? strQuote (s) : s);
+	 {
+ 	   const bool bad =    s. empty () 
+ 	                    || contains (s, ' ')
+ 	                    || contains (s, '|')
+ 	                    || contains (s, ';')
+ 	                    || contains (s, '#')
+ 	                    || contains (s, '*')
+ 	                    || contains (s, '?')
+ 	                    || contains (s, '$')
+ 	                    || contains (s, '(')
+ 	                    || contains (s, ')')
+ 	                    || contains (s, '<')
+ 	                    || contains (s, '>')
+ 	                    || contains (s, '~');
+ 	   // '\' ??
+	   *os << " " << (bad ? strQuote (s, '\'') : s);
+	 }
 	 *os << endl;
 //system (("env >> " + logFName). c_str ());
 
