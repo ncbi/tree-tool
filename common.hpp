@@ -648,11 +648,13 @@ inline string prepend (const string &prefix,
   	return prefix + s;
   }
 
-inline bool isQuoted (const string &s)
-  { return ! s. empty () && s [0] == '\"' && s [s. size () - 1] == '\"'; }
+inline bool isQuoted (const string &s,
+                      char quote = '\"')
+  { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
 
-inline string strQuote (const string &s)
-  { return "\"" + s + "\""; }
+inline string strQuote (const string &s,
+                        char quote = '\"')
+  { return quote + s + quote; }
 
 inline string unQuote (const string &s)
   { return s. substr (1, s. size () - 2); }
@@ -2793,7 +2795,7 @@ protected:
       addKey ("verbose", "Level of verbosity", "0");
       addFlag ("noprogress", "Turn off progress printout");
       addFlag ("profile", "Use chronometers to profile");
-      addKey ("seed", "Integer positive seed for random number generator", "1");
+      addKey ("seed", "Positive integer seed for random number generator", "1");
       addKey ("threads", "Max. number of threads", "1");
       addKey ("json", "Output file in Json format");
       addKey ("log", "Error log file, appended");
