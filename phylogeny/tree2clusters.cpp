@@ -31,9 +31,10 @@ struct ThisApplication : Application
 
 	void body () const final
   {
-		const string input_tree   = getArg ("input_tree");
+		const string input_tree = getArg ("input_tree");
+				
     
-    DistTree tree (input_tree, string (), string (), false); 
+    DistTree tree (input_tree, string (), string (), string (), false); 
   //tree. setReprLeaves ();
     tree. qc (); 
     

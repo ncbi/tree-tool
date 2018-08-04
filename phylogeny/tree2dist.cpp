@@ -57,7 +57,7 @@ struct ThisApplication : Application
     if (input_tree. empty ())
       tree = new DistTree (branch_prob, leaf_num_max);
     else
-      tree = new DistTree (input_tree, string (), string (), false); 
+      tree = new DistTree (input_tree, string (), string (), string (), false); 
     ASSERT (tree);
     tree->qc ();     
       

@@ -228,7 +228,7 @@ A node with an empty set of leaves matches.")
 		       
     Common_sp::AutoPtr<Tree> tree1;
     if (treeType == "dist")
-      tree1 = new DistTree (input_tree1, string (), string (), false);
+      tree1 = new DistTree (input_tree1, string (), string (), string (), false);
     else
       tree1 = new FeatureTree (input_tree1, string (), string ());
     if (verbose ())
@@ -236,7 +236,7 @@ A node with an empty set of leaves matches.")
       
     Common_sp::AutoPtr<Tree> tree2;
     if (treeType == "dist")
-      tree2 = new DistTree (input_tree2, string (), string (), false);
+      tree2 = new DistTree (input_tree2, string (), string (), string (), false);
     else
       tree2 = new FeatureTree (input_tree2, string (), string ());
     if (verbose ())
