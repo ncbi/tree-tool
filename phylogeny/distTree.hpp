@@ -23,6 +23,27 @@ extern Chronometer chron_subgraph2tree;
 
 
 
+// PAR
+constexpr streamsize dissimDecimals = 6;  
+constexpr streamsize criterionDecimals = 3;
+constexpr uint areaRadius_std = 5;  
+  // The greater the better DistTree::absCriterion
+constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
+constexpr uint subgraphDepth = areaRadius_std;  
+constexpr uint boundary_size_max_std = 500;  // was: 100
+constexpr size_t sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
+constexpr Prob rareProb = 0.01; 
+constexpr size_t dissim_progress = 1e5;
+
+
+
+// For Time: 
+//   n = # Tree leaves, p = # distances = DistTree::dissims.size()
+//   p >= n
+//   ~ O(): p/n = log(n); log log = 1
+
+
+
 // --> DistTree ??
 // Dissimilarity variance
 enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
@@ -31,7 +52,6 @@ enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
                   };
 extern const StringVector varianceTypeNames;
 extern VarianceType varianceType;
-extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
 
 inline VarianceType str2varianceType (const string &s)
   { size_t index = 0;
@@ -63,17 +83,15 @@ inline Real dissim_max ()
   // dissim < dissim_max() <=> !nullReal(dissim2mult(dissim))
 
 
+extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
+extern Real hybridness_min;
+extern Real dissim_boundary;
 
-// PAR
-constexpr streamsize dissimDecimals = 6;  
-constexpr streamsize criterionDecimals = 3;
-constexpr uint areaRadius_std = 5;  
-  // The greater the better DistTree::absCriterion
-constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
-constexpr uint subgraphDepth = areaRadius_std;  
-constexpr uint boundary_size_max_std = 500;  // was: 100
-constexpr size_t sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
-constexpr Prob rareProb = 0.01; 
+inline bool at_dissim_boundary (Real dissim)
+  { return     dissim_boundary >= dissim 
+  	       && (dissim_boundary -  dissim) / dissim_boundary <= 0.05;  // PAR
+  }
+  // Has a small probability <= choice of dissim_boundary
 
 
 
@@ -90,10 +108,172 @@ struct DissimLine;
 
 
 
-// For Time: 
-//   n = # Tree leaves, p = # distances = DistTree::dissims.size()
-//   p >= n
-//   ~ O(): p/n = log(n); log log --> 1
+struct Neighbor 
+{ 
+	const Leaf* leaf {nullptr}; 
+	  // !nullptr
+	Real target {NAN};
+	  // > 0
+
+	  
+	Neighbor (const Leaf* leaf_arg,
+	          Real target_arg);
+	explicit Neighbor (const Leaf* leaf_arg);
+
+	  
+	bool operator< (const Neighbor &other) const
+	  { return leaf < other. leaf; }
+	bool operator== (const Neighbor &other) const
+	  { return leaf == other. leaf; }
+};
+
+
+
+struct Triangle  
+// Triple of Leaf's with a triangle inequality violation
+{ 
+	// !nullptr
+	const Leaf* child {nullptr};
+	Real hybridness {NAN};
+	  // = d(parent1,parent2) / (d(child,parent1) + d(child,parent2))
+	  // > 1
+	const Leaf* parent1 {nullptr};
+	const Leaf* parent2 {nullptr};
+	Real parent1_dissim {NAN};
+	  // = d(child,parent1)
+	  // > 0
+	Real parent2_dissim {NAN};
+	  // = d(child,parent2)
+	  // > 0
+	// Cause of the triangle inequality violation
+	bool child_hybrid   {false};
+	bool parent1_hybrid {false};
+	bool parent2_hybrid {false};
+
+	  
+	Triangle (const Leaf* child_arg,
+		        Real hybridness_arg,
+				  	const Leaf* parent1_arg,
+				  	const Leaf* parent2_arg,
+				  	Real parent1_dissim_arg,
+				  	Real parent2_dissim_arg);
+	void qc () const;
+	void print (ostream &os) const;
+	static constexpr const char* format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
+	
+	
+	Real parentsDissim () const
+	  { return (parent1_dissim + parent2_dissim) * hybridness; }
+	  // Return: d(parent1,parent2)
+	Prob parent_dissim_ratio () const
+	  { return min ( parent1_dissim / parent2_dissim
+                 , parent2_dissim / parent1_dissim
+                 );
+    }
+	bool hasHybrid () const
+	  { return    child_hybrid 
+	  	       || parent1_hybrid
+	  	       || parent2_hybrid;
+	  }
+	VectorPtr<Leaf> getHybrids () const
+	  { VectorPtr<Leaf> vec;  vec. reserve (3);
+	  	if (child_hybrid)    vec << child;
+	  	if (parent1_hybrid)  vec << parent1;
+	  	if (parent2_hybrid)  vec << parent2;
+	  	return vec;
+	  }
+};
+
+
+
+struct TriangleParentPair
+{
+	// Input
+	// !nullptr
+	const Leaf* parent1 {nullptr};
+	const Leaf* parent2 {nullptr};
+	Real parentsDissim {NAN};
+	  // = f(parent1,parent2)
+	
+	// Output
+	Vector<Triangle> triangles;
+	  // Triangle::parent{1|2} = parent{1|2}
+	  // Clusterize Triangle::child's ??
+	  // May be empty()
+private:
+	size_t triangle_best_index {NO_INDEX};
+	  // Index in triangles
+public:
+	size_t parent1_class {0};
+	size_t parent2_class {0};
+	Real hybridness_ave {NAN};
+	Real childSize_ave {NAN};
+
+	
+	TriangleParentPair (const Leaf* parent1_arg,
+		                  const Leaf* parent2_arg,
+		                  Real parentsDissim_arg)
+		: parent1 (parent1_arg)
+		, parent2 (parent2_arg)
+		, parentsDissim (parentsDissim_arg)
+		{}
+	TriangleParentPair ()
+	  {}
+	void setTriangles (const DistTree &tree);
+	  // Output: triangles, hybridness_ave, childSize_ave
+	  // Time: ~ O(log(n))
+  void finish (const DistTree &tree,
+               const Set<const Leaf*> &hybrids);
+    // Input: triangles
+    // Output: Triangle::*_hybrid
+	void qc () const;
+  void print (ostream &os) const;
+  static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <avg. child size> <parent1 size> <parent2 size> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
+
+
+	bool operator< (const TriangleParentPair &other) const
+    { return Pair<const Leaf*> (parent1, parent2) < Pair<const Leaf*> (other. parent1, other. parent2); }
+  bool operator== (const TriangleParentPair &other) const
+    { return Pair<const Leaf*> (parent1, parent2) == Pair<const Leaf*> (other. parent1, other. parent2); }
+  static bool compareHybridness (const TriangleParentPair &hpp1,
+                                 const TriangleParentPair &hpp2)
+    { return hpp1. hybridness_ave > hpp2. hybridness_ave; }
+    
+
+  const Triangle& getBest () const
+    { if (triangle_best_index < triangles. size ())
+    	  return triangles [triangle_best_index]; 
+    	throw logic_error ("TriangleParentPair::getBest()");
+    }
+  bool dissimError () const  
+    { return    getBest (). parent_dissim_ratio () < 0.25  // PAR
+    	       && hybridness_ave < 1.25;  // PAR
+    }
+  Vector<Triangle> getHybridTriangles () const
+    { Vector<Triangle> vec;  
+    	for (const Triangle &tr : triangles)
+    		if (tr. hasHybrid ())
+    			vec << tr;
+    	return vec;
+    }
+  VectorPtr<Leaf> getHybrids () const
+    { VectorPtr<Leaf> vec;  
+    	for (const Triangle &tr : triangles)
+    		if (tr. hasHybrid ())
+    			vec << tr. getHybrids ();
+    	return vec;
+    }
+private:
+	size_t child_parent2parents (const DistTree &tree,
+                               const Leaf* child,
+                               const Leaf* parent,
+                               Real parentDissim) const;
+	  // Time: ~ O(log(n))
+	void setChildrenHybrid ()
+	  { for (Triangle &tr : triangles)
+	  	  tr. child_hybrid = true;
+	  }
+};
 
 
 
@@ -284,7 +464,9 @@ struct Leaf : DTNode
   string name;  
     // !empty()
   string comment;
-  
+  Real objSize {NAN};
+    // For getHybridness()
+    // NAN or > 0  
   static const string non_discernible;
   bool discernible {true}; 
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
@@ -294,29 +476,18 @@ private:
   size_t index {NO_INDEX};
 public:
 
-#if 0
-  // Hybrid 
+  // Hybrid data
 private:
-  struct BadNeighbor 
-  { 
-  	const Leaf* leaf; 
-  	Real target;
-  	  // Dissimilarity between *this and leaf
-  	bool operator< (const BadNeighbor &other) const
-  	  { return leaf < other. leaf; }
-  	bool operator== (const BadNeighbor &other) const
-  	  { return leaf == other. leaf; }
-  };
-  Vector<BadNeighbor> badNeighbors;
-    // BadNeighbor::leaf is unique
-public:
+	friend Triangle;
+  Vector<Neighbor> badNeighbors;
+    // Neighbor::leaf is unique
   Real hybridness {1};
     // >= 1    
     // = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
     // > 1 => triangle inequality violation
-  uint hybridParentsDissimObjNum;
+  uint hybridParentsDissimObjNum;  
     // hybridness > 1 => in DistTree::dissims
-#endif
+public:
   
 
 	Leaf (DistTree &tree,
@@ -388,18 +559,36 @@ private:
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:	
+#if 0
 	bool possibleHybrid () const
 	  { return getDiscernible () -> len == 0; }
-  Real getHybridness (Real height_min,
+#endif
+private:
+	const Neighbor* findNeighbor (const Leaf* leaf) const
+	  { const size_t i = badNeighbors. binSearch (Neighbor (leaf));
+    	if (i == NO_INDEX)    		
+    		return nullptr;
+    	return & badNeighbors [i];
+    }
+public:
+  Real getHybridness (/*Real height_min,*/
+                    //Real parentLengthFrac_min,
 	                    const Leaf* &parent1,
 	                    const Leaf* &parent2,
-	                    Real &parentDissimilarity) const;
+	                    Real &parent1_dissim,
+	                    Real &parent2_dissim) const;
 		// Return: 0: not a hybrid
 		//         > 1: hybrid
 		//                = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
 		//                triangle inequality violation
 		//         NAN: request of the dissimilarity between parent1 and parent2, if (bool)parent1
+	  // Input: parentLengthFrac_min > 1
 	  // Time: ~ O(log^3(n))
+	void getHybridTriangles (Vector<Triangle> &hybrids,
+		                       Set<const Leaf*> &tried) const;
+		// Update: hybrids, tried; hybrids is a subset of tried
+		// Invokes: getHybridness()
+		// Recursive
 };
 
 
@@ -756,6 +945,8 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
+  const PositiveAttr1* objSizeAttr {nullptr};
+  bool objSizeExists {false};
 public:
     
   constexpr static uint dissims_max {numeric_limits<uint>::max ()};
@@ -775,32 +966,34 @@ private:
 public:
 
 
-  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute attrName,
+  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute dissimAttrName, may contain objSizeAttrName
   //                     may contain more objects than *this contains leaves
+  //        dissimFName and dissimAttrName: both may be empty	  
 	DistTree (const string &treeFName,
 	          const string &dissimFName,
-	          const string &attrName,
+	          const string &dissimAttrName,
+	          const string &objSizeAttrName,
 	          bool sparse);
-	  // Input: dissimFName and attrName: may be both empty
 	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2dissims()
 	DistTree (const string &dirName,
 	          const string &dissimFName,
-	          const string &attrName);
+	          const string &dissimAttrName,
+	          const string &objSizeAttrName);
 	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
-	          const string &attrName,
+	          const string &dissimAttrName,
+	          const string &objSizeAttrName,
 	          bool sparse);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
 	          bool loadDissim,
 	          bool optimizeP);
-	  // Input: dataDirName: ends with '/'
-	  //          files: tree, leaf, dissim
-	  //          <dataDirName/> contains:
+	  // Input: dataDirName: ends with '/': directory for incremental data structure:
 	  //          file name                 line/file format                              meaning
 	  //          ---------                 -----------------------------                 ----------------------------
+	  //          obj_size                  <obj> <Leaf::objSize>                         For DistTree::findHybrids()
 	  //          tree                                           
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
@@ -819,6 +1012,7 @@ public:
 	  //                                     makeFeatureTree
 	  //                                    }.<version>                                   Historic versions of data
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
+	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity
     //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
@@ -871,7 +1065,8 @@ private:
                     Steiner* parent);
   void setName2leaf ();
   void loadDissimDs (const string &dissimFName,
-                     const string &attrName);
+                     const string &dissimAttrName,
+                     const string &objSizeAttrName);
     // Output: dissimDs
     // invokes: dissimDs->setName2objNum()
   // Input: dissimDs
@@ -1132,38 +1327,20 @@ public:
     // Output: outlier_min
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))
-#if 0
-  VectorPtr<Leaf> findHybrids (Real dissimOutlierEValue_max,
-                               Real hybridness_min,
-	                             Vector<Pair<const Leaf*>> &dissimRequests) const;
-    // Return: hybridization parents are not hybrid; sort()'ed
-    // Output: dissimRequests
-    //         Leaf::{hybridness,hybridParentsDissimObjNum}
+  Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
+	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
+    // Update (append): *dissimRequests if !nullptr
     // Invokes: RealAttr2::normal2outlier() 
+    // Time: ~ O(n log^2(n)) without dissimRequests
+    // Time: ~ O(n log^3(n)) with    dissimRequests
+#if 0
+  Vector<Triangle> findHybrids (Real parentLengthFrac_min,
+                                Vector<Pair<const Leaf*>> &dissimRequests) const;
+	  // Input: parentLengthFrac_min > 1
+    // Update (append): dissimRequests
+    // Invokes: Leaf::getHybridness()
     // Time: ~ O(n log^3(n))
 #endif
-  struct Hybrid
-  { // !nullptr
-  	const Leaf* leaf;
-  	Real triangleInequalityViolation;
-  	  // > 1
-  	const Leaf* parent1;
-  	  // !possibleHybrid()
-  	const Leaf* parent2;
-  	  // !possibleHybrid()
-  	Real parentDissim;
-  	  // > 0
-  	Hybrid (const Leaf* leaf_arg,
-  	        Real triangleInequalityViolation_arg,
-				  	const Leaf* parent1_arg,
-				  	const Leaf* parent2_arg,
-				  	Real parentDissim_arg);
-		void print (ostream &os) const;
-  };
-  Vector<Hybrid> findHybrids (Real hybridness_min,
-                              Vector<Pair<const Leaf*>> &dissimRequests) const;
-    // Update (append): dissimRequests
-    // Time: ~ O(n log^3(n))
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode;:getReprLeaf()
 #if 0

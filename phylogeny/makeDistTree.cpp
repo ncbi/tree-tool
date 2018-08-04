@@ -39,6 +39,7 @@ struct ThisApplication : Application
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
+	  addKey ("obj_size", "Object size attribute name in the <data> file");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>");
@@ -60,11 +61,13 @@ struct ThisApplication : Application
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  	
-	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");
+	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  // obsolete ??
 	  
-	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), >= 1", "1.25");
-	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: hybrid hybridness(>1) parent1 parent2 inter-parent_dissimilarity");
+	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
+	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
+	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (Triangle::format));
 	  addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
+	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
@@ -81,40 +84,60 @@ struct ThisApplication : Application
 	
 	
 	bool deleteHybrids (DistTree &tree,
-	                    OFStream &os,
-	                    Real hybridness_min,
-	                    Vector<Pair<const Leaf*>> &hybridDissimRequests) const
+	                    OFStream *triangleParentPairsOs,
+	                    OFStream &hybridTrianglesOs,
+	                    Vector<Pair<const Leaf*>> *hybridDissimRequests) const
 	// Return: true <=> hybrids are deleted
-	// Append: hybridDissimRequests
+	// Append: *hybridDissimRequests
 	{
-    const Vector<DistTree::Hybrid> hybrids (tree. findHybrids (hybridness_min, hybridDissimRequests));
-    cout << "# Hybrids: " << hybrids. size () << endl;
-    cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests. size () << endl;
+    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1, hybridDissimRequests));  // PAR  
+    if (hybridDissimRequests)
+      cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests->size () << endl;
 
+    Vector<Triangle> hybridTriangles;
+    for (const TriangleParentPair& tpp : triangleParentPairs)
+    {    	
+    	if (triangleParentPairsOs)
+			  tpp. print (*triangleParentPairsOs);
+			tpp. qc ();
+		  hybridTriangles << tpp. getHybridTriangles ();  
+		}
+		if (triangleParentPairsOs)
+		  *triangleParentPairsOs << endl;
+
+    VectorPtr<Leaf> hybrids;  hybrids. reserve (hybridTriangles. size () * 2);  // PAR
+    for (const Triangle& tr : hybridTriangles)
     {
-    #ifndef NDEBUG
-      VectorPtr<Leaf> hybridLeaves;  hybridLeaves. reserve (hybrids. size ());
-      for (const DistTree::Hybrid& hybrid : hybrids)
-      	hybridLeaves << hybrid. leaf;
-      hybridLeaves. sort ();
-      ASSERT (hybridLeaves. isUniq ());
-    #endif
-      for (const DistTree::Hybrid& hybrid : hybrids)
-      {
-				ASSERT (hybrid. triangleInequalityViolation >= hybridness_min);
-				ASSERT (! hybridLeaves. containsFast (hybrid. parent1));
-				ASSERT (! hybridLeaves. containsFast (hybrid. parent2));
-      	hybrid. print (os);
-      }
+    	tr. print (hybridTrianglesOs);
+    	tr. qc ();
+			ASSERT (tr. hybridness >= hybridness_min);
+			hybrids << tr. getHybrids ();
     }
+    hybrids. sort ();
+    hybrids. uniq ();
+    
+    Set<const Leaf*> extra;
+    for (const Leaf* leaf : hybrids)
+    	if (! leaf->discernible)
+    		for (const DiGraph::Node* child : leaf->getParent () -> getChildren ())
+    			if (const Leaf* other = static_cast <const DTNode*> (child) -> asLeaf ())
+    			  if (! hybrids. containsFast (other))
+    			  {
+    			  	ASSERT (! other->discernible);
+    			  	extra << other;
+    			  }
+    Common_sp::insertAll (hybrids, extra);
+    			  	      
+    cout << "# Hybrids: " << hybrids. size () << endl;        
 
     cout << "Deleting ..." << endl;
     bool deleted = false;
     {
       Progress prog (hybrids. size ());
-      for (const DistTree::Hybrid& hybrid : hybrids)
+      for (const Leaf* leaf : hybrids)
       {
-        tree. removeLeaf (const_cast <Leaf*> (hybrid. leaf), true);
+      	ASSERT (leaf->graph);
+        tree. removeLeaf (const_cast <Leaf*> (leaf), true);
         prog (tree. absCriterion2str ());
         deleted = true;
       }
@@ -133,12 +156,13 @@ struct ThisApplication : Application
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
+	  const string objSizeAttrName     = getArg ("obj_size");
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
-		      bool   sparse              = getFlag ("sparse");
+		const bool   sparse              = getFlag ("sparse");
 		      
 		const bool   optimize            = getFlag ("optimize");
 		const bool   whole               = getFlag ("whole");
@@ -155,9 +179,11 @@ struct ThisApplication : Application
 
 		const string delete_outliers     = getArg ("delete_outliers");
 
-		const Real   hybridness_min      = str2real (getArg ("hybridness_min"));
+                 dissim_boundary     = str2real (getArg ("dissim_boundary"));
+		             hybridness_min      = str2real (getArg ("hybridness_min"));
 		const string delete_hybrids      = getArg ("delete_hybrids");
 		const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
+		const string hybrid_parent_pairs = getArg ("hybrid_parent_pairs");
 		
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
@@ -179,11 +205,13 @@ struct ThisApplication : Application
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
       if (sparse)
         throw runtime_error ("Further sparsing of " + dataFName + " cannot be done");
-      sparse = true;
+    //sparse = true;
     }
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
+    if (! objSizeAttrName. empty () && dissimAttrName. empty ())
+      throw runtime_error ("If the object size attribute is present then the dissimilarity attribute must be present");
     ASSERT (dissim_coeff > 0);
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exist, but no output_dist");
@@ -196,9 +224,14 @@ struct ThisApplication : Application
     IMPLY (subgraph_fast,     ! whole);
     IMPLY (subgraph_iter_max, ! whole);
     IMPLY (new_only, ! optimize);
-    ASSERT (hybridness_min >= 1);
+    if (dissim_boundary <= 0)
+    	throw runtime_error ("dissim_boundary must be > 0");
+    if (hybridness_min <= 1)
+    	throw runtime_error ("hybridness_min must be > 1");
     if (delete_all_hybrids && delete_hybrids. empty ())
     	throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
+    if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())
+    	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
     IMPLY (! leaf_errors. empty (), ! noqual);
 
 
@@ -215,10 +248,10 @@ struct ThisApplication : Application
       tree = isDirName (dataFName)
                ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
                : input_tree. empty ()
-                 ? new DistTree (dataFName, dissimAttrName, sparse)
+                 ? new DistTree (dataFName, dissimAttrName, objSizeAttrName, sparse)
                  : isDirName (input_tree)
-                   ? new DistTree (input_tree, dataFName, dissimAttrName)
-                   : new DistTree (input_tree, dataFName, dissimAttrName, sparse);
+                   ? new DistTree (input_tree, dataFName, dissimAttrName, objSizeAttrName)
+                   : new DistTree (input_tree, dataFName, dissimAttrName, objSizeAttrName, sparse);
     }
     ASSERT (tree. get ());
     tree->qc ();     
@@ -257,6 +290,9 @@ struct ThisApplication : Application
 
 
     Vector<Pair<const Leaf*>> hybridDissimRequests;
+    unique_ptr<OFStream> hybridParentPairsF;
+    if (! hybrid_parent_pairs. empty ())
+    	hybridParentPairsF. reset (new OFStream (hybrid_parent_pairs));
     unique_ptr<OFStream> hybridF;
     if (! delete_hybrids. empty ())
     	hybridF. reset (new OFStream (delete_hybrids));
@@ -318,7 +354,7 @@ struct ThisApplication : Application
 	              tree->optimizeLargeSubgraphs ();  
               	hybridDeleted = false;
 	              if (hybridF. get ())
-	              	hybridDeleted = deleteHybrids (*tree, *hybridF, hybridness_min, hybridDissimRequests);
+	              	hybridDeleted = deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
 	              if (hybridDeleted)
 	              	continue;
 	              if (tree->absCriterion == 0)
