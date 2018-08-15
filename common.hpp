@@ -71,6 +71,12 @@
 #include <iomanip>
 #include <memory>
 #include <algorithm>
+
+#pragma warning(push)
+#pragma warning(disable:4265)
+#include <mutex>
+#pragma warning(pop)
+
 #include <thread>
 
 
@@ -81,6 +87,7 @@ using namespace std;
 
 
 
+typedef  unsigned char  uchar; 
 typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
 

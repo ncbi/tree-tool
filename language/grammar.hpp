@@ -1,17 +1,16 @@
-// grammar.h
+// grammar.hpp
 
 #ifndef GRAMMAR_HPP
 #define GRAMMAR_HPP
 
 #include "../common.hpp"
 #include "../graph.hpp"
+using namespace Common_sp;
 
 
 
 namespace Grammar_sp
 {
-using namespace std;
-using namespace Common_sp;
 
 
 // Forward
