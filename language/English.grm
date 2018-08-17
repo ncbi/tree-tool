@@ -1,0 +1,111 @@
+Tense -> Past | Present
+Person -> 1st | 2nd | 3rd 
+Number -> Singular | Plural
+Personal -> Tense Person Number
+
+VerbForm -> Personal | Infinitive | Gerund | Participle 
+
+VerbStem -> ModalVerbStem | MainVerbStem 
+  ModalVerbStem -> Can | Will | ...
+  MainVerbStem -> Be | Have | Do | StrongVerbStem1 | StrongVerbStem2 | WeakVerbStem
+    StrongVerbStem1 -> BringType | PutType  # t|d
+      BringType -> Bring | Buy | Catch | Fight | Seech | Seek | Teach | Think | Wreak
+        # C2 is velar 
+      PutType -> Bend | Bet | Bid | Bleed | Breed | Build | Burn | Burst | Cast | Cut | Deal | Feed | Feel | Fit | Flee | Hear | Hit | Hold | Hurt | Keep | Kneel | Knit | Lay | Lead | Leap | Learn | Leave | Lend | Let | Light | Lose | Mean | Meet | Pay | Quit | Read | Say | Send | Set | Put | Shed | Shoot | Shut | Sleep | Slide | Speed | Spend | Split | Spread | Sweep | Thrust | Weep
+        # C1 V_short C2 {t|d}, C2 is not velar
+    StrongVerbStem2 -> DigType | DrinkType | TakeType
+      DigType -> Cling | Dig | Fling | Hang | Sling | Spin | Stick | Sting | Strike | String | Win
+        # C1 i C2, C2 is velar or nasal
+      DrinkType -> Begin | Drink | Ring | Shrink | Sing | Sink | Spring | Stink | Swim | Swing | Wring
+        # C1 i C2, C2 is velar or nasal
+      TakeType -> Bear | Beat | Bide | Bite | Blow | Break | Choose | Draw | Drive | Eat | Fall | Fly | Forbid | Freeze | Get | Give | Hide | Know | Lie | Ride | Rise | See | Shake | Speak | Steal | Stride | Swear | Take | Tear | Throw | Tread | Wake | Wear | Write
+    WeakVerbStem -> Want | ...
+
+??
+come came come
+find found found
+go went gone
+grind ground ground
+make made made
+prove proved proven
+run ran run
+sell sold sold
+sew sewed sewn
+shave shaved shaven
+show showed shown
+sit sat sat
+sow sowed sown
+spit spat spat
+stand stood stood
+tell told told
+wind wound wound
+
+
+SYNTAGM:
+Sentence [] -> 
+         NP[p,n]  CompVerb [Personal (_, p, n), _, null]  "." |
+  ^lead  NP[p,n]  CompVerb [Personal (_, p, n), _, ^lead] "?" 
+EX: I go .
+EX: I am .
+EX: I am going .
+EX: I can be going .
+EX: I do not go .
+EX: I cannot go .
+EX: I am not going .
+EX: I have not eaten .
+EX: I am not .
+EX: are you going ?
+EX: are not you going ?
+EX: are you ?
+?EX: I can .
+?EX: I do .  # anaphoric
+
+CompVerb [Personal p, MainVerbStem vs, ^lead] ->
+  AuxVerb [p, Be vs, ^lead] |
+  Perfectness [p, vs, ^lead] | 
+  AuxVerb [p, Do,            ^lead]  Perfectness [Infinitive, vs, null] |
+  AuxVerb [p, ModalVerbStem, ^lead]  Perfectness [Infinitive, vs, null]
+# Be: as an AuxVerb and a non-AuxVerb ??
+
+Perfectness [VerbForm vf, VerbStem vs, ^lead] ->
+  Continuity [vf, vs, ^lead] | AuxVerb [vf, Have, ^lead]  Continuity [Participle, vs, null]
+Continuity [VerbForm vf, VerbStem vs, ^lead] ->
+  Voice [vf, vs, ^lead] | AuxVerb [vf, Be, ^lead]  Voice [Gerund, vs, null]
+Voice [VerbForm vf, VerbStem vs, ^lead] ->
+  Verb [vf, vs] | AuxVerb [vf, Be, ^lead]  Verb [Participle, vs]
+
+TYPE: AuxVerb [VerbForm, VerbStem, ^lead]
+AuxVerb [VerbForm vf, VerbStem vs, null] -> Verb(vf,vs)
+AuxVerb [Personal(Present,_,_), ModalVerbStem(Can), ^lead] -> {"can" | "cannot"} ^lead
+AuxVerb [Personal p, VerbStem vs, ^lead] -> {Verb(p,vs) ["not"]} ^lead
+
+TYPE: Verb [VerbForm, VerbStem]
+# ModalVerbStem
+  Verb [Personal(Tense t,_,_), ModalVerbStem mvs] -> ModalVerb[t,mvs]
+  Verb [VerbForm, ModalVerbStem] -> DEFECT
+# MainVerbStem
+  Verb [Infinitive, MainVerbStem vs] -> MainVerb[vs]
+  Verb [Gerund,     MainVerbStem vs] -> MainVerb[vs] "ing"
+  # Present
+    Verb [Personal(Present,1st,Singular), Be] -> "am"
+    ...
+    Verb [Personal(Present,3rd,Singular), MainVerbStem vs] -> MainVerb[vs] "s"
+    Verb [Personal(Present,_,_),          MainVerbStem vs] -> MainVerb[vs]
+  # Past, Participle
+    # WeakVerbStem
+      Verb [Personal(Past,_,_), WeakVerbStem vs] -> MainVerb[vs] "ed"
+      Verb [Participle,         WeakVerbStem vs] -> MainVerb[vs] "ed"
+    # StrongVerbStrem1
+      Verb [Personal(Past,_,_), StrongVerbStem1 vs] -> PastVerbStem1[vs]
+      Verb [Participle,         StrongVerbStem1 vs] -> PastVerbStem1[vs]
+    # StrongVerbStrem2
+      # TakeType
+        Verb [Personal(Past,_,_), TakeType vs] -> C1[vs] VPast   [vs] C2[vs]
+        Verb [Participle,         TakeType vs] -> C1[vs] VPresent[vs] C2[vs] "en"
+
+TYPE: PastVerbStem1 [StrongVerbStem1] 
+
+TYPE: ModalVerb [Tense, ModalVerbStem]
+TYPE: MainVerb [MainVerbStem]
+
+TYPE: NP [Person, Number]
