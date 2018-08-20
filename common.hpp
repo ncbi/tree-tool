@@ -2043,6 +2043,10 @@ private:
 	  	cerr << ' ';
 	  }
 public:
+  void reset ()
+    { n = 0;
+      step. clear ();
+    }
 	static void disable ()
 	  { beingUsed++; }
 	static bool enabled ()
@@ -2059,6 +2063,8 @@ struct Input : Root, Nocopy
 protected:
 	AutoPtr <char> buf;
 	ifstream ifs;
+  istream* is {nullptr};
+    // !nullptr
 public:
 	bool eof {false};
 	uint lineNum {0};
@@ -2072,6 +2078,13 @@ protected:
   Input (const string &fName,
          size_t bufSize,
          uint displayPeriod);
+  Input (istream &is_arg,
+	       uint displayPeriod);
+public:
+
+
+  void reset ();
+    // Update: ifs
 };
 	
 
@@ -2080,6 +2093,7 @@ struct LineInput : Input
 {
 	string line;
 	  // Current line
+  string commentStart;
 
 	
 	explicit LineInput (const string &fName,
@@ -2087,11 +2101,16 @@ struct LineInput : Input
           	          uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
     {}
+  explicit LineInput (istream &is,
+	                    uint displayPeriod = 0)
+    : Input (is, displayPeriod)
+    {}
 
 
 	bool nextLine ();
   	// Output: eof, line
   	// Update: lineNum
+    // Invokes: trimTrailing()
 	bool expectPrefix (const string &prefix,
 	                   bool eofAllowed)
 		{ if (nextLine () && trimPrefix (line, prefix))
@@ -2127,6 +2146,10 @@ struct ObjectInput : Input
           	            uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
     {}
+  explicit ObjectInput (istream &is,
+	                      uint displayPeriod = 0)
+    : Input (is, displayPeriod)
+    {}
 
 
 	bool next (Root &row);
@@ -2138,12 +2161,12 @@ struct ObjectInput : Input
 
 struct CharInput : Input
 {
-  uint charNum;
+  uint charNum {(uint) -1};
     // In the current line
-  bool eol;
+  bool eol {false};
     // eof => eol
 private:
-  bool ungot;
+  bool ungot {false};
 public:
 
 	
@@ -2151,11 +2174,12 @@ public:
               	      size_t bufSize = 100 * 1024,
               	      uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
-    , charNum ((uint) -1)
-    , eol (false)
-    , ungot (false)
     {}
-  
+  explicit CharInput (istream &is,
+	                    uint displayPeriod = 0)
+    : Input (is, displayPeriod)
+    {}
+
 
 	char get ();
 	  // Output: eof
@@ -2167,14 +2191,14 @@ public:
 	  
 
   struct Error : runtime_error
-  { explicit Error (const CharInput &in,
-		                const string &expected = string ()) 
-			: runtime_error ("Error at line " + toString (in. lineNum + 1) 
-		                   + ", pos. " + toString (in. charNum + 1)
-		                   + (expected. empty () ? string () : (": " + expected + " is expected"))
-		                  )
-	    {}
-	};
+    { explicit Error (const CharInput &in,
+		                  const string &expected = string ()) 
+			  : runtime_error ("Error at line " + toString (in. lineNum + 1) 
+		                     + ", pos. " + toString (in. charNum + 1)
+		                     + (expected. empty () ? string () : (": " + expected + " is expected"))
+		                    )
+	      {}
+	  };
 };
 	
 

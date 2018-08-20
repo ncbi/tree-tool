@@ -970,6 +970,7 @@ Input::Input (const string &fName,
 	            uint displayPeriod)
 : buf (new char [bufSize])
 , ifs (fName)
+, is (& ifs)
 , prog (0, displayPeriod)  
 { 
   if (! ifs. good ())
@@ -980,11 +981,36 @@ Input::Input (const string &fName,
  
 
 
+Input::Input (istream &is_arg,
+	            uint displayPeriod)
+: is (& is_arg)
+, prog (0, displayPeriod)  
+{ 
+  ASSERT (is);
+  if (! is->good ())
+    throw runtime_error ("Bad input stream");
+}
+ 
+
+
+void Input::reset ()
+{ 
+  ASSERT (is == & ifs);
+
+  ifs. seekg (0); 
+  ASSERT (ifs. good ());
+  prog. reset ();
+}
+
+
+
 
 // LineInput
 
 bool LineInput::nextLine ()
 { 
+  ASSERT (is);
+
 	if (eof)  
 	{ 
 		line. clear ();
@@ -993,12 +1019,20 @@ bool LineInput::nextLine ()
 	
 	try 
 	{
-  	readLine (ifs, line);
+  	readLine (*is, line);
+  	const bool end = line. empty () && eof;
+
+    if (! commentStart. empty ())
+    {
+      const size_t pos = line. find (commentStart);
+      if (pos != string::npos)
+        line. erase (pos);
+    }
     trimTrailing (line); 
-  	eof = ifs. eof ();
+
+  	eof = is->eof ();
   	lineNum++;
   
-  	const bool end = line. empty () && eof;
   	if (! end)
   		prog ();
   		
@@ -1017,15 +1051,17 @@ bool LineInput::nextLine ()
 
 bool ObjectInput::next (Root &row)
 { 
+  ASSERT (is);
+
 	row. clear ();
 
 	if (eof)
 	  return false;
 
-	row. read (ifs);
+	row. read (*is);
 	lineNum++;
 
- 	eof = ifs. eof ();
+ 	eof = is->eof ();
   if (eof)
   {
   	ASSERT (row. empty ());
@@ -1034,10 +1070,10 @@ bool ObjectInput::next (Root &row)
 
 	prog ();
 	
-  ASSERT (ifs. peek () == '\n');
+  ASSERT (is->peek () == '\n');
 	row. qc ();
 
-  skipLine (ifs);
+  skipLine (*is);
 
 	return true;
 }
@@ -1048,11 +1084,13 @@ bool ObjectInput::next (Root &row)
 
 char CharInput::get ()
 { 
+  ASSERT (is);
+
   ungot = false;
   
-	const char c = (char) ifs. get ();
+	const char c = (char) is->get ();
 
-	eof = ifs. eof ();
+	eof = is->eof ();
 	ASSERT (eof == (c == (char) EOF));
 
 	if (eol)
@@ -1073,9 +1111,10 @@ char CharInput::get ()
 
 void CharInput::unget ()
 { 
+  ASSERT (is);
 	ASSERT (! ungot);
 	
-	ifs. unget (); 
+	is->unget (); 
 	charNum--;
 	ungot = true;
 }
