@@ -1,47 +1,14 @@
-// grammar.cpp
+// cfgrammar.cpp
 
 #undef NDEBUG
 #include "../common.inc"
 
-#include "grammar.hpp"
+#include "cfgrammar.hpp"
 
 
 
-namespace Grammar_sp
+namespace Cfgr
 {
-
-
-bool initGrammar ()
-{
-  MODULE_INIT
-
-  static_assert (numeric_limits<Char>::is_integer, "Char must be integer");
-
-  return true;
-}
-
-
-namespace
-{
-  const bool init_ = initGrammar ();
-}
-
-
-
-
-string chars2str (const Vector<Char> &vec)
-{
-  string s;  s. reserve (vec. size ());
-  for (const Char c : vec)
-  {
-    ASSERT (c < 128);
-    s += (char) c;
-  }
-  
-  return s;
-}
-
-
 
 
 // Sentence
@@ -56,7 +23,7 @@ Sentence::Sentence (const Grammar &grammar,
     { 
       const char c = s [i];
       ASSERT (c != eot);
-      seq [i + 1]. init (grammar, (Char) c); 
+      seq [i + 1]. init (grammar, c); 
     }
     catch (const exception &e) 
       { throw BadPos (i, e. what ()); }
@@ -69,8 +36,8 @@ void Sentence::qc () const
 {
   if (! qc_on)
     return;
+
   ASSERT (! seq. empty ());
-#ifndef NDEBUG
   FOR (size_t, i, seq. size ())
   {
     const Position& pos = seq [i];
@@ -79,7 +46,6 @@ void Sentence::qc () const
     else
       pos. qc ();
   }
-#endif  
 }
 
 
@@ -230,7 +196,7 @@ void Syntagm::qc () const
 
 void Syntagm::saveText (ostream &os) const
 { 
-  os << symbol. name << ": " << chars2str (str ()); 
+  os << symbol. name << ": " << str (); 
 }
 
 
@@ -289,10 +255,9 @@ void TerminalSyntagm::qc () const
 
 
 
-Vector<Char> TerminalSyntagm::str () const 
+string TerminalSyntagm::str () const 
 { 
-  Vector<Char> vec (1, begin. c); 
-  return vec;
+  return string (1, begin. c); 
 }
 
 
@@ -325,7 +290,6 @@ void NonTerminalSyntagm::qc () const
   ASSERT (findPtr (begin. nonTerminal2syntagms, symbol. asNonTerminal ()));
   ASSERT (& symbol == & rule. lhs);
   ASSERT (children. size () == rule. rhs. size ());
-#ifndef NDEBUG
   const Syntagm* prev = nullptr;
   FOR (size_t, i, children. size ())
   {
@@ -338,7 +302,6 @@ void NonTerminalSyntagm::qc () const
   //syntagm->qc ();   // Invoked in Position::qc()
     prev = syntagm;
   }
-#endif
 }
 
 
@@ -356,11 +319,11 @@ void NonTerminalSyntagm::saveText (ostream &os) const
 
 
 
-Vector<Char> NonTerminalSyntagm::str () const
+string NonTerminalSyntagm::str () const
 {
-  Vector<Char> vec;  vec. reserve (size ());
+  string vec;  vec. reserve (size ());
   for (const Syntagm* syntagm : children)
-    vec << syntagm->str ();
+    vec += syntagm->str ();
 /*
   for (const Position* pos = & begin; pos != & end; pos++)
     vec << pos->c;    
@@ -389,7 +352,6 @@ void Position::qc () const
     return;
     
   ASSERT (! terminal2syntagms. empty ()); 
-#ifndef NDEBUG
   const Syntagm* prev = nullptr;
   for (const auto mapIt : terminal2syntagms)
   {
@@ -428,13 +390,12 @@ void Position::qc () const
     }
     ASSERT (dSet. size () == mapIt. second->size ());
   }
-#endif
 }
 
 
 
 TerminalSyntagm& Position::init (const Grammar &grammar,
-                                 Char c_arg)
+                                 char c_arg)
 {
   c = c_arg;
 /*if (isspace (c))
@@ -611,10 +572,8 @@ void Rule::qc () const
   ASSERT (! firstTerminals. contains (nullptr));
   ASSERT (singleRhs. size () == rhs. size ());
 #if 0
-#ifndef NDEBUG
   for (const Symbol* s : rhs)
     ASSERT (lhs. grammar == s->grammar);
-#endif
 #endif
 
   // Non-redundant
@@ -882,16 +841,13 @@ void Symbol::qc () const
   IMPLY (erasable, terminable);
 
 //IMPLY (! grammar, asGrammar());
-#ifndef NDEBUG
   for (const Rule::Occurrence ro : ruleOccurrences)
   {
     ro. qc ();
     ASSERT (ro. getSymbol () == this);
   }
-#endif
 
   ASSERT (! terminals. contains (nullptr));
-#ifndef NDEBUG
   for (const Rule::Occurrence ro : firstROs)
     ro. qc ();
   for (const Rule::Occurrence ro : lastROs)
@@ -925,16 +881,13 @@ void Symbol::qc () const
   ASSERT (/*(bool) grammar ==*/ found)
 
   ASSERT (! terminals. contains (nullptr));
-#endif
 
   // Non-redundant
-#ifndef NDEBUG
   for (const bool out : {false, true})
   {
     IMPLY (name != NonTerminal::sigmaS, ! neighbors [out]. empty ());
     ASSERT (! neighbors [out]. contains (nullptr));
   }
-#endif
 
 
   ASSERT (! replacements. contains (nullptr));
@@ -1061,10 +1014,6 @@ Set<const Symbol*> Symbol::getRuleNexts () const
 
 // Terminal
 
-const string Terminal::eotName ("EOT");
-
-
-
 Terminal::Terminal (const string &name_arg)
 : Symbol (name_arg)
 {
@@ -1073,16 +1022,18 @@ Terminal::Terminal (const string &name_arg)
   {
     if (isDigit (name [0]))
     {
-      c = str2<Char> (name);
-      ASSERT (c > 0);
-      ASSERT (c < ' ' || c >= 127);
+      const int i = str2<int> (name);
+      ASSERT (i > 0);
+      ASSERT (i < ' ' || i >= 127);
+      ASSERT (i < 256);
+      c = (char) i;
     }
     else
     {    
       ASSERT (name. size () == 3);
       ASSERT (name [0] == Token::quote);
       ASSERT (name [2] == Token::quote);
-      c = (Char) name [1];
+      c = name [1];
       ASSERT (c >= ' ')
       ASSERT (c < 127);
     }
@@ -1102,7 +1053,6 @@ void Terminal::qc () const
     return;
   Symbol::qc ();
 
-#ifndef NDEBUG
 //if (grammar)
   {
     ASSERT (! erasable);
@@ -1114,7 +1064,6 @@ void Terminal::qc () const
     for (const bool out : {false, true})
       ASSERT (Set<Rule::Occurrence> (terminalNeighbors [out]) == ruleOccurrences);
   }
-#endif
 }
 
 
@@ -1141,10 +1090,6 @@ bool Terminal::differentiated (Rule::Occurrence ro,
 
 // NonTerminal
 
-const string NonTerminal::sigmaS = "Sigma";
-
-
-
 void NonTerminal::qc () const
 {
   if (! qc_on)
@@ -1154,7 +1099,6 @@ void NonTerminal::qc () const
   ASSERT (isAlpha (name [0]));
 
 //ASSERT (grammar);
-#ifndef NDEBUG
   size_t leftRecursive = 0;
   size_t rightRecursive = 0;
   size_t nonRecursive = 0;
@@ -1176,10 +1120,8 @@ void NonTerminal::qc () const
   // Non-redundant
   IMPLY (leftRecursive, nonRecursive);
   IMPLY (rightRecursive, nonRecursive);
-#endif
 
 //ASSERT (terminal2rules [false]. size () == terminal2rules [true] . size ());
-#ifndef NDEBUG
   Set<const Rule*> all;
   for (const bool b : {false, true})
     for (const auto it : terminal2rules [b])
@@ -1212,7 +1154,6 @@ void NonTerminal::qc () const
     all << r;
   }
   ASSERT (all == ruleSet);
-#endif
 
   IMPLY (erasable, ! erasableRules. empty ());
 
@@ -1472,7 +1413,6 @@ void SymbolTree::qc () const
   if (! qc_on)
     return;
   IMPLY (children. empty (), ! rules. empty ());
-#ifndef NDEBUG
   for (const auto it : children)
   {
     ASSERT (it. first);
@@ -1480,7 +1420,6 @@ void SymbolTree::qc () const
     ASSERT (st);
     st->qc ();
   }
-#endif
 
   ASSERT (! rules. contains (nullptr));
 }
@@ -1506,83 +1445,13 @@ void SymbolTree::saveText (ostream &os) const
 
 // Grammar
 
-const string Grammar::arrowS ("->");
-
-
-
-Grammar::Grammar (const string &fName)
-: /*Terminal (commentC, nullptr)
-,*/ ruleNum (0)
-, startSymbol (nullptr)
-, eotSymbol (nullptr)
-//, symbolTree (* new SymbolTree ())
-{
-  string startS;
-
-  CharInput in (fName);
-  try 
-  {
-    List<Token> tokens;
-    for (;;)
-    {
-      const Token token (in);
-      token. qc ();
-      if (token. isDelimiter (commentC))
-      {
-        in. getLine ();
-        continue;
-      }
-      if (   token. charNum == 0
-          || token. empty ()
-         )
-      {
-        if (! tokens. empty ())
-        {
-          ASSERT (tokens. size () >= 3);
-          ASSERT (tokens. front (). type == Token::eName);
-          const string lhs (tokens. popFront (). name);
-          ASSERT (arrowS. size () == 2);
-          ASSERT (tokens. popFront (). isDelimiter (arrowS [0]));
-          ASSERT (tokens. popFront (). isDelimiter (arrowS [1]));
-        #ifndef NDEBUG
-          for (const Token& t : tokens)
-            ASSERT (! contains (t. name, commentC));
-        #endif
-          List<Token>::const_iterator it = tokens. cbegin ();
-          addRule (lhs, it, tokens. cend (), false);
-          if (startS. empty ())
-            startS = lhs;
-        }
-        tokens. clear ();
-      }
-      if (token. empty ())
-        break;
-      tokens << token;
-    }
-  }
-  catch (...)
-  {
-    cout << "At line " << in. lineNum + 1 << endl;
-    throw;
-  }
-
-  finish (startS);
-}
-
-
-
 Grammar::Grammar (const Grammar &other,
                   const VectorPtr<NonTerminal> &newTerminals)
-: /*Terminal (other. name, nullptr)
-,*/ ruleNum (0)
-, startSymbol (nullptr)
-, eotSymbol (nullptr)
+// : Terminal (other. name, nullptr)
 //, symbolTree (* new SymbolTree ())
 {
   ASSERT (! newTerminals. empty ());
-#ifndef NDEBUG
   other. qc ();
-#endif
 
   DerivedSymbolGraph dsg (other);      
   for (const NonTerminal* nt : newTerminals)
@@ -1618,16 +1487,11 @@ Grammar::Grammar (const Grammar &other,
 
 Grammar::Grammar (const Grammar &other,
                   const Terminal* universalDelimiter)
-: /*Terminal (other. name, nullptr)
-,*/ ruleNum (0)
-, startSymbol (nullptr)
-, eotSymbol (nullptr)
+// : Terminal (other. name, nullptr)
 //, symbolTree (* new SymbolTree ())
 {
   ASSERT (other. symbols. contains (universalDelimiter));
-#ifndef NDEBUG
   other. qc ();
-#endif
 
   for (const Symbol* s : other. symbols)
     if (const NonTerminal* nt = s->asNonTerminal ())
@@ -1641,6 +1505,61 @@ Grammar::Grammar (const Grammar &other,
       }
 
   finish (other. startSymbol->name);
+}
+
+
+
+void Grammar::init (CharInput &in)
+{
+  string startS;
+
+  try 
+  {
+    List<Token> tokens;
+    for (;;)
+    {
+      const Token token (in);
+      token. qc ();
+      if (token. isDelimiter (commentC))
+      {
+        in. getLine ();
+        continue;
+      }
+      if (   token. charNum == 0
+          || token. empty ()
+         )
+      {
+        if (! tokens. empty ())
+        {
+          ASSERT (tokens. size () >= 3);
+          ASSERT (tokens. front (). type == Token::eName);
+          const string lhs (tokens. popFront (). name);
+          ASSERT (string (arrowS). size () == 2);
+          ASSERT (tokens. popFront (). isDelimiter (arrowS [0]));
+          ASSERT (tokens. popFront (). isDelimiter (arrowS [1]));
+        #ifndef NDEBUG
+          for (const Token& t : tokens)
+            ASSERT (! contains (t. name, commentC));
+        #endif
+          List<Token>::const_iterator it = tokens. cbegin ();
+          addRule (lhs, it, tokens. cend (), false);
+          if (startS. empty ())
+            startS = lhs;
+        }
+        tokens. clear ();
+      }
+      if (token. empty ())
+        break;
+      tokens << token;
+    }
+  }
+  catch (...)
+  {
+    cout << "At line " << in. lineNum + 1 << endl;
+    throw;
+  }
+
+  finish (startS);
 }
 
 
@@ -1665,7 +1584,8 @@ void Grammar::addRule (const string &lhs,
                        bool optional)
 {
   ASSERT (! lhs. empty ());
-  ASSERT (lhs != NonTerminal::sigmaS);
+  if (lhs == NonTerminal::sigmaS)
+    throw runtime_error (string ("Symbol \"") + NonTerminal::sigmaS + "\" is reserved");
   
   string ascii ("   ");
   ASSERT (ascii. size () == 3);
@@ -1825,9 +1745,8 @@ void Grammar::qc () const
   ASSERT (eotSymbol);
 //ASSERT (eotSymbol->ruleOccurrences. empty ());
 
-#ifndef NDEBUG
   Set<const Symbol*> symbolSet;
-  Set<Char> charSet;
+  Set<char> charSet;
   size_t terminals = 0;
   for (const Symbol* s : symbols)
   {
@@ -1855,13 +1774,10 @@ void Grammar::qc () const
     ERROR_MSG (s->name + " is not reachable");
   if (const Symbol* s = getNonTerminable ())
     ERROR_MSG (s->name + " is not terminable");
-#endif
 
 #if 0
-#ifndef NDEBUG
   for (const Rule* r : symbolTree. rules)
     ASSERT (r->erasable);
-#endif
   symbolTree. qc ();
 #endif
 }

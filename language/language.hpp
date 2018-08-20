@@ -9,10 +9,11 @@ using namespace Common_sp;
 
 
 
-namespace Language_sp
+namespace Lang
 {
 
 
+// --> utf8.{hpp,cpp} ??
 typedef  uint  Codepoint;
   // Unicode
   // 0 - non-existing code point
@@ -141,6 +142,10 @@ struct Category : Named
   Vector<Expansion> expansions;
     // Or
     // empty() <=> terminal
+
+  explicit Category (const string &name_arg)
+    : Named (name_arg)
+    {}
 };
 
 
@@ -156,17 +161,7 @@ template <typename T /*:Named*/>
 
 
 
-struct Rule;
-
-
-
-struct Construction : Named
-{
-  VectorPtr<Category> args;
-//Vector<Address> ??
-  VectorOwn<Rule> rules;
-    // empty() <=> terminal (<=> "phoneme")
-};
+struct Construction;
 
 
 
@@ -180,12 +175,46 @@ struct SubConstruction
 
 
 
-struct Rule
+struct Choice
 {
   SubConstruction lhs;
-  Vector<SubConstruction> rhs;
+
+  typedef Vector<SubConstruction> Expansion;
+  Vector<Expansion> expansions;
 };
 
+
+
+struct Construction : Named
+{
+  VectorPtr<Category> args;
+//Vector<Address> ??
+  Vector<Choice> choices;
+    // empty() <=> terminal (<=> "phoneme")
+
+  explicit Construction (const string &name_arg)
+    : Named (name_arg)
+    {}
+};
+
+
+
+struct Language : Root
+{
+  static constexpr char* arrowS {"->"};
+  map <string/*Category::name*/, const Category*> categories;
+  map <string/*Construction::name*/, const Construction*> constructions;
+  const Construction* rootConstruction {nullptr};
+    // !nullptr
+
+
+  explicit Language (const string &fName);
+private:
+  void parseGrammar (LineInput &f,
+                     uchar pass);
+  void parseRule (const string &line,
+                  uchar pass);
+};
 
 
 }  // namespace

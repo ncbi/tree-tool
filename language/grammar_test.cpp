@@ -5,8 +5,8 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
-#include "grammar.hpp"
-using namespace Grammar_sp;
+#include "cfgrammar.hpp"
+using namespace Cfgr;
 
 
 
@@ -14,7 +14,7 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Test a CF-grammar")
-    { addPositional ("grammar", "Grammar file"); }
+    { addPositional ("grammar", "CF-Grammar file"); }
 
 
   void body () const
@@ -61,13 +61,11 @@ struct ThisApplication : Application
       cout << "Not parsed" << endl;
     else
       for (const Syntagm* syntagm : syntagms)
-      {
         if (syntagm->right)
         {
           syntagm->print (cout);
           cout << endl;
         }
-      }
 
     cout << endl;
     cout << "Wrong syntagms:" << endl;

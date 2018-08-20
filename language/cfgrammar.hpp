@@ -1,4 +1,4 @@
-// grammar.hpp
+// cfgrammar.hpp
 // Context-free grammar
 
 #ifndef GRAMMAR_HPP
@@ -10,7 +10,7 @@ using namespace Common_sp;
 
 
 
-namespace Grammar_sp
+namespace Cfgr
 {
 
 
@@ -27,15 +27,8 @@ struct Position;
 
 
 
-typedef  unsigned int  Char;
-  // Unicode
-const Char eot = 0;
+const char eot = '\0';
   // "End of text"
-typedef  Set<Char>  Alphabet;
-  // !contains(eot)
-string chars2str (const Vector<Char> &vec);
-  // Requires: Char in ASCII
-
 
 
 
@@ -46,7 +39,6 @@ struct Sentence : Root
 // Ambiguous text
 {
   Vector<Position> seq;
-//const Alphabet* alphabet;  ??
 
   struct BadPos : runtime_error  
     { size_t pos;
@@ -59,7 +51,6 @@ struct Sentence : Root
   Sentence (const Grammar &grammar,
             const string &s) throw (BadPos);
     // After: grammar.setChar2terminal() 
-    // Requires: Char in ASCII
   void qc () const final;
 
   size_t countWrongTerminalSyntagms () const;
@@ -71,7 +62,6 @@ struct Sentence : Root
   const NonTerminalSyntagm* getLastLongestSyntagm () const;
     // Return: may be nullptr
   void reportError (ostream &os) const;
-    // Requires: Char in ASCII
   void printWrongSyntagms (ostream &os,
                            size_t size_min) const;
   VectorPtr<NonTerminalSyntagm> findSyntagms (const string& symbolName) const;
@@ -90,7 +80,7 @@ struct Syntagm : Root
     // In Grammar::symbols
 
   // Analysis
-  bool right;
+  bool right {false};
 
 protected:
   Syntagm (const Position& begin_arg,
@@ -99,7 +89,6 @@ protected:
     : begin (begin_arg)
     , end (end_arg)
     , symbol (symbol_arg)
-    , right (false)
     {}
 public:
   void qc () const override;
@@ -111,7 +100,7 @@ public:
     { return nullptr; }
 
   size_t size () const;
-  virtual Vector<Char> str () const = 0;
+  virtual string str () const = 0;
   virtual void setRight () 
     { right = true; }
 };
@@ -131,7 +120,7 @@ public:
   const TerminalSyntagm* asTerminalSyntagm () const final
     { return this; }
 
-  Vector<Char> str () const final;
+  string str () const final;
 };
 
 
@@ -155,7 +144,7 @@ struct NonTerminalSyntagm : Syntagm
   const NonTerminalSyntagm* asNonTerminalSyntagm () const final
     { return this; }
 
-  Vector<Char> str () const final;
+  string str () const final;
   void setRight () final;
 };
 
@@ -172,7 +161,7 @@ typedef  VectorOwn<Syntagm>  Syntagms;
 struct Position : Root
 // In Sentence
 {
-  Char c {eot};
+  char c {eot};
 
   // Output
   // !nullptr
@@ -196,7 +185,7 @@ struct Position : Root
         delete it. second;
     }
   TerminalSyntagm& init (const Grammar &grammar,
-                         Char c_arg);
+                         char c_arg);
   void qc () const final;
 
   const NonTerminalSyntagm* getLongestSyntagm () const;
@@ -216,9 +205,9 @@ struct Rule : Root
 
   struct Occurrence;
   struct Occurrences : Set<Occurrence>  
-  { Set<const Symbol*> getSymbols () const;
-      // Return: !contains(nullptr)
-  };
+    { Set<const Symbol*> getSymbols () const;
+        // Return: !contains(nullptr)
+    };
 
 
   struct Occurrence : Root
@@ -262,7 +251,7 @@ struct Rule : Root
   };
 
 
-  size_t num;
+  size_t num {0};
     // Unique within Rule's of the Grammar
 
 private:
@@ -357,7 +346,7 @@ public:
 #if 0
   virtual const Letter* asLetter () const
     { return nullptr; }
-  virtual const Grammar* asGrammar () const
+  virtual const Grammar* asCFGrammar () const
     { return nullptr; }
 #endif
 
@@ -396,8 +385,8 @@ typedef  map <Rule::Occurrence, Set<const Terminal*> >  Occurrence2Terminals;
 struct Terminal : Symbol
 // name: '<ASCII>' or <Unicode>
 {
-  static const string eotName;
-  Char c {eot};
+  static constexpr char* eotName {"EOT"};
+  char c {eot};
 
   // Analysis
   Occurrence2Terminals terminalNeighbors [2/*bool next*/];  
@@ -421,7 +410,7 @@ struct Terminal : Symbol
                        bool out) const;
     // Input: ro in terminalNeighbors[out].keys()
 
-  const Syntagms* parse (const Position &pos) const
+  const Syntagms* parse (const Position &pos) const final
     { return findPtr (pos. terminal2syntagms, this); }
     // Return: TerminalSyntagm*'s
 };
@@ -431,7 +420,7 @@ struct Terminal : Symbol
 struct NonTerminal : Symbol
 // name: no quotes
 {
-  static const string sigmaS;
+  static constexpr char* sigmaS {"Sigma"};
   VectorOwn<Rule> lhsRules;
     // *this == Rule::lhs 
 
@@ -483,7 +472,7 @@ private:
 public:
   bool canEnd (const Position &pos) const;
     // Requires: pos != Sentence::seq.end()
-  const Syntagms* parse (const Position &pos) const;
+  const Syntagms* parse (const Position &pos) const final;
     // Return: !nullptr, VectorOwn* of NonTerminalSyntagm*
 };
 
@@ -493,7 +482,7 @@ public:
 struct Letter : Terminal
 {
   static const string space;
-  Char c;
+  char c;
 
 
   Letter (const string &name_arg,
@@ -502,7 +491,7 @@ struct Letter : Terminal
     , c (getChar (name_arg))
     {}
 private:
-  static Char getChar (const string &name) 
+  static char getChar (const string &name) 
     { return name == space
                ? ' ' 
                : name. size () == 1
@@ -541,48 +530,55 @@ struct SymbolTree : Root
 
 
 struct Grammar : Root
-// grammar  ??
-  // Tree
+// CF-grammar
+  // ??
+  // Tree 
   // nullptr <=> *this is a root grammar
   // !nullptr <=> *this is a symbol grammar
 {
-  static const string arrowS;
+  static constexpr char* arrowS {"->"};
   static const char commentC = '#';
 private:
   friend struct Rule;
-  size_t ruleNum;
+  size_t ruleNum {0};
   map<string,Symbol*> string2Symbol;
 public:
 
   VectorOwn<Symbol> symbols;  
   // In symbols
-  const NonTerminal* startSymbol;
-  const Terminal* eotSymbol;
+  const NonTerminal* startSymbol {nullptr};
+  const Terminal* eotSymbol {nullptr};
 
 #if 0
   const SymbolTree& symbolTree;
     // rules = erasable rules
 #endif
 
-  map <Char, const Terminal*> char2terminal; 
+  map <char, const Terminal*> char2terminal; 
     // size() == charSize
     // symbols.contains(Terminal*)
 
 
-  explicit Grammar (const string &fName);
-    // Normal CF-grammar
-    // Input: fName: sequence of rules 
-    //   <rule> ::= <NonTerminal> <arrowS> <Symbol>*
-    //     space-delimited
-    //     starts from the first position of a line
-    //   '#' starts a comment which ends at the line end
-    //   Special characters: [ ] * +
-    //   Automatically added rules for symbols A* or A+ in r.h.s.:
-    //     A+ -> A A*
-    //     A* ->
-    //     A* -> A+
-    //   <Terminal symbol> ::= <Unicode> | "<sequence of printable ASCII symbols>"
-    // Output: startSymbol = the <NonTerminal> of the first rule
+  // Normal CF-grammar: sequence of rules
+  //   <rule> ::= <NonTerminal> <arrowS> <Symbol>*
+  //     space-delimited
+  //     starts from the first position of a line
+  //   NonTerminal cannot be "Sigma"
+  //   '#' starts a comment which ends at the line end
+  //   Special characters: [ ] * +
+  //   Automatically added rules for symbols A* or A+ in r.h.s.:
+  //     A+ -> A A*
+  //     A* ->
+  //     A* -> A+
+  //   <Terminal symbol> ::= <Unicode> | "<sequence of printable ASCII symbols>"
+  explicit Grammar (const string &fName)
+    //: Terminal (commentC, nullptr)
+    //, symbolTree (* new SymbolTree ())
+    { CharInput in (fName);
+      init (in);
+    }
+  explicit Grammar (CharInput &in)
+    { init (in); }
   // Subgrammars ??
 //explicit Grammar (const NonTerminal &nt);
   Grammar (const Grammar &other,
@@ -592,6 +588,9 @@ public:
            const Terminal* universalDelimiter);
     // Input: other.symbols.contains(universalDelimiter)
 private:
+  void init (CharInput &in);
+    // Input: in: Normal CF-grammar 
+    // Output: startSymbol = the <NonTerminal> of the first rule
   template <typename T>
     T* getSymbol (const string &lhs)
       // Return: !nullptr
@@ -617,13 +616,13 @@ private:
   void finish (const string &startS);
     // Invokes: Rule::finish(), see below
 public:
-  void qc () const;
+  void qc () const override;
     // Invokes: see below
-  void saveText (ostream &os) const;
+  void saveText (ostream &os) const final;
     // Invokes: getComplexity()
 
 
-//const Grammar* asGrammar () const
+//const Grammar* asCFGrammar () const
   //{ return this; }
 
   // Invoked in finish()

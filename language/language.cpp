@@ -2,12 +2,13 @@
 
 #undef NDEBUG
 #include "../common.inc"
+#include "cfgrammar.hpp"
 
 #include "language.hpp"
 
 
 
-namespace Language_sp
+namespace Lang
 {
 
 
@@ -164,6 +165,175 @@ string Alphabet::small2name (Codepoint c) const
   size_t index;
   EXEC_ASSERT (extraSmall. find (c, index));
   return names [size + index];
+}
+
+
+
+
+// Language
+
+namespace
+{
+
+Cfgr::Grammar* cfgr = nullptr;
+
+void addCharRule (string &s, 
+                  char c)
+  { s += string ("char -> \"") + c + "\"\n"; }
+
+}
+
+
+
+Language::Language (const string &fName)
+{
+  if (! cfgr)
+  {
+    string s (R"cfgr(
+sigma -> categ_rule
+sigma -> cons_rule
+
+categ_rule -> w sp "->" categ_choices
+categ_choices -> categ_seq
+categ_choices -> categ_seq sp "|" categ_choices
+categ_seq -> w
+categ_seq -> w space categ_seq
+
+cons_rule -> cons sp "->" cons_choices
+cons_choices -> cons_seq
+cons_choices -> cons_seq sp "|" cons_choices
+cons_seq -> cons
+cons_seq -> cons space cons_seq
+
+cons -> w sp "[" args sp "]" [pointer]
+args -> arg
+args -> arg sp "," args
+
+arg -> SExpr [space w]
+arg -> pointer
+
+SExpr -> w
+SExpr -> sp "(" SExprList sp ")"
+SExprList -> SExpr
+SExprList -> SExpr space SExprList
+
+pointer -> sp "^" w
+
+w -> sp char+
+space -> " "
+sp -> space*
+)cfgr");
+    for (char c = 'a'; c <= 'z'; c++)
+      addCharRule (s, c);
+    for (char c = 'A'; c <= 'Z'; c++)
+      addCharRule (s, c);
+    for (char c = '0'; c <= '9'; c++)
+      addCharRule (s, c);
+    addCharRule (s, '_');
+    if (verbose ())
+      cout << s << endl;  
+
+    istringstream iss (s);
+    CharInput in (iss);
+    cfgr = new Cfgr::Grammar (in);
+    cfgr->qc();
+    if (verbose ())
+      cfgr->print (cout);  
+    cfgr->prepare ();  
+  }
+
+
+  LineInput f (fName, 100 * 1024, 1);  // PAR
+  f. commentStart = "#";
+  FOR (uchar, pass, 2)
+    parseGrammar (f, pass);
+}
+
+
+
+void Language::parseGrammar (LineInput &f,
+                             uchar pass)
+{
+  f. reset ();
+  string line;
+  while (f. nextLine ())
+  {
+    if (f. line. empty ())
+      continue;
+    replace (f. line, '\t', ' ');
+    trim (f. line);
+    if (f. line == "END")
+      break;
+    if (contains (f. line, arrowS))
+    {
+      parseRule (line, pass);
+      line = f. line;
+    }
+    else
+      line += " " + f. line;
+  }
+  parseRule (line, pass);
+}
+
+
+
+void Language::parseRule (const string &line,
+                          uchar pass)
+{
+  ASSERT (cfgr);
+
+  if (line. empty ())
+    return;
+  ASSERT (! isspace (line [0]));
+
+  const size_t pos = line. find (arrowS);
+  ASSERT (pos != string::npos);
+  {
+    const size_t rpos = line. rfind (arrowS);
+    ASSERT (pos <= rpos);
+    if (pos < rpos)
+      throw runtime_error ("There can be only one \"->\" on a line");
+  }
+
+  string name (line. substr (0, pos));
+  trim (name);
+
+  if (pass ==  0)
+  {
+    if (contains (line, "["))
+    {
+      if (! findPtr (categories, name))
+        categories [name] = new Category (name);
+    }
+    else
+    {
+      if (! findPtr (constructions, name))
+        constructions [name] = new Construction (name);
+    }
+    return;
+  }
+
+
+  ASSERT (pass == 1);
+
+  Cfgr::Sentence text (*cfgr, line);
+  const Cfgr::Syntagms& syntagms = cfgr->parseSentence (text);
+
+  const Cfgr::Syntagm* syntagm = nullptr;
+  for (const Cfgr::Syntagm* syntagm_ : syntagms)
+    if (syntagm_->right)
+    {
+      if (syntagm)
+        throw runtime_error ("Ambiguous: " + line);
+      syntagm = syntagm_;
+    }
+  if (! syntagm)
+    throw runtime_error ("Not parsed: " + line);
+  if (verbose ())
+  {
+    syntagm->print (cout);
+    cout << endl;
+  }
 }
 
 

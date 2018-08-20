@@ -5,8 +5,10 @@ Personal -> Tense Person Number
 
 VerbForm -> Personal | Infinitive | Gerund | Participle 
 
+END
+
 VerbStem -> ModalVerbStem | MainVerbStem 
-  ModalVerbStem -> Can | Will | ...
+  ModalVerbStem -> Can | Will # ...
   MainVerbStem -> Be | Have | Do | StrongVerbStem1 | StrongVerbStem2 | WeakVerbStem
     StrongVerbStem1 -> BringType | PutType  # t|d
       BringType -> Bring | Buy | Catch | Fight | Seech | Seek | Teach | Think | Wreak
@@ -19,29 +21,28 @@ VerbStem -> ModalVerbStem | MainVerbStem
       DrinkType -> Begin | Drink | Ring | Shrink | Sing | Sink | Spring | Stink | Swim | Swing | Wring
         # C1 i C2, C2 is velar or nasal
       TakeType -> Bear | Beat | Bide | Bite | Blow | Break | Choose | Draw | Drive | Eat | Fall | Fly | Forbid | Freeze | Get | Give | Hide | Know | Lie | Ride | Rise | See | Shake | Speak | Steal | Stride | Swear | Take | Tear | Throw | Tread | Wake | Wear | Write
-    WeakVerbStem -> Want | ...
+    WeakVerbStem -> Want # ...
 
-??
-come came come
-find found found
-go went gone
-grind ground ground
-make made made
-prove proved proven
-run ran run
-sell sold sold
-sew sewed sewn
-shave shaved shaven
-show showed shown
-sit sat sat
-sow sowed sown
-spit spat spat
-stand stood stood
-tell told told
-wind wound wound
+# ??
+# come came come
+# find found found
+# go went gone
+# grind ground ground
+# make made made
+# prove proved proven
+# run ran run
+# sell sold sold
+# sew sewed sewn
+# shave shaved shaven
+# show showed shown
+# sit sat sat
+# sow sowed sown
+# spit spat spat
+# stand stood stood
+# tell told told
+# wind wound wound
 
 
-SYNTAGM:
 Sentence [] -> 
          NP[p,n]  CompVerb [Personal (_, p, n), _, null]  "." |
   ^lead  NP[p,n]  CompVerb [Personal (_, p, n), _, ^lead] "?" 
@@ -74,12 +75,12 @@ Continuity [VerbForm vf, VerbStem vs, ^lead] ->
 Voice [VerbForm vf, VerbStem vs, ^lead] ->
   Verb [vf, vs] | AuxVerb [vf, Be, ^lead]  Verb [Participle, vs]
 
-TYPE: AuxVerb [VerbForm, VerbStem, ^lead]
+AuxVerb [VerbForm, VerbStem, ^lead] ->
 AuxVerb [VerbForm vf, VerbStem vs, null] -> Verb(vf,vs)
 AuxVerb [Personal(Present,_,_), ModalVerbStem(Can), ^lead] -> {"can" | "cannot"} ^lead
 AuxVerb [Personal p, VerbStem vs, ^lead] -> {Verb(p,vs) ["not"]} ^lead
 
-TYPE: Verb [VerbForm, VerbStem]
+Verb [VerbForm, VerbStem] ->
 # ModalVerbStem
   Verb [Personal(Tense t,_,_), ModalVerbStem mvs] -> ModalVerb[t,mvs]
   Verb [VerbForm, ModalVerbStem] -> DEFECT
@@ -103,9 +104,9 @@ TYPE: Verb [VerbForm, VerbStem]
         Verb [Personal(Past,_,_), TakeType vs] -> C1[vs] VPast   [vs] C2[vs]
         Verb [Participle,         TakeType vs] -> C1[vs] VPresent[vs] C2[vs] "en"
 
-TYPE: PastVerbStem1 [StrongVerbStem1] 
+PastVerbStem1 [StrongVerbStem1] ->
 
-TYPE: ModalVerb [Tense, ModalVerbStem]
-TYPE: MainVerb [MainVerbStem]
+ModalVerb [Tense, ModalVerbStem] ->
+MainVerb [MainVerbStem] ->
 
-TYPE: NP [Person, Number]
+NP [Person, Number] ->
