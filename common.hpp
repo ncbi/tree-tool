@@ -72,10 +72,12 @@
 #include <memory>
 #include <algorithm>
 
-#pragma warning(push)
-#pragma warning(disable:4265)
-#include <mutex>
-#pragma warning(pop)
+#ifdef _MSC_VER
+	#pragma warning(push)
+	#pragma warning(disable:4265)
+	#include <mutex>
+	#pragma warning(pop)
+#endif
 
 #include <thread>
 
@@ -2101,9 +2103,9 @@ struct LineInput : Input
           	          uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
     {}
-  explicit LineInput (istream &is,
+  explicit LineInput (istream &is_arg,
 	                    uint displayPeriod = 0)
-    : Input (is, displayPeriod)
+    : Input (is_arg, displayPeriod)
     {}
 
 
@@ -2146,9 +2148,9 @@ struct ObjectInput : Input
           	            uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
     {}
-  explicit ObjectInput (istream &is,
+  explicit ObjectInput (istream &is_arg,
 	                      uint displayPeriod = 0)
-    : Input (is, displayPeriod)
+    : Input (is_arg, displayPeriod)
     {}
 
 
@@ -2175,9 +2177,9 @@ public:
               	      uint displayPeriod = 0)
     : Input (fName, bufSize, displayPeriod)
     {}
-  explicit CharInput (istream &is,
+  explicit CharInput (istream &is_arg,
 	                    uint displayPeriod = 0)
-    : Input (is, displayPeriod)
+    : Input (is_arg, displayPeriod)
     {}
 
 
