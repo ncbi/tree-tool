@@ -359,7 +359,7 @@ struct ThisApplication : Application
 	              	continue;
 	              if (tree->absCriterion == 0)
 	              	break;
-	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-6)  // PAR
+	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-7)  // PAR  was: 1e-6
 	              	break;
 	            }
             }
