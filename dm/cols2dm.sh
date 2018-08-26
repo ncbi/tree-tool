@@ -28,7 +28,7 @@ echo "ObjNum $N[1] $NAME nomult"
 echo "Attributes"
 set i = 1
 while ($i <= $C)
-  echo "V$i real $2"
+  echo "  V$i real $2"
   @ i = $i + 1
 end
 echo "Data"
