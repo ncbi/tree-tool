@@ -1020,7 +1020,7 @@ bool LineInput::nextLine ()
 	try 
 	{
   	readLine (*is, line);
-  	const bool end = line. empty () && eof;
+  	const bool end = line. empty () && is->eof ();
 
     if (! commentStart. empty ())
     {
