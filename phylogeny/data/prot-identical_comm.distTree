@@ -35,6 +35,10 @@ absCriterion = 7.048  Error density = 1.834 %
 Deleting ...
 absCriterion = 7.048  Error density = 1.834 %
 
+# Hybrids: 0
+Deleting ...
+absCriterion = 7.048  Error density = 1.834 %
+
 absCriterion = 7.048  Error density = 1.834 %
 
 Re-rooting ...
@@ -63,14 +67,14 @@ Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 274 (max = 275)
+# Interior nodes (with root) = 275 (max = 275)
 # Interior undirected arcs = 273
 Tree length = 30.543
 Min. discernible leaf length = 0.000000e+00
-Ave. arc length = 0.055
+Ave. arc length = 0.054
 Interior height = 34
 Bifurcating interior branching = 1.370
-# Frequent children interior nodes = 269
+# Frequent children interior nodes = 270
 # Frequent children leaves = 277
 # Frequent interior nodes = 42
 # Frequent leaves = 60

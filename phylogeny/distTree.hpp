@@ -132,54 +132,54 @@ struct Neighbor
 struct Triangle  
 // Triple of Leaf's with a triangle inequality violation
 { 
+	struct Parent
+		{ const Leaf* leaf {nullptr};
+			Real dissim {NAN};
+			  // = d(Triangle::child,leaf)
+			  // > 0
+			bool hybrid {false};
+				// Cause of the triangle inequality violation
+		};
+
 	// !nullptr
 	const Leaf* child {nullptr};
 	Real hybridness {NAN};
 	  // = d(parent1,parent2) / (d(child,parent1) + d(child,parent2))
 	  // > 1
-	const Leaf* parent1 {nullptr};
-	const Leaf* parent2 {nullptr};
-	Real parent1_dissim {NAN};
-	  // = d(child,parent1)
-	  // > 0
-	Real parent2_dissim {NAN};
-	  // = d(child,parent2)
-	  // > 0
-	// Cause of the triangle inequality violation
-	bool child_hybrid   {false};
-	bool parent1_hybrid {false};
-	bool parent2_hybrid {false};
+	array<Parent, 2> parents;	
+	bool child_hybrid {false};
+		// Cause of the triangle inequality violation
 
 	  
 	Triangle (const Leaf* child_arg,
 		        Real hybridness_arg,
-				  	const Leaf* parent1_arg,
-				  	const Leaf* parent2_arg,
-				  	Real parent1_dissim_arg,
-				  	Real parent2_dissim_arg);
+				  	const Leaf* parent1,
+				  	const Leaf* parent2,
+				  	Real parent1_dissim,
+				  	Real parent2_dissim);
 	void qc () const;
 	void print (ostream &os) const;
 	static constexpr const char* format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
 	
 	
 	Real parentsDissim () const
-	  { return (parent1_dissim + parent2_dissim) * hybridness; }
+	  { return (parents [0]. dissim + parents [1]. dissim) * hybridness; }
 	  // Return: d(parent1,parent2)
 	Prob parent_dissim_ratio () const
-	  { return min ( parent1_dissim / parent2_dissim
-                 , parent2_dissim / parent1_dissim
+	  { return min ( parents [0]. dissim / parents [1]. dissim
+                 , parents [1]. dissim / parents [0]. dissim
                  );
     }
 	bool hasHybrid () const
 	  { return    child_hybrid 
-	  	       || parent1_hybrid
-	  	       || parent2_hybrid;
+	  	       || parents [0]. hybrid
+	  	       || parents [1]. hybrid;
 	  }
 	VectorPtr<Leaf> getHybrids () const
 	  { VectorPtr<Leaf> vec;  vec. reserve (3);
-	  	if (child_hybrid)    vec << child;
-	  	if (parent1_hybrid)  vec << parent1;
-	  	if (parent2_hybrid)  vec << parent2;
+	  	if (child_hybrid)         vec << child;
+	  	if (parents [0]. hybrid)  vec << parents [0]. leaf;
+	  	if (parents [1]. hybrid)  vec << parents [1]. leaf;
 	  	return vec;
 	  }
 };
@@ -189,34 +189,36 @@ struct Triangle
 struct TriangleParentPair
 {
 	// Input
-	// !nullptr
-	const Leaf* parent1 {nullptr};
-	const Leaf* parent2 {nullptr};
+	struct Parent
+		{ const Leaf* leaf {nullptr};
+				// !nullptr
+			size_t classSize {0};
+			  // Output
+		};
+	array<Parent,2> parents;	
 	Real parentsDissim {NAN};
-	  // = f(parent1,parent2)
+	  // = f(parents[0].leaf,parents[1].leaf)
 	
 	// Output
 	Vector<Triangle> triangles;
-	  // Triangle::parent{1|2} = parent{1|2}
+	  // Triangle::parents[i].leaf = parents[i].leaf
 	  // Clusterize Triangle::child's ??
 	  // May be empty()
 private:
 	size_t triangle_best_index {NO_INDEX};
 	  // Index in triangles
 public:
-	size_t parent1_class {0};
-	size_t parent2_class {0};
 	Real hybridness_ave {NAN};
 	Real childSize_ave {NAN};
 
 	
-	TriangleParentPair (const Leaf* parent1_arg,
-		                  const Leaf* parent2_arg,
+	TriangleParentPair (const Leaf* parent1,
+		                  const Leaf* parent2,
 		                  Real parentsDissim_arg)
-		: parent1 (parent1_arg)
-		, parent2 (parent2_arg)
-		, parentsDissim (parentsDissim_arg)
-		{}
+		: parentsDissim (parentsDissim_arg)
+		{ parents [0]. leaf = parent1;
+			parents [1]. leaf = parent2;
+	  }
 	TriangleParentPair ()
 	  {}
 	void setTriangles (const DistTree &tree);
@@ -225,16 +227,18 @@ public:
   void finish (const DistTree &tree,
                const Set<const Leaf*> &hybrids);
     // Input: triangles
-    // Output: Triangle::*_hybrid
+    // Output: Triangle::*hybrid
 	void qc () const;
   void print (ostream &os) const;
   static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <avg. child size> <parent1 size> <parent2 size> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
 
 
+  Pair<const Leaf*> getPair () const
+    { return Pair<const Leaf*> (parents [0]. leaf, parents [1]. leaf); }
 	bool operator< (const TriangleParentPair &other) const
-    { return Pair<const Leaf*> (parent1, parent2) < Pair<const Leaf*> (other. parent1, other. parent2); }
+    { return getPair () < other. getPair (); }
   bool operator== (const TriangleParentPair &other) const
-    { return Pair<const Leaf*> (parent1, parent2) == Pair<const Leaf*> (other. parent1, other. parent2); }
+    { return getPair () == other. getPair (); }
   static bool compareHybridness (const TriangleParentPair &hpp1,
                                  const TriangleParentPair &hpp2)
     { return hpp1. hybridness_ave > hpp2. hybridness_ave; }
@@ -1329,6 +1333,7 @@ public:
     // Time: O(n log(n))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
+    // ~Idempotent w.r.t. restoring hybrids in the tree
     // Update (append): *dissimRequests if !nullptr
     // Invokes: RealAttr2::normal2outlier() 
     // Time: ~ O(n log^2(n)) without dissimRequests

@@ -60,22 +60,21 @@ Neighbor::Neighbor (const Leaf* leaf_arg)
 
 Triangle::Triangle (const Leaf* child_arg,
 		  	  	        Real hybridness_arg,
-								  	const Leaf* parent1_arg,
-								  	const Leaf* parent2_arg,
-								  	Real parent1_dissim_arg,
-								  	Real parent2_dissim_arg)
+								  	const Leaf* parent1,
+								  	const Leaf* parent2,
+								  	Real parent1_dissim,
+								  	Real parent2_dissim)
 : child (child_arg)
 , hybridness (hybridness_arg)
-, parent1          (parent1_arg)
-, parent2          (parent2_arg)
-, parent1_dissim   (parent1_dissim_arg)
-, parent2_dissim   (parent2_dissim_arg)
 {
-	if (parent1->name > parent2->name)
-	{
-  	swap (parent1,        parent2);	
-  	swap (parent1_dissim, parent2_dissim);
-  }
+	ASSERT (parent1);
+	ASSERT (parent2);
+	parents [0]. leaf = parent1;
+	parents [1]. leaf = parent2;
+	parents [0]. dissim = parent1_dissim;
+	parents [1]. dissim = parent2_dissim;
+	if (parents [0]. leaf->name > parents [1]. leaf->name)
+		swap (parents [0], parents [1]);
 }
 
 
@@ -87,18 +86,17 @@ void Triangle::qc () const
 		
 	ASSERT (child);
 	ASSERT (child->graph);
-	ASSERT (parent1);
-	ASSERT (parent2);
-	ASSERT (parent1->graph);
-	ASSERT (parent2->graph);
-	ASSERT (child != parent1);
-	ASSERT (child != parent2);
-  ASSERT (parent1->name < parent2->name);
+	for (const bool i : {false, true})
+	{
+		const Parent& p = parents [i];
+		ASSERT (p. leaf);	
+		ASSERT (p. leaf->graph);
+ 		ASSERT (child != p. leaf);
+		ASSERT (p. dissim > 0);
+		IMPLY (child_hybrid, ! p. hybrid);
+ 	}
+  ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
 	ASSERT (hybridness >= hybridness_min);
-	ASSERT (parent1_dissim > 0);
-	ASSERT (parent2_dissim > 0);
-	IMPLY (child_hybrid, ! parent1_hybrid);
-	IMPLY (child_hybrid, ! parent2_hybrid);
 }
 
 
@@ -106,9 +104,11 @@ void Triangle::qc () const
 void Triangle::print (ostream &os) const
 { 
 	TabDel td (3, false);  // PAR  
+	const Parent& p1 = parents [0];
+	const Parent& p2 = parents [1];
 	td << child->name << hybridness 
-	   << parent1->name << parent2->name << parent1_dissim << parent2_dissim 
-	   << child_hybrid << parent1_hybrid << parent2_hybrid;
+	   << p1. leaf->name << p2. leaf->name << p1. dissim << p2. dissim 
+	   << child_hybrid << p1. hybrid << p2. hybrid;
 	os << td. str () << endl;	
 }
 
@@ -119,39 +119,39 @@ void Triangle::print (ostream &os) const
 
 void TriangleParentPair::setTriangles (const DistTree &tree) 
 {
-  ASSERT (parent1);
-  ASSERT (parent2);
-  ASSERT (parent1->name < parent2->name);
+	for (const bool i : {false, true})
+    ASSERT (parents [i]. leaf);
+  ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
   ASSERT (parentsDissim > 0);
   ASSERT (hybridness_min > 1);
   ASSERT (triangles. empty ());
 
-  Vector<Neighbor> hybridParents;  hybridParents. reserve (parent1->pathObjNums. size ());
-	for (const uint objNum : parent1->pathObjNums)
+  Vector<Neighbor> hybridParents;  hybridParents. reserve (parents [0]. leaf->pathObjNums. size ());
+	for (const uint objNum : parents [0]. leaf->pathObjNums)
 	{
 		const Dissim& dissim = tree. dissims [objNum];
 		if (! dissim. mult)
 			continue;
-		const Leaf* other = dissim. getOtherLeaf (parent1);
+		const Leaf* other = dissim. getOtherLeaf (parents [0]. leaf);
 	  ASSERT (other->graph);
     hybridParents << Neighbor (other, dissim. target);
 	}
 	hybridParents. sort ();
 	ASSERT (hybridParents. isUniq ());
 
-	for (const uint objNum : parent2->pathObjNums)
+	for (const uint objNum : parents [1]. leaf->pathObjNums)
 	{
 		const Dissim& dissim = tree. dissims [objNum];
 		if (! dissim. mult)
 			continue;
-		const Leaf* other = dissim. getOtherLeaf (parent2);
+		const Leaf* other = dissim. getOtherLeaf (parents [1]. leaf);
     ASSERT (other->graph);
   	const size_t i = hybridParents. binSearch (Neighbor (other));
   	if (i == NO_INDEX)
   		continue;
   	const Real hybridness = parentsDissim / (dissim. target + hybridParents [i]. target);
   	if (hybridness >= hybridness_min)
-  		triangles << Triangle (other, hybridness, parent1, parent2, hybridParents [i]. target, dissim. target);
+  		triangles << Triangle (other, hybridness, parents [0]. leaf, parents [1]. leaf, hybridParents [i]. target, dissim. target);
 	}
 	ASSERT (! triangles. empty ());
 
@@ -176,12 +176,13 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
 void TriangleParentPair::finish (const DistTree &tree,
                                  const Set<const Leaf*> &hybrids)
 { 
-	ASSERT (parent1);
-	ASSERT (parent2);
+	for (const bool i : {false, true})
+	{
+    ASSERT (parents [i]. leaf);
+		ASSERT (! parents [i]. classSize);
+  }
 	ASSERT (! triangles. empty ());
 	ASSERT (triangle_best_index == NO_INDEX);
-	ASSERT (! parent1_class);
-	ASSERT (! parent2_class);
 	
 
  	triangles. filterValue ([&hybrids] (const Triangle &tr) { return hybrids. contains (tr. child); });	
@@ -196,93 +197,68 @@ void TriangleParentPair::finish (const DistTree &tree,
 	ASSERT (best);
 	triangle_best_index = (size_t) (best - & triangles [0]);
   ASSERT (triangle_best_index < triangles. size ());
+  ASSERT (& getBest () == best);
 
-	parent1_class = child_parent2parents (tree, best->child, parent2, best->parent2_dissim);
-	parent2_class = child_parent2parents (tree, best->child, parent1, best->parent1_dissim);
+	for (const bool i : {false, true})
+		parents [i]. classSize = child_parent2parents (tree, best->child, best->parents [! i]. leaf, best->parents [! i]. dissim);
 
 
   // Decision
 	if (dissimError ())
 		return;
 
-	const Real child_class = (Real) triangles. size ();
-	
-  if (   at_dissim_boundary (getBest (). parent1_dissim)
-    	|| at_dissim_boundary (getBest (). parent2_dissim)
-     )
-	  return; 
-
+	for (const bool i : {false, true})
+	  if (at_dissim_boundary (best->parents [i]. dissim))
+		  return; 
 
  
+  // ??
   // Remove a hybrid candidate class, compute criterion
-  // Select the hybrid candidate class which minimizes average absCriterion ??
+  // Select the hybrid candidate class which minimizes average absCriterion
   
-  // Cause schema: parent1 parent2 child
 
-  // PAR
-  constexpr Prob classSizeFrac = 0.1; 
-  constexpr Prob objSizeFrac = 0.95;  
+	const Real child_classSize = (Real) triangles. size ();	
+  const Real all = child_classSize + (Real) parents [0]. classSize + (Real) parents [1]. classSize;
+
+
+  // 1 short dissimilarity
+	for (const bool i : {false, true})  
+	  if (   best->parents [! i]. dissim > dissim_boundary
+	  	  && best->parents [  i]. dissim < dissim_boundary
+	  	 ) 
+	  {
+		  // PAR
+		  constexpr Prob classSizeFrac_max = 0.1; 
+		  constexpr Prob objSizeFrac = 0.95;  
+		
+			const Parent& p = parents [i];
+			const Prob frac = child_classSize / (child_classSize + (Real) p. classSize);
+		
+			if (   frac < classSizeFrac_max
+				  || (   childSize_ave * objSizeFrac >= p. leaf->objSize   
+				      && child_classSize < all * classSizeFrac_max
+				     )
+				 )
+				setChildrenHybrid ();
+			else 
+			if (   frac > 1 - classSizeFrac_max
+				  || (   p. leaf->objSize * objSizeFrac >= childSize_ave  
+				      && p. classSize < all * classSizeFrac_max
+				     )
+				 )
+				best->parents [i]. hybrid = true;		
+
+			goto quit;
+	  }
   
-  const Real all = child_class + (Real) parent1_class + (Real) parent2_class;
-
-  if (   getBest (). parent1_dissim > dissim_boundary
-  	  && getBest (). parent2_dissim < dissim_boundary
-  	 ) 
-  {
-  	// --> ebool crossBoundary2child_hybrid () ??
-		const Prob p = child_class / (child_class + (Real) parent2_class);
-		if (   p < classSizeFrac
-			  || (   childSize_ave * objSizeFrac >= parent2->objSize   
-			      && child_class < all * classSizeFrac
-			     )
-			 )
-		{
-			setChildrenHybrid ();
-			goto quit;
-		}
-		if (   p > 1 - classSizeFrac
-			  || (   parent2->objSize * objSizeFrac >= childSize_ave  
-			      && parent2_class < all * classSizeFrac
-			     )
-			 )
-		{
-			best->parent2_hybrid = true;
-			goto quit;  			
-		}
-		return;
-  }
-
-  if (   getBest (). parent1_dissim < dissim_boundary
-  	  && getBest (). parent2_dissim > dissim_boundary
-  	 ) 
-  {
-		const Prob p = child_class / (child_class + (Real) parent1_class);
-		if (   p < classSizeFrac
-			  || (   childSize_ave * objSizeFrac >= parent1->objSize   
-			      && child_class < all * classSizeFrac
-			     )
-			 )
-		{
-			setChildrenHybrid ();
-			goto quit;
-		}
-		if (   p > 1 - classSizeFrac
-			  || (   parent1->objSize * objSizeFrac >= childSize_ave  
-			      && parent1_class < all * classSizeFrac
-			     )
-			 )
-		{
-			best->parent1_hybrid = true;
-			goto quit;  			
-		}
-		return;
-  }
 
   {
-		const Prob p = child_class / (child_class + (Real) parent1_class + (Real) parent2_class);
+		const Prob p = child_classSize / all;
+		const Real parentObjSize = max ( parents [0]. leaf->objSize  
+			                             , parents [1]. leaf->objSize
+			                             );
 		if (   p <= 0.15  // PAR
-			  && childSize_ave > 1.0 * max ( parent1->objSize   // PAR
-			                               , parent2->objSize)  
+			  && childSize_ave > 1.0 * parentObjSize  // PAR
 			 )
 			{
 				// aa bb ab
@@ -290,36 +266,40 @@ void TriangleParentPair::finish (const DistTree &tree,
 				goto quit;
 			}
 		if (   p >= 0.85  // PAR
-			  && childSize_ave < 1.0 * max ( parent1->objSize   // PAR
-			                               , parent2->objSize)  
+			  && childSize_ave < 1.0 * parentObjSize  // PAR  
 			 )
 			{
 				// ab ac aa
 				// common(ab,ac) = 1/4 aa <= random halves of aa
-				best->parent1_hybrid = true;
-				best->parent2_hybrid = true;
+				best->parents [0]. hybrid = true;
+				best->parents [1]. hybrid = true;
 				goto quit;  			
 			}
 	}
+	
+	
+	// Undecided cases ??
 
 
 quit:
-	if (   (! best->parent1_hybrid && hybrids. contains (parent1))
-		  || (! best->parent2_hybrid && hybrids. contains (parent2))
-		 )
-		triangles. clear ();
+	// Inconsistent decision
+	for (const bool i : {false, true})  
+		if (   ! best->parents [i]. hybrid 
+			  && hybrids. contains (parents [i]. leaf)
+			 )
+			triangles. clear ();
 }
 
-  
-  
+
+
 void TriangleParentPair::qc () const
 {
 	if (! qc_on)
 		return;
 
-	ASSERT (parent1);
-	ASSERT (parent2);
-	ASSERT (parent1->name < parent2->name);
+	for (const bool i : {false, true})  
+		ASSERT (parents [i]. leaf);
+	ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
 	ASSERT (parentsDissim > 0);
 	
 	if (triangles. empty ())
@@ -328,15 +308,15 @@ void TriangleParentPair::qc () const
 	for (const Triangle& tr : triangles)
 	{
 		tr. qc ();
-		ASSERT (tr. parent1 == parent1);
-		ASSERT (tr. parent2 == parent2);
+		for (const bool i : {false, true})  
+			ASSERT (tr. parents [i]. leaf == parents [i]. leaf);
 		ASSERT (eqReal (parentsDissim, tr. parentsDissim ()));
 	}
 	
 	ASSERT (& getBest ());
 
-	ASSERT (parent1_class);
-	ASSERT (parent2_class);
+	for (const bool i : {false, true})  
+		ASSERT (parents [i]. classSize);
 
 	ASSERT (hybridness_ave >= hybridness_min);
 	IMPLY (! isNan (childSize_ave), childSize_ave > 0);
@@ -347,11 +327,13 @@ void TriangleParentPair::qc () const
 void TriangleParentPair::print (ostream &os) const
 { 
 	TabDel td (3, false);  // PAR
-	td << getBest (). child->name << parent1->name << parent2->name 
-	   << triangles. size () << parent1_class << parent2_class
-	   << hybridness_ave << getBest (). parent1_dissim << getBest (). parent2_dissim
-	   << childSize_ave << parent1->objSize << parent2->objSize
-	   << getBest (). child_hybrid << getBest (). parent1_hybrid << getBest (). parent2_hybrid;
+	const Parent& p1 = parents [0];
+	const Parent& p2 = parents [1];
+	td << getBest (). child->name << p1. leaf->name << p2. leaf->name 
+	   << triangles. size () << p1. classSize << p2. classSize
+	   << hybridness_ave << getBest (). parents [0]. dissim << getBest (). parents [1]. dissim
+	   << childSize_ave << p1. leaf->objSize << p2. leaf->objSize
+	   << getBest (). child_hybrid << getBest (). parents [0]. hybrid << getBest (). parents [1]. hybrid;
 	os << td. str () << endl;
 }
 
@@ -6319,7 +6301,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   for (const Triangle& tr : triangles)
   {
   	tr. qc ();
-  	triangleParentPairs << TriangleParentPair (tr. parent1, tr. parent2, tr. parentsDissim ());
+  	triangleParentPairs << TriangleParentPair (tr. parents [0]. leaf, tr. parents [1]. leaf, tr. parentsDissim ());
   }
   triangleParentPairs. sort ();
   triangleParentPairs. uniq ();  
