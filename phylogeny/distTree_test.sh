@@ -11,6 +11,7 @@ if [ $# != 1 ]; then
 fi
 
 
+#if [ 1 == 0 ]; then  
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -r -f data/Enterobacteriaceae.dir/
@@ -69,6 +70,7 @@ diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 rm prot-identical_comm.distTree
+#fi  
 
 echo ""
 echo "prot-identical_comm: subgraphs, threads ..."
