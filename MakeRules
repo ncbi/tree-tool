@@ -40,7 +40,7 @@ $(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
 
 
 LANG_DIR = $(CPP_DIR)/language
-$(LANG_DIR)/grammar.o: $(LANG_DIR)/grammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
+$(LANG_DIR)/cfgrammar.o: $(LANG_DIR)/cfgrammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 
 
 DM_DIR = $(CPP_DIR)/dm

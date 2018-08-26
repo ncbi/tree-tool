@@ -385,7 +385,7 @@ typedef  map <Rule::Occurrence, Set<const Terminal*> >  Occurrence2Terminals;
 struct Terminal : Symbol
 // name: '<ASCII>' or <Unicode>
 {
-  static constexpr char* eotName {"EOT"};
+  static constexpr const char* eotName {"EOT"};
   char c {eot};
 
   // Analysis
@@ -420,7 +420,7 @@ struct Terminal : Symbol
 struct NonTerminal : Symbol
 // name: no quotes
 {
-  static constexpr char* sigmaS {"Sigma"};
+  static constexpr const char* sigmaS {"Sigma"};
   VectorOwn<Rule> lhsRules;
     // *this == Rule::lhs 
 
@@ -536,7 +536,7 @@ struct Grammar : Root
   // nullptr <=> *this is a root grammar
   // !nullptr <=> *this is a symbol grammar
 {
-  static constexpr char* arrowS {"->"};
+  static constexpr const char* arrowS {"->"};
   static const char commentC = '#';
 private:
   friend struct Rule;
