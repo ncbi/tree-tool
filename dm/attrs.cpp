@@ -30,7 +30,7 @@ struct ThisApplication : Application
 		const string inFName = getArg ("file");
 		const Real corr_min  = str2real (getArg ("corr_min"));
 		const Prob outlier_eValue_max = str2real (getArg ("outlier_evalue_max"));
-		ASSERT (isProb (outlier_eValue_max));
+		ASSERT (outlier_eValue_max >= 0);
 
 
     const Dataset ds (inFName);
@@ -56,6 +56,7 @@ struct ThisApplication : Application
 			    Sample sample_pure (ds);
 			    for (const bool rightTail : {false, true})
 			    {
+			    	// 2-tail, non-idempotent procedure ??
 			    	const Real threshold = num->distr2outlier (sample, normal, rightTail, outlier_eValue_max);
 			      cout << '\t' << threshold;
 			      FFOR (size_t, i, sample_pure. mult. size ())
