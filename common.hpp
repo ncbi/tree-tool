@@ -831,16 +831,21 @@ inline string getFileName (const string &path)
   	return path. substr (pos + 1);
   }
 
+inline string getDirName (const string &path)  
+  { const size_t pos = path. rfind ('/');
+  	if (pos == string::npos)
+  		return ".";
+  	return path. substr (0, pos);
+  }
+
 inline bool isDirName (const string &path)
   { return isRight (path, "/"); }
 
 bool fileExists (const string &fName);
 
-
 #ifndef _MSC_VER
-bool directoryExists (const string &dirName);
+  bool directoryExists (const string &dirName);
 #endif
-
 
 size_t strMonth2num (const string& month);
 // Input: month: "Jan", "Feb", ... (3 characters)
@@ -2851,8 +2856,22 @@ public:
 protected:
   string getArg (const string &name) const;
     // Input: keys, where Key::flag = false, and positionals
+  uint arg2uint (const string &name) const
+    { uint n = 0;
+    	try { n = str2<uint> (getArg (name)); }
+    	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to number"); }
+    	return n;
+    }
+  double arg2double (const string &name) const
+    { double d = NAN;
+    	try { d = str2<double> (getArg (name)); }
+    	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to number"); }
+    	return d;
+    }
   bool getFlag (const string &name) const;
     // Input: keys, where Key::flag = true
+  string getProgramDirName () const
+    { return getDirName (programArgs. front ()); }
 public:
   string getInstruction () const;
   string getHelp () const;
