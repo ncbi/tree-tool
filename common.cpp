@@ -1639,7 +1639,11 @@ size_t Offset::size = 0;
 void exec (const string &cmd)
 {
   ASSERT (! cmd. empty ());
-  EXEC_ASSERT (system (cmd. c_str ()) == 0);
+  if (qc_on)
+  	cout << cmd << endl;
+	const int status = system (cmd. c_str ());
+	if (status)
+		exit (status);
 }
 
 
