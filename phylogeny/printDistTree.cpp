@@ -45,7 +45,7 @@ struct ThisApplication : Application
       throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
     
 
-    DistTree tree (input_tree, dataFName, dissimAttrName, string (), false);
+    DistTree tree (input_tree, dataFName, dissimAttrName, false);
     tree. sort ();
     if (! dataFName. empty ())
       tree. setNodeAbsCriterion ();

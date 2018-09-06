@@ -35,7 +35,7 @@ struct ThisApplication : Application
     ASSERT (! input_tree. empty ());
 
     
-    DistTree tree (input_tree, string (), string (), string (), false);
+    DistTree tree (input_tree, string (), string (), false);
     tree. qc ();    
       
     tree. findSpecies (species_dist);

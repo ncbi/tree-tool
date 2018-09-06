@@ -157,18 +157,11 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
 
   // Statistics
 	MeanVar hybridness_mv;
-	MeanVar childSize_mv;
 	for (const Triangle& tr : triangles)
-	{
 		hybridness_mv << tr. hybridness;
-		if (! isNan (tr. child->objSize))
-			childSize_mv << tr. child->objSize;
-	}
 	hybridness_ave = hybridness_mv. getMean ();
-	childSize_ave  = childSize_mv.  getMean ();
 	
 	ASSERT (hybridness_ave >= hybridness_min);
-	IMPLY (! isNan (childSize_ave), childSize_ave > 0);
 }
 
 
@@ -207,67 +200,45 @@ void TriangleParentPair::finish (const DistTree &tree,
 	if (dissimError ())
 		return;
 
-	for (const bool i : {false, true})
-	  if (at_dissim_boundary (best->parents [i]. dissim))
-		  return; 
 
- 
   // ??
   // Remove a hybrid candidate class, compute criterion
   // Select the hybrid candidate class which minimizes average absCriterion
   
 
+  // PAR
+  constexpr Prob classSizeFrac_max = 0.2;  
+
 	const Real child_classSize = (Real) triangles. size ();	
   const Real all = child_classSize + (Real) parents [0]. classSize + (Real) parents [1]. classSize;
 
-
-  // 1 short dissimilarity
 	for (const bool i : {false, true})  
 	  if (   best->parents [! i]. dissim > dissim_boundary
 	  	  && best->parents [  i]. dissim < dissim_boundary
 	  	 ) 
 	  {
-		  // PAR
-		  constexpr Prob classSizeFrac_max = 0.1; 
-		  constexpr Prob objSizeFrac = 0.95;  
-		
-			const Parent& p = parents [i];
-			const Prob frac = child_classSize / (child_classSize + (Real) p. classSize);
-		
-			if (   frac < classSizeFrac_max
-				  || (   childSize_ave * objSizeFrac >= p. leaf->objSize   
-				      && child_classSize < all * classSizeFrac_max
-				     )
-				 )
+		  const Parent& p = parents [i];		
+			if (child_classSize < all * classSizeFrac_max)
 				setChildrenHybrid ();
-			else 
-			if (   frac > 1 - classSizeFrac_max
-				  || (   p. leaf->objSize * objSizeFrac >= childSize_ave  
-				      && p. classSize < all * classSizeFrac_max
-				     )
-				 )
+			else if (p. classSize < all * classSizeFrac_max)
 				best->parents [i]. hybrid = true;		
-
+			else if (child_classSize + (Real) p. classSize < all * classSizeFrac_max)
+			{
+				setChildrenHybrid ();
+				best->parents [i]. hybrid = true;		
+			}
 			goto quit;
 	  }
   
-
   {
 		const Prob p = child_classSize / all;
-		const Real parentObjSize = max ( parents [0]. leaf->objSize  
-			                             , parents [1]. leaf->objSize
-			                             );
-		if (   p <= 0.15  // PAR
-			  && childSize_ave > 1.0 * parentObjSize  // PAR
-			 )
+		if (p <= classSizeFrac_max)
 			{
 				// aa bb ab
 				setChildrenHybrid ();
 				goto quit;
 			}
-		if (   p >= 0.85  // PAR
-			  && childSize_ave < 1.0 * parentObjSize  // PAR  
-			 )
+		if (p >= 1 - classSizeFrac_max)
 			{
 				// ab ac aa
 				// common(ab,ac) = 1/4 aa <= random halves of aa
@@ -276,7 +247,6 @@ void TriangleParentPair::finish (const DistTree &tree,
 				goto quit;  			
 			}
 	}
-	
 	
 	// Undecided cases ??
 
@@ -319,7 +289,6 @@ void TriangleParentPair::qc () const
 		ASSERT (parents [i]. classSize);
 
 	ASSERT (hybridness_ave >= hybridness_min);
-	IMPLY (! isNan (childSize_ave), childSize_ave > 0);
 }
 
 
@@ -332,7 +301,6 @@ void TriangleParentPair::print (ostream &os) const
 	td << getBest (). child->name << p1. leaf->name << p2. leaf->name 
 	   << triangles. size () << p1. classSize << p2. classSize
 	   << hybridness_ave << getBest (). parents [0]. dissim << getBest (). parents [1]. dissim
-	   << childSize_ave << p1. leaf->objSize << p2. leaf->objSize
 	   << getBest (). child_hybrid << getBest (). parents [0]. hybrid << getBest (). parents [1]. hybrid;
 	os << td. str () << endl;
 }
@@ -2289,7 +2257,6 @@ void Image::apply ()
 DistTree::DistTree (const string &treeFName,
 	                  const string &dissimFName,
 	                  const string &dissimAttrName,
-                    const string &objSizeAttrName,
 	                  bool sparse)
 : rand (seed_global)
 {
@@ -2305,7 +2272,7 @@ DistTree::DistTree (const string &treeFName,
         
   if (! dissimFName. empty ())
   {
-    loadDissimDs (dissimFName, dissimAttrName, objSizeAttrName);
+    loadDissimDs (dissimFName, dissimAttrName);
     
     if (! getConnected ())
       throw runtime_error ("Disconnected objects");
@@ -2319,8 +2286,7 @@ DistTree::DistTree (const string &treeFName,
 
 DistTree::DistTree (const string &dirName,
 	                  const string &dissimFName,
-	                  const string &dissimAttrName,
-                    const string &objSizeAttrName)
+	                  const string &dissimAttrName)
 : rand (seed_global)
 {
   // Initial tree topology, no DTNode::len
@@ -2331,7 +2297,7 @@ DistTree::DistTree (const string &dirName,
 
   setName2leaf ();
         
-  loadDissimDs (dissimFName, dissimAttrName, objSizeAttrName);
+  loadDissimDs (dissimFName, dissimAttrName);
   
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
@@ -2346,11 +2312,10 @@ DistTree::DistTree (const string &dirName,
 
 DistTree::DistTree (const string &dissimFName,
 	                  const string &dissimAttrName,
-	                  const string &objSizeAttrName,
 	                  bool sparse)
 : rand (seed_global)
 {
-  loadDissimDs (dissimFName, dissimAttrName, objSizeAttrName);
+  loadDissimDs (dissimFName, dissimAttrName);
 
   // Initial tree topology: star topology 
   ASSERT (! root);
@@ -2506,8 +2471,7 @@ DistTree::DistTree (const string &dataDirName,
                     bool loadNewLeaves,
  	                  bool loadDissim,
  	                  bool optimizeP)
-: objSizeExists (true)
-, rand (seed_global)
+: rand (seed_global)
 {
 	ASSERT (! dataDirName. empty ());
 	ASSERT (dataDirName. back () == '/');
@@ -2578,21 +2542,6 @@ DistTree::DistTree (const string &dataDirName,
   }
 
 
-  {
-    LineInput f (dataDirName + "obj_size", 10 * 1024, 0);  // PAR
-    string leafName;
-    while (f. nextLine ())
-    {
-      istringstream iss (f. line);
-	    Real objSize = NAN;
-      iss >> leafName >> objSize;
-      ASSERT (objSize > 0);
-		  if (const Leaf* leaf = findPtr (name2leaf, leafName))
-			  const_cast <Leaf*> (leaf) -> objSize = objSize;
-    }
-  }
-
-
   if (loadDissim)
   {
   #if 0
@@ -2640,8 +2589,6 @@ DistTree::DistTree (const string &dataDirName,
       if (! leaf->paths)
         throw runtime_error ("No dissimilarities for object " + leaf->name);
       const_cast <Leaf*> (leaf) -> paths = 0;
-		  if (! (leaf->objSize > 0))
-		    throw runtime_error ("No positive obj_size for object " + leaf->name + ": " + toString (leaf->objSize));
 	  }
 
     // qc: pairs of <leaf1,leaf2> must be unique in dissims
@@ -2748,7 +2695,6 @@ DistTree::DistTree (const string &dataDirName,
 
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
-  ASSERT (! objSizeAttr);
 }
 
 
@@ -3196,13 +3142,10 @@ void DistTree::setName2leaf ()
 
 
 void DistTree::loadDissimDs (const string &dissimFName,
-                             const string &dissimAttrName,
-                             const string &objSizeAttrName)
+                             const string &dissimAttrName)
 {
 	ASSERT (! dissimDs. get ());
 	ASSERT (! dissimAttr);
-	ASSERT (! objSizeAttr);
-	ASSERT (! objSizeExists);
 	ASSERT (! optimizable ());
 
 	if (dissimFName. empty ())
@@ -3234,17 +3177,6 @@ void DistTree::loadDissimDs (const string &dissimFName,
            << " at " << dissimDs->objs [row_bad] -> name 
            << ", "   << dissimDs->objs [col_bad] -> name 
            << endl;
-  }
-
-  if (! objSizeAttrName. empty ())
-  {
-  	objSizeExists = true;
-    const Attr* attr = dissimDs->name2attr (objSizeAttrName);
-    if (! attr)
-    	throw runtime_error ("Attribute " + objSizeAttrName + " must exist in the dataset " + dissimFName);
-    objSizeAttr = attr->asPositiveAttr1 ();
-	  if (! objSizeAttr)
-	   	throw runtime_error ("Attribute " + objSizeAttrName + " must have type Positive");
   }
 
   dissimDs->setName2objNum ();
@@ -3811,11 +3743,7 @@ void DistTree::dissimDs2dissims (bool sparse)
     const Leaf* leaf = findPtr (name2leaf, obj->name);
     IMPLY (! extraObjs (), leaf);
     if (leaf)
-    {
       const_cast <Leaf*> (leaf) -> comment = obj->comment;
-      if (objSizeAttr)
-      	const_cast <Leaf*> (leaf) -> objSize = (*objSizeAttr) [objNum];
-    }
   }
 
   // Sparsing
@@ -3856,7 +3784,6 @@ void DistTree::dissimDs2dissims (bool sparse)
   {
     dissimDs. reset (nullptr);
     dissimAttr = nullptr;
-    objSizeAttr = nullptr;
   }
 
 
@@ -4133,17 +4060,13 @@ void DistTree::qc () const
   	const Leaf* leaf = it. second;
     ASSERT (leaf);
     ASSERT (leaf->graph == this);
-   	ASSERT (objSizeExists == ! isNan (leaf->objSize));
-   	IMPLY (! isNan (leaf->objSize), leaf->objSize > 0);
   }
   
   ASSERT ((bool) dissimDs. get () == (bool) dissimAttr);
-  IMPLY (objSizeAttr, dissimAttr);
   if (dissimAttr)
   {
     dissimDs->qc ();
     ASSERT (& dissimAttr->ds == dissimDs. get ());
-    IMPLY (objSizeAttr, & objSizeAttr->ds == dissimDs. get ());
   }
 
 
@@ -5882,7 +5805,6 @@ void DistTree::removeLeaf (Leaf* leaf,
     
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
-  ASSERT (! objSizeAttr);
   
   const TreeNode* parent = leaf->getParent ();
   ASSERT (parent);

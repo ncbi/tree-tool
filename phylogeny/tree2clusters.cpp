@@ -23,7 +23,6 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Print indiscernibility clusters of a distance tree")
 	{
-	  // Input
 	  addPositional ("input_tree", "File with the tree and arc lengths");
 	}
 
@@ -34,8 +33,7 @@ struct ThisApplication : Application
 		const string input_tree = getArg ("input_tree");
 				
     
-    DistTree tree (input_tree, string (), string (), string (), false); 
-  //tree. setReprLeaves ();
+    const DistTree tree (input_tree, string (), string (), false); 
     tree. qc (); 
     
     for (const auto it : tree. name2leaf)

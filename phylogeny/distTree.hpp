@@ -89,7 +89,7 @@ extern Real dissim_boundary;
 
 inline bool at_dissim_boundary (Real dissim)
   { return     dissim_boundary >= dissim 
-  	       && (dissim_boundary -  dissim) / dissim_boundary <= 0.05;  // PAR
+  	       && (dissim_boundary -  dissim) / dissim_boundary <= 0.05;  // PAR 
   }
   // Has a small probability <= choice of dissim_boundary
 
@@ -209,7 +209,6 @@ private:
 	  // Index in triangles
 public:
 	Real hybridness_ave {NAN};
-	Real childSize_ave {NAN};
 
 	
 	TriangleParentPair (const Leaf* parent1,
@@ -222,7 +221,7 @@ public:
 	TriangleParentPair ()
 	  {}
 	void setTriangles (const DistTree &tree);
-	  // Output: triangles, hybridness_ave, childSize_ave
+	  // Output: triangles, hybridness_ave
 	  // Time: ~ O(log(n))
   void finish (const DistTree &tree,
                const Set<const Leaf*> &hybrids);
@@ -250,8 +249,14 @@ public:
     	throw logic_error ("TriangleParentPair::getBest()");
     }
   bool dissimError () const  
-    { return    getBest (). parent_dissim_ratio () < 0.25  // PAR
-    	       && hybridness_ave < 1.25;  // PAR
+    { if (    getBest (). parent_dissim_ratio () < 0.25  // PAR
+    	    && hybridness_ave < 1.25  // PAR
+    	   )
+    	  return true;
+			for (const bool i : {false, true})
+			  if (at_dissim_boundary (getBest (). parents [i]. dissim))
+				  return true; 
+      return false;
     }
   Vector<Triangle> getHybridTriangles () const
     { Vector<Triangle> vec;  
@@ -468,9 +473,6 @@ struct Leaf : DTNode
   string name;  
     // !empty()
   string comment;
-  Real objSize {NAN};
-    // For getHybridness()
-    // NAN or > 0  
   static const string non_discernible;
   bool discernible {true}; 
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
@@ -949,8 +951,6 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
-  const PositiveAttr1* objSizeAttr {nullptr};
-  bool objSizeExists {false};
 public:
     
   constexpr static uint dissims_max {numeric_limits<uint>::max ()};
@@ -970,24 +970,21 @@ private:
 public:
 
 
-  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute dissimAttrName, may contain objSizeAttrName
+  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute dissimAttrName
   //                     may contain more objects than *this contains leaves
   //        dissimFName and dissimAttrName: both may be empty	  
 	DistTree (const string &treeFName,
 	          const string &dissimFName,
 	          const string &dissimAttrName,
-	          const string &objSizeAttrName,
 	          bool sparse);
 	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2dissims()
 	DistTree (const string &dirName,
 	          const string &dissimFName,
-	          const string &dissimAttrName,
-	          const string &objSizeAttrName);
+	          const string &dissimAttrName);
 	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
 	          const string &dissimAttrName,
-	          const string &objSizeAttrName,
 	          bool sparse);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
@@ -997,7 +994,6 @@ public:
 	  // Input: dataDirName: ends with '/': directory for incremental data structure:
 	  //          file name                 line/file format                              meaning
 	  //          ---------                 -----------------------------                 ----------------------------
-	  //          obj_size                  <obj> <Leaf::objSize>                         For DistTree::findHybrids()
 	  //          tree                                           
 	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
@@ -1069,8 +1065,7 @@ private:
                     Steiner* parent);
   void setName2leaf ();
   void loadDissimDs (const string &dissimFName,
-                     const string &dissimAttrName,
-                     const string &objSizeAttrName);
+                     const string &dissimAttrName);
     // Output: dissimDs
     // invokes: dissimDs->setName2objNum()
   // Input: dissimDs
