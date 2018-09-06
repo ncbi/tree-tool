@@ -69,5 +69,5 @@ end
 
 set exitcode = 0
 quit:
-if (! $DEBUG)  rm -fr $TmpFNam.*   
+if (! $DEBUG)  rm -fr $TmpFNam*   
 exit $exitcode

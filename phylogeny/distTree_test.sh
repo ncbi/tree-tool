@@ -14,7 +14,7 @@ fi
 #if [ 1 == 0 ]; then  
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
-rm -r -f data/Enterobacteriaceae.dir/
+rm -rf data/Enterobacteriaceae.dir/
 mdsTree.sh data/Enterobacteriaceae Conservation 2 >& /dev/null
 
 makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
@@ -70,7 +70,6 @@ diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 rm prot-identical_comm.distTree
-#fi  
 
 echo ""
 echo "prot-identical_comm: subgraphs, threads ..."
@@ -79,15 +78,16 @@ makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -thr
 echo ""
 echo "prot-identical_comm: subgraphs, delete ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
+#fi  
 
 echo ""
 echo "Saccharomyces hybrids ..."
-makeDistTree -qc  -threads 3  -data data/Saccharomyces  -dissim cons  -obj_size obj_size \
+makeDistTree -qc  -threads 3  -data data/Saccharomyces  -dissim cons  \
   -optimize  -subgraph_iter_max 2 \
   -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -delete_all_hybrids  -dissim_boundary 0.675 > /dev/null
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
-diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
 rm Saccharomyces.hybrid
+diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
 rm Saccharomyces.hybrid_parent_pairs
 
 if [ 1 == 0 ]; then

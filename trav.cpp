@@ -15,7 +15,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Apply <command> to all items")
+    : Application ("Apply <command> to all <items>")
   	{
   	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory), or a natural number");
   	  addPositional ("command", "Text with special symbols: \
