@@ -1854,18 +1854,20 @@ void Application::qc () const
   for (const Positional& p : positionals)
   	p. qc ();
   	
-  Set<string> requiredGroups;
+  map<string,size_t> requiredGroups;
   string requiredGroup_prev;
   for (const Key& key : keys)
   {
   	key. qc ();
   	if (! key. requiredGroup. empty () && key. requiredGroup != requiredGroup_prev)
   	{
-  		ASSERT (! requiredGroups. contains (key. requiredGroup));
-  		requiredGroups << key. requiredGroup;
+  		ASSERT (! contains (requiredGroups, key. requiredGroup));
+  		requiredGroups [key. requiredGroup] ++;
   	}
   	requiredGroup_prev = key. requiredGroup;
   }
+  for (const auto& it : requiredGroups)
+  	ASSERT (it. second > 1);
 }
 	
 
@@ -2094,25 +2096,23 @@ int Application::run (int argc,
     
     
     {
-	    map<string,bool> requiredGroups;
+	    map<string,StringVector> requiredGroup2names;
+	    map<string,StringVector> requiredGroup2given;
 	    for (const Key& key : keys)
 	    	if (! key. requiredGroup. empty ())
 	    	{
-	    		if (key. value. empty ())
+	    		if (! key. value. empty ())
 	    		{
-	    			if (! contains (requiredGroups, key. requiredGroup))
-	    				requiredGroups [key. requiredGroup] = false;
-	    		}
-	    		else
-	    		{
-		    		if (requiredGroups [key. requiredGroup])
-		    			throw runtime_error ("Parameter " + strQuote (key. name) + " is conflicting");  // with what ??
-		    		requiredGroups [key. requiredGroup] = true;
+	    			const StringVector& given = requiredGroup2given [key. requiredGroup];
+		    		if (! given. empty ())
+		    			throw runtime_error ("Parameter " + strQuote (key. name) + " is conflicting with " + given. toString (", "));
+		    		requiredGroup2given [key. requiredGroup] << strQuote (key. name);
 		    	}
+		    	requiredGroup2names [key. requiredGroup] << strQuote (key. name);
 	    	}
-	    for (const auto& it : requiredGroups)
-	    	if (! it. second)
-	    		throw runtime_error ("Required parameter is missing");  // print parameter names ??
+	    for (const auto& it : requiredGroup2names)
+	    	if (requiredGroup2given [it. first]. empty ())
+	    		throw runtime_error ("One of required parameters is missing: " + it. second. toString (", "));
 	  }
   
   
