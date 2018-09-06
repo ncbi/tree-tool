@@ -1713,48 +1713,95 @@ Application::Arg::Arg (const string &name_arg,
 {
   trim (name);
   ASSERT (! name. empty ());
-  ASSERT (! contains (name, ' '));
-  
+  ASSERT (! contains (name, ' '));  
   ASSERT (! description. empty ());
+  ASSERT (name != Application::helpS);
+  ASSERT (name != Application::versionS);
+}
+
+
+
+void Application::Arg::qc () const
+{
+  if (! qc_on)
+  	return;
+  	
+  ASSERT (! name. empty ());
+  ASSERT (! description. empty ());
+}
+
+
+
+void Application::Key::qc () const
+{
+  if (! qc_on)
+  	return;
+  Arg::qc ();
+  
+  IMPLY (app. gnu, name. size () > 1);
+  IMPLY (acronymable, app. gnu);
+  ASSERT (isUpper (var));
+  ASSERT (! var. empty () == (app. gnu && ! flag));
+  IMPLY (! requiredGroup. empty (), value. empty ());
 }
 
 
 
 void Application::Key::saveText (ostream &os) const
 {
-  os << "[-" << name; 
-  if (! flag)
-  {
-    os << " ";
-    const bool quoted = value. empty () || contains (value, ' ');
-    if (quoted)
-      os << "\"";
-    os << value;
-    if (quoted)
-      os << "\"";
-  }
-  os << "]";
+  os << '-';
+	if (app. gnu)
+	{
+		os << "-" << name;
+		if (! flag)
+			os << ' ' << var;
+	}
+	else
+	{
+	  os << name; 
+	  if (! flag)
+	  {
+	    os << ' ';
+	    const bool quoted = value. empty () || contains (value, ' ');
+	    if (quoted)
+	      os << '\"';
+	    os << value;
+	    if (quoted)
+	      os << '\"';
+	  }
+	}
 }
 
 
 
 void Application::addKey (const string &name, 
                           const string &argDescription,
-                          const string &defaultValue)
+                          const string &defaultValue,
+                          bool acronymable,
+                          const string &var)
 {
-  ASSERT (! contains (args, name));
-  keys << Key (name, argDescription, defaultValue);
-  args [name] = & keys. back ();
+  ASSERT (! name. empty ());
+  ASSERT (! contains (name2arg, name));
+  IMPLY (acronymable, ! contains (char2arg, name [0]));
+  keys << Key (*this, name, argDescription, defaultValue, acronymable, var);
+  name2arg [name] = & keys. back ();
+  if (acronymable)
+  	char2arg [name [0]] = & keys. back ();
 }
 
 
 
 void Application::addFlag (const string &name,
-                           const string &argDescription)
+                           const string &argDescription,
+                           bool acronymable)
 {
-  ASSERT (! contains (args, name));
-  keys << Key (name, argDescription);
-  args [name] = & keys. back ();
+  ASSERT (! name. empty ());
+  ASSERT (! contains (name2arg, name));
+  IMPLY (acronymable, ! contains (char2arg, name [0]));
+  keys << Key (*this, name, argDescription, acronymable);
+  name2arg [name] = & keys. back ();
+  if (acronymable)
+  	char2arg [name [0]] = & keys. back ();
 }
 
 
@@ -1762,18 +1809,72 @@ void Application::addFlag (const string &name,
 void Application::addPositional (const string &name,
                                  const string &argDescription)
 {
-  ASSERT (! contains (args, name));
+  ASSERT (! contains (name2arg, name));
+  IMPLY (gnu, isUpper (name));
   positionals << Positional (name, argDescription);
-  args [name] = & positionals. back ();
+  name2arg [name] = & positionals. back ();
 }
 
 
 
+Application::Key* Application::getKey (const string &name) const
+{
+  if (! contains (name2arg, name))
+    errorExitStr ("Unknown key: " + strQuote (name) + "\n" + getInstruction ());
+    
+  Key* key = nullptr;
+  if (const Arg* const* argPtr = findPtr (name2arg, name))  	
+    key = const_cast <Key*> ((*argPtr) -> asKey ());
+  if (! key)
+    errorExitStr (strQuote (name) + " is not a key\n" + getInstruction ());
+    
+  return key;
+}
+
+
+
+void Application::setRequiredGroup (const string &keyName,
+                                    const string &requiredGroup)
+{ 
+  ASSERT (! requiredGroup. empty ());
+	getKey (keyName) -> requiredGroup = requiredGroup; 
+}
+
+
+
+void Application::qc () const
+{
+  if (! qc_on)
+    return;
+  
+  ASSERT (! description. empty ());
+  ASSERT (! version. empty ());
+  IMPLY (! needsArg, positionals. empty ());
+  
+  for (const Positional& p : positionals)
+  	p. qc ();
+  	
+  Set<string> requiredGroups;
+  string requiredGroup_prev;
+  for (const Key& key : keys)
+  {
+  	key. qc ();
+  	if (! key. requiredGroup. empty () && key. requiredGroup != requiredGroup_prev)
+  	{
+  		ASSERT (! requiredGroups. contains (key. requiredGroup));
+  		requiredGroups << key. requiredGroup;
+  	}
+  	requiredGroup_prev = key. requiredGroup;
+  }
+}
+	
+
+
 string Application::getArg (const string &name) const
 {
-  if (contains (args, name))  
-    return args. at (name) -> value;
-  throw runtime_error ("Parameter \"" + name + "\" is not found");
+  if (contains (name2arg, name))  
+    return name2arg. at (name) -> value;
+  throw logic_error ("Parameter \"" + name + "\" is not found");
 }
 
 
@@ -1781,9 +1882,9 @@ string Application::getArg (const string &name) const
 bool Application::getFlag (const string &name) const
 {
   const string value (getArg (name));
-  const Key* key = args. at (name) -> asKey ();
+  const Key* key = name2arg. at (name) -> asKey ();
   if (! key || ! key->flag)
-    throw runtime_error ("Parameter \"" + name + "\" is not a flag");
+    throw logic_error ("Parameter \"" + name + "\" is not a flag");
   return value == "true";
 }
 
@@ -1792,13 +1893,42 @@ bool Application::getFlag (const string &name) const
 string Application::getInstruction () const
 {
   string instr (description);
-  instr += "\nUsage: " + programName;
+  instr += "\n\nUSAGE:   " + programName;
+
   for (const Positional& p : positionals)
     instr += " " + p. str ();
+
+  string requiredGroup_prev;
   for (const Key& key : keys)
-    instr += " " + key. str ();
+  {
+ 		if (key. requiredGroup == requiredGroup_prev)
+	  	if (key. requiredGroup. empty ())
+		    instr += " ";
+	  	else
+  		  instr += " | ";
+  	else
+  		if (requiredGroup_prev. empty ())
+  			instr += " (";
+  		else 
+  		{
+ 			  instr += ") ";
+  			if (! key. requiredGroup. empty ())
+  				instr += "(";
+  		}
+	  if (key. requiredGroup. empty ())
+	  	instr += "[";
+    instr += key. str ();
+	  if (key. requiredGroup. empty ())
+	  	instr += "]";
+  	requiredGroup_prev = key. requiredGroup;
+  }
+	if (! requiredGroup_prev. empty ())
+		instr += ")";
   
-  instr += string ("\n") + "Help:  " + programName + " -help|-h";
+//if (! contains (name2arg, "help"))
+    instr += "\nHELP:    " + programName + " " + ifS (gnu, "-") + "-" + helpS;
+//if (! contains (name2arg, "version"))
+	  instr += "\nVERSION: " + programName + " " + ifS (gnu, "-") + "-" + versionS;
 
   return instr;
 }
@@ -1808,12 +1938,34 @@ string Application::getInstruction () const
 string Application::getHelp () const
 {
   string instr (getInstruction ());
-  instr += "\nParameters:";
-  const string par ("\n  ");
-  for (const Positional& p : positionals)
-    instr += par + p. str () + ": " + p. description;
-  for (const Key& key : keys)
-    instr += par + key. str () + ": " + key. description;;
+
+  const string par ("\n    ");
+
+  if (! positionals. empty ())
+  {
+	  instr += "\n\nOBLIGATORY PARAMETERS";
+	  for (const Positional& p : positionals)
+	    instr += "\n" + p. str () + par + p. description;
+	}
+
+  if (! keys. empty ())
+  {
+	  instr += "\n\nOPTIONAL PARAMETERS";
+	  for (const Key& key : keys)
+	  {
+	  	string acronym;
+	  	if (key. acronymable)
+	  	{
+				acronym = string ("-") + key. name [0];
+				if (! key. flag)
+					acronym += " " + key. var;
+				acronym += ", ";
+			}
+	    instr += "\n" + acronym + key. str () + par + key. description;
+	    if (gnu && ! key. value. empty ())
+	    	instr += par + "Default: " + key. value;
+	  }
+	}
   
   return instr;
 }
@@ -1824,6 +1976,11 @@ int Application::run (int argc,
                       const char* argv []) 
 {
   ASSERT (programArgs. empty ());
+  
+
+  addDefaultArgs ();
+  
+  
 	try
   { 
     for (int i = 0; i < argc; i++)  
@@ -1832,110 +1989,179 @@ int Application::run (int argc,
   
       
     // positionals, keys
-    bool first = true;
-    posIt = positionals. begin ();
-    Key* key = nullptr;
-    Set<string> keysRead;
-    for (string s : programArgs)
     {
-      if (first)
-      {
-        programName = rfindSplit (s, fileSlash);
-        ASSERT (! programName. empty ());
-      }
-      else
-      {
-        if (! s. empty () && s [0] == '-')
-        {
-          if (key)
-            errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
-          const string name (s. substr (1));
-          if (   name == "help"
-          	  || name == "h"
-          	 )
-          {
-            cout << getHelp () << endl;
-            return 0;
-          }
-          if (! contains (args, name))
-            errorExitStr ("Unknown key: " + name + "\n" + getInstruction ());
-          key = const_cast <Key*> (args [name] -> asKey ());
-          if (! key)
-            errorExitStr (name + " is not a key\n" + getInstruction ());
-          if (keysRead. contains (name))
-            errorExitStr ("Parameter \"" + name + "\" is used more than once");
-          else
-            keysRead << name;
-          if (key->flag)
-          {
-            key->value = "true";
-            key = nullptr;
-          }
-        }
-        else
-          if (key)
-          {
-            ASSERT (! key->flag);
-            key->value = s;
-            key = nullptr;
-          }
-          else
-          {
-            if (posIt == positionals. end ())
-              errorExitStr ("Too many positional arguments\n" + getInstruction ());
-            (*posIt). value = s;
-            posIt++;
-          }
-      }
-      first = false;
-    }
-  
-  
-    const string logFName = getArg ("log");
-  	ASSERT (! logPtr);
-    if (! logFName. empty ())
-  		logPtr = new ofstream (logFName, ios_base::app);
-  
-  	if (getFlag ("qc"))
-  		qc_on = true;
+	    bool first = true;
+		  List<Positional>::iterator posIt = positionals. begin ();
+	    Key* key = nullptr;
+	    Set<const Key*> keysRead;
+	    for (string s : programArgs)
+	    {
+	      if (first)
+	      {
+	        programName = rfindSplit (s, fileSlash);
+	        ASSERT (! programName. empty ());
+	      }
+	      else
+	      {
+	        if (! s. empty () && s [0] == '-')
+	        {
+	          if (key)
+	            errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
+	
+	          const string s1 (s. substr (1));
+	          if (s1. empty ())
+	            errorExitStr ("Dash with no key\n" + getInstruction ());
+	
+	          string name;
+	          const char c = s1 [0];  // Valid if name.empty()
+	          if (gnu)
+	          	if (c == '-')
+	          	{
+	          		name = s1. substr (1);
+			          if (name. empty ())
+			            errorExitStr ("Dashes with no key\n" + getInstruction ());
+	          	}
+	          	else
+	          	{
+	          		if (s1. size () != 1)
+	                errorExitStr ("Single character expected: " + strQuote (s1) + "\n" + getInstruction ());
+	            }
+	          else
+	          	name = s1;
+	
+	          if (name == helpS /*&& ! contains (name2arg, helpS)*/)
+	          {
+	            cout << getHelp () << endl;
+	            return 0;
+	          }
+	          if (name == versionS /*&& ! contains (name2arg, versionS)*/)
+	          {
+	            cout << version << endl;
+	            return 0;
+	          }
+	          
+	          // key
+	          if (name. empty ())
+	          {
+	          	ASSERT (gnu);
+		          if (! contains (char2arg, c))
+		            errorExitStr ("Unknown key: " + strQuote (s) + "\n" + getInstruction ());
+		          key = char2arg [c];
+		        }
+	          else
+	          	key = getKey (name);
+	            
+	          if (keysRead. contains (key))
+	            errorExitStr ("Parameter " + strQuote (key->name) + " is used more than once");
+	          else
+	            keysRead << key;
+	            
+	          if (key->flag)
+	          {
+	            key->value = "true";
+	            key = nullptr;
+	          }
+	        }
+	        else
+	          if (key)
+	          {
+	            ASSERT (! key->flag);
+	            key->value = s;
+	            key = nullptr;
+	          }
+	          else
+	          {
+	            if (posIt == positionals. end ())
+	              errorExitStr ("Too many positional parameters\n" + getInstruction ());
+	            (*posIt). value = s;
+	            posIt++;
+	          }
+	      }
+	      first = false;
+	    }
 
-  	Verbose vrb (str2<int> (getArg ("verbose")));
-  	
-  	if (getFlag ("noprogress"))
-  		Progress::disable ();
-  	if (getFlag ("profile"))
-  		Chronometer::enabled = true;
-  			
-  	seed_global = str2<ulong> (getArg ("seed"));
-  	if (! seed_global)
-  		throw runtime_error ("Seed cannot be 0");
 
-  	threads_max = str2<size_t> (getArg ("threads"));
-  	if (! threads_max)
-  		throw runtime_error ("Number of threads cannot be 0");
+	    if (programArgs. size () == 1 && (! positionals. empty () || needsArg))
+	    {
+	      cout << getInstruction () << endl;
+	      return 1;
+	    }
+	    
 
-  	if (threads_max > 1 && Chronometer::enabled)
-  		throw runtime_error ("Cannot profile with threads");
-  
-  	const string jsonFName = getArg ("json");
-  	ASSERT (! jRoot);
-  	if (! jsonFName. empty ())
-  	{
-  		new JsonMap ();
-  	  ASSERT (jRoot);
-  	}
-  
-  
-    if (programArgs. size () == 1 && (! positionals. empty () || needsArg))
-    {
-      cout << getInstruction () << endl;
-      return 1;
-    }
+	    if (posIt != positionals. end ())
+	      errorExitStr ("Too few positional parameters\n" + getInstruction ());
+	  }
     
-    if (posIt != positionals. end ())
-      errorExitStr ("Too few positional arguments\n" + getInstruction ());
-
-
+    
+    {
+	    map<string,bool> requiredGroups;
+	    for (const Key& key : keys)
+	    	if (! key. requiredGroup. empty ())
+	    	{
+	    		if (key. value. empty ())
+	    		{
+	    			if (! contains (requiredGroups, key. requiredGroup))
+	    				requiredGroups [key. requiredGroup] = false;
+	    		}
+	    		else
+	    		{
+		    		if (requiredGroups [key. requiredGroup])
+		    			throw runtime_error ("Parameter " + strQuote (key. name) + " is conflicting");  // with what ??
+		    		requiredGroups [key. requiredGroup] = true;
+		    	}
+	    	}
+	    for (const auto& it : requiredGroups)
+	    	if (! it. second)
+	    		throw runtime_error ("Required parameter is missing");  // print parameter names ??
+	  }
+  
+  
+    string logFName;
+    string jsonFName;
+    if (gnu)
+    {
+	  	if (getFlag ("debug"))
+	  		qc_on = true;
+    }
+    else
+    {
+	    logFName = getArg ("log");
+	  	ASSERT (! logPtr);
+	    if (! logFName. empty ())
+	  		logPtr = new ofstream (logFName, ios_base::app);
+	  
+	  	if (getFlag ("qc"))
+	  		qc_on = true;
+	
+	  	if (getFlag ("noprogress"))
+	  		Progress::disable ();
+	  	if (getFlag ("profile"))
+	  		Chronometer::enabled = true;
+	  			
+	  	seed_global = str2<ulong> (getArg ("seed"));
+	  	if (! seed_global)
+	  		throw runtime_error ("Seed cannot be 0");
+	
+	  	threads_max = str2<size_t> (getArg ("threads"));
+	  	if (! threads_max)
+	  		throw runtime_error ("Number of threads cannot be 0");
+	
+	  	if (threads_max > 1 && Chronometer::enabled)
+	  		throw runtime_error ("Cannot profile with threads");
+	  
+	  	jsonFName = getArg ("json");
+	  	ASSERT (! jRoot);
+	  	if (! jsonFName. empty ())
+	  	{
+	  		new JsonMap ();
+	  	  ASSERT (jRoot);
+	  	}
+	  }
+  
+  	const Verbose vrb (gnu ? 0 : str2<int> (getArg ("verbose")));
+	  	
+  
+		qc ();
   	body ();
 
   

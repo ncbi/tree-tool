@@ -2764,10 +2764,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////
 
 struct Application : Singleton<Application>, Root
-// Usage: int main (argc, argv) { Application app; return app. run (argc, argv); }
+// Usage: int main (argc, argv) { ThisApplication /*:Application*/ app; return app. run (argc, argv); }
 {  
   const string description;
   const bool needsArg;
+  const bool gnu;
+  string version {"1"};
+  static constexpr const char* helpS {"help"};
+  static constexpr const char* versionS {"version"};
   
 private:
   struct Positional;  // forward
@@ -2782,6 +2786,7 @@ private:
     Arg (const string &name_arg,
          const string &description_arg);
   public:
+  	void qc () const override;
     virtual const Positional* asPositional () const
       { return nullptr; }
     virtual const Key* asKey () const
@@ -2800,56 +2805,90 @@ private:
   };  
   struct Key : Arg
   {
+  	const Application& app;
     const bool flag;
-    Key (const string &name_arg,
+    string requiredGroup;
+  	const bool acronymable;
+    const string var;
+      // For help
+    Key (const Application &app_arg,
+         const string &name_arg,
          const string &description_arg,
-         const string &defaultValue)
+         const string &defaultValue,
+         bool acronymable_arg,
+         const string &var_arg)
       : Arg (name_arg, description_arg)
+      , app (app_arg)
       , flag (false)
+      , acronymable (acronymable_arg)
+      , var (var_arg)
       { value = defaultValue; }
-    Key (const string &name_arg,
-         const string &description_arg)
+    Key (const Application &app_arg,
+         const string &name_arg,
+         const string &description_arg,
+         bool acronymable_arg)
       : Arg (name_arg, description_arg)
+      , app (app_arg)
       , flag (true)
+      , acronymable (acronymable_arg)
       {}
+  	void qc () const override;
     void saveText (ostream &os) const override;
     const Key* asKey () const final
       { return this; }
   };
   List<Positional> positionals;
   List<Key> keys;
-  map<string/*Arg::name*/,Arg*> args;
-  List<Positional>::iterator posIt;
+  map<string/*Arg::name*/,Arg*> name2arg;
+  map<char/*Arg::name[0]*/,Key*> char2arg;
+    // Valid if gnu
 public:
   
 
 protected:
   explicit Application (const string &description_arg,
-                        bool needsArg_arg = true)               
+                        bool needsArg_arg = true,
+                        bool gnu_arg = false)               
     : description (description_arg)
     , needsArg (needsArg_arg)
-    , posIt (positionals. begin ())
-    { addFlag ("qc", "Integrity checks (quality control)");
-      addKey ("verbose", "Level of verbosity", "0");
-      addFlag ("noprogress", "Turn off progress printout");
-      addFlag ("profile", "Use chronometers to profile");
-      addKey ("seed", "Positive integer seed for random number generator", "1");
-      addKey ("threads", "Max. number of threads", "1");
-      addKey ("json", "Output file in Json format");
-      addKey ("log", "Error log file, appended");
-    }
-    // To invoke: addKey(), addFlag(), addPositional()
+    , gnu (gnu_arg)
+    {}
+    // To invoke: addKey(), addFlag(), addPositional(), setRequiredGroup()
   // Command-line parameters
   void addKey (const string &name, 
                const string &argDescription,
-               const string &defaultValue = string ());
+               const string &defaultValue = string (),
+               bool acronymable = false,
+               const string &var = string ());
     // [-<name> <defaultValue>]
+    // gnu: [--<name> <var>]
   void addFlag (const string &name,
-                const string &argDescription);
+                const string &argDescription,
+                bool acronymable = false);
     // [-<name>]
   void addPositional (const string &name,
                       const string &argDescription);
     // What if it starts with '-' ??
+  void setRequiredGroup (const string &keyName,
+                         const string &requiredGroup);
+private:
+	void addDefaultArgs ()
+	  { if (gnu)
+    	  addFlag ("debug", "Integrity checks");
+    	else
+    	{ addFlag ("qc", "Integrity checks (quality control)");
+	      addKey ("verbose", "Level of verbosity", "0");
+	      addFlag ("noprogress", "Turn off progress printout");
+	      addFlag ("profile", "Use chronometers to profile");
+	      addKey ("seed", "Positive integer seed for random number generator", "1");
+	      addKey ("threads", "Max. number of threads", "1");
+	      addKey ("json", "Output file in Json format");
+	      addKey ("log", "Error log file, appended");
+	    }
+	  }
+	void qc () const final;
+	Key* getKey (const string &name) const;
+	  // Return: !nullptr
 public:
 
 
@@ -2872,9 +2911,10 @@ protected:
     // Input: keys, where Key::flag = true
   string getProgramDirName () const
     { return getDirName (programArgs. front ()); }
-public:
+private:
   string getInstruction () const;
   string getHelp () const;
+public:
   int run (int argc, 
            const char* argv []);
     // Invokes: body()
