@@ -2839,8 +2839,8 @@ private:
   };
   List<Positional> positionals;
   List<Key> keys;
-  map<string/*Arg::name*/,Arg*> name2arg;
-  map<char/*Arg::name[0]*/,Key*> char2arg;
+  map<string/*Arg::name*/,const Arg*> name2arg;
+  map<char/*Arg::name[0]*/,const Key*> char2arg;
     // Valid if gnu
 public:
   
@@ -2868,7 +2868,6 @@ protected:
     // [-<name>]
   void addPositional (const string &name,
                       const string &argDescription);
-    // What if it starts with '-' ??
   void setRequiredGroup (const string &keyName,
                          const string &requiredGroup);
 private:
@@ -2887,8 +2886,10 @@ private:
 	    }
 	  }
 	void qc () const final;
-	Key* getKey (const string &name) const;
+	Key* getKey (const string &keyName) const;
 	  // Return: !nullptr
+	void setPositional (List<Positional>::iterator &posIt,
+	                    const string &value);
 public:
 
 

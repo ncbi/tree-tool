@@ -1817,18 +1817,29 @@ void Application::addPositional (const string &name,
 
 
 
-Application::Key* Application::getKey (const string &name) const
+Application::Key* Application::getKey (const string &keyName) const
 {
-  if (! contains (name2arg, name))
-    errorExitStr ("Unknown key: " + strQuote (name) + "\n" + getInstruction ());
+  if (! contains (name2arg, keyName))
+    errorExitStr ("Unknown key: " + strQuote (keyName) + "\n" + getInstruction ());
     
   Key* key = nullptr;
-  if (const Arg* const* argPtr = findPtr (name2arg, name))  	
-    key = const_cast <Key*> ((*argPtr) -> asKey ());
+  if (const Arg* arg = findPtr (name2arg, keyName))  	
+    key = const_cast <Key*> (arg->asKey ());
   if (! key)
-    errorExitStr (strQuote (name) + " is not a key\n" + getInstruction ());
+    errorExitStr (strQuote (keyName) + " is not a key\n" + getInstruction ());
     
   return key;
+}
+
+
+
+void Application::setPositional (List<Positional>::iterator &posIt,
+	                               const string &value)
+{
+  if (posIt == positionals. end ())
+    errorExitStr ("Too many positional parameters\n" + getInstruction ());
+  (*posIt). value = value;
+  posIt++;
 }
 
 
@@ -2048,31 +2059,31 @@ int Application::run (int argc,
           if (name. empty ())
           {
           	ASSERT (gnu);
-	          if (! contains (char2arg, c))
-	            errorExitStr ("Unknown key: " + strQuote (s) + "\n" + getInstruction ());
-	          key = char2arg [c];
+	          key = const_cast <Key*> (findPtr (char2arg, c));
 	        }
           else
-          	key = getKey (name);
-            
-          if (keysRead. contains (key))
-            errorExitStr ("Parameter " + strQuote (key->name) + " is used more than once");
-          else
-            keysRead << key;
-            
-          if (key->flag)
+          	if (const Arg* arg = findPtr (name2arg, name))					    
+					    key = const_cast <Key*> (arg->asKey ());
+					    
+					if (key)
           {
-            key->value = "true";
-            key = nullptr;
-          }
+	          if (keysRead. contains (key))
+	            errorExitStr ("Parameter " + strQuote (key->name) + " is used more than once");
+	          else
+	            keysRead << key;
+	            
+	          if (key->flag)
+	          {
+	            key->value = "true";
+	            key = nullptr;
+	          }
+	        }
+	        else
+	        	setPositional (posIt, s);
         }
         else
-        {
-          if (posIt == positionals. end ())
-            errorExitStr ("Too many positional parameters\n" + getInstruction ());
-          (*posIt). value = s;
-          posIt++;
-        }
+        	setPositional (posIt, s);
+
 	      first = false;
 	    }
       if (key)
