@@ -1643,7 +1643,7 @@ void exec (const string &cmd)
   	cout << cmd << endl;
 	const int status = system (cmd. c_str ());
 	if (status)
-		exit (status);
+		throw runtime_error ("Command failed:\n" + cmd + "\nstatus = " + toString (status));
 }
 
 
