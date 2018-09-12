@@ -834,8 +834,8 @@ inline string getFileName (const string &path)
 inline string getDirName (const string &path)  
   { const size_t pos = path. rfind ('/');
   	if (pos == string::npos)
-  		return ".";
-  	return path. substr (0, pos);
+  		return string ();
+  	return path. substr (0, pos + 1);
   }
 
 inline bool isDirName (const string &path)
