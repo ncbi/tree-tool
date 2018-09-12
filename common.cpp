@@ -2003,84 +2003,80 @@ int Application::run (int argc,
 	        programName = rfindSplit (s, fileSlash);
 	        ASSERT (! programName. empty ());
 	      }
-	      else
-	      {
-	        if (! s. empty () && s [0] == '-')
-	        {
-	          if (key)
-	            errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
-	
-	          const string s1 (s. substr (1));
-	          if (s1. empty ())
-	            errorExitStr ("Dash with no key\n" + getInstruction ());
-	
-	          string name;
-	          const char c = s1 [0];  // Valid if name.empty()
-	          if (gnu)
-	          	if (c == '-')
-	          	{
-	          		name = s1. substr (1);
-			          if (name. empty ())
-			            errorExitStr ("Dashes with no key\n" + getInstruction ());
-	          	}
-	          	else
-	          	{
-	          		if (s1. size () != 1)
-	                errorExitStr ("Single character expected: " + strQuote (s1) + "\n" + getInstruction ());
-	            }
-	          else
-	          	name = s1;
-	
-	          if (name == helpS /*&& ! contains (name2arg, helpS)*/)
-	          {
-	            cout << getHelp () << endl;
-	            return 0;
-	          }
-	          if (name == versionS /*&& ! contains (name2arg, versionS)*/)
-	          {
-	            cout << version << endl;
-	            return 0;
-	          }
-	          
-	          // key
-	          if (name. empty ())
-	          {
-	          	ASSERT (gnu);
-		          if (! contains (char2arg, c))
-		            errorExitStr ("Unknown key: " + strQuote (s) + "\n" + getInstruction ());
-		          key = char2arg [c];
-		        }
-	          else
-	          	key = getKey (name);
-	            
-	          if (keysRead. contains (key))
-	            errorExitStr ("Parameter " + strQuote (key->name) + " is used more than once");
-	          else
-	            keysRead << key;
-	            
-	          if (key->flag)
-	          {
-	            key->value = "true";
-	            key = nullptr;
-	          }
+	      else if (key)
+      	{
+          ASSERT (! key->flag);
+          key->value = s;
+          key = nullptr;
+        }
+        else if (! s. empty () && s [0] == '-')
+        {
+
+          const string s1 (s. substr (1));
+          if (s1. empty ())
+            errorExitStr ("Dash with no key\n" + getInstruction ());
+
+          string name;
+          const char c = s1 [0];  // Valid if name.empty()
+          if (gnu)
+          	if (c == '-')
+          	{
+          		name = s1. substr (1);
+		          if (name. empty ())
+		            errorExitStr ("Dashes with no key\n" + getInstruction ());
+          	}
+          	else
+          	{
+          		if (s1. size () != 1)
+                errorExitStr ("Single character expected: " + strQuote (s1) + "\n" + getInstruction ());
+            }
+          else
+          	name = s1;
+
+          if (name == helpS /*&& ! contains (name2arg, helpS)*/)
+          {
+            cout << getHelp () << endl;
+            return 0;
+          }
+          if (name == versionS /*&& ! contains (name2arg, versionS)*/)
+          {
+            cout << version << endl;
+            return 0;
+          }
+          
+          // key
+          if (name. empty ())
+          {
+          	ASSERT (gnu);
+	          if (! contains (char2arg, c))
+	            errorExitStr ("Unknown key: " + strQuote (s) + "\n" + getInstruction ());
+	          key = char2arg [c];
 	        }
-	        else
-	          if (key)
-	          {
-	            ASSERT (! key->flag);
-	            key->value = s;
-	            key = nullptr;
-	          }
-	          else
-	          {
-	            if (posIt == positionals. end ())
-	              errorExitStr ("Too many positional parameters\n" + getInstruction ());
-	            (*posIt). value = s;
-	            posIt++;
-	          }
-	      }
+          else
+          	key = getKey (name);
+            
+          if (keysRead. contains (key))
+            errorExitStr ("Parameter " + strQuote (key->name) + " is used more than once");
+          else
+            keysRead << key;
+            
+          if (key->flag)
+          {
+            key->value = "true";
+            key = nullptr;
+          }
+        }
+        else
+        {
+          if (posIt == positionals. end ())
+            errorExitStr ("Too many positional parameters\n" + getInstruction ());
+          (*posIt). value = s;
+          posIt++;
+        }
 	      first = false;
 	    }
+      if (key)
+        errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
 
 
 	    if (programArgs. size () == 1 && (! positionals. empty () || needsArg))
