@@ -1714,6 +1714,8 @@ Application::Arg::Arg (const string &name_arg,
   trim (name);
   ASSERT (! name. empty ());
   ASSERT (! contains (name, ' '));  
+  ASSERT (! contains (name, '='));
+  ASSERT (! isLeft (name, "-"));
   ASSERT (! description. empty ());
   ASSERT (name != Application::helpS);
   ASSERT (name != Application::versionS);
@@ -1997,7 +1999,27 @@ int Application::run (int argc,
 	try
   { 
     for (int i = 0; i < argc; i++)  
-      programArgs. push_back (argv [i]);
+    {
+    	string key (argv [i]);
+    	string value;
+    	bool valueP = false;
+    	if (   i 
+    		  && ! key. empty () 
+    		  && key [0] == '-'
+    		 )
+    	{
+	    	const size_t eqPos = key. find ('=');
+	    	if (eqPos != string::npos)
+	    	{
+	    		value = key. substr (eqPos + 1);
+	    		key = key. substr (0, eqPos);
+	    		valueP = true;
+	    	}
+	    }
+      programArgs. push_back (key);
+      if (valueP)
+	      programArgs. push_back (value);
+    }
     ASSERT (! programArgs. empty ());
   
       
