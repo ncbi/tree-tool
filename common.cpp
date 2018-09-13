@@ -2000,6 +2000,7 @@ int Application::run (int argc,
   { 
     for (int i = 0; i < argc; i++)  
     {
+    	// gnu: -abc --> -a -b -c ??
     	string key (argv [i]);
     	string value;
     	bool valueP = false;
@@ -2060,7 +2061,7 @@ int Application::run (int argc,
           	}
           	else
           	{
-          		if (s1. size () != 1)
+          		if (s1. size () != 1) 
                 errorExitStr ("Single character expected: " + strQuote (s1) + "\n" + getInstruction ());
             }
           else
