@@ -2854,7 +2854,11 @@ protected:
     , gnu (gnu_arg)
     {}
     // To invoke: addKey(), addFlag(), addPositional(), setRequiredGroup()
-  // Command-line parameters
+  // <Command-line parameters> ::= <arg>*
+  // <arg> ::= <positional> | <key> | <flag>
+  // <positional> ::= <string>
+  // <key> ::= -<name> <value> | -<name>=<value>
+  // <flag> ::= -<name>
   void addKey (const string &name, 
                const string &argDescription,
                const string &defaultValue = string (),
