@@ -750,6 +750,23 @@ void trimLeading (string &s);
 
 void trimTrailing (string &s);
 
+inline void trim (string &s)
+  { trimTrailing (s);
+    trimLeading (s); 
+  }
+
+void trimLeading (string &s,
+                  char c);
+
+void trimTrailing (string &s,
+                   char c);
+
+inline void trim (string &s,
+                  char c)
+  { trimTrailing (s, c);
+    trimLeading  (s, c); 
+  }
+
 inline bool contains (const string &hay,
                       const string &needle)
   { return hay. find (needle) != string::npos; }
@@ -761,11 +778,6 @@ inline bool contains (const string &hay,
 size_t containsWord (const string& hay,
                      const string& needle);
   // Return: position of needle in hay; string::npos if needle does not exist
-
-inline void trim (string &s)
-  { trimTrailing (s);
-    trimLeading (s); 
-  }
 
 void replace (string &s,
               char from,

@@ -380,6 +380,31 @@ void trimTrailing (string &s)
 
 
 
+void trimLeading (string &s,
+                  char c)
+{
+  size_t i = 0;
+  for (; i < s. size () && s [i] == c; i++)
+    ;
+  s. erase (0, i);
+}
+
+
+
+void trimTrailing (string &s,
+                   char c)
+{
+	size_t i = s. size ();
+	while (i)
+		if (s [i - 1] == c)
+			i--;
+		else
+			break;
+  s. erase (i);
+}
+
+
+
 size_t containsWord (const string& hay,
                      const string& needle)
 {
