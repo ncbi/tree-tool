@@ -2052,7 +2052,7 @@ private:
 	void report () const
 	  { cerr << '\r';
     #ifndef _MSC_VER
-      cerr << "\33[2K";
+      cerr << "\033[2K";
     #endif
 	    cerr << n; 
 	  	if (n_max)
