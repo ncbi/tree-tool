@@ -117,7 +117,7 @@ void errorExit (const char* msg,
 #endif
 	*os << endl
       << "*** ERROR ***" << endl
-      << msg << endl
+      << msg << endl << endl
     #ifndef _MSC_VER
 	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
 	    << "PWD: " << (pwd ? pwd : "?") << endl
@@ -1769,7 +1769,7 @@ void Application::Key::qc () const
   IMPLY (acronymable, app. gnu);
   ASSERT (isUpper (var));
   ASSERT (! var. empty () == (app. gnu && ! flag));
-  IMPLY (! requiredGroup. empty (), value. empty ());
+  IMPLY (! requiredGroup. empty (), defaultValue. empty ());
 }
 
 
@@ -1789,10 +1789,10 @@ void Application::Key::saveText (ostream &os) const
 	  if (! flag)
 	  {
 	    os << ' ';
-	    const bool quoted = value. empty () || contains (value, ' ');
+	    const bool quoted = defaultValue. empty () || contains (defaultValue, ' ');
 	    if (quoted)
 	      os << '\"';
-	    os << value;
+	    os << defaultValue;
 	    if (quoted)
 	      os << '\"';
 	  }
@@ -1847,13 +1847,13 @@ void Application::addPositional (const string &name,
 Application::Key* Application::getKey (const string &keyName) const
 {
   if (! contains (name2arg, keyName))
-    errorExitStr ("Unknown key: " + strQuote (keyName) + "\n" + getInstruction ());
+    errorExitStr ("Unknown key: " + strQuote (keyName) + "\n\n" + getInstruction ());
     
   Key* key = nullptr;
   if (const Arg* arg = findPtr (name2arg, keyName))  	
     key = const_cast <Key*> (arg->asKey ());
   if (! key)
-    errorExitStr (strQuote (keyName) + " is not a key\n" + getInstruction ());
+    errorExitStr (strQuote (keyName) + " is not a key\n\n" + getInstruction ());
     
   return key;
 }
@@ -1864,7 +1864,7 @@ void Application::setPositional (List<Positional>::iterator &posIt,
 	                               const string &value)
 {
   if (posIt == positionals. end ())
-    errorExitStr ("Too many positional parameters\n" + getInstruction ());
+    errorExitStr (strQuote (value) + " cannot be a positional parameter\n\n" + getInstruction ());
   (*posIt). value = value;
   posIt++;
 }
@@ -2002,8 +2002,8 @@ string Application::getHelp () const
 				acronym += ", ";
 			}
 	    instr += "\n" + acronym + key. str () + par + key. description;
-	    if (gnu && ! key. value. empty ())
-	    	instr += par + "Default: " + key. value;
+	    if (gnu && ! key. defaultValue. empty ())
+	    	instr += par + "Default: " + key. defaultValue;
 	  }
 	}
   
@@ -2073,7 +2073,7 @@ int Application::run (int argc,
 
           const string s1 (s. substr (1));
           if (s1. empty ())
-            errorExitStr ("Dash with no key\n" + getInstruction ());
+            errorExitStr ("Dash with no key\n\n" + getInstruction ());
 
           string name;
           const char c = s1 [0];  // Valid if name.empty()
@@ -2082,12 +2082,12 @@ int Application::run (int argc,
           	{
           		name = s1. substr (1);
 		          if (name. empty ())
-		            errorExitStr ("Dashes with no key\n" + getInstruction ());
+		            errorExitStr ("Dashes with no key\n\n" + getInstruction ());
           	}
           	else
           	{
           		if (s1. size () != 1) 
-                errorExitStr ("Single character expected: " + strQuote (s1) + "\n" + getInstruction ());
+                errorExitStr ("Single character expected: " + strQuote (s1) + "\n\n" + getInstruction ());
             }
           else
           	name = s1;
@@ -2135,7 +2135,7 @@ int Application::run (int argc,
 	      first = false;
 	    }
       if (key)
-        errorExitStr ("Key with no value: " + key->name + "\n" + getInstruction ());
+        errorExitStr ("Key with no value: " + key->name + "\n\n" + getInstruction ());
 
 
 	    if (programArgs. size () == 1 && (! positionals. empty () || needsArg))
@@ -2146,7 +2146,7 @@ int Application::run (int argc,
 	    
 
 	    if (posIt != positionals. end ())
-	      errorExitStr ("Too few positional parameters\n" + getInstruction ());
+	      errorExitStr ("Too few positional parameters\n\n" + getInstruction ());
 	  }
     
     

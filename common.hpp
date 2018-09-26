@@ -2793,7 +2793,7 @@ private:
     const string description;
       // !empty()
     string value;
-      // Init: default
+      // Init: default value
   protected:
     Arg (const string &name_arg,
          const string &description_arg);
@@ -2823,10 +2823,11 @@ private:
   	const bool acronymable;
     const string var;
       // For help
+    const string defaultValue;
     Key (const Application &app_arg,
          const string &name_arg,
          const string &description_arg,
-         const string &defaultValue,
+         const string &defaultValue_arg,
          bool acronymable_arg,
          const string &var_arg)
       : Arg (name_arg, description_arg)
@@ -2834,6 +2835,7 @@ private:
       , flag (false)
       , acronymable (acronymable_arg)
       , var (var_arg)
+      , defaultValue (defaultValue_arg)
       { value = defaultValue; }
     Key (const Application &app_arg,
          const string &name_arg,
