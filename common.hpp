@@ -650,23 +650,22 @@ inline string nvl (const string& s,
                    const string& nullS = "-")
   { return s. empty () ? nullS : s; }
   	
+inline bool isQuoted (const string &s,
+                      char quote = '\"')
+  { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
+
+string strQuote (const string &s,
+                 char quote = '\"');
+
+inline string unQuote (const string &s)
+  { return s. substr (1, s. size () - 2); }
+
 inline string prepend (const string &prefix,
                     	 const string &s)
   { if (s. empty ())
   	  return string ();
   	return prefix + s;
   }
-
-inline bool isQuoted (const string &s,
-                      char quote = '\"')
-  { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
-
-inline string strQuote (const string &s,
-                        char quote = '\"')
-  { return quote + s + quote; }
-
-inline string unQuote (const string &s)
-  { return s. substr (1, s. size () - 2); }
 
 inline bool isSpace (char c)
   { return c > '\0' && c <= ' ' && isspace (c); }
@@ -689,7 +688,7 @@ template <typename T>
       if (   Common_sp::strBlank (s)
           || ! iss. eof ()
          )
-        throw runtime_error ("Converting \"" + s + "\"");    
+        throw runtime_error ("Converting " + strQuote (s));
       return i;
     }
 
@@ -2136,7 +2135,7 @@ struct LineInput : Input
 		  	return true;  
 			if (eof && eofAllowed)
 				return false;
-		  throw runtime_error ("No \"" + prefix + "\"");
+		  throw runtime_error ("No " + strQuote (prefix));
 		}
 	string getString ()
 	  { string s; 
@@ -2241,7 +2240,7 @@ public:
       istringstream iss (f. line);
       iss >> name1 >> name2;
       if (name2. empty ())
-      	throw runtime_error ("Bad request: '" + name1 + "' - '" + name2 + "'");
+      	throw runtime_error ("Bad request: " + strQuote (name1) + " - " + strQuote (name2));
       if (name1 == name2)
       	throw runtime_error ("Same name: " + name1);
       if (name1 > name2)

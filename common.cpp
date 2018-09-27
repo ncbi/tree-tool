@@ -138,8 +138,10 @@ void errorExit (const char* msg,
  	                    || contains (s, ')')
  	                    || contains (s, '<')
  	                    || contains (s, '>')
- 	                    || contains (s, '~');
- 	   // '\' ??
+ 	                    || contains (s, '~')
+ 	                    || contains (s, '\'')
+ 	                    || contains (s, '"')
+ 	                    || contains (s, '\\');
 	   *os << " " << (bad ? strQuote (s, '\'') : s);
 	 }
 	 *os << endl;
@@ -453,22 +455,32 @@ void replaceStr (string &s,
 {
   if (from == to)
     return;
-    
+
+  size_t start = 0;    
   for (;;)
   {
-    const size_t pos = s. find (from);
+    const size_t pos = s. find (from, start);
     if (pos == string::npos)
       break;
-  #if 0
-    s = s. substr (0, pos) + to + s. substr (pos + from. size ());
-  #else
     s. replace (pos, from. size (), to);
-  #endif
+    start = pos + to. size ();
   }
 }
   
   
   
+string strQuote (const string &s,
+                 char quote)
+{ 
+	string s1 (s);
+	replaceStr (s1, "\\", "\\\\");
+	const char slashQuote [] = {'\\', quote, '\0'};
+	replaceStr (s1, string (1, quote), slashQuote);
+	return quote + s1 + quote; 
+}
+
+
+
 string to_c (const string &s)
 {
   string r;
@@ -908,7 +920,7 @@ Named::Named (const string& name_arg)
 {
 #ifndef NDEBUG
   if (! goodName (name))
-    ERROR_MSG ("Bad name: \"" + name_arg + "\"");
+    ERROR_MSG ("Bad name: " + strQuote (name_arg));
 #endif
 }
 
@@ -999,9 +1011,9 @@ Input::Input (const string &fName,
 , prog (0, displayPeriod)  
 { 
   if (! ifs. good ())
-    throw runtime_error ("Bad file: '" + fName  + "'");
+    throw runtime_error ("Bad file: " + strQuote (fName));
   if (! ifs. rdbuf () -> pubsetbuf (buf. get (), (long) bufSize))
-  	throw runtime_error ("Cannot allocate buffer to '" + fName + "'");
+  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName));
 }
  
 
@@ -1274,7 +1286,7 @@ void OFStream::open (const string &dirName,
 	ofstream::open (pathName);
 
 	if (! good ())
-	  throw runtime_error ("Cannot create file \"" + pathName + "\"");
+	  throw runtime_error ("Cannot create file " + strQuote (pathName));
 }
 
 
@@ -1585,10 +1597,10 @@ JsonMap::JsonMap (const string &fName)
 {
   ifstream ifs (fName. c_str ());
   if (! ifs. good ())
-    throw runtime_error ("Bad file: '" + fName + "'");
+    throw runtime_error ("Bad file: " + strQuote (fName));
   const Token token (readToken (ifs));
   if (! token. isDelimiter ('{'))
-    throw runtime_error ("Json file: '" + fName + "': should start with '{'");
+    throw runtime_error ("Json file: " + strQuote (fName) + ": should start with '{'");
   parse (ifs);
 }
 
@@ -1914,7 +1926,7 @@ string Application::getArg (const string &name) const
 {
   if (contains (name2arg, name))  
     return name2arg. at (name) -> value;
-  throw logic_error ("Parameter \"" + name + "\" is not found");
+  throw logic_error ("Parameter " + strQuote (name) + " is not found");
 }
 
 
@@ -1924,7 +1936,7 @@ bool Application::getFlag (const string &name) const
   const string value (getArg (name));
   const Key* key = name2arg. at (name) -> asKey ();
   if (! key || ! key->flag)
-    throw logic_error ("Parameter \"" + name + "\" is not a flag");
+    throw logic_error ("Parameter " + strQuote (name) + " is not a flag");
   return value == "true";
 }
 
@@ -2023,6 +2035,7 @@ int Application::run (int argc,
   
 	try
   { 
+  	// programArgs
     for (int i = 0; i < argc; i++)  
     {
     	// gnu: -abc --> -a -b -c ??
