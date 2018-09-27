@@ -1765,7 +1765,7 @@ void Dataset::load (istream &is)
       string attrName;
       is >> attrName;
       if (! isAlpha (attrName [0]))
-      	throw runtime_error ("Bad protein name: \"" + attrName + "\"");
+      	throw runtime_error ("Bad protein name: " + strQuote (attrName));
       string dataS = attrName;
       strUpper (dataS);
       if (dataS == "DATA")

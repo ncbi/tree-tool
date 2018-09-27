@@ -1045,7 +1045,7 @@ public:
     { { ifstream is (fName + dmSuff);
     	  char* buf = nullptr;
 			  if (! is. rdbuf () -> pubsetbuf (buf, 1e6))   // PAR
-			  	throw runtime_error ("Cannot allocate buffer to '" + fName + "'");
+			  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName));
         load (is);
       }
       qc ();

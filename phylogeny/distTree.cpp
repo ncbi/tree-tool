@@ -3033,7 +3033,7 @@ void DistTree::loadTreeFile (const string &fName)
   }
   catch (const exception &e)
   {
-    throw runtime_error ("Loading tree file \"" + fName + "\"\n" + e. what ());
+    throw runtime_error ("Loading tree file " + strQuote (fName) + "\n" + e. what ());
   }
   ASSERT (! lines. empty ());
 
@@ -6983,7 +6983,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
   
   if (fileExists (getRequestFName ()))
   {
-    cout << "File \"" << getRequestFName () << "\" exists" << endl;
+    cout << "File " << strQuote (getRequestFName ()) << " exists" << endl;
     return;
   }
     
@@ -6994,15 +6994,15 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
   if (init)
   { 
     if (fileExists (getLeafFName ()))
-      throw runtime_error ("File \"" + getLeafFName () + "\" exists");
+      throw runtime_error ("File " + strQuote (getLeafFName ()) + " exists");
     if (fileExists (getDissimFName ()))
-      throw runtime_error ("File \"" + getDissimFName () + "\" exists");
+      throw runtime_error ("File " + strQuote (getDissimFName ()) + " exists");
     { OFStream of (getDissimFName ()); }  // destructor creates an empty file
   }
   else
   {
     if (! fileExists (getDissimFName ()))
-      throw runtime_error ("File \"" + getDissimFName () + "\" does not exist");
+      throw runtime_error ("File " + strQuote (getDissimFName ()) + " does not exist");
     {
       LineInput f (getDissimFName ());
       string name1, name2, dissimS;

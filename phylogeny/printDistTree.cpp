@@ -22,7 +22,7 @@ struct ThisApplication : Application
 	{
     // Input
 	  addPositional ("input_tree", "Tree file");
-	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\" to read object comments");
+	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);  
     // Output

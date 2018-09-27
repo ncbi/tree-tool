@@ -1585,7 +1585,7 @@ void Grammar::addRule (const string &lhs,
 {
   ASSERT (! lhs. empty ());
   if (lhs == NonTerminal::sigmaS)
-    throw runtime_error (string ("Symbol \"") + NonTerminal::sigmaS + "\" is reserved");
+    throw runtime_error ("Symbol " + strQuote (NonTerminal::sigmaS) + " is reserved");
   
   string ascii ("   ");
   ASSERT (ascii. size () == 3);
@@ -1662,7 +1662,7 @@ void Grammar::addRule (const string &lhs,
                         }
                       }
                       break;
-            default:  ERROR_MSG ("Unknown special grammar symbol: \'" + token. name + "\'");
+            default:  ERROR_MSG ("Unknown special grammar symbol: " + strQuote (token. name));
           }
         }
         break;

@@ -32,7 +32,7 @@ struct ThisApplication : Application
 	  const bool init           = getFlag ("init");
 	               varianceType = str2varianceType (getArg ("variance"));  // Global    
     if (! isRight (dataDir, "/"))
-      throw runtime_error ("\"" + dataDir + "\" must end with '/'");
+      throw runtime_error (strQuote (dataDir) + " must end with '/'");
 
 
     if (verbose ())

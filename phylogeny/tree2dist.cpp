@@ -23,7 +23,7 @@ const string distName = "dist";
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Print a " + dmSuff + "-file with an attribute '" + distName + "'")
+	: Application ("Print a " + dmSuff + "-file with an attribute " + strQuote (distName))
 	{
 	  // Input
 	  addKey ("input_tree", "File with the tree and arc lengths");

@@ -21,7 +21,7 @@ const string dissimName = "cons";
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert feature sets to a Jaccard conservation distance '" + dissimName + "' and print a " + dmSuff + "-file")
+    : Application ("Convert feature sets to a Jaccard conservation distance " + strQuote (dissimName) + " and print a " + dmSuff + "-file")
     {
   	  addPositional ("objects", "File with a list of object files with features");
   	  addPositional ("objects_dir", "Directory with <object> files containing features");

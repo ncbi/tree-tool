@@ -902,7 +902,7 @@ void Genome::initDir (const string &geneDir)
       trim (geneName);
       ASSERT (! geneName. empty ());
       if (contains (coreSet, geneName))
-        ERROR_MSG ("Gene \"" + geneName + "\" already exists in genome " + getName ());
+        ERROR_MSG ("Gene " + strQuote (geneName) + " already exists in genome " + getName ());
       coreSet [geneName] = optional;
     }
   }

@@ -60,7 +60,7 @@ struct ThisApplication : Application
         if (isdigit (items [0]))
           gen. reset (new NumberItemGenerator (step, items));	  
         else
-          throw runtime_error ("File \"" + items + "\" does not exist");
+          throw runtime_error ("File " + strQuote (items) + " does not exist");
     }
     ASSERT (gen. get ());
 	

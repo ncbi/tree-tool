@@ -37,7 +37,7 @@ struct ThisApplication : Application
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
-	  addKey ("data", dmSuff + "-file without \"" + dmSuff + "\", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
+	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + ", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
@@ -71,7 +71,7 @@ struct ThisApplication : Application
     // Output
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
-	  addKey ("leaf_errors", dmSuff + "-file without \"" + dmSuff + "\" with " + outlierCriterion + " for each leaf");
+	  addKey ("leaf_errors", dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
 	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");

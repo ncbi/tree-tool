@@ -23,7 +23,7 @@ struct ThisApplication : Application
     : Application ("Analyze proportional homoscedastic dissimilarities: centralize to 1, find variances. Print dissimilarity attributes statistics")
     {
       // Input
-  	  addPositional ("file", dmSuff + "-file without \"" + dmSuff + "\"");
+  	  addPositional ("file", dmSuff + "-file without " + strQuote (dmSuff));
   	  addPositional ("power", "Power for raw dissimilarities to be raised to");
   	  // Output
   	  addKey ("output_dissim", "Output merged dissimilarity");

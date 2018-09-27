@@ -17,7 +17,7 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Print a tree'")
+	: Application ("Print a tree")
 	{
 	  // Input
 	  addPositional ("input_tree", "Tree in Newick format");

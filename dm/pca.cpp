@@ -31,12 +31,12 @@ struct ThisApplication : Application
 	  addKey ("maxTotalExpl", "Min. total explained fraction (0..1)", "1");  // was: 0.99
 	  addKey ("minExpl", "Min. explained fraction (0..1)", "0.005");  // was: 0.001
 	  // Class attribute
-	  addKey ("class", "Class attribute name", "");  // test ??
+	  addKey ("class", "Class attribute name");  // test ??
 	  // Clustering
-	  addKey ("maxClusters", "Max. number of clusters; 1 - no clustering, otherwise make a clustering in the MDS space, create an attribute \"" + clusterAttrName + "\"", "1");
+	  addKey ("maxClusters", "Max. number of clusters; 1 - no clustering, otherwise make a clustering in the MDS space, create an attribute " + strQuote (clusterAttrName), "1");
 	  addKey ("minClusteringSDRel", "Min. SD for a cluster / data SD", "0.01"); 
 	  addFlag ("mergeClose", "Merge close clusters");
-	  addKey ("clusteringDir", "If specified and the number of clusters > 1 then save the original data restricted to each cluster in this directory", "");
+	  addKey ("clusteringDir", "If specified and the number of clusters > 1 then save the original data restricted to each cluster in this directory");
 	  //
 	  addKey ("attrPValue", "Max. p-value for a cluster-characteristic attribute", "1e-5");  // was : 0.01
 	  //

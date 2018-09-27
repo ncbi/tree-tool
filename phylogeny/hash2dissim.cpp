@@ -24,7 +24,7 @@ const string attrName = "cons";
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert hashes to a dissimilarity named \"" + attrName + "\" and print a " + dmSuff + "-file")
+    : Application ("Convert hashes to a dissimilarity named " + strQuote (attrName) + " and print a " + dmSuff + "-file")
     {
     	// Input
   	  addPositional ("objects", "File with a list of objects");
