@@ -1676,7 +1676,7 @@ size_t Offset::size = 0;
 void exec (const string &cmd)
 {
   ASSERT (! cmd. empty ());
-  if (qc_on)
+  if (verbose ())
   	cout << cmd << endl;
 	const int status = system (cmd. c_str ());
 	if (status)
