@@ -1,4 +1,9 @@
 #!/bin/bash
+set -o nounset
+set -o errexit
+set -o posix
+set -o pipefail
+export LC_ALL=C
 
 if [ $# != 3 ]; then
   echo "Input: #3.dm"

@@ -2610,8 +2610,10 @@ DistTree::DistTree (const string &dataDirName,
   
   
   cleanTopology ();
-   
-  
+  if (getDiscernibles (). size () <= 1)
+  	throw runtime_error ("No discernible objects");
+  	
+     
   if (loadDissim)
   {
     setPaths ();        
@@ -4982,7 +4984,7 @@ size_t DistTree::optimizeLenNode ()
       continue;
     stars << Star (center->asSteiner ());
   }
-  stars. sort (Star::strictlyLess);  
+  stars. sort (Star::strictlyLess); 
 
 
   Progress prog (stars. size ());  

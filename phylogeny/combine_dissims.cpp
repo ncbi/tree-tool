@@ -112,12 +112,21 @@ Line format: <unit> <raw_min> <raw_max>");
 			while (f. nextLine ())
 			{
 	      scales << Scale (f. line, coeff);
-	      if (scales. size () >= 2 && scales [scales. size () - 2]. unit > scales [scales. size () - 1]. unit)
-	      	throw runtime_error ("Scale units must increase");
+	      const size_t i = scales. size ();
+	      if (i >= 2)
+	      {
+	      	if (  scales [i - 2]. unit 
+	      		  > scales [i - 1]. unit
+	      		 )
+	      	  throw runtime_error ("Scale units must increase");
+	      	if (  scales [i - 2]. dissim_max () 
+	      		  > scales [i - 1]. dissim_max ()
+	      		 )
+	      	  throw runtime_error ("dissim_max must increase");
+	      }
 	    }
 		}
 		ASSERT (scales. size () >= 2);
-	//ASSERT (scales [0]. unit == 1);  
 
       
     Vector<ObjPair> objPairs;  objPairs. reserve (1000);  // PAR
@@ -140,7 +149,6 @@ Line format: <unit> <raw_min> <raw_max>");
 	    Real weight_sum = 0;
 	  #else
 	    Real dissim = NAN;
-	  //Real dissim_max_prev = 0;
 	  #endif
   	  FFOR (size_t, j, scales. size ())
       {
@@ -150,7 +158,7 @@ Line format: <unit> <raw_min> <raw_max>");
         	                     + " has a different name1: " + objPairs [k]. name1 + " vs. " + objPairs [i]. name1
         	                    );
         ASSERT (objPairs [k]. name2 == objPairs [i]. name2);
-        const Real raw = objPairs [k]. dissim;
+        const Real raw = objPairs [k]. dissim;  // isNan (objPairs [k]. dissim) ? NAN : max (dissim_max_prev, objPairs [k]. dissim);  // Bad
   	  #ifdef WEIGHT
         const Real dissim = scales [j]. raw2dissim (raw);
         if (isNan (dissim))
@@ -161,11 +169,7 @@ Line format: <unit> <raw_min> <raw_max>");
       #else
         dissim = scales [j]. raw2dissim (raw);
         if (! isNan (dissim))
-        {
-        //maximize (dissim, dissim_max_prev);
           break;
-        }
-      //dissim_max_prev = scales [j]. dissim_max ();
       #endif
       }
       cout         << objPairs [i]. name1 

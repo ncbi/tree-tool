@@ -1,32 +1,42 @@
-#!/bin/csh -f
+#!/bin/bash
+set -o nounset
+set -o errexit
+set -o posix
+set -o pipefail
+export LC_ALL=C
 
-if ($# != 2) then
-  echo "Input: sm1K-univ-calibrate.dm"
+if [ $# != 5 ]; then
+  echo "Input: #3-calibrate.dm"
   echo "#1: power"
   echo "#2: phen/"
+  echo "#3: Input file prefix"
+  echo "#4: delete hybrids (0/1)"
+  echo "#5: dissim_coeff (default: 1)"
   exit 1
-endif
+fi
 
 
 echo ""
 echo "power = $1"
 
-calibrateDissims sm1K-univ-calibrate $1  -output_dissim sm1K-univ.pairs  > hmm-univ.stat
-if ($?) exit 1
+calibrateDissims $3-calibrate $1  -output_dissim $3.pairs  > hmm-univ.stat
 
-tail -n +5 sm1K-univ.pairs.dm | sed 's/-/ /1' > sm1K-univ.pairs
-if ($?) exit 1
-rm sm1K-univ.pairs.dm
+tail -n +5 $3.pairs.dm | sed 's/-/ /1' > $3.pairs
+rm $3.pairs.dm
 
-pairs2attr2 sm1K-univ.pairs 1 cons 6 -distance > sm1K-univ.dm
-if ($?) exit 1
-rm sm1K-univ.pairs
+pairs2attr2 $3.pairs 1 cons 6  -distance > $3.dm
+rm $3.pairs
 
-distTree.sh sm1K-univ cons
-if ($?) exit 1
-rm sm1K-univ.dm
+hybrid=""
+if [ $4 == 1 ]; then
+  hybrid="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid  -delete_all_hybrids"
+fi
 
-tree_quality_phen.sh sm1K-univ.tree $2
-if ($?) exit 1
+echo ""
+echo ""
+makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $hybrid  -output_tree tree  -output_feature_tree _feature_tree
 
+echo ""
+echo ""
+makeFeatureTree  -input_tree _feature_tree  -features $2  -output_core _core  -qual _qual
 
