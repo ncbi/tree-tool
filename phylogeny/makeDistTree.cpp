@@ -115,6 +115,9 @@ struct ThisApplication : Application
     hybrids. sort ();
     hybrids. uniq ();
     
+    for (const TriangleParentPair& tpp : triangleParentPairs)
+      tpp. qcMatchHybrids (hybrids);
+    
     Set<const Leaf*> extra;
     for (const Leaf* leaf : hybrids)
     	if (! leaf->discernible)

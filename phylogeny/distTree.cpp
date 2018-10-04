@@ -114,6 +114,17 @@ void Triangle::print (ostream &os) const
 
 
 
+void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
+{
+	#define QC_MATC_HHYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << leaf->name << endl; print (cout); ERROR; }	
+	QC_MATC_HHYBRIDS (child, child_hybrid);
+	QC_MATC_HHYBRIDS (parents [0]. leaf, parents [0]. hybrid);
+	QC_MATC_HHYBRIDS (parents [1]. leaf, parents [1]. hybrid);
+	#undef QC_MATC_HHYBRIDS
+}
+
+
+
 
 // TriangleParentPair
 

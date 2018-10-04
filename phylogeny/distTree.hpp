@@ -182,6 +182,8 @@ struct Triangle
 	  	if (parents [1]. hybrid)  vec << parents [1]. leaf;
 	  	return vec;
 	  }
+	void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const;
+	  // Requires: hybrids: sort()'ed
 };
 
 
@@ -272,6 +274,12 @@ public:
     			vec << tr. getHybrids ();
     	return vec;
     }
+  void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
+    { for (const Triangle &tr : triangles)
+    		if (tr. hasHybrid ())
+	    		tr. qcMatchHybrids (hybrids);
+    }
+	  // Requires: hybrids: sort()'ed
 private:
 	size_t child_parent2parents (const DistTree &tree,
                                const Leaf* child,
