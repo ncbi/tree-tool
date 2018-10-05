@@ -66,10 +66,9 @@ echo "To add at this step: $INC"
 
 ls $1/new/ > $1/new.list
 if ($?) exit 1
-if (-z $1/new.list) then
-  rm $1/new.list
-  exit 2
-endif
+
+set STOP = 0
+if (-z $1/new.list)  set STOP = 1
 
 cp /dev/null $1/dissim.add
 if ($?) exit 1
@@ -101,9 +100,11 @@ else
 	if ($?) exit 1  
 endif
 
-distTree_inc_hybrid.sh $1 $VER 
-if ($?) exit 1
-if (-e $1/hist/hybrid.$VER)  mv $1/hist/hybrid.$VER $1/hist/hybrid-new.$VER
+if (0) then  # ??
+	distTree_inc_hybrid.sh $1 $VER 
+	if ($?) exit 1
+	if (-e $1/hist/hybrid.$VER)  mv $1/hist/hybrid.$VER $1/hist/hybrid-new.$VER
+endif
 
 
 # Time: O(log^4(n)) per one new object, where n = # objects in the tree
@@ -159,17 +160,18 @@ cat $1/dissim.add >> $1/dissim
 if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 38  # PAR 
+  set VER = 2  # PAR 
 endif
 
 
 # Time: O(n log^4(n)) 
-set HYBRIDNESS_MIN = `cat $1/hybridness_min`
+set hybridness_min  = `cat $1/hybridness_min`
+set dissim_boundary = `cat $1/dissim_boundary`
 makeDistTree $QC  -threads 15 \
   -data $1/ \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
-  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN \
+  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $hybridness_min  -dissim_boundary $dissim_boundary \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
@@ -191,7 +193,6 @@ rm $1/leaf.list
 echo ""
 distTree_inc_hybrid.sh $1 $VER 
 if ($?) exit 1
-
 distTree_inc_unhybrid.sh $1 $VER 
 if ($?) exit 1
 
@@ -228,3 +229,6 @@ if (-e $1/phen) then
 	grep ' !' $1/hist/makeFeatureTree.$VER
 	if ($?) exit 1
 endif
+
+
+if ($STOP == 1)  exit 2

@@ -12,16 +12,18 @@ endif
 set DIR = $1/search/$2
 
 
-distTree_inc_new2hybrid.sh $1 $2 $DIR/hybrid $DIR/log
-if ($?) exit 1
-if (-e $DIR/log)  exit 1
-if (-e $DIR/hybrid) then
-  if (-z $DIR/hybrid) exit 1    
-  flock $1/hybrid -c "cat $DIR/hybrid >> $1/hybrid"
-  if ($?) exit 1
-  rm -r $DIR/
-  if ($?) exit 1
-  exit 0
+if (0) then  # ??
+	distTree_inc_new2hybrid.sh $1 $2 $DIR/hybrid $DIR/log 
+	if ($?) exit 1
+	if (-e $DIR/log)  exit 1
+	if (-e $DIR/hybrid) then
+	  if (-z $DIR/hybrid) exit 1    
+	  flock $1/hybrid -c "cat $DIR/hybrid >> $1/hybrid"
+	  if ($?) exit 1
+	  rm -r $DIR/
+	  if ($?) exit 1
+	  exit 0
+	endif
 endif
 
 

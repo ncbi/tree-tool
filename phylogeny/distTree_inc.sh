@@ -53,7 +53,7 @@ endif
 # Time: O(n log^5(n))
 makeDistTree  -threads 15  -data $1/  \
   $delete  \
-  -optimize  -skip_len  -reinsert  -subgraph_fast  \
+  -optimize  -skip_len  -reinsert  \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 if ($?) exit 1
 mv $1/tree.new $1/tree
@@ -64,10 +64,11 @@ if ($?) exit 1
 if (-e $1/delete) then
   $1/objects_in_tree.sh $1/delete null
 	if ($?) exit 1
+	trav $1/delete "rm -f $1/outlier/%f"
+	if ($?) exit 1
   mv $1/delete $1/hist/delete.$VER
 	if ($?) exit 1
 endif
-
 
 
 if (-e $1/phen) then

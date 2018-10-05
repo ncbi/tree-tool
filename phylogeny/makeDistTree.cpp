@@ -89,7 +89,7 @@ struct ThisApplication : Application
 	// Return: true <=> hybrids are deleted
 	// Append: *hybridDissimRequests
 	{
-    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1, hybridDissimRequests));  // PAR  
+    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1, hybridDissimRequests));  // PAR 
     if (hybridDissimRequests)
       cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests->size () << endl;
 

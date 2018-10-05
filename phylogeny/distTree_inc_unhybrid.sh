@@ -19,6 +19,7 @@ if (-z $1/unhybrid) then
 else
   echo ""
   wc -l $1/unhybrid
+  # -> search/ ??
   trav $1/unhybrid "mv $1/outlier/%f $1/new/"
 	if ($?) exit 1
   $1/objects_in_tree.sh $1/unhybrid null

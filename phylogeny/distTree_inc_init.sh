@@ -1,78 +1,63 @@
-#!/bin/csh -f
+#!/bin/bash
+set -o nounset
+set -o errexit
+set -o posix
+set -o pipefail
+export LC_ALL=C
 
-if ($# != 3) then
+if [ $# != 4 ]; then
   echo "Initialize an incremental distance tree"
   echo "#1: Output directory"
-  echo "#2: hybridness_min (> 1)"
-  echo "#3: grid_min (> 0)"
+  echo "#2: grid_min (> 0)"
+  echo "#3: hybridness_min (> 1)"
+  echo "#4: dissim_boundary (> 0)"
   exit 1
-endif
+fi
+
+inc=$1
+grid_min=$2
+hybridness_min=$3
+dissim_boundary=$4
+
+if [ $grid_min -le 0 ]; then
+  exit 1
+fi
 
 
+mkdir $inc
 
-mkdir $1
-if ($?) exit 1
+cp /dev/null $inc/tree
+cp /dev/null $inc/dissim
+cp /dev/null $inc/leaf
 
+mkdir $inc/new
+mkdir $inc/search
+mkdir $inc/outlier
 
-cp /dev/null $1/tree
-if ($?) exit 1
+echo "1" > $inc/version
 
-cp /dev/null $1/dissim
-if ($?) exit 1
+mkdir $inc/hist
 
-cp /dev/null $1/leaf
-if ($?) exit 1
+echo $hybridness_min  > $inc/hybridness_min
+echo $grid_min        > $inc/grid_min
+echo $dissim_boundary > $inc/dissim_boundary
 
-mkdir $1/new
-if ($?) exit 1
+cp /dev/null $inc/runlog
 
-mkdir $1/search
-if ($?) exit 1
+echo "exit 1" > $inc/request2dissim.sh
+chmod a+x $inc/request2dissim.sh
 
-mkdir $1/outlier
-if ($?) exit 1
+echo "exit 1" > $inc/objects_in_tree.sh
+chmod a+x $inc/objects_in_tree.sh
 
-echo "1" > $1/version
-if ($?) exit 1
+echo "exit 1" > $inc/request_closest.sh
+chmod a+x $inc/request_closest.sh
 
-mkdir $1/hist
-if ($?) exit 1
+echo "exit 1" > $inc/hybrid2db.sh
+chmod a+x $inc/hybrid2db.sh
 
-echo $2 > $1/hybridness_min
-if ($?) exit 1
+echo "exit 1" > $inc/db2hybrid.sh
+chmod a+x $inc/db2hybrid.sh
 
-echo $3 > $1/grid_min
-if ($?) exit 1
-
-cp /dev/null $1/runlog
-if ($?) exit 1
-
-echo "exit 1" > $1/request2dissim.sh
-if ($?) exit 1
-chmod a+x $1/request2dissim.sh
-if ($?) exit 1
-
-echo "exit 1" > $1/objects_in_tree.sh
-if ($?) exit 1
-chmod a+x $1/objects_in_tree.sh
-if ($?) exit 1
-
-echo "exit 1" > $1/request_closest.sh
-if ($?) exit 1
-chmod a+x $1/request_closest.sh
-if ($?) exit 1
-
-echo "exit 1" > $1/hybrid2db.sh
-if ($?) exit 1
-chmod a+x $1/hybrid2db.sh
-if ($?) exit 1
-
-echo "exit 1" > $1/db2hybrid.sh
-if ($?) exit 1
-chmod a+x $1/db2hybrid.sh
-if ($?) exit 1
-
-echo "exit 1" > $1/db2unhybrid.sh
-if ($?) exit 1
-chmod a+x $1/db2unhybrid.sh
-if ($?) exit 1
+echo "exit 1" > $inc/db2unhybrid.sh
+chmod a+x $inc/db2unhybrid.sh

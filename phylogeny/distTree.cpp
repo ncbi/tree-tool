@@ -6245,15 +6245,13 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   	tpp. setTriangles (*this);
   triangleParentPairs. sort (TriangleParentPair::compareHybridness);  // PAR
 
+  Set<const Leaf*> hybrids;
+  for (TriangleParentPair& tpp : triangleParentPairs)
   {
-	  Set<const Leaf*> hybrids;
-	  for (TriangleParentPair& tpp : triangleParentPairs)
-	  {
-	  	tpp. finish (*this, hybrids);
-	  	tpp. qc ();
-			hybrids. insertAll (tpp. getHybrids ());
-	  }
-	}
+  	tpp. finish (*this, hybrids);
+  	tpp. qc ();
+		hybrids. insertAll (tpp. getHybrids ());
+  }
 	
 	triangleParentPairs. filterValue ([] (const TriangleParentPair& tpp) { return tpp. triangles. empty () || tpp. dissimError (); });
 	if (triangleParentPairs. empty ())
@@ -6263,10 +6261,6 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   if (dissimRequests)  
   {  
 	  Vector<RequestCandidate> requests;  requests. reserve (name2leaf. size () / 10); // PAR
-	  Set<const Leaf*> hybridChildren;
-	  for (const TriangleParentPair& tpp : triangleParentPairs)
-			for (const Triangle& tr : tpp. triangles)
-				hybridChildren << tr. child;
 	  LcaBuffer buf;
 	  for (const auto& it : name2leaf)
 	  {
@@ -6275,10 +6269,10 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	  		continue;
 	  	if (child->badNeighbors. size () <= 1)
 	  		continue;
-	  	if (hybridChildren. contains (child))
+	  	if (hybrids. contains (child))
 	  		continue;
-	  	Real hybridness_tree = hybridness_min;
 	  	RequestCandidate req;
+	  	Real hybridness_tree = hybridness_min;
 	  	for (const Neighbor& badNeighbor1 : child->badNeighbors)
 		  	for (const Neighbor& badNeighbor2 : child->badNeighbors)
 		  	{

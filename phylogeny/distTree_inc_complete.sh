@@ -19,24 +19,51 @@ if ($N[1]) then
   exit 1
 endif
 
+set N = `ls $1/outlier/ | wc -l`
+if ($N[1]) then
+  echo "$1/outlier/ must be empty"
+  exit 1
+endif
 
-list2pairs $2 > $1/dissim_request
+
+sort.sh $2
 if ($?) exit 1
 
-distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim
+sort.sh $1/obj_size
 if ($?) exit 1
-rm $1/dissim_request
 
+if (-z $1/dissim) then
+	list2pairs $2 > $1/dissim_request
+	if ($?) exit 1	
+	distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim
+	if ($?) exit 1
+	rm $1/dissim_request
+endif
+
+
+echo ""
+echo "data.dm ..."
 pairs2attr2 $1/dissim 1 cons 6 -distance > $1/data.dm
+if ($?) exit 1
+join  -1 1  -2 1  $2  $1/obj_size > $1/data_obj_size
+if ($?) exit 1
+cols2dm.sh $1/data_obj_size 0 1 | sed 's/^V1 real/  obj_size positive/1' > $1/data_obj_size.dm
+if ($?) exit 1
+rm $1/data_obj_size
+dm_merge $1/data $1/data_obj_size > $1/data1.dm
+if ($?) exit 1
+rm $1/data_obj_size.dm
+mv $1/data1.dm $1/data.dm
 if ($?) exit 1
 
 echo ""
 echo "Tree ..."
-set HYBRIDNESS_MIN = `cat $1/hybridness_min`
+set hybridness_min  = `cat $1/hybridness_min`
+set dissim_boundary = `cat $1/dissim_boundary`
 makeDistTree  -threads 5  \
-  -data $1/data  -dissim cons  \
+  -data $1/data  -dissim cons  -obj_size obj_size \
   -optimize  \
-  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN \
+  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $hybridness_min  -dissim_boundary $dissim_boundary \
   -output_tree $1/tree \
   -output_feature_tree $1/_feature_tree \
   > $1/hist/makeDistTree.1
