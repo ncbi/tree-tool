@@ -6,7 +6,7 @@ if ($# != 1) then
 endif
 
 set TmpFNam = `mktemp`
-sort $1 | uniq > $TmpFNam
+cat $1 | tr '\t' ' ' | sed 's/ *$//1' | sort | uniq > $TmpFNam
 if ($?) exit 1
 mv $TmpFNam $1
 if ($?) exit 1
