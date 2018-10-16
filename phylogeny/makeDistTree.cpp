@@ -262,6 +262,7 @@ struct ThisApplication : Application
     if (! deleteFName. empty ())
     {
       cout << "Deleting ..." << endl;
+      size_t deleted = 0;
       {
         LineInput f (deleteFName, 10000, 1);
         Progress prog;
@@ -279,8 +280,10 @@ struct ThisApplication : Application
             prog (tree->absCriterion2str ());
           else
           	prog ();
+          deleted++;
         }
       }
+      cout << "# Deleted: " << deleted << endl;
 	    if (tree->optimizable ())
         tree->reportErrors (cout);
       tree->qc ();

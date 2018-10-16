@@ -1,11 +1,6 @@
 #!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
-if [ $# != 1 ]; then
+source bash_common.sh
+if [ $# -ne 1 ]; then
   echo "Convert hybrid output of makeDistTree into a list and print"
   echo "#1: hybrid file"
   exit 1

@@ -2686,7 +2686,7 @@ DistTree::DistTree (const string &dataDirName,
 	      {
 	        Unverbose unv;
 	        optimizeSmallSubgraph (leaf->getDiscernible (), radius);  
-	          // reinsert ??
+	          // optimizeReinsert() ??
 	        prog (absCriterion2str ());
 	      #ifndef NDEBUG
 	       	for (const DiGraph::Node* node : nodes)

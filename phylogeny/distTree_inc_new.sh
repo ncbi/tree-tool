@@ -1,155 +1,142 @@
-#!/bin/csh -f
-
-if ($# != 2) then
+#!/bin/bash
+source bash_common.sh
+if [ $# -ne 2 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "exit 2: increments are completed"
   echo "#1: incremental distance tree directory"
   echo "#2: seed (>=1)"
   echo "Time: O(n log^4(n))"
   exit 1
-endif
+fi
 
 
-if ($2 <= 0)  exit 1
+if [ $2 -le 0 ]; then
+  exit 1
+fi
 
 
-set GRID_MIN = `cat $1/grid_min`
-set QC = ""  # -qc  
-set RATE = 0.01   # PAR
+GRID_MIN=`cat $1/grid_min`
+QC=""  # -qc  
+RATE=0.01   # PAR
 
 
-if (1) then   
+if [ 1 == 1 ]; then   
 date
 echo ""
 top -b -n 1 | head -15
 echo ""
 
 
-set N = `ls $1/search/ | head -1`
-if ("$N") then
+N=`ls $1/search/ | head -1`
+if [ $N ]; then
   echo "$1/search/ is not empty"
   exit 1
-endif
+fi
 
-if (! -z $1/leaf) then
+if [ -s $1/leaf ]; then
   echo "$1/leaf is not empty"
   exit 1
-endif
+fi
 
-if (-e $1/dissim.add) then
+if [ -e $1/dissim.add ]; then
   echo "$1/dissim.add exists"
   exit 1
-endif
+fi
 
 
-set VER_OLD = `cat $1/version`
-if ($?) exit 1
+VER_OLD=`cat $1/version`
 
-# Time: O(n) 
+# Time: O(n log(n)) 
 cp $1/tree $1/hist/tree.$VER_OLD
-if ($?) exit 1
 
-@ VER = $VER_OLD + 1
+VER=$(( $VER_OLD + 1 ))
 echo $VER > $1/version
-if ($?) exit 1
 
 
 echo "new/ -> search/ ..."
 
 # Time: O(n) 
-set OBJS = `grep -vc '^ *0x' $1/tree`
-if ($?) exit 1
+OBJS=`grep -vc '^ *0x' $1/tree`
 echo "# Objects: $OBJS"  
 
-set INC = `echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
+INC=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 echo "To add at this step: $INC"
 
 ls $1/new/ > $1/new.list
-if ($?) exit 1
 
-set STOP = 0
-if (-z $1/new.list)  set STOP = 1
+STOP=0
+if [ ! -s $1/new.list ]; then
+  STOP=1
+fi
 
 cp /dev/null $1/dissim.add
-if ($?) exit 1
 
-setRandOrd $1/new.list  -seed $2 | head -$INC > $1/search.list
+setRandOrd $1/new.list  -seed $2 > $1/search.all 
+head -$INC $1/search.all > $1/search.list
+rm $1/search.all
 rm $1/new.list
 
 trav -noprogress $1/search.list "mkdir $1/search/%f"
-if ($?) exit 1
 trav -noprogress $1/search.list "rm $1/new/%f"
-if ($?) exit 1
 rm $1/search.list
 
 
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-cp /dev/null $1/hybrid
-if ($?) exit 1
-
-set REQ = `ls $1/search | wc -l`
-if ($REQ[1] > 20) then  # PAR
+REQ=`ls $1/search | wc -l`
+if [ $REQ -gt 20 ]; then  # PAR
 	trav  -step 1  $1/search "$QSUB_5,ul1=30  -N j%n  %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
-	if ($?) exit 1  
 	qstat_wait.sh 1
-	if ($?) exit 1
 else
 	trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
-	if ($?) exit 1  
-endif
-
-if (0) then  # ??
-	distTree_inc_hybrid.sh $1 $VER 
-	if ($?) exit 1
-	if (-e $1/hist/hybrid.$VER)  mv $1/hist/hybrid.$VER $1/hist/hybrid-new.$VER
-endif
-
+fi
 
 # Time: O(log^4(n)) per one new object, where n = # objects in the tree
-set Iter = 0
-while (1)
-  set N = `ls $1/search/ | head -1`
-  if ("$N" == "")  break  
+ITER=0
+while [ 1 == 1 ]; do
+  N=`ls $1/search/ | wc -l`
+  if [ $N == 0 ]; then
+    break  
+  fi
 
-  @ Iter = $Iter + 1
+	ITER=$(( $ITER + 1 ))
   echo ""
-  echo "Iteration $Iter ..."
+  echo "Iteration $ITER ..."
   
-  set REQ = `trav -noprogress $1/search "cat %d/%f/request" | wc -l`
-  echo "# Requests: $REQ[1]"
-  set GRID = 1
-  if ($REQ[1] < $GRID_MIN)  set GRID = 0  
+  REQ=`trav -noprogress $1/search "cat %d/%f/request" | wc -l`
+  echo "# Requests: $REQ"
+  GRID=1
+  if [ $REQ -lt $GRID_MIN ]; then
+    GRID=0  
+  fi
 
   rm -rf $1/log/
   mkdir $1/log
-  if ($?) exit 1
 
   trav  -step 1  $1/search "distTree_inc_search.sh $1 %f %n $GRID"
-  if ($?) exit 1
-  if ($GRID) then
+  if [ $GRID == 1 ]; then
     qstat_wait.sh 0
-	  if ($?) exit 1
-  endif
+  fi
   
-  set L = `ls $1/log | wc -l`
-  if ($L[1]) then
-    echo "# Failed tasks: $L[1]"
-    if (! $GRID) exit 1
+  L=`ls $1/log | wc -l`
+  if [ $L -gt 0 ]; then
+    echo "# Failed tasks: $L"
+    if [ $GRID == 0 ]; then
+      exit 1
+    fi
 	  # Try to fix grid problems
     trav $1/log "distTree_inc_unsearch.sh $1 %f"
-    if ($?) exit 1
-    trav $1/log "echo %d/%f; tail -20 %d/%f" | head -21
-  endif
+    trav $1/log "echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
+    head -21 $1/log.out # PAR
+    rm $1/log.out
+  fi
   
   rm -r $1/log/
-  if ($?) exit 1
       
   echo "Processing new objects ..."
   distTree_new $QC $1/
-  if ($?) exit 1
-end
+done
 
 
 echo ""
@@ -157,78 +144,70 @@ echo "leaf, dissim.add -> tree, dissim ..."
 
 wc -l $1/dissim.add
 cat $1/dissim.add >> $1/dissim
-if ($?) exit 1
 rm $1/dissim.add
 else
-  set VER = 2  # PAR 
-endif
+  VER=2  # PAR 
+fi
 
+
+HYBRID=""
+if [ -e $1/hybridness_min ]; then
+	HYBRIDNESS_MIN=`cat $1/hybridness_min`
+	DISSIM_BOUNDARY=`cat $1/dissim_boundary`
+	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+fi
 
 # Time: O(n log^4(n)) 
-set hybridness_min  = `cat $1/hybridness_min`
-set dissim_boundary = `cat $1/dissim_boundary`
 makeDistTree $QC  -threads 15 \
   -data $1/ \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
-  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $hybridness_min  -dissim_boundary $dissim_boundary \
+  $HYBRID \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
-if ($?) exit 1
   # -threads 20  # bad_alloc 
 mv $1/leaf $1/hist/leaf.$VER
-if ($?) exit 1
 cp /dev/null $1/leaf
-if ($?) exit 1
 mv $1/tree.new $1/tree
-if ($?) exit 1
-
-cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
-if ($?) exit 1
-$1/objects_in_tree.sh $1/leaf.list 1
-if ($?) exit 1
-rm $1/leaf.list
 
 echo ""
-distTree_inc_hybrid.sh $1 $VER 
-if ($?) exit 1
-distTree_inc_unhybrid.sh $1 $VER 
-if ($?) exit 1
+cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
+$1/objects_in_tree.sh $1/leaf.list 1
+rm $1/leaf.list
+
+if [ -e $1/hybridness_min ]; then
+	echo ""
+	distTree_inc_hybrid.sh $1 $VER 
+	distTree_inc_unhybrid.sh $1 $VER 
+fi
 
 echo ""
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
-if ($?) exit 1
 cat $1/dissim.add-req >> $1/dissim
-if ($?) exit 1
 rm $1/dissim.add-req
 rm $1/dissim_request
 
 
-if (-e $1/phen) then
+if [ -e $1/phen ]; then
   echo ""
   echo "Quality ..."
 	tree2obj.sh $1/hist/tree.1 > $1/_init.list
-	if ($?) exit 1	
 	tree2obj.sh $1/tree > $1/_cur.list
-	if ($?) exit 1	
 	setMinus $1/_cur.list $1/_init.list >  $1/_delete.list
-	if ($?) exit 1
 	setMinus $1/_init.list $1/_cur.list >> $1/_delete.list
-	if ($?) exit 1	
 	rm $1/_init.list 
 	rm $1/_cur.list
 	makeDistTree  -input_tree $1/tree  -delete $1/_delete.list  -output_feature_tree $1/_feature_tree >& /dev/null
-	if ($?) exit 1	
 	rm $1/_delete.list
 	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.$VER
-	if ($?) exit 1
 	rm $1/_feature_tree
 	rm $1/_core
 	rm $1/_qual
 	grep ' !' $1/hist/makeFeatureTree.$VER
-	if ($?) exit 1
-endif
+fi
 
 
-if ($STOP == 1)  exit 2
+if [ $STOP == 1 ]; then
+  exit 2
+fi

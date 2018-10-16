@@ -1,63 +1,63 @@
 #!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
-if [ $# != 4 ]; then
+source bash_common.sh
+if [ $# -ne 4 ]; then
   echo "Initialize an incremental distance tree"
   echo "#1: Output directory"
   echo "#2: grid_min (> 0)"
-  echo "#3: hybridness_min (> 1)"
+  echo "#3: hybridness_min (> 1); 0 - no hybrids"
   echo "#4: dissim_boundary (> 0)"
   exit 1
 fi
 
-inc=$1
-grid_min=$2
-hybridness_min=$3
-dissim_boundary=$4
+INC=$1
+GRID_MIN=$2
+HYBRIDNESS_MIN=$3
+DISSIM_BOUNDARY=$4
 
-if [ $grid_min -le 0 ]; then
+
+if [ $GRID_MIN -le 0 ]; then
   exit 1
 fi
 
 
-mkdir $inc
+mkdir $INC
 
-cp /dev/null $inc/tree
-cp /dev/null $inc/dissim
-cp /dev/null $inc/leaf
+cp /dev/null $INC/dissim
+cp /dev/null $INC/leaf
+cp /dev/null $INC/tree
 
-mkdir $inc/new
-mkdir $inc/search
-mkdir $inc/outlier
+mkdir $INC/new
+mkdir $INC/outlier
+mkdir $INC/search
 
-echo "1" > $inc/version
+echo "1" > $INC/version
 
-mkdir $inc/hist
+mkdir $INC/hist
 
-echo $hybridness_min  > $inc/hybridness_min
-echo $grid_min        > $inc/grid_min
-echo $dissim_boundary > $inc/dissim_boundary
+echo $GRID_MIN > $INC/GRID_MIN
+cp /dev/null $INC/runlog
 
-cp /dev/null $inc/runlog
 
-echo "exit 1" > $inc/request2dissim.sh
-chmod a+x $inc/request2dissim.sh
+if [ $HYBRIDNESS_MIN != 0 ]; then
+	echo $DISSIM_BOUNDARY > $INC/DISSIM_BOUNDARY
+	echo $HYBRIDNESS_MIN  > $INC/HYBRIDNESS_MIN
+fi
 
-echo "exit 1" > $inc/objects_in_tree.sh
-chmod a+x $inc/objects_in_tree.sh
 
-echo "exit 1" > $inc/request_closest.sh
-chmod a+x $inc/request_closest.sh
+function create_script
+{
+	name=$1.sh
+	echo "exit 1" > $INC/$name
+	chmod a+x $INC/$name
+	echo "Set $INC/$name !"
+}
+create_script objects_in_tree
+create_script request2dissim
+create_script request_closest
+if [ $HYBRIDNESS_MIN != 0 ]; then
+ #create_script db2hybrid
+	create_script db2unhybrid
+	create_script hybrid2db
+fi
 
-echo "exit 1" > $inc/hybrid2db.sh
-chmod a+x $inc/hybrid2db.sh
 
-echo "exit 1" > $inc/db2hybrid.sh
-chmod a+x $inc/db2hybrid.sh
-
-echo "exit 1" > $inc/db2unhybrid.sh
-chmod a+x $inc/db2unhybrid.sh
