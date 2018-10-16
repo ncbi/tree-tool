@@ -1,11 +1,6 @@
 #!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
-if [ $# != 1 ]; then
+source bash_common.sh
+if [ $# -ne 1 ]; then
   echo "#1: go"
   exit 1
 fi
@@ -15,7 +10,7 @@ fi
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
-mdsTree.sh data/Enterobacteriaceae Conservation 2 >& /dev/null
+mdsTree.sh data/Enterobacteriaceae Conservation 2 &> /dev/null
 
 makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
 rm -r data/Enterobacteriaceae.dir/
@@ -29,7 +24,7 @@ rm Enterobacteriaceae.nw
 echo ""
 echo "mdsTree: Mycobacterium_tuberculosis ..."
 rm -r -f data/Mycobacterium_tuberculosis.dir/
-mdsTree.sh data/Mycobacterium_tuberculosis ANI 2 >& /dev/null
+mdsTree.sh data/Mycobacterium_tuberculosis ANI 2 &> /dev/null
 rm -r data/Mycobacterium_tuberculosis.dir/
 
 
@@ -39,18 +34,18 @@ makeDistTree -qc -data data/tree4 -dissim dist | grep -v '^CHRON: ' > tree4.make
 diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
 echo "Verbose..."
-makeDistTree -qc -data data/tree4 -dissim dist  >& /dev/null
+makeDistTree -qc -data data/tree4 -dissim dist  &> /dev/null
 
 
 echo ""
 echo "mdsTree: Random tree ..."
 rm -r -f data/randomTree.dir/
-mdsTree.sh data/randomTree dist 2 >& /dev/null
+mdsTree.sh data/randomTree dist 2 &> /dev/null
 makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -optimize  -output_tree random-output.tree > /dev/null
 makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
 diff randomTree.makeDistTree data/randomTree.makeDistTree
 echo "Verbose..."
-makeDistTree  -qc  -verbose 2  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin  >& /dev/null
+makeDistTree  -qc  -verbose 2  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin  &> /dev/null
 rm -r data/randomTree.dir/
 rm randomTree.makeDistTree
 rm random-output.tree
@@ -78,7 +73,6 @@ makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -thr
 echo ""
 echo "prot-identical_comm: subgraphs, delete ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
-#fi  
 
 echo ""
 echo "Saccharomyces hybrids ..."

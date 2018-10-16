@@ -1,11 +1,6 @@
 #!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
-if [ $# != 5 ]; then
+source bash_common.sh
+if [ $# -ne5 ]; then
   echo "Input: #3-calibrate.dm"
   echo "#1: power"
   echo "#2: phen/"
@@ -28,7 +23,7 @@ pairs2attr2 $3.pairs 1 cons 6  -distance > $3.dm
 rm $3.pairs
 
 hybrid=""
-if [ $4 == 1 ]; then
+if [ $4 -eq 1 ]; then
   hybrid="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid  -delete_all_hybrids"
 fi
 

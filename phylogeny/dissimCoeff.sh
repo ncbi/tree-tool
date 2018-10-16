@@ -1,11 +1,6 @@
 #!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
-if [ $# != 3 ]; then
+source bash_common.sh
+if [ $# -ne 3 ]; then
   echo "Input: #3.dm"
   echo "#1: dissim_coeff"
   echo "#2: phen/"
