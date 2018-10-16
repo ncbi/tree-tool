@@ -1,6 +1,6 @@
-#!/bin/csh -f
-
-if ($# != 4) then
+#!/bin/bash
+source bash_common.sh
+if [ $# -ne 4 ]; then
   echo "Process a new object for a distance tree"
   echo "Update: append: #1/{leaf,dissim.add}"
   echo "        delete: #1/search/#2/"
@@ -10,41 +10,39 @@ if ($# != 4) then
   echo "#3: Job number"
   echo "#4: Use grid (0/1)"
   exit 1
-endif
+fi
 
 
-set DIR = $1/search/$2
+DIR=$1/search/$2
 
 
 # Already done
-if (! -e $DIR/request && -e $DIR/dissim && ! -z $DIR/dissim)  exit 0
+if [ ! -e $DIR/request -a -e $DIR/dissim -a -s $DIR/dissim ]; then
+  exit 0
+fi
 
-if (! -e $DIR/request) then
+if [ ! -e $DIR/request ]; then
   echo "$DIR/request does not exist" 
   exit 1
-endif
+fi
 
-if (! -e $DIR/dissim) then
+if [ ! -e $DIR/dissim ]; then
   echo "$DIR/dissim does not exist" 
   exit 1
-endif
+fi
 
 
-if (-z $DIR/request) then
-  cat $DIR/leaf >> $1/leaf
-  if ($?) exit 1
-  cat $DIR/dissim >> $1/dissim.add
-  if ($?) exit 1
-  rm -r $DIR/
-  if ($?) exit 1
-else
+if [ -s $DIR/request ]; then
   cp /dev/null $1/log/$2
-  if ($?) exit 1
-  if ($4) then
+  if [ $4 == 1 ]; then
     $QSUB_5 -N j$3 "distTree_inc_request.sh $1 $2" > /dev/null  
   else
     distTree_inc_request.sh $1 $2
-  endif
-  if ($?) exit 1
-endif
+  fi
+else
+  # Finish
+  cat $DIR/leaf >> $1/leaf
+  cat $DIR/dissim >> $1/dissim.add
+  rm -r $DIR/
+fi
 

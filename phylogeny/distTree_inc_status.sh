@@ -1,61 +1,64 @@
-#!/bin/csh -f
-
-if ($# != 1) then
+#!/bin/bash
+source bash_common.sh
+if [ $# -ne 1 ]; then
   echo "Print criterion statistics for an incremental distance tree"
   echo "#1: distance tree data"
   exit 1
-endif
+fi
 
 
-set tmp = `mktemp`
+TMP=`mktemp`
 
 
 echo "Version: `cat $1/version`"
 echo ""
 
-set OBJS = `grep -vc '^ *0x' $1/tree`
+OBJS=`grep -vc '^ *0x' $1/tree`
 echo "# Objects: $OBJS"  
 
-set N = `wc -l $1/leaf`
-if ($N[1])  echo "# Being added: $N[1]"
+N=`cat $1/leaf | wc -l`
+if [ $N -gt 0 ]; then
+  echo "# Being added: $N"
+fi
 
-set N = `ls $1/search/ | wc -l`
-if ($N[1])  echo "# Being searched: $N[1]"
+N=`ls $1/search/ | wc -l`
+if [ $N -gt 0 ]; then
+  echo "# Being searched: $N"
+fi
 
-set N = `ls $1/outlier/ | wc -l`
-set outliers_percent = `echo "scale=2; $N[1] * 100 / ($N[1] + $OBJS)" | bc -l`
-if ($N[1])  echo "# Outliers: $N[1] ($outliers_percent %)"
+N=`ls $1/outlier/ | wc -l`
+outliers_percent=`echo "scale=2; $N * 100 / ($N + $OBJS)" | bc -l`
+if [ $N -gt 0 ]; then
+  echo "# Outliers: $N ($outliers_percent %)"
+fi
 
-if (-e $1/delete) then
-	set N = `wc -l $1/delete`
-  echo "# To delete: $N[1]"
-endif
+if [ -e $1/alien ]; then
+	N=`cat $1/alien | wc -l`
+  echo "# Aliens: $N"
+fi
 
-if (-e $1/alien) then
-	set N = `wc -l $1/alien`
-  echo "# Aliens: $N[1]"
-endif
-
-set N = `ls $1/new/ | wc -l`
-if ($N[1])  echo "# New: $N[1]"
+N=`ls $1/new/ | wc -l`
+if [ $N -gt 0 ]; then
+  echo "# New: $N"
+fi
 
 
 echo ""
 wc -l $1/dissim
 
 echo ""
-grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree.* | sed 's|^'$1'/hist/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $tmp
-tail -5 $tmp
+grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree.* | sed 's|^'$1'/hist/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
+tail -5 $TMP
 
 echo ""
 tail -5 $1/runlog
 
 echo ""
-grep ' V !' $1/hist/makeFeatureTree.* | sed 's|^'$1'/hist/makeFeatureTree\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $tmp
-tail -5 $tmp
+grep ' V !' $1/hist/makeFeatureTree.* | sed 's|^'$1'/hist/makeFeatureTree\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
+tail -5 $TMP
 
 
-rm -f $tmp*
+rm -f $TMP*
 
 
 # grep '# Non-paraphyletic disagreements:' inc/hist/makeFeatureTree.* | sed 's|^inc/hist/makeFeatureTree\.||1' | tr ":" ' ' | sort -k 1 -n

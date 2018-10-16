@@ -1,51 +1,41 @@
-#!/bin/csh -f
-
-if ($# != 3) then
+#!/bin/bash
+source bash_common.sh
+if [ $# -ne 3 ]; then
   echo "Compute requested dissimilarities"
-  echo "#1: incremental tree"
-  echo "#2: pairs of objects"  
-  echo "#3: output file with dissimilarities"
+  echo "#1: Incremental tree"
+  echo "#2: Pairs of objects"  
+  echo "#3: Output file with dissimilarities"
   exit 1
-endif
+fi
 
 
-set N = `wc -l $2`
-echo "$N[1] $2"
-
-set GRID_MIN = `cat $1/grid_min`
-
-
-if ($N[1] <= $GRID_MIN) then  # PAR
-  $1/request2dissim.sh $2 $3 $3.log >& /dev/null
-  if ($?) exit 1
+N=`cat $2 | wc -l`
+echo "$N $2"
+GRID_MIN=`cat $1/grid_min`
+if [ $N -le $GRID_MIN ]; then  # PAR
+  $1/request2dissim.sh $2 $3 $3.log &> /dev/null
 else
-	mkdir $1/dr
-	if ($?) exit 1
-	
+	mkdir $1/dr	
 	splitList $2 $GRID_MIN $1/dr
-	if ($?) exit 1
 	
-  while (1)
+  while [ 1 == 1 ]; do
     rm -rf $1/dr.out
 		mkdir $1/dr.out
-		if ($?) exit 1
 		
-		trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"
-		if ($?) exit 1
-		
+		trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"		
 		qstat_wait.sh 1
-		if ($?) exit 1
 		
 		trav $1/dr.out "cat %d/%f" > $3
-		if ($?) exit 1
 		wc -l $3
 		
-		set N_new = `wc -l $3`
-		if ($N[1] == $N_new[1]) break
+		N_new=`cat $3 | wc -l`
+		if [ $N -eq $N_new ]; then 
+		  break
+		fi
 		echo "Redo ..."
-	end
+	done
 	
 	rm -r $1/dr.out
 	rm -r $1/dr
-endif	
+fi	
 
