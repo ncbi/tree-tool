@@ -1,31 +1,27 @@
-#!/bin/csh -f
-
-if ($# != 2) then
+#!/bin/bash
+source bash_common.sh
+if [ $# -ne 2 ]; then
   echo "Phenotypic quality of a distance tree"
   echo "Output: core, qual, gain_nodes, disagreement_nodes, disagreement_nodes.txt"
   echo "#1: distance tree"
   echo "#2: phen/"
   exit 1
-endif
+fi
 
 
-set tmp = `mktemp`
-if ($?) exit 1
-echo $tmp
+TMP=`mktemp`
+echo $TMP
 
 
-makeDistTree  -input_tree $1  -output_feature_tree $tmp.feature_tree  > $tmp.distTree
-if ($?) exit 1
+makeDistTree  -input_tree $1  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
 
-makeFeatureTree  -input_tree $tmp.feature_tree  -features $2  -output_core core \
+makeFeatureTree  -input_tree $TMP.feature_tree  -features $2  -output_core core \
   -qual qual \
   -gain_nodes gain_nodes \
   -disagreement_nodes disagreement_nodes
-if ($?) exit 1
 cut -f 1 disagreement_nodes | sort | uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
-if ($?) exit 1
 echo ""
 wc -l disagreement_nodes.txt
 
 
-rm -f $tmp*
+rm -f $TMP*

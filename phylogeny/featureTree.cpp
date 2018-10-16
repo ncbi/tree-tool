@@ -1945,7 +1945,7 @@ bool getParam (const string &line,
 
 
 void FeatureTree::loadPhylFile (/*int root_species_id,*/
-	                           const string &treeFName)
+	                              const string &treeFName)
 {
 //ASSERT (root_species_id > 0);
 	ASSERT (! treeFName. empty ());
