@@ -2942,13 +2942,18 @@ string FeatureTree::findRoot (size_t &bestCoreSize)
   }    
   
   // superRootCore
+  bool changed = bestFrom;
   ASSERT (superRootCore. empty ());
   superRootCore. resize (features. size (), false);
   FFOR (size_t, i, features. size ())
     if (getSuperRootCore (i))
+  	{
       superRootCore [i] = true;
+      changed = true;
+    }
       
-  setCore ();
+  if (changed)
+    setCore ();
 
   return rootLcaName;
 }
