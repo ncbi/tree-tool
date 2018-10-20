@@ -93,7 +93,7 @@ struct ThisApplication : Application
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending.\n\
 Line format: <unit> <raw_min> <raw_max>");
-      addPositional ("coeff", "Coefficient to multiply all dissimilarities, > 0");
+      addKey ("coeff", "Coefficient to multiply all dissimilarities, > 0", "1");
   	}
 
 
