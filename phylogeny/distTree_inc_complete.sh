@@ -41,12 +41,12 @@ pairs2attr2 $1/dissim 1 cons 6 -distance > $1/data.dm
 
 echo ""
 echo "Tree ..."
-hybridness_min=`cat $1/hybridness_min`
-dissim_boundary=`cat $1/dissim_boundary`
+HYBRIDNESS_MIN=`cat $1/hybridness_min`
+DISSIM_BOUNDARY=`cat $1/dissim_boundary`
 makeDistTree  -threads 5  \
   -data $1/data  -dissim cons  \
   -optimize  \
-  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $hybridness_min  -dissim_boundary $dissim_boundary \
+  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY \
   -output_tree $1/tree \
   -output_feature_tree $1/_feature_tree \
   > $1/hist/makeDistTree.1
