@@ -110,7 +110,7 @@ struct ThisApplication : Application
     	tr. print (hybridTrianglesOs);
     	tr. qc ();
 			ASSERT (tr. hybridness >= hybridness_min);
-			hybrids << tr. getHybrids ();
+			hybrids << tr. getHybrids (true);
     }
     hybrids. sort ();
     hybrids. uniq ();
@@ -118,6 +118,8 @@ struct ThisApplication : Application
     for (const TriangleParentPair& tpp : triangleParentPairs)
       tpp. qcMatchHybrids (hybrids);
     
+  #if 0
+    // Should be in hybridTrianglesOs
     Set<const Leaf*> extra;
     for (const Leaf* leaf : hybrids)
     	if (! leaf->discernible)
@@ -129,6 +131,7 @@ struct ThisApplication : Application
     			  	extra << other;
     			  }
     Common_sp::insertAll (hybrids, extra);
+  #endif
     			  	      
     cout << "# Hybrids: " << hybrids. size () << endl;        
 

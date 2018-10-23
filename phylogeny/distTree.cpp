@@ -91,10 +91,11 @@ void Triangle::qc () const
 		const Parent& p = parents [i];
 		ASSERT (p. leaf);	
 		ASSERT (p. leaf->graph);
- 		ASSERT (child != p. leaf);
+ 		ASSERT (child->getDiscernible () != p. leaf->getDiscernible ());
 		ASSERT (p. dissim > 0);
 		IMPLY (child_hybrid, ! p. hybrid);
  	}
+  ASSERT (parents [0]. leaf->getDiscernible () != parents [1]. leaf->getDiscernible ());
   ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
 	ASSERT (hybridness >= hybridness_min);
 }
@@ -116,7 +117,7 @@ void Triangle::print (ostream &os) const
 
 void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
 {
-	#define QC_MATC_HHYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << leaf->name << endl; print (cout); ERROR; }	
+	#define QC_MATC_HHYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << (leaf)->name << endl; print (cout); ERROR; }	
 	QC_MATC_HHYBRIDS (child, child_hybrid);
 	QC_MATC_HHYBRIDS (parents [0]. leaf, parents [0]. hybrid);
 	QC_MATC_HHYBRIDS (parents [1]. leaf, parents [1]. hybrid);
@@ -238,7 +239,7 @@ void TriangleParentPair::finish (const DistTree &tree,
 				setChildrenHybrid ();
 				best->parents [i]. hybrid = true;		
 			}
-			goto quit;
+			return;
 	  }
   
   {
@@ -247,7 +248,7 @@ void TriangleParentPair::finish (const DistTree &tree,
 			{
 				// aa bb ab
 				setChildrenHybrid ();
-				goto quit;
+				return;
 			}
 		if (p >= 1 - classSizeFrac_max)
 			{
@@ -255,20 +256,11 @@ void TriangleParentPair::finish (const DistTree &tree,
 				// common(ab,ac) = 1/4 aa <= random halves of aa
 				best->parents [0]. hybrid = true;
 				best->parents [1]. hybrid = true;
-				goto quit;  			
+				return;  			
 			}
 	}
 	
 	// Undecided cases ??
-
-
-quit:
-	// Inconsistent decision
-	for (const bool i : {false, true})  
-		if (   ! best->parents [i]. hybrid 
-			  && hybrids. contains (parents [i]. leaf)
-			 )
-			triangles. clear ();
 }
 
 
@@ -5841,6 +5833,8 @@ void DistTree::removeLeaf (Leaf* leaf,
       parent = root;
 		delayDeleteRetainArcs (st);
   }  
+  
+  // Recompute Leaf::discernible !??
 
     
   if (optimizable ())
@@ -6213,31 +6207,32 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     }
   }
 
-  Vector<Triangle> triangles;  
-  for (const auto& it : name2leaf)
   {
-  	const Leaf* child = it. second;
-  	if (! child->graph)
-  		continue;
-  	ASSERT (child->hybridness >= hybridness_min_init);
-  	if (child->hybridness < hybridness_min)  
-  		continue;
-		ASSERT (child->hybridParentsDissimObjNum < DistTree::dissims_max);
-		const Dissim& dissim = dissims [child->hybridParentsDissimObjNum];
-		const Real parent1_dissim = checkPtr<const Neighbor> (child->findNeighbor (dissim. leaf1)) -> target;
-		const Real parent2_dissim = checkPtr<const Neighbor> (child->findNeighbor (dissim. leaf2)) -> target;
-	  triangles << Triangle (child, child->hybridness, dissim. leaf1, dissim. leaf2, parent1_dissim, parent2_dissim);
-  }
-  if (triangles. empty ())
-	  return triangleParentPairs;
-  	  	
-
-  ASSERT (triangleParentPairs. empty ());
-  for (const Triangle& tr : triangles)
-  {
-  	tr. qc ();
-  	triangleParentPairs << TriangleParentPair (tr. parents [0]. leaf, tr. parents [1]. leaf, tr. parentsDissim ());
-  }
+	  Vector<Triangle> triangles;  
+	  for (const auto& it : name2leaf)
+	  {
+	  	const Leaf* child = it. second;
+	  	if (! child->graph)
+	  		continue;
+	  	ASSERT (child->hybridness >= hybridness_min_init);
+	  	if (child->hybridness < hybridness_min)  
+	  		continue;
+			ASSERT (child->hybridParentsDissimObjNum < DistTree::dissims_max);
+			const Dissim& dissim = dissims [child->hybridParentsDissimObjNum];
+			const Real parent1_dissim = checkPtr<const Neighbor> (child->findNeighbor (dissim. leaf1)) -> target;
+			const Real parent2_dissim = checkPtr<const Neighbor> (child->findNeighbor (dissim. leaf2)) -> target;
+		  triangles << Triangle (child, child->hybridness, dissim. leaf1, dissim. leaf2, parent1_dissim, parent2_dissim);
+	  }
+	  if (triangles. empty ())
+		  return triangleParentPairs;
+	  	  	
+	  ASSERT (triangleParentPairs. empty ());
+	  for (const Triangle& tr : triangles)
+	  {
+	  	tr. qc ();
+	  	triangleParentPairs << TriangleParentPair (tr. parents [0]. leaf, tr. parents [1]. leaf, tr. parentsDissim ());
+	  }
+	}
   triangleParentPairs. sort ();
   triangleParentPairs. uniq ();  
 
@@ -6246,11 +6241,23 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   triangleParentPairs. sort (TriangleParentPair::compareHybridness);  // PAR
 
   Set<const Leaf*> hybrids;
+  Set<const Leaf*> nonHybrids;
   for (TriangleParentPair& tpp : triangleParentPairs)
   {
   	tpp. finish (*this, hybrids);
   	tpp. qc ();
-		hybrids. insertAll (tpp. getHybrids ());
+	  const Set<const Leaf*> hybrids_    (tpp. getHybrids (true));
+	  const Set<const Leaf*> nonHybrids_ (tpp. getHybrids (false));
+	  IMPLY (hybrids_. empty (), nonHybrids_. empty ());
+	  if (   hybrids_.    intersects (nonHybrids)
+	  	  || nonHybrids_. intersects (hybrids)
+	  	 )
+			tpp. triangles. clear ();
+		else
+		{
+			hybrids.    insertAll (hybrids_);
+			nonHybrids. insertAll (nonHybrids_);
+		}
   }
 	
 	triangleParentPairs. filterValue ([] (const TriangleParentPair& tpp) { return tpp. triangles. empty () || tpp. dissimError (); });

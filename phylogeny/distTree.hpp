@@ -175,11 +175,12 @@ struct Triangle
 	  	       || parents [0]. hybrid
 	  	       || parents [1]. hybrid;
 	  }
-	VectorPtr<Leaf> getHybrids () const
+	  // Return: false <= undecided
+	VectorPtr<Leaf> getHybrids (bool hybrid) const
 	  { VectorPtr<Leaf> vec;  vec. reserve (3);
-	  	if (child_hybrid)         vec << child;
-	  	if (parents [0]. hybrid)  vec << parents [0]. leaf;
-	  	if (parents [1]. hybrid)  vec << parents [1]. leaf;
+	  	if (child_hybrid        == hybrid)  vec << child;
+	  	if (parents [0]. hybrid == hybrid)  vec << parents [0]. leaf;
+	  	if (parents [1]. hybrid == hybrid)  vec << parents [1]. leaf;
 	  	return vec;
 	  }
 	void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const;
@@ -267,11 +268,11 @@ public:
     			vec << tr;
     	return vec;
     }
-  VectorPtr<Leaf> getHybrids () const
+  VectorPtr<Leaf> getHybrids (bool hybrid) const
     { VectorPtr<Leaf> vec;  
     	for (const Triangle &tr : triangles)
     		if (tr. hasHybrid ())
-    			vec << tr. getHybrids ();
+    			vec << tr. getHybrids (hybrid);
     	return vec;
     }
   void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
