@@ -18,6 +18,7 @@ fi
 GRID_MIN=`cat $1/grid_min`
 QC=""  # -qc  
 RATE=0.01   # PAR
+STOP=0
 
 
 if [ 1 == 1 ]; then   
@@ -64,7 +65,6 @@ echo "To add at this step: $INC"
 
 ls $1/new/ > $1/new.list
 
-STOP=0
 if [ ! -s $1/new.list ]; then
   STOP=1
 fi
@@ -146,7 +146,7 @@ wc -l $1/dissim.add
 cat $1/dissim.add >> $1/dissim
 rm $1/dissim.add
 else
-  VER=2  # PAR 
+  VER=110  # PAR 
 fi
 
 
