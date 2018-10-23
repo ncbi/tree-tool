@@ -1821,7 +1821,8 @@ void Application::addKey (const string &name,
 {
   ASSERT (! name. empty ());
   ASSERT (! contains (name2arg, name));
-  IMPLY (acronymable, ! contains (char2arg, name [0]));
+  if (acronymable && contains (char2arg, name [0]))
+  	throw logic_error ("Duplicate argument " + strQuote (string (1, name [0])));
   keys << Key (*this, name, argDescription, defaultValue, acronymable, var);
   name2arg [name] = & keys. back ();
   if (acronymable)
