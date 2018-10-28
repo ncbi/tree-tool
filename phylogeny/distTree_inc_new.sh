@@ -160,7 +160,7 @@ fi
 # Time: O(n log^4(n)) 
 makeDistTree $QC  -threads 15 \
   -data $1/ \
-  -optimize  -skip_len  -subgraph_iter_max 1 \
+  -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
   -output_tree $1/tree.new \

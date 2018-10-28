@@ -11,6 +11,7 @@ if [ $# -ne 2 ]; then
 fi
 
 
+if [ 1 == 1 ]; then  
 # Time: O(n log^5(n))
 while [ 1 == 1 ]; do
   if [ -e $1/stop ]; then
@@ -51,6 +52,9 @@ makeDistTree  -threads 15  -data $1/  \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 mv $1/tree.new $1/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
+else
+  VER=`cat $1/version`
+fi 
 
 
 if [ -e $1/phen ]; then

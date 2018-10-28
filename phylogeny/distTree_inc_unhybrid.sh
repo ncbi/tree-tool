@@ -19,8 +19,7 @@ if [ -s $1/unhybrid ]; then
   echo ""
 	uniq.sh $1/unhybrid
   wc -l $1/unhybrid
-  trav $1/unhybrid "rm -f $1/outlier/%f"
-  trav $1/unhybrid "cp /dev/null $1/new/%f"
+  trav $1/unhybrid "mv $1/outlier/%f $1/new/"
   $1/objects_in_tree.sh $1/unhybrid null
 	mv $1/unhybrid $1/hist/unhybrid.$2
 else
