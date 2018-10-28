@@ -1372,8 +1372,11 @@ public:
     // Output: DisjointCluster::<Leaf>
   VectorPtr<DTNode> findDepthClusters (size_t clusters_min) const;
     // Return: connected subgraph including root
-  void findSpecies (Real species_dist_max);
+  void findSpecies (Real species_dist_max,
+                   bool includeInteriorNodes);  
+    // Genospecies
     // Output: DTNode::DisjointCluster
+    // Time: if includeInteriorNodes then O(n log(n)) else O(n)
 
   // Statistics
 #if 0
@@ -1390,7 +1393,8 @@ public:
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
 #endif
 
-  void saveDissim (ostream &os) const;
+  void saveDissim (ostream &os,
+                   bool addPredictionAbsCriterion) const;
 };
 
 

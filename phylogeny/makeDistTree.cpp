@@ -41,7 +41,7 @@ struct ThisApplication : Application
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
-	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>");
+	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
@@ -68,16 +68,18 @@ struct ThisApplication : Application
 	  addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
 
+	  addFlag ("noqual", "Do not compute quality statitistics");
+
     // Output
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
-	  addKey ("leaf_errors", dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
-	//addKey ("pair_residuals", dmSuff + "-file with quality statistics for each object pair"); ??
-	  addKey ("arc_length_stat", "File with arc length statistics: " + Tree::printArcLengthsColumns ());
-	  addKey ("output_dissim", "File with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
-	  addKey ("dissim_request", "File with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
-	  addKey ("output_dist", "File with tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
-	  addFlag ("noqual", "Do not compute quality statitistics");
+	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
+	  addKey ("output_dist", "Output file with all or <dist-request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
+	//addKey ("pair_residuals", "Output " + dmSuff + "-file with quality statistics for each object pair"); ??
+	  addKey ("arc_length_stat", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
+	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
+    addFlag ("output_dist_etc", "Add columns <prediction> <absCriterion> to the file <output_dissim>");
 	}
 	
 	
@@ -189,15 +191,17 @@ struct ThisApplication : Application
 		const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
 		const string hybrid_parent_pairs = getArg ("hybrid_parent_pairs");
 		
+		const bool   noqual              = getFlag ("noqual");
+
 		const string output_tree         = getArg ("output_tree");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
+		const string output_dist         = getArg ("output_dist");
 	//const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
-		const string output_dissim       = getArg ("output_dissim");
 		const string dissim_request      = getArg ("dissim_request");
-		const string output_dist         = getArg ("output_dist");
-		const bool noqual                = getFlag ("noqual");
+		const string output_dissim       = getArg ("output_dissim");
+		const bool   output_dist_etc     = getFlag ("output_dist_etc");
 		
 	  IMPLY (isDirName (input_tree), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
@@ -216,7 +220,9 @@ struct ThisApplication : Application
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
     ASSERT (dissim_coeff > 0);
     if (! dist_request. empty () && output_dist. empty ())
-    	throw runtime_error ("dist_request exist, but no output_dist");
+    	throw runtime_error ("dist_request exists, but no output_dist");
+    if (output_dist_etc && output_dissim. empty ())
+    	throw runtime_error ("output_dist_etc exists, but no output_dissim");
     IMPLY (whole,             optimize);
     IMPLY (subgraph_fast,     optimize);
     IMPLY (subgraph_iter_max, optimize);
@@ -599,7 +605,7 @@ struct ThisApplication : Application
     {
       checkOptimizable (*tree, "output_dissim");
       OFStream f (output_dissim);
-      tree->saveDissim (f);
+      tree->saveDissim (f, output_dist_etc);
     }
     
     
@@ -676,7 +682,8 @@ struct ThisApplication : Application
 	    	VectorPtr<Leaf> leaves;  leaves. reserve (tree->nodes. size ());
 	 	    for (const DiGraph::Node* node : tree->nodes)
 	        if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
-	        	leaves << leaf;
+	          if (leaf->graph)
+	        	  leaves << leaf;
 	      FFOR (size_t, i, leaves. size ())
 	        FOR (size_t, j, i)
 	        {

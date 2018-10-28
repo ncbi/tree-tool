@@ -260,6 +260,13 @@ void TriangleParentPair::finish (const DistTree &tree,
 			}
 	}
 	
+	// Singletons
+	if (triangles. size () == 1)
+		setChildrenHybrid ();
+	for (const bool i : {false, true})  
+		if (parents [i]. classSize == 1)
+			best->parents [i]. hybrid = true;	
+			
 	// Undecided cases ??
 }
 
@@ -6241,24 +6248,26 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   triangleParentPairs. sort (TriangleParentPair::compareHybridness);  // PAR
 
   Set<const Leaf*> hybrids;
-  Set<const Leaf*> nonHybrids;
-  for (TriangleParentPair& tpp : triangleParentPairs)
   {
-  	tpp. finish (*this, hybrids);
-  	tpp. qc ();
-	  const Set<const Leaf*> hybrids_    (tpp. getHybrids (true));
-	  const Set<const Leaf*> nonHybrids_ (tpp. getHybrids (false));
-	  IMPLY (hybrids_. empty (), nonHybrids_. empty ());
-	  if (   hybrids_.    intersects (nonHybrids)
-	  	  || nonHybrids_. intersects (hybrids)
-	  	 )
-			tpp. triangles. clear ();
-		else
-		{
-			hybrids.    insertAll (hybrids_);
-			nonHybrids. insertAll (nonHybrids_);
-		}
-  }
+	  Set<const Leaf*> nonHybrids;
+	  for (TriangleParentPair& tpp : triangleParentPairs)
+	  {
+	  	tpp. finish (*this, hybrids);
+	  	tpp. qc ();
+		  const Set<const Leaf*> hybrids_    (tpp. getHybrids (true));
+		  const Set<const Leaf*> nonHybrids_ (tpp. getHybrids (false));
+		  IMPLY (hybrids_. empty (), nonHybrids_. empty ());
+		  if (   hybrids_.    intersects (nonHybrids)
+		  	  || nonHybrids_. intersects (hybrids)
+		  	 )
+				tpp. triangles. clear ();
+			else
+			{
+				hybrids.    insertAll (hybrids_);
+				nonHybrids. insertAll (nonHybrids_);
+			}
+	  }
+	}
 	
 	triangleParentPairs. filterValue ([] (const TriangleParentPair& tpp) { return tpp. triangles. empty () || tpp. dissimError (); });
 	if (triangleParentPairs. empty ())
@@ -6769,7 +6778,8 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
 
 
 
-void DistTree::findSpecies (Real species_dist_max) 
+void DistTree::findSpecies (Real species_dist_max,
+                            bool includeInteriorNodes) 
 {
   ASSERT (species_dist_max > 0);
   ASSERT (species_dist_max < INF);
@@ -6781,20 +6791,40 @@ void DistTree::findSpecies (Real species_dist_max)
  	  DTNode* dtNode = const_static_cast <DTNode*> (node);
     dtNode->DisjointCluster::init ();
  	  if (const Leaf* leaf = dtNode->asLeaf ())
- 	    leaves << leaf;
+ 	    if (leaf->graph)
+ 	      leaves << leaf;
  	}
+
+  // Optimize using getDistanceHeight() ??!
+  Progress prog (leaves. size (), 1000);  // PAR
   Tree::LcaBuffer buf;
-  FFOR (size_t, row, leaves. size ())
-    FOR (size_t, col, row)  
-    {
-    	const TreeNode* lca = nullptr;
-		 	const VectorPtr<TreeNode>& path = getPath (leaves [row], leaves [col], nullptr, lca, buf);
-      ASSERT (lca);
-    	const Real dist = path2prediction (path);
-    	if (leReal (dist, species_dist_max))
-    		for (const TreeNode* node : path)
-          const_cast <TreeNode*> (lca) -> DisjointCluster::merge (* const_cast <TreeNode*> (node));
-    }
+  VectorPtr<TreeNode> area;
+  VectorPtr<TreeNode> boundary;
+  for (const Leaf* leaf : leaves)
+  {
+    prog ();
+    area. clear ();
+    boundary. clear ();
+    leaf->getDistanceArea (species_dist_max, area, boundary);
+    for (const TreeNode* treeNode : boundary)
+      if (const Leaf* other = static_cast <const DTNode*> (treeNode) -> asLeaf ())
+      {
+        ASSERT (other->graph);
+        if (includeInteriorNodes)
+        {
+        	const TreeNode* lca = nullptr;
+    		 	const VectorPtr<TreeNode>& path = getPath (leaf, other, nullptr, lca, buf);
+          ASSERT (lca);
+        	const Real dist = path2prediction (path);
+        	ASSERT (leReal (dist, species_dist_max));
+      		for (const TreeNode* node : path)
+            const_cast <TreeNode*> (lca) -> DisjointCluster::merge (* const_cast <TreeNode*> (node));
+        }
+        else
+          const_cast <Leaf*> (leaf) -> DisjointCluster::merge (* const_cast <Leaf*> (other));
+            // => all interior nodes between leaf and other belong to the same species
+      }
+  }
 }
 
 
@@ -6861,17 +6891,23 @@ void DistTree::pairResiduals2dm (const RealAttr1* resid2Attr,
 
 
 
-void DistTree::saveDissim (ostream &os) const
+void DistTree::saveDissim (ostream &os,
+                           bool addPredictionAbsCriterion) const
 {
   ASSERT (optimizable ());
 
   const ONumber on (os, dissimDecimals, true);
   for (const Dissim& dissim : dissims)
     if (dissim. valid ())
+    {
       os         << dissim. leaf1->name
          << '\t' << dissim. leaf2->name
-         << '\t' << dissim. target
-         << endl;
+         << '\t' << dissim. target;
+      if (addPredictionAbsCriterion)
+        os << '\t' << dissim. prediction 
+           << '\t' << dissim. getAbsCriterion ();
+      os << endl;
+    }
 }
 
 
