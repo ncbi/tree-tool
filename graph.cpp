@@ -1157,6 +1157,41 @@ void Tree::TreeNode::getArea_ (uint radius,
 
 
 
+void Tree::TreeNode::getDistanceArea_ (double radius,
+                                       const Tree::TreeNode* prev,
+                                       VectorPtr<Tree::TreeNode> &area,
+                                       VectorPtr<Tree::TreeNode> &boundary) const
+{
+  if (radius < 0)
+    return;
+  
+  area << this;
+
+  size_t degree = (size_t) (prev ? 1 : 0);  // Degree of *this in area
+
+  const TreeNode* parent_ = getParent ();
+  if (parent_ && parent_ != prev)
+  {
+    parent_->getDistanceArea_ (radius - getParentDistance (), this, area, boundary);
+    degree++;
+  }
+
+  for (const Arc* arc : arcs [false])
+  {
+    const TreeNode* child = static_cast <const TreeNode*> (arc->node [false]);
+    if (child != prev)
+    {
+      child->getDistanceArea_ (radius - child->getParentDistance (), this, area, boundary);
+      degree++;
+    }
+  }
+  
+  if (degree <= 1)
+    boundary << this;
+}
+
+
+
 void Tree::TreeNode::getSubtreeArea (const VectorPtr<Tree::TreeNode> &possibleBoundary,
 	                                   VectorPtr<Tree::TreeNode> &area,
                                      VectorPtr<Tree::TreeNode> &boundary) const

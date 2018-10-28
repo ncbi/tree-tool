@@ -436,7 +436,7 @@ struct Tree : DiGraph
                   VectorPtr<TreeNode> &area,
                   VectorPtr<TreeNode> &boundary) const
       { getArea_ (radius, nullptr, area, boundary); }
-      // Output: area: connected TreeNode's with one root, distinct
+      // Update: area: connected TreeNode's with one root, distinct
       //         boundary: distinct; degree = 1 in the subgraph
       //         area.contains(boundary)
   private:
@@ -446,6 +446,19 @@ struct Tree : DiGraph
                    VectorPtr<TreeNode> &boundary) const;
       // Update: area, boundary
       //         area.contains(boundary)
+  public:
+    void getDistanceArea (double radius,
+                          VectorPtr<TreeNode> &area,
+                          VectorPtr<TreeNode> &boundary) const
+      { getDistanceArea_ (radius, nullptr, area, boundary); }
+      // Update: area: connected TreeNode's with one root, distinct
+      //         boundary: distinct; degree = 1 in the subgraph
+      //         area.contains(boundary)
+  private:
+    void getDistanceArea_ (double radius,
+                           const TreeNode* prev,
+                           VectorPtr<TreeNode> &area,
+                           VectorPtr<TreeNode> &boundary) const;
   public:
     void getSubtreeArea (const VectorPtr<Tree::TreeNode> &possibleBoundary,
 	                       VectorPtr<Tree::TreeNode> &area,
