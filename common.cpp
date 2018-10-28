@@ -1877,7 +1877,12 @@ void Application::setPositional (List<Positional>::iterator &posIt,
 	                               const string &value)
 {
   if (posIt == positionals. end ())
-    errorExitStr (strQuote (value) + " cannot be a positional parameter\n\n" + getInstruction ());
+  {
+  	if (isLeft (value, "-"))
+      errorExitStr (strQuote (value) + " is not a valid option\n\n" + getInstruction ());
+  	else
+      errorExitStr (strQuote (value) + " cannot be a positional parameter\n\n" + getInstruction ());
+  }
   (*posIt). value = value;
   posIt++;
 }
