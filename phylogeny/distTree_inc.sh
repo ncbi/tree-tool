@@ -47,7 +47,7 @@ cp $1/tree $1/hist/tree.$VER
 VER=$(( $VER + 1 ))
 echo $VER > $1/version
 # Time: O(n log^5(n))
-makeDistTree  -threads 15  -data $1/  \
+makeDistTree  -threads 15  -data $1/  -variance lin \
   -optimize  -skip_len  -reinsert  \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 mv $1/tree.new $1/tree
@@ -55,6 +55,9 @@ tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 else
   VER=`cat $1/version`
 fi 
+
+
+distTree_inc_tree1_quality.sh $1
 
 
 if [ -e $1/phen ]; then

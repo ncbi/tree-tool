@@ -135,7 +135,7 @@ while [ 1 == 1 ]; do
   rm -r $1/log/
       
   echo "Processing new objects ..."
-  distTree_new $QC $1/
+  distTree_new $QC $1/  -variance lin
 done
 
 
@@ -158,8 +158,7 @@ if [ -e $1/hybridness_min ]; then
 fi
 
 # Time: O(n log^4(n)) 
-makeDistTree $QC  -threads 15 \
-  -data $1/ \
+makeDistTree $QC  -threads 15  -data $1/  -variance lin \
   -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
@@ -189,23 +188,7 @@ rm $1/dissim.add-req
 rm $1/dissim_request
 
 
-if [ -e $1/phen ]; then
-  echo ""
-  echo "Quality ..."
-	tree2obj.sh $1/hist/tree.1 > $1/_init.list
-	tree2obj.sh $1/tree > $1/_cur.list
-	setMinus $1/_cur.list $1/_init.list >  $1/_delete.list
-	setMinus $1/_init.list $1/_cur.list >> $1/_delete.list
-	rm $1/_init.list 
-	rm $1/_cur.list
-	makeDistTree  -input_tree $1/tree  -delete $1/_delete.list  -output_feature_tree $1/_feature_tree >& /dev/null
-	rm $1/_delete.list
-	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.$VER
-	rm $1/_feature_tree
-	rm $1/_core
-	rm $1/_qual
-	grep ' !' $1/hist/makeFeatureTree.$VER
-fi
+distTree_inc_tree1_quality.sh $1
 
 
 if [ $STOP == 1 ]; then

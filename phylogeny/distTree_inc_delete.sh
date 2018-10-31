@@ -17,7 +17,7 @@ VER=$(( $VER + 1 ))
 echo $VER > $1/version
 
 # Cf. distTree_inc_new.sh
-makeDistTree  -threads 15  -data $1/  \
+makeDistTree  -threads 15  -data $1/  -variance lin \
   -delete $2  \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
@@ -32,3 +32,4 @@ trav $2 "rm -f $1/new/%f"
 cp $2 $1/hist/delete.$VER
 
 
+distTree_inc_tree1_quality.sh $1
