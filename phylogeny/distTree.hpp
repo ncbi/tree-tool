@@ -63,7 +63,7 @@ inline VarianceType str2varianceType (const string &s)
 // Input: varianceType
 inline Real dissim2mult (Real dissim)
   { switch (varianceType)
-    { case varianceType_lin:    return positive (dissim) ? 1 / dissim : 0;
+    { case varianceType_lin:    return positive (dissim) ? 1 / dissim : 0;   
       case varianceType_exp:    return exp (- 2 * max (dissim, 0.0)); 
       case varianceType_linExp: return positive (dissim) ? 1 / (exp (dissim) - 1) : 0; 
     }  
@@ -1350,7 +1350,7 @@ public:
     // Time: ~ O(n log^3(n))
 #endif
   VectorPtr<Leaf> findDepthOutliers () const;
-    // Invokes: DTNode;:getReprLeaf()
+    // Invokes: DTNode::getReprLeaf()
 #if 0
   VectorPtr<DTNode> findOutlierArcs (Real outlier_EValue_max,
                                      Real &dissimOutlier_min) const;
@@ -1410,7 +1410,6 @@ struct NewLeaf : Named
 private:
   const DistTree& tree;
     // !nullptr
-  const string dataDir;
   const DTNode* node_orig {nullptr};
 public:
   
@@ -1493,25 +1492,35 @@ public:
            const string &dataDir_arg,
            const string &name_arg,
            bool init);
-    // Invokes: saveLeaf(), saveRequest()
+    // Invokes; process()
+  NewLeaf (const DistTree &tree_arg,
+           const string &name_arg,
+           const string &dissimFName,
+           const string &leafFName,
+           const string &requestFName,
+           bool init)
+    : Named (name_arg)
+    , tree (tree_arg)
+    { process (init, dissimFName, leafFName, requestFName); }
   NewLeaf (const DTNode* dtNode,
            size_t q_max,
            Real &nodeAbsCriterion_old);
     // q = q_max
 private:
-  string getNameDir      () const  { return dataDir + "/" + name + "/"; }
-  string getDissimFName  () const  { return getNameDir () + "dissim"; }
-  string getLeafFName    () const  { return getNameDir () + "leaf"; }
-  string getRequestFName () const  { return getNameDir () + "request"; }
-  void saveLeaf () const
-    { OFStream f (getLeafFName ());
+  void process (bool init,
+                const string &dissimFName,
+                const string &leafFName,
+                const string &requestFName);
+    // Invokes: saveLeaf(), saveRequest()
+  void saveLeaf (const string &leafFName) const
+    { OFStream f (leafFName);
       f << name << '\t';
       location. saveText (f);
       f << endl;
     }
-  void saveRequest () const;
+  void saveRequest (const string &requestFName) const;
     // Input: location.anchor
-    // Output: file getRequestFName()
+    // Output: file requestFName
     // Invokes: DTNode::getSparseLeafMatches()
     // Time: O(log(n) log(q))
   void optimize ();

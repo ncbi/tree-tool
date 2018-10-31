@@ -644,6 +644,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
 	  	  else
 	  	    searchDepth = 1;
 	  	}
+	  //maximize<size_t> (searchDepth, 2);  // PAR
 	  	ASSERT (searchDepth);
 	  	ancestor->getDescendants (descendants, searchDepth, ancestor_prev);  
 	  }
@@ -7021,78 +7022,18 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 // NewLeaf
 
 NewLeaf::NewLeaf (const DistTree &tree_arg,
-                  const string &dataDir_arg,
+                  const string &dataDir,
                   const string &name_arg,
                   bool init)
 : Named (name_arg)
 , tree (tree_arg)
-, dataDir (dataDir_arg)
 {
-  ASSERT (isDirName (dataDir));
-  ASSERT (! name. empty ());
-  
-  if (fileExists (getRequestFName ()))
-  {
-    cout << "File " << strQuote (getRequestFName ()) << " exists" << endl;
-    return;
-  }
-    
-  location. anchor = static_cast <const DTNode*> (tree. root);
-  location. leafLen = 0;
-  location. arcLen = 0;
-
-  if (init)
-  { 
-    if (fileExists (getLeafFName ()))
-      throw runtime_error ("File " + strQuote (getLeafFName ()) + " exists");
-    if (fileExists (getDissimFName ()))
-      throw runtime_error ("File " + strQuote (getDissimFName ()) + " exists");
-    { OFStream of (getDissimFName ()); }  // destructor creates an empty file
-  }
-  else
-  {
-    if (! fileExists (getDissimFName ()))
-      throw runtime_error ("File " + strQuote (getDissimFName ()) + " does not exist");
-    {
-      LineInput f (getDissimFName ());
-      string name1, name2, dissimS;
-      while (f. nextLine ())
-        try
-        {
-          istringstream iss (f. line);
-          iss >> name1 >> name2 >> dissimS;
-          ASSERT (iss. eof ());
-          ASSERT (name1 < name2);
-          if (name1 != name)
-          	swap (name1, name2);
-          if (name1 != name)
-            throw runtime_error (getDissimFName () + " must contain " + name);
-          const Real dissim = str2real (dissimS);
-          if (dissim < 0)
-            throw runtime_error ("Dissimilarity must be non-negative");
-          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NAN, location. anchor);
-        }          
-        catch (...)
-        {
-          cout << f. line << endl;
-          throw;
-        }
-    }
-    leaf2dissims. sort ();
-  #ifndef NDEBUG
-    // Check uniqueness
-    const Leaf2dissim* prev = nullptr;
-    for (const Leaf2dissim& ld : leaf2dissims)
-    {
-      IMPLY (prev, prev->leaf < ld. leaf);
-      prev = & ld;
-    }
-  #endif
-    optimize ();
-  }
-
-  saveLeaf ();
-  saveRequest ();
+  ASSERT (isDirName (dataDir));  
+  const string nameDir (dataDir + "/" + name + "/");
+  const string dissimFName  (nameDir + "dissim");
+  const string leafFName    (nameDir + "leaf");
+  const string requestFName (nameDir + "request");
+  process (init, dissimFName, leafFName, requestFName);
 }
 
 
@@ -7153,12 +7094,89 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
 
 
 
-void NewLeaf::saveRequest () const
+void NewLeaf::process (bool init,
+                       const string &dissimFName,
+                       const string &leafFName,
+                       const string &requestFName)
+{
+  ASSERT (! name. empty ());
+  ASSERT (! dissimFName. empty ());
+  ASSERT (! leafFName. empty ());
+  ASSERT (! requestFName. empty ());
+  
+
+  if (fileExists (requestFName))
+  {
+    cout << "File " << strQuote (requestFName) << " exists" << endl;
+    return;
+  }
+    
+  location. anchor = static_cast <const DTNode*> (tree. root);
+  location. leafLen = 0;
+  location. arcLen = 0;
+
+  if (init)
+  { 
+    if (fileExists (leafFName))
+      throw runtime_error ("File " + strQuote (leafFName) + " exists");
+    if (fileExists (dissimFName))
+      throw runtime_error ("File " + strQuote (dissimFName) + " exists");
+    { OFStream of (dissimFName); }  // destructor creates an empty file
+  }
+  else
+  {
+    if (! fileExists (dissimFName))
+      throw runtime_error ("File " + strQuote (dissimFName) + " does not exist");
+    {
+      LineInput f (dissimFName);
+      string name1, name2, dissimS;
+      while (f. nextLine ())
+        try
+        {
+          istringstream iss (f. line);
+          iss >> name1 >> name2 >> dissimS;
+          ASSERT (iss. eof ());
+          ASSERT (name1 < name2);
+          if (name1 != name)
+          	swap (name1, name2);
+          if (name1 != name)
+            throw runtime_error (dissimFName + " must contain " + name);
+          const Real dissim = str2real (dissimS);
+          if (dissim < 0)
+            throw runtime_error ("Dissimilarity must be non-negative");
+          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NAN, location. anchor);
+        }          
+        catch (...)
+        {
+          cout << f. line << endl;
+          throw;
+        }
+    }
+    leaf2dissims. sort ();
+  #ifndef NDEBUG
+    // Check uniqueness
+    const Leaf2dissim* prev = nullptr;
+    for (const Leaf2dissim& ld : leaf2dissims)
+    {
+      IMPLY (prev, prev->leaf < ld. leaf);
+      prev = & ld;
+    }
+  #endif
+    optimize ();
+  }
+
+  saveLeaf (leafFName);
+  saveRequest (requestFName);
+}
+
+
+
+void NewLeaf::saveRequest (const string &requestFName) const
 {	
   VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth, false));
   requested. filterValue ([this] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
   
-  OFStream f (getRequestFName ());
+  OFStream f (requestFName);
   for (const Leaf* leaf : requested)
   {
     ASSERT (name != leaf->name);

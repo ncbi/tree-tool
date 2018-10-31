@@ -22,6 +22,10 @@ struct ThisApplication : Application
 		  addPositional ("data", "Directory with data");
 		  addFlag ("init", "Initialize search");
 		  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+		  addKey ("name", "Name of the object");
+		  addKey ("dissim", "File of the format: <obj1> <obj2> <dissimilarity>");
+		  addKey ("request", "Output file of the format: <obj1> <obj2>");
+		  addKey ("leaf", "Output file of the format: <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>");
 		}
 	
 	
@@ -30,9 +34,18 @@ struct ThisApplication : Application
   {
 	  const string dataDir      = getArg ("data");
 	  const bool init           = getFlag ("init");
-	               varianceType = str2varianceType (getArg ("variance"));  // Global    
+	               varianceType = str2varianceType (getArg ("variance"));  // Global   
+	  const string name         = getArg ("name");
+	  const string dissimFName  = getArg ("dissim");
+	  const string requestFName = getArg ("request");
+	  const string leafFName    = getArg ("leaf");
+	   
     if (! isRight (dataDir, "/"))
       throw runtime_error (strQuote (dataDir) + " must end with '/'");
+      
+    ASSERT (name. empty () == dissimFName.  empty ());
+    ASSERT (name. empty () == requestFName. empty ());
+    ASSERT (name. empty () == leafFName.    empty ());
 
 
     if (verbose ())
@@ -50,12 +63,20 @@ struct ThisApplication : Application
       cout << endl;
     }
     
-    const string newDir (dataDir + "search/");
-    FileItemGenerator fig (1, true, newDir);  // PAR
-	  string item;
-	  while (fig. next (item))
+    if (name. empty ())
     {
-      const NewLeaf nl (tree, newDir, item, init);
+      const string newDir (dataDir + "search/");
+      FileItemGenerator fig (1, true, newDir);  // PAR
+  	  string item;
+  	  while (fig. next (item))
+      {
+        const NewLeaf nl (tree, newDir, item, init);
+        nl. qc ();
+      }
+    }
+    else
+    {
+      const NewLeaf nl (tree, name, dissimFName, leafFName, requestFName, init);
       nl. qc ();
     }
 	}
