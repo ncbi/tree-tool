@@ -4090,7 +4090,7 @@ void DistTree::qc () const
     for (const Dissim& dissim : dissims)
     {
       dissim. qc ();
-      leafSet. checkUnique (pair<const Leaf*,const Leaf*> (dissim. leaf1, dissim. leaf2));
+      leafSet. addUnique (pair<const Leaf*,const Leaf*> (dissim. leaf1, dissim. leaf2));
     }
     
    	if (! isNan (absCriterion))
