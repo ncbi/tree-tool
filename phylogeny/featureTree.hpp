@@ -80,6 +80,8 @@ inline bool eqTreeLen (Real len1,
 
 struct FeatureTree;
 
+
+
 struct Phyl : Tree::TreeNode 
 {
   // For FeatureTree::len
@@ -110,7 +112,7 @@ struct Phyl : Tree::TreeNode
 	Vector<bool> core;
     // size() = getFeatureTree().features.size()
 	size_t index_init;
-	  // !getFeatureTree().inputTreeFName.empty() => matches the orginial node number in DFS
+	  // Matches the orginial node number in DFS
 private:
   bool stable {false};
   friend struct FeatureTree;
@@ -164,11 +166,7 @@ public:
 	// Input: core
 	bool feature2parentCore (size_t featureIndex) const;
 protected:
-	bool feature2core (size_t featureIndex) const
-	  { const bool parentCore = feature2parentCore (featureIndex);
-			const ebool c = parent2core [parentCore] [featureIndex]. core;
-		  return c == UBOOL ? true /*parentCore*/ /*PAR*/ : (bool) c;  // gain is less probable than loss
-	  }
+	bool feature2core (size_t featureIndex) const;
 public:
 	size_t getCoreSize () const;  
   size_t getCoreChange (bool gain) const;
@@ -443,7 +441,7 @@ public:
 	Genome (FeatureTree &tree,
 	        Strain* parent_arg,
 	        const string &id_arg);
-	  // To be followed by: {initDb()|initDir()}, init()
+	  // To be followed by: initDir(), init()
   static string geneLineFormat ()
     { return "{{<gene> [<optional (0|1)>]} | {<nominal name>:<value>} \\n}*"; }
 	void initDir (const string &geneDir);
@@ -1017,10 +1015,11 @@ struct FeatureTree : Tree
   static constexpr Real len_delta {1e-2};
 
 	string inputTreeFName;
-	  // May be empty()
+	  // !empty()
 
   // For FeatureTree::len
   static constexpr bool emptySuperRoot {false};  // PAR
+  const bool preferGain;
 	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
 	  // Init: isNan(Species::time) 
@@ -1067,7 +1066,8 @@ public:
 	  
 	FeatureTree (const string &treeFName,
   	           const string &geneDir,
-  	           const string &coreFeaturesFName);
+  	           const string &coreFeaturesFName,
+  	           bool preferGain_arg);
 	   // Invokes: loadPhylFile(), Genome::initDir(), finish()
 private:
   bool loadPhylLines (const StringVector& lines,

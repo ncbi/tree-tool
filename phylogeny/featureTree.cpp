@@ -186,6 +186,15 @@ bool Phyl::feature2parentCore (size_t featureIndex) const
 
 
 
+bool Phyl::feature2core (size_t featureIndex) const
+{ 
+  const bool parentCore = feature2parentCore (featureIndex);
+	const ebool c = parent2core [parentCore] [featureIndex]. core;
+  return c == UBOOL ? ! getFeatureTree (). preferGain : (bool) c; 
+}
+
+
+
 size_t Phyl::getCoreSize () const
 {
   ASSERT (getFeatureTree (). coreSynced);   
@@ -386,6 +395,7 @@ void Phyl::assignFeatures ()
 
 void Phyl::assignFeaturesDown ()
 { 
+  // Threads ??
 	for (DiGraph::Arc* arc : arcs [false])
 		static_cast <Phyl*> (arc->node [false]) -> assignFeaturesDown ();
   assignFeatures ();
@@ -892,7 +902,7 @@ void Genome::initDir (const string &geneDir)
         geneName = f. line;
       else if (   isRight (f. line, " 0")
                || isRight (f. line, " 1")
-         )
+              )
       {
         optional = isRight (f. line, " 1");
         geneName = f. line. substr (0, f. line. size () - 2);
@@ -902,7 +912,7 @@ void Genome::initDir (const string &geneDir)
       trim (geneName);
       ASSERT (! geneName. empty ());
       if (contains (coreSet, geneName))
-        ERROR_MSG ("Gene " + strQuote (geneName) + " already exists in genome " + getName ());
+        throw runtime_error ("Gene " + strQuote (geneName) + " already exists in genome " + getName ());
       coreSet [geneName] = optional;
     }
   }
@@ -1157,8 +1167,6 @@ void Change::qc () const
 
 void Change::saveText (ostream& os) const
 { 
-//const FeatureTree& tree = * from->getFeatureTree ();
-  ASSERT (! tree. inputTreeFName. empty ());
 	os         << type () 
 	   << '\t' << from->index_init
 	   << '\t' << improvement;
@@ -1246,7 +1254,6 @@ ChangeTo::ChangeTo (const FeatureTree &tree_arg,
 
 void ChangeTo::saveText (ostream& os) const
 { 
-  ASSERT (! tree /*to->getFeatureTree ().*/. inputTreeFName. empty ());
 	Change::saveText (os);
 	os << '\t' << to->index_init;
 }
@@ -1817,8 +1824,10 @@ namespace
 
 FeatureTree::FeatureTree (const string &treeFName,
       						        const string &geneDir,
-      						        const string &coreFeaturesFName)
+      						        const string &coreFeaturesFName,
+  	                      bool preferGain_arg)
 : inputTreeFName (treeFName)
+, preferGain (preferGain_arg)
 {
 	ASSERT (! treeFName. empty ());
 
@@ -1833,6 +1842,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   {
     cerr << "Genomes ..." << endl;
 	  Progress prog;
+	  // Threads ??
 	 	for (const DiGraph::Node* node : nodes)
 	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
 	 		{
@@ -1947,7 +1957,6 @@ bool getParam (const string &line,
 void FeatureTree::loadPhylFile (/*int root_species_id,*/
 	                              const string &treeFName)
 {
-//ASSERT (root_species_id > 0);
 	ASSERT (! treeFName. empty ());
 	
 		
@@ -2092,7 +2101,6 @@ void FeatureTree::finish (const string &coreFeaturesFName)
 
   ASSERT (nodes. front () == root);
 #ifndef NDEBUG
-  if (! inputTreeFName. empty ())
   {
     size_t index = 0;
    	for (const DiGraph::Node* node : nodes)
@@ -2112,6 +2120,8 @@ void FeatureTree::qc () const
     return;
 	Tree::qc ();
 		
+	ASSERT (! inputTreeFName. empty ());
+
 	ASSERT (root);
 	ASSERT (root->graph == this);
 	const Species* root_ = static_cast <const Phyl*> (root) -> asSpecies ();
@@ -2276,12 +2286,7 @@ void FeatureTree::deleteLeaf (TreeNode* node,
 
 void FeatureTree::printInput (ostream& os) const
 {
-//os << "SPECIES.id: " << static_cast <const Species*> (root) -> id << endl;
-
-  if (inputTreeFName. empty ())
-	  os << "Tree from database" << endl;
-	else
-	  os << "Tree from file: " << inputTreeFName << endl;
+  os << "Tree from file: " << inputTreeFName << endl;
 	  
   const size_t genomes = root->getLeavesSize ();
   os << "# Genomes: " << genomes << endl;
@@ -2292,7 +2297,12 @@ void FeatureTree::printInput (ostream& os) const
   os << "Genome size ave.:    " << genomeGenes_ave << endl;
 
   os << "Time: " << (allTimeZero ? "Not used" : "Used") << endl;
-  if (! allTimeZero)
+  if (allTimeZero)
+  {
+    if (preferGain)
+      os << "Gains are preferred over losses" << endl;
+  }
+  else
   {
   	ONumber oNum (os, 3, true);  // PAR
     os << "Lambda_0          = " << lambda0 << endl;
@@ -2608,7 +2618,7 @@ struct LambdaCommonTimeFunc : Func1
 
 
 Real FeatureTree::getLambda0_commonTime (const size_t parent2core [2/*thisCore*/] [2/*parentCore*/],
-                                      Real commonTime) 
+                                         Real commonTime) 
 {
 	LambdaCommonTimeFunc f (parent2core, commonTime);
 	const Real delta = 1e-6;  // PAR

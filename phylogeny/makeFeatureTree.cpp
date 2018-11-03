@@ -26,9 +26,10 @@ struct ThisApplication : Application
   	  addKey ("input_tree", "Input file with the tree");
   	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::geneLineFormat ());
   	  addKey ("input_core", "Input file with root core feature ids");
+  	  addFlag ("prefer_gain", "Prefer gain over loss in maximum parsimony method");
   	    
   	  // Process
-  	  addFlag ("use_time", "Use time for MLE, otherwise parsimony method");
+  	  addFlag ("use_time", "Use time for MLE, otherwise maximum parsimony method");
   	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
   
       // Output	    
@@ -53,18 +54,19 @@ struct ThisApplication : Application
 		const string input_tree         = getArg ("input_tree");
 		const string feature_dir        = getArg ("features");
 		const string input_core         = getArg ("input_core");
+		const bool   prefer_gain        = getFlag ("prefer_gain");
 
-		const bool use_time             = getFlag ("use_time");  
-		const int optim_iter_max        = str2<int> (getArg ("optim_iter_max"));
+		const bool   use_time           = getFlag ("use_time");  
+		const int    optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
 
 		const string output_tree        = getArg ("output_tree");
 		const string output_core        = getArg ("output_core");
 		const string report_feature     = getArg ("report_feature");
-	//const bool set_node_ids         = getFlag ("set_node_ids");  
+	//const bool   set_node_ids       = getFlag ("set_node_ids");  
 		const string newick             = getArg ("newick");
-		const bool min_newick_name      = getFlag ("min_newick_name");
+		const bool   min_newick_name    = getFlag ("min_newick_name");
 		const string qual               = getArg ("qual");  
-		const bool qual_nonredundant    = getFlag ("qual_nonredundant");
+		const bool   qual_nonredundant  = getFlag ("qual_nonredundant");
 		const string gain_nodes         = getArg ("gain_nodes");  
 		const string disagreement_nodes = getArg ("disagreement_nodes");  
 		const string arc_length_stat    = getArg ("arc_length_stat");
@@ -76,7 +78,7 @@ struct ThisApplication : Application
 		IMPLY (qual_nonredundant, ! qual. empty ());
 		
 		
-    FeatureTree tree (input_tree, feature_dir, input_core);
+    FeatureTree tree (input_tree, feature_dir, input_core, prefer_gain);
     tree. printInput (cout);
     tree. qc ();    
     
