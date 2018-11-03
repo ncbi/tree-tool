@@ -1929,7 +1929,7 @@ public:
   template <typename From>
     void insertAll (const From &from)
       { P::insert (from. begin (), from. end ()); }
-  bool checkUnique (const T& el)
+  bool addUnique (const T& el)
     { if (contains (el))
         return false;
       operator<< (el);
