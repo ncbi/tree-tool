@@ -16,14 +16,6 @@ namespace FeatureTree_sp
 
 // Feature
 
-Feature::Feature (const Feature::Id &name_arg)
-: Named (name_arg)
-{
-  qc ();
-}
-
-
-
 void Feature::qc () const
 {
   if (! qc_on)
@@ -898,6 +890,8 @@ void Genome::initDir (const string &geneDir)
       bool optional = false;
       trim (f. line);
       replace (f. line, '\t', ' ');
+      if (contains (f. line, " : "))
+        throw runtime_error ("':' cannot have neighboring spaces");
       if (contains (f. line, ':'))
         geneName = f. line;
       else if (   isRight (f. line, " 0")
@@ -928,20 +922,20 @@ void Genome::coreSet2nominals ()
 	for (const auto it : coreSet)
 	{
 	  const string& geneName = it. first;
-	  if (it. second)
-	    throw runtime_error ("Optional nominal attribute " + geneName);
 	  const size_t pos = geneName. find (':');
 	  if (pos == string::npos)
 	    continue;
+	  if (it. second)
+	    throw runtime_error ("Optional nominal attribute " + geneName);
 	  const string attrName = geneName. substr (0, pos);
 	  const string value    = geneName. substr (pos + 1);
 	  if (attrName. empty ())
 	    throw runtime_error ("Empty nominal attribute name: " + geneName);
 	  if (value. empty ())
 	    throw runtime_error ("Empty nominal attribute value: " + geneName);
-	  if (! nominals. checkUnique (attrName))
+	  if (! nominals. addUnique (attrName))
 	    throw runtime_error ("Duplicate nominal attribute: " + attrName);
-	  const_cast <FeatureTree&> (getFeatureTree ()). nominals [attrName] << value;
+	  const_cast <FeatureTree&> (getFeatureTree ()). nominal2values [attrName] << value;
 	}
 }
 
@@ -949,10 +943,12 @@ void Genome::coreSet2nominals ()
 
 void Genome::nominals2coreSet ()
 {
-  for (const auto it : getFeatureTree (). nominals)
+  for (const auto it : getFeatureTree (). nominal2values)
     if (! nominals. contains (it. first))
       for (const string& value : it. second)
         coreSet [it. first + ":" + value] = true;
+        
+  nominals. clear ();
 }
 
 
@@ -1001,13 +997,25 @@ void Genome::qc () const
   ASSERT (! id. empty ());
   ASSERT (! contains (id, ' '));
   ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
+	ASSERT (nominals. empty ());
 	ASSERT (coreSet. empty ());
-	IMPLY (getFeatureTree (). coreSynced, coreNonSingletons >= getCoreSize ());
+/*
+	if (getFeatureTree (). coreSynced && coreNonSingletons < getCoreSize ())
+	{
+	  print (cout);
+	  cout << endl;
+	  cout << coreNonSingletons << ' ' << getCoreSize () << ' ' << singletons. size () << endl;
+    FFOR (size_t, i, getFeatureTree (). features. size ())
+      if (core [i])
+      	cout << getFeatureTree (). features [i]. name << endl;
+	  ERROR;
+	}
+*/
 	
 	ASSERT (! singletons. intersects (getFeatureTree (). commonCore));
 	
 	for (const string& attrName : nominals)
-	  ASSERT (contains (getFeatureTree (). nominals, attrName));
+	  ASSERT (contains (getFeatureTree (). nominal2values, attrName));
 }
 
 
@@ -1017,8 +1025,10 @@ void Genome::saveContent (ostream& os) const
   Phyl::saveContent (os);  
 
 	os << "  S=" << (getStrain () -> singletonsInCore ? 0 : singletons. size ()) /*<< '+' << oddCdss*/;    
+/*
 	if (const size_t opt = coreNonSingletons - getCoreSize ())
 	  os << "  OptC=" << opt;
+*/
 #if 0
 	os << "  " << project_id  // << ':' << tax_id 
 	   << "  " << taxName;
@@ -1122,13 +1132,55 @@ void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
 	  ERROR;
 	}
 	
-	for (const auto it : coreSet)
-	  if (nonSingletons. contains (it. first))
-	  	;
-	  else if (globalSingletons. contains (it. first))
-	  	setMove (& globalSingletons, & nonSingletons, it. first);
+	for (const auto& it : coreSet)
+	{
+	/*if (it. second)
+	    continue; ?? */
+	  const Feature::Id& featureId = it. first;
+	  if (Feature::singleton (featureId))
+	  {
+	    ASSERT (! globalSingletons. contains (featureId));
+	    ASSERT (! nonSingletons.    contains (featureId));
+	  }
 	  else
-	  	EXEC_ASSERT (globalSingletons. insert (it. first). second);
+	  {
+  	  if (nonSingletons. contains (featureId))
+  	  	;
+  	  else if (globalSingletons. contains (featureId))
+  	  	setMove (& globalSingletons, & nonSingletons, featureId);
+  	  else
+  	  	EXEC_ASSERT (globalSingletons. insert (featureId). second);
+  	}
+	}
+}
+
+
+
+size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
+{ 
+  Set<Feature::Id> featureSingletons;
+  for (Iter <CoreSet> iter (coreSet); iter. next (); )
+  {
+	  const auto& mapIt = *iter;
+		if (Feature::singleton (mapIt. first))
+		{
+		  ASSERT (! mapIt. second);
+		  featureSingletons << mapIt. first;
+			iter. erase ();
+		}
+	}
+		
+  singletons = coreSet;
+  singletons. intersect (globalSingletons);
+  for (const Feature::Id& f : singletons)
+    coreSet. erase (f);
+    
+  singletons << featureSingletons;
+  
+  ASSERT (coreNonSingletons >= singletons. size ());
+  coreNonSingletons -= singletons. size ();
+
+  return featureSingletons. size ();
 }
 
 
@@ -1991,8 +2043,8 @@ void FeatureTree::loadPhylFile (/*int root_species_id,*/
 
 void FeatureTree::finish (const string &coreFeaturesFName)
 {
-  // nominals, Genome::nominals
-  ASSERT (nominals. empty ());
+  // nominal2values, Genome::nominals
+  ASSERT (nominal2values. empty ());
  	for (const DiGraph::Node* node : nodes)
  		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
  		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
@@ -2016,11 +2068,7 @@ void FeatureTree::finish (const string &coreFeaturesFName)
   globalSingletonsSize = globalSingletons. size ();
  	for (const DiGraph::Node* node : nodes)
  		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
- 		{
-      g->setSingletons (globalSingletons);
-      ASSERT (g->coreNonSingletons >= g->singletons. size ());
-      g->coreNonSingletons -= g->singletons. size ();
-    }
+      globalSingletonsSize += g->setSingletons (globalSingletons);
   
   // commonCore
   ASSERT (commonCore. empty ());
@@ -2171,6 +2219,7 @@ void FeatureTree::qc () const
 	{
 	  const Feature f (features [i]);
 	  f. qc ();
+	  ASSERT (! Feature::singleton (f. name));
 		ASSERT (/*prevFeature. isGene == f. isGene,*/ prevFeature. name < f. name);
 	//ASSERT (prevFeature. isGene >= f. isGene);
 	//ASSERT (f. isGene == (i < genes));
@@ -3093,7 +3142,7 @@ void FeatureTree::setStats ()
             && ! g->optionalCore [i]
            )
           features [i]. genomes++;
-      if ((! phyl->feature2parentCore (i) /*|| phyl == root*/) && phyl->core [i])  
+      if ((! phyl->feature2parentCore (i) || phyl == root) && phyl->core [i])  
         features [i]. gains << phyl;
       if (phyl->feature2parentCore (i) && ! phyl->core [i])
         features [i]. losses << phyl;

@@ -28,7 +28,7 @@ struct Phyl;
 struct Feature : Named
 // Boolean attribute of Genome
 // Gene or phenotype
-// name: key
+// Id name: key
 {
   typedef string Id;
   // For FeatureTree::len
@@ -42,7 +42,9 @@ struct Feature : Named
 
   Feature ()
     {}
-	explicit Feature (const Id &name_arg);
+	explicit Feature (const Id &name_arg)
+    : Named (name_arg)
+    {}
 	void qc () const override;
 	void saveText (ostream& os) const override
 	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << endl; }
@@ -68,6 +70,8 @@ struct Feature : Named
              || mutations () < other->mutations ()
              || (mutations () == other->mutations () && name.size () > other->name. size ());
     }
+  static bool singleton (const Id &featureId)
+    { return isRight (featureId, ":_OTHER_"); }
 };
 
 
@@ -423,12 +427,16 @@ struct Genome : Phyl
     // GENOME.id
     // !empty()
   
-  Set<string> nominals;
-    // Subset of getFeatureTree().nominals
 	Vector<bool> optionalCore;
     // size() = getFeatureTree().features.size()
+    // Nominal attribute => true
 private:
-  map<Feature::Id,bool/*optional*/> coreSet; 
+  // Temporary
+  Set<string> nominals;
+    // Nominal attribute names
+    // Subset of getFeatureTree().nominal2values
+  typedef  map<Feature::Id,bool/*optional*/>  CoreSet;
+  CoreSet coreSet; 
   friend struct FeatureTree;
 public:
   size_t coreNonSingletons {0};
@@ -443,12 +451,12 @@ public:
 	        const string &id_arg);
 	  // To be followed by: initDir(), init()
   static string geneLineFormat ()
-    { return "{{<gene> [<optional (0|1)>]} | {<nominal name>:<value>} \\n}*"; }
+    { return "{{<gene> [<optional (0|1)>]} | {<nominal name>:<value>} \\n}*, where <value> = _OTHER_ is singleton for any <nominal name>"; }
 	void initDir (const string &geneDir);
 	  // Input: file "geneDir/id" with the format: `geneLineFormat()`
 	  // Output: coreSet, coreNonSingletons
 	void coreSet2nominals ();
-	  // Update: getFeatureTree().nominals, nominals
+	  // Update: getFeatureTree().nominal2values, nominals
 	void nominals2coreSet ();
 	  // Update: coreSet
 	void init (const map <Feature::Id, size_t/*index*/> &feature2index);
@@ -501,12 +509,9 @@ public:
 	      n += coreSet. erase (f);
 	    return n;
     }
-	void setSingletons (const Set<Feature::Id> &globalSingletons)
-    { singletons = coreSet;
-      singletons. intersect (globalSingletons);
-      for (const Feature::Id& f : singletons)
-	      coreSet. erase (f);
-    }
+	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
+	  // Return: number of Feature::Id's s.t. Feature::singleton()
+	  // Update: coreSet, singletons, coreNonSingletons
 };
 
 
@@ -1003,11 +1008,6 @@ public:
 
 
 
-typedef  Set<string>  Nominal;
-typedef  map<string/*nominal attribute name*/, Nominal>  Nominals;
-
-
-
 struct FeatureTree : Tree
 // Of Phyl*
 // !allTimeZero => effectively unrooted 
@@ -1035,10 +1035,13 @@ struct FeatureTree : Tree
   Real time_init {NAN};
     // > 0    
 	
-  Nominals nominals;
-  
+private:
+  friend Genome;
+  map <string/*nominal attribute name*/, Set<string>/*nominal attribute values*/>  nominal2values;
+public:  
 	Vector<Feature> features;
 	  // Feature::name's are sorted, unique
+	  // !Feature::singleton(Feature::Id)
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
 	size_t genomeGenes_ave {0};
