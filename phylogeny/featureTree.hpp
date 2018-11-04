@@ -36,6 +36,8 @@ struct Feature : Named
 //Prob lambda_0;  ??
   // Stats
   size_t genomes {0};
+    // Non-optional
+  size_t optionalGenomes {0};  
   VectorPtr<Phyl> gains;
   VectorPtr<Phyl> losses;
 
@@ -47,7 +49,7 @@ struct Feature : Named
     {}
 	void qc () const override;
 	void saveText (ostream& os) const override
-	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << endl; }
+	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << "(" << optionalGenomes << ") " << endl; }
 
 	
   bool operator== (const Feature &other) const
@@ -88,6 +90,8 @@ struct FeatureTree;
 
 struct Phyl : Tree::TreeNode 
 {
+  friend FeatureTree;
+
   // For FeatureTree::len
 	struct CoreEval
 	{
@@ -119,7 +123,6 @@ struct Phyl : Tree::TreeNode
 	  // Matches the orginial node number in DFS
 private:
   bool stable {false};
-  friend struct FeatureTree;
 public:
 
 
@@ -423,6 +426,8 @@ public:
 
 struct Genome : Phyl
 {
+  friend FeatureTree;
+
   string id;  
     // GENOME.id
     // !empty()
@@ -437,7 +442,6 @@ private:
     // Subset of getFeatureTree().nominal2values
   typedef  map<Feature::Id,bool/*optional*/>  CoreSet;
   CoreSet coreSet; 
-  friend struct FeatureTree;
 public:
   size_t coreNonSingletons {0};
     // Includes optionalCore[]  
@@ -452,6 +456,7 @@ public:
 	  // To be followed by: initDir(), init()
   static string geneLineFormat ()
     { return "{{<gene> [<optional (0|1)>]} | {<nominal name>:<value>} \\n}*, where <value> = _OTHER_ is singleton for any <nominal name>"; }
+private:
 	void initDir (const string &geneDir);
 	  // Input: file "geneDir/id" with the format: `geneLineFormat()`
 	  // Output: coreSet, coreNonSingletons
@@ -459,8 +464,23 @@ public:
 	  // Update: getFeatureTree().nominal2values, nominals
 	void nominals2coreSet ();
 	  // Update: coreSet
+	void getSingletons (Set<Feature::Id> &globalSingletons,
+	                    Set<Feature::Id> &nonSingletons) const;
+    // Update: globalSingletons, nonSingletons: !intersect()
+	void getCommonCore (Set<Feature::Id> &commonCore) const
+    { commonCore. intersect (coreSet); }
+	size_t removeFromCoreSet (const Set<Feature::Id> &toRemove)
+    { size_t n = 0;
+      for (const Feature::Id& f : toRemove)
+	      n += coreSet. erase (f);
+	    return n;
+    }
+	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
+	  // Return: number of Feature::Id's s.t. Feature::singleton()
+	  // Update: coreSet, singletons, coreNonSingletons
 	void init (const map <Feature::Id, size_t/*index*/> &feature2index);
 	  // Output: CoreEval::core, core
+public:
 	void qc () const override;
 	void saveContent (ostream& os) const override;
 
@@ -498,20 +518,6 @@ public:
     // Input: dir: !empty()
   size_t getGenes () const
     { return coreNonSingletons + singletons. size (); }
-	void getSingletons (Set<Feature::Id> &globalSingletons,
-	                    Set<Feature::Id> &nonSingletons) const;
-    // Update: globalSingletons, nonSingletons: !intersect()
-	void getCommonCore (Set<Feature::Id> &commonCore) const
-    { commonCore. intersect (coreSet); }
-	size_t removeFromCoreSet (const Set<Feature::Id> &toRemove)
-    { size_t n = 0;
-      for (const Feature::Id& f : toRemove)
-	      n += coreSet. erase (f);
-	    return n;
-    }
-	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
-	  // Return: number of Feature::Id's s.t. Feature::singleton()
-	  // Update: coreSet, singletons, coreNonSingletons
 };
 
 
@@ -1071,7 +1077,8 @@ public:
   	           const string &geneDir,
   	           const string &coreFeaturesFName,
   	           bool preferGain_arg);
-	   // Invokes: loadPhylFile(), Genome::initDir(), finish()
+    // Input: coreFeaturesFName if !allTimeZero
+    // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore()
 private:
   bool loadPhylLines (const StringVector& lines,
 		                  size_t &lineNum,
@@ -1084,10 +1091,6 @@ private:
   void loadPhylFile (/*int root_species_id,*/
 	                   const string &treeFName);
 	  // Invokes: loadPhylLines()
-  void finish (/*Server* db,*/
-               const string &coreFeaturesFName);
-    // Input: db or coreFeaturesFName if !allTimeZero
-    // Invokes: setLenGlobal(), setCore()
 public:
 	void qc () const override;
 	void saveText (ostream& os) const override;

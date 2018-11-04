@@ -1903,7 +1903,122 @@ FeatureTree::FeatureTree (const string &treeFName,
 	    }
 	}
 
-  finish (coreFeaturesFName);  
+
+  // nominal2values, Genome::nominals
+  ASSERT (nominal2values. empty ());
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
+ 		    catch (const exception &e)
+ 		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
+
+  // Genome::coreSet
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  const_cast <Genome*> (g) -> nominals2coreSet (); 
+
+  // optionalCore[i] in all Genome's => remove Feature i ??
+
+  // globalSingletons, nonSingletons
+  Set<Feature::Id> globalSingletons;
+  Set<Feature::Id> nonSingletons;
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  g->getSingletons (globalSingletons, nonSingletons);
+  ASSERT (! globalSingletons. intersects (nonSingletons));
+  globalSingletonsSize = globalSingletons. size ();
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
+      globalSingletonsSize += g->setSingletons (globalSingletons);
+  
+  // commonCore
+  ASSERT (commonCore. empty ());
+  commonCore = nonSingletons;
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  g->getCommonCore (commonCore);
+  ASSERT (! globalSingletons. intersects (commonCore));
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
+      { EXEC_ASSERT (g->removeFromCoreSet (commonCore) == commonCore. size ()); }
+      
+  for (const Feature::Id& fId : commonCore)
+    nonSingletons. erase (fId);    
+  if (featuresExist () && nonSingletons. empty ())
+  	throw runtime_error ("All genes are singletons or common core");
+  	
+  // features, feature2index
+  ASSERT (features. empty ());
+  map<Feature::Id, size_t/*index*/> feature2index;
+#ifndef NDEBUG
+  Feature::Id prevFeature;
+#endif
+  for (const Feature::Id& fId : nonSingletons)
+  {
+  	ASSERT (prevFeature < fId);
+  	feature2index [fId] = features. size ();
+  	features << Feature (fId);
+  #ifndef NDEBUG
+  	prevFeature = fId;
+  #endif
+  }
+  features. searchSorted = true;
+//genes = features. size ();
+  ASSERT (features. size () == nonSingletons. size ());
+  ASSERT (feature2index. size () == features. size ());
+
+  // allTimeZero, Phyl::init()      
+  size_t timeNan = 0;
+  size_t timeNonNan = 0;
+ 	for (const DiGraph::Node* node : nodes)
+ 	{
+ 		const Phyl* p = static_cast <const Phyl*> (node);
+ 		if (const Species* s = p->asSpecies ())
+ 		{
+   		if (isNan (s->time))
+   			timeNan++;
+   		else
+   			timeNonNan++;
+ 			const_cast <Species*> (s) -> init ();
+ 		}
+ 		else if (const Genome* g = p->asGenome ())
+ 			const_cast <Genome*> (g) -> init (feature2index);
+ 		else
+ 			ERROR;
+ 	}
+ 	ASSERT (timeNan || timeNonNan);
+ 	ASSERT (! (timeNan && timeNonNan));
+ 	allTimeZero = timeNan;
+
+  genomeGenes_ave = 0;  
+  size_t genomes = 0;
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		{
+ 			genomeGenes_ave += g->getGenes ();
+ 			genomes++;
+ 	  }
+  genomeGenes_ave /= genomes;
+
+  if (! allTimeZero && featuresExist ())
+    loadSuperRootCoreFile (coreFeaturesFName);
+ 	for (DiGraph::Node* node : nodes)  
+ 		static_cast <Phyl*> (node) -> setWeight ();
+  setLenGlobal ();
+  setCore ();
+  len_min = getLength_min ();
+
+  ASSERT (nodes. front () == root);
+#ifndef NDEBUG
+  {
+    size_t index = 0;
+   	for (const DiGraph::Node* node : nodes)
+   	{
+   		ASSERT (static_cast <const Phyl*> (node) -> index_init == index);
+   		index++;
+   	}
+  }
+#endif
 }
 
 
@@ -2036,127 +2151,6 @@ void FeatureTree::loadPhylFile (/*int root_species_id,*/
  			if (s->id == (uint) root_species_id)
  				const_cast <Species*> (s) -> id = 0;
 	const_static_cast <Species*> (root) -> id = (uint) root_species_id;
-#endif
-}
-
-
-
-void FeatureTree::finish (const string &coreFeaturesFName)
-{
-  // nominal2values, Genome::nominals
-  ASSERT (nominal2values. empty ());
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
- 		    catch (const exception &e)
- 		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
-
-  // Genome::coreSet
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  const_cast <Genome*> (g) -> nominals2coreSet (); 
-
-  // optionalCore[i] in all Genome's => remove Feature i ??
-
-  // globalSingletons, nonSingletons
-  Set<Feature::Id> globalSingletons;
-  Set<Feature::Id> nonSingletons;
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  g->getSingletons (globalSingletons, nonSingletons);
-  ASSERT (! globalSingletons. intersects (nonSingletons));
-  globalSingletonsSize = globalSingletons. size ();
- 	for (const DiGraph::Node* node : nodes)
- 		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
-      globalSingletonsSize += g->setSingletons (globalSingletons);
-  
-  // commonCore
-  ASSERT (commonCore. empty ());
-  commonCore = nonSingletons;
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  g->getCommonCore (commonCore);
-  ASSERT (! globalSingletons. intersects (commonCore));
- 	for (const DiGraph::Node* node : nodes)
- 		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
-      { EXEC_ASSERT (g->removeFromCoreSet (commonCore) == commonCore. size ()); }
-      
-  for (const Feature::Id& fId : commonCore)
-    nonSingletons. erase (fId);    
-  if (featuresExist () && nonSingletons. empty ())
-  	throw runtime_error ("All genes are singletons or common core");
-  	
-  // features, feature2index
-  ASSERT (features. empty ());
-  map<Feature::Id, size_t/*index*/> feature2index;
-#ifndef NDEBUG
-  Feature::Id prevFeature;
-#endif
-  for (const Feature::Id& fId : nonSingletons)
-  {
-  	ASSERT (prevFeature < fId);
-  	feature2index [fId] = features. size ();
-  	features << Feature (fId);
-  #ifndef NDEBUG
-  	prevFeature = fId;
-  #endif
-  }
-  features. searchSorted = true;
-//genes = features. size ();
-  ASSERT (features. size () == nonSingletons. size ());
-  ASSERT (feature2index. size () == features. size ());
-
-  // allTimeZero, Phyl::init()      
-  size_t timeNan = 0;
-  size_t timeNonNan = 0;
- 	for (const DiGraph::Node* node : nodes)
- 	{
- 		const Phyl* p = static_cast <const Phyl*> (node);
- 		if (const Species* s = p->asSpecies ())
- 		{
-   		if (isNan (s->time))
-   			timeNan++;
-   		else
-   			timeNonNan++;
- 			const_cast <Species*> (s) -> init ();
- 		}
- 		else if (const Genome* g = p->asGenome ())
- 			const_cast <Genome*> (g) -> init (feature2index);
- 		else
- 			ERROR;
- 	}
- 	ASSERT (timeNan || timeNonNan);
- 	ASSERT (! (timeNan && timeNonNan));
- 	allTimeZero = timeNan;
-
-  genomeGenes_ave = 0;  
-  size_t genomes = 0;
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		{
- 			genomeGenes_ave += g->getGenes ();
- 			genomes++;
- 	  }
-  genomeGenes_ave /= genomes;
-
-  if (! allTimeZero && featuresExist ())
-    loadSuperRootCoreFile (coreFeaturesFName);
- 	for (DiGraph::Node* node : nodes)  
- 		static_cast <Phyl*> (node) -> setWeight ();
-  setLenGlobal ();
-  setCore ();
-  len_min = getLength_min ();
-
-  ASSERT (nodes. front () == root);
-#ifndef NDEBUG
-  {
-    size_t index = 0;
-   	for (const DiGraph::Node* node : nodes)
-   	{
-   		ASSERT (static_cast <const Phyl*> (node) -> index_init == index);
-   		index++;
-   	}
-  }
 #endif
 }
 
@@ -2590,7 +2584,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
   }
 
 
-  // Cf. finish()
+  // Cf. FeatureTree::FeatureTree()
 	setLenGlobal ();  
 	ASSERT (leReal (len, len1));
 	setCore ();  
@@ -3121,6 +3115,7 @@ void FeatureTree::setStats ()
   for (Feature& f : features)
   {
     f. genomes = 0;
+    f. optionalGenomes = 0;
     f. gains. clear ();
     f. losses. clear ();
   }
@@ -3137,11 +3132,21 @@ void FeatureTree::setStats ()
     const Genome* g = phyl->asGenome ();
     FFOR (size_t, i, features. size ())
     {
-      if (g)
-        if (   g->core [i]
-            && ! g->optionalCore [i]
-           )
+      if (g && g->core [i])
+      {
+        if (g->optionalCore [i])
+          features [i]. optionalGenomes++;
+        else
           features [i]. genomes++;
+      }
+    #if 0
+      if (phyl->core [i])
+      {
+        features [i]. coreNodes++;
+        if (features [i]. name == "13-00:Aquificales")   // ??
+          cout << phyl->getLcaName () << endl;
+      }
+    #endif
       if ((! phyl->feature2parentCore (i) || phyl == root) && phyl->core [i])  
         features [i]. gains << phyl;
       if (phyl->feature2parentCore (i) && ! phyl->core [i])
