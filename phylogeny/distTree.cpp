@@ -644,7 +644,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
 	  	  else
 	  	    searchDepth = 1;
 	  	}
-	  //maximize<size_t> (searchDepth, 2);  // PAR
+	    maximize<size_t> (searchDepth, 3);  // PAR
 	  	ASSERT (searchDepth);
 	  	ancestor->getDescendants (descendants, searchDepth, ancestor_prev);  
 	  }
