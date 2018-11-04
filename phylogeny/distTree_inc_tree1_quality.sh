@@ -19,7 +19,7 @@ if [ -e $1/phen ]; then
 	rm $1/_cur.list
 	makeDistTree  -input_tree $1/tree  -delete $1/_delete.list  -output_feature_tree $1/_feature_tree >& /dev/null
 	rm $1/_delete.list
-	makeFeatureTree  -qc  -input_tree $1/_feature_tree  -prefer_gain  -features $1/phen  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree-tree1.$VER
+	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -prefer_gain  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree-tree1.$VER
 	rm $1/_feature_tree
 	rm $1/_core
 	rm $1/_qual

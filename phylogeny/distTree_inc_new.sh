@@ -146,7 +146,7 @@ wc -l $1/dissim.add
 cat $1/dissim.add >> $1/dissim
 rm $1/dissim.add
 else
-  VER=110  # PAR 
+  VER=`cat $1/version`
 fi
 
 
