@@ -14,22 +14,22 @@ echo "Version: `cat $1/version`"
 echo ""
 
 OBJS=`grep -vc '^ *0x' $1/tree`
-echo "# Objects: $OBJS"  
+echo "# Objects in tree: $OBJS"  
 
-N=`cat $1/leaf | wc -l`
-if [ $N -gt 0 ]; then
-  echo "# Being added: $N"
+ADDED=`cat $1/leaf | wc -l`
+if [ $ADDED -gt 0 ]; then
+  echo "# Being added: $ADDED"
 fi
 
-N=`ls $1/search/ | wc -l`
-if [ $N -gt 0 ]; then
-  echo "# Being searched: $N"
+SEARCH=`ls $1/search/ | wc -l`
+if [ $SEARCH -gt 0 ]; then
+  echo "# Being searched: $SEARCH"
 fi
 
 N=`ls $1/outlier/ | wc -l`
 outliers_percent=`echo "scale=2; $N * 100 / ($N + $OBJS)" | bc -l`
 if [ $N -gt 0 ]; then
-  echo "# Outliers: $N ($outliers_percent %)"
+  echo "# Hybrids: $N ($outliers_percent %)"
 fi
 
 if [ -e $1/alien ]; then
@@ -37,9 +37,16 @@ if [ -e $1/alien ]; then
   echo "# Aliens: $N"
 fi
 
+if [ -e $1/genospecies_outlier ]; then
+	N=`cat $1/genospecies_outlier | wc -l`
+  echo "# Genospecies outliers: $N"
+  echo "# Objects to be in tree: $(( $OBJS - $N ))"
+fi
+
 N=`ls $1/new/ | wc -l`
 if [ $N -gt 0 ]; then
   echo "# New: $N"
+  echo "# To process: $(( $ADDED + $SEARCH + $N ))"
 fi
 
 
@@ -54,7 +61,7 @@ echo ""
 tail -5 $1/runlog
 
 echo ""
-grep ' V !' $1/hist/makeFeatureTree.* | sed 's|^'$1'/hist/makeFeatureTree\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
+grep ' V !' $1/hist/makeFeatureTree-tree1.* | sed 's|^'$1'/hist/makeFeatureTree-tree1\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
 tail -5 $TMP
 
 

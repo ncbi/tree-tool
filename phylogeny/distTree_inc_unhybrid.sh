@@ -1,28 +1,29 @@
 #!/bin/bash
 source bash_common.sh
-if [ $# -ne 2 ]; then
-  echo "Process #1/hybrid"
+if [ $# -ne 1 ]; then
+  echo "Unhybrid objects"
   echo "#1: incremental distance tree directory"
-  echo "#2: tree version"
   exit 1
 fi
+INC=$1
 
 
-if [ -e $1/unhybrid ]; then
+if [ -e $INC/unhybrid ]; then
   exit 1
 fi
+$INC/db2unhybrid.sh $INC/unhybrid
 
+VER=`cat $INC/version`
 
-$1/db2unhybrid.sh $1/unhybrid
-
-if [ -s $1/unhybrid ]; then
+if [ -s $INC/unhybrid ]; then
   echo ""
-	uniq.sh $1/unhybrid
-  wc -l $1/unhybrid
-  trav $1/unhybrid "mv $1/outlier/%f $1/new/"
-  $1/objects_in_tree.sh $1/unhybrid null
-	mv $1/unhybrid $1/hist/unhybrid.$2
+	uniq.sh $INC/unhybrid
+  wc -l $INC/unhybrid
+  trav $INC/unhybrid "mv $INC/outlier/%f $INC/new/"
+  $INC/objects_in_tree.sh $INC/unhybrid null
+	mv $INC/unhybrid $INC/hist/unhybrid.$VER
 else
-  rm $1/unhybrid
+  rm $INC/unhybrid
 fi
+
 

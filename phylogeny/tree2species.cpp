@@ -35,6 +35,7 @@ struct ThisApplication : Application
 	  const string species_table         = getArg ("species_table");
 	  const string species_under_species = getArg ("species_under_species");
     ASSERT (! input_tree. empty ());
+    ASSERT (species_dist > 0);
 
     
     DistTree tree (input_tree, string (), string (), false);

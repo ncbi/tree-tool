@@ -18,7 +18,6 @@ fi
 GRID_MIN=`cat $1/grid_min`
 QC=""  # -qc  
 RATE=0.01   # PAR
-STOP=0
 
 
 if [ 1 == 1 ]; then   
@@ -64,10 +63,6 @@ INC=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 echo "To add at this step: $INC"
 
 ls $1/new/ > $1/new.list
-
-if [ ! -s $1/new.list ]; then
-  STOP=1
-fi
 
 cp /dev/null $1/dissim.add
 
@@ -150,15 +145,23 @@ else
 fi
 
 
+DISSIM_BOUNDARY=`cat $1/dissim_boundary`
+
 HYBRID=""
 if [ -e $1/hybridness_min ]; then
 	HYBRIDNESS_MIN=`cat $1/hybridness_min`
-	DISSIM_BOUNDARY=`cat $1/dissim_boundary`
 	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+fi
+
+DELETE=""
+if [ -e $1/genospecies_outlier ]; then
+  wc -l $1/genospecies_outlier
+  DELETE="-delete $1/genospecies_outlier"
 fi
 
 # Time: O(n log^4(n)) 
 makeDistTree $QC  -threads 15  -data $1/  -variance lin \
+  $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
@@ -175,11 +178,28 @@ cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
 $1/objects_in_tree.sh $1/leaf.list 1
 rm $1/leaf.list
 
-if [ -e $1/hybridness_min ]; then
-	echo ""
-	distTree_inc_hybrid.sh $1 $VER 
-	distTree_inc_unhybrid.sh $1 $VER 
+if [ -e $1/genospecies_outlier ]; then
+  $1/objects_in_tree.sh $1/genospecies_outlier null
+  trav $1/genospecies_outlier "rm -f $1/outlier/%f"
+  mv $1/genospecies_outlier $1/hist/genospecies_outlier.$VER
 fi
+
+if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
+  tree2species $1/tree  $DISSIM_BOUNDARY  -species_table $1/genospecies_table
+  $1/genospecies2db.sh $1/genospecies_table > $1/genospecies_outlier  
+  mv $1/genospecies_table $1/hist/genospecies_table.$VER
+  if [ -s $1/genospecies_outlier ]; then
+    wc -l $1/genospecies_outlier
+  else
+    rm $1/genospecies_outlier
+  fi
+fi
+
+echo ""
+if [ -e $1/hybridness_min ]; then
+	distTree_inc_hybrid.sh $1 
+fi
+distTree_inc_unhybrid.sh $1 
 
 echo ""
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
@@ -191,6 +211,11 @@ rm $1/dissim_request
 distTree_inc_tree1_quality.sh $1
 
 
-if [ $STOP == 1 ]; then
+set +o errexit
+L=`ls $1/new | head -1`
+set -o errexit
+if [ ! "$L" -a ! -e $1/genospecies_outlier ]; then
   exit 2
 fi
+
+

@@ -56,8 +56,8 @@ echo ""
 echo "Database ..."
 $1/objects_in_tree.sh $2 1
 
-distTree_inc_hybrid.sh $1 1 
-distTree_inc_unhybrid.sh $1 1
+distTree_inc_hybrid.sh $1 
+distTree_inc_unhybrid.sh $1
 
 
 if [ -e $1/phen ]; then

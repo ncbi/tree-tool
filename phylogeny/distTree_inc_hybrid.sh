@@ -1,14 +1,15 @@
 #!/bin/bash
 source bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ]; then
   echo "Process #1/{hybrid,hybrid_parent_pairs}"
   echo "#1: incremental distance tree directory"
-  echo "#2: tree version"
   exit 1
 fi
 
 INC=$1
-VER=$2
+
+
+VER=`cat $INC/version`
 
 
 if [ -e $INC/hybrid_parent_pairs ]; then

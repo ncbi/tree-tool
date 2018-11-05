@@ -5,7 +5,7 @@ if [ $# -ne 4 ]; then
   echo "#1: Output directory"
   echo "#2: grid_min (> 0)"
   echo "#3: hybridness_min (> 1); 0 - no hybrids"
-  echo "#4: dissim_boundary (> 0)"
+  echo "#4: dissim_boundary (> 0 or NAN)"
   exit 1
 fi
 
@@ -38,8 +38,9 @@ echo $GRID_MIN > $INC/GRID_MIN
 cp /dev/null $INC/runlog
 
 
+echo $DISSIM_BOUNDARY > $INC/DISSIM_BOUNDARY
+
 if [ $HYBRIDNESS_MIN != 0 ]; then
-	echo $DISSIM_BOUNDARY > $INC/DISSIM_BOUNDARY
 	echo $HYBRIDNESS_MIN  > $INC/HYBRIDNESS_MIN
 fi
 
@@ -58,6 +59,9 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
  #create_script db2hybrid
 	create_script db2unhybrid
 	create_script hybrid2db
+fi
+if [ $DISSIM_BOUNDARY != "NAN" ]; then
+  create_script genospecies2db
 fi
 
 

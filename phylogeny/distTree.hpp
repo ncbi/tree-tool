@@ -1013,8 +1013,11 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
+	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity, species boundary
+	  //          hybridness_min            <number>                                      Min. hybridness, >1
     //         [alien]                                                                  Objects similar to no other objects
 	  //          outlier/                  <obj>                                         Tree outlier objects
+	  //         [genospecies_outlier]      <obj>                                         Genospecies outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
 	  //          hist/                     {tree,makeDistTree,leaf,outlier,
@@ -1024,15 +1027,13 @@ public:
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
-    //          request2dissim.sh         executable with parameters: request, dissim.add, log
+    //          <Executables>
+    //          db2unhybrid.sh            output: <Obj> list to move to new/
+    //          genospecies2db.sh         input: genospecies_table; output: genospecies_outlier
+    //          hybrid2db.sh              parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1/null
+    //          request2dissim.sh         executable with parameters: request, dissim.add, log
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
-    //         [hybrid identification]
-	  //          hybridness_min            <number>                                      Min. hybridness, >1
-	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity
-    //          hybrid2db.sh              executable with parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
-    //         -db2hybrid.sh              executable with parameter: <Obj>; output: empty or <inter_parent_dissim>\n<parent1>\n<parent2>
-    //          db2unhybrid.sh            executable: output: <Obj> list to move to new/
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
