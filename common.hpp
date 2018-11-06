@@ -2819,7 +2819,8 @@ private:
   	const Application& app;
     const bool flag;
     string requiredGroup;
-  	const bool acronymable;
+  	const char acronym;
+  	  // '\0' <=> no acronym
     const string var;
       // For help
     const string defaultValue;
@@ -2827,23 +2828,23 @@ private:
          const string &name_arg,
          const string &description_arg,
          const string &defaultValue_arg,
-         bool acronymable_arg,
+         char acronym_arg,
          const string &var_arg)
       : Arg (name_arg, description_arg)
       , app (app_arg)
       , flag (false)
-      , acronymable (acronymable_arg)
+      , acronym (acronym_arg)
       , var (var_arg)
       , defaultValue (defaultValue_arg)
       { value = defaultValue; }
     Key (const Application &app_arg,
          const string &name_arg,
          const string &description_arg,
-         bool acronymable_arg)
+         char acronym_arg)
       : Arg (name_arg, description_arg)
       , app (app_arg)
       , flag (true)
-      , acronymable (acronymable_arg)
+      , acronym (acronym_arg)
       {}
   	void qc () const override;
     void saveText (ostream &os) const override;
@@ -2868,20 +2869,21 @@ protected:
     {}
     // To invoke: addKey(), addFlag(), addPositional(), setRequiredGroup()
   // <Command-line parameters> ::= <arg>*
-  // <arg> ::= <positional> | <key> | <flag>
-  // <positional> ::= <string>
-  // <key> ::= -<name> <value> | -<name>=<value>
-  // <flag> ::= -<name>
+  //   <arg> ::= <positional> | <key> | <flag>
+  //   <positional> ::= <string>
+  //   <key> ::= -<name> <value> | -<name>=<value>
+  //   <flag> ::= -<name>
+  // acronym = '\0' <=> no acronym
   void addKey (const string &name, 
                const string &argDescription,
                const string &defaultValue = string (),
-               bool acronymable = false,
+               char acronym = '\0',
                const string &var = string ());
     // [-<name> <defaultValue>]
     // gnu: [--<name> <var>]
   void addFlag (const string &name,
                 const string &argDescription,
-                bool acronymable = false);
+                char acronym = '\0');
     // [-<name>]
   void addPositional (const string &name,
                       const string &argDescription);

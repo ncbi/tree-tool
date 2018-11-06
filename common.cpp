@@ -1778,7 +1778,7 @@ void Application::Key::qc () const
   Arg::qc ();
   
   IMPLY (app. gnu, name. size () > 1);
-  IMPLY (acronymable, app. gnu);
+  IMPLY (acronym, app. gnu);
   ASSERT (isUpper (var));
   ASSERT (! var. empty () == (app. gnu && ! flag));
   IMPLY (! requiredGroup. empty (), defaultValue. empty ());
@@ -1816,32 +1816,33 @@ void Application::Key::saveText (ostream &os) const
 void Application::addKey (const string &name, 
                           const string &argDescription,
                           const string &defaultValue,
-                          bool acronymable,
+                          char acronym,
                           const string &var)
 {
   ASSERT (! name. empty ());
   ASSERT (! contains (name2arg, name));
-  if (acronymable && contains (char2arg, name [0]))
-  	throw logic_error ("Duplicate argument " + strQuote (string (1, name [0])));
-  keys << Key (*this, name, argDescription, defaultValue, acronymable, var);
+  if (acronym && contains (char2arg, acronym))
+  	throw logic_error ("Duplicate option " + strQuote (string (1, acronym)));
+  keys << Key (*this, name, argDescription, defaultValue, acronym, var);
   name2arg [name] = & keys. back ();
-  if (acronymable)
-  	char2arg [name [0]] = & keys. back ();
+  if (acronym)
+  	char2arg [acronym] = & keys. back ();
 }
 
 
 
 void Application::addFlag (const string &name,
                            const string &argDescription,
-                           bool acronymable)
+                           char acronym)
 {
   ASSERT (! name. empty ());
   ASSERT (! contains (name2arg, name));
-  IMPLY (acronymable, ! contains (char2arg, name [0]));
-  keys << Key (*this, name, argDescription, acronymable);
+  if (acronym && contains (char2arg, acronym))
+  	throw logic_error ("Duplicate option " + strQuote (string (1, acronym)));
+  keys << Key (*this, name, argDescription, acronym);
   name2arg [name] = & keys. back ();
-  if (acronymable)
-  	char2arg [name [0]] = & keys. back ();
+  if (acronym)
+  	char2arg [acronym] = & keys. back ();
 }
 
 
@@ -2011,15 +2012,15 @@ string Application::getHelp () const
 	  instr += "\n\nOPTIONAL PARAMETERS";
 	  for (const Key& key : keys)
 	  {
-	  	string acronym;
-	  	if (key. acronymable)
+	  	string acronymS;
+	  	if (key. acronym)
 	  	{
-				acronym = string ("-") + key. name [0];
+				acronymS = string ("-") + key. acronym;
 				if (! key. flag)
-					acronym += " " + key. var;
-				acronym += ", ";
+					acronymS += " " + key. var;
+				acronymS += ", ";
 			}
-	    instr += "\n" + acronym + key. str () + par + key. description;
+	    instr += "\n" + acronymS + key. str () + par + key. description;
 	    if (gnu && ! key. defaultValue. empty ())
 	    	instr += par + "Default: " + key. defaultValue;
 	  }
