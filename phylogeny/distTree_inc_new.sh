@@ -121,7 +121,9 @@ while [ 1 == 1 ]; do
       exit 1
     fi
 	  # Try to fix grid problems
-    trav $1/log "distTree_inc_unsearch.sh $1 %f"
+	  ls $1/log | grep -v '\.' > $1/log.list
+    trav $1/log.list "distTree_inc_unsearch.sh $1 %f"
+    rm $1/log.list
     trav $1/log "echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
     head -21 $1/log.out # PAR
     rm $1/log.out
@@ -162,13 +164,14 @@ fi
 # Time: O(n log^4(n)) 
 makeDistTree $QC  -threads 15  -data $1/  -variance lin \
   $DELETE \
-  -optimize  -skip_len  -subgraph_iter_max 2 \
+  -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
   $HYBRID \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
   # -threads 20  # bad_alloc 
+  # -subgraph_iter_max 2
 mv $1/leaf $1/hist/leaf.$VER
 cp /dev/null $1/leaf
 mv $1/tree.new $1/tree

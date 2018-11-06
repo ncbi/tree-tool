@@ -64,6 +64,10 @@ echo ""
 grep ' V !' $1/hist/makeFeatureTree-tree1.* | sed 's|^'$1'/hist/makeFeatureTree-tree1\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
 tail -5 $TMP
 
+echo ""
+wc -l inc/hist/genospecies_outlier.* | grep -v total |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+tail -5 $TMP
+
 
 rm -f $TMP*
 
