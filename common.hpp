@@ -731,6 +731,12 @@ bool isUpper (const string &s);
 
 bool isLower (const string &s);
 
+inline string strUpper1 (const string &s)
+  { if (s. empty ())
+      return s;
+    return toUpper (s [0]) + s. substr (1);
+  }
+
 inline bool charInSet (char c,
 		                   const string &charSet)
   { return charSet. find (c) != string::npos; }
