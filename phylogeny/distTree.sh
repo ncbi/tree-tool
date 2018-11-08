@@ -1,37 +1,33 @@
-#!/bin/csh -f
-
-if ($# != 2) then
+#!/bin/bash
+source bash_common.sh
+if [ $# -ne 2 ]; then
   echo "Make a distance tree"
   echo "Output: #1.tree, #1.makeDistTree"
   echo "#1: Input .dm file without .dm"
   echo "#2: Dissimilarity attribute in #1"
   exit 1
-endif
+fi
 
 
 # PAR
-set mds      = 0  # 1
-set variance = linExp # lin
-set sparse   = ""  # -sparse  
-set whole    = ""  # -whole  
+MDS=0  # 1
+VARIANCE=linExp # lin
+SPARSE=""  # -sparse  
+WHOLE=""  # -whole  
 
 
-set input_tree = ""
-if ($mds) then
+input_tree=""
+if [ $MDS == 1 ]; then
   echo "mdsTree.sh ..."
   mdsTree.sh $1 $2 2 >& /dev/null
-  if ($?) exit 1
-  set input_tree = "-input_tree $1.dir/"
-endif
+  input_tree="-input_tree $1.dir/"
+fi
 
-makeDistTree  $input_tree  -data $1  -dissim $2  -variance $variance  $sparse  -optimize  $whole  -output_tree $1.tree  
-if ($?) exit 1
-if ($mds) then
+makeDistTree  $input_tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE  -optimize  $WHOLE  -output_tree $1.tree  
+if [ $MDS == 1 ]; then
   rm -r $1.dir/
-  if ($?) exit 1
-endif
+fi
 
 echo ""
-makeDistTree  -input_tree $1.tree  -data $1  -dissim $2  -variance $variance  $sparse > $1.makeDistTree
-if ($?) exit 1
+makeDistTree  -input_tree $1.tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE > $1.makeDistTree
 

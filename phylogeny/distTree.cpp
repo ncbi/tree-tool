@@ -651,14 +651,14 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
 	  ASSERT (! descendants. empty ());
 	  {
 		  size_t added = 0;
-		  const VectorPtr<Leaf>* otherLeaves = nullptr;
+		  const VectorPtr<Leaf>* otherLeaves = nullptr;  // having a dissimilarity with *this where LCA = ancestor
 		  if (subtractDissims)
 		  	if (const Steiner* st = ancestor->asSteiner ())
 		  	  otherLeaves = findPtr (lca2leaves, st);
 	  	for (const DTNode* descendant : descendants)
 	  	{
-	  		if (otherLeaves && otherLeaves->size () + added >= descendants. size ())
-	  			break;
+	  		if (otherLeaves && otherLeaves->size () + added >= descendants. size ())  // maybe not through the right children
+	  			break;  // removing this statement imrpoves criterion and quality! ??
 	  		const Leaf* repr = descendant->getReprLeaf ();
 	  		ASSERT (repr);
 	  		if (   ! otherLeaves 
