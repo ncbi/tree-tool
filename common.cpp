@@ -1813,6 +1813,21 @@ void Application::Key::saveText (ostream &os) const
 
 
 
+string Application::Key::getShortHelp () const
+{
+	string acronymS;
+	if (acronym)
+	{
+		acronymS = string ("-") + acronym;
+		if (! flag)
+			acronymS += " " + var;
+		acronymS += ", ";
+	}
+  return acronymS + str ();
+}
+
+
+
 void Application::addKey (const string &name, 
                           const string &argDescription,
                           const string &defaultValue,
@@ -1949,6 +1964,19 @@ bool Application::getFlag (const string &name) const
 
 
 
+string Application::key2shortHelp (const string &name) const
+{
+  if (! contains (name2arg, name))  
+    throw logic_error ("Parameter " + strQuote (name) + " is not found");
+  const Arg* arg = name2arg. at (name);
+  ASSERT (arg);
+  if (const Key* key = arg->asKey ())
+    return key->getShortHelp ();
+  throw logic_error ("Parameter " + strQuote (name) + " is not a key");
+}
+
+
+
 string Application::getInstruction () const
 {
   string instr (description);
@@ -2012,15 +2040,7 @@ string Application::getHelp () const
 	  instr += "\n\nOPTIONAL PARAMETERS";
 	  for (const Key& key : keys)
 	  {
-	  	string acronymS;
-	  	if (key. acronym)
-	  	{
-				acronymS = string ("-") + key. acronym;
-				if (! key. flag)
-					acronymS += " " + key. var;
-				acronymS += ", ";
-			}
-	    instr += "\n" + acronymS + key. str () + par + key. description;
+	    instr += "\n" + key. getShortHelp () + par + key. description;
 	    if (gnu && ! key. defaultValue. empty ())
 	    	instr += par + "Default: " + key. defaultValue;
 	  }

@@ -2848,6 +2848,7 @@ private:
       {}
   	void qc () const override;
     void saveText (ostream &os) const override;
+    string getShortHelp () const;
     const Key* asKey () const final
       { return this; }
   };
@@ -2929,6 +2930,7 @@ protected:
     }
   bool getFlag (const string &name) const;
     // Input: keys, where Key::flag = true
+  string key2shortHelp (const string &name) const;
   string getProgramDirName () const
     { return getDirName (programArgs. front ()); }
 private:
