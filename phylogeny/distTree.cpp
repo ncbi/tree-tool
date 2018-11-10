@@ -2428,6 +2428,9 @@ struct DissimLine
 
 
 
+namespace
+{
+
 void processDissimLine (size_t from,
                         size_t to,
                         Notype /*&res*/,
@@ -2476,6 +2479,8 @@ struct OptimizeSmallSubgraph
 void processOptimizeSmallSubgraph (OptimizeSmallSubgraph &oss)
 {
 	oss. process ();
+}
+
 }
 
 
@@ -5183,49 +5188,75 @@ void DistTree::optimize3 ()
 
 
 
+namespace
+{
+  
+void reinsert_thread (size_t from, 
+                      size_t to, 
+                      VectorPtr<Change> &changes, 
+                      const DistTree &tree,
+                      const VectorPtr<DTNode> &nodeVec
+                     )
+{ 
+  
+  ASSERT (from <= to);
+  ASSERT (changes. empty ());
+  ASSERT (to <= nodeVec. size ());
+  
+  const size_t q_max = 10 * tree. getSparseDissims_size ();  // PAR
+  Tree::LcaBuffer buf;
+  FOR_START (size_t, i, from, to)
+  {
+    const DTNode* fromNode = nodeVec [i];
+    Real nodeAbsCriterion_old = NAN;
+    const NewLeaf nl (fromNode, q_max, nodeAbsCriterion_old);
+    ASSERT (nodeAbsCriterion_old >= 0);
+    nl. qc ();
+    const DTNode* toNode = nl. location. anchor;
+    ASSERT (toNode);
+    const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
+    if (   fromNode->getParent () == toNode
+        || fromNode->getParent () == toNode->getParent ()
+        || ! positive (improvement)
+       )
+      continue;
+ 	  if (! Change::valid (fromNode, toNode))
+ 	    continue;
+ 	  const DistTree::TreeNode* lca = nullptr;
+ 	  const size_t arcDist = tree. getPath (fromNode, toNode, nullptr, lca, buf). size ();
+ 	  ASSERT (arcDist > 1);
+ 	  if (verbose ())
+      cout << fromNode->getLcaName () << " -> " << toNode->getLcaName () << ' ' << improvement << ' ' << arcDist << endl;
+    if (arcDist < areaDiameter_std)
+      continue;
+ 	  auto change = new Change (fromNode, toNode);
+ 	  change->improvement = improvement;
+ 	  changes << change;
+  }
+}
+            
+}
+
+
+
 bool DistTree::optimizeReinsert ()
 {
-	// Threads ??
-	VectorOwn<Change> changes;  changes. reserve (256);  // PAR
-	{
-    const size_t nodesSize = nodes. size ();
-    const size_t q_max = 10 * getSparseDissims_size ();  // PAR
-    Progress prog (nodesSize);
-	  Tree::LcaBuffer buf;
-    for (const DiGraph::Node* node : nodes)
-    {
-      const DTNode* from = static_cast <const DTNode*> (node);
-      if (from->inDiscernible ())
-        continue;
-      if (from == root)
-        continue;
-      prog (toString (changes. size ()) + " " + toString (from->pathObjNums. size ()));
-      Real nodeAbsCriterion_old = NAN;
-      const NewLeaf nl (from, q_max, nodeAbsCriterion_old);
-      ASSERT (nodeAbsCriterion_old >= 0);
-      nl. qc ();
-      const DTNode* to = nl. location. anchor;
-      ASSERT (to);
-      const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
-      if (   from->getParent () == to
-          || from->getParent () == to->getParent ()
-          || ! positive (improvement)
-         )
-        continue;
-   	  if (! Change::valid (from, to))
-   	    continue;
-   	  const TreeNode* lca = nullptr;
-   	  const size_t arcDist = getPath (from, to, nullptr, lca, buf). size ();
-   	  ASSERT (arcDist > 1);
-   	  if (verbose ())
-        cout << from->getLcaName () << " -> " << to->getLcaName () << ' ' << improvement << ' ' << arcDist << endl;
-      if (arcDist < areaDiameter_std)
-        continue;
-   	  auto change = new Change (from, to);
-   	  change->improvement = improvement;
-   	  changes << change;
-    }
+  VectorPtr<DTNode> nodeVec;  nodeVec. reserve (nodes. size ());
+  for (const DiGraph::Node* node_ : nodes)
+  {
+    const DTNode* node = static_cast <const DTNode*> (node_);
+    if (   ! node->inDiscernible ()
+        && node != root
+       )
+      nodeVec << node;
   }
+
+  vector<VectorPtr<Change>> results;
+  arrayThreads (reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
+
+	VectorOwn<Change> changes;  changes. reserve (256);  // PAR	
+  for (const VectorPtr<Change>& threadChanges : results)
+    changes << threadChanges;
 
   return applyChanges (changes, true);
 }
@@ -6181,7 +6212,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   	Leaf* leaf = const_cast <Leaf*> (it. second);
   	ASSERT (leaf);
   	leaf->badNeighbors. clear ();
-  	leaf->badNeighbors. reserve (name2leaf. size () / 100 + 1);  // PAR
+  	leaf->badNeighbors. reserve (name2leaf. size () / 100);  // PAR
   	leaf->hybridness = hybridness_min_init;  
   	leaf->hybridParentsDissimObjNum = dissims_max;
   }
