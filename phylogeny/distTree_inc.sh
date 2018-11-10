@@ -15,7 +15,8 @@ if [ 1 == 1 ]; then
 # Time: O(n log^5(n))
 while [ 1 == 1 ]; do
   if [ -e $1/stop ]; then
-    echo "Stopped"
+    echo ""
+    echo '*** STOPPED ***'
     exit 2
   fi
   
@@ -43,6 +44,7 @@ echo "# Complete optimization  `date`  `date +%s`" >> $1/runlog
 VER=`cat $1/version`
 # Time: O(n log(n)) 
 cp $1/tree $1/hist/tree.$VER
+gzip $1/hist/tree.$VER
 #
 VER=$(( $VER + 1 ))
 echo $VER > $1/version
@@ -72,7 +74,7 @@ if [ -e $1/phen ]; then
 	echo "New root: $new_root"
 	echo ""
 	echo ""
-	makeDistTree  -data $1/  -reroot_at "$new_root"  -output_tree tree.$DATE > /dev/null
+	makeDistTree  -data $1/  -variance lin  -reroot_at "$new_root"  -output_tree tree.$DATE > /dev/null
 	echo ""
 	tree_quality_phen.sh tree.$DATE $1/phen > $1/hist/tree_quality_phen.$VER-rooted
 	cat $1/hist/tree_quality_phen.$VER-rooted

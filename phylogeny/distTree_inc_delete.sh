@@ -12,6 +12,7 @@ fi
 VER=`cat $1/version`
 
 cp $1/tree $1/hist/tree.$VER
+gzip $1/hist/tree.$VER
 
 VER=$(( $VER + 1 ))
 echo $VER > $1/version

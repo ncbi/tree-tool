@@ -9,7 +9,7 @@ fi
 
 if [ -e $1/phen ]; then
   echo ""
-  echo "Quality ..."
+  echo "Quality of the initial tree ..."
   VER=`cat $1/version`
 	tree2obj.sh $1/hist/tree.1 > $1/_init.list
 	tree2obj.sh $1/tree > $1/_cur.list
