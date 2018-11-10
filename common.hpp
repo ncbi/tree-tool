@@ -1010,7 +1010,7 @@ template <typename Func, typename Res, typename... Args>
                      size_t i_max,
                      vector<Res> &results,
                      Args&&... args)
-  // Input: func (size_t from, size_t to, Res& res, Args...)
+  // Input: void func (size_t from, size_t to, Res& res, Args...)
   // Optimial thread_num minimizes (Time_SingleCPU/thread_num + Time_openCloseThread * (thread_num - 1)), which is sqrt(Time_SingleCPU/Time_openCloseThread)
   {
   	ASSERT (threads_max >= 1);
