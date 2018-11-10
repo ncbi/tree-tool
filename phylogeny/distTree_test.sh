@@ -77,7 +77,7 @@ makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/de
 echo ""
 echo "Saccharomyces hybrids ..."
 makeDistTree -qc  -threads 3  -data data/Saccharomyces  -dissim cons  \
-  -optimize  -subgraph_iter_max 2 \
+  -optimize  -subgraph_iter_max 2  -reinsert \
   -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -delete_all_hybrids  -dissim_boundary 0.675 > /dev/null
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
 rm Saccharomyces.hybrid
