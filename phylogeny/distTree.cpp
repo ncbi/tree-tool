@@ -598,7 +598,8 @@ Vector<uint> DTNode::getLcaObjNums ()
 
 
 VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
-                                              bool subtractDissims) const
+                                              bool subtractDissims,
+                                              bool refreshDissims) const
 {
   IMPLY (depth_max, depth_max >= sparsingDepth);
   IMPLY (subtractDissims, asLeaf ());
@@ -657,8 +658,9 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
 		  	  otherLeaves = findPtr (lca2leaves, st);
 	  	for (const DTNode* descendant : descendants)
 	  	{
-	  		if (otherLeaves && otherLeaves->size () + added >= descendants. size ())  // maybe not through the right children
-	  			break;  // removing this statement imrpoves criterion and quality! ??
+	  	  if (! refreshDissims)
+  	  		if (otherLeaves && otherLeaves->size () + added >= descendants. size ())  // maybe not through the right children
+  	  			break;  
 	  		const Leaf* repr = descendant->getReprLeaf ();
 	  		ASSERT (repr);
 	  		if (   ! otherLeaves 
@@ -3764,7 +3766,7 @@ void DistTree::dissimDs2dissims (bool sparse)
   if (sparse)
   {
     ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
-    selectedPairs = getMissingLeafPairs_ancestors (0);
+    selectedPairs = getMissingLeafPairs_ancestors (0, false);
   }
 
   // dissims[], mult_sum, dissim2_sum
@@ -6152,6 +6154,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 
 	Real outlier_min = NAN;
 	{
+	  // dissim.ssize() = 35M => 80 sec. 
 		Dataset ds;
 	  ds. objs. reserve (dissims. size ());  // PAR
 	  auto criterionAttr = new PositiveAttr1 ("dissim_error", ds);  
@@ -6178,6 +6181,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   	Leaf* leaf = const_cast <Leaf*> (it. second);
   	ASSERT (leaf);
   	leaf->badNeighbors. clear ();
+  	leaf->badNeighbors. reserve (name2leaf. size () / 100 + 1);  // PAR
   	leaf->hybridness = hybridness_min_init;  
   	leaf->hybridParentsDissimObjNum = dissims_max;
   }
@@ -6191,7 +6195,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     {
     	const_cast <Leaf*> (dissim. leaf1) -> badNeighbors << Neighbor (dissim. leaf2, dissim. target);
     	const_cast <Leaf*> (dissim. leaf2) -> badNeighbors << Neighbor (dissim. leaf1, dissim. target);
-    }  	  
+    }
   for (const auto& it : name2leaf)
   {
   	Leaf* leaf = const_cast <Leaf*> (it. second);
@@ -6200,6 +6204,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   }
 
   // Leaf::{hybridness,hybridParentsDissimObjNum}
+  // dissims.size() = 35M => 253 sec.  ??
   FFOR (size_t, objNum, dissims. size ())
 	{
 		const Dissim& dissim = dissims [objNum];
@@ -6278,47 +6283,49 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   if (dissimRequests)  
   {  
 	  Vector<RequestCandidate> requests;  requests. reserve (name2leaf. size () / 10); // PAR
-	  LcaBuffer buf;
-	  for (const auto& it : name2leaf)
 	  {
-	  	const Leaf* child = it. second;
-	  	if (! child->graph)
-	  		continue;
-	  	if (child->badNeighbors. size () <= 1)
-	  		continue;
-	  	if (hybrids. contains (child))
-	  		continue;
-	  	RequestCandidate req;
-	  	Real hybridness_tree = hybridness_min;
-	  	for (const Neighbor& badNeighbor1 : child->badNeighbors)
-		  	for (const Neighbor& badNeighbor2 : child->badNeighbors)
-		  	{
-		  		if (& badNeighbor1 == & badNeighbor2)
-		  			break;
-			    const TreeNode* lca_ = nullptr;
-			    const VectorPtr<TreeNode>& path = getPath ( badNeighbor1. leaf
-																							      , badNeighbor2. leaf
-																	                  , nullptr
-																	                  , lca_
-																	                  , buf
-																	                  );
-			    ASSERT (! path. empty ());
-			    const Real hybridness = path2prediction (path) / (badNeighbor1. target + badNeighbor2. target);
-			    if (maximize (hybridness_tree, hybridness))
-			    {
-			    	req. leaf1 = badNeighbor1. leaf;
-			    	req. leaf2 = badNeighbor2. leaf;
-			    }
-		    }
-		  if (req. leaf1)
-		  	requests << req;
-	  }
+      // dissims.size() = 35M => 479 sec.  ??
+  	  LcaBuffer buf;
+  	  for (const auto& it : name2leaf)
+  	  {
+  	  	const Leaf* child = it. second;
+  	  	if (! child->graph)
+  	  		continue;
+  	  	if (child->badNeighbors. size () <= 1)
+  	  		continue;
+  	  	if (hybrids. contains (child))
+  	  		continue;
+  	  	RequestCandidate req;
+  	  	Real hybridness_tree = hybridness_min;
+  	  	for (const Neighbor& badNeighbor1 : child->badNeighbors)
+  		  	for (const Neighbor& badNeighbor2 : child->badNeighbors)
+  		  	{
+  		  		if (& badNeighbor1 == & badNeighbor2)
+  		  			break;
+  			    const TreeNode* lca_ = nullptr;
+  			    const VectorPtr<TreeNode>& path = getPath ( badNeighbor1. leaf
+  																							      , badNeighbor2. leaf
+  																	                  , nullptr
+  																	                  , lca_
+  																	                  , buf
+  																	                  );
+  			    ASSERT (! path. empty ());
+  			    const Real hybridness = path2prediction (path) / (badNeighbor1. target + badNeighbor2. target);
+  			    if (maximize (hybridness_tree, hybridness))
+  			    {
+  			    	req. leaf1 = badNeighbor1. leaf;
+  			    	req. leaf2 = badNeighbor2. leaf;
+  			    }
+  		    }
+  		  if (req. leaf1)
+  		  	requests << req;
+  	  }
+  	}
 	  if (verbose ())
 	    cout << "# Requests: " << requests. size () << endl;  
 	  for (RequestCandidate& req : requests)
 	  	if (req. leaf1->name > req. leaf2->name)
 	  		swap (req. leaf1, req. leaf2);
-	  // Instead: search in dissims ??
 	  requests. sort ();
 	  requests. uniq ();
 	  for (const Dissim& dissim : dissims)  	
@@ -6334,6 +6341,14 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	}
     
   
+  for (const auto& it : name2leaf)
+  {
+  	Leaf* leaf = const_cast <Leaf*> (it. second);
+  	ASSERT (leaf);
+  	leaf->badNeighbors. wipe ();
+  }
+
+
   return triangleParentPairs;
 }
 
@@ -6542,7 +6557,8 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
   
 
 
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max) const
+Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max,
+                                                                   bool refreshDissims) const
 {
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
   {
@@ -6554,7 +6570,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
       ASSERT (leaf);
       if (! leaf->graph)
         continue;
-      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (depth_max, true));
+      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (depth_max, true, refreshDissims));
       for (const Leaf* match : matches)
     	  if (leaf->getDiscernible () != match->getDiscernible ())
     	  {
@@ -7173,7 +7189,7 @@ void NewLeaf::process (bool init,
 
 void NewLeaf::saveRequest (const string &requestFName) const
 {	
-  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth, false));
+  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth, false, false));
   requested. filterValue ([this] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
   
   OFStream f (requestFName);

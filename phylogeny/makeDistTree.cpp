@@ -78,6 +78,7 @@ struct ThisApplication : Application
 	//addKey ("pair_residuals", "Output " + dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns <prediction> <absCriterion> to the file <output_dissim>");
 	}
@@ -200,6 +201,7 @@ struct ThisApplication : Application
 	//const string pair_residuals      = getArg ("pair_residuals");
 		const string arc_length_stat     = getArg ("arc_length_stat");
 		const string dissim_request      = getArg ("dissim_request");
+		const bool   refresh_dissim      = getFlag ("refresh_dissim");
 		const string output_dissim       = getArg ("output_dissim");
 		const bool   output_dist_etc     = getFlag ("output_dist_etc");
 		
@@ -241,6 +243,7 @@ struct ThisApplication : Application
     if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())
     	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
     IMPLY (! leaf_errors. empty (), ! noqual);
+    IMPLY (refresh_dissim, ! dissim_request. empty ());
 
 
     DistTree::printParam (cout);
@@ -612,7 +615,7 @@ struct ThisApplication : Application
     if (! dissim_request. empty ())
     {
       cout << endl << "Finding missing leaf pairs ..." << endl;      
-      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth));
+      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, refresh_dissim));
       cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
 
     #if 0

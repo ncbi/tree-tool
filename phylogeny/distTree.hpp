@@ -396,10 +396,12 @@ private:
     // Return: objNum's s.t. getDistTree().dissims[objNum].lca = this
     // Invokes: DTNode::pathObjNums.sort()
   VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max,
-                                        bool subtractDissims) const;
+                                        bool subtractDissims,
+                                        bool refreshDissims) const;
     // Return: size = O(log(n)); sort()'ed, uniq()'ed
     //         getDistTree().reroot(true) reduces size()
     // Input: depth_max: 0 <=> no restriction
+    //        refreshDissims => improves criterion and quality; number of new dissims = ~10% of dissims
     // Time: O(log^2(n)) 
 };
 
@@ -493,6 +495,7 @@ public:
 
   // Hybrid data
 private:
+  // For DistTree::findHybrids()
 	friend Triangle;
   Vector<Neighbor> badNeighbors;
     // Neighbor::leaf is unique
@@ -1360,7 +1363,8 @@ public:
     
   // Missing dissimilarities
   // Return: not in dissims; sort()'ed, uniq()'ed
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max) const;
+  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max,
+                                                           bool refreshDissims) const;
     // Return: almost a superset of getMissingLeafPairs_subgraphs()
     // Invokes: DTNode::getSparseLeafMatches()
     // Time: ~ O(n log^2(n))
