@@ -71,6 +71,11 @@ echo "prot-identical_comm: subgraphs, threads ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -threads 3 > /dev/null
 
 echo ""
+echo "prot-identical_comm: subgraphs, -variance sqr ..."
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -threads 3  -variance sqr | grep -v '^CHRON: ' > prot-identical_comm-sqr.distTree
+diff prot-identical_comm-sqr.distTree data/prot-identical_comm-sqr.distTree
+
+echo ""
 echo "prot-identical_comm: subgraphs, delete ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
 

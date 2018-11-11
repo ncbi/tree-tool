@@ -47,6 +47,7 @@ constexpr size_t dissim_progress = 1e5;
 // --> DistTree ??
 // Dissimilarity variance
 enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
+                  , varianceType_sqr     
                   , varianceType_exp     // Dissimilarity = -ln(P), var P = const
                   , varianceType_linExp  // Dissimilarity = -ln(P), var P = p*(1-p)
                   };
@@ -63,7 +64,8 @@ inline VarianceType str2varianceType (const string &s)
 // Input: varianceType
 inline Real dissim2mult (Real dissim)
   { switch (varianceType)
-    { case varianceType_lin:    return positive (dissim) ? 1 / dissim : 0;   
+    { case varianceType_lin:    return positive (dissim) ? 1 / dissim : 0; 
+      case varianceType_sqr:    return positive (dissim) ? 1 / sqr (dissim) : 0; 
       case varianceType_exp:    return exp (- 2 * max (dissim, 0.0)); 
       case varianceType_linExp: return positive (dissim) ? 1 / (exp (dissim) - 1) : 0; 
     }  
@@ -74,6 +76,7 @@ inline Real dissim2mult (Real dissim)
 inline Real dissim_max ()
   { switch (varianceType)
     { case varianceType_lin:    return 1 / epsilon;
+      case varianceType_sqr:    return 1 / sqrt (epsilon);
       case varianceType_exp:    return - 0.5 * log (epsilon);
       case varianceType_linExp: return log (1 / epsilon + 1);
     }  
@@ -1239,7 +1242,7 @@ public:
   bool optimizeReinsert ();
     // Re-inserts subtrees with small DTNode::pathObjNums.size()
 	  // Return: false <=> finished
-    // Invokes: NewLeaf(DTNode*), Change, applyChanges()
+    // Invokes: NewLeaf(DTNode*), Change, applyChanges(), Threads
     // Time: O(n log^3(n))
 	void optimizeWholeIter (uint iter_max,
 	                        const string &output_tree);

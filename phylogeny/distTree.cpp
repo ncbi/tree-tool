@@ -22,7 +22,7 @@ Chronometer chron_subgraph2tree ("subgraph2tree");
 
 
 // VarianceType
-const StringVector varianceTypeNames {"lin", "exp", "linExp"};
+const StringVector varianceTypeNames {"lin", "sqr", "exp", "linExp"};
 VarianceType varianceType = varianceType_linExp;
 
 Real dissim_coeff = 1;
@@ -5252,6 +5252,7 @@ bool DistTree::optimizeReinsert ()
   }
 
   vector<VectorPtr<Change>> results;
+  // First node's are slower => separate invocation of reinsert_thread ??
   arrayThreads (reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
 
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR	
@@ -5606,7 +5607,7 @@ void DistTree::optimizeLargeSubgraphs ()
 			VectorOwn<Image> images;  images. reserve (threads_max);
 		  Image mainImage (*this);  
 			{
-				Threads th (boundary. size ());
+				Threads th (boundary. size ());  // bad_alloc() => decrease threads_max, redo ??
 				VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
 				for (const Steiner* cut : boundary)
 				{
