@@ -56,8 +56,20 @@ string programName;
 ostream* logPtr = nullptr;
 
 bool qc_on = false;
-size_t threads_max = 1;
 ulong seed_global = 1;
+
+
+// thread
+size_t threads_max = 1;
+
+inline thread::id get_thread_id ()
+  { return this_thread::get_id (); }
+
+thread::id main_thread_id = get_thread_id ();
+  
+bool isMainThread ()
+  { return get_thread_id () == main_thread_id; }
+
 
 bool Chronometer::enabled = false;
 

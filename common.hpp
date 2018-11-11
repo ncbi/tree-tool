@@ -104,10 +104,13 @@ extern string programName;
 extern ostream* logPtr;
 
 extern bool qc_on;
-extern size_t threads_max;
-  // >= 1
 extern ulong seed_global;
   // >= 1
+
+// thread
+extern size_t threads_max;
+  // >= 1
+bool isMainThread ();
 
 
 void errorExit (const char* msg,
@@ -1059,7 +1062,7 @@ public:
  ~Verbose ();
  
   static bool enabled ()
-    { return Threads::empty (); }
+    { return isMainThread () /*Threads::empty ()*/; }
 };
 
 struct Unverbose 
@@ -2064,6 +2067,8 @@ private:
 	  		cerr << " / " << n_max;
 	  	if (! step. empty ())
 	  		cerr << ' ' << step;
+	  	if (! Threads::empty ())
+	  	  cerr << " (main thread)";
 	  	cerr << ' ';
 	  }
 public:
