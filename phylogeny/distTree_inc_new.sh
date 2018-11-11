@@ -20,7 +20,7 @@ QC=""  # -qc
 RATE=0.01   # PAR
 
 
-if [ 1 == 1 ]; then   
+if [ 1 == 1 ]; then  
 date
 echo ""
 top -b -n 1 | head -15
@@ -48,9 +48,13 @@ VER_OLD=`cat $1/version`
 
 # Time: O(n log(n)) 
 cp $1/tree $1/hist/tree.$VER_OLD
+if [ $VER_OLD != 1 ]; then
+  gzip $1/hist/tree.$VER_OLD
+fi
 
 VER=$(( $VER_OLD + 1 ))
 echo $VER > $1/version
+echo "version: $VER"
 
 
 echo "new/ -> search/ ..."
@@ -132,7 +136,7 @@ while [ 1 == 1 ]; do
   rm -r $1/log/
       
   echo "Processing new objects ..."
-  distTree_new $QC $1/  -variance lin
+  distTree_new $QC $1/  -variance sqr
 done
 
 
@@ -145,6 +149,7 @@ rm $1/dissim.add
 else
   VER=`cat $1/version`
 fi
+
 
 
 DISSIM_BOUNDARY=`cat $1/dissim_boundary`
@@ -162,7 +167,7 @@ if [ -e $1/genospecies_outlier ]; then
 fi
 
 # Time: O(n log^4(n)) 
-makeDistTree $QC  -threads 15  -data $1/  -variance lin \
+makeDistTree $QC  -threads 15  -data $1/  -variance sqr \
   $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
@@ -170,7 +175,6 @@ makeDistTree $QC  -threads 15  -data $1/  -variance lin \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
-  # -threads 20  # bad_alloc 
   # -subgraph_iter_max 2
 mv $1/leaf $1/hist/leaf.$VER
 cp /dev/null $1/leaf
@@ -190,7 +194,7 @@ fi
 if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
   tree2species $1/tree  $DISSIM_BOUNDARY  -species_table $1/genospecies_table
   $1/genospecies2db.sh $1/genospecies_table > $1/genospecies_outlier  
-  mv $1/genospecies_table $1/hist/genospecies_table.$VER
+  rm $1/genospecies_table 
   if [ -s $1/genospecies_outlier ]; then
     wc -l $1/genospecies_outlier
   else
