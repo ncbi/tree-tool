@@ -20,6 +20,12 @@ while [ 1 == 1 ]; do
     exit 2
   fi
   
+  if [ -e $1/skip ]; then
+    echo ""
+    echo '*** SKIPPED ***'
+    break
+  fi
+  
   ADD=`ls $1/new/ | wc -l`
   echo "# Add: $ADD  `date`  `date +%s`" >> $1/runlog  
   echo ""
@@ -49,7 +55,7 @@ gzip $1/hist/tree.$VER
 VER=$(( $VER + 1 ))
 echo $VER > $1/version
 # Time: O(n log^5(n))
-makeDistTree  -threads 15  -data $1/  -variance lin \
+makeDistTree  -threads 15  -data $1/  -variance sqr \
   -optimize  -skip_len  -reinsert  \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 mv $1/tree.new $1/tree
@@ -74,7 +80,7 @@ if [ -e $1/phen ]; then
 	echo "New root: $new_root"
 	echo ""
 	echo ""
-	makeDistTree  -data $1/  -variance lin  -reroot_at "$new_root"  -output_tree tree.$DATE > /dev/null
+	makeDistTree  -data $1/  -variance sqr  -reroot_at "$new_root"  -output_tree tree.$DATE > /dev/null
 	echo ""
 	tree_quality_phen.sh tree.$DATE $1/phen > $1/hist/tree_quality_phen.$VER-rooted
 	cat $1/hist/tree_quality_phen.$VER-rooted
