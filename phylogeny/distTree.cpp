@@ -2437,8 +2437,12 @@ void processDissimLine (size_t from,
                         Vector<DissimLine> &dls,
                         const map<string/*Leaf::name*/,const Leaf*> &name2leaf)
 {
+  Progress prog (to - from, 1000);  // PAR
 	FOR_START (size_t, i, from, to)
+	{
+	  prog ();
 		dls [i]. process (name2leaf);
+	}
 }
 
 
@@ -5205,8 +5209,10 @@ void reinsert_thread (size_t from,
   
   const size_t q_max = 10 * tree. getSparseDissims_size ();  // PAR
   Tree::LcaBuffer buf;
+  Progress prog (to - from);
   FOR_START (size_t, i, from, to)
   {
+    prog ();
     const DTNode* fromNode = nodeVec [i];
     Real nodeAbsCriterion_old = NAN;
     const NewLeaf nl (fromNode, q_max, nodeAbsCriterion_old);
@@ -5250,9 +5256,9 @@ bool DistTree::optimizeReinsert ()
        )
       nodeVec << node;
   }
+  nodeVec. randomOrder ();
 
   vector<VectorPtr<Change>> results;
-  // First node's are slower => separate invocation of reinsert_thread ??
   arrayThreads (reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
 
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR	
@@ -5600,14 +5606,14 @@ void DistTree::optimizeLargeSubgraphs ()
 			cout << "No cuts found" << endl;
 			goto small_tree;
 		}
-	//qc ();  // will break due to transients
+	//qc ();  // Breaks due to transients
 	
 	
 	  {
 			VectorOwn<Image> images;  images. reserve (threads_max);
 		  Image mainImage (*this);  
 			{
-				Threads th (boundary. size ());  // bad_alloc() => decrease threads_max, redo ??
+				Threads th (boundary. size ());  // bad_alloc() => decrease boundary.size(), redo ??
 				VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
 				for (const Steiner* cut : boundary)
 				{

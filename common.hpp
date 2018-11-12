@@ -1330,8 +1330,8 @@ public:
     	}
     	searchSorted = false;
     }
-  void randomOrder (ulong seed)
-		{ Rand rand (seed);
+  void randomOrder ()
+		{ Rand rand (seed_global);
 			for (T &t : *this)
 	      swap (t, P::operator[] ((size_t) rand. get ((ulong) P::size ())));
     	searchSorted = false;
