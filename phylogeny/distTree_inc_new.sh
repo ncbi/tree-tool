@@ -136,7 +136,7 @@ while [ 1 == 1 ]; do
   rm -r $1/log/
       
   echo "Processing new objects ..."
-  distTree_new $QC $1/  -variance sqr
+  distTree_new $QC $1/  -variance lin
 done
 
 
@@ -167,7 +167,7 @@ if [ -e $1/genospecies_outlier ]; then
 fi
 
 # Time: O(n log^4(n)) 
-makeDistTree $QC  -threads 15  -data $1/  -variance sqr \
+makeDistTree $QC  -threads 15  -data $1/  -variance lin \
   $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
