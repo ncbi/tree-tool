@@ -373,7 +373,7 @@ struct ThisApplication : Application
 	              	continue;
 	              if (tree->absCriterion == 0)
 	              	break;
-	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-7)  
+	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-4 / (Real) tree->name2leaf. size ())  // PAR
 	              	break;
 	            }
             }
