@@ -129,6 +129,7 @@ struct ThisApplication : Application
     {
       if (tree. allTimeZero)
       {
+        // 63 sec./50K genomes
         cout << "Old root: " << tree. root->getLcaName () << endl;
         size_t bestCoreSize = 0;
         cout << "New root: " << tree. findRoot (bestCoreSize) << endl;
@@ -152,7 +153,7 @@ struct ThisApplication : Application
 
 
     // Output
-    tree. dump (output_tree/*, set_node_ids*/);
+    tree. dump (output_tree);
 
 
     if (! qual. empty ())

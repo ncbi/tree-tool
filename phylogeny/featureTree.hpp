@@ -445,7 +445,8 @@ private:
 public:
   size_t coreNonSingletons {0};
     // Includes optionalCore[]  
-  Set<Feature::Id> singletons;
+  Vector<Feature::Id> singletons;
+    // searchSorted
 //Set<Feature::Id> missedCore;  ??
     // Opposite to singletons
 
