@@ -110,6 +110,7 @@ extern ulong seed_global;
 // thread
 extern size_t threads_max;
   // >= 1
+extern thread::id main_thread_id;
 bool isMainThread ();
 
 
@@ -977,24 +978,8 @@ private:
 	vector<thread> threads;
 public:
 
-  explicit Threads (size_t threadsToStart_arg)
-    { if (! empty ())
-    	  throw logic_error ("Previous threads have not finished");
-    	threadsToStart = threadsToStart_arg;
-    	if (threadsToStart >= threads_max)
-    		throw logic_error ("Too many threads to start");
-    	threads. reserve (threadsToStart);
-    	if (verbose (1))
-		    cout << "# Threads started: " << threadsToStart + 1 << endl;
-    }	
- ~Threads ()
-    { for (auto& t : threads)  
-			  t. join ();
-			threads. clear ();
-			threadsToStart = 0;
-    	if (verbose (1))
-				cout << "Threads finished" << endl;
-		}
+  explicit Threads (size_t threadsToStart_arg);
+ ~Threads ();
   	
 	static bool empty () 
 	  { return ! threadsToStart; }
@@ -1474,7 +1459,7 @@ public:
         return false;
       }
   template <typename U>
-    bool intersectsFast2 (const Vector<U> &other) const
+    bool intersectsFast_merge (const Vector<U> &other) const
       { checkSorted ();
       	other. checkSorted ();
       	size_t i = 0;
@@ -1487,6 +1472,13 @@ public:
           if (other [i] == t)
             return true;
         }
+        return false;
+      }
+  template <typename U /* : T */>
+    bool intersects (const set<U> &other) const
+      { for (const T& t : *this)
+          if (other. find (t) != other. end ())
+            return true;
         return false;
       }
   template <typename U /* : T */>
@@ -2019,12 +2011,12 @@ private:
 	static size_t beingUsed;
 public:
 
-	size_t n_max;
+	size_t n_max {0};
 	  // 0 <=> unknown
 	bool active;
 	size_t n {0};
 	string step;
-	size_t displayPeriod;
+	size_t displayPeriod {0};
 	
 
 	explicit Progress (size_t n_max_arg = 0,
@@ -2056,8 +2048,9 @@ public:
     		 )
     	  report ();
     }
-private:
-	void report () const
+  static void report (size_t n,
+                      size_t n_max,
+                      const string &step = string())
 	  { cerr << '\r';
     #ifndef _MSC_VER
       cerr << "\033[2K";
@@ -2067,9 +2060,13 @@ private:
 	  		cerr << " / " << n_max;
 	  	if (! step. empty ())
 	  		cerr << ' ' << step;
-	  	if (! Threads::empty ())
-	  	  cerr << " (main thread)";
 	  	cerr << ' ';
+	  }
+private:
+	void report () const
+	  { report (n, n_max, step);
+	  	if (! Threads::empty ())
+	  	  cerr << "(main thread) ";
 	  }
 public:
   void reset ()
@@ -2078,6 +2075,8 @@ public:
     }
 	static void disable ()
 	  { beingUsed++; }
+	static bool isUsed ()
+	  { return beingUsed; }
 	static bool enabled ()
 	  { return ! beingUsed && verbose (1); }
 };
