@@ -935,6 +935,8 @@ void Leaf::qc () const
     ERROR;
   }  
   ASSERT (getReprLeaf () == this);
+  
+  ASSERT (index < NO_INDEX);
 }
 
 
@@ -1602,7 +1604,7 @@ bool Change::apply ()
     VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
     const Tree::TreeNode* lca_ = nullptr;
 	  Tree::LcaBuffer buf;
-    area = DistTree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
+    area = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
     const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
@@ -1629,7 +1631,7 @@ bool Change::apply ()
       boundary << lcaParent;
     boundary. sort ();
     ASSERT (boundary. isUniq ());
-    ASSERT (! area. intersectsFast2 (boundary));
+    ASSERT (! area. intersectsFast_merge (boundary));
     area << boundary;  // Real area
     subgraph. finish ();
     ASSERT (subgraph. boundary. containsFast (from));
@@ -2840,7 +2842,7 @@ DistTree::DistTree (Subgraph &subgraph,
     {
       VectorPtr<DiGraph::Node> children (node_old->getChildren ());
       children. sort ();
-      if (! children. intersectsFast2 (area))
+      if (! children. intersectsFast_merge (area))
       {
         auto leaf = new Leaf (*this, st, 0, "L" + toString (leafNum));
         old2new [node_old] = leaf;
@@ -2856,7 +2858,7 @@ DistTree::DistTree (Subgraph &subgraph,
       const Real len = static_cast <const DTNode*> (node_old) -> len;
       VectorPtr<DiGraph::Node> children (node_old->getChildren ());
       children. sort ();
-      if (children. intersectsFast2 (area))
+      if (children. intersectsFast_merge (area))
         node_new = new Steiner (*this, nullptr, len);
       else  
         node_new = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
@@ -4078,13 +4080,19 @@ void DistTree::qc () const
   }
 
   const size_t leaves = root->getLeavesSize ();
+  ASSERT (leaves);
   ASSERT (name2leaf. size () == leaves);
+  Vector<size_t> leafIndices;  leafIndices. reserve (leaves);
   for (const auto it : name2leaf)
   {
   	const Leaf* leaf = it. second;
     ASSERT (leaf);
     ASSERT (leaf->graph == this);
+    leafIndices << leaf->index;
   }
+  leafIndices. sort ();
+  leafIndices. uniq ();
+  ASSERT (leafIndices. size () == leaves);
   
   ASSERT ((bool) dissimDs. get () == (bool) dissimAttr);
   if (dissimAttr)
@@ -5229,7 +5237,7 @@ void reinsert_thread (size_t from,
  	  if (! Change::valid (fromNode, toNode))
  	    continue;
  	  const DistTree::TreeNode* lca = nullptr;
- 	  const size_t arcDist = tree. getPath (fromNode, toNode, nullptr, lca, buf). size ();
+ 	  const size_t arcDist = Tree::getPath (fromNode, toNode, nullptr, lca, buf). size ();
  	  ASSERT (arcDist > 1);
  	  if (verbose ())
       cout << fromNode->getLcaName () << " -> " << toNode->getLcaName () << ' ' << improvement << ' ' << arcDist << endl;
@@ -5669,7 +5677,7 @@ void DistTree::optimizeLargeSubgraphs ()
 	  setPredictionAbsCriterion ();
 	  qc ();
 	  
-	  cout << "Optimizing cut nodes ..." << endl;
+	  cerr << "Optimizing cut nodes ..." << endl;
 	  optimizeSmallSubgraphs (areaRadius_std, true);  // PAR
 	  qc ();
 	  qcPredictionAbsCriterion ();
@@ -6171,6 +6179,78 @@ struct RequestCandidate
 };
 
 
+
+void hybrid2requests (size_t from, 
+                      size_t to, 
+                      Vector<RequestCandidate> &res, 
+                      const VectorPtr<Leaf> &leaves)
+{
+  ASSERT (from <= to);
+  ASSERT (to <= leaves. size ());
+  ASSERT (res. empty ());
+  
+  Tree::LcaBuffer buf;
+  FOR_START (size_t, i, from, to)
+  {
+  	const Leaf* child = leaves [i];
+  	RequestCandidate req;
+  	Real hybridness_tree = hybridness_min;
+  	for (const Neighbor& badNeighbor1 : child->badNeighbors)
+	  	for (const Neighbor& badNeighbor2 : child->badNeighbors)
+	  	{
+	  		if (& badNeighbor1 == & badNeighbor2)
+	  			break;
+		    const Tree::TreeNode* lca_ = nullptr;
+		    const VectorPtr<Tree::TreeNode>& path = Tree::getPath ( badNeighbor1. leaf
+            																						      , badNeighbor2. leaf
+            																                  , nullptr
+            																                  , lca_
+            																                  , buf
+            																                  );
+		    ASSERT (! path. empty ());
+		    const Real hybridness = DistTree::path2prediction (path) / (badNeighbor1. target + badNeighbor2. target);
+		    if (maximize (hybridness_tree, hybridness))
+		    {
+		    	req. leaf1 = badNeighbor1. leaf;
+		    	req. leaf2 = badNeighbor2. leaf;
+		    }
+	    }
+	  if (req. leaf1)
+	  	res << req;
+	}
+}
+
+
+
+void dissim2hybridness (size_t from,
+                        size_t to,
+                        Notype&,
+                        const Vector<Dissim> &dissims)
+{
+  ASSERT (from <= to);
+  ASSERT (to <= dissims. size ());
+  
+  FOR_START (size_t, objNum, from, to)
+	{
+		const Dissim& dissim = dissims [objNum];
+		if (! dissim. mult)
+			continue;
+		ASSERT (dissim. target > 0);
+  	for (const Neighbor& neighbor : dissim. leaf1->badNeighbors)
+  	{
+    	Leaf* child = const_cast <Leaf*> (neighbor. leaf);
+    	if (const Neighbor* otherNeighbor = child->findNeighbor (dissim. leaf2))
+    	{
+    	  const Real hybridness = dissim. target / (neighbor. target + otherNeighbor->target);
+    	  lock_guard<mutex> lg {child->mtx};
+	    	if (maximize (child->hybridness, hybridness))
+	    		child->hybridParentsDissimObjNum = (uint) objNum;
+	    }
+    }
+  }
+}
+
+
 }  // namespace
 
 
@@ -6242,20 +6322,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   }
 
   // Leaf::{hybridness,hybridParentsDissimObjNum}
-  // dissims.size() = 35M => 253 sec.  ??
-  FFOR (size_t, objNum, dissims. size ())
-	{
-		const Dissim& dissim = dissims [objNum];
-		if (! dissim. mult)
-			continue;
-		ASSERT (dissim. target > 0);
-  	for (const Neighbor& neighbor : dissim. leaf1->badNeighbors)
-  	{
-    	Leaf* child = const_cast <Leaf*> (neighbor. leaf);
-    	if (const Neighbor* otherNeighbor = child->findNeighbor (dissim. leaf2))
-	    	if (maximize (child->hybridness, dissim. target / (neighbor. target + otherNeighbor->target)))
-	    		child->hybridParentsDissimObjNum = (uint) objNum;
-    }
+  {
+	  vector<Notype> notypes;
+    arrayThreads (dissim2hybridness, dissims. size (), notypes, cref (dissims));
   }
 
   {
@@ -6322,8 +6391,8 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   {  
 	  Vector<RequestCandidate> requests;  requests. reserve (name2leaf. size () / 10); // PAR
 	  {
-      // dissims.size() = 35M => 479 sec.  ??
-  	  LcaBuffer buf;
+      // dissims.size() = 35M => 89 sec.  
+      VectorPtr<Leaf> leaves;  leaves. reserve (name2leaf. size ());
   	  for (const auto& it : name2leaf)
   	  {
   	  	const Leaf* child = it. second;
@@ -6333,31 +6402,14 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   	  		continue;
   	  	if (hybrids. contains (child))
   	  		continue;
-  	  	RequestCandidate req;
-  	  	Real hybridness_tree = hybridness_min;
-  	  	for (const Neighbor& badNeighbor1 : child->badNeighbors)
-  		  	for (const Neighbor& badNeighbor2 : child->badNeighbors)
-  		  	{
-  		  		if (& badNeighbor1 == & badNeighbor2)
-  		  			break;
-  			    const TreeNode* lca_ = nullptr;
-  			    const VectorPtr<TreeNode>& path = getPath ( badNeighbor1. leaf
-  																							      , badNeighbor2. leaf
-  																	                  , nullptr
-  																	                  , lca_
-  																	                  , buf
-  																	                  );
-  			    ASSERT (! path. empty ());
-  			    const Real hybridness = path2prediction (path) / (badNeighbor1. target + badNeighbor2. target);
-  			    if (maximize (hybridness_tree, hybridness))
-  			    {
-  			    	req. leaf1 = badNeighbor1. leaf;
-  			    	req. leaf2 = badNeighbor2. leaf;
-  			    }
-  		    }
-  		  if (req. leaf1)
-  		  	requests << req;
+  	  	leaves << child;
   	  }
+  	  leaves. randomOrder ();
+
+      vector<Vector<RequestCandidate>> requests_vec;  
+      arrayThreads (hybrid2requests, leaves. size (), requests_vec, cref (leaves));
+      for (const auto& requests_ : requests_vec)
+        requests << requests_;
   	}
 	  if (verbose ())
 	    cout << "# Requests: " << requests. size () << endl;  
@@ -6656,7 +6708,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
             break;
           const DTNode* dtNode1 = static_cast <const DTNode*> (node1);
           const Vector<uint>& pathObjNums1 = subgraph. boundary2pathObjNums (dtNode1);
-          if (pathObjNums1. intersectsFast2 (pathObjNums2))
+          if (pathObjNums1. intersectsFast_merge (pathObjNums2))
             continue;
      	    Pair<const Leaf*> leafPair (subgraph. getReprLeaf (dtNode1), subgraph. getReprLeaf (dtNode2));
      	    ASSERT (leafPair. first);
@@ -6686,7 +6738,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
         ASSERT (node1 != root);
         if (node1 == node2)
           break;
-        if (node1->pathObjNums. intersectsFast2 (node2->pathObjNums))
+        if (node1->pathObjNums. intersectsFast_merge (node2->pathObjNums))
           continue;
         const TreeNode* lca = getLca (node1, node2);
         ASSERT (lca);

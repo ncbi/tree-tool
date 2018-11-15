@@ -497,9 +497,7 @@ private:
 public:
 
   // Hybrid data
-private:
   // For DistTree::findHybrids()
-	friend Triangle;
   Vector<Neighbor> badNeighbors;
     // Neighbor::leaf is unique
   Real hybridness {1};
@@ -508,7 +506,8 @@ private:
     // > 1 => triangle inequality violation
   uint hybridParentsDissimObjNum;  
     // hybridness > 1 => in DistTree::dissims
-public:
+    
+  mutex mtx;    
   
 
 	Leaf (DistTree &tree,
@@ -584,14 +583,12 @@ public:
 	bool possibleHybrid () const
 	  { return getDiscernible () -> len == 0; }
 #endif
-private:
 	const Neighbor* findNeighbor (const Leaf* leaf) const
 	  { const size_t i = badNeighbors. binSearch (Neighbor (leaf));
     	if (i == NO_INDEX)    		
     		return nullptr;
     	return & badNeighbors [i];
     }
-public:
   Real getHybridness (/*Real height_min,*/
                     //Real parentLengthFrac_min,
 	                    const Leaf* &parent1,
