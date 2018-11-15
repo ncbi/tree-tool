@@ -911,6 +911,47 @@ Unverbose::~Unverbose ()
 
 
 
+// Threads
+
+Threads::Threads (size_t threadsToStart_arg)
+{ 
+  if (! isMainThread ())
+	  throw logic_error ("Threads are started not from the main thread");
+  if (! empty ())
+	  throw logic_error ("Previous threads have not finished");
+
+	threadsToStart = threadsToStart_arg;
+	if (threadsToStart >= threads_max)
+		throw logic_error ("Too many threads to start");
+		
+	threads. reserve (threadsToStart);
+	
+	if (verbose (1))
+    cerr << "# Threads started: " << threadsToStart + 1 << endl;
+}	
+
+
+
+Threads::~Threads ()
+{ 
+  {
+    Progress prog (threads. size () + 1);
+    const string step ("consecutive threads finished");
+    prog (step);
+    for (auto& t : threads) 
+    { 
+      t. join ();
+      prog (step);
+  	}
+  }
+	  
+	threads. clear ();
+	threadsToStart = 0;
+}
+
+
+
+
 // Root
 
 void Root::saveFile (const string &fName) const
@@ -1008,6 +1049,24 @@ DisjointCluster* DisjointCluster::getDisjointCluster ()
 // Progress
 
 size_t Progress::beingUsed = 0;
+
+
+
+void Progress::report () const
+{ 
+  cerr << '\r';
+#ifndef _MSC_VER
+  cerr << "\033[2K";
+#endif
+  cerr << n; 
+	if (n_max)
+		cerr << " / " << n_max;
+	if (! step. empty ())
+		cerr << ' ' << step;
+	cerr << ' ';
+	if (! Threads::empty () && ! contains (step, "thread"))
+	  cerr << "(main thread) ";
+}
 
 
 

@@ -2048,26 +2048,8 @@ public:
     		 )
     	  report ();
     }
-  static void report (size_t n,
-                      size_t n_max,
-                      const string &step = string())
-	  { cerr << '\r';
-    #ifndef _MSC_VER
-      cerr << "\033[2K";
-    #endif
-	    cerr << n; 
-	  	if (n_max)
-	  		cerr << " / " << n_max;
-	  	if (! step. empty ())
-	  		cerr << ' ' << step;
-	  	cerr << ' ';
-	  }
 private:
-	void report () const
-	  { report (n, n_max, step);
-	  	if (! Threads::empty ())
-	  	  cerr << "(main thread) ";
-	  }
+	void report () const;
 public:
   void reset ()
     { n = 0;
