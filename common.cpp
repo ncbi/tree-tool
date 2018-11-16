@@ -1704,7 +1704,7 @@ void JsonMap::parse (istream& is)
 
 JsonMap::~JsonMap ()
 { 
-  for (auto it : data)
+  for (auto& it : data)
     delete it. second;
 }
 
@@ -1714,7 +1714,7 @@ void JsonMap::print (ostream& os) const
 { 
   os << "{";
   bool first = true;
-  for (const auto it : data)
+  for (const auto& it : data)
   {
     if (! first)
       os << ",";
