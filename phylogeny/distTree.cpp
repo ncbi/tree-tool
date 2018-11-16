@@ -828,6 +828,55 @@ const Steiner* Steiner::makeDTRoot ()
 
 
 
+LeafCluster Steiner::getIndiscernibles ()
+{
+  ASSERT (! getDistTree (). subDepth);
+  ASSERT (getDistTree (). optimizable ());
+  
+  LeafCluster leafCluster;
+
+  if (childrenDiscernible ())
+    return leafCluster;
+
+  VectorPtr<Leaf> children;  children. reserve (arcs [false]. size ());
+  for (const DiGraph::Arc* arc : arcs [false])
+  {
+    const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+    ASSERT (leaf);
+    var_cast (leaf) -> DisjointCluster::init ();
+    children << leaf;
+ 	}
+ 	children. sort ();
+ 	ASSERT (children. isUniq ());
+
+  for (const DiGraph::Arc* arc : arcs [false])
+  {
+    const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+    ASSERT (leaf);
+    for (const uint objNum : leaf->pathObjNums)
+    {
+      const Dissim& dissim = getDistTree (). dissims [objNum];
+   	  if (   dissim. valid ()
+   	      && dissim. target <= 0
+   	      && children. containsFast (dissim. leaf1)
+   	      && children. containsFast (dissim. leaf2)
+   	     )
+        var_cast (dissim. leaf1) -> DisjointCluster::merge (* var_cast (dissim. leaf2));
+    }
+  }
+
+  for (const DiGraph::Arc* arc : arcs [false])
+  {
+    const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+    ASSERT (leaf);
+    leafCluster [var_cast (leaf) -> DisjointCluster::getDisjointCluster ()] << leaf;
+ 	}
+  
+  return leafCluster;
+}
+
+
+
 #if 0
 void Steiner::setSubTreeWeight ()
 {
@@ -985,6 +1034,7 @@ const DTNode* Leaf::getDiscernible () const
 
 void Leaf::collapse (Leaf* other)
 {
+  ASSERT (! getDistTree (). subDepth);
   ASSERT (this != other);
 //ASSERT (len == 0);
 //ASSERT (discernible);
@@ -1171,7 +1221,7 @@ Real Leaf::getHybridness (const Leaf* &parent1,
 
 
 void Leaf::getHybridTriangles (Vector<Triangle> &hybrids,
-				               Set<const Leaf*> &tried) const
+				                       Set<const Leaf*> &tried) const
 {
 	ASSERT (hybridness_min > 1);
 	
@@ -2000,7 +2050,7 @@ void Image::processSmall (const DTNode* center_arg,
   ASSERT (area. containsFast (center));
   ASSERT (boundary. size () <= boundary_size_max_std);
 #ifndef NDEBUG
-  for (const auto it : new2old)
+  for (const auto& it : new2old)
   {
     // New
     ASSERT (it. first);
@@ -2220,7 +2270,7 @@ void Image::apply ()
 	  if (rootInArea)
 	  {
 	    wholeTree. root = nullptr;
-	    for (const auto it : new2old)
+	    for (const auto& it : new2old)
 	    {
 	      const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (it. second);
 	      if (! node->getParent ())
@@ -2242,7 +2292,7 @@ void Image::apply ()
 	  subgraph. subPaths2tree ();
 	    
 	  // deleteLenZero
-	  for (const auto it : new2old)
+	  for (const auto& it : new2old)
 	  {
 	    DTNode* node = const_static_cast <DTNode*> (it. second);
 	    if (! subgraph. boundary. containsFast (node))
@@ -2291,7 +2341,7 @@ DistTree::DistTree (const string &treeFName,
     
     if (! getConnected ())
       throw runtime_error ("Disconnected objects");
-  	setDiscernible ();  
+  	setDiscernibles_ds ();  
 
     dissimDs2dissims (sparse);    	
   }
@@ -2316,7 +2366,7 @@ DistTree::DistTree (const string &dirName,
   
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
-	setDiscernible ();  
+	setDiscernibles_ds ();  
 
   setGlobalLen ();  // --> after dissim2Ds(), use dissims ??
 
@@ -2345,7 +2395,7 @@ DistTree::DistTree (const string &dissimFName,
         
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
-	setDiscernible ();
+	setDiscernibles_ds ();
 
   neighborJoin ();
   
@@ -2607,7 +2657,7 @@ DistTree::DistTree (const string &dataDirName,
 		  }
     }
     // qc
-	  for (const auto it : name2leaf)
+	  for (const auto& it : name2leaf)
 	  {
 	  	const Leaf* leaf = it. second;
       if (! leaf->paths)
@@ -2641,7 +2691,6 @@ DistTree::DistTree (const string &dataDirName,
   if (loadDissim)
   {
     setPaths ();        
-    qc ();     
 
     if (optimizeP)
     {  
@@ -2910,7 +2959,7 @@ DistTree::DistTree (Subgraph &subgraph,
   ASSERT (boundary. size () == name2leaf. size ());
 
   // newLeaves2boundary
-  for (const auto it : old2new)
+  for (const auto& it : old2new)
     if (static_cast <const DTNode*> (it. second) -> asLeaf ())
       newLeaves2boundary [it. second] = it. first;
   ASSERT (newLeaves2boundary. size () == boundary. size ());
@@ -2991,13 +3040,14 @@ DistTree::DistTree (Subgraph &subgraph,
     
 
   setPaths ();
-//ASSERT (setDiscernible () == 0);
+//ASSERT (setDiscernibles_ds () == 0);
 }
 
 
 
 void DistTree::loadTreeDir (const string &dir)
 {
+  ASSERT (! subDepth);
 	ASSERT (! dir. empty ());
   ASSERT (isDirName (dir));
 
@@ -3049,6 +3099,7 @@ Steiner* DistTree::getName2steiner (const string &name,
 
 void DistTree::loadTreeFile (const string &fName)
 {
+  ASSERT (! subDepth);
 	ASSERT (! fName. empty ());
 
   StringVector lines;
@@ -3092,6 +3143,7 @@ bool DistTree::loadLines (const StringVector &lines,
 						              Steiner* parent,
 						              size_t expectedOffset)
 { 
+  ASSERT (! subDepth);
 	ASSERT (lineNum <= lines. size ());
 
 	if (lineNum == lines. size ())
@@ -3170,6 +3222,7 @@ void DistTree::setName2leaf ()
 void DistTree::loadDissimDs (const string &dissimFName,
                              const string &dissimAttrName)
 {
+  ASSERT (! subDepth);
 	ASSERT (! dissimDs. get ());
 	ASSERT (! dissimAttr);
 	ASSERT (! optimizable ());
@@ -3262,6 +3315,7 @@ void DistTree::newick2node (ifstream &f,
 
 bool DistTree::getConnected () 
 {
+  ASSERT (! subDepth);
 	ASSERT (dissimDs. get ());
 	ASSERT (dissimAttr);
 	ASSERT (! optimizable ());
@@ -3281,27 +3335,27 @@ bool DistTree::getConnected ()
           if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
             const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
 
-  map <const DisjointCluster*, VectorPtr<Leaf>> cluster2leaves;
+  LeafCluster leafCluster;
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
  	  if (const Leaf* leaf = dtNode->asLeaf ())
-      cluster2leaves [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
+      leafCluster [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
  	}
-  ASSERT (! cluster2leaves. empty ());
+  ASSERT (! leafCluster. empty ());
   
-  if (cluster2leaves. size () == 1)
+  if (leafCluster. size () == 1)
     return true;
     
 
   const DisjointCluster* cluster_main = nullptr;
   size_t size_max = 0;
-  for (const auto it : cluster2leaves)
+  for (const auto& it : leafCluster)
     if (maximize (size_max, it. second. size ()))
       cluster_main = it. first;
   ASSERT (cluster_main);
  
-  for (const auto it : cluster2leaves)
+  for (const auto& it : leafCluster)
     if (it. first != cluster_main)
     {
       cout << endl;
@@ -3315,45 +3369,54 @@ bool DistTree::getConnected ()
 
 
 
-size_t DistTree::setDiscernible ()
+LeafCluster DistTree::getIndiscernibles ()
 {
-  ASSERT (dissimDs. get ());
-  ASSERT (dissimAttr);
-  ASSERT (! optimizable ());
+  ASSERT (optimizable ());
 
+  // Leaf::DisjointCluster
+ 	for (DiGraph::Node* node : nodes)
+ 	{
+ 	  const DTNode* dtNode = static_cast <DTNode*> (node);
+ 	  if (Leaf* leaf = var_cast (dtNode->asLeaf ()))
+ 	    leaf->DisjointCluster::init ();
+ 	}
 
-  map <const DisjointCluster*, VectorPtr<Leaf>> cluster2leaves;
-  {
-    // Leaf::DisjointCluster
-   	for (DiGraph::Node* node : nodes)
-   	{
-   	  const DTNode* dtNode = static_cast <DTNode*> (node);
-   	  if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
-   	  {
-   	    leaf->discernible = true;
-   	    leaf->DisjointCluster::init ();
-   	  }
-   	}
-    FFOR (size_t, row, dissimDs->objs. size ())
-      if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
-        FOR (size_t, col, row)  // dissimAttr is symmetric
-          if (dissimAttr->get (row, col) <= 0)  // => !isNan()
-            if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
-              const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
-    // cluster2leaves
-   	for (DiGraph::Node* node : nodes)
-   	{
-   	  const DTNode* dtNode = static_cast <DTNode*> (node);
-   	  if (const Leaf* leaf = dtNode->asLeaf ())
-        cluster2leaves [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
-   	}
-  }
+ 	for (const Dissim& dissim : dissims)
+ 	  if (   dissim. valid ()
+ 	      && dissim. target <= 0
+ 	     )
+      var_cast (dissim. leaf1) -> DisjointCluster::merge (* var_cast (dissim. leaf2));
+
+  LeafCluster leafCluster;
+ 	for (DiGraph::Node* node : nodes)
+ 	{
+ 	  const DTNode* dtNode = static_cast <DTNode*> (node);
+ 	  if (const Leaf* leaf = dtNode->asLeaf ())
+      leafCluster [var_cast (leaf) -> DisjointCluster::getDisjointCluster ()] << leaf;
+ 	}
   
-  if (cluster2leaves. size () == 1)
+  if (leafCluster. size () == 1)
   	throw runtime_error ("No discernible objects");
  
+  for (Iter<LeafCluster> iter (leafCluster); iter. next (); )
+  {
+    const auto& itMap = *iter;
+    ASSERT (itMap. second. size () > 0);
+    if (itMap. second. size () == 1)
+      iter. erase ();
+  }
+
+  return leafCluster;
+}
+
+
+
+size_t DistTree::leafCluster2discernibles (const LeafCluster &leafCluster)
+{
+  ASSERT (! subDepth);
+
   size_t n = 0;   
-  for (const auto it : cluster2leaves)
+  for (const auto& it : leafCluster)
   {
     const VectorPtr<Leaf>& clusterNodes = it. second;
     ASSERT (! clusterNodes. empty ());
@@ -3361,25 +3424,110 @@ size_t DistTree::setDiscernible ()
       continue;
     const Leaf* first = clusterNodes [0];
     ASSERT (first);
-    Steiner* parent = const_cast <Steiner*> (static_cast <const DTNode*> (first->getParent ()) -> asSteiner ());
+    Steiner* parent = var_cast (static_cast <const DTNode*> (first->getParent ()) -> asSteiner ());
     ASSERT (parent);
-    auto steiner = new Steiner (*this, parent, 0);
+    auto steiner = new Steiner (*this, parent, 0.0); 
     for (const Leaf* leaf_ : clusterNodes)
     {
       Leaf* leaf = const_cast <Leaf*> (leaf_);
       leaf->setParent (steiner);
       leaf->discernible = false;  
       leaf->len = 0;  
+      steiner->pathObjNums << leaf->pathObjNums;
       n++;
     }
     ASSERT (! steiner->isTransient ());
     ASSERT (n);
+    
+    if (optimizable ())
+    {
+      VectorPtr<Leaf> leaves (clusterNodes);
+      leaves. sort ();
+      ASSERT (leaves. isUniq ());
+      steiner->pathObjNums. sort ();
+      steiner->pathObjNums. uniq ();
+      for (const uint objNum : steiner->pathObjNums)
+      {
+        Dissim& d = dissims [objNum]; 
+        if (   leaves. containsFast (d. leaf1)
+            && leaves. containsFast (d. leaf2)
+           )
+        d. lca = steiner;  
+      }
+      steiner->pathObjNums. filterValue ([this, &leaves] 
+                                         (const uint objNum) 
+                                         { const Dissim& d = this->dissims [objNum]; 
+                                           return    leaves. containsFast (d. leaf1)
+                                                  && leaves. containsFast (d. leaf2);
+                                         }
+                                        );
+    }
   }
-  
   
   if (n)
     cleanTopology ();
+    
+  return n;
+}
 
+
+
+size_t DistTree::setDiscernibles_ds ()
+{
+  ASSERT (! subDepth);
+  ASSERT (dissimDs. get ());
+  ASSERT (dissimAttr);
+  ASSERT (! optimizable ());
+
+
+  // Leaf::DisjointCluster
+ 	for (DiGraph::Node* node : nodes)
+ 	{
+ 	  const DTNode* dtNode = static_cast <DTNode*> (node);
+ 	  if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
+ 	  {
+ 	    leaf->discernible = true;
+ 	    leaf->DisjointCluster::init ();
+ 	  }
+ 	}
+  FFOR (size_t, row, dissimDs->objs. size ())
+    if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
+      FOR (size_t, col, row)  // dissimAttr is symmetric
+        if (dissimAttr->get (row, col) <= 0)  // => !isNan()
+          if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
+            const_cast <Leaf*> (leaf1) -> merge (* const_cast <Leaf*> (leaf2));
+
+  LeafCluster leafCluster;
+ 	for (DiGraph::Node* node : nodes)
+ 	{
+ 	  const DTNode* dtNode = static_cast <DTNode*> (node);
+ 	  if (const Leaf* leaf = dtNode->asLeaf ())
+      leafCluster [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
+ 	}
+  
+  if (leafCluster. size () == 1)
+  	throw runtime_error ("No discernible objects");
+ 
+  return leafCluster2discernibles (leafCluster);
+}
+
+
+
+size_t DistTree::setDiscernibles ()
+{ 
+  ASSERT (! subDepth);
+  ASSERT (optimizable ());
+
+ 	for (DiGraph::Node* node : nodes)
+ 	{
+ 	  const DTNode* dtNode = static_cast <DTNode*> (node);
+ 	  if (Leaf* leaf = const_cast <Leaf*> (dtNode->asLeaf ()))
+ 	    leaf->discernible = true;
+ 	}
+  const LeafCluster leafCluster (getIndiscernibles ());
+  const size_t n = leafCluster2discernibles (leafCluster);
+
+  qcPaths ();
   
   return n;
 }
@@ -4079,11 +4227,11 @@ void DistTree::qc () const
     ASSERT (! dtNode->isTransient ());
   }
 
-  const size_t leaves = root->getLeavesSize ();
-  ASSERT (leaves);
-  ASSERT (name2leaf. size () == leaves);
-  Vector<size_t> leafIndices;  leafIndices. reserve (leaves);
-  for (const auto it : name2leaf)
+  const size_t leavesSize = root->getLeavesSize ();
+  ASSERT (leavesSize);
+  ASSERT (name2leaf. size () == leavesSize);
+  Vector<size_t> leafIndices;  leafIndices. reserve (leavesSize);
+  for (const auto& it : name2leaf)
   {
   	const Leaf* leaf = it. second;
     ASSERT (leaf);
@@ -4092,7 +4240,7 @@ void DistTree::qc () const
   }
   leafIndices. sort ();
   leafIndices. uniq ();
-  ASSERT (leafIndices. size () == leaves);
+  ASSERT (leafIndices. size () == leavesSize);
   
   ASSERT ((bool) dissimDs. get () == (bool) dissimAttr);
   if (dissimAttr)
@@ -4130,7 +4278,7 @@ void DistTree::qc () const
   
 
   const size_t discernibles = getDiscernibles (). size ();
-  ASSERT (discernibles <= leaves);
+  ASSERT (discernibles <= leavesSize);
 
   for (const Leaf* leaf : detachedLeaves)
   {
@@ -4139,7 +4287,7 @@ void DistTree::qc () const
     leaf->qc ();
 	  leafDissims += leaf->pathObjNums. size ();
   }
-  const size_t allLeaves = leaves + detachedLeaves. size ();
+  const size_t allLeaves = leavesSize + detachedLeaves. size ();
   ASSERT (dissims. size () <= (allLeaves * (allLeaves - 1)) / 2);
 
  	ASSERT (leafDissims == 2 * dissims. size ());
@@ -4149,6 +4297,43 @@ void DistTree::qc () const
   for (const DTNode* dtNode : toDelete)
   	ASSERT (! dtNode->asLeaf ());
 */
+
+  if (! subDepth)
+  {
+    const LeafCluster leafCluster (var_cast (this) -> getIndiscernibles ());
+    for (const auto& it : leafCluster)
+    {
+      const VectorPtr<Leaf>& leaves = it. second;
+      ASSERT (leaves. size () >= 2);
+      for (const Leaf* leaf : leaves)
+      {
+        ASSERT (leaf->graph == this);
+        ASSERT (leaf->getParent () == leaves [0] -> getParent ());
+      }
+    }
+   	for (const DiGraph::Node* node : nodes)
+   	{
+   	  const DTNode* dtNode = static_cast <const DTNode*> (node);
+   	  if (dtNode->childrenDiscernible ())
+   	    continue;
+   	  const DisjointCluster* dc = nullptr;
+    	for (const DiGraph::Arc* arc : dtNode->arcs [false])
+    	{
+    	  Leaf* child = var_cast (static_cast <DTNode*> (arc->node [false]) -> asLeaf ());
+    	  ASSERT (child);
+    	  if (dc)
+    	  { 
+    	    if (child->DisjointCluster::getDisjointCluster () != dc)
+    	    {
+    	      cout << "Bad indiscernible " << child->name << endl;
+    	      ERROR;
+    	    }
+    	  }
+    	  else
+    	    dc = child->DisjointCluster::getDisjointCluster ();
+   	  }
+   	}
+  }
 }
 
 
@@ -4156,6 +4341,7 @@ void DistTree::qc () const
 void DistTree::deleteLeaf (TreeNode* node,
                            bool deleteTransientAncestor)
 {
+  ASSERT (! subDepth);
   ASSERT (! optimizable ());
   
   ASSERT (node);
@@ -4262,40 +4448,54 @@ void DistTree::qcPaths ()
   if (! qc_on)
     return;
 
+  const size_t displayNodes = 1000;  // PAR
+  if (nodes. size () >= displayNodes)
+    cerr << "QC paths ..." << endl;
+
   size_t pathObjNums_checked = 0;
   size_t lcaObjNums_checked = 0;
-  for (DiGraph::Node* node : nodes)
   {
-    DTNode* dtNode = const_static_cast <DTNode*> (node);
-    Vector<uint>& pathObjNums = dtNode->pathObjNums;
-    pathObjNums. sort ();
-    ASSERT (pathObjNums. isUniq ());
-    for (const uint objNum : pathObjNums)
-      if (dissims [objNum]. valid ())
-        pathObjNums_checked++;
-    const Vector<uint> lcaObjNums (dtNode->getLcaObjNums ());
-    for (const uint objNum : lcaObjNums)
-      if (dissims [objNum]. valid ())
-      {
-        ASSERT (dissims [objNum]. lca == dtNode->asSteiner ());
-        lcaObjNums_checked++;
-      }
+    Progress prog (nodes. size (), displayNodes);  
+    for (DiGraph::Node* node : nodes)
+    {
+      prog ();
+      DTNode* dtNode = const_static_cast <DTNode*> (node);
+      Vector<uint>& pathObjNums = dtNode->pathObjNums;
+      pathObjNums. sort ();
+      ASSERT (pathObjNums. isUniq ());
+      for (const uint objNum : pathObjNums)
+        if (dissims [objNum]. valid ())
+          pathObjNums_checked++;
+      const Vector<uint> lcaObjNums (dtNode->getLcaObjNums ());
+      for (const uint objNum : lcaObjNums)
+        if (dissims [objNum]. valid ())
+        {
+          ASSERT (dissims [objNum]. lca == dtNode->asSteiner ());
+          lcaObjNums_checked++;
+        }
+    }
   }
   
   size_t pathObjNums_all = 0;
   size_t lcaObjNums_all = 0;
-  LcaBuffer buf;
-  FFOR (size_t, objNum, dissims. size ())
-    if (dissims [objNum]. valid ())
+  {
+    Progress prog (dissims. size (), dissim_progress);
+    LcaBuffer buf;
+    FFOR (size_t, objNum, dissims. size ())
     {
-      const VectorPtr<TreeNode>& path = dissims [objNum]. getPath (buf);
-      for (const TreeNode* node : path)
+      prog ();
+      if (dissims [objNum]. valid ())
       {
-        ASSERT (static_cast <const DTNode*> (node) -> pathObjNums. containsFast ((uint) objNum));
-        pathObjNums_all++;
+        const VectorPtr<TreeNode>& path = dissims [objNum]. getPath (buf);
+        for (const TreeNode* node : path)
+        {
+          ASSERT (static_cast <const DTNode*> (node) -> pathObjNums. containsFast ((uint) objNum));
+          pathObjNums_all++;
+        }
+        lcaObjNums_all++;
       }
-      lcaObjNums_all++;
     }
+  }
 
   ASSERT (pathObjNums_all == pathObjNums_checked);
   ASSERT (lcaObjNums_all == lcaObjNums_checked);
@@ -4326,6 +4526,9 @@ void DistTree::clearSubtreeLen ()
 
 
 
+namespace
+{
+
 void setPredictionAbsCriterion_thread (size_t from,
 								                       size_t to,
 								                       Real &absCriterion,
@@ -4346,10 +4549,14 @@ void setPredictionAbsCriterion_thread (size_t from,
 	}
 }
 
+}
+
 
 
 void DistTree::setPredictionAbsCriterion ()
 {
+  ASSERT (! subDepth);
+
   absCriterion = 0;
 #if 1
   vector<Real> absCriteria;
@@ -5255,6 +5462,8 @@ void reinsert_thread (size_t from,
 
 bool DistTree::optimizeReinsert ()
 {
+  ASSERT (! subDepth);
+
   VectorPtr<DTNode> nodeVec;  nodeVec. reserve (nodes. size ());
   for (const DiGraph::Node* node_ : nodes)
   {
@@ -5522,17 +5731,23 @@ void DistTree::tryChange (Change* ch,
 
 
 
+namespace
+{
+
 void processLargeImage_thread (Image &image,
 				                       const Steiner* subTreeRoot,
 					                     const VectorPtr<Tree::TreeNode> possibleBoundary)  // needs a copy
 { 
 	image. processLarge (subTreeRoot, possibleBoundary); 
 }
+
+}
 	                      
 
 
 void DistTree::optimizeLargeSubgraphs ()
 {
+  ASSERT (! subDepth);
   ASSERT (threads_max);
   
   constexpr size_t large_min = 100;  // PAR
@@ -5859,6 +6074,7 @@ bool DistTree::deleteLenZero (DTNode* node)
 void DistTree::removeLeaf (Leaf* leaf,
 	                         bool optimizeP)
 {
+  ASSERT (! subDepth);
   ASSERT (leaf);
   
   if (! leaf->graph)
@@ -5882,17 +6098,29 @@ void DistTree::removeLeaf (Leaf* leaf,
 	{
     ASSERT (parent->graph); 
     if (const Leaf* childLeaf = static_cast <const DTNode*> (child) -> asLeaf ())
-      const_cast <Leaf*> (childLeaf) -> discernible = true;
-	  Steiner* st = const_static_cast <Steiner*> (parent);
+      var_cast (childLeaf) -> discernible = true;
+	  const Steiner* st = static_cast <const DTNode*> (parent) -> asSteiner ();
+	  ASSERT (st);
 	  parent = parent->getParent ();
     if (! parent)
       parent = root;
-		delayDeleteRetainArcs (st);
+		delayDeleteRetainArcs (var_cast (st));
   }  
-  
-  // Recompute Leaf::discernible !??
+  else if (! static_cast <const DTNode*> (parent) -> childrenDiscernible () && optimizable ())
+  {
+    for (const DiGraph::Arc* arc : parent->arcs [false])
+    {
+      const Leaf* child_ = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+      ASSERT (child_);
+      var_cast (child_) -> discernible = true;
+   	}
+	  const Steiner* st = static_cast <const DTNode*> (parent) -> asSteiner ();
+	  ASSERT (st);
+    const LeafCluster leafCluster (var_cast (st) -> getIndiscernibles ());
+    leafCluster2discernibles (leafCluster);
+  }
 
-    
+      
   if (optimizable ())
   {
 		for (const uint objNum : leaf->pathObjNums)
@@ -6258,6 +6486,7 @@ void dissim2hybridness (size_t from,
 Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	                                                Vector<Pair<const Leaf*>> *dissimRequests) const
 {
+  ASSERT (! subDepth);
 	ASSERT (optimizable ());
 	ASSERT (dissimOutlierEValue_max > 0);
 	ASSERT (hybridness_min > 1);
@@ -6598,6 +6827,8 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
 
 VectorPtr<Leaf> DistTree::findDepthOutliers () const
 {
+  ASSERT (! subDepth);
+
   const Real outlier_EValue_max = 1e-3 / (Real) name2leaf. size ();  // PAR
   
   VectorPtr<Leaf> outliers;  outliers. reserve (name2leaf. size () / 100 + 1);  
@@ -6650,10 +6881,12 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
 Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max,
                                                                    bool refreshDissims) const
 {
+  ASSERT (! subDepth);
+
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
   {
     Progress prog (name2leaf. size (), 1000);  // PAR
-    for (const auto it : name2leaf)
+    for (const auto& it : name2leaf)
     {
       prog ();
       const Leaf* leaf = it. second;
@@ -6682,6 +6915,8 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
 
 Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
 {
+  ASSERT (! subDepth);
+
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ()); 
   {
     Subgraph subgraph (*this);
@@ -6766,6 +7001,8 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
 
 Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const
 {
+  ASSERT (! subDepth);
+
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (leaves. size () * (leaves. size () - 1) / 2);  
   {
     Progress prog (leaves. size (), 100);  // PAR
@@ -6825,19 +7062,19 @@ void DistTree::findTopologicalClusters ()
     }
   }
 
-  map <const DisjointCluster*, VectorPtr<Leaf>> cluster2leaves;
+  LeafCluster leafCluster;
  	for (const DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <const DTNode*> (node);
  	  if (const Leaf* leaf = dtNode->asLeaf ())
  	    if (leaf->graph)
-        cluster2leaves [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
+        leafCluster [const_cast <Leaf*> (leaf) -> getDisjointCluster ()] << leaf;
  	}
-  ASSERT (! cluster2leaves. empty ());
+  ASSERT (! leafCluster. empty ());
   
   // ??
   OFStream f ("leaf_clusters");
-  for (const auto it : cluster2leaves)
+  for (const auto& it : leafCluster)
   {
     f << static_cast <const Leaf*> (it. first) -> name << '\t' <<  it. second. size () << '\t';
     for (const Leaf* leaf : it. second)

@@ -55,6 +55,7 @@ struct ThisApplication : Application
 	  addFlag ("reinsert", "Re-insert subtrees");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
+	  addFlag ("fix_discernibles", "Set the indiscernible flag of objects");
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
@@ -179,6 +180,7 @@ struct ThisApplication : Application
 		const bool   reinsert            = getFlag ("reinsert");
 		const bool   skip_topology       = getFlag ("skip_topology");
 	  const bool   new_only            = getFlag ("new_only");
+	  const bool   fix_discernibles    = getFlag ("fix_discernibles");
 		
 		const bool   reroot              = getFlag ("reroot");		
 		const bool   root_topological    = getFlag ("root_topological");
@@ -234,6 +236,8 @@ struct ThisApplication : Application
     IMPLY (subgraph_fast,     ! whole);
     IMPLY (subgraph_iter_max, ! whole);
     IMPLY (new_only, ! optimize);
+    if (dataFName. empty () && fix_discernibles)
+      throw runtime_error ("-fix_discernibles needs dissimilarities");
     if (dissim_boundary <= 0)
     	throw runtime_error ("dissim_boundary must be > 0");
     if (hybridness_min <= 1)
@@ -265,7 +269,18 @@ struct ThisApplication : Application
                    : new DistTree (input_tree, dataFName, dissimAttrName, sparse);
     }
     ASSERT (tree. get ());
-    tree->qc ();     
+    
+    if (fix_discernibles)
+    {
+      cerr << "Fixing discernibles ..." << endl;
+      tree->setDiscernibles ();
+    }
+      
+    if (qc_on)
+    {
+      cerr << "QC ..." << endl;
+      tree->qc (); 
+    }
 
     tree->printInput (cout);
     cout << endl;
@@ -434,7 +449,6 @@ struct ThisApplication : Application
       cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
       tree->printAbsCriterion_halves ();  
-      tree->qc ();
       cout << endl;
     }
     
@@ -444,6 +458,7 @@ struct ThisApplication : Application
       cout << "Re-rooting ..." << endl;
       cout << "Ave. radius: " << tree->reroot (root_topological) << endl;
       cout << endl;
+      tree->qc ();
     }
     else 
       if (! reroot_at. empty ())
@@ -453,6 +468,7 @@ struct ThisApplication : Application
         tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
         if (! noqual)
 	        tree->setNodeAbsCriterion ();
+        tree->qc ();
       }
       
 
@@ -465,8 +481,8 @@ struct ThisApplication : Application
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
       cout << endl;
+      tree->qc ();
     }
-    tree->qc ();
     
     
     chron_getBestChange.    print (cout);

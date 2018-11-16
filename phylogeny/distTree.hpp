@@ -298,6 +298,10 @@ private:
 
 
 
+typedef  map <const DisjointCluster*, VectorPtr<Leaf>>  LeafCluster;
+
+
+
 struct DTNode : Tree::TreeNode 
 {
   friend DistTree;
@@ -465,6 +469,8 @@ public:
   const Steiner* makeDTRoot ();
     // Return: Old root, !nullptr
     // Invokes: makeRoot(getTree().root)
+  LeafCluster getIndiscernibles ();
+    // Invokes: Leaf->DisjointCluster
 
 #if 0
 private:
@@ -1086,11 +1092,23 @@ private:
     // Return: true <=> 1 connected component
     // Output: DisjointCluster
     //         cout: print other connected components
-  size_t setDiscernible ();
+  LeafCluster getIndiscernibles ();
+    // Return: VectorPtr::size() >= 2
+    // Invokes: Leaf->DisjointCluster
+    // Time: ~ O(p)
+private:
+  size_t leafCluster2discernibles (const LeafCluster &leafCluster);
     // Return: Number of indiscernible leaves
     // Output: Leaf::len = 0, Leaf::discernible = false, topology
     // Invokes: cleanTopology()
+    // Time: O(n)
+public:
+  size_t setDiscernibles_ds ();
+    // Invokes: leafCluster2discernibles()
+  size_t setDiscernibles ();
+    // Invokes: getIndiscernibles(), leafCluster2discernibles()
   void cleanTopology ();
+    // Time: O(n)
   void setGlobalLen ();
     // Molecular clock 
     // Output: DTNode::len
@@ -1136,6 +1154,7 @@ private:
     // Time: O(p log(n))
 public:
 	void qc () const override;
+	  // Invokes: getIndiscernibles()
 
 
   void deleteLeaf (TreeNode* leaf,
@@ -1195,6 +1214,7 @@ public:
 private:
   void qcPaths ();
     // Sort: DTNode::pathObjNums 
+    // Time: ~ O(p log(n))
   void setLca ();
     // Input: Leaf::pathObjNums
     // Output: Dissim::lca
@@ -1293,6 +1313,7 @@ public:
                    bool optimizeP);
     // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
+    // !leaf->getParent()->childrenDiscernible(), nubner of children > 1 and !optimizable() => may produce incorrect tree
 	  // Time: Time(optimizeSmallSubgraph)    
         
   // After optimization
@@ -1320,11 +1341,11 @@ public:
     // Input: Dissim::prediction
 	  // Time: O(p)
   Real setErrorDensities ();
-    // Requires: linear variance of dissimilarities
     // Return: epsilon2_0
     // Input: Dissim::prediction
     // Output: DTNode::{paths,errorDensity}
-    // Requires: Leaf::discernible is set
+    // Requires: linear variance of dissimilarities
+    //           Leaf::discernible is set
 	  // Time: O(p log(n))
 
   // Outliers
@@ -1380,7 +1401,7 @@ public:
   void findSpecies (Real species_dist_max,
                    bool includeInteriorNodes);  
     // Genospecies
-    // Output: DTNode::DisjointCluster
+    // Output: DTNode->DisjointCluster
     // Time: if includeInteriorNodes then O(n log(n)) else O(n)
 
   // Statistics
