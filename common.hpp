@@ -232,6 +232,13 @@ struct Chronometer_OnePass : Nocopy
 	
 	
 
+template <typename T>
+  inline T* var_cast (const T* t)
+    { return const_cast <T*> (t); }
+template <typename T>
+  inline T& var_cast (const T &t)
+    { return const_cast <T&> (t); }
+
 template <typename T, typename S>
   inline T const_static_cast (const S* s)
     { return static_cast <T> (const_cast <S*> (s)); }
@@ -1854,7 +1861,7 @@ public:
 	template <typename U, typename V>
 	  Set (const map<U,V> &other)
 	    : universal (false)
-	    { for (const auto it : other)
+	    { for (const auto& it : other)
 	        P::insert (it. first);
 	    }
 	template <typename U>
@@ -2023,7 +2030,7 @@ public:
 	explicit Progress (size_t n_max_arg = 0,
 	                   size_t displayPeriod_arg = 1)
 	  : n_max (n_max_arg)
-	  , active (enabled () && displayPeriod_arg)
+	  , active (enabled () && displayPeriod_arg && (! n_max_arg || displayPeriod_arg <= n_max_arg))
 	  , displayPeriod (displayPeriod_arg)
 	  { if (active) 
 	  	  beingUsed++; 
