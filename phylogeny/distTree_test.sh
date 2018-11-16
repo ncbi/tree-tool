@@ -33,7 +33,7 @@ echo "Perfect tree ..."
 makeDistTree -qc -data data/tree4 -dissim dist | grep -v '^CHRON: ' > tree4.makeDistTree
 diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
-echo "Verbose..."
+echo "Verbose ..."
 makeDistTree -qc -data data/tree4 -dissim dist  &> /dev/null
 
 
@@ -44,7 +44,7 @@ mdsTree.sh data/randomTree dist 2 &> /dev/null
 makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -optimize  -output_tree random-output.tree > /dev/null
 makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
 diff randomTree.makeDistTree data/randomTree.makeDistTree
-echo "Verbose..."
+echo "Verbose ..."
 makeDistTree  -qc  -verbose 2  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin  &> /dev/null
 rm -r data/randomTree.dir/
 rm randomTree.makeDistTree
