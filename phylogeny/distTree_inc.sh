@@ -60,6 +60,7 @@ makeDistTree  -threads 15  -data $1/  -variance lin \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
 mv $1/tree.new $1/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
+makeDistTree  -threads 15  -data $1/  -variance lin  -qc  -noqual > $1/hist/makeDistTree-qc.$VER
 else
   VER=`cat $1/version`
 fi 
@@ -72,21 +73,24 @@ if [ -e $1/phen ]; then
 	echo ""
 	echo "Quality ..."
 	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER 
-	new_root=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
+	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 	DATE=`date +%Y%m%d`
 
-	echo ""
-	echo ""
-	echo "New root: $new_root"
-	echo ""
-	echo ""
-	makeDistTree  -data $1/  -variance lin  -reroot_at "$new_root"  -output_tree tree.$DATE > /dev/null
-	echo ""
-	tree_quality_phen.sh tree.$DATE $1/phen > $1/hist/tree_quality_phen-rooted.$VER
-	cat $1/hist/tree_quality_phen-rooted.$VER
-	new_root=`grep '^New root: ' $1/hist/tree_quality_phen-rooted.$VER | sed 's/^New root: //1'`
-	if [ "$new_root" ]; then
-	  echo "Re-rooting must be idempotent"
-	  exit 1
-	fi
+  if [ "$NEW_ROOT" ]; then
+  	echo ""
+  	echo "New root: $NEW_ROOT"
+  	echo ""
+  	makeDistTree  -data $1/  -variance lin  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
+  	echo ""
+  	tree_quality_phen.sh tree.$DATE $1/phen > $1/hist/tree_quality_phen-rooted.$VER
+  	cat $1/hist/tree_quality_phen-rooted.$VER
+  	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen-rooted.$VER | sed 's/^New root: //1'`
+  	if [ "$NEW_ROOT" ]; then
+  	  echo "Re-rooting must be idempotent"
+  	  exit 1
+  	fi
+  else
+    cp $1/tree tree.$DATE
+    cat $1/hist/tree_quality_phen.$VER 
+  fi
 fi
