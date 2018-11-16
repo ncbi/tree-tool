@@ -1102,7 +1102,7 @@ public:
     // Input: name2objNum
   StringVector getObjNames () const
     { StringVector names;  names. reserve (name2objNum. size ());
-      for (const auto it : name2objNum)
+      for (const auto& it : name2objNum)
         names << it. first;
       names. sort ();
       return names;

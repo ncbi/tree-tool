@@ -67,7 +67,7 @@ struct ThisApplication : Application
     Dataset ds;
     
     VectorPtr<Leaf> leaves;
-    for (const auto it : tree->name2leaf)
+    for (const auto& it : tree->name2leaf)
     {
       ds. appendObj (it. first);
       ASSERT (it. second->graph);

@@ -489,7 +489,7 @@ VectorPtr<DiGraph::Node> DiGraph::getEnds (bool out) const
 DiGraph::Node2Node DiGraph::reverse (const Node2Node& old2new)
 {
   Node2Node new2old;
-  for (const auto it : old2new)
+  for (const auto& it : old2new)
     new2old [it. second] = it. first;    
   return new2old;
 }
@@ -502,7 +502,7 @@ void DiGraph::borrowArcs (const Node2Node &other2this,
 #ifndef NDEBUG
   const DiGraph* otherGraph = nullptr;
 #endif
-  for (const auto it : other2this)
+  for (const auto& it : other2this)
   {
     const Node* other = it. first;
     const Node* from  = it. second;
@@ -1268,7 +1268,7 @@ namespace
     os << ",\n\
       features {\n";
     bool first = true;
-    for (const auto it : features)
+    for (const auto& it : features)
     {
       if (! first)
         os << ',';
@@ -1443,7 +1443,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
 		  for (const auto it1 : leaf2dist)
 			  for (const auto it2 : nodeLeaf2dist)
 			    res << Tree::Patristic (it1. first, it2. first, it1. second + it2. second);
-			for (const auto it : nodeLeaf2dist)
+			for (const auto& it : nodeLeaf2dist)
 			  leaf2dist [it. first] = it. second;
 	  }
     

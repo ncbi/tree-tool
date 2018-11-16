@@ -36,7 +36,7 @@ struct ThisApplication : Application
     const DistTree tree (input_tree, string (), string (), false); 
     tree. qc (); 
     
-    for (const auto it : tree. name2leaf)
+    for (const auto& it : tree. name2leaf)
     {
       const Leaf* leaf = it. second;
       if (! leaf->discernible)

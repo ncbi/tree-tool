@@ -53,7 +53,7 @@ struct ThisApplication : Application
     {
 	    Dataset ds;
 	    auto catAttr = new IntAttr1 ("Category", ds);
-	    for (const auto it : categs)
+	    for (const auto& it : categs)
 	    {
 	    	const uint key = it. first;
 	    	const size_t n = ds. appendObj (toString (key));
@@ -78,7 +78,7 @@ struct ThisApplication : Application
 
     
     Vector <uint/*freq*/> freqVec;
-    for (const auto it : categs)
+    for (const auto& it : categs)
       freqVec << it. second;
     sort (freqVec);
     freqVec. reverse ();
@@ -151,12 +151,12 @@ struct ThisApplication : Application
     
     // Frequency distribution
     map <uint/*freq*/, uint/*freq*/> freqs;
-    for (const auto it : categs)
+    for (const auto& it : categs)
       freqs [it. second] ++;
     {
 	    Dataset ds2;
 	    auto freqAttr = new IntAttr1 ("Freq", ds2);
-	    for (const auto it : freqs)
+	    for (const auto& it : freqs)
 	    {
 	    	const uint key = it. first;
 	    //if (key > 20)  // PAR

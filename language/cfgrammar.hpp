@@ -179,9 +179,9 @@ struct Position : Root
   Position ()
     {}
  ~Position ()
-    { for (auto it : terminal2syntagms)  
+    { for (auto& it : terminal2syntagms)  
         delete it. second;
-      for (auto it : nonTerminal2syntagms)  
+      for (auto& it : nonTerminal2syntagms)  
         delete it. second;
     }
   TerminalSyntagm& init (const Grammar &grammar,
@@ -519,7 +519,7 @@ struct SymbolTree : Root
     // children.empty() => !rules.empty()
 
  ~SymbolTree ()
-    { for (auto it : children)
+    { for (auto& it : children)
         delete it. second;
     }
   void qc () const;

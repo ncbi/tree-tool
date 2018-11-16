@@ -68,7 +68,7 @@ struct ThisApplication : Application
     size_t stable = 0;
     double varSum = 0;
     size_t n = 0;
-    for (const auto it : node2support)
+    for (const auto& it : node2support)
     {
  	    const size_t replicas = it. second [0] + it. second [1];
  	    ASSERT (replicas);

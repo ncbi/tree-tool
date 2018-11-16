@@ -92,7 +92,7 @@ const NonTerminalSyntagm* Sentence::getLastLongestSyntagm () const
   ptrdiff_t diff_max = 0;
   size_t size_max = 0;
   for (const Position& pos : seq) 
-    for (const auto it : pos. nonTerminal2syntagms)
+    for (const auto& it : pos. nonTerminal2syntagms)
       for (const Syntagm* syntagm : *it. second)
       {
         const ptrdiff_t diff = & syntagm->end - & seq [0];
@@ -154,7 +154,7 @@ void Sentence::printWrongSyntagms (ostream &os,
                                    size_t size_min) const
 {
   for (const Position& pos : seq) 
-    for (const auto it : pos. nonTerminal2syntagms)
+    for (const auto& it : pos. nonTerminal2syntagms)
       for (const Syntagm* syntagm : *(it. second))
         if (! syntagm->right 
             && syntagm->size () >= size_min
@@ -171,7 +171,7 @@ VectorPtr<NonTerminalSyntagm> Sentence::findSyntagms (const string& symbolName) 
 {
   VectorPtr<NonTerminalSyntagm> vec;
   for (const Position& pos : seq)
-    for (const auto it : pos. nonTerminal2syntagms)
+    for (const auto& it : pos. nonTerminal2syntagms)
       for (const Syntagm* syntagm : *(it. second))
         if (   syntagm->right 
             && syntagm->symbol. name == symbolName
@@ -412,7 +412,7 @@ const NonTerminalSyntagm* Position::getLongestSyntagm () const
 {
   const Syntagm* longestSyntagm = nullptr;
   size_t size_max = 0;
-  for (const auto it : nonTerminal2syntagms)
+  for (const auto& it : nonTerminal2syntagms)
     for (const Syntagm* syntagm : *it. second)
       if (maximize (size_max, syntagm->size ()))
         longestSyntagm = syntagm;
@@ -769,7 +769,7 @@ void Rule::parseIt (RhsIt rhsIt,
     {
       VectorPtr<Syntagm> children_new;  children_new. reserve (1); 
       children_new << nts;
-      for (const auto it : pos. terminal2syntagms)
+      for (const auto& it : pos. terminal2syntagms)
         if (const VectorPtr<Rule>* rules = findPtr (lhs. terminal2rules [true], it. first))
           for (const Rule* rule : *rules)
           {
@@ -1077,7 +1077,7 @@ bool Terminal::differentiated (Rule::Occurrence ro,
     return false;
   const Set<const Terminal*>* s = findPtr (o2t, ro);
   ASSERT (s);
-  for (const auto it : o2t)
+  for (const auto& it : o2t)
     if (   ! (it. first == ro)
         && s->intersects (it. second)
        )
@@ -1124,7 +1124,7 @@ void NonTerminal::qc () const
 //ASSERT (terminal2rules [false]. size () == terminal2rules [true] . size ());
   Set<const Rule*> all;
   for (const bool b : {false, true})
-    for (const auto it : terminal2rules [b])
+    for (const auto& it : terminal2rules [b])
     {
       const Terminal* t = it. first;
       ASSERT (t);
@@ -1262,7 +1262,7 @@ double NonTerminal::getComplexity () const
   // Relation to running time ??
   size_t n = erasableRules. size ();
   for (const bool b : {false, true})
-    for (const auto it : terminal2rules [b])
+    for (const auto& it : terminal2rules [b])
     {
       const VectorPtr<Rule>& rules = it. second;
       maximize (n, rules. size () /*+ (b ? 0 : erasableRules. size ())*/);
@@ -1281,7 +1281,7 @@ double NonTerminal::getComplexity () const
 
 bool NonTerminal::canEnd (const Position &pos) const
 {
-  for (const auto it : pos. terminal2syntagms)
+  for (const auto& it : pos. terminal2syntagms)
     if (neighbors [true]. contains (it. first))
       return true;
   return false;
@@ -1313,7 +1313,7 @@ const Syntagms* NonTerminal::parse (const Position& pos) const
   ASSERT (res. empty ());
 
   const VectorPtr<Syntagm> children;
-  for (const auto it : pos. terminal2syntagms)
+  for (const auto& it : pos. terminal2syntagms)
     if (const VectorPtr<Rule>* rules = findPtr (terminal2rules [false], it. first))
       for (const Rule* rule : *rules)
       {
@@ -1413,7 +1413,7 @@ void SymbolTree::qc () const
   if (! qc_on)
     return;
   IMPLY (children. empty (), ! rules. empty ());
-  for (const auto it : children)
+  for (const auto& it : children)
   {
     ASSERT (it. first);
     const SymbolTree* st = it. second;
@@ -1431,7 +1431,7 @@ void SymbolTree::saveText (ostream &os) const
   for (const Rule* r : rules)
     os << ' ' << r->num;
   Offset ofs;
-  for (const auto it : children)
+  for (const auto& it : children)
   {
     ofs. newLn (os);
     os << it. first->name << ':';
@@ -1766,7 +1766,7 @@ void Grammar::qc () const
   ASSERT (symbolSet. size () == symbols. size ());
   ASSERT (charSet. size () == terminals);
 
-  for (const auto it : char2terminal)
+  for (const auto& it : char2terminal)
     ASSERT (symbols. contains (it. second));      
 
   // Valid CF-grammar
@@ -1823,7 +1823,7 @@ void Grammar::saveText (ostream &os) const
         os << s->name << " after " << prev->name << endl;
       }
   }
-  for (const auto it : mainNexts)
+  for (const auto& it : mainNexts)
   {
     Set<const Symbol*> nexts (it. first->getRuleNexts ());
     nexts. erase (nullptr);
@@ -1844,7 +1844,7 @@ void Grammar::saveText (ostream &os) const
         os << s->name << " before " << Symbol::getName (next) << endl;
       }
   }
-  for (const auto it : mainPrevs)
+  for (const auto& it : mainPrevs)
   {
     Set<const Symbol*> prevs (it. first->getRulePrevs ());
     prevs. erase (nullptr);
@@ -2260,7 +2260,7 @@ void Grammar::terminals4scc () const
   }
 
   // Only print ??
-  for (const auto it : scc2terminals)
+  for (const auto& it : scc2terminals)
   {
     cout << static_cast <const SymbolGraph::Node*> (it. first) -> symbol. name << ":";
     for (const Symbol* s : it. second)

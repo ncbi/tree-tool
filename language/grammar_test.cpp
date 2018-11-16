@@ -72,7 +72,7 @@ struct ThisApplication : Application
     for (const Position& pos : text. seq)
     {
       cout << pos. c << ":";
-      for (const auto it : pos. nonTerminal2syntagms)
+      for (const auto& it : pos. nonTerminal2syntagms)
         for (const Syntagm* syntagm : * it. second)
           if (! syntagm->right)
           {
