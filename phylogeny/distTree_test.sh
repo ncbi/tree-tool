@@ -23,7 +23,7 @@ rm Enterobacteriaceae.nw
 
 echo ""
 echo "mdsTree: Mycobacterium_tuberculosis ..."
-rm -r -f data/Mycobacterium_tuberculosis.dir/
+rm -rf data/Mycobacterium_tuberculosis.dir/
 mdsTree.sh data/Mycobacterium_tuberculosis ANI 2 &> /dev/null
 rm -r data/Mycobacterium_tuberculosis.dir/
 
@@ -39,7 +39,7 @@ makeDistTree -qc -data data/tree4 -dissim dist  &> /dev/null
 
 echo ""
 echo "mdsTree: Random tree ..."
-rm -r -f data/randomTree.dir/
+rm -rf data/randomTree.dir/
 mdsTree.sh data/randomTree dist 2 &> /dev/null
 makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -optimize  -output_tree random-output.tree > /dev/null
 makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
