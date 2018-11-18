@@ -22,10 +22,8 @@ Optimizing arc lengths at each node ...
 # Nodes deleted = 4
 absCriterion = 37.167  Error density = 2.969 %
 
-Optimizing topology: subgraphs ...
 absCriterion = 18.512  Error density = 2.095 %
 
-Re-rooting ...
 Ave. radius: 0.455852
 
 OUTPUT:

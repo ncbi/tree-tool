@@ -22,26 +22,20 @@ Optimizing arc lengths at each node ...
 # Nodes deleted = 2
 absCriterion = 7.910  Error density = 1.943 %
 
-Optimizing topology: subgraphs ...
 # Hybrids: 0
-Deleting ...
 absCriterion = 7.067  Error density = 1.837 %
 
 # Hybrids: 0
-Deleting ...
 absCriterion = 7.048  Error density = 1.834 %
 
 # Hybrids: 0
-Deleting ...
 absCriterion = 7.048  Error density = 1.834 %
 
 # Hybrids: 0
-Deleting ...
 absCriterion = 7.048  Error density = 1.834 %
 
 absCriterion = 7.048  Error density = 1.834 %
 
-Re-rooting ...
 Ave. radius: 0.455985
 
 # Outliers: 9
@@ -55,7 +49,6 @@ SAMN03988423	10.158	0.492
 SAMN03992688	2.890	0.140
 SAMN04255291	3.763	0.182
 SAMN04388342.r1	13.646	0.661
-Deleting ...
 absCriterion = 4.395  Error density = 1.448 %
 
 OUTPUT:

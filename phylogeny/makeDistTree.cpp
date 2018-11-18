@@ -139,7 +139,7 @@ struct ThisApplication : Application
     			  	      
     cout << "# Hybrids: " << hybrids. size () << endl;        
 
-    cout << "Deleting ..." << endl;
+    cerr << "Deleting hybrids ..." << endl;
     bool deleted = false;
     {
       Progress prog (hybrids. size ());
@@ -151,6 +151,7 @@ struct ThisApplication : Application
         deleted = true;
       }
     }
+    
     tree. reportErrors (cout);
     cout << endl;
     tree. qc ();
@@ -288,7 +289,7 @@ struct ThisApplication : Application
 
     if (! deleteFName. empty ())
     {
-      cout << "Deleting ..." << endl;
+      cerr << "Deleting ..." << endl;
       size_t deleted = 0;
       {
         LineInput f (deleteFName, 10000, 1);
@@ -299,7 +300,7 @@ struct ThisApplication : Application
           const Leaf* leaf = findPtr (tree->name2leaf, f. line);
           if (! leaf)
           {
-            cout << "Leaf " << f. line << " not found" << endl;
+          //cout << "Leaf " << f. line << " not found" << endl;
             continue;
           }
           tree->removeLeaf (const_cast <Leaf*> (leaf), false);
@@ -353,14 +354,14 @@ struct ThisApplication : Application
           
           if (reinsert)
           {
-            cout << "Optimizing topology: re-insert ..." << endl;
+            cerr << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: re-insert");
             tree->optimizeReinsert ();  
           }
           
           if (! skip_topology)
           {
-            cout << string ("Optimizing topology: ") + (whole ? "neighbors" : "subgraphs") + " ..." << endl;
+            cerr << string ("Optimizing topology: ") + (whole ? "neighbors" : "subgraphs") + " ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
             if (whole)
               tree->optimizeWholeIter (0, output_tree);
@@ -395,7 +396,7 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           
-          cout << "Re-rooting ..." << endl;
+          cerr << "Re-rooting ..." << endl;
           const Real radius_ave = tree->reroot (root_topological);
 				  const ONumber on (cout, dissimDecimals, false);
           cout << "Ave. radius: " << radius_ave << endl;
@@ -422,7 +423,7 @@ struct ThisApplication : Application
 	             << '\t' << leaf->getRelCriterion ()
 	             << '\t' << leaf->absCriterion  
 	             << endl;
-        cout << "Deleting ..." << endl;
+        cerr << "Deleting outliers ..." << endl;
         {
           OFStream f (delete_outliers);
           Progress prog (outliers. size ());
@@ -455,7 +456,7 @@ struct ThisApplication : Application
 
     if (reroot)
     {
-      cout << "Re-rooting ..." << endl;
+      cerr << "Re-rooting ..." << endl;
       cout << "Ave. radius: " << tree->reroot (root_topological) << endl;
       cout << endl;
       tree->qc ();
@@ -630,7 +631,7 @@ struct ThisApplication : Application
     
     if (! dissim_request. empty ())
     {
-      cout << endl << "Finding missing leaf pairs ..." << endl;      
+      cerr << endl << "Finding missing leaf pairs ..." << endl;      
       Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, refresh_dissim));
       cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
 
