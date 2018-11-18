@@ -3,6 +3,9 @@
 #undef NDEBUG
 #include "common.inc"
 
+#include <thread>         // std::this_thread::sleep_for
+#include <chrono>         // std::chrono::seconds
+
 #include "common.hpp"
 using namespace Common_sp;
 
@@ -62,26 +65,12 @@ struct ThisApplication : Application
 
 	void body () const
 	{
-	  Vector<double> vec;  vec. reserve (1000000);
-	  cout << vec. capacity () << endl;
-	  Rand rand;
-	  FOR (size_t, i, vec. capacity ())
-	    vec << rand. getProb ();
-	  cout << vec. capacity () << endl;
-	  cout << vec. size () << endl;
-	
-	  {    
-      const Chronometer_OnePass chron ("sort");
-  	  for (size_t i = 0; i < 100000; i++)
-  	    vec. sort ();
-  	}
-
-	  {    
-      const Chronometer_OnePass chron ("nth_element");
-  	  for (size_t i = 0; i < 1000; i++)
-  	    std::nth_element (vec. begin (), vec. begin () + 7000, vec. end ());
-  	}
-	}
+    for (int i=10; i>0; --i) 
+    {
+      std::cout << i << std::endl;
+      std::this_thread::sleep_for (std::chrono::seconds(10));
+    }	
+  }
 };
 
 
