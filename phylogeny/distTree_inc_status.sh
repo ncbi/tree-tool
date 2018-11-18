@@ -37,9 +37,14 @@ if [ -e $1/alien ]; then
   echo "# Aliens: $N"
 fi
 
-if [ -e $1/genospecies_outlier ]; then
-	N=`cat $1/genospecies_outlier | wc -l`
-  echo "# Genospecies outliers: $N"
+if [ -e $1/contaminated ]; then
+	N=`cat $1/contaminated | wc -l`
+  echo "# Contaminated: $N"
+fi
+
+if [ -e $1/genosubspecies_outlier ]; then
+	N=`cat $1/genosubspecies_outlier | wc -l`
+  echo "# Genosubspecies outliers: $N"
   echo "# Objects to be in tree: $(( $OBJS - $N ))"
 fi
 
@@ -65,7 +70,7 @@ grep ' V !' $1/hist/makeFeatureTree-tree1.* | sed 's|^'$1'/hist/makeFeatureTree-
 tail -5 $TMP
 
 echo ""
-wc -l inc/hist/genospecies_outlier.* | grep -v total |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+wc -l inc/hist/genosubspecies_outlier.* | grep -v total |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 tail -5 $TMP
 
 

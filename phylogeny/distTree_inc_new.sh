@@ -20,7 +20,7 @@ QC=""  # -qc
 RATE=0.01   # PAR
 
 
-if [ 1 == 1 ]; then  
+if [ 1 == 1 ]; then 
 date
 echo ""
 top -b -n 1 | head -15
@@ -135,6 +135,8 @@ while [ 1 == 1 ]; do
   
   rm -r $1/log/
       
+  trav  -step 1  $1/search "distTree_inc_search2bad.sh $1 %f"
+
   echo "Processing new objects ..."
   distTree_new $QC $1/  -variance lin
 done
@@ -161,9 +163,9 @@ if [ -e $1/hybridness_min ]; then
 fi
 
 DELETE=""
-if [ -e $1/genospecies_outlier ]; then
-  wc -l $1/genospecies_outlier
-  DELETE="-delete $1/genospecies_outlier"
+if [ -e $1/genosubspecies_outlier ]; then
+  wc -l $1/genosubspecies_outlier
+  DELETE="-delete $1/genosubspecies_outlier"
 fi
 
 # Time: O(n log^4(n)) 
@@ -185,20 +187,21 @@ cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
 $1/objects_in_tree.sh $1/leaf.list 1
 rm $1/leaf.list
 
-if [ -e $1/genospecies_outlier ]; then
-  $1/objects_in_tree.sh $1/genospecies_outlier null
-  trav $1/genospecies_outlier "rm -f $1/outlier/%f"
-  mv $1/genospecies_outlier $1/hist/genospecies_outlier.$VER
+if [ -e $1/genosubspecies_outlier ]; then
+  $1/objects_in_tree.sh $1/genosubspecies_outlier null
+  trav $1/genosubspecies_outlier "rm -f $1/outlier/%f"
+  mv $1/genosubspecies_outlier $1/hist/genosubspecies_outlier.$VER
 fi
 
-if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
-  tree2species $1/tree  $DISSIM_BOUNDARY  -species_table $1/genospecies_table
-  $1/genospecies2db.sh $1/genospecies_table > $1/genospecies_outlier  
-  rm $1/genospecies_table 
-  if [ -s $1/genospecies_outlier ]; then
-    wc -l $1/genospecies_outlier
+GENOSUBSPECIES_BOUNDARY=`cat $1/genosubspecies_boundary`
+if [ "$GENOSUBSPECIES_BOUNDARY" != "NAN" ]; then
+  tree2species $1/tree  $GENOSUBSPECIES_BOUNDARY  -species_table $1/genosubspecies_table
+  $1/genospecies2db.sh $1/genosubspecies_table > $1/genosubspecies_outlier  
+  rm $1/genosubspecies_table 
+  if [ -s $1/genosubspecies_outlier ]; then
+    wc -l $1/genosubspecies_outlier
   else
-    rm $1/genospecies_outlier
+    rm $1/genosubspecies_outlier
   fi
 fi
 
@@ -221,7 +224,7 @@ distTree_inc_tree1_quality.sh $1
 set +o errexit
 L=`ls $1/new | head -1`
 set -o errexit
-if [ ! "$L" -a ! -e $1/genospecies_outlier ]; then
+if [ ! "$L" -a ! -e $1/genosubspecies_outlier ]; then
   exit 2
 fi
 

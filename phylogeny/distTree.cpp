@@ -1969,8 +1969,8 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
 
 
 
-Real Dissim::process (size_t objNum,
-	                    Tree::LcaBuffer &buf)
+Real Dissim::setPathObjNums (size_t objNum,
+	                           Tree::LcaBuffer &buf)
 {
   ASSERT (valid ());
 
@@ -2422,10 +2422,11 @@ struct DissimLine
 		{ replace (line, '\t', ' ');
       name1 = findSplit (line);
       name2 = findSplit (line);
+      const string errorS ("Line " + toString (lineNum) + ": ");
       if (name2. empty ())
-        throw runtime_error ("Line " + toString (lineNum) + ": Empty name2");
+        throw runtime_error (errorS + "empty name2");
       if (name1 >= name2)
-        throw runtime_error ("Line " + toString (lineNum) + ": name1 >= name2");
+        throw runtime_error (errorS + "name1 >= name2");
     #if 0
       if (outliers. containsFast (name1))
         continue;
@@ -2433,6 +2434,12 @@ struct DissimLine
         continue;
     #endif
       dissim = str2real (line);
+      if (isNan (dissim))
+        throw runtime_error (errorS + "dissimilarity is NAN");
+      if (dissim < 0)
+        throw runtime_error (errorS + "dissimilarity is negative");
+      if (! DM_sp::finite (dissim))
+        throw runtime_error (errorS + "dissimilarity is infinite");
 		}
 		
 
@@ -2456,13 +2463,14 @@ struct DissimLine
 	  
 	  
 	void apply (DistTree &tree) const
-    { if (! leaf1)
+    { ASSERT (! isNan (dissim));
+      if (! leaf1)
         return;
       if (! leaf2)
         return;
       if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
         leaf1->collapse (leaf2);
-      if (! isNan (dissim) && ! tree. addDissim (leaf1, leaf2, dissim))
+      if (! tree. addDissim (leaf1, leaf2, dissim))
       	throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
     }
 
@@ -4062,7 +4070,7 @@ void setPaths_ (const Vector<size_t> &subTree,
   for (const size_t objNum : subTree) 
   {
     prog ();
-    absCriterion += dissims [objNum]. process (objNum, buf);
+    absCriterion += dissims [objNum]. setPathObjNums (objNum, buf);
   }
 }
 	
@@ -4077,16 +4085,7 @@ void DistTree::setPaths ()
   if (dissims. size () > dissims_max)
     throw runtime_error ("setPaths: Too large objNum");
     
- 	for (DiGraph::Node* node : nodes)
-    if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
-    {
-      st->pathObjNums. clear ();
-    //st->lcaNum = 0;
-    }
-
   setLca ();  
-
-  absCriterion = 0;
   
   Tree::LcaBuffer buf;
 #if 0
@@ -4095,17 +4094,38 @@ void DistTree::setPaths ()
   	  || dissims. size () < smallDissims
   	 )
 #endif
-  {
-	  Progress prog (dissims. size (), dissim_progress); 
-	  FFOR (size_t, objNum, dissims. size ()) 
-	  {
-	  	prog ();
-	    absCriterion += dissims [objNum]. process (objNum, buf);
-	  }
-	}
+    for (;;)
+      try
+      {
+       	for (DiGraph::Node* node : nodes)
+          if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
+            st->pathObjNums. clear ();
+        absCriterion = 0;
+    	  Progress prog (dissims. size (), dissim_progress); 
+    	  FFOR (size_t, objNum, dissims. size ()) 
+    	  {
+    	  	prog ();
+    	    absCriterion += dissims [objNum]. setPathObjNums (objNum, buf);
+    	  }
+      	break;
+    	}
+    	catch (const bad_alloc &)
+    	{
+    	  if (Threads::empty ())
+    	    throw;
+    	  cerr << endl << "*** Thread out of memory ***" << endl;
+    	  // Maybe other thread's will finish
+        this_thread::sleep_for (chrono::seconds (60));  // PAR
+    	}
+    	catch (...)  { throw; }
 #if 0
 	else
   {    
+   	for (DiGraph::Node* node : nodes)
+      if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
+        st->pathObjNums. clear ();
+
+    absCriterion = 0;
 	  for (Dissim& dissim : dissims)
 	  {
 	  	ASSERT (dissim. lca);
@@ -4146,7 +4166,7 @@ void DistTree::setPaths ()
 		  FFOR (size_t, objNum, dissims. size ()) 
 		  {
 		    prog ();
-		    absCriterion += dissims [objNum]. process (objNum, buf);
+		    absCriterion += dissims [objNum]. setPathObjNums (objNum, buf);
 		  }
 		}
 		else
@@ -5836,7 +5856,7 @@ void DistTree::optimizeLargeSubgraphs ()
 			VectorOwn<Image> images;  images. reserve (threads_max);
 		  Image mainImage (*this);  
 			{
-				Threads th (boundary. size ());  // bad_alloc() => decrease boundary.size(), redo ??
+				Threads th (boundary. size ());  
 				VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
 				for (const Steiner* cut : boundary)
 				{

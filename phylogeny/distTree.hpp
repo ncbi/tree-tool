@@ -892,8 +892,8 @@ struct Dissim
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
     // LSE is MLE <= sqrt(mult)*(prediction-target) ~ N(0,sigma^2)
-  Real process (size_t objNum,
-                Tree::LcaBuffer &buf);
+  Real setPathObjNums (size_t objNum,
+                       Tree::LcaBuffer &buf);
     // Return: getAbsCriterion()
     // Output: prediction, Steiner::pathObjNums
     
@@ -1024,9 +1024,12 @@ public:
     //        ]
 	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity, species boundary
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
+	  //          genosubspecies_boundary   <number>                                      Boundary of genosubspecies to find outliers
     //         [alien]                                                                  Objects similar to no other objects
+    //         [dissim.bad]               <obj1> <obj2> nan
+    //         [contaminated]             <obj>                                         Contaminated objects from dissim.bad
 	  //          outlier/                  <obj>                                         Tree outlier objects
-	  //         [genospecies_outlier]      <obj>                                         Genospecies outliers to delete
+	  //         [genosubspecies_outlier]   <obj>                                         Genospecies outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
 	  //          hist/                     {tree,makeDistTree,leaf,outlier,

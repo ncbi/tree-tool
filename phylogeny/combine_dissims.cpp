@@ -169,7 +169,12 @@ Line format: <unit> <raw_min> <raw_max>");
       #else
         dissim = scales [j]. raw2dissim (raw);
         if (! isNan (dissim))
+        {
+          ASSERT (dissim >= 0);
+          if (dissim == 0 && j)  // Contradiction
+            dissim = NAN;
           break;
+        }
       #endif
       }
       cout         << objPairs [i]. name1 
