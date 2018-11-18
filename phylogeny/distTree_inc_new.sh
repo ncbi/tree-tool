@@ -20,7 +20,7 @@ QC=""  # -qc
 RATE=0.01   # PAR
 
 
-if [ 1 == 0 ]; then  # was: 1 == 1  ??
+if [ 1 == 1 ]; then  # was: 1 == 1  
 date
 echo ""
 top -b -n 1 | head -15

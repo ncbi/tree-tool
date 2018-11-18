@@ -57,7 +57,7 @@ echo $VER > $1/version
 # Time: O(n log^5(n))
 makeDistTree  -threads 15  -data $1/  -variance lin \
   -optimize  -skip_len  -reinsert  \
-  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree.$VER
+  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree-complete-inc.$VER
 mv $1/tree.new $1/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 makeDistTree  -threads 15  -data $1/  -variance lin  -qc  -noqual > $1/hist/makeDistTree-qc.$VER
