@@ -22,7 +22,7 @@ makeDistTree  -threads 15  -data $1/  -variance lin \
   -delete $2  \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
-  -output_tree $1/tree.new > $1/hist/makeDistTree.$VER
+  -output_tree $1/tree.new > $1/hist/makeDistTree-delete.$VER
 mv $1/tree.new $1/tree
 
 echo ""

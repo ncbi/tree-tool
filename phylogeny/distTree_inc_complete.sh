@@ -49,7 +49,7 @@ makeDistTree  -threads 5  \
   -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY \
   -output_tree $1/tree \
   -output_feature_tree $1/_feature_tree \
-  > $1/hist/makeDistTree.1
+  > $1/hist/makeDistTree-complete.1
 rm $1/data.dm
 
 echo ""
