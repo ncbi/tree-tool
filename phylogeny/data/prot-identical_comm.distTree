@@ -31,9 +31,6 @@ absCriterion = 7.048  Error density = 1.834 %
 # Hybrids: 0
 absCriterion = 7.048  Error density = 1.834 %
 
-# Hybrids: 0
-absCriterion = 7.048  Error density = 1.834 %
-
 absCriterion = 7.048  Error density = 1.834 %
 
 Ave. radius: 0.455985
@@ -49,10 +46,10 @@ SAMN03988423	10.158	0.492
 SAMN03992688	2.890	0.140
 SAMN04255291	3.763	0.182
 SAMN04388342.r1	13.646	0.661
-absCriterion = 4.395  Error density = 1.448 %
+absCriterion = 4.395  Error density = 1.491 %
 
 OUTPUT:
-absCriterion = 4.395  Error density = 1.448 %
+absCriterion = 4.395  Error density = 1.491 %
 absCriterion [0] = 0.322  Error density [0] = 5.018 %  Fraction = 5.988 %
 absCriterion [1] = 4.073  Error density [1] = 1.440 %  Fraction = 94.012 %
 

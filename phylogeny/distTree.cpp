@@ -2147,21 +2147,32 @@ void Image::processLarge (const Steiner* subTreeRoot,
   subgraph. removeIndiscernibles ();
 //cout << "Subgraph size: " << subgraph. area. size () << endl;
   
-  tree = new DistTree (subgraph, new2old);
-  tree->qc ();
-  rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
+  try
+  {
+    tree = new DistTree (subgraph, new2old);
+    tree->qc ();
+    rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
-  // Optimization
-	tree->optimizeSmallSubgraphs (areaRadius_std, false);
-	
-	tree->qc ();
+    // Optimization
+  	tree->optimizeSmallSubgraphs (areaRadius_std, false);
+  	
+  	tree->qc ();
+  }
+  catch (const bad_alloc &)  
+  { 
+    delete tree;
+    tree = nullptr;
+    subgraph. clear ();
+  }
 }
 
 
 
-void Image::apply ()
+bool Image::apply ()
 {
-	ASSERT (tree);
+	if (! tree)
+	  return false;
+	  
 	subgraph. qc ();
 	
 
@@ -2312,6 +2323,9 @@ void Image::apply ()
 
   if (verbose (1))
     wholeTree. reportErrors (cout);
+
+    
+  return true;
 }
 
 
@@ -2532,9 +2546,9 @@ struct OptimizeSmallSubgraph
    	}
   void process ()
     { image. processSmall (center, radius); }
-  void apply ()
+  bool apply ()
     { Unverbose unv;
-    	image. apply (); 
+    	return image. apply (); 
     }
 };
 
@@ -2741,7 +2755,7 @@ DistTree::DistTree (const string &dataDirName,
 						// Use Threads for apply() for sibling subtrees ??
 		      	for (const OptimizeSmallSubgraph* oss : osss)
 		      	{
-		      		const_cast <OptimizeSmallSubgraph*> (oss) -> apply ();
+		      		EXEC_ASSERT (var_cast (oss) -> apply ());
 			        prog (absCriterion2str ());
 		      	}
 			    }
@@ -2977,11 +2991,12 @@ DistTree::DistTree (Subgraph &subgraph,
   // For some leaf pairs the dissimilarity may be missing
   dissims. reserve (getDissimSize_max ());
  	Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, (uint) -1);
+  const size_t reserve_size = pathObjNums_reserve_size ();
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
  	  ASSERT (dtNode->pathObjNums. empty ());
- 	  const_cast <DTNode*> (dtNode) -> pathObjNums. reserve (dissims. capacity ()); 
+ 	  var_cast (dtNode) -> pathObjNums. reserve (reserve_size); 
  	}
   for (const auto it2 : name2leaf)
     for (const auto it1 : name2leaf)
@@ -2991,7 +3006,7 @@ DistTree::DistTree (Subgraph &subgraph,
       ASSERT (it1. first < it2. first);
       const Leaf* leaf1 = it1. second;
       const Leaf* leaf2 = it2. second;
-      const uint objNum = leaves2dissims (const_cast <Leaf*> (leaf1), const_cast <Leaf*> (leaf2), 0, 0);
+      const uint objNum = leaves2dissims (var_cast (leaf1), var_cast (leaf2), 0, 0);
       ASSERT (leaf1->index < NO_INDEX);
       ASSERT (leaf2->index < NO_INDEX);
       leaves2objNum [leaf1->index * leafNum + leaf2->index] = objNum;
@@ -3983,7 +3998,7 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
   dissims. reserve (pairs_max);
 
-  const size_t reserve_size = 10 * (size_t) log (name2leaf. size () + 1);  
+  const size_t reserve_size = pathObjNums_reserve_size ();
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -4087,6 +4102,11 @@ void DistTree::setPaths ()
     
   setLca ();  
   
+ 	for (DiGraph::Node* node : nodes)
+    if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
+      st->pathObjNums. clear ();  
+
+  absCriterion = 0;
   Tree::LcaBuffer buf;
 #if 0
   if (   subDepth 
@@ -4094,38 +4114,17 @@ void DistTree::setPaths ()
   	  || dissims. size () < smallDissims
   	 )
 #endif
-    for (;;)
-      try
-      {
-       	for (DiGraph::Node* node : nodes)
-          if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
-            st->pathObjNums. clear ();
-        absCriterion = 0;
-    	  Progress prog (dissims. size (), dissim_progress); 
-    	  FFOR (size_t, objNum, dissims. size ()) 
-    	  {
-    	  	prog ();
-    	    absCriterion += dissims [objNum]. setPathObjNums (objNum, buf);
-    	  }
-      	break;
-    	}
-    	catch (const bad_alloc &)
-    	{
-    	  if (Threads::empty ())
-    	    throw;
-    	  cerr << endl << "*** Thread out of memory ***" << endl;
-    	  // Maybe other thread's will finish
-        this_thread::sleep_for (chrono::seconds (60));  // PAR
-    	}
-    	catch (...)  { throw; }
+  {
+	  Progress prog (dissims. size (), dissim_progress); 
+	  FFOR (size_t, objNum, dissims. size ()) 
+	  {
+	  	prog ();
+	    absCriterion += dissims [objNum]. setPathObjNums (objNum, buf);
+	  }
+ 	}
 #if 0
 	else
   {    
-   	for (DiGraph::Node* node : nodes)
-      if (Steiner* st = const_cast <Steiner*> (static_cast <const DTNode*> (node) -> asSteiner ()))
-        st->pathObjNums. clear ();
-
-    absCriterion = 0;
 	  for (Dissim& dissim : dissims)
 	  {
 	  	ASSERT (dissim. lca);
@@ -4313,7 +4312,7 @@ void DistTree::qc () const
  	ASSERT (leafDissims == 2 * dissims. size ());
 
 /*
-  // May happen due to deleteLeaf()
+  // May happen due to removeLeaf()
   for (const DTNode* dtNode : toDelete)
   	ASSERT (! dtNode->asLeaf ());
 */
@@ -5775,14 +5774,20 @@ void DistTree::optimizeLargeSubgraphs ()
 
 
 	if (threads_max == 1)
-		goto small_tree;
+	{
+		optimizeSmallSubgraphs (areaRadius_std, false);
+    return;
+	}
 	if (name2leaf. size () <= 2 * large_min)  // PAR
 	{
 	  cout << "Too small tree" << endl;
-		goto small_tree;
+		optimizeSmallSubgraphs (areaRadius_std, false);
+    return;
 	}
 	
-	
+
+  const Keep<size_t> threads_max_kp (threads_max);
+	for (;;)
 	{
 		VectorPtr<Steiner> boundary;  boundary. reserve (threads_max);   // isTransient()
 		{
@@ -5847,11 +5852,13 @@ void DistTree::optimizeLargeSubgraphs ()
 		if (boundary. empty ()) 
 		{
 			cout << "No cuts found" << endl;
-			goto small_tree;
+  		optimizeSmallSubgraphs (areaRadius_std, false);
+      return;
 		}
 	//qc ();  // Breaks due to transients
 	
 	
+		bool failed = false;
 	  {
 			VectorOwn<Image> images;  images. reserve (threads_max);
 		  Image mainImage (*this);  
@@ -5880,11 +5887,13 @@ void DistTree::optimizeLargeSubgraphs ()
 			{
 				Progress prog (images. size () + 1);
 				Unverbose unv;
-				mainImage. apply ();  
+				if (! mainImage. apply ())
+				  failed = true;
 				prog (absCriterion2str ()); 
 			  for (const Image* image : images)
 			  {
-			  	const_cast <Image*> (image) -> apply ();
+			  	if (! failed && ! var_cast (image) -> apply ())
+			  	  failed = true;
 					prog (absCriterion2str () + " (approx.)"); 
 			  }
 			}
@@ -5912,16 +5921,26 @@ void DistTree::optimizeLargeSubgraphs ()
 	  setPredictionAbsCriterion ();
 	  qc ();
 	  
-	  cerr << "Optimizing cut nodes ..." << endl;
-	  optimizeSmallSubgraphs (areaRadius_std, true);  // PAR
-	  qc ();
-	  qcPredictionAbsCriterion ();
-	}  
-  return;
-
-  
-small_tree:
-	optimizeSmallSubgraphs (areaRadius_std, false);
+	  if (failed)
+	  {
+      cerr << "*** OUT OF MEMORY ***" << endl;
+      ASSERT (threads_max > 1);
+      threads_max--;
+      if (threads_max == 1)
+      {
+        optimizeSmallSubgraphs (areaRadius_std, false);
+        break;
+      }
+	  }
+	  else
+	  {
+  	  cerr << "Optimizing cut nodes ..." << endl;
+  	  optimizeSmallSubgraphs (areaRadius_std, true);  // PAR
+  	  qc ();
+  	  qcPredictionAbsCriterion ();
+  	  break;
+  	}
+  }
 }
 
 
@@ -5990,7 +6009,7 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
 
 	Image image (*this);
   image. processSmall (center, areaRadius);
-  image. apply ();
+  EXEC_ASSERT (image. apply ());
 
   qc ();
   qcPredictionAbsCriterion ();
@@ -6150,10 +6169,14 @@ void DistTree::removeLeaf (Leaf* leaf,
 			if (dissim. mult)
 	  	{
 	      absCriterion -= dissim. getAbsCriterion ();	      
+        mult_sum     -= dissim. mult;
+        dissim2_sum  -= dissim. mult * sqr (dissim. target); 
 	      dissim. mult = 0;
 	    }
     }
 	  maximize (absCriterion, 0.0);
+	  ASSERT (dissim2_sum >= absCriterion);
+	  ASSERT (mult_sum > 0);
 	
 	  qcPaths (); 
 	

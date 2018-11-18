@@ -915,6 +915,7 @@ struct Image : Nocopy
     // May be delete'd
   DistTree* tree {nullptr};
     // Subgraph tree
+    // nullptr <=> bad_alloc
   DiGraph::Node2Node new2old;  
     // Initially: newLeaves2boundary
   bool rootInArea {false};
@@ -932,7 +933,8 @@ struct Image : Nocopy
 	void processLarge (const Steiner* subTreeRoot,
 	                   const VectorPtr<Tree::TreeNode> &possibleBoundary);
     // Time: ~ O(n^2 / threads_max^2)
-  void apply ();
+  bool apply ();
+    // Return: false <=> bad_alloc
 	  // Output: DTNode::stable = true
     // Time: ~ O(|area| log^2(|area|) log^2(n))
 };
@@ -1085,6 +1087,8 @@ private:
   void newick2node (ifstream &f,
                     Steiner* parent);
   void setName2leaf ();
+  size_t pathObjNums_reserve_size () const
+    { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR
   void loadDissimDs (const string &dissimFName,
                      const string &dissimAttrName);
     // Output: dissimDs
