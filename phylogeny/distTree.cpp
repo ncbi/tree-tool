@@ -1341,11 +1341,19 @@ void Subgraph::qc () const
 
 
 
-void Subgraph::reserve ()
+void Subgraph::reserve (size_t radius)
 {
-  area.     reserve (tree. name2leaf. size () * 2); 
-  boundary. reserve (tree. name2leaf. size ());
-  subPaths. reserve (tree. dissims. size ()); 
+  ASSERT (radius);
+  
+ 	const size_t boundary_size = 2 * (size_t) powInt (2, (uint) radius);  // PAR
+  area.     reserve (boundary_size * 2); 
+  boundary. reserve (boundary_size);
+  
+  const Real path_size_max = 2 * log2 ((Real) tree. name2leaf. size ());
+  const Prob area_prob = min (1.0, (Real) boundary_size / (Real) tree. name2leaf. size ());
+  const Prob p = 1 - pow (1 - area_prob, path_size_max);
+  ASSERT (isProb (p));
+  subPaths. reserve ((size_t) ((Real) tree. dissims. size () * p)); 
 }
 
 
@@ -1651,7 +1659,7 @@ bool Change::apply ()
   // subgraph
   ASSERT (subgraph. empty ());
   {
-    subgraph. reserve ();
+    subgraph. reserve (areaRadius_std);
     VectorPtr<Tree::TreeNode>& area     = subgraph. area;
     VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
     const Tree::TreeNode* lca_ = nullptr;
@@ -1995,7 +2003,7 @@ Image::Image (const DistTree &mainTree)
 : subgraph (mainTree)
 { 
 	ASSERT (mainTree. optimizable ());
-	subgraph. reserve (); 
+	subgraph. reserve (areaRadius_std); 
 }
 	        
 
@@ -2995,7 +3003,7 @@ DistTree::DistTree (Subgraph &subgraph,
   // For some leaf pairs the dissimilarity may be missing
   dissims. reserve (getDissimSize_max ());
  	Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, (uint) -1);
-  const size_t reserve_size = pathObjNums_reserve_size ();
+  const size_t reserve_size = getPathObjNums_size ();
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -3956,7 +3964,7 @@ void DistTree::dissimDs2dissims (bool sparse)
   }
 
   // dissims[], mult_sum, dissim2_sum
-  loadDissimPrepare (getDissimSize_max () /*, dissimAttr->decimals*/);
+  loadDissimPrepare (getDissimSize_max ());
   FFOR (size_t, row, dissimDs->objs. size ())
   {
     const string name1 = dissimDs->objs [row] -> name;
@@ -4002,7 +4010,7 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
   dissims. reserve (pairs_max);
 
-  const size_t reserve_size = pathObjNums_reserve_size ();
+  const size_t reserve_size = getPathObjNums_size ();
  	for (DiGraph::Node* node : nodes)
  	{
  	  const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -4192,7 +4200,7 @@ void DistTree::setPaths ()
 		
 		  Vector<Vector<size_t>> subTrees (cut_best. size () + 1);
 		  for (Vector<size_t>& subTree : subTrees)
-		  	subTree. reserve (dissims. size ());  
+		  	subTree. reserve (dissims. size ());  // ??
 		  FFOR (size_t, objNum, dissims. size ()) 
 		  {
 		    Dissim& dissim = dissims [objNum];
@@ -5257,7 +5265,7 @@ size_t DistTree::optimizeLenNode ()
     const VectorPtr<DiGraph::Node>& arcNodes = star. arcNodes;
 
     Subgraph subgraph (*this);
-    subgraph. reserve ();
+    subgraph. reserve (3);  // PAR
     for (const DiGraph::Node* node : star. arcNodes)
       subgraph. area << static_cast <const TreeNode*> (node);
     subgraph. area << star. center->getParent ();
@@ -6550,7 +6558,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	{
 	  // dissim.ssize() = 35M => 80 sec. 
 		Dataset ds;
-	  ds. objs. reserve (dissims. size ());  // PAR
+	  ds. objs. reserve (dissims. size ());  
 	  auto criterionAttr = new PositiveAttr1 ("dissim_error", ds);  
 	  for (const Dissim& dissim : dissims)  	
 	  	if (dissim. mult)
@@ -6967,7 +6975,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
   Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ()); 
   {
     Subgraph subgraph (*this);
-    subgraph. reserve ();
+    subgraph. reserve (areaRadius_std);
     Progress prog (nodes. size (), 100);  // PAR
     for (const DiGraph::Node* node : nodes)
     {

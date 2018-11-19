@@ -23,7 +23,10 @@ Optimizing arc lengths at each node ...
 absCriterion = 7.910  Error density = 1.943 %
 
 # Hybrids: 0
-absCriterion = 7.067  Error density = 1.837 %
+absCriterion = 7.057  Error density = 1.836 %
+
+# Hybrids: 0
+absCriterion = 7.048  Error density = 1.834 %
 
 # Hybrids: 0
 absCriterion = 7.048  Error density = 1.834 %
@@ -50,7 +53,7 @@ absCriterion = 4.395  Error density = 1.491 %
 
 OUTPUT:
 absCriterion = 4.395  Error density = 1.491 %
-absCriterion [0] = 0.322  Error density [0] = 5.018 %  Fraction = 5.988 %
+absCriterion [0] = 0.322  Error density [0] = 5.016 %  Fraction = 5.988 %
 absCriterion [1] = 4.073  Error density [1] = 1.440 %  Fraction = 94.012 %
 
 Relative epsilon2_0 = 0.00 %

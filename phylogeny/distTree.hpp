@@ -694,7 +694,7 @@ struct Subgraph : Root
   
   // Usage:
 //set area, boundary
-  void reserve ();
+  void reserve (size_t radius);
   void removeIndiscernibles ();
     // Update: area, boundary
   void finish ();
@@ -1089,7 +1089,7 @@ private:
   void newick2node (ifstream &f,
                     Steiner* parent);
   void setName2leaf ();
-  size_t pathObjNums_reserve_size () const
+  size_t getPathObjNums_size () const
     { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR
   void loadDissimDs (const string &dissimFName,
                      const string &dissimAttrName);
@@ -1181,7 +1181,7 @@ public:
   size_t getDissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   size_t getSparseDissims_size () const
-    { return ((size_t) log (name2leaf. size ()) + 1) * 70; }  // PAR
+    { return 7 * getPathObjNums_size (); }  // PAR
   Set<const DTNode*> getDiscernibles () const;
     // Logical leaves
   static void printParam (ostream &os) 
