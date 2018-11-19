@@ -2903,6 +2903,7 @@ private:
 	      addKey ("threads", "Max. number of threads", "1");
 	      addKey ("json", "Output file in Json format");
 	      addKey ("log", "Error log file, appended");
+	      addFlag ("sigpipe", "Exit normally on SIGPIPE");
 	    }
 	  }
 	void qc () const final;

@@ -21,7 +21,7 @@ if ($?) exit 1
 set N = `wc -l $NAME-$3.all`
 @ N = $N[1] / 2
 
-setRandOrd $NAME-$3.all  -seed $3 | head -$N > $NAME-$3.subset
+setRandOrd $NAME-$3.all  -seed $3  -sigpipe | head -$N > $NAME-$3.subset
 set S = $?
 if ($S != 141 && $S != 0) then
   echo "subset $S" >> $4/$3

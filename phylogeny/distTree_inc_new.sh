@@ -70,9 +70,7 @@ ls $1/new/ > $1/new.list
 
 cp /dev/null $1/dissim.add
 
-setRandOrd $1/new.list  -seed $2 > $1/search.all 
-head -$INC $1/search.all > $1/search.list
-rm $1/search.all
+setRandOrd $1/new.list  -seed $2  -sigpipe | head -$INC > $1/search.list
 rm $1/new.list
 
 trav -noprogress $1/search.list "mkdir $1/search/%f"

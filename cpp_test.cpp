@@ -15,6 +15,7 @@ namespace
 {
   
   
+  
 struct S : Root
 {
   vector<int> a;
@@ -65,11 +66,8 @@ struct ThisApplication : Application
 
 	void body () const
 	{
-    for (int i=10; i>0; --i) 
-    {
-      std::cout << i << std::endl;
-      std::this_thread::sleep_for (std::chrono::seconds(10));
-    }	
+    for (;;)
+      cout << "test" << endl;
   }
 };
 

@@ -20,7 +20,7 @@ if ($?) exit 1
 set N = `wc -l ../$BASE.list`
 @ N = $N[1] / 2
 
-setRandOrd ../$BASE.list  -seed $2 | head -$N > $BASE-$2.list
+setRandOrd ../$BASE.list  -seed $2  -sigpipe | head -$N > $BASE-$2.list
 set S = $?
 if ($S != 141 && $S != 0) then
   echo "subset $S" >> $3/$2

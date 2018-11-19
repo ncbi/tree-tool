@@ -34,7 +34,7 @@ if ($SUPER_SIZE > $N[1]) then
   exit 1
 endif
 
-setRandOrd $INPUT.list  -seed $BASE_SEED | head -$BASE_SIZE | sort > $BASE.list
+setRandOrd $INPUT.list  -seed $BASE_SEED  -sigpipe | head -$BASE_SIZE | sort > $BASE.list
 
 setMinus $INPUT.list $BASE.list > $BASE.rest
 if ($?) exit 1

@@ -57,6 +57,7 @@ ostream* logPtr = nullptr;
 
 bool qc_on = false;
 ulong seed_global = 1;
+bool sigpipe = false;
 
 
 // thread
@@ -84,6 +85,15 @@ void segmFaultHandler (int /*sig_num*/)
   errorExit ("Segmentation fault", true); 
 }
 
+
+void sigpipe_handler (int /*sig_num*/) 
+{
+  signal (SIGPIPE, SIG_DFL);
+  if (sigpipe)
+    exit (0);
+  exit (1);
+}
+
 }
 
 
@@ -93,6 +103,7 @@ bool initCommon ()
   MODULE_INIT
 
   signal (SIGSEGV, segmFaultHandler);  
+  signal (SIGPIPE, sigpipe_handler);
         
 #ifdef _MSC_VER
   #pragma warning (disable : 4127)
@@ -2322,6 +2333,8 @@ int Application::run (int argc,
 	  		new JsonMap ();
 	  	  ASSERT (jRoot);
 	  	}
+	  	
+	  	sigpipe = getFlag ("sigpipe");
 	  }
   
   	const Verbose vrb (gnu ? 0 : str2<int> (getArg ("verbose")));
