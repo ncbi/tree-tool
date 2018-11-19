@@ -1032,13 +1032,12 @@ public:
     //         [alien]                                                                  Objects similar to no other objects
     //         [dissim.bad]               <obj1> <obj2> NaN
     //         [contaminated]             <obj>                                         Contaminated objects from dissim.bad
-	  //          outlier/                  <obj>                                         Tree outlier objects
+	  //          hybrid/                   <obj>                                         Hybrid objects
 	  //         [genosubspecies_outlier]   <obj>                                         Genospecies outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
-	  //          hist/                     {tree,makeDistTree,leaf,outlier,
-	  //                                     makeFeatureTree
-	  //                                    }.<version>                                   Historic versions of data
+	  //          hist/                     {delete,genospecies_table,genosubspecies_outlier,hybrid,hybrid_parent_pairs,leaf,makeDistTree,makeFeatureTree,tree,tree_quality_phen,unhybrid}.<version>   
+	  //                                                                                  Historic versions of data
     //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
