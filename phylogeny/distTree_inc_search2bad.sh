@@ -19,8 +19,8 @@ fi
 awk '$3 == "nan"' $DIR/dissim > $DIR/dissim.bad
 
 if [ -s $DIR/dissim.bad ]; then
-  echo ""
-  wc -l $DIR/dissim.bad
+ #echo ""
+ #wc -l $DIR/dissim.bad
   cat $DIR/dissim.bad >> $1/dissim.bad
   echo $2 >> $1/contaminated
   rm -r $DIR/
