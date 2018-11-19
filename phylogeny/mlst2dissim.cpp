@@ -94,7 +94,7 @@ Columns 1 and 2: genome pair
         ASSERT (diffAllelesFiltered <= diffAlleles);
         ASSERT (diffDnaLen <= lociDnaLen);
 
-        Real dist = NAN;
+        Real dist = NaN;
         if (aniP)
         {
           const Prob ani = (Real) (lociDnaLen - diffDnaLen) / (Real) lociDnaLen;

@@ -29,7 +29,7 @@ struct Func1 : Root
 // Function of 1 argument
 {
   virtual Real f (Real x) = 0;
-    // Return: May be NAN
+    // Return: May be NaN
 
   Real findZero (Real x_min,
 	               Real x_max,
@@ -56,7 +56,7 @@ struct Func1 : Root
     // Requires: XMin <= XMax
     //           YXMin|Max = f (XMin|Max)
     //           dX > 0
-    //           f(x) != NAN for x \in [XMin, XMax]
+    //           f(x) != NaN for x \in [XMin, XMax]
     // # iterations = log ((XMax - XMin) / dX) / log (Psi), 
     //   where Psi = Golden Section ((sqrt (5) - 1) / 2)
   bool minimizeConvex (Real x_min,
@@ -71,7 +71,7 @@ struct Func1 : Root
     // Return: true if x is minimum within dX
     // Requires: x_min <= x_max
     //           dX > 0
-    //           f(x) != NAN for x \in [x_min, x_max]
+    //           f(x) != NaN for x \in [x_min, x_max]
     // If f is convex then local minimum is global
 };
 
@@ -109,8 +109,8 @@ public:
 
   Real f (Real x);
     // Output: MFX
-    // Return: MF->f (MFX); may be NAN
-    // Requires: x >= 0.0; f(0.0) != NAN
+    // Return: MF->f (MFX); may be NaN
+    // Requires: x >= 0.0; f(0.0) != NaN
     // Invokes: SetMFX (x)
   virtual bool SetMFX (Real x) = 0;
     // Output: MFX
@@ -138,7 +138,7 @@ public:
   // Requires: Size of x, dX, gradient = (maxArgNum, 1)
 
   virtual Real f (const MVector &x) = 0;
-    // Return: May be NAN
+    // Return: May be NaN
   virtual void getGradient (const MVector &x,
                      			  MVector &gradient);
     // Output: gradient
@@ -160,7 +160,7 @@ protected:
     // Return: arg LocalExtr_K MF->f(K), s.t. K >= 0.0;
     //         very large K if MF->f(K) is improving
     // Invokes: MF->optimizeFibonacci()
-    // Requires: MF->f(K) != NAN in the neighborhood of MF->MFX0
+    // Requires: MF->f(K) != NaN in the neighborhood of MF->MFX0
 public:
 
 
@@ -210,7 +210,7 @@ private:
     // Output: XNew
     // Return: true if success
     // Invokes: optimizeLinear(Rough)
-    // Requires: dX [] > 0.0; f(X0) != NAN
+    // Requires: dX [] > 0.0; f(X0) != NaN
 public:
 
   bool optimizeHypercube (bool           Min,

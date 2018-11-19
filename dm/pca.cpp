@@ -164,7 +164,7 @@ struct ThisApplication : Application
             for (const RealAttr1* attr : spStnd)
             {
               const Real value = (*attr) [*it];                
-              if (abs (value) >= 4.0)  // PAR
+              if (fabs (value) >= 4.0)  // PAR
               {
                 if (! first)
                   osPar << ';';

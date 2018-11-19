@@ -1559,7 +1559,7 @@ double Json::getDouble () const
   if (! this)
     throw runtime_error ("undefined");
   if (asJsonNull ())
-    return NAN;
+    return numeric_limits<double>::quiet_NaN ();
   if (const JsonDouble* j = asJsonDouble ())
     return j->n;
   throw runtime_error ("Not a JsonDouble");

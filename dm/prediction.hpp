@@ -76,16 +76,16 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
 struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
 {
   // Output
-  Real negLogLikelihood_ave {NAN};
+  Real negLogLikelihood_ave {NaN};
     // !isNan() <=> solve() is successul
-    // Init: NAN
+    // Init: NaN
     // >= 0
   MVector beta;
     // rowsSize(true) = space.size()
     // Precision ??
     // getSeparated(), beta *= k, k > 1 => negLogLikelihood_ave is improved
-  Real target_score_min {NAN};
-  Real non_target_score_max {NAN};
+  Real target_score_min {NaN};
+  Real non_target_score_max {NaN};
   MVector attrImportance;
     // = negLogLikelihood_ave(without attr) / negLogLikelihood_ave(with attr) - 1
     // May be < 0 if separated()
@@ -117,9 +117,9 @@ struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
   void resize () 
     { beta.           resize (space. size ());
       attrImportance. resize (space. size ());
-      negLogLikelihood_ave = NAN;
-      target_score_min     = NAN;
-      non_target_score_max = NAN;
+      negLogLikelihood_ave = NaN;
+      target_score_min     = NaN;
+      non_target_score_max = NaN;
     }
 
   Real getScore (size_t objNum) const;
@@ -236,18 +236,18 @@ struct LinearNumPrediction : Prediction<NumAttr1,RealAttr1>
   VectorOwn<Constraint> constraints;  
 
   // OUTPUT
-  Real absCriterion {NAN};
+  Real absCriterion {NaN};
     // >= 0, -> min
-    // May be NAN
-    // Init: NAN
+    // May be NaN
+    // Init: NaN
   MVector beta;
     // size = predictors_.size()
-    // Init: NAN
+    // Init: NaN
   MVector betaSD;
     // Uncertainty of beta
     // Disregards constraints
     // size = predictors_.size()
-	  // Init: NAN
+	  // Init: NaN
 	  
 #if LIN_PROG
 protected:
@@ -263,7 +263,7 @@ protected:
                        const Space1<NumAttr1> &space_arg,
                        const RealAttr1 &target_arg)
     : P (sample_arg, space_arg, target_arg)
-    , absCriterion (NAN)
+    , absCriterion (NaN)
   #if LIN_PROG
     , Problem (nullptr)
   #endif
@@ -301,7 +301,7 @@ public:
    	//          multSum = GetObjSumW () !
   bool solve ();
     // Update: *Problem
-    // Output: absCriterion, beta - if failed then NAN
+    // Output: absCriterion, beta - if failed then NaN
     // Return: true if success
     // Requires: after SetVarSelected (), SetWeight () = true
     // Invokes: Problem2Result ()
@@ -445,8 +445,8 @@ public:
   Matrix betaCovariance;
     // size = (space.size(), space.size())
 #if LIN_PROG
-  Real absCriterionUnconstrained {NAN};
-    // Init: NAN
+  Real absCriterionUnconstrained {NaN};
+    // Init: NaN
   MVector betaUnconstrained;
     // size = space.size()
 #endif
@@ -554,17 +554,17 @@ struct ExprNumPredict : Prediction
   Matrix BetaDelta;
     // Precision of beta
     // Size = (MaxParamNum, 1)
-    // Init: NAN
+    // Init: NaN
 
   // OUTPUT
   MVector beta;
     // Coefficients of prediction function
     // Size = (MaxParamNum, 1)
-    // Init: NAN
+    // Init: NaN
   Real absCriterion;
     // Absolute criterion
     // >= 0, -> min
-    // Init: NAN
+    // Init: NaN
     // Metric L_2
 
 
@@ -587,7 +587,7 @@ struct ExprNumPredict : Prediction
     // Update: beta
     // Output: absCriterion
     // Return: true if converged
-    // Requires: beta, BetaDelta are not NAN
+    // Requires: beta, BetaDelta are not NaN
     // Invokes: FUNCTION_MULT::OptimizeMarquardt (),
     //          GetTargetPredicted (), GetTargetPredictedDeriv ()
 };

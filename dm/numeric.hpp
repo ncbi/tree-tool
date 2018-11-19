@@ -1,5 +1,4 @@
 // numeric.hpp
-// C++, ISO/EIC 14882:1998(E), hosted implementation
 
 #ifndef NUMERIC_HPP_69862
 #define NUMERIC_HPP_69862
@@ -69,7 +68,8 @@ const Real INF = numeric_limits<Real>::infinity ();
 inline bool finite (Real x)
   { return -INF < x && x < INF; }
 
-//const Real NAN = /*INF - INF*/ numeric_limits<Real>::quiet_NaN ();  
+const Real NaN = numeric_limits<Real>::quiet_NaN ();  
+
 inline bool isNan (Real x)
   { return x != x; }
 
@@ -87,10 +87,10 @@ extern Real sqrt_2;
 inline bool eqReal (Real x, Real y, Real delta = epsilon)
   { if (x == y)  // INF
       return true;
-    const Real m = abs (max (x, y));
+    const Real m = fabs (max (x, y));
     if (m == INF)
       return false;
-    return abs (x - y) <= max (m, 1.0) * delta; 
+    return fabs (x - y) <= max (m, 1.0) * delta; 
 	}
 
 inline bool sameReal (Real x, Real y, Real delta = epsilon)
@@ -126,10 +126,10 @@ inline bool betweenEqualReal (Real x, Real lo, Real hi, Real delta = epsilon)
   { return geReal (x, lo, delta) && leReal (x, hi, delta); }
 
 long round (Real x);
-  // NAN -> numeric_limits::min()
+  // NaN -> numeric_limits::min()
 
 inline bool isInteger (Real x)
-  { return abs (x - (Real) round (x)) < epsilon; }
+  { return fabs (x - (Real) round (x)) < epsilon; }
 
 inline bool maximizeReal (Real &a,
 				                  Real b,
@@ -190,7 +190,7 @@ struct LogReal : Root
     {}
   explicit LogReal (Real r)
     : sign (r >= 0)
-    , n (log (abs (r)))
+    , n (log (fabs (r)))
     {}
     
   LogReal& operator*= (Real x)
@@ -234,7 +234,7 @@ private:
   bool hasMinusInf;
 public:
 
-  explicit Sum (Real initMaxAbs = NAN);
+  explicit Sum (Real initMaxAbs = NaN);
     // Invokes: reset()
  ~Sum ();
 
@@ -245,7 +245,7 @@ private:
     // Time: O(n)
   void setMaxAbs (Real intiMaxAbs);
 public:
-  void reset (Real initMaxAbs = NAN);
+  void reset (Real initMaxAbs = NaN);
     // Faster if initMaxAbs >= max |X|
   void add (Real x);
     // More precise if |x|'s increase
@@ -516,7 +516,7 @@ public:
 
   // Estimates    
   Real getMean () const
-    { return n ? s / n : NAN; }
+    { return n ? s / n : NaN; }
   Real getVar (bool biased = true) const
     { return max (0.0, s2 - n * sqr (getMean ())) / (biased ? n : (n - 1)); }
     // biased = MLE

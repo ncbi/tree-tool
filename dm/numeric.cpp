@@ -16,9 +16,9 @@ using namespace std;
 
 const Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
 const Real pi = acos (-1.0);
-Real log_2  = NAN;
-Real log_10 = NAN;
-Real sqrt_2 = NAN;
+Real log_2  = NaN;
+Real log_10 = NaN;
+Real sqrt_2 = NaN;
 
 
 
@@ -41,7 +41,7 @@ bool initNumeric ()
   ASSERT (INF / 2 == INF);
   ASSERT (INF > 0);
 
-  ASSERT (isNan (NAN));
+  ASSERT (isNan (NaN));
   ASSERT (isNan (INF - INF));
   ASSERT (isNan (INF / INF));
 #ifdef _MSC_VER
@@ -93,11 +93,11 @@ Real str2real (const string& s)
 	  return INF;
   if (s1 == "-inf")
 	  return -INF;
-	if (   s1 == "nan"
-	    || s1 == "-nan"
+	if (   s1 == "NaN"
+	    || s1 == "-NaN"
 	    || s1 == "?"
 	   )
-	  return NAN;
+	  return NaN;
 
 #if 0
   return str2<double> (s1);  // slow
@@ -153,8 +153,8 @@ Sum::Sum (Real initMaxAbs)
   stepInc        (0.9),
   logStep        (log (step)),
   bucket         (NULL),
-  maxAbs         (NAN),
-  logStep_MaxAbs (NAN)
+  maxAbs         (NaN),
+  logStep_MaxAbs (NaN)
 {     
   ASSERT (n > 0);
   ASSERT (step > 2.0 * 10.0);
@@ -199,7 +199,7 @@ void Sum::stabilize (size_t i)
 
 
   if (bucket [i] == 0.0 || 
-      absAddendum2index (abs (bucket [i])) == (int) i)
+      absAddendum2index (fabs (bucket [i])) == (int) i)
     return;
   // Should happen rarely
   
@@ -215,7 +215,7 @@ void Sum::setMaxAbs (Real initMaxAbs)
 { 
   maxAbs = initMaxAbs;
   if (isNan (maxAbs))
-    logStep_MaxAbs = NAN;
+    logStep_MaxAbs = NaN;
   else
     {
       ASSERT (maxAbs >= 0.0);
@@ -257,7 +257,7 @@ void Sum::add (Real x)
     return;
       
   
-  const Real a = abs (x);
+  const Real a = fabs (x);
   ASSERT (a != INF);
   
   
@@ -295,7 +295,7 @@ Real Sum::get () const
 {
   if (hasPlusInf)
     if (hasMinusInf)
-      return NAN;
+      return NaN;
     else
       return INF;
   else
@@ -359,7 +359,7 @@ Real Series::get (Real maxError) const
 			return s + (integral (x) + integral (x + 1)) / 2;
 	}
   NEVER_CALL;
-  return NAN;
+  return NaN;
 }
 
 

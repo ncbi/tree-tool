@@ -1,5 +1,4 @@
 // matrix.hpp
-// C++, ISO/EIC 14882:1998(E), hosted implementation
 
 
 #ifndef MATRIX_HPP_59376
@@ -17,7 +16,7 @@ namespace DM_sp
 using namespace std;
 using namespace Common_sp;
 
-// In scanning operations NAN-elements are skipped
+// In scanning operations NaN-elements are skipped
 // "bool t" means whether the operation is applied to the transposed matrix, i.e. rows <-> columns
 // <Function>Row means <Function> applied to a row
 // Object is a row and column of a square matrix
@@ -139,14 +138,14 @@ public:
   Matrix (bool t,
           size_t maxRow,
           size_t maxCol,
-          Real init_val = NAN) 
+          Real init_val = NaN) 
     : data (init_val, maxRow * maxCol)
     , rowsSize_ (t ? maxCol : maxRow)
     , colsSize  (t ? maxRow : maxCol)
     , psd (maxRow == maxCol)
     {}
   explicit Matrix (size_t maxRow,
-                   Real init_val = NAN) 
+                   Real init_val = NaN) 
     : data (init_val, sqr (maxRow))
     , rowsSize_ (maxRow)
     , colsSize  (maxRow)
@@ -155,7 +154,7 @@ public:
   Matrix (bool t,
           const Matrix &source,
           bool sourceT,
-          Real init_val = NAN) 
+          Real init_val = NaN) 
     : data ( init_val
     	     ,   source. rowsSize (  sourceT) 
     	       * source. rowsSize (! sourceT)
@@ -461,7 +460,7 @@ public:
                           Real &mean,
                           size_t &DefinedNum) const;
     // Output: mean, DefinedNum
-    //         If DefinedNum = 0 then mean = NAN
+    //         If DefinedNum = 0 then mean = NaN
   Real meanRow (bool t,
                 size_t row) const
     { Real mean; size_t definedNum;
@@ -649,7 +648,7 @@ public:
 		  psd = isSquare () && (isNan (r) || r >= 0);
 		}
   void clear ()
-    { putAll (NAN); }
+    { putAll (NaN); }
   size_t undefined2ValueRow (bool t,
                              size_t row,
                              Real R);
@@ -907,7 +906,7 @@ public:
 struct MVector : Matrix
 {
   explicit MVector (size_t maxRow = 0,
-                    Real init_val = NAN) 
+                    Real init_val = NaN) 
     : Matrix (false, maxRow, 1, init_val)
     {}
   explicit MVector (const Vector<Real> &vec)
@@ -982,7 +981,7 @@ struct Eigen : Root
   Real getNorm2 () const
     { return vec. sumSqr (); }  
   bool operator> (const Eigen &other) const
-    { return abs (value) > abs (other. value); }
+    { return fabs (value) > fabs (other. value); }
   bool makePositiveVec ();
     // Return: vec is negateRow()'d
     // Update: vec
@@ -1062,7 +1061,7 @@ struct Eigens : Root
 				       size_t attrNum,
 				       bool imaginary) const
     { return imaginaryMdsAttr (attrNum) == imaginary
-               ? basis. get (false, objNum, attrNum) * sqrt (abs (values [attrNum])) 
+               ? basis. get (false, objNum, attrNum) * sqrt (fabs (values [attrNum])) 
                : 0;  
     }
 	size_t makeSquare ();

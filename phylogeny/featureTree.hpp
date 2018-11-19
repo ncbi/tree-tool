@@ -245,9 +245,9 @@ struct Species : Phyl
 	  // >= 0
 private:
 	Real weight_old [2/*thisCore*/] [2/*parentCore*/];
-  Real time_old {NAN};
-    // May be NAN
-	Real pooledSubtreeDistance_old {NAN};  
+  Real time_old {NaN};
+    // May be NaN
+	Real pooledSubtreeDistance_old {NaN};  
   struct Movement
   {
   	bool parentCore;
@@ -324,7 +324,7 @@ public:
 	  // Invokes: setTimeWeight()
 	void restoreTime ();
 	void commitTime ()
-	  { time_old = NAN; }
+	  { time_old = NaN; }
 
 	virtual Real getPooledSubtreeDistance () const = 0;
 	  
@@ -1037,9 +1037,9 @@ struct FeatureTree : Tree
   // Valid if !allTimeZero
   Vector<bool> superRootCore;
     // size() == features.size()
-  Prob lambda0 {NAN};
+  Prob lambda0 {NaN};
 		// > 0
-  Real time_init {NAN};
+  Real time_init {NaN};
     // > 0    
 	
 private:
@@ -1052,10 +1052,10 @@ public:
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
 	size_t genomeGenes_ave {0};
-	Real len {NAN};
+	Real len {NaN};
 	  // >= len_min
 	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
-	Real len_min {NAN};
+	Real len_min {NaN};
 	  // >= 0
 	Prob lenInflation {0};
 

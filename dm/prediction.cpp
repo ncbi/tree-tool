@@ -163,7 +163,7 @@ void LogisticRegression::solve ()
     return;
   }
 
-  negLogLikelihood_ave = NAN;
+  negLogLikelihood_ave = NaN;
   beta. putAll (0);  // PAR
 
   LogRegFuncMult f (*this);
@@ -230,7 +230,7 @@ void LogisticRegression::setAttrImportance ()
   const VectorPtr<NumAttr1> tmp (space); 
 #endif
 
-  attrImportance [0] = NAN;
+  attrImportance [0] = NaN;
   const Real negLogLikelihood_ave_old = negLogLikelihood_ave;
   for (Iter <VectorPtr<NumAttr1>> iter (space); iter. next (); )
   {
@@ -317,7 +317,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
       ASSERT (beta [attrNum] >= 0);
 #endif
 
-  absCriterion = NAN;
+  absCriterion = NaN;
   
   Dataset& ds = const_cast <Dataset&> (space. ds);
   
@@ -430,7 +430,7 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
   if (! solved || absCriterion > absCriterion_old)
   {
     beta = beta_init;
-    absCriterion = NAN;
+    absCriterion = NaN;
     solved = false;
   }
 
@@ -524,7 +524,7 @@ bool LinearNumPrediction::solve ()
 
 
   beta. clear ();
-  absCriterion = NAN;
+  absCriterion = NaN;
 
   if (! Problem->Solve ())
     return false;
@@ -816,7 +816,7 @@ Real L1_LINEAR_NUM_PREDICT::GetConstTarget () const
   YWeightHeap. Sort ();
 
 
-  ConstTarget = NAN;
+  ConstTarget = NaN;
   Real WSortSum = 0.0;
   {
     For (Row, MaxRow)
@@ -842,7 +842,7 @@ Real L1_LINEAR_NUM_PREDICT::GetRelCriterion (Real ConstTarget) const
 {
   if (isNan (absCriterion) ||
       isNan (ConstTarget))
-    return NAN;
+    return NaN;
 
 
   // MaxAbsCriterion
@@ -865,7 +865,7 @@ Real L1_LINEAR_NUM_PREDICT::GetRelCriterion (Real ConstTarget) const
 
 void L2LinearNumPrediction::solveUnconstrained ()
 {
-  absCriterion = NAN;
+  absCriterion = NaN;
   const bool existsMissing = getExistsMissing ();
 
 
@@ -1128,7 +1128,7 @@ Real L2LinearNumPrediction::getRelTargetCriterion (Real constTarget) const
   if (   isNan (absCriterion) 
       || isNan (constTarget)
      )
-    return NAN;
+    return NaN;
 
   // maxAbsCriterion
   Real maxAbsCriterion = 0;
@@ -1298,7 +1298,7 @@ Real L_INF_LINEAR_NUM_PREDICT::AbsCriterion2Error () const
 
 Real L_INF_LINEAR_NUM_PREDICT::GetConstTarget () const
 { 
-  ConstTarget = NAN;
+  ConstTarget = NaN;
   Real MaxAbsCriterion = -INF;
   For (Row1, MaxRow)
     For (Row2, MaxRow)
@@ -1320,7 +1320,7 @@ Real L_INF_LINEAR_NUM_PREDICT::GetRelCriterion (Real ConstTarget) const
 {
   if (isNan (absCriterion) ||
       isNan (ConstTarget))
-    return NAN;
+    return NaN;
 
 
   // MaxAbsCriterion
@@ -1352,7 +1352,7 @@ ExprNumPredict::ExprNumPredict (const Space1<NumAttr1>* initAttrSpace,
   BetaDelta    (false, MaxParamNum, 1),
 
   beta         (false, MaxParamNum, 1),
-  absCriterion (NAN)
+  absCriterion (NaN)
 {
   ASSERT (space);
   ASSERT (target);

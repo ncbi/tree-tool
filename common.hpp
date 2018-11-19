@@ -903,7 +903,7 @@ inline void pressAnyKey ()
 
 
 inline streamsize double2decimals (double r)
-  { return r ? (streamsize) max<long> (0, (long) (ceil (- log10 (abs (r)) + 1))) : 0; }
+  { return r ? (streamsize) max<long> (0, (long) (ceil (- log10 (fabs (r)) + 1))) : 0; }
 
 
 
@@ -1082,7 +1082,7 @@ protected:
   Root () 
     {}
 public:
-  virtual ~Root () throw (logic_error)
+  virtual ~Root () 
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendant class destructor
   virtual Root* copy () const
@@ -1135,7 +1135,7 @@ template <typename T /*Root*/>
   	typedef  unique_ptr<T>  P;
   public:
   
-  	explicit AutoPtr (T* t = nullptr) throw ()
+  	explicit AutoPtr (T* t = nullptr) 
   	  : P (t)
   	  {}
   	AutoPtr (const AutoPtr<T> &t) 
@@ -1830,7 +1830,7 @@ private:
       const string& s2_ = * static_cast <const string*> (s2);
       if (s1_ < s2_) return -1;
       if (s1_ > s2_) return  1;
-                     return  0;
+      return  0;
     }
 };
 
@@ -2561,7 +2561,7 @@ struct JsonDouble : Json
     	if (n == n)
         os << n; 
       else
-        os << "null";  // NAN
+        os << "null";  // NaN
     }      
 
   const JsonDouble* asJsonDouble () const final
@@ -2924,7 +2924,7 @@ protected:
     	return n;
     }
   double arg2double (const string &name) const
-    { double d = NAN;
+    { double d = numeric_limits<double>::quiet_NaN ();
     	try { d = str2<double> (getArg (name)); }
     	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to number"); }
     	return d;

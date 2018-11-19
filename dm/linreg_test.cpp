@@ -82,7 +82,7 @@ struct ThisApplication : Application
       }
       if (! lin_dep)
         FOR (size_t, i, lr. beta. size ())
-          ASSERT (abs (lr. beta [i] - 1) <= 0.05);  // PAR
+          ASSERT (fabs (lr. beta [i] - 1) <= 0.05);  // PAR
     }
   
   
@@ -101,7 +101,7 @@ struct ThisApplication : Application
       }
       if (! lin_dep)
         FOR (size_t, i, lr1. beta. size ())
-          ASSERT (abs (lr1. beta [i] - 1) <= 0.05);  // PAR    
+          ASSERT (fabs (lr1. beta [i] - 1) <= 0.05);  // PAR    
     }
     
   /*

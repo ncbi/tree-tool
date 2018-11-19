@@ -115,7 +115,7 @@ struct Neighbor
 { 
 	const Leaf* leaf {nullptr}; 
 	  // !nullptr
-	Real target {NAN};
+	Real target {NaN};
 	  // > 0
 
 	  
@@ -137,7 +137,7 @@ struct Triangle
 { 
 	struct Parent
 		{ const Leaf* leaf {nullptr};
-			Real dissim {NAN};
+			Real dissim {NaN};
 			  // = d(Triangle::child,leaf)
 			  // > 0
 			bool hybrid {false};
@@ -146,7 +146,7 @@ struct Triangle
 
 	// !nullptr
 	const Leaf* child {nullptr};
-	Real hybridness {NAN};
+	Real hybridness {NaN};
 	  // = d(parent1,parent2) / (d(child,parent1) + d(child,parent2))
 	  // > 1
 	array<Parent, 2> parents;	
@@ -202,7 +202,7 @@ struct TriangleParentPair
 			  // Output
 		};
 	array<Parent,2> parents;	
-	Real parentsDissim {NAN};
+	Real parentsDissim {NaN};
 	  // = f(parents[0].leaf,parents[1].leaf)
 	
 	// Output
@@ -214,7 +214,7 @@ private:
 	size_t triangle_best_index {NO_INDEX};
 	  // Index in triangles
 public:
-	Real hybridness_ave {NAN};
+	Real hybridness_ave {NaN};
 
 	
 	TriangleParentPair (const Leaf* parent1,
@@ -312,7 +312,7 @@ struct DTNode : Tree::TreeNode
 
 	Real len;
 	  // Arc length between *this and *getParent()
-	  // *this is root => NAN
+	  // *this is root => NaN
   Vector<uint/*objNum*/> pathObjNums; 
     // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
@@ -337,13 +337,13 @@ protected:
 public:
   size_t paths {0};  // = pathObjNums.size() ??
     // Number of paths going through *this arc
-  Real errorDensity {NAN};
-  Real absCriterion {NAN};
+  Real errorDensity {NaN};
+  Real absCriterion {NaN};
     // = sum(dissim.getAbsCriterion())
     // For Leaf's: sum = 2*getTree().absCriterion
-  Real absCriterion_ave {NAN};
+  Real absCriterion_ave {NaN};
     // = absCriterion/count
-  Real relCriterion {NAN};
+  Real relCriterion {NaN};
     // !isNan() => = getRelCriterion()
 
 
@@ -607,7 +607,7 @@ public:
 		//         > 1: hybrid
 		//                = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
 		//                triangle inequality violation
-		//         NAN: request of the dissimilarity between parent1 and parent2, if (bool)parent1
+		//         NaN: request of the dissimilarity between parent1 and parent2, if (bool)parent1
 	  // Input: parentLengthFrac_min > 1
 	  // Time: ~ O(log^3(n))
 	void getHybridTriangles (Vector<Triangle> &hybrids,
@@ -627,7 +627,7 @@ struct SubPath
   const DTNode* node1 {nullptr};
   const DTNode* node2 {nullptr};
     // !nullptr, different
-  Real dist_hat_tails {NAN};
+  Real dist_hat_tails {NaN};
 
     
   SubPath ()
@@ -764,12 +764,12 @@ public:
 	// Output of apply_()
 	VectorPtr<DTNode> targets;  
 	  // DTNode's whose len may be changed 
-	Real improvement {NAN};
+	Real improvement {NaN};
 	  // isNan() or positive()
     // Too small values are noise => not stable in tree sampling
 private:
-	Real fromLen {NAN};
-	Real toLen {NAN};
+	Real fromLen {NaN};
+	Real toLen {NaN};
 	// !nullptr
 	Steiner* oldParent {nullptr};
 	  // Old from->getParent()
@@ -851,12 +851,12 @@ struct Dissim
   const Leaf* leaf1 {nullptr};
   const Leaf* leaf2 {nullptr};
   //
-  Real target {NAN};
+  Real target {NaN};
     // Dissimilarity between leaf1 and leaf2; !isNan()
-  Real mult {NAN};
+  Real mult {NaN};
   
   // Output
-  Real prediction {NAN};
+  Real prediction {NaN};
     // Tree distance
   const Steiner* lca {nullptr};
     // Paths
@@ -864,7 +864,7 @@ struct Dissim
 
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg,
-          Real target_arg = NAN,
+          Real target_arg = NaN,
           Real mult_arg = 0);
   void qc () const;
 
@@ -980,7 +980,7 @@ public:
   Real mult_sum {0};
   Real dissim2_sum {0};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
-  Real absCriterion {NAN};
+  Real absCriterion {NaN};
     // = L2LinearNumPrediction::absCriterion  
 private:
   size_t leafNum {0};
@@ -1030,7 +1030,7 @@ public:
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
 	  //          genosubspecies_boundary   <number>                                      Boundary of genosubspecies to find outliers
     //         [alien]                                                                  Objects similar to no other objects
-    //         [dissim.bad]               <obj1> <obj2> nan
+    //         [dissim.bad]               <obj1> <obj2> NaN
     //         [contaminated]             <obj>                                         Contaminated objects from dissim.bad
 	  //          outlier/                  <obj>                                         Tree outlier objects
 	  //         [genosubspecies_outlier]   <obj>                                         Genospecies outliers to delete
@@ -1454,8 +1454,8 @@ public:
     const DTNode* anchor {nullptr};
       // Current best position of NewLeaf
       // New Leaf* leaf: leaf->getParent() is on the anchor arc
-    Real leafLen {NAN};
-    Real arcLen {NAN};
+    Real leafLen {NaN};
+    Real arcLen {NaN};
       // From anchor to leaf->getParent()
     Real absCriterion_leaf {INF};
       // To be minimized, >= 0
@@ -1479,13 +1479,13 @@ public:
   struct Leaf2dissim
   {
     const Leaf* leaf {nullptr};
-    Real dissim {NAN};
+    Real dissim {NaN};
       // Between NewLeaf and leaf
-    Real mult {NAN};
-    Real treeAbsCriterion {NAN};
+    Real mult {NaN};
+    Real treeAbsCriterion {NaN};
       
     // Function of NewLeaf::Location::anchor
-    Real dist_hat {NAN};
+    Real dist_hat {NaN};
       // From leaf to NewLeaf::Location::anchor
     bool leafIsBelow {false};
     

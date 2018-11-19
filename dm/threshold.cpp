@@ -86,7 +86,7 @@ struct Bin : Root
 #endif
   
   explicit Bin (Real stop_arg)
-    : start (NAN)
+    : start (NaN)
     , stop (stop_arg)
     , classMult (0)
   #if 0
@@ -209,7 +209,7 @@ struct ThisApplication : Application
 
     // There can be more bin's than there really are due to background clusters
     Vector<Bin> bins;  bins. reserve (clusters);  // Ordered by score descending
-    Real score_prev = NAN;
+    Real score_prev = NaN;
     size_t cluster_prev = NominAttr1::missing;
     for (Iterator it (sm); it ();)  
       if (! clusterAttr->isMissing (*it))

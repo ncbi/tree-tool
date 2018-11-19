@@ -24,7 +24,7 @@ struct Scale
 	Real raw_min {0};
 	Real raw_max {0};
 #ifdef WEIGHT
-	Real weight {NAN};
+	Real weight {NaN};
 #endif
 	
 	Scale (const string &line,
@@ -50,12 +50,12 @@ struct Scale
 	  
 	Real raw2dissim (Real raw) const
 	  { if (isNan (raw))
-	  	  return NAN;
+	  	  return NaN;
 	  	ASSERT (raw >= 0);
 	  	if (raw < raw_min)
-	  	  return NAN;
+	  	  return NaN;
 	  	if (raw > raw_max)
-	  	  return NAN;
+	  	  return NaN;
 	  	return raw * unit; 
 	  }
 	Real dissim_max () const
@@ -148,7 +148,7 @@ Line format: <unit> <raw_min> <raw_max>");
 	    Real dissim_sum = 0;
 	    Real weight_sum = 0;
 	  #else
-	    Real dissim = NAN;
+	    Real dissim = NaN;
 	  #endif
   	  FFOR (size_t, j, scales. size ())
       {
@@ -158,7 +158,7 @@ Line format: <unit> <raw_min> <raw_max>");
         	                     + " has a different name1: " + objPairs [k]. name1 + " vs. " + objPairs [i]. name1
         	                    );
         ASSERT (objPairs [k]. name2 == objPairs [i]. name2);
-        const Real raw = objPairs [k]. dissim;  // isNan (objPairs [k]. dissim) ? NAN : max (dissim_max_prev, objPairs [k]. dissim);  // Bad
+        const Real raw = objPairs [k]. dissim;  // isNan (objPairs [k]. dissim) ? NaN : max (dissim_max_prev, objPairs [k]. dissim);  // Bad
   	  #ifdef WEIGHT
         const Real dissim = scales [j]. raw2dissim (raw);
         if (isNan (dissim))
@@ -172,7 +172,7 @@ Line format: <unit> <raw_min> <raw_max>");
         {
           ASSERT (dissim >= 0);
           if (dissim == 0 && j)  // Contradiction
-            dissim = NAN;
+            dissim = NaN;
           break;
         }
       #endif

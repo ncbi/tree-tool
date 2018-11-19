@@ -93,7 +93,7 @@ struct ThisApplication : Application
   
     if (!  lin_dep)
       FOR (size_t, i, maxAttrNum)
-        ASSERT (abs (lr. beta [i] - 1) <= 0.5);  // PAR
+        ASSERT (fabs (lr. beta [i] - 1) <= 0.5);  // PAR
   
     lr. setAttrImportance ();
 

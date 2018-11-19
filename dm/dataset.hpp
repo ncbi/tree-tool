@@ -52,7 +52,7 @@ struct RealScale
 {
   typedef  Real  Value;
   static const Value missing;  
-    // NAN
+    // NaN
   streamsize decimals;
     // Purposes: display, data precision
 
@@ -308,7 +308,7 @@ public:
                       LocScaleDistribution &distr,
                       bool rightTail,
                       Real outlier_EValue_max) const;
-    // Return: (if rightTail) min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NAN or INF
+    // Return: (if rightTail) min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NaN or INF
     // Idempotent after removing outliers
     // Time: O(n log(n))
 };
@@ -316,7 +316,7 @@ public:
 
 
 struct RealAttr1 : NumAttr1
-// Missing = NAN
+// Missing = NaN
 {
 protected:
   Vector<Value> values;
@@ -381,7 +381,7 @@ public:
   void multiply (Real coeff);
   Real normal_likelihood2max (const Sample &sample) const;
     // Model: distribution of *this = if value <= t then truncated Normal else Uniform
-    // Return: t, may be NAN
+    // Return: t, may be NaN
     // Time: O(n log(n))
 };
 
@@ -1215,7 +1215,7 @@ private:
   // Output
   size_t objNum {NO_INDEX};
 public:
-  Real mult {NAN};
+  Real mult {NaN};
 
   explicit Iterator (const Sample &sample)
     : mult_ (sample. mult)
@@ -1853,12 +1853,12 @@ public:
 
   // Information = -log(pdfVariable(X))
   virtual Real getInfoMean () const
-    { return NAN; }
+    { return NaN; }
   Real getEntropy () const  // synonym
     { return getInfoMean (); }  
     // If X ~ Categorical with n equally probable categories then getEntropy() = log(n)
   virtual Real getInfoVar () const
-    { return NAN; }    
+    { return NaN; }    
 
   // Input: *getAnalysisCheck()
   
@@ -1910,7 +1910,7 @@ struct Bernoulli : Distribution
   const An* analysis {nullptr};
   mutable An::Value variable {BoolAttr1::missing};
   // Parameters
-  Prob p {NAN};
+  Prob p {NaN};
 
 
   Bernoulli () 
@@ -1962,7 +1962,7 @@ struct Bernoulli : Distribution
     { switch (x)
       { case ETRUE:  return p;
         case EFALSE: return 1 - p;
-        case UBOOL:  return NAN;
+        case UBOOL:  return NaN;
       }
       throw runtime_error ("Unknown ebool value");
     }
@@ -2290,14 +2290,14 @@ struct Binomial : DiscreteDistribution
   An::Value n {0};
     // > 0
     // 0 <=> unknown
-  Prob p {NAN};
+  Prob p {NaN};
 private:
   // Functions of parameters
-  Real n_re {NAN};
+  Real n_re {NaN};
   Bernoulli bernoulli;
-  Real lnFacN {NAN};
-  Real lnP {NAN};
-  Real lnPCompl {NAN};
+  Real lnFacN {NaN};
+  Real lnP {NaN};
+  Real lnPCompl {NaN};
 public:
 
 
@@ -2432,11 +2432,11 @@ struct Geometric : DiscreteDistribution
 // Continuous: Exponential
 {
   // Parameters
-  Prob p {NAN};
+  Prob p {NaN};
   // Functions of parameters
 private:
-  Real lnP {NAN};
-  Real lnPCompl {NAN};
+  Real lnP {NaN};
+  Real lnPCompl {NaN};
 public:
 
 
@@ -2485,7 +2485,7 @@ public:
 private:
   Real logPmf_ (int x) const;
   Prob cdfDiscrete_ (int /*x*/) const
-    { NOT_IMPLEMENTED; return NAN; }
+    { NOT_IMPLEMENTED; return NaN; }
   int randDiscrete_ () const
     { NOT_IMPLEMENTED; return -1; }
 };
@@ -2500,13 +2500,13 @@ struct Zipf : DiscreteDistribution   // not a distribution ??
 // Continuous: Pareto
 {
   // Parameters
-  Real alpha {NAN};
+  Real alpha {NaN};
     // > 1
 private:
   // Functions of parameters
-  Real c {NAN};
+  Real c {NaN};
     // > 0
-  Real lnC {NAN};
+  Real lnC {NaN};
   Categorical cat;
     // Valid if hiBound < INF
 public:
@@ -2552,15 +2552,15 @@ public:
   Real stdLoBound () const final
     { return 1; }
   Real getMean () const  
-    { NOT_IMPLEMENTED; return NAN; }
+    { NOT_IMPLEMENTED; return NaN; }
   Real getVar () const  
-    { NOT_IMPLEMENTED; return NAN; }
+    { NOT_IMPLEMENTED; return NaN; }
 private:
   Prob pmf_ (int x) const
     { return c * pow (x, - alpha); }
   Real logPmf_ (int x) const;
   Prob cdfDiscrete_ (int /*x*/) const
-    { NOT_IMPLEMENTED; return NAN; }
+    { NOT_IMPLEMENTED; return NaN; }
   int randDiscrete_ () const;
 public:
 
@@ -2620,18 +2620,18 @@ public:
   void randVariable () const final
     { variable = rand (); }
   Real getInfoMean () const final
-    { return stdBounds () ? getInfoMean_ () : NAN; }
+    { return stdBounds () ? getInfoMean_ () : NaN; }
   Real getInfoVar () const final
-    { return stdBounds () ? getInfoVar_ () : NAN; }
+    { return stdBounds () ? getInfoVar_ () : NaN; }
 
   // Unbounded support
   virtual Real getQuantile (Prob /*p*/) const 
-    { NOT_IMPLEMENTED; return NAN; }
+    { NOT_IMPLEMENTED; return NaN; }
     // Return: inverse cdf()
   virtual Real getInfoMean_ () const
-    { return NAN; }
+    { return NaN; }
   virtual Real getInfoVar_ () const
-    { return NAN; }
+    { return NaN; }
 };
 
 
@@ -2639,17 +2639,17 @@ public:
 struct LocScaleDistribution : ContinuousDistribution
 {
   // Parameters
-  An::Value loc {NAN};
+  An::Value loc {NaN};
     // Location
     // If stdLoBound() = 0 then 0
-  An::Value scale {NAN};
+  An::Value scale {NaN};
     // > 0
 //Lower bound on scale ??
   // <Others>
 
   // Functions of parameters
 protected:
-  Real log_scale {NAN};
+  Real log_scale {NaN};
   // <Others>
 public:
     
@@ -2713,7 +2713,7 @@ protected:
   Real getInfoMean_ () const final
     { return getInfoMeanStnd () + log_scale; }
   virtual Real getInfoMeanStnd () const 
-    { return NAN; }
+    { return NaN; }
 public:
     
   virtual void setMeanVar (Real /*mean*/,
@@ -2781,7 +2781,7 @@ public:
                    Real var) final
     { setParam (mean, sqrt (var)); }
   Prob pValue_2tail (Real x) const
-    { const Real diff = abs (getMean () - x);
+    { const Real diff = fabs (getMean () - x);
       if (nullReal (diff))
         return 1;
       if (nullReal (scale))
@@ -2878,9 +2878,9 @@ private:
     { return unstnd (tan (pi * (randProb () - 0.5))); }
 public:
   Real getMean () const final
-    { return NAN; }
+    { return NaN; }
   Real getVar () const final
-    { return NAN; }
+    { return NaN; }
   // ContinuousDistribution
 private:
   Real pdfStnd (Real xStnd) const final
@@ -2889,7 +2889,7 @@ private:
     { return log (4 * pi); }
   // Solve: \int \log (x^2 + a) / (x^2 + a) dx ??
 //Real getInfoVar_ () const
-  //{ return NAN; }    
+  //{ return NaN; }    
   // Solve: \int \log^2 (x^2 + a) / (x^2 + a) dx ??
 };
 
@@ -2900,11 +2900,11 @@ struct Beta1 : ContinuousDistribution
 // loc, scale: use ??
 {  
   // Parameters
-  Real alpha {NAN};
+  Real alpha {NaN};
     // 0..1 (Prob ??)
   // Functions of parameters
 private:
-  Real logAlpha {NAN};
+  Real logAlpha {NaN};
 public:
 
 
@@ -2985,11 +2985,11 @@ private:
       { qc (); }
     explicit Point (Real value_arg)
       : value (value_arg)
-      , mult (NAN)
+      , mult (NaN)
       {}
     Point ()
-      : value (NAN)
-      , mult (NAN)
+      : value (NaN)
+      , mult (NaN)
       {}
     void qc () const;
     bool operator== (const Point &other) const
@@ -3001,10 +3001,10 @@ private:
     // Sorted ascending
   Vector<Real> multSum;
 public:
-  Real attr_min {NAN};
-  Real attr_max {NAN};
-  Prob uniform_prob {NAN};
-  Real halfWindow {NAN};
+  Real attr_min {NaN};
+  Real attr_max {NaN};
+  Prob uniform_prob {NaN};
+  Real halfWindow {NaN};
     // >= 0
 
 
@@ -3164,8 +3164,8 @@ struct MultiNormal : MultiDistribution
     
   // Functions of parameters
   Matrix sigmaInv;
-  Real coeff {NAN};
-    // May be NAN
+  Real coeff {NaN};
+    // May be NaN
     // = 0.5 * (getDim() * Normal::coeff + log(det(sigmaInflated)))
 private: 
   Common_sp::AutoPtr <Matrix> cholesky;
@@ -3220,7 +3220,7 @@ public:
     }
   Real logPdfVariable () const
     { if (isNan (coeff))
-        throw runtime_error ("MultiNormal::coeff is NAN"); 
+        throw runtime_error ("MultiNormal::coeff is NaN"); 
       x_field = variable;
       if (coeff == INF)
         return nullReal (x_field. maxAbsDiff (false, mu, false)) ? 0 : -INF;  // PAR
@@ -3234,7 +3234,7 @@ public:
     // variable = mu + cholesky * zs
   Real getInfoMean () const final
     { if (isNan (coeff))
-        throw runtime_error ("MultiNormal::coeff is NAN"); 
+        throw runtime_error ("MultiNormal::coeff is NaN"); 
       return 0.5 * (Real) getDim () + coeff; 
     }
   Real getInfoVar () const final
@@ -3376,7 +3376,7 @@ public:
   void setSeed (ulong seed) const override;
   // Parameters
   Component* addComponent (Distribution* distr,
-                           Prob prob = NAN);
+                           Prob prob = NaN);
     // Return: !nullptr
     // Append: components (may be re-ordered later)
 //distr->setParam()

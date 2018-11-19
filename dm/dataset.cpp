@@ -332,7 +332,7 @@ NumAttr1::Value NumAttr1::getMedian (const Sample &sample) const
     	vec << x;
   }
   if (vec. empty ())
-  	return NAN;
+  	return NaN;
   // Time: --> linear ??
   vec. sort ();
   return vec [vec. size () / 2];
@@ -350,14 +350,14 @@ Real NumAttr1::distr2outlier (const Sample &sample,
     if (! isMissing (*it))
       vec << ObjNum_Real {*it, getSign (rightTail) * getReal (*it)};
   if (vec. size () <= 2)
-    return NAN;
+    return NaN;
     
   vec. sort ();
     
   Real mult_sum = 0;
   Real s = 0;
   Real s2 = 0;
-  Real mean = NAN;
+  Real mean = NaN;
   Real var = 0;
   for (const auto& it : vec)
   {
@@ -391,7 +391,7 @@ Real NumAttr1::distr2outlier (const Sample &sample,
 
 // RealScale
 
-const RealScale::Value RealScale::missing = NAN;
+const RealScale::Value RealScale::missing = NaN;
 
 	
 
@@ -510,7 +510,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
     if (! isMissing (*it))
       vec << ObjNum_Real {*it, getReal (*it)};
   if (vec. size () <= 2)
-    return NAN;
+    return NaN;
     
   vec. sort ();
     
@@ -549,7 +549,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
       objNum_threshold = it. objNum;
   }
   
-  return objNum_threshold == NO_INDEX ? NAN : getReal (objNum_threshold);
+  return objNum_threshold == NO_INDEX ? NaN : getReal (objNum_threshold);
 }
 
 
@@ -2140,7 +2140,7 @@ void Dataset::addAttr (Attr* attr)
 
 Sample::Sample (const Dataset &ds_arg)
 : ds   (& ds_arg)
-, mult (ds_arg. objs. size (), NAN)
+, mult (ds_arg. objs. size (), NaN)
 {
   const VectorOwn<Obj>& objs = ds_arg. objs;
   FFOR (size_t, i, objs. size ())
@@ -2988,7 +2988,7 @@ void Binomial::estimate ()
 				ASSERT (leReal (x_ave, n_re));
 				minimize (x_ave, n_re);
 			}
-		  if (abs (c) <= 0.1)  // PAR
+		  if (fabs (c) <= 0.1)  // PAR
 		  	p_ = x_ave / n_re;
 		  else
 		  {
@@ -2998,10 +2998,10 @@ void Binomial::estimate ()
 			    // If c <  0 then d = (n+c)^2 - 4*c*x_ave <= (n+c)^2 - 4*c*n = (n-c)^2 
 			  ASSERT (d >= 0);
 				const Real d_sqrt = sqrt (d);
-				IMPLY (c >= 0, geReal (d_sqrt, abs (n_re - c)));
-				IMPLY (c >= 0, leReal (d_sqrt, abs (n_re + c)));
-				IMPLY (c <  0, leReal (d_sqrt, abs (n_re - c)));
-				IMPLY (c <  0, geReal (d_sqrt, abs (n_re + c)));
+				IMPLY (c >= 0, geReal (d_sqrt, fabs (n_re - c)));
+				IMPLY (c >= 0, leReal (d_sqrt, fabs (n_re + c)));
+				IMPLY (c <  0, leReal (d_sqrt, fabs (n_re - c)));
+				IMPLY (c <  0, geReal (d_sqrt, fabs (n_re + c)));
 				  // If c >= 0 & n-c >= 0 then n+c - d_sqrt <= n+c - (n-c) = 2*c
 				  // If c >= 0 & n-c <  0 then n+c + d_sqrt <= n+c + (c-n) = 2*c
 				  // If c <  0 & n-c >= 0 then n+c - d_sqrt >= n+c - (n-c) = 2*c
@@ -3011,7 +3011,7 @@ void Binomial::estimate ()
 			}
 		//cout << "c=" << c << " p_=" << p_ << endl;  
 		}
-		while (abs (p - p_) > 1e-5);  // PAR
+		while (fabs (p - p_) > 1e-5);  // PAR
 	}
 
 
@@ -3421,8 +3421,8 @@ Real Normal::getQuantile (Prob p) const
           Produces the normal deviate Z corresponding to a given lower
           tail area of P; Z is accurate to about 1 part in 10**16.
   */
-  Real val = NAN;
-  if (abs(q) <= .425)
+  Real val = NaN;
+  if (fabs(q) <= .425)
   {
     // 0.075 <= p <= 0.925 
     const Real r = .180625 - q * q;
@@ -3578,7 +3578,7 @@ void Cauchy::estimate ()
   ASSERT (analysis);
 	const NumAttr1& attr = analysis->attr;
 	
-  setParam (NAN, NAN);
+  setParam (NaN, NaN);
 	Real loc_ = attr. getMedian (analysis->sample);
 	Real scale_ = INF;
 	
@@ -3592,8 +3592,8 @@ void Cauchy::estimate ()
 			CauchyScaleFunc f (*analysis, loc_);
 			Real minX, maxX;
 			attr. getMinMax (analysis->sample, minX, maxX);
-			const Real maxScale = max ( abs (loc_ - minX)
-						                    , abs (loc_ - maxX)
+			const Real maxScale = max ( fabs (loc_ - minX)
+						                    , fabs (loc_ - maxX)
 						                    );
 		  scale_ = f. findZero (0, maxScale, 1e-4);  // PAR
 		  ASSERT (positive (scale_));
@@ -3613,8 +3613,8 @@ void Cauchy::estimate ()
 		  loc_ = s / n;
 		}
 	}
-	while (   abs (loc   - loc_)   > 1e-5   // PAR
-	       || abs (scale - scale_) > 1e-5   // PAR
+	while (   fabs (loc   - loc_)   > 1e-5   // PAR
+	       || fabs (scale - scale_) > 1e-5   // PAR
 	      );
 }	
 	
@@ -3694,7 +3694,7 @@ void UniKernel::qc () const
     ASSERT (getRange () >= 0);
     ASSERT (isProb (uniform_prob));
     
-    Real prevValue = NAN;
+    Real prevValue = NaN;
     for (const Point& p : points)
     {
       p. qc ();
@@ -3702,7 +3702,7 @@ void UniKernel::qc () const
       prevValue = p. value;
     }
 
-    Real prevMult = NAN;
+    Real prevMult = NaN;
     for (const Real& mult : multSum)
     {
       ASSERT (positive (mult));
@@ -3800,8 +3800,8 @@ void UniKernel::estimate_ (Real halfWindow_lo,
   ASSERT (step > 1);
   
   
-  Real halfWindow_best = NAN;   
-  Prob uniform_prob_best = NAN;   
+  Real halfWindow_best = NaN;   
+  Prob uniform_prob_best = NaN;   
   Real logLikelihood_max = -INF;  
   halfWindow = halfWindow_lo;
   while (leReal (halfWindow, halfWindow_hi))
@@ -3948,8 +3948,8 @@ Prob UniKernel::cdf_ (Real x) const
 
 Real UniKernel::getMean () const
 {
-	Real average = NAN;
-	Real scatter = NAN;
+	Real average = NaN;
+	Real scatter = NaN;
   getAttr (). getAverageScatter (analysis->sample, average, scatter);
   return average;
 }
@@ -3958,8 +3958,8 @@ Real UniKernel::getMean () const
 
 Real UniKernel::getVar () const
 {
-	Real average = NAN;
-	Real scatter = NAN;
+	Real average = NaN;
+	Real scatter = NaN;
   getAttr (). getAverageScatter (analysis->sample, average, scatter);
   return scatter;
 }
@@ -4100,7 +4100,7 @@ void MultiNormal::setDim (size_t dim)
   }
 
   sigmaInv. resize (false, dim, dim);
-	sigmaInv. putAll (NAN);
+	sigmaInv. putAll (NaN);
 	
   zs. resize (dim);
 	for (Normal &n : zs)
@@ -4475,7 +4475,7 @@ Mixture::Component* Mixture::addComponent (Distribution* distr,
   
   auto c = new Component (distr, prob);
   if (const Analysis1* an = distr->getAnalysis ())
-    c->objProb. resize (an->sample. ds->objs. size (), NAN); 
+    c->objProb. resize (an->sample. ds->objs. size (), NaN); 
   components << c; 
   
   return c;
@@ -4665,7 +4665,7 @@ void Mixture::estimate ()
 		    else
   		  {
   		  	data2variable (*it);
-  		  //ASSERT (! variable. contains (NAN));
+  		  //ASSERT (! variable. contains (NaN));
   		  	// Bayes' theorem
   				FFOR (size_t, i, components. size ())
   				  vec [i] = components [i] -> logPdfProb ();				
@@ -5599,8 +5599,8 @@ void Clustering::processSubclusters (const string &clusterAttrName,
           can. print (cout);
         }
       #if 0
-        Real average = NAN;
-        Real scatter = NAN;
+        Real average = NaN;
+        Real scatter = NaN;
         spCan [0] -> getAverageScatter (sample, average, scatter);
         ASSERT (eqReal (average, 0, 1e-2));
       //ASSERT (eqReal (scatter, eigenValues [0] + 1, 1e-2));
@@ -5685,7 +5685,7 @@ Canonical::Canonical (const Clustering &clustering)
   basis_norm. resize (false, between. getDim (), eigens. basis. rowsSize (true));
   basis_norm = basis;
   {
-    Real sumSqrNorma = NAN;
+    Real sumSqrNorma = NaN;
     EXEC_ASSERT (basis_norm. normalize (true, sumSqrNorma));
   }
 }
@@ -5895,8 +5895,8 @@ Space1<RealAttr1> Canonical::createSpace (const string &attrPrefix,
 #ifndef NDEBUG
   if (sp. size () == 1)
   {
-    Real average = NAN;
-    Real scatter = NAN;
+    Real average = NaN;
+    Real scatter = NaN;
     sp [0] -> getAverageScatter (sample, average, scatter);
     ASSERT (eqReal (average, 0, 1e-2));
   //ASSERT (eqReal (scatter, eigenValues [0] + 1, 1e-2));

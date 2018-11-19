@@ -23,7 +23,7 @@ Real intersection2dissim (Real size1,
 	                        Prob sizes_ratio_min,
 	                        bool ave_arithP);
   // Input: ave_arithP; false <=> ave_harm()
-  // Return: >= 0; may be NAN
+  // Return: >= 0; may be NaN
   // Symmetric
 
 
@@ -52,7 +52,7 @@ struct Hashes : Vector<size_t>
 // --> dataset.hpp ??
 struct DissimAverage : Root
 {
-	Real power {NAN};
+	Real power {NaN};
 	
 	
 	struct DissimAttr : Named
@@ -60,12 +60,12 @@ struct DissimAverage : Root
 		const DissimAverage& da;
 		const PositiveAttr1* attr {nullptr};
 
-		Real center {NAN};
+		Real center {NaN};
 			// > 0
 		// For centered value's
-		Real var {NAN};
+		Real var {NaN};
 			// >= 0
-		Real value {NAN};
+		Real value {NaN};
 			// >= 0
 		mutable bool outlier {false};
 		WeightedMeanVar outlierMV;  

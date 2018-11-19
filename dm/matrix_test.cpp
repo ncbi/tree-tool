@@ -268,7 +268,7 @@ struct ThisApplication : Application
 		        FOR (size_t, i, prod. rowsSize (false))
 			        FOR (size_t, j, prod. rowsSize (false))
 			          if (i != j)
-			          	s += abs (prod. get (false, i, j));
+			          	s += fabs (prod. get (false, i, j));
 			      if (s / sqr ((Real) prod. rowsSize (false)) < 1e-6)  // PAR   
 			      	break;
 			    }

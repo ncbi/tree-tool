@@ -52,8 +52,8 @@ struct ThisApplication : Application
 	  	
 	    const Sample sm (ds);
 	  #if 0  // PAR
-	  	Real center = NAN;
-	  	Real scatter = NAN;
+	  	Real center = NaN;
+	  	Real scatter = NaN;
 	  	attr->getAverageScatter (sm, center, scatter);
 	  	// center = INF
 	  #else

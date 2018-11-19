@@ -414,7 +414,7 @@ struct ThisApplication : Application
       if (! delete_outliers. empty ())
       {
 	      tree->setNodeAbsCriterion (); 
-	      Real outlier_min = NAN;
+	      Real outlier_min = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001, outlier_min));  // PAR
 	      const ONumber on (cout, criterionDecimals, false);  
 	      cout << "# Outliers: " << outliers. size () << endl;
@@ -504,7 +504,7 @@ struct ThisApplication : Application
 
   #if 0
     {
-      Real arcLen_min = NAN;
+      Real arcLen_min = NaN;
       Real outlier_EValue_max = 10;  // ??
       while (outlier_EValue_max >= 1e-6)
       {

@@ -32,16 +32,16 @@ Real intersection2dissim (Real size1,
          << endl;
          
   if (nullReal (max (size1, size2)))
-  	return NAN;
+  	return NaN;
 
   if (  min (size1, size2) 
   	  / max (size1, size2)
   	    < sizes_ratio_min
   	 )
-  	return NAN;
+  	return NaN;
          
   if (intersection < intersection_min)
-  	return NAN;
+  	return NaN;
   	
   const Real dissim1 = log (size1 / intersection);
   const Real dissim2 = log (size2 / intersection);
@@ -144,7 +144,7 @@ void DissimAverage::DissimAttr::qc () const
 void DissimAverage::DissimAttr::setOutlier (Real value_target) const
 { 
 	outlier =    /*value > 1   // PAR
-	          &&*/ /*abs*/ (value - value_target) / getSD () > 1;   // PAR
+	          &&*/ /*fabs*/ (value - value_target) / getSD () > 1;   // PAR
 }
 
 
@@ -234,7 +234,7 @@ Real DissimAverage::get () const
   for (const DissimAttr& dissimAttr : dissimAttrs)
    	dissimAttr. outlier = false;
 
-	Real ave = NAN;
+	Real ave = NaN;
 	for (;;)
 	{
 		const Real ave_prev = ave;
@@ -259,7 +259,7 @@ Real DissimAverage::get () const
     ave = sum / weights;
   //cout << ave << endl;
     
-    if (isNan (ave) || abs (ave - ave_prev) < 1e-6)  // PAR
+    if (isNan (ave) || fabs (ave - ave_prev) < 1e-6)  // PAR
     	break;
     
     for (const DissimAttr& dissimAttr : dissimAttrs)

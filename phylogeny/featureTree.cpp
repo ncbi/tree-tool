@@ -51,7 +51,7 @@ Phyl::Phyl (FeatureTree &tree,
 {
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
-		  weight [i] [j] = NAN;
+		  weight [i] [j] = NaN;
 }
 
 
@@ -88,7 +88,7 @@ void Phyl::qc () const
 	FFOR (size_t, i, core. size ())
 	{
  	  ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core); 
- 	//IMPLY (getFeatureTree (). allTimeZero, abs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
+ 	//IMPLY (getFeatureTree (). allTimeZero, fabs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
  	  ASSERT (! (   parent2core [false] [i]. core == UBOOL
  	             && parent2core [true]  [i]. core == UBOOL
  	            )
@@ -301,8 +301,8 @@ Real Phyl::getNeighborDistance () const
 bool Phyl::badNeighborDistance (Real &neighborDistance_stnd,
                                 Real &depth_stnd) const
 {
-  neighborDistance_stnd = NAN;
-  depth_stnd = NAN;
+  neighborDistance_stnd = NaN;
+  depth_stnd = NaN;
   const Normal* distDistr = getFeatureTree (). distDistr. get ();
   if (! distDistr)
     return false;
@@ -412,11 +412,11 @@ Species::Species (FeatureTree &tree,
 	                Real time_arg)
 : Phyl (tree, parent_arg)  // FeatureTree must be declared
 , id (id_arg)
-, time (tree. allTimeZero ? NAN : time_arg)
+, time (tree. allTimeZero ? NaN : time_arg)
 {
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
-		  weight_old [i] [j] = NAN;
+		  weight_old [i] [j] = NaN;
 }
 
 
@@ -590,7 +590,7 @@ Real coreChange2time (const FeatureTree& tree,
 Real Species::getTime () const
 {
   if (getFeatureTree (). allTimeZero)
-  	return NAN;
+  	return NaN;
 
   if (! getParent ())
   	return getFeatureTree (). getRootTime ();;  
@@ -722,7 +722,7 @@ void Species::commitFeatures ()
 	ASSERT (movementsOn);
 	movements. clear ();
 	movementsOn = false;
-	pooledSubtreeDistance_old = NAN;
+	pooledSubtreeDistance_old = NaN;
 }
 
 
@@ -1360,7 +1360,7 @@ void ChangeToSibling::apply_ ()
   ASSERT (from != arcEnd);
 
   // Topology
-  auto inter_ = new Fossil (const_cast <FeatureTree&> (tree), arcEnd, string (), NAN);
+  auto inter_ = new Fossil (const_cast <FeatureTree&> (tree), arcEnd, string (), NaN);
   inter = inter_;
   inter_->init ();
   // PAR
@@ -1717,7 +1717,7 @@ void ChangeRoot::apply_ ()
 
 
   // Topology
-  auto inter = new Fossil (const_cast <FeatureTree&> (tree), const_static_cast <Fossil*> (from->getParent ()), string (), NAN);
+  auto inter = new Fossil (const_cast <FeatureTree&> (tree), const_static_cast <Fossil*> (from->getParent ()), string (), NaN);
   inter->init ();
   FFOR (size_t, i, inter->core. size ())
     inter->core [i] = from->core [i];  // PAR
@@ -2051,7 +2051,7 @@ namespace
 		const string tStr (" t=");
 		const size_t pos = s1. find (tStr);
 		if (pos == string::npos)
-			return NAN;  
+			return NaN;  
 		string timeS (s1. substr (pos + tStr. size ()));
 		return str2real (findSplit (timeS));
 	}
@@ -2508,7 +2508,7 @@ void FeatureTree::optimizeLambdaTime ()
 
   if (verbose ())
     qc ();
-	Real x = NAN;
+	Real x = NaN;
 	if (allTimeZero)
 		x = 0.5;  // PAR
 	else

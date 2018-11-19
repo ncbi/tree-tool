@@ -27,7 +27,7 @@ VarianceType varianceType = varianceType_linExp;
 
 Real dissim_coeff = 1;
 Real hybridness_min = 1.1;
-Real dissim_boundary = NAN;
+Real dissim_boundary = NaN;
 
 
 
@@ -483,7 +483,7 @@ void DTNode::setGlobalLenDown (bool topological,
     // Subtree goes upward from *parent_
       
     WeightedMeanVar globalLen;
-    Real lenDelta = NAN;
+    Real lenDelta = NaN;
     if (topological)
     {
       lenDelta = len / 2;
@@ -1126,8 +1126,8 @@ Real Leaf::getHybridness (const Leaf* &parent1,
 	
 	parent1 = nullptr;
 	parent2 = nullptr;
-	parent1_dissim = NAN;
-	parent2_dissim = NAN;
+	parent1_dissim = NaN;
+	parent2_dissim = NaN;
 	
 	
   const auto& dissims = getDistTree (). dissims;
@@ -1217,7 +1217,7 @@ Real Leaf::getHybridness (const Leaf* &parent1,
 #endif
 
 	
-  return NAN;
+  return NaN;
 }
 
 
@@ -1234,8 +1234,8 @@ void Leaf::getHybridTriangles (Vector<Triangle> &hybrids,
 		
 	const Leaf* parent1 = nullptr;
   const Leaf* parent2 = nullptr;
-  Real parent1_dissim = NAN;
-  Real parent2_dissim = NAN;
+  Real parent1_dissim = NaN;
+  Real parent2_dissim = NaN;
 	const Real hybridness_ = getHybridness (parent1, parent2, parent1_dissim, parent2_dissim);
 	if (isNan (hybridness_))
 		return;
@@ -1793,7 +1793,7 @@ bool Change::apply ()
   {
     const_cast <DTNode*> (from) -> len = lr. beta [0] / 2;
     const_cast <DTNode*> (to)   -> len = from->len;
-    inter                       -> len = NAN;
+    inter                       -> len = NaN;
     ASSERT (inter == tree. root);
   }
 
@@ -2268,7 +2268,7 @@ bool Image::apply ()
 	    DTNode* node = const_static_cast <DTNode*> (findPtr (new2old, node_new));
 	    if (! node)
 	    {
-	      node = new Steiner (wholeTree, nullptr, NAN);
+	      node = new Steiner (wholeTree, nullptr, NaN);
 	      new2old [node_new] = node;
 	      node->stable = true;
 			#ifndef NDEBUG
@@ -2408,7 +2408,7 @@ DistTree::DistTree (const string &dissimFName,
 
   // Initial tree topology: star topology 
   ASSERT (! root);
-  auto root_ = new Steiner (*this, nullptr, NAN);
+  auto root_ = new Steiner (*this, nullptr, NaN);
   for (const Obj* obj : dissimDs->objs)
 	  new Leaf (*this, root_, 0, obj->name);
   ASSERT (root);
@@ -2433,7 +2433,7 @@ struct DissimLine
 	// Input
 	string name1;
 	string name2;
-	Real dissim {NAN};
+	Real dissim {NaN};
 	// Output
   Leaf* leaf1 {nullptr};
 	Leaf* leaf2 {nullptr};
@@ -2459,7 +2459,7 @@ struct DissimLine
     #endif
       dissim = str2real (line);
       if (isNan (dissim))
-        throw runtime_error (errorS + "dissimilarity is NAN");
+        throw runtime_error (errorS + "dissimilarity is NaN");
       if (dissim < 0)
         throw runtime_error (errorS + "dissimilarity is negative");
       if (! DM_sp::finite (dissim))
@@ -2840,7 +2840,7 @@ DistTree::DistTree (Prob branchProb,
   const Real len = 1;  // PAR
 
   Set<Steiner*> open;
-  open << new Steiner (*this, nullptr, NAN);
+  open << new Steiner (*this, nullptr, NaN);
   Bernoulli bernoulli;
   bernoulli. setParam (branchProb);
   size_t leafIndex = 0;
@@ -2914,7 +2914,7 @@ DistTree::DistTree (Subgraph &subgraph,
   if (subgraph. unresolved ())
   {
     // Star topology
-    auto st = new Steiner (*this, nullptr, NAN);
+    auto st = new Steiner (*this, nullptr, NaN);
     root = st;
     if (area_root)
     {
@@ -2967,7 +2967,7 @@ DistTree::DistTree (Subgraph &subgraph,
         DTNode* child = const_static_cast <DTNode*> (children. front ());
         ASSERT (child);
         const TreeNode* root_ = root;                    // Old root in *this
-        auto inter = new Steiner (*this, nullptr, NAN);  // New root in *this
+        auto inter = new Steiner (*this, nullptr, NaN);  // New root in *this
         child->setParent (inter);
         child->len /= 2;
         ASSERT (root_->getChildren (). empty ());
@@ -3065,7 +3065,7 @@ DistTree::DistTree (Subgraph &subgraph,
   ASSERT (dissim2_sum == 0);
   for (Dissim& dissim : dissims)
     if (dissim. mult == 0)
-      dissim. target = NAN;
+      dissim. target = NaN;
     else
     {
       dissim. target /= dissim. mult;
@@ -3106,7 +3106,7 @@ void DistTree::loadTreeDir (const string &dir)
       continue;
     Steiner* steiner = getName2steiner (name, name2steiner);
     for (const Obj* obj : leafDs. objs)
-      new Leaf (*this, steiner, NAN, obj->name);
+      new Leaf (*this, steiner, NaN, obj->name);
   }
 
   deleteTransients ();  
@@ -3124,7 +3124,7 @@ Steiner* DistTree::getName2steiner (const string &name,
 
   string prefix (name);
   rfindSplit (prefix, '.');
-  auto s = new Steiner (*this, getName2steiner (prefix, name2steiner), NAN);
+  auto s = new Steiner (*this, getName2steiner (prefix, name2steiner), NaN);
   name2steiner [name] = s;
   
   return s;
@@ -3165,7 +3165,7 @@ namespace
 		const string token1 (" " + token + "=");
 		const size_t pos = s1. find (token1);
 		if (pos == string::npos)
-			return NAN;  
+			return NaN;  
 		string valueS (s1. substr (pos + token1. size ()));
 		return str2real (findSplit (valueS));
 	}
@@ -3308,7 +3308,7 @@ void DistTree::newick2node (ifstream &f,
   DTNode* node = nullptr;
   if (c == '(')
   {
-    auto st = new Steiner (*this, parent, NAN);
+    auto st = new Steiner (*this, parent, NaN);
     for (;;)
     {
       newick2node (f, st);
@@ -3331,7 +3331,7 @@ void DistTree::newick2node (ifstream &f,
     }
     if (name. empty ())
       throw runtime_error ("Empty name");
-    node = new Leaf (*this, parent, NAN, name);
+    node = new Leaf (*this, parent, NaN, name);
   }
   ASSERT (node);
   
@@ -3668,7 +3668,7 @@ namespace
     // !nullptr, discernible
     array <const DTNode*, 2> nodes;
       // nodes[0] < nodes[1]
-    Real dissim {NAN};
+    Real dissim {NaN};
       // !isNan()
 
     LeafPair ()
@@ -3834,7 +3834,7 @@ void DistTree::neighborJoin ()
     Steiner* newNode = nullptr;
     {
       // leafPair_best
-      Real dissim_min = NAN;
+      Real dissim_min = NaN;
       {
         Real criterion = INF;
         size_t i_best = NO_INDEX;
@@ -4625,7 +4625,7 @@ void DistTree::qcPredictionAbsCriterion () const
       ASSERT_EQ (prediction_, dissim. prediction, 1e-3);  // PAR
       absCriterion_ += dissim. getAbsCriterion ();
     }
-  if (abs (absCriterion - absCriterion_) > 1e-3)  // PAR
+  if (fabs (absCriterion - absCriterion_) > 1e-3)  // PAR
   {
   	cout << absCriterion << " " << absCriterion_ << endl;
   	ERROR;
@@ -5460,7 +5460,7 @@ void reinsert_thread (size_t from,
   {
     prog ();
     const DTNode* fromNode = nodeVec [i];
-    Real nodeAbsCriterion_old = NAN;
+    Real nodeAbsCriterion_old = NaN;
     const NewLeaf nl (fromNode, q_max, nodeAbsCriterion_old);
     ASSERT (nodeAbsCriterion_old >= 0);
     nl. qc ();
@@ -6051,7 +6051,7 @@ void DistTree::delayDeleteRetainArcs (DTNode* node)
 
   const VectorPtr<DiGraph::Node> children (node->getChildren ());
   for (const DiGraph::Node* child : children)
-    const_static_cast <DTNode*> (child) -> len += (node == root ? NAN : node->len);
+    const_static_cast <DTNode*> (child) -> len += (node == root ? NaN : node->len);
 
 	if (const Steiner* st = node->asSteiner ())
     if (const TreeNode* parent_ = st->getParent ())
@@ -6253,7 +6253,7 @@ Real DistTree::reroot (bool topological)
 //cout << "Old radius: " << root_->getHeight_ave () << endl;  
   
   DTNode* bestDTNode = nullptr;
-  Real bestDTNodeLen_new = NAN;
+  Real bestDTNodeLen_new = NaN;
   WeightedMeanVar bestGlobalLen;
   root_->setGlobalLenDown (topological, bestDTNode, bestDTNodeLen_new, bestGlobalLen);
   ASSERT (bestDTNode);
@@ -6554,7 +6554,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 	ASSERT (hybridness_min > hybridness_min_init);
 	
 
-	Real outlier_min = NAN;
+	Real outlier_min = NaN;
 	{
 	  // dissim.ssize() = 35M => 80 sec. 
 		Dataset ds;
@@ -6751,7 +6751,7 @@ Vector<Triangle> DistTree::findHybrids (Real parentLengthFrac_min,
   		continue;
   	const Leaf* parent1 = nullptr;
   	const Leaf* parent2 = nullptr;
-  	Real parentDissimilarity = NAN;
+  	Real parentDissimilarity = NaN;
   	const Real hybridness = leaf->getHybridness (/*height_min,*/ parentLengthFrac_min, parent1, parent2, parentDissimilarity);
   	if (hybridness < hybridness_min)
   		continue;  	
@@ -7013,7 +7013,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
   }
 
 #if 0
-  Real arcLen_outlier_min = NAN;
+  Real arcLen_outlier_min = NaN;
   const VectorPtr<DTNode> tooLongArcs (findOutlierArcs (0.1, arcLen_outlier_min));  // PAR
   {
     Progress prog (tooLongArcs. size (), 100);  // PAR
@@ -7240,7 +7240,7 @@ RealAttr1* DistTree::getResiduals2 ()
   //ASSERT (d >= 0);
     const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
-    const Real residual = abs (dHat - d);      
+    const Real residual = fabs (dHat - d);      
     ASSERT (DM_sp::finite (residual));
     (*resid2Attr) [*it] = sqr (residual);
   }
@@ -7542,7 +7542,7 @@ void NewLeaf::process (bool init,
           const Real dissim = str2real (dissimS);
           if (dissim < 0)
             throw runtime_error ("Dissimilarity must be non-negative");
-          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NAN, location. anchor);
+          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN, location. anchor);
         }          
         catch (...)
         {

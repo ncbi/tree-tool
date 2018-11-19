@@ -51,7 +51,7 @@ struct ThisApplication : Application
     lr. solveUnconstrained ();
     lr. qc ();
     cout << "Abs. Error = " << lr. absCriterion2Error () << endl;
-    Real scatter = NAN;
+    Real scatter = NaN;
     const Real constTarget = lr. getConstTarget (scatter);
     cout << "Const target = " << constTarget << endl;
     cout << "Rel. Error = " << lr. getRelTargetCriterion (constTarget) << endl;

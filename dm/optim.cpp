@@ -54,7 +54,7 @@ Real Func1::findZero (Real x_min,
   	ASSERT (! isNan (y));
     if (verbose ())
       cout << "x =" << x << "  y = " << y << endl;  
-  	if (abs (y) <= precision)  
+  	if (fabs (y) <= precision)  
   		return x;
   	if (y < 0)
   		x_min = x;
@@ -292,7 +292,7 @@ Real MoveFunc::f (Real X)
   if (SetMFX (X))
     return MF->f (MFX); 
   else
-    return NAN;
+    return NaN;
 }
 
 
@@ -353,7 +353,7 @@ Real FuncMult::optimizeLinear (bool           Min,
   Real YPrev = YPrevPrev;
   
   Real K = dK * dKCoeff;
-  Real Y = NAN;
+  Real Y = NaN;
   while (isNan (Y))
   {
     K /= dKCoeff;
@@ -580,7 +580,7 @@ bool FuncMult::optimizeMarquardt (bool         Min,
   MVector XNew (maxArgNum);
   bool Stop = false;
   unsigned short iter;
-  Real y_prev = NAN;
+  Real y_prev = NaN;
   for (iter = 0; iter < MaxIter; iter++)
   {
     if (verbose ())

@@ -75,7 +75,7 @@ Real sumAbsDifferenceVec (const Matrix &m1,
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
-     s += abs (r1 - r2);
+     s += fabs (r1 - r2);
   return s;
 }
 
@@ -96,7 +96,7 @@ Real maxAbsDifferenceVec (const Matrix &m1,
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
-     Common_sp::maximize (s, abs (r1 - r2));
+     Common_sp::maximize (s, fabs (r1 - r2));
   return s;
 }
 
@@ -129,7 +129,7 @@ Real getCovarianceVec (const Matrix &m1,
 
   const size_t correction = ! biased;
   if (n <= correction)
-    return NAN;
+    return NaN;
   const Real a = Sxy - Sx * Sy / (Real) n;
   return a / ((int) n - (int) correction);
 }
@@ -166,7 +166,7 @@ Real getCorrelationVec (const Matrix  &m1,
     }
 
   if (n == 0)
-    return NAN;
+    return NaN;
 
   const Real a     = Sxy - Sx * Sy  / (Real) n;
   const Real Var1N = Sx2 - sqr (Sx) / (Real) n;
@@ -242,7 +242,7 @@ Matrix::Matrix (bool t,
   loadSize (f, square, maxRow, maxCol); 
 
   swapRowCol (t, maxRow, maxCol);  
-  data. resize (maxRow * maxCol, NAN);
+  data. resize (maxRow * maxCol, NaN);
   rowsSize_ = maxRow;    
   colsSize = maxCol;  
   psd = isSquare ();  
@@ -851,7 +851,7 @@ Real Matrix::maxAbsRow (bool t,
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
-      Common_sp::maximize (r, abs (a));
+      Common_sp::maximize (r, fabs (a));
   return r;
 }
 
@@ -864,7 +864,7 @@ Real Matrix::minAbsRow (bool t,
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
-      Common_sp::minimize (r, abs (a));
+      Common_sp::minimize (r, fabs (a));
   return r;
 }
 
@@ -909,7 +909,7 @@ Real Matrix::closestZeroRow (bool t,
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
-      Common_sp::minimize (r, abs (a));
+      Common_sp::minimize (r, fabs (a));
   return r;
 }
 
@@ -991,7 +991,7 @@ void Matrix::meanDefinedNumRow (bool t,
       s += r;
     }
 
-  mean = definedNum ? s / (Real) definedNum : NAN;
+  mean = definedNum ? s / (Real) definedNum : NaN;
 }
 
 
@@ -1028,7 +1028,7 @@ Real Matrix::sumAbsDevRow (bool t,
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
-      s += abs (a - centerValue);
+      s += fabs (a - centerValue);
   return s;
 }
 
@@ -1200,11 +1200,11 @@ bool Matrix::checkInverse (const Matrix &inverseM,
     FFOR (size_t, col, rowsSize (false))
       if (row == col)
       {
-        if (abs (Ident. get (false, row, col) - 1.0) >= error)
+        if (fabs (Ident. get (false, row, col) - 1.0) >= error)
           return false;
       }
       else
-        if (abs (Ident. get (false, row, col)) >= error)
+        if (fabs (Ident. get (false, row, col)) >= error)
           return false;
           
   return true;
@@ -1269,7 +1269,7 @@ bool Matrix::getEigen (Eigen &eigen,
       const Real a =        vec [row];
       const Real b = eigen. vec [row];
       if (! nullReal (b))
-        mv. add (a / b, abs (a) + abs (b));
+        mv. add (a / b, fabs (a) + fabs (b));
     }
     eigen. value = mv. getMean ();
       
@@ -1429,7 +1429,7 @@ Real Matrix::getLnFisherExact (bool oneTail) const
 
     
   NOT_IMPLEMENTED;
-  return NAN;
+  return NaN;
 }
 
 
@@ -1447,7 +1447,7 @@ Real Matrix::maxAbsDiff (bool         t,
     if (   get (t, i, j, a)
     	  && source. get (sourceT, i, j, b)
     	 )
-      Common_sp::maximize (diff, abs (a - b));
+      Common_sp::maximize (diff, fabs (a - b));
   return diff;
 }
 
@@ -1472,7 +1472,7 @@ Real Matrix::meanRelativeError (bool         t,
 	      if (source. get (sourceT, i, j, X))
 	      {
 	        C++;
-	        s += abs ((X - r) / r);
+	        s += fabs ((X - r) / r);
 	      }
 	    }
   if (C == 0)
@@ -1721,7 +1721,7 @@ void Matrix::absRow (bool t,
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
-      put (t, row, col, abs (a));
+      put (t, row, col, fabs (a));
 }
 
 
@@ -2204,9 +2204,9 @@ Real Matrix::ipfp (bool         t,
   ASSERT (sumColVector. rowsSize (! sumColT) == 1);
   ASSERT (defined ());
 
-  Common_sp::maximize (minError, abs (sumRowVector. sum () - sumColVector. sum ()));
+  Common_sp::maximize (minError, fabs (sumRowVector. sum () - sumColVector. sum ()));
 
-  Real error = NAN;
+  Real error = NaN;
   FOR (size_t, i, iter_max)
   {
     const Real sumDeviation = balanceVec (  t, sumColVector,   sumColT) +
@@ -2394,7 +2394,7 @@ Determinant Matrix::inverse ()
   FOR (size_t, k, M)
   {
     // r, Q, coeff
-   	// abs(get(false,r,Q)) -> max, s.t. U[r] = NO_INDEX, V[Q] = NO_INDEX
+   	// fabs(get(false,r,Q)) -> max, s.t. U[r] = NO_INDEX, V[Q] = NO_INDEX
     Real XMax = -INF;
     size_t r = NO_INDEX;
     size_t q = NO_INDEX;
@@ -2402,7 +2402,7 @@ Determinant Matrix::inverse ()
       if (U [j] == NO_INDEX)
         FOR (size_t, i, M)
           if (V [i] == NO_INDEX)
-            if (Common_sp::maximize (XMax, abs (get (false, i, j))))
+            if (Common_sp::maximize (XMax, fabs (get (false, i, j))))
             {
               r = i;
               q = j;
@@ -2411,7 +2411,7 @@ Determinant Matrix::inverse ()
         r == NO_INDEX) 
       return Determinant (rowsSize (false), 0);
     const Real f = get (false, r, q);
-    // XMax = abs (f)
+    // XMax = fabs (f)
     U [q] = r;
     V [r] = q;
     if (nullReal (f)) 
@@ -2510,7 +2510,7 @@ Real Matrix::symmetrize (Real &maxCorrection,
          )
       {
        	const Real c = (a + b) / 2;
-       	const Real correction = abs (a - c);
+       	const Real correction = fabs (a - c);
        	if (Common_sp::maximize (maxCorrection, correction))
        	{
        	  row_bad = row;
@@ -2710,8 +2710,8 @@ Eigens::Eigens (const Matrix &matr,
 , totalExplained_max (matr. psd ? matr. getTrace () : matr. sumSqr ())
 , basis (false, matr. rowsSize (false), 0)
 , values (0)
-, explainedVarianceFrac (NAN)
-, explainedFrac_next (NAN)
+, explainedVarianceFrac (NaN)
+, explainedFrac_next (NaN)
 , orthogonal (true)
 {
   if (verbose ())
@@ -2855,7 +2855,7 @@ Eigens::Eigens (const Matrix &matr,
     // orthogonal
     for (const Eigen* other : vecs)
     {
-    	const Real prod = abs (other->vec. multiplyVec (eigen->vec) / (Real) len);
+    	const Real prod = fabs (other->vec. multiplyVec (eigen->vec) / (Real) len);
       if (greaterReal (prod, 0.05))  // PAR  
       {
         if (verbose ())
@@ -2871,7 +2871,7 @@ Eigens::Eigens (const Matrix &matr,
     if (! orthogonal)  // Try a different random normalized vector ??
       break;
   
-    explainedFrac_next = NAN;
+    explainedFrac_next = NaN;
     vecs << eigen. get ();
   }
   eigen. release ();

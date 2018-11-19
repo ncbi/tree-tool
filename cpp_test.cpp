@@ -3,9 +3,6 @@
 #undef NDEBUG
 #include "common.inc"
 
-#include <thread>         // std::this_thread::sleep_for
-#include <chrono>         // std::chrono::seconds
-
 #include "common.hpp"
 using namespace Common_sp;
 
@@ -66,8 +63,9 @@ struct ThisApplication : Application
 
 	void body () const
 	{
-    for (;;)
-      cout << "test" << endl;
+	  const double d = 1.5;
+	  const double r = abs (d);
+	  cout << r << endl;
   }
 };
 

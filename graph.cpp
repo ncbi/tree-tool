@@ -1402,7 +1402,7 @@ Tree::Patristic::Patristic (const TreeNode* leaf1_arg,
 {
   ASSERT (leaf1);
   ASSERT (leaf2);
-  ASSERT (distance == distance);  // != NAN
+  ASSERT (distance == distance);  // != NaN
   ASSERT (leaf1->graph);
   ASSERT (leaf1->graph == leaf2->graph);
   ASSERT (leaf1->getName () != leaf2->getName ());
@@ -1437,7 +1437,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
 			res << node2leafDistances (n, nodeLeaf2dist);
 			ASSERT (! nodeLeaf2dist. empty ());
 			const double dist = n->getParentDistance ();
-			ASSERT (dist == dist);  // != NAN
+			ASSERT (dist == dist);  // != NaN
 			for (auto& it : nodeLeaf2dist)
 			  it. second += dist;
 		  for (const auto it1 : leaf2dist)
