@@ -520,10 +520,12 @@ public:
 	      Steiner* parent_arg,
 	      Real len_arg,
 	      const string &name_arg);
+#if 0
 	Leaf (DistTree &tree,
 	      Leaf* other,
 	      const string &name_arg);
 	  // Invokes: collapse(other)
+#endif
 	void qc () const final;
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);

@@ -938,6 +938,7 @@ Leaf::Leaf (DistTree &tree,
 
 
 
+#if 0
 Leaf::Leaf (DistTree &tree,
   	        Leaf* other,
   	        const string &name_arg)
@@ -952,6 +953,7 @@ Leaf::Leaf (DistTree &tree,
   const_cast <DistTree&> (getDistTree ()). leafNum ++;  
   collapse (other);
 }
+#endif
 
 
 
@@ -2603,9 +2605,11 @@ DistTree::DistTree (const string &dataDirName,
       Leaf* leaf = nullptr;
       if (const Leaf* anchorLeaf = anchor->asLeaf ())
       {
+      #if 0
         if (leafLen == 0 && arcLen == 0)
-          leaf = new Leaf (*this, const_cast <Leaf*> (anchorLeaf), leafName);
+          leaf = new Leaf (*this, const_cast <Leaf*> (anchorLeaf), leafName);  // DissimLine::apply() will collapse() if needed
         else
+      #endif
           if (! anchorLeaf->discernible)
             anchor = static_cast <const DTNode*> (anchor->getParent ());
       }
