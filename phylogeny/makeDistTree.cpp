@@ -247,7 +247,8 @@ struct ThisApplication : Application
     	throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
     if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())
     	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
-    IMPLY (! leaf_errors. empty (), ! noqual);
+    if (! leaf_errors. empty () && noqual)
+      throw runtime_error ("-noqual prohibits -leaf_errors");
     IMPLY (refresh_dissim, ! dissim_request. empty ());
 
 
@@ -414,7 +415,7 @@ struct ThisApplication : Application
       {
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NAN;
-	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001 /*0.1 ??*/, outlier_min));  // PAR
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001, outlier_min));  // PAR
 	      const ONumber on (cout, criterionDecimals, false);  
 	      cout << "# Outliers: " << outliers. size () << endl;
 	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
