@@ -1194,7 +1194,7 @@ public:
 	  // Invokes: getBestChange(), applyChanges()
 	string findRoot (size_t &bestCoreSize);
 	  // arg min_node core size
-    // Idempotent
+    // Idempotent (prove ??)
     // Return: new root LCA name in the old tree; "" if new root = old root
 	  // Output: bestCoreSize, topology, superRootCore
 	  // Invokes: setCore(), sort()
