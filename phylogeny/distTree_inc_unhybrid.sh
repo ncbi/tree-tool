@@ -19,7 +19,7 @@ if [ -s $INC/unhybrid ]; then
   echo ""
 	uniq.sh $INC/unhybrid
   wc -l $INC/unhybrid
-  trav $INC/unhybrid "if [ -e $INC/outlier/%f ]; then mv $INC/outlier/%f $INC/new/; fi"
+  trav $INC/unhybrid "mv $INC/hybrid/%f $INC/new/"
   $INC/objects_in_tree.sh $INC/unhybrid null
 	mv $INC/unhybrid $INC/hist/unhybrid.$VER
 else

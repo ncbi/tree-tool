@@ -26,25 +26,25 @@ if [ $SEARCH -gt 0 ]; then
   echo "# Being searched: $SEARCH"
 fi
 
-N=`ls $1/outlier/ | wc -l`
-outliers_percent=`echo "scale=2; $N * 100 / ($N + $OBJS)" | bc -l`
+N=`ls $1/hybrid/ | wc -l`
+PERCENT=`echo "scale=2; $N * 100 / ($N + $OBJS)" | bc -l`
 if [ $N -gt 0 ]; then
-  echo "# Hybrids: $N ($outliers_percent %)"
+  echo "# Hybrids: $N ($PERCENT %)"
 fi
 
-if [ -e $1/alien ]; then
-	N=`cat $1/alien | wc -l`
-  echo "# Aliens: $N"
+if [ -e $1/outlier-alien ]; then
+	N=`cat $1/outlier-alien | wc -l`
+  echo "# Alien-outliers: $N"
 fi
 
-if [ -e $1/contaminated ]; then
-	N=`cat $1/contaminated | wc -l`
-  echo "# Contaminated: $N"
+if [ -e $1/outlier-dissim ]; then
+	N=`cat $1/outlier-dissim | wc -l`
+  echo "# Dissimilarity outliers: $N"
 fi
 
-if [ -e $1/genosubspecies_outlier ]; then
-	N=`cat $1/genosubspecies_outlier | wc -l`
-  echo "# Genosubspecies outliers: $N"
+if [ -e $1/outlier-genogroup ]; then
+	N=`cat $1/outlier-genogroup | wc -l`
+  echo "# Genogroup outliers: $N"
   echo "# Objects to be in tree: $(( $OBJS - $N ))"
 fi
 
@@ -70,7 +70,7 @@ grep ' V !' $1/hist/makeFeatureTree-tree1.* | sed 's|^'$1'/hist/makeFeatureTree-
 tail -5 $TMP
 
 echo ""
-wc -l inc/hist/genosubspecies_outlier.* | grep -v total |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+wc -l inc/hist/outlier-genogroup.* | grep -v total |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 tail -5 $TMP
 
 

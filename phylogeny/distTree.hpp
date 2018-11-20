@@ -1028,15 +1028,15 @@ public:
     //        ]
 	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity, species boundary
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
-	  //          genosubspecies_boundary   <number>                                      Boundary of genosubspecies to find outliers
-    //         [alien]                                                                  Objects similar to no other objects
+	  //          genogroup_boundary        <number>                                      Boundary of genogroup to find outliers
+    //         [outlier-alien]            <obj>                                         Objects similar to no other objects
     //         [dissim.bad]               <obj1> <obj2> NaN
-    //         [contaminated]             <obj>                                         Contaminated objects from dissim.bad
+    //         [outlier-dissim]           <obj>                                         Outlier (contaminated) objects from dissim.bad
 	  //          hybrid/                   <obj>                                         Hybrid objects
-	  //         [genosubspecies_outlier]   <obj>                                         Genospecies outliers to delete
+	  //         [outlier-genogroup]        <obj>                                         Genogroup outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
-	  //          hist/                     {delete,genospecies_table,genosubspecies_outlier,hybrid,hybrid_parent_pairs,leaf,makeDistTree,makeFeatureTree,tree,tree_quality_phen,unhybrid}.<version>   
+	  //          hist/                     {delete,genogroup_table,outlier-genogroup,hybrid,hybrid_parent_pairs,leaf,makeDistTree,makeFeatureTree,tree,tree_quality_phen,unhybrid}.<version>   
 	  //                                                                                  Historic versions of data
     //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
@@ -1044,7 +1044,7 @@ public:
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
     //          <Executables>
     //          db2unhybrid.sh            output: <Obj> list to move to new/
-    //          genospecies2db.sh         input: genospecies_table; output: genospecies_outlier
+    //          genogroup2db.sh           input: genogroup_table; output: outlier-genogroup
     //          hybrid2db.sh              parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1/null
     //          request2dissim.sh         executable with parameters: request, dissim.add, log
@@ -1408,7 +1408,7 @@ public:
     // Return: connected subgraph including root
   void findSpecies (Real species_dist_max,
                    bool includeInteriorNodes);  
-    // Genospecies
+    // Genogroup
     // Output: DTNode->DisjointCluster
     // Time: if includeInteriorNodes then O(n log(n)) else O(n)
 

@@ -19,9 +19,9 @@ if [ $N -gt 0 ]; then
   exit 1
 fi
 
-N=`ls $1/outlier/ | wc -l`
+N=`ls $1/hybrid/ | wc -l`
 if [ $N -gt 0 ]; then
-  echo "$1/outlier/ must be empty"
+  echo "$1/hybrid/ must be empty"
   exit 1
 fi
 
@@ -46,7 +46,7 @@ DISSIM_BOUNDARY=`cat $1/dissim_boundary`
 makeDistTree  -threads 5  \
   -data $1/data  -dissim cons  \
   -optimize  \
-  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY \
+  -hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY \
   -output_tree $1/tree \
   -output_feature_tree $1/_feature_tree \
   > $1/hist/makeDistTree-complete.1

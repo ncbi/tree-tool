@@ -157,13 +157,13 @@ DISSIM_BOUNDARY=`cat $1/dissim_boundary`
 HYBRID=""
 if [ -e $1/hybridness_min ]; then
 	HYBRIDNESS_MIN=`cat $1/hybridness_min`
-	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 
 DELETE=""
-if [ -e $1/genosubspecies_outlier ]; then
-  wc -l $1/genosubspecies_outlier
-  DELETE="-delete $1/genosubspecies_outlier"
+if [ -e $1/outlier-genogroup ]; then
+  wc -l $1/outlier-genogroup
+  DELETE="-delete $1/outlier-genogroup  -check_delete"
 fi
 
 # Time: O(n log^4(n)) 
@@ -181,33 +181,40 @@ cp /dev/null $1/leaf
 mv $1/tree.new $1/tree
 
 echo ""
+echo "Database: new -> tree ..."
 cut -f 1 $1/hist/leaf.$VER | sort > $1/leaf.list
 $1/objects_in_tree.sh $1/leaf.list 1
 rm $1/leaf.list
 
-if [ -e $1/genosubspecies_outlier ]; then
-  $1/objects_in_tree.sh $1/genosubspecies_outlier null
-  trav $1/genosubspecies_outlier "rm -f $1/outlier/%f"
-  mv $1/genosubspecies_outlier $1/hist/genosubspecies_outlier.$VER
-fi
-
-GENOSUBSPECIES_BOUNDARY=`cat $1/genosubspecies_boundary`
-if [ "$GENOSUBSPECIES_BOUNDARY" != "NAN" ]; then
-  tree2species $1/tree  $GENOSUBSPECIES_BOUNDARY  -species_table $1/genosubspecies_table
-  $1/genospecies2db.sh $1/genosubspecies_table > $1/genosubspecies_outlier  
-  rm $1/genosubspecies_table 
-  if [ -s $1/genosubspecies_outlier ]; then
-    wc -l $1/genosubspecies_outlier
-  else
-    rm $1/genosubspecies_outlier
-  fi
+if [ -e $1/outlier-genogroup ]; then
+  echo "Database: genogroup outliers ..."
+  $1/objects_in_tree.sh $1/outlier-genogroup null
+  mv $1/outlier-genogroup $1/hist/outlier-genogroup.$VER
 fi
 
 echo ""
+echo "Hybrid ..."
 if [ -e $1/hybridness_min ]; then
 	distTree_inc_hybrid.sh $1 
 fi
+echo "Unhybrid ..."
 distTree_inc_unhybrid.sh $1 
+
+# Must be the last database change in this script
+GENOGROUP_BOUNDARY=`cat $1/genogroup_boundary`
+if [ "$GENOGROUP_BOUNDARY" != "NAN" ]; then
+  echo ""
+  echo "New genogroup outliers ..."
+  tree2species $1/tree  $GENOGROUP_BOUNDARY  -species_table $1/genogroup_table
+  $1/genogroup2db.sh $1/genogroup_table > $1/outlier-genogroup  
+  rm $1/genogroup_table 
+  if [ -s $1/outlier-genogroup ]; then
+    wc -l $1/outlier-genogroup
+  else
+    rm $1/outlier-genogroup
+  fi
+fi
+
 
 echo ""
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
@@ -222,7 +229,7 @@ distTree_inc_tree1_quality.sh $1
 set +o errexit
 L=`ls $1/new | head -1`
 set -o errexit
-if [ ! "$L" -a ! -e $1/genosubspecies_outlier ]; then
+if [ ! "$L" -a ! -e $1/outlier-genogroup ]; then
   exit 2
 fi
 

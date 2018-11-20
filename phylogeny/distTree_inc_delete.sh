@@ -27,7 +27,7 @@ mv $1/tree.new $1/tree
 
 echo ""
 $1/objects_in_tree.sh $2 null
-trav $2 "rm -f $1/outlier/%f"
+trav $2 "rm -f $1/hybrid/%f"
 trav $2 "rm -f $1/new/%f"
 
 cp $2 $1/hist/delete.$VER

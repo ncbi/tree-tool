@@ -1,7 +1,7 @@
 #!/bin/bash
 source bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Process #1/{hybrid,hybrid_parent_pairs}"
+  echo "Process #1/{hybrid.new,hybrid_parent_pairs}"
   echo "#1: incremental distance tree directory"
   exit 1
 fi
@@ -17,25 +17,25 @@ if [ -e $INC/hybrid_parent_pairs ]; then
 fi
 
 
-if [ ! -e $INC/hybrid ]; then
+if [ ! -e $INC/hybrid.new ]; then
   exit 0
 fi
-wc -l $INC/hybrid
+wc -l $INC/hybrid.new
 
-if [ ! -s $INC/hybrid ]; then
-  rm $INC/hybrid
+if [ ! -s $INC/hybrid.new ]; then
+  rm $INC/hybrid.new
   exit 0
 fi
 
-$INC/hybrid2db.sh $INC/hybrid
+$INC/hybrid2db.sh $INC/hybrid.new
 
-cat $INC/hybrid | awk '$7 == 1' | cut -f 1 >  $INC/outlier.add
-cat $INC/hybrid | awk '$8 == 1' | cut -f 3 >> $INC/outlier.add
-cat $INC/hybrid | awk '$9 == 1' | cut -f 4 >> $INC/outlier.add
-uniq.sh $INC/outlier.add
+cat $INC/hybrid.new | awk '$7 == 1' | cut -f 1 >  $INC/hybrid.add
+cat $INC/hybrid.new | awk '$8 == 1' | cut -f 3 >> $INC/hybrid.add
+cat $INC/hybrid.new | awk '$9 == 1' | cut -f 4 >> $INC/hybrid.add
+uniq.sh $INC/hybrid.add
 
-$INC/objects_in_tree.sh $INC/outlier.add 0
-trav -noprogress $INC/outlier.add "cp /dev/null $INC/outlier/%f"
-rm $INC/outlier.add
+$INC/objects_in_tree.sh $INC/hybrid.add 0
+trav -noprogress $INC/hybrid.add "cp /dev/null $INC/hybrid/%f"
+rm $INC/hybrid.add
 
-mv $INC/hybrid $INC/hist/hybrid.$VER
+mv $INC/hybrid.new $INC/hist/hybrid.$VER

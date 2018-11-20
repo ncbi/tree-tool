@@ -6,14 +6,14 @@ if [ $# -ne 5 ]; then
   echo "#2: grid_min (> 0)"
   echo "#3: hybridness_min (> 1); 0 - no hybrids"
   echo "#4: dissim_boundary (> 0 or NAN)"
-  echo "#5: genosubspecies_boundary (> 0 or NAN)"
+  echo "#5: genogroup_boundary (> 0 or NAN)"
   exit 1
 fi
 INC=$1
 GRID_MIN=$2
 HYBRIDNESS_MIN=$3
 DISSIM_BOUNDARY=$4
-GENOSUBSPECIES_BOUNDARY=$5
+GENOGROUP_BOUNDARY=$5
 
 
 if [ $GRID_MIN -le 0 ]; then
@@ -28,7 +28,7 @@ cp /dev/null $INC/leaf
 cp /dev/null $INC/tree
 
 mkdir $INC/new
-mkdir $INC/outlier
+mkdir $INC/hybrid
 mkdir $INC/search
 
 echo "1" > $INC/version
@@ -39,7 +39,7 @@ echo $GRID_MIN > $INC/grid_min
 cp /dev/null $INC/runlog
 
 echo $DISSIM_BOUNDARY > $INC/dissim_boundary
-echo $GENOSUBSPECIES_BOUNDARY > $INC/genosubspecies_boundary
+echo $GENOGROUP_BOUNDARY > $INC/genogroup_boundary
 
 if [ $HYBRIDNESS_MIN != 0 ]; then
 	echo $HYBRIDNESS_MIN > $INC/hybridness_min
@@ -54,15 +54,15 @@ function create_script
 	echo "Set $INC/$name !"
 }
 create_script objects_in_tree
+create_script outlier2db
 create_script request2dissim
 create_script request_closest
 if [ $HYBRIDNESS_MIN != 0 ]; then
- #create_script db2hybrid
 	create_script db2unhybrid
 	create_script hybrid2db
 fi
 if [ $DISSIM_BOUNDARY != "NAN" ]; then
-  create_script genospecies2db
+  create_script genogroup2db
 fi
 
 
