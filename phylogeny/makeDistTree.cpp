@@ -45,6 +45,7 @@ struct ThisApplication : Application
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
+	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
@@ -171,6 +172,7 @@ struct ThisApplication : Application
 		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
+		const bool   check_delete        = getFlag ("check_delete");
 		const bool   sparse              = getFlag ("sparse");
 		      
 		const bool   optimize            = getFlag ("optimize");
@@ -224,6 +226,8 @@ struct ThisApplication : Application
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
     ASSERT (dissim_coeff > 0);
+    if (check_delete && deleteFName. empty ())
+      throw runtime_error ("-check_delete requires -delete");
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
@@ -301,7 +305,8 @@ struct ThisApplication : Application
           const Leaf* leaf = findPtr (tree->name2leaf, f. line);
           if (! leaf)
           {
-          //cout << "Leaf " << f. line << " not found" << endl;
+            if (check_delete)
+              throw runtime_error ("Leaf " + f. line + " not found");
             continue;
           }
           tree->removeLeaf (const_cast <Leaf*> (leaf), false);

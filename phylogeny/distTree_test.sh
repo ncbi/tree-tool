@@ -77,7 +77,7 @@ diff prot-identical_comm-sqr.distTree data/prot-identical_comm-sqr.distTree
 
 echo ""
 echo "prot-identical_comm: subgraphs, delete ..."
-makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list > /dev/null
+makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list  -check_delete > /dev/null
 
 echo ""
 echo "Saccharomyces hybrids ..."
