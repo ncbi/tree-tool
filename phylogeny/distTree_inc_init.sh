@@ -6,14 +6,14 @@ if [ $# -ne 5 ]; then
   echo "#2: grid_min (> 0)"
   echo "#3: hybridness_min (> 1); 0 - no hybrids"
   echo "#4: dissim_boundary (> 0 or NAN)"
-  echo "#5: genogroup_boundary (> 0 or NAN)"
+  echo "#5: genogroup_barrier (> 0 or NAN)"
   exit 1
 fi
 INC=$1
 GRID_MIN=$2
 HYBRIDNESS_MIN=$3
 DISSIM_BOUNDARY=$4
-GENOGROUP_BOUNDARY=$5
+GENOGROUP_BARRIER=$5
 
 
 if [ $GRID_MIN -le 0 ]; then
@@ -39,7 +39,7 @@ echo $GRID_MIN > $INC/grid_min
 cp /dev/null $INC/runlog
 
 echo $DISSIM_BOUNDARY > $INC/dissim_boundary
-echo $GENOGROUP_BOUNDARY > $INC/genogroup_boundary
+echo $GENOGROUP_BARRIER > $INC/genogroup_barrier
 
 if [ $HYBRIDNESS_MIN != 0 ]; then
 	echo $HYBRIDNESS_MIN > $INC/hybridness_min

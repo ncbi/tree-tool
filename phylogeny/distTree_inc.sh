@@ -38,7 +38,7 @@ while [ 1 == 1 ]; do
     break
   fi
   if [ $S -ne 0 ]; then
-    exit 1
+    exit $S
   fi
 done
   
@@ -60,6 +60,8 @@ makeDistTree  -threads 15  -data $1/  -variance lin \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree-complete-inc.$VER
 mv $1/tree.new $1/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
+
+echo ""
 makeDistTree  -threads 15  -data $1/  -variance lin  -qc  -noqual > $1/hist/makeDistTree-qc.$VER
 else
   VER=`cat $1/version`

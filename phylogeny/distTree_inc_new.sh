@@ -172,6 +172,7 @@ makeDistTree $QC  -threads 15  -data $1/  -variance lin \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
   $HYBRID \
+  -delete_outliers $1/outlier-criterion  -max_outlier_num 1 \
   -output_tree $1/tree.new \
   -dissim_request $1/dissim_request \
   > $1/hist/makeDistTree.$VER
@@ -187,9 +188,19 @@ $1/objects_in_tree.sh $1/leaf.list 1
 rm $1/leaf.list
 
 if [ -e $1/outlier-genogroup ]; then
+  echo ""
   echo "Database: genogroup outliers ..."
   $1/objects_in_tree.sh $1/outlier-genogroup null
   mv $1/outlier-genogroup $1/hist/outlier-genogroup.$VER
+fi
+
+if [ -e $1/outlier-criterion ]; then
+  echo ""
+  echo "Database: criterion outlier ..."
+  wc -l $1/outlier-criterion
+  $1/objects_in_tree.sh $1/outlier-criterion null
+  trav $1/outlier-criterion "$1/outlier2db.sh %f criterion"  
+  mv $1/outlier-criterion $1/hist/outlier-criterion.$VER
 fi
 
 echo ""
@@ -201,11 +212,11 @@ echo "Unhybrid ..."
 distTree_inc_unhybrid.sh $1 
 
 # Must be the last database change in this script
-GENOGROUP_BOUNDARY=`cat $1/genogroup_boundary`
-if [ "$GENOGROUP_BOUNDARY" != "NAN" ]; then
+GENOGROUP_BARRIER=`cat $1/genogroup_barrier`
+if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   echo ""
   echo "New genogroup outliers ..."
-  tree2species $1/tree  $GENOGROUP_BOUNDARY  -species_table $1/genogroup_table
+  tree2species $1/tree  $GENOGROUP_BARRIER  -species_table $1/genogroup_table
   $1/genogroup2db.sh $1/genogroup_table > $1/outlier-genogroup  
   rm $1/genogroup_table 
   if [ -s $1/outlier-genogroup ]; then
@@ -229,6 +240,7 @@ distTree_inc_tree1_quality.sh $1
 set +o errexit
 L=`ls $1/new | head -1`
 set -o errexit
+# Existence of outlier-criterion at the last iteration ??
 if [ ! "$L" -a ! -e $1/outlier-genogroup ]; then
   exit 2
 fi

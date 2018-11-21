@@ -83,11 +83,16 @@ echo ""
 echo "Saccharomyces hybrids ..."
 makeDistTree -qc  -threads 3  -data data/Saccharomyces  -dissim cons  \
   -optimize  -subgraph_iter_max 2  -reinsert \
-  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -delete_all_hybrids  -dissim_boundary 0.675 > /dev/null
+  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -delete_all_hybrids  -dissim_boundary 0.675 \
+  -delete_outliers Saccharomyces.outliers  -max_outlier_num 1 \
+  > /dev/null
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
 rm Saccharomyces.hybrid
 diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
 rm Saccharomyces.hybrid_parent_pairs
+diff Saccharomyces.outliers data/Saccharomyces.outliers
+rm Saccharomyces.outliers
+
 
 if [ 1 == 0 ]; then
 	echo ""

@@ -63,6 +63,7 @@ struct ThisApplication : Application
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  	
 	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  // obsolete ??
+	  addKey ("max_outlier_num", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
 	  
 	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
 	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
@@ -147,7 +148,7 @@ struct ThisApplication : Application
       for (const Leaf* leaf : hybrids)
       {
       	ASSERT (leaf->graph);
-        tree. removeLeaf (const_cast <Leaf*> (leaf), true);
+        tree. removeLeaf (var_cast (leaf), true);
         prog (tree. absCriterion2str ());
         deleted = true;
       }
@@ -190,6 +191,7 @@ struct ThisApplication : Application
 		const string reroot_at           = getArg ("reroot_at");
 
 		const string delete_outliers     = getArg ("delete_outliers");
+		const size_t max_outlier_num     = str2<size_t> (getArg ("max_outlier_num"));
 
                  dissim_boundary     = str2real (getArg ("dissim_boundary"));
 		             hybridness_min      = str2real (getArg ("hybridness_min"));
@@ -249,8 +251,10 @@ struct ThisApplication : Application
     	throw runtime_error ("hybridness_min must be > 1");
     if (delete_all_hybrids && delete_hybrids. empty ())
     	throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
-    if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())
+    if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())      
     	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
+    if (max_outlier_num && delete_outliers. empty ())
+      throw runtime_error ("-max_outlier_num requires -delete_outliers");
     if (! leaf_errors. empty () && noqual)
       throw runtime_error ("-noqual prohibits -leaf_errors");
     IMPLY (refresh_dissim, ! dissim_request. empty ());
@@ -309,7 +313,7 @@ struct ThisApplication : Application
               throw runtime_error ("Leaf " + f. line + " not found");
             continue;
           }
-          tree->removeLeaf (const_cast <Leaf*> (leaf), false);
+          tree->removeLeaf (var_cast (leaf), false);
           if (tree->optimizable ())
             prog (tree->absCriterion2str ());
           else
@@ -415,32 +419,39 @@ struct ThisApplication : Application
       }
 
 
-      // Outliers ??
+      // Outliers 
       if (! delete_outliers. empty ())
       {
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (0.001, outlier_min));  // PAR
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-10, outlier_min));  // PAR  
 	      const ONumber on (cout, criterionDecimals, false);  
 	      cout << "# Outliers: " << outliers. size () << endl;
-	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
-	      for (const Leaf* leaf : outliers)
-	        cout         << leaf->name 
-	             << '\t' << leaf->getRelCriterion ()
-	             << '\t' << leaf->absCriterion  
-	             << endl;
-        cerr << "Deleting outliers ..." << endl;
-        {
-          OFStream f (delete_outliers);
-          Progress prog (outliers. size ());
-          for (const Leaf* leaf : outliers)
+	      if (! outliers. empty ())
+	      {
+  	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
+  	      for (const Leaf* leaf : outliers)
+  	        cout         << leaf->name 
+  	             << '\t' << leaf->getRelCriterion ()
+  	             << '\t' << leaf->absCriterion  
+  	             << endl;
+          cerr << "Deleting outliers ..." << endl;
           {
-            f << leaf->name << endl;
-            tree->removeLeaf (const_cast <Leaf*> (leaf), true);
-            prog (tree->absCriterion2str ());
+            OFStream f (delete_outliers);
+            Progress prog (outliers. size ());
+            size_t removed = 0;
+            for (const Leaf* leaf : outliers)
+            {
+              if (max_outlier_num && removed >= max_outlier_num)
+                break;
+              f << leaf->name << endl;
+              tree->removeLeaf (var_cast (leaf), true);
+              prog (tree->absCriterion2str ());
+              removed++;
+            }
           }
+          tree->reportErrors (cout);
         }
-        tree->reportErrors (cout);
         cout << endl;
       }
       tree->qc ();
@@ -472,7 +483,7 @@ struct ThisApplication : Application
       {
 			  Tree::LcaBuffer buf;
         const DTNode* underRoot = tree->lcaName2node (reroot_at, buf);
-        tree->reroot (const_cast <DTNode*> (underRoot), underRoot->len / 2);
+        tree->reroot (var_cast (underRoot), underRoot->len / 2);
         if (! noqual)
 	        tree->setNodeAbsCriterion ();
         tree->qc ();
