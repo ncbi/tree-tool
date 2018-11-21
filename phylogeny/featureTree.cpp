@@ -1167,8 +1167,8 @@ size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
 	  const auto& mapIt = *iter;
 		if (Feature::singleton (mapIt. first))
 		{
-		  ASSERT (! mapIt. second);
-		  featureSingletons << mapIt. first;
+		  if (! mapIt. second)
+  		  featureSingletons << mapIt. first;
 			iter. erase ();
 		}
 	}
@@ -1180,7 +1180,7 @@ size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
   for (const Feature::Id& f : singletons)
     coreSet. erase (f);
     
-  singletons << featureSingletons;
+  singletons << featureSingletons;  // ??
 
   singletons. sort ();
   singletons. uniq ();
