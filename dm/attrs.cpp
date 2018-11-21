@@ -53,18 +53,18 @@ struct ThisApplication : Application
 	           << '\t' << normal. scale;
 		    if (! isNan (outlier_eValue_max))
 		    {
-			    Sample sample_pure (ds);
+			    Real threshold [2] = {NaN, NaN};
 			    for (const bool rightTail : {false, true})
 			    {
-			    	// 2-tail, non-idempotent procedure ??
-			    	const Real threshold = num->distr2outlier (sample, normal, rightTail, outlier_eValue_max);
-			      cout << '\t' << threshold;
-			      FFOR (size_t, i, sample_pure. mult. size ())
-			        if (   (  rightTail && (*num) [i] > threshold)
-			        	  || (! rightTail && (*num) [i] < threshold)
-			        	 )
-			        	sample_pure. mult [i] = 0;
+			    	threshold [rightTail] = num->distr2outlier (sample, normal, rightTail, outlier_eValue_max);
+			      cout << '\t' << threshold [rightTail];
 			    }
+			    Sample sample_pure (ds);
+		      FFOR (size_t, i, sample_pure. mult. size ())
+		        if (   (*num) [i] > threshold [true]
+		        	  || (*num) [i] < threshold [false]
+		        	 )
+		        	sample_pure. mult [i] = 0;
 		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
 		      normal. analysis = & an_pure;
 		      normal. estimate ();
