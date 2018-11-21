@@ -377,6 +377,7 @@ public:
   Real getEpsilon2 () const
     { return (Real) paths * sqr (errorDensity) * len; }
   Real getRelCriterion () const;
+    // Relative average absolute criterion
   virtual const Leaf* getReprLeaf () const = 0;
     // Return: !nullptr, in subtree
     // For sparse *getDistTree().dissimAttr
@@ -512,6 +513,7 @@ public:
     // > 1 => triangle inequality violation
   uint hybridParentsDissimObjNum;  
     // hybridness > 1 => in DistTree::dissims
+  Real badCriterion {NaN};
     
   mutex mtx;    
   
@@ -1028,7 +1030,7 @@ public:
     //        ]
 	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity, species boundary
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
-	  //          genogroup_boundary        <number>                                      Boundary of genogroup to find outliers
+	  //          genogroup_barrier         <number>                                      Boundary of genogroup to find outliers
     //         [outlier-alien]            <obj>                                         Objects similar to no other objects
     //         [dissim.bad]               <obj1> <obj2> NaN
     //         [outlier-dissim]           <obj>                                         Outlier (contaminated) objects from dissim.bad
@@ -1363,7 +1365,9 @@ public:
     // After: setNodeAbsCriterion()    
   VectorPtr<Leaf> findCriterionOutliers (Real outlier_EValue_max,
                                          Real &outlier_min) const;
+    // Relative average absolute criterion
     // Idempotent
+    // Return: sort()'ed by getRelCriterion() descending
     // Output: outlier_min
     // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
     // Time: O(n log(n))

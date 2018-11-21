@@ -261,11 +261,37 @@ void TriangleParentPair::finish (const DistTree &tree,
 	}
 	
 	// Singletons
+  bool allSingletons = false;
 	if (triangles. size () == 1)
-		setChildrenHybrid ();
-	for (const bool i : {false, true})  
-		if (parents [i]. classSize == 1)
-			best->parents [i]. hybrid = true;	
+	{
+	  allSingletons = true;
+  	for (const bool i : {false, true})  
+  		if (parents [i]. classSize > 1)
+  			allSingletons = false;
+  }
+  if (allSingletons)
+  {
+    size_t i_bad = NO_INDEX;
+    Real badCriterion = triangles [0]. child->badCriterion;
+  	for (const bool i : {false, true})  
+  		if (maximize (badCriterion, parents [i]. leaf->badCriterion))
+  		  i_bad = (size_t) i;
+  	if (i_bad == NO_INDEX)
+  	  setChildrenHybrid ();
+  	else  
+  	{
+  	  ASSERT (i_bad < 2);
+  	  best->parents [i_bad]. hybrid = true;	
+  	}
+  }
+  else
+  {
+  	if (triangles. size () == 1)
+  		setChildrenHybrid ();
+  	for (const bool i : {false, true})  
+  		if (parents [i]. classSize == 1)
+  			best->parents [i]. hybrid = true;	
+  }
 			
 	// Undecided cases ??
 }
@@ -6403,8 +6429,23 @@ Dataset DistTree::getLeafErrorDataset () const
 
 
 
+namespace
+{
+  
+bool leafRelCriterionStrictlyGreater (const Leaf* a,
+                                      const Leaf* b)
+{
+  ASSERT (a);
+  ASSERT (b);
+  return a->getRelCriterion () > b->getRelCriterion ();
+}
+
+}
+
+
+
 VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
-                                                  Real &outlier_min) const
+                                                 Real &outlier_min) const
 {
   const Dataset ds (getLeafErrorDataset ());
   ASSERT (ds. attrs. size () == 1)
@@ -6426,6 +6467,8 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
         if (geReal (leaf->getRelCriterion (), outlier_min))
           res << leaf;
     }
+    
+  res. sort (leafRelCriterionStrictlyGreater);
       
 	return res;
 }
@@ -6586,17 +6629,22 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   	leaf->badNeighbors. reserve (name2leaf. size () / 100);  // PAR
   	leaf->hybridness = hybridness_min_init;  
   	leaf->hybridParentsDissimObjNum = dissims_max;
+  	leaf->badCriterion = 0;
   }
 	
 	// Leaf::badNeighbors
   for (const Dissim& dissim : dissims)  	
   	if (   dissim. mult
   		  && dissim. getAbsCriterion () >= outlier_min
-  		  && dissim. target < dissim. prediction  // <= hybrid
   		 )
     {
-    	const_cast <Leaf*> (dissim. leaf1) -> badNeighbors << Neighbor (dissim. leaf2, dissim. target);
-    	const_cast <Leaf*> (dissim. leaf2) -> badNeighbors << Neighbor (dissim. leaf1, dissim. target);
+      var_cast (dissim. leaf1) -> badCriterion += dissim. getAbsCriterion ();
+      var_cast (dissim. leaf2) -> badCriterion += dissim. getAbsCriterion ();
+      if (dissim. target < dissim. prediction)  // <= hybrid
+  		{
+      	var_cast (dissim. leaf1) -> badNeighbors << Neighbor (dissim. leaf2, dissim. target);
+      	var_cast (dissim. leaf2) -> badNeighbors << Neighbor (dissim. leaf1, dissim. target);
+      }
     }
   for (const auto& it : name2leaf)
   {
