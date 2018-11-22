@@ -136,13 +136,14 @@ struct Triangle
 // Triple of Leaf's with a triangle inequality violation
 { 
 	struct Parent
-		{ const Leaf* leaf {nullptr};
-			Real dissim {NaN};
-			  // = d(Triangle::child,leaf)
-			  // > 0
-			bool hybrid {false};
-				// Cause of the triangle inequality violation
-		};
+	{ 
+	  const Leaf* leaf {nullptr};
+		Real dissim {NaN};
+		  // = d(Triangle::child,leaf)
+		  // > 0
+		bool hybrid {false};
+			// Cause of the triangle inequality violation
+	};
 
 	// !nullptr
 	const Leaf* child {nullptr};

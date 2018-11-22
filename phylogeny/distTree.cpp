@@ -93,8 +93,12 @@ void Triangle::qc () const
 		ASSERT (p. leaf->graph);
  		ASSERT (child->getDiscernible () != p. leaf->getDiscernible ());
 		ASSERT (p. dissim > 0);
-		IMPLY (child_hybrid, ! p. hybrid);
  	}
+ 	ASSERT (! (   child_hybrid 
+ 	           && parents [false]. hybrid 
+ 	           && parents [true].  hybrid 
+ 	          )
+ 	       );
   ASSERT (parents [0]. leaf->getDiscernible () != parents [1]. leaf->getDiscernible ());
   ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
 	ASSERT (hybridness >= hybridness_min);
@@ -245,19 +249,19 @@ void TriangleParentPair::finish (const DistTree &tree,
   {
 		const Prob p = child_classSize / all;
 		if (p <= classSizeFrac_max)
-			{
-				// aa bb ab
-				setChildrenHybrid ();
-				return;
-			}
+		{
+			// aa bb ab
+			setChildrenHybrid ();
+			return;
+		}
 		if (p >= 1 - classSizeFrac_max)
-			{
-				// ab ac aa
-				// common(ab,ac) = 1/4 aa <= random halves of aa
-				best->parents [0]. hybrid = true;
-				best->parents [1]. hybrid = true;
-				return;  			
-			}
+		{
+			// ab ac aa
+			// common(ab,ac) = 1/4 aa <= random halves of aa
+			best->parents [0]. hybrid = true;
+			best->parents [1]. hybrid = true;
+			return;  			
+		}
 	}
 	
 	// Singletons
@@ -311,12 +315,21 @@ void TriangleParentPair::qc () const
 	if (triangles. empty ())
 		return;
 	
+  bool child_hybrid;
+  bool first = true;
 	for (const Triangle& tr : triangles)
 	{
 		tr. qc ();
 		for (const bool i : {false, true})  
 			ASSERT (tr. parents [i]. leaf == parents [i]. leaf);
 		ASSERT (eqReal (parentsDissim, tr. parentsDissim ()));
+		if (first)
+		{
+		  child_hybrid = tr. child_hybrid;
+		  first = false;
+		}
+		else
+		  ASSERT (child_hybrid == tr. child_hybrid);
 	}
 	
 	ASSERT (& getBest ());
@@ -6469,6 +6482,8 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
     }
     
   res. sort (leafRelCriterionStrictlyGreater);
+  
+  // Find a maximal "independent" subset ??
       
 	return res;
 }

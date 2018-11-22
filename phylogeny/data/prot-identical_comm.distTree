@@ -35,37 +35,33 @@ absCriterion = 7.048  Error density = 1.834 %
 
 Ave. radius: 0.455985
 
-# Outliers: 9
-Min. relative unweighted average leaf error of outliers: 2.890
+# Outliers: 5
+Min. relative unweighted average leaf error of outliers: 4.064
 SAMN04388342.r1	13.646	0.661
 SAMN03988423	10.158	0.492
 SAMN03477482	9.252	0.448
 SAMN03480186	4.987	0.242
 SAMN01902483	4.064	0.197
-SAMN04255291	3.763	0.182
-SAMN03098713	3.026	0.147
-SAMEA1692308	2.995	0.145
-SAMN03992688	2.890	0.140
-absCriterion = 4.395  Error density = 1.491 %
+absCriterion = 4.899  Error density = 1.554 %
 
 OUTPUT:
-absCriterion = 4.395  Error density = 1.491 %
-absCriterion [0] = 0.323  Error density [0] = 5.019 %  Fraction = 5.988 %
-absCriterion [1] = 4.072  Error density [1] = 1.440 %  Fraction = 94.012 %
+absCriterion = 4.899  Error density = 1.554 %
+absCriterion [0] = 0.432  Error density [0] = 5.606 %  Fraction = 6.170 %
+absCriterion [1] = 4.467  Error density [1] = 1.489 %  Fraction = 93.830 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 274 (max = 275)
-# Interior undirected arcs = 273
-Tree length = 30.543
+# Interior nodes (with root) = 279 (max = 279)
+# Interior undirected arcs = 277
+Tree length = 30.569
 Min. discernible leaf length = 0.000000e+00
-Ave. arc length = 0.055
+Ave. arc length = 0.054
 Interior height = 34
-Bifurcating interior branching = 1.370
-# Frequent children interior nodes = 269
-# Frequent children leaves = 277
+Bifurcating interior branching = 1.363
+# Frequent children interior nodes = 274
+# Frequent children leaves = 281
 # Frequent interior nodes = 42
-# Frequent leaves = 60
+# Frequent leaves = 52
 Rareness threshold = 1.000 %
