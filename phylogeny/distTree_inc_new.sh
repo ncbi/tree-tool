@@ -216,7 +216,7 @@ GENOGROUP_BARRIER=`cat $1/genogroup_barrier`
 if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   echo ""
   echo "New genogroup outliers ..."
-  tree2species $1/tree  $GENOGROUP_BARRIER  -species_table $1/genogroup_table
+  tree2genogroup $1/tree  $GENOGROUP_BARRIER  -genogroup_table $1/genogroup_table
   $1/genogroup2db.sh $1/genogroup_table > $1/outlier-genogroup  
   rm $1/genogroup_table 
   if [ -s $1/outlier-genogroup ]; then

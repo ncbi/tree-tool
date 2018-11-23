@@ -7240,11 +7240,10 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
 
 
 
-void DistTree::findSpecies (Real species_dist_max,
-                            bool includeInteriorNodes) 
+void DistTree::findGenogroups (Real genogroup_dist_max) 
 {
-  ASSERT (species_dist_max > 0);
-  ASSERT (species_dist_max < INF);
+  ASSERT (genogroup_dist_max > 0);
+  ASSERT (genogroup_dist_max < INF);
 
   // DTNode::DisjointCluster
   VectorPtr<Leaf> leaves;  leaves. reserve (nodes. size ());
@@ -7267,24 +7266,12 @@ void DistTree::findSpecies (Real species_dist_max,
     prog ();
     area. clear ();
     boundary. clear ();
-    leaf->getDistanceArea (species_dist_max, area, boundary);
+    leaf->getDistanceArea (genogroup_dist_max, area, boundary);
     for (const TreeNode* treeNode : boundary)
       if (const Leaf* other = static_cast <const DTNode*> (treeNode) -> asLeaf ())
       {
         ASSERT (other->graph);
-        if (includeInteriorNodes)
-        {
-        	const TreeNode* lca = nullptr;
-    		 	const VectorPtr<TreeNode>& path = getPath (leaf, other, nullptr, lca, buf);
-          ASSERT (lca);
-        	const Real dist = path2prediction (path);
-        	ASSERT (leReal (dist, species_dist_max));
-      		for (const TreeNode* node : path)
-            const_cast <TreeNode*> (lca) -> DisjointCluster::merge (* const_cast <TreeNode*> (node));
-        }
-        else
-          const_cast <Leaf*> (leaf) -> DisjointCluster::merge (* const_cast <Leaf*> (other));
-            // => all interior nodes between leaf and other belong to the same species
+        var_cast (leaf) -> DisjointCluster::merge (* var_cast (other));
       }
   }
 }

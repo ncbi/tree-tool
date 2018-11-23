@@ -28,7 +28,7 @@ all:	\
   sampleReport \
 	tree2clusters \
 	tree2dist \
-	tree2species
+	tree2genogroup
 	
 
 attr2_2paup.o:  $(DM_HPP) 
@@ -156,9 +156,9 @@ tree2dist:	$(tree2distOBJS)
 	$(CXX) -o $@ $(tree2distOBJS) $(LIBS)
 	$(ECHO)
 
-tree2species.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
-tree2speciesOBJS=tree2species.o $(DISTTREE_OBJ)
-tree2species:	$(tree2speciesOBJS)
-	$(CXX) -o $@ $(tree2speciesOBJS) $(LIBS)
+tree2genogroup.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
+tree2genogroupOBJS=tree2genogroup.o $(DISTTREE_OBJ)
+tree2genogroup:	$(tree2genogroupOBJS)
+	$(CXX) -o $@ $(tree2genogroupOBJS) $(LIBS)
 	$(ECHO)
 

@@ -1029,7 +1029,7 @@ public:
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity, species boundary
+	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
 	  //          genogroup_barrier         <number>                                      Boundary of genogroup to find outliers
     //         [outlier-alien]            <obj>                                         Objects similar to no other objects
@@ -1411,11 +1411,10 @@ public:
     // Output: DisjointCluster::<Leaf>
   VectorPtr<DTNode> findDepthClusters (size_t clusters_min) const;
     // Return: connected subgraph including root
-  void findSpecies (Real species_dist_max,
-                   bool includeInteriorNodes);  
-    // Genogroup
+  void findGenogroups (Real genogroup_dist_max);  
     // Output: DTNode->DisjointCluster
-    // Time: if includeInteriorNodes then O(n log(n)) else O(n)
+    // For different genogroups their interior nodes do not intersect
+    // Time: O(n)
 
   // Statistics
 #if 0
