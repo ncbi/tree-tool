@@ -422,6 +422,7 @@ struct ThisApplication : Application
       // Outliers 
       if (! delete_outliers. empty ())
       {
+        cerr << "Finding criterion outliers ..." << endl;
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-10, outlier_min));  // PAR  
@@ -648,7 +649,7 @@ struct ThisApplication : Application
     
     if (! dissim_request. empty ())
     {
-      cerr << endl << "Finding missing leaf pairs ..." << endl;      
+      cerr << "Finding missing leaf pairs ..." << endl;      
       Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, refresh_dissim));
       cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
 
