@@ -53,6 +53,42 @@ namespace Common_sp
 
 vector<string> programArgs;
 string programName;
+
+
+
+string getCommandLine ()
+{
+  string commandLine;
+  for (const string& s : programArgs)
+  {
+    const bool bad =    s. empty () 
+                     || contains (s, ' ')
+                     || contains (s, '|')
+                     || contains (s, ';')
+                     || contains (s, '#')
+                     || contains (s, '*')
+                     || contains (s, '?')
+                     || contains (s, '$')
+                     || contains (s, '(')
+                     || contains (s, ')')
+                     || contains (s, '<')
+                     || contains (s, '>')
+                     || contains (s, '~')
+                      || contains (s, '\'')
+                     || contains (s, '"')
+                     || contains (s, '\\');
+    if (! commandLine. empty ())
+      commandLine += ' ';
+    if (bad)
+      commandLine += strQuote (s, '\'');
+    else
+      commandLine += s;
+  }
+  return commandLine;
+}
+
+
+
 ostream* logPtr = nullptr;
 
 bool qc_on = false;
@@ -146,28 +182,7 @@ void errorExit (const char* msg,
 	    << "PWD: " << (pwd ? pwd : "?") << endl
     #endif
 	    << "Progam name: " << programName << endl
-	    << "Command line:";
-	 for (const string& s : programArgs)
-	 {
- 	   const bool bad =    s. empty () 
- 	                    || contains (s, ' ')
- 	                    || contains (s, '|')
- 	                    || contains (s, ';')
- 	                    || contains (s, '#')
- 	                    || contains (s, '*')
- 	                    || contains (s, '?')
- 	                    || contains (s, '$')
- 	                    || contains (s, '(')
- 	                    || contains (s, ')')
- 	                    || contains (s, '<')
- 	                    || contains (s, '>')
- 	                    || contains (s, '~')
- 	                    || contains (s, '\'')
- 	                    || contains (s, '"')
- 	                    || contains (s, '\\');
-	   *os << " " << (bad ? strQuote (s, '\'') : s);
-	 }
-	 *os << endl;
+	    << "Command line:" << getCommandLine () << endl;
 //system (("env >> " + logFName). c_str ());
 
   os->flush ();

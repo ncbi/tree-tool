@@ -102,6 +102,9 @@ bool initCommon ();
 
 extern vector<string> programArgs;
 extern string programName;
+
+string getCommandLine ();
+
 extern ostream* logPtr;
 
 extern bool qc_on;
