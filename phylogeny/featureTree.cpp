@@ -2983,6 +2983,7 @@ string FeatureTree::findRoot (size_t &bestCoreSize)
       bestCoreSize++;
 //cout << "Init. bestCoreSize = " << bestCoreSize << endl;  
   setLeaves ();
+  const size_t halfLeaves = root->leaves / 2;
  	for (const DiGraph::Node* node : nodes)
  		if (const Species* from = static_cast <const Phyl*> (node) -> asSpecies ())
  		{
@@ -2999,7 +3000,11 @@ string FeatureTree::findRoot (size_t &bestCoreSize)
            )
         coreSize++;
       if (   minimize (bestCoreSize, coreSize)
-          || (bestCoreSize == coreSize && bestFrom && from->leaves > bestFrom->leaves)
+          || (   bestCoreSize == coreSize 
+              && bestFrom 
+              &&   difference (    from->leaves, halfLeaves) 
+                 < difference (bestFrom->leaves, halfLeaves)
+             )
          )
         bestFrom = from;
    	}
