@@ -123,10 +123,10 @@ while [ 1 == 1 ]; do
       exit 1
     fi
 	  # Try to fix grid problems
-	  ls $1/log | grep -v '\.' > $1/log.list
+	  ls $1/log | sed 's/\..*$//1' | sort | uniq > $1/log.list
     trav $1/log.list "distTree_inc_unsearch.sh $1 %f"
     rm $1/log.list
-    trav $1/log "echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
+    trav $1/log "echo ''; echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
     head -21 $1/log.out # PAR
     rm $1/log.out
   fi

@@ -82,7 +82,7 @@ if [ -e $1/phen ]; then
   	echo ""
   	echo "New root: $NEW_ROOT"
   	echo ""
-  	makeDistTree  -data $1/  -variance lin  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
+  	makeDistTree  -threads 15  -data $1/  -variance lin  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
   	echo ""
   	tree_quality_phen.sh tree.$DATE $1/phen > $1/hist/tree_quality_phen-rooted.$VER
   	cat $1/hist/tree_quality_phen-rooted.$VER
