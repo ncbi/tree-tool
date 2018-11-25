@@ -3,7 +3,7 @@ source bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Save the parameters and scripts of an incremental distance tree"
   echo "#1: Incremental tree directory"
-  echo "#3: Output directory"
+  echo "#2: Output directory"
   exit 1
 fi
 INC=$1
