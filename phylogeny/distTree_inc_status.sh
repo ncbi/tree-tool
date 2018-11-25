@@ -56,7 +56,9 @@ fi
 
 
 echo ""
-wc -l $1/dissim
+N=`cat $1/dissim | wc -l`
+PERCENT=`echo "scale=2; 100 * $N / ($OBJS * ($OBJS - 1))" | bc -l`
+echo "Dissimilarities per object: $PERCENT % of maximum"
 
 echo ""
 grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree.* | sed 's|^'$1'/hist/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
