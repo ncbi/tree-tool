@@ -438,6 +438,7 @@ void DTNode::qc () const
   
   IMPLY (! isNan (len), len >= 0);	  
   IMPLY (paths, errorDensity >= 0);
+  ASSERT (! contains (name, '\''));
 }
 
 
@@ -746,6 +747,20 @@ void Steiner::qc () const
 
 
 
+void Steiner::saveContent (ostream& os) const 
+{ 
+  DTNode::saveContent (os);
+  if (! name. empty ())
+    os << "  name='" << name << '\'';
+#if 0
+	if (frequentChild)
+	  os << " " << "frequent";
+	os << " fd=" << frequentDegree;
+#endif
+}
+
+
+
 const Leaf* Steiner::getReprLeaf () const
 { 
 	const size_t n = arcs [false]. size ();
@@ -969,9 +984,10 @@ Leaf::Leaf (DistTree &tree,
   	        Real len_arg,
   	        const string &name_arg)
 : DTNode (tree, parent_arg, len_arg)  // DistTree must be declared
-, name (name_arg)
 , index (getDistTree (). leafNum)
 {
+  ASSERT (name. empty ());
+  name = name_arg;
   const_cast <DistTree&> (getDistTree ()). leafNum ++;  
 }
 
@@ -2847,18 +2863,183 @@ DistTree::DistTree (const string &dataDirName,
 
 
 
+namespace 
+{
+
+struct Newick
+/* Grammar:
+     tree ::= subtree ;
+     subtree ::= item [: length]
+     item ::= interior | leaf
+     interior ::= ( list ) [interior_name]
+     list ::= subtree | subtree , list
+     leaf ::= name
+     name ::= string | ' string_space '
+     interior_name ::= bootstrap [: name]
+     string ::=  // No ' ', ',', ';', '(', ')'
+*/
+{
+private:
+  istream& f;
+  DistTree& tree;
+  char c {' '};
+    // Current character of f
+  streamsize pos {0};
+  static const string delimiters;
+public:
+
+
+  struct Error : runtime_error
+  {
+    Error (const string &what_arg,
+           const Newick &newick)
+      : runtime_error (what_arg + " at position " + toString (newick. pos))
+      {}
+  };
+
+
+  Newick (istream &f_arg,
+          DistTree &tree_arg)
+    : f (f_arg)
+    , tree (tree_arg)
+    { 
+      ASSERT (f. good ()); 
+      ASSERT (tree. nodes. empty ());
+      parseSubtree (nullptr);
+      skipSpaces ();
+      if (c != ';')
+        throw Error ("No ending semicolon", *this);
+    }
+    
+    
+private:
+  void readChar ()
+  {
+    f >> c;
+    pos++;
+  }
+  
+  void skipSpaces ()
+  {
+    while (c == ' ')
+      readChar ();
+    if (f. eof ())
+      throw Error ("Unexpected end of file", *this);
+  }
+
+  void parseSubtree (Steiner* parent)
+  {
+    DTNode* node = parseItem (parent);
+    skipSpaces ();
+    if (c == ':')
+    {
+      Real len = NaN;
+      const streamsize start = f. tellg ();
+      f >> len;
+      pos += f. tellg () - start;
+      ASSERT (! isNan (len));
+      node->len = max (0.0, len);
+      readChar ();
+    }
+  }
+  
+  DTNode* parseItem (Steiner* parent)
+  {
+    DTNode* node = nullptr;
+    skipSpaces ();
+    if (c == '(')
+    {
+      auto st = new Steiner (tree, parent, NaN);
+      parseInterior (st);
+      node = st;
+    }
+    else
+      node = new Leaf (tree, parent, NaN, parseName ());
+    ASSERT (node);
+    return node;
+  }
+  
+  void parseInterior (Steiner* parent)
+  {
+    skipSpaces ();
+    if (c != '(')
+      throw Error ("'(' expected", *this);
+    // List
+    for (;;)
+    {
+      readChar ();
+      parseSubtree (parent);
+      skipSpaces ();
+      if (c == ')')
+        break;
+      if (c != ',')
+        throw Error ("Comma expected", *this);
+    }
+    readChar ();
+    skipSpaces ();
+    // Name
+    if (! contains (delimiters, c))
+    {
+      // bootstrap is lost ??
+      string name (parseName ());
+      const size_t colonPos = name. find (':');      
+      if (colonPos != string::npos)
+        parent->name = name. substr (colonPos + 1);
+    }
+  }
+  
+  string parseName ()
+  {
+    skipSpaces ();
+    string name;
+    if (c == '\'')
+    {
+      for (;;)
+      {
+        readChar ();
+        if (c == '\'')
+          break;
+        name += c;
+      }
+      readChar ();
+    }
+    else
+      for (;;)
+      {
+        if (contains (delimiters, c))
+          break;
+        if (! printable (c))
+          throw Error ("Non-printable character in name: " + string (1, c), *this);
+        name += c;
+        readChar ();
+      }
+    if (name. empty ())
+      throw Error ("Empty name", *this);
+    return name;
+  }
+};
+
+
+
+const string Newick::delimiters (" ,;():");
+  
+}  // namespace
+
+
+
 DistTree::DistTree (const string &newickFName)
 : rand (seed_global)
 { 
   {
     ifstream f (newickFName);
-    newick2node (f, nullptr);
+    const Newick newick (f, *this);
   }
 
 	ASSERT (root);
   ASSERT (nodes. front () == root);
   if (! static_cast <const DTNode*> (root) -> asSteiner ())
     throw runtime_error ("One-node tree");
+  const_static_cast <DTNode*> (root) -> len = NaN;
     
   finishChanges ();
 
@@ -3197,16 +3378,48 @@ void DistTree::loadTreeFile (const string &fName)
 
 namespace 
 {
-	Real token2real (const string &s,
-	                 const string &token)
+	string token2string (const string &s,
+	                     const string &token)
 	{
 	  const string s1 (" " + s);
 		const string token1 (" " + token + "=");
 		const size_t pos = s1. find (token1);
 		if (pos == string::npos)
-			return NaN;  
+			return string ();  
+			
 		string valueS (s1. substr (pos + token1. size ()));
-		return str2real (findSplit (valueS));
+		trim (valueS);
+		if (valueS. empty ())
+		  throw runtime_error ("Empty token '" + token + "' in: " + s);
+		  
+		if (valueS [0] == '\'')
+		{
+  		string name;
+		  size_t i = 0;
+		  for (;;)
+		  {
+		    i++;
+		    if (! valueS [i])
+		      throw runtime_error ("No closing single quote");
+		    if (valueS [i] == '\'')
+		      break;
+		    else
+		      name += valueS [i];
+		  }
+		  return name;
+		}
+		
+	  return findSplit (valueS);
+	}
+
+
+	Real token2real (const string &s,
+	                 const string &token)
+	{
+	  const string valueS (token2string (s, token));
+	  if (valueS. empty ())
+	    return NaN;
+		return str2real (valueS);
 	}
 }
 
@@ -3240,10 +3453,11 @@ bool DistTree::loadLines (const StringVector &lines,
   string idS (findSplit (s));
 	ASSERT (isRight (idS, ":"));
 	idS. erase (idS. size () - 1);
-  const Real len          = token2real (s, "len");
-  const Real paths        = token2real (s, "paths");
-  const Real errorDensity = token2real (s, "err_density");
-  const Real relCriterion = token2real (s, rel_errorS);
+  const Real   len          = token2real (s, "len");
+  const Real   paths        = token2real (s, "paths");
+  const Real   errorDensity = token2real (s, "err_density");
+  const Real   relCriterion = token2real (s, rel_errorS);
+  const string name         = token2string (s, "name");
   const bool indiscernible = contains (s, Leaf::non_discernible);
   IMPLY (parent, len >= 0);
   DTNode* dtNode = nullptr;
@@ -3277,6 +3491,11 @@ bool DistTree::loadLines (const StringVector &lines,
   }
   if (! isNan (relCriterion))
   	dtNode->relCriterion = relCriterion;
+  if (! name. empty ())
+  {
+    ASSERT (! dtNode->asLeaf ());
+    dtNode->name = name;
+  }
 	
 	return true;
 }
@@ -3335,54 +3554,6 @@ void DistTree::loadDissimDs (const string &dissimFName,
   dissimDs->setName2objNum ();
   
 //dissimDecimals = dissimAttr->decimals;
-}
-
-
-
-void DistTree::newick2node (ifstream &f,
-                            Steiner* parent)
-{
-  char c;
-  f >> c;
-  DTNode* node = nullptr;
-  if (c == '(')
-  {
-    auto st = new Steiner (*this, parent, NaN);
-    for (;;)
-    {
-      newick2node (f, st);
-      f >> c;
-      if (c == ')')
-        break;
-      if (c != ',')
-        throw runtime_error ("Comma expected");
-    }
-    f >> c;
-    node = st;
-  }
-  else
-  {
-    string name;
-    while (c != ':' && c != ';')
-    {
-      name += c;
-      f >> c;
-    }
-    if (name. empty ())
-      throw runtime_error ("Empty name");
-    node = new Leaf (*this, parent, NaN, name);
-  }
-  ASSERT (node);
-  
-  if (c == ';')
-    return;
-  
-  if (c != ':')
-    throw runtime_error ("':' expected");
-
-  Real len;
-  f >> len;
-  node->len = max (0.0, len);
 }
 
 
@@ -4368,7 +4539,7 @@ void DistTree::qc () const
   	ASSERT (! dtNode->asLeaf ());
 */
 
-  if (! subDepth)
+  if (! subDepth && optimizable ())
   {
     const LeafCluster leafCluster (var_cast (this) -> getIndiscernibles ());
     for (const auto& it : leafCluster)
@@ -7581,7 +7752,7 @@ void NewLeaf::process (bool init,
       while (f. nextLine ())
         try
         {
-          istringstream iss (f. line);
+          istringstream iss (f. line);  // slow ??
           iss >> name1 >> name2 >> dissimS;
           ASSERT (iss. eof ());
           ASSERT (name1 < name2);

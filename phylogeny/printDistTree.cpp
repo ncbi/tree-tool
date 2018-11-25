@@ -24,10 +24,12 @@ struct ThisApplication : Application
 	  addPositional ("input_tree", "Tree file");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
-	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);  
+	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
+	  addKey ("name_match", "File with lines: <name_old> <name_new>, to replace leaf names");
     // Output
-	  addKey ("format", "newick|ASN", "newick");
+	  addKey ("format", "newick|itree|ASN", "newick");
 	  addFlag ("min_name", "Minimal leaf names");
+	  addFlag ("order", "Order subtrees by the number of leaves descending");
 	}
 
 
@@ -37,23 +39,46 @@ struct ThisApplication : Application
 	  const string input_tree     = getArg ("input_tree");
 	  const string dataFName      = getArg ("data");
 	  const string dissimAttrName = getArg ("dissim");
-	               varianceType   = str2varianceType (getArg ("variance"));  // Global    	  
+	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
+	  const string name_match     = getArg ("name_match");
 	  const string format         = getArg ("format");
   	const bool min_name         = getFlag ("min_name");
+  	const bool order            = getFlag ("order");
     ASSERT (! input_tree. empty ());
     if (dataFName. empty () != dissimAttrName. empty ())
       throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
     
 
     DistTree tree (input_tree, dataFName, dissimAttrName, false);
-    tree. sort ();
+    if (order)
+      tree. sort ();
     if (! dataFName. empty ())
       tree. setNodeAbsCriterion ();
     tree. qc ();    
+    
+    if (! name_match. empty ())
+    {
+      LineInput f (name_match, 10 * 1024, 1000);  // PAR
+      string name_old, name_new;
+      while (f. nextLine ())
+      {
+        istringstream iss (f. line);
+        name_new. clear ();
+        iss >> name_old >> name_new;
+        ASSERT (! name_old. empty ());
+        ASSERT (! name_new. empty ());
+        if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
+          var_cast (leaf) -> name = name_new;
+        else
+          throw runtime_error ("Object " + name_old + " does not exist");
+      }
+    }
 
    	cout << fixed << setprecision (6);  // PAR
     if (format == "newick")
       tree. printNewick (cout, false, min_name);
+    else if (format == "itree")
+      tree. saveText (cout);
     else if (format == "ASN")
       tree. printAsn (cout);
     else

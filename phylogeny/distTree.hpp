@@ -311,6 +311,8 @@ struct DTNode : Tree::TreeNode
   friend Leaf;
   friend NewLeaf;
 
+  string name;  
+    // !empty() -> Newick
 	Real len;
 	  // Arc length between *this and *getParent()
 	  // *this is root => NaN
@@ -433,14 +435,7 @@ public:
 	         Steiner* parent_arg,
 	         Real len_arg);
 	void qc () const override;
-#if 0
-  void saveContent (ostream& os) const final
-    { DTNode::saveContent (os);
-    	if (frequentChild)
-    	  os << " " << "frequent";
-    	os << " fd=" << frequentDegree;
-    }
-#endif
+  void saveContent (ostream& os) const override;
 
 
   const Steiner* asSteiner () const final
@@ -489,11 +484,10 @@ private:
 
 
 struct Leaf : DTNode
+// name: !empty()
 {
 	friend DistTree;
 	
-  string name;  
-    // !empty()
   string comment;
   static const string non_discernible;
   bool discernible {true}; 
@@ -1088,8 +1082,6 @@ private:
     // Return: a child of parent has been loaded
     // Output: topology, DTNode::len, Leaf::discernible
     // Update: lineNum
-  void newick2node (ifstream &f,
-                    Steiner* parent);
   void setName2leaf ();
   size_t getPathObjNums_size () const
     { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR

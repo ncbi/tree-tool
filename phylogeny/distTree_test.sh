@@ -15,11 +15,19 @@ mdsTree.sh data/Enterobacteriaceae Conservation 2 &> /dev/null
 makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
 rm -r data/Enterobacteriaceae.dir/
 
-printDistTree  -qc  -data data/Enterobacteriaceae  -dissim Conservation Enterobacteriaceae.tree > Enterobacteriaceae.nw
+echo ""
+echo "To Newick ..."
+printDistTree  -qc  -data data/Enterobacteriaceae  -dissim Conservation Enterobacteriaceae.tree -order > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 rm Enterobacteriaceae.tree
 rm Enterobacteriaceae.nw
 
+echo ""
+echo "From Newick ..."
+newick2tree -qc data/Enterobacteriaceae.nw > Enterobacteriaceae.tree
+printDistTree -qc Enterobacteriaceae.tree > Enterobacteriaceae.nw
+diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
+rm Enterobacteriaceae.nw
 
 echo ""
 echo "mdsTree: Mycobacterium_tuberculosis ..."

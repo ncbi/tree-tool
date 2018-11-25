@@ -29,7 +29,7 @@ struct ThisApplication : Application
   {
 		const string input_tree = getArg ("input_tree");    
 
-    const DistTree tree (/*DistTree::Newick (),*/ input_tree);
+    const DistTree tree (input_tree);
     tree. qc ();         
     tree. saveText (cout);
 	}
