@@ -17,7 +17,7 @@ fi
 
 GRID_MIN=`cat $1/grid_min`
 QC=""  # -qc  
-RATE=0.01   # PAR
+RATE=0.015   # PAR
 
 
 if [ 1 == 1 ]; then  # was: 1 == 1  
@@ -228,8 +228,10 @@ fi
 
 
 echo ""
-distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req 
-cat $1/dissim.add-req >> $1/dissim
+distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req
+if [ -s $1/dissim.add-req ]; then
+  cat $1/dissim.add-req | grep -vwi nan >> $1/dissim
+fi
 rm $1/dissim.add-req
 rm $1/dissim_request
 
