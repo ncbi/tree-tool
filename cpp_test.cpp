@@ -1,4 +1,4 @@
-// trav.cpp
+// cpp_test.cpp
 
 #undef NDEBUG
 #include "common.inc"
@@ -61,11 +61,15 @@ struct ThisApplication : Application
   
 
 
-	void body () const
-	{
-	  const double d = 1.5;
-	  const double r = abs (d);
-	  cout << r << endl;
+ 	void body () const
+	 {
+	   const double d = 1.5;
+	   const double r = abs (d);
+	   cout << r << endl;
+  #if 0
+    int i = d;
+    cout << i << endl;
+  #endif
   }
 };
 
