@@ -59,11 +59,10 @@ struct ThisApplication : Application
     if (! name_match. empty ())
     {
       LineInput f (name_match, 10 * 1024, 1000);  // PAR
-      istringstream iss;
       string name_old, name_new;
       while (f. nextLine ())
       {
-        iss. str (f. line);
+        istringstream iss (f. line);
         name_new. clear ();
         iss >> name_old >> name_new;
         ASSERT (! name_old. empty ());

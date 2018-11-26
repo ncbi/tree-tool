@@ -2655,10 +2655,9 @@ DistTree::DistTree (const string &dataDirName,
     string leafName, anchorName;
     Real leafLen, arcLen;
 	  Tree::LcaBuffer buf;
-    istringstream iss;
     while (f. nextLine ())
     {
-      iss. str (f. line);
+      istringstream iss (f. line);
       iss >> leafName >> anchorName >> leafLen >> arcLen;
       ASSERT (leafLen >= 0);
       ASSERT (arcLen >= 0);
@@ -7749,12 +7748,11 @@ void NewLeaf::process (bool init,
       throw runtime_error ("File " + strQuote (dissimFName) + " does not exist");
     {
       LineInput f (dissimFName);
-      istringstream iss;  
       string name1, name2, dissimS;
       while (f. nextLine ())
         try
         {
-          iss. str (f. line);  
+          istringstream iss (f. line);  
           iss >> name1 >> name2 >> dissimS;
           ASSERT (iss. eof ());
           ASSERT (name1 < name2);
@@ -7763,7 +7761,7 @@ void NewLeaf::process (bool init,
           if (name1 != name)
             throw runtime_error (dissimFName + " must contain " + name);
           const Real dissim = str2real (dissimS);
-          if (dissim < 0)
+          if (! (dissim >= 0))  // To include isNan()
             throw runtime_error ("Dissimilarity must be non-negative");
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN, location. anchor);
         }          

@@ -45,10 +45,9 @@ struct ThisApplication : Application
     map <string/*node name*/, Support>  node2support;
     {
       LineInput f (sampling);
-      istringstream iss;
       while (f. nextLine ())
       {
-        iss. str (f. line);
+        istringstream iss (f. line);
         size_t n;
         string match, name;
         iss >> n >> match >> name;

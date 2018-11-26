@@ -25,10 +25,9 @@ Loci getLoci (const string &fName)
   loci. fill (0);
   string locus;
   size_t n = 0;
-  istringstream iss;
   while (f. nextLine ())
   {
-    iss. str (f. line);
+    istringstream iss (f. line);
     size_t locusNum, allele;
     iss >> locus >> allele;
     ASSERT (iss. eof ());
