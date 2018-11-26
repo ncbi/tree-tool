@@ -45,12 +45,13 @@ struct ThisApplication : Application
     map <string/*node name*/, Support>  node2support;
     {
       LineInput f (sampling);
+      istringstream iss;
       while (f. nextLine ())
       {
-        istringstream oss (f. line);
+        iss. str (f. line);
         size_t n;
         string match, name;
-        oss >> n >> match >> name;
+        iss >> n >> match >> name;
         ASSERT (n);
         ASSERT (match == "match+" || match == "match-");
         ASSERT (! name. empty ());

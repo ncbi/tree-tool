@@ -2655,9 +2655,10 @@ DistTree::DistTree (const string &dataDirName,
     string leafName, anchorName;
     Real leafLen, arcLen;
 	  Tree::LcaBuffer buf;
+    istringstream iss;
     while (f. nextLine ())
     {
-      istringstream iss (f. line);
+      iss. str (f. line);
       iss >> leafName >> anchorName >> leafLen >> arcLen;
       ASSERT (leafLen >= 0);
       ASSERT (arcLen >= 0);
@@ -7748,11 +7749,12 @@ void NewLeaf::process (bool init,
       throw runtime_error ("File " + strQuote (dissimFName) + " does not exist");
     {
       LineInput f (dissimFName);
+      istringstream iss;  
       string name1, name2, dissimS;
       while (f. nextLine ())
         try
         {
-          istringstream iss (f. line);  // slow ??
+          iss. str (f. line);  
           iss >> name1 >> name2 >> dissimS;
           ASSERT (iss. eof ());
           ASSERT (name1 < name2);
