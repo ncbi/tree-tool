@@ -438,7 +438,6 @@ public:
 
 
 
-
 template <typename T, typename U>
   inline ostream& operator<< (ostream &os,
                               const pair<T,U> &p) 
@@ -573,7 +572,17 @@ template <typename T>
 
 
 
-//
+struct Istringstream : istringstream
+{
+  Istringstream ()
+    {}
+  void reset (const string &s)
+    { clear ();
+      str (s);
+    }
+};
+
+
 
 template <typename T>
 struct List : list<T>
@@ -698,7 +707,8 @@ template <typename T>
   T str2 (const string &s)
     { static_assert (numeric_limits<T>::max() > 256, "str2 does not work on chars");
     	T i;
-      istringstream iss (s);
+    	static Istringstream iss;
+      iss. reset (s);
       iss >> i;
       if (   Common_sp::strBlank (s)
           || ! iss. eof ()
@@ -2240,7 +2250,8 @@ public:
 	bool next ()
 	  { if (! f. nextLine ())
 	  	  return false;
-      istringstream iss (f. line);
+	  	static Istringstream iss;
+      iss. reset (f. line);
       iss >> name1 >> name2;
       if (name2. empty ())
       	throw runtime_error ("Bad request: " + strQuote (name1) + " - " + strQuote (name2));

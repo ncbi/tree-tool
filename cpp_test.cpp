@@ -64,21 +64,12 @@ struct ThisApplication : Application
  	void body () const
 	 {
 	   const double d = 1.5;
-	   const double r = abs (d);
+	   const double r = abs (d);  // non-standard
 	   cout << r << endl;
   #if 0
     int i = d;
     cout << i << endl;
-  #endif
-  
-    stringstream ss;
-    string s;
-    ss. str ("abc");
-    ss >> s;
-    cout << s << endl;
-    ss. str ("def");
-    ss >> s;
-    cout << s << endl;
+  #endif  
   }
 };
 
