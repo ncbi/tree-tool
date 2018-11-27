@@ -70,6 +70,15 @@ struct ThisApplication : Application
     int i = d;
     cout << i << endl;
   #endif
+  
+    stringstream ss;
+    string s;
+    ss. str ("abc");
+    ss >> s;
+    cout << s << endl;
+    ss. str ("def");
+    ss >> s;
+    cout << s << endl;
   }
 };
 
