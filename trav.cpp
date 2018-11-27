@@ -107,14 +107,7 @@ struct ThisApplication : Application
 	          ERROR;
         }
         else
-        {
-        	cout << endl 
-        	     << "item=" << item 
-        	     << "  status=" << exitStatus 
-        	     << endl;
-          cout << thisCmd << endl;
-          ERROR;
-        }
+          throw runtime_error ("item=" + item + "  status=" + toString (exitStatus) + "\n" + thisCmd);
       }
     }
 	}
