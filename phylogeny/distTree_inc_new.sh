@@ -89,6 +89,7 @@ else
 	trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
 fi
 
+
 # Time: O(log^4(n)) per one new object, where n = # objects in the tree
 ITER=0
 while [ 1 == 1 ]; do
