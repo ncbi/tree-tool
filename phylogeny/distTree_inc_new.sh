@@ -117,20 +117,20 @@ while [ 1 == 1 ]; do
     qstat_wait.sh 0
   fi
   
-  L=`ls $1/log | wc -l`
+  ls $1/log | sed 's/\..*$//1' | sort | uniq > $1/log.list
+  L=`cat $1/log.list | wc -l`
   if [ $L -gt 0 ]; then
     echo "# Failed tasks: $L"
     if [ $GRID == 0 ]; then
       exit 1
     fi
 	  # Try to fix grid problems
-	  ls $1/log | sed 's/\..*$//1' | sort | uniq > $1/log.list
     trav $1/log.list "distTree_inc_unsearch.sh $1 %f"
-    rm $1/log.list
     trav $1/log "echo ''; echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
     head -21 $1/log.out # PAR
     rm $1/log.out
   fi
+  rm $1/log.list
   
   rm -r $1/log/
       
