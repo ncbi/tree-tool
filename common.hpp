@@ -707,8 +707,7 @@ template <typename T>
   T str2 (const string &s)
     { static_assert (numeric_limits<T>::max() > 256, "str2 does not work on chars");
     	T i;
-    	static Istringstream iss;
-      iss. reset (s);
+    	istringstream iss (s);
       iss >> i;
       if (   Common_sp::strBlank (s)
           || ! iss. eof ()

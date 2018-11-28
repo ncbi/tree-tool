@@ -553,8 +553,7 @@ void collapseSpace (string &s)
 string str2streamWord (const string &s,
                        size_t wordNum)
 {
-  static Istringstream iss;
-  iss. reset (s);
+  istringstream iss (s);
   string word;
   FOR (size_t, i, wordNum + 1)
     if (iss. eof ())
