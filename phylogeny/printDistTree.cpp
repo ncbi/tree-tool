@@ -60,9 +60,10 @@ struct ThisApplication : Application
     {
       LineInput f (name_match, 10 * 1024, 1000);  // PAR
       string name_old, name_new;
+      Istringstream iss;
       while (f. nextLine ())
       {
-        istringstream iss (f. line);
+        iss. reset (f. line);
         name_new. clear ();
         iss >> name_old >> name_new;
         ASSERT (! name_old. empty ());

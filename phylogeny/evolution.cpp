@@ -111,7 +111,8 @@ DissimAverage::DissimAttr::DissimAttr (const DissimAverage &da_arg,
 : da (da_arg)
 {
 	// Cf. saveText()
-	istringstream iss (line);
+	static Istringstream iss;
+	iss. reset (line);
 	iss >> name; 
 	if (loadStat)
 	{

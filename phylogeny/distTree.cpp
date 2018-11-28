@@ -2655,9 +2655,10 @@ DistTree::DistTree (const string &dataDirName,
     string leafName, anchorName;
     Real leafLen, arcLen;
 	  Tree::LcaBuffer buf;
+    Istringstream iss;
     while (f. nextLine ())
     {
-      istringstream iss (f. line);
+      iss. reset (f. line);
       iss >> leafName >> anchorName >> leafLen >> arcLen;
       ASSERT (leafLen >= 0);
       ASSERT (arcLen >= 0);
@@ -7749,10 +7750,11 @@ void NewLeaf::process (bool init,
     {
       LineInput f (dissimFName);
       string name1, name2, dissimS;
+      Istringstream iss;  
       while (f. nextLine ())
         try
         {
-          istringstream iss (f. line);  
+          iss. reset (f. line);  
           iss >> name1 >> name2 >> dissimS;
           ASSERT (iss. eof ());
           ASSERT (name1 < name2);

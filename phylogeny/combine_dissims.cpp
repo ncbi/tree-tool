@@ -30,7 +30,8 @@ struct Scale
 	Scale (const string &line,
 	       Real coeff)
 	  {
-	  	istringstream iss (line);
+	  	static Istringstream iss;
+	  	iss. reset (line);
 	  	iss >> unit >> raw_min >> raw_max 
         #ifdef WEIGHT
 	  	    >> weight
@@ -72,8 +73,10 @@ struct ObjPair
 	
 	explicit ObjPair (const string &line)
 	  { 
-	  	istringstream iss (line);
-	  	string dissimS;
+	  	static Istringstream iss;
+	  	iss. reset (line);
+	  	static string dissimS;
+	  	dissimS. clear ();
 	  	iss >> name1 >> name2 >> dissimS;
 	  	ASSERT (iss. eof ());
 	  	ASSERT (name1 < name2);
