@@ -170,7 +170,7 @@ public:
 struct Chronometer : Nocopy
 // Requires: no thread is used
 {
-  static constexpr clock_t noclock {-1};
+  static constexpr clock_t noclock {(clock_t) -1};
   static bool enabled;
   const string name;
   clock_t time {0};
@@ -2933,7 +2933,7 @@ protected:
   uint arg2uint (const string &name) const
     { uint n = 0;
     	try { n = str2<uint> (getArg (name)); }
-    	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to number"); }
+    	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to non-negative number"); }
     	return n;
     }
   double arg2double (const string &name) const
