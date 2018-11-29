@@ -1,6 +1,6 @@
 #!/bin/bash
 source bash_common.sh
-if [ $# -ne5 ]; then
+if [ $# -ne 5 ]; then
   echo "Input: #3-calibrate.dm"
   echo "#1: power"
   echo "#2: phen/"
