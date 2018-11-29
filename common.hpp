@@ -2715,7 +2715,8 @@ public:
 
 
 
-void exec (const string &cmd);
+void exec (const string &cmd,
+           const string &logFName = string());
 
 
 

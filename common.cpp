@@ -1774,7 +1774,8 @@ size_t Offset::size = 0;
 
 //
 
-void exec (const string &cmd)
+void exec (const string &cmd,
+           const string &logFName)
 {
   ASSERT (! cmd. empty ());
   
@@ -1783,7 +1784,14 @@ void exec (const string &cmd)
   	
 	const int status = system (cmd. c_str ());
 	if (status)
-		throw runtime_error ("Command failed:\n" + cmd + "\nstatus = " + toString (status));
+	{
+	  if (! logFName. empty ())
+	  {
+	    LineInput f (logFName);
+	    cout << endl << f. getString () << endl;
+	  }
+		throw runtime_error ("Command failed:\n" + cmd + "\nstatus = " + toString (status));		
+	}
 }
 
 
