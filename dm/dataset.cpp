@@ -1759,14 +1759,16 @@ void Dataset::load (istream &is)
   ASSERT (s == "ATTRIBUTES");
   {
     Progress prog (0, 10000);  // PAR
+    string attrName;
+    string dataS;
+    string type;
     for (;;)
     {
       // attrName
-      string attrName;
       is >> attrName;
       if (! isAlpha (attrName [0]))
       	throw runtime_error ("Bad protein name: " + strQuote (attrName));
-      string dataS = attrName;
+      dataS = attrName;
       strUpper (dataS);
       if (dataS == "DATA")
         break;
@@ -1774,7 +1776,6 @@ void Dataset::load (istream &is)
       prog ();
   
       // Type name
-      string type;
       is >> type;
       strUpper (type);
   
@@ -1851,6 +1852,7 @@ void Dataset::load (istream &is)
   // objs, Obj::data
   {
     Progress prog (objs. size (), max<size_t> (1, 10000 / attrs. size ()));  // PAR
+    string val;
     FFOR (size_t, i, objs. size ())
     {
       prog ();
@@ -1858,15 +1860,14 @@ void Dataset::load (istream &is)
       // objs
       const Obj* obj = objs [i];
       if (named)
-        is >> const_cast <Obj*> (obj) -> name;
+        is >> var_cast (obj) -> name;
       if (multP)
-        is >> const_cast <Obj*> (obj) -> mult;
+        is >> var_cast (obj) -> mult;
       
       // Obj::data
       for (const Attr* a : attrs)
-        if (Attr1* attr = const_cast <Attr1*> (a->asAttr1 ()))
+        if (Attr1* attr = var_cast (a->asAttr1 ()))
         {
-          string val;
           is >> val;
           if (val. empty ())
           {
@@ -1884,13 +1885,14 @@ void Dataset::load (istream &is)
   
   
   // Attr2, Obj::comment
+  string s1;
   while (! is. eof ())
   {
   	s. clear ();
 	  is >> s;
 	  if (s. empty ())
 	  	break;
-	  string s1 (s);
+	  s1 = s;
 	  strUpper (s1);
 	  if (s1 == "COMMENT")
 	  {
@@ -1898,7 +1900,7 @@ void Dataset::load (istream &is)
       is. ignore (numeric_limits<streamsize>::max(), '\n');	    
       for (const Obj* obj_ : objs)
       {
-        Obj* obj = const_cast <Obj*> (obj_);
+        Obj* obj = var_cast (obj_);
         getline (is, obj->comment);
         replace (obj->comment, '\t', ' ');
         trim (obj->comment);
