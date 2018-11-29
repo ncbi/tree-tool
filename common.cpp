@@ -501,7 +501,7 @@ void replaceStr (string &s,
     if (pos == string::npos)
       break;
     s. replace (pos, from. size (), to);
-    start = pos + to. size ();
+    start = pos /*to. size ()*/;
   }
 }
   
