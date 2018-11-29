@@ -491,8 +491,12 @@ void replaceStr (string &s,
                  const string &from,
                  const string &to)
 {
+  ASSERT (! from. empty ());
+  
   if (from == to)
     return;
+  
+  const bool inside = contains (to, from);
 
   size_t start = 0;    
   for (;;)
@@ -501,7 +505,7 @@ void replaceStr (string &s,
     if (pos == string::npos)
       break;
     s. replace (pos, from. size (), to);
-    start = pos /*to. size ()*/;
+    start = pos + (inside ? to. size () : 0);
   }
 }
   
@@ -1773,8 +1777,10 @@ size_t Offset::size = 0;
 void exec (const string &cmd)
 {
   ASSERT (! cmd. empty ());
+  
   if (verbose ())
   	cout << cmd << endl;
+  	
 	const int status = system (cmd. c_str ());
 	if (status)
 		throw runtime_error ("Command failed:\n" + cmd + "\nstatus = " + toString (status));
