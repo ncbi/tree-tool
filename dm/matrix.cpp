@@ -4,12 +4,7 @@
 #include "../common.inc"
 
 #include "matrix.hpp"
-using namespace std;
 using namespace Common_sp;
-
-#include <string>
-#include <fstream>
-#include <cmath>
 
  
 

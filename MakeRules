@@ -53,7 +53,7 @@ NUMERIC = $(DM_DIR)/numeric $(COMMON)
 $(DM_DIR)/matrix.o: $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
 $(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP) 
 
-MATRIX = $(DM_DIR)/matrix $(DM_DIR)/optim $(NUMERIC)
+MATRIX = $(DM_DIR)/matrix $(NUMERIC)
 
 DM_HPP = $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp $(DM_DIR)/optim.hpp $(DM_DIR)/dataset.hpp
 $(DM_DIR)/dataset.o:	$(DM_HPP)
@@ -88,7 +88,8 @@ SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o
 
 $(GEN_DIR)/align.o:	$(GEN_DIR)/align.hpp $(NUMERIC_HPP) $(GEN_DIR)/seq.hpp $(PHYL_DIR)/evolution.hpp
 ALIGN = $(GEN_DIR)/seq $(DM) $(PHYL_DIR)/evolution $(GEN_DIR)/align
-$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(COMMON_HPP)
+$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
+HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
 $(GEN_DIR)/GenomeTab.o:	$(GEN_DIR)/GenomeTab.hpp $(COMMON_HPP)
 
 

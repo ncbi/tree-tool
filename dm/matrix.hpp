@@ -7,14 +7,14 @@
 
 
 #include "../common.hpp"
+using namespace Common_sp;
 #include "numeric.hpp"
 #include <valarray>
 
 
+
 namespace DM_sp
 {
-using namespace std;
-using namespace Common_sp;
 
 // In scanning operations NaN-elements are skipped
 // "bool t" means whether the operation is applied to the transposed matrix, i.e. rows <-> columns
