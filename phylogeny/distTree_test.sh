@@ -17,7 +17,7 @@ rm -r data/Enterobacteriaceae.dir/
 
 echo ""
 echo "To Newick ..."
-printDistTree  -qc  -data data/Enterobacteriaceae  -dissim Conservation Enterobacteriaceae.tree -order > Enterobacteriaceae.nw
+printDistTree  -qc  -data data/Enterobacteriaceae  -dissim Conservation  Enterobacteriaceae.tree  -order > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 rm Enterobacteriaceae.tree
 rm Enterobacteriaceae.nw
@@ -28,6 +28,7 @@ newick2tree -qc data/Enterobacteriaceae.nw > Enterobacteriaceae.tree
 printDistTree -qc Enterobacteriaceae.tree > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 rm Enterobacteriaceae.nw
+rm Enterobacteriaceae.tree
 
 echo ""
 echo "mdsTree: Mycobacterium_tuberculosis ..."
