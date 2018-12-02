@@ -58,6 +58,7 @@ fi
 echo ""
 N=`cat $1/dissim | wc -l`
 PERCENT=`echo "scale=2; 100 * $N / ($OBJS * ($OBJS - 1))" | bc -l`
+echo "# Dissimilarities: $N"
 echo "Dissimilarities per object: $PERCENT % of maximum"
 
 echo ""
