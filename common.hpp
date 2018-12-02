@@ -135,7 +135,7 @@ protected:
 	Nocopy ()
 	  {}
   Nocopy (const Nocopy &) = delete;
-  Nocopy (Nocopy&&) = delete;
+  Nocopy (Nocopy &&) = delete;
   Nocopy& operator= (const Nocopy &) = delete;
 };
 
@@ -458,9 +458,7 @@ public:
         const T &b)
     : P (a, b)
     {}
-  Pair ()
-    : P ()
-    {}
+  Pair () = default;
     
   bool same () const
     { return P::first == P::second; }
@@ -574,8 +572,7 @@ template <typename T>
 
 struct Istringstream : istringstream
 {
-  Istringstream ()
-    {}
+  Istringstream () = default;
   void reset (const string &s)
     { clear ();
       str (s);
@@ -592,8 +589,7 @@ private:
 public:
 
 
-	List ()
-	  {}
+	List () = default;
   template <typename U/*:<T>*/>
     explicit List (const list<U> &other)
       { *this << other; }
@@ -1094,8 +1090,7 @@ class Notype {};
 struct Root
 {
 protected:
-  Root () 
-    {}
+  Root () = default;
 public:
   virtual ~Root () 
     {}
@@ -1182,8 +1177,7 @@ struct Named : Root
   string name;
     // !empty(), no spaces at the ends, printable ASCII characeters
 
-  Named ()
-    {}  
+  Named () = default;
   explicit Named (const string &name_arg);   
   Named* copy () const override
     { return new Named (*this); }    
@@ -1227,8 +1221,7 @@ public:
   bool searchSorted {false};
 	
 
-	Vector ()
-	  {}
+	Vector () = default;
 	explicit Vector (size_t n, 
 	                 const T &value = T ())
 	  : P (n, value)
@@ -1236,7 +1229,7 @@ public:
   explicit Vector (initializer_list<T> init)
     : P (init)
     {}
-	Vector (const vector<T> &other)
+	Vector (const vector<T> &other) 
     : P (other)
 	  {}
   Vector (const Vector<T> &other) 
@@ -1573,15 +1566,12 @@ private:
 public:
 
 
-  VectorPtr ()
-	  {}	  
+  VectorPtr () = default;
 	explicit VectorPtr (size_t n, 
 	                    const T* value = nullptr)
 	  : P (n, value)
 	  {}
-	VectorPtr (const VectorPtr<T> &other)
-	  : P (other)
-	  {}
+	VectorPtr (const VectorPtr<T> & /*other*/) = default;
   explicit VectorPtr (initializer_list<const T*> init)
     : P (init)
     {}
@@ -1627,8 +1617,7 @@ private:
 	typedef  VectorPtr<T>  P;
 public:
 
-  VectorOwn ()
-	  {}	  
+  VectorOwn () = default;
 	VectorOwn (const VectorOwn<T> &x)
 	  : P ()
 	  { *this = x; }
@@ -1656,8 +1645,7 @@ private:
 public:
 	
 
-  StringVector ()
-    {}
+  StringVector () = default;
   StringVector (initializer_list<string> init)
     : P (init)
     {}
@@ -1861,8 +1849,7 @@ public:
 	  // true => empty()
 	
 
-	Set ()
-	  {}
+	Set () = default;
 	explicit Set (bool universal_arg)
 	  : universal (universal_arg)
 	  {}
@@ -2383,8 +2370,7 @@ public:
 
 struct OFStream : ofstream
 {
-	OFStream ()
-	  {}
+	OFStream () = default;
 	OFStream (const string &dirName,
 	          const string &fileName,
 	          const string &extension)
@@ -2481,8 +2467,7 @@ struct Json : Root, Nocopy  // Heaponly
 protected:
   Json (JsonContainer* parent,
         const string& name);
-  Json ()
-    {};
+  Json () = default;
 public:  
   void print (ostream& os) const override = 0;
   
@@ -2628,8 +2613,7 @@ protected:
                  const string& name)
     : Json (parent, name)
     {}
-  JsonContainer ()
-    {}
+  JsonContainer () = default;
 public:  
 };
 
