@@ -2219,7 +2219,7 @@ void Image::processLarge (const Steiner* subTreeRoot,
     rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
     // Optimization
-  	tree->optimizeSmallSubgraphs (areaRadius_std, false);
+    tree->optimizeLargeSubgraphs ();
   	
   	tree->qc ();
   }
@@ -2494,8 +2494,7 @@ struct DissimLine
 	Leaf* leaf2 {nullptr};
 	
 
-  DissimLine ()
-    {}
+  DissimLine () = default;
 	DissimLine (string &line,
 	            uint lineNum)
 		{ replace (line, '\t', ' ');
@@ -4797,26 +4796,16 @@ void setPredictionAbsCriterion_thread (size_t from,
 
 void DistTree::setPredictionAbsCriterion ()
 {
-  ASSERT (! subDepth);
-
-  absCriterion = 0;
-#if 1
-  vector<Real> absCriteria;
-  arrayThreads (setPredictionAbsCriterion_thread, dissims. size (), absCriteria, ref (dissims)); 
-  for (const Real x : absCriteria)
-  	absCriterion += x;
-#else
-  LcaBuffer buf;
-  Progress prog (dissims. size (), dissim_progress); 
-  for (Dissim& dissim : dissims)
-    if (dissim. valid ())
-    {
-    	prog ();
-		  const VectorPtr<TreeNode>& path = dissim. getPath (buf);
-		  dissim. prediction = path2prediction (path);  
-      absCriterion += dissim. getAbsCriterion ();
-    }
-#endif
+  if (subDepth)
+    setPredictionAbsCriterion_thread (0, dissims. size (), absCriterion, dissims);
+  else
+  {
+    absCriterion = 0;
+    vector<Real> absCriteria;
+    arrayThreads (setPredictionAbsCriterion_thread, dissims. size (), absCriteria, ref (dissims)); 
+    for (const Real x : absCriteria)
+    	absCriterion += x;
+  }
 }
 
 
@@ -5395,7 +5384,10 @@ size_t DistTree::optimizeLenArc ()
     }
   
     if (Progress::enabled ())
+    {
+      const ONumber on (cerr, criterionDecimals, false);
       cerr << '\r' << iter + 1 << " / " << (uint) iters << " " << absCriterion2str ();
+    }
     if (absCriterion_prev / absCriterion - 1 <= 0.01)   // PAR
       break;
     absCriterion_prev = absCriterion;  
@@ -5989,59 +5981,66 @@ void processLargeImage_thread (Image &image,
 
 void DistTree::optimizeLargeSubgraphs ()
 {
-  ASSERT (! subDepth);
   ASSERT (threads_max);
   
-  constexpr size_t large_min = 100;  // PAR
+  
+#if 0  
+  FOR (size_t, i, subDepth)
+    cout << "  ";
+  cout << "optimizeLargeSubgraphs: " << name2leaf. size () << endl;
+#endif
+  
+  
+  constexpr size_t large_min = 1000;  // PAR  
   ASSERT (large_min > 1);
 
 
-	if (threads_max == 1)
+	if (name2leaf. size () <= large_min)  
 	{
-		optimizeSmallSubgraphs (areaRadius_std, false);
-    return;
-	}
-	if (name2leaf. size () <= 2 * large_min)  // PAR
-	{
-	  cout << "Too small tree" << endl;
 		optimizeSmallSubgraphs (areaRadius_std, false);
     return;
 	}
 	
-
-  const Keep<size_t> threads_max_kp (threads_max);
+  
+  size_t parts_max = threads_max;
+  if (threads_max == 1 || subDepth)
+    parts_max = (size_t) ceil (6 * log ((Real) name2leaf. size () / (Real) large_min)) + 1;  // PAR
+  ASSERT (parts_max >= 2);
 	for (;;)
 	{
-		VectorPtr<Steiner> boundary;  boundary. reserve (threads_max);   // isTransient()
+		VectorPtr<Steiner> boundary;  boundary. reserve (parts_max);   // isTransient()
 		{
-			// Improves speed without thread's ??!
-			VectorPtr<Steiner> cuts;  cuts. reserve (threads_max);
+			VectorPtr<Steiner> cuts;  cuts. reserve (parts_max);
 			{
 				const_static_cast <Steiner*> (root) -> subtreeSize2leaves ();
 				const size_t rootLeaves = static_cast <const Steiner*> (root) -> leaves;
 				ASSERT (rootLeaves + 1 == nodes. size ());
 				Normal normal;
 				normal. setSeed ((ulong) clock ());
-				constexpr Prob topSubgraphFrac = 0.2;  // PAR  // was: 0.5
-				const Real goalSize_init = (Real) rootLeaves / ((Real) threads_max - 1 + topSubgraphFrac);  
+				constexpr Prob topSubgraphFrac = 0.2;  // PAR  
+				  // Top subtree is slower
+				const Real goalSize_init = (Real) rootLeaves / ((Real) parts_max - 1 + topSubgraphFrac);  
 				normal. setParam (0, max<Real> (1, goalSize_init * 0.02));  // PAR
-				FFOR (size_t, threadNum, threads_max - 1)
+				FFOR (size_t, partNum, parts_max - 1)
 				{
 				  // cuts nodes should vary after tree addition
-					const size_t goalSize = max (large_min, (size_t) max<Real> (0, goalSize_init + normal. rand ()));
+					const size_t goalSize = min (rootLeaves, (size_t) max (0.0, goalSize_init + normal. rand ()));
+					const size_t goalSize_min = goalSize / 2;  // PAR
+					ASSERT (goalSize_min < rootLeaves);
 					const Steiner* st_best = nullptr;
 					size_t diff = numeric_limits<size_t>::max ();
 			    for (const DiGraph::Node* node : nodes)
 			    	if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
-			  	    if (   st->leaves > max<size_t> (large_min, goalSize / 2)  // PAR
+			  	    if (   st->leaves > max (large_min, goalSize_min)
+			  	        && st->leaves < rootLeaves - goalSize_min
+			  	        && st != root
 			  	    	  && st->childrenDiscernible ()
 			  	    	  && minimize (diff, difference (st->leaves, goalSize))
 			  	    	 )
 			  	    	st_best = st;
 			  	if (! st_best)
 			  		break;
-			  	if (st_best == root)
-			  		break;
+			  //ASSERT (st_best != root);
 			    cuts << st_best;
 			    const size_t leaves_best = st_best->leaves;
 			    ASSERT (leaves_best);
@@ -6064,6 +6063,7 @@ void DistTree::optimizeLargeSubgraphs ()
 			for (const Steiner* cut : cuts)
 			{
 				ASSERT (cut);
+				ASSERT (cut != root);
 		    auto inter = new Steiner (*this, const_static_cast <Steiner*> (cut->getParent ()), 0);
 		    inter->pathObjNums = cut->pathObjNums;
 		    const_cast <Steiner*> (cut) -> setParent (inter);
@@ -6074,7 +6074,8 @@ void DistTree::optimizeLargeSubgraphs ()
 		}
 		if (boundary. empty ()) 
 		{
-			cout << "No cuts found" << endl;
+		  if (! Progress::isUsed ())
+			  cerr << "No cuts found" << endl;
   		optimizeSmallSubgraphs (areaRadius_std, false);
       return;
 		}
@@ -6083,27 +6084,31 @@ void DistTree::optimizeLargeSubgraphs ()
 	
 		bool failed = false;
 	  {
-			VectorOwn<Image> images;  images. reserve (threads_max);
+			VectorOwn<Image> images;  images. reserve (boundary. size ());
 		  Image mainImage (*this);  
 			{
-				Threads th (boundary. size ());  
+				unique_ptr<Threads> th;
+				if (! subDepth && threads_max > 1)
+				  th. reset (new Threads (boundary. size ()));
 				VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
+				Progress prog (boundary. size () + 1);
 				for (const Steiner* cut : boundary)
 				{
+				  prog ();
 					ASSERT (cut);
 			  	ASSERT (cut->isTransient ());
 					auto image = new Image (*this);
 					images << image;
 					ASSERT (cut->isTransient ());
-				#if 1
-				  // Use functional ??
-				  th << thread (processLargeImage_thread, ref (*image), cut, possibleBoundary);
-				#else
-				  image->processLarge (cut, possibleBoundary);
-				#endif
+          if (th. get ())
+  				  *th << thread (processLargeImage_thread, ref (*image), cut, possibleBoundary);
+    				  // Use functional ??
+  				else
+  				  image->processLarge (cut, possibleBoundary);
 				  possibleBoundary << cut;
 			  }	  
 			  // Top subgraph
+			  prog ();
 			  mainImage. processLarge (nullptr, possibleBoundary);
 			}
 			// Image::apply() can be done by Threads if it is done in the order of cuts and for sibling subtrees ??!
@@ -6147,9 +6152,9 @@ void DistTree::optimizeLargeSubgraphs ()
 	  if (failed)
 	  {
       cerr << "*** OUT OF MEMORY ***" << endl;
-      ASSERT (threads_max > 1);
-      threads_max--;
-      if (threads_max == 1)
+      ASSERT (parts_max > 1);
+      parts_max--;
+      if (parts_max == 1)
       {
         optimizeSmallSubgraphs (areaRadius_std, false);
         break;
@@ -6157,7 +6162,8 @@ void DistTree::optimizeLargeSubgraphs ()
 	  }
 	  else
 	  {
-  	  cerr << "Optimizing cut nodes ..." << endl;
+	    if (! Progress::isUsed ())
+  	    cerr << "Optimizing cut nodes ..." << endl;
   	  optimizeSmallSubgraphs (areaRadius_std, true);  // PAR
   	  qc ();
   	  qcPredictionAbsCriterion ();
@@ -6682,8 +6688,7 @@ struct RequestCandidate
 			if (leaf1->name > leaf2->name)
 		  	swap (leaf1, leaf2);	
 	  }
-	RequestCandidate ()
-	  {}
+	RequestCandidate () = default;
 	  
 	bool operator< (const RequestCandidate &other) const
     { return Pair<const Leaf*> (leaf1, leaf2) < Pair<const Leaf*> (other. leaf1, other. leaf2); }

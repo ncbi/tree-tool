@@ -36,12 +36,6 @@ absCriterion = 7.048  Error density = 1.834 %
 Ave. radius: 0.455985
 
 # Outliers: 5
-Min. relative unweighted average leaf error of outliers: 4.064
-SAMN04388342.r1	13.646	0.661
-SAMN03988423	10.158	0.492
-SAMN03477482	9.252	0.448
-SAMN03480186	4.987	0.242
-SAMN01902483	4.064	0.197
 absCriterion = 4.899  Error density = 1.554 %
 
 OUTPUT:

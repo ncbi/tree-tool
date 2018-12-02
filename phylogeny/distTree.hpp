@@ -225,8 +225,7 @@ public:
 		{ parents [0]. leaf = parent1;
 			parents [1]. leaf = parent2;
 	  }
-	TriangleParentPair ()
-	  {}
+	TriangleParentPair () = default;
 	void setTriangles (const DistTree &tree);
 	  // Output: triangles, hybridness_ave
 	  // Time: ~ O(log(n))
@@ -627,8 +626,7 @@ struct SubPath
   Real dist_hat_tails {NaN};
 
     
-  SubPath ()
-    {}
+  SubPath () = default;
   explicit SubPath (uint objNum_arg)
     : objNum (objNum_arg)
     {}
@@ -1207,7 +1205,7 @@ public:
   string absCriterion2str () const
     { return real2str (absCriterion, criterionDecimals); }
   void reportErrors (ostream &os) const
-    { const ONumber on (os, criterionDecimals, false);  // PAR
+    { const ONumber on (os, criterionDecimals, false);  
       os << "absCriterion = " << absCriterion 
          << "  Error density = " << getErrorDensity () * 100 << " %"
          << endl;
@@ -1492,8 +1490,7 @@ public:
     explicit Leaf2dissim (const Leaf* leaf_arg)
       : leaf (leaf_arg)
       {}
-    Leaf2dissim ()
-      {}
+    Leaf2dissim () = default;
       
     Real getDelta () const
       { return dissim - dist_hat; }
