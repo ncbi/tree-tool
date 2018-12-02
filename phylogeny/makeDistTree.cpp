@@ -430,12 +430,15 @@ struct ThisApplication : Application
 	      cout << "# Outliers: " << outliers. size () << endl;
 	      if (! outliers. empty ())
 	      {
-  	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
-  	      for (const Leaf* leaf : outliers)
-  	        cout         << leaf->name 
-  	             << '\t' << leaf->getRelCriterion ()
-  	             << '\t' << leaf->absCriterion  
-  	             << endl;
+  	      if (verbose ())
+  	      {
+    	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
+    	      for (const Leaf* leaf : outliers)
+    	        cout         << leaf->name 
+    	             << '\t' << leaf->getRelCriterion ()
+    	             << '\t' << leaf->absCriterion  
+    	             << endl;
+    	    }
           cerr << "Deleting outliers ..." << endl;
           {
             OFStream f (delete_outliers);
@@ -651,6 +654,7 @@ struct ThisApplication : Application
     {
       cerr << "Finding missing leaf pairs ..." << endl;      
       Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, refresh_dissim));
+      cout << endl;
       cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
 
     #if 0
