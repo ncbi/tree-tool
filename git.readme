@@ -1,0 +1,3 @@
+git init
+git remote add origin https://github.com/vbrover/dm.git
+git pull origin master
