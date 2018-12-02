@@ -83,10 +83,22 @@ echo ""
 echo "prot-identical_comm: subgraphs, -variance sqr ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -threads 3  -variance sqr | grep -v '^CHRON: ' > prot-identical_comm-sqr.distTree
 diff prot-identical_comm-sqr.distTree data/prot-identical_comm-sqr.distTree
+rm prot-identical_comm-sqr.distTree
 
 echo ""
 echo "prot-identical_comm: subgraphs, delete ..."
 makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -delete data/delete.list  -check_delete > /dev/null
+
+echo ""
+echo "ITS threads ..."
+makeDistTree -data data/inc.ITS/  -variance lin  -optimize  -skip_len  -subgraph_iter_max 1  -noqual  -threads 5 > /dev/null
+# threads  sec.  criterion
+# 1       336    191...
+# 2       344    189...
+# 3       258    190...
+# 5       160    192...
+#10       163    186...
+#15       175    207...
 
 echo ""
 echo "Saccharomyces hybrids ..."
