@@ -951,7 +951,7 @@ void Steiner::threadNum2subTree (size_t threadNum_arg)
 	
   threadNum = threadNum_arg;
 	for (const DiGraph::Arc* arc : arcs [false])
-	  if (Steiner* child = const_cast <Steiner*> (static_cast <DTNode*> (arc->node [false]) -> asSteiner ()))
+	  if (Steiner* child = var_cast (static_cast <DTNode*> (arc->node [false]) -> asSteiner ()))
 		  child->threadNum2subTree (threadNum_arg);
 }
 
@@ -1123,7 +1123,7 @@ void Leaf::collapse (Leaf* other)
         const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
         ASSERT (child);
         ASSERT (! child->discernible);
-        indiscernibles << const_cast <Leaf*> (child);
+        indiscernibles << var_cast (child);
       }
       ASSERT (indiscernibles. size () >= 2);
     }
@@ -2500,11 +2500,10 @@ struct DissimLine
 		{ replace (line, '\t', ' ');
       name1 = findSplit (line);
       name2 = findSplit (line);
-      const string errorS ("Line " + toString (lineNum) + ": ");
       if (name2. empty ())
-        throw runtime_error (errorS + "empty name2");
+        throw runtime_error (getErrorStr (lineNum) + "empty name2");
       if (name1 >= name2)
-        throw runtime_error (errorS + "name1 >= name2");
+        throw runtime_error (getErrorStr (lineNum) + "name1 >= name2");
     #if 0
       if (outliers. containsFast (name1))
         continue;
@@ -2513,12 +2512,16 @@ struct DissimLine
     #endif
       dissim = str2real (line);
       if (isNan (dissim))
-        throw runtime_error (errorS + "dissimilarity is NaN");
+        throw runtime_error (getErrorStr (lineNum) + "dissimilarity is NaN");
       if (dissim < 0)
-        throw runtime_error (errorS + "dissimilarity is negative");
+        throw runtime_error (getErrorStr (lineNum) + "dissimilarity is negative");
       if (! DM_sp::finite (dissim))
-        throw runtime_error (errorS + "dissimilarity is infinite");
+        throw runtime_error (getErrorStr (lineNum) + "dissimilarity is infinite");
 		}
+private:
+  static string getErrorStr (uint lineNum) 
+    { return "Line " + toString (lineNum) + ": "; }
+public:
 		
 
 	void process (const map<string/*Leaf::name*/,const Leaf*> &name2leaf)
@@ -2727,7 +2730,7 @@ DistTree::DistTree (const string &dataDirName,
 	      {
 		      LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
 		      while (f. nextLine ())
-		      	dissimLines << DissimLine (f. line, f. lineNum);
+		      	dissimLines << move (DissimLine (f. line, f. lineNum));
 		      if (! f. lineNum)
 		        throw runtime_error ("Empty " + fName);
 		    }
@@ -5453,7 +5456,7 @@ size_t DistTree::optimizeLenNode ()
         || ! center->childrenDiscernible ()
        )
       continue;
-    stars << Star (center->asSteiner ());
+    stars << move (Star (center->asSteiner ()));
   }
   stars. sort (Star::strictlyLess); 
 
@@ -5991,7 +5994,7 @@ void DistTree::optimizeLargeSubgraphs ()
 #endif
   
   
-  constexpr size_t large_min = 500;  // PAR  
+  constexpr size_t large_min = 1000;  // PAR  
   ASSERT (large_min > 1);
 
 
@@ -6004,7 +6007,7 @@ void DistTree::optimizeLargeSubgraphs ()
   
   size_t parts_max = threads_max;
   if (threads_max == 1 || subDepth)
-    parts_max = (size_t) ceil (2 * log ((Real) name2leaf. size () / (Real) large_min)) + 1;  // PAR
+    parts_max = (size_t) ceil (8 /*6*/ * log ((Real) name2leaf. size () / (Real) large_min)) + 1;  // PAR
   ASSERT (parts_max >= 2);
 	VectorPtr<Steiner> boundary;  boundary. reserve (parts_max);   // isTransient()
 	{
