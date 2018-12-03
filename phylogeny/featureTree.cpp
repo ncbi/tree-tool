@@ -1969,7 +1969,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     {
     	ASSERT (prevFeature < fId);
     	feature2index [fId] = features. size ();
-    	features << Feature (fId);
+    	features << move (Feature (fId));
     #ifndef NDEBUG
     	prevFeature = fId;
     #endif

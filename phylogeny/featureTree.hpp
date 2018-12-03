@@ -99,8 +99,7 @@ struct Phyl : Tree::TreeNode
 		  // >= 0
 		ebool core {EFALSE};
 		
-    CoreEval ()
-      {}
+    CoreEval () = default;
 		CoreEval (Real treeLen_arg,
 		          ebool core_arg)
 		  : treeLen (treeLen_arg)

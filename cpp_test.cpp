@@ -51,6 +51,16 @@ inline S g ()
 
 
 
+struct Struct
+{
+  string s;
+  Struct ()
+    : s ("abcdefgihjkhjklhjkhjlhjhjkhjklhjklhjkljklhjhhhhhhhhhhhhhhhhhhhhhhhhh")
+    {}
+};
+
+
+
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -62,14 +72,20 @@ struct ThisApplication : Application
 
 
  	void body () const
-	 {
-	   const double d = 1.5;
-	   const double r = abs (d);  // non-standard
-	   cout << r << endl;
-  #if 0
-    int i = d;
-    cout << i << endl;
-  #endif  
+	{
+	  const size_t len = 100000000;  // PAR
+	  Vector<Struct> vec;  vec. reserve (len);
+	  {
+      const Chronometer_OnePass cop ("no move");  
+  	  FOR (size_t, i, len)
+  	    vec << Struct ();
+  	}
+  	vec. clear ();
+	  {
+      const Chronometer_OnePass cop ("move");  
+  	  FOR (size_t, i, len)
+  	    vec << move (Struct ());
+  	}
   }
 };
 
