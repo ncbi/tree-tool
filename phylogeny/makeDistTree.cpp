@@ -77,7 +77,7 @@ struct ThisApplication : Application
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
-	  addKey ("output_dist", "Output file with all or <dist-request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
+	  addKey ("output_dist", "Output file with all or <dist_request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
 	//addKey ("pair_residuals", "Output " + dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length_stat", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
