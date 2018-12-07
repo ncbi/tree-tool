@@ -269,8 +269,8 @@ void DiGraph::Node::detach ()
 	for (const bool b : {false, true})
 	  ASSERT (arcs [b]. empty ());
 #endif
-  const_cast <DiGraph*> (graph) -> nodes. erase (graphIt);  
-  graphIt = const_cast <DiGraph*> (graph) -> nodes. end (); 
+  var_cast (graph) -> nodes. erase (graphIt);  
+  graphIt = var_cast (graph) -> nodes. end (); 
   graph = nullptr;
 }
 
@@ -522,8 +522,8 @@ void DiGraph::borrowArcs (const Node2Node &other2this,
     for (const Node* otherNeighbor : otherNeighborhood)
       if (const Node* to = findPtr (other2this, otherNeighbor))
         if (parallelAllowed || ! from->isIncident (to, true))
-          new Arc ( const_cast <Node*> (from)
-                  , const_cast <Node*> (to)
+          new Arc ( var_cast (from)
+                  , var_cast (to)
                   );
   }
 }
@@ -663,7 +663,7 @@ void Tree::TreeNode::setParent (TreeNode* newParent)
 	  ASSERT (getParent () == newParent);
 	}
 	else
-		const_cast <Tree&> (getTree ()). root = this;
+		var_cast (getTree ()). root = this;
 }
 
 
@@ -846,7 +846,7 @@ void Tree::TreeNode::subtreeSize2leaves ()
 	for (const Arc* arc : arcs [false])
 	{
 	  const TreeNode* child = static_cast <TreeNode*> (arc->node [false]);
-	  const_cast <TreeNode*> (child) -> subtreeSize2leaves ();
+	  var_cast (child) -> subtreeSize2leaves ();
 	  leaves += 1 + child->leaves;
 	}
 }
@@ -942,7 +942,7 @@ void Tree::TreeNode::children2frequentChild (double rareProb)
     {
       const TreeNode* node = static_cast <const TreeNode*> (child);
       ASSERT (node->leaves);
-      childFreqs << ChildFreq (const_cast <TreeNode*> (node), node->leaves); 
+      childFreqs << ChildFreq (var_cast (node), node->leaves); 
     }
   }
   Common_sp::sort (childFreqs, ChildFreq::strictlyLess);  // Bifurcatization
@@ -1068,7 +1068,7 @@ void Tree::TreeNode::childrenUp ()
 	for (const DiGraph::Node* node : children)
 	{	
 		TreeNode* n = const_static_cast <TreeNode*> (node);
-		n->setParent (const_cast <TreeNode*> (getParent ()));  
+		n->setParent (var_cast (getParent ()));  
 	}
 	ASSERT (arcs [false]. empty ());
 }
@@ -1110,7 +1110,7 @@ const Tree::TreeNode* Tree::TreeNode::makeRoot ()
 	TreeNode* node = this;
 	while (node)
 	{
-		TreeNode* parent_old = const_cast <TreeNode*> (node->getParent ());
+		TreeNode* parent_old = var_cast (node->getParent ());
 	  node->setParent (parent_new);
 	  parent_new = node;
 	  node = parent_old;
@@ -1712,8 +1712,8 @@ void Tree::setFrequentChild (double rareProb)
     
   for (DiGraph::Node* node : nodes)
     static_cast <TreeNode*> (node) -> frequentChild = false;
-  const_cast <TreeNode*> (root) -> frequentChild = true;
-  const_cast <TreeNode*> (root) -> children2frequentChild (rareProb);
+  var_cast (root) -> frequentChild = true;
+  var_cast (root) -> children2frequentChild (rareProb);
   
   VectorPtr<TreeNode> transients;  transients. reserve (nodes. size ());
   for (const DiGraph::Node* node : nodes)
@@ -1730,7 +1730,7 @@ void Tree::setFrequentChild (double rareProb)
       transients << tn;
   }  
   for (const TreeNode* tn : transients)
-    const_cast <TreeNode*> (tn) -> frequentChild = false;
+    var_cast (tn) -> frequentChild = false;
 }
 
 
@@ -1790,7 +1790,7 @@ void Tree::setFrequentDegree (double rareProb)
     while (parent && parent->frequentDegree == 1)
       parent = parent->getParent ();
     if (parent && parent->frequentDegree < 3)  // 0 or 2
-      const_cast <TreeNode*> (tn) -> frequentDegree = 0;
+      var_cast (tn) -> frequentDegree = 0;
   }  
 }
 
@@ -1839,7 +1839,7 @@ size_t Tree::restrictLeaves (const StringVector &leafNames,
     if (node->isLeafType ())
       if (! leafNames. containsFast (node->getName ()))
       {
-        deleteLeaf (const_cast <TreeNode*> (node), deleteTransientAncestor);
+        deleteLeaf (var_cast (node), deleteTransientAncestor);
         n++;
       }
   }

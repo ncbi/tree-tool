@@ -472,7 +472,7 @@ struct Tree : DiGraph
   				Common_sp::sort (children, strictlyLess);
   				for (const DiGraph::Node* child : children)
   				{	TreeNode* s = const_static_cast <TreeNode*> (child);
-  					s->setParent (const_cast <TreeNode*> (s->getParent ()));  // To reorder arcs[false]
+  					s->setParent (var_cast (s->getParent ()));  // To reorder arcs[false]
   				  s->sort (strictlyLess);
   				}
   			}
@@ -525,7 +525,7 @@ struct Tree : DiGraph
   Vector<Patristic> getLeafDistances () const;
   void setLeaves ()
     { if (root)
-        const_cast <TreeNode*> (root) -> setLeaves (); 
+        var_cast (root) -> setLeaves (); 
     }
   size_t size (bool countLeaves) const
     { return nodes. size () <= 1
@@ -605,7 +605,7 @@ struct Tree : DiGraph
   template <typename StrictlyLess>
     void sort (const StrictlyLess &strictlyLess)
       { if (root)
-      	  const_cast <TreeNode*> (root) -> sort (strictlyLess); 
+      	  var_cast (root) -> sort (strictlyLess); 
       }
 private:
 	static bool strictlyLess_std (const DiGraph::Node* a,
