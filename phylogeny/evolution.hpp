@@ -31,8 +31,7 @@ Real intersection2dissim (Real size1,
 struct Hashes : Vector<size_t>
 {
 	explicit Hashes (const string &fName);
-	Hashes ()
-	  {}
+	Hashes () = default;
 	
 	Real getDissim (const Hashes &other,
 	                size_t intersection_min,
@@ -103,7 +102,7 @@ struct DissimAverage : Root
 		friend struct DissimAverage;
 		void setOutlier (Real value_target) const;
 	    // Output: outlier
-    void setValue (size_t objNum)
+    void attr2value (size_t objNum)
 			{ setValue ((* checkPtr<const PositiveAttr1> (attr)) [objNum]); }
     void setVar (const PositiveAttr1& averageAttr);
       // Output: var
@@ -151,7 +150,7 @@ private:
 	MVector getVars () const;
   void setValues (size_t objNum)
     { for (DissimAttr& dissimAttr : dissimAttrs)
-		    dissimAttr. setValue (objNum);
+		    dissimAttr. attr2value (objNum);
 		}
   Real setVars (const PositiveAttr1& averageAttr)
     { MeanVar mv;

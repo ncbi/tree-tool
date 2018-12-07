@@ -143,8 +143,7 @@ void DissimAverage::DissimAttr::qc () const
 
 void DissimAverage::DissimAttr::setOutlier (Real value_target) const
 { 
-	outlier =    /*value > 1   // PAR
-	          &&*/ /*fabs*/ (value - value_target) / getSD () > 1;   // PAR
+	outlier = /*fabs*/ (value - value_target) / getSD () > 1.0;   // PAR
 }
 
 
@@ -165,7 +164,7 @@ void DissimAverage::DissimAttr::setVar (const PositiveAttr1& averageAttr)
 	Real mult_sum = 0;
 	FFOR (size_t, i, attr->ds. objs. size ())
 	{
-	  setValue (i);
+	  attr2value (i);
 		const Real y = averageAttr [i];
 		if (! goodValue (value))
 			continue;
