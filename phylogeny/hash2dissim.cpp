@@ -56,7 +56,7 @@ struct ThisApplication : Application
         while (f. nextLine ())
         {
           trim (f. line);
-          objNames << f. line;
+          objNames << move (f. line);
         }
       }
       cerr << "# Objects: " << objNames. size () << endl;  
@@ -72,7 +72,7 @@ struct ThisApplication : Application
       FFOR (size_t, objNum, ds. objs. size ())
       {
         prog (ds. objs [objNum] -> name);
-        obj2hashes [objNum] << Hashes (hash_dir + "/" + ds. objs [objNum] -> name);
+        obj2hashes [objNum] << move (Hashes (hash_dir + "/" + ds. objs [objNum] -> name));
       }
     }
     
