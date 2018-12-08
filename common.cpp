@@ -1448,13 +1448,13 @@ Json::Json (JsonContainer* parent,
   if (const JsonArray* jArray = parent->asJsonArray ())
   {
     ASSERT (name. empty ());  
-    const_cast <JsonArray*> (jArray) -> data << this;
+    var_cast (jArray) -> data << this;
   }
   else if (const JsonMap* jMap = parent->asJsonMap ())
   {
     ASSERT (! name. empty ());  
     ASSERT (! contains (jMap->data, name));
-    const_cast <JsonMap*> (jMap) -> data [name] = this;
+    var_cast (jMap) -> data [name] = this;
   }
 }
 
@@ -1991,7 +1991,7 @@ Application::Key* Application::getKey (const string &keyName) const
     
   Key* key = nullptr;
   if (const Arg* arg = findPtr (name2arg, keyName))  	
-    key = const_cast <Key*> (arg->asKey ());
+    key = var_cast (arg->asKey ());
   if (! key)
     errorExitStr (strQuote (keyName) + " is not a key\n\n" + getInstruction ());
     
@@ -2258,11 +2258,11 @@ int Application::run (int argc,
           if (name. empty ())
           {
           	ASSERT (gnu);
-	          key = const_cast <Key*> (findPtr (char2arg, c));
+	          key = var_cast (findPtr (char2arg, c));
 	        }
           else
           	if (const Arg* arg = findPtr (name2arg, name))					    
-					    key = const_cast <Key*> (arg->asKey ());
+					    key = var_cast (arg->asKey ());
 					    
 					if (key)
           {

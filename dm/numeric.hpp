@@ -186,8 +186,7 @@ struct LogReal : Root
     // false <=> negative
   Real n {0};
   
-  LogReal ()
-    {}
+  LogReal () = default;
   explicit LogReal (Real r)
     : sign (r >= 0)
     , n (log (fabs (r)))
@@ -215,23 +214,23 @@ struct Sum : Root, Nocopy
 // Summation with better precision
 {
 private:
-  size_t n;
+  size_t n {0};
     // # Buckets
-  Real step;
+  Real step {NaN};
     // >> 2.0
-  Real stepInc;
-  Real logStep;
+  Real stepInc {NaN};
+  Real logStep {NaN};
     // = log(step)
-  Real* bucket;
+  Real* bucket {nullptr};
     // Size = n
     // if bucket[i] != 0 then Threshold(i+1) < |bucket[i]| <= Threshold(i)
     //   where Threshold(i) = maxAbs / step^i
-  Real maxAbs;
+  Real maxAbs {NaN};
     // >= 0.0
-  Real logStep_MaxAbs;
+  Real logStep_MaxAbs {NaN};
     // = log (maxAbs) / logStep
-  bool hasPlusInf;
-  bool hasMinusInf;
+  bool hasPlusInf {false};
+  bool hasMinusInf {false};
 public:
 
   explicit Sum (Real initMaxAbs = NaN);
@@ -260,7 +259,7 @@ struct SumLn : Root, Nocopy
 // Summation of natural logarithms with better precision
 {
 private:
-  Real maxLnX;
+  Real maxLnX {NaN};
   Sum sum;
 public:
 
@@ -278,7 +277,7 @@ public:
 
 struct Series : Root
 {
-	uint start;
+	uint start {0};
 	
 	// Input: x >= start
   virtual Real f (uint x) const = 0;
@@ -421,9 +420,9 @@ Real zetaLn (Real alpha,
 struct WeightedMeanVar
 // Weighted mean
 {
-  Real weightedSum;
-  Real weightedSum2;
-  Real weights;
+  Real weightedSum {NaN};
+  Real weightedSum2 {NaN};
+  Real weights {NaN};
 
   
   WeightedMeanVar ()
@@ -464,12 +463,12 @@ struct WeightedMeanVar
 
 struct MeanVar : Root
 {
-  streamsize decimals;
-  int n;
-  Real s;
-  Real s2;
-  Real v_min;
-  Real v_max;
+  streamsize decimals {2};
+  int n {0};
+  Real s {NaN};
+  Real s2 {NaN};
+  Real v_min {NaN};
+  Real v_max {NaN};
   
 
   explicit MeanVar (streamsize decimals_arg = 2)
@@ -535,7 +534,7 @@ struct Correlation
 {
   MeanVar a_mv;
   MeanVar b_mv;
-  Real ab;
+  Real ab {NaN};
 
   
   Correlation ()
@@ -545,7 +544,7 @@ struct Correlation
   void clear ()
     { a_mv. clear ();
       b_mv. clear ();
-      ab = 0;
+      ab = 0.0;
     }
   void add (Real a,
             Real b)
@@ -566,9 +565,9 @@ struct Correlation
 
 struct Histogram : Root
 {
-  Real start;
-  Real stop;
-  Real binRange;
+  Real start {NaN};
+  Real stop {NaN};
+  Real binRange {NaN};
   Vector<size_t> bins;
   
   Histogram (Real start_arg,
