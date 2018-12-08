@@ -780,7 +780,7 @@ public:
 	
 	Change (const DTNode* from_arg,
 				  const DTNode* to_arg)
-		: tree (const_cast <DistTree&> (from_arg->getDistTree ()))
+		: tree (var_cast (from_arg->getDistTree ()))
 		, from (from_arg)
 		, to (to_arg)
 		, targets {from, to}
@@ -1144,8 +1144,8 @@ public:
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim)
-    { return addDissim ( const_cast <Leaf*> (findPtr (name2leaf, name1))
-    	                 , const_cast <Leaf*> (findPtr (name2leaf, name2))
+    { return addDissim ( var_cast (findPtr (name2leaf, name1))
+    	                 , var_cast (findPtr (name2leaf, name2))
     	                 , dissim
     	                 );
     }
