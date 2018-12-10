@@ -395,6 +395,7 @@ struct ThisApplication : Application
               	hybridDeleted = false;
 	              if (hybridF. get ())
 	              	hybridDeleted = deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+                tree->saveFile (output_tree); 
 	              if (hybridDeleted)
 	              	continue;
 	              if (tree->absCriterion == 0)
