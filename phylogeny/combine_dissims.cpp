@@ -46,8 +46,7 @@ struct Scale
 	  	ASSERT (weight > 0);
 	  #endif
 	  }
-	Scale ()
-	  {}
+	Scale () = default;
 	  
 	Real raw2dissim (Real raw) const
 	  { if (isNan (raw))
