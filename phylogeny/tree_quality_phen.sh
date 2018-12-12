@@ -13,9 +13,9 @@ TMP=`mktemp`
 echo $TMP
 
 
-makeDistTree  -input_tree $1  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
+makeDistTree  -threads 15  -input_tree $1  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
 
-makeFeatureTree  -input_tree $TMP.feature_tree  -features $2  -prefer_gain  -output_core core \
+makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $2  -prefer_gain  -output_core core \
   -qual qual \
   -gain_nodes gain_nodes \
   -disagreement_nodes disagreement_nodes
