@@ -48,10 +48,12 @@ fi
 
 function create_script
 {
-	name=$1.sh
-	echo "exit 1" > $INC/$name
-	chmod a+x $INC/$name
-	echo "Set $INC/$name !"
+	NAME=$1.sh
+	#
+	echo "$NAME is not implemented" >  $INC/$NAME
+	echo "exit 1"                   >> $INC/$NAME
+	chmod a+x $INC/$NAME
+	echo "Implement $INC/$NAME !"
 }
 create_script objects_in_tree
 create_script outlier2db
