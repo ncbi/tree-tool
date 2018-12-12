@@ -159,11 +159,11 @@ const FeatureTree& Phyl::getFeatureTree () const
 
 
 
-Real Phyl::feature2weight (size_t /*featureIndex ??*/,
-	                         bool thisCore,
-	                         bool parentCore) const
+float Phyl::feature2weight (size_t /*featureIndex ??*/,
+	                          bool thisCore,
+	                          bool parentCore) const
 { 
-	const Real w = /*getFeatureTree (). features [featureIndex].*/ weight [thisCore] [parentCore]; 
+	const float w = /*getFeatureTree (). features [featureIndex].*/ weight [thisCore] [parentCore]; 
 	ASSERT (w >= 0);
 	return w;
 }
@@ -215,11 +215,11 @@ size_t Phyl::getCoreChange (bool gain) const
 
 
 
-Real Phyl::getDistance () const
+float Phyl::getDistance () const
 { 
 	ASSERT (getFeatureTree (). coreSynced);
 
-	Real d = getPooledDistance ();
+	float d = getPooledDistance ();
 	FFOR (size_t, i, getFeatureTree (). features. size ())
   	d += feature2weight (i, core [i], feature2parentCore (i));
   ASSERT (d >= 0);
@@ -241,9 +241,9 @@ Real Phyl::getDistance () const
 
 
 
-Real Phyl::getSubtreeLength () const
+float Phyl::getSubtreeLength () const
 { 
-	Real d = getDistance ();
+	float d = getDistance ();
 	for (const DiGraph::Arc* arc : arcs [false])
 	  d += static_cast <Phyl*> (arc->node [false]) -> getSubtreeLength ();
 	return d;
@@ -262,15 +262,15 @@ void Phyl::getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*pa
 
 
 
-Real Phyl::getPooledDistance () const
+float Phyl::getPooledDistance () const
 { 
   size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/];
   getParent2corePooled (parent2corePooled);
 
-  Real d = 0;
+  float d = 0;
 	for (const bool thisCore : {false, true})
   	for (const bool parentCore : {false, true})
-      d += multiplyLog ((Real) parent2corePooled [thisCore] [parentCore], feature2weight (thisCore, parentCore));
+      d += (float) multiplyLog ((Real) parent2corePooled [thisCore] [parentCore], feature2weight (thisCore, parentCore));
   
   if (! (d >= 0))
   {
@@ -288,9 +288,9 @@ Real Phyl::getPooledDistance () const
 
 
 
-Real Phyl::getNeighborDistance () const
+float Phyl::getNeighborDistance () const
 {
-	Real d = getDistance ();
+	float d = getDistance ();
 	for (const DiGraph::Arc* arc: arcs [false])
 	  d += static_cast <Phyl*> (arc->node [false]) -> getDistance ();
 	return d;
@@ -354,7 +354,7 @@ void Phyl::assignFeature (size_t featureIndex)
 { 
   const_cast <FeatureTree&> (getFeatureTree ()). coreSynced = false;
 
-	Real childrenCoreDistance [2/*bool thisCore*/];
+	float childrenCoreDistance [2/*bool thisCore*/];
 	for (const bool thisCore : {false, true})
 	{
     childrenCoreDistance [thisCore] = 0;
@@ -364,7 +364,7 @@ void Phyl::assignFeature (size_t featureIndex)
   
 	for (const bool parentCore : {false, true})
 	{
-		Real distance [2/*bool thisCore*/];
+		float distance [2/*bool thisCore*/];
   	for (const bool thisCore : {false, true})
 		  distance [thisCore] =   childrenCoreDistance [thisCore] 
 		                        + feature2weight (featureIndex, thisCore, parentCore);
@@ -485,7 +485,7 @@ void Species::setWeight ()
 		  	const Prob p = negateProb (changeProb, parentCore == thisCore); 
 		  	const Real w = - log (p);
 		  	ASSERT (w >= 0);
-		    weight [thisCore] [parentCore] = w;
+		    weight [thisCore] [parentCore] = (float) w;
 		  }
 		}
 	}
@@ -746,9 +746,9 @@ void Fossil::qc () const
 
 
 
-Real Fossil::getPooledSubtreeDistance () const 
+float Fossil::getPooledSubtreeDistance () const 
 { 
-  Real d = getPooledDistance ();
+  float d = getPooledDistance ();
 	for (const DiGraph::Arc* arc : arcs [false])
 	  d += static_cast <Species*> (arc->node [false]) -> pooledSubtreeDistance;
   return d; 
@@ -819,7 +819,7 @@ void Strain::getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*
 void Strain::assignFeatures ()
 { 
   // singletonsInCore
-	Real distance [2/*bool thisCore*/];
+	float distance [2/*bool thisCore*/];
 	const Genome* g = getGenome ();
 	for (const bool thisCore : {false, true})
 	  distance [thisCore] =   g->feature2weight (true,     thisCore)
@@ -831,7 +831,7 @@ void Strain::assignFeatures ()
 
 
 
-Real Strain::getPooledSubtreeDistance () const 
+float Strain::getPooledSubtreeDistance () const 
 { 
   return getPooledDistance () + getGenome () -> getPooledDistance (); 
 }
@@ -1077,10 +1077,10 @@ void Genome::setWeight ()
   #endif
     ASSERT (isProb (annotError));
     ASSERT (isProb (misannotError));
-    weight [true]  [true]  = - log (1 - annotError);
-    weight [false] [true]  = - log (annotError);
-    weight [true]  [false] = - log (misannotError);
-    weight [false] [false] = - log (1 - misannotError);
+    weight [true]  [true]  = - (float) log (1 - annotError);
+    weight [false] [true]  = - (float) log (annotError);
+    weight [true]  [false] = - (float) log (misannotError);
+    weight [false] [false] = - (float) log (1 - misannotError);
 	}
 }
 
@@ -1241,7 +1241,7 @@ void Change::apply ()
 	ASSERT (! isolatedTransientChild);
 
   apply_ ();
-  improvement = tree. len * (1 + tree. lenInflation) - tree. getLength ();
+  improvement = tree. len * (1 + (float) tree. lenInflation) - tree. getLength ();
   status = eApplied;
 }
 
@@ -1891,6 +1891,8 @@ FeatureTree::FeatureTree (const string &treeFName,
 {
 	ASSERT (! treeFName. empty ());
 
+  const Chronometer_OnePass cop ("Initialization");  
+
  	loadPhylFile (treeFName);
   ASSERT (root);
   ASSERT (nodes. front () == root);
@@ -1898,7 +1900,8 @@ FeatureTree::FeatureTree (const string &treeFName,
 
   if (geneDir. empty ())
     return;
-    
+   
+  size_t genomes = 0; 
   {
     cerr << "Genomes ..." << endl;
 	  Progress prog;
@@ -1908,122 +1911,149 @@ FeatureTree::FeatureTree (const string &treeFName,
 	 		{
 	 			prog (g->getName ());
 	      const_cast <Genome*> (g) -> initDir (geneDir);
+	      genomes++;
 	    }
 	}
+	ASSERT (genomes);
 
+  // nominal2values, Genome::nominals
+  ASSERT (nominal2values. empty ());
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
+ 		    catch (const exception &e)
+ 		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
 
+  // Genome::coreSet
   {
-    // nominal2values, Genome::nominals
-    ASSERT (nominal2values. empty ());
-   	for (const DiGraph::Node* node : nodes)
-   		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-   		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
-   		    catch (const exception &e)
-   		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
-
-    // Genome::coreSet
+    Progress prog (genomes);
     // 86 sec./50K genomes
    	for (const DiGraph::Node* node : nodes)
    		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+   		{
+   		  prog ();
    		  const_cast <Genome*> (g) -> nominals2coreSet (); 
-
-    // optionalCore[i] in all Genome's => remove Feature i ??
-
-    // globalSingletons, nonSingletons
-    Set<Feature::Id> globalSingletons;
-    Set<Feature::Id> nonSingletons;
-    // 196 sec./50K genomes
-   	for (const DiGraph::Node* node : nodes)
-   		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-   		  g->getSingletons (globalSingletons, nonSingletons);
-    ASSERT (! globalSingletons. intersects (nonSingletons));
-    globalSingletonsSize = globalSingletons. size ();
-   	for (const DiGraph::Node* node : nodes)
-   		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
-        globalSingletonsSize += g->setSingletons (globalSingletons);
-    
-    // commonCore
-    // 64 sec./50K genomes
-    ASSERT (commonCore. empty ());
-    commonCore = nonSingletons;
-   	for (const DiGraph::Node* node : nodes)
-   		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-   		  g->getCommonCore (commonCore);
-    ASSERT (! globalSingletons. intersects (commonCore));
-   	for (const DiGraph::Node* node : nodes)
-   		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
-        { EXEC_ASSERT (g->removeFromCoreSet (commonCore) == commonCore. size ()); }
-        
-    for (const Feature::Id& fId : commonCore)
-      nonSingletons. erase (fId);    
-    if (featuresExist () && nonSingletons. empty ())
-    	throw runtime_error ("All genes are singletons or common core");
-    	
-    // features, feature2index
-    ASSERT (features. empty ());
-    map<Feature::Id, size_t/*index*/> feature2index;
-  #ifndef NDEBUG
-    Feature::Id prevFeature;
-  #endif
-    for (const Feature::Id& fId : nonSingletons)
-    {
-    	ASSERT (prevFeature < fId);
-    	feature2index [fId] = features. size ();
-    	features << move (Feature (fId));
-    #ifndef NDEBUG
-    	prevFeature = fId;
-    #endif
-    }
-    features. searchSorted = true;
-  //genes = features. size ();
-    ASSERT (features. size () == nonSingletons. size ());
-    ASSERT (feature2index. size () == features. size ());
-
-    // allTimeZero, Phyl::init()   
-    {   
-      // 288 sec./50K genomes
-      size_t timeNan = 0;
-      size_t timeNonNan = 0;
-     	for (const DiGraph::Node* node : nodes)
-     	{
-     		const Phyl* p = static_cast <const Phyl*> (node);
-     		if (const Species* s = p->asSpecies ())
-     		{
-       		if (isNan (s->time))
-       			timeNan++;
-       		else
-       			timeNonNan++;
-     			const_cast <Species*> (s) -> init ();
-     		}
-     		else if (const Genome* g = p->asGenome ())
-     			const_cast <Genome*> (g) -> init (feature2index);
-     		else
-     			ERROR;
-     	}
-     	ASSERT (timeNan || timeNonNan);
-     	ASSERT (! (timeNan && timeNonNan));
-     	allTimeZero = timeNan;
-    }
-
-    {
-      genomeGenes_ave = 0;  
-      size_t genomes = 0;
-     	for (const DiGraph::Node* node : nodes)
-     		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-     		{
-     			genomeGenes_ave += g->getGenes ();
-     			genomes++;
-     	  }
-      genomeGenes_ave /= genomes;
-    }
-
-    if (! allTimeZero && featuresExist ())
-      loadSuperRootCoreFile (coreFeaturesFName);
-    {
-     	for (DiGraph::Node* node : nodes)  
-     		static_cast <Phyl*> (node) -> setWeight ();
-    }
+   		}
   }
+
+  // optionalCore[i] in all Genome's => remove Feature i ??
+
+  // globalSingletons, nonSingletons
+  Set<Feature::Id> globalSingletons;
+  Set<Feature::Id> nonSingletons;
+  // 196 sec./50K genomes
+  {
+    Progress prog (genomes);
+   	for (const DiGraph::Node* node : nodes)
+   		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+   		{
+   		  prog ();
+   		  g->getSingletons (globalSingletons, nonSingletons);
+   		}
+  }
+  ASSERT (! globalSingletons. intersects (nonSingletons));
+  globalSingletonsSize = globalSingletons. size ();
+  {
+    Progress prog (genomes);
+   	for (const DiGraph::Node* node : nodes)
+   		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
+   		{
+   		  prog ();
+        globalSingletonsSize += g->setSingletons (globalSingletons);
+      }
+  }
+  
+  // commonCore
+  // 64 sec./50K genomes
+  ASSERT (commonCore. empty ());
+  commonCore = nonSingletons;
+  {
+    Progress prog (genomes);
+   	for (const DiGraph::Node* node : nodes)
+   		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+   		{
+   		  prog ();
+   		  g->getCommonCore (commonCore);
+   		}
+  }
+  ASSERT (! globalSingletons. intersects (commonCore));
+  {
+    Progress prog (genomes);
+   	for (const DiGraph::Node* node : nodes)
+   		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
+      { 
+        prog ();
+        EXEC_ASSERT (g->removeFromCoreSet (commonCore) == commonCore. size ()); 
+      }
+  }
+      
+  for (const Feature::Id& fId : commonCore)
+    nonSingletons. erase (fId);    
+  if (featuresExist () && nonSingletons. empty ())
+  	throw runtime_error ("All genes are singletons or common core");
+  	
+  // features, feature2index
+  ASSERT (features. empty ());
+  map<Feature::Id, size_t/*index*/> feature2index;
+#ifndef NDEBUG
+  Feature::Id prevFeature;
+#endif
+  for (const Feature::Id& fId : nonSingletons)
+  {
+  	ASSERT (prevFeature < fId);
+  	feature2index [fId] = features. size ();
+  	features << move (Feature (fId));
+  #ifndef NDEBUG
+  	prevFeature = fId;
+  #endif
+  }
+  features. searchSorted = true;
+//genes = features. size ();
+  ASSERT (features. size () == nonSingletons. size ());
+  ASSERT (feature2index. size () == features. size ());
+  cerr << "# Features: " << features. size () << endl;
+
+  // allTimeZero, Phyl::init()   
+  // If no optimization then optimize each Feature separately !??
+  cerr << "Memory ..." << endl;
+  {   
+    // 288 sec./50K genomes
+    size_t timeNan = 0;
+    size_t timeNonNan = 0;
+    Progress prog (nodes. size ());
+   	for (const DiGraph::Node* node : nodes)
+   	{
+   	  prog ();
+   		const Phyl* p = static_cast <const Phyl*> (node);
+   		if (const Species* s = p->asSpecies ())
+   		{
+     		if (isNan (s->time))
+     			timeNan++;
+     		else
+     			timeNonNan++;
+   			const_cast <Species*> (s) -> init ();
+   		}
+   		else if (const Genome* g = p->asGenome ())
+   			const_cast <Genome*> (g) -> init (feature2index);
+   		else
+   			ERROR;
+   	}
+   	ASSERT (timeNan || timeNonNan);
+   	ASSERT (! (timeNan && timeNonNan));
+   	allTimeZero = timeNan;
+  }
+
+  genomeGenes_ave = 0;  
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 			genomeGenes_ave += g->getGenes ();
+  genomeGenes_ave /= genomes;
+
+  if (! allTimeZero && featuresExist ())
+    loadSuperRootCoreFile (coreFeaturesFName);
+ 	for (DiGraph::Node* node : nodes)  
+ 		static_cast <Phyl*> (node) -> setWeight ();
+  cerr << "Assigning features ..." << endl;
   setLenGlobal ();  // 399 sec./50K genomes
   setCore ();  // 67 sec./50K genomes
   len_min = getLength_min ();
@@ -2259,7 +2289,7 @@ void FeatureTree::qc () const
 			  ASSERT (root_->core [i] == root_->feature2parentCore (i));
 			  IMPLY (! allTimeZero && featuresExist (), root_->core [i] == superRootCore [i]);
 			}
-		const Real subtreeLen = static_cast <const Phyl*> (root) -> getSubtreeLength ();
+		const float subtreeLen = static_cast <const Phyl*> (root) -> getSubtreeLength ();
 		if (! eqReal (len, subtreeLen, len_delta)) 
 		{
 			cout << fixed; cout. precision (10);  // PAR
@@ -2409,7 +2439,7 @@ void FeatureTree::dump (const string &fName/*,
 
 
 
-Real FeatureTree::feature2treeLength (size_t featureIndex) const
+float FeatureTree::feature2treeLength (size_t featureIndex) const
 { 
   // Cf. Phyl:;feature2parentCore()
   const auto& parent2core = static_cast <const Species*> (root) -> parent2core;
@@ -2424,9 +2454,9 @@ Real FeatureTree::feature2treeLength (size_t featureIndex) const
 
 
 
-Real FeatureTree::getLength () const
+float FeatureTree::getLength () const
 {
-  Real s = static_cast <const Species*> (root) -> pooledSubtreeDistance;
+  float s = static_cast <const Species*> (root) -> pooledSubtreeDistance;
   FFOR (size_t, i, features. size ())
     s += feature2treeLength (i);
   return s;
@@ -2557,8 +2587,8 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
     	for (const bool j : {false, true})
         cout << "parent2core[" << (int) i << "][" << (int) j << "]=" << parent2core [i] [j] << endl;
 
-  Real len_old;  
-  Real len1 = INF;;
+  float len_old;  
+  float len1 = INF;;
 	lambda0 = (Real) parent2core [true] [false] / ((Real) parent2core [true] [false] + (Real) parent2core [false] [true]);  // Optimal if time_init = 0
 	do 
 	{
@@ -2584,7 +2614,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
    	len1 = static_cast <const Phyl*> (root) -> getSubtreeLength ();
 	  if (verbose ())  
 	  	cout << "len1 = " << len1 << endl;
-		if (! leReal (len1, len_old + len_delta)) 
+		if (! leReal (len1, len_old + len_delta, 1e-3))  // PAR
 		{
 			cout << len1 << " " << len_old << endl;
 			ERROR;
@@ -2795,7 +2825,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
     static_cast <Phyl*> (node) -> stable = true;
 	
 	
-  const Real len_init = len;
+  const float len_init = len;
 
 
   changes. sort (Change::compare);	
@@ -2831,7 +2861,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
 	  const bool first = ch == changes. front ();  
 	#endif
 	  changedNodes << ch->getCoreChanged ();
-  	Real len_old = len;
+  	float len_old = len;
     ch->apply ();
 	  len = getLength ();
 	  if (verbose ())
@@ -2901,7 +2931,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
   finishChanges ();
   
 
-  const Real improvement = max (0.0, len_init - len);
+  const float improvement = max<float> (0.0, len_init - len);
   cout << "Improvement = " << improvement << endl;
   cout << "len = " << len << endl;
   IMPLY (timeOptimWhole (), geReal (improvement, - len_delta));

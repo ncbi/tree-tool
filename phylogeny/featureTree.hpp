@@ -42,8 +42,7 @@ struct Feature : Named
   VectorPtr<Phyl> losses;
 
 
-  Feature ()
-    {}
+  Feature () = default;
 	explicit Feature (const Id &name_arg)
     : Named (name_arg)
     {}
@@ -78,8 +77,8 @@ struct Feature : Named
 
 
 
-inline bool eqTreeLen (Real len1,
-                       Real len2)
+inline bool eqTreeLen (float len1,
+                       float len2)
   { return eqReal (len1, len2, 1e-4 /*PAR*/); }  
 
 
@@ -95,12 +94,12 @@ struct Phyl : Tree::TreeNode
   // For FeatureTree::len
 	struct CoreEval
 	{
-		Real treeLen {0};
+		float treeLen {0};
 		  // >= 0
 		ebool core {EFALSE};
 		
     CoreEval () = default;
-		CoreEval (Real treeLen_arg,
+		CoreEval (float treeLen_arg,
 		          ebool core_arg)
 		  : treeLen (treeLen_arg)
 		  , core (core_arg)
@@ -114,7 +113,7 @@ struct Phyl : Tree::TreeNode
 	Vector<CoreEval> parent2core [2/*bool parentCore*/];
 	  // CoreEval::core: optimal given parentCore
     // size() = getFeatureTree().features.size()
-	Real weight [2/*thisCore*/] [2/*parentCore*/];
+	float weight [2/*thisCore*/] [2/*parentCore*/];
 	  // = -log(prob); >= 0; may be INF
 	Vector<bool> core;
     // size() = getFeatureTree().features.size()
@@ -158,11 +157,11 @@ public:
   // weight[][]
   virtual void setWeight () = 0;
     // Output: weight[][]
-	Real feature2weight (size_t featureIndex,
-	                     bool thisCore,
-	                     bool parentCore) const;
+	float feature2weight (size_t featureIndex,
+	                      bool thisCore,
+	                      bool parentCore) const;
 	  // Return: >= 0	  
-	Real feature2weight (bool thisCore,
+	float feature2weight (bool thisCore,
 	                     bool parentCore) const
 	  { return feature2weight (NO_INDEX/*??*/, thisCore, parentCore); }
 	  
@@ -181,20 +180,20 @@ public:
     { return   getCoreChange (false)
     	       + getCoreChange (true);
     }
-  Real getDistance () const;
+  float getDistance () const;
     // Distance to getParent() for features in getFeatureTree().features
     // Return: >= 0
     // Input: core
     // Invokes: getPooledDistance()
-	Real getSubtreeLength () const;  
+	float getSubtreeLength () const;  
 	  // Return: sum_{n \in subtree} n->getDistance() 
 #if 0
-	Real getFeatureDistance (size_t featureIndex) const;
-	Real getFeatureSubtreeLength (size_t featureIndex) const;  
-	Real getFeatureTreeLen (size_t featureIndex) const
+	float getFeatureDistance (size_t featureIndex) const;
+	float getFeatureSubtreeLength (size_t featureIndex) const;  
+	float getFeatureTreeLen (size_t featureIndex) const
 	  { return parent2core [feature2parentCore (featureIndex)] [featureIndex]. treeLen; }
 #endif
-  Real getNeighborDistance () const;
+  float getNeighborDistance () const;
     // Invokes: getDistance()
   bool badNeighborDistance (Real &neighborDistance_stnd,
                             Real &depth_stnd) const;
@@ -222,7 +221,7 @@ public:
 
   virtual void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const;
     // Output: parent2corePooled[][]: core change for features not in getFeatureTree().features
-	Real getPooledDistance () const;
+	float getPooledDistance () const;
     // Distance to getParent() for features not in getFeatureTree().features
     // Invokes: getParent2corePooled()
 };
@@ -235,22 +234,22 @@ struct Species : Phyl
   string id;
     // !empty() => SPECIES.id
   // Valid if !allTimeZero
-	Real time;
+	Real time {NaN};
 	  // isNan() || >= 0
     // Exponential distribution, if yes then use P_{prior} ??
 //Real timeVariance;  // Read the MLE theory ??
-	Real pooledSubtreeDistance {INF};  
+	float pooledSubtreeDistance {numeric_limits<float>::infinity ()};  
 	  // Part of the arc (this,getParent()) length due to FeatureTree::commonCore and Genome::singletons
 	  // >= 0
 private:
-	Real weight_old [2/*thisCore*/] [2/*parentCore*/];
+	float weight_old [2/*thisCore*/] [2/*parentCore*/];
   Real time_old {NaN};
     // May be NaN
-	Real pooledSubtreeDistance_old {NaN};  
+	float pooledSubtreeDistance_old {NaN};  
   struct Movement
   {
-  	bool parentCore;
-  	size_t featureIndex;
+  	bool parentCore {false};
+  	size_t featureIndex {NO_INDEX};
     CoreEval from;  
   	Movement (bool parentCore_arg,
   	          size_t featureIndex_arg,
@@ -325,7 +324,7 @@ public:
 	void commitTime ()
 	  { time_old = NaN; }
 
-	virtual Real getPooledSubtreeDistance () const = 0;
+	virtual float getPooledSubtreeDistance () const = 0;
 	  
 	// Usage: assignFeaturesUp(a) ... {restoreFeaturesUp(a)|commitFeaturesUp(a))
   // Input: toParentExcluding: may be 0
@@ -361,7 +360,7 @@ struct Fossil : Species
   bool isInteriorType () const final
     { return true; }
 
-  Real getPooledSubtreeDistance () const final;
+  float getPooledSubtreeDistance () const final;
 
   void setId (uint &id_arg);
     // Output: id
@@ -372,10 +371,10 @@ struct Fossil : Species
 
 struct Strain : Species
 // Distance from children to *this depends on Genome quality
+// Not neded for maximum parsimony ??!
 {
   bool singletonsInCore {true};
     // getGenome()->singletons: true <=> in this->core, false <=> annotation errors in Genome
-    // Init: true
     // Analog of parent2core[false] and core
 private:
   bool singletonsInCore_old {true};
@@ -403,7 +402,7 @@ public:
 
   void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const final;
 	void assignFeatures () final;
-	Real getPooledSubtreeDistance () const final;
+	float getPooledSubtreeDistance () const final;
 private:
 	void rememberFeatures () final
 	  { Species::rememberFeatures ();
@@ -535,7 +534,7 @@ protected:
 public:
 	const Species* from {nullptr};
 	  // !nullptr
-	Real improvement {INF};
+	float improvement {numeric_limits<float>::infinity ()};
 	  // > 0
 	VectorPtr<Tree::TreeNode> targets; 
 	  // Lowest Phyl's whose parent2core may be changed
@@ -1028,7 +1027,7 @@ struct FeatureTree : Tree
   const bool preferGain;
 	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
-	  // Init: isNan(Species::time) 
+	  // Init: = isNan(Species::time) 
 	Prob timeOptimFrac {1};
 	  // Annealing
 	  // allTimeZero => 1
@@ -1051,10 +1050,10 @@ public:
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
 	size_t genomeGenes_ave {0};
-	Real len {NaN};
+	float len {NaN};
 	  // >= len_min
 	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
-	Real len_min {NaN};
+	float len_min {NaN};
 	  // >= 0
 	Prob lenInflation {0};
 
@@ -1120,22 +1119,22 @@ public:
 	  { return ! features. empty (); }
 	size_t getTotalGenes () const
 	  { return commonCore. size () + features. size () + globalSingletonsSize; }  
-  Real getLength_min ()  
+  float getLength_min ()  
     { if (! emptySuperRoot)
         return 0;
       // Needed for E. coli pan ??
       if (allTimeZero)  
-    		return (Real) getTotalGenes ();
+    		return (float) getTotalGenes ();
       // Simplistic model: all Genome::core's are the same, all Species::time = 0 except root
     	const Species* s = static_cast <const Species*> (root);
-    	return (Real) getTotalGenes () * s->feature2weight (true,  false)
+    	return (float) getTotalGenes () * s->feature2weight (true,  false)
     	     /*+ commonMissings   * s->feature2weight (false, false)*/;
     }
   // Sankoff algorithm
 private:
-	Real feature2treeLength (size_t featureIndex) const;
+	float feature2treeLength (size_t featureIndex) const;
 public:
-  Real getLength () const;
+  float getLength () const;
 
   // OPTIMIZATION 
   // Phyl::parent2core[]
