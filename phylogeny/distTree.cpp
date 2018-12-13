@@ -6012,7 +6012,7 @@ void DistTree::optimizeLargeSubgraphs ()
   
   size_t parts_max = threads_max;
   if (! threadsUsed)
-    parts_max = (size_t) ceil (6 * log ((Real) name2leaf. size () / (Real) large_min)) + 1;  // PAR
+    parts_max = (size_t) ceil (6 * log ((Real) name2leaf. size () / (Real) large_min)) + 1;  // PAR  
   ASSERT (parts_max >= 2);
   VectorPtr<Steiner> boundary;  boundary. reserve (parts_max);   // isTransient()
   {
@@ -6074,15 +6074,10 @@ void DistTree::optimizeLargeSubgraphs ()
             st = static_cast <const Steiner*> (st->getParent ());
           }
           var_cast (st_best) -> setLeaves (0);
-        #if 0
-          ??
-          if (TreeNode* parent = var_cast (st_best->getParent ()))
-            parent->leaves = 0;  // To prevent neighboring boundary nodes ??
-        #endif
         }
         if (! threadsUsed || cuts. size () <= parts_max - 1)
           break;
-        goalSize = (size_t) ((Real) goalSize * 1.05);  // PAR
+        goalSize += (size_t) ((Real) goalSize * 0.01) + 1;  // PAR  
         cuts. clear ();
       }
     }
