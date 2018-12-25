@@ -62,7 +62,7 @@ echo "# Dissimilarities: $N"
 echo "Dissimilarities per object: $PERCENT % of maximum"
 
 echo ""
-grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree.* | sed 's|^'$1'/hist/makeDistTree\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
+grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree*.* | grep -v '\-qc\.' | sed 's|^'$1'/hist/makeDistTree[^.]*\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
 tail -5 $TMP
 
 echo ""
