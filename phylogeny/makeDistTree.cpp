@@ -302,7 +302,7 @@ struct ThisApplication : Application
       size_t deleted = 0;
       {
         LineInput f (deleteFName, 10000, 1);
-        Progress prog;
+        Progress prog (0, 1000);  // PAR
         while (f. nextLine ())
         {
           trim (f. line);
