@@ -5834,10 +5834,10 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
 
   if (verbose (1))
     cout << "# Changes: " << changes. size () << endl;
+  changes. sort (Change::strictlyLess); 
   size_t commits = 0;
   {
   //Unverbose un;
-    changes. sort (Change::strictlyLess); 
     size_t nChange = 0;
     Progress prog (changes. size ());
     for (const Change* ch_ : changes)
