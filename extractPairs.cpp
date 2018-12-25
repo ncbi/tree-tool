@@ -10,14 +10,26 @@ using namespace Common_sp;
 
 namespace 
 {
+  
+  
+List<string> getList (string &s,
+                      const string &delim)
+{
+  trim (s);
+  replaceStr (s, delim, " ");
+  replaceStr (s, "  ", " ");
+  return str2list (s);  
+}
 
+  
+  
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("A\\tB1<delim>B2<delim>B3... -> A\\tB1\\nA\\tB2\\nA\\tB3\\n...")
+    : Application ("A1<delim>A2<delim>A3...\\tB1<delim>B2<delim>B3... -> A1\\tB1\\nA1\\tB2\\nA1\\tB3\\nA2\\tB1\\nA2\\tB2\\nA2\\tB3\\nA3\\tB1\\nA3\\tB2\\nA3\\tB3...")
   	{
-  	  addPositional("in", "Input file");
-  	  addKey("delim", "Delimiter", " ");
+  	  addPositional ("in", "Input file");
+  	  addKey ("delim", "Delimiter", " ");
   	}
 
 
@@ -35,14 +47,11 @@ struct ThisApplication : Application
   	  if (f. line. empty ())
   	    continue;
   	  string lhs (findSplit (f. line, '\t'));
-  	  trim (lhs);
-  	  replaceStr (f. line, delim, "\t");
-  	  while (! f. line. empty ())
-  	  {
-  	    string rhs (findSplit (f. line, '\t'));
-  	    trim (rhs);
-  	    cout << lhs << '\t' << rhs << endl;
-  	  }
+  	  const List<string> lhsVec (getList (lhs, delim));
+  	  const List<string> rhsVec (getList (f. line, delim));
+  	  for (const string& a : lhsVec)
+    	  for (const string& b : rhsVec)
+    	    cout << a << '\t' << b << endl;
   	}
 	}
 };
