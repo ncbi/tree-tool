@@ -81,6 +81,7 @@ FEATURE_TREE = $(PHYL_DIR)/featureTree $(DM) $(CPP_DIR)/graph
 
 GEN_DIR = $(CODE_DIR)/genetics
 $(GEN_DIR)/asn.o:	$(GEN_DIR)/asn.hpp $(COMMON_HPP)
+$(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_HPP)
 $(GEN_DIR)/gff.o: $(GEN_DIR)/gff.hpp $(COMMON_HPP)
 
 $(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_HPP)
