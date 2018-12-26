@@ -27,7 +27,7 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("name_match", "File with lines: <name_old> <name_new>, to replace leaf names");
     // Output
-	  addKey ("format", "newick|itree|ASN", "newick");
+	  addKey ("format", "newick|itree (makeDistTree output)|ASNT (textual ASN.1)", "newick");
 	  addFlag ("min_name", "Minimal leaf names");
 	  addFlag ("order", "Order subtrees by the number of leaves descending");
 	}
@@ -80,7 +80,7 @@ struct ThisApplication : Application
       tree. printNewick (cout, false, min_name);
     else if (format == "itree")
       tree. saveText (cout);
-    else if (format == "ASN")
+    else if (format == "ASNT")
       tree. printAsn (cout);
     else
       throw runtime_error ("Unknown format " + format);
