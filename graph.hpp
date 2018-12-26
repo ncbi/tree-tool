@@ -181,8 +181,7 @@ struct DiGraph : Root
     // size() == n
 
 
-  DiGraph ()
-    {}
+  DiGraph () = default;
   typedef  map <const Node* /*old*/, Node* /*new*/>  Old2new;
   DiGraph (const DiGraph &other)
     { Old2new old2new;
@@ -299,8 +298,7 @@ struct Tree : DiGraph
     struct TipName : Root
     { string name; 
       size_t depth {0}; 
-      TipName ()
-        {}
+      TipName () = default;
       TipName (const string &name_arg,
                size_t depth_arg)
         : name (name_arg)
@@ -482,8 +480,7 @@ struct Tree : DiGraph
   static const char objNameSeparator {':'};
 
 
-  Tree ()
-    {}
+  Tree () = default;
   void qc () const override;
 	void saveText (ostream &os) const override
 	  { if (root)
@@ -515,12 +512,11 @@ struct Tree : DiGraph
     const TreeNode* leaf2 {nullptr};  
       // != nullptr
       // leaf1->getName() < leaf2->getName()
-    double distance {0};
+    double distance {0.0};
     Patristic (const TreeNode* leaf1_arg, 
                const TreeNode* leaf2_arg,
                double distance_arg);        
-    Patristic ()
-      {}
+    Patristic () = default;
   };
   Vector<Patristic> getLeafDistances () const;
   void setLeaves ()
