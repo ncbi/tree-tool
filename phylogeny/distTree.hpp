@@ -1062,6 +1062,7 @@ public:
     // Output: subgraph: area: contains newLeaves2boundary.values(); discernible
     //         newLeaves2boundary
 	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + |area| /*fast*/))
+  DistTree () = default;
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
