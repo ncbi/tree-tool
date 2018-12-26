@@ -1303,7 +1303,8 @@ void Token::readInput (CharInput &in)
 		{ 
 			c = in. get (); 
 			if (in. eol)
-				throw CharInput::Error (in, "ending quote");
+		  //throw CharInput::Error (in, "ending quote");
+		    continue;
 			if (c == quote)
 				break;
 			name += c;
@@ -1335,7 +1336,7 @@ void Token::readInput (CharInput &in)
 	}
 	else 
 	{
-	  ASSERT (type == eDelimiter);
+	  type = eDelimiter;
 		name = c;
 	}	
 	ASSERT (! empty ());
