@@ -25,13 +25,13 @@ wc -l $TMP.list2
 setMinus $TMP.list1 $TMP.list2 > $TMP.list1-del
 setMinus $TMP.list2 $TMP.list1 > $TMP.list2-del
 
-makeDistTree -input_tree $T1  -delete $TMP.list1-del  -check_delete  -output_feature_tree $TMP.feature_tree1 > /dev/null
-makeDistTree -input_tree $T2  -delete $TMP.list2-del  -check_delete  -output_feature_tree $TMP.feature_tree2 > /dev/null
+makeDistTree -input_tree $T1  -delete $TMP.list1-del  -check_delete  -output_feature_tree $TMP.feature_tree1 > $TMP.makeDistTree1
+makeDistTree -input_tree $T2  -delete $TMP.list2-del  -check_delete  -output_feature_tree $TMP.feature_tree2 > $TMP.makeDistTree2
 
 echo ""
-makeFeatureTree -input_tree $TMP.feature_tree1  -features $PHEN  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
+makeFeatureTree  -input_tree $TMP.feature_tree1  -features $PHEN  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
 echo ""
-makeFeatureTree -input_tree $TMP.feature_tree2  -features $PHEN  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
+makeFeatureTree  -input_tree $TMP.feature_tree2  -features $PHEN  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
 
 
 rm -f $TMP*
