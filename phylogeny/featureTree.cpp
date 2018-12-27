@@ -25,7 +25,7 @@ void Feature::qc () const
 	ASSERT (! contains (name, ";"));
 //IMPLY (isGene, geneId ());
 	ASSERT (gains. size () <= genomes);
-	IMPLY (genomes, ! gains. empty ());
+	IMPLY (genomes, mutations () /*! gains. empty ()*/);
 	IMPLY (genomes <= 1, losses. empty ());
 }
 
@@ -3199,7 +3199,9 @@ void FeatureTree::setStats ()
           cout << phyl->getLcaName () << endl;
       }
     #endif
-      if ((! phyl->feature2parentCore (i) || phyl == root) && phyl->core [i])  
+      if (phyl == root)
+        continue;
+      if (! phyl->feature2parentCore (i) && phyl->core [i])  
         features [i]. gains << phyl;
       if (phyl->feature2parentCore (i) && ! phyl->core [i])
         features [i]. losses << phyl;

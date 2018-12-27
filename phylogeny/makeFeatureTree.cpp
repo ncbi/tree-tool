@@ -202,7 +202,6 @@ struct ThisApplication : Application
             extraMutations += f. mutations () - 1;
             nonParaphyletics++;
           }
-          //
           f. print (out);
         }
       }
@@ -216,7 +215,67 @@ struct ThisApplication : Application
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
       ASSERT (optionals + commons + singles + paraphyletics + nonParaphyletics == features. size ());
-      IMPLY (! qual_nonredundant && ! use_time, (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize == paraphyletics + nonParaphyletics + extraMutations + singles);
+      if (! qual_nonredundant && ! use_time && (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize != paraphyletics + nonParaphyletics + extraMutations + singles)
+      {
+      #if 0
+        size_t s = 0;
+        FFOR (size_t, i, features. size ())
+        {
+          size_t feature_paraphyletics = 0;  
+          size_t feature_nonParaphyletics = 0;  
+          size_t feature_extraMutations = 0;
+          size_t feature_optionals = 0;
+          size_t feature_commons = 0;  
+          size_t feature_singles = 0;  
+          const Feature& f = features [i];
+          f. qc ();
+          if (f. genomes == 0)
+            feature_optionals++;
+          else if (f. genomes == genomes)
+          {
+            ASSERT (f. gains. size () <= 1);
+            ASSERT (f. losses. empty ());
+            feature_commons++;
+          }
+          else if (f. genomes == 1)
+            feature_singles++;
+          else   // Non-trivial features
+          {
+          	ASSERT (f. mutations () >= 1);
+            if (f. mutations () == 1)
+              feature_paraphyletics++;
+            else
+            {
+              feature_extraMutations += f. mutations () - 1;
+              feature_nonParaphyletics++;
+            }
+          }
+          const size_t feature_len = (size_t) Common_sp::round (tree. feature2treeLength (i));
+          if (feature_len != feature_paraphyletics + feature_nonParaphyletics + feature_extraMutations + feature_singles)
+          {
+            cout << f;
+            cout        << feature_len 
+                 << ' ' << feature_paraphyletics 
+                 << ' ' << feature_nonParaphyletics 
+                 << ' ' << feature_extraMutations 
+                 << ' ' << feature_singles
+                 << ' ' << f. gains. contains (static_cast <const Phyl*> (tree. root))
+                 << endl;
+            ERROR;
+          }
+          s += feature_len;
+        }
+        cout        << tree. len 
+             << ' ' << tree. globalSingletonsSize 
+             << ' ' << paraphyletics 
+             << ' ' << nonParaphyletics 
+             << ' ' << extraMutations 
+             << ' ' << singles
+             << ' ' << s
+             << endl;
+      #endif
+        ERROR;
+      }
     }
 
     
