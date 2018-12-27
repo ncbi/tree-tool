@@ -6361,13 +6361,17 @@ void DistTree::removeLeaf (Leaf* leaf,
   ASSERT (! dissimAttr);
   
   const TreeNode* parent = leaf->getParent ();
-  ASSERT (parent);
+  if (! parent)
+    throw runtime_error ("removeLeaf: Empty tree");
     
   leaf->detachChildrenUp ();  
   ASSERT (! leaf->graph);
   detachedLeaves << leaf;  
 
   name2leaf. erase (leaf->name);
+  ASSERT (name2leaf. size () >= 1);
+  if (name2leaf. size () == 1)
+    throw runtime_error ("removeLeaf: one leaf tree");
   
   // Clean topology, parent, Leaf::discernible consistency
   ASSERT (! parent->isLeaf ());

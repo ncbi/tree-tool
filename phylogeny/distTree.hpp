@@ -1313,6 +1313,7 @@ private:
 public:
   void removeLeaf (Leaf* leaf,
                    bool optimizeP);
+    // If the number of left leaves <= 1 then throw (--> return bool ??)
     // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
     // !leaf->getParent()->childrenDiscernible(), nubner of children > 1 and !optimizable() => may produce incorrect tree
