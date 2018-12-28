@@ -29,6 +29,7 @@ struct ThisApplication : Application
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
+  	  addFlag ("print_item", "Print item name before command execution");
   	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
   	}
@@ -42,6 +43,7 @@ struct ThisApplication : Application
 		const string errorsFName = getArg ("errors");
 		const bool quote         = getFlag ("quote");
 		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
+		const bool print_item    = getFlag ("print_item");
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
     ASSERT (! items. empty ());
@@ -80,14 +82,18 @@ struct ThisApplication : Application
 	  string item;
 	  while (gen->next (item))
     {
-	    FOR (uint, i, blank_lines)
-	      cout << " " << endl;
       if (gen->prog. n < start)
         continue;
 
+	    FOR (uint, i, blank_lines)
+	      cout << " " << endl;
+	      
+	    if (print_item)
+	      cout << item << endl;
+
       // Preparing item for using it in a shell command
       FOR_REV (size_t, i, item. size ())
-        if (item. at (i) == '\\')
+        if (item [i] == '\\')
         	item. replace (i, 0, "\\");
       if (quote)
         item = "\"" + item + "\"";
