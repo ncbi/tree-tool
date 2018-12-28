@@ -63,7 +63,7 @@ distTree_inc_unhybrid.sh $1
 if [ -e $1/phen ]; then
   echo ""
   echo "Quality ..."
-	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -prefer_gain  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.1
+	makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -nominal_singleton_is_optional  -prefer_gain  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.1
 	rm $1/_core
 	rm $1/_qual
 	grep ' !' $1/hist/makeFeatureTree.1

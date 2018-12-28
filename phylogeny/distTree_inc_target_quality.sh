@@ -17,7 +17,7 @@ TMP=`mktemp`
 tree2obj.sh $INC/tree > $TMP.cur
 setMinus $TMP.cur $TARGET > $TMP.del
 makeDistTree  -threads 15  -input_tree $INC/tree  -delete $TMP.del  -check_delete  -output_feature_tree $TMP.feature_tree >& /dev/null
-makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $INC/phen  -prefer_gain  -output_core $TMP.core  -qual $TMP.qual
+makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $INC/phen  -prefer_gain  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $TMP.qual
 
 rm $TMP*
 

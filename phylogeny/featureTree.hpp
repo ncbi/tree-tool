@@ -37,7 +37,8 @@ struct Feature : Named
   // Stats
   size_t genomes {0};
     // Non-optional
-  size_t optionalGenomes {0};  
+  size_t optionalGenomes {0}; 
+  bool rootGain {false}; 
   VectorPtr<Phyl> gains;
   VectorPtr<Phyl> losses;
 
@@ -57,22 +58,24 @@ struct Feature : Named
     { return name < other. name; }
   static bool statEqual (const Feature& a,
                          const Feature& b)
-    { return    a. gains  == b. gains
-    	       && a. losses == b. losses;
+    { return    a. rootGain == b. rootGain
+             && a. gains    == b. gains
+    	       && a. losses   == b. losses;
     }
+  size_t realGains () const
+    { return rootGain + gains. size (); }
   static bool statLess (const Feature& a,
                         const Feature& b);
   size_t mutations () const
     { return gains. size () + losses. size (); }
   bool monophyletic () const
-    { return gains. size () <= 1 && losses. empty (); }
+    { return realGains () == 1 && losses. empty (); }
   bool better (const Feature* other) const
     { return    ! other 
              || mutations () < other->mutations ()
              || (mutations () == other->mutations () && name.size () > other->name. size ());
     }
-  static bool singleton (const Id &featureId)
-    { return isRight (featureId, ":_OTHER_"); }
+  static bool singleton (const Id &featureId);
 };
 
 
@@ -453,10 +456,10 @@ public:
 	        Strain* parent_arg,
 	        const string &id_arg);
 	  // To be followed by: initDir(), init()
-  static string geneLineFormat ()
-    { return "{{<gene> [<optional (0|1)>]} | {<nominal name>:<value>} \\n}*, where <value> = _OTHER_ is singleton for any <nominal name>"; }
+  static string geneLineFormat ();
 private:
-	void initDir (const string &geneDir);
+	void initDir (const string &geneDir,
+	              bool nominalSingletonIsOptional);
 	  // Input: file "geneDir/id" with the format: `geneLineFormat()`
 	  // Output: coreSet, coreNonSingletons
 	void coreSet2nominals ();
@@ -1075,6 +1078,7 @@ public:
 	FeatureTree (const string &treeFName,
   	           const string &geneDir,
   	           const string &coreFeaturesFName,
+  	           bool nominalSingletonIsOptional,
   	           bool preferGain_arg);
     // Input: coreFeaturesFName if !allTimeZero
     // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore()

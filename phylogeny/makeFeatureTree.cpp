@@ -26,6 +26,7 @@ struct ThisApplication : Application
   	  addKey ("input_tree", "Input file with the tree");
   	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::geneLineFormat ());
   	  addKey ("input_core", "Input file with root core feature ids");
+  	  addFlag ("nominal_singleton_is_optional", "Nominal singleton value means that all values of this nominal attribute are optional");
   	  addFlag ("prefer_gain", "Prefer gain over loss in maximum parsimony method");
   	    
   	  // Process
@@ -54,6 +55,7 @@ struct ThisApplication : Application
 		const string input_tree         = getArg ("input_tree");
 		const string feature_dir        = getArg ("features");
 		const string input_core         = getArg ("input_core");
+		const bool   nominal_singleton_is_optional = getFlag ("nominal_singleton_is_optional");
 		const bool   prefer_gain        = getFlag ("prefer_gain");
 
 		const bool   use_time           = getFlag ("use_time");  
@@ -78,7 +80,7 @@ struct ThisApplication : Application
 		IMPLY (qual_nonredundant, ! qual. empty ());
 		
 		
-    FeatureTree tree (input_tree, feature_dir, input_core, prefer_gain);
+    FeatureTree tree (input_tree, feature_dir, input_core, nominal_singleton_is_optional, prefer_gain);
     tree. printInput (cout);
     tree. qc ();    
     
@@ -171,8 +173,8 @@ struct ThisApplication : Application
       // Input: Feature::{genomes,gains,losses}
       cout << endl;
       cout << "Feature statistics:" << endl;
-      size_t paraphyletics = 0;  
-      size_t nonParaphyletics = 0;  
+      size_t monophyletics = 0;     // In an unrooted tree
+      size_t nonMonophyletics = 0;  // In an unrooted tree
       size_t extraMutations = 0;
       size_t optionals = 0;
       size_t commons = 0;  // f may be optional
@@ -186,7 +188,7 @@ struct ThisApplication : Application
           optionals++;
         else if (f. genomes == genomes)
         {
-          ASSERT (f. gains. size () <= 1);
+          ASSERT (f. realGains () == 1);
           ASSERT (f. losses. empty ());
           commons++;
         }
@@ -196,26 +198,24 @@ struct ThisApplication : Application
         {
         	ASSERT (f. mutations () >= 1);
           if (f. mutations () == 1)
-            paraphyletics++;
+            monophyletics++;
           else
           {
             extraMutations += f. mutations () - 1;
-            nonParaphyletics++;
+            nonMonophyletics++;
           }
           f. print (out);
         }
       }
       const ONumber on (cout, 2, false);  // PAR
-      cout << "# Paraphyletic features:          " << paraphyletics    << " (" << (Real) paraphyletics    / (Real) genomes << ") ^" << endl;  
-      cout << "# Non-paraphyletic features:      " << nonParaphyletics << " (" << (Real) nonParaphyletics / (Real) genomes << ") V" << endl;  
-    //cout << "# Non-paraphyletic gains:         " << gains   << " v" << endl;  
-    //cout << "# Losses:                         " << losses  << " v" << endl;  
-      cout << "# Non-paraphyletic disagreements: " << extraMutations   << " (" << (Real) extraMutations   / (Real) genomes << ") V !" << endl;  
+      cout << "# Monophyletic features:          " << monophyletics    << " (" << (Real) monophyletics    / (Real) genomes << ") ^" << endl;  
+      cout << "# Non-monophyletic features:      " << nonMonophyletics << " (" << (Real) nonMonophyletics / (Real) genomes << ") V" << endl;  
+      cout << "# Non-monophyletic disagreements: " << extraMutations   << " (" << (Real) extraMutations   / (Real) genomes << ") V !" << endl;  
       cout << "# Common features:                " << commons << endl;
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
-      ASSERT (optionals + commons + singles + paraphyletics + nonParaphyletics == features. size ());
-      if (! qual_nonredundant && ! use_time && (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize != paraphyletics + nonParaphyletics + extraMutations + singles)
+      ASSERT (optionals + commons + singles + monophyletics + nonMonophyletics == features. size ());
+      if (! qual_nonredundant && ! use_time && (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles)
       {
       #if 0
         size_t s = 0;
@@ -233,7 +233,7 @@ struct ThisApplication : Application
             feature_optionals++;
           else if (f. genomes == genomes)
           {
-            ASSERT (f. gains. size () <= 1);
+            ASSERT (f. realGains () == 1);
             ASSERT (f. losses. empty ());
             feature_commons++;
           }
@@ -260,6 +260,7 @@ struct ThisApplication : Application
                  << ' ' << feature_extraMutations 
                  << ' ' << feature_singles
                  << ' ' << f. gains. contains (static_cast <const Phyl*> (tree. root))
+                 << ' ' << f. rootGain
                  << endl;
             ERROR;
           }
@@ -267,8 +268,8 @@ struct ThisApplication : Application
         }
         cout        << tree. len 
              << ' ' << tree. globalSingletonsSize 
-             << ' ' << paraphyletics 
-             << ' ' << nonParaphyletics 
+             << ' ' << monophyletics 
+             << ' ' << nonMonophyletics 
              << ' ' << extraMutations 
              << ' ' << singles
              << ' ' << s

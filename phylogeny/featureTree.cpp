@@ -14,6 +14,10 @@ namespace FeatureTree_sp
 
 
 
+#define NOMINAL_OTHER "_OTHER_"
+
+
+
 // Feature
 
 void Feature::qc () const
@@ -24,8 +28,8 @@ void Feature::qc () const
 	ASSERT (! name. empty ());
 	ASSERT (! contains (name, ";"));
 //IMPLY (isGene, geneId ());
-	ASSERT (gains. size () <= genomes);
-	IMPLY (genomes, mutations () /*! gains. empty ()*/);
+	ASSERT (realGains () <= genomes);
+	IMPLY (genomes, realGains ());
 	IMPLY (genomes <= 1, losses. empty ());
 }
 
@@ -34,9 +38,17 @@ void Feature::qc () const
 bool Feature::statLess (const Feature& a,
                         const Feature& b)
 { 
+	LESS_PART (a, b, rootGain);
 	LESS_PART (a, b, gains);
 	LESS_PART (a, b, losses);
 	return false;
+}
+
+
+
+bool Feature::singleton (const Id &featureId)
+{ 
+  return isRight (featureId, ":" NOMINAL_OTHER); 
 }
 
 
@@ -874,7 +886,15 @@ Genome::Genome (FeatureTree &tree,
 
 
 
-void Genome::initDir (const string &geneDir)
+string Genome::geneLineFormat ()
+{ 
+  return "{{<Boolean> [<optional (0|1)>]} | {<nominal>:<value>} \\n}*, where <value> = " NOMINAL_OTHER " means singleton Boolean attributes for all values of the nominal attribute"; 
+}
+
+
+
+void Genome::initDir (const string &geneDir,
+                      bool nominalSingletonIsOptional)
 {
   ASSERT (! id. empty ());
   ASSERT (coreSet. empty ());
@@ -893,7 +913,11 @@ void Genome::initDir (const string &geneDir)
       if (contains (f. line, " : "))
         throw runtime_error ("':' cannot have neighboring spaces");
       if (contains (f. line, ':'))
+      {
         geneName = f. line;
+        if (Feature::singleton (geneName) && nominalSingletonIsOptional)
+          continue;
+      }
       else if (   isRight (f. line, " 0")
                || isRight (f. line, " 1")
               )
@@ -906,7 +930,7 @@ void Genome::initDir (const string &geneDir)
       trim (geneName);
       ASSERT (! geneName. empty ());
       if (contains (coreSet, geneName))
-        throw runtime_error ("Gene " + strQuote (geneName) + " already exists in genome " + getName ());
+        throw runtime_error ("Gene " + strQuote (geneName) + " is duplicated in genome " + getName ());
       coreSet [geneName] = optional;
     }
   }
@@ -927,15 +951,16 @@ void Genome::coreSet2nominals ()
 	    continue;
 	  if (it. second)
 	    throw runtime_error ("Optional nominal attribute " + geneName);
-	  const string attrName = geneName. substr (0, pos);
-	  const string value    = geneName. substr (pos + 1);
+	  const string attrName (geneName. substr (0, pos));
+	  const string value    (geneName. substr (pos + 1));
 	  if (attrName. empty ())
 	    throw runtime_error ("Empty nominal attribute name: " + geneName);
 	  if (value. empty ())
 	    throw runtime_error ("Empty nominal attribute value: " + geneName);
 	  if (! nominals. addUnique (attrName))
 	    throw runtime_error ("Duplicate nominal attribute: " + attrName);
-	  const_cast <FeatureTree&> (getFeatureTree ()). nominal2values [attrName] << value;
+	  if (! Feature::singleton (geneName))
+	    const_cast <FeatureTree&> (getFeatureTree ()). nominal2values [attrName] << value;
 	}
 }
 
@@ -946,7 +971,12 @@ void Genome::nominals2coreSet ()
   for (const auto& it : getFeatureTree (). nominal2values)
     if (! nominals. contains (it. first))
       for (const string& value : it. second)
-        coreSet [it. first + ":" + value] = true;
+      {
+        const Feature::Id s (it. first + ":" + value);
+        ASSERT (! contains (coreSet, s));
+        coreSet [s] = true;
+        coreNonSingletons++;
+      }
         
   nominals. clear ();
 }
@@ -1885,6 +1915,7 @@ namespace
 FeatureTree::FeatureTree (const string &treeFName,
       						        const string &geneDir,
       						        const string &coreFeaturesFName,
+      						        bool nominalSingletonIsOptional,
   	                      bool preferGain_arg)
 : inputTreeFName (treeFName)
 , preferGain (preferGain_arg)
@@ -1910,7 +1941,7 @@ FeatureTree::FeatureTree (const string &treeFName,
 	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
 	 		{
 	 			prog (g->getName ());
-	      const_cast <Genome*> (g) -> initDir (geneDir);
+	      var_cast (g) -> initDir (geneDir, nominalSingletonIsOptional);
 	      genomes++;
 	    }
 	}
@@ -1920,7 +1951,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   ASSERT (nominal2values. empty ());
  	for (const DiGraph::Node* node : nodes)
  		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  try { const_cast <Genome*> (g) -> coreSet2nominals (); }
+ 		  try { var_cast (g) -> coreSet2nominals (); }
  		    catch (const exception &e)
  		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
 
@@ -1932,7 +1963,7 @@ FeatureTree::FeatureTree (const string &treeFName,
    		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
    		{
    		  prog ();
-   		  const_cast <Genome*> (g) -> nominals2coreSet (); 
+   		  var_cast (g) -> nominals2coreSet (); 
    		}
   }
 
@@ -1985,10 +2016,10 @@ FeatureTree::FeatureTree (const string &treeFName,
         prog ();
         EXEC_ASSERT (g->removeFromCoreSet (commonCore) == commonCore. size ()); 
       }
-  }
-      
+  }      
   for (const Feature::Id& fId : commonCore)
     nonSingletons. erase (fId);    
+    
   if (featuresExist () && nonSingletons. empty ())
   	throw runtime_error ("All genes are singletons or common core");
   	
@@ -3184,27 +3215,34 @@ void FeatureTree::setStats ()
     const Genome* g = phyl->asGenome ();
     FFOR (size_t, i, features. size ())
     {
+      Feature& f = features [i];
       if (g && g->core [i])
       {
         if (g->optionalCore [i])
-          features [i]. optionalGenomes++;
+          f. optionalGenomes++;
         else
-          features [i]. genomes++;
+          f. genomes++;
       }
     #if 0
       if (phyl->core [i])
       {
-        features [i]. coreNodes++;
-        if (features [i]. name == "13-00:Aquificales")   // ??
+        f. coreNodes++;
+        if (f. name == "13-00:Aquificales")   // ??
           cout << phyl->getLcaName () << endl;
       }
     #endif
       if (phyl == root)
-        continue;
-      if (! phyl->feature2parentCore (i) && phyl->core [i])  
-        features [i]. gains << phyl;
-      if (phyl->feature2parentCore (i) && ! phyl->core [i])
-        features [i]. losses << phyl;
+      {
+        if (phyl->core [i])
+          f. rootGain = true;
+      }
+      else
+      {
+        if (! phyl->feature2parentCore (i) && phyl->core [i])  
+          f. gains << phyl;
+        if (phyl->feature2parentCore (i) && ! phyl->core [i])
+          f. losses << phyl;
+      }
     }
   }
   
@@ -3243,6 +3281,7 @@ void FeatureTree::clearStats ()
   {
     f. genomes = 0;
     f. optionalGenomes = 0;
+    f. rootGain = false;
     f. gains. clear ();
     f. losses. clear ();
   }

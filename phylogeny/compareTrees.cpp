@@ -146,8 +146,7 @@ struct Signature
   string front;
   string back;
   
-  Signature ()
-    {}
+  Signature () = default;
   Signature (size_t leaves_arg,
              const string &front_arg,
              const string &back_arg)
@@ -204,7 +203,7 @@ A node with an empty set of leaves matches.")
 
 
 
-	void body () const
+	void body () const final
   {
 		const string input_tree1 = getArg ("input_tree1");
 		const string input_tree2 = getArg ("input_tree2");
@@ -230,7 +229,7 @@ A node with an empty set of leaves matches.")
     if (treeType == "dist")
       tree1 = new DistTree (input_tree1, string (), string (), false);
     else
-      tree1 = new FeatureTree (input_tree1, string (), string (), true);
+      tree1 = new FeatureTree (input_tree1, string (), string (), false, true);
     if (verbose ())
       tree1->qc ();     
       
@@ -238,7 +237,7 @@ A node with an empty set of leaves matches.")
     if (treeType == "dist")
       tree2 = new DistTree (input_tree2, string (), string (), false);
     else
-      tree2 = new FeatureTree (input_tree2, string (), string (), true);
+      tree2 = new FeatureTree (input_tree2, string (), string (), false, true);
     if (verbose ())
       tree2->qc (); 
       

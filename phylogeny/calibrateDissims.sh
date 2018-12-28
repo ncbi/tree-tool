@@ -33,5 +33,5 @@ makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $
 
 echo ""
 echo ""
-makeFeatureTree  -input_tree _feature_tree  -features $2  -output_core _core  -qual _qual
+makeFeatureTree  -input_tree _feature_tree  -features $2  -nominal_singleton_is_optional  -output_core _core  -qual _qual
 
