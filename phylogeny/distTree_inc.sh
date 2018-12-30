@@ -78,22 +78,21 @@ if [ -e $1/phen ]; then
 	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER 
 	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 	DATE=`date +%Y%m%d`
-
   if [ "$NEW_ROOT" ]; then
   	echo ""
   	echo "New root: $NEW_ROOT"
   	echo ""
   	makeDistTree  -threads 15  -data $1/  -variance lin  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
-  	echo ""
-  	tree_quality_phen.sh tree.$DATE $1/phen > $1/hist/tree_quality_phen-rooted.$VER
-  	cat $1/hist/tree_quality_phen-rooted.$VER
-  	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen-rooted.$VER | sed 's/^New root: //1'`
-  	if [ "$NEW_ROOT" ]; then
-  	  echo "Re-rooting must be idempotent"
-  	  exit 1
-  	fi
   else
     cp $1/tree tree.$DATE
-    cat $1/hist/tree_quality_phen.$VER 
   fi
+  	
+	echo ""
+	tree2names.sh tree.$DATE $1/phen > $1/hist/tree2names.$VER
+	cat $1/hist/tree2names.$VER
+	NEW_ROOT=`grep '^New root: ' $1/hist/tree2names.$VER | sed 's/^New root: //1'`
+	if [ "$NEW_ROOT" ]; then
+	  echo "Re-rooting should be idempotent"
+	  exit 1
+	fi
 fi
