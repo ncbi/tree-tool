@@ -74,7 +74,7 @@ distTree_inc_tree1_quality.sh $1
 
 if [ -e $1/phen ]; then
 	echo ""
-	echo "Quality ..."
+	echo "Root and quality ..."
 	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER 
 	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 	DATE=`date +%Y%m%d`
@@ -88,6 +88,7 @@ if [ -e $1/phen ]; then
   fi
   	
 	echo ""
+	echo "Names ..."
 	tree2names.sh tree.$DATE $1/phen > $1/hist/tree2names.$VER
 	cat $1/hist/tree2names.$VER
 	NEW_ROOT=`grep '^New root: ' $1/hist/tree2names.$VER | sed 's/^New root: //1'`
