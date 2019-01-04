@@ -1482,8 +1482,16 @@ double Tree::getBifurcatingInteriorBranching () const
   size_t branches = 0;
   root->getBifurcatingInteriorBranching (bifurcatingInteriorNodes, branches);
   const double branching = (double) branches / (double) bifurcatingInteriorNodes;
-  ASSERT (branching >= 1);
-  ASSERT (branching <= 2);
+  if (branching < 1.0)
+  {
+    cout << branches << ' ' << bifurcatingInteriorNodes << endl;
+    ERROR;
+  }
+  if (branching > 2.0)
+  {
+    cout << branches << ' ' << bifurcatingInteriorNodes << endl;
+    ERROR;
+  }
   return branching;
 }
 

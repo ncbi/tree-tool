@@ -3183,7 +3183,7 @@ void FeatureTree::loadSuperRootCoreFile (const string &coreFeaturesFName)
 void FeatureTree::saveSuperRootCore (const string &coreFeaturesFName) const
 {
   ASSERT (! coreFeaturesFName. empty ());
-  ASSERT (! superRootCore. empty ());
+//ASSERT (! superRootCore. empty ());
 
  	Set<Feature::Id> s (commonCore);
   FFOR (size_t, i, features. size ())
