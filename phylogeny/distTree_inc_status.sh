@@ -73,8 +73,14 @@ grep ' V !' $1/hist/makeFeatureTree-tree1.* | sed 's|^'$1'/hist/makeFeatureTree-
 tail -5 $TMP
 
 echo ""
-wc -l inc/hist/outlier-genogroup.* | grep -v total |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
-tail -5 $TMP
+set +o errexit
+wc -l inc/hist/outlier-genogroup.* 1> $TMP.out 2> /dev/null
+grep -v total $TMP.out |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+S=$?
+set -o errexit
+if [ $S == 0 ]; then
+  tail -5 $TMP
+fi
 
 
 rm -f $TMP*

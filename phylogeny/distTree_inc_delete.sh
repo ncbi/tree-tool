@@ -17,8 +17,10 @@ gzip $1/hist/tree.$VER
 VER=$(( $VER + 1 ))
 echo $VER > $1/version
 
+VARIANCE=`cat $1/variance`
+
 # Cf. distTree_inc_new.sh
-makeDistTree  -threads 15  -data $1/  -variance lin \
+makeDistTree  -threads 15  -data $1/  -variance $VARIANCE \
   -delete $2  \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \

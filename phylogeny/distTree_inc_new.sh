@@ -18,6 +18,7 @@ fi
 GRID_MIN=`cat $1/grid_min`
 QC=""  # -qc  
 RATE=0.015   # PAR
+VARIANCE=`cat $1/variance`
 
 
 if [ 1 == 1 ]; then  # was: 1 == 1  
@@ -137,7 +138,7 @@ while [ 1 == 1 ]; do
   trav  -step 1  $1/search "distTree_inc_search2bad.sh $1 %f"
 
   echo "Processing new objects ..."
-  distTree_new $QC $1/  -variance lin
+  distTree_new $QC $1/  -variance $VARIANCE
 done
 
 
@@ -152,12 +153,11 @@ else
 fi
 
 
-
-DISSIM_BOUNDARY=`cat $1/dissim_boundary`
+HYBRIDNESS_MIN=`cat $1/hybridness_min`
 
 HYBRID=""
-if [ -e $1/hybridness_min ]; then
-	HYBRIDNESS_MIN=`cat $1/hybridness_min`
+if [ "$HYBRIDNESS_MIN" != 0 ]; then
+  DISSIM_BOUNDARY=`cat $1/dissim_boundary`
 	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 
@@ -168,7 +168,7 @@ if [ -e $1/outlier-genogroup ]; then
 fi
 
 # Time: O(n log^4(n)) 
-makeDistTree $QC  -threads 15  -data $1/  -variance lin \
+makeDistTree $QC  -threads 15  -data $1/  -variance $VARIANCE \
   $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
@@ -204,13 +204,13 @@ if [ -e $1/outlier-criterion ]; then
   mv $1/outlier-criterion $1/hist/outlier-criterion.$VER
 fi
 
-echo ""
-echo "Hybrid ..."
-if [ -e $1/hybridness_min ]; then
+if [ "$HYBRIDNESS_MIN" != 0 ]; then
+  echo ""
+  echo "Hybrid ..."
 	distTree_inc_hybrid.sh $1 
+  echo "Unhybrid ..."
+  distTree_inc_unhybrid.sh $1 
 fi
-echo "Unhybrid ..."
-distTree_inc_unhybrid.sh $1 
 
 # Must be the last database change in this script
 GENOGROUP_BARRIER=`cat $1/genogroup_barrier`
@@ -231,7 +231,7 @@ fi
 echo ""
 distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req
 if [ -s $1/dissim.add-req ]; then
-  cat $1/dissim.add-req | grep -vwi nan >> $1/dissim
+  grep -vwi nan $1/dissim.add-req >> $1/dissim
 fi
 rm $1/dissim.add-req
 rm $1/dissim_request
