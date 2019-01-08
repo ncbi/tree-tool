@@ -1,20 +1,32 @@
 #!/bin/bash
 source bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Phenotypic quality of a distance tree"
   echo "#1: distance tree"
-  echo "#2: phen/"
+  echo "#2: target list of objects | '' - all"
+  echo "#3: phen/"
   exit 1
 fi
-INC=$1
-PHEN=$2
+TREE=$1
+TARGET="$2"
+PHEN=$3
 
 
 TMP=`mktemp`
 echo $TMP
 
-makeDistTree  -threads 15  -input_tree $INC  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
-makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  \
-  -features $PHEN  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $TMP.qual 
+
+DELETE=""
+if [ $TARGET ]; then
+  tree2obj.sh $TREE > $TMP.cur
+  setMinus $TMP.cur $TARGET > $TMP.del
+  DELETE="-delete $TMP.del  -check_delete"
+fi
+
+makeDistTree  -threads 15  -input_tree $TREE  $DELETE  -output_feature_tree $TMP.feature_tree > $TMP.distTree
+
+makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  \
+  -prefer_gain  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $TMP.qual
+
 
 rm -f $TMP*

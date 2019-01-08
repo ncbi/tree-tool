@@ -12,7 +12,7 @@ if [ -e $1/phen ]; then
   echo "Quality of the initial tree ..."
   VER=`cat $1/version`
 	tree2obj.sh $1/hist/tree.1 > $1/_init.list
-  distTree_inc_target_quality.sh $1 $1/_init.list > $1/hist/makeFeatureTree-tree1.$VER
+  tree_quality_phen.sh $1/tree $1/_init.list $1/phen > $1/hist/makeFeatureTree-tree1.$VER
   rm $1/_init.list
 	grep ' !' $1/hist/makeFeatureTree-tree1.$VER
 fi

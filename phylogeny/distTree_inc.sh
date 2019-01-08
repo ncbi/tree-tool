@@ -54,16 +54,17 @@ gzip $1/hist/tree.$VER
 #
 VER=$(( $VER + 1 ))
 echo $VER > $1/version
+VARIANCE=`cat $1/variance`
 # Time: O(n log^5(n))
 # PAR
-makeDistTree  -threads 15  -data $1/  -variance lin \
+makeDistTree  -threads 15  -data $1/  -variance $VARIANCE \
   -optimize  -skip_len  -reinsert  -subgraph_iter_max 20 \
   -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree-complete-inc.$VER
 mv $1/tree.new $1/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
 echo ""
-makeDistTree  -threads 15  -data $1/  -variance lin  -qc  -noqual > $1/hist/makeDistTree-qc.$VER
+makeDistTree  -threads 15  -data $1/  -variance $VARIANCE  -qc  -noqual > $1/hist/makeDistTree-qc.$VER
 else
   VER=`cat $1/version`
 fi 
@@ -75,14 +76,15 @@ distTree_inc_tree1_quality.sh $1
 if [ -e $1/phen ]; then
 	echo ""
 	echo "Root and quality ..."
-	tree_quality_phen.sh $1/tree $1/phen > $1/hist/tree_quality_phen.$VER 
+	tree_quality_phen.sh $1/tree "" $1/phen > $1/hist/tree_quality_phen.$VER 
+	cat $1/hist/tree_quality_phen.$VER 
 	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 	DATE=`date +%Y%m%d`
   if [ "$NEW_ROOT" ]; then
   	echo ""
   	echo "New root: $NEW_ROOT"
   	echo ""
-  	makeDistTree  -threads 15  -data $1/  -variance lin  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
+  	makeDistTree  -threads 15  -data $1/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
   else
     cp $1/tree tree.$DATE
   fi
@@ -90,7 +92,6 @@ if [ -e $1/phen ]; then
 	echo ""
 	echo "Names ..."
 	tree2names.sh tree.$DATE $1/phen > $1/hist/tree2names.$VER
-	cat $1/hist/tree2names.$VER
 	NEW_ROOT=`grep '^New root: ' $1/hist/tree2names.$VER | sed 's/^New root: //1'`
 	if [ "$NEW_ROOT" ]; then
 	  echo "Re-rooting should be idempotent"
