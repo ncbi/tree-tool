@@ -995,9 +995,11 @@ struct Threads : Singleton<Threads>
 private:
 	static size_t threadsToStart;
 	vector<thread> threads;
+	const bool quiet;
 public:
 
-  explicit Threads (size_t threadsToStart_arg);
+  explicit Threads (size_t threadsToStart_arg,
+                    bool quiet_arg = false);
  ~Threads ();
   	
 	static bool empty () 
