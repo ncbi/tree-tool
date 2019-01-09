@@ -652,7 +652,7 @@ List<string> str2list (const string &s,
 	List<string> res;
 	string s1 (s);
 	while (! s1. empty ())
-	  res << findSplit (s1, c);
+	  res << move (findSplit (s1, c));
 	return res;
 }
 
@@ -1044,6 +1044,18 @@ StringVector::StringVector (const string &fName,
 	  prev = s;
 	}
 }
+
+
+
+StringVector::StringVector (const string &s,
+                            char c)
+{
+	StringVector res;
+	string s1 (s);
+	while (! s1. empty ())
+	  *this << move (findSplit (s1, c));
+}
+
 
 
 

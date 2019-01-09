@@ -1653,6 +1653,8 @@ public:
     {}
   StringVector (const string &fName,
                 size_t reserve_size);
+  explicit StringVector (const string &s, 
+                         char c = ' ');
 
 
   string toString (const string& sep) const
