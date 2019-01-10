@@ -37,7 +37,7 @@ struct ThisApplication : Application
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
-	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + ", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree");
+	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + ", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree ending with '/'");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
