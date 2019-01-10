@@ -4552,7 +4552,8 @@ void DistTree::qc () const
       for (const Leaf* leaf : leaves)
       {
         ASSERT (leaf->graph == this);
-        ASSERT (leaf->getParent () == leaves [0] -> getParent ());
+        if (leaf->getParent () != leaves [0] -> getParent ())
+          throw runtime_error ("Indiscernibles have different parents: " + leaves [0] -> name + " and " + leaf->name);
       }
     }
     for (const DiGraph::Node* node : nodes)
@@ -4568,10 +4569,7 @@ void DistTree::qc () const
         if (dc)
         { 
           if (child->DisjointCluster::getDisjointCluster () != dc)
-          {
-            cout << "Bad indiscernible " << child->name << endl;
-            ERROR;
-          }
+            throw runtime_error ("Bad indiscernible: " + child->name);
         }
         else
           dc = child->DisjointCluster::getDisjointCluster ();

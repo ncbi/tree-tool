@@ -92,9 +92,8 @@ if [ -e $1/phen ]; then
 	echo ""
 	echo "Names ..."
 	tree2names.sh tree.$DATE $1/phen > $1/hist/tree2names.$VER
-	NEW_ROOT=`grep '^New root: ' $1/hist/tree2names.$VER | sed 's/^New root: //1'`
-	if [ "$NEW_ROOT" ]; then
-	  echo "Re-rooting should be idempotent"
-	  exit 1
-	fi
 fi
+
+
+date
+
