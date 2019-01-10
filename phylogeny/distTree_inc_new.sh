@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "exit 2: increments are completed"
@@ -71,11 +72,11 @@ ls $1/new/ > $1/new.list
 
 cp /dev/null $1/dissim.add
 
-setRandOrd $1/new.list  -seed $2  -sigpipe | head -$INC > $1/search.list
+$THIS/../setRandOrd $1/new.list  -seed $2  -sigpipe | head -$INC > $1/search.list
 rm $1/new.list
 
-trav -noprogress $1/search.list "mkdir $1/search/%f"
-trav -noprogress $1/search.list "rm $1/new/%f"
+$THIS/../trav -noprogress $1/search.list "mkdir $1/search/%f"
+$THIS/../trav -noprogress $1/search.list "rm $1/new/%f"
 rm $1/search.list
 
 
@@ -84,10 +85,10 @@ echo "search/ -> leaf, dissim ..."
 
 REQ=`ls $1/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
-	trav  -step 1  $1/search "$QSUB_5,ul1=30  -N j%n  %QdistTree_inc_search_init.sh $1 %f%Q > /dev/null" 
-	qstat_wait.sh 1
+	$THIS/../trav  -step 1  $1/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $1 %f%Q > /dev/null" 
+	$THIS/../qstat_wait.sh 1
 else
-	trav  -step 1  $1/search "distTree_inc_search_init.sh $1 %f"
+	$THIS/../trav  -step 1  $1/search "$THIS/distTree_inc_search_init.sh $1 %f"
 fi
 
 
@@ -103,7 +104,7 @@ while [ 1 == 1 ]; do
   echo ""
   echo "Iteration $ITER ..."
   
-  REQ=`trav -noprogress $1/search "cat %d/%f/request" | wc -l`
+  REQ=`$THIS/../trav -noprogress $1/search "cat %d/%f/request" | wc -l`
   echo "# Requests: $REQ"
   GRID=1
   if [ $REQ -lt $GRID_MIN ]; then
@@ -113,9 +114,9 @@ while [ 1 == 1 ]; do
   rm -rf $1/log/
   mkdir $1/log
 
-  trav  -step 1  $1/search "distTree_inc_search.sh $1 %f %n $GRID"
+  $THIS/../trav  -step 1  $1/search "$THIS/distTree_inc_search.sh $1 %f %n $GRID"
   if [ $GRID == 1 ]; then
-    qstat_wait.sh 0
+    $THIS/../qstat_wait.sh 0
   fi
   
   ls $1/log | sed 's/\..*$//1' | sort | uniq > $1/log.list
@@ -126,8 +127,8 @@ while [ 1 == 1 ]; do
       exit 1
     fi
 	  # Try to fix grid problems
-    trav $1/log.list "distTree_inc_unsearch.sh $1 %f"
-    trav $1/log "echo ''; echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
+    $THIS/../trav $1/log.list "$THIS/distTree_inc_unsearch.sh $1 %f"
+    $THIS/../trav $1/log "echo ''; echo %d/%f; tail -20 %d/%f" > $1/log.out  # PAR
     head -21 $1/log.out # PAR
     rm $1/log.out
   fi
@@ -135,10 +136,10 @@ while [ 1 == 1 ]; do
   
   rm -r $1/log/
       
-  trav  -step 1  $1/search "distTree_inc_search2bad.sh $1 %f"
+  $THIS/../trav  -step 1  $1/search "$THIS/distTree_inc_search2bad.sh $1 %f"
 
   echo "Processing new objects ..."
-  distTree_new $QC $1/  -variance $VARIANCE
+  $THIS/distTree_new $QC $1/  -variance $VARIANCE
 done
 
 
@@ -168,7 +169,7 @@ if [ -e $1/outlier-genogroup ]; then
 fi
 
 # Time: O(n log^4(n)) 
-makeDistTree $QC  -threads 15  -data $1/  -variance $VARIANCE \
+$THIS/makeDistTree $QC  -threads 15  -data $1/  -variance $VARIANCE \
   $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
@@ -200,16 +201,16 @@ if [ -e $1/outlier-criterion ]; then
   echo "Database: criterion outlier ..."
   wc -l $1/outlier-criterion
   $1/objects_in_tree.sh $1/outlier-criterion null
-  trav $1/outlier-criterion "$1/outlier2db.sh %f criterion"  
+  $THIS/../trav $1/outlier-criterion "$1/outlier2db.sh %f criterion"  
   mv $1/outlier-criterion $1/hist/outlier-criterion.$VER
 fi
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   echo ""
   echo "Hybrid ..."
-	distTree_inc_hybrid.sh $1 
+	$THIS/distTree_inc_hybrid.sh $1 
   echo "Unhybrid ..."
-  distTree_inc_unhybrid.sh $1 
+  $THIS/distTree_inc_unhybrid.sh $1 
 fi
 
 # Must be the last database change in this script
@@ -217,7 +218,7 @@ GENOGROUP_BARRIER=`cat $1/genogroup_barrier`
 if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   echo ""
   echo "New genogroup outliers ..."
-  tree2genogroup $1/tree  $GENOGROUP_BARRIER  -genogroup_table $1/genogroup_table
+  $THIS/tree2genogroup $1/tree  $GENOGROUP_BARRIER  -genogroup_table $1/genogroup_table
   $1/genogroup2db.sh $1/genogroup_table > $1/outlier-genogroup  
   rm $1/genogroup_table 
   if [ -s $1/outlier-genogroup ]; then
@@ -229,7 +230,7 @@ fi
 
 
 echo ""
-distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req
+$THIS/distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.add-req
 if [ -s $1/dissim.add-req ]; then
   grep -vwi nan $1/dissim.add-req >> $1/dissim
 fi
@@ -237,7 +238,7 @@ rm $1/dissim.add-req
 rm $1/dissim_request
 
 
-distTree_inc_tree1_quality.sh $1
+$THIS/distTree_inc_tree1_quality.sh $1
 
 
 set +o errexit
