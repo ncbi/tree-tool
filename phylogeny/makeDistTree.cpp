@@ -46,6 +46,7 @@ struct ThisApplication : Application
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
 	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
+	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deletign all the other leaves");
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
@@ -173,6 +174,7 @@ struct ThisApplication : Application
 		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
+		const string keepFName           = getArg ("keep");
 		const bool   check_delete        = getFlag ("check_delete");
 		const bool   sparse              = getFlag ("sparse");
 		      
@@ -230,6 +232,8 @@ struct ThisApplication : Application
     ASSERT (dissim_coeff > 0);
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
+    if (! deleteFName. empty () && ! keepFName. empty ())
+      throw runtime_error ("Cannot use both -delete and -keep");
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
@@ -322,6 +326,48 @@ struct ThisApplication : Application
         }
       }
       cout << "# Deleted: " << deleted << endl;
+	    if (tree->optimizable ())
+        tree->reportErrors (cout);
+      tree->qc ();
+      cout << endl;
+    }
+
+
+    if (! keepFName. empty ())
+    {
+      cerr << "Keeping ..." << endl;
+      VectorPtr<Leaf> toDelete;  toDelete. reserve (tree->name2leaf. size ());
+      for (const auto& it : tree->name2leaf)
+        toDelete << it. second;
+      toDelete. sort ();
+      ASSERT (toDelete. isUniq ());
+      VectorPtr<Leaf> toKeep;  toKeep. reserve (tree->name2leaf. size ());
+      {
+        LineInput f (keepFName, 10000, 1);
+        while (f. nextLine ())
+        {
+          trim (f. line);
+          const Leaf* leaf = findPtr (tree->name2leaf, f. line);
+          if (! leaf)
+            throw runtime_error ("Leaf " + f. line + " not found");
+          toKeep << leaf;  
+        }
+      }
+      toKeep. sort ();
+      toKeep. uniq ();
+      toDelete. setMinus (toKeep);
+      {
+        Progress prog (0, 1000);  // PAR
+        for (const Leaf* leaf : toDelete)
+        {
+          tree->removeLeaf (var_cast (leaf), false);
+          if (tree->optimizable ())
+            prog (tree->absCriterion2str ());
+          else
+          	prog ();
+        }
+      }
+      cout << "# Deleted: " << toDelete. size () << endl;
 	    if (tree->optimizable ())
         tree->reportErrors (cout);
       tree->qc ();
