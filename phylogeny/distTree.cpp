@@ -858,15 +858,15 @@ void Steiner::makeRoot (Steiner* ancestor2descendant)
 
   const DTNode* parent_new = static_cast <const DTNode*> (ancestor2descendant->getParent ());
   // Arc-specific data
-  const auto len_new         = ancestor2descendant->len;
-  const auto pathObjNums_new = ancestor2descendant->pathObjNums;
+  const auto len_new          = ancestor2descendant->len;
+  const auto pathObjNums_new  = ancestor2descendant->pathObjNums;
   
   reverseParent (ancestor2descendant, nullptr);
 
   setParent (var_cast (parent_new));
   // Arc-specific data
-  len         = len_new;
-  pathObjNums = pathObjNums_new;
+  len          = len_new;
+  pathObjNums  = pathObjNums_new;
 }
 
 
@@ -6441,32 +6441,38 @@ void DistTree::reroot (DTNode* underRoot,
 {
   ASSERT (underRoot);
   ASSERT (& underRoot->getTree () == this);
-  ASSERT (underRoot != root);  
   ASSERT (! underRoot->inDiscernible ());
 
   ASSERT (! isNan (arcLen));
   ASSERT (arcLen >= 0);
   ASSERT (arcLen <= underRoot->len);
   
-  DTNode* root_ = const_static_cast<DTNode*> (root);
+  if (underRoot != root)
+  {
+    DTNode* root_ = const_static_cast<DTNode*> (root);
+      
+    const Steiner* newRootParent = static_cast <const DTNode*> (underRoot->getParent ()) -> asSteiner ();
+    auto newRoot = new Steiner (*this, var_cast (newRootParent), underRoot->len - arcLen);
+    newRoot->pathObjNums  = underRoot->pathObjNums;
+    newRoot->relCriterion = underRoot->relCriterion;
+    newRoot->paths        = underRoot->oaths;
+    underRoot->setParent (newRoot); 
+    underRoot->len = arcLen;
     
-  const Steiner* newRootParent = static_cast <const DTNode*> (underRoot->getParent ()) -> asSteiner ();
-  auto newRoot = new Steiner (*this, var_cast (newRootParent), underRoot->len - arcLen);
-  newRoot->pathObjNums = underRoot->pathObjNums;
-  underRoot->setParent (newRoot); 
-  underRoot->len = arcLen;
+    newRoot->makeDTRoot ();
+    ASSERT (newRoot == root);
+    ASSERT (root_ != root);
+    
+    setLca ();  
+
+    if (root_->isTransient ())
+      delayDeleteRetainArcs (root_);
+
+    finishChanges ();
+  }
+
+  sort ();
   
-  newRoot->makeDTRoot ();
-  ASSERT (newRoot == root);
-  ASSERT (root_ != root);
-  
-  setLca ();  
-
-  if (root_->isTransient ())
-    delayDeleteRetainArcs (root_);
-
-  finishChanges ();
-
   qcPaths ();  
 }
 
