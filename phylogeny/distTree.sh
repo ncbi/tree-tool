@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Make a distance tree"
   echo "Output: #1.tree, #1.makeDistTree"
@@ -19,15 +20,15 @@ WHOLE=""  # -whole
 input_tree=""
 if [ $MDS == 1 ]; then
   echo "mdsTree.sh ..."
-  mdsTree.sh $1 $2 2 >& /dev/null
+  $THIS/../dm/mdsTree.sh $1 $2 2 >& /dev/null
   input_tree="-input_tree $1.dir/"
 fi
 
-makeDistTree  $input_tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE  -optimize  $WHOLE  -output_tree $1.tree  
+$THIS/makeDistTree  $input_tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE  -optimize  $WHOLE  -output_tree $1.tree  
 if [ $MDS == 1 ]; then
   rm -r $1.dir/
 fi
 
 echo ""
-makeDistTree  -input_tree $1.tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE > $1.makeDistTree
+$THIS/makeDistTree  -input_tree $1.tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE > $1.makeDistTree
 

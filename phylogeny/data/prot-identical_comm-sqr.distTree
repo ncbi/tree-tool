@@ -20,7 +20,7 @@ Optimizing arc lengths at each arc ...
 # Nodes deleted = 36
 Optimizing arc lengths at each node ...
 # Nodes deleted = 4
-absCriterion = 37.167  Error density = 2.969 %
+absCriterion = 37.154  Error density = 2.969 %
 
 absCriterion = 18.498  Error density = 2.094 %
 

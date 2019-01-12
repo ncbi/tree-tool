@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "#1: go"
   echo "Time: 8 min."
@@ -15,9 +16,9 @@ cp $DIR/obj.list .
 gunzip gene.tar.gz
 tar -xf gene.tar
 
-featureTree.sh obj gene
+$THIS/featureTree.sh obj gene
 
-makeFeatureTree  -qc  -input_tree obj.tree  -features gene  -input_core obj.core  -use_time > obj.featureTree
+$THIS/makeFeatureTree  -qc  -input_tree obj.tree  -features gene  -input_core obj.core  -use_time > obj.featureTree
  
 diff obj.core $DIR/obj.core
 diff obj.featureTree $DIR/obj.featureTree
