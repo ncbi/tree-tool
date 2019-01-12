@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
-  echo "Phenotypic quality of a distance tree"
+  echo "Phenotypic quality of a distance tree, find root"
   echo "#1: distance tree"
   echo "#2: target list of objects | '' - all"
   echo "#3: phen/"
