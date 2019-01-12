@@ -1111,8 +1111,7 @@ public:
     // Requires: features.empty()
 
 	void printInput (ostream& os) const;
-	void dump (const string &fName/*,
-	           bool setIds*/);
+	void dump (const string &fName);
 	  // Invokes: setStats()
 	void progInternal (const string& step = string ())
 	  { if (prog_. get ()) 

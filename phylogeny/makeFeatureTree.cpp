@@ -35,7 +35,7 @@ struct ThisApplication : Application
   
       // Output	    
   	  addKey ("output_tree", "Output file with the tree");
-  	  addKey ("output_core", "Find root, set root core and save file with root core feature ids");  	    
+  	  addKey ("output_core", "Find root, set root core, sort tree and save file with root core feature ids");  	    
   	  addKey ("report_feature", "Feature name to report in the output tree");
   	//addFlag ("set_node_ids", "Set node ids in the output tree");  
   	  addKey ("newick", "Output file with the tree in the Newick format");
@@ -109,7 +109,8 @@ struct ThisApplication : Application
         for (;;)
         {
     	    cout << endl;
-    	    tree. dump (output_tree /*, true*/);  // Redundant
+          tree. sort ();  
+    	    tree. dump (output_tree);  
           if (iter >= optim_iter_max)
           	break;
           iter++;
@@ -117,7 +118,8 @@ struct ThisApplication : Application
           if (! tree. optimize ())
           	break;	    
         }
-        tree. dump (output_tree /*, true*/);  // Redundant
+        tree. sort ();  
+        tree. dump (output_tree);  
       }
       else
       {

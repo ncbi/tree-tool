@@ -2450,11 +2450,9 @@ void FeatureTree::printInput (ostream& os) const
 
 
 
-void FeatureTree::dump (const string &fName/*,
-                        bool setIds*/)
+void FeatureTree::dump (const string &fName)
 { 
   setCore ();
-  sort ();
   setStats ();
 #if 0
   if (setIds)
@@ -3035,7 +3033,6 @@ string FeatureTree::findRoot (size_t &bestCoreSize)
   string rootLcaName;
 
   setCore ();
-  sort ();
 
   const Species* bestFrom = nullptr;
  	bestCoreSize = 0;
@@ -3096,6 +3093,8 @@ string FeatureTree::findRoot (size_t &bestCoreSize)
       
   if (changed)
     setCore ();
+    
+  sort ();
 
   return rootLcaName;
 }
