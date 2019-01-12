@@ -454,6 +454,8 @@ void DTNode::saveContent (ostream& os) const
     os << "  err_density=" << errorDensity << "  paths=" << paths;
   if (! isNan (absCriterion_ave))
     os << "  " << rel_errorS << "=" << getRelCriterion ();
+  else if (! isNan (relCriterion))
+    os << "  " << rel_errorS << "=" << relCriterion;
 }
 
 
@@ -3457,8 +3459,8 @@ bool DistTree::loadLines (const StringVector &lines,
   ASSERT (isRight (idS, ":"));
   idS. erase (idS. size () - 1);
   const Real   len          = token2real (s, "len");
-  const Real   paths        = token2real (s, "paths");
   const Real   errorDensity = token2real (s, "err_density");
+  const Real   paths        = token2real (s, "paths");
   const Real   relCriterion = token2real (s, rel_errorS);
   const string name         = token2string (s, "name");
   const bool indiscernible = contains (s, Leaf::non_discernible);
