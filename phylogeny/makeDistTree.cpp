@@ -535,7 +535,7 @@ struct ThisApplication : Application
 			  Tree::LcaBuffer buf;
         const DTNode* underRoot = tree->lcaName2node (reroot_at, buf);
         tree->reroot (var_cast (underRoot), underRoot->len / 2);
-        if (! noqual)
+        if (tree->optimizable () && ! noqual)
 	        tree->setNodeAbsCriterion ();
         tree->qc ();
       }
@@ -559,8 +559,6 @@ struct ThisApplication : Application
     chron_subgraphOptimize. print (cout); 
     chron_subgraph2tree.    print (cout); 
 
-
-    tree->sort ();  // Makes reroot() idempotent
 
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
