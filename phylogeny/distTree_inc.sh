@@ -75,21 +75,23 @@ $THIS/distTree_inc_tree1_quality.sh $1
 
 
 if [ -e $1/phen ]; then
+	DATE=`date +%Y%m%d`
+
 	echo ""
 	echo "Root and quality ..."
 	$THIS/tree_quality_phen.sh $1/tree "" $1/phen > $1/hist/tree_quality_phen.$VER 
 	cat $1/hist/tree_quality_phen.$VER 
+
+	echo ""
+	echo "Setting root and sorting ..."
+	OLD_ROOT=`grep '^Old root: ' $1/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
-	DATE=`date +%Y%m%d`
-  if [ "$NEW_ROOT" ]; then
-  	echo ""
-  	echo "New root: $NEW_ROOT"
-  	echo ""
-  	$THIS/makeDistTree  -threads 15  -data $1/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
-  else
-    cp $1/tree tree.$DATE
+  if [ ! "$NEW_ROOT" ]; then
+    NEW_ROOT=$OLD_ROOT
   fi
-  	
+	echo ""
+	$THIS/makeDistTree  -threads 15  -data $1/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null  	
+	
 	echo ""
 	echo "Names ..."
 	$THIS/tree2names.sh tree.$DATE $1/phen > $1/hist/tree2names.$VER
