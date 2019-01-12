@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Hierarchical clustering by MDS. Output directory: #1/"
   echo "#1: Input .dm file without .dm"
@@ -7,9 +8,6 @@ if [ $# -ne 3 ]; then
   echo "#3: mds -attrType"
   exit 1
 fi
-
-
-EXEC=~brovervv/code
 
 
 DEBUG=0  # or 1 
@@ -54,7 +52,7 @@ while [ 1 == 1 ]; do
     echo "" >> $TMP.mds
     echo "" >> $TMP.mds
     L_old=`ls $TMP.tmp/ | wc -l`
-    $EXEC/cpp/dm/mds -verbose $VERBOSE  -attrType $3  -maxClusters 6  -clusteringDir $TMP.tmp  -attr $2  $TMP.tmp/$F >> $TMP.mds
+    $THIS/mds -verbose $VERBOSE  -attrType $3  -maxClusters 6  -clusteringDir $TMP.tmp  -attr $2  $TMP.tmp/$F >> $TMP.mds
     L_new=`ls $TMP.tmp/ | wc -l`
     if [ $L_old == $L_new ]; then
       mv $TMP.tmp/$F.dm $1.dir/
