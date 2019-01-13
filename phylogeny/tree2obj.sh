@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Print objects of a distance tree, sorted"
   echo "#1: Distance tree"
