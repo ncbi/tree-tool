@@ -6455,7 +6455,7 @@ void DistTree::reroot (DTNode* underRoot,
     auto newRoot = new Steiner (*this, var_cast (newRootParent), underRoot->len - arcLen);
     newRoot->pathObjNums  = underRoot->pathObjNums;
     newRoot->relCriterion = underRoot->relCriterion;
-    newRoot->paths        = underRoot->oaths;
+    newRoot->paths        = underRoot->paths;
     underRoot->setParent (newRoot); 
     underRoot->len = arcLen;
     
@@ -6483,7 +6483,7 @@ Real DistTree::reroot (bool topological)
   DTNode* root_ = const_static_cast<DTNode*> (root);
   
   if (! root_->childrenDiscernible ())
-    return 0;
+    return 0.0;
   
   root_->setSubtreeLenUp (topological);
 //cout << "Old radius: " << root_->getHeight_ave () << endl;  
@@ -6493,6 +6493,7 @@ Real DistTree::reroot (bool topological)
   WeightedMeanVar bestGlobalLen;
   root_->setGlobalLenDown (topological, bestDTNode, bestDTNodeLen_new, bestGlobalLen);
   ASSERT (bestDTNode);
+  ASSERT (bestDTNode != root);
   
   const Real height = bestGlobalLen. getMean ();
   
