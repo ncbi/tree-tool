@@ -109,8 +109,8 @@ struct ThisApplication : Application
         for (;;)
         {
     	    cout << endl;
-          tree. sort ();  
-    	    tree. dump (output_tree);  
+          tree. setCore ();
+    	    tree. saveFile (output_tree);  
           if (iter >= optim_iter_max)
           	break;
           iter++;
@@ -118,8 +118,8 @@ struct ThisApplication : Application
           if (! tree. optimize ())
           	break;	    
         }
-        tree. sort ();  
-        tree. dump (output_tree);  
+        tree. setCore ();
+        tree. saveFile (output_tree);  
       }
       else
       {
@@ -153,11 +153,13 @@ struct ThisApplication : Application
       tree. saveSuperRootCore (output_core);
     }
 
+
+    tree. setStats ();
     tree. qc ();
 
 
     // Output
-    tree. dump (output_tree);
+    tree. saveFile (output_tree);
 
 
     if (! qual. empty ())
@@ -179,8 +181,8 @@ struct ThisApplication : Application
       size_t nonMonophyletics = 0;  // In an unrooted tree
       size_t extraMutations = 0;
       size_t optionals = 0;
-      size_t commons = 0;  // f may be optional
-      size_t singles = 0;  // f may be optional
+      size_t commons = 0;  // Feature may be optional
+      size_t singles = 0;  // Feature may be optional
       const size_t genomes = tree. root->getLeavesSize ();
       FFOR (size_t, i, features. size ())
       {

@@ -2450,24 +2450,6 @@ void FeatureTree::printInput (ostream& os) const
 
 
 
-void FeatureTree::dump (const string &fName)
-{ 
-  setCore ();
-  setStats ();
-#if 0
-  if (setIds)
-    if (const Fossil* f = static_cast <const Species*> (root) -> asFossil ())
-    { 
-      uint id = 1;  // 0 means "unknown"
-      const_cast <Fossil*> (f) -> setId (id);
-    }
-#endif
-  qc ();      
-  saveFile (fName);
-}
-
-
-
 float FeatureTree::feature2treeLength (size_t featureIndex) const
 { 
   // Cf. Phyl:;feature2parentCore()
