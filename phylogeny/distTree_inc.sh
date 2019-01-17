@@ -1,38 +1,41 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes.txt, disagreement_nodes, gain_nodes, qual, core"
   echo "#1: incremental distance tree directory"
-  echo "#2: seed (>=1)"
   echo "Time: O(n log^5(n))"
   exit 1
 fi
+INC=$1
 
 
-if [ 1 == 1 ]; then  
+VARIANCE=`cat $INC/variance`
+
+
+if [ 1 == 1 ]; then   
 # Time: O(n log^5(n))
 while [ 1 == 1 ]; do
-  if [ -e $1/stop ]; then
+  if [ -e $INC/stop ]; then
     echo ""
     echo '*** STOPPED ***'
     exit 2
   fi
   
-  if [ -e $1/skip ]; then
+  if [ -e $INC/skip ]; then
     echo ""
     echo '*** SKIPPED ***'
     break
   fi
   
-  ADD=`ls $1/new/ | wc -l`
-  echo "# Add: $ADD  `date`  `date +%s`" >> $1/runlog  
+  ADD=`ls $INC/new/ | wc -l`
+  echo "# Add: $ADD  `date`  `date +%s`" >> $INC/runlog  
   echo ""
   echo ""
 	set +o errexit
-  $THIS/distTree_inc_new.sh $1 $2 
+  $THIS/distTree_inc_new.sh $INC  
   S=$?
 	set -o errexit
   if [ $S == 2 ]; then
@@ -47,54 +50,53 @@ done
 echo ""
 echo ""
 echo "Complete optimization ..."
-echo "# Complete optimization  `date`  `date +%s`" >> $1/runlog  
-VER=`cat $1/version`
+echo "# Complete optimization  `date`  `date +%s`" >> $INC/runlog  
+VER=`cat $INC/version`
 # Time: O(n log(n)) 
-cp $1/tree $1/hist/tree.$VER
-gzip $1/hist/tree.$VER
+cp $INC/tree $INC/hist/tree.$VER
+gzip $INC/hist/tree.$VER
 #
 VER=$(( $VER + 1 ))
-echo $VER > $1/version
-VARIANCE=`cat $1/variance`
+echo $VER > $INC/version
 # Time: O(n log^5(n))
 # PAR
-$THIS/makeDistTree  -threads 15  -data $1/  -variance $VARIANCE \
+$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
   -optimize  -skip_len  -reinsert  -subgraph_iter_max 20 \
-  -output_tree $1/tree.new  -leaf_errors leaf_errors > $1/hist/makeDistTree-complete-inc.$VER
-mv $1/tree.new $1/tree
+  -output_tree $INC/tree.new  -leaf_errors leaf_errors > $INC/hist/makeDistTree-complete-inc.$VER
+mv $INC/tree.new $INC/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
 echo ""
-$THIS/makeDistTree  -threads 15  -data $1/  -variance $VARIANCE  -qc  -noqual > $1/hist/makeDistTree-qc.$VER
+$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
-  VER=`cat $1/version`
+  VER=`cat $INC/version`
 fi 
 
 
-$THIS/distTree_inc_tree1_quality.sh $1
+$THIS/distTree_inc_tree1_quality.sh $INC
 
 
-if [ -e $1/phen ]; then
+
+if [ -e $INC/phen ]; then
 	DATE=`date +%Y%m%d`
 
 	echo ""
 	echo "Root and quality ..."
-	$THIS/tree_quality_phen.sh $1/tree "" $1/phen > $1/hist/tree_quality_phen.$VER 
-	cat $1/hist/tree_quality_phen.$VER 
+	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen > $INC/hist/tree_quality_phen.$VER 
+	cat $INC/hist/tree_quality_phen.$VER 
+	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
+	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 
 	echo ""
 	echo "Setting root and sorting ..."
-	OLD_ROOT=`grep '^Old root: ' $1/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
-	NEW_ROOT=`grep '^New root: ' $1/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
   if [ ! "$NEW_ROOT" ]; then
     NEW_ROOT=$OLD_ROOT
   fi
-	echo ""
-	$THIS/makeDistTree  -threads 15  -data $1/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null  	
+	$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -noqual  -output_tree tree.$DATE > /dev/null  	
 	
 	echo ""
 	echo "Names ..."
-	$THIS/tree2names.sh tree.$DATE $1/phen > $1/hist/tree2names.$VER
+	$THIS/tree2names.sh tree.$DATE $INC/phen > $INC/hist/tree2names.$VER
 fi
 
 
