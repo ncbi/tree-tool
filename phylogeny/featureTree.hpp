@@ -402,9 +402,8 @@ public:
     { return "s" + id; }
   string getNewickName (bool /*minimal*/) const final
     { return string (); }
-
-  void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const final;
 	void assignFeatures () final;
+  void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const final;
 	float getPooledSubtreeDistance () const final;
 private:
 	void rememberFeatures () final
@@ -1031,7 +1030,7 @@ struct FeatureTree : Tree
 	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
 	  // Init: = isNan(Species::time) 
-	Prob timeOptimFrac {1};
+	Prob timeOptimFrac {1.0};
 	  // Annealing
 	  // allTimeZero => 1
 	  // To be increased
@@ -1058,7 +1057,7 @@ public:
 	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
 	float len_min {NaN};
 	  // >= 0
-	Prob lenInflation {0};
+	Prob lenInflation {0.0};
 
   // Internal
 	size_t nodeIndex_max {0};

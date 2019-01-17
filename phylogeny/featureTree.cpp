@@ -2202,8 +2202,7 @@ bool getParam (const string &line,
 
 
 
-void FeatureTree::loadPhylFile (/*int root_species_id,*/
-	                              const string &treeFName)
+void FeatureTree::loadPhylFile (const string &treeFName)
 {
 	ASSERT (! treeFName. empty ());
 	
@@ -2225,14 +2224,6 @@ void FeatureTree::loadPhylFile (/*int root_species_id,*/
 
   Species* sp = nullptr;  	
 	EXEC_ASSERT (loadPhylLines (lines, lineNum, sp, 0));
-#if 0
-  // root_species_id
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Species* s = static_cast <const Phyl*> (node) -> asSpecies ())
- 			if (s->id == (uint) root_species_id)
- 				const_cast <Species*> (s) -> id = 0;
-	const_static_cast <Species*> (root) -> id = (uint) root_species_id;
-#endif
 }
 
 
