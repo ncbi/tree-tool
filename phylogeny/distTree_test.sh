@@ -7,7 +7,7 @@ if [ $# -ne 1 ]; then
 fi
 
 
-#if [ 1 == 0 ]; then  
+#if [ 1 == 0 ]; then 
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
