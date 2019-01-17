@@ -6443,12 +6443,13 @@ void DistTree::reroot (DTNode* underRoot,
   ASSERT (& underRoot->getTree () == this);
   ASSERT (! underRoot->inDiscernible ());
 
-  ASSERT (! isNan (arcLen));
-  ASSERT (arcLen >= 0);
-  ASSERT (arcLen <= underRoot->len);
   
   if (underRoot != root)
   {
+    ASSERT (! isNan (arcLen));
+    ASSERT (arcLen >= 0);
+    ASSERT (arcLen <= underRoot->len);
+    
     DTNode* root_ = const_static_cast<DTNode*> (root);
       
     const Steiner* newRootParent = static_cast <const DTNode*> (underRoot->getParent ()) -> asSteiner ();
@@ -6470,6 +6471,7 @@ void DistTree::reroot (DTNode* underRoot,
 
     finishChanges ();
   }
+
 
   sort ();
   
