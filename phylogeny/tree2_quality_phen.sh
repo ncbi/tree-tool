@@ -54,8 +54,8 @@ fi
 $THIS/../setMinus $TMP.list1 $TMP.list2-good > $TMP.list1-del
 $THIS/../setMinus $TMP.list2 $TMP.list1-good > $TMP.list2-del
 
-$THIS/makeDistTree  -threads 15  -input_tree $T1  -delete $TMP.list1-del  -check_delete  -output_tree $TMP.tree1  -output_feature_tree $TMP.feature_tree1 > $TMP.makeDistTree1
-$THIS/makeDistTree  -threads 15  -input_tree $T2  -delete $TMP.list2-del  -check_delete  -output_tree $TMP.tree2  -output_feature_tree $TMP.feature_tree2 > $TMP.makeDistTree2
+$THIS/makeDistTree  -threads 15  -input_tree $T1  -delete $TMP.list1-del  -check_delete  -noqual  -output_tree $TMP.tree1  -output_feature_tree $TMP.feature_tree1 > $TMP.makeDistTree1
+$THIS/makeDistTree  -threads 15  -input_tree $T2  -delete $TMP.list2-del  -check_delete  -noqual  -output_tree $TMP.tree2  -output_feature_tree $TMP.feature_tree2 > $TMP.makeDistTree2
 
 echo ""
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1

@@ -19,12 +19,12 @@ echo $TMP
 
 DELETE=""
 if [ $TARGET ]; then
-  tree2obj.sh $TREE > $TMP.cur
+  $THIS/tree2obj.sh $TREE > $TMP.cur
   $THIS/../setMinus $TMP.cur $TARGET > $TMP.del
   DELETE="-delete $TMP.del  -check_delete"
 fi
 
-$THIS/makeDistTree  -threads 15  -input_tree $TREE  $DELETE  -output_feature_tree $TMP.feature_tree > $TMP.distTree
+$THIS/makeDistTree  -threads 15  -input_tree $TREE  $DELETE  -noqual  -output_feature_tree $TMP.feature_tree > $TMP.distTree
 
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  \
   -prefer_gain  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $TMP.qual

@@ -19,7 +19,7 @@ rm sm1K.dm
 
 echo ""
 echo "Tree quality ..."
-makeDistTree  -input_tree sm1K.tree  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
+makeDistTree  -input_tree sm1K.tree  -noqual  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
 makeFeatureTree  -input_tree $TMP.feature_tree  \
   -features $2  -nominal_singleton_is_optional  -prefer_gain  -output_core core \
   -qual qual \

@@ -29,7 +29,7 @@ fi
 
 echo ""
 echo ""
-makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $hybrid  -output_tree tree  -output_feature_tree _feature_tree
+makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $hybrid  -noqual  -output_tree tree  -output_feature_tree _feature_tree
 
 echo ""
 echo ""

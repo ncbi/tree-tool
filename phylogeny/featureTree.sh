@@ -17,7 +17,7 @@ rm $1.dm
 rm $1.makeDistTree
 
 # Gain/loss tree
-$THIS/makeDistTree  -input_tree $1.tree  -output_feature_tree $1-init.tree  
+$THIS/makeDistTree  -input_tree $1.tree  -noqual  -output_feature_tree $1-init.tree  
 rm $1.tree 
 
 echo ""
