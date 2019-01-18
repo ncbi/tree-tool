@@ -21,6 +21,7 @@ $THIS/makeDistTree  -threads 15  -input_tree $INTREE  -noqual  -output_feature_t
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  -prefer_gain  \
   -qual qual  -gain_nodes gain_nodes  -disagreement_nodes disagreement_nodes
 cut -f 1 disagreement_nodes | sort | uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
+cat disagreement_nodes.txt | grep -v ":" | grep -v ' 1 ' > disagreement_objects
 echo ""
 wc -l disagreement_nodes.txt
 
