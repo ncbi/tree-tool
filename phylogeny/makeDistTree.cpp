@@ -47,6 +47,7 @@ struct ThisApplication : Application
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
 	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
 	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deletign all the other leaves");
+	  addFlag ("check_keep", "Check that the names to be kept actually exist in the tree");  
 	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
@@ -174,8 +175,9 @@ struct ThisApplication : Application
 		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
-		const string keepFName           = getArg ("keep");
 		const bool   check_delete        = getFlag ("check_delete");
+		const string keepFName           = getArg ("keep");
+		const bool   check_keep          = getFlag ("check_keep");
 		const bool   sparse              = getFlag ("sparse");
 		      
 		const bool   optimize            = getFlag ("optimize");
@@ -232,6 +234,8 @@ struct ThisApplication : Application
     ASSERT (dissim_coeff > 0);
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
+    if (check_keep && keepFName. empty ())
+      throw runtime_error ("-check_keep requires -keep");
     if (! deleteFName. empty () && ! keepFName. empty ())
       throw runtime_error ("Cannot use both -delete and -keep");
     if (! dist_request. empty () && output_dist. empty ())
@@ -349,7 +353,11 @@ struct ThisApplication : Application
           trim (f. line);
           const Leaf* leaf = findPtr (tree->name2leaf, f. line);
           if (! leaf)
-            throw runtime_error ("Leaf " + f. line + " not found");
+          {
+            if (check_keep)
+              throw runtime_error ("Leaf " + f. line + " not found");
+            continue;
+          }
           toKeep << leaf;  
         }
       }
