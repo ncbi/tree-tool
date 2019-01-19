@@ -1935,7 +1935,8 @@ FeatureTree::FeatureTree (const string &treeFName,
   size_t genomes = 0; 
   {
     cerr << "Genomes ..." << endl;
-	  Progress prog;
+    const size_t genomes_ = root->getLeavesSize ();
+	  Progress prog (genomes_, 1);
 	  // Threads ??
 	 	for (const DiGraph::Node* node : nodes)
 	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
@@ -1944,6 +1945,7 @@ FeatureTree::FeatureTree (const string &treeFName,
 	      var_cast (g) -> initDir (geneDir, nominalSingletonIsOptional);
 	      genomes++;
 	    }
+	  ASSERT (genomes == genomes_);
 	}
 	ASSERT (genomes);
 

@@ -18,6 +18,7 @@ tar -xf gene.tar
 
 $THIS/featureTree.sh obj gene
 
+echo ""
 $THIS/makeFeatureTree  -qc  -input_tree obj.tree  -features gene  -input_core obj.core  -use_time > obj.featureTree
  
 diff obj.core $DIR/obj.core

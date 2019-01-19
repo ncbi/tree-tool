@@ -108,12 +108,12 @@ struct ThisApplication : Application
         int iter = 0; 
         for (;;)
         {
-    	    cout << endl;
           tree. setCore ();
     	    tree. saveFile (output_tree);  
           if (iter >= optim_iter_max)
           	break;
           iter++;
+    	    cout << endl;
     	    cout << "Iter = " << iter << endl;
           if (! tree. optimize ())
           	break;	    
@@ -123,6 +123,7 @@ struct ThisApplication : Application
       }
       else
       {
+   	    cout << endl;
   	  	cout << "Optimizing time ..." << endl;
         tree. optimizeTime ();
       }
@@ -131,6 +132,7 @@ struct ThisApplication : Application
     
     if (! output_core. empty ())
     {
+ 	    cout << endl;
       if (tree. allTimeZero)
       {
         // 63 sec./50K genomes
@@ -141,7 +143,6 @@ struct ThisApplication : Application
       }
       else
       {
-        cout << endl;
         cout << "Adjusting root core ..." << endl;
         tree. setCore ();
         size_t coreChange [2/*core2nonCore*/];
