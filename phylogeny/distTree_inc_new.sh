@@ -15,11 +15,6 @@ INC=$1
 SEED=1  # >= 1
 
 
-if [ $2 -le 0 ]; then
-  exit 1
-fi
-
-
 GRID_MIN=`cat $INC/grid_min`
 QC=""  # -qc  
 RATE=0.015   # PAR
