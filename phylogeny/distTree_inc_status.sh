@@ -13,7 +13,9 @@ TMP=`mktemp`
 echo "Version: `cat $1/version`"
 echo ""
 
+set +o errexit
 OBJS=`grep -vc '^ *0x' $1/tree`
+set -o errexit
 echo "# Objects in tree: $OBJS"  
 
 ADDED=`cat $1/leaf | wc -l`
@@ -57,7 +59,7 @@ fi
 
 echo ""
 N=`cat $1/dissim | wc -l`
-PERCENT=`echo "scale=2; 100 * $N / ($OBJS * ($OBJS - 1))" | bc -l`
+PERCENT=`echo "scale=2; 100 * $N / ($OBJS * ($OBJS - 1) / 2)" | bc -l`
 echo "# Dissimilarities: $N"
 echo "Dissimilarities per object: $PERCENT % of maximum"
 

@@ -1,19 +1,21 @@
 #!/bin/bash
 source bash_common.sh
-if [ $# -ne 5 ]; then
+if [ $# -ne 6 ]; then
   echo "Initialize an incremental distance tree"
   echo "#1: Output directory"
   echo "#2: grid_min (> 0)"
-  echo "#3: hybridness_min (> 1); 0 - no hybrids"
-  echo "#4: dissim_boundary (> 0 or NAN)"
-  echo "#5: genogroup_barrier (> 0 or NAN)"
+  echo "#3: variance: lin|linExp"
+  echo "#4: hybridness_min (> 1); 0 - no hybrids"
+  echo "#5: dissim_boundary (> 0 or NAN)"
+  echo "#6: genogroup_barrier (> 0 or NAN)"
   exit 1
 fi
 INC=$1
 GRID_MIN=$2
-HYBRIDNESS_MIN=$3
-DISSIM_BOUNDARY=$4
-GENOGROUP_BARRIER=$5
+VARIANCE=$3
+HYBRIDNESS_MIN=$4
+DISSIM_BOUNDARY=$5
+GENOGROUP_BARRIER=$6
 
 
 if [ $GRID_MIN -le 0 ]; then
@@ -38,12 +40,10 @@ mkdir $INC/hist
 echo $GRID_MIN > $INC/grid_min
 cp /dev/null $INC/runlog
 
-echo $DISSIM_BOUNDARY > $INC/dissim_boundary
+echo $VARIANCE          > $INC/variance
+echo $DISSIM_BOUNDARY   > $INC/dissim_boundary
 echo $GENOGROUP_BARRIER > $INC/genogroup_barrier
-
-if [ $HYBRIDNESS_MIN != 0 ]; then
-	echo $HYBRIDNESS_MIN > $INC/hybridness_min
-fi
+echo $HYBRIDNESS_MIN    > $INC/hybridness_min
 
 
 function create_script

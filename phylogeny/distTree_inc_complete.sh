@@ -31,7 +31,9 @@ sort.sh $2
 
 if [ ! -s $1/dissim ]; then
 	$THIS/../list2pairs $2 > $1/dissim_request
-	$THIS/distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim
+	$THIS/distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.raw
+	rm $1/dissim_request
+	cat $1/dissim.raw | grep -vwi nan | grep -vwi inf > $1/dissim
 	rm $1/dissim_request
 fi
 
@@ -57,18 +59,22 @@ echo ""
 echo "Database ..."
 $1/objects_in_tree.sh $2 1
 
-$THIS/distTree_inc_hybrid.sh $1 
-$THIS/distTree_inc_unhybrid.sh $1
+if [ "$HYBRIDNESS_MIN" != 0 ]; then
+  echo ""
+  echo "Hybrid ..."
+	$THIS/distTree_inc_hybrid.sh $1
+  echo "Unhybrid ..."
+  $THIS/distTree_inc_unhybrid.sh $1
+fi
 
 
 if [ -e $1/phen ]; then
   echo ""
   echo "Quality ..."
-	$THIS/makeFeatureTree  -input_tree $1/_feature_tree  -features $1/phen  -nominal_singleton_is_optional  -prefer_gain  -output_core $1/_core  -qual $1/_qual > $1/hist/makeFeatureTree.1
-	rm $1/_core
-	rm $1/_qual
-	grep ' !' $1/hist/makeFeatureTree.1
+  $THIS/tree_quality_phen.sh $1/tree "" $1/phen > $1/hist/tree_quality_phen.1
+	grep ' !' $1/hist/tree_quality_phen.1
 fi
 rm $1/_feature_tree
 
 
+echo "Done"
