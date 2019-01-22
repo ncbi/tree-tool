@@ -182,11 +182,13 @@ mv $INC/leaf $INC/hist/leaf.$VER
 cp /dev/null $INC/leaf
 mv $INC/tree.new $INC/tree
 
-echo ""
-echo "Database: new -> tree ..."
-cut -f 1 $INC/hist/leaf.$VER | sort > $INC/leaf.list
-$INC/objects_in_tree.sh $INC/leaf.list 1
-rm $INC/leaf.list
+if [ -s $INC/hist/leaf.$VER ]; then
+  echo ""
+  echo "Database: new -> tree ..."
+  cut -f 1 $INC/hist/leaf.$VER | sort > $INC/leaf.list
+  $INC/objects_in_tree.sh $INC/leaf.list 1
+  rm $INC/leaf.list
+fi
 
 if [ -e $INC/outlier-genogroup ]; then
   echo ""
@@ -231,7 +233,7 @@ fi
 echo ""
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.add-req
 if [ -s $INC/dissim.add-req ]; then
-  grep -vwi nan $INC/dissim.add-req >> $INC/dissim
+  grep -vwi nan $INC/dissim.add-req | grep -vwi inf >> $INC/dissim
 fi
 rm $INC/dissim.add-req
 rm $INC/dissim_request
