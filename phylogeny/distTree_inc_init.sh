@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Initialize an incremental distance tree"
   echo "#1: Output directory"

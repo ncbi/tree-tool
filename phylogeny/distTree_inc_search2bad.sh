@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Remove a new contaminated object in a distance tree data structure indentified by inconsistent dissimilarities"
   echo "Output (append): #1/outlier-dissim"

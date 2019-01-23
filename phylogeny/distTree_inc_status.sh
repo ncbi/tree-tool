@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Print criterion statistics for an incremental distance tree"
   echo "#1: distance tree data"

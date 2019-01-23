@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Process a new object for a distance tree"
   echo "Update: append: #1/{leaf,dissim.add}"
@@ -35,9 +36,9 @@ fi
 if [ -s $DIR/request ]; then
   cp /dev/null $1/log/$2
   if [ $4 == 1 ]; then
-    $QSUB_5 -N j$3 "distTree_inc_request.sh $1 $2" > /dev/null  
+    $QSUB_5 -N j$3 "$THIS/distTree_inc_request.sh $1 $2" > /dev/null  
   else
-    distTree_inc_request.sh $1 $2
+    $THIS/distTree_inc_request.sh $1 $2
   fi
 else
   # Finish

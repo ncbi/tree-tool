@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# != 1 ]; then
   echo "#1: qual-file of makeFeatureTree"
   exit 1

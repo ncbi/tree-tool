@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Input: #3-calibrate.dm"
   echo "#1: power"
@@ -14,12 +15,12 @@ fi
 echo ""
 echo "power = $1"
 
-calibrateDissims $3-calibrate $1  -output_dissim $3.pairs  > hmm-univ.stat
+$THIS/calibrateDissims $3-calibrate $1  -output_dissim $3.pairs  > hmm-univ.stat
 
 tail -n +5 $3.pairs.dm | sed 's/-/ /1' > $3.pairs
 rm $3.pairs.dm
 
-pairs2attr2 $3.pairs 1 cons 6  -distance > $3.dm
+$THIS/../dm/pairs2attr2 $3.pairs 1 cons 6  -distance > $3.dm
 rm $3.pairs
 
 hybrid=""
@@ -29,9 +30,9 @@ fi
 
 echo ""
 echo ""
-makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $hybrid  -noqual  -output_tree tree  -output_feature_tree _feature_tree
+$THIS/makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $hybrid  -noqual  -output_tree tree  -output_feature_tree _feature_tree
 
 echo ""
 echo ""
-makeFeatureTree  -input_tree _feature_tree  -features $2  -nominal_singleton_is_optional  -output_core _core  -qual _qual
+$THIS/makeFeatureTree  -input_tree _feature_tree  -features $2  -nominal_singleton_is_optional  -output_core _core  -qual _qual
 

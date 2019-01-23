@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Phenotypic quality of an incremental tree: initial tree"
   echo "Requires: no added outliers"
@@ -25,13 +26,13 @@ TMP=`mktemp`
 
 cp $1/hist/tree.1 $TMP.tree
 
-tree2obj.sh $1/hist/tree.1 > $TMP.init
+$THIS/tree2obj.sh $1/hist/tree.1 > $TMP.init
 
 
 i=1
 while [ $i <= $2 ]
 do
-	distTree_inc_quality_phen_step.sh $1 $TMP.init $i $TMP $4
+	$THIS/distTree_inc_quality_phen_step.sh $1 $TMP.init $i $TMP $4
 	i = $(( $i + $3 ))
 done
 
