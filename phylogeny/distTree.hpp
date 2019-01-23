@@ -434,7 +434,7 @@ public:
 	         Steiner* parent_arg,
 	         Real len_arg);
 	void qc () const override;
-  void saveContent (ostream& os) const override;
+  void saveContent (ostream& os) const final;
 
 
   const Steiner* asSteiner () const final
