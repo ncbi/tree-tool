@@ -1,4 +1,4 @@
-include $(HOME)/code/cpp/MakeRules
+include MakeRules
 CPPFLAGS=$(OptCPPFLAGS) 
 #CPPFLAGS=$(DebugCPPFLAGS)
 
