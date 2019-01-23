@@ -2535,13 +2535,13 @@ public:
       if (! leaf1)
         return;
       //throw runtime_error ("Tree has no object " + name1);
-      leaf1->paths = 1;  // temporary
+      leaf1->index = 1;  // temporary
     
       leaf2 = var_cast (findPtr (name2leaf, name2));
       if (! leaf2)
         return;
       //throw runtime_error ("Tree has no object " + name2);
-      leaf2->paths = 1;  // temporary
+      leaf2->index = 1;  // temporary
     }
     
     
@@ -2754,9 +2754,9 @@ DistTree::DistTree (const string &dataDirName,
     for (const auto& it : name2leaf)
     {
       const Leaf* leaf = it. second;
-      if (! leaf->paths)
+      if (leaf->index == NO_INDEX)
         throw runtime_error ("No dissimilarities for object " + leaf->name);
-      var_cast (leaf) -> paths = 0;
+      var_cast (leaf) -> index = NO_INDEX;
     }
 
     // qc: pairs of <leaf1,leaf2> must be unique in dissims
