@@ -188,7 +188,7 @@ Signature leaves2signature (const Leaves &leaves)
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Remove " + real2str(DistTree_sp::rareProb, 2) + "-infrequent leaves from tree 1 depending on -frequency, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1.\n\
+	: Application ("Remove " + real2str (DistTree_sp::rareProb, 2) + "-infrequent leaves from tree 1 depending on -frequency, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1.\n\
 A node with an empty set of leaves matches.")
 	{
 		// Input

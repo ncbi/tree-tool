@@ -1,9 +1,10 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "#1: Tree 1"
   echo "#2: Tree 2"
+  echo "#3: Collapse rare branches: directed|undirected|none"
   exit 1
 fi
 
@@ -11,7 +12,7 @@ fi
 TMP=`mktemp`
 
 
-$THIS/compareTrees $1 $2 > $TMP.out
+$THIS/compareTrees $1 $2  -frequency $3 > $TMP.out
 
 M=(`grep -w match $TMP.out | tr '\t' ' '  | sed 's/ .*$//1' | sort | uniq -c`)
 #   5177 match+
