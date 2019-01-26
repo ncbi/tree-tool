@@ -3,6 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Phenotypic quality comparison of 2 distance trees"
+  echo "Output: qual.comp"
   echo "#1: distance tree 1"
   echo "#2: distance tree 2"
   echo "#3: phen/"
@@ -61,6 +62,11 @@ echo ""
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
 echo ""
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
+
+cat $TMP.qual1 | sed 's/ \([^0-9+/-]\)/_\1/g' > $TMP.qual1_
+cat $TMP.qual2 | sed 's/ \([^0-9+/-]\)/_\1/g' > $TMP.qual2_
+# PAR
+join -1 1 -2 1 $TMP.qual1_ $TMP.qual2_ | grep '^[0-9][0-9]-00:' > qual.comp 
 
 
 rm -f $TMP*
