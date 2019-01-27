@@ -29,7 +29,7 @@ while ($SEED < 100)  # PAR
     $QSUB_5 -N j$SEED "featureTree_subsample_item.sh $1 $SEED log" > /dev/null
   endif
 end
-qstat_wait.sh 1
+qstat_wait.sh 2000 1
 if ($?) exit 1
 
 rmdir log

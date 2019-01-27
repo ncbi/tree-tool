@@ -24,7 +24,7 @@ else
 		mkdir $1/dr.out
 		
 		$THIS/../trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"		
-		$THIS/../qstat_wait.sh 1
+		$THIS/../qstat_wait.sh 2000 1
 		
 		$THIS/../trav $1/dr.out "cat %d/%f" > $3
 		wc -l $3

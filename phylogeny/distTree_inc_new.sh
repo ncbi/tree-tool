@@ -85,7 +85,7 @@ echo "search/ -> leaf, dissim ..."
 REQ=`ls $INC/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
 	$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
-	$THIS/../qstat_wait.sh 1
+	$THIS/../qstat_wait.sh 2000 1
 else
 	$THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f"
 fi
@@ -115,7 +115,7 @@ while [ 1 == 1 ]; do
 
   $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
   if [ $GRID == 1 ]; then
-    $THIS/../qstat_wait.sh 0
+    $THIS/../qstat_wait.sh 2000 0
   fi
   
   ls $INC/log | sed 's/\..*$//1' | sort | uniq > $INC/log.list
