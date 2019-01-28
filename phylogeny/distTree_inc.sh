@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
-  echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes.txt, disagreement_nodes, gain_nodes, qual, core"
+  echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual"
   echo "#1: incremental distance tree directory"
   echo "#2: new.list | ''"
   echo "Time: O(n log^5(n))"
@@ -14,7 +14,7 @@ INC=$1
 NEW=$2
 
 
-if [ -e $NEW ]; then
+if [ "$NEW" ]; then
   wc -l $NEW
   $THIS/../trav $NEW "cp /dev/null $INC/new/%f"
 fi
