@@ -21,3 +21,15 @@ else
 fi
 
 makeblastdb  -in $BASE_DIR/seq.fa  -dbtype nucl  -logfile /dev/null
+
+
+loadLISTC $OBJ_LIST
+
+sqsh-ms  -S PROTEUS  -D uniColl << EOT 
+  update Locus
+    set in_tree = $IN_TREE
+    from      LISTC
+         join Locus on Locus.id = LISTC.id;
+  print @@rowcount;
+  go -m bcp
+EOT

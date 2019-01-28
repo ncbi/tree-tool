@@ -11,6 +11,6 @@ REQUEST=$1
 DISSIM=$2
 LOG=$3
 
-ITS2dissim  -log $LOG  $REQUEST /home/brovervv/panfs/marker/fungi/ITS/seq $DISSIM
+ITS2dissim  -log $LOG  -coeff 0.0082  $REQUEST /home/brovervv/panfs/marker/fungi/ITS/seq $DISSIM
 rm -f $LOG
 
