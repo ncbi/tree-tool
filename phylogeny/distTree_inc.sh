@@ -1,15 +1,23 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 1 ]; then
+if [ $# -ne 2 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes.txt, disagreement_nodes, gain_nodes, qual, core"
   echo "#1: incremental distance tree directory"
+  echo "#2: new.list | ''"
   echo "Time: O(n log^5(n))"
   exit 1
 fi
 INC=$1
+NEW=$2
+
+
+if [ -e $NEW ]; then
+  wc -l $NEW
+  $THIS/../trav $NEW "cp /dev/null $INC/new/%f"
+fi
 
 
 VARIANCE=`cat $INC/variance`
@@ -61,7 +69,7 @@ echo $VER > $INC/version
 # Time: O(n log^5(n))
 # PAR
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
-  -optimize  -skip_len  -reinsert  -subgraph_iter_max 20 \
+  -optimize  -skip_len  -reinsert  -subgraph_iter_max 10 \
   -output_tree $INC/tree.new  -leaf_errors leaf_errors > $INC/hist/makeDistTree-complete-inc.$VER
 mv $INC/tree.new $INC/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
