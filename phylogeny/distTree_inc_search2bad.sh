@@ -3,7 +3,6 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Remove a new contaminated object in a distance tree data structure indentified by inconsistent dissimilarities"
-  echo "Output (append): #1/outlier-dissim"
   echo "#1: incremental distance tree directory"
   echo "#2: New object"
   exit 1
@@ -20,10 +19,7 @@ fi
 awk '$3 == "nan"' $DIR/dissim > $DIR/dissim.bad
 
 if [ -s $DIR/dissim.bad ]; then
- #echo ""
- #wc -l $DIR/dissim.bad
   cat $DIR/dissim.bad >> $1/dissim.bad
-  echo $2 >> $1/outlier-dissim
   $1/outlier2db.sh $2 dissimilarity
   rm -r $DIR/
 else

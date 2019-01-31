@@ -40,11 +40,6 @@ if [ -e $1/outlier-alien ]; then
   echo "# Alien-outliers: $N"
 fi
 
-if [ -e $1/outlier-dissim ]; then
-	N=`cat $1/outlier-dissim | wc -l`
-  echo "# Dissimilarity outliers: $N"
-fi
-
 if [ -e $1/outlier-genogroup ]; then
 	N=`cat $1/outlier-genogroup | wc -l`
   echo "# Genogroup outliers: $N"

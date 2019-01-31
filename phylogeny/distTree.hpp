@@ -1025,8 +1025,7 @@ public:
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
 	  //          genogroup_barrier         <number>                                      Boundary of genogroup to find outliers
     //         [outlier-alien]            <obj>                                         Objects similar to no other objects
-    //         [dissim.bad]               <obj1> <obj2> NaN
-    //         [outlier-dissim]           <obj>                                         Outlier (contaminated) objects from dissim.bad
+    //         [dissim.bad]               <obj1> <obj2> nan
 	  //          hybrid/                   <obj>                                         Hybrid objects
 	  //         [outlier-genogroup]        <obj>                                         Genogroup outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
