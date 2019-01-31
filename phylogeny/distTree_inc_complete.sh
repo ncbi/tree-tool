@@ -43,6 +43,23 @@ echo ""
 echo "data.dm ..."
 $THIS/../dm/pairs2attr2 $1/dissim 1 cons 6 -distance > data.dm
 
+cat data.dm | sed 's/nan/inf/g' > $1/data1.dm
+mkdir $1/clust
+$THIS/dm/distTriangle $1/data1 cons  -clustering_dir $1/clust
+rm $1/data1.dm
+N=`ls $1/clust/ | wc -l`
+if [ $N -gt 1 ]; then
+  echo "# Clusters: $N"
+  exit 1
+fi
+$THIS/dm/dm2objs $1/clust/1/data1 | sort > $1/tree.list
+mv $1/clust/1/data1.dm data.dm
+$THIS/../setMinus $2 $1/tree.list > $1/outlier-triangle
+rm -r $1/clust/
+$1/outlier2db.sh $1/outlier-triangle triangle
+rm $1/outlier-triangle
+
+
 echo ""
 echo "Tree ..."
 HYBRID=""
@@ -56,7 +73,7 @@ $THIS/makeDistTree  -threads 5  -data data  -dissim cons  -optimize  $HYBRID  -o
 
 echo ""
 echo "Database ..."
-$1/objects_in_tree.sh $2 1
+$1/objects_in_tree.sh $1/tree.list 1
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   echo ""
