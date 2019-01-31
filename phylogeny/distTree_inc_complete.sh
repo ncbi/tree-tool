@@ -2,9 +2,10 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "Build a distance tree with complete pair-wise dissimilarity matrix using the incremental tree data structure"
+  echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
   echo "#1: Incremental distance tree directory"
   echo "#2: List of objects"
+  echo "Output: #1/, data.dm"
   exit 1
 fi
 
@@ -27,20 +28,20 @@ if [ $N -gt 0 ]; then
 fi
 
 
-sort.sh $2
+$THIS/../sort.sh $2
 
 if [ ! -s $1/dissim ]; then
 	$THIS/../list2pairs $2 > $1/dissim_request
 	$THIS/distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.raw
 	rm $1/dissim_request
 	cat $1/dissim.raw | grep -vwi nan | grep -vwi inf > $1/dissim
-	rm $1/dissim_request
+	rm $1/dissim.raw
 fi
 
 
 echo ""
 echo "data.dm ..."
-$THIS/../dm/pairs2attr2 $1/dissim 1 cons 6 -distance > $1/data.dm
+$THIS/../dm/pairs2attr2 $1/dissim 1 cons 6 -distance > data.dm
 
 echo ""
 echo "Tree ..."
@@ -50,10 +51,8 @@ if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $1/dissim_boundary`
 	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
-$THIS/makeDistTree  -threads 5  -data $1/data  -dissim cons  -optimize  $HYBRID \
-  -output_tree $1/tree  -output_feature_tree $1/_feature_tree \
-  > $1/hist/makeDistTree-complete.1
-rm $1/data.dm
+$THIS/makeDistTree  -threads 5  -data data  -dissim cons  -optimize  $HYBRID  -output_tree $1/tree  > $1/hist/makeDistTree-complete.1
+#rm $1/data.dm
 
 echo ""
 echo "Database ..."
@@ -74,7 +73,9 @@ if [ -e $1/phen ]; then
   $THIS/tree_quality_phen.sh $1/tree "" $1/phen > $1/hist/tree_quality_phen.1
 	grep ' !' $1/hist/tree_quality_phen.1
 fi
-rm $1/_feature_tree
 
 
-echo "Done"
+echo ""
+date
+
+

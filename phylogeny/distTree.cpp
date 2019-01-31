@@ -7827,7 +7827,8 @@ void NewLeaf::saveRequest (const string &requestFName) const
   OFStream f (requestFName);
   for (const Leaf* leaf : requested)
   {
-    ASSERT (name != leaf->name);
+    if (name == leaf->name)
+      throw runtime_error ("Object " + name + " already exists in the tree");
     const string* n1 = & name;
     const string* n2 = & leaf->name;
     if (*n1 > *n2)
