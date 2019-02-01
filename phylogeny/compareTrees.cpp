@@ -217,9 +217,9 @@ A node with an empty set of leaves matches.")
 		      )
 		   )
 		  throw runtime_error ("Wrong tree type");
-		if (! (   frequencyS == "none"
+		if (! (   frequencyS == "none"       
 		       || frequencyS == "directed"
-		       || frequencyS == "undirected"  // || "" /*no frequency filtering*/ ??
+		       || frequencyS == "undirected"  
 		      )
 		   )
 		  throw runtime_error ("Wrong frequency");
