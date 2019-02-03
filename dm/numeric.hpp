@@ -6,15 +6,13 @@
 
 #include <limits>
 #include <cmath>
-#include <math.h>
 #include "../common.hpp"
+using namespace Common_sp;
 
 
 
 namespace DM_sp
 {
-using namespace std;
-using namespace Common_sp;
 
 
 bool initNumeric ();

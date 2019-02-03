@@ -12,9 +12,6 @@
 
 namespace DM_sp
 {
-using namespace std;
-using namespace Common_sp;
-
 
 
 

@@ -5,14 +5,14 @@
 
 
 #include "../common.hpp"
+using namespace Common_sp;
 #include "numeric.hpp"
 #include "matrix.hpp"
 
 
+
 namespace DM_sp
 {
-using namespace std;
-using namespace Common_sp;
 
 
 bool practicallyOptimal (bool min,

@@ -220,7 +220,7 @@ struct ThisApplication : Application
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
       ASSERT (optionals + commons + singles + monophyletics + nonMonophyletics == features. size ());
-      if (! qual_nonredundant && ! use_time && (size_t) Common_sp::round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles)
+      if (! qual_nonredundant && ! use_time && (size_t) round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles)
       {
       #if 0
         size_t s = 0;
@@ -255,7 +255,7 @@ struct ThisApplication : Application
               feature_nonParaphyletics++;
             }
           }
-          const size_t feature_len = (size_t) Common_sp::round (tree. feature2treeLength (i));
+          const size_t feature_len = (size_t) round (tree. feature2treeLength (i));
           if (feature_len != feature_paraphyletics + feature_nonParaphyletics + feature_extraMutations + feature_singles)
           {
             cout << f;

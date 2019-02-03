@@ -55,7 +55,7 @@
   #pragma warning (default : 4005)  
 #endif
 
-#include <time.h>
+#include <ctime>
 #include <cstring>
 #include <string>
 #include <stdexcept>
@@ -72,22 +72,22 @@
 #include <memory>
 #include <algorithm>
 
+#include <thread>
 #ifdef _MSC_VER
 	#pragma warning(push)
 	#pragma warning(disable:4265)
-	#include <mutex>
+#endif
+#include <mutex>
+#ifdef _MSC_VER
 	#pragma warning(pop)
 #endif
 
-#include <thread>
-#include <mutex>
+using namespace std;
 
 
 
 namespace Common_sp
 {
-using namespace std;
-
 
 
 typedef  unsigned char  uchar; 

@@ -11,7 +11,6 @@
 
 namespace DM_sp
 {
-using namespace std;
  
 
 const Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
@@ -775,7 +774,7 @@ Histogram::Histogram (Real start_arg,
 : start (start_arg)
 , stop (stop_arg)
 , binRange (binRange_arg)
-, bins ((size_t) Common_sp::round (ceil ((stop - start) / binRange)), 0)
+, bins ((size_t) round (ceil ((stop - start) / binRange)), 0)
 { 
   ASSERT (lessReal (start, stop)); 
   ASSERT (positive (binRange));
@@ -797,7 +796,7 @@ size_t Histogram::getBin (Real x) const
 { 
   if (! betweenEqualReal (x, start, stop))
     return NO_INDEX;
-  size_t bin = (size_t) Common_sp::round (floor ((x - start) / binRange));
+  size_t bin = (size_t) round (floor ((x - start) / binRange));
   if (bin == bins. size ())
     bin--;
   ASSERT (bin < bins. size ());
