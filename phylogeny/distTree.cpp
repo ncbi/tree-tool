@@ -2873,7 +2873,7 @@ namespace
 
 struct Newick
 /* Grammar:
-     tree ::= subtree ;
+     tree ::= [comment] subtree ;
      subtree ::= item [: length]
      item ::= interior | leaf
      interior ::= ( list ) [interior_name]
@@ -2882,6 +2882,7 @@ struct Newick
      name ::= string | ' string_space '
      interior_name ::= bootstrap [: name]
      string ::=  // No ' ', ',', ';', '(', ')'
+     comment ::= \[ string_space \]
 */
 {
 private:
@@ -2910,7 +2911,22 @@ public:
     { 
       ASSERT (f. good ()); 
       ASSERT (tree. nodes. empty ());
+
+      // Comment
+      skipSpaces ();
+      if (c == '[')
+      {
+        for (;;)
+        {
+          readChar ();
+          if (c == ']')
+            break;
+        }
+        readChar ();
+      }
+
       parseSubtree (nullptr);
+
       skipSpaces ();
       if (c != ';')
         throw Error ("No ending semicolon", *this);
@@ -2920,8 +2936,15 @@ public:
 private:
   void readChar ()
   {
-    f >> c;
-    pos++;
+    for (;;)
+    {
+      f. get (c);
+      pos++;
+      if (   c != '\n'
+          && c != '\r'
+         )
+        break;
+    }
   }
   
   void skipSpaces ()
@@ -3014,7 +3037,7 @@ private:
         if (contains (delimiters, c))
           break;
         if (! printable (c))
-          throw Error ("Non-printable character in name: " + string (1, c), *this);
+          throw Error ("Non-printable character in name: " + toString ((int) c), *this);
         name += c;
         readChar ();
       }
