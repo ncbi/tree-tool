@@ -181,9 +181,9 @@ struct DiGraph : Root
 
 
   DiGraph () = default;
-  typedef  map <const Node* /*old*/, Node* /*new*/>  Old2new;
+  typedef  unordered_map <const Node* /*old*/, Node* /*new*/>  Old2new;
   DiGraph (const DiGraph &other)
-    { Old2new old2new;
+    { Old2new old2new (other. nodes. size ());
     	init (other, old2new);
     }
   DiGraph (const DiGraph &other,
@@ -225,7 +225,7 @@ public:
 			  return * ends. begin ();
 			return nullptr;
 		}
-  typedef  map <const Node*, const Node*>  Node2Node;  
+  typedef  unordered_map <const Node*, const Node*>  Node2Node;  
     // !nullptr
   static Node2Node reverse (const Node2Node& old2new);
   void borrowArcs (const Node2Node &other2this,

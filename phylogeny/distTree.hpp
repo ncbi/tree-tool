@@ -298,7 +298,7 @@ private:
 
 
 
-typedef  map <const DisjointCluster*, VectorPtr<Leaf>>  LeafCluster;
+typedef  unordered_map <const DisjointCluster*, VectorPtr<Leaf>>  LeafCluster;
 
 
 
@@ -957,7 +957,8 @@ struct DistTree : Tree
 
   const uint subDepth {0};
     // > 0 => *this is a subgraph of a tree with subDepth - 1
-  map<string/*Leaf::name*/,const Leaf*> name2leaf;
+  typedef  unordered_map<string/*Leaf::name*/,const Leaf*>  Name2leaf;
+  Name2leaf name2leaf;
     // 1-1
 
 private:

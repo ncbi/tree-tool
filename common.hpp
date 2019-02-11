@@ -66,6 +66,7 @@
 #include <stack>
 #include <set>
 #include <map>
+#include <unordered_map>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -514,7 +515,25 @@ template <typename Key, typename Value, typename KeyParent>
     { return m. find (key) != m. end (); }
 
 template <typename Key, typename Value, typename KeyParent>
+  inline bool contains (const unordered_map <Key, Value> &m,
+                        const KeyParent& key)
+    { return m. find (key) != m. end (); }
+
+template <typename Key, typename Value, typename KeyParent>
   bool find (const map <Key, Value> &m,
+             const KeyParent& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  bool find (const unordered_map <Key, Value> &m,
              const KeyParent& key,
              Value &value)
     // Return: success
@@ -536,7 +555,25 @@ template <typename Key, typename Value, typename KeyParent>
     }
 
 template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const unordered_map <Key, Value> &m,
+                        const KeyParent& key)
+    { const auto it = m. find (key);
+    	if (it == m. end ())
+    		return nullptr;
+    	return & it->second; 
+    }
+
+template <typename Key, typename Value, typename KeyParent>
   const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
+                        const KeyParent& key)
+    { const Value* value;
+      if (find (m, key, value))
+        return value;
+      return nullptr;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const unordered_map <Key, const Value* /*!nullptr*/> &m,
                         const KeyParent& key)
     { const Value* value;
       if (find (m, key, value))
@@ -546,6 +583,14 @@ template <typename Key, typename Value, typename KeyParent>
 
 template <typename Key, typename Value>
   const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
+                         const Key& key)
+    { if (! contains (m, key))
+        m [key] = new Value ();
+      return * m [key];
+    }
+
+template <typename Key, typename Value>
+  const Value& findMake (unordered_map <Key, const Value* /*!nullptr*/> &m,
                          const Key& key)
     { if (! contains (m, key))
         m [key] = new Value ();
@@ -1869,10 +1914,16 @@ public:
 	    { for (const auto& it : other)
 	        P::insert (it. first);
 	    }
+	template <typename U, typename V>
+	  Set (const unordered_map<U,V> &other)
+	    : universal (false)
+	    { for (const auto& it : other)
+	        P::insert (it. first);
+	    }
 	template <typename U>
 	  Set (const vector<U> &other)
 	    : universal (false)
-	    { for (const U u : other)
+	    { for (const U& u : other)
 	        P::insert (u);
 	    }
   bool operator== (const Set<T> &other) const

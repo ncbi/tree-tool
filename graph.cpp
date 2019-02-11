@@ -202,7 +202,7 @@ void DiGraph::Node::contract (Node* from)
 
 	for (const bool b : {false, true})
   {  
-    map <Node*, Arc*> m;
+    unordered_map <Node*, Arc*> m (arcs [b]. size ());
     for (Arc* arc : arcs [b])
       m [arc->node [b]] = arc;
 
@@ -318,6 +318,7 @@ void DiGraph::init (const DiGraph &other,
 	                  Old2new &old2new)
 {
   ASSERT (old2new. empty ());
+  ASSERT (old2new. bucket_count () == other. nodes. size ());
 
   for (const Node* node : other. nodes)
   {
@@ -488,7 +489,7 @@ VectorPtr<DiGraph::Node> DiGraph::getEnds (bool out) const
 
 DiGraph::Node2Node DiGraph::reverse (const Node2Node& old2new)
 {
-  Node2Node new2old;
+  Node2Node new2old (old2new. size ());
   for (const auto& it : old2new)
     new2old [it. second] = it. first;    
   return new2old;
@@ -1260,6 +1261,8 @@ void Tree::qc () const
 namespace 
 {
   typedef  map<size_t, string> AsnFeatures;
+
+
   void printAsnFeatures (ostream &os,
                          const AsnFeatures &features)
   {
@@ -1288,7 +1291,7 @@ namespace
 
 void Tree::printAsn (ostream &os) const
 {
-  map<const DiGraph::Node*, size_t/*index*/> node2index;
+  unordered_map<const DiGraph::Node*, size_t/*index*/> node2index (nodes. size ());
   size_t index = 0;
   for (const DiGraph::Node* n : nodes)
   {
@@ -1434,7 +1437,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
 		{
 			const Tree::TreeNode* n = static_cast <Tree::TreeNode*> (arc->node [false]);
 			Leaf2dist nodeLeaf2dist;
-			res << node2leafDistances (n, nodeLeaf2dist);
+			res << move (node2leafDistances (n, nodeLeaf2dist));
 			ASSERT (! nodeLeaf2dist. empty ());
 			const double dist = n->getParentDistance ();
 			ASSERT (dist == dist);  // != NaN

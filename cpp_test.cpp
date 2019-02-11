@@ -73,18 +73,35 @@ struct ThisApplication : Application
 
  	void body () const
 	{
-	  const size_t len = 100000000;  // PAR
-	  Vector<Struct> vec;  vec. reserve (len);
+	  constexpr size_t len = 10000000;  // PAR
+	  Vector<ulong> vec;  vec. reserve (len);
+	  Rand rand;
+	  FOR (size_t, i, len)
+	    vec << rand. get ((ulong) len);
 	  {
-      const Chronometer_OnePass cop ("no move");  
+      const Chronometer_OnePass cop ("map");  
+  	  map<ulong,size_t> m;
   	  FOR (size_t, i, len)
-  	    vec << Struct ();
+  	    m [vec [i]] = i;
+  	  FOR (size_t, i, len)
+  	    m [vec [i]] ++;
   	}
-  	vec. clear ();
 	  {
-      const Chronometer_OnePass cop ("move");  
+      const Chronometer_OnePass cop ("unordered_map");  
+  	  unordered_map<ulong,size_t> m (len);
   	  FOR (size_t, i, len)
-  	    vec << move (Struct ());
+  	    m [vec [i]] = i;
+  	  FOR (size_t, i, len)
+  	    m [vec [i]] ++;
+  	}
+	  {
+      const Chronometer_OnePass cop ("unordered_map");  
+  	  unordered_map<ulong,size_t> m ;
+  	  m. reserve (len);
+  	  FOR (size_t, i, len)
+  	    m [vec [i]] = i;
+  	  FOR (size_t, i, len)
+  	    m [vec [i]] ++;
   	}
   }
 };
