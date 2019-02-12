@@ -37,3 +37,8 @@ cp $2 $1/hist/delete.$VER
 
 
 $THIS/distTree_inc_tree1_quality.sh $1
+
+
+echo ""
+date
+
