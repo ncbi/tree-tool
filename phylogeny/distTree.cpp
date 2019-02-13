@@ -3481,9 +3481,9 @@ bool DistTree::loadLines (const StringVector &lines,
   
   lineNum++;
 
-  string idS (findSplit (s));
-  ASSERT (isRight (idS, ":"));
-  idS. erase (idS. size () - 1);
+  string idS (findSplit (s, ':'));
+  if (s. empty ())
+    throw runtime_error ("No ':' in name on line " + toString (lineNum));
   const Real   len          = token2real (s, "len");
   const Real   errorDensity = token2real (s, "err_density");
   const Real   paths        = token2real (s, "paths");
