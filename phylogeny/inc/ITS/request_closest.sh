@@ -12,7 +12,7 @@ NEW_OBJ=$1
 BASE_DIR=`dirname $0`
 TMP=`mktemp`  
 
-blastn  -db $BASE_DIR/seq.fa  -query /home/brovervv/panfs/marker/fungi/ITS/seq/$NEW_OBJ  -show_gis  -evalue 1e-20  -outfmt '6 sseqid' > $TMP.blastn
+blastn  -db $BASE_DIR/seq.fa  -query /home/brovervv/panfs/marker/Fungi/ITS/seq/$NEW_OBJ  -show_gis  -evalue 1e-20  -outfmt '6 sseqid' > $TMP.blastn
 set +o errexit
 grep -v $NEW_OBJ $TMP.blastn | sort | uniq > $TMP.grep
 set -o errexit

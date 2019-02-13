@@ -14,7 +14,7 @@ fi
 BASE_DIR=`dirname $0`
 
 if [ $IN_TREE == 1 ]; then
-  trav $1 "cat /home/brovervv/panfs/marker/fungi/ITS/seq/%f" >> $BASE_DIR/seq.fa
+  trav $1 "cat /home/brovervv/panfs/marker/Fungi/ITS/seq/%f" >> $BASE_DIR/seq.fa
 else
   extractFastaDna  -in $BASE_DIR/seq.fa  -target $OBJ_LIST  -remove > $BASE_DIR/seq.fa1
   mv $BASE_DIR/seq.fa1 $BASE_DIR/seq.fa
