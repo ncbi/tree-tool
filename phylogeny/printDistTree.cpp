@@ -25,10 +25,10 @@ struct ThisApplication : Application
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
-	  addKey ("name_match", "File with lines: <name_old> <name_new>, to replace leaf names");
+	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
     // Output
 	  addKey ("format", "newick|itree (makeDistTree output)|ASNT (textual ASN.1)", "newick");
-	  addFlag ("min_name", "Minimal leaf names");
+	  addFlag ("min_name", "Minimal leaf names for newick");
 	  addFlag ("order", "Order subtrees by the number of leaves descending");
 	}
 
@@ -60,18 +60,16 @@ struct ThisApplication : Application
     {
       LineInput f (name_match, 10 * 1024, 1000);  // PAR
       string name_old, name_new;
-      Istringstream iss;
       while (f. nextLine ())
       {
-        iss. reset (f. line);
-        name_new. clear ();
-        iss >> name_old >> name_new;
+        name_new = f. line;
+        name_old = findSplit (name_new, '\t');
         ASSERT (! name_old. empty ());
         ASSERT (! name_new. empty ());
         if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
           var_cast (leaf) -> name = name_new;
         else
-          throw runtime_error ("Object " + name_old + " does not exist");
+          throw runtime_error ("Object '" + name_old + "' does not exist");
       }
     }
 
