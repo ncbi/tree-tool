@@ -15,20 +15,19 @@ using namespace Common_sp;
 namespace 
 {
 
+
 struct Item
 {
-	bool num;
+	bool num {false};
 	enum Position {SMALLEST, NORMAL, BIGGEST};
-	Position pos;
+	Position pos {SMALLEST};
 	// Valid if pos == NORMAL
   string s;  // Valid if !num
-	size_t i;     // Valid if  num
+	size_t i {0};     // Valid if  num
 	
 
 	explicit Item (bool num_arg)
 	  : num (num_arg)
-	  , pos (SMALLEST)
-	  , i (0)
 	  {}
 	Item& operator= (const Item &item)
 		{
