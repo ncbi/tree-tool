@@ -1,36 +1,36 @@
-#!/bin/csh -f
-
-if ($# != 3) then
+#!/bin/bash
+THIS=`dirname $0`
+source $THIS/bash_common.sh
+if [ $# -ne 3 ]; then
   echo "Print a .dm-file"
   echo "#1: File with numeric columns"
   echo "#2: Number precision"
-  echo "#3: named(0/1)"
+  echo "#3: Named (0/1)"
   exit 1
-endif
+fi
 
 
-set N = `wc -l $1`
-if ($N[1] == 0) then
+N=`cat $1 | wc -l`
+if [ $N == 0 ]; then
   echo "No data"
   exit 1
-endif
+fi
 
-set C = `head -1 $1 | wc -w`
-@ C = $C[1] 
-if ($3) then
-  set NAME = name
-  @ C = $C - 1
+C=`head -1 $1 | wc -w`
+if [ $3 == 1 ]; then
+  NAME="name"
+  C=$(( $C - 1 ))
 else
-  set NAME = noname
-endif
+  NAME="noname"
+fi
 
-echo "ObjNum $N[1] $NAME nomult" 
+echo "ObjNum $N $NAME nomult" 
 echo "Attributes"
-set i = 1
-while ($i <= $C)
+i=1
+while [ $i -le $C ]; do
   echo "  V$i real $2"
-  @ i = $i + 1
-end
+  i=$(( $i + 1 ))
+done
 echo "Data"
 cat $1
 
