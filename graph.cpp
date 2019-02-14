@@ -379,7 +379,9 @@ void DiGraph::qc () const
     ASSERT (node);
     ASSERT (node->graph == this);
     nodes_ << node;
-    node->qc ();
+    try { node->qc (); }
+      catch (const exception &e)
+        { throw runtime_error ("In node " + node->getHumanName () + ": " + e. what ()); }
   	for (const bool b : {false, true})
       for (const Arc* arc : node->arcs [b])
       {
@@ -393,10 +395,7 @@ void DiGraph::qc () const
         }
       }
     if (names. contains (node->getName ()))
-    {
-      cout << "Duplicate name: " << node->getName () << endl;
-      ERROR;  
-    }
+      throw runtime_error ("Duplicate name: " + node->getName ());
     names << node->getName ();
   }
   ASSERT (nodes. size () == nodes_. size ());
@@ -438,7 +437,6 @@ void DiGraph::scc ()
   stack<Node*, vector<Node*> > sccStack (vec);
   for (Node* node : nodes)
   {
-  //os << node->getName ();  
     if (! node->orderDfs)
       node->setScc (visitedNum, sccStack);
     ASSERT (sccStack. empty ());
@@ -1225,11 +1223,11 @@ void Tree::qc () const
 	{
 	  if (node->arcs [true]. size () > 1)
 	  {
-	    cout << "Multiple parents of " << node->getName () << endl;
+	    cout << "Multiple parents of " << node->getHumanName () << endl;
 	    const VectorPtr<DiGraph::Node> neighbors (node->getNeighborhood (true));
 	    ASSERT (neighbors. size () >= 2);
 	    for (const DiGraph::Node* neighbor : neighbors)
-	      cout << " " << neighbor->getName ();
+	      cout << " " << neighbor->getHumanName ();
 	    cout << endl << endl;
 	    if (verbose ())
 	      print (cout);
@@ -1240,10 +1238,7 @@ void Tree::qc () const
 	  {
 	    const string newickName (TreeNode::name2newick (n->getNewickName (true)));
       if (names. contains (newickName))
-      {
-        cout << "Duplicate name: " << newickName << endl;
-        ERROR;
-      }
+        throw runtime_error ("Duplicate name: " + newickName);
       names << newickName;
     }
     if (n->isTransient ())
