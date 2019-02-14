@@ -84,6 +84,8 @@ struct DiGraph : Root
 		  	oss << this;
 			  return oss. str ();
 		  }
+		virtual string getHumanName () const
+		  { return getName (); }
 		virtual string getLeafName () const
 		  { return getName (); }
     bool isIncident (const Node* n,
@@ -260,6 +262,9 @@ struct Tree : DiGraph
 		void qc () const override;
    	void saveText (ostream &os) const override;
    	  // Invokes: getName(), saveContent(), getSaveSubtreeP()
+
+		string getHumanName () const final
+		  { return getLcaName (); }
 
     virtual bool getSaveSubtreeP () const 
       { return true; }
