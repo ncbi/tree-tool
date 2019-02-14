@@ -437,7 +437,11 @@ void DTNode::qc () const
   }
   
   IMPLY (! isNan (len), len >= 0);    
-  IMPLY (paths, errorDensity >= 0);
+  if (! isNan (len) && paths && ! (errorDensity >= 0))
+  {
+    cout << len << ' ' << paths << ' ' << errorDensity << endl;
+    ERROR;
+  }
   ASSERT (! contains (name, '\''));
 }
 
