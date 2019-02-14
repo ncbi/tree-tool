@@ -1,11 +1,11 @@
-#!/bin/csh -f
-
-if ($# != 1) then
+#!/bin/bash
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
+if [ $# -ne 1 ]; then
   echo "Print leaf statistics for an incremental distance tree"
   echo "#1: distance tree data"
   exit 1
-endif
+fi
 
 cat $1/hist/leaf* | sort -k 6 -g
-if ($?) exit 1
 

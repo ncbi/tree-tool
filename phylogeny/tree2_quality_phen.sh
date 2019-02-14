@@ -20,6 +20,9 @@ TMP=`mktemp`
 echo $TMP  
 
 
+echo "$T1 vs. $T2"
+
+
 $THIS/tree2obj.sh $T1 > $TMP.list1
 $THIS/tree2obj.sh $T2 > $TMP.list2
 

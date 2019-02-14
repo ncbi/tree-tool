@@ -1,12 +1,11 @@
-#!/bin/csh -f
-
-if ($# != 1) then
+#!/bin/bash
+THIS=`dirname $0`
+source $THIS/bash_common.sh
+if [ $# -ne 1 ]; then
   echo "#1: File to sort"
   exit 1
-endif
+fi
 
-set TmpFNam = `mktemp`
-sort $1 > $TmpFNam
-if ($?) exit 1
-mv $TmpFNam $1
-if ($?) exit 1
+TMP=`mktemp`
+sort $1 > $TMP
+mv $TMP $1
