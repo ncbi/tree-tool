@@ -1958,9 +1958,11 @@ FeatureTree::FeatureTree (const string &treeFName,
  		    catch (const exception &e)
  		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
 
+  constexpr size_t displayPeriod = 1000;  // PAR
+
   // Genome::coreSet
   {
-    Progress prog (genomes);
+    Progress prog (genomes, displayPeriod);
     // 86 sec./50K genomes
    	for (const DiGraph::Node* node : nodes)
    		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
@@ -1977,7 +1979,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   Set<Feature::Id> nonSingletons;
   // 196 sec./50K genomes
   {
-    Progress prog (genomes);
+    Progress prog (genomes, displayPeriod);
    	for (const DiGraph::Node* node : nodes)
    		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
    		{
@@ -1988,7 +1990,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   ASSERT (! globalSingletons. intersects (nonSingletons));
   globalSingletonsSize = globalSingletons. size ();
   {
-    Progress prog (genomes);
+    Progress prog (genomes, displayPeriod);
    	for (const DiGraph::Node* node : nodes)
    		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
    		{
@@ -2002,7 +2004,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   ASSERT (commonCore. empty ());
   commonCore = nonSingletons;
   {
-    Progress prog (genomes);
+    Progress prog (genomes, displayPeriod);
    	for (const DiGraph::Node* node : nodes)
    		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
    		{
@@ -2012,7 +2014,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   }
   ASSERT (! globalSingletons. intersects (commonCore));
   {
-    Progress prog (genomes);
+    Progress prog (genomes, displayPeriod);
    	for (const DiGraph::Node* node : nodes)
    		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
       { 

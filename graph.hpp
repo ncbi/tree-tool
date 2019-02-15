@@ -399,13 +399,7 @@ struct Tree : DiGraph
       // Return: !nullptr; != child
     const TreeNode* getLeftmostDescendant () const;
     const TreeNode* getRightmostDescendant () const;
-    string getLcaName () const
-      { const TreeNode* left  = getLeftmostDescendant ();
-      	const TreeNode* right = getRightmostDescendant ();
-      	if (left == right)
-      		return left->getLeafName ();
-      	return left->getLeafName () + objNameSeparator + right->getLeafName (); 
-      }
+    string getLcaName () const;
 	  void childrenUp ();
 	    // Children->setParent(getParent())
 	    // Post-condition: arcs[false].empty()

@@ -1061,6 +1061,19 @@ const Tree::TreeNode* Tree::TreeNode::getRightmostDescendant () const
 
 
 
+string Tree::TreeNode::getLcaName () const
+{ 
+  const TreeNode* left  = getLeftmostDescendant ();
+	const TreeNode* right = getRightmostDescendant ();
+	string name;
+	if (left == right)
+		name = left->getLeafName ();
+	name = left->getLeafName () + objNameSeparator + right->getLeafName (); 
+	return name;
+}
+
+
+
 void Tree::TreeNode::childrenUp ()
 {
   const VectorPtr<DiGraph::Node> children (getChildren ());
