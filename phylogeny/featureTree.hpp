@@ -80,6 +80,10 @@ struct Feature : Named
 
 
 
+typedef  unordered_map<Feature::Id, size_t>  Feature2index;
+
+
+
 inline bool eqTreeLen (float len1,
                        float len2)
   { return eqReal (len1, len2, 1e-4 /*PAR*/); }  
@@ -479,7 +483,7 @@ private:
 	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
 	  // Return: number of Feature::Id's s.t. Feature::singleton()
 	  // Update: coreSet, singletons, coreNonSingletons
-	void init (const map <Feature::Id, size_t/*index*/> &feature2index);
+	void init (const Feature2index &feature2index);
 	  // Output: CoreEval::core, core
 public:
 	void qc () const override;
@@ -557,7 +561,7 @@ public:
 protected:
   // To invoke: clear()
 	explicit Change (const Species* from_arg)
-		: tree (const_cast <FeatureTree&> (from_arg->getFeatureTree ()))
+		: tree (var_cast (from_arg->getFeatureTree ()))
 		, from (from_arg)
 		, improvement (INF)
 		{}

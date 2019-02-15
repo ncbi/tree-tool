@@ -120,7 +120,7 @@ void Phyl::qc () const
   	for (const bool i : {false, true})
     	for (const bool j : {false, true})
 		    weight_ [i] [j] = weight [i] [j];
-		const_cast <Phyl*> (this) -> setWeight ();
+		var_cast (this) -> setWeight ();
   	for (const bool i : {false, true})
     	for (const bool j : {false, true})
 		    if (! eqReal (weight_ [i] [j], weight [i] [j], 1e-3))
@@ -364,7 +364,7 @@ Real Phyl::getFeatureSubtreeLength (size_t featureIndex) const
 
 void Phyl::assignFeature (size_t featureIndex)
 { 
-  const_cast <FeatureTree&> (getFeatureTree ()). coreSynced = false;
+  var_cast (getFeatureTree ()). coreSynced = false;
 
 	float childrenCoreDistance [2/*bool thisCore*/];
 	for (const bool thisCore : {false, true})
@@ -774,7 +774,7 @@ void Fossil::setId (uint &id_arg)
   id_arg++;
 	for (const DiGraph::Arc* arc : arcs [false])
 		if (const Fossil* f = static_cast <Phyl*> (arc->node [false]) -> asFossil ())
-		  const_cast <Fossil*> (f) -> setId (id_arg);
+		  var_cast (f) -> setId (id_arg);
 }
 
 
@@ -881,7 +881,8 @@ Genome::Genome (FeatureTree &tree,
 { 
 	ASSERT (parent_arg);
 	ASSERT (! id. empty ()); 
-	ASSERT (! contains (id, ' '));
+//ASSERT (! contains (id, ' '));
+  ASSERT (! contains (id, '\''));
 }
 
 
@@ -960,7 +961,7 @@ void Genome::coreSet2nominals ()
 	  if (! nominals. addUnique (attrName))
 	    throw runtime_error ("Duplicate nominal attribute: " + attrName);
 	  if (! Feature::singleton (geneName))
-	    const_cast <FeatureTree&> (getFeatureTree ()). nominal2values [attrName] << value;
+	    var_cast (getFeatureTree ()). nominal2values [attrName] << value;
 	}
 }
 
@@ -983,7 +984,7 @@ void Genome::nominals2coreSet ()
 
 
 
-void Genome::init (const map <Feature::Id, size_t/*index*/> &feature2index)
+void Genome::init (const Feature2index &feature2index)
 {
 	IMPLY ( ! coreSet. empty (), getFeatureTree (). featuresExist ());
 
@@ -1298,7 +1299,7 @@ void Change::commit ()
 	ASSERT ((bool) isolatedTransient == (bool) isolatedTransientChild);
 
   commit_ ();
-	const_cast <FeatureTree&> (tree). delayDelete (isolatedTransient);
+	var_cast (tree). delayDelete (isolatedTransient);
 }
 
 
@@ -1390,15 +1391,15 @@ void ChangeToSibling::apply_ ()
   ASSERT (from != arcEnd);
 
   // Topology
-  auto inter_ = new Fossil (const_cast <FeatureTree&> (tree), arcEnd, string (), NaN);
+  auto inter_ = new Fossil (var_cast (tree), arcEnd, string (), NaN);
   inter = inter_;
   inter_->init ();
   // PAR
   FFOR (size_t, i, inter_->core. size ())
     inter_->core [i] = (arcEnd ? arcEnd->core [i] : false) + from->core [i] + to->core [i] >= 2;
   inter_->setTimeWeight ();
-  const_cast <Species*> (from) -> setParent (inter_); 
-  const_cast <Species*> (to)   -> setParent (inter_);
+  var_cast (from) -> setParent (inter_); 
+  var_cast (to)   -> setParent (inter_);
   {
     Fossil* oldParent_parent = const_static_cast <Fossil*> (oldParent->getParent ());  // May be nullptr
     if (isolateTransient (oldParent))
@@ -1412,14 +1413,14 @@ void ChangeToSibling::apply_ ()
   }
   ASSERT (oldParentRepr);
   
-  Species* fromSibling = const_cast <Species*> (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
+  Species* fromSibling = var_cast (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
   ASSERT (fromSibling);
   Tree::LcaBuffer buf;
 	lca = static_cast <const Phyl*> (Tree::getLca (oldParentRepr, inter, buf)) -> asFossil ();
 	ASSERT (lca);
   
   // Species::time
-  const_cast <Species*> (from) -> assignTime (); 
+  var_cast (from) -> assignTime (); 
   fromSibling->assignTime ();  
   if (isolatedTransientChild && oldParentRepr != fromSibling)
     oldParentRepr->assignTime (); 
@@ -1428,7 +1429,7 @@ void ChangeToSibling::apply_ ()
   oldParentRepr->assignFeaturesUp (lca);  
   if (! oldParentRepr->descendantOf (fromSibling))
     fromSibling->assignFeaturesUp (inter);
-  const_cast <Species*> (from) -> assignFeaturesUp (nullptr);
+  var_cast (from) -> assignFeaturesUp (nullptr);
 }
 
 
@@ -1444,17 +1445,17 @@ void ChangeToSibling::restore_ ()
   { ASSERT (oldParentRepr == oldParent); }
 	
 
-  Species* fromSibling = const_cast <Species*> (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
+  Species* fromSibling = var_cast (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
   ASSERT (fromSibling);
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> restoreFeaturesUp (nullptr);
+  var_cast (from) -> restoreFeaturesUp (nullptr);
   if (! oldParentRepr->descendantOf (fromSibling))
     fromSibling->restoreFeaturesUp (inter);
   oldParentRepr->restoreFeaturesUp (lca);  
   
   // Species::time
-  const_cast <Species*> (from) -> restoreTime (); 
+  var_cast (from) -> restoreTime (); 
   fromSibling->restoreTime ();  
   if (isolatedTransientChild && oldParentRepr != fromSibling)
     oldParentRepr->restoreTime (); 
@@ -1465,14 +1466,14 @@ void ChangeToSibling::restore_ ()
   	IMPLY (isolatedTransient == to,   isolatedTransientChild == inter->arcs [false]. back () -> node [false]);
   	IMPLY (isolatedTransient == arcEnd, isolatedTransientChild == inter);
   	// May be: isolatedTransientChild->getParent() == inter
-  	isolatedTransient->attach (const_cast <FeatureTree&> (tree));
+  	isolatedTransient->attach (var_cast (tree));
 	  isolatedTransientChild->setParent (isolatedTransient);
 	  isolatedTransient     ->setParent (oldParent);
 	  oldParent = isolatedTransient;
   }
 	ASSERT (oldParent);
-  const_cast <Species*> (from) -> setParent (oldParent);  
-  const_cast <Species*> (to)   -> setParent (arcEnd);
+  var_cast (from) -> setParent (oldParent);  
+  var_cast (to)   -> setParent (arcEnd);
   delete inter;
 }
 
@@ -1488,11 +1489,11 @@ void ChangeToSibling::commit_ ()
   else
   { ASSERT (oldParentRepr == oldParent); }
   
-  Species* fromSibling = const_cast <Species*> (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
+  Species* fromSibling = var_cast (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
   ASSERT (fromSibling);
 
   // Species::time
-  const_cast <Species*> (from) -> commitTime (); 
+  var_cast (from) -> commitTime (); 
   fromSibling->commitTime ();  
   if (isolatedTransientChild && oldParentRepr != fromSibling)
     oldParentRepr->commitTime (); 
@@ -1501,7 +1502,7 @@ void ChangeToSibling::commit_ ()
   oldParentRepr->commitFeaturesUp (lca);
   if (! oldParentRepr->descendantOf (fromSibling))
     fromSibling->commitFeaturesUp (inter);
-  const_cast <Species*> (from) -> commitFeaturesUp (nullptr);
+  var_cast (from) -> commitFeaturesUp (nullptr);
 }
 
 
@@ -1521,7 +1522,7 @@ void ChangeToParent::apply_ ()
   oldParentRepr = oldParent;
 
   // Topology
-  const_cast <Species*> (from) -> setParent (const_cast <Species*> (to)); 
+  var_cast (from) -> setParent (var_cast (to)); 
   {
     Fossil* oldParent_parent = const_static_cast <Fossil*> (oldParent->getParent ());  // May be nullptr
     if (isolateTransient (oldParent))
@@ -1541,11 +1542,11 @@ void ChangeToParent::apply_ ()
   // Species::time
   if (isolatedTransientChild)
     oldParentRepr->assignTime (); 
-  const_cast <Species*> (from) -> assignTime (); 
+  var_cast (from) -> assignTime (); 
 
   // Species::parent2core[]
   oldParentRepr->assignFeaturesUp (lca);  
-  const_cast <Species*> (from) -> assignFeaturesUp (nullptr);
+  var_cast (from) -> assignFeaturesUp (nullptr);
 }
 
 
@@ -1561,26 +1562,26 @@ void ChangeToParent::restore_ ()
 	
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> restoreFeaturesUp (nullptr);
+  var_cast (from) -> restoreFeaturesUp (nullptr);
   oldParentRepr->restoreFeaturesUp (lca);  
   
   // Species::time
   if (isolatedTransientChild)
     oldParentRepr->restoreTime (); 
-  const_cast <Species*> (from) -> restoreTime (); 
+  var_cast (from) -> restoreTime (); 
 
   // Topology
   if (isolatedTransient)
   {
   	ASSERT (isolatedTransient != to);
   	ASSERT (oldParent == isolatedTransientChild->getParent ());
-  	isolatedTransient->attach (const_cast <FeatureTree&> (tree));
+  	isolatedTransient->attach (var_cast (tree));
 	  isolatedTransientChild->setParent (isolatedTransient);
 	  isolatedTransient     ->setParent (oldParent);
 	  oldParent = isolatedTransient;
   }
 	ASSERT (oldParent);
-  const_cast <Species*> (from) -> setParent (oldParent);  
+  var_cast (from) -> setParent (oldParent);  
 }
 
 
@@ -1597,11 +1598,11 @@ void ChangeToParent::commit_ ()
   // Species::time
   if (isolatedTransientChild)
     oldParentRepr->commitTime (); 
-  const_cast <Species*> (from) -> commitTime (); 
+  var_cast (from) -> commitTime (); 
 
   // Species::parent2core[]
   oldParentRepr->commitFeaturesUp (lca);
-  const_cast <Species*> (from) -> commitFeaturesUp (nullptr);  
+  var_cast (from) -> commitFeaturesUp (nullptr);  
 }
 
 
@@ -1617,16 +1618,16 @@ void ChangeToUncle::apply_ ()
   ASSERT (toParent);
 
   // Topology
-  const_cast <Species*> (from) -> setParent (toParent); 
-  const_cast <Species*> (to)   -> setParent (fromParent); 
+  var_cast (from) -> setParent (toParent); 
+  var_cast (to)   -> setParent (fromParent); 
 
   // Species::time
-  const_cast <Species*> (from) -> assignTime (); 
-  const_cast <Species*> (to)   -> assignTime (); 
+  var_cast (from) -> assignTime (); 
+  var_cast (to)   -> assignTime (); 
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> assignFeaturesUp (toParent);
-  const_cast <Species*> (to)   -> assignFeaturesUp (nullptr);
+  var_cast (from) -> assignFeaturesUp (toParent);
+  var_cast (to)   -> assignFeaturesUp (nullptr);
 }
 
 
@@ -1640,16 +1641,16 @@ void ChangeToUncle::restore_ ()
 
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> restoreFeaturesUp (toParent);
-  const_cast <Species*> (to) -> restoreFeaturesUp (nullptr);
+  var_cast (from) -> restoreFeaturesUp (toParent);
+  var_cast (to) -> restoreFeaturesUp (nullptr);
   
   // Species::time
-  const_cast <Species*> (from) -> restoreTime (); 
-  const_cast <Species*> (to)   -> restoreTime (); 
+  var_cast (from) -> restoreTime (); 
+  var_cast (to)   -> restoreTime (); 
 
   // Topology
-  const_cast <Species*> (from) -> setParent (fromParent); 
-  const_cast <Species*> (to)   -> setParent (toParent); 
+  var_cast (from) -> setParent (fromParent); 
+  var_cast (to)   -> setParent (toParent); 
 }
 
 
@@ -1657,12 +1658,12 @@ void ChangeToUncle::restore_ ()
 void ChangeToUncle::commit_ ()
 {
   // Species::time
-  const_cast <Species*> (from) -> commitTime (); 
-  const_cast <Species*> (to)   -> commitTime (); 
+  var_cast (from) -> commitTime (); 
+  var_cast (to)   -> commitTime (); 
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> commitFeaturesUp (static_cast <const Fossil*> (from->getParent ()));
-  const_cast <Species*> (to) -> commitFeaturesUp (nullptr);  
+  var_cast (from) -> commitFeaturesUp (static_cast <const Fossil*> (from->getParent ()));
+  var_cast (to) -> commitFeaturesUp (nullptr);  
 }
 
 
@@ -1678,16 +1679,16 @@ void ChangeToCousin::apply_ ()
   ASSERT (toParent);
 
   // Topology
-  const_cast <Species*> (from) -> setParent (toParent); 
-  const_cast <Species*> (to)   -> setParent (fromParent); 
+  var_cast (from) -> setParent (toParent); 
+  var_cast (to)   -> setParent (fromParent); 
 
   // Species::time
-  const_cast <Species*> (from) -> assignTime (); 
-  const_cast <Species*> (to)   -> assignTime (); 
+  var_cast (from) -> assignTime (); 
+  var_cast (to)   -> assignTime (); 
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> assignFeaturesUp (static_cast <const Fossil*> (toParent->getParent ()));
-  const_cast <Species*> (to)   -> assignFeaturesUp (nullptr);
+  var_cast (from) -> assignFeaturesUp (static_cast <const Fossil*> (toParent->getParent ()));
+  var_cast (to)   -> assignFeaturesUp (nullptr);
 }
 
 
@@ -1700,16 +1701,16 @@ void ChangeToCousin::restore_ ()
   ASSERT (toParent);
 
   // Species::parent2core[]
-  const_cast <Species*> (from) -> restoreFeaturesUp (static_cast <const Fossil*> (toParent->getParent ()));
-  const_cast <Species*> (to)   -> restoreFeaturesUp (nullptr);
+  var_cast (from) -> restoreFeaturesUp (static_cast <const Fossil*> (toParent->getParent ()));
+  var_cast (to)   -> restoreFeaturesUp (nullptr);
   
   // Species::time
-  const_cast <Species*> (from) -> restoreTime (); 
-  const_cast <Species*> (to)   -> restoreTime (); 
+  var_cast (from) -> restoreTime (); 
+  var_cast (to)   -> restoreTime (); 
 
   // Topology
-  const_cast <Species*> (from) -> setParent (fromParent); 
-  const_cast <Species*> (to)   -> setParent (toParent); 
+  var_cast (from) -> setParent (fromParent); 
+  var_cast (to)   -> setParent (toParent); 
 }
 
 
@@ -1717,12 +1718,12 @@ void ChangeToCousin::restore_ ()
 void ChangeToCousin::commit_ ()
 {
   // Species::time
-  const_cast <Species*> (from) -> commitTime (); 
-  const_cast <Species*> (to)   -> commitTime (); 
+  var_cast (from) -> commitTime (); 
+  var_cast (to)   -> commitTime (); 
   
   // Species::parent2core[]
-  const_cast <Species*> (from) -> commitFeaturesUp (static_cast <const Fossil*> (from->getParent () -> getParent ()));
-  const_cast <Species*> (to) -> commitFeaturesUp (nullptr);  
+  var_cast (from) -> commitFeaturesUp (static_cast <const Fossil*> (from->getParent () -> getParent ()));
+  var_cast (to) -> commitFeaturesUp (nullptr);  
 }
 
 
@@ -1747,14 +1748,14 @@ void ChangeRoot::apply_ ()
 
 
   // Topology
-  auto inter = new Fossil (const_cast <FeatureTree&> (tree), const_static_cast <Fossil*> (from->getParent ()), string (), NaN);
+  auto inter = new Fossil (var_cast (tree), const_static_cast <Fossil*> (from->getParent ()), string (), NaN);
   inter->init ();
   FFOR (size_t, i, inter->core. size ())
     inter->core [i] = from->core [i];  // PAR
   inter->setTimeWeight ();
-  const_cast <Species*> (from) -> setParent (inter); 
+  var_cast (from) -> setParent (inter); 
   //
-	Fossil* root_old_ = const_cast <Fossil*> (static_cast <const Phyl*> (inter->makeRoot ()) -> asFossil ());
+	Fossil* root_old_ = var_cast (static_cast <const Phyl*> (inter->makeRoot ()) -> asFossil ());
 	ASSERT (root_old_);
 	root_old = root_old_;
 	//
@@ -1791,15 +1792,15 @@ void ChangeRoot::restore_ ()
   // Topology
   if (isolatedTransient) 
   {
-  	isolatedTransient->attach (const_cast <FeatureTree&> (tree));
+  	isolatedTransient->attach (var_cast (tree));
   	const Tree::TreeNode* parent_old = isolatedTransientChild->getParent ();
 	  isolatedTransientChild->setParent (isolatedTransient);
-	  isolatedTransient     ->setParent (const_cast <Tree::TreeNode*> (parent_old));
+	  isolatedTransient     ->setParent (var_cast (parent_old));
 	  root_old = isolatedTransient;
   }
 	EXEC_ASSERT (root_old->makeRoot () == from->getParent ());
   const Fossil* inter = static_cast <const Fossil*> (from->getParent ());
-  const_cast <Species*> (from) -> setParent (const_static_cast <Fossil*> (inter->getParent ()));  
+  var_cast (from) -> setParent (const_static_cast <Fossil*> (inter->getParent ()));  
   delete inter;
 }
 
@@ -1834,7 +1835,7 @@ void ChangeDel::apply_ ()
 	ASSERT (fromChildren. size () >= 2);
 	
   // Topology
-	const_cast <Species*> (from) -> detachChildrenUp ();
+	var_cast (from) -> detachChildrenUp ();
 	ASSERT (static_cast <const Species*> (fromChildren. front ()) -> getParent () == oldParent);
 
   // Species::time
@@ -1867,8 +1868,8 @@ void ChangeDel::restore_ ()
   	const_static_cast <Species*> (node) -> restoreTime ();
 	
   // Topology
-  Species* from_ = const_cast <Species*> (from);
-	from_->attach (const_cast <FeatureTree&> (tree));
+  Species* from_ = var_cast (from);
+	from_->attach (var_cast (tree));
   from_->setParent (oldParent);
   for (const DiGraph::Node* node : fromChildren)
     const_static_cast <Species*> (node) -> setParent (from_);
@@ -1892,7 +1893,7 @@ void ChangeDel::commit_ ()
   	const_static_cast <Species*> (node) -> commitFeaturesUp (oldParent);
 	oldParent->commitFeaturesUp (nullptr);
 
-	const_cast <FeatureTree&> (tree). delayDelete (const_cast <Species*> (from));
+	var_cast (tree). delayDelete (var_cast (from));
 }
 
 
@@ -1989,7 +1990,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   {
     Progress prog (genomes);
    	for (const DiGraph::Node* node : nodes)
-   		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
+   		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
    		{
    		  prog ();
         globalSingletonsSize += g->setSingletons (globalSingletons);
@@ -2013,7 +2014,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   {
     Progress prog (genomes);
    	for (const DiGraph::Node* node : nodes)
-   		if (Genome* g = const_cast <Genome*> (static_cast <const Phyl*> (node) -> asGenome ()))
+   		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
       { 
         prog ();
         EXEC_ASSERT (g->removeFromCoreSet (commonCore) == commonCore. size ()); 
@@ -2027,7 +2028,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   	
   // features, feature2index
   ASSERT (features. empty ());
-  map<Feature::Id, size_t/*index*/> feature2index;
+  Feature2index feature2index (nonSingletons. size ());
 #ifndef NDEBUG
   Feature::Id prevFeature;
 #endif
@@ -2064,10 +2065,10 @@ FeatureTree::FeatureTree (const string &treeFName,
      			timeNan++;
      		else
      			timeNonNan++;
-   			const_cast <Species*> (s) -> init ();
+   			var_cast (s) -> init ();
    		}
    		else if (const Genome* g = p->asGenome ())
-   			const_cast <Genome*> (g) -> init (feature2index);
+   			var_cast (g) -> init (feature2index);
    		else
    			ERROR;
    	}
@@ -2139,30 +2140,29 @@ bool FeatureTree::loadPhylLines (const StringVector& lines,
 	if (offset < expectedOffset)
 		return false;
 	if (offset != expectedOffset)
-	{
-		cout << "Line " << lineNum + 1 << ": " << line << endl;
-		ERROR;
-	}
+		throw runtime_error ("Line " + toString (lineNum + 1) + ":\n" + line);
 	
 	lineNum++;
 
-  string idS (findSplit (s));
-	ASSERT (isRight (idS, ":"));
-	idS. erase (idS. size () - 1);
+  if (! contains (s, ':'))
+    throw runtime_error ("No ':' on line " + toString (lineNum));
+  string idS (findSplit (s, ':'));
 	if (isLeft (idS, "g"))
 	{
 	  idS. erase (0, 1);
 	  ASSERT (parent);
-	  Strain* st = const_cast <Strain*> (parent->asStrain ());
+	  Strain* st = var_cast (parent->asStrain ());
 		new Genome (*this, st, idS);
 	}
 	else
 	{
+    if (s. empty ())
+      throw runtime_error ("Bad format of line " + toString (lineNum));
     const Real time = str2time (s);
     Fossil* fossilParent = nullptr;
     if (parent)
     {
-      fossilParent = const_cast <Fossil*> (parent->asFossil ());
+      fossilParent = var_cast (parent->asFossil ());
       ASSERT (fossilParent);
     }
 	  Species* sp = nullptr;
@@ -2384,15 +2384,15 @@ void FeatureTree::deleteLeaf (TreeNode* node,
   const Fossil* grandparent = static_cast <const Phyl*> (parent->getParent ()) -> asFossil ();
   ASSERT (grandparent);
   
-  const_cast <Genome*> (leaf) -> detachChildrenUp ();
+  var_cast (leaf) -> detachChildrenUp ();
   
-	const_cast <Strain*> (parent) -> detachChildrenUp ();
-	delayDelete (const_cast <Strain*> (parent));
+	var_cast (parent) -> detachChildrenUp ();
+	delayDelete (var_cast (parent));
 
   if (deleteTransientAncestor && grandparent->isTransient ())
   {
-  	const_cast <Fossil*> (grandparent) -> detachChildrenUp ();
-  	delayDelete (const_cast <Fossil*> (grandparent));
+  	var_cast (grandparent) -> detachChildrenUp ();
+  	delayDelete (var_cast (grandparent));
   }
 	
   delete leaf;
@@ -2473,7 +2473,7 @@ void FeatureTree::setTimeWeight ()
   setCore ();
  	for (DiGraph::Node* node : nodes)
  	  if (const Species* s = static_cast <Phyl*> (node) -> asSpecies ())
- 		  const_cast <Species*> (s) -> setTimeWeight (); 
+ 		  var_cast (s) -> setTimeWeight (); 
 }
 
 
@@ -2611,7 +2611,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
    	{
    	  Phyl* p = static_cast <Phyl*> (node);
    		if (const Species* s = p->asSpecies ())
-  		  const_cast <Species*> (s) -> time = s->getParent () ? time_init : getRootTime ();
+  		  var_cast (s) -> time = s->getParent () ? time_init : getRootTime ();
  		  p->setWeight ();
    	}
    	
@@ -2782,7 +2782,7 @@ const Change* FeatureTree::getBestChange (const Species* from)
     cerr << " area=" << area. size () << " ";
 
  	for (const Tree::TreeNode* node : area)  
- 		if (Species* to = const_cast <Species*> (static_cast <const Phyl*> (node) -> asSpecies ()))
+ 		if (Species* to = var_cast (static_cast <const Phyl*> (node) -> asSpecies ()))
  		{
    	  TRY_CHANGE (ChangeToSibling, (from, to));  
    	  TRY_CHANGE (ChangeToUncle,   (from, to));   
@@ -2836,7 +2836,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
   Set<const TreeNode*> changedNodes;  	
 	for (const Change* ch_ : changes)
 	{
-		Change* ch = const_cast <Change*> (ch_);
+		Change* ch = var_cast (ch_);
 		ASSERT (ch);
   	  
 	  if (! ch->valid ())
@@ -3130,8 +3130,7 @@ void FeatureTree::loadSuperRootCoreFile (const string &coreFeaturesFName)
 	if (coreFeaturesFName. empty ())
 	  return;
 
-  typedef  map<Feature::Id, size_t>  Feature2index;
-  Feature2index feature2index;
+  Feature2index feature2index (features. size ());
   FFOR (size_t, i, features. size ())
     feature2index [features [i]. name] = i;
   ASSERT (feature2index. size () == features. size ());
@@ -3346,8 +3345,8 @@ size_t FeatureTree::deleteTimeZero ()
  			{
  			  if (verbose ())
  			    cout << "To delete:" << f->getName () << endl;
- 				const_cast <Fossil*> (f) -> detachChildrenUp ();
- 				delayDelete (const_cast <Fossil*> (f));
+ 				var_cast (f) -> detachChildrenUp ();
+ 				delayDelete (var_cast (f));
  				n++;
  			}
  			
@@ -3362,105 +3361,6 @@ size_t FeatureTree::deleteTimeZero ()
  				
   return n;  
 }
-
-
-
-#if 0
-void FeatureTree::abbreviate ()
-{
-	ASSERT (taxNamePrefix. empty ());
-	
-	
-  List<List<string> > names;
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		{
- 			const List<string> words (str2list (g->taxName));
- 		//ASSERT (! words. empty ());
- 		  names. push_back (words);
- 		}
- 	
- 		
-  while (! names. empty ())
-  {
-    const size_t nNames = names. size ();
-
-    typedef  map<string, size_t>  Freq;
-	  Freq freq;
-	 	for (List<string>& lst : names)
-	 	  freq [lst. front ()]++;
-	 	  
-	 	string bestWord;
-	 	size_t freq_max = 0;
-	  for (const auto& it : freq)
-	 	  if (maximize (freq_max, it. second))
-	 	  	bestWord = it. first;
-	 	  	
-	 	if (freq_max < nNames / 2)
-	 		break;
-	 		
-	 	taxNamePrefix. push_back (bestWord);
-
-  #if 1
-    for (Iter <List<List<string> > > iter (names); iter. next (); )
-	 	  if (iter->front () == bestWord)
-	 	  {
-	 	  	iter->pop_front ();
-	 	  	if (iter->empty ())
- 	 	  	  iter. erase ();
-	 	  }
-	 	  else
-	 	  	iter. erase ();
-  #else	  
-	 	for (List<List<string> >::iterator it = names. begin (); it != names. end ();)
-	 	{
-	 		List<List<string> >::iterator itCur = it;
-	 		it++;
-	 	  if (itCur->front () == bestWord)
-	 	  {
-	 	  	itCur->pop_front ();
-	 	  	if (itCur->empty ())
- 	 	  	  names. erase (itCur);
-	 	  }
-	 	  else
-	 	  	names. erase (itCur);
-	 	}
-	#endif
-	}
-
-
- 	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		{
- 			List<string> words (str2list (g->taxName));
-      List<string>::iterator wordsIt = words. begin ();
-    	for (const string& prefix : taxNamePrefix)
-    	{ 
-	    	if (   wordsIt == words. end ()
-	    		  || prefix != *wordsIt
-	    		 )
-	      	break;
-	      *wordsIt = string (1, prefix. at (0)) + ".";
-	      wordsIt++;
- 		  }
- 		  const_cast <Genome*> (g) -> taxName = list2str (words);
- 		}
-}
-
-
-
-string FeatureTree::abbreviationLegend () const
-{
-  string abbreviation;
-  for (const string& pref : taxNamePrefix)
-  {
-  	if (! abbreviation. empty ())
-  		abbreviation += " ";
-  	abbreviation += string (1, pref. at (0)) + ".";
-  }
-  return abbreviation + " - " + list2str (taxNamePrefix);
-}
-#endif
 
 
 
