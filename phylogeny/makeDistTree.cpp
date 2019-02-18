@@ -39,7 +39,8 @@ struct ThisApplication : Application
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + ", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree ending with '/'");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
-	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by", "1");
+	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
+	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
 	  
@@ -170,6 +171,7 @@ struct ThisApplication : Application
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim");
+	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 		const string dist_request        = getArg ("dist_request");
@@ -231,7 +233,10 @@ struct ThisApplication : Application
     else
       if (dataFName. empty () != dissimAttrName. empty ())
         throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
-    ASSERT (dissim_coeff > 0);
+    if (dissim_coeff <= 0)
+      throw runtime_error ("dissim_coeff must be positive");
+    if (dissim_power <= 0)
+      throw runtime_error ("dissim_power must be positive");
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
     if (check_keep && keepFName. empty ())

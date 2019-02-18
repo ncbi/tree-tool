@@ -86,6 +86,7 @@ inline Real dissim_max ()
   // dissim < dissim_max() <=> !nullReal(dissim2mult(dissim))
 
 
+extern Real dissim_power;
 extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
 extern Real hybridness_min;
 extern Real dissim_boundary;

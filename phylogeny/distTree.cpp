@@ -25,7 +25,8 @@ Chronometer chron_subgraph2tree ("subgraph2tree");
 const StringVector varianceTypeNames {"lin", "sqr", "exp", "linExp"};
 VarianceType varianceType = varianceType_linExp;
 
-Real dissim_coeff = 1;
+Real dissim_power = 1.0;
+Real dissim_coeff = 1.0;
 Real hybridness_min = 1.1;
 Real dissim_boundary = NaN;
 
@@ -4294,6 +4295,7 @@ bool DistTree::addDissim (Leaf* leaf1,
 {
   ASSERT (leaf1);
   ASSERT (leaf2);
+  ASSERT (dissim_power > 0);
   ASSERT (dissim_coeff > 0);
   ASSERT (detachedLeaves. empty ());
   IMPLY (dissim == 0, leaf1->getCollapsed (leaf2));
@@ -4309,6 +4311,8 @@ bool DistTree::addDissim (Leaf* leaf1,
   }
   
   ASSERT (dissim >= 0);
+  if (dissim_power != 1.0)
+    dissim = pow (dissim, dissim_power);
   dissim *= dissim_coeff;   
     
   const Real mult = dissim2mult (dissim);  
