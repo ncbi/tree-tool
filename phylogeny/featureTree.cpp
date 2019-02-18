@@ -1958,7 +1958,7 @@ FeatureTree::FeatureTree (const string &treeFName,
  		    catch (const exception &e)
  		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
 
-  constexpr size_t displayPeriod = 1000;  // PAR
+  constexpr size_t displayPeriod = 100;  // PAR
 
   // Genome::coreSet
   {
@@ -2056,7 +2056,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     // 288 sec./50K genomes
     size_t timeNan = 0;
     size_t timeNonNan = 0;
-    Progress prog (nodes. size ());
+    Progress prog (nodes. size (), displayPeriod); 
    	for (const DiGraph::Node* node : nodes)
    	{
    	  prog ();
