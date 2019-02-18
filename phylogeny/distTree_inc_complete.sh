@@ -1,94 +1,102 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
   echo "#1: Incremental distance tree directory"
   echo "#2: List of objects"
+  echo "#3: Update database (0/1)"
   echo "Output: #1/, data.dm"
   exit 1
 fi
+INC=$1
+OBJS=$2
+DB=$3
 
 
-if [ -s $1/tree ]; then
-  echo "$1/tree must be empty"
+#if [ 1 == 0 ]; then  
+if [ -s $INC/tree ]; then
+  echo "$INC/tree must be empty"
   exit 1
 fi
 
-N=`ls $1/new/ | wc -l`
+N=`ls $INC/new/ | wc -l`
 if [ $N -gt 0 ]; then
-  echo "$1/new/ must be empty"
+  echo "$INC/new/ must be empty"
   exit 1
 fi
 
-N=`ls $1/hybrid/ | wc -l`
+N=`ls $INC/hybrid/ | wc -l`
 if [ $N -gt 0 ]; then
-  echo "$1/hybrid/ must be empty"
+  echo "$INC/hybrid/ must be empty"
   exit 1
 fi
 
 
-$THIS/../sort.sh $2
+$THIS/../sort.sh $OBJS
 
-if [ ! -s $1/dissim ]; then
-	$THIS/../list2pairs $2 > $1/dissim_request
-	$THIS/distTree_inc_request2dissim.sh $1 $1/dissim_request $1/dissim.raw
-	rm $1/dissim_request
-	cat $1/dissim.raw | grep -vwi nan | grep -vwi inf > $1/dissim
-	rm $1/dissim.raw
-fi
-
+$THIS/../list2pairs $OBJS > $INC/dissim_request
+$THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.raw
+rm $INC/dissim_request
+cat $INC/dissim.raw | grep -vwi nan | grep -vwi inf > $INC/dissim
+rm $INC/dissim.raw
 
 echo ""
 echo "data.dm ..."
-$THIS/../dm/pairs2attr2 $1/dissim 1 cons 6 -distance > data.dm
+$THIS/../dm/pairs2attr2 $INC/dissim 1 cons 6 -distance > data.dm
 
-cat data.dm | sed 's/nan/inf/g' > $1/data1.dm
-mkdir $1/clust
-$THIS/dm/distTriangle $1/data1 cons  -clustering_dir $1/clust
-rm $1/data1.dm
-N=`ls $1/clust/ | wc -l`
+# distTriangle
+cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
+mkdir $INC/clust
+$THIS/../dm/distTriangle $INC/data1 cons  -clustering_dir $INC/clust
+rm $INC/data1.dm
+N=`ls $INC/clust/ | wc -l`
 if [ $N -gt 1 ]; then
   echo "# Clusters: $N"
   exit 1
 fi
-$THIS/dm/dm2objs $1/clust/1/data1 | sort > $1/tree.list
-mv $1/clust/1/data1.dm data.dm
-$THIS/../setMinus $2 $1/tree.list > $1/outlier-triangle
-rm -r $1/clust/
-$1/outlier2db.sh $1/outlier-triangle triangle
-rm $1/outlier-triangle
-
+$THIS/../dm/dm2objs $INC/clust/1/data1 | sort > $INC/tree.list
+mv $INC/clust/1/data1.dm data.dm
+$THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-triangle
+rm -r $INC/clust/
+wc -l $INC/outlier-triangle
+if [ $DB == 1 ]; then
+  $THIS/../trav $INC/outlier-triangle "$INC/outlier2db.sh %f triangle"
+fi
+rm $INC/outlier-triangle
 
 echo ""
 echo "Tree ..."
 HYBRID=""
-HYBRIDNESS_MIN=`cat $1/hybridness_min`
+HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
-  DISSIM_BOUNDARY=`cat $1/dissim_boundary`
-	HYBRID="-hybrid_parent_pairs $1/hybrid_parent_pairs  -delete_hybrids $1/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+  DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
+	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
-$THIS/makeDistTree  -threads 5  -data data  -dissim cons  -optimize  $HYBRID  -output_tree $1/tree  > $1/hist/makeDistTree-complete.1
-#rm $1/data.dm
+VARIANCE=`cat $INC/variance`
+$THIS/makeDistTree  -threads 5  -data data  -dissim cons  -variance $VARIANCE  -optimize  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
-echo ""
-echo "Database ..."
-$1/objects_in_tree.sh $1/tree.list 1
-
-if [ "$HYBRIDNESS_MIN" != 0 ]; then
+if [ $DB == 1 ]; then
   echo ""
-  echo "Hybrid ..."
-	$THIS/distTree_inc_hybrid.sh $1
-  echo "Unhybrid ..."
-  $THIS/distTree_inc_unhybrid.sh $1
+  echo "Database ..."
+  $INC/objects_in_tree.sh $INC/tree.list 1
+  if [ "$HYBRIDNESS_MIN" != 0 ]; then
+    echo ""
+    echo "Hybrid ..."
+  	$THIS/distTree_inc_hybrid.sh $INC
+    echo "Unhybrid ..."
+    $THIS/distTree_inc_unhybrid.sh $INC
+  fi
 fi
 
+rm $INC/tree.list
 
-if [ -e $1/phen ]; then
+
+if [ -e $INC/phen ]; then
   echo ""
   echo "Quality ..."
-  $THIS/tree_quality_phen.sh $1/tree "" $1/phen > $1/hist/tree_quality_phen.1
-	grep ' !' $1/hist/tree_quality_phen.1
+  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen > $INC/hist/tree_quality_phen.1
+	grep ' !' $INC/hist/tree_quality_phen.1
 fi
 
 
