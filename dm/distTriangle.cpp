@@ -64,8 +64,8 @@ struct Violation
 struct Violator : Named
 {
   // # Violation's
-  size_t end;
-  size_t middle;
+  size_t end {0};
+  size_t middle {0};
   
   Violator (const string &name_arg,
             size_t end_arg,
@@ -74,10 +74,7 @@ struct Violator : Named
     , end (end_arg)
     , middle (middle_arg)
     { ASSERT (num ()); }
-  Violator ()
-    : end (0)
-    , middle (0)
-    {}
+  Violator () = default;
   void saveText (ostream &os) const
     { os << name << ": " << end << "+" << middle << " = " << num (); }
     
@@ -191,7 +188,7 @@ Save clusters in " + dmSuff + "-files\
     cout << "Average distance = " << ave << endl; 
 
 
-    map <const DisjointCluster*, Vector<size_t/*objNum*/>>  cluster2objs;
+    unordered_map <const DisjointCluster*, Vector<size_t/*objNum*/>>  cluster2objs (ds. objs. size ());
     if (max_cliques)
     {
       // Greedy algorithm
@@ -256,7 +253,7 @@ Save clusters in " + dmSuff + "-files\
     
     
     size_t nClust = 0;
-    for (const auto clustIt : cluster2objs)
+    for (const auto& clustIt : cluster2objs)
     {
       const Vector<size_t>& objs = clustIt. second;
       ASSERT (! objs. empty ());
@@ -275,39 +272,45 @@ Save clusters in " + dmSuff + "-files\
   
       // Triangle inequality
       List<Violation> violations;
-      FOR (size_t, y_, objs. size ())
-        FOR (size_t, x_, y_)
-          FOR (size_t, z_, objs. size ())
-          {
-            const size_t x = objs [x_];
-            const size_t y = objs [y_];
-            const size_t z = objs [z_];
-            const Real d = dist->get (x, y); 
-            const Real dPair = dist->get (x, z) + dist->get (z, y);
-            if (! DM_sp::finite (dPair))
-              continue;
-            const Real deviation = d - dPair;  // Triangle inequality => non-positive
-            if (deviation < ave * 0.01 /*deviation_min*/)  // PAR
-              continue;
-            const Prob fraction = DM_sp::finite (d) ? deviation / d : 1;
-            ASSERT (! isNan (fraction));
-            if (fraction < fraction_min || fraction_min == 1)
-              continue;
-            const Violation violation (x, y, z);
-            violations << violation;
-            if (   violation. contains (objIndex)
-                || verbose ()
-               )
+      {
+        Progress prog (objs. size ());
+        FOR_REV (size_t, y_, objs. size ())
+        {
+          prog ();
+          FOR (size_t, x_, y_)
+            FOR (size_t, z_, objs. size ())
             {
-              const string xName (ds. objs [x] -> name);
-              const string yName (ds. objs [y] -> name);
-              const string zName (ds. objs [z] -> name);
-              cout << "d(" << xName << "," << yName << ") = " << d 
-                       << " > d(" << xName << "," << zName << ") + d(" << zName << "," << yName << ") = " << dPair
-                       << " by " << deviation << " (" << fraction * 100 << " %)"
-                       << endl;
+              const size_t x = objs [x_];
+              const size_t y = objs [y_];
+              const size_t z = objs [z_];
+              const Real d = dist->get (x, y); 
+              const Real dPair = dist->get (x, z) + dist->get (z, y);
+              if (! DM_sp::finite (dPair))
+                continue;
+              const Real deviation = d - dPair;  // Triangle inequality => non-positive
+              if (deviation < ave * 0.01 /*deviation_min*/)  // PAR
+                continue;
+              const Prob fraction = DM_sp::finite (d) ? deviation / d : 1;
+              ASSERT (! isNan (fraction));
+              if (fraction < fraction_min || fraction_min == 1)
+                continue;
+              const Violation violation (x, y, z);
+              violations << violation;
+              if (   violation. contains (objIndex)
+                  || verbose ()
+                 )
+              {
+                const string xName (ds. objs [x] -> name);
+                const string yName (ds. objs [y] -> name);
+                const string zName (ds. objs [z] -> name);
+                cout << "d(" << xName << "," << yName << ") = " << d 
+                         << " > d(" << xName << "," << zName << ") + d(" << zName << "," << yName << ") = " << dPair
+                         << " by " << deviation << " (" << fraction * 100 << " %)"
+                         << endl;
+              }
             }
-          }
+        }
+      }
       cout << "# Violations = " << violations. size () << endl;
           
       // Set-covering problem: approximation alogorithm
