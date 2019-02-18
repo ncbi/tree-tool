@@ -1042,10 +1042,13 @@ public:
   Dataset () 
     {}
   explicit Dataset (const string &fName)
-    { { ifstream is (fName + dmSuff);
+    { { const string fName_ (fName + dmSuff);
+        ifstream is (fName_);
+        if (! is. good ())
+          throw runtime_error ("cannot open file " + strQuote (fName_));
     	  char* buf = nullptr;
 			  if (! is. rdbuf () -> pubsetbuf (buf, 1e6))   // PAR
-			  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName));
+			  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName_));
         load (is);
       }
       qc ();

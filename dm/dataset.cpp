@@ -1698,7 +1698,8 @@ void PositiveAttr2::qc () const
 
 void Dataset::load (istream &is)
 {
-  ASSERT (is. good ());
+  if (! is. good ())
+    throw runtime_error ("Cannot load dataset");
   
   
   string s;
