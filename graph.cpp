@@ -1068,7 +1068,8 @@ string Tree::TreeNode::getLcaName () const
 	string name;
 	if (left == right)
 		name = left->getLeafName ();
-	name = left->getLeafName () + objNameSeparator + right->getLeafName (); 
+	else
+	  name = left->getLeafName () + objNameSeparator + right->getLeafName (); 
 	return name;
 }
 
