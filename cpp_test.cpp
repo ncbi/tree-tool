@@ -33,6 +33,9 @@ struct S : Root
     : a (move (other. a))
     , b (move (other. b))
     { cout << "Move constructor" << endl; }
+  
+  void f () const
+    { throw runtime_error (FUNC  + ": error"); }
 }; 
 
 
@@ -73,6 +76,9 @@ struct ThisApplication : Application
 
  	void body () const
 	{
+	  S s;
+	  s. f ();
+	  
 	  constexpr size_t len = 10000000;  // PAR
 	  Vector<ulong> vec;  vec. reserve (len);
 	  Rand rand;
