@@ -931,6 +931,8 @@ bool fileExists (const string &fName);
   bool directoryExists (const string &dirName);
 #endif
 
+streampos getFileSize (const string &fName);
+
 size_t strMonth2num (const string& month);
 // Input: month: "Jan", "Feb", ... (3 characters)
 
@@ -1051,9 +1053,13 @@ public:
 	Threads& operator<< (thread &&t)
 	  { if (threads. size () >= threadsToStart)
 	  	  throw logic_error ("Too many threads created");
-	  	threads. push_back (move (t)); 
+	  	try { threads. push_back (move (t)); }
+	  	  catch (const exception &e) 
+	  	    { throw runtime_error (string ("Cannot start thread\n") + e. what ()); }
 	  	return *this;
 	  }
+	size_t getAvailable () const
+	  { return threadsToStart - threads. size (); }
 };
 
 
@@ -2959,7 +2965,9 @@ protected:
 private:
 	void addDefaultArgs ()
 	  { if (gnu)
+    	{ addKey ("threads", "Max. number of threads", "1", '\0', "THREADS");
     	  addFlag ("debug", "Integrity checks");
+      }
     	else
     	{ addFlag ("qc", "Integrity checks (quality control)");
 	      addKey ("verbose", "Level of verbosity", "0");
@@ -3002,7 +3010,7 @@ protected:
   string key2shortHelp (const string &name) const;
   string getProgramDirName () const
     { return getDirName (programArgs. front ()); }
-private:
+protected:
   virtual void initEnvironment ()
     {}
   string getInstruction () const;
@@ -3038,8 +3046,9 @@ struct ShellApplication : Application
  ~ShellApplication ();
 
 
-private:
+protected:
   void initEnvironment () override;
+private:
   void body () const final;
   virtual void shellBody () const = 0;
 protected:
@@ -3054,7 +3063,8 @@ protected:
   void findProg (const string &progName) const;
     // Output: prog2dir
   string fullProg (const string &progName) const;
-   // Requires: After findProg(progName)
+    // Return: directory + progName + ' '
+    // Requires: After findProg(progName)
 };
 
 
