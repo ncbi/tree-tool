@@ -4,39 +4,41 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Delete a list of objects from an incremental distance tree"
   echo "Update: #1/"
-  echo "#1: incremental distance tree directory"
+  echo "#1: Incremental distance tree directory"
   echo "#2: List of objects to delete"
   exit 1
 fi
+INC=$1
+DEL=$2
 
 
-VER=`cat $1/version`
+VER=`cat $INC/version`
 
-cp $1/tree $1/hist/tree.$VER
-gzip $1/hist/tree.$VER
+cp $INC/tree $INC/hist/tree.$VER
+gzip $INC/hist/tree.$VER
 
 VER=$(( $VER + 1 ))
-echo $VER > $1/version
+echo $VER > $INC/version
 
-VARIANCE=`cat $1/variance`
+VARIANCE=`cat $INC/variance`
 
 # Cf. distTree_inc_new.sh
-$THIS/makeDistTree  -threads 15  -data $1/  -variance $VARIANCE \
-  -delete $2  \
+$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
+  -delete $DEL  \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
-  -output_tree $1/tree.new > $1/hist/makeDistTree-delete.$VER
-mv $1/tree.new $1/tree
+  -output_tree $INC/tree.new > $INC/hist/makeDistTree-delete.$VER
+mv $INC/tree.new $INC/tree
 
 echo ""
-$1/objects_in_tree.sh $2 null
-$THIS/../trav $2 "rm -f $1/hybrid/%f"
-$THIS/../trav $2 "rm -f $1/new/%f"
+$INC/objects_in_tree.sh $DEL null
+$THIS/../trav $DEL "rm -f $INC/hybrid/%f"
+$THIS/../trav $DEL "rm -f $INC/new/%f"
 
-cp $2 $1/hist/delete.$VER
+cp $DEL $INC/hist/delete.$VER
 
 
-$THIS/distTree_inc_tree1_quality.sh $1
+$THIS/distTree_inc_tree1_quality.sh $INC
 
 
 echo ""
