@@ -41,8 +41,8 @@ while [ 1 = 1 ]; do
     set +o errexit
     L=(`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rTt]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`)
     set -o errexit
-    echo "Re-submitting $#L grid jobs ..."
-    while [ $#L -gt 0 ]; do
+    echo "Re-submitting ${#L[@]} grid jobs ..."
+    while [ ${#L[@]} -gt 0 ]; do
       if [ $QRESUB == 1 ]; then
         set +o errexit
 	      qresub ${L[0]} -h u
