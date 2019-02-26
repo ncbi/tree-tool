@@ -1031,8 +1031,8 @@ Terminal::Terminal (const string &name_arg)
     else
     {    
       ASSERT (name. size () == 3);
-      ASSERT (name [0] == Token::quote);
-      ASSERT (name [2] == Token::quote);
+      ASSERT (name [0] == '\"');
+      ASSERT (name [2] == '\"');
       c = name [1];
       ASSERT (c >= ' ')
       ASSERT (c < 127);
@@ -1589,7 +1589,7 @@ void Grammar::addRule (const string &lhs,
   
   string ascii ("   ");
   ASSERT (ascii. size () == 3);
-  ascii [0] = Token::quote;
+  ascii [0] = '\"';
   ascii [2] = ascii [0];
 
   StringVector rhs;
@@ -1607,7 +1607,7 @@ void Grammar::addRule (const string &lhs,
     {
       case Token::eName: 
         isName = true;
-      case Token::eNumber: 
+      case Token::eInteger: 
         rhs << token. name; 
         rhsPart++;
         break;
@@ -1650,10 +1650,13 @@ void Grammar::addRule (const string &lhs,
                           List<Token>::const_iterator it = tokens. cbegin ();
                           switch (last)
                           {
-                            case '+': tokens << name << name << '*';
+                            case '+': tokens << move (Token (name)) 
+                                             << move (Token (name))
+                                             << move (Token ('*'));
                                       break;
                             case '*': addRule (nameMod, it, tokens. cend (), false);
-                                      tokens << name << '+';
+                                      tokens << move (Token (name)) 
+                                             << move (Token ('+'));
                                       break;
                             default: ERROR;
                           }

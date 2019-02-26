@@ -76,6 +76,22 @@ struct ThisApplication : Application
 
  	void body () const
 	{
+	#if 1
+	  double d = str2<double> ("1e0");
+	  cout << d << endl;
+	  
+	  {
+  	  istringstream iss ("1e");
+  	  iss >> d;
+  	  cout << d << ' ' << iss. eof () << ' ' << iss. fail () << ' ' << iss. rdstate () << endl;
+  	}
+
+	  {
+  	  istringstream iss ("1e1");
+  	  iss >> d;
+  	  cout << d << ' ' << iss. eof () << ' ' << iss. fail () << ' ' << iss. rdstate () << endl;
+  	}
+	#else
 	  S s;
 	  s. f ();
 	  
@@ -109,6 +125,7 @@ struct ThisApplication : Application
   	  FOR (size_t, i, len)
   	    m [vec [i]] ++;
   	}
+  #endif
   }
 };
 
