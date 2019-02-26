@@ -3,40 +3,51 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute requested dissimilarities"
-  echo "#1: Incremental tree"
+  echo "#1: Incremental tree directory"
   echo "#2: Pairs of objects"  
   echo "#3: Output file with dissimilarities"
   exit 1
 fi
+INC=$1
+REQ=$2
+OUT=$3
 
 
-N=`cat $2 | wc -l`
-echo "$N $2"
-GRID_MIN=`cat $1/grid_min`
+N=`cat $REQ | wc -l`
+echo "$N $REQ"
+GRID_MIN=`cat $INC/grid_min`
 if [ $N -le $GRID_MIN ]; then  # PAR
-  $1/request2dissim.sh $2 $3 $3.log &> /dev/null
+  $INC/request2dissim.sh $REQ $OUT $OUT.log &> /dev/null
 else
-	mkdir $1/dr	
-	$THIS/../splitList $2 $GRID_MIN $1/dr
+	mkdir $INC/dr	
+	$THIS/../splitList $REQ $GRID_MIN $INC/dr
 	
   while [ 1 == 1 ]; do
-    rm -rf $1/dr.out
-		mkdir $1/dr.out
+    rm -rf $INC/dr.out
+		mkdir $INC/dr.out
 		
-		$THIS/../trav -step 1 $1/dr "$QSUB_5 -N j%f %q$1/request2dissim.sh %d/%f $1/dr.out/%f $1/dr.out/%f.log%q > /dev/null"		
-		$THIS/../qstat_wait.sh 2000 1
+		ls $INC/dr > $INC/dr.list
+		while [ -s $INC/dr.list ]; do
+  		$THIS/../trav -step 1 $INC/dr.list "$QSUB_5 -N j%f %q$1/request2dissim.sh $INC/dr/%f $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
+  		$THIS/../qstat_wait.sh 2000 1	
+ 			set +o errexit	
+		  ls $INC/dr.out/*.log > $INC/dr.log
+	  	set -o errexit
+      cat $INC/dr.log | sed 's|^'$INC'/dr.out/||1' | sed 's/\.log$//1' > $INC/dr.list
+		done
+		rm $INC/dr.list
 		
-		$THIS/../trav $1/dr.out "cat %d/%f" > $3
-		wc -l $3
+		$THIS/../trav $INC/dr.out "cat %d/%f" > $OUT
+		wc -l $OUT
 		
-		N_new=`cat $3 | wc -l`
+		N_new=`cat $OUT | wc -l`
 		if [ $N -eq $N_new ]; then 
 		  break
 		fi
 		echo "Redo ..."
 	done
 	
-	rm -r $1/dr.out
-	rm -r $1/dr
+	rm -r $INC/dr.out
+	rm -r $INC/dr
 fi	
 
