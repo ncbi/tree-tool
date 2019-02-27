@@ -9,11 +9,21 @@ Root: by length
 INPUT:
 # Leaves: 50
 # Discernible leaves: 50
-# Nodes: 98
+# Nodes: 69
 # Dissimilarities: 1225 (100.00 %)
 Dissimilarities factor: 6.26
 Ave. dissimilarity = 4.986726
+absCriterion = 691.758  Error density = 32.249 %
+
+Optimizing arc lengths at each arc ...
+# Nodes deleted = 1
+Optimizing arc lengths at each node ...
+# Nodes deleted = 1
+absCriterion = 281.009  Error density = 19.948 %
+
 absCriterion = 8.350  Error density = 3.374 %
+
+Ave. radius: 3.966933
 
 OUTPUT:
 absCriterion = 8.350  Error density = 3.374 %
@@ -21,7 +31,7 @@ absCriterion [0] = 3.746  Error density [0] = 5.049 %  Fraction = 34.041 %
 absCriterion [1] = 4.605  Error density [1] = 2.802 %  Fraction = 65.959 %
 
 Relative epsilon2_0 = 0.00 %
-Mean residual = 0.00
+Mean residual = -0.00
 Correlation between residual^2 and dissimilarity = 0.08
 
 # Interior nodes (with root) = 48 (max = 49)
