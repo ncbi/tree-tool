@@ -2115,7 +2115,7 @@ void Image::processSmall (const DTNode* center_arg,
     areaRadius--;
   }
 
-  tree = new DistTree (subgraph, new2old);
+  tree = new DistTree (subgraph, new2old, false);
   tree->qc ();
   rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
@@ -2221,7 +2221,7 @@ void Image::processLarge (const Steiner* subTreeRoot,
   
   try
   {
-    tree = new DistTree (subgraph, new2old);
+    tree = new DistTree (subgraph, new2old, true);
     tree->qc ();
     rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
@@ -3138,7 +3138,8 @@ DistTree::DistTree (Prob branchProb,
 
 
 DistTree::DistTree (Subgraph &subgraph,
-                    Node2Node &newLeaves2boundary)
+                    Node2Node &newLeaves2boundary,
+                    bool sparse)
 : subDepth (subgraph. tree. subDepth + 1)
 , rand (seed_global)
 {
@@ -3253,74 +3254,106 @@ DistTree::DistTree (Subgraph &subgraph,
   ASSERT (newLeaves2boundary. size () == boundary. size ());
     
 
-  // dissims[] 
+  // dissims[]
   // For some leaf pairs the dissimilarity may be missing
-  dissims. reserve (getDissimSize_max ());
-  Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, (uint) -1);
-  const size_t reserve_size = getPathObjNums_size ();
-  for (DiGraph::Node* node : nodes)
   {
-    const DTNode* dtNode = static_cast <DTNode*> (node);
-    ASSERT (dtNode->pathObjNums. empty ());
-    var_cast (dtNode) -> pathObjNums. reserve (reserve_size); 
-  }
-  for (const auto& it2 : name2leaf)
-    for (const auto& it1 : name2leaf)
+    unordered_map <size_t, Dissim> dissimMap;  // sparse
+    Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, dissims_max);  // !sparse
+    if (sparse)
+      dissimMap. reserve (name2leaf. size () * getSparseDissims_size ());
+    else
     {
-      if (it1. first == it2. first)
-        break;
-      const Leaf* leaf1 = it1. second;
-      const Leaf* leaf2 = it2. second;
-      ASSERT (leaf1->index != leaf2->index);
+      dissims. resize (getDissimSize_max ());
+      ASSERT (leafNum == name2leaf. size ());
+      {
+        size_t objNum = 0;
+        for (const auto& it2 : name2leaf)
+          for (const auto& it1 : name2leaf)
+          {
+            const Leaf* leaf1 = it1. second;
+            const Leaf* leaf2 = it2. second;
+            if (leaf1 == leaf2)
+              break;
+            dissims [objNum] = move (Dissim (leaf1, leaf2, 0.0, 0.0));
+            ASSERT (leaf1->index != leaf2->index);
+            ASSERT (leaf1->index < NO_INDEX);
+            ASSERT (leaf2->index < NO_INDEX);
+            if (leaf1->index > leaf2->index)
+              swap (leaf1, leaf2);
+            leaves2objNum [leaf1->index * leafNum + leaf2->index] = (uint) objNum;
+            objNum++;
+            if (objNum >= (size_t) dissims_max)
+              throw runtime_error ("objNum is out of uint limits");
+          }
+        ASSERT (dissims. size () == objNum);
+      }
+      ASSERT (dissims. size () == getDissimSize_max ());
+    }
+
+
+    // dissims[]: mult, target
+    for (const SubPath& subPath : subgraph. subPaths)
+    {
+      const size_t wholeObjNum = subPath. objNum;
+      
+      const Real dist = wholeTree. dissims [wholeObjNum]. target - subPath. dist_hat_tails;
+        // May be < 0
+      if (isNan (dist))
+        continue;
+    
+      const Real mult = wholeTree. dissims [wholeObjNum]. mult; 
+      ASSERT (mult >= 0.0);
+      if (mult == 0.0)  // wholeTree.dissims[wholeObjNum].target = INF
+        continue;
+      
+      const DTNode* node1 = static_cast <const DTNode*> (findPtr (old2new, subPath. node1));
+      const DTNode* node2 = static_cast <const DTNode*> (findPtr (old2new, subPath. node2));
+      ASSERT (node1);
+      ASSERT (node2);
+      ASSERT (node1 != node2);
+      const Leaf* leaf1 = node1->asLeaf ();
+      const Leaf* leaf2 = node2->asLeaf ();
+      ASSERT (leaf1);
+      ASSERT (leaf2);    
       if (leaf1->index > leaf2->index)
         swap (leaf1, leaf2);
-      const uint objNum = leaves2dissims (var_cast (leaf1), var_cast (leaf2), 0.0, 0.0);
-      ASSERT (leaf1->index < NO_INDEX);
-      ASSERT (leaf2->index < NO_INDEX);
-      leaves2objNum [leaf1->index * leafNum + leaf2->index] = objNum;
+
+      const size_t index = leaf1->index * leafNum + leaf2->index;
+
+      Dissim* dissim = nullptr;
+      if (sparse)
+      {
+        dissim = & dissimMap [index];
+        if (! dissim->leaf1)
+          *dissim = move (Dissim (leaf1, leaf2, 0.0, 0.0));
+      }
+      else
+      {
+        const uint objNum = leaves2objNum [index];
+        ASSERT (objNum < dissims_max);
+        dissim = & dissims [objNum];
+      }
+      ASSERT (dissim);
+      ASSERT (dissim->leaf1);
+      dissim->target += mult * dist;
+      dissim->mult   += mult;
     }
-  ASSERT (dissims. size () == getDissimSize_max ());
-
-
-  // dissims[]: mult, target
-  for (const SubPath& subPath : subgraph. subPaths)
-  {
-    const size_t wholeObjNum = subPath. objNum;
     
-    const Real dist = wholeTree. dissims [wholeObjNum]. target - subPath. dist_hat_tails;
-    if (isNan (dist))
-      continue;
-    // May be < 0
-    const Real mult = wholeTree. dissims [wholeObjNum]. mult; 
-    ASSERT (mult >= 0);
-    if (mult == 0)  // wholeTree.dissims[wholeObjNum].target = INF
-      continue;
     
-    const DTNode* node1 = static_cast <const DTNode*> (findPtr (old2new, subPath. node1));
-    const DTNode* node2 = static_cast <const DTNode*> (findPtr (old2new, subPath. node2));
-    ASSERT (node1);
-    ASSERT (node2);
-    ASSERT (node1 != node2);
-    const Leaf* leaf1 = node1->asLeaf ();
-    const Leaf* leaf2 = node2->asLeaf ();
-    ASSERT (leaf1);
-    ASSERT (leaf2);    
-    if (leaf1->index > leaf2->index)
-      swap (leaf1, leaf2);
-
-    const uint objNum = leaves2objNum [leaf1->index * leafNum + leaf2->index];
-    ASSERT (objNum != (uint) -1);
-    
-    dissims [objNum]. mult   += mult;
-    dissims [objNum]. target += mult * dist;
+    if (sparse)
+    {
+      dissims. reserve (dissimMap. size ());
+      for (auto& it : dissimMap) 
+        dissims << move (it. second);
+    }
   }
   
   
   // Dissim::target, mult_sum, dissim2_sum
-  ASSERT (mult_sum == 0);
-  ASSERT (dissim2_sum == 0);
+  ASSERT (mult_sum == 0.0);
+  ASSERT (dissim2_sum == 0.0);
   for (Dissim& dissim : dissims)
-    if (dissim. mult == 0)
+    if (dissim. mult == 0.0)
       dissim. target = NaN;
     else
     {
@@ -3330,7 +3363,23 @@ DistTree::DistTree (Subgraph &subgraph,
     }
     
 
+  // DTNode::pathObjNums[]
+  const size_t reserve_size = getPathObjNums_size ();
+  for (DiGraph::Node* node : nodes)
+  {
+    const DTNode* dtNode = static_cast <DTNode*> (node);
+    ASSERT (dtNode->pathObjNums. empty ());
+    var_cast (dtNode) -> pathObjNums. reserve (reserve_size); 
+  }
+  FFOR (uint, objNum, (uint) dissims. size ())
+  {
+    Dissim& dissim = dissims [objNum];
+    var_cast (dissim. leaf1) -> pathObjNums << objNum;
+    var_cast (dissim. leaf2) -> pathObjNums << objNum;      
+  }
   setPaths ();
+
+
 //ASSERT (setDiscernibles_ds () == 0);
 }
 
@@ -4268,27 +4317,6 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
   
 
 
-uint DistTree::leaves2dissims (Leaf* leaf1,
-                               Leaf* leaf2,
-                               Real target,
-                               Real mult)
-{ 
-  ASSERT (leaf1);
-  ASSERT (leaf2);
-  
-  const size_t objNum_ = dissims. size ();
-  dissims << move (Dissim (leaf1, leaf2, target, mult));
-  if (objNum_ > (size_t) dissims_max)
-    throw runtime_error ("leaves2dissims: Too large objNum");
-  const uint objNum = (uint) objNum_;
-  leaf1->pathObjNums << objNum;
-  leaf2->pathObjNums << objNum;      
-  
-  return objNum;
-}
-
-
-
 bool DistTree::addDissim (Leaf* leaf1,
                           Leaf* leaf2,
                           Real dissim)
@@ -4322,7 +4350,13 @@ bool DistTree::addDissim (Leaf* leaf1,
     dissim2_sum += mult * sqr (dissim);  // max (0.0, dissim);
   }
   
-  leaves2dissims (leaf1, leaf2, dissim, mult);
+  const size_t objNum_ = dissims. size ();
+  if (objNum_ > (size_t) dissims_max)
+    throw runtime_error ("addDissim: Too large objNum");
+  dissims << move (Dissim (leaf1, leaf2, dissim, mult));
+  const uint objNum = (uint) objNum_;
+  leaf1->pathObjNums << objNum;
+  leaf2->pathObjNums << objNum;      
   
   return true;
 }

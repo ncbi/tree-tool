@@ -861,7 +861,8 @@ struct Dissim
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg,
           Real target_arg = NaN,
-          Real mult_arg = 0);
+          Real mult_arg = 0.0);
+  Dissim () = default;
   void qc () const;
 
           
@@ -959,7 +960,7 @@ struct DistTree : Tree
   const uint subDepth {0};
     // > 0 => *this is a subgraph of a tree with subDepth - 1
   typedef  unordered_map<string/*Leaf::name*/,const Leaf*>  Name2leaf;
-  Name2leaf name2leaf;
+  Name2leaf name2leaf;  // Not needed if subDepth ??
     // 1-1
 
 private:
@@ -1038,6 +1039,7 @@ public:
 	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
+	  //         [finished]                 /dev/null                                     Iterations of distTree_inc_new.sh are finished
     //          <Executables>
     //          db2unhybrid.sh            output: <Obj> list to move to new/
     //          genogroup2db.sh           input: genogroup_table; output: outlier-genogroup
@@ -1056,7 +1058,8 @@ public:
     // Random tree: DTNode::len = 1
     // Time: O(n)
   DistTree (Subgraph &subgraph,
-            Node2Node &newLeaves2boundary);
+            Node2Node &newLeaves2boundary,
+            bool sparse);
     // Connected subgraph of subgraph.tree: boundary of subgraph.area are Leaf's of *this
     // If subgraph.unresolved() then the topology of *this is changed to a star
     // Input: subgraph: !empty(), not finish()'ed
@@ -1131,18 +1134,12 @@ public:
     // Invokes: getSelectedPairs(), setPaths()
   void loadDissimPrepare (size_t pairs_max);
     // Output: Dissim::target
-  uint leaves2dissims (Leaf* leaf1,
-                       Leaf* leaf2,
-                       Real target,
-                       Real mult);
-    // Return: dissims.size() - 1
-    // Append: dissims[], Leaf::pathObjNums
   bool addDissim (Leaf* leaf1,
                   Leaf* leaf2,
                   Real dissim);
 	  // Return: dissim is added
 	  // Update: Dissim, mult_sum, dissim2_sum
-	  // Invokes: leaves2dissims()
+    // Append: dissims[], Leaf::pathObjNums
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim)
