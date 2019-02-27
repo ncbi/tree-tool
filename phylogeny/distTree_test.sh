@@ -12,7 +12,6 @@ echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
 $THIS/../dm/mdsTree.sh data/Enterobacteriaceae Conservation 2 &> /dev/null
-
 $THIS/makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
 rm -r data/Enterobacteriaceae.dir/
 
@@ -40,22 +39,22 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 echo ""
 echo "Perfect tree ..."
-$THIS/makeDistTree -qc -data data/tree4 -dissim dist | grep -v '^CHRON: ' > tree4.makeDistTree
+$THIS/makeDistTree  -qc  -data data/tree4  -dissim dist -optimize | grep -v '^CHRON: ' > tree4.makeDistTree
 diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
 echo "Verbose ..."
-$THIS/makeDistTree -qc -data data/tree4 -dissim dist  &> /dev/null
+$THIS/makeDistTree -qc  -data data/tree4  -dissim dist  -optimize  -verbose 2 &> /dev/null
 
 
 echo ""
 echo "mdsTree: Random tree ..."
 rm -rf data/randomTree.dir/
 $THIS/../dm/mdsTree.sh data/randomTree dist 2 &> /dev/null
-$THIS/makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -optimize  -output_tree random-output.tree > /dev/null
-$THIS/makeDistTree  -qc  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin | grep -v '^CHRON: ' > randomTree.makeDistTree
+$THIS/makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -dissim dist  -variance lin  -output_tree random-output.tree > /dev/null
+$THIS/makeDistTree  -qc  -input_tree random-output.tree    -data data/randomTree  -dissim dist  -variance lin  -optimize | grep -v '^CHRON: ' > randomTree.makeDistTree
 diff randomTree.makeDistTree data/randomTree.makeDistTree
 echo "Verbose ..."
-$THIS/makeDistTree  -qc  -verbose 2  -input_tree random-output.tree  -data data/randomTree  -dissim dist  -variance lin  &> /dev/null
+$THIS/makeDistTree  -qc  -input_tree random-output.tree    -data data/randomTree  -dissim dist  -variance lin  -verbose 2 &> /dev/null
 rm -r data/randomTree.dir/
 rm randomTree.makeDistTree
 rm random-output.tree
@@ -75,10 +74,6 @@ diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
 diff prot-identical_comm.distTree data/prot-identical_comm.distTree
 rm prot-identical_comm.distTree
-
-echo ""
-echo "prot-identical_comm: subgraphs, threads ..."
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -dissim cons  -optimize  -threads 3 > /dev/null
 
 echo ""
 echo "prot-identical_comm: subgraphs, -variance sqr ..."
