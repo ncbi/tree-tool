@@ -36,7 +36,6 @@ rm -rf data/Mycobacterium_tuberculosis.dir/
 $THIS/../dm/mdsTree.sh data/Mycobacterium_tuberculosis ANI 2 &> /dev/null
 rm -r data/Mycobacterium_tuberculosis.dir/
 
-
 echo ""
 echo "Perfect tree ..."
 $THIS/makeDistTree  -qc  -data data/tree4  -dissim dist -optimize | grep -v '^CHRON: ' > tree4.makeDistTree
@@ -44,7 +43,6 @@ diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
 echo "Verbose ..."
 $THIS/makeDistTree -qc  -data data/tree4  -dissim dist  -optimize  -verbose 2 &> /dev/null
-
 
 echo ""
 echo "mdsTree: Random tree ..."
@@ -58,7 +56,6 @@ $THIS/makeDistTree  -qc  -input_tree random-output.tree    -data data/randomTree
 rm -r data/randomTree.dir/
 rm randomTree.makeDistTree
 rm random-output.tree
-
 
 echo ""
 echo "prot-identical_comm: subgraphs ..."

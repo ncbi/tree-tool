@@ -3258,7 +3258,7 @@ DistTree::DistTree (Subgraph &subgraph,
   // For some leaf pairs the dissimilarity may be missing
   {
     unordered_map <size_t, Dissim> dissimMap;  // sparse
-    Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, dissims_max);  // !sparse
+    Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, dissims_max);  // !sparse  // PAR
     if (sparse)
       dissimMap. reserve (name2leaf. size () * getSparseDissims_size ());
     else
@@ -4568,11 +4568,11 @@ void DistTree::qc () const
   size_t leafDissims = 0;
   if (optimizable ())
   {
-    Set<pair<const Leaf*,const Leaf*>> leafSet;
+    Set<Pair<const Leaf*>> leafSet;
     for (const Dissim& dissim : dissims)
     {
       dissim. qc ();
-      leafSet. addUnique (pair<const Leaf*,const Leaf*> (dissim. leaf1, dissim. leaf2));
+      leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
     }
     
     if (! isNan (absCriterion))

@@ -31,9 +31,10 @@ else
   		$THIS/../trav -step 1 $INC/dr.list "$QSUB_5 -N j%f %q$1/request2dissim.sh $INC/dr/%f $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
   		$THIS/../qstat_wait.sh 2000 1	
  			set +o errexit	
-		  ls $INC/dr.out/*.log > $INC/dr.log
+		  ls $INC/dr.out/*.log  1> $INC/dr.log  2> /dev/null
 	  	set -o errexit
       cat $INC/dr.log | sed 's|^'$INC'/dr.out/||1' | sed 's/\.log$//1' > $INC/dr.list
+      rm $INC/dr.log
 		done
 		rm $INC/dr.list
 		
