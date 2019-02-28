@@ -38,19 +38,13 @@ while [ 1 == 1 ]; do
     break
   fi
   
-  ADD=`ls $INC/new/ | wc -l`
-  echo "# Add: $ADD  `date`  `date +%s`" >> $INC/runlog  
+  NEW=`ls $INC/new/ | wc -l`
+  echo "# New: $NEW  `date`  `date +%s`" >> $INC/runlog  
   echo ""
   echo ""
-	set +o errexit
   $THIS/distTree_inc_new.sh $INC  
-  S=$?
-	set -o errexit
-  if [ $S == 2 ]; then
+  if [ -e $INC/finished ]; then
     break
-  fi
-  if [ $S -ne 0 ]; then
-    exit $S
   fi
 done
   
@@ -66,13 +60,29 @@ gzip $INC/hist/tree.$VER
 #
 VER=$(( $VER + 1 ))
 echo $VER > $INC/version
+
+
+DELETE=""
+if [ -e $INC/outlier-genogroup ]; then
+  wc -l $INC/outlier-genogroup
+  DELETE="-delete $INC/outlier-genogroup  -check_delete"
+fi
+
 # Time: O(n log^5(n))
 # PAR
-$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
+$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -reinsert  -subgraph_iter_max 10 \
   -output_tree $INC/tree.new  -leaf_errors leaf_errors > $INC/hist/makeDistTree-complete-inc.$VER
 mv $INC/tree.new $INC/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
+
+if [ -e $INC/outlier-genogroup ]; then
+  echo ""
+  echo "Database: genogroup outliers ..."
+  $INC/objects_in_tree.sh $INC/outlier-genogroup null
+  mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
+fi
+
 
 echo ""
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER

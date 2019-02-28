@@ -3,8 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
-  echo "exit 2: increments are completed"
-  echo "#1: incremental distance tree directory"
+  echo "#1: Incremental distance tree directory"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
@@ -242,12 +241,11 @@ rm $INC/dissim_request
 $THIS/distTree_inc_tree1_quality.sh $INC
 
 
-set +o errexit
-L=`ls $INC/new | head -1`
-set -o errexit
-# Existence of outlier-criterion at the last iteration ??
-if [ ! "$L" -a ! -e $INC/outlier-genogroup ]; then
-  exit 2
+NEW=`ls $INC/new | wc -l`
+if [ $ADD -gt $NEW ]; then
+  cp /dev/null $INC/finished
+else
+  rm -f $INC/finished
 fi
 
 
