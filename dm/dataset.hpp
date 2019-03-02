@@ -32,7 +32,7 @@ struct Obj : Root, DisjointCluster
 {
   string name;
     // Me be empty()
-  Real mult {1};
+  Real mult {1.0};
     // >= 0
     // Multiplicity (absolute frequency)
     // --> Sample Dataset::sample, remove extra Sample's ??
@@ -53,7 +53,7 @@ struct RealScale
   typedef  Real  Value;
   static const Value missing;  
     // NaN
-  streamsize decimals;
+  streamsize decimals {0};
     // Purposes: display, data precision
 
 
@@ -117,7 +117,7 @@ private:
 public:
   string name;
     // May be empty()
-  bool rightAlign;
+  bool rightAlign {false};
     // true iff the value strings are to be right-aligned 
 /*
   static const DataType missing;
@@ -778,9 +778,9 @@ public:
   {
     struct NormalParam : Root
     { 
-      Real mean; 
-      Real sd; 
-      streamsize decimals;
+      Real mean {NaN}; 
+      Real sd {NaN}; 
+      streamsize decimals {0};
       NormalParam (Real mean_arg, 
                    Real sd_arg,
                    streamsize decimals_arg)
@@ -792,13 +792,13 @@ public:
         { os << mean << " +- " << sd; }
       JsonMap* toJson (JsonContainer* parent_arg,
                        const string& name_arg = noString) const final
-        { auto jMap = new JsonMap (parent_arg, name_arg);
+        { auto* jMap = new JsonMap (parent_arg, name_arg);
           new JsonDouble (mean, decimals, jMap, "mean");
           new JsonDouble (sd,   decimals, jMap, "sd");
           return jMap;
         }
     };
-    Prob pValue;
+    Prob pValue {NaN};
     NormalParam cluster;
     NormalParam other;
     Dependence (Prob pValue_arg,
@@ -817,7 +817,7 @@ public:
       }
     JsonMap* toJson (JsonContainer* parent_arg,
                      const string& name_arg = noString) const final
-      { auto jMap = new JsonMap (parent_arg, name_arg);
+      { auto* jMap = new JsonMap (parent_arg, name_arg);
         new JsonDouble (pValue, 3, jMap, "pValue");  // PAR
         cluster. toJson (jMap, "cluster");
         other.   toJson (jMap, "other");
@@ -1031,7 +1031,7 @@ struct Dataset : Root
     // Attr::name's are different or empty()
 private:
   map<string/*Attr::name*/,const Attr*> name2attr_;
-  map<string/*Obj::name*/,size_t/*Obj index*/> name2objNum;
+  unordered_map<string/*Obj::name*/,size_t/*Obj index*/> name2objNum;
 public:
 
 
@@ -1143,7 +1143,7 @@ private:
   friend struct Attr;
 public:
   RealAttr1* addRealAttr1Unit (const string &attrName = "unit")
-    { auto attr = new RealAttr1 (attrName, *this, 0);
+    { auto* attr = new RealAttr1 (attrName, *this, 0);
       attr->setAll (1);
       attr->moveAfter (nullptr);
       return attr;
@@ -1155,11 +1155,11 @@ public:
 struct Sample : Root
 // Usage: Sample s(); [s.mult *= ...; s.finish();]  // *= --> setMult() ??
 {
-  const Dataset* ds;
+  const Dataset* ds {nullptr};
     // !nullptr
   Vector<Real> mult;
     // size() = ds.objs.size()
-  Real mult_sum {0};
+  Real mult_sum {0.0};
     // >= 0
   size_t nEffective {0};
 
@@ -1396,16 +1396,16 @@ template <typename T/*:Attr1*/>
       { ASSERT (sample. ds == P::dsPtr ());
         const bool unitMult = P::ds. getUnitMult ();
         const bool commented = P::ds. objCommented ();
-        auto jObjs = new JsonArray (parent, name);
+        auto* jObjs = new JsonArray (parent, name);
         for (Iterator it (sample); it ();)  
         { const Obj* obj = P::ds. objs [*it];
-          auto jObj = new JsonMap (jObjs);
+          auto* jObj = new JsonMap (jObjs);
           new JsonString (obj->name, jObj, "objName");
           if (! unitMult)
             new JsonDouble (sample. mult [*it], 3, jObj, "mult");  // PAR
           if (commented)
             new JsonString (obj->comment, jObj, "comment");
-          auto jAttr = new JsonMap (jObj, "attr");
+          auto* jAttr = new JsonMap (jObj, "attr");
           for (const T* attr : *this)
           { Json* j = nullptr;
             if (attr->isMissing (*it))
@@ -2075,13 +2075,13 @@ struct UniDistribution : Distribution
   Real hiBound {INF};
 
   // Functions of parameters
-  Prob p_supp {1};
+  Prob p_supp {1.0};
     // = P(getLoBoundEffective() <= X <= getHiBoundEffective())
-  Prob p_ltSupp {0};
+  Prob p_ltSupp {0.0};
     // = P(X < getLoBoundEffective())
   // p_supp + p_ltSupp <= 1
 protected:
-  Real log_p_supp {0};
+  Real log_p_supp {0.0};
     // <= 0
 public:
     
@@ -2979,8 +2979,8 @@ struct UniKernel : ContinuousDistribution
   // Parameters
 private:
   struct Point : Root
-  { Real value;
-    Real mult;
+  { Real value {NaN};
+    Real mult {NaN};
     Point (Real value_arg,
            Real mult_arg)
       : value (value_arg)
@@ -2990,10 +2990,7 @@ private:
       : value (value_arg)
       , mult (NaN)
       {}
-    Point ()
-      : value (NaN)
-      , mult (NaN)
-      {}
+    Point () = default;
     void qc () const;
     bool operator== (const Point &other) const
       { return value == other. value; }
@@ -3268,7 +3265,7 @@ struct Mixture : Distribution
     Common_sp::AutoPtr<Distribution> distr;
       // !nullptr
       // getParamSet()
-    Prob prob;
+    Prob prob {NaN};
       // Functions of parameters
     Vector<Prob> objProb;
       // Size = Analysis1::samlpe.size()

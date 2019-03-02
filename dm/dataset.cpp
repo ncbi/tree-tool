@@ -256,7 +256,7 @@ Real NumAttr1::getSqr_ave (const Sample &sample) const
 Vector<NumAttr1*> NumAttr1::toNumAttr1 (Dataset &ds_arg) const 
 {
   Vector<NumAttr1*> vec;
-  auto a = new RealAttr1 (name + "_num", ds_arg);  
+  auto* a = new RealAttr1 (name + "_num", ds_arg);  
   vec << a;
   FOR (size_t, i, ds. objs. size ())
     (*a) [i] = getReal (i);
@@ -275,7 +275,7 @@ Vector<RealAttr1*> NumAttr1::standardize (Dataset &ds_arg,
   getAverageScatter (sample, average, scatter);
   if (! isNan (scatter) && ! nullReal (scatter))
   {
-    auto a = new RealAttr1 (name + "_std", ds_arg);  
+    auto* a = new RealAttr1 (name + "_std", ds_arg);  
     vec << a;
     ASSERT (positive (scatter));
     const Real sd = sqrt (scatter);
@@ -680,7 +680,7 @@ ORD_ATTR1* RealAttr1::MakeOrdAttr (const char* Suffix,
   // Attr
   char* S = StrNew (Name);
   StrAppend (S, Suffix);
-  auto Attr = new ORD_ATTR1 (S, ds);
+  auto* Attr = new ORD_ATTR1 (S, ds);
   ASSERT (GoodObject (Attr));
   free (S);
   
@@ -726,7 +726,7 @@ RealAttr1* RealAttr1::smoothUniform (const string &suffix,
   ASSERT (start <= end);
   
 
-  auto smoothed = new RealAttr1 (name + suffix, * const_cast <Dataset*> (ds), decimals);
+  auto* smoothed = new RealAttr1 (name + suffix, * const_cast <Dataset*> (ds), decimals);
   
   
   for (Iterator it (ds); it ();)
@@ -768,14 +768,12 @@ void PositiveAttr1::qc () const
     return;
   RealAttr1::qc ();
 
-#ifndef NDEBUG
   // values[]
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
       ASSERT (values [i] >= 0);
     }
-#endif
 }
 
 
@@ -817,7 +815,7 @@ PositiveAttr1* PositiveAttr1::standardizePositive (Dataset &ds_arg,
   	return nullptr;
   else
   {
-		auto attr = new PositiveAttr1 (name + "_pos_std", ds_arg, decimals);
+		auto* attr = new PositiveAttr1 (name + "_pos_std", ds_arg, decimals);
     ASSERT (positive (average));
     for (Iterator it (sample); it ();)  
       if (! isMissing (*it))
@@ -833,7 +831,7 @@ RealAttr1* PositiveAttr1::logarithmize (Dataset &ds_arg,
 {
 	ASSERT (& ds_arg == & ds);
 		
-	auto attr = new RealAttr1 (name + suffix, ds_arg, decimals + 1);  // PAR
+	auto* attr = new RealAttr1 (name + suffix, ds_arg, decimals + 1);  // PAR
   FFOR (size_t, objNum, ds. objs. size ())
   {
   	const Real x = (*this) [objNum];
@@ -854,11 +852,9 @@ void ProbAttr1::qc () const
     return;
   RealAttr1::qc ();
 
-#ifndef NDEBUG
   // values[]
   FFOR (size_t, i, ds. objs. size ())
     IMPLY (! isMissing (i), isProb (values [i]));
-#endif
 }
 
 
@@ -917,13 +913,11 @@ void IntAttr1::qc () const
 	
   // values[]
   ASSERT (values. size () == ds. objs. size ());
-#ifndef NDEBUG
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
       ASSERT (finite (values [i]));
     }
-#endif
 }
 
 
@@ -1189,7 +1183,6 @@ void NominAttr1::qc () const
 	Attr1::qc ();
 	
 //ASSERT (! categories. empty ());
-#ifndef NDEBUG
 	for (const string &cat : categories)
 	  ASSERT (! cat. empty ());
 	  
@@ -1203,7 +1196,6 @@ void NominAttr1::qc () const
   ASSERT (categories. size () == categMap. size ());
   FFOR (size_t, i, categories. size ())
     ASSERT ((* categMap. find (categories [i])). second == i);
-#endif
 }
 
 
@@ -1317,7 +1309,7 @@ void NominAttr1::rebuildCategMap ()
 
 Categorical* NominAttr1::getCategorical (const Sample &sample) const
 {
-  auto cat = new Categorical ();
+  auto* cat = new Categorical ();
 
   MVector categ2num (categories. size (), 0);
 //categ2num. putAll (0);
@@ -1729,7 +1721,7 @@ void Dataset::load (istream &is)
   is >> maxObjNum;
   FOR (size_t, i, maxObjNum)
   {
-    auto obj = new Obj (toString (i + 1));
+    auto* obj = new Obj (toString (i + 1));
     objs. push_back (obj);
   }
 
@@ -1943,8 +1935,8 @@ Dataset::Dataset (const Eigens &eigens)
   FFOR (size_t, i, eigens. getDim ())
     appendObj ();
   addRealAttr1Unit ();
-  auto orderAttr = new RealAttr1 ("Order", *this);  
-  auto eigenValueFracAttr = new RealAttr1 ("EigenValueFrac", *this, 4);  // PAR
+  auto* orderAttr = new RealAttr1 ("Order", *this);  
+  auto* eigenValueFracAttr = new RealAttr1 ("EigenValueFrac", *this, 4);  // PAR
   FFOR (size_t, i, eigens. getDim ())
   {
     (*orderAttr)          [i] = log (i + 1);
@@ -1960,7 +1952,6 @@ void Dataset::qc () const
     return;
 	Root::qc ();
 
-#ifndef NDEBUG	
   for (const Obj* obj: objs)
     obj->qc ();
 
@@ -1976,7 +1967,6 @@ void Dataset::qc () const
     }
     attrNames << attr->name;
   }
-#endif
   
   IMPLY (! name2objNum. empty (), name2objNum. size () == objs. size ());
   ASSERT (attrs. size () == name2attr_. size ());
@@ -2000,7 +1990,7 @@ JsonArray* Dataset::comments2Json (JsonContainer* parent,
   if (comments. empty ())
     return nullptr;
 
-  auto jComm = new JsonArray (parent, name);
+  auto* jComm = new JsonArray (parent, name);
   for (const auto& s : comments)
     new JsonString (s, jComm); 
     
@@ -2015,7 +2005,7 @@ JsonArray* Dataset::comments2Json (JsonContainer* parent,
 void Dataset::setName2objNum ()
 {
   name2objNum. clear ();
-  
+  name2objNum. reserve (objs. size ());  
   FFOR (size_t, i, objs. size ())
   {
     const string& objName = objs [i] -> name;
@@ -2029,7 +2019,7 @@ void Dataset::setName2objNum ()
 
 size_t Dataset::getName2objNum (const string &objName) const
 {
-  const auto /*Name2objNum::const_iterator*/ it = name2objNum. find (objName);
+  const auto& it = name2objNum. find (objName);
 	if (it == name2objNum. end ())
 		return NO_INDEX;
 	return it->second; 
@@ -2292,7 +2282,7 @@ PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
 {
   ASSERT (! space. empty ());
 
-  auto dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
+  auto* dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
   FFOR (size_t, row, ds. objs. size ())
   {
   	dist->matr. putDiag (row, 0);
@@ -2344,7 +2334,7 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
 #endif
 		
 	
-  auto dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
+  auto* dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
   FFOR (size_t, row, ds. objs. size ())
   {
   	dist->matr. putDiag (row, 0);
@@ -2380,7 +2370,7 @@ RealAttr2* getSimilarity (const Space1<RealAttr1> &space,
 {
   ASSERT (! space. empty ());
 
-  auto sim = new RealAttr2 (attrName, ds, 4);  // PAR
+  auto* sim = new RealAttr2 (attrName, ds, 4);  // PAR
   Progress prog (ds. objs. size (), max<size_t> (1, 10000 / space. size ()));  // PAR
   FFOR (size_t, row, ds. objs. size ())
   {
@@ -2451,7 +2441,7 @@ void Distribution::simulate (Dataset &ds,
 {
   ASSERT (ds. empty ());
 
-  auto an_ = createAnalysis (ds);
+  auto* an_ = createAnalysis (ds);
 
   FOR (size_t, i, objsSize)  
   {
@@ -2602,9 +2592,9 @@ void Bernoulli::qc () const
 
 Analysis1* Bernoulli::createAnalysis (Dataset &ds)
 {
-  auto attr = new ExtBoolAttr1 ("X", ds);  
+  auto* attr = new ExtBoolAttr1 ("X", ds);  
   const Sample sm (ds);
-  auto analysis_ = new An (sm, *attr);
+  auto* analysis_ = new An (sm, *attr);
   analysis = analysis_;
   
   return analysis_;
@@ -2703,12 +2693,12 @@ void Categorical::setParam (const DiscreteDistribution &distr,
 
 Analysis1* Categorical::createAnalysis (Dataset &ds)
 {
-  auto attr = new NominAttr1 ("X", ds);  
+  auto* attr = new NominAttr1 ("X", ds);  
   FFOR (size_t, i, probs. size ())
     attr->category2index ("C" + toString (i + 1));
 
   const Sample sm (ds);
-  auto analysis_ = new An (sm, *attr);    
+  auto* analysis_ = new An (sm, *attr);    
   analysis = analysis_;
   
   return analysis_;
@@ -2838,9 +2828,9 @@ void DiscreteDistribution::qc () const
 
 Analysis1* DiscreteDistribution::createAnalysis (Dataset &ds)
 {
-  auto attr = new IntAttr1 ("X", ds);  
+  auto* attr = new IntAttr1 ("X", ds);  
   const Sample sm (ds);
-  auto analysis_ = new An (sm, *attr);
+  auto* analysis_ = new An (sm, *attr);
   analysis = analysis_;
   
   return analysis_;
@@ -3296,9 +3286,9 @@ int Zipf::randDiscrete_ () const
 
 Analysis1* ContinuousDistribution::createAnalysis (Dataset &ds)
 {
-  auto attr = new RealAttr1 ("X", ds);  
+  auto* attr = new RealAttr1 ("X", ds);  
   const Sample sm (ds);
-  auto analysis_ = new An (sm, *attr);
+  auto* analysis_ = new An (sm, *attr);
   analysis = analysis_;
   
   return analysis_;
@@ -3685,7 +3675,6 @@ void UniKernel::qc () const
   ASSERT (! points. empty ());
 
 
-#ifndef NDEBUG
   if (getParamSet ())
   {
     ASSERT (! isNan (attr_min));
@@ -3712,7 +3701,6 @@ void UniKernel::qc () const
     ASSERT (halfWindow >= 0);
     ASSERT (positive (halfWindow) == positive (getRange ()));
   }
-#endif
 }
 
 
@@ -3989,7 +3977,7 @@ Analysis1* MultiDistribution::createAnalysis (Dataset &ds)
   FFOR (size_t, i, getDim ())
     space << new RealAttr1 ("X" + toString (i + 1), ds);  
   const Sample sm (ds);
-  auto analysis_ = new An (sm, space);
+  auto* analysis_ = new An (sm, space);
   analysis = analysis_;
   
   return analysis_;
@@ -4408,7 +4396,6 @@ void Mixture::qc () const
     return;
 	Distribution::qc ();
 
-#ifndef NDEBUG		
 	if (! getParamSet ())
   	return;
 
@@ -4445,7 +4432,6 @@ void Mixture::qc () const
   	  objS += comp->objProb [objNum];
   	IMPLY (! isNan (objS), eqReal (objS, 1));
   }
-#endif
 	
 	cat. qc ();
 }
@@ -4472,7 +4458,7 @@ Mixture::Component* Mixture::addComponent (Distribution* distr,
   ASSERT (distr)
 //ASSERT (distr->analysis);
   
-  auto c = new Component (distr, prob);
+  auto* c = new Component (distr, prob);
   if (const Analysis1* an = distr->getAnalysis ())
     c->objProb. resize (an->sample. ds->objs. size (), NaN); 
   components << c; 
@@ -4938,7 +4924,7 @@ Dataset PrinComp::createAttrMds (const string &attrPrefix,
 	  ds. appendObj (space [attrNum] -> name);
 	FFOR (size_t, eigenNum, getOutDim ())
   {
-	  auto attr = new RealAttr1 (attrPrefix + toString (eigenNum + 1), ds);
+	  auto* attr = new RealAttr1 (attrPrefix + toString (eigenNum + 1), ds);
 	  FFOR (size_t, attrNum, mn. mu. size ())
 	    (*attr) [attrNum] = getAttrMds (attrNum, eigenNum);
 	  quality << eigens. explainedFrac (eigenNum);
@@ -5158,10 +5144,8 @@ void Clustering::qc () const
   P::qc ();
    
   mixt. qc ();
-#ifndef NDEBUG
   for (const Mixture::Component* c : mixt. components)
   	ASSERT (c->distr->asMultiNormal ());
-#endif
 
   ASSERT (getOutDim ()); 
   ASSERT (variance_min. min () >= 0);
@@ -5265,7 +5249,7 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
 	ASSERT (isProb (prob_min));
 //ASSERT (prob_min >= 0.5);
 	
-	auto attr = new NominAttr1 (attrName, ds);
+	auto* attr = new NominAttr1 (attrName, ds);
  	FFOR (size_t, col, getOutDim ())
  	  EXEC_ASSERT (attr->category2index ("C" + toString (col + 1)) == col);
   ASSERT (! attr->categories. empty ());
@@ -5291,7 +5275,7 @@ ProbAttr1* Clustering::createProbAttr (const string &attrName,
                                        streamsize decimals,
                                        Dataset &ds) const
 {
-	auto attr = new ProbAttr1 (attrName, ds, decimals);  
+	auto* attr = new ProbAttr1 (attrName, ds, decimals);  
 
   for (Iterator it (sample); it ();)  
   {
@@ -5339,12 +5323,12 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
   	  if (verbose ())
   	    cout << "Cluster " << i + 1 << " vs. cluster " << j + 1 << ": confused = " << confused << endl;
  	    if (geReal (confused, confused_max))
- 	      const_cast <CategoryCluster*> (clusters [i]) -> merge (* const_cast <CategoryCluster*> (clusters [j]));
+ 	      var_cast (clusters [i]) -> merge (* var_cast (clusters [j]));
     }
 
-  map<const DisjointCluster*, Vector<size_t>> cluster2categories;
+  unordered_map<const DisjointCluster*, Vector<size_t>> cluster2categories (clusters. size ());
   FFOR (size_t, i, clusters. size ())
-    cluster2categories [const_cast <CategoryCluster*> (clusters [i]) -> getDisjointCluster ()] << i;
+    cluster2categories [var_cast (clusters [i]) -> getDisjointCluster ()] << i;
   ASSERT (! cluster2categories. empty ());
 
   if (cluster2categories. size () == 1)
@@ -5503,7 +5487,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
     {
       jClust = new JsonMap (jClusts);
       new JsonString (clustNominAttr->categories [i], jClust, "name");
-      auto jDeps = new JsonArray (jClust, "dependencies");
+      auto* jDeps = new JsonArray (jClust, "dependencies");
       for (const Attr* attr : attrs_orig)
         if (const RealAttr1* attr1 = attr->asRealAttr1 ())
         {
@@ -5548,7 +5532,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
       {
         const string attrPrefix ("BC" + toString (i + 1) + "_");
         
-      	auto attr = new RealAttr1 (attrPrefix + "1", ds);
+      	auto* attr = new RealAttr1 (attrPrefix + "1", ds);
       	sp1 << attr;
         MVector center (getMultiNormal (i) -> mu);
         center. normalizeRow (true, 0);
@@ -5577,7 +5561,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         uniKernel. estimate ();
         uniKernel. qc ();
       //cout << uniKernel. nameParam () << endl;
-        auto pdf = new PositiveAttr1 (attrPrefix + "2", ds, 3);  // PAR
+        auto* pdf = new PositiveAttr1 (attrPrefix + "2", ds, 3);  // PAR
         sp1 << pdf;
         for (Iterator it (sample); it ();)  
           (*pdf) [*it] = uniKernel. pdf ((*attr) [*it]);
@@ -5613,7 +5597,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         uniKernel. estimate ();
         uniKernel. qc ();
       //cout << uniKernel. nameParam () << endl;
-        auto pdf = new PositiveAttr1 (attrPrefix + "2", ds);
+        auto* pdf = new PositiveAttr1 (attrPrefix + "2", ds);
         sp1 << pdf;
         for (Iterator it (sample); it ();)  
           (*pdf) [*it] = uniKernel. pdf (attr [*it]);
@@ -5771,7 +5755,6 @@ void Canonical::qc () const
   ASSERT (between. getDim () == within. getDim ());
   IMPLY (getOutDim (), choleskyInv. get ());
 
-#ifndef NDEBUG
   if (getOutDim ())
   {
     ASSERT (basis. rowsSize (false) == between. getDim ());
@@ -5827,7 +5810,6 @@ void Canonical::qc () const
         }   
     }
   }
-#endif
 }  
 
 
@@ -5927,16 +5909,6 @@ Mds::Mds (const Sample &sample_arg,
 {
   ASSERT (sample. ds == & attr2. ds);
   ASSERT (sample. ds->getUnitMult ());
-#if 0
-#ifndef NDEBUG
-  FFOR (size_t, objNum, sample. ds->objs. size ())
-  	if (negative (attr2. matr. getDiag (objNum)))
-  	{
-  	  cout << "matr[" << objNum << "," << objNum << "] = " << attr2. matr. getDiag (objNum) << endl;
-  	  ERROR;
-  	}
-#endif
-#endif
 //ASSERT (! attr2. matr. psd);  // PCA via MDS
 }
 
@@ -5968,12 +5940,12 @@ Space1<RealAttr1> Mds::createSpace (const string &realAttrPrefix,
 	Vector<RealAttr1*> imaginaryAttrs (getOutDim (), nullptr);
 	FFOR (size_t, i, getOutDim ())
 	{
-	  auto realAttr = new RealAttr1 (realAttrPrefix + toString (i + 1), ds);;
+	  auto* realAttr = new RealAttr1 (realAttrPrefix + toString (i + 1), ds);;
 	  sp << realAttr;
 	  realAttrs << realAttr;
 	  if (eigens. imaginaryMdsAttr (i))
 	  {
-  	  auto imaginaryAttr = new RealAttr1 (imaginaryAttrPrefix + toString (i + 1), ds);;
+  	  auto* imaginaryAttr = new RealAttr1 (imaginaryAttrPrefix + toString (i + 1), ds);;
   	  sp << imaginaryAttr;
 	    imaginaryAttrs [i] = imaginaryAttr;
 	  }
