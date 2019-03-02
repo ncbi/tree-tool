@@ -2058,6 +2058,15 @@ public:
 				if (! other. contains (*iter))
 					iter. erase ();
 		}
+	void intersect (const Vector<T> &other) 
+		{ if (universal)
+			{ operator= (other);
+				return;
+			}
+      for (Iter<Set<T>> iter (*this); iter. next (); )
+				if (! other. containsFast (*iter))
+					iter. erase ();
+		}
 	template <typename U, typename V>
   	void intersect (const map<U,V> &other) 
   		{ if (universal)
