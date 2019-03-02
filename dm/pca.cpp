@@ -202,7 +202,10 @@ struct ThisApplication : Application
 
 
     sp1 << outlierScore;
-    sm_orig. save (sp1, osDat);
+    {
+      const VectorPtr<Attr> sm_all (sp1);
+      sm_orig. save (sm_all, osDat);
+    }
 
 
     if (mds)
