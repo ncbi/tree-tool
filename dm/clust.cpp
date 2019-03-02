@@ -42,7 +42,7 @@ struct ThisApplication : Application
 	  const Clustering cl (sm, sp, clusters_max, sd_min, false);  
     cl. print (cout);
     
-    VectorPtr<Attr1> attrs;
+    VectorPtr<Attr> attrs;
     attrs << cl. createSpace (ds);
     if (prob_min)
       attrs << cl. createNominAttr ("Cluster", prob_min, ds);

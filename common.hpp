@@ -412,7 +412,7 @@ public:
   typename T::iterator it;
     
 
-  Iter (T &t_arg)
+  explicit Iter (T &t_arg)
     : t (t_arg)
     , itNext (t_arg. begin ())
     {}
@@ -494,7 +494,7 @@ template <typename To, typename From>
   inline void insertIter (To &to,
                           const From &from)
     { for (const auto x : from)
-        to << x;
+        to << move (x);
     }
 
 template <typename T>
@@ -531,7 +531,7 @@ template <typename Key, typename Value, typename KeyParent>
              Value &value)
     // Return: success
     // Output: value, if Return
-    { const auto it = m. find (key);
+    { const auto& it = m. find (key);
     	if (it == m. end ())
     		return false;
     	value = it->second; 
@@ -544,7 +544,7 @@ template <typename Key, typename Value, typename KeyParent>
              Value &value)
     // Return: success
     // Output: value, if Return
-    { const auto it = m. find (key);
+    { const auto& it = m. find (key);
     	if (it == m. end ())
     		return false;
     	value = it->second; 
@@ -554,7 +554,7 @@ template <typename Key, typename Value, typename KeyParent>
 template <typename Key, typename Value, typename KeyParent>
   const Value* findPtr (const map <Key, Value> &m,
                         const KeyParent& key)
-    { const auto it = m. find (key);
+    { const auto& it = m. find (key);
     	if (it == m. end ())
     		return nullptr;
     	return & it->second; 
@@ -563,7 +563,7 @@ template <typename Key, typename Value, typename KeyParent>
 template <typename Key, typename Value, typename KeyParent>
   const Value* findPtr (const unordered_map <Key, Value> &m,
                         const KeyParent& key)
-    { const auto it = m. find (key);
+    { const auto& it = m. find (key);
     	if (it == m. end ())
     		return nullptr;
     	return & it->second; 
@@ -641,7 +641,7 @@ public:
 
 	List () = default;
   template <typename U/*:<T>*/>
-    explicit List (const list<U> &other)
+    List (const list<U> &other)
       { *this << other; }
   template <typename U/*:<T>*/>
     explicit List (const vector<U> &other)
@@ -1200,7 +1200,7 @@ inline ostream& operator<< (ostream &os,
 
 
 template <typename T /*Root*/> 
-  struct AutoPtr : unique_ptr<T>
+  struct AutoPtr : unique_ptr<T>  // ??
   {
   private:
   	typedef  unique_ptr<T>  P;
@@ -1290,7 +1290,7 @@ public:
   explicit Vector (initializer_list<T> init)
     : P (init)
     {}
-	Vector (const vector<T> &other) 
+	explicit Vector (const vector<T> &other) 
     : P (other)
 	  {}
   Vector (const Vector<T> &other) 
@@ -1637,19 +1637,28 @@ public:
     : P (init)
     {}
 	template <typename U>
-  	VectorPtr (const vector<const U*> &other)
+  	explicit VectorPtr (const vector<const U*> &other)
   	  : P ()
   	  { P::reserve (other. size ());
   	    insertAll (*this, other);
   	  }	  
 	template <typename U>
-  	VectorPtr (const list<const U*> &other)
+  	explicit VectorPtr (const list<const U*> &other)
   	  : P ()
   	  { P::reserve (other. size ());
   	    insertAll (*this, other);
   	  }	  
 
 
+  VectorPtr<T>& operator<< (const T* value)
+    { P::operator<< (value); 
+    	return *this;
+    }
+  template <typename U/*:<T>*/>
+    VectorPtr<T>& operator<< (const VectorPtr<U> &other)
+      { P::operator<< (other); 
+        return *this;
+      }
 	void deleteData ()
 	  {	for (const T* t : *this)
 			  delete t;
@@ -1690,11 +1699,21 @@ public:
 	  	P::searchSorted = x. searchSorted;
 	  	return *this;
 	  }
-	VectorOwn (const VectorPtr<T> &x)
+	explicit VectorOwn (const VectorPtr<T> &x)
 	  : P ()
 	  { P::operator= (x); }
  ~VectorOwn ()
     { P::deleteData (); }
+
+  VectorOwn<T>& operator<< (const T* value)
+    { P::operator<< (value); 
+    	return *this;
+    }
+  template <typename U/*:<T>*/>
+    VectorOwn<T>& operator<< (const VectorPtr<U> &other)
+      { P::operator<< (other); 
+        return *this;
+      }
 };
 
 
@@ -1707,7 +1726,7 @@ public:
 	
 
   StringVector () = default;
-  StringVector (initializer_list<string> init)
+  explicit StringVector (initializer_list<string> init)
     : P (init)
     {}
   StringVector (const string &fName,
@@ -1919,28 +1938,41 @@ public:
 	Set (const Set<T> &other)
 	  : P ()
 	  { *this = other; }
+	template <typename U, typename V>
+	  explicit Set (const map<U,V> &other)
+	    { operator= (other); }
+	template <typename U, typename V>
+	  explicit Set (const unordered_map<U,V> &other)
+	    { operator= (other); }
+	template <typename U>
+	  explicit Set (const vector<U> &other)
+	    { operator= (other); }
 	Set<T>& operator= (const Set<T> &other)
 	  { universal = other. universal;
-	  	return static_cast <Set<T>&> (P::operator= (other)); 
+	  	P::operator= (other); 
+	  	return *this;
 	  }
 	template <typename U, typename V>
-	  Set (const map<U,V> &other)
-	    : universal (false)
-	    { for (const auto& it : other)
+  	Set<T>& operator= (const map<U,V> &other)
+  	  { universal = false;
+  	    for (const auto& it : other)
 	        P::insert (it. first);
-	    }
+	      return *this;
+  	  }
 	template <typename U, typename V>
-	  Set (const unordered_map<U,V> &other)
-	    : universal (false)
-	    { for (const auto& it : other)
+  	Set<T>& operator= (const unordered_map<U,V> &other)
+  	  { universal = false;
+  	    for (const auto& it : other)
 	        P::insert (it. first);
-	    }
+	      return *this;
+  	  }
 	template <typename U>
-	  Set (const vector<U> &other)
-	    : universal (false)
-	    { for (const U& u : other)
+  	Set<T>& operator= (const vector<U> &other)
+  	  { universal = false;
+  	    for (const U& u : other)
 	        P::insert (u);
-	    }
+	      return *this;
+  	  }
   bool operator== (const Set<T> &other) const
     { return universal
                ? other. universal ? true : false
@@ -2022,10 +2054,30 @@ public:
 			{ operator= (other);
 				return;
 			}
-      for (Iter <Set<T>> iter (*this); iter. next (); )
+      for (Iter<Set<T>> iter (*this); iter. next (); )
 				if (! other. contains (*iter))
 					iter. erase ();
 		}
+	template <typename U, typename V>
+  	void intersect (const map<U,V> &other) 
+  		{ if (universal)
+  			{ operator= (other);
+  				return;
+  			}
+        for (Iter<Set<T>> iter (*this); iter. next (); )
+  				if (! Common_sp::contains (other, *iter))
+  					iter. erase ();
+  		}
+	template <typename U, typename V>
+  	void intersect (const unordered_map<U,V> &other) 
+  		{ if (universal)
+  			{ operator= (other);
+  				return;
+  			}
+        for (Iter<Set<T>> iter (*this); iter. next (); )
+  				if (! Common_sp::contains (other, *iter))
+  					iter. erase ();
+  		}
 	size_t intersectSize (const Set<T> &other) const
 	  // Return: universal <=> SIZE_MAX
 		{ if (other. universal)
@@ -2521,8 +2573,8 @@ private:
   ONumber on;
 public:
   
-  TabDel (streamsize precision = 6,
-	        bool scientific = false)
+  explicit TabDel (streamsize precision = 6,
+	                 bool scientific = false)
 	  : on (tabDel, precision, scientific)
 	  {}
     
