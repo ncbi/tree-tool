@@ -6179,7 +6179,7 @@ void DistTree::optimizeLargeSubgraphs ()
       unique_ptr<Threads> th;
       if (threadsUsed)
         th. reset (new Threads (boundary. size ()));
-      VectorPtr<Steiner> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
+      VectorPtr<Tree::TreeNode> possibleBoundary;  possibleBoundary. reserve (boundary. size ());
       Progress prog (boundary. size () + 1, ! threadsUsed);
       for (const Steiner* cut : boundary)
       {
