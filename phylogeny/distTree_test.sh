@@ -69,7 +69,11 @@ diff prot-identical_comm.outliers data/prot-identical_comm.outliers
 rm prot-identical_comm.outliers
 diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
-diff prot-identical_comm.distTree data/prot-identical_comm.distTree
+TMP=`mktemp`
+grep OUTPUT -A 1      prot-identical_comm.distTree > $TMP.1
+grep OUTPUT -A 1 data/prot-identical_comm.distTree > $TMP.2
+diff $TMP.1 $TMP.2
+rm $TMP*
 rm prot-identical_comm.distTree
 
 echo ""
