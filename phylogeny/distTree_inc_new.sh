@@ -220,7 +220,7 @@ if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   echo "New genogroup outliers ..."
   $THIS/tree2genogroup $INC/tree  $GENOGROUP_BARRIER  -genogroup_table $INC/genogroup_table
   $INC/genogroup2db.sh $INC/genogroup_table > $INC/outlier-genogroup  
-  rm $INC/genogroup_table 
+  mv $INC/genogroup_table $INC/hist/genogroup_table.$VER
   if [ -s $INC/outlier-genogroup ]; then
     wc -l $INC/outlier-genogroup
   else
