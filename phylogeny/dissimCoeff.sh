@@ -31,7 +31,7 @@ $THIS/makeDistTree  -threads 5  -data $DATA  -dissim cons  -dissim_power $DISSIM
 
 echo ""
 echo ""
-$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $TMP.qual
+$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -nominal_singleton_is_optional  -qual $TMP.qual
 
 
 rm -f $TMP*

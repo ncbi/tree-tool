@@ -34,5 +34,5 @@ $THIS/makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optim
 
 echo ""
 echo ""
-$THIS/makeFeatureTree  -input_tree _feature_tree  -features $2  -nominal_singleton_is_optional  -output_core _core  -qual _qual
+$THIS/makeFeatureTree  -input_tree _feature_tree  -features $2  -nominal_singleton_is_optional  -qual _qual
 
