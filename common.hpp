@@ -509,7 +509,9 @@ template <typename T, typename StrictlyLess>
 template <typename T, typename U>
   bool intersects (const T &t,
                    const U &u)
-    { for (const auto x : t)
+    { if (u. empty ())
+        return false;
+      for (const auto x : t)
         if (u. find (static_cast <typename U::value_type> (x)) != u. end ())
           return true;
       return false;
@@ -1530,7 +1532,9 @@ public:
       }
   template <typename U /* : T */>
     bool intersectsFast (const Vector<U> &other) const
-      { for (const U& u : other)
+      { if (P::empty ())
+          return false;
+        for (const U& u : other)
           if (containsFast (u))
             return true;
         return false;
@@ -1553,7 +1557,9 @@ public:
       }
   template <typename U /* : T */>
     bool intersects (const set<U> &other) const
-      { for (const T& t : *this)
+      { if (other. empty ())
+          return false;
+        for (const T& t : *this)
           if (other. find (t) != other. end ())
             return true;
         return false;
@@ -2015,7 +2021,9 @@ public:
      }
 private:
   bool intersects_ (const Set<T> &other) const
-    { for (const T& t : *this)
+    { if (other. empty ())
+        return false;
+      for (const T& t : *this)
         if (other. contains (t))
           return true;
       return false;
@@ -2094,9 +2102,10 @@ public:
 			if (universal)
 				return other. size ();
 		  size_t n = 0;
-		  for (const T& t : *this)
-				if (other. contains (t))
-					n++;
+		  if (! other. empty ())
+  		  for (const T& t : *this)
+  				if (other. contains (t))
+  					n++;
 			return n;
 		}
   size_t setMinus (const Set<T> &other)
