@@ -54,7 +54,7 @@ else
 	$THIS/makeDistTree  -data $TMP  -dissim cons  -optimize  -output_tree $TMP.tree  -output_feature_tree $TMP.feature_tree1 | grep "# Discernible leaves:"
 fi
 
-$THIS/makeFeatureTree  -input_tree $TMP.feature_tree1  -features $1/phen  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $TMP.qual  
+$THIS/makeFeatureTree  -input_tree $TMP.feature_tree1  -features $1/phen  -nominal_singleton_is_optional  -qual $TMP.qual  
 
 
 mkdir $TMP.trees

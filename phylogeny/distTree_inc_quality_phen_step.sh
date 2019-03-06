@@ -45,7 +45,7 @@ echo "# Outliers deleted: $N"
 
 $THIS/../setMinus $TMP.target $2 > $TMP.delete
 $THIS/makeDistTree  -input_tree $INTREE  -delete $TMP.delete  -output_tree $5/$3.tree  -output_feature_tree $TMP.feature_tree > $5/$3.makeDistTree
-$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $1/phen  -nominal_singleton_is_optional  -output_core $TMP.core  -qual $5/$3.qual > $5/$3.makeFeatureTree
+$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $1/phen  -nominal_singleton_is_optional  -qual $5/$3.qual > $5/$3.makeFeatureTree
 grep ' !' $5/$3.makeFeatureTree
 
 echo "match+:"
