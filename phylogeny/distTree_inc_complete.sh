@@ -95,7 +95,7 @@ rm $INC/tree.list
 if [ -e $INC/phen ]; then
   echo ""
   echo "Quality ..."
-  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen > $INC/hist/tree_quality_phen.1
+  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen 0 > $INC/hist/tree_quality_phen.1
 	grep ' !' $INC/hist/tree_quality_phen.1
 fi
 

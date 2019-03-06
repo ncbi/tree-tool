@@ -23,7 +23,7 @@ fi
 VARIANCE=`cat $INC/variance`
 
 
-if [ 1 == 1 ]; then   
+if [ 1 == 0 ]; then   # ??
 # Time: O(n log^5(n))
 while [ 1 == 1 ]; do
   if [ -e $INC/stop ]; then
@@ -100,7 +100,7 @@ if [ -e $INC/phen ]; then
 
 	echo ""
 	echo "Root and quality ..."
-	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen > $INC/hist/tree_quality_phen.$VER 
+	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen 1 > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
