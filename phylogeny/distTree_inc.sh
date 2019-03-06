@@ -23,7 +23,7 @@ fi
 VARIANCE=`cat $INC/variance`
 
 
-if [ 1 == 0 ]; then   # ??
+if [ 1 == 1 ]; then  
 # Time: O(n log^5(n))
 while [ 1 == 1 ]; do
   if [ -e $INC/stop ]; then
