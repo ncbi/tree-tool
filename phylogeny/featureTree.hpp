@@ -27,26 +27,23 @@ struct Phyl;
 
 struct Feature : Named
 // Boolean attribute of Genome
-// Gene or phenotype
 // Id name: key
 {
   typedef string Id;
-  // For FeatureTree::len
-  // Valid if !allTimeZero
-//Prob lambda_0;  ??
+
   // Stats
   size_t genomes {0};
     // Non-optional
   size_t optionalGenomes {0}; 
   bool rootGain {false}; 
-  VectorPtr<Phyl> gains;
-  VectorPtr<Phyl> losses;
+  VectorPtr<Phyl> gains;  
+  VectorPtr<Phyl> losses; 
 
 
-  Feature () = default;
 	explicit Feature (const Id &name_arg)
     : Named (name_arg)
     {}
+  Feature () = default;
 	void qc () const override;
 	void saveText (ostream& os) const override
 	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << "(" << optionalGenomes << ") " << endl; }
@@ -55,7 +52,7 @@ struct Feature : Named
   bool operator== (const Feature &other) const
     { return name == other. name; }
   bool operator< (const Feature &other) const
-    { return name < other. name; }
+    { return name < other. name; }    
   static bool statEqual (const Feature& a,
                          const Feature& b)
     { return    a. rootGain == b. rootGain
@@ -75,7 +72,15 @@ struct Feature : Named
              || mutations () < other->mutations ()
              || (mutations () == other->mutations () && name.size () > other->name. size ());
     }
-  static bool singleton (const Id &featureId);
+  void clearStats ()
+    { genomes = 0;
+      optionalGenomes = 0;
+      rootGain = false;
+      gains. clear ();
+      losses. clear ();
+    }
+  
+  static bool nominalSingleton (const Id &featureId);
 };
 
 
@@ -101,16 +106,16 @@ struct Phyl : Tree::TreeNode
   // For FeatureTree::len
 	struct CoreEval
 	{
-		float treeLen {0};
+		float treeLen {0.0};
 		  // >= 0
 		ebool core {EFALSE};
 		
-    CoreEval () = default;
 		CoreEval (float treeLen_arg,
 		          ebool core_arg)
 		  : treeLen (treeLen_arg)
 		  , core (core_arg)
 		  {}
+    CoreEval () = default;
 		  
 		bool operator== (const CoreEval &other) const
 		  { return    eqReal (treeLen, other. treeLen)
@@ -249,6 +254,7 @@ struct Species : Phyl
 	  // Part of the arc (this,getParent()) length due to FeatureTree::commonCore and Genome::singletons
 	  // >= 0
 private:
+  friend FeatureTree;
 	float weight_old [2/*thisCore*/] [2/*parentCore*/];
   Real time_old {NaN};
     // May be NaN
@@ -270,6 +276,7 @@ private:
   bool movementsOn {false};
   Vector<Movement> movements;
     // Valid if movementsOn
+  size_t coreSize {0};
 public:
 
 
@@ -346,6 +353,12 @@ protected:
 	virtual void restoreFeatures ();
 	void commitFeatures ();
 public:
+  
+  void setCoreSize ()
+    { coreSize = 0;
+      for (const bool b : core)
+        coreSize += b;
+    }
 };
 
 
@@ -431,9 +444,24 @@ public:
 struct Genome : Phyl
 {
   friend FeatureTree;
+  
+  struct GenomeFeature
+  { 
+    Feature::Id id;
+    bool optional {false};
+    GenomeFeature (const Feature::Id &id_arg,
+                   bool optional_arg)
+      : id (id_arg)
+      , optional (optional_arg)
+      {}
+    GenomeFeature () = default;
+    bool operator< (const GenomeFeature& gf) const
+      { return id < gf. id; }
+    bool operator== (const GenomeFeature& gf) const
+      { return id == gf. id; }
+  };
 
   string id;  
-    // GENOME.id
     // !empty()
   
 	Vector<bool> optionalCore;
@@ -441,11 +469,12 @@ struct Genome : Phyl
     // Nominal attribute => true
 private:
   // Temporary
-  Set<string> nominals;
+  typedef  Vector<GenomeFeature>  CoreSet;
+    // searchSorted
+  CoreSet coreSet; 
+  StringVector nominals;
     // Nominal attribute names
     // Subset of getFeatureTree().nominal2values
-  typedef  map<Feature::Id,bool/*optional*/>  CoreSet;
-  CoreSet coreSet; 
 public:
   size_t coreNonSingletons {0};
     // Includes optionalCore[]  
@@ -459,11 +488,11 @@ public:
 	        Strain* parent_arg,
 	        const string &id_arg);
 	  // To be followed by: initDir(), init()
-  static string geneLineFormat ();
+  static string featureLineFormat ();
 private:
-	void initDir (const string &geneDir,
+	void initDir (const string &featureDir,
 	              bool nominalSingletonIsOptional);
-	  // Input: file "geneDir/id" with the format: `geneLineFormat()`
+	  // Input: file "featureDir/id" with the format: `featureLineFormat()`
 	  // Output: coreSet, coreNonSingletons
 	void coreSet2nominals ();
 	  // Update: getFeatureTree().nominal2values, nominals
@@ -473,18 +502,18 @@ private:
 	                    Set<Feature::Id> &nonSingletons) const;
     // Update: globalSingletons, nonSingletons: !intersect()
 	void getCommonCore (Set<Feature::Id> &commonCore) const
-    { commonCore. intersect (coreSet); }
-	size_t removeFromCoreSet (const Set<Feature::Id> &toRemove)
-    { size_t n = 0;
-      for (const Feature::Id& f : toRemove)
-	      n += coreSet. erase (f);
-	    return n;
-    }
+    { for (Iter<Set<Feature::Id>> iter (commonCore); iter. next (); )
+				if (! coreSet. containsFast (GenomeFeature (*iter, false)))
+					iter. erase ();
+      }
+	void removeFromCoreSet (const Set<Feature::Id> &toRemove)
+    { coreSet. filterValue ([&toRemove] (const GenomeFeature &gf) { return toRemove. contains (gf. id); }); }
 	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
-	  // Return: number of Feature::Id's s.t. Feature::singleton()
+	  // Return: number of Feature::Id's s.t. Feature::nominalSingleton()
 	  // Update: coreSet, singletons, coreNonSingletons
 	void init (const Feature2index &feature2index);
 	  // Output: CoreEval::core, core
+	void init (const Vector<size_t> &featureBatch);
 public:
 	void qc () const override;
 	void saveContent (ostream& os) const override;
@@ -521,7 +550,7 @@ public:
   void saveFeatures (const string &dir) const;
     // Save Feature::name's
     // Input: dir: !empty()
-  size_t getGenes () const
+  size_t getFeatures () const
     { return coreNonSingletons + singletons. size (); }
 };
 
@@ -1052,16 +1081,21 @@ private:
 public:  
 	Vector<Feature> features;
 	  // Feature::name's are sorted, unique
-	  // !Feature::singleton(Feature::Id)
+	  // !Feature::nominalSingleton(Feature::Id)
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
-	size_t genomeGenes_ave {0};
+	size_t genomeFeatures_ave {0};
 	float len {NaN};
 	  // >= len_min
 	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
 	float len_min {NaN};
 	  // >= 0
 	Prob lenInflation {0.0};
+	bool oneFeatureInTree {false};
+    // RAM is limited, no topology optimization, only maximum parsimony
+  static constexpr size_t featureBatchSize {10000};  // PAR
+    // 164777 Genome's, 114555 features: 26% of RAM of lmem21
+    // "Assigning features": 15 min./10000 features
 
   // Internal
 	size_t nodeIndex_max {0};
@@ -1075,17 +1109,19 @@ public:
 	Common_sp::AutoPtr <const Normal> distDistr;
 	Common_sp::AutoPtr <const Normal> depthDistr;
 	  
-	size_t reportFeature {NO_INDEX};
-
 	  
 	FeatureTree (const string &treeFName,
-  	           const string &geneDir,
+  	           const string &featureDir,
   	           const string &coreFeaturesFName,
   	           bool nominalSingletonIsOptional,
-  	           bool preferGain_arg);
+  	           bool preferGain_arg,
+  	           bool oneFeatureInTree_arg);
     // Input: coreFeaturesFName if !allTimeZero
     // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore()
 private:
+  void processBatch (const VectorPtr<Phyl> &phyls,
+                     const Vector<size_t> &featureBatch,
+                     float &featureLen);
   bool loadPhylLines (const StringVector& lines,
 		                  size_t &lineNum,
 		                  Species* parent,
@@ -1121,17 +1157,17 @@ public:
 	  // Requires: after Progress::Start
 	bool featuresExist () const
 	  { return ! features. empty (); }
-	size_t getTotalGenes () const
+	size_t getTotalFeatures () const
 	  { return commonCore. size () + features. size () + globalSingletonsSize; }  
   float getLength_min ()  
     { if (! emptySuperRoot)
-        return 0;
+        return 0.0;
       // Needed for E. coli pan ??
       if (allTimeZero)  
-    		return (float) getTotalGenes ();
+    		return (float) getTotalFeatures ();
       // Simplistic model: all Genome::core's are the same, all Species::time = 0 except root
     	const Species* s = static_cast <const Species*> (root);
-    	return (float) getTotalGenes () * s->feature2weight (true,  false)
+    	return (float) getTotalFeatures () * s->feature2weight (true,  false)
     	     /*+ commonMissings   * s->feature2weight (false, false)*/;
     }
   // Sankoff algorithm
@@ -1194,13 +1230,16 @@ public:
 	  // Return: false <=> finished
 	  // Update: Phyl::stable
 	  // Invokes: getBestChange(), applyChanges()
-	string findRoot (size_t &bestCoreSize);
-	  // arg min_node core size
+  const Species* findRoot ();
+	  // Return: arg min_{Species::coreSize()} or nullptr if current root is best
     // Idempotent (prove ??)
-    // Return: new root LCA name in the old tree; "" if new root = old root
-	  // Output: bestCoreSize, topology, superRootCore
-	  // Invokes: setCore(), sort()
+    // Input: Species::coreSize
+	  // Invokes: setLeaves();
 	  // Requires: allTimeZero
+	string changeRoot ();
+    // Return: new root LCA name in the old tree; "" if new root = old root
+	  // Output: topology, superRootCore
+	  // Invokes: findRoot()
   void resetSuperRootCore (size_t coreChange [2/*core2nonCore*/]);
     // Idempotent
     // Update: superRootCore, Phyl::core
@@ -1224,15 +1263,18 @@ public:
   void setStats ();
     // Output: Stats
     // Invokes: Phyl::getNeighborDistance()
+private:
   void clearStats ();
     // Output: Stats
-	void delayDelete (Species* s);
-private:
+  void setFeatureStats (Feature &f,
+                        size_t coreIndex,
+                        const Phyl* phyl);
 	void tryChange (Change* ch,
 	                const Change* &bestChange);
     // Update: bestChange: positive(improvement)
     // Invokes: Change::{apply(),restore()}
 public:	
+	void delayDelete (Species* s);
   void finishChanges ();
     // Invokes: deleteTimeZero()
 private:

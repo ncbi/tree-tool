@@ -24,7 +24,7 @@ struct ThisApplication : Application
   	{
   		// Input
   	  addKey ("input_tree", "Input file with the tree");
-  	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::geneLineFormat ());
+  	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::featureLineFormat ());
   	  addKey ("input_core", "Input file with root core feature ids");
   	  addFlag ("nominal_singleton_is_optional", "Nominal singleton value means that all values of this nominal attribute are optional");
   	  addFlag ("prefer_gain", "Prefer gain over loss in maximum parsimony method");
@@ -32,12 +32,12 @@ struct ThisApplication : Application
   	  // Process
   	  addFlag ("use_time", "Use time for MLE, otherwise maximum parsimony method");
   	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
+  	  addFlag ("save_mem", "Save RAM memory by processing features one by one in the tree. This makes processing slower and restricts functionality");
   
       // Output	    
   	  addKey ("output_tree", "Output file with the tree");
   	  addKey ("output_core", "Find root, set root core, sort tree and save file with root core feature ids");  	    
   	  addKey ("report_feature", "Feature name to report in the output tree");
-  	//addFlag ("set_node_ids", "Set node ids in the output tree");  
   	  addKey ("newick", "Output file with the tree in the Newick format");
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
   	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
@@ -60,11 +60,10 @@ struct ThisApplication : Application
 
 		const bool   use_time           = getFlag ("use_time");  
 		const int    optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
+		const bool   save_mem           = getFlag ("save_mem");
 
 		const string output_tree        = getArg ("output_tree");
 		const string output_core        = getArg ("output_core");
-		const string report_feature     = getArg ("report_feature");
-	//const bool   set_node_ids       = getFlag ("set_node_ids");  
 		const string newick             = getArg ("newick");
 		const bool   min_newick_name    = getFlag ("min_newick_name");
 		const string qual               = getArg ("qual");  
@@ -74,22 +73,22 @@ struct ThisApplication : Application
 		const string arc_length_stat    = getArg ("arc_length_stat");
 		const string patrDistFName      = getArg ("patr_dist");
 
-		IMPLY (! input_core. empty () && ! output_core. empty (), input_core != output_core);
-	//ASSERT (save_feature. empty () || save_features. empty ());
-		ASSERT (optim_iter_max >= -1);
-		IMPLY (qual_nonredundant, ! qual. empty ());
+		if (save_mem && (optim_iter_max || use_time))
+		  throw runtime_error ("-save_mem cannot be used with -optim_iter_max or -use_time");
+		if (! input_core. empty () && ! output_core. empty () && input_core == output_core)
+		  throw runtime_error ("-input_core file cannot be the same as -output_core file");
+		if (optim_iter_max < -1)
+		  throw runtime_error ("-optim_iter_max cannot be less than -1");
+		if (qual_nonredundant && qual. empty ())
+		  throw runtime_error ("if -qual_nonredundant then -qual cannot be empty");
 		
 		
-    FeatureTree tree (input_tree, feature_dir, input_core, nominal_singleton_is_optional, prefer_gain);
+    const Chronometer_OnePass cop ("Total");  
+		
+		
+    FeatureTree tree (input_tree, feature_dir, input_core, nominal_singleton_is_optional, prefer_gain, save_mem);
     tree. printInput (cout);
     tree. qc ();    
-    
-    if (! report_feature. empty ())
-    {
-      tree. reportFeature = tree. findFeature (report_feature);
-      if (tree. reportFeature == NO_INDEX)
-        throw runtime_error ("Feature " + report_feature + " is not found");
-    }
     
 
    	if (use_time && tree. allTimeZero)
@@ -137,12 +136,25 @@ struct ThisApplication : Application
       {
         // 63 sec./50K genomes
         cout << "Old root: " << tree. root->getLcaName () << endl;
-        size_t bestCoreSize = 0;
-        cout << "New root: " << tree. findRoot (bestCoreSize) << endl;
-      //cout << "Core size: " << bestCoreSize << endl;
+        string newRootName;
+        if (save_mem)
+        {
+          if (const Species* newRoot = tree. findRoot ())
+            newRootName = newRoot->getLcaName ();
+        }
+        else
+        {
+         	for (const DiGraph::Node* node : tree. nodes)
+         		if (const Species* sp = static_cast <const Phyl*> (node) -> asSpecies ())
+         		  var_cast (sp) -> setCoreSize ();
+         	newRootName = tree. changeRoot ();
+        }
+        cout << "New root: " << newRootName << endl;
+        tree. sort ();
       }
       else
       {
+        ASSERT (! save_mem);
         cout << "Adjusting root core ..." << endl;
         tree. setCore ();
         size_t coreChange [2/*core2nonCore*/];
@@ -151,11 +163,15 @@ struct ThisApplication : Application
         cout << "# Non-core to core: " << coreChange [false] << endl;
       }
       // Output
-      tree. saveSuperRootCore (output_core);
+      if (save_mem)
+        cout << "FILE WITH ROOT CORE FEATURE IDS IS NOT SAVED!" << endl;
+      else
+        tree. saveSuperRootCore (output_core);
     }
 
 
-    tree. setStats ();
+    if (! save_mem)
+      tree. setStats ();
     tree. qc ();
 
 
@@ -185,9 +201,8 @@ struct ThisApplication : Application
       size_t commons = 0;  // Feature may be optional
       size_t singles = 0;  // Feature may be optional
       const size_t genomes = tree. root->getLeavesSize ();
-      FFOR (size_t, i, features. size ())
+      for (const Feature& f : features)
       {
-        const Feature& f = features [i];
         f. qc ();
         if (f. genomes == 0)
           optionals++;
@@ -223,62 +238,65 @@ struct ThisApplication : Application
       if (! qual_nonredundant && ! use_time && (size_t) round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles)
       {
       #if 0
-        size_t s = 0;
-        FFOR (size_t, i, features. size ())
+        if (! save_mem)
         {
-          size_t feature_paraphyletics = 0;  
-          size_t feature_nonParaphyletics = 0;  
-          size_t feature_extraMutations = 0;
-          size_t feature_optionals = 0;
-          size_t feature_commons = 0;  
-          size_t feature_singles = 0;  
-          const Feature& f = features [i];
-          f. qc ();
-          if (f. genomes == 0)
-            feature_optionals++;
-          else if (f. genomes == genomes)
+          size_t s = 0;
+          FFOR (size_t, i, features. size ())
           {
-            ASSERT (f. realGains () == 1);
-            ASSERT (f. losses. empty ());
-            feature_commons++;
-          }
-          else if (f. genomes == 1)
-            feature_singles++;
-          else   // Non-trivial features
-          {
-          	ASSERT (f. mutations () >= 1);
-            if (f. mutations () == 1)
-              feature_paraphyletics++;
-            else
+            size_t feature_paraphyletics = 0;  
+            size_t feature_nonParaphyletics = 0;  
+            size_t feature_extraMutations = 0;
+            size_t feature_optionals = 0;
+            size_t feature_commons = 0;  
+            size_t feature_singles = 0;  
+            const Feature& f = features [i];
+            f. qc ();
+            if (f. genomes == 0)
+              feature_optionals++;
+            else if (f. genomes == genomes)
             {
-              feature_extraMutations += f. mutations () - 1;
-              feature_nonParaphyletics++;
+              ASSERT (f. realGains () == 1);
+              ASSERT (f. losses. empty ());
+              feature_commons++;
             }
+            else if (f. genomes == 1)
+              feature_singles++;
+            else   // Non-trivial features
+            {
+            	ASSERT (f. mutations () >= 1);
+              if (f. mutations () == 1)
+                feature_paraphyletics++;
+              else
+              {
+                feature_extraMutations += f. mutations () - 1;
+                feature_nonParaphyletics++;
+              }
+            }
+            const size_t feature_len = (size_t) round (tree. feature2treeLength (i));
+            if (feature_len != feature_paraphyletics + feature_nonParaphyletics + feature_extraMutations + feature_singles)
+            {
+              cout << f;
+              cout        << feature_len 
+                   << ' ' << feature_paraphyletics 
+                   << ' ' << feature_nonParaphyletics 
+                   << ' ' << feature_extraMutations 
+                   << ' ' << feature_singles
+                   << ' ' << f. gains. contains (static_cast <const Phyl*> (tree. root))
+                   << ' ' << f. rootGain
+                   << endl;
+              ERROR;
+            }
+            s += feature_len;
           }
-          const size_t feature_len = (size_t) round (tree. feature2treeLength (i));
-          if (feature_len != feature_paraphyletics + feature_nonParaphyletics + feature_extraMutations + feature_singles)
-          {
-            cout << f;
-            cout        << feature_len 
-                 << ' ' << feature_paraphyletics 
-                 << ' ' << feature_nonParaphyletics 
-                 << ' ' << feature_extraMutations 
-                 << ' ' << feature_singles
-                 << ' ' << f. gains. contains (static_cast <const Phyl*> (tree. root))
-                 << ' ' << f. rootGain
-                 << endl;
-            ERROR;
-          }
-          s += feature_len;
+          cout        << tree. len 
+               << ' ' << tree. globalSingletonsSize 
+               << ' ' << monophyletics 
+               << ' ' << nonMonophyletics 
+               << ' ' << extraMutations 
+               << ' ' << singles
+               << ' ' << s
+               << endl;
         }
-        cout        << tree. len 
-             << ' ' << tree. globalSingletonsSize 
-             << ' ' << monophyletics 
-             << ' ' << nonMonophyletics 
-             << ' ' << extraMutations 
-             << ' ' << singles
-             << ' ' << s
-             << endl;
       #endif
         ERROR;
       }
@@ -288,12 +306,12 @@ struct ThisApplication : Application
     if (! gain_nodes. empty ())
     {
       OFStream f (gain_nodes);
-     	for (const DiGraph::Node* node : tree. nodes)
-     	{
-     		const Phyl* phyl = static_cast <const Phyl*> (node);
-        FFOR (size_t, i, tree. features. size ())
-          if ((! phyl->feature2parentCore (i) || phyl == tree. root) && phyl->core [i])  
-            f << phyl->getLcaName () << '\t' << tree. features [i]. name << endl;
+      for (const Feature& feature : tree. features)
+      {        
+        for (const Phyl* phyl : feature. gains)
+          f << phyl->getLcaName () << '\t' << feature. name << endl;          
+        if (feature. rootGain)
+          f << tree. root->getLcaName () << '\t' << feature. name << endl;          
       }
     }
 
@@ -301,15 +319,14 @@ struct ThisApplication : Application
     if (! disagreement_nodes. empty ())
     {
       OFStream f (disagreement_nodes);
-     	for (const DiGraph::Node* node : tree. nodes)
-     	{
-     		const Phyl* phyl = static_cast <const Phyl*> (node);
-        FFOR (size_t, i, tree. features. size ())
-          if ((! phyl->feature2parentCore (i) || phyl == tree. root) == phyl->core [i]
-          	  && ! tree. features [i]. monophyletic ()
-          	 )
-            f << phyl->getLcaName () << '\t' << tree. features [i]. name << '\t' << (phyl->core [i] ? "gain" : "loss") << endl;
-      }
+      for (const Feature& feature : tree. features)
+        if (! feature. monophyletic ())
+        {
+          for (const Phyl* phyl : feature. gains)
+            f << phyl->getLcaName () << '\t' << feature. name << "\tgain" << endl;
+          for (const Phyl* phyl : feature. losses)
+            f << phyl->getLcaName () << '\t' << feature. name << "\tloss" << endl;
+        }
     }
 
     
@@ -339,16 +356,6 @@ struct ThisApplication : Application
           << '\t' << patr. leaf2->getName ()
           << '\t' << patr. distance 
           << endl;
-    }
-
-
-    if (verbose ())
-    {
-      tree. setLenGlobal (); 
-      tree. setCore ();
-      tree. qc ();
-      if (verbose ())
-      	tree. print (cout);
     }
 	}
 };
