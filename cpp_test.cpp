@@ -54,13 +54,16 @@ inline S g ()
 
 
 
-struct Struct
+template <typename K, typename V>
+void um_stat (const unordered_map<K,V> &um)
 {
-  string s;
-  Struct ()
-    : s ("abcdefgihjkhjklhjkhjlhjhjkhjklhjklhjkljklhjhhhhhhhhhhhhhhhhhhhhhhhhh")
-    {}
-};
+  #define STAT(f)  cout << #f " = " << um. f () << endl;
+//STAT (bucket_count);
+  STAT (load_factor);
+//STAT (max_load_factor);
+  #undef STAT
+}
+
 
 
 
@@ -76,7 +79,7 @@ struct ThisApplication : Application
 
  	void body () const
 	{
-	#if 1
+	#if 0
 	  double d = str2<double> ("1e0");
 	  cout << d << endl;
 	  
@@ -92,9 +95,6 @@ struct ThisApplication : Application
   	  cout << d << ' ' << iss. eof () << ' ' << iss. fail () << ' ' << iss. rdstate () << endl;
   	}
 	#else
-	  S s;
-	  s. f ();
-	  
 	  constexpr size_t len = 10000000;  // PAR
 	  Vector<ulong> vec;  vec. reserve (len);
 	  Rand rand;
@@ -109,21 +109,42 @@ struct ThisApplication : Application
   	    m [vec [i]] ++;
   	}
 	  {
-      const Chronometer_OnePass cop ("unordered_map");  
+	    cout << endl;
+      const Chronometer_OnePass cop ("unordered_map: constructor");  
   	  unordered_map<ulong,size_t> m (len);
+  	  um_stat (m);
   	  FOR (size_t, i, len)
   	    m [vec [i]] = i;
   	  FOR (size_t, i, len)
   	    m [vec [i]] ++;
+  	  cout << endl;
+  	  um_stat (m);
   	}
 	  {
-      const Chronometer_OnePass cop ("unordered_map");  
-  	  unordered_map<ulong,size_t> m ;
+	    cout << endl;
+      const Chronometer_OnePass cop ("unordered_map: reserve");  
+  	  unordered_map<ulong,size_t> m;
   	  m. reserve (len);
+  	  um_stat (m);
   	  FOR (size_t, i, len)
   	    m [vec [i]] = i;
   	  FOR (size_t, i, len)
   	    m [vec [i]] ++;
+  	  cout << endl;
+  	  um_stat (m);
+  	}
+	  {
+	    cout << endl;
+      const Chronometer_OnePass cop ("unordered_map: rehash");  
+  	  unordered_map<ulong,size_t> m;
+  	  m. rehash (len);
+  	  um_stat (m);
+  	  FOR (size_t, i, len)
+  	    m [vec [i]] = i;
+  	  FOR (size_t, i, len)
+  	    m [vec [i]] ++;
+  	  cout << endl;
+  	  um_stat (m);
   	}
   #endif
   }

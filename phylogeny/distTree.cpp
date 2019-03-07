@@ -894,7 +894,7 @@ LeafCluster Steiner::getIndiscernibles ()
   ASSERT (! getDistTree (). subDepth);
   ASSERT (getDistTree (). optimizable ());
   
-  LeafCluster leafCluster (arcs [false]. size ());
+  LeafCluster leafCluster;  leafCluster. rehash (arcs [false]. size ());
 
   if (childrenDiscernible ())
     return leafCluster;
@@ -3590,7 +3590,7 @@ bool DistTree::loadLines (const StringVector &lines,
 void DistTree::setName2leaf ()
 {
   ASSERT (name2leaf. empty ());
-  name2leaf. reserve (nodes. size ());
+  name2leaf. rehash (nodes. size ());
   for (const DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
       name2leaf [leaf->name] = leaf;
@@ -3666,7 +3666,7 @@ bool DistTree::getConnected ()
           if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
             var_cast (leaf1) -> merge (* var_cast (leaf2));
 
-  LeafCluster leafCluster (nodes. size ());
+  LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -3718,7 +3718,7 @@ LeafCluster DistTree::getIndiscernibles ()
        )
       var_cast (dissim. leaf1) -> DisjointCluster::merge (* var_cast (dissim. leaf2));
 
-  LeafCluster leafCluster (nodes. size ());
+  LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -3828,7 +3828,7 @@ size_t DistTree::setDiscernibles_ds ()
           if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
             var_cast (leaf1) -> merge (* var_cast (leaf2));
 
-  LeafCluster leafCluster (nodes. size ());
+  LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -7448,7 +7448,7 @@ void DistTree::findTopologicalClusters ()
     }
   }
 
-  LeafCluster leafCluster (nodes. size ());
+  LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
