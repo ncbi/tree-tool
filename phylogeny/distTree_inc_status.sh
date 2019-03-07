@@ -6,73 +6,77 @@ if [ $# -ne 1 ]; then
   echo "#1: distance tree data"
   exit 1
 fi
+INC=$1
 
 
 TMP=`mktemp`
 
 
-echo "Version: `cat $1/version`"
+echo "Version: `cat $INC/version`"
 echo ""
 
 set +o errexit
-OBJS=`grep -vc '^ *0x' $1/tree`
+OBJS=`grep -vc '^ *0x' $INC/tree`
 set -o errexit
 echo "# Objects in tree: $OBJS"  
 
-ADDED=`cat $1/leaf | wc -l`
+ADDED=`cat $INC/leaf | wc -l`
 if [ $ADDED -gt 0 ]; then
   echo "# Being added: $ADDED"
 fi
 
-SEARCH=`ls $1/search/ | wc -l`
+SEARCH=`ls $INC/search/ | wc -l`
 if [ $SEARCH -gt 0 ]; then
   echo "# Being searched: $SEARCH"
 fi
 
-N=`ls $1/hybrid/ | wc -l`
+N=`ls $INC/hybrid/ | wc -l`
 PERCENT=`echo "scale=2; $N * 100 / ($N + $OBJS)" | bc -l`
 if [ $N -gt 0 ]; then
   echo "# Hybrids: $N ($PERCENT %)"
 fi
 
-if [ -e $1/outlier-alien ]; then
-	N=`cat $1/outlier-alien | wc -l`
+if [ -e $INC/outlier-alien ]; then
+	N=`cat $INC/outlier-alien | wc -l`
   echo "# Alien-outliers: $N"
 fi
 
-if [ -e $1/outlier-genogroup ]; then
-	N=`cat $1/outlier-genogroup | wc -l`
-  echo "# Genogroup outliers: $N"
-  echo "# Objects to be in tree: $(( $OBJS - $N ))"
-fi
 
-N=`ls $1/new/ | wc -l`
+echo ""
+
+N=`ls $INC/new/ | wc -l`
 if [ $N -gt 0 ]; then
   echo "# New: $N"
   echo "# To process: $(( $ADDED + $SEARCH + $N ))"
 fi
 
+if [ -e $INC/outlier-genogroup ]; then
+	N=`cat $INC/outlier-genogroup | wc -l`
+  echo "# Genogroup outliers: $N"
+  echo "# Objects to be in tree: $(( $OBJS - $N ))"
+fi
+
 
 echo ""
-N=`cat $1/dissim | wc -l`
+N=`cat $INC/dissim | wc -l`
 PERCENT=`echo "scale=2; 100 * $N / ($OBJS * ($OBJS - 1) / 2)" | bc -l`
 echo "# Dissimilarities: $N"
 echo "Dissimilarities per object: $PERCENT % of maximum"
 
 echo ""
-grep '^OUTPUT:' -A 1 -n $1/hist/makeDistTree*.* | grep -v '\-qc\.' | sed 's|^'$1'/hist/makeDistTree[^.]*\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
+grep '^OUTPUT:' -A 1 -n $INC/hist/makeDistTree*.* | grep -v '\-qc\.' | sed 's|^'$INC'/hist/makeDistTree[^.]*\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
 tail -5 $TMP
 
 echo ""
-tail -5 $1/runlog
+tail -5 $INC/runlog
 
 echo ""
-grep ' V !' $1/hist/makeFeatureTree-tree1.* | sed 's|^'$1'/hist/makeFeatureTree-tree1\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
+grep ' V !' $INC/hist/makeFeatureTree-tree1.* | sed 's|^'$INC'/hist/makeFeatureTree-tree1\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
 tail -5 $TMP
 
 echo ""
 set +o errexit
-wc -l inc/hist/outlier-genogroup.* 1> $TMP.out 2> /dev/null
+wc -l $INC/hist/outlier-genogroup.* 1> $TMP.out 2> /dev/null
 grep -v total $TMP.out |sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 S=$?
 set -o errexit
