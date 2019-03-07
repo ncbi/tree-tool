@@ -942,6 +942,8 @@ bool fileExists (const string &fName);
   bool directoryExists (const string &dirName);
 #endif
 
+string simplifyDir (const string &dir);
+
 streampos getFileSize (const string &fName);
 
 size_t strMonth2num (const string& month);
