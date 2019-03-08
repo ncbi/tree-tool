@@ -249,12 +249,14 @@ struct ThisApplication : Application
     	throw runtime_error ("output_dist_etc exists, but no output_dissim");
     IMPLY (whole,             optimize);
     IMPLY (subgraph_fast,     optimize);
-    IMPLY (subgraph_iter_max, optimize);
+    if (subgraph_iter_max && ! optimize)
+      throw runtime_error ("-subgraph_iter_max requires -optimize");
     IMPLY (skip_len,          optimize);
     IMPLY (reinsert,          optimize);
     IMPLY (skip_topology,     optimize);
     IMPLY (subgraph_fast,     ! whole);
-    IMPLY (subgraph_iter_max, ! whole);
+    if (subgraph_iter_max && whole)
+      throw runtime_error ("-subgraph_iter_max is incompatible with -whole");
     IMPLY (new_only, ! optimize);
     if (dataFName. empty () && fix_discernibles)
       throw runtime_error ("-fix_discernibles needs dissimilarities");
@@ -442,8 +444,8 @@ struct ThisApplication : Application
               if (subgraph_iter_max)
               	minimize (iter_max, subgraph_iter_max);
               ASSERT (iter_max);
-              bool hybridDeleted = true;
-              for (size_t iter = 0; iter < iter_max || (delete_all_hybrids && hybridDeleted); iter++)
+            //bool hybridDeleted = true;
+              for (size_t iter = 0; iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/; iter++)
             	{
 	              cerr << "Iteration " << iter + 1;
             		if (iter_max < numeric_limits<size_t>::max ())
@@ -451,13 +453,15 @@ struct ThisApplication : Application
             	  cerr << " ..." << endl;
             		const Real absCriterion_old = tree->absCriterion;
 	              tree->optimizeLargeSubgraphs ();  
-              	hybridDeleted = false;
+              //hybridDeleted = false;
 	              if (hybridF. get ())
-	              	hybridDeleted = deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+	              	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
                 tree->saveFile (output_tree); 
+              #if 0
 	              if (hybridDeleted)
 	              	continue;
-	              if (tree->absCriterion == 0)
+	            #endif
+	              if (tree->absCriterion == 0.0)
 	              	break;
 	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-4 / (Real) tree->name2leaf. size ())  // PAR
 	              	break;

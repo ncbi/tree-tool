@@ -169,14 +169,13 @@ fi
 # Time: O(n log^4(n)) 
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE \
-  -optimize  -skip_len  -subgraph_iter_max 1 \
+  -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
   -delete_outliers $INC/outlier-criterion  -max_outlier_num 1 \
   -output_tree $INC/tree.new \
   -dissim_request $INC/dissim_request \
   > $INC/hist/makeDistTree.$VER
-  # -subgraph_iter_max 2
 mv $INC/leaf $INC/hist/leaf.$VER
 cp /dev/null $INC/leaf
 mv $INC/tree.new $INC/tree
