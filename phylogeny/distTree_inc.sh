@@ -117,9 +117,12 @@ if [ -e $INC/phen ]; then
 	echo "Names ..."
 	$THIS/tree2names.sh tree.$DATE $INC/phen > $INC/hist/tree2names.$VER
 	
-	echo ""
-	echo "Genogroups ..."
-	$THIS/tree2genogroup tree.$DATE  `cat $INC/genogroup_barrier`  -genogroups genogroups   -genogroup_under_genogroup gug
+  GENOGROUP_BARRIER=`cat $INC/genogroup_barrier`
+  if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
+  	echo ""
+  	echo "Genogroups ..."
+  	$THIS/tree2genogroup tree.$DATE  $GENOGROUP_BARRIER  -genogroups genogroups   -genogroup_under_genogroup gug
+  fi
 fi
 
 
