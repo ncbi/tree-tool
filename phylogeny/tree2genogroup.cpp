@@ -66,7 +66,7 @@ struct ThisApplication : Application
 
     
     DistTree tree (input_tree, string (), string (), false);
-    tree. sort ();
+    tree. sort ();  // For Genogroup::repr
     tree. qc ();    
       
     tree. findGenogroups (genogroup_dist);
