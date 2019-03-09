@@ -397,8 +397,8 @@ struct Tree : DiGraph
       // Requires: getChildren().size() <= 2
     const TreeNode* getDifferentChild (const TreeNode* child) const;
       // Return: !nullptr; != child
-    const TreeNode* getLeftmostDescendant () const;
-    const TreeNode* getRightmostDescendant () const;
+    const TreeNode* getFirstDecendant () const;
+    const TreeNode* getLastDecendant () const;
     string getLcaName () const;
 	  void childrenUp ();
 	    // Children->setParent(getParent())

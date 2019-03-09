@@ -188,7 +188,7 @@ Save clusters in " + dmSuff + "-files\
     cout << "Average distance = " << ave << endl; 
 
 
-    unordered_map <const DisjointCluster*, Vector<size_t/*objNum*/>>  cluster2objs (ds. objs. size ());
+    unordered_map <const DisjointCluster*, Vector<size_t/*objNum*/>> cluster2objs;  cluster2objs. rehash (ds. objs. size ());
     if (max_cliques)
     {
       // Greedy algorithm

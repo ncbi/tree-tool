@@ -202,7 +202,7 @@ void DiGraph::Node::contract (Node* from)
 
 	for (const bool b : {false, true})
   {  
-    unordered_map <Node*, Arc*> m (arcs [b]. size ());
+    unordered_map <Node*, Arc*> m;  m. rehash (arcs [b]. size ());
     for (Arc* arc : arcs [b])
       m [arc->node [b]] = arc;
 
@@ -1041,7 +1041,7 @@ const Tree::TreeNode* Tree::TreeNode::getDifferentChild (const TreeNode* child) 
 
 
 
-const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendant () const
+const Tree::TreeNode* Tree::TreeNode::getFirstDecendant () const
 {
   const TreeNode* n = this;
   while (! n->isLeaf ())
@@ -1051,7 +1051,7 @@ const Tree::TreeNode* Tree::TreeNode::getLeftmostDescendant () const
 
 
 
-const Tree::TreeNode* Tree::TreeNode::getRightmostDescendant () const
+const Tree::TreeNode* Tree::TreeNode::getLastDecendant () const
 {
   const TreeNode* n = this;
   while (! n->isLeaf ())
@@ -1063,8 +1063,8 @@ const Tree::TreeNode* Tree::TreeNode::getRightmostDescendant () const
 
 string Tree::TreeNode::getLcaName () const
 { 
-  const TreeNode* left  = getLeftmostDescendant ();
-	const TreeNode* right = getRightmostDescendant ();
+  const TreeNode* left  = getFirstDecendant ();
+	const TreeNode* right = getLastDecendant ();
 	string name;
 	if (left == right)
 		name = left->getLeafName ();
@@ -1300,7 +1300,7 @@ namespace
 
 void Tree::printAsn (ostream &os) const
 {
-  unordered_map<const DiGraph::Node*, size_t/*index*/> node2index (nodes. size ());
+  unordered_map<const DiGraph::Node*, size_t/*index*/> node2index;  node2index. rehash (nodes. size ());
   size_t index = 0;
   for (const DiGraph::Node* n : nodes)
   {
@@ -1881,8 +1881,8 @@ bool Tree::strictlyLess_std (const DiGraph::Node* a,
   ASSERT (a_->leaves);
   ASSERT (b_->leaves);
 	LESS_PART (*b_, *a_, leaves);
-  LESS_PART (*a_, *b_, getLeftmostDescendant  () -> getName ());
-//LESS_PART (*a_, *b_, getRightmostDescendant () -> getName ());
+  LESS_PART (*a_, *b_, getFirstDecendant  () -> getName ());
+//LESS_PART (*a_, *b_, getLastDecendant () -> getName ());
 
   return false;
 }

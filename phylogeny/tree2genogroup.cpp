@@ -32,7 +32,7 @@ struct Genogroup
       { Tree::LcaBuffer buf;
         const Tree::TreeNode* lca_ = Tree::getLca (leaves, buf);
         EXEC_ASSERT (lca = static_cast <const DTNode*> (lca_) -> asSteiner ());
-        EXEC_ASSERT (repr = static_cast <const DTNode*> (lca->getLeftmostDescendant ()) -> asLeaf ());
+        EXEC_ASSERT (repr = static_cast <const DTNode*> (lca->getFirstDecendant ()) -> asLeaf ());
       }
       ASSERT (repr);
     }

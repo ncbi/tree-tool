@@ -41,7 +41,7 @@ struct ThisApplication : Application
       const Leaf* leaf = it. second;
       if (! leaf->discernible)
         cout << leaf->name 
-             << '\t' << static_cast <const DTNode*> (leaf->getParent ()) -> getLeftmostDescendant () -> getName ()
+             << '\t' << static_cast <const DTNode*> (leaf->getParent ()) -> getFirstDecendant () -> getName ()
              << endl;
     }
 	}
