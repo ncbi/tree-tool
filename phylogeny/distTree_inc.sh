@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
-  echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual"
+  echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, genogroups, gug"
   echo "#1: incremental distance tree directory"
   echo "#2: new.list | ''"
   echo "Time: O(n log^5(n))"
@@ -71,7 +71,7 @@ fi
 # Time: O(n log^5(n))
 # PAR
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  $DELETE \
-  -optimize  -skip_len  -reinsert  -subgraph_iter_max 10 \
+  -optimize  -skip_len  -reinsert  -subgraph_iter_max 5 \
   -output_tree $INC/tree.new  -leaf_errors leaf_errors > $INC/hist/makeDistTree-complete-inc.$VER
 mv $INC/tree.new $INC/tree
 tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
@@ -116,6 +116,10 @@ if [ -e $INC/phen ]; then
 	echo ""
 	echo "Names ..."
 	$THIS/tree2names.sh tree.$DATE $INC/phen > $INC/hist/tree2names.$VER
+	
+	echo ""
+	echo "Genogroups ..."
+	$THIS/tree2genogroup tree.$DATE  `cat $INC/genogroup_barrier`  -genogroups genogroups   -genogroup_under_genogroup gug
 fi
 
 
