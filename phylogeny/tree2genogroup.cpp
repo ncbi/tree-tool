@@ -12,6 +12,31 @@ using namespace DistTree_sp;
 
 namespace 
 {
+  
+  
+  
+struct Genogroup
+{
+  VectorPtr<Tree::TreeNode> leaves;
+    // Distinct
+  const Steiner* lca {nullptr};
+  const Leaf* repr {nullptr};
+  
+  Genogroup () = default;
+    
+  void finish ()
+    { ASSERT (! leaves. empty ());
+      if (leaves. size () == 1)
+        repr = static_cast <const DTNode*> (leaves [0]) -> asLeaf ();
+      else
+      { Tree::LcaBuffer buf;
+        const Tree::TreeNode* lca_ = Tree::getLca (leaves, buf);
+        EXEC_ASSERT (lca = static_cast <const DTNode*> (lca_) -> asSteiner ());
+        EXEC_ASSERT (repr = static_cast <const DTNode*> (lca->getLeftmostDescendant ()) -> asLeaf ());
+      }
+      ASSERT (repr);
+    }
+};
 
 
 
@@ -40,32 +65,33 @@ struct ThisApplication : Application
     ASSERT (genogroup_dist > 0);
 
     
-    const bool clustersUsed = ! genogroupsFName. empty () || ! genogroup_under_genogroup. empty ();
-
-
     DistTree tree (input_tree, string (), string (), false);
+    tree. sort ();
     tree. qc ();    
       
     tree. findGenogroups (genogroup_dist);
   
-    const size_t nodesSize = tree. nodes. size ();
-    unordered_map <const DiGraph::Node*, string> names;  names. rehash (nodesSize);
-    unordered_map <const DiGraph::Node*, VectorPtr<Tree::TreeNode>> clusters;  
-    if (clustersUsed)
-      clusters. rehash (nodesSize);
+    unordered_map <const DiGraph::Node* /*genogroup cluster*/, Genogroup> genogroups;  
+    genogroups. rehash (tree. nodes. size ());
 	 	for (DiGraph::Node* node_ : tree. nodes)
 	 	{
 	 		const DiGraph::Node* cluster = node_->getDisjointCluster ();
 	 		const DTNode* node = static_cast <const DTNode*> (node_);
 	 		if (const Leaf* leaf = node->asLeaf ())
-	 		{
-	 		  if (clustersUsed)
-	 		    clusters [cluster] << leaf;
-	 			names [cluster] = leaf->name;
-	 		}
+ 		    genogroups [cluster]. leaves << leaf;
 	 	}
+    for (auto& it : genogroups)
+      it. second. finish ();
+      
+    VectorPtr<Tree::TreeNode> lcas;  lcas. reserve (genogroups. size ());
+    for (const auto& it : genogroups)
+      if (const Steiner* lca = it. second. lca)
+        lcas << lca;
+    lcas. sort ();
+    ASSERT (lcas. isUniq ());
 
 	  
+	  // Output
 	  if (! genogroup_table. empty ())
 	  {
 	  	OFStream f (genogroup_table);
@@ -73,57 +99,36 @@ struct ThisApplication : Application
 		 	{
 		 		const DTNode* node = static_cast <const DTNode*> (node_);
 		 		if (const Leaf* leaf = node->asLeaf ())
-		 			f << leaf->name << '\t' << names [node_->getDisjointCluster ()] << endl;
+		 			f << leaf->name << '\t' << genogroups [node_->getDisjointCluster ()]. repr->name << endl;
 		 	}
-	  	
 	  }
-	  
+	      
+    if (! genogroupsFName. empty ())
+    {
+	  	OFStream f (genogroupsFName);
+      for (const Tree::TreeNode* lca : lcas)
+        f << lca->getLcaName () << endl;
+	  }
 
-    if (clustersUsed)
-    { 
-      VectorPtr<Tree::TreeNode> lcas;  lcas. reserve (nodesSize);
-      {
-        Tree::LcaBuffer buf;
-        for (const auto& it : clusters)
-        {
-          const VectorPtr<Tree::TreeNode>& cluster = it. second;
-          ASSERT (! cluster. empty ());
-          if (cluster. size () == 1)
-            continue;
-          const Tree::TreeNode* lca = Tree::getLca (cluster, buf);
-          lcas << lca;
-        }
-        lcas. sort ();        
-        ASSERT (lcas. isUniq ());
-      }
-      
-      if (! genogroupsFName. empty ())
-      {
-  	  	OFStream f (genogroupsFName);
-  	  	for (const Tree::TreeNode* lca : lcas)
-  	      f << static_cast <const DTNode*> (lca) -> getLcaName () << endl;
-  	  }
-
-      if (! genogroup_under_genogroup. empty ())
-      {
-  	  	OFStream f (genogroup_under_genogroup);
-  	  	for (const Tree::TreeNode* lca : lcas)
-  	  	{
-  	  	  const Tree::TreeNode* parent = lca->getParent ();
-  	  	  while (parent)
-  	  	  {
-  	  	    if (lcas. contains (parent))
-  	  	    {
-  	  	      f << static_cast <const DTNode*> (lca)    -> getLcaName () << " - " 
-  	  	        << static_cast <const DTNode*> (parent) -> getLcaName () 
-  	  	        << endl;
-  	  	      break;
-  	  	    }
-  	  	    parent = parent->getParent ();
-  	  	  }
-  	  	}
-  	  }
-  	}
+    if (! genogroup_under_genogroup. empty ())
+    {
+	  	OFStream f (genogroup_under_genogroup);
+	  	for (const Tree::TreeNode* lca : lcas)
+	  	{
+	  	  const Tree::TreeNode* parent = lca->getParent ();
+	  	  while (parent)
+	  	  {
+	  	    if (lcas. contains (parent))
+	  	    {
+	  	      f << static_cast <const DTNode*> (lca)    -> getLcaName () << " - " 
+	  	        << static_cast <const DTNode*> (parent) -> getLcaName () 
+	  	        << endl;
+	  	      break;
+	  	    }
+	  	    parent = parent->getParent ();
+	  	  }
+	  	}
+	  }
 	}
 };
 
