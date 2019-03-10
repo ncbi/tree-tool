@@ -166,7 +166,6 @@ Save clusters in " + dmSuff + "-files\
     }
     
     size_t objIndex = NO_INDEX;
-    ds. setName2objNum ();
     if (! objName. empty ())
     { 
       objIndex = ds. getName2objNum (objName);

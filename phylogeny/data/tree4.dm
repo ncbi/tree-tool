@@ -6,7 +6,7 @@ A
 B
 C
 D
-dist
+dist full
 0 7 9 10
 7 0 10 11
 9 10 0 3

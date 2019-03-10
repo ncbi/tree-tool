@@ -14,7 +14,7 @@ INPUT:
 # Dissimilarities: 42195 (100.00 %)
 Dissimilarities factor: 26.19
 Ave. dissimilarity = 0.004039
-absCriterion = 295.300  Error density = 8.396 %
+absCriterion = 295.292  Error density = 8.396 %
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 36

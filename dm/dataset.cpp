@@ -56,8 +56,8 @@ Attr::Attr (const string &name_arg,
 Attr::~Attr ()
 {
   ASSERT (dsIt != ds. attrs. end ());
-  const_cast <Dataset&> (ds). attrs. erase (dsIt);
-  const_cast <Dataset&> (ds). name2attr_. erase (name);
+  var_cast (ds). attrs. erase (dsIt);
+  var_cast (ds). name2attr_. erase (name);
 }
 
 
@@ -83,7 +83,7 @@ void Attr::moveAfter (const Attr* pred)
   if (! pred && ds. attrs. begin () == dsIt)
     return;
   
-  Dataset& ds_ = const_cast <Dataset&> (ds);
+  Dataset& ds_ = var_cast (ds);
 
   ds_. attrs. erase (dsIt);
   
@@ -207,7 +207,7 @@ NumAttr1& NumAttr1::operator= (const NumAttr1& other)
 NumAttr1::Value& NumAttr1::operator[] (size_t objNum) 
 { 
   if (const RealAttr1* a = asRealAttr1 ())
-    return const_cast <RealAttr1*> (a) -> operator[] (objNum);
+    return var_cast (a) -> operator[] (objNum);
   throw runtime_error ("Assignment to NumAttr1"); 
 }
 
@@ -726,7 +726,7 @@ RealAttr1* RealAttr1::smoothUniform (const string &suffix,
   ASSERT (start <= end);
   
 
-  auto* smoothed = new RealAttr1 (name + suffix, * const_cast <Dataset*> (ds), decimals);
+  auto* smoothed = new RealAttr1 (name + suffix, * var_cast (ds), decimals);
   
   
   for (Iterator it (ds); it ();)
@@ -970,7 +970,7 @@ bool BoolAttr1::str2bool (const string &s) const
 BoolAttr1::Value& BoolAttr1::operator[] (size_t objNum) 
 { 
   if (const ExtBoolAttr1* a = asExtBoolAttr1 ())
-    return const_cast <ExtBoolAttr1*> (a) -> operator[] (objNum);
+    return var_cast (a) -> operator[] (objNum);
   throw runtime_error ("Assignment to BoolAttr1"); 
 }
 
@@ -1261,7 +1261,7 @@ Vector<NumAttr1*> NominAttr1::toNumAttr1 (Dataset &ds_arg) const
         ASSERT (value <= vec. size ());
         FFOR (size_t, i, vec. size ())
         {
-          ExtBoolAttr1* a = const_cast <ExtBoolAttr1*> (vec [i] -> asExtBoolAttr1 ());
+          ExtBoolAttr1* a = var_cast (vec [i] -> asExtBoolAttr1 ());
           ASSERT (a);
           (*a) [objNum] = (value == i ? ETRUE : EFALSE);
         }
@@ -1859,11 +1859,7 @@ void Dataset::load (istream &is)
         {
           is >> val;
           if (val. empty ())
-          {
-            ostringstream oss;
-            oss << "Object " << i + 1 << " named " << obj->name << ": attribute " << attr->name;
-            throw Error (oss. str ());
-          }
+            throw runtime_error (FUNC " end-of-file");
           if (val == missingStr)
             attr->setMissing (i);
           else
@@ -1871,6 +1867,9 @@ void Dataset::load (istream &is)
         }
     }
   }
+  
+  
+  setName2objNum ();
   
   
   // Attr2, Obj::comment
@@ -1902,24 +1901,57 @@ void Dataset::load (istream &is)
 	  {
   	  const Attr* attr = name2attr (s);
   	  if (! attr)
-  	    throw runtime_error ("Two-way attribute " + s + " is not found");
-  	  Attr2* attr2 = const_cast <Attr2*> (attr->asAttr2 ());
-  	  ASSERT (attr2);
-      string val;
-  	  FFOR (size_t, row, objs. size ())
-  	  FFOR (size_t, col, objs. size ())
+  	    throw runtime_error ("Two-way attribute " + strQuote (s) + " is not found");
+  	  Attr2* attr2 = var_cast (attr->asAttr2 ());
+  	  if (! attr2)
+  	    throw runtime_error (strQuote (s) + " is not a two-way attribute");
+  	  is >> s;
+  	  strUpper (s);
+  	  if (s == "FULL")
+  	  {
+        string val;
+    	  FFOR (size_t, row, objs. size ())
+      	  FFOR (size_t, col, objs. size ())
+          {
+            is >> val;
+            if (val. empty ())
+              throw runtime_error (FUNC "end-of-file");
+            if (val == missingStr)
+              attr2->setMissing (row, col);
+            else
+              attr2->str2value (row, col, val);
+          }
+      }
+      else if (s == "PARTIAL")
       {
-        is >> val;
-        if (val. empty ())
+        size_t matrixObjNum;
+        is >> matrixObjNum;
+        Vector<StringVector> matr;  matr. resize (matrixObjNum);
+        Vector<size_t> objNums;  objNums. reserve (matrixObjNum);
+        FOR (size_t, i, matrixObjNum)
         {
-          ostringstream oss;
-          oss << attr2->name << "[" << row << "," << col << "] is empty";
-          throw Error (oss. str ());
+          is >> s;
+          size_t objNum = NO_INDEX;
+          if (find (name2objNum, s, objNum))
+            objNums << objNum;
+          else
+            throw runtime_error ("Unknown object " + strQuote (s) + " in two-way attribute " + strQuote (attr2->name));
+          matr [i]. resize (matrixObjNum);
+          string val;
+          FOR (size_t, j, matrixObjNum)
+          {
+            is >> val;
+            if (val. empty ())
+              throw runtime_error (FUNC "end-of-file");
+            matr [i] [j] = move (val);
+          }
         }
-        if (val == missingStr)
-          attr2->setMissing (row, col);
-        else
-          attr2->str2value (row, col, val);
+        FOR (size_t, i, matrixObjNum)
+          FOR (size_t, j, matrixObjNum)
+            if (matr [i] [j] == missingStr)
+              attr2->setMissing (objNums [i], objNums [j]);
+            else
+              attr2->str2value (objNums [i], objNums [j], matr [i] [j]);
       }
     }
 	}
@@ -2035,7 +2067,7 @@ size_t Dataset::appendObj (const string &objName)
 
   objs << new Obj (realObjName);
   for (const Attr* attr : attrs)
-    const_cast <Attr*> (attr) -> appendObj (); 
+    var_cast (attr) -> appendObj (); 
     
   return objs. size () - 1;
 }
@@ -2046,15 +2078,15 @@ void Dataset::list2ObjNames (const VectorPtr<Named> &names)
 {
   ASSERT (names. size () == objs. size ());
   FFOR (size_t, i, objs. size ())
-    const_cast <Obj*> (objs [i]) -> name = names [i] -> name;
+    var_cast (objs [i]) -> name = names [i] -> name;
 }
 
 
 
 void Dataset::setMultAll (Real mult)
 {
-  ITER (VectorOwn<Obj>, it, objs)
-    const_cast <Obj*> (*it) -> mult = mult;
+  for (const Obj* obj : objs)
+    var_cast (obj) -> mult = mult;
 }
 
 
@@ -2064,7 +2096,7 @@ void Dataset::attr2mult (const RealAttr1* attr)
   ASSERT (attr);
   ASSERT (& attr->ds == this);
   FFOR (size_t, i, objs. size ())
-    const_cast <Obj*> (objs [i]) -> mult = (*attr) [i];
+    var_cast (objs [i]) -> mult = (*attr) [i];
 }
 
 
@@ -2073,7 +2105,7 @@ void Dataset::objInterval2Active (size_t startObjNum,
                                   size_t endObjNum)
 {
   FFOR (size_t, i, objs. size ())
-    const_cast <Obj*> (objs [i]) -> mult = between (i, startObjNum, endObjNum);
+    var_cast (objs [i]) -> mult = between (i, startObjNum, endObjNum);
 }
 
 
@@ -2258,7 +2290,7 @@ void Sample::save (const VectorPtr<Attr> &attrs,
   for (const Attr* attr : attrs)
     if (const Attr2* attr2 = attr->asAttr2 ())
     {
-    	os << attr2->name << endl;
+    	os << attr2->name << " FULL" << endl;  // ??
     	attr2->save (os, *this);
     }
 
@@ -3766,7 +3798,7 @@ Real UniKernel::setPoints ()
   if (verbose ())
     cout << "SD = " << mv. getSD () << endl;  
     
-  const_cast <An*> (analysis) -> sample. mult_sum = multSum. back ();
+  var_cast (analysis) -> sample. mult_sum = multSum. back ();
 
   // attr_min, attr_max
   attr. getMinMax (analysis->sample, attr_min, attr_max);
@@ -4351,7 +4383,7 @@ Real Mixture::Component::getDeltaness () const
 
 void Mixture::Component::estimate ()
 {
-  Sample& sample = const_cast <Analysis1*> (distr->getAnalysisCheck ()) -> sample;
+  Sample& sample = var_cast (distr->getAnalysisCheck ()) -> sample;
   const Component2Sample c2s (sample, *this);  
   if (verbose ())
     cout << "multSum = " << sample. mult_sum << endl;
@@ -4366,7 +4398,7 @@ void Mixture::Component::estimate ()
 
 Real Mixture::Component::getFitness_entropy () const
 { 
-  const Component2Sample c2s (const_cast <Analysis1*> (distr->getAnalysisCheck ()) -> sample, * const_cast <Component*> (this)); 
+  const Component2Sample c2s (var_cast (distr->getAnalysisCheck ()) -> sample, * var_cast (this)); 
 	return distr->getFitness_entropy (); 
 }
 
@@ -4646,7 +4678,7 @@ void Mixture::estimate ()
 		  MVector vec (components. size ());
 		  for (Iterator it (analysis->sample); it ();)  
 		    if (components. size () == 1)
-		      const_cast <Component*> (components [0]) -> objProb [*it] = 1;
+		      var_cast (components [0]) -> objProb [*it] = 1;
 		    else
   		  {
   		  	data2variable (*it);
@@ -4661,7 +4693,7 @@ void Mixture::estimate ()
   				{
   					const Prob newObjProb = vec [i];
   					ASSERT (isProb (newObjProb));
-  					const_cast <Component*> (components [i]) -> objProb [*it] = newObjProb;
+  					var_cast (components [i]) -> objProb [*it] = newObjProb;
   			  }
   		  }  
 	  }
@@ -4674,11 +4706,11 @@ void Mixture::estimate ()
 	    if (verbose ())
 	      cout << "Estimating component " << (i + 1) << endl;
 	  #if 1
-	    const_cast <Component*> (components [i]) -> estimate ();
+	    var_cast (components [i]) -> estimate ();
 	    if (verbose ())
 	      components [i] -> print (cout);
 	  #else
-	    if (   ! const_cast <Component*> (components [i]) -> estimate ()
+	    if (   ! var_cast (components [i]) -> estimate ()
 	        && components. size () >= 2
 	       )
 	    {
@@ -4697,7 +4729,7 @@ void Mixture::estimate ()
 	  	vec. balanceRow (true, 0, 1);
 	  	FFOR (size_t, i, components. size ())
 	  	{
-	  	  const_cast <Component*> (components [i]) -> prob = toProb (vec [i]);
+	  	  var_cast (components [i]) -> prob = toProb (vec [i]);
 	  	  if (verbose ())
 	  	  {
 	  	    ONumber on (cout, 6, true);
@@ -4784,7 +4816,7 @@ void Mixture::balanceProb ()
 	  s += comp->prob;
 	ASSERT (s > 0);
 	for (const Component* comp : components)
-	  const_cast <Component*> (comp) -> prob /= s;
+	  var_cast (comp) -> prob /= s;
 }
 
 
@@ -4799,7 +4831,7 @@ void Mixture::mergeComponents ()
   	  const Component* other = components [j];
 	    if (comp->distr->similar (* other->distr, 1e-3))  // PAR  
 	    {
-        const_cast <Component*> (comp) -> merge (other);
+        var_cast (comp) -> merge (other);
   			components. erasePtr (j);
   	  }
   	}
@@ -4827,7 +4859,7 @@ bool Mixture::deleteComponent (size_t num)
   for (const Component* c : components)
     if (c != comp_del)
     {
-      Prob& p = const_cast <Component*> (c) -> prob;
+      Prob& p = var_cast (c) -> prob;
       p /= 1 - p_del;
       makeProb (p);
     }
@@ -4838,7 +4870,7 @@ bool Mixture::deleteComponent (size_t num)
 	  for (const Component* c : components)
       if (c != comp_del)
   	  {
-  	    Prob& p = const_cast <Component*> (c) -> objProb [*it];
+  	    Prob& p = var_cast (c) -> objProb [*it];
   	    p /= 1 - p_obj_del;
   	    makeProb (p);
   	  }
@@ -4906,7 +4938,7 @@ Space1<RealAttr1> PrinComp::createSpace (const string &attrPrefix,
   {
     project (i, projection);
   	FFOR (size_t, col, projection. size ())
-  	  (* const_cast <RealAttr1*> (sp [col])) [i] = projection [col];
+  	  (* var_cast (sp [col])) [i] = projection [col];
   }
 	
 	return sp;
@@ -5180,7 +5212,7 @@ void Clustering::saveText (ostream &os) const
 void Clustering::setAnalysis ()
 { 
   FFOR (size_t, i, getOutDim ())
-    const_cast <MultiNormal*> (getMultiNormal (i)) -> analysis = this;
+    var_cast (getMultiNormal (i)) -> analysis = this;
 }
 
 
@@ -5190,7 +5222,7 @@ void Clustering::splitCluster (size_t num)
   if (verbose ())
     cout << "Splitting cluster " << num + 1 << endl;
 
-	Mixture::Component* oldComp = const_cast <Mixture::Component*> (mixt. components [num]);
+	Mixture::Component* oldComp = var_cast (mixt. components [num]);
 	oldComp->prob /= 2;  // ??
 	const MultiNormal* oldMn = oldComp->distr->asMultiNormal ();
 	ASSERT (oldMn);
@@ -5235,7 +5267,7 @@ Space1<ProbAttr1> Clustering::createSpace (Dataset &ds) const
 	
   for (Iterator it (sample); it ();)  
   	FFOR (size_t, col, getOutDim ())
-  	  (* const_cast <ProbAttr1*> (sp [col])) [*it] = mixt. components [col] -> objProb [*it];
+  	  (* var_cast (sp [col])) [*it] = mixt. components [col] -> objProb [*it];
 	
 	return sp;
 }
@@ -5326,7 +5358,7 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
  	      var_cast (clusters [i]) -> merge (* var_cast (clusters [j]));
     }
 
-  unordered_map<const DisjointCluster*, Vector<size_t>> cluster2categories (clusters. size ());
+  unordered_map<const DisjointCluster*, Vector<size_t>> cluster2categories;  cluster2categories. rehash (clusters. size ());
   FFOR (size_t, i, clusters. size ())
     cluster2categories [var_cast (clusters [i]) -> getDisjointCluster ()] << i;
   ASSERT (! cluster2categories. empty ());
@@ -5375,12 +5407,12 @@ void Clustering::merge (size_t compNum1,
   ASSERT (compNum2 < getOutDim ());  
   ASSERT (compNum1 != compNum2);
     
-  Mixture::Component* comp1 = const_cast <Mixture::Component*> (mixt. components [compNum1]);
-  Mixture::Component* comp2 = const_cast <Mixture::Component*> (mixt. components [compNum2]);
+  Mixture::Component* comp1 = var_cast (mixt. components [compNum1]);
+  Mixture::Component* comp2 = var_cast (mixt. components [compNum2]);
   ASSERT (comp1 != comp2);
 
-  MultiNormal* mn1 = const_cast <MultiNormal*> (comp1->distr->asMultiNormal ());
-  MultiNormal* mn2 = const_cast <MultiNormal*> (comp2->distr->asMultiNormal ());
+  MultiNormal* mn1 = var_cast (comp1->distr->asMultiNormal ());
+  MultiNormal* mn2 = var_cast (comp2->distr->asMultiNormal ());
   ASSERT (mn1);
   ASSERT (mn2);
   ASSERT (mn1 != mn2);
@@ -5683,7 +5715,7 @@ MultiNormal Canonical::getBetween (const Clustering &clustering)
   Vector<RealAttr1*> attrs;
   
   for (const Mixture::Component* comp : clustering. mixt. components)
-    const_cast <Obj*> (ds. objs [ds. appendObj ()]) -> mult = comp->prob;
+    var_cast (ds. objs [ds. appendObj ()]) -> mult = comp->prob;
   FFOR (size_t, i, clustering. space. size ())
     attrs << new RealAttr1 (clustering. space [i] -> name, ds); 
 
@@ -5870,7 +5902,7 @@ Space1<RealAttr1> Canonical::createSpace (const string &attrPrefix,
   {
     project (i, projection);  
   	FFOR (size_t, col, projection. size ())
-  	  (* const_cast <RealAttr1*> (sp [col])) [i] = projection [col];
+  	  (* var_cast (sp [col])) [i] = projection [col];
   }
 	
 #ifndef NDEBUG

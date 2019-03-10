@@ -79,8 +79,6 @@ struct ThisApplication : Application
 		
 		
     Dataset ds (fName);
-    ds. setName2objNum ();
-    ds. qc ();
     
     const Sample sm (ds);
     if (! positive (sm. mult_sum))

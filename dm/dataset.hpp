@@ -339,7 +339,7 @@ public:
     { return attr->asRealAttr1 (); }
     
   RealAttr1* copyAttr (const string &name_arg) const override
-    { return new RealAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new RealAttr1 (name_arg, var_cast (ds), *this); }
   RealAttr1* copyToDataset (Dataset &other) const override
     { return new RealAttr1 (name, other, *this); }
 
@@ -412,7 +412,7 @@ struct PositiveAttr1 : RealAttr1
     { return attr->asPositiveAttr1 (); }
     
   PositiveAttr1* copyAttr (const string &name_arg) const final
-    { return new PositiveAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new PositiveAttr1 (name_arg, var_cast (ds), *this); }
   PositiveAttr1* copyToDataset (Dataset &other) const final
     { return new PositiveAttr1 (name, other, *this); }
     
@@ -458,7 +458,7 @@ struct ProbAttr1 : RealAttr1
     { return attr->asProbAttr1 (); }
     
   ProbAttr1* copyAttr (const string &name_arg) const final
-    { return new ProbAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new ProbAttr1 (name_arg, var_cast (ds), *this); }
   ProbAttr1* copyToDataset (Dataset &other) const final
     { return new ProbAttr1 (name, other, *this); }
 
@@ -494,7 +494,7 @@ public:
     { return attr->asIntAttr1 (); }
     
   IntAttr1* copyAttr (const string &name_arg) const final
-    { return new IntAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new IntAttr1 (name_arg, var_cast (ds), *this); }
   IntAttr1* copyToDataset (Dataset &other) const final
     { return new IntAttr1 (name, other, *this); }
 
@@ -602,7 +602,7 @@ public:
     { return attr->asExtBoolAttr1 (); }
     
   ExtBoolAttr1* copyAttr (const string &name_arg) const final
-    { return new ExtBoolAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new ExtBoolAttr1 (name_arg, var_cast (ds), *this); }
   ExtBoolAttr1* copyToDataset (Dataset &other) const final
     { return new ExtBoolAttr1 (name, other, *this); }
 
@@ -659,7 +659,7 @@ public:
     { return attr->asCompactBoolAttr1 (); }
         
   CompactBoolAttr1* copyAttr (const string &name_arg) const final
-    { return new CompactBoolAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new CompactBoolAttr1 (name_arg, var_cast (ds), *this); }
   CompactBoolAttr1* copyToDataset (Dataset &other) const final
     { return new CompactBoolAttr1 (name, other, *this); }
 
@@ -726,7 +726,7 @@ public:
     { return attr->asNominAttr1 (); }
     
   NominAttr1* copyAttr (const string &name_arg) const final
-    { return new NominAttr1 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new NominAttr1 (name_arg, var_cast (ds), *this); }
   NominAttr1* copyToDataset (Dataset &other) const final
     { return new NominAttr1 (name, other, *this); }
 
@@ -924,7 +924,7 @@ struct RealAttr2 : Attr2, RealScale
     { return attr->asRealAttr2 (); }
     
   RealAttr2* copyAttr (const string &name_arg) const override
-    { return new RealAttr2 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new RealAttr2 (name_arg, var_cast (ds), *this); }
   RealAttr2* copyToDataset (Dataset &other) const override
     { return new RealAttr2 (name, other, *this); }
 
@@ -1002,7 +1002,7 @@ struct PositiveAttr2 : RealAttr2
     { return attr->asPositiveAttr2 (); }
     
   PositiveAttr2* copyAttr (const string &name_arg) const final
-    { return new PositiveAttr2 (name_arg, const_cast <Dataset&> (ds), *this); }
+    { return new PositiveAttr2 (name_arg, var_cast (ds), *this); }
   PositiveAttr2* copyToDataset (Dataset &other) const final
     { return new PositiveAttr2 (name, other, *this); }
 
@@ -1035,28 +1035,19 @@ private:
 public:
 
 
-  struct Error : runtime_error
-    { explicit Error (const string &str) : runtime_error ("Dataset: " + str) {} };
-
-
-  Dataset () 
-    {}
+  Dataset () = default;
   explicit Dataset (const string &fName)
-    { { const string fName_ (fName + dmSuff);
-        ifstream is (fName_);
-        if (! is. good ())
-          throw runtime_error ("cannot open file " + strQuote (fName_));
-    	  char* buf = nullptr;
-			  if (! is. rdbuf () -> pubsetbuf (buf, 1e6))   // PAR
-			  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName_));
-        load (is);
-      }
-      qc ();
+    { const string fName_ (fName + dmSuff);
+      ifstream is (fName_);
+      if (! is. good ())
+        throw runtime_error ("cannot open file " + strQuote (fName_));
+  	  char* buf = nullptr;
+		  if (! is. rdbuf () -> pubsetbuf (buf, 1e6))   // PAR
+		  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName_));
+      load (is);
     }
   explicit Dataset (istream &is)
-    { load (is);
-      qc ();
-    }
+    { load (is); }
 private:
   void load (istream &is);
     // Loading from a text file in the <dmSuff>-format:
@@ -1067,18 +1058,19 @@ private:
     //      {<Attribute name> <Type>}
     //    Data
     //      {[<Object name>] [<mult>] {<Value>}}
+    //   [<Two-way attribute name> {FULL <full matrix>} | {PARTIAL <# objects> <partial matrix>}]
     //   [COMMENT
     //      {<Object comment>}
     //   ]
     //
-    // where <Type> ::= {Real | Positive | Probability} <# decimals> |
+    // where <Type> ::= {{Real | Real2 | Positive | Positive2 | Probability} <# decimals>} |
+    //                  {Integer | Boolean | CompactBoolean} |
     //                  Nominal {<Category name>}+   // line may wrap if ended with "\"
-    //                  {Integer | Boolean | CompactBoolean}
     //
     // All keywords are case-insensitive
     // Missings are coded by <missing>
     // Empty lines are allowed
-    // Invokes: qc()
+    // Invokes: setName2objNum(), qc()
 public:
   explicit Dataset (const Eigens &eigens);
     // RealAttr1: unit, "Order" (log), "EigenValueFrac" (log)
@@ -1095,11 +1087,11 @@ public:
     // Return: may be nullptr                        
 
   // objs
-  bool name2objNumSet () const
-    { return ! name2objNum. empty (); }
   void setName2objNum ();
     // Output: name2objNum
     // If duplicate names then throw
+  bool name2objNumSet () const
+    { return ! name2objNum. empty (); }
   size_t getName2objNum (const string &objName) const;
     // Return: NO_INDEX <=> not found
     // Input: name2objNum
@@ -1783,7 +1775,7 @@ public:
     // Output: variable
   void variable2data (size_t objNum)
     { variable2analysis ();
-      const_cast <Analysis1*> (getAnalysisCheck ()) -> variable2data (objNum);
+      var_cast (getAnalysisCheck ()) -> variable2data (objNum);
     }
   void data2variable (size_t objNum) const
     { getAnalysisCheck () -> data2variable (objNum);
@@ -3350,15 +3342,15 @@ public:
   Analysis1* createAnalysis (Dataset &ds) final
     { if (components. empty ())
         return nullptr;
-      return const_cast <Component*> (components [0]) -> distr->createAnalysis (ds);
+      return var_cast (components [0]) -> distr->createAnalysis (ds);
     }
   void removeAnalysis () final
     { for (const Component* comp : components)
-        const_cast <Component*> (comp) -> distr->removeAnalysis ();
+        var_cast (comp) -> distr->removeAnalysis ();
     }
   void shareAnalysis (const Distribution &distr) final
     { for (const Component* comp : components)
-      { const_cast <Component*> (comp) -> distr->shareAnalysis (distr);
+      { var_cast (comp) -> distr->shareAnalysis (distr);
         if (! comp->distr->getAnalysis ())
         { removeAnalysis ();
           break;
