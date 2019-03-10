@@ -16,10 +16,6 @@ namespace
 {
 
 
-const string clusterAttrName = "Cluster";
-
-
-
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -33,7 +29,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string fName     = getArg ("file");
 		const string attr2Name = getArg ("attr2Name");

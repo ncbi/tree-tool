@@ -49,6 +49,8 @@ struct ThisApplication : Application
 	        continue;
 	      attr_new->matr. put (false, i, j, pow (r, power));
 	    }
+	    
+	  ds. qc ();
     
     ds. print (cout);
 	}

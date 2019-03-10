@@ -30,7 +30,7 @@ struct ThisApplication : Application
 		const string inFName  = getArg ("file");
 		const string attrName = getArg ("attr");
 		const Real power      = str2real (getArg ("power"));
-		ASSERT (power > 0);
+		ASSERT (power > 0.0);
 
 
     Dataset ds (inFName);    
@@ -47,6 +47,8 @@ struct ThisApplication : Application
         continue;
       (*attr1) [objNum] = pow (r, power);
     }
+    
+    ds. qc ();
     
     ds. print (cout);
 	}

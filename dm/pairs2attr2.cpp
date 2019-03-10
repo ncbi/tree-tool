@@ -119,8 +119,8 @@ struct ThisApplication : Application
     }
     
     if (isDistance)
-      FOR (size_t, row, ds. objs. size ())
-        attr->put (row, row, 0);
+      FFOR (size_t, row, ds. objs. size ())
+        attr->put (row, row, 0.0);
     
     ds. qc ();
     ds. saveText (cout);    
