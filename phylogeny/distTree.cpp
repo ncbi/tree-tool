@@ -651,7 +651,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
   IMPLY (depth_max, depth_max >= sparsingDepth);
   IMPLY (subtractDissims, asLeaf ());
 
-  unordered_map <const Steiner* /*lca*/, VectorPtr<Leaf>>  lca2leaves (pathObjNums. size ());  
+  unordered_map <const Steiner* /*lca*/, VectorPtr<Leaf>> lca2leaves;  lca2leaves. rehash (pathObjNums. size ());  
   if (subtractDissims)
   {
     // Time: ~ O(p/n) ~ O(log(n))
@@ -1978,7 +1978,7 @@ Dissim::Dissim (const Leaf* leaf1_arg,
   if (leaf1->name > leaf2->name)
     swap (leaf1, leaf2);
   ASSERT (leaf1->name < leaf2->name);
-  ASSERT (mult >= 0);
+  ASSERT (mult >= 0.0);
 }
 
 
@@ -1993,8 +1993,8 @@ void Dissim::qc () const
   ASSERT (leaf1 != leaf2);
   ASSERT (leaf1->name < leaf2->name);
   
-  ASSERT (mult >= 0);
-  ASSERT (prediction >= 0);
+  ASSERT (mult >= 0.0);
+  ASSERT (prediction >= 0.0);
         
   if (! mult)
     return;
@@ -2002,7 +2002,7 @@ void Dissim::qc () const
   ASSERT (valid ());
   ASSERT (! isNan (target));
   ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
-  IMPLY (! leaf1->getDistTree (). subDepth && target == 0, ! leaf1->discernible && ! leaf2->discernible && leaf1->getParent () == leaf2->getParent ());
+  IMPLY (! leaf1->getDistTree (). subDepth && target == 0.0, ! leaf1->discernible && ! leaf2->discernible && leaf1->getParent () == leaf2->getParent ());
   ASSERT (lca);
 }
 
@@ -2556,7 +2556,7 @@ public:
         return;
       if (! leaf2)
         return;
-      if (dissim == 0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
+      if (dissim == 0.0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
         leaf1->collapse (leaf2);
       if (! tree. addDissim (leaf1, leaf2, dissim))
         throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
@@ -3637,8 +3637,6 @@ void DistTree::loadDissimDs (const string &dissimFName,
            << endl;
   }
 
-  dissimDs->setName2objNum ();
-  
 //dissimDecimals = dissimAttr->decimals;
 }
 
