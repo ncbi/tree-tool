@@ -1,6 +1,6 @@
 #!/bin/bash
 THIS=`dirname $0`
-source $THIS/bash_common.sh
+source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Print a .dm-file"
   echo "#1: File with numeric columns"
