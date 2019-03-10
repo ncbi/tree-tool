@@ -142,8 +142,8 @@ protected:
 */
  ~Attr ();
 public:
-  void qc () const;
-  void saveText (ostream &os) const
+  void qc () const override;
+  void saveText (ostream &os) const override
     { os << getTypeStr (); }
     
 
@@ -891,6 +891,9 @@ public:
                           const string &s) = 0;
     // Output: values[row][col]
     // Requires: s does not encode missing
+    
+  virtual Attr1* createAttr1 (Dataset &ds_arg) const = 0;
+  virtual void symmetrize () = 0;
 
   void save (ostream &os,
              const Sample &sample) const;
@@ -948,6 +951,13 @@ struct RealAttr2 : Attr2, RealScale
       replaceStr (s1, ",", "");
       put (row, col, str2real (s1)); 
     }
+  RealAttr1* createAttr1 (Dataset &ds_arg) const override
+    { return new RealAttr1 (name, ds_arg, decimals); }
+  void symmetrize () override
+    { Real maxCorrection;
+      size_t row_bad, col_bad;
+      matr. symmetrize (maxCorrection, row_bad, col_bad);
+    }    
     
   Value get (size_t row,
              size_t col) const
@@ -1008,6 +1018,8 @@ struct PositiveAttr2 : RealAttr2
 
   string getTypeStr () const final
     { return "Positive2 " + toString (decimals); }
+  PositiveAttr1* createAttr1 (Dataset &ds_arg) const final
+    { return new PositiveAttr1 (name, ds_arg, decimals); }
 
   bool areClose (size_t row,
                  size_t col,
@@ -1058,7 +1070,7 @@ private:
     //      {<Attribute name> <Type>}
     //    Data
     //      {[<Object name>] [<mult>] {<Value>}}
-    //   [<Two-way attribute name> {FULL <full matrix>} | {PARTIAL <# objects> <partial matrix>}]
+    //      [<Two-way attribute name> {FULL <full matrix>} | {PARTIAL <# objects> <partial matrix>}]
     //   [COMMENT
     //      {<Object comment>}
     //   ]
@@ -1076,12 +1088,12 @@ public:
     // RealAttr1: unit, "Order" (log), "EigenValueFrac" (log)
  ~Dataset ()
     { deleteAttrs (); }
-  void qc () const;
-  void saveText (ostream &os) const;
-
-
-  bool empty () const
+  void qc () const override;
+  void saveText (ostream &os) const override;
+  bool empty () const override
     { return objs. empty () && attrs. empty (); }
+
+
   JsonArray* comments2Json (JsonContainer* parent,
                             const string& name) const;   
     // Return: may be nullptr                        
@@ -1108,10 +1120,11 @@ public:
   bool objCommented () const;
   
   string pair2name (size_t objNum1,
-                    size_t objNum2) const
+                    size_t objNum2,
+                    bool symmetric) const
     { string s1 (objs [objNum1] -> name);
       string s2 (objs [objNum2] -> name);
-      if (s1 > s2)
+      if (symmetric && s1 > s2)
         swap (s1, s2);
       return s1 + "-" + s2;
     }
@@ -1992,27 +2005,27 @@ public:
     {}
   Categorical* copy () const final
     { return new Categorical (*this); }
-  void qc () const;
-  void saveText (ostream& os) const;
+  void qc () const override;
+  void saveText (ostream& os) const override;
 
   
   const Categorical* asCategorical () const final
     { return this; }
 
-  const Analysis1* getAnalysis () const 
+  const Analysis1* getAnalysis () const final
     { return analysis; }
-  Analysis1* createAnalysis (Dataset &ds);
-  void removeAnalysis () 
+  Analysis1* createAnalysis (Dataset &ds) final;
+  void removeAnalysis () final
     { analysis = nullptr; }
-  void shareAnalysis (const Distribution &distr) 
+  void shareAnalysis (const Distribution &distr) final
     { analysis = nullptr;
       if (const Categorical* d = distr. asCategorical ())
         if (d->probs. size () == probs. size ())
           analysis = d->analysis;
     }
-  void variable2analysis () const
+  void variable2analysis () const final
     { checkPtr (analysis) -> variable = variable; }
-  void analysis2variable () const
+  void analysis2variable () const final
     { variable = checkPtr (analysis) -> variable; }
   // Parameters
   void setParam ()
@@ -2083,8 +2096,8 @@ protected:
     : Distribution (name_arg) 
     {}
 public:
-  void qc () const;
-  void saveText (ostream& os) const
+  void qc () const override;
+  void saveText (ostream& os) const override
     { os << nameParam (); 
       if (! stdBounds ())
         os << " on [" << getLoBoundEffective () << ',' << getHiBoundEffective () << ']';
@@ -2364,7 +2377,7 @@ struct UniformDiscrete : DiscreteDistribution
   UniformDiscrete () 
     : DiscreteDistribution ("Uniform(Discrete)") 
     {}
-  void qc () const;
+  void qc () const override;
   UniformDiscrete* copy () const final
     { return new UniformDiscrete (*this); }
 
@@ -2983,7 +2996,7 @@ private:
       , mult (NaN)
       {}
     Point () = default;
-    void qc () const;
+    void qc () const override;
     bool operator== (const Point &other) const
       { return value == other. value; }
     bool operator< (const Point &other) const

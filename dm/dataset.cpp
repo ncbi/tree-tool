@@ -1840,7 +1840,7 @@ void Dataset::load (istream &is)
     
   // objs, Obj::data
   {
-    Progress prog (objs. size (), max<size_t> (1, 10000 / attrs. size ()));  // PAR
+    Progress prog (objs. size (), max<size_t> (1, 1000000 / attrs. size ()));  // PAR
     string val;
     FFOR (size_t, i, objs. size ())
     {
