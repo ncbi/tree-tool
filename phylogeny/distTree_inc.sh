@@ -111,7 +111,7 @@ if [ -e $INC/phen ]; then
     NEW_ROOT=$OLD_ROOT
   fi
   # -noqual must be absent to compute quality data after reroot()
-	$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null  	
+	$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
 	
 	echo ""
 	echo "Names ..."
