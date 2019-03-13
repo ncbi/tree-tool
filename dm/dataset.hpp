@@ -2007,6 +2007,12 @@ public:
     { return new Categorical (*this); }
   void qc () const override;
   void saveText (ostream& os) const override;
+  void clear () override
+    { Distribution::clear ();
+      analysis = nullptr;
+      probs. clear ();
+      probSum. clear ();
+    }
 
   
   const Categorical* asCategorical () const final
@@ -3340,6 +3346,11 @@ public:
     { return new Mixture (*this); }
   void qc () const override;
   void saveText (ostream& os) const override;
+  void clear () override
+    { Distribution::clear ();
+      components. deleteData ();
+      cat. clear ();
+    }
 
 
   const Mixture* asMixture () const final

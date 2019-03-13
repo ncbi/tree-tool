@@ -1212,9 +1212,9 @@ public:
                         const string& /*name_arg*/) const
     { NOT_IMPLEMENTED; return nullptr; }
 	virtual bool empty () const
-	  { NOT_IMPLEMENTED; return false; }
+	  { return true; }
   virtual void clear ()
-    { NOT_IMPLEMENTED; }
+    {}
     // Postcondition: empty()
   virtual void read (istream &/*is*/)
 	  { NOT_IMPLEMENTED; }
