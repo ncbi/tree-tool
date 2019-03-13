@@ -78,7 +78,7 @@ struct ThisApplication : Application
 	      cout << '\t' << boolean->getProb (sample);
       else if (const NominAttr1* nomin = attrRaw->asNominAttr1 ())
       {
-        Common_sp::AutoPtr<Categorical> cat (nomin->getCategorical (sample));
+        unique_ptr<const Categorical> cat (nomin->getCategorical (sample));
 	      cout << "  " << endl;
         cat->print (cout);
 	    }

@@ -60,7 +60,7 @@ struct DiGraph : Root
       {}
       // To be followed by: attach()
     Node* copy () const override
-      { return new Node (*this); }
+      { return new Node (*this); } 
    ~Node ();
       // Remove this from graph 
       // Time: O(m) for all nodes
@@ -104,7 +104,7 @@ struct DiGraph : Root
     void deleteNeighborhood (bool out);
   private:
     Node* setScc (size_t &visitedNum,
-                  stack<Node*, vector<Node*> > &sccStack);
+                  stack<Node*,vector<Node*>> &sccStack);
       // If node n is reachable from this then
       //   the SCC of n is reachable from this and the SCC is a subtree of DFS tree
       // Output: scc, orderDfs in nodes reachable from this
@@ -164,7 +164,7 @@ struct DiGraph : Root
       }
       // To be followed by: attach()
     Arc* copy () const override
-      { return new Arc (*this); }
+      { return new Arc (*this); } 
    ~Arc ();
       // Remove this from node->graph
       // Time: O(1)
@@ -197,7 +197,7 @@ private:
     // Output: old2new
 public:
   DiGraph* copy () const override
-    { return new DiGraph (*this); }
+    { return new DiGraph (*this); } 
  ~DiGraph ();
     // Invokes: Node::delete
     // Time: O(n + m)

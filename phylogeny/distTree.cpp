@@ -7549,11 +7549,11 @@ RealAttr1* DistTree::getResiduals2 ()
 {
   ASSERT (optimizable ());
 
-  Common_sp::AutoPtr<RealAttr1> resid2Attr (new RealAttr1 ("resid2", ds, target->decimals + 1));
+  unique_ptr<RealAttr1> resid2Attr (new RealAttr1 ("resid2", ds, target->decimals + 1));
   for (Iterator it (dsSample); it ();)  
   {
     const Real d = (*target) [*it];
-  //ASSERT (d >= 0);
+  //ASSERT (d >= 0.0);
     const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
     const Real residual = fabs (dHat - d);      
@@ -7570,11 +7570,11 @@ RealAttr1* DistTree::getLogPredictionDiff ()
 {
   ASSERT (optimizable ());
 
-  Common_sp::AutoPtr<RealAttr1> logDiffAttr (new RealAttr1 ("logDiff", ds, target->decimals + 1));
+  unique_ptr<RealAttr1> logDiffAttr (new RealAttr1 ("logDiff", ds, target->decimals + 1));
   for (Iterator it (dsSample); it ();)  
   {
     const Real d = (*target) [*it];
-  //ASSERT (d >= 0);
+  //ASSERT (d >= 0.0);
     const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
     if (   positive (d)

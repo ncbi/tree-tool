@@ -53,11 +53,11 @@ struct ThisApplication : Application
 		ASSERT (noise >= 0);    
     
 
-    Common_sp::AutoPtr<DistTree> tree;
+    unique_ptr<DistTree> tree;
     if (input_tree. empty ())
-      tree = new DistTree (branch_prob, leaf_num_max);
+      tree. reset (new DistTree (branch_prob, leaf_num_max));
     else
-      tree = new DistTree (input_tree, string (), string (), false); 
+      tree. reset (new DistTree (input_tree, string (), string (), false)); 
     ASSERT (tree);
     tree->qc ();     
       

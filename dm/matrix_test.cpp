@@ -61,17 +61,17 @@ struct ThisApplication : Application
 		}
 	  
     {
-		  Common_sp::AutoPtr <const Matrix> L (pd. getCholesky (false));
-		  ASSERT (L. get ());
-		  L->qc ();
+		  const Matrix ch (pd. getCholesky (false));
+		  ASSERT (ch. defined ());
+		  ch. qc ();
 		  if (verbose ())
 		  {
 		  	cout << endl << "Choleski:" << endl;
-		    L->print (cout);
+		    ch. print (cout);
 		  }
 	  
 		  Matrix m1 (false, pd, false);
-		  m1. multiply (false, *L, false, *L, true);
+		  m1. multiply (false, ch, false, ch, true);
 		  m1. qc ();
 		  if (verbose ())
 		  {
@@ -261,8 +261,9 @@ struct ThisApplication : Application
 	        for (;;)
 	        {
 	        	iter++;
-				  	Common_sp::AutoPtr<Matrix> ch (prod. getCholesky (false));
-		        prod. multiply (false, *ch, true, *ch, false);
+				  	const Matrix ch (prod. getCholesky (false));
+				  	ASSERT (ch. defined ());
+		        prod. multiply (false, ch, true, ch, false);
 		        // Sum of off-diagonal elements
 		        Real s = 0;
 		        FOR (size_t, i, prod. rowsSize (false))

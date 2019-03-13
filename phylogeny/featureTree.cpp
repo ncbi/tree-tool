@@ -1014,7 +1014,10 @@ void Genome::init (const Feature2index &feature2index)
 	optionalCore. resize (core. size (), false); 
 	  
 	if (getFeatureTree (). oneFeatureInTree)
+	{
+	  ASSERT (feature2index. empty ());
 	  return;
+	}
 	
 	for (const GenomeFeature& gf : coreSet)
 	{
@@ -1033,7 +1036,9 @@ void Genome::init (const Feature2index &feature2index)
 
 void Genome::init (const Vector<size_t> &featureBatch)
 {
-  FFOR (size_t, i, getFeatureTree (). featureBatchSize)
+  ASSERT (getFeatureTree (). oneFeatureInTree);
+  
+  FFOR (size_t, i, core. size ())
   {
     size_t coreSetIndex = NO_INDEX;
     if (i < featureBatch. size ())
@@ -2086,7 +2091,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     ASSERT (features. empty ());
     ASSERT (feature2index. empty ());
     if (! oneFeatureInTree)
-      feature2index. reserve (nonSingletons. size ());
+      feature2index. rehash (nonSingletons. size ());
   #ifndef NDEBUG
     Feature::Id prevFeature;
   #endif
@@ -2163,8 +2168,8 @@ FeatureTree::FeatureTree (const string &treeFName,
       float featureLen = 0.0;
       ASSERT (featureBatchSize);
       Vector<size_t/*featureIndex*/> batch;  batch. resize (featureBatchSize, NO_INDEX);
-      size_t j = 0;  // = Number of elements in featureIndex[]
-      Progress prog (features. size (), 100);  // PAR
+      size_t j = 0;  // = real batch.size()
+      Progress prog (features. size (), 1);  // PAR  
       FFOR (size_t, featureIndex, features. size ())
       {
         prog ();
@@ -2179,6 +2184,7 @@ FeatureTree::FeatureTree (const string &treeFName,
       }
       if (j)
       {
+        ASSERT (j <= featureBatchSize);
         batch. resize (j);
         processBatch (phyls, batch, featureLen);
       }
@@ -3273,7 +3279,7 @@ void FeatureTree::loadSuperRootCoreFile (const string &coreFeaturesFName)
 	if (coreFeaturesFName. empty ())
 	  return;
 
-  Feature2index feature2index (features. size ());
+  Feature2index feature2index;  feature2index. rehash (features. size ());
   FFOR (size_t, i, features. size ())
     feature2index [features [i]. name] = i;
   ASSERT (feature2index. size () == features. size ());
@@ -3380,10 +3386,12 @@ void FeatureTree::setFeatureStats (Feature &f,
 {
   ASSERT (phyl);
   ASSERT (phyl->graph == this);
-  
+  ASSERT (coreIndex < phyl->core. size ());
+
   const Genome* g = phyl->asGenome ();
   if (g && g->core [coreIndex])
   {
+    ASSERT (coreIndex < g->optionalCore. size ());
     if (g->optionalCore [coreIndex])
       f. optionalGenomes++;
     else

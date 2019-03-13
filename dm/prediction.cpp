@@ -318,13 +318,13 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
   
   Dataset& ds = const_cast <Dataset&> (space. ds);
   
-  Common_sp::AutoPtr<RealAttr1> residual (& makeResidualAttr ("_res", predictionAttr, ds));  
+  unique_ptr<RealAttr1> residual (& makeResidualAttr ("_res", predictionAttr, ds));  
 
   setAbsCriterion (*residual);
   const Real errorPrev_init = absCriterion2Error ();
   ASSERT (! isNan (errorPrev_init));  
   
-  Common_sp::AutoPtr<RealAttr1> target1 (new RealAttr1 ("_target", ds)); 
+  unique_ptr<RealAttr1> target1 (new RealAttr1 ("_target", ds)); 
 
     
   bool ok = true;
@@ -344,7 +344,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
       for (Iterator it (sample); it ();)  
         (*target1) [*it] = (*residual) [*it] + beta [attrNum] * predictor. getReal (*it);
       Unverbose unv;
-      Common_sp::AutoPtr<LinearNumPrediction> lp (makeLinearNumPrediction (sample, sp, *target1));
+      unique_ptr<LinearNumPrediction> lp (makeLinearNumPrediction (sample, sp, *target1));
       ASSERT (eqReal (lp->sample. mult_sum, sample. mult_sum));
       lp->solveUnconstrained ();
       lp->qc ();

@@ -1924,7 +1924,7 @@ struct Bernoulli : Distribution
   Bernoulli () 
     : Distribution ("Bernoulli") 
     {}
-  Bernoulli* copy () const final
+  Bernoulli* copy () const override
     { return new Bernoulli (*this); }
   void qc () const override;
   void saveText (ostream &os) const override
@@ -2003,7 +2003,7 @@ public:
   Categorical () 
     : Distribution ("Categorical") 
     {}
-  Categorical* copy () const final
+  Categorical* copy () const override
     { return new Categorical (*this); }
   void qc () const override;
   void saveText (ostream& os) const override;
@@ -2312,7 +2312,7 @@ public:
   Binomial () 
     : DiscreteDistribution ("Binomial") 
     {}
-  Binomial* copy () const final
+  Binomial* copy () const override
     { return new Binomial (*this); }
   void qc () const final;
     
@@ -2378,7 +2378,7 @@ struct UniformDiscrete : DiscreteDistribution
     : DiscreteDistribution ("Uniform(Discrete)") 
     {}
   void qc () const override;
-  UniformDiscrete* copy () const final
+  UniformDiscrete* copy () const override
     { return new UniformDiscrete (*this); }
 
 
@@ -2451,7 +2451,7 @@ public:
   Geometric () 
     : DiscreteDistribution ("Geometric") 
     {}
-  Geometric* copy () const final
+  Geometric* copy () const override
     { return new Geometric (*this); }
   void qc () const final;
 
@@ -2523,7 +2523,7 @@ public:
   Zipf () 
     : DiscreteDistribution ("Zipf") 
     {}
-  Zipf* copy () const final
+  Zipf* copy () const override
     { return new Zipf (*this); }
   void qc () const final;
 
@@ -2805,7 +2805,7 @@ struct Exponential : LocScaleDistribution
   Exponential ()
     : LocScaleDistribution ("Exponential")
     {}
-  Exponential* copy () const final
+  Exponential* copy () const override
     { return new Exponential (*this); }
   void qc () const final;
 
@@ -2860,7 +2860,7 @@ struct Cauchy : LocScaleDistribution
   Cauchy ()
     : LocScaleDistribution ("Cauchy")
     {}
-  Cauchy* copy () const final
+  Cauchy* copy () const override
     { return new Cauchy (*this); }
   void qc () const final;
 
@@ -2919,9 +2919,9 @@ public:
   Beta1 ()
     : ContinuousDistribution ("Beta")
     {}
-  Beta1* copy () const final
+  Beta1* copy () const override
     { return new Beta1 (*this); }
-  void qc () const final;
+  void qc () const override;
 
 
   const Beta1* asBeta1 () const final
@@ -3016,9 +3016,9 @@ public:
   explicit UniKernel (const UniVariate<NumAttr1> &analysis_arg)
     : ContinuousDistribution ("UniKernel")
     { analysis = & analysis_arg; }
-  UniKernel* copy () const final
+  UniKernel* copy () const override
     { return new UniKernel (*this); }
-  void qc () const final;
+  void qc () const override;
 
 
   const UniKernel* asUniKernel () const final
@@ -3173,7 +3173,7 @@ struct MultiNormal : MultiDistribution
     // May be NaN
     // = 0.5 * (getDim() * Normal::coeff + log(det(sigmaInflated)))
 private: 
-  Common_sp::AutoPtr <Matrix> cholesky;
+  Matrix cholesky;
   // Random numbers generator
   Vector<Normal> zs;
     // size() == getDim()
@@ -3183,7 +3183,7 @@ public:
   MultiNormal ()
     : MultiDistribution ("Normal")
     { /*sigma. psd = true;*/ }
-  MultiNormal* copy () const final
+  MultiNormal* copy () const override
     { return new MultiNormal (*this); }
   void qc () const override;
   void saveText (ostream& os) const override;
@@ -3284,8 +3284,8 @@ struct Mixture : Distribution
       {}
     friend struct Mixture;
   public:
-    Component* copy () const final
-      { return new Component (*this); }
+    Component* copy () const override
+      { return new Component (*this); } 
     void qc () const override;
     void saveText (ostream& os) const override
       { distr->saveText (os); 
@@ -3319,11 +3319,6 @@ struct Mixture : Distribution
         }
     };
   public:
-  #if 0
-    const MultiNormal* getMultiNormal () const
-      { return distr->asMultiNormal (); }
-      // Return: may be nullptr
-  #endif
   };
   VectorOwn<Component> components;
     // Same: Distribution::{<analysis>,<variable>}
@@ -3341,7 +3336,7 @@ public:
   Mixture ()
     : Distribution ("Mixture")
     {}
-  Mixture* copy () const final
+  Mixture* copy () const override
     { return new Mixture (*this); }
   void qc () const override;
   void saveText (ostream& os) const override;
@@ -3401,7 +3396,7 @@ public:
   bool similar (const Distribution &distr,
                 Real delta) const;
   Real getSortingValue () const
-    { Real s = 0;
+    { Real s = 0.0;
       for (const Component* comp : components)
         s += comp->prob * comp->distr->getSortingValue ();
       return s;
@@ -3467,7 +3462,7 @@ struct PrinComp : MultiVariate<NumAttr1>
              , 5000  // PAR
              )
     { mn. analysis = nullptr; }
-  PrinComp* copy () const final
+  PrinComp* copy () const override
     { return new PrinComp (*this); }
   void qc () const override;
   void saveText (ostream &os) const override
@@ -3549,7 +3544,7 @@ private:
   bool deleteCluster (size_t num)
     { return mixt. deleteComponent (num); }
 public:
-  Clustering* copy () const final
+  Clustering* copy () const override
     { return new Clustering (*this); }
   void qc () const override;
   void saveText (ostream &os) const override;
@@ -3623,8 +3618,8 @@ struct Canonical : MultiVariate<NumAttr1>
   Notype requires;
   MultiNormal between;  
   MultiNormal within;  
-  Common_sp::AutoPtr<const Matrix> choleskyInv;
-    // May be nullptr ??
+  Matrix choleskyInv;
+    // May be !defined
   Matrix basis;
   Matrix basis_norm;
   MVector eigenValues;
@@ -3640,9 +3635,9 @@ private:
     }
   static MultiNormal getBetween (const Clustering &clustering);
   static MultiNormal getWithin (const Clustering &clustering);
-  static Matrix* getCholeskyInv (const Matrix &withinSigma);
+  static Matrix getCholeskyInv (const Matrix &withinSigma);
 public:
-  Canonical* copy () const final
+  Canonical* copy () const override
     { return new Canonical (*this); }
   void qc () const override;
   void saveText (ostream &os) const override;
@@ -3682,9 +3677,9 @@ struct Mds : Analysis
     // Requires: attr2.matr: defined(), symmetric, centered
     //           space.ds.getUnitMult() ??
     // Time: O(n^2 outDim_max)
-  Mds* copy () const final
+  Mds* copy () const override
     { return new Mds (*this); }
-  void qc () const final;
+  void qc () const override;
   void saveText (ostream &os) const override
     { eigens. saveText (os); }
 

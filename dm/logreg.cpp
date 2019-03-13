@@ -55,7 +55,7 @@ struct ThisApplication : Application
     lr. print (cout);
           
     LogisticRegression* lrFinal = & lr;
-    Common_sp::AutoPtr<LogisticRegression> lrSel;
+    unique_ptr<LogisticRegression> lrSel;
     Space1<NumAttr1> spSel (sp);  // Is used by lrSel
     if (importance_min)
     {

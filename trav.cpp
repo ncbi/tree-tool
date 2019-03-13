@@ -50,7 +50,7 @@ struct ThisApplication : Application
     // ^C to stop trav if noerror ??
     
 
-	  Common_sp::AutoPtr<ItemGenerator> gen;
+	  unique_ptr<ItemGenerator> gen;
 	  {
   	  const bool isFile = fileExists (items);
   	  const bool isDir = directoryExists (items);
@@ -73,9 +73,9 @@ struct ThisApplication : Application
     replaceStr (cmd, "%G", "`");
 	
 
-    Common_sp::AutoPtr<OFStream> errors;
+    unique_ptr<OFStream> errors;
     if (! errorsFName. empty ())
-    	errors = new OFStream (errorsFName);
+    	errors. reset (new OFStream (errorsFName));
 	
 	  string item;
 	  while (gen->next (item))

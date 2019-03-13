@@ -86,7 +86,7 @@ struct ThisApplication : Application
     distr. simulate (ds, dataSize);
     ds. qc ();
 
-    Common_sp::AutoPtr<const Analysis1> an (distr. getAnalysisCheck ());
+    unique_ptr<const Analysis1> an (distr. getAnalysisCheck ());
     distr. qc ();
        
     T distr_est (distr);  // Set fixed parameters
@@ -130,7 +130,7 @@ struct ThisApplication : Application
     distr. simulate (ds, dataSize);
     ds. qc ();
 
-    Common_sp::AutoPtr<const Analysis1> an (distr. getAnalysisCheck ());
+    unique_ptr<const Analysis1> an (distr. getAnalysisCheck ());
     an->qc ();
 
 

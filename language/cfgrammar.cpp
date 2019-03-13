@@ -1300,7 +1300,7 @@ const Syntagms* NonTerminal::parse (const Position& pos) const
     cout << & pos << ' ' << (char) pos. c << ' ' << name << endl;
 #endif
 #if 0
-  Common_sp::AutoPtr<Offset> ofs;
+  unique_ptr<Offset> ofs;
   if (verbose ())
   {
     ofs. reset (new Offset ());

@@ -34,10 +34,10 @@ struct ThisApplication : Application
 	  delimiters += " \t";
 
     istream* is = & cin;
-    Common_sp::AutoPtr <ifstream> ifs;
+    unique_ptr<ifstream> ifs;
     if (fName != "-")
     {
-      ifs = new ifstream (fName. c_str ());  
+      ifs. reset (new ifstream (fName. c_str ()));  
       is = ifs. get ();
     }
     uint row = 0;

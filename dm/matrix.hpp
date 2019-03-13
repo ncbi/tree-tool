@@ -111,7 +111,7 @@ struct Determinant : LogReal
     : LogReal (r)
     , size (size_arg)
     {}
-  void qc () const;
+  void qc () const override;
   
   Real getAverage () const
     { return exp (n / (Real) size) * (sign ? 1 : -1); }
@@ -164,8 +164,7 @@ public:
     , psd (source. psd)
     {}
     // Rows are not copied
-  Matrix () 
-    {}
+  Matrix () = default;
   Matrix (const Matrix &other) 
     : data      (other. data)
     , rowsSize_ (other. rowsSize_)
@@ -572,10 +571,10 @@ public:
     //           eigen.vec.rowsSize(eigen.t) = rowsSize(false)
     //           isSymmetric(), defined()
     // Time: O(n^2 iter_max) 
-  Matrix* getCholesky (bool t) const;
+  Matrix getCholesky (bool t) const;
     // Return: Lower-triangle matrix
     //         (*Return)^t * (*Return)^(!t) = *this
-    //         nullptr <=> numerical problem
+    //         may be: !defined
     // Requires: psd
   Matrix getSqrt () const;
     // Requires: psd
@@ -647,7 +646,7 @@ public:
 		{ data = r;
 		  psd = isSquare () && (isNan (r) || r >= 0);
 		}
-  void clear ()
+  void clear () override
     { putAll (NaN); }
   size_t undefined2ValueRow (bool t,
                              size_t row,

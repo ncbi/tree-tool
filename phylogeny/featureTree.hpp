@@ -1102,12 +1102,12 @@ public:
 	bool coreSynced {false};
 	  // Phyl::core[] corresponds to Phyl::parent2core[]
 private:
-	Common_sp::AutoPtr <Progress> prog_;
+	unique_ptr<Progress> prog_;
 	VectorOwn<Species> toDelete;
 public:
   // Stats
-	Common_sp::AutoPtr <const Normal> distDistr;
-	Common_sp::AutoPtr <const Normal> depthDistr;
+	unique_ptr<const Normal> distDistr;
+	unique_ptr<const Normal> depthDistr;
 	  
 	  
 	FeatureTree (const string &treeFName,

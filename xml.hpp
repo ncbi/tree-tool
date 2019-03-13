@@ -48,8 +48,7 @@ struct XmlTag : Root
   string text;
   bool comment {false};
   bool whole {false};
-  Common_sp::AutoPtr <const XmlSentense> sentense;
-    // --> unique_ptr ??
+  Common_sp::AutoPtr<const XmlSentense> sentense;
 
 
   XmlTag (istream &is,
@@ -57,7 +56,7 @@ struct XmlTag : Root
   XmlTag (const XmlTag &other)
     : name (other. name)
     , text (other. text)
-    , sentense (const_cast <XmlTag&> (other). sentense)
+    , sentense (var_cast (other). sentense)
     {}
 
 

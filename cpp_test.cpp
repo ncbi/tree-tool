@@ -16,23 +16,35 @@ namespace
 struct S : Root
 {
   vector<int> a;
-  vector<int> b;
   
   
+  explicit S (size_t n)
+    : a (n)
+    {}
   S ()
-    : a (2)
-    , b (3)
     { cout << "Default constructor" << endl; }
  ~S () 
-    { cout << "Destructor" << endl; }
+    { cout << "Destructor: " << a. size () << endl; }
   S (const S& other)
     : a (other. a)
-    , b (other. b)
     { cout << "Copy constructor" << endl; }
+  S& operator= (const S &other)
+    { a = other. a;
+      cout << "Copy assignment" << endl;
+      return *this;
+    }
+  S (S&&) = default;
+  S& operator= (S&&) = default;
+#if 0
   S (S&& other)
     : a (move (other. a))
-    , b (move (other. b))
     { cout << "Move constructor" << endl; }
+  S& operator= (S&& other)
+    { a = move (other. a);
+      cout << "Move assignment" << endl;
+      return *this;
+    }
+#endif
   
   void f () const
     { throw runtime_error (FUNC  + ": error"); }
@@ -40,30 +52,35 @@ struct S : Root
 
 
 
-S f ()
+#if 0
+void get (S &s)
 {
-  S s;
-  return s;
+  cout << "Move get" << endl;
+  S s1;
+  swap (s1, s);
+}
+#endif
+
+
+
+#if 0
+void get (const S &s)
+{
+  cout << "Const get" << endl;
+  S s1 (s);
+  S s2;
+  swap (s1, s2);
 }
 
 
-inline S g ()
+
+void get (S &s)
 {
-  return f ();
+  cout << "Update get" << endl;
+  S s1;
+  swap (s1, s);
 }
-
-
-
-template <typename K, typename V>
-void um_stat (const unordered_map<K,V> &um)
-{
-  #define STAT(f)  cout << #f " = " << um. f () << endl;
-//STAT (bucket_count);
-  STAT (load_factor);
-//STAT (max_load_factor);
-  #undef STAT
-}
-
+#endif
 
 
 
@@ -77,82 +94,34 @@ struct ThisApplication : Application
   
 
 
- 	void body () const
+ 	void body () const final
 	{
-	#if 0
-	  double d = str2<double> ("1e0");
-	  cout << d << endl;
+	/*
+	  S s (3);
+	  get (s);
+	*/
 	  
-	  {
-  	  istringstream iss ("1e");
-  	  iss >> d;
-  	  cout << d << ' ' << iss. eof () << ' ' << iss. fail () << ' ' << iss. rdstate () << endl;
-  	}
+	  Vector<int> vec;
+	  vec << 3 << 1 << 5;
+	  vec. sort ();
+	  
+	  const Vector<int> vec1 (vec);
+	  cout << vec1. searchSorted << endl;
 
-	  {
-  	  istringstream iss ("1e1");
-  	  iss >> d;
-  	  cout << d << ' ' << iss. eof () << ' ' << iss. fail () << ' ' << iss. rdstate () << endl;
-  	}
-	#else
-	  constexpr size_t len = 10000000;  // PAR
-	  Vector<ulong> vec;  vec. reserve (len);
-	  Rand rand;
-	  FOR (size_t, i, len)
-	    vec << rand. get ((ulong) len);
-	  {
-      const Chronometer_OnePass cop ("map");  
-  	  map<ulong,size_t> m;
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] = i;
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] ++;
-  	}
-	  {
-	    cout << endl;
-      const Chronometer_OnePass cop ("unordered_map: constructor");  
-  	  unordered_map<ulong,size_t> m (len);
-  	  um_stat (m);
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] = i;
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] ++;
-  	  cout << endl;
-  	  um_stat (m);
-  	}
-	  {
-	    cout << endl;
-      const Chronometer_OnePass cop ("unordered_map: reserve");  
-  	  unordered_map<ulong,size_t> m;
-  	  m. reserve (len);
-  	  um_stat (m);
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] = i;
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] ++;
-  	  cout << endl;
-  	  um_stat (m);
-  	}
-	  {
-	    cout << endl;
-      const Chronometer_OnePass cop ("unordered_map: rehash");  
-  	  unordered_map<ulong,size_t> m;
-  	  m. rehash (len);
-  	  um_stat (m);
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] = i;
-  	  FOR (size_t, i, len)
-  	    m [vec [i]] ++;
-  	  cout << endl;
-  	  um_stat (m);
-  	}
-  #endif
+	  Vector<int> vec2;
+	  vec2 = vec;
+	  cout << vec2. searchSorted << endl;
+	  
+	  Vector<int> vec3 (move (vec));
+	  cout << vec3. searchSorted << ' ' << vec3. size () << endl;
+	  cout << vec.  searchSorted << ' ' << vec.  size () << endl;
   }
 };
 
 
 
 }  // namespace
+
 
 
 

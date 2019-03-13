@@ -2291,31 +2291,32 @@ bool Matrix::solveSystem (bool   t,
 
 
 
-Matrix* Matrix::getCholesky (bool t) const
+Matrix Matrix::getCholesky (bool t) const
 // Numerical Recipes in C, p. 97
 {
 	ASSERT (isSymmetric ());
 	ASSERT (defined ());
 	ASSERT (psd);
 	
-	Common_sp::AutoPtr <Matrix> m (new Matrix (false, *this, false));
+	Matrix m (false, *this, false);
 	
 	const Real abs_max = maxAbs ();
 	FFOR (size_t, row, rowsSize (false))
 	  FFOR (size_t, col, rowsSize (false))
 	    if (col < row)
-	    	m->put (t, col, row, 0);
+	    	m. put (t, col, row, 0);
 	    else
 		  {
 		  	Real s = get (false, row, col);
 		  	FOR (size_t, k, row) 
-		  	  s -=   m->get (t, row, k) 
-		  	       * m->get (t, col, k);
+		  	  s -=   m. get (t, row, k) 
+		  	       * m. get (t, col, k);
 		  	if (row == col)
 		  		if (negative (s, abs_max * epsilon))
 		  		{
 		  		#if 1
-		  		  return nullptr;  // Numerical problem
+		  		  m. clear ();
+		  		  return m;  // Numerical problem
 		  		#else
 		  		  cout << s << endl; 
 		  		  print (cout); 
@@ -2323,19 +2324,18 @@ Matrix* Matrix::getCholesky (bool t) const
 		  		#endif
 		  	  }		  		
 		  		else
-		  		  m->putDiag (row, sqrt (std::max (s, 0.0)));
+		  		  m. putDiag (row, sqrt (std::max (s, 0.0)));
 		  	else
 		  	{
-    	    const Real d = m->getDiag (row);
+    	    const Real d = m. getDiag (row);
 		  	  if (nullReal (s, abs_max * epsilon) || nullReal (d, abs_max * epsilon))  // nullReal(d) => nullReal(s)
-		  		  m->put (t, col, row, 0);
+		  		  m. put (t, col, row, 0);
 		  	  else
-		  		  m->put (t, col, row, s / d);
+		  		  m. put (t, col, row, s / d);
 		    }
 		  }
 		  
-  ASSERT (m. get ());
-  return m. release ();
+  return m;
 }
 
 
@@ -2741,7 +2741,7 @@ Eigens::Eigens (const Matrix &matr,
   Rand rand;
   Matrix work (matr);
   Real totalExplained = 0;
-  Common_sp::AutoPtr<Eigen> eigen;
+  unique_ptr<Eigen> eigen;
   const size_t len = matr. rowsSize (false);
   if (verbose ())
     cout << "dim_max = " << dim_max << "  len = " << len << endl;

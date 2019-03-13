@@ -967,7 +967,7 @@ private:
   // Temporary
   // Dissimilarity
   // May be nullptr
-  Common_sp::AutoPtr<Dataset> dissimDs;
+  unique_ptr<Dataset> dissimDs;
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs

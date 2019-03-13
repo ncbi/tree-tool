@@ -173,7 +173,7 @@ T* selectAttrs (const Sample &sample,
 // Time: O(p * time(setAttrImportance))
 { Progress prog (space. size ());
   for (;;)
-  { Common_sp::AutoPtr<T> t (new T (sample, space, target));
+  { unique_ptr<T> t (new T (sample, space, target));
     t->solve ();
     t->qc ();
     if (verbose ())
@@ -251,7 +251,7 @@ struct LinearNumPrediction : Prediction<NumAttr1,RealAttr1>
 	  
 #if LIN_PROG
 protected:
-  Commpn_sp::AutoPtr<CPLEX> Problem;
+  unique_ptr<CPLEX> Problem;
     // Init: nullptr
     // Requries: beta [] are the first variables
 public:

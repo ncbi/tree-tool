@@ -118,7 +118,7 @@ void DiGraph::Node::deleteNeighborhood (bool out)
 
 
 DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
-                                      stack<DiGraph::Node*, vector<DiGraph::Node*> > &sccStack)
+                                      stack<DiGraph::Node*,vector<DiGraph::Node*>> &sccStack)
 // Tarjan's alogorithm:
 /*
   Input: Graph G = (V, E), Start node v0
@@ -434,7 +434,7 @@ void DiGraph::scc ()
   size_t visitedNum = 0;
   vector<Node*> vec (nodes. size ());
   vec. clear ();
-  stack<Node*, vector<Node*> > sccStack (vec);
+  stack<Node*,vector<Node*>> sccStack (vec);
   for (Node* node : nodes)
   {
     if (! node->orderDfs)

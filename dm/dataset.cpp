@@ -1331,7 +1331,7 @@ Categorical* NominAttr1::getCategorical (const Sample &sample) const
 
 bool NominAttr1::isDegenerate (const Sample &sample) const
 {
-  Common_sp::AutoPtr <const Categorical> cat (getCategorical (sample));
+  unique_ptr<const Categorical> cat (getCategorical (sample));
   return cat->getUniqueCategory () != missing;
 }
 
@@ -1342,7 +1342,7 @@ void NominAttr1::deleteEmptyCategories (const Sample &sample)
   size_t catNum = 0;
   Vector<size_t> newCat (categories. size (), missing);
   {
-    Common_sp::AutoPtr <const Categorical> cat (getCategorical (sample));
+    unique_ptr<const Categorical> cat (getCategorical (sample));
     ASSERT (categories. size () == cat->probs. size ());
     FFOR (size_t, i, cat->probs. size ())
       if (! nullReal (cat->probs [i]))
@@ -4055,8 +4055,6 @@ void MultiNormal::qc () const
   	  ASSERT (sigmaInv. psd);
   	}
 
-	//ASSERT (cholesky. get ());
-	
 	  ASSERT (zs. size () == getDim ());
 	}
 
@@ -4154,8 +4152,8 @@ void MultiNormal::setParamFunc ()
   	
   coeff = INF;
 
-	cholesky. reset (sigmaInflated. getCholesky (false));
-	if (! cholesky. get ())
+	cholesky = sigmaInflated. getCholesky (false);
+	if (! cholesky. defined ())
 	  return;
 
   sigmaInv = sigmaInflated; 
@@ -4180,10 +4178,7 @@ void MultiNormal::setParamFunc ()
 		sigmaInv. saveText (cout);
 		cout << endl;
 		cout << "Cholesky:" << endl;
-		if (cholesky. get ())
-		  cholesky->saveText (cout);
-		else
-		  cout << "  None" << endl;
+	  cholesky. saveText (cout);
 	}
 }
 
@@ -4200,12 +4195,10 @@ void MultiNormal::setSeed (ulong seed) const
 
 void MultiNormal::randVariable () const
 {
-	ASSERT (cholesky. get ());
-	
   MVector zVec (zs. size ());
 	FFOR (size_t, i, zs. size ())
 	  zVec [i] = zs [i]. rand ();
-	x_field. multiply (false, *cholesky, false, zVec, false);
+	x_field. multiply (false, cholesky, false, zVec, false);
 	x_field. add (false, mu, false, 1);
 	
   FFOR (size_t, i, variable. size ())	
@@ -4437,7 +4430,6 @@ void Mixture::qc () const
 	const size_t objs = getAnalysis () ? getAnalysis () -> sample. mult. size () : 0;
 	for (const Component* comp : components)
 	{
-	  ASSERT (comp);
 		comp->qc ();
 	  ASSERT (comp->distr->getAnalysis () == getAnalysis ());
 		ASSERT ((bool) comp->distr->asDiscreteDistribution () == discrete);
@@ -4455,7 +4447,7 @@ void Mixture::qc () const
 		IMPLY (comp->distr->getAnalysis (), objs == comp->distr->getAnalysis () -> sample. mult. size ());
 	  s += comp->prob;      
 	}
-	ASSERT (eqReal (s, 1));
+	ASSERT (eqReal (s, 1.0));
 	
   FOR (size_t, objNum, objs)  
   {
@@ -4490,7 +4482,7 @@ Mixture::Component* Mixture::addComponent (Distribution* distr,
   ASSERT (distr)
 //ASSERT (distr->analysis);
   
-  auto* c = new Component (distr, prob);
+  auto c = new Component (distr, prob);
   if (const Analysis1* an = distr->getAnalysis ())
     c->objProb. resize (an->sample. ds->objs. size (), NaN); 
   components << c; 
@@ -5085,7 +5077,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	  if (   work. mixt. getParamSet ()
   	  	      && work. mixt. minimizeEntropy (entropy_best, entropyDimensionPrecision) 
   	  	     )
-  	  	  	workBest = /*move*/ (work. mixt);
+  	  	  	workBest = move (work. mixt);
   	  	}
   	  	if (verbose ())
   	      workBest. qc ();
@@ -5553,6 +5545,8 @@ void Clustering::processSubclusters (const string &clusterAttrName,
       FFOR (size_t, j, getOutDim ())
         toMerge. push_back (i != j);
                 
+      Unverbose unv;
+
       const Clustering cl (*this, toMerge); 
       ASSERT (cl. getOutDim () == 2);
       
@@ -5671,13 +5665,13 @@ Canonical::Canonical (const Clustering &clustering)
 , within (getWithin (clustering))
 , choleskyInv (getCholeskyInv (within. sigmaExact))
 { 
-  if (! choleskyInv. get ())
+  if (! choleskyInv. defined ())
     return;
 
   MultiNormal mn (between);
   mn. sigmaExact. multiplyBilinear ( false
                                    , between. sigmaExact, false
-                                   , *choleskyInv, false
+                                   , choleskyInv, false
                                    );
 
   const size_t dim_max = clustering. getOutDim () - 1;
@@ -5685,12 +5679,12 @@ Canonical::Canonical (const Clustering &clustering)
 
   const Eigens eigens (mn. sigmaExact, dim_max, 1, 1e-3, 1e-4, 5000);  // PAR
   eigens. qc ();
-  ASSERT (eigens. getInitSize () == choleskyInv->rowsSize (false));  
+  ASSERT (eigens. getInitSize () == choleskyInv. rowsSize (false));  
   ASSERT (eigens. values. size () <= dim_max);  
   
   basis. resize (false, between. getDim (), eigens. basis. rowsSize (true));
   basis. multiply ( false
-                  , *choleskyInv, false
+                  , choleskyInv, false
                   , eigens. basis, false
                   );  
 
@@ -5760,18 +5754,18 @@ MultiNormal Canonical::getWithin (const Clustering &clustering)
 
 
 
-Matrix* Canonical::getCholeskyInv (const Matrix &withinSigma) 
+Matrix Canonical::getCholeskyInv (const Matrix &withinSigma) 
 {
-  Common_sp::AutoPtr<Matrix> m (withinSigma. getCholesky (true));
-  if (! m. get ())
-    return nullptr;
-  m->qc ();
-  ASSERT (m->isSquare ());
+  Matrix m (withinSigma. getCholesky (true));
+  if (! m. defined ())
+    return m;
+  m. qc ();
+  ASSERT (m. isSquare ());
   
-  if (m->inverse (). get ())
-    return m. release ();
+  if (! m. inverse (). get ())
+    m. clear ();
     
-  return nullptr;
+  return m;
 }
 
 
@@ -5785,7 +5779,7 @@ void Canonical::qc () const
   between. qc ();
   within. qc ();
   ASSERT (between. getDim () == within. getDim ());
-  IMPLY (getOutDim (), choleskyInv. get ());
+  IMPLY (getOutDim (), choleskyInv. defined ());
 
   if (getOutDim ())
   {
@@ -5794,9 +5788,9 @@ void Canonical::qc () const
     ASSERT (basis_norm. equalLen (false, basis, false));
     ASSERT (eigenValues. size () >= 1);
 
-    choleskyInv->qc ();
-    ASSERT (choleskyInv->isSquare ());
-    ASSERT (between. getDim () == choleskyInv->rowsSize (false));
+    choleskyInv. qc ();
+    ASSERT (choleskyInv. isSquare ());
+    ASSERT (between. getDim () == choleskyInv. rowsSize (false));
     basis. qc ();
     ASSERT (basis. defined ());
     basis_norm. qc ();
@@ -5854,10 +5848,10 @@ void Canonical::saveText (ostream &os) const
   os << endl << "Within:" << endl;
   within. saveText (os);
   
-  if (choleskyInv. get ())
+  if (choleskyInv. defined ())
   { 
     os << endl << "Cholesky:" << endl;
-    choleskyInv->saveText (os);
+    choleskyInv. saveText (os);
 
     os << endl << "basis:" << endl;
     basis. saveText (os);

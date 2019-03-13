@@ -282,16 +282,17 @@ struct ThisApplication : Application
     cout << endl;
 
 
-    Common_sp::AutoPtr<DistTree> tree;
+    unique_ptr<DistTree> tree;
     {
       const Chronometer_OnePass cop ("Initial topology");  
-      tree = isDirName (dataFName)
-               ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
-               : input_tree. empty ()
-                 ? new DistTree (dataFName, dissimAttrName, sparse)
-                 : isDirName (input_tree)
-                   ? new DistTree (input_tree, dataFName, dissimAttrName)
-                   : new DistTree (input_tree, dataFName, dissimAttrName, sparse);
+      tree. reset (isDirName (dataFName)
+                     ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
+                     : input_tree. empty ()
+                       ? new DistTree (dataFName, dissimAttrName, sparse)
+                       : isDirName (input_tree)
+                         ? new DistTree (input_tree, dataFName, dissimAttrName)
+                         : new DistTree (input_tree, dataFName, dissimAttrName, sparse)
+                  );
     }
     ASSERT (tree. get ());
     

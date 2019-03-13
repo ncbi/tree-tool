@@ -136,7 +136,7 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 
 
 #if SORT
-	bool getMatch (const vector<string> &vec,
+	bool getMatch (const StringVector &vec,
 			         	 uint &index,
 			         	 const string &target)
 	// Update: index
@@ -167,16 +167,16 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 
 
   #if SORT
-		vector <string> vec1 (readList (list1Name));
+		StringVector vec1 (readList (list1Name));
 		sortAll (vec1);
 		
-		vector <string> vec2 (readList (list2Name));
+		StringVector vec2 (readList (list2Name));
 		sortAll (vec2);
 		
 		uint j = 0;
-		CONST_ITER (vector <string>, it, vec1)
-		  if (! getMatch (vec2, j, *it))
-		    cout << *it << endl;          
+		for (const string& s : vec1)
+		  if (! getMatch (vec2, j, s))
+		    cout << s << endl;          
   #else
 	  ifstream f1 (list1Name);
 	  ifstream f2 (list2Name);
