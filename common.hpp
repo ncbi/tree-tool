@@ -1189,13 +1189,13 @@ public:
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendant class destructor
   virtual Root* copy () const
-    { NOT_IMPLEMENTED; return nullptr; } 
+    { throw logic_error ("Root::copy() is not implemented"); }
     // Return: the same type    
   virtual void qc () const
     {}
     // Input: qc_on
   virtual void saveText (ostream& /*os*/) const 
-    { NOT_IMPLEMENTED; }
+    { throw logic_error ("Root::saveText() is not implemented"); }
     // Parsable output
   void saveFile (const string &fName) const;
     // if fName.empty() then do nothing
@@ -1210,14 +1210,14 @@ public:
     // Human-friendly
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
                         const string& /*name_arg*/) const
-    { NOT_IMPLEMENTED; return nullptr; }
+    { throw logic_error ("Root::toJson() is not implemented"); }
 	virtual bool empty () const
 	  { return true; }
   virtual void clear ()
     {}
     // Postcondition: empty()
   virtual void read (istream &/*is*/)
-	  { NOT_IMPLEMENTED; }
+    { throw logic_error ("Root::read() is not implemented"); }
 	  // Input: a line of is
 };
 
