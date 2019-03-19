@@ -67,9 +67,9 @@ struct ThisApplication : Application
     
     {
       L2LinearNumPrediction lr (sm, sp, *target);
-      lr. beta. putAll (1);
+      lr. beta. putAll (1.0);
       FOR (size_t, i, ds. objs. size ())
-        (*target) [i] = lr. predict (i) + norm. rand () / 10;  // PAR
+        (*target) [i] = lr. predict (i) + norm. rand () / 10.0;  // PAR
     //lr. setMult ();
       
       lr. solveUnconstrained ();
@@ -82,7 +82,7 @@ struct ThisApplication : Application
       }
       if (! lin_dep)
         FOR (size_t, i, lr. beta. size ())
-          ASSERT (fabs (lr. beta [i] - 1) <= 0.05);  // PAR
+          ASSERT (fabs (lr. beta [i] - 1.0) <= 0.05);  // PAR
     }
   
   
