@@ -43,7 +43,7 @@ Real sumSqrDifferenceVec (const Matrix &m1,
 {
   ASSERT (m1. rowsSize (! t1) == m2. rowsSize (! t2));
 
-  Real s = 0;
+  Real s = 0.0;
   Real r1, r2;
   FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
@@ -64,7 +64,7 @@ Real sumAbsDifferenceVec (const Matrix &m1,
 {
   ASSERT (m1. rowsSize (! t1) == m2. rowsSize (! t2));
 
-  Real s = 0;
+  Real s = 0.0;
   Real r1, r2;
   FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
@@ -85,13 +85,17 @@ Real maxAbsDifferenceVec (const Matrix &m1,
 {
   ASSERT (m1. rowsSize (! t1) == m2. rowsSize (! t2));
 
-  Real s = 0;
+  Real s = 0.0;
   Real r1, r2;
   FFOR (size_t, col, m1. rowsSize (! t1))
     if (m1. get (t1, row1, col, r1) &&
         m2. get (t2, row2, col, r2)
        )
-     Common_sp::maximize (s, fabs (r1 - r2));
+     {
+       const Real diff = r1 - r2;
+       if (! isNan (diff))
+         Common_sp::maximize (s, fabs (diff));
+     }
   return s;
 }
 
@@ -171,42 +175,6 @@ Real getCorrelationVec (const Matrix  &m1,
     return 1.0;
   return a / sqrt (b);
 }
-
-
-
-#if 0
-void distribution2MeanVar (const Matrix &distribution,
-                           size_t       distributionRow,
-                           bool         distributionT,
-                           const Matrix &Values,
-                           size_t       ValuesRow,
-                           bool         ValuesT,
-                           Real         &mean, 
-                           Real         &Variance)
-{
-  ASSERT (distribution. rowsSize (! distributionT) == Values. rowsSize (! ValuesT));
-  ASSERT (distribution. definedRow (distributionT, distributionRow));
-//ASSERT (Values.       definedRow (ValuesT, ValuesRow));  -??
-
-  // mean
-  mean = 0.0;
-  FFOR (size_t, col, distribution. rowsSize (! distributionT))
-  {
-    const Real r = distribution. get (distributionT, distributionRow, col);
-    if (! nullReal (r))
-      mean += r * Values. get (ValuesT, ValuesRow, col);
-  }
-
-  // StDev
-  Variance = 0.0;
-  FFOR (size_t, col, distribution. rowsSize (! distributionT))
-  {
-    const Real r = distribution. get (distributionT, distributionRow, col);
-    if (! nullReal (r))
-      Variance += r * sqr (Values. get (ValuesT, ValuesRow, col) - mean);
-  }
-}
-#endif
 
 
 
@@ -1435,14 +1403,18 @@ Real Matrix::maxAbsDiff (bool         t,
 {
   ASSERT (equalLen (t, source, sourceT));
 
-  Real diff = 0;
+  Real diff = 0.0;
   Real a, b;
   FFOR (size_t, i, rowsSize (t)) 
   FFOR (size_t, j, rowsSize (! t))
     if (   get (t, i, j, a)
     	  && source. get (sourceT, i, j, b)
     	 )
-      Common_sp::maximize (diff, fabs (a - b));
+    {
+     const Real delta = a - b;
+     if (! isNan (delta))
+       Common_sp::maximize (diff, fabs (delta));
+    }
   return diff;
 }
 
