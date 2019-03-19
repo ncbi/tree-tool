@@ -575,15 +575,15 @@ struct ExprNumPredict : Prediction
     // Requires: No missing values
   
   
-  virtual Real GetTargetPredicted (size_t         objNum,
-                                    const Matrix &TrialBeta) const = 0;
-  virtual void GetTargetPredictedDeriv (size_t         objNum,
+  virtual Real getTargetPredicted (size_t         objNum,
+                                   const Matrix &TrialBeta) const = 0;
+  virtual void getTargetPredictedDeriv (size_t         objNum,
                                         const Matrix &TrialBeta,
                                         Matrix       &TargetPredictedDeriv) const;
     // Output: TargetPredictedDeriv
     // Requires: TargetPredictedDeriv: Size = (MaxParamNum, 1)
     // Default: RunError
-  bool Solve (size_t MaxIter);
+  bool solve (size_t maxIter);
     // Update: beta
     // Output: absCriterion
     // Return: true if converged
@@ -592,6 +592,7 @@ struct ExprNumPredict : Prediction
     //          GetTargetPredicted (), GetTargetPredictedDeriv ()
 };
 #endif
+
 
 
 

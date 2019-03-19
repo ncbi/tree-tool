@@ -880,8 +880,8 @@ void L2LinearNumPrediction::solveUnconstrained ()
   FFOR (size_t, attrNum, space. size ())
   {
     const NumAttr1& a = * space [attrNum];
-    Real s = 0;
-    Real mult_sum = 0;
+    Real s = 0.0;
+    Real mult_sum = 0.0;
     FFOR (size_t, i, sample. mult. size ())
       if (const Real mult = sample. mult [i])
       {
@@ -897,7 +897,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
         s += x * target [i] * mult;
       }
     if (existsMissing)
-	    xy [attrNum] = mult_sum > 0 ? s / mult_sum : 0;
+	    xy [attrNum] = mult_sum > 0.0 ? s / mult_sum : 0.0;
 	  else
 	  {
 	    ASSERT (! isNan (s));
@@ -913,12 +913,12 @@ void L2LinearNumPrediction::solveUnconstrained ()
 
   // absCriterion
   const Real yHat2 = beta. multiplyVec (xy);
-  if (yHat2 < 0) 
+  if (yHat2 < 0.0) 
   	return;  // betaCovariance determinant = 0
 
-  Real y2 = 0;
+  Real y2 = 0.0;
   {
-	  Real mult_sum = 0;
+	  Real mult_sum = 0.0;
 	  FFOR (size_t, i, sample. mult. size ())
 	    if (const Real mult = sample. mult [i])
 	    	if (! isNan (target [i]))
@@ -929,7 +929,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
 		if (existsMissing)
 			y2 /= mult_sum;
 	}
-	ASSERT (y2 >= 0);
+	ASSERT (y2 >= 0.0);
 
   absCriterion = y2 - yHat2;
   if (existsMissing)
@@ -942,7 +942,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
 	  if (! positive (absCriterion))
 	    setAbsCriterion ();
 	}
-  ASSERT (absCriterion >= 0);
+  ASSERT (absCriterion >= 0.0);
 
 
   // betaCovariance  
@@ -1085,6 +1085,7 @@ void L2LinearNumPrediction::setAbsCriterion ()
 	    }
   absCriterion *= sample. mult_sum / mult_sum;
 }
+
 
 
 void L2LinearNumPrediction::setAbsCriterion (const RealAttr1& residual)
@@ -1498,6 +1499,7 @@ bool ExprNumPredict::Solve (size_t MaxIter)
   return Ok;
 }
 #endif
+
 
 
 
