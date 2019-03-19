@@ -21,11 +21,12 @@ bool initNumeric ();
   // Invokes: initCommon()
 
 
-template <class T /*:intgeer*/>  
+template <class T /*:integer*/>  
   inline T divide (T n, 
                    T divisor,
                    T &remainder)
-  { if (n >= 0)
+  { static_assert (numeric_limits<T>::is_integer(), "T must be integer");
+    if (n >= 0)
     { remainder = n % divisor;
       return n / divisor;
     }
