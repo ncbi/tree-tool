@@ -14,39 +14,39 @@ INC=$1
 NEW=$2
 
 
-if [ "$NEW" ]; then
-  wc -l $NEW
-  $THIS/../trav $NEW "cp /dev/null $INC/new/%f"
-fi
-
-
 VARIANCE=`cat $INC/variance`
 
 
 if [ 1 == 1 ]; then  
-# Time: O(n log^5(n))
-while [ 1 == 1 ]; do
-  if [ -e $INC/stop ]; then
+if [ "$NEW" ]; then
+  wc -l $NEW
+  $THIS/../trav $NEW "cp /dev/null $INC/new/%f"
+
+
+  # Time: O(n log^5(n))
+  while [ 1 == 1 ]; do
+    if [ -e $INC/stop ]; then
+      echo ""
+      echo '*** STOPPED ***'
+      exit 2
+    fi
+    
+    if [ -e $INC/skip ]; then
+      echo ""
+      echo '*** SKIPPED ***'
+      break
+    fi
+    
+    NEW=`ls $INC/new/ | wc -l`
+    echo "# New: $NEW  `date`  `date +%s`" >> $INC/runlog  
     echo ""
-    echo '*** STOPPED ***'
-    exit 2
-  fi
-  
-  if [ -e $INC/skip ]; then
     echo ""
-    echo '*** SKIPPED ***'
-    break
-  fi
-  
-  NEW=`ls $INC/new/ | wc -l`
-  echo "# New: $NEW  `date`  `date +%s`" >> $INC/runlog  
-  echo ""
-  echo ""
-  $THIS/distTree_inc_new.sh $INC  
-  if [ -e $INC/finished ]; then
-    break
-  fi
-done
+    $THIS/distTree_inc_new.sh $INC  
+    if [ -e $INC/finished ]; then
+      break
+    fi
+  done
+fi
   
 
 echo ""
