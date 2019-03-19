@@ -2172,13 +2172,13 @@ FeatureTree::FeatureTree (const string &treeFName,
       Progress prog (features. size (), 1);  // PAR  
       FFOR (size_t, featureIndex, features. size ())
       {
-        prog ();
         if (j == featureBatchSize)
         {
           processBatch (phyls, batch, featureLen);
           batch. resize (featureBatchSize, NO_INDEX);
           j = 0;
         }
+        prog ();
         batch [j] = featureIndex;
       	j++;
       }
