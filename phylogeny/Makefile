@@ -10,7 +10,6 @@ CPPFLAGS=$(OptCPPFLAGS)
 all:	\
   attr2_2paup \
   attr2_2phylip \
-  calibrateDissims \
   combine_dissims \
   compareTrees \
   distTree_new \
@@ -47,12 +46,6 @@ attr2_multiply.o:  $(DM_HPP)
 attr2_multiplyOBJS=attr2_multiply.o $(DM_OBJ) 
 attr2_multiply:	$(attr2_multiplyOBJS)
 	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
-	$(ECHO)
-
-calibrateDissims.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp
-calibrateDissimsOBJS=calibrateDissims.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
-calibrateDissims:	$(calibrateDissimsOBJS)
-	$(CXX) -o $@ $(calibrateDissimsOBJS) $(LIBS)
 	$(ECHO)
 
 combine_dissims.o:  $(NUMERIC_HPP)

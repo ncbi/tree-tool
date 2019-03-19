@@ -39,6 +39,7 @@ all:	\
 	pairs2Boolean \
 	pca \
 	pca2clusters \
+	positiveAverage \
 	sim2dist \
   threshold \
 	uniKernel \
@@ -236,6 +237,12 @@ pca2clusters.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
 pca2clustersOBJS=pca2clusters.o $(NUMERIC_OBJ)
 pca2clusters:	$(pca2clustersOBJS)
 	$(CXX) -o $@ $(pca2clustersOBJS) $(LIBS)
+	$(ECHO)
+
+positiveAverage.o:  $(DM_HPP) 
+positiveAverageOBJS=positiveAverage.o $(DM_OBJ)
+positiveAverage:	$(positiveAverageOBJS)
+	$(CXX) -o $@ $(positiveAverageOBJS) $(LIBS)
 	$(ECHO)
 
 sim2dist.o:  $(DM_HPP) 

@@ -72,7 +72,7 @@ $(PHYL_DIR)/distTree.o:	$(PHYL_DIR)/distTree.hpp $(PREDICT_HPP) $(CPP_DIR)/graph
 DISTTREE_OBJ = $(PHYL_DIR)/distTree.o $(PREDICT_OBJ) $(CPP_DIR)/graph.o
 DISTTREE = $(PHYL_DIR)/distTree $(PREDICT) $(CPP_DIR)/graph
 
-$(PHYL_DIR)/evolution.o:	$(PHYL_DIR)/evolution.hpp $(NUMERIC_HPP) $(DM_DIR)/dataset.hpp
+$(PHYL_DIR)/evolution.o:	$(PHYL_DIR)/evolution.hpp $(NUMERIC_HPP)
 
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP) $(CPP_DIR)/graph.hpp
 FEATURE_TREE_OBJ = $(PHYL_DIR)/featureTree.o $(DM_OBJ) $(CPP_DIR)/graph.o

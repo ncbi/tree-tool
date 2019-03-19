@@ -1,38 +1,55 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 5 ]; then
+if [ $# -ne 6 ]; then
   echo "Input: #3-calibrate.dm"
+  echo "Output: hmm-univ.stat"
   echo "#1: power"
-  echo "#2: phen/"
-  echo "#3: Input file prefix"
-  echo "#4: delete hybrids (0/1)"
-  echo "#5: dissim_coeff (default: 1)"
+  echo "#2: outlierSEs"
+  echo "#3: phen/"
+  echo "#4: Input .dm-file without '.dm'"
+  echo "#5: delete hybrids (0/1)"
+  echo "#6: dissim_coeff: 0 - variance = lin, else linVar"
   exit 1
 fi
+POWER=$1
+OUTLIER_SES=$2
+PHEN=$3
+INPUT=$4
+DELETE_HYBRIDS=$5
+DISSIM_COEFF=$6
 
 
 echo ""
-echo "power = $1"
+echo "power = $POWER"
+echo "outlier_SEs = $OUTLIER_SES"
 
-$THIS/calibrateDissims $3-calibrate $1  -output_dissim $3.pairs  > hmm-univ.stat
 
-tail -n +5 $3.pairs.dm | sed 's/-/ /1' > $3.pairs
-rm $3.pairs.dm
+TMP=`mktemp`
+#echo $TMP 
 
-$THIS/../dm/pairs2attr2 $3.pairs 1 cons 6  -distance > $3.dm
-rm $3.pairs
 
-hybrid=""
-if [ $4 -eq 1 ]; then
-  hybrid="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid  -delete_all_hybrids"
+$THIS/../dm/positiveAverage $INPUT $POWER $OUTLIER_SES  -output_dissim $TMP.pairs > hmm-univ.stat
+tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
+$THIS/../dm/pairs2attr2 $TMP.pairs 1 cons 6  -distance > $TMP.dm
+
+echo ""
+echo ""
+HYBRID=""
+if [ $DELETE_HYBRIDS -eq 1 ]; then
+  HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid  -delete_all_hybrids"
 fi
+VARIANCE=linExp
+DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
+if [ $DISSIM_COEFF == 0 ]; then
+  VARIANCE=lin
+  DISSIM_COEFF_OPTION=""
+fi
+$THIS/makeDistTree  -threads 5  -data $TMP  -dissim cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
 
 echo ""
 echo ""
-$THIS/makeDistTree  -threads 5  -data $3  -dissim cons  -dissim_coeff $5  -optimize  $hybrid  -noqual  -output_tree tree  -output_feature_tree _feature_tree
+$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual
 
-echo ""
-echo ""
-$THIS/makeFeatureTree  -input_tree _feature_tree  -features $2  -nominal_singleton_is_optional  -qual _qual
 
+rm $TMP*  
