@@ -1148,9 +1148,9 @@ private:
   friend struct Attr;
 public:
   RealAttr1* addRealAttr1Unit (const string &attrName = "unit")
-    { auto* attr = new RealAttr1 (attrName, *this, 0);
-      attr->setAll (1);
-      attr->moveAfter (nullptr);
+    { auto attr = new RealAttr1 (attrName, *this, 0);
+      attr->setAll (1.0);
+      attr->moveAfter (nullptr);  // !
       return attr;
     }
 };
@@ -3717,6 +3717,139 @@ struct Mds : Analysis
     // Update: ds
 };
 
+
+
+
+////////////////////////// PositiveAverage ///////////////////////////
+
+struct PositiveAverageModel : Root
+{
+//Real varPower {1.0};  // PAR
+  Real outlierSEs {NaN};
+    // Standard errors to be an outlier
+  
+  
+	struct Component : Named
+	{
+	  const PositiveAverageModel& pam;
+		Real coeff {NaN};
+			// >= 0.0
+		Real var {NaN};
+			// >= 0.0
+		// Functions of var
+		Real sd {NaN};
+		Real weight {NaN};
+  private:			
+	  // Data
+		Real value {NaN};
+			// >= 0.0
+	public:
+		mutable bool outlier {false}; 
+		  // Output of get()
+
+    Component (const string &name_arg,
+               const PositiveAverageModel& pam_arg)
+      : Named (name_arg)
+      , pam (pam_arg)
+      {}
+		Component (const PositiveAverageModel& pam_arg,
+		           const string &line,
+		           bool loadStat);
+		void qc () const override;
+		void saveText (ostream &os) const override
+		  { os         << name
+ 		       << '\t' << coeff
+ 		       << '\t' << var
+ 		       << endl;
+ 		  }
+		  
+		static bool validValue (Real value)  
+		  { return ! isNan (value) && value != INF; }
+		void setVar (Real var_arg);
+		Real setValue (Real value_arg)
+	    { value = value_arg * coeff;  // May be NaN
+	      return value;
+	    }
+	private:
+	  friend struct PositiveAverageModel;
+		void setOutlier (Real value_target) const;
+	    // Output: outlier
+	};
+	Vector<Component> components;
+    // Assumption: Component's are independent, which allows re-weighting of Component's if some value's are missing
+	
+	
+	PositiveAverageModel (const string &fName,
+	                      bool loadStat);
+	explicit PositiveAverageModel (Real outlierSEs_arg)
+	  : outlierSEs (outlierSEs_arg)
+	  {}
+  void qc () const override;
+	void saveText (ostream &os) const override
+    { os << outlierSEs << endl;
+      for (const Component& comp : components)
+	      comp. saveText (os);
+		}
+		
+   
+  Real get () const;
+    // Input: Component::value
+    // Output: Component::outlier
+    // Invokes: Component::setOutlier()
+  Real getVar () const
+    { Real var = 0.0;
+    	for (const Component& comp : components)
+   		  var += comp. weight;
+    	return 1.0 / var;
+    }    	
+  Real getEffectiveAttrs () const
+    { Real s = 0.0;
+    	for (const Component& comp : components)
+   		  s += comp. weight;
+    	Real s2 = 0.0;
+    	for (const Component& comp : components)
+   		  s2 += sqr (comp. weight / s);
+    	return 1.0 / s2;
+    }
+  Matrix getParam () const;
+};
+	
+
+
+struct PositiveAverage : MultiVariate<PositiveAttr1>
+{
+  typedef  MultiVariate<PositiveAttr1>  P;  
+  PositiveAverageModel model;
+    // components.size() = space.size()
+  PositiveAttr1* averageAttr {nullptr};
+    // !nullptr
+  bool optimizeCoeff {false};
+#if 0
+private:
+  Vector<Vector<bool>> outliers;
+	  // Requires: model.outlierSEs >> 0
+public:
+#endif
+  	
+	
+	PositiveAverage (const Sample &sample_arg,
+                   const Space1<PositiveAttr1> &space_arg,
+                   Real outlierSEs_arg,
+                   bool optimizeCoeff_arg);
+    // Invokes: calibrate()
+private:
+  void calibrate ();
+    // Output: (*averageAttr)[], PositiveAverageModel::Component
+    // Invokes: setComponent()
+  void setComponent (PositiveAverageModel::Component &comp,
+                     const PositiveAttr1 &attr/*,
+                     const Vector<bool> &attrOutliers*/);
+public:
+  void qc () const override;
+  void saveText (ostream &os) const override
+    { model. saveText (os); }
+};
+	
 
 
 }  

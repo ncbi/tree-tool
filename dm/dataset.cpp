@@ -29,6 +29,7 @@ void Obj::qc () const
 		
   IMPLY (! name. empty (), goodName (name));
   ASSERT (mult >= 0); 
+  ASSERT (mult < INF);
 }
 
 
@@ -217,9 +218,9 @@ void NumAttr1::getAverageScatter (const Sample &sample,
                                   Real &average,
 	                                Real &scatter) const
 {
-	Real n = 0;
-	Real s = 0;
-	Real s2 = 0;
+	Real n = 0.0;
+	Real s = 0.0;
+	Real s2 = 0.0;
   for (Iterator it (sample); it ();)  
     if (! isMissing (*it))
     {
@@ -231,15 +232,15 @@ void NumAttr1::getAverageScatter (const Sample &sample,
   
   average = s / n;
   scatter = s2 / n - sqr (average);
-  IMPLY (! isNan (scatter), scatter >= 0);
+  IMPLY (! isNan (scatter), scatter >= 0.0);
 }
 
 
 
 Real NumAttr1::getSqr_ave (const Sample &sample) const
 {
-	Real n = 0;
-	Real s = 0;
+	Real n = 0.0;
+	Real s = 0.0;
   for (Iterator it (sample); it ();)  
     if (! isMissing (*it))
     {
@@ -1118,7 +1119,7 @@ CompactBoolAttr1& CompactBoolAttr1::operator= (const CompactBoolAttr1& other)
 
 void CompactBoolAttr1::setAll (bool value)
 {
-  values. resize (0, value); 
+//values. resize (0, value);  
   values. resize (ds. objs. size (), value); 
 }
 
@@ -5993,6 +5994,375 @@ Space1<RealAttr1> Mds::createSpace (const string &realAttrPrefix,
   	}
 	
 	return sp;
+}
+
+
+
+
+///////////////////////////// PositiveAverage //////////////////////////////////
+
+// PositiveAverageModel::Component
+
+PositiveAverageModel::Component::Component (const PositiveAverageModel& pam_arg,
+                                            const string &line,
+		                                        bool loadStat)
+: pam (pam_arg)
+{
+	// Cf. saveText()
+	istringstream iss (line);
+	iss >> name; 
+	if (loadStat)
+	{
+		iss >> coeff >> var;
+		if (! (coeff >= 0.0))
+			throw runtime_error ("Coefficient should be >= 0");
+    if (! (coeff < INF))
+			throw runtime_error ("Coefficient should be finite");
+		if (! (var >= 0.0))
+			throw runtime_error ("Variance should be >= 0");
+	}
+	
+	setVar (var);
+}
+
+
+
+void PositiveAverageModel::Component::qc () const
+{
+	if (! qc_on)
+		return;
+
+	Named::qc ();
+	
+	ASSERT (goodName (name));
+	ASSERT (coeff >= 0.0);
+	ASSERT (var >= 0.0);
+	IMPLY (coeff == 0.0, var == INF);
+}
+
+
+
+void PositiveAverageModel::Component::setVar (Real var_arg)
+{ 
+  ASSERT (var_arg >= 0.0);
+
+  var = var_arg;
+  if (nullReal (var))
+    throw runtime_error (FUNC "name " + strQuote (name) + ": too small variance");
+    
+  sd = sqrt (var);
+  weight = 1.0 / var;
+}
+
+
+
+void PositiveAverageModel::Component::setOutlier (Real value_target) const
+{ 
+	outlier = (value == INF || /*fabs*/ (value - value_target) / sd > pam. outlierSEs);
+}
+
+
+
+
+// PositiveAverageModel
+
+PositiveAverageModel::PositiveAverageModel (const string &fName,
+                                            bool loadStat)
+{ 
+	LineInput f (fName);
+	while (f. nextLine ())
+	{
+	  if (f. line. empty ())
+	    continue;
+	    
+    if (isNan (outlierSEs))
+    {
+      outlierSEs = stod (f. line);
+      ASSERT (! isNan (outlierSEs));
+    }
+    else
+		{ 
+			Component comp (*this, f. line, loadStat);
+		  components << move (comp);
+		}
+  }
+}    
+
+
+
+void PositiveAverageModel::qc () const
+{
+	if (! qc_on)
+		return;
+
+  ASSERT (outlierSEs >= 0.0);
+	for (const Component& comp : components)
+		comp. qc ();
+}
+
+
+
+Real PositiveAverageModel::get () const
+{
+	Real ave = NaN;
+  for (const Component& comp : components)
+   	comp. outlier = false;  // To converge
+	for (;;)
+	{
+		const Real ave_prev = ave;
+		
+    Real sum = 0.0;
+    Real weights = 0.0;
+    for (const Component& comp : components)
+    	if (   Component::validValue (comp. value)
+    		  && ! comp. outlier
+    		 )
+    	{
+    		ASSERT (comp. value >= 0.0);
+    		if (comp. value == INF)
+    		{
+    		  ASSERT (comp. var == INF);
+    		  continue;
+    		}
+    		const Real weight = comp. weight;
+    		ASSERT (weight >= 0.0);
+    		ASSERT (weight < INF);
+    		sum     += weight * comp. value;
+    		weights += weight;
+    	}  		
+    ave = sum / weights;
+    
+    if (isNan (ave) || fabs (ave - ave_prev) < 1e-6)  // PAR
+    	break;
+    
+    for (const Component& comp : components)
+    	comp. setOutlier (ave);
+  }
+  maximize (ave, 0.0);
+    
+    
+  return ave;
+}
+
+
+
+Matrix PositiveAverageModel::getParam () const
+{ 
+	Matrix param (components. size (), 2);
+	FFOR (size_t, i, components. size ())
+  {
+	  param. put (false, i, 0, components [i]. coeff);
+	  param. put (false, i, 1, components [i]. var);
+	}
+	return param;
+}
+
+
+
+
+// PositiveAverage
+
+PositiveAverage::PositiveAverage (const Sample &sample_arg,
+                                  const Space1<PositiveAttr1> &space_arg,
+                                  Real outlierSEs_arg,
+                                  bool optimizeCoeff_arg)
+: P (sample_arg, space_arg)
+, model (outlierSEs_arg)
+, optimizeCoeff (optimizeCoeff_arg)
+{
+  // model
+  model. components. reserve (space. size ());
+  streamsize decimals_max = 0;
+  for (const PositiveAttr1* attr : space)
+  {
+   	model. components << move (PositiveAverageModel::Component (attr->name, model));
+    maximize (decimals_max, attr->decimals);
+  }
+  if (model. components. empty ())
+    throw runtime_error ("PositiveAverage: No attributes");
+    	  
+  averageAttr = new PositiveAttr1 ("average", var_cast (* sample. ds), decimals_max + 1);
+
+#if 0  
+  outliers. resize (space. size ());
+  for (Vector<bool>& vec : outliers)
+    vec. resize (sample. ds->objs. size (), false);
+#endif
+  
+  calibrate ();
+}
+
+
+
+void PositiveAverage::calibrate ()
+{
+  ASSERT (averageAttr);
+  
+  
+  // Initialization 
+  FFOR (size_t, attrNum, space. size ())
+  {
+    PositiveAverageModel::Component& comp = model. components [attrNum];
+  	{
+      const Real center = space [attrNum] -> getMedian (sample);
+      ASSERT (center >= 0.0);
+      if (center == 0.0)
+        throw runtime_error (space [attrNum] -> name + ": center is 0");
+      comp. coeff = 1.0 / center;
+    }
+  	comp. setVar (0.1);  // PAR
+  }
+
+  
+  for (;;)
+  {
+    // averageAttr
+    // PositiveAverageModel::Component::outliers
+  	FFOR (size_t, i, sample. ds->objs. size ())  
+  	{
+      FFOR (size_t, attrNum, space. size ())
+		    model. components [attrNum]. setValue ((* space [attrNum]) [i]);
+  		var_cast (*averageAttr) [i] = model. get ();
+  	#if 0
+      FFOR (size_t, attrNum, space. size ())
+		    outliers [attrNum] [i] = model. components [attrNum]. outlier;
+		#endif
+  	}  	
+
+    if (optimizeCoeff)
+    {
+      // Make average of averageAttr = 1
+      Real average = NaN;
+      Real scatter = NaN;
+      averageAttr->getAverageScatter (sample, average, scatter);
+      ASSERT (average > 0.0);
+    	FFOR (size_t, i, sample. ds->objs. size ())
+    		var_cast (*averageAttr) [i] /= average;  /* use errWeight ?? */
+    }
+
+    const Matrix param_old (model. getParam ());
+
+    FFOR (size_t, attrNum, space. size ())
+      setComponent (model. components [attrNum], * space [attrNum] /*, outliers [attrNum]*/);
+ 		
+ 		const Real diff = model. getParam (). maxAbsDiff (false, param_old, false);
+    cerr << diff << endl;  /*+ " " + toString (getVar ())*/
+ 		if (diff < 1e-6)  // PAR
+ 			break;
+ 			
+ 	//saveText (cout);   
+ 	}
+}
+
+
+
+void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
+                                    const PositiveAttr1 &attr/*,
+                                    const Vector<bool> &attrOutliers*/)
+{
+	ASSERT (averageAttr);
+
+
+	if (optimizeCoeff)
+	{
+  	// coeff
+  	Real x2_sum = 0.0;
+  	Real xy_sum = 0.0;
+  	FFOR (size_t, i, sample. ds->objs. size ())
+  	{
+  	  const Real x = attr [i];
+  		const Real y = (*averageAttr) [i];  
+  		if (! PositiveAverageModel::Component::validValue (x))
+  			continue;
+  		if (! PositiveAverageModel::Component::validValue (y))
+  			continue;
+  		ASSERT (y >= 0.0);
+  	#if 0
+  		if (attrOutliers [i])
+  		  continue;
+  	#endif
+  	#if 0
+  		if (y == 0.0)
+  		  continue;
+  	  const Real errWeight = pow (y, - model. varPower);
+  	#endif
+  		const Real mult = sample. ds->objs [i] -> mult /* * errWeight*/;
+  		ASSERT (mult >= 0.0);
+  		x2_sum += mult * sqr (x);
+  		xy_sum += mult * x * y;
+  	}
+  	
+   	ASSERT (x2_sum >= 0.0);
+  	if (x2_sum == 0.0)
+  	  comp. coeff = INF;
+  	else
+  	{
+    	if (xy_sum <= 0.0)
+    	  comp. coeff = INF;
+    	else
+    	  comp. coeff = xy_sum / x2_sum;
+    }
+  }
+	ASSERT (comp. coeff > 0.0);
+
+
+  // var
+  {
+  	Real s = 0.0;
+  	Real mult_sum = 0.0;
+  	FFOR (size_t, i, sample. ds->objs. size ())
+  	{
+  	  const Real x = comp. setValue (attr [i]);  // y_hat
+  		const Real y = (*averageAttr) [i];
+  		if (! PositiveAverageModel::Component::validValue (x))
+  			continue;
+  		if (! PositiveAverageModel::Component::validValue (y))
+  			continue;
+  		ASSERT (y >= 0.0);
+  	#if 0
+  		if (attrOutliers [i])
+  		  continue;
+  	#endif
+  	#if 0
+  		if (y == 0.0)
+  		  continue;
+  		const Real errWeight = pow (y, - model. varPower);
+  	#endif
+  		const Real mult = sample. ds->objs [i] -> mult /* * errWeight*/;
+  		ASSERT (mult >= 0.0);
+  		s        += mult * sqr (x - y);  
+  		mult_sum += mult;  
+  	}
+
+  	ASSERT (mult_sum >= 0.0);
+  	if (mult_sum == 0.0)
+  		comp. setVar (INF);
+  	else
+    	comp. setVar (s / mult_sum);
+  }
+	
+
+	comp. qc ();
+}
+
+
+
+void PositiveAverage::qc () const
+{
+	if (! qc_on)
+		return;
+
+  P::qc ();
+  model. qc ();
+  ASSERT (model. components. size () == space. size ());
+//ASSERT (model. components. size () == outliers. size ());  
+  FFOR (size_t, i, space. size ())
+  {
+    ASSERT (model. components [i]. name == space [i] -> name);
+  //ASSERT (outliers [i]. size () == sample. ds->objs. size ());
+  }
+  ASSERT (averageAttr);
+  ASSERT (& averageAttr->ds == sample. ds);
 }
 
 
