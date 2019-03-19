@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
-  echo "Initialize an incremental distance tree"
+  echo "Initialize the main directory of an incremental distance tree"
   echo "#1: Output directory"
   echo "#2: grid_min (> 0)"
   echo "#3: variance: lin|linExp"
