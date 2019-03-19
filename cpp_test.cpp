@@ -100,6 +100,8 @@ struct ThisApplication : Application
 	  S s (3);
 	  get (s);
 	*/
+	
+	  cout << max (1.0, 2.0) << ' ' << max (2.0, 0.0/0.0) << ' ' << max (0.0/0.0, 2.0) << ' ' << max (0.0/0.0, 0.0/0.0) << endl;
 	  
 	  Vector<int> vec;
 	  vec << 3 << 1 << 5;
