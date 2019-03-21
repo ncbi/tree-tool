@@ -95,7 +95,8 @@ struct ThisApplication : Application
       replaceStr (thisCmd, "%n", toString (gen->prog. n));  
       if (verbose ())
       	cerr << thisCmd << endl;
-      const int exitStatus = system (thisCmd. c_str ());
+      const int exitStatus_ = system (thisCmd. c_str ());
+      const int exitStatus = WEXITSTATUS (exitStatus_);
       if (exitStatus)
       {
         if (errors. get ())
