@@ -66,6 +66,7 @@
 #include <stack>
 #include <set>
 #include <map>
+#include <unordered_set>
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
@@ -1567,6 +1568,24 @@ public:
     	    return false;
         for (const U& u : other)
           if (! containsFast (u))
+            return false;
+        return true;
+      }
+  template <typename U /* : T */>
+    bool containsFastAll (const unordered_set<U> &other) const
+      { if (other. size () > P::size ())
+    	    return false;
+        for (const U& u : other)
+          if (! containsFast (u))
+            return false;
+        return true;
+      }
+  template <typename U /* : T */, typename V>
+    bool containsFastAll (const unordered_map<U,V> &other) const
+      { if (other. size () > P::size ())
+    	    return false;
+        for (const auto& it : other)
+          if (! containsFast (it. first))
             return false;
         return true;
       }
