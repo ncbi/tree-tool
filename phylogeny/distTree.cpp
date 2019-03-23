@@ -1960,6 +1960,31 @@ bool Change::strictlyLess (const Change* a,
 
 
 
+// DissimType
+
+DissimType::DissimType (const PositiveAttr2* dissimAttr_arg)
+: Named (checkPtr (dissimAttr_arg) -> name)
+, dissimAttr (dissimAttr_arg)
+{
+  ASSERT (dissimAttr);
+}
+
+
+
+void DissimType::qc () const
+{
+  if (! qc_on)
+    return;
+    
+  Named::qc ();
+  ASSERT (goodName (name));
+  ASSERT (coeff >= 0.0);
+  ASSERT (coeff < INF);
+}
+
+
+
+
 // Dissim
 
 Dissim::Dissim (const Leaf* leaf1_arg,
@@ -2407,63 +2432,40 @@ bool Image::apply ()
 
 DistTree::DistTree (const string &treeFName,
                     const string &dissimFName,
-                    const string &dissimAttrName,
-                    bool sparse)
-: rand (seed_global)
-{
-  ASSERT (dissimFName. empty () == dissimAttrName. empty ());
-
-  // Initial tree topology
-  loadTreeFile (treeFName);  
-  ASSERT (root);
-  ASSERT (nodes. front () == root);
-  ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
-
-  setName2leaf ();
-        
-  if (! dissimFName. empty ())
-  {
-    loadDissimDs (dissimFName, dissimAttrName);
-    
-    if (! getConnected ())
-      throw runtime_error ("Disconnected objects");
-    setDiscernibles_ds ();  
-
-    dissimDs2dissims (sparse);      
-  }
-}
-
-
-
-DistTree::DistTree (const string &dirName,
-                    const string &dissimFName,
                     const string &dissimAttrName)
 : rand (seed_global)
 {
-  // Initial tree topology, no DTNode::len
-  loadTreeDir (dirName);
+  // Initial tree topology
+  if (isDirName (treeFName))
+    loadTreeDir (treeFName);  // Directory name
+      // no DTNode::len
+  else  
+    loadTreeFile (treeFName);  
   ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
 
   setName2leaf ();
         
+  if (! isDirName (treeFName) && dissimFName. empty ())
+    return;
+
   loadDissimDs (dissimFName, dissimAttrName);
   
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
   setDiscernibles_ds ();  
 
-  setGlobalLen ();  // --> after dissim2Ds(), use dissims ??
+  if (isDirName (treeFName))
+    setGlobalLen ();  // --> after dissim2Ds(), use dissims ??
 
-  dissimDs2dissims (false);  
+  dissimDs2dissims ();      
 }
 
 
 
 DistTree::DistTree (const string &dissimFName,
-                    const string &dissimAttrName,
-                    bool sparse)
+                    const string &dissimAttrName)
 : rand (seed_global)
 {
   loadDissimDs (dissimFName, dissimAttrName);
@@ -2485,7 +2487,7 @@ DistTree::DistTree (const string &dissimFName,
 
   neighborJoin ();
   
-  dissimDs2dissims (sparse);       
+  dissimDs2dissims ();       
 }
 
 
@@ -2869,6 +2871,7 @@ DistTree::DistTree (const string &dataDirName,
 
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
+  ASSERT (dissimTypes. empty ());
 }
 
 
@@ -3598,12 +3601,36 @@ void DistTree::setName2leaf ()
 
 
 
+namespace
+{
+
+void checkDissimAttr (PositiveAttr2& dissimAttr)
+{
+  dissimAttr. qc ();
+
+  {
+    Real maxCorrection;
+    size_t row_bad, col_bad;
+    dissimAttr. matr. symmetrize (maxCorrection, row_bad, col_bad);
+    if (maxCorrection > 2.0 * pow (10.0, - (Real) dissimAttr. decimals))  // PAR
+      cout << "maxCorrection = " << maxCorrection 
+           << " at " << dissimAttr. ds. objs [row_bad] -> name 
+           << ", "   << dissimAttr. ds. objs [col_bad] -> name 
+           << endl;
+  }
+}
+
+}
+
+
+
 void DistTree::loadDissimDs (const string &dissimFName,
                              const string &dissimAttrName)
 {
   ASSERT (! subDepth);
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
+  ASSERT (dissimTypes. empty ());
   ASSERT (! optimizable ());
 
   if (dissimFName. empty ())
@@ -3615,29 +3642,96 @@ void DistTree::loadDissimDs (const string &dissimFName,
     Unverbose unv;
     dissimDs. reset (new Dataset (dissimFName));
   }
-  
-  {
-    const Attr* attr = dissimDs->name2attr (dissimAttrName);
-    if (! attr)
-      throw runtime_error ("Attribute " + dissimAttrName + " must exist in the dataset " + dissimFName);
-    dissimAttr = attr->asPositiveAttr2 ();
-  }
-  if (! dissimAttr)
-    throw runtime_error ("Attribute " + dissimAttrName + " must have type Positive2");
-  ASSERT (dissimAttr->matr. isSquare ());
-  ASSERT (dissimAttr->matr. rowsSize (false) == dissimDs->objs. size ());
-  {
-    Real maxCorrection;
-    size_t row_bad, col_bad;
-    var_cast (dissimAttr) -> matr. symmetrize (maxCorrection, row_bad, col_bad);
-    if (maxCorrection > 2 * pow (10, - (Real) dissimAttr->decimals))
-      cout << "maxCorrection = " << maxCorrection 
-           << " at " << dissimDs->objs [row_bad] -> name 
-           << ", "   << dissimDs->objs [col_bad] -> name 
-           << endl;
-  }
 
-//dissimDecimals = dissimAttr->decimals;
+  if (dissimAttrName. empty ())
+  {
+    for (const Attr* attr_ : dissimDs->attrs)
+      if (const PositiveAttr2* attr = attr_->asPositiveAttr2 ())
+      {
+        checkDissimAttr (* var_cast (attr));
+        dissimTypes << move (DissimType (attr));
+      }
+    if (dissimTypes. empty ())
+      throw runtime_error ("No dissimilarities in " + strQuote (dissimFName));
+    if (dissimTypes. size () == 1)
+    {
+      dissimAttr = dissimTypes [0]. dissimAttr;
+      dissimTypes. clear ();
+    }
+    else
+      mergeDissimAttrs ();
+  }
+  else
+  {
+    {
+      const Attr* attr = dissimDs->name2attr (dissimAttrName);
+      if (! attr)
+        throw runtime_error ("Attribute " + dissimAttrName + " must exist in the dataset " + dissimFName);
+      dissimAttr = attr->asPositiveAttr2 ();
+    }
+    if (! dissimAttr)
+      throw runtime_error ("Attribute " + dissimAttrName + " must have type Positive2");      
+    checkDissimAttr (* var_cast (dissimAttr));
+  }
+  
+  ASSERT (dissimAttr);
+}
+
+
+
+void DistTree::mergeDissimAttrs ()
+{
+  ASSERT (! subDepth);
+  ASSERT (dissimDs. get ());
+  ASSERT (! dissimAttr);
+  ASSERT (dissimTypes. size () >= 2);
+  ASSERT (! optimizable ());
+  
+
+  Vector<Real> vec;  vec. reserve (sqr (dissimDs->objs. size ()));
+  streamsize decimals = 0;
+  for (const DissimType& dt : dissimTypes)
+  {
+    ASSERT (dt. dissimAttr);
+    vec. clear ();
+    {
+      Real x = NaN;    
+      FFOR (size_t, i, dissimDs->objs. size ())
+        FFOR (size_t, j, dissimDs->objs. size ())
+          if (dt. dissimAttr->matr. get (false, i, j, x))
+            vec << x;
+    }
+    if (vec. empty ())
+      throw runtime_error ("No data in dissimilarity " + strQuote (dt. dissimAttr->name));
+    Real s = 0.0;
+    for (const Real x : vec)
+      s += x;
+    const Real average = s / (Real) vec. size ();
+    ASSERT (average >= 0.0);
+    if (average == 0.0)
+      throw runtime_error ("Zero dissimilarity " + strQuote (dt. dissimAttr->name));
+    var_cast (dt). coeff = 1.0 / average;
+    ASSERT (dt. coeff > 0.0);
+    ASSERT (dt. coeff < INF);
+    maximize (decimals, dt. dissimAttr->decimals);
+  }
+  
+  dissimAttr = new PositiveAttr2 ("merged" /*name may be duplicate ??*/, * var_cast (dissimDs. get ()), decimals + 1);
+  FFOR (size_t, i, dissimDs->objs. size ())
+    FFOR (size_t, j, dissimDs->objs. size ())
+    {
+      Real s = 0.0;
+      size_t n = 0;
+      Real x = NaN;
+      for (const DissimType& dt : dissimTypes)
+        if (dt. dissimAttr->matr. get (false, i, j, x))
+        {
+          s += x * dt. coeff;
+          n++;
+        }
+      if (n)
+        var_cast (dissimAttr) -> matr. put (false, i, j, s / (Real) n);
+    }
 }
 
 
@@ -4222,7 +4316,7 @@ void DistTree::neighborJoin ()
 
 
 
-void DistTree::dissimDs2dissims (bool sparse)
+void DistTree::dissimDs2dissims ()
 {
   ASSERT (dissimDs. get ());
   ASSERT (dissimAttr);
@@ -4249,14 +4343,6 @@ void DistTree::dissimDs2dissims (bool sparse)
       var_cast (leaf) -> comment = obj->comment;
   }
 
-  // Sparsing
-  Vector<Pair<const Leaf*>> selectedPairs;
-  if (sparse)
-  {
-    ASSERT (dissims. empty ());  // => dissims do not affect selectedPairs
-    selectedPairs = getMissingLeafPairs_ancestors (0, false);
-  }
-
   // dissims[], mult_sum, dissim2_sum
   loadDissimPrepare (getDissimSize_max ());
   FFOR (size_t, row, dissimDs->objs. size ())
@@ -4276,9 +4362,6 @@ void DistTree::dissimDs2dissims (bool sparse)
       ASSERT (! p. same ());
       if (p. first->name > p. second->name)
         p. swap ();
-      if (sparse && ! selectedPairs. containsFast (p /*getObjName (name1, name2)*/))
-        continue;
-          // The graph of comparable objects remains connected (getConnected())
       addDissim (name1, name2, dissim);
     }
   }
@@ -4287,6 +4370,8 @@ void DistTree::dissimDs2dissims (bool sparse)
   {
     dissimDs. reset (nullptr);
     dissimAttr = nullptr;
+    for (DissimType& dt : dissimTypes)
+      dt. dissimAttr = nullptr;
   }
 
 
@@ -4561,6 +4646,14 @@ void DistTree::qc () const
     dissimDs->qc ();
     ASSERT (& dissimAttr->ds == dissimDs. get ());
   }
+  
+  IMPLY (! dissimTypes. empty (), dissimTypes. size () >= 2);
+  for (const DissimType& dt : dissimTypes)
+  {
+    dt. qc ();
+    ASSERT ((bool) dt. dissimAttr == (bool) dissimAttr);
+    IMPLY (dt. dissimAttr, & dissimAttr->ds == & dt. dissimAttr->ds);
+  }
 
 
   size_t leafDissims = 0;
@@ -4571,6 +4664,10 @@ void DistTree::qc () const
     {
       dissim. qc ();
       leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
+      if (dissimTypes. empty ())
+        { ASSERT (dissim. type == NO_INDEX); }
+      else
+        { ASSERT (dissim. type < dissimTypes. size ()); } 
     }
     
     if (! isNan (absCriterion))
@@ -4587,6 +4684,11 @@ void DistTree::qc () const
       if (const Leaf* leaf = dtNode->asLeaf ())
         leafDissims += leaf->pathObjNums. size ();
     }  
+  }
+  else
+  {
+    ASSERT (! dissimAttr);
+    ASSERT (dissimTypes. empty ());
   }
   
 

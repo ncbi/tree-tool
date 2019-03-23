@@ -26,6 +26,7 @@ struct ThisApplication : Application
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
+	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
     // Output
 	  addKey ("format", "newick|itree (makeDistTree output)|ASNT (textual ASN.1)", "newick");
 	  addFlag ("min_name", "Minimal leaf names for newick");
@@ -41,6 +42,7 @@ struct ThisApplication : Application
 	  const string dissimAttrName = getArg ("dissim");
 	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
 	  const string name_match     = getArg ("name_match");
+	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
 	  const string format         = getArg ("format");
   	const bool min_name         = getFlag ("min_name");
   	const bool order            = getFlag ("order");
@@ -49,7 +51,7 @@ struct ThisApplication : Application
       throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
     
 
-    DistTree tree (input_tree, dataFName, dissimAttrName, false);
+    DistTree tree (input_tree, dataFName, dissimAttrName);
     if (order)
       tree. sort ();
     if (! dataFName. empty ())
@@ -73,7 +75,7 @@ struct ThisApplication : Application
       }
     }
 
-   	cout << fixed << setprecision (6);  // PAR
+   	cout << fixed << setprecision ((int) decimals);  
     if (format == "newick")
       tree. printNewick (cout, false, min_name);
     else if (format == "itree")

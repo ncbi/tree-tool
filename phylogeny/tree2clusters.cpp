@@ -33,7 +33,7 @@ struct ThisApplication : Application
 		const string input_tree = getArg ("input_tree");
 				
     
-    const DistTree tree (input_tree, string (), string (), false); 
+    const DistTree tree (input_tree, string (), string ()); 
     tree. qc (); 
     
     for (const auto& it : tree. name2leaf)

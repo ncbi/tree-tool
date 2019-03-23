@@ -839,6 +839,23 @@ public:
 
 
 
+struct DissimType : Named
+{
+  const PositiveAttr2* dissimAttr {nullptr};
+    // In *DistTree::dissimDs
+  Real coeff {NaN};
+    // >= 0.0, < INF
+    
+  explicit DissimType (const PositiveAttr2* dissimAttr_arg);
+  void qc () const override;
+  void saveText (ostream &os) const override
+    { const ONumber on (os, dissimDecimals, true);
+      os << name << ' ' << coeff << endl; 
+    }
+}; 
+
+
+
 struct Dissim
 {
 	// Input
@@ -850,6 +867,8 @@ struct Dissim
   Real target {NaN};
     // Dissimilarity between leaf1 and leaf2; !isNan()
   Real mult {NaN};
+  size_t type {NO_INDEX};
+    // < DistTree::dissimTypes.size()
   
   // Output
   Real prediction {NaN};
@@ -975,6 +994,7 @@ public:
     
   constexpr static uint dissims_max {numeric_limits<uint>::max ()};
   Vector<Dissim> dissims;
+  Vector<DissimType> dissimTypes;
   Real mult_sum {0};
   Real dissim2_sum {0};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
@@ -993,19 +1013,13 @@ public:
   // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute dissimAttrName
   //                     may contain more objects than *this contains leaves
   //        dissimFName and dissimAttrName: both may be empty	  
-	DistTree (const string &treeFName,
-	          const string &dissimFName,
-	          const string &dissimAttrName,
-	          bool sparse);
-	  // Invokes: loadTreeFile(), loadDissimDs(), dissimDs2dissims()
-	DistTree (const string &dirName,
+	DistTree (const string &treeDirFName,
 	          const string &dissimFName,
 	          const string &dissimAttrName);
-	  // Input: dirName: contains the result of mdsTree.sh; ends with '/'
-	  // Invokes: loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
+	  // Input: treeDirName: if directory anme then contains the result of mdsTree.sh; ends with '/'
+	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
-	          const string &dissimAttrName,
-	          bool sparse);
+	          const string &dissimAttrName);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
@@ -1093,6 +1107,7 @@ private:
     // Output: dissimDs
     // invokes: dissimDs->setName2objNum()
   // Input: dissimDs
+  void mergeDissimAttrs ();
   bool getConnected ();
     // Find connected components of leaves where pairs have dissimilarities with positive multiplicity
     // Return: true <=> 1 connected component
@@ -1127,7 +1142,7 @@ public:
     // Invokes: reroot(true)
     // Time: O(n^3)
   //
-  void dissimDs2dissims (bool sparse);
+  void dissimDs2dissims ();
     // Update: dissimDs: delete
     // Output: dissims etc.
     //         if an object is absent in dissimDs then it is deleted from the Tree

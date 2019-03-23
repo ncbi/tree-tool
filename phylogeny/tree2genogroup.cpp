@@ -65,7 +65,7 @@ struct ThisApplication : Application
     ASSERT (genogroup_dist > 0);
 
     
-    DistTree tree (input_tree, string (), string (), false);
+    DistTree tree (input_tree, string (), string ());
     tree. sort ();  // For Genogroup::repr
     tree. qc ();    
       

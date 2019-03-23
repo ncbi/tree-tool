@@ -38,7 +38,7 @@ struct ThisApplication : Application
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + ", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree ending with '/'");
-	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
+	  addKey ("dissim", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
@@ -49,7 +49,6 @@ struct ThisApplication : Application
 	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
 	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deletign all the other leaves");
 	  addFlag ("check_keep", "Check that the names to be kept actually exist in the tree");  
-	  addFlag ("sparse", "Make the initial dissimilarity matrix sparse");
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
@@ -180,7 +179,6 @@ struct ThisApplication : Application
 		const bool   check_delete        = getFlag ("check_delete");
 		const string keepFName           = getArg ("keep");
 		const bool   check_keep          = getFlag ("check_keep");
-		const bool   sparse              = getFlag ("sparse");
 		      
 		const bool   optimize            = getFlag ("optimize");
 		const bool   whole               = getFlag ("whole");
@@ -218,7 +216,6 @@ struct ThisApplication : Application
 		const string output_dissim       = getArg ("output_dissim");
 		const bool   output_dist_etc     = getFlag ("output_dist_etc");
 		
-	  IMPLY (isDirName (input_tree), ! sparse);
 		ASSERT (! (reroot && ! reroot_at. empty ()));
     if (isDirName (dataFName))
     {
@@ -226,13 +223,10 @@ struct ThisApplication : Application
         throw runtime_error ("Input tree must be in " + dataFName);
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
-      if (sparse)
-        throw runtime_error ("Further sparsing of " + dataFName + " cannot be done");
-    //sparse = true;
     }
     else
-      if (dataFName. empty () != dissimAttrName. empty ())
-        throw runtime_error ("The both data file and the dissimilarity attribute must be either present or absent");
+      if (dataFName. empty () && ! dissimAttrName. empty ())
+        throw runtime_error ("Dissimilarity attribute with no data file");
     if (dissim_coeff <= 0)
       throw runtime_error ("dissim_coeff must be positive");
     if (dissim_power <= 0)
@@ -276,8 +270,6 @@ struct ThisApplication : Application
 
 
     DistTree::printParam (cout);
-    if (sparse)
-      cout << "Sparsing depth: " << sparsingDepth << endl;
     cout << "Root: " << (root_topological ? "topological" : "by length") << endl;
     cout << endl;
 
@@ -288,10 +280,8 @@ struct ThisApplication : Application
       tree. reset (isDirName (dataFName)
                      ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
                      : input_tree. empty ()
-                       ? new DistTree (dataFName, dissimAttrName, sparse)
-                       : isDirName (input_tree)
-                         ? new DistTree (input_tree, dataFName, dissimAttrName)
-                         : new DistTree (input_tree, dataFName, dissimAttrName, sparse)
+                       ? new DistTree (dataFName, dissimAttrName)
+                       : new DistTree (input_tree, dataFName, dissimAttrName)
                   );
     }
     ASSERT (tree. get ());
@@ -634,8 +624,6 @@ struct ThisApplication : Application
       cout << "Interior height = " << tree->getInteriorHeight () << endl;
       const Real bifurcatingInteriorBranching = tree->getBifurcatingInteriorBranching ();
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
-      if (sparse) 
-        cout << "# Sparsing leaves = " << pow (bifurcatingInteriorBranching, sparsingDepth + 1) << endl;
       // #dissimilarities = 2 #discernibles log_2(#discernibles) #sparsing_leaves
 
       {      
@@ -814,6 +802,51 @@ struct ThisApplication : Application
 		  	  << endl;
 		  }
     }
+    
+    
+  #if 0
+    {
+      Dataset ds;
+      for (const Dissim& dissim : tree->dissims)
+        if (dissim. valid ())
+        {
+          const size_t index = ds. appendObj ();
+          var_cast (ds. objs [index]) -> mult = dissim. mult;
+        }
+      auto dissimAttr = new PositiveAttr1 ("dissim", ds, 6);
+      auto distAttr   = new PositiveAttr1 ("dist",   ds, 6);
+      {
+        size_t i = 0;
+        for (const Dissim& dissim : tree->dissims)
+          if (dissim. valid ())
+          {
+            (*dissimAttr) [i] = dissim. target;
+            (*distAttr)   [i] = dissim. prediction;
+            i++;
+          }
+        ASSERT (i == ds. objs. size ());
+      }
+      const Sample sample (ds);
+      {
+        Space1<NumAttr1> sp (ds, false);  sp. reserve (1);
+        sp << dissimAttr;  
+        L2LinearNumPrediction lr (sample, sp, *distAttr);
+        lr. solveUnconstrained ();
+        if (verbose ())
+          lr. qc ();  
+        cout << lr. absCriterion << ' ' << lr. beta [0] << endl;
+      }
+      {
+        Space1<NumAttr1> sp (ds, false);  sp. reserve (1);
+        sp << distAttr;  
+        L2LinearNumPrediction lr (sample, sp, *dissimAttr);
+        lr. solveUnconstrained ();
+        if (verbose ())
+          lr. qc ();  
+        cout << lr. absCriterion << ' ' << lr. beta [0] << endl;
+      }
+    }
+  #endif
 
 
     if (! delete_outliers. empty ())  // Parameter is performed above
