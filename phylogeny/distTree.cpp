@@ -2473,6 +2473,7 @@ DistTree::DistTree (const string &dissimFName,
   // Initial tree topology: star topology 
   ASSERT (! root);
   auto root_ = new Steiner (*this, nullptr, NaN);
+  ASSERT (dissimDs. get ());
   for (const Obj* obj : dissimDs->objs)
     new Leaf (*this, root_, 0, obj->name);
   ASSERT (root);
@@ -4324,24 +4325,27 @@ void DistTree::dissimDs2dissims ()
   ASSERT (detachedLeaves. empty ());
 
 
-  const StringVector objNames (dissimDs->getObjNames ());
-  restrictLeaves (objNames, true);
   if (qc_on)
   {
-    const Set<string> leafNames (name2leaf);
-    ASSERT (objNames. containsFastAll (leafNames));
+    const StringVector objNames (dissimDs->getObjNames ());
+    if (! objNames. containsFastAll (name2leaf))
+      throw runtime_error ("Tree has more objects than the dataset");
   }
-  ASSERT (name2leaf. size () <= dissimDs->objs. size ());
 
   // Leaf::comment
   FFOR (size_t, objNum, dissimDs->objs. size ())
   {
     const Obj* obj = dissimDs->objs [objNum];
     const Leaf* leaf = findPtr (name2leaf, obj->name);
-    IMPLY (! extraObjs (), leaf);
     if (leaf)
       var_cast (leaf) -> comment = obj->comment;
+    else
+      throw runtime_error ("Object " + strQuote (obj->name) + " is not in the tree");
   }
+
+  if (name2leaf. size () != dissimDs->objs. size ())
+    throw runtime_error ("Mismatch of the tree objects and the dataset");
+
 
   // dissims[], mult_sum, dissim2_sum
   loadDissimPrepare (getDissimSize_max ());
@@ -4366,13 +4370,10 @@ void DistTree::dissimDs2dissims ()
     }
   }
   
-  if (! extraObjs ())
-  {
-    dissimDs. reset (nullptr);
-    dissimAttr = nullptr;
-    for (DissimType& dt : dissimTypes)
-      dt. dissimAttr = nullptr;
-  }
+  dissimDs. reset (nullptr);
+  dissimAttr = nullptr;
+  for (DissimType& dt : dissimTypes)
+    dt. dissimAttr = nullptr;
 
 
   setPaths ();

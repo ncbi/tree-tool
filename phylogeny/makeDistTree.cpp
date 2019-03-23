@@ -37,7 +37,7 @@ struct ThisApplication : Application
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
-	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + ", may contain more or less objects than <input_tree> does; or directory with data for an incremental tree ending with '/'");
+	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
 	  addKey ("dissim", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");

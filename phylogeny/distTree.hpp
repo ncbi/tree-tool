@@ -1182,8 +1182,6 @@ public:
                               Tree::LcaBuffer &buf) const;
     // Return: !nullptr
     // Input: lcaName: <leaf1 name> <objNameSeparator> <leaf2 name>
-  size_t extraObjs () const
-    { return dissimDs. get () ? dissimDs->objs. size () - name2leaf. size () : 0; }
   size_t getDissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
   size_t getSparseDissims_size () const
