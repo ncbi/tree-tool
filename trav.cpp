@@ -95,8 +95,7 @@ struct ThisApplication : Application
       replaceStr (thisCmd, "%n", toString (gen->prog. n));  
       if (verbose ())
       	cerr << thisCmd << endl;
-      const int exitStatus_ = system (thisCmd. c_str ());
-      const int exitStatus = WEXITSTATUS (exitStatus_);
+      const int exitStatus = system (thisCmd. c_str ());
       if (exitStatus)
       {
         if (errors. get ())
@@ -106,7 +105,7 @@ struct ThisApplication : Application
 	          ERROR;
         }
         else
-          throw runtime_error ("item=" + item + "  status=" + toString (exitStatus) + "\n" + thisCmd);
+          throw runtime_error ("item=" + item + "  status=" + toString (WEXITSTATUS (exitStatus)) + "\n" + thisCmd);
       }
 
 	    FOR (uint, i, blank_lines)
