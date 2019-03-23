@@ -1271,7 +1271,9 @@ struct Named : Root
     // !empty(), no spaces at the ends, printable ASCII characeters
 
   Named () = default;
-  explicit Named (const string &name_arg);   
+  explicit Named (const string &name_arg)
+    : name (name_arg) 
+    {}
   Named* copy () const override
     { return new Named (*this); } 
   void qc () const override;

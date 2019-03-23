@@ -1076,17 +1076,6 @@ void Root::saveFile (const string &fName) const
 
 // Named
 
-Named::Named (const string& name_arg)
-: name (name_arg) 
-{
-#ifndef NDEBUG
-  if (! goodName (name))
-    ERROR_MSG ("Bad name: " + strQuote (name_arg));
-#endif
-}
-
-
-
 void Named::qc () const
 {
   if (! qc_on)
