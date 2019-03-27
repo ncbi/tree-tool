@@ -157,7 +157,7 @@ HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 HYBRID=""
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
-	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 
 DELETE=""
@@ -195,14 +195,12 @@ if [ -e $INC/outlier-genogroup ]; then
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
-if [ -e $INC/outlier-criterion ]; then
-  echo ""
-  echo "Database: criterion outlier ..."
-  wc -l $INC/outlier-criterion
-  $INC/objects_in_tree.sh $INC/outlier-criterion null
-  $THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
-  mv $INC/outlier-criterion $INC/hist/outlier-criterion.$VER
-fi
+echo ""
+echo "Database: criterion outlier ..."
+wc -l $INC/outlier-criterion
+$INC/objects_in_tree.sh $INC/outlier-criterion null
+$THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
+mv $INC/outlier-criterion $INC/hist/outlier-criterion.$VER
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   echo ""

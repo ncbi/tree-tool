@@ -37,7 +37,7 @@ echo ""
 echo ""
 HYBRID=""
 if [ $DELETE_HYBRIDS -eq 1 ]; then
-  HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid  -delete_all_hybrids"
+  HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
 fi
 VARIANCE=linExp
 DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"

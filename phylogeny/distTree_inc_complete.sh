@@ -71,7 +71,7 @@ HYBRID=""
 HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
-	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -delete_all_hybrids  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 VARIANCE=`cat $INC/variance`
 $THIS/makeDistTree  -threads 5  -data data  -dissim cons  -variance $VARIANCE  -optimize  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
