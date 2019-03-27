@@ -3,9 +3,12 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "#1: go"
-  echo "Time: 14 min."
+  echo "Time: 31 min."
   exit 1
 fi
+
+
+TMP=`mktemp`
 
 
 #if [ 1 == 0 ]; then  
@@ -69,11 +72,9 @@ diff prot-identical_comm.outliers data/prot-identical_comm.outliers
 rm prot-identical_comm.outliers
 diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
-TMP=`mktemp`
 grep OUTPUT -A 1      prot-identical_comm.distTree > $TMP.1
 grep OUTPUT -A 1 data/prot-identical_comm.distTree > $TMP.2
 diff $TMP.1 $TMP.2
-rm $TMP*
 rm prot-identical_comm.distTree
 
 echo ""
@@ -92,16 +93,57 @@ $THIS/makeDistTree -data data/inc.ITS/  -variance lin  -optimize  -skip_len  -su
 
 echo ""
 echo "Saccharomyces hybrids ..."
-$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -optimize  -subgraph_iter_max 2  -reinsert \
-  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -delete_all_hybrids  -dissim_boundary 0.675 \
+$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -optimize  -subgraph_iter_max 2  \
+  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -dissim_boundary 0.675 \
   -delete_outliers Saccharomyces.outliers  -max_outlier_num 1 \
   > /dev/null
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
 rm Saccharomyces.hybrid
 diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
+cut -f 1,2,3,7,8,9,10,11,12 Saccharomyces.hybrid_parent_pairs > Saccharomyces.hybrid_parent_pairs.stable
 rm Saccharomyces.hybrid_parent_pairs
 diff Saccharomyces.outliers data/Saccharomyces.outliers
 rm Saccharomyces.outliers
+
+
+echo ""
+echo ""
+echo "Two dissimilarity types ..."
+
+echo ""
+echo "prot-identical_comm: subgraphs ..."
+makeDistTree  -qc  -data data/prot-identical_comm2  -optimize  -output_dissim_coeff prot-identical_comm2.dissim_coeff \
+  -delete_outliers prot-identical_comm2.outliers \
+  -delete_hybrids prot-identical_comm2.hybrids \
+  | grep -v '^CHRON: ' > prot-identical_comm2.distTree
+diff prot-identical_comm2.dissim_coeff data/prot-identical_comm2.dissim_coeff
+rm prot-identical_comm2.dissim_coeff
+diff prot-identical_comm2.outliers data/prot-identical_comm2.outliers
+rm prot-identical_comm2.outliers
+diff prot-identical_comm2.hybrids data/prot-identical_comm2.hybrids
+rm prot-identical_comm2.hybrids
+grep OUTPUT -A 1      prot-identical_comm2.distTree > $TMP.1
+grep OUTPUT -A 1 data/prot-identical_comm2.distTree > $TMP.2
+diff $TMP.1 $TMP.2
+rm prot-identical_comm2.distTree
+
+echo ""
+echo "Saccharomyces hybrids ..."
+$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -optimize  -subgraph_iter_max 2  \
+  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
+  -delete_outliers Saccharomyces2.outliers  -max_outlier_num 1 \
+  > /dev/null
+diff Saccharomyces2.hybrid data/Saccharomyces2.hybrid
+rm Saccharomyces2.hybrid
+diff Saccharomyces2.hybrid_parent_pairs data/Saccharomyces2.hybrid_parent_pairs
+cut -f 1,2,3,7,8,9,10,11,12 Saccharomyces2.hybrid_parent_pairs > Saccharomyces2.hybrid_parent_pairs.stable
+rm Saccharomyces2.hybrid_parent_pairs
+diff Saccharomyces2.outliers data/Saccharomyces2.outliers
+rm Saccharomyces2.outliers
+
+diff Saccharomyces.hybrid_parent_pairs.stable Saccharomyces2.hybrid_parent_pairs.stable
+rm Saccharomyces.hybrid_parent_pairs.stable Saccharomyces2.hybrid_parent_pairs.stable
+diff data/Saccharomyces2.outliers data/Saccharomyces.outliers
 
 
 if [ 1 == 0 ]; then
@@ -117,3 +159,5 @@ if [ 1 == 0 ]; then
 	rm prot-identical_comm.distTree-whole
 fi
 
+
+rm $TMP*

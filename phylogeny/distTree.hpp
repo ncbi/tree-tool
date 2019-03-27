@@ -64,10 +64,10 @@ inline VarianceType str2varianceType (const string &s)
 // Input: varianceType
 inline Real dissim2mult (Real dissim)
   { switch (varianceType)
-    { case varianceType_lin:    return positive (dissim) ? 1 / dissim : 0; 
-      case varianceType_sqr:    return positive (dissim) ? 1 / sqr (dissim) : 0; 
+    { case varianceType_lin:    return positive (dissim) ? 1.0 / dissim : 0.0; 
+      case varianceType_sqr:    return positive (dissim) ? 1.0 / sqr (dissim) : 0.0; 
       case varianceType_exp:    return exp (- 2 * max (dissim, 0.0)); 
-      case varianceType_linExp: return positive (dissim) ? 1 / (exp (dissim) - 1) : 0; 
+      case varianceType_linExp: return positive (dissim) ? 1.0 / (exp (dissim) - 1) : 0.0; 
     }  
     throw logic_error ("Unknown dissimilarity variance");
   }
@@ -75,10 +75,10 @@ inline Real dissim2mult (Real dissim)
   //         0 <=> dissim = INF
 inline Real dissim_max ()
   { switch (varianceType)
-    { case varianceType_lin:    return 1 / epsilon;
-      case varianceType_sqr:    return 1 / sqrt (epsilon);
+    { case varianceType_lin:    return 1.0 / epsilon;
+      case varianceType_sqr:    return 1.0 / sqrt (epsilon);
       case varianceType_exp:    return - 0.5 * log (epsilon);
-      case varianceType_linExp: return log (1 / epsilon + 1);
+      case varianceType_linExp: return log (1.0 / epsilon + 1.0);
     }  
     throw logic_error ("Unknown dissimilarity variance");
   }
@@ -116,19 +116,23 @@ struct Neighbor
 { 
 	const Leaf* leaf {nullptr}; 
 	  // !nullptr
+	size_t dissimType {NO_INDEX};
 	Real target {NaN};
 	  // > 0
 
 	  
 	Neighbor (const Leaf* leaf_arg,
+	          size_t dissimType_arg,
 	          Real target_arg);
-	explicit Neighbor (const Leaf* leaf_arg);
+  Neighbor (const Leaf* leaf_arg,
+            size_t dissimType_arg);
 
 	  
-	bool operator< (const Neighbor &other) const
-	  { return leaf < other. leaf; }
+	bool operator< (const Neighbor &other) const;
 	bool operator== (const Neighbor &other) const
-	  { return leaf == other. leaf; }
+	  { return    leaf       == other. leaf
+	           && dissimType == other. dissimType; 
+	  }
 };
 
 
@@ -154,6 +158,7 @@ struct Triangle
 	array<Parent, 2> parents;	
 	bool child_hybrid {false};
 		// Cause of the triangle inequality violation
+	size_t dissimType {NO_INDEX};
 
 	  
 	Triangle (const Leaf* child_arg,
@@ -161,10 +166,11 @@ struct Triangle
 				  	const Leaf* parent1,
 				  	const Leaf* parent2,
 				  	Real parent1_dissim,
-				  	Real parent2_dissim);
+				  	Real parent2_dissim,
+				  	size_t dissimType_arg);
 	void qc () const;
 	void print (ostream &os) const;
-	static constexpr const char* format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
+	static constexpr const char* format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> [<dissimilarity type>]"};
 	
 	
 	Real parentsDissim () const
@@ -502,7 +508,7 @@ public:
   // For DistTree::findHybrids()
   Vector<Neighbor> badNeighbors;
     // Neighbor::leaf is unique
-  Real hybridness {1};
+  Real hybridness {1.0};
     // >= 1    
     // = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
     // > 1 => triangle inequality violation
@@ -517,12 +523,6 @@ public:
 	      Steiner* parent_arg,
 	      Real len_arg,
 	      const string &name_arg);
-#if 0
-	Leaf (DistTree &tree,
-	      Leaf* other,
-	      const string &name_arg);
-	  // Invokes: collapse(other)
-#endif
 	void qc () const final;
   void saveContent (ostream& os) const final
     { DTNode::saveContent (os);
@@ -586,10 +586,11 @@ private:
 public:	
 #if 0
 	bool possibleHybrid () const
-	  { return getDiscernible () -> len == 0; }
+	  { return getDiscernible () -> len == 0.0; }
 #endif
-	const Neighbor* findNeighbor (const Leaf* leaf) const
-	  { const size_t i = badNeighbors. binSearch (Neighbor (leaf));
+	const Neighbor* findNeighbor (const Leaf* leaf,
+	                              size_t dissimType) const
+	  { const size_t i = badNeighbors. binSearch (Neighbor (leaf, dissimType));
     	if (i == NO_INDEX)    		
     		return nullptr;
     	return & badNeighbors [i];
@@ -599,7 +600,8 @@ public:
 	                    const Leaf* &parent1,
 	                    const Leaf* &parent2,
 	                    Real &parent1_dissim,
-	                    Real &parent2_dissim) const;
+	                    Real &parent2_dissim,
+	                    size_t &dissimType) const;
 		// Return: 0: not a hybrid
 		//         > 1: hybrid
 		//                = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
@@ -866,7 +868,9 @@ struct Dissim
   //
   Real target {NaN};
     // Dissimilarity between leaf1 and leaf2; !isNan()
+    // < INF
   Real mult {NaN};
+    // >= 0.0
   size_t type {NO_INDEX};
     // < DistTree::dissimTypes.size()
   
@@ -880,7 +884,8 @@ struct Dissim
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg,
           Real target_arg = NaN,
-          Real mult_arg = 0.0);
+          Real mult_arg = NaN,
+          size_t type_arg = NO_INDEX);
   Dissim () = default;
   void qc () const;
 
@@ -915,10 +920,11 @@ struct Dissim
     // Return: getAbsCriterion()
     // Output: prediction, Steiner::pathObjNums
     
-  bool operator< (const Dissim &other) const
-    { return Pair<const Leaf*> (leaf1, leaf2) < Pair<const Leaf*> (other. leaf1, other. leaf2); }
+  bool operator< (const Dissim &other) const;
   bool operator== (const Dissim &other) const
-    { return Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2); }
+   { return    Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2)
+            && type == other. type; 
+   }
 };
 
 
@@ -995,8 +1001,9 @@ public:
   constexpr static uint dissims_max {numeric_limits<uint>::max ()};
   Vector<Dissim> dissims;
   Vector<DissimType> dissimTypes;
-  Real mult_sum {0};
-  Real dissim2_sum {0};
+    // Product(DissimType::coeff) = 1.0
+  Real mult_sum {0.0};
+  Real dissim2_sum {0.0};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NaN};
     // = L2LinearNumPrediction::absCriterion  
@@ -1117,17 +1124,13 @@ private:
     // Return: VectorPtr::size() >= 2
     // Invokes: Leaf->DisjointCluster
     // Time: ~ O(p)
-private:
   size_t leafCluster2discernibles (const LeafCluster &leafCluster);
     // Return: Number of indiscernible leaves
     // Output: Leaf::len = 0, Leaf::discernible = false, topology
     // Invokes: cleanTopology()
     // Time: O(n)
-public:
   size_t setDiscernibles_ds ();
     // Invokes: leafCluster2discernibles()
-  size_t setDiscernibles ();
-    // Invokes: getIndiscernibles(), leafCluster2discernibles()
   void cleanTopology ();
     // Time: O(n)
   void setGlobalLen ();
@@ -1151,16 +1154,19 @@ public:
     // Output: Dissim::target
   bool addDissim (Leaf* leaf1,
                   Leaf* leaf2,
-                  Real dissim);
+                  Real dissim,
+                  size_t type);
 	  // Return: dissim is added
 	  // Update: Dissim, mult_sum, dissim2_sum
     // Append: dissims[], Leaf::pathObjNums
   bool addDissim (const string &name1,
                   const string &name2,
-                  Real dissim)
+                  Real dissim,
+                  size_t type)
     { return addDissim ( var_cast (findPtr (name2leaf, name1))
     	                 , var_cast (findPtr (name2leaf, name2))
     	                 , dissim
+    	                 , type
     	                 );
     }
   void setPaths ();
@@ -1172,6 +1178,8 @@ public:
 	  // Invokes: getIndiscernibles()
 
 
+  size_t dissimTypesNum () const
+    { return dissimTypes. empty () ? 1 : dissimTypes. size (); }
   void deleteLeaf (TreeNode* leaf,
                    bool deleteTransientAncestor) final;
     // Requires: !optimizable()
@@ -1182,8 +1190,10 @@ public:
                               Tree::LcaBuffer &buf) const;
     // Return: !nullptr
     // Input: lcaName: <leaf1 name> <objNameSeparator> <leaf2 name>
-  size_t getDissimSize_max () const
+  size_t getOneDissimSize_max () const
     { return name2leaf. size () * (name2leaf. size () - 1) / 2; }	
+  size_t getDissimSize_max () const
+    { return getOneDissimSize_max () * dissimTypesNum (); }	
   size_t getSparseDissims_size () const
     { return 7 * getPathObjNums_size (); }  // PAR
   Set<const DTNode*> getDiscernibles () const;
@@ -1201,27 +1211,30 @@ public:
 	Real getDissim_ave () const
 	  { WeightedMeanVar mv;
 	    for (const Dissim& dissim : dissims)
-	      mv. add (dissim. target, dissim. mult);
+	      if (dissim. valid ())
+	        mv. add (dissim. target, dissim. mult);
 	    return mv. getMean ();
 	  }
   Real getAbsCriterion_ave () const
     { return absCriterion / (Real) dissims. size (); }
     // Approximate: includes !Dissim::valid() ?? 
-  Prob getUnexplainedFrac () const
-    { return absCriterion / dissim2_sum; }
-  Real getErrorDensity () const
-    { const Prob r = 1 - getUnexplainedFrac ();   
-      return sqrt ((1 - r) / r);   
+  Prob getUnexplainedFrac (Real unoptimizable) const
+    { return (absCriterion - unoptimizable) / (dissim2_sum - unoptimizable); }
+  Real getErrorDensity (Real unoptimizable) const
+    { const Prob r = 1.0 - getUnexplainedFrac (unoptimizable);   
+      return sqrt ((1.0 - r) / r);   
     }
     // Requires: interpretation <= linear variance of dissimilarities  ??
   string absCriterion2str () const
     { return real2str (absCriterion, criterionDecimals); }
-  void reportErrors (ostream &os) const
+  void reportErrors (ostream &os,
+                     Real unoptimizable = 0.0) const
     { const ONumber on (os, criterionDecimals, false);  
-      os << "absCriterion = " << absCriterion 
-         << "  Error density = " << getErrorDensity () * 100 << " %"
+      os << "absCriterion = " << absCriterion  - unoptimizable
+         << "  Error density = " << getErrorDensity (unoptimizable) * 100 << " %"
          << endl;
     }    
+  void saveDissimCoeffs (const string &fName) const;
   void saveFeatureTree (const string &fName) const;
 
 private:
@@ -1239,6 +1252,8 @@ private:
     // Time: O(p log(n) / threads_max)
   void qcPredictionAbsCriterion () const;
 public:
+  size_t setDiscernibles ();
+    // Invokes: getIndiscernibles(), leafCluster2discernibles()
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len
@@ -1322,6 +1337,14 @@ private:
   bool deleteLenZero (DTNode* node);
     // Return: success
 public:
+  void optimizeDissimCoeffs ();
+private:
+  void normalizeDissimCoeffs ();
+    // Make product(DissimType::coeff) = 1.0
+public:
+  Dataset getDissimDataset (Real &unoptimizable) const;
+    // Output: unoptimiable - part of absCriterion
+    // Requires: dissims.searchSorted
   void removeLeaf (Leaf* leaf,
                    bool optimizeP);
     // If the number of left leaves <= 1 then throw (--> return bool ??)

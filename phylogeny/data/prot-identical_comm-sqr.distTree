@@ -28,8 +28,6 @@ Ave. radius: 0.455852
 
 OUTPUT:
 absCriterion = 18.498  Error density = 2.094 %
-absCriterion [0] = 0.038  Error density [0] = 2.948 %  Fraction = 0.104 %
-absCriterion [1] = 18.460  Error density [1] = 2.093 %  Fraction = 99.896 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

@@ -64,19 +64,20 @@ struct ThisApplication : Application
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  	
-	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  // obsolete ??
+	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  
 	  addKey ("max_outlier_num", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
 	  
 	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
 	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (Triangle::format));
-	  addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
+	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
 
 	  addFlag ("noqual", "Do not compute quality statitistics");
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
+	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
 	  addKey ("output_dist", "Output file with all or <dist_request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
@@ -86,6 +87,7 @@ struct ThisApplication : Application
 	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns <prediction> <absCriterion> to the file <output_dissim>");
+    addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
 	}
 	
 	
@@ -97,7 +99,7 @@ struct ThisApplication : Application
 	// Return: true <=> hybrids are deleted
 	// Append: *hybridDissimRequests
 	{
-    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1, hybridDissimRequests));  // PAR 
+    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1.0, hybridDissimRequests));  // PAR 
     if (hybridDissimRequests)
       cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests->size () << endl;
 
@@ -200,12 +202,13 @@ struct ThisApplication : Application
                  dissim_boundary     = str2real (getArg ("dissim_boundary"));
 		             hybridness_min      = str2real (getArg ("hybridness_min"));
 		const string delete_hybrids      = getArg ("delete_hybrids");
-		const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
+	//const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
 		const string hybrid_parent_pairs = getArg ("hybrid_parent_pairs");
 		
 		const bool   noqual              = getFlag ("noqual");
 
 		const string output_tree         = getArg ("output_tree");
+		const string output_dissim_coeff = getArg ("output_dissim_coeff");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
 		const string output_dist         = getArg ("output_dist");
@@ -215,6 +218,7 @@ struct ThisApplication : Application
 		const bool   refresh_dissim      = getFlag ("refresh_dissim");
 		const string output_dissim       = getArg ("output_dissim");
 		const bool   output_dist_etc     = getFlag ("output_dist_etc");
+		const string output_data         = getArg ("output_data");
 		
 		ASSERT (! (reroot && ! reroot_at. empty ()));
     if (isDirName (dataFName))
@@ -258,8 +262,8 @@ struct ThisApplication : Application
     	throw runtime_error ("dissim_boundary must be > 0");
     if (hybridness_min <= 1)
     	throw runtime_error ("hybridness_min must be > 1");
-    if (delete_all_hybrids && delete_hybrids. empty ())
-    	throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
+  //if (delete_all_hybrids && delete_hybrids. empty ())
+    //throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
     if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())      
     	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
     if (max_outlier_num && delete_outliers. empty ())
@@ -443,6 +447,7 @@ struct ThisApplication : Application
             	    cerr << " / " << iter_max; 
             	  cerr << " ..." << endl;
             		const Real absCriterion_old = tree->absCriterion;
+	              tree->optimizeDissimCoeffs ();  
 	              tree->optimizeLargeSubgraphs ();  
               //hybridDeleted = false;
 	              if (hybridF. get ())
@@ -483,6 +488,7 @@ struct ThisApplication : Application
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-10, outlier_min));  // PAR  
 	      const ONumber on (cout, criterionDecimals, false);  
 	      cout << "# Outliers: " << outliers. size () << endl;
+        OFStream f (delete_outliers);
 	      if (! outliers. empty ())
 	      {
   	      if (verbose ())
@@ -496,7 +502,6 @@ struct ThisApplication : Application
     	    }
           cerr << "Deleting outliers ..." << endl;
           {
-            OFStream f (delete_outliers);
             Progress prog (outliers. size ());
             size_t removed = 0;
             for (const Leaf* leaf : outliers)
@@ -525,7 +530,8 @@ struct ThisApplication : Application
 
       cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
-      tree->printAbsCriterion_halves ();  
+      if (verbose ())
+        tree->printAbsCriterion_halves ();  
       cout << endl;
     }
     
@@ -572,9 +578,24 @@ struct ThisApplication : Application
     tree->setFrequentDegree (rareProb); 
 
     tree->saveFile (output_tree); 
+    tree->saveDissimCoeffs (output_dissim_coeff);
     tree->saveFeatureTree (output_feature_tree);
 
 
+    if (! output_data. empty ())
+    {
+      tree->dissims. sort ();
+      Real unoptimizable = NaN;
+      const Dataset ds (tree->getDissimDataset (unoptimizable));
+      OFStream of (output_data + dmSuff);
+      const ONumber on (of, criterionDecimals, false);  
+      cout << "Unoptimizable absCriterion = " << unoptimizable << endl;
+      tree->reportErrors (cout, unoptimizable);
+      ds. saveText (of);
+      cout << endl;
+    }
+    
+    
   #if 0
     {
       Real arcLen_min = NaN;
@@ -804,51 +825,6 @@ struct ThisApplication : Application
     }
     
     
-  #if 0
-    {
-      Dataset ds;
-      for (const Dissim& dissim : tree->dissims)
-        if (dissim. valid ())
-        {
-          const size_t index = ds. appendObj ();
-          var_cast (ds. objs [index]) -> mult = dissim. mult;
-        }
-      auto dissimAttr = new PositiveAttr1 ("dissim", ds, 6);
-      auto distAttr   = new PositiveAttr1 ("dist",   ds, 6);
-      {
-        size_t i = 0;
-        for (const Dissim& dissim : tree->dissims)
-          if (dissim. valid ())
-          {
-            (*dissimAttr) [i] = dissim. target;
-            (*distAttr)   [i] = dissim. prediction;
-            i++;
-          }
-        ASSERT (i == ds. objs. size ());
-      }
-      const Sample sample (ds);
-      {
-        Space1<NumAttr1> sp (ds, false);  sp. reserve (1);
-        sp << dissimAttr;  
-        L2LinearNumPrediction lr (sample, sp, *distAttr);
-        lr. solveUnconstrained ();
-        if (verbose ())
-          lr. qc ();  
-        cout << lr. absCriterion << ' ' << lr. beta [0] << endl;
-      }
-      {
-        Space1<NumAttr1> sp (ds, false);  sp. reserve (1);
-        sp << distAttr;  
-        L2LinearNumPrediction lr (sample, sp, *dissimAttr);
-        lr. solveUnconstrained ();
-        if (verbose ())
-          lr. qc ();  
-        cout << lr. absCriterion << ' ' << lr. beta [0] << endl;
-      }
-    }
-  #endif
-
-
     if (! delete_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "delete_outliers");  
     if (! delete_hybrids. empty ())  // Parameter is performed above
