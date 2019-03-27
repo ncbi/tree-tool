@@ -101,6 +101,7 @@ struct ThisApplication : Application
 	  get (s);
 	*/
 	
+	#if 0
 	  cout << max (1.0, 2.0) << ' ' << max (2.0, 0.0/0.0) << ' ' << max (0.0/0.0, 2.0) << ' ' << max (0.0/0.0, 0.0/0.0) << endl;
 	  
 	  Vector<int> vec;
@@ -117,6 +118,18 @@ struct ThisApplication : Application
 	  Vector<int> vec3 (move (vec));
 	  cout << vec3. searchSorted << ' ' << vec3. size () << endl;
 	  cout << vec.  searchSorted << ' ' << vec.  size () << endl;
+	#endif
+	
+	  cout << to_string (5) << endl;
+	  cout << to_string (5.5) << endl;
+	  cout << to_string (-5) << endl;
+	  cout << to_string (5.5e5) << endl;
+	  cout << endl;
+	  
+	  cout << toString (5) << endl;
+	  cout << toString (5.5) << endl;
+	  cout << toString (-5) << endl;
+	  cout << toString (5.5e5) << endl;
   }
 };
 
