@@ -9,6 +9,7 @@ fi
 
 
 TMP=`mktemp`
+echo $TMP
 
 
 #if [ 1 == 0 ]; then  
@@ -16,15 +17,16 @@ echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
 $THIS/../dm/mdsTree.sh data/Enterobacteriaceae Conservation 2 &> /dev/null
-$THIS/makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
+$THIS/makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim_attr Conservation  -optimize  -output_tree Enterobacteriaceae.tree > /dev/null
 rm -r data/Enterobacteriaceae.dir/
 
 echo ""
 echo "To Newick ..."
-$THIS/printDistTree  -qc  -data data/Enterobacteriaceae  -dissim Conservation  Enterobacteriaceae.tree  -order  -decimals 4 > Enterobacteriaceae.nw
+$THIS/printDistTree  -qc  -data data/Enterobacteriaceae  -dissim_attr Conservation  Enterobacteriaceae.tree  -order  -decimals 4 > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
-rm Enterobacteriaceae.tree
 rm Enterobacteriaceae.nw
+
+rm Enterobacteriaceae.tree
 
 echo ""
 echo "From Newick ..."
@@ -144,6 +146,29 @@ rm Saccharomyces2.outliers
 diff Saccharomyces.hybrid_parent_pairs.stable Saccharomyces2.hybrid_parent_pairs.stable
 rm Saccharomyces.hybrid_parent_pairs.stable Saccharomyces2.hybrid_parent_pairs.stable
 diff data/Saccharomyces2.outliers data/Saccharomyces.outliers
+
+
+echo ""
+echo ""
+echo "Many dissimilarity types ..."
+makeDistTree  -qc  -data data/Wolf9  -optimize  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
+diff Wolf9.coeff data/Wolf9.coeff
+rm Wolf9.coeff
+A=`grep -w ^Unoptimizable -A 1 $TMP.1 | tail -1`
+makeDistTree  -qc  -data Wolf9-out  -dissim_attr dissim  -var_attr var  -optimize  -output_tree Wolf9-out.tree 1> $TMP.2 2> /dev/null
+B=`grep -w ^OUTPUT -A 1 $TMP.2 | tail -1`
+if [ "$A" != "$B" ]; then
+  echo "$A"
+  echo "$B"
+  exit 1
+fi
+printDistTree  -qc  Wolf9.tree      -order  -decimals 4  -min_name > Wolf9.nw
+printDistTree  -qc  Wolf9-out.tree  -order  -decimals 4  -min_name > Wolf9-out.nw
+diff Wolf9.nw Wolf9-out.nw
+rm Wolf9.nw Wolf9-out.nw
+rm Wolf9.tree Wolf9-out.tree
+rm Wolf9-out.dm
+
 
 
 if [ 1 == 0 ]; then

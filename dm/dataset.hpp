@@ -1144,6 +1144,8 @@ public:
   const Attr* name2attr (const string &attrName) const
     { return attrName. empty () ? nullptr : findPtr (name2attr_, attrName); }
     // Return: nullptr <=> not found
+  string findNewAttrName (const string &namePrefix) const;
+    // Return: namePrefix + "_" + <number>
 private:
   void addAttr (Attr* attr);  
   friend struct Attr;

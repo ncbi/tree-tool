@@ -74,7 +74,7 @@ if [ "$HYBRIDNESS_MIN" != 0 ]; then
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 VARIANCE=`cat $INC/variance`
-$THIS/makeDistTree  -threads 5  -data data  -dissim cons  -variance $VARIANCE  -optimize  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
+$THIS/makeDistTree  -threads 5  -data data  -dissim_attr cons  -variance $VARIANCE  -optimize  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
 if [ $DB == 1 ]; then
   echo ""

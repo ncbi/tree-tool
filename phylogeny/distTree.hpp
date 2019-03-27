@@ -996,6 +996,8 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
+  const PositiveAttr2* varAttr {nullptr};
+    // In *dissimDs
 public:
     
   constexpr static uint dissims_max {numeric_limits<uint>::max ()};
@@ -1017,16 +1019,18 @@ private:
 public:
 
 
-  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attribute dissimAttrName
+  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attributes dissimAttrName and varAttrName
   //                     may contain more objects than *this contains leaves
-  //        dissimFName and dissimAttrName: both may be empty	  
+  //        dissimFName, dissimAttrName, varAttrName: all may be empty	  
 	DistTree (const string &treeDirFName,
 	          const string &dissimFName,
-	          const string &dissimAttrName);
+	          const string &dissimAttrName,
+	          const string &varAttrName);
 	  // Input: treeDirName: if directory anme then contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
-	          const string &dissimAttrName);
+	          const string &dissimAttrName,
+	          const string &varAttrName);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
@@ -1110,7 +1114,8 @@ private:
   size_t getPathObjNums_size () const
     { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR
   void loadDissimDs (const string &dissimFName,
-                     const string &dissimAttrName);
+                     const string &dissimAttrName,
+                     const string &varAttrName);
     // Output: dissimDs
     // invokes: dissimDs->setName2objNum()
   // Input: dissimDs
@@ -1141,7 +1146,7 @@ private:
   void neighborJoin ();
     // Greedy
     // Assumes: Obj::mult = 1
-    // Requires: complete *dissimAttr, isStar()
+    // Requires: isStar()
     // Invokes: reroot(true)
     // Time: O(n^3)
   //
@@ -1155,6 +1160,7 @@ private:
   bool addDissim (Leaf* leaf1,
                   Leaf* leaf2,
                   Real dissim,
+                  Real var,
                   size_t type);
 	  // Return: dissim is added
 	  // Update: Dissim, mult_sum, dissim2_sum
@@ -1162,10 +1168,12 @@ private:
   bool addDissim (const string &name1,
                   const string &name2,
                   Real dissim,
+                  Real var,
                   size_t type)
     { return addDissim ( var_cast (findPtr (name2leaf, name1))
     	                 , var_cast (findPtr (name2leaf, name2))
     	                 , dissim
+    	                 , var
     	                 , type
     	                 );
     }
@@ -1342,8 +1350,9 @@ private:
   void normalizeDissimCoeffs ();
     // Make product(DissimType::coeff) = 1.0
 public:
-  Dataset getDissimDataset (Real &unoptimizable) const;
-    // Output: unoptimiable - part of absCriterion
+  Dataset getDissimVarDataset (Real &unoptimizable) const;
+    // Return: attributes: "dissim", "var"
+    // Output: unoptimizable - part of absCriterion
     // Requires: dissims.searchSorted
   void removeLeaf (Leaf* leaf,
                    bool optimizeP);

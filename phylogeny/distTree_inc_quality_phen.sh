@@ -51,7 +51,7 @@ else
 	$THIS/../list2pairs $TMP.test > $TMP.pairs
 	$THIS/distTree_inc_request2dissim.sh $1 $TMP.pairs $TMP.dissim
 	$THIS/../dm/pairs2attr2 $TMP.dissim 1 cons 6 -distance > $TMP.dm
-	$THIS/makeDistTree  -data $TMP  -dissim cons  -optimize  -output_tree $TMP.tree  -output_feature_tree $TMP.feature_tree1 | grep "# Discernible leaves:"
+	$THIS/makeDistTree  -data $TMP  -dissim_attr cons  -optimize  -output_tree $TMP.tree  -output_feature_tree $TMP.feature_tree1 | grep "# Discernible leaves:"
 fi
 
 $THIS/makeFeatureTree  -input_tree $TMP.feature_tree1  -features $1/phen  -nominal_singleton_is_optional  -qual $TMP.qual  

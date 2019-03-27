@@ -23,7 +23,7 @@ struct ThisApplication : Application
     // Input
 	  addPositional ("input_tree", "Tree file");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
-	  addKey ("dissim", "Dissimilarity attribute name in the <data> file");
+	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
@@ -39,7 +39,7 @@ struct ThisApplication : Application
   {
 	  const string input_tree     = getArg ("input_tree");
 	  const string dataFName      = getArg ("data");
-	  const string dissimAttrName = getArg ("dissim");
+	  const string dissimAttrName = getArg ("dissim_attr");
 	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
 	  const string name_match     = getArg ("name_match");
 	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
@@ -51,7 +51,7 @@ struct ThisApplication : Application
       throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
     
 
-    DistTree tree (input_tree, dataFName, dissimAttrName);
+    DistTree tree (input_tree, dataFName, dissimAttrName, string());
     if (order)
       tree. sort ();
     if (! dataFName. empty ())

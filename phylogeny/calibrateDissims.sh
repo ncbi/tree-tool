@@ -45,7 +45,7 @@ if [ $DISSIM_COEFF == 0 ]; then
   VARIANCE=lin
   DISSIM_COEFF_OPTION=""
 fi
-$THIS/makeDistTree  -threads 5  -data $TMP  -dissim cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
+$THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
 
 echo ""
 echo ""

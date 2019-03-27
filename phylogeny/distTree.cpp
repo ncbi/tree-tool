@@ -2041,6 +2041,7 @@ void Dissim::qc () const
   ASSERT (leaf1->name < leaf2->name);
   
   ASSERT (mult >= 0.0);
+  ASSERT (mult < INF);
   ASSERT (prediction >= 0.0);
         
   if (! mult)
@@ -2464,7 +2465,8 @@ bool Image::apply ()
 
 DistTree::DistTree (const string &treeFName,
                     const string &dissimFName,
-                    const string &dissimAttrName)
+                    const string &dissimAttrName,
+	                  const string &varAttrName)
 : rand (seed_global)
 {
   // Initial tree topology
@@ -2482,7 +2484,7 @@ DistTree::DistTree (const string &treeFName,
   if (! isDirName (treeFName) && dissimFName. empty ())
     return;
 
-  loadDissimDs (dissimFName, dissimAttrName);
+  loadDissimDs (dissimFName, dissimAttrName, varAttrName);
   
   if (! getConnected ())
     throw runtime_error ("Disconnected objects");
@@ -2497,10 +2499,11 @@ DistTree::DistTree (const string &treeFName,
 
 
 DistTree::DistTree (const string &dissimFName,
-                    const string &dissimAttrName)
+                    const string &dissimAttrName,
+	                  const string &varAttrName)
 : rand (seed_global)
 {
-  loadDissimDs (dissimFName, dissimAttrName);
+  loadDissimDs (dissimFName, dissimAttrName, varAttrName);
 
   // Initial tree topology: star topology 
   ASSERT (! root);
@@ -2593,7 +2596,7 @@ public:
         return;
       if (dissim == 0.0 && ! leaf1->getCollapsed (leaf2))  // Only for new Leaf's
         leaf1->collapse (leaf2);
-      if (! tree. addDissim (leaf1, leaf2, dissim, NO_INDEX))
+      if (! tree. addDissim (leaf1, leaf2, dissim, NaN, NO_INDEX))
         throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
     }
 
@@ -2904,6 +2907,7 @@ DistTree::DistTree (const string &dataDirName,
 
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
+  ASSERT (! varAttr);
   ASSERT (dissimTypes. empty ());
 }
 
@@ -3637,18 +3641,18 @@ void DistTree::setName2leaf ()
 namespace
 {
 
-void checkDissimAttr (PositiveAttr2& dissimAttr)
+void checkPositiveAttr2 (PositiveAttr2& attr)
 {
-  dissimAttr. qc ();
+  attr. qc ();
 
   {
     Real maxCorrection;
     size_t row_bad, col_bad;
-    dissimAttr. matr. symmetrize (maxCorrection, row_bad, col_bad);
-    if (maxCorrection > 2.0 * pow (10.0, - (Real) dissimAttr. decimals))  // PAR
+    attr. matr. symmetrize (maxCorrection, row_bad, col_bad);
+    if (maxCorrection > 2.0 * pow (10.0, - (Real) attr. decimals))  // PAR
       cout << "maxCorrection = " << maxCorrection 
-           << " at " << dissimAttr. ds. objs [row_bad] -> name 
-           << ", "   << dissimAttr. ds. objs [col_bad] -> name 
+           << " at " << attr. ds. objs [row_bad] -> name 
+           << ", "   << attr. ds. objs [col_bad] -> name 
            << endl;
   }
 }
@@ -3658,19 +3662,22 @@ void checkDissimAttr (PositiveAttr2& dissimAttr)
 
 
 void DistTree::loadDissimDs (const string &dissimFName,
-                             const string &dissimAttrName)
+                             const string &dissimAttrName,
+                             const string &varAttrName)
 {
   ASSERT (! subDepth);
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
+  ASSERT (! varAttr);
   ASSERT (dissimTypes. empty ());
   ASSERT (! optimizable ());
+  IMPLY (dissimAttrName. empty (), varAttrName. empty ());
 
   if (dissimFName. empty ())
     throw runtime_error ("Dataset " + dissimFName + " must exist");
 
 
-  // dissimAttr, dissimDs
+  // dissimDs, dissimAttr, varAttr
   {
     Unverbose unv;
     dissimDs. reset (new Dataset (dissimFName));
@@ -3681,7 +3688,7 @@ void DistTree::loadDissimDs (const string &dissimFName,
     for (const Attr* attr_ : dissimDs->attrs)
       if (const PositiveAttr2* attr = attr_->asPositiveAttr2 ())
       {
-        checkDissimAttr (* var_cast (attr));
+        checkPositiveAttr2 (* var_cast (attr));
         dissimTypes << move (DissimType (attr));
       }
     if (dissimTypes. empty ())
@@ -3693,18 +3700,32 @@ void DistTree::loadDissimDs (const string &dissimFName,
     }
     else
       mergeDissimAttrs ();
+    ASSERT (! varAttr);
   }
   else
   {
     {
       const Attr* attr = dissimDs->name2attr (dissimAttrName);
       if (! attr)
-        throw runtime_error ("Attribute " + dissimAttrName + " must exist in the dataset " + dissimFName);
+        throw runtime_error ("Attribute " + strQuote (dissimAttrName) + " must exist in the dataset " + dissimFName);
       dissimAttr = attr->asPositiveAttr2 ();
     }
     if (! dissimAttr)
-      throw runtime_error ("Attribute " + dissimAttrName + " must have type Positive2");      
-    checkDissimAttr (* var_cast (dissimAttr));
+      throw runtime_error ("Attribute " + strQuote (dissimAttrName) + " must have type Positive2");      
+    checkPositiveAttr2 (* var_cast (dissimAttr));
+
+    if (! varAttrName. empty ())
+    {
+      {
+        const Attr* attr = dissimDs->name2attr (varAttrName);
+        if (! attr)
+          throw runtime_error ("Attribute " + strQuote (varAttrName) + " must exist in the dataset " + dissimFName);
+        varAttr = attr->asPositiveAttr2 ();
+      }
+      if (! varAttr)
+        throw runtime_error ("Attribute " + strQuote (varAttrName) + " must have type Positive2");      
+      checkPositiveAttr2 (* var_cast (varAttr));
+    }
   }
   
   ASSERT (dissimAttr);
@@ -3717,6 +3738,7 @@ void DistTree::mergeDissimAttrs ()
   ASSERT (! subDepth);
   ASSERT (dissimDs. get ());
   ASSERT (! dissimAttr);
+  ASSERT (! varAttr);  
   ASSERT (dissimTypes. size () >= 2);
   ASSERT (! optimizable ());
   
@@ -3756,7 +3778,7 @@ void DistTree::mergeDissimAttrs ()
 
   normalizeDissimCoeffs ();
       
-  dissimAttr = new PositiveAttr2 ("merged" /*name may be duplicate ??*/, * var_cast (dissimDs. get ()), decimals + 1);
+  dissimAttr = new PositiveAttr2 (dissimDs->findNewAttrName ("merged"), * var_cast (dissimDs. get ()), decimals + 1);
   FFOR (size_t, i, dissimDs->objs. size ())
     FFOR (size_t, j, dissimDs->objs. size ())
     {
@@ -4401,7 +4423,7 @@ void DistTree::dissimDs2dissims ()
     const Leaf* leaf1 = findPtr (name2leaf, name1);
     if (! leaf1)
       continue;
-    FOR (size_t, col, row)  // dissimAttr is symmetric
+    FOR (size_t, col, row)  // dissimAttr, varAttr are symmetric
     {
       const string name2 = dissimDs->objs [col] -> name;
       const Leaf* leaf2 = findPtr (name2leaf, name2);
@@ -4410,20 +4432,22 @@ void DistTree::dissimDs2dissims ()
       if (dissimTypes. empty ())
       {
         const Real dissim = dissimAttr->get (row, col);
-        addDissim (name1, name2, dissim, NO_INDEX);
+        const Real var = varAttr ? varAttr->get (row, col) : NaN;
+        addDissim (name1, name2, dissim, var, NO_INDEX);
       }
       else
         FFOR (size_t, type, dissimTypes. size ())
         {
           const DissimType& dt = dissimTypes [type];
           const Real dissim = dt. dissimAttr->get (row, col);
-          addDissim (name1, name2, dissim, type);
+          addDissim (name1, name2, dissim, NaN, type);
         }
     }
   }
   
   dissimDs. reset (nullptr);
   dissimAttr = nullptr;
+  varAttr = nullptr;
   for (DissimType& dt : dissimTypes)
     dt. dissimAttr = nullptr;
 
@@ -4456,6 +4480,7 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 bool DistTree::addDissim (Leaf* leaf1,
                           Leaf* leaf2,
                           Real dissim,
+                          Real var,
                           size_t type)
 {
   ASSERT (leaf1);
@@ -4464,6 +4489,7 @@ bool DistTree::addDissim (Leaf* leaf1,
   ASSERT (dissim_coeff > 0.0);
   ASSERT (detachedLeaves. empty ());
   IMPLY (dissim == 0.0 /*&& type == NO_INDEX*/, leaf1->getCollapsed (leaf2));  
+  IMPLY (! isNan (var), var >= 0.0);
 
   
   if (   isNan (dissim)  // prediction must be large ??
@@ -4475,15 +4501,24 @@ bool DistTree::addDissim (Leaf* leaf1,
     return false;  
   }
   
-  ASSERT (dissim >= 0);
+  ASSERT (dissim >= 0.0);
+  IMPLY (! isNan (var), var > 0.0);
+  
   if (dissim_power != 1.0)
+  {
     dissim = pow (dissim, dissim_power);
+    ASSERT (isNan (var));
+  }
+
   dissim *= dissim_coeff;   
+  if (! isNan (var))
+    var *= sqr (dissim_coeff);
     
-  Real mult = dissim2mult (dissim);  
+  Real mult = isNan (var) ? dissim2mult (dissim) : 1.0 / var;  
   
   if (type != NO_INDEX)
   {
+    ASSERT (isNan (var));
     const DissimType& dt = dissimTypes [type];
     dissim *= dt. coeff;
     mult *= sqr (1.0 / dt. coeff);
@@ -4497,7 +4532,7 @@ bool DistTree::addDissim (Leaf* leaf1,
   
   const size_t objNum_ = dissims. size ();
   if (objNum_ > (size_t) dissims_max)
-    throw runtime_error ("addDissim: Too large objNum");
+    throw runtime_error (FUNC "Too large objNum");
   dissims << move (Dissim (leaf1, leaf2, dissim, mult, type));
   const uint objNum = (uint) objNum_;
   leaf1->pathObjNums << objNum;
@@ -4708,6 +4743,8 @@ void DistTree::qc () const
     dissimDs->qc ();
     ASSERT (& dissimAttr->ds == dissimDs. get ());
   }
+  IMPLY (varAttr, dissimAttr);
+  IMPLY (varAttr, & varAttr->ds == dissimDs. get ());
   
   IMPLY (! dissimTypes. empty (), dissimTypes. size () >= 2);
   Real prod = 1.0;
@@ -4717,6 +4754,7 @@ void DistTree::qc () const
     ASSERT ((bool) dt. dissimAttr == (bool) dissimAttr);
     IMPLY (dt. dissimAttr, & dissimAttr->ds == & dt. dissimAttr->ds);
     prod *= dt. coeff;
+    ASSERT (! varAttr);
   }
   ASSERT_EQ (prod, 1.0, 1e-5);  // PAR
 
@@ -4752,7 +4790,9 @@ void DistTree::qc () const
   }
   else
   {
+    ASSERT (! dissimDs. get ());
     ASSERT (! dissimAttr);
+    ASSERT (! varAttr);
     ASSERT (dissimTypes. empty ());
   }
   
@@ -6706,6 +6746,7 @@ Real setDissimVarAttrs (const Leaf* leaf1,
   ASSERT (leaf1 != leaf2);
   ASSERT (s >= 0.0);
   ASSERT (w >= 0.0);
+  ASSERT (w < INF);
   ASSERT (dissimAttr);
   ASSERT (varAttr);
   ASSERT (& dissimAttr->ds == & varAttr->ds);
@@ -6729,7 +6770,7 @@ Real setDissimVarAttrs (const Leaf* leaf1,
 
 
 
-Dataset DistTree::getDissimDataset (Real &unoptimizable) const
+Dataset DistTree::getDissimVarDataset (Real &unoptimizable) const
 {
   ASSERT (dissims. searchSorted);
   
@@ -6741,10 +6782,10 @@ Dataset DistTree::getDissimDataset (Real &unoptimizable) const
   ds. setName2objNum ();
   
   auto dissimAttr_ = new PositiveAttr2 ("dissim", ds, dissimDecimals);  
-  auto varAttr     = new PositiveAttr2 ("var",    ds, dissimDecimals); 
+  auto varAttr_    = new PositiveAttr2 ("var",    ds, dissimDecimals); 
   
   dissimAttr_->setDiag (0.0);
-  varAttr    ->setDiag (0.0);
+  varAttr_   ->setDiag (0.0);
     
   unoptimizable = 0.0;
   const Leaf* leaf1_old = nullptr;
@@ -6761,7 +6802,7 @@ Dataset DistTree::getDissimDataset (Real &unoptimizable) const
           || leaf2_old != dissim. leaf2
          )
       {
-        unoptimizable += setDissimVarAttrs (leaf1_old, leaf2_old, s, s2, w, dissimAttr_, varAttr);
+        unoptimizable += setDissimVarAttrs (leaf1_old, leaf2_old, s, s2, w, dissimAttr_, varAttr_);
         s  = 0.0;
         s2 = 0.0;
         w  = 0.0;
@@ -6772,7 +6813,7 @@ Dataset DistTree::getDissimDataset (Real &unoptimizable) const
       s2 += dissim. mult * sqr (dissim. target);
       w  += dissim. mult;
     }  
-  unoptimizable += setDissimVarAttrs (leaf1_old, leaf2_old, s, s2, w, dissimAttr_, varAttr);
+  unoptimizable += setDissimVarAttrs (leaf1_old, leaf2_old, s, s2, w, dissimAttr_, varAttr_);
   
   ASSERT (leReal (unoptimizable, absCriterion));
     
@@ -6793,6 +6834,7 @@ void DistTree::removeLeaf (Leaf* leaf,
     
   ASSERT (! dissimDs. get ());
   ASSERT (! dissimAttr);
+  ASSERT (! varAttr);
   
   const TreeNode* parent = leaf->getParent ();
   if (! parent)

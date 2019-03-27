@@ -24,11 +24,11 @@ if [ $MDS == 1 ]; then
   input_tree="-input_tree $1.dir/"
 fi
 
-$THIS/makeDistTree  $input_tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE  -optimize  $WHOLE  -output_tree $1.tree  
+$THIS/makeDistTree  $input_tree  -data $1  -dissim_attr $2  -variance $VARIANCE  $SPARSE  -optimize  $WHOLE  -output_tree $1.tree  
 if [ $MDS == 1 ]; then
   rm -r $1.dir/
 fi
 
 echo ""
-$THIS/makeDistTree  -input_tree $1.tree  -data $1  -dissim $2  -variance $VARIANCE  $SPARSE > $1.makeDistTree
+$THIS/makeDistTree  -input_tree $1.tree  -data $1  -dissim_attr $2  -variance $VARIANCE  $SPARSE > $1.makeDistTree
 

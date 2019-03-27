@@ -38,7 +38,8 @@ struct ThisApplication : Application
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
-	  addKey ("dissim", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
+	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
+	  addKey ("var_attr", "Variance attribute name in the <data> file; if empty then varaince is computed by the -variance parameter");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
@@ -171,7 +172,8 @@ struct ThisApplication : Application
   {
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
-	  const string dissimAttrName      = getArg ("dissim");
+	  const string dissimAttrName      = getArg ("dissim_attr");
+	  const string varAttrName         = getArg ("var_attr");
 	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
@@ -227,14 +229,20 @@ struct ThisApplication : Application
         throw runtime_error ("Input tree must be in " + dataFName);
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
+      if (! varAttrName. empty ())
+        throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
     }
     else
       if (dataFName. empty () && ! dissimAttrName. empty ())
         throw runtime_error ("Dissimilarity attribute with no data file");
-    if (dissim_coeff <= 0)
+    if (dissimAttrName. empty () && ! varAttrName. empty ())
+      throw runtime_error ("Variance attribute with no dissimilarity attribute");
+    if (dissim_coeff <= 0.0)
       throw runtime_error ("dissim_coeff must be positive");
-    if (dissim_power <= 0)
+    if (dissim_power <= 0.0)
       throw runtime_error ("dissim_power must be positive");
+    if (dissim_power != 1.0 && ! varAttrName. empty ())
+      throw runtime_error ("-dissim_power and -var_attr cannot coexist");
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
     if (check_keep && keepFName. empty ())
@@ -284,8 +292,8 @@ struct ThisApplication : Application
       tree. reset (isDirName (dataFName)
                      ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
                      : input_tree. empty ()
-                       ? new DistTree (dataFName, dissimAttrName)
-                       : new DistTree (input_tree, dataFName, dissimAttrName)
+                       ? new DistTree (            dataFName, dissimAttrName, varAttrName)
+                       : new DistTree (input_tree, dataFName, dissimAttrName, varAttrName)
                   );
     }
     ASSERT (tree. get ());
@@ -586,7 +594,7 @@ struct ThisApplication : Application
     {
       tree->dissims. sort ();
       Real unoptimizable = NaN;
-      const Dataset ds (tree->getDissimDataset (unoptimizable));
+      const Dataset ds (tree->getDissimVarDataset (unoptimizable));
       OFStream of (output_data + dmSuff);
       const ONumber on (of, criterionDecimals, false);  
       cout << "Unoptimizable absCriterion = " << unoptimizable << endl;

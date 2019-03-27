@@ -2149,6 +2149,23 @@ void Dataset::deleteAttrs ()
 
 
 
+string Dataset::findNewAttrName (const string &namePrefix) const
+{
+  ASSERT (! namePrefix. empty ());
+  
+  string attrName;
+  FOR (size_t, i, numeric_limits<size_t>::max ())
+  {
+    attrName = namePrefix + "_" + to_string (i);
+    if (! name2attr (attrName))
+      return attrName;
+  }
+  
+  throw runtime_error (FUNC "No new attribute names");
+}
+
+
+
 void Dataset::addAttr (Attr* attr)
 {
   ASSERT (attr);

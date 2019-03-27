@@ -227,7 +227,7 @@ A node with an empty set of leaves matches.")
 		       
     unique_ptr<Tree> tree1;
     if (treeType == "dist")
-      tree1. reset (new DistTree (input_tree1, string (), string ()));
+      tree1. reset (new DistTree (input_tree1, string (), string (), string()));
     else
       tree1. reset (new FeatureTree (input_tree1, string (), string (), false, true, false));
     if (verbose ())
@@ -235,7 +235,7 @@ A node with an empty set of leaves matches.")
       
     unique_ptr<Tree> tree2;
     if (treeType == "dist")
-      tree2. reset (new DistTree (input_tree2, string (), string ()));
+      tree2. reset (new DistTree (input_tree2, string (), string (), string()));
     else
       tree2. reset (new FeatureTree (input_tree2, string (), string (), false, true, false));
     if (verbose ())

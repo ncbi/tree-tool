@@ -57,7 +57,7 @@ struct ThisApplication : Application
     if (input_tree. empty ())
       tree. reset (new DistTree (branch_prob, leaf_num_max));
     else
-      tree. reset (new DistTree (input_tree, string (), string ())); 
+      tree. reset (new DistTree (input_tree, string (), string (), string())); 
     ASSERT (tree);
     tree->qc ();     
       

@@ -26,7 +26,7 @@ echo "varaince     = $VARIANCE"
 TMP=`mktemp`
 
 
-$THIS/makeDistTree  -threads 5  -data $DATA  -dissim cons  -dissim_power $DISSIM_POWER  -dissim_coeff $DISSIM_COEFF  -variance $VARIANCE  \
+$THIS/makeDistTree  -threads 5  -data $DATA  -dissim_attr cons  -dissim_power $DISSIM_POWER  -dissim_coeff $DISSIM_COEFF  -variance $VARIANCE  \
   -optimize  -subgraph_iter_max 10  -noqual  -output_tree $TMP.tree  -output_feature_tree $TMP.feature_tree
 
 echo ""
