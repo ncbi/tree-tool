@@ -351,19 +351,19 @@ Real NumAttr1::distr2outlier (const Sample &sample,
     
   vec. sort ();
     
-  Real mult_sum = 0;
-  Real s = 0;
-  Real s2 = 0;
+  Real mult_sum = 0.0;
+  Real s = 0.0;
+  Real s2 = 0.0;
   Real mean = NaN;
-  Real var = 0;
-  for (const auto& it : vec)
+  Real var = 0.0;
+  for (const ObjNum_Real& it : vec)
   {
-    const Real x = it. value;
+    const Real x = it. value;  // Next object
 
-    if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)
+    if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)  // PAR
     {
       distr. setMeanVar (mean, var);
-      const Prob p = 1 - distr. cdf (x);
+      const Prob p = 1.0 - distr. cdf (x);
       if (leReal (p * mult_sum, outlier_EValue_max))
         return getSign (rightTail) * x;
     }
@@ -1631,6 +1631,13 @@ bool RealAttr2::existsLessThan (Real minValue,
   return false;
 }
 
+
+
+void RealAttr2::setDiag (Real value)
+{
+  FFOR (size_t, row, ds. objs. size ())
+    put (row, row, value);
+}
 
 
 size_t RealAttr2::getInfCount () const

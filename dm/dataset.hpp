@@ -33,7 +33,7 @@ struct Obj : Root, DisjointCluster
   string name;
     // Me be empty()
   Real mult {1.0};
-    // >= 0
+    // >= 0.0
     // Multiplicity (absolute frequency)
     // --> Sample Dataset::sample, remove extra Sample's ??
   string comment;
@@ -302,7 +302,7 @@ public:
                           Real &average,
                           Real &scatter) const;
   Real getSqr_ave (const Sample &sample) const;
-    // Return: >= 0
+    // Return: >= 0.0
   Value getMedian (const Sample &sample) const;
   Real distr2outlier (const Sample &sample,
                       LocScaleDistribution &distr,
@@ -428,7 +428,7 @@ struct PositiveAttr1 : RealAttr1
 	  //         average = 1
   RealAttr1* logarithmize (Dataset &ds_arg,
                            const string &suffix = "_log") const;
-    // 0 --> missing
+    // 0.0 --> missing
 };
 
 
@@ -980,6 +980,7 @@ struct RealAttr2 : Attr2, RealScale
     // Output: row,col: valid if return is true
   void setAll (Value value)
     { matr. putAll (value); }
+  void setDiag (Real value);
   size_t getInfCount () const;
   size_t inf2missing ();
     // Return: number of replacements
@@ -1165,7 +1166,7 @@ struct Sample : Root
   Vector<Real> mult;
     // size() = ds.objs.size()
   Real mult_sum {0.0};
-    // >= 0
+    // >= 0.0
   size_t nEffective {0};
 
 
@@ -1610,8 +1611,8 @@ template <typename T/*:Attr1*/>
 		    { const NumAttr1& a1 = * space [attrNum1];
 		  	  FFOR_START (size_t, attrNum2, attrNum1, space. size ())
 		      { const NumAttr1& a2 = * space [attrNum2];
-		        Real s = 0;
-		        Real mult_sum = 0;
+		        Real s = 0.0;
+		        Real mult_sum = 0.0;
 		        FFOR (size_t, i, sample. mult. size ())
 		          if (const Real mult = sample. mult [i])
 		          { const Real x1 = a1. getReal (i);
@@ -1627,7 +1628,7 @@ template <typename T/*:Attr1*/>
 		            s += x1 * x2 * mult;
 		          }
 		        ASSERT (! isNan (s));
-		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0) : s);
+		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0.0) : s);
 		      }
 		   	}
 		  }		
@@ -1647,8 +1648,8 @@ template <typename T/*:Attr1*/>
 		      const NumAttr1& a1 = * space [attrNum1];
 		  	  FFOR_START (size_t, attrNum2, attrNum1, space. size ())
 		      { const NumAttr1& a2 = * space [attrNum2];
-		        Real s = 0;
-		        Real mult_sum = 0;
+		        Real s = 0.0;
+		        Real mult_sum = 0.0;
 		        FFOR (size_t, i, sample. mult. size ())
 		          if (const Real mult = sample. mult [i])
 		          { const Real x1 = a1. getReal (i);
@@ -1664,7 +1665,7 @@ template <typename T/*:Attr1*/>
 		            s += x1 * x2 * mult;
 		          }
 		        ASSERT (! isNan (s));
-		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0) : s);
+		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0.0) : s);
 		      }
 		   	}
 			#endif
@@ -1845,7 +1846,7 @@ public:
   // Input: variable
   virtual Real pdfVariable () const
     { return exp (logPdfVariable ()); }
-    // Return: >= 0
+    // Return: >= 0.0
   virtual Real logPdfVariable () const
     { return log (pdfVariable ()); }
   size_t getModeObjNum () const;
@@ -1996,7 +1997,7 @@ struct Categorical : Distribution
 private:
   Vector<Prob> probSum;
     // size() = probs.size()
-    // at(0) = 0; at(i) < at(i+1)
+    // at(0) = 0.0; at(i) < at(i+1)
 public:
 
 
@@ -2062,7 +2063,7 @@ public:
   Prob pmf (size_t x) const
     { return probs [x]; }
   Prob getNominalVar () const 
-    { Prob s = 0;
+    { Prob s = 0.0;
       for (const Prob p : probs)
         s += sqr (p);
       return s;
@@ -2093,7 +2094,7 @@ struct UniDistribution : Distribution
   // p_supp + p_ltSupp <= 1
 protected:
   Real log_p_supp {0.0};
-    // <= 0
+    // <= 0.0
 public:
     
 
@@ -2122,7 +2123,7 @@ protected:
     }
   void setParamFunc () 
     { p_supp = 1;
-      p_ltSupp = 0;
+      p_ltSupp = 0.0;
     }
 public:
   bool similar (const Distribution &distr,
@@ -2159,7 +2160,7 @@ public:
 private:
   virtual Real pdf_ (Real x) const
     { return exp (logPdf_ (x)); }
-    // >= 0
+    // >= 0.0
   virtual Real logPdf_ (Real x) const
     { return log (pdf_ (x)); }
   virtual Prob cdf_ (Real x) const = 0;
@@ -2172,15 +2173,15 @@ public:
 
   // Bounded support
   Real pdf (Real x) const
-    { if (p_supp == 0)
-        return 0;
+    { if (p_supp == 0.0)
+        return 0.0;
       if (supported (x))
         return pdf_ (x) / p_supp; 
-      return 0;
+      return 0.0;
     }
-    // Return: >= 0
+    // Return: >= 0.0
   Real logPdf (Real x) const
-    { if (p_supp == 0)
+    { if (p_supp == 0.0)
         return -INF;
       if (supported (x))
         return logPdf_ (x) - log_p_supp; 
@@ -2188,7 +2189,7 @@ public:
     }
   Prob cdf (Real x) const
     { if (lessReal (x, getLoBoundEffective ()))
-        return 0;
+        return 0.0;
       if (geReal (x, getHiBoundEffective ()))
         return 1;
       return (cdf_ (x) - p_ltSupp) / p_supp;
@@ -2254,7 +2255,7 @@ public:
     { variable = randDiscrete (); }
 
   Real stdLoBound () const override
-    { return 0; }
+    { return 0.0; }
 private:
   Real pdf_ (Real x) const final
     { return pmf_ (real2int (x)); }
@@ -2275,7 +2276,7 @@ protected:
     { return exp (logPmf_ (x)); }
   virtual Real logPmf_ (int x) const
     { return log (pmf_ (x)); }
-    // Return: <= 0
+    // Return: <= 0.0
   virtual Prob cdfDiscrete_ (int x) const = 0;
     // Return: P(X <= x)
   virtual int randDiscrete_ () const = 0;
@@ -2288,7 +2289,7 @@ public:
     { return pdf (x); }
   Real logPmf (int x) const
     { return logPdf (x); }
-    // Return: <= 0
+    // Return: <= 0.0
   Prob cdfDiscrete (int x) const
     { return cdf (x); }
   int randDiscrete () const
@@ -2519,7 +2520,7 @@ struct Zipf : DiscreteDistribution   // not a distribution ??
 private:
   // Functions of parameters
   Real c {NaN};
-    // > 0
+    // > 0.0
   Real lnC {NaN};
   Categorical cat;
     // Valid if hiBound < INF
@@ -2583,7 +2584,7 @@ public:
   Real freqAlpha2alpha () const  
     { return 1 / (alpha - 1); }
   Real getBetaAlpha () const
-    // Return: alpha of the Beta(alpha,1), alpha > 0
+    // Return: alpha of the Beta(alpha,1), alpha > 0.0
     // pmf(1) = Beta1::cdf(1/upBound) = (1/upBound)^alpha 
     { return - log (c) / log (upBound); }
 #endif
@@ -2655,9 +2656,9 @@ struct LocScaleDistribution : ContinuousDistribution
   // Parameters
   An::Value loc {NaN};
     // Location
-    // If stdLoBound() = 0 then 0
+    // If stdLoBound() = 0.0 then 0.0
   An::Value scale {NaN};
-    // > 0
+    // > 0.0
 //Lower bound on scale ??
   // <Others>
 
@@ -2706,7 +2707,7 @@ public:
 private:
   Real pdf_ (Real x) const final
     { return pdfStnd (stnd (x)) / scale; }
-    // >= 0
+    // >= 0.0
   Real logPdf_ (Real x) const final
     { return logPdfStnd (stnd (x)) - log_scale; }
 public:
@@ -2716,10 +2717,10 @@ public:
   Real unstnd (Real x) const
     { return x * scale + loc; }
 protected:
-  // loc = 0, scale = 1
+  // loc = 0.0, scale = 1
   virtual Real pdfStnd (Real xStnd) const
     { return exp (logPdfStnd (xStnd)); }
-    // >= 0
+    // >= 0.0
   virtual Real logPdfStnd (Real xStnd) const
     { return log (pdfStnd (xStnd)); }
 
@@ -2778,7 +2779,7 @@ private:
   Real logPdfStnd (Real xStnd) const final
     { return coeff == INF 
                ? nullReal (xStnd)
-                 ? 0  // PAR
+                 ? 0.0  // PAR
                  : -INF
                : - 0.5 * (coeff + sqr (xStnd)); 
     }
@@ -2799,7 +2800,7 @@ public:
       if (nullReal (diff))
         return 1;
       if (nullReal (scale))
-        return 0;
+        return 0.0;
       return 2 * cdf (getMean () - diff); 
     }
 };
@@ -2848,7 +2849,7 @@ private:
   string nameParam () const final
     { return  name + "(" + real2str (loc, 3) + ")"; }
   Real stdLoBound () const final
-    { return 0; }
+    { return 0.0; }
 public:
 
   void setMeanVar (Real mean,
@@ -2959,7 +2960,7 @@ public:
   string nameParam () const
     { return  name + "(" + real2str (alpha) + ",1)"; }
   Real stdLoBound () const final
-    { return 0; }
+    { return 0.0; }
   Real stdHiBound () const final
     { return 1; }
 private:
@@ -3016,7 +3017,7 @@ public:
   Real attr_max {NaN};
   Prob uniform_prob {NaN};
   Real halfWindow {NaN};
-    // >= 0
+    // >= 0.0
 
 
   explicit UniKernel (const UniVariate<NumAttr1> &analysis_arg)
@@ -3061,7 +3062,7 @@ private:
     // Integral over getRange() = 1
 public:
   bool getParamSet () const
-    { return isProb (uniform_prob) && halfWindow >= 0; }
+    { return isProb (uniform_prob) && halfWindow >= 0.0; }
   bool similar (const Distribution &/*distr*/,
                 Real /*delta*/) const
     { return false; }
@@ -3071,7 +3072,7 @@ public:
 private:
   Real pdf_ (Real x) const;
     // Invokes: findIndex()
-    // halfWindow = 0 => INF or 0
+    // halfWindow = 0.0 => INF or 0.0
   Prob cdf_ (Real x) const;
   Real rand_ () const
     { return points [(size_t) round (randProb () * ((Real) points. size () - 1))]. value; }
@@ -3162,15 +3163,15 @@ struct MultiNormal : MultiDistribution
   Matrix sigmaExact;
     // VC matrix
     // size() = (getDim(), getDim())
-    // det >= 0 
+    // det >= 0.0 
   Matrix sigmaInflated;
     // VC matrix
     // size() = (getDim(), getDim())
-    // det >= 0 
-    // Inflated if variance_min > 0, otherwise = sigmaExact
+    // det >= 0.0 
+    // Inflated if variance_min > 0.0, otherwise = sigmaExact
   MVector variance_min;
     // size() = mu.size()
-    // Init: 0
+    // Init: 0.0
     // Is not estimate()'ed
     
   // Functions of parameters
@@ -3234,7 +3235,7 @@ public:
         throw runtime_error ("MultiNormal::coeff is NaN"); 
       x_field = variable;
       if (coeff == INF)
-        return nullReal (x_field. maxAbsDiff (false, mu, false)) ? 0 : -INF;  // PAR
+        return nullReal (x_field. maxAbsDiff (false, mu, false)) ? 0.0 : -INF;  // PAR
       const Real mah = sigmaInv. getMahalanobis ( false
                                                 , x_field, true, 0
                                                 , mu,      true, 0
@@ -3300,7 +3301,7 @@ struct Mixture : Distribution
       
     // Input: Parameters
     Real pdfProb () const
-      { return prob ? prob * distr->pdfVariable () : 0; }
+      { return prob ? prob * distr->pdfVariable () : 0.0; }
     Real logPdfProb () const
       { return log (prob) + distr->logPdfVariable (); }
     Real getMult () const;
