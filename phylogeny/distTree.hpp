@@ -1242,7 +1242,7 @@ public:
     { const Prob r = 1.0 - getUnexplainedFrac (unoptimizable);   
       return sqrt ((1.0 - r) / r);   
     }
-    // Requires: interpretation <= linear variance of dissimilarities  ??
+    // Requires: interpretation <= linear variance of dissimilarities  
   string absCriterion2str () const
     { return real2str (absCriterion, criterionDecimals); }
   void reportErrors (ostream &os,
@@ -1366,7 +1366,6 @@ public:
     // Requires: dissims.searchSorted
   void removeLeaf (Leaf* leaf,
                    bool optimizeP);
-    // If the number of left leaves <= 1 then throw (--> return bool ??)
     // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
     // !leaf->getParent()->childrenDiscernible(), number of children > 1 and !optimizable() => may produce incorrect tree

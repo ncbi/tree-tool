@@ -4252,7 +4252,6 @@ void DistTree::neighborJoin ()
       }
       leafPairs << leafPair;
     }
-    // non-complete dissimilarity matrix ??
   }
   else
   {
@@ -7937,7 +7936,7 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
   
   // Use outlier analysis ??
   size_t i_best = NO_INDEX;
-  Real diff_max = 0;
+  Real diff_max = 0.0;
   FFOR (size_t, i, nodeHeights. size ())
     if (i && maximize (diff_max, nodeHeights [i]. dist - nodeHeights [i - 1]. dist))
       i_best = i;
@@ -8369,12 +8368,12 @@ void NewLeaf::optimize ()
     if (ld. dissim != INF)
     {
       dissimExists = true;
-      if (ld. dissim == 0)  // if all dissim's = INF ??
+      if (! ld. dissim)  // if all dissim's = INF ??
       {
         location. anchor = ld. leaf->getDiscernible ();
-        location. leafLen = 0;
-        location. arcLen = 0;
-        location. absCriterion_leaf = 0;
+        location. leafLen = 0.0;
+        location. arcLen = 0.0;
+        location. absCriterion_leaf = 0.0;
         return;
       }
     }
