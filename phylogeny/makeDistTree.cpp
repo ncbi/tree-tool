@@ -255,6 +255,8 @@ struct ThisApplication : Application
       throw runtime_error ("-min_var cannot be negative");
     if (variance_min && dataFName. empty ())
       throw runtime_error ("-min_var needs -data");
+    if (variance_min && ! varAttrName. empty ())
+      throw runtime_error ("-min_var implies no -var_attr");
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
