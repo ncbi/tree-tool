@@ -42,7 +42,8 @@ struct ThisApplication : Application
 	  addKey ("var_attr", "Variance attribute name in the <data> file; if empty then varaince is computed by the -variance parameter");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
-	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+	  addKey ("min_var", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
 	  
 	  // Processing
@@ -177,6 +178,7 @@ struct ThisApplication : Application
 	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
+	               variance_min        = str2real (getArg ("min_var"));
 		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
@@ -249,6 +251,10 @@ struct ThisApplication : Application
       throw runtime_error ("-check_keep requires -keep");
     if (! deleteFName. empty () && ! keepFName. empty ())
       throw runtime_error ("Cannot use both -delete and -keep");
+    if (variance_min < 0.0)
+      throw runtime_error ("-min_var cannot be negative");
+    if (variance_min && dataFName. empty ())
+      throw runtime_error ("-min_var needs -data");
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
@@ -264,11 +270,13 @@ struct ThisApplication : Application
     if (subgraph_iter_max && whole)
       throw runtime_error ("-subgraph_iter_max is incompatible with -whole");
     IMPLY (new_only, ! optimize);
-    if (dataFName. empty () && fix_discernibles)
+    if (fix_discernibles && dataFName. empty ())
       throw runtime_error ("-fix_discernibles needs dissimilarities");
-    if (dissim_boundary <= 0)
+    if (fix_discernibles && variance_min)
+      throw runtime_error ("-fix_discernibles implies zero -min_var");
+    if (dissim_boundary <= 0.0)
     	throw runtime_error ("dissim_boundary must be > 0");
-    if (hybridness_min <= 1)
+    if (hybridness_min <= 1.0)
     	throw runtime_error ("hybridness_min must be > 1");
   //if (delete_all_hybrids && delete_hybrids. empty ())
     //throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");

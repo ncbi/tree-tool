@@ -109,6 +109,23 @@ rm Saccharomyces.outliers
 
 
 echo ""
+echo "-min_var ..."
+# 0.0005 = average arc length / 100
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -min_var 0.0005  -optimize  \
+  -delete_outliers prot-identical_comm-min_var.outliers \
+  -delete_hybrids prot-identical_comm-min_var.hybrids \
+  | grep -v '^CHRON: ' > prot-identical_comm-min_var.distTree
+diff prot-identical_comm-min_var.outliers data/prot-identical_comm-min_var.outliers
+rm prot-identical_comm-min_var.outliers
+diff prot-identical_comm-min_var.hybrids data/prot-identical_comm-min_var.hybrids
+rm prot-identical_comm-min_var.hybrids
+grep OUTPUT -A 1      prot-identical_comm-min_var.distTree > $TMP.1
+grep OUTPUT -A 1 data/prot-identical_comm-min_var.distTree > $TMP.2
+diff $TMP.1 $TMP.2
+rm prot-identical_comm-min_var.distTree
+
+
+echo ""
 echo ""
 echo "Two dissimilarity types ..."
 

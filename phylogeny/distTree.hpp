@@ -54,22 +54,31 @@ enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
 extern const StringVector varianceTypeNames;
 extern VarianceType varianceType;
 
+extern Real variance_min;
+
 inline VarianceType str2varianceType (const string &s)
   { size_t index = 0;
     if (varianceTypeNames. find (s, index))
       return (VarianceType) index;
-    throw logic_error ("Unknown dissimilarity variance " + s);
+    throw logic_error (FUNC "Unknown dissimilarity variance " + s);
   }      
 
 // Input: varianceType
 inline Real dissim2mult (Real dissim)
-  { switch (varianceType)
-    { case varianceType_lin:    return positive (dissim) ? 1.0 / dissim : 0.0; 
-      case varianceType_sqr:    return positive (dissim) ? 1.0 / sqr (dissim) : 0.0; 
-      case varianceType_exp:    return exp (- 2 * max (dissim, 0.0)); 
-      case varianceType_linExp: return positive (dissim) ? 1.0 / (exp (dissim) - 1) : 0.0; 
-    }  
-    throw logic_error ("Unknown dissimilarity variance");
+  { if (dissim < 0.0)
+      throw runtime_error (FUNC "Negative dissim");
+    Real var = 0.0;
+    if (dissim)
+      switch (varianceType)
+      { case varianceType_lin:    var = dissim; break;
+        case varianceType_sqr:    var = sqr (dissim); break;
+        case varianceType_exp:    var = exp (2.0 * dissim); break;
+        case varianceType_linExp: var = exp (dissim) - 1.0; break;
+        default: throw logic_error (FUNC "Unknown dissimilarity variance");
+      }  
+    else if (! variance_min)
+      return 0.0;  // Objects will be collapse()'d
+    return 1.0 / (variance_min + var);
   }
   // Return: >= 0
   //         0 <=> dissim = INF
@@ -80,7 +89,7 @@ inline Real dissim_max ()
       case varianceType_exp:    return - 0.5 * log (epsilon);
       case varianceType_linExp: return log (1.0 / epsilon + 1.0);
     }  
-    throw logic_error ("Unknown dissimilarity variance");
+    throw logic_error (FUNC "Unknown dissimilarity variance");
   }
   // Solution of: dissim2mult(dissim_max) = epsilon
   // dissim < dissim_max() <=> !nullReal(dissim2mult(dissim))
@@ -581,12 +590,13 @@ private:
   friend DissimLine;
   void collapse (Leaf* other);
     // Output: discernible = false
+    // Requires: !DistTree_sp::variance_min
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:	
 #if 0
 	bool possibleHybrid () const
-	  { return getDiscernible () -> len == 0.0; }
+	  { return ! getDiscernible () -> len; }
 #endif
 	const Neighbor* findNeighbor (const Leaf* leaf,
 	                              size_t dissimType) const
@@ -1088,7 +1098,7 @@ public:
     // Connected subgraph of subgraph.tree: boundary of subgraph.area are Leaf's of *this
     // If subgraph.unresolved() then the topology of *this is changed to a star
     // Input: subgraph: !empty(), not finish()'ed
-    // Output: subgraph: area: contains newLeaves2boundary.values(); discernible
+    // Output: subgraph: area: contains newLeaves2boundary.values(); Leaf::discernible
     //         newLeaves2boundary
 	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + |area| /*fast*/))
   DistTree () = default;
@@ -1204,7 +1214,7 @@ public:
     { return getOneDissimSize_max () * dissimTypesNum (); }	
   size_t getSparseDissims_size () const
     { return 7 * getPathObjNums_size (); }  // PAR
-  Set<const DTNode*> getDiscernibles () const;
+  VectorPtr<DTNode> getDiscernibles () const;
     // Logical leaves
   static void printParam (ostream &os) 
     { os << "PARAMETERS:" << endl;
@@ -1359,7 +1369,7 @@ public:
     // If the number of left leaves <= 1 then throw (--> return bool ??)
     // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
-    // !leaf->getParent()->childrenDiscernible(), nubner of children > 1 and !optimizable() => may produce incorrect tree
+    // !leaf->getParent()->childrenDiscernible(), number of children > 1 and !optimizable() => may produce incorrect tree
 	  // Time: Time(optimizeSmallSubgraph)    
         
   // After optimization
