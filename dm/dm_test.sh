@@ -104,9 +104,9 @@ $THIS/beta1_test  -qc  1000  -seed $1
 
 echo ""
 echo "uniKernel"
-$THIS/uniKernel  -qc  data/bimodal Z1_1 > bimodal.unikernel
-diff bimodal.unikernel data/bimodal.unikernel
-rm bimodal.unikernel
+$THIS/uniKernel  -qc  data/bimodal Z1_1 > bimodal.uniKernel
+diff bimodal.uniKernel data/bimodal.uniKernel
+rm bimodal.uniKernel
 
 echo ""
 $THIS/uniKernel  -qc  data/363068-2319168-diff JK > 363068-2319168-diff.uniKernel
