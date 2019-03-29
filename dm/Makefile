@@ -40,6 +40,7 @@ all:	\
 	pca \
 	pca2clusters \
 	positiveAverage \
+	printDataset \
 	sim2dist \
   threshold \
 	uniKernel \
@@ -243,6 +244,12 @@ positiveAverage.o:  $(DM_HPP)
 positiveAverageOBJS=positiveAverage.o $(DM_OBJ)
 positiveAverage:	$(positiveAverageOBJS)
 	$(CXX) -o $@ $(positiveAverageOBJS) $(LIBS)
+	$(ECHO)
+
+printDataset.o:  $(DM_HPP) 
+printDatasetOBJS=printDataset.o $(DM_OBJ) 
+printDataset:	$(printDatasetOBJS)
+	$(CXX) -o $@ $(printDatasetOBJS) $(LIBS)
 	$(ECHO)
 
 sim2dist.o:  $(DM_HPP) 
