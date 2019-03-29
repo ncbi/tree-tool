@@ -52,6 +52,16 @@ struct ThisApplication : Application
 	      sum. addExp (- log (n));
 	    ASSERT_EQ (exp (sum. getLn ()), 1, 1e-6);
  	  }
+
+  #if 0
+    #define REAL2STR(x)  cout << #x << ": " << real2str (x,6) << endl;
+ 	  REAL2STR (0);
+ 	  REAL2STR (1);
+ 	  REAL2STR (0.0001);
+ 	  REAL2STR (1e5);
+ 	  REAL2STR (0.000123456);
+ 	  #undef REAL2STR
+ 	#endif
 	}
 };
 

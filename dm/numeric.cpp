@@ -74,7 +74,7 @@ string real2str (Real x,
                  streamsize decimals)
 {
 	ostringstream os;
-	os << fixed; os. precision (decimals); os << x;
+	os << scientific /*fixed*/; os. precision (decimals); os << x;
 	return os. str ();
 }
 
