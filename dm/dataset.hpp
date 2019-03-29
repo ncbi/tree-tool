@@ -67,6 +67,8 @@ public:
   
   Real getPrecision () const
     { return pow (10.0, - (Real) decimals); }
+
+  static string getAverageStrValue (StringVector &&valuesStr);
 };
 
 
@@ -245,6 +247,7 @@ public:
                           const string &s) = 0;
     // Output: values[objNum]
     // Requires: s does not encode missing
+  virtual string getAverageStrValue (StringVector &&valuesStr) const = 0;
   virtual Json* value2json (JsonContainer* parent, 
                             size_t objNum) const = 0;
     // Return: new
@@ -359,6 +362,8 @@ public:
       replaceStr (s1, ",", "");
       values [objNum] = str2real (s1); 
     }
+  string getAverageStrValue (StringVector &&valuesStr) const final
+    { return RealScale::getAverageStrValue (move (valuesStr)); }
   JsonDouble* value2json (JsonContainer* parent,
                           size_t objNum) const final
     { return new JsonDouble ((*this) [objNum], decimals, parent, name); }
@@ -524,6 +529,8 @@ public:
   void str2value (size_t objNum,
                   const string &s)
     { (*this) [objNum] = str2<Value> (s); }
+  string getAverageStrValue (StringVector &&/*valuesStr*/) const final
+    { throw logic_error ("Not implemented"); }
   Real getReal (size_t objNum) const 
     { const Value v = (*this) [objNum];
       return v == missing ? NumAttr1::missing : (Real) v; 
@@ -554,6 +561,8 @@ public:
   void str2value (size_t objNum,
                   const string &s) final
     { setBool (objNum, (ebool) str2bool (s)); }
+  string getAverageStrValue (StringVector &&/*valuesStr*/) const final
+    { throw logic_error ("Not implemented"); }
   JsonBoolean* value2json (JsonContainer* parent,
                            size_t objNum) const final
     { return new JsonBoolean (getBool (objNum), parent, name); }
@@ -743,6 +752,8 @@ public:
     { return categories [values [objNum]]; }
   void str2value (size_t objNum,
                   const string &s) final;
+  string getAverageStrValue (StringVector &&/*valuesStr*/) const final
+    { throw logic_error ("Not implemented"); }
   JsonString* value2json (JsonContainer* parent,
                           size_t objNum) const final
     { return new JsonString (value2str (objNum), parent, name); }
@@ -891,6 +902,7 @@ public:
                           const string &s) = 0;
     // Output: values[row][col]
     // Requires: s does not encode missing
+  virtual string getAverageStrValue (StringVector &&valuesStr) const = 0;
     
   virtual Attr1* createAttr1 (Dataset &ds_arg) const = 0;
   virtual void symmetrize () = 0;
@@ -951,6 +963,8 @@ struct RealAttr2 : Attr2, RealScale
       replaceStr (s1, ",", "");
       put (row, col, str2real (s1)); 
     }
+  string getAverageStrValue (StringVector &&valuesStr) const final
+    { return RealScale::getAverageStrValue (move (valuesStr)); }
   RealAttr1* createAttr1 (Dataset &ds_arg) const override
     { return new RealAttr1 (name, ds_arg, decimals); }
   void symmetrize () override
@@ -1071,7 +1085,10 @@ private:
     //      {<Attribute name> <Type>}
     //    Data
     //      {[<Object name>] [<mult>] {<Value>}}
-    //      [<Two-way attribute name> {FULL <full matrix>} | {PARTIAL <# objects> <partial matrix>}]
+    //      [<Two-way attribute name>    {FULL <full matrix>} 
+    //                                 | {PARTIAL <# objects> <partial matrix>} 
+    //                                 | {PAIRS <# pairs> {<obj1> <obj2> <value> [<comment>]}*}  // ordered by (<obj1>,<obj2>)
+    //      ]
     //   [COMMENT
     //      {<Object comment>}
     //   ]

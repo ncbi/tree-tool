@@ -28,9 +28,34 @@ void Obj::qc () const
   Root::qc ();
 		
   IMPLY (! name. empty (), goodName (name));
-  ASSERT (mult >= 0); 
+  ASSERT (mult >= 0.0); 
   ASSERT (mult < INF);
 }
+
+
+
+
+// RealScale
+
+string RealScale::getAverageStrValue (StringVector &&valuesStr)
+{
+  if (valuesStr. empty ())
+    return "nan";
+    
+  if (valuesStr. size () == 1)
+    return move (valuesStr [0]);
+   
+  MeanVar mv;
+  for (string s : valuesStr)
+  {
+    replaceStr (s, ",", "");
+    mv << str2real (s);
+  }
+   
+  return toString (mv. getMean ());  
+}
+
+
 
 
 
@@ -1696,6 +1721,36 @@ void PositiveAttr2::qc () const
 
 /////////////////////////////////////// Dataset ////////////////////////////////////
 
+namespace 
+{
+  
+void loadObjPair (const string &objName1, 
+                  const string &objName2, 
+                  StringVector &&values, 
+                  Attr2 &attr)
+{
+  ASSERT (objName1. empty () == objName1. empty ());
+  
+  if (objName1. empty ())
+    return;
+
+  const size_t objNum1 = attr. ds. getName2objNum (objName1);
+  const size_t objNum2 = attr. ds. getName2objNum (objName2);
+  if (objNum1 == NO_INDEX)
+    throw runtime_error (FUNC "Unknown object " + strQuote (objName1) + " while reading two-way attribute " + strQuote (attr. name));
+  if (objNum2 == NO_INDEX)
+    throw runtime_error (FUNC "Unknown object " + strQuote (objName2) + " while reading two-way attribute " + strQuote (attr. name));
+
+  const string averageS (attr. getAverageStrValue (move (values)));
+  
+  attr. str2value (objNum1, objNum2, averageS); 
+}
+
+  
+}
+
+
+
 void Dataset::load (istream &is)
 {
   if (! is. good ())
@@ -1909,10 +1964,11 @@ void Dataset::load (istream &is)
 	  {
   	  const Attr* attr = name2attr (s);
   	  if (! attr)
-  	    throw runtime_error ("Two-way attribute " + strQuote (s) + " is not found");
+  	    throw runtime_error (FUNC "Two-way attribute " + strQuote (s) + " is not found");
   	  Attr2* attr2 = var_cast (attr->asAttr2 ());
   	  if (! attr2)
-  	    throw runtime_error (strQuote (s) + " is not a two-way attribute");
+  	    throw runtime_error (FUNC + strQuote (s) + " is not a two-way attribute");
+  	  const string twoWayAttrName ("two-way attribute " + strQuote (attr2->name));
   	  is >> s;
   	  strUpper (s);
   	  if (s == "FULL")
@@ -1943,14 +1999,14 @@ void Dataset::load (istream &is)
           if (find (name2objNum, s, objNum))
             objNums << objNum;
           else
-            throw runtime_error ("Unknown object " + strQuote (s) + " in two-way attribute " + strQuote (attr2->name));
+            throw runtime_error (FUNC "Unknown object " + strQuote (s) + " in " + twoWayAttrName);
           matr [i]. resize (matrixObjNum);
           string val;
           FOR (size_t, j, matrixObjNum)
           {
             is >> val;
             if (val. empty ())
-              throw runtime_error (FUNC "end-of-file");
+              throw runtime_error (FUNC "end-of-file in " + twoWayAttrName);
             matr [i] [j] = move (val);
           }
         }
@@ -1961,6 +2017,61 @@ void Dataset::load (istream &is)
             else
               attr2->str2value (objNums [i], objNums [j], matr [i] [j]);
       }
+      else if (s == "PAIRS")
+      {
+        size_t pairsNum = NO_INDEX;
+        is >> pairsNum;
+        if (pairsNum == NO_INDEX)
+          throw runtime_error (FUNC "End-of-file reading " + twoWayAttrName);
+      //is. ignore (numeric_limits<streamsize>::max (), '\n');
+        skipLine (is);
+        string line;
+        Istringstream iss;
+        string objName1;
+        string objName2;
+        string value;
+        StringVector values;
+        string objName1_old;
+        string objName2_old;
+        string averageS;
+        FFOR (size_t, i, pairsNum)
+        {
+          ASSERT (objName1_old. empty () == objName2_old. empty ());
+          readLine (is, line);
+          iss. reset (line);
+          value. clear ();
+          iss >> objName1 >> objName2 >> value;
+        //cout << objName1 << ' ' << objName2 << ' ' << value << endl;  
+          const string atLine (" at line " + toString (i + 1));
+          if (value. empty ())
+            throw runtime_error (FUNC "End-of-file reading " + twoWayAttrName + atLine);
+          if (objName1 < objName1_old)
+            throw runtime_error (FUNC + objName1 + " is not ordered in " + twoWayAttrName + atLine);
+          if (objName1 == objName1_old && objName2 < objName2_old)
+            throw runtime_error (FUNC + objName2 + " is not ordered in " + twoWayAttrName + atLine);
+          if (   objName1 != objName1_old
+              || objName2 != objName2_old
+             )
+          {
+          #if 0
+            if (values. size () >= 2)  
+            {
+              cerr << attr2->name << ' '<< objName1_old << ' ' << objName2_old << ": ";
+              for (const string &val : values)
+                 cerr << ' ' << val;
+              cerr << endl;  
+            }
+          #endif
+            loadObjPair (objName1_old, objName2_old, move (values), *attr2);
+            objName1_old = objName1;
+            objName2_old = objName2;
+            values. clear ();
+          }
+          values << move (value);
+        }
+        loadObjPair (objName1_old, objName2_old, move (values), *attr2);
+      }
+      else throw runtime_error (FUNC "Unknown representation " + strQuote (s) + " for " + twoWayAttrName);
     }
 	}
     

@@ -42,7 +42,7 @@ trav $LIST "basename %f" | sed 's/$/ '"$ATTR"'/1' | sed 's/^/  /1'
 echo "DATA"
 cat $TMP.obj
 
-trav $LIST "basename %f; echo PAIRS; wc -l %f | awk %q{print %D1};%q; cat %f"
+trav $LIST "basename %f; echo PAIRS; wc -l %f | awk %q{print %D1};%q; sort %f"
 
 
 rm $TMP*  
