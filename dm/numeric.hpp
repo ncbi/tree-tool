@@ -57,7 +57,8 @@ typedef double Real;
 /////////////////////////////////////////////////////
 
 string real2str (Real x,
-                 streamsize decimals = 2);
+                 streamsize decimals = 2,
+                 bool scientific_arg = true);
 
 Real str2real (const string& s);
 

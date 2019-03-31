@@ -71,10 +71,11 @@ namespace
 
 
 string real2str (Real x,
-                 streamsize decimals)
+                 streamsize decimals,
+                 bool scientific_arg)
 {
 	ostringstream os;
-	os << scientific /*fixed*/; os. precision (decimals); os << x;
+	os << (scientific_arg ? scientific : fixed); os. precision (decimals); os << x;
 	return os. str ();
 }
 
