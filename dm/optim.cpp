@@ -12,19 +12,19 @@ namespace DM_sp
 
 
 
-bool practicallyOptimal (bool  Min,
-                         Real PracticalOptimum,
-                         Real Y)
+bool practicallyOptimal (bool min,
+                         Real practicalOptimum,
+                         Real y)
 {
-  ASSERT (! isNan (PracticalOptimum));
+  ASSERT (! isNan (practicalOptimum));
   
-  if (isNan (Y))
+  if (isNan (y))
     return false;
 
-  if (Min)
-    return Y <= PracticalOptimum;
+  if (min)
+    return y <= practicalOptimum;
   else
-    return Y >= PracticalOptimum;
+    return y >= practicalOptimum;
 }
 
 
@@ -36,25 +36,26 @@ Real Func1::findZero (Real x_min,
                       Real x_max,
                       Real precision) 
 {
-	ASSERT (positive (precision));	
-	ASSERT (! positive (f (x_min)));
-	ASSERT (! negative (f (x_max)));
+	ASSERT (precision >= 0.0);	
+	ASSERT (f (x_min) <= 0.0);
+	ASSERT (f (x_max) >= 0.0);
 	
 	Unverbose unv;
 	
 	for (;;)
 	{
 	  ASSERT (leReal (x_min, x_max));
-  	const Real x = (x_min + x_max) / 2;
-		if (x_max - x_min <= precision)
-			return x;
+  	const Real x = (x_min + x_max) / 2.0;
+	//if (x_max - x_min <= precision)
+		//return x;
   	const Real y = f (x);
   	ASSERT (! isNan (y));
     if (verbose ())
       cout << "x =" << x << "  y = " << y << endl;  
   	if (fabs (y) <= precision)  
   		return x;
-  	if (y < 0)
+    ASSERT (x_min < x_max);
+  	if (y < 0.0)
   		x_min = x;
   	else
   		x_max = x;
@@ -66,13 +67,13 @@ Real Func1::findZero (Real x_min,
 Real Func1::findZeroPositive (Real x_init,
                               Real precision) 
 {
-	ASSERT (x_init > 0);
+	ASSERT (x_init > 0.0);
 	
   Real x_min = x_init;
   while (positive (f (x_min)))
-    x_min /= 2;
+    x_min /= 2.0;
   if (x_min != x_init)
-  	return findZero (x_min, 2 * x_min, precision);
+  	return findZero (x_min, 2.0 * x_min, precision);
   if (verbose ())
     cout << "x_init=" << x_init << "  x_min=" << x_min << endl;  
     
@@ -80,7 +81,7 @@ Real Func1::findZeroPositive (Real x_init,
   while (negative (f (x_max)))
     x_max *= 2;
   if (x_max != x_init)
-  	return findZero (x_max / 2, x_max, precision);
+  	return findZero (x_max / 2.0, x_max, precision);
   if (verbose ())
     cout << "x_init=" << x_init << "  x_max=" << x_max << endl;   
     
