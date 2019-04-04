@@ -84,6 +84,20 @@ void get (S &s)
 
 
 
+void testStack1 ()
+{
+  ERROR;
+}
+
+
+
+void testStack ()
+{
+  testStack1 ();
+}
+
+
+
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -130,6 +144,8 @@ struct ThisApplication : Application
 	  cout << toString (5.5) << endl;
 	  cout << toString (-5) << endl;
 	  cout << toString (5.5e5) << endl;
+	  
+	  testStack ();
   }
 };
 

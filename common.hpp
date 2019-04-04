@@ -135,7 +135,6 @@ inline void errorExitStr (const string &msg)
   { errorExit (msg. c_str ()); }
 
 
-
 struct Nocopy
 {
 protected:

@@ -113,10 +113,10 @@ Real str2real (const string& s)
   	  || s1 == "."
   	  || s1 == "-0."
   	 )
-  	return 0;  	  
+  	return 0.0;  	  
 
-  const double res = atof (s1. c_str ());  
-  if (res == 0)
+  const double res = stof (s1);
+  if (! res)
   	throw runtime_error ("Cannot convert " + s + " to number");
   	
   return res;
