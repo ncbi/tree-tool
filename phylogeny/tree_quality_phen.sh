@@ -6,7 +6,8 @@ if [ $# -ne 4 ]; then
   echo "#1: distance tree"
   echo "#2: target list of objects | '' - all"
   echo "#3: phen/"
-  echo "#4: Find root (0/1)"
+  echo "#4: Find root and save RAM (0/1)"
+  echo "Time: 3.5 hours/172K genomes"
   exit 1
 fi
 TREE=$1
@@ -20,7 +21,7 @@ echo $TMP
 
 
 DELETE=""
-if [ $TARGET ]; then
+if [ "$TARGET" ]; then
   $THIS/tree2obj.sh $TREE > $TMP.cur
   $THIS/../setMinus $TMP.cur $TARGET > $TMP.del
   DELETE="-delete $TMP.del  -check_delete"
