@@ -39,7 +39,7 @@ struct ThisApplication : Application
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
 	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
-	  addKey ("var_attr", "Variance attribute name in the <data> file; if empty then varaince is computed by the -variance parameter");
+	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
@@ -53,11 +53,12 @@ struct ThisApplication : Application
 	  addFlag ("check_keep", "Check that the names to be kept actually exist in the tree");  
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
-	  addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
+	//addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
-	  addFlag ("reinsert", "Re-insert subtrees");
+	  addFlag ("reinsert", "Re-insert subtrees before subgraph optimizations");
+	  addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 	  addFlag ("fix_discernibles", "Set the indiscernible flag of objects");
@@ -174,7 +175,7 @@ struct ThisApplication : Application
 	  const string input_tree          = getArg ("input_tree");
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim_attr");
-	  const string varAttrName         = getArg ("var_attr");
+	  const string multAttrName        = getArg ("weight_attr");
 	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
@@ -187,11 +188,12 @@ struct ThisApplication : Application
 		const bool   check_keep          = getFlag ("check_keep");
 		      
 		const bool   optimize            = getFlag ("optimize");
-		const bool   whole               = getFlag ("whole");
+	//const bool   whole               = getFlag ("whole");
 		const bool   subgraph_fast       = getFlag ("subgraph_fast");
 		const size_t subgraph_iter_max   = str2<size_t> (getArg ("subgraph_iter_max"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
+		const bool   reinsert_iter       = getFlag ("reinsert_iter");
 		const bool   skip_topology       = getFlag ("skip_topology");
 	  const bool   new_only            = getFlag ("new_only");
 	  const bool   fix_discernibles    = getFlag ("fix_discernibles");
@@ -231,20 +233,18 @@ struct ThisApplication : Application
         throw runtime_error ("Input tree must be in " + dataFName);
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
-      if (! varAttrName. empty ())
-        throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
+      if (! multAttrName. empty ())
+        throw runtime_error ("Non-empty dissimilarity weight attribute with no " + dmSuff + "-file");
     }
     else
       if (dataFName. empty () && ! dissimAttrName. empty ())
         throw runtime_error ("Dissimilarity attribute with no data file");
-    if (dissimAttrName. empty () && ! varAttrName. empty ())
-      throw runtime_error ("Variance attribute with no dissimilarity attribute");
+    if (dissimAttrName. empty () && ! multAttrName. empty ())
+      throw runtime_error ("Dissimilarity weight attribute with no dissimilarity attribute");
     if (dissim_coeff <= 0.0)
       throw runtime_error ("dissim_coeff must be positive");
     if (dissim_power <= 0.0)
       throw runtime_error ("dissim_power must be positive");
-    if (dissim_power != 1.0 && ! varAttrName. empty ())
-      throw runtime_error ("-dissim_power and -var_attr cannot coexist");
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
     if (check_keep && keepFName. empty ())
@@ -255,22 +255,17 @@ struct ThisApplication : Application
       throw runtime_error ("-min_var cannot be negative");
     if (variance_min && dataFName. empty ())
       throw runtime_error ("-min_var needs -data");
-    if (variance_min && ! varAttrName. empty ())
-      throw runtime_error ("-min_var implies no -var_attr");
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
     	throw runtime_error ("output_dist_etc exists, but no output_dissim");
-    IMPLY (whole,             optimize);
     IMPLY (subgraph_fast,     optimize);
     if (subgraph_iter_max && ! optimize)
       throw runtime_error ("-subgraph_iter_max requires -optimize");
     IMPLY (skip_len,          optimize);
     IMPLY (reinsert,          optimize);
+    IMPLY (reinsert_iter,     optimize);
     IMPLY (skip_topology,     optimize);
-    IMPLY (subgraph_fast,     ! whole);
-    if (subgraph_iter_max && whole)
-      throw runtime_error ("-subgraph_iter_max is incompatible with -whole");
     IMPLY (new_only, ! optimize);
     if (fix_discernibles && dataFName. empty ())
       throw runtime_error ("-fix_discernibles needs dissimilarities");
@@ -302,8 +297,8 @@ struct ThisApplication : Application
       tree. reset (isDirName (dataFName)
                      ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
                      : input_tree. empty ()
-                       ? new DistTree (            dataFName, dissimAttrName, varAttrName)
-                       : new DistTree (input_tree, dataFName, dissimAttrName, varAttrName)
+                       ? new DistTree (            dataFName, dissimAttrName, multAttrName)
+                       : new DistTree (input_tree, dataFName, dissimAttrName, multAttrName)
                   );
     }
     ASSERT (tree. get ());
@@ -322,6 +317,10 @@ struct ThisApplication : Application
 
     tree->printInput (cout);
     cout << endl;
+    
+    
+    
+    bool predictionChanged = false;
 
 
     if (! deleteFName. empty ())
@@ -434,59 +433,76 @@ struct ThisApplication : Application
             if (verbose ())
               tree->print (cout);  
             tree->reportErrors (cout);
+            
+            if (lenArc_deleted || lenNode_deleted)
+              predictionChanged = true;
           }
           
+
           if (reinsert)
           {
             cerr << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: re-insert");
             tree->optimizeReinsert ();  
+            predictionChanged = true;
           }
+          
+          if (predictionChanged)
+         		tree->setDissimMult ();
           
           if (! skip_topology)
           {
-            cerr << string ("Optimizing topology: ") + (whole ? "neighbors" : "subgraphs") + " ..." << endl;
+            cerr << "Optimizing topology: subgraphs ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
-            if (whole)
-              tree->optimizeWholeIter (0, output_tree);
-            else
-            {
-              size_t iter_max = numeric_limits<size_t>::max ();
-              if (subgraph_fast)
-                minimize (iter_max, max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std));  // PAR
+            size_t iter_max = numeric_limits<size_t>::max ();
+            if (subgraph_fast)
+              minimize (iter_max, max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std));  // PAR
+            if (subgraph_iter_max)
+            	minimize (iter_max, subgraph_iter_max);
+            ASSERT (iter_max);
+          //bool hybridDeleted = true;
+            for (size_t iter = 0; iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/; iter++)
+          	{
+              cerr << "Iteration " << iter + 1;
+          		if (iter_max < numeric_limits<size_t>::max ())
+          	    cerr << " / " << iter_max; 
+          	  cerr << " ..." << endl;
+          		const Real absCriterion_old = tree->absCriterion;
+              tree->optimizeDissimCoeffs ();  
+              if (reinsert_iter)
+                tree->optimizeReinsert ();  
+              tree->optimizeLargeSubgraphs ();  
+            //hybridDeleted = false;
+              if (hybridF. get ())
+              	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+              tree->saveFile (output_tree); 
+            #if 0
+              if (hybridDeleted)
+              	continue;
+            #endif
+              if (! tree->absCriterion)
+              	break;
               if (subgraph_iter_max)
-              	minimize (iter_max, subgraph_iter_max);
-              ASSERT (iter_max);
-            //bool hybridDeleted = true;
-              for (size_t iter = 0; iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/; iter++)
-            	{
-	              cerr << "Iteration " << iter + 1;
-            		if (iter_max < numeric_limits<size_t>::max ())
-            	    cerr << " / " << iter_max; 
-            	  cerr << " ..." << endl;
-            		const Real absCriterion_old = tree->absCriterion;
-	              tree->optimizeDissimCoeffs ();  
-	              tree->optimizeLargeSubgraphs ();  
-              //hybridDeleted = false;
-	              if (hybridF. get ())
-	              	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
-                tree->saveFile (output_tree); 
-              #if 0
-	              if (hybridDeleted)
-	              	continue;
-	            #endif
-	              if (tree->absCriterion == 0.0)
-	              	break;
-	              if (! subgraph_iter_max && (absCriterion_old - tree->absCriterion) / tree->absCriterion < 1e-4 / (Real) tree->name2leaf. size ())  // PAR
-	              	break;
-	            }
+                continue;
+              const Real improvement = absCriterion_old - tree->absCriterion;
+              if (improvement / tree->absCriterion <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
+              	break;
+              ASSERT (improvement > 0.0);
+            /*const Real setback =*/ tree->setDissimMult ();
+            //cout << improvement << ' ' << setback << endl; 
+            #if 0
+            //tree->multFixed = true;  // ??
+              constexpr Real ratio = 1.5;  // PAR
+              if (setback / improvement < ratio || improvement / setback < ratio)
+                break;                
+            #endif
             }
             tree->reportErrors (cout);
           }
           
           cerr << "Re-rooting ..." << endl;
           const Real radius_ave = tree->reroot (root_topological);
-				  const ONumber on (cout, dissimDecimals, false);
+				  const ONumber on (cout, dissimDecimals / 2, false);  // PAR
           cout << "Ave. radius: " << radius_ave << endl;
           cout << endl;
         }
@@ -494,6 +510,8 @@ struct ThisApplication : Application
           tree->optimize3 ();
         else if (leaves == 2)
           tree->optimize2 ();
+        else
+          { ERROR; }
       }
 
 
@@ -504,7 +522,7 @@ struct ThisApplication : Application
 	      tree->setNodeAbsCriterion (); 
 	      Real outlier_min = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-10, outlier_min));  // PAR  
-	      const ONumber on (cout, criterionDecimals, false);  
+	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Outliers: " << outliers. size () << endl;
         OFStream f (delete_outliers);
 	      if (! outliers. empty ())
@@ -531,6 +549,8 @@ struct ThisApplication : Application
               prog (tree->absCriterion2str ());
               removed++;
             }
+            if (removed)
+              tree->setDissimMult ();
           }
           tree->reportErrors (cout);
         }
@@ -552,6 +572,15 @@ struct ThisApplication : Application
         tree->printAbsCriterion_halves ();  
       cout << endl;
     }
+    
+    
+    chron_getBestChange.    print (cout);
+    chron_tree2subgraph.    print (cout);
+    chron_subgraphOptimize. print (cout); 
+    chron_subgraph2tree.    print (cout); 
+
+
+    // Tree model is fixed
     
 
     if (reroot)
@@ -577,7 +606,7 @@ struct ThisApplication : Application
     {
 		  const ONumber on (cout, 2, false);  // PAR
     	const Real dissim_var = tree->setErrorDensities ();  
-      cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->dissim2_sum) * 100 << " %" << endl;
+      cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->target2_sum) * 100 << " %" << endl;
         // Must be << "Average arc error"
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
@@ -586,12 +615,6 @@ struct ThisApplication : Application
     }
     
     
-    chron_getBestChange.    print (cout);
-    chron_tree2subgraph.    print (cout);
-    chron_subgraphOptimize. print (cout); 
-    chron_subgraph2tree.    print (cout); 
-
-
     tree->setFrequentChild (rareProb);  
     tree->setFrequentDegree (rareProb); 
 
@@ -602,15 +625,20 @@ struct ThisApplication : Application
 
     if (! output_data. empty ())
     {
-      tree->dissims. sort ();
-      Real unoptimizable = NaN;
-      const Dataset ds (tree->getDissimVarDataset (unoptimizable));
-      OFStream of (output_data + dmSuff);
-      const ONumber on (of, criterionDecimals, false);  
-      cout << "Unoptimizable absCriterion = " << unoptimizable << endl;
-      tree->reportErrors (cout, unoptimizable);
-      ds. saveText (of);
-      cout << endl;
+      Real dissimTypeError = NaN;
+      {
+        tree->dissims. sort ();
+        const Dataset ds (tree->getDissimWeightDataset (dissimTypeError));
+        OFStream of (output_data + dmSuff);
+        ds. saveText (of);
+      }
+      if (! tree->dissimTypes. empty ())
+      {
+        const ONumber on (cout, absCriterionDecimals, false);  
+        cout << "Error between dissimilarities of different types = " << dissimTypeError << endl;
+        tree->reportErrors (cout, dissimTypeError);
+        cout << endl;
+      }
     }
     
     
@@ -649,7 +677,7 @@ struct ThisApplication : Application
     
     // Statistics
     {
-      const ONumber on (cout, criterionDecimals, false);
+      const ONumber on (cout, relCriterionDecimals, false);
       cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernibles (). size () - 1 << ')' << endl;
       cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree->getLength () << endl;
