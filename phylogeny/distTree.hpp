@@ -25,7 +25,8 @@ extern Chronometer chron_subgraph2tree;
 
 // PAR
 constexpr streamsize dissimDecimals = 6;  
-constexpr streamsize criterionDecimals = 3;
+constexpr streamsize absCriterionDecimals = 4;  // Small for stability
+constexpr streamsize relCriterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
   // The greater the better DistTree::absCriterion
 constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
@@ -34,6 +35,7 @@ constexpr uint boundary_size_max_std = 500;  // was: 100
 constexpr size_t sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
 constexpr Prob rareProb = 0.01; 
 constexpr size_t dissim_progress = 1e5;
+constexpr Real dissimCoeffProd_delta = 1e-6; 
 
 
 
@@ -64,35 +66,35 @@ inline VarianceType str2varianceType (const string &s)
   }      
 
 // Input: varianceType
-inline Real dissim2mult (Real dissim)
-  { if (dissim < 0.0)
-      throw runtime_error (FUNC "Negative dissim");
-    Real var = 0.0;
-    if (dissim)
+inline Real dist2mult (Real dist)
+  { if (dist < 0.0)
+      throw runtime_error (FUNC "Negative dist");
+    Real var = 0.0;  // Variance function
+    if (dist)  
       switch (varianceType)
-      { case varianceType_lin:    var = dissim; break;
-        case varianceType_sqr:    var = sqr (dissim); break;
-        case varianceType_exp:    var = exp (2.0 * dissim); break;
-        case varianceType_linExp: var = exp (dissim) - 1.0; break;
-        default: throw logic_error (FUNC "Unknown dissimilarity variance");
+      { case varianceType_lin:    var = dist; break;
+        case varianceType_sqr:    var = sqr (dist); break;
+        case varianceType_exp:    var = exp (2.0 * dist); break;
+        case varianceType_linExp: var = exp (dist) - 1.0; break;
+        default: throw logic_error (FUNC "Unknown variance function");
       }  
     else if (! variance_min)
       return 0.0;  // Objects will be collapse()'d
     return 1.0 / (variance_min + var);
   }
   // Return: >= 0
-  //         0 <=> dissim = INF
-inline Real dissim_max ()
+  //         0 <=> dist = INF
+inline Real dist_max ()
   { switch (varianceType)
     { case varianceType_lin:    return 1.0 / epsilon;
       case varianceType_sqr:    return 1.0 / sqrt (epsilon);
       case varianceType_exp:    return - 0.5 * log (epsilon);
       case varianceType_linExp: return log (1.0 / epsilon + 1.0);
     }  
-    throw logic_error (FUNC "Unknown dissimilarity variance");
+    throw logic_error (FUNC "Unknown variance function");
   }
-  // Solution of: dissim2mult(dissim_max) = epsilon
-  // dissim < dissim_max() <=> !nullReal(dissim2mult(dissim))
+  // Solution of: dist2mult(dist_max) = epsilon
+  // dist < dist_max() <=> !nullReal(dist2mult(dist))
 
 
 extern Real dissim_power;
@@ -551,9 +553,9 @@ public:
         return name;
       string s = name + prepend (" ", comment); 
       if (! isNan (relCriterion))
-        s += " " + real2str (relCriterion, 1);  // PAR
+        s += " " + real2str (relCriterion, 1, false);  // PAR
       else if (! isNan (absCriterion))
-        s += " " + real2str (getRelCriterion (), 1);  // PAR
+        s += " " + real2str (getRelCriterion (), 1, false);  // PAR
       return s;
     }
   bool isLeafType () const final
@@ -677,7 +679,7 @@ struct Subgraph : Root
   Vector<SubPath> subPaths;
     // Some paths of tree.dissims passing through area
     // Size: O(|bounadry| p/n log(n)) ~ O(|area| log^2(n))
-  Real subPathsAbsCriterion {0};
+  Real subPathsAbsCriterion {0.0};
   
   
   explicit Subgraph (const DistTree &tree_arg);
@@ -696,7 +698,7 @@ struct Subgraph : Root
       area_root = nullptr;
       area_underRoot = nullptr;
       subPaths. wipe ();
-      subPathsAbsCriterion = 0;
+      subPathsAbsCriterion = 0.0;
     }
 
   
@@ -855,14 +857,14 @@ struct DissimType : Named
 {
   const PositiveAttr2* dissimAttr {nullptr};
     // In *DistTree::dissimDs
-  Real coeff {NaN};
-    // >= 0.0, < INF
+  Real scaleCoeff {NaN}; 
+    // >= 0, < INF
     
   explicit DissimType (const PositiveAttr2* dissimAttr_arg);
   void qc () const override;
   void saveText (ostream &os) const override
     { const ONumber on (os, dissimDecimals, true);
-      os << name << ' ' << coeff << endl; 
+      os << name << ' ' << scaleCoeff << endl; 
     }
 }; 
 
@@ -876,27 +878,39 @@ struct Dissim
   const Leaf* leaf1 {nullptr};
   const Leaf* leaf2 {nullptr};
   //
+  // Use 4-byte variables ??
   Real target {NaN};
     // Dissimilarity between leaf1 and leaf2; !isNan()
     // < INF
-  Real mult {NaN};
-    // >= 0.0
+    // Update: = original target * DissimType::scaleCoeff
   size_t type {NO_INDEX};
     // < DistTree::dissimTypes.size()
   
   // Output
   Real prediction {NaN};
     // Tree distance
+    // >= 0
+  Real mult {NaN};
+    // >= 0
   const Steiner* lca {nullptr};
     // Paths
   
 
   Dissim (const Leaf* leaf1_arg,
           const Leaf* leaf2_arg,
-          Real target_arg = NaN,
-          Real mult_arg = NaN,
-          size_t type_arg = NO_INDEX);
+          Real target_arg,
+          Real mult_arg,
+          size_t type_arg);
   Dissim () = default;
+  void saveText (ostream &os) const
+    { os <<         leaf1->name 
+         << '\t' << leaf2->name 
+         << '\t' << target 
+         << '\t' << type
+         << '\t' << prediction
+         << '\t' << mult
+         << endl;
+    }
   void qc () const;
 
           
@@ -915,8 +929,6 @@ struct Dissim
     	throw logic_error ("getOtherLeaf");
     }
   string getObjName () const;
-  void print () const
-    { cout << leaf1 << ' ' << leaf2 << ' ' << mult << ' ' << lca << endl; }
   VectorPtr<Tree::TreeNode>& getPath (Tree::LcaBuffer &buf) const;
   	// Return: reference to buf
   Real getResidual () const
@@ -925,9 +937,8 @@ struct Dissim
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
     // LSE is MLE <= sqrt(mult)*(prediction-target) ~ N(0,sigma^2)
-  Real setPathObjNums (size_t objNum,
+  void setPathObjNums (size_t objNum,
                        Tree::LcaBuffer &buf);
-    // Return: getAbsCriterion()
     // Output: prediction, Steiner::pathObjNums
     
   bool operator< (const Dissim &other) const;
@@ -1006,16 +1017,17 @@ private:
     // Original data
   const PositiveAttr2* dissimAttr {nullptr};
     // In *dissimDs
-  const PositiveAttr2* varAttr {nullptr};
-    // In *dissimDs
+  const PositiveAttr2* multAttr {nullptr};
+    // In *dissimDs   
 public:
     
   constexpr static uint dissims_max {numeric_limits<uint>::max ()};
   Vector<Dissim> dissims;
   Vector<DissimType> dissimTypes;
-    // Product(DissimType::coeff) = 1.0
+    // Product(DissimType::scaleCoeff) = 1.0
+  bool multFixed {false};
   Real mult_sum {0.0};
-  Real dissim2_sum {0.0};
+  Real target2_sum {0.0};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NaN};
     // = L2LinearNumPrediction::absCriterion  
@@ -1029,18 +1041,18 @@ private:
 public:
 
 
-  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attributes dissimAttrName and varAttrName
+  // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attributes dissimAttrName and multAttrName
   //                     may contain more objects than *this contains leaves
-  //        dissimFName, dissimAttrName, varAttrName: all may be empty	  
+  //        dissimFName, dissimAttrName, multAttrName: all may be empty	  
 	DistTree (const string &treeDirFName,
 	          const string &dissimFName,
 	          const string &dissimAttrName,
-	          const string &varAttrName);
+	          const string &multAttrName);
 	  // Input: treeDirName: if directory anme then contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
 	          const string &dissimAttrName,
-	          const string &varAttrName);
+	          const string &multAttrName);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
             bool loadNewLeaves,
@@ -1125,7 +1137,7 @@ private:
     { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR
   void loadDissimDs (const string &dissimFName,
                      const string &dissimAttrName,
-                     const string &varAttrName);
+                     const string &multAttrName);
     // Output: dissimDs
     // invokes: dissimDs->setName2objNum()
   // Input: dissimDs
@@ -1169,27 +1181,26 @@ private:
     // Output: Dissim::target
   bool addDissim (Leaf* leaf1,
                   Leaf* leaf2,
-                  Real dissim,
-                  Real var,
+                  Real target,
+                  Real mult,
                   size_t type);
-	  // Return: dissim is added
-	  // Update: Dissim, mult_sum, dissim2_sum
+	  // Return: Dissim is added
     // Append: dissims[], Leaf::pathObjNums
   bool addDissim (const string &name1,
                   const string &name2,
-                  Real dissim,
-                  Real var,
+                  Real target,
+                  Real mult,
                   size_t type)
     { return addDissim ( var_cast (findPtr (name2leaf, name1))
     	                 , var_cast (findPtr (name2leaf, name2))
-    	                 , dissim
-    	                 , var
+    	                 , target
+    	                 , mult
     	                 , type
     	                 );
     }
-  void setPaths ();
+  void setPaths (bool setDissimMultP);
     // Output: dissims::Dissim, DTNode::pathObjNums, absCriterion
-    // Invokes: setLca()
+    // Invokes: setLca(), setDissimMult()
     // Time: O(p log(n))
 public:
 	void qc () const override;
@@ -1219,8 +1230,10 @@ public:
   static void printParam (ostream &os) 
     { os << "PARAMETERS:" << endl;
       os << "# Threads: " << threads_max << endl;
-      os << "Dissimilarity variance: " << varianceTypeNames [varianceType] << endl;
-      os << "Max. possible dissimilarity: " << dissim_max () << endl;
+      os << "Variance function: " << varianceTypeNames [varianceType] << endl;
+      if (DistTree_sp::variance_min)
+        os << "Min. variance: " << variance_min << endl;
+      os << "Max. possible distance: " << dist_max () << endl;
       os << "Subgraph radius: " << areaRadius_std << endl;
     }
 	void printInput (ostream &os) const;
@@ -1237,18 +1250,18 @@ public:
     { return absCriterion / (Real) dissims. size (); }
     // Approximate: includes !Dissim::valid() ?? 
   Prob getUnexplainedFrac (Real unoptimizable) const
-    { return (absCriterion - unoptimizable) / (dissim2_sum - unoptimizable); }
+    { return (absCriterion - unoptimizable) / (target2_sum - unoptimizable); }
   Real getErrorDensity (Real unoptimizable) const
     { const Prob r = 1.0 - getUnexplainedFrac (unoptimizable);   
       return sqrt ((1.0 - r) / r);   
     }
     // Requires: interpretation <= linear variance of dissimilarities  
   string absCriterion2str () const
-    { return real2str (absCriterion, criterionDecimals); }
+    { return real2str (absCriterion, absCriterionDecimals); }
   void reportErrors (ostream &os,
                      Real unoptimizable = 0.0) const
-    { const ONumber on (os, criterionDecimals, false);  
-      os << "absCriterion = " << absCriterion  - unoptimizable
+    { const ONumber on (os, relCriterionDecimals, false);  
+      os << "absCriterion = " << real2str (absCriterion  - unoptimizable, absCriterionDecimals)
          << "  Error density = " << getErrorDensity (unoptimizable) * 100 << " %"
          << endl;
     }    
@@ -1280,6 +1293,9 @@ public:
 	void setNodeAbsCriterion ();
     // Output: DTNode::{absCriterion,absCriterion_ave}
     // Time: O(p log(n))
+	Real setDissimMult ();
+	  // Return: improvement of absCriterion
+	  // Output: Dissim::mult, absCriterion, mult_sum, target2_sum
 	  
   // Optimization	  
 	size_t optimizeLenArc ();
@@ -1355,14 +1371,23 @@ private:
   bool deleteLenZero (DTNode* node);
     // Return: success
 public:
+  Real getDissimCoeffProd () const
+    { Real prod = 1.0;
+      for (const DissimType& dt : dissimTypes)
+        if (dt. scaleCoeff)
+          prod *= dt. scaleCoeff;
+      return prod;
+    }  
   void optimizeDissimCoeffs ();
+    // Update: DissimType::scaleCoeff, Dissim::{target,mult}
 private:
-  void normalizeDissimCoeffs ();
-    // Make product(DissimType::coeff) = 1.0
+  Real normalizeDissimCoeffs ();
+    // Return: multiplier
+  void removeDissimType (size_t type);
 public:
-  Dataset getDissimVarDataset (Real &unoptimizable) const;
-    // Return: attributes: "dissim", "var"
-    // Output: unoptimizable - part of absCriterion
+  Dataset getDissimWeightDataset (Real &dissimTypeError) const;
+    // Return: attributes: "dissim", "weight"
+    // Output: dissimTypeError - part of absCriterion
     // Requires: dissims.searchSorted
   void removeLeaf (Leaf* leaf,
                    bool optimizeP);
