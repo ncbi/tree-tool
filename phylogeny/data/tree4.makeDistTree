@@ -1,7 +1,7 @@
 PARAMETERS:
 # Threads: 1
-Dissimilarity variance: linExp
-Max. possible dissimilarity: 18.0218
+Variance function: linExp
+Max. possible distance: 18.0218
 Subgraph radius: 5
 Root: by length
 
@@ -14,20 +14,20 @@ INPUT:
 # Dissimilarities: 6 (100.00 %)
 Dissimilarities factor: 1.08
 Ave. dissimilarity = 3.096390
-absCriterion = 0.000  Error density = 0.000 %
+absCriterion = 0.0000e+00  Error density = 0.000 %
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 0
 Optimizing arc lengths at each node ...
 # Nodes deleted = 0
-absCriterion = 0.000  Error density = 0.000 %
+absCriterion = 9.1597e-34  Error density = 0.000 %
 
-absCriterion = 0.000  Error density = 0.000 %
+absCriterion = 5.2069e-33  Error density = 0.000 %
 
-Ave. radius: 5.089286
+Ave. radius: 5.089
 
 OUTPUT:
-absCriterion = 0.000  Error density = 0.000 %
+absCriterion = 5.2069e-33  Error density = 0.000 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

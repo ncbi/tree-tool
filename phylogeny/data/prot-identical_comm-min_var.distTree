@@ -1,7 +1,8 @@
 PARAMETERS:
 # Threads: 1
-Dissimilarity variance: linExp
-Max. possible dissimilarity: 18.0218
+Variance function: linExp
+Min. variance: 0.0005
+Max. possible distance: 18.0218
 Subgraph radius: 5
 Root: by length
 
@@ -13,47 +14,62 @@ INPUT:
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
 Dissimilarities factor: 25.56
-Ave. dissimilarity = 0.182523
-absCriterion = 20.303  Error density = 3.115 %
+Ave. dissimilarity = 0.191845
+absCriterion = 1.8111e+01  Error density = 2.952 %
 
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 21
+# Nodes deleted = 17
 Optimizing arc lengths at each node ...
-# Nodes deleted = 0
-absCriterion = 7.825  Error density = 1.933 %
+# Nodes deleted = 2
+absCriterion = 7.2269e+00  Error density = 1.865 %
 
 # Hybrids: 0
-absCriterion = 7.020  Error density = 1.831 %
+absCriterion = 6.5152e+00  Error density = 1.764 %
 
 # Hybrids: 0
-absCriterion = 7.012  Error density = 1.830 %
+absCriterion = 6.3835e+00  Error density = 1.746 %
 
 # Hybrids: 0
-absCriterion = 7.012  Error density = 1.830 %
+absCriterion = 6.2337e+00  Error density = 1.725 %
 
-absCriterion = 7.012  Error density = 1.830 %
+# Hybrids: 0
+absCriterion = 6.2116e+00  Error density = 1.722 %
 
-Ave. radius: 0.455992
+# Hybrids: 0
+absCriterion = 6.2085e+00  Error density = 1.722 %
 
-# Outliers: 5
-absCriterion = 4.884  Error density = 1.552 %
+# Hybrids: 0
+absCriterion = 6.2078e+00  Error density = 1.722 %
+
+# Hybrids: 0
+absCriterion = 6.2076e+00  Error density = 1.722 %
+
+# Hybrids: 0
+absCriterion = 6.2075e+00  Error density = 1.722 %
+
+absCriterion = 6.2075e+00  Error density = 1.722 %
+
+Ave. radius: 0.456240
+
+# Outliers: 4
+absCriterion = 4.8591e+00  Error density = 1.542 %
 
 OUTPUT:
-absCriterion = 4.884  Error density = 1.552 %
+absCriterion = 4.8591e+00  Error density = 1.542 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 283 (max = 285)
-# Interior undirected arcs = 282
-Tree length = 30.570
+# Interior nodes (with root) = 285 (max = 286)
+# Interior undirected arcs = 283
+Tree length = 30.612
 Min. discernible leaf length = 0.000000e+00
 Ave. arc length = 0.054
-Interior height = 34
-Bifurcating interior branching = 1.359
-# Frequent children interior nodes = 278
-# Frequent children leaves = 281
+Interior height = 35
+Bifurcating interior branching = 1.357
+# Frequent children interior nodes = 280
+# Frequent children leaves = 282
 # Frequent interior nodes = 42
 # Frequent leaves = 52
 Rareness threshold = 1.000 %

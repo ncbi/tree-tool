@@ -1,7 +1,7 @@
 PARAMETERS:
 # Threads: 1
-Dissimilarity variance: lin
-Max. possible dissimilarity: 6.71089e+07
+Variance function: lin
+Max. possible distance: 6.71089e+07
 Subgraph radius: 5
 Root: by length
 
@@ -12,31 +12,31 @@ INPUT:
 # Nodes: 69
 # Dissimilarities: 1225 (100.00 %)
 Dissimilarities factor: 6.26
-Ave. dissimilarity = 4.986726
-absCriterion = 691.758  Error density = 32.249 %
+Ave. dissimilarity = 5.378897
+absCriterion = 5.6589e+02  Error density = 27.760 %
 
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 1
+# Nodes deleted = 0
 Optimizing arc lengths at each node ...
-# Nodes deleted = 1
-absCriterion = 281.009  Error density = 19.948 %
+# Nodes deleted = 0
+absCriterion = 2.4334e+02  Error density = 17.817 %
 
-absCriterion = 8.350  Error density = 3.374 %
+absCriterion = 8.3501e+00  Error density = 3.372 %
 
-Ave. radius: 3.966933
+Ave. radius: 3.967
 
 OUTPUT:
-absCriterion = 8.350  Error density = 3.374 %
+absCriterion = 8.3501e+00  Error density = 3.372 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = -0.00
-Correlation between residual^2 and dissimilarity = 0.08
+Correlation between residual^2 and dissimilarity = 0.07
 
 # Interior nodes (with root) = 48 (max = 49)
 # Interior undirected arcs = 47
-Tree length = 64.341
-Min. discernible leaf length = 7.793012e-01
-Ave. arc length = 0.663
+Tree length = 64.477
+Min. discernible leaf length = 7.787411e-01
+Ave. arc length = 0.665
 Interior height = 13
 Bifurcating interior branching = 1.371
 # Frequent children interior nodes = 48

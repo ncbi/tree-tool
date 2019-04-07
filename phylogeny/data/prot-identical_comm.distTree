@@ -1,7 +1,7 @@
 PARAMETERS:
 # Threads: 1
-Dissimilarity variance: linExp
-Max. possible dissimilarity: 18.0218
+Variance function: linExp
+Max. possible distance: 18.0218
 Subgraph radius: 5
 Root: by length
 
@@ -13,49 +13,71 @@ INPUT:
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
 Dissimilarities factor: 26.19
-Ave. dissimilarity = 0.185037
-absCriterion = 20.558  Error density = 3.134 %
+Ave. dissimilarity = 0.194195
+absCriterion = 1.8217e+01  Error density = 2.960 %
 
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 17
+# Nodes deleted = 16
 Optimizing arc lengths at each node ...
 # Nodes deleted = 3
-absCriterion = 7.910  Error density = 1.943 %
+absCriterion = 7.2722e+00  Error density = 1.870 %
 
 # Hybrids: 0
-absCriterion = 7.057  Error density = 1.836 %
+absCriterion = 6.5362e+00  Error density = 1.766 %
 
 # Hybrids: 0
-absCriterion = 7.048  Error density = 1.834 %
+absCriterion = 6.5110e+00  Error density = 1.763 %
 
 # Hybrids: 0
-absCriterion = 7.048  Error density = 1.834 %
+absCriterion = 6.5060e+00  Error density = 1.762 %
 
-absCriterion = 7.048  Error density = 1.834 %
+# Hybrids: 0
+absCriterion = 6.5042e+00  Error density = 1.762 %
 
-Ave. radius: 0.455985
+# Hybrids: 0
+absCriterion = 6.5032e+00  Error density = 1.762 %
 
-# Outliers: 5
-absCriterion = 4.899  Error density = 1.554 %
+# Hybrids: 0
+absCriterion = 6.5026e+00  Error density = 1.762 %
+
+# Hybrids: 0
+absCriterion = 6.5022e+00  Error density = 1.762 %
+
+# Hybrids: 0
+absCriterion = 6.5020e+00  Error density = 1.761 %
+
+# Hybrids: 0
+absCriterion = 6.5018e+00  Error density = 1.761 %
+
+# Hybrids: 0
+absCriterion = 6.5017e+00  Error density = 1.761 %
+
+# Hybrids: 0
+absCriterion = 6.5016e+00  Error density = 1.761 %
+
+absCriterion = 6.5016e+00  Error density = 1.761 %
+
+Ave. radius: 0.456221
+
+# Outliers: 4
+absCriterion = 4.8718e+00  Error density = 1.543 %
 
 OUTPUT:
-absCriterion = 4.899  Error density = 1.554 %
-absCriterion [0] = 0.432  Error density [0] = 5.607 %  Fraction = 6.170 %
-absCriterion [1] = 4.466  Error density [1] = 1.489 %  Fraction = 93.830 %
+absCriterion = 4.8718e+00  Error density = 1.543 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 278 (max = 279)
-# Interior undirected arcs = 277
-Tree length = 30.569
+# Interior nodes (with root) = 280 (max = 280)
+# Interior undirected arcs = 278
+Tree length = 30.612
 Min. discernible leaf length = 0.000000e+00
 Ave. arc length = 0.054
-Interior height = 34
-Bifurcating interior branching = 1.363
-# Frequent children interior nodes = 273
-# Frequent children leaves = 281
+Interior height = 35
+Bifurcating interior branching = 1.354
+# Frequent children interior nodes = 275
+# Frequent children leaves = 282
 # Frequent interior nodes = 42
 # Frequent leaves = 52
 Rareness threshold = 1.000 %
