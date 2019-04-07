@@ -22,7 +22,7 @@ struct ThisApplication : Application
   { 
 	  addPositional ("file", dmSuff + "-file without the extension");
 	  addPositional ("attrName", "name of a real attribute");
-	  addKey ("window", "Window of UniKernel; 0 <=> default", "0");  
+	  addKey ("window", "half-Window of UniKernel; 0 <=> default", "0");  
   }
 
 
