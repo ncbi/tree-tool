@@ -84,6 +84,7 @@ void get (S &s)
 
 
 
+#if 0
 void testStack1 ()
 {
   ERROR;
@@ -95,6 +96,7 @@ void testStack ()
 {
   testStack1 ();
 }
+#endif
 
 
 
@@ -133,7 +135,8 @@ struct ThisApplication : Application
 	  cout << vec3. searchSorted << ' ' << vec3. size () << endl;
 	  cout << vec.  searchSorted << ' ' << vec.  size () << endl;
 	#endif
-	
+
+  #if 0	
 	  cout << to_string (5) << endl;
 	  cout << to_string (5.5) << endl;
 	  cout << to_string (-5) << endl;
@@ -144,8 +147,16 @@ struct ThisApplication : Application
 	  cout << toString (5.5) << endl;
 	  cout << toString (-5) << endl;
 	  cout << toString (5.5e5) << endl;
+	#endif
 	  
-	  testStack ();
+	//testStack ();
+	
+	  double x = 0.0/0.0;
+	  cout << x << endl;
+	  if (x)
+	    cout << "x" << endl;
+	  if (! x)
+	    cout << "!x" << endl;
   }
 };
 
