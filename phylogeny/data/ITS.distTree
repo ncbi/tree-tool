@@ -6,7 +6,7 @@ Subgraph radius: 5
 Root: by length
 
 Loading data/inc.ITS/dissim ...
-CHRON: Initial topology: 32 sec.
+CHRON: Initial topology: 31 sec.
 
 INPUT:
 # Leaves: 9009
@@ -17,23 +17,23 @@ Dissimilarities factor: 82.55
 Ave. dissimilarity = 9.243448
 absCriterion = 3.8947e+05  Error density = 7.233 %
 
-absCriterion = 1.9436e+05  Error density = 5.103 %
-CHRON: Topology optimization: local: 129 sec.
+absCriterion = 1.9434e+05  Error density = 5.103 %
+CHRON: Topology optimization: local: 131 sec.
 
-Ave. radius: 7.072
+Ave. radius: 7.073
 
 OUTPUT:
-absCriterion = 1.9436e+05  Error density = 5.103 %
+absCriterion = 1.9434e+05  Error density = 5.103 %
 
-# Interior nodes (with root) = 8388 (max = 8445)
-# Interior undirected arcs = 8387
-Tree length = 14977.974
+# Interior nodes (with root) = 8384 (max = 8445)
+# Interior undirected arcs = 8383
+Tree length = 14978.444
 Min. discernible leaf length = 0.000000e+00
 Ave. arc length = 0.847
-Interior height = 189
-Bifurcating interior branching = 1.381
-# Frequent children interior nodes = 7435
-# Frequent children leaves = 8012
+Interior height = 184
+Bifurcating interior branching = 1.382
+# Frequent children interior nodes = 7440
+# Frequent children leaves = 8019
 # Frequent interior nodes = 33
-# Frequent leaves = 173
+# Frequent leaves = 172
 Rareness threshold = 1.000 %

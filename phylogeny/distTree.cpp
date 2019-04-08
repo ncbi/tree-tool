@@ -6714,43 +6714,34 @@ namespace
 struct DissimCoeffFunc : Func1
 {
   // Input
-  const Vector<Real>& betaRaw;
+  const Vector<Real>& covar;
   const Vector<Real>& predict2;
   // Output
   Vector<Real> beta;
   
   
-  DissimCoeffFunc (const Vector<Real>& betaRaw_arg,
+  DissimCoeffFunc (const Vector<Real>& covar_arg,
                    const Vector<Real>& predict2_arg)
-    : betaRaw (betaRaw_arg)
+    : covar (covar_arg)
     , predict2 (predict2_arg)
-    , beta (betaRaw_arg. size (), 0.0)
+    , beta (covar_arg. size (), 0.0)
     {
-      ASSERT (betaRaw. size () == predict2. size ());
+      ASSERT (covar. size () == predict2. size ());
     }  
     
   Real f (Real lambda) final
     {
       Real sum = 0.0;
-      if (verbose ())
-        cout << "lambda = " << lambda << endl;
-      FFOR (size_t, i, betaRaw. size ())
-        if (positive (betaRaw [i]))
+      FFOR (size_t, i, covar. size ())
         {
           ASSERT (predict2 [i] > 0.0);
-          Real det = sqr (betaRaw [i]) + 4.0 * lambda / predict2 [i];
-          ASSERT (! negative (det));
-          maximize (det, 0.0);
-          beta [i] = 2.0 / (betaRaw [i] + sqrt (det));
-          ASSERT (beta [i] > 0.0);
+          ASSERT (covar    [i] > 0.0);
+          beta [i] = (predict2 [i] + lambda) / covar [i];
+          ASSERT (beta [i] >= 0.0);
           ASSERT (beta [i] < INF);
           sum += log (beta [i]);
-          if (verbose ())
-            cout << i << ": " << betaRaw [i] << ' ' << beta [i] << endl; 
         }
-        else
-          beta [i] = 0.0;
-      return  - sum;
+      return  sum;
     }
 };
 
@@ -6769,7 +6760,6 @@ void DistTree::optimizeDissimCoeffs ()
   ASSERT_EQ (getDissimCoeffProd (), 1.0, dissimCoeffProd_delta); 
 
     
-  Vector<Real> betaRaw (dissimTypes. size (), 0.0);  
   // Linear regression
   Vector<Real> covar    (dissimTypes. size (), 0.0);  
   Vector<Real> predict2 (dissimTypes. size (), 0.0);  
@@ -6778,28 +6768,20 @@ void DistTree::optimizeDissimCoeffs ()
         && dissim. mult
        )
     {
-      const Real mult = dissim. mult * sqr (dissimTypes [dissim. type]. scaleCoeff);
+      const Real mult = dissim. mult * sqr (dissimTypes [dissim. type]. scaleCoeff); 
       covar    [dissim. type] += mult * dissim. target * dissim. prediction;
       predict2 [dissim. type] += mult * sqr (dissim. prediction);
+      if (! positive (covar [dissim. type]))
+        removeDissimType (dissim. type);
     }
-  FFOR (size_t, type, dissimTypes. size ())  
-  {  
-    if (! dissimTypes [type]. scaleCoeff)
-      continue;
-    ASSERT (predict2 [type] > 0.0);
-    betaRaw [type] = max (0.0, covar [type] / predict2 [type]);  
-    if (! betaRaw [type])
-      removeDissimType (type);
-  }
 
 
-  DissimCoeffFunc func (betaRaw, predict2);
-  for (;;)
+  DissimCoeffFunc func (covar, predict2);
   {
     Real lambda_min = -INF;
     FFOR (size_t, type, dissimTypes. size ())  
       if (dissimTypes [type]. scaleCoeff)
-        maximize (lambda_min, -0.25 * predict2 [type] * sqr (betaRaw [type]));
+        maximize (lambda_min, - predict2 [type]);
     ASSERT (lambda_min < 0.0);
     
     Real lambda_max = 1.0; 
@@ -6808,21 +6790,8 @@ void DistTree::optimizeDissimCoeffs ()
       
     const Real lambda_best = func. findZero (lambda_min, lambda_max, dissimCoeffProd_delta);  
     if (lambda_best == lambda_max)
-      throw runtime_error (FUNC "Cannot optimize");
-      
-    if (lambda_best > lambda_min)  
-      break;
-
-    Real beta_min = INF;
-    size_t type_min = NO_INDEX;
-    FFOR (size_t, type, func. beta. size ())
-      if (func. beta [type] && minimize (beta_min, func. beta [type]))
-        type_min = type;
-    if (type_min == NO_INDEX)
-      throw runtime_error (FUNC "All scale coefficients are set to 0");
-      
-    betaRaw [type_min] = 0.0;
-    removeDissimType (type_min);
+      throw runtime_error (FUNC "Cannot optimize");    
+    ASSERT (lambda_best > lambda_min);
   }
 
 
@@ -6900,7 +6869,7 @@ Real DistTree::normalizeDissimCoeffs ()
 
 
 
-void DistTree::removeDissimType (size_t type)
+void DistTree::removeDissimType (size_t type)  
 { 
   ASSERT (dissimTypes [type]. scaleCoeff > 0.0);
   

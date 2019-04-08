@@ -23,24 +23,24 @@ Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 # Nodes deleted = 1
 absCriterion = 5.1530e+02  Error density = 8.949 %
-CHRON: Initial arc lengths: 443 sec.
+CHRON: Initial arc lengths: 445 sec.
 
 # Hybrids: 25
-absCriterion = 1.4573e+02  Error density = 4.969 %
+absCriterion = 1.4567e+02  Error density = 4.968 %
 
 # Hybrids: 0
 absCriterion = 1.4555e+02  Error density = 4.965 %
 
 absCriterion = 1.4555e+02  Error density = 4.965 %
-CHRON: Topology optimization: local: 482 sec.
+CHRON: Topology optimization: local: 494 sec.
 
 Ave. radius: 0.539
 
 # Outliers: 3
-absCriterion = 1.4119e+02  Error density = 4.907 %
+absCriterion = 1.4119e+02  Error density = 4.906 %
 
 OUTPUT:
-absCriterion = 1.4119e+02  Error density = 4.907 %
+absCriterion = 1.4119e+02  Error density = 4.906 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = -0.00
