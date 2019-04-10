@@ -26,7 +26,7 @@ for F in `ls $INC/`; do
   fi
   
   N=`cat $INC/$F | wc -l`
-  if [ $N -lt 500 ]; then  # PAR
+  if [ $N -lt 20000 ]; then  # PAR
     cp $INC/$F $OUT/
   fi
 done
