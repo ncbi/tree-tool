@@ -47,6 +47,15 @@
 
 
 
+
+[[noreturn]] void errorThrow (const string &msg)
+{ 
+  throw std::logic_error (msg); 
+}
+
+
+
+
 namespace Common_sp
 {
  
