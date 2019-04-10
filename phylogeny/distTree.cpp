@@ -5327,6 +5327,7 @@ void DistTree::setDissimMult ()
   ASSERT (absCriterion < INF);
 
 
+  // To keep absCriterion < INF
   if (! variance_min)
   {  
     unordered_map<const Leaf*,Real/*dissim.target*/> leaf2target_min;  
@@ -6825,6 +6826,7 @@ void DistTree::optimizeDissimCoeffs ()
   // Linear regression
   Vector<Real> covar    (dissimTypes. size (), 0.0);  
   Vector<Real> predict2 (dissimTypes. size (), 0.0);  
+  bool removed = false;
   for (const Dissim& dissim : dissims)  
     if (dissim. validMult ())
     {
@@ -6832,8 +6834,14 @@ void DistTree::optimizeDissimCoeffs ()
       covar    [dissim. type] += mult * dissim. target * dissim. prediction;
       predict2 [dissim. type] += mult * sqr (dissim. prediction);
       if (! positive (covar [dissim. type]))
+      {
         removeDissimType (dissim. type);
+        removed = true;
+      }
     }
+  if (removed && ! getConnected ())
+    throw runtime_error (FUNC "Disconnected objects");
+
 
 
   DissimCoeffFunc func (covar, predict2);
