@@ -150,13 +150,29 @@ struct ThisApplication : Application
 	#endif
 	  
 	//testStack ();
-	
+
+  #if 0	
 	  double x = 0.0/0.0;
 	  cout << x << endl;
 	  if (x)
 	    cout << "x" << endl;
 	  if (! x)
 	    cout << "!x" << endl;
+	#endif
+	
+	#if 0
+	  Vector<bool> vec (10, false);
+	  cout << vec [3] << endl;
+	  vec [3] = true;
+	  cout << vec [3] << endl;
+	  vec [3] = false;
+	  cout << vec [3] << endl;
+	#endif
+	
+	  const double x = 0.0/0.0;
+	  cout << x << endl;
+	  cout << (bool) x << endl;
+	  cout << (! (bool) x) << endl;
   }
 };
 
