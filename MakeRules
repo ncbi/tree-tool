@@ -12,7 +12,7 @@ SimpleCPPFLAGS = -std=gnu++11 -pthread \
 	# -ffinite-math-only: NAN problem
 # Disable debugging
 OptCPPFLAGS = -Werror $(SimpleCPPFLAGS) -O3 
-DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
+DebugCPPFLAGS = $(SimpleCPPFLAGS) -O3 -g
 
 
 CXX=g++
