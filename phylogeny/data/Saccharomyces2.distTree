@@ -6,7 +6,7 @@ Subgraph radius: 5
 Root: by length
 
 Neighbor joining ...
-CHRON: Initial topology: 3 sec.
+CHRON: Initial topology: 4 sec.
 
 INPUT:
 # Leaves: 501
@@ -23,16 +23,16 @@ Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 # Nodes deleted = 1
 absCriterion = 5.1530e+02  Error density = 8.949 %
-CHRON: Initial arc lengths: 445 sec.
+CHRON: Initial arc lengths: 433 sec.
 
 # Hybrids: 25
-absCriterion = 1.4567e+02  Error density = 4.968 %
+absCriterion = 1.4566e+02  Error density = 4.967 %
 
 # Hybrids: 0
 absCriterion = 1.4555e+02  Error density = 4.965 %
 
 absCriterion = 1.4555e+02  Error density = 4.965 %
-CHRON: Topology optimization: local: 494 sec.
+CHRON: Topology optimization: local: 474 sec.
 
 Ave. radius: 0.539
 

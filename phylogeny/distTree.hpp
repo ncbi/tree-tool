@@ -52,6 +52,7 @@ enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
                   , varianceType_sqr     
                   , varianceType_exp     // Dissimilarity = -ln(P), var P = const
                   , varianceType_linExp  // Dissimilarity = -ln(P), var P = p*(1-p)
+                  , varianceType_none
                   };
 extern const StringVector varianceTypeNames;
 extern VarianceType varianceType;
@@ -69,17 +70,15 @@ inline VarianceType str2varianceType (const string &s)
 inline Real dist2mult (Real dist)
   { if (dist < 0.0)
       throw runtime_error (FUNC "Negative dist");
-    Real var = 0.0;  // Variance function
-    if (dist)  
-      switch (varianceType)
-      { case varianceType_lin:    var = dist; break;
-        case varianceType_sqr:    var = sqr (dist); break;
-        case varianceType_exp:    var = exp (2.0 * dist); break;
-        case varianceType_linExp: var = exp (dist) - 1.0; break;
-        default: throw logic_error (FUNC "Unknown variance function");
-      }  
-    else if (! variance_min)
-      return 0.0;  // Objects will be collapse()'d
+    Real var = NaN;  // Variance function
+    switch (varianceType)
+    { case varianceType_lin:    var = dist; break;
+      case varianceType_sqr:    var = sqr (dist); break;
+      case varianceType_exp:    var = exp (2.0 * dist); break;
+      case varianceType_linExp: var = exp (dist) - 1.0; break;
+      case varianceType_none:   throw runtime_error (FUNC "Variance function is not specified");
+      default:                  throw logic_error (FUNC "Unknown variance function");
+    }  
     return 1.0 / (variance_min + var);
   }
   // Return: >= 0
@@ -90,6 +89,7 @@ inline Real dist_max ()
       case varianceType_sqr:    return 1.0 / sqrt (epsilon);
       case varianceType_exp:    return - 0.5 * log (epsilon);
       case varianceType_linExp: return log (1.0 / epsilon + 1.0);
+      case varianceType_none:   return INF;
     }  
     throw logic_error (FUNC "Unknown variance function");
   }
@@ -677,7 +677,7 @@ struct Subgraph : Root
     // area.contains(area_underRoot)
   // (bool)area_underRoot = (bool)area_root
   Vector<SubPath> subPaths;
-    // Some paths of tree.dissims passing through area
+    // tree.dissims passing through area which can be changed
     // Size: O(|bounadry| p/n log(n)) ~ O(|area| log^2(n))
   Real subPathsAbsCriterion {0.0};
   
@@ -892,6 +892,7 @@ struct Dissim
     // >= 0
   Real mult {NaN};
     // >= 0
+    // INF <=> leaf1 and leaf2 must be collapse()'ed
   const Steiner* lca {nullptr};
     // Paths
   
@@ -919,6 +920,11 @@ struct Dissim
              && leaf2->graph;
     }
     // For topology
+  bool validMult () const
+    { return    valid ()
+             && mult
+             && mult < INF;
+    }
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
              || leaf == leaf2;
@@ -936,10 +942,15 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
-    // LSE is MLE <= sqrt(mult)*(prediction-target) ~ N(0,sigma^2)
   void setPathObjNums (size_t objNum,
                        Tree::LcaBuffer &buf);
     // Output: prediction, Steiner::pathObjNums
+  array<const Leaf*,2> getLeaves () const
+    { array<const Leaf*, 2> leaves;
+      leaves [0] = leaf1;
+      leaves [1] = leaf2;
+      return leaves;
+    }
     
   bool operator< (const Dissim &other) const;
   bool operator== (const Dissim &other) const
@@ -959,7 +970,7 @@ struct Image : Nocopy
     // In subgraph.tree
     // May be delete'd
   DistTree* tree {nullptr};
-    // Subgraph tree
+    // = &subgraph.tree
     // nullptr <=> bad_alloc
   DiGraph::Node2Node new2old;  
     // Initially: newLeaves2boundary
@@ -1026,8 +1037,8 @@ public:
   Vector<DissimType> dissimTypes;
     // Product(DissimType::scaleCoeff) = 1.0
   bool multFixed {false};
-  Real mult_sum {0.0};
-  Real target2_sum {0.0};
+  Real mult_sum {NaN};
+  Real target2_sum {NaN};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NaN};
     // = L2LinearNumPrediction::absCriterion  
@@ -1242,13 +1253,13 @@ public:
 	Real getDissim_ave () const
 	  { WeightedMeanVar mv;
 	    for (const Dissim& dissim : dissims)
-	      if (dissim. valid ())
+	      if (dissim. validMult ())
 	        mv. add (dissim. target, dissim. mult);
 	    return mv. getMean ();
 	  }
   Real getAbsCriterion_ave () const
     { return absCriterion / (Real) dissims. size (); }
-    // Approximate: includes !Dissim::valid() ?? 
+    // Approximate: includes !Dissim::validMult() ?? 
   Prob getUnexplainedFrac (Real unoptimizable) const
     { return (absCriterion - unoptimizable) / (target2_sum - unoptimizable); }
   Real getErrorDensity (Real unoptimizable) const
@@ -1293,8 +1304,7 @@ public:
 	void setNodeAbsCriterion ();
     // Output: DTNode::{absCriterion,absCriterion_ave}
     // Time: O(p log(n))
-	Real setDissimMult ();
-	  // Return: improvement of absCriterion
+	void setDissimMult ();
 	  // Output: Dissim::mult, absCriterion, mult_sum, target2_sum
 	  
   // Optimization	  

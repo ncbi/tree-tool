@@ -253,8 +253,12 @@ struct ThisApplication : Application
       throw runtime_error ("Cannot use both -delete and -keep");
     if (variance_min < 0.0)
       throw runtime_error ("-min_var cannot be negative");
-    if (variance_min && dataFName. empty ())
-      throw runtime_error ("-min_var needs -data");
+    if (variance_min && varianceType == varianceType_none)
+      throw runtime_error ("-min_var needs a variance function");
+    if (varianceType != varianceType_none && dataFName. empty ())
+      throw runtime_error ("Variance function needs a data file");
+    if (varianceType != varianceType_none && ! multAttrName. empty ())
+      throw runtime_error ("Variance function cannot be used with a dissimilarity weight attribute");
     if (! dist_request. empty () && output_dist. empty ())
     	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
@@ -488,14 +492,7 @@ struct ThisApplication : Application
               if (improvement / tree->absCriterion <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
               	break;
               ASSERT (improvement > 0.0);
-            /*const Real setback =*/ tree->setDissimMult ();
-            //cout << improvement << ' ' << setback << endl; 
-            #if 0
-            //tree->multFixed = true;  // ??
-              constexpr Real ratio = 1.5;  // PAR
-              if (setback / improvement < ratio || improvement / setback < ratio)
-                break;                
-            #endif
+              tree->setDissimMult ();
             }
             tree->reportErrors (cout);
           }

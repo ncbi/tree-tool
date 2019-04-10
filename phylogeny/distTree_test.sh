@@ -12,19 +12,19 @@ TMP=`mktemp`
 echo $TMP
 
 
-#if [ 1 == 0 ]; then  
+#if [ 1 == 0 ]; then 
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
 $THIS/../dm/mdsTree.sh data/Enterobacteriaceae Conservation 2 &> /dev/null
-$THIS/makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim_attr Conservation  -optimize  -output_tree Enterobacteriaceae.tree > Enterobacteriaceae.distTree
+$THIS/makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim_attr Conservation  -variance linExp  -optimize  -output_tree Enterobacteriaceae.tree > Enterobacteriaceae.distTree
 $THIS/distTree_compare_criteria.sh Enterobacteriaceae.distTree data/Enterobacteriaceae.distTree
 rm Enterobacteriaceae.distTree
 rm -r data/Enterobacteriaceae.dir/
 
 echo ""
 echo "To Newick ..."
-$THIS/printDistTree  -qc  -data data/Enterobacteriaceae  -dissim_attr Conservation  Enterobacteriaceae.tree  -order  -decimals 4 > Enterobacteriaceae.nw
+$THIS/printDistTree  -qc  -data data/Enterobacteriaceae  -dissim_attr Conservation  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4 > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 rm Enterobacteriaceae.nw
 
@@ -46,11 +46,11 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 echo ""
 echo "Perfect tree ..."
-$THIS/makeDistTree  -qc  -data data/tree4  -optimize | grep -v '^CHRON: ' > tree4.makeDistTree
+$THIS/makeDistTree  -qc  -data data/tree4  -variance linExp  -optimize | grep -v '^CHRON: ' > tree4.makeDistTree
 diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
 echo "Verbose ..."
-$THIS/makeDistTree -qc  -data data/tree4  -optimize  -verbose 2 &> /dev/null
+$THIS/makeDistTree -qc  -data data/tree4  -variance linExp  -optimize  -verbose 2 &> /dev/null
 
 echo ""
 echo "mdsTree: Random tree ..."
@@ -68,7 +68,7 @@ rm random-output.tree
 echo ""
 echo "prot-identical_comm: subgraphs ..."
 # Check time ??
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -optimize  \
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -optimize  \
   -delete_outliers prot-identical_comm.outliers \
   -delete_hybrids prot-identical_comm.hybrids \
   | grep -v '^CHRON: ' > prot-identical_comm.distTree
@@ -81,17 +81,18 @@ rm prot-identical_comm.distTree
 
 echo ""
 echo "prot-identical_comm: subgraphs, delete ..."
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -delete data/delete.list  -check_delete > /dev/null
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -delete data/delete.list  -check_delete > /dev/null
 
 echo ""
 echo "ITS threads ..."
-$THIS/makeDistTree -data data/inc.ITS/  -variance lin  -optimize  -skip_len  -subgraph_iter_max 1  -noqual  -threads 5 > ITS.distTree
+# -qc: 40 min.
+$THIS/makeDistTree  -data data/inc.ITS/  -variance lin  -optimize  -skip_len  -subgraph_iter_max 1  -noqual  -threads 5 > ITS.distTree
 $THIS/distTree_compare_criteria.sh ITS.distTree data/ITS.distTree
 rm ITS.distTree
 
 echo ""
 echo "Saccharomyces hybrids ..."
-$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -optimize  -subgraph_iter_max 2  \
+$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -dissim_boundary 0.675 \
   -delete_outliers Saccharomyces.outliers  -max_outlier_num 1 \
   > Saccharomyces.distTree
@@ -109,7 +110,7 @@ rm Saccharomyces.distTree
 echo ""
 echo "-min_var ..."
 # 0.0005 = average arc length / 100
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -min_var 0.0005  -optimize  \
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -min_var 0.0005  -optimize  \
   -delete_outliers prot-identical_comm-min_var.outliers \
   -delete_hybrids prot-identical_comm-min_var.hybrids \
   | grep -v '^CHRON: ' > prot-identical_comm-min_var.distTree
@@ -127,7 +128,7 @@ echo "Two dissimilarity types ..."
 
 echo ""
 echo "prot-identical_comm: subgraphs ..."
-makeDistTree  -qc  -data data/prot-identical_comm2  -optimize  -subgraph_iter_max 10  \
+makeDistTree  -qc  -data data/prot-identical_comm2  -variance linExp  -optimize  -subgraph_iter_max 10  \
   -output_dissim_coeff prot-identical_comm2.dissim_coeff \
   -delete_outliers prot-identical_comm2.outliers \
   -delete_hybrids prot-identical_comm2.hybrids \
@@ -143,7 +144,7 @@ rm prot-identical_comm2.distTree
 
 echo ""
 echo "Saccharomyces hybrids ..."
-$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -optimize  -subgraph_iter_max 2  \
+$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
   -delete_outliers Saccharomyces2.outliers  -max_outlier_num 1 \
   > Saccharomyces2.distTree
@@ -165,7 +166,7 @@ diff data/Saccharomyces2.outliers data/Saccharomyces.outliers
 echo ""
 echo ""
 echo "Many dissimilarity types ..."
-makeDistTree  -qc  -data data/Wolf9  -optimize  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
+makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
 diff Wolf9.coeff data/Wolf9.coeff
 rm Wolf9.coeff
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`

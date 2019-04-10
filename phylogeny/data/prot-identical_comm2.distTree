@@ -13,14 +13,14 @@ INPUT:
 # Nodes: 580
 # Dissimilarities: 84390 (100.00 %)
 Dissimilarities factor: 52.38
-Ave. dissimilarity = 0.194156
+Ave. dissimilarity = 0.194155
 # Dissimilarity types = 2
 absCriterion = 3.6433e+01  Error density = 2.960 %
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 17
 Optimizing arc lengths at each node ...
-# Nodes deleted = 2
+# Nodes deleted = 1
 absCriterion = 1.4549e+01  Error density = 1.870 %
 
 # Hybrids: 0
@@ -58,10 +58,10 @@ absCriterion = 1.3072e+01  Error density = 1.766 %
 Ave. radius: 0.456
 
 # Outliers: 4
-absCriterion = 9.7535e+00  Error density = 1.544 %
+absCriterion = 9.7533e+00  Error density = 1.544 %
 
 OUTPUT:
-absCriterion = 9.7535e+00  Error density = 1.544 %
+absCriterion = 9.7533e+00  Error density = 1.544 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
@@ -72,10 +72,10 @@ Correlation between residual^2 and dissimilarity = 0.09
 Tree length = 30.608
 Min. discernible leaf length = 0.000000e+00
 Ave. arc length = 0.054
-Interior height = 35
-Bifurcating interior branching = 1.354
+Interior height = 34
+Bifurcating interior branching = 1.361
 # Frequent children interior nodes = 275
 # Frequent children leaves = 282
 # Frequent interior nodes = 42
-# Frequent leaves = 52
+# Frequent leaves = 55
 Rareness threshold = 1.000 %
