@@ -1015,6 +1015,12 @@ namespace
 }
 
 
+int getVerbosity ()
+{
+  return verbose_;
+}
+
+
 bool verbose (int inc)
 { 
 	return Verbose::enabled () ? (verbose_ + inc > 0) : false;

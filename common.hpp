@@ -1072,6 +1072,8 @@ template <typename T>
 
 bool verbose (int inc = 0);
 
+int getVerbosity ();
+
 
 
 // Threads
