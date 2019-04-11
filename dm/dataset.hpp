@@ -1079,16 +1079,19 @@ private:
   void load (istream &is);
     // Loading from a text file in the <dmSuff>-format:
     //
-    //    {# <Comment>}
-    //    ObjNum <# objects> [no]name [no]mult
-    //    Attributes
-    //      {<Attribute name> <Type>}
-    //    Data
-    //      {[<Object name>] [<mult>] {<Value>}}
-    //      [<Two-way attribute name>    {FULL <full matrix>} 
-    //                                 | {PARTIAL <# objects> <partial matrix>} 
-    //                                 | {PAIRS <# pairs> {<obj1> <obj2> <value> [<comment>]}*}  // ordered by (<obj1>,<obj2>)
-    //      ]
+    //   {# <Comment>}
+    //   OBJNUM <# objects> [NO]NAME [NO]MULT
+    //   ATTRIBUTES
+    //     {<Attribute name> <Type>}
+    //   DATA
+    //     {[<Object name>] [<mult>] {<Value>}}*   // <# objects> rows
+    //     [<Two-way attribute name>    {FULL <full matrix>} 
+    //                                | {PARTIAL <# objects> <partial matrix>} 
+    //                                | {PAIRS <# pairs> {<obj1> <obj2> <value> [<comment>]}*}  // ordered by (<obj1>,<obj2>)
+    //     ]
+    //   [PAIR_DATA <# pairs> <# two-way attributes> <two-way attributes>
+    //    {<obj1> <obj2> <value>*}*
+    //   ]
     //   [COMMENT
     //      {<Object comment>}
     //   ]

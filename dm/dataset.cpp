@@ -224,7 +224,7 @@ NumAttr1& NumAttr1::operator= (const NumAttr1& other)
   ASSERT (& other. ds == & ds);
   ASSERT (other. decimals == decimals);
   if (! RealScale::operator== (other))
-    throw runtime_error ("Different RealScle in " + name + " and in " + other. name);
+    throw runtime_error (FUNC "Different RealScle in " + name + " and in " + other. name);
   return *this;
 }
 
@@ -234,7 +234,7 @@ NumAttr1::Value& NumAttr1::operator[] (size_t objNum)
 { 
   if (const RealAttr1* a = asRealAttr1 ())
     return var_cast (a) -> operator[] (objNum);
-  throw runtime_error ("Assignment to NumAttr1"); 
+  throw runtime_error (FUNC "Assignment to NumAttr1"); 
 }
 
 
@@ -988,7 +988,7 @@ bool BoolAttr1::str2bool (const string &s) const
       return false;
   }
   
-  throw runtime_error ("Unknown Boolean value " + strQuote (s));
+  throw runtime_error (FUNC "Unknown Boolean value " + strQuote (s));
 }
 
 
@@ -997,7 +997,7 @@ BoolAttr1::Value& BoolAttr1::operator[] (size_t objNum)
 { 
   if (const ExtBoolAttr1* a = asExtBoolAttr1 ())
     return var_cast (a) -> operator[] (objNum);
-  throw runtime_error ("Assignment to BoolAttr1"); 
+  throw runtime_error (FUNC "Assignment to BoolAttr1"); 
 }
 
 
@@ -1754,7 +1754,7 @@ void loadObjPair (const string &objName1,
 void Dataset::load (istream &is)
 {
   if (! is. good ())
-    throw runtime_error ("Cannot load dataset");
+    throw runtime_error (FUNC "Cannot load dataset");
   
   
   string s;
@@ -1819,7 +1819,7 @@ void Dataset::load (istream &is)
       // attrName
       is >> attrName;
       if (! isAlpha (attrName [0]))
-      	throw runtime_error ("Bad protein name: " + strQuote (attrName));
+      	throw runtime_error (FUNC "Bad protein name: " + strQuote (attrName));
       dataS = attrName;
       strUpper (dataS);
       if (dataS == "DATA")
@@ -1898,7 +1898,7 @@ void Dataset::load (istream &is)
     }
   }
   if (attrs. empty ())
-  	throw runtime_error ("No attributes");
+  	throw runtime_error (FUNC "No attributes");
     
     
   // objs, Obj::data
@@ -1960,6 +1960,55 @@ void Dataset::load (istream &is)
       }
 	  //ASSERT (objCommented ());
 	  }
+	  else if (s1 == "PAIR_DATA")
+	  {
+	    size_t pairs = 0;
+	    size_t attrsNum = 0; 
+	    is >> pairs >> attrsNum;
+	    VectorPtr<Attr2> attr2s;  attr2s. reserve (attrsNum);
+	    string attrName;
+	    FOR (size_t, col, attrsNum)
+	    {
+	      attrName. clear ();
+	      is >> attrName;
+	      if (attrName. empty ())
+	        throw runtime_error (FUNC "PAIR_DATA: No attribute name");
+	      const Attr* attr = name2attr (attrName);
+	      if (! attr)
+	        throw runtime_error (FUNC "PAIR_DATA: Unknown attribute " + strQuote (attrName));
+	      const Attr2* attr2 = attr->asAttr2 ();
+	      if (! attr2)
+	        throw runtime_error (FUNC "PAIR_DATA: Not a two-way attribute " + strQuote (attrName));
+	      attr2s << attr2;
+	    }
+	    string objName1, objName2, value;
+	    Verbose verb (1);
+	    Progress prog (pairs, 1000);  // PAR
+	    FOR (size_t, row, pairs)
+	    {
+	      prog ();
+	      objName1. clear ();
+	      objName2. clear ();
+	      is >> objName1 >> objName2;
+        const size_t objNum1 = getName2objNum (objName1);
+        if (objNum1 == NO_INDEX)
+          throw runtime_error (FUNC "PAIR_DATA: Unknown object " + strQuote (objName1));
+        const size_t objNum2 = getName2objNum (objName2);
+        if (objNum2 == NO_INDEX)
+          throw runtime_error (FUNC "PAIR_DATA: Unknown object " + strQuote (objName2));
+        FOR (size_t, col, attrsNum)
+        {
+          is >> value;
+          if (value. empty ())
+            throw runtime_error (FUNC "end-of-file");
+          Attr2* attr2 = var_cast (attr2s [col]);
+          if (value == missingStr)
+            attr2->setMissing (objNum1, objNum2);
+          else
+            attr2->str2value (objNum1, objNum2, value);
+        }
+	    }
+	  }
 	  else
 	  {
   	  const Attr* attr = name2attr (s);
@@ -1973,17 +2022,17 @@ void Dataset::load (istream &is)
   	  strUpper (s);
   	  if (s == "FULL")
   	  {
-        string val;
+        string value;
     	  FFOR (size_t, row, objs. size ())
       	  FFOR (size_t, col, objs. size ())
           {
-            is >> val;
-            if (val. empty ())
+            is >> value;
+            if (value. empty ())
               throw runtime_error (FUNC "end-of-file");
-            if (val == missingStr)
+            if (value == missingStr)
               attr2->setMissing (row, col);
             else
-              attr2->str2value (row, col, val);
+              attr2->str2value (row, col, value);
           }
       }
       else if (s == "PARTIAL")
@@ -2001,13 +2050,13 @@ void Dataset::load (istream &is)
           else
             throw runtime_error (FUNC "Unknown object " + strQuote (s) + " in " + twoWayAttrName);
           matr [i]. resize (matrixObjNum);
-          string val;
+          string value;
           FOR (size_t, j, matrixObjNum)
           {
-            is >> val;
-            if (val. empty ())
+            is >> value;
+            if (value. empty ())
               throw runtime_error (FUNC "end-of-file in " + twoWayAttrName);
-            matr [i] [j] = move (val);
+            matr [i] [j] = move (value);
           }
         }
         FOR (size_t, i, matrixObjNum)
@@ -2057,8 +2106,8 @@ void Dataset::load (istream &is)
             if (values. size () >= 2)  
             {
               cerr << attr2->name << ' '<< objName1_old << ' ' << objName2_old << ": ";
-              for (const string &val : values)
-                 cerr << ' ' << val;
+              for (const string &value : values)
+                 cerr << ' ' << value;
               cerr << endl;  
             }
           #endif
@@ -2161,7 +2210,7 @@ void Dataset::setName2objNum ()
   {
     const string& objName = objs [i] -> name;
     if (contains (name2objNum, objName))
-      throw runtime_error ("Duplicate name " + objName);
+      throw runtime_error (FUNC "Duplicate name " + objName);
     name2objNum [objName] = i;
   }
 }
@@ -6150,11 +6199,11 @@ PositiveAverageModel::Component::Component (const PositiveAverageModel& pam_arg,
 	{
 		iss >> coeff >> var;
 		if (! (coeff >= 0.0))
-			throw runtime_error ("Coefficient should be >= 0");
+			throw runtime_error (FUNC "Coefficient should be >= 0");
     if (! (coeff < INF))
-			throw runtime_error ("Coefficient should be finite");
+			throw runtime_error (FUNC "Coefficient should be finite");
 		if (! (var >= 0.0))
-			throw runtime_error ("Variance should be >= 0");
+			throw runtime_error (FUNC "Variance should be >= 0");
 	}
 	
 	setVar (var);
@@ -6314,7 +6363,7 @@ PositiveAverage::PositiveAverage (const Sample &sample_arg,
     maximize (decimals_max, attr->decimals);
   }
   if (model. components. empty ())
-    throw runtime_error ("PositiveAverage: No attributes");
+    throw runtime_error (FUNC "PositiveAverage: No attributes");
     	  
   averageAttr = new PositiveAttr1 ("average", var_cast (* sample. ds), decimals_max + 1);
 
@@ -6342,7 +6391,7 @@ void PositiveAverage::calibrate ()
       const Real center = space [attrNum] -> getMedian (sample);
       ASSERT (center >= 0.0);
       if (center == 0.0)
-        throw runtime_error (space [attrNum] -> name + ": center is 0");
+        throw runtime_error (FUNC + space [attrNum] -> name + ": center is 0");
       comp. coeff = 1.0 / center;
     }
   	comp. setVar (0.1);  // PAR
