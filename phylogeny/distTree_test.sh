@@ -12,7 +12,7 @@ TMP=`mktemp`
 echo $TMP
 
 
-#if [ 1 == 0 ]; then 
+#if [ 1 == 0 ]; then  
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
@@ -86,7 +86,7 @@ $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -dele
 echo ""
 echo "ITS threads ..."
 # -qc: 40 min.
-$THIS/makeDistTree  -data data/inc.ITS/  -variance lin  -optimize  -skip_len  -subgraph_iter_max 1  -noqual  -threads 5 > ITS.distTree
+$THIS/makeDistTree  -data data/inc.ITS/  -variance linExp  -optimize  -skip_len  -subgraph_iter_max 1  -noqual  -threads 5 > ITS.distTree
 $THIS/distTree_compare_criteria.sh ITS.distTree data/ITS.distTree
 rm ITS.distTree
 
@@ -94,7 +94,7 @@ echo ""
 echo "Saccharomyces hybrids ..."
 $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -dissim_boundary 0.675 \
-  -delete_outliers Saccharomyces.outliers  -max_outlier_num 1 \
+  -delete_outliers Saccharomyces.outliers  -outlier_num_max 1 \
   > Saccharomyces.distTree
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
 rm Saccharomyces.hybrid
@@ -108,18 +108,18 @@ rm Saccharomyces.distTree
 
 
 echo ""
-echo "-min_var ..."
+echo "-var_min ..."
 # 0.0005 = average arc length / 100
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -min_var 0.0005  -optimize  \
-  -delete_outliers prot-identical_comm-min_var.outliers \
-  -delete_hybrids prot-identical_comm-min_var.hybrids \
-  | grep -v '^CHRON: ' > prot-identical_comm-min_var.distTree
-diff prot-identical_comm-min_var.outliers data/prot-identical_comm-min_var.outliers
-rm prot-identical_comm-min_var.outliers
-diff prot-identical_comm-min_var.hybrids data/prot-identical_comm-min_var.hybrids
-rm prot-identical_comm-min_var.hybrids
-$THIS/distTree_compare_criteria.sh prot-identical_comm-min_var.distTree data/prot-identical_comm-min_var.distTree
-rm prot-identical_comm-min_var.distTree
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -var_min 0.0005  -optimize  \
+  -delete_outliers prot-identical_comm-var_min.outliers \
+  -delete_hybrids prot-identical_comm-var_min.hybrids \
+  | grep -v '^CHRON: ' > prot-identical_comm-var_min.distTree
+diff prot-identical_comm-var_min.outliers data/prot-identical_comm-var_min.outliers
+rm prot-identical_comm-var_min.outliers
+diff prot-identical_comm-var_min.hybrids data/prot-identical_comm-var_min.hybrids
+rm prot-identical_comm-var_min.hybrids
+$THIS/distTree_compare_criteria.sh prot-identical_comm-var_min.distTree data/prot-identical_comm-var_min.distTree
+rm prot-identical_comm-var_min.distTree
 
 
 echo ""
@@ -146,7 +146,7 @@ echo ""
 echo "Saccharomyces hybrids ..."
 $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
-  -delete_outliers Saccharomyces2.outliers  -max_outlier_num 1 \
+  -delete_outliers Saccharomyces2.outliers  -outlier_num_max 1 \
   > Saccharomyces2.distTree
 diff Saccharomyces2.hybrid data/Saccharomyces2.hybrid
 rm Saccharomyces2.hybrid

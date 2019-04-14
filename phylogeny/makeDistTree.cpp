@@ -43,7 +43,7 @@ struct ThisApplication : Application
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
-	  addKey ("min_var", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
+	  addKey ("var_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
 	  
 	  // Processing
@@ -68,7 +68,7 @@ struct ThisApplication : Application
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  	
 	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  
-	  addKey ("max_outlier_num", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
+	  addKey ("outlier_num_max", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
 	  
 	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
 	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
@@ -179,7 +179,7 @@ struct ThisApplication : Application
 	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
-	               variance_min        = str2real (getArg ("min_var"));
+	               variance_min        = str2real (getArg ("var_min"));
 		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
@@ -203,7 +203,7 @@ struct ThisApplication : Application
 		const string reroot_at           = getArg ("reroot_at");
 
 		const string delete_outliers     = getArg ("delete_outliers");
-		const size_t max_outlier_num     = str2<size_t> (getArg ("max_outlier_num"));
+		const size_t outlier_num_max     = str2<size_t> (getArg ("outlier_num_max"));
 
                  dissim_boundary     = str2real (getArg ("dissim_boundary"));
 		             hybridness_min      = str2real (getArg ("hybridness_min"));
@@ -252,9 +252,9 @@ struct ThisApplication : Application
     if (! deleteFName. empty () && ! keepFName. empty ())
       throw runtime_error ("Cannot use both -delete and -keep");
     if (variance_min < 0.0)
-      throw runtime_error ("-min_var cannot be negative");
+      throw runtime_error ("-var_min cannot be negative");
     if (variance_min && varianceType == varianceType_none)
-      throw runtime_error ("-min_var needs a variance function");
+      throw runtime_error ("-var_min needs a variance function");
     if (varianceType != varianceType_none && dataFName. empty ())
       throw runtime_error ("Variance function needs a data file");
     if (varianceType != varianceType_none && ! multAttrName. empty ())
@@ -274,7 +274,7 @@ struct ThisApplication : Application
     if (fix_discernibles && dataFName. empty ())
       throw runtime_error ("-fix_discernibles needs dissimilarities");
     if (fix_discernibles && variance_min)
-      throw runtime_error ("-fix_discernibles implies zero -min_var");
+      throw runtime_error ("-fix_discernibles implies zero -var_min");
     if (dissim_boundary <= 0.0)
     	throw runtime_error ("dissim_boundary must be > 0");
     if (hybridness_min <= 1.0)
@@ -283,8 +283,8 @@ struct ThisApplication : Application
     //throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
     if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())      
     	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
-    if (max_outlier_num && delete_outliers. empty ())
-      throw runtime_error ("-max_outlier_num requires -delete_outliers");
+    if (outlier_num_max && delete_outliers. empty ())
+      throw runtime_error ("-outlier_num_max requires -delete_outliers");
     if (! leaf_errors. empty () && noqual)
       throw runtime_error ("-noqual prohibits -leaf_errors");
     IMPLY (refresh_dissim, ! dissim_request. empty ());
@@ -465,7 +465,8 @@ struct ThisApplication : Application
             	minimize (iter_max, subgraph_iter_max);
             ASSERT (iter_max);
           //bool hybridDeleted = true;
-            for (size_t iter = 0; iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/; iter++)
+            size_t iter = 0;
+            for (; iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/; iter++)
           	{
               cerr << "Iteration " << iter + 1;
           		if (iter_max < numeric_limits<size_t>::max ())
@@ -484,16 +485,15 @@ struct ThisApplication : Application
               if (hybridDeleted)
               	continue;
             #endif
-              if (! tree->absCriterion)
+              if (! absCriterion_old)
               	break;
-              if (subgraph_iter_max)
-                continue;
-              const Real improvement = absCriterion_old - tree->absCriterion;
-              if (improvement / tree->absCriterion <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
+              const Real relImprovement = (absCriterion_old - tree->absCriterion) / absCriterion_old;
+              if (relImprovement <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
               	break;
-              ASSERT (improvement > 0.0);
               tree->setDissimMult ();
+              cerr << tree->absCriterion2str () /*<< ' ' << relImprovement*/ << endl; 
             }
+            cout << "# Iterations of subgraph optimization: " << iter + 1 << endl;
             tree->reportErrors (cout);
           }
           
@@ -539,7 +539,7 @@ struct ThisApplication : Application
             size_t removed = 0;
             for (const Leaf* leaf : outliers)
             {
-              if (max_outlier_num && removed >= max_outlier_num)
+              if (outlier_num_max && removed >= outlier_num_max)
                 break;
               f << leaf->name << endl;
               tree->removeLeaf (var_cast (leaf), true);

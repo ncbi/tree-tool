@@ -22,6 +22,7 @@ Optimizing arc lengths at each node ...
 # Nodes deleted = 0
 absCriterion = 9.1597e-34  Error density = 0.000 %
 
+# Iterations of subgraph optimization: 1
 absCriterion = 5.2069e-33  Error density = 0.000 %
 
 Ave. radius: 5.089

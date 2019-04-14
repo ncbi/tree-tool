@@ -1,12 +1,12 @@
 PARAMETERS:
 # Threads: 5
-Variance function: lin
-Max. possible distance: 6.71089e+07
+Variance function: linExp
+Max. possible distance: 18.0218
 Subgraph radius: 5
 Root: by length
 
 Loading data/inc.ITS/dissim ...
-CHRON: Initial topology: 35 sec.
+CHRON: Initial topology: 31 sec.
 
 INPUT:
 # Leaves: 9009
@@ -14,26 +14,27 @@ INPUT:
 # Nodes: 17748
 # Dissimilarities: 6304107 (15.54 %)
 Dissimilarities factor: 82.55
-Ave. dissimilarity = 9.243448
-absCriterion = 3.8947e+05  Error density = 7.233 %
+Ave. dissimilarity = 0.854598
+absCriterion = 1.3604e+03  Error density = 8.879 %
 
-absCriterion = 1.9422e+05  Error density = 5.101 %
-CHRON: Topology optimization: local: 130 sec.
+# Iterations of subgraph optimization: 2
+absCriterion = 1.0168e+03  Error density = 8.158 %
+CHRON: Topology optimization: local: 81 sec.
 
-Ave. radius: 7.073
+Ave. radius: 7.406
 
 OUTPUT:
-absCriterion = 1.9422e+05  Error density = 5.101 %
+absCriterion = 1.0168e+03  Error density = 8.158 %
 
-# Interior nodes (with root) = 8392 (max = 8445)
-# Interior undirected arcs = 8391
-Tree length = 14978.707
+# Interior nodes (with root) = 8414 (max = 8445)
+# Interior undirected arcs = 8413
+Tree length = 14949.033
 Min. discernible leaf length = 0.000000e+00
-Ave. arc length = 0.846
-Interior height = 186
-Bifurcating interior branching = 1.381
-# Frequent children interior nodes = 7443
-# Frequent children leaves = 8018
-# Frequent interior nodes = 33
-# Frequent leaves = 172
+Ave. arc length = 0.844
+Interior height = 116
+Bifurcating interior branching = 1.408
+# Frequent children interior nodes = 7702
+# Frequent children leaves = 8270
+# Frequent interior nodes = 35
+# Frequent leaves = 425
 Rareness threshold = 1.000 %

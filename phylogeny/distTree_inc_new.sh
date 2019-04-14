@@ -172,7 +172,7 @@ $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
-  -delete_outliers $INC/outlier-criterion  -max_outlier_num 1 \
+  -delete_outliers $INC/outlier-criterion  -outlier_num_max 1 \
   -output_tree $INC/tree.new \
   -dissim_request $INC/dissim_request \
   > $INC/hist/makeDistTree.$VER
