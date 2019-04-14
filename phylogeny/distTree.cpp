@@ -2109,6 +2109,8 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
   if (! mult)
     return 0.0;
   const Real epsilon = prediction_arg - target;
+  ASSERT (! isNan (epsilon));
+  ASSERT (fabs (epsilon) < INF);
   if (! epsilon)
     return 0.0;
   return mult * sqr (epsilon);
@@ -3782,15 +3784,17 @@ void DistTree::mergeDissimAttrs ()
   for (DissimType& dt : dissimTypes)
   {
     ASSERT (dt. dissimAttr);
-    vec. clear ();
+    Real s = 0.0;
     size_t n = 0; 
     {
       Real x = NaN;   
       FFOR (size_t, i, dissimDs->objs. size ())
         FFOR (size_t, j, dissimDs->objs. size ())
-          if (dt. dissimAttr->matr. get (false, i, j, x))
+          if (   dt. dissimAttr->matr. get (false, i, j, x)
+              && x < INF
+             )
           {
-            vec << x;
+            s += x;
             n++;
           }
     }
@@ -3798,15 +3802,13 @@ void DistTree::mergeDissimAttrs ()
       throw runtime_error ("No data in dissimilarity " + strQuote (dt. dissimAttr->name));
     if (n == 1)
       throw runtime_error ("Only one value in dissimilarity " + strQuote (dt. dissimAttr->name));
-    Real s = 0.0;
-    for (const Real x : vec)
-      s += x;
-    const Real average = s / (Real) vec. size ();
+    const Real average = s / (Real) n;
     ASSERT (average >= 0.0);
     if (average == 0.0)
       throw runtime_error ("Zero dissimilarity " + strQuote (dt. dissimAttr->name));
     dt. scaleCoeff = 1.0 / average;
     dt. qc ();
+    ASSERT (dt. scaleCoeff > 0.0);
     maximize (decimals, dt. dissimAttr->decimals);
   }
 
@@ -3821,20 +3823,22 @@ void DistTree::mergeDissimAttrs ()
       Real dissim_sum = 0.0;
       Real mult_sum_  = 0.0;
       Real x = NaN;
-      bool zero = false;
+      bool allZero = true;
       for (const DissimType& dt : dissimTypes)
-        if (dt. dissimAttr->matr. get (false, i, j, x))
+        if (   dt. dissimAttr->matr. get (false, i, j, x) 
+            && x < INF
+           )
         {
           ASSERT (x >= 0.0);
-          if (x == 0.0)
-            zero = true;
+          if (x)
+            allZero = false;
           ASSERT (dt. scaleCoeff > 0.0);
-          const Real mult = dist2mult (x /*Approximate*/) / sqr (dt. scaleCoeff);  
+          const Real mult = 1.0/*temporary*/ / sqr (dt. scaleCoeff);  
           dissim_sum += mult * x * dt. scaleCoeff;
           mult_sum_  += mult;
         }
       ASSERT (mult_sum_ >= 0.0);
-      if (zero)
+      if (allZero)  
         var_cast (dissimAttr) -> matr. put (false, i, j, 0.0);  // To collapse()
       else if (mult_sum_)
       {
@@ -4540,11 +4544,11 @@ bool DistTree::addDissim (Leaf* leaf1,
   ASSERT (DistTree_sp::dissim_power > 0.0);
   ASSERT (DistTree_sp::dissim_coeff > 0.0);
   ASSERT (detachedLeaves. empty ());
-  IMPLY (! DistTree_sp::variance_min && ! target, leaf1->getCollapsed (leaf2));  
+  IMPLY (! DistTree_sp::variance_min && ! target && dissimTypes. empty (), leaf1->getCollapsed (leaf2));  
 
   
   if (   isNan (target)  // prediction must be large ??
-    //|| ! DM_sp::finite (target)  // For getSparseLeafPairs()
+      || target == INF
      )
   {
     if (verbose ())
@@ -4827,6 +4831,7 @@ void DistTree::qc () const
                ! dissim. leaf1->discernible && ! dissim. leaf2->discernible && dissim. leaf1->getParent () == dissim. leaf2->getParent ()
               );
         leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
+        IMPLY (multFixed, dissim. mult < INF);
         if (dissimTypes. empty ())
           { ASSERT (dissim. type == NO_INDEX); }
         else
@@ -5000,7 +5005,7 @@ void DistTree::printInput (ostream &os) const
   {
     const ONumber on (os, 2, false);  // PAR
     os << "# Dissimilarities: " << dissims. size () << " (" << (Real) dissims. size () / (Real) getDissimSize_max () * 100 << " %)" << endl; 
-    os << "Dissimilarities factor: " << (Real) dissims. size () / ((Real) discernibles * log ((Real) discernibles)) << endl;
+    os << "Dissimilarities factor: " << (Real) dissims. size () / ((Real) dissimTypesNum () * (Real) discernibles * log ((Real) discernibles)) << endl;
   }
   {
     const ONumber on (os, dissimDecimals, false);
@@ -5322,31 +5327,33 @@ void DistTree::setNodeAbsCriterion ()
 
 void DistTree::setDissimMult ()
 { 
-  ASSERT (! subDepth);
   ASSERT (optimizable ());
   ASSERT (absCriterion < INF);
 
 
   // To keep absCriterion < INF
-  if (! variance_min)
+  if (! multFixed && ! variance_min)
   {  
     unordered_map<const Leaf*,Real/*dissim.target*/> leaf2target_min;  
     leaf2target_min. rehash (name2leaf. size () / 100 + 1);  // PAR
     for (Dissim& dissim : dissims)
       if (   dissim. valid ()
           && ! dissim. prediction
-          && dissim. target
+          && dissim. target          
          )
       {
         const array<const Leaf*,2> leaves (dissim. getLeaves ());
+        const Real target_half = 0.5 * dissim. target;
+        ASSERT (target_half > 0.0);
         for (const Leaf* leaf : leaves)
-        {
-          auto it = leaf2target_min. find (leaf);          
-          if (it == leaf2target_min. end ())
-            leaf2target_min [leaf] = dissim. target;
-          else
-            minimize (it->second, dissim. target);
-        }
+          if (leaf->discernible)
+          {
+            auto it = leaf2target_min. find (leaf);          
+            if (it == leaf2target_min. end ())
+              leaf2target_min [leaf] = target_half;
+            else
+              minimize (it->second, target_half);
+          }
       }
     for (const auto& it : leaf2target_min)
     {
@@ -5761,7 +5768,7 @@ size_t DistTree::optimizeLenArc ()
         && ! dtNode->inDiscernible ()
        )
       dtNodes << dtNode;
-    IMPLY (dtNode->inDiscernible (), dtNode->len == 0);
+    IMPLY (dtNode->inDiscernible (), ! dtNode->len);
   }
   dtNodes. sort (DTNode_len_strictlyLess);
   
@@ -6826,22 +6833,23 @@ void DistTree::optimizeDissimCoeffs ()
   // Linear regression
   Vector<Real> covar    (dissimTypes. size (), 0.0);  
   Vector<Real> predict2 (dissimTypes. size (), 0.0);  
-  bool removed = false;
   for (const Dissim& dissim : dissims)  
     if (dissim. validMult ())
     {
       const Real mult = dissim. mult * sqr (dissimTypes [dissim. type]. scaleCoeff); 
       covar    [dissim. type] += mult * dissim. target * dissim. prediction;
       predict2 [dissim. type] += mult * sqr (dissim. prediction);
-      if (! positive (covar [dissim. type]))
-      {
-        removeDissimType (dissim. type);
-        removed = true;
-      }
     }
-  if (removed && ! getConnected ())
-    throw runtime_error (FUNC "Disconnected objects");
-
+    
+//bool removed = false;
+  FFOR (size_t, type, dissimTypes. size ())
+    if (! positive (covar [type]))
+    {
+      removeDissimType (type);
+    //removed = true;
+    }
+/*if (removed && ! getDissimConnected ())
+    throw runtime_error (FUNC "Disconnected objects"); ?? */
 
 
   DissimCoeffFunc func (covar, predict2);
@@ -6902,7 +6910,13 @@ void DistTree::optimizeDissimCoeffs ()
     }    
 
 
-  ASSERT (leReal (absCriterion, absCriterion_old, 1e-5));  // PAR
+  cerr << absCriterion2str () << endl;
+  if (! leReal (absCriterion / absCriterion_old, 1.0, 1e-3))  // PAR
+  {
+    PRINT (absCriterion);
+    PRINT (absCriterion_old);
+    ERROR;
+  }
   qcPredictionAbsCriterion ();
 }
 
@@ -7131,11 +7145,13 @@ void DistTree::removeLeaf (Leaf* leaf,
       Dissim& dissim = dissims [objNum];
       ASSERT (dissim. hasLeaf (leaf));
       ASSERT ( ! dissim. valid ());
-      ASSERT (dissim. mult >= 0.0); 
-      ASSERT (dissim. mult < INF);
-      absCriterion -= dissim. getAbsCriterion ();       
-      mult_sum     -= dissim. mult;
-      target2_sum  -= dissim. mult * sqr (dissim. target); 
+      ASSERT (dissim. mult >= 0.0);
+      if (dissim. mult < INF)
+      {
+        absCriterion -= dissim. getAbsCriterion ();       
+        mult_sum     -= dissim. mult;
+        target2_sum  -= dissim. mult * sqr (dissim. target); 
+      }
       dissim. mult = 0.0;
     }
     maximize (absCriterion, 0.0);

@@ -507,7 +507,7 @@ struct Leaf : DTNode
 	
   string comment;
   static const string non_discernible;
-  bool discernible {true}; 
+  bool discernible {true};  // May be not used: parameter ??
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
     
 private:
