@@ -33,19 +33,32 @@ $THIS/../dm/positiveAverage $INPUT $POWER $OUTLIER_SES  -output_dissim $TMP.pair
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
 $THIS/../dm/pairs2attr2 $TMP.pairs 1 cons 6  -distance > $TMP.dm
 
+
 echo ""
 echo ""
+
 HYBRID=""
 if [ $DELETE_HYBRIDS -eq 1 ]; then
   HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
 fi
+
 VARIANCE=linExp
 DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
 if [ $DISSIM_COEFF == 0 ]; then
   VARIANCE=lin
   DISSIM_COEFF_OPTION=""
 fi
-$THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
+
+
+$THIS/../dm/dm2objs $TMP > $TMP.list
+ls $PHEN > $TMP.phen
+$THIS/../setMinus $TMP.list $TMP.phen > $TMP.delete
+
+
+echo ""
+echo ""
+$THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -delete $TMP.delete  -optimize  -subgraph_iter_max 20  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
+
 
 echo ""
 echo ""
