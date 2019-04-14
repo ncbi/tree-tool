@@ -1891,10 +1891,7 @@ void Dataset::load (istream &is)
       //ASSERT (! nominAttr->categories. empty ());
       }
       if (! attr)
-      {
-        cout << attrName << " " << type << endl;
-        ERROR;
-      }
+        throw runtime_error (FUNC "Attribute " + strQuote (attrName) + " of unknown type " + strQuote (type));
     }
   }
   if (attrs. empty ())

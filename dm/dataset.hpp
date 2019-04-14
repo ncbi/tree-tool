@@ -3778,6 +3778,8 @@ struct PositiveAverageModel : Root
 		Component (const PositiveAverageModel& pam_arg,
 		           const string &line,
 		           bool loadStat);
+		  // Input: line
+		  //          format: <name> <coeff> <var>
 		void qc () const override;
 		void saveText (ostream &os) const override
 		  { os         << name
@@ -3804,6 +3806,8 @@ struct PositiveAverageModel : Root
 	
 	PositiveAverageModel (const string &fName,
 	                      bool loadStat);
+	  // Input: fName
+	  //          format: <Outlier SEs> \n <Component>*
 	explicit PositiveAverageModel (Real outlierSEs_arg)
 	  : outlierSEs (outlierSEs_arg)
 	  {}
