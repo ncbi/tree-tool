@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "#1: go"
-  echo "Time: 32 min."
+  echo "Time: ~60 min."
   exit 1
 fi
 
@@ -166,6 +166,9 @@ diff data/Saccharomyces2.outliers data/Saccharomyces.outliers
 echo ""
 echo ""
 echo "Many dissimilarity types ..."
+
+echo ""
+echo "Wolf9 ..."
 makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
 diff Wolf9.coeff data/Wolf9.coeff
 rm Wolf9.coeff
@@ -183,6 +186,29 @@ diff Wolf9.nw Wolf9-out.nw
 rm Wolf9.nw Wolf9-out.nw
 rm Wolf9.tree Wolf9-out.tree
 rm Wolf9-out.dm
+
+echo ""
+echo "Wolf110 ..."
+# 643 iterations, 14 min.
+makeDistTree  -qc  -data data/Wolf110  -var_min 0.005  -variance linExp  -optimize  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
+A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
+#
+makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
+B=`grep -w ^OUTPUT -A 1 $TMP.2 | tail -1`
+if [ "$A" != "$B" ]; then
+  echo "$A"
+  echo "$B"
+  exit 1
+fi
+printDistTree  -qc  Wolf110.tree      -order  -decimals 4  -min_name > Wolf110.nw
+printDistTree  -qc  Wolf110-out.tree  -order  -decimals 4  -min_name > Wolf110-out.nw
+diff Wolf110.nw Wolf110-out.nw
+rm Wolf110.nw Wolf110-out.nw
+rm Wolf110.tree Wolf110-out.tree
+rm Wolf110-out.dm
+#
+# makeDistTree  -qc  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
+# ... ??
 
 
 
