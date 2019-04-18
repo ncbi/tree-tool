@@ -14,7 +14,7 @@ OBJS=$2
 DB=$3
 
 
-#if [ 1 == 0 ]; then  
+#if [ 1 == 0 ]; then 
 if [ -s $INC/tree ]; then
   echo "$INC/tree must be empty"
   exit 1
@@ -90,6 +90,8 @@ if [ $DB == 1 ]; then
 fi
 
 rm $INC/tree.list
+
+cp $INC/tree $INC/hist/tree.1
 
 
 if [ -e $INC/phen ]; then
