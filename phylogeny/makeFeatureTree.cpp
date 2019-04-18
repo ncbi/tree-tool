@@ -313,6 +313,11 @@ struct ThisApplication : Application
         if (feature. rootGain)
           f << tree. root->getLcaName () << '\t' << feature. name << endl;          
       }
+  	 	for (const DiGraph::Node* node : tree. nodes)
+  	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+  	 		  for (const Feature::Id& featureId : g->singletons)
+  	 		    if (! Feature::nominalSingleton (featureId))
+  	 		      f << g->getLcaName () << '\t' << featureId << endl;
     }
 
     
