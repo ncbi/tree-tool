@@ -6201,9 +6201,8 @@ PositiveAverageModel::Component::Component (const PositiveAverageModel& pam_arg,
 			throw runtime_error (FUNC "Coefficient should be finite");
 		if (! (var >= 0.0))
 			throw runtime_error (FUNC "Variance should be >= 0");
+  	setVar (var);
 	}
-	
-	setVar (var);
 }
 
 
@@ -6256,7 +6255,7 @@ PositiveAverageModel::PositiveAverageModel (const string &fName,
 	  if (f. line. empty ())
 	    continue;
 	    
-    if (isNan (outlierSEs))
+    if (loadStat && isNan (outlierSEs))
     {
       outlierSEs = stod (f. line);
       ASSERT (! isNan (outlierSEs));
