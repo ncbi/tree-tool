@@ -2,22 +2,21 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
-  echo "Input: #3-calibrate.dm"
-  echo "Output: hmm-univ.stat"
-  echo "#1: power"
-  echo "#2: outlierSEs"
-  echo "#3: phen/"
-  echo "#4: Input .dm-file without '.dm'"
-  echo "#5: delete hybrids (0/1)"
-  echo "#6: dissim_coeff: 0 - variance = lin, else linVar"
+  echo "Output: #1-out.dm, hmm-univ.stat"
+  echo "#1: Input .dm-file without '.dm'"
+  echo "#2: delete hybrids (0/1)"
+  echo "#3: power"
+  echo "#4: outlierSEs"
+  echo "#5: dissim_coeff: 0 - variance = lin, else linVar"
+  echo "#6: phen/"
   exit 1
 fi
-POWER=$1
-OUTLIER_SES=$2
-PHEN=$3
-INPUT=$4
-DELETE_HYBRIDS=$5
-DISSIM_COEFF=$6
+INPUT=$1
+DELETE_HYBRIDS=$2
+POWER=$3
+OUTLIER_SES=$4
+DISSIM_COEFF=$5
+PHEN=$6
 
 
 echo ""
@@ -31,7 +30,7 @@ TMP=`mktemp`
 
 $THIS/../dm/positiveAverage $INPUT $POWER $OUTLIER_SES  -output_dissim $TMP.pairs > hmm-univ.stat
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
-$THIS/../dm/pairs2attr2 $TMP.pairs 1 cons 6  -distance > $TMP.dm
+$THIS/../dm/pairs2attr2 $TMP.pairs 1 cons 6  -distance > $INPUT-out.dm
 
 
 echo ""
@@ -50,14 +49,14 @@ if [ $DISSIM_COEFF == 0 ]; then
 fi
 
 
-$THIS/../dm/dm2objs $TMP > $TMP.list
+$THIS/../dm/dm2objs $INPUT-out > $TMP.list
 ls $PHEN > $TMP.phen
 $THIS/../setMinus $TMP.list $TMP.phen > $TMP.delete
 
 
 echo ""
 echo ""
-$THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -delete $TMP.delete  -optimize  -subgraph_iter_max 20  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
+$THIS/makeDistTree  -threads 5  -data $INPUT-out  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -delete $TMP.delete  -optimize  -subgraph_iter_max 20  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree
 
 
 echo ""
