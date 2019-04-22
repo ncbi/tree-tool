@@ -42,7 +42,7 @@ constexpr Real dissimCoeffProd_delta = 1e-6;
 // For Time: 
 //   n = # Tree leaves, p = # distances = DistTree::dissims.size()
 //   p >= n
-//   ~ O(): p/n = log(n); log log = 1
+//   ~ O(): p = n log(n); log log = 1
 
 
 
@@ -668,6 +668,8 @@ struct Subgraph : Root
   VectorPtr<Tree::TreeNode> area;  
     // Connected area
   VectorPtr<Tree::TreeNode> boundary;
+    // Of area
+    // Size: O(|area|)
     // Make boundary and area disjoint ??
   const Steiner* area_root {nullptr};
     // May be nullptr
@@ -712,14 +714,14 @@ struct Subgraph : Root
 //set subPaths
   void finishSubPaths ();
     // Time: O(|boundary| p/n log(n) log(|subPaths|) + |subPaths| log(|area|)) 
-    //       ~ O(|area| log(|area| log^2(n)))
+    //       ~ O(|area| log(|area|) log^2(n)))
 //change topology of tree within area
   Real getImprovement (const DiGraph::Node2Node &boundary2new) const;
     // Time: O(|subPaths| (log(|boundary|) + log(|area|)))
   void subPaths2tree ();
     // Update: tree: Paths, absCriterion, Dissim::prediction
-    // Time: O(p/*fast*/ + |area| (log(|boundary|) + p/n log(n)) + |subPaths| log(|area|) log(|boundary|)) 
-    //       ~ O(|area| log^2(|area|) log^2(n))
+    // Time: O(p/*gast*/ + |subPaths| + |area| (log(|boundary| + p/n log(n)) + |subPaths| log(|area|)
+    //       ~ O(|area| log(|area|) log^2(n))
 
   bool large () const
     { return boundary. size () > 64; } // PAR
@@ -988,11 +990,11 @@ struct Image : Nocopy
 	  // Time: ~ O(|area| (log(|area|) log^2(n) + |area|) + Time(optimizeWholeIter(|area|)))
 	void processLarge (const Steiner* subTreeRoot,
 	                   const VectorPtr<Tree::TreeNode> &possibleBoundary);
-    // Time: ~ O(n^2 / threads_max^2)
+	  // Time: ~ O(|area| log(|area|) log^2(n) + Time(optimizeSmallSubgraphs(|area|)))
   bool apply ();
     // Return: false <=> bad_alloc
 	  // Output: DTNode::stable = true
-    // Time: ~ O(|area| log^2(|area|) log^2(n))
+    // Time: ~ O(|area| log(|area|) log^2(n))
 };
 
 
@@ -1108,7 +1110,7 @@ public:
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
-	  //       if !loadDissim then O(n + new_leaves)
+	  //       if !loadDissim then O(n log(n) + new_leaves)
   //  
   explicit DistTree (const string &newickFName);
   DistTree (Prob branchProb,
@@ -1123,7 +1125,7 @@ public:
     // Input: subgraph: !empty(), not finish()'ed
     // Output: subgraph: area: contains newLeaves2boundary.values(); Leaf::discernible
     //         newLeaves2boundary
-	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + |area| /*fast*/))
+	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + (sparse ? log(|area|) : |area|)))
   DistTree () = default;
 private:
   void loadTreeDir (const string &dir);
@@ -1156,8 +1158,14 @@ private:
   bool getConnected ();
     // Find connected components of leaves where pairs have dissimilarities with positive multiplicity
     // Return: true <=> 1 connected component
+    // Input: dissimDs
     // Output: DisjointCluster
     //         cout: print other connected components
+  bool getDissimConnected ();
+    // Find connected components of leaves where pairs have dissimilarities with positive multiplicity
+    // Return: true <=> 1 connected component
+    // Input: dissims
+    // Output: DisjointCluster
   LeafCluster getIndiscernibles ();
     // Return: VectorPtr::size() >= 2
     // Invokes: Leaf->DisjointCluster
@@ -1362,12 +1370,13 @@ private:
 public:
   void optimizeLargeSubgraphs ();
     // Invokes: optimizeSmallSubgraphs(), Threads
-    // Time: ~ O(n^2 / threads_max^2 + threads_max n log^4(n))
+	  // Time: ~ O(threads_max n log^3(n))
+
 private:
 	void optimizeSmallSubgraphs (uint areaRadius,
 	                             bool unstableOnly);
 	  // Invokes: optimizeSmallSubgraph()
-	  // Time: ~ O(n * Time(optimizeSmallSubgraph))
+	  // Time: O(p log^2(n) * Time(optimizeSmallSubgraph))  
 	void optimizeSmallSubgraph (const DTNode* center,
 	                            uint areaRadius);
   void delayDeleteRetainArcs (DTNode* node);
@@ -1523,7 +1532,7 @@ public:
 struct NewLeaf : Named
 // To become Leaf
 // name = Leaf::name
-// For time: q = leaf2dissims.size()
+// For Time: q = leaf2dissims.size()
 {
 private:
   const DistTree& tree;
@@ -1605,11 +1614,12 @@ public:
 
 
   // Find best location, greedy
+  // Time: O(q log^2(n))
   NewLeaf (const DistTree &tree_arg,
            const string &dataDir_arg,
            const string &name_arg,
            bool init);
-    // Invokes; process()
+    // Invokes: process()
   NewLeaf (const DistTree &tree_arg,
            const string &name_arg,
            const string &dissimFName,
@@ -1623,6 +1633,7 @@ public:
            size_t q_max,
            Real &nodeAbsCriterion_old);
     // q = q_max
+    // Invokes: optimize()
 private:
   void process (bool init,
                 const string &dissimFName,
