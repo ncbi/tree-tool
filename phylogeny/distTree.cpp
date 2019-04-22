@@ -1419,6 +1419,7 @@ void Subgraph::qc () const
     // area_underRoot
     ASSERT (area_underRoot->getParent () == area_root);
     ASSERT (area. containsFast (area_underRoot));
+    ASSERT (! boundary. containsFast (area_underRoot));  
   }
 
   // subPaths
@@ -1550,7 +1551,7 @@ void Subgraph::finishSubPaths ()
       if (! tree. dissims [objNum]. valid ())  
         continue;
       const SubPath subPath_ (objNum);
-      const size_t index = subPaths. binSearch (subPath_);
+      const size_t index = subPaths. binSearch (subPath_);  // unordered_map can be used 
       if (index == NO_INDEX)  // impossible for optimizeSmallSubgraph() 
         continue;
       SubPath& subPath = subPaths [index];
@@ -1634,7 +1635,7 @@ void Subgraph::subPaths2tree ()
   
   tree_. absCriterion -= subPathsAbsCriterion;
   Tree::LcaBuffer buf;
-  // Time: O(|subPaths| log(|area|) log(|boundary|))
+  // Time: O(|subPaths| log(|area|))
   for (const SubPath& subPath : subPaths)
   {
     subPath. qc ();
@@ -1652,7 +1653,11 @@ void Subgraph::subPaths2tree ()
       dissim. lca = lca;
     }
     for (const Tree::TreeNode* node : path)
-      if (! boundary. containsFast (node))
+    {
+      ASSERT (node != area_root);
+      if (qc_on)
+        { ASSERT (boundary. containsFast (node) == (node != area_underRoot && (node == subPath. node1 || node == subPath. node2))); }
+      if ((node == area_underRoot || (node != subPath. node1 && node != subPath. node2)))  
       {
         const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
         ASSERT (st);
@@ -1663,6 +1668,7 @@ void Subgraph::subPaths2tree ()
         }
         var_cast (st) -> pathObjNums << objNum;
       }
+    }
     dissim. prediction = subPath. dist_hat_tails + DistTree::path2prediction (path);
     tree_. absCriterion += dissim. getAbsCriterion ();
   }
@@ -3902,6 +3908,38 @@ bool DistTree::getConnected ()
     }
 
   return false;
+}
+
+
+
+bool DistTree::getDissimConnected () 
+{
+  ASSERT (optimizable ());
+
+  // Leaf::DisjointCluster
+  for (DiGraph::Node* node : nodes)
+  {
+    const DTNode* dtNode = static_cast <DTNode*> (node);
+    if (Leaf* leaf = var_cast (dtNode->asLeaf ()))
+      leaf->DisjointCluster::init ();
+  }
+
+  for (const Dissim& dissim : dissims)
+    if (   dissim. valid ()
+        && dissim. mult
+       )
+      var_cast (dissim. leaf1) -> merge (* var_cast (dissim. leaf2));
+
+  LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
+  for (DiGraph::Node* node : nodes)
+  {
+    const DTNode* dtNode = static_cast <DTNode*> (node);
+    if (const Leaf* leaf = dtNode->asLeaf ())
+      leafCluster [var_cast (leaf) -> getDisjointCluster ()] << leaf;
+  }
+  ASSERT (! leafCluster. empty ());
+  
+  return leafCluster. size () == 1;
 }
 
 
@@ -6471,7 +6509,6 @@ void DistTree::optimizeLargeSubgraphs ()
           // Node::leaves = number of Arc's in the subtree
         ASSERT (root->leaves <= rootNodes);
         IMPLY (cuts. empty (), root->leaves == rootNodes);
-        // Time = O (parts * exp(subtree size))
         // Minimize maximum subtree size
         while (root->leaves > goalSize + 2)  // root->leaves - 2 > goalSize
         {
@@ -6841,15 +6878,15 @@ void DistTree::optimizeDissimCoeffs ()
       predict2 [dissim. type] += mult * sqr (dissim. prediction);
     }
     
-//bool removed = false;
+  bool removed = false;
   FFOR (size_t, type, dissimTypes. size ())
     if (! positive (covar [type]))
     {
       removeDissimType (type);
-    //removed = true;
+      removed = true;
     }
-/*if (removed && ! getDissimConnected ())
-    throw runtime_error (FUNC "Disconnected objects"); ?? */
+  if (removed && ! getDissimConnected ())
+    throw runtime_error (FUNC "Disconnected objects"); 
 
 
   DissimCoeffFunc func (covar, predict2);
