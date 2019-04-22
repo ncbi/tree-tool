@@ -51,9 +51,7 @@ function create_script
 {
 	NAME=$1.sh
 	#
-	echo "$NAME is not implemented" >  $INC/$NAME
-	echo "exit 1"                   >> $INC/$NAME
-	chmod a+x $INC/$NAME
+	cp $THIS/distTree_inc/$NAME $INC/
 	echo "Implement $INC/$NAME !"
 }
 create_script objects_in_tree
@@ -64,7 +62,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
 	create_script db2unhybrid
 	create_script hybrid2db
 fi
-if [ $DISSIM_BOUNDARY != "NAN" ]; then
+if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
   create_script genogroup2db
 fi
 
