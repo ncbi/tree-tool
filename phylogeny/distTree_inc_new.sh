@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: Incremental distance tree directory"
-  echo "Time: O(n log^4(n))"
+  echo "Time: O(n log^4(n))+"
   exit 1
 fi
 INC=$1
@@ -81,6 +81,7 @@ rm $INC/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
+# Time ??
 REQ=`ls $INC/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
 	$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
@@ -90,7 +91,8 @@ else
 fi
 
 
-# Time: O(log^4(n)) per one new object, where n = # objects in the tree
+# Time: O(log^3(n)) per one new object
+# O(log(n)) iterations ??
 ITER=0
 while [ 1 == 1 ]; do
   N=`ls $INC/search/ | wc -l`
@@ -166,7 +168,7 @@ if [ -e $INC/outlier-genogroup ]; then
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
 
-# Time: O(n log^4(n)) 
+# Time: O(n log^3(n)) 
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 2 \

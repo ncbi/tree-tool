@@ -7,7 +7,7 @@ if [ $# -ne 2 ]; then
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, genogroups, gug"
   echo "#1: incremental distance tree directory"
   echo "#2: new.list | ''"
-  echo "Time: O(n log^5(n))"
+  echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
@@ -23,7 +23,7 @@ if [ "$NEW" ]; then
   $THIS/../trav $NEW "cp /dev/null $INC/new/%f"
 
 
-  # Time: O(n log^5(n))
+  # Time: O(n log^4(n))+
   while [ 1 == 1 ]; do
     if [ -e $INC/stop ]; then
       echo ""
@@ -68,7 +68,7 @@ if [ -e $INC/outlier-genogroup ]; then
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
 
-# Time: O(n log^5(n))
+# Time: O(n log^3(n))
 # PAR
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -reinsert  -subgraph_iter_max 5 \

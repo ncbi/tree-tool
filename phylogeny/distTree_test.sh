@@ -200,8 +200,8 @@ if [ "$A" != "$B" ]; then
   echo "$B"
   exit 1
 fi
-printDistTree  -qc  Wolf110.tree      -order  -decimals 4  -min_name > Wolf110.nw
-printDistTree  -qc  Wolf110-out.tree  -order  -decimals 4  -min_name > Wolf110-out.nw
+printDistTree  -qc  Wolf110.tree      -order  -decimals 2  -min_name > Wolf110.nw
+printDistTree  -qc  Wolf110-out.tree  -order  -decimals 2  -min_name > Wolf110-out.nw
 diff Wolf110.nw Wolf110-out.nw
 rm Wolf110.nw Wolf110-out.nw
 rm Wolf110.tree Wolf110-out.tree
