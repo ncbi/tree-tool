@@ -76,9 +76,10 @@ struct ThisApplication : Application
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
 
-	  addFlag ("noqual", "Do not compute quality statitistics");
+	  addFlag ("noqual", "Do not compute quality statistics");
 
     // Output
+    // Statistics which do not need DistTree::dissims --> separate program ??
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
