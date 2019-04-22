@@ -43,7 +43,7 @@ struct ThisApplication : Application
   	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
   	  addFlag ("qual_nonredundant", "Non-redundify features by removing identical ones for the summary gain/loss statistics");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained; within a node features are ordered alphabetically");
-  	  addKey ("disagreement_nodes", "File name to save nodes where features are not gained monophyletically");
+  	  addKey ("disagreement_nodes", "File name to save nodes with features not gained monophyletically");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
   	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
   	}
