@@ -18,8 +18,9 @@ namespace
 
 struct ObjNeighbors
 {
-  size_t objNum;
-  size_t neighbors;
+  size_t objNum {0};
+  size_t neighbors {0};
+  
   ObjNeighbors (size_t objNum_arg,
                 size_t neighbors_arg)
     : objNum (objNum_arg)
@@ -38,18 +39,30 @@ struct Violation
 // Of triangle inquality
 {
   // Dataset::objs index
-  size_t x, y, z;
-    // z - middle object
+  size_t x {0};
+  size_t y {0};
+  size_t z {0};
+    // middle object
+  Real hybridness {NaN};
   
+  Violation () = default;
   Violation (size_t x_arg,
              size_t y_arg, 
-             size_t z_arg)
+             size_t z_arg,
+             Real hybridness_arg)
     : x (x_arg)
     , y (y_arg)
     , z (z_arg)
+    , hybridness (hybridness_arg)
     { ASSERT (x != y);
       ASSERT (x != z);
       ASSERT (y != z);
+      ASSERT (hybridness > 1.0);
+    }
+  void print (const Dataset &ds) const
+    { cout        << ds. objs [z] -> name 
+           << ' ' << ds. objs [x] -> name 
+           << ' ' << ds. objs [y] -> name;
     }
     
   bool contains (size_t i) const
@@ -97,7 +110,7 @@ Save clusters in " + dmSuff + "-files\
   	  addPositional ("file", dmSuff + "-file without the extension");
   	  addPositional ("attrName", "Attribute name of a distance in the <file>");
   	  addFlag("max_cliques", "Clusters must be maximal cliques");
-  	  addKey ("fraction_min", "Min. (d_xy - (d_xz + d_zy)) / d_xy to report (= 1-1/hybridness); 1 - no reportng", "0.1");
+  	  addKey ("hybridness_min", "Min. hybridness to report hybrids, >1", "NAN");
   	  addKey ("distance_max", "Max. distance to merge into the same cluster; 0 - infinity", "0");
   	  addKey ("objName", "Object name to print violations for");
   	  // Output
@@ -112,12 +125,11 @@ Save clusters in " + dmSuff + "-files\
 		const bool max_cliques      = getFlag ("max_cliques");
 		const string fName          = getArg ("file");
 		const string attrName       = getArg ("attrName");
-	//const Real deviation_min    = str2<Real> (getArg ("deviation_min"));
-		const Prob fraction_min     = str2<Prob> (getArg ("fraction_min"));
+	  const Real hybridness_min   = str2<Real> (getArg ("hybridness_min"));
 		const Real distance_max     = str2<Real> (getArg ("distance_max"));
 		const string objName        = getArg ("objName");
-	//ASSERT (deviation_min >= 0);
-		ASSERT (isProb (fraction_min));
+	  if (hybridness_min <= 1.0)
+	    throw runtime_error ("-hybridness_min must be > 1.0");
 		
 		
     Dataset ds (fName);
@@ -136,7 +148,7 @@ Save clusters in " + dmSuff + "-files\
 	  {
       Real maxCorrection;
       size_t row_bad, col_bad;   
-      const_cast <PositiveAttr2*> (dist) -> matr. symmetrize (maxCorrection, row_bad, col_bad);
+      var_cast (dist) -> matr. symmetrize (maxCorrection, row_bad, col_bad);
       if (maxCorrection > 2 * pow (10, - (Real) dist->decimals))
         cout << "maxCorrection = " << maxCorrection << " at " << ds. objs [row_bad] -> name << ", " << ds. objs [col_bad] -> name << endl;
     }
@@ -145,7 +157,7 @@ Save clusters in " + dmSuff + "-files\
   	  if (dist->matr. existsMissing (false, row, col))
       {
       #if 0
-      	const_cast <Matrix&> (dist->matr). put (false, row, col, INF);
+      	var_cast (dist->matr). put (false, row, col, INF);
       #else
         cout << dist->name << " [" << row + 1 << "] [" << col + 1 << "] is missing" << endl;
         exit (1);
@@ -157,7 +169,7 @@ Save clusters in " + dmSuff + "-files\
       if (! dist->matr. zeroDiagonal (row))
       {
       #if 0
-      	const_cast <Matrix&> (dist->matr). put (false, row, row, 0);
+      	var_cast (dist->matr). put (false, row, row, 0);
       #else
        	cout << dist->name << " [" << row + 1 << "] [" << row + 1 << "] = " << dist->matr. get (false, row, row) << " != 0" << endl;
        	exit (1);
@@ -191,7 +203,7 @@ Save clusters in " + dmSuff + "-files\
     if (max_cliques)
     {
       // Greedy algorithm
-      Vector<bool> clustered (ds. objs. size(), false);
+      Vector<bool> clustered (ds. objs. size (), false);
       for (;;)
       {
         Vector<ObjNeighbors> objNeighbors;  objNeighbors. reserve (ds. objs. size());
@@ -239,14 +251,14 @@ Save clusters in " + dmSuff + "-files\
     {
       // Obj::DisjointCluster
      	for (const Obj* obj : ds. objs)
-   	    const_cast <Obj*> (obj) -> DisjointCluster::init ();
+   	    var_cast (obj) -> DisjointCluster::init ();
       FOR (size_t, row, ds. objs. size ())
         FOR (size_t, col, ds. objs. size ())
           if (dist->areClose (row, col, distance_max))
-            const_cast <Obj*> (ds. objs [row]) -> merge (* const_cast <Obj*> (ds. objs [col]));
+            var_cast (ds. objs [row]) -> merge (* const_cast <Obj*> (ds. objs [col]));
       // cluster2objs
       FOR (size_t, i, ds. objs. size ())
-        cluster2objs [const_cast <Obj*> (ds. objs [i]) -> getDisjointCluster ()] << i;
+        cluster2objs [var_cast (ds. objs [i]) -> getDisjointCluster ()] << i;
     }
     cout << "# Clusters = " << cluster2objs. size () << endl;
     
@@ -266,6 +278,7 @@ Save clusters in " + dmSuff + "-files\
       cout << endl << "Cluster #" << nClust << ":  size=" << objs. size () << endl;   
       Set<size_t> objSet;
       insertIter (objSet, objs);
+      ASSERT (objSet. size () == objs. size ());
 
       // Distribuiton of distances: exponential ??
   
@@ -278,36 +291,36 @@ Save clusters in " + dmSuff + "-files\
           prog ();
           FOR (size_t, x_, y_)
             FOR (size_t, z_, objs. size ())
-            {
-              const size_t x = objs [x_];
-              const size_t y = objs [y_];
-              const size_t z = objs [z_];
-              const Real d = dist->get (x, y); 
-              const Real dPair = dist->get (x, z) + dist->get (z, y);
-              if (! DM_sp::finite (dPair))
-                continue;
-              const Real deviation = d - dPair;  // Triangle inequality => non-positive
-              if (deviation < ave * 0.01 /*deviation_min*/)  // PAR
-                continue;
-              const Prob fraction = DM_sp::finite (d) ? deviation / d : 1;
-              ASSERT (! isNan (fraction));
-              if (fraction < fraction_min || fraction_min == 1)
-                continue;
-              const Violation violation (x, y, z);
-              violations << violation;
-              if (   violation. contains (objIndex)
-                  || verbose ()
+              if (   z_ != x_
+                  && z_ != y_
                  )
               {
-                const string xName (ds. objs [x] -> name);
-                const string yName (ds. objs [y] -> name);
-                const string zName (ds. objs [z] -> name);
-                cout << "d(" << xName << "," << yName << ") = " << d 
-                         << " > d(" << xName << "," << zName << ") + d(" << zName << "," << yName << ") = " << dPair
-                         << " by " << deviation << " (" << fraction * 100 << " %)"
-                         << endl;
+                const size_t x = objs [x_];
+                const size_t y = objs [y_];
+                const size_t z = objs [z_];
+                const Real d = dist->get (x, y); 
+                const Real dPair = dist->get (x, z) + dist->get (z, y);
+                ASSERT (d >= 0.0);
+                ASSERT (dPair >= 0.0);
+                const Real hybridness = d / dPair;
+                if (hybridness < hybridness_min)
+                  continue;
+                const Violation violation (x, y, z, hybridness);
+                violations << violation;
+                if (   violation. contains (objIndex)
+                    || verbose ()
+                   )
+                {
+                  const string xName (ds. objs [x] -> name);
+                  const string yName (ds. objs [y] -> name);
+                  const string zName (ds. objs [z] -> name);
+                  cout << "d(" << xName << "," << yName << ") = " << d 
+                           << " > d(" << xName << "," << zName << ") + d(" << zName << "," << yName << ") = " << dPair
+                         //<< " by " << deviation << " (" << fraction * 100.0 << " %)"
+                           << " hybridness = " << hybridness
+                           << endl;
+                }
               }
-            }
         }
       }
       cout << "# Violations = " << violations. size () << endl;
@@ -315,7 +328,6 @@ Save clusters in " + dmSuff + "-files\
       // Set-covering problem: approximation alogorithm
       const size_t violationsNum = violations. size ();
       size_t coverage = 0;
-      List<Violator> violators;
       Vector<size_t> endViolations    (ds. objs. size ());
       Vector<size_t> middleViolations (ds. objs. size ());
       while (! violations. empty ())
@@ -324,7 +336,7 @@ Save clusters in " + dmSuff + "-files\
         {
           endViolations.    setAll (0);
           middleViolations. setAll (0);
-          for (Violation& v : violations)
+          for (const Violation& v : violations)
           {
             endViolations    [v. x] ++;
             endViolations    [v. y] ++;
@@ -338,18 +350,28 @@ Save clusters in " + dmSuff + "-files\
         ASSERT (i_best != NO_INDEX);
   
         const Violator v (ds. objs [i_best] -> name, endViolations [i_best], middleViolations [i_best]);
-        violators << v;
         coverage += v. num ();
-        v. saveText (cout);
-        const Prob coverageFrac = (Real) coverage / (Real) violationsNum;
-        cout << "  coverage = " << coverageFrac * 100 << " %" << endl;
-        objSet. erase (i_best);  // => redo the clustering !??
-        if (coverageFrac >= 0.95)  // PAR
-          break;
-  
+
+        Real hybridness_max = 0.0;
+        Violation violation_worst;
         for (Iter <List<Violation> > iter (violations); iter. next (); )
           if (iter->contains (i_best))
+          {
+            if (maximize (hybridness_max, iter->hybridness))
+              violation_worst = *iter;
             iter. erase ();
+          }
+        ASSERT (hybridness_max > 1.0);
+
+        v. saveText (cout);
+        const Prob coverageFrac = (Real) coverage / (Real) violationsNum;
+        cout << "  coverage = " << coverageFrac * 100.0 << " %";
+        cout << "  hybridness = " << hybridness_max;
+        cout << "  ";
+        violation_worst. print (ds);
+        cout << endl;
+
+        objSet. erase (i_best);  // => redo the clustering !??
       }
 
       if (! clustering_dir. empty ())
@@ -363,7 +385,7 @@ Save clusters in " + dmSuff + "-files\
         Sample sm (ds);
         FOR (size_t, row, ds. objs. size ())
           if (! objSet. contains (row))
-            sm. mult [row] = 0;
+            sm. mult [row] = 0.0;
         sm. finish ();    
         sm. save (attrs, f);
       }
