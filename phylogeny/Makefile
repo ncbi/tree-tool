@@ -24,9 +24,10 @@ all:	\
 	mlst2dissim \
 	newick2tree \
 	printDistTree \
+	randomDistTree \
   sampleReport \
+	statDistTree \
 	tree2clusters \
-	tree2dist \
 	tree2genogroup
 	
 
@@ -129,6 +130,12 @@ printDistTree:	$(printDistTreeOBJS)
 	$(CXX) -o $@ $(printDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
+randomDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
+randomDistTreeOBJS=randomDistTree.o $(DISTTREE_OBJ)
+randomDistTree:	$(randomDistTreeOBJS)
+	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
 sampleReport.o:  $(COMMON_HPP)  
 # $(PHYL_DIR)/distTree.hpp
 sampleReportOBJS=sampleReport.o $(CPP_DIR)/common.o
@@ -137,16 +144,16 @@ sampleReport:	$(sampleReportOBJS)
 	$(CXX) -o $@ $(sampleReportOBJS) $(LIBS)
 	$(ECHO)
 
+statDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
+statDistTreeOBJS=statDistTree.o $(DISTTREE_OBJ)
+statDistTree:	$(statDistTreeOBJS)
+	$(CXX) -o $@ $(statDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
 tree2clusters.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 tree2clustersOBJS=tree2clusters.o $(DISTTREE_OBJ)
 tree2clusters:	$(tree2clustersOBJS)
 	$(CXX) -o $@ $(tree2clustersOBJS) $(LIBS)
-	$(ECHO)
-
-tree2dist.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
-tree2distOBJS=tree2dist.o $(DISTTREE_OBJ)
-tree2dist:	$(tree2distOBJS)
-	$(CXX) -o $@ $(tree2distOBJS) $(LIBS)
 	$(ECHO)
 
 tree2genogroup.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
