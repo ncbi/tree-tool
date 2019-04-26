@@ -558,6 +558,19 @@ template <typename Key, typename Value, typename KeyParent>
     	return true;
     }
 
+template <typename Key, typename Value, typename Hash, typename KeyParent>
+  bool find (const unordered_map <Key, Value, Hash> &m,
+             const KeyParent& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto& it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
 template <typename Key, typename Value, typename KeyParent>
   const Value* findPtr (const map <Key, Value> &m,
                         const KeyParent& key)
