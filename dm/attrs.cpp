@@ -30,14 +30,14 @@ struct ThisApplication : Application
 		const string inFName = getArg ("file");
 		const Real corr_min  = str2real (getArg ("corr_min"));
 		const Prob outlier_eValue_max = str2real (getArg ("outlier_evalue_max"));
-		ASSERT (outlier_eValue_max >= 0);
+		ASSERT (outlier_eValue_max >= 0.0);
 
 
     const Dataset ds (inFName);
     const Sample sample (ds);
     cout << "mult_sum: " << sample. mult_sum << endl << endl;
     
-    cout << "AttrName\tDefintion\tMissings\tStatistics" << endl;
+    cout << "AttrName\tDefinition\tMissings\tStatistics" << endl;
     for (const auto attrRaw : ds. attrs)
     {
     	cout << attrRaw->name << '\t' << attrRaw->getTypeStr () << '\t' << attrRaw->countMissings ();
