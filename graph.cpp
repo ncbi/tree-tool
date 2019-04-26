@@ -706,14 +706,14 @@ void Tree::TreeNode::getSubtreeHeights (Vector<Tree::TreeNode::NodeDist> &nodeHe
   if (isLeaf ())
     return;
 
-  double height = 0;
+  double height = 0.0;
 	for (const DiGraph::Arc* arc : arcs [false])
 	{
 	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
 	  const double dist = node->getParentDistance ();
 	  ASSERT (dist >= 0);
 	  node->getSubtreeHeights (nodeHeights);
-	  maximize (height, dist + (node->isLeaf () ? 0 : nodeHeights. back (). dist));
+	  maximize (height, dist + (node->isLeaf () ? 0.0 : nodeHeights. back (). dist));
   }
   nodeHeights << NodeDist {this, height};
 }
@@ -770,12 +770,12 @@ size_t Tree::TreeNode::getInteriorHeight () const
 
 double Tree::TreeNode::getDistanceHeight () const
 {
-  double n = 0;
+  double n = 0.0;
 	for (const Arc* arc : arcs [false])
 	{
 		const TreeNode* child = static_cast <const TreeNode*> (arc->node [false]);
 		const double parentDistance = child->getParentDistance ();
-		ASSERT (parentDistance >= 0);
+		ASSERT (parentDistance >= 0.0);
 	  maximize (n, parentDistance + child->getDistanceHeight ());
 	}
 	return n;
@@ -854,7 +854,7 @@ void Tree::TreeNode::subtreeSize2leaves ()
 
 double Tree::TreeNode::getSubtreeLength () const
 {
-	double len = 0;
+	double len = 0.0;
 	for (const Arc* arc : arcs [false])
 	{
 	  const TreeNode* node = static_cast <TreeNode*> (arc->node [false]);
@@ -929,7 +929,7 @@ namespace
 
 void Tree::TreeNode::children2frequentChild (double rareProb)
 {
-  ASSERT (rareProb >= 0);
+  ASSERT (rareProb >= 0.0);
   ASSERT (rareProb < 0.5);  // => in a bifurcating node at least one child is frequentChild
   ASSERT (frequentChild);  
   
@@ -1175,7 +1175,7 @@ void Tree::TreeNode::getDistanceArea_ (double radius,
                                        VectorPtr<Tree::TreeNode> &area,
                                        VectorPtr<Tree::TreeNode> &boundary) const
 {
-  if (radius < 0)
+  if (radius < 0.0)
     return;
   
   area << this;
@@ -1364,17 +1364,17 @@ void Tree::printArcLengths (ostream &os) const
     if (n == root)
       continue;
   	const double dist = node->getParentDistance ();
-  	if (dist == dist && dist != -1 && dist > 0)
+  	if (dist == dist && dist != -1.0 && dist > 0.0)
   	{
   		os << node->getLcaName () << " " << dist << " " << node->getRootDistance ();
-  		double distPar = 0;
+  		double distPar = 0.0;
       if (const TreeNode* parent = node->getParent ())
         if (parent != root)
         {
         	distPar = parent->getParentDistance ();
-        	if (distPar == distPar && distPar != -1)
+        	if (distPar == distPar && distPar != -1.0)
         	{
-        	  ASSERT (distPar > 0);
+        	  ASSERT (distPar > 0.0);
         	  os << " " << log (distPar) - log (dist);
         	}
         }
@@ -1389,14 +1389,14 @@ void Tree::printArcLengths (ostream &os) const
 
 double Tree::getAveArcLength () const
 {
-  double len = 0;
+  double len = 0.0;
   size_t n = 0;
   for (const DiGraph::Node* node : nodes)
   {
     if (node == root)
       continue;
     const double arcLen = static_cast <const TreeNode*> (node) -> getParentDistance ();
-    ASSERT (arcLen >= 0);
+    ASSERT (arcLen >= 0.0);
     len += arcLen;
     n++;
   }
@@ -1440,7 +1440,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
   
   Vector<Tree::Patristic> res;
   if (node->isLeaf ())
-    leaf2dist [node] = 0;
+    leaf2dist [node] = 0.0;
   else
 		for (const Tree::Arc* arc : node->arcs [false])
 		{
@@ -1757,7 +1757,7 @@ void Tree::setFrequentChild (double rareProb)
 
 void Tree::setFrequentDegree (double rareProb)
 { 
-  ASSERT (rareProb >= 0);
+  ASSERT (rareProb >= 0.0);
   ASSERT (rareProb < 0.3);
   
   if (! root)

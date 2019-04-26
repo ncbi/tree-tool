@@ -176,7 +176,7 @@ inline Real ave_arith (Real x, Real y)
 inline Real ave_geom (Real x, Real y)
   { return sqrt (x * y); }
 inline Real ave_harm (Real x, Real y)   // harmonic
-  { return 2 / (1 / x + 1 / y); }
+  { return 2.0 / (1.0 / x + 1.0 / y); }
 
 
 
@@ -184,7 +184,7 @@ struct LogReal : Root
 {
   bool sign {true};
     // false <=> negative
-  Real n {0};
+  Real n {0.0};
   
   LogReal () = default;
   explicit LogReal (Real r)
@@ -193,7 +193,7 @@ struct LogReal : Root
     {}
     
   LogReal& operator*= (Real x)
-    { if (x < 0)
+    { if (x < 0.0)
       { toggle (sign);
         x = - x;
       }
@@ -201,7 +201,7 @@ struct LogReal : Root
       return *this;
     }
   Real get () const
-    { return exp (n) * (sign ? 1 : -1); }
+    { return exp (n) * (sign ? 1.0 : -1.0); }
   bool isZero () const
     { return n == -INF; }
   bool nullReal () const
@@ -328,10 +328,10 @@ bool lnComIncGamma (Real x,
 typedef Real Prob;
 
 inline bool isProb (Real p)
-  { return p >= 0 && p <= 1; }
+  { return p >= 0.0 && p <= 1.0; }
   
 inline bool probIsLogic (Prob p)
-  { return p == 0 || p == 1; }
+  { return p == 0.0 || p == 1.0; }
   
 Prob toProb (Real x);
   
@@ -340,7 +340,7 @@ inline void makeProb (Real &x)
 
 inline Prob negateProb (Prob p,
                         bool act)
-  { return act ? 1 - p : p; }
+  { return act ? 1.0 - p : p; }
   // negateProb(negateProb(p,a),b) = negateProb(p,(a+b)%2)
 
 inline Real prob2info (Prob p)
@@ -351,8 +351,8 @@ string prob2str (Prob x);
 inline Prob ebool2prob (ebool b)
   { switch (b)
 		{ 
-			case ETRUE:  return 1;
-			case EFALSE: return 0;
+			case ETRUE:  return 1.0;
+			case EFALSE: return 0.0;
 			case UBOOL:  return 0.5;
 		}
 		throw runtime_error ("Never call");
@@ -369,24 +369,24 @@ inline ebool prob2ebool (Prob p)
 inline Real convexCombination (Prob p,
                                Real a,
                                Real b)
-  { return p == 0 ? b : 
-  	       p == 1 ? a :
-  	       p * a + (1 - p) * b; 
+  { return p == 0.0 ? b : 
+  	       p == 1.0 ? a :
+  	       p * a + (1.0 - p) * b; 
   }
 
 inline Prob probit (Real a)
   { const Real b = exp (a);
-    return b / (b + 1);
+    return b / (b + 1.0);
   }
 
 inline Real logit (Prob p)
-  { return log (p / (1 - p)); }
+  { return log (p / (1.0 - p)); }
 
 Real lnFactorial (uint n);
 
 inline Real multiplyLog (Real a, Real logB)
-  { if (a == 0 /*&& logB == -INF*/)
-  	  return 0;
+  { if (a == 0.0 /*&& logB == -INF*/)
+  	  return 0.0;
   	return a * logB;
   }
 
@@ -430,32 +430,32 @@ struct WeightedMeanVar
 
     
   void clear ()
-    { weightedSum = 0;
-      weightedSum2 = 0;
-      weights = 0;
+    { weightedSum = 0.0;
+      weightedSum2 = 0.0;
+      weights = 0.0;
     }
   void add (Real x,
-            Real weight = 1);
+            Real weight = 1.0);
     // Input: weight: may be < 0
     // Invariant: { add (x, weight); add (x, - weight); }
   void add (const WeightedMeanVar& other);
   void subtract (const WeightedMeanVar& other);
   void addValue (Real x)
-    { weightedSum2 += 2 * x * weightedSum + sqr (x) * weights;
+    { weightedSum2 += 2.0 * x * weightedSum + sqr (x) * weights;
       weightedSum  += x * weights;
     }
     // {for (i) add (x_i, w_i); addValue (x); } = {for (i) add (x_i + x, w_i); }
   Real getMean () const
-    { return weightedSum ? weightedSum / weights : 0; }
+    { return weightedSum ? weightedSum / weights : 0.0; }
   Real getVar () const
-    { return (weightedSum2 ? weightedSum2 / weights : 0) - sqr (getMean ()); }
+    { return (weightedSum2 ? weightedSum2 / weights : 0.0) - sqr (getMean ()); }
   Real getSD () const
     { return sqrt (getVar ()); }
   Real mean2var (Real mean) const
     { const Real bias = getMean () - mean;
     	return getVar () + sqr (bias); 
     }
-  Real getOutlier_min (Real zScore = 3) const
+  Real getOutlier_min (Real zScore = 3.0) const
     { return getMean () + zScore * getSD (); }
 };
 
@@ -481,8 +481,8 @@ struct MeanVar : Root
     }
   void clear () override
     { n = 0;
-    	s = 0;
-    	s2 = 0;
+    	s = 0.0;
+    	s2 = 0.0;
     	v_min =  INF;
     	v_max = -INF;
     }
@@ -553,11 +553,11 @@ struct Correlation
       ab += a * b;
     }
   Real getCovariance () const
-    { return a_mv. n ? ab / a_mv. n - a_mv. getMean () * b_mv. getMean () : 0; }
+    { return a_mv. n ? ab / a_mv. n - a_mv. getMean () * b_mv. getMean () : 0.0; }
   Real getCorrelation () const
     { const Real a_sd = a_mv. getSD ();
       const Real b_sd = b_mv. getSD ();
-      return nullReal (a_sd) || nullReal (a_sd) ? 0 : getCovariance () / (a_sd * b_sd); 
+      return nullReal (a_sd) || nullReal (a_sd) ? 0.0 : getCovariance () / (a_sd * b_sd); 
     }
 };
 
