@@ -465,11 +465,13 @@ struct Tree : DiGraph
     template <typename StrictlyLess>
     	void sort (const StrictlyLess &strictlyLess)
   			{ VectorPtr<DiGraph::Node> children (getChildren ());
-  				Common_sp::sort (children, strictlyLess);
   				for (const DiGraph::Node* child : children)
-  				{	TreeNode* s = const_static_cast <TreeNode*> (child);
-  					s->setParent (var_cast (s->getParent ()));  // To reorder arcs[false]
-  				  s->sort (strictlyLess);
+  				  const_static_cast <TreeNode*> (child) -> sort (strictlyLess);
+  				Common_sp::sort (children, strictlyLess);
+  				// To reorder arcs[false]
+  				for (const DiGraph::Node* child : children)
+  				{ const TreeNode* s = static_cast <const TreeNode*> (child);
+  				  var_cast (s) -> setParent (var_cast (s->getParent ()));  
   				}
   			}
 	};
