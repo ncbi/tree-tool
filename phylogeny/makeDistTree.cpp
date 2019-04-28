@@ -44,7 +44,7 @@ struct ThisApplication : Application
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("var_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
-	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
+	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
@@ -70,40 +70,39 @@ struct ThisApplication : Application
 	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  
 	  addKey ("outlier_num_max", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
 	  
-	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
-	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (Triangle::format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
+	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
+	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
 
 	  addFlag ("noqual", "Do not compute quality statistics");
 
     // Output
-    // Statistics which do not need DistTree::dissims --> separate program ??
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
-	  addKey ("output_dist", "Output file with all or <dist_request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
-	//addKey ("pair_residuals", "Output " + dmSuff + "-file with quality statistics for each object pair"); ??
-	  addKey ("arc_length_stat", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
-	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
-    addFlag ("output_dist_etc", "Add columns <prediction> <absCriterion> to the file <output_dissim>");
+    addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
 	}
 	
 	
 	
 	bool deleteHybrids (DistTree &tree,
+	                    bool searchBadLeaves,
 	                    OFStream *triangleParentPairsOs,
 	                    OFStream &hybridTrianglesOs,
 	                    Vector<Pair<const Leaf*>> *hybridDissimRequests) const
 	// Return: true <=> hybrids are deleted
 	// Append: *hybridDissimRequests
 	{
-    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1.0, hybridDissimRequests));  // PAR 
+	  if (searchBadLeaves)
+      tree. setLeafAbsCriterion ();
+
+    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1e0, searchBadLeaves, hybridDissimRequests));  // PAR 
     if (hybridDissimRequests)
       cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests->size () << endl;
 
@@ -117,6 +116,9 @@ struct ThisApplication : Application
 		}
 		if (triangleParentPairsOs)
 		  *triangleParentPairsOs << endl;
+
+    hybridTriangles. sort ();
+    hybridTriangles. uniq ();
 
     VectorPtr<Leaf> hybrids;  hybrids. reserve (hybridTriangles. size () * 2);  // PAR
     for (const Triangle& tr : hybridTriangles)
@@ -181,7 +183,6 @@ struct ThisApplication : Application
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 	               variance_min        = str2real (getArg ("var_min"));
-		const string dist_request        = getArg ("dist_request");
 	               
 		const string deleteFName         = getArg ("delete");
 		const bool   check_delete        = getFlag ("check_delete");
@@ -218,9 +219,6 @@ struct ThisApplication : Application
 		const string output_dissim_coeff = getArg ("output_dissim_coeff");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
-		const string output_dist         = getArg ("output_dist");
-	//const string pair_residuals      = getArg ("pair_residuals");
-		const string arc_length_stat     = getArg ("arc_length_stat");
 		const string dissim_request      = getArg ("dissim_request");
 		const bool   refresh_dissim      = getFlag ("refresh_dissim");
 		const string output_dissim       = getArg ("output_dissim");
@@ -260,8 +258,6 @@ struct ThisApplication : Application
       throw runtime_error ("Variance function needs a data file");
     if (varianceType != varianceType_none && ! multAttrName. empty ())
       throw runtime_error ("Variance function cannot be used with a dissimilarity weight attribute");
-    if (! dist_request. empty () && output_dist. empty ())
-    	throw runtime_error ("dist_request exists, but no output_dist");
     if (output_dist_etc && output_dissim. empty ())
     	throw runtime_error ("output_dist_etc exists, but no output_dissim");
     IMPLY (subgraph_fast,     optimize);
@@ -271,7 +267,8 @@ struct ThisApplication : Application
     IMPLY (reinsert,          optimize);
     IMPLY (reinsert_iter,     optimize);
     IMPLY (skip_topology,     optimize);
-    IMPLY (new_only, ! optimize);
+    if (new_only && optimize)
+      throw runtime_error ("-new_only cannot be used with -optimize");
     if (fix_discernibles && dataFName. empty ())
       throw runtime_error ("-fix_discernibles needs dissimilarities");
     if (fix_discernibles && variance_min)
@@ -457,7 +454,8 @@ struct ThisApplication : Application
           
           if (! skip_topology)
           {
-            cerr << "Optimizing topology: subgraphs ..." << endl;
+          //cerr << "Optimizing topology: subgraphs ..." << endl;
+            cout << "Optimizing topology: subgraphs ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();
             if (subgraph_fast)
@@ -480,7 +478,7 @@ struct ThisApplication : Application
               tree->optimizeLargeSubgraphs ();  
             //hybridDeleted = false;
               if (hybridF. get ())
-              	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+              	/*hybridDeleted =*/ deleteHybrids (*tree, false/*??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
               tree->saveFile (output_tree); 
             #if 0
               if (hybridDeleted)
@@ -517,7 +515,7 @@ struct ThisApplication : Application
       if (! delete_outliers. empty ())
       {
         cerr << "Finding criterion outliers ..." << endl;
-	      tree->setNodeAbsCriterion (); 
+	      tree->setLeafAbsCriterion (); 
 	      Real outlier_min = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-10, outlier_min));  // PAR  
 	      const ONumber on (cout, absCriterionDecimals, false);  
@@ -559,7 +557,7 @@ struct ThisApplication : Application
       
       if (! noqual)
       {
-        tree->setNodeAbsCriterion ();
+        tree->setNodeAbsCriterion ();  // --> setLeafAbsCriterion() ??
         tree->qc ();
       }
 
@@ -595,7 +593,7 @@ struct ThisApplication : Application
         const DTNode* underRoot = tree->lcaName2node (reroot_at, buf);
         tree->reroot (var_cast (underRoot), underRoot->len / 2);
         if (tree->optimizable () && ! noqual)
-	        tree->setNodeAbsCriterion ();
+	        tree->setNodeAbsCriterion ();  // --> setLeafAbsCriterion() ??
         tree->qc ();
       }
       
@@ -613,9 +611,6 @@ struct ThisApplication : Application
     }
     
     
-    tree->setFrequentChild (rareProb);  
-    tree->setFrequentDegree (rareProb); 
-
     tree->saveFile (output_tree); 
     tree->saveDissimCoeffs (output_dissim_coeff);
     tree->saveFeatureTree (output_feature_tree);
@@ -640,94 +635,6 @@ struct ThisApplication : Application
     }
     
     
-  #if 0
-    {
-      Real arcLen_min = NaN;
-      Real outlier_EValue_max = 10;  // ??
-      while (outlier_EValue_max >= 1e-6)
-      {
-        const VectorPtr<DTNode> tooLongArcs (tree->findOutlierArcs (outlier_EValue_max, arcLen_min));
-        cout << endl;
-        {
-          ONumber on (cout, 1, true);  // PAR
-          cout << "outlier_EValue_max: " << outlier_EValue_max << endl;
-        }
-        cout << "# Too long arcs: " << tooLongArcs. size () << endl;
-        cout << "Min. length of too long arcs: " << arcLen_min << endl;
-        outlier_EValue_max /= 10;
-      }
-    }
-  #endif
-  //tree->findTopologicalClusters ();
-  #if 0
-    {
-      Real outlier_EValue_max = 0.001;  
-      while (outlier_EValue_max >= 1e-10)
-      {
-        ONumber on (cout, 1, true);  // PAR
-        cout << "outlier_EValue_max: " << outlier_EValue_max << endl;
-        tree->findDepthOutliers (outlier_EValue_max);  
-        outlier_EValue_max /= 10;
-      }
-    }
-  #endif
-
-    
-    // Statistics
-    {
-      const ONumber on (cout, relCriterionDecimals, false);
-      cout << "# Interior nodes (with root) = " << tree->countInteriorNodes () << " (max = " << tree->getDiscernibles (). size () - 1 << ')' << endl;
-      cout << "# Interior undirected arcs = " << tree->countInteriorUndirectedArcs () << endl;
-      cout << "Tree length = " << tree->getLength () << endl;
-      {
-      	const ONumber on1 (cout, dissimDecimals, true); 
-        cout << "Min. discernible leaf length = " << tree->getMinLeafLen () << endl;
-          // = 0 => epsilon2_0 > 0
-      }
-      cout << "Ave. arc length = " << tree->getAveArcLength () << endl;
-        // Check exponential distribution ??
-      cout << "Interior height = " << tree->getInteriorHeight () << endl;
-      const Real bifurcatingInteriorBranching = tree->getBifurcatingInteriorBranching ();
-      cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
-      // #dissimilarities = 2 #discernibles log_2(#discernibles) #sparsing_leaves
-
-      {      
-        size_t freqChildrenInteriors = 0;
-        size_t freqChildrenLeaves    = 0;
-        size_t stableInteriors       = 0;
-        size_t stableLeaves          = 0;
-        for (const DiGraph::Node* node : tree->nodes)
-        {
-          const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
-          if (tn->frequentChild)
-          {
-            if (tn->isInteriorType ())
-              freqChildrenInteriors++;
-            else
-              if (tn->isLeafType ())
-                freqChildrenLeaves++;
-          }
-          if (   tn->isInteriorType ()
-              && tn->frequentDegree >= 3
-             )
-            stableInteriors++;
-          if (   tn->isLeafType ()
-              && tn->frequentDegree == 1
-             )
-            stableLeaves++;
-        }
-        
-        // Depend on root ??
-        cout << "# Frequent children interior nodes = " << freqChildrenInteriors << endl;
-        cout << "# Frequent children leaves = "         << freqChildrenLeaves << endl;
-        
-        cout << "# Frequent interior nodes = "          << stableInteriors << endl;
-        cout << "# Frequent leaves = "                  << stableLeaves << endl;
-        cout << "Rareness threshold = " << rareProb * 100 << " %" << endl;
-      }      
-    }
-
-    
     if (! leaf_errors. empty ())
     {
       checkOptimizable (*tree, "leaf_errors");
@@ -737,27 +644,7 @@ struct ThisApplication : Application
 	    ds. saveText (f);    
     }
 
-  #if 0
-    ??
-    if (! pair_residuals. empty ())
-    {
-      checkOptimizable (*tree, "pair_residuals");
-      OFStream f ("", pair_residuals, dmExt);
-      const RealAttr1* resid2Attr  = tree->getResiduals2 ();
-      const RealAttr1* logDiffAttr = tree->getLogPredictionDiff ();
-      tree->pairResiduals2dm (resid2Attr, logDiffAttr, f); 
-    }
-  #endif
-    
-    if (! arc_length_stat. empty ())
-    {
-      // dm-file ??
-      // cout << arcLenRel.SD after outlier deleting ??
-      OFStream f (arc_length_stat);
-      const ONumber on (f, dissimDecimals, true);
-      tree->printArcLengths (f);
-    }
-    
+
     if (! output_dissim. empty ())
     {
       checkOptimizable (*tree, "output_dissim");
@@ -815,60 +702,6 @@ struct ThisApplication : Application
     }
 
 
-    Vector<Pair<const Leaf*>> distRequestPairs;  distRequestPairs. reserve (tree->dissims. size ());
-    if (! dist_request. empty ())
-    {
-    	PairFile f (dist_request);
-    	while (f. next ())
-    	{
-        const Leaf* leaf1 = findPtr (tree->name2leaf, f. name1);
-        if (! leaf1)
-        	throw runtime_error ("Object " + f. name1 + " is not found");
-        const Leaf* leaf2 = findPtr (tree->name2leaf, f. name2);
-        if (! leaf2)
-        	throw runtime_error ("Object " + f. name2 + " is not found");
-			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
-    	}
-    }
-    
-    
-    if (! output_dist. empty ())
-    {
-    	// distRequestPairs
-    	if (dist_request. empty ())
-    	{
-	    	VectorPtr<Leaf> leaves;  leaves. reserve (tree->nodes. size ());
-	 	    for (const DiGraph::Node* node : tree->nodes)
-	        if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
-	          if (leaf->graph)
-	        	  leaves << leaf;
-	      FFOR (size_t, i, leaves. size ())
-	        FOR (size_t, j, i)
-	        {
-	        	const Leaf* leaf1 = leaves [i];
-	        	const Leaf* leaf2 = leaves [j];
-					  if (leaf1->name > leaf2->name)
-					    swap (leaf1, leaf2);
-					  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
-					}
-    	}
-
-    	OFStream f (output_dist);
-    	Tree::LcaBuffer buf;
-    	for (const auto p : distRequestPairs)
-    	{
-    		const Leaf* leaf1 = p. first;
-    		const Leaf* leaf2 = p. second;
-			  const Tree::TreeNode* lca_ = nullptr;
-	    	const VectorPtr<Tree::TreeNode>& path = Tree::getPath (leaf1, leaf2, nullptr, lca_, buf);
-		  	f         << leaf1->name 
-		  	  << '\t' << leaf2->name
-		  	  << '\t' << DistTree::path2prediction (path)
-		  	  << endl;
-		  }
-    }
-    
-    
     if (! delete_outliers. empty ())  // Parameter is performed above
       checkOptimizable (*tree, "delete_outliers");  
     if (! delete_hybrids. empty ())  // Parameter is performed above

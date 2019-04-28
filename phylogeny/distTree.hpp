@@ -173,17 +173,25 @@ struct Triangle
 
 	  
 	Triangle (const Leaf* child_arg,
-		        Real hybridness_arg,
+		        Real parentDissim_arg,
 				  	const Leaf* parent1,
 				  	const Leaf* parent2,
 				  	Real parent1_dissim,
 				  	Real parent2_dissim,
 				  	size_t dissimType_arg);
+	Triangle () = default;
 	void qc () const;
 	void print (ostream &os) const;
 	static constexpr const char* format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> [<dissimilarity type>]"};
 	
 	
+	bool operator== (const Triangle &other) const
+    { return    child             == other. child
+             && parents [0]. leaf == other. parents [0]. leaf
+             && parents [1]. leaf == other. parents [1]. leaf
+             && dissimType        == other. dissimType;
+    }
+	bool operator< (const Triangle &other) const;
 	Real parentsDissim () const
 	  { return (parents [0]. dissim + parents [1]. dissim) * hybridness; }
 	  // Return: d(parent1,parent2)
@@ -211,6 +219,18 @@ struct Triangle
 
 
 
+void addTriangle (Vector<Triangle> &triangles,
+                  const Leaf* leaf1,
+                  const Leaf* leaf2,
+                  const Leaf* leaf3,
+                  Real target23,
+                  Real target13,
+                  Real target12,
+                  size_t dissimType);
+  // Update: triangles: append by <= 1 element
+
+
+
 struct TriangleParentPair
 {
 	// Input
@@ -223,6 +243,7 @@ struct TriangleParentPair
 	array<Parent,2> parents;	
 	Real parentsDissim {NaN};
 	  // = f(parents[0].leaf,parents[1].leaf)
+	size_t dissimType {NO_INDEX};
 	
 	// Output
 	Vector<Triangle> triangles;
@@ -238,35 +259,35 @@ public:
 	
 	TriangleParentPair (const Leaf* parent1,
 		                  const Leaf* parent2,
-		                  Real parentsDissim_arg)
+		                  Real parentsDissim_arg,
+		                  size_t dissimType_arg)
 		: parentsDissim (parentsDissim_arg)
+		, dissimType (dissimType_arg)
 		{ parents [0]. leaf = parent1;
 			parents [1]. leaf = parent2;
 	  }
 	TriangleParentPair () = default;
 	void setTriangles (const DistTree &tree);
 	  // Output: triangles, hybridness_ave
-	  // Time: ~ O(log(n))
+	  // Time: ~ O(log^2(n))
   void finish (const DistTree &tree,
                const Set<const Leaf*> &hybrids);
     // Input: triangles
     // Output: Triangle::*hybrid
 	void qc () const;
   void print (ostream &os) const;
-  static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <avg. child size> <parent1 size> <parent2 size> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
+  static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <dissimilarity type> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
 
 
-  Pair<const Leaf*> getPair () const
-    { return Pair<const Leaf*> (parents [0]. leaf, parents [1]. leaf); }
-	bool operator< (const TriangleParentPair &other) const
-    { return getPair () < other. getPair (); }
   bool operator== (const TriangleParentPair &other) const
-    { return getPair () == other. getPair (); }
+    { return    parents [0]. leaf == other. parents [0]. leaf
+             && parents [1]. leaf == other. parents [1]. leaf
+             && dissimType        == other. dissimType;
+    }
+  bool operator< (const TriangleParentPair &other) const;
   static bool compareHybridness (const TriangleParentPair &hpp1,
                                  const TriangleParentPair &hpp2)
     { return hpp1. hybridness_ave > hpp2. hybridness_ave; }
-    
-
   const Triangle& getBest () const
     { if (triangle_best_index < triangles. size ())
     	  return triangles [triangle_best_index]; 
@@ -283,33 +304,37 @@ public:
       return false;
     }
   Vector<Triangle> getHybridTriangles () const
-    { Vector<Triangle> vec;  
-    	for (const Triangle &tr : triangles)
+    { Vector<Triangle> vec;  vec. reserve (triangles. size ());
+    	for (const Triangle& tr : triangles)
     		if (tr. hasHybrid ())
     			vec << tr;
     	return vec;
     }
   VectorPtr<Leaf> getHybrids (bool hybrid) const
-    { VectorPtr<Leaf> vec;  
-    	for (const Triangle &tr : triangles)
+    { VectorPtr<Leaf> vec;  vec. reserve (triangles. size ());
+    	for (const Triangle& tr : triangles)
     		if (tr. hasHybrid ())
     			vec << move (tr. getHybrids (hybrid));
     	return vec;
     }
   void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
-    { for (const Triangle &tr : triangles)
+    { for (const Triangle& tr : triangles)
     		if (tr. hasHybrid ())
 	    		tr. qcMatchHybrids (hybrids);
     }
 	  // Requires: hybrids: sort()'ed
+  bool undecided () const
+    { return    ! triangles. empty ()
+             && ! getBest (). hasHybrid ();
+    }
 private:
 	size_t child_parent2parents (const DistTree &tree,
                                const Leaf* child,
                                const Leaf* parent,
                                Real parentDissim) const;
-	  // Time: ~ O(log(n))
+	  // Time: ~ O(log^2(n))
 	void setChildrenHybrid ()
-	  { for (Triangle &tr : triangles)
+	  { for (Triangle& tr : triangles)
 	  	  tr. child_hybrid = true;
 	  }
 };
@@ -514,20 +539,8 @@ private:
   // Temporary
   size_t index {NO_INDEX};
 public:
-
-  // Hybrid data
   // For DistTree::findHybrids()
-  Vector<Neighbor> badNeighbors;
-    // Neighbor::leaf is unique
-  Real hybridness {1.0};
-    // >= 1    
-    // = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
-    // > 1 => triangle inequality violation
-  uint hybridParentsDissimObjNum;  
-    // hybridness > 1 => in DistTree::dissims
   Real badCriterion {NaN};
-    
-  mutex mtx;    
   
 
 	Leaf (DistTree &tree,
@@ -567,7 +580,7 @@ private:
   void setSubtreeLenUp (bool topological) final
     { subtreeLen. clear ();
       if (topological)
-    	  subtreeLen. add (0, 1);
+    	  subtreeLen. add (0.0, 1.0);
     }
   void getDescendants (VectorPtr<DTNode> &descendants,
                        size_t /*depth*/,
@@ -596,36 +609,9 @@ private:
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:	
-#if 0
-	bool possibleHybrid () const
-	  { return ! getDiscernible () -> len; }
-#endif
-	const Neighbor* findNeighbor (const Leaf* leaf,
-	                              size_t dissimType) const
-	  { const size_t i = badNeighbors. binSearch (Neighbor (leaf, dissimType));
-    	if (i == NO_INDEX)    		
-    		return nullptr;
-    	return & badNeighbors [i];
-    }
-  Real getHybridness (/*Real height_min,*/
-                    //Real parentLengthFrac_min,
-	                    const Leaf* &parent1,
-	                    const Leaf* &parent2,
-	                    Real &parent1_dissim,
-	                    Real &parent2_dissim,
-	                    size_t &dissimType) const;
-		// Return: 0: not a hybrid
-		//         > 1: hybrid
-		//                = max d(parent1,parent2) / (d(this,parent1) + d(this,parent2))
-		//                triangle inequality violation
-		//         NaN: request of the dissimilarity between parent1 and parent2, if (bool)parent1
-	  // Input: parentLengthFrac_min > 1
-	  // Time: ~ O(log^3(n))
-	void getHybridTriangles (Vector<Triangle> &hybrids,
-		                       Set<const Leaf*> &tried) const;
-		// Update: hybrids, tried; hybrids is a subset of tried
-		// Invokes: getHybridness()
-		// Recursive
+  void addHybridTriangles (Vector<Triangle> &triangles) const;
+    // Invokes: addTriangle()
+    // Time: ~ O(log^4(n))  
 };
 
 
@@ -944,6 +930,9 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
+  Real getHybridCriterion () const
+    { return getAbsCriterion () /*sqr (target - prediction)*/; }
+    // /*Independent of varianceType*/
   void setPathObjNums (size_t objNum,
                        Tree::LcaBuffer &buf);
     // Output: prediction, Steiner::pathObjNums
@@ -1309,7 +1298,10 @@ public:
 	  // Input: DTNode::len
 	  // Time: O(|path|)
   void printAbsCriterion_halves () const;
-	void setNodeAbsCriterion ();
+	void setLeafAbsCriterion ();
+    // Output: Leaf::{absCriterion,absCriterion_ave}
+    // Time: O(p)
+  void setNodeAbsCriterion ();
     // Output: DTNode::{absCriterion,absCriterion_ave}
     // Time: O(p log(n))
 	void setDissimMult ();
@@ -1360,6 +1352,7 @@ private:
   bool applyChanges (VectorOwn<Change> &changes,
                      bool byNewLeaf);
 	  // Return: false <=> finished
+	  // Input: changes: !byNewLeaf <=> Change::apply()/restore() was done
     // Update: topology, changes (sort by Change::improvement descending)
     // Output: DTNode::stable
     // Invokes: once: finishChanges(), optimizeLen(), optimizeLenLocal(), reportErrors(cout)
@@ -1452,30 +1445,24 @@ public:
   // Return: distinct
   Dataset getLeafErrorDataset () const;
     // Return: attrs = {PositiveAttr1}
-    // After: setNodeAbsCriterion()    
+    // After: setNodeAbsCriterion() or setLeafAbsCriterion()
+    // Invokes: Leaf::getRelCriterion()
   VectorPtr<Leaf> findCriterionOutliers (Real outlier_EValue_max,
                                          Real &outlier_min) const;
     // Relative average absolute criterion
     // Idempotent
     // Return: sort()'ed by getRelCriterion() descending
     // Output: outlier_min
-    // Invokes: getLeafErrorDataset(), RealAttr2::normal2outlier() 
+    // Invokes: getLeafErrorDataset(), RealAttr2::distr2outlier(), Leaf::getRelCriterion()
     // Time: O(n log(n))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
+                                          bool searchBadLeaves,
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
     // ~Idempotent w.r.t. restoring hybrids in the tree
-    // Update (append): *dissimRequests if !nullptr
+    // Update (append): *dissimRequests if !nullptr  // Not implemented ??
+    // After: setLeafAbsCriterion() if searchBadLeaves
     // Invokes: RealAttr2::normal2outlier() 
-    // Time: ~ O(n log^2(n)) without dissimRequests
-    // Time: ~ O(n log^3(n)) with    dissimRequests
-#if 0
-  Vector<Triangle> findHybrids (Real parentLengthFrac_min,
-                                Vector<Pair<const Leaf*>> &dissimRequests) const;
-	  // Input: parentLengthFrac_min > 1
-    // Update (append): dissimRequests
-    // Invokes: Leaf::getHybridness()
-    // Time: ~ O(n log^3(n))
-#endif
+    // Time: ~ O(p log^2(n)) 
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode::getReprLeaf()
 #if 0
@@ -1520,8 +1507,10 @@ public:
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
 #endif
 
+  static constexpr const char* dissimExtra {"<prediction>, <absCriterion>, <squared difference>"};
   void saveDissim (ostream &os,
-                   bool addPredictionAbsCriterion) const;
+                   bool addExtra) const;
+    // Input: addExtra: add dissimExtra
 };
 
 

@@ -46,9 +46,12 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 echo ""
 echo "Perfect tree ..."
-$THIS/makeDistTree  -qc  -data data/tree4  -variance linExp  -optimize | grep -v '^CHRON: ' > tree4.makeDistTree
+$THIS/makeDistTree  -qc  -data data/tree4  -variance linExp  -optimize  -output_tree tree4 | grep -v '^CHRON: ' > tree4.makeDistTree
 diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
+$THIS/statDistTree tree4 > tree4.stat
+diff tree4.stat data/tree4.stat
+rm tree4.stat
 echo "Verbose ..."
 $THIS/makeDistTree -qc  -data data/tree4  -variance linExp  -optimize  -verbose 2 &> /dev/null
 
@@ -90,6 +93,7 @@ $THIS/makeDistTree  -data data/inc.ITS/  -variance linExp  -optimize  -skip_len 
 $THIS/distTree_compare_criteria.sh ITS.distTree data/ITS.distTree
 rm ITS.distTree
 
+
 echo ""
 echo "Saccharomyces hybrids ..."
 $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
@@ -97,9 +101,9 @@ $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -variance linExp  
   -delete_outliers Saccharomyces.outliers  -outlier_num_max 1 \
   > Saccharomyces.distTree
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
+$THIS/hybrid2list.sh Saccharomyces.hybrid > Saccharomyces.hybrid.list
 rm Saccharomyces.hybrid
 diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
-cut -f 1-3,7-12 Saccharomyces.hybrid_parent_pairs > Saccharomyces.hybrid_parent_pairs.stable
 rm Saccharomyces.hybrid_parent_pairs
 diff Saccharomyces.outliers data/Saccharomyces.outliers
 rm Saccharomyces.outliers
@@ -149,17 +153,17 @@ $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -variance linExp 
   -delete_outliers Saccharomyces2.outliers  -outlier_num_max 1 \
   > Saccharomyces2.distTree
 diff Saccharomyces2.hybrid data/Saccharomyces2.hybrid
+$THIS/hybrid2list.sh Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
 rm Saccharomyces2.hybrid
 diff Saccharomyces2.hybrid_parent_pairs data/Saccharomyces2.hybrid_parent_pairs
-cut -f 1-3,7-12 Saccharomyces2.hybrid_parent_pairs > Saccharomyces2.hybrid_parent_pairs.stable
 rm Saccharomyces2.hybrid_parent_pairs
 diff Saccharomyces2.outliers data/Saccharomyces2.outliers
 rm Saccharomyces2.outliers
 $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree data/Saccharomyces2.distTree
 rm Saccharomyces2.distTree
 
-diff Saccharomyces.hybrid_parent_pairs.stable Saccharomyces2.hybrid_parent_pairs.stable
-rm Saccharomyces.hybrid_parent_pairs.stable Saccharomyces2.hybrid_parent_pairs.stable
+diff Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
+rm Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
 diff data/Saccharomyces2.outliers data/Saccharomyces.outliers
 
 

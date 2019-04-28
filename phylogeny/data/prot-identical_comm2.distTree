@@ -13,16 +13,17 @@ INPUT:
 # Nodes: 580
 # Dissimilarities: 84390 (100.00 %)
 Dissimilarities factor: 26.19
-Ave. dissimilarity = 0.194155
+Ave. dissimilarity = 0.194156
 # Dissimilarity types = 2
 absCriterion = 3.6433e+01  Error density = 2.960 %
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 17
 Optimizing arc lengths at each node ...
-# Nodes deleted = 1
+# Nodes deleted = 2
 absCriterion = 1.4549e+01  Error density = 1.870 %
 
+Optimizing topology: subgraphs ...
 # Hybrids: 0
 absCriterion = 1.3072e+01  Error density = 1.766 %
 
@@ -30,10 +31,10 @@ absCriterion = 1.3072e+01  Error density = 1.766 %
 absCriterion = 1.3022e+01  Error density = 1.763 %
 
 # Hybrids: 0
-absCriterion = 1.3010e+01  Error density = 1.762 %
+absCriterion = 1.3011e+01  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 1.3007e+01  Error density = 1.762 %
+absCriterion = 1.3008e+01  Error density = 1.762 %
 
 # Hybrids: 0
 absCriterion = 1.3006e+01  Error density = 1.762 %
@@ -48,7 +49,7 @@ absCriterion = 1.3004e+01  Error density = 1.762 %
 absCriterion = 1.3004e+01  Error density = 1.761 %
 
 # Hybrids: 0
-absCriterion = 1.3003e+01  Error density = 1.761 %
+absCriterion = 1.3004e+01  Error density = 1.761 %
 
 # Hybrids: 0
 absCriterion = 1.3003e+01  Error density = 1.761 %
@@ -59,24 +60,12 @@ absCriterion = 1.3003e+01  Error density = 1.761 %
 Ave. radius: 0.456
 
 # Outliers: 4
-absCriterion = 9.7434e+00  Error density = 1.543 %
+absCriterion = 9.7436e+00  Error density = 1.543 %
 
 OUTPUT:
-absCriterion = 9.7434e+00  Error density = 1.543 %
+absCriterion = 9.7436e+00  Error density = 1.543 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 280 (max = 280)
-# Interior undirected arcs = 278
-Tree length = 30.612
-Min. discernible leaf length = 0.000000e+00
-Ave. arc length = 0.054
-Interior height = 35
-Bifurcating interior branching = 1.361
-# Frequent children interior nodes = 275
-# Frequent children leaves = 282
-# Frequent interior nodes = 42
-# Frequent leaves = 52
-Rareness threshold = 1.000 %

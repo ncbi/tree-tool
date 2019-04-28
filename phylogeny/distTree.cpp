@@ -75,14 +75,14 @@ bool Neighbor::operator< (const Neighbor &other) const
 // Triangle
 
 Triangle::Triangle (const Leaf* child_arg,
-                    Real hybridness_arg,
+                    Real parentDissim_arg /*hybridness_arg*/,
                     const Leaf* parent1,
                     const Leaf* parent2,
                     Real parent1_dissim,
                     Real parent2_dissim,
 				  	        size_t dissimType_arg)
 : child (child_arg)
-, hybridness (hybridness_arg)
+, hybridness (parentDissim_arg / (parent1_dissim + parent2_dissim) /*hybridness_arg*/)
 , dissimType (dissimType_arg)
 {
   ASSERT (parent1);
@@ -139,6 +139,17 @@ void Triangle::print (ostream &os) const
 
 
 
+bool Triangle::operator< (const Triangle &other) const
+{ 
+  LESS_PART (*this, other, child->name);
+  LESS_PART (*this, other, parents [0]. leaf->name);
+  LESS_PART (*this, other, parents [1]. leaf->name);
+  LESS_PART (*this, other, dissimType);
+  return false;
+}
+
+
+
 void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
 {
   #define QC_MATCH_HYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << (leaf)->name << endl; print (cout); ERROR; } 
@@ -151,6 +162,53 @@ void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
 
 
 
+//
+
+void addTriangle (Vector<Triangle> &triangles,
+                  const Leaf* leaf1,
+                  const Leaf* leaf2,
+                  const Leaf* leaf3,
+                  Real target23,
+                  Real target13,
+                  Real target12,
+                  size_t dissimType)
+{
+  const Triangle tr1 ( leaf1
+                     , target23
+                     , leaf2
+                     , leaf3
+                     , target12
+                     , target13
+                     , dissimType
+                     );
+  const Triangle tr2 ( leaf2
+                     , target13
+                     , leaf1
+                     , leaf3
+                     , target12
+                     , target23
+                     , dissimType
+                     );
+  const Triangle tr3 ( leaf3
+                     , target12
+                     , leaf1
+                     , leaf2
+                     , target13
+                     , target23
+                     , dissimType
+                     );
+#ifndef NDEBUG
+  const size_t size_old = triangles. size ();
+#endif
+  if (tr1. hybridness >= DistTree_sp::hybridness_min)  triangles << tr1;
+  if (tr2. hybridness >= DistTree_sp::hybridness_min)  triangles << tr2;
+  if (tr3. hybridness >= DistTree_sp::hybridness_min)  triangles << tr3;
+  ASSERT (triangles. size () <= size_old + 1);
+}
+
+
+
+
 // TriangleParentPair
 
 void TriangleParentPair::setTriangles (const DistTree &tree) 
@@ -158,7 +216,7 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
   for (const bool i : {false, true})
     ASSERT (parents [i]. leaf);
   ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
-  ASSERT (parentsDissim > 0.0);
+  ASSERT (parentsDissim >= 0.0);
   ASSERT (DistTree_sp::hybridness_min > 1.0);
   ASSERT (triangles. empty ());
 
@@ -168,11 +226,13 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
     const Dissim& dissim = tree. dissims [objNum];
     if (! dissim. validMult ())
       continue;
+    if (dissim. type != dissimType)
+      continue;
     const Leaf* other = dissim. getOtherLeaf (parents [0]. leaf);
     ASSERT (other->graph);
     hybridParents << Neighbor (other, dissim. type, dissim. target);
   }
-  hybridParents. sort ();
+  hybridParents. sort ();  // --> unordered_set ??
   ASSERT (hybridParents. isUniq ());
 
   for (const uint objNum : parents [1]. leaf->pathObjNums)
@@ -180,23 +240,34 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
     const Dissim& dissim = tree. dissims [objNum];
     if (! dissim. validMult ())
       continue;
+    if (dissim. type != dissimType)
+      continue;
     const Leaf* other = dissim. getOtherLeaf (parents [1]. leaf);
     ASSERT (other->graph);
     const size_t i = hybridParents. binSearch (Neighbor (other, dissim. type));
     if (i == NO_INDEX)
       continue;
-    const Real hybridness = parentsDissim / (dissim. target + hybridParents [i]. target);
-    if (hybridness >= DistTree_sp::hybridness_min)
-      triangles << Triangle (other, hybridness, parents [0]. leaf, parents [1]. leaf, hybridParents [i]. target, dissim. target, dissim. type);
+    addTriangle ( triangles
+                , other
+                , parents [0]. leaf
+                , parents [1]. leaf
+                , parentsDissim
+                , dissim. target
+                , hybridParents [i]. target
+                , dissim. type
+                );
   }
-  ASSERT (! triangles. empty ());
+//ASSERT (! triangles. empty ());
 
-  // Statistics
-  MeanVar hybridness_mv;
-  for (const Triangle& tr : triangles)
-    hybridness_mv << tr. hybridness;
-  hybridness_ave = hybridness_mv. getMean ();
-  
+  // hybridness_ave
+  hybridness_ave = DistTree_sp::hybridness_min;
+  if (! triangles. empty ())
+  {
+    MeanVar hybridness_mv;
+    for (const Triangle& tr : triangles)
+      hybridness_mv << tr. hybridness;
+    hybridness_ave = hybridness_mv. getMean ();
+  }
   ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
 }
 
@@ -212,7 +283,9 @@ void TriangleParentPair::finish (const DistTree &tree,
   }
   ASSERT (! triangles. empty ());
   ASSERT (triangle_best_index == NO_INDEX);
-  
+
+  triangles. sort ();
+  triangles. uniq ();
 
   triangles. filterValue ([&hybrids] (const Triangle &tr) { return hybrids. contains (tr. child); }); 
   if (triangles. empty ())
@@ -330,7 +403,7 @@ void TriangleParentPair::qc () const
   for (const bool i : {false, true})  
     ASSERT (parents [i]. leaf);
   ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
-  ASSERT (parentsDissim > 0);
+  ASSERT (parentsDissim > 0.0);
   
   if (triangles. empty ())
     return;
@@ -350,6 +423,7 @@ void TriangleParentPair::qc () const
     }
     else
       ASSERT (child_hybrid == tr. child_hybrid);
+    ASSERT (tr. dissimType == dissimType);
   }
   
   ASSERT (& getBest ());
@@ -370,8 +444,21 @@ void TriangleParentPair::print (ostream &os) const
   td << getBest (). child->name << p1. leaf->name << p2. leaf->name 
      << triangles. size () << p1. classSize << p2. classSize
      << hybridness_ave << getBest (). parents [0]. dissim << getBest (). parents [1]. dissim
-     << getBest (). child_hybrid << getBest (). parents [0]. hybrid << getBest (). parents [1]. hybrid;
+     << (int) dissimType
+     << getBest (). child_hybrid 
+     << getBest (). parents [0]. hybrid 
+     << getBest (). parents [1]. hybrid;
   os << td. str () << endl;
+}
+
+
+
+bool TriangleParentPair::operator< (const TriangleParentPair &other) const
+{ 
+  LESS_PART (*this, other, parents [0]. leaf);
+  LESS_PART (*this, other, parents [1]. leaf);
+  LESS_PART (*this, other, dissimType);
+  return false;
 }
 
 
@@ -393,6 +480,8 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
     const Dissim& dissim = tree. dissims [objNum];
     if (! dissim. validMult ())
       continue;
+    if (dissim. type != dissimType)
+      continue;
     const Leaf* other = dissim. getOtherLeaf (child);
     ASSERT (other->graph);
     hybridParents << Neighbor (other, dissim. type, dissim. target);
@@ -405,6 +494,8 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
   {
     const Dissim& dissim = tree. dissims [objNum];
     if (! dissim. validMult ())
+      continue;
+    if (dissim. type != dissimType)
       continue;
     const Leaf* otherParent = dissim. getOtherLeaf (parent);
     ASSERT (otherParent->graph);
@@ -788,11 +879,6 @@ void Steiner::saveContent (ostream& os) const
   DTNode::saveContent (os);
   if (! name. empty ())
     os << "  name='" << name << '\'';
-#if 0
-  if (frequentChild)
-    os << " " << "frequent";
-  os << " fd=" << frequentDegree;
-#endif
 }
 
 
@@ -1030,25 +1116,6 @@ Leaf::Leaf (DistTree &tree,
 
 
 
-#if 0
-Leaf::Leaf (DistTree &tree,
-            Leaf* other,
-            const string &name_arg)
-: DTNode ( tree   // DistTree must be declared
-         , const_static_cast <Steiner*> (checkPtr<Leaf> (other) -> getParent ())  // temporary
-         , 0
-         )  
-, name (name_arg)
-, discernible (other->discernible)
-, index (getDistTree (). leafNum)
-{
-  var_cast (getDistTree ()). leafNum ++;  
-  collapse (other);
-}
-#endif
-
-
-
 void Leaf::qc () const
 { 
   if (! qc_on)
@@ -1141,14 +1208,6 @@ void Leaf::collapse (Leaf* other)
   ASSERT (graph);
   ASSERT (graph == other->graph);
   
-#if 0
-  printAncestors (nullptr);
-  other->printAncestors (nullptr);
-  cout << discernible << ' ' << other->discernible << endl;
-  cout << name << ' ' << other->name << endl;
-  getParent () -> saveText (cout);
-#endif
-  
   Vector<Leaf*> indiscernibles (1, this);
   {
     const Steiner* oldParent = static_cast <const Steiner*> (getParent ()); 
@@ -1168,11 +1227,6 @@ void Leaf::collapse (Leaf* other)
     }
   }
   ASSERT (indiscernibles. contains (this));
-#if 0
-  for (const Leaf* leaf : indiscernibles)
-    cout << ' ' << leaf;
-  cout << endl;
-#endif
     
   if (other->discernible)
   {
@@ -1210,143 +1264,57 @@ void Leaf::collapse (Leaf* other)
 
 
 
-Real Leaf::getHybridness (const Leaf* &parent1,
-                          const Leaf* &parent2,
-                          Real &parent1_dissim,
-                          Real &parent2_dissim,
-                          size_t &dissimType) const
+void Leaf::addHybridTriangles (Vector<Triangle> &triangles) const
 {
   ASSERT (DistTree_sp::hybridness_min > 1.0);
   ASSERT (graph);
   
-  parent1 = nullptr;
-  parent2 = nullptr;
-  parent1_dissim = NaN;
-  parent2_dissim = NaN;
-  dissimType = NO_INDEX;
-  
-  
-  const auto& dissims = getDistTree (). dissims;
+  const Vector<Dissim>& dissims = getDistTree (). dissims;
 
-  Vector<Neighbor> hybridParents;  hybridParents. reserve (pathObjNums. size ());
-    // Neighbor::leaf is unique
-    // Neighbor::target: dissimilarity between *this and leaf
-  for (const uint objNum : pathObjNums)
+  Vector<Neighbor> neighbors;  neighbors. reserve (pathObjNums. size ());
+  for (const uint objNum1 : pathObjNums)
   {
-    const Dissim& dissim = dissims [objNum];
-    if (dissim. validMult ())  
-    {
-      const Leaf* other = dissim. getOtherLeaf (this);
-      ASSERT (other->graph);  
-      if (dissim. prediction < dissim. target) 
-        hybridParents << Neighbor (other, dissim. type, dissim. target);
-    }
+    const Dissim& dissim1 = dissims [objNum1];
+    if (! dissim1. validMult ())
+      continue;
+    const Leaf* parent1 = dissim1. getOtherLeaf (this);
+    ASSERT (parent1->graph);
+    ASSERT (parent1 != this);
+    neighbors << Neighbor (parent1, dissim1. type, dissim1. target);
   }
-  hybridParents. sort ();
-  ASSERT (hybridParents. isUniq ());
-  
-  Real hybridness_ = DistTree_sp::hybridness_min;
-  for (const Neighbor& hybridParent1 : hybridParents)
+  neighbors. sort ();  // --> unordered_set ??
+  ASSERT (neighbors. isUniq ());
+
+  // Time: ~ O(log^4(n))  
+  for (const Neighbor& neighbor1 : neighbors)
   {
-    const Leaf* parent1_ = hybridParent1. leaf;
-    ASSERT (parent1_ != this);
-    for (const uint objNum : parent1_->pathObjNums)
+    const Leaf* parent1 = neighbor1. leaf;
+    for (const uint objNum2 : parent1->pathObjNums)
     {
-      const Dissim& dissim = dissims [objNum];
-      if (! dissim. validMult ())
+      const Dissim& dissim2 = dissims [objNum2];
+      if (! dissim2. validMult ())
         continue;
-      if (dissim. target <= 0.0)
+      if (dissim2. type != neighbor1. dissimType)
         continue;
-      if (dissim. prediction >= dissim. target) 
+      const Leaf* parent2 = dissim2. getOtherLeaf (parent1);
+      ASSERT (parent2->graph);
+      ASSERT (parent2 != parent1);
+      if (parent2 == this)
         continue;
-      const Leaf* parent2_ = dissim. getOtherLeaf (parent1_);
-      if (parent2_ == this)
-        continue;
-      const size_t i = hybridParents. binSearch (Neighbor (parent2_, dissim. type));
+      const size_t i = neighbors. binSearch (Neighbor (parent2, dissim2. type));
       if (i == NO_INDEX)
         continue;
-      if (maximize (hybridness_, dissim. target / (hybridParent1. target + hybridParents [i]. target)))
-      {
-        parent1 = parent1_;
-        parent2 = parent2_;
-        parent1_dissim = hybridParent1. target;
-        parent2_dissim = hybridParents [i]. target;
-        dissimType = dissim. type;
-      }
+      addTriangle ( triangles
+                  , this
+                  , parent1
+                  , parent2
+                  , dissim2. target
+                  , neighbors [i]. target
+                  , neighbor1. target
+                  , neighbor1. dissimType
+                  );
     }
   }
-  ASSERT ((bool) parent1 == (bool) parent2);
-  ASSERT ((bool) parent1 == ! isNan (parent1_dissim));
-  ASSERT ((bool) parent2 == ! isNan (parent2_dissim));
-  
-  if (parent1)
-  {
-    ASSERT (hybridness_ > DistTree_sp::hybridness_min);
-    return hybridness_;
-  }
-  
-
-#if 0
-  // Compute if dissim_requests are needed ??
-  Tree::LcaBuffer buf;
-  for (const Neighbor& hybridParent1 : hybridParents)
-    for (const Neighbor& hybridParent2 : hybridParents)
-    {
-      if (& hybridParent1 == & hybridParent2)
-        break;
-      const TreeNode* lca_ = nullptr;
-      const VectorPtr<TreeNode>& path = Tree::getPath ( hybridParent1. leaf
-                                                      , hybridParent2. leaf
-                                                      , nullptr
-                                                      , lca_
-                                                      , buf
-                                                      );
-      ASSERT (! path. empty ());
-      const Real hybridness_tree = DistTree::path2prediction (path) / (hybridParent1. target + hybridParent2. target);
-      if (maximize (hybridness_, hybridness_tree))
-      {
-        parent1 = hybridParent1. leaf;
-        parent2 = hybridParent2. leaf;
-      }
-    }    
-  ASSERT ((bool) parent1 == (bool) parent2);
-  ASSERT (isNan (parentDissimilarity));  
-#endif
-
-  
-  return NaN;
-}
-
-
-
-void Leaf::getHybridTriangles (Vector<Triangle> &hybrids,
-                               Set<const Leaf*> &tried) const
-{
-  ASSERT (DistTree_sp::hybridness_min > 1.0);
-  
-  if (tried. contains (this))
-    return;
-    
-  tried << this;
-    
-  const Leaf* parent1 = nullptr;
-  const Leaf* parent2 = nullptr;
-  Real parent1_dissim = NaN;
-  Real parent2_dissim = NaN;
-  size_t dissimType = NO_INDEX;
-  const Real hybridness_ = getHybridness (parent1, parent2, parent1_dissim, parent2_dissim, dissimType);
-  if (isNan (hybridness_))
-    return;
-  if (hybridness_ < DistTree_sp::hybridness_min)
-    return;
-        
-  ASSERT (parent1);
-  ASSERT (parent2);
-  
-  hybrids << Triangle (this, hybridness_, parent1, parent2, parent1_dissim, parent2_dissim, dissimType);
-  
-  parent1->getHybridTriangles (hybrids, tried);
-  parent2->getHybridTriangles (hybrids, tried); 
 }
 
 
@@ -2343,138 +2311,124 @@ bool Image::apply ()
   DiGraph::Node2Node boundary2new (DiGraph::reverse (new2old));
   ASSERT (boundary2new. size () == new2old. size ());
 
-#if 0
-  if (   neighborJoinP   
-      && subgraph. getImprovement (boundary2new) <= 1e-5  // PAR ??  // Slow  
-     )
-  {
-    for (const Tree::TreeNode* node : subgraph. area)
-      if (! subgraph. boundary. containsFast (node))
-        const_static_cast <DTNode*> (node) -> stable = true;
-  //cerr << " no improvement" << endl;  
-  }
-  else
-#endif
-  {
-    // Optimization of tree is not needed any more
-    for (DiGraph::Node* node_new : tree->nodes)
-      static_cast <DTNode*> (node_new) -> pathObjNums. clear ();  
-  
-    const Tree::TreeNode* root_old = wholeTree. root;
-  
-    // tree->root
-    // new2old: newBoundary2oldBoundary
-    if (const DTNode* dtNode = static_cast <const DTNode*> (findPtr (boundary2new, subgraph. area_root)))
-    {
-    //ASSERT (! rootInArea);
-      ASSERT (subgraph. area_root);
-      const Leaf* leaf = dtNode->asLeaf ();
-      ASSERT (leaf);
-      if (verbose ())
-        cout << "Re-rooting subgraph ..." << endl;
-      // Replace leaf by st
-      auto st = new Steiner (*tree, const_static_cast <Steiner*> (leaf->getParent ()), leaf->len);
-      EXEC_ASSERT (new2old. erase (leaf) == 1);
-      tree->delayDeleteRetainArcs (var_cast (leaf));
-      ASSERT (isNan (static_cast <const DTNode*> (tree->root) -> len));
-      const Steiner* root_ = st->makeDTRoot ();  // Old root
-      boundary2new [subgraph. area_root] = st;
-      new2old [st] = subgraph. area_root;
-      ASSERT (root_ != st);
-      ASSERT (root_->len >= 0);
-      if (root_->isTransient ())
-        tree->delayDeleteRetainArcs (var_cast (root_));
-      tree->toDelete. deleteData ();
-      ASSERT (st == tree->root);
-      ASSERT (isNan (st->len));
-    }
-    ASSERT (new2old. size () == boundary2new. size ());
-    ASSERT (subgraph. boundary. size () == boundary2new. size ());
-  //tree->qc ();
-  
-    // tree, subgraph --> topology of wholeTree
-  
-    // nodes: delete
-    // center may be delete'd
-  #ifndef NDEBUG
-    size_t deleted = 0;
-  #endif
-    for (const Tree::TreeNode* node : subgraph. area)
-      if (! contains (boundary2new, node))
-      {
-        DTNode* dtNode = const_static_cast <DTNode*> (node);
-        dtNode->isolate ();
-        dtNode->detach ();
-        wholeTree. toDelete << dtNode;
-      #ifndef NDEBUG
-        deleted++;
-      #endif
-      }
-      // Between boundary Tree::TreeNode's there are no Arc's => borrowArcs() will not break
-  
-    // nodes, new2old[]: new
-  #ifndef NDEBUG
-    size_t created = 0;
-  #endif
-    for (const DiGraph::Node* node_new : tree->nodes)
-    {
-      DTNode* node = const_static_cast <DTNode*> (findPtr (new2old, node_new));
-      if (! node)
-      {
-        node = new Steiner (wholeTree, nullptr, NaN);
-        new2old [node_new] = node;
-        node->stable = true;
-      #ifndef NDEBUG
-        created++;
-      #endif
-      }
-      ASSERT (node);
-      if (node_new != tree->root)
-        node->len = static_cast <const DTNode*> (node_new) -> len;
-    }
-    ASSERT (new2old. size () == tree->nodes. size ());
-    
-    ASSERT ((bool) deleted == (bool) created);
-    ASSERT ((bool) deleted == (subgraph. area. size () > 2));
+  // Optimization of tree is not needed any more
+  for (DiGraph::Node* node_new : tree->nodes)
+    static_cast <DTNode*> (node_new) -> pathObjNums. clear ();  
 
-    if (subgraph. area. size () > 2)
-      wholeTree. borrowArcs (new2old, true);  // Arc's are not parallel
-    
-    // wholeTree.root
-    if (rootInArea)
+  const Tree::TreeNode* root_old = wholeTree. root;
+
+  // tree->root
+  // new2old: newBoundary2oldBoundary
+  if (const DTNode* dtNode = static_cast <const DTNode*> (findPtr (boundary2new, subgraph. area_root)))
+  {
+  //ASSERT (! rootInArea);
+    ASSERT (subgraph. area_root);
+    const Leaf* leaf = dtNode->asLeaf ();
+    ASSERT (leaf);
+    if (verbose ())
+      cout << "Re-rooting subgraph ..." << endl;
+    // Replace leaf by st
+    auto st = new Steiner (*tree, const_static_cast <Steiner*> (leaf->getParent ()), leaf->len);
+    EXEC_ASSERT (new2old. erase (leaf) == 1);
+    tree->delayDeleteRetainArcs (var_cast (leaf));
+    ASSERT (isNan (static_cast <const DTNode*> (tree->root) -> len));
+    const Steiner* root_ = st->makeDTRoot ();  // Old root
+    boundary2new [subgraph. area_root] = st;
+    new2old [st] = subgraph. area_root;
+    ASSERT (root_ != st);
+    ASSERT (root_->len >= 0);
+    if (root_->isTransient ())
+      tree->delayDeleteRetainArcs (var_cast (root_));
+    tree->toDelete. deleteData ();
+    ASSERT (st == tree->root);
+    ASSERT (isNan (st->len));
+  }
+  ASSERT (new2old. size () == boundary2new. size ());
+  ASSERT (subgraph. boundary. size () == boundary2new. size ());
+//tree->qc ();
+
+  // tree, subgraph --> topology of wholeTree
+
+  // nodes: delete
+  // center may be delete'd
+#ifndef NDEBUG
+  size_t deleted = 0;
+#endif
+  for (const Tree::TreeNode* node : subgraph. area)
+    if (! contains (boundary2new, node))
     {
-      wholeTree. root = nullptr;
-      for (const auto& it : new2old)
-      {
-        const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (it. second);
-        if (! node->getParent ())
-        {
-          ASSERT (! wholeTree. root);
-          wholeTree. root = node;
-        }
-      }
+      DTNode* dtNode = const_static_cast <DTNode*> (node);
+      dtNode->isolate ();
+      dtNode->detach ();
+      wholeTree. toDelete << dtNode;
+    #ifndef NDEBUG
+      deleted++;
+    #endif
     }
-    else
+    // Between boundary Tree::TreeNode's there are no Arc's => borrowArcs() will not break
+
+  // nodes, new2old[]: new
+#ifndef NDEBUG
+  size_t created = 0;
+#endif
+  for (const DiGraph::Node* node_new : tree->nodes)
+  {
+    DTNode* node = const_static_cast <DTNode*> (findPtr (new2old, node_new));
+    if (! node)
     {
-      ASSERT (root_old);
-      ASSERT (! root_old->getParent ());
-      wholeTree. root = root_old;
+      node = new Steiner (wholeTree, nullptr, NaN);
+      new2old [node_new] = node;
+      node->stable = true;
+    #ifndef NDEBUG
+      created++;
+    #endif
     }
-    ASSERT (wholeTree. root);
-     
-    // Topology, absCriterion
-    subgraph. subPaths2tree ();
-      
-    // deleteLenZero
+    ASSERT (node);
+    if (node_new != tree->root)
+      node->len = static_cast <const DTNode*> (node_new) -> len;
+  }
+  ASSERT (new2old. size () == tree->nodes. size ());
+  
+  ASSERT ((bool) deleted == (bool) created);
+  ASSERT ((bool) deleted == (subgraph. area. size () > 2));
+
+  if (subgraph. area. size () > 2)
+    wholeTree. borrowArcs (new2old, true);  // Arc's are not parallel
+  
+  // wholeTree.root
+  if (rootInArea)
+  {
+    wholeTree. root = nullptr;
     for (const auto& it : new2old)
     {
-      DTNode* node = const_static_cast <DTNode*> (it. second);
-      if (! subgraph. boundary. containsFast (node))
-        wholeTree. deleteLenZero (node);  
+      const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (it. second);
+      if (! node->getParent ())
+      {
+        ASSERT (! wholeTree. root);
+        wholeTree. root = node;
+      }
     }
-
-    wholeTree. toDelete. deleteData ();
   }
+  else
+  {
+    ASSERT (root_old);
+    ASSERT (! root_old->getParent ());
+    wholeTree. root = root_old;
+  }
+  ASSERT (wholeTree. root);
+   
+  // Topology, absCriterion
+  subgraph. subPaths2tree ();
+    
+  // deleteLenZero
+  for (const auto& it : new2old)
+  {
+    DTNode* node = const_static_cast <DTNode*> (it. second);
+    if (! subgraph. boundary. containsFast (node))
+      wholeTree. deleteLenZero (node);  
+  }
+
+  wholeTree. toDelete. deleteData ();
 
 
   if (center && contains (boundary2new, center))
@@ -2582,12 +2536,6 @@ struct DissimLine
         throw runtime_error (getErrorStr (lineNum) + "empty name2");
       if (name1 >= name2)
         throw runtime_error (getErrorStr (lineNum) + "name1 >= name2");
-    #if 0
-      if (outliers. containsFast (name1))
-        continue;
-      if (outliers. containsFast (name2))
-        continue;
-    #endif
       dissim = str2real (line);
       if (isNan (dissim))
         throw runtime_error (getErrorStr (lineNum) + "dissimilarity is NaN");
@@ -2752,15 +2700,8 @@ DistTree::DistTree (const string &dataDirName,
       // Attach a leaf
       Leaf* leaf = nullptr;
       if (const Leaf* anchorLeaf = anchor->asLeaf ())
-      {
-      #if 0
-        if (! leafLen && ! arcLen)
-          leaf = new Leaf (*this, var_cast (anchorLeaf), leafName);  // DissimLine::apply() will collapse() if needed
-        else
-      #endif
-          if (! anchorLeaf->discernible)
-            anchor = static_cast <const DTNode*> (anchor->getParent ());
-      }
+        if (! anchorLeaf->discernible)
+          anchor = static_cast <const DTNode*> (anchor->getParent ());
       ASSERT (anchor);
       if (! leaf)
       {
@@ -2792,16 +2733,6 @@ DistTree::DistTree (const string &dataDirName,
 
   if (loadDissim)
   {
-  #if 0
-    StringVector outliers;
-    {
-      FileItemGenerator fig (0, true, dataDirName + "outlier");  
-      string item;
-      while (fig. next (item))
-        outliers << item;
-    }
-    outliers. sort ();
-  #endif
     loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
     const string fName (dataDirName + "dissim");
     {
@@ -5279,10 +5210,7 @@ void DistTree::printAbsCriterion_halves () const
 
 
 
-#if 0
 void DistTree::setLeafAbsCriterion ()  
-// Output: Leaf::{absCriterion,absCriterion_ave}
-// Time: O(p)
 {
   ASSERT (optimizable ());
   
@@ -5296,20 +5224,21 @@ void DistTree::setLeafAbsCriterion ()
   for (const Dissim& dissim : dissims)
     if (dissim. validMult ())
     {
-      const Real residual2 = sqr (dissim. getResidual ());      
-      ASSERT (DM_sp::finite (residual2));
-
+      const Real criterion = dissim. getAbsCriterion ();
+      ASSERT (DM_sp::finite (criterion));
+      ASSERT (criterion >= 0.0);
+      
       Leaf* leaf1 = var_cast (dissim. leaf1);
       Leaf* leaf2 = var_cast (dissim. leaf2);
 
-      leaf1->absCriterion += residual2 * dissim. mult;
-      leaf2->absCriterion += residual2 * dissim. mult;
+      leaf1->absCriterion += criterion; 
+      leaf2->absCriterion += criterion; 
 
-      leaf1->absCriterion_ave += dissim. mult;
-      leaf2->absCriterion_ave += dissim. mult;
+      // Temporary
+      leaf1->absCriterion_ave += 1.0; 
+      leaf2->absCriterion_ave += 1.0; 
     }
 
-//OFStream f ("leaf_criterion");  
   for (DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
     {
@@ -5317,7 +5246,6 @@ void DistTree::setLeafAbsCriterion ()
       ASSERT (leaf->absCriterion_ave >= 0.0);
     }
 }
-#endif
 
 
 
@@ -6189,7 +6117,6 @@ bool DistTree::optimizeReinsert ()
     changes << threadChanges;
 
   return applyChanges (changes, true);  // Slow ??
-    // "# changes = 3, # commits = 0" ??
 }
 
 
@@ -6342,7 +6269,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
       const bool success = ch->apply ();
       if (verbose (1))
         cout << "Success: " << success << "  improvement = " << ch->improvement << endl;
-      IMPLY (first && ! byNewLeaf/*??*/, success && ch->improvement > 0.0);
+      IMPLY (first && ! byNewLeaf, success && ch->improvement > 0.0);
       if (! success || ch->improvement <= 0.0) 
       {
       //ASSERT (! first);
@@ -6457,17 +6384,9 @@ void DistTree::optimizeLargeSubgraphs ()
   ASSERT (threads_max);
   
   
-#if 0  
-  FOR (size_t, i, subDepth)
-    cout << "  ";
-  cout << "optimizeLargeSubgraphs: " << name2leaf. size () << endl;
-#endif
-
   const bool threadsUsed = (threads_max > 1 && ! subDepth);
   
-#if 0
-  unique_ptr<const Chronometer_OnePass> cop (subDepth == 1 ? new Chronometer_OnePass ("optimizeLargeSubgraphs for " + toString (name2leaf. size ())) : nullptr);   
-#endif
+//unique_ptr<const Chronometer_OnePass> cop (subDepth == 1 ? new Chronometer_OnePass ("optimizeLargeSubgraphs for " + toString (name2leaf. size ())) : nullptr);   
   
   constexpr size_t large_min = 1000;  // PAR  
   ASSERT (large_min > 1);
@@ -7045,7 +6964,7 @@ Real setDissimWeightAttrs (const Leaf* leaf1,
   ASSERT (leaf1 != leaf2);
   ASSERT (s >= 0.0);
   ASSERT (w >= 0.0);
-  ASSERT (w < INF);
+//ASSERT (w < INF);
   ASSERT (dissimAttr);
   ASSERT (weightAttr);
   ASSERT (& dissimAttr->ds == & weightAttr->ds);
@@ -7060,6 +6979,9 @@ Real setDissimWeightAttrs (const Leaf* leaf1,
   ASSERT (isNan (weightAttr->get (objNum1, objNum2)));
   dissimAttr->putSymm (objNum1, objNum2, ave);
   weightAttr->putSymm (objNum1, objNum2, w);
+  
+  if (! s2 && ! s)
+    return 0.0;
   
   const Real var = s2 / w - sqr (ave);
   return var * w;
@@ -7093,7 +7015,7 @@ Dataset DistTree::getDissimWeightDataset (Real &dissimTypeError) const
   Real s2 = 0.0;
   Real w  = 0.0;
   for (const Dissim& dissim : dissims)    
-    if (dissim. validMult ())
+    if (dissim. valid ())
     {
       if (   leaf1_old != dissim. leaf1
           || leaf2_old != dissim. leaf2
@@ -7106,8 +7028,11 @@ Dataset DistTree::getDissimWeightDataset (Real &dissimTypeError) const
         leaf1_old = dissim. leaf1;
         leaf2_old = dissim. leaf2;
       }
-      s  += dissim. mult *      dissim. target;
-      s2 += dissim. mult * sqr (dissim. target);
+      if (dissim. mult < INF)
+      {
+        s  += dissim. mult *      dissim. target;
+        s2 += dissim. mult * sqr (dissim. target);
+      }
       w  += dissim. mult;
     }  
   dissimTypeError += setDissimWeightAttrs (leaf1_old, leaf2_old, s, s2, w, dissimAttr_, weightAttr_);
@@ -7466,6 +7391,30 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 namespace
 {
   
+  
+struct TriangleType
+{
+  const Leaf* parent1;
+  const Leaf* parent2;
+  size_t dissimType;
+  
+  bool operator== (const TriangleType &other) const
+    { return    parent1    == other. parent1
+             && parent2    == other. parent2
+             && dissimType == other. dissimType;
+    }
+
+  struct Hash
+  {
+    size_t operator() (const TriangleType &tt) const
+      { static hash<const Leaf*> leafHash;
+        static hash<size_t>      sizeHash;
+        return leafHash (tt. parent1) ^ leafHash (tt. parent2) ^ sizeHash (tt. dissimType);
+      }
+  };
+};
+
+
 
 struct RequestCandidate
 {
@@ -7493,6 +7442,8 @@ struct RequestCandidate
 
 
 
+#if 0
+??
 void hybrid2requests (size_t from, 
                       size_t to, 
                       Vector<RequestCandidate> &res, 
@@ -7505,17 +7456,23 @@ void hybrid2requests (size_t from,
   Tree::LcaBuffer buf;
   FOR_START (size_t, i, from, to)
   {
-    const Leaf* child = leaves [i];
+    const Leaf* leaf = leaves [i];
     RequestCandidate req;
     Real hybridness_tree = DistTree_sp::hybridness_min;
-    for (const Neighbor& badNeighbor1 : child->badNeighbors)
-      for (const Neighbor& badNeighbor2 : child->badNeighbors)
+    for (const uint objNum1 : leaf->pathObjNums)
+    {
+      const Dissim& dissim1 = leaf->getDistTree (). dissims [objNum1];
+      if (! dissim1. validMult ())
+        continue;
+      FOR (uint, objNum2, objNum1)
       {
-        if (& badNeighbor1 == & badNeighbor2)
-          break;
+        const Dissim& dissim2 = leaf->getDistTree (). dissims [objNum2];
+        if (! dissim2. validMult ())
+          continue;
+        ??
         const Tree::TreeNode* lca_ = nullptr;
-        const VectorPtr<Tree::TreeNode>& path = Tree::getPath ( badNeighbor1. leaf
-                                                              , badNeighbor2. leaf
+        const VectorPtr<Tree::TreeNode>& path = Tree::getPath ( dissim1. getOtherLeaf (leaf)
+                                                              , dissim2. getOtherLeaf (leaf)
                                                               , nullptr
                                                               , lca_
                                                               , buf
@@ -7528,39 +7485,41 @@ void hybrid2requests (size_t from,
           req. leaf2 = badNeighbor2. leaf;
         }
       }
+    }
     if (req. leaf1)
       res << req;
   }
 }
+#endif
 
 
 
-void dissim2hybridness (size_t from,
-                        size_t to,
-                        Notype&,
-                        const Vector<Dissim> &dissims)
+void setTriangles_thread (size_t from,
+                          size_t to,
+                          Notype&,
+                          Vector<TriangleParentPair> &triangleParentPairs_init,
+                          const DistTree &tree)
 {
   ASSERT (from <= to);
-  ASSERT (to <= dissims. size ());
-  
-  FOR_START (size_t, objNum, from, to)
-  {
-    const Dissim& dissim = dissims [objNum];
-    if (! dissim. validMult ())
-      continue;
-    ASSERT (dissim. target >= 0.0);
-    for (const Neighbor& neighbor : dissim. leaf1->badNeighbors)
-    {
-      Leaf* child = var_cast (neighbor. leaf);
-      if (const Neighbor* otherNeighbor = child->findNeighbor (dissim. leaf2, dissim. type))
-      {
-        const Real hybridness = dissim. target / (neighbor. target + otherNeighbor->target);
-        lock_guard<mutex> lg {child->mtx};
-        if (maximize (child->hybridness, hybridness))
-          child->hybridParentsDissimObjNum = (uint) objNum;
-      }
-    }
-  }
+  ASSERT (to <= triangleParentPairs_init. size ());
+    
+  FOR_START (size_t, i, from, to)
+    triangleParentPairs_init [i]. setTriangles (tree);
+}
+
+
+
+void addHybridTriangles_thread (size_t from,
+                                size_t to,
+                                Vector<Triangle>& res,
+                                const VectorPtr<Leaf> &badLeaves)
+{
+  ASSERT (from <= to);
+  ASSERT (to <= badLeaves. size ());
+  ASSERT (res. empty ());
+    
+  FOR_START (size_t, i, from, to)
+    badLeaves [i] -> addHybridTriangles (res);
 }
 
 
@@ -7569,6 +7528,7 @@ void dissim2hybridness (size_t from,
 
 
 Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
+                                                  bool searchBadLeaves,
                                                   Vector<Pair<const Leaf*>> *dissimRequests) const
 {
   ASSERT (! subDepth);
@@ -7582,9 +7542,10 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 
   constexpr Real hybridness_min_init = 1.0;  // PAR   
   ASSERT (DistTree_sp::hybridness_min > hybridness_min_init);
-  
+    
 
-  Real outlier_min = NaN;
+  // Time: O(p log(p))
+  Vector<TriangleParentPair> triangleParentPairs_init;  triangleParentPairs_init. reserve (dissims. size ());  
   {
     // dissims.size() = 35M => 80 sec. 
     Dataset ds;
@@ -7593,96 +7554,104 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
       {
-        const Real err = dissim. getAbsCriterion ();
+        const Real err = dissim. getHybridCriterion ();
         ASSERT (err >= 0.0);
         const size_t index = ds. appendObj ();
         (*criterionAttr) [index] = err;
       }
     const Sample sample (ds); 
     Normal distr;  // Beta1 ??
-    // Time: O(p log(p))
-    outlier_min = criterionAttr->distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
-  }
-  if (isNan (outlier_min))
-    return triangleParentPairs;
-  if (verbose ())
-    cout << "outlier_min = " << outlier_min << endl;  
-    
-  for (const auto& it : name2leaf)
-  {
-    Leaf* leaf = var_cast (it. second);
-    ASSERT (leaf);
-    leaf->badNeighbors. clear ();
-    leaf->badNeighbors. reserve (name2leaf. size () / 100);  // PAR
-    leaf->hybridness = hybridness_min_init;  
-    leaf->hybridParentsDissimObjNum = dissims_max;
-    leaf->badCriterion = 0.0;
-  }
-  
-  // Leaf::badNeighbors
-  for (const Dissim& dissim : dissims)    
-    if (   dissim. validMult ()
-        && dissim. getAbsCriterion () >= outlier_min
-       )
-    {
-      var_cast (dissim. leaf1) -> badCriterion += dissim. getAbsCriterion ();
-      var_cast (dissim. leaf2) -> badCriterion += dissim. getAbsCriterion ();
-      if (dissim. target < dissim. prediction)  // <= hybrid
+    const Real outlier_min = criterionAttr->distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
+    if (isNan (outlier_min))
+      return triangleParentPairs;
+    if (verbose ())  
+      cout << "outlier_min = " << outlier_min << endl;  
+    for (const Dissim& dissim : dissims)    
+      if (   dissim. validMult ()
+          && dissim. getHybridCriterion () >= outlier_min 
+         )
       {
-        var_cast (dissim. leaf1) -> badNeighbors << Neighbor (dissim. leaf2, dissim. type, dissim. target);
-        var_cast (dissim. leaf2) -> badNeighbors << Neighbor (dissim. leaf1, dissim. type, dissim. target);
+        var_cast (dissim. leaf1) -> badCriterion += dissim. getHybridCriterion ();
+        var_cast (dissim. leaf2) -> badCriterion += dissim. getHybridCriterion ();
+        triangleParentPairs_init << TriangleParentPair ( dissim. leaf1
+                                                       , dissim. leaf2
+                                                       , dissim. target
+                                                       , dissim. type);
       }
-    }
-  for (const auto& it : name2leaf)
-  {
-    Leaf* leaf = var_cast (it. second);
-    leaf->badNeighbors. sort ();
-    ASSERT (leaf->badNeighbors. isUniq ());
   }
-
-  // Leaf::{hybridness,hybridParentsDissimObjNum}
+//cerr << "# Bad dissimilarities = " << triangleParentPairs_init. size () << endl;
+  
+  if (searchBadLeaves)
   {
-    vector<Notype> notypes;
-    arrayThreads (dissim2hybridness, dissims. size (), notypes, cref (dissims));
-  }
-
-  {
-    Vector<Triangle> triangles;  
+    VectorPtr<Leaf> badLeaves;  badLeaves. reserve (name2leaf. size ());
     for (const auto& it : name2leaf)
     {
-      const Leaf* child = it. second;
-      if (! child->graph)
+      const Leaf* leaf = it. second;
+      if (! leaf->graph)
         continue;
-      ASSERT (child->hybridness >= hybridness_min_init);
-      if (child->hybridness < DistTree_sp::hybridness_min)  
-        continue;
-      ASSERT (child->hybridParentsDissimObjNum < DistTree::dissims_max);
-      const Dissim& dissim = dissims [child->hybridParentsDissimObjNum];
-      const Neighbor* neighbor1 = child->findNeighbor (dissim. leaf1, dissim. type);
-      const Neighbor* neighbor2 = child->findNeighbor (dissim. leaf2, dissim. type);
-      if (   ! neighbor1 
-          || ! neighbor2
-         )
-        continue;
-      triangles << Triangle (child, child->hybridness, dissim. leaf1, dissim. leaf2, neighbor1->target, neighbor2->target, dissim. type);
+      if (! leaf->getDiscernible () -> len)
+        badLeaves << leaf;
     }
-    if (triangles. empty ())
-      return triangleParentPairs;
-          
-    ASSERT (triangleParentPairs. empty ());
-    for (const Triangle& tr : triangles)
-    {
-      tr. qc ();
-      triangleParentPairs << TriangleParentPair (tr. parents [0]. leaf, tr. parents [1]. leaf, tr. parentsDissim ());
-    }
+    Real outlier_min = NaN;
+    badLeaves << findCriterionOutliers (dissimOutlierEValue_max * 0.1, outlier_min);  // PAR
+    badLeaves. sort ();
+    badLeaves. uniq ();
+    cerr << "Bad objects = " << badLeaves. size () << endl;
+    badLeaves. randomOrder ();
+    const Real nLeaves = (Real) name2leaf. size ();
+    const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / log (nLeaves)) + 1);  // = O(n/log(n))
+    vector<Vector<Triangle>> resVec;
+    // Time: O (n log^3(n) / threads_max)
+    arrayThreads (addHybridTriangles_thread, badLeaves_size, resVec, cref (badLeaves));
+    for (const Vector<Triangle>& res : resVec)
+      for (const Triangle& tr : res)  
+          // Limit by O(p) ??
+        triangleParentPairs_init << TriangleParentPair ( tr. parents [0]. leaf
+                                                       , tr. parents [1]. leaf
+                                                       , tr. parentsDissim ()
+                                                       , tr. dissimType);
+    triangleParentPairs_init. sort ();
+    triangleParentPairs_init. uniq ();
+    cerr << "# Bad dissimilarities = " << triangleParentPairs_init. size () << endl;
+  }  
+   
+  // Time: O (p log^2(n) / threads_max)  
+  {
+    vector<Notype> notypes;
+    arrayThreads (setTriangles_thread, triangleParentPairs_init. size (), notypes, ref (triangleParentPairs_init), cref (*this));
   }
-  triangleParentPairs. sort ();
-  triangleParentPairs. uniq ();  
 
-  for (TriangleParentPair& tpp : triangleParentPairs)
-    tpp. setTriangles (*this);
+  ASSERT (triangleParentPairs. empty ());
+  {
+    size_t trianglesSize = 0;
+    for (const TriangleParentPair& tpp : triangleParentPairs_init)
+      trianglesSize += tpp. triangles. size ();
+    unordered_map <TriangleType,size_t/*index in triangleParentPairs*/,TriangleType::Hash> triangleType2tpp;  triangleType2tpp. rehash (trianglesSize);
+    for (const TriangleParentPair& tpp : triangleParentPairs_init)
+      for (const Triangle& tr : tpp. triangles)
+      {
+        const TriangleType triangleType { tr. parents [0]. leaf
+                                        , tr. parents [1]. leaf
+                                        , tr. dissimType
+                                        };
+        size_t index = NO_INDEX;
+        if (! find (triangleType2tpp, triangleType, index))
+        {
+          triangleParentPairs << TriangleParentPair ( tr. parents [0]. leaf
+                                                    , tr. parents [1]. leaf
+                                                    , tr. parentsDissim ()
+                                                    , tr. dissimType
+                                                    );
+          index = triangleParentPairs. size () - 1;
+          triangleType2tpp [triangleType] = index;
+        }
+        ASSERT (index != NO_INDEX);
+        triangleParentPairs [index]. triangles << tr;
+        triangleParentPairs [index]. hybridness_ave = tpp. hybridness_ave;
+      }
+  }    
   triangleParentPairs. sort (TriangleParentPair::compareHybridness);  // PAR
-
+    
   Set<const Leaf*> hybrids;
   {
     Set<const Leaf*> nonHybrids;
@@ -7690,13 +7659,17 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     {
       tpp. finish (*this, hybrids);
       tpp. qc ();
+      if (tpp. triangles. empty ())
+        continue;
+      if (tpp. undecided ())
+        continue;  
       const Set<const Leaf*> hybrids_    (tpp. getHybrids (true));
       const Set<const Leaf*> nonHybrids_ (tpp. getHybrids (false));
       IMPLY (hybrids_. empty (), nonHybrids_. empty ());
-      if (   hybrids_.    intersects (nonHybrids)
+      if (   hybrids_.    intersects (nonHybrids)  // Wrongly decided
           || nonHybrids_. intersects (hybrids)
          )
-        tpp. triangles. clear ();
+        tpp. triangles. clear ();  // Preserve ??
       else
       {
         hybrids.    insertAll (hybrids_);
@@ -7706,31 +7679,18 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   }
   
   triangleParentPairs. filterValue ([] (const TriangleParentPair& tpp) { return tpp. triangles. empty () || tpp. dissimError (); });
-  if (triangleParentPairs. empty ())
-    return triangleParentPairs;
   
 
   if (dissimRequests)  
   {  
+  #if 0
+    ??
     Vector<RequestCandidate> requests;  requests. reserve (name2leaf. size () / 10); // PAR
+    triangleParentPairs_init. filterValue ([] (const TriangleParentPair& tpp) { return ! tpp. triangles. empty (); });
+    triangleParentPairs_init. randomOrder ();
     {
-      // dissims.size() = 35M => 89 sec.  
-      VectorPtr<Leaf> leaves;  leaves. reserve (name2leaf. size ());
-      for (const auto& it : name2leaf)
-      {
-        const Leaf* child = it. second;
-        if (! child->graph)
-          continue;
-        if (child->badNeighbors. size () <= 1)
-          continue;
-        if (hybrids. contains (child))
-          continue;
-        leaves << child;
-      }
-      leaves. randomOrder ();
-
       vector<Vector<RequestCandidate>> requests_vec;  
-      arrayThreads (hybrid2requests, leaves. size (), requests_vec, cref (leaves));
+      arrayThreads (hybrid2requests, leaves. size (), requests_vec, cref (triangleParentPairs_init));
       for (const auto& requests_ : requests_vec)
         requests << requests_;
     }
@@ -7751,78 +7711,12 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     for (const RequestCandidate& req : requests)
       if (! req. inDissims)
         *dissimRequests << Pair<const Leaf*> (req. leaf1, req. leaf2);
+  #endif
   }
     
   
-  for (const auto& it : name2leaf)
-  {
-    Leaf* leaf = var_cast (it. second);
-    ASSERT (leaf);
-    leaf->badNeighbors. wipe ();
-  }
-
-
   return triangleParentPairs;
 }
-
-
-
-#if 0
-Vector<Triangle> DistTree::findHybrids (Real parentLengthFrac_min,
-                                        Vector<Pair<const Leaf*>> &dissimRequests) const
-{
-  ASSERT (optimizable ());
-  ASSERT (DistTree_sp::hybridness_min > 1.0);
-  ASSERT (parentLengthFrac_min > 1.0);
-
-#if 0
-  const Real height_min = getAveArcLength () * 0.1;  // PAR
-  ASSERT (height_min > 0);
-#endif
-
-  Vector<Triangle> triangles;
-  Vector<RequestCandidate> requests;  
-  for (const auto& it : name2leaf)
-  {
-    Leaf* leaf = var_cast (it. second);
-    ASSERT (leaf);
-    if (! leaf->graph)
-      continue;
-    const Leaf* parent1 = nullptr;
-    const Leaf* parent2 = nullptr;
-    Real parentDissimilarity = NaN;
-    const Real hybridness = leaf->getHybridness (parentLengthFrac_min, parent1, parent2, parentDissimilarity);
-    if (hybridness < DistTree_sp::hybridness_min)
-      continue;   
-    if (isNan (hybridness))
-    {
-      if (parent1)
-        requests << RequestCandidate (parent1, parent2);
-    }
-    else
-      triangles << Triangle (leaf, hybridness, parent1, parent2, parentDissimilarity);
-  }
-  
-  // Instead: search in dissims ??
-  if (! requests. empty ())
-  {
-    requests. sort ();
-    requests. uniq ();
-    for (const Dissim& dissim : dissims)    
-    {
-      const RequestCandidate req (dissim. leaf1, dissim. leaf2);
-      const size_t index = requests. binSearch (req);
-      if (index != NO_INDEX)
-        requests [index]. inDissims = true;
-    }
-    for (const RequestCandidate& req : requests)
-      if (! req. inDissims)
-        dissimRequests << Pair<const Leaf*> (req. leaf1, req. leaf2);
-  }    
-    
-  return triangles;
-}
-#endif
 
 
 
@@ -8317,7 +8211,7 @@ void DistTree::pairResiduals2dm (const RealAttr1* resid2Attr,
 
 
 void DistTree::saveDissim (ostream &os,
-                           bool addPredictionAbsCriterion) const
+                           bool addExtra) const
 {
   ASSERT (optimizable ());
 
@@ -8328,9 +8222,10 @@ void DistTree::saveDissim (ostream &os,
       os         << dissim. leaf1->name
          << '\t' << dissim. leaf2->name
          << '\t' << dissim. target;
-      if (addPredictionAbsCriterion)
+      if (addExtra)
         os << '\t' << dissim. prediction 
-           << '\t' << dissim. getAbsCriterion ();
+           << '\t' << dissim. getAbsCriterion ()
+           << '\t' << sqr (dissim. target - dissim. prediction);
       os << endl;
     }
 }
