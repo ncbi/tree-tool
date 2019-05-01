@@ -151,7 +151,7 @@ struct ThisApplication : Application
         // Too simplistic criterion ??
         const Real eValue = pValue * sm. mult_sum;
         if (eValue <= outlierEValue * 10)  // PAR
-          const_cast <Obj*> (ds. objs [*it]) -> comment += string("  [E-value = ") + real2str (eValue, eValueDecimals) + "]";
+          const_cast <Obj*> (ds. objs [*it]) -> comment += string ("  [E-value = ") + real2str (eValue, eValueDecimals) + "]";
         (*outlierScore) [*it] = eValue;
         (*outlier) [*it] = (eValue <= outlierEValue ? ETRUE : EFALSE);  
         if ((*outlier) [*it])

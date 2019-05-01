@@ -1004,6 +1004,9 @@ struct RealAttr2 : Attr2, RealScale
 
 struct PositiveAttr2 : RealAttr2
 {
+  static constexpr const char* hybrid_format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> [<dissimilarity type>]"};
+  
+
   PositiveAttr2 (const string &name_arg,
                  Dataset &ds_arg,
                  streamsize decimals_arg = decimals_def)

@@ -2029,7 +2029,14 @@ void Dataset::load (istream &is)
             if (value == missingStr)
               attr2->setMissing (row, col);
             else
-              attr2->str2value (row, col, value);
+              try { attr2->str2value (row, col, value); }
+                catch (const exception &e) 
+                {
+                  throw runtime_error (e. what () + string (": ") + twoWayAttrName 
+                                       + " [" + objs [row] -> name 
+                                       + ", " + objs [col] -> name 
+                                       + "]");
+                }
           }
       }
       else if (s == "PARTIAL")
@@ -2356,14 +2363,17 @@ Sample::Sample (const Dataset &ds_arg)
 
 void Sample::finish ()
 {
-  mult_sum = 0;
-  nEffective = 0;
+  mult_sum = 0.0;
+  nEffective = 0.0;
   for (const Real m : mult)
   {
     mult_sum += m;
     if (m)
       nEffective++;
   }
+  ASSERT (mult_sum >= 0.0);
+//if (! mult. empty () && ! mult_sum)
+  //throw runtime_error (FUNC "mult_sum is 0");
 }
 
 
@@ -2375,7 +2385,7 @@ void Sample::qc () const
   ASSERT (ds);
   ASSERT (mult. size () == ds->objs. size ());
   for (const Real m : mult)
-    ASSERT (m >= 0);
+    ASSERT (m >= 0.0);
   ASSERT (positive (mult_sum));  
 }
 
@@ -2383,7 +2393,7 @@ void Sample::qc () const
 
 Real Sample::getMaxMult () const
 {
-  Real n = 0;
+  Real n = 0.0;
   for (Iterator it (*this); it ();)  
     maximize (n, it. mult);
   return n;
@@ -2656,7 +2666,7 @@ void Distribution::simulate (Dataset &ds,
   ASSERT (ds. empty ());
 
   auto* an_ = createAnalysis (ds);
-
+  
   FOR (size_t, i, objsSize)  
   {
   	EXEC_ASSERT (ds. appendObj (toString (i + 1)) == i);
@@ -5683,7 +5693,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
       Sample subset (sample);
       FFOR (size_t, row, space. ds. objs. size ())
         if ((*clustNominAttr) [row] != i)
-          subset. mult [row] = 0;
+          subset. mult [row] = 0.0;
       subset. finish ();    
       subset. save (attrs_orig, oss);
     }
