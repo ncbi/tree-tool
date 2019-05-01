@@ -43,17 +43,17 @@ while [ 1 = 1 ]; do
     set -o errexit
     echo "Re-submitting ${#L[@]} grid jobs ..."
     while [ ${#L[@]} -gt 0 ]; do
+      set +o errexit
       if [ $QRESUB == 1 ]; then
-        set +o errexit
 	      qresub ${L[0]} -h u
 	      S=$?
-        set -o errexit
 	      if [ $S == 0 ]; then
 	        qdel -f ${L[0]}
 	      fi
 	    else
 	      qdel -f ${L[0]}
 	    fi
+      set -o errexit
       shift L
     done
     qrls  -h u  -u $USER > /dev/null
