@@ -111,6 +111,7 @@ Save clusters in " + dmSuff + "-files\
   	  addPositional ("attrName", "Attribute name of a distance in the <file>");
   	  addFlag("max_cliques", "Clusters must be maximal cliques");
   	  addKey ("hybridness_min", "Min. hybridness to report hybrids, >1", "NAN");
+  	  addKey ("hybrid", "Output file with hybrids information. Line format: " + string (PositiveAttr2::hybrid_format));
   	  addKey ("distance_max", "Max. distance to merge into the same cluster; 0 - infinity", "0");
   	  addKey ("objName", "Object name to print violations for");
   	  // Output
@@ -122,11 +123,12 @@ Save clusters in " + dmSuff + "-files\
 	void body () const
 	{
 		const string clustering_dir = getArg ("clustering_dir");
-		const bool max_cliques      = getFlag ("max_cliques");
+		const bool   max_cliques    = getFlag ("max_cliques");
 		const string fName          = getArg ("file");
 		const string attrName       = getArg ("attrName");
-	  const Real hybridness_min   = str2<Real> (getArg ("hybridness_min"));
-		const Real distance_max     = str2<Real> (getArg ("distance_max"));
+	  const Real   hybridness_min = str2real (getArg ("hybridness_min"));
+	  const string hybridFName   = getArg ("hybrid");
+		const Real   distance_max   = str2real (getArg ("distance_max"));
 		const string objName        = getArg ("objName");
 	  if (hybridness_min <= 1.0)
 	    throw runtime_error ("-hybridness_min must be > 1.0");
@@ -152,6 +154,7 @@ Save clusters in " + dmSuff + "-files\
       if (maxCorrection > 2 * pow (10, - (Real) dist->decimals))
         cout << "maxCorrection = " << maxCorrection << " at " << ds. objs [row_bad] -> name << ", " << ds. objs [col_bad] -> name << endl;
     }
+  #if 0
     {
    	  size_t row, col;
   	  if (dist->matr. existsMissing (false, row, col))
@@ -164,6 +167,7 @@ Save clusters in " + dmSuff + "-files\
       #endif
       }
     }
+  #endif
 	  {
   	  size_t row;
       if (! dist->matr. zeroDiagonal (row))
@@ -263,6 +267,9 @@ Save clusters in " + dmSuff + "-files\
     cout << "# Clusters = " << cluster2objs. size () << endl;
     
     
+    unique_ptr<OFStream> hybridF;
+    if (! hybridFName. empty ())
+      hybridF. reset (new OFStream (hybridFName));
     size_t nClust = 0;
     for (const auto& clustIt : cluster2objs)
     {
@@ -299,8 +306,12 @@ Save clusters in " + dmSuff + "-files\
                 const size_t y = objs [y_];
                 const size_t z = objs [z_];
                 const Real d = dist->get (x, y); 
-                const Real dPair = dist->get (x, z) + dist->get (z, y);
+                if (isNan (d))
+                  continue;
                 ASSERT (d >= 0.0);
+                const Real dPair = dist->get (x, z) + dist->get (z, y);
+                if (isNan (dPair))
+                  continue;
                 ASSERT (dPair >= 0.0);
                 const Real hybridness = d / dPair;
                 if (hybridness < hybridness_min)
@@ -362,6 +373,18 @@ Save clusters in " + dmSuff + "-files\
             iter. erase ();
           }
         ASSERT (hybridness_max > 1.0);
+
+        if (hybridF. get ())
+          *hybridF         << ds. objs [violation_worst. z] -> name
+                    << '\t' << violation_worst. hybridness
+                    << '\t' << ds. objs [violation_worst. x] -> name
+                    << '\t' << ds. objs [violation_worst. y] -> name
+                    << '\t' << dist->get (violation_worst. z, violation_worst. x)
+                    << '\t' << dist->get (violation_worst. z, violation_worst. y)
+                    << '\t' << (ds. objs [violation_worst. z] -> name == v. name)
+                    << '\t' << (ds. objs [violation_worst. x] -> name == v. name)
+                    << '\t' << (ds. objs [violation_worst. y] -> name == v. name)
+                    << endl;
 
         v. saveText (cout);
         const Prob coverageFrac = (Real) coverage / (Real) violationsNum;
