@@ -92,7 +92,7 @@ fi
 
 
 # Time: O(log^3(n)) per one new object
-# O(log(n)) iterations ??
+# Limit by O(log(n)) iterations ??
 ITER=0
 while [ 1 == 1 ]; do
   N=`ls $INC/search/ | wc -l`
