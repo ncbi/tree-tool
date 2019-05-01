@@ -1,7 +1,7 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 6 ]; then
+if [ $# -ne 7 ]; then
   echo "Initialize the main directory of an incremental distance tree"
   echo "#1: Output directory"
   echo "#2: grid_min (> 0)"
@@ -9,14 +9,16 @@ if [ $# -ne 6 ]; then
   echo "#4: hybridness_min (> 1); 0 - no hybrids"
   echo "#5: dissim_boundary (> 0 or NAN)"
   echo "#6: genogroup_barrier (> 0 or NAN)"
+  echo "#7: complete path to phen/ or ''"
   exit 1
 fi
 INC=$1
 GRID_MIN=$2
-VARIANCE=$3
+VARIANCE="$3"
 HYBRIDNESS_MIN=$4
 DISSIM_BOUNDARY=$5
 GENOGROUP_BARRIER=$6
+PHEN=$7
 
 
 if [ $GRID_MIN -le 0 ]; then
@@ -41,7 +43,7 @@ mkdir $INC/hist
 echo $GRID_MIN > $INC/grid_min
 cp /dev/null $INC/runlog
 
-echo $VARIANCE          > $INC/variance
+echo "$VARIANCE"        > $INC/variance
 echo $DISSIM_BOUNDARY   > $INC/dissim_boundary
 echo $GENOGROUP_BARRIER > $INC/genogroup_barrier
 echo $HYBRIDNESS_MIN    > $INC/hybridness_min
@@ -67,3 +69,6 @@ if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
 fi
 
 
+if [ $PHEN ]; then
+  ln -s $PHEN $INC/phen
+fi
