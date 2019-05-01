@@ -25,6 +25,7 @@ struct ThisApplication : Application
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
 	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
+	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
     // Output
@@ -41,14 +42,22 @@ struct ThisApplication : Application
 	  const string dataFName      = getArg ("data");
 	  const string dissimAttrName = getArg ("dissim_attr");
 	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
+	               variancePower  = str2real (getArg ("variance_power"));    // Global
 	  const string name_match     = getArg ("name_match");
 	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
 	  const string format         = getArg ("format");
   	const bool min_name         = getFlag ("min_name");
   	const bool order            = getFlag ("order");
+
     ASSERT (! input_tree. empty ());
     if (dataFName. empty () != dissimAttrName. empty ())
       throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
+		if (! isNan (variancePower) && varianceType != varianceType_pow)
+		  throw runtime_error ("-variance_power requires -variance pow");
+		if (isNan (variancePower) && varianceType == varianceType_pow)
+		  throw runtime_error ("-variance_power is needed by -variance pow");
+		if (variancePower <= 0.0)
+		  throw runtime_error ("-variance_power must be positive");
     
 
     DistTree tree (input_tree, dataFName, dissimAttrName, string());

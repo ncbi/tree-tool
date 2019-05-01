@@ -43,6 +43,7 @@ struct ThisApplication : Application
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("var_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
 	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 	  
@@ -70,7 +71,7 @@ struct ThisApplication : Application
 	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  
 	  addKey ("outlier_num_max", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
 	  
-	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (Triangle::format));
+	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
 	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
@@ -182,6 +183,7 @@ struct ThisApplication : Application
 	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
+	               variancePower       = str2real (getArg ("variance_power"));    // Global
 	               variance_min        = str2real (getArg ("var_min"));
 	               
 		const string deleteFName         = getArg ("delete");
@@ -226,6 +228,12 @@ struct ThisApplication : Application
 		const string output_data         = getArg ("output_data");
 		
 		ASSERT (! (reroot && ! reroot_at. empty ()));
+		if (! isNan (variancePower) && varianceType != varianceType_pow)
+		  throw runtime_error ("-variance_power requires -variance pow");
+		if (isNan (variancePower) && varianceType == varianceType_pow)
+		  throw runtime_error ("-variance_power is needed by -variance pow");
+		if (variancePower < 0.0)
+		  throw runtime_error ("-variance_power must be non-negative");
     if (isDirName (dataFName))
     {
       if (! input_tree. empty ())
@@ -478,7 +486,7 @@ struct ThisApplication : Application
               tree->optimizeLargeSubgraphs ();  
             //hybridDeleted = false;
               if (hybridF. get ())
-              	/*hybridDeleted =*/ deleteHybrids (*tree, false/*??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+              	/*hybridDeleted =*/ deleteHybrids (*tree, true/*slow ??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
               tree->saveFile (output_tree); 
             #if 0
               if (hybridDeleted)
@@ -489,6 +497,7 @@ struct ThisApplication : Application
               const Real relImprovement = (absCriterion_old - tree->absCriterion) / absCriterion_old;
               if (relImprovement <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
               	break;
+              	// -variance linExp or exp => threshold must be smaller ??
               tree->setDissimMult ();
               cerr << tree->absCriterion2str () /*<< ' ' << relImprovement*/ << endl; 
             }

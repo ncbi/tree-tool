@@ -28,7 +28,6 @@ constexpr streamsize dissimDecimals = 6;
 constexpr streamsize absCriterionDecimals = 4;  // Small for stability
 constexpr streamsize relCriterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
-  // The greater the better DistTree::absCriterion
 constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
 constexpr uint subgraphDepth = areaRadius_std;  
 constexpr uint boundary_size_max_std = 500;  // was: 100
@@ -49,14 +48,15 @@ constexpr Real dissimCoeffProd_delta = 1e-6;
 // --> DistTree ??
 // Dissimilarity variance
 enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
-                  , varianceType_sqr     
+                  , varianceType_sqr   
+                  , varianceType_pow  
                   , varianceType_exp     // Dissimilarity = -ln(P), var P = const
                   , varianceType_linExp  // Dissimilarity = -ln(P), var P = p*(1-p)
                   , varianceType_none
                   };
 extern const StringVector varianceTypeNames;
 extern VarianceType varianceType;
-
+extern Real variancePower;
 extern Real variance_min;
 
 inline VarianceType str2varianceType (const string &s)
@@ -74,6 +74,7 @@ inline Real dist2mult (Real dist)
     switch (varianceType)
     { case varianceType_lin:    var = dist; break;
       case varianceType_sqr:    var = sqr (dist); break;
+      case varianceType_pow:    var = pow (dist, variancePower); break;
       case varianceType_exp:    var = exp (2.0 * dist); break;
       case varianceType_linExp: var = exp (dist) - 1.0; break;
       case varianceType_none:   throw runtime_error (FUNC "Variance function is not specified");
@@ -87,6 +88,7 @@ inline Real dist_max ()
   { switch (varianceType)
     { case varianceType_lin:    return 1.0 / epsilon;
       case varianceType_sqr:    return 1.0 / sqrt (epsilon);
+      case varianceType_pow:    return pow (epsilon, - 1.0 / variancePower);
       case varianceType_exp:    return - 0.5 * log (epsilon);
       case varianceType_linExp: return log (1.0 / epsilon + 1.0);
       case varianceType_none:   return INF;
@@ -182,7 +184,7 @@ struct Triangle
 	Triangle () = default;
 	void qc () const;
 	void print (ostream &os) const;
-	static constexpr const char* format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> [<dissimilarity type>]"};
+	  // Matches PositiveAttr2::hybrid_format
 	
 	
 	bool operator== (const Triangle &other) const
@@ -930,9 +932,16 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
-  Real getHybridCriterion () const
-    { return getAbsCriterion () /*sqr (target - prediction)*/; }
-    // /*Independent of varianceType*/
+  Real getHybridCriterion (bool relative) const
+    {//return getAbsCriterion ();  // Depends on varianceType
+      const Real residual = fabs (target - prediction);
+      if (! residual)
+        return 0.0;
+      if (relative)
+        return residual / prediction;  
+      return residual;
+    }  
+    
   void setPathObjNums (size_t objNum,
                        Tree::LcaBuffer &buf);
     // Output: prediction, Steiner::pathObjNums

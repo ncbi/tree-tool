@@ -16,7 +16,7 @@ echo $TMP
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
-$THIS/../dm/mdsTree.sh data/Enterobacteriaceae Conservation 2 &> /dev/null
+$THIS/../dm/mdsTree.sh data/Enterobacteriaceae Conservation 2  &> /dev/null
 $THIS/makeDistTree  -qc -input_tree data/Enterobacteriaceae.dir/  -data data/Enterobacteriaceae  -dissim_attr Conservation  -variance linExp  -optimize  -output_tree Enterobacteriaceae.tree > Enterobacteriaceae.distTree
 $THIS/distTree_compare_criteria.sh Enterobacteriaceae.distTree data/Enterobacteriaceae.distTree
 rm Enterobacteriaceae.distTree
@@ -50,6 +50,7 @@ $THIS/makeDistTree  -qc  -data data/tree4  -variance linExp  -optimize  -output_
 diff tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
 $THIS/statDistTree tree4 > tree4.stat
+rm tree4
 diff tree4.stat data/tree4.stat
 rm tree4.stat
 echo "Verbose ..."
@@ -162,7 +163,10 @@ rm Saccharomyces2.outliers
 $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree data/Saccharomyces2.distTree
 rm Saccharomyces2.distTree
 
-diff Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
+N=`diff -y --suppress-common-lines Saccharomyces.hybrid.list Saccharomyces2.hybrid.list | wc -l`
+if [ $N -gt 1 ]; then
+  diff Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
+fi
 rm Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
 diff data/Saccharomyces2.outliers data/Saccharomyces.outliers
 

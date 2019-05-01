@@ -22,6 +22,7 @@ struct ThisApplication : Application
 		  addPositional ("data", "Directory with data");
 		  addFlag ("init", "Initialize search");
 		  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+  	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 		  addKey ("name", "Name of the object");
 		  addKey ("dissim", "File of the format: <obj1> <obj2> <dissimilarity>");
 		  addKey ("request", "Output file of the format: <obj1> <obj2>");
@@ -32,16 +33,24 @@ struct ThisApplication : Application
 	
 	void body () const final
   {
-	  const string dataDir      = getArg ("data");
-	  const bool init           = getFlag ("init");
-	               varianceType = str2varianceType (getArg ("variance"));  // Global   
-	  const string name         = getArg ("name");
-	  const string dissimFName  = getArg ("dissim");
-	  const string requestFName = getArg ("request");
-	  const string leafFName    = getArg ("leaf");
+	  const string dataDir       = getArg ("data");
+	  const bool init            = getFlag ("init");
+	               varianceType  = str2varianceType (getArg ("variance"));  // Global   
+	               variancePower = str2real (getArg ("variance_power"));    // Global
+	  const string name          = getArg ("name");
+	  const string dissimFName   = getArg ("dissim");
+	  const string requestFName  = getArg ("request");
+	  const string leafFName     = getArg ("leaf");
 	   
     if (! isRight (dataDir, "/"))
       throw runtime_error (strQuote (dataDir) + " must end with '/'");
+
+		if (! isNan (variancePower) && varianceType != varianceType_pow)
+		  throw runtime_error ("-variance_power requires -variance pow");
+		if (isNan (variancePower) && varianceType == varianceType_pow)
+		  throw runtime_error ("-variance_power is needed by -variance pow");
+		if (variancePower <= 0.0)
+		  throw runtime_error ("-variance_power must be positive");
       
     ASSERT (name. empty () == dissimFName.  empty ());
     ASSERT (name. empty () == requestFName. empty ());

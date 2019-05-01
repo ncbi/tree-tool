@@ -23,9 +23,9 @@ Chronometer chron_subgraph2tree ("subgraph2tree");
 
 
 // VarianceType
-const StringVector varianceTypeNames {"lin", "sqr", "exp", "linExp", "none"};
+const StringVector varianceTypeNames {"lin", "sqr", "pow", "exp", "linExp", "none"};
 VarianceType varianceType = varianceType_none;
-
+Real variancePower = NaN;
 Real variance_min = 0.0;
 
 Real dissim_power = 1.0;
@@ -4727,8 +4727,10 @@ void DistTree::qc () const
 
   // Global ??
   ASSERT (DistTree_sp::variance_min >= 0.0);
-  ASSERT (DistTree_sp::dissim_coeff > 0.0);
+  ASSERT (! isNan (DistTree_sp::variancePower) == (DistTree_sp::varianceType == varianceType_pow));
+  IMPLY (! isNan (DistTree_sp::variancePower), DistTree_sp::variancePower >= 0.0);
   ASSERT (DistTree_sp::hybridness_min >= 1.0);
+  ASSERT (DistTree_sp::dissim_coeff > 0.0);
   IMPLY (! isNan (DistTree_sp::dissim_boundary), DistTree_sp::dissim_boundary > 0.0);
 
 
@@ -6310,7 +6312,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
     cout << "# Commits = " << commits << endl;
     cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
   }
-  ASSERT ((! commits) == (improvement == 0));
+  IMPLY (! commits, ! improvement);
 
   if (commits)
   {
@@ -7550,29 +7552,39 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     // dissims.size() = 35M => 80 sec. 
     Dataset ds;
     ds. objs. reserve (dissims. size ());  
-    auto criterionAttr = new PositiveAttr1 ("dissim_error", ds);  
+    array <PositiveAttr1*, 2> criterionAttrs;
+    criterionAttrs [0] = new PositiveAttr1 ("dissim_error_abs", ds);  
+    criterionAttrs [1] = new PositiveAttr1 ("dissim_error_rel", ds);  
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
       {
-        const Real err = dissim. getHybridCriterion ();
-        ASSERT (err >= 0.0);
         const size_t index = ds. appendObj ();
-        (*criterionAttr) [index] = err;
+        for (const bool relative : {false, true})
+        {
+          const Real err = dissim. getHybridCriterion (relative);
+          ASSERT (err >= 0.0);
+          (* criterionAttrs [relative]) [index] = err;
+        }
       }
+    ds. qc ();
     const Sample sample (ds); 
     Normal distr;  // Beta1 ??
-    const Real outlier_min = criterionAttr->distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
-    if (isNan (outlier_min))
+    Real outlier_min [2];
+    for (const bool relative : {false, true})
+      outlier_min [relative] = criterionAttrs [relative] -> distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
+    if (   isNan (outlier_min [false])
+        && isNan (outlier_min [true])
+       )
       return triangleParentPairs;
-    if (verbose ())  
-      cout << "outlier_min = " << outlier_min << endl;  
     for (const Dissim& dissim : dissims)    
       if (   dissim. validMult ()
-          && dissim. getHybridCriterion () >= outlier_min 
+          && (   dissim. getHybridCriterion (false) >= outlier_min [false]
+              || dissim. getHybridCriterion (true)  >= outlier_min [true]
+             )
          )
       {
-        var_cast (dissim. leaf1) -> badCriterion += dissim. getHybridCriterion ();
-        var_cast (dissim. leaf2) -> badCriterion += dissim. getHybridCriterion ();
+        var_cast (dissim. leaf1) -> badCriterion += dissim. getAbsCriterion ();
+        var_cast (dissim. leaf2) -> badCriterion += dissim. getAbsCriterion ();
         triangleParentPairs_init << TriangleParentPair ( dissim. leaf1
                                                        , dissim. leaf2
                                                        , dissim. target
@@ -7596,8 +7608,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     badLeaves << findCriterionOutliers (dissimOutlierEValue_max * 0.1, outlier_min);  // PAR
     badLeaves. sort ();
     badLeaves. uniq ();
-    cerr << "Bad objects = " << badLeaves. size () << endl;
-    badLeaves. randomOrder ();
+  //cerr << "Bad objects = " << badLeaves. size () << endl;
+    if (! qc_on)
+      badLeaves. randomOrder ();
     const Real nLeaves = (Real) name2leaf. size ();
     const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / log (nLeaves)) + 1);  // = O(n/log(n))
     vector<Vector<Triangle>> resVec;
@@ -7612,7 +7625,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        , tr. dissimType);
     triangleParentPairs_init. sort ();
     triangleParentPairs_init. uniq ();
-    cerr << "# Bad dissimilarities = " << triangleParentPairs_init. size () << endl;
+  //cerr << "# Bad dissimilarities = " << triangleParentPairs_init. size () << endl;
   }  
    
   // Time: O (p log^2(n) / threads_max)  
