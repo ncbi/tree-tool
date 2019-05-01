@@ -7,14 +7,16 @@ if [ $# -ne 2 ]; then
   echo "#2: New object"
   exit 1
 fi
+INC=$1
+OBJ=$2
 
 
-DIR=$1/search/$2
+DIR=$INC/search/$OBJ
 
 
 while [ 1 == 1 ]; do
 	set +o errexit
-	$1/request_closest.sh $2 > $DIR/request
+	$INC/request_closest.sh $OBJ > $DIR/request
   S=$?
 	set -o errexit
 	if [ $S == 0 ]; then
@@ -25,8 +27,8 @@ done
 
 if [ ! -s $DIR/request ]; then
   wc -l $DIR/request
-  flock $1/outlier-alien -c "echo $2 >> $1/outlier-alien"
-  $1/outlier2db.sh $2 alien
+  flock $INC/outlier-alien -c "echo $OBJ >> $INC/outlier-alien"
+  $INC/outlier2db.sh $OBJ alien
   rm -r $DIR/
 else
 	cp /dev/null $DIR/dissim
