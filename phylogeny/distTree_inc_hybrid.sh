@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Process #1/{hybrid.new,hybrid_parent_pairs}"
+  echo "Process #1/hybrid.new, #1/hybrid_parent_pairs (optional)"
   echo "#1: incremental distance tree directory"
   exit 1
 fi
@@ -29,10 +29,11 @@ fi
 
 $INC/hybrid2db.sh $INC/hybrid.new
 
-cat $INC/hybrid.new | awk '$7 == 1' | cut -f 1 >  $INC/hybrid.add
-cat $INC/hybrid.new | awk '$8 == 1' | cut -f 3 >> $INC/hybrid.add
-cat $INC/hybrid.new | awk '$9 == 1' | cut -f 4 >> $INC/hybrid.add
-$THIS/../uniq.sh $INC/hybrid.add
+$THIS/hybrid2list.sh $INC/hybrid.new > $INC/hybrid.add
+#cat $INC/hybrid.new | awk '$7 == 1' | cut -f 1 >  $INC/hybrid.add
+#cat $INC/hybrid.new | awk '$8 == 1' | cut -f 3 >> $INC/hybrid.add
+#cat $INC/hybrid.new | awk '$9 == 1' | cut -f 4 >> $INC/hybrid.add
+#$THIS/../uniq.sh $INC/hybrid.add
 
 $INC/objects_in_tree.sh $INC/hybrid.add 0
 $THIS/../trav -noprogress $INC/hybrid.add "cp /dev/null $INC/hybrid/%f"
