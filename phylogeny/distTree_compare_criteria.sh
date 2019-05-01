@@ -14,8 +14,8 @@ OUT2=$2
 L1=(`grep "^OUTPUT" -A 1  $OUT1 | tail -1`)
 L2=(`grep "^OUTPUT" -A 1  $OUT2 | tail -1`)
 if [ "${L1[2]}" != "${L2[2]}" ]; then
-  echo "NEW: $L1"
-  echo "OLD: $L2"
+  echo "NEW: ${L1[*]}"
+  echo "OLD: ${L2[*]}"
   exit 1
 fi
 
