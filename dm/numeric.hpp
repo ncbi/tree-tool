@@ -114,10 +114,10 @@ inline bool geReal (Real x, Real y, Real delta = epsilon)
   { return x >= y || eqReal (x, y, delta); }
 
 inline bool positive (Real x, Real delta = epsilon)
-  { return greaterReal (x, 0, delta); }
+  { return greaterReal (x, 0.0, delta); }
 
 inline bool negative (Real x, Real delta = epsilon)
-  { return lessReal (x, 0, delta); }
+  { return lessReal (x, 0.0, delta); }
   
 inline bool betweenReal (Real x, Real lo, Real hi, Real delta = epsilon) 
   { return geReal (x, lo, delta) && lessReal (x, hi, delta); }

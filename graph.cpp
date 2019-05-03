@@ -711,7 +711,7 @@ void Tree::TreeNode::getSubtreeHeights (Vector<Tree::TreeNode::NodeDist> &nodeHe
 	{
 	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
 	  const double dist = node->getParentDistance ();
-	  ASSERT (dist >= 0);
+	  ASSERT (dist >= 0.0);
 	  node->getSubtreeHeights (nodeHeights);
 	  maximize (height, dist + (node->isLeaf () ? 0.0 : nodeHeights. back (). dist));
   }
@@ -720,18 +720,20 @@ void Tree::TreeNode::getSubtreeHeights (Vector<Tree::TreeNode::NodeDist> &nodeHe
 
 
 
-void Tree::TreeNode::getLeafDepths (Vector<Tree::TreeNode::NodeDist> &leafDepths,
-                                    bool first) const
+void Tree::TreeNode::getLeafDepths_ (Vector<Tree::TreeNode::NodeDist> &leafDepths,
+                                     bool first) const
 {
   const size_t start = leafDepths. size ();
+  
   if (isLeaf ())
-    leafDepths << NodeDist {this, 0};
+    leafDepths << NodeDist {this, 0.0};
   else
   	for (const DiGraph::Arc* arc : arcs [false])
   	{
   	  const TreeNode* node = static_cast <const TreeNode*> (arc->node [false]);
-  	  node->getLeafDepths (leafDepths, false);
+  	  node->getLeafDepths_ (leafDepths, false);
     }
+    
   if (! first)
   {
     const double parentDistance = getParentDistance ();

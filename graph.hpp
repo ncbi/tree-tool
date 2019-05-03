@@ -332,10 +332,14 @@ struct Tree : DiGraph
 		void getSubtreeHeights (Vector<NodeDist> &nodeHeights) const;
 		  // Append: nodeHeights: interior nodes
 		  // Invokes: getParentDistance()
-    void getLeafDepths (Vector<NodeDist> &leafDepths,
-                        bool first = true) const;
+    void getLeafDepths (Vector<NodeDist> &leafDepths) const
+      { getLeafDepths_ (leafDepths, true); }
+  private:
+    void getLeafDepths_ (Vector<NodeDist> &leafDepths,
+                         bool first) const;
 		  // Append: leafDepths: leaves
 		  // Invokes: getParentDistance()
+	public:
 		size_t getHeight () const;
 		  // Return: 0 <=> isLeaf()
 		size_t getInteriorHeight () const;
