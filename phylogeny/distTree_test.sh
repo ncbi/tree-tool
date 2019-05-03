@@ -163,7 +163,9 @@ rm Saccharomyces2.outliers
 $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree data/Saccharomyces2.distTree
 rm Saccharomyces2.distTree
 
+set +o errexit
 N=`diff -y --suppress-common-lines Saccharomyces.hybrid.list Saccharomyces2.hybrid.list | wc -l`
+set -o errexit
 if [ $N -gt 1 ]; then
   diff Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
 fi

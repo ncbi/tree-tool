@@ -84,10 +84,10 @@ struct ThisApplication : Application
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
-	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
+	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	}
 	
 	
@@ -566,7 +566,8 @@ struct ThisApplication : Application
       
       if (! noqual)
       {
-        tree->setNodeAbsCriterion ();  // --> setLeafAbsCriterion() ??
+        tree->setNodeAbsCriterion ();  
+        tree->setNodeClosestObjNum ();
         tree->qc ();
       }
 
@@ -602,7 +603,7 @@ struct ThisApplication : Application
         const DTNode* underRoot = tree->lcaName2node (reroot_at, buf);
         tree->reroot (var_cast (underRoot), underRoot->len / 2);
         if (tree->optimizable () && ! noqual)
-	        tree->setNodeAbsCriterion ();  // --> setLeafAbsCriterion() ??
+	        tree->setNodeAbsCriterion ();  
         tree->qc ();
       }
       
@@ -647,7 +648,7 @@ struct ThisApplication : Application
     if (! leaf_errors. empty ())
     {
       checkOptimizable (*tree, "leaf_errors");
-    //tree->setNodeAbsCriterion ();   // Done above
+    //tree->setLeafAbsCriterion ();   // Done above
       const Dataset ds (tree->getLeafErrorDataset ());
       OFStream f (leaf_errors + dmSuff);
 	    ds. saveText (f);    

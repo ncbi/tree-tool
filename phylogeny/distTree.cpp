@@ -572,6 +572,13 @@ void DTNode::saveContent (ostream& os) const
     os << "  " << rel_errorS << "=" << getRelCriterion ();
   else if (! isNan (relCriterion))
     os << "  " << rel_errorS << "=" << relCriterion;
+	if (closestObjNum != dissims_max)
+	{
+	  const Dissim& dissim = getDistTree (). dissims [closestObjNum];
+	  os << "  closest="        << dissim. leaf1->getName () 
+	                     << ':' << dissim. leaf2->getName ();
+	  os << "  closest_criterion=" << dissim. getRelResidual ();
+	}
 }
 
 
@@ -1148,6 +1155,15 @@ void Leaf::qc () const
   ASSERT (getReprLeaf () == this);
   
   ASSERT (index < NO_INDEX);
+}
+
+
+
+void Leaf::saveContent (ostream& os) const 
+{ 
+  DTNode::saveContent (os);
+	if (! discernible)
+	  os << "  " << non_discernible;
 }
 
 
@@ -4582,7 +4598,7 @@ void setPaths_ (const Vector<size_t> &subTree,
 void DistTree::setPaths (bool setDissimMultP)
 {
 //ASSERT (optimizable ());
-  if (dissims. size () > dissims_max)
+  if (dissims. size () > (size_t) dissims_max)
     throw runtime_error ("setPaths: Too large objNum");
     
   setLca ();  
@@ -5172,123 +5188,6 @@ Real DistTree::path2prediction (const VectorPtr<TreeNode> &path)
   ASSERT (! isNan (dHat));
   ASSERT (dHat >= 0);
   return dHat;
-}
-
-
-
-void DistTree::printAbsCriterion_halves () const
-{
-  ASSERT (optimizable ());
-  
-  const Real dissim_ave = getDissim_ave ();
-  size_t pairs = 0;
-  size_t size_half       [2/*bool*/] = {0, 0};
-  Real absCriterion_half [2/*bool*/] = {0.0, 0.0};
-  Real dissim2_half      [2/*bool*/] = {0.0, 0.0};
-  for (const Dissim& dissim : dissims)
-    if (dissim. validMult ())
-    {
-      const Real d = dissim. target;
-      const Real dHat = dissim. prediction;
-      ASSERT (! isNan (dHat));
-      const bool half2 = d > dissim_ave;
-      pairs++;
-      size_half [half2] ++;
-      absCriterion_half [half2] += dissim. mult * sqr (dHat - d);
-      dissim2_half      [half2] += dissim. mult * sqr (d);
-    }
-    
-  for (const bool half2 : {false, true})
-  {
-    const ONumber on (cout, relCriterionDecimals, false);  // PAR
-    cout << "absCriterion [" << half2 << "] = " << absCriterion_half [half2];
-    const Prob unexplainedFrac = absCriterion_half [half2] / dissim2_half [half2];
-    const Prob r = 1 - unexplainedFrac;
-    const Real arcLenError = sqrt ((1 - r) / r); 
-    cout << "  Error density [" << half2 << "] = " << arcLenError * 100 << " %";
-    cout << "  Fraction = " << (Real) size_half [half2] / (Real) pairs * 100 << " %" << endl;
-  }
-}
-
-
-
-void DistTree::setLeafAbsCriterion ()  
-{
-  ASSERT (optimizable ());
-  
-  for (DiGraph::Node* node : nodes)
-    if (Leaf* leaf = var_cast (static_cast <DTNode*> (node) -> asLeaf ()))
-    {
-      leaf->absCriterion = 0.0;
-      leaf->absCriterion_ave = 0.0;  // tepmorary: = mult
-    }
-
-  for (const Dissim& dissim : dissims)
-    if (dissim. validMult ())
-    {
-      const Real criterion = dissim. getAbsCriterion ();
-      ASSERT (DM_sp::finite (criterion));
-      ASSERT (criterion >= 0.0);
-      
-      Leaf* leaf1 = var_cast (dissim. leaf1);
-      Leaf* leaf2 = var_cast (dissim. leaf2);
-
-      leaf1->absCriterion += criterion; 
-      leaf2->absCriterion += criterion; 
-
-      // Temporary
-      leaf1->absCriterion_ave += 1.0; 
-      leaf2->absCriterion_ave += 1.0; 
-    }
-
-  for (DiGraph::Node* node : nodes)
-    if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
-    {
-      var_cast (leaf) -> absCriterion_ave = leaf->absCriterion == 0.0 ? 0.0 : leaf->absCriterion / leaf->absCriterion_ave;
-      ASSERT (leaf->absCriterion_ave >= 0.0);
-    }
-}
-
-
-
-void DistTree::setNodeAbsCriterion () 
-{
-  ASSERT (optimizable ());
-  
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->absCriterion = 0.0;
-    dtNode->absCriterion_ave = 0.0;  // tepmorary: = count
-  }
-
-  Tree::LcaBuffer buf;
-  for (const Dissim& dissim : dissims)
-    if (dissim. validMult ())
-    {
-      const Real criterion = dissim. getAbsCriterion ();
-      ASSERT (DM_sp::finite (criterion));
-      ASSERT (criterion >= 0.0);
-      
-      // For interior nodes ??
-      ASSERT (dissim. lca); 
-      VectorPtr<TreeNode>& path = dissim. getPath (buf);
-      path << dissim. lca;
-      
-      for (const TreeNode* node : path)
-      {
-        DTNode* dtNode = const_static_cast <DTNode*> (node);
-        dtNode->absCriterion     += criterion;  
-        dtNode->absCriterion_ave += 1.0; 
-      }
-    }
-
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->absCriterion_ave = dtNode->absCriterion == 0.0 ? 0.0 : dtNode->absCriterion / dtNode->absCriterion_ave;
-    ASSERT (dtNode->absCriterion_ave >= 0.0);
-  }
 }
 
 
@@ -7317,6 +7216,144 @@ Real DistTree::setErrorDensities ()
 
 
 
+void DistTree::printAbsCriterion_halves () const
+{
+  ASSERT (optimizable ());
+  
+  const Real dissim_ave = getDissim_ave ();
+  size_t pairs = 0;
+  size_t size_half       [2/*bool*/] = {0, 0};
+  Real absCriterion_half [2/*bool*/] = {0.0, 0.0};
+  Real dissim2_half      [2/*bool*/] = {0.0, 0.0};
+  for (const Dissim& dissim : dissims)
+    if (dissim. validMult ())
+    {
+      const Real d = dissim. target;
+      const Real dHat = dissim. prediction;
+      ASSERT (! isNan (dHat));
+      const bool half2 = d > dissim_ave;
+      pairs++;
+      size_half [half2] ++;
+      absCriterion_half [half2] += dissim. mult * sqr (dHat - d);
+      dissim2_half      [half2] += dissim. mult * sqr (d);
+    }
+    
+  for (const bool half2 : {false, true})
+  {
+    const ONumber on (cout, relCriterionDecimals, false);  // PAR
+    cout << "absCriterion [" << half2 << "] = " << absCriterion_half [half2];
+    const Prob unexplainedFrac = absCriterion_half [half2] / dissim2_half [half2];
+    const Prob r = 1 - unexplainedFrac;
+    const Real arcLenError = sqrt ((1 - r) / r); 
+    cout << "  Error density [" << half2 << "] = " << arcLenError * 100 << " %";
+    cout << "  Fraction = " << (Real) size_half [half2] / (Real) pairs * 100 << " %" << endl;
+  }
+}
+
+
+
+void DistTree::setLeafAbsCriterion ()  
+{
+  ASSERT (optimizable ());
+  
+  for (DiGraph::Node* node : nodes)
+    if (Leaf* leaf = var_cast (static_cast <DTNode*> (node) -> asLeaf ()))
+    {
+      leaf->absCriterion = 0.0;
+      leaf->absCriterion_ave = 0.0;  // tepmorary: = mult
+    }
+
+  for (const Dissim& dissim : dissims)
+    if (dissim. validMult ())
+    {
+      const Real criterion = dissim. getAbsCriterion ();
+      ASSERT (DM_sp::finite (criterion));
+      ASSERT (criterion >= 0.0);
+      
+      Leaf* leaf1 = var_cast (dissim. leaf1);
+      Leaf* leaf2 = var_cast (dissim. leaf2);
+
+      leaf1->absCriterion += criterion; 
+      leaf2->absCriterion += criterion; 
+
+      // Temporary
+      leaf1->absCriterion_ave += 1.0; 
+      leaf2->absCriterion_ave += 1.0; 
+    }
+
+  for (DiGraph::Node* node : nodes)
+    if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
+    {
+      var_cast (leaf) -> absCriterion_ave = leaf->absCriterion == 0.0 ? 0.0 : leaf->absCriterion / leaf->absCriterion_ave;
+      ASSERT (leaf->absCriterion_ave >= 0.0);
+    }
+}
+
+
+
+void DistTree::setNodeAbsCriterion () 
+{
+  ASSERT (optimizable ());
+  
+  for (DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->absCriterion = 0.0;
+    dtNode->absCriterion_ave = 0.0;  // tepmorary: = count
+  }
+
+  Tree::LcaBuffer buf;
+  for (const Dissim& dissim : dissims)
+    if (dissim. validMult ())
+    {
+      const Real criterion = dissim. getAbsCriterion ();
+      ASSERT (DM_sp::finite (criterion));
+      ASSERT (criterion >= 0.0);
+      
+      // For interior nodes ??
+      ASSERT (dissim. lca); 
+      VectorPtr<TreeNode>& path = dissim. getPath (buf);
+      path << dissim. lca;
+      
+      for (const TreeNode* node : path)
+      {
+        DTNode* dtNode = const_static_cast <DTNode*> (node);
+        dtNode->absCriterion     += criterion;  
+        dtNode->absCriterion_ave += 1.0; 
+      }
+    }
+
+  for (DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->absCriterion_ave = dtNode->absCriterion == 0.0 ? 0.0 : dtNode->absCriterion / dtNode->absCriterion_ave;
+    ASSERT (dtNode->absCriterion_ave >= 0.0);
+  }
+}
+
+
+
+void DistTree::setNodeClosestObjNum ()
+{
+ ASSERT (optimizable ());
+  
+  for (DiGraph::Node* node : nodes)
+  {
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->closestObjNum = dissims_max;
+    Real target = INF;
+    for (const uint objNum : dtNode->pathObjNums)
+    {
+      const Dissim& dissim = dissims [objNum];
+      if (dissim. validMult ())
+        if (minimize (target, dissim. target))
+          dtNode->closestObjNum = objNum;
+    }
+  }
+}
+
+
+
 Dataset DistTree::getLeafErrorDataset () const
 {
   ASSERT (optimizable ());
@@ -7552,37 +7589,36 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     // dissims.size() = 35M => 80 sec. 
     Dataset ds;
     ds. objs. reserve (dissims. size ());  
-    array <PositiveAttr1*, 2> criterionAttrs;
+    array <PositiveAttr1*, Dissim::criterionType_max> criterionAttrs;
     criterionAttrs [0] = new PositiveAttr1 ("dissim_error_abs", ds);  
-    criterionAttrs [1] = new PositiveAttr1 ("dissim_error_rel", ds);  
+    criterionAttrs [1] = new PositiveAttr1 ("dissim_error_rel_prediction", ds);  
+    criterionAttrs [2] = new PositiveAttr1 ("dissim_error_rel_target", ds);  
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
       {
         const size_t index = ds. appendObj ();
-        for (const bool relative : {false, true})
+        FOR (uchar, criterionType, Dissim::criterionType_max)
         {
-          const Real err = dissim. getHybridCriterion (relative);
+          const Real err = dissim. getCriterion (criterionType);
           ASSERT (err >= 0.0);
-          (* criterionAttrs [relative]) [index] = err;
+          (* criterionAttrs [criterionType]) [index] = err;
         }
       }
     ds. qc ();
     const Sample sample (ds); 
     Normal distr;  // Beta1 ??
-    Real outlier_min [2];
-    for (const bool relative : {false, true})
-      outlier_min [relative] = criterionAttrs [relative] -> distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
-    if (   isNan (outlier_min [false])
-        && isNan (outlier_min [true])
-       )
-      return triangleParentPairs;
+    array <Real, Dissim::criterionType_max> outlier_min;
+    FOR (uchar, criterionType, Dissim::criterionType_max)
+      outlier_min [criterionType] = criterionAttrs [criterionType] -> distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
     for (const Dissim& dissim : dissims)    
-      if (   dissim. validMult ()
-          && (   dissim. getHybridCriterion (false) >= outlier_min [false]
-              || dissim. getHybridCriterion (true)  >= outlier_min [true]
-             )
-         )
+      if (dissim. validMult ())
       {
+        bool found = false;
+        FOR (uchar, criterionType, Dissim::criterionType_max)
+          if (dissim. getCriterion (criterionType) >= outlier_min [criterionType])
+            found = true;
+        if (! found)
+          continue;
         var_cast (dissim. leaf1) -> badCriterion += dissim. getAbsCriterion ();
         var_cast (dissim. leaf2) -> badCriterion += dissim. getAbsCriterion ();
         triangleParentPairs_init << TriangleParentPair ( dissim. leaf1
@@ -8383,8 +8419,8 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
   ASSERT (node_orig);
 
   location. anchor = static_cast <const DTNode*> (tree. root);
-  location. leafLen = 0;
-  location. arcLen = 0;
+  location. leafLen = 0.0;
+  location. arcLen = 0.0;
   
   // Field of DTNode ??
   Vector<Tree::TreeNode::NodeDist> leafDepths;  leafDepths. reserve (tree. name2leaf. size () / 8 + 1);  // PAR

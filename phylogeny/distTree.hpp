@@ -111,6 +111,9 @@ inline bool at_dissim_boundary (Real dissim)
   // Has a small probability <= choice of dissim_boundary
 
 
+constexpr static uint dissims_max {numeric_limits<uint>::max ()};
+
+
 
 struct DistTree;
 struct Image;
@@ -392,6 +395,8 @@ public:
     // = absCriterion/count
   Real relCriterion {NaN};
     // !isNan() => = getRelCriterion()
+  uint closestObjNum {dissims_max};
+    // Index of DistTree::dissims[]
 
 
 protected:
@@ -550,11 +555,7 @@ public:
 	      Real len_arg,
 	      const string &name_arg);
 	void qc () const final;
-  void saveContent (ostream& os) const final
-    { DTNode::saveContent (os);
-    	if (! discernible)
-    	  os << "  " << non_discernible;
-    }
+  void saveContent (ostream& os) const final;
 
 
   const Leaf* asLeaf () const final
@@ -932,15 +933,22 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
-  Real getHybridCriterion (bool relative) const
+  static constexpr uchar criterionType_max {3};
+  Real getCriterion (uchar criterionType) const
     {//return getAbsCriterion ();  // Depends on varianceType
       const Real residual = fabs (target - prediction);
       if (! residual)
         return 0.0;
-      if (relative)
-        return residual / prediction;  
-      return residual;
+      switch (criterionType)
+      {
+        case 0: return residual;
+        case 1: return residual / prediction;  
+        case 2: return residual / target;
+      }
+      throw logic_error ("Unknown Dissim::criterionType");
     }  
+  Real getRelResidual () const
+    { return getCriterion (2); }
     
   void setPathObjNums (size_t objNum,
                        Tree::LcaBuffer &buf);
@@ -1032,7 +1040,6 @@ private:
     // In *dissimDs   
 public:
     
-  constexpr static uint dissims_max {numeric_limits<uint>::max ()};
   Vector<Dissim> dissims;
   Vector<DissimType> dissimTypes;
     // Product(DissimType::scaleCoeff) = 1.0
@@ -1306,13 +1313,6 @@ public:
     // Return: >= 0
 	  // Input: DTNode::len
 	  // Time: O(|path|)
-  void printAbsCriterion_halves () const;
-	void setLeafAbsCriterion ();
-    // Output: Leaf::{absCriterion,absCriterion_ave}
-    // Time: O(p)
-  void setNodeAbsCriterion ();
-    // Output: DTNode::{absCriterion,absCriterion_ave}
-    // Time: O(p log(n))
 	void setDissimMult ();
 	  // Output: Dissim::mult, absCriterion, mult_sum, target2_sum
 	  
@@ -1449,13 +1449,23 @@ public:
     // Requires: linear variance of dissimilarities
     //           Leaf::discernible is set
 	  // Time: O(p log(n))
-
-  // Outliers
-  // Return: distinct
+  void printAbsCriterion_halves () const;
+	void setLeafAbsCriterion ();
+    // Output: Leaf::{absCriterion,absCriterion_ave}
+    // Time: O(p)
+  void setNodeAbsCriterion ();
+    // Output: DTNode::{absCriterion,absCriterion_ave}
+    // Time: O(p log(n))
+	void setNodeClosestObjNum ();
+    // Output: DTNode::closestObjNum
+    // Time: O(p log(n))
   Dataset getLeafErrorDataset () const;
     // Return: attrs = {PositiveAttr1}
     // After: setNodeAbsCriterion() or setLeafAbsCriterion()
     // Invokes: Leaf::getRelCriterion()
+
+  // Outliers
+  // Return: distinct
   VectorPtr<Leaf> findCriterionOutliers (Real outlier_EValue_max,
                                          Real &outlier_min) const;
     // Relative average absolute criterion
