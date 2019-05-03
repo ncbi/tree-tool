@@ -117,7 +117,7 @@ Real str2real (const string& s)
 
   const double res = atof (s1. c_str ());
   if (! res)
-  	throw runtime_error ("Cannot convert " + s + " to number");
+  	throw runtime_error ("Cannot convert " + strQuote (s) + " to number");
   	
   return res;
 #endif

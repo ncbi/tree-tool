@@ -3154,13 +3154,13 @@ protected:
   uint arg2uint (const string &name) const
     { uint n = 0;
     	try { n = str2<uint> (getArg (name)); }
-    	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to non-negative number"); }
+    	  catch (...) { throw runtime_error ("Cannot convert " + strQuote (name) + " to non-negative number"); }
     	return n;
     }
   double arg2double (const string &name) const
     { double d = numeric_limits<double>::quiet_NaN ();
     	try { d = str2<double> (getArg (name)); }
-    	  catch (...) { throw runtime_error ("Cannot convert -" + name + " to number"); }
+    	  catch (...) { throw runtime_error ("Cannot convert " + strQuote (name) + " to number"); }
     	return d;
     }
   bool getFlag (const string &name) const;
