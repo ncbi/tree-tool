@@ -37,7 +37,7 @@ struct ThisApplication : Application
     const Sample sample (ds);
     cout << "mult_sum: " << sample. mult_sum << endl << endl;
     
-    cout << "AttrName\tDefinition\tMissings\tStatistics" << endl;
+    cout << "AttrName\tDefinition\tMissings\tStatistics\tMain_interval" << endl;
     for (const auto attrRaw : ds. attrs)
     {
     	cout << attrRaw->name << '\t' << attrRaw->getTypeStr () << '\t' << attrRaw->countMissings ();
@@ -64,7 +64,7 @@ struct ThisApplication : Application
 		        if (   (*num) [i] > threshold [true]
 		        	  || (*num) [i] < threshold [false]
 		        	 )
-		        	sample_pure. mult [i] = 0;
+		        	sample_pure. mult [i] = 0.0;
 		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
 		      normal. analysis = & an_pure;
 		      normal. estimate ();
