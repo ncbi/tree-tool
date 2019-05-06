@@ -17,15 +17,6 @@ namespace
   
 
 
-void checkOptimizable (const DistTree& tree,
-                       const string &parameter)
-{
-  if (! tree. optimizable ())
-    throw runtime_error ("Parameter " + parameter + " requires dissimilarities");
-}
-
-
-
 const string criterionOutlier_definition ("relative unweighted average leaf error");
 const string closestOutlier_definition ("absolute residual to dissimilarity ratio for closest leaf");
 
@@ -64,10 +55,6 @@ struct ThisApplication : Application
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 	  addFlag ("fix_discernibles", "Set the indiscernible flag of objects");
-
-	  addFlag ("reroot", "Re-root");
-	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
-	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  	
 	  addKey ("delete_criterion_outliers", "Delete outliers by " + criterionOutlier_definition + " and save them in the indicated file");  
 	  addKey ("criterion_outlier_num_max", "Max. number of outliers ordered by " + criterionOutlier_definition + " descending to delete; 0 - all", "0");
@@ -81,10 +68,15 @@ struct ThisApplication : Application
 	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
 	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
 
+	  addFlag ("reroot", "Re-root");
+	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
+	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
+
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 
     // Output
+	  addFlag ("noqual", "Do not compute quality statistics");
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
@@ -92,7 +84,6 @@ struct ThisApplication : Application
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
-	  addFlag ("noqual", "Do not compute quality statistics");
 	}
 	
 	
@@ -236,13 +227,8 @@ struct ThisApplication : Application
 		const bool   output_dist_etc     = getFlag ("output_dist_etc");
 		const string output_data         = getArg ("output_data");
 		
-		ASSERT (! (reroot && ! reroot_at. empty ()));
-		if (! isNan (variancePower) && varianceType != varianceType_pow)  // ??
-		  throw runtime_error ("-variance_power requires -variance pow");
-		if (isNan (variancePower) && varianceType == varianceType_pow)
-		  throw runtime_error ("-variance_power is needed by -variance pow");
-		if (variancePower < 0.0)
-		  throw runtime_error ("-variance_power must be non-negative");
+		const bool optimizable = isDirName (dataFName) || ! dataFName. empty ();
+		
     if (isDirName (dataFName))
     {
       if (! input_tree. empty ())
@@ -257,26 +243,36 @@ struct ThisApplication : Application
         throw runtime_error ("Dissimilarity attribute with no data file");
     if (dissimAttrName. empty () && ! multAttrName. empty ())
       throw runtime_error ("Dissimilarity weight attribute with no dissimilarity attribute");
+
     if (dissim_coeff <= 0.0)
       throw runtime_error ("-dissim_coeff must be positive");
     if (dissim_power <= 0.0)
       throw runtime_error ("-dissim_power must be positive");
+
+    if (variance_min < 0.0)
+      throw runtime_error ("-var_min cannot be negative");
+    if (variance_min && varianceType == varianceType_none)
+      throw runtime_error ("-var_min requires a variance function");
+    if (varianceType != varianceType_none && dataFName. empty ())
+      throw runtime_error ("Variance function requires a data file");
+    if (varianceType != varianceType_none && ! multAttrName. empty ())
+      throw runtime_error ("Variance function excludes a dissimilarity weight attribute");
+		if (! isNan (variancePower) && varianceType != varianceType_pow)  // ??
+		  throw runtime_error ("-variance_power requires -variance pow");
+		if (isNan (variancePower) && varianceType == varianceType_pow)
+		  throw runtime_error ("-variance_power requires -variance pow");
+		if (variancePower < 0.0)
+		  throw runtime_error ("-variance_power must be non-negative");
+
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
     if (check_keep && keepFName. empty ())
       throw runtime_error ("-check_keep requires -keep");
     if (! deleteFName. empty () && ! keepFName. empty ())
       throw runtime_error ("Cannot use both -delete and -keep");
-    if (variance_min < 0.0)
-      throw runtime_error ("-var_min cannot be negative");
-    if (variance_min && varianceType == varianceType_none)
-      throw runtime_error ("-var_min needs a variance function");
-    if (varianceType != varianceType_none && dataFName. empty ())
-      throw runtime_error ("Variance function needs a data file");
-    if (varianceType != varianceType_none && ! multAttrName. empty ())
-      throw runtime_error ("Variance function cannot be used with a dissimilarity weight attribute");
-    if (output_dist_etc && output_dissim. empty ())
-    	throw runtime_error ("-output_dist_etc exists, but no -output_dissim");
+
+    if (optimize && ! optimizable)
+      throw runtime_error ("-optimize requires dissimilarities");
     if (subgraph_fast && ! optimize)
       throw runtime_error ("-subgraph_fast requires -optimize");
     if (subgraph_iter_max && ! optimize)
@@ -291,26 +287,45 @@ struct ThisApplication : Application
     if (skip_topology && ! optimize)
       throw runtime_error ("-skip_topology requires -optimize");
     if (new_only && optimize)
-      throw runtime_error ("-new_only cannot be used with -optimize");
+      throw runtime_error ("-new_only excludes -optimize");
     if (fix_discernibles && dataFName. empty ())
-      throw runtime_error ("-fix_discernibles needs dissimilarities");
+      throw runtime_error ("-fix_discernibles requires dissimilarities");
     if (fix_discernibles && variance_min)
-      throw runtime_error ("-fix_discernibles implies zero -var_min");
+      throw runtime_error ("-fix_discernibles requires zero -var_min");
+      
+    if (! delete_hybrids. empty () && ! optimizable)
+      throw runtime_error ("-delete_hybrids requires dissimilarities");
     if (dissim_boundary <= 0.0)
     	throw runtime_error ("-dissim_boundary must be > 0");
     if (hybridness_min <= 1.0)
     	throw runtime_error ("-hybridness_min must be > 1");
   //if (delete_all_hybrids && delete_hybrids. empty ())
-    //throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
+    //throw runtime_error ("-delete_all_hybrids requires -delete_hybrids");
     if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())      
-    	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
+    	throw runtime_error ("-hybrid_parent_pairs requires -delete_hybrids");
+
+    if (! delete_criterion_outliers. empty () && ! optimizable)
+      throw runtime_error ("-delete_criterion_outliers requires dissimilarities");
+    if (! delete_hybrids. empty () && ! optimizable)
+      throw runtime_error ("-delete_hybrids requires dissimilarities");    	
     if (criterion_outlier_num_max && delete_criterion_outliers. empty ())
       throw runtime_error ("-criterion_outlier_num_max requires -delete_criterion_outliers");
     if (closest_outlier_num_max && delete_closest_outliers. empty ())
       throw runtime_error ("-closest_outlier_num_max requires -delete_closest_outliers");
+
+		if (reroot && ! reroot_at. empty ())
+		  throw runtime_error ("-reroot excludes -reroot_at");
+
+    if (! output_dissim. empty () && ! optimizable)
+      throw runtime_error ("-output_dissim requires dissimilarities");    	
+    if (output_dist_etc && output_dissim. empty ())
+    	throw runtime_error ("-output_dist_etc requires -output_dissim");
+    if (! leaf_errors. empty () && ! optimizable)
+      throw runtime_error ("-leaf_errors requires dissimilarities");    	
     if (! leaf_errors. empty () && noqual)
-      throw runtime_error ("-noqual prohibits -leaf_errors");
-    IMPLY (refresh_dissim, ! dissim_request. empty ());
+      throw runtime_error ("-noqual excludes -leaf_errors");
+    if (refresh_dissim && dissim_request. empty ())
+      throw runtime_error ("-refresh_dissim requires -dissim_request");
 
 
     DistTree::printParam (cout);
@@ -329,6 +344,7 @@ struct ThisApplication : Application
                   );
     }
     ASSERT (tree. get ());
+    ASSERT (optimizable == tree->optimizable ());
     
     if (fix_discernibles)
     {
@@ -699,7 +715,6 @@ struct ThisApplication : Application
     
     if (! leaf_errors. empty ())
     {
-      checkOptimizable (*tree, "leaf_errors");
     //tree->setLeafAbsCriterion ();   // Done above
       const Dataset ds (tree->getLeafErrorDataset ());
       OFStream f (leaf_errors + dmSuff);
@@ -709,7 +724,6 @@ struct ThisApplication : Application
 
     if (! output_dissim. empty ())
     {
-      checkOptimizable (*tree, "output_dissim");
       OFStream f (output_dissim);
       tree->saveDissim (f, output_dist_etc);
     }
@@ -762,13 +776,6 @@ struct ThisApplication : Application
           f << p. first->name << '\t' << p. second->name << endl;
       }
     }
-
-
-    // Parameters performed above, but incorrectly
-    if (! delete_criterion_outliers. empty ()) 
-      checkOptimizable (*tree, "delete_criterion_outliers");  
-    if (! delete_hybrids. empty ())  
-      checkOptimizable (*tree, "delete_hybrids");  
 	}
 };
 

@@ -63,10 +63,10 @@ Ave. radius: 0.456
 absCriterion = 9.7436e+00  Error density = 1.543 %
 
 # Closest outliers: 69
-absCriterion = 4.3822e+00  Error density = 1.345 %
+absCriterion = 4.3823e+00  Error density = 1.345 %
 
 OUTPUT:
-absCriterion = 4.3822e+00  Error density = 1.345 %
+absCriterion = 4.3823e+00  Error density = 1.345 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = -0.00
