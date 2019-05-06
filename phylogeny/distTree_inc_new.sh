@@ -174,7 +174,8 @@ $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
-  -delete_outliers $INC/outlier-criterion  -outlier_num_max 1 \
+  -delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1 \
+  -delete_closest_outliers $INC/outlier-closest  -closest_outlier_num_max 1 \
   -output_tree $INC/tree.new \
   -dissim_request $INC/dissim_request \
   > $INC/hist/makeDistTree.$VER
@@ -192,17 +193,25 @@ fi
 
 if [ -e $INC/outlier-genogroup ]; then
   echo ""
-  echo "Database: genogroup outliers ..."
+ #echo "Database: genogroup outliers ..."
+  wc -l $INC/outlier-genogroup
   $INC/objects_in_tree.sh $INC/outlier-genogroup null
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
 echo ""
-echo "Database: criterion outlier ..."
+#echo "Database: criterion outliers ..."
 wc -l $INC/outlier-criterion
 $INC/objects_in_tree.sh $INC/outlier-criterion null
 $THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
 mv $INC/outlier-criterion $INC/hist/outlier-criterion.$VER
+
+echo ""
+#echo "Database: closest outliers ..."
+wc -l $INC/outlier-closest
+$INC/objects_in_tree.sh $INC/outlier-closest null
+$THIS/../trav $INC/outlier-closest "$INC/outlier2db.sh %f closest"  
+mv $INC/outlier-closest $INC/hist/outlier-closest.$VER
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   echo ""

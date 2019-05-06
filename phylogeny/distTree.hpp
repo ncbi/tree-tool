@@ -415,7 +415,7 @@ public:
 
 
 	double getParentDistance () const final
-	  { return isNan (len) ? 0 : len; }
+	  { return isNan (len) ? 0.0 : len; }
 
   const DistTree& getDistTree () const;
 
@@ -958,7 +958,7 @@ struct Dissim
       leaves [0] = leaf1;
       leaves [1] = leaf2;
       return leaves;
-    }
+    }                
     
   bool operator< (const Dissim &other) const;
   bool operator== (const Dissim &other) const
@@ -1057,6 +1057,15 @@ private:
 	  // !Leaf::graph
 	mutable Rand rand;
 public:
+  
+  struct ClosestPair
+  {
+    string leafName1;
+    string leafName2;
+    Real criterion;
+  };
+  unordered_map<const DTNode*,ClosestPair> node2closestPair;
+    // Requires: topology is unchanged
 
 
   // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attributes dissimAttrName and multAttrName
@@ -1313,7 +1322,7 @@ public:
     // Return: >= 0
 	  // Input: DTNode::len
 	  // Time: O(|path|)
-	void setDissimMult ();
+	void setDissimMult (bool usePrediction);
 	  // Output: Dissim::mult, absCriterion, mult_sum, target2_sum
 	  
   // Optimization	  
@@ -1337,10 +1346,10 @@ public:
 	void optimize3 ();
 	  // Optimal solution, does not depend on Obj::mult
 	  // Requires: 3 leaves
-  bool optimizeReinsert ();
+  bool optimizeReinsert (bool useOrigWeights);
     // Re-inserts subtrees with small DTNode::pathObjNums.size()
 	  // Return: false <=> finished
-    // Invokes: NewLeaf(DTNode*), Change, applyChanges(), Threads
+    // Invokes: setDissimMult(false), NewLeaf(DTNode*), Change, applyChanges(), Threads
     // Time: O(n log^3(n))
 	void optimizeWholeIter (uint iter_max,
 	                        const string &output_tree);
@@ -1474,13 +1483,20 @@ public:
     // Output: outlier_min
     // Invokes: getLeafErrorDataset(), RealAttr2::distr2outlier(), Leaf::getRelCriterion()
     // Time: O(n log(n))
+  VectorPtr<Leaf> findClosestOutliers (Real outlier_EValue_max,
+                                       Real &outlier_min) const;
+    // Idempotent
+    // Return: sort()'ed by Dissim::getRelResidual() descending
+    // Output: outlier_min, Leaf::badCriterion
+    // Invokes: RealAttr2::distr2outlier(), Dissim::getRelResidual()
+    // Time: O(p log(p))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
                                           bool searchBadLeaves,
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
     // ~Idempotent w.r.t. restoring hybrids in the tree
     // Update (append): *dissimRequests if !nullptr  // Not implemented ??
     // After: setLeafAbsCriterion() if searchBadLeaves
-    // Invokes: RealAttr2::normal2outlier() 
+    // Invokes: RealAttr2::normal2outlier(), findCriterionOutliers()
     // Time: ~ O(p log^2(n)) 
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode::getReprLeaf()

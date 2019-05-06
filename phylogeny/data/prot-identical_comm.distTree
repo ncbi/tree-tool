@@ -13,38 +13,39 @@ INPUT:
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
 Dissimilarities factor: 26.19
-Ave. dissimilarity = 0.194195
+Ave. dissimilarity = 0.194156
 absCriterion = 1.8217e+01  Error density = 2.960 %
 
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 16
+# Nodes deleted = 17
 Optimizing arc lengths at each node ...
-# Nodes deleted = 3
-absCriterion = 7.2722e+00  Error density = 1.870 %
+# Nodes deleted = 2
+absCriterion = 7.2746e+00  Error density = 1.870 %
 
+Optimizing topology: subgraphs ...
 # Hybrids: 0
 absCriterion = 6.5362e+00  Error density = 1.766 %
 
 # Hybrids: 0
-absCriterion = 6.5110e+00  Error density = 1.763 %
+absCriterion = 6.5109e+00  Error density = 1.763 %
 
 # Hybrids: 0
-absCriterion = 6.5060e+00  Error density = 1.762 %
+absCriterion = 6.5056e+00  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 6.5042e+00  Error density = 1.762 %
+absCriterion = 6.5039e+00  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 6.5032e+00  Error density = 1.762 %
+absCriterion = 6.5030e+00  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 6.5026e+00  Error density = 1.762 %
+absCriterion = 6.5025e+00  Error density = 1.762 %
 
 # Hybrids: 0
 absCriterion = 6.5022e+00  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 6.5020e+00  Error density = 1.761 %
+absCriterion = 6.5019e+00  Error density = 1.761 %
 
 # Hybrids: 0
 absCriterion = 6.5018e+00  Error density = 1.761 %
@@ -55,29 +56,21 @@ absCriterion = 6.5017e+00  Error density = 1.761 %
 # Hybrids: 0
 absCriterion = 6.5016e+00  Error density = 1.761 %
 
+# Iterations of subgraph optimization: 11
 absCriterion = 6.5016e+00  Error density = 1.761 %
 
-Ave. radius: 0.456221
+Ave. radius: 0.456
 
-# Outliers: 4
+# Criterion outliers: 4
 absCriterion = 4.8718e+00  Error density = 1.543 %
+
+# Closest outliers: 70
+absCriterion = 2.1559e+00  Error density = 1.340 %
 
 OUTPUT:
-absCriterion = 4.8718e+00  Error density = 1.543 %
+absCriterion = 2.1559e+00  Error density = 1.340 %
 
 Relative epsilon2_0 = 0.00 %
-Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.09
+Mean residual = -0.00
+Correlation between residual^2 and dissimilarity = 0.08
 
-# Interior nodes (with root) = 280 (max = 280)
-# Interior undirected arcs = 278
-Tree length = 30.612
-Min. discernible leaf length = 0.000000e+00
-Ave. arc length = 0.054
-Interior height = 35
-Bifurcating interior branching = 1.354
-# Frequent children interior nodes = 275
-# Frequent children leaves = 282
-# Frequent interior nodes = 42
-# Frequent leaves = 52
-Rareness threshold = 1.000 %

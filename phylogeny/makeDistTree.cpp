@@ -26,7 +26,8 @@ void checkOptimizable (const DistTree& tree,
 
 
 
-const string outlierCriterion ("relative unweighted average leaf error");
+const string criterionOutlier_definition ("relative unweighted average leaf error");
+const string closestOutlier_definition ("absolute residual to dissimilarity ratio for closest leaf");
 
 
 
@@ -43,9 +44,8 @@ struct ThisApplication : Application
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
-	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
+	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
 	  addKey ("var_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
-	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
@@ -59,7 +59,8 @@ struct ThisApplication : Application
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees before subgraph optimizations");
-	  addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
+	  addFlag ("reinsert_orig_weights", "Use original weights in the re-insert optimization");  // useful ??
+	//addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 	  addFlag ("fix_discernibles", "Set the indiscernible flag of objects");
@@ -68,26 +69,30 @@ struct ThisApplication : Application
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 	  	
-	  addKey ("delete_outliers", "Delete outliers by " + outlierCriterion + " and save them in the indicated file");  
-	  addKey ("outlier_num_max", "Max. number of outliers ordered by " + outlierCriterion + " descending to delete; 0 - all", "0");
+	  addKey ("delete_criterion_outliers", "Delete outliers by " + criterionOutlier_definition + " and save them in the indicated file");  
+	  addKey ("criterion_outlier_num_max", "Max. number of outliers ordered by " + criterionOutlier_definition + " descending to delete; 0 - all", "0");
 	  
+	  addKey ("delete_closest_outliers", "Delete outliers by " + closestOutlier_definition + " and save them in the indicated file");  
+	  addKey ("closest_outlier_num_max", "Max. number of outliers ordered by " + closestOutlier_definition + " descending to delete; 0 - all", "0");
+
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
 	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
 	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
 
-	  addFlag ("noqual", "Do not compute quality statistics");
+	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 
     // Output
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
-	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + outlierCriterion + " for each leaf");
+	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " for each leaf");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
-	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
+	  addFlag ("noqual", "Do not compute quality statistics");
 	}
 	
 	
@@ -197,7 +202,8 @@ struct ThisApplication : Application
 		const size_t subgraph_iter_max   = str2<size_t> (getArg ("subgraph_iter_max"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
-		const bool   reinsert_iter       = getFlag ("reinsert_iter");
+		const bool   reinsert_orig_weights = getFlag ("reinsert_orig_weights");		
+	//const bool   reinsert_iter       = getFlag ("reinsert_iter");
 		const bool   skip_topology       = getFlag ("skip_topology");
 	  const bool   new_only            = getFlag ("new_only");
 	  const bool   fix_discernibles    = getFlag ("fix_discernibles");
@@ -206,8 +212,11 @@ struct ThisApplication : Application
 		const bool   root_topological    = getFlag ("root_topological");
 		const string reroot_at           = getArg ("reroot_at");
 
-		const string delete_outliers     = getArg ("delete_outliers");
-		const size_t outlier_num_max     = str2<size_t> (getArg ("outlier_num_max"));
+		const string delete_criterion_outliers = getArg ("delete_criterion_outliers");
+		const size_t criterion_outlier_num_max = str2<size_t> (getArg ("criterion_outlier_num_max"));
+
+		const string delete_closest_outliers = getArg ("delete_closest_outliers");
+		const size_t closest_outlier_num_max = str2<size_t> (getArg ("closest_outlier_num_max"));
 
                  dissim_boundary     = str2real (getArg ("dissim_boundary"));
 		             hybridness_min      = str2real (getArg ("hybridness_min"));
@@ -228,7 +237,7 @@ struct ThisApplication : Application
 		const string output_data         = getArg ("output_data");
 		
 		ASSERT (! (reroot && ! reroot_at. empty ()));
-		if (! isNan (variancePower) && varianceType != varianceType_pow)
+		if (! isNan (variancePower) && varianceType != varianceType_pow)  // ??
 		  throw runtime_error ("-variance_power requires -variance pow");
 		if (isNan (variancePower) && varianceType == varianceType_pow)
 		  throw runtime_error ("-variance_power is needed by -variance pow");
@@ -249,9 +258,9 @@ struct ThisApplication : Application
     if (dissimAttrName. empty () && ! multAttrName. empty ())
       throw runtime_error ("Dissimilarity weight attribute with no dissimilarity attribute");
     if (dissim_coeff <= 0.0)
-      throw runtime_error ("dissim_coeff must be positive");
+      throw runtime_error ("-dissim_coeff must be positive");
     if (dissim_power <= 0.0)
-      throw runtime_error ("dissim_power must be positive");
+      throw runtime_error ("-dissim_power must be positive");
     if (check_delete && deleteFName. empty ())
       throw runtime_error ("-check_delete requires -delete");
     if (check_keep && keepFName. empty ())
@@ -267,14 +276,20 @@ struct ThisApplication : Application
     if (varianceType != varianceType_none && ! multAttrName. empty ())
       throw runtime_error ("Variance function cannot be used with a dissimilarity weight attribute");
     if (output_dist_etc && output_dissim. empty ())
-    	throw runtime_error ("output_dist_etc exists, but no output_dissim");
-    IMPLY (subgraph_fast,     optimize);
+    	throw runtime_error ("-output_dist_etc exists, but no -output_dissim");
+    if (subgraph_fast && ! optimize)
+      throw runtime_error ("-subgraph_fast requires -optimize");
     if (subgraph_iter_max && ! optimize)
       throw runtime_error ("-subgraph_iter_max requires -optimize");
-    IMPLY (skip_len,          optimize);
-    IMPLY (reinsert,          optimize);
-    IMPLY (reinsert_iter,     optimize);
-    IMPLY (skip_topology,     optimize);
+    if (skip_len && ! optimize)
+      throw runtime_error ("-skip_len requires -optimize");
+    if (reinsert && ! optimize)
+      throw runtime_error ("-reinsert requires -optimize");
+    if (reinsert_orig_weights && ! reinsert)
+      throw runtime_error ("-reinsert_orig_weights requires -reinsert");
+  //IMPLY (reinsert_iter,     optimize);
+    if (skip_topology && ! optimize)
+      throw runtime_error ("-skip_topology requires -optimize");
     if (new_only && optimize)
       throw runtime_error ("-new_only cannot be used with -optimize");
     if (fix_discernibles && dataFName. empty ())
@@ -282,15 +297,17 @@ struct ThisApplication : Application
     if (fix_discernibles && variance_min)
       throw runtime_error ("-fix_discernibles implies zero -var_min");
     if (dissim_boundary <= 0.0)
-    	throw runtime_error ("dissim_boundary must be > 0");
+    	throw runtime_error ("-dissim_boundary must be > 0");
     if (hybridness_min <= 1.0)
-    	throw runtime_error ("hybridness_min must be > 1");
+    	throw runtime_error ("-hybridness_min must be > 1");
   //if (delete_all_hybrids && delete_hybrids. empty ())
     //throw runtime_error ("-delete_all_hybrids assumes -delete_hybrids");
     if (! hybrid_parent_pairs. empty () && delete_hybrids. empty ())      
     	throw runtime_error ("-hybrid_parent_pairs assumes -delete_hybrids");
-    if (outlier_num_max && delete_outliers. empty ())
-      throw runtime_error ("-outlier_num_max requires -delete_outliers");
+    if (criterion_outlier_num_max && delete_criterion_outliers. empty ())
+      throw runtime_error ("-criterion_outlier_num_max requires -delete_criterion_outliers");
+    if (closest_outlier_num_max && delete_closest_outliers. empty ())
+      throw runtime_error ("-closest_outlier_num_max requires -delete_closest_outliers");
     if (! leaf_errors. empty () && noqual)
       throw runtime_error ("-noqual prohibits -leaf_errors");
     IMPLY (refresh_dissim, ! dissim_request. empty ());
@@ -330,9 +347,6 @@ struct ThisApplication : Application
     
     
     
-    bool predictionChanged = false;
-
-
     if (! deleteFName. empty ())
     {
       cerr << "Deleting ..." << endl;
@@ -429,6 +443,8 @@ struct ThisApplication : Application
           if (verbose ())
             tree->saveFile (output_tree);  
 
+          bool predictionImproved = false;
+
           if (! skip_len)            
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
@@ -445,7 +461,7 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
             
             if (lenArc_deleted || lenNode_deleted)
-              predictionChanged = true;
+              predictionImproved = true;
           }
           
 
@@ -453,12 +469,12 @@ struct ThisApplication : Application
           {
             cerr << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: re-insert");
-            tree->optimizeReinsert ();  
-            predictionChanged = true;
+            tree->optimizeReinsert (reinsert_orig_weights);  
+            predictionImproved = ! reinsert_orig_weights;
           }
           
-          if (predictionChanged)
-         		tree->setDissimMult ();
+          if (predictionImproved)
+         		tree->setDissimMult (true);
           
           if (! skip_topology)
           {
@@ -481,8 +497,10 @@ struct ThisApplication : Application
           	  cerr << " ..." << endl;
           		const Real absCriterion_old = tree->absCriterion;
               tree->optimizeDissimCoeffs ();  
-              if (reinsert_iter)
+            #if 0
+              if (reinsert_iter)  
                 tree->optimizeReinsert ();  
+            #endif
               tree->optimizeLargeSubgraphs ();  
             //hybridDeleted = false;
               if (hybridF. get ())
@@ -498,7 +516,7 @@ struct ThisApplication : Application
               if (relImprovement <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
               	break;
               	// -variance linExp or exp => threshold must be smaller ??
-              tree->setDissimMult ();
+              tree->setDissimMult (true);
               cerr << tree->absCriterion2str () /*<< ' ' << relImprovement*/ << endl; 
             }
             cout << "# Iterations of subgraph optimization: " << iter + 1 << endl;
@@ -520,34 +538,33 @@ struct ThisApplication : Application
       }
 
 
-      // Outliers 
-      if (! delete_outliers. empty ())
+      if (! delete_criterion_outliers. empty ())
       {
         cerr << "Finding criterion outliers ..." << endl;
 	      tree->setLeafAbsCriterion (); 
 	      Real outlier_min = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-10, outlier_min));  // PAR  
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-6, outlier_min));  // PAR  // was: 1e-10
 	      const ONumber on (cout, absCriterionDecimals, false);  
-	      cout << "# Outliers: " << outliers. size () << endl;
-        OFStream f (delete_outliers);
+	      cout << "# Criterion outliers: " << outliers. size () << endl;
+        OFStream f (delete_criterion_outliers);
 	      if (! outliers. empty ())
 	      {
   	      if (verbose ())
   	      {
-    	      cout << "Min. " << outlierCriterion << " of outliers: " << outlier_min << endl;
+    	      cout << "Min. " << criterionOutlier_definition << " of outliers: " << outlier_min << endl;
     	      for (const Leaf* leaf : outliers)
     	        cout         << leaf->name 
     	             << '\t' << leaf->getRelCriterion ()
     	             << '\t' << leaf->absCriterion  
     	             << endl;
     	    }
-          cerr << "Deleting outliers ..." << endl;
+          cerr << "Deleting criterion outliers ..." << endl;
           {
             Progress prog (outliers. size ());
             size_t removed = 0;
             for (const Leaf* leaf : outliers)
             {
-              if (outlier_num_max && removed >= outlier_num_max)
+              if (criterion_outlier_num_max && removed >= criterion_outlier_num_max)
                 break;
               f << leaf->name << endl;
               tree->removeLeaf (var_cast (leaf), true);
@@ -555,7 +572,7 @@ struct ThisApplication : Application
               removed++;
             }
             if (removed)
-              tree->setDissimMult ();
+              tree->setDissimMult (true);
           }
           tree->reportErrors (cout);
         }
@@ -564,6 +581,41 @@ struct ThisApplication : Application
       tree->qc ();
     
       
+      if (! delete_closest_outliers. empty ())
+      {
+        cerr << "Finding closest outliers ..." << endl;
+	      tree->setLeafAbsCriterion (); 
+	      tree->setNodeClosestObjNum (); 
+	      Real outlier_min = NaN;
+	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (1e-10, outlier_min));  // PAR  
+	      const ONumber on (cout, absCriterionDecimals, false);  
+	      cout << "# Closest outliers: " << outliers. size () << endl;
+        OFStream f (delete_closest_outliers);
+	      if (! outliers. empty ())
+	      {
+          cerr << "Deleting closest outliers ..." << endl;
+          {
+            Progress prog (outliers. size ());
+            size_t removed = 0;
+            for (const Leaf* leaf : outliers)
+            {
+              if (closest_outlier_num_max && removed >= closest_outlier_num_max)
+                break;
+              f << leaf->name << endl;
+              tree->removeLeaf (var_cast (leaf), true);
+              prog (tree->absCriterion2str ());
+              removed++;
+            }
+            if (removed)
+              tree->setDissimMult (true);
+          }
+          tree->reportErrors (cout);
+        }
+        cout << endl;
+      }
+      tree->qc ();
+
+
       if (! noqual)
       {
         tree->setNodeAbsCriterion ();  
@@ -712,9 +764,10 @@ struct ThisApplication : Application
     }
 
 
-    if (! delete_outliers. empty ())  // Parameter is performed above
-      checkOptimizable (*tree, "delete_outliers");  
-    if (! delete_hybrids. empty ())  // Parameter is performed above
+    // Parameters performed above, but incorrectly
+    if (! delete_criterion_outliers. empty ()) 
+      checkOptimizable (*tree, "delete_criterion_outliers");  
+    if (! delete_hybrids. empty ())  
       checkOptimizable (*tree, "delete_hybrids");  
 	}
 };

@@ -23,6 +23,7 @@ Optimizing arc lengths at each node ...
 # Nodes deleted = 2
 absCriterion = 7.2269e+00  Error density = 1.865 %
 
+Optimizing topology: subgraphs ...
 # Hybrids: 0
 absCriterion = 6.5152e+00  Error density = 1.764 %
 
@@ -47,29 +48,21 @@ absCriterion = 6.2076e+00  Error density = 1.722 %
 # Hybrids: 0
 absCriterion = 6.2075e+00  Error density = 1.722 %
 
+# Iterations of subgraph optimization: 8
 absCriterion = 6.2075e+00  Error density = 1.722 %
 
-Ave. radius: 0.456240
+Ave. radius: 0.456
 
-# Outliers: 4
+# Criterion outliers: 4
 absCriterion = 4.8591e+00  Error density = 1.542 %
+
+# Closest outliers: 73
+absCriterion = 2.1071e+00  Error density = 1.343 %
 
 OUTPUT:
-absCriterion = 4.8591e+00  Error density = 1.542 %
+absCriterion = 2.1071e+00  Error density = 1.343 %
 
 Relative epsilon2_0 = 0.00 %
-Mean residual = 0.00
+Mean residual = -0.00
 Correlation between residual^2 and dissimilarity = 0.09
 
-# Interior nodes (with root) = 285 (max = 286)
-# Interior undirected arcs = 283
-Tree length = 30.612
-Min. discernible leaf length = 0.000000e+00
-Ave. arc length = 0.054
-Interior height = 35
-Bifurcating interior branching = 1.357
-# Frequent children interior nodes = 280
-# Frequent children leaves = 282
-# Frequent interior nodes = 42
-# Frequent leaves = 52
-Rareness threshold = 1.000 %

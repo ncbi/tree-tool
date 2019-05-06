@@ -515,7 +515,12 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
 
 //
 
-static const string rel_errorS ("rel_error");
+static const string lenS               ("len");
+static const string err_densityS       ("err_density");
+static const string pathsS             ("paths");
+static const string rel_errorS         ("rel_error");
+static const string closestS           ("closest");
+static const string closest_criterionS ("closest_criterion");
 
 
 
@@ -563,11 +568,11 @@ void DTNode::saveContent (ostream& os) const
 { 
   {
     const ONumber oLen (os, dissimDecimals, true);
-    os << "len=" << len;
+    os << lenS << "=" << len;
   }
   const ONumber oNum (os, relCriterionDecimals, true);  // PAR
   if (paths)
-    os << "  err_density=" << errorDensity << "  paths=" << paths;
+    os << "  " << err_densityS << "=" << errorDensity << "  " << pathsS << "=" << paths;
   if (! isNan (absCriterion_ave))
     os << "  " << rel_errorS << "=" << getRelCriterion ();
   else if (! isNan (relCriterion))
@@ -575,9 +580,9 @@ void DTNode::saveContent (ostream& os) const
 	if (closestObjNum != dissims_max)
 	{
 	  const Dissim& dissim = getDistTree (). dissims [closestObjNum];
-	  os << "  closest="        << dissim. leaf1->getName () 
+	  os << "  " << closestS << "="        << dissim. leaf1->getName () 
 	                     << ':' << dissim. leaf2->getName ();
-	  os << "  closest_criterion=" << dissim. getRelResidual ();
+	  os << "  " << closest_criterionS << "=" << dissim. getRelResidual ();
 	}
 }
 
@@ -1713,7 +1718,7 @@ void Change::qc () const
   Root::qc ();
     
   ASSERT (valid ());
-  IMPLY (! isNan (improvement), positive (improvement));
+  IMPLY (! isNan (improvement), improvement > 0.0);
   ASSERT (! targets. empty ());
   subgraph. qc ();
 }
@@ -1981,7 +1986,7 @@ bool Change::strictlyLess (const Change* a,
   if (a == b)  
     return false;
   if (! b)  
-    return positive (a->improvement);
+    return true;
   ASSERT (positive (b->improvement));
     
   if (a->improvement > b->improvement)  return true;  
@@ -3566,12 +3571,14 @@ bool DistTree::loadLines (const StringVector &lines,
   string idS (findSplit (s, ':'));
   if (idS. empty () || s. empty ())
     throw runtime_error ("Bad format of line " + toString (lineNum));
-  const Real   len          = token2real (s, "len");
-  const Real   errorDensity = token2real (s, "err_density");
-  const Real   paths        = token2real (s, "paths");
-  const Real   relCriterion = token2real (s, rel_errorS);
-  const string name         = token2string (s, "name");
-  const bool indiscernible  = contains (s, Leaf::non_discernible);
+  const Real   len               = token2real (s, lenS);
+  const Real   errorDensity      = token2real (s, err_densityS);
+  const Real   paths             = token2real (s, pathsS);
+  const Real   relCriterion      = token2real (s, rel_errorS);
+        string closest           = token2string (s, closestS);
+  const Real   closest_criterion = token2real (s, closest_criterionS);
+  const string name              = token2string (s, "name");
+  const bool indiscernible = contains (s, Leaf::non_discernible);
   IMPLY (parent, len >= 0);
   DTNode* dtNode = nullptr;
   if (isLeft (idS, "0x"))
@@ -3608,6 +3615,16 @@ bool DistTree::loadLines (const StringVector &lines,
   {
     ASSERT (! dtNode->asLeaf ());
     dtNode->name = name;
+  }
+  
+  ASSERT (closest. empty () == isNan (closest_criterion));
+  if (! closest. empty ())
+  {
+    const string leafName1 (findSplit (closest, ':'));
+    ASSERT (! closest. empty ());
+    ASSERT (closest_criterion >= 0.0);
+    ASSERT (! contains (node2closestPair, dtNode));
+    node2closestPair [dtNode] = move (ClosestPair {leafName1, closest, closest_criterion});
   }
   
   return true;
@@ -4729,7 +4746,7 @@ void DistTree::setPaths (bool setDissimMultP)
 #endif
 
   if (setDissimMultP)
-    setDissimMult ();
+    setDissimMult (true);
 }
 
 
@@ -4902,6 +4919,14 @@ void DistTree::qc () const
       }
     }
   }
+  
+  for (const auto& it : node2closestPair)
+  {
+    const ClosestPair& cp = it. second;
+    ASSERT (cp. leafName1 < cp. leafName2);
+    ASSERT (contains (name2leaf, cp. leafName1));
+    ASSERT (contains (name2leaf, cp. leafName2));
+  }
 }
 
 
@@ -4928,6 +4953,8 @@ void DistTree::deleteLeaf (TreeNode* node,
     delayDeleteRetainArcs (var_cast (parent));
   
   toDelete. deleteData ();
+  
+  node2closestPair. clear ();
 }
 
 
@@ -5192,7 +5219,7 @@ Real DistTree::path2prediction (const VectorPtr<TreeNode> &path)
 
 
 
-void DistTree::setDissimMult ()
+void DistTree::setDissimMult (bool usePrediction)
 { 
   ASSERT (optimizable ());
   ASSERT (absCriterion < INF);
@@ -5253,11 +5280,10 @@ void DistTree::setDissimMult ()
     if (dissim. valid ())
     {
       if (! multFixed)
-      {
-        // Use dissim.target to compare absCriterion with that of 3rd party programs: a new parameter is needed ??
+      { 
         const Real scale = (dissim. type == NO_INDEX ? 1.0 : dissimTypes [dissim. type]. scaleCoeff);
         ASSERT (scale > 0.0);
-        dissim. mult = dist2mult (dissim. prediction / scale) / sqr (scale);
+        dissim. mult = dist2mult ((usePrediction ? dissim. prediction : dissim. target) / scale) / sqr (scale);
       }
       if (dissim. mult < INF)
       {
@@ -5627,6 +5653,8 @@ size_t DistTree::optimizeLenArc ()
   if (verbose (1))
     cout << "Optimizing arc lengths at each arc ..." << endl;
     
+  node2closestPair. clear ();
+
   VectorPtr<DTNode> dtNodes;  dtNodes. reserve (2 * name2leaf. size ());
   for (DiGraph::Node* node : nodes)
   {
@@ -5745,6 +5773,8 @@ size_t DistTree::optimizeLenNode ()
 {
   if (verbose (1))
     cout << "Optimizing arc lengths at each node ..." << endl;
+
+  node2closestPair. clear ();
 
   Vector<Star> stars;  stars. reserve (2 * name2leaf. size ());
   for (const DiGraph::Node* node : nodes)
@@ -5966,12 +5996,24 @@ void reinsert_thread (size_t from,
     const DTNode* fromNode = nodeVec [i];
     Real nodeAbsCriterion_old = NaN;
     const NewLeaf nl (fromNode, q_max, nodeAbsCriterion_old);
-    ASSERT (nodeAbsCriterion_old >= 0);
+    ASSERT (nodeAbsCriterion_old >= 0.0);
     nl. qc ();
     const DTNode* toNode = nl. location. anchor;
     ASSERT (toNode);
     const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
-    if (   ! positive (improvement)
+  #if 0
+    if (fromNode->getLcaName () == "1032888")  
+    {
+      cout << endl;
+      PRINT (nodeAbsCriterion_old);
+      nl. location. print (cout);
+      cout << endl;
+      PRINT (improvement);
+      cout << fromNode->getParent () -> getLcaName () << ' ' << toNode->getLcaName () << ' ' << toNode->getParent () -> getLcaName () << endl;
+      cout << endl;
+    }
+  #endif
+    if (   improvement <= 0.0
         || fromNode->getParent () == toNode
         || fromNode->getParent () == toNode->getParent ()
        )
@@ -5995,9 +6037,15 @@ void reinsert_thread (size_t from,
 
 
 
-bool DistTree::optimizeReinsert ()
+bool DistTree::optimizeReinsert (bool useOrigWeights)
 {
   ASSERT (! subDepth);
+
+
+  node2closestPair. clear ();
+
+  if (useOrigWeights && ! multFixed)
+    setDissimMult (false);
 
   VectorPtr<DTNode> nodeVec;  nodeVec. reserve (nodes. size ());
   for (const DiGraph::Node* node_ : nodes)
@@ -6049,6 +6097,8 @@ bool DistTree::optimizeWhole ()
   ASSERT (dissims. size () >= 2 * name2leaf. size () - 2);
 
   
+  node2closestPair. clear ();
+
   VectorOwn<Change> changes;  changes. reserve (256);  // PAR
   {
     Vector<DTNode*> nodeVec;  nodeVec. reserve (2 * name2leaf. size ());
@@ -6065,7 +6115,7 @@ bool DistTree::optimizeWhole ()
       chron_getBestChange. start ();
       if (const Change* bestChange = getBestChange (node)) 
       { 
-        ASSERT (positive (bestChange->improvement));
+        ASSERT (bestChange->improvement >= 0.0);
         changes << bestChange;
       }
       chron_getBestChange. stop ();
@@ -6106,7 +6156,7 @@ const Change* DistTree::getBestChange (const DTNode* from)
   {
     if (verbose (1))
       cerr << "found ";
-    ASSERT (positive (bestChange->improvement));
+    ASSERT (bestChange->improvement >= 0.0);
     return bestChange;  
   }
 
@@ -6228,7 +6278,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
   
   qc ();
   
-  return positive (improvement);
+  return improvement > 0.0;
 }
 
 
@@ -6285,6 +6335,8 @@ void DistTree::optimizeLargeSubgraphs ()
   ASSERT (threads_max);
   
   
+  node2closestPair. clear ();
+
   const bool threadsUsed = (threads_max > 1 && ! subDepth);
   
 //unique_ptr<const Chronometer_OnePass> cop (subDepth == 1 ? new Chronometer_OnePass ("optimizeLargeSubgraphs for " + toString (name2leaf. size ())) : nullptr);   
@@ -6477,6 +6529,8 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius,
 {
   ASSERT (areaRadius >= 1);
   
+  node2closestPair. clear ();
+
   if (! unstableOnly)
     for (DiGraph::Node* node : nodes)
       static_cast <DTNode*> (node) -> stable = false;
@@ -6959,6 +7013,8 @@ void DistTree::removeLeaf (Leaf* leaf,
   ASSERT (! dissimAttr);
   ASSERT (! multAttr);
   
+  node2closestPair. clear ();
+
   const TreeNode* parent = leaf->getParent ();
   if (! parent)
     throw runtime_error ("removeLeaf: Empty tree");
@@ -7045,6 +7101,9 @@ void DistTree::reroot (DTNode* underRoot,
   ASSERT (! underRoot->inDiscernible ());
 
   
+  node2closestPair. clear ();
+
+
   if (underRoot != root)
   {
     ASSERT (! isNan (arcLen));
@@ -7419,6 +7478,65 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
     }
     
   res. sort (leafRelCriterionStrictlyGreater);
+  
+  // Find a maximal "independent" subset ??
+      
+  return res;
+}
+
+
+
+namespace
+{
+  
+bool leafBadCriterionStrictlyGreater (const Leaf* a,
+                                      const Leaf* b)
+{
+  ASSERT (a);
+  ASSERT (b);
+  return a->badCriterion > b->badCriterion;
+}
+
+}
+
+
+
+VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
+                                               Real &outlier_min) const
+{
+  Dataset ds;
+  ds. objs. reserve (dissims. size ());  
+  auto criterionAttr = new PositiveAttr1 ("dissim_error_rel_target", ds);  
+  for (const Dissim& dissim : dissims)    
+    if (dissim. validMult ())
+    {
+      const size_t index = ds. appendObj ();
+      const Real err = dissim. getRelResidual ();
+      ASSERT (err >= 0.0);
+      (*criterionAttr) [index] = err;
+    }
+  ds. qc ();
+
+  const Sample sample (ds);
+
+  Normal distr;  // Beta1 ??
+  outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max * (Real) dissimTypesNum ());
+
+  VectorPtr<Leaf> res;
+  if (! isNan (outlier_min))
+    for (const Dissim& dissim : dissims)    
+      if (dissim. validMult ())
+        if (geReal (dissim. getRelResidual (), outlier_min))
+        {
+          const Leaf* leaf = dissim. leaf1;
+          if (dissim. leaf2->getRelCriterion () > leaf->getRelCriterion ())
+            leaf = dissim. leaf2;
+          var_cast (leaf) -> badCriterion = dissim. getRelResidual ();
+          res << leaf;
+        }
+    
+  res. sort (leafBadCriterionStrictlyGreater);
+  res. uniq ();
   
   // Find a maximal "independent" subset ??
       
@@ -8414,6 +8532,7 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
 , node_orig (dtNode)
 {
   ASSERT (dtNode);
+  ASSERT (dtNode->graph);
   ASSERT (dtNode != tree. root);
   ASSERT (q_max);
   ASSERT (node_orig);
@@ -8422,7 +8541,6 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
   location. leafLen = 0.0;
   location. arcLen = 0.0;
   
-  // Field of DTNode ??
   Vector<Tree::TreeNode::NodeDist> leafDepths;  leafDepths. reserve (tree. name2leaf. size () / 8 + 1);  // PAR
   dtNode->getLeafDepths (leafDepths);
   leafDepths. sort ();
@@ -8430,13 +8548,13 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
   for (const uint objNum : dtNode->pathObjNums)
   {
     const Dissim& dissim = tree. dissims [objNum];
-    if (! dissim. valid ())
+    if (! dissim. validMult ())
       continue;
-    size_t index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf1, 0});
+    size_t index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf1, 0.0});
     const Leaf* leaf = dissim. leaf2;
     if (index == NO_INDEX)
     {
-      index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf2, 0});
+      index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf2, 0.0});
       leaf = dissim. leaf1;
     }
     ASSERT (index != NO_INDEX);
@@ -8480,8 +8598,8 @@ void NewLeaf::process (bool init,
   }
     
   location. anchor = static_cast <const DTNode*> (tree. root);
-  location. leafLen = 0;
-  location. arcLen = 0;
+  location. leafLen = 0.0;
+  location. arcLen = 0.0;
 
   if (init)
   { 

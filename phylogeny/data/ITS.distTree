@@ -17,13 +17,19 @@ Dissimilarities factor: 82.55
 Ave. dissimilarity = 0.854598
 absCriterion = 1.3604e+03  Error density = 8.879 %
 
+# Changes: 554
+# Commits = 230
+Improvement = 68.9784
+absCriterion = 1.2914e+03  Error density = 8.650 %
+CHRON: Topology optimization: re-insert: 656 sec.
+
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 2
-absCriterion = 1.0168e+03  Error density = 8.159 %
-CHRON: Topology optimization: local: 69 sec.
+absCriterion = 1.0081e+03  Error density = 8.134 %
+CHRON: Topology optimization: local: 71 sec.
 
-Ave. radius: 7.407
+Ave. radius: 7.577
 
 OUTPUT:
-absCriterion = 1.0168e+03  Error density = 8.159 %
+absCriterion = 1.0081e+03  Error density = 8.134 %
 
