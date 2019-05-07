@@ -120,9 +120,9 @@ rm Saccharomyces.distTree
 
 
 echo ""
-echo "-var_min ..."
+echo "-variance_min ..."
 # 0.0005 = average arc length / 100
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -var_min 0.0005  -optimize  \
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -variance_min 0.0005  -optimize  \
   -delete_criterion_outliers prot-identical_comm-var_min.criterion_outliers \
   -delete_closest_outliers prot-identical_comm-var_min.closest_outliers \
   -delete_hybrids prot-identical_comm-var_min.hybrids \
@@ -218,7 +218,7 @@ rm Wolf9-out.dm
 echo ""
 echo "Wolf110 ..."
 # 643 iterations, 14 min.
-makeDistTree  -qc  -data data/Wolf110  -var_min 0.005  -variance linExp  -optimize  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
+makeDistTree  -qc  -data data/Wolf110  -variance_min 0.005  -variance linExp  -optimize  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
 #
 makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
