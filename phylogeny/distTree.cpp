@@ -5035,7 +5035,7 @@ void DistTree::printInput (ostream &os) const
   if (! dissimTypes. empty ())
     os << "# Dissimilarity types = " << dissimTypes. size () << endl;
   if (multFixed)
-    os << "Weights are fixed" << endl;
+    os << "Variance is fixed" << endl;
   reportErrors (os);
 }
 

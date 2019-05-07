@@ -36,7 +36,8 @@ struct ThisApplication : Application
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
-	  addKey ("var_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
+	  addKey ("variance_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
+	  addFlag ("variance_fixed", "Variance is computed off dissimilarities");
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
@@ -180,7 +181,8 @@ struct ThisApplication : Application
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 	               variancePower       = str2real (getArg ("variance_power"));    // Global
-	               variance_min        = str2real (getArg ("var_min"));
+	               variance_min        = str2real (getArg ("variance_min"));
+	  const bool   variance_fixed      = getFlag ("variance_fixed");
 	               
 		const string deleteFName         = getArg ("delete");
 		const bool   check_delete        = getFlag ("check_delete");
@@ -250,9 +252,9 @@ struct ThisApplication : Application
       throw runtime_error ("-dissim_power must be positive");
 
     if (variance_min < 0.0)
-      throw runtime_error ("-var_min cannot be negative");
+      throw runtime_error ("-variance_min cannot be negative");
     if (variance_min && varianceType == varianceType_none)
-      throw runtime_error ("-var_min requires a variance function");
+      throw runtime_error ("-variance_min requires a variance function");
     if (varianceType != varianceType_none && dataFName. empty ())
       throw runtime_error ("Variance function requires a data file");
     if (varianceType != varianceType_none && ! multAttrName. empty ())
@@ -291,7 +293,7 @@ struct ThisApplication : Application
     if (fix_discernibles && dataFName. empty ())
       throw runtime_error ("-fix_discernibles requires dissimilarities");
     if (fix_discernibles && variance_min)
-      throw runtime_error ("-fix_discernibles requires zero -var_min");
+      throw runtime_error ("-fix_discernibles requires zero -variance_min");
       
     if (! delete_hybrids. empty () && ! optimizable)
       throw runtime_error ("-delete_hybrids requires dissimilarities");
@@ -345,6 +347,8 @@ struct ThisApplication : Application
     }
     ASSERT (tree. get ());
     ASSERT (optimizable == tree->optimizable ());
+    if (variance_fixed)
+      tree->multFixed = true;
     
     if (fix_discernibles)
     {
