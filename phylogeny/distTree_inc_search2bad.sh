@@ -20,7 +20,7 @@ awk '$3 == "nan"' $DIR/dissim > $DIR/dissim.bad
 
 if [ -s $DIR/dissim.bad ]; then
   cat $DIR/dissim.bad >> $1/dissim.bad
-  $1/outlier2db.sh $2 dissimilarity
+  $1/outlier2db.sh $2 'dissimilarity'
   rm -r $DIR/
 else
 	rm $DIR/dissim.bad
