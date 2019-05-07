@@ -512,6 +512,7 @@ struct ThisApplication : Application
           	    cerr << " / " << iter_max; 
           	  cerr << " ..." << endl;
           		const Real absCriterion_old = tree->absCriterion;
+          		ASSERT (absCriterion_old < INF);
               tree->optimizeDissimCoeffs ();  
             #if 0
               if (reinsert_iter)  

@@ -1623,6 +1623,7 @@ void Subgraph::subPaths2tree ()
         ([&subPathDissims] (uint objNum) { return subPathDissims [objNum]; });
   
   tree_. absCriterion -= subPathsAbsCriterion;
+  ASSERT (tree. absCriterion < INF);
   Tree::LcaBuffer buf;
   // Time: O(|subPaths| log(|area|))
   for (const SubPath& subPath : subPaths)
@@ -1661,7 +1662,7 @@ void Subgraph::subPaths2tree ()
     dissim. prediction = subPath. dist_hat_tails + DistTree::path2prediction (path);
     tree_. absCriterion += dissim. getAbsCriterion ();
   }
-  ASSERT (DM_sp::finite (tree. absCriterion));
+  ASSERT (tree. absCriterion < INF);
   maximize (tree_. absCriterion, 0.0);
 
   chron_subgraph2tree. stop ();
@@ -2064,6 +2065,8 @@ void Dissim::qc () const
 
   ASSERT (mult >= 0.0);
 //ASSERT (mult <= INF);
+        
+//ASSERT ((! leaf1->discernible && ! leaf2->discernible) == (mult == INF));
         
   if (! mult)
     return;
@@ -4605,6 +4608,7 @@ void setPaths_ (const Vector<size_t> &subTree,
     dissims [objNum]. setPathObjNums (objNum, buf);
     absCriterion += dissims [objNum]. getAbsCriterion ();
   }
+  ASSERT (absCriterion < INF);
 }
   
 }
@@ -4641,6 +4645,7 @@ void DistTree::setPaths (bool setDissimMultP)
       if (! setDissimMultP)
         absCriterion += dissims [objNum]. getAbsCriterion ();
     }
+  ASSERT (absCriterion < INF);
   }
 #if 0
   else
@@ -4688,6 +4693,7 @@ void DistTree::setPaths (bool setDissimMultP)
         dissims [objNum]. setPathObjNums (objNum, buf);
         absCriterion += dissims [objNum]. getAbsCriterion ();
       }
+      ASSERT (absCriterion < INF);
     }
     else
     {
@@ -4843,6 +4849,7 @@ void DistTree::qc () const
       }
     
     ASSERT (absCriterion >= 0.0);
+    ASSERT (absCriterion < INF);
     ASSERT (target2_sum >= 0.0);    
     ASSERT (mult_sum >= 0.0);    
         
@@ -5159,8 +5166,10 @@ void setPredictionAbsCriterion_thread (size_t from,
     prog ();
     const VectorPtr<Tree::TreeNode>& path = dissim. getPath (buf);
     dissim. prediction = DistTree::path2prediction (path);  
-    absCriterion += dissim. getAbsCriterion ();
+    if (dissim. discernible ())
+      absCriterion += dissim. getAbsCriterion ();
   }
+  ASSERT (absCriterion < INF);
 }
 
 }
@@ -5178,6 +5187,7 @@ void DistTree::setPredictionAbsCriterion ()
     arrayThreads (setPredictionAbsCriterion_thread, dissims. size (), absCriteria, ref (dissims)); 
     for (const Real x : absCriteria)
       absCriterion += x;
+    ASSERT (absCriterion < INF);
   }
 }
 
@@ -5964,6 +5974,7 @@ void DistTree::optimize3 ()
         dissim. prediction += leaf->len;
     absCriterion += dissim. getAbsCriterion ();
   }
+  ASSERT (absCriterion < INF);
   
   cleanTopology ();
 
@@ -6254,6 +6265,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
   }
   
 
+  ASSERT (absCriterion < INF);
   const Real improvement = max (0.0, absCriterion_init - absCriterion);
   if (verbose (1))
   {
@@ -6286,7 +6298,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
 void DistTree::tryChange (Change* ch,
                           const Change* &bestChange)
 { 
-  ASSERT (! isNan (absCriterion));
+  ASSERT (absCriterion < INF);
   ASSERT (ch);
   ASSERT (ch->from->graph == this);
   ASSERT (isNan (ch->improvement));
@@ -6890,6 +6902,7 @@ void DistTree::removeDissimType (size_t type)
         absCriterion += dissim. getAbsCriterion ();
       }
     }    
+  ASSERT (absCriterion < INF);
 
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> len *= multiplier;
@@ -7073,6 +7086,7 @@ void DistTree::removeLeaf (Leaf* leaf,
       }
       dissim. mult = 0.0;
     }
+    ASSERT (absCriterion < INF);
     maximize (absCriterion, 0.0);
     ASSERT (target2_sum >= absCriterion);
     ASSERT (mult_sum > 0.0);
@@ -7326,7 +7340,7 @@ void DistTree::setLeafAbsCriterion ()
     if (dissim. validMult ())
     {
       const Real criterion = dissim. getAbsCriterion ();
-      ASSERT (DM_sp::finite (criterion));
+      ASSERT (criterion < INF);
       ASSERT (criterion >= 0.0);
       
       Leaf* leaf1 = var_cast (dissim. leaf1);
@@ -7366,7 +7380,7 @@ void DistTree::setNodeAbsCriterion ()
     if (dissim. validMult ())
     {
       const Real criterion = dissim. getAbsCriterion ();
-      ASSERT (DM_sp::finite (criterion));
+      ASSERT (criterion < INF);
       ASSERT (criterion >= 0.0);
       
       // For interior nodes ??
