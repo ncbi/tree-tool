@@ -936,7 +936,7 @@ struct Dissim
   static constexpr uchar criterionType_max {3};
   Real getCriterion (uchar criterionType) const
     {//return getAbsCriterion ();  // Depends on varianceType
-      const Real residual = fabs (target - prediction);
+      const Real residual = sqr (target - prediction);
       if (! residual)
         return 0.0;
       switch (criterionType)
@@ -947,7 +947,8 @@ struct Dissim
       }
       throw logic_error ("Unknown Dissim::criterionType");
     }  
-  Real getRelResidual () const
+    // Return: continuous function at prediction = 0 or target = 0
+  Real getDeformation () const
     { return getCriterion (2); }
     
   void setPathObjNums (size_t objNum,
@@ -1486,9 +1487,9 @@ public:
   VectorPtr<Leaf> findClosestOutliers (Real outlier_EValue_max,
                                        Real &outlier_min) const;
     // Idempotent
-    // Return: sort()'ed by Dissim::getRelResidual() descending
+    // Return: sort()'ed by Dissim::getDeformation() descending
     // Output: outlier_min, Leaf::badCriterion
-    // Invokes: RealAttr2::distr2outlier(), Dissim::getRelResidual()
+    // Invokes: RealAttr2::distr2outlier(), Dissim::getDeformation()
     // Time: O(p log(p))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
                                           bool searchBadLeaves,

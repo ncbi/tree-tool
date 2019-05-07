@@ -582,7 +582,7 @@ void DTNode::saveContent (ostream& os) const
 	  const Dissim& dissim = getDistTree (). dissims [closestObjNum];
 	  os << "  " << closestS << "="        << dissim. leaf1->getName () 
 	                     << ':' << dissim. leaf2->getName ();
-	  os << "  " << closest_criterionS << "=" << dissim. getRelResidual ();
+	  os << "  " << closest_criterionS << "=" << dissim. getDeformation ();
 	}
 }
 
@@ -7511,7 +7511,7 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
     if (dissim. validMult ())
     {
       const size_t index = ds. appendObj ();
-      const Real err = dissim. getRelResidual ();
+      const Real err = dissim. getDeformation ();
       ASSERT (err >= 0.0);
       (*criterionAttr) [index] = err;
     }
@@ -7526,12 +7526,12 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
   if (! isNan (outlier_min))
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
-        if (geReal (dissim. getRelResidual (), outlier_min))
+        if (geReal (dissim. getDeformation (), outlier_min))
         {
           const Leaf* leaf = dissim. leaf1;
           if (dissim. leaf2->getRelCriterion () > leaf->getRelCriterion ())
             leaf = dissim. leaf2;
-          var_cast (leaf) -> badCriterion = dissim. getRelResidual ();
+          var_cast (leaf) -> badCriterion = dissim. getDeformation ();
           res << leaf;
         }
     
