@@ -498,7 +498,6 @@ struct ThisApplication : Application
           
           if (! skip_topology)
           {
-          //cerr << "Optimizing topology: subgraphs ..." << endl;
             cout << "Optimizing topology: subgraphs ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();

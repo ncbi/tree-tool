@@ -916,10 +916,6 @@ struct Dissim
              && mult
              && mult < INF;
     }
-  bool discernible () const
-    { return    leaf1->discernible 
-             && leaf2->discernible;
-    }
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
              || leaf == leaf2;

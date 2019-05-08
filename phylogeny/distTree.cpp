@@ -2064,15 +2064,12 @@ void Dissim::qc () const
     return;
 
   ASSERT (mult >= 0.0);
-//ASSERT (mult <= INF);
-        
-//ASSERT ((! leaf1->discernible && ! leaf2->discernible) == (mult == INF));
+//ASSERT (mult <= INF);        
         
   if (! mult)
     return;
 
-  IMPLY (mult == INF, ! target && ! prediction);
-  IMPLY (! target && ! DistTree_sp::variance_min, mult == INF);
+  IMPLY (mult == INF, ! leaf1->discernible && ! leaf2->discernible && ! prediction);
   ASSERT (valid ());
   ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
   ASSERT (target < INF);
@@ -4841,7 +4838,10 @@ void DistTree::qc () const
                ! dissim. leaf1->discernible && ! dissim. leaf2->discernible && dissim. leaf1->getParent () == dissim. leaf2->getParent ()
               );
         leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
-        IMPLY (multFixed, dissim. mult < INF);
+        if (subDepth)
+          { ASSERT (dissim. mult < INF); }
+        else
+          { IMPLY (! dissim. target && ! DistTree_sp::variance_min, dissim. mult == INF); }
         if (dissimTypes. empty ())
           { ASSERT (dissim. type == NO_INDEX); }
         else
@@ -5166,7 +5166,7 @@ void setPredictionAbsCriterion_thread (size_t from,
     prog ();
     const VectorPtr<Tree::TreeNode>& path = dissim. getPath (buf);
     dissim. prediction = DistTree::path2prediction (path);  
-    if (dissim. discernible ())
+    if (dissim. mult < INF)
       absCriterion += dissim. getAbsCriterion ();
   }
   ASSERT (absCriterion < INF);
