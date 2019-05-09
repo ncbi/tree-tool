@@ -70,7 +70,7 @@ rm randomTree.makeDistTree
 rm random-output.tree
 
 echo ""
-echo "prot-identical_comm: subgraphs ..."
+echo "prot-identical_comm ..."
 # Check time ??
 $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -optimize  \
   -delete_criterion_outliers prot-identical_comm.criterion_outliers \
@@ -87,7 +87,7 @@ $THIS/distTree_compare_criteria.sh prot-identical_comm.distTree data/prot-identi
 rm prot-identical_comm.distTree
 
 echo ""
-echo "prot-identical_comm: subgraphs, delete ..."
+echo "prot-identical_comm: delete ..."
 $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -delete data/delete.list  -check_delete > /dev/null
 
 echo ""
@@ -142,7 +142,7 @@ echo ""
 echo "Two dissimilarity types ..."
 
 echo ""
-echo "prot-identical_comm: subgraphs ..."
+echo "prot-identical_comm ..."
 makeDistTree  -qc  -data data/prot-identical_comm2  -variance linExp  -optimize  -subgraph_iter_max 10  \
   -output_dissim_coeff prot-identical_comm2.dissim_coeff \
   -delete_criterion_outliers prot-identical_comm2.criterion_outliers \
