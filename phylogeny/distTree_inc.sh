@@ -1,17 +1,19 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual"
   echo "#1: incremental distance tree directory"
   echo "#2: new.list | ''"
-  echo "Time: O(n log^4(n))"
+  echo "#3: process new objects completely (0/1)"
+  echo "Time: O(n log^4(n)) if #3 = 0"
   exit 1
 fi
 INC=$1
 NEW=$2
+ALL_NEW=$3
 
 
 VARIANCE=`cat $INC/variance`
@@ -41,7 +43,7 @@ if [ "$NEW" ]; then
     echo "# New: $NEW  `date`  `date +%s`" >> $INC/runlog  
     echo ""
     echo ""
-    $THIS/distTree_inc_new.sh $INC  
+    $THIS/distTree_inc_new.sh $INC $ALL_NEW
     if [ -e $INC/finished ]; then
       break
     fi
