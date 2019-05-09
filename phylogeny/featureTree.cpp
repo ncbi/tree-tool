@@ -25,14 +25,14 @@ void Feature::qc () const
   if (! qc_on)
     return;
 
-	ASSERT (! name. empty ());
-	ASSERT (! contains (name, ";"));
-	ASSERT (realGains () <= genomes);
-	IMPLY (genomes, realGains ());
-	IMPLY (genomes <= 1, losses. empty ());	
-	IMPLY (! gains.  empty (), gains.  searchSorted);
-	IMPLY (! losses. empty (), losses. searchSorted);
-	IMPLY (! gains. empty () && ! losses. empty (), ! gains. intersectsFast (losses));
+	QC_ASSERT (! name. empty ());
+	QC_ASSERT (! contains (name, ";"));
+	QC_ASSERT (realGains () <= genomes);
+	QC_IMPLY (genomes, realGains ());
+	QC_IMPLY (genomes <= 1, losses. empty ());	
+	QC_IMPLY (! gains.  empty (), gains.  searchSorted);
+	QC_IMPLY (! losses. empty (), losses. searchSorted);
+	QC_IMPLY (! gains. empty () && ! losses. empty (), ! gains. intersectsFast (losses));
 }
 
 
@@ -96,28 +96,28 @@ void Phyl::qc () const
 
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
-	    ASSERT (weight [i] [j] >= 0);
+	    QC_ASSERT (weight [i] [j] >= 0);
 
 	const size_t n = core. size ();  
-  IMPLY (! getFeatureTree (). oneFeatureInTree, n == getFeatureTree (). features. size ())
+  QC_IMPLY (! getFeatureTree (). oneFeatureInTree, n == getFeatureTree (). features. size ())
 	for (const bool parentCore : {false, true})
-  	ASSERT (parent2core [parentCore]. size () == n);
+  	QC_ASSERT (parent2core [parentCore]. size () == n);
   if (const TreeNode* parent = getParent ())
-    { ASSERT (static_cast <const Phyl*> (parent) -> core. size () == n); }
+    { QC_ASSERT (static_cast <const Phyl*> (parent) -> core. size () == n); }
 	FFOR (size_t, i, core. size ())
 	{
- 	  ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core); 
- 	//IMPLY (getFeatureTree (). allTimeZero, fabs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
- 	  ASSERT (! (   parent2core [false] [i]. core == UBOOL
+ 	  QC_ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core); 
+ 	//QC_IMPLY (getFeatureTree (). allTimeZero, fabs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
+ 	  QC_ASSERT (! (   parent2core [false] [i]. core == UBOOL
  	             && parent2core [true]  [i]. core == UBOOL
  	            )
  	         );
  	  if (getFeatureTree (). coreSynced)
  	  {
-	    IMPLY (   parent2core [false] [i]. core  != UBOOL
-	    	     && parent2core [false] [i]. core == parent2core [true] [i]. core,
-	    	     core [i] == parent2core [false] [i]. core
-	    	    );
+	    QC_IMPLY (   parent2core [false] [i]. core  != UBOOL
+  	    	      && parent2core [false] [i]. core == parent2core [true] [i]. core,
+  	    	      core [i] == parent2core [false] [i]. core
+  	    	     );
 	  }
  	}
 
@@ -448,10 +448,10 @@ void Species::qc () const
     return;
 	Phyl::qc ();
 	
-	IMPLY (! isNan (time), time >= 0);	
-	IMPLY (getFeatureTree (). allTimeZero, isNan (time)); 
-  ASSERT (pooledSubtreeDistance >= 0);	
-	IMPLY (! movementsOn, movements. empty ());
+	QC_IMPLY (! isNan (time), time >= 0);	
+	QC_IMPLY (getFeatureTree (). allTimeZero, isNan (time)); 
+  QC_ASSERT (pooledSubtreeDistance >= 0);	
+	QC_IMPLY (! movementsOn, movements. empty ());
 }
 
 
@@ -760,9 +760,9 @@ void Fossil::qc () const
 	for (const DiGraph::Arc* arc : arcs [false])
 	{
 		const Phyl* sub = static_cast <Phyl*> (arc->node [false]);
-		ASSERT (sub->asFossil () || sub->asStrain ());
+		QC_ASSERT (sub->asFossil () || sub->asStrain ());
 	}	
-	ASSERT (! isLeaf ());
+	QC_ASSERT (! isLeaf ());
 }
 
 
@@ -809,15 +809,15 @@ void Strain::qc () const
     return;
   Species::qc ();
   
-  ASSERT (arcs [false]. size () == 1);  // Transient
-  ASSERT (getGenome ());
+  QC_ASSERT (arcs [false]. size () == 1);  // Transient
+  QC_ASSERT (getGenome ());
 	
-	IMPLY (getFeatureTree (). allTimeZero, singletonsInCore);
+	QC_IMPLY (getFeatureTree (). allTimeZero, singletonsInCore);
 	
 	const Species* p = static_cast <const Species*> (getParent ());
 	const Genome* g = getGenome ();
 	FFOR (size_t, i, core. size ())
-	  IMPLY (p->core [i] == g->core [i], p->core [i] == core [i]);  // <= (time <= time_max) ??
+	  QC_IMPLY (p->core [i] == g->core [i], p->core [i] == core [i]);  // <= (time <= time_max) ??
 }
 
 
@@ -1061,24 +1061,24 @@ void Genome::qc () const
     return;
 	Phyl::qc ();
 	  
-	ASSERT (optionalCore. size () == core. size ());
+	QC_ASSERT (optionalCore. size () == core. size ());
 
-  ASSERT (getParent ());
-  ASSERT (getStrain ());
-	ASSERT (isLeaf ());
+  QC_ASSERT (getParent ());
+  QC_ASSERT (getStrain ());
+	QC_ASSERT (isLeaf ());
 	
-//ASSERT (getName (). substr (1) == getStrain () -> getName (). substr (1));  
+//QC_ASSERT (getName (). substr (1) == getStrain () -> getName (). substr (1));  
 
-	ASSERT (lessReal (weight [true] [true], weight [false] [true]));
-	ASSERT (lessReal (weight [false] [false], weight [true] [false]));
-//ASSERT (leReal (weight [false] [false], weight [true] [true]));
+	QC_ASSERT (lessReal (weight [true] [true], weight [false] [true]));
+	QC_ASSERT (lessReal (weight [false] [false], weight [true] [false]));
+//QC_ASSERT (leReal (weight [false] [false], weight [true] [true]));
 
-  ASSERT (! id. empty ());
-  ASSERT (! contains (id, ' '));
-  ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
-	ASSERT (nominals. empty ());
-	IMPLY (! getFeatureTree (). oneFeatureInTree, coreSet. empty ());
-	ASSERT (singletons. searchSorted);
+  QC_ASSERT (! id. empty ());
+  QC_ASSERT (! contains (id, ' '));
+  QC_ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
+	QC_ASSERT (nominals. empty ());
+	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, coreSet. empty ());
+	QC_ASSERT (singletons. searchSorted);
 /*
 	if (getFeatureTree (). coreSynced && coreNonSingletons < getCoreSize ())
 	{
@@ -1092,10 +1092,10 @@ void Genome::qc () const
 	}
 */
 	
-	ASSERT (! singletons. intersects (getFeatureTree (). commonCore));
+	QC_ASSERT (! singletons. intersects (getFeatureTree (). commonCore));
 	
 	for (const string& attrName : nominals)
-	  ASSERT (contains (getFeatureTree (). nominal2values, attrName));
+	  QC_ASSERT (contains (getFeatureTree (). nominal2values, attrName));
 }
 
 
@@ -1295,10 +1295,10 @@ void Change::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (! tree. oneFeatureInTree);
-	ASSERT (valid ());
-	ASSERT (positive (improvement));
-	ASSERT (! targets. empty ());
+  QC_ASSERT (! tree. oneFeatureInTree);
+	QC_ASSERT (valid ());
+	QC_ASSERT (positive (improvement));
+	QC_ASSERT (! targets. empty ());
 }
 
 
@@ -1784,7 +1784,7 @@ void ChangeRoot::qc () const
     return;
 	Change::qc ();
 	
-	ASSERT (tree. allTimeZero);
+	QC_ASSERT (tree. allTimeZero);
 }
 
 
@@ -2380,21 +2380,21 @@ void FeatureTree::qc () const
     return;
 	Tree::qc ();
 		
-	ASSERT (! inputTreeFName. empty ());
+	QC_ASSERT (! inputTreeFName. empty ());
 
-	ASSERT (root);
-	ASSERT (root->graph == this);
+	QC_ASSERT (root);
+	QC_ASSERT (root->graph == this);
 	const Species* root_ = static_cast <const Phyl*> (root) -> asSpecies ();
-	ASSERT (root_);
-//ASSERT (nodes. size () <= numeric_limits<unsigned short>::max ());  // To fit Phyl::CoreEval::treeLen
+	QC_ASSERT (root_);
+//QC_ASSERT (nodes. size () <= numeric_limits<unsigned short>::max ());  // To fit Phyl::CoreEval::treeLen
 	if (! allTimeZero && featuresExist ())
   {
-    ASSERT (root_->time == getRootTime ());
+    QC_ASSERT (root_->time == getRootTime ());
     if (! emptySuperRoot)
     	for (const bool i : {false, true})
     	{
-    	  ASSERT (root_->weight [i] [  i] == 0);
-    	  ASSERT (root_->weight [i] [! i] == INF);
+    	  QC_ASSERT (root_->weight [i] [  i] == 0);
+    	  QC_ASSERT (root_->weight [i] [! i] == INF);
     	}
   }
 
@@ -2403,27 +2403,27 @@ void FeatureTree::qc () const
  	for (const DiGraph::Node* node : nodes)
  	{
  		const Phyl* p = static_cast <const Phyl*> (node);
- 		ASSERT ((bool) p->asStrain () == (bool) p->isTransient ());
- 		ASSERT (! indices. contains (p->index_init));
+ 		QC_ASSERT ((bool) p->asStrain () == (bool) p->isTransient ());
+ 		QC_ASSERT (! indices. contains (p->index_init));
  		indices << p->index_init;
  		if (const Genome* g = p->asGenome ())
  		  n += g->singletons. size ();
  	}
- 	ASSERT (n == globalSingletonsSize);
+ 	QC_ASSERT (n == globalSingletonsSize);
 
   if (allTimeZero || ! featuresExist ())
   { 
-    ASSERT (timeOptimWhole ());
-    ASSERT (isNan (lambda0)); 
-    ASSERT (isNan (time_init)); 
+    QC_ASSERT (timeOptimWhole ());
+    QC_ASSERT (isNan (lambda0)); 
+    QC_ASSERT (isNan (time_init)); 
   }
   else
   {
-    ASSERT (superRootCore. size () == features. size ());
-    ASSERT (isProb (timeOptimFrac));
-	  ASSERT (isProb (lambda0));
-	  ASSERT (lambda0 < 1 /*0.5*/);
-    ASSERT (time_init > 0);
+    QC_ASSERT (superRootCore. size () == features. size ());
+    QC_ASSERT (isProb (timeOptimFrac));
+	  QC_ASSERT (isProb (lambda0));
+	  QC_ASSERT (lambda0 < 1 /*0.5*/);
+    QC_ASSERT (time_init > 0);
 	}
 
 	Feature prevFeature;
@@ -2431,27 +2431,27 @@ void FeatureTree::qc () const
 	{
 	  const Feature f (features [i]);
 	  f. qc ();
-	  ASSERT (! Feature::nominalSingleton (f. name));
-		ASSERT (prevFeature. name < f. name);
+	  QC_ASSERT (! Feature::nominalSingleton (f. name));
+		QC_ASSERT (prevFeature. name < f. name);
 		prevFeature = f;
 	}
-	ASSERT (features. searchSorted);
+	QC_ASSERT (features. searchSorted);
 
-	ASSERT (geReal (len, len_min));
-	ASSERT (len_min >= 0);
+	QC_ASSERT (geReal (len, len_min));
+	QC_ASSERT (len_min >= 0);
 	
-	IMPLY (! features. empty (), genomeFeatures_ave > 0);
-	ASSERT (genomeFeatures_ave <= getTotalFeatures ());
+	QC_IMPLY (! features. empty (), genomeFeatures_ave > 0);
+	QC_ASSERT (genomeFeatures_ave <= getTotalFeatures ());
 	
-	ASSERT ((bool) distDistr. get () == (bool) depthDistr. get ());
+	QC_ASSERT ((bool) distDistr. get () == (bool) depthDistr. get ());
 	
 	if (coreSynced) 
 	{
 		if (! emptySuperRoot)
 			FFOR (size_t, i, root_->core. size ())
 			{
-			  ASSERT (root_->core [i] == root_->feature2parentCore (i));
-			  IMPLY (! allTimeZero && featuresExist (), root_->core [i] == superRootCore [i]);
+			  QC_ASSERT (root_->core [i] == root_->feature2parentCore (i));
+			  QC_IMPLY (! allTimeZero && featuresExist (), root_->core [i] == superRootCore [i]);
 			}
 	  if (! oneFeatureInTree)
 	  {

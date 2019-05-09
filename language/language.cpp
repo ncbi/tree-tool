@@ -85,44 +85,44 @@ void Alphabet::qc () const
   if (! qc_on)
     return;
 
-  ASSERT (size);
-  ASSERT (startCapital > 32);
-  ASSERT (startSmall >= startCapital + (int) size);
-  ASSERT (extraCapital. size () == extraSmall.size ());
+  QC_ASSERT (size);
+  QC_ASSERT (startCapital > 32);
+  QC_ASSERT (startSmall >= startCapital + (int) size);
+  QC_ASSERT (extraCapital. size () == extraSmall.size ());
   if (! extraCapital. empty ())
   { 
-    ASSERT (extraSmall [0] > extraCapital [0]);
+    QC_ASSERT (extraSmall [0] > extraCapital [0]);
     FOR (size_t, i, extraCapital. size ())
     {
-      ASSERT (extraCapital [i]);
-      ASSERT (! toSmall_ (extraCapital [i]));
-      ASSERT (! toSmall_ (extraSmall   [i]));
-      ASSERT (extraSmall [i] == extraCapital [i] + extraCapitalShift ());
+      QC_ASSERT (extraCapital [i]);
+      QC_ASSERT (! toSmall_ (extraCapital [i]));
+      QC_ASSERT (! toSmall_ (extraSmall   [i]));
+      QC_ASSERT (extraSmall [i] == extraCapital [i] + extraCapitalShift ());
     }
   }
   for (const Codepoint v : vowels)
   {
-    ASSERT (v);
-    ASSERT (toSmall (v) == v);
+    QC_ASSERT (v);
+    QC_ASSERT (toSmall (v) == v);
   }
   // delimiters
   Set<Codepoint> delimiterSet;
   for (const Codepoint d : delimiters)
   {
-    ASSERT (d);
-    ASSERT (! toSmall (d));
+    QC_ASSERT (d);
+    QC_ASSERT (! toSmall (d));
     delimiterSet << d;
   }
-  ASSERT (delimiters. size () == delimiterSet. size ());
+  QC_ASSERT (delimiters. size () == delimiterSet. size ());
   // names
-  ASSERT (names. size () == size + extraCapital. size ());
+  QC_ASSERT (names. size () == size + extraCapital. size ());
   Set<string> nameSet;
   for (const string& name : names)
   {
-    ASSERT (! name. empty ());
+    QC_ASSERT (! name. empty ());
     nameSet << name;
   }
-  ASSERT (nameSet. size () == names. size());
+  QC_ASSERT (nameSet. size () == names. size());
 }
 
 

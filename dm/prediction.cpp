@@ -23,27 +23,27 @@ void LogisticRegression::qc () const
     return;
   Prediction::qc ();
     
-  ASSERT (& target);
+  QC_ASSERT (& target);
 
 #ifndef NDEBUG
   FOR (size_t, i, space. size ())
   {
     const NumAttr1* a = space [i];
-    ASSERT (a);
+    QC_ASSERT (a);
     if (! i)
     {
-      ASSERT (a->isConstant ());
-      ASSERT (a->getReal (0) == 1);
+      QC_ASSERT (a->isConstant ());
+      QC_ASSERT (a->getReal (0) == 1);
     }
   } 
   
-  ASSERT (beta. size () == space. size ());   
-  ASSERT (attrImportance. size () == space. size ());   
+  QC_ASSERT (beta. size () == space. size ());   
+  QC_ASSERT (attrImportance. size () == space. size ());   
   
   if (! isNan (negLogLikelihood_ave))
   {
-    ASSERT (! isNan (target_score_min));
-    ASSERT (! isNan (non_target_score_max));
+    QC_ASSERT (! isNan (target_score_min));
+    QC_ASSERT (! isNan (non_target_score_max));
   }
 #endif
 }
@@ -280,13 +280,13 @@ void LinearNumPrediction::qc () const
     return;
   Prediction::qc ();
 
-  ASSERT (& target);
+  QC_ASSERT (& target);
   
   for (const auto attr : space)
-    ASSERT (attr);
+    QC_ASSERT (attr);
 
   for (const Constraint* cons : constraints)
-    ASSERT (& cons->pred == this);
+    QC_ASSERT (& cons->pred == this);
 }
 
 
@@ -1151,7 +1151,7 @@ void EigensLinearRegression::qc () const
     return;
   ds. qc ();
   lr. qc ();
-  ASSERT (lr. beta. size () == 2);  
+  QC_ASSERT (lr. beta. size () == 2);  
 }
 
 

@@ -56,8 +56,8 @@ void Operation::qc () const
   if (! qc_on)
     return;
 	Named::qc ();
-	IMPLY (rank (), prefix () || infix ());
-	IMPLY (rank (), name. size () == 1);
+	QC_IMPLY (rank (), prefix () || infix ());
+	QC_IMPLY (rank (), name. size () == 1);
 }
 
 
@@ -629,10 +629,10 @@ void OperExpr::qc () const
 { 
   if (! qc_on)
     return;
-	ASSERT (oper. nArgs == args. size ());
+	QC_ASSERT (oper. nArgs == args. size ());
 	CONST_ITER (VectorOwn <Expr>, it, args)
   { 
-  	ASSERT (*it);
+  	QC_ASSERT (*it);
 	  (*it)->qc ();
 	}
 }

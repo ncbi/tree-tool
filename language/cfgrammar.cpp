@@ -37,12 +37,12 @@ void Sentence::qc () const
   if (! qc_on)
     return;
 
-  ASSERT (! seq. empty ());
+  QC_ASSERT (! seq. empty ());
   FOR (size_t, i, seq. size ())
   {
     const Position& pos = seq [i];
     if (pos. c == eot)
-      { ASSERT (i == 0 || i == seq. size () - 1); }
+      { QC_ASSERT (i == 0 || i == seq. size () - 1); }
     else
       pos. qc ();
   }
@@ -189,7 +189,7 @@ void Syntagm::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (begin. c != eot);
+  QC_ASSERT (begin. c != eot);
 }
 
 
@@ -248,9 +248,9 @@ void TerminalSyntagm::qc () const
     return;
   Syntagm::qc ();
 
-  ASSERT (symbol. asTerminal ());
-  ASSERT (findPtr (begin. terminal2syntagms, symbol. asTerminal ()));
-  ASSERT (& begin != & end);
+  QC_ASSERT (symbol. asTerminal ());
+  QC_ASSERT (findPtr (begin. terminal2syntagms, symbol. asTerminal ()));
+  QC_ASSERT (& begin != & end);
 }
 
 
@@ -286,19 +286,19 @@ void NonTerminalSyntagm::qc () const
     return;
   Syntagm::qc ();
 
-  ASSERT (symbol. asNonTerminal ());
-  ASSERT (findPtr (begin. nonTerminal2syntagms, symbol. asNonTerminal ()));
-  ASSERT (& symbol == & rule. lhs);
-  ASSERT (children. size () == rule. rhs. size ());
+  QC_ASSERT (symbol. asNonTerminal ());
+  QC_ASSERT (findPtr (begin. nonTerminal2syntagms, symbol. asNonTerminal ()));
+  QC_ASSERT (& symbol == & rule. lhs);
+  QC_ASSERT (children. size () == rule. rhs. size ());
   const Syntagm* prev = nullptr;
   FOR (size_t, i, children. size ())
   {
     const Syntagm* syntagm = children [i];
-    ASSERT (syntagm);
-    ASSERT (& syntagm->symbol == rule. rhs [i]);
-    IMPLY (i == 0, & syntagm->begin == & begin);
-    IMPLY (i == children. size () - 1, & syntagm->end == & end);
-    IMPLY (prev, & prev->end == & syntagm->begin);
+    QC_ASSERT (syntagm);
+    QC_ASSERT (& syntagm->symbol == rule. rhs [i]);
+    QC_IMPLY (i == 0, & syntagm->begin == & begin);
+    QC_IMPLY (i == children. size () - 1, & syntagm->end == & end);
+    QC_IMPLY (prev, & prev->end == & syntagm->begin);
   //syntagm->qc ();   // Invoked in Position::qc()
     prev = syntagm;
   }
@@ -351,44 +351,44 @@ void Position::qc () const
   if (! qc_on)
     return;
     
-  ASSERT (! terminal2syntagms. empty ()); 
+  QC_ASSERT (! terminal2syntagms. empty ()); 
   const Syntagm* prev = nullptr;
   for (const auto mapIt : terminal2syntagms)
   {
-    ASSERT (mapIt. first);
-    ASSERT (mapIt. second);
+    QC_ASSERT (mapIt. first);
+    QC_ASSERT (mapIt. second);
     Set<const Syntagm*> dSet;
     for (const Syntagm* syntagm : * mapIt. second)
     {
-      ASSERT (syntagm);
+      QC_ASSERT (syntagm);
       syntagm->qc ();
-      ASSERT (syntagm->asTerminalSyntagm ());
-      ASSERT (& syntagm->begin == this);
-      ASSERT (c == syntagm->symbol. asTerminal () -> c);
-      ASSERT (mapIt. first == & syntagm->symbol);
+      QC_ASSERT (syntagm->asTerminalSyntagm ());
+      QC_ASSERT (& syntagm->begin == this);
+      QC_ASSERT (c == syntagm->symbol. asTerminal () -> c);
+      QC_ASSERT (mapIt. first == & syntagm->symbol);
       dSet << syntagm;
-      IMPLY (prev, & prev->begin == & syntagm->begin);
+      QC_IMPLY (prev, & prev->begin == & syntagm->begin);
       prev = syntagm;
     }
-    ASSERT (dSet. size () == mapIt. second->size ());
+    QC_ASSERT (dSet. size () == mapIt. second->size ());
   }
   for (const auto mapIt : nonTerminal2syntagms)
   {
-    ASSERT (mapIt. first);
-    ASSERT (mapIt. second);
+    QC_ASSERT (mapIt. first);
+    QC_ASSERT (mapIt. second);
     Set<const Syntagm*> dSet;
     for (const Syntagm* syntagm : * mapIt. second)
     {
-      ASSERT (syntagm);
+      QC_ASSERT (syntagm);
       syntagm->qc ();
-      ASSERT (syntagm->asNonTerminalSyntagm ());
-      ASSERT (& syntagm->begin == this);
-      ASSERT (mapIt. first == & syntagm->symbol);
+      QC_ASSERT (syntagm->asNonTerminalSyntagm ());
+      QC_ASSERT (& syntagm->begin == this);
+      QC_ASSERT (mapIt. first == & syntagm->symbol);
       dSet << syntagm;
-      IMPLY (prev, & prev->begin == & syntagm->begin);
+      QC_IMPLY (prev, & prev->begin == & syntagm->begin);
       prev = syntagm;
     }
-    ASSERT (dSet. size () == mapIt. second->size ());
+    QC_ASSERT (dSet. size () == mapIt. second->size ());
   }
 }
 
@@ -446,8 +446,8 @@ void Rule::Occurrence::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (*rhsIt);
-  ASSERT (rhsIt - rule. rhs. begin () >= 0);
+  QC_ASSERT (*rhsIt);
+  QC_ASSERT (rhsIt - rule. rhs. begin () >= 0);
 }
 
 
@@ -563,21 +563,21 @@ void Rule::qc () const
     return;
   Root::qc ();
 
-  ASSERT (! rhs. contains (nullptr));
-  IMPLY (empty (), isErasable ());
-  IMPLY (isErasable (), isTerminable ());
-  IMPLY (isErasable (), lhs. erasable);
-  IMPLY (isErasable (), erasable);
-  ASSERT (firstTerminals. empty () == erasable);
-  ASSERT (! firstTerminals. contains (nullptr));
-  ASSERT (singleRhs. size () == rhs. size ());
+  QC_ASSERT (! rhs. contains (nullptr));
+  QC_IMPLY (empty (), isErasable ());
+  QC_IMPLY (isErasable (), isTerminable ());
+  QC_IMPLY (isErasable (), lhs. erasable);
+  QC_IMPLY (isErasable (), erasable);
+  QC_ASSERT (firstTerminals. empty () == erasable);
+  QC_ASSERT (! firstTerminals. contains (nullptr));
+  QC_ASSERT (singleRhs. size () == rhs. size ());
 #if 0
   for (const Symbol* s : rhs)
-    ASSERT (lhs. grammar == s->grammar);
+    QC_ASSERT (lhs. grammar == s->grammar);
 #endif
 
   // Non-redundant
-  IMPLY (rhs. size () == 1, & lhs != rhs [0]);
+  QC_IMPLY (rhs. size () == 1, & lhs != rhs [0]);
 }
 
 
@@ -835,19 +835,19 @@ void Symbol::qc () const
     return;
   Named::qc ();
     
-  ASSERT (! isLeft  (name, "["));
-  ASSERT (! isRight (name, "]"));
+  QC_ASSERT (! isLeft  (name, "["));
+  QC_ASSERT (! isRight (name, "]"));
 
-  IMPLY (erasable, terminable);
+  QC_IMPLY (erasable, terminable);
 
 //IMPLY (! grammar, asGrammar());
   for (const Rule::Occurrence ro : ruleOccurrences)
   {
     ro. qc ();
-    ASSERT (ro. getSymbol () == this);
+    QC_ASSERT (ro. getSymbol () == this);
   }
 
-  ASSERT (! terminals. contains (nullptr));
+  QC_ASSERT (! terminals. contains (nullptr));
   for (const Rule::Occurrence ro : firstROs)
     ro. qc ();
   for (const Rule::Occurrence ro : lastROs)
@@ -855,43 +855,43 @@ void Symbol::qc () const
   bool found = false;
   for (const Symbol* s : getFirstSymbols ())
   {
-    ASSERT (s);
-  //ASSERT (s->grammar == grammar);
+    QC_ASSERT (s);
+  //QC_ASSERT (s->grammar == grammar);
     if (const Terminal* t = s->asTerminal ())
     {
       found = true;
-      ASSERT (terminals. contains (t));
+      QC_ASSERT (terminals. contains (t));
     }
   }
   // Non-redundant
-  ASSERT (/*(bool) grammar ==*/ found)
+  QC_ASSERT (/*(bool) grammar ==*/ found)
 
   found = false;
   for (const Symbol* s : getLastSymbols ())
   {
-    ASSERT (s);
-  //ASSERT (s->grammar == grammar);
+    QC_ASSERT (s);
+  //QC_ASSERT (s->grammar == grammar);
     if (const Terminal* t = s->asTerminal ())
     {
       found = true;
-      ASSERT (terminals. contains (t));
+      QC_ASSERT (terminals. contains (t));
     }
   }
   // Non-redundant
-  ASSERT (/*(bool) grammar ==*/ found)
+  QC_ASSERT (/*(bool) grammar ==*/ found)
 
-  ASSERT (! terminals. contains (nullptr));
+  QC_ASSERT (! terminals. contains (nullptr));
 
   // Non-redundant
   for (const bool out : {false, true})
   {
-    IMPLY (name != NonTerminal::sigmaS, ! neighbors [out]. empty ());
-    ASSERT (! neighbors [out]. contains (nullptr));
+    QC_IMPLY (name != NonTerminal::sigmaS, ! neighbors [out]. empty ());
+    QC_ASSERT (! neighbors [out]. contains (nullptr));
   }
 
 
-  ASSERT (! replacements. contains (nullptr));
-  ASSERT (replacements. contains (this));
+  QC_ASSERT (! replacements. contains (nullptr));
+  QC_ASSERT (replacements. contains (this));
 }
 
 
@@ -1055,14 +1055,14 @@ void Terminal::qc () const
 
 //if (grammar)
   {
-    ASSERT (! erasable);
-    ASSERT (terminable);
-    ASSERT (firstROs. empty ());
-    ASSERT (lastROs. empty ());
-    ASSERT (terminals. size () == 1);
-    ASSERT (* terminals. begin () == this);
+    QC_ASSERT (! erasable);
+    QC_ASSERT (terminable);
+    QC_ASSERT (firstROs. empty ());
+    QC_ASSERT (lastROs. empty ());
+    QC_ASSERT (terminals. size () == 1);
+    QC_ASSERT (* terminals. begin () == this);
     for (const bool out : {false, true})
-      ASSERT (Set<Rule::Occurrence> (terminalNeighbors [out]) == ruleOccurrences);
+      QC_ASSERT (Set<Rule::Occurrence> (terminalNeighbors [out]) == ruleOccurrences);
   }
 }
 
@@ -1096,18 +1096,18 @@ void NonTerminal::qc () const
     return;
   Symbol::qc ();
 
-  ASSERT (isAlpha (name [0]));
+  QC_ASSERT (isAlpha (name [0]));
 
-//ASSERT (grammar);
+//QC_ASSERT (grammar);
   size_t leftRecursive = 0;
   size_t rightRecursive = 0;
   size_t nonRecursive = 0;
   Set<const Rule*> ruleSet;
   for (const Rule* r : lhsRules)
   {
-    ASSERT (r);
+    QC_ASSERT (r);
     r->qc ();
-    ASSERT (& r->lhs == this);
+    QC_ASSERT (& r->lhs == this);
     ruleSet << r;
     if (r->isLeftRecursive ())
       leftRecursive++;
@@ -1116,50 +1116,50 @@ void NonTerminal::qc () const
     else
       nonRecursive++;
   }
-  ASSERT (ruleSet. size () == lhsRules. size ());
+  QC_ASSERT (ruleSet. size () == lhsRules. size ());
   // Non-redundant
-  IMPLY (leftRecursive, nonRecursive);
-  IMPLY (rightRecursive, nonRecursive);
+  QC_IMPLY (leftRecursive, nonRecursive);
+  QC_IMPLY (rightRecursive, nonRecursive);
 
-//ASSERT (terminal2rules [false]. size () == terminal2rules [true] . size ());
+//QC_ASSERT (terminal2rules [false]. size () == terminal2rules [true] . size ());
   Set<const Rule*> all;
   for (const bool b : {false, true})
     for (const auto& it : terminal2rules [b])
     {
       const Terminal* t = it. first;
-      ASSERT (t);
-    //ASSERT (t->grammar == grammar);
+      QC_ASSERT (t);
+    //QC_ASSERT (t->grammar == grammar);
       const VectorPtr<Rule>& rules = it. second;
       Set<const Rule*> s;
       s. insertAll (rules);
-      ASSERT (s. size () == rules. size ());
+      QC_ASSERT (s. size () == rules. size ());
       for (const Rule* r : rules)
       {
-        ASSERT (r);
-      //ASSERT (r->lhs. grammar == grammar);
-        ASSERT (! r->erasable);
-        ASSERT (r->isLeftRecursive () == (bool) b);
+        QC_ASSERT (r);
+      //QC_ASSERT (r->lhs. grammar == grammar);
+        QC_ASSERT (! r->erasable);
+        QC_ASSERT (r->isLeftRecursive () == (bool) b);
       }
       all << s;
     }
   Set<const Rule*> s;
   s. insertAll (erasableRules);
-  ASSERT (s. size () == erasableRules. size ());
+  QC_ASSERT (s. size () == erasableRules. size ());
   for (const Rule* r : erasableRules)
   {
-    ASSERT (r);
-  //ASSERT (r->lhs. grammar == grammar);
-    ASSERT (r->erasable);
-    ASSERT (! r->isLeftRecursive ());  // Otherwise dummy left-recursivity
+    QC_ASSERT (r);
+  //QC_ASSERT (r->lhs. grammar == grammar);
+    QC_ASSERT (r->erasable);
+    QC_ASSERT (! r->isLeftRecursive ());  // Otherwise dummy left-recursivity
     all << r;
   }
-  ASSERT (all == ruleSet);
+  QC_ASSERT (all == ruleSet);
 
-  IMPLY (erasable, ! erasableRules. empty ());
+  QC_IMPLY (erasable, ! erasableRules. empty ());
 
   // Non-redundant
-  ASSERT (! lhsRules. empty ());  
-  IMPLY (lhsRules. size () == 1, ! lhsRules [0] -> empty ());
+  QC_ASSERT (! lhsRules. empty ());  
+  QC_IMPLY (lhsRules. size () == 1, ! lhsRules [0] -> empty ());
 #if 0
   if (isRoot () != isTransient ())
   {
@@ -1167,9 +1167,9 @@ void NonTerminal::qc () const
     ERROR;
   }
 #endif
-  IMPLY (getEmptyRule (), lhsRules. size () > 1);
-  ASSERT (! firstROs. empty ());
-  ASSERT (! lastROs. empty ());
+  QC_IMPLY (getEmptyRule (), lhsRules. size () > 1);
+  QC_ASSERT (! firstROs. empty ());
+  QC_ASSERT (! lastROs. empty ());
 }
 
 
@@ -1396,9 +1396,9 @@ void Letter::qc () const
     return;
   Terminal::qc ();
 
-  ASSERT (grammar);
-  ASSERT (! endOfSentence (c));
-  ASSERT (! erasable);
+  QC_ASSERT (grammar);
+  QC_ASSERT (! endOfSentence (c));
+  QC_ASSERT (! erasable);
 }
 #endif
 
@@ -1412,16 +1412,16 @@ void SymbolTree::qc () const
 {
   if (! qc_on)
     return;
-  IMPLY (children. empty (), ! rules. empty ());
+  QC_IMPLY (children. empty (), ! rules. empty ());
   for (const auto& it : children)
   {
-    ASSERT (it. first);
+    QC_ASSERT (it. first);
     const SymbolTree* st = it. second;
-    ASSERT (st);
+    QC_ASSERT (st);
     st->qc ();
   }
 
-  ASSERT (! rules. contains (nullptr));
+  QC_ASSERT (! rules. contains (nullptr));
 }
 
 
@@ -1739,22 +1739,22 @@ void Grammar::qc () const
     return;
 //Terminal::qc ();
 
-//ASSERT (grammar != this);
-  ASSERT (! symbols. empty ());
-  ASSERT (startSymbol);
-//ASSERT (symbols [0] == startSymbol);
+//QC_ASSERT (grammar != this);
+  QC_ASSERT (! symbols. empty ());
+  QC_ASSERT (startSymbol);
+//QC_ASSERT (symbols [0] == startSymbol);
 
   // eotSymbol
-  ASSERT (eotSymbol);
-//ASSERT (eotSymbol->ruleOccurrences. empty ());
+  QC_ASSERT (eotSymbol);
+//QC_ASSERT (eotSymbol->ruleOccurrences. empty ());
 
   Set<const Symbol*> symbolSet;
   Set<char> charSet;
   size_t terminals = 0;
   for (const Symbol* s : symbols)
   {
-    ASSERT (s);
-  //ASSERT (s->grammar == this);
+    QC_ASSERT (s);
+  //QC_ASSERT (s->grammar == this);
     try { s->qc (); }
       catch (...) { cout << s->name << endl; throw; }
     symbolSet << s;
@@ -1764,13 +1764,13 @@ void Grammar::qc () const
       charSet << let->c;
     }
     // Non-redundant
-    IMPLY (/*s != eotSymbol &&*/ s->ruleOccurrences. empty (), s == startSymbol);  
+    QC_IMPLY (/*s != eotSymbol &&*/ s->ruleOccurrences. empty (), s == startSymbol);  
   }
-  ASSERT (symbolSet. size () == symbols. size ());
-  ASSERT (charSet. size () == terminals);
+  QC_ASSERT (symbolSet. size () == symbols. size ());
+  QC_ASSERT (charSet. size () == terminals);
 
   for (const auto& it : char2terminal)
-    ASSERT (symbols. contains (it. second));      
+    QC_ASSERT (symbols. contains (it. second));      
 
   // Valid CF-grammar
   if (const Symbol* s = getNonReachable ())
@@ -1780,7 +1780,7 @@ void Grammar::qc () const
 
 #if 0
   for (const Rule* r : symbolTree. rules)
-    ASSERT (r->erasable);
+    QC_ASSERT (r->erasable);
   symbolTree. qc ();
 #endif
 }
@@ -2456,8 +2456,8 @@ void ROGraph::Arc::qc () const
     return;
   DiGraph::Arc::qc ();
     
-  ASSERT (rhs_pos1 < rhs_pos2)
-  ASSERT (rhs_pos2 < rule. rhs. size ());
+  QC_ASSERT (rhs_pos1 < rhs_pos2)
+  QC_ASSERT (rhs_pos2 < rule. rhs. size ());
 }
 
 

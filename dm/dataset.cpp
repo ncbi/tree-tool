@@ -27,9 +27,9 @@ void Obj::qc () const
     return;
   Root::qc ();
 		
-  IMPLY (! name. empty (), goodName (name));
-  ASSERT (mult >= 0.0); 
-  ASSERT (mult < INF);
+  QC_IMPLY (! name. empty (), goodName (name));
+  QC_ASSERT (mult >= 0.0); 
+  QC_ASSERT (mult < INF);
 }
 
 
@@ -94,7 +94,7 @@ void Attr::qc () const
     return;
   Root::qc ();
   
-  ASSERT (*dsIt == this);
+  QC_ASSERT (*dsIt == this);
 }
 
 
@@ -458,7 +458,7 @@ void RealAttr1::qc () const
 	NumAttr1::qc ();
 	
   // values[]
-  ASSERT (values. size () == ds. objs. size ());
+  QC_ASSERT (values. size () == ds. objs. size ());
 }
 
 
@@ -798,7 +798,7 @@ void PositiveAttr1::qc () const
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
-      ASSERT (values [i] >= 0);
+      QC_ASSERT (values [i] >= 0);
     }
 }
 
@@ -880,7 +880,7 @@ void ProbAttr1::qc () const
 
   // values[]
   FFOR (size_t, i, ds. objs. size ())
-    IMPLY (! isMissing (i), isProb (values [i]));
+    QC_IMPLY (! isMissing (i), isProb (values [i]));
 }
 
 
@@ -938,11 +938,11 @@ void IntAttr1::qc () const
 	NumAttr1::qc ();
 	
   // values[]
-  ASSERT (values. size () == ds. objs. size ());
+  QC_ASSERT (values. size () == ds. objs. size ());
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
-      ASSERT (finite (values [i]));
+      QC_ASSERT (finite (values [i]));
     }
 }
 
@@ -1064,7 +1064,7 @@ void ExtBoolAttr1::qc () const
     return;
 	BoolAttr1::qc ();
 	  
-  ASSERT (values. size () == ds. objs. size ());
+  QC_ASSERT (values. size () == ds. objs. size ());
 }
 
 
@@ -1113,7 +1113,7 @@ void CompactBoolAttr1::qc () const
     return;
 	BoolAttr1::qc ();
 	  
-  ASSERT (values. size () == ds. objs. size ());
+  QC_ASSERT (values. size () == ds. objs. size ());
 }
 
 
@@ -1157,7 +1157,7 @@ void NominAttr1::Dependence::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (isProb (pValue));
+  QC_ASSERT (isProb (pValue));
 }
       
       
@@ -1210,7 +1210,7 @@ void NominAttr1::qc () const
 	
 //ASSERT (! categories. empty ());
 	for (const string &cat : categories)
-	  ASSERT (! cat. empty ());
+	  QC_ASSERT (! cat. empty ());
 	  
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i) && ! ((*this) [i] < categories. size ()))
@@ -1219,9 +1219,9 @@ void NominAttr1::qc () const
       ERROR;
     }
     
-  ASSERT (categories. size () == categMap. size ());
+  QC_ASSERT (categories. size () == categMap. size ());
   FFOR (size_t, i, categories. size ())
-    ASSERT ((* categMap. find (categories [i])). second == i);
+    QC_ASSERT ((* categMap. find (categories [i])). second == i);
 }
 
 
@@ -1586,8 +1586,8 @@ void RealAttr2::qc () const
 	Attr2::qc ();
 	
   // matr[][]
-  ASSERT (matr. isSquare ());
-  ASSERT (matr. rowsSize (false) == ds. objs. size ());
+  QC_ASSERT (matr. isSquare ());
+  QC_ASSERT (matr. rowsSize (false) == ds. objs. size ());
 #if 0
   FFOR (size_t, row, ds. objs. size ())
   FFOR (size_t, col, ds. objs. size ())
@@ -1712,7 +1712,7 @@ void PositiveAttr2::qc () const
     FFOR (size_t, col, ds. objs. size ())
       if (! isMissing2 (row, col))
       {
-        ASSERT (get (row, col) >= 0);
+        QC_ASSERT (get (row, col) >= 0);
       }
 }
 
@@ -2162,7 +2162,7 @@ void Dataset::qc () const
   Set<string> attrNames;
   for (const Attr* attr : attrs)
   {
-    ASSERT (& attr->ds == this);
+    QC_ASSERT (& attr->ds == this);
     attr->qc ();
     if (! attr->name. empty () && attrNames. contains (attr->name))
     {
@@ -2172,8 +2172,8 @@ void Dataset::qc () const
     attrNames << attr->name;
   }
   
-  IMPLY (! name2objNum. empty (), name2objNum. size () == objs. size ());
-  ASSERT (attrs. size () == name2attr_. size ());
+  QC_IMPLY (! name2objNum. empty (), name2objNum. size () == objs. size ());
+  QC_ASSERT (attrs. size () == name2attr_. size ());
 }
 
 
@@ -2382,11 +2382,11 @@ void Sample::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (ds);
-  ASSERT (mult. size () == ds->objs. size ());
+  QC_ASSERT (ds);
+  QC_ASSERT (mult. size () == ds->objs. size ());
   for (const Real m : mult)
-    ASSERT (m >= 0.0);
-  ASSERT (positive (mult_sum));  
+    QC_ASSERT (m >= 0.0);
+  QC_ASSERT (positive (mult_sum));  
 }
 
 
@@ -2637,8 +2637,8 @@ void Distribution::qc () const
 
   if (getParamSet ())
   {  	
-	  ASSERT (getDim ());
-	//IMPLY (analysis, getDim () == analysis->space. size ());  
+	  QC_ASSERT (getDim ());
+	//QC_IMPLY (analysis, getDim () == analysis->space. size ());  
 	}
 }
 
@@ -2809,7 +2809,7 @@ void Bernoulli::qc () const
     return;
 	Distribution::qc ();
 		
-  IMPLY (getParamSet (), isProb (p));
+  QC_IMPLY (getParamSet (), isProb (p));
 }
 
 
@@ -2858,9 +2858,9 @@ void Categorical::qc () const
 	  Prob s = 0;
 	  for (const Prob p : probs)
 	    s += p;
-	  ASSERT (eqReal (s, 1));
+	  QC_ASSERT (eqReal (s, 1));
 	
-		ASSERT (eqReal (probSum [probSum. size () - 1], 1));	
+		QC_ASSERT (eqReal (probSum [probSum. size () - 1], 1));	
   }
 }
 
@@ -3004,10 +3004,10 @@ void UniDistribution::qc () const
 
   if (getParamSet ())
   {
-    ASSERT (loBound <= hiBound);
-    ASSERT (isProb (p_supp));
-    ASSERT (isProb (p_ltSupp));
-    ASSERT (isProb (p_supp + p_ltSupp));
+    QC_ASSERT (loBound <= hiBound);
+    QC_ASSERT (isProb (p_supp));
+    QC_ASSERT (isProb (p_ltSupp));
+    QC_ASSERT (isProb (p_supp + p_ltSupp));
   }
   
 #if 0
@@ -3022,8 +3022,8 @@ void UniDistribution::qc () const
   		 )
 		  for (Iterator it (*analysis); it ();)  
 		  {
-		   	ASSERT (geReal ((*attr) [*it], lo));
-		   	ASSERT (leReal ((*attr) [*it], hi));  
+		   	QC_ASSERT (geReal ((*attr) [*it], lo));
+		   	QC_ASSERT (leReal ((*attr) [*it], hi));  
 		   	  // Binomial::n in a Mixture ??
 		  }
   }
@@ -3043,8 +3043,8 @@ void DiscreteDistribution::qc () const
 		
   if (getParamSet ())
   {
-  	IMPLY (loBound != -INF, isInteger (loBound));
-  	IMPLY (hiBound !=  INF, isInteger (hiBound));
+  	QC_IMPLY (loBound != -INF, isInteger (loBound));
+  	QC_IMPLY (hiBound !=  INF, isInteger (hiBound));
   }
 }
 
@@ -3091,11 +3091,11 @@ void Binomial::qc () const
     return;
 	DiscreteDistribution::qc ();		
 		
-	ASSERT (n >= 0);
+	QC_ASSERT (n >= 0);
   if (getParamSet ())
   {
-    ASSERT (n > 0);
-	  ASSERT (isProb (p));
+    QC_ASSERT (n > 0);
+	  QC_ASSERT (isProb (p));
 	}
 
 	bernoulli. qc ();
@@ -3312,8 +3312,8 @@ void UniformDiscrete::qc () const
 		
   if (getParamSet ())
   {
-  	ASSERT (stdBounds ());  // ??
-  	ASSERT (min <= max);
+  	QC_ASSERT (stdBounds ());  // ??
+  	QC_ASSERT (min <= max);
   }
 }
 
@@ -3330,8 +3330,8 @@ void Geometric::qc () const
 
   if (getParamSet ())
   {
-    ASSERT (stdBounds ());  // ??
-    ASSERT (isProb (p));
+    QC_ASSERT (stdBounds ());  // ??
+    QC_ASSERT (isProb (p));
   }
 }
 
@@ -3376,9 +3376,9 @@ void Zipf::qc () const
 
   if (getParamSet ())
   {
-    ASSERT (alpha > 1);
+    QC_ASSERT (alpha > 1);
   //IMPLY (hiBound == INF, alpha > 1);  
-  	ASSERT (c > 0);
+  	QC_ASSERT (c > 0);
   }
   
 	cat. qc ();
@@ -3529,7 +3529,7 @@ void LocScaleDistribution::qc () const
     return;
   ContinuousDistribution::qc ();
 
-  IMPLY (! isNan (scale), scale >= 0);
+  QC_IMPLY (! isNan (scale), scale >= 0.0);
 }
 
 
@@ -3537,7 +3537,7 @@ void LocScaleDistribution::qc () const
 
 // Normal
 
-const Real Normal::coeff = log (2 * pi);
+const Real Normal::coeff = log (2.0 * pi);
 	
 	
 
@@ -3547,7 +3547,7 @@ void Normal::qc () const
     return;
 	LocScaleDistribution::qc ();
 
-	IMPLY (getParamSet (), stdBounds ());  // ??
+	QC_IMPLY (getParamSet (), stdBounds ());  // ??
 }
 	
 	
@@ -3710,9 +3710,9 @@ void Exponential::qc () const
 
 	if (getParamSet ())
 	{
-	  ASSERT (stdBounds ());  // ??
-  	ASSERT (loc >= 0);
-  	ASSERT (scale == loc);
+	  QC_ASSERT (stdBounds ());  // ??
+  	QC_ASSERT (loc >= 0);
+  	QC_ASSERT (scale == loc);
   }
 }
 	
@@ -3747,7 +3747,7 @@ void Cauchy::qc () const
     return;
 	LocScaleDistribution::qc ();
 
-	IMPLY (getParamSet (), stdBounds ());  // ??
+	QC_IMPLY (getParamSet (), stdBounds ());  // ??
 }
 
 
@@ -3844,8 +3844,8 @@ void Beta1::qc () const
 
   if (getParamSet ())
   {
-  	ASSERT (stdBounds ());  // ??
-  	ASSERT (alpha > 0);
+  	QC_ASSERT (stdBounds ());  // ??
+  	QC_ASSERT (alpha > 0);
   }
 }
 
@@ -3878,8 +3878,8 @@ void UniKernel::Point::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (! isNan (value));
-  ASSERT (positive (mult));
+  QC_ASSERT (! isNan (value));
+  QC_ASSERT (positive (mult));
 }
 
 
@@ -3891,20 +3891,20 @@ void UniKernel::qc () const
   ContinuousDistribution::qc ();
     
     
-  ASSERT (analysis);
-  ASSERT (positive (analysis->sample. mult_sum));
-  ASSERT (points.  size () <= analysis->sample. size ());
-  ASSERT (multSum. size () <= analysis->sample. size ());
-  ASSERT (points. size () == multSum. size ());
-  ASSERT (! points. empty ());
+  QC_ASSERT (analysis);
+  QC_ASSERT (positive (analysis->sample. mult_sum));
+  QC_ASSERT (points.  size () <= analysis->sample. size ());
+  QC_ASSERT (multSum. size () <= analysis->sample. size ());
+  QC_ASSERT (points. size () == multSum. size ());
+  QC_ASSERT (! points. empty ());
 
 
   if (getParamSet ())
   {
-    ASSERT (! isNan (attr_min));
-    ASSERT (! isNan (attr_max));
-    ASSERT (getRange () >= 0);
-    ASSERT (isProb (uniform_prob));
+    QC_ASSERT (! isNan (attr_min));
+    QC_ASSERT (! isNan (attr_max));
+    QC_ASSERT (getRange () >= 0);
+    QC_ASSERT (isProb (uniform_prob));
     
     Real prevValue = NaN;
     for (const Point& p : points)
@@ -3917,13 +3917,13 @@ void UniKernel::qc () const
     Real prevMult = NaN;
     for (const Real& mult : multSum)
     {
-      ASSERT (positive (mult));
-      IMPLY (! isNan (prevMult), prevMult < mult);      
+      QC_ASSERT (positive (mult));
+      QC_IMPLY (! isNan (prevMult), prevMult < mult);      
       prevMult = mult;
     }
 
-    ASSERT (halfWindow >= 0);
-    ASSERT (positive (halfWindow) == positive (getRange ()));
+    QC_ASSERT (halfWindow >= 0);
+    QC_ASSERT (positive (halfWindow) == positive (getRange ()));
   }
 }
 
@@ -4188,8 +4188,8 @@ void MultiDistribution::qc () const
     
   if (getParamSet ())
   {
-    ASSERT (variable. size () == getDim ());
-    ASSERT (x_field. size () == getDim ());
+    QC_ASSERT (variable. size () == getDim ());
+    QC_ASSERT (x_field. size () == getDim ());
   }
 }
 
@@ -4220,34 +4220,34 @@ void MultiNormal::qc () const
 
   if (getParamSet ())
   {  	
-	  ASSERT (mu. size () == getDim ());
-	  ASSERT (mu. defined ());
+	  QC_ASSERT (mu. size () == getDim ());
+	  QC_ASSERT (mu. defined ());
 	  
-	  ASSERT (sigmaExact. defined ());
-	  ASSERT (sigmaExact. isSimilarity ());
-	  ASSERT (sigmaExact. rowsSize (false) == getDim ());
-	  ASSERT (sigmaExact. psd);
+	  QC_ASSERT (sigmaExact. defined ());
+	  QC_ASSERT (sigmaExact. isSimilarity ());
+	  QC_ASSERT (sigmaExact. rowsSize (false) == getDim ());
+	  QC_ASSERT (sigmaExact. psd);
 
-	  ASSERT (sigmaInflated. defined ());
-	  ASSERT (sigmaInflated. isSimilarity ());
-	  ASSERT (sigmaInflated. rowsSize (false) == getDim ());
-	  ASSERT (sigmaInflated. psd);
+	  QC_ASSERT (sigmaInflated. defined ());
+	  QC_ASSERT (sigmaInflated. isSimilarity ());
+	  QC_ASSERT (sigmaInflated. rowsSize (false) == getDim ());
+	  QC_ASSERT (sigmaInflated. psd);
 
-	  ASSERT (variance_min. size () == getDim ());
-    ASSERT (variance_min. defined ());
-	  ASSERT (variance_min. min () >= 0);
+	  QC_ASSERT (variance_min. size () == getDim ());
+    QC_ASSERT (variance_min. defined ());
+	  QC_ASSERT (variance_min. min () >= 0);
 	  
-	  IMPLY (variance_min. min () == 0, sigmaExact. maxAbsDiff (false, sigmaInflated, false) == 0);
+	  QC_IMPLY (variance_min. min () == 0, sigmaExact. maxAbsDiff (false, sigmaInflated, false) == 0);
 
     if (coeff != INF)
     { 
-  	  ASSERT (sigmaInv. defined ());
-  	  ASSERT (sigmaInv. isSimilarity ());
-  	  ASSERT (sigmaInv. rowsSize (false) == getDim ());
-  	  ASSERT (sigmaInv. psd);
+  	  QC_ASSERT (sigmaInv. defined ());
+  	  QC_ASSERT (sigmaInv. isSimilarity ());
+  	  QC_ASSERT (sigmaInv. rowsSize (false) == getDim ());
+  	  QC_ASSERT (sigmaInv. psd);
   	}
 
-	  ASSERT (zs. size () == getDim ());
+	  QC_ASSERT (zs. size () == getDim ());
 	}
 
 	for (const Normal& n : zs)
@@ -4538,9 +4538,9 @@ void Mixture::Component::qc () const
 {
   if (! qc_on)
     return;
-	ASSERT (distr. get ());
+	QC_ASSERT (distr. get ());
 	distr->qc ();
-	ASSERT (isProb (prob));
+	QC_ASSERT (isProb (prob));
 }
 
 
@@ -4616,37 +4616,37 @@ void Mixture::qc () const
 	if (! getParamSet ())
   	return;
 
-	Prob s = 0;
+	Prob s = 0.0;
 	const Distribution* distr0 = components [0] -> distr. get ();
 	const bool discrete = distr0->asDiscreteDistribution ();
 	const size_t objs = getAnalysis () ? getAnalysis () -> sample. mult. size () : 0;
 	for (const Component* comp : components)
 	{
 		comp->qc ();
-	  ASSERT (comp->distr->getAnalysis () == getAnalysis ());
-		ASSERT ((bool) comp->distr->asDiscreteDistribution () == discrete);
-		ASSERT (comp->distr->getDim () == getDim ());
+	  QC_ASSERT (comp->distr->getAnalysis () == getAnalysis ());
+		QC_ASSERT ((bool) comp->distr->asDiscreteDistribution () == discrete);
+		QC_ASSERT (comp->distr->getDim () == getDim ());
 	  const UniDistribution* u = comp->distr->asUniDistribution ();
     if (const UniDistribution* u0 = distr0->asUniDistribution ())
 		{
-			ASSERT (u);
-			ASSERT (eqReal (u0->loBound, u->loBound));
-			ASSERT (eqReal (u0->hiBound, u->hiBound));
+			QC_ASSERT (u);
+			QC_ASSERT (eqReal (u0->loBound, u->loBound));
+			QC_ASSERT (eqReal (u0->hiBound, u->hiBound));
 		}
 		else
-		  { ASSERT (! u); }
-		ASSERT (comp->objProb. size () == objs);
-		IMPLY (comp->distr->getAnalysis (), objs == comp->distr->getAnalysis () -> sample. mult. size ());
+		  { QC_ASSERT (! u); }
+		QC_ASSERT (comp->objProb. size () == objs);
+		QC_IMPLY (comp->distr->getAnalysis (), objs == comp->distr->getAnalysis () -> sample. mult. size ());
 	  s += comp->prob;      
 	}
-	ASSERT (eqReal (s, 1.0));
+	QC_ASSERT (eqReal (s, 1.0));
 	
   FOR (size_t, objNum, objs)  
   {
-    Prob objS = 0;
+    Prob objS = 0.0;
   	for (const Component* comp : components)
   	  objS += comp->objProb [objNum];
-  	IMPLY (! isNan (objS), eqReal (objS, 1));
+  	QC_IMPLY (! isNan (objS), eqReal (objS, 1.0));
   }
 	
 	cat. qc ();
@@ -5078,13 +5078,13 @@ void PrinComp::qc () const
   P::qc ();
     
   mn. qc ();
-  ASSERT (space. size () == mn. getDim ());
-  IMPLY (mn. getAnalysis (), mn. getAnalysis () == this);
+  QC_ASSERT (space. size () == mn. getDim ());
+  QC_IMPLY (mn. getAnalysis (), mn. getAnalysis () == this);
   
 	eigens. qc ();
-	ASSERT (! isNan (eigens. explainedVarianceFrac));
-	ASSERT (eigens. getInitSize () == mn. getDim ());
-	ASSERT (eigens. getDim () <= mn. getDim ());
+	QC_ASSERT (! isNan (eigens. explainedVarianceFrac));
+	QC_ASSERT (eigens. getInitSize () == mn. getDim ());
+	QC_ASSERT (eigens. getDim () <= mn. getDim ());
 }
 
 
@@ -5361,10 +5361,10 @@ void Clustering::qc () const
    
   mixt. qc ();
   for (const Mixture::Component* c : mixt. components)
-  	ASSERT (c->distr->asMultiNormal ());
+  	QC_ASSERT (c->distr->asMultiNormal ());
 
-  ASSERT (getOutDim ()); 
-  ASSERT (variance_min. min () >= 0);
+  QC_ASSERT (getOutDim ()); 
+  QC_ASSERT (variance_min. min () >= 0);
 }
 
 
@@ -5970,26 +5970,26 @@ void Canonical::qc () const
     
   between. qc ();
   within. qc ();
-  ASSERT (between. getDim () == within. getDim ());
-  IMPLY (getOutDim (), choleskyInv. defined ());
+  QC_ASSERT (between. getDim () == within. getDim ());
+  QC_IMPLY (getOutDim (), choleskyInv. defined ());
 
   if (getOutDim ())
   {
-    ASSERT (basis. rowsSize (false) == between. getDim ());
-    ASSERT (basis. rowsSize (true) == eigenValues. size ());
-    ASSERT (basis_norm. equalLen (false, basis, false));
-    ASSERT (eigenValues. size () >= 1);
+    QC_ASSERT (basis. rowsSize (false) == between. getDim ());
+    QC_ASSERT (basis. rowsSize (true) == eigenValues. size ());
+    QC_ASSERT (basis_norm. equalLen (false, basis, false));
+    QC_ASSERT (eigenValues. size () >= 1);
 
     choleskyInv. qc ();
-    ASSERT (choleskyInv. isSquare ());
-    ASSERT (between. getDim () == choleskyInv. rowsSize (false));
+    QC_ASSERT (choleskyInv. isSquare ());
+    QC_ASSERT (between. getDim () == choleskyInv. rowsSize (false));
     basis. qc ();
-    ASSERT (basis. defined ());
+    QC_ASSERT (basis. defined ());
     basis_norm. qc ();
-    ASSERT (basis_norm. defined ());
+    QC_ASSERT (basis_norm. defined ());
     eigenValues. qc ();
     eigenValues. defined ();
-    ASSERT (positive (eigenValues. min ()));
+    QC_ASSERT (positive (eigenValues. min ()));
     
     if (false)  // --> getError () ??
     {
@@ -6022,9 +6022,9 @@ void Canonical::qc () const
         {
           const Real a = m. get (false, row, col);
           if (row == col) 
-            { ASSERT (eqReal (a, eigenValues [row], 1e-2)); }
+            { QC_ASSERT (eqReal (a, eigenValues [row], 1e-2)); }
           else
-            { ASSERT (eqReal (a, 0, 1e-1)); }
+            { QC_ASSERT (eqReal (a, 0, 1e-1)); }
         }   
     }
   }
@@ -6139,7 +6139,7 @@ void Mds::qc () const
   Analysis::qc ();
   
 	eigens. qc (); 
-	IMPLY (getOutDim (), ! isNan (eigens. explainedVarianceFrac));
+	QC_IMPLY (getOutDim (), ! isNan (eigens. explainedVarianceFrac));
 }
 
 
@@ -6224,10 +6224,10 @@ void PositiveAverageModel::Component::qc () const
 
 	Named::qc ();
 	
-	ASSERT (goodName (name));
-	ASSERT (coeff >= 0.0);
-	ASSERT (var >= 0.0);
-	IMPLY (coeff == 0.0, var == INF);
+	QC_ASSERT (goodName (name));
+	QC_ASSERT (coeff >= 0.0);
+	QC_ASSERT (var >= 0.0);
+	QC_IMPLY (coeff == 0.0, var == INF);
 }
 
 
@@ -6285,7 +6285,7 @@ void PositiveAverageModel::qc () const
 	if (! qc_on)
 		return;
 
-  ASSERT (outlierSEs >= 0.0);
+  QC_ASSERT (outlierSEs >= 0.0);
 	for (const Component& comp : components)
 		comp. qc ();
 }
@@ -6544,15 +6544,15 @@ void PositiveAverage::qc () const
 
   P::qc ();
   model. qc ();
-  ASSERT (model. components. size () == space. size ());
-//ASSERT (model. components. size () == outliers. size ());  
+  QC_ASSERT (model. components. size () == space. size ());
+//QC_ASSERT (model. components. size () == outliers. size ());  
   FFOR (size_t, i, space. size ())
   {
-    ASSERT (model. components [i]. name == space [i] -> name);
-  //ASSERT (outliers [i]. size () == sample. ds->objs. size ());
+    QC_ASSERT (model. components [i]. name == space [i] -> name);
+  //QC_ASSERT (outliers [i]. size () == sample. ds->objs. size ());
   }
-  ASSERT (averageAttr);
-  ASSERT (& averageAttr->ds == sample. ds);
+  QC_ASSERT (averageAttr);
+  QC_ASSERT (& averageAttr->ds == sample. ds);
 }
 
 

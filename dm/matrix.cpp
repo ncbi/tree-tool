@@ -187,7 +187,7 @@ void Determinant::qc () const
     return;
   LogReal::qc ();
     
-  ASSERT (size);
+  QC_ASSERT (size);
 }
 
 
@@ -301,8 +301,8 @@ void Matrix::qc () const
 {
   if (! qc_on)
     return;
-  ASSERT (data. size () == rowsSize_ * colsSize);
-  IMPLY (psd, isSymmetric ());
+  QC_ASSERT (data. size () == rowsSize_ * colsSize);
+  QC_IMPLY (psd, isSymmetric ());
 }
 
 
@@ -2628,7 +2628,7 @@ void Eigen::qc () const
     return;
   Root::qc ();
     
-  ASSERT (eqReal (getNorm2 (), 1));
+  QC_ASSERT (eqReal (getNorm2 (), 1));
 }
 
 
@@ -2873,12 +2873,12 @@ void Eigens::qc () const
 {
   if (! qc_on)
     return;
-	ASSERT (basis. rowsSize (true) == getDim ());
-	ASSERT (values. rowsSize (false) == getDim ());
+	QC_ASSERT (basis. rowsSize (true) == getDim ());
+	QC_ASSERT (values. rowsSize (false) == getDim ());
 	FFOR (size_t, i, basis. rowsSize (true))
 	{
-	  ASSERT (eqReal (basis. sumSqrRow (true, i), 1));
-	  IMPLY (psd, values [i] >= 0);
+	  QC_ASSERT (eqReal (basis. sumSqrRow (true, i), 1));
+	  QC_IMPLY (psd, values [i] >= 0);
 	}
   if (! leReal (totalExplainedFrac (), 1 + 1e-2))  // PAR
   {

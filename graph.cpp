@@ -48,10 +48,10 @@ void DiGraph::Node::qc () const
     return;
   Root::qc ();
     
-  IMPLY (graph, *graphIt == this);
+  QC_IMPLY (graph, *graphIt == this);
   if (! graph)
   	for (const bool b : {false, true})
-  	  ASSERT (arcs [b]. empty ());
+  	  QC_ASSERT (arcs [b]. empty ());
 }
 
 
@@ -376,8 +376,8 @@ void DiGraph::qc () const
   size_t arcs = 0;
   for (const Node* node : nodes)
   {
-    ASSERT (node);
-    ASSERT (node->graph == this);
+    QC_ASSERT (node);
+    QC_ASSERT (node->graph == this);
     nodes_ << node;
     try { node->qc (); }
       catch (const exception &e)
@@ -385,7 +385,7 @@ void DiGraph::qc () const
   	for (const bool b : {false, true})
       for (const Arc* arc : node->arcs [b])
       {
-        ASSERT (arc);
+        QC_ASSERT (arc);
         arcs_ [b] << arc;
         arcs++;
         if (b)
@@ -398,10 +398,10 @@ void DiGraph::qc () const
       throw runtime_error ("Duplicate name: " + node->getName ());
     names << node->getName ();
   }
-  ASSERT (nodes. size () == nodes_. size ());
+  QC_ASSERT (nodes. size () == nodes_. size ());
 	for (const bool b : {false, true})
-    ASSERT (2 * arcs_ [b]. size () == arcs);
-  ASSERT (arcs_ [false] == arcs_ [true]);
+    QC_ASSERT (2 * arcs_ [b]. size () == arcs);
+  QC_ASSERT (arcs_ [false] == arcs_ [true]);
 }
 
  
@@ -542,11 +542,11 @@ void Tree::TreeNode::qc () const
     
   if (graph)
   {
-    ASSERT (! (isLeafType () && isInteriorType ()));
-    IMPLY (isLeaf (), isLeafType ());
-    IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
+    QC_ASSERT (! (isLeafType () && isInteriorType ()));
+    QC_IMPLY (isLeaf (), isLeafType ());
+    QC_IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
   }
-  ASSERT (! contains (getName (), objNameSeparator));
+  QC_ASSERT (! contains (getName (), objNameSeparator));
 }
   
 
@@ -1241,7 +1241,7 @@ void Tree::qc () const
 	  {
 	    cout << "Multiple parents of " << node->getHumanName () << endl;
 	    const VectorPtr<DiGraph::Node> neighbors (node->getNeighborhood (true));
-	    ASSERT (neighbors. size () >= 2);
+	    QC_ASSERT (neighbors. size () >= 2);
 	    for (const DiGraph::Node* neighbor : neighbors)
 	      cout << " " << neighbor->getHumanName ();
 	    cout << endl << endl;
@@ -1260,11 +1260,11 @@ void Tree::qc () const
     if (n->isTransient ())
       transient = true;
 	}
-	ASSERT (! root == nodes. empty ());
-	IMPLY (root, getRoot (true) == root);
-	IMPLY (root, (nodes. size () > 1) == ! root->isLeaf ());
+	QC_ASSERT (! root == nodes. empty ());
+	QC_IMPLY (root, getRoot (true) == root);
+	QC_IMPLY (root, (nodes. size () > 1) == ! root->isLeaf ());
 	
-	IMPLY (! transient, nodes. size () <= 2 * root->getLeavesSize () - 1);
+	QC_IMPLY (! transient, nodes. size () <= 2 * root->getLeavesSize () - 1);
 }
 
 
