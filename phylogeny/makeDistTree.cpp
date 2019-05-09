@@ -605,7 +605,7 @@ struct ThisApplication : Application
       {
         cerr << "Finding closest outliers ..." << endl;
 	      tree->setLeafAbsCriterion (); 
-	      tree->setNodeClosestObjNum (); 
+	      tree->setNodeClosestDissimNum (); 
 	      Real outlier_min = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (1e-10, outlier_min));  // PAR  
 	      const ONumber on (cout, absCriterionDecimals, false);  
@@ -631,6 +631,8 @@ struct ThisApplication : Application
           }
           tree->reportErrors (cout);
         }
+        for (DiGraph::Node* node : tree->nodes)
+          static_cast <DTNode*> (node) -> closestDissimNum = dissims_max;
         cout << endl;
       }
       tree->qc ();
@@ -639,7 +641,7 @@ struct ThisApplication : Application
       if (! noqual)
       {
         tree->setNodeAbsCriterion ();  
-        tree->setNodeClosestObjNum ();
+        tree->setNodeClosestDissimNum ();
         tree->qc ();
       }
 
