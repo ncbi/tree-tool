@@ -102,24 +102,24 @@ void Triangle::qc () const
   if (! qc_on)
     return;
     
-  ASSERT (child);
-  ASSERT (child->graph);
+  QC_ASSERT (child);
+  QC_ASSERT (child->graph);
   for (const bool i : {false, true})
   {
     const Parent& p = parents [i];
-    ASSERT (p. leaf); 
-    ASSERT (p. leaf->graph);
-    ASSERT (child->getDiscernible () != p. leaf->getDiscernible ());
-    ASSERT (p. dissim > 0.0);
+    QC_ASSERT (p. leaf); 
+    QC_ASSERT (p. leaf->graph);
+    QC_ASSERT (child->getDiscernible () != p. leaf->getDiscernible ());
+    QC_ASSERT (p. dissim > 0.0);
   }
-  ASSERT (! (   child_hybrid 
-             && parents [false]. hybrid 
-             && parents [true].  hybrid 
-            )
-         );
-  ASSERT (parents [0]. leaf->getDiscernible () != parents [1]. leaf->getDiscernible ());
-  ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
-  ASSERT (hybridness >= DistTree_sp::hybridness_min);
+  QC_ASSERT (! (   child_hybrid 
+                && parents [false]. hybrid 
+                && parents [true].  hybrid 
+               )
+            );
+  QC_ASSERT (parents [0]. leaf->getDiscernible () != parents [1]. leaf->getDiscernible ());
+  QC_ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
+  QC_ASSERT (hybridness >= DistTree_sp::hybridness_min);
 }
 
 
@@ -220,10 +220,10 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
   ASSERT (DistTree_sp::hybridness_min > 1.0);
   ASSERT (triangles. empty ());
 
-  Vector<Neighbor> hybridParents;  hybridParents. reserve (parents [0]. leaf->pathObjNums. size ());
-  for (const uint objNum : parents [0]. leaf->pathObjNums)
+  Vector<Neighbor> hybridParents;  hybridParents. reserve (parents [0]. leaf->pathDissimNums. size ());
+  for (const uint dissimNum : parents [0]. leaf->pathDissimNums)
   {
-    const Dissim& dissim = tree. dissims [objNum];
+    const Dissim& dissim = tree. dissims [dissimNum];
     if (! dissim. validMult ())
       continue;
     if (dissim. type != dissimType)
@@ -235,9 +235,9 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
   hybridParents. sort ();  // --> unordered_set ??
   ASSERT (hybridParents. isUniq ());
 
-  for (const uint objNum : parents [1]. leaf->pathObjNums)
+  for (const uint dissimNum : parents [1]. leaf->pathDissimNums)
   {
-    const Dissim& dissim = tree. dissims [objNum];
+    const Dissim& dissim = tree. dissims [dissimNum];
     if (! dissim. validMult ())
       continue;
     if (dissim. type != dissimType)
@@ -401,9 +401,9 @@ void TriangleParentPair::qc () const
     return;
 
   for (const bool i : {false, true})  
-    ASSERT (parents [i]. leaf);
-  ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
-  ASSERT (parentsDissim > 0.0);
+    QC_ASSERT (parents [i]. leaf);
+  QC_ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
+  QC_ASSERT (parentsDissim > 0.0);
   
   if (triangles. empty ())
     return;
@@ -414,24 +414,24 @@ void TriangleParentPair::qc () const
   {
     tr. qc ();
     for (const bool i : {false, true})  
-      ASSERT (tr. parents [i]. leaf == parents [i]. leaf);
-    ASSERT (eqReal (parentsDissim, tr. parentsDissim ()));
+      QC_ASSERT (tr. parents [i]. leaf == parents [i]. leaf);
+    QC_ASSERT (eqReal (parentsDissim, tr. parentsDissim ()));
     if (first)
     {
       child_hybrid = tr. child_hybrid;
       first = false;
     }
     else
-      ASSERT (child_hybrid == tr. child_hybrid);
-    ASSERT (tr. dissimType == dissimType);
+      QC_ASSERT (child_hybrid == tr. child_hybrid);
+    QC_ASSERT (tr. dissimType == dissimType);
   }
   
-  ASSERT (& getBest ());
+  QC_ASSERT (& getBest ());
 
   for (const bool i : {false, true})  
-    ASSERT (parents [i]. classSize);
+    QC_ASSERT (parents [i]. classSize);
 
-  ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
+  QC_ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
 }
 
 
@@ -474,10 +474,10 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
   ASSERT (parentDissim > 0.0);
   ASSERT (DistTree_sp::hybridness_min > 1.0);
     
-  Vector<Neighbor> hybridParents;  hybridParents. reserve (child->pathObjNums. size ());
-  for (const uint objNum : child->pathObjNums)
+  Vector<Neighbor> hybridParents;  hybridParents. reserve (child->pathDissimNums. size ());
+  for (const uint dissimNum : child->pathDissimNums)
   {
-    const Dissim& dissim = tree. dissims [objNum];
+    const Dissim& dissim = tree. dissims [dissimNum];
     if (! dissim. validMult ())
       continue;
     if (dissim. type != dissimType)
@@ -490,9 +490,9 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
   ASSERT (hybridParents. isUniq ());
 
   size_t n = 0;
-  for (const uint objNum : parent->pathObjNums)
+  for (const uint dissimNum : parent->pathDissimNums)
   {
-    const Dissim& dissim = tree. dissims [objNum];
+    const Dissim& dissim = tree. dissims [dissimNum];
     if (! dissim. validMult ())
       continue;
     if (dissim. type != dissimType)
@@ -543,23 +543,23 @@ void DTNode::qc () const
 
   if (graph)
   {
-    ASSERT ((bool) getParent () == ! isNan (len));
+    QC_ASSERT ((bool) getParent () == ! isNan (len));
     if (! childrenDiscernible ())
     {
-      ASSERT (! DistTree_sp::variance_min);
-      ASSERT (! inDiscernible ());
+      QC_ASSERT (! DistTree_sp::variance_min);
+      QC_ASSERT (! inDiscernible ());
       for (const DiGraph::Arc* arc : arcs [false])
-        ASSERT (static_cast <const DTNode*> (arc->node [false]) -> inDiscernible ());
+        QC_ASSERT (static_cast <const DTNode*> (arc->node [false]) -> inDiscernible ());
     }
   }
   
-  IMPLY (! isNan (len), len >= 0);    
+  QC_IMPLY (! isNan (len), len >= 0);    
   if (! isNan (len) && paths && ! (errorDensity >= 0))
   {
     cout << len << ' ' << paths << ' ' << errorDensity << endl;
     ERROR;
   }
-  ASSERT (! contains (name, '\''));
+  QC_ASSERT (! contains (name, '\''));
 }
 
 
@@ -577,9 +577,9 @@ void DTNode::saveContent (ostream& os) const
     os << "  " << rel_errorS << "=" << getRelCriterion ();
   else if (! isNan (relCriterion))
     os << "  " << rel_errorS << "=" << relCriterion;
-	if (closestObjNum != dissims_max)
+	if (closestDissimNum != dissims_max)
 	{
-	  const Dissim& dissim = getDistTree (). dissims [closestObjNum];
+	  const Dissim& dissim = getDistTree (). dissims [closestDissimNum];
 	  os << "  " << closestS << "="        << dissim. leaf1->getName () 
 	                     << ':' << dissim. leaf2->getName ();
 	  os << "  " << closest_criterionS << "=" << dissim. getDeformation ();
@@ -739,7 +739,7 @@ void DTNode::setLca ()
 
 
 
-Vector<uint> DTNode::getLcaObjNums () 
+Vector<uint> DTNode::getLcaDissimNums () 
 {
   Vector<uint> lcaObjNums;  
   if (getDistTree (). dissims. empty ())
@@ -754,20 +754,20 @@ Vector<uint> DTNode::getLcaObjNums ()
   const VectorPtr<DiGraph::Node> children (getChildren ());
   FOR_REV (size_t, i, children. size ())
   {
-    Vector<uint>& childPathObjNums = const_static_cast <DTNode*> (children [i]) -> pathObjNums;
+    Vector<uint>& childPathObjNums = const_static_cast <DTNode*> (children [i]) -> pathDissimNums;
   #if 0
     // Faster for small n
-    for (const size_t objNum : childPathObjNums)
-      if (childDissims [objNum])
-        lcaObjNums << objNum;
+    for (const size_t dissimNum : childPathObjNums)
+      if (childDissims [dissimNum])
+        lcaObjNums << dissimNum;
       else
-        childDissims [objNum] = true;
+        childDissims [dissimNum] = true;
   #else
     childPathObjNums. sort ();
     FOR (size_t, j, i)
-      for (const uint objNum : static_cast <const DTNode*> (children [j]) -> pathObjNums)
-        if (childPathObjNums. containsFast (objNum))
-          lcaObjNums << objNum;
+      for (const uint dissimNum : static_cast <const DTNode*> (children [j]) -> pathDissimNums)
+        if (childPathObjNums. containsFast (dissimNum))
+          lcaObjNums << dissimNum;
   #endif
   }
         
@@ -783,13 +783,13 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
   IMPLY (depth_max, depth_max >= sparsingDepth);
   IMPLY (subtractDissims, asLeaf ());
 
-  unordered_map <const Steiner* /*lca*/, VectorPtr<Leaf>> lca2leaves;  lca2leaves. rehash (pathObjNums. size ());  
+  unordered_map <const Steiner* /*lca*/, VectorPtr<Leaf>> lca2leaves;  lca2leaves. rehash (pathDissimNums. size ());  
   if (subtractDissims)
   {
     // Time: ~ O(p/n) ~ O(log(n))
-    for (const uint objNum : pathObjNums)
+    for (const uint dissimNum : pathDissimNums)
     {
-      const Dissim& dissim = getDistTree (). dissims [objNum];
+      const Dissim& dissim = getDistTree (). dissims [dissimNum];
       if (! dissim. validMult ())
         continue;
       ASSERT (dissim. lca);
@@ -881,7 +881,7 @@ void Steiner::qc () const
     return;
   DTNode::qc ();
     
-  ASSERT (! isLeaf ()); 
+  QC_ASSERT (! isLeaf ()); 
 }
 
 
@@ -977,7 +977,7 @@ void Steiner::reverseParent (const Steiner* target,
     setParent (child);
     // Arc-specific data
     len  = child->len;
-    pathObjNums = child->pathObjNums;
+    pathDissimNums = child->pathDissimNums;
   }
 }
 
@@ -991,14 +991,14 @@ void Steiner::makeRoot (Steiner* ancestor2descendant)
   const DTNode* parent_new = static_cast <const DTNode*> (ancestor2descendant->getParent ());
   // Arc-specific data
   const auto len_new          = ancestor2descendant->len;
-  const auto pathObjNums_new  = ancestor2descendant->pathObjNums;
+  const auto pathObjNums_new  = ancestor2descendant->pathDissimNums;
   
   reverseParent (ancestor2descendant, nullptr);
 
   setParent (var_cast (parent_new));
   // Arc-specific data
   len          = len_new;
-  pathObjNums  = pathObjNums_new;
+  pathDissimNums  = pathObjNums_new;
 }
 
 
@@ -1023,9 +1023,6 @@ LeafCluster Steiner::getIndiscernibles ()
   
   LeafCluster leafCluster;  leafCluster. rehash (arcs [false]. size ());
 
-  if (childrenDiscernible ())
-    return leafCluster;
-
   VectorPtr<Leaf> children;  children. reserve (arcs [false]. size ());
   for (const DiGraph::Arc* arc : arcs [false])
   {
@@ -1037,29 +1034,20 @@ LeafCluster Steiner::getIndiscernibles ()
   children. sort ();
   ASSERT (children. isUniq ());
 
-  for (const DiGraph::Arc* arc : arcs [false])
-  {
-    const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
-    ASSERT (leaf);
-    for (const uint objNum : leaf->pathObjNums)
+  for (const Leaf* leaf : children)
+    for (const uint dissimNum : leaf->pathDissimNums)
     {
-      const Dissim& dissim = getDistTree (). dissims [objNum];
+      const Dissim& dissim = getDistTree (). dissims [dissimNum];
       if (   dissim. valid ()
           && dissim. target <= 0.0
-          && dissim. mult == INF
-          && children. containsFast (dissim. leaf1)
-          && children. containsFast (dissim. leaf2)
+        //&& dissim. mult == INF
+          && children. containsFast (dissim. getOtherLeaf (leaf))
          )
         var_cast (dissim. leaf1) -> DisjointCluster::merge (* var_cast (dissim. leaf2));
     }
-  }
 
-  for (const DiGraph::Arc* arc : arcs [false])
-  {
-    const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
-    ASSERT (leaf);
+  for (const Leaf* leaf : children)
     leafCluster [var_cast (leaf) -> DisjointCluster::getDisjointCluster ()] << leaf;
-  }
   
   return leafCluster;
 }
@@ -1136,30 +1124,30 @@ void Leaf::qc () const
     
   if (graph)
   {
-    ASSERT (getParent ());
-    ASSERT (isLeaf ()); 
+    QC_ASSERT (getParent ());
+    QC_ASSERT (isLeaf ()); 
     if (getParent () && discernible != static_cast <const DTNode*> (getParent ()) -> childrenDiscernible ())
     {
       cout << getName () << " " << discernible << " " << getParent () -> getName () 
                << " " << static_cast <const DTNode*> (getParent ()) -> childrenDiscernible () << endl;
       ERROR;
     }
-    for (const uint objNum : pathObjNums)
-      ASSERT (getDistTree (). dissims [objNum]. hasLeaf (this));
-    IMPLY (getDistTree (). subDepth, discernible);
+    for (const uint dissimNum : pathDissimNums)
+      QC_ASSERT (getDistTree (). dissims [dissimNum]. hasLeaf (this));
+    QC_IMPLY (getDistTree (). subDepth, discernible);
   }
 
-  ASSERT (! name. empty());
-  ASSERT (! isLeft (name, "0x"));
-  IMPLY (DistTree_sp::variance_min, discernible);
+  QC_ASSERT (! name. empty());
+  QC_ASSERT (! isLeft (name, "0x"));
+  QC_IMPLY (DistTree_sp::variance_min, discernible);
   if (! isNan (len) && ! discernible && len)
   {
     cout << getName () << " " << len << endl;
     ERROR;
   }  
-  ASSERT (getReprLeaf () == this);
+  QC_ASSERT (getReprLeaf () == this);
   
-  ASSERT (index < NO_INDEX);
+  QC_ASSERT (index < NO_INDEX);
 }
 
 
@@ -1177,9 +1165,9 @@ void Leaf::setLca ()
 {
   DTNode::setLca ();
 
-  for (const uint objNum : pathObjNums)
+  for (const uint dissimNum : pathDissimNums)
   {
-    const Leaf* other = getDissimOther (objNum);
+    const Leaf* other = getDissimOther (dissimNum);
     ASSERT (other != this);
     if (! other->graph)
       continue;
@@ -1189,7 +1177,7 @@ void Leaf::setLca ()
     ASSERT (lca);
     const Steiner* st = lca->asSteiner ();
     ASSERT (st);
-    const Dissim& dissim = getDistTree (). dissims [objNum];
+    const Dissim& dissim = getDistTree (). dissims [dissimNum];
     ASSERT (! dissim. lca);
     var_cast (dissim). lca = st;
   }
@@ -1197,9 +1185,9 @@ void Leaf::setLca ()
 
 
 
-const Leaf* Leaf::getDissimOther (size_t objNum) const
+const Leaf* Leaf::getDissimOther (size_t dissimNum) const
 { 
-  const Dissim& dissim = getDistTree (). dissims [objNum];
+  const Dissim& dissim = getDistTree (). dissims [dissimNum];
   ASSERT (dissim. hasLeaf (this));
   return dissim. leaf1 == this ? dissim. leaf2 : dissim. leaf1; 
 }
@@ -1292,10 +1280,10 @@ void Leaf::addHybridTriangles (Vector<Triangle> &triangles) const
   
   const Vector<Dissim>& dissims = getDistTree (). dissims;
 
-  Vector<Neighbor> neighbors;  neighbors. reserve (pathObjNums. size ());
-  for (const uint objNum1 : pathObjNums)
+  Vector<Neighbor> neighbors;  neighbors. reserve (pathDissimNums. size ());
+  for (const uint dissimNum1 : pathDissimNums)
   {
-    const Dissim& dissim1 = dissims [objNum1];
+    const Dissim& dissim1 = dissims [dissimNum1];
     if (! dissim1. validMult ())
       continue;
     const Leaf* parent1 = dissim1. getOtherLeaf (this);
@@ -1310,9 +1298,9 @@ void Leaf::addHybridTriangles (Vector<Triangle> &triangles) const
   for (const Neighbor& neighbor1 : neighbors)
   {
     const Leaf* parent1 = neighbor1. leaf;
-    for (const uint objNum2 : parent1->pathObjNums)
+    for (const uint dissimNum2 : parent1->pathDissimNums)
     {
-      const Dissim& dissim2 = dissims [objNum2];
+      const Dissim& dissim2 = dissims [dissimNum2];
       if (! dissim2. validMult ())
         continue;
       if (dissim2. type != neighbor1. dissimType)
@@ -1348,15 +1336,15 @@ void SubPath::qc () const
   if (! qc_on)
     return;
 
-  ASSERT (objNum != (uint) -1);
+  QC_ASSERT (dissimNum != (uint) -1);
   
-  ASSERT (node1);
-  ASSERT (node2);
-  ASSERT (node1 != node2);
-  ASSERT (node1->graph);
-  ASSERT (node1->graph == node2->graph);
+  QC_ASSERT (node1);
+  QC_ASSERT (node2);
+  QC_ASSERT (node1 != node2);
+  QC_ASSERT (node1->graph);
+  QC_ASSERT (node1->graph == node2->graph);
   
-  ASSERT (dist_hat_tails >= 0.0);
+  QC_ASSERT (dist_hat_tails >= 0.0);
 }
 
 
@@ -1379,52 +1367,52 @@ void Subgraph::qc () const
     return;
     
   // area
-  ASSERT (area. searchSorted);
+  QC_ASSERT (area. searchSorted);
   for (const Tree::TreeNode* node : area)
   {
-    ASSERT (node);
-    ASSERT (node->graph == & tree);
-    ASSERT (! static_cast <const DTNode*> (node) -> inDiscernible ());
+    QC_ASSERT (node);
+    QC_ASSERT (node->graph == & tree);
+    QC_ASSERT (! static_cast <const DTNode*> (node) -> inDiscernible ());
   }
     
   // boundary
-  ASSERT (boundary. size () >= 2);
-  ASSERT (boundary. searchSorted);
-  ASSERT (area. containsFastAll (boundary));
-  ASSERT ((area. size () == 2) == (area. size () == boundary. size ()));
+  QC_ASSERT (boundary. size () >= 2);
+  QC_ASSERT (boundary. searchSorted);
+  QC_ASSERT (area. containsFastAll (boundary));
+  QC_ASSERT ((area. size () == 2) == (area. size () == boundary. size ()));
   for (const Tree::TreeNode* node : boundary)
-    ASSERT (! boundary. containsFast (node->getParent ()));
+    QC_ASSERT (! boundary. containsFast (node->getParent ()));
 
-  ASSERT ((bool) area_root == (bool) area_underRoot);
+  QC_ASSERT ((bool) area_root == (bool) area_underRoot);
 
   if (area_root)
   {
     // area_root
-  //ASSERT (area_root->asSteiner ());
-    ASSERT (area_root->graph == & tree);
-    ASSERT (area. containsFast (area_root));
-    ASSERT (! area. containsFast (area_root->getParent ()));
-    ASSERT (boundary. containsFast (area_root));  
+  //QC_ASSERT (area_root->asSteiner ());
+    QC_ASSERT (area_root->graph == & tree);
+    QC_ASSERT (area. containsFast (area_root));
+    QC_ASSERT (! area. containsFast (area_root->getParent ()));
+    QC_ASSERT (boundary. containsFast (area_root));  
     // area_underRoot
-    ASSERT (area_underRoot->getParent () == area_root);
-    ASSERT (area. containsFast (area_underRoot));
-    ASSERT (! boundary. containsFast (area_underRoot));  
+    QC_ASSERT (area_underRoot->getParent () == area_root);
+    QC_ASSERT (area. containsFast (area_underRoot));
+    QC_ASSERT (! boundary. containsFast (area_underRoot));  
   }
 
   // subPaths
-  ASSERT (! subPaths. empty ());
+  QC_ASSERT (! subPaths. empty ());
   {
-    Vector<uint> objNums;  objNums. reserve (subPaths. size ());
+    Vector<uint> dissimNums;  dissimNums. reserve (subPaths. size ());
     for (const SubPath& subPath : subPaths)
     {
       subPath. qc ();
-      ASSERT (boundary. containsFast (subPath. node1));
-      ASSERT (boundary. containsFast (subPath. node2));
-      ASSERT (tree. dissims [subPath. objNum]. valid ());
-      objNums << subPath. objNum;
+      QC_ASSERT (boundary. containsFast (subPath. node1));
+      QC_ASSERT (boundary. containsFast (subPath. node2));
+      QC_ASSERT (tree. dissims [subPath. dissimNum]. valid ());
+      dissimNums << subPath. dissimNum;
     }
-    objNums. sort ();
-    ASSERT (objNums. isUniq ());
+    dissimNums. sort ();
+    QC_ASSERT (dissimNums. isUniq ());
   }
 }  
 
@@ -1534,17 +1522,17 @@ void Subgraph::finishSubPaths ()
   for (const Tree::TreeNode* node : boundary)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
-    const Vector<uint>& pathObjNums = boundary2pathObjNums (dtNode);
-    for (const uint objNum : pathObjNums)
+    const Vector<uint>& pathDissimNums = boundary2pathDissimNums (dtNode);
+    for (const uint dissimNum : pathDissimNums)
     {
-      if (! tree. dissims [objNum]. valid ())  
+      if (! tree. dissims [dissimNum]. valid ())  
         continue;
-      const SubPath subPath_ (objNum);
+      const SubPath subPath_ (dissimNum);
       const size_t index = subPaths. binSearch (subPath_);  // unordered_map can be used 
       if (index == NO_INDEX)  // impossible for optimizeSmallSubgraph() 
         continue;
       SubPath& subPath = subPaths [index];
-      ASSERT (subPath. objNum == objNum);
+      ASSERT (subPath. dissimNum == dissimNum);
       if (! subPath. node1)
         subPath. node1 = dtNode;
       else if (! subPath. node2)
@@ -1559,7 +1547,7 @@ void Subgraph::finishSubPaths ()
   Tree::LcaBuffer buf;
   for (SubPath& subPath : subPaths)
   {
-    const Dissim& dissim = tree. dissims [subPath. objNum];
+    const Dissim& dissim = tree. dissims [subPath. dissimNum];
 
     subPathsAbsCriterion += dissim. getAbsCriterion ();
 
@@ -1583,7 +1571,7 @@ Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
   Tree::LcaBuffer buf;
   for (const SubPath& subPath : subPaths)
   {
-    const Dissim& dissim = tree. dissims [subPath. objNum];
+    const Dissim& dissim = tree. dissims [subPath. dissimNum];
     if (! dissim. validMult ())
       continue;      
     const Tree::TreeNode* lca_ = nullptr;
@@ -1612,15 +1600,15 @@ void Subgraph::subPaths2tree ()
   // Time: O(p + |subPaths|)
   Vector<bool> subPathDissims (tree. dissims. size (), false);  
   for (const SubPath& subPath : subPaths)
-    subPathDissims [subPath. objNum] = true;
+    subPathDissims [subPath. dissimNum] = true;
   
   // Time: O(|area| (log(|boundary|) + p/n log(n)))  
   for (const Tree::TreeNode* node : area)
     if (! boundary. containsFast (node))
-      const_static_cast <DTNode*> (node) -> pathObjNums. filterValue 
-      //([this] (uint objNum) { const SubPath subPath (objNum); return subPaths. containsFast (subPath); });
+      const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
+      //([this] (uint dissimNum) { const SubPath subPath (dissimNum); return subPaths. containsFast (subPath); });
           // Faster if n >> 0 <= O(p) above is not needed
-        ([&subPathDissims] (uint objNum) { return subPathDissims [objNum]; });
+        ([&subPathDissims] (uint dissimNum) { return subPathDissims [dissimNum]; });
   
   tree_. absCriterion -= subPathsAbsCriterion;
   ASSERT (tree. absCriterion < INF);
@@ -1631,11 +1619,11 @@ void Subgraph::subPaths2tree ()
     subPath. qc ();
     ASSERT (subPath. node1->graph == & tree);
     ASSERT (subPath. node2->graph == & tree);
-    const uint objNum = subPath. objNum;
+    const uint dissimNum = subPath. dissimNum;
     const Tree::TreeNode* lca_ = nullptr;
     const VectorPtr<Tree::TreeNode>& path = Tree::getPath (subPath. node1, subPath. node2, area_root, lca_, buf);
     ASSERT (lca_);
-    Dissim& dissim = tree_. dissims [objNum];
+    Dissim& dissim = tree_. dissims [dissimNum];
     if (! viaRoot (subPath))
     {
       const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
@@ -1654,9 +1642,9 @@ void Subgraph::subPaths2tree ()
         if (qc_on && verbose ())
         {
         //ASSERT (area. containsFast (st));  
-          ASSERT (! st->pathObjNums. contains (objNum));  
+          ASSERT (! st->pathDissimNums. contains (dissimNum));  
         }
-        var_cast (st) -> pathObjNums << objNum;
+        var_cast (st) -> pathDissimNums << dissimNum;
       }
     }
     dissim. prediction = subPath. dist_hat_tails + DistTree::path2prediction (path);
@@ -1676,9 +1664,9 @@ void Subgraph::node2subPaths (const DTNode* node)
 { 
   ASSERT (node);
   ASSERT (node->graph == & tree);
-  for (const uint objNum : node->pathObjNums)
-    if (tree. dissims [objNum]. valid ())
-      subPaths << SubPath (objNum);
+  for (const uint dissimNum : node->pathDissimNums)
+    if (tree. dissims [dissimNum]. valid ())
+      subPaths << SubPath (dissimNum);
 }
 
 
@@ -1718,9 +1706,9 @@ void Change::qc () const
     return;
   Root::qc ();
     
-  ASSERT (valid ());
-  IMPLY (! isNan (improvement), improvement > 0.0);
-  ASSERT (! targets. empty ());
+  QC_ASSERT (valid ());
+  QC_IMPLY (! isNan (improvement), improvement > 0.0);
+  QC_ASSERT (! targets. empty ());
   subgraph. qc ();
 }
 
@@ -1861,7 +1849,7 @@ bool Change::apply ()
         (*interAttr) [objNum] = ETRUE;
       }
     }
-    const Dissim& dissim = tree. dissims [subPath. objNum];
+    const Dissim& dissim = tree. dissims [subPath. dissimNum];
     ASSERT (dissim. valid ());
     ASSERT (dissim. mult < INF);
     var_cast (ds. objs [objNum]) -> mult = dissim. mult; 
@@ -1903,7 +1891,7 @@ bool Change::apply ()
   FFOR (size_t, objNum, subgraph. subPaths. size ())
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
-    const Dissim& dissim = tree. dissims [subPath. objNum];
+    const Dissim& dissim = tree. dissims [subPath. dissimNum];
     const Real prediction = nonNegative (dissim. target - lr. getResidual (objNum));
     subPathsAbsCriterion += dissim. getAbsCriterion (prediction);
   }    
@@ -1956,11 +1944,11 @@ void Change::commit ()
   status = eDone;
 
   if (arcEnd)
-    inter->pathObjNums = to->pathObjNums;
+    inter->pathDissimNums = to->pathDissimNums;
   else
   {
-    ASSERT (to->pathObjNums. empty ());
-    var_cast (to) -> pathObjNums = from->pathObjNums;
+    ASSERT (to->pathDissimNums. empty ());
+    var_cast (to) -> pathDissimNums = from->pathDissimNums;
   }
 
   subgraph. area << inter;
@@ -2017,9 +2005,9 @@ void DissimType::qc () const
     return;
     
   Named::qc ();
-  ASSERT (goodName (name));
-  ASSERT (scaleCoeff >= 0.0);
-  ASSERT (scaleCoeff < INF);
+  QC_ASSERT (goodName (name));
+  QC_ASSERT (scaleCoeff >= 0.0);
+  QC_ASSERT (scaleCoeff < INF);
 }
 
 
@@ -2055,27 +2043,27 @@ void Dissim::qc () const
   if (! qc_on)
     return;
   
-  ASSERT (leaf1);
-  ASSERT (leaf2);
-  ASSERT (leaf1 != leaf2);
-  ASSERT (leaf1->name < leaf2->name);
+  QC_ASSERT (leaf1);
+  QC_ASSERT (leaf2);
+  QC_ASSERT (leaf1 != leaf2);
+  QC_ASSERT (leaf1->name < leaf2->name);
   
   if (isNan (mult))
     return;
 
-  ASSERT (mult >= 0.0);
-//ASSERT (mult <= INF);        
+  QC_ASSERT (mult >= 0.0);
         
   if (! mult)
     return;
 
-  IMPLY (mult == INF, ! leaf1->discernible && ! leaf2->discernible && ! prediction);
-  ASSERT (valid ());
-  ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
-  ASSERT (target < INF);
-  ASSERT (prediction >= 0.0);
-  ASSERT (prediction < INF);
-  ASSERT (lca);
+  QC_ASSERT (valid ());
+  QC_ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
+  QC_ASSERT (target < INF);
+  QC_ASSERT (prediction >= 0.0);
+  QC_ASSERT (prediction < INF);
+  QC_IMPLY (indiscernible (), ! prediction);
+  QC_ASSERT (indiscernible () == (mult == INF));
+  QC_ASSERT (lca);
 }
 
 
@@ -2113,7 +2101,7 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
 
 
 
-void Dissim::setPathObjNums (size_t objNum,
+void Dissim::setPathDissimNums (size_t dissimNum,
                              Tree::LcaBuffer &buf)
 {
   ASSERT (valid ());
@@ -2122,7 +2110,7 @@ void Dissim::setPathObjNums (size_t objNum,
   prediction = DistTree::path2prediction (path);  
   for (const Tree::TreeNode* node : path)
     if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
-      var_cast (st) -> pathObjNums << (uint) objNum;  
+      var_cast (st) -> pathDissimNums << (uint) dissimNum;  
 }
   
   
@@ -2334,7 +2322,7 @@ bool Image::apply ()
 
   // Optimization of tree is not needed any more
   for (DiGraph::Node* node_new : tree->nodes)
-    static_cast <DTNode*> (node_new) -> pathObjNums. clear ();  
+    static_cast <DTNode*> (node_new) -> pathDissimNums. clear ();  
 
   const Tree::TreeNode* root_old = wholeTree. root;
 
@@ -3288,7 +3276,7 @@ DistTree::DistTree (Subgraph &subgraph,
   // For some leaf pairs the dissimilarity may be missing
   {
     unordered_map <size_t, Dissim> dissimMap;  // sparse
-    Vector<uint/*objNum*/> leaves2objNum (leafNum * leafNum, dissims_max);  // !sparse  // PAR
+    Vector<uint/*dissimNum*/> leaves2dissimNum (leafNum * leafNum, dissims_max);  // !sparse  // PAR
     if (sparse)
       dissimMap. reserve (name2leaf. size () * getSparseDissims_size ());
     else
@@ -3296,7 +3284,7 @@ DistTree::DistTree (Subgraph &subgraph,
       dissims. resize (getDissimSize_max ());
       ASSERT (leafNum == name2leaf. size ());
       {
-        size_t objNum = 0;
+        size_t dissimNum = 0;
         for (const auto& it2 : name2leaf)
           for (const auto& it1 : name2leaf)
           {
@@ -3304,18 +3292,18 @@ DistTree::DistTree (Subgraph &subgraph,
             const Leaf* leaf2 = it2. second;
             if (leaf1 == leaf2)
               break;
-            dissims [objNum] = move (Dissim (leaf1, leaf2, 0.0, 0.0, NO_INDEX));
+            dissims [dissimNum] = move (Dissim (leaf1, leaf2, 0.0, 0.0, NO_INDEX));
             ASSERT (leaf1->index != leaf2->index);
             ASSERT (leaf1->index < NO_INDEX);
             ASSERT (leaf2->index < NO_INDEX);
             if (leaf1->index > leaf2->index)
               swap (leaf1, leaf2);
-            leaves2objNum [leaf1->index * leafNum + leaf2->index] = (uint) objNum;
-            objNum++;
-            if (objNum >= (size_t) dissims_max)
-              throw runtime_error ("objNum is out of uint limit");
+            leaves2dissimNum [leaf1->index * leafNum + leaf2->index] = (uint) dissimNum;
+            dissimNum++;
+            if (dissimNum >= (size_t) dissims_max)
+              throw runtime_error ("dissimNum is out of uint limit");
           }
-        ASSERT (dissims. size () == objNum);
+        ASSERT (dissims. size () == dissimNum);
       }
       ASSERT (dissims. size () == getDissimSize_max ());
     }
@@ -3324,17 +3312,18 @@ DistTree::DistTree (Subgraph &subgraph,
     // dissims[]: mult, target
     for (const SubPath& subPath : subgraph. subPaths)
     {
-      const size_t wholeObjNum = subPath. objNum;
+      const Dissim& wholeDissim = wholeTree. dissims [subPath. dissimNum];
+      ASSERT (wholeDissim. valid ());
       
-      const Real dist = wholeTree. dissims [wholeObjNum]. target - subPath. dist_hat_tails;
+      const Real dist = wholeDissim. target - subPath. dist_hat_tails;
         // May be < 0
       if (isNan (dist))
         continue;
     
-      const Real mult = wholeTree. dissims [wholeObjNum]. mult; 
+      const Real mult = wholeDissim. mult; 
       ASSERT (mult >= 0.0);
       ASSERT (mult < INF);
-      if (! mult)  // wholeTree.dissims[wholeObjNum].target = INF
+      if (! mult)  // wholeDissim.target = INF
         continue;
       
       const DTNode* node1 = static_cast <const DTNode*> (findPtr (old2new, subPath. node1));
@@ -3360,9 +3349,9 @@ DistTree::DistTree (Subgraph &subgraph,
       }
       else
       {
-        const uint objNum = leaves2objNum [index];
-        ASSERT (objNum < dissims_max);
-        dissim = & dissims [objNum];
+        const uint dissimNum = leaves2dissimNum [index];
+        ASSERT (dissimNum < dissims_max);
+        dissim = & dissims [dissimNum];
       }
       ASSERT (dissim);
       ASSERT (dissim->leaf1);
@@ -3394,19 +3383,19 @@ DistTree::DistTree (Subgraph &subgraph,
       dissim. target = NaN;
     
 
-  // DTNode::pathObjNums[]
-  const size_t reserve_size = getPathObjNums_size ();
+  // DTNode::pathDissimNums[]
+  const size_t reserve_size = getPathDissimNums_size ();
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
-    ASSERT (dtNode->pathObjNums. empty ());
-    var_cast (dtNode) -> pathObjNums. reserve (reserve_size); 
+    ASSERT (dtNode->pathDissimNums. empty ());
+    var_cast (dtNode) -> pathDissimNums. reserve (reserve_size); 
   }
-  FFOR (uint, objNum, (uint) dissims. size ())
+  FFOR (uint, dissimNum, (uint) dissims. size ())
   {
-    Dissim& dissim = dissims [objNum];
-    var_cast (dissim. leaf1) -> pathObjNums << objNum;
-    var_cast (dissim. leaf2) -> pathObjNums << objNum;      
+    Dissim& dissim = dissims [dissimNum];
+    var_cast (dissim. leaf1) -> pathDissimNums << dissimNum;
+    var_cast (dissim. leaf2) -> pathDissimNums << dissimNum;      
   }
   setPaths (false);
 
@@ -3978,7 +3967,7 @@ size_t DistTree::leafCluster2discernibles (const LeafCluster &leafCluster)
       leaf->setParent (steiner);
       leaf->discernible = false;  
       leaf->len = 0.0;  
-      steiner->pathObjNums << leaf->pathObjNums;
+      steiner->pathDissimNums << leaf->pathDissimNums;
       n++;
     }
     ASSERT (! steiner->isTransient ());
@@ -3989,23 +3978,23 @@ size_t DistTree::leafCluster2discernibles (const LeafCluster &leafCluster)
       VectorPtr<Leaf> leaves (clusterNodes);
       leaves. sort ();
       ASSERT (leaves. isUniq ());
-      steiner->pathObjNums. sort ();
-      steiner->pathObjNums. uniq ();
-      for (const uint objNum : steiner->pathObjNums)
+      steiner->pathDissimNums. sort ();
+      steiner->pathDissimNums. uniq ();
+      for (const uint dissimNum : steiner->pathDissimNums)
       {
-        Dissim& d = dissims [objNum]; 
+        Dissim& d = dissims [dissimNum]; 
         if (   leaves. containsFast (d. leaf1)
             && leaves. containsFast (d. leaf2)
            )
           d. lca = steiner;  
       }
-      steiner->pathObjNums. filterValue ([this, &leaves] 
-                                         (const uint objNum) 
-                                         { const Dissim& d = this->dissims [objNum]; 
-                                           return    leaves. containsFast (d. leaf1)
-                                                  && leaves. containsFast (d. leaf2);
-                                         }
-                                        );
+      steiner->pathDissimNums. filterValue ([this, &leaves] 
+                                            (uint dissimNum) 
+                                            { const Dissim& d = this->dissims [dissimNum]; 
+                                              return    leaves. containsFast (d. leaf1)
+                                                     && leaves. containsFast (d. leaf2);
+                                            }
+                                           );
     }
   }
   
@@ -4524,12 +4513,12 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
   dissims. reserve (pairs_max);
 
-  const size_t reserve_size = getPathObjNums_size ();
+  const size_t reserve_size = getPathDissimNums_size ();
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
-    ASSERT (dtNode->pathObjNums. empty ());
-    var_cast (dtNode) -> pathObjNums. reserve (reserve_size);  
+    ASSERT (dtNode->pathDissimNums. empty ());
+    var_cast (dtNode) -> pathDissimNums. reserve (reserve_size);  
   }
 }
   
@@ -4571,13 +4560,13 @@ bool DistTree::addDissim (Leaf* leaf1,
   
   Dissim d (leaf1, leaf2, target, mult, type);  
   
-  const size_t objNum_ = dissims. size ();
-  if (objNum_ > (size_t) dissims_max)
-    throw runtime_error (FUNC "Too large objNum");
+  const size_t dissimNum_ = dissims. size ();
+  if (dissimNum_ > (size_t) dissims_max)
+    throw runtime_error (FUNC "Too large dissimNum");
   dissims << move (d);
-  const uint objNum = (uint) objNum_;
-  leaf1->pathObjNums << objNum;
-  leaf2->pathObjNums << objNum;      
+  const uint dissimNum = (uint) dissimNum_;
+  leaf1->pathDissimNums << dissimNum;
+  leaf2->pathDissimNums << dissimNum;      
   
   return true;
 }
@@ -4599,11 +4588,11 @@ void setPaths_ (const Vector<size_t> &subTree,
   if (prog. active)
     cerr << "One thread ..." << endl;
   Tree::LcaBuffer buf;
-  for (const size_t objNum : subTree) 
+  for (const size_t dissimNum : subTree) 
   {
     prog ();
-    dissims [objNum]. setPathObjNums (objNum, buf);
-    absCriterion += dissims [objNum]. getAbsCriterion ();
+    dissims [dissimNum]. setPathDissimNums (dissimNum, buf);
+    absCriterion += dissims [dissimNum]. getAbsCriterion ();
   }
   ASSERT (absCriterion < INF);
 }
@@ -4617,13 +4606,13 @@ void DistTree::setPaths (bool setDissimMultP)
 {
 //ASSERT (optimizable ());
   if (dissims. size () > (size_t) dissims_max)
-    throw runtime_error ("setPaths: Too large objNum");
+    throw runtime_error ("setPaths: Too large dissimNum");
     
   setLca ();  
   
   for (DiGraph::Node* node : nodes)
     if (Steiner* st = var_cast (static_cast <const DTNode*> (node) -> asSteiner ()))
-      st->pathObjNums. clear ();  
+      st->pathDissimNums. clear ();  
 
   absCriterion = 0.0;
   Tree::LcaBuffer buf;
@@ -4635,12 +4624,12 @@ void DistTree::setPaths (bool setDissimMultP)
 #endif
   {
     Progress prog (dissims. size (), dissim_progress); 
-    FFOR (size_t, objNum, dissims. size ()) 
+    FFOR (size_t, dissimNum, dissims. size ()) 
     {
       prog ();
-      dissims [objNum]. setPathObjNums (objNum, buf);
+      dissims [dissimNum]. setPathDissimNums (dissimNum, buf);
       if (! setDissimMultP)
-        absCriterion += dissims [objNum]. getAbsCriterion ();
+        absCriterion += dissims [dissimNum]. getAbsCriterion ();
     }
   ASSERT (absCriterion < INF);
   }
@@ -4684,11 +4673,11 @@ void DistTree::setPaths (bool setDissimMultP)
     if (cut_best. size () == 1)
     {
       Progress prog (dissims. size (), dissim_progress);
-      FFOR (size_t, objNum, dissims. size ()) 
+      FFOR (size_t, dissimNum, dissims. size ()) 
       {
         prog ();
-        dissims [objNum]. setPathObjNums (objNum, buf);
-        absCriterion += dissims [objNum]. getAbsCriterion ();
+        dissims [dissimNum]. setPathDissimNums (dissimNum, buf);
+        absCriterion += dissims [dissimNum]. getAbsCriterion ();
       }
       ASSERT (absCriterion < INF);
     }
@@ -4713,13 +4702,13 @@ void DistTree::setPaths (bool setDissimMultP)
       Vector<Vector<size_t>> subTrees (cut_best. size () + 1);
       for (Vector<size_t>& subTree : subTrees)
         subTree. reserve (dissims. size ());  // ??
-      FFOR (size_t, objNum, dissims. size ()) 
+      FFOR (size_t, dissimNum, dissims. size ()) 
       {
-        Dissim& dissim = dissims [objNum];
+        Dissim& dissim = dissims [dissimNum];
         const Steiner* st = dissim. lca;
         ASSERT (st);
         ASSERT (st->threadNum <= cut_best. size ());
-        subTrees [st->threadNum] << objNum;
+        subTrees [st->threadNum] << dissimNum;
       }
       
       // ??
@@ -4762,67 +4751,67 @@ void DistTree::qc () const
 
 
   // Global ??
-  ASSERT (DistTree_sp::variance_min >= 0.0);
-  ASSERT (! isNan (DistTree_sp::variancePower) == (DistTree_sp::varianceType == varianceType_pow));
-  IMPLY (! isNan (DistTree_sp::variancePower), DistTree_sp::variancePower >= 0.0);
-  ASSERT (DistTree_sp::hybridness_min >= 1.0);
-  ASSERT (DistTree_sp::dissim_coeff > 0.0);
-  IMPLY (! isNan (DistTree_sp::dissim_boundary), DistTree_sp::dissim_boundary > 0.0);
+  QC_ASSERT (DistTree_sp::variance_min >= 0.0);
+  QC_ASSERT (! isNan (DistTree_sp::variancePower) == (DistTree_sp::varianceType == varianceType_pow));
+  QC_IMPLY (! isNan (DistTree_sp::variancePower), DistTree_sp::variancePower >= 0.0);
+  QC_ASSERT (DistTree_sp::hybridness_min >= 1.0);
+  QC_ASSERT (DistTree_sp::dissim_coeff > 0.0);
+  QC_IMPLY (! isNan (DistTree_sp::dissim_boundary), DistTree_sp::dissim_boundary > 0.0);
 
 
-  ASSERT (nodes. size () >= 2);
+  QC_ASSERT (nodes. size () >= 2);
     
-  ASSERT (root);
-  ASSERT (root->graph == this);
+  QC_ASSERT (root);
+  QC_ASSERT (root->graph == this);
   const Steiner* root_ = static_cast <const DTNode*> (root) -> asSteiner ();
-  ASSERT (root_);
+  QC_ASSERT (root_);
 
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
-    ASSERT (! dtNode->isTransient ());
+    QC_ASSERT (! dtNode->isTransient ());
   }
 
   const size_t leavesSize = root->getLeavesSize ();
-  ASSERT (leavesSize);
-  ASSERT (name2leaf. size () == leavesSize);
+  QC_ASSERT (leavesSize);
+  QC_ASSERT (name2leaf. size () == leavesSize);
   Vector<size_t> leafIndices;  leafIndices. reserve (leavesSize);
   for (const auto& it : name2leaf)
   {
     const Leaf* leaf = it. second;
-    ASSERT (leaf);
-    ASSERT (leaf->graph == this);
+    QC_ASSERT (leaf);
+    QC_ASSERT (leaf->graph == this);
     leafIndices << leaf->index;
   }
   leafIndices. sort ();
   leafIndices. uniq ();
-  ASSERT (leafIndices. size () == leavesSize);
+  QC_ASSERT (leafIndices. size () == leavesSize);
   
-  ASSERT ((bool) dissimDs. get () == (bool) dissimAttr);
+  QC_ASSERT ((bool) dissimDs. get () == (bool) dissimAttr);
   if (dissimAttr)
   {
     dissimDs->qc ();
-    ASSERT (& dissimAttr->ds == dissimDs. get ());
+    QC_ASSERT (& dissimAttr->ds == dissimDs. get ());
   }
-  IMPLY (multAttr, dissimAttr);
-  IMPLY (multAttr, & multAttr->ds == dissimDs. get ());
+  QC_IMPLY (multAttr, dissimAttr);
+  QC_IMPLY (multAttr, & multAttr->ds == dissimDs. get ());
   
   if (! dissimTypes. empty ())
   {
-    ASSERT (dissimTypes. size () >= 2);
-    ASSERT (! multAttr);
-    ASSERT (! subDepth);
-    ASSERT (eqReal (getDissimCoeffProd (), 1.0, dissimCoeffProd_delta)); 
-    ASSERT (! multFixed);
+    QC_ASSERT (dissimTypes. size () >= 2);
+    QC_ASSERT (! multAttr);
+    QC_ASSERT (! subDepth);
+    QC_ASSERT (eqReal (getDissimCoeffProd (), 1.0, dissimCoeffProd_delta)); 
+    QC_ASSERT (! multFixed);
     for (const DissimType& dt : dissimTypes)
     {
       dt. qc ();
-      ASSERT ((bool) dt. dissimAttr == (bool) dissimAttr);
-      IMPLY (dt. dissimAttr, & dissimAttr->ds == & dt. dissimAttr->ds);
+      QC_ASSERT ((bool) dt. dissimAttr == (bool) dissimAttr);
+      QC_IMPLY (dt. dissimAttr, & dissimAttr->ds == & dt. dissimAttr->ds);
     }
   }
 
-  IMPLY (subDepth, multFixed);
+  QC_IMPLY (subDepth, multFixed);
 
 
   size_t leafDissims = 0;
@@ -4833,62 +4822,60 @@ void DistTree::qc () const
       if (dissim. mult)
       {
         dissim. qc ();
-        IMPLY (! subDepth, dissim. target >= 0.0);
-        IMPLY (! DistTree_sp::variance_min && ! subDepth && ! dissim. target, 
-               ! dissim. leaf1->discernible && ! dissim. leaf2->discernible && dissim. leaf1->getParent () == dissim. leaf2->getParent ()
-              );
+        QC_IMPLY (! subDepth, dissim. target >= 0.0);
+        QC_IMPLY (! DistTree_sp::variance_min && ! subDepth && ! dissim. target, dissim. indiscernible ());
         leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
         if (subDepth)
-          { ASSERT (dissim. mult < INF); }
+          { QC_ASSERT (dissim. mult < INF); }
         else
-          { IMPLY (! dissim. target && ! DistTree_sp::variance_min, dissim. mult == INF); }
+          { QC_IMPLY (! dissim. target && ! DistTree_sp::variance_min, dissim. mult == INF); }
         if (dissimTypes. empty ())
-          { ASSERT (dissim. type == NO_INDEX); }
+          { QC_ASSERT (dissim. type == NO_INDEX); }
         else
-          { ASSERT (dissim. type < dissimTypes. size ()); } 
+          { QC_ASSERT (dissim. type < dissimTypes. size ()); } 
       }
     
-    ASSERT (absCriterion >= 0.0);
-    ASSERT (absCriterion < INF);
-    ASSERT (target2_sum >= 0.0);    
-    ASSERT (mult_sum >= 0.0);    
+    QC_ASSERT (absCriterion >= 0.0);
+    QC_ASSERT (absCriterion < INF);
+    QC_ASSERT (target2_sum >= 0.0);    
+    QC_ASSERT (mult_sum >= 0.0);    
         
     for (const DiGraph::Node* node : nodes)
     {
       const DTNode* dtNode = static_cast <const DTNode*> (node);
-      ASSERT ((dtNode == root) == dtNode->pathObjNums. empty ());  
+      QC_ASSERT ((dtNode == root) == dtNode->pathDissimNums. empty ());  
       if (const Leaf* leaf = dtNode->asLeaf ())
-        leafDissims += leaf->pathObjNums. size ();
+        leafDissims += leaf->pathDissimNums. size ();
     }  
   }
   else
   {
-    ASSERT (! dissimDs. get ());
-    ASSERT (! dissimAttr);
-    ASSERT (! multAttr);
-    ASSERT (dissimTypes. empty ());
+    QC_ASSERT (! dissimDs. get ());
+    QC_ASSERT (! dissimAttr);
+    QC_ASSERT (! multAttr);
+    QC_ASSERT (dissimTypes. empty ());
   }
   
 
   const size_t discernibles = getDiscernibles (). size ();
-  ASSERT (discernibles <= leavesSize);
+  QC_ASSERT (discernibles <= leavesSize);
 
   for (const Leaf* leaf : detachedLeaves)
   {
-    ASSERT (leaf);
-    ASSERT (! leaf->graph);
+    QC_ASSERT (leaf);
+    QC_ASSERT (! leaf->graph);
     leaf->qc ();
-    leafDissims += leaf->pathObjNums. size ();
+    leafDissims += leaf->pathDissimNums. size ();
   }
   const size_t allLeaves = leavesSize + detachedLeaves. size ();
-  ASSERT (dissims. size () <= (allLeaves * (allLeaves - 1)) / 2 * dissimTypesNum ());
+  QC_ASSERT (dissims. size () <= (allLeaves * (allLeaves - 1)) / 2 * dissimTypesNum ());
 
-  ASSERT (leafDissims == 2 * dissims. size ());
+  QC_ASSERT (leafDissims == 2 * dissims. size ());
 
 /*
   // May happen due to removeLeaf()
   for (const DTNode* dtNode : toDelete)
-    ASSERT (! dtNode->asLeaf ());
+    QC_ASSERT (! dtNode->asLeaf ());
 */
 
   if (! subDepth && optimizable ())
@@ -4897,11 +4884,11 @@ void DistTree::qc () const
     for (const auto& it : leafCluster)
     {
       const VectorPtr<Leaf>& leaves = it. second;
-      ASSERT (leaves. size () >= 2);
-      ASSERT (! DistTree_sp::variance_min);
+      QC_ASSERT (leaves. size () >= 2);
+      QC_ASSERT (! DistTree_sp::variance_min);
       for (const Leaf* leaf : leaves)
       {
-        ASSERT (leaf->graph == this);
+        QC_ASSERT (leaf->graph == this);
         if (leaf->getParent () != leaves [0] -> getParent ())
           throw runtime_error ("Indiscernibles have different parents: " + leaves [0] -> name + " and " + leaf->name);
       }
@@ -4915,7 +4902,7 @@ void DistTree::qc () const
       for (const DiGraph::Arc* arc : dtNode->arcs [false])
       {
         Leaf* child = var_cast (static_cast <DTNode*> (arc->node [false]) -> asLeaf ());
-        ASSERT (child);
+        QC_ASSERT (child);
         if (dc)
         { 
           if (child->DisjointCluster::getDisjointCluster () != dc)
@@ -4930,9 +4917,9 @@ void DistTree::qc () const
   for (const auto& it : node2closestPair)
   {
     const ClosestPair& cp = it. second;
-    ASSERT (cp. leafName1 < cp. leafName2);
-    ASSERT (contains (name2leaf, cp. leafName1));
-    ASSERT (contains (name2leaf, cp. leafName2));
+    QC_ASSERT (cp. leafName1 < cp. leafName2);
+    QC_ASSERT (contains (name2leaf, cp. leafName1));
+    QC_ASSERT (contains (name2leaf, cp. leafName2));
   }
 }
 
@@ -5068,7 +5055,7 @@ void DistTree::qcPaths ()
   if (! qc_on)
     return;
 
-  ASSERT (const_static_cast <const DTNode*> (root) -> pathObjNums. empty ());
+  QC_ASSERT (const_static_cast <const DTNode*> (root) -> pathDissimNums. empty ());
 
   size_t pathObjNums_checked = 0;
   size_t lcaObjNums_checked = 0;
@@ -5081,17 +5068,17 @@ void DistTree::qcPaths ()
     {
       prog ();
       DTNode* dtNode = static_cast <DTNode*> (node);
-      Vector<uint>& pathObjNums = dtNode->pathObjNums;
-      pathObjNums. sort ();
-      ASSERT (pathObjNums. isUniq ());
-      for (const uint objNum : pathObjNums)
-        if (dissims [objNum]. valid ())
+      Vector<uint>& pathDissimNums = dtNode->pathDissimNums;
+      pathDissimNums. sort ();
+      QC_ASSERT (pathDissimNums. isUniq ());
+      for (const uint dissimNum : pathDissimNums)
+        if (dissims [dissimNum]. valid ())
           pathObjNums_checked++;
-      const Vector<uint> lcaObjNums (dtNode->getLcaObjNums ());
-      for (const uint objNum : lcaObjNums)
-        if (dissims [objNum]. valid ())
+      const Vector<uint> lcaObjNums (dtNode->getLcaDissimNums ());
+      for (const uint dissimNum : lcaObjNums)
+        if (dissims [dissimNum]. valid ())
         {
-          ASSERT (dissims [objNum]. lca == dtNode->asSteiner ());
+          QC_ASSERT (dissims [dissimNum]. lca == dtNode->asSteiner ());
           lcaObjNums_checked++;
         }
     }
@@ -5102,15 +5089,15 @@ void DistTree::qcPaths ()
   {
     Progress prog (dissims. size (), dissim_progress);
     LcaBuffer buf;
-    FFOR (size_t, objNum, dissims. size ())
+    FFOR (size_t, dissimNum, dissims. size ())
     {
       prog ();
-      if (dissims [objNum]. valid ())
+      if (dissims [dissimNum]. valid ())
       {
-        const VectorPtr<TreeNode>& path = dissims [objNum]. getPath (buf);
+        const VectorPtr<TreeNode>& path = dissims [dissimNum]. getPath (buf);
         for (const TreeNode* node : path)
         {
-          ASSERT (static_cast <const DTNode*> (node) -> pathObjNums. containsFast ((uint) objNum));
+          QC_ASSERT (static_cast <const DTNode*> (node) -> pathDissimNums. containsFast ((uint) dissimNum));
           pathObjNums_all++;
         }
         lcaObjNums_all++;
@@ -5118,8 +5105,8 @@ void DistTree::qcPaths ()
     }
   }
 
-  ASSERT (pathObjNums_all == pathObjNums_checked);
-  ASSERT (lcaObjNums_all == lcaObjNums_checked);
+  QC_ASSERT (pathObjNums_all == pathObjNums_checked);
+  QC_ASSERT (lcaObjNums_all == lcaObjNums_checked);
 }
 
 
@@ -5205,7 +5192,7 @@ void DistTree::qcPredictionAbsCriterion () const
     {
       const VectorPtr<TreeNode>& path = dissim. getPath (buf);
       const Real prediction_ = path2prediction (path);
-      ASSERT_EQ (prediction_, dissim. prediction, 1e-3);  // PAR
+      QC_ASSERT_EQ (prediction_, dissim. prediction, 1e-3);  // PAR
       absCriterion_ += dissim. getAbsCriterion ();
     }
   if (fabs (absCriterion - absCriterion_) > 1e-3)  // PAR
@@ -5232,7 +5219,7 @@ Real DistTree::path2prediction (const VectorPtr<TreeNode> &path)
 void DistTree::setDissimMult (bool usePrediction)
 { 
   ASSERT (optimizable ());
-  ASSERT (absCriterion < INF);
+  ASSERT (absCriterion < INF);  
 
 
   // To keep absCriterion < INF
@@ -5287,21 +5274,40 @@ void DistTree::setDissimMult (bool usePrediction)
   absCriterion = 0.0;
   // Use Threads ??
   for (Dissim& dissim : dissims)
-    if (dissim. valid ())
-    {
-      if (! multFixed)
-      { 
-        const Real scale = (dissim. type == NO_INDEX ? 1.0 : dissimTypes [dissim. type]. scaleCoeff);
-        ASSERT (scale > 0.0);
-        dissim. mult = dist2mult ((usePrediction ? dissim. prediction : dissim. target) / scale) / sqr (scale);
-      }
-      if (dissim. mult < INF)
-      {
-        absCriterion += dissim. getAbsCriterion ();
-        mult_sum     += dissim. mult;
-        target2_sum  += dissim. mult * sqr (dissim. target);
-      }
+    setDissimMult (dissim, usePrediction);
+  ASSERT (absCriterion < INF);
+}
+
+
+
+void DistTree::setDissimMult (Dissim& dissim,
+                              bool usePrediction) 
+{
+  ASSERT (optimizable ());
+  ASSERT (absCriterion < INF);  
+
+  if (! dissim. valid ())
+    return;
+
+  if (! multFixed)
+  {
+    if (dissim. indiscernible ())
+      dissim. mult = INF;
+    else
+    { 
+      const Real scale = (dissim. type == NO_INDEX ? 1.0 : dissimTypes [dissim. type]. scaleCoeff);
+      ASSERT (scale > 0.0);
+      dissim. mult = dist2mult ((usePrediction ? dissim. prediction : dissim. target) / scale) / sqr (scale);
+      ASSERT (dissim. mult < INF);
     }
+  }
+
+  if (dissim. mult < INF)
+  {
+    absCriterion += dissim. getAbsCriterion ();
+    mult_sum     += dissim. mult;
+    target2_sum  += dissim. mult * sqr (dissim. target);
+  }
   ASSERT (absCriterion < INF);
 }
 
@@ -5693,9 +5699,9 @@ size_t DistTree::optimizeLenArc ()
       
         Real arcAbsCriterion_old = 0.0;
         WeightedMeanVar mv;
-        for (const uint objNum : node->pathObjNums)
+        for (const uint dissimNum : node->pathDissimNums)
         {
-          const Dissim& dissim = dissims [objNum];
+          const Dissim& dissim = dissims [dissimNum];
           if (dissim. validMult ())
           {
             const Real dist_hat_tails = max (0.0, dissim. prediction - node->len);
@@ -5707,9 +5713,9 @@ size_t DistTree::optimizeLenArc ()
         const Real len_new = max (0.0, mv. getMean ());
         
         Real arcAbsCriterion_new = 0.0;
-        for (const uint objNum : node->pathObjNums)
+        for (const uint dissimNum : node->pathDissimNums)
         {
-          Dissim& dissim = dissims [objNum];
+          Dissim& dissim = dissims [dissimNum];
           if (dissim. validMult ())
           {
             dissim. prediction = max (0.0, dissim. prediction - node->len + len_new);
@@ -5844,7 +5850,7 @@ size_t DistTree::optimizeLenNode ()
       FFOR (size_t, i, star. arcNodes. size ())
         if (path. contains (static_cast <const TreeNode*> (star. arcNodes [i])))
           (* const_static_cast <ExtBoolAttr1*> (sp [i])) [objNum] = ETRUE;        
-      const size_t wholeObjNum = subPath. objNum;
+      const size_t wholeObjNum = subPath. dissimNum;
       var_cast (starDs. objs [objNum]) -> mult = dissims [wholeObjNum]. mult; 
       (*targetAttr) [objNum] = dissims [wholeObjNum]. target - subPath. dist_hat_tails;
     }
@@ -6445,7 +6451,7 @@ void DistTree::optimizeLargeSubgraphs ()
       ASSERT (cut);
       ASSERT (cut != root);
       auto inter = new Steiner (*this, const_static_cast <Steiner*> (cut->getParent ()), 0.0);
-      inter->pathObjNums = cut->pathObjNums;
+      inter->pathDissimNums = cut->pathDissimNums;
       var_cast (cut) -> setParent (inter);
       ASSERT (inter->getParent ());
       boundary << inter;
@@ -6635,10 +6641,10 @@ void DistTree::delayDeleteRetainArcs (DTNode* node)
       const Steiner* parent = static_cast <const DTNode*> (parent_) -> asSteiner ();
       ASSERT (parent);
       ASSERT (parent->graph == this);
-      const Vector<uint> lcaObjNums (node->getLcaObjNums ());
-      for (const size_t objNum : lcaObjNums)
+      const Vector<uint> lcaObjNums (node->getLcaDissimNums ());
+      for (const size_t dissimNum : lcaObjNums)
       {
-        Dissim& dissim = dissims [objNum];
+        Dissim& dissim = dissims [dissimNum];
         if (! dissim. valid ())
           continue;
         ASSERT (dissim. lca == st);
@@ -7057,24 +7063,48 @@ void DistTree::removeLeaf (Leaf* leaf,
   }  
   else if (! static_cast <const DTNode*> (parent) -> childrenDiscernible () && optimizable ())
   {
-    for (const DiGraph::Arc* arc : parent->arcs [false])
-    {
-      const Leaf* child_ = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
-      ASSERT (child_);
-      var_cast (child_) -> discernible = true;
-    }
     const Steiner* st = static_cast <const DTNode*> (parent) -> asSteiner ();
     ASSERT (st);
     const LeafCluster leafCluster (var_cast (st) -> getIndiscernibles ());
-    leafCluster2discernibles (leafCluster);
+    ASSERT (! leafCluster. empty ());
+    if (leafCluster. size () > 1)
+    {
+      VectorPtr<Leaf> cluster_old;  cluster_old. reserve (parent->arcs [false]. size ());
+      for (const DiGraph::Arc* arc : parent->arcs [false])
+      {
+        const Leaf* child_ = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+        ASSERT (child_);
+        var_cast (child_) -> discernible = true;
+        cluster_old << child_;
+      }
+      leafCluster2discernibles (leafCluster);
+      ASSERT (! cluster_old. empty ());
+      cluster_old. sort ();
+      ASSERT (cluster_old. isUniq ());
+      for (const Leaf* child_ : cluster_old)
+        for (const uint dissimNum : child_->pathDissimNums)
+        {
+          Dissim& dissim = dissims [dissimNum];
+          if (   dissim. valid ()
+              && cluster_old. contains (dissim. getOtherLeaf (child_))
+              && ! dissim. indiscernible ()
+              && dissim. mult == INF
+             )
+          {
+            setDissimMult (dissim, false);
+            ASSERT (dissim. mult < INF);
+          }
+        }
+      EXEC_ASSERT (parent = cluster_old [0] -> getParent ());
+    }
   }
 
       
   if (optimizable ())
   {
-    for (const uint objNum : leaf->pathObjNums)
+    for (const uint dissimNum : leaf->pathDissimNums)
     {
-      Dissim& dissim = dissims [objNum];
+      Dissim& dissim = dissims [dissimNum];
       ASSERT (dissim. hasLeaf (leaf));
       ASSERT ( ! dissim. valid ());
       ASSERT (dissim. mult >= 0.0);
@@ -7097,6 +7127,7 @@ void DistTree::removeLeaf (Leaf* leaf,
     {
       Unverbose unv;
       ASSERT (parent);
+      ASSERT (parent->graph);
       optimizeSmallSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), 2 * areaRadius_std);  // PAR 
     }
   }
@@ -7128,7 +7159,7 @@ void DistTree::reroot (DTNode* underRoot,
       
     const Steiner* newRootParent = static_cast <const DTNode*> (underRoot->getParent ()) -> asSteiner ();
     auto newRoot = new Steiner (*this, var_cast (newRootParent), underRoot->len - arcLen);
-    newRoot->pathObjNums  = underRoot->pathObjNums;
+    newRoot->pathDissimNums  = underRoot->pathDissimNums;
     newRoot->relCriterion = underRoot->relCriterion;
     newRoot->paths        = underRoot->paths;
     underRoot->setParent (newRoot); 
@@ -7406,21 +7437,21 @@ void DistTree::setNodeAbsCriterion ()
 
 
 
-void DistTree::setNodeClosestObjNum ()
+void DistTree::setNodeClosestDissimNum ()
 {
  ASSERT (optimizable ());
   
   for (DiGraph::Node* node : nodes)
   {
     DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->closestObjNum = dissims_max;
+    dtNode->closestDissimNum = dissims_max;
     Real target = INF;
-    for (const uint objNum : dtNode->pathObjNums)
+    for (const uint dissimNum : dtNode->pathDissimNums)
     {
-      const Dissim& dissim = dissims [objNum];
+      const Dissim& dissim = dissims [dissimNum];
       if (dissim. validMult ())
         if (minimize (target, dissim. target))
-          dtNode->closestObjNum = objNum;
+          dtNode->closestDissimNum = dissimNum;
     }
   }
 }
@@ -7630,14 +7661,14 @@ void hybrid2requests (size_t from,
     const Leaf* leaf = leaves [i];
     RequestCandidate req;
     Real hybridness_tree = DistTree_sp::hybridness_min;
-    for (const uint objNum1 : leaf->pathObjNums)
+    for (const uint dissimNum1 : leaf->pathDissimNums)
     {
-      const Dissim& dissim1 = leaf->getDistTree (). dissims [objNum1];
+      const Dissim& dissim1 = leaf->getDistTree (). dissims [dissimNum1];
       if (! dissim1. validMult ())
         continue;
-      FOR (uint, objNum2, objNum1)
+      FOR (uint, dissimNum2, dissimNum1)
       {
-        const Dissim& dissim2 = leaf->getDistTree (). dissims [objNum2];
+        const Dissim& dissim2 = leaf->getDistTree (). dissims [dissimNum2];
         if (! dissim2. validMult ())
           continue;
         ??
@@ -7915,9 +7946,9 @@ struct NodeDissim
     {
       ASSERT (node);
       const DistTree& tree = node->getDistTree ();
-      for (const size_t objNum : node->pathObjNums)
+      for (const size_t dissimNum : node->pathDissimNums)
       {
-        const Dissim& dissim = tree. dissims [objNum];
+        const Dissim& dissim = tree. dissims [dissimNum];
         if (dissim. valid ())
           minimize (dissim_min, dissim. target);
       }
@@ -8104,14 +8135,14 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
       for (const TreeNode* node2 : subgraph. boundary)
       {      
         const DTNode* dtNode2 = static_cast <const DTNode*> (node2);
-        const Vector<uint>& pathObjNums2 = subgraph. boundary2pathObjNums (dtNode2);
+        const Vector<uint>& pathObjNums2 = subgraph. boundary2pathDissimNums (dtNode2);
         var_cast (pathObjNums2). sort ();
         for (const TreeNode* node1 : subgraph. boundary)
         {
           if (node1 == node2)
             break;
           const DTNode* dtNode1 = static_cast <const DTNode*> (node1);
-          const Vector<uint>& pathObjNums1 = subgraph. boundary2pathObjNums (dtNode1);
+          const Vector<uint>& pathObjNums1 = subgraph. boundary2pathDissimNums (dtNode1);
           if (pathObjNums1. intersectsFast_merge (pathObjNums2))
             continue;
           Pair<const Leaf*> leafPair (subgraph. getReprLeaf (dtNode1), subgraph. getReprLeaf (dtNode2));
@@ -8136,13 +8167,13 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
       prog ();
       ASSERT (node2 != root);
       ASSERT (! node2->inDiscernible ());
-      var_cast (node2->pathObjNums). sort ();
+      var_cast (node2->pathDissimNums). sort ();
       for (const DTNode* node1 : tooLongArcs)
       {
         ASSERT (node1 != root);
         if (node1 == node2)
           break;
-        if (node1->pathObjNums. intersectsFast_merge (node2->pathObjNums))
+        if (node1->pathDissimNums. intersectsFast_merge (node2->pathDissimNums))
           continue;
         const TreeNode* lca = getLca (node1, node2);
         ASSERT (lca);
@@ -8423,27 +8454,27 @@ void NewLeaf::Location::qc () const
   if (! qc_on)
     return;
 
-  ASSERT (anchor);
-  ASSERT (! anchor->inDiscernible ());
+  QC_ASSERT (anchor);
+  QC_ASSERT (! anchor->inDiscernible ());
   if (anchor == anchor->getTree (). root)
   {
-    ASSERT (isNan (anchor->len));
-    ASSERT (! arcLen);
+    QC_ASSERT (isNan (anchor->len));
+    QC_ASSERT (! arcLen);
   }
   else
   {
-    IMPLY (absCriterion_leaf > 0.0 && anchor != anchor->getDistTree (). root, anchor->len > 0.0);
-    ASSERT (anchor->len < INF);
-    ASSERT (arcLen >= 0.0);
-    ASSERT (arcLen <= anchor->len);
+    QC_IMPLY (absCriterion_leaf > 0.0 && anchor != anchor->getDistTree (). root, anchor->len > 0.0);
+    QC_ASSERT (anchor->len < INF);
+    QC_ASSERT (arcLen >= 0.0);
+    QC_ASSERT (arcLen <= anchor->len);
   }
 
-  ASSERT (leafLen >= 0.0);
-  ASSERT (leafLen < INF);
+  QC_ASSERT (leafLen >= 0.0);
+  QC_ASSERT (leafLen < INF);
   
-//IMPLY (leafLen == 0 && arcLen == 0, anchor->asLeaf ());
+//QC_IMPLY (leafLen == 0 && arcLen == 0, anchor->asLeaf ());
   
-  ASSERT (absCriterion_leaf >= 0.0);  
+  QC_ASSERT (absCriterion_leaf >= 0.0);  
 }
 
 
@@ -8559,9 +8590,9 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
   dtNode->getLeafDepths (leafDepths);
   leafDepths. sort ();
     
-  for (const uint objNum : dtNode->pathObjNums)
+  for (const uint dissimNum : dtNode->pathDissimNums)
   {
-    const Dissim& dissim = tree. dissims [objNum];
+    const Dissim& dissim = tree. dissims [dissimNum];
     if (! dissim. validMult ())
       continue;
     size_t index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf1, 0.0});
@@ -8872,7 +8903,7 @@ void NewLeaf::qc () const
   Named::qc ();
     
   location. qc ();    
-  ASSERT (& location. anchor->getDistTree () == & tree);
+  QC_ASSERT (& location. anchor->getDistTree () == & tree);
 }
 
 

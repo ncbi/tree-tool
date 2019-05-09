@@ -363,10 +363,10 @@ struct DTNode : Tree::TreeNode
 	Real len;
 	  // Arc length between *this and *getParent()
 	  // *this is root => NaN
-  Vector<uint/*objNum*/> pathObjNums; 
+  Vector<uint/*dissimNum*/> pathDissimNums; 
     // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
-    // asLeaf() => getDistTree().dissims[objNum].hasLeaf(this)  
+    // asLeaf() => getDistTree().dissims[dissimNum].hasLeaf(this)  
     //             aggregate size = 2 p
     // !asLeaf(): aggregate size = O(p log(n))
     // Distribution of size ??
@@ -385,7 +385,7 @@ protected:
     // Average subtree height 
     // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
-  size_t paths {0};  // = pathObjNums.size() ??
+  size_t paths {0};  // = pathDissimNums.size() ??
     // Number of paths going through *this arc
   Real errorDensity {NaN};
   Real absCriterion {NaN};
@@ -395,7 +395,7 @@ public:
     // = absCriterion/count
   Real relCriterion {NaN};
     // !isNan() => = getRelCriterion()
-  uint closestObjNum {dissims_max};
+  uint closestDissimNum {dissims_max};
     // Index of DistTree::dissims[]
 
 
@@ -452,9 +452,9 @@ private:
   virtual void setLca ();
     // Off-line LCA algorithm by Tarjan
     // Requires: !tarjanLca 
-  Vector<uint/*objNum*/> getLcaObjNums ();
-    // Return: objNum's s.t. getDistTree().dissims[objNum].lca = this
-    // Invokes: DTNode::pathObjNums.sort()
+  Vector<uint/*dissimNum*/> getLcaDissimNums ();
+    // Return: dissimNum's s.t. getDistTree().dissims[dissimNum].lca = this
+    // Invokes: DTNode::pathDissimNums.sort()
   VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max,
                                         bool subtractDissims,
                                         bool refreshDissims) const;
@@ -594,7 +594,7 @@ private:
   void setLca () final;
 public:
 
-  const Leaf* getDissimOther (size_t objNum) const;
+  const Leaf* getDissimOther (size_t dissimNum) const;
     // Return: !nullptr; != this
   const DTNode* getDiscernible () const;
     // Return: this or getParent(); !nullptr
@@ -622,7 +622,7 @@ public:
 struct SubPath
 // Path going through a connected subgraph
 {
-  uint objNum {(uint) -1};    
+  uint dissimNum {(uint) -1};    
     // Index of DistTree::dissims
   const DTNode* node1 {nullptr};
   const DTNode* node2 {nullptr};
@@ -631,17 +631,17 @@ struct SubPath
 
     
   SubPath () = default;
-  explicit SubPath (uint objNum_arg)
-    : objNum (objNum_arg)
+  explicit SubPath (uint dissimNum_arg)
+    : dissimNum (dissimNum_arg)
     {}
   void qc () const;
 
   
   bool operator== (const SubPath &other) const
-    { return objNum == other. objNum;
+    { return dissimNum == other. dissimNum;
     }
   bool operator< (const SubPath &other) const
-    { return objNum < other. objNum; }
+    { return dissimNum < other. dissimNum; }
   bool contains (const DTNode* node) const
     { return    node1 == node
              || node2 == node;
@@ -732,14 +732,14 @@ struct Subgraph : Root
   	                                  Tree::LcaBuffer &buf) const
     // Return: reference to buf
     { const Tree::TreeNode* lca_ = nullptr;
-      // tree.dissims[subPath.objNum].lca can be used instead of area_root if viaRoot(subPath) and tree topology has not been changed ??
+      // tree.dissims[subPath.dissimNum].lca can be used instead of area_root if viaRoot(subPath) and tree topology has not been changed ??
       return Tree::getPath (subPath. node1, subPath. node2, area_root, lca_, buf);
     }
     // Requires: subPath in subPaths
-  const Vector<uint>& boundary2pathObjNums (const DTNode* dtNode) const
+  const Vector<uint>& boundary2pathDissimNums (const DTNode* dtNode) const
     { return dtNode == area_root /* && area_underRoot */
-               ? area_underRoot->pathObjNums
-               : dtNode        ->pathObjNums;
+               ? area_underRoot->pathDissimNums
+               : dtNode        ->pathDissimNums;
     }
   const Leaf* getReprLeaf (const DTNode* dtNode) const
     { return dtNode == area_root 
@@ -925,6 +925,11 @@ struct Dissim
     	if (leaf == leaf2) return leaf1;
     	throw logic_error ("getOtherLeaf");
     }
+  bool indiscernible () const
+    { return    ! leaf1->discernible
+             && ! leaf2->discernible
+             && leaf1->getParent () == leaf2->getParent ();
+    }
   string getObjName () const;
   VectorPtr<Tree::TreeNode>& getPath (Tree::LcaBuffer &buf) const;
   	// Return: reference to buf
@@ -951,9 +956,9 @@ struct Dissim
   Real getDeformation () const
     { return getCriterion (2); }
     
-  void setPathObjNums (size_t objNum,
-                       Tree::LcaBuffer &buf);
-    // Output: prediction, Steiner::pathObjNums
+  void setPathDissimNums (size_t dissimNum,
+                          Tree::LcaBuffer &buf);
+    // Output: prediction, Steiner::pathDissimNums
   array<const Leaf*,2> getLeaves () const
     { array<const Leaf*, 2> leaves;
       leaves [0] = leaf1;
@@ -1161,7 +1166,7 @@ private:
     // Output: topology, DTNode::len, Leaf::discernible
     // Update: lineNum
   void setName2leaf ();
-  size_t getPathObjNums_size () const
+  size_t getPathDissimNums_size () const
     { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR
   void loadDissimDs (const string &dissimFName,
                      const string &dissimAttrName,
@@ -1219,7 +1224,7 @@ private:
                   Real mult,
                   size_t type);
 	  // Return: Dissim is added
-    // Append: dissims[], Leaf::pathObjNums
+    // Append: dissims[], Leaf::pathDissimNums
   bool addDissim (const string &name1,
                   const string &name2,
                   Real target,
@@ -1233,7 +1238,7 @@ private:
     	                 );
     }
   void setPaths (bool setDissimMultP);
-    // Output: dissims::Dissim, DTNode::pathObjNums, absCriterion
+    // Output: dissims::Dissim, DTNode::pathDissimNums, absCriterion
     // Invokes: setLca(), setDissimMult()
     // Time: O(p log(n))
 public:
@@ -1258,7 +1263,7 @@ public:
   size_t getDissimSize_max () const
     { return getOneDissimSize_max () * dissimTypesNum (); }	
   size_t getSparseDissims_size () const
-    { return 7 * getPathObjNums_size (); }  // PAR
+    { return 7 * getPathDissimNums_size (); }  // PAR
   VectorPtr<DTNode> getDiscernibles () const;
     // Logical leaves
   static void printParam (ostream &os) 
@@ -1304,10 +1309,10 @@ public:
 
 private:
   void qcPaths ();
-    // Sort: DTNode::pathObjNums 
+    // Sort: DTNode::pathDissimNums 
     // Time: ~ O(p log(n))
   void setLca ();
-    // Input: Leaf::pathObjNums
+    // Input: Leaf::pathDissimNums
     // Output: Dissim::lca
   void clearSubtreeLen ();
     // Invokes: DTNode::subtreeLen.clear()
@@ -1325,6 +1330,10 @@ public:
 	  // Time: O(|path|)
 	void setDissimMult (bool usePrediction);
 	  // Output: Dissim::mult, absCriterion, mult_sum, target2_sum
+private:
+  void setDissimMult (Dissim& dissim,
+                      bool usePrediction);
+public:
 	  
   // Optimization	  
 	size_t optimizeLenArc ();
@@ -1348,7 +1357,7 @@ public:
 	  // Optimal solution, does not depend on Obj::mult
 	  // Requires: 3 leaves
   bool optimizeReinsert (bool useOrigWeights);
-    // Re-inserts subtrees with small DTNode::pathObjNums.size()
+    // Re-inserts subtrees with small DTNode::pathDissimNums.size()
 	  // Return: false <=> finished
     // Invokes: setDissimMult(false), NewLeaf(DTNode*), Change, applyChanges(), Threads
     // Time: O(n log^3(n))
@@ -1466,8 +1475,8 @@ public:
   void setNodeAbsCriterion ();
     // Output: DTNode::{absCriterion,absCriterion_ave}
     // Time: O(p log(n))
-	void setNodeClosestObjNum ();
-    // Output: DTNode::closestObjNum
+	void setNodeClosestDissimNum ();
+    // Output: DTNode::closestDissimNum
     // Time: O(p log(n))
   Dataset getLeafErrorDataset () const;
     // Return: attrs = {PositiveAttr1}
