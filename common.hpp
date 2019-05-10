@@ -1390,6 +1390,15 @@ public:
 	  }
   bool contains (const T &value) const
     { return constFind (value) != P::end (); }
+  size_t indexOf (const T &value) const
+    { size_t n = 0;
+      for (const T& t : *this)
+        if (value == t)
+          return n;
+        else
+          n++;
+      return NO_INDEX;
+    }
   size_t countValue (const T &value) const
     { size_t n = 0;
       for (const T& t : *this)
