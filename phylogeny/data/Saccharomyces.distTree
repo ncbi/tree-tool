@@ -22,18 +22,18 @@ Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 # Nodes deleted = 1
 absCriterion = 2.5765e+02  Error density = 8.949 %
-CHRON: Initial arc lengths: 222 sec.
+CHRON: Initial arc lengths: 215 sec.
 
 Optimizing topology: subgraphs ...
 # Hybrids: 42
-absCriterion = 6.9193e+01  Error density = 5.057 %
+absCriterion = 6.9203e+01  Error density = 5.057 %
 
 # Hybrids: 0
-absCriterion = 6.8790e+01  Error density = 5.048 %
+absCriterion = 6.8790e+01  Error density = 5.047 %
 
 # Iterations of subgraph optimization: 3
 absCriterion = 6.8783e+01  Error density = 5.048 %
-CHRON: Topology optimization: local: 292 sec.
+CHRON: Topology optimization: local: 279 sec.
 
 Ave. radius: 0.560
 
@@ -41,10 +41,10 @@ Ave. radius: 0.560
 absCriterion = 6.6991e+01  Error density = 4.993 %
 
 # Closest outliers: 100
-absCriterion = 6.6601e+01  Error density = 4.990 %
+absCriterion = 6.5838e+01  Error density = 4.960 %
 
 OUTPUT:
-absCriterion = 6.6601e+01  Error density = 4.990 %
+absCriterion = 6.5838e+01  Error density = 4.960 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

@@ -7539,7 +7539,8 @@ bool leafBadCriterionStrictlyGreater (const Leaf* a,
 {
   ASSERT (a);
   ASSERT (b);
-  return a->badCriterion > b->badCriterion;
+  LESS_PART (*b, *a, badCriterion);
+  return a->name < b->name;
 }
 
 }
@@ -7566,8 +7567,12 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
 
   Normal distr;  // Beta1 ??
   outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max * (Real) dissimTypesNum ());
+//PRINT (outlier_min); 
 
-  VectorPtr<Leaf> res;
+  for (const auto& it : name2leaf)
+    var_cast (it. second) -> badCriterion = 0.0;
+
+  VectorPtr<Leaf> res;  res. reserve (name2leaf. size ());
   if (! isNan (outlier_min))
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
@@ -7576,13 +7581,14 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
           const Leaf* leaf = dissim. leaf1;
           if (dissim. leaf2->getRelCriterion () > leaf->getRelCriterion ())
             leaf = dissim. leaf2;
-          var_cast (leaf) -> badCriterion = dissim. getDeformation ();
+          maximize (var_cast (leaf) -> badCriterion, dissim. getDeformation ());
           res << leaf;
         }
-    
-  res. sort (leafBadCriterionStrictlyGreater);
+  res. sort ();
   res. uniq ();
   
+  res. sort (leafBadCriterionStrictlyGreater);
+
   // Find a maximal "independent" subset ??
       
   return res;

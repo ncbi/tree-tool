@@ -34,7 +34,7 @@ absCriterion = 1.3022e+01  Error density = 1.763 %
 absCriterion = 1.3011e+01  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 1.3007e+01  Error density = 1.762 %
+absCriterion = 1.3008e+01  Error density = 1.762 %
 
 # Hybrids: 0
 absCriterion = 1.3006e+01  Error density = 1.762 %
@@ -63,10 +63,10 @@ Ave. radius: 0.456
 absCriterion = 9.7436e+00  Error density = 1.543 %
 
 # Closest outliers: 52
-absCriterion = 4.0439e+00  Error density = 1.222 %
+absCriterion = 4.0438e+00  Error density = 1.222 %
 
 OUTPUT:
-absCriterion = 4.0439e+00  Error density = 1.222 %
+absCriterion = 4.0438e+00  Error density = 1.222 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

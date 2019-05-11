@@ -1107,7 +1107,6 @@ public:
 	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
 	  //          genogroup_barrier         <number>                                      Boundary of genogroup to find outliers
-    //         [outlier-alien]            <obj>                                         Objects similar to no other objects
     //         [dissim.bad]               <obj1> <obj2> nan
 	  //          hybrid/                   <obj>                                         Hybrid objects
 	  //         [outlier-genogroup]        <obj>                                         Genogroup outliers to delete
@@ -1120,7 +1119,7 @@ public:
 	  //          runlog                                                                  Invocations of distTree_inc_new.sh
 	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
 	  //         [finished]                 /dev/null                                     Iterations of distTree_inc_new.sh are finished
-    //          <Executables>
+    //        <Executables>:
     //          db2unhybrid.sh            output: <Obj> list to move to new/
     //          genogroup2db.sh           input: genogroup_table; output: outlier-genogroup
     //          hybrid2db.sh              parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
