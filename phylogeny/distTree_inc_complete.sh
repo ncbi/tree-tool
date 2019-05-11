@@ -32,11 +32,6 @@ if [ $N -gt 0 ]; then
   exit 1
 fi
 
-if [ -s $INC/outlier-alien ]; then
-  echo "$INC/outlier-alien must be empty"
-  exit 1
-fi
-
 
 $THIS/../sort.sh $OBJS
 
@@ -51,9 +46,10 @@ echo "data.dm ..."
 $THIS/../dm/pairs2attr2 $INC/dissim 1 cons 6 -distance > data.dm
 
 $THIS/../dm/dm2objs data | sort > $INC/tree.list
-$THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
 if [ $DB == 1 ]; then
+  $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
   $THIS/../trav $INC/outlier-alien "$INC/outlier2db.sh %f alien"
+  rm $INC/outlier-alien
 fi
 
 

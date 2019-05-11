@@ -36,11 +36,6 @@ if [ $N -gt 0 ]; then
   echo "# Hybrids: $N ($PERCENT %)"
 fi
 
-if [ -e $INC/outlier-alien ]; then
-	N=`cat $INC/outlier-alien | wc -l`
-  echo "# Alien-outliers: $N"
-fi
-
 
 echo ""
 

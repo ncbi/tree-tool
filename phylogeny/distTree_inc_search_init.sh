@@ -27,7 +27,7 @@ done
 
 if [ ! -s $DIR/request ]; then
   wc -l $DIR/request
-  flock $INC/outlier-alien -c "echo $OBJ >> $INC/outlier-alien"
+ #flock $INC/outlier-alien -c "echo $OBJ >> $INC/outlier-alien"
   $INC/outlier2db.sh $OBJ alien
   rm -r $DIR/
 else
