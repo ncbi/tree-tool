@@ -276,7 +276,9 @@ private:
   bool movementsOn {false};
   Vector<Movement> movements;
     // Valid if movementsOn
-  size_t coreSize {0};
+  size_t middleCoreSize {0};
+    // Size of core in the middle of the arc
+    // Undefined for FeatureTree::root
 public:
 
 
@@ -354,11 +356,9 @@ protected:
 	void commitFeatures ();
 public:
   
-  void setCoreSize ()
-    { coreSize = 0;
-      for (const bool b : core)
-        coreSize += b;
-    }
+  bool getMiddleCore (size_t featureIndex) const
+    { return getParent () ? feature2parentCore (featureIndex) && core [featureIndex] : false; }
+  void setMiddleCoreSize ();
 };
 
 
@@ -966,6 +966,10 @@ public:
 		{ clear ();
 		  targets = getTargets (); 
 		}
+	static bool valid_ (const Species* from_arg)
+    { return    Change::valid_ (from_arg)
+             && from_arg->getParent ();
+    }
 private:
 	void clear () override
 	  { Change::clear ();
@@ -1231,9 +1235,9 @@ public:
 	  // Update: Phyl::stable
 	  // Invokes: getBestChange(), applyChanges()
   const Species* findRoot ();
-	  // Return: arg min_{Species::coreSize()} or nullptr if current root is best
+	  // Return: arg min_{Species::middleCcoreSize()} or nullptr if current root is best
     // Idempotent (prove ??)
-    // Input: Species::coreSize
+    // Input: Species::middleCoreSize
 	  // Invokes: setLeaves();
 	  // Requires: allTimeZero
 	string changeRoot ();
