@@ -7,32 +7,35 @@ if [ $# != 2 ]; then
   echo "#2: directory with features of genomes"
   exit 1
 fi
+OBJ=$1
+FEAT=$2
 
 
+TMP=`mktemp`
 
-$THIS/feature2dissim $1.list $2 > $1.dm
 
-$THIS/distTree.sh $1 cons 
-rm $1.dm
-rm $1.makeDistTree
+QC="" # -qc
 
-# Gain/loss tree
-$THIS/makeDistTree  -input_tree $1.tree  -noqual  -output_feature_tree $1-init.tree  
-rm $1.tree 
+
+$THIS/feature2dissim $QC $OBJ.list $FEAT > $TMP.dm
 
 echo ""
 echo ""
-$THIS/makeFeatureTree  -input_tree $1-init.tree  -features $2  -output_tree $1-maxParsimony.tree  -output_core $1-maxParsimony.core  -optim_iter_max 100
-rm $1-init.tree
+$THIS/makeDistTree  $QC  -data $TMP  -dissim_attr cons  -variance linExp  -optimize  -output_feature_tree ${TMP}-init.tree 
+
+echo ""
+echo ""
+$THIS/makeFeatureTree  $QC  -input_tree ${TMP}-init.tree  -features $FEAT  -optim_iter_max 100  -output_core ${TMP}-maxParsimony.core  -prefer_gain  -output_tree ${TMP}-maxParsimony.tree  
 
 # MLE
 echo ""
 echo ""
-$THIS/makeFeatureTree  -input_tree $1-maxParsimony.tree  -features $2  -input_core $1-maxParsimony.core  -output_tree $1.tree  -output_core $1.core  -optim_iter_max 100  -use_time
-rm $1-maxParsimony.tree 
-rm $1-maxParsimony.core
+$THIS/makeFeatureTree  $QC  -input_tree ${TMP}-maxParsimony.tree  -features $FEAT  -input_core ${TMP}-maxParsimony.core  -optim_iter_max 100  -use_time  -output_tree $OBJ.tree  -output_core $OBJ.core 
 
 
-# To distance tree for loading into Phyl
+# Creating a distance tree for loading into Phyl:
 # mv genomes299.tree genomes299.featureTree
 # tail -n +3 genomes299.featureTree | sed 's/: t=/: len=/1' | grep -v '^ *g' | sed 's/^\( *\)s/\1/1' | sed 's/^1: len=0.000000e+00/1: len=nan/1' | sed 's/^\( *\)\([1-9]\)/\10x\2/1' > genomes299.tree
+
+
+rm $TMP*
