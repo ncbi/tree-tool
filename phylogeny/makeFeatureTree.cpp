@@ -33,11 +33,10 @@ struct ThisApplication : Application
   	  addFlag ("use_time", "Use time for MLE, otherwise maximum parsimony method");
   	  addKey ("optim_iter_max", "# Iterations for tree optimization; -1: optimize time only", "0");
   	  addFlag ("save_mem", "Save RAM memory by processing features one by one in the tree. This makes processing slower and restricts functionality");
+  	  addKey ("output_core", "Find root, set root core, sort tree and save file with root core feature ids");  	    
   
       // Output	    
   	  addKey ("output_tree", "Output file with the tree");
-  	  addKey ("output_core", "Find root, set root core, sort tree and save file with root core feature ids");  	    
-  	  addKey ("report_feature", "Feature name to report in the output tree");
   	  addKey ("newick", "Output file with the tree in the Newick format");
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
   	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
@@ -61,9 +60,9 @@ struct ThisApplication : Application
 		const bool   use_time           = getFlag ("use_time");  
 		const int    optim_iter_max     = str2<int> (getArg ("optim_iter_max"));
 		const bool   save_mem           = getFlag ("save_mem");
+		const string output_core        = getArg ("output_core");
 
 		const string output_tree        = getArg ("output_tree");
-		const string output_core        = getArg ("output_core");
 		const string newick             = getArg ("newick");
 		const bool   min_newick_name    = getFlag ("min_newick_name");
 		const string qual               = getArg ("qual");  
@@ -146,7 +145,7 @@ struct ThisApplication : Application
         {
          	for (const DiGraph::Node* node : tree. nodes)
          		if (const Species* sp = static_cast <const Phyl*> (node) -> asSpecies ())
-         		  var_cast (sp) -> setCoreSize ();
+         		  var_cast (sp) -> setMiddleCoreSize ();
          	newRootName = tree. changeRoot ();
         }
         cout << "New root: " << newRootName << endl;
