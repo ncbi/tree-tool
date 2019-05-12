@@ -2,6 +2,7 @@
 if [ $# -ne 1 ]; then
   echo "Print 100 approximately closest objects to #1"
   echo "#1: object id"
+  echo "Requires: Time: O(n log^3(n))"
   exit 1
 fi
 OBJ=$1
