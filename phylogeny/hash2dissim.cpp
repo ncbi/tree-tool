@@ -72,7 +72,7 @@ struct ThisApplication : Application
       FFOR (size_t, objNum, ds. objs. size ())
       {
         prog (ds. objs [objNum] -> name);
-        obj2hashes [objNum] << move (Hashes (hash_dir + "/" + ds. objs [objNum] -> name));
+        obj2hashes << move (Hashes (hash_dir + "/" + ds. objs [objNum] -> name));
       }
     }
     
