@@ -47,17 +47,14 @@ Real Func1::findZero (Real x_min,
 	
 	for (;;)
 	{
-	  ASSERT (leReal (x_min, x_max));
+    ASSERT (x_min < x_max);
   	const Real x = (x_min + x_max) / 2.0;
-	//if (x_max - x_min <= precision)
-		//return x;
+	  if (x_max - x_min <= precision)
+		  return x;
   	const Real y = f (x);
   	ASSERT (! isNan (y));
     if (verbose ())
       cout << "x =" << x << "  y = " << y << endl;  
-  	if (fabs (y) <= precision)  
-  		return x;
-    ASSERT (x_min < x_max);
   	if (y < 0.0)
   		x_min = x;
   	else
@@ -71,9 +68,11 @@ Real Func1::findZeroPositive (Real x_init,
                               Real precision) 
 {
 	ASSERT (x_init > 0.0);
+	ASSERT (f (0.0) <= 0.0);
+	ASSERT (f (INF) >= 0.0);
 	
   Real x_min = x_init;
-  while (f (x_min) > 0.0)
+  while (positive (f (x_min)))
     x_min /= 2.0;
   if (x_min != x_init)
   	return findZero (x_min, 2.0 * x_min, precision);
@@ -81,7 +80,7 @@ Real Func1::findZeroPositive (Real x_init,
     cout << "x_init=" << x_init << "  x_min=" << x_min << endl;  
     
   Real x_max = x_init;
-  while (f (x_max) < 0.0)
+  while (negative (f (x_max)))
     x_max *= 2.0;
   if (x_max != x_init)
   	return findZero (x_max / 2.0, x_max, precision);
