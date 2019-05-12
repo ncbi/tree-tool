@@ -1121,6 +1121,9 @@ const Tree::TreeNode* Tree::TreeNode::makeRoot ()
 	const TreeNode* root_old = getTree (). root;
 	ASSERT (root_old);
 	
+	if (this == root_old)
+	  return this;
+	
 	TreeNode* parent_new = nullptr;
 	TreeNode* node = this;
 	while (node)
