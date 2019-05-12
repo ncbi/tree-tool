@@ -6,7 +6,7 @@ Subgraph radius: 5
 Root: by length
 
 Loading data/inc.ITS/dissim ...
-CHRON: Initial topology: 37 sec.
+CHRON: Initial topology: 33 sec.
 
 INPUT:
 # Leaves: 9009
@@ -21,14 +21,14 @@ absCriterion = 1.3604e+03  Error density = 8.879 %
 # Commits = 233
 Improvement = 69.0361
 absCriterion = 1.2914e+03  Error density = 8.649 %
-CHRON: Topology optimization: re-insert: 631 sec.
+CHRON: Topology optimization: re-insert: 580 sec.
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 2
 absCriterion = 1.0080e+03  Error density = 8.133 %
 CHRON: Topology optimization: local: 75 sec.
 
-Ave. radius: 7.575
+Ave. radius: 7.577
 
 OUTPUT:
 absCriterion = 1.0080e+03  Error density = 8.133 %
