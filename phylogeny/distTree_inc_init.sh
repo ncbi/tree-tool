@@ -60,6 +60,7 @@ create_script objects_in_tree
 create_script outlier2db
 create_script request2dissim
 create_script request_closest
+create_script qc
 if [ $HYBRIDNESS_MIN != 0 ]; then
 	create_script db2unhybrid
 	create_script hybrid2db

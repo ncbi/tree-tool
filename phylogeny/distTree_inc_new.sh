@@ -83,7 +83,7 @@ rm $INC/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-# Time ??
+# Time: O(n log(n))+
 REQ=`ls $INC/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
 	$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
@@ -249,6 +249,9 @@ rm $INC/dissim_request
 
 
 $THIS/distTree_inc_tree1_quality.sh $INC
+
+
+$INC/qc.sh go
 
 
 NEW=`ls $INC/new | wc -l`
