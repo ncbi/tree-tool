@@ -495,7 +495,7 @@ void Species::setWeight ()
   else
   {
 	  ASSERT (time >= 0.0);
-	 	const Prob a = 1 - exp (- time);
+	 	const Prob a = 1.0 - exp (- time);
 	 	ASSERT (isProb (a));
   	for (const bool parentCore : {false, true})
 	  {
@@ -552,25 +552,25 @@ struct TimeFunc : Func1
   
   Real f (Real x) 
   { 
-    ASSERT (x >= 0);
+    ASSERT (x >= 0.0);
     
-  	const Prob a = 1 - exp (- x);
+  	const Prob a = 1.0 - exp (- x);
   	
-  	Real lhs = 0;
+  	Real lhs = 0.0;
   	for (const bool c : {false, true})
   		if (const Prob denomin = a)
   	    lhs += parent2core [! c] [c] / denomin;
   	  else
   	  	lhs = INF;
-  	ASSERT (lhs >= 0);
+  	ASSERT (lhs >= 0.0);
   	  
-  	Real rhs = 0;
+  	Real rhs = 0.0;
   	for (const bool c : {false, true})
   		if (const Real denomin = 1 / negateProb (tree. lambda0, c) - a)
   	    rhs += parent2core [c] [c] / denomin;
   	  else
   	  	rhs = INF;
-  	ASSERT (rhs >= 0);
+  	ASSERT (rhs >= 0.0);
   	  
   	const Real r = rhs - lhs;
   	ASSERT (! isNan (r));
@@ -744,6 +744,16 @@ void Species::commitFeatures ()
 	movements. clear ();
 	movementsOn = false;
 	pooledSubtreeDistance_old = NaN;
+}
+
+
+
+void Species::setMiddleCoreSize ()
+{ 
+  middleCoreSize = 0;
+  FFOR (size_t, i, core. size ())
+    if (getMiddleCore (i))  
+      middleCoreSize++;
 }
 
 
@@ -2238,13 +2248,13 @@ void FeatureTree::processBatch (const VectorPtr<Phyl> &phyls,
   
   setCore ();  
   
-  // Feature::Stats; Species::coreSize
+  // Feature::Stats; Species::middleCoreSize
  	for (const Phyl* phyl : phyls)
  	  FFOR (size_t, i, featureBatch. size ())
    	{
       setFeatureStats (features [featureBatch [i]], i, phyl);
       if (const Species* sp = phyl->asSpecies ())
-        var_cast (sp) -> coreSize += sp->core [i];
+        var_cast (sp) -> middleCoreSize += sp->getMiddleCore (i) /*core [i]*/;
     }
 }
                                 
@@ -2742,7 +2752,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
         cout << "parent2core[" << (int) i << "][" << (int) j << "]=" << parent2core [i] [j] << endl;
 
   float len_old;  
-  float len1 = INF;;
+  float len1 = INF;
 	lambda0 = (Real) parent2core [true] [false] / ((Real) parent2core [true] [false] + (Real) parent2core [false] [true]);  // Optimal if time_init = 0
 	do 
 	{
@@ -2790,7 +2800,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
 
   // Cf. FeatureTree::FeatureTree()
 	setLenGlobal ();  
-	ASSERT (leReal (len, len1));
+	ASSERT (leReal (len / len1, 1.0, 1e-3));  // PAR
 	setCore ();  
   len_min = getLength_min ();
 
@@ -3165,18 +3175,20 @@ const Species* FeatureTree::findRoot ()
   const size_t halfLeaves = root->leaves / 2;
   
   const Species* newRoot = nullptr;
-  size_t bestCoreSize = static_cast <const Species*> (root) -> coreSize;
+  size_t bestMiddleCoreSize = numeric_limits<size_t>::max ();
  	for (const DiGraph::Node* node : nodes)
  		if (const Species* sp = static_cast <const Phyl*> (node) -> asSpecies ())
-      if (   minimize (bestCoreSize, sp->coreSize)
-          || (   bestCoreSize == sp->coreSize 
-              && newRoot 
-              &&   difference (     sp->leaves, halfLeaves) 
-                 < difference (newRoot->leaves, halfLeaves)
-             )
-         )
-        newRoot = sp;
+ 		  if (sp != root)
+        if (   minimize (bestMiddleCoreSize, sp->middleCoreSize)
+            || (   bestMiddleCoreSize == sp->middleCoreSize 
+                && newRoot 
+                &&   difference (     sp->leaves, halfLeaves) 
+                   < difference (newRoot->leaves, halfLeaves)
+               )
+           )
+          newRoot = sp;
 
+  ASSERT (newRoot != root);
   return newRoot;
 }
 
@@ -3422,10 +3434,8 @@ void FeatureTree::tryChange (Change* ch,
 	ASSERT (ch->from->graph == this);
 
   if (verbose ())
-  {
     ch->print (cout); 
-    ch->qc ();
-  }
+  ch->qc ();
 
   ch->apply ();
   ch->restore ();
