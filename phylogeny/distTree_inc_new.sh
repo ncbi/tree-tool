@@ -251,6 +251,8 @@ rm $INC/dissim_request
 $THIS/distTree_inc_tree1_quality.sh $INC
 
 
+echo ""
+echo "QC ..."
 $INC/qc.sh go
 
 
