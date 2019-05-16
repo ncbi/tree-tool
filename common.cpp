@@ -1704,7 +1704,8 @@ void Json::parse (CharInput& in,
 
 string Json::getString () const
 { 
-  if (! this || asJsonNull ())
+  const auto* this_ = this;
+  if (! this_ || asJsonNull ())
     throw runtime_error ("undefined");
   if (const JsonString* j = asJsonString ())
     return j->s;
@@ -1715,7 +1716,8 @@ string Json::getString () const
 
 int Json::getInt () const
 { 
-  if (! this || asJsonNull ())
+  const auto* this_ = this;
+  if (! this_ || asJsonNull ())
     throw runtime_error ("undefined");
   if (const JsonInt* j = asJsonInt ())
     return j->n;
@@ -1726,7 +1728,8 @@ int Json::getInt () const
 
 double Json::getDouble () const
 { 
-  if (! this)
+  const auto* this_ = this;
+  if (! this_)
     throw runtime_error ("undefined");
   if (asJsonNull ())
     return numeric_limits<double>::quiet_NaN ();
@@ -1739,7 +1742,8 @@ double Json::getDouble () const
 
 bool Json::getBoolean () const
 { 
-  if (! this || asJsonNull ())
+  const auto* this_ = this;
+  if (! this_ || asJsonNull ())
     throw runtime_error ("undefined");
   if (const JsonBoolean* j = asJsonBoolean ())
     return j->b;
@@ -1750,7 +1754,8 @@ bool Json::getBoolean () const
 
 const Json* Json::at (const string& name_arg) const
 { 
-  if (! this)
+  const auto* this_ = this;
+  if (! this_)
     throw runtime_error ("undefined");
   if (asJsonNull ())
     return nullptr;
@@ -1763,7 +1768,8 @@ const Json* Json::at (const string& name_arg) const
 
 const Json* Json::at (size_t index) const
 { 
-  if (! this)
+  const auto* this_ = this;
+  if (! this_)
     throw runtime_error ("undefined");
   if (asJsonNull ())
     return nullptr;
@@ -1781,7 +1787,8 @@ const Json* Json::at (size_t index) const
 
 size_t Json::getSize () const
 { 
-  if (! this)
+  const auto* this_ = this;
+  if (! this_)
     throw runtime_error ("undefined");
   if (asJsonNull ())
     return 0;

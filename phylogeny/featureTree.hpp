@@ -258,7 +258,7 @@ private:
 	float weight_old [2/*thisCore*/] [2/*parentCore*/];
   Real time_old {NaN};
     // May be NaN
-	float pooledSubtreeDistance_old {NaN};  
+	float pooledSubtreeDistance_old {(float) NaN};  
   struct Movement
   {
   	bool parentCore {false};
@@ -1089,10 +1089,10 @@ public:
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
 	size_t genomeFeatures_ave {0};
-	float len {NaN};
+	float len {(float) NaN};
 	  // >= len_min
 	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
-	float len_min {NaN};
+	float len_min {(float) NaN};
 	  // >= 0
 	Prob lenInflation {0.0};
 	bool oneFeatureInTree {false};

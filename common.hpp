@@ -57,6 +57,7 @@
 
 #include <ctime>
 #include <cstring>
+#include <cmath>
 #include <string>
 #include <stdexcept>
 #include <limits>
@@ -70,6 +71,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <memory>
 #include <algorithm>

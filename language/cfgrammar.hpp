@@ -49,7 +49,7 @@ struct Sentence : Root
         {}
     };
   Sentence (const Grammar &grammar,
-            const string &s) throw (BadPos);
+            const string &s) /*throw (BadPos)*/;
     // After: grammar.setChar2terminal() 
   void qc () const final;
 
@@ -658,10 +658,10 @@ public:
   const Rule* getLeftRecursiveErasable () const;
     // Return: may be nullptr
   struct Ambiguity : runtime_error  { Ambiguity (const string &what_arg) : runtime_error (what_arg) {} };
-  void findAmbiguity ()  const throw (Ambiguity);
+  void findAmbiguity () const /*throw (Ambiguity)*/;
     // Not important for a deterministic parser
   struct StdParserError : runtime_error  { StdParserError (const string &what_arg) : runtime_error (what_arg) {} };
-  void prepare () throw (StdParserError, Ambiguity);
+  void prepare () /*throw (StdParserError, Ambiguity)*/;
     // Invokes: findParseCycle(), getLeftRecursiveErasable(), setChar2terminal(), findAmbiguity()
     
   double getComplexity () const;

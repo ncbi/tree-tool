@@ -93,7 +93,7 @@ struct ThisApplication : Application
   
     if (!  lin_dep)
       FOR (size_t, i, maxAttrNum)
-        ASSERT (fabs (lr. beta [i] - 1) <= 0.5);  // PAR
+        { QC_ASSERT (fabs (lr. beta [i] - 1) <= 0.5); }  // PAR
   
     lr. setAttrImportance ();
 

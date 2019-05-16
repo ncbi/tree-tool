@@ -5341,11 +5341,13 @@ Clustering::Clustering (const Clustering &clustering,
     
   if (compNum1 != NO_INDEX)    
     FOR_REV (size_t, compNum2, mixt. components. size ())
+    {
       if (compNum2 == compNum1)
         break;
       else
         if (toMerge [compNum2])
           merge (compNum1, compNum2);        
+    }
         
   mixt. setParam ();  
   setAnalysis ();

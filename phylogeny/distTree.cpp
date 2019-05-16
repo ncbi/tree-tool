@@ -329,7 +329,7 @@ void TriangleParentPair::finish (const DistTree &tree,
       const Parent& p = parents [i];    
       if (child_classSize < all * classSizeFrac_max)
         setChildrenHybrid ();
-      else if (p. classSize < all * classSizeFrac_max)
+      else if ((Real) p. classSize < all * classSizeFrac_max)
         best->parents [i]. hybrid = true;   
       else if (child_classSize + (Real) p. classSize < all * classSizeFrac_max)
       {
@@ -1460,7 +1460,7 @@ void Subgraph::removeIndiscernibles ()
   newBoundary. uniq ();
   if (qc_on)
     for (const Tree::TreeNode* node : boundary)
-      ASSERT (! newBoundary. contains (node));
+      { QC_ASSERT (! newBoundary. contains (node)); }
   for (const Tree::TreeNode* node : newBoundary)
     boundary << node;    
 }
@@ -1634,15 +1634,15 @@ void Subgraph::subPaths2tree ()
     {
       ASSERT (node != area_root);
       if (qc_on)
-        { ASSERT (boundary. containsFast (node) == (node != area_underRoot && (node == subPath. node1 || node == subPath. node2))); }
+        { QC_ASSERT (boundary. containsFast (node) == (node != area_underRoot && (node == subPath. node1 || node == subPath. node2))); }
       if ((node == area_underRoot || (node != subPath. node1 && node != subPath. node2)))  
       {
         const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
         ASSERT (st);
         if (qc_on && verbose ())
         {
-        //ASSERT (area. containsFast (st));  
-          ASSERT (! st->pathDissimNums. contains (dissimNum));  
+        //QC_ASSERT (area. containsFast (st));  
+          QC_ASSERT (! st->pathDissimNums. contains (dissimNum));  
         }
         var_cast (st) -> pathDissimNums << dissimNum;
       }
@@ -1793,10 +1793,11 @@ bool Change::apply ()
     subgraph. qc ();
     if (qc_on)
       for (const SubPath& subPath : subgraph. subPaths)
-        ASSERT (   subPath. contains (from)
-                || subPath. contains (to)
-                || subPath. contains (subgraph. area_root)
-               );
+        { QC_ASSERT (   subPath. contains (from)
+                     || subPath. contains (to)
+                     || subPath. contains (subgraph. area_root)
+                    );
+        }
   }
   
 

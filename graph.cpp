@@ -51,7 +51,7 @@ void DiGraph::Node::qc () const
   QC_IMPLY (graph, *graphIt == this);
   if (! graph)
   	for (const bool b : {false, true})
-  	  QC_ASSERT (arcs [b]. empty ());
+  	  { QC_ASSERT (arcs [b]. empty ()); }
 }
 
 

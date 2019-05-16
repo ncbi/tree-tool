@@ -311,7 +311,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
 #ifndef NDEBUG
   if (betaNonNegative)
     FOR (size_t, attrNum, space. size ())
-      ASSERT (beta [attrNum] >= 0);
+      { ASSERT (beta [attrNum] >= 0); }
 #endif
 
   absCriterion = NaN;

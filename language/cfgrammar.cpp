@@ -14,7 +14,7 @@ namespace Cfgr
 // Sentence
 
 Sentence::Sentence (const Grammar &grammar,
-                    const string &s) throw (BadPos)
+                    const string &s) /*throw (BadPos)*/
 {
   seq. resize (s. size () + 2);
   seq [0]. init (grammar, eot). right = true;
@@ -1607,6 +1607,9 @@ void Grammar::addRule (const string &lhs,
     {
       case Token::eName: 
         isName = true;
+        rhs << token. name; 
+        rhsPart++;
+        break;
       case Token::eInteger: 
         rhs << token. name; 
         rhsPart++;
@@ -2079,7 +2082,7 @@ const Rule* Grammar::getLeftRecursiveErasable () const
 
 
 
-void Grammar::findAmbiguity () const throw (Ambiguity)
+void Grammar::findAmbiguity () const /*throw (Ambiguity)*/
 {
   for (const Symbol* s : symbols)
     if (const NonTerminal* nt = s->asNonTerminal ())
@@ -2111,7 +2114,7 @@ void Grammar::findAmbiguity () const throw (Ambiguity)
 
 
 
-void Grammar::prepare () throw (StdParserError, Ambiguity)
+void Grammar::prepare () /*throw (StdParserError, Ambiguity)*/
 {
   if (const Symbol* s = findParseCycle ())
     throw StdParserError ("First symbol cycle: " + s->name);
