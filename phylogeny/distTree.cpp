@@ -5196,7 +5196,9 @@ void DistTree::qcPredictionAbsCriterion () const
       QC_ASSERT_EQ (prediction_, dissim. prediction, 1e-3);  // PAR
       absCriterion_ += dissim. getAbsCriterion ();
     }
-  if (fabs (absCriterion - absCriterion_) > 1e-3)  // PAR
+  if (   fabs (absCriterion - absCriterion_) > 1e-3        // PAR
+      && fabs (log (absCriterion / absCriterion_)) > 1e-3  // PAR
+     )  
   {
     cout << absCriterion << " " << absCriterion_ << endl;
     ERROR;
@@ -5885,7 +5887,9 @@ size_t DistTree::optimizeLenNode ()
     const ONumber on (cout, absCriterionDecimals, false);
     cout << absCriterion_old1 << " -> " << absCriterion << endl;
   }
-  if (! leReal (absCriterion, absCriterion_old1))
+  if (   ! leReal (absCriterion, absCriterion_old1) 
+      && ! leReal (absCriterion / absCriterion_old1, 1.0, 1e-4)  // PAR
+     )
   {
     const ONumber on (cout, 6, true);
     cout << absCriterion_old1 << ' ' << absCriterion << endl;
