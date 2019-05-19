@@ -145,7 +145,7 @@ echo "Two dissimilarity types ..."
 
 echo ""
 echo "prot-identical_comm ..."
-makeDistTree  -qc  -data data/prot-identical_comm2  -variance linExp  -optimize  -subgraph_iter_max 10  \
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm2  -variance linExp  -optimize  -subgraph_iter_max 10  \
   -output_dissim_coeff prot-identical_comm2.dissim_coeff \
   -delete_criterion_outliers prot-identical_comm2.criterion_outliers \
   -delete_closest_outliers prot-identical_comm2.closest_outliers \
@@ -199,19 +199,19 @@ echo "Many dissimilarity types ..."
 
 echo ""
 echo "Wolf9 ..."
-makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
+$THIS/makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
 diff Wolf9.coeff data/Wolf9.coeff
 rm Wolf9.coeff
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
-makeDistTree  -qc  -data Wolf9-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf9-out.tree 1> $TMP.2 2> /dev/null
+$THIS/makeDistTree  -qc  -data Wolf9-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf9-out.tree 1> $TMP.2 2> /dev/null
 B=`grep -w ^OUTPUT -A 1 $TMP.2 | tail -1`
 if [ "$A" != "$B" ]; then
   echo "$A"
   echo "$B"
   exit 1
 fi
-printDistTree  -qc  Wolf9.tree      -order  -decimals 3  -min_name > Wolf9.nw
-printDistTree  -qc  Wolf9-out.tree  -order  -decimals 3  -min_name > Wolf9-out.nw
+$THIS/printDistTree  -qc  Wolf9.tree      -order  -decimals 3  -min_name > Wolf9.nw
+$THIS/printDistTree  -qc  Wolf9-out.tree  -order  -decimals 3  -min_name > Wolf9-out.nw
 diff Wolf9.nw Wolf9-out.nw
 rm Wolf9.nw Wolf9-out.nw
 rm Wolf9.tree Wolf9-out.tree
@@ -220,18 +220,18 @@ rm Wolf9-out.dm
 echo ""
 echo "Wolf110 ..."
 # 643 iterations, 14 min.
-makeDistTree  -qc  -data data/Wolf110  -variance_min 0.005  -variance linExp  -optimize  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
+$THIS/makeDistTree  -qc  -data data/Wolf110  -variance_min 0.005  -variance linExp  -optimize  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
 #
-makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
+$THIS/makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
 B=`grep -w ^OUTPUT -A 1 $TMP.2 | tail -1`
 if [ "$A" != "$B" ]; then
   echo "$A"
   echo "$B"
   exit 1
 fi
-printDistTree  -qc  Wolf110.tree      -order  -decimals 2  -min_name > Wolf110.nw
-printDistTree  -qc  Wolf110-out.tree  -order  -decimals 2  -min_name > Wolf110-out.nw
+$THIS/printDistTree  -qc  Wolf110.tree      -order  -decimals 2  -min_name > Wolf110.nw
+$THIS/printDistTree  -qc  Wolf110-out.tree  -order  -decimals 2  -min_name > Wolf110-out.nw
 diff Wolf110.nw Wolf110-out.nw
 rm Wolf110.nw Wolf110-out.nw
 rm Wolf110.tree Wolf110-out.tree
