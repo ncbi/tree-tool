@@ -65,7 +65,7 @@ Phyl::Phyl (FeatureTree &tree,
 {
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
-		  weight [i] [j] = NaN;
+		  weight [i] [j] = (float) NaN;
 }
 
 
@@ -437,7 +437,7 @@ Species::Species (FeatureTree &tree,
 {
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
-		  weight_old [i] [j] = NaN;
+		  weight_old [i] [j] = (float) NaN;
 }
 
 
@@ -743,7 +743,7 @@ void Species::commitFeatures ()
 	ASSERT (movementsOn);
 	movements. clear ();
 	movementsOn = false;
-	pooledSubtreeDistance_old = NaN;
+	pooledSubtreeDistance_old = (float) NaN;
 }
 
 
@@ -1147,7 +1147,7 @@ void Genome::setWeight ()
 	  {
 	  	// Parsimony method
 	    weight [  parentCore] [parentCore] = 0;
-	    weight [! parentCore] [parentCore] = INF;  
+	    weight [! parentCore] [parentCore] = (float) INF;  
 		}
   else
   {
@@ -2752,7 +2752,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
         cout << "parent2core[" << (int) i << "][" << (int) j << "]=" << parent2core [i] [j] << endl;
 
   float len_old;  
-  float len1 = INF;
+  float len1 = (float) INF;
 	lambda0 = (Real) parent2core [true] [false] / ((Real) parent2core [true] [false] + (Real) parent2core [false] [true]);  // Optimal if time_init = 0
 	do 
 	{

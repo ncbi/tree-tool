@@ -592,7 +592,6 @@ protected:
 	explicit Change (const Species* from_arg)
 		: tree (var_cast (from_arg->getFeatureTree ()))
 		, from (from_arg)
-		, improvement (INF)
 		{}
     // Requires: valid_()
 	Change (const FeatureTree &tree_arg,
