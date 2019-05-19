@@ -90,13 +90,15 @@ echo ""
 echo "prot-identical_comm: delete ..."
 $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -delete data/delete.list  -check_delete > /dev/null
 
-echo ""
-echo "ITS threads ..."
-# Time: 10 min.
-#       -qc: >40 min.
-$THIS/makeDistTree  -threads 5  -data data/inc.ITS/  -variance linExp  -optimize  -skip_len  -reinsert  -subgraph_iter_max 1  -noqual > ITS.distTree
-$THIS/distTree_compare_criteria.sh ITS.distTree data/ITS.distTree
-rm ITS.distTree
+if [ -d data/inc.ITS ]; then
+  echo ""
+  echo "ITS threads ..."
+  # Time: 10 min.
+  #       -qc: >40 min.
+  $THIS/makeDistTree  -threads 5  -data data/inc.ITS/  -variance linExp  -optimize  -skip_len  -reinsert  -subgraph_iter_max 1  -noqual > ITS.distTree
+  $THIS/distTree_compare_criteria.sh ITS.distTree data/ITS.distTree
+  rm ITS.distTree
+fi
 
 
 echo ""
