@@ -93,6 +93,8 @@ struct ThisApplication : Application
       string thisCmd (cmd);
       replaceStr (thisCmd, "%f", item);
       replaceStr (thisCmd, "%n", toString (gen->prog. n));  
+      if (contains (thisCmd, "%"))
+        throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
       if (verbose ())
       	cerr << thisCmd << endl;
       const int exitStatus = system (thisCmd. c_str ());
