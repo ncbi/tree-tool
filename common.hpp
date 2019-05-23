@@ -471,7 +471,16 @@ public:
         const T &b)
     : P (a, b)
     {}
+  Pair (T &&a,
+        T &&b)
+    : P (move (a), move (b))
+    {}
   Pair () = default;
+  Pair (Pair<T> &&other)
+    : P (move (other. first), move (other. second))
+    {}
+  Pair (const Pair<T> &other) = default;
+  Pair& operator= (const Pair<T> &other) = default;
     
   bool same () const
     { return P::first == P::second; }
@@ -2459,29 +2468,23 @@ struct PairFile : Root
 {
 private:
 	LineInput f;
+	Istringstream iss;
 public:
+  bool sameAllowed {false};
+	bool orderNames {false};
+  	// true => name1 < name2
 	string name1;
 	string name2;
-	// name1 < name2
 	
-	explicit PairFile (const string &fName)
+	PairFile (const string &fName,
+	          bool sameAllowed_arg,
+	          bool orderNames_arg)
 	  : f (fName, 100 * 1024, 1000)  // PAR
+	  , sameAllowed (sameAllowed_arg)
+	  , orderNames (orderNames_arg)
 	  {}
 	  
-	bool next ()
-	  { if (! f. nextLine ())
-	  	  return false;
-	  	static Istringstream iss;
-      iss. reset (f. line);
-      iss >> name1 >> name2;
-      if (name2. empty ())
-      	throw runtime_error ("Bad request: " + strQuote (name1) + " - " + strQuote (name2));
-      if (name1 == name2)
-      	throw runtime_error ("Same name: " + name1);
-      if (name1 > name2)
-      	swap (name1, name2);
-      return true;
-	  }
+	bool next ();
 };
 
 
