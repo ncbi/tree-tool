@@ -183,7 +183,7 @@ struct ThisApplication : Application
     Vector<Pair<const Leaf*>> distRequestPairs;  
     if (! dist_request. empty ())
     {
-    	PairFile f (dist_request);
+    	PairFile f (dist_request, false, false);
     	while (f. next ())
     	{
         const Leaf* leaf1 = findPtr (tree. name2leaf, f. name1);

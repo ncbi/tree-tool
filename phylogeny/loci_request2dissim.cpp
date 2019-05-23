@@ -74,7 +74,7 @@ struct ThisApplication : Application
 		
     OFStream output (out);
     ONumber on (output, 6, true);  // PAR
-    PairFile input (pairsFName);
+    PairFile input (pairsFName, false, false);
     while (input. next ())
     {
       const Loci loci1 (getLoci (loci_dir + "/" + input. name1));

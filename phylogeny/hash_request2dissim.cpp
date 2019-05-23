@@ -46,7 +46,7 @@ struct ThisApplication : Application
     OFStream output (out);
     ONumber on (output, 6, true);  // PAR
     map<string/*fName*/,Hashes> name2hashes;
-    PairFile input (pairsFName);
+    PairFile input (pairsFName, false, false);
     while (input. next ())
     {
       const string fName1 (hash_dir + "/" + input. name1);
