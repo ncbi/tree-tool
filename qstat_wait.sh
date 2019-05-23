@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "#1: seconds to wait"
+  echo "#1: seconds to wait after all jobs are in 'r' state"
   echo "#2: run qresub (0/1)"
   exit 1
 fi
