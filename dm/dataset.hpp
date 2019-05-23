@@ -3822,6 +3822,10 @@ struct PositiveAverageModel : Root
 		}
 		
    
+  void clearValues ()
+    { for (Component& comp : components)
+   		  comp. value = NaN;
+   	}
   Real get () const;
     // Input: Component::value
     // Output: Component::outlier
