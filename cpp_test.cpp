@@ -168,11 +168,31 @@ struct ThisApplication : Application
 	  vec [3] = false;
 	  cout << vec [3] << endl;
 	#endif
-	
+
+  #if 0	
 	  const double x = 0.0/0.0;
 	  cout << x << endl;
 	  cout << (bool) x << endl;
 	  cout << (! (bool) x) << endl;
+	#endif
+
+  #if 0	
+	  double x = 1.0;
+	  double y = 2.0;
+	  size_t i = 0;
+    for (; i < 1000000000000; i++)
+    {
+      double c = x / y;
+  	  if (maximize (x, c))
+  	    y = x + 1.0;
+  	}
+  	cout << i << endl;
+  #endif
+  
+    PRINT (sizeof (int));
+    PRINT (sizeof (size_t));
+    PRINT (sizeof (float));
+    PRINT (sizeof (double));
   }
 };
 
