@@ -19,7 +19,7 @@ TMP=`mktemp`
 #echo $TMP  
 
 
-trav $LIST "tail -n +2 %f" | tr ' ' '\t' | cut -f1 | sort | uniq > $TMP.obj
+trav $LIST "tail -n +2 %f" | tr ' ' '\t' | cut -f1 | sort -u > $TMP.obj
 
 N=`cat $TMP.obj | wc -l`
 if [ $N == 0 ]; then

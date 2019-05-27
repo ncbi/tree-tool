@@ -23,4 +23,4 @@ while [ $i -le $MAX ]; do
 done
 $THIS/../qstat_wait.sh 2000 1
 
-$THIS/../trav -noprogress $OUT 'echo "%f `cut -f 2 %d/%f | sort | uniq | wc -l`"'
+$THIS/../trav -noprogress $OUT 'echo "%f `cut -f 2 %d/%f | sort -u | wc -l`"'

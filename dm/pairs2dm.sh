@@ -21,7 +21,7 @@ TMP=`mktemp`
 
 trav $LIST "cat %f | tr ' ' '\t' | cut -f 1" >  $TMP.obj_raw
 trav $LIST "cat %f | tr ' ' '\t' | cut -f 2" >> $TMP.obj_raw
-sort $TMP.obj_raw | uniq > $TMP.obj
+sort -u $TMP.obj_raw > $TMP.obj
 
 N=`cat $TMP.obj | wc -l`
 if [ $N == 0 ]; then

@@ -7,6 +7,6 @@ if [ $# != 1 ]; then
 fi
 
 TMP=`mktemp`
-cat $1 | tr '\t' ' ' | sed 's/ *$//1' | sed 's/  / /g' | sort | uniq | tr ' ' '\t' > $TMP
+cat $1 | tr '\t' ' ' | sed 's/ *$//1' | sed 's/  / /g' | sort -u | tr ' ' '\t' > $TMP
 mv $TMP $1
 

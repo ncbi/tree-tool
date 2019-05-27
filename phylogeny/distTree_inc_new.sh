@@ -93,10 +93,11 @@ else
 fi
 
 
-# Time: O(log^3(n)) per one new object
 # Limit by O(log(n)) iterations ??
 ITER=0
 while [ 1 == 1 ]; do
+  # Time: O(log^3(n)) per one new object
+  
   N=`ls $INC/search/ | wc -l`
   if [ $N == 0 ]; then
     break  
@@ -121,7 +122,7 @@ while [ 1 == 1 ]; do
     $THIS/../qstat_wait.sh 2000 0
   fi
   
-  ls $INC/log | sed 's/\..*$//1' | sort | uniq > $INC/log.list
+  ls $INC/log | sed 's/\..*$//1' | sort -u > $INC/log.list
   L=`cat $INC/log.list | wc -l`
   if [ $L -gt 0 ]; then
     echo "# Failed tasks: $L"
