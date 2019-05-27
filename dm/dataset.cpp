@@ -6225,6 +6225,9 @@ void PositiveAverageModel::Component::qc () const
 		return;
 
 	Named::qc ();
+	  
+	if (isNan (pam. outlierSEs))
+	  return;
 	
 	QC_ASSERT (goodName (name));
 	QC_ASSERT (coeff >= 0.0);
@@ -6287,7 +6290,7 @@ void PositiveAverageModel::qc () const
 	if (! qc_on)
 		return;
 
-  QC_ASSERT (outlierSEs >= 0.0);
+  QC_IMPLY (! isNan (outlierSEs), outlierSEs >= 0.0);
 	for (const Component& comp : components)
 		comp. qc ();
 }
