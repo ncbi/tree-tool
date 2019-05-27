@@ -27,6 +27,7 @@ Real intersection2dissim (Real size1,
 
 
 struct Hashes : Vector<size_t>
+// searchSorted
 {
 	explicit Hashes (const string &fName);
 	Hashes () = default;
