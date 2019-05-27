@@ -8,10 +8,6 @@ using namespace Common_sp;
 
 
 
-#define SORT 0
-
-
-
 namespace 
 {
 
@@ -135,30 +131,6 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
   	}
 
 
-#if SORT
-	bool getMatch (const StringVector &vec,
-			         	 uint &index,
-			         	 const string &target)
-	// Update: index
-	// Requires: List is sorted ascending
-	{
-	  ASSERT (! target. empty ());
-	
-	  for (; index < vec. size (); index++)
-	  {
-	    const int cmp = target. compare (vec. at (index));
-	    if (cmp < 0)
-	      return false;
-	    if (cmp == 0)
-	      return true;
-	  }
-		
-	  return false;
-	}
-#endif
-
-
-
 	void body () const final
 	{
 		const string list1Name = getArg ("list1");
@@ -166,20 +138,13 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 		const bool num = getFlag ("number");
 
 
-  #if SORT
-		StringVector vec1 (readList (list1Name));
-		sortAll (vec1);
-		
-		StringVector vec2 (readList (list2Name));
-		sortAll (vec2);
-		
-		uint j = 0;
-		for (const string& s : vec1)
-		  if (! getMatch (vec2, j, s))
-		    cout << s << endl;          
-  #else
 	  ifstream f1 (list1Name);
 	  ifstream f2 (list2Name);
+	  constexpr size_t buf_size = 16 * 1024 * 1024;  // PAR
+	  char* buf1 = new char [buf_size];  // Not delete'd
+	  char* buf2 = new char [buf_size];  // Not delete'd
+    QC_ASSERT (f1. rdbuf () -> pubsetbuf (buf1, buf_size)); 
+    QC_ASSERT (f2. rdbuf () -> pubsetbuf (buf2, buf_size)); 
 	  Item it1 (num);
 	  Item it2 (num);
 	  Item it1old (num);
@@ -202,7 +167,6 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 	    if (cmp < 0)
 		    cout << it1. name () << endl;
 	  }
-	#endif
 	}
 };
 
