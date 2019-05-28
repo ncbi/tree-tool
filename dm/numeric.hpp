@@ -119,6 +119,16 @@ inline bool positive (Real x, Real delta = epsilon)
 inline bool negative (Real x, Real delta = epsilon)
   { return lessReal (x, 0.0, delta); }
   
+inline bool leRealRel (Real x, Real y, Real delta = epsilon)
+  { return    leReal (x, y) 
+           || leReal (x / y, 1.0, delta);
+  }
+  
+inline bool geRealRel (Real x, Real y, Real delta = epsilon)
+  { return    geReal (x, y) 
+           || geReal (x / y, 1.0, delta);
+  }
+  
 inline bool betweenReal (Real x, Real lo, Real hi, Real delta = epsilon) 
   { return geReal (x, lo, delta) && lessReal (x, hi, delta); }
 
