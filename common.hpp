@@ -111,11 +111,7 @@ string getCommandLine ();
 
 extern ostream* logPtr;
 
-#ifdef NDEBUG
-  constexpr bool qc_on = false;
-#else
-  extern bool qc_on;
-#endif
+extern bool qc_on;
 
 extern ulong seed_global;
   // >= 1
@@ -3149,10 +3145,7 @@ private:
     	  addFlag ("debug", "Integrity checks");
       }
     	else
-    	{ 
-    	#ifndef NDEBUG
-    	  addFlag ("qc", "Integrity checks (quality control)");
-    	#endif
+    	{ addFlag ("qc", "Integrity checks (quality control)");
 	      addKey ("verbose", "Level of verbosity", "0");
 	      addFlag ("noprogress", "Turn off progress printout");
 	      addFlag ("profile", "Use chronometers to profile");
