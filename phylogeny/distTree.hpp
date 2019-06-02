@@ -448,7 +448,7 @@ private:
   virtual void getDescendants (VectorPtr<DTNode> &descendants,
                                size_t depth,
                                const DTNode* exclude) const = 0;
-    // Update: descendants
+    // Update: descendants (append)
   virtual void setLca ();
     // Off-line LCA algorithm by Tarjan
     // Requires: !tarjanLca 
@@ -1088,6 +1088,7 @@ public:
 	          const string &multAttrName);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
 	DistTree (const string &dataDirName,
+	          const string &treeFName,
             bool loadNewLeaves,
 	          bool loadDissim,
 	          bool optimizeP);

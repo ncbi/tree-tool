@@ -807,7 +807,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
 
   VectorPtr<Leaf> matches;  matches. reserve (getDistTree (). getSparseDissims_size ());  // PAR
   VectorPtr<DTNode> descendants;  descendants. reserve (2 * powInt (2, (uint) sparsingDepth));  // PAR
-  size_t depth = 0;  
+  size_t height = 0;  // From ancestor to *this
   const DTNode* ancestor = this;
   const DTNode* ancestor_prev = nullptr;
   // Time: ~ O(log^2(n))
@@ -816,9 +816,9 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
     descendants. clear ();
     {
       size_t searchDepth = sparsingDepth;
-      if (depth_max && depth > depth_max)
+      if (depth_max && height > depth_max)
       {
-        const size_t dec = depth - depth_max;
+        const size_t dec = height - depth_max;
         if (searchDepth > dec)
           searchDepth -= dec;
         else
@@ -835,6 +835,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
       if (subtractDissims)
         if (const Steiner* st = ancestor->asSteiner ())
           otherLeaves = findPtr (lca2leaves, st);
+    //else set seed (hash(leaf->name,global depth)) to remove randomness ??
       for (const DTNode* descendant : descendants)
       {
         if (! refreshDissims)
@@ -853,7 +854,7 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
     }
     ancestor_prev = ancestor;
     ancestor = static_cast <const DTNode*> (ancestor->getParent ());
-    depth++;
+    height++;
   }
   matches. sort ();
   matches. uniq ();
@@ -2671,6 +2672,7 @@ void processOptimizeSmallSubgraph (OptimizeSmallSubgraph &oss)
 
 
 DistTree::DistTree (const string &dataDirName,
+	                  const string &treeFName,
                     bool loadNewLeaves,
                     bool loadDissim,
                     bool optimizeP)
@@ -2682,7 +2684,7 @@ DistTree::DistTree (const string &dataDirName,
   
 
   // Initial tree topology
-  loadTreeFile (dataDirName + "tree");  
+  loadTreeFile (nvl (treeFName, dataDirName + "tree"));  
   ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
@@ -5875,7 +5877,7 @@ size_t DistTree::optimizeLenNode ()
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
       const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
-      ASSERT (leReal (absCriterion, absCriterion_old, 1e-4));  // PAR
+      ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
       prog (absCriterion2str ()); 
     }
   }
@@ -5887,14 +5889,7 @@ size_t DistTree::optimizeLenNode ()
     const ONumber on (cout, absCriterionDecimals, false);
     cout << absCriterion_old1 << " -> " << absCriterion << endl;
   }
-  if (   ! leReal (absCriterion, absCriterion_old1) 
-      && ! leReal (absCriterion / absCriterion_old1, 1.0, 1e-4)  // PAR
-     )
-  {
-    const ONumber on (cout, 6, true);
-    cout << absCriterion_old1 << ' ' << absCriterion << endl;
-    ERROR;
-  }
+  ASSERT (leRealRel (absCriterion, absCriterion_old1, 1e-4));  // PAR
 #endif
 
   return finishChanges ();
@@ -6845,12 +6840,7 @@ void DistTree::optimizeDissimCoeffs ()
 
 
   cerr << absCriterion2str () << endl;
-  if (! leReal (absCriterion / absCriterion_old, 1.0, 1e-3))  // PAR
-  {
-    PRINT (absCriterion);
-    PRINT (absCriterion_old);
-    ERROR;
-  }
+  ASSERT (leRealRel (absCriterion / absCriterion_old, 1.0, 1e-3));  // PAR
   qcPredictionAbsCriterion ();
 }
 

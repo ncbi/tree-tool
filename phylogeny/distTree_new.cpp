@@ -63,7 +63,7 @@ struct ThisApplication : Application
       cout << endl;
     }
 
-    DistTree tree (dataDir, false, false, false);
+    DistTree tree (dataDir, string (), false, false, false);
     tree. qc ();     
 
     if (verbose ())

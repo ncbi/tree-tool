@@ -211,11 +211,11 @@ struct ThisApplication : Application
 		const string delete_closest_outliers = getArg ("delete_closest_outliers");
 		const size_t closest_outlier_num_max = str2<size_t> (getArg ("closest_outlier_num_max"));
 
-                 dissim_boundary     = str2real (getArg ("dissim_boundary"));
-		             hybridness_min      = str2real (getArg ("hybridness_min"));
 		const string delete_hybrids      = getArg ("delete_hybrids");
 	//const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
 		const string hybrid_parent_pairs = getArg ("hybrid_parent_pairs");
+                 dissim_boundary     = str2real (getArg ("dissim_boundary"));
+		             hybridness_min      = str2real (getArg ("hybridness_min"));
 		
 		const bool   noqual              = getFlag ("noqual");
 
@@ -233,8 +233,8 @@ struct ThisApplication : Application
 		
     if (isDirName (dataFName))
     {
-      if (! input_tree. empty ())
-        throw runtime_error ("Input tree must be in " + dataFName);
+    //if (! input_tree. empty ())
+      //throw runtime_error ("Input tree must be in " + dataFName);
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
       if (! multAttrName. empty ())
@@ -308,8 +308,6 @@ struct ThisApplication : Application
 
     if (! delete_criterion_outliers. empty () && ! optimizable)
       throw runtime_error ("-delete_criterion_outliers requires dissimilarities");
-    if (! delete_hybrids. empty () && ! optimizable)
-      throw runtime_error ("-delete_hybrids requires dissimilarities");    	
     if (criterion_outlier_num_max && delete_criterion_outliers. empty ())
       throw runtime_error ("-criterion_outlier_num_max requires -delete_criterion_outliers");
     if (closest_outlier_num_max && delete_closest_outliers. empty ())
@@ -339,7 +337,7 @@ struct ThisApplication : Application
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree. reset (isDirName (dataFName)
-                     ? new DistTree (dataFName, true, true, /*optimize*/ new_only)
+                     ? new DistTree (dataFName, input_tree, true, true, /*optimize*/ new_only)
                      : input_tree. empty ()
                        ? new DistTree (            dataFName, dissimAttrName, multAttrName)
                        : new DistTree (input_tree, dataFName, dissimAttrName, multAttrName)
@@ -556,6 +554,9 @@ struct ThisApplication : Application
         else
           { ERROR; }
       }
+      else
+        if (hybridF. get ())
+          deleteHybrids (*tree, true/*slow ??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
 
 
       if (! delete_criterion_outliers. empty ())
