@@ -6,7 +6,7 @@ if [ $# -ne 4 ]; then
   echo "#1: distance tree"
   echo "#2: target list of objects | '' - all"
   echo "#3: phen/"
-  echo "#4: Find root and save RAM (0/1)"
+  echo "#4: find root and save RAM (0/1)"
   echo "Time: 3.5 hours/172K genomes"
   exit 1
 fi
