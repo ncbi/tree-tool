@@ -50,6 +50,7 @@ struct ThisApplication : Application
 		  addKey ("genogroup_table", "File with lines: <object> <genogroup leader>");
 		  addKey ("genogroups", "File with the names of the interior nodes which are genogroup roots");
 		  addKey ("genogroup_under_genogroup", "File with lines: <node1 LCA name> <node2 LCA name>, where nodes belong to different genogroups, but node1 is a child of node2");
+		//addKey ("outlier", "Criterion threshold to remove outliers with");  // ??!
 		}
 
 
