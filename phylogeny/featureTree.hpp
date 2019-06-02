@@ -46,7 +46,7 @@ struct Feature : Named
   Feature () = default;
 	void qc () const override;
 	void saveText (ostream& os) const override
-	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << "(" << optionalGenomes << ") " << endl; }
+	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << " (" << optionalGenomes << ")" << endl; }
 
 	
   bool operator== (const Feature &other) const
