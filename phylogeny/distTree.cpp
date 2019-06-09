@@ -104,11 +104,13 @@ void Triangle::qc () const
     
   QC_ASSERT (child);
   QC_ASSERT (child->graph);
+  QC_ASSERT (child->badCriterion >= 0.0);
   for (const bool i : {false, true})
   {
     const Parent& p = parents [i];
     QC_ASSERT (p. leaf); 
     QC_ASSERT (p. leaf->graph);
+    QC_ASSERT (p. leaf->badCriterion >= 0.0);
     QC_ASSERT (child->getDiscernible () != p. leaf->getDiscernible ());
     QC_ASSERT (p. dissim > 0.0);
   }
@@ -152,6 +154,8 @@ bool Triangle::operator< (const Triangle &other) const
 
 void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
 {
+  if (! qc_on)
+    return;
   #define QC_MATCH_HYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << (leaf)->name << endl; print (cout); ERROR; } 
   QC_MATCH_HYBRIDS (child, child_hybrid);
   QC_MATCH_HYBRIDS (parents [0]. leaf, parents [0]. hybrid);
@@ -458,6 +462,17 @@ bool TriangleParentPair::operator< (const TriangleParentPair &other) const
   LESS_PART (*this, other, parents [0]. leaf);
   LESS_PART (*this, other, parents [1]. leaf);
   LESS_PART (*this, other, dissimType);
+  return false;
+}
+
+
+
+bool TriangleParentPair::compareHybridness (const TriangleParentPair &tpp1,
+                                            const TriangleParentPair &tpp2)
+{ 
+  LESS_PART (tpp2, tpp1, hybridness_ave); 
+  LESS_PART (tpp1, tpp2, parents [0]. leaf->name);
+  LESS_PART (tpp1, tpp2, parents [1]. leaf->name);
   return false;
 }
 
@@ -776,12 +791,16 @@ Vector<uint> DTNode::getLcaDissimNums ()
 
 
 
-VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
+VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
+                                              size_t depth_max,
                                               bool subtractDissims,
                                               bool refreshDissims) const
 {
   IMPLY (depth_max, depth_max >= sparsingDepth);
   IMPLY (subtractDissims, asLeaf ());
+  
+  hash<string> hash_str;
+  const ulong seed = hash_str (targetName) + 1;
 
   unordered_map <const Steiner* /*lca*/, VectorPtr<Leaf>> lca2leaves;  lca2leaves. rehash (pathDissimNums. size ());  
   if (subtractDissims)
@@ -835,21 +854,17 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (size_t depth_max,
       if (subtractDissims)
         if (const Steiner* st = ancestor->asSteiner ())
           otherLeaves = findPtr (lca2leaves, st);
-    //else set seed (hash(leaf->name,global depth)) to remove randomness ??
       for (const DTNode* descendant : descendants)
       {
         if (! refreshDissims)
           if (otherLeaves && otherLeaves->size () + added >= descendants. size ())  // maybe not through the right children
             break;  
-        const Leaf* repr = descendant->getReprLeaf ();
+        const Leaf* repr = descendant->getReprLeaf (seed);
         ASSERT (repr);
-        if (   ! otherLeaves 
-            || ! otherLeaves->containsFast (repr)
-           )
-        {
-          matches << repr;
-          added++;
-        }
+        if (otherLeaves && otherLeaves->containsFast (repr))
+          continue;
+        matches << repr;
+        added++;
       }
     }
     ancestor_prev = ancestor;
@@ -896,12 +911,15 @@ void Steiner::saveContent (ostream& os) const
 
 
 
-const Leaf* Steiner::getReprLeaf () const
+const Leaf* Steiner::getReprLeaf (ulong seed) const
 { 
   const size_t n = arcs [false]. size ();
   ASSERT (n);
-  const size_t index = getDistTree (). rand. get (n);
-  return static_cast <const DTNode*> (arcs [false]. at (index) -> node [false]) -> getReprLeaf ();
+  Rand& rand = getDistTree (). rand;
+  if (seed)
+    rand. setSeed (seed);
+  const size_t index = rand. get (n);
+  return static_cast <const DTNode*> (arcs [false]. at (index) -> node [false]) -> getReprLeaf (0);
 }
 
 
@@ -1146,7 +1164,7 @@ void Leaf::qc () const
     cout << getName () << " " << len << endl;
     ERROR;
   }  
-  QC_ASSERT (getReprLeaf () == this);
+  QC_ASSERT (getReprLeaf (0) == this);
   
   QC_ASSERT (index < NO_INDEX);
 }
@@ -1965,20 +1983,20 @@ void Change::commit ()
 
 
 
-bool Change::strictlyLess (const Change* a, 
-                           const Change* b)
+bool Change::strictlyBetter (const Change* a, 
+                             const Change* b)
 { 
   ASSERT (a);
   ASSERT (! isNan (a->improvement));
   
-  if (! positive (a->improvement))
+  if (! positive (a->improvement))  // Otherwise *a is noise
     return false;
   
   if (a == b)  
     return false;
   if (! b)  
     return true;
-  ASSERT (positive (b->improvement));
+  ASSERT (b->improvement >= 0.0);
     
   if (a->improvement > b->improvement)  return true;  
   if (a->improvement < b->improvement)  return false;
@@ -6160,13 +6178,9 @@ const Change* DistTree::getBestChange (const DTNode* from)
   for (const TreeNode* node : area)  
   {
     DTNode* to = const_static_cast <DTNode*> (node);
+    ASSERT (to->graph);
     if (Change::valid (from, to))
       tryChange (new Change (from, to), bestChange);
-    if (verbose ())
-    {
-      ASSERT (to->graph);
-      to->qc ();
-    }
   }
   
   if (bestChange)
@@ -6199,7 +6213,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
 
   if (verbose (1))
     cout << "# Changes: " << changes. size () << endl;
-  changes. sort (Change::strictlyLess); 
+  changes. sort (Change::strictlyBetter); 
   size_t commits = 0;
   {
   //Unverbose un;
@@ -6323,7 +6337,7 @@ void DistTree::tryChange (Change* ch,
   if (verbose ())
     ch->print (cout); 
   
-  if (Change::strictlyLess (ch, bestChange))
+  if (Change::strictlyBetter (ch, bestChange))
   {
     delete bestChange;
     bestChange = ch;
@@ -6608,14 +6622,7 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
   qc ();
   qcPredictionAbsCriterion ();
 
-#ifndef NDEBUG
-  if (greaterReal (absCriterion, absCriterion_old, 1e-5))   // PAR
-  {
-    const ONumber on (cout, absCriterionDecimals, true);
-    cout << absCriterion << " " << absCriterion_old << endl;
-    ERROR;
-  }
-#endif
+  IMPLY (! subDepth, leRealRel (absCriterion, absCriterion_old, 1e-4));  // PAR
 }
 
 
@@ -7113,7 +7120,7 @@ void DistTree::removeLeaf (Leaf* leaf,
     }
     ASSERT (absCriterion < INF);
     maximize (absCriterion, 0.0);
-    ASSERT (target2_sum >= absCriterion);
+  //ASSERT (target2_sum >= absCriterion);  // Can occur just after neighbor joining
     ASSERT (mult_sum > 0.0);
   
     qcPaths (); 
@@ -7745,6 +7752,15 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
 
   constexpr Real hybridness_min_init = 1.0;  // PAR   
   ASSERT (DistTree_sp::hybridness_min > hybridness_min_init);
+
+
+  for (auto& it : name2leaf)
+  {
+    const Leaf* leaf = it. second;
+    if (! leaf->graph)
+      continue;
+    var_cast (leaf) -> badCriterion = 0.0;
+  }
     
 
   // Time: O(p log(p))
@@ -7801,7 +7817,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
       const Leaf* leaf = it. second;
       if (! leaf->graph)
         continue;
-      if (! leaf->getDiscernible () -> len)
+      if (! leaf->getDiscernible () -> len)  
         badLeaves << leaf;
     }
     Real outlier_min = NaN;
@@ -8069,7 +8085,7 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
       continue;
     FFOR (size_t, objNum, ds. objs. size ())
       if (geReal ((*lenAttr) [objNum], outlier_min))
-        outliers << descendants [objNum] -> getReprLeaf ();
+        outliers << descendants [objNum] -> getReprLeaf (0);
   }  
   outliers. sort ();
   outliers. uniq ();
@@ -8094,7 +8110,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
       ASSERT (leaf);
       if (! leaf->graph)
         continue;
-      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (depth_max, true, refreshDissims));
+      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (leaf->name, depth_max, true, refreshDissims));
       for (const Leaf* match : matches)
         if (leaf->getDiscernible () != match->getDiscernible ())
         {
@@ -8480,7 +8496,7 @@ void NewLeaf::Location::qc () const
 
 
 
-void NewLeaf::Location::setAbsCriterion (const NewLeaf& nl)
+void NewLeaf::Location::setAbsCriterion_leaf (const NewLeaf& nl)
 {
   ASSERT (leafLen >= 0.0);
   ASSERT (arcLen  >= 0.0);
@@ -8509,7 +8525,7 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 { 
   if (! leaf)
     throw runtime_error ("No other leaf found for a new leaf placement");
-//ASSERT (dissim >= 0);
+//ASSERT (dissim >= 0.0);
   ASSERT (! isNan (dissim));
   ASSERT (anchor);
   ASSERT (mult >= 0.0);
@@ -8604,6 +8620,7 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
       leaf = dissim. leaf1;
     }
     ASSERT (index != NO_INDEX);
+    ASSERT (leaf);
     Leaf2dissim ld (leaf, dissim. target - leafDepths [index]. dist, dissim. mult, location. anchor);
     ld. treeAbsCriterion = dissim. getAbsCriterion ();
     leaf2dissims << ld;
@@ -8706,7 +8723,7 @@ void NewLeaf::process (bool init,
 
 void NewLeaf::saveRequest (const string &requestFName) const
 { 
-  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (sparsingDepth, false, false));
+  VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (name, sparsingDepth, false, false));
   requested. filterValue ([this] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
   
   OFStream f (requestFName);
@@ -8728,10 +8745,13 @@ void NewLeaf::optimize ()
 {
   bool dissimExists = false;
   for (const Leaf2dissim& ld : leaf2dissims)
-    if (ld. dissim != INF)
+  {
+    ASSERT (ld. mult >= 0.0);
+    if (ld. mult > 0.0 /*ld. dissim != INF*/)
     {
+      ASSERT (ld. dissim != INF);
       dissimExists = true;
-      if (! ld. dissim)  // if all dissim's = INF ??
+      if (! ld. dissim)  
       {
         location. anchor = ld. leaf->getDiscernible ();
         location. leafLen = 0.0;
@@ -8740,6 +8760,7 @@ void NewLeaf::optimize ()
         return;
       }
     }
+  }
     
   if (! dissimExists)
   {
@@ -8762,25 +8783,24 @@ void NewLeaf::optimize ()
 void NewLeaf::optimizeAnchor (Location &location_best,
                               Vector<Leaf2dissim> &leaf2dissims_best)
 {
-  setLocation ();
-
-  if (minimize (location_best. absCriterion_leaf, location. absCriterion_leaf))
+  if (location. anchor->len > 0.0)
   {
-    location_best = location;
-    leaf2dissims_best = leaf2dissims;
-    if (location. anchor->len == 0)
-      location. anchor = static_cast <const DTNode*> (location. anchor->getParent ());
+    anchor2location ();
+    if (minimize (location_best. absCriterion_leaf, location. absCriterion_leaf))
+    {
+      location_best = location;
+      leaf2dissims_best = leaf2dissims;
+    }
+    else if (   node_orig  // greedy search
+             && location. absCriterion_leaf / location_best. absCriterion_leaf - 1.0 > 0.01  // PAR
+            )
+      return;
   }
-  else if (   node_orig  // greedy search
-           && location. absCriterion_leaf / location_best. absCriterion_leaf - 1 > 0.01  // PAR
-          )
-    return;
 
   if (! location. anchor->childrenDiscernible ())
     return;
     
-  const auto& arcs = location. anchor->arcs [false];
-  for (const DiGraph::Arc* arc : arcs)
+  for (const DiGraph::Arc* arc : location. anchor->arcs [false])
   {
     const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
     ASSERT (! child->inDiscernible ());
@@ -8795,19 +8815,23 @@ void NewLeaf::optimizeAnchor (Location &location_best,
 
 
 
-void NewLeaf::setLocation ()
+void NewLeaf::anchor2location ()
 {
+  ASSERT (location. anchor->len > 0.0);
+
   Real mult_sum = 0.0;
   Real u_avg = 0.0; 
   Real delta_avg = 0.0;
+  Real delta_u_sum = 0.0;
   for (const Leaf2dissim& ld : leaf2dissims)
   {
   //ASSERT (ld. dissim > 0);
     if (ld. mult)
     {
-      mult_sum  += ld. mult;
-      u_avg     += ld. mult * ld. getU ();
-      delta_avg += ld. mult * ld. getDelta ();
+      mult_sum    += ld. mult;
+      u_avg       += ld. mult * ld. getU ();
+      delta_avg   += ld. mult * ld. getDelta ();
+      delta_u_sum += ld. mult * ld. getDelta () * ld. getU ();
     }
   } 
   ASSERT (mult_sum > 0.0);  // <= pre-condition
@@ -8823,17 +8847,74 @@ void NewLeaf::setLocation ()
       u_var       += ld. mult * sqr (ld. getU () - u_avg);
     }
   u_var       /= mult_sum;
-  delta_u_cov /= mult_sum;    
-  IMPLY (u_var > 0.0, mult_sum > 0.0);
+  delta_u_cov /= mult_sum;  
+  ASSERT (u_var >= 0.0);  
+//IMPLY (u_var > 0.0, mult_sum > 0.0);
 
-  bool adjusted = ! (u_var > 0);
+
+#if 1
+  IMPLY (location. anchor == tree. root, ! u_var);
+  
+
+  // location.{arcLen,leafLen}
+  bool bad = false;
+  if (u_var)  
+  {
+    location. arcLen = delta_u_cov / u_var;
+    if (   location. arcLen >= 0.0 
+        && location. arcLen <= location. anchor->len
+       )
+    {
+      location. leafLen = delta_avg - u_avg * location. arcLen;
+      if (location. leafLen < 0.0)
+        bad = true;
+    }
+    else
+      bad = true;
+    if (bad)
+    {
+      location. leafLen = 0.0;
+      location. arcLen = min (max (0.0, delta_u_sum / mult_sum), location. anchor->len);
+      location. setAbsCriterion_leaf (*this); 
+      const Location loc1 (location);
+      //
+      location. leafLen = max (0.0, delta_avg);
+      location. arcLen = 0.0;
+      location. setAbsCriterion_leaf (*this); 
+      const Location loc2 (location);
+      //
+      location. leafLen = max (0.0, delta_avg - location. anchor->len * u_avg);
+      location. arcLen = location. anchor->len;
+      location. setAbsCriterion_leaf (*this); 
+      const Location loc3 (location);
+      //
+      if (   loc1. absCriterion_leaf < loc2. absCriterion_leaf
+          && loc1. absCriterion_leaf < loc3. absCriterion_leaf
+         )
+        location = loc1;
+      else
+        if (loc2. absCriterion_leaf < loc3. absCriterion_leaf)
+          location = loc2;
+        else
+          location = loc3;
+    }
+  }
+  else
+  {
+    location. leafLen = max (0.0, delta_avg);
+    location. arcLen = 0.0;
+  }
+  if (! bad)
+    location. setAbsCriterion_leaf (*this); 
+#else
+  bool adjusted = ! (u_var > 0.0);
 
   // location.arcLen, adjusted
   location. arcLen = 0.0;
   if (location. anchor == tree. root)
     { ASSERT (u_var == 0.0); }
   else
-    if (u_var > 0.0)  // dissimilarity to all leaves may be INF
+    if (u_var > 0.0)  
     {
       location. arcLen = delta_u_cov / u_var;
       if (maximize (location. arcLen, 0.0))
@@ -8843,20 +8924,20 @@ void NewLeaf::setLocation ()
     }
 
   // location.leafLen, adjusted
-  location. leafLen = mult_sum > 0.0 ? (delta_avg - u_avg * location. arcLen) : 0.0;
+  location. leafLen = delta_avg - u_avg * location. arcLen;
   if (maximize (location. leafLen, 0.0))
     adjusted = true;
   
   
   // Case 1
-  location. setAbsCriterion (*this);  
+  location. setAbsCriterion_leaf (*this);  
   if (adjusted)
   {
     Location loc (location);
     // Case 2
-    loc. arcLen = 0;
+    loc. arcLen = 0.0;
     loc. leafLen = max (0.0, delta_avg);
-    loc. setAbsCriterion (*this); 
+    loc. setAbsCriterion_leaf (*this); 
     if (location. absCriterion_leaf > loc. absCriterion_leaf)
       location = loc;
     // Case 3
@@ -8864,11 +8945,12 @@ void NewLeaf::setLocation ()
     {
       loc. arcLen = location. anchor->len;
       loc. leafLen = max (0.0, delta_avg - loc. arcLen * u_avg);
-      loc. setAbsCriterion (*this); 
+      loc. setAbsCriterion_leaf (*this); 
       if (location. absCriterion_leaf > loc. absCriterion_leaf)
         location = loc;
     }
   }
+#endif
 }
 
 

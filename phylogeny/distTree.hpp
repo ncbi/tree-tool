@@ -240,11 +240,12 @@ struct TriangleParentPair
 {
 	// Input
 	struct Parent
-		{ const Leaf* leaf {nullptr};
-				// !nullptr
-			size_t classSize {0};
-			  // Output
-		};
+	{ 
+	  const Leaf* leaf {nullptr};
+			// !nullptr
+		size_t classSize {0};
+		  // Output
+	};
 	array<Parent,2> parents;	
 	Real parentsDissim {NaN};
 	  // = f(parents[0].leaf,parents[1].leaf)
@@ -291,8 +292,7 @@ public:
     }
   bool operator< (const TriangleParentPair &other) const;
   static bool compareHybridness (const TriangleParentPair &hpp1,
-                                 const TriangleParentPair &hpp2)
-    { return hpp1. hybridness_ave > hpp2. hybridness_ave; }
+                                 const TriangleParentPair &hpp2);
   const Triangle& getBest () const
     { if (triangle_best_index < triangles. size ())
     	  return triangles [triangle_best_index]; 
@@ -323,7 +323,9 @@ public:
     	return vec;
     }
   void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
-    { for (const Triangle& tr : triangles)
+    { if (! qc_on)
+        return;
+      for (const Triangle& tr : triangles)
     		if (tr. hasHybrid ())
 	    		tr. qcMatchHybrids (hybrids);
     }
@@ -430,9 +432,10 @@ public:
     { return (Real) paths * sqr (errorDensity) * len; }
   Real getRelCriterion () const;
     // Relative average absolute criterion
-  virtual const Leaf* getReprLeaf () const = 0;
+  virtual const Leaf* getReprLeaf (ulong seed) const = 0;
     // Return: !nullptr, in subtree
     // For sparse *getDistTree().dissimAttr
+    // Deterministic <=> (bool)seed
     // Invokes: getDistTree().rand
     // Time: ~ O(log(n))
 private:
@@ -455,12 +458,14 @@ private:
   Vector<uint/*dissimNum*/> getLcaDissimNums ();
     // Return: dissimNum's s.t. getDistTree().dissims[dissimNum].lca = this
     // Invokes: DTNode::pathDissimNums.sort()
-  VectorPtr<Leaf> getSparseLeafMatches (size_t depth_max,
+  VectorPtr<Leaf> getSparseLeafMatches (const string &targetName,
+                                        size_t depth_max,
                                         bool subtractDissims,
                                         bool refreshDissims) const;
     // Return: size = O(log(n)); sort()'ed, uniq()'ed
     //         getDistTree().reroot(true) reduces size()
-    // Input: depth_max: 0 <=> no restriction
+    // Input: targetName: for Rand::setSeed()
+    //        depth_max: 0 <=> no restriction
     //        refreshDissims => improves criterion and quality; number of new dissims = ~10% of dissims
     // Time: O(log^2(n)) 
 };
@@ -494,7 +499,7 @@ public:
     { return childrenDiscernible (); }
 
 private:
-  const Leaf* getReprLeaf () const final;
+  const Leaf* getReprLeaf (ulong seed) const final;
   void setSubtreeLenUp (bool topological) final;
   void getDescendants (VectorPtr<DTNode> &descendants,
                        size_t depth,
@@ -542,8 +547,8 @@ struct Leaf : DTNode
   bool discernible {true};  // May be not used: parameter ??
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
     
-private:
   // Temporary
+private:
   size_t index {NO_INDEX};
 public:
   // For DistTree::findHybrids()
@@ -578,7 +583,7 @@ public:
     { return true; }
 
 private:
-  const Leaf* getReprLeaf () const final
+  const Leaf* getReprLeaf (ulong /*seed*/) const final
     { return this; }
   void setSubtreeLenUp (bool topological) final
     { subtreeLen. clear ();
@@ -743,8 +748,8 @@ struct Subgraph : Root
     }
   const Leaf* getReprLeaf (const DTNode* dtNode) const
     { return dtNode == area_root 
-               ? static_cast <const DTNode*> (dtNode->getDifferentChild (area_underRoot)) -> getReprLeaf ()
-               : dtNode->getReprLeaf ();
+               ? static_cast <const DTNode*> (dtNode->getDifferentChild (area_underRoot)) -> getReprLeaf (0)
+               : dtNode->getReprLeaf (0);
     }
 };
 
@@ -837,8 +842,8 @@ public:
 	  // status: eApplied --> eDone
     // May invoke: tree.delayDeleteRetainArcs()
     // Time: O(log^2(n))
-	static bool strictlyLess (const Change* a, 
-	                          const Change* b);
+	static bool strictlyBetter (const Change* a, 
+	                           const Change* b);
     // Requires: (bool)a
 };
 
@@ -1127,6 +1132,7 @@ public:
     //          objects_in_tree.sh        executable with parameters: list of objects, 0/1/null
     //          request2dissim.sh         executable with parameters: request, dissim.add, log
     //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
+    //          qc.sh                     quality control
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
@@ -1570,7 +1576,6 @@ struct NewLeaf : Named
 {
 private:
   const DistTree& tree;
-    // !nullptr
   const DTNode* node_orig {nullptr};
 public:
   
@@ -1586,8 +1591,8 @@ public:
     Real absCriterion_leaf {INF};
       // To be minimized, >= 0
       
-    void qc () const;
-    void saveText (ostream &os) const
+    void qc () const override;
+    void saveText (ostream &os) const override
       { const ONumber on (os, dissimDecimals, true);
         os         << anchor->getLcaName ()
            << '\t' << leafLen 
@@ -1597,19 +1602,23 @@ public:
            << '\t' << absCriterion_leaf;
       }
       
-    void setAbsCriterion (const NewLeaf& nl);
+    void setAbsCriterion_leaf (const NewLeaf& nl);
   };
   Location location;
 
 
   struct Leaf2dissim
   {
+    // Input
     const Leaf* leaf {nullptr};
+    // Below are functions of leaf
     Real dissim {NaN};
       // Between NewLeaf and leaf
     Real mult {NaN};
-    Real treeAbsCriterion {NaN};
+    Real treeAbsCriterion {NaN};  
+      // For DistTree::optimizeReinsert()
       
+    // Output
     // Function of NewLeaf::Location::anchor
     Real dist_hat {NaN};
       // From leaf to NewLeaf::Location::anchor
@@ -1628,7 +1637,7 @@ public:
     Real getDelta () const
       { return dissim - dist_hat; }
     Real getU () const
-      { return leafIsBelow ? 1 : -1; }
+      { return leafIsBelow ? 1.0 : -1.0; }
     Real getEpsilon (const Location& loc) const
       { const Real leaf_dist_hat = dist_hat + loc. arcLen * getU () + loc. leafLen;
         return dissim - leaf_dist_hat;
@@ -1648,7 +1657,7 @@ public:
 
 
   // Find best location, greedy
-  // Time: O(q log^2(n))
+  // Time: O(q^2 log^2(n))
   NewLeaf (const DistTree &tree_arg,
            const string &dataDir_arg,
            const string &name_arg,
@@ -1684,7 +1693,7 @@ private:
     // Input: location.anchor
     // Output: file requestFName
     // Invokes: DTNode::getSparseLeafMatches()
-    // Time: O(log(n) log(q))
+    // Time: O(log(n) (log(n) + log(q)))
   void optimize ();
     // Output: location
     // Update: leaf2dissims.{dist_hat,leafIsBelow}
@@ -1694,9 +1703,10 @@ private:
     // Depth-first search, greedy
     // Update: location, leaf2dissims, location_best
     // Output: leaf2dissims_best
-    // Invokes: setLocation(), descend()
-    // Time: O(q log^2(n))
-  void setLocation ();
+    // Invokes: anchor2location(), descend()
+    // Time: O(q^2 log^2(n))
+  void anchor2location ();
+    // Input: leaf2dissims
     // Output: location.{leafLen,arcLen,absCriterion_leaf}
     // Time: O(q)
   bool descend (const DTNode* anchor_new);
