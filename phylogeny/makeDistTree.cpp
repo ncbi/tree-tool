@@ -233,8 +233,6 @@ struct ThisApplication : Application
 		
     if (isDirName (dataFName))
     {
-    //if (! input_tree. empty ())
-      //throw runtime_error ("Input tree must be in " + dataFName);
       if (! dissimAttrName. empty ())
         throw runtime_error ("Non-empty dissimilarity attribute with no " + dmSuff + "-file");
       if (! multAttrName. empty ())
@@ -506,7 +504,7 @@ struct ThisApplication : Application
             ASSERT (iter_max);
           //bool hybridDeleted = true;
             size_t iter = 0;
-            for (; iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/; iter++)
+            while (iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/)
           	{
               cerr << "Iteration " << iter + 1;
           		if (iter_max < numeric_limits<size_t>::max ())
@@ -524,6 +522,7 @@ struct ThisApplication : Application
               if (hybridF. get ())
               	/*hybridDeleted =*/ deleteHybrids (*tree, true/*slow ??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
               tree->saveFile (output_tree); 
+              iter++;
             #if 0
               if (hybridDeleted)
               	continue;
@@ -535,9 +534,10 @@ struct ThisApplication : Application
               	break;
               	// -variance linExp or exp => threshold must be smaller ??
               tree->setDissimMult (true);
-              cerr << tree->absCriterion2str () /*<< ' ' << relImprovement*/ << endl; 
+              if (! tree->multFixed)
+                cerr << tree->absCriterion2str () /*<< ' ' << relImprovement*/ << endl; 
             }
-            cout << "# Iterations of subgraph optimization: " << iter + 1 << endl;
+            cout << "# Iterations of subgraph optimization: " << iter << endl;
             tree->reportErrors (cout);
           }
           
