@@ -102,6 +102,10 @@ if [ $DB == 1 ]; then
   fi
 fi
 
+echo ""
+echo "QC ..."
+$INC/qc.sh $INC
+
 rm $INC/tree.list
 
 cp $INC/tree $INC/hist/tree.1

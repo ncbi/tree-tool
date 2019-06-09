@@ -38,6 +38,11 @@ $THIS/../trav $DEL "rm -f $INC/new/%f"
 cp $DEL $INC/hist/delete.$VER
 
 
+echo ""
+echo "QC ..."
+$INC/qc.sh $INC
+
+
 $THIS/distTree_inc_tree1_quality.sh $INC
 
 

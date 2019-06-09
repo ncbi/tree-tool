@@ -87,6 +87,10 @@ fi
 
 
 echo ""
+echo "QC ..."
+$INC/qc.sh $INC
+echo ""
+echo "Tree QC ..."
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
   VER=`cat $INC/version`
