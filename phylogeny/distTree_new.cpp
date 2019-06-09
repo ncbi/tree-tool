@@ -34,7 +34,7 @@ struct ThisApplication : Application
 	void body () const final
   {
 	  const string dataDir       = getArg ("data");
-	  const bool init            = getFlag ("init");
+	  const bool   init          = getFlag ("init");
 	               varianceType  = str2varianceType (getArg ("variance"));  // Global   
 	               variancePower = str2real (getArg ("variance_power"));    // Global
 	  const string name          = getArg ("name");
