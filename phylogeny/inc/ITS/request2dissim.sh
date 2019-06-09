@@ -12,5 +12,7 @@ DISSIM=$2
 LOG=$3
 
 dna_pairs2dissim  -log $LOG  -coeff 0.0082  $REQUEST /home/brovervv/panfs/marker/Fungi/ITS/seq 140 $DISSIM
+#dna_pairs2dissim  -log $LOG  -power 1.01  $REQUEST /home/brovervv/panfs/marker/Fungi/ITS/seq 140 $DISSIM
+  # Needs recomputation of inc/dissim
 rm -f $LOG
 
