@@ -27,6 +27,7 @@ all:	\
 	randomDistTree \
   sampleReport \
 	statDistTree \
+	testDistTree \
 	tree2clusters \
 	tree2genogroup
 	
@@ -148,6 +149,12 @@ statDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp
 statDistTreeOBJS=statDistTree.o $(DISTTREE_OBJ)
 statDistTree:	$(statDistTreeOBJS)
 	$(CXX) -o $@ $(statDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+testDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
+testDistTreeOBJS=testDistTree.o $(DISTTREE_OBJ)
+testDistTree:	$(testDistTreeOBJS)
+	$(CXX) -o $@ $(testDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
 tree2clusters.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
