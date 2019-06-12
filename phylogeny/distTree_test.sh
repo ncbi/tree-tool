@@ -24,7 +24,7 @@ rm -r data/Enterobacteriaceae.dir/
 
 echo ""
 echo "To Newick ..."
-$THIS/printDistTree  -qc  -data data/Enterobacteriaceae  -dissim_attr Conservation  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4 > Enterobacteriaceae.nw
+$THIS/printDistTree  -qc  -data data/Enterobacteriaceae  -dissim_attr Conservation  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4  -ext_name > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 rm Enterobacteriaceae.nw
 
@@ -33,7 +33,7 @@ rm Enterobacteriaceae.tree
 echo ""
 echo "From Newick ..."
 $THIS/newick2tree -qc data/Enterobacteriaceae.nw > Enterobacteriaceae.tree
-$THIS/printDistTree -qc Enterobacteriaceae.tree  -decimals 4 > Enterobacteriaceae.nw
+$THIS/printDistTree -qc Enterobacteriaceae.tree  -decimals 4  -ext_name > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw data/Enterobacteriaceae.nw
 rm Enterobacteriaceae.nw
 rm Enterobacteriaceae.tree
@@ -85,6 +85,11 @@ diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
 $THIS/distTree_compare_criteria.sh prot-identical_comm.distTree data/prot-identical_comm.distTree
 rm prot-identical_comm.distTree
+
+echo ""
+echo "testDistTree ..."
+$THIS/makeDistTree  -data data/prot-identical_comm  -variance linExp  -optimize  -output_tree $TMP.tree
+$THIS/testDistTree -qc  $TMP.tree  -data data/prot-identical_comm  -variance linExp 
 
 echo ""
 echo "prot-identical_comm: delete ..."
@@ -210,8 +215,8 @@ if [ "$A" != "$B" ]; then
   echo "$B"
   exit 1
 fi
-$THIS/printDistTree  -qc  Wolf9.tree      -order  -decimals 3  -min_name > Wolf9.nw
-$THIS/printDistTree  -qc  Wolf9-out.tree  -order  -decimals 3  -min_name > Wolf9-out.nw
+$THIS/printDistTree  -qc  Wolf9.tree      -order  -decimals 3  > Wolf9.nw
+$THIS/printDistTree  -qc  Wolf9-out.tree  -order  -decimals 3  > Wolf9-out.nw
 diff Wolf9.nw Wolf9-out.nw
 rm Wolf9.nw Wolf9-out.nw
 rm Wolf9.tree Wolf9-out.tree
@@ -230,8 +235,8 @@ if [ "$A" != "$B" ]; then
   echo "$B"
   exit 1
 fi
-$THIS/printDistTree  -qc  Wolf110.tree      -order  -decimals 2  -min_name > Wolf110.nw
-$THIS/printDistTree  -qc  Wolf110-out.tree  -order  -decimals 2  -min_name > Wolf110-out.nw
+$THIS/printDistTree  -qc  Wolf110.tree      -order  -decimals 2  > Wolf110.nw
+$THIS/printDistTree  -qc  Wolf110-out.tree  -order  -decimals 2  > Wolf110-out.nw
 diff Wolf110.nw Wolf110-out.nw
 rm Wolf110.nw Wolf110-out.nw
 rm Wolf110.tree Wolf110-out.tree
@@ -239,7 +244,6 @@ rm Wolf110-out.dm
 #
 # makeDistTree  -qc  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
 # ... ??
-
 
 
 rm $TMP*
