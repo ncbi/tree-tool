@@ -30,7 +30,7 @@ struct ThisApplication : Application
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
     // Output
 	  addKey ("format", "newick|itree (makeDistTree output)|ASNT (textual ASN.1)", "newick");
-	  addFlag ("min_name", "Minimal leaf names for newick");
+	  addFlag ("ext_name", "Extended leaf names for newick");
 	  addFlag ("order", "Order subtrees by the number of leaves descending");
 	}
 
@@ -46,12 +46,13 @@ struct ThisApplication : Application
 	  const string name_match     = getArg ("name_match");
 	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
 	  const string format         = getArg ("format");
-  	const bool min_name         = getFlag ("min_name");
+  	const bool ext_name         = getFlag ("ext_name");
   	const bool order            = getFlag ("order");
 
-    ASSERT (! input_tree. empty ());
-    if (dataFName. empty () != dissimAttrName. empty ())
-      throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
+    if (input_tree. empty ())
+      throw runtime_error ("-input_tree must be present");
+  //if (dataFName. empty () != dissimAttrName. empty ())
+    //throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
 		if (! isNan (variancePower) && varianceType != varianceType_pow)
 		  throw runtime_error ("-variance_power requires -variance pow");
 		if (isNan (variancePower) && varianceType == varianceType_pow)
@@ -86,7 +87,7 @@ struct ThisApplication : Application
 
    	cout << fixed << setprecision ((int) decimals);  
     if (format == "newick")
-      tree. printNewick (cout, false, min_name);
+      tree. printNewick (cout, false, ! ext_name);
     else if (format == "itree")
       tree. saveText (cout);
     else if (format == "ASNT")
