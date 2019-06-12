@@ -51,7 +51,7 @@ struct ThisApplication : Application
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees before subgraph optimizations");
-	  addFlag ("reinsert_orig_weights", "Use original weights in the re-insert optimization");  // useful ??
+	//addFlag ("reinsert_orig_weights", "Use original weights in the re-insert optimization");  // useful ??
 	//addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
@@ -195,7 +195,7 @@ struct ThisApplication : Application
 		const size_t subgraph_iter_max   = str2<size_t> (getArg ("subgraph_iter_max"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
-		const bool   reinsert_orig_weights = getFlag ("reinsert_orig_weights");		
+	//const bool   reinsert_orig_weights = getFlag ("reinsert_orig_weights");		
 	//const bool   reinsert_iter       = getFlag ("reinsert_iter");
 		const bool   skip_topology       = getFlag ("skip_topology");
 	  const bool   new_only            = getFlag ("new_only");
@@ -281,8 +281,8 @@ struct ThisApplication : Application
       throw runtime_error ("-skip_len requires -optimize");
     if (reinsert && ! optimize)
       throw runtime_error ("-reinsert requires -optimize");
-    if (reinsert_orig_weights && ! reinsert)
-      throw runtime_error ("-reinsert_orig_weights requires -reinsert");
+  //if (reinsert_orig_weights && ! reinsert)
+    //throw runtime_error ("-reinsert_orig_weights requires -reinsert");
   //IMPLY (reinsert_iter,     optimize);
     if (skip_topology && ! optimize)
       throw runtime_error ("-skip_topology requires -optimize");
@@ -485,8 +485,8 @@ struct ThisApplication : Application
           {
             cerr << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: re-insert");
-            tree->optimizeReinsert (reinsert_orig_weights);  
-            predictionImproved = ! reinsert_orig_weights;
+            tree->optimizeReinsert (false /*reinsert_orig_weights*/);  
+            predictionImproved = true /*! reinsert_orig_weights*/;
           }
           
           if (predictionImproved)

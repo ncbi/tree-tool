@@ -393,6 +393,7 @@ public:
   Real absCriterion {NaN};
     // = sum(dissim.getAbsCriterion())
     // For Leaf's: sum = 2*getTree().absCriterion
+    // Theoretically distributed as chi^2_1
   Real absCriterion_ave {NaN};
     // = absCriterion/count
   Real relCriterion {NaN};

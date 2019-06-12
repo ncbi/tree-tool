@@ -2997,6 +2997,36 @@ private:
     if (f. eof ())
       throw Error ("Unexpected end of file", *this);
   }
+  
+  string parseName ()
+  {
+    skipSpaces ();
+    string name;
+    if (c == '\'')
+    {
+      for (;;)
+      {
+        readChar ();
+        if (c == '\'')
+          break;
+        name += c;
+      }
+      readChar ();
+    }
+    else
+      for (;;)
+      {
+        if (contains (delimiters, c))
+          break;
+        if (! printable (c))
+          throw Error ("Non-printable character in name: " + toString ((int) c), *this);
+        name += c;
+        readChar ();
+      }
+    if (name. empty ())
+      throw Error ("Empty name", *this);
+    return name;
+  }
 
   void parseSubtree (Steiner* parent)
   {
@@ -3032,6 +3062,7 @@ private:
   
   void parseInterior (Steiner* parent)
   {
+    ASSERT (parent);
     skipSpaces ();
     if (c != '(')
       throw Error ("'(' expected", *this);
@@ -3051,42 +3082,12 @@ private:
     // Name
     if (! contains (delimiters, c))
     {
+      const string s (parseName ());
       // bootstrap is lost ??
-      string name (parseName ());
-      const size_t colonPos = name. find (':');      
+      const size_t colonPos = s. find (':');      
       if (colonPos != string::npos)
-        parent->name = name. substr (colonPos + 1);
+        parent->name = s. substr (colonPos + 1);
     }
-  }
-  
-  string parseName ()
-  {
-    skipSpaces ();
-    string name;
-    if (c == '\'')
-    {
-      for (;;)
-      {
-        readChar ();
-        if (c == '\'')
-          break;
-        name += c;
-      }
-      readChar ();
-    }
-    else
-      for (;;)
-      {
-        if (contains (delimiters, c))
-          break;
-        if (! printable (c))
-          throw Error ("Non-printable character in name: " + toString ((int) c), *this);
-        name += c;
-        readChar ();
-      }
-    if (name. empty ())
-      throw Error ("Empty name", *this);
-    return name;
   }
 };
 
@@ -6036,18 +6037,6 @@ void reinsert_thread (size_t from,
     const DTNode* toNode = nl. location. anchor;
     ASSERT (toNode);
     const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
-  #if 0
-    if (fromNode->getLcaName () == "1032888")  
-    {
-      cout << endl;
-      PRINT (nodeAbsCriterion_old);
-      nl. location. print (cout);
-      cout << endl;
-      PRINT (improvement);
-      cout << fromNode->getParent () -> getLcaName () << ' ' << toNode->getLcaName () << ' ' << toNode->getParent () -> getLcaName () << endl;
-      cout << endl;
-    }
-  #endif
     if (   improvement <= 0.0
         || fromNode->getParent () == toNode
         || fromNode->getParent () == toNode->getParent ()
@@ -8791,10 +8780,12 @@ void NewLeaf::optimizeAnchor (Location &location_best,
       location_best = location;
       leaf2dissims_best = leaf2dissims;
     }
+  /*
     else if (   node_orig  // greedy search
-             && location. absCriterion_leaf / location_best. absCriterion_leaf - 1.0 > 0.01  // PAR
+             && location. absCriterion_leaf / location_best. absCriterion_leaf > 1.01  // PAR
             )
       return;
+  */
   }
 
   if (! location. anchor->childrenDiscernible ())
