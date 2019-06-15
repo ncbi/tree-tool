@@ -2386,7 +2386,7 @@ void Sample::qc () const
   QC_ASSERT (mult. size () == ds->objs. size ());
   for (const Real m : mult)
     QC_ASSERT (m >= 0.0);
-  QC_ASSERT (positive (mult_sum));  
+  QC_ASSERT (mult_sum >= 0.0);  
 }
 
 
