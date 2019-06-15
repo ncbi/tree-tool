@@ -269,7 +269,7 @@ struct Tree : DiGraph
     virtual bool getSaveSubtreeP () const 
       { return true; }
 	  virtual double getParentDistance () const
-	    { return -1; }
+	    { return -1.0; }
 	    // Return: -1 || >= 0
 	  virtual string getNewickName (bool /*minimal*/) const
 	    { return getName (); }
@@ -373,6 +373,15 @@ struct Tree : DiGraph
 		    if (! parent_)
 		      return nullptr;
 		    return parent_->getPrevAncestor (ancestor);
+		  }
+		double getPathLength (const TreeNode* ancestor) const
+		  { if (this == ancestor)
+		  		return 0.0;
+		  	if (const TreeNode* parent_ = getParent ())
+		  		return getParentDistance () + parent_->getPathLength (ancestor);
+		  	if (! ancestor)
+		  	  return 0.0;
+		  	return numeric_limits<double>::quiet_NaN ();
 		  }
 		size_t getSubtreeSize (bool countLeaves) const;
 		  // Return: number of Arc's in the subtree
