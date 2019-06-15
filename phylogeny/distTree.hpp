@@ -426,6 +426,8 @@ public:
     // Return: this or nullptr
   bool childrenDiscernible () const
     { return arcs [false]. empty () || ! static_cast <DTNode*> ((*arcs [false]. begin ()) -> node [false]) -> inDiscernible (); }
+  const DTNode* getDiscernible () const;
+    // Return: this or getParent(); !nullptr
   Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
     // After: DistTree::setHeight()
@@ -602,8 +604,6 @@ public:
 
   const Leaf* getDissimOther (size_t dissimNum) const;
     // Return: !nullptr; != this
-  const DTNode* getDiscernible () const;
-    // Return: this or getParent(); !nullptr
   bool getCollapsed (const Leaf* other) const
     { return    other
              && getParent () == other->getParent ()
@@ -1363,10 +1363,10 @@ public:
 	void optimize3 ();
 	  // Optimal solution, does not depend on Obj::mult
 	  // Requires: 3 leaves
-  bool optimizeReinsert (bool useOrigWeights);
+  bool optimizeReinsert ();
     // Re-inserts subtrees with small DTNode::pathDissimNums.size()
 	  // Return: false <=> finished
-    // Invokes: setDissimMult(false), NewLeaf(DTNode*), Change, applyChanges(), Threads
+    // Invokes: NewLeaf(DTNode*), Change, applyChanges(), Threads
     // Time: O(n log^3(n))
 	void optimizeWholeIter (uint iter_max,
 	                        const string &output_tree);
@@ -1585,7 +1585,10 @@ public:
   {
     const DTNode* anchor {nullptr};
       // Current best position of NewLeaf
-      // New Leaf* leaf: leaf->getParent() is on the anchor arc
+      // = LCA of Leaf2dissim::leaf's or NewLeaf::tree.root
+    Real anchorLen {NaN};
+      // >= anchor->len
+      // Distance to the previous anchor
     Real leafLen {NaN};
     Real arcLen {NaN};
       // From anchor to leaf->getParent()
@@ -1599,6 +1602,7 @@ public:
            << '\t' << leafLen 
            << '\t' << arcLen  
            // Not used 
+           << '\t' << anchorLen
            << '\t' << anchor->len
            << '\t' << absCriterion_leaf;
       }
@@ -1621,7 +1625,7 @@ public:
       
     // Output
     // Function of NewLeaf::Location::anchor
-    Real dist_hat {NaN};
+    Real dist_hat {0.0};
       // From leaf to NewLeaf::Location::anchor
     bool leafIsBelow {false};
     
@@ -1658,7 +1662,7 @@ public:
 
 
   // Find best location, greedy
-  // Time: O(q^2 log^2(n))
+  // Time: O(q^2 log(n))
   NewLeaf (const DistTree &tree_arg,
            const string &dataDir_arg,
            const string &name_arg,
@@ -1705,15 +1709,13 @@ private:
     // Update: location, leaf2dissims, location_best
     // Output: leaf2dissims_best
     // Invokes: anchor2location(), descend()
-    // Time: O(q^2 log^2(n))
   void anchor2location ();
     // Input: leaf2dissims
     // Output: location.{leafLen,arcLen,absCriterion_leaf}
     // Time: O(q)
-  bool descend (const DTNode* anchor_new);
+  bool descend (const DTNode* anchorChild);
     // Return: true <=> location.anchor has leaves in leaf2dissims
-    // Update: leaf2dissims
-    // Output: location.anchor
+    // Update: leaf2dissims, location.anchor
     // Time: O(q log(n))
 public:
   void qc () const override;

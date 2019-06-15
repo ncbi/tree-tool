@@ -627,6 +627,15 @@ const Leaf* DTNode::inDiscernible () const
 
 
 
+const DTNode* DTNode::getDiscernible () const
+{ 
+  if (const Leaf* leaf = inDiscernible ())
+    return static_cast <const DTNode*> (leaf->getParent ());
+  return this;
+}
+
+
+
 Real DTNode::getRelCriterion () const
 { 
   return absCriterion_ave / getDistTree (). getAbsCriterion_ave (); 
@@ -1209,15 +1218,6 @@ const Leaf* Leaf::getDissimOther (size_t dissimNum) const
   const Dissim& dissim = getDistTree (). dissims [dissimNum];
   ASSERT (dissim. hasLeaf (this));
   return dissim. leaf1 == this ? dissim. leaf2 : dissim. leaf1; 
-}
-
-
-
-const DTNode* Leaf::getDiscernible () const
-{ 
-  if (const Leaf* leaf = inDiscernible ())
-    return static_cast <const DTNode*> (leaf->getParent ());
-  return this;
 }
 
 
@@ -5247,7 +5247,7 @@ void DistTree::setDissimMult (bool usePrediction)
 
 
   // To keep absCriterion < INF
-  if (! multFixed && ! variance_min)
+  if (! multFixed && ! variance_min && usePrediction)
   {  
     unordered_map<const Leaf*,Real/*dissim.target*/> leaf2target_min;  
     leaf2target_min. rehash (name2leaf. size () / 100 + 1);  // PAR
@@ -6061,15 +6061,12 @@ void reinsert_thread (size_t from,
 
 
 
-bool DistTree::optimizeReinsert (bool useOrigWeights)
+bool DistTree::optimizeReinsert ()
 {
   ASSERT (! subDepth);
 
 
   node2closestPair. clear ();
-
-  if (useOrigWeights && ! multFixed)
-    setDissimMult (false);
 
   VectorPtr<DTNode> nodeVec;  nodeVec. reserve (nodes. size ());
   for (const DiGraph::Node* node_ : nodes)
@@ -8462,17 +8459,20 @@ void NewLeaf::Location::qc () const
 
   QC_ASSERT (anchor);
   QC_ASSERT (! anchor->inDiscernible ());
-  if (anchor == anchor->getTree (). root)
+  if (anchor->getParent ())
   {
-    QC_ASSERT (isNan (anchor->len));
-    QC_ASSERT (! arcLen);
+  //QC_IMPLY (absCriterion_leaf > 0.0, anchorLen > 0.0);
+    QC_ASSERT (anchorLen < INF);
+    QC_ASSERT (anchor->len <= anchorLen);
+    QC_ASSERT (anchor->len >= 0.0);
+    QC_ASSERT (arcLen >= 0.0);
+    QC_ASSERT (arcLen <= anchorLen);
   }
   else
   {
-    QC_IMPLY (absCriterion_leaf > 0.0 && anchor != anchor->getDistTree (). root, anchor->len > 0.0);
-    QC_ASSERT (anchor->len < INF);
-    QC_ASSERT (arcLen >= 0.0);
-    QC_ASSERT (arcLen <= anchor->len);
+    QC_ASSERT (isNan (anchor->len));
+    QC_ASSERT (isNan (anchorLen));
+    QC_ASSERT (! arcLen);
   }
 
   QC_ASSERT (leafLen >= 0.0);
@@ -8509,8 +8509,6 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 : leaf (leaf_arg)
 , dissim (dissim_arg)
 , mult (isNan (mult_arg) ? dist2mult (dissim_arg) : mult_arg)
-, dist_hat (0.0)
-, leafIsBelow (false)
 { 
   if (! leaf)
     throw runtime_error ("No other leaf found for a new leaf placement");
@@ -8772,7 +8770,7 @@ void NewLeaf::optimize ()
 void NewLeaf::optimizeAnchor (Location &location_best,
                               Vector<Leaf2dissim> &leaf2dissims_best)
 {
-  if (location. anchor->len > 0.0)
+  if (location. anchorLen > 0.0)
   {
     anchor2location ();
     if (minimize (location_best. absCriterion_leaf, location. absCriterion_leaf))
@@ -8795,12 +8793,20 @@ void NewLeaf::optimizeAnchor (Location &location_best,
   {
     const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
     ASSERT (! child->inDiscernible ());
-    if (child == node_orig)
-      continue;
+  //if (child == node_orig)
+    //continue;
     const Keep<Location> location_old (location);
     const Keep<Vector<Leaf2dissim>> leaf2dissims_old (leaf2dissims);
-    if (descend (child))
+    if (descend (child))  
       optimizeAnchor (location_best, leaf2dissims_best);
+      
+  #if 0
+    if (name == "111838")
+    {
+      location. saveText (cout);
+      cout << endl;
+    }
+  #endif
   }
 }
 
@@ -8808,7 +8814,7 @@ void NewLeaf::optimizeAnchor (Location &location_best,
 
 void NewLeaf::anchor2location ()
 {
-  ASSERT (location. anchor->len > 0.0);
+  ASSERT (location. anchorLen > 0.0);
 
   Real mult_sum = 0.0;
   Real u_avg = 0.0; 
@@ -8843,7 +8849,6 @@ void NewLeaf::anchor2location ()
 //IMPLY (u_var > 0.0, mult_sum > 0.0);
 
 
-#if 1
   IMPLY (location. anchor == tree. root, ! u_var);
   
 
@@ -8853,7 +8858,7 @@ void NewLeaf::anchor2location ()
   {
     location. arcLen = delta_u_cov / u_var;
     if (   location. arcLen >= 0.0 
-        && location. arcLen <= location. anchor->len
+        && location. arcLen <= location. anchorLen
        )
     {
       location. leafLen = delta_avg - u_avg * location. arcLen;
@@ -8865,7 +8870,7 @@ void NewLeaf::anchor2location ()
     if (bad)
     {
       location. leafLen = 0.0;
-      location. arcLen = min (max (0.0, delta_u_sum / mult_sum), location. anchor->len);
+      location. arcLen = min (max (0.0, delta_u_sum / mult_sum), location. anchorLen);
       location. setAbsCriterion_leaf (*this); 
       const Location loc1 (location);
       //
@@ -8874,8 +8879,8 @@ void NewLeaf::anchor2location ()
       location. setAbsCriterion_leaf (*this); 
       const Location loc2 (location);
       //
-      location. leafLen = max (0.0, delta_avg - location. anchor->len * u_avg);
-      location. arcLen = location. anchor->len;
+      location. leafLen = max (0.0, delta_avg - location. anchorLen * u_avg);
+      location. arcLen = location. anchorLen;
       location. setAbsCriterion_leaf (*this); 
       const Location loc3 (location);
       //
@@ -8897,75 +8902,62 @@ void NewLeaf::anchor2location ()
   }
   if (! bad)
     location. setAbsCriterion_leaf (*this); 
-#else
-  bool adjusted = ! (u_var > 0.0);
 
-  // location.arcLen, adjusted
-  location. arcLen = 0.0;
-  if (location. anchor == tree. root)
-    { ASSERT (u_var == 0.0); }
-  else
-    if (u_var > 0.0)  
-    {
-      location. arcLen = delta_u_cov / u_var;
-      if (maximize (location. arcLen, 0.0))
-        adjusted = true;
-      if (minimize (location. arcLen, location. anchor->len))
-        adjusted = true;
-    }
-
-  // location.leafLen, adjusted
-  location. leafLen = delta_avg - u_avg * location. arcLen;
-  if (maximize (location. leafLen, 0.0))
-    adjusted = true;
-  
-  
-  // Case 1
-  location. setAbsCriterion_leaf (*this);  
-  if (adjusted)
-  {
-    Location loc (location);
-    // Case 2
-    loc. arcLen = 0.0;
-    loc. leafLen = max (0.0, delta_avg);
-    loc. setAbsCriterion_leaf (*this); 
-    if (location. absCriterion_leaf > loc. absCriterion_leaf)
-      location = loc;
-    // Case 3
-    if (location. anchor != tree. root)
-    {
-      loc. arcLen = location. anchor->len;
-      loc. leafLen = max (0.0, delta_avg - loc. arcLen * u_avg);
-      loc. setAbsCriterion_leaf (*this); 
-      if (location. absCriterion_leaf > loc. absCriterion_leaf)
-        location = loc;
-    }
-  }
-#endif
+  location. qc ();
 }
 
 
 
-bool NewLeaf::descend (const DTNode* anchor_new)
+bool NewLeaf::descend (const DTNode* anchorChild)
 {
-  ASSERT (anchor_new);
-  ASSERT (anchor_new->getParent () == location. anchor);
-  ASSERT (anchor_new != node_orig);
+  ASSERT (anchorChild);
+  ASSERT (anchorChild->getParent () == location. anchor);
+  ASSERT (location. anchor);
   
-  location. anchor = anchor_new;
   
-  bool hasLeaves = false;
+  VectorPtr<Tree::TreeNode> nodeVec;  nodeVec. reserve (leaf2dissims. size ());
+#ifndef NDEBUG
+	size_t below = 0;
+#endif
   for (Leaf2dissim& ld : leaf2dissims)
   {
-    if (ld. leafIsBelow)
-      ld. leafIsBelow = ld. leaf->descendantOf (location. anchor);
-    if (ld. mult)
-      ld. dist_hat -= location. anchor->len * ld. getU ();
-    if (ld. leafIsBelow)
-      hasLeaves = true;
+    ASSERT (ld. leaf);
+    if (! ld. leafIsBelow)
+      continue;
+  #ifndef NDEBUG
+    below++;
+  #endif
+    if (ld. leaf->descendantOf (anchorChild))
+      nodeVec << ld. leaf;
+    else
+      ld. leafIsBelow = false;
   }
+  if (nodeVec. empty ())
+    return false;
+    
+  IMPLY (location. anchor->getParent (), nodeVec. size () < below);  // <= location.anchor is the LCA of leaf2dissim::leaf's which are below location.anchor
+    
+	Tree::LcaBuffer buf;
+  const Tree::TreeNode* lca_ = Tree::getLca (nodeVec, buf);  
+  ASSERT (lca_);
   
-  return hasLeaves;
+  const DTNode* lca = static_cast <const DTNode*> (lca_);
+  lca = lca->getDiscernible ();
+  ASSERT (lca);
+  ASSERT (lca != location. anchor);
+  ASSERT (lca->descendantOf (anchorChild));
+  
+  IMPLY (node_orig, ! lca->descendantOf (node_orig));  // <= node_orig has no neighbors under itself
+  
+  location. anchorLen = lca->getPathLength (location. anchor);
+  location. anchor = lca;
+  ASSERT (location. anchorLen >= location. anchor->len);
+  
+  for (Leaf2dissim& ld : leaf2dissims)
+    if (ld. mult)
+      ld. dist_hat -= location. anchorLen * ld. getU ();
+  
+  return true;
 }
 
 
