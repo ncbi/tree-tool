@@ -55,6 +55,8 @@ struct ThisApplication : Application
                      ? new DistTree (            dataFName, dissimAttrName, string())
                      : new DistTree (input_tree, dataFName, dissimAttrName, string())
                 );
+  //tree->multFixed = true;
+  //tree->setDissimMult (false);  
     tree->qc ();
     
     
@@ -70,6 +72,15 @@ struct ThisApplication : Application
       const DTNode* to = nl. location. anchor;
       ASSERT (to);
       const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
+    #if 0
+      if (from->name == "111838")  
+      {
+        PRINT (from->name);
+        PRINT (nodeAbsCriterion_old);
+        PRINT (nl. location. absCriterion_leaf);
+        PRINT (improvement);
+      }
+    #endif
       if (improvement > 1e-6)  // PAR
         continue;
       try 
