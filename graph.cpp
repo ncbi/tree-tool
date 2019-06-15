@@ -737,7 +737,7 @@ void Tree::TreeNode::getLeafDepths_ (Vector<Tree::TreeNode::NodeDist> &leafDepth
   if (! first)
   {
     const double parentDistance = getParentDistance ();
-    FOR_START (size_t, i, start, leafDepths. size ())
+    FFOR_START (size_t, i, start, leafDepths. size ())
       leafDepths [i]. dist += parentDistance;
   }
 }
@@ -1622,7 +1622,7 @@ const Tree::TreeNode* Tree::getLca (const VectorPtr<TreeNode> &nodeVec,
     return nullptr;
     
 	const TreeNode* n = nodeVec [0];
-	FOR_START (size_t, i, 1, nodeVec. size ())
+	FFOR_START (size_t, i, 1, nodeVec. size ())
     n = getLca (n, nodeVec [i], buf);
 	return n;
 }
