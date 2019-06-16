@@ -19,9 +19,9 @@ for F in `ls $INC/`; do
   fi
 
   set +o errexit
-  N=`file $INC/$F | grep -c ': data$'`
+  N=`file $INC/$F | grep -c 'ASCII text'`
   set -o errexit
-  if [ $N -ne 0 ]; then
+  if [ $N -eq 0 ]; then
     continue
   fi
   
