@@ -6049,7 +6049,7 @@ void reinsert_thread (size_t from,
     ASSERT (arcDist > 1);
     if (verbose ())
       cout << fromNode->getLcaName () << " -> " << toNode->getLcaName () << ' ' << improvement << ' ' << arcDist << endl;
-    if (arcDist < areaRadius_std)  // PAR  // was: areaDiameter_std  ??
+    if (arcDist < areaRadius_std)  // PAR 
       continue;
     auto change = new Change (fromNode, toNode);
     change->improvement = improvement;
@@ -6086,7 +6086,7 @@ bool DistTree::optimizeReinsert ()
   for (const VectorPtr<Change>& threadChanges : results)
     changes << threadChanges;
 
-  return applyChanges (changes, true);  // Slow ??
+  return applyChanges (changes, true); 
 }
 
 

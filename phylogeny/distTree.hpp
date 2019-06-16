@@ -478,16 +478,6 @@ private:
 struct Steiner : DTNode
 // Steiner node
 {
-#if 0
-private:
-  size_t threadNum {NO_INDEX};
-  // Temporary
-  size_t lcaNum {0};  
-  size_t subTreeWeight {0};  // union ??
-public:
-#endif
-
-
 	Steiner (DistTree &tree,
 	         Steiner* parent_arg,
 	         Real len_arg);
@@ -665,7 +655,6 @@ struct Subgraph : Root
   VectorPtr<Tree::TreeNode> boundary;
     // Of area
     // Size: O(|area|)
-    // Make boundary and area disjoint ??
   const Steiner* area_root {nullptr};
     // May be nullptr
     // boundary.contains(area_root)
