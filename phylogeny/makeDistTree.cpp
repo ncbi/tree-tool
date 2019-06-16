@@ -30,14 +30,16 @@ struct ThisApplication : Application
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
+
 	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
-	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
+
+	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
+	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
 	  addKey ("variance_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
-	  addFlag ("variance_fixed", "Variance is computed off dissimilarities");
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
@@ -51,7 +53,7 @@ struct ThisApplication : Application
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Re-insert subtrees before subgraph optimizations");
-	//addFlag ("reinsert_orig_weights", "Use original weights in the re-insert optimization");  // useful ??
+	//addFlag ("reinsert_orig_weights", "Use original weights in the re-insert optimization");  
 	//addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
@@ -79,8 +81,8 @@ struct ThisApplication : Application
     // Output
 	  addFlag ("noqual", "Do not compute quality statistics");
 	  addKey ("output_tree", "Resulting tree");
-	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
+	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " for each leaf");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
@@ -182,7 +184,7 @@ struct ThisApplication : Application
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 	               variancePower       = str2real (getArg ("variance_power"));    // Global
 	               variance_min        = str2real (getArg ("variance_min"));
-	  const bool   variance_fixed      = getFlag ("variance_fixed");
+	  const bool   variance_dissim      = getFlag ("variance_dissim");  // useful ??
 	               
 		const string deleteFName         = getArg ("delete");
 		const bool   check_delete        = getFlag ("check_delete");
@@ -343,8 +345,17 @@ struct ThisApplication : Application
     }
     ASSERT (tree. get ());
     ASSERT (optimizable == tree->optimizable ());
-    if (variance_fixed)
-      tree->multFixed = true;
+    
+    if (variance_dissim)
+    {
+      if (tree->multFixed)
+        throw runtime_error ("-variance_dissim cannot be used with fixed dissimilarity variance");
+      else
+      {
+      	tree->setDissimMult (false);  
+        tree->multFixed = true;
+      }
+    }
     
     if (fix_discernibles)
     {
@@ -485,8 +496,10 @@ struct ThisApplication : Application
           {
             cerr << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: re-insert");
-            tree->optimizeReinsert (false /*reinsert_orig_weights*/);  
-            predictionImproved = true /*! reinsert_orig_weights*/;
+            if (! variance_dissim)              
+         	    tree->setDissimMult (false); 
+            tree->optimizeReinsert ();  
+            predictionImproved = true;
           }
           
           if (predictionImproved)
