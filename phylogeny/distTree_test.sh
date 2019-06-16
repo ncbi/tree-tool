@@ -88,8 +88,8 @@ rm prot-identical_comm.distTree
 
 echo ""
 echo "testDistTree ..."
-$THIS/makeDistTree  -data data/prot-identical_comm  -variance linExp  -optimize  -output_tree $TMP.tree
-$THIS/testDistTree -qc  $TMP.tree  -data data/prot-identical_comm  -variance linExp 
+$THIS/makeDistTree  -data data/prot-identical_comm  -variance linExp  -optimize  -output_tree $TMP.tree > /dev/null
+$THIS/testDistTree -qc  data/prot-identical_comm  -input_tree  $TMP.tree  -variance linExp 
 
 echo ""
 echo "prot-identical_comm: delete ..."
@@ -98,9 +98,7 @@ $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -dele
 if [ -d data/inc.ITS ]; then
   echo ""
   echo "ITS threads ..."
-  # Time: 10 min.
-  #       -qc: >40 min.
-  $THIS/makeDistTree  -threads 5  -data data/inc.ITS/  -variance linExp  -optimize  -skip_len  -reinsert  -subgraph_iter_max 1  -noqual > ITS.distTree
+  $THIS/makeDistTree  -threads 10  -data data/inc.ITS/  -variance linExp  -variance_dissim  -optimize  -skip_len  -reinsert  -subgraph_iter_max 1  -noqual > ITS.distTree
   $THIS/distTree_compare_criteria.sh ITS.distTree data/ITS.distTree
   rm ITS.distTree
 fi
