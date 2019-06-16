@@ -6,7 +6,7 @@ Subgraph radius: 5
 Root: by length
 
 Loading data/inc.ITS/dissim ...
-CHRON: Initial topology: 27 sec.
+CHRON: Initial topology: 28 sec.
 
 INPUT:
 # Leaves: 9009
@@ -14,22 +14,23 @@ INPUT:
 # Nodes: 17748
 # Dissimilarities: 6304107 (15.54 %)
 Dissimilarities factor: 82.55
-Ave. dissimilarity = 0.854598
-absCriterion = 1.3604e+03  Error density = 8.879 %
+Ave. dissimilarity = 0.812877
+Variance is fixed
+absCriterion = 1.1476e+03  Error density = 8.611 %
 
-# Changes: 516
-# Commits = 211
-Improvement = 75.4643
-absCriterion = 1.2849e+03  Error density = 8.628 %
-CHRON: Topology optimization: re-insert: 2517 sec.
+# Changes: 300
+# Commits = 45
+Improvement = 4.8791
+absCriterion = 1.1427e+03  Error density = 8.593 %
+CHRON: Topology optimization: re-insert: 2116 sec.
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 1
-absCriterion = 1.0068e+03  Error density = 8.128 %
-CHRON: Topology optimization: local: 72 sec.
+absCriterion = 1.1420e+03  Error density = 8.590 %
+CHRON: Topology optimization: local: 57 sec.
 
-Ave. radius: 7.586
+Ave. radius: 7.066
 
 OUTPUT:
-absCriterion = 1.0068e+03  Error density = 8.128 %
+absCriterion = 1.1420e+03  Error density = 8.590 %
 
