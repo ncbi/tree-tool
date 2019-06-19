@@ -60,50 +60,51 @@ struct ThisApplication : Application
     tree->qc ();
     
     
-   
     // DistTree::optimizeReinsert()
-    for (const auto& it : tree->name2leaf)
+    size_t improvements = 0;
     {
-      const DTNode* from = it. second->getDiscernible ();
-      Real nodeAbsCriterion_old = NaN;
-      const NewLeaf nl (from, tree->name2leaf. size (), nodeAbsCriterion_old);
-      ASSERT (nodeAbsCriterion_old >= 0.0);
-      nl. qc ();
-      const DTNode* to = nl. location. anchor;
-      ASSERT (to);
-      const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
-    #if 0
-      if (from->name == "111838")  
+      Progress prog (tree->nodes. size ());
+      for (const DiGraph::Node* node_ : tree->nodes)
       {
-        PRINT (from->name);
-        PRINT (nodeAbsCriterion_old);
-        PRINT (nl. location. absCriterion_leaf);
-        PRINT (improvement);
-      }
-    #endif
-      if (improvement > 1e-6)  // PAR
-        continue;
-      try 
-      {
-        ASSERT (! negative (improvement));
-        ASSERT (from->getParent () == to->getParent () || from->getParent () == to);
-        ASSERT (fabs (from->len - nl. location. leafLen) < 1e-4);  // PAR
-      }
-      catch (const exception &e)
-      {
-        if (verbose ())
-          cout         << from->getLcaName ()
-               << '\t' << from->len 
-               << '\t' << nl. location. leafLen 
-               << '\t' << (from->getParent () == to->getParent () || from->getParent () == to)
-               << '\t' << improvement
-               << '\t' << to->getLcaName ()
-               << '\t' << e. what ()
-               << endl;
+        prog ();
+        const DTNode* from = static_cast <const DTNode*> (node_);
+        if (   from->inDiscernible ()
+            || from == tree->root
+           )
+          continue;
+        Real nodeAbsCriterion_old = NaN;
+        const NewLeaf nl (from, tree->name2leaf. size (), nodeAbsCriterion_old);
+        ASSERT (nodeAbsCriterion_old >= 0.0);
+        nl. qc ();
+        const DTNode* to = nl. location. anchor;
+        ASSERT (to);
+        const Real improvement = nodeAbsCriterion_old - nl. location. absCriterion_leaf;
+        if (improvement > 1e-6)  // PAR
+          improvements++;
         else
-          throw;
-      }
-    } 
+          try 
+          {
+            QC_ASSERT (! negative (improvement));
+            QC_ASSERT (from->getParent () == to->getParent () || from->getParent () == to);
+            QC_ASSERT (fabs (from->len - nl. location. leafLen) < 1e-4);  // PAR
+          }
+          catch (const exception &e)
+          {
+            if (verbose ())
+              cout         << from->getLcaName ()
+                   << '\t' << from->len 
+                   << '\t' << nl. location. leafLen 
+                   << '\t' << (from->getParent () == to->getParent () || from->getParent () == to)
+                   << '\t' << improvement
+                   << '\t' << to->getLcaName ()
+                   << '\t' << e. what ()
+                   << endl;
+            else
+              throw;
+          }
+      } 
+    }
+    PRINT (improvements);
 	}
 };
 
