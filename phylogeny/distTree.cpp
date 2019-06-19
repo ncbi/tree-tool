@@ -5896,7 +5896,14 @@ size_t DistTree::optimizeLenNode ()
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
       const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
-      ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
+      if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR
+      { 
+        // ??
+        cout << "optimizeLenNode" << endl;  
+        PRINT (absCriterion);
+        PRINT (absCriterion_old);
+        PRINT (subDepth);
+      }
       prog (absCriterion2str ()); 
     }
   }
@@ -6275,7 +6282,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
   const Real improvement = max (0.0, absCriterion_init - absCriterion);
   if (verbose (1))
   {
-    ONumber on (cout, absCriterionDecimals, false);
+    const ONumber on (cout, absCriterionDecimals, true);
     cout << "# Commits = " << commits << endl;
     cout << "Improvement = " << improvement /*<< "  from: " << absCriterion_init << " to: " << absCriterion*/ << endl;
   }
@@ -8504,8 +8511,7 @@ void NewLeaf::Location::setAbsCriterion_leaf (const NewLeaf& nl)
 
 NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
                                    Real dissim_arg,
-                                   Real mult_arg,
-                                   const DTNode* anchor)
+                                   Real mult_arg)
 : leaf (leaf_arg)
 , dissim (dissim_arg)
 , mult (isNan (mult_arg) ? dist2mult (dissim_arg) : mult_arg)
@@ -8514,39 +8520,16 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
     throw runtime_error ("No other leaf found for a new leaf placement");
 //ASSERT (dissim >= 0.0);
   ASSERT (! isNan (dissim));
-  ASSERT (anchor);
   ASSERT (mult >= 0.0);
+  ASSERT (mult < INF);
   
   // dist_hat, leafIsBelow
+  const DTNode* node = leaf;
+  while (node != leaf->getTree (). root)
   { 
-    const DTNode* node = leaf;
-    for (;;)
-    { 
-      ASSERT (node);
-      if (node == anchor)
-      {
-        ASSERT (! leafIsBelow);
-        leafIsBelow = true;
-        break;
-      }
-      if (node == node->getTree (). root)
-        break;
-      dist_hat += node->len;
-      node = static_cast <const DTNode*> (node->getParent ());
-    }
-    if (! leafIsBelow)
-    {
-      node = anchor;
-      for (;;)
-      { 
-        ASSERT (node);
-        if (node == node->getTree (). root)
-          break;
-        dist_hat += node->len;
-        node = static_cast <const DTNode*> (node->getParent ());
-      }
-    }
-  }  
+    dist_hat += node->len;
+    node = static_cast <const DTNode*> (node->getParent ());
+  }
   ASSERT (dist_hat >= 0.0);
   ASSERT (dist_hat < INF);
 }
@@ -8573,8 +8556,22 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
 
 
 
+namespace
+{
+  
+struct DissimMult
+{
+  Real dissim;
+  Real mult;
+  Real absCriterion;
+};
+  
+}
+
+
+
 NewLeaf::NewLeaf (const DTNode* dtNode,
-                  size_t q_max,
+                  size_t q_max,  
                   Real &nodeAbsCriterion_old)
 : Named (checkPtr (dtNode) -> getLcaName ())
 , tree  (checkPtr (dtNode) -> getDistTree ())
@@ -8589,42 +8586,76 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
   location. anchor = static_cast <const DTNode*> (tree. root);
   location. leafLen = 0.0;
   location. arcLen = 0.0;
-  
-  Vector<Tree::TreeNode::NodeDist> leafDepths;  leafDepths. reserve (tree. name2leaf. size () / 8 + 1);  // PAR
-  dtNode->getLeafDepths (leafDepths);
-  leafDepths. sort ();
-    
-  for (const uint dissimNum : dtNode->pathDissimNums)
-  {
-    const Dissim& dissim = tree. dissims [dissimNum];
-    if (! dissim. validMult ())
-      continue;
-    size_t index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf1, 0.0});
-    const Leaf* leaf = dissim. leaf2;
-    if (index == NO_INDEX)
+
+  // leaf2dissims[]
+  {  
+    unordered_map <const Leaf*, Vector<DissimMult>> leaf2dissimMults;
+    leaf2dissimMults. rehash (dtNode->pathDissimNums. size ());
     {
-      index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf2, 0.0});
-      leaf = dissim. leaf1;
+      Vector<Tree::TreeNode::NodeDist> leafDepths;  leafDepths. reserve (tree. name2leaf. size () / 8 + 1);  // PAR
+      dtNode->getLeafDepths (leafDepths);
+      leafDepths. sort ();
+      for (const uint dissimNum : dtNode->pathDissimNums)
+      {
+        const Dissim& dissim = tree. dissims [dissimNum];
+        if (! dissim. validMult ())
+          continue;
+        size_t index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf1, 0.0});
+        const Leaf* leaf = dissim. leaf2;
+        if (index == NO_INDEX)
+        {
+          index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf2, 0.0});
+          leaf = dissim. leaf1;
+        }
+        ASSERT (index != NO_INDEX);
+        ASSERT (leaf);
+        leaf2dissimMults [leaf] << DissimMult {dissim. target - leafDepths [index]. dist, dissim. mult, dissim. getAbsCriterion ()};
+      }
     }
-    ASSERT (index != NO_INDEX);
-    ASSERT (leaf);
-    Leaf2dissim ld (leaf, dissim. target - leafDepths [index]. dist, dissim. mult, location. anchor);
-    ld. treeAbsCriterion = dissim. getAbsCriterion ();
-    leaf2dissims << ld;
+    for (const auto& it : leaf2dissimMults)
+    {
+      Real dissim_sum = 0.0;
+      Real mult_sum   = 0.0;
+      for (const DissimMult& dm : it. second)
+      {
+        dissim_sum += dm. mult * dm. dissim;
+        mult_sum   += dm. mult;
+      }
+      if (mult_sum)
+      {
+        const Real dissim_ave = dissim_sum / mult_sum;
+        Leaf2dissim ld (it. first, dissim_ave, mult_sum);
+        {
+          Real absCriterion = 0.0;
+          Real dissim2 = 0.0;
+          for (const DissimMult& dm : it. second)
+          {
+            absCriterion += dm. absCriterion;
+            dissim2      += dm. mult * sqr (dm. dissim - dissim_ave);          
+          }
+          ASSERT (geReal (absCriterion, dissim2, 1e-6));  // PAR
+          ld. absCriterion_sub = max (0.0, absCriterion - dissim2);
+        }
+        leaf2dissims << ld;
+      }
+    }
   }
 
-  if (leaf2dissims. size () > q_max)
+  if (leaf2dissims. size () > q_max)  
   {
-    leaf2dissims. sort (Leaf2dissim::multLess);
+    leaf2dissims. sort (Leaf2dissim::dissimLess);
     leaf2dissims. resize (q_max);
     leaf2dissims. shrink_to_fit ();  
   }
 
   nodeAbsCriterion_old = 0.0;
   for (const Leaf2dissim& ld : leaf2dissims)
-    nodeAbsCriterion_old += ld. treeAbsCriterion;  
+    nodeAbsCriterion_old += ld. absCriterion_sub;  
+  ASSERT (nodeAbsCriterion_old >= 0.0);
   
   leaf2dissims. sort ();
+  ASSERT (leaf2dissims. isUniq ());
+  
   optimize ();
 }
 
@@ -8681,7 +8712,7 @@ void NewLeaf::process (bool init,
           const Real dissim = str2real (dissimS);
           if (! (dissim >= 0))  // To include isNan()
             throw runtime_error ("Dissimilarity must be non-negative");
-          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN, location. anchor);
+          leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
         catch (...)
         {
@@ -8690,15 +8721,7 @@ void NewLeaf::process (bool init,
         }
     }
     leaf2dissims. sort ();
-  #ifndef NDEBUG
-    // Check uniqueness
-    const Leaf2dissim* prev = nullptr;
-    for (const Leaf2dissim& ld : leaf2dissims)
-    {
-      IMPLY (prev, prev->leaf < ld. leaf);
-      prev = & ld;
-    }
-  #endif
+    ASSERT (leaf2dissims. isUniq ());
     optimize ();
   }
 

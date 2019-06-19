@@ -1609,20 +1609,19 @@ public:
     Real dissim {NaN};
       // Between NewLeaf and leaf
     Real mult {NaN};
-    Real treeAbsCriterion {NaN};  
+    Real absCriterion_sub {NaN};  
       // For DistTree::optimizeReinsert()
       
     // Output
     // Function of NewLeaf::Location::anchor
     Real dist_hat {0.0};
       // From leaf to NewLeaf::Location::anchor
-    bool leafIsBelow {false};
+    bool leafIsBelow {true};
     
     Leaf2dissim (const Leaf* leaf_arg,
                  Real dissim_arg,
-                 Real mult_arg,
-                 const DTNode* anchor);
-      // Input: anchor = NewLeaf::Location::anchor
+                 Real mult_arg);
+      // Input: anchor = DistTree::root
     explicit Leaf2dissim (const Leaf* leaf_arg)
       : leaf (leaf_arg)
       {}
@@ -1642,9 +1641,9 @@ public:
     bool operator== (const Leaf2dissim &other) const
       { return leaf == other. leaf; }
 
-    static bool multLess (const Leaf2dissim &ld1,
-                          const Leaf2dissim &ld2)
-      { return ld1. mult > ld2. mult; }
+    static bool dissimLess (const Leaf2dissim &ld1,
+                            const Leaf2dissim &ld2)
+      { return ld1. dissim < ld2. dissim; }
   };
   Vector<Leaf2dissim> leaf2dissims;
     // Leaf2dissim::leaf: distinct, sort()'ed
@@ -1670,6 +1669,7 @@ public:
            size_t q_max,
            Real &nodeAbsCriterion_old);
     // q = q_max
+    // Output: nodeAbsCriterion_old: in subgraph, restricted by q_max
     // Invokes: optimize()
 private:
   void process (bool init,
