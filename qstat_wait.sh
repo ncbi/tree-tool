@@ -42,19 +42,20 @@ while [ 1 = 1 ]; do
     L=(`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rTt]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`)
     set -o errexit
     echo "Re-submitting ${#L[@]} grid jobs ..."
-    while [ ${#L[@]} -gt 0 ]; do
+    i=0
+    while [ $i -lt ${#L[@]} ]; do
       set +o errexit
       if [ $QRESUB == 1 ]; then
-	      qresub ${L[0]} -h u
+	      qresub ${L[i]} -h u
 	      S=$?
 	      if [ $S == 0 ]; then
-	        qdel -f ${L[0]}
+	        qdel -f ${L[i]}
 	      fi
 	    else
-	      qdel -f ${L[0]}
+	      qdel -f ${L[i]}
 	    fi
       set -o errexit
-      shift L
+      i=$(( $i + 1 ))
     done
     qrls  -h u  -u $USER > /dev/null
   fi
