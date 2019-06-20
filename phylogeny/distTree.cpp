@@ -5912,7 +5912,7 @@ size_t DistTree::optimizeLenNode ()
 #ifndef NDEBUG
   if (verbose ())
   {
-    const ONumber on (cout, absCriterionDecimals, false);
+    const ONumber on (cout, absCriterionDecimals, true);
     cout << absCriterion_old1 << " -> " << absCriterion << endl;
   }
   ASSERT (leRealRel (absCriterion, absCriterion_old1, 1e-4));  // PAR
@@ -6615,7 +6615,12 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
   qc ();
   qcPredictionAbsCriterion ();
 
-  IMPLY (! subDepth, leRealRel (absCriterion, absCriterion_old, 1e-4));  // PAR
+  if (! subDepth && ! leRealRel (absCriterion, absCriterion_old, 1e-4))  // PAR
+  {
+    cout << "optimizeSmallSubgraph" << endl;  // ??
+    PRINT (absCriterion);
+    PRINT (absCriterion_old);
+  }
 }
 
 
@@ -8521,7 +8526,7 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 //ASSERT (dissim >= 0.0);
   ASSERT (! isNan (dissim));
   ASSERT (mult >= 0.0);
-  ASSERT (mult < INF);
+//ASSERT (mult < INF);
   
   // dist_hat, leafIsBelow
   const DTNode* node = leaf;
