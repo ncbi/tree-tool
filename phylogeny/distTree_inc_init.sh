@@ -33,7 +33,6 @@ cp /dev/null $INC/leaf
 cp /dev/null $INC/tree
 
 mkdir $INC/new
-mkdir $INC/hybrid
 mkdir $INC/search
 
 echo "1" > $INC/version
