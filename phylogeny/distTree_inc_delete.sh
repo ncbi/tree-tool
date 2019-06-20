@@ -32,7 +32,6 @@ mv $INC/tree.new $INC/tree
 
 echo ""
 $INC/objects_in_tree.sh $DEL null
-$THIS/../trav $DEL "rm -f $INC/hybrid/%f"
 $THIS/../trav $DEL "rm -f $INC/new/%f"
 
 cp $DEL $INC/hist/delete.$VER

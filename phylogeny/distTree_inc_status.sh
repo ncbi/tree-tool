@@ -30,12 +30,6 @@ if [ $SEARCH -gt 0 ]; then
   echo "# Being searched: $SEARCH"
 fi
 
-N=`ls $INC/hybrid/ | wc -l`
-PERCENT=`echo "scale=2; $N * 100 / ($N + $OBJS)" | bc -l`
-if [ $N -gt 0 ]; then
-  echo "# Hybrids: $N ($PERCENT %)"
-fi
-
 
 echo ""
 

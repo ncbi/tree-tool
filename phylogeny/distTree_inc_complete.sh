@@ -26,12 +26,6 @@ if [ $N -gt 0 ]; then
   exit 1
 fi
 
-N=`ls $INC/hybrid/ | wc -l`
-if [ $N -gt 0 ]; then
-  echo "$INC/hybrid/ must be empty"
-  exit 1
-fi
-
 
 $THIS/../sort.sh $OBJS
 

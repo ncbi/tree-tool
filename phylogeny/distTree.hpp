@@ -1026,7 +1026,7 @@ struct DistTree : Tree
   const uint subDepth {0};
     // > 0 => *this is a subgraph of a tree with subDepth - 1
   typedef  unordered_map<string/*Leaf::name*/,const Leaf*>  Name2leaf;
-  Name2leaf name2leaf;  // Not needed if subDepth ??
+  Name2leaf name2leaf;  // subDepth => replace by leavesSize ??
     // 1-1
 
 private:
@@ -1104,7 +1104,6 @@ public:
 	  //          hybridness_min            <number>                                      Min. hybridness, >1
 	  //          genogroup_barrier         <number>                                      Boundary of genogroup to find outliers
     //         [dissim.bad]               <obj1> <obj2> nan
-	  //          hybrid/                   <obj>                                         Hybrid objects
 	  //         [outlier-genogroup]        <obj>                                         Genogroup outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
 	  //          version                   <natural number>
