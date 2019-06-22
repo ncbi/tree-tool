@@ -31,6 +31,7 @@ struct ThisApplication : Application
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
+  	  addFlag ("print", "Print command, not execute");
   	}
   
 
@@ -44,6 +45,7 @@ struct ThisApplication : Application
 		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
+		const bool printP        = getFlag ("print");
     ASSERT (! items. empty ());
 
 
@@ -97,21 +99,25 @@ struct ThisApplication : Application
         throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
       if (verbose ())
       	cerr << thisCmd << endl;
-      const int exitStatus = system (thisCmd. c_str ());
-      if (exitStatus)
+      if (printP)
+        cout << thisCmd << endl;
+      else
       {
-        if (errors. get ())
+        const int exitStatus = system (thisCmd. c_str ());
+        if (exitStatus)
         {
-        	*errors << item << endl;
-	        if (exitStatus == -1)  // ??
-	          ERROR;
+          if (errors. get ())
+          {
+          	*errors << item << endl;
+  	        if (exitStatus == -1)  // ??
+  	          ERROR;
+          }
+          else
+            throw runtime_error ("item=" + item + "  status=" + toString (WEXITSTATUS (exitStatus)) + "\n" + thisCmd);
         }
-        else
-          throw runtime_error ("item=" + item + "  status=" + toString (WEXITSTATUS (exitStatus)) + "\n" + thisCmd);
-      }
-
-	    FOR (uint, i, blank_lines)
-	      cerr << " " << endl;
+  	    FOR (uint, i, blank_lines)
+  	      cerr << " " << endl;
+  	  }
     }
 	}
 };
