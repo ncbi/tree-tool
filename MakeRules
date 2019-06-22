@@ -1,5 +1,4 @@
 WarningCPPFLAGS = \
-  -Werror \
 	-Waddress -Wbool-compare -Wbool-operation -Wc++11-compat  -Wc++14-compat -Wchar-subscripts -Wcomment \
   -Wformat -Wint-in-bool-context -Winit-self -Wlogical-not-parentheses -Wmaybe-uninitialized -Wmemset-elt-size -Wmemset-transposed-args \
   -Wnarrowing -Wnonnull -Wnonnull-compare -Wopenmp-simd -Wparentheses  -Wreorder -Wreturn-type \
@@ -14,11 +13,12 @@ ifneq ($(USER),brovervv)
   WarningCPPFLAGS =
 endif
 SimpleCPPFLAGS = -std=gnu++14 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
+  # -Werror 
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
   # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
 	# -ffloat-store  # slows down two-fold
-	# -ffinite-math-only: NAN problem
+	# -ffinite-math-only  # NAN problem
 # Disable debugging
 OptCPPFLAGS = $(SimpleCPPFLAGS) -O3 
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -O3 -g
