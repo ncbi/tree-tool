@@ -1,30 +1,26 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 2 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual"
   echo "#1: incremental distance tree directory"
-  echo "#2: new.list | ''"
-  echo "#3: process new objects completely (0/1)"
-  echo "Time: O(n log^4(n)) if #3 = 0"
+  echo "#2: add new (0 - no, 1 - almost all, 2 - all)"
+  echo "Time: O(n log^4(n)) if #2 = 1"
   exit 1
 fi
 INC=$1
-NEW=$2
-ALL_NEW=$3
+NEW_PAR=$2
 
 
-VARIANCE=`cat $INC/variance`
+echo "QC ..."
+$INC/qc.sh $INC
+echo ""
 
 
 if [ 1 == 1 ]; then  
-if [ "$NEW" ]; then
-  wc -l $NEW
-  $THIS/../trav $NEW "cp /dev/null $INC/new/%f"
-
-
+if [ $NEW_PAR -gt 0 ]; then
   # Time: O(n log^4(n))+
   while [ 1 == 1 ]; do
     if [ -e $INC/stop ]; then
@@ -43,6 +39,10 @@ if [ "$NEW" ]; then
     echo "# New: $NEW  `date`  `date +%s`" >> $INC/runlog  
     echo ""
     echo ""
+    ALL_NEW=0
+    if [ $NEW_PAR -eq 2 ]; then
+      ALL_NEW=1
+    fi
     $THIS/distTree_inc_new.sh $INC $ALL_NEW
     if [ -e $INC/finished ]; then
       break
@@ -50,6 +50,9 @@ if [ "$NEW" ]; then
   done
 fi
   
+
+VARIANCE=`cat $INC/variance`
+
 
 echo ""
 echo ""
