@@ -5899,7 +5899,7 @@ size_t DistTree::optimizeLenNode ()
       if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR
       { 
         // ??
-        cout << "optimizeLenNode" << endl;  
+        cout << "!!optimizeLenNode" << endl;  
         PRINT (absCriterion);
         PRINT (absCriterion_old);
         PRINT (subDepth);
@@ -6617,7 +6617,7 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
 
   if (! subDepth && ! leRealRel (absCriterion, absCriterion_old, 1e-4))  // PAR
   {
-    cout << "optimizeSmallSubgraph" << endl;  // ??
+    cout << "!!optimizeSmallSubgraph" << endl;  // ??
     PRINT (absCriterion);
     PRINT (absCriterion_old);
   }
@@ -8353,7 +8353,6 @@ void DistTree::findGenogroups (Real genogroup_dist_max)
         leaves << leaf;
   }
 
-  // Optimize using getDistanceHeight() ??!
   Progress prog (leaves. size (), 1000);  // PAR
   Tree::LcaBuffer buf;
   VectorPtr<TreeNode> area;
@@ -8363,7 +8362,7 @@ void DistTree::findGenogroups (Real genogroup_dist_max)
     prog ();
     area. clear ();
     boundary. clear ();
-    leaf->getDistanceArea (genogroup_dist_max, area, boundary);
+    leaf->getDistanceArea (genogroup_dist_max, area, boundary);  // make faster ??
     for (const TreeNode* treeNode : boundary)
       if (const Leaf* other = static_cast <const DTNode*> (treeNode) -> asLeaf ())
       {

@@ -1530,7 +1530,7 @@ public:
   void findGenogroups (Real genogroup_dist_max);  
     // Output: DTNode->DisjointCluster
     // For different genogroups their interior nodes do not intersect
-    // Time: O(n)
+    // Time: O(n) 
 
   // Statistics
 #if 0
