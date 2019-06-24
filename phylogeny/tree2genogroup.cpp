@@ -20,7 +20,9 @@ struct Genogroup
   VectorPtr<Tree::TreeNode> leaves;
     // Distinct
   const Steiner* lca {nullptr};
+    // Root of the genogroup subgraph
   const Leaf* leader {nullptr};
+    // Prefer complete, well annotated objects !??
   
   Genogroup () = default;
     
@@ -45,12 +47,14 @@ struct ThisApplication : Application
 	ThisApplication ()
 		: Application ("Find genogroups in a distance tree")
 		{
+		  // Input
 		  addPositional ("input_tree", "Tree file");
 		  addPositional ("genogroup_dist", "Max. distance between objects of the same genogroup");
+		//addKey ("outlier", "Criterion threshold to remove outliers with");  // ??!
+		  // Output
 		  addKey ("genogroup_table", "File with lines: <object> <genogroup leader>");
 		  addKey ("genogroups", "File with the names of the interior nodes which are genogroup roots");
 		  addKey ("genogroup_under_genogroup", "File with lines: <node1 LCA name> <node2 LCA name>, where nodes belong to different genogroups, but node1 is a child of node2");
-		//addKey ("outlier", "Criterion threshold to remove outliers with");  // ??!
 		}
 
 
@@ -84,6 +88,14 @@ struct ThisApplication : Application
     for (auto& it : genogroups)
       it. second. finish ();
       
+    /* Proof:
+         Let \beta be the barrier (= genogroup_dist).
+         If d_{ab} \le \beta and d_{cd} \le \beta then
+            one of d_{ac}, d_{ad}, d_{bc} and d_{bd} \le \beta, otherwise
+            4 \beta < d_{ac} + d_{ad} + d_{bc} + d_{bd} = 2 d_{ab} + 2 d_{cd} \le 4 \beta #.
+         => interior nodes of different genogroups do not intersect.
+         A genogroups with its interior nodes is a connected subgraph. It has a unique root.
+    */
     VectorPtr<Tree::TreeNode> lcas;  lcas. reserve (genogroups. size ());
     for (const auto& it : genogroups)
       if (const Steiner* lca = it. second. lca)
