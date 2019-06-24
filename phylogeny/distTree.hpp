@@ -361,7 +361,7 @@ struct DTNode : Tree::TreeNode
   friend NewLeaf;
 
   string name;  
-    // !empty() -> Newick
+    // !empty() => from Newick
 	Real len;
 	  // Arc length between *this and *getParent()
 	  // *this is root => NaN
@@ -471,6 +471,15 @@ private:
     //        depth_max: 0 <=> no restriction
     //        refreshDissims => improves criterion and quality; number of new dissims = ~10% of dissims
     // Time: O(log^2(n)) 
+
+  struct ClosestLeaf
+  {
+    const Leaf* leaf;
+    Real dist;
+    void qc () const;
+  };
+  virtual Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) = 0;
+    // Return: dist <= genogroup_dist_max
 };
 
 
@@ -515,6 +524,8 @@ public:
     // Invokes: makeRoot(getTree().root)
   LeafCluster getIndiscernibles ();
     // Invokes: Leaf->DisjointCluster
+  Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) final;
+    // Time: O(n log(n))+
 
 #if 0
 private:
@@ -611,6 +622,13 @@ public:
   void addHybridTriangles (Vector<Triangle> &triangles) const;
     // Invokes: addTriangle()
     // Time: ~ O(log^4(n))  
+  Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) final
+    { if (len <= genogroup_dist_max)
+      { Vector<ClosestLeaf> res {{this, len}};
+        return res; 
+      }
+      return {};
+    }
 };
 
 
@@ -1530,7 +1548,7 @@ public:
   void findGenogroups (Real genogroup_dist_max);  
     // Output: DTNode->DisjointCluster
     // For different genogroups their interior nodes do not intersect
-    // Time: O(n) 
+    // Time: O(n log(n)) 
 
   // Statistics
 #if 0

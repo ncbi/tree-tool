@@ -889,6 +889,19 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
 
 
 
+// DTNode::ClosestLeaf
+
+void DTNode::ClosestLeaf::qc () const
+{
+  if (! qc_on)
+    return;
+  QC_ASSERT (leaf);
+  QC_ASSERT (isNan (dist) || dist >= 0.0);
+}
+
+
+
+
 // Steiner
 
 
@@ -1078,6 +1091,59 @@ LeafCluster Steiner::getIndiscernibles ()
     leafCluster [var_cast (leaf) -> DisjointCluster::getDisjointCluster ()] << leaf;
   
   return leafCluster;
+}
+
+
+
+Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max) 
+{
+  Vector<ClosestLeaf> res;
+  
+  Vector<ClosestLeaf> vec;  vec. reserve (16); // PAR
+    // Total length for nodes of the same depth = n
+  for (const DiGraph::Arc* arc : arcs [false])
+    vec << static_cast <DTNode*> (arc->node [false]) -> findGenogroups (genogroup_dist_max);
+  if (vec. empty ())
+    return res;
+  
+  ClosestLeaf* cf_min = nullptr;
+  Real dist_min = INF;
+  for (ClosestLeaf &cf : vec)
+  {
+    cf. qc ();
+    ASSERT (cf. dist <= genogroup_dist_max);
+    if (minimize (dist_min, cf. dist))
+      cf_min = & cf;
+  }
+  ASSERT (cf_min);
+
+  for (ClosestLeaf &cf : vec)
+    if (   cf_min != & cf
+        && cf_min->dist + cf. dist <= genogroup_dist_max
+       )
+      var_cast (cf_min->leaf) -> DisjointCluster::merge (* var_cast (cf. leaf));
+        
+  unordered_map<const Leaf*,Real/*dist*/> leaf2dist;
+  leaf2dist. rehash (vec. size ());
+  for (const ClosestLeaf &cf : vec)
+  {
+    auto it = leaf2dist. find (cf. leaf);
+    if (it == leaf2dist. end ())
+      leaf2dist [cf. leaf] = cf. dist;
+    else
+      minimize (it->second, cf. dist);
+  }
+  
+  ASSERT (res. empty ());
+  vec. reserve (leaf2dist. size ()); 
+  for (const auto& it : leaf2dist)
+  {
+    const Real dist = it. second + len;
+    if (dist <= genogroup_dist_max)
+      res << ClosestLeaf {it. first, dist};
+  }
+   
+  return res;
 }
 
 
@@ -5909,14 +5975,13 @@ size_t DistTree::optimizeLenNode ()
   }
 
   
-#ifndef NDEBUG
-  if (verbose ())
+  if (! leRealRel (absCriterion, absCriterion_old1, 1e-4))  // PAR
   {
+    cout << "!!optimizeLenNode" << endl;  // ??
     const ONumber on (cout, absCriterionDecimals, true);
-    cout << absCriterion_old1 << " -> " << absCriterion << endl;
+    PRINT (absCriterion_old1);
+    PRINT (absCriterion);
   }
-  ASSERT (leRealRel (absCriterion, absCriterion_old1, 1e-4));  // PAR
-#endif
 
   return finishChanges ();
 }
@@ -8342,6 +8407,10 @@ void DistTree::findGenogroups (Real genogroup_dist_max)
   ASSERT (genogroup_dist_max > 0.0);
   ASSERT (genogroup_dist_max < INF);
 
+
+#if 1
+  const_static_cast<DTNode*> (root) -> findGenogroups (genogroup_dist_max);
+#else
   // DTNode::DisjointCluster
   VectorPtr<Leaf> leaves;  leaves. reserve (nodes. size ());
   for (DiGraph::Node* node : nodes)
@@ -8353,6 +8422,13 @@ void DistTree::findGenogroups (Real genogroup_dist_max)
         leaves << leaf;
   }
 
+  
+  // Molecular clock => 
+  //   topological tree height = O(log(n))
+  //   ave. arc len = const / log(n)
+  //   topological radius = genogroup_dist_max / ave. arc len = O(log(n))
+
+  // Time: O(n log(n))
   Progress prog (leaves. size (), 1000);  // PAR
   Tree::LcaBuffer buf;
   VectorPtr<TreeNode> area;
@@ -8370,6 +8446,7 @@ void DistTree::findGenogroups (Real genogroup_dist_max)
         var_cast (leaf) -> DisjointCluster::merge (* var_cast (other));
       }
   }
+#endif
 }
 
 
