@@ -69,10 +69,12 @@ ADD=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 echo "To add at this step: $ADD"
 
 ls $INC/new/ > $INC/new.list
+wc -l $INC/new.list
 
 cp /dev/null $INC/dissim.add
 
 $THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD > $INC/search.list
+wc -l $INC/search.list
 rm $INC/new.list
 
 $THIS/../trav -noprogress $INC/search.list "mkdir $INC/search/%f"
@@ -232,6 +234,7 @@ if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   $THIS/tree2genogroup $INC/tree  $GENOGROUP_BARRIER  -genogroup_table $INC/genogroup_table
   $INC/genogroup2db.sh $INC/genogroup_table > $INC/outlier-genogroup  
   mv $INC/genogroup_table $INC/hist/genogroup_table.$VER
+  gzip $INC/hist/genogroup_table.$VER
   if [ -s $INC/outlier-genogroup ]; then
     wc -l $INC/outlier-genogroup
   else
