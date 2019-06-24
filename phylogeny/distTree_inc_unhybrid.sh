@@ -20,7 +20,7 @@ if [ -s $INC/unhybrid ]; then
   echo ""
 	uniq.sh $INC/unhybrid
   wc -l $INC/unhybrid
-  $THIS/../trav $INC/unhybrid "cp /dev/null $INC/new/"
+  $THIS/../trav $INC/unhybrid "cp /dev/null $INC/new/%f"
   $INC/objects_in_tree.sh $INC/unhybrid null
 	mv $INC/unhybrid $INC/hist/unhybrid.$VER
 else
