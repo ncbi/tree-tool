@@ -41,7 +41,7 @@ constexpr Real dissimCoeffProd_delta = 1e-6;
 // For Time: 
 //   n = # Tree leaves, p = # distances = DistTree::dissims.size()
 //   p >= n
-//   ~ O(): p = n log(n); log log = 1
+//   ~ O(): p = n log^2(n); log log = 1
 
 
 
@@ -636,7 +636,7 @@ public:
 struct SubPath
 // Path going through a connected subgraph
 {
-  uint dissimNum {(uint) -1};    
+  uint dissimNum {dissims_max};    
     // Index of DistTree::dissims
   const DTNode* node1 {nullptr};
   const DTNode* node2 {nullptr};
@@ -651,11 +651,6 @@ struct SubPath
   void qc () const;
 
   
-  bool operator== (const SubPath &other) const
-    { return dissimNum == other. dissimNum;
-    }
-  bool operator< (const SubPath &other) const
-    { return dissimNum < other. dissimNum; }
   bool contains (const DTNode* node) const
     { return    node1 == node
              || node2 == node;
@@ -676,13 +671,18 @@ struct Subgraph : Root
   const Steiner* area_root {nullptr};
     // May be nullptr
     // boundary.contains(area_root)
+private:  
   const DTNode* area_underRoot {nullptr};
     // May be nullptr
     // area.contains(area_underRoot)
   // (bool)area_underRoot = (bool)area_root
-  Vector<SubPath> subPaths;
+  Vector<uint> dissimNums;
     // tree.dissims passing through area which can be changed
-    // Size: O(|bounadry| p/n log(n)) ~ O(|area| log^2(n))
+    // Size: O(|bounadry| p/n log(n))
+  bool completeBoundary {false};
+public:  
+  Vector<SubPath> subPaths;
+    // Size: O(|bounadry| p/n log(n))
   Real subPathsAbsCriterion {0.0};
   
   
@@ -693,6 +693,8 @@ struct Subgraph : Root
              && boundary. empty ()
              && ! area_root
              && ! area_underRoot
+             && dissimNums. empty ()
+             && ! completeBoundary
              && subPaths. empty () 
              && ! subPathsAbsCriterion;
     }
@@ -701,6 +703,8 @@ struct Subgraph : Root
       boundary. wipe ();
       area_root = nullptr;
       area_underRoot = nullptr;
+      dissimNums. wipe ();
+      completeBoundary = false;
       subPaths. wipe ();
       subPathsAbsCriterion = 0.0;
     }
@@ -712,18 +716,18 @@ struct Subgraph : Root
   void removeIndiscernibles ();
     // Update: area, boundary
   void finish ();
+    // Output: area_root, area_underRoot
     // Time: O(|area| log(|area|))
-//set subPaths
-  void finishSubPaths ();
-    // Time: O(|boundary| p/n log(n) log(|subPaths|) + |subPaths| log(|area|)) 
-    //       ~ O(|area| log(|area|) log^2(n)))
+//set dissims
+  void dissimNums2subPaths ();
+    // Output: subPaths, subPathsAbsCriterion
+    // Time: O(|dissimNums| log(|area|)) 
 //change topology of tree within area
   Real getImprovement (const DiGraph::Node2Node &boundary2new) const;
     // Time: O(|subPaths| (log(|boundary|) + log(|area|)))
   void subPaths2tree ();
     // Update: tree: Paths, absCriterion, Dissim::prediction
-    // Time: O(p/*gast*/ + |subPaths| + |area| (log(|boundary| + p/n log(n)) + |subPaths| log(|area|)
-    //       ~ O(|area| log(|area|) log^2(n))
+    // Time: O(|subPaths| + |area| (log(|boundary| + p/n log(n)) + |subPaths| log(|area|)
 
   bool large () const
     { return boundary. size () > 64; } // PAR
@@ -736,9 +740,10 @@ struct Subgraph : Root
     { return    subPath. node1 == area_root 
              || subPath. node2 == area_root;
     }
-  void node2subPaths (const DTNode* node);
+  void node2dissimNums (const DTNode* node);
     // Time: O(p/n log(n))
-  void area2subPaths ();
+  void area2dissimNums ();
+    // Output: dissimNums, completeBoundary
     // Invokes: node2subPaths()
     // Time: O(|boundary| p/n log(n))
   VectorPtr<Tree::TreeNode>& getPath (const SubPath &subPath,

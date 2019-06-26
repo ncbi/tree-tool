@@ -595,8 +595,8 @@ void DTNode::saveContent (ostream& os) const
 	if (closestDissimNum != dissims_max)
 	{
 	  const Dissim& dissim = getDistTree (). dissims [closestDissimNum];
-	  os << "  " << closestS << "="        << dissim. leaf1->getName () 
-	                     << ':' << dissim. leaf2->getName ();
+	  os << "  " << closestS << "=" << dissim. leaf1->getName () 
+	                         << ':' << dissim. leaf2->getName ();
 	  os << "  " << closest_criterionS << "=" << dissim. getDeformation ();
 	}
 }
@@ -1421,7 +1421,7 @@ void SubPath::qc () const
   if (! qc_on)
     return;
 
-  QC_ASSERT (dissimNum != (uint) -1);
+  QC_ASSERT (dissimNum != dissims_max);
   
   QC_ASSERT (node1);
   QC_ASSERT (node2);
@@ -1485,19 +1485,20 @@ void Subgraph::qc () const
   }
 
   // subPaths
+  QC_ASSERT (dissimNums. empty ());
   QC_ASSERT (! subPaths. empty ());
   {
-    Vector<uint> dissimNums;  dissimNums. reserve (subPaths. size ());
+    Vector<uint> dissimNums_;  dissimNums_. reserve (subPaths. size ());
     for (const SubPath& subPath : subPaths)
     {
       subPath. qc ();
       QC_ASSERT (boundary. containsFast (subPath. node1));
       QC_ASSERT (boundary. containsFast (subPath. node2));
       QC_ASSERT (tree. dissims [subPath. dissimNum]. valid ());
-      dissimNums << subPath. dissimNum;
+      dissimNums_ << subPath. dissimNum;
     }
-    dissimNums. sort ();
-    QC_ASSERT (dissimNums. isUniq ());
+    dissimNums_. sort ();
+    QC_ASSERT (dissimNums_. isUniq ());
   }
 }  
 
@@ -1515,7 +1516,7 @@ void Subgraph::reserve (size_t radius)
   const Prob area_prob = min (1.0, (Real) boundary_size / (Real) tree. name2leaf. size ());
   const Prob p = 1 - pow (1 - area_prob, path_size_max);
   ASSERT (isProb (p));
-  subPaths. reserve ((size_t) ((Real) tree. dissims. size () * p)); 
+  dissimNums. reserve ((size_t) ((Real) tree. dissims. size () * p)); 
 }
 
 
@@ -1594,16 +1595,42 @@ void Subgraph::finish ()
 
 
 
-void Subgraph::finishSubPaths ()
+void Subgraph::dissimNums2subPaths ()
 {
   ASSERT (! subPathsAbsCriterion);
+  ASSERT (! dissimNums. empty ());
+  ASSERT (subPaths. empty ());
   
 
-  subPaths. sort ();
-  subPaths. uniq ();
+#if 0
+  cout << "dissimNum: " << dissimNums. size () << endl;  
+  {
+    Vector<uint> vec (dissimNums);
+    vec. sort ();
+    vec. uniq ();
+    cout << "uniq: " << vec. size () << endl;
+  }  
+#endif
+  
+  unordered_set<uint> dissimSet;  
+  dissimSet. rehash (dissimNums. size ());
+  for (const uint dissimNum : dissimNums)
+    dissimSet. insert (dissimNum);
+
+  dissimNums. wipe ();
+
+  unordered_map<uint/*dissimNum*/,size_t/*SubPath index*/> dissimNum2subPath;
+  dissimNum2subPath. rehash (dissimSet. size ());
+  subPaths. reserve (dissimSet. size ());
+  for (const uint dissimNum : dissimSet)
+  {
+    subPaths << SubPath (dissimNum);
+    dissimNum2subPath [dissimNum] = subPaths. size () - 1;
+  }
 
 
   // SubPath::{node1,node2}
+//bool missed = false; 
   for (const Tree::TreeNode* node : boundary)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
@@ -1612,10 +1639,16 @@ void Subgraph::finishSubPaths ()
     {
       if (! tree. dissims [dissimNum]. valid ())  
         continue;
-      const SubPath subPath_ (dissimNum);
-      const size_t index = subPaths. binSearch (subPath_);  // unordered_map can be used 
-      if (index == NO_INDEX)  // impossible for optimizeSmallSubgraph() 
-        continue;
+      size_t index = NO_INDEX;
+      if (! find (dissimNum2subPath, dissimNum, index))
+      {        
+      //cout << "missed: " << dtNode << endl;
+      //tree. dissims [dissimNum]. saveText (cout);
+      //missed = true;
+        ASSERT (! completeBoundary);
+        continue;   
+      }
+      ASSERT (index != NO_INDEX); 
       SubPath& subPath = subPaths [index];
       ASSERT (subPath. dissimNum == dissimNum);
       if (! subPath. node1)
@@ -1626,6 +1659,19 @@ void Subgraph::finishSubPaths ()
         { ERROR; }
     }
   }
+#if 0
+  if (missed)
+  {
+    tree. print (cout);
+    cout << "area:" << endl;
+    cout << area << endl;
+    cout << "boundary:" << endl;
+    cout << boundary << endl;
+    cout << "area_root: " << area_root << endl;
+    cout << "area_underRoot: " << area_underRoot << endl;
+    ERROR;
+  }
+#endif
 
 
   // subPathsAbsCriterion, SubPath::dist_hat_tails
@@ -1642,7 +1688,6 @@ void Subgraph::finishSubPaths ()
 
     ASSERT (isNan (subPath. dist_hat_tails));
     subPath. dist_hat_tails = max (0.0, dissim. prediction - dist_hat_sub);
-    ASSERT (! isNan (subPath. dist_hat_tails));
 
     subPath. qc ();
   }
@@ -1652,6 +1697,8 @@ void Subgraph::finishSubPaths ()
 
 Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
 {
+  ASSERT (dissimNums. empty ());
+  
   Real s = 0.0;
   Tree::LcaBuffer buf;
   for (const SubPath& subPath : subPaths)
@@ -1678,22 +1725,45 @@ Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
 
 void Subgraph::subPaths2tree ()
 {
+  ASSERT (dissimNums. empty ());
+
   chron_subgraph2tree. start ();  
 
   DistTree& tree_ = var_cast (tree);
 
-  // Time: O(p + |subPaths|)
-  Vector<bool> subPathDissims (tree. dissims. size (), false);  
-  for (const SubPath& subPath : subPaths)
-    subPathDissims [subPath. dissimNum] = true;
+  // Time: O(|subPaths|)
+  Vector<bool>* subPathDissimsVec = nullptr;
+  unordered_set<uint>* subPathDissimsSet = nullptr;  
+  if (tree. dissims. size () < 1024 * 1024)  // PAR
+  {
+    subPathDissimsVec = new Vector<bool> (tree. dissims. size (), false);  
+    for (const SubPath& subPath : subPaths)
+      (*subPathDissimsVec) [subPath. dissimNum] = true;
+  }
+  else
+  {
+    subPathDissimsSet = new unordered_set<uint> ();
+    subPathDissimsSet->rehash (subPaths. size ());
+    for (const SubPath& subPath : subPaths)
+      subPathDissimsSet->insert (subPath. dissimNum);  
+  }
+  ASSERT ((bool) subPathDissimsVec != (bool) subPathDissimsSet);
   
   // Time: O(|area| (log(|boundary|) + p/n log(n)))  
   for (const Tree::TreeNode* node : area)
     if (! boundary. containsFast (node))
-      const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
-      //([this] (uint dissimNum) { const SubPath subPath (dissimNum); return subPaths. containsFast (subPath); });
-          // Faster if n >> 0 <= O(p) above is not needed
-        ([&subPathDissims] (uint dissimNum) { return subPathDissims [dissimNum]; });
+    {
+      if (subPathDissimsVec)
+        const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
+          ([subPathDissimsVec] (uint dissimNum) 
+             { return (*subPathDissimsVec) [dissimNum]; }
+          );
+      else
+        const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
+          ([subPathDissimsSet] (uint dissimNum) 
+             { return subPathDissimsSet->find (dissimNum) != subPathDissimsSet->end (); }
+          );
+    }
   
   tree_. absCriterion -= subPathsAbsCriterion;
   ASSERT (tree. absCriterion < INF);
@@ -1745,21 +1815,23 @@ void Subgraph::subPaths2tree ()
 
 
 
-void Subgraph::node2subPaths (const DTNode* node)
+void Subgraph::node2dissimNums (const DTNode* node)
 { 
   ASSERT (node);
   ASSERT (node->graph == & tree);
   for (const uint dissimNum : node->pathDissimNums)
     if (tree. dissims [dissimNum]. valid ())
-      subPaths << SubPath (dissimNum);
+      dissimNums << dissimNum;
 }
 
 
 
-void Subgraph::area2subPaths ()
+void Subgraph::area2dissimNums ()
 // Approximation: parameter sparse: Use O(boundary.size()) dissimilarities, use getReprLeaf()'s like in sparsing ??
 {
-  ASSERT (subPaths. empty ());
+  ASSERT (dissimNums. empty ());
+  ASSERT (! completeBoundary);
+  
   bool first = true;
   for (const Tree::TreeNode* node : boundary)
   {
@@ -1769,8 +1841,10 @@ void Subgraph::area2subPaths ()
     if (first)
       first = false;  // One of dtNode's is redundant given the others
     else
-      node2subPaths (dtNode);
+      node2dissimNums (dtNode);
   }
+  
+  completeBoundary = true;
 }
 
 
@@ -1871,9 +1945,10 @@ bool Change::apply ()
     ASSERT (subgraph. area. containsFast (to));
     IMPLY (arcEnd, subgraph. area. containsFast (arcEnd));
 
-    subgraph. node2subPaths (from);
-    subgraph. node2subPaths (to);
-    subgraph. finishSubPaths ();
+    subgraph. node2dissimNums (from);
+    subgraph. node2dissimNums (to);
+  //cout << "Change::apply: " << from << " -> " << to << endl;  
+    subgraph. dissimNums2subPaths ();
 
     subgraph. qc ();
     if (qc_on)
@@ -1963,13 +2038,13 @@ bool Change::apply ()
   {
     var_cast (from) -> len = lr. beta [0];
     var_cast (to)   -> len = lr. beta [1];
-    inter                       -> len = lr. beta [2];
+    inter           -> len = lr. beta [2];
   }
   else
   {
     var_cast (from) -> len = lr. beta [0] / 2.0;
     var_cast (to)   -> len = from->len;
-    inter                       -> len = NaN;
+    inter           -> len = NaN;
     ASSERT (inter == tree. root);
   }
 
@@ -1981,7 +2056,7 @@ bool Change::apply ()
     const Real prediction = nonNegative (dissim. target - lr. getResidual (objNum));
     subPathsAbsCriterion += dissim. getAbsCriterion (prediction);
   }    
-  improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);
+  improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);  // max ??
 
 
   return true;
@@ -2949,7 +3024,6 @@ DistTree::DistTree (const string &dataDirName,
         {
           Unverbose unv;
           optimizeSmallSubgraph (leaf->getDiscernible (), radius);  
-            // optimizeReinsert() ??
           prog (absCriterion2str ());
         #ifndef NDEBUG
           for (const DiGraph::Node* node : nodes)
@@ -3249,15 +3323,15 @@ DistTree::DistTree (Subgraph &subgraph,
 , multFixed (true)
 , rand (seed_global)
 {
-  ASSERT (! subgraph. empty ());
-  ASSERT (subgraph. subPaths. empty ());  // not finish()'ed
+  ASSERT (! subgraph. empty ());  
+  ASSERT (subgraph. subPaths. empty ());  // not finish()'ed  
   ASSERT (newLeaves2boundary. empty ());
 
 
   // subgraph
   subgraph. finish ();
-  subgraph. area2subPaths ();    
-  subgraph. finishSubPaths ();
+  subgraph. area2dissimNums ();    
+  subgraph. dissimNums2subPaths ();
   subgraph. qc ();
 
   VectorPtr<TreeNode>& area     = subgraph. area;
@@ -5916,10 +5990,9 @@ size_t DistTree::optimizeLenNode ()
     ASSERT (subgraph. boundary [centerPos] == star. center);
     subgraph. boundary. eraseAt (centerPos);
     subgraph. finish ();
-    subgraph. area2subPaths ();
-    subgraph. finishSubPaths ();
+    subgraph. area2dissimNums ();
+    subgraph. dissimNums2subPaths ();
     subgraph. qc ();    
-    // subpaths --> arc pairs ??
   
     Dataset starDs;
     starDs. objs. reserve (subgraph. subPaths. size ());
@@ -7574,7 +7647,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
   
   const Sample sample (ds);
 
-  Normal distr;  // Beta1 ??
+  Normal distr;  
   outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
 
   VectorPtr<Leaf> res;
@@ -7618,7 +7691,7 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
   Dataset ds;
   ds. objs. reserve (dissims. size ());  
   auto criterionAttr = new PositiveAttr1 ("dissim_error_rel_target", ds);  
-  for (const Dissim& dissim : dissims)    
+  for (const Dissim& dissim : dissims)    // use Leaf::closestDissimNum ??!
     if (dissim. validMult ())
     {
       const size_t index = ds. appendObj ();
@@ -7630,7 +7703,7 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
 
   const Sample sample (ds);
 
-  Normal distr;  // Beta1 ??
+  Normal distr;  // \chi^2_1 ??
   outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max * (Real) dissimTypesNum ());
 //PRINT (outlier_min); 
 
@@ -8438,7 +8511,7 @@ void DistTree::findGenogroups (Real genogroup_dist_max)
     prog ();
     area. clear ();
     boundary. clear ();
-    leaf->getDistanceArea (genogroup_dist_max, area, boundary);  // make faster ??
+    leaf->getDistanceArea (genogroup_dist_max, area, boundary); 
     for (const TreeNode* treeNode : boundary)
       if (const Leaf* other = static_cast <const DTNode*> (treeNode) -> asLeaf ())
       {
