@@ -202,12 +202,13 @@ echo "Many dissimilarity types ..."
 
 echo ""
 echo "Wolf9 ..."
-$THIS/makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
+$THIS/makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -variance_dissim  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree 1> $TMP.1 2> /dev/null
 diff Wolf9.coeff data/Wolf9.coeff
 rm Wolf9.coeff
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
+#
 $THIS/makeDistTree  -qc  -data Wolf9-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf9-out.tree 1> $TMP.2 2> /dev/null
-B=`grep -w ^OUTPUT -A 1 $TMP.2 | tail -1`
+B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
 if [ "$A" != "$B" ]; then
   echo "$A"
   echo "$B"
@@ -222,26 +223,36 @@ rm Wolf9-out.dm
 
 echo ""
 echo "Wolf110 ..."
-# 643 iterations, 14 min.
-$THIS/makeDistTree  -qc  -data data/Wolf110  -variance_min 0.005  -variance linExp  -optimize  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
+$THIS/makeDistTree  -data data/Wolf110  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
 #
-$THIS/makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
-B=`grep -w ^OUTPUT -A 1 $TMP.2 | tail -1`
+$THIS/makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out1.tree 1> $TMP.2 2> /dev/null
+B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
 if [ "$A" != "$B" ]; then
   echo "$A"
   echo "$B"
   exit 1
 fi
-$THIS/printDistTree  -qc  Wolf110.tree      -order  -decimals 2  > Wolf110.nw
-$THIS/printDistTree  -qc  Wolf110-out.tree  -order  -decimals 2  > Wolf110-out.nw
-diff Wolf110.nw Wolf110-out.nw
-rm Wolf110.nw Wolf110-out.nw
-rm Wolf110.tree Wolf110-out.tree
-rm Wolf110-out.dm
+$THIS/printDistTree  -qc  Wolf110.tree       -order  -decimals 2  > Wolf110.nw
+$THIS/printDistTree  -qc  Wolf110-out1.tree  -order  -decimals 2  > Wolf110-out1.nw
+diff Wolf110.nw Wolf110-out1.nw 
 #
-# makeDistTree  -qc  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out.tree 1> $TMP.2 2> /dev/null
-# ... ??
+makeDistTree  -qc  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out2.tree 1> $TMP.2 2> /dev/null
+B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
+if [ "$A" != "$B" ]; then
+  echo "$A"
+  echo "$B"
+  exit 1
+fi
+if [ 0 == 1 ]; then  # ??
+  $THIS/printDistTree  -qc  Wolf110.tree       -order  -decimals 2  > Wolf110.nw
+  $THIS/printDistTree  -qc  Wolf110-out2.tree  -order  -decimals 2  > Wolf110-out2.nw
+  diff Wolf110.nw Wolf110-out.nw
+fi
+#
+rm -f Wolf110.nw Wolf110-out1.nw Wolf110-out2.nw
+rm -f Wolf110.tree Wolf110-out1.tree Wolf110-out2.tree
+rm Wolf110-out.dm
 
 
 rm $TMP*
