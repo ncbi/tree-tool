@@ -1732,37 +1732,37 @@ void Subgraph::subPaths2tree ()
   DistTree& tree_ = var_cast (tree);
 
   // Time: O(|subPaths|)
-  Vector<bool>* subPathDissimsVec = nullptr;
-  unordered_set<uint>* subPathDissimsSet = nullptr;  
+  unique_ptr<Vector<bool>> subPathDissimsVec;
+  unique_ptr<unordered_set<uint>> subPathDissimsSet;  
   if (tree. dissims. size () < 1024 * 1024)  // PAR
   {
-    subPathDissimsVec = new Vector<bool> (tree. dissims. size (), false);  
+    subPathDissimsVec. reset (new Vector<bool> (tree. dissims. size (), false));  
     for (const SubPath& subPath : subPaths)
       (*subPathDissimsVec) [subPath. dissimNum] = true;
   }
   else
   {
-    subPathDissimsSet = new unordered_set<uint> ();
+    subPathDissimsSet. reset (new unordered_set<uint> ());
     subPathDissimsSet->rehash (subPaths. size ());
     for (const SubPath& subPath : subPaths)
       subPathDissimsSet->insert (subPath. dissimNum);  
   }
-  ASSERT ((bool) subPathDissimsVec != (bool) subPathDissimsSet);
+  ASSERT ((bool) subPathDissimsVec. get () != (bool) subPathDissimsSet. get ());
   
   // Time: O(|area| (log(|boundary|) + p/n log(n)))  
   for (const Tree::TreeNode* node : area)
     if (! boundary. containsFast (node))
     {
-      if (subPathDissimsVec)
+      if (const Vector<bool>* vec = subPathDissimsVec. get ())
         const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
-          ([subPathDissimsVec] (uint dissimNum) 
-             { return (*subPathDissimsVec) [dissimNum]; }
-          );
+          ([vec] (uint dissimNum) { return (*vec) [dissimNum]; });
       else
+      {
+        const unordered_set<uint>* s = subPathDissimsSet. get ();
+        ASSERT (s);
         const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
-          ([subPathDissimsSet] (uint dissimNum) 
-             { return subPathDissimsSet->find (dissimNum) != subPathDissimsSet->end (); }
-          );
+          ([s] (uint dissimNum) { return s->find (dissimNum) != s->end (); });
+      }
     }
   
   tree_. absCriterion -= subPathsAbsCriterion;
@@ -4964,7 +4964,6 @@ void DistTree::qc () const
     QC_ASSERT (! multAttr);
     QC_ASSERT (! subDepth);
     QC_ASSERT (eqReal (getDissimCoeffProd (), 1.0, dissimCoeffProd_delta)); 
-    QC_ASSERT (! multFixed);
     for (const DissimType& dt : dissimTypes)
     {
       dt. qc ();
