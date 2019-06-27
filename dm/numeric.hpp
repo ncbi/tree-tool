@@ -321,16 +321,12 @@ Real lnGamma (Real x);
   // Requires: x > 0.0
   // Author: Lanczos, C. 1964, SIAM Journal on Numerical Analysis, ser. B, vol. 1, pp. 86-96
 
-bool lnComIncGamma (Real x,
-                    Real start,
-                    size_t  maxIter,
-                    Real &result);
-  // Logarithm of complementary incomplete Gamma function
-  // Output: result
-  // Return: true if converges
-  // Requires: X > 0.0, Start >= 0.0
-  // Invokes: lnGamma (), CONTINUED_FRACTION::Lentz ()
-  // Result of LnComIncGamma (X, 0.0) = LnGamma (X)
+Real lnComIncGamma (Real x,
+                    Real a);
+  // Return: Logarithm of complementary incomplete Gamma function, may be NaN if not converged
+  // Requires: x >= 0.0, a > 0.0
+  // Invokes: lnGamma (), ContinuedFraction::lentz ()
+  // lnComIncGamma (x, 0.0) = lnGamma (X)
 
 
 

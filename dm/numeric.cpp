@@ -124,6 +124,7 @@ Real str2real (const string& s)
 }
 
 
+
 namespace 
 {
   inline void setNonZero (Real &target,
@@ -372,24 +373,22 @@ bool ContinuedFraction::lentz (size_t maxIter,
 {
   ASSERT (maxIter > 1);
   
-
   setNonZero (result, getB (0));
   Real c = result;
-  Real d = 0;
+  Real d = 0.0;
   FOR (size_t, i, maxIter)
   {
     const Real a = getA (i + 1);
     const Real b = getB (i + 1);
     setNonZero (d, b + a * d);
     setNonZero (c, b + a / c);
-    d = 1 / d;
+    d = 1.0 / d;
     const Real delta = c * d;
-    if (eqReal (delta, 1))
+    if (eqReal (delta, 1.0))
       return true;
     result *=  delta;
   }
-    
-    
+        
   return false;
 }
 
@@ -400,8 +399,7 @@ bool ContinuedFraction::lentz (size_t maxIter,
 
 Real lnGamma (Real x)
 {
-  ASSERT (x > 0);
-
+  ASSERT (x > 0.0);
 
   static constexpr Real c [6] = { 76.18009172947146,
 	                               -86.50532032941677,
@@ -410,14 +408,12 @@ Real lnGamma (Real x)
 	                                 0.001208650973866179,
 	                                -0.5395239384953e-5};
                          
-
   const Real a = x + 4.5;
   const Real b = (x - 0.5) * log (a) - a;
   
   Real s = 1.000000000190015;
   FOR (size_t, i, 6)
-    s += c [i] / (x + (Real) i);
-    
+    s += c [i] / (x + (Real) i);    
     
   return  b + log (2.5066282746310005 * s);
 }
@@ -426,66 +422,49 @@ Real lnGamma (Real x)
 
 namespace
 {
-  class ContinuedFraction_LnComIncGamma : public ContinuedFraction
+  struct ContinuedFraction_LnComIncGamma : ContinuedFraction
   {
     Real x;
-    Real start;
-  public:  
+    Real a;
   	
     ContinuedFraction_LnComIncGamma (Real x_arg,
-                                     Real start_arg):
-      ContinuedFraction (),
-      x (x_arg),
-      start (start_arg)
-      {
-        ASSERT (x > 0);
-        ASSERT (start > 0);
+                                     Real a_arg)
+      : ContinuedFraction ()
+      , x (x_arg)
+      , a (a_arg)
+      { ASSERT (x > 0.0);
+        ASSERT (a > 0.0);
       }
 
   private:
-    Real getA (size_t index) const
-      {
-        ASSERT (index > 0);
+    Real getA (size_t index) const final
+      { ASSERT (index > 0);
         if (index == 1)
-          return 1;
+          return 1.0;
         const Real j = (Real) (index - 1);
-        return  - j * (j - x);
+        return  - j * (j - a);
       }
-    Real getB (size_t index) const
-      {
-        return index ? start - x + 1.0 + 2.0 * (Real) (index - 1) : 0;
-      }
+    Real getB (size_t index) const final
+      { return index ? x - a + 1.0 + 2.0 * (Real) (index - 1) : 0.0; }
   };
 }
 
 
 
-bool lnComIncGamma (Real x,
-                    Real start,
-                    size_t maxIter,
-                    Real &result)
+Real lnComIncGamma (Real x,
+                    Real a)
 {
-  ASSERT (x > 0);
-  ASSERT (! negative (start));
-  
-  
-  if (nullReal (start))
-  {
-    result = lnGamma (x);
-    return true;
-  }
+  ASSERT (x >= 0.0);
+  ASSERT (a > 0.0);
+    
+  if (! x)
+    return lnGamma (a);
 
-
-  ContinuedFraction_LnComIncGamma cf (x, start);
-
-  
-  Real a;
-  const bool ok = cf. lentz (maxIter, a);
-  
-  result = - start + x * log (start) + log (a);
-  
-  
-  return ok;
+  const ContinuedFraction_LnComIncGamma cf (x, a);  
+  Real g;
+  if (! cf. lentz (1000, g))  // PAR
+    return NaN;
+  return - x + a * log (x) + log (g);  
 }
 
 
