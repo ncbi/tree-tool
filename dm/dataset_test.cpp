@@ -209,6 +209,7 @@ struct ThisApplication : Application
     {
 	    Binomial bin;
 	    bin. setParam (20, 0.3);
+	    bin. qc ();
 	    ASSERT_EQ (bin. cdf ( 0), 0.0008, 1e-4);
 	    ASSERT_EQ (bin. cdf ( 1), 0.0076, 1e-4);
 	    ASSERT_EQ (bin. cdf ( 2), 0.0355, 1e-4);
@@ -243,7 +244,8 @@ struct ThisApplication : Application
     cerr << "Normal ..." << endl;
     {
     	Normal normal;
-    	normal. setParam (0, 1);
+    	normal. setParam (0.0, 1.0);
+    	normal. qc ();
     	ASSERT_EQ (normal. cdf (0.155), 0.561589, 1e-6);
     	ASSERT_EQ (normal. cdf (0.344), 0.634577, 1e-6);
     	ASSERT_EQ (normal. cdf (0.545), 0.707123, 1e-6);
@@ -255,7 +257,7 @@ struct ThisApplication : Application
     	ASSERT_EQ (normal. cdf (-1.555), 1-0.940027, 1e-6);
     	ASSERT_EQ (normal. cdf (2.444), 0.992737, 1e-6);
     	// getQuantile()
-    	for (Real val = -5; val <= 5; val += 0.1)
+    	for (Real val = -5.0; val <= 5.0; val += 0.1)
     	{
       	const Prob p = normal. cdf (val);  
       	const Real quantile = normal. getQuantile (p);
@@ -267,9 +269,47 @@ struct ThisApplication : Application
     {
 	    Normal normal;
 	    const Real delta = 0.03;
-	    normal. setParam (3, 2);  estimate (normal, delta);
-	    normal. setParam (4, 1);  estimate (normal, delta);
+	    normal. setParam (3.0, 2.0);  estimate (normal, delta);
+	    normal. setParam (4.0, 1.0);  estimate (normal, delta);
 	    findDistribution (normal, delta);
+		  if (verbose ())
+	      cout << endl;
+    }
+
+    cerr << "Chi2 ..." << endl;
+    {
+    	Chi2 chi2;
+    	chi2. setParam (1.0);
+    	chi2. qc ();
+    	ASSERT_EQ (chi2. pdf (1.0), 0.241971, 1e-6);
+    	ASSERT_EQ (chi2. pdf (2.0), 0.103777, 1e-6);
+    	ASSERT_EQ (chi2. pdf (3.0), 0.0513934, 1e-6);
+    	ASSERT_EQ (chi2. cdf (0.455), 0.5, 1e-4);
+    	ASSERT_EQ (chi2. cdf (1.642), 0.8, 1e-4);
+    	ASSERT_EQ (chi2. cdf (2.706), 0.900, 1e-4);
+    	ASSERT_EQ (chi2. cdf (3.841), 0.950, 1e-4);
+    	ASSERT_EQ (chi2. cdf (5.024), 0.975, 1e-4);
+    	ASSERT_EQ (chi2. cdf (5.412), 0.980, 1e-4);
+    	ASSERT_EQ (chi2. cdf (6.635), 0.990, 1e-5);
+    	ASSERT_EQ (chi2. cdf (7.879), 0.995, 1e-5);
+    	ASSERT_EQ (chi2. cdf (10.828), 0.999, 1e-6);
+    	// getQuantileComp()
+    	for (Real val = 0.5; val <= 5.0; val += 0.1)
+    	{
+      	const Prob p = chi2. cdf (val);  
+      	const Real quantile = chi2. getQuantileComp (p, 0.0, 1e3);
+      	ASSERT_EQ (val, quantile, 1e-6);
+      }
+	    Chi2* other = chi2. copy ();
+	    delete other;
+    }
+    if (false)
+    {
+	    Chi2 chi2;
+	    const Real delta = 0.03;
+	    chi2. setParam (3.0);  estimate (chi2, delta);
+	    chi2. setParam (4.0);  estimate (chi2, delta);
+	    findDistribution (chi2, delta);
 		  if (verbose ())
 	      cout << endl;
     }
@@ -310,6 +350,23 @@ struct ThisApplication : Application
 	  }
 	#endif
 	
+	  // MinDistribution
+	  cerr << "MaxDistribution ..." << endl;
+	  {
+	    Chi2 chi2;
+    	chi2. setParam (1.0);
+    	chi2. qc ();
+    	MaxDistribution maxD;
+    	maxD. setParam (& chi2, 300);
+    	maxD. qc ();
+    #if 0
+    	for (Real x = 0.0; x < 300.0; x += 10.0)  
+    	  cout << x << '\t' << 1.0 - maxD. cdf (x) << endl;
+    #endif
+	    MaxDistribution* other = maxD. copy ();
+	    delete other;
+	  }
+	
 	  // Beta1 vs. Uniform ??
 	
     cerr << "MultiNormal ..." << endl;
@@ -324,6 +381,7 @@ struct ThisApplication : Application
 	  	mn. sigmaExact. putDiag (1, 1);
 	  	mn. sigmaExact. putSymmetric (1, 0, 0.5);
 	  	mn. setParam ();
+	  	mn. qc ();
 	  	estimate (mn, 0.1);
 	    findDistribution (mn, 0.05);  // PAR
 		  if (verbose ())

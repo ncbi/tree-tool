@@ -3520,6 +3520,54 @@ Analysis1* ContinuousDistribution::createAnalysis (Dataset &ds)
 
 
 
+namespace
+{
+  
+struct ContDistrQuantile : Func1
+{
+  const ContinuousDistribution& distr;
+  Prob p;
+  ContDistrQuantile (const ContinuousDistribution &distr_arg,
+                     Prob p_arg)
+    : distr (distr_arg)
+    , p (p_arg)
+    { ASSERT (isProb (p)); }
+  Real f (Real x) final
+    { return distr. cdf (x) - p; }
+};
+  
+}
+
+
+
+Real ContinuousDistribution::getQuantileComp (Prob p,
+                                              Real x_min,
+                                              Real x_max) const 
+{ 
+  ContDistrQuantile cdq (*this, p);
+  return cdq. findZero (x_min, x_max, 1e-6);  // PAR
+}
+
+
+
+// ExtremeDistribution
+
+void ExtremeDistribution::qc () const
+{
+  if (! qc_on)
+    return;
+	ContinuousDistribution::qc ();
+
+  if (getParamSet ())
+  {
+  	QC_ASSERT (n > 0);  
+  	QC_ASSERT (baseDistr);
+  	baseDistr->qc ();
+  }
+}
+
+
+
 
 // LocScaleDistribution
 
@@ -3834,6 +3882,35 @@ void Cauchy::estimate ()
 
 
 
+// Chi2
+
+void Chi2::qc () const
+{
+  if (! qc_on)
+    return;
+	ContinuousDistribution::qc ();
+
+  if (getParamSet ())
+  {
+  	QC_ASSERT (degree > 0.0);  
+  }
+}
+
+
+
+void Chi2::estimate ()
+{
+  ASSERT (analysis);
+#if 1
+  NOT_IMPLEMENTED;
+#else
+	const NumAttr1& attr = analysis->attr;
+#endif
+}
+
+
+
+
 // Beta1
 
 void Beta1::qc () const
@@ -3845,7 +3922,7 @@ void Beta1::qc () const
   if (getParamSet ())
   {
   	QC_ASSERT (stdBounds ());  // ??
-  	QC_ASSERT (alpha > 0);
+  	QC_ASSERT (alpha > 0.0);
   }
 }
 

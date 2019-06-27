@@ -1712,10 +1712,14 @@ template <typename T/*:Attr1*/>
       struct Geometric;
       struct Zipf;
     struct ContinuousDistribution;
+      struct ExtremeDistribution;
+        struct MinDistribution;
+        struct MaxDistribution;
       struct LocScaleDistribution;
         struct Normal;
         struct Exponential;
         struct Cauchy;
+      struct Chi2;
       struct Beta1;
       struct UniKernel;
   struct MultiDistribution;
@@ -1770,6 +1774,12 @@ public:
     { return nullptr; }
   virtual const ContinuousDistribution* asContinuousDistribution () const
     { return nullptr; }
+  virtual const ExtremeDistribution* asExtremeDistribution () const
+    { return nullptr; }
+  virtual const MinDistribution* asMinDistribution () const
+    { return nullptr; }
+  virtual const MaxDistribution* asMaxDistribution () const
+    { return nullptr; }
   virtual const LocScaleDistribution* asLocScaleDistribution () const
     { return nullptr; }
   virtual const Normal* asNormal () const
@@ -1777,6 +1787,8 @@ public:
   virtual const Exponential* asExponential () const
     { return nullptr; }
   virtual const Cauchy* asCauchy () const
+    { return nullptr; }
+  virtual const Chi2* asChi2 () const
     { return nullptr; }
   virtual const Beta1* asBeta1 () const
     { return nullptr; }
@@ -1981,15 +1993,15 @@ struct Bernoulli : Distribution
     }
   void estimate () final
     { NOT_IMPLEMENTED; }
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return ! isNan (p); }
   bool similar (const Distribution &distr,
-                Real delta) const;
-  Real getSortingValue () const 
+                Real delta) const final;
+  Real getSortingValue () const final
     { return p; }
-  Real pdfVariable () const
+  Real pdfVariable () const final
     { return pmf (variable); }
-  void randVariable () const
+  void randVariable () const final
     { variable = randProb () <= p ? ETRUE : EFALSE; }
 
   Prob pmf (An::Value x) const
@@ -2064,25 +2076,25 @@ public:
     // Input: probs: proportional to the probabilities
     { finish (); }
 private:
-  void setParamFunc ();
+  void setParamFunc () override;
 public:
   void setParam (const DiscreteDistribution &distr,
                  int x_from,
                  int x_to);
     // Input: x_from, x_to: inclusive
   void estimate () final;
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return ! probs. empty (); }
-  size_t paramCount () const
+  size_t paramCount () const final
     { return probs. size () - 1; }
   bool similar (const Distribution &distr,
-                Real delta) const;
-  Real getSortingValue () const 
+                Real delta) const final;
+  Real getSortingValue () const final
     { return getNominalVar (); }
   //
-  Real pdfVariable () const
+  Real pdfVariable () const final
     { return pmf (variable); }
-  void randVariable () const
+  void randVariable () const final
     { variable = probSum. binSearch (randProb (), false); }
     
   Prob pmf (size_t x) const
@@ -2142,23 +2154,23 @@ public:
 
   // Parameters
 protected:
-  void finish ()
+  void finish () override
     { Distribution::finish ();
       log_p_supp = log (p_supp);
     }
-  void setParamFunc () 
+  void setParamFunc () override
     { p_supp = 1;
       p_ltSupp = 0.0;
     }
 public:
   bool similar (const Distribution &distr,
-                Real delta) const 
+                Real delta) const override
     { if (const UniDistribution* u = distr. asUniDistribution ())
         return    eqReal (getLoBoundEffective (), u->getLoBoundEffective (), delta)
                && eqReal (getHiBoundEffective (), u->getHiBoundEffective (), delta);
       return false;
     }
-  Real getSortingValue () const 
+  Real getSortingValue () const override
     { return getMean (); }
 
   // Input: bounds
@@ -2285,11 +2297,11 @@ private:
   Real pdf_ (Real x) const final
     { return pmf_ (real2int (x)); }
     // Mixture of delta-functions
-  Real logPdf_ (Real x) const
+  Real logPdf_ (Real x) const final
     { return logPmf_ (real2int (x)); }
-  Prob cdf_ (Real x) const
+  Prob cdf_ (Real x) const final
     { return cdfDiscrete_ (real2int (isInteger (x) ? x : floor (x))); }
-  Real rand_ () const
+  Real rand_ () const final
     { return randDiscrete_ (); }
 public:
 
@@ -2364,15 +2376,15 @@ public:
       finish ();
     }
 private:
-  void setParamFunc ();
+  void setParamFunc () override;
 public:
   void estimate () final;
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return n && ! isNan (p); }
-  size_t paramCount () const
+  size_t paramCount () const final
     { return 2; }
   bool similar (const Distribution &distr,
-                Real delta) const
+                Real delta) const final
     { if (! DiscreteDistribution::similar (distr, delta))
         return false;
       if (const Binomial* bin = distr. asBinomial ())
@@ -2385,14 +2397,14 @@ public:
     { return name + "(" + toString (n) + "," + prob2str (p) + ")"; }
   Real stdHiBound () const final
     { return n_re; }
-  Real getMean () const  
+  Real getMean () const final
     { return n_re * bernoulli. getMean (); }
-  Real getVar () const  
+  Real getVar () const final
     { return n_re * bernoulli. getVar (); }
 private:
-  Real logPmf_ (int x) const;
-  Prob cdfDiscrete_ (int x) const;
-  int randDiscrete_ () const;
+  Real logPmf_ (int x) const final;
+  Prob cdfDiscrete_ (int x) const final;
+  int randDiscrete_ () const final;
 };
 
 
@@ -2428,12 +2440,12 @@ struct UniformDiscrete : DiscreteDistribution
     { if (! getParamSet ())  // ??
     	  NOT_IMPLEMENTED; 
     } 
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return min <= max; }
-  size_t paramCount () const
+  size_t paramCount () const final
     { return 2; }
   bool similar (const Distribution &distr,
-                Real delta) const
+                Real delta) const final
     { if (! DiscreteDistribution::similar (distr, delta))
         return false;
       if (const UniformDiscrete* ud = distr. asUniformDiscrete ())
@@ -2448,16 +2460,16 @@ struct UniformDiscrete : DiscreteDistribution
     { return (Real) min; }
   Real stdHiBound () const final
     { return (Real) max; }
-  Real getMean () const  
+  Real getMean () const final
     { return (Real) (min + max) / 2.0; }
-  Real getVar () const  
+  Real getVar () const final
     { return (Real) (range () + 1) * ((Real) range () - 1) / 12.0; }
 private:
-  Real pmf_ (int /*x*/) const
+  Real pmf_ (int /*x*/) const final
     { return 1.0 / range (); }          
-  int randDiscrete_ () const
+  int randDiscrete_ () const final
     { return min + (int) randGen. get ((ulong) range ()); }
-  Prob cdfDiscrete_ (int x) const
+  Prob cdfDiscrete_ (int x) const final
     { return (Real) (x - min + 1) * 1.0 / range (); }
 public:
 
@@ -2497,16 +2509,16 @@ public:
       finish ();
     }
 private:
-  void setParamFunc ()
+  void setParamFunc () override
     { lnP = log (p);
-      lnPCompl = log (1 - p);
+      lnPCompl = log (1.0 - p);
     }
 public:
   void estimate () final;
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return ! isNan (p); }
   bool similar (const Distribution &distr,
-                Real delta) const
+                Real delta) const final
     { if (! DiscreteDistribution::similar (distr, delta))
         return false;
       if (const Geometric* geom = distr. asGeometric ())
@@ -2518,15 +2530,15 @@ public:
     { return name + "(" + prob2str (p) + ")"; }
   Real stdLoBound () const final
     { return 1; }
-  Real getMean () const  
-    { return 1 / p; }
-  Real getVar () const  
-    { return (1 - p) / sqr (p); }
+  Real getMean () const final
+    { return 1.0 / p; }
+  Real getVar () const final
+    { return (1.0 - p) / sqr (p); }
 private:
-  Real logPmf_ (int x) const;
-  Prob cdfDiscrete_ (int /*x*/) const
+  Real logPmf_ (int x) const final;
+  Prob cdfDiscrete_ (int /*x*/) const final
     { NOT_IMPLEMENTED; return NaN; }
-  int randDiscrete_ () const
+  int randDiscrete_ () const final
     { NOT_IMPLEMENTED; return -1; }
 };
 
@@ -2573,13 +2585,13 @@ public:
       finish ();
     }
 private:
-  void setParamFunc ();
+  void setParamFunc () override;
 public:   
   void estimate () final;
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return ! isNan (alpha); }
   bool similar (const Distribution &distr,
-                Real delta) const
+                Real delta) const final
     { if (! DiscreteDistribution::similar (distr, delta))
         return false;
       if (const Zipf* zipf = distr. asZipf ())
@@ -2591,17 +2603,17 @@ public:
     { return name + "(" + real2str (alpha, 3) + ")"; }
   Real stdLoBound () const final
     { return 1; }
-  Real getMean () const  
+  Real getMean () const final
     { NOT_IMPLEMENTED; return NaN; }
-  Real getVar () const  
+  Real getVar () const final
     { NOT_IMPLEMENTED; return NaN; }
 private:
-  Prob pmf_ (int x) const
+  Prob pmf_ (int x) const final
     { return c * pow (x, - alpha); }
-  Real logPmf_ (int x) const;
-  Prob cdfDiscrete_ (int /*x*/) const
+  Real logPmf_ (int x) const final;
+  Prob cdfDiscrete_ (int /*x*/) const final
     { NOT_IMPLEMENTED; return NaN; }
-  int randDiscrete_ () const;
+  int randDiscrete_ () const final;
 public:
 
 #if 0
@@ -2665,13 +2677,117 @@ public:
     { return stdBounds () ? getInfoVar_ () : NaN; }
 
   // Unbounded support
-  virtual Real getQuantile (Prob /*p*/) const 
-    { NOT_IMPLEMENTED; return NaN; }
+  Real getQuantileComp (Prob p,
+                        Real x_min,
+                        Real x_max) const;
+  virtual Real getQuantile (Prob /*p*/) const
     // Return: inverse cdf()
+    { throw runtime_error ("Not implemented"); }
   virtual Real getInfoMean_ () const
     { return NaN; }
   virtual Real getInfoVar_ () const
     { return NaN; }
+};
+
+
+
+struct ExtremeDistribution : ContinuousDistribution 
+{  
+  // Parameters
+  const ContinuousDistribution* baseDistr {nullptr};
+  size_t n {0};
+    // Number of distributions
+    // > 0
+
+protected:
+  explicit ExtremeDistribution (const string &name_arg)
+    : ContinuousDistribution (name_arg)
+    {}
+public:
+  void qc () const override;
+
+
+  const ExtremeDistribution* asExtremeDistribution () const final
+    { return this; }
+
+  // Parameters
+  void setParam (const ContinuousDistribution* baseDistr_arg,
+                 size_t n_arg)
+    { baseDistr = baseDistr_arg;
+      n = n_arg;
+      finish ();
+    }
+  void estimate () final
+    { throw runtime_error ("Not implemented"); }
+  bool getParamSet () const final
+    { return (bool) baseDistr; }
+  bool similar (const Distribution &distr,
+                Real delta) const final
+    { if (! ContinuousDistribution::similar (distr, delta))
+        return false;
+      if (const ExtremeDistribution* extremeDistr = distr. asExtremeDistribution ())
+        return    n == extremeDistr->n
+               && baseDistr->similar (*extremeDistr->baseDistr, delta);
+      return false;
+    }
+//Real getInfoMean_ () const final
+  //{ return logAlpha + (1 - alpha) / alpha; }
+  // UniDistribution
+  string nameParam () const final
+    { return  name + "(" + baseDistr->nameParam () + "," + to_string (n) + ")"; }
+  Real stdLoBound () const final
+    { return baseDistr->stdLoBound (); }
+  Real stdHiBound () const final
+    { return baseDistr->stdHiBound (); }
+private:
+  Real pdf_ (Real /*x*/) const final
+    { throw runtime_error ("Not implemented"); }
+  Real rand_ () const final
+    { throw runtime_error ("Not implemented"); }   
+    // Return: isProb()
+public:
+  Real getMean () const final
+    { throw runtime_error ("Not implemented"); }
+  Real getVar () const final
+    { throw runtime_error ("Not implemented"); }
+};
+
+
+
+struct MinDistribution : ExtremeDistribution 
+{  
+  MinDistribution ()
+    : ExtremeDistribution ("Min")
+    {}
+  MinDistribution* copy () const override
+    { return new MinDistribution (*this); }
+
+
+  const MinDistribution* asMinDistribution () const final
+    { return this; }
+
+private:
+  Prob cdf_ (Real x) const final
+    { return 1.0 - pow (1.0 - baseDistr->cdf (x), n); }
+};
+
+
+
+struct MaxDistribution : ExtremeDistribution 
+{  
+  MaxDistribution ()
+    : ExtremeDistribution ("Min")
+    {}
+  MaxDistribution* copy () const override
+    { return new MaxDistribution (*this); }
+
+
+  const MaxDistribution* asMaxDistribution () const final
+    { return this; }
+
+private:
+  Prob cdf_ (Real x) const final
+    { return pow (baseDistr->cdf (x), n); }
 };
 
 
@@ -2924,13 +3040,84 @@ public:
   // ContinuousDistribution
 private:
   Real pdfStnd (Real xStnd) const final
-    { return 1 / (pi * (1 + sqr (xStnd))); }
+    { return 1 / (pi * (1.0 + sqr (xStnd))); }
   Real getInfoMeanStnd () const final
-    { return log (4 * pi); }
+    { return log (4.0 * pi); }
   // Solve: \int \log (x^2 + a) / (x^2 + a) dx ??
-//Real getInfoVar_ () const
+//Real getInfoVar_ () const final
   //{ return NaN; }    
   // Solve: \int \log^2 (x^2 + a) / (x^2 + a) dx ??
+};
+
+
+
+struct Chi2 : ContinuousDistribution 
+{  
+  // Parameters
+  Real degree {NaN};
+    // > 0
+private:
+  // Functions of parameters
+  Real deg {NaN};
+  Real alpha {NaN};
+  Real beta {NaN};
+public:
+
+
+  Chi2 ()
+    : ContinuousDistribution ("Chi2")
+    {}
+  Chi2* copy () const override
+    { return new Chi2 (*this); }
+  void qc () const override;
+
+
+  const Chi2* asChi2 () const final
+    { return this; }
+
+  // Parameters
+  void setParam (Real degree_arg)
+    { degree = degree_arg;
+      finish ();
+    }
+private:
+  void setParamFunc () override
+    { deg = 0.5 * degree;
+      alpha = lnGamma (deg); 
+      beta = deg * log (2.0) + alpha;
+    }
+public:
+  void estimate () final;
+  bool getParamSet () const final
+    { return ! isNan (degree); }
+  bool similar (const Distribution &distr,
+                Real delta) const final
+    { if (! ContinuousDistribution::similar (distr, delta))
+        return false;
+      if (const Chi2* chi2 = distr. asChi2 ())
+        return eqReal (degree, chi2->degree, delta);
+      return false;
+    }
+//Real getInfoMean_ () const final
+  //{ return logAlpha + (1 - alpha) / alpha; }
+  // UniDistribution
+  string nameParam () const final
+    { return  name + "(" + real2str (degree) + ",1)"; }
+  Real stdLoBound () const final
+    { return 0.0; }
+private:
+  Real logPdf_ (Real x) const final
+    { return - beta + (deg - 1.0) * log (x) - 0.5 * x; }
+  Prob cdf_ (Real x) const final
+    { return 1.0 - exp (lnComIncGamma (0.5 * x, deg) - lnGamma (deg)); } 
+  Real rand_ () const final
+    { throw runtime_error ("Not implemented"); }   
+    // Return: isProb()
+public:
+  Real getMean () const final
+    { return degree; }
+  Real getVar () const final
+    { return 2.0 * degree; }
 };
 
 
@@ -2965,14 +3152,14 @@ public:
       finish ();
     }
 private:
-  void setParamFunc ()
+  void setParamFunc () override
     { logAlpha = log (alpha); }
 public:
   void estimate () final;
-  bool getParamSet () const 
+  bool getParamSet () const final
     { return ! isNan (alpha); }
   bool similar (const Distribution &distr,
-                Real delta) const
+                Real delta) const final
     { if (! ContinuousDistribution::similar (distr, delta))
         return false;
       if (const Beta1* beta1 = distr. asBeta1 ())
@@ -2982,29 +3169,25 @@ public:
   Real getInfoMean_ () const final
     { return logAlpha + (1 - alpha) / alpha; }
   // UniDistribution
-  string nameParam () const
+  string nameParam () const final
     { return  name + "(" + real2str (alpha) + ",1)"; }
   Real stdLoBound () const final
     { return 0.0; }
   Real stdHiBound () const final
     { return 1; }
 private:
-  Real pdf_ (Real x) const
+  Real pdf_ (Real x) const final
     { return alpha * pow (x, alpha - 1); }
-  Prob cdf_ (Real x) const
+  Prob cdf_ (Real x) const final
     { return pow (x, alpha); }
-  Real rand_ () const
+  Real rand_ () const final
     { return pow (randProb (), 1 / alpha); }
     // Return: isProb()
 public:
-  Real getMean () const
+  Real getMean () const final
     { return alpha / (alpha + 1); }
-  Real getVar () const
+  Real getVar () const final
     { return alpha / (sqr (alpha + 1) * (alpha + 2)); }
-  // ContinuousDistribution
-private:
-  Real pdfStnd (Real xStnd) const
-    { return pdf_ (xStnd); }
 };
 
 
@@ -3086,31 +3269,26 @@ private:
     { return 1 / getRange (); }
     // Integral over getRange() = 1
 public:
-  bool getParamSet () const
+  bool getParamSet () const final
     { return isProb (uniform_prob) && halfWindow >= 0.0; }
   bool similar (const Distribution &/*distr*/,
-                Real /*delta*/) const
+                Real /*delta*/) const final
     { return false; }
   // UniDistribution
-  string nameParam () const
+  string nameParam () const final
     { return name + " (" + prob2str (uniform_prob) + "," + real2str (2 * halfWindow, getAttr (). decimals + 1) + ")"; }  
 private:
-  Real pdf_ (Real x) const;
+  Real pdf_ (Real x) const final;
     // Invokes: findIndex()
     // halfWindow = 0.0 => INF or 0.0
-  Prob cdf_ (Real x) const;
-  Real rand_ () const
+  Prob cdf_ (Real x) const final;
+  Real rand_ () const final
     { return points [(size_t) round (randProb () * ((Real) points. size () - 1))]. value; }
     // Bootstrap
 public:
-  Real getMean () const;
-  Real getVar () const;
-  // ContinuousDistribution
-private:
-  Real pdfStnd (Real xStnd) const
-    { return pdf_ (xStnd); }
+  Real getMean () const final;
+  Real getVar () const final;
 
-public:
   const NumAttr1& getAttr () const
     { return checkPtr (analysis) -> attr; }
   Real getRange () const
@@ -3159,15 +3337,15 @@ public:
     { variable. resize (dim); 
       x_field.  resize (dim); 
     }
-  size_t getDim () const 
+  size_t getDim () const final
     { return variable. size (); }
   bool similar (const Distribution &distr,
-                Real /*delta*/) const
+                Real /*delta*/) const override
     { if (const MultiDistribution* d = distr. asMultiDistribution ())
         return getDim () == d->getDim ();
       return false;
     }
-  Real getSortingValue () const 
+  Real getSortingValue () const final
     { MVector v (getDim ());
       getMeanVec (v);
       return v. sumSqr ();
@@ -3176,7 +3354,6 @@ public:
   // Input: <Parameters>
   virtual void getMeanVec (MVector &mean) const = 0;
   virtual void getVC (Matrix &vc) const = 0;
-    
 };
 
 
@@ -3224,7 +3401,7 @@ public:
   const MultiNormal* asMultiNormal () const final
     { return this; }    
 
-  void setSeed (ulong seed) const;
+  void setSeed (ulong seed) const override;
   // Parameters
   void setDim (size_t dim);
     // Output: mu = 0, sigmaInflated = 0, sigmaExact = 0
@@ -3232,11 +3409,11 @@ public:
     // Input: mu, sigmaInflated, sigmaExact
     { finish (); }
 private:
-  void setParamFunc ();
+  void setParamFunc () override;
     // Invokes: inflateSigma()
 public:
   void estimate () final;
-  bool getParamSet () const
+  bool getParamSet () const final
     { return    getDim () 
              && mu. defined () 
              && sigmaExact. defined () 
@@ -3244,10 +3421,10 @@ public:
              && ! isNan (coeff)
              ; 
     }
-  size_t paramCount () const
+  size_t paramCount () const final
     { return getDim () + (getDim () * (getDim () + 1)) / 2; }
   bool similar (const Distribution &distr,
-                Real delta) const
+                Real delta) const final
     { if (! MultiDistribution::similar (distr, delta))
         return false;
       if (const MultiNormal* mn = distr. asMultiNormal ())
@@ -3255,7 +3432,7 @@ public:
                && sigmaInflated. maxAbsDiff (false, mn->sigmaInflated, false) <= delta;
       return false;
     }
-  Real logPdfVariable () const
+  Real logPdfVariable () const final
     { if (isNan (coeff))
         throw runtime_error ("MultiNormal::coeff is NaN"); 
       x_field = variable;
@@ -3267,7 +3444,7 @@ public:
                                                 );
       return -0.5 * mah - coeff;
     }
-  void randVariable () const;
+  void randVariable () const final;
     // variable = mu + cholesky * zs
   Real getInfoMean () const final
     { if (isNan (coeff))
@@ -3277,9 +3454,9 @@ public:
   Real getInfoVar () const final
     { return (Real) getDim () / 2.0; }    
   // MultiDistribution
-  void getMeanVec (MVector &mean) const 
+  void getMeanVec (MVector &mean) const final
     { mean = mu; }
-  void getVC (Matrix &vc) const
+  void getVC (Matrix &vc) const final
     { vc = sigmaExact; }
   
   void getSigmaRaw (Matrix &sigmaRaw) const;
@@ -3420,28 +3597,28 @@ public:
   void setParam ()
     { finish (); }
 private:
-  void setParamFunc ();
+  void setParamFunc () override;
 public:   
   void estimate () final;
     // Input: Component::{parameters, prob} or Component::objProb
     // Invokes: components.sort()
-  bool getParamSet () const;
+  bool getParamSet () const final;
     // Input: Component::{parameters, prob}
-  size_t getDim () const 
+  size_t getDim () const final
     { return components. empty () ? SIZE_MAX : components [0] -> distr->getDim (); }
-  size_t paramCount () const;
+  size_t paramCount () const final;
   bool similar (const Distribution &distr,
-                Real delta) const;
-  Real getSortingValue () const
+                Real delta) const final;
+  Real getSortingValue () const final
     { Real s = 0.0;
       for (const Component* comp : components)
         s += comp->prob * comp->distr->getSortingValue ();
       return s;
     }
-  Real pdfVariable () const;
+  Real pdfVariable () const final;
     // Return: sum(Component::pdfProb(x))
-  Real logPdfVariable () const;
-  void randVariable () const
+  Real logPdfVariable () const final;
+  void randVariable () const final
     { cat. randVariable ();
       Distribution* distr = components [cat. variable] -> distr. get ();
       distr->randVariable (); 
