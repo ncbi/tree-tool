@@ -65,7 +65,7 @@ struct ThisApplication : Application
     if (order)
       tree. sort ();
     if (! dataFName. empty ())
-      tree. setNodeAbsCriterion ();
+      tree. setLeafAbsCriterion ();
     tree. qc ();    
     
     if (! name_match. empty ())
