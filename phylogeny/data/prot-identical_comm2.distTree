@@ -31,7 +31,7 @@ absCriterion = 1.3072e+01  Error density = 1.766 %
 absCriterion = 1.3022e+01  Error density = 1.763 %
 
 # Hybrids: 0
-absCriterion = 1.3011e+01  Error density = 1.762 %
+absCriterion = 1.3012e+01  Error density = 1.762 %
 
 # Hybrids: 0
 absCriterion = 1.3008e+01  Error density = 1.762 %
@@ -54,7 +54,7 @@ absCriterion = 1.3004e+01  Error density = 1.761 %
 # Hybrids: 0
 absCriterion = 1.3003e+01  Error density = 1.761 %
 
-# Iterations of subgraph optimization: 11
+# Iterations of subgraph optimization: 10
 absCriterion = 1.3003e+01  Error density = 1.761 %
 
 Ave. radius: 0.456
@@ -62,13 +62,13 @@ Ave. radius: 0.456
 # Criterion outliers: 4
 absCriterion = 9.7436e+00  Error density = 1.543 %
 
-# Closest outliers: 52
-absCriterion = 4.0438e+00  Error density = 1.222 %
+# Closest outliers: 13
+absCriterion = 8.2208e+00  Error density = 1.487 %
 
 OUTPUT:
-absCriterion = 4.0438e+00  Error density = 1.222 %
+absCriterion = 8.2208e+00  Error density = 1.487 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.17
+Correlation between residual^2 and dissimilarity = 0.09
 

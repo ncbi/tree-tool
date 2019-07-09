@@ -638,7 +638,20 @@ const DTNode* DTNode::getDiscernible () const
 
 Real DTNode::getRelCriterion () const
 { 
-  return absCriterion_ave / getDistTree (). getAbsCriterion_ave (); 
+  const Real err = absCriterion_ave / getDistTree (). getAbsCriterion_ave (); 
+  ASSERT (err >= 0.0);
+  return err;
+}
+
+
+
+Real DTNode::getDeformation () const
+{ 
+  if (closestDissimNum == dissims_max)
+    return NaN;
+  const Real deformation = getDistTree (). dissims [closestDissimNum]. getDeformation ();
+  ASSERT (deformation >= 0.0);
+  return deformation;
 }
 
 
@@ -1695,6 +1708,7 @@ void Subgraph::dissimNums2subPaths ()
 
 
 
+#if 0
 Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
 {
   ASSERT (dissimNums. empty ());
@@ -1720,6 +1734,7 @@ Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
   
   return subPathsAbsCriterion - s;
 }
+#endif
 
 
 
@@ -1731,6 +1746,8 @@ void Subgraph::subPaths2tree ()
 
   DistTree& tree_ = var_cast (tree);
 
+  
+  // Delete subPaths from tree
   // Time: O(|subPaths|)
   unique_ptr<Vector<bool>> subPathDissimsVec;
   unique_ptr<unordered_set<uint>> subPathDissimsSet;  
@@ -1765,6 +1782,8 @@ void Subgraph::subPaths2tree ()
       }
     }
   
+
+  // Add subPaths in area to tree
   tree_. absCriterion -= subPathsAbsCriterion;
   ASSERT (tree. absCriterion < INF);
   Tree::LcaBuffer buf;
@@ -1807,7 +1826,8 @@ void Subgraph::subPaths2tree ()
   }
   ASSERT (tree. absCriterion < INF);
   maximize (tree_. absCriterion, 0.0);
-
+  
+  
   chron_subgraph2tree. stop ();
   
   tree_. qcPaths (); 
@@ -2056,7 +2076,7 @@ bool Change::apply ()
     const Real prediction = nonNegative (dissim. target - lr. getResidual (objNum));
     subPathsAbsCriterion += dissim. getAbsCriterion (prediction);
   }    
-  improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);  // max ??
+  improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);
 
 
   return true;
@@ -6280,7 +6300,7 @@ bool DistTree::optimizeWhole ()
       chron_getBestChange. start ();
       if (const Change* bestChange = getBestChange (node)) 
       { 
-        ASSERT (bestChange->improvement >= 0.0);
+        ASSERT (bestChange->improvement > 0.0);
         changes << bestChange;
       }
       chron_getBestChange. stop ();
@@ -6317,7 +6337,7 @@ const Change* DistTree::getBestChange (const DTNode* from)
   {
     if (verbose (1))
       cerr << "found ";
-    ASSERT (bestChange->improvement >= 0.0);
+    ASSERT (bestChange->improvement > 0.0);
     return bestChange;  
   }
 
@@ -6356,7 +6376,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
       
       Change* ch = var_cast (ch_);
       ASSERT (ch);
-      ASSERT (ch->improvement > 0);
+      ASSERT (ch->improvement > 0.0);
 
       if (! ch->valid ())
         continue;
@@ -7104,6 +7124,7 @@ Real setDissimWeightAttrs (const Leaf* leaf1,
 
 Dataset DistTree::getDissimWeightDataset (Real &dissimTypeError) const
 {
+  ASSERT (optimizable ());
   ASSERT (dissims. searchSorted);
   
   
@@ -7532,6 +7553,7 @@ void DistTree::setLeafAbsCriterion ()
 
 
 
+#if 0
 void DistTree::setNodeAbsCriterion () 
 {
   ASSERT (optimizable ());
@@ -7571,6 +7593,7 @@ void DistTree::setNodeAbsCriterion ()
     ASSERT (dtNode->absCriterion_ave >= 0.0);
   }
 }
+#endif
 
 
 
@@ -7595,23 +7618,48 @@ void DistTree::setNodeClosestDissimNum ()
 
 
 
-Dataset DistTree::getLeafErrorDataset () const
+Real DistTree::getDeformation_mean () const
+{
+  ASSERT (optimizable ());
+
+  Real deformation_mean = NaN;
+  
+  MeanVar mv;
+  for (const Dissim& dissim : dissims)
+    if (dissim. validMult ())
+      mv << dissim. getDeformation ();
+  deformation_mean = mv. getMean ();
+  ASSERT (deformation_mean >= 0.0);
+  
+  return deformation_mean;
+}
+
+
+
+Dataset DistTree::getLeafErrorDataset (bool criterionAttrP,
+                                       Real deformation_mean) const
 {
   ASSERT (optimizable ());
   
   Dataset ds;
   ds. objs. reserve (name2leaf. size () / 10 + 1);  // PAR
-  auto criterionAttr = new PositiveAttr1 ("leaf_error", ds);  
+  PositiveAttr1* criterionAttr   = nullptr;
+  PositiveAttr1* deformationAttr = nullptr;
+  if (criterionAttrP)
+    criterionAttr   = new PositiveAttr1 ("leaf_error",  ds);  
+  if (! isNan (deformation_mean))
+    deformationAttr = new PositiveAttr1 ("deformation", ds);  
   for (const auto& it : name2leaf)
   {
     const Leaf* leaf = it. second;
     ASSERT (leaf);
     if (leaf->graph)
     {
-      const Real err = leaf->getRelCriterion ();
-      ASSERT (err >= 0);
       const size_t index = ds. appendObj (it. first);
-      (*criterionAttr) [index] = err;
+      if (criterionAttr)
+        (*criterionAttr)   [index] = leaf->getRelCriterion ();
+      if (deformationAttr)
+        (*deformationAttr) [index] = leaf->getDeformation () / deformation_mean;
     }
   }
 
@@ -7635,18 +7683,17 @@ bool leafRelCriterionStrictlyGreater (const Leaf* a,
 
 
 
-VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
+VectorPtr<Leaf> DistTree::findCriterionOutliers (const Dataset &leafErrorDs,
+                                                 Real outlier_EValue_max,
                                                  Real &outlier_min) const
 {
-  const Dataset ds (getLeafErrorDataset ());
-  ASSERT (ds. attrs. size () == 1)
-
-  const PositiveAttr1* criterionAttr = ds. attrs. front () -> asPositiveAttr1 ();
+  const Attr* attr = leafErrorDs. name2attr ("leaf_error");
+  ASSERT (attr);
+  const PositiveAttr1* criterionAttr = attr->asPositiveAttr1 ();
   ASSERT (criterionAttr);
   
-  const Sample sample (ds);
-
   Normal distr;  
+  const Sample sample (leafErrorDs);
   outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
 
   VectorPtr<Leaf> res;
@@ -7671,60 +7718,51 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (Real outlier_EValue_max,
 namespace
 {
   
-bool leafBadCriterionStrictlyGreater (const Leaf* a,
-                                      const Leaf* b)
+bool leafDeformationStrictlyGreater (const Leaf* a,
+                                     const Leaf* b)
 {
   ASSERT (a);
   ASSERT (b);
-  LESS_PART (*b, *a, badCriterion);
-  return a->name < b->name;
+  return a->getDeformation () > b->getDeformation ();
 }
 
 }
 
 
 
-VectorPtr<Leaf> DistTree::findClosestOutliers (Real outlier_EValue_max,
+VectorPtr<Leaf> DistTree::findClosestOutliers (Real deformation_mean,
+                                               Real outlier_EValue_max,
                                                Real &outlier_min) const
 {
-  Dataset ds;
-  ds. objs. reserve (dissims. size ());  
-  auto criterionAttr = new PositiveAttr1 ("dissim_error_rel_target", ds);  
-  for (const Dissim& dissim : dissims)    // use Leaf::closestDissimNum ??!
-    if (dissim. validMult ())
-    {
-      const size_t index = ds. appendObj ();
-      const Real err = dissim. getDeformation ();
-      ASSERT (err >= 0.0);
-      (*criterionAttr) [index] = err;
-    }
-  ds. qc ();
+  ASSERT (deformation_mean >= 0.0);
+  ASSERT (outlier_EValue_max >= 0.0);
 
-  const Sample sample (ds);
+  VectorPtr<Leaf> res;
 
-  Normal distr;  // \chi^2_1 ??
-  outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max * (Real) dissimTypesNum ());
-//PRINT (outlier_min); 
+  if (! deformation_mean)
+    return res;
 
-  for (const auto& it : name2leaf)
-    var_cast (it. second) -> badCriterion = 0.0;
-
-  VectorPtr<Leaf> res;  res. reserve (name2leaf. size ());
-  if (! isNan (outlier_min))
-    for (const Dissim& dissim : dissims)    
-      if (dissim. validMult ())
-        if (geReal (dissim. getDeformation (), outlier_min))
-        {
-          const Leaf* leaf = dissim. leaf1;
-          if (dissim. leaf2->getRelCriterion () > leaf->getRelCriterion ())
-            leaf = dissim. leaf2;
-          maximize (var_cast (leaf) -> badCriterion, dissim. getDeformation ());
-          res << leaf;
-        }
-  res. sort ();
-  res. uniq ();
+  // outlier_min
+  {
+    Chi2 chi2;
+    chi2. setParam (1.0);
+    MaxDistribution maxD;
+    const size_t degree = 2 * dissims. size () / name2leaf. size ();
+    maxD. setParam (& chi2, degree + 1);
+    maxD. qc ();
+    outlier_min = maxD. getQuantileComp (1.0 - outlier_EValue_max / (Real) name2leaf. size (), 0.0, 1e6);  // PAR
+  }
+//cout << "outlier_min: " << outlier_min << endl;  
+  ASSERT (outlier_min >= 0.0)
   
-  res. sort (leafBadCriterionStrictlyGreater);
+  for (const auto& it : name2leaf)
+  {
+    const Leaf* leaf = it. second;
+    if (leaf->graph)
+      if (geReal (leaf->getDeformation () / deformation_mean, outlier_min))
+        res << leaf;
+  }
+  res. sort (leafDeformationStrictlyGreater);  
 
   // Find a maximal "independent" subset ??
       
@@ -7956,7 +7994,8 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
         badLeaves << leaf;
     }
     Real outlier_min = NaN;
-    badLeaves << findCriterionOutliers (dissimOutlierEValue_max * 0.1, outlier_min);  // PAR
+    const Dataset leafErrorDs (getLeafErrorDataset (true, NaN));
+    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 0.1, outlier_min);  // PAR
     badLeaves. sort ();
     badLeaves. uniq ();
   //cerr << "Bad objects = " << badLeaves. size () << endl;

@@ -435,6 +435,7 @@ public:
     { return (Real) paths * sqr (errorDensity) * len; }
   Real getRelCriterion () const;
     // Relative average absolute criterion
+  Real getDeformation () const;
   virtual const Leaf* getReprLeaf (ulong seed) const = 0;
     // Return: !nullptr, in subtree
     // For sparse *getDistTree().dissimAttr
@@ -665,9 +666,11 @@ struct Subgraph : Root
   // !nullptr
   VectorPtr<Tree::TreeNode> area;  
     // Connected area
+    // sort()'ed
   VectorPtr<Tree::TreeNode> boundary;
     // Of area
     // Size: O(|area|)
+    // sort()'ed
   const Steiner* area_root {nullptr};
     // May be nullptr
     // boundary.contains(area_root)
@@ -723,8 +726,11 @@ public:
     // Output: subPaths, subPathsAbsCriterion
     // Time: O(|dissimNums| log(|area|)) 
 //change topology of tree within area
+#if 0
+  // Not used
   Real getImprovement (const DiGraph::Node2Node &boundary2new) const;
     // Time: O(|subPaths| (log(|boundary|) + log(|area|)))
+#endif
   void subPaths2tree ();
     // Update: tree: Paths, absCriterion, Dissim::prediction
     // Time: O(|subPaths| + |area| (log(|boundary| + p/n log(n)) + |subPaths| log(|area|)
@@ -1490,34 +1496,43 @@ public:
 	void setLeafAbsCriterion ();
     // Output: Leaf::{absCriterion,absCriterion_ave}
     // Time: O(p)
+#if 0
   void setNodeAbsCriterion ();
     // Output: DTNode::{absCriterion,absCriterion_ave}
     // Time: O(p log(n))
+#endif
 	void setNodeClosestDissimNum ();
     // Output: DTNode::closestDissimNum
     // Time: O(p log(n))
-  Dataset getLeafErrorDataset () const;
-    // Return: attrs = {PositiveAttr1}
-    // After: setNodeAbsCriterion() or setLeafAbsCriterion()
-    // Invokes: Leaf::getRelCriterion()
+  Real getDeformation_mean () const;
+    // Return: >= 0
+    // Time: O(p)
+  Dataset getLeafErrorDataset (bool criterionAttrP,
+                               Real deformation_mean) const;
+    // Input: deformation_mean: may be NaN
+    // Return: attrs: PositiveAttr1 "leaf_error", "deformation" if deformation_mean is not NaN
+    // Invokes: Leaf::getRelCriterion(), Leaf::getDeformation()
+    // Requires: setLeafAbsCriterion(), setNodeClosestDissimNum()
+    // Time: O(n)
 
   // Outliers
   // Return: distinct
-  VectorPtr<Leaf> findCriterionOutliers (Real outlier_EValue_max,
+  VectorPtr<Leaf> findCriterionOutliers (const Dataset &leafErrorDs,
+                                         Real outlier_EValue_max,
                                          Real &outlier_min) const;
     // Relative average absolute criterion
     // Idempotent
     // Return: sort()'ed by getRelCriterion() descending
     // Output: outlier_min
-    // Invokes: getLeafErrorDataset(), RealAttr2::distr2outlier(), Leaf::getRelCriterion()
+    // Invokes: RealAttr2::distr2outlier(), Leaf::getRelCriterion()
     // Time: O(n log(n))
-  VectorPtr<Leaf> findClosestOutliers (Real outlier_EValue_max,
+  VectorPtr<Leaf> findClosestOutliers (Real deformation_mean,
+                                       Real outlier_EValue_max,
                                        Real &outlier_min) const;
-    // Idempotent
     // Return: sort()'ed by Dissim::getDeformation() descending
-    // Output: outlier_min, Leaf::badCriterion
-    // Invokes: RealAttr2::distr2outlier(), Dissim::getDeformation()
-    // Time: O(p log(p))
+    // Output: outlier_min
+    // Invokes: Leaf::getDeformation(), MaxDistribution::getQuantileComp()
+    // Time: O(n log(n))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
                                           bool searchBadLeaves,
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;

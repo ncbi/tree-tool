@@ -56,13 +56,12 @@ Ave. radius: 0.456
 # Criterion outliers: 4
 absCriterion = 4.8591e+00  Error density = 1.542 %
 
-# Closest outliers: 60
-absCriterion = 1.8308e+00  Error density = 1.204 %
+# Closest outliers: 0
 
 OUTPUT:
-absCriterion = 1.8308e+00  Error density = 1.204 %
+absCriterion = 4.8591e+00  Error density = 1.542 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.18
+Correlation between residual^2 and dissimilarity = 0.09
 

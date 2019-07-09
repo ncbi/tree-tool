@@ -326,6 +326,10 @@ struct ThisApplication : Application
       throw runtime_error ("-noqual excludes -leaf_errors");
     if (refresh_dissim && dissim_request. empty ())
       throw runtime_error ("-refresh_dissim requires -dissim_request");
+    if (! dissim_request. empty () && ! optimizable)
+      throw runtime_error ("-dissim_request requires dissimilarities");    	
+    if (! output_data. empty () && ! optimizable)
+      throw runtime_error ("-output_data requires dissimilarities");    	
 
 
     DistTree::printParam (cout);
@@ -543,7 +547,7 @@ struct ThisApplication : Application
               if (! absCriterion_old)
               	break;
               const Real relImprovement = (absCriterion_old - tree->absCriterion) / absCriterion_old;
-              if (relImprovement <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR
+              if (relImprovement <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR  
               	break;
               	// -variance linExp or exp => threshold must be smaller ??
               tree->setDissimMult (true);
@@ -576,8 +580,9 @@ struct ThisApplication : Application
       {
         cerr << "Finding criterion outliers ..." << endl;
 	      tree->setLeafAbsCriterion (); 
+        const Dataset leafErrorDs (tree->getLeafErrorDataset (true, NaN));
 	      Real outlier_min = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (1e-6, outlier_min));  // PAR  // was: 1e-10
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (leafErrorDs, 1e-6, outlier_min));  // PAR  // was: 1e-10
 	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Criterion outliers: " << outliers. size () << endl;
         OFStream f (delete_criterion_outliers);
@@ -618,10 +623,9 @@ struct ThisApplication : Application
       if (! delete_closest_outliers. empty ())
       {
         cerr << "Finding closest outliers ..." << endl;
-	      tree->setLeafAbsCriterion (); 
 	      tree->setNodeClosestDissimNum (); 
 	      Real outlier_min = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (1e-10, outlier_min));  // PAR  
+	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (tree->getDeformation_mean (), 1e-10, outlier_min));  // PAR  
 	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Closest outliers: " << outliers. size () << endl;
         OFStream f (delete_closest_outliers);
@@ -654,7 +658,7 @@ struct ThisApplication : Application
 
       if (! noqual)
       {
-        tree->setNodeAbsCriterion ();  
+        tree->setLeafAbsCriterion ();  
         tree->setNodeClosestDissimNum ();
         tree->qc ();
       }
@@ -689,9 +693,7 @@ struct ThisApplication : Application
       {
 			  Tree::LcaBuffer buf;
         const DTNode* underRoot = tree->lcaName2node (reroot_at, buf);
-        tree->reroot (var_cast (underRoot), underRoot->len / 2);
-        if (tree->optimizable () && ! noqual)
-	        tree->setNodeAbsCriterion ();  
+        tree->reroot (var_cast (underRoot), underRoot->len / 2.0);
         tree->qc ();
       }
       
@@ -735,10 +737,11 @@ struct ThisApplication : Application
     
     if (! leaf_errors. empty ())
     {
-    //tree->setLeafAbsCriterion ();   // Done above
-      const Dataset ds (tree->getLeafErrorDataset ());
+      tree->setLeafAbsCriterion (); 
+      tree->setNodeClosestDissimNum ();
+      const Dataset leafErrorDs (tree->getLeafErrorDataset (true, tree->getDeformation_mean ()));
       OFStream f (leaf_errors + dmSuff);
-	    ds. saveText (f);    
+	    leafErrorDs. saveText (f);    
     }
 
 

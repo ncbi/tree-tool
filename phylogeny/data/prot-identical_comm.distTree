@@ -27,19 +27,19 @@ Optimizing topology: subgraphs ...
 absCriterion = 6.5362e+00  Error density = 1.766 %
 
 # Hybrids: 0
-absCriterion = 6.5110e+00  Error density = 1.763 %
+absCriterion = 6.5109e+00  Error density = 1.763 %
 
 # Hybrids: 0
-absCriterion = 6.5061e+00  Error density = 1.762 %
+absCriterion = 6.5059e+00  Error density = 1.762 %
 
 # Hybrids: 0
 absCriterion = 6.5041e+00  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 6.5032e+00  Error density = 1.762 %
+absCriterion = 6.5031e+00  Error density = 1.762 %
 
 # Hybrids: 0
-absCriterion = 6.5026e+00  Error density = 1.762 %
+absCriterion = 6.5025e+00  Error density = 1.762 %
 
 # Hybrids: 0
 absCriterion = 6.5022e+00  Error density = 1.762 %
@@ -64,13 +64,13 @@ Ave. radius: 0.456
 # Criterion outliers: 4
 absCriterion = 4.8718e+00  Error density = 1.543 %
 
-# Closest outliers: 53
-absCriterion = 1.9789e+00  Error density = 1.215 %
+# Closest outliers: 13
+absCriterion = 4.1104e+00  Error density = 1.487 %
 
 OUTPUT:
-absCriterion = 1.9789e+00  Error density = 1.215 %
+absCriterion = 4.1104e+00  Error density = 1.487 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.17
+Correlation between residual^2 and dissimilarity = 0.09
 
