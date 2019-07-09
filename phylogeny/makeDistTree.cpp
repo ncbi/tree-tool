@@ -183,8 +183,8 @@ struct ThisApplication : Application
 	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 	               variancePower       = str2real (getArg ("variance_power"));    // Global
-	               variance_min        = str2real (getArg ("variance_min"));
-	  const bool   variance_dissim      = getFlag ("variance_dissim");  // useful ??
+	               variance_min        = str2real (getArg ("variance_min"));      // Global
+	  const bool   variance_dissim     = getFlag ("variance_dissim");
 	               
 		const string deleteFName         = getArg ("delete");
 		const bool   check_delete        = getFlag ("check_delete");
