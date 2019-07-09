@@ -297,7 +297,7 @@ struct ThisApplication : Application
     	for (Real val = 0.5; val <= 5.0; val += 0.1)
     	{
       	const Prob p = chi2. cdf (val);  
-      	const Real quantile = chi2. getQuantileComp (p, 0.0, 1e3);
+      	const Real quantile = chi2. getQuantileComp (p, 0.0, 1e3);  // PAR
       	ASSERT_EQ (val, quantile, 1e-6);
       }
 	    Chi2* other = chi2. copy ();
@@ -359,10 +359,9 @@ struct ThisApplication : Application
     	MaxDistribution maxD;
     	maxD. setParam (& chi2, 300);
     	maxD. qc ();
-    #if 0
-    	for (Real x = 0.0; x < 300.0; x += 10.0)  
-    	  cout << x << '\t' << 1.0 - maxD. cdf (x) << endl;
-    #endif
+      if (verbose ())
+      	for (Real x = 0.0; x < 300.0; x += 10.0)  
+      	  cout << x << '\t' << 1.0 - maxD. cdf (x) << endl;
 	    MaxDistribution* other = maxD. copy ();
 	    delete other;
 	  }
