@@ -2680,6 +2680,8 @@ public:
   Real getQuantileComp (Prob p,
                         Real x_min,
                         Real x_max) const;
+    // Return: x_min <= x <= x_max
+    //         cdf(x) = p
   virtual Real getQuantile (Prob /*p*/) const
     // Return: inverse cdf()
     { throw runtime_error ("Not implemented"); }
