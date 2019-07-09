@@ -2722,17 +2722,21 @@ struct DissimLine
     { replace (line, '\t', ' ');
       name1 = findSplit (line);
       name2 = findSplit (line);
+      #define MSG  getErrorStr (lineNum) + 
       if (name2. empty ())
-        throw runtime_error (getErrorStr (lineNum) + "empty name2");
-      if (name1 >= name2)
-        throw runtime_error (getErrorStr (lineNum) + "name1 >= name2");
+        throw runtime_error (MSG "empty name2");
+      if (name1 == name2)
+        throw runtime_error (MSG "name1 == name2");
+      if (name1 > name2)
+        swap (name1, name2);
       dissim = str2real (line);
       if (isNan (dissim))
-        throw runtime_error (getErrorStr (lineNum) + "dissimilarity is NaN");
+        throw runtime_error (MSG "dissimilarity is NaN");
       if (dissim < 0.0)
-        throw runtime_error (getErrorStr (lineNum) + "dissimilarity is negative");
+        throw runtime_error (MSG "dissimilarity is negative");
       if (! DM_sp::finite (dissim))
-        throw runtime_error (getErrorStr (lineNum) + "dissimilarity is infinite");
+        throw runtime_error (MSG "dissimilarity is infinite");
+      #undef MSG
     }
 private:
   static string getErrorStr (uint lineNum) 
@@ -8894,15 +8898,19 @@ void NewLeaf::process (bool init,
         try
         {
           iss. reset (f. line);  
+          name1. clear ();
+          name2. clear ();
+          dissimS. clear ();
           iss >> name1 >> name2 >> dissimS;
-          ASSERT (iss. eof ());
-          ASSERT (name1 < name2);
+          QC_ASSERT (iss. eof ());
+          QC_ASSERT (name1 != name2);
+          QC_ASSERT (! dissimS. empty ());
           if (name1 != name)
             swap (name1, name2);
           if (name1 != name)
             throw runtime_error (dissimFName + " must contain " + name);
           const Real dissim = str2real (dissimS);
-          if (! (dissim >= 0))  // To include isNan()
+          if (! (dissim >= 0.0))  // To include isNan()
             throw runtime_error ("Dissimilarity must be non-negative");
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
