@@ -164,7 +164,7 @@ HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 HYBRID=""
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
-	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY  -delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_closest_outliers $INC/outlier-closest  -closest_outlier_num_max 1"
 fi
 
 DELETE=""
@@ -179,8 +179,6 @@ $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
-  -delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1 \
-  -delete_closest_outliers $INC/outlier-closest  -closest_outlier_num_max 1 \
   -output_tree $INC/tree.new \
   -dissim_request $INC/dissim_request \
   > $INC/hist/makeDistTree.$VER
@@ -204,19 +202,23 @@ if [ -e $INC/outlier-genogroup ]; then
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
-echo ""
-#echo "Database: criterion outliers ..."
-wc -l $INC/outlier-criterion
-$INC/objects_in_tree.sh $INC/outlier-criterion null
-$THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
-mv $INC/outlier-criterion $INC/hist/outlier-criterion.$VER
+if [ -e $INC/outlier-criterion ]; then
+  echo ""
+  #echo "Database: criterion outliers ..."
+  wc -l $INC/outlier-criterion
+  $INC/objects_in_tree.sh $INC/outlier-criterion null
+  $THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
+  mv $INC/outlier-criterion $INC/hist/outlier-criterion.$VER
+fi
 
-echo ""
-#echo "Database: closest outliers ..."
-wc -l $INC/outlier-closest
-$INC/objects_in_tree.sh $INC/outlier-closest null
-$THIS/../trav $INC/outlier-closest "$INC/outlier2db.sh %f closest"  
-mv $INC/outlier-closest $INC/hist/outlier-closest.$VER
+if [ -e $INC/outlier-closest ]; then
+  echo ""
+  #echo "Database: closest outliers ..."
+  wc -l $INC/outlier-closest
+  $INC/objects_in_tree.sh $INC/outlier-closest null
+  $THIS/../trav $INC/outlier-closest "$INC/outlier2db.sh %f closest"  
+  mv $INC/outlier-closest $INC/hist/outlier-closest.$VER
+fi
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   echo ""
