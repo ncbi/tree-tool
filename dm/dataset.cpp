@@ -362,10 +362,10 @@ NumAttr1::Value NumAttr1::getMedian (const Sample &sample) const
 
 
 
-Real NumAttr1::distr2outlier (const Sample &sample,
-                              LocScaleDistribution &distr,
-                              bool rightTail,
-                              Real outlier_EValue_max) const
+Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
+                                      LocScaleDistribution &distr,
+                                      bool rightTail,
+                                      Real outlier_EValue_max) const
 {
   Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)  
@@ -404,6 +404,40 @@ Real NumAttr1::distr2outlier (const Sample &sample,
   }
   if (verbose ())
     cout << "mean = " << mean << ' ' << "SD = " << sqrt (var) << endl;
+  
+  return getSign (rightTail) * INF;  
+}
+
+
+
+Real NumAttr1::contDistr2outlier (const Sample &sample,
+                                  const ContinuousDistribution &distr,
+                                  bool rightTail,
+                                  Real outlier_EValue_max) const
+{
+  Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
+  for (Iterator it (sample); it ();)  
+    if (! isMissing (*it))
+      vec << ObjNum_Real {*it, getSign (rightTail) * getReal (*it)};
+  if (vec. size () <= 2)
+    return NaN;
+    
+  vec. sort ();
+    
+  Real mult_sum = 0.0;
+  for (const ObjNum_Real& it : vec)
+  {
+    const Real x = it. value;  // Next object
+    if (mult_sum >= 0.5 * sample. mult_sum)  // PAR
+    {
+      const Prob p = 1.0 - distr. cdf (x);
+      if (leReal (p * mult_sum, outlier_EValue_max))
+        return getSign (rightTail) * x;
+    }
+    const Real mult = ds. objs [it. objNum] -> mult;
+    mult_sum += mult;
+    ASSERT (geReal (sample. mult_sum, mult_sum));
+  }
   
   return getSign (rightTail) * INF;  
 }

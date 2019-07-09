@@ -473,7 +473,7 @@ void LinearNumPrediction::removeTargetOutlierValues ()
 {
 	??
   Normal /*Exponential*/ distr;
-  outlier_min = exp (residualAttr->distr2outlier (sample, distr, outlier_EValue_max));  
+  outlier_min = exp (residualAttr->locScaleDistr2outlier (sample, distr, outlier_EValue_max));  
 }
 #endif
 

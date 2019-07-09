@@ -103,6 +103,7 @@ struct Attr2;
 // Distribution's
 struct Categorical;
 struct LocScaleDistribution;
+struct ContinuousDistribution;
 
 
 
@@ -307,13 +308,19 @@ public:
   Real getSqr_ave (const Sample &sample) const;
     // Return: >= 0.0
   Value getMedian (const Sample &sample) const;
-  Real distr2outlier (const Sample &sample,
-                      LocScaleDistribution &distr,
-                      bool rightTail,
-                      Real outlier_EValue_max) const;
-    // Return: (if rightTail) min(x) s.t. (1-\Phi(x)) * mult_sum <= outlier_EValue_max; may be NaN or INF
-    // Idempotent after removing outliers
-    // Time: O(n log(n))
+  
+  // Return: (if rightTail) min(x) s.t. (1-CDF(x)) * mult_sum <= outlier_EValue_max; may be NaN or INF
+  // Idempotent after removing outliers
+  // Time: O(n log(n))
+  Real locScaleDistr2outlier (const Sample &sample,
+                              LocScaleDistribution &distr,
+                              bool rightTail,
+                              Real outlier_EValue_max) const;
+    // Update: distr
+  Real contDistr2outlier (const Sample &sample,
+                          const ContinuousDistribution &distr,
+                          bool rightTail,
+                          Real outlier_EValue_max) const;
 };
 
 

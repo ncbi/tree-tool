@@ -56,7 +56,7 @@ struct ThisApplication : Application
 			    Real threshold [2] = {NaN, NaN};
 			    for (const bool rightTail : {false, true})
 			    {
-			    	threshold [rightTail] = num->distr2outlier (sample, normal, rightTail, outlier_eValue_max);
+			    	threshold [rightTail] = num->locScaleDistr2outlier (sample, normal, rightTail, outlier_eValue_max);
 			      cout << '\t' << threshold [rightTail];
 			    }
 			    Sample sample_pure (ds);
