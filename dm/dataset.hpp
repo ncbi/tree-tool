@@ -309,7 +309,7 @@ public:
     // Return: >= 0.0
   Value getMedian (const Sample &sample) const;
   
-  // Return: (if rightTail) min(x) s.t. (1-CDF(x)) * mult_sum <= outlier_EValue_max; may be NaN or INF
+  // Return: (if rightTail) max(x) s.t. (1-CDF(x)) * mult_sum > outlier_EValue_max; may be NaN
   // Idempotent after removing outliers
   // Time: O(n log(n))
   Real locScaleDistr2outlier (const Sample &sample,
@@ -321,6 +321,7 @@ public:
                           const ContinuousDistribution &distr,
                           bool rightTail,
                           Real outlier_EValue_max) const;
+    // Input: distr.getMean() = 1
 };
 
 

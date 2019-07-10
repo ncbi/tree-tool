@@ -376,6 +376,7 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
     
   vec. sort ();
     
+  Real x_prev = -INF;
   Real mult_sum = 0.0;
   Real s = 0.0;
   Real s2 = 0.0;
@@ -390,22 +391,21 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
       distr. setMeanVar (mean, var);
       const Prob p = 1.0 - distr. cdf (x);
       if (leReal (p * mult_sum, outlier_EValue_max))
-        return getSign (rightTail) * x;
+        break;
     }
 
     const Real mult = ds. objs [it. objNum] -> mult;
     mult_sum += mult;
+    s        += mult * x;
+    s2       += mult * sqr (x);
     ASSERT (geReal (sample. mult_sum, mult_sum));
-    s  += mult * x;
-    s2 += mult * sqr (x);
     mean = s / mult_sum;
     var = s2 / mult_sum - sqr (mean);
     ASSERT (! negative (var));
+    x_prev = x;
   }
-  if (verbose ())
-    cout << "mean = " << mean << ' ' << "SD = " << sqrt (var) << endl;
   
-  return getSign (rightTail) * INF;  
+  return getSign (rightTail) * x_prev;  
 }
 
 
@@ -415,6 +415,8 @@ Real NumAttr1::contDistr2outlier (const Sample &sample,
                                   bool rightTail,
                                   Real outlier_EValue_max) const
 {
+  ASSERT_EQ (distr. getMean (), 1.0, 1e-6);  // PAR
+
   Vector<ObjNum_Real> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)  
     if (! isMissing (*it))
@@ -424,22 +426,28 @@ Real NumAttr1::contDistr2outlier (const Sample &sample,
     
   vec. sort ();
     
+  Real x_prev = -INF;
   Real mult_sum = 0.0;
+  Real s = 0.0;
+  Real mean = vec [0]. value;
   for (const ObjNum_Real& it : vec)
   {
     const Real x = it. value;  // Next object
     if (mult_sum >= 0.5 * sample. mult_sum)  // PAR
     {
-      const Prob p = 1.0 - distr. cdf (x);
+      const Prob p = 1.0 - distr. cdf (x / mean);
       if (leReal (p * mult_sum, outlier_EValue_max))
-        return getSign (rightTail) * x;
+        break;
     }
     const Real mult = ds. objs [it. objNum] -> mult;
     mult_sum += mult;
+    s        += mult * x;
     ASSERT (geReal (sample. mult_sum, mult_sum));
+    mean = s / mult_sum;
+    x_prev = x;
   }
   
-  return getSign (rightTail) * INF;  
+  return getSign (rightTail) * x_prev;  
 }
 
 
