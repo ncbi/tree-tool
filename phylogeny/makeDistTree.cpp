@@ -537,7 +537,7 @@ struct ThisApplication : Application
               tree->optimizeLargeSubgraphs ();  
             //hybridDeleted = false;
               if (hybridF. get ())
-              	/*hybridDeleted =*/ deleteHybrids (*tree, true/*slow ??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+              	/*hybridDeleted =*/ deleteHybrids (*tree, false/*true:slow*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
               tree->saveFile (output_tree); 
               iter++;
             #if 0
@@ -581,8 +581,8 @@ struct ThisApplication : Application
         cerr << "Finding criterion outliers ..." << endl;
 	      tree->setLeafAbsCriterion (); 
         const Dataset leafErrorDs (tree->getLeafErrorDataset (true, NaN));
-	      Real outlier_min = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (leafErrorDs, 1e-6, outlier_min));  // PAR  // was: 1e-10
+	      Real outlier_min_excl = NaN;
+	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (leafErrorDs, 1e-6, outlier_min_excl));  // PAR
 	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Criterion outliers: " << outliers. size () << endl;
         OFStream f (delete_criterion_outliers);
@@ -590,7 +590,7 @@ struct ThisApplication : Application
 	      {
   	      if (verbose ())
   	      {
-    	      cout << "Min. " << criterionOutlier_definition << " of outliers: " << outlier_min << endl;
+    	      cout << "Min. " << criterionOutlier_definition << " of outliers: " << outlier_min_excl << endl;
     	      for (const Leaf* leaf : outliers)
     	        cout         << leaf->name 
     	             << '\t' << leaf->getRelCriterion ()
@@ -624,8 +624,8 @@ struct ThisApplication : Application
       {
         cerr << "Finding closest outliers ..." << endl;
 	      tree->setNodeClosestDissimNum (); 
-	      Real outlier_min = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (tree->getDeformation_mean (), 1e-10, outlier_min));  // PAR  
+	      Real outlier_min_excl = NaN;
+	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (tree->getDeformation_mean (), 1e-10, outlier_min_excl));  // PAR  
 	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Closest outliers: " << outliers. size () << endl;
         OFStream f (delete_closest_outliers);

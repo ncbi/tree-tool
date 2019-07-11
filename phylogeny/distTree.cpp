@@ -7689,7 +7689,7 @@ bool leafRelCriterionStrictlyGreater (const Leaf* a,
 
 VectorPtr<Leaf> DistTree::findCriterionOutliers (const Dataset &leafErrorDs,
                                                  Real outlier_EValue_max,
-                                                 Real &outlier_min) const
+                                                 Real &outlier_min_excl) const
 {
   const Attr* attr = leafErrorDs. name2attr ("leaf_error");
   ASSERT (attr);
@@ -7698,15 +7698,15 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (const Dataset &leafErrorDs,
   
   Normal distr;  
   const Sample sample (leafErrorDs);
-  outlier_min = criterionAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
+  outlier_min_excl = criterionAttr->locScaleDistr2outlier (sample, distr, true, outlier_EValue_max);
 
   VectorPtr<Leaf> res;
-  if (! isNan (outlier_min))
+  if (! isNan (outlier_min_excl))
     for (const auto& it : name2leaf)
     {
       const Leaf* leaf = it. second;
       if (leaf->graph)
-        if (geReal (leaf->getRelCriterion (), outlier_min))
+        if (leaf->getRelCriterion () > outlier_min_excl)
           res << leaf;
     }
     
@@ -7736,7 +7736,7 @@ bool leafDeformationStrictlyGreater (const Leaf* a,
 
 VectorPtr<Leaf> DistTree::findClosestOutliers (Real deformation_mean,
                                                Real outlier_EValue_max,
-                                               Real &outlier_min) const
+                                               Real &outlier_min_excl) const
 {
   ASSERT (deformation_mean >= 0.0);
   ASSERT (outlier_EValue_max >= 0.0);
@@ -7746,7 +7746,7 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real deformation_mean,
   if (! deformation_mean)
     return res;
 
-  // outlier_min
+  // outlier_min_excl
   {
     Chi2 chi2;
     chi2. setParam (1.0);
@@ -7754,16 +7754,15 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real deformation_mean,
     const size_t degree = 2 * dissims. size () / name2leaf. size ();
     maxD. setParam (& chi2, degree + 1);
     maxD. qc ();
-    outlier_min = maxD. getQuantileComp (1.0 - outlier_EValue_max / (Real) name2leaf. size (), 0.0, 1e6);  // PAR
+    outlier_min_excl = maxD. getQuantileComp (1.0 - outlier_EValue_max / (Real) name2leaf. size (), 0.0, 1e6);  // PAR
   }
-//cout << "outlier_min: " << outlier_min << endl;  
-  ASSERT (outlier_min >= 0.0)
+  ASSERT (outlier_min_excl >= 0.0)
   
   for (const auto& it : name2leaf)
   {
     const Leaf* leaf = it. second;
     if (leaf->graph)
-      if (geReal (leaf->getDeformation () / deformation_mean, outlier_min))
+      if (leaf->getDeformation () / deformation_mean > outlier_min_excl)
         res << leaf;
   }
   res. sort (leafDeformationStrictlyGreater);  
@@ -7943,6 +7942,12 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   // Time: O(p log(p))
   Vector<TriangleParentPair> triangleParentPairs_init;  triangleParentPairs_init. reserve (dissims. size ());  
   {
+  #if 0
+    const Real deformation_mean = getDeformation_mean ();
+    ASSERT (deformation_mean >= 0.0);
+    if (! deformation_mean)
+      return triangleParentPairs;    
+  #endif
     // dissims.size() = 35M => 80 sec. 
     Dataset ds;
     ds. objs. reserve (dissims. size ());  
@@ -7958,22 +7963,46 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
         {
           const Real err = dissim. getCriterion (criterionType);
           ASSERT (err >= 0.0);
+        //if (criterionType)
+          //err /= deformation_mean;
           (* criterionAttrs [criterionType]) [index] = err;
         }
       }
     ds. qc ();
     const Sample sample (ds); 
-    Normal distr;  // Beta1 ??
-    array <Real, Dissim::criterionType_max> outlier_min;
+    array <Real, Dissim::criterionType_max> outlier_min_excl;
     FOR (uchar, criterionType, Dissim::criterionType_max)
-      outlier_min [criterionType] = criterionAttrs [criterionType] -> distr2outlier (sample, distr, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
+      if (criterionType)
+      {
+        Chi2 chi2;
+        chi2. setParam (1.0);
+        chi2. qc ();
+        outlier_min_excl [criterionType] = criterionAttrs [criterionType] -> contDistr2outlier (sample, chi2, true, dissimOutlierEValue_max * (Real) dissimTypesNum () * 10.0);  // PAR
+      }
+      else
+      {
+        Normal normal; 
+        outlier_min_excl [criterionType] = criterionAttrs [criterionType] -> locScaleDistr2outlier (sample, normal, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
+      }
+    array <size_t, Dissim::criterionType_max> outlier_num;  // ??
+    outlier_num. fill (0);
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
       {
         bool found = false;
         FOR (uchar, criterionType, Dissim::criterionType_max)
-          if (dissim. getCriterion (criterionType) >= outlier_min [criterionType])
+        {
+          if (criterionType == 0)
+            continue;  // Almost redundant ??!
+          const Real err = dissim. getCriterion (criterionType);
+        //if (criterionType)
+          //err /= deformation_mean;
+          if (err > outlier_min_excl [criterionType])
+          {
+            outlier_num [criterionType] ++;
             found = true;
+          }
+        }
         if (! found)
           continue;
         var_cast (dissim. leaf1) -> badCriterion += dissim. getAbsCriterion ();
@@ -7983,10 +8012,14 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        , dissim. target
                                                        , dissim. type);
       }
+    // ??
+    PRINT (triangleParentPairs_init. size ());
+    PRINT (outlier_num [0]);
+    PRINT (outlier_num [1]);
+    PRINT (outlier_num [2]);
   }
-//cerr << "# Bad dissimilarities = " << triangleParentPairs_init. size () << endl;
   
-  if (searchBadLeaves)
+  if (searchBadLeaves)  // slow
   {
     VectorPtr<Leaf> badLeaves;  badLeaves. reserve (name2leaf. size ());
     for (const auto& it : name2leaf)
@@ -7997,9 +8030,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
       if (! leaf->getDiscernible () -> len)  
         badLeaves << leaf;
     }
-    Real outlier_min = NaN;
+    Real outlier_min_excl = NaN;
     const Dataset leafErrorDs (getLeafErrorDataset (true, NaN));
-    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 0.1, outlier_min);  // PAR
+    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 0.1, outlier_min_excl);  // PAR
     badLeaves. sort ();
     badLeaves. uniq ();
   //cerr << "Bad objects = " << badLeaves. size () << endl;
@@ -8019,11 +8052,11 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        , tr. dissimType);
     triangleParentPairs_init. sort ();
     triangleParentPairs_init. uniq ();
-  //cerr << "# Bad dissimilarities = " << triangleParentPairs_init. size () << endl;
   }  
    
   // Time: O (p log^2(n) / threads_max)  
   {
+    const Chronometer_OnePass cop ("setTriangles_thread");  // ??
     vector<Notype> notypes;
     arrayThreads (setTriangles_thread, triangleParentPairs_init. size (), notypes, ref (triangleParentPairs_init), cref (*this));
   }
@@ -8160,7 +8193,7 @@ struct NodeDissim
 
 
 VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
-                                             Real &dissimOutlier_min) const
+                                             Real &dissimOutlier_min_excl) const
 {
   VectorPtr<DTNode> res;  
   
@@ -8191,9 +8224,9 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
   
   Exponential distr;  
 
-  dissimOutlier_min = lenAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
+  dissimOutlier_min_excl = lenAttr->locScaleDistr2outlier (sample, distr, true, outlier_EValue_max);
 
-  if (isNan (dissimOutlier_min))
+  if (isNan (dissimOutlier_min_excl))
     return res;
     
   // Mixture of 2 types of dissimilarities (> 2 ??)
@@ -8207,11 +8240,11 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
     }
   sample. finish ();
   if (sample. mult_sum >= (Real) name2leaf. size () * 0.001)  // PAR
-    dissimOutlier_min = lenAttr->distr2outlier (sample, distr, true, outlier_EValue_max);
+    dissimOutlier_min_excl = lenAttr->locScaleDistr2outlier (sample, distr, true, outlier_EValue_max);
 
   res. reserve (name2leaf. size () / 1000 + 1);  // PAR
   for (const NodeDissim& nd : nodeDissims)
-    if (geReal (nd. dissim_min, dissimOutlier_min))  
+    if (nd. dissim_min > dissimOutlier_min_excl)
       res << nd. node;
       
   return res;
@@ -8258,11 +8291,11 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
     ASSERT (descendants. size () == ds. objs. size ());
     Sample sample (ds);    
     Normal distr;   
-    const Real outlier_min = lenAttr->distr2outlier (sample, distr, true, outlier_EValue_max); 
-    if (isNan (outlier_min))
+    const Real outlier_min_excl = lenAttr->locScaleDistr2outlier (sample, distr, true, outlier_EValue_max); 
+    if (isNan (outlier_min_excl))
       continue;
     FFOR (size_t, objNum, ds. objs. size ())
-      if (geReal ((*lenAttr) [objNum], outlier_min))
+      if ((*lenAttr) [objNum] > outlier_min_excl)
         outliers << descendants [objNum] -> getReprLeaf (0);
   }  
   outliers. sort ();

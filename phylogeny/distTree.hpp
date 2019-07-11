@@ -971,12 +971,15 @@ struct Dissim
       switch (criterionType)
       {
         case 0: return residual;
-        case 1: return residual / prediction;  
+        case 1: return residual / prediction;  // --> / min(prediction,target) ??
         case 2: return residual / target;
       }
       throw logic_error ("Unknown Dissim::criterionType");
     }  
     // Return: continuous function at prediction = 0 or target = 0
+    //         Distribution for criterionType:
+    //           0: Normal
+    //           1,2: Chi^2 if mean = 1 
   Real getDeformation () const
     { return getCriterion (2); }
     
@@ -1519,18 +1522,18 @@ public:
   // Return: distinct
   VectorPtr<Leaf> findCriterionOutliers (const Dataset &leafErrorDs,
                                          Real outlier_EValue_max,
-                                         Real &outlier_min) const;
+                                         Real &outlier_min_excl) const;
     // Relative average absolute criterion
     // Idempotent
     // Return: sort()'ed by getRelCriterion() descending
-    // Output: outlier_min
-    // Invokes: RealAttr2::distr2outlier(), Leaf::getRelCriterion()
+    // Output: outlier_min_excl
+    // Invokes: RealAttr2::locScaleDistr2outlier(), Leaf::getRelCriterion()
     // Time: O(n log(n))
   VectorPtr<Leaf> findClosestOutliers (Real deformation_mean,
                                        Real outlier_EValue_max,
-                                       Real &outlier_min) const;
+                                       Real &outlier_min_excl) const;
     // Return: sort()'ed by Dissim::getDeformation() descending
-    // Output: outlier_min
+    // Output: outlier_min_excl
     // Invokes: Leaf::getDeformation(), MaxDistribution::getQuantileComp()
     // Time: O(n log(n))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
@@ -1545,7 +1548,7 @@ public:
     // Invokes: DTNode::getReprLeaf()
 #if 0
   VectorPtr<DTNode> findOutlierArcs (Real outlier_EValue_max,
-                                     Real &dissimOutlier_min) const;
+                                     Real &dissimOutlier_min_excl) const;
     // Output: dissimOutlier_min
 #endif
     
