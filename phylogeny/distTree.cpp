@@ -6061,7 +6061,7 @@ size_t DistTree::optimizeLenNode ()
       if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR
       { 
         // ??
-        cout << "!!optimizeLenNode" << endl;  
+        cout << "!!optimizeLenNode1" << endl;  
         PRINT (absCriterion);
         PRINT (absCriterion_old);
         PRINT (subDepth);
@@ -6073,10 +6073,11 @@ size_t DistTree::optimizeLenNode ()
   
   if (! leRealRel (absCriterion, absCriterion_old1, 1e-4))  // PAR
   {
-    cout << "!!optimizeLenNode" << endl;  // ??
+    cout << "!!optimizeLenNode2" << endl;  // ??
     const ONumber on (cout, absCriterionDecimals, true);
-    PRINT (absCriterion_old1);
     PRINT (absCriterion);
+    PRINT (absCriterion_old1);
+    PRINT (subDepth);
   }
 
   return finishChanges ();
@@ -7199,6 +7200,7 @@ void DistTree::removeLeaf (Leaf* leaf,
   const TreeNode* parent = leaf->getParent ();
   if (! parent)
     throw runtime_error ("removeLeaf: Empty tree");
+  ASSERT (parent->graph);
     
   leaf->detachChildrenUp ();  
   ASSERT (! leaf->graph);
@@ -7207,21 +7209,21 @@ void DistTree::removeLeaf (Leaf* leaf,
   name2leaf. erase (leaf->name);
   ASSERT (name2leaf. size () >= 1);
   if (name2leaf. size () == 1)
-    throw runtime_error ("removeLeaf: one leaf tree");
+    throw runtime_error (FUNC "one leaf tree");
   
   // Clean topology, parent, Leaf::discernible consistency
   ASSERT (! parent->isLeaf ());
   if (const TreeNode* child = parent->isTransient ())
   {
-    ASSERT (parent->graph); 
     if (const Leaf* childLeaf = static_cast <const DTNode*> (child) -> asLeaf ())
       var_cast (childLeaf) -> discernible = true;
     const Steiner* st = static_cast <const DTNode*> (parent) -> asSteiner ();
     ASSERT (st);
     parent = parent->getParent ();
+    delayDeleteRetainArcs (var_cast (st));
     if (! parent)
       parent = root;
-    delayDeleteRetainArcs (var_cast (st));
+    ASSERT (parent->graph);
   }  
   else if (! static_cast <const DTNode*> (parent) -> childrenDiscernible () && optimizable ())
   {
@@ -7259,6 +7261,7 @@ void DistTree::removeLeaf (Leaf* leaf,
         }
       EXEC_ASSERT (parent = cluster_old [0] -> getParent ());
     }
+    ASSERT (parent->graph);
   }
 
       
@@ -7914,7 +7917,6 @@ void addHybridTriangles_thread (size_t from,
 
 
 Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
-                                                  bool searchBadLeaves,
                                                   Vector<Pair<const Leaf*>> *dissimRequests) const
 {
   ASSERT (! subDepth);
@@ -7923,12 +7925,12 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   ASSERT (DistTree_sp::hybridness_min > 1.0);
 
 
-  Vector<TriangleParentPair> triangleParentPairs;
+//const Chronometer_OnePass cop ("findHybrids"); 
 
+  Vector<TriangleParentPair> triangleParentPairs;
 
   constexpr Real hybridness_min_init = 1.0;  // PAR   
   ASSERT (DistTree_sp::hybridness_min > hybridness_min_init);
-
 
   for (auto& it : name2leaf)
   {
@@ -7937,73 +7939,37 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
       continue;
     var_cast (leaf) -> badCriterion = 0.0;
   }
-    
 
   // Time: O(p log(p))
   Vector<TriangleParentPair> triangleParentPairs_init;  triangleParentPairs_init. reserve (dissims. size ());  
   {
-  #if 0
-    const Real deformation_mean = getDeformation_mean ();
-    ASSERT (deformation_mean >= 0.0);
-    if (! deformation_mean)
-      return triangleParentPairs;    
-  #endif
-    // dissims.size() = 35M => 80 sec. 
+    // Bad dissims
     Dataset ds;
     ds. objs. reserve (dissims. size ());  
-    array <PositiveAttr1*, Dissim::criterionType_max> criterionAttrs;
-    criterionAttrs [0] = new PositiveAttr1 ("dissim_error_abs", ds);  
-    criterionAttrs [1] = new PositiveAttr1 ("dissim_error_rel_prediction", ds);  
-    criterionAttrs [2] = new PositiveAttr1 ("dissim_error_rel_target", ds);  
+    auto criterionAttr = new PositiveAttr1 ("dissim_error", ds);  
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
       {
         const size_t index = ds. appendObj ();
-        FOR (uchar, criterionType, Dissim::criterionType_max)
-        {
-          const Real err = dissim. getCriterion (criterionType);
-          ASSERT (err >= 0.0);
-        //if (criterionType)
-          //err /= deformation_mean;
-          (* criterionAttrs [criterionType]) [index] = err;
-        }
+        const Real err = dissim. getDeformation ();
+        ASSERT (err >= 0.0);
+        (*criterionAttr) [index] = err;
       }
     ds. qc ();
     const Sample sample (ds); 
-    array <Real, Dissim::criterionType_max> outlier_min_excl;
-    FOR (uchar, criterionType, Dissim::criterionType_max)
-      if (criterionType)
-      {
-        Chi2 chi2;
-        chi2. setParam (1.0);
-        chi2. qc ();
-        outlier_min_excl [criterionType] = criterionAttrs [criterionType] -> contDistr2outlier (sample, chi2, true, dissimOutlierEValue_max * (Real) dissimTypesNum () * 10.0);  // PAR
-      }
-      else
-      {
-        Normal normal; 
-        outlier_min_excl [criterionType] = criterionAttrs [criterionType] -> locScaleDistr2outlier (sample, normal, true, dissimOutlierEValue_max * (Real) dissimTypesNum ());
-      }
-    array <size_t, Dissim::criterionType_max> outlier_num;  // ??
-    outlier_num. fill (0);
+    Chi2 chi2;
+    chi2. setParam (1.0);
+    chi2. qc ();
+    const Real outlier_min_excl = criterionAttr->contDistr2outlier (sample, chi2, true, dissimOutlierEValue_max * (Real) dissimTypesNum () * 1e1);  // PAR
+  #if 0
+    Normal normal; 
+    outlier_min_excl [criterionType] = criterionAttrs [criterionType] -> locScaleDistr2outlier (sample, normal, true, dissimOutlierEValue_max * (Real) dissimTypesNum () * 1e-2);  // PAR
+  #endif
     for (const Dissim& dissim : dissims)    
       if (dissim. validMult ())
       {
-        bool found = false;
-        FOR (uchar, criterionType, Dissim::criterionType_max)
-        {
-          if (criterionType == 0)
-            continue;  // Almost redundant ??!
-          const Real err = dissim. getCriterion (criterionType);
-        //if (criterionType)
-          //err /= deformation_mean;
-          if (err > outlier_min_excl [criterionType])
-          {
-            outlier_num [criterionType] ++;
-            found = true;
-          }
-        }
-        if (! found)
+        const Real err = dissim. getDeformation ();
+        if (err <= outlier_min_excl)
           continue;
         var_cast (dissim. leaf1) -> badCriterion += dissim. getAbsCriterion ();
         var_cast (dissim. leaf2) -> badCriterion += dissim. getAbsCriterion ();
@@ -8012,15 +7978,11 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        , dissim. target
                                                        , dissim. type);
       }
-    // ??
-    PRINT (triangleParentPairs_init. size ());
-    PRINT (outlier_num [0]);
-    PRINT (outlier_num [1]);
-    PRINT (outlier_num [2]);
   }
   
-  if (searchBadLeaves)  // slow
   {
+    // Bad leaves
+  //const Chronometer_OnePass cop1 ("badLeaves"); 
     VectorPtr<Leaf> badLeaves;  badLeaves. reserve (name2leaf. size ());
     for (const auto& it : name2leaf)
     {
@@ -8035,13 +7997,12 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 0.1, outlier_min_excl);  // PAR
     badLeaves. sort ();
     badLeaves. uniq ();
-  //cerr << "Bad objects = " << badLeaves. size () << endl;
     if (! qc_on)
       badLeaves. randomOrder ();
     const Real nLeaves = (Real) name2leaf. size ();
-    const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / log (nLeaves)) + 1);  // = O(n/log(n))
+    const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / sqr (log (nLeaves))) + 1);  // = O(n/log^2(n))
     vector<Vector<Triangle>> resVec;
-    // Time: O (n log^3(n) / threads_max)
+    // Time: O (n log^2(n) / threads_max)
     arrayThreads (addHybridTriangles_thread, badLeaves_size, resVec, cref (badLeaves));
     for (const Vector<Triangle>& res : resVec)
       for (const Triangle& tr : res)  
@@ -8056,9 +8017,10 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
    
   // Time: O (p log^2(n) / threads_max)  
   {
-    const Chronometer_OnePass cop ("setTriangles_thread");  // ??
-    vector<Notype> notypes;
+    triangleParentPairs_init. randomOrder ();
+    vector<Notype> notypes;  
     arrayThreads (setTriangles_thread, triangleParentPairs_init. size (), notypes, ref (triangleParentPairs_init), cref (*this));
+    triangleParentPairs_init. sort ();
   }
 
   ASSERT (triangleParentPairs. empty ());

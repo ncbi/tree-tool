@@ -962,26 +962,13 @@ struct Dissim
   Real getAbsCriterion (Real prediction_arg) const;
   Real getAbsCriterion () const
     { return getAbsCriterion (prediction); }
-  static constexpr uchar criterionType_max {3};
-  Real getCriterion (uchar criterionType) const
-    {//return getAbsCriterion ();  // Depends on varianceType
-      const Real residual = sqr (target - prediction);
+  Real getDeformation () const
+    { const Real residual = sqr (target - prediction);
       if (! residual)
         return 0.0;
-      switch (criterionType)
-      {
-        case 0: return residual;
-        case 1: return residual / prediction;  // --> / min(prediction,target) ??
-        case 2: return residual / target;
-      }
-      throw logic_error ("Unknown Dissim::criterionType");
-    }  
-    // Return: continuous function at prediction = 0 or target = 0
-    //         Distribution for criterionType:
-    //           0: Normal
-    //           1,2: Chi^2 if mean = 1 
-  Real getDeformation () const
-    { return getCriterion (2); }
+      return residual / min (prediction, target);
+    }
+    // Return: distribution is Chi^2_1 if mean = 1
     
   void setPathDissimNums (size_t dissimNum,
                           Tree::LcaBuffer &buf);
@@ -1537,11 +1524,10 @@ public:
     // Invokes: Leaf::getDeformation(), MaxDistribution::getQuantileComp()
     // Time: O(n log(n))
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
-                                          bool searchBadLeaves,
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
     // ~Idempotent w.r.t. restoring hybrids in the tree
     // Update (append): *dissimRequests if !nullptr  // Not implemented ??
-    // After: setLeafAbsCriterion() if searchBadLeaves
+    // After: setLeafAbsCriterion() 
     // Invokes: RealAttr2::normal2outlier(), findCriterionOutliers()
     // Time: ~ O(p log^2(n)) 
   VectorPtr<Leaf> findDepthOutliers () const;

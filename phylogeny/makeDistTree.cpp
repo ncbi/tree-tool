@@ -92,17 +92,15 @@ struct ThisApplication : Application
 	
 	
 	bool deleteHybrids (DistTree &tree,
-	                    bool searchBadLeaves,
 	                    OFStream *triangleParentPairsOs,
 	                    OFStream &hybridTrianglesOs,
 	                    Vector<Pair<const Leaf*>> *hybridDissimRequests) const
 	// Return: true <=> hybrids are deleted
 	// Append: *hybridDissimRequests
 	{
-	  if (searchBadLeaves)
-      tree. setLeafAbsCriterion ();
+    tree. setLeafAbsCriterion ();
 
-    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1e0, searchBadLeaves, hybridDissimRequests));  // PAR 
+    const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1e0, hybridDissimRequests));  // PAR 
     if (hybridDissimRequests)
       cout << "# Hybrid dissimilarity requests: " << hybridDissimRequests->size () << endl;
 
@@ -537,7 +535,7 @@ struct ThisApplication : Application
               tree->optimizeLargeSubgraphs ();  
             //hybridDeleted = false;
               if (hybridF. get ())
-              	/*hybridDeleted =*/ deleteHybrids (*tree, false/*true:slow*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+              	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
               tree->saveFile (output_tree); 
               iter++;
             #if 0
@@ -573,7 +571,7 @@ struct ThisApplication : Application
       }
       else
         if (hybridF. get ())
-          deleteHybrids (*tree, true/*slow ??*/, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+          deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
 
 
       if (! delete_criterion_outliers. empty ())
