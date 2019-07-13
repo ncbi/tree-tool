@@ -36,7 +36,8 @@ if [ $NEW_PAR -gt 0 ]; then
     fi
     
     NEW=`ls $INC/new/ | wc -l`
-    echo "# New: $NEW  `date`  `date +%s`" >> $INC/runlog  
+    VER=`cat $INC/version`
+    echo "$VER  # New: $NEW  `date`  `date +%s`" >> $INC/runlog  
     echo ""
     echo ""
     ALL_NEW=0
@@ -57,8 +58,8 @@ VARIANCE=`cat $INC/variance`
 echo ""
 echo ""
 echo "Complete optimization ..."
-echo "# Complete optimization  `date`  `date +%s`" >> $INC/runlog  
 VER=`cat $INC/version`
+echo "$VER  # Complete optimization  `date`  `date +%s`" >> $INC/runlog  
 # Time: O(n log(n)) 
 cp $INC/tree $INC/hist/tree.$VER
 gzip $INC/hist/tree.$VER
