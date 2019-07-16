@@ -88,6 +88,7 @@ echo "search/ -> leaf, dissim ..."
 # Time: O(n log(n))+
 REQ=`ls $INC/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
+  $THIS/../grid_wait.sh go
 	$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
 	$THIS/../qstat_wait.sh 2000 1
 else
@@ -119,6 +120,9 @@ while [ $ITER -le $ITER_MAX ]; do
   rm -rf $INC/log/
   mkdir $INC/log
 
+  if [ $GRID == 1 ]; then
+	  $THIS/../grid_wait.sh go
+  fi
   $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
   if [ $GRID == 1 ]; then
     $THIS/../qstat_wait.sh 2000 0
@@ -164,7 +168,7 @@ HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 HYBRID=""
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
-	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY  -delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_closest_outliers $INC/outlier-closest  -closest_outlier_num_max 1"
+	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY  -delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_deformation_outliers $INC/outlier-deformation  -deformation_outlier_num_max 1"
 fi
 
 DELETE=""
@@ -211,13 +215,13 @@ if [ -e $INC/outlier-criterion ]; then
   mv $INC/outlier-criterion $INC/hist/outlier-criterion.$VER
 fi
 
-if [ -e $INC/outlier-closest ]; then
+if [ -e $INC/outlier-deformation ]; then
   echo ""
-  #echo "Database: closest outliers ..."
-  wc -l $INC/outlier-closest
-  $INC/objects_in_tree.sh $INC/outlier-closest null
-  $THIS/../trav $INC/outlier-closest "$INC/outlier2db.sh %f closest"  
-  mv $INC/outlier-closest $INC/hist/outlier-closest.$VER
+  #echo "Database: deformation outliers ..."
+  wc -l $INC/outlier-deformation
+  $INC/objects_in_tree.sh $INC/outlier-deformation null
+  $THIS/../trav $INC/outlier-deformation "$INC/outlier2db.sh %f deformation"  
+  mv $INC/outlier-deformation $INC/hist/outlier-deformation.$VER
 fi
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then

@@ -74,13 +74,13 @@ echo "prot-identical_comm ..."
 # Check time ??
 $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -optimize  \
   -delete_criterion_outliers prot-identical_comm.criterion_outliers \
-  -delete_closest_outliers prot-identical_comm.closest_outliers \
+  -delete_deformation_outliers prot-identical_comm.deformation_outliers \
   -delete_hybrids prot-identical_comm.hybrids \
   | grep -v '^CHRON: ' > prot-identical_comm.distTree
 diff prot-identical_comm.criterion_outliers data/prot-identical_comm.criterion_outliers
 rm prot-identical_comm.criterion_outliers
-diff prot-identical_comm.closest_outliers data/prot-identical_comm.closest_outliers
-rm prot-identical_comm.closest_outliers
+diff prot-identical_comm.deformation_outliers data/prot-identical_comm.deformation_outliers
+rm prot-identical_comm.deformation_outliers
 diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
 rm prot-identical_comm.hybrids
 $THIS/distTree_compare_criteria.sh prot-identical_comm.distTree data/prot-identical_comm.distTree
@@ -103,13 +103,12 @@ if [ -d data/inc.ITS ]; then
   rm ITS.distTree
 fi
 
-
 echo ""
 echo "Saccharomyces hybrids ..."
 $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -dissim_boundary 0.675 \
   -delete_criterion_outliers Saccharomyces.criterion_outliers  -criterion_outlier_num_max 1 \
-  -delete_closest_outliers Saccharomyces.closest_outliers  -closest_outlier_num_max 1 \
+  -delete_deformation_outliers Saccharomyces.deformation_outliers  -deformation_outlier_num_max 1 \
   > Saccharomyces.distTree
 diff Saccharomyces.hybrid data/Saccharomyces.hybrid
 $THIS/hybrid2list.sh Saccharomyces.hybrid > Saccharomyces.hybrid.list
@@ -118,24 +117,23 @@ diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
 rm Saccharomyces.hybrid_parent_pairs
 diff Saccharomyces.criterion_outliers data/Saccharomyces.criterion_outliers
 rm Saccharomyces.criterion_outliers
-diff Saccharomyces.closest_outliers data/Saccharomyces.closest_outliers
-rm Saccharomyces.closest_outliers
+diff Saccharomyces.deformation_outliers data/Saccharomyces.deformation_outliers
+rm Saccharomyces.deformation_outliers
 $THIS/distTree_compare_criteria.sh Saccharomyces.distTree data/Saccharomyces.distTree
 rm Saccharomyces.distTree
-
 
 echo ""
 echo "-variance_min ..."
 # 0.0005 = average arc length / 100
 $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -variance_min 0.0005  -optimize  \
   -delete_criterion_outliers prot-identical_comm-var_min.criterion_outliers \
-  -delete_closest_outliers prot-identical_comm-var_min.closest_outliers \
+  -delete_deformation_outliers prot-identical_comm-var_min.deformation_outliers \
   -delete_hybrids prot-identical_comm-var_min.hybrids \
   | grep -v '^CHRON: ' > prot-identical_comm-var_min.distTree
 diff prot-identical_comm-var_min.criterion_outliers data/prot-identical_comm-var_min.criterion_outliers
 rm prot-identical_comm-var_min.criterion_outliers
-diff prot-identical_comm-var_min.closest_outliers data/prot-identical_comm-var_min.closest_outliers
-rm prot-identical_comm-var_min.closest_outliers
+diff prot-identical_comm-var_min.deformation_outliers data/prot-identical_comm-var_min.deformation_outliers
+rm prot-identical_comm-var_min.deformation_outliers
 diff prot-identical_comm-var_min.hybrids data/prot-identical_comm-var_min.hybrids
 rm prot-identical_comm-var_min.hybrids
 $THIS/distTree_compare_criteria.sh prot-identical_comm-var_min.distTree data/prot-identical_comm-var_min.distTree
@@ -151,15 +149,15 @@ echo "prot-identical_comm ..."
 $THIS/makeDistTree  -qc  -data data/prot-identical_comm2  -variance linExp  -optimize  -subgraph_iter_max 10  \
   -output_dissim_coeff prot-identical_comm2.dissim_coeff \
   -delete_criterion_outliers prot-identical_comm2.criterion_outliers \
-  -delete_closest_outliers prot-identical_comm2.closest_outliers \
+  -delete_deformation_outliers prot-identical_comm2.deformation_outliers \
   -delete_hybrids prot-identical_comm2.hybrids \
   | grep -v '^CHRON: ' > prot-identical_comm2.distTree
 diff prot-identical_comm2.dissim_coeff data/prot-identical_comm2.dissim_coeff
 rm prot-identical_comm2.dissim_coeff
 diff prot-identical_comm2.criterion_outliers data/prot-identical_comm2.criterion_outliers
 rm prot-identical_comm2.criterion_outliers
-diff prot-identical_comm2.closest_outliers data/prot-identical_comm2.closest_outliers
-rm prot-identical_comm2.closest_outliers
+diff prot-identical_comm2.deformation_outliers data/prot-identical_comm2.deformation_outliers
+rm prot-identical_comm2.deformation_outliers
 diff prot-identical_comm2.hybrids data/prot-identical_comm2.hybrids
 rm prot-identical_comm2.hybrids
 $THIS/distTree_compare_criteria.sh prot-identical_comm2.distTree data/prot-identical_comm2.distTree
@@ -170,7 +168,7 @@ echo "Saccharomyces hybrids ..."
 $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
   -delete_criterion_outliers Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
-  -delete_closest_outliers Saccharomyces2.closest_outliers  -closest_outlier_num_max 1 \
+  -delete_deformation_outliers Saccharomyces2.deformation_outliers  -deformation_outlier_num_max 1 \
   > Saccharomyces2.distTree
 diff Saccharomyces2.hybrid data/Saccharomyces2.hybrid
 $THIS/hybrid2list.sh Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
@@ -180,8 +178,8 @@ diff Saccharomyces2.hybrid_parent_pairs data/Saccharomyces2.hybrid_parent_pairs
 rm Saccharomyces2.hybrid_parent_pairs
 diff Saccharomyces2.criterion_outliers data/Saccharomyces2.criterion_outliers
 rm Saccharomyces2.criterion_outliers
-diff Saccharomyces2.closest_outliers data/Saccharomyces2.closest_outliers
-rm Saccharomyces2.closest_outliers
+diff Saccharomyces2.deformation_outliers data/Saccharomyces2.deformation_outliers
+rm Saccharomyces2.deformation_outliers
 $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree data/Saccharomyces2.distTree
 rm Saccharomyces2.distTree
 
@@ -193,7 +191,7 @@ if [ $N -gt 1 ]; then
 fi
 rm Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
 diff data/Saccharomyces2.criterion_outliers data/Saccharomyces.criterion_outliers
-diff data/Saccharomyces2.closest_outliers data/Saccharomyces.closest_outliers
+diff data/Saccharomyces2.deformation_outliers data/Saccharomyces.deformation_outliers
 
 
 echo ""
