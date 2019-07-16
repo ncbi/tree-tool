@@ -398,7 +398,7 @@ public:
     // = absCriterion/count
   Real relCriterion {NaN};
     // !isNan() => = getRelCriterion()
-  uint closestDissimNum {dissims_max};
+  uint maxDeformationDissimNum {dissims_max};
     // Index of DistTree::dissims[]
 
 
@@ -1078,13 +1078,13 @@ private:
 	mutable Rand rand;
 public:
   
-  struct ClosestPair
+  struct DeformationPair
   {
     string leafName1;
     string leafName2;
-    Real criterion;
+    Real deformation;
   };
-  unordered_map<const DTNode*,ClosestPair> node2closestPair;
+  unordered_map<const DTNode*,DeformationPair> node2deformationPair;
     // Requires: topology is unchanged
 
 
@@ -1491,8 +1491,8 @@ public:
     // Output: DTNode::{absCriterion,absCriterion_ave}
     // Time: O(p log(n))
 #endif
-	void setNodeClosestDissimNum ();
-    // Output: DTNode::closestDissimNum
+	void setNodeMaxDeformationDissimNum ();
+    // Output: DTNode::maxDeformationDissimNum
     // Time: O(p log(n))
   Real getDeformation_mean () const;
     // Return: >= 0
@@ -1502,7 +1502,7 @@ public:
     // Input: deformation_mean: may be NaN
     // Return: attrs: PositiveAttr1 "leaf_error", "deformation" if deformation_mean is not NaN
     // Invokes: Leaf::getRelCriterion(), Leaf::getDeformation()
-    // Requires: setLeafAbsCriterion(), setNodeClosestDissimNum()
+    // Requires: setLeafAbsCriterion(), setNodeMaxDeformationDissimNum()
     // Time: O(n)
 
   // Outliers
@@ -1516,13 +1516,13 @@ public:
     // Output: outlier_min_excl
     // Invokes: RealAttr2::locScaleDistr2outlier(), Leaf::getRelCriterion()
     // Time: O(n log(n))
-  VectorPtr<Leaf> findClosestOutliers (Real deformation_mean,
-                                       Real outlier_EValue_max,
-                                       Real &outlier_min_excl) const;
+  VectorPtr<Leaf> findDeformationOutliers (Real deformation_mean,
+                                           Real outlier_EValue_max,
+                                           Real &outlier_min_excl) const;
     // Return: sort()'ed by Dissim::getDeformation() descending
     // Output: outlier_min_excl
     // Invokes: Leaf::getDeformation(), MaxDistribution::getQuantileComp()
-    // Time: O(n log(n))
+    // Time: O(n log(n))  // sorting of result
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
     // ~Idempotent w.r.t. restoring hybrids in the tree

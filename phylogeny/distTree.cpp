@@ -534,8 +534,8 @@ static const string lenS               ("len");
 static const string err_densityS       ("err_density");
 static const string pathsS             ("paths");
 static const string rel_errorS         ("rel_error");
-static const string closestS           ("closest");
-static const string closest_criterionS ("closest_criterion");
+static const string deformationS       ("deformation");
+static const string deformation_criterionS ("deformation_criterion");
 
 
 
@@ -592,12 +592,12 @@ void DTNode::saveContent (ostream& os) const
     os << "  " << rel_errorS << "=" << getRelCriterion ();
   else if (! isNan (relCriterion))
     os << "  " << rel_errorS << "=" << relCriterion;
-	if (closestDissimNum != dissims_max)
+	if (maxDeformationDissimNum != dissims_max)
 	{
-	  const Dissim& dissim = getDistTree (). dissims [closestDissimNum];
-	  os << "  " << closestS << "=" << dissim. leaf1->getName () 
-	                         << ':' << dissim. leaf2->getName ();
-	  os << "  " << closest_criterionS << "=" << dissim. getDeformation ();
+	  const Dissim& dissim = getDistTree (). dissims [maxDeformationDissimNum];
+	  os << "  " << deformationS << "=" << dissim. leaf1->getName () 
+	                             << ':' << dissim. leaf2->getName ();
+	  os << "  " << deformation_criterionS << "=" << dissim. getDeformation ();
 	}
 }
 
@@ -647,9 +647,9 @@ Real DTNode::getRelCriterion () const
 
 Real DTNode::getDeformation () const
 { 
-  if (closestDissimNum == dissims_max)
+  if (maxDeformationDissimNum == dissims_max)
     return NaN;
-  const Real deformation = getDistTree (). dissims [closestDissimNum]. getDeformation ();
+  const Real deformation = getDistTree (). dissims [maxDeformationDissimNum]. getDeformation ();
   ASSERT (deformation >= 0.0);
   return deformation;
 }
@@ -3750,8 +3750,8 @@ bool DistTree::loadLines (const StringVector &lines,
   const Real   errorDensity      = token2real (s, err_densityS);
   const Real   paths             = token2real (s, pathsS);
   const Real   relCriterion      = token2real (s, rel_errorS);
-        string closest           = token2string (s, closestS);
-  const Real   closest_criterion = token2real (s, closest_criterionS);
+        string deformationObj    = token2string (s, deformationS);
+  const Real   deformation       = token2real (s, deformation_criterionS);
   const string name              = token2string (s, "name");
   const bool indiscernible = contains (s, Leaf::non_discernible);
   IMPLY (parent, len >= 0);
@@ -3792,14 +3792,14 @@ bool DistTree::loadLines (const StringVector &lines,
     dtNode->name = name;
   }
   
-  ASSERT (closest. empty () == isNan (closest_criterion));
-  if (! closest. empty ())
+  ASSERT (deformationObj. empty () == isNan (deformation));
+  if (! deformationObj. empty ())
   {
-    const string leafName1 (findSplit (closest, ':'));
-    ASSERT (! closest. empty ());
-    ASSERT (closest_criterion >= 0.0);
-    ASSERT (! contains (node2closestPair, dtNode));
-    node2closestPair [dtNode] = move (ClosestPair {leafName1, closest, closest_criterion});
+    const string leafName1 (findSplit (deformationObj, ':'));
+    ASSERT (! deformationObj. empty ());
+    ASSERT (deformation >= 0.0);
+    ASSERT (! contains (node2deformationPair, dtNode));
+    node2deformationPair [dtNode] = move (DeformationPair {leafName1, deformationObj, deformation});
   }
   
   return true;
@@ -5099,9 +5099,9 @@ void DistTree::qc () const
     }
   }
   
-  for (const auto& it : node2closestPair)
+  for (const auto& it : node2deformationPair)
   {
-    const ClosestPair& cp = it. second;
+    const DeformationPair& cp = it. second;
     QC_ASSERT (cp. leafName1 < cp. leafName2);
     QC_ASSERT (contains (name2leaf, cp. leafName1));
     QC_ASSERT (contains (name2leaf, cp. leafName2));
@@ -5133,7 +5133,7 @@ void DistTree::deleteLeaf (TreeNode* node,
   
   toDelete. deleteData ();
   
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 }
 
 
@@ -5856,7 +5856,7 @@ size_t DistTree::optimizeLenArc ()
   if (verbose (1))
     cout << "Optimizing arc lengths at each arc ..." << endl;
     
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   VectorPtr<DTNode> dtNodes;  dtNodes. reserve (2 * name2leaf. size ());
   for (DiGraph::Node* node : nodes)
@@ -5977,7 +5977,7 @@ size_t DistTree::optimizeLenNode ()
   if (verbose (1))
     cout << "Optimizing arc lengths at each node ..." << endl;
 
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   Vector<Star> stars;  stars. reserve (2 * name2leaf. size ());
   for (const DiGraph::Node* node : nodes)
@@ -6235,7 +6235,7 @@ bool DistTree::optimizeReinsert ()
   ASSERT (! subDepth);
 
 
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   VectorPtr<DTNode> nodeVec;  nodeVec. reserve (nodes. size ());
   for (const DiGraph::Node* node_ : nodes)
@@ -6287,7 +6287,7 @@ bool DistTree::optimizeWhole ()
   ASSERT (dissims. size () >= 2 * name2leaf. size () - 2);
 
   
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   VectorOwn<Change> changes;  changes. reserve (256);  // PAR
   {
@@ -6522,7 +6522,7 @@ void DistTree::optimizeLargeSubgraphs ()
   ASSERT (threads_max);
   
   
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   const bool threadsUsed = (threads_max > 1 && ! subDepth);
   
@@ -6716,7 +6716,7 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius,
 {
   ASSERT (areaRadius >= 1);
   
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   if (! unstableOnly)
     for (DiGraph::Node* node : nodes)
@@ -7195,7 +7195,7 @@ void DistTree::removeLeaf (Leaf* leaf,
   ASSERT (! dissimAttr);
   ASSERT (! multAttr);
   
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
   const TreeNode* parent = leaf->getParent ();
   if (! parent)
@@ -7311,7 +7311,7 @@ void DistTree::reroot (DTNode* underRoot,
   ASSERT (! underRoot->inDiscernible ());
 
   
-  node2closestPair. clear ();
+  node2deformationPair. clear ();
 
 
   if (underRoot != root)
@@ -7604,21 +7604,21 @@ void DistTree::setNodeAbsCriterion ()
 
 
 
-void DistTree::setNodeClosestDissimNum ()
+void DistTree::setNodeMaxDeformationDissimNum ()
 {
  ASSERT (optimizable ());
   
   for (DiGraph::Node* node : nodes)
   {
     DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->closestDissimNum = dissims_max;
-    Real target = INF;
+    dtNode->maxDeformationDissimNum = dissims_max;
+    Real target = 0.0;
     for (const uint dissimNum : dtNode->pathDissimNums)
     {
       const Dissim& dissim = dissims [dissimNum];
       if (dissim. validMult ())
-        if (minimize (target, dissim. target))
-          dtNode->closestDissimNum = dissimNum;
+        if (maximize (target, dissim. getDeformation ()))
+          dtNode->maxDeformationDissimNum = dissimNum;
     }
   }
 }
@@ -7737,9 +7737,9 @@ bool leafDeformationStrictlyGreater (const Leaf* a,
 
 
 
-VectorPtr<Leaf> DistTree::findClosestOutliers (Real deformation_mean,
-                                               Real outlier_EValue_max,
-                                               Real &outlier_min_excl) const
+VectorPtr<Leaf> DistTree::findDeformationOutliers (Real deformation_mean,
+                                                   Real outlier_EValue_max,
+                                                   Real &outlier_min_excl) const
 {
   ASSERT (deformation_mean >= 0.0);
   ASSERT (outlier_EValue_max >= 0.0);
@@ -7754,8 +7754,8 @@ VectorPtr<Leaf> DistTree::findClosestOutliers (Real deformation_mean,
     Chi2 chi2;
     chi2. setParam (1.0);
     MaxDistribution maxD;
-    const size_t degree = 2 * dissims. size () / name2leaf. size ();
-    maxD. setParam (& chi2, degree + 1);
+    const size_t n = 2 * dissims. size () / name2leaf. size ();
+    maxD. setParam (& chi2, n + 1);
     maxD. qc ();
     outlier_min_excl = maxD. getQuantileComp (1.0 - outlier_EValue_max / (Real) name2leaf. size (), 0.0, 1e6);  // PAR
   }
@@ -7976,7 +7976,8 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
         triangleParentPairs_init << TriangleParentPair ( dissim. leaf1
                                                        , dissim. leaf2
                                                        , dissim. target
-                                                       , dissim. type);
+                                                       , dissim. type
+                                                       );
       }
   }
   
@@ -7995,12 +7996,14 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     Real outlier_min_excl = NaN;
     const Dataset leafErrorDs (getLeafErrorDataset (true, NaN));
     badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 0.1, outlier_min_excl);  // PAR
-    badLeaves. sort ();
+      // --> findDeformationOutliers() ??
+    badLeaves. sort (leafRelCriterionStrictlyGreater);
     badLeaves. uniq ();
-    if (! qc_on)
-      badLeaves. randomOrder ();
     const Real nLeaves = (Real) name2leaf. size ();
     const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / sqr (log (nLeaves))) + 1);  // = O(n/log^2(n))
+    badLeaves. resize (badLeaves_size);
+    if (! qc_on)
+      badLeaves. randomOrder ();
     vector<Vector<Triangle>> resVec;
     // Time: O (n log^2(n) / threads_max)
     arrayThreads (addHybridTriangles_thread, badLeaves_size, resVec, cref (badLeaves));
@@ -8010,7 +8013,8 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
         triangleParentPairs_init << TriangleParentPair ( tr. parents [0]. leaf
                                                        , tr. parents [1]. leaf
                                                        , tr. parentsDissim ()
-                                                       , tr. dissimType);
+                                                       , tr. dissimType
+                                                       );
     triangleParentPairs_init. sort ();
     triangleParentPairs_init. uniq ();
   }  

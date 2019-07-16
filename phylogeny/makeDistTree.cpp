@@ -18,7 +18,7 @@ namespace
 
 
 const string criterionOutlier_definition ("relative unweighted average leaf error");
-const string closestOutlier_definition ("absolute residual to dissimilarity ratio for closest leaf");
+const string deformationOutlier_definition ("max. squared residual to min(dissimilarity,distance) ratio");
 
 
 
@@ -62,8 +62,8 @@ struct ThisApplication : Application
 	  addKey ("delete_criterion_outliers", "Delete outliers by " + criterionOutlier_definition + " and save them in the indicated file");  
 	  addKey ("criterion_outlier_num_max", "Max. number of outliers ordered by " + criterionOutlier_definition + " descending to delete; 0 - all", "0");
 	  
-	  addKey ("delete_closest_outliers", "Delete outliers by " + closestOutlier_definition + " and save them in the indicated file");  
-	  addKey ("closest_outlier_num_max", "Max. number of outliers ordered by " + closestOutlier_definition + " descending to delete; 0 - all", "0");
+	  addKey ("delete_deformation_outliers", "Delete outliers by " + deformationOutlier_definition + " and save them in the indicated file");  
+	  addKey ("deformation_outlier_num_max", "Max. number of outliers ordered by " + deformationOutlier_definition + " descending to delete; 0 - all", "0");
 
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
@@ -208,8 +208,8 @@ struct ThisApplication : Application
 		const string delete_criterion_outliers = getArg ("delete_criterion_outliers");
 		const size_t criterion_outlier_num_max = str2<size_t> (getArg ("criterion_outlier_num_max"));
 
-		const string delete_closest_outliers = getArg ("delete_closest_outliers");
-		const size_t closest_outlier_num_max = str2<size_t> (getArg ("closest_outlier_num_max"));
+		const string delete_deformation_outliers = getArg ("delete_deformation_outliers");
+		const size_t deformation_outlier_num_max = str2<size_t> (getArg ("deformation_outlier_num_max"));
 
 		const string delete_hybrids      = getArg ("delete_hybrids");
 	//const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
@@ -308,8 +308,8 @@ struct ThisApplication : Application
       throw runtime_error ("-delete_criterion_outliers requires dissimilarities");
     if (criterion_outlier_num_max && delete_criterion_outliers. empty ())
       throw runtime_error ("-criterion_outlier_num_max requires -delete_criterion_outliers");
-    if (closest_outlier_num_max && delete_closest_outliers. empty ())
-      throw runtime_error ("-closest_outlier_num_max requires -delete_closest_outliers");
+    if (deformation_outlier_num_max && delete_deformation_outliers. empty ())
+      throw runtime_error ("-deformation_outlier_num_max requires -delete_deformation_outliers");
 
 		if (reroot && ! reroot_at. empty ())
 		  throw runtime_error ("-reroot excludes -reroot_at");
@@ -618,24 +618,24 @@ struct ThisApplication : Application
       tree->qc ();
     
       
-      if (! delete_closest_outliers. empty ())
+      if (! delete_deformation_outliers. empty ())
       {
-        cerr << "Finding closest outliers ..." << endl;
-	      tree->setNodeClosestDissimNum (); 
+        cerr << "Finding deformation outliers ..." << endl;
+	      tree->setNodeMaxDeformationDissimNum (); 
 	      Real outlier_min_excl = NaN;
-	      const VectorPtr<Leaf> outliers (tree->findClosestOutliers (tree->getDeformation_mean (), 1e-10, outlier_min_excl));  // PAR  
+	      const VectorPtr<Leaf> outliers (tree->findDeformationOutliers (tree->getDeformation_mean (), 1e-10, outlier_min_excl));  // PAR  
 	      const ONumber on (cout, absCriterionDecimals, false);  
-	      cout << "# Closest outliers: " << outliers. size () << endl;
-        OFStream f (delete_closest_outliers);
+	      cout << "# Deformation outliers: " << outliers. size () << endl;
+        OFStream f (delete_deformation_outliers);
 	      if (! outliers. empty ())
 	      {
-          cerr << "Deleting closest outliers ..." << endl;
+          cerr << "Deleting deformation outliers ..." << endl;
           {
             Progress prog (outliers. size ());
             size_t removed = 0;
             for (const Leaf* leaf : outliers)
             {
-              if (closest_outlier_num_max && removed >= closest_outlier_num_max)
+              if (deformation_outlier_num_max && removed >= deformation_outlier_num_max)
                 break;
               f << leaf->name << endl;
               tree->removeLeaf (var_cast (leaf), true);
@@ -648,7 +648,7 @@ struct ThisApplication : Application
           tree->reportErrors (cout);
         }
         for (DiGraph::Node* node : tree->nodes)
-          static_cast <DTNode*> (node) -> closestDissimNum = dissims_max;
+          static_cast <DTNode*> (node) -> maxDeformationDissimNum = dissims_max;
         cout << endl;
       }
       tree->qc ();
@@ -657,7 +657,7 @@ struct ThisApplication : Application
       if (! noqual)
       {
         tree->setLeafAbsCriterion ();  
-        tree->setNodeClosestDissimNum ();
+        tree->setNodeMaxDeformationDissimNum ();
         tree->qc ();
       }
 
@@ -736,7 +736,7 @@ struct ThisApplication : Application
     if (! leaf_errors. empty ())
     {
       tree->setLeafAbsCriterion (); 
-      tree->setNodeClosestDissimNum ();
+      tree->setNodeMaxDeformationDissimNum ();
       const Dataset leafErrorDs (tree->getLeafErrorDataset (true, tree->getDeformation_mean ()));
       OFStream f (leaf_errors + dmSuff);
 	    leafErrorDs. saveText (f);    
