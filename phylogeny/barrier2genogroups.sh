@@ -16,6 +16,7 @@ OUT=$4
 
 
 i=$MIN
+$THIS/../grid_wait.sh go
 while [ $i -le $MAX ]; do
   T=`echo "$i/10" | bc -l | sed 's/0*$//1' | sed 's/^\./0./1'`
   $QSUB_5 -N j$i "$THIS/tree2genogroup $INC/tree $T  -genogroup_table $OUT/$T" > /dev/null

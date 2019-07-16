@@ -28,7 +28,8 @@ else
 		
 		ls $INC/dr > $INC/dr.list
 		while [ -s $INC/dr.list ]; do
-  		$THIS/../trav -step 1 $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
+		  $THIS/../grid_wait.sh go
+  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
   		$THIS/../qstat_wait.sh 2000 1	
  			set +o errexit	
 		  ls $INC/dr.out/*.log  1> $INC/dr.log  2> /dev/null

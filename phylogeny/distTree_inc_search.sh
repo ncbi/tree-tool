@@ -12,9 +12,13 @@ if [ $# -ne 4 ]; then
   echo "#4: Use grid (0/1)"
   exit 1
 fi
+INC=$1
+OBJ=$2
+JOB=$3
+GRID=$4
 
 
-DIR=$1/search/$2
+DIR=$INC/search/$OBJ
 
 
 # Already done
@@ -34,16 +38,16 @@ fi
 
 
 if [ -s $DIR/request ]; then
-  cp /dev/null $1/log/$2
-  if [ $4 == 1 ]; then
-    $QSUB_5 -N j$3 "$THIS/distTree_inc_request.sh $1 $2" > /dev/null  
+  cp /dev/null $INC/log/$OBJ
+  if [ $GRID == 1 ]; then
+    $QSUB_5 -N j$JOB "$THIS/distTree_inc_request.sh $INC $OBJ" > /dev/null  
   else
-    $THIS/distTree_inc_request.sh $1 $2
+    $THIS/distTree_inc_request.sh $INC $OBJ
   fi
 else
   # Finish
-  cat $DIR/leaf >> $1/leaf
-  cat $DIR/dissim >> $1/dissim.add
+  cat $DIR/leaf >> $INC/leaf
+  cat $DIR/dissim >> $INC/dissim.add
   rm -r $DIR/
 fi
 
