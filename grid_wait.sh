@@ -3,10 +3,15 @@ THIS=`dirname $0`
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Wait until grid is available"
-  echo "#1: go"
+  echo "#1: print message (0/1)"
   exit 1
 fi
+MSG=$1
 
+
+if [ $MSG == "1" ]; then
+  echo "Waiting for GRID ..."
+fi
 
 N=0
 while [ 1 == 1 ]; do

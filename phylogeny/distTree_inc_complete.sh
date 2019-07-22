@@ -96,9 +96,11 @@ if [ $DB == 1 ]; then
   fi
 fi
 
-echo ""
-echo "QC ..."
-$INC/qc.sh $INC
+if [ $DB == 1 ]; then
+  echo ""
+  echo "QC ..."
+  $INC/qc.sh $INC
+fi
 
 rm $INC/tree.list
 

@@ -77,8 +77,8 @@ $THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD > $INC/sea
 wc -l $INC/search.list
 rm $INC/new.list
 
-$THIS/../trav -noprogress $INC/search.list "mkdir $INC/search/%f"
-$THIS/../trav -noprogress $INC/search.list "rm $INC/new/%f"
+$THIS/../trav $INC/search.list "mkdir $INC/search/%f"
+$THIS/../trav $INC/search.list "rm $INC/new/%f"
 rm $INC/search.list
 
 
@@ -88,7 +88,7 @@ echo "search/ -> leaf, dissim ..."
 # Time: O(n log(n))+
 REQ=`ls $INC/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
-  $THIS/../grid_wait.sh go
+  $THIS/../grid_wait.sh 1
 	$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
 	$THIS/../qstat_wait.sh 2000 1
 else
@@ -110,7 +110,7 @@ while [ $ITER -le $ITER_MAX ]; do
   echo ""
   echo "Iteration $ITER / $ITER_MAX ..."
   
-  REQ=`$THIS/../trav -noprogress $INC/search "cat %d/%f/request" | wc -l`
+  REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`
   echo "# Requests: $REQ"
   GRID=1
   if [ $REQ -lt $GRID_MIN ]; then
@@ -121,7 +121,7 @@ while [ $ITER -le $ITER_MAX ]; do
   mkdir $INC/log
 
   if [ $GRID == 1 ]; then
-	  $THIS/../grid_wait.sh go
+	  $THIS/../grid_wait.sh 1
   fi
   $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
   if [ $GRID == 1 ]; then
