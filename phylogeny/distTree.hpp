@@ -59,17 +59,23 @@ extern VarianceType varianceType;
 extern Real variancePower;
 extern Real variance_min;
 
+extern Real dissim_power;
+extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
+extern Real hybridness_min;
+extern Real dissim_boundary;
+
+
 inline VarianceType str2varianceType (const string &s)
   { size_t index = 0;
     if (varianceTypeNames. find (s, index))
       return (VarianceType) index;
-    throw logic_error (FUNC "Unknown dissimilarity variance " + s);
+    throw logic_error ("Unknown dissimilarity variance " + s);
   }      
 
 // Input: varianceType
 inline Real dist2mult (Real dist)
   { if (dist < 0.0)
-      throw runtime_error (FUNC "Negative dist");
+      throw runtime_error ("Negative dist");
     Real var = NaN;  // Variance function
     switch (varianceType)
     { case varianceType_lin:    var = dist; break;
@@ -77,32 +83,29 @@ inline Real dist2mult (Real dist)
       case varianceType_pow:    var = pow (dist, variancePower); break;
       case varianceType_exp:    var = exp (2.0 * dist); break;
       case varianceType_linExp: var = exp (dist) - 1.0; break;
-      case varianceType_none:   throw runtime_error (FUNC "Variance function is not specified");
-      default:                  throw logic_error (FUNC "Unknown variance function");
+      case varianceType_none:   throw runtime_error ("Variance function is not specified");
+      default:                  throw logic_error ("Unknown variance function");
     }  
     return 1.0 / (variance_min + var);
   }
   // Return: >= 0
   //         0 <=> dist = INF
+
 inline Real dist_max ()
-  { switch (varianceType)
-    { case varianceType_lin:    return 1.0 / epsilon;
-      case varianceType_sqr:    return 1.0 / sqrt (epsilon);
-      case varianceType_pow:    return pow (epsilon, - 1.0 / variancePower);
-      case varianceType_exp:    return - 0.5 * log (epsilon);
-      case varianceType_linExp: return log (1.0 / epsilon + 1.0);
-      case varianceType_none:   return INF;
+  { Real x = NaN;
+    switch (varianceType)
+    { case varianceType_lin:    x = 1.0 / epsilon; break;
+      case varianceType_sqr:    x = 1.0 / sqrt (epsilon); break;
+      case varianceType_pow:    x = pow (epsilon, - 1.0 / variancePower); break;
+      case varianceType_exp:    x = - 0.5 * log (epsilon); break;
+      case varianceType_linExp: x = log (1.0 / epsilon + 1.0); break;
+      case varianceType_none:   x = INF; break;
+      default:                  throw logic_error ("Unknown variance function");
     }  
-    throw logic_error (FUNC "Unknown variance function");
+    return pow (x / dissim_coeff, 1.0 / dissim_power);
   }
   // Solution of: dist2mult(dist_max) = epsilon
   // dist < dist_max() <=> !nullReal(dist2mult(dist))
-
-
-extern Real dissim_power;
-extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
-extern Real hybridness_min;
-extern Real dissim_boundary;
 
 inline bool at_dissim_boundary (Real dissim)
   { return     dissim_boundary >= dissim 
@@ -436,6 +439,7 @@ public:
   Real getRelCriterion () const;
     // Relative average absolute criterion
   Real getDeformation () const;
+    // Input: maxDeformationDissimNum
   virtual const Leaf* getReprLeaf (ulong seed) const = 0;
     // Return: !nullptr, in subtree
     // For sparse *getDistTree().dissimAttr
@@ -1287,6 +1291,10 @@ public:
       if (DistTree_sp::variance_min)
         os << "Min. variance: " << variance_min << endl;
       os << "Max. possible distance: " << dist_max () << endl;
+      if (dissim_power != 1.0)
+        os << "Dissimilarity power: " << dissim_power << endl;
+      if (dissim_coeff != 1.0)
+        os << "Dissimilarity coefficient: " << dissim_coeff << endl;
       os << "Subgraph radius: " << areaRadius_std << endl;
     }
 	void printInput (ostream &os) const;
