@@ -7994,10 +7994,15 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
         badLeaves << leaf;
     }
     Real outlier_min_excl = NaN;
+  #if 1
     const Dataset leafErrorDs (getLeafErrorDataset (true, NaN));
-    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 0.1, outlier_min_excl);  // PAR
-      // --> findDeformationOutliers() ??
+    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 1e0, outlier_min_excl);  // PAR  // was: 1e-1
     badLeaves. sort (leafRelCriterionStrictlyGreater);
+  #else  
+    // Too few hybrids
+    badLeaves << findDeformationOutliers (getDeformation_mean (), dissimOutlierEValue_max, outlier_min_excl); 
+    badLeaves. sort (leafDeformationStrictlyGreater);
+  #endif
     badLeaves. uniq ();
     const Real nLeaves = (Real) name2leaf. size ();
     const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / sqr (log (nLeaves))) + 1);  // = O(n/log^2(n))

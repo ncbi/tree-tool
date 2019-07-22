@@ -98,7 +98,12 @@ struct ThisApplication : Application
 	// Return: true <=> hybrids are deleted
 	// Append: *hybridDissimRequests
 	{
+	#if 1
     tree. setLeafAbsCriterion ();
+  #else
+    // Too few hybrids
+    tree. setNodeMaxDeformationDissimNum (); 
+  #endif
 
     const Vector<TriangleParentPair> triangleParentPairs (tree. findHybrids (1e0, hybridDissimRequests));  // PAR 
     if (hybridDissimRequests)
