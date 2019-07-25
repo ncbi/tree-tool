@@ -12,6 +12,9 @@ if [ $# -ne 2 ]; then
 fi
 
 
+#set -x
+
+
 DIR=$1/search/$2
 LOG=$1/log/$2
 
