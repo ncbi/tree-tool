@@ -17,7 +17,6 @@ $INC/db2unhybrid.sh $INC/unhybrid
 VER=`cat $INC/version`
 
 if [ -s $INC/unhybrid ]; then
-  echo ""
 	uniq.sh $INC/unhybrid
   wc -l $INC/unhybrid
   $THIS/../trav $INC/unhybrid "cp /dev/null $INC/new/%f"
