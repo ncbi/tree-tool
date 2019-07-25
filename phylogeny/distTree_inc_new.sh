@@ -269,7 +269,7 @@ $INC/qc.sh $INC
 NEW=`ls $INC/new | wc -l`
 if [ $NEW  == 0 ]; then
   cp /dev/null $INC/finished
-elif [ ! $ALL_NEW -a $NEW -lt $ADD ]; then
+elif [ $ALL_NEW == 0 -a $NEW -lt $ADD ]; then
   cp /dev/null $INC/finished
 else
   rm -f $INC/finished
