@@ -262,19 +262,6 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
                 );
   }
 //ASSERT (! triangles. empty ());
-
-#if 0
-  // hybridness_ave
-  hybridness_ave = DistTree_sp::hybridness_min;
-  if (! triangles. empty ())
-  {
-    MeanVar hybridness_mv;
-    for (const Triangle& tr : triangles)
-      hybridness_mv << tr. hybridness;
-    hybridness_ave = hybridness_mv. getMean ();
-  }
-  ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
-#endif
 }
 
 
