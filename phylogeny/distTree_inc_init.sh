@@ -5,7 +5,7 @@ if [ $# -ne 7 ]; then
   echo "Initialize the main directory of an incremental distance tree"
   echo "#1: Output directory"
   echo "#2: grid_min (> 0)"
-  echo "#3: variance: lin|linExp"
+  echo "#3: variance: lin|linExp|..."
   echo "#4: hybridness_min (> 1); 0 - no hybrids"
   echo "#5: dissim_boundary (> 0 or NAN)"
   echo "#6: genogroup_barrier (> 0 or NAN)"
