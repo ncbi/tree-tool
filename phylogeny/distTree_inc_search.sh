@@ -18,6 +18,9 @@ JOB=$3
 GRID=$4
 
 
+#set -x
+
+
 DIR=$INC/search/$OBJ
 
 
