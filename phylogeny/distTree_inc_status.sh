@@ -31,16 +31,16 @@ if [ $SEARCH -gt 0 ]; then
 fi
 
 
-echo ""
-
 N=`ls $INC/new/ | wc -l`
 if [ $N -gt 0 ]; then
+  echo ""
   echo "# New: $N"
   echo "# To process: $(( $ADDED + $SEARCH + $N ))"
 fi
 
 if [ -e $INC/outlier-genogroup ]; then
 	N=`cat $INC/outlier-genogroup | wc -l`
+  echo ""
   echo "# Genogroup outliers: $N"
   echo "# Objects to be in tree: $(( $OBJS - $N ))"
 fi
@@ -59,27 +59,32 @@ tail -5 $TMP
 echo ""
 tail -5 $INC/runlog
 
-echo ""
-grep ' V !' $INC/hist/makeFeatureTree-tree1.* | sed 's|^'$INC'/hist/makeFeatureTree-tree1\.||1' | sed 's/:#/ #/1' | sort -k 1 -n > $TMP
-tail -5 $TMP
+set +o errexit
+grep ' V !' $INC/hist/makeFeatureTree-tree1.* 1> $TMP.grep 2> /dev/null
+set -o errexit
+if [ -s $TMP.grep ]; then
+  sed 's|^'$INC'/hist/makeFeatureTree-tree1\.||1' $TMP.grep | sed 's/:#/ #/1' | sort -k 1 -n > $TMP 
+  echo ""
+  tail -5 $TMP
+fi
 
-echo ""
 set +o errexit
 wc -l $INC/hist/hybrid.* 1> $TMP.out 2> /dev/null
 grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 S=$?
 set -o errexit
 if [ $S == 0 ]; then
+  echo ""
   tail -5 $TMP
 fi
 
-echo ""
 set +o errexit
 wc -l $INC/hist/outlier-genogroup.* 1> $TMP.out 2> /dev/null
 grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 S=$?
 set -o errexit
 if [ $S == 0 ]; then
+  echo ""
   tail -5 $TMP
 fi
 
