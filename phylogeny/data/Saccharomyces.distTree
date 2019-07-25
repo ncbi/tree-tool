@@ -6,7 +6,7 @@ Subgraph radius: 5
 Root: by length
 
 Neighbor joining ...
-CHRON: Initial topology: 2 sec.
+CHRON: Initial topology: 3 sec.
 
 INPUT:
 # Leaves: 501
@@ -22,37 +22,25 @@ Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 # Nodes deleted = 1
 absCriterion = 2.5765e+02  Error density = 8.949 %
-CHRON: Initial arc lengths: 294 sec.
+CHRON: Initial arc lengths: 282 sec.
 
 Optimizing topology: subgraphs ...
-triangleParentPairs_init. size () = 851
-triangleParentPairs_init. size () = 2147
-CHRON: badLeaves: 1 sec.
-
-CHRON: findHybrids: 1 sec.
-
 # Hybrids: 42
-absCriterion = 6.9202e+01  Error density = 5.057 %
-
-triangleParentPairs_init. size () = 327
-triangleParentPairs_init. size () = 327
-CHRON: badLeaves: 0 sec.
-
-CHRON: findHybrids: 0 sec.
+absCriterion = 6.9198e+01  Error density = 5.057 %
 
 # Hybrids: 0
 absCriterion = 6.8790e+01  Error density = 5.048 %
 
 # Iterations of subgraph optimization: 2
 absCriterion = 6.8783e+01  Error density = 5.048 %
-CHRON: Topology optimization: local: 449 sec.
+CHRON: Topology optimization: local: 421 sec.
 
 Ave. radius: 0.560
 
 # Criterion outliers: 3
 absCriterion = 6.6991e+01  Error density = 4.993 %
 
-# Closest outliers: 5
+# Deformation outliers: 14
 absCriterion = 6.5838e+01  Error density = 4.960 %
 
 OUTPUT:

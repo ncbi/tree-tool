@@ -39,9 +39,10 @@ constexpr Real dissimCoeffProd_delta = 1e-6;
 
 
 // For Time: 
-//   n = # Tree leaves, p = # distances = DistTree::dissims.size()
+//   n = # Tree leaves
+//   p = # distances = DistTree::dissims.size()
 //   p >= n
-//   ~ O(): p = n log^2(n); log log = 1
+//   O(): log log = 1
 
 
 
@@ -277,12 +278,15 @@ public:
 	  }
 	TriangleParentPair () = default;
 	void setTriangles (const DistTree &tree);
-	  // Output: triangles, hybridness_ave
-	  // Time: ~ O(log^2(n))
+	  // Output: triangles
+	  // Average time: O(p/n log(n))
+  void triangles2hybridness_ave ();
+	  // Output: hybridness_ave
   void finish (const DistTree &tree,
                const Set<const Leaf*> &hybrids);
-    // Input: triangles
+    // Input: triangles, Leaf::badCriterion
     // Output: Triangle::*hybrid
+    // Invokes: child_parent2parents()
 	void qc () const;
   void print (ostream &os) const;
   static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <dissimilarity type> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
@@ -302,7 +306,7 @@ public:
     	throw logic_error ("TriangleParentPair::getBest()");
     }
   bool dissimError () const  
-    { if (    getBest (). parent_dissim_ratio () < 0.25  // PAR
+    { if (   getBest (). parent_dissim_ratio () < 0.25  // PAR
     	    && hybridness_ave < 1.25  // PAR
     	   )
     	  return true;
@@ -342,7 +346,7 @@ private:
                                const Leaf* child,
                                const Leaf* parent,
                                Real parentDissim) const;
-	  // Time: ~ O(log^2(n))
+	  // Average time: O(p/n log(n))
 	void setChildrenHybrid ()
 	  { for (Triangle& tr : triangles)
 	  	  tr. child_hybrid = true;
@@ -445,7 +449,7 @@ public:
     // For sparse *getDistTree().dissimAttr
     // Deterministic <=> (bool)seed
     // Invokes: getDistTree().rand
-    // Time: ~ O(log(n))
+    // Time: O(log(n))
 private:
   void saveFeatureTree (ostream &os,
                         size_t offset) const;
@@ -626,7 +630,7 @@ private:
 public:	
   void addHybridTriangles (Vector<Triangle> &triangles) const;
     // Invokes: addTriangle()
-    // Time: ~ O(log^4(n))  
+    // Average time: O(p^2/n^2 log^2(n))  
   Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) final
     { if (len <= genogroup_dist_max)
       { Vector<ClosestLeaf> res {{this, len}};
@@ -1537,7 +1541,7 @@ public:
     // Update (append): *dissimRequests if !nullptr  // Not implemented ??
     // After: setLeafAbsCriterion() 
     // Invokes: RealAttr2::normal2outlier(), findCriterionOutliers()
-    // Time: ~ O(p log^2(n)) 
+    // Time: O(p^2/n)
   VectorPtr<Leaf> findDepthOutliers () const;
     // Invokes: DTNode::getReprLeaf()
 #if 0

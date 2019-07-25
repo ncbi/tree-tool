@@ -23,37 +23,25 @@ Optimizing arc lengths at each arc ...
 Optimizing arc lengths at each node ...
 # Nodes deleted = 1
 absCriterion = 5.1530e+02  Error density = 8.949 %
-CHRON: Initial arc lengths: 607 sec.
+CHRON: Initial arc lengths: 578 sec.
 
 Optimizing topology: subgraphs ...
-triangleParentPairs_init. size () = 1702
-triangleParentPairs_init. size () = 4294
-CHRON: badLeaves: 0 sec.
-
-CHRON: findHybrids: 1 sec.
-
 # Hybrids: 42
-absCriterion = 1.3840e+02  Error density = 5.057 %
-
-triangleParentPairs_init. size () = 654
-triangleParentPairs_init. size () = 654
-CHRON: badLeaves: 0 sec.
-
-CHRON: findHybrids: 0 sec.
+absCriterion = 1.3838e+02  Error density = 5.056 %
 
 # Hybrids: 0
 absCriterion = 1.3758e+02  Error density = 5.048 %
 
 # Iterations of subgraph optimization: 2
 absCriterion = 1.3757e+02  Error density = 5.048 %
-CHRON: Topology optimization: local: 847 sec.
+CHRON: Topology optimization: local: 783 sec.
 
 Ave. radius: 0.560
 
 # Criterion outliers: 3
 absCriterion = 1.3398e+02  Error density = 4.993 %
 
-# Closest outliers: 5
+# Deformation outliers: 14
 absCriterion = 1.3168e+02  Error density = 4.960 %
 
 OUTPUT:

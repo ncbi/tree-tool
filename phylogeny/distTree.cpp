@@ -263,6 +263,7 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
   }
 //ASSERT (! triangles. empty ());
 
+#if 0
   // hybridness_ave
   hybridness_ave = DistTree_sp::hybridness_min;
   if (! triangles. empty ())
@@ -272,6 +273,22 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
       hybridness_mv << tr. hybridness;
     hybridness_ave = hybridness_mv. getMean ();
   }
+  ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
+#endif
+}
+
+
+
+void TriangleParentPair::triangles2hybridness_ave ()
+{
+  hybridness_ave = DistTree_sp::hybridness_min;
+  if (triangles. empty ())
+    return;
+
+  MeanVar hybridness_mv;
+  for (const Triangle& tr : triangles)
+    hybridness_mv << tr. hybridness;
+  hybridness_ave = hybridness_mv. getMean ();
   ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
 }
 
@@ -351,7 +368,7 @@ void TriangleParentPair::finish (const DistTree &tree,
       setChildrenHybrid ();
       return;
     }
-    if (p >= 1 - classSizeFrac_max)
+    if (p >= 1.0 - classSizeFrac_max)
     {
       // ab ac aa
       // common(ab,ac) = 1/4 aa <= random halves of aa
@@ -7883,21 +7900,6 @@ void hybrid2requests (size_t from,
 
 
 
-void setTriangles_thread (size_t from,
-                          size_t to,
-                          Notype&,
-                          Vector<TriangleParentPair> &triangleParentPairs_init,
-                          const DistTree &tree)
-{
-  ASSERT (from <= to);
-  ASSERT (to <= triangleParentPairs_init. size ());
-    
-  FOR_START (size_t, i, from, to)
-    triangleParentPairs_init [i]. setTriangles (tree);
-}
-
-
-
 void addHybridTriangles_thread (size_t from,
                                 size_t to,
                                 Vector<Triangle>& res,
@@ -7909,6 +7911,21 @@ void addHybridTriangles_thread (size_t from,
     
   FOR_START (size_t, i, from, to)
     badLeaves [i] -> addHybridTriangles (res);
+}
+
+
+
+void setTriangles_thread (size_t from,
+                          size_t to,
+                          Notype&,
+                          Vector<TriangleParentPair> &triangleParentPairs_init,
+                          const DistTree &tree)
+{
+  ASSERT (from <= to);
+  ASSERT (to <= triangleParentPairs_init. size ());
+    
+  FOR_START (size_t, i, from, to)
+    triangleParentPairs_init [i]. setTriangles (tree);
 }
 
 
@@ -8010,11 +8027,10 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     if (! qc_on)
       badLeaves. randomOrder ();
     vector<Vector<Triangle>> resVec;
-    // Time: O (n log^2(n) / threads_max)
+    // Time: O(n/log^2(n) * p^2/n^2 log^2(n) / threads_max) = O(p^2/n / threads_max)
     arrayThreads (addHybridTriangles_thread, badLeaves_size, resVec, cref (badLeaves));
     for (const Vector<Triangle>& res : resVec)
       for (const Triangle& tr : res)  
-          // Limit by O(p) ??
         triangleParentPairs_init << TriangleParentPair ( tr. parents [0]. leaf
                                                        , tr. parents [1]. leaf
                                                        , tr. parentsDissim ()
@@ -8022,9 +8038,12 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        );
     triangleParentPairs_init. sort ();
     triangleParentPairs_init. uniq ();
+    const Real dissims_size = (Real) dissims. size ();
+    const size_t triangleParentPairs_init_size = min (triangleParentPairs_init. size (), (size_t) (dissims_size / log (dissims_size)) + 1);  // = O(p/log(p))
+    triangleParentPairs_init. resize (triangleParentPairs_init_size);
   }  
    
-  // Time: O (p log^2(n) / threads_max)  
+  // Time: O (p/log(p) * p/n log(n) / threads_max) = O(p^2/n / threads_max)
   {
     triangleParentPairs_init. randomOrder ();
     vector<Notype> notypes;  
@@ -8058,11 +8077,18 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
         }
         ASSERT (index != NO_INDEX);
         triangleParentPairs [index]. triangles << tr;
-        triangleParentPairs [index]. hybridness_ave = tpp. hybridness_ave;
       }
   }    
-  triangleParentPairs. sort (TriangleParentPair::compareHybridness);  // PAR
+  for (TriangleParentPair& tpp : triangleParentPairs)
+    tpp. triangles2hybridness_ave ();
+  triangleParentPairs. sort (TriangleParentPair::compareHybridness);  
+  {
+    const Real dissims_size = (Real) dissims. size ();
+    const size_t triangleParentPairs_size = min (triangleParentPairs. size (), (size_t) (dissims_size / log (dissims_size)) + 1);  // = O(p/log(p))
+    triangleParentPairs. resize (triangleParentPairs_size);
+  }
     
+  // Time: O(p/log(p) * p/n log(n)) = O(p^2/n)
   Set<const Leaf*> hybrids;
   {
     Set<const Leaf*> nonHybrids;
