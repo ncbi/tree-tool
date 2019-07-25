@@ -2918,7 +2918,7 @@ struct Normal : LocScaleDistribution
   // UniDistribution
 private:
   Prob cdf_ (Real x) const final
-    { return (erf (stnd (x) / sqrt_2) + 1) / 2; }
+    { return (erf (stnd (x) / sqrt_2) + 1.0) / 2.0; }
   Real rand_ () const final;
 public:
   Real getMean () const final
