@@ -105,7 +105,7 @@ struct ThisApplication : Application
     ud->setParam (0, bin_n);
     mixt. addComponent (ud, (1 - bin_prob) / 2);  
     
-    mixt. qc ();
+  //mixt. qc ();
     mixt. estimate ();
     mixt. qc ();
     mixt. print (cout);
