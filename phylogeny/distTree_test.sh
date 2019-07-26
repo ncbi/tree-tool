@@ -9,7 +9,9 @@ fi
 
 
 TMP=`mktemp`
-echo $TMP
+if [ $USER == "brovervv" ]; then
+  echo $TMP
+fi
 
 
 #if [ 1 == 0 ]; then  
@@ -138,6 +140,13 @@ diff prot-identical_comm-var_min.hybrids data/prot-identical_comm-var_min.hybrid
 rm prot-identical_comm-var_min.hybrids
 $THIS/distTree_compare_criteria.sh prot-identical_comm-var_min.distTree data/prot-identical_comm-var_min.distTree
 rm prot-identical_comm-var_min.distTree
+
+
+if [ $USER != "brovervv" ]; then
+  rm Saccharomyces.hybrid.list
+  rm $TMP*
+  exit 0
+fi
 
 
 echo ""
