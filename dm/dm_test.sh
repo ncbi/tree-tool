@@ -115,7 +115,7 @@ rm 363068-2319168-diff.uniKernel
 
 echo ""
 echo "clust_binomial"
-$THIS/clust_binomial data/Fungi-univ-stat V1 273 -outlier_pValue 1e-5 > Fungi-univ-stat.clust_binomial
+$THIS/clust_binomial -qc  data/Fungi-univ-stat V1 273 -outlier_pValue 1e-5 > Fungi-univ-stat.clust_binomial
 diff Fungi-univ-stat.clust_binomial data/Fungi-univ-stat.clust_binomial
 rm Fungi-univ-stat.clust_binomial
 
