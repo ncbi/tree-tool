@@ -7976,8 +7976,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     var_cast (leaf) -> badCriterion = 0.0;
   }
 
+  Vector<TriangleParentPair> triangleParentPairs_init;  triangleParentPairs_init. reserve (dissims. size ());    
+
   // Time: O(p log(p))
-  Vector<TriangleParentPair> triangleParentPairs_init;  triangleParentPairs_init. reserve (dissims. size ());  
   {
     // Bad dissims
     Dataset ds;
@@ -8014,6 +8015,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        , dissim. target
                                                        , dissim. type
                                                        );
+          // Size: O(p)
       }
   }
   
@@ -8032,7 +8034,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     Real outlier_min_excl = NaN;
   #if 1
     const Dataset leafErrorDs (getLeafErrorDataset (true, NaN));
-    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 1e0, outlier_min_excl);  // PAR  // was: 1e-1
+    badLeaves << findCriterionOutliers (leafErrorDs, dissimOutlierEValue_max * 1e0, outlier_min_excl);  // PAR  
     badLeaves. sort (leafRelCriterionStrictlyGreater);
   #else  
     // Too few hybrids
@@ -8041,8 +8043,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   #endif
     badLeaves. uniq ();
     const Real nLeaves = (Real) name2leaf. size ();
-    const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / sqr (log (nLeaves))) + 1);  // = O(n/log^2(n))
+    const size_t badLeaves_size = min (badLeaves. size (), (size_t) (nLeaves / sqr (log (nLeaves))) + 1);  
     badLeaves. resize (badLeaves_size);
+      // Size: O(n/log^2(n))
     if (! qc_on)
       badLeaves. randomOrder ();
     vector<Vector<Triangle>> resVec;
@@ -8055,11 +8058,15 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                                        , tr. parentsDissim ()
                                                        , tr. dissimType
                                                        );
+  }
+  
+  {
     triangleParentPairs_init. sort ();
     triangleParentPairs_init. uniq ();
     const Real dissims_size = (Real) dissims. size ();
-    const size_t triangleParentPairs_init_size = min (triangleParentPairs_init. size (), (size_t) (dissims_size / log (dissims_size)) + 1);  // = O(p/log(p))
+    const size_t triangleParentPairs_init_size = min (triangleParentPairs_init. size (), (size_t) (dissims_size / log (dissims_size)) + 1);  
     triangleParentPairs_init. resize (triangleParentPairs_init_size);
+      // Size: O(p/log(p))
   }  
    
   // Time: O (p/log(p) * p/n log(n) / threads_max) = O(p^2/n / threads_max)
@@ -8070,6 +8077,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     triangleParentPairs_init. sort ();
   }
 
+  // triangleParentPairs_init --> triangleParentPairs
   ASSERT (triangleParentPairs. empty ());
   {
     size_t trianglesSize = 0;
@@ -8103,8 +8111,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   triangleParentPairs. sort (TriangleParentPair::compareHybridness);  
   {
     const Real dissims_size = (Real) dissims. size ();
-    const size_t triangleParentPairs_size = min (triangleParentPairs. size (), (size_t) (dissims_size / log (dissims_size)) + 1);  // = O(p/log(p))
+    const size_t triangleParentPairs_size = min (triangleParentPairs. size (), (size_t) (dissims_size / log (dissims_size)) + 1);  
     triangleParentPairs. resize (triangleParentPairs_size);
+      // Size: O(p/log(p))
   }
     
   // Time: O(p/log(p) * p/n log(n)) = O(p^2/n)

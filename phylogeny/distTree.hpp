@@ -292,6 +292,7 @@ struct TriangleParentPair
 	  // Triangle::parents[i].leaf = parents[i].leaf
 	  // Clusterize Triangle::child's ??
 	  // May be empty()
+    // Average size: O(p/n log(n))  
 private:
 	size_t triangle_best_index {NO_INDEX};
 	  // Index in triangles
