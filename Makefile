@@ -12,6 +12,7 @@ all:	\
   extractPairs \
   graph_test \
   list2pairs \
+  mergePairs \
   selColumn \
   setMinus \
   setRandOrd \
@@ -43,6 +44,12 @@ list2pairs.o:  $(COMMON_HPP)
 list2pairsOBJS=list2pairs.o $(CPP_DIR)/common.o
 list2pairs:	$(list2pairsOBJS)
 	$(CXX) -o $@ $(list2pairsOBJS) $(LIBS)
+	$(ECHO)
+
+mergePairs.o:  $(COMMON_HPP)  
+mergePairsOBJS=mergePairs.o $(CPP_DIR)/common.o
+mergePairs:	$(mergePairsOBJS)
+	$(CXX) -o $@ $(mergePairsOBJS) $(LIBS)
 	$(ECHO)
 
 selColumn.o:  $(COMMON_HPP)  
