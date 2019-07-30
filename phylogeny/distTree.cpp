@@ -5976,15 +5976,14 @@ namespace
 struct Star
 {
   // !nullptr
-  const Steiner* center;
+  const Steiner* center {nullptr};
   VectorPtr<DiGraph::Node> arcNodes;
     // Arc's make up a star
-  Real lenSum;
+  Real lenSum {0.0};
   
   explicit Star (const Steiner* center_arg)
     : center   (center_arg)
     , arcNodes (center->getChildren ())
-    , lenSum (0)
     {
       ASSERT (center);
       ASSERT (! center->isTransient ());
@@ -5992,7 +5991,7 @@ struct Star
       ASSERT (arcNodes. size () >= 3);
       for (const DiGraph::Node* node : arcNodes)
         lenSum += static_cast <const DTNode*> (node) -> len;
-      ASSERT (lenSum >= 0);
+      ASSERT (lenSum >= 0.0);
     }
    
   static bool strictlyLess (const Star &a,
@@ -6101,6 +6100,10 @@ size_t DistTree::optimizeLenNode ()
         PRINT (absCriterion);
         PRINT (absCriterion_old);
         PRINT (subDepth);
+        PRINT (star. center);
+        PRINT (star. center->getParent ());
+        FFOR (size_t, attrNum, arcNodes. size ())
+          PRINT (lr. beta [attrNum]);
       }
       prog (absCriterion2str ()); 
     }

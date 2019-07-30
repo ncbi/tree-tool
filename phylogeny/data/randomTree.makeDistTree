@@ -13,22 +13,22 @@ INPUT:
 # Dissimilarities: 1225 (100.00 %)
 Dissimilarities factor: 6.26
 Ave. dissimilarity = 5.378897
-absCriterion = 5.6589e+02  Error density = 27.760 %
+Criterion = 5.6589e+02  Error density = 27.760 %
 
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 0
 Optimizing arc lengths at each node ...
 # Nodes deleted = 0
-absCriterion = 2.4334e+02  Error density = 17.817 %
+Criterion = 2.4334e+02  Error density = 17.817 %
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 3
-absCriterion = 8.3501e+00  Error density = 3.372 %
+Criterion = 8.3501e+00  Error density = 3.372 %
 
 Ave. radius: 3.967
 
 OUTPUT:
-absCriterion = 8.3501e+00  Error density = 3.372 %
+Criterion = 8.3501e+00  Error density = 3.372 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = -0.00

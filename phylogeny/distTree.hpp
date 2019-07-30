@@ -1359,7 +1359,7 @@ public:
   void reportErrors (ostream &os,
                      Real unoptimizable = 0.0) const
     { const ONumber on (os, relCriterionDecimals, false);  
-      os << "absCriterion = " << real2str (absCriterion  - unoptimizable, absCriterionDecimals)
+      os << "Criterion = " << real2str (absCriterion  - unoptimizable, absCriterionDecimals)
          << "  Error density = " << getErrorDensity (unoptimizable) * 100 << " %"
          << endl;
     }    
