@@ -79,6 +79,16 @@ if [ $S == 0 ]; then
 fi
 
 set +o errexit
+wc -l $INC/hist/unhybrid.* 1> $TMP.out 2> /dev/null
+grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+S=$?
+set -o errexit
+if [ $S == 0 ]; then
+  echo ""
+  tail -5 $TMP
+fi
+
+set +o errexit
 wc -l $INC/hist/outlier-genogroup.* 1> $TMP.out 2> /dev/null
 grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 S=$?
