@@ -61,13 +61,14 @@ struct ThisApplication : Application
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
+
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
-
 	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
-	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
-	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
-
 	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
+
+	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
+	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
+
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
 	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
@@ -76,7 +77,7 @@ struct ThisApplication : Application
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
 	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
-	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deletign all the other leaves");
+	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deleting all the other leaves");
 	  addFlag ("check_keep", "Check that the names to be kept actually exist in the tree");  
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
@@ -97,11 +98,11 @@ struct ThisApplication : Application
 	  addKey ("delete_deformation_outliers", "Delete outliers by " + deformationOutlier_definition + " and save them in the indicated file");  
 	  addKey ("deformation_outlier_num_max", "Max. number of outliers ordered by " + deformationOutlier_definition + " descending to delete; 0 - all", "0");
 
+	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
-	  addKey ("dissim_boundary", "Boundary between two merged dissmilarity measures causing discontinuity", toString (dissim_boundary));
-	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
+	  addKey ("dissim_boundary", "Boundary between two merged dissmilarities causing discontinuity", toString (dissim_boundary));
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
