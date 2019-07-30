@@ -15,7 +15,7 @@ NEW_PAR=$2
 
 
 echo "QC ..."
-$INC/qc.sh $INC
+$INC/qc.sh go
 echo ""
 
 
@@ -57,9 +57,9 @@ VARIANCE=`cat $INC/variance`
 
 echo ""
 echo ""
-echo "Complete optimization ..."
+echo "Final optimization ..."
 VER=`cat $INC/version`
-echo "$VER  # Complete optimization  `date`  `date +%s`" >> $INC/runlog  
+echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
 # Time: O(n log(n)) 
 cp $INC/tree $INC/hist/tree.$VER
 gzip $INC/hist/tree.$VER
@@ -92,12 +92,13 @@ fi
 
 echo ""
 echo "QC ..."
-$INC/qc.sh $INC
+$INC/qc.sh go
 echo ""
 echo "Tree QC ..."
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
   VER=`cat $INC/version`
+  VARIANCE=`cat $INC/variance`
 fi 
 
 

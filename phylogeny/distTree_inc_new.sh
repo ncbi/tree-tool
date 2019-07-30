@@ -263,7 +263,7 @@ $THIS/distTree_inc_tree1_quality.sh $INC
 
 echo ""
 echo "QC ..."
-$INC/qc.sh $INC
+$INC/qc.sh go
 
 
 NEW=`ls $INC/new | wc -l`

@@ -39,7 +39,7 @@ cp $DEL $INC/hist/delete.$VER
 
 echo ""
 echo "QC ..."
-$INC/qc.sh $INC
+$INC/qc.sh go
 
 
 $THIS/distTree_inc_tree1_quality.sh $INC
