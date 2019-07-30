@@ -338,12 +338,12 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
                                                        Real errorRelDiff)
 {
   ASSERT (maxIter);
-  ASSERT (errorRelDiff > 0);
+  ASSERT (errorRelDiff > 0.0);
   ASSERT (beta. defined ());
 #ifndef NDEBUG
   if (betaNonNegative)
     FOR (size_t, attrNum, space. size ())
-      { ASSERT (beta [attrNum] >= 0); }
+      { ASSERT (beta [attrNum] >= 0.0); }
 #endif
 
   absCriterion = NaN;
@@ -398,7 +398,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
       if (verbose ())
         cout << error << " " << errorPrev << endl;
     }
-    if (errorPrev / error - 1 <= errorRelDiff) 
+    if (errorPrev / error - 1.0 <= errorRelDiff) 
     {
       if (error >= errorPrev_init)
         ok = false;
