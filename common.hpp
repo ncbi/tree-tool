@@ -1085,6 +1085,8 @@ template <typename T>
       {}
    ~Keep () 
       { *ptr = t; }
+    const T& get () const
+      { return t; }
   };
 
 
