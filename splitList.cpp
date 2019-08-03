@@ -46,7 +46,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Partition <in> into parts of size <size> sequentially.\n\
+    : Application ("Partition <in> into parts of size <size> lines sequentially.\n\
 Parts are named <out_dir>/<i>")
   {
 	  addPositional ("in", "Text file");
