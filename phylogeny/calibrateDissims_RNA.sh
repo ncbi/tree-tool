@@ -1,40 +1,24 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 7 ]; then
+if [ $# -ne 5 ]; then
   echo "#1: input .dm-file without '.dm'"
   echo "#2: dissimilarity attribute in #1"
-  echo "#3: dissimilarity power (> 0)"
-  echo "#4: dissim_coeff: >0 <=> variance linExp"
-  echo "#5: variance power (NAN <=> variance = linExp)"
-  echo "#6: variance fixed (0/1)"
-  echo "#7: phen/"
+  echo "#3: dissimilarity parameters of makeDistTree"
+  echo "#4: variance parameters of makeDistTree (without '-variance ')"
+  echo "#5: phen/"
   exit 1
 fi
 INPUT=$1
 DISSIM=$2
-DISSIM_POWER=$3
-DISSIM_COEFF=$4
-VAR_POWER=$5
-VAR_FIXED=$6
-PHEN=$7
+DISSIM_PAR="$3"
+VARIANCE_PAR="$4"
+PHEN=$5
 
 
 TMP=`mktemp`
 #echo $TMP 
 
-
-VARIANCE=linExp
-DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
-if [ $DISSIM_COEFF == 0 ]; then
-  VARIANCE="pow  -variance_power $VAR_POWER"
-  DISSIM_COEFF_OPTION=""
-fi
-
-VAR_FIXED_PAR=""
-if [ $VAR_FIXED == 1 ]; then
-  VAR_FIXED_PAR="-variance_fixed"
-fi
 
 $THIS/../dm/dm2objs $INPUT | sort > $TMP.list
 ls $PHEN > $TMP.phen
@@ -43,7 +27,7 @@ $THIS/../setMinus $TMP.list $TMP.phen > $TMP.delete
 echo ""
 echo ""
 $THIS/makeDistTree  -threads 5  -data $INPUT  -dissim_attr $DISSIM  -delete $TMP.delete  \
-  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -dissim_power $DISSIM_POWER  $VAR_FIXED_PAR \
+  $DISSIM_PAR  -variance $VARIANCE_PAR \
   -optimize  -subgraph_iter_max 20  -noqual  -output_feature_tree $TMP.feature_tree
 
 echo ""
