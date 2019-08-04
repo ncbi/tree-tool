@@ -401,7 +401,7 @@ struct ThisApplication : Application
     {
       cerr << "Fixing discernibles ..." << endl;
       tree->setDiscernibles ();
-      Keep<bool> multFixed_old (tree->multFixed);
+      const Keep<bool> multFixed_old (tree->multFixed);
       tree->multFixed = false;
       tree->setDissimMult (! multFixed_old. get ());
     }
@@ -518,6 +518,8 @@ struct ThisApplication : Application
           if (! skip_len)            
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
+
+            tree->optimizeLenWhole ();
 
             const size_t lenArc_deleted = tree->optimizeLenArc ();
             cout << "# Nodes deleted = " << lenArc_deleted << endl;

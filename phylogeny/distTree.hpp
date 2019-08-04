@@ -140,6 +140,11 @@ inline Real dist_max ()
   // Solution of: dist2mult(dist_max) = epsilon
   // dist < dist_max() <=> !nullReal(dist2mult(dist))
 
+
+void dissimTransform (Real &target);
+  // Update: target
+
+
 inline bool at_dissim_boundary (Real dissim)
   { return     dissim_boundary >= dissim 
   	       && (dissim_boundary -  dissim) / dissim_boundary <= 0.05;  // PAR 
@@ -1381,6 +1386,7 @@ private:
 public:
 	  
   // Optimization	  
+  void optimizeLenWhole ();
 	size_t optimizeLenArc ();
 	  // Return: # nodes delete'd
 	  // Update: DTNode::len
