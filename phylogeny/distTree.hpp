@@ -1147,41 +1147,18 @@ public:
             bool loadNewLeaves,
 	          bool loadDissim,
 	          bool optimizeP);
-	  // Input: dataDirName: ends with '/': directory for incremental data structure:
-	  //          file name                 line/file format                              meaning
-	  //          ---------                 -----------------------------                 ----------------------------
-	  //          tree                                           
-	  //          dissim                    <obj1> <obj2> <dissimilarity>                 <ob1>, <ob2> are tree leaves
+	  // Input: dataDirName: ends with '/': incremental distance tree directory:
+	  //          temporary file name       line/file format                              meaning
+	  //          -------------------       -----------------------------                 ----------------------------
     //          leaf                      <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>
     //         [dissim.add[-req]]
-    //          new/                      <obj>                                         New objects to add to the tree
     //          search/<obj_new>/                                                       Initialization of search for <obj_new> location
     //        [ search/<obj_new>/dissim   <obj_new> <obj> <dissimilarity>        
     //          search/<obj_new>/leaf     = as in leaf 
     //         [search/<obj_new>/request  <obj_new> <obj>]                              Request to compute dissimilarity
     //        ]
-	  //          dissim_boundary           <number>                                      Boundary between two merged dissmilarity measures causing discontinuity
-	  //          hybridness_min            <number>                                      Min. hybridness, >1
-	  //          genogroup_barrier         <number>                                      Boundary of genogroup to find outliers
     //         [dissim.bad]               <obj1> <obj2> nan
-	  //         [outlier-genogroup]        <obj>                                         Genogroup outliers to delete
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
-	  //          version                   <natural number>
-	  //          hist/                     {delete,genogroup_table,outlier-genogroup,hybrid,hybrid_parent_pairs,leaf,makeDistTree,makeFeatureTree,tree,tree_quality_phen,unhybrid}.<version>   
-	  //                                                                                  Historic versions of data
-    //          grid_min                  <number>                                      Min. number of dissimilarity requests to be processed on a grid (e.g., 2000 for fast dissimilarities)
-	  //         [phen/]                                                                  Link to a directory with phenotypes for makeFeatureTree
-	  //          runlog                                                                  Invocations of distTree_inc_new.sh
-	  //         [stop]                     /dev/null                                     Stop distTree_inc_new.sh
-	  //         [finished]                 /dev/null                                     Iterations of distTree_inc_new.sh are finished
-    //        <Executables>:
-    //          db2unhybrid.sh            output: <Obj> list to move to new/
-    //          genogroup2db.sh           input: genogroup_table; output: outlier-genogroup
-    //          hybrid2db.sh              parameter: tab-delimited hybrid file (outpuf of makeDistTree -find_hybrids)
-    //          objects_in_tree.sh        executable with parameters: list of objects, 0/1/null
-    //          request2dissim.sh         executable with parameters: request, dissim.add, log
-    //          request_closest.sh        executable with parameter: object; output: pairs of objects to request dissimilarities for
-    //          qc.sh                     quality control
 	  //       <dissimilarity>: >= 0, < INF
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
@@ -1325,6 +1302,8 @@ public:
     { os << "PARAMETERS:" << endl;
       os << "# Threads: " << threads_max << endl;
       os << "Variance function: " << varianceTypeNames [varianceType] << endl;
+      if (! isNan (variancePower))
+        os << "Variance power: " << variancePower << endl;
       if (DistTree_sp::variance_min)
         os << "Min. variance: " << variance_min << endl;
       os << "Max. possible distance: " << dist_max () << endl;
@@ -1332,6 +1311,10 @@ public:
         os << "Dissimilarity power: " << dissim_power << endl;
       if (dissim_coeff != 1.0)
         os << "Dissimilarity coefficient: " << dissim_coeff << endl;
+    /*if (hybridness_min != 1.0)  // always > 1.0
+        os << "Min. hybridness: " << hybridness_min << endl;
+      if (! isNan (dissim_boundary))
+        os << "Dissimilarity boundary (for hybrids): " << dissim_boundary << endl;*/
       os << "Subgraph radius: " << areaRadius_std << endl;
     }
 	void printInput (ostream &os) const;
@@ -1388,10 +1371,13 @@ public:
 	  // Input: DTNode::len
 	  // Time: O(|path|)
 	void setDissimMult (bool usePrediction);
+	  // Input: multFixed
 	  // Output: Dissim::mult, absCriterion, mult_sum, target2_sum
 private:
   void setDissimMult (Dissim& dissim,
                       bool usePrediction);
+	  // Input: multFixed
+	  // Output: dissim::mult
 public:
 	  
   // Optimization	  
