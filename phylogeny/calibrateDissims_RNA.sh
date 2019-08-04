@@ -23,11 +23,15 @@ TMP=`mktemp`
 $THIS/../dm/dm2objs $INPUT | sort > $TMP.list
 ls $PHEN > $TMP.phen
 $THIS/../setMinus $TMP.list $TMP.phen > $TMP.delete
-wc -l $TMP.delete
+if [ -s $TMP.delete ]; then
+  wc -l $TMP.delete
+  $THIS/../dm/dm2subset $INPUT $TMP.delete -exclude > $TMP.dm
+  INPUT=$TMP.dm
+fi
 
 echo ""
 echo ""
-$THIS/makeDistTree  -threads 5  -data $INPUT  -dissim_attr $DISSIM  -delete $TMP.delete  \
+$THIS/makeDistTree  -threads 5  -data $INPUT  -dissim_attr $DISSIM \
   $DISSIM_PAR  -variance $VARIANCE_PAR \
   -optimize  -subgraph_iter_max 20  -noqual  -output_feature_tree $TMP.feature_tree
 
