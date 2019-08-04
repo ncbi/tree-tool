@@ -401,6 +401,9 @@ struct ThisApplication : Application
     {
       cerr << "Fixing discernibles ..." << endl;
       tree->setDiscernibles ();
+      Keep<bool> multFixed_old (tree->multFixed);
+      tree->multFixed = false;
+      tree->setDissimMult (! multFixed_old. get ());
     }
       
     if (qc_on)
@@ -536,7 +539,7 @@ struct ThisApplication : Application
           {
             cerr << "Optimizing topology: re-insert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: re-insert");
-            if (! variance_dissim)              
+            if (! tree->multFixed)              
          	    tree->setDissimMult (false); 
             tree->optimizeReinsert ();  
             predictionImproved = true;
