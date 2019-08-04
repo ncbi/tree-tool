@@ -411,7 +411,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
     
 quit:
   setAbsCriterion ();
-  ASSERT (! isNan (absCriterion));
+  ASSERT (absCriterion >= 0.0);
     
   return ok;
 }
