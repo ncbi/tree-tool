@@ -2319,7 +2319,7 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
 
 
 void Dissim::setPathDissimNums (size_t dissimNum,
-                             Tree::LcaBuffer &buf)
+                                Tree::LcaBuffer &buf)
 {
   ASSERT (valid ());
 
@@ -4177,6 +4177,7 @@ size_t DistTree::leafCluster2discernibles (const LeafCluster &leafCluster)
     ASSERT (! clusterNodes. empty ());
     if (clusterNodes. size () == 1)
       continue;
+      
     ASSERT (! DistTree_sp::variance_min);
     const Leaf* first = clusterNodes [0];
     ASSERT (first);
@@ -4190,6 +4191,12 @@ size_t DistTree::leafCluster2discernibles (const LeafCluster &leafCluster)
       leaf->discernible = false;  
       leaf->len = 0.0;  
       steiner->pathDissimNums << leaf->pathDissimNums;
+      for (const uint dissimNum : leaf->pathDissimNums)
+      {
+        Dissim& dissim = dissims [dissimNum];
+        if (dissim. indiscernible ())
+          dissim. mult = INF;
+      }
       n++;
     }
     ASSERT (! steiner->isTransient ());
@@ -4752,11 +4759,14 @@ bool DistTree::addDissim (Leaf* leaf1,
                           Real mult,
                           size_t type)
 {
-  ASSERT (leaf1);
-  ASSERT (leaf2);
   ASSERT (DistTree_sp::dissim_power > 0.0);
   ASSERT (DistTree_sp::dissim_coeff > 0.0);
+
   ASSERT (detachedLeaves. empty ());
+
+  ASSERT (leaf1);
+  ASSERT (leaf2);
+  IMPLY (! multFixed, mult == 1.0);  // mult will be set later
   IMPLY (! DistTree_sp::variance_min && ! target && dissimTypes. empty (), leaf1->getCollapsed (leaf2));  
 
   
@@ -5514,6 +5524,7 @@ void DistTree::setDissimMult (Dissim& dissim,
 
   if (! multFixed)
   {
+    // dissim.mult
     if (dissim. indiscernible ())
       dissim. mult = INF;
     else
@@ -7294,7 +7305,7 @@ void DistTree::removeLeaf (Leaf* leaf,
               && dissim. mult == INF
              )
           {
-            setDissimMult (dissim, false);
+            setDissimMult (dissim, false);  // !dissim.prediction
             ASSERT (dissim. mult < INF);
           }
         }
