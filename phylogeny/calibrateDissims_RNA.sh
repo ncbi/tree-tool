@@ -23,6 +23,7 @@ TMP=`mktemp`
 $THIS/../dm/dm2objs $INPUT | sort > $TMP.list
 ls $PHEN > $TMP.phen
 $THIS/../setMinus $TMP.list $TMP.phen > $TMP.delete
+wc -l $TMP.delete
 
 echo ""
 echo ""
