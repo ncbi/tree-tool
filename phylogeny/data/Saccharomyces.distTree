@@ -6,7 +6,7 @@ Subgraph radius: 5
 Root: by length
 
 Neighbor joining ...
-CHRON: Initial topology: 3 sec.
+CHRON: Initial topology: 2 sec.
 
 INPUT:
 # Leaves: 501
@@ -15,36 +15,37 @@ INPUT:
 # Dissimilarities: 125250 (100.00 %)
 Dissimilarities factor: 40.21
 Ave. dissimilarity = 0.263527
-absCriterion = 4.9129e+02  Error density = 12.403 %
+Criterion = 4.9129e+02  Error density = 12.403 %
 
+Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 61
+# Nodes deleted = 79
 Optimizing arc lengths at each node ...
-# Nodes deleted = 1
-absCriterion = 2.5765e+02  Error density = 8.949 %
-CHRON: Initial arc lengths: 282 sec.
+# Nodes deleted = 4
+Criterion = 2.5756e+02  Error density = 8.948 %
+CHRON: Initial arc lengths: 198 sec.
 
 Optimizing topology: subgraphs ...
 # Hybrids: 42
-absCriterion = 6.9198e+01  Error density = 5.057 %
+Criterion = 6.9292e+01  Error density = 5.061 %
 
 # Hybrids: 0
-absCriterion = 6.8790e+01  Error density = 5.048 %
+Criterion = 6.8952e+01  Error density = 5.053 %
 
 # Iterations of subgraph optimization: 2
-absCriterion = 6.8783e+01  Error density = 5.048 %
-CHRON: Topology optimization: local: 421 sec.
+Criterion = 6.8923e+01  Error density = 5.053 %
+CHRON: Topology optimization: local: 274 sec.
 
 Ave. radius: 0.560
 
 # Criterion outliers: 3
-absCriterion = 6.6991e+01  Error density = 4.993 %
+Criterion = 6.6988e+01  Error density = 4.993 %
 
 # Deformation outliers: 14
-absCriterion = 6.5838e+01  Error density = 4.960 %
+Criterion = 6.5836e+01  Error density = 4.960 %
 
 OUTPUT:
-absCriterion = 6.5838e+01  Error density = 4.960 %
+Criterion = 6.5836e+01  Error density = 4.960 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

@@ -81,6 +81,7 @@ $THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -opti
   | grep -v '^CHRON: ' > prot-identical_comm.distTree
 diff prot-identical_comm.criterion_outliers data/prot-identical_comm.criterion_outliers
 rm prot-identical_comm.criterion_outliers
+$THIS/../sort.sh prot-identical_comm.deformation_outliers
 diff prot-identical_comm.deformation_outliers data/prot-identical_comm.deformation_outliers
 rm prot-identical_comm.deformation_outliers
 diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
@@ -165,6 +166,7 @@ diff prot-identical_comm2.dissim_coeff data/prot-identical_comm2.dissim_coeff
 rm prot-identical_comm2.dissim_coeff
 diff prot-identical_comm2.criterion_outliers data/prot-identical_comm2.criterion_outliers
 rm prot-identical_comm2.criterion_outliers
+$THIS/../sort.sh prot-identical_comm2.deformation_outliers
 diff prot-identical_comm2.deformation_outliers data/prot-identical_comm2.deformation_outliers
 rm prot-identical_comm2.deformation_outliers
 diff prot-identical_comm2.hybrids data/prot-identical_comm2.hybrids

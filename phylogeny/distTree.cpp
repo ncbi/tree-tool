@@ -5546,6 +5546,8 @@ void DistTree::setDissimMult (Dissim& dissim,
       const Real scale = (dissim. type == NO_INDEX ? 1.0 : dissimTypes [dissim. type]. scaleCoeff);
       ASSERT (scale > 0.0);
       dissim. mult = dist2mult ((usePrediction ? dissim. prediction : dissim. target) / scale) / sqr (scale);
+      if (dissim. mult == INF)  
+        dissim. mult = dist2mult (epsilon);  // PAR
       ASSERT (dissim. mult < INF);
     }
   }
@@ -6066,6 +6068,14 @@ struct Star
       ASSERT (lenSum >= 0.0);
     }
    
+  size_t liveNodes () const
+    { size_t n = 0;
+      for (const DiGraph::Node* node : arcNodes)
+        if (static_cast <const DTNode*> (node) -> len)
+          n++;
+      return n;
+    }
+   
   static bool strictlyLess (const Star &a,
                             const Star &b)
     {
@@ -6107,6 +6117,8 @@ size_t DistTree::optimizeLenNode ()
   Tree::LcaBuffer buf;
   for (const Star& star : stars)
   {
+    if (star. liveNodes () <= 2)
+      continue;
     const VectorPtr<DiGraph::Node>& arcNodes = star. arcNodes;
 
     Subgraph subgraph (*this);
@@ -6176,6 +6188,8 @@ size_t DistTree::optimizeLenNode ()
         PRINT (star. center->getParent ());
         FFOR (size_t, attrNum, arcNodes. size ())
           PRINT (lr. beta [attrNum]);
+        OFStream ofs ("optimizeLenNode");
+        starDs. saveText (ofs);
       }
       prog (absCriterion2str ()); 
     }
@@ -6698,7 +6712,8 @@ void DistTree::optimizeLargeSubgraphs ()
                     st_best = st;
                 }
           }
-          ASSERT (st_best);
+          if (! st_best)
+            throw runtime_error (FUNC "Too few interior nodes");  // Try optimize anyway ??
           cuts << st_best;
           // Node::leaves
           const size_t leaves_best = st_best->leaves;
