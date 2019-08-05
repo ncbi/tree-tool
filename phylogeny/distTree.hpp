@@ -1386,7 +1386,8 @@ private:
 public:
 	  
   // Optimization	  
-  void optimizeLenWhole ();
+  bool optimizeLenWhole ();
+    // Rerturn: success
 	size_t optimizeLenArc ();
 	  // Return: # nodes delete'd
 	  // Update: DTNode::len

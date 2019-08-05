@@ -5897,27 +5897,34 @@ void DistTree::quartet2arcLen ()
 
 
 
-void DistTree::optimizeLenWhole ()
+bool DistTree::optimizeLenWhole ()
 {
   if (verbose (1))
     cout << "Optimizing arc lengths for the whole tree ..." << endl;
     
   node2deformationPair. clear ();
   
+  // beta
   Real covar = 0.0;
   Real predict2 = 0.0;
   for (const Dissim& dissim : dissims)  
     if (dissim. validMult ())
     {
+      if (dissim. target < 0.0)
+        return false;
       covar    += dissim. mult * dissim. target * dissim. prediction;
       predict2 += dissim. mult * sqr (dissim. prediction);
     }
   if (! predict2)
     throw runtime_error ("No arcs");
   const Real beta = covar / predict2;
+  if (isNan (beta))
+    return false;
+  if (! beta)
+    return false;
   ASSERT (beta > 0.0);
   ASSERT (beta < INF);
-    
+      
   for (DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <DTNode*> (node);
@@ -5939,7 +5946,9 @@ void DistTree::optimizeLenWhole ()
   if (Progress::enabled ())
     cerr << absCriterion2str () << endl;
 
-  QC_ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
+  ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
+  
+  return true;
 }
 
 
