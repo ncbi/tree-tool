@@ -5910,11 +5910,11 @@ bool DistTree::optimizeLenWhole ()
   for (const Dissim& dissim : dissims)  
     if (dissim. validMult ())
     {
-      if (dissim. target < 0.0)
-        return false;
       covar    += dissim. mult * dissim. target * dissim. prediction;
       predict2 += dissim. mult * sqr (dissim. prediction);
     }
+  if (covar <= 0.0)
+    return false;
   if (! predict2)
     throw runtime_error ("No arcs");
   const Real beta = covar / predict2;
