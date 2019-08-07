@@ -2597,7 +2597,7 @@ bool Image::apply ()
     if (! contains (boundary2new, node))
     {
       DTNode* dtNode = const_static_cast <DTNode*> (node);
-      ASSERT (! dtNode->stable);
+    //ASSERT (! dtNode->stable);
       dtNode->isolate ();
       dtNode->detach ();
       wholeTree. toDelete << dtNode;
