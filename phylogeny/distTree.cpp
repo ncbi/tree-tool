@@ -1564,17 +1564,17 @@ void Subgraph::qc () const
 
 
 
-void Subgraph::reserve (size_t radius)
+void Subgraph::reserve (uint radius)
 {
   ASSERT (radius);
   
-  const size_t boundary_size = 2 * (size_t) powInt (2, (uint) radius);  // PAR
+  const size_t boundary_size = Tree::radius2boundarySize (radius);  // PAR
   area.     reserve (boundary_size * 2); 
   boundary. reserve (boundary_size);
   
-  const Real path_size_max = 2 * log2 ((Real) tree. name2leaf. size ());
+  const Real path_size_max = 2.0 * log2 ((Real) tree. name2leaf. size ());
   const Prob area_prob = min (1.0, (Real) boundary_size / (Real) tree. name2leaf. size ());
-  const Prob p = 1 - pow (1 - area_prob, path_size_max);
+  const Prob p = 1.0 - pow (1.0 - area_prob, path_size_max);
   ASSERT (isProb (p));
   dissimNums. reserve ((size_t) ((Real) tree. dissims. size () * p)); 
 }
@@ -2414,7 +2414,8 @@ void Image::processSmall (const DTNode* center_arg,
   rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
   ASSERT (area. containsFast (center));
-  ASSERT (boundary. size () <= boundary_size_max_std);
+  if (boundary. size () > boundary_size_max_std)
+    throw runtime_error ("Boundary size > " + to_string (boundary_size_max_std));
 #ifndef NDEBUG
   for (const auto& it : new2old)
   {
@@ -2596,6 +2597,7 @@ bool Image::apply ()
     if (! contains (boundary2new, node))
     {
       DTNode* dtNode = const_static_cast <DTNode*> (node);
+      ASSERT (! dtNode->stable);
       dtNode->isolate ();
       dtNode->detach ();
       wholeTree. toDelete << dtNode;
@@ -4997,6 +4999,7 @@ void DistTree::qc () const
 
 
   // Global ??
+  QC_ASSERT (radius2boundarySize (areaRadius_std) <= boundary_size_max_std);
   QC_ASSERT (DistTree_sp::variance_min >= 0.0);
   QC_ASSERT (! isNan (DistTree_sp::variancePower) == (DistTree_sp::varianceType == varianceType_pow));
   QC_IMPLY (! isNan (DistTree_sp::variancePower), DistTree_sp::variancePower >= 0.0);
@@ -6202,6 +6205,7 @@ size_t DistTree::optimizeLenNode ()
           PRINT (lr. beta [attrNum]);
         OFStream ofs ("optimizeLenNode");
         starDs. saveText (ofs);
+        // 2 arcs of an equal length, and all the other arcs have a positive length close to 0: why ??
       }
       prog (absCriterion2str ()); 
     }

@@ -552,8 +552,7 @@ struct Tree : DiGraph
     { return root->getSubtreeLength (); }
   double getAveArcLength () const;
   struct Patristic
-  {
-    const TreeNode* leaf1 {nullptr};
+  { const TreeNode* leaf1 {nullptr};
     const TreeNode* leaf2 {nullptr};  
       // != nullptr
       // leaf1->getName() < leaf2->getName()
@@ -582,6 +581,12 @@ struct Tree : DiGraph
         return root->getInteriorHeight ();
       return 0;
     }
+  static size_t radius2boundarySize (uint radius) 
+    { return radius 
+               ? 3 * (size_t) powInt (2, radius - 1) 
+               : 1; 
+    }
+    // Requires: binary tree
   double getBifurcatingInteriorBranching () const;
     // For unrooted tree
     // Return: if !root->isInteriotType() then -1 else between 1 and 2

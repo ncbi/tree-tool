@@ -60,10 +60,10 @@ constexpr streamsize dissimDecimals = 6;
 constexpr streamsize absCriterionDecimals = 4;  // Small for stability
 constexpr streamsize relCriterionDecimals = 3;
 constexpr uint areaRadius_std = 5;  
-constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
+constexpr uint areaDiameter_std = 2 * areaRadius_std; 
 constexpr uint subgraphDepth = areaRadius_std;  
-constexpr uint boundary_size_max_std = 500;  // was: 100
-constexpr size_t sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
+constexpr uint boundary_size_max_std = 500;  
+constexpr uint sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
 constexpr Prob rareProb = 0.01; 
 constexpr size_t dissim_progress = 1e5;
 constexpr Real dissimCoeffProd_delta = 1e-6; 
@@ -761,7 +761,7 @@ public:
   
   // Usage:
 //set area, boundary
-  void reserve (size_t radius);
+  void reserve (uint radius);
   void removeIndiscernibles ();
     // Update: area, boundary
   void finish ();
