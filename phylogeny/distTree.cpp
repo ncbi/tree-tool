@@ -6878,7 +6878,10 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius,
       {
         steiners++;
         if (newSt->stable)
+        {
           stables++;
+          IMPLY (! unstableOnly && newSt != root, static_cast <const DTNode*> (newSt->getParent ()) -> stable);
+        }
         else
           if (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
           {
