@@ -1,10 +1,13 @@
-# Interior nodes (with root) = 3 (max = 3)
+# Objects = 4
+# Discernible objects = 4
+# Interior nodes (with root) = 3
 # Interior undirected arcs = 1
 Tree length = 15.000
 Min. discernible leaf length = 1.000000e+00
 Ave. arc length = 2.500
 Interior height = 1
 Bifurcating interior branching = 2.000
+Max. degree = 3
 # Frequent children interior nodes = 3
 # Frequent children leaves = 4
 # Frequent interior nodes = 2

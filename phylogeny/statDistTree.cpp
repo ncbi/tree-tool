@@ -94,13 +94,15 @@ struct ThisApplication : Application
     tree. qc ();     
       
     
-    // Statistics 
-    {
-      tree. setFrequentChild (rareProb);  
-      tree. setFrequentDegree (rareProb); 
+    tree. setFrequentChild (rareProb);  
+    tree. setFrequentDegree (rareProb); 
 
+    {
       const ONumber on (cout, relCriterionDecimals, false);
-      cout << "# Interior nodes (with root) = " << tree. countInteriorNodes () << " (max = " << tree. getDiscernibles (). size () - 1 << ')' << endl;
+      cout << "# Objects = " << tree. name2leaf. size () << endl;
+      const size_t discernibles = tree. getDiscernibles (). size ();
+      cout << "# Discernible objects = " << discernibles << endl;
+      cout << "# Interior nodes (with root) = " << tree. countInteriorNodes () << endl;
       cout << "# Interior undirected arcs = " << tree. countInteriorUndirectedArcs () << endl;
       cout << "Tree length = " << tree. getLength () << endl;
       {
@@ -115,14 +117,17 @@ struct ThisApplication : Application
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
       // #dissimilarities = 2 #discernibles log_2(#discernibles) #sparsing_leaves
 
-      {      
+      { 
+        size_t degree_max = 0;     
         size_t freqChildrenInteriors = 0;
         size_t freqChildrenLeaves    = 0;
         size_t stableInteriors       = 0;
         size_t stableLeaves          = 0;
         for (const DiGraph::Node* node : tree. nodes)
         {
-          const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
+          const DTNode* tn = static_cast <const DTNode*> (node);
+          if (tn->childrenDiscernible ())
+            maximize (degree_max, tn->getDegree ());
           if (tn->frequentChild)
           {
             if (tn->isInteriorType ())
@@ -140,6 +145,8 @@ struct ThisApplication : Application
              )
             stableLeaves++;
         }
+        
+        cout << "Max. degree = " << degree_max << endl;
         
         // Depend on root ??
         cout << "# Frequent children interior nodes = " << freqChildrenInteriors << endl;
