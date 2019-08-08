@@ -9,9 +9,15 @@ WarningCPPFLAGS = \
   -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
   -Woverloaded-virtual -pedantic -Wparentheses -Wpointer-arith -Wsequence-point -Wshadow -Wunused \
   -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion -Wuseless-cast 
-ifneq ($(SGE_CELL),ncbi)
+
+ifdef SGE_CELL
+  ifneq ($(SGE_CELL),ncbi)
+    WarningCPPFLAGS =
+  endif
+else
   WarningCPPFLAGS =
 endif
+
 SimpleCPPFLAGS = -std=gnu++14 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
   # -Werror 
   # -Wunreachable-code  # Wrongly reports virtual functions
@@ -20,6 +26,7 @@ SimpleCPPFLAGS = -std=gnu++14 -pthread -malign-double -fno-math-errno -fdiagnost
 	# -ffloat-store  # slows down two-fold
 	# -ffinite-math-only  # NAN problem
 # Disable debugging
+
 OptCPPFLAGS = $(SimpleCPPFLAGS) -O3 
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -O3 -g
 
