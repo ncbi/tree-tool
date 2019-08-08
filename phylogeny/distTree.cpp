@@ -2459,7 +2459,7 @@ void Image::processSmall (const DTNode* center_arg,
       tree->optimizeLenArc ();
       tree->optimizeLenNode ();  
       if (subgraph. large () && areaRadius > 1)
-        tree->optimizeSmallSubgraphs (areaRadius / 2, false); 
+        tree->optimizeSmallSubgraphs (areaRadius / 2); 
       else
         tree->optimizeWholeIter (20, string ());  // PAR
     }
@@ -6676,7 +6676,7 @@ void DistTree::optimizeLargeSubgraphs ()
 
   if (name2leaf. size () <= large_min)  
   {
-    optimizeSmallSubgraphs (areaRadius_std, false);
+    optimizeSmallSubgraphs (areaRadius_std);
     return;
   }
   
@@ -6754,7 +6754,7 @@ void DistTree::optimizeLargeSubgraphs ()
     }
     if (cuts. empty ()) 
     {
-      optimizeSmallSubgraphs (areaRadius_std, false);
+      optimizeSmallSubgraphs (areaRadius_std);
       return;
     }
     ASSERT (boundary. empty ());
@@ -6846,7 +6846,7 @@ void DistTree::optimizeLargeSubgraphs ()
   {
     if (! subDepth)
       cerr << "Optimizing cut nodes ..." << endl;
-    optimizeSmallSubgraphs (areaRadius_std, true);  // PAR
+    optimizeSmallSubgraphsUnstable (areaRadius_std);  // PAR
     qc ();
     qcPredictionAbsCriterion ();
   }
@@ -6854,16 +6854,14 @@ void DistTree::optimizeLargeSubgraphs ()
 
 
 
-void DistTree::optimizeSmallSubgraphs (uint areaRadius,
-                                       bool unstableOnly)
+void DistTree::optimizeSmallSubgraphs (uint areaRadius)
 {
   ASSERT (areaRadius >= 1);
   
   node2deformationPair. clear ();
 
-  if (! unstableOnly)
-    for (DiGraph::Node* node : nodes)
-      static_cast <DTNode*> (node) -> stable = false;
+  for (DiGraph::Node* node : nodes)
+    static_cast <DTNode*> (node) -> stable = false;
 
   // sort nodes: cf. optimizeLenNode() ??
 
@@ -6880,7 +6878,7 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius,
         if (newSt->stable)
         {
           stables++;
-          IMPLY (! unstableOnly && newSt != root, static_cast <const DTNode*> (newSt->getParent ()) -> stable);
+          IMPLY (newSt != root, static_cast <const DTNode*> (newSt->getParent ()) -> stable);
         }
         else
           if (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
@@ -6896,16 +6894,40 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius,
       optimizeSmallSubgraph (center, areaRadius);
     }
     prog (to_string (stables) + "/" + to_string (steiners) + " " + absCriterion2str ());
+    // The number of un-stable DTNode's decreases at least by 1
   }
+}
 
-#if 0
-  // Almost no improvement
-  optimizeLenWhole ();
-  optimizeLenArc (); 
-  optimizeLenNode ();  
-  if (verbose (1))
-    reportErrors (cout);
-#endif
+
+
+void DistTree::optimizeSmallSubgraphsUnstable (uint areaRadius)
+{
+  ASSERT (areaRadius >= 1);
+  
+  node2deformationPair. clear ();
+
+  Progress prog;
+  for (;;)
+  {
+    const Steiner* center = nullptr;
+    for (const DiGraph::Node* node : nodes)
+      if (const Steiner* newSt = static_cast <const DTNode*> (node) -> asSteiner ())
+        if (   ! newSt->stable
+            && (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
+           )
+        {
+          center = newSt;
+          break;
+        }
+    if (! center)
+      break;
+    {
+      Unverbose unv;
+      optimizeSmallSubgraph (center, areaRadius);
+    }
+    prog (absCriterion2str ());
+    // The number of un-stable DTNode's decreases at least by 1
+  }
 }
 
 

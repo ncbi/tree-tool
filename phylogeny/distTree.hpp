@@ -1446,10 +1446,13 @@ public:
 	  // Time: ~ O(threads_max n log^3(n))
 
 private:
-	void optimizeSmallSubgraphs (uint areaRadius,
-	                             bool unstableOnly);
+	void optimizeSmallSubgraphs (uint areaRadius);
 	  // Invokes: optimizeSmallSubgraph()
-	  // Time: O(p log^2(n) * Time(optimizeSmallSubgraph))  
+	  // Time: O(p log^2(n) * Time(optimizeSmallSubgraph))
+  void optimizeSmallSubgraphsUnstable (uint areaRadius);
+    // Input:: DTNode::stable
+	  // Invokes: optimizeSmallSubgraph()
+	  // Time: (number of !DTNode::stable node's) * Time(optimizeSmallSubgraph))
 	void optimizeSmallSubgraph (const DTNode* center,
 	                            uint areaRadius);
   void delayDeleteRetainArcs (DTNode* node);
