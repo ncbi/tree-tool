@@ -1,6 +1,11 @@
 include MakeRules
-CPPFLAGS=$(OptCPPFLAGS) 
-#CPPFLAGS=$(DebugCPPFLAGS)
+CPPFLAGS = $(OptCPPFLAGS) 
+#CPPFLAGS = $(DebugCPPFLAGS)
+
+ifdef AT_NCBI
+  CPPFLAGS += -Werror
+endif
+
 
 
 
