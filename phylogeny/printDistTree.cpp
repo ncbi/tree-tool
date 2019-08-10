@@ -112,8 +112,10 @@ struct ThisApplication : Application
         ASSERT (! name_new. empty ());
         if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
           var_cast (leaf) -> name = name_new;
+      #if 0
         else
           throw runtime_error ("Object '" + name_old + "' does not exist");
+      #endif
       }
     }
 
