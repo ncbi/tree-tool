@@ -64,7 +64,7 @@ rm -rf data/randomTree.dir/
 $THIS/../dm/mdsTree.sh data/randomTree dist 2 &> /dev/null
 $THIS/makeDistTree  -qc  -input_tree data/randomTree.dir/  -data data/randomTree  -variance lin  -output_tree random-output.tree > /dev/null
 $THIS/makeDistTree  -qc  -input_tree random-output.tree    -data data/randomTree  -variance lin  -optimize | grep -v '^CHRON: ' > randomTree.makeDistTree
-diff randomTree.makeDistTree data/randomTree.makeDistTree
+$THIS/distTree_compare_criteria.sh randomTree.makeDistTree data/randomTree.makeDistTree
 echo "Verbose ..."
 $THIS/makeDistTree  -qc  -input_tree random-output.tree    -data data/randomTree  -variance lin  -verbose 2 &> /dev/null
 rm -r data/randomTree.dir/
@@ -181,6 +181,8 @@ $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -variance linExp 
   -delete_criterion_outliers Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
   -delete_deformation_outliers Saccharomyces2.deformation_outliers  -deformation_outlier_num_max 1 \
   > Saccharomyces2.distTree
+$THIS/../rm_col.sh Saccharomyces2.hybrid 10
+$THIS/../sort.sh Saccharomyces2.hybrid
 diff Saccharomyces2.hybrid data/Saccharomyces2.hybrid
 $THIS/hybrid2list.sh Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
 rm Saccharomyces2.hybrid
