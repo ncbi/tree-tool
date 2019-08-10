@@ -1,10 +1,3 @@
-AT_NCBI = 
-ifdef SGE_CELL
-  ifeq ($(SGE_CELL),ncbi)
-    AT_NCBI = 1
-  endif
-endif
-
 WarningCPPFLAGS =
 ifdef AT_NCBI
   WarningCPPFLAGS = \
