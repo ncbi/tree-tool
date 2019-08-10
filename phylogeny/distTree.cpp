@@ -78,30 +78,6 @@ void dissimTransform (Real &target)
 
 
 
-// SteinerHash
-
-namespace
-{
-  
-Rand steinerHashRand (seed_global);
-
-}
-
-
-struct SteinerHash
-{
-  size_t shift {0};
-  SteinerHash ()
-    : shift (steinerHashRand. get ((ulong) Rand::max_))
-    {}
-  size_t operator () (const Steiner* st) const
-    { const hash<const Steiner*> h;
-      return h (st) + shift; 
-    }
-};
-  
-
-
 
 // Neighbor
 
@@ -2569,7 +2545,7 @@ bool Image::apply ()
   
   
   DistTree& wholeTree = var_cast (subgraph. tree);
-  IMPLY (wholeTree. unstableCut, ! wholeTree. unstableCut->empty ());
+  const bool unstableCutP = ! wholeTree. unstableCut. empty ();
   
 
   DiGraph::Node2Node boundary2new (DiGraph::reverse (new2old));
@@ -2625,11 +2601,11 @@ bool Image::apply ()
       dtNode->isolate ();
       dtNode->detach ();
       wholeTree. toDelete << dtNode;
-      if (wholeTree. unstableCut)
+      if (unstableCutP)
         if (! dtNode->stable)
           if (const Steiner* st = dtNode->asSteiner ())
           {
-            wholeTree. unstableCut->erase (st);
+            wholeTree. unstableCut. erase (st);
             wholeTree. unstableProcessed++;
           }
     #ifndef NDEBUG
@@ -2705,18 +2681,18 @@ bool Image::apply ()
   if (center && contains (boundary2new, center))
   {
     ASSERT (center->graph == & wholeTree);
-    if (wholeTree. unstableCut)
+    if (unstableCutP)
       if (! center->stable)
         if (const Steiner* st = center->asSteiner ())
         {
-          wholeTree. unstableCut->erase (st);
+          wholeTree. unstableCut. erase (st);
           wholeTree. unstableProcessed++;
         }
     var_cast (center) -> stable = true;
   }
   
   // wholeTree.unstableCut
-  if (wholeTree. unstableCut)
+  if (unstableCutP)
     for (const Tree::TreeNode* node_ : subgraph. boundary)
     {
       const DTNode* node = static_cast <const DTNode*> (node_);
@@ -2726,7 +2702,7 @@ bool Image::apply ()
         ASSERT (node->getParent ());
         ASSERT (static_cast <const DTNode*> (node->getParent ()) -> stable);
         if (const Steiner* st = node->asSteiner ())
-          wholeTree. unstableCut->insert (st);
+          wholeTree. unstableCut. insert (st);
       }
     }
 
@@ -6910,26 +6886,26 @@ void DistTree::optimizeLargeSubgraphs ()
 void DistTree::optimizeSmallSubgraphs (uint areaRadius)
 {
   ASSERT (areaRadius >= 1);
-  ASSERT (! unstableCut);
+  ASSERT (unstableCut. empty ());
   
   node2deformationPair. clear ();
 
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = false;
     
-  unstableCut = new unordered_set<const Steiner*, SteinerHash> ();
-  unstableCut->rehash (name2leaf. size ());
-  unstableCut->insert (static_cast <const Steiner*> (root));
+  unstableCut. reset (name2leaf. size ());
+  unstableCut. insert (static_cast <const Steiner*> (root));
 
   Progress prog;
   const size_t unstables_max = nodes. size () - name2leaf. size ();
   unstableProcessed = 0;
   size_t unstables_prev = numeric_limits<size_t>::max ();  // valid if qc_on
-  while (! unstableCut->empty ())
+  while (! unstableCut. empty ())
   {
     size_t unstables = 0;  // valid if qc_on
     if (qc_on)
     {
+      unstableCut. qc ();
       size_t inCut = 0;
       for (const DiGraph::Node* node_ : nodes)
       {
@@ -6942,15 +6918,15 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius)
         }
         IMPLY (node != root && node->stable, static_cast <const DTNode*> (node->getParent ()) -> stable);
       }
-      for (const Steiner* st : *unstableCut)
+      for (const Steiner* st : unstableCut. getVec ())
       {
         ASSERT (! st->stable);
         ASSERT (! st->getParent () || static_cast <const DTNode*> (st->getParent ()) -> stable);
       }
-      ASSERT (inCut == unstableCut->size ());
-      ASSERT (unstableCut->size () <= unstables);
+      ASSERT (inCut == unstableCut. size ());
+      ASSERT (unstableCut. size () <= unstables);
     }
-    const Steiner* center = * unstableCut->begin ();
+    const Steiner* center = unstableCut. getVec (). getRandom (rand);
     {
       Unverbose unv;
       optimizeSmallSubgraph (center, areaRadius);
@@ -6965,10 +6941,7 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius)
     }
   }
   ASSERT (unstableProcessed == unstables_max);
-  ASSERT (unstableCut->empty ());
-  
-  delete unstableCut;
-  unstableCut = nullptr;
+  ASSERT (unstableCut. empty ());
 }
 
 

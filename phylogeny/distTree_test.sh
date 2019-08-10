@@ -186,6 +186,7 @@ $THIS/../sort.sh Saccharomyces2.hybrid
 diff Saccharomyces2.hybrid data/Saccharomyces2.hybrid
 $THIS/hybrid2list.sh Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
 rm Saccharomyces2.hybrid
+$THIS/../rm_col.sh Saccharomyces2.hybrid_parent_pairs 13
 $THIS/../sort.sh Saccharomyces2.hybrid_parent_pairs
 diff Saccharomyces2.hybrid_parent_pairs data/Saccharomyces2.hybrid_parent_pairs
 rm Saccharomyces2.hybrid_parent_pairs

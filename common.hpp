@@ -1045,6 +1045,8 @@ public:
 	ulong get (ulong max);
     // Return: in 0 .. max - 1
     // Input: 0 < max <= max_
+	ulong get ()
+	  { return get ((ulong) max_); }
   double getProb ()
     { return (double) get ((ulong) max_) / ((double) max_ - 1); }
     // Return: [0,1]
@@ -1481,6 +1483,8 @@ public:
     	}
     	searchSorted = false;
     }
+  const T& getRandom (Rand &rand) const
+    { return (*this) [rand. get (P::size ())]; }
   void randomOrder ()
 		{ Rand rand (seed_global);
 			for (T &t : *this)
@@ -2251,6 +2255,65 @@ template <typename T, typename U /* : T */>
           return false;
       return true;
     }
+
+
+
+template <typename T>  
+struct RandomSet
+// Set of T* objects with an O(1) random access
+// Requires: mutable size_t T::rs_index_
+//           T objects can be in only one RandomSet object
+{
+private:
+  Vector<const T*> vec;
+  unordered_set<const T*> us;
+  // Same elements, !nullptr
+public:
+  
+  RandomSet () = default;
+  void reset (size_t num)
+    { vec. clear ();  vec. reserve (num);
+      us.  clear ();  us. rehash (num);
+    }
+  void qc () const
+    { if (! qc_on)
+        return;
+      if (vec. size () != us. size ())
+        throw logic_error ("RandomSet: qc");
+    }
+    
+  // Time: O(1)
+  bool empty () const
+    { return vec. empty (); }
+  size_t size () const
+    { return vec. size (); }
+  bool insert (const T* t)
+    { if (! t)
+        throw logic_error ("RandomSet: insert");
+      if (us. insert (t). second)
+      { t->rs_index_ = vec. size ();
+        vec << t;
+        return true;
+      }
+      return false;
+    }
+  bool erase (const T* t)
+    { if (! t)
+        return false;
+      if (vec. empty ())
+        return false;
+      if (us. erase (t))
+      { vec. back () -> rs_index_ = t->rs_index_;
+        vec [t->rs_index_] = vec. back ();
+        vec. pop_back ();
+        return true;
+      }
+      return false;
+    }
+  const Vector<const T*>& getVec () const
+    { return vec; }
+};
+  
 
 
 

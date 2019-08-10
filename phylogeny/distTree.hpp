@@ -534,6 +534,12 @@ private:
 struct Steiner : DTNode
 // Steiner node
 {
+private:
+  friend RandomSet<Steiner>;
+  mutable size_t rs_index_ {0};
+public:
+  
+  
 	Steiner (DistTree &tree,
 	         Steiner* parent_arg,
 	         Real len_arg);
@@ -1139,9 +1145,10 @@ public:
     // Requires: topology is unchanged
 
 private:
-  unordered_set<const Steiner*,SteinerHash>* unstableCut {nullptr};
+  RandomSet<Steiner> unstableCut;
     // !Steiner::stable, but getParent()->stable
   size_t unstableProcessed {0};
+    // For Progress
 public:
 
 
