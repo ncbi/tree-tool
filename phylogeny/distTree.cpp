@@ -78,6 +78,30 @@ void dissimTransform (Real &target)
 
 
 
+// SteinerHash
+
+namespace
+{
+  
+Rand steinerHashRand (seed_global);
+
+}
+
+
+struct SteinerHash
+{
+  size_t shift {0};
+  SteinerHash ()
+    : shift (steinerHashRand. get ((ulong) Rand::max_))
+    {}
+  size_t operator () (const Steiner* st) const
+    { const hash<const Steiner*> h;
+      return h (st) + shift; 
+    }
+};
+  
+
+
 
 // Neighbor
 
@@ -495,10 +519,10 @@ void TriangleParentPair::print (ostream &os) const
   td << getBest (). child->name << p1. leaf->name << p2. leaf->name 
      << triangles. size () << p1. classSize << p2. classSize
      << hybridness_ave << getBest (). parents [0]. dissim << getBest (). parents [1]. dissim
-     << (int) dissimType
      << getBest (). child_hybrid 
      << getBest (). parents [0]. hybrid 
-     << getBest (). parents [1]. hybrid;
+     << getBest (). parents [1]. hybrid
+     << (int) dissimType;
   os << td. str () << endl;
 }
 
@@ -2459,7 +2483,7 @@ void Image::processSmall (const DTNode* center_arg,
       tree->optimizeLenArc ();
       tree->optimizeLenNode ();  
       if (subgraph. large () && areaRadius > 1)
-        tree->optimizeSmallSubgraphs (areaRadius / 2); 
+        tree->optimizeSmallSubgraphs (areaRadius / 2);  // PAR
       else
         tree->optimizeWholeIter (20, string ());  // PAR
     }
@@ -2543,8 +2567,9 @@ bool Image::apply ()
     
   subgraph. qc ();
   
-
+  
   DistTree& wholeTree = var_cast (subgraph. tree);
+  IMPLY (wholeTree. unstableCut, ! wholeTree. unstableCut->empty ());
   
 
   DiGraph::Node2Node boundary2new (DiGraph::reverse (new2old));
@@ -2597,10 +2622,16 @@ bool Image::apply ()
     if (! contains (boundary2new, node))
     {
       DTNode* dtNode = const_static_cast <DTNode*> (node);
-    //ASSERT (! dtNode->stable);
       dtNode->isolate ();
       dtNode->detach ();
       wholeTree. toDelete << dtNode;
+      if (wholeTree. unstableCut)
+        if (! dtNode->stable)
+          if (const Steiner* st = dtNode->asSteiner ())
+          {
+            wholeTree. unstableCut->erase (st);
+            wholeTree. unstableProcessed++;
+          }
     #ifndef NDEBUG
       deleted++;
     #endif
@@ -2674,8 +2705,30 @@ bool Image::apply ()
   if (center && contains (boundary2new, center))
   {
     ASSERT (center->graph == & wholeTree);
+    if (wholeTree. unstableCut)
+      if (! center->stable)
+        if (const Steiner* st = center->asSteiner ())
+        {
+          wholeTree. unstableCut->erase (st);
+          wholeTree. unstableProcessed++;
+        }
     var_cast (center) -> stable = true;
   }
+  
+  // wholeTree.unstableCut
+  if (wholeTree. unstableCut)
+    for (const Tree::TreeNode* node_ : subgraph. boundary)
+    {
+      const DTNode* node = static_cast <const DTNode*> (node_);
+      ASSERT (node->graph == & wholeTree);
+      if (! node->stable)
+      {
+        ASSERT (node->getParent ());
+        ASSERT (static_cast <const DTNode*> (node->getParent ()) -> stable);
+        if (const Steiner* st = node->asSteiner ())
+          wholeTree. unstableCut->insert (st);
+      }
+    }
 
 
   if (verbose (1))
@@ -6132,7 +6185,7 @@ size_t DistTree::optimizeLenNode ()
   Tree::LcaBuffer buf;
   for (const Star& star : stars)
   {
-    if (star. liveNodes () <= 2)
+    if (star. liveNodes () <= 2)  
       continue;
     const VectorPtr<DiGraph::Node>& arcNodes = star. arcNodes;
 
@@ -6857,45 +6910,65 @@ void DistTree::optimizeLargeSubgraphs ()
 void DistTree::optimizeSmallSubgraphs (uint areaRadius)
 {
   ASSERT (areaRadius >= 1);
+  ASSERT (! unstableCut);
   
   node2deformationPair. clear ();
 
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = false;
-
-  // sort nodes: cf. optimizeLenNode() ??
+    
+  unstableCut = new unordered_set<const Steiner*, SteinerHash> ();
+  unstableCut->rehash (name2leaf. size ());
+  unstableCut->insert (static_cast <const Steiner*> (root));
 
   Progress prog;
-  for (;;)
+  const size_t unstables_max = nodes. size () - name2leaf. size ();
+  unstableProcessed = 0;
+  size_t unstables_prev = numeric_limits<size_t>::max ();  // valid if qc_on
+  while (! unstableCut->empty ())
   {
-    size_t steiners = 0;
-    size_t stables  = 0;
-    const Steiner* center = nullptr;
-    for (const DiGraph::Node* node : nodes)
-      if (const Steiner* newSt = static_cast <const DTNode*> (node) -> asSteiner ())
+    size_t unstables = 0;  // valid if qc_on
+    if (qc_on)
+    {
+      size_t inCut = 0;
+      for (const DiGraph::Node* node_ : nodes)
       {
-        steiners++;
-        if (newSt->stable)
+        const DTNode* node = static_cast <const DTNode*> (node_);
+        if (! node->stable && node->asSteiner ())
         {
-          stables++;
-          IMPLY (newSt != root, static_cast <const DTNode*> (newSt->getParent ()) -> stable);
+          unstables++;
+          if (! node->getParent () || static_cast <const DTNode*> (node->getParent ()) -> stable)
+            inCut++;
         }
-        else
-          if (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
-          {
-            if (! center)
-              center = newSt;
-          }
+        IMPLY (node != root && node->stable, static_cast <const DTNode*> (node->getParent ()) -> stable);
       }
-    if (! center)
-      break;
+      for (const Steiner* st : *unstableCut)
+      {
+        ASSERT (! st->stable);
+        ASSERT (! st->getParent () || static_cast <const DTNode*> (st->getParent ()) -> stable);
+      }
+      ASSERT (inCut == unstableCut->size ());
+      ASSERT (unstableCut->size () <= unstables);
+    }
+    const Steiner* center = * unstableCut->begin ();
     {
       Unverbose unv;
       optimizeSmallSubgraph (center, areaRadius);
-    }
-    prog (to_string (stables) + "/" + to_string (steiners) + " " + absCriterion2str ());
+    }    
+    ASSERT (unstableProcessed <= unstables_max);
+    prog (to_string (unstableProcessed) + " / " + to_string (unstables_max) + " " + absCriterion2str ());
     // The number of un-stable DTNode's decreases at least by 1
+    if (qc_on)
+    {
+      ASSERT (unstables_prev > unstables);
+      unstables_prev = unstables;
+    }
   }
+  ASSERT (unstableProcessed == unstables_max);
+  ASSERT (unstableCut->empty ());
+  
+  delete unstableCut;
+  unstableCut = nullptr;
 }
 
 
@@ -6911,12 +6984,12 @@ void DistTree::optimizeSmallSubgraphsUnstable (uint areaRadius)
   {
     const Steiner* center = nullptr;
     for (const DiGraph::Node* node : nodes)
-      if (const Steiner* newSt = static_cast <const DTNode*> (node) -> asSteiner ())
-        if (   ! newSt->stable
-            && (! newSt->getParent () || static_cast <const DTNode*> (newSt->getParent ()) -> stable)
+      if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
+        if (   ! st->stable
+            && (! st->getParent () || static_cast <const DTNode*> (st->getParent ()) -> stable)
            )
         {
-          center = newSt;
+          center = st;
           break;
         }
     if (! center)

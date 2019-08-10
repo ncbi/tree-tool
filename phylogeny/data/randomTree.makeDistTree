@@ -24,14 +24,14 @@ Criterion = 2.4334e+02  Error density = 17.817 %
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 3
-Criterion = 8.3501e+00  Error density = 3.372 %
+Criterion = 8.3500e+00  Error density = 3.372 %
 
 Ave. radius: 3.967
 
 OUTPUT:
-Criterion = 8.3501e+00  Error density = 3.372 %
+Criterion = 8.3500e+00  Error density = 3.372 %
 
 Relative epsilon2_0 = 0.00 %
-Mean residual = -0.00
+Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.07
 

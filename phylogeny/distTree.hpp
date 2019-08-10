@@ -1074,6 +1074,10 @@ struct Image : Nocopy
 
 ///////////////////////////////////////////////////////////////////////////
 
+struct SteinerHash;
+
+
+
 struct DistTree : Tree
 // Of DTNode*
 // Least-squares distance tree
@@ -1115,6 +1119,7 @@ public:
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NaN};
     // = L2LinearNumPrediction::absCriterion  
+
 private:
   size_t leafNum {0};
     // For Leaf::index
@@ -1132,6 +1137,12 @@ public:
   };
   unordered_map<const DTNode*,DeformationPair> node2deformationPair;
     // Requires: topology is unchanged
+
+private:
+  unordered_set<const Steiner*,SteinerHash>* unstableCut {nullptr};
+    // !Steiner::stable, but getParent()->stable
+  size_t unstableProcessed {0};
+public:
 
 
   // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attributes dissimAttrName and multAttrName
