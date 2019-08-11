@@ -2260,25 +2260,22 @@ template <typename T, typename U /* : T */>
 
 template <typename T>  
 struct RandomSet
-// Set of T* objects with an O(1) random access
-// Requires: mutable size_t T::rs_index_
-//           T objects can be in only one RandomSet object
 {
 private:
-  Vector<const T*> vec;
-  unordered_set<const T*> us;
-  // Same elements, !nullptr
+  Vector<T> vec;
+  unordered_map<T,size_t/*index in vec*/> um;
+  // Same elements
 public:
   
   RandomSet () = default;
   void reset (size_t num)
     { vec. clear ();  vec. reserve (num);
-      us.  clear ();  us. rehash (num);
+      um.  clear ();  um. rehash (num);
     }
   void qc () const
     { if (! qc_on)
         return;
-      if (vec. size () != us. size ())
+      if (vec. size () != um. size ())
         throw logic_error ("RandomSet: qc");
     }
     
@@ -2287,31 +2284,28 @@ public:
     { return vec. empty (); }
   size_t size () const
     { return vec. size (); }
-  bool insert (const T* t)
-    { if (! t)
-        throw logic_error ("RandomSet: insert");
-      if (us. insert (t). second)
-      { t->rs_index_ = vec. size ();
-        vec << t;
-        return true;
-      }
-      return false;
-    }
-  bool erase (const T* t)
-    { if (! t)
+  bool insert (const T &t)
+    { if (contains (um, t))
         return false;
-      if (vec. empty ())
-        return false;
-      if (us. erase (t))
-      { vec. back () -> rs_index_ = t->rs_index_;
-        vec [t->rs_index_] = vec. back ();
-        vec. pop_back ();
-        return true;
-      }
-      return false;
+      um [t] = vec. size ();;
+      vec << t;
+      return true;
     }
-  const Vector<const T*>& getVec () const
+  bool erase (const T &t)
+    { if (vec. empty ())
+        return false;
+      const auto it = um. find (t);
+      if (it == um. end ())
+        return false;
+      um [vec. back ()] = it->second;
+      vec [it->second] = vec. back ();
+      vec. pop_back ();
+      um. erase (t);
+      return true;
+    }
+  const Vector<T>& getVec () const
     { return vec; }
+    // For a random access
 };
   
 
