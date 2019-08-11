@@ -38,6 +38,8 @@ rm $INC/dissim.raw
 echo ""
 echo "data.dm ..."
 $THIS/../dm/pairs2attr2 $INC/dissim 1 "cons" 6 -distance > data.dm
+echo "nan|inf:"
+grep -wci 'nan\|inf' data.dm
 
 $THIS/../dm/dm2objs data | sort > $INC/tree.list
 if [ $DB == 1 ]; then
