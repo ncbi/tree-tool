@@ -18,7 +18,13 @@ echo "$N $REQ"
 GRID_MIN=`cat $INC/grid_min`
 if [ $N -le $GRID_MIN ]; then 
   $INC/request2dissim.sh $REQ $OUT $OUT.log &> /dev/null
-  rm $OUT.log
+  if [ -e $OUT.log ]; then
+    if [ -s $OUT.log ]; then
+      head $OUT.log
+      exit 1
+    fi
+    rm $OUT.log
+  fi
 else
 	mkdir $INC/dr	
 	$THIS/../splitList $REQ $GRID_MIN $INC/dr
