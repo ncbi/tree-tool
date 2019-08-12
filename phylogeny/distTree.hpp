@@ -1383,6 +1383,8 @@ private:
 public:
   size_t setDiscernibles ();
     // Invokes: getIndiscernibles(), leafCluster2discernibles()
+  size_t fixTransients ();
+    // Return: number of transient nodes deleted
   static Real path2prediction (const VectorPtr<TreeNode> &path);
     // Return: >= 0
 	  // Input: DTNode::len

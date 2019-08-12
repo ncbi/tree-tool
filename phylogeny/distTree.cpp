@@ -4348,6 +4348,40 @@ size_t DistTree::setDiscernibles ()
 
 
 
+size_t DistTree::fixTransients ()
+{ 
+  ASSERT (! subDepth);
+
+  size_t n = 0;
+  for (;;)
+  {
+    bool found = false;
+    Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());
+    insertAll (nodeVec, nodes);
+    for (DiGraph::Node* node_ : nodeVec)
+    {
+      DTNode* node = static_cast <DTNode*> (node_);
+      if (   node->isTransient ()
+          || (node->isLeaf () && node->asSteiner ())
+         )
+      {
+        delayDeleteRetainArcs (node);
+        found = true;
+        n++;
+      }
+    }
+    if (! found)
+      break;
+  }
+  toDelete. deleteData ();
+  
+  qcPaths ();
+  
+  return n;
+}
+
+
+
 void DistTree::cleanTopology ()
 {
   Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());

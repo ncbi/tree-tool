@@ -90,7 +90,9 @@ struct ThisApplication : Application
 	//addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
-	  addFlag ("fix_discernibles", "Set the indiscernible flag of objects");
+
+	  addFlag ("fix_discernible", "Set the indiscernible flag of objects");
+	  addFlag ("fix_transient", "Remove transient nodes (nodes with one child)");
 	  	
 	  addKey ("delete_criterion_outliers", "Delete outliers by " + criterionOutlier_definition + " and save them in the indicated file");  
 	  addKey ("criterion_outlier_num_max", "Max. number of outliers ordered by " + criterionOutlier_definition + " descending to delete; 0 - all", "0");
@@ -237,7 +239,9 @@ struct ThisApplication : Application
 	//const bool   reinsert_iter       = getFlag ("reinsert_iter");
 		const bool   skip_topology       = getFlag ("skip_topology");
 	  const bool   new_only            = getFlag ("new_only");
-	  const bool   fix_discernibles    = getFlag ("fix_discernibles");
+
+	  const bool   fix_discernible     = getFlag ("fix_discernible");
+	  const bool   fix_transient       = getFlag ("fix_transient");
 		
 		const bool   reroot              = getFlag ("reroot");		
 		const bool   root_topological    = getFlag ("root_topological");
@@ -326,10 +330,11 @@ struct ThisApplication : Application
       throw runtime_error ("-skip_topology requires -optimize");
     if (new_only && optimize)
       throw runtime_error ("-new_only excludes -optimize");
-    if (fix_discernibles && dataFName. empty ())
-      throw runtime_error ("-fix_discernibles requires dissimilarities");
-    if (fix_discernibles && variance_min)
-      throw runtime_error ("-fix_discernibles requires zero -variance_min");
+      
+    if (fix_discernible && dataFName. empty ())
+      throw runtime_error ("-fix_discernible requires dissimilarities");
+    if (fix_discernible && variance_min)
+      throw runtime_error ("-fix_discernible requires zero -variance_min");
       
     if (! delete_hybrids. empty () && ! optimizable)
       throw runtime_error ("-delete_hybrids requires dissimilarities");
@@ -397,14 +402,17 @@ struct ThisApplication : Application
       }
     }
     
-    if (fix_discernibles)
+    if (fix_discernible)
     {
-      cerr << "Fixing discernibles ..." << endl;
+      cerr << "Fixing discernible ..." << endl;
       tree->setDiscernibles ();
       const Keep<bool> multFixed_old (tree->multFixed);
       tree->multFixed = false;
       tree->setDissimMult (! multFixed_old. get ());
     }
+    
+    if (fix_transient)
+      tree->fixTransients ();
       
     if (qc_on)
     {
