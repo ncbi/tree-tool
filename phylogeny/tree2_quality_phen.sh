@@ -25,9 +25,14 @@ echo "$T1 vs. $T2"
 
 $THIS/tree2obj.sh $T1 > $TMP.list1
 $THIS/tree2obj.sh $T2 > $TMP.list2
-
 wc -l $TMP.list1
 wc -l $TMP.list2
+
+# QC
+uniq $TMP.list1 > $TMP.list1-uniq
+uniq $TMP.list2 > $TMP.list2-uniq
+diff $TMP.list1 $TMP.list1-uniq
+diff $TMP.list2 $TMP.list2-uniq
 
 if [ "$TARGET" ]; then
   $THIS/../setIntersect.sh $TMP.list1 $TARGET 0 > $TMP.list1-good 
