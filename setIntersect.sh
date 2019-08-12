@@ -15,7 +15,6 @@ if [ $3 == 1 ]; then
   NUM="-number"
 fi
 
-
 TMP=`mktemp` 
 
 $THIS/setMinus $NUM $1 $2 > $TMP
