@@ -5986,6 +5986,10 @@ bool DistTree::optimizeLenWhole ()
   }
   if (! predict2)
     throw runtime_error ("No arcs");
+  if (   covar    > 1.0 / epsilon
+      && predict2 > 1.0 / epsilon
+     )
+    return false; 
   const Real beta = covar / predict2;
   if (isNan (beta))
     return false;
@@ -6736,18 +6740,21 @@ void DistTree::optimizeLargeSubgraphs ()
   constexpr size_t large_min = 1000;  // PAR  
   ASSERT (large_min > 1);
 
+  const size_t largeParts = name2leaf. size () / large_min;
 
-  if (name2leaf. size () <= large_min)  
+  if (! largeParts)  
   {
     optimizeSmallSubgraphs (areaRadius_std);
     return;
   }
-  
-  
-  size_t parts_max = threads_max;
+    
+  size_t parts_max = threads_max;  
   if (! threadsUsed)
-    parts_max = (size_t) ceil (6.0 * log ((Real) name2leaf. size () / (Real) large_min)) + 1;  // PAR  
+    parts_max = (size_t) ceil (6.0 * log ((Real) largeParts + 0.5)) + 1;  // PAR  
+  minimize (parts_max, largeParts + 1);
   ASSERT (parts_max >= 2);
+
+  
   VectorPtr<Steiner> boundary;  boundary. reserve (parts_max);   // isTransient()
   {
     VectorPtr<Steiner> cuts;  cuts. reserve (parts_max);

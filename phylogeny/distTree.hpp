@@ -1354,12 +1354,12 @@ public:
       return sqrt ((1.0 - r) / r);   
     }
     // Requires: interpretation <= linear variance of dissimilarities  
-  string absCriterion2str () const
-    { return real2str (absCriterion, absCriterionDecimals); }
+  string absCriterion2str (Real unoptimizable = 0.0) const
+    { return real2str (absCriterion - unoptimizable, absCriterionDecimals); }
   void reportErrors (ostream &os,
                      Real unoptimizable = 0.0) const
     { const ONumber on (os, relCriterionDecimals, false);  
-      os << "Criterion = " << real2str (absCriterion  - unoptimizable, absCriterionDecimals)
+      os << "Criterion = " << absCriterion2str (unoptimizable)
          << "  Error density = " << getErrorDensity (unoptimizable) * 100 << " %"
          << endl;
     }    
@@ -1752,6 +1752,8 @@ public:
     // q = q_max
     // Output: nodeAbsCriterion_old: in subgraph, restricted by q_max
     // Invokes: optimize()
+    // Time: O(n + p log(n) / n)
+    // Cumulative time for all DTNode's: O(n log(n) + p log(n)) = O(p log(n))
 private:
   void process (bool init,
                 const string &dissimFName,
