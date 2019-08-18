@@ -7,5 +7,8 @@ if [ $# -ne 1 ]; then
 fi
 
 
+INC=`dirname $0`
+
+
 exit 0
 

@@ -1,1 +1,1 @@
-hash_requestClosest.sh $1 CDS
+Genome_hash_requestClosest.sh $1 CDS

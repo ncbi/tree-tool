@@ -2,11 +2,15 @@
 source bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
-  echo "#1: Incremental distance tree directory"
-  echo "Requires: Time: O(n log^3(n))"
+  echo "#1: go"
   exit 1
 fi
-INC=$1
+
+
+INC=`dirname $0`
+
+
+#set -x
 
 
 TMP=`mktemp`
@@ -21,6 +25,8 @@ sqsh-ms -S PROTEUS  -D uniColl  -U anyone  -P allowed  << EOT | sed 's/|$//1' | 
           and in_tree = 1;
   go -m bcp  
 EOT
+#wc -l $TMP.genome-tree 
+#wc -l $TMP.tree
 diff $TMP.genome-tree $TMP.tree
 
 
@@ -35,6 +41,8 @@ sqsh-ms -S PROTEUS  -D uniColl  -U anyone  -P allowed  << EOT | sed 's/|$//1' | 
           and in_tree is null;
   go -m bcp  
 EOT
+#wc -l $TMP.genome-new 
+#wc -l $TMP.new
 diff $TMP.genome-new $TMP.new
 
 

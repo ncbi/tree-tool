@@ -9,25 +9,5 @@ if [ $# -ne 1 ]; then
 fi
 
 
-TMP=`mktemp`
-#echo $TMP
-
-
-tree2obj.sh $THIS/tree > $TMP.list
-
-grep "^>" $THIS/seq.fa | sed 's/^>//1' | sed 's/ .*$//1' | sort > $TMP.id
-
-set +o errexit
-uniq -c $TMP.id | grep -v '^ *1 ' > /dev/null
-S=$?
-set -o errexit
-if [ $S -ne 1 ]; then
-  exit 1
-fi
-
-diff $TMP.list $TMP.id
-
-
-rm $TMP*
-
-
+INC=`dirname $0`
+LocusQC.sh $INC 2 "16S"
