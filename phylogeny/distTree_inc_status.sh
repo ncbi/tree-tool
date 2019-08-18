@@ -1,12 +1,14 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 1 ]; then
+if [ $# -ne 2 ]; then
   echo "Print criterion statistics for an incremental distance tree"
   echo "#1: distance tree data"
+  echo "#2: number of latest versions to report"
   exit 1
 fi
 INC=$1
+HIST=$2
 
 
 TMP=`mktemp`
@@ -54,10 +56,10 @@ echo "Dissimilarities per object: $PERCENT % of maximum"
 
 echo ""
 grep '^OUTPUT:' -A 1 -n $INC/hist/makeDistTree*.* | grep -v '\-qc\.' | sed 's|^'$INC'/hist/makeDistTree[^.]*\.||1' | grep -v ':OUTPUT:' | grep -v '^--$' | sed 's/-[0-9]\+-/ /1' | sort -n -k 1 > $TMP
-tail -5 $TMP
+tail -$HIST $TMP
 
 echo ""
-tail -5 $INC/runlog
+tail -$HIST $INC/runlog
 
 set +o errexit
 grep ' V !' $INC/hist/makeFeatureTree-tree1.* 1> $TMP.grep 2> /dev/null
@@ -65,7 +67,7 @@ set -o errexit
 if [ -s $TMP.grep ]; then
   sed 's|^'$INC'/hist/makeFeatureTree-tree1\.||1' $TMP.grep | sed 's/:#/ #/1' | sort -k 1 -n > $TMP 
   echo ""
-  tail -5 $TMP
+  tail -$HIST $TMP
 fi
 
 set +o errexit
@@ -75,7 +77,7 @@ S=$?
 set -o errexit
 if [ $S == 0 ]; then
   echo ""
-  tail -5 $TMP
+  tail -$HIST $TMP
 fi
 
 set +o errexit
@@ -85,7 +87,7 @@ S=$?
 set -o errexit
 if [ $S == 0 ]; then
   echo ""
-  tail -5 $TMP
+  tail -$HIST $TMP
 fi
 
 set +o errexit
@@ -95,7 +97,7 @@ S=$?
 set -o errexit
 if [ $S == 0 ]; then
   echo ""
-  tail -5 $TMP
+  tail -$HIST $TMP
 fi
 
 
