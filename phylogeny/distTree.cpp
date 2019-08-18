@@ -6249,6 +6249,11 @@ size_t DistTree::optimizeLenNode ()
     ASSERT (lr. beta. size () == arcNodes. size ());
     FFOR (size_t, attrNum, lr. beta. size ())
       lr. beta [attrNum] = static_cast <const DTNode*> (arcNodes [attrNum]) -> len;
+    // For "!!optimizeLenNode1" ??
+    const auto beta_init (lr. beta);
+    lr. setAbsCriterion ();
+    const auto absCriterion_lr_init = lr. absCriterion;
+    //
     const bool solved = lr. solveUnconstrainedFast (nullptr, true, 10, 0.01);  // PAR
     lr. qc ();
   
@@ -6263,11 +6268,16 @@ size_t DistTree::optimizeLenNode ()
       { 
         // ??
         cout << "!!optimizeLenNode1" << endl;  
+        PRINT (absCriterion_lr_init);
         PRINT (absCriterion);
         PRINT (absCriterion_old);
         PRINT (subDepth);
         PRINT (star. center);
         PRINT (star. center->getParent ());
+        cout << "beta_init:" << endl;
+        FFOR (size_t, attrNum, arcNodes. size ())
+          PRINT (beta_init [attrNum]);
+        cout << "beta result:" << endl;
         FFOR (size_t, attrNum, arcNodes. size ())
           PRINT (lr. beta [attrNum]);
         OFStream ofs ("optimizeLenNode");
