@@ -5,7 +5,7 @@ if [ $# -ne 2 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: incremental distance tree directory"
   echo "#2: process new objects completely (0/1)"
-  echo "Time: O(n log^4(n))+ ??"
+  echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
@@ -61,7 +61,6 @@ echo "version: $VER"
 
 echo "new/ -> search/ ..."
 
-# Time: O(n) 
 OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 echo "# Objects: $OBJS"  
 
@@ -85,7 +84,6 @@ rm $INC/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-# Time: O(n log(n))+
 REQ=`ls $INC/search | wc -l`
 if [ $REQ -gt 20 ]; then  # PAR
   $THIS/../grid_wait.sh 1
@@ -99,7 +97,7 @@ fi
 ITER=0
 ITER_MAX=`echo $OBJS | awk '{printf "%d", log($1)+3};'`
 while [ $ITER -le $ITER_MAX ]; do
-  # Time: O(log^3(n)) per one new object
+  # Time: O(log^4(n)) per one new object
   
   N=`ls $INC/search/ | wc -l`
   if [ $N == 0 ]; then
@@ -177,7 +175,7 @@ if [ -e $INC/outlier-genogroup ]; then
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
 
-# Time: O(n log^3(n)) 
+# Time: O(n log^4(n)) 
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 2 \

@@ -21,7 +21,7 @@ echo ""
 
 if [ 1 == 1 ]; then  
 if [ $NEW_PAR -gt 0 ]; then
-  # Time: O(n log^4(n))+
+  # Time: O(n log^4(n))
   while [ 1 == 1 ]; do
     if [ -e $INC/stop ]; then
       echo ""
@@ -60,7 +60,6 @@ echo ""
 echo "Final optimization ..."
 VER=`cat $INC/version`
 echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
-# Time: O(n log(n)) 
 cp $INC/tree $INC/hist/tree.$VER
 gzip $INC/hist/tree.$VER
 #
