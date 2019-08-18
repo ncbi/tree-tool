@@ -5,9 +5,9 @@ if [ $# -ne 4 ]; then
   echo "Optimize a distance tree and evaluate"
   echo "#1: incremental distance tree directory"
   echo "#2: number of optimization iterations"
-  echo "#3: -variance parameters etc."
+  echo "#3: parameters after -variance."
   echo "#4: output tree"
-  echo "Time: O(n log^4(n))"
+  echo "Time: O(n log^5(n))"
   exit 1
 fi
 INC=$1
