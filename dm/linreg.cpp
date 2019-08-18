@@ -80,7 +80,15 @@ struct ThisApplication : Application
     
     L2LinearNumPrediction lr (sm, sp, *targetAttr);
     lr. qc ();
+  #if 1
     lr. solveUnconstrained ();
+  #else
+    FFOR (size_t, attrNum, lr. beta. size ())
+      lr. beta [attrNum] = 1.0;  // PAR
+    const bool solved = lr. solveUnconstrainedFast (nullptr, true/*??*/, 10, 0.01);  // PAR
+    if (! solved)
+      cout << "Not solved" << endl;
+  #endif    
     lr. qc ();
     cout << "Abs. Error = " << lr. absCriterion2Error () << endl;
     Real scatter = NaN;

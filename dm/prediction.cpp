@@ -433,11 +433,11 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
   setAbsCriterion ();
   const Real absCriterion_old = absCriterion;
   
-  if (beta. size () /*p*/ <= 2 * maxIter)  
+  if (beta. size () /*p*/ <= 2 * maxIter)  // PAR
   {
     if (verbose ())
       cout << "Direct solution ..." << endl;
-    solveUnconstrained ();   // Time = O(p^2 n / 2)
+    solveUnconstrained ();   // Time = O(p^2 n)
     if (! isNan (absCriterion))
     {
       solved = true;
