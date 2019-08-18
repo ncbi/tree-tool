@@ -72,6 +72,7 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
 	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
+	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
 	  addKey ("variance_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
 	  
 	  // Processing
@@ -85,9 +86,9 @@ struct ThisApplication : Application
 	  addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
-	  addFlag ("reinsert", "Re-insert subtrees before subgraph optimizations");
-	//addFlag ("reinsert_orig_weights", "Use original weights in the re-insert optimization");  
-	//addFlag ("reinsert_iter", "Re-insert subtrees at each iteration of subgraph optimization");
+	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations");
+	//addFlag ("reinsert_orig_weights", "Use original weights in the reinsert optimization");  
+	//addFlag ("reinsert_iter", "Reinsert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 
@@ -223,6 +224,7 @@ struct ThisApplication : Application
 	               variancePower       = str2real (getArg ("variance_power"));    // Global
 	               variance_min        = str2real (getArg ("variance_min"));      // Global
 	  const bool   variance_dissim     = getFlag ("variance_dissim");
+	  const bool   reinsert_variance_dist = getFlag ("reinsert_variance_dist");
 	               
 		const string deleteFName         = getArg ("delete");
 		const bool   check_delete        = getFlag ("check_delete");
@@ -547,16 +549,22 @@ struct ThisApplication : Application
 
           if (reinsert)
           {
-            cerr << "Optimizing topology: re-insert ..." << endl;
-            const Chronometer_OnePass cop ("Topology optimization: re-insert");
-            if (! tree->multFixed)              
-         	    tree->setDissimMult (false); 
+            cerr << "Optimizing topology: reinsert ..." << endl;
+            const Chronometer_OnePass cop ("Topology optimization: reinsert");
+            if (! tree->multFixed && ! reinsert_variance_dist)
+            {
+         	    tree->setDissimMult (false);   // may damage topology for big variance functions
+              cerr << tree->absCriterion2str () << endl; 
+         	  }
             tree->optimizeReinsert ();  
             predictionImproved = true;
           }
           
           if (predictionImproved)
+          {
          		tree->setDissimMult (true);
+            cerr << tree->absCriterion2str () << endl; 
+         	}
           
           if (! skip_topology)
           {
