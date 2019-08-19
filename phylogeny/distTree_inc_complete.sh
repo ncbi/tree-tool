@@ -39,7 +39,9 @@ echo ""
 echo "data.dm ..."
 $THIS/../dm/pairs2attr2 $INC/dissim 1 "cons" 6 -distance > data.dm
 echo "nan|inf:"
+set +o errexit
 grep -wci 'nan\|inf' data.dm
+set -o errexit
 
 $THIS/../dm/dm2objs data | sort > $INC/tree.list
 if [ $DB == 1 ]; then
