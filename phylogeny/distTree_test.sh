@@ -122,7 +122,9 @@ diff Saccharomyces.criterion_outliers data/Saccharomyces.criterion_outliers
 rm Saccharomyces.criterion_outliers
 diff Saccharomyces.deformation_outliers data/Saccharomyces.deformation_outliers
 rm Saccharomyces.deformation_outliers
-$THIS/distTree_compare_criteria.sh Saccharomyces.distTree data/Saccharomyces.distTree
+if [ $USER == "brovervv" ]; then
+  $THIS/distTree_compare_criteria.sh Saccharomyces.distTree data/Saccharomyces.distTree
+fi
 rm Saccharomyces.distTree
 
 echo ""
