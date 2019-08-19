@@ -1,6 +1,5 @@
 #!/bin/bash
 THIS=`dirname $0`
-source bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Find closest objects approximately"
   echo "#1: input object"
