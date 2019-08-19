@@ -57,7 +57,7 @@ const string deformationOutlier_definition ("max. squared residual to min(dissim
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Optimize topology and compute statistics for a least-squares distance tree")
+	: Application ("Optimize or modify a least-squares distance tree")
 	{
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
