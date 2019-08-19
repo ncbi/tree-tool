@@ -43,6 +43,7 @@ set +o errexit
 grep -wci 'nan\|inf' data.dm
 set -o errexit
 
+echo ""
 $THIS/../dm/dm2objs data | sort > $INC/tree.list
 if [ $DB == 1 ]; then
   $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
