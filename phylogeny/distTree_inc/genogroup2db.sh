@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ $# -ne 1 ]; then
-  echo "Record genogroup outliers in the database"
-  echo "#1: File genogroup_table"
+  echo "Record genogroup outliers in a database"
+  echo "#1: file genogroup_table"
   exit 1
 fi
 IN=$1
