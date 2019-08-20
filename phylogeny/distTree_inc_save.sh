@@ -14,7 +14,7 @@ OUT=$2
 rm -rf $OUT
 mkdir $OUT
 for F in `ls $INC/`; do
-  if [ -d $INC/$F ]; then
+  if [ -d $INC/$F -o $F == "tree" -o $F == "dissim" ]; then
     continue;
   fi
 
