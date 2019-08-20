@@ -84,14 +84,9 @@ rm $INC/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-REQ=`ls $INC/search | wc -l`
-if [ $REQ -gt 20 ]; then  # PAR
-  $THIS/../grid_wait.sh 1
-	$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
-	$THIS/../qstat_wait.sh 2000 1
-else
-	$THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f"
-fi
+$THIS/../grid_wait.sh 1
+$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
+$THIS/../qstat_wait.sh 2000 1
 
 
 ITER=0
@@ -226,8 +221,8 @@ if [ "$HYBRIDNESS_MIN" != 0 ]; then
   echo ""
   echo "Hybrid ..."
 	$THIS/distTree_inc_hybrid.sh $INC 
-  echo "Unhybrid ..."
-  $THIS/distTree_inc_unhybrid.sh $INC 
+ #echo "Unhybrid ..."
+ #$THIS/distTree_inc_unhybrid.sh $INC 
 fi
 
 # Must be the last database change in this script

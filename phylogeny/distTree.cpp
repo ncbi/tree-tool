@@ -408,6 +408,8 @@ void TriangleParentPair::finish (const DistTree &tree,
     }
   }
   
+
+#if 0
   // Singletons
   bool allSingletons = false;
   if (triangles. size () == 1)
@@ -442,6 +444,7 @@ void TriangleParentPair::finish (const DistTree &tree,
   }
       
   // Undecided cases ??
+#endif
 }
 
 
