@@ -72,8 +72,8 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
     echo ""
     echo "Hybrid ..."
   	$THIS/distTree_inc_hybrid.sh $INC 
-    echo "Unhybrid ..."
-    $THIS/distTree_inc_unhybrid.sh $INC 
+   #echo "Unhybrid ..."
+   #$THIS/distTree_inc_unhybrid.sh $INC 
   fi
 fi
 
@@ -96,8 +96,8 @@ if [ $DB == 1 ]; then
     echo ""
     echo "Hybrid ..."
   	$THIS/distTree_inc_hybrid.sh $INC
-    echo "Unhybrid ..."
-    $THIS/distTree_inc_unhybrid.sh $INC
+   #echo "Unhybrid ..."
+   #$THIS/distTree_inc_unhybrid.sh $INC
   fi
 fi
 
