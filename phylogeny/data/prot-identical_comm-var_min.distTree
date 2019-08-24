@@ -15,55 +15,55 @@ INPUT:
 # Dissimilarities: 42195 (100.00 %)
 Dissimilarities factor: 25.56
 Ave. dissimilarity = 0.191845
-Criterion = 1.8111e+01  Error density = 2.952 %
+Abs. criterion = 1.8111e+01  Rel. criterion = 2.951 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 17
 Optimizing arc lengths at each node ...
 # Nodes deleted = 4
-Criterion = 7.2358e+00  Error density = 1.866 %
+Abs. criterion = 7.2358e+00  Rel. criterion = 1.865 %
 
 Optimizing topology: subgraphs ...
 # Hybrids: 0
-Criterion = 6.5161e+00  Error density = 1.764 %
+Abs. criterion = 6.5163e+00  Rel. criterion = 1.763 %
 
 # Hybrids: 0
-Criterion = 6.3857e+00  Error density = 1.746 %
+Abs. criterion = 6.3905e+00  Rel. criterion = 1.746 %
 
 # Hybrids: 0
-Criterion = 6.2342e+00  Error density = 1.725 %
+Abs. criterion = 6.2287e+00  Rel. criterion = 1.724 %
 
 # Hybrids: 0
-Criterion = 6.2124e+00  Error density = 1.722 %
+Abs. criterion = 6.2112e+00  Rel. criterion = 1.722 %
 
 # Hybrids: 0
-Criterion = 6.2091e+00  Error density = 1.722 %
+Abs. criterion = 6.2088e+00  Rel. criterion = 1.721 %
 
 # Hybrids: 0
-Criterion = 6.2085e+00  Error density = 1.722 %
+Abs. criterion = 6.2084e+00  Rel. criterion = 1.721 %
 
 # Hybrids: 0
-Criterion = 6.2082e+00  Error density = 1.722 %
+Abs. criterion = 6.2082e+00  Rel. criterion = 1.721 %
 
 # Hybrids: 0
-Criterion = 6.2081e+00  Error density = 1.722 %
+Abs. criterion = 6.2081e+00  Rel. criterion = 1.721 %
 
 # Hybrids: 0
-Criterion = 6.2081e+00  Error density = 1.722 %
+Abs. criterion = 6.2081e+00  Rel. criterion = 1.721 %
 
 # Iterations of subgraph optimization: 9
-Criterion = 6.2081e+00  Error density = 1.722 %
+Abs. criterion = 6.2081e+00  Rel. criterion = 1.721 %
 
 Ave. radius: 0.456
 
 # Criterion outliers: 4
-Criterion = 4.8597e+00  Error density = 1.542 %
+Abs. criterion = 4.8597e+00  Rel. criterion = 1.542 %
 
 # Deformation outliers: 0
 
 OUTPUT:
-Criterion = 4.8597e+00  Error density = 1.542 %
+Abs. criterion = 4.8597e+00  Rel. criterion = 1.542 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

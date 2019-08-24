@@ -582,8 +582,7 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
 
 static const string lenS               ("len");
 static const string err_densityS       ("err_density");
-static const string pathsS             ("paths");
-static const string rel_errorS         ("rel_error");
+static const string normCriterionS     ("norm_criterion");
 static const string deformationS       ("deformation");
 static const string deformation_criterionS ("deformation_criterion");
 
@@ -619,11 +618,6 @@ void DTNode::qc () const
   }
   
   QC_IMPLY (! isNan (len), len >= 0);    
-  if (! isNan (len) && paths && ! (errorDensity >= 0))
-  {
-    cout << len << ' ' << paths << ' ' << errorDensity << endl;
-    ERROR;
-  }
   QC_ASSERT (! contains (name, '\''));
 }
 
@@ -635,13 +629,12 @@ void DTNode::saveContent (ostream& os) const
     const ONumber oLen (os, dissimDecimals, true);
     os << lenS << "=" << len;
   }
+  
   const ONumber oNum (os, relCriterionDecimals, true);  // PAR
-  if (paths)
-    os << "  " << err_densityS << "=" << errorDensity << "  " << pathsS << "=" << paths;
-  if (! isNan (absCriterion_ave))
-    os << "  " << rel_errorS << "=" << getRelCriterion ();
-  else if (! isNan (relCriterion))
-    os << "  " << rel_errorS << "=" << relCriterion;
+
+  if (! isNan (errorDensity))
+    os << "  " << err_densityS << "=" << errorDensity;
+    
 	if (maxDeformationDissimNum != dissims_max)
 	{
 	  const Dissim& dissim = getDistTree (). dissims [maxDeformationDissimNum];
@@ -682,15 +675,6 @@ const DTNode* DTNode::getDiscernible () const
   if (const Leaf* leaf = inDiscernible ())
     return static_cast <const DTNode*> (leaf->getParent ());
   return this;
-}
-
-
-
-Real DTNode::getRelCriterion () const
-{ 
-  const Real err = absCriterion_ave / getDistTree (). getAbsCriterion_ave (); 
-  ASSERT (err >= 0.0);
-  return err;
 }
 
 
@@ -859,6 +843,32 @@ Vector<uint> DTNode::getLcaDissimNums ()
   }
         
   return lcaObjNums;
+}
+
+
+
+void DTNode::setErrorDensity (Real absCriterion_ave)
+{
+  ASSERT (absCriterion_ave >= 0.0);
+  
+  Real a = 0.0;
+  Real b = 0.0;
+  for (const uint dissimNum : pathDissimNums)
+  {
+    const Dissim& dissim = getDistTree (). dissims [dissimNum];
+    if (! dissim. validMult ())
+      continue;
+    const Real criterion = dissim. getAbsCriterion ();
+    ASSERT (criterion >= 0.0);
+    ASSERT (criterion < INF);
+    ASSERT (dissim. prediction >= 0.0);
+    if (! dissim. prediction)
+      continue;
+    a += (criterion / absCriterion_ave - 1.0) / dissim. prediction;
+    b += 1.0 / sqr (dissim. prediction);
+  }
+  
+  errorDensity = a / sqrt (2.0 * b);
 }
 
 
@@ -1312,6 +1322,9 @@ void Leaf::qc () const
 void Leaf::saveContent (ostream& os) const 
 { 
   DTNode::saveContent (os);
+    
+  if (! isNan (normCriterion))
+    os << "  " << normCriterionS << "=" << normCriterion;
 	if (! discernible)
 	  os << "  " << non_discernible;
 }
@@ -3830,8 +3843,7 @@ bool DistTree::loadLines (const StringVector &lines,
     throw runtime_error ("Bad format of line " + toString (lineNum));
   const Real   len               = token2real (s, lenS);
   const Real   errorDensity      = token2real (s, err_densityS);
-  const Real   paths             = token2real (s, pathsS);
-  const Real   relCriterion      = token2real (s, rel_errorS);
+  const Real   normCriterion     = token2real (s, normCriterionS);  
         string deformationObj    = token2string (s, deformationS);
   const Real   deformation       = token2real (s, deformation_criterionS);
   const string name              = token2string (s, "name");
@@ -3851,23 +3863,19 @@ bool DistTree::loadLines (const StringVector &lines,
     while (loadLines (lines, lineNum, steiner, expectedOffset + Offset::delta))
       ;
     dtNode = steiner;
+    ASSERT (isNan (normCriterion));
   }
   else
   {
     ASSERT (parent);
     auto leaf = new Leaf (*this, parent, len, idS);
     leaf->discernible = DistTree_sp::variance_min || ! indiscernible;
+    leaf->normCriterion = normCriterion;
     dtNode = leaf;
   }
   ASSERT (dtNode);
   
-  if (! isNan (paths))
-  {
-    dtNode->paths = (size_t) DM_sp::round (paths);
-    dtNode->errorDensity = errorDensity;
-  }
-  if (! isNan (relCriterion))
-    dtNode->relCriterion = relCriterion;
+  dtNode->errorDensity = errorDensity;
   if (! name. empty ())
   {
     ASSERT (! dtNode->asLeaf ());
@@ -7594,8 +7602,6 @@ void DistTree::reroot (DTNode* underRoot,
     const Steiner* newRootParent = static_cast <const DTNode*> (underRoot->getParent ()) -> asSteiner ();
     auto newRoot = new Steiner (*this, var_cast (newRootParent), underRoot->len - arcLen);
     newRoot->pathDissimNums  = underRoot->pathDissimNums;
-    newRoot->relCriterion = underRoot->relCriterion;
-    newRoot->paths        = underRoot->paths;
     underRoot->setParent (newRoot); 
     underRoot->len = arcLen;
     
@@ -7699,107 +7705,47 @@ Real DistTree::getSqrResidualCorr () const
   
   
 
-Real DistTree::setErrorDensities () 
+Real DistTree::getUnoptimizable () const
 {
   ASSERT (optimizable ());
 
-
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->paths = 0;
-    dtNode->errorDensity = 0.0;
-  }
-  
-
   Real epsilon2_0 = 0.0;
-  Tree::LcaBuffer buf;
   for (const Dissim& dissim : dissims)
     if (dissim. validMult ())
     {
-      const Real d = dissim. target;
       const Real dHat = dissim. prediction;
       ASSERT (dHat >= 0.0);
-      if (nullReal (dHat))
-      {
-        epsilon2_0 += dissim. mult * sqr (d);
-        continue;
-      }
-  
-      const Real a = dissim. mult * sqr (dHat - d) / dHat;
-      ASSERT (DM_sp::finite (a));
-      
-      const VectorPtr<TreeNode>& path = dissim. getPath (buf);
-      for (const TreeNode* node : path)
-      {
-        DTNode* dtNode = const_static_cast <DTNode*> (node);
-        dtNode->paths++;
-        dtNode->errorDensity += a;
-      }
+      if (! dHat)
+        epsilon2_0 += dissim. mult * sqr (dissim. target);
     }
 
-
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    if (! dtNode->getParent ())
-      continue;
-    if (dtNode->inDiscernible ())
-      continue;
-    dtNode->errorDensity = dtNode->paths ? sqrt (dtNode->errorDensity / (Real) dtNode->paths) : INF;
-  }
-  
   return epsilon2_0;
 }
 
 
 
-void DistTree::printAbsCriterion_halves () const
+void DistTree::setErrorDensities () 
 {
   ASSERT (optimizable ());
-  
-  const Real dissim_ave = getDissim_ave ();
-  size_t pairs = 0;
-  size_t size_half       [2/*bool*/] = {0, 0};
-  Real absCriterion_half [2/*bool*/] = {0.0, 0.0};
-  Real dissim2_half      [2/*bool*/] = {0.0, 0.0};
-  for (const Dissim& dissim : dissims)
-    if (dissim. validMult ())
-    {
-      const Real d = dissim. target;
-      const Real dHat = dissim. prediction;
-      ASSERT (! isNan (dHat));
-      const bool half2 = d > dissim_ave;
-      pairs++;
-      size_half [half2] ++;
-      absCriterion_half [half2] += dissim. mult * sqr (dHat - d);
-      dissim2_half      [half2] += dissim. mult * sqr (d);
-    }
-    
-  for (const bool half2 : {false, true})
+
+  const Real c = absCriterion / (Real) dissims. size ();
+  ASSERT (c >= 0.0);
+  for (DiGraph::Node* node : nodes)
   {
-    const ONumber on (cout, relCriterionDecimals, false);  // PAR
-    cout << "absCriterion [" << half2 << "] = " << absCriterion_half [half2];
-    const Prob unexplainedFrac = absCriterion_half [half2] / dissim2_half [half2];
-    const Prob r = 1 - unexplainedFrac;
-    const Real arcLenError = sqrt ((1 - r) / r); 
-    cout << "  Error density [" << half2 << "] = " << arcLenError * 100 << " %";
-    cout << "  Fraction = " << (Real) size_half [half2] / (Real) pairs * 100 << " %" << endl;
+    DTNode* dtNode = static_cast <DTNode*> (node);
+    dtNode->setErrorDensity (c);
   }
 }
 
 
 
-void DistTree::setLeafAbsCriterion ()  
+void DistTree::setLeafNormCriterion ()  
 {
   ASSERT (optimizable ());
   
   for (DiGraph::Node* node : nodes)
     if (Leaf* leaf = var_cast (static_cast <DTNode*> (node) -> asLeaf ()))
-    {
-      leaf->absCriterion = 0.0;
-      leaf->absCriterion_ave = 0.0;  // tepmorary: = mult
-    }
+      leaf->normCriterion = 0.0;  // temporary
 
   for (const Dissim& dissim : dissims)
     if (dissim. validMult ())
@@ -7811,65 +7757,16 @@ void DistTree::setLeafAbsCriterion ()
       Leaf* leaf1 = var_cast (dissim. leaf1);
       Leaf* leaf2 = var_cast (dissim. leaf2);
 
-      leaf1->absCriterion += criterion; 
-      leaf2->absCriterion += criterion; 
-
-      // Temporary
-      leaf1->absCriterion_ave += 1.0; 
-      leaf2->absCriterion_ave += 1.0; 
+      leaf1->normCriterion += criterion; 
+      leaf2->normCriterion += criterion; 
     }
 
+  const Real c = absCriterion / (Real) dissims. size ();
+  ASSERT (c >= 0.0);
   for (DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
-    {
-      var_cast (leaf) -> absCriterion_ave = leaf->absCriterion == 0.0 ? 0.0 : leaf->absCriterion / leaf->absCriterion_ave;
-      ASSERT (leaf->absCriterion_ave >= 0.0);
-    }
+      var_cast (leaf) -> normCriterion = (leaf->normCriterion / c - (Real) leaf->pathDissimNums. size ()) / sqrt (2.0 * (Real) leaf->pathDissimNums. size ());
 }
-
-
-
-#if 0
-void DistTree::setNodeAbsCriterion () 
-{
-  ASSERT (optimizable ());
-  
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->absCriterion = 0.0;
-    dtNode->absCriterion_ave = 0.0;  // tepmorary: = count
-  }
-
-  Tree::LcaBuffer buf;
-  for (const Dissim& dissim : dissims)
-    if (dissim. validMult ())
-    {
-      const Real criterion = dissim. getAbsCriterion ();
-      ASSERT (criterion < INF);
-      ASSERT (criterion >= 0.0);
-      
-      // For interior nodes ??
-      ASSERT (dissim. lca); 
-      VectorPtr<TreeNode>& path = dissim. getPath (buf);
-      path << dissim. lca;
-      
-      for (const TreeNode* node : path)
-      {
-        DTNode* dtNode = const_static_cast <DTNode*> (node);
-        dtNode->absCriterion     += criterion;  
-        dtNode->absCriterion_ave += 1.0; 
-      }
-    }
-
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->absCriterion_ave = dtNode->absCriterion == 0.0 ? 0.0 : dtNode->absCriterion / dtNode->absCriterion_ave;
-    ASSERT (dtNode->absCriterion_ave >= 0.0);
-  }
-}
-#endif
 
 
 
@@ -7933,7 +7830,7 @@ Dataset DistTree::getLeafErrorDataset (bool criterionAttrP,
     {
       const size_t index = ds. appendObj (it. first);
       if (criterionAttr)
-        (*criterionAttr)   [index] = leaf->getRelCriterion ();
+        (*criterionAttr)   [index] = leaf->normCriterion;
       if (deformationAttr)
         (*deformationAttr) [index] = leaf->getDeformation () / deformation_mean;
     }
@@ -7952,7 +7849,7 @@ bool leafRelCriterionStrictlyGreater (const Leaf* a,
 {
   ASSERT (a);
   ASSERT (b);
-  return a->getRelCriterion () > b->getRelCriterion ();
+  return a->normCriterion > b->normCriterion;
 }
 
 }
@@ -7978,7 +7875,7 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (const Dataset &leafErrorDs,
     {
       const Leaf* leaf = it. second;
       if (leaf->graph)
-        if (leaf->getRelCriterion () > outlier_min_excl)
+        if (leaf->normCriterion > outlier_min_excl)
           res << leaf;
     }
     

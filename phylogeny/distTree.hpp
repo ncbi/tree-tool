@@ -432,17 +432,8 @@ protected:
     // Average subtree height 
     // weights = topological ? # leaves : sum of DTNode::len in the subtree excluding *this
 public:
-  size_t paths {0};  // = pathDissimNums.size() ??
-    // Number of paths going through *this arc
   Real errorDensity {NaN};
-  Real absCriterion {NaN};
-    // = sum(dissim.getAbsCriterion())
-    // For Leaf's: sum = 2*getTree().absCriterion
-    // Theoretically distributed as chi^2_1
-  Real absCriterion_ave {NaN};
-    // = absCriterion/count
-  Real relCriterion {NaN};
-    // !isNan() => = getRelCriterion()
+    // ~ Normal(0,1)
   uint maxDeformationDissimNum {dissims_max};
     // Index of DistTree::dissims[]
 
@@ -476,10 +467,6 @@ public:
   Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
     // After: DistTree::setHeight()
-  Real getEpsilon2 () const
-    { return (Real) paths * sqr (errorDensity) * len; }
-  Real getRelCriterion () const;
-    // Relative average absolute criterion
   Real getDeformation () const;
     // Input: maxDeformationDissimNum
   virtual const Leaf* getReprLeaf (ulong seed) const = 0;
@@ -508,6 +495,9 @@ private:
   Vector<uint/*dissimNum*/> getLcaDissimNums ();
     // Return: dissimNum's s.t. getDistTree().dissims[dissimNum].lca = this
     // Invokes: DTNode::pathDissimNums.sort()
+  void setErrorDensity (Real absCriterion_ave);
+    // Output: errorDensity
+    // Time: O(|pathDissimNums|)
   VectorPtr<Leaf> getSparseLeafMatches (const string &targetName,
                                         size_t depth_max,
                                         bool subtractDissims,
@@ -597,6 +587,8 @@ struct Leaf : DTNode
   static const string non_discernible;
   bool discernible {true};  // May be not used: parameter ??
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
+  Real normCriterion {NaN};
+    // ~ Normal(0,1)
     
   // Temporary
 private:
@@ -624,10 +616,8 @@ public:
     { if (minimal)
         return name;
       string s = name + prepend (" ", comment); 
-      if (! isNan (relCriterion))
-        s += " " + real2str (relCriterion, 1, false);  // PAR
-      else if (! isNan (absCriterion))
-        s += " " + real2str (getRelCriterion (), 1, false);  // PAR
+      if (! isNan (normCriterion))
+        s += " " + real2str (normCriterion, 1, false);  // PAR
       return s;
     }
   bool isLeafType () const final
@@ -1349,18 +1339,15 @@ public:
     // Approximate: includes !Dissim::validMult() ?? 
   Prob getUnexplainedFrac (Real unoptimizable) const
     { return (absCriterion - unoptimizable) / (target2_sum - unoptimizable); }
-  Real getErrorDensity (Real unoptimizable) const
-    { const Prob r = 1.0 - getUnexplainedFrac (unoptimizable);   
-      return sqrt ((1.0 - r) / r);   
-    }
-    // Requires: interpretation <= linear variance of dissimilarities  
+  Real getRelCriterion (Real unoptimizable) const
+    { return sqrt (getUnexplainedFrac (unoptimizable)); }
   string absCriterion2str (Real unoptimizable = 0.0) const
     { return real2str (absCriterion - unoptimizable, absCriterionDecimals); }
   void reportErrors (ostream &os,
                      Real unoptimizable = 0.0) const
     { const ONumber on (os, relCriterionDecimals, false);  
-      os << "Criterion = " << absCriterion2str (unoptimizable)
-         << "  Error density = " << getErrorDensity (unoptimizable) * 100 << " %"
+      os << "Abs. criterion = " << absCriterion2str (unoptimizable)
+         << "  Rel. criterion = " << getRelCriterion (unoptimizable) * 100.0 << " %"
          << endl;
     }    
   void saveDissimCoeffs (const string &fName) const;
@@ -1530,22 +1517,14 @@ public:
     // Return: correlation between squared residual and Dissim::target
     // Input: Dissim::prediction
 	  // Time: O(p)
-  Real setErrorDensities ();
+  Real getUnoptimizable () const;
     // Return: epsilon2_0
-    // Input: Dissim::prediction
-    // Output: DTNode::{paths,errorDensity}
-    // Requires: linear variance of dissimilarities
-    //           Leaf::discernible is set
+  void setErrorDensities ();
+    // Invokes: DTNode::setErrorDensity()
 	  // Time: O(p log(n))
-  void printAbsCriterion_halves () const;
-	void setLeafAbsCriterion ();
+	void setLeafNormCriterion ();
     // Output: Leaf::{absCriterion,absCriterion_ave}
     // Time: O(p)
-#if 0
-  void setNodeAbsCriterion ();
-    // Output: DTNode::{absCriterion,absCriterion_ave}
-    // Time: O(p log(n))
-#endif
 	void setNodeMaxDeformationDissimNum ();
     // Output: DTNode::maxDeformationDissimNum
     // Time: O(p log(n))
@@ -1556,8 +1535,8 @@ public:
                                Real deformation_mean) const;
     // Input: deformation_mean: may be NaN
     // Return: attrs: PositiveAttr1 "leaf_error", "deformation" if deformation_mean is not NaN
-    // Invokes: Leaf::getRelCriterion(), Leaf::getDeformation()
-    // Requires: setLeafAbsCriterion(), setNodeMaxDeformationDissimNum()
+    // Invokes: Leaf::getDeformation()
+    // Requires: setLeafNormCriterion(), setNodeMaxDeformationDissimNum()
     // Time: O(n)
 
   // Outliers
@@ -1567,9 +1546,10 @@ public:
                                          Real &outlier_min_excl) const;
     // Relative average absolute criterion
     // Idempotent
-    // Return: sort()'ed by getRelCriterion() descending
+    // Return: sort()'ed by Leaf::normCriterion descending
     // Output: outlier_min_excl
-    // Invokes: RealAttr2::locScaleDistr2outlier(), Leaf::getRelCriterion()
+    // Invokes: RealAttr2::locScaleDistr2outlier()
+    // Requires: after setLeafNormCriterion()
     // Time: O(n log(n))
   VectorPtr<Leaf> findDeformationOutliers (Real deformation_mean,
                                            Real outlier_EValue_max,
@@ -1582,7 +1562,7 @@ public:
 	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
     // ~Idempotent w.r.t. restoring hybrids in the tree
     // Update (append): *dissimRequests if !nullptr  // Not implemented ??
-    // After: setLeafAbsCriterion() 
+    // After: setLeafNormCriterion() 
     // Invokes: RealAttr2::normal2outlier(), findCriterionOutliers()
     // Time: O(p^2/n)
   VectorPtr<Leaf> findDepthOutliers () const;

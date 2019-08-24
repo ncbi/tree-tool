@@ -97,7 +97,7 @@ struct ThisApplication : Application
     if (order)
       tree. sort ();
     if (! dataFName. empty ())
-      tree. setLeafAbsCriterion ();
+      tree. setLeafNormCriterion ();
     tree. qc ();    
     
     if (! name_match. empty ())

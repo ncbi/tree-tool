@@ -14,25 +14,25 @@ INPUT:
 # Dissimilarities: 435 (100.00 %)
 Dissimilarities factor: 4.26
 Ave. dissimilarity = 0.968072
-Criterion = 2.6144e+01  Error density = 31.573 %
+Abs. criterion = 2.6144e+01  Rel. criterion = 30.108 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 0
 Optimizing arc lengths at each node ...
 # Nodes deleted = 0
-Criterion = 3.3746e+00  Error density = 10.881 %
+Abs. criterion = 3.3746e+00  Rel. criterion = 10.817 %
 CHRON: Initial arc lengths: 0 sec.
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 4
-Criterion = 3.9127e-01  Error density = 3.957 %
+Abs. criterion = 3.9127e-01  Rel. criterion = 3.954 %
 CHRON: Topology optimization: local: 1 sec.
 
 Ave. radius: 0.831
 
 OUTPUT:
-Criterion = 3.9127e-01  Error density = 3.957 %
+Abs. criterion = 3.9127e-01  Rel. criterion = 3.954 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

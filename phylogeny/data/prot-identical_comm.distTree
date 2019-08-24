@@ -14,68 +14,65 @@ INPUT:
 # Dissimilarities: 42195 (100.00 %)
 Dissimilarities factor: 26.19
 Ave. dissimilarity = 0.194156
-Criterion = 1.8217e+01  Error density = 2.960 %
+Abs. criterion = 1.8217e+01  Rel. criterion = 2.959 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 17
 Optimizing arc lengths at each node ...
 # Nodes deleted = 2
-Criterion = 7.2838e+00  Error density = 1.871 %
+Abs. criterion = 7.2838e+00  Rel. criterion = 1.871 %
 
 Optimizing topology: subgraphs ...
 # Hybrids: 0
-Criterion = 6.5370e+00  Error density = 1.766 %
+Abs. criterion = 6.5487e+00  Rel. criterion = 1.767 %
 
 # Hybrids: 0
-Criterion = 6.5145e+00  Error density = 1.763 %
+Abs. criterion = 6.5129e+00  Rel. criterion = 1.763 %
 
 # Hybrids: 0
-Criterion = 6.5070e+00  Error density = 1.762 %
+Abs. criterion = 6.5064e+00  Rel. criterion = 1.762 %
 
 # Hybrids: 0
-Criterion = 6.5052e+00  Error density = 1.762 %
+Abs. criterion = 6.5042e+00  Rel. criterion = 1.762 %
 
 # Hybrids: 0
-Criterion = 6.5039e+00  Error density = 1.762 %
+Abs. criterion = 6.5032e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5033e+00  Error density = 1.762 %
+Abs. criterion = 6.5026e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5028e+00  Error density = 1.762 %
+Abs. criterion = 6.5022e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5026e+00  Error density = 1.762 %
+Abs. criterion = 6.5020e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5024e+00  Error density = 1.762 %
+Abs. criterion = 6.5018e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5022e+00  Error density = 1.762 %
+Abs. criterion = 6.5017e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5021e+00  Error density = 1.762 %
+Abs. criterion = 6.5016e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 6.5020e+00  Error density = 1.762 %
+Abs. criterion = 6.5015e+00  Rel. criterion = 1.761 %
 
-# Hybrids: 0
-Criterion = 6.5020e+00  Error density = 1.761 %
-
-# Iterations of subgraph optimization: 13
-Criterion = 6.5020e+00  Error density = 1.761 %
+# Iterations of subgraph optimization: 12
+Abs. criterion = 6.5015e+00  Rel. criterion = 1.761 %
 
 Ave. radius: 0.456
 
 # Criterion outliers: 4
-Criterion = 4.8722e+00  Error density = 1.543 %
+Abs. criterion = 4.8716e+00  Rel. criterion = 1.543 %
 
 # Deformation outliers: 22
-Criterion = 3.6261e+00  Error density = 1.447 %
+Abs. criterion = 3.6259e+00  Rel. criterion = 1.447 %
 
 OUTPUT:
-Criterion = 3.6261e+00  Error density = 1.447 %
+Abs. criterion = 3.6259e+00  Rel. criterion = 1.447 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

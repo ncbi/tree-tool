@@ -15,59 +15,59 @@ INPUT:
 Dissimilarities factor: 26.19
 Ave. dissimilarity = 0.194156
 # Dissimilarity types = 2
-Criterion = 3.6433e+01  Error density = 2.960 %
+Abs. criterion = 3.6433e+01  Rel. criterion = 2.959 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 17
 Optimizing arc lengths at each node ...
 # Nodes deleted = 2
-Criterion = 1.4568e+01  Error density = 1.871 %
+Abs. criterion = 1.4568e+01  Rel. criterion = 1.871 %
 
 Optimizing topology: subgraphs ...
 # Hybrids: 0
-Criterion = 1.3074e+01  Error density = 1.766 %
+Abs. criterion = 1.3097e+01  Rel. criterion = 1.767 %
 
 # Hybrids: 0
-Criterion = 1.3028e+01  Error density = 1.763 %
+Abs. criterion = 1.3026e+01  Rel. criterion = 1.763 %
 
 # Hybrids: 0
-Criterion = 1.3012e+01  Error density = 1.762 %
+Abs. criterion = 1.3011e+01  Rel. criterion = 1.762 %
 
 # Hybrids: 0
-Criterion = 1.3009e+01  Error density = 1.762 %
+Abs. criterion = 1.3008e+01  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 1.3007e+01  Error density = 1.762 %
+Abs. criterion = 1.3006e+01  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 1.3006e+01  Error density = 1.762 %
+Abs. criterion = 1.3005e+01  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 1.3005e+01  Error density = 1.762 %
+Abs. criterion = 1.3005e+01  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 1.3005e+01  Error density = 1.762 %
+Abs. criterion = 1.3004e+01  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 1.3005e+01  Error density = 1.762 %
+Abs. criterion = 1.3004e+01  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Criterion = 1.3004e+01  Error density = 1.762 %
+Abs. criterion = 1.3003e+01  Rel. criterion = 1.761 %
 
 # Iterations of subgraph optimization: 10
-Criterion = 1.3004e+01  Error density = 1.762 %
+Abs. criterion = 1.3003e+01  Rel. criterion = 1.761 %
 
 Ave. radius: 0.456
 
 # Criterion outliers: 4
-Criterion = 9.7446e+00  Error density = 1.543 %
+Abs. criterion = 9.7434e+00  Rel. criterion = 1.543 %
 
 # Deformation outliers: 22
-Criterion = 7.2523e+00  Error density = 1.447 %
+Abs. criterion = 7.2517e+00  Rel. criterion = 1.447 %
 
 OUTPUT:
-Criterion = 7.2523e+00  Error density = 1.447 %
+Abs. criterion = 7.2517e+00  Rel. criterion = 1.447 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00

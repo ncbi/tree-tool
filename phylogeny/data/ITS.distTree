@@ -1,12 +1,12 @@
 PARAMETERS:
-# Threads: 5
+# Threads: 10
 Variance function: linExp
 Max. possible distance: 18.0218
 Subgraph radius: 5
 Root: by length
 
 Loading data/inc.ITS/dissim ...
-CHRON: Initial topology: 28 sec.
+CHRON: Initial topology: 27 sec.
 
 INPUT:
 # Leaves: 9009
@@ -16,21 +16,21 @@ INPUT:
 Dissimilarities factor: 82.55
 Ave. dissimilarity = 0.812877
 Variance is fixed
-absCriterion = 1.1476e+03  Error density = 8.611 %
+Abs. criterion = 1.1476e+03  Rel. criterion = 8.579 %
 
-# Changes: 300
-# Commits = 45
-Improvement = 4.8791
-absCriterion = 1.1427e+03  Error density = 8.593 %
-CHRON: Topology optimization: re-insert: 2116 sec.
+# Changes: 54
+# Commits = 43
+Improvement = 4.8789e+00
+Abs. criterion = 1.1427e+03  Rel. criterion = 8.561 %
+CHRON: Topology optimization: reinsert: 693 sec.
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 1
-absCriterion = 1.1420e+03  Error density = 8.590 %
-CHRON: Topology optimization: local: 57 sec.
+Abs. criterion = 1.1420e+03  Rel. criterion = 8.558 %
+CHRON: Topology optimization: local: 91 sec.
 
-Ave. radius: 7.066
+Ave. radius: 7.065
 
 OUTPUT:
-absCriterion = 1.1420e+03  Error density = 8.590 %
+Abs. criterion = 1.1420e+03  Rel. criterion = 8.558 %
 

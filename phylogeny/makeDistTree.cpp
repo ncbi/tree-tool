@@ -135,7 +135,7 @@ struct ThisApplication : Application
 	// Append: *hybridDissimRequests
 	{
 	#if 1
-    tree. setLeafAbsCriterion ();
+    tree. setLeafNormCriterion ();
   #else
     // Too few hybrids
     tree. setNodeMaxDeformationDissimNum (); 
@@ -636,7 +636,7 @@ struct ThisApplication : Application
       if (! delete_criterion_outliers. empty ())
       {
         cerr << "Finding criterion outliers ..." << endl;
-	      tree->setLeafAbsCriterion (); 
+	      tree->setLeafNormCriterion (); 
         const Dataset leafErrorDs (tree->getLeafErrorDataset (true, NaN));
 	      Real outlier_min_excl = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (leafErrorDs, 1e-6, outlier_min_excl));  // PAR
@@ -645,15 +645,6 @@ struct ThisApplication : Application
         OFStream f (delete_criterion_outliers);
 	      if (! outliers. empty ())
 	      {
-  	      if (verbose ())
-  	      {
-    	      cout << "Min. " << criterionOutlier_definition << " of outliers: " << outlier_min_excl << endl;
-    	      for (const Leaf* leaf : outliers)
-    	        cout         << leaf->name 
-    	             << '\t' << leaf->getRelCriterion ()
-    	             << '\t' << leaf->absCriterion  
-    	             << endl;
-    	    }
           cerr << "Deleting criterion outliers ..." << endl;
           {
             Progress prog (outliers. size ());
@@ -715,16 +706,15 @@ struct ThisApplication : Application
 
       if (! noqual)
       {
-        tree->setLeafAbsCriterion ();  
+        tree->setLeafNormCriterion ();  
         tree->setNodeMaxDeformationDissimNum ();
+        tree->setErrorDensities ();  
         tree->qc ();
       }
 
 
       cout << "OUTPUT:" << endl;  
       tree->reportErrors (cout);
-      if (verbose ())
-        tree->printAbsCriterion_halves ();  
       cout << endl;
     }
     
@@ -758,8 +748,8 @@ struct ThisApplication : Application
     if (! noqual && tree->optimizable ())
     {
 		  const ONumber on (cout, 2, false);  // PAR
-    	const Real dissim_var = tree->setErrorDensities ();  
-      cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->target2_sum) * 100 << " %" << endl;
+    	const Real dissim_var = tree->getUnoptimizable ();  
+      cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->target2_sum) * 100.0 << " %" << endl;
         // Must be << "Average arc error"
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
       cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
@@ -794,7 +784,7 @@ struct ThisApplication : Application
     
     if (! leaf_errors. empty ())
     {
-      tree->setLeafAbsCriterion (); 
+      tree->setLeafNormCriterion (); 
       tree->setNodeMaxDeformationDissimNum ();
       const Dataset leafErrorDs (tree->getLeafErrorDataset (true, tree->getDeformation_mean ()));
       OFStream f (leaf_errors + dmSuff);
