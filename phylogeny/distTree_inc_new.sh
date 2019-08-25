@@ -84,9 +84,15 @@ rm $INC/search.list
 echo ""
 echo "search/ -> leaf, dissim ..."
 
-$THIS/../grid_wait.sh 1
-$THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
-$THIS/../qstat_wait.sh 2000 1
+N=`ls $INC/search/ | wc -l`
+SEARCH_GRID_MIN=$(( $GRID_MIN / 100 ))  # PAR
+if [ $N -lt $SEARCH_GRID_MIN ]; then
+  $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
+else
+  $THIS/../grid_wait.sh 1
+  $THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
+  $THIS/../qstat_wait.sh 2000 1
+fi
 
 
 ITER=0
