@@ -77,9 +77,10 @@ fi
 # PAR
 $THIS/makeDistTree  -threads 30  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -reinsert  -subgraph_iter_max 5 \
-  -output_tree $INC/tree.new  -leaf_errors leaf_errors > $INC/hist/makeDistTree-complete-inc.$VER
+  -output_tree $INC/tree.new  > $INC/hist/makeDistTree-complete-inc.$VER
+  # was: -leaf_errors leaf_errors
 mv $INC/tree.new $INC/tree
-tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
+#tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
 if [ -e $INC/outlier-genogroup ]; then
   echo ""
