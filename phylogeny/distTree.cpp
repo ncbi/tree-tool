@@ -7632,11 +7632,13 @@ Real DistTree::reroot (bool topological)
   if (! root_->childrenDiscernible ())
     return 0.0;
   
-  root_->setSubtreeLenUp (topological);
-//cout << "Old radius: " << root_->getHeight_ave () << endl;  
   
   DTNode* bestDTNode = nullptr;
   Real bestDTNodeLen_new = NaN;
+
+  root_->setSubtreeLenUp (topological);
+//cout << "Old radius: " << root_->getHeight_ave () << endl;  
+  
   WeightedMeanVar bestGlobalLen;
   root_->setGlobalLenDown (topological, bestDTNode, bestDTNodeLen_new, bestGlobalLen);
   ASSERT (bestDTNode);
@@ -7651,9 +7653,11 @@ Real DistTree::reroot (bool topological)
     print (cout);
   }
   
-  reroot (bestDTNode, bestDTNodeLen_new);
-  
   clearSubtreeLen ();
+
+
+  reroot (bestDTNode, bestDTNodeLen_new);
+    
   
   return height;
 }
@@ -7711,12 +7715,12 @@ Real DistTree::getUnoptimizable () const
 
   Real epsilon2_0 = 0.0;
   for (const Dissim& dissim : dissims)
-    if (dissim. validMult ())
+    if (   dissim. validMult ()
+        && dissim. indiscernible ()
+       )
     {
-      const Real dHat = dissim. prediction;
-      ASSERT (dHat >= 0.0);
-      if (! dHat)
-        epsilon2_0 += dissim. mult * sqr (dissim. target);
+      ASSERT (! dissim. prediction);
+      epsilon2_0 += dissim. mult * sqr (dissim. target);
     }
 
   return epsilon2_0;
