@@ -74,7 +74,7 @@ rm random-output.tree
 echo ""
 echo "prot-identical_comm ..."
 # Check time ??
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -optimize  \
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -optimize  -subgraph_iter_max 10 \
   -delete_criterion_outliers prot-identical_comm.criterion_outliers \
   -delete_deformation_outliers prot-identical_comm.deformation_outliers \
   -delete_hybrids prot-identical_comm.hybrids \
@@ -130,7 +130,7 @@ rm Saccharomyces.distTree
 echo ""
 echo "-variance_min ..."
 # 0.0005 = average arc length / 100
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -variance_min 0.0005  -optimize  \
+$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -variance_min 0.0005  -optimize  -subgraph_iter_max 10 \
   -delete_criterion_outliers prot-identical_comm-var_min.criterion_outliers \
   -delete_deformation_outliers prot-identical_comm-var_min.deformation_outliers \
   -delete_hybrids prot-identical_comm-var_min.hybrids \

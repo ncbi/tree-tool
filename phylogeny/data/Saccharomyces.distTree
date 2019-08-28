@@ -27,14 +27,14 @@ CHRON: Initial arc lengths: 182 sec.
 
 Optimizing topology: subgraphs ...
 # Hybrids: 42
-Abs. criterion = 6.8896e+01  Rel. criterion = 5.040 %
+Abs. criterion = 6.8888e+01  Rel. criterion = 5.040 %
 
 # Hybrids: 0
-Abs. criterion = 6.8564e+01  Rel. criterion = 5.034 %
+Abs. criterion = 6.8564e+01  Rel. criterion = 5.033 %
 
 # Iterations of subgraph optimization: 2
 Abs. criterion = 6.8552e+01  Rel. criterion = 5.033 %
-CHRON: Topology optimization: local: 253 sec.
+CHRON: Topology optimization: local: 261 sec.
 
 Ave. radius: 0.561
 

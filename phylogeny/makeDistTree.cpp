@@ -83,7 +83,7 @@ struct ThisApplication : Application
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	//addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
-	  addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
+	//addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations");
@@ -233,7 +233,7 @@ struct ThisApplication : Application
 		      
 		const bool   optimize            = getFlag ("optimize");
 	//const bool   whole               = getFlag ("whole");
-		const bool   subgraph_fast       = getFlag ("subgraph_fast");
+	//const bool   subgraph_fast       = getFlag ("subgraph_fast");
 		const size_t subgraph_iter_max   = str2<size_t> (getArg ("subgraph_iter_max"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
@@ -317,8 +317,8 @@ struct ThisApplication : Application
 
     if (optimize && ! optimizable)
       throw runtime_error ("-optimize requires dissimilarities");
-    if (subgraph_fast && ! optimize)
-      throw runtime_error ("-subgraph_fast requires -optimize");
+  //if (subgraph_fast && ! optimize)
+    //throw runtime_error ("-subgraph_fast requires -optimize");
     if (subgraph_iter_max && ! optimize)
       throw runtime_error ("-subgraph_iter_max requires -optimize");
     if (skip_len && ! optimize)
@@ -571,8 +571,10 @@ struct ThisApplication : Application
             cout << "Optimizing topology: subgraphs ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();
+          #if 0
             if (subgraph_fast)
               minimize (iter_max, max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std));  // PAR
+          #endif
             if (subgraph_iter_max)
             	minimize (iter_max, subgraph_iter_max);
             ASSERT (iter_max);
@@ -595,7 +597,8 @@ struct ThisApplication : Application
             //hybridDeleted = false;
               if (hybridF. get ())
               	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
-              tree->saveFile (output_tree); 
+              if (verbose ())
+                tree->saveFile (output_tree); 
               iter++;
             #if 0
               if (hybridDeleted)
@@ -603,13 +606,11 @@ struct ThisApplication : Application
             #endif
               if (! absCriterion_old)
               	break;
-              const Real relImprovement = (absCriterion_old - tree->absCriterion) / absCriterion_old;
-              if (relImprovement <= 1e-4 / (Real) tree->name2leaf. size ())  // PAR  
+              if (absCriterion_old <= tree->absCriterion)
               	break;
-              	// -variance linExp or exp => threshold must be smaller ??
               tree->setDissimMult (true);
               if (! tree->multFixed)
-                cerr << tree->absCriterion2str () /*<< ' ' << relImprovement*/ << endl; 
+                cerr << tree->absCriterion2str () << endl; 
             }
             cout << "# Iterations of subgraph optimization: " << iter << endl;
             tree->reportErrors (cout);
