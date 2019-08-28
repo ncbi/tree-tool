@@ -71,7 +71,8 @@ struct ThisApplication : Application
     ds. qc ();
     
     const auto targetAttr = ds. name2attr (target) -> asRealAttr1 ();
-    ASSERT (targetAttr);
+    if (! targetAttr)
+      throw runtime_error (strQuote (target) + " is not a Real attribute");
     
     Space1<NumAttr1> sp (ds, true);
     sp. removeAttr (*targetAttr);
@@ -80,21 +81,29 @@ struct ThisApplication : Application
     
     L2LinearNumPrediction lr (sm, sp, *targetAttr);
     lr. qc ();
-  #if 1
+  #if 1  // ??
     lr. solveUnconstrained ();
   #else
+  #if 0  // ??
     FFOR (size_t, attrNum, lr. beta. size ())
       lr. beta [attrNum] = 1.0;  // PAR
+  #else
+    lr. beta [0] = 6.15061e-05;
+    lr. beta [1] = 30.5589;
+    lr. beta [2] = 3.71502e-05;
+    lr. setAbsCriterion ();
+  #endif
     const bool solved = lr. solveUnconstrainedFast (nullptr, true/*??*/, 10, 0.01);  // PAR
     if (! solved)
       cout << "Not solved" << endl;
   #endif    
     lr. qc ();
-    cout << "Abs. Error = " << lr. absCriterion2Error () << endl;
+    cout << "Abs. criterion = " << lr. absCriterion << endl;
+    cout << "Abs. error = " << lr. absCriterion2Error () << endl;
     Real scatter = NaN;
     const Real constTarget = lr. getConstTarget (scatter);
     cout << "Const target = " << constTarget << endl;
-    cout << "Rel. Error = " << lr. getRelTargetCriterion (constTarget) << endl;
+    cout << "Rel. error = " << lr. getRelTargetCriterion (constTarget) << endl;
 
     cout << endl;
     cout << "beta: value" << endl;
