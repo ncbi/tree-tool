@@ -38,6 +38,7 @@
 
 #ifdef _MSC_VER
   #pragma warning (disable : 4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+  #pragma warning (disable : 4365)  // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (bool -> size_t)
   #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
   #pragma warning (disable : 4521)  // multiple copy constructors specified
   #pragma warning (disable : 4522)  // multiple assignment operators specified
@@ -2873,7 +2874,7 @@ struct JsonDouble : Json
 {
   double n {0.0};
   streamsize decimals {0};
-  bool scientfiic {false};
+  bool scientific {false};
 
   JsonDouble (double n_arg,
               streamsize decimals_arg,
@@ -3211,7 +3212,9 @@ private:
 	      addKey ("threads", "Max. number of threads", "1");
 	      addKey ("json", "Output file in Json format");
 	      addKey ("log", "Error log file, appended");
+      #ifndef _MSC_VER
 	      addFlag ("sigpipe", "Exit normally on SIGPIPE");
+      #endif
 	    }
 	  }
 	void qc () const final;
@@ -3260,6 +3263,7 @@ private:
 
 
 
+#ifndef _MSC_VER
 struct ShellApplication : Application
 // Requires: SHELL=bash
 {
@@ -3300,6 +3304,7 @@ protected:
     // Return: directory + progName + ' '
     // Requires: After findProg(progName)
 };
+#endif
 
 
 
