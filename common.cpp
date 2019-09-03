@@ -2564,7 +2564,7 @@ int Application::run (int argc,
 	  	  ASSERT (jRoot);
 	  	}
 	  	
-    #ifndef _NSC_VER
+    #ifndef _MSC_VER
 	  	sigpipe = getFlag ("sigpipe");
     #endif
 	  }
