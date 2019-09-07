@@ -9,13 +9,213 @@ using namespace Common_sp;
 
 
 
-namespace Lang
+namespace Lang_sp
 {
 
 
-// --> utf8.{hpp,cpp} ??
+// SExpr
+struct SExprGeneral;
+struct SContent;
+struct SVariable;
+struct SEndOfList;
+struct STruncated;
+
+
+
+struct SExpr : Named
+{
+protected:
+  explicit SExpr (const string &name_arg) 
+    : Named (name_arg)
+    {}
+public:
+  void qc () const override;
+  void saveText (ostream &os) const override
+    { os << name; }
+
+
+  virtual const SExprGeneral* asSExprGeneral () const
+    { return nullptr; }
+  virtual const SContent* asSContent () const
+    { return nullptr; }
+  virtual const SVariable* asSVariable () const
+    { return nullptr; }
+  virtual const SEndOfList* asSEndOfList () const
+    { return nullptr; }
+  virtual const STruncated* asSTruncated () const
+    { return nullptr; }
+
+  static SExpr* parse (TokenInput &ti);
+    // Return: nullptr <=> EOF
+
+  virtual StringVector getVarNames () const 
+    { return StringVector (); }
+
+  typedef  map <string, const SExpr*>  Var2SExpr;
+  virtual bool unify (const SExpr &pattern,
+                        Var2SExpr &var2SExpr) const 
+    { throw logic_error ("Matching a bad SExpr"); }
+    // Return: success
+    // Output: var2SExpr::second
+    // Requires: *this has no SVariable's
+  bool equal (const SExpr &pattern) const
+    { Var2SExpr var2SExpr;
+      return unify (pattern, var2SExpr);
+    }
+};
+
+
+
+struct SExprGeneral : SExpr
+{
+  VectorOwn<SExpr> children;
+    // !nullptr
+    // Tree
+
+
+  SExprGeneral (const string &name_arg,
+                size_t childrenNum) 
+    : SExpr (name_arg)
+    { children. resize (childrenNum, nullptr); }
+  void qc () const override;
+  void saveText (ostream &os) const override
+    { os << name;
+      if (children. empty ())
+        return;
+      os << " (";
+      bool first = true;
+      for (const SExpr* child : children)
+      { if (! first)
+          os << ' ';
+        if (child)
+          child->saveText (os);
+        else
+          os << "nil";
+        first = false;
+      }
+      os << ')';
+    }
+
+
+  const SExprGeneral* asSExprGeneral () const final
+    { return this; }
+
+  StringVector getVarNames () const final
+    { StringVector s;
+      for (const SExpr* child : children)
+        s << child->getVarNames ();
+      s. sort ();
+      s. uniq ();
+      return s;
+    }
+  bool unify (const SExpr &pattern,
+                Var2SExpr &var2SExpr) const final;
+};
+
+
+
+struct SNil : SExprGeneral
+  { SNil () : SExprGeneral ("nil", 0) {} };
+  // Also repressnts "false"
+
+struct STrue : SExprGeneral
+  { STrue () : SExprGeneral ("true", 0) {} };
+
+
+
+struct SContent : SExpr
+// name: arbitrary text
+{
+  explicit SContent (const string &name_arg) 
+    : SExpr (name_arg)
+    {}
+
+  const SContent* asSContent () const final
+    { return this; }
+  bool unify (const SExpr &pattern,
+                Var2SExpr &var2SExpr) const final;
+};
+
+
+
+struct SVariable : SExpr
+{
+  explicit SVariable (const string &name_arg) 
+    : SExpr (name_arg)
+    {}
+
+  const SVariable* asSVariable () const final
+    { return this; }
+
+  StringVector getVarNames () const final
+    { return StringVector ({name}); }
+
+  bool assign (const SExpr &target,
+               Var2SExpr &var2SExpr) const;
+};
+
+
+
+struct SEndOfList : SExpr
+// Auxiliary
+{ 
+  SEndOfList () 
+    : SExpr ("end_of_list_") 
+    {} 
+
+  const SEndOfList* asSEndOfList () const final
+    { return this; }
+};
+
+
+
+struct STruncated : SExpr
+// To be replacde by a non-STruncated SExpr
+{ 
+  STruncated () 
+    : SExpr ("truncated_") 
+    {} 
+
+  const STruncated* asSTruncated () const final
+    { return this; }
+
+  bool unify (const SExpr &/*pattern*/,
+                Var2SExpr &/*var2SExpr*/) const final
+    { return false; }
+};
+
+
+
+
+// Transformation
+
+struct Transformation : Root
+{
+  const SExpr* lhs {nullptr};
+  const SExpr* rhs {nullptr};
+  // !nullptr
+
+
+  explicit Transformation (TokenInput &ti);
+  void qc () const override;
+
+
+  bool empty () const final
+    { return ! lhs && ! rhs; }
+  void saveText (ostream &os) const override
+    { lhs->saveText (os);
+      os << " -> ";
+      rhs->saveText (os);
+      os << ';' << endl;
+    }
+};
+
+
+
+
+// Unicode
+
 typedef  uint  Codepoint;
-  // Unicode
   // 0 - non-existing code point
 
 
@@ -30,6 +230,7 @@ public:
 
   bool get (Codepoint &v);
     // Return: false <=> EOF
+    // Output: v
 private:
   static size_t nextBytes (char &c);
     // Update: c - leading byte
@@ -37,31 +238,46 @@ private:
 
 
 
-struct Alphabet
+struct Language : Root
+/* 
+  CF-grammar:
+    char_star -> char char_star | nil
+    char -> delimiter | dia_letter
+    delimiter -> content
+    dia_letter -> letter capital  # bold underscore italics ...
+    letter -> content
+    capital -> false | true
+  text = char_star where first and last char's are delimiter('#')
+*/
 {
-  static const Vector<Codepoint> delimiters;
-    // Of words
-  // Main
+  // delimiters
+  Vector<Codepoint> delimiters;
+  StringVector delimiterNames;
+
+  // digits
+  Vector<Codepoint> digits;
+  StringVector digitNames;
+
+  // Letters
   Codepoint startCapital;
   Codepoint startSmall;
   size_t size;
-  // Dispensable letters: map into the main code points
+  // Optional: map into the main letters ??
   Vector<Codepoint> extraCapital;
   Vector<Codepoint> extraSmall;
-  Vector<string> names;
   //
-  Vector<Codepoint> vowels;
-    // Small
+  StringVector letterNames;
+    // Of small letters
+
+  Vector<Transformation> trs;
 
 
-  Alphabet (Codepoint startCapital_arg,
+protected:
+  Language (Codepoint startCapital_arg,
             Codepoint startSmall_arg,
-            size_t size_arg)
-    : startCapital (startCapital_arg)
-    , startSmall (startSmall_arg)
-    , size (size_arg)
-    {}
-  void qc () const;
+            size_t size_arg);
+public:
+  void qc () const override;
 
 
 private:
@@ -69,32 +285,38 @@ private:
     { return startSmall - startCapital; }
   size_t extraCapitalShift () const
     { return extraCapital. empty () ? 0 : (extraSmall [0] - extraCapital [0]); }
-  Codepoint toSmall_ (Codepoint c) const;
-public:
   Codepoint toSmall (Codepoint c) const;
     // Return: 0 <=> not in Alphabet
     //         c is capital => Return != c
-  string small2name (Codepoint c) const;
+  const string& small2name (Codepoint c) const;
+public:
+  SExpr* codepoint2SExpr (Codepoint c) const;
+    // Return: !nullptr
+    // Input: 0: text start/end
+  SExpr* utf8_2SExpr (Utf8 &text) const;
+    // Return: !nullptr
+
+  void readTransformations (const string &tfmFName);
+    // Output: trs
 };
 
 
 
-struct Russian : Alphabet  // ??
+struct RussianAlphabet : Language  
 {
-  Russian ()
-    : Alphabet (0x410, 0x430, 32)
+  RussianAlphabet ()
+    : Language (0x410, 0x430, 32)
     { extraCapital << 0x401;  // Yo
       extraSmall   << 0x451;  // yo
-      vowels << 0x430 << 0x435 << 0x438 << 0x43E << 0x443 << 0x44B << 0x44D << 0x44E << 0x44F << 0x451;
-      names << "a" << "b" << "v" << "g" << "d" << "je" << "zh" << "z" << "ji" << "iy" << "k" << "l" << "m" << "n" << "o" << "p"
+      letterNames << "a" << "b" << "v" << "g" << "d" << "je" << "zh" << "z" << "ji" << "iy" << "k" << "l" << "m" << "n" << "o" << "p"
             << "r" << "s" << "t" << "u" << "f" << "x" << "c" << "ch" << "sh" << "sch" << "'" << "i" << "j" << "e" << "ju" << "ja"
             << "yo";
-      qc ();
     }
 };
 
 
 
+#if 0
 struct Codestring : Root
 {
   const Alphabet& alphabet;
@@ -215,6 +437,7 @@ private:
   void parseRule (const string &line,
                   uchar pass);
 };
+#endif
 
 
 }  // namespace
