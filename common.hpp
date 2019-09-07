@@ -37,6 +37,7 @@
 
 
 #ifdef _MSC_VER
+  #pragma warning (disable : 4061)  // enumerator ... in switch of enum ... is not explicitly handled by a case label
   #pragma warning (disable : 4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
   #pragma warning (disable : 4365)  // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (bool -> size_t)
   #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
@@ -2656,6 +2657,42 @@ public:
 	  { return ! empty () && type == eDouble && d == d_arg; }
 	bool isDelimiter (char c) const
 	  { return ! empty () && type == eDelimiter && name [0] == c; }
+};
+
+
+
+struct TokenInput : Root
+{
+  CharInput ci;
+  const char commentStart {'\0'};
+  Token last;
+
+
+  TokenInput (const string &fName,
+              char commentStart_arg,
+      	      size_t bufSize = 100 * 1024,
+              uint displayPeriod = 0)
+    : ci (fName, bufSize, displayPeriod)
+    , commentStart (commentStart_arg)
+    {}
+
+
+  Token get ()
+    // Return: empty() <=> EOF
+    { const Token last_ (last);
+      last = Token ();
+      if (! last_. empty ())
+        return last_;
+      for (;;)
+      { Token t (ci);
+        if (t. empty ())
+          break;
+        if (! t. isDelimiter (commentStart))
+          return t;
+        ci. getLine ();
+      }
+      return Token ();
+    }
 };
 
 
