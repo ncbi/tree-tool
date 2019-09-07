@@ -1,0 +1,728 @@
+Russian sensu stricto
+  loaned: 
+    letters: f e
+    n k #
+    # sh k
+    n sh #
+
+C -> 
+  T  // voicedness 
+  L
+T ->  
+  p t    k    
+    s,sh      
+         x    // voiceless only
+    c,ch      // voiceless only
+L ->
+  m n         
+    l,r  j    
+  v           // phonetic voicedness
+
+phonetic word -> # (T^+ V)^+ T^+ #
+T^+ -> [C_init] [S] C [L]
+S -> s | z
+# T^+ -> 
+  # b d
+  # g d
+  # k t
+  # p ch
+  # p t
+  # p s
+  # ch t
+  # zh d
+  # l b
+  # l g
+  # m sch
+s ch -> sch
+
+T^+
+  regressive voicedness assimilation
+  regressive palatalized assimilation ?
+
+palatalized: ch
+non-palatalized: j, sh, zh, c
+
+*:
+b m
+p m
+g m
+k m
+
+
+#:
+# b #  6
+# b l  9
+# b r  10
+# b j  1
+# v #  100
+# v b  1
+# v v  1
+# v d  1
+# v d v  1
+# v d r  3
+# v z  8
+# v z b  1
+# v l  2
+# v m  3
+# v n  3
+# v p  5
+# v p r  2
+# v r  8
+# v s  27
+# v s k  2
+# v s k r  1
+# v s p  1
+# v s t  6
+# v s t r  4
+# v t  2
+# v h  3
+# v ch  1
+# g d  4
+# g l  8
+# g r  32
+# d v  19
+# d l  2
+# d n  3
+# d r  20
+# d j  2
+# zh #  2
+# zh d  6
+# zh r  2
+# z v  1
+# z d  2
+# z l  7
+# z n  19
+# k #  19
+# k v  1
+# k l  4
+# k n  5
+# k r  14
+# k t  5
+# l b  1
+# l g  1
+# m n  59
+# m r  2
+# m sch  1
+# n #  1
+# n r  1
+# p l  2
+# p r  139
+# p ch  1
+# p j  4
+# r #  2
+# r t  1
+# s #  41
+# s b  1
+# s v  29
+# s d  2
+# s zh  1
+# s k  31
+# s k v  1
+# s k r  1
+# s l  28
+# s m  16
+# s n  4
+# s p  4
+# s p r  6
+# s r  2
+# s s  1
+# s t  43
+# s t r  19
+# s h v  1
+# s ch  8
+# t v  3
+# t r  19
+# h v  1
+# h l  2
+# h r  3
+# ch r  3
+# ch t  43
+# sh v  1
+# sh l  1
+
+# b #  6
+# v #  100
+# zh #  2
+# k #  19
+# n #  1
+# r #  2
+# s #  41
+g r #  1
+d j #  5
+z d #  1
+z n j #  4
+l k #  2
+l j #  7
+n  s t v #  1
+n j #  11
+r t j #  1
+r h #  1
+r j #  4
+s l j #  3
+s t #  1
+s t r #  1
+s t j #  26
+s j #  69
+t j #  88
+ch j #  2
+sh j #  4
+
+
+
+n:
+# v n  3
+# d n  3
+# z n  19
+# k n  5
+# m n  59
+# n r  1
+# s n  4
+
+z n j #  4
+n | s t v #  1
+
+z d n  1
+l zh n  3
+l n | c  1
+l j k n  1
+l j n  12
+n d r  1
+n s k  3
+n s t v  8
+n j g  1
+n j k  2
+s t n  8
+
+
+m:
+# v m  3
+# m n  59
+# m r  2
+# m sch  1
+# s m  16
+
+
+d j m  1
+m s t  1
+m s t v  1
+s j m  5
+
+
+l:
+# b l  9
+# v l  2
+# g l  8
+# d l  2
+# z l  7
+# k l  4
+# l b  1
+# l g  1
+# p l  2
+# s l  28
+# h l  2
+# sh l  1
+
+l k #  2
+l j #  7
+s l j #  3
+
+d s l  1
+l zh n  3
+l n c  1
+l j b  1
+l j v  43
+l j z  1
+l j k  8
+l j k n  1
+l j n  12
+l j s k  2
+l j s t v  16
+l j t  2
+l j c  2
+l j sh  5
+l j sch  1
+s k l  1
+s t l  4
+t k l  1
+
+
+r:
+# b r  10
+# v d r  3
+# v p r  2
+# v r  8
+# v s k r  1
+# v s t r  4
+# g r  32
+# d r  20
+# zh r  2
+# k r  14
+# m r  2
+# n r  1
+# p r  139
+# r #  2
+# r t  1
+# s k r  1
+# s p r  6
+# s r  2
+# s t r  19
+# t r  19
+# f r  1
+# h r  3
+# ch r  3
+
+# r #  2
+g r #  1
+r t j #  1
+r h #  1
+r j #  4
+s t r #  1
+
+v s t r  1
+v t r  1
+z b r  1
+z v r  2
+n d r  1
+r s k  1
+r s t  1
+r t v  1
+r j k  2
+s b r  1
+s k r  1
+s p r  2
+s s t r  1
+s t r  27
+t k r  4
+t p r  1
+
+
+b:
+# b #  6
+# b l  9
+# b r  10
+# b j  1
+# v b  1
+# v z b  1
+# l b  1
+# s b  1
+
+# b #  6
+
+b s t  3
+b s t v  2
+b s ch  1
+d j b  2
+z b r  1
+l j b  1
+s b r  1
+
+
+v:
+# v #  100
+# v b  1
+# v v  1
+# v d  1
+# v d v  1
+# v d r  3
+# v z  8
+# v z b  1
+# v l  2
+# v m  3
+# v n  3
+# v p  5
+# v p r  2
+# v r  8
+# v s  27
+# v s k  2
+# v s k r  1
+# v s p  1
+# v s t  6
+# v s t r  4
+# v t  2
+# v h  3
+# v ch  1
+# d v  19
+# z v  1
+# k v  1
+# s v  29
+# s k v  1
+# s h v  1
+# t v  3
+# h v  1
+# sh v  1
+
+# v #  100
+n s t v #  1
+
+b s t v  2
+v s k  1
+v s t v  5
+v s t r  1
+v t r  1
+v j t  1
+d s t v  1
+z v r  2
+iy s t v  7
+l j v  43
+l j s t v  16
+m s t v  1
+n s t v  8
+r t v  1
+s k v  2
+s s v  1
+s s t v  2
+s t v  9
+t s t v  5
+
+
+g:
+# g d  4
+# g l  8
+# g r  32
+# l g  1
+
+g r #  1
+
+n j g  1
+
+
+d:
+# v d  1
+# v d v  1
+# v d r  3
+# g d  4
+# d v  19
+# d l  2
+# d n  3
+# d r  20
+# d j  2
+# zh d  6
+# z d  2
+# s d  2
+
+d j #  5
+z d #  1
+
+d s l  1
+d s t  5
+d s t v  1
+d j b  2
+d j m  1
+z d n  1
+n d r  1
+
+
+zh:
+# zh #  2
+# zh d  6
+# zh r  2
+# s zh  1
+
+# zh #  2
+
+l zh n  3
+
+
+z:
+# v z  8
+# v z b  1
+# z v  1
+# z d  2
+# z l  7
+# z n  19
+
+z d #  1
+z n j #  4
+
+z b r  1
+z v r  2
+z d n  1
+z j k  2
+l j z  1
+
+
+iy:
+
+
+iy s k  1
+iy s t v  7
+
+
+k:
+# v s k  2
+# v s k r  1
+# k #  19
+# k v  1
+# k l  4
+# k n  5
+# k r  14
+# k t  5
+# s k  31
+# s k v  1
+# s k r  1
+# sh k  2
+
+# k #  19
+l k #  2
+n k #  1
+
+v s k  1
+z j k  2
+iy s k  1
+l j k  8
+l j k n  1
+l j s k  2
+n s k  3
+n j k  2
+r s k  1
+r j k  2
+s k v  2
+s k l  1
+s k r  1
+s s k  6
+t k l  1
+t k r  4
+f s k  1
+
+
+p:
+# v p  5
+# v p r  2
+# v s p  1
+# p l  2
+# p r  139
+# p ch  1
+# p j  4
+# s p  4
+# s p r  6
+
+
+s p r  2
+t p r  1
+
+
+s:
+# v s  27
+# v s k  2
+# v s k r  1
+# v s p  1
+# v s t  6
+# v s t r  4
+# s #  41
+# s b  1
+# s v  29
+# s d  2
+# s zh  1
+# s k  31
+# s k v  1
+# s k r  1
+# s l  28
+# s m  16
+# s n  4
+# s p  4
+# s p r  6
+# s r  2
+# s s  1
+# s t  43
+# s t r  19
+# s h v  1
+# s ch  8
+
+# s #  41
+n s t v #  1
+s l j #  3
+s t #  1
+s t r #  1
+s t j #  26
+s j #  69
+
+b s t  3
+b s t v  2
+b s ch  1
+v s k  1
+v s t v  5
+v s t r  1
+d s l  1
+d s t  5
+d s t v  1
+iy s k  1
+iy s t v  7
+l j s k  2
+l j s t v  16
+m s t  1
+m s t v  1
+n s k  3
+n s t v  8
+r s k  1
+r s t  1
+s b r  1
+s k v  2
+s k l  1
+s k r  1
+s p r  2
+s s v  1
+s s k  6
+s s t v  2
+s s t r  1
+s t v  9
+s t l  4
+s t n  8
+s t r  27
+s t j  3
+s j m  5
+t s t  5
+t s t v  5
+t j s  24
+f s k  1
+
+
+t:
+# v s t  6
+# v s t r  4
+# v t  2
+# k t  5
+# r t  1
+# s t  43
+# s t r  19
+# t v  3
+# t r  19
+# ch t  43
+
+n s t v #  1
+r t j #  1
+s t #  1
+s t r #  1
+s t j #  26
+t j #  88
+
+b s t  3
+b s t v  2
+v s t v  5
+v s t r  1
+v t r  1
+v j t  1
+d s t  5
+d s t v  1
+iy s t v  7
+l j s t v  16
+l j t  2
+m s t  1
+m s t v  1
+n s t v  8
+r s t  1
+r t v  1
+s s t v  2
+s s t r  1
+s t v  9
+s t l  4
+s t n  8
+s t r  27
+s t j  3
+t k l  1
+t k r  4
+t p r  1
+t s t  5
+t s t v  5
+t j s  24
+
+
+f:
+# f r  1
+
+
+f s k  1
+
+
+h:
+# v h  3
+# s h v  1
+# h v  1
+# h l  2
+# h r  3
+
+r h #  1
+
+
+
+c:
+
+
+l n c  1
+l j c  2
+
+
+ch:
+# v ch  1
+# p ch  1
+# s ch  8
+# ch r  3
+# ch t  43
+
+ch j #  2
+
+b s ch  1
+
+
+sh:
+# sh v  1
+# sh k  2
+# sh l  1
+
+sh j #  4
+
+l j sh  5
+
+
+sch:
+# m sch  1
+
+
+l j sch  1
+
+
+':
+
+
+
+
+j:
+# b j  1
+# d j  2
+# p j  4
+
+d j #  5
+z n j #  4
+l j #  7
+n j #  11
+r t j #  1
+r j #  4
+s l j #  3
+s t j #  26
+s j #  69
+t j #  88
+ch j #  2
+sh j #  4
+
+v j t  1
+d j b  2
+d j m  1
+z j k  2
+l j b  1
+l j v  43
+l j z  1
+l j k  8
+l j k n  1
+l j n  12
+l j s k  2
+l j s t v  16
+l j t  2
+l j c  2
+l j sh  5
+l j sch  1
+n j g  1
+n j k  2
+r j k  2
+s t j  3
+s j m  5
+t j s  24
+

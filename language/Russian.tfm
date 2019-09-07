@@ -1,0 +1,26 @@
+# word
+# init
+char_star (char (delimiter (D)) 
+           char_star (char (dia_letter (DL))
+                      char_star (CS)
+                     )
+          ) -> 
+char_star (char (delimiter (D)) 
+           char_star (word (star_dia_letter (star_dia_letter () 
+                                             dia_letter (DL)
+                                            )
+                           ) 
+                      char_star (CS)
+                     )
+          ); 
+# extend
+char_star (word (W) 
+           char_star (char (dia_letter (DL)) 
+                      char_star (CS)
+                     )
+           ) ->
+char_star (word (star_dia_letter (star_dia_letter (W) dia_letter (DL))
+                )
+           char_star (CS)
+          );
+
