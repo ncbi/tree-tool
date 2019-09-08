@@ -40,6 +40,7 @@
   #pragma warning (disable : 4061)  // enumerator ... in switch of enum ... is not explicitly handled by a case label
   #pragma warning (disable : 4290)  // C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
   #pragma warning (disable : 4365)  // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (bool -> size_t)
+  #pragma warning (disable : 4503)  // decorated name length exceeded, name was truncated
   #pragma warning (disable : 4514)  // '...': unreferenced inline function has been removed
   #pragma warning (disable : 4521)  // multiple copy constructors specified
   #pragma warning (disable : 4522)  // multiple assignment operators specified
@@ -1481,7 +1482,7 @@ public:
     	{ const size_t j = P::size () - 1 - i;
     		if (i >= j)
     			break;
-    	  swap ((*this) [i], (*this) [j]);
+    	  std::swap ((*this) [i], (*this) [j]);
     	}
     	searchSorted = false;
     }
@@ -1490,7 +1491,7 @@ public:
   void randomOrder ()
 		{ Rand rand (seed_global);
 			for (T &t : *this)
-	      swap (t, (*this) [(size_t) rand. get ((ulong) P::size ())]);
+	      std::swap (t, (*this) [(size_t) rand. get ((ulong) P::size ())]);
     	searchSorted = false;
 		}
   T pop (size_t n = 1)
@@ -1561,7 +1562,7 @@ public:
       FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
 		      if ((*this) [j + 1] > (*this) [j])
-        	  swap ((*this) [j], (*this) [j + 1]);
+        	  std::swap ((*this) [j], (*this) [j + 1]);
 		      else
 		      	break;
     	searchSorted = true;
