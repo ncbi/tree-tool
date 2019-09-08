@@ -2438,7 +2438,7 @@ Sample::Sample (const Dataset &ds_arg)
 void Sample::finish ()
 {
   mult_sum = 0.0;
-  nEffective = 0.0;
+  nEffective = 0;
   for (const Real m : mult)
   {
     mult_sum += m;

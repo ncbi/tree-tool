@@ -1112,7 +1112,7 @@ public:
       if (! is. good ())
         throw runtime_error ("cannot open file " + strQuote (fName_));
   	  char* buf = nullptr;
-		  if (! is. rdbuf () -> pubsetbuf (buf, 1e6))   // PAR
+		  if (! is. rdbuf () -> pubsetbuf (buf, 1000000))   // PAR
 		  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName_));
       load (is);
     }
