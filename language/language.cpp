@@ -14,17 +14,6 @@ namespace Lang_sp
 
 // SExpr
 
-void SExpr::qc () const 
-{
- if (! qc_on)
-   return;
-
-  QC_ASSERT (! name. empty ());
-  QC_ASSERT (! contains (name, ' '));
-}
-
-
-
 SExpr* SExpr::parse (TokenInput &ti)
 {
   const Token t1 (ti. get ());
@@ -36,14 +25,14 @@ SExpr* SExpr::parse (TokenInput &ti)
   {
     case Token::eName: 
       if (isUpper (t1. name [0]))
-        s = new SVariable (t1. name); 
+        s = new SExprVariable (t1. name); 
       else
         s = new SExprGeneral (t1. name, 0); 
       break;
-    case Token::eText: s = new SContent (t1. name); break;
+    case Token::eText: s = new SExprContent (t1. name); break;
     case Token::eDelimiter: 
       if (t1. isDelimiter (')'))
-        s = new SEndOfList ();
+        s = new SExprEndOfList ();
       else if (   t1. isDelimiter ('-')
                || t1. isDelimiter (';')
               )
@@ -72,11 +61,12 @@ SExpr* SExpr::parse (TokenInput &ti)
     SExpr* child = SExpr::parse (ti);
     if (! child)
       throw runtime_error (FUNC "EOF");
-    if (child->asSEndOfList ())
+    if (child->asSExprEndOfList ())
     {
       delete child;
       break;
     }
+    ASSERT (child->asSExprNamed ());
     sg->children << child;
   }
 
@@ -86,7 +76,40 @@ SExpr* SExpr::parse (TokenInput &ti)
 
 
 
+// SExprNamed
+
+void SExprNamed::qc () const 
+{
+ if (! qc_on)
+   return;
+
+  QC_ASSERT (! name. empty ());
+  QC_ASSERT (! contains (name, ' '));
+}
+
+
+
+
 // SExprGeneral
+
+void SExprGeneral::deleteChildren ()
+{ 
+  ASSERT (! referred);
+
+  for (const SExpr* child : children)
+    if (child)
+    { 
+      if (const SExprGeneral* sg = child->asSExprGeneral ())
+        if (sg->referred)
+        { 
+          sg->referred = false;
+          continue;
+        }
+      delete child;
+    }
+}
+
+
 
 void SExprGeneral::qc () const 
 {
@@ -98,63 +121,162 @@ void SExprGeneral::qc () const
   for (const SExpr* child : children)
   {
     QC_ASSERT (child); 
-    QC_ASSERT (! child->asSEndOfList ());
+    QC_ASSERT (! child->asSExprEndOfList ());
     child->qc ();
-    QC_IMPLY (child->asSVariable (), children. size () == 1);
+    QC_IMPLY (child->asSExprVariable (), children. size () == 1);
   }
 }
 
 
 
-bool SExprGeneral::unify (const SExpr &pattern,
+void SExprGeneral::saveText (ostream &os) const
+{ 
+  os << name;
+  os << " (";
+  bool first = true;
+  for (const SExpr* child : children)
+  { 
+    if (! first)
+      os << ' ';
+    if (child)
+      child->saveText (os);
+    else
+      os << "nullptr";
+    first = false;
+  }
+  os << ')';
+}
+
+
+
+SExprGeneral* SExprGeneral::copy () const
+{
+  auto sg = new SExprGeneral (name, children. size ());
+  FFOR (size_t, i, children. size ())
+    sg->children [i] = children [i] -> copy ();
+  return sg;
+}
+
+
+
+Var2name SExprGeneral::getVarNames (const string &/*parentName*/) const
+{ 
+  Var2name var2name;
+  for (const SExpr* child : children)
+    if (const SExprNamed* sn = child->asSExprNamed ())
+    {
+      const Var2name other (sn->getVarNames (name));
+      for (const auto& otherIt : other)
+      {
+        auto& it = var2name. find (otherIt. first);
+        if (it == var2name. end ())
+          var2name [otherIt. first] = otherIt. second;
+        else if (it->second != otherIt. second)
+          throw logic_error ("Different SExpr names of variable " + strQuote (it->first));
+      }
+    }
+    else
+      throw logic_error ("getVarNames of a non-SExprNamed");
+
+  return var2name;
+}
+
+
+
+const SExprGeneral* SExprGeneral::copySubstitute (const Var2SExpr &var2SExpr) const
+{
+  if (children. size () == 1)
+    if (const SExprVariable* v = children [0] -> asSExprVariable ())
+    {
+      auto& it = var2SExpr. find (v->name);
+      if (it == var2SExpr. end ())
+        throw logic_error (FUNC "Variable " + strQuote (v->name) + " is missing");  // Cannot happen ??
+      const SExprGeneral* sg = it->second;
+      ASSERT (sg);
+      if (sg->referred)
+        sg = sg->copy ();
+      else
+        sg->referred = true;
+      ASSERT (name == sg->name);
+      return sg;
+    }
+
+  auto sg = new SExprGeneral (name, children. size ());
+  FFOR (size_t, i, children. size ())
+    if (const SExprNamed* sn = children [i] -> asSExprNamed ())
+      sg->children [i] = sn->copySubstitute (var2SExpr);
+    else
+      throw logic_error (FUNC "not SExprNamed");
+  return sg;
+}
+
+
+
+bool SExprGeneral::unify (const SExprNamed &pattern,
                           Var2SExpr &var2SExpr) const 
 {
-  if (const SExprGeneral* p = pattern. asSExprGeneral ())
+  const SExprGeneral* p = pattern. asSExprGeneral ();
+  if (! p)
+    return false;
+
+  if (name != pattern. name)
+    return false;
+
+  if (p->children. size () == 1)
+    if (const SExprVariable* v = p->children [0] -> asSExprVariable ())
+    {
+      const auto& it = var2SExpr. find (v->name);
+      if (it == var2SExpr. end ())
+        var2SExpr [v->name] = this;
+      else
+      {
+        ASSERT (it->second);
+        return equal (* it->second);
+      }
+      return true;
+    }
+      
+  if (children. size () != p->children. size ())
+    return false;
+  FFOR (size_t, i, children. size ())
   {
-    if (children. size () != p->children. size ())
+    const SExprNamed* p_child = p->children [i] -> asSExprNamed ();
+    if (! p_child)
+      throw logic_error (FUNC "Non-SExprNamed in pattern");
+    if (! children [i] -> unify (*p_child, var2SExpr))
       return false;
-    FFOR (size_t, i, children. size ())
-      if (! children [i] -> unify (* p->children [i], var2SExpr))
-        return false;
-    return true;
   }
 
-  if (const SVariable* v = pattern. asSVariable ())
-    return v->assign (*this, var2SExpr);
-
-  return false;
+  return true;
 }
 
 
 
-
-// SContent
-
-bool SContent::unify (const SExpr &pattern,
-                      Var2SExpr &var2SExpr) const
-{ 
-  if (const SVariable* v = pattern. asSVariable ())
-    return v->assign (*this, var2SExpr);
-  return    pattern. asSContent () 
-         && name == pattern. name; 
-}
-
-
-
-
-// SVariable
-
-bool SVariable::assign (const SExpr &target,
-                        Var2SExpr &var2SExpr) const
+bool SExprGeneral::apply (const Transformation &tr)
 {
-  auto& it = var2SExpr. find (name);
-  if (it == var2SExpr. end ())
-    throw logic_error ("Unknown variable " + strQuote (name) + " in pattern");
-  if (it->second)
-    return target. equal (* it->second);
-  it->second = & target;
+  Var2SExpr var2SExpr;
+  if (! unify (* tr. lhs, var2SExpr))
+    return false;
+
+  SExprGeneral* sg = var_cast (tr. rhs->copySubstitute (var2SExpr));
+  ASSERT (sg->name == name);
+  deleteChildren ();
+  children = move (sg->children);
+  ASSERT (sg->children. empty ());
+  delete sg;
 
   return true;
+}
+
+
+
+void SExprGeneral::applyDown (const Transformation &tr)
+{
+  while (apply (tr));
+
+  for (const SExpr* child : children)
+    if (const SExprGeneral* sg = child->asSExprGeneral ())
+      var_cast (sg) -> applyDown (tr);
 }
 
 
@@ -166,12 +288,12 @@ Transformation::Transformation (TokenInput &ti)
 {
   try 
   {
-    lhs = SExpr::parse (ti);
+    lhs = SExprGeneral::parse (ti);
     if (! lhs)
       return;
     Token (ti. ci, '-');
     Token (ti. ci, '>');
-    rhs = SExpr::parse (ti);
+    rhs = SExprGeneral::parse (ti);
     QC_ASSERT (rhs);
     Token (ti. ci, ';');
   }
@@ -195,11 +317,43 @@ void Transformation::qc () const
   QC_ASSERT (rhs);
   lhs->qc ();
   rhs->qc ();
+  QC_ASSERT (lhs->name == rhs->name);
 
-  const StringVector lhsVars (lhs->getVarNames ());
-  const StringVector rhsVars (rhs->getVarNames ());
-  QC_ASSERT (lhsVars == rhsVars);
+  const Var2name lhsVars (lhs->getVarNames (string ()));
+  const Var2name rhsVars (rhs->getVarNames (string ()));
+#undef TRANSFORMATION_REVERSIBLE  // ??
+#ifdef TRANSFORMATION_REVERSIBLE
+  if (lhsVars. size () != rhsVars. size ())
+    throw logic_error (FUNC "Different number of variables in LHS and RHS");
+#endif
+  for (const auto& it : lhsVars)
+  {
+    const auto& other = rhsVars. find (it. first);
+    if (other == rhsVars. end ())
+    #ifdef TRANSFORMATION_REVERSIBLE
+      throw logic_error (FUNC "LHS variable " + strQuote (it. first) + " is missing in RHS");
+    #else
+      ;
+    #endif
+    else
+      if (it. second != other->second)
+        throw logic_error (FUNC "Variable " + strQuote (it. first) + " is under " + strQuote (it. second) + " and " + strQuote (other->second));
+  }
+  for (const auto& it : rhsVars)
+  {
+    const auto& other = lhsVars. find (it. first);
+    if (other == lhsVars. end ())
+    #ifdef TRANSFORMATION_REVERSIBLE
+      throw logic_error (FUNC "RHS variable " + strQuote (it. first) + " is missing in LHS");
+    #else
+      ;
+    #endif
+    else 
+      if (it. second != other->second)
+        throw logic_error (FUNC "Variable " + strQuote (it. first) + " is under " + strQuote (other->second) + " and " + strQuote (it. second));
+  }
 }
+
 
 
 
@@ -212,11 +366,11 @@ Utf8::Utf8 (const string &fName)
   ASSERT (is. good ());
   char c;
   EXEC_ASSERT (getChar (is, c));
-  ASSERT (c == '\xEF');  // ??
+  ASSERT (c == '\xEF');  
   EXEC_ASSERT (getChar (is, c));
-  ASSERT (c == '\xBB');  // ??
+  ASSERT (c == '\xBB');  
   EXEC_ASSERT (getChar (is, c));
-  ASSERT (c == '\xBF');  // ??
+  ASSERT (c == '\xBF');  
 }
 
 
@@ -396,7 +550,7 @@ const string& Language::small2name (Codepoint c) const
 
 
 
-SExpr* Language::codepoint2SExpr (Codepoint c) const
+SExprGeneral* Language::codepoint2SExpr (Codepoint c) const
 { 
   SExpr* character = nullptr;
   if (c)
@@ -404,7 +558,7 @@ SExpr* Language::codepoint2SExpr (Codepoint c) const
     const size_t i = delimiters. indexOf (c);
     if (i != NO_INDEX)
     { 
-      auto delimContent = new SContent (delimiterNames [i]);
+      auto delimContent = new SExprContent (delimiterNames [i]);
       auto delim = new SExprGeneral ("delimiter", 1);
       delim->children [0] = delimContent;
       character = delim;
@@ -412,22 +566,22 @@ SExpr* Language::codepoint2SExpr (Codepoint c) const
     else
       if (const Codepoint cs = toSmall (c))
       { 
-        auto letterContent = new SContent (small2name (cs));
+        auto letterContent = new SExprContent (small2name (cs));
         auto letter = new SExprGeneral ("letter", 1);
         letter->children [0] = letterContent;
         auto capital = new SExprGeneral ("capital", 1);
         if (cs == c)
-          capital->children [0] = new SNil ();
+          capital->children [0] = new SFalse ();
         else
           capital->children [0] = new STrue ();
-        auto diaLetter = new SExprGeneral ("dia_letter", 2);
+        auto diaLetter = new SExprGeneral ("cap_letter", 2);
         diaLetter->children [0] = letter;
         diaLetter->children [1] = capital;  // diacritic
         character = diaLetter;
       }
       else
       { 
-        auto letter = new SContent (to_string (c));
+        auto letter = new SExprContent (to_string (c));
         auto foreign = new SExprGeneral ("foreign", 1);
         foreign->children [0] = letter;
         character = foreign;
@@ -435,7 +589,7 @@ SExpr* Language::codepoint2SExpr (Codepoint c) const
   }
   else
   {
-    auto delimContent = new SContent ("#");
+    auto delimContent = new SExprContent ("#");
     auto delim = new SExprGeneral ("delimiter", 1);
     delim->children [0] = delimContent;
     character = delim;
@@ -450,7 +604,7 @@ SExpr* Language::codepoint2SExpr (Codepoint c) const
 
 
 
-SExpr* Language::utf8_2SExpr (Utf8 &text) const
+SExprGeneral* Language::utf8_2SExpr (Utf8 &text) const
 {
   auto root = new SExprGeneral ("char_star", 2);
   root->children [0] = codepoint2SExpr (0);
@@ -473,12 +627,12 @@ SExpr* Language::utf8_2SExpr (Utf8 &text) const
     }
   }
   if (truncated)
-    parent->children [1] = new STruncated ();
+    parent->children [1] = new SExprTruncated ();
   else
   {
     auto char_star = new SExprGeneral ("char_star", 2);
     char_star->children [0] = codepoint2SExpr (0);
-    char_star->children [1] = new SNil ();
+    char_star->children [1] = new SExprGeneral ("char_star", 0);
     parent->children [1] = char_star;
   }
 
@@ -492,10 +646,14 @@ void Language::readTransformations (const string &tfmFName)
   ASSERT (trs. empty ());
 
   TokenInput ti (tfmFName, '#');
+  size_t n = 0;
   for (;;)
   {
+    n++;
     const Transformation tr (ti);
-    tr. qc ();
+    try { tr. qc (); }
+      catch (const exception &e)
+        { throw runtime_error ("Transformation " + to_string (n) + ": " + e. what ()); }
     if (tr. empty ())
       break;
     trs << tr;

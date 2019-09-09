@@ -10,6 +10,47 @@ using namespace Lang_sp;
 
 
 
+#if 0
+struct Codestring : Root
+{
+  const Alphabet& alphabet;
+  Vector<Codepoint> arr;
+
+
+  explicit Codestring (const Alphabet &alphabet_arg)
+    : alphabet (alphabet_arg)
+    {}
+  void saveText (ostream &os) const final
+    { for (const Codepoint c : arr)
+        os << alphabet. small2name (c) << ' ';
+    }
+  bool empty () const final
+    { return arr. empty (); }
+  void clear () final
+    { arr. clear (); }
+
+
+  bool operator< (const Codestring &other) const
+    { return arr < other. arr; }
+  Codestring& operator<< (Codepoint c)
+    { if (! c)
+        throw logic_error ("0 code point");
+      arr << c;
+      return *this;
+    }
+  size_t size () const
+    { return arr. size (); }
+  Codepoint front () const
+    { return arr. front (); }
+  Codepoint back () const
+    { return arr. back (); }
+  bool contains (Codepoint c) const
+    { return arr. contains (c); }
+};
+#endif
+
+
+
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -33,13 +74,16 @@ struct ThisApplication : Application
     russian. readTransformations (tfmFName);
     russian. qc ();
     
-    Utf8 text (textFName);
-    SExpr* root = russian. utf8_2SExpr (text);
-    ASSERT (root);
+    Utf8 textF (textFName);
+    unique_ptr<SExprGeneral> root (russian. utf8_2SExpr (textF));
+    ASSERT (root. get ());
     root->qc ();
-     
+  //root->saveText (cout);
+  //cout << endl;
+
+    russian. transform (*root);
     root->saveText (cout);
-    delete root;
+    cout << endl;
 
 
 #if 0

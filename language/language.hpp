@@ -14,51 +14,55 @@ namespace Lang_sp
 
 
 // SExpr
-struct SExprGeneral;
-struct SContent;
-struct SVariable;
-struct SEndOfList;
-struct STruncated;
+struct SExprNamed;
+  struct SExprGeneral;   // text
+  struct SExprContent;   // text
+  struct SExprVariable;
+struct SExprEndOfList;
+struct SExprTruncated;   // text
+
+typedef  map <string, const SExprGeneral*>  Var2SExpr;
+  // !nullptr
+typedef  map <string, string/*SExprGeneral::name*/>  Var2name;
+
+struct Transformation;
 
 
 
-struct SExpr : Named
+struct SExpr : Root
 {
 protected:
-  explicit SExpr (const string &name_arg) 
-    : Named (name_arg)
-    {}
+  SExpr () = default;
 public:
-  void qc () const override;
-  void saveText (ostream &os) const override
-    { os << name; }
+  virtual SExpr* copy () const = 0;
 
 
+  virtual const SExprNamed* asSExprNamed () const
+    { return nullptr; }
   virtual const SExprGeneral* asSExprGeneral () const
     { return nullptr; }
-  virtual const SContent* asSContent () const
+  virtual const SExprContent* asSExprContent () const
     { return nullptr; }
-  virtual const SVariable* asSVariable () const
+  virtual const SExprVariable* asSExprVariable () const
     { return nullptr; }
-  virtual const SEndOfList* asSEndOfList () const
+  virtual const SExprEndOfList* asSExprEndOfList () const
     { return nullptr; }
-  virtual const STruncated* asSTruncated () const
+  virtual const SExprTruncated* asSExprTruncated () const
     { return nullptr; }
 
+protected:
   static SExpr* parse (TokenInput &ti);
     // Return: nullptr <=> EOF
+    //         descendants: SExprNamed
+public:
 
-  virtual StringVector getVarNames () const 
-    { return StringVector (); }
-
-  typedef  map <string, const SExpr*>  Var2SExpr;
-  virtual bool unify (const SExpr &pattern,
-                        Var2SExpr &var2SExpr) const 
-    { throw logic_error ("Matching a bad SExpr"); }
+  virtual bool unify (const SExprNamed &/*pattern*/,
+                      Var2SExpr &/*var2SExpr*/) const 
+    { throw logic_error ("Unifying a bad SExpr"); }
     // Return: success
     // Output: var2SExpr::second
-    // Requires: *this has no SVariable's
-  bool equal (const SExpr &pattern) const
+    // Requires: *this has no SExprVariable's
+  bool equal (const SExprNamed &pattern) const
     { Var2SExpr var2SExpr;
       return unify (pattern, var2SExpr);
     }
@@ -66,121 +70,165 @@ public:
 
 
 
-struct SExprGeneral : SExpr
+struct SExprNamed : SExpr
 {
-  VectorOwn<SExpr> children;
+  string name;
+
+
+protected:
+  explicit SExprNamed (const string &name_arg)
+    : name (name_arg)
+    {}
+public:
+  void qc () const override;
+  void saveText (ostream &os) const override
+    { os << name; }
+
+
+  const SExprNamed* asSExprNamed () const final
+    { return this; }
+
+  virtual Var2name getVarNames (const string &/*parentName*/) const 
+    { return Var2name (); }
+  virtual const SExprNamed* copySubstitute (const Var2SExpr &var2SExpr) const = 0;
+    // Return: !nullptr
+};
+
+
+
+struct SExprGeneral : SExprNamed
+{
+  VectorPtr<SExpr> children;
     // !nullptr
     // Tree
+protected:
+  mutable bool referred {false};
+public:
 
 
   SExprGeneral (const string &name_arg,
                 size_t childrenNum) 
-    : SExpr (name_arg)
+    : SExprNamed (name_arg)
     { children. resize (childrenNum, nullptr); }
+ ~SExprGeneral ()
+    { deleteChildren (); }
+private:
+  void deleteChildren ();
+public:
   void qc () const override;
-  void saveText (ostream &os) const override
-    { os << name;
-      if (children. empty ())
-        return;
-      os << " (";
-      bool first = true;
-      for (const SExpr* child : children)
-      { if (! first)
-          os << ' ';
-        if (child)
-          child->saveText (os);
-        else
-          os << "nil";
-        first = false;
-      }
-      os << ')';
-    }
+  void saveText (ostream &os) const override;
+  SExprGeneral* copy () const final;
 
 
   const SExprGeneral* asSExprGeneral () const final
     { return this; }
 
-  StringVector getVarNames () const final
-    { StringVector s;
-      for (const SExpr* child : children)
-        s << child->getVarNames ();
-      s. sort ();
-      s. uniq ();
-      return s;
+  static SExprGeneral* parse (TokenInput &ti)
+    { if (SExpr* s = SExpr::parse (ti))
+        if (const SExprGeneral* sg = s->asSExprGeneral ())
+          return var_cast (sg);
+        else
+          throw logic_error ("Parsing non-SExprGeneral");
+      return nullptr;
     }
-  bool unify (const SExpr &pattern,
-                Var2SExpr &var2SExpr) const final;
+
+  Var2name getVarNames (const string &/*parentName*/) const final;
+  const SExprGeneral* copySubstitute (const Var2SExpr &var2SExpr) const final;
+  bool unify (const SExprNamed &pattern,
+              Var2SExpr &var2SExpr) const final;
+  bool apply (const Transformation &tr);
+    // Return: success
+  void applyDown (const Transformation &tr);
 };
 
 
 
-struct SNil : SExprGeneral
-  { SNil () : SExprGeneral ("nil", 0) {} };
-  // Also repressnts "false"
+struct SFalse : SExprGeneral
+  { SFalse () : SExprGeneral ("false", 0) {} };
 
 struct STrue : SExprGeneral
   { STrue () : SExprGeneral ("true", 0) {} };
 
 
 
-struct SContent : SExpr
+struct SExprContent : SExprNamed
 // name: arbitrary text
 {
-  explicit SContent (const string &name_arg) 
-    : SExpr (name_arg)
+  explicit SExprContent (const string &name_arg) 
+    : SExprNamed (name_arg)
     {}
+  void saveText (ostream &os) const override
+    { os << strQuote (name); }
+  SExprContent* copy () const final
+    { return new SExprContent (name); }
 
-  const SContent* asSContent () const final
+
+  const SExprContent* asSExprContent () const final
     { return this; }
-  bool unify (const SExpr &pattern,
-                Var2SExpr &var2SExpr) const final;
+
+  const SExprContent* copySubstitute (const Var2SExpr &/*var2SExpr*/) const final
+    { return new SExprContent (name); }
+  bool unify (const SExprNamed &pattern,
+              Var2SExpr &var2SExpr) const final
+    { return    pattern. asSExprContent () 
+             && name == pattern. name; 
+    }
 };
 
 
 
-struct SVariable : SExpr
+struct SExprVariable : SExprNamed
 {
-  explicit SVariable (const string &name_arg) 
-    : SExpr (name_arg)
+  explicit SExprVariable (const string &name_arg) 
+    : SExprNamed (name_arg)
     {}
+  SExprVariable* copy () const final
+    { return new SExprVariable (name); }
 
-  const SVariable* asSVariable () const final
+
+  const SExprVariable* asSExprVariable () const final
     { return this; }
 
-  StringVector getVarNames () const final
-    { return StringVector ({name}); }
-
-  bool assign (const SExpr &target,
-               Var2SExpr &var2SExpr) const;
+  Var2name getVarNames (const string &parentName) const final
+    { Var2name var2name;
+      var2name [name] = parentName;
+      return var2name; 
+    }
+  const SExprVariable* copySubstitute (const Var2SExpr &/*var2SExpr*/) const final
+    { throw logic_error ("SExprVariable::copySubstitute()"); }
 };
 
 
 
-struct SEndOfList : SExpr
+struct SExprEndOfList : SExpr
 // Auxiliary
 { 
-  SEndOfList () 
-    : SExpr ("end_of_list_") 
-    {} 
+  SExprEndOfList () = default;
+  SExprEndOfList* copy () const final
+    { throw logic_error ("SExprEndOfList::copy()"); }
 
-  const SEndOfList* asSEndOfList () const final
+
+  const SExprEndOfList* asSExprEndOfList () const final
     { return this; }
 };
 
 
 
-struct STruncated : SExpr
-// To be replacde by a non-STruncated SExpr
+struct SExprTruncated : SExpr
+// To be replaced by a non-SExprTruncated SExpr
 { 
-  STruncated () 
-    : SExpr ("truncated_") 
-    {} 
+  SExprTruncated () = default;
+  void saveText (ostream &os) const override
+    { os << "__truncated__"; }
+  SExprTruncated* copy () const final
+    { throw logic_error ("SExprTruncated::copy()"); }
 
-  const STruncated* asSTruncated () const final
+
+  const SExprTruncated* asSExprTruncated () const final
     { return this; }
 
-  bool unify (const SExpr &/*pattern*/,
-                Var2SExpr &/*var2SExpr*/) const final
+  bool unify (const SExprNamed &/*pattern*/,
+              Var2SExpr &/*var2SExpr*/) const final
     { return false; }
 };
 
@@ -191,23 +239,21 @@ struct STruncated : SExpr
 
 struct Transformation : Root
 {
-  const SExpr* lhs {nullptr};
-  const SExpr* rhs {nullptr};
+  const SExprGeneral* lhs {nullptr};
+  const SExprGeneral* rhs {nullptr};
   // !nullptr
 
 
   explicit Transformation (TokenInput &ti);
   void qc () const override;
-
-
-  bool empty () const final
-    { return ! lhs && ! rhs; }
   void saveText (ostream &os) const override
     { lhs->saveText (os);
       os << " -> ";
       rhs->saveText (os);
       os << ';' << endl;
     }
+  bool empty () const final
+    { return ! lhs && ! rhs; }
 };
 
 
@@ -242,9 +288,9 @@ struct Language : Root
 /* 
   CF-grammar:
     char_star -> char char_star | nil
-    char -> delimiter | dia_letter
+    char -> delimiter | cap_letter
     delimiter -> content
-    dia_letter -> letter capital  # bold underscore italics ...
+    cap_letter -> letter capital  # bold underscore italics ...
     letter -> content
     capital -> false | true
   text = char_star where first and last char's are delimiter('#')
@@ -262,7 +308,6 @@ struct Language : Root
   Codepoint startCapital;
   Codepoint startSmall;
   size_t size;
-  // Optional: map into the main letters ??
   Vector<Codepoint> extraCapital;
   Vector<Codepoint> extraSmall;
   //
@@ -290,14 +335,21 @@ private:
     //         c is capital => Return != c
   const string& small2name (Codepoint c) const;
 public:
-  SExpr* codepoint2SExpr (Codepoint c) const;
+  SExprGeneral* codepoint2SExpr (Codepoint c) const;
     // Return: !nullptr
     // Input: 0: text start/end
-  SExpr* utf8_2SExpr (Utf8 &text) const;
+  SExprGeneral* utf8_2SExpr (Utf8 &text) const;
     // Return: !nullptr
 
   void readTransformations (const string &tfmFName);
     // Output: trs
+  void transform (SExprGeneral& root) const
+    { Progress prog;
+      for (const Transformation& tr : trs)
+      { prog ();
+        root. applyDown (tr);
+      }
+    }
 };
 
 
@@ -317,45 +369,6 @@ struct RussianAlphabet : Language
 
 
 #if 0
-struct Codestring : Root
-{
-  const Alphabet& alphabet;
-  Vector<Codepoint> arr;
-
-
-  explicit Codestring (const Alphabet &alphabet_arg)
-    : alphabet (alphabet_arg)
-    {}
-  void saveText (ostream &os) const final
-    { for (const Codepoint c : arr)
-        os << alphabet. small2name (c) << ' ';
-    }
-  bool empty () const final
-    { return arr. empty (); }
-  void clear () final
-    { arr. clear (); }
-
-
-  bool operator< (const Codestring &other) const
-    { return arr < other. arr; }
-  Codestring& operator<< (Codepoint c)
-    { if (! c)
-        throw logic_error ("0 code point");
-      arr << c;
-      return *this;
-    }
-  size_t size () const
-    { return arr. size (); }
-  Codepoint front () const
-    { return arr. front (); }
-  Codepoint back () const
-    { return arr. back (); }
-  bool contains (Codepoint c) const
-    { return arr. contains (c); }
-};
-
-
-
 struct Category : Named
 {
   typedef VectorPtr<Category> Expansion;
@@ -369,17 +382,6 @@ struct Category : Named
     : Named (name_arg)
     {}
 };
-
-
-
-// -> common.hpp ??
-template <typename T /*:Named*/>
-  struct SExpr
-  {
-    const T* t {nullptr};
-      // !nullptr
-    Vector<SExpr<T>> children;
-  };
 
 
 

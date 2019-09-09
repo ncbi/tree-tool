@@ -1,26 +1,187 @@
-# word
+##### Windows "lf"
+char_star (char (delimiter ("cr")) 
+           char_star (char (delimiter ("lf")) 
+                      char_star (CS)
+                     )
+          ) -> 
+char_star (char (delimiter ("cr")) 
+           char_star (CS)
+          );
+
+
+##### new_line
+delimiter ("cr") -> delimiter (new_line);
+
+char_star (char (delimiter (new_line))
+           char_star (char (delimiter (new_line))
+                      char_star (CS)
+                     )
+          ) -> 
+char_star (char (delimiter (new_line))
+           char_star (CS)
+          );
+
+
+##### cap_word
 # init
 char_star (char (delimiter (D)) 
-           char_star (char (dia_letter (DL))
+           char_star (char (cap_letter (letter (L) 
+                                        capital (CAP)
+                                       )
+                           )
                       char_star (CS)
                      )
           ) -> 
 char_star (char (delimiter (D)) 
-           char_star (word (star_dia_letter (star_dia_letter () 
-                                             dia_letter (DL)
-                                            )
-                           ) 
+           char_star (cap_word (star_cap_letter (star_cap_letter () 
+                                                 cap_letter (letter (L) 
+                                                             capital (CAP))
+                                                            )
+                                first_capital (capital (CAP))
+                                rest_capital (true)
+                                rest_small   (true)
+                               ) 
                       char_star (CS)
                      )
           ); 
+
 # extend
-char_star (word (W) 
-           char_star (char (dia_letter (DL)) 
+char_star (cap_word (star_cap_letter (SCL)
+                     first_capital (FIRST_CAP)
+                     rest_capital (REST_CAP)
+                     rest_small   (REST_SMALL)
+                    )
+           char_star (char (cap_letter (letter(L) capital(true))) 
                       char_star (CS)
                      )
            ) ->
-char_star (word (star_dia_letter (star_dia_letter (W) dia_letter (DL))
+char_star (cap_word (star_cap_letter (star_cap_letter (SCL) 
+                                      cap_letter (letter(L) capital(true))
+                                     )
+                     first_capital (FIRST_CAP)
+                     rest_capital (REST_CAP)
+                     rest_small   (false)
+                    )
+           char_star (CS)
+          );
+
+char_star (cap_word (star_cap_letter (SCL)
+                     first_capital (FIRST_CAP)
+                     rest_capital (REST_CAP)
+                     rest_small   (REST_SMALL)
+                    )
+           char_star (char (cap_letter (letter(L) capital(false))) 
+                      char_star (CS)
+                     )
+           ) ->
+char_star (cap_word (star_cap_letter (star_cap_letter (SCL) 
+                                      cap_letter (letter(L) capital(false))
+                                     )
+                     first_capital (FIRST_CAP)
+                     rest_capital (false)
+                     rest_small   (REST_SMALL)
+                    )
+           char_star (CS)
+          );
+
+
+##### sentence_end
+char_star (char (delimiter (new_line))
+           char_star (CS)
+          ) ->
+char_star (char (delimiter ("space"))
+           char_star (sentence_end (delimiter (new_line))
+                      char_star (char (delimiter ("space"))
+                                 char_star (CS)
+                                )
+                    )
+          );
+
+
+char_star (char (delimiter ("period")) 
+           char_star (char (delimiter ("space")) 
+                      char_star (CS)
+                     )
+          ) ->
+char_star (sentence_end (delimiter ("period")) 
+           char_star (char (delimiter ("space")) 
+                      char_star (CS)
+                     )
+          );
+
+char_star (char (delimiter ("exclamation")) 
+           char_star (CS)
+          ) ->
+char_star (sentence_end (delimiter ("exclamation")) 
+           char_star (CS)
+          );
+
+char_star (char (delimiter ("question")) 
+           char_star (CS)
+          ) ->
+char_star (sentence_end (delimiter ("question")) 
+           char_star (CS)
+          );
+
+char_star (char (delimiter ("#")) 
+           char_star (CS)
+          ) ->
+char_star (sentence_end (delimiter ("#")) 
+           char_star (CS)
+          );
+
+char_star (sentence_end (delimiter (D)) 
+           char_star (sentence_end (delimiter (new_line)) 
+                      char_star (CS)
+                     )
+          ) ->
+char_star (sentence_end (delimiter (D)) 
+           char_star (CS)
+          );
+
+
+##### space: remove 
+char_star (char (delimiter ("space")) 
+           char_star (CS)
+          ) -> 
+char_star (CS);
+
+
+##### word
+# init
+char_star (cap_word (star_cap_letter (star_cap_letter (SCL) 
+                                      cap_letter (letter(L) capital(false))
+                                     )
+                     first_capital (capital (false))
+                     rest_capital  (false)
+                     rest_small    (true)
+                    )
+           char_star (CS)
+          ) ->
+char_star (word (star_letter (star_cap_letter (SCL) 
+                              letter (L)
+                             )
                 )
            char_star (CS)
           );
+          
+# extend
+star_letter (star_cap_letter (star_cap_letter (SCL) 
+                              cap_letter (letter (L2) capital (CAP))
+                             ) 
+             letter (L1)
+            ) ->
+star_letter (star_letter (star_cap_letter (SCL) 
+                          letter (L2)
+                         ) 
+             letter (L1)
+            );
+
+# finish
+star_letter (star_cap_letter () 
+             letter (L)
+            ) ->
+star_letter (star_letter () 
+             letter (L)
+            );
 
