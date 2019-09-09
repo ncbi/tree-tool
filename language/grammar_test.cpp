@@ -17,7 +17,7 @@ struct ThisApplication : Application
     { addPositional ("grammar", "CF-Grammar file"); }
 
 
-  void body () const
+  void body () const final
   {
     const string grammarFName (getArg ("grammar"));
     ASSERT (! grammarFName. empty ());

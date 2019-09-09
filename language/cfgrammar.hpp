@@ -27,7 +27,7 @@ struct Position;
 
 
 
-const char eot = '\0';
+constexpr char eot = '\0';
   // "End of text"
 
 
@@ -176,8 +176,7 @@ struct Position : Root
     // --> incomplete Syntagm's in Syntagms ??
 
 
-  Position ()
-    {}
+  Position () = default;
  ~Position ()
     { for (auto& it : terminal2syntagms)  
         delete it. second;
@@ -426,7 +425,7 @@ struct NonTerminal : Symbol
 
   // Analysis
   // Cover of lhsRules 
-  map <const Terminal*, VectorPtr<Rule> > terminal2rules [2/*Rule::isLeftRecursive()*/];
+  map <const Terminal*, VectorPtr<Rule>> terminal2rules [2/*Rule::isLeftRecursive()*/];
     // Parsing table
     // Index by Terminal::num ??
     // !Rule::erasable

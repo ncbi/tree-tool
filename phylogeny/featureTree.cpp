@@ -138,7 +138,7 @@ void Phyl::qc () const
     { QC_ASSERT (static_cast <const Phyl*> (parent) -> core. size () == n); }
 	FFOR (size_t, i, core. size ())
 	{
- 	  QC_ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core); 
+ 	  QC_ASSERT ((int) parent2core [false] [i]. core <= (int) parent2core [true] [i]. core); 
  	//QC_IMPLY (getFeatureTree (). allTimeZero, fabs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
  	  QC_ASSERT (! (   parent2core [false] [i]. core == UBOOL
  	             && parent2core [true]  [i]. core == UBOOL
@@ -148,7 +148,7 @@ void Phyl::qc () const
  	  {
 	    QC_IMPLY (   parent2core [false] [i]. core  != UBOOL
   	    	      && parent2core [false] [i]. core == parent2core [true] [i]. core,
-  	    	      core [i] == parent2core [false] [i]. core
+  	    	      (int) core [i] == (int) parent2core [false] [i]. core
   	    	     );
 	  }
  	}
@@ -2048,10 +2048,12 @@ FeatureTree::FeatureTree (const string &treeFName,
   // nominal2values, Genome::nominals
   ASSERT (nominal2values. empty ());
  	for (const DiGraph::Node* node : nodes)
- 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 		  try { var_cast (g) -> coreSet2nominals (); }
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ()) 
+    { // parentheses are needed for Visual C++
+ 		  try { var_cast (g) -> coreSet2nominals (); } 
  		    catch (const exception &e)
  		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
+    }
 
   constexpr size_t displayPeriod = 100;  // PAR
 

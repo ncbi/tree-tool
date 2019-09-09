@@ -65,7 +65,7 @@ constexpr uint subgraphDepth = areaRadius_std;
 constexpr uint boundary_size_max_std = 500;  
 constexpr uint sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
 constexpr Prob rareProb = 0.01; 
-constexpr size_t dissim_progress = 1e5;
+constexpr size_t dissim_progress = 100000;
 constexpr Real dissimCoeffProd_delta = 1e-6; 
 
 
