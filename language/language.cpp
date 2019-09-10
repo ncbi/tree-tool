@@ -2,9 +2,10 @@
 
 #undef NDEBUG
 #include "../common.inc"
-#include "cfgrammar.hpp"
+//#include "cfgrammar.hpp"
 
 #include "language.hpp"
+
 
 
 
@@ -132,19 +133,70 @@ void SExprGeneral::qc () const
 void SExprGeneral::saveText (ostream &os) const
 { 
   os << name;
-  os << " (";
-  bool first = true;
-  for (const SExpr* child : children)
-  { 
-    if (! first)
-      os << ' ';
-    if (child)
+  if (children. empty ())
+    return;
+  if (isSmall ())
+  {
+    os << " (";
+    bool first = true;
+    for (const SExpr* child : children)
+    { 
+      if (! first)
+        os << ' ';
       child->saveText (os);
-    else
-      os << "nullptr";
-    first = false;
+      first = false;
+    }
+    os << ')';
   }
-  os << ')';
+  else
+  {
+    const ebool left = isLeftList ();
+    switch (left)
+    {
+      case EFALSE: os << " [*LIST]"; break;
+      case ETRUE:  os << " [LIST*]"; break;
+      default: break;
+    }
+    Offset::newLn (os);
+    os << '(';
+    {
+      const Offset ofs;
+      if (left == UBOOL)
+        for (const SExpr* child : children)
+        { 
+          Offset::newLn (os);
+          child->saveText (os);
+        }
+      else
+        saveList (os, (bool) left);
+    }
+    Offset::newLn (os);
+    os << ')';
+  }
+}
+
+
+
+void SExprGeneral::saveList (ostream &os,
+                             bool left) const
+{ 
+  const SExprGeneral* sg = this;
+  for (;;)
+  {
+    if (sg->children. empty ())
+      break;
+    ASSERT (sg->children. size () == 2);
+    Offset::newLn (os);
+    sg->children [left] -> saveText (os);
+    if (const SExprTruncated* st = sg->children [! left] -> asSExprTruncated ())
+    {
+      Offset::newLn (os);
+      st->saveText (os);
+      break;
+    }
+    sg = sg->children [! left] -> asSExprGeneral ();
+    ASSERT (sg);
+  }
 }
 
 
@@ -168,7 +220,7 @@ Var2name SExprGeneral::getVarNames (const string &/*parentName*/) const
       const Var2name other (sn->getVarNames (name));
       for (const auto& otherIt : other)
       {
-        auto& it = var2name. find (otherIt. first);
+        const auto& it = var2name. find (otherIt. first);
         if (it == var2name. end ())
           var2name [otherIt. first] = otherIt. second;
         else if (it->second != otherIt. second)
@@ -188,7 +240,7 @@ const SExprGeneral* SExprGeneral::copySubstitute (const Var2SExpr &var2SExpr) co
   if (children. size () == 1)
     if (const SExprVariable* v = children [0] -> asSExprVariable ())
     {
-      auto& it = var2SExpr. find (v->name);
+      const auto& it = var2SExpr. find (v->name);
       if (it == var2SExpr. end ())
         throw logic_error (FUNC "Variable " + strQuote (v->name) + " is missing");  // Cannot happen ??
       const SExprGeneral* sg = it->second;
@@ -284,23 +336,17 @@ void SExprGeneral::applyDown (const Transformation &tr)
 
 // Transformation
 
-Transformation::Transformation (TokenInput &ti)
+Transformation* Transformation::parse (TokenInput &ti)
 {
-  try 
-  {
-    lhs = SExprGeneral::parse (ti);
-    if (! lhs)
-      return;
-    Token (ti. ci, '-');
-    Token (ti. ci, '>');
-    rhs = SExprGeneral::parse (ti);
-    QC_ASSERT (rhs);
-    Token (ti. ci, ';');
-  }
-  catch (const exception &e)
-  {  
-    throw runtime_error ("Line " + to_string (ti. ci. lineNum + 1) + ", position " + to_string (ti. ci. charNum + 1) + ": " + e. what ());
-  }
+  SExprGeneral* lhs = SExprGeneral::parse (ti);
+  if (! lhs)
+    return nullptr;
+  Token (ti. ci, '-');
+  Token (ti. ci, '>');
+  SExprGeneral* rhs = SExprGeneral::parse (ti);
+  QC_ASSERT (rhs);
+  Token (ti. ci, ';');
+  return new Transformation (lhs, rhs);
 }
 
 
@@ -310,11 +356,9 @@ void Transformation::qc () const
   if (! qc_on)
     return;
 
-  if (empty ())
-    return;
-
   QC_ASSERT (lhs);
   QC_ASSERT (rhs);
+  QC_ASSERT (lhs != rhs);
   lhs->qc ();
   rhs->qc ();
   QC_ASSERT (lhs->name == rhs->name);
@@ -403,11 +447,12 @@ size_t Utf8::nextBytes (char &c)
   size_t n = 0;
   while (c & '\x80')
   {
-    c = c << 1;
+    c = (char) (2 * c);
     n++;
   }
   ASSERT (n > 1);
-  c = c >> n;
+  FOR (size_t, i, n)
+    c = (char) (c / 2);
   return n - 1;
 }
 
@@ -477,7 +522,7 @@ void Language::qc () const
 
   QC_ASSERT (size);
   QC_ASSERT (startCapital > 32);
-  QC_ASSERT (startSmall >= startCapital + (int) size);
+  QC_ASSERT (startSmall >= startCapital + size);
 
   QC_ASSERT (extraCapital. size () == extraSmall.size ());
   if (! extraCapital. empty ())
@@ -510,8 +555,11 @@ void Language::qc () const
   QC_ASSERT (nameSet. size () == letterNames. size ());
 
 
-  for (const Transformation& tr : trs)
-    tr. qc ();
+  for (const Transformation* tr : trs)
+  {
+    QC_ASSERT (tr);
+    tr->qc ();
+  }
 }
 
 
@@ -521,18 +569,18 @@ Codepoint Language::toSmall (Codepoint c) const
   ASSERT (c > 0);
 
   if (   c >= startSmall
-      && c < startSmall + (int) size
+      && c < startSmall + size
      )
     return c;
   if (   c >= startCapital
-      && c < startCapital + (int) size
+      && c < startCapital + size
      )
-    return c + capitalShift ();
+    return c + (Codepoint) capitalShift ();
 
   if (extraSmall. contains (c))
     return c;
   if (extraCapital. contains (c))
-    return c + extraCapitalShift ();
+    return c + (Codepoint) extraCapitalShift ();
 
   return 0;
 }
@@ -604,23 +652,26 @@ SExprGeneral* Language::codepoint2SExpr (Codepoint c) const
 
 
 
-SExprGeneral* Language::utf8_2SExpr (Utf8 &text) const
+SExprGeneral* Language::utf8_2SExpr (Utf8 &text,
+                                     size_t char_max) const
 {
-  auto root = new SExprGeneral ("char_star", 2);
+  ASSERT (char_max);
+
+  auto root = new SExprGeneral ("char_list", 2);
   root->children [0] = codepoint2SExpr (0);
   Codepoint c = 0;
-  size_t i = 0; // ??
+  size_t i = 0; 
   SExprGeneral* parent = root;
   bool truncated = false;
   while (text. get (c))
   {
     ASSERT (c);
-    auto char_star = new SExprGeneral ("char_star", 2);
-    char_star->children [0] = codepoint2SExpr (c);
-    parent->children [1] = char_star;
-    parent = char_star;
+    auto char_list = new SExprGeneral ("char_list", 2);
+    char_list->children [0] = codepoint2SExpr (c);
+    parent->children [1] = char_list;
+    parent = char_list;
     i++;
-    if (i >= 100)  // PAR
+    if (i >= char_max)  
     {
       truncated = true;
       break;
@@ -630,10 +681,10 @@ SExprGeneral* Language::utf8_2SExpr (Utf8 &text) const
     parent->children [1] = new SExprTruncated ();
   else
   {
-    auto char_star = new SExprGeneral ("char_star", 2);
-    char_star->children [0] = codepoint2SExpr (0);
-    char_star->children [1] = new SExprGeneral ("char_star", 0);
-    parent->children [1] = char_star;
+    auto char_list = new SExprGeneral ("char_list", 2);
+    char_list->children [0] = codepoint2SExpr (0);
+    char_list->children [1] = new SExprGeneral ("char_list", 0);
+    parent->children [1] = char_list;
   }
 
   return root;
@@ -646,16 +697,16 @@ void Language::readTransformations (const string &tfmFName)
   ASSERT (trs. empty ());
 
   TokenInput ti (tfmFName, '#');
-  size_t n = 0;
   for (;;)
   {
-    n++;
-    const Transformation tr (ti);
-    try { tr. qc (); }
-      catch (const exception &e)
-        { throw runtime_error ("Transformation " + to_string (n) + ": " + e. what ()); }
-    if (tr. empty ())
+    Transformation* tr = Transformation::parse (ti);
+    if (! tr)
       break;
+    try { tr->qc (); }
+      catch (const exception &e)
+      {
+        throw runtime_error ("Line " + to_string (ti. ci. lineNum + 1) + ", position " + to_string (ti. ci. charNum + 1) + ": " + e. what ());
+      }
     trs << tr;
   }
 }

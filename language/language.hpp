@@ -30,6 +30,8 @@ struct Transformation;
 
 
 struct SExpr : Root
+// ?? Optimize: name --> uint
+//              children --> template <size_t n> {array <const SExpr*, n>;}
 {
 protected:
   SExpr () = default;
@@ -117,18 +119,52 @@ private:
 public:
   void qc () const override;
   void saveText (ostream &os) const override;
+private:
+  void saveList (ostream &os,
+                 bool left) const;
+public:
   SExprGeneral* copy () const final;
 
 
   const SExprGeneral* asSExprGeneral () const final
     { return this; }
 
+  bool isSmall () const
+    { if (children. size () > 1)
+        return false;
+      if (children. empty ())
+        return true;
+      if (const SExprGeneral* child = children [0] -> asSExprGeneral ())
+        return (child->isSmall ());
+      return true;
+    }
+  bool isList (bool left) const
+    { if (children. empty ())
+        return true;
+      if (children. size () != 2)
+        return false;
+      if (const SExprGeneral* child = children [! left] -> asSExprGeneral ())
+        if (child->name == name)
+          return child->isList (left);
+      if (children [! left] -> asSExprTruncated ())
+        return true;
+      return false;
+    }
+  ebool isLeftList () const
+    { if (isList (true))
+        return ETRUE;
+      if (isList (false))
+        return EFALSE;
+      return UBOOL;
+    }
+
   static SExprGeneral* parse (TokenInput &ti)
     { if (SExpr* s = SExpr::parse (ti))
-        if (const SExprGeneral* sg = s->asSExprGeneral ())
+      { if (const SExprGeneral* sg = s->asSExprGeneral ())
           return var_cast (sg);
         else
           throw logic_error ("Parsing non-SExprGeneral");
+      }
       return nullptr;
     }
 
@@ -145,7 +181,6 @@ public:
 
 struct SFalse : SExprGeneral
   { SFalse () : SExprGeneral ("false", 0) {} };
-
 struct STrue : SExprGeneral
   { STrue () : SExprGeneral ("true", 0) {} };
 
@@ -169,7 +204,7 @@ struct SExprContent : SExprNamed
   const SExprContent* copySubstitute (const Var2SExpr &/*var2SExpr*/) const final
     { return new SExprContent (name); }
   bool unify (const SExprNamed &pattern,
-              Var2SExpr &var2SExpr) const final
+              Var2SExpr &/*var2SExpr*/) const final
     { return    pattern. asSExprContent () 
              && name == pattern. name; 
     }
@@ -244,7 +279,17 @@ struct Transformation : Root
   // !nullptr
 
 
-  explicit Transformation (TokenInput &ti);
+  Transformation (const SExprGeneral* lhs_arg,
+                  const SExprGeneral* rhs_arg)
+    : lhs (lhs_arg)
+    , rhs (rhs_arg)
+    {}
+  static Transformation* parse (TokenInput &ti);
+  
+ ~Transformation ()
+    { delete lhs;
+      delete rhs;
+    }
   void qc () const override;
   void saveText (ostream &os) const override
     { lhs->saveText (os);
@@ -252,8 +297,6 @@ struct Transformation : Root
       rhs->saveText (os);
       os << ';' << endl;
     }
-  bool empty () const final
-    { return ! lhs && ! rhs; }
 };
 
 
@@ -285,16 +328,6 @@ private:
 
 
 struct Language : Root
-/* 
-  CF-grammar:
-    char_star -> char char_star | nil
-    char -> delimiter | cap_letter
-    delimiter -> content
-    cap_letter -> letter capital  # bold underscore italics ...
-    letter -> content
-    capital -> false | true
-  text = char_star where first and last char's are delimiter('#')
-*/
 {
   // delimiters
   Vector<Codepoint> delimiters;
@@ -314,7 +347,8 @@ struct Language : Root
   StringVector letterNames;
     // Of small letters
 
-  Vector<Transformation> trs;
+  VectorOwn<Transformation> trs;
+    // !nullptr
 
 
 protected:
@@ -338,16 +372,27 @@ public:
   SExprGeneral* codepoint2SExpr (Codepoint c) const;
     // Return: !nullptr
     // Input: 0: text start/end
-  SExprGeneral* utf8_2SExpr (Utf8 &text) const;
+  SExprGeneral* utf8_2SExpr (Utf8 &text,
+                             size_t char_max) const;
     // Return: !nullptr
+    /* 
+      CF-grammar:
+        char_list -> char char_list | nil
+        char -> delimiter | cap_letter
+        delimiter -> content
+        cap_letter -> letter capital  # bold underscore italics ...
+        letter -> content
+        capital -> false | true
+      text = char_list where first and last char's are delimiter('#')
+    */
 
   void readTransformations (const string &tfmFName);
     // Output: trs
   void transform (SExprGeneral& root) const
     { Progress prog;
-      for (const Transformation& tr : trs)
+      for (const Transformation* tr : trs)
       { prog ();
-        root. applyDown (tr);
+        root. applyDown (*tr);
       }
     }
 };
