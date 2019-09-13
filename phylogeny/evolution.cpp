@@ -63,7 +63,7 @@ Real intersection2dissim (Real size1,
          << '\t' << size2 
          << endl;
          
-  if (nullReal (max (size1, size2)))
+  if (! max (size1, size2))
   	return NaN;
 
   if (  min (size1, size2) 

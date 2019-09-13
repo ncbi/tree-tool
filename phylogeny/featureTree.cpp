@@ -621,9 +621,9 @@ Real coreChange2time (const FeatureTree& tree,
 
 	TimeFunc f (tree, parent2core /*, nodes*/);
 	
-	ASSERT (! positive (f. f (0)));
-	if (nullReal (f. f (0)))
-		return 0;
+	ASSERT (! positive (f. f (0.0)));
+	if (! f. f (0))
+		return 0.0;
 
 	if (! positive (f. f (INF)))
 		return INF;
@@ -631,7 +631,7 @@ Real coreChange2time (const FeatureTree& tree,
   Unverbose unv1;
   Unverbose unv2;
   const Real r = f. findZeroPositive (1.0, 1e-6);  // PAR
-  ASSERT (r >= 0);
+  ASSERT (r >= 0.0);
 
   return r;
 }

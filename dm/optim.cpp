@@ -494,7 +494,7 @@ bool FuncMult::optimizeGradient (bool         Min,
 
     // X -> Gradient
     getGradient (X, Gradient);
-    if (nullReal (Gradient. maxAbs ()))
+    if (! Gradient. maxAbs ())
       break;
     if (Min)
       Gradient. negate ();
@@ -588,11 +588,11 @@ Real FuncMult::GetGradientMove (bool         Min,
 
 // optimizeMarquardt
 
-bool FuncMult::optimizeMarquardt (bool         Min,
-                                  Real        PracticalOptimum,
+bool FuncMult::optimizeMarquardt (bool          Min,
+                                  Real          PracticalOptimum,
                                   MVector       &X,
                                   const MVector &dX,
-                                  unsigned short         MaxIter)
+                                  unsigned short MaxIter)
 {
   ASSERT (X.  rowsSize (false) == maxArgNum);
   ASSERT (dX. rowsSize (false) == maxArgNum);
@@ -630,7 +630,7 @@ bool FuncMult::optimizeMarquardt (bool         Min,
 
     // XNew
     getGradient (X, Gradient);
-    if (nullReal (Gradient. maxAbs ()))
+    if (! Gradient. maxAbs ())
       break;
     getHessian (X, Hessian);
 
