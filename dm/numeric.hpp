@@ -191,13 +191,6 @@ inline bool minimizeReal (Real &a,
  	  return true;
   }
 
-inline Real nonNegative (Real x)
-  { if (negative (x))
-      throw logic_error ("negative x = " + toString (x));
-    else
-      return max (0.0, x);
-  }
-
 inline void sqrEquation (Real a,
                          Real b,
                          Real c,

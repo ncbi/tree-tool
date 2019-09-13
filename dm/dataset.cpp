@@ -433,7 +433,7 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
     ASSERT (geReal (sample. mult_sum, mult_sum));
     mean = s / mult_sum;
     var = s2 / mult_sum - sqr (mean);
-    ASSERT (! negative (var));
+    ASSERT (var >= 0.0);
     x_prev = x;
   }
   
@@ -627,8 +627,8 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
     s2 += mult * sqr (x);
     const Real mean = s / mult_sum;
     const Real var = s2 / mult_sum - sqr (mean);
-    ASSERT (! negative (var));
-    if (! positive (var))
+    ASSERT (var >= 0.0);
+    if (! var)
       continue;
     normal. setParam (mean, sqrt (var));
     ASSERT (geReal (sample. mult_sum, mult_sum));

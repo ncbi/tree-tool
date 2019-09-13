@@ -278,7 +278,7 @@ void LogisticRegression::setAttrImportance ()
     resize ();  
 
     attrImportance [i] = (negLogLikelihood_ave_without_attr - negLogLikelihood_ave_old) / negLogLikelihood_ave_old;
-    IMPLY (! separated, ! negative (attrImportance [i]));
+    IMPLY (! separated, attrImportance [i] >= 0.0);
   }
   
 #ifndef NDEBUG
@@ -419,7 +419,7 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
 
   const MVector beta_init (beta);
   ASSERT (beta_init. defined ());
-  IMPLY (betaNonNegative, ! negative (beta. min ()));
+  IMPLY (betaNonNegative, beta. min () >= 0.0);
   
   setAbsCriterion ();
   const Real absCriterion_old = absCriterion;

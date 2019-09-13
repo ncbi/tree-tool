@@ -1245,7 +1245,7 @@ bool Matrix::getEigen (Eigen &eigen,
   }
   ASSERT (eigen. vec. size () == rowsSize (false));
 	ASSERT (eqReal (eigen. vec. sumSqr (), 1));
-  ASSERT (! negative (error));
+  ASSERT (error >= 0.0);
   ASSERT (iter_max >= 1);
 
 
@@ -1284,7 +1284,7 @@ bool Matrix::getEigen (Eigen &eigen,
     {
       if (psd)
       {
-        if (negative (eigen. value, 1e-3))  // PAR
+        if (eigen. value < 0.0)  // PAR
         {
           cout << "eigen.value = " << eigen. value << endl;
           ERROR;
@@ -1311,7 +1311,7 @@ Real Matrix::getChi2 () const
 {
   ASSERT (minSize () >= 2); 
 	ASSERT (defined ());
-	ASSERT (! negative (min ()));
+	ASSERT (min () >= 0.0);
 	
 	Real chi2 = 0;
   const Matrix rowSum (processRow2Col (false, & Matrix::sumRow));
@@ -1336,7 +1336,7 @@ Real Matrix::getLnFisherExact (bool oneTail) const
 {
   ASSERT (minSize () >= 2); 
   ASSERT (defined ());
-  ASSERT (! negative (min ())); 
+  ASSERT (min () >= 0.0); 
   ASSERT (isInteger ());
   
   
@@ -2305,7 +2305,7 @@ Matrix Matrix::getCholesky (bool t) const
 	
 	Matrix m (false, *this, false);
 	
-	const Real abs_max = maxAbs ();
+//const Real abs_max = maxAbs ();
 	FFOR (size_t, row, rowsSize (false))
 	  FFOR (size_t, col, rowsSize (false))
 	    if (col < row)
@@ -2317,16 +2317,10 @@ Matrix Matrix::getCholesky (bool t) const
 		  	  s -=   m. get (t, row, k) 
 		  	       * m. get (t, col, k);
 		  	if (row == col)
-		  		if (negative (s, abs_max * epsilon))
+		  		if (s < 0.0 /*negative (s, abs_max * epsilon)*/)
 		  		{
-		  		#if 1
 		  		  m. clear ();
 		  		  return m;  // Numerical problem
-		  		#else
-		  		  cout << s << endl; 
-		  		  print (cout); 
-		  			ERROR;
-		  		#endif
 		  	  }		  		
 		  		else
 		  		  m. putDiag (row, sqrt (std::max (s, 0.0)));

@@ -112,7 +112,7 @@ Real Func1::findZeroPositive (Real x_init,
     cout << "x_init=" << x_init << "  x_min=" << x_min << endl;  
     
   Real x_max = x_init;
-  while (negative (f (x_max)))
+  while (f (x_max) < 0.0)
     x_max *= 2.0;
   if (x_max != x_init)
   	return findZero (x_max / 2.0, x_max, precision);

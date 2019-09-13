@@ -2146,7 +2146,7 @@ bool Change::apply ()
   {
     const SubPath& subPath = subgraph. subPaths [objNum];
     const Dissim& dissim = tree. dissims [subPath. dissimNum];
-    const Real prediction = nonNegative (dissim. target - lr. getResidual (objNum));
+    const Real prediction = max (0.0, dissim. target - lr. getResidual (objNum));
     subPathsAbsCriterion += dissim. getAbsCriterion (prediction);
   }    
   improvement = max (0.0, subgraph. subPathsAbsCriterion - subPathsAbsCriterion);
@@ -5924,7 +5924,7 @@ void DistTree::quartet2arcLen ()
     }
     else
       belowPairs = 1;
-    ASSERT (! negative (belowSum));
+    ASSERT (belowSum >= 0.0);
     IMPLY (a->leaves == 1, belowSum == 0);
     ASSERT (belowPairs);
 
@@ -5949,7 +5949,7 @@ void DistTree::quartet2arcLen ()
       abovePairs += (allLeaves - b->leaves) * (b->leaves - a->leaves); 
     }
     aboveSum -= a->dissimSum;
-    ASSERT (! negative (aboveSum));
+    ASSERT (aboveSum >= 0.0);
     ASSERT (even (abovePairs));
     abovePairs /= 2;
     
