@@ -81,16 +81,16 @@ struct ThisApplication : Application
     
     L2LinearNumPrediction lr (sm, sp, *targetAttr);
     lr. qc ();
-  #if 1  // ??
+  #if 1
     lr. solveUnconstrained ();
-  #else
-  #if 0  // ??
+  #else  // for testing
+  #if 0  
     FFOR (size_t, attrNum, lr. beta. size ())
       lr. beta [attrNum] = 1.0;  // PAR
   #else
-    lr. beta [0] = 6.15061e-05;
-    lr. beta [1] = 30.5589;
-    lr. beta [2] = 3.71502e-05;
+    lr. beta [0] = 0.041179;
+    lr. beta [1] = 2.21651;
+    lr. beta [2] = 8.04923e-05;
     lr. setAbsCriterion ();
   #endif
     const bool solved = lr. solveUnconstrainedFast (nullptr, true/*??*/, 10, 0.01);  // PAR
