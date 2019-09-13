@@ -73,6 +73,12 @@ diff bla-A.mds data/bla-A.mds
 rm bla-A.mds
 
 echo ""
+echo "mdsTree: Mycobacterium_tuberculosis ..."
+rm -rf data/Mycobacterium_tuberculosis.dir/
+$THIS/mdsTree.sh data/Mycobacterium_tuberculosis ANI 2 &> /dev/null
+rm -r data/Mycobacterium_tuberculosis.dir/
+
+echo ""
 echo "clust"
 $THIS/clust  -qc  data/hmmScore 100 10 0.5 > hmmScore.clust
 diff hmmScore.clust data/hmmScore.clust
