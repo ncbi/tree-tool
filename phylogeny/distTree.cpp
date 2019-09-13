@@ -6306,6 +6306,7 @@ size_t DistTree::optimizeLenNode ()
         OFStream ofs ("optimizeLenNode.dm");
         starDs. saveText (ofs);
         // 2 arcs of an equal length, and all the other arcs have a positive length close to 0: why ??
+        ERROR;
       }
       prog (absCriterion2str ()); 
     }
