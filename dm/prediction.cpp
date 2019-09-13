@@ -353,8 +353,8 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
   unique_ptr<RealAttr1> residual (& makeResidualAttr ("_res", predictionAttr, ds));  
 
   setAbsCriterion (*residual);
-  const Real errorPrev_init = absCriterion2Error ();
-  ASSERT (! isNan (errorPrev_init));  
+  const Real absCriterion_init = absCriterion;
+  ASSERT (absCriterion_init >= 0.0);
   
   unique_ptr<RealAttr1> target1 (new RealAttr1 ("_target", ds)); 
 
@@ -362,7 +362,7 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
   bool ok = true;
   Progress prog;
   Space1<NumAttr1> sp (ds, false);
-  Real errorPrev = errorPrev_init;
+  Real absCriterion_prev = absCriterion_init;
   FOR (uint, iter, maxIter)
   {
     prog (real2str (absCriterion /*errorPrev*/, 6));  // PAR
@@ -388,32 +388,23 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
       for (Iterator it (sample); it ();)  
         (*residual) [*it] = (*residual) [*it] + betaDelta * predictor. getReal (*it);
       beta [attrNum] = lp->beta [0];
-    //cout << "attrNum = " << attrNum << "  beta = " << beta [attrNum] << endl;
-      // Save lp->absCriterion as a property of beta[attrNum] ??
     }
     setAbsCriterion (*residual);
-    const Real error = absCriterion2Error ();
+    if (absCriterion_prev / absCriterion - 1.0 <= errorRelDiff) 
     {
-      Unverbose unv;
-      if (verbose ())
-        cout << error << " " << errorPrev << endl;
-    }
-    if (errorPrev / error - 1.0 <= errorRelDiff) 
-    {
-      if (error >= errorPrev_init)
+      if (absCriterion >= absCriterion_init)
         ok = false;
       goto quit;
     }
-    errorPrev = error;
+    absCriterion_prev = absCriterion;
   }
   ok = false;
 
     
 quit:
   setAbsCriterion ();
-  ASSERT (absCriterion >= 0.0);
-    
-  return ok;
+  ASSERT (absCriterion >= 0.0);    
+  return ok && absCriterion < absCriterion_init;
 }
 
 
@@ -432,6 +423,8 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
   
   setAbsCriterion ();
   const Real absCriterion_old = absCriterion;
+  if (verbose ())
+    PRINT (absCriterion_old);
   
   if (beta. size () /*p*/ <= 2 * maxIter)  // PAR
   {
@@ -447,6 +440,7 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
             solved = false;
     }
   }
+  setAbsCriterion ();  // Previous absCriterion may be wrong
 
   if (! solved)
   {
@@ -461,6 +455,13 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
     beta = beta_init;
     absCriterion = NaN;
     solved = false;
+  }
+  
+  if (verbose ())
+  {
+    PRINT (solved);
+    PRINT (absCriterion);
+    PRINT (absCriterion_old);
   }
 
   return solved;
@@ -937,6 +938,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
 	  }
  	}
 
+
   // beta
   beta. multiply (false, 
                   betaCovariance, false, 
@@ -945,8 +947,6 @@ void L2LinearNumPrediction::solveUnconstrained ()
 
   // absCriterion
   const Real yHat2 = max (0.0, beta. multiplyVec (xy));
-//if (yHat2 < 0.0) 
-  //return;  // betaCovariance determinant = 0
 
   Real y2 = 0.0;
   {
@@ -1161,14 +1161,14 @@ Real L2LinearNumPrediction::getRelTargetCriterion (Real constTarget) const
     return NaN;
 
   // maxAbsCriterion
-  Real maxAbsCriterion = 0;
+  Real maxAbsCriterion = 0.0;
   for (Iterator it (sample); it ();)  
     maxAbsCriterion += it. mult * sqr (target [*it] - constTarget);
 
-  if (nullReal (maxAbsCriterion))
-    return INF;
-  else
+  if (maxAbsCriterion)
     return absCriterion / maxAbsCriterion;
+  else
+    return INF;
 }
 
 

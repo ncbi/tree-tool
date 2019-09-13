@@ -803,7 +803,7 @@ public:
                    size_t row,
                    Real rowSum);
     // Make sumRow() = rowSum
-    //   If nullReal(sumRow()) then put 0 into the row
+    //   If sumRow() = 0 then put 0 into the row
     // Return: rowSum-sumRow(t,row)  (old sumRow() -??)
   Real balance (bool  t,
                 Real rowSum);
@@ -897,6 +897,7 @@ public:
     // If *this is p.d. then use getCholesky() ??
   Determinant inverse ();
     // Generalized elimination method with the selection of the leading element
+    // May work incorrectly if there is (almost) linear dependence
     // Return: getDeterminant()
     // If result is 0.0 then no inversion is made
     // Requries: isSquare(), defined()

@@ -11,8 +11,8 @@ L50_num: 0.00254601
 n50_num: 2.74567e-07
 contigs_num: -0.0705411
 typestrain_num: 1.53267
-model_num: 16.1227
-community_num: 16.4752
+model_num: 16.0796
+community_num: 16.355
 pubmeds_num: 0.024731
 clusters_num: 0.000599146
 core_clusters_num: -0.00140447
@@ -28,8 +28,8 @@ typestrain_num: 0.0800964
 model_num: 0.0233409
 community_num: 0.027145
 pubmeds_num: 0.00063913
-clusters_num: 0.00233726
-core_clusters_num: 0.00625322
+clusters_num: 0.00233719
+core_clusters_num: 0.00625316
 
 Control:
 -logL = 0.170688

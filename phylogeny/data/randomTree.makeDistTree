@@ -9,29 +9,29 @@ Root: by length
 INPUT:
 # Leaves: 50
 # Discernible leaves: 50
-# Nodes: 69
+# Nodes: 99
 # Dissimilarities: 1225 (100.00 %)
 Dissimilarities factor: 6.26
-Ave. dissimilarity = 5.378897
-Abs. criterion = 5.6589e+02  Rel. criterion = 26.749 %
+Ave. dissimilarity = 4.996728
+Abs. criterion = 8.6861e+00  Rel. criterion = 3.438 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 0
 Optimizing arc lengths at each node ...
 # Nodes deleted = 0
-Abs. criterion = 2.4334e+02  Rel. criterion = 17.540 %
+Abs. criterion = 8.3918e+00  Rel. criterion = 3.379 %
 
 Optimizing topology: subgraphs ...
-# Iterations of subgraph optimization: 3
-Abs. criterion = 8.3501e+00  Rel. criterion = 3.370 %
+# Iterations of subgraph optimization: 8
+Abs. criterion = 8.3449e+00  Rel. criterion = 3.369 %
 
-Ave. radius: 3.967
+Ave. radius: 3.966
 
 OUTPUT:
-Abs. criterion = 8.3501e+00  Rel. criterion = 3.370 %
+Abs. criterion = 8.3449e+00  Rel. criterion = 3.369 %
 
 Relative epsilon2_0 = 0.00 %
-Mean residual = -0.00
+Mean residual = 0.00
 Correlation between residual^2 and dissimilarity = 0.07
 

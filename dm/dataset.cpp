@@ -331,7 +331,7 @@ Vector<RealAttr1*> NumAttr1::standardize (Dataset &ds_arg,
   Vector<RealAttr1*> vec;
   Real average, scatter;
   getAverageScatter (sample, average, scatter);
-  if (! isNan (scatter) && ! nullReal (scatter))
+  if (scatter > 0.0)
   {
     auto* a = new RealAttr1 (name + "_std", ds_arg);  
     vec << a;
@@ -634,12 +634,12 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
     ASSERT (geReal (sample. mult_sum, mult_sum));
     const Real rest = sample. mult_sum - mult_sum;
     const Real negLogLikelihood = 
-        mult_sum / 2 * (coeff + log (var)) 
-      + (nullReal (rest)
-           ? 0
-           : eqReal (x, x_max) 
+        mult_sum / 2.0 * (coeff + log (var)) 
+      + (rest
+           ? eqReal (x, x_max) 
              ? INF
              : rest * (log ((x_max - x) / (1 - normal. cdf (x))))
+           : 0.0
         );
     if (minimize (negLogLikelihood_min, negLogLikelihood))
       objNum_threshold = it. objNum;
@@ -888,9 +888,7 @@ Vector<RealAttr1*> PositiveAttr1::standardize (Dataset &ds_arg,
   Vector<RealAttr1*> vec;
   Real average, scatter;
   attr->getAverageScatter (sample, average, scatter);
-  if (isNan (scatter) || nullReal (scatter))
-  	delete attr;
-  else
+  if (scatter > 0.0)
   {
     vec << attr;
     ASSERT (positive (scatter));
@@ -899,6 +897,8 @@ Vector<RealAttr1*> PositiveAttr1::standardize (Dataset &ds_arg,
       if (! isMissing (*it))
         (*attr) [*it] = ((*attr) [*it] - average) / sd;
   }
+  else
+  	delete attr;
   return vec;
 }
 
@@ -911,9 +911,7 @@ PositiveAttr1* PositiveAttr1::standardizePositive (Dataset &ds_arg,
 	
   Real average, scatter;
   getAverageScatter (sample, average, scatter);
-  if (isNan (average) || nullReal (average))
-  	return nullptr;
-  else
+  if (average != 0.0)  // && !isNan()
   {
 		auto* attr = new PositiveAttr1 (name + "_pos_std", ds_arg, decimals);
     ASSERT (positive (average));
@@ -922,6 +920,8 @@ PositiveAttr1* PositiveAttr1::standardizePositive (Dataset &ds_arg,
         (*attr) [*it] = (*this) [*it] / average;
 	  return attr;
   }
+  else
+  	return nullptr;
 }
 
 
@@ -1445,7 +1445,7 @@ void NominAttr1::deleteEmptyCategories (const Sample &sample)
     unique_ptr<const Categorical> cat (getCategorical (sample));
     ASSERT (categories. size () == cat->probs. size ());
     FFOR (size_t, i, cat->probs. size ())
-      if (! nullReal (cat->probs [i]))
+      if (cat->probs [i])
       {
         newCat [i] = catNum;
         catNum++;
@@ -2531,32 +2531,32 @@ void Sample::save (const VectorPtr<Attr> &attrs,
   const size_t objWidth = getObjNameLen_max ();
   const size_t multWidth = toString (getMaxMult ()). size ();  // integer ??
   for (Iterator it (*this); it ();)  
-    {
-    	os. width ((streamsize) objWidth);
-      os << std::left << ds->objs [*it] -> name << " ";
-    	os. width ((streamsize) multWidth);
-    	if (! unitMult)
-    	{
-  	    os << std::right << fixed; os. precision (3); os << it. mult << " ";   // PAR
-  	  }
-      size_t col = 0;
-      for (const Attr* attr : attrs)
-  	    if (const Attr1* attr1 = attr->asAttr1 ())
-  	    {
-  	      os << " ";
-  	      os. width ((streamsize) widths [col]);
-  	      os << (attr1->rightAlign ? std::right : std::left) 
-  	      	 << (attr1->isMissing (*it) ? missingStr : attr1->value2str (*it));
-  	      col++;
-  	    }
-  	  ASSERT (col == widths. size ());
-      os << endl;
-    }
+  {
+  	os. width ((streamsize) objWidth);
+    os << std::left << ds->objs [*it] -> name << " ";
+  	os. width ((streamsize) multWidth);
+  	if (! unitMult)
+  	{
+	    os << std::right << scientific; os. precision (6); os << it. mult << " ";   // PAR
+	  }
+    size_t col = 0;
+    for (const Attr* attr : attrs)
+	    if (const Attr1* attr1 = attr->asAttr1 ())
+	    {
+	      os << " ";
+	      os. width ((streamsize) widths [col]);
+	      os << (attr1->rightAlign ? std::right : std::left) 
+	      	 << (attr1->isMissing (*it) ? missingStr : attr1->value2str (*it));
+	      col++;
+	    }
+	  ASSERT (col == widths. size ());
+    os << endl;
+  }
 
   for (const Attr* attr : attrs)
     if (const Attr2* attr2 = attr->asAttr2 ())
     {
-    	os << attr2->name << " FULL" << endl;  // ??
+    	os << attr2->name << " FULL" << endl;  // Use other formats ??
     	attr2->save (os, *this);
     }
 
@@ -3055,7 +3055,7 @@ size_t Categorical::getUniqueCategory () const
 {
   size_t unique = NO_INDEX;
   FFOR (size_t, i, probs. size ())
-    if (! nullReal (probs [i]))
+    if (probs [i])
     {
       if (unique == NO_INDEX)
         unique = i;
@@ -3265,7 +3265,7 @@ void Binomial::estimate ()
 			  	mx += it. mult * x;
 			  	m  += it. mult;
 			  }  
-			  if (nullReal (m))
+			  if (! m)
 			  {
 			  	setParam (n, 0);
 			  	break;
@@ -3542,9 +3542,9 @@ void Zipf::estimate ()
 	  cerr << "f(-0.5)  = " << zf. f (-0.5) << endl;  
 	}
   Real alpha_;  
-  if      (geReal (zf. f (alpha_min), 0))  // ??
+  if      (geReal (zf. f (alpha_min), 0.0))  // ??
   	alpha_ = - alpha_min;
-  else if (leReal (zf. f (alpha_max), 0))  // ??
+  else if (leReal (zf. f (alpha_max), 0.0))  // ??
   	alpha_ = - alpha_max;  
   else
     alpha_ = - zf. findZero (alpha_min, alpha_max, 0.001);  // PAR
@@ -3874,7 +3874,8 @@ void Cauchy::qc () const
 
 
 
-namespace {
+namespace 
+{
 
 struct CauchyScaleFunc : Func1
 {
@@ -3897,10 +3898,10 @@ struct CauchyScaleFunc : Func1
 	  {
 	  	const Cauchy::An::Value y = attr. getReal (*it);
 	  	n += it. mult;
-	  	s += 1 / (x2 + sqr (y - loc)) * it. mult;
+	  	s += 1.0 / (x2 + sqr (y - loc)) * it. mult;
 	  }
 	  
-	  return (nullReal (x2) ? 0 : (x2 * s)) - n / 2;
+	  return (x2 ? (x2 * s) : 0.0) - n / 2.0;
   }  
 };
 
@@ -4087,7 +4088,7 @@ void UniKernel::estimate ()
   
   const Real sd = setPoints ();
 
-  if (! nullReal (getRange ()))
+  if (getRange ())
   {
     // uniform_prob, halfWindow  
     // Strange optimum: large uniform_prob, small halfWindow ??
@@ -4501,8 +4502,8 @@ void MultiNormal::setParamFunc ()
 
   sigmaInv = sigmaInflated; 
 	const Determinant det (sigmaInv. inverse ());
-	if (   det. get () <= 0
-	    || nullReal (det. getAverage () /*, 1e-5*/)  // PAR  
+	if (   det. get () <= 0.0
+	    || nullReal (det. getAverage ())
 	   )  
 	{
 	#if 0
@@ -4556,8 +4557,8 @@ void MultiNormal::estimate ()
     
   setDim (analysis->space. size ());
   
-  mu. putAll (0);
-  sigmaExact. putAll (0);
+  mu. putAll (0.0);
+  sigmaExact. putAll (0.0);
 
   MVector muCount (mu);
   Matrix sigmaCount (sigmaExact);
@@ -4591,18 +4592,18 @@ void MultiNormal::estimate ()
 	{
 	  {
   	  const Real n = muCount [row];
-  	  if (nullReal (n))
-  	    mu [row] = 0;
-  	  else
+  	  if (n)
   	    mu [row] /= n;
+  	  else
+  	    mu [row] = 0.0;
   	}
   	FFOR (size_t, col, row + 1)
   	{
   	  const Real n = sigmaCount. get (false, row, col);
-  	  if (nullReal (n))
-  	    sigmaExact. put (false, row, col, 0);
+  	  if (n)
+  	    sigmaExact. putProd (false, row, col, 1.0 / n);
   	  else
-  	    sigmaExact. putProd (false, row, col, 1 / n);
+  	    sigmaExact. put (false, row, col, 0.0);
   	}
   }
   
@@ -4640,7 +4641,7 @@ bool MultiNormal::inflateSigma ()
 {
   sigmaInflated = sigmaExact;
   
-  if (nullReal (variance_min. maxAbs ()))
+  if (! variance_min. maxAbs ())
 	  return false;
 
 
@@ -5158,7 +5159,7 @@ void Mixture::balanceProb ()
 
 void Mixture::mergeComponents ()
 {
-  FFOR (size_t, i, components. size ())
+  FOR (size_t, i, components. size ())
   {
 	  const Component* comp = components [i];
   	FOR_REV_END (size_t, j, i + 1, components. size ())
@@ -5560,7 +5561,7 @@ void Clustering::splitCluster (size_t num)
     cout << "Splitting cluster " << num + 1 << endl;
 
 	Mixture::Component* oldComp = var_cast (mixt. components [num]);
-	oldComp->prob /= 2;  // ??
+	oldComp->prob /= 2.0;  // ??
 	const MultiNormal* oldMn = oldComp->distr->asMultiNormal ();
 	ASSERT (oldMn);
 	ASSERT (oldMn->getParamSet ());
@@ -6393,7 +6394,7 @@ void PositiveAverageModel::Component::setVar (Real var_arg)
   ASSERT (var_arg >= 0.0);
 
   var = var_arg;
-  if (nullReal (var))
+  if (! var)
     throw runtime_error (FUNC "name " + strQuote (name) + ": too small variance");
     
   sd = sqrt (var);

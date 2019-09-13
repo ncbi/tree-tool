@@ -203,13 +203,13 @@ inline void sqrEquation (Real a,
                          Real c,
                          Real &x1,
                          Real &x2)
-  { if (nullReal (a))
-    { x1 = x2 = - c / b; }
-    else
+  { if (a)
     { const Real det = sqrt (sqr (b) - 4 * a * c);
       x1 = (- b - det) / (2 * a);
       x2 = (- b + det) / (2 * a);
     }
+    else
+    { x1 = x2 = - c / b; }
   }
 
 
@@ -371,10 +371,12 @@ inline bool isProb (Real p)
 inline bool probIsLogic (Prob p)
   { return p == 0.0 || p == 1.0; }
   
-Prob toProb (Real x);
+Prob toProb (Real x, 
+             Real delta = 1e-5);  // PAR
   
-inline void makeProb (Real &x)
-  { x = toProb (x); }
+inline void makeProb (Real &x, 
+                      Real delta = 1e-5)  // PAR
+  { x = toProb (x, delta); }
 
 inline Prob negateProb (Prob p,
                         bool act)
@@ -595,7 +597,7 @@ struct Correlation
   Real getCorrelation () const
     { const Real a_sd = a_mv. getSD ();
       const Real b_sd = b_mv. getSD ();
-      return nullReal (a_sd) || nullReal (a_sd) ? 0.0 : getCovariance () / (a_sd * b_sd); 
+      return (a_sd && b_sd) ? getCovariance () / (a_sd * b_sd) : 0.0; 
     }
 };
 

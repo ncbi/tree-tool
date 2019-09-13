@@ -2112,7 +2112,17 @@ bool Change::apply ()
   if (verbose ())
     lr. qc ();  
   if (isNan (lr. absCriterion))
+  {
+  #if 1
+    if (const Leaf* leaf = from->asLeaf ())  // ??
+      if (leaf->name == "AY662658.1")
+      {
+        OFStream ofs ("apply.dm");
+        ds. saveText (ofs);
+      }
+  #endif
     return false;
+  }
 
   FFOR (size_t, i, lr. beta. size ())
     maximize (lr. beta [i], 0.0);
@@ -6244,11 +6254,12 @@ size_t DistTree::optimizeLenNode ()
     FFOR (size_t, objNum, subgraph. subPaths. size ())
     {
       const SubPath& subPath = subgraph. subPaths [objNum];
+      const size_t wholeObjNum = subPath. dissimNum;
       const VectorPtr<TreeNode>& path = subgraph. getPath (subPath, buf);
       FFOR (size_t, i, star. arcNodes. size ())
         if (path. contains (static_cast <const TreeNode*> (star. arcNodes [i])))
+      //if (star. arcNodes [i] -> pathDissimNums. containsFast (wholeObjNum))  // needs sorting ??
           (* const_static_cast <ExtBoolAttr1*> (sp [i])) [objNum] = ETRUE;        
-      const size_t wholeObjNum = subPath. dissimNum;
       var_cast (starDs. objs [objNum]) -> mult = dissims [wholeObjNum]. mult; 
       (*targetAttr) [objNum] = dissims [wholeObjNum]. target - subPath. dist_hat_tails;
     }
@@ -6280,8 +6291,9 @@ size_t DistTree::optimizeLenNode ()
         // ??
         cout << "!!optimizeLenNode1" << endl;  
         PRINT (absCriterion_lr_init);
-        PRINT (absCriterion);
+        PRINT (lr. absCriterion);
         PRINT (absCriterion_old);
+        PRINT (absCriterion);
         PRINT (subDepth);
         PRINT (star. center);
         PRINT (star. center->getParent ());
@@ -6291,7 +6303,7 @@ size_t DistTree::optimizeLenNode ()
         cout << "beta result:" << endl;
         FFOR (size_t, attrNum, arcNodes. size ())
           PRINT (lr. beta [attrNum]);
-        OFStream ofs ("optimizeLenNode");
+        OFStream ofs ("optimizeLenNode.dm");
         starDs. saveText (ofs);
         // 2 arcs of an equal length, and all the other arcs have a positive length close to 0: why ??
       }
@@ -6451,6 +6463,14 @@ void reinsert_thread (size_t from,
       continue;
     auto change = new Change (fromNode, toNode);
     change->improvement = improvement;
+  #if 1
+    if (const Leaf* leaf = change->from->asLeaf ())  // ??
+      if (leaf->name == "AY662658.1")
+      {
+        const ONumber on (cout, 12, true);
+        PRINT (change->improvement);
+      }
+  #endif
     changes << change;
   }
 }
@@ -6636,7 +6656,19 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
       if (verbose (1))
         cout << "Success: " << success << "  improvement = " << ch->improvement << endl;
       IMPLY (first && ! byNewLeaf, success && ch->improvement > 0.0);
-      if (! success || ch->improvement <= 0.0) 
+        // byNewLeaf => not all dissimilarities have been used to create Change
+
+    #if 1
+      if (const Leaf* leaf = ch->from->asLeaf ())  // ??
+        if (leaf->name == "AY662658.1")
+        {
+          const ONumber on (cout, 12, true);
+          PRINT (ch->improvement);
+          PRINT (success);
+        }
+    #endif
+
+      if (! success || ch->improvement <= 0.0)
       {
       //ASSERT (! first);
         if (verbose (1))
@@ -9397,8 +9429,6 @@ void NewLeaf::qc () const
 
 /* TO DO ??
 
-not solved LinearRegression
-  
 non-stability of results
 
 */

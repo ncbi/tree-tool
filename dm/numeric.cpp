@@ -157,15 +157,6 @@ Real str2real (const string& s)
 
 
 
-namespace 
-{
-  inline void setNonZero (Real &target,
-		              		    Real source)
-    { target = nullReal (source) ? epsilon : source; }
-}
-
-  
-  
 long round (Real a)
 {
   if (isNan (a))
@@ -400,6 +391,15 @@ Real Series::get (Real maxError) const
 
 /////////////////////////// ContinuedFraction /////////////////////////////
 
+namespace 
+{
+  inline void setNonZero (Real &target,
+		              		    Real source)
+    { target = nullReal (source) ? epsilon : source; }
+}
+
+  
+  
 bool ContinuedFraction::lentz (size_t maxIter,
                                Real &result) const
 {
@@ -504,17 +504,17 @@ Real lnComIncGamma (Real x,
 
 /////////////////////////
 
-Prob toProb (Real x)
+Prob toProb (Real x, Real delta)
 { 
+  ASSERT (delta >= 0.0);
   if (isNan (x))
     return x;
   if (isProb (x))
 	  return x;
-	const Real delta = 1e-5;  // PAR
 	if (nullReal (x, delta))
-		return 0;
+		return 0.0;
 	if (eqReal (x, 1, delta))
-		return 1;
+		return 1.0;
 	throw runtime_error ("Not a probability: " + real2str (x));
 }
   

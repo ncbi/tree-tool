@@ -598,8 +598,8 @@ bool Matrix::zeroDiagonal (size_t &row) const
 
   Real a;
   for (row = 0; row < rowsSize (false); row++)
-    if (  getDiag (row, a) &&
-        ! nullReal (a)
+    if (   getDiag (row, a) 
+        && a
        )
       return false;
   return true;
@@ -916,7 +916,7 @@ Real Matrix::firstNonZeroRow (bool t,
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, a) 
-        && ! nullReal (a)
+        && a
        )
       return a;
   return 0.0;
@@ -1066,7 +1066,7 @@ Real Matrix::entropyRow (bool t,
   Real r;
   FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, r) 
-        && ! nullReal (r)
+        && r
        )
       s += r * prob2info (r);
   return s;
@@ -1103,7 +1103,7 @@ void Matrix::covariance2correlation ()
     {
       const Real a = StDev. get (false, 0, row) *
                      StDev. get (false, 0, col);
-      putSymmetric (row, col, nullReal (a) ? 1 : (get (false, row, col) / a));
+      putSymmetric (row, col, a ? get (false, row, col) / a : 1.0);
     }
   }
 }
@@ -1263,7 +1263,7 @@ bool Matrix::getEigen (Eigen &eigen,
     {
       const Real a =        vec [row];
       const Real b = eigen. vec [row];
-      if (! nullReal (b))
+      if (b)
         mv. add (a / b, fabs (a) + fabs (b));
     }
     eigen. value = mv. getMean ();
@@ -2004,10 +2004,10 @@ Real Matrix::balanceRow (bool  t,
                          Real rowSum)
 {
   const Real s = sumRow (t, row);
-  if (nullReal (s))
-    putRow (t, row, 0.0);
-  else
+  if (s)
     putProdRow (t, row, rowSum / s);
+  else
+    putRow (t, row, 0.0);
   return rowSum - s;
 }
 
@@ -2086,7 +2086,7 @@ bool Matrix::normalizeRow (bool  t,
   sqrNorma = sumSqrRow (t, row);
   
   const Real norm = sqrt (sqrNorma);
-  if (nullReal (norm))
+  if (! norm)
     return false;
 
   putProdRow (t, row, 1 / norm);
@@ -2160,8 +2160,9 @@ Determinant Matrix::gaussElimination (bool t)
   FFOR (size_t, row, d. size)
   {
     size_t row1 = row;
-    while (row1 < rowsSize (t) &&
-           nullReal (get (t, row1, row)))
+    while (   row1 < rowsSize (t) 
+           && ! get (t, row1, row)
+          )
       row1++;
     if (row1 < rowsSize (t))
     {
@@ -2172,11 +2173,11 @@ Determinant Matrix::gaussElimination (bool t)
         d *= -1;
       }
       // eor 2
-      ASSERT (! nullReal (get (t, row, row)));      
+      ASSERT (get (t, row, row)); 
       FOR_START (size_t, row2, row + 1, rowsSize (t))
       {
         const Real k = get (t, row2, row) / get (t, row, row);
-        if (! nullReal (k))
+        if (k)
 	        FOR_START (size_t, col, row, rowsSize (! t))
 	          putInc (t, row2, col, - get (t, row, col) * k);
       }
@@ -2281,13 +2282,13 @@ bool Matrix::solveSystem (bool   t,
       s += source. get (sourceT, row, i) * get (t, i, col);
     const Real r = source. get (sourceT, row, source. rowsSize (! sourceT) - 1) - s;
     const Real a = source. get (sourceT, row, row);
-    if (nullReal (a))
-      if (nullReal (r))
-        put (t, row, col, 0.0);  // Solution is not unique
-      else 
-        return false;
-    else 
+    if (a)
       put (t, row, col, r / a);
+    else 
+      if (r)
+        return false;
+      else 
+        put (t, row, col, 0.0);  // Solution is not unique
   }
 
   return true;
@@ -2332,10 +2333,10 @@ Matrix Matrix::getCholesky (bool t) const
 		  	else
 		  	{
     	    const Real d = m. getDiag (row);
-		  	  if (nullReal (s, abs_max * epsilon) || nullReal (d, abs_max * epsilon))  // nullReal(d) => nullReal(s)
-		  		  m. put (t, col, row, 0);
-		  	  else
+		  	  if (s && d)
 		  		  m. put (t, col, row, s / d);
+		  	  else
+		  		  m. put (t, col, row, 0.0);
 		    }
 		  }
 		  
@@ -2367,11 +2368,9 @@ Determinant Matrix::inverse ()
   ASSERT (isSquare ());
   ASSERT (defined ());
 
-  // Inversion may work incorrectly if there is linear dependence -??
   // Determinant
   const Determinant determinant = getDeterminant ();
-//if (determinant. get () == 0)
-  if (nullReal (determinant. getAverage ()))
+  if (! determinant. get ())
     return determinant; 
 
 
@@ -2408,13 +2407,13 @@ Determinant Matrix::inverse ()
             }
     if (q == NO_INDEX || 
         r == NO_INDEX) 
-      return Determinant (rowsSize (false), 0);
+      return Determinant (rowsSize (false), 0.0);
     const Real f = get (false, r, q);
     // XMax = fabs (f)
     U [q] = r;
     V [r] = q;
-    if (nullReal (f)) 
-      return Determinant (rowsSize (false), 0);
+    if (! f)
+      return Determinant (rowsSize (false), 0.0);
     const Real coeff = 1.0 / f;
 
     // data
@@ -2679,9 +2678,9 @@ bool Eigen::makePositiveVec ()
   FFOR (size_t, i, vec. size ())
   {
     const Real a = vec [i];
-    if (nullReal (a))
+    if (! a)
       continue;
-    if (a < 0)
+    if (a < 0.0)
     {
       vec. negateRow (true, 0);
       return true;
@@ -2722,20 +2721,17 @@ Eigens::Eigens (const Matrix &matr,
   ASSERT (relError >= 0.0);
   
   
+  if (! (totalExplained_max > 0.0))
+    return;
+  
   const Real maxAbs = matr. maxAbs ();
   if (verbose ())
     cout << "maxAbs = " << maxAbs 
          << "  totalExplained_max = " << totalExplained_max
          << endl;
-  if (nullReal (maxAbs))
+  if (! maxAbs)
     return;  
-  if (   nullReal (totalExplained_max, 1e-6)  // PAR
-      && maxAbs <= 1e-3  // PAR
-     )
-    return;
 
-  ASSERT (positive (totalExplained_max));
-  
   
   Unverbose unv;
   
@@ -2744,7 +2740,7 @@ Eigens::Eigens (const Matrix &matr,
     // Eigen::vector's are orthogonal
   Rand rand;
   Matrix work (matr);
-  Real totalExplained = 0;
+  Real totalExplained = 0.0;
   unique_ptr<Eigen> eigen;
   const size_t len = matr. rowsSize (false);
   if (verbose ())
@@ -2889,12 +2885,12 @@ Eigens::Eigens (const Matrix &matr,
     explainedVarianceFrac += values [col];
   }   
   const Real tr = matr. getTrace ();
-  ASSERT (! nullReal (tr));
+  ASSERT (tr);
 //cout << vecs. size () << ' ' << tr << ' ' << explainedVarianceFrac << endl;  
   explainedVarianceFrac /= tr;
   if (psd)
   {
-    ASSERT (positive (tr));
+    ASSERT (tr > 0.0);
     minimize (explainedVarianceFrac, 1.0);
   }
 }

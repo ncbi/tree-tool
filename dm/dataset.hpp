@@ -1453,7 +1453,7 @@ template <typename T/*:Attr1*/>
         for (Iterator it (sample); it ();)  
         { os << P::ds. objs [*it] -> name;
           if (! unitMult)
-            os << "," << fixed << sample. mult [*it];
+            os << "," << scientific << sample. mult [*it];
           for (const T* attr : *this)
             os << "," << (attr->isMissing (*it) ? missingStr : attr->value2str (*it)); 
           os << endl;
@@ -2961,9 +2961,9 @@ public:
 private:
   Real logPdfStnd (Real xStnd) const final
     { return coeff == INF 
-               ? nullReal (xStnd)
-                 ? 0.0  // PAR
-                 : -INF
+               ? xStnd
+                 ? -INF
+                 : 0.0  // PAR
                : - 0.5 * (coeff + sqr (xStnd)); 
     }
 public:
@@ -2980,11 +2980,11 @@ public:
     { setParam (mean, sqrt (var)); }
   Prob pValue_2tail (Real x) const
     { const Real diff = fabs (getMean () - x);
-      if (nullReal (diff))
-        return 1;
-      if (nullReal (scale))
+      if (! diff)
+        return 1.0;
+      if (! scale)
         return 0.0;
-      return 2 * cdf (getMean () - diff); 
+      return 2.0 * cdf (getMean () - diff); 
     }
 };
 
@@ -3479,7 +3479,7 @@ public:
         throw runtime_error ("MultiNormal::coeff is NaN"); 
       x_field = variable;
       if (coeff == INF)
-        return nullReal (x_field. maxAbsDiff (false, mu, false)) ? 0.0 : -INF;  // PAR
+        return x_field. maxAbsDiff (false, mu, false) ? -INF : 0.0;  // PAR
       const Real mah = sigmaInv. getMahalanobis ( false
                                                 , x_field, true, 0
                                                 , mu,      true, 0
