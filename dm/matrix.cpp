@@ -2821,7 +2821,10 @@ Eigens::Eigens (const Matrix &matr,
     }
     
     totalExplained += explained;
-    if (totalExplainedFrac_max < 1 && greaterReal (totalExplained, totalExplainedFrac_max * totalExplained_max, 1e-5))  // PAR
+    if (   totalExplainedFrac_max < 1.0 
+      //&& greaterReal (totalExplained, totalExplainedFrac_max * totalExplained_max, 1e-5)  // PAR
+        && totalExplained > totalExplainedFrac_max * totalExplained_max
+       )
     {
       if (verbose ())
         cout << endl 
@@ -2837,7 +2840,7 @@ Eigens::Eigens (const Matrix &matr,
     for (const Eigen* other : vecs)
     {
     	const Real prod = fabs (other->vec. multiplyVec (eigen->vec) / (Real) len);
-      if (greaterReal (prod, 0.05))  // PAR  
+      if (prod > 0.05)  // PAR  
       {
         if (verbose ())
         	cout << "prod = " << scientific << prod 

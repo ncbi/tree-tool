@@ -3005,7 +3005,9 @@ DistTree::DistTree (const string &dataDirName,
       ASSERT (anchor);
       if (! leaf)
       {
-        while (anchor != root && greaterReal (arcLen, anchor->len))
+        while (   anchor != root 
+               && arcLen > anchor->len
+              )
         {
           arcLen -= anchor->len;
           anchor = static_cast <const DTNode*> (anchor->getParent ());

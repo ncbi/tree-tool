@@ -607,7 +607,7 @@ struct ZetaSeries : Series
 Real zeta (Real alpha,
            uint from)
 {
-  ASSERT (greaterReal (alpha, 1));
+  ASSERT (alpha > 1.0);
   
   constexpr size_t size = 1000;  // PAR
 	static Real res [size];
@@ -621,9 +621,9 @@ Real zeta (Real alpha,
 		}
 	}
 	size_t index = NO_INDEX;
-  if (from == 1 && alpha > 1 && alpha < 2)
+  if (from == 1 && alpha > 1.0 && alpha < 2.0)
   {
-	  index = (size_t) round ((alpha - 1) * size);
+	  index = (size_t) round ((alpha - 1.0) * size);
 	  if (index < size)
 	  	if (const Real res_ = res [index])
 	  	  return res_;
@@ -679,7 +679,7 @@ struct ZetaLnSeries : Series
 Real zetaLn (Real alpha,
              uint from)
 {
-  ASSERT (greaterReal (alpha, 1));
+  ASSERT (alpha > 1.0);
 
   constexpr size_t size = 1000;  // PAR
 	static Real res [size];
