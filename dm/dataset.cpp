@@ -424,7 +424,7 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
     {
       distr. setMeanVar (mean, var);
       const Prob p = 1.0 - distr. cdf (x);
-      if (leReal (p * mult_sum, outlier_EValue_max))
+      if (p * mult_sum <= outlier_EValue_max)
         break;
     }
 
@@ -470,7 +470,7 @@ Real NumAttr1::contDistr2outlier (const Sample &sample,
     if (mult_sum >= 0.5 * sample. mult_sum)  // PAR
     {
       const Prob p = 1.0 - distr. cdf (x / mean);
-      if (leReal (p * mult_sum, outlier_EValue_max))
+      if (p * mult_sum <= outlier_EValue_max)
         break;
     }
     const Real mult = ds. objs [it. objNum] -> mult;
@@ -3098,8 +3098,8 @@ void UniDistribution::qc () const
   		 )
 		  for (Iterator it (*analysis); it ();)  
 		  {
-		   	QC_ASSERT (geReal ((*attr) [*it], lo));
-		   	QC_ASSERT (leReal ((*attr) [*it], hi));  
+		   	QC_ASSERT ((*attr) [*it] >= lo);
+		   	QC_ASSERT ((*attr) [*it] <= hi);
 		   	  // Binomial::n in a Mixture ??
 		  }
   }
@@ -3274,7 +3274,7 @@ void Binomial::estimate ()
 			  }
 			  x_ave = mx / m;
 			  ASSERT (x_ave >= 0.0);
-				ASSERT (leReal (x_ave, n_re));
+				ASSERT (x_ave <= n_re);
 				minimize (x_ave, n_re);
 			}
 		  if (fabs (c) <= 0.1)  // PAR
@@ -3287,10 +3287,10 @@ void Binomial::estimate ()
 			    // If c <  0 then d = (n+c)^2 - 4*c*x_ave <= (n+c)^2 - 4*c*n = (n-c)^2 
 			  ASSERT (d >= 0.0);
 				const Real d_sqrt = sqrt (d);
-				IMPLY (c >= 0.0, geReal (d_sqrt, fabs (n_re - c)));
-				IMPLY (c >= 0.0, leReal (d_sqrt, fabs (n_re + c)));
-				IMPLY (c <  0.0, leReal (d_sqrt, fabs (n_re - c)));
-				IMPLY (c <  0.0, geReal (d_sqrt, fabs (n_re + c)));
+				IMPLY (c >= 0.0, d_sqrt >= fabs (n_re - c));
+				IMPLY (c >= 0.0, d_sqrt <= fabs (n_re + c));
+				IMPLY (c <  0.0, d_sqrt <= fabs (n_re - c));
+				IMPLY (c <  0.0, d_sqrt >= fabs (n_re + c));
 				  // If c >= 0 & n-c >= 0 then n+c - d_sqrt <= n+c - (n-c) = 2*c
 				  // If c >= 0 & n-c <  0 then n+c + d_sqrt <= n+c + (c-n) = 2*c
 				  // If c <  0 & n-c >= 0 then n+c - d_sqrt >= n+c - (n-c) = 2*c
@@ -3544,9 +3544,9 @@ void Zipf::estimate ()
 	  cerr << "f(-0.5)  = " << zf. f (-0.5) << endl;  
 	}
   Real alpha_;  
-  if      (geReal (zf. f (alpha_min), 0.0))  // ??
+  if      (zf. f (alpha_min) >= 0.0)  // ??
   	alpha_ = - alpha_min;
-  else if (leReal (zf. f (alpha_max), 0.0))  // ??
+  else if (zf. f (alpha_max) <= 0.0)  // ??
   	alpha_ = - alpha_max;  
   else
     alpha_ = - zf. findZero (alpha_min, alpha_max, 0.001);  // PAR
@@ -4169,7 +4169,7 @@ void UniKernel::estimate_ (Real halfWindow_lo,
   Prob uniform_prob_best = NaN;   
   Real logLikelihood_max = -INF;  
   halfWindow = halfWindow_lo;
-  while (leReal (halfWindow, halfWindow_hi))
+  while (halfWindow <= halfWindow_hi)
   {  
     halfWindow *= step;    
     const Real height = getHeight ();
@@ -5140,7 +5140,7 @@ Prob Mixture::getOverlap (size_t compNum1,
   
   const Prob p = confused / total;
   ASSERT (isProb (p));
-  ASSERT (leReal (p, 0.5));
+  ASSERT (p <= 0.5);
   
   return p;
 }
@@ -5864,7 +5864,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         if (const RealAttr1* attr1 = attr->asRealAttr1 ())
         {
           const NominAttr1::Dependence dep (clustNominAttr->getDependence (sample, i, attr1));
-          if (leReal (dep. pValue, attr_pvalue))
+          if (dep. pValue <= attr_pvalue)
           {
             JsonMap* jDep = dep. toJson (jDeps);
             new JsonString (attr1->name, jDep, "attr");

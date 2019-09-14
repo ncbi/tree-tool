@@ -145,9 +145,9 @@ struct Bin : Root
       mult += objMult;
       const Real grayLen = range () / 6;  // PAR
       ASSERT (grayLen >= 0);
-           if (leReal (score, start + grayLen))
+           if (score <= start + grayLen)
         grayZone_lo += objMult;
-      else if (geReal (score, stop  - grayLen))
+      else if (score >= stop  - grayLen)
         grayZone_hi += objMult;
     }
 #endif

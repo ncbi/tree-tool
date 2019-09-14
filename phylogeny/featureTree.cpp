@@ -887,7 +887,7 @@ void Strain::assignFeatures ()
 	for (const bool thisCore : {false, true})
 	  distance [thisCore] =   g->feature2weight (true,     thisCore)
 	                        +    feature2weight (thisCore, false);
-  singletonsInCore = leReal (distance [true], distance [false]);  
+  singletonsInCore = distance [true] <= distance [false];
 
   Species::assignFeatures ();
 }
@@ -1113,7 +1113,7 @@ void Genome::qc () const
 
 	QC_ASSERT (weight [true] [true] < weight [false] [true]);
 	QC_ASSERT (weight [false] [false] < weight [true] [false]);
-//QC_ASSERT (leReal (weight [false] [false], weight [true] [true]));
+//QC_ASSERT (weight [false] [false] <= weight [true] [true]);
 
   QC_ASSERT (! id. empty ());
   QC_ASSERT (! contains (id, ' '));
@@ -3119,7 +3119,8 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
     optimizeTime (); 
     if (verbose ())
 	    cout << "len = " << len << endl;
-    if (! leReal (len, len_old + len_delta)) 
+  //if (! leReal (len, len_old + len_delta)) 
+    if (len > len_old + len_delta)
     {
     	if (timeOptimWhole ())
     	{
@@ -3145,7 +3146,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
   {
   	if (timeOptimWhole ())
   	{
-      if (leReal (improvement, len_delta))
+      if (improvement <= len_delta)
       	return false;
     }
   	else

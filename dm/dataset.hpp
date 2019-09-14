@@ -2219,16 +2219,16 @@ public:
   virtual Real stdHiBound () const
     { return INF; }
   bool stdBounds () const
-    { return    leReal (loBound, stdLoBound ())
-             && geReal (hiBound, stdHiBound ());
+    { return    loBound <= stdLoBound ()
+             && hiBound >= stdHiBound ();
     }
   Real getLoBoundEffective () const
     { return max (loBound, stdLoBound ()); }
   Real getHiBoundEffective () const
     { return min (hiBound, stdHiBound ()); }
   bool supported (Real x) const
-    { return    geReal (x, getLoBoundEffective ())
-             && leReal (x, getHiBoundEffective ());
+    { return    x >= getLoBoundEffective ()
+             && x <= getHiBoundEffective ();
     }
     
   // Requires: getParamSet()

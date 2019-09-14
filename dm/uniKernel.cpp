@@ -93,7 +93,7 @@ struct ThisApplication : Application
     {
       const Real step = 2 * uniKernel. halfWindow;  // PAR
       Real x = uniKernel. attr_min - step;
-      while (leReal (x, uniKernel. attr_max + step))
+      while (x <= uniKernel. attr_max + step)
       {
         cout << x << "\t" << uniKernel. pdf (x) << endl;
         x += step;

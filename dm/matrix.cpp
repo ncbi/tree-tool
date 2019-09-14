@@ -203,7 +203,7 @@ Real getCorrelationVec (const Matrix  &m1,
   const Real Var1N = Sx2 - sqr (Sx) / (Real) n;
   const Real Var2N = Sy2 - sqr (Sy) / (Real) n;
   const Real b = Var1N * Var2N;
-  if (leReal (b, 0.0))
+  if (b <= 0.0)
     return 1.0;
   return a / sqrt (b);
 }
@@ -1280,7 +1280,7 @@ bool Matrix::getEigen (Eigen &eigen,
                       
     eigen. vec. copyDataCheck (false, vec, false);
     
-    if (leReal (diff, error))
+    if (diff <= error)
     {
       if (psd)
       {
@@ -2796,7 +2796,7 @@ Eigens::Eigens (const Matrix &matr,
 
     if (psd)
     { 
-      if (negative (eigen->value / totalExplained_max, 1e-2))  // PAR
+      if (! nullReal (eigen->value) && negative (eigen->value / totalExplained_max, 1e-2))  // PAR
       {
         cout << eigen->value << ' ' << totalExplained_max << endl;
         ERROR;
@@ -2897,7 +2897,7 @@ void Eigens::qc () const
 	  QC_ASSERT (eqReal (basis. sumSqrRow (true, i), 1.0));
 	  QC_IMPLY (psd, values [i] >= 0);
 	}
-  if (! leReal (totalExplainedFrac (), 1 + 1e-2))  // PAR
+  if (! leReal (totalExplainedFrac (), 1.0 + 1e-2))  // PAR
   {
     cout << totalExplainedFrac () << endl;
     ERROR;

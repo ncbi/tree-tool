@@ -164,9 +164,9 @@ Real Func1::optimizeFibonacci (bool Min,
   const Real InitYRes = YRes;
   while (Range > dX)
   {
-    ASSERT (leReal (x_min, A));
-    ASSERT (leReal (A, B));
-    ASSERT (leReal (B, x_max));
+    ASSERT (x_min <= A);
+    ASSERT (A <= B);
+    ASSERT (B <= x_max);
     
   /*
     printf ("x_min = %f,  YXMin = %f,  x_max = %f,  YXMax = %f\n",
