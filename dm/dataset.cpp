@@ -167,7 +167,7 @@ size_t Attr::countMissings () const
 bool Attr::existsMissing (size_t &objNum) const
 {
   for (objNum = 0; objNum < ds. objs. size (); objNum++)
-    if (ds. objs [objNum] -> mult > 0 && isMissing (objNum))
+    if (ds. objs [objNum] -> mult > 0.0 && isMissing (objNum))
       return true;
       
   objNum = NO_INDEX;
@@ -615,11 +615,11 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
   size_t objNum_threshold = NO_INDEX;
   Real negLogLikelihood_min = INF;
   const Real x_max = vec. back (). value;
-  Real mult_sum = 0;
-  Real s = 0;
-  Real s2 = 0;
+  Real mult_sum = 0.0;
+  Real s = 0.0;
+  Real s2 = 0.0;
   Normal normal;
-  const Real coeff = log (2 * pi) + 1;
+  const Real coeff = log (2.0 * pi) + 1.0;
   for (const auto& it : vec)
   {
     const Real mult = ds. objs [it. objNum] -> mult;
@@ -640,7 +640,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
       + (rest
            ? eqReal (x, x_max) 
              ? INF
-             : rest * (log ((x_max - x) / (1 - normal. cdf (x))))
+             : rest * (log ((x_max - x) / (1.0 - normal. cdf (x))))
            : 0.0
         );
     if (minimize (negLogLikelihood_min, negLogLikelihood))
@@ -673,7 +673,7 @@ Real RealAttr1::getKurt (Real mult,
                          Real variance) const
 // Biased -??
 {
-  Real sumDiff4 = 0;
+  Real sumDiff4 = 0.0;
   for (Iterator it (this); it ();)
     sumDiff4 += it. mult * pow (values [*it] - mean, 4);
 
@@ -693,7 +693,7 @@ Real histogramLikelihood (const Vector <Real> &vec,
   ASSERT (delta > 0.0);
   
 
-  Real negLogLikelihood = 0;
+  Real negLogLikelihood = 0.0;
   size_t left  = 0;  // = min left  s.t. vec.at(left)  >= vec.at(center) - delta
   size_t right = 0;  // = min right s.t. vec.at(right) >= vec.at(center) + delta
   for (size_t center = 0; center < vec. size (); center++)
@@ -716,7 +716,7 @@ Real histogramLikelihood (const Vector <Real> &vec,
     ASSERT (center < right);    
     // center is excluded
     const Real density =   (Real) (right - left - 1) 
-                          / (delta * 2 * (Real) (vec. size () - 1));
+                          / (delta * 2.0 * (Real) (vec. size () - 1));
     negLogLikelihood += - log (density);
   }
 
@@ -833,8 +833,8 @@ RealAttr1* RealAttr1::smoothUniform (const string &suffix,
   
   for (Iterator it (ds); it ();)
   {
-    Real s = 0;
-    Real w = 0;
+    Real s = 0.0;
+    Real w = 0.0;
     for (int i = (int) *it + start; 
              i < (int) *it + end; 
              i++)
@@ -874,7 +874,7 @@ void PositiveAttr1::qc () const
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
-      QC_ASSERT (values [i] >= 0);
+      QC_ASSERT (values [i] >= 0.0);
     }
 }
 
@@ -937,7 +937,7 @@ RealAttr1* PositiveAttr1::logarithmize (Dataset &ds_arg,
   FFOR (size_t, objNum, ds. objs. size ())
   {
   	const Real x = (*this) [objNum];
-    if (x > 0)
+    if (x > 0.0)
       (*attr) [objNum] = log (x);
   }
   return attr;
@@ -1096,8 +1096,8 @@ void BoolAttr1::getStat (const Sample &sample,
 
 Prob BoolAttr1::getProb (const Sample &sample) const
 {
-	Real n = 0;
-	Real s = 0;
+	Real n = 0.0;
+	Real s = 0.0;
   for (Iterator it (sample); it ();)  
   {
   	const ebool x = getBool (*it);
@@ -1414,11 +1414,11 @@ Categorical* NominAttr1::getCategorical (const Sample &sample) const
   auto* cat = new Categorical ();
 
   MVector categ2num (categories. size (), 0);
-//categ2num. putAll (0);
+//categ2num. putAll (0.0);
   for (Iterator it (sample); it ();)
     if (! isMissing (*it))
       categ2num [(*this) [*it]] += it. mult;
-  categ2num. balanceRow (true, 0, 1);
+  categ2num. balanceRow (true, 0, 1.0);
 
   cat->probs. resize (categories. size ());
   FFOR (size_t, i, categories. size ())
@@ -1537,7 +1537,7 @@ NominAttr1::Dependence NominAttr1::getDependence (const Sample &sample,
 
   const Prob pValue =    isNan (normCluster. loc)
                       || isNan (normOther.   loc)
-                        ? 1
+                        ? 1.0
                         : min ( normCluster. pValue_2tail (paramOther.   mean)
                               , normOther.   pValue_2tail (paramCluster. mean)
                               );
@@ -1586,9 +1586,9 @@ bool Attr2::existsMissing2 (size_t &row,
                             size_t &col) const
 {
   for (row = 0; row < ds. objs. size (); row++)
-    if (ds. objs [row] -> mult > 0)
+    if (ds. objs [row] -> mult > 0.0)
       for (col = 0; col < ds. objs. size (); col++)
-        if (ds. objs [col] -> mult > 0)
+        if (ds. objs [col] -> mult > 0.0)
           if (isMissing2 (row, col))
             return true;
       
@@ -1788,7 +1788,7 @@ void PositiveAttr2::qc () const
     FFOR (size_t, col, ds. objs. size ())
       if (! isMissing2 (row, col))
       {
-        QC_ASSERT (get (row, col) >= 0);
+        QC_ASSERT (get (row, col) >= 0.0);
       }
 }
 
@@ -2361,7 +2361,7 @@ void Dataset::objInterval2Active (size_t startObjNum,
 bool Dataset::getUnitMult () const
 {
   FFOR (size_t, i, objs. size ())
-    if (! eqReal (objs [i] -> mult, 1))
+    if (objs [i] -> mult != 1.0)
     	return false;
   return true;
 }
@@ -2495,7 +2495,7 @@ void Sample::missing2mult (const Attr1* attr1)
   
   FFOR (size_t, i, mult. size ())
     if (attr1->isMissing (i))
-    	mult [i] = 0;
+    	mult [i] = 0.0;
 }
 
 
@@ -2585,10 +2585,10 @@ PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
   auto* dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
   FFOR (size_t, row, ds. objs. size ())
   {
-  	dist->matr. putDiag (row, 0);
+  	dist->matr. putDiag (row, 0.0);
     FOR (size_t, col, row)
     {
-    	Real diff = 0;  
+    	Real diff = 0.0;  
     	for (const RealAttr1* attr : space)
     	{
     	  ASSERT (& attr->ds == & ds);
@@ -2620,7 +2620,7 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
   	FFOR (size_t, attrNum, getDim ())
   	{
   	  const RealAttr1* attr = getRealAttr1 (attrNum);
-  	  c [attrNum] = 0;
+  	  c [attrNum] = 0.0;
 		  FFOR (size_t, row, ds. objs. size ())
   	    c [attrNum] += (*attr) [row];
   	  c [attrNum] /= (Real) ds. objs. size ();
@@ -2637,10 +2637,10 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
   auto* dist = new PositiveAttr2 (attrName, ds, 4);  // PAR
   FFOR (size_t, row, ds. objs. size ())
   {
-  	dist->matr. putDiag (row, 0);
+  	dist->matr. putDiag (row, 0.0);
     FOR (size_t, col, row)
     {
-    	Real diff = 0;  
+    	Real diff = 0.0;  
     	for (const ProbAttr1* attr : space)
     	{
     	  ASSERT (& attr->ds == & ds);
@@ -2677,7 +2677,7 @@ RealAttr2* getSimilarity (const Space1<RealAttr1> &space,
     prog ();
     FFOR_START (size_t, col, row, ds. objs. size ())
     {
-    	Real s = 0;  
+    	Real s = 0.0;  
       for (const RealAttr1* attr : space)
     	{
     	  ASSERT (& attr->ds == & ds);
@@ -2931,12 +2931,12 @@ void Categorical::qc () const
 		
   if (getParamSet ())
   {		
-	  Prob s = 0;
+	  Prob s = 0.0;
 	  for (const Prob p : probs)
 	    s += p;
-	  QC_ASSERT (eqReal (s, 1));
+	  QC_ASSERT (eqReal (s, 1.0));
 	
-		QC_ASSERT (eqReal (probSum [probSum. size () - 1], 1));	
+		QC_ASSERT (eqReal (probSum [probSum. size () - 1], 1.0));	
   }
 }
 
@@ -2963,7 +2963,7 @@ void Categorical::setParamFunc ()
 		
   // probSum
 	probSum. resize (probs. size ());
-	Prob s = 0;
+	Prob s = 0.0;
 	FFOR (size_t, i, probs. size ())
   {
 	  s += probs [i];
@@ -3033,7 +3033,7 @@ void Categorical::estimate ()
 
   // probs
   for (Prob& p : probs)
-    p = 0;
+    p = 0.0;
   for (Iterator it (analysis->sample); it ();)  
    	probs [attr [*it]] += it. mult;
     
@@ -3044,7 +3044,7 @@ void Categorical::estimate ()
 
 void Categorical::balanceProb ()
 {
-  Real s = 0;
+  Real s = 0.0;
   for (const Prob p : probs)
     s += p;
   for (Prob& p : probs)
@@ -3148,7 +3148,7 @@ int DiscreteDistribution::real2int (Real x)
 #if 0
 Prob DiscreteDistribution::cdfDiscrete_ (int x) const 
 {
-	Prob s = 0;
+	Prob s = 0.0;
 	FOR_REV (int, i, x + 1)  // Usually pmf(i) > pmf(i+1)
 	  s += pmf (i);
 	  	 
@@ -3185,13 +3185,13 @@ void Binomial::setParamFunc ()
 	bernoulli. setParam (p);
 	lnFacN = lnFactorial ((uint) n);
 	lnP = log (p);
-	lnPCompl = log (1 - p);
+	lnPCompl = log (1.0 - p);
 	
   const int lo = real2int (getLoBoundEffective ());
   const int hi = real2int (getHiBoundEffective ());
-	p_ltSupp = lo ? cdfDiscrete_ (lo - 1) : 0;
-	const Real p_gtSupp = hi == n ? 0 : (1 - cdfDiscrete_ (hi));
-	p_supp = 1 - (p_ltSupp + p_gtSupp);
+	p_ltSupp = lo ? cdfDiscrete_ (lo - 1) : 0.0;
+	const Real p_gtSupp = hi == n ? 0.0 : (1.0 - cdfDiscrete_ (hi));
+	p_supp = 1.0 - (p_ltSupp + p_gtSupp);
 }
 
 
@@ -3214,18 +3214,18 @@ void Binomial::estimate ()
   // p
 	if (stdBounds ())
   {
-		Real s = 0;
-		Real sCompl = 0;
+		Real s = 0.0;
+		Real sCompl = 0.0;
 	  for (Iterator it (analysis->sample); it ();)  
 	  {
 	  	const An::Value x = attr [*it];
-	  	ASSERT (x >= 0);
+	  	ASSERT (x >= 0.0);
 	  	ASSERT (x <= n);
 	  	s      += it. mult * x;
 	  	sCompl += it. mult * (n - x);
 	  }  
 	  const Real a = sCompl / s;	  
-    setParam (n, 1 / (a + 1));
+    setParam (n, 1.0 / (a + 1.0));
 	}
 	else
 	{
@@ -3234,33 +3234,33 @@ void Binomial::estimate ()
 		do
 		{
 			setParam (n, p_);
-			if (   eqReal (p, 0)
-				  || eqReal (p, 1)
+			if (   eqReal (p, 0.0)
+				  || eqReal (p, 1.0)
 				 )
 				break;
 			Real c;
 			{
 				const int loBound_ = real2int (getLoBoundEffective ());
 				const int hiBound_ = real2int (getHiBoundEffective ());
-				Real sum = 0;
-				Real sumLog = 0;
+				Real sum = 0.0;
+				Real sumLog = 0.0;
 				FFOR_START (int, x, loBound_, hiBound_ + 1)
 				{
 					const Real y = pmf_ (x);
 				//if (verbose ())
 					//cout << "pmf(" << x << ")=" << y << endl;
-		      sumLog += y * ((Real) x / p - (Real) (n - x) / (1 - p));
+		      sumLog += y * ((Real) x / p - (Real) (n - x) / (1.0 - p));
 				  sum    += y;
 			    ASSERT (! isNan (sumLog));
 				}
-				ASSERT (geReal (sum, 0));
+				ASSERT (geReal (sum, 0.0));
 				c = sumLog / sum;
 				ASSERT (! isNan (c));
 			}
 			Real x_ave;
 			{
-				Real mx = 0;
-				Real m  = 0;
+				Real mx = 0.0;
+				Real m  = 0.0;
 			  for (Iterator it (analysis->sample); it ();)  
 			  {
 			  	const An::Value x = attr [*it];
@@ -3273,7 +3273,7 @@ void Binomial::estimate ()
 			  	break;
 			  }
 			  x_ave = mx / m;
-			  ASSERT (x_ave >= 0);
+			  ASSERT (x_ave >= 0.0);
 				ASSERT (leReal (x_ave, n_re));
 				minimize (x_ave, n_re);
 			}
@@ -3285,17 +3285,17 @@ void Binomial::estimate ()
 			  const Real d = sqr (n_re + c) - 4 * c * x_ave;  // Determinant
 			    // If c >= 0 then d = (n+c)^2 - 4*c*x_ave >= (n+c)^2 - 4*c*n = (n-c)^2 >= 0
 			    // If c <  0 then d = (n+c)^2 - 4*c*x_ave <= (n+c)^2 - 4*c*n = (n-c)^2 
-			  ASSERT (d >= 0);
+			  ASSERT (d >= 0.0);
 				const Real d_sqrt = sqrt (d);
-				IMPLY (c >= 0, geReal (d_sqrt, fabs (n_re - c)));
-				IMPLY (c >= 0, leReal (d_sqrt, fabs (n_re + c)));
-				IMPLY (c <  0, leReal (d_sqrt, fabs (n_re - c)));
-				IMPLY (c <  0, geReal (d_sqrt, fabs (n_re + c)));
+				IMPLY (c >= 0.0, geReal (d_sqrt, fabs (n_re - c)));
+				IMPLY (c >= 0.0, leReal (d_sqrt, fabs (n_re + c)));
+				IMPLY (c <  0.0, leReal (d_sqrt, fabs (n_re - c)));
+				IMPLY (c <  0.0, geReal (d_sqrt, fabs (n_re + c)));
 				  // If c >= 0 & n-c >= 0 then n+c - d_sqrt <= n+c - (n-c) = 2*c
 				  // If c >= 0 & n-c <  0 then n+c + d_sqrt <= n+c + (c-n) = 2*c
 				  // If c <  0 & n-c >= 0 then n+c - d_sqrt >= n+c - (n-c) = 2*c
 				  // If c <  0 & n-c <  0 then n+c + d_sqrt >= n+c + (c-n) = 2*c
-				p_ = (n_re + c + ((n_re - c >= 0) ? -1 : 1) * d_sqrt) / (2 * c);  // The other solution: isProb() => second local MLE
+				p_ = (n_re + c + ((n_re - c >= 0.0) ? -1.0 : 1.0) * d_sqrt) / (2.0 * c);  // The other solution: isProb() => second local MLE
 				ASSERT (isProb (p_));
 			}
 		//cout << "c=" << c << " p_=" << p_ << endl;  
@@ -3357,7 +3357,7 @@ Prob Binomial::cdfDiscrete_ (int x) const
 	Prob s = min (sum. get (), 1.0);
 	 
 	if (x_start)
-		s = 1 - s;
+		s = 1.0 - s;
 
   return s;
 }
@@ -3419,8 +3419,8 @@ void Geometric::estimate ()
   ASSERT (analysis);
 	const IntAttr1& attr = analysis->attr;
 	
-	Real s = 0;
-	Real n = 0;
+	Real s = 0.0;
+	Real n = 0.0;
   for (Iterator it (analysis->sample); it ();)  
   {
   	const An::Value x = attr [*it];
@@ -3436,7 +3436,7 @@ void Geometric::estimate ()
 Real Geometric::logPmf_ (int x) const
 {
 	ASSERT (x >= 1);
-	return lnP + ((Real) x - 1) * lnPCompl;
+	return lnP + (Real) (x - 1) * lnPCompl;
 }
 
 
@@ -3452,9 +3452,9 @@ void Zipf::qc () const
 
   if (getParamSet ())
   {
-    QC_ASSERT (alpha > 1);
-  //IMPLY (hiBound == INF, alpha > 1);  
-  	QC_ASSERT (c > 0);
+    QC_ASSERT (alpha > 1.0);
+  //IMPLY (hiBound == INF, alpha > 1.0);  
+  	QC_ASSERT (c > 0.0);
   }
   
 	cat. qc ();
@@ -3465,11 +3465,11 @@ void Zipf::qc () const
 void Zipf::setParamFunc ()
 {
  	const uint lo = (uint) real2int (getLoBoundEffective ());
-	const Real zeta_gtSupp = hiBound == INF ? 0 : zeta (alpha, (uint) real2int (hiBound));
+	const Real zeta_gtSupp = hiBound == INF ? 0.0 : zeta (alpha, (uint) real2int (hiBound));
 	const Real zeta_geSupp = zeta (alpha, lo);
-  const Real zeta_ltSupp = lo ? zeta (alpha, 1, lo - 1) : 0;
+  const Real zeta_ltSupp = lo ? zeta (alpha, 1, lo - 1) : 0.0;
 	
-	c = 1 / (zeta_ltSupp + zeta_geSupp);
+	c = 1.0 / (zeta_ltSupp + zeta_geSupp);
 	lnC = log (c);
 
  	p_supp = (zeta_geSupp - zeta_gtSupp) * c;
@@ -3520,8 +3520,8 @@ void Zipf::estimate ()
   {
 	  zf. from = (uint) real2int (getLoBoundEffective ());
   	zf. to   = (uint) (hiBound == INF ? 0 : real2int (hiBound));
-		Real s = 0;
-		Real w = 0;
+		Real s = 0.0;
+		Real w = 0.0;
 	  for (Iterator it (analysis->sample); it ();)  
 	  {
 	  	const An::Value x = attr [*it];
@@ -3534,8 +3534,8 @@ void Zipf::estimate ()
   CONST_ITER (Data, it, data)
     cout << (*it). first << " " << (*it). second << endl;
 #endif
-  const Real alpha_max = -1 /*(hiBound == INF ? -1 : 0)*/ - 1e-5;  // PAR
-  const Real alpha_min = -10;  // PAR
+  const Real alpha_max = -1.0 /*(hiBound == INF ? -1 : 0)*/ - 1e-5;  // PAR
+  const Real alpha_min = -10.0;  // PAR
   if (verbose ())
   {
 	  cerr << "goal = " << zf. goal << endl;  
@@ -3565,7 +3565,7 @@ void Zipf::estimate ()
 
 Real Zipf::logPmf_ (int x) const
 { 
-  ASSERT (x > 0);
+  ASSERT (x > 0.0);
 	return lnC - alpha * log (x); 
 }
 
@@ -3681,9 +3681,9 @@ void Normal::estimate ()
   ASSERT (analysis);
 	const NumAttr1& attr = analysis->attr;
 	
-	Real n = 0;
-	Real s = 0;
-	Real s2 = 0;
+	Real n = 0.0;
+	Real s = 0.0;
+	Real s2 = 0.0;
   for (Iterator it (analysis->sample); it ();)  
     if (! attr. isMissing (*it))
     {
@@ -3706,11 +3706,11 @@ Real Normal::rand_ () const
   Real a, b, d2;
   do
   {
-    a = 2 * randProb () - 1;
-    b = 2 * randProb () - 1;
+    a = 2.0 * randProb () - 1.0;
+    b = 2.0 * randProb () - 1.0;
     d2 = sqr (a) + sqr (b);
   }
-  while (d2 >= 1 || d2 == 0);
+  while (d2 >= 1.0 || d2 == 0.0);
   const Real f = sqrt (-2 * log (d2) / d2);
   return unstnd (a * f);
 }
@@ -3744,11 +3744,11 @@ Real Normal::getQuantile (Prob p) const
 {
   ASSERT (isProb (p));
  
-  if (p == 0)
+  if (p == 0.0)
     return -INF;
-  if (p == 1)
+  if (p == 1.0)
     return INF;
-  if (scale == 0)
+  if (scale == 0.0)
     return loc;
 
   const Real q = p - 0.5;
@@ -3771,14 +3771,14 @@ Real Normal::getQuantile (Prob p) const
            / (((((((r * 5226.495278852854561 +
                     28729.085735721942674) * r + 39307.89580009271061) * r +
                   21213.794301586595867) * r + 5394.1960214247511077) * r +
-                687.1870074920579083) * r + 42.313330701600911252) * r + 1);
+                687.1870074920579083) * r + 42.313330701600911252) * r + 1.0);
   }
   else
   { 
     // closer than 0.075 from {0,1} boundary 
 
     /* r = min(p, 1-p) < 0.075 */
-    Real r = (q > 0) ? 1 - p : p;
+    Real r = (q > 0.0) ? 1.0 - p : p;
     r = sqrt (-log (r));
     /* r = sqrt(-log(r))  <==>  min(p, 1-p) = exp( - r^2 ) */
 
@@ -3796,7 +3796,7 @@ Real Normal::getQuantile (Prob p) const
                   r + .0151986665636164571966) * r +
                  .14810397642748007459) * r + .68976733498510000455) *
                r + 1.6763848301838038494) * r +
-              2.05319162663775882187) * r + 1);
+              2.05319162663775882187) * r + 1.0);
     }
     else
     { /* very close to  0 or 1 */
@@ -3812,7 +3812,7 @@ Real Normal::getQuantile (Prob p) const
                   r + 1.8463183175100546818e-5) * r +
                  7.868691311456132591e-4) * r + .0148753612908506148525)
                * r + .13692988092273580531) * r +
-              .59983220655588793769) * r + 1);
+              .59983220655588793769) * r + 1.0);
     }
     if (q < 0.0)
       val = -val;
@@ -3835,7 +3835,7 @@ void Exponential::qc () const
 	if (getParamSet ())
 	{
 	  QC_ASSERT (stdBounds ());  // ??
-  	QC_ASSERT (loc >= 0);
+  	QC_ASSERT (loc >= 0.0);
   	QC_ASSERT (scale == loc);
   }
 }
@@ -3847,8 +3847,8 @@ void Exponential::estimate ()
   ASSERT (analysis);
 	const NumAttr1& attr = analysis->attr;
 	
-	Real n = 0;
-	Real s = 0;
+	Real n = 0.0;
+	Real s = 0.0;
   for (Iterator it (analysis->sample); it ();)  
     if (! attr. isMissing (*it))
     {
@@ -3894,8 +3894,8 @@ struct CauchyScaleFunc : Func1
   { 
   	const NumAttr1& attr = an. attr; 
   	const Real x2 = sqr (x);
-		Real n = 0;
-		Real s = 0;
+		Real n = 0.0;
+		Real s = 0.0;
 	  for (Iterator it (an. sample); it ();)  
 	  {
 	  	const Cauchy::An::Value y = attr. getReal (*it);
@@ -3933,14 +3933,14 @@ void Cauchy::estimate ()
 			const Real maxScale = max ( fabs (loc_ - minX)
 						                    , fabs (loc_ - maxX)
 						                    );
-		  scale_ = f. findZero (0, maxScale, 1e-4);  // PAR
+		  scale_ = f. findZero (0.0, maxScale, 1e-4);  // PAR
 		  ASSERT (scale_ > 0.0);
 		}
 		
 	  // loc_	
 	  {
-			Real n = 0;
-			Real s = 0;
+			Real n = 0.0;
+			Real s = 0.0;
 		  for (Iterator it (analysis->sample); it ();)  
 		  {
 		  	const An::Value x = attr. getReal (*it);
@@ -4010,8 +4010,8 @@ void Beta1::estimate ()
   ASSERT (analysis);
 	const NumAttr1& attr = analysis->attr;
 	
-	Real s = 0;
-	Real n = 0;
+	Real s = 0.0;
+	Real n = 0.0;
   for (Iterator it (analysis->sample); it ();)  
   {
   	const An::Value x = attr. getReal (*it);
@@ -4057,7 +4057,7 @@ void UniKernel::qc () const
   {
     QC_ASSERT (! isNan (attr_min));
     QC_ASSERT (! isNan (attr_max));
-    QC_ASSERT (getRange () >= 0);
+    QC_ASSERT (getRange () >= 0.0);
     QC_ASSERT (isProb (uniform_prob));
     
     Real prevValue = NaN;
@@ -4076,7 +4076,7 @@ void UniKernel::qc () const
       prevMult = mult;
     }
 
-    QC_ASSERT (halfWindow >= 0);
+    QC_ASSERT (halfWindow >= 0.0);
     QC_ASSERT ((halfWindow > 0.0) == (getRange () > 0.0));
   }
 }
@@ -4085,8 +4085,8 @@ void UniKernel::qc () const
 
 void UniKernel::estimate ()
 {
-  uniform_prob = 0;
-  halfWindow = 0;
+  uniform_prob = 0.0;
+  halfWindow = 0.0;
   
   const Real sd = setPoints ();
 
@@ -4162,7 +4162,7 @@ void UniKernel::estimate_ (Real halfWindow_lo,
 {
   ASSERT (halfWindow_lo > 0.0);
   ASSERT (halfWindow_lo < halfWindow_hi);
-  ASSERT (step > 1);
+  ASSERT (step > 1.0);
   
   
   Real halfWindow_best = NaN;   
@@ -4179,9 +4179,9 @@ void UniKernel::estimate_ (Real halfWindow_lo,
     Sum logLikelihood;
     for (const Point& point : points)
     {
-      const Real pdfValue = pdf (point. value) - (1 - uniform_prob) * point. mult * height;
+      const Real pdfValue = pdf (point. value) - (1.0 - uniform_prob) * point. mult * height;
         // Correct for: checkPtr (analysis) -> sample. mult_sum -= p. mult ??
-      ASSERT (pdfValue >= 0);
+      ASSERT (pdfValue >= 0.0);
       logLikelihood. add (log (pdfValue) * point. mult);
     }
         
@@ -4211,7 +4211,7 @@ void UniKernel::set_uniform_prob ()
   ASSERT (halfWindow > 0.0);
   
 #if 1  
-  Real outlierMult = 0;
+  Real outlierMult = 0.0;
   FFOR (size_t, i, points. size ())
     if (   (i == 0                   || geReal (points [i].     value - points [i - 1]. value, halfWindow))
         && (i == points. size () - 1 || geReal (points [i + 1]. value - points [i].     value, halfWindow))
@@ -4221,12 +4221,12 @@ void UniKernel::set_uniform_prob ()
 #else
   for (;;)
   {
-    Real uniform_mult = 0;
+    Real uniform_mult = 0.0;
     for (const Point& point : points)
     {
     //const Real pdfValue = pdf (point. value);
-      const Real pdfValue = pdf (point. value) - (1 - uniform_prob) * point. mult * height;
-      ASSERT (pdfValue > 0);
+      const Real pdfValue = pdf (point. value) - (1.0 - uniform_prob) * point. mult * height;
+      ASSERT (pdfValue > 0.0);
       const Prob p = (uniform_prob * getUniformHeight ()) / pdfValue;
       uniform_mult += p * point. mult;
     }
@@ -4243,7 +4243,7 @@ void UniKernel::set_uniform_prob ()
   }
 #endif
 
-  ASSERT (uniform_prob >= 0);
+  ASSERT (uniform_prob >= 0.0);
 }
 
 
@@ -4272,17 +4272,17 @@ size_t UniKernel::findIndex (Point x) const
 
 Real UniKernel::pdf_ (Real x) const
 {
-  if (halfWindow == 0)
-    return eqReal (x, attr_min) ? INF : 0;
+  if (halfWindow == 0.0)
+    return eqReal (x, attr_min) ? INF : 0.0;
   
   const size_t left  = findIndex (Point (x - halfWindow));
   const size_t right = findIndex (Point (x + halfWindow));
   
-  Real multSumLeft = 0;
+  Real multSumLeft = 0.0;
   if (left == NO_INDEX)
   {
     if (right == NO_INDEX)
-      return 0;
+      return 0.0;
   }
   else
     multSumLeft = multSum [left];
@@ -4291,11 +4291,11 @@ Real UniKernel::pdf_ (Real x) const
   ASSERT (right < multSum. size ());
   
   const Real windowMultsum = multSum [right] - multSumLeft;
-  ASSERT (windowMultsum >= 0);
+  ASSERT (windowMultsum >= 0.0);
   
-  const Real uniformPdf = betweenEqualReal (x, attr_min, attr_max) ? getUniformHeight () : 0;
+  const Real uniformPdf = betweenEqualReal (x, attr_min, attr_max) ? getUniformHeight () : 0.0;
   return        uniform_prob  * uniformPdf
-         + (1 - uniform_prob) * windowMultsum * getHeight ();  // = sum_i Kernel_i(x)
+         + (1.0 - uniform_prob) * windowMultsum * getHeight ();  // = sum_i Kernel_i(x)
 }
 
 
@@ -4304,7 +4304,7 @@ Prob UniKernel::cdf_ (Real x) const
 {
   const size_t index = findIndex (Point (x));
   if (index == NO_INDEX)
-    return 0;
+    return 0.0;
   ASSERT (index < multSum. size ());
   return multSum [index] / multSum. back ();
 }
@@ -4389,9 +4389,9 @@ void MultiNormal::qc () const
 
 	  QC_ASSERT (variance_min. size () == getDim ());
     QC_ASSERT (variance_min. defined ());
-	  QC_ASSERT (variance_min. min () >= 0);
+	  QC_ASSERT (variance_min. min () >= 0.0);
 	  
-	  QC_IMPLY (variance_min. min () == 0, sigmaExact. maxAbsDiff (false, sigmaInflated, false) == 0);
+	  QC_IMPLY (variance_min. min () == 0.0, sigmaExact. maxAbsDiff (false, sigmaInflated, false) == 0.0);
 
     if (coeff != INF)
     { 
@@ -4448,18 +4448,18 @@ void MultiNormal::setDim (size_t dim)
 	MultiDistribution::setDim (dim);
 
   mu. resize (dim);
-	mu. putAll (0);
+	mu. putAll (0.0);
 
   sigmaExact. resize (false, dim, dim);
-	sigmaExact. putAll (0);
+	sigmaExact. putAll (0.0);
 	
   sigmaInflated. resize (false, dim, dim);
-	sigmaInflated. putAll (0);
+	sigmaInflated. putAll (0.0);
 	
   if (! variance_min. size ())
   {
     variance_min. resize (dim);
-    variance_min. putAll (0);
+    variance_min. putAll (0.0);
   }
 
   sigmaInv. resize (false, dim, dim);
@@ -4467,7 +4467,7 @@ void MultiNormal::setDim (size_t dim)
 	
   zs. resize (dim);
 	for (Normal &n : zs)
-	  n. setParam (0, 1);
+	  n. setParam (0.0, 1.0);
 }
 
 
@@ -4650,7 +4650,7 @@ bool MultiNormal::inflateSigma ()
   if (verbose ())
     cout << "inflateSigma" << endl;
   ASSERT (sigmaExact. psd);
-	Eigens eigens (sigmaExact, sigmaExact. rowsSize (false), 1, 0, 1e-4 * sqrt (variance_min. min ()), 2000);  // PAR
+	Eigens eigens (sigmaExact, sigmaExact. rowsSize (false), 1.0, 0.0, 1e-4 * sqrt (variance_min. min ()), 2000);  // PAR
 	{
 	  Unverbose unv;
 	  if (verbose ())
@@ -4701,7 +4701,7 @@ void Mixture::Component::qc () const
 
 Real Mixture::Component::getMult () const
 {
-	Real s = 0;
+	Real s = 0.0;
   for (Iterator it (distr->getAnalysisCheck () -> sample); it ();)  
     s += objProb [*it] * it. mult;
   return s;
@@ -4711,7 +4711,7 @@ Real Mixture::Component::getMult () const
 
 Real Mixture::Component::getDeltaness () const
 {
-	Real s = 0;
+	Real s = 0.0;
   for (Iterator it (distr->getAnalysisCheck () -> sample); it ();)  
     maximize (s, objProb [*it] * it. mult);
     
@@ -4910,7 +4910,7 @@ bool Mixture::similar (const Distribution &distr,
 
 Real Mixture::pdfVariable () const
 {
-	Real r = 0;
+	Real r = 0.0;
 	for (const Component* comp : components)
 	  r += comp->pdfProb ();
 	return r;
@@ -4922,7 +4922,7 @@ Real Mixture::logPdfVariable () const
 {
 #if 0
 	const Real r = log (pdfVariable (x));
-	if (r > 0 || finite (r))
+	if (r > 0.0 || finite (r))
 	  return r;
 #endif
 	  
@@ -4939,7 +4939,7 @@ void Mixture::getMeanVec (MVector &mean) const
 {
 	ASSERT (mean. size () == getDim ());
 	
-	mean. putAll (0);
+	mean. putAll (0.0);
 	MVector x (getDim ());
 	for (const Component* comp : components)
 	{
@@ -4958,7 +4958,7 @@ void Mixture::getVC (Matrix &vc) const
 #if 1
   NOT_IMPLEMENTED;
 #else	
-	vc. putAll (0);
+	vc. putAll (0.0);
 	Matrix vcComp (getDim ());
 	for (const Component* comp : components)
 	{
@@ -5016,7 +5016,7 @@ void Mixture::estimate ()
 		  MVector vec (components. size ());
 		  for (Iterator it (analysis->sample); it ();)  
 		    if (components. size () == 1)
-		      var_cast (components [0]) -> objProb [*it] = 1;
+		      var_cast (components [0]) -> objProb [*it] = 1.0;
 		    else
   		  {
   		  	data2variable (*it);
@@ -5024,9 +5024,9 @@ void Mixture::estimate ()
   		  	// Bayes' theorem
   				FFOR (size_t, i, components. size ())
   				  vec [i] = components [i] -> logPdfProb ();				
-  				vec. expBalanceLogRow (true, 0, 1);
+  				vec. expBalanceLogRow (true, 0, 1.0);
   				vec. expRow (true, 0);
-  				ASSERT (eqReal (vec. sumRow (true, 0), 1));
+  				ASSERT (eqReal (vec. sumRow (true, 0), 1.0));
   				FFOR (size_t, i, components. size ())
   				{
   					const Prob newObjProb = vec [i];
@@ -5064,7 +5064,7 @@ void Mixture::estimate ()
 		  MVector vec (components. size ());
 			FFOR (size_t, i, components. size ())
 		    vec [i] = components [i] -> getMult ();
-	  	vec. balanceRow (true, 0, 1);
+	  	vec. balanceRow (true, 0, 1.0);
 	  	FFOR (size_t, i, components. size ())
 	  	{
 	  	  var_cast (components [i]) -> prob = toProb (vec [i]);
@@ -5090,7 +5090,7 @@ void Mixture::estimate ()
 #if 0
 Prob Mixture::getFitness_entropy_min () const
 {
-	Prob p = 1;
+	Prob p = 1.0;
 	for (const Component* comp : components)
 	  minimize (p, comp->getFitness_entropy ());
   return p;
@@ -5103,16 +5103,16 @@ Prob Mixture::getConfusion () const
 {
   const Analysis1* analysis = getAnalysisCheck ();
 
-	Real s = 0;
+	Real s = 0.0;
   for (Iterator it (analysis->sample); it ();)  
   {
-  	Prob p_max = 0;
+  	Prob p_max = 0.0;
   	for (const Component* comp : components)
   	  maximize (p_max, comp->objProb [*it]);
   	s += p_max * it. mult;
   }
   
-  const Prob p = 1 - s / analysis->sample. mult_sum;
+  const Prob p = 1.0 - s / analysis->sample. mult_sum;
   ASSERT (isProb (p));
   
   return p;
@@ -5127,8 +5127,8 @@ Prob Mixture::getOverlap (size_t compNum1,
 
   const Component* comp1 = components [compNum1];
   const Component* comp2 = components [compNum2];
-  Real confused = 0;
-  Real total = 0;
+  Real confused = 0.0;
+  Real total = 0.0;
   for (Iterator it (analysis->sample); it ();)  
   {
   	data2variable (*it);
@@ -5149,10 +5149,10 @@ Prob Mixture::getOverlap (size_t compNum1,
 
 void Mixture::balanceProb ()
 {
-	Real s = 0;
+	Real s = 0.0;
 	for (const Component* comp : components)
 	  s += comp->prob;
-	ASSERT (s > 0);
+	ASSERT (s > 0.0);
 	for (const Component* comp : components)
 	  var_cast (comp) -> prob /= s;
 }
@@ -5188,28 +5188,28 @@ bool Mixture::deleteComponent (size_t num)
 	
 	const Prob p_del = comp_del->prob;
 
-	if (eqReal (p_del, 1))
+	if (eqReal (p_del, 1.0))
 	  return false;
   for (Iterator it (analysis->sample); it ();)  
-  	if (eqReal (comp_del->objProb [*it], 1))
+  	if (eqReal (comp_del->objProb [*it], 1.0))
   	  return false;
 
   for (const Component* c : components)
     if (c != comp_del)
     {
       Prob& p = var_cast (c) -> prob;
-      p /= 1 - p_del;
+      p /= 1.0 - p_del;
       makeProb (p);
     }
   for (Iterator it (analysis->sample); it ();)  
   {
     const Prob p_obj_del = comp_del->objProb [*it];
-  	ASSERT (lessReal (p_obj_del, 1));
+  	ASSERT (p_obj_del < 1.0);
 	  for (const Component* c : components)
       if (c != comp_del)
   	  {
   	    Prob& p = var_cast (c) -> objProb [*it];
-  	    p /= 1 - p_obj_del;
+  	    p /= 1.0 - p_obj_del;
   	    makeProb (p);
   	  }
   }
@@ -5309,7 +5309,7 @@ Real PrinComp::getChi2 (size_t objNum) const
 {
   MVector projection (getOutDim ());  
   project (objNum, projection);
-  Real chi2 = 0;
+  Real chi2 = 0.0;
   FFOR (size_t, i, getOutDim ())
   {
     const Real coeff = eigens. values [i];
@@ -5334,8 +5334,8 @@ Clustering::Clustering (const Sample &sample_arg,
 , variance_min (space. size ())
 {
   ASSERT (clusters_max >= 2);
-  ASSERT (sd_min >= 0);
-  ASSERT (entropyDimensionPrecision >= 0);
+  ASSERT (sd_min >= 0.0);
+  ASSERT (entropyDimensionPrecision >= 0.0);
   
   
   // variance_min
@@ -5343,7 +5343,7 @@ Clustering::Clustering (const Sample &sample_arg,
     const Real var_rel_min = sqr (sd_min);
     FFOR (size_t, i, space. size ())
     {
-      Real var = 1;
+      Real var = 1.0;
       if (sd_min_is_relative)
       {
         const UniVariate<NumAttr1> an (sample, * space [i]);
@@ -5520,7 +5520,7 @@ void Clustering::qc () const
   	QC_ASSERT (c->distr->asMultiNormal ());
 
   QC_ASSERT (getOutDim ()); 
-  QC_ASSERT (variance_min. min () >= 0);
+  QC_ASSERT (variance_min. min () >= 0.0);
 }
 
 
@@ -5571,7 +5571,7 @@ void Clustering::splitCluster (size_t num)
 	Mixture::Component* newComp = addCluster (oldComp->prob);
 
   // oldComp->objProb[], newComp->objProb[]
-	const PrinComp pc (sample, space, *oldMn, 1, 1.0, 0.0, 0.0); 
+	const PrinComp pc (sample, space, *oldMn, 1.0, 1.0, 0.0, 0.0); 
 	ASSERT (pc. getOutDim () <= 1);
   MVector projection (1);
   for (Iterator it (sample); it ();)  
@@ -5579,13 +5579,13 @@ void Clustering::splitCluster (size_t num)
   	if (pc. getOutDim () == 1)
   	  pc. project (*it, projection);
   	else
-  	  projection [0] = 0;
-  	if (projection [0] < 0)  
-  		newComp->objProb [*it] = 0;
+  	  projection [0] = 0.0;
+  	if (projection [0] < 0.0)  
+  		newComp->objProb [*it] = 0.0;
   	else
 		{
   		newComp->objProb [*it] = oldComp->objProb [*it];
-  		oldComp->objProb [*it] = 0;
+  		oldComp->objProb [*it] = 0.0;
 		}
   }
   
@@ -5629,7 +5629,7 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
   for (Iterator it (sample); it ();)  
   {
   	size_t col_best = NO_INDEX;
-  	Prob p_max = 0;
+  	Prob p_max = 0.0;
   	FFOR (size_t, col, getOutDim ())
   	  if (maximize (p_max, mixt. components [col] -> objProb [*it]))
   	  	col_best = col;
@@ -5651,7 +5651,7 @@ ProbAttr1* Clustering::createProbAttr (const string &attrName,
 
   for (Iterator it (sample); it ();)  
   {
-  	Prob p_max = 0;
+  	Prob p_max = 0.0;
   	FFOR (size_t, col, getOutDim ())
   	  maximize (p_max, mixt. components [col] -> objProb [*it]);
   	(*attr) [*it] = p_max;
@@ -5721,7 +5721,7 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
         continue;
       ASSERT (nominAttr [*it] >= mainCategory);
       nominAttr [*it] = mainCategory;
-      Prob p = 0;
+      Prob p = 0.0;
       FFOR (size_t, i, categories. size ())
         p += mixt. components [categories [i]] -> objProb [*it];
       makeProb (p);
@@ -5760,21 +5760,21 @@ void Clustering::merge (size_t compNum1,
   const Prob p1 = comp1->prob;
   const Prob p2 = comp2->prob;
   
-  MVector mu (mn1->mu. size (), 0);
-//mu. putAll (0);
+  MVector mu (mn1->mu. size (), 0.0);
+//mu. putAll (0.0);
   mu. add (false, mn1->mu, false, p1);
   mu. add (false, mn2->mu, false, p2);
-  mu. putProdAll (1 / (p1 + p2));
+  mu. putProdAll (1.0 / (p1 + p2));
   
   Matrix sigma (false, mn1->sigmaExact, false, 0);
   {
-  //sigma. putAll (0);
+  //sigma. putAll (0.0);
     Matrix raw (false, mn1->sigmaExact, false);
     mn1->getSigmaRaw (raw);
     sigma. add (false, raw, false, p1);
     mn2->getSigmaRaw (raw);
     sigma. add (false, raw, false, p2);
-    sigma. putProdAll (1 / (p1 + p2));
+    sigma. putProdAll (1.0 / (p1 + p2));
     raw. multiply (     false
                   , mu, false
                   , mu, true
@@ -5959,11 +5959,11 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         Real average = NaN;
         Real scatter = NaN;
         spCan [0] -> getAverageScatter (sample, average, scatter);
-        ASSERT (eqReal (average, 0, 1e-2));
+        ASSERT (eqReal (average, 0.0, 1e-2));
       //ASSERT (eqReal (scatter, eigenValues [0] + 1, 1e-2));
       #endif
         if (jClust)
-          new JsonDouble (/*scatter*/ can. eigenValues [0], 1, jClust, "canonical");  // PAR
+          new JsonDouble (/*scatter*/ can. eigenValues [0], 1.0, jClust, "canonical");  // PAR
 
         const RealAttr1& attr = * spCan [0]; 
         const UniVariate<NumAttr1> analysis (sample, attr);
@@ -5984,10 +5984,10 @@ void Clustering::processSubclusters (const string &clusterAttrName,
   if (classAttr)
   {
     Matrix contTab (false, clustNominAttr->categories. size (), classAttr->categories. size (), 0);
-  //contTab. putAll (0);
+  //contTab. putAll (0.0);
     AttrAnalysis an (clustNominAttr, classAttr);
     for (Iterator it (an); it ();)  
-      contTab. putInc (false, (*clustNominAttr) [*it], (*classAttr) [*it], 1);
+      contTab. putInc (false, (*clustNominAttr) [*it], (*classAttr) [*it], 1.0);
     // Quality ??
     // Rename clustNominAttr->categories ??
     cout << endl;
@@ -6025,7 +6025,7 @@ Canonical::Canonical (const Clustering &clustering)
   const size_t dim_max = clustering. getOutDim () - 1;
   ASSERT (dim_max);
 
-  const Eigens eigens (mn. sigmaExact, dim_max, 1, 1e-3, 1e-4, 5000);  // PAR
+  const Eigens eigens (mn. sigmaExact, dim_max, 1.0, 1e-3, 1e-4, 5000);  // PAR
   eigens. qc ();
   ASSERT (eigens. getInitSize () == choleskyInv. rowsSize (false));  
   ASSERT (eigens. values. size () <= dim_max);  
@@ -6157,14 +6157,14 @@ void Canonical::qc () const
         {
           const Real a = m. get (false, row, col);
           if (row == col) 
-            { if (! eqReal (a, 1, 1e-1))  // PAR
+            { if (! eqReal (a, 1.0, 1e-1))  // PAR
               {
                 cout << a << endl;
                 ERROR;
               }
             }
           else
-            { if (! eqReal (a, 0, 1e-1))  // PAR
+            { if (! eqReal (a, 0.0, 1e-1))  // PAR
               {
                 cout << a << endl;  
                 ERROR;
@@ -6180,7 +6180,7 @@ void Canonical::qc () const
           if (row == col) 
             { QC_ASSERT (eqReal (a, eigenValues [row], 1e-2)); }
           else
-            { QC_ASSERT (eqReal (a, 0, 1e-1)); }
+            { QC_ASSERT (eqReal (a, 0.0, 1e-1)); }
         }   
     }
   }
@@ -6253,7 +6253,7 @@ Space1<RealAttr1> Canonical::createSpace (const string &attrPrefix,
     Real average = NaN;
     Real scatter = NaN;
     sp [0] -> getAverageScatter (sample, average, scatter);
-    ASSERT (eqReal (average, 0, 1e-2));
+    ASSERT (eqReal (average, 0.0, 1e-2));
   //ASSERT (eqReal (scatter, eigenValues [0] + 1, 1e-2));
       // Requires: basis is used in project()
   }

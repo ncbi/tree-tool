@@ -1111,8 +1111,8 @@ void Genome::qc () const
 	
 //QC_ASSERT (getName (). substr (1) == getStrain () -> getName (). substr (1));  
 
-	QC_ASSERT (lessReal (weight [true] [true], weight [false] [true]));
-	QC_ASSERT (lessReal (weight [false] [false], weight [true] [false]));
+	QC_ASSERT (weight [true] [true] < weight [false] [true]);
+	QC_ASSERT (weight [false] [false] < weight [true] [false]);
 //QC_ASSERT (leReal (weight [false] [false], weight [true] [true]));
 
   QC_ASSERT (! id. empty ());

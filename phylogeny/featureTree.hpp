@@ -1290,9 +1290,9 @@ public:
       return emptySuperRoot 
            	   ? false
            	   : allTimeZero 
-           	     ? lessReal ( parent2core [true]  [featureIndex]. treeLen
-           	                , parent2core [false] [featureIndex]. treeLen
-           	                )  // superRoot should be minimal
+           	     ?   parent2core [true]  [featureIndex]. treeLen
+           	       < parent2core [false] [featureIndex]. treeLen
+           	           // superRoot should be minimal
   	    	       : superRootCore [featureIndex];
     }
   void setStats ();

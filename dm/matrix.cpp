@@ -574,7 +574,7 @@ bool Matrix::isSymmetric (size_t &row,
   if (! isSquare ())
   	return false;
 
-  const Real delta = std::max (1.0, maxAbs ()) * DM_sp::epsilon; 
+  const Real delta = std::max (1.0, maxAbs ()) * DM_sp::epsilon;  // PAR
   Real a, b;
   for (row = 0;       row < rowsSize (false); row++)
   for (col = row + 1; col < rowsSize (false); col++)
@@ -616,9 +616,9 @@ bool Matrix::greaterDiagonal (bool t,
   Real a, b;
   for (row = 0; row < rowsSize (false); row++)
   for (col = 0; col < rowsSize (false); col++)
-    if (getDiag (row, a)     &&
-        get (t, row, col, b) &&
-        lessReal (a, b)
+    if (   getDiag (row, a)     
+        && get (t, row, col, b) 
+        && a < b
        )
       return false;
   return true;
@@ -1244,7 +1244,7 @@ bool Matrix::getEigen (Eigen &eigen,
     }
   }
   ASSERT (eigen. vec. size () == rowsSize (false));
-	ASSERT (eqReal (eigen. vec. sumSqr (), 1));
+	ASSERT (eqReal (eigen. vec. sumSqr (), 1.0));
   ASSERT (error >= 0.0);
   ASSERT (iter_max >= 1);
 
@@ -2653,7 +2653,7 @@ void Eigen::qc () const
     return;
   Root::qc ();
     
-  QC_ASSERT (eqReal (getNorm2 (), 1));
+  QC_ASSERT (eqReal (getNorm2 (), 1.0));
 }
 
 
@@ -2810,7 +2810,7 @@ Eigens::Eigens (const Matrix &matr,
     ASSERT (explained >= 0);
     explainedFrac_next = explained / totalExplained_max;
 
-    if (lessReal (explainedFrac_next, explainedFrac_min))
+    if (explainedFrac_next < explainedFrac_min)
     {
       if (verbose ())
         cout << endl 
@@ -2891,7 +2891,7 @@ void Eigens::qc () const
 	QC_ASSERT (values. rowsSize (false) == getDim ());
 	FFOR (size_t, i, basis. rowsSize (true))
 	{
-	  QC_ASSERT (eqReal (basis. sumSqrRow (true, i), 1));
+	  QC_ASSERT (eqReal (basis. sumSqrRow (true, i), 1.0));
 	  QC_IMPLY (psd, values [i] >= 0);
 	}
   if (! leReal (totalExplainedFrac (), 1 + 1e-2))  // PAR

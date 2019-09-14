@@ -197,9 +197,9 @@ inline void sqrEquation (Real a,
                          Real &x1,
                          Real &x2)
   { if (a)
-    { const Real det = sqrt (sqr (b) - 4 * a * c);
-      x1 = (- b - det) / (2 * a);
-      x2 = (- b + det) / (2 * a);
+    { const Real det = sqrt (sqr (b) - 4.0 * a * c);
+      x1 = (- b - det) / (2.0 * a);
+      x2 = (- b + det) / (2.0 * a);
     }
     else
     { x1 = x2 = - c / b; }

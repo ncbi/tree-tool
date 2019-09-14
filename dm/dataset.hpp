@@ -2265,9 +2265,9 @@ public:
       return -INF;
     }
   Prob cdf (Real x) const
-    { if (lessReal (x, getLoBoundEffective ()))
+    { if (x < getLoBoundEffective ())
         return 0.0;
-      if (geReal (x, getHiBoundEffective ()))
+      if (x > getHiBoundEffective ())
         return 1;
       return (cdf_ (x) - p_ltSupp) / p_supp;
     }

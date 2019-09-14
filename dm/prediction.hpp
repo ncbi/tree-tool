@@ -177,7 +177,7 @@ struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
       return a;
     }
   bool getSeparated () const
-    { return lessReal (non_target_score_max, target_score_min); }
+    { return non_target_score_max < target_score_min; }
   void simulateTarget (ulong seed);
     // Output: target[]
   void solve ();
