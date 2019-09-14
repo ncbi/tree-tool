@@ -971,7 +971,7 @@ void L2LinearNumPrediction::solveUnconstrained ()
   }
   else
   {
-	  if (! positive (absCriterion))
+	  if (absCriterion <= 0.0)
 	    setAbsCriterion ();
 	}
   ASSERT (absCriterion >= 0.0);

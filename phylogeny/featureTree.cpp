@@ -621,11 +621,11 @@ Real coreChange2time (const FeatureTree& tree,
 
 	TimeFunc f (tree, parent2core /*, nodes*/);
 	
-	ASSERT (! positive (f. f (0.0)));
+	ASSERT (f. f (0.0) <= 0.0);
 	if (! f. f (0))
 		return 0.0;
 
-	if (! positive (f. f (INF)))
+	if (f. f (INF) <= 0.0)
 		return INF;
   
   Unverbose unv1;
@@ -1339,7 +1339,7 @@ void Change::qc () const
     return;
   QC_ASSERT (! tree. oneFeatureInTree);
 	QC_ASSERT (valid ());
-	QC_ASSERT (positive (improvement));
+	QC_ASSERT (improvement > 0.0);
 	QC_ASSERT (! targets. empty ());
 }
 
@@ -3000,7 +3000,7 @@ const Change* FeatureTree::getBestChange (const Species* from)
   
   if (bestChange)
   {
-  	ASSERT (positive (bestChange->improvement));
+  	ASSERT (bestChange->improvement > 0.0);
 	  if (bestChange->improvement / len >= (allTimeZero ? 1e-4 : 1e-6))  // PAR  --> 0 ??
 	  {
       if (verbose (1))
@@ -3192,7 +3192,7 @@ bool FeatureTree::optimize ()
   	 	 	if (from != root)
     		 	if (const Change* bestChange = getBestChange (from))
     		  { 
-    		  	ASSERT (positive (bestChange->improvement));
+    		  	ASSERT (bestChange->improvement > 0.0);
     		  	changes << bestChange;
     		  }
   	}

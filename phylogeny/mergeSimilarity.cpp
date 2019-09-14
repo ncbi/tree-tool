@@ -115,7 +115,7 @@ struct ThisApplication : Application
         
         // Normalization
         const Real k = matr. getTrace () / (Real) ds. objs. size ();
-        ASSERT (positive (k));
+        ASSERT (k > 0.0);
         matr. putProdAll (1.0 / k);
         
         FOR (size_t, row, ds. objs. size ())

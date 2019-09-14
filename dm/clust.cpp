@@ -64,7 +64,7 @@ struct ThisApplication : Application
 		const size_t clusters_max = str2<size_t> (getArg ("clusters_max"));
 		const Real sd_min         = str2real     (getArg ("sd_min"));
 		const Prob prob_min       = str2<Prob>   (getArg ("prob_min"));
-		ASSERT (positive (sd_min));
+		QC_ASSERT (sd_min > 0.0);
 
 
     Dataset ds (inFName);

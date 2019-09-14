@@ -129,7 +129,7 @@ struct ThisApplication : Application
 
     const Sample sm_orig (ds);
     Sample sm (ds);
-    if (! positive (sm. mult_sum))
+    if (sm. mult_sum <= 0.0)
       throw runtime_error ("Too small data size");
 
     Space1<Attr1> spRaw (ds, true);
@@ -166,7 +166,7 @@ struct ThisApplication : Application
       for (Iterator it (sm); it ();)  
       {
         const Real score = pc. getChi2 (*it);
-        if (positive (score))
+        if (score > 0.0)
           (*outlierScore) [*it] = log (score);
       }
       UniVariate<NumAttr1> outlierAn (sm, *outlierScore);     

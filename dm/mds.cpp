@@ -113,7 +113,7 @@ struct ThisApplication : Application
     Dataset ds (fName);
     
     const Sample sm (ds);
-    if (! positive (sm. mult_sum))
+    if (sm. mult_sum <= 0.0)
       exit (1);
 
     const NominAttr1* classAttr = nullptr;
@@ -284,7 +284,10 @@ struct ThisApplication : Application
     sp1 << spMds_;
     
 
-    if (maxClusters > 1 && mds. getOutDim () && positive (globalSD))
+    if (   maxClusters > 1 
+        && mds. getOutDim () 
+        && globalSD > 0.0
+       )
 	  {
       cerr << "Clustering ..." << endl;
       Space1<NumAttr1> spMds (spMds_);

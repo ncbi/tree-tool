@@ -71,7 +71,7 @@ public:
     , cells (cellsSize, 0)
     , total (0)
     { ASSERT (x_min < x_max); 
-      ASSERT (positive (window));
+      ASSERT (window > 0.0);
       ASSERT (cellsSize);
     }
   void add (Real x)

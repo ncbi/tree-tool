@@ -789,7 +789,7 @@ Histogram::Histogram (Real start_arg,
 , bins ((size_t) round (ceil ((stop - start) / binRange)), 0)
 { 
   ASSERT (lessReal (start, stop)); 
-  ASSERT (positive (binRange));
+  ASSERT (binRange > 0.0);
   ASSERT (bins. size ());      
 }
 

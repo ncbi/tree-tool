@@ -1971,7 +1971,7 @@ bool Matrix::subtractProjectionRow (bool         t,
   ASSERT (rowsSize (! t) == source. rowsSize (! sourceT));
 	
 	const Real s = source. sumSqrRow (sourceT, sourceRow);
-	if (! positive (s))
+	if (s <= 0.0)
 	  return false;
 	  
 	const Real prod = multiplyVec (*this, t, row, source, sourceT, sourceRow);
@@ -2832,14 +2832,6 @@ Eigens::Eigens (const Matrix &matr,
     }
     
   //IMPLY (prevEigen, leReal (eigen->value, prevEigen->value));  // May not hold
-
-  #if 0  
-    if (removeNegativeEigenValues && ! positive (eigen->value))
-    {
-      eigenValue_negative = true;
-      break;
-    }
-  #endif
 
     // orthogonal
     for (const Eigen* other : vecs)

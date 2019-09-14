@@ -335,7 +335,7 @@ Vector<RealAttr1*> NumAttr1::standardize (Dataset &ds_arg,
   {
     auto* a = new RealAttr1 (name + "_std", ds_arg);  
     vec << a;
-    ASSERT (positive (scatter));
+    ASSERT (scatter > 0.0);
     const Real sd = sqrt (scatter);
     for (Iterator it (sample); it ();)  
       if (! isMissing (*it))
@@ -418,7 +418,9 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
   {
     const Real x = it. value;  // Next object
 
-    if (positive (var) && mult_sum >= 0.5 * sample. mult_sum)  // PAR
+    if (   var > 0.0 
+        && mult_sum >= 0.5 * sample. mult_sum  // PAR
+       )
     {
       distr. setMeanVar (mean, var);
       const Prob p = 1.0 - distr. cdf (x);
@@ -688,7 +690,7 @@ Real histogramLikelihood (const Vector <Real> &vec,
 // Requires: vec is sorted ascending
 {
   ASSERT (vec. size () >= 2); 
-  ASSERT (positive (delta));
+  ASSERT (delta > 0.0);
   
 
   Real negLogLikelihood = 0;
@@ -891,7 +893,7 @@ Vector<RealAttr1*> PositiveAttr1::standardize (Dataset &ds_arg,
   if (scatter > 0.0)
   {
     vec << attr;
-    ASSERT (positive (scatter));
+    ASSERT (scatter > 0.0);
     const Real sd = sqrt (scatter);
     for (Iterator it (sample); it ();)  
       if (! isMissing (*it))
@@ -914,7 +916,7 @@ PositiveAttr1* PositiveAttr1::standardizePositive (Dataset &ds_arg,
   if (average != 0.0)  // && !isNan()
   {
 		auto* attr = new PositiveAttr1 (name + "_pos_std", ds_arg, decimals);
-    ASSERT (positive (average));
+    ASSERT (average > 0.0);
     for (Iterator it (sample); it ();)  
       if (! isMissing (*it))
         (*attr) [*it] = (*this) [*it] / average;
@@ -3932,7 +3934,7 @@ void Cauchy::estimate ()
 						                    , fabs (loc_ - maxX)
 						                    );
 		  scale_ = f. findZero (0, maxScale, 1e-4);  // PAR
-		  ASSERT (positive (scale_));
+		  ASSERT (scale_ > 0.0);
 		}
 		
 	  // loc_	
@@ -4031,7 +4033,7 @@ void UniKernel::Point::qc () const
   if (! qc_on)
     return;
   QC_ASSERT (! isNan (value));
-  QC_ASSERT (positive (mult));
+  QC_ASSERT (mult > 0.0);
 }
 
 
@@ -4044,7 +4046,7 @@ void UniKernel::qc () const
     
     
   QC_ASSERT (analysis);
-  QC_ASSERT (positive (analysis->sample. mult_sum));
+  QC_ASSERT (analysis->sample. mult_sum > 0.0);
   QC_ASSERT (points.  size () <= analysis->sample. size ());
   QC_ASSERT (multSum. size () <= analysis->sample. size ());
   QC_ASSERT (points. size () == multSum. size ());
@@ -4069,13 +4071,13 @@ void UniKernel::qc () const
     Real prevMult = NaN;
     for (const Real& mult : multSum)
     {
-      QC_ASSERT (positive (mult));
+      QC_ASSERT (mult > 0.0);
       QC_IMPLY (! isNan (prevMult), prevMult < mult);      
       prevMult = mult;
     }
 
     QC_ASSERT (halfWindow >= 0);
-    QC_ASSERT (positive (halfWindow) == positive (getRange ()));
+    QC_ASSERT ((halfWindow > 0.0) == (getRange () > 0.0));
   }
 }
 
@@ -4106,7 +4108,7 @@ void UniKernel::estimate ()
       step = sqrt (step);
       prog (toString (halfWindow_hi - halfWindow_lo));
     }
-    ASSERT (positive (halfWindow));
+    ASSERT (halfWindow > 0.0);
   }  
 
   ASSERT (getParamSet ());
@@ -4121,7 +4123,7 @@ Real UniKernel::setPoints ()
   points. clear ();
   for (Iterator it (analysis->sample); it ();)  
     if (   ! attr. isMissing (*it)
-        && positive (it. mult)
+        && it. mult > 0.0
         && ! attr. isMissing (*it)
        )
     	points << Point (attr. getReal (*it), it. mult);
@@ -4158,7 +4160,7 @@ void UniKernel::estimate_ (Real halfWindow_lo,
                            Real halfWindow_hi,
                            Real step)
 {
-  ASSERT (positive (halfWindow_lo));
+  ASSERT (halfWindow_lo > 0.0);
   ASSERT (halfWindow_lo < halfWindow_hi);
   ASSERT (step > 1);
   
@@ -4206,7 +4208,7 @@ void UniKernel::estimate_ (Real halfWindow_lo,
 
 void UniKernel::set_uniform_prob ()
 {
-  ASSERT (positive (halfWindow));
+  ASSERT (halfWindow > 0.0);
   
 #if 1  
   Real outlierMult = 0;
@@ -5311,7 +5313,7 @@ Real PrinComp::getChi2 (size_t objNum) const
   FFOR (size_t, i, getOutDim ())
   {
     const Real coeff = eigens. values [i];
-    ASSERT (positive (coeff));
+    ASSERT (coeff > 0.0);
     chi2 += sqr (projection [i]) / coeff;
   }
   return chi2;
@@ -6143,7 +6145,7 @@ void Canonical::qc () const
     QC_ASSERT (basis_norm. defined ());
     eigenValues. qc ();
     eigenValues. defined ();
-    QC_ASSERT (positive (eigenValues. min ()));
+    QC_ASSERT (eigenValues. min () > 0.0);
     
     if (false)  // --> getError () ??
     {

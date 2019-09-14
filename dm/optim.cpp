@@ -104,7 +104,7 @@ Real Func1::findZeroPositive (Real x_init,
 	ASSERT (f (INF) >= 0.0);
 	
   Real x_min = x_init;
-  while (positive (f (x_min)))
+  while (f (x_min) > 0.0)
     x_min /= 2.0;
   if (x_min != x_init)
   	return findZero (x_min, 2.0 * x_min, precision);
@@ -596,7 +596,7 @@ bool FuncMult::optimizeMarquardt (bool          Min,
 {
   ASSERT (X.  rowsSize (false) == maxArgNum);
   ASSERT (dX. rowsSize (false) == maxArgNum);
-  ASSERT (positive (dX. min ()));
+  ASSERT (dX. min () > 0.0);
 
 
 	Unverbose unv;

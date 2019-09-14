@@ -692,7 +692,7 @@ public:
 	                     const Change* b)
     // Requires: (bool)a
     { if (a == b)  return false;
-      if (! b)  return positive (a->improvement);
+      if (! b)  return a->improvement > 0.0;
       if (a->improvement > b->improvement)  return true;
       if (a->improvement < b->improvement)  return false;
       const int cmp = strcmp (a->type (), b->type ());
