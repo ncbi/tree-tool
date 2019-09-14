@@ -73,7 +73,7 @@ diff bla-A.mds data/bla-A.mds
 rm bla-A.mds
 
 echo ""
-echo "mdsTree: Mycobacterium_tuberculosis ..."
+echo "mdsTree: Mycobacterium_tuberculosis"
 rm -rf data/Mycobacterium_tuberculosis.dir/
 $THIS/mdsTree.sh data/Mycobacterium_tuberculosis ANI 2 &> /dev/null
 rm -r data/Mycobacterium_tuberculosis.dir/
