@@ -114,7 +114,9 @@ rm Saccharomyces.criterion_outliers
 diff Saccharomyces.deformation_outliers data/Saccharomyces.deformation_outliers
 rm Saccharomyces.deformation_outliers
 if [ $USER == "brovervv" ]; then
+  set +o errexit  # ??
   $THIS/distTree_compare_criteria.sh Saccharomyces.distTree data/Saccharomyces.distTree
+  set -o errexit  # ??
 fi
 rm Saccharomyces.distTree
 
@@ -187,7 +189,9 @@ diff Saccharomyces2.criterion_outliers data/Saccharomyces2.criterion_outliers
 rm Saccharomyces2.criterion_outliers
 diff Saccharomyces2.deformation_outliers data/Saccharomyces2.deformation_outliers
 rm Saccharomyces2.deformation_outliers
+set +o errexit  # ??
 $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree data/Saccharomyces2.distTree
+set -o errexit  # ??
 rm Saccharomyces2.distTree
 
 set +o errexit
@@ -206,60 +210,60 @@ echo ""
 echo "Many dissimilarity types ..."
 
 echo ""
-echo "Wolf9 ..."
-$THIS/makeDistTree  -qc  -data data/Wolf9  -optimize  -variance linExp  -variance_dissim  -output_dissim_coeff Wolf9.coeff  -output_data Wolf9-out  -output_tree Wolf9.tree  1> $TMP.1 2> /dev/null
-diff Wolf9.coeff data/Wolf9.coeff
-rm Wolf9.coeff
+echo "Virus9 ..."
+$THIS/makeDistTree  -qc  -data data/Virus9  -optimize  -variance linExp  -variance_dissim  -output_dissim_coeff Virus9.coeff  -output_data Virus9-out  -output_tree Virus9.tree  1> $TMP.1 2> /dev/null
+diff Virus9.coeff data/Virus9.coeff
+rm Virus9.coeff
 A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
 #
-$THIS/makeDistTree  -qc  -data Wolf9-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf9-out.tree  1> $TMP.2 2> /dev/null
+$THIS/makeDistTree  -qc  -data Virus9-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus9-out.tree  1> $TMP.2 2> /dev/null
 B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
 if [ "$A" != "$B" ]; then
   echo "$A"
   echo "$B"
   exit 1
 fi
-$THIS/printDistTree  -qc  Wolf9.tree      -order  -decimals 3  > Wolf9.nw
-$THIS/printDistTree  -qc  Wolf9-out.tree  -order  -decimals 3  > Wolf9-out.nw
-diff Wolf9.nw Wolf9-out.nw
-rm Wolf9.nw Wolf9-out.nw
-rm Wolf9.tree Wolf9-out.tree
-rm Wolf9-out.dm
+$THIS/printDistTree  -qc  Virus9.tree      -order  -decimals 3  > Virus9.nw
+$THIS/printDistTree  -qc  Virus9-out.tree  -order  -decimals 3  > Virus9-out.nw
+diff Virus9.nw Virus9-out.nw
+rm Virus9.nw Virus9-out.nw
+rm Virus9.tree Virus9-out.tree
+rm Virus9-out.dm
 
 
-if [ 1 == 1 ]; then
+if [ $USER == "brovervv" ]; then
   echo ""
-  echo "Wolf110 ..."
-  $THIS/makeDistTree  -data data/Wolf110  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Wolf110-out  -output_tree Wolf110.tree 1> $TMP.1 
+  echo "Virus110 ..."
+  $THIS/makeDistTree  -data data/Virus110  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Virus110-out  -output_tree Virus110.tree 1> $TMP.1 
   A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
   #
-  $THIS/makeDistTree  -qc  -input_tree Wolf110.tree  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out1.tree 1> $TMP.2 2> /dev/null
+  $THIS/makeDistTree  -qc  -input_tree Virus110.tree  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out1.tree 1> $TMP.2 2> /dev/null
   B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
   if [ "$A" != "$B" ]; then
     echo "$A"
     echo "$B"
     exit 1
   fi
-  $THIS/printDistTree  -qc  Wolf110.tree       -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Wolf110.nw
-  $THIS/printDistTree  -qc  Wolf110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Wolf110-out1.nw
-  diff Wolf110.nw Wolf110-out1.nw 
+  $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110.nw
+  $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110-out1.nw
+  diff Virus110.nw Virus110-out1.nw 
   #
   if [ 0 == 1 ]; then  # ??
-    makeDistTree  -qc  -data Wolf110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Wolf110-out2.tree 1> $TMP.2 2> /dev/null
+    makeDistTree  -qc  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out2.tree 1> $TMP.2 2> /dev/null
     B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
     if [ "$A" != "$B" ]; then
       echo "$A"
       echo "$B"
       exit 1
     fi
-    $THIS/printDistTree  -qc  Wolf110.tree       -order  -decimals 2  > Wolf110.nw
-    $THIS/printDistTree  -qc  Wolf110-out2.tree  -order  -decimals 2  > Wolf110-out2.nw
-    diff Wolf110.nw Wolf110-out.nw
+    $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 2  > Virus110.nw
+    $THIS/printDistTree  -qc  Virus110-out2.tree  -order  -decimals 2  > Virus110-out2.nw
+    diff Virus110.nw Virus110-out.nw
   fi
   #
-  rm -f Wolf110.nw Wolf110-out1.nw Wolf110-out2.nw
-  rm -f Wolf110.tree Wolf110-out1.tree Wolf110-out2.tree
-  rm Wolf110-out.dm
+  rm -f Virus110.nw Virus110-out1.nw Virus110-out2.nw
+  rm -f Virus110.tree Virus110-out1.tree Virus110-out2.tree
+  rm Virus110-out.dm
 fi
 
 
