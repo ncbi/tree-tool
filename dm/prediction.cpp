@@ -440,9 +440,9 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
             solved = false;
     }
   }
-  setAbsCriterion ();  // Previous absCriterion may be wrong
+  setAbsCriterion ();  // Current absCriterion may be wrong due to numeric problems
 
-  if (! solved)
+  if (! solved  || absCriterion > absCriterion_old)
   {
     if (verbose ())
       cout << "Alternate optimization ..." << endl;

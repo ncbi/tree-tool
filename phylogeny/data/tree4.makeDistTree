@@ -25,14 +25,14 @@ Abs. criterion = 9.1597e-34  Rel. criterion = 0.000 %
 
 Optimizing topology: subgraphs ...
 # Iterations of subgraph optimization: 1
-Abs. criterion = 5.7948e-33  Rel. criterion = 0.000 %
+Abs. criterion = 2.1309e-33  Rel. criterion = 0.000 %
 
 Ave. radius: 5.082
 
 OUTPUT:
-Abs. criterion = 5.7948e-33  Rel. criterion = 0.000 %
+Abs. criterion = 2.1309e-33  Rel. criterion = 0.000 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.94
+Correlation between residual^2 and dissimilarity = 0.31
 
