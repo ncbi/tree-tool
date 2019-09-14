@@ -2223,7 +2223,7 @@ bool Change::strictlyBetter (const Change* a,
   ASSERT (a);
   ASSERT (! isNan (a->improvement));
   
-  if (! positive (a->improvement))  // Otherwise *a is noise
+  if (a->improvement <= 0.0) 
     return false;
   
   if (a == b)  
@@ -6320,6 +6320,7 @@ size_t DistTree::optimizeLenNode ()
     PRINT (absCriterion);
     PRINT (absCriterion_old1);
     PRINT (subDepth);
+    ERROR;
   }
 
   return finishChanges ();
@@ -7207,7 +7208,7 @@ struct DissimCoeffFunc : Func1
     {
       Real sum = 0.0;
       FFOR (size_t, i, covar. size ())
-        if (positive (covar [i]))
+        if (covar [i] > 0.0)
         {
           ASSERT (predict2 [i] > 0.0);
           beta [i] = (predict2 [i] + lambda) / covar [i];
@@ -7249,7 +7250,7 @@ void DistTree::optimizeDissimCoeffs ()
     
   bool removed = false;
   FFOR (size_t, type, dissimTypes. size ())
-    if (! positive (covar [type]))
+    if (covar [type] <= 0.0)
     {
       removeDissimType (type);
       removed = true;
@@ -8824,8 +8825,8 @@ RealAttr1* DistTree::getLogPredictionDiff ()
   //ASSERT (d >= 0.0);
     const Real dHat = (*prediction) [*it];
     ASSERT (! isNan (dHat));
-    if (   positive (d)
-        && positive (dHat)
+    if (   d    > 0.0
+        && dHat > 0.0
        )
       (*logDiffAttr) [*it] = log (d) - log (dHat);
   }
