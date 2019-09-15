@@ -806,7 +806,7 @@ void Histogram::saveText (ostream &os) const
 
 size_t Histogram::getBin (Real x) const
 { 
-  if (! betweenEqualReal (x, start, stop))
+  if (! betweenEqual (x, start, stop))
     return NO_INDEX;
   size_t bin = (size_t) round (floor ((x - start) / binRange));
   if (bin == bins. size ())

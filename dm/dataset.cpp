@@ -4293,7 +4293,7 @@ Real UniKernel::pdf_ (Real x) const
   const Real windowMultsum = multSum [right] - multSumLeft;
   ASSERT (windowMultsum >= 0.0);
   
-  const Real uniformPdf = betweenEqualReal (x, attr_min, attr_max) ? getUniformHeight () : 0.0;
+  const Real uniformPdf = betweenEqual (x, attr_min, attr_max) ? getUniformHeight () : 0.0;
   return        uniform_prob  * uniformPdf
          + (1.0 - uniform_prob) * windowMultsum * getHeight ();  // = sum_i Kernel_i(x)
 }

@@ -248,7 +248,7 @@ bool Func1::minimizeConvex (Real x_min,
   FOR (unsigned short, iter, iter_max)
   {
     ASSERT (x_min <= x_max);
-    ASSERT (betweenReal (x1, x_min, x_max));
+    ASSERT (between (x1, x_min, x_max));
     if (verbose ())
     	cout << "f1=" << f1 << endl;
 
@@ -264,7 +264,7 @@ bool Func1::minimizeConvex (Real x_min,
       x2 = x_min + (x1   - x_min) / 2.0;  
     else
       x2 = x1   + (x_max - x1)   / 2.0;
-    ASSERT (betweenReal (x2, x_min, x_max));
+    ASSERT (between (x2, x_min, x_max));
     
     // f2
     const Real f2 = f (x2);

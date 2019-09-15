@@ -57,7 +57,7 @@ struct Kernel
     // > 0
   Vector<size_t> cells;
 private:
-  size_t total;
+  size_t total {0};
 public:
   
   
@@ -69,7 +69,6 @@ public:
     , x_max (x_max_arg)
     , window (window_arg)
     , cells (cellsSize, 0)
-    , total (0)
     { ASSERT (x_min < x_max); 
       ASSERT (window > 0.0);
       ASSERT (cellsSize);
@@ -105,28 +104,20 @@ public:
 
 struct Bin : Root
 {
-  Real start;
-  Real stop;
+  Real start {NaN};
+  Real stop {NaN};
     // start < stop
-  size_t classMult;
+  size_t classMult {0};
 #if 0
-  Real mult;
-  Real grayZone_lo;
-  Real grayZone_hi;
-  bool merge;
+  Real mult {0.0};
+  Real grayZone_lo {0.0};
+  Real grayZone_hi {0.0};
+  bool merge {false};
     // With next bin
 #endif
   
   explicit Bin (Real stop_arg)
-    : start (NaN)
-    , stop (stop_arg)
-    , classMult (0)
-  #if 0
-    , mult (0)
-    , grayZone_lo (0)
-    , grayZone_hi (0)
-    , merge (false)
-  #endif
+    : stop (stop_arg)
     {}    
   void saveText (ostream &os) const
     { TabDel td;
@@ -143,7 +134,7 @@ struct Bin : Root
             Real objMult)
     { ASSERT (betweenEqualReal (score, start, stop));
       mult += objMult;
-      const Real grayLen = range () / 6;  // PAR
+      const Real grayLen = range () / 6.0;  // PAR
       ASSERT (grayLen >= 0);
            if (score <= start + grayLen)
         grayZone_lo += objMult;
