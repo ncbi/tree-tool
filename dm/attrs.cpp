@@ -138,7 +138,7 @@ struct ThisApplication : Application
         FOR (size_t, j, i)
         {
         	const Real corr = mn. sigmaExact. get (false, i, j) / sqrt (mn. sigmaExact. getDiag (i) * mn. sigmaExact. getDiag (j));
-          if (geReal (corr, corr_min))
+          if (corr >= corr_min)
           	cout << "corr (" << space [i] -> name << ", " << space [j] -> name << ") = " << corr << endl;
         }
       }

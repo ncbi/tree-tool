@@ -161,7 +161,7 @@ size_t findClass_last (const Vector<Bin> &bins,
 {
   size_t class_last = NO_INDEX;
   FOR (size_t, i, bins. size ())
-    if (geReal ((Real) bins. at (i). classMult, FP_fraction * (Real) classMult_max))  
+    if ((Real) bins. at (i). classMult >= FP_fraction * (Real) classMult_max)
       class_last = i;
   ASSERT (class_last != NO_INDEX);
   return class_last;

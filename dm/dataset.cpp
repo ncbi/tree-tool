@@ -3253,7 +3253,7 @@ void Binomial::estimate ()
 				  sum    += y;
 			    ASSERT (! isNan (sumLog));
 				}
-				ASSERT (geReal (sum, 0.0));
+				ASSERT (sum >= 0.0);
 				c = sumLog / sum;
 				ASSERT (! isNan (c));
 			}
@@ -4213,8 +4213,8 @@ void UniKernel::set_uniform_prob ()
 #if 1  
   Real outlierMult = 0.0;
   FFOR (size_t, i, points. size ())
-    if (   (i == 0                   || geReal (points [i].     value - points [i - 1]. value, halfWindow))
-        && (i == points. size () - 1 || geReal (points [i + 1]. value - points [i].     value, halfWindow))
+    if (   (i == 0                   || points [i].     value - points [i - 1]. value >= halfWindow)
+        && (i == points. size () - 1 || points [i + 1]. value - points [i].     value >= halfWindow)
        )
       outlierMult += points [i]. mult;
   uniform_prob = outlierMult / checkPtr (analysis) -> sample. mult_sum;
@@ -5634,7 +5634,7 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
   	  if (maximize (p_max, mixt. components [col] -> objProb [*it]))
   	  	col_best = col;
   	ASSERT (col_best != NO_INDEX);
-  	if (geReal (p_max, prob_min))
+  	if (p_max >= prob_min)
  	  	(*attr) [*it] = col_best;
   }
   
@@ -5694,7 +5694,7 @@ bool Clustering::mergeClose (NominAttr1 &nominAttr,
   	  const Prob confused = mixt. getOverlap (i, j);
   	  if (verbose ())
   	    cout << "Cluster " << i + 1 << " vs. cluster " << j + 1 << ": confused = " << confused << endl;
- 	    if (geReal (confused, confused_max))
+ 	    if (confused >= confused_max)
  	      var_cast (clusters [i]) -> merge (* var_cast (clusters [j]));
     }
 

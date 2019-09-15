@@ -1370,7 +1370,7 @@ Real Matrix::getLnFisherExact (bool oneTail) const
                        + lnFactorial (sum01 - sum11)
                        + lnFactorial (sum10 - sum11)
                        + lnFactorial (sum02 - (sum10 - sum11));
-        if (oneTail || geReal (f, threshold))
+        if (oneTail || f >= threshold)
           sumLn. addExp (- f);
       }
       return
@@ -1409,7 +1409,7 @@ Real Matrix::getLnFisherExact (bool oneTail) const
                         + lnFactorial (sum01 - sum11)
                         + lnFactorial (sum02 - sum12)
                         + lnFactorial (sum23);
-        if (geReal (f, threshold))
+        if (f >= threshold)
           sumLn. addExp (- f);
       }
       return

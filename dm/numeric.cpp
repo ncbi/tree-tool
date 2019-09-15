@@ -754,7 +754,7 @@ void WeightedMeanVar::add (const WeightedMeanVar& other)
 
 void WeightedMeanVar::subtract (const WeightedMeanVar& other)
 { 
-  ASSERT (geReal (weights, other. weights));
+  ASSERT (weights >= other. weights);
   
   weightedSum  -= other. weightedSum;
   weightedSum2 -= other. weightedSum2;

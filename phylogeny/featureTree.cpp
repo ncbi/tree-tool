@@ -3088,7 +3088,7 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
 	  	}
 	  }
 	  
-	  if (geReal (len, len_old))
+	  if (len >= len_old)
 	  {
 	  	ch->restore ();
 	  	ASSERT (! first);

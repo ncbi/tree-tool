@@ -8428,7 +8428,7 @@ VectorPtr<DTNode> DistTree::findOutlierArcs (Real outlier_EValue_max,
   sample. mult. setAll (0.0);
 //OFStream f ("arc_len");  
   FFOR (size_t, objNum, nodeDissims. size ())
-    if (geReal (nodeDissims [objNum]. dissim_min, dissimOutlier_min))  
+    if (nodeDissims [objNum]. dissim_min >= dissimOutlier_min)
     {
       sample. mult [objNum] = 1.0;
     //nodeDissims [objNum]. print (f);  
