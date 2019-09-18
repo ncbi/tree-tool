@@ -5,48 +5,41 @@ Max. possible distance: 18.0218
 Subgraph radius: 5
 Root: by length
 
-Neighbor joining ...
-CHRON: Initial topology: 2 sec.
+CHRON: Initial topology: 0 sec.
 
 INPUT:
-# Leaves: 501
-# Discernible leaves: 501
-# Nodes: 1001
-# Dissimilarities: 250500 (100.00 %)
-Dissimilarities factor: 40.21
-Ave. dissimilarity = 0.263527
+# Leaves: 457
+# Discernible leaves: 457
+# Nodes: 913
+# Dissimilarities: 208392 (100.00 %)
+Dissimilarities factor: 37.23
+Ave. dissimilarity = 0.251813
 # Dissimilarity types = 2
-Abs. criterion = 9.8259e+02  Rel. criterion = 12.308 %
+Abs. criterion = 1.3170e+02  Rel. criterion = 4.954 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
-# Nodes deleted = 79
+# Nodes deleted = 1
 Optimizing arc lengths at each node ...
-# Nodes deleted = 4
-Abs. criterion = 5.1512e+02  Rel. criterion = 8.912 %
-CHRON: Initial arc lengths: 352 sec.
+# Nodes deleted = 0
+Abs. criterion = 1.3169e+02  Rel. criterion = 4.954 %
+CHRON: Initial arc lengths: 11 sec.
+
+# Changes: 13
+# Commits = 8
+Improvement = 2.0765e+00
+Abs. criterion = 1.3174e+02  Rel. criterion = 4.962 %
+CHRON: Topology optimization: reinsert: 5 sec.
 
 Optimizing topology: subgraphs ...
-# Hybrids: 42
-Abs. criterion = 1.3778e+02  Rel. criterion = 5.040 %
+# Iterations of subgraph optimization: 10
+Abs. criterion = 1.3049e+02  Rel. criterion = 4.931 %
+CHRON: Topology optimization: local: 52 sec.
 
-# Hybrids: 0
-Abs. criterion = 1.3713e+02  Rel. criterion = 5.033 %
-
-# Iterations of subgraph optimization: 2
-Abs. criterion = 1.3710e+02  Rel. criterion = 5.033 %
-CHRON: Topology optimization: local: 443 sec.
-
-Ave. radius: 0.561
-
-# Criterion outliers: 3
-Abs. criterion = 1.3352e+02  Rel. criterion = 4.978 %
-
-# Deformation outliers: 14
-Abs. criterion = 1.3119e+02  Rel. criterion = 4.945 %
+Ave. radius: 0.562
 
 OUTPUT:
-Abs. criterion = 1.3119e+02  Rel. criterion = 4.945 %
+Abs. criterion = 1.3049e+02  Rel. criterion = 4.931 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
