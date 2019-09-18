@@ -1090,8 +1090,9 @@ void Steiner::reverseParent (const Steiner* target,
   {
     setParent (child);
     // Arc-specific data
-    len  = child->len;
+    len            = child->len;
     pathDissimNums = child->pathDissimNums;
+    errorDensity   = child->errorDensity;
   }
 }
 
@@ -1106,13 +1107,15 @@ void Steiner::makeRoot (Steiner* ancestor2descendant)
   // Arc-specific data
   const auto len_new          = ancestor2descendant->len;
   const auto pathObjNums_new  = ancestor2descendant->pathDissimNums;
+  const auto errorDensity_new = ancestor2descendant->errorDensity;
   
   reverseParent (ancestor2descendant, nullptr);
 
   setParent (var_cast (parent_new));
   // Arc-specific data
-  len          = len_new;
+  len             = len_new;
   pathDissimNums  = pathObjNums_new;
+  errorDensity    = errorDensity_new;
 }
 
 
@@ -2113,7 +2116,7 @@ bool Change::apply ()
     lr. qc ();  
   if (isNan (lr. absCriterion))
   {
-  #if 1
+  #if 0
     if (const Leaf* leaf = from->asLeaf ())  // ??
       if (leaf->name == "AY662658.1")
       {
@@ -6273,11 +6276,12 @@ size_t DistTree::optimizeLenNode ()
     ASSERT (lr. beta. size () == arcNodes. size ());
     FFOR (size_t, attrNum, lr. beta. size ())
       lr. beta [attrNum] = static_cast <const DTNode*> (arcNodes [attrNum]) -> len;
-    // For "!!optimizeLenNode1" ??
+  #if 0
+    // For "!!optimizeLenNode1"
     const auto beta_init (lr. beta);
     lr. setAbsCriterion ();
     const auto absCriterion_lr_init = lr. absCriterion;
-    //
+  #endif
     const bool solved = lr. solveUnconstrainedFast (nullptr, true, 10, 0.01);  // PAR
     lr. qc ();
   
@@ -6288,9 +6292,9 @@ size_t DistTree::optimizeLenNode ()
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
       const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
-      if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR
+      ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
+    #if 0
       { 
-        // ??
         cout << "!!optimizeLenNode1" << endl;  
         PRINT (absCriterion_lr_init);
         PRINT (lr. absCriterion);
@@ -6310,20 +6314,23 @@ size_t DistTree::optimizeLenNode ()
         // 2 arcs of an equal length, and all the other arcs have a positive length close to 0: why ??
         ERROR;
       }
+    #endif
       prog (absCriterion2str ()); 
     }
   }
 
   
-  if (! leRealRel (absCriterion, absCriterion_old1, 1e-4))  // PAR
+  ASSERT (leRealRel (absCriterion, absCriterion_old1, 1e-4));  // PAR
+#if 0
   {
-    cout << "!!optimizeLenNode2" << endl;  // ??
+    cout << "!!optimizeLenNode2" << endl;  
     const ONumber on (cout, absCriterionDecimals, true);
     PRINT (absCriterion);
     PRINT (absCriterion_old1);
     PRINT (subDepth);
     ERROR;
   }
+#endif
 
   return finishChanges ();
 }
@@ -6467,8 +6474,8 @@ void reinsert_thread (size_t from,
       continue;
     auto change = new Change (fromNode, toNode);
     change->improvement = improvement;
-  #if 1
-    if (const Leaf* leaf = change->from->asLeaf ())  // ??
+  #if 0
+    if (const Leaf* leaf = change->from->asLeaf ())  
       if (leaf->name == "AY662658.1")
       {
         const ONumber on (cout, 12, true);
@@ -6662,8 +6669,8 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
       IMPLY (first && ! byNewLeaf, success && ch->improvement > 0.0);
         // byNewLeaf => not all dissimilarities have been used to create Change
 
-    #if 1
-      if (const Leaf* leaf = ch->from->asLeaf ())  // ??
+    #if 0
+      if (const Leaf* leaf = ch->from->asLeaf ())  
         if (leaf->name == "AY662658.1")
         {
           const ONumber on (cout, 12, true);
@@ -7629,15 +7636,17 @@ void DistTree::reroot (DTNode* underRoot,
 
   if (underRoot != root)
   {
-    ASSERT (! isNan (arcLen));
-    ASSERT (arcLen >= 0);
+    ASSERT (arcLen >= 0.0);
     ASSERT (arcLen <= underRoot->len);
     
     DTNode* root_ = const_static_cast<DTNode*> (root);
       
     const Steiner* newRootParent = static_cast <const DTNode*> (underRoot->getParent ()) -> asSteiner ();
     auto newRoot = new Steiner (*this, var_cast (newRootParent), underRoot->len - arcLen);
-    newRoot->pathDissimNums  = underRoot->pathDissimNums;
+    // Arc-specific data
+    newRoot->pathDissimNums = underRoot->pathDissimNums;
+    newRoot->errorDensity   = underRoot->errorDensity;
+    //
     underRoot->setParent (newRoot); 
     underRoot->len = arcLen;
     
