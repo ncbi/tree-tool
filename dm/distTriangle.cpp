@@ -159,7 +159,7 @@ Save clusters in " + dmSuff + "-files\
 		const string fName          = getArg ("file");
 		const string attrName       = getArg ("attrName");
 	  const Real   hybridness_min = str2real (getArg ("hybridness_min"));
-	  const string hybridFName   = getArg ("hybrid");
+	  const string hybridFName    = getArg ("hybrid");
 		const Real   distance_max   = str2real (getArg ("distance_max"));
 		const string objName        = getArg ("objName");
 	  if (hybridness_min <= 1.0)
@@ -346,7 +346,7 @@ Save clusters in " + dmSuff + "-files\
                   continue;
                 ASSERT (dPair >= 0.0);
                 const Real hybridness = d / dPair;
-                if (hybridness < hybridness_min)
+                if (! (hybridness >= hybridness_min))
                   continue;
                 const Violation violation (x, y, z, hybridness);
                 violations << violation;
