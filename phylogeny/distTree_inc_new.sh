@@ -176,10 +176,17 @@ if [ -e $INC/outlier-genogroup ]; then
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
 
+REINSERT=""
+POS=$(( ${#VER} - 1 ))
+if [ "${VER:$POS}" == 0 ]; then  # PAR
+  REINSERT="-reinsert"
+  echo "Reinsert"
+fi
+
 # Time: O(n log^4(n)) 
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE \
-  -optimize  -skip_len  -subgraph_iter_max 2 \
+  $REINSERT  -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
   $HYBRID \
   -output_tree $INC/tree.new \
