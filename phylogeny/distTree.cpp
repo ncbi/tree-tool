@@ -7777,7 +7777,13 @@ void DistTree::setErrorDensities ()
 {
   ASSERT (optimizable ());
 
-  const Real c = absCriterion / (Real) dissims. size ();
+  size_t n = 0;
+  for (const Dissim& dissim : dissims)
+    if (dissim. validMult ())
+      n++;
+  ASSERT (n);
+
+  const Real c = absCriterion / (Real) n;
   ASSERT (c >= 0.0);
   for (DiGraph::Node* node : nodes)
   {
@@ -7796,6 +7802,7 @@ void DistTree::setLeafNormCriterion ()
     if (Leaf* leaf = var_cast (static_cast <DTNode*> (node) -> asLeaf ()))
       leaf->normCriterion = 0.0;  // temporary
 
+  size_t n = 0;
   for (const Dissim& dissim : dissims)
     if (dissim. validMult ())
     {
@@ -7808,9 +7815,12 @@ void DistTree::setLeafNormCriterion ()
 
       leaf1->normCriterion += criterion; 
       leaf2->normCriterion += criterion; 
+      
+      n++;
     }
+  ASSERT (n);
 
-  const Real c = absCriterion / (Real) dissims. size ();
+  const Real c = absCriterion / (Real) n;
   ASSERT (c >= 0.0);
   for (DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <DTNode*> (node) -> asLeaf ())
@@ -7969,8 +7979,8 @@ VectorPtr<Leaf> DistTree::findDeformationOutliers (Real deformation_mean,
     Chi2 chi2;
     chi2. setParam (1.0);
     MaxDistribution maxD;
-    const size_t n = 2 * dissims. size () / name2leaf. size ();
-    maxD. setParam (& chi2, n + 1);
+    const size_t n = max<size_t> (1, 2 * dissims. size () / name2leaf. size ());
+    maxD. setParam (& chi2, n);
     maxD. qc ();
     outlier_min_excl = maxD. getQuantileComp (1.0 - outlier_EValue_max / (Real) name2leaf. size (), 0.0, 1e6);  // PAR
   }
