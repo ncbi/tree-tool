@@ -28,9 +28,9 @@ fi
 
 mkdir $INC
 
-cp /dev/null $INC/dissim
-cp /dev/null $INC/leaf
-cp /dev/null $INC/tree
+touch $INC/dissim
+touch $INC/leaf
+touch $INC/tree
 
 mkdir $INC/new
 mkdir $INC/search
@@ -40,7 +40,7 @@ echo "1" > $INC/version
 mkdir $INC/hist
 
 echo $GRID_MIN > $INC/grid_min
-cp /dev/null $INC/runlog
+touch $INC/runlog
 
 echo "$VARIANCE"        > $INC/variance
 echo $DISSIM_BOUNDARY   > $INC/dissim_boundary

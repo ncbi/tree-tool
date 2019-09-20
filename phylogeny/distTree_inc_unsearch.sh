@@ -11,6 +11,6 @@ INC=$1
 OBJ=$2
 
 
-cp /dev/null $INC/new/$OBJ
+touch $INC/new/$OBJ
 rm -r $INC/search/$OBJ/
 

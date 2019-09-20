@@ -274,9 +274,9 @@ $INC/qc.sh go
 
 NEW=`ls $INC/new | wc -l`
 if [ $NEW  == 0 ]; then
-  cp /dev/null $INC/finished
+  touch $INC/finished
 elif [ $ALL_NEW == 0 -a $NEW -lt $ADD ]; then
-  cp /dev/null $INC/finished
+  touch $INC/finished
 else
   rm -f $INC/finished
 fi
