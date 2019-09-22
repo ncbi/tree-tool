@@ -52,6 +52,7 @@ struct ThisApplication : Application
   	  addPositional ("command", "Text with special symbols: \
 \"%d\" = <items>, \
 \"%f\" - an item, \
+\"%h\" - item hash (0.." + to_string (hash_class_max - 1) + "), \
 \"%n\" - sequential number, \
 \"%q\" - single quote, \
 \"%Q\" - double quote, \
@@ -125,7 +126,8 @@ struct ThisApplication : Application
 
       string thisCmd (cmd);
       replaceStr (thisCmd, "%f", item);
-      replaceStr (thisCmd, "%n", toString (gen->prog. n));  
+      replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
+      replaceStr (thisCmd, "%n", to_string (gen->prog. n));  
       if (contains (thisCmd, "%"))
         throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
       if (verbose ())
@@ -144,7 +146,7 @@ struct ThisApplication : Application
   	          ERROR;
           }
           else
-            throw runtime_error ("item=" + item + "  status=" + toString (WEXITSTATUS (exitStatus)) + "\n" + thisCmd);
+            throw runtime_error ("item=" + item + "  status=" + to_string (WEXITSTATUS (exitStatus)) + "\n" + thisCmd);
         }
   	    FOR (uint, i, blank_lines)
   	      cerr << " " << endl;
