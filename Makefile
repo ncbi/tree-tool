@@ -15,6 +15,7 @@ endif
 all:	\
   cpp_test \
   extractPairs \
+  file2hash \
   graph_test \
   list2pairs \
   mergePairs \
@@ -37,6 +38,12 @@ extractPairs.o:  $(COMMON_HPP)
 extractPairsOBJS=extractPairs.o $(CPP_DIR)/common.o
 extractPairs:	$(extractPairsOBJS)
 	$(CXX) -o $@ $(extractPairsOBJS) $(LIBS)
+	$(ECHO)
+
+file2hash.o:  $(COMMON_HPP)  
+file2hashOBJS=file2hash.o $(CPP_DIR)/common.o
+file2hash:	$(file2hashOBJS)
+	$(CXX) -o $@ $(file2hashOBJS) $(LIBS)
 	$(ECHO)
 
 graph_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp

@@ -79,7 +79,7 @@ struct ThisApplication : Application
 		  string s; 
 		  FOR (uint, col, targetCol)
 		  {
-		  	s = getToken (*is, delimiters, "\n");
+		  	s = getColumn (*is, delimiters, "\n");
 		  	if (s == "\n")
 		  	{
 		  		cout << "No column " << targetCol + 1 << " in row " << row << endl;

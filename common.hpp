@@ -1013,9 +1013,9 @@ void readLine (istream &is,
                string &s);
   // Output: s
 
-string getToken (istream &is,
-                 const string &skip,
-                 const string &delimeters);
+string getColumn (istream &is,
+                  const string &skip,
+                  const string &delimeters);
   // Return: empty() <=> eof
 
 inline void pressAnyKey ()
@@ -1025,6 +1025,15 @@ inline void pressAnyKey ()
 
 inline streamsize double2decimals (double r)
   { return r ? (streamsize) max<long> (0, (long) (ceil (- log10 (fabs (r)) + 1))) : 0; }
+
+
+
+// hash
+extern hash<string> str_hash;
+constexpr size_t hash_class_max = 1000;  // PAR
+inline size_t str2hash_class (const string &s)
+  { return str_hash (s) % hash_class_max; }
+ 
 
 
 

@@ -49,21 +49,18 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-  : Application ("Print sorted unique 64-bit hash codes for a list of strings form stdin", false)
-  {}
+    : Application ("Print sorted unique 64-bit hash codes for a list of strings form stdin", false)
+    {}
 
 
 
 	void body () const final
 	{
-    hash<string> str_hash;
-    static_assert (sizeof (size_t) == 8, "Size of size_t must be 8 bytes");
-    
     Vector<size_t> hashes;  hashes. reserve (10000);   // PAR
 	  {
 	  	string s;
 	    while (cin >> s)
-	      hashes << str_hash (s);;
+	      hashes << str_hash (s);
 	  }
 
     hashes. sort ();

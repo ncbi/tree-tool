@@ -166,6 +166,8 @@ bool initCommon ()
 
   static_assert (SIZE_MAX == std::numeric_limits<size_t>::max (), "SIZE_MAX is correct");
 
+  static_assert (sizeof (size_t) == 8, "Size of size_t must be 8 bytes");
+    
   return true;
 }
 
@@ -912,9 +914,9 @@ void readLine (istream &is,
 
 
 
-string getToken (istream &is,
-                 const string &skip,
-                 const string &delimeters)
+string getColumn (istream &is,
+                  const string &skip,
+                  const string &delimeters)
 {
   // Skipping skip
   for (;;)
@@ -954,6 +956,11 @@ string getToken (istream &is,
 }
 
  
+
+
+hash<string> str_hash;
+
+
 
 
 // Rand
