@@ -3318,6 +3318,7 @@ struct ShellApplication : Application
   const bool useTmp;
   string tmp;
   string execDir;
+    // Ends with '/'
   mutable map<string,string> prog2dir;
   
 
