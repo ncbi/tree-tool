@@ -58,6 +58,11 @@
   #pragma warning (default : 4005)  
 #endif
 
+#ifdef __APPLE__
+  #include <sys/types.h>
+  #include <sys/sysctl.h>
+#endif
+
 #include <ctime>
 #include <cstring>
 #include <cmath>
@@ -2532,31 +2537,6 @@ public:
 	
 
 
-struct PairFile : Root
-{
-private:
-	LineInput f;
-	Istringstream iss;
-public:
-  bool sameAllowed {false};
-	bool orderNames {false};
-  	// true => name1 < name2
-	string name1;
-	string name2;
-	
-	PairFile (const string &fName,
-	          bool sameAllowed_arg,
-	          bool orderNames_arg)
-	  : f (fName, 100 * 1024, 1000)  // PAR
-	  , sameAllowed (sameAllowed_arg)
-	  , orderNames (orderNames_arg)
-	  {}
-	  
-	bool next ();
-};
-
-
-
 struct Token : Root
 {
 	enum Type { eName
@@ -2678,11 +2658,17 @@ struct TokenInput : Root
   Token last;
 
 
-  TokenInput (const string &fName,
-              char commentStart_arg,
-      	      size_t bufSize = 100 * 1024,
-              uint displayPeriod = 0)
+  explicit TokenInput (const string &fName,
+                       char commentStart_arg = '\0',
+                	     size_t bufSize = 100 * 1024,
+                       uint displayPeriod = 0)
     : ci (fName, bufSize, displayPeriod)
+    , commentStart (commentStart_arg)
+    {}
+  explicit TokenInput (istream &is_arg,
+                       char commentStart_arg = '\0',
+                       uint displayPeriod = 0)
+    : ci (is_arg, displayPeriod)
     , commentStart (commentStart_arg)
     {}
 
@@ -2705,6 +2691,30 @@ struct TokenInput : Root
     }
 };
 
+
+
+struct PairFile : Root
+{
+private:
+	LineInput f;
+	Istringstream iss;
+public:
+  bool sameAllowed {false};
+	bool orderNames {false};
+  	// true => name1 < name2
+	string name1;
+	string name2;
+	
+	PairFile (const string &fName,
+	          bool sameAllowed_arg,
+	          bool orderNames_arg)
+	  : f (fName, 100 * 1024, 1000)  // PAR
+	  , sameAllowed (sameAllowed_arg)
+	  , orderNames (orderNames_arg)
+	  {}
+	  
+	bool next ();
+};
 
 
 
