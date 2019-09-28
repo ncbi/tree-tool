@@ -11,15 +11,16 @@ NEW_OBJ=$1
 
 INC=`dirname $0`
 TMP=`mktemp`  
+#echo $TMP  
 
-blastn  -db $INC/seq.fa  -query /home/brovervv/panfs/marker/SSU/seq/$NEW_OBJ  -strand plus  -evalue 1e-20  -outfmt '6 sseqid' > $TMP.blastn
+blastn  -db $INC/seq.fa  -query /home/brovervv/panfs/marker/SSU/seq/$NEW_OBJ  -strand plus  -evalue 1e-20  -outfmt '6 sseqid nident' > $TMP.blastn
 set +o errexit
-grep -v $NEW_OBJ $TMP.blastn | sort -u > $TMP.grep
+grep -v $NEW_OBJ $TMP.blastn > $TMP.grep 
 set -o errexit
-head -100 $TMP.grep | sed 's/$/ '$NEW_OBJ'/1'
+sort -k 2 -n -r $TMP.grep | cut -f 1 | head -100 | sort -u | sed 's/$/ '$NEW_OBJ'/1' 
 
 
-rm -fr $TMP*
+rm -fr $TMP*  
 
 
 
