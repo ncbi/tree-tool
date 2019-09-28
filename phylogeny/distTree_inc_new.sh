@@ -20,6 +20,7 @@ GRID_MIN=`cat $INC/grid_min`
 QC=""  # -qc  
 RATE=0.015   # PAR
 VARIANCE=`cat $INC/variance`
+OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 
 
 if [ 1 == 1 ]; then  # was: 1 == 1  
@@ -61,7 +62,6 @@ echo "version: $VER"
 
 echo "new/ -> search/ ..."
 
-OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 echo "# Objects: $OBJS"  
 
 ADD=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
@@ -127,7 +127,11 @@ while [ $ITER -le $ITER_MAX ]; do
     $THIS/../qstat_wait.sh 2000 0
   fi
   
-  ls $INC/log | sed 's/\..*$//1' | sort -u > $INC/log.list
+  ls $INC/log > $INC/log.list-all
+  ls $INC/search > $INC/search.list
+  $THIS/../setIntersect.sh $INC/log.list-all $INC/search.list 0 > $INC/log.list
+  rm $INC/log.list-all
+  rm $INC/search.list
   L=`cat $INC/log.list | wc -l`
   if [ $L -gt 0 ]; then
     echo "# Failed tasks: $L"

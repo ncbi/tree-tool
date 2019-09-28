@@ -7,7 +7,7 @@ if [ $# -ne 2 ]; then
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual"
   echo "#1: incremental distance tree directory"
   echo "#2: add new (0 - no, 1 - almost all, 2 - all)"
-  echo "Time: O(n log^5(n)) if #2 = 1"
+  echo "Time: O(n log^5(n))"
   exit 1
 fi
 INC=$1
@@ -107,10 +107,11 @@ $THIS/distTree_inc_tree1_quality.sh $INC
 
 if [ -e $INC/phen ]; then
 	DATE=`date +%Y%m%d`
+	PHEN_LARGE=`cat $INC/phen_large`
 
 	echo ""
 	echo "Root and quality ..."
-	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen 1 > $INC/hist/tree_quality_phen.$VER 
+	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 1 > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
@@ -125,7 +126,7 @@ if [ -e $INC/phen ]; then
 	
 	echo ""
 	echo "Names ..."
-	$THIS/tree2names.sh tree.$DATE $INC/phen > $INC/hist/tree2names.$VER
+	$THIS/tree2names.sh tree.$DATE $INC/phen $PHEN_LARGE > $INC/hist/tree2names.$VER
 fi
 
 

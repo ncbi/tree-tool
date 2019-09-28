@@ -946,6 +946,7 @@ string Genome::featureLineFormat ()
 
 
 void Genome::initDir (const string &featureDir,
+                      bool large,
                       bool nominalSingletonIsOptional)
 {
   ASSERT (! id. empty ());
@@ -954,7 +955,10 @@ void Genome::initDir (const string &featureDir,
  
   if (! featureDir. empty ())
   {
-    LineInput f (featureDir + "/" + id);
+    string dirName (featureDir);
+    if (large)
+      dirName += "/" + to_string (str2hash_class (id));
+    LineInput f (dirName + "/" + id);
     // coreSet
     while (f. nextLine ())
     {
@@ -981,7 +985,7 @@ void Genome::initDir (const string &featureDir,
       else
         gf. id = f. line;
       trim (gf. id);
-      ASSERT (! gf. id. empty ());
+      QC_ASSERT (! gf. id. empty ());
       coreSet << move (gf);
     }
   }
@@ -2004,6 +2008,7 @@ namespace
 
 FeatureTree::FeatureTree (const string &treeFName,
       						        const string &featureDir,
+      						        bool large,
       						        const string &coreFeaturesFName,
       						        bool nominalSingletonIsOptional,
   	                      bool preferGain_arg,
@@ -2036,7 +2041,7 @@ FeatureTree::FeatureTree (const string &treeFName,
 	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
 	 		{
 	 			prog (g->getName ());
-	      try { var_cast (g) -> initDir (featureDir, nominalSingletonIsOptional); }
+	      try { var_cast (g) -> initDir (featureDir, large, nominalSingletonIsOptional); }
    		    catch (const exception &e)
    		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
 	      genomes++;

@@ -14,7 +14,8 @@ if [ -e $INC/phen ]; then
   echo "Quality of the initial tree ..."
   VER=`cat $INC/version`
 	$THIS/tree2obj.sh $INC/hist/tree.1 > $INC/_init.list
-  $THIS/tree_quality_phen.sh $INC/tree $INC/_init.list $INC/phen 0 > $INC/hist/makeFeatureTree-tree1.$VER
+	PHEN_LARGE=`cat $INC/phen_large`
+  $THIS/tree_quality_phen.sh $INC/tree $INC/_init.list $INC/phen $PHEN_LARGE 0 > $INC/hist/makeFeatureTree-tree1.$VER
   rm $INC/_init.list
 	grep ' !' $INC/hist/makeFeatureTree-tree1.$VER
 fi

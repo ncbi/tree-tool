@@ -1,7 +1,7 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 7 ]; then
+if [ $# -ne 8 ]; then
   echo "Initialize an incremental distance tree directory"
   echo "#1: output directory"
   echo "#2: grid_min (> 0): min. number of dissimilarity requests to use GRID"
@@ -9,7 +9,8 @@ if [ $# -ne 7 ]; then
   echo "#4: hybridness_min (> 1); 0 - no hybrids"
   echo "#5: dissim_boundary (> 0 or NAN)"
   echo "#6: genogroup_barrier (> 0 or NAN)"
-  echo "#7: complete path to phen/ or ''"
+  echo "#7: complete path to 'phenotype' directory or ''"
+  echo "#8: phen_large (0/1): 1 - files in #7 directory are grouped into subdirectories named file2hash(<file name>)"
   exit 1
 fi
 INC=$1
@@ -19,6 +20,7 @@ HYBRIDNESS_MIN=$4
 DISSIM_BOUNDARY=$5
 GENOGROUP_BARRIER=$6
 PHEN=$7
+PHEN_LARGE=$8
 
 
 if [ $GRID_MIN -le 0 ]; then
@@ -73,4 +75,5 @@ fi
 
 if [ $PHEN ]; then
   ln -s $PHEN $INC/phen
+  echo $PHEN_LARGE > $INC/phen_large
 fi

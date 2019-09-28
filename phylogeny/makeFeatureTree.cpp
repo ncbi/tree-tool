@@ -57,6 +57,7 @@ struct ThisApplication : Application
   		// Input
   	  addKey ("input_tree", "Input file with the tree");
   	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::featureLineFormat ());
+  	  addFlag ("large", "Featrue files are grouped into subdirectories which are their hash-names (hash<string> % 1000)");
   	  addKey ("input_core", "Input file with root core feature ids");
   	  addFlag ("nominal_singleton_is_optional", "Nominal singleton value means that all values of this nominal attribute are optional");
   	  addFlag ("prefer_gain", "Prefer gain over loss in maximum parsimony method");
@@ -85,6 +86,7 @@ struct ThisApplication : Application
   {
 		const string input_tree         = getArg ("input_tree");
 		const string feature_dir        = getArg ("features");
+		const bool   large              = getFlag ("large");
 		const string input_core         = getArg ("input_core");
 		const bool   nominal_singleton_is_optional = getFlag ("nominal_singleton_is_optional");
 		const bool   prefer_gain        = getFlag ("prefer_gain");
@@ -117,7 +119,7 @@ struct ThisApplication : Application
     const Chronometer_OnePass cop ("Total");  
 		
 		
-    FeatureTree tree (input_tree, feature_dir, input_core, nominal_singleton_is_optional, prefer_gain, save_mem);
+    FeatureTree tree (input_tree, feature_dir, large, input_core, nominal_singleton_is_optional, prefer_gain, save_mem);
     tree. printInput (cout);
     tree. qc ();    
     

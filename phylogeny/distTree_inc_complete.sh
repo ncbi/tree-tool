@@ -6,7 +6,7 @@ if [ $# -ne 3 ]; then
   echo "#1: Incremental distance tree directory"
   echo "#2: List of objects"
   echo "#3: Update database (0/1)"
-  echo "Output: #1/, data.dm (without hybrids)"
+  echo "Output: #1/, data.dm"
   exit 1
 fi
 INC=$1
@@ -44,9 +44,10 @@ grep -wci 'nan\|inf' data.dm
 set -o errexit
 
 echo ""
-$THIS/../dm/dm2objs data | sort > $INC/tree.list
+$THIS/../dm/dm2objs data -noprogress | sort > $INC/tree.list
 if [ $DB == 1 ]; then
   $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
+  wc -l $INC/outlier-alien
   $THIS/../trav $INC/outlier-alien "$INC/outlier2db.sh %f alien"
   rm $INC/outlier-alien
 fi
@@ -109,7 +110,8 @@ cp $INC/tree $INC/hist/tree.1
 if [ -e $INC/phen ]; then
   echo ""
   echo "Quality ..."
-  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen 0 > $INC/hist/tree_quality_phen.1
+	PHEN_LARGE=`cat $INC/phen_large`
+  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 0 > $INC/hist/tree_quality_phen.1
 	grep ' !' $INC/hist/tree_quality_phen.1
 fi
 

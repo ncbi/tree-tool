@@ -523,8 +523,10 @@ public:
   static string featureLineFormat ();
 private:
 	void initDir (const string &featureDir,
+	              bool large,
 	              bool nominalSingletonIsOptional);
 	  // Input: file "featureDir/id" with the format: `featureLineFormat()`
+    //        large: files in featureDir are grouped into subdirectories named str2hash_class(<file name>)
 	  // Output: coreSet, coreNonSingletons
 	void coreSet2nominals ();
 	  // Update: getFeatureTree().nominal2values, nominals
@@ -1147,11 +1149,13 @@ public:
 	  
 	FeatureTree (const string &treeFName,
   	           const string &featureDir,
+  	           bool large,
   	           const string &coreFeaturesFName,
   	           bool nominalSingletonIsOptional,
   	           bool preferGain_arg,
   	           bool oneFeatureInTree_arg);
     // Input: coreFeaturesFName if !allTimeZero
+    //        large: files in featureDir are grouped into subdirectories named str2hash_class(<file name>)
     // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore()
 private:
   void processBatch (const VectorPtr<Phyl> &phyls,
