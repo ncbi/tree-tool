@@ -10,35 +10,35 @@ CHRON: Initial topology: 0 sec.
 INPUT:
 # Leaves: 457
 # Discernible leaves: 457
-# Nodes: 912
+# Nodes: 913
 # Dissimilarities: 104196 (100.00 %)
 Dissimilarities factor: 37.23
-Ave. dissimilarity = 0.251810
-Abs. criterion = 6.5594e+01  Rel. criterion = 4.945 %
+Ave. dissimilarity = 0.251813
+Abs. criterion = 6.5849e+01  Rel. criterion = 4.954 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 0
 Optimizing arc lengths at each node ...
 # Nodes deleted = 0
-Abs. criterion = 6.5591e+01  Rel. criterion = 4.945 %
+Abs. criterion = 6.5843e+01  Rel. criterion = 4.954 %
 CHRON: Initial arc lengths: 5 sec.
 
 # Changes: 13
 # Commits = 8
-Improvement = 6.5390e-01
-Abs. criterion = 6.5862e+01  Rel. criterion = 4.962 %
-CHRON: Topology optimization: reinsert: 6 sec.
+Improvement = 1.0367e+00
+Abs. criterion = 6.5870e+01  Rel. criterion = 4.962 %
+CHRON: Topology optimization: reinsert: 5 sec.
 
 Optimizing topology: subgraphs ...
-# Iterations of subgraph optimization: 10
-Abs. criterion = 6.5297e+01  Rel. criterion = 4.933 %
-CHRON: Topology optimization: local: 34 sec.
+# Iterations of subgraph optimization: 7
+Abs. criterion = 6.5245e+01  Rel. criterion = 4.931 %
+CHRON: Topology optimization: local: 26 sec.
 
 Ave. radius: 0.562
 
 OUTPUT:
-Abs. criterion = 6.5297e+01  Rel. criterion = 4.933 %
+Abs. criterion = 6.5245e+01  Rel. criterion = 4.931 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
