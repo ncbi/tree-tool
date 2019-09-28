@@ -419,8 +419,8 @@ struct Iter : Nocopy
 private:
   T& t;
   typename T::iterator itNext;
-public:
   typename T::iterator it;
+public:
     
 
   explicit Iter (T &t_arg)
@@ -444,7 +444,7 @@ public:
   typename T::value_type* operator-> () const
     { return & const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
   typename T::value_type erase ()
-    { typename T::value_type val = *it;
+    { typename T::value_type val = move (*it);
       itNext = t. erase (it); 
       return val;
     }
@@ -2705,13 +2705,16 @@ public:
 	string name1;
 	string name2;
 	
+
 	PairFile (const string &fName,
 	          bool sameAllowed_arg,
-	          bool orderNames_arg)
-	  : f (fName, 100 * 1024, 1000)  // PAR
+	          bool orderNames_arg,
+	          uint displayPeriod = 1000)
+	  : f (fName, 100 * 1024, displayPeriod) 
 	  , sameAllowed (sameAllowed_arg)
 	  , orderNames (orderNames_arg)
 	  {}
+
 	  
 	bool next ();
 };
@@ -2740,10 +2743,12 @@ struct OFStream : ofstream
 struct Stderr : Singleton<Stderr>
 {
   bool quiet {false};
+
   
   explicit Stderr (bool quiet_arg)
     : quiet (quiet_arg)
     {}
+
     
   template <typename T>
     Stderr& operator<< (const T& t) 
