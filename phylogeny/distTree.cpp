@@ -492,7 +492,7 @@ void TriangleParentPair::qc () const
 
 void TriangleParentPair::print (ostream &os) const
 { 
-  TabDel td (3, false);  // PAR
+  TabDel td (2, false);  // PAR
   const Parent& p1 = parents [0];
   const Parent& p2 = parents [1];
   td << getBest (). child->name << p1. leaf->name << p2. leaf->name 
