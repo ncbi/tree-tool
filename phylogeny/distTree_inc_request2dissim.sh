@@ -17,7 +17,7 @@ N=`cat $REQ | wc -l`
 echo "$N $REQ"
 GRID_MIN=`cat $INC/grid_min`
 if [ $N -le $GRID_MIN ]; then 
-  $INC/request2dissim.sh $REQ $OUT $OUT.log &> /dev/null
+  $INC/request2dissim.sh $REQ $OUT $OUT.log > /dev/null
   if [ -e $OUT.log ]; then
     if [ -s $OUT.log ]; then
       head $OUT.log
