@@ -1340,7 +1340,7 @@ Real Matrix::getLnFisherExact (bool oneTail) const
   ASSERT (isInteger ());
   
   
-  Real threshold = 0;
+  Real threshold = 0.0;
   if (! oneTail)
 	  FFOR (size_t, row, rowsSize (false))
 	  FFOR (size_t, col, rowsSize (true))
@@ -1362,7 +1362,7 @@ Real Matrix::getLnFisherExact (bool oneTail) const
       ASSERT (sum10 + sum20 == sum00);
       const uint sum11_max = oneTail ? (uint) round (get (false, 0, 0)) : std::min (sum01, sum10);
       FOR_START (  uint, sum11
-                , sum10 <= sum02 ? 0 : sum10 - sum02
+                , sum10 <= sum02 ? 0 : (sum10 - sum02)
                 , sum11_max + 1
                 )
       {

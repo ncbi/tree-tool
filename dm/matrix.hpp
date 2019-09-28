@@ -617,6 +617,7 @@ public:
     // Return: ln p-value
     // Requires: isInteger()
     //           2*2 or 2*3 matrix 
+    // Time: O(sum())
   
   // Comparison
   bool equalLen (bool t,
