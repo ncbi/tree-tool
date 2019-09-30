@@ -91,7 +91,7 @@ struct ThisApplication : Application
   	  if (isFile || isDir)
   	    gen. reset (new FileItemGenerator (step, isDir, items));
       else 
-        if (isdigit (items [0]))
+        if (isDigit (items [0]))
           gen. reset (new NumberItemGenerator (step, items));	  
         else
           throw runtime_error ("File " + strQuote (items) + " does not exist");

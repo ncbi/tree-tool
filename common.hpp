@@ -379,9 +379,11 @@ const size_t NO_INDEX = SIZE_MAX;
 
 inline bool isAlpha (char c)
   { return strchr ("abcdefghijklmnopqrstuvwxyz", tolower (c)); }
+  // isalpha() is locale-specific
 
 inline bool isDigit (char c)
   { return strchr ("0123456789", c); }
+  // isdigit() is locale-specific
   
 inline bool isLetter (char c)
   { return isAlpha (c) || isDigit (c) || c == '_'; }
