@@ -435,7 +435,7 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
     ASSERT (geReal (sample. mult_sum, mult_sum));
     mean = s / mult_sum;
     var = s2 / mult_sum - sqr (mean);
-    ASSERT (var >= 0.0);
+    maximize (var, 0.0);
     x_prev = x;
   }
   
