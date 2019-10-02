@@ -49,11 +49,10 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Compute hash dissimilarities for requested pairs")
+    : Application ("Compute hash dissimilarities for pairs of hash files")
     {
     	// Input
-  	  addPositional ("pairs", "File with pairs of objects");
-  	  addPositional ("hash_dir", "Directory with hashes for each object");
+  	  addPositional ("pairs", "File with pairs of files");
   	  addKey ("intersection_min", "Min. number of common hashes to compute distance", "50");
   	  addKey ("ratio_min", "Min. ratio of hash sizes (0..1)", "0.5");
   	  // Output
@@ -65,11 +64,9 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string pairsFName       = getArg  ("pairs");
-		const string hash_dir         = getArg  ("hash_dir");
 		const size_t intersection_min = str2<size_t> (getArg ("intersection_min"));
 		const Prob   hashes_ratio_min = str2real (getArg ("ratio_min"));
 		const string out              = getArg  ("out");
-		ASSERT (! hash_dir. empty ());
 		ASSERT (isProb (hashes_ratio_min));
 		ASSERT (! out. empty ());
 		
@@ -81,8 +78,8 @@ struct ThisApplication : Application
     PairFile input (pairsFName, false, false);
     while (input. next ())
     {
-      const string fName1 (hash_dir + "/" + input. name1);
-      const string fName2 (hash_dir + "/" + input. name2);
+      const string fName1 (input. name1);
+      const string fName2 (input. name2);
       if (! contains (name2hashes, fName1))  name2hashes [fName1] = move (Hashes (fName1));
       if (! contains (name2hashes, fName2))  name2hashes [fName2] = move (Hashes (fName2));
       const Hashes& h1 = name2hashes [fName1];
