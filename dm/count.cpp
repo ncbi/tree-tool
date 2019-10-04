@@ -47,10 +47,14 @@ namespace
 {
 	
 	
-template <typename T>
-	void report (const string &attr,
-	             T value)
-	  {	cout << attr << '\t' << value << endl; }
+void report (const string &attr,
+             Real value)
+{	
+  unique_ptr<const ONumber> on;
+  if (isInteger (value))
+    on. reset (new ONumber (cout, 0, false));
+  cout << attr << '\t' << value << endl; 
+}
 
 	
 
@@ -78,7 +82,7 @@ struct ThisApplication : Application
 		report ("mean",    mv. getMean ());
 		report ("var",     mv. getVar ());
 		report ("SD",      mv. getSD ());
-		report ("sum",     mv. s);
+	  report ("sum",     mv. s);
 		report ("mean SD", mv. getSD () / sqrt (mv. n));
 	}
 };
