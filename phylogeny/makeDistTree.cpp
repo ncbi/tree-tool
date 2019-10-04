@@ -59,6 +59,8 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Optimize or modify a least-squares distance tree")
 	{
+	  version = "0.0.0";  // PAR
+	  
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
 
@@ -432,7 +434,7 @@ struct ThisApplication : Application
       cerr << "Deleting ..." << endl;
       size_t deleted = 0;
       {
-        LineInput f (deleteFName, 10000, 1);
+        LineInput f (deleteFName, 10000, 0);  // PAR
         Progress prog (0, 1000);  // PAR
         while (f. nextLine ())
         {
@@ -470,7 +472,7 @@ struct ThisApplication : Application
       ASSERT (toDelete. isUniq ());
       VectorPtr<Leaf> toKeep;  toKeep. reserve (tree->name2leaf. size ());
       {
-        LineInput f (keepFName, 10000, 1);
+        LineInput f (keepFName, 10000, 1000);  // PAR
         while (f. nextLine ())
         {
           trim (f. line);
