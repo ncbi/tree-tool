@@ -108,8 +108,7 @@ while [ $ITER -le $ITER_MAX ]; do
 	ITER=$(( $ITER + 1 ))
   echo ""
   echo "Iteration $ITER / $ITER_MAX ..."
-  
-  REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`
+  REQ=`$THIS/../trav $INC/search "wc -l %d/%f/request" | cut -f 1 -d ' ' | $THIS/../dm/count | grep -w '^sum' | cut -f 2` 
   echo "# Requests: $REQ"
   GRID=1
   if [ $REQ -lt $GRID_MIN ]; then
