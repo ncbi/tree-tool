@@ -7785,7 +7785,7 @@ void DistTree::setErrorDensities ()
 
   const Real c = absCriterion / (Real) n;
   ASSERT (c >= 0.0);
-  for (DiGraph::Node* node : nodes)
+  for (DiGraph::Node* node : nodes)  // --> Threads ??
   {
     DTNode* dtNode = static_cast <DTNode*> (node);
     dtNode->setErrorDensity (c);
@@ -7833,7 +7833,7 @@ void DistTree::setNodeMaxDeformationDissimNum ()
 {
  ASSERT (optimizable ());
   
-  for (DiGraph::Node* node : nodes)
+  for (DiGraph::Node* node : nodes)  // --> Threads ??
   {
     DTNode* dtNode = static_cast <DTNode*> (node);
     dtNode->maxDeformationDissimNum = dissims_max;
