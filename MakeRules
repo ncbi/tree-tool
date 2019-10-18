@@ -52,7 +52,7 @@ $(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
 
 LANG_DIR = $(CODE_DIR)/lang
 $(LANG_DIR)/cfgrammar.o: $(LANG_DIR)/cfgrammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
-$(LANG_DIR)/language.o: $(COMMON_HPP) $(LANG_DIR)/language.hpp
+$(LANG_DIR)/language.o: $(COMMON_HPP) $(LANG_DIR)/language.hpp $(LANG_DIR)/utf8.hpp
 
 
 DM_DIR = $(CPP_DIR)/dm
