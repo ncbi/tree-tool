@@ -7021,15 +7021,15 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius)
           if (! node->getParent () || static_cast <const DTNode*> (node->getParent ()) -> stable)
             inCut++;
         }
-        IMPLY (node != root && node->stable, static_cast <const DTNode*> (node->getParent ()) -> stable);
+        QC_IMPLY (node != root && node->stable, static_cast <const DTNode*> (node->getParent ()) -> stable);
       }
       for (const Steiner* st : unstableCut. getVec ())
       {
-        ASSERT (! st->stable);
-        ASSERT (! st->getParent () || static_cast <const DTNode*> (st->getParent ()) -> stable);
+        QC_ASSERT (! st->stable);
+        QC_ASSERT (! st->getParent () || static_cast <const DTNode*> (st->getParent ()) -> stable);
       }
-      ASSERT (inCut == unstableCut. size ());
-      ASSERT (unstableCut. size () <= unstables);
+      QC_ASSERT (inCut == unstableCut. size ());
+      QC_ASSERT (unstableCut. size () <= unstables);
     }
     const Steiner* center = unstableCut. getVec (). getRandom (rand);
     {
@@ -7041,7 +7041,7 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius)
     // The number of un-stable DTNode's decreases at least by 1
     if (qc_on)
     {
-      ASSERT (unstables_prev > unstables);
+      QC_ASSERT (unstables_prev > unstables);
       unstables_prev = unstables;
     }
   }
