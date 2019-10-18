@@ -53,7 +53,12 @@ struct DiGraph : Root
 // m = number of arcs
 {
   struct Arc; 
+  struct Node;
   
+
+  typedef  unordered_map <const Node*, const Node*>  Node2Node;  
+    // !nullptr
+
 
   struct Node : Root, protected DisjointCluster
   {
@@ -134,6 +139,12 @@ struct DiGraph : Root
     VectorPtr<Node> getChildren () const
       { return getNeighborhood (false); }
     void deleteNeighborhood (bool out);
+    void getDependents (bool out,
+                        unordered_set<const Node*> &dependents) const
+      { dependents. insert (this);
+        for (const Arc* arc : arcs [out])
+          arc->node [out] -> getDependents (out, dependents);
+      }
   private:
     Node* setScc (size_t &visitedNum,
                   stack<Node*,vector<Node*>> &sccStack);
@@ -160,6 +171,8 @@ struct DiGraph : Root
       // Output: graph = nullptr
       // Requires: No Arc's
       // Invokes: list::erase()
+    Node* copyGraph (bool out,
+                     Node2Node &node2node) const;
   };
 
 
@@ -172,7 +185,7 @@ struct DiGraph : Root
       // !nullptr
   private:
     array <List<Arc*>::iterator, 2 /*bool: out*/> arcsIt;
-      // in node [b] -> arcs [! b]
+      // in node[b]->arcs[!b]
   public:
 
     Arc (Node* start,
@@ -207,6 +220,11 @@ struct DiGraph : Root
     virtual void contractContent (const Arc* /*from*/) 
       {}
       // Required time: O(1)
+  public:
+    void setNode (Node* newNode,
+                  bool out);
+      // Update: node[out] = newNode
+      // Preserves the ordering of node[!out]->arcs[out]
   };
 
 
@@ -230,13 +248,15 @@ private:
 public:
   DiGraph* copy () const override
     { return new DiGraph (*this); } 
- ~DiGraph ();
-    // Invokes: Node::delete
-    // Time: O(n + m)
+ ~DiGraph ()
+    { deleteNodes (); }
   void qc () const override;
   void saveText (ostream &os) const override;
 
 
+  void deleteNodes ();
+    // Invokes: Node::delete
+    // Time: O(n + m)
   void connectedComponents ();
     // Output: Node::getConnectedComponent()  
     // Invokes: DisjointCluster::init()
@@ -259,8 +279,6 @@ public:
 			  return * ends. begin ();
 			return nullptr;
 		}
-  typedef  unordered_map <const Node*, const Node*>  Node2Node;  
-    // !nullptr
   static Node2Node reverse (const Node2Node& old2new);
   void borrowArcs (const Node2Node &other2this,
                    bool parallelAllowed);

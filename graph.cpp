@@ -238,7 +238,6 @@ void DiGraph::Node::contract (Node* from)
     for (Arc* arc : arcs [b])
       m [arc->node [b]] = arc;
 
-  #if 1      
     for (Iter <List<Arc*> > iter (from->arcs [b]); iter. next (); )
     {
       Arc* arc = *iter;
@@ -253,28 +252,6 @@ void DiGraph::Node::contract (Node* from)
       else
         m [arc->node [b]] -> contractContent (arc);
     }
-  #else
-    List<Arc*>::iterator it = from->arcs [b]. begin ();
-    while (it != from->arcs [b]. end ())
-    {
-      List<Arc*>::iterator next = it;
-      next++;
-      
-      Arc* arc = *it;
-      if (m. find (arc->node [b]) == m. end ())
-      {
-        from->arcs [b]. erase (it);
-        arc->node [! b] = this;
-        arcs [b]. push_back (arc);
-        arc->arcsIt [! b] = arcs [b]. end ();
-        arc->arcsIt [! b] --;
-      }
-      else
-        m [arc->node [b]] -> contractContent (arc);
-        
-      it = next;
-    }
-  #endif
   }
   
   delete from;
@@ -307,6 +284,27 @@ void DiGraph::Node::detach ()
 }
 
 
+
+DiGraph::Node* DiGraph::Node::copyGraph (bool out,
+                                         Node2Node &node2node) const
+{
+  {
+    const Node* n = nullptr;
+    if (find (node2node, this, n))
+      return var_cast (n);
+  }
+  Node* n = copy ();
+  node2node [this] = n;
+  for (const Arc* arc : arcs [out])
+  {
+    const Node* child = arc->node [out];
+    Node* child1 = child->copyGraph (out, node2node);
+    new Arc (child1, n);
+  }
+  return n;
+}
+
+
  
 
 // DiGraph::Arc
@@ -326,7 +324,7 @@ void DiGraph::Arc::attach (Node* start,
 
 	for (const bool b : {false, true})
   {
-  	auto& arcs = node [b] -> arcs [! b];
+  	List<Arc*>& arcs = node [b] -> arcs [! b];
     arcs. push_back (this);
     arcsIt [b] = arcs. end ();
     arcsIt [b] --;
@@ -342,6 +340,25 @@ DiGraph::Arc::~Arc ()
 }
 
  
+
+void DiGraph::Arc::setNode (Node* newNode,
+                            bool out)
+{
+  ASSERT (newNode);
+  ASSERT (node [out]);
+  ASSERT (node [out] -> graph == newNode->graph);
+  
+  if (node [out] == newNode)
+    return;
+  
+  node [out] -> arcs [! out]. erase (arcsIt [out]);
+  node [out] = newNode;
+  newNode->arcs [! out]. push_back (this);
+  arcsIt [out] = newNode->arcs [! out]. end ();
+  arcsIt [out] --;
+}
+
+
 
 
 // DiGraph
@@ -380,19 +397,6 @@ void DiGraph::init (const DiGraph &other,
 	  	a->attach (n, old2new [arc->node [true]]);
 	  }
   }   
-}
-
-
-
-DiGraph::~DiGraph ()
-{
-  while (! nodes. empty ())
-  {
-    Node* n = nodes. front ();
-    if (! n)
-      errorExit ("DiGraph::Node is nullptr");
-    delete n;
-  }
 }
 
 
@@ -448,6 +452,19 @@ void DiGraph::saveText (ostream &os) const
 }
 
  
+
+void DiGraph::deleteNodes ()
+{
+  while (! nodes. empty ())
+  {
+    Node* n = nodes. front ();
+    if (! n)
+      errorExit ("DiGraph::Node is nullptr");
+    delete n;
+  }
+}
+
+
 
 void DiGraph::connectedComponents ()
 {
