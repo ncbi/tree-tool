@@ -13,7 +13,10 @@ OUT2=$2
 
 L1=(`grep "^OUTPUT" -A 1  $OUT1 | tail -1`)
 L2=(`grep "^OUTPUT" -A 1  $OUT2 | tail -1`)
-if [ "${L1[7]}" != "${L2[7]}" ]; then
+A=${L1[7]}
+B=${L2[7]}
+R=`echo "($A - $B) / $A * 1000" | sed -E 's/([+-]?[0-9.]+)[eE]\+?(-?)([0-9]+)/(\1*10^\2\3)/g' | bc -l | cut -c1`
+if [ $R != '.' -a $R != '0' ]; then
   echo "NEW: ${L1[*]}"
   echo "OLD: ${L2[*]}"
   exit 1
