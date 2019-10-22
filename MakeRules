@@ -113,7 +113,6 @@ $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_HPP) $(DATABASE_DIR)/db.
 
 $(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
 GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq $(DATABASE_DIR)/db
-GenBank_LIB = xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC)
-GenBank_LIBS = $(DL_LIBS)  -lz  $(BERKELEYDB_LIBS) -lxutil $(SDBAPI_LIBS) $(DL_LIBS) $(SYBASE_LIBS) 
-  # $(NCBI_C_LIBPATH) -lctutils
 
+GenBank_LIB = xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect
+GenBank_LIBS = $(DL_LIBS)  -lz  $(BERKELEYDB_LIBS) -lxutil $(SDBAPI_LIBS) $(SYBASE_LIBS) 
