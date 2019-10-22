@@ -549,6 +549,11 @@ template <typename Key, typename Value, typename KeyParent>
                         const KeyParent& key)
     { return m. find (key) != m. end (); }
 
+template <typename Key, typename KeyParent>
+  inline bool contains (const unordered_set <Key> &m,
+                        const KeyParent& key)
+    { return m. find (key) != m. end (); }
+
 template <typename Key, typename Value, typename KeyParent>
   bool find (const map <Key, Value> &m,
              const KeyParent& key,
