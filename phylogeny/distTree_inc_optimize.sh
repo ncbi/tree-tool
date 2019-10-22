@@ -21,8 +21,8 @@ if [ ! -e $INC/phen ]; then
   exit 1
 fi
 
-$THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_len  -reinsert  -subgraph_iter_max $ITER_MAX  \
-  -output_tree $OUT_TREE
+$THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
+  # -reinsert  
 
 echo ""
 echo "Quality ..."
