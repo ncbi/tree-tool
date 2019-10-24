@@ -3014,6 +3014,9 @@ public:
 
   const JsonArray* asJsonArray () const final
     { return this; }
+    
+  size_t size () const
+    { return data. size (); }
 };
 
 
@@ -3045,6 +3048,13 @@ public:
 
   const JsonMap* asJsonMap () const final
     { return this; }
+    
+  StringVector getKeys () const
+    { StringVector keys;  keys. reserve (data. size ());
+      for (const auto& it : data)
+        keys << it. first;
+      return keys;
+    }
 };
 
 
