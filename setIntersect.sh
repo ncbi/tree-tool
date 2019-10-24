@@ -16,6 +16,7 @@ if [ $3 == 1 ]; then
 fi
 
 TMP=`mktemp` 
+#echo $TMP
 
 $THIS/setMinus $NUM $1 $2 > $TMP
 $THIS/setMinus $NUM $1 $TMP
