@@ -3263,7 +3263,7 @@ struct Application : Singleton<Application>, Root
   const string description;
   const bool needsArg;
   const bool gnu;
-  string version {"1"};
+  string version {"1.0.0"};
   static constexpr const char* helpS {"help"};
   static constexpr const char* versionS {"version"};
   
