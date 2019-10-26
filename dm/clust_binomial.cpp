@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Clustering as the decomposition of a mixture of a binomial (with p ~ 1) and uniform distributions")
   	{
+  	  version = VERSION;
   	  addPositional ("file", dmSuff + "-file");	 
   	  addPositional ("attr", "name of a non-negative integer attribute"); 
   	  addPositional ("bin_n", "Binomial N parameter");

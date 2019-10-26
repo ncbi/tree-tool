@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print a " + dmSuff + "-file adding log(attr) named \"log_\" + attr")
     {
+      version = VERSION;
       addPositional ("file", dmSuff + "-file");
       addPositional ("attr", "Attribute name");
       addFlag ("inf2nan", "Convert -INF to NaN");

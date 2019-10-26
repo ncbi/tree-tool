@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print a subset of a " + dmSuff + "-file")
   {
+    version = VERSION;
 	  addFlag ("exclude", "Exclude the list of objects, otherwise include");
 	  addPositional ("file", dmSuff + "-file");
 	  addPositional ("objNameFName", "File with object names defining the subset");

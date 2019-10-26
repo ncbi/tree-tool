@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "numeric.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test numeric.cpp")
   	{
+  	  version = VERSION;
   	  addPositional ("go", "Go");
   	}
 

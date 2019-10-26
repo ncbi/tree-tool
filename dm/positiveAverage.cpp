@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "../dm/numeric.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Analyze proportional homoscedastic positive attributes. Print attributes statistics")
     {
+      version = VERSION;
       // Input
   	  addPositional ("file", dmSuff + "-file without " + strQuote (dmSuff));
   	  addPositional ("power", "Power for raw dissimilarities to be raised to");

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print a space of a " + dmSuff + "-file")
   {
+    version = VERSION;
 	  addPositional ("file", dmSuff + "-file");
 	  addPositional ("attrNameFName", "File with attribute names defining the space");
 	  addFlag ("exclude", "Exclude the list of attributes, otherwise include");

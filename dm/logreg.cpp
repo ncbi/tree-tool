@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Logistic regression")
   	{
+  	  version = VERSION;
   	  addKey ("importance_min", "Min. relative importance of attributes for attribute selection; 0 - no selection", "0");
   	  addPositional ("file", dmSuff + "-file with Number attributes");
   	  addPositional ("target", "Target - Boolean attribute name");

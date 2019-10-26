@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -86,6 +87,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert two-way attributes to a " + dmSuff + "-file")
     {
+      version = VERSION;
   	  addPositional ("pairs", "File with lines: <obj1> <obj2> <attr1> <attr2> ...");
   	  addPositional ("attr_num", "Attribute number (1-based) in each line");
   	  addPositional ("attr_name", "Attribute name");

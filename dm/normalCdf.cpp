@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Normal distribution CDF")
   	{
+  	  version = VERSION;
   	  addPositional ("loc",   "Location parameter");	
   	  addPositional ("scale", "Scale parameter");	  
   	  addPositional ("x",     "Value");

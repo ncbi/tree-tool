@@ -41,6 +41,7 @@ using namespace Common_sp;
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -53,6 +54,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print pairs for an Attr2: <objName1>\t<objName2>\t<value>")
     {
+      version = VERSION;
   	  addPositional ("file", dmSuff + "-file");
   	  addPositional ("attr2Name", "Attribute name of an object-object table in the " + dmSuff + "-file");
   	  addFlag ("symmetric", "Attribute is symmetric, print only lines where <objName1> <= <objName2>");

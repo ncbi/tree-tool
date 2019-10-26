@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test logistic regression")
   	{
+  	  version = VERSION;
   	  addFlag ("lin_dep", "There is a linear dependence between two input variables");
   	//addFlag ("perfect", "There is a separating hyperplane between the true and false objects");
   	//addPositional ("seed", "Seed for random numbers");

@@ -41,6 +41,7 @@ using namespace Common_sp;
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -57,6 +58,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Multiply a two-way attribute and print the resulting data set")
     {
+      version = VERSION;
   	  addPositional ("file", dmSuff + "-file");
   	  addPositional ("attr2Name", "Attribute name of an object-object table in the " + dmSuff + "-file");
   	  addPositional ("coefficient", "Coeffciient to multiply <attr2Name> by");

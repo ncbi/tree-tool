@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "numeric.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
   : Application ("Kernel p.d.f. estimation. Parameters: (prob_uniform, half_window). Print distribution with the step = window")
   { 
+    version = VERSION;
 	  addPositional ("file", dmSuff + "-file without the extension");
 	  addPositional ("attrName", "name of a real attribute");
 	  addKey ("window", "half-Window of UniKernel; 0 <=> default", "0");  

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -55,6 +56,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test dataset.cpp")
   	{
+  	  version = VERSION;
   	//addPositional ("seed", "Seed for random numbers");
   	  addPositional ("go", "Go");
   	}

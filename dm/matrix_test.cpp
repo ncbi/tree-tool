@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "matrix.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test matrix.cpp")
     {
+      version = VERSION;
       addPositional ("go", "Go");
       addFlag ("eigens", "test Eigens");
     }

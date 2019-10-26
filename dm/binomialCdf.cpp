@@ -40,6 +40,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -49,8 +50,9 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Binomial distribution CDF")
+    : Application ("Binomial distribution CDF")      
   	{
+  	  version = VERSION;
   	  addPositional ("N", "Number of coin tosses");	
   	  addPositional ("P", "Probability of heads");	
   	  addPositional ("M", "Number of heads");

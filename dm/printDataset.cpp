@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Read a dataset and print it")
   	{
+  	  version = VERSION;
   	  addPositional ("file", dmSuff + "-file with Number attributes");
   	}
 	

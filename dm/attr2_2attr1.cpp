@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
     : Application ("Print a " + dmSuff + "-file where all two-way attributes are converted into one-way attributes.\n\
 Objects will be named: <objName1>-<objName2>")
     {
+      version = VERSION;
   	  addPositional ("file", dmSuff + "-file");
   	  addFlag ("symmetrize", "Make all two-way attributes symmetric by averaging");
   	  addFlag ("zero_diagonal", "Skip diagonal values because they are 0");

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print the description of attributes")
     {
+      version = VERSION;
       addPositional ("file", dmSuff + "-file");
       addKey ("corr_min", "Min. correlation between two attributes to report", "nan");
       addKey ("outlier_evalue_max", "Max. outlier e-value", "0.1");

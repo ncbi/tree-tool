@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test Zipf estimation")
   	{
+  	  version = VERSION;
   	  addPositional ("size", "Data size");
   	//addPositional ("seed", "Seed for random numbers (> 0)");
   	}

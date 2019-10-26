@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "numeric.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -165,6 +166,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find a <score-attr> threshold separating the values of Boolean attribute <class_attr>")
     {
+      version = VERSION;
       addPositional ("file", dmSuff + "-file, sorted by <score_attr> descending");
       addPositional ("score_attr", "Score number attribute");
       addPositional ("class_attr", "Class Boolean attribute");

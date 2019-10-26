@@ -41,6 +41,7 @@ using namespace Common_sp;
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -138,6 +139,7 @@ Remove distance outliers by the triangle inequality analysis.\n\
 Save clusters in " + dmSuff + "-files\
 ")
   	{
+  	  version = VERSION;
   		// Input
   	  addPositional ("file", dmSuff + "-file without the extension");
   	  addPositional ("attrName", "Attribute name of a distance in the <file>");

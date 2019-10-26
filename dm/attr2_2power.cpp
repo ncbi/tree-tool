@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print a " + dmSuff + "-file adding <attr>^power named <attr>_<power>")
     {
+      version = VERSION;
       addPositional ("file", dmSuff + "-file");
       addPositional ("attr", "2-way attribute name");
       addPositional ("power", "Power");

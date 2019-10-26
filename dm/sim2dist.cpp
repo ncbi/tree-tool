@@ -41,6 +41,7 @@ using namespace Common_sp;
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -53,6 +54,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert similarity to distance")
     {
+      version = VERSION;
   	  addPositional ("file", dmSuff + "-file without the extension");
   	  addPositional ("attrName", "Attribute name of real-valued object-object table in the " + dmSuff + "-file");
   	  addFlag ("sqr", "Make squared distances");

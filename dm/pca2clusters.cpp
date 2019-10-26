@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "numeric.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Extract lists of core objects for each cluster made by mds or pca")
   	{
+  	  version = VERSION;
   	  addPositional ("in", "Clustering output in Json");
   	  addPositional ("out", "File prefix for lists, each list is sorted");
   	  addPositional ("threshold", "Min. probability to belong to a cluster");

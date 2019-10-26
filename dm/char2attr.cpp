@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Add a Boolean attribute for the object names containing a specified substring")
   	{
+  	  version = VERSION;
   	  addFlag("equal_multiplicity", "the objects with the substring should have teh same weight as the other objects");
   	  addPositional ("in_file", "Input " + dmSuff + "-file");
   	  addPositional ("substr", "Object name substring");	

@@ -42,6 +42,7 @@ using namespace Common_sp;
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -59,6 +60,7 @@ struct ThisApplication : Application
   ThisApplication ()
   : Application ("Multidimensional scaling (linear)")
   { 
+    version = VERSION;
 	  // Input
 	  addPositional ("file", dmSuff + "-file without the extension");
 	  addKey ("attr", "Attribute name of real-valued object-object comparison table in the " + dmSuff + "-file, if empty then the PCA of all attributes except <class> is done");

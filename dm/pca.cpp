@@ -41,6 +41,7 @@ using namespace Common_sp;
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -56,6 +57,8 @@ struct ThisApplication : Application
   ThisApplication ()
   : Application ("Principal components")
 	{
+	  version = VERSION;
+	  
 	  addPositional ("file", dmSuff + "-file without the extension");	  
 	  addPositional ("suf", "Files <file>-<suf>.* will be created");	  
 	  // Stopping criteria

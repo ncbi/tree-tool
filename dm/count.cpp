@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "numeric.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -63,7 +64,9 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Statistics of a sequence of numbers from cin", false)
-    {}
+    {
+      version = VERSION;
+    }
 
 
 

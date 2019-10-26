@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Merge 2 " + dmSuff + "-files and print the resulting " + dmSuff + "-file. Files must have same objects in the same order, and different attributes")
   {
+    version = VERSION;
 	  addPositional ("file1", "First "  + dmSuff + "-file");
 	  addPositional ("file2", "Second " + dmSuff + "-file");
 	}

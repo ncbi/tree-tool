@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Clustering as the decomposition of a mixture of multivariate Normal distributions")
   	{
+  	  version = VERSION;
   	  addPositional ("file", dmSuff + "-file");	  
   	  addPositional ("clusters_max", "Max. numebr of clusters");	  
   	  addPositional ("sd_min", "Min. SD of each variable in each cluster");	  

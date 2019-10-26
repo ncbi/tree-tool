@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Linear regression")
   	{
+  	  version = VERSION;
   	  addFlag ("intercept", "Use an intercep");
   	  addPositional ("file", dmSuff + "-file with Number attributes");
   	  addPositional ("target", "Target - Number attribute name");
