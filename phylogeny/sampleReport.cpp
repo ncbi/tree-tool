@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Analyze tree sampling result")
 	{
+	  version = VERSION;
 		// Input
 	  addPositional ("sampling", "Tree sampling result: file with lines: <N> match[+-]: <node LCA-name>");
 	  addKey ("replicas", "# replicas (match+ + match-) - for QC", "0");

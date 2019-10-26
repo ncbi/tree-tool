@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "../dm/matrix.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print an Attr2 in Phylip format")
     {
+      version = VERSION;
   	  addPositional ("file", dmSuff + "-file");
   	  addPositional ("attr2Name", "Attribute name of an object-object table in the " + dmSuff + "-file");
   	  addPositional ("map", "Output map file for nw_rename");

@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "../dm/numeric.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert MLST data to a dissimilarity and print a " + dmSuff + "-file")
     {
+      version = VERSION;
   	  addPositional ("biosamples", "File with a list of BioSamples");
   	  addPositional ("pairs", "File with tab-delimited lines: <obj1> <obj2> <X1> <X2> <X3> <X4> <Result> <number of loci in common with same allele> <number of loci in common with different allele> ...");
   	  addFlag ("ani", "Compute density-filtered ANI-based Jukes-Cantor distance, otherwise MLST DNA Jaccard evolution distance");

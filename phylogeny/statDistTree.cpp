@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -57,6 +58,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Compute different statistics of a distance tree")
 	{
+	  version = VERSION;
 	  // Input
 	  addPositional ("input_tree", "Distance tree file");
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");

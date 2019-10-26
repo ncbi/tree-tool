@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "featureTree.hpp"
 using namespace FeatureTree_sp;
+#include "version.inc"
 
 
 
@@ -54,6 +55,8 @@ struct ThisApplication : Application
 	ThisApplication ()
   	: Application ("Optimize a feature tree")
   	{
+  	  version = VERSION;
+  	  
   		// Input
   	  addKey ("input_tree", "Input file with the tree");
   	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::featureLineFormat ());

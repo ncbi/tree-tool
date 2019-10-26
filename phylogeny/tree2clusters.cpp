@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -55,6 +56,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Print indiscernibility clusters of a distance tree")
 	{
+	  version = VERSION;
 	  addPositional ("input_tree", "File with the tree and arc lengths");
 	}
 

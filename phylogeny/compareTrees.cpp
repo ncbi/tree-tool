@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace DistTree_sp;
 #include "featureTree.hpp"
 using namespace FeatureTree_sp;
+#include "version.inc"
 
 
 
@@ -223,6 +224,7 @@ struct ThisApplication : Application
 	: Application ("Remove " + real2str (DistTree_sp::rareProb, 2) + "-infrequent leaves from tree 1 depending on -frequency, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1.\n\
 A node with an empty set of leaves matches.")
 	{
+	  version = VERSION;
 		// Input
 	  addPositional ("input_tree1", "Tree 1");
 	  addPositional ("input_tree2", "Tree 2");

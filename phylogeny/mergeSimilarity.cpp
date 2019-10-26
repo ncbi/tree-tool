@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "../dm/matrix.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication () 
     : Application ("Print a " + dmSuff + "-file with merged <Similarity> attrributes of a list of " + dmSuff + "-files")
     {
+      version = VERSION;
   	  addPositional ("file_list", "List of " + dmSuff + "-files without \"" + dmSuff + "\" with a binary <Similarity> attribute");
   	  addKey ("attr", "Similarity attribute", "Similarity");
   	}

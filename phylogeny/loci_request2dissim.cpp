@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -87,6 +88,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Compute loci dissimilarities for requested pairs")
     {
+      version = VERSION;
   	  addPositional ("pairs", "File with pairs of objects");
   	  addPositional ("loci_dir", "Directory with a file of loci for each object. File line format: G<locus number> <allele number>");
   	  addPositional ("out", "Output file");

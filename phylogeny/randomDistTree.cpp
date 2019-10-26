@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Print a random distance tree")
 	{
+	  version = VERSION;
 	  // Input
 	  addPositional ("branch_prob", "Probability to expand a branch");
 	  addPositional ("leaf_num_max", "Max. number of leaves");

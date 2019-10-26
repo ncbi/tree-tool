@@ -42,6 +42,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "evolution.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -58,6 +59,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert hashes to a dissimilarity named " + strQuote (attrName) + " and print a " + dmSuff + "-file")
     {
+      version = VERSION;
     	// Input
   	  addPositional ("objects", "File with a list of objects");
   	  addPositional ("hash_dir", "Directory with hashes for each object");

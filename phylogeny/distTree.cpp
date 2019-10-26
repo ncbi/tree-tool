@@ -1326,8 +1326,11 @@ void Leaf::saveContent (ostream& os) const
 { 
   DTNode::saveContent (os);
     
+  if (const DistTree::DeformationPair* dp = findPtr (getDistTree (). node2deformationPair, this))
+    os << "  " << deformationS << '=' << dp->leafName1 << ':' << dp->leafName2 
+       << "  " << deformation_criterionS << '=' << dp->deformation;
   if (! isNan (normCriterion))
-    os << "  " << normCriterionS << "=" << normCriterion;
+    os << "  " << normCriterionS << '=' << normCriterion;    
 	if (! discernible)
 	  os << "  " << non_discernible;
 }
@@ -7631,7 +7634,7 @@ void DistTree::reroot (DTNode* underRoot,
   ASSERT (! underRoot->inDiscernible ());
 
   
-  node2deformationPair. clear ();
+//node2deformationPair. clear ();
 
 
   if (underRoot != root)

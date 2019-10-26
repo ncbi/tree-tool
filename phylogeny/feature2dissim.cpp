@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -55,6 +56,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert feature sets to a Jaccard conservation distance " + strQuote (dissimName) + " and print a " + dmSuff + "-file")
     {
+      version = VERSION;
   	  addPositional ("objects", "File with a list of object files with features");
   	  addPositional ("objects_dir", "Directory with <object> files containing features");
   	}

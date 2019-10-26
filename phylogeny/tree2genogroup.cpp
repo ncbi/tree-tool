@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -79,6 +80,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 		: Application ("Find genogroups in a distance tree")
 		{
+		  version = VERSION;
 		  // Input
 		  addPositional ("input_tree", "Tree file");
 		  addPositional ("genogroup_dist", "Max. distance between objects of the same genogroup");

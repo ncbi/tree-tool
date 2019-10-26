@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,8 @@ struct ThisApplication : Application
 	ThisApplication ()
 		: Application ("Find location of new objects in a distance tree")
 		{
+		  version = VERSION;
+		  
 		  // Input
 		  addPositional ("data", "Directory with data");
 		  addFlag ("init", "Initialize search");

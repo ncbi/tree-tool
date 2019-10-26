@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "../dm/numeric.hpp"
 using namespace DM_sp;
+#include "version.inc"
 
 
 
@@ -124,6 +125,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Combine different dissimilarities for the same pairs of objects")
     {
+      version = VERSION;
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity>; # lines = # object pairs times # dissimilarities");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by scale descending.\n\
 Line format: <unit> <raw_min> <raw_max>");

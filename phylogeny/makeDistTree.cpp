@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -59,7 +60,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Optimize or modify a least-squares distance tree")
 	{
-	  version = "0.0.0";  // PAR
+	  version = VERSION;
 	  
 		// Input
 	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");

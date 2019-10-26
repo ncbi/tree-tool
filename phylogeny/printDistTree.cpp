@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Print a tree made by makeDistTree")
 	{
+	  version = VERSION;
     // Input
 	  addPositional ("input_tree", "Tree file");
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");

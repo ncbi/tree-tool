@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Print a tree")
 	{
+	  version = VERSION;
 	  // Input
 	  addPositional ("input_tree", "Tree in Newick format");
 	}

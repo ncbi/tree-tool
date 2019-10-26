@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "evolution.hpp"
 using namespace DistTree_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Compute hash dissimilarities for pairs of hash files")
     {
+      version = VERSION;
     	// Input
   	  addPositional ("pairs", "File with pairs of files");
   	  addKey ("intersection_min", "Min. number of common hashes to compute distance", "50");
