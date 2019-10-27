@@ -1439,6 +1439,26 @@ string CharInput::getLine ()
 
 
 
+
+// Token
+
+bool Token::operator< (const Token &other) const
+{
+  LESS_PART (*this, other, type);
+  switch (type)
+  { 
+    case eName:
+    case eText:
+    case eDelimiter: LESS_PART (*this, other, name); break;
+    case eInteger:   LESS_PART (*this, other, n);    break; 
+    case eDouble:    LESS_PART (*this, other, d);    break;
+  }  
+  return false;
+}
+
+
+
+
 // PairFile
 
 bool PairFile::next ()

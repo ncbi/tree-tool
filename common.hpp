@@ -2626,6 +2626,20 @@ public:
 	  { return ! empty () && type == eDouble && d == d_arg; }
 	bool isDelimiter (char c) const
 	  { return ! empty () && type == eDelimiter && name [0] == c; }
+	  
+	bool operator== (const Token &other) const
+	  { if (type != other. type)
+	      return false;
+	    switch (type)
+	    { case eName:
+	      case eText:
+	      case eDelimiter: return name == other. name;
+	      case eInteger:   return n    == other. n;
+	      case eDouble:    return d    == other. d;
+	    }
+	    return false;
+	  }
+	bool operator< (const Token &other) const;
 };
 
 
