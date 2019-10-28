@@ -3179,11 +3179,9 @@ struct SoftwareVersion : Root
   
 
   explicit SoftwareVersion (const string &fName)
-    { if (fileExists (fName))
-      { LineInput f (fName);
-        string s (f. getString ());
-        init (move (s), false);
-      }
+    { LineInput f (fName);
+      string s (f. getString ());
+      init (move (s), false);
     }
   explicit SoftwareVersion (istream &is,
                             bool minorOnly = false)
@@ -3233,11 +3231,9 @@ struct DataVersion : Root
   
 
   explicit DataVersion (const string &fName)
-    { if (fileExists (fName))
-      { LineInput f (fName);
-        string s (f. getString ());
-        init (move (s));
-      }
+    { LineInput f (fName);
+      string s (f. getString ());
+      init (move (s));
     }
   explicit DataVersion (istream &is)
     { string s;
