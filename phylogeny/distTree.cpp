@@ -642,6 +642,10 @@ void DTNode::saveContent (ostream& os) const
 	                             << ':' << dissim. leaf2->getName ();
 	  os << "  " << deformation_criterionS << "=" << dissim. getDeformation ();
 	}
+  else if (const DistTree::DeformationPair* dp = findPtr (getDistTree (). node2deformationPair, this))
+    os << "  " << deformationS << '=' << dp->leafName1 
+                               << ':' << dp->leafName2 
+       << "  " << deformation_criterionS << '=' << dp->deformation;
 }
 
 
@@ -1326,9 +1330,6 @@ void Leaf::saveContent (ostream& os) const
 { 
   DTNode::saveContent (os);
     
-  if (const DistTree::DeformationPair* dp = findPtr (getDistTree (). node2deformationPair, this))
-    os << "  " << deformationS << '=' << dp->leafName1 << ':' << dp->leafName2 
-       << "  " << deformation_criterionS << '=' << dp->deformation;
   if (! isNan (normCriterion))
     os << "  " << normCriterionS << '=' << normCriterion;    
 	if (! discernible)
