@@ -710,7 +710,7 @@ struct ThisApplication : Application
 
       if (! noqual)
       {
-        cerr << "Node/arc criteria ..." << endl;
+        cerr << "Node/arc criteria ..." << endl << endl;
         tree->setLeafNormCriterion ();  
         tree->setNodeMaxDeformationDissimNum ();
         tree->setErrorDensities ();  
