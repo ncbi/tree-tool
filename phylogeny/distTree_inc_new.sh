@@ -5,7 +5,7 @@ if [ $# -ne 2 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: incremental distance tree directory"
   echo "#2: process new objects completely (0/1)"
-  echo "Time: O(n log^5(n))"
+  echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
@@ -186,7 +186,7 @@ if [ "${VER:$POS}" == 0 ]; then  # PAR
   echo "Reinsert"
 fi
 
-# Time: O(n log^5(n)) 
+# Time: O(n log^4(n)) 
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE \
   $REINSERT  -optimize  -skip_len  -subgraph_iter_max 2 \

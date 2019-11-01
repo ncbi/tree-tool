@@ -7,7 +7,7 @@ if [ $# -ne 2 ]; then
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual"
   echo "#1: incremental distance tree directory"
   echo "#2: add new (0 - no, 1 - almost all, 2 - all)"
-  echo "Time: O(n log^5(n))"
+  echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1

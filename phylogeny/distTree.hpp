@@ -1413,7 +1413,6 @@ public:
     // Re-inserts subtrees with small DTNode::pathDissimNums.size()
 	  // Return: false <=> finished
     // Invokes: NewLeaf(DTNode*), Change, applyChanges(), Threads
-    // Time: O(n log^3(n))
 	void optimizeWholeIter (uint iter_max,
 	                        const string &output_tree);
 	  // Input: iter_max: 0 <=> infinity
