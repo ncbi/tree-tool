@@ -2334,6 +2334,36 @@ public:
   
 
 
+template <typename T>
+struct Enumerate
+{
+  Vector<T> num2elem;
+private:
+  unordered_map<T,size_t> elem2num;
+public:
+  
+  explicit Enumerate (size_t n)
+    { num2elem. reserve (n);
+      elem2num. rehash (n);
+    }
+    
+  size_t find (const T &t) const
+    { if (const size_t* num = Common_sp::findPtr (elem2num, t))
+        return *num;
+      return NO_INDEX;
+    }
+  size_t add (const T &t)
+    { size_t num = find (t);
+      if (num == NO_INDEX)
+      { num2elem << t;
+        num = num2elem. size () - 1;
+        elem2num [t] = num;
+      }
+      return num;
+    }
+};
+
+
 
 struct Progress : Nocopy
 {
@@ -2530,11 +2560,17 @@ public:
     // Postcondition: eol
 	  
 
+  struct Error : runtime_error 
+  {
+    explicit Error (const string &what_arg)
+      : runtime_error (what_arg)
+      {}
+  };
   [[noreturn]] void error (const string &what,
 		                       bool expected = true) const
-		{ throw runtime_error ("Error at line " + to_string (lineNum + 1) + ", pos. " + to_string (charNum + 1)
-		                       + (what. empty () ? string () : (": " + what + ifS (expected, " is expected")))
-		                      );
+		{ throw Error ("Error at line " + to_string (lineNum + 1) + ", pos. " + to_string (charNum + 1)
+		               + (what. empty () ? string () : (": " + what + ifS (expected, " is expected")))
+		              );
 		}
 };
 	
