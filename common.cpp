@@ -1483,6 +1483,8 @@ void Token::readInput (CharInput &in)
 		           || c == 'e'
 		           || c == 'E'
 		           || c == '-'
+		           || c == 'x'
+		           || isHex (c)
 		          )
 		      )
 		{ 
@@ -1493,7 +1495,12 @@ void Token::readInput (CharInput &in)
 			in. unget ();
 	  if (name == "-")
 	    type = eDelimiter;
-	  else
+	  else if (isLeft (name, "0x"))
+	  {
+   		type = eInteger;
+ 		  n = (long long) std::stoull (name. substr (2), nullptr, 16); 
+    }
+    else
 	  {
   	  strLower (name);
   	  if (   contains (name, '.') 
@@ -1520,7 +1527,7 @@ void Token::readInput (CharInput &in)
   	  else
   	  {
     		type = eInteger;
-  		  n = str2<int> (name);
+ 		    n = str2<long long> (name);
   		}
   	}
 	}
@@ -1793,7 +1800,7 @@ string Json::getString () const
 
 
 
-int Json::getInt () const
+long long Json::getInt () const
 { 
   const auto* this_ = this;
   if (! this_ || asJsonNull ())

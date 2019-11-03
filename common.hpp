@@ -400,6 +400,9 @@ inline bool isUpper (char c)
 inline bool isLower (char c)
   { return toLower (c) == c; }
 
+inline bool isHex (char c)
+  { return isDigit (c) || strchr ("ABCDEF", toUpper (c)); }
+
 inline bool printable (char c)
   { return between (c, ' ', (char) 127); }
   
@@ -2590,7 +2593,7 @@ struct Token : Root
 	  // eText => embracing quote's are removed
 	char quote {'\0'};
 	  // eText => '\'' or '\"'
-	int n {0};
+	long long n {0};
 	double d {0.0};
   // Valid if eDouble
 	streamsize decimals {0};
@@ -2611,11 +2614,11 @@ struct Token : Root
 	  , name (name_arg)
 	  , quote (quote_arg)
 	  {}
-	explicit Token (const int n_arg)
+	explicit Token (long long n_arg)
 	  : type (eInteger)
 	  , n (n_arg)
 	  {}
-	explicit Token (const double d_arg)
+	explicit Token (double d_arg)
 	  : type (eDouble)
 	  , d (d_arg)
 	  {}
@@ -2656,7 +2659,7 @@ public:
 	  { return ! empty () && type == eName && name == s; }
 	bool isNameText (const string &s) const
 	  { return ! empty () && (type == eName || type == eText) && name == s; }
-	bool isInteger (int n_arg) const
+	bool isInteger (long long n_arg) const
 	  { return ! empty () && type == eInteger && n == n_arg; }
 	bool isDouble (double d_arg) const
 	  { return ! empty () && type == eDouble && d == d_arg; }
@@ -2921,7 +2924,7 @@ protected:
 public:    
   string getString () const;
     // Requires: JsonString
-  int getInt () const;
+  long long getInt () const;
     // Requires: JsonInt
   double getDouble () const;
     // Requires: JsonDouble
@@ -2970,9 +2973,9 @@ struct JsonString : Json
 
 struct JsonInt : Json
 {
-  int n {0};
+  long long n {0};
   
-  JsonInt (int n_arg,
+  JsonInt (long long n_arg,
            JsonContainer* parent,
            const string& name = noString)
     : Json (parent, name)
