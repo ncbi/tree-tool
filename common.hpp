@@ -2351,6 +2351,8 @@ public:
       elem2num. rehash (n);
     }
     
+  size_t size () const
+    { return num2elem. size (); }
   size_t find (const T &t) const
     { if (const size_t* num = Common_sp::findPtr (elem2num, t))
         return *num;
