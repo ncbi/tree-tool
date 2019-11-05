@@ -959,6 +959,7 @@ string getColumn (istream &is,
 
 
 hash<string> str_hash;
+hash<size_t> size_hash;
 
 
 

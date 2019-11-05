@@ -1045,6 +1045,7 @@ inline streamsize double2decimals (double r)
 
 // hash
 extern hash<string> str_hash;
+extern hash<size_t> size_hash;
 constexpr size_t hash_class_max = 1000;  // PAR
 inline size_t str2hash_class (const string &s)
   { return str_hash (s) % hash_class_max; }
