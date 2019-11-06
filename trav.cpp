@@ -43,6 +43,58 @@ namespace
 {
   
   
+unique_ptr<OFStream> errors;
+std::mutex errorsMtx;
+
+
+
+void executeCommand (const string &cmd,
+                     const string &item,
+                     uint blank_lines)
+{
+  ASSERT (! cmd. empty ());
+  
+  const int exitStatus = system (cmd. c_str ());
+  if (exitStatus)
+  {
+    if (errors. get ())
+    {
+      errorsMtx. lock ();
+    	*errors << item << endl;
+      QC_ASSERT (exitStatus != -1);
+      errorsMtx. unlock ();
+    }
+    else
+      throw runtime_error ("item=" + item + "  status=" + to_string (WEXITSTATUS (exitStatus)) + "\n" + cmd);
+  }
+  if (isMainThread ())
+    FOR (uint, i, blank_lines)
+      cerr << " " << endl;
+}
+  
+  
+  
+void executeCommands (size_t from,
+                      size_t to,
+                      Notype /*&res*/,
+                      const StringVector &commands,
+                      const StringVector &items,
+                      uint step,
+                      uint blank_lines)
+{
+  ASSERT (commands. size () == items. size ());
+  
+  Progress prog (to - from, step);  
+  FOR_START (size_t, i, from, to)
+  {
+    prog ();
+    executeCommand (commands [i], items [i], blank_lines);
+  }
+}
+
+
+  
+  
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -65,12 +117,12 @@ struct ThisApplication : Application
   	  addKey ("start", "# Item to start with", "1");
   	  addFlag ("print", "Print command, not execute");
   	}
-  
-
-
+  	
+  	
+ 
 	void body () const final
 	{
-		      string items       = getArg ("items");
+		      string itemsName   = getArg ("items");
 		const string cmd_        = getArg ("command");
 		const string errorsFName = getArg ("errors");
 		const bool quote         = getFlag ("quote");
@@ -78,80 +130,83 @@ struct ThisApplication : Application
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool printP        = getFlag ("print");
-    ASSERT (! items. empty ());
+    ASSERT (! itemsName. empty ());
 
 
     // ^C to stop trav if noerror ??
     
 
-	  unique_ptr<ItemGenerator> gen;
-	  {
-  	  const bool isFile = fileExists (items);
-  	  const bool isDir = directoryExists (items);
-  	  if (isFile || isDir)
-  	    gen. reset (new FileItemGenerator (step, isDir, items));
-      else 
-        if (isDigit (items [0]))
-          gen. reset (new NumberItemGenerator (step, items));	  
-        else
-          throw runtime_error ("File " + strQuote (items) + " does not exist");
-    }
-    ASSERT (gen. get ());
-	
-	
-	  string cmd (cmd_);
-	  replaceStr (cmd, "%d", items);
-    replaceStr (cmd, "%q", "'");  
-    replaceStr (cmd, "%Q", "\"");  
-    replaceStr (cmd, "%D", "$");  
-    replaceStr (cmd, "%G", "`");
-	
-
-    unique_ptr<OFStream> errors;
-    if (! errorsFName. empty ())
-    	errors. reset (new OFStream (errorsFName));
-	
-	  string item;
-	  while (gen->next (item))
+	  StringVector commands;  commands. reserve (100000);  // PAR
+	  StringVector items;     items.    reserve (100000);  // PAR
     {
-      if (gen->prog. n < start)
-        continue;
-	      
-      // Preparing item for using it in a shell command
-      FOR_REV (size_t, i, item. size ())
-        if (item [i] == '\\')
-        	item. replace (i, 0, "\\");
-      if (quote)
-        item = "\"" + item + "\"";
-
-      string thisCmd (cmd);
-      replaceStr (thisCmd, "%f", item);
-      replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
-      replaceStr (thisCmd, "%n", to_string (gen->prog. n));  
-      if (contains (thisCmd, "%"))
-        throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
-      if (verbose ())
-      	cerr << thisCmd << endl;
-      if (printP)
-        cout << thisCmd << endl;
-      else
-      {
-        const int exitStatus = system (thisCmd. c_str ());
-        if (exitStatus)
-        {
-          if (errors. get ())
-          {
-          	*errors << item << endl;
-  	        if (exitStatus == -1)  // ??
-  	          ERROR;
-          }
+  	  unique_ptr<ItemGenerator> gen;
+  	  {
+    	  const bool isFile = fileExists (itemsName);
+    	  const bool isDir = directoryExists (itemsName);
+    	  if (isFile || isDir)
+    	    gen. reset (new FileItemGenerator (step, isDir, itemsName));
+        else 
+          if (isDigit (itemsName [0]))
+            gen. reset (new NumberItemGenerator (step, itemsName));	  
           else
-            throw runtime_error ("item=" + item + "  status=" + to_string (WEXITSTATUS (exitStatus)) + "\n" + thisCmd);
-        }
-  	    FOR (uint, i, blank_lines)
-  	      cerr << " " << endl;
-  	  }
+            throw runtime_error ("File " + strQuote (itemsName) + " does not exist");
+      }
+      ASSERT (gen. get ());
+  	
+  	
+  	  string cmd (cmd_);
+  	  replaceStr (cmd, "%d", itemsName);
+      replaceStr (cmd, "%q", "'");  
+      replaceStr (cmd, "%Q", "\"");  
+      replaceStr (cmd, "%D", "$");  
+      replaceStr (cmd, "%G", "`");
+  	
+
+      ASSERT (! errors. get ());
+      if (! errorsFName. empty ())
+      	errors. reset (new OFStream (errorsFName));
+  	
+
+  	  string item;
+  	  while (gen->next (item))
+      {
+        if (gen->prog. n < start)
+          continue;
+  	      
+        // Preparing item for using it in a shell command
+        FOR_REV (size_t, i, item. size ())
+          if (item [i] == '\\')
+          	item. replace (i, 0, "\\");
+        if (quote)
+          item = "\"" + item + "\"";
+
+        string thisCmd (cmd);
+        replaceStr (thisCmd, "%f", item);
+        replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
+        replaceStr (thisCmd, "%n", to_string (gen->prog. n));  
+        if (contains (thisCmd, "%"))
+          throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
+        if (verbose ())
+       	  cerr << thisCmd << endl;
+        if (printP)
+          cout << thisCmd << endl;
+        else
+          if (threads_max == 1)
+            executeCommand (thisCmd, item, blank_lines);
+      	  else
+      	  {
+      	    commands << move (thisCmd);
+      	    items << item;
+      	  }
+      }
     }
+
+
+    if (threads_max > 1)
+    {
+      vector<Notype> notypes;
+  	  arrayThreads (executeCommands, commands. size (), notypes, cref (commands), cref (items), step, blank_lines);
+  	}
 	}
 };
 
@@ -167,5 +222,6 @@ int main (int argc,
   ThisApplication app;
   return app. run (argc, argv);
 }
+
 
 
