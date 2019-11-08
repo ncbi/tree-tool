@@ -59,6 +59,7 @@ void executeCommand (const string &cmd,
   {
     if (errors. get ())
     {
+    //cout << exitStatus << endl;  // always 256 ??
       errorsMtx. lock ();
     	*errors << item << endl;
       QC_ASSERT (exitStatus != -1);
@@ -92,7 +93,6 @@ void executeCommands (size_t from,
   }
 }
 
-
   
   
 struct ThisApplication : Application
@@ -111,6 +111,7 @@ struct ThisApplication : Application
 \"%D\" - $, \
 \"%G\" - `");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
+  	    // Bug: ^C does not stop the program ??
   	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "100");
@@ -132,9 +133,6 @@ struct ThisApplication : Application
 		const bool printP        = getFlag ("print");
     ASSERT (! itemsName. empty ());
 
-
-    // ^C to stop trav if noerror ??
-    
 
 	  StringVector commands;  commands. reserve (100000);  // PAR
 	  StringVector items;     items.    reserve (100000);  // PAR
