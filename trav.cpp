@@ -53,6 +53,7 @@ void executeCommand (const string &cmd,
                      uint blank_lines)
 {
   ASSERT (! cmd. empty ());
+  ASSERT (! item. empty ());
   
   const int exitStatus = system (cmd. c_str ());
   if (exitStatus)
@@ -74,22 +75,28 @@ void executeCommand (const string &cmd,
 }
   
   
+
+struct Command
+{
+  string cmd;
+  string item;
+};
+  
+  
   
 void executeCommands (size_t from,
                       size_t to,
                       Notype /*&res*/,
-                      const StringVector &commands,
-                      const StringVector &items,
+                      const Vector<Command> &commands,
                       uint step,
                       uint blank_lines)
 {
-  ASSERT (commands. size () == items. size ());
-  
   Progress prog (to - from, step);  
   FOR_START (size_t, i, from, to)
   {
     prog ();
-    executeCommand (commands [i], items [i], blank_lines);
+    const Command& command = commands [i];
+    executeCommand (command. cmd, command. item, blank_lines);
   }
 }
 
@@ -134,8 +141,7 @@ struct ThisApplication : Application
     ASSERT (! itemsName. empty ());
 
 
-	  StringVector commands;  commands. reserve (100000);  // PAR
-	  StringVector items;     items.    reserve (100000);  // PAR
+	  Vector<Command> commands;  commands. reserve (100000);  // PAR
     {
   	  unique_ptr<ItemGenerator> gen;
   	  {
@@ -192,18 +198,16 @@ struct ThisApplication : Application
           if (threads_max == 1)
             executeCommand (thisCmd, item, blank_lines);
       	  else
-      	  {
-      	    commands << move (thisCmd);
-      	    items << item;
-      	  }
+      	    commands << move (Command {move (thisCmd), move (item)});
       }
     }
 
 
     if (threads_max > 1)
     {
+      commands. randomOrder ();
       vector<Notype> notypes;
-  	  arrayThreads (executeCommands, commands. size (), notypes, cref (commands), cref (items), step, blank_lines);
+  	  arrayThreads (executeCommands, commands. size (), notypes, cref (commands), step, blank_lines);
   	}
 	}
 };
