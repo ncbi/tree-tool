@@ -54,8 +54,8 @@ namespace
 struct Scale
 {
 	Real unit {INF};
-	Real raw_min {0};
-	Real raw_max {0};
+	Real raw_min {0.0};
+	Real raw_max {0.0};
 #ifdef WEIGHT
 	Real weight {NaN};
 #endif
@@ -71,12 +71,12 @@ struct Scale
 	  	  #endif
 	  	  ;
 	  	unit *= coeff;
-	  	ASSERT (unit > 0);
-	  //ASSERT (unit <= 1); 
-	  	ASSERT (raw_min >= 0);
+	  	ASSERT (unit > 0.0);
+	  //ASSERT (unit <= 1.0); 
+	  	ASSERT (raw_min >= 0.0);
 	  	ASSERT (raw_min <= raw_max);
     #ifdef WEIGHT
-	  	ASSERT (weight > 0);
+	  	ASSERT (weight > 0.0);
 	  #endif
 	  }
 	Scale () = default;
@@ -84,7 +84,7 @@ struct Scale
 	Real raw2dissim (Real raw) const
 	  { if (isNan (raw))
 	  	  return NaN;
-	  	ASSERT (raw >= 0);
+	  	ASSERT (raw >= 0.0);
 	  	if (raw < raw_min)
 	  	  return NaN;
 	  	if (raw > raw_max)
@@ -101,7 +101,7 @@ struct ObjPair
 {
 	string name1;
 	string name2;
-	Real dissim;
+	Real dissim {NaN};
 	
 	explicit ObjPair (const string &line)
 	  { 
@@ -113,7 +113,7 @@ struct ObjPair
 	  	ASSERT (iss. eof ());
 	  	ASSERT (name1 < name2);
 	  	dissim = str2real (dissimS);
-	  	IMPLY (! isNan (dissim), dissim >= 0);
+	  	IMPLY (! isNan (dissim), dissim >= 0.0);
 	  }
 };
 
@@ -139,7 +139,7 @@ Line format: <unit> <raw_min> <raw_max>");
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
 		const Real coeff         = str2real (getArg ("coeff"));
-		ASSERT (coeff > 0);
+		ASSERT (coeff > 0.0);
 		
 		
 		Vector<Scale> scales;  scales. reserve (16); // PAR
@@ -162,17 +162,17 @@ Line format: <unit> <raw_min> <raw_max>");
 	      }
 	    }
 		}
-		ASSERT (scales. size () >= 2);
+		QC_ASSERT (scales. size () >= 2);
 
       
     Vector<ObjPair> objPairs;  objPairs. reserve (1000);  // PAR
     {
     	LineInput f (dissimFName);
     	while (f. nextLine ())
-    		objPairs << ObjPair (f. line);
+    		objPairs << move (ObjPair (f. line));
     }
 
-    ASSERT (objPairs. size () % scales. size () == 0);
+    QC_ASSERT (objPairs. size () % scales. size () == 0);
     const size_t n = objPairs. size () / scales. size ();  // # Pairs
     
     const ONumber on (cout, 6, true);
@@ -181,8 +181,8 @@ Line format: <unit> <raw_min> <raw_max>");
 	  {
 	  	prog ();
 	  #ifdef WEIGHT
-	    Real dissim_sum = 0;
-	    Real weight_sum = 0;
+	    Real dissim_sum = 0.0;
+	    Real weight_sum = 0.0;
 	  #else
 	    Real dissim = NaN;
 	  #endif
@@ -199,15 +199,15 @@ Line format: <unit> <raw_min> <raw_max>");
         const Real dissim = scales [j]. raw2dissim (raw);
         if (isNan (dissim))
         	continue;
-        ASSERT (dissim >= 0);
+        ASSERT (dissim >= 0.0);
         dissim_sum += scales [j]. weight * dissim;
         weight_sum += scales [j]. weight;
       #else
         dissim = scales [j]. raw2dissim (raw);
         if (! isNan (dissim))
         {
-          ASSERT (dissim >= 0);
-          if (dissim == 0 && j)  // Contradiction
+          ASSERT (dissim >= 0.0);
+          if (! dissim && j)  // Contradiction
             dissim = NaN;
           break;
         }

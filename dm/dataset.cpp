@@ -6393,7 +6393,7 @@ void PositiveAverageModel::Component::qc () const
 
 void PositiveAverageModel::Component::setVar (Real var_arg)
 { 
-  ASSERT (var_arg >= 0.0);
+  QC_ASSERT (var_arg >= 0.0);
 
   var = var_arg;
   if (! var)
