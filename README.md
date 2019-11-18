@@ -1,4 +1,4 @@
-# Incremental Phylogenetic Distance Tree Building
+# Incremental Building of Phylogenetic Distance Tree
 
 Build a least squares distance tree given a matrix of dissimilarities.
 
