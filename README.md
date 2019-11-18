@@ -1,1 +1,9 @@
-<meta http-equiv="Refresh" content="0; url=https://github.com/vbrover/dm/wiki" />
+# Incremental Phylogenetic Distance Tree Building
+
+Build a least squares distance tree given a matrix of dissimilarities.
+
+Scripts to build a large tree incrementally.
+
+General data analysis tools.
+
+## See [Documentation at wiki](https://github.com/brovervv/dm/wiki) 
