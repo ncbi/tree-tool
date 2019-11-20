@@ -177,6 +177,7 @@ struct ThisApplication : Application
       FFOR (size_t, i, cmd. size () - 1)
         if (   cmd [i] == '%'
             && isDigit (cmd [i + 1])
+            && cmd [i + 1] != '0'
            )
         {
           subitemsP = true;
@@ -214,6 +215,7 @@ struct ThisApplication : Application
           {
             string s;
             iss >> s;
+            ASSERT (! s. empty ());
             subitems << move (s);
           }
           ASSERT (! subitems. empty ());
@@ -223,8 +225,9 @@ struct ThisApplication : Application
             replaceStr (thisCmd, "%" + to_string (i + 1), subitems [i]); 
         }        
         
-        if (contains (thisCmd, "%"))
-          throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
+        const size_t percentPos = thisCmd. find ('%');
+        if (percentPos != string::npos)
+          throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (percentPos, 2)) + " in item: " + item + "\n" + thisCmd);
 
         if (verbose ())
        	  cerr << thisCmd << endl;
