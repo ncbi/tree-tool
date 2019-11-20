@@ -110,7 +110,11 @@ struct ThisApplication : Application
   	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory), or a natural number");
   	  addPositional ("command", "Text with special symbols: \
 \"%d\" = <items>, \
-\"%f\" - an item, \
+\"%f\" - item, \
+\"%1\" - subitem #1, \
+\"%2\" - subitem #2, \
+... \
+\"%9\" - subitem #9, \
 \"%h\" - item hash (0.." + to_string (hash_class_max - 1) + "), \
 \"%n\" - sequential number, \
 \"%q\" - single quote, \
@@ -119,7 +123,6 @@ struct ThisApplication : Application
 \"%G\" - `");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
-  	  addFlag ("quote", "Quote %f");
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
@@ -133,12 +136,12 @@ struct ThisApplication : Application
 		      string itemsName   = getArg ("items");
 		const string cmd_        = getArg ("command");
 		const string errorsFName = getArg ("errors");
-		const bool quote         = getFlag ("quote");
 		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool printP        = getFlag ("print");
-    ASSERT (! itemsName. empty ());
+    QC_ASSERT (! itemsName. empty ());
+    QC_ASSERT (! cmd_. empty ());
 
 
 	  Vector<Command> commands;  commands. reserve (100000);  // PAR
@@ -170,10 +173,26 @@ struct ThisApplication : Application
       if (! errorsFName. empty ())
       	errors. reset (new OFStream (errorsFName));
   	
+      bool subitemsP = false;
+      FFOR (size_t, i, cmd. size () - 1)
+        if (   cmd [i] == '%'
+            && isDigit (cmd [i + 1])
+           )
+        {
+          subitemsP = true;
+          break;
+        }
 
   	  string item;
+  	  Istringstream iss;
+  	  constexpr size_t subitems_max = 9;
+      StringVector subitems;  subitems. reserve (subitems_max);  
   	  while (gen->next (item))
       {
+        trim (item);
+        if (item. empty ())
+          throw runtime_error ("Empty item");
+        
         if (gen->prog. n < start)
           continue;
   	      
@@ -181,17 +200,35 @@ struct ThisApplication : Application
         FOR_REV (size_t, i, item. size ())
           if (item [i] == '\\')
           	item. replace (i, 0, "\\");
-        if (quote)
-          item = "\"" + item + "\"";
 
         string thisCmd (cmd);
         replaceStr (thisCmd, "%f", item);
         replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
         replaceStr (thisCmd, "%n", to_string (gen->prog. n));  
+
+        if (subitemsP)
+        {
+          iss. reset (item);
+          subitems. clear ();
+          while (! iss. eof ())
+          {
+            string s;
+            iss >> s;
+            subitems << move (s);
+          }
+          ASSERT (! subitems. empty ());
+          if (subitems. size () > subitems_max)
+            throw runtime_error ("Number of subitems is " + to_string (subitems. size ()) + " wheras the maximum is " + to_string (subitems_max));
+          FFOR (size_t, i, subitems. size ())
+            replaceStr (thisCmd, "%" + to_string (i + 1), subitems [i]); 
+        }        
+        
         if (contains (thisCmd, "%"))
           throw runtime_error ("Unprocessed '%' in item=" + item + "\n" + thisCmd);
+
         if (verbose ())
        	  cerr << thisCmd << endl;
+       	  
         if (printP)
           cout << thisCmd << endl;
         else
