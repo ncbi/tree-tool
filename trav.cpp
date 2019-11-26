@@ -192,7 +192,8 @@ struct ThisApplication : Application
       {
         trim (item);
         if (item. empty ())
-          throw runtime_error ("Empty item");
+          continue;
+        //throw runtime_error ("Empty item");
         
         if (gen->prog. n < start)
           continue;
