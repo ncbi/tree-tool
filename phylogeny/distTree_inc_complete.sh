@@ -111,7 +111,7 @@ if [ -e $INC/phen ]; then
   echo ""
   echo "Quality ..."
 	PHEN_LARGE=`cat $INC/phen_large`
-  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 0 > $INC/hist/tree_quality_phen.1
+  $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 0 "" > $INC/hist/tree_quality_phen.1
 	grep ' !' $INC/hist/tree_quality_phen.1
 fi
 

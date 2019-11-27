@@ -27,5 +27,5 @@ $THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_l
 echo ""
 echo "Quality ..."
 PHEN_LARGE=`cat $INC/phen_large`
-$THIS/tree_quality_phen.sh $OUT_TREE "" $INC/phen $PHEN_LARGE 1 
+$THIS/tree_quality_phen.sh $OUT_TREE "" $INC/phen $PHEN_LARGE 1 ""
 

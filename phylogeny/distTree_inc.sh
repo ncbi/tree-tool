@@ -112,7 +112,7 @@ if [ -e $INC/phen ]; then
 
 	echo ""
 	echo "Root and quality ..."
-	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 1 > $INC/hist/tree_quality_phen.$VER 
+	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 1 "" qual.raw > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
