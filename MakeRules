@@ -95,6 +95,7 @@ GEN_DIR = $(CODE_DIR)/genetics
 $(GEN_DIR)/asn.o:	$(GEN_DIR)/asn.hpp $(COMMON_HPP)
 $(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_HPP)
 $(GEN_DIR)/gff.o: $(GEN_DIR)/gff.hpp $(COMMON_HPP)
+$(GEN_DIR)/alignment.o: $(GEN_DIR)/alignment.hpp $(COMMON_HPP)
 $(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_HPP)
 SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o 
 $(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
