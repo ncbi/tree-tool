@@ -212,9 +212,10 @@ struct ThisApplication : Application
         {
           iss. reset (item);
           subitems. clear ();
+          string s;
           while (! iss. eof ())
           {
-            string s;
+            ASSERT (s. empty ());
             iss >> s;
             ASSERT (! s. empty ());
             subitems << move (s);
