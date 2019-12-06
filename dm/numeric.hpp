@@ -100,8 +100,6 @@ const Real INF = numeric_limits<Real>::infinity ();
 inline bool finite (Real x)
   { return -INF < x && x < INF; }
 
-const Real NaN = numeric_limits<Real>::quiet_NaN ();  
-
 inline bool isNan (Real x)
   { return x != x; }
 
