@@ -120,7 +120,8 @@ struct ThisApplication : Application
 \"%q\" - single quote, \
 \"%Q\" - double quote, \
 \"%D\" - $, \
-\"%G\" - `");
+\"%G\" - `, \
+\"%P\" - %");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
@@ -226,10 +227,11 @@ struct ThisApplication : Application
           FFOR (size_t, i, subitems. size ())
             replaceStr (thisCmd, "%" + to_string (i + 1), subitems [i]); 
         }        
-        
-        const size_t percentPos = thisCmd. find ('%');
-        if (percentPos != string::npos)
-          throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (percentPos, 2)) + " in item: " + item + "\n" + thisCmd);
+
+        FFOR (size_t, i, thisCmd. size ())
+          if (thisCmd [i] == '%' && (i == thisCmd. size () - 1 || thisCmd [i + 1] != 'P'))
+            throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (i, 2)) + " in item: " + item + "\n" + thisCmd);
+        replaceStr (thisCmd, "%P", "%");
 
         if (verbose ())
        	  cerr << thisCmd << endl;
