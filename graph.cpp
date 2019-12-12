@@ -667,8 +667,8 @@ string Tree::TreeNode::name2newick (const string &s)
 {
   string s1 (s);
   replace (s1, "\"\' ():;,[]<>=", '_');
-  return s1. substr (0, 100 /*50*/ /*PAR*/);
-    // Newick allowes the name length <= 50 characters, but http://www.trex.uqam.ca/ breaks with 50
+  return s1. substr (0, 100 /*50*/);  // PAR
+    // Newick allowes the name length >= 50 characters, but http://www.trex.uqam.ca/ breaks with 50
 }
 
 
