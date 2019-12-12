@@ -110,8 +110,8 @@ struct ThisApplication : Application
       {
         name_new = f. line;
         name_old = findSplit (name_new, '\t');
-        ASSERT (! name_old. empty ());
-        ASSERT (! name_new. empty ());
+        QC_ASSERT (! name_old. empty ());
+        QC_ASSERT (! name_new. empty ());
         if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
           var_cast (leaf) -> name = name_new;
       #if 0
