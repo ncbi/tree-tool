@@ -617,7 +617,7 @@ void DTNode::qc () const
     }
   }
   
-  QC_IMPLY (! isNan (len), len >= 0);    
+  QC_IMPLY (! isNan (len), len >= 0.0);    
   QC_ASSERT (! contains (name, '\''));
 }
 
@@ -3310,16 +3310,17 @@ private:
   {
     DTNode* node = parseItem (parent);
     skipSpaces ();
+    Real len = 0.0;
     if (c == ':')
     {
-      Real len = NaN;
       const streamsize start = f. tellg ();
+      len = NaN;
       f >> len;
       pos += f. tellg () - start;
-      ASSERT (! isNan (len));
-      node->len = max (0.0, len);
+      QC_ASSERT (! isNan (len));
       readChar ();
     }
+    node->len = max (0.0, len);
   }
   
   DTNode* parseItem (Steiner* parent)
