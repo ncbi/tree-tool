@@ -2286,6 +2286,32 @@ void Application::setRequiredGroup (const string &keyName,
 
 
 
+void Application::addDefaultArgs ()
+{ 
+  if (gnu)
+	{ 
+	  addKey ("threads", "Max. number of threads", "1", '\0', "THREADS");
+	  addFlag ("debug", "Integrity checks");
+    addKey ("log", "Error log file, appended", "", '\0', "LOG");
+  }
+	else
+	{ 
+	  addFlag ("qc", "Integrity checks (quality control)");
+    addKey ("verbose", "Level of verbosity", "0");
+    addFlag ("noprogress", "Turn off progress printout");
+    addFlag ("profile", "Use chronometers to profile");
+    addKey ("seed", "Positive integer seed for random number generator", "1");
+    addKey ("threads", "Max. number of threads", "1");
+    addKey ("json", "Output file in Json format");
+    addKey ("log", "Error log file, appended");
+  #ifndef _MSC_VER
+    addFlag ("sigpipe", "Exit normally on SIGPIPE");
+  #endif
+  }
+}
+
+
+
 void Application::qc () const
 {
   if (! qc_on)
@@ -2591,6 +2617,11 @@ int Application::run (int argc,
   
   
     string logFName;
+    logFName = getArg ("log");
+  	ASSERT (! logPtr);
+    if (! logFName. empty ())
+  		logPtr = new ofstream (logFName, ios_base::app);
+
     string jsonFName;
     if (gnu)
     {
@@ -2599,11 +2630,6 @@ int Application::run (int argc,
     }
     else
     {
-	    logFName = getArg ("log");
-	  	ASSERT (! logPtr);
-	    if (! logFName. empty ())
-	  		logPtr = new ofstream (logFName, ios_base::app);
-
 	  	if (getFlag ("qc"))
 	  		qc_on = true;
 	

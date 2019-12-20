@@ -189,10 +189,16 @@ struct ThisApplication : Application
   	cout << i << endl;
   #endif
   
+  #if 0
     PRINT (sizeof (int));
     PRINT (sizeof (size_t));
     PRINT (sizeof (float));
     PRINT (sizeof (double));
+  #endif
+  
+    const Dir dbDir ("/Users/justin.payne/.miniconda3/envs/amrfinder/share/amrfinderplus/data");
+    PRINT (dbDir. get ());
+    PRINT (dbDir. getParent ());
   }
 };
 
