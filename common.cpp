@@ -1394,7 +1394,10 @@ char CharInput::get ()
 	ASSERT (eof == (c == (char) EOF));
 
   if (ungot)
+  {
     ungot = false;
+	  charNum++;
+  }
   else
   	if (eol)
   	{ 
@@ -1407,6 +1410,12 @@ char CharInput::get ()
 
 	eol = (eof || c == '\n');
 	
+#if 0
+	PRINT (c);
+	PRINT (lineNum);
+	PRINT (charNum);
+#endif
+	
 	return /*eof ? (char) EOF :*/ c;
 }
 
@@ -1418,7 +1427,7 @@ void CharInput::unget ()
 	ASSERT (! ungot);
 	
 	is->unget (); 
-	charNum--;
+	charNum--;  // May be (uint) (-1)
 	ungot = true;
 }
 
@@ -1557,7 +1566,7 @@ void Token::readInput (CharInput &in)
   if (verbose ())
   {
   	cout << type2str (type) << ' ';  
-  	cout << *this << endl;
+  	cout << *this << ' ' << charNum << endl;
   }
 }
 
