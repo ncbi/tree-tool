@@ -2752,8 +2752,8 @@ void ShellApplication::initEnvironment ()
 
 void ShellApplication::body () const
 {
-  if (useTmp && verbose () /*qc_on*/)
-    cout << tmp << endl;  
+  if (logPtr && useTmp)
+    *logPtr << tmp << endl;
   shellBody ();
 }
 
