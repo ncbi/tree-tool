@@ -160,6 +160,7 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
   	  addPositional ("list1", "File with ordered set of items");
   	  addPositional ("list2", "File with ordered set of items to be removed from list1");
   	  addFlag ("number", "Items are numbers");
+  	  addFlag ("check", "Break if <list1> is nto a subset of <list2>");
   	}
 
 
@@ -167,7 +168,8 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 	{
 		const string list1Name = getArg ("list1");
 		const string list2Name = getArg ("list2");
-		const bool num = getFlag ("number");
+		const bool num         = getFlag ("number");
+		const bool check       = getFlag ("check");
 
 
 	  ifstream f1 (list1Name);
@@ -185,7 +187,7 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 	  {
 	  	it1. read (list1Name, f1, it1old);
 
-      int cmp;
+      int cmp = 0;
       for (;;)
 		  {
 		  	cmp = it1. compare (it2);
@@ -197,7 +199,12 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 		  }
 
 	    if (cmp < 0)
-		    cout << it1. name () << endl;
+	    {
+	      if (check)
+	        throw runtime_error (it1. name ());
+	      else
+		      cout << it1. name () << endl;
+		  }
 	  }
 	}
 };
