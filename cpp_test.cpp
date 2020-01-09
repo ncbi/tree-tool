@@ -105,13 +105,15 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test")
   	{
-  	  addPositional ("go", "Go");
+  	  addPositional ("arg", "Argument");
   	}
   
 
 
  	void body () const final
 	{
+	   const string arg = getArg ("arg");
+	  
 	/*
 	  S s (3);
 	  get (s);
@@ -196,9 +198,13 @@ struct ThisApplication : Application
     PRINT (sizeof (double));
   #endif
   
+  #if 0
     const Dir dbDir ("/Users/justin.payne/.miniconda3/envs/amrfinder/share/amrfinderplus/data");
     PRINT (dbDir. get ());
     PRINT (dbDir. getParent ());
+  #endif
+  
+    cout << getFileSize (arg) << endl;
   }
 };
 
