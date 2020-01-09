@@ -62,7 +62,7 @@ struct ThisApplication : Application
   	  addKey ("features", "Input directory with features for each genome. Line format: " + Genome::featureLineFormat ());
   	  addFlag ("large", "Featrue files are grouped into subdirectories which are their hash-names (hash<string> % 1000)");
   	  addKey ("input_core", "Input file with root core feature ids");
-  	  addFlag ("nominal_singleton_is_optional", "Nominal singleton value means that all values of this nominal attribute are optional");
+  	  addFlag ("nominal_singleton_is_optional", "Nominal singleton value means that all values of this nominal attribute are optional for the genome");
   	  addFlag ("prefer_gain", "Prefer gain over loss in maximum parsimony method");
   	    
   	  // Process
