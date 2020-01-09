@@ -93,8 +93,8 @@ FEATURE_TREE = $(PHYL_DIR)/featureTree $(DM) $(CPP_DIR)/graph
 
 
 AMRFINDER_DIR=$(CODE_DIR)/amrfinder
-$(GEN_DIR)/gff.o: $(AMRFINDER_DIR)/gff.hpp $(COMMON_HPP)
-$(GEN_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_HPP)
+$(AMRFINDER_DIR)/gff.o: $(AMRFINDER_DIR)/gff.hpp $(COMMON_HPP)
+$(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_HPP)
 
 
 GEN_DIR = $(CODE_DIR)/genetics
