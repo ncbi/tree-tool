@@ -327,7 +327,7 @@ public:
     // Invokes: child_parent2parents()
 	void qc () const;
   void print (ostream &os) const;
-  static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <dissimilarity type> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid>"};
+  static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> <dissimilarity type>"};
 
 
   bool operator== (const TriangleParentPair &other) const
