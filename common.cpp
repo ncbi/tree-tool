@@ -2742,12 +2742,25 @@ void ShellApplication::initEnvironment ()
   		throw runtime_error ("Cannot create a temporary file");
   }
 
-  // execDir
+  // execDir, programName
 	execDir = getProgramDirName ();
 	if (execDir. empty ())
 		execDir = which (programArgs. front ());
   if (! isRight (execDir, "/"))
     throw logic_error ("Cannot identify the directory of the executable");
+  {
+    string s (programArgs. front ());
+    programName = rfindSplit (s, fileSlash);
+    string path (execDir + programName);
+    for (;;)
+    {
+      const string path_new (realpath (path. c_str (), nullptr));
+      if (path == path_new)
+        break;
+      path = path_new;
+    }
+    execDir = getDirName (path);
+  }
 
   string execDir_ (execDir);
   trimSuffix (execDir_, "/");				

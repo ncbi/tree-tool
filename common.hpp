@@ -3530,6 +3530,7 @@ struct ShellApplication : Application
   string tmp;
   string execDir;
     // Ends with '/'
+    // Physically real directory of the software
   mutable map<string,string> prog2dir;
   
 
