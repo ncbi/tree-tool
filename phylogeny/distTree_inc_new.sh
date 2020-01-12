@@ -1,15 +1,13 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ]; then
   echo "Process new objects for a distance tree: new/ -> leaf, dissim"
   echo "#1: incremental distance tree directory"
-  echo "#2: process new objects completely (0/1)"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
-ALL_NEW=$2
 
 
 # PAR
@@ -276,9 +274,7 @@ $INC/qc.sh go
 
 
 NEW=`ls $INC/new | wc -l`
-if [ $NEW  == 0 ]; then
-  touch $INC/finished
-elif [ $ALL_NEW == 0 -a $NEW -lt $ADD ]; then
+if [ $NEW == 0 ]; then
   touch $INC/finished
 else
   rm -f $INC/finished

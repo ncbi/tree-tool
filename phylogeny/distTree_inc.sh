@@ -6,7 +6,7 @@ if [ $# -ne 2 ]; then
   echo "Update: #1/"
   echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, qual.raw"
   echo "#1: incremental distance tree directory"
-  echo "#2: add new (0 - no, 1 - almost all, 2 - all)"
+  echo "#2: add new objects (0/1)"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
@@ -19,8 +19,8 @@ $INC/qc.sh go
 echo ""
 
 
-if [ 1 == 1 ]; then  
-if [ $NEW_PAR -gt 0 ]; then
+if [ 1 == 1 ]; then   
+if [ $NEW_PAR == 1 ]; then
   # Time: O(n log^4(n))
   while [ 1 == 1 ]; do
     if [ -e $INC/stop ]; then
@@ -40,11 +40,7 @@ if [ $NEW_PAR -gt 0 ]; then
     echo "$VER  # New: $NEW  `date`  `date +%s`" >> $INC/runlog  
     echo ""
     echo ""
-    ALL_NEW=0
-    if [ $NEW_PAR -eq 2 ]; then
-      ALL_NEW=1
-    fi
-    $THIS/distTree_inc_new.sh $INC $ALL_NEW
+    $THIS/distTree_inc_new.sh $INC 
     if [ -e $INC/finished ]; then
       break
     fi
@@ -112,7 +108,7 @@ if [ -e $INC/phen ]; then
 
 	echo ""
 	echo "Root and quality ..."
-	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 1 "" qual.raw > $INC/hist/tree_quality_phen.$VER 
+	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
