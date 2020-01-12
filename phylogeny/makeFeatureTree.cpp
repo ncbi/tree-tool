@@ -266,7 +266,7 @@ struct ThisApplication : Application
       const ONumber on (cout, 2, false);  // PAR
       cout << "# Monophyletic features:          " << monophyletics    << " (" << (Real) monophyletics    / (Real) genomes << ") ^" << endl;  
       cout << "# Non-monophyletic features:      " << nonMonophyletics << " (" << (Real) nonMonophyletics / (Real) genomes << ") V" << endl;  
-      cout << "# Non-monophyletic disagreements: " << extraMutations   << " (" << (Real) extraMutations   / (Real) genomes << ") V !" << endl;  
+      cout << "# Non-monophyletic disagreements: " << extraMutations   << " (" << (Real) extraMutations   / (Real) genomes << ") V !" << endl;  // = Taxonomy miscongruence for taxonomy features
       cout << "# Common features:                " << commons << endl;
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
