@@ -81,6 +81,12 @@ struct Feature : Named
 	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << " (" << optionalGenomes << ")" << endl; }
 
 	
+	string getNominVar () const
+	  { const size_t pos = name. find (':');
+	    if (pos == string::npos)
+	      return string ();
+	    return name. substr (0, pos);
+	  }
   bool operator== (const Feature &other) const
     { return name == other. name; }
   bool operator< (const Feature &other) const

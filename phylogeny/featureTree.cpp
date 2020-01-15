@@ -138,11 +138,11 @@ void Phyl::qc () const
     { QC_ASSERT (static_cast <const Phyl*> (parent) -> core. size () == n); }
 	FFOR (size_t, i, core. size ())
 	{
- 	  QC_ASSERT ((int) parent2core [false] [i]. core <= (int) parent2core [true] [i]. core); 
+ 	  QC_ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core);
  	//QC_IMPLY (getFeatureTree (). allTimeZero, fabs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
  	  QC_ASSERT (! (   parent2core [false] [i]. core == UBOOL
- 	             && parent2core [true]  [i]. core == UBOOL
- 	            )
+ 	                && parent2core [true]  [i]. core == UBOOL
+ 	               )
  	         );
  	  if (getFeatureTree (). coreSynced)
  	  {
@@ -2476,12 +2476,22 @@ void FeatureTree::qc () const
 	}
 
 	Feature prevFeature;
+	unordered_map<const Phyl*,StringVector> gain2nominVars;  gain2nominVars. rehash (nodes. size ());
 	FFOR (size_t, i, features. size ())
 	{
 	  const Feature f (features [i]);
 	  f. qc ();
 	  QC_ASSERT (! Feature::nominalSingleton (f. name));
 		QC_ASSERT (prevFeature. name < f. name);
+		for (const Phyl* gain : f. gains)
+		{
+		  StringVector& nominVars = gain2nominVars [gain];
+		  string nominVar (f. getNominVar ());
+		  if (nominVar. empty ())
+		    continue;
+		  QC_ASSERT (! nominVars. contains (nominVar));
+		  nominVars << move (nominVar);
+		}
 		prevFeature = f;
 	}
 	QC_ASSERT (features. searchSorted);
