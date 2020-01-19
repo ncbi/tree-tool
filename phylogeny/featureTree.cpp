@@ -2402,12 +2402,8 @@ void FeatureTree::loadPhylFile (const string &treeFName)
 	ASSERT (! treeFName. empty ());
 	
 		
-  StringVector lines;
-  {
-    LineInput in (treeFName, 10000);  // PAR
-    lines = in. getVector ();
-  }
-  ASSERT (! lines. empty ());
+  const StringVector lines (treeFName, (size_t) 10000);  // PAR
+  QC_ASSERT (! lines. empty ());
 	size_t lineNum = 0; 
 
   if (getParam (lines [lineNum], timeOptimFracS, timeOptimFrac))

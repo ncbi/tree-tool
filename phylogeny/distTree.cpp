@@ -3714,15 +3714,11 @@ void DistTree::loadTreeDir (const string &dir)
   ASSERT (! dir. empty ());
   ASSERT (isDirName (dir));
 
-  StringVector fileNames;  
-  {
-    const string outFName (dir + ".list");
-    EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
-    LineInput f (outFName);
-    fileNames = f. getVector ();
-    EXEC_ASSERT (system (("rm " + outFName). c_str ()) == 0);
-  }
-  ASSERT (! fileNames. empty ());
+  const string outFName (dir + ".list");
+  EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
+  const StringVector fileNames (outFName, (size_t) 100);  // PAR
+  EXEC_ASSERT (system (("rm " + outFName). c_str ()) == 0);
+  QC_ASSERT (! fileNames. empty ());
 
   Name2steiner name2steiner;
   for (string name : fileNames)
@@ -3765,17 +3761,8 @@ void DistTree::loadTreeFile (const string &fName)
   ASSERT (! subDepth);
   ASSERT (! fName. empty ());
 
-  StringVector lines;
-  try
-  {
-    LineInput in (fName, 10000);  // PAR
-    lines = in. getVector ();
-  }
-  catch (const exception &e)
-  {
-    throw runtime_error ("Loading tree file " + strQuote (fName) + "\n" + e. what ());
-  }
-  ASSERT (! lines. empty ());
+  const StringVector lines (fName, (size_t) 10000);  // PAR
+  QC_ASSERT (! lines. empty ());
 
   size_t lineNum = 0; 
   Steiner* steiner = nullptr;   

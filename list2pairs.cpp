@@ -58,11 +58,7 @@ struct ThisApplication : Application
 		const string listFName = getArg ("list");
 
 
-    StringVector words;  
-    {
-      LineInput f (listFName);
-      words = f. getVector ();
-    }
+    StringVector words (listFName, (size_t) 1000);  // PAR
     words. sort ();
     ASSERT (words. isUniq ());
     

@@ -854,6 +854,14 @@ bool trimTailAt (string &s,
   // Return: trimmed
   // Update: s
 
+inline bool isLeftBlank (const string &s,
+                         size_t spaces)
+  { size_t i = 0;
+    while (i < s. size () && i < spaces && s [i] == ' ')
+      i++;
+    return i == spaces;
+  }
+
 bool goodName (const string &name);
 
 bool isIdentifier (const string& name);
@@ -1370,6 +1378,9 @@ struct Named : Root
   Named () = default;
   explicit Named (const string &name_arg)
     : name (name_arg) 
+    {}
+  explicit Named (string &&name_arg)
+    : name (move (name_arg))
     {}
   Named* copy () const override
     { return new Named (*this); } 
@@ -2534,22 +2545,6 @@ struct LineInput : Input
 				return false;
 		  throw runtime_error ("No " + strQuote (prefix));
 		}
-	string getString ()
-	  { string s; 
-	  	while (nextLine ())
-	  	{ if (! s. empty ())
-	  			s += "\n";
-	  	  s += line;
-	  	}
-	  	return s;
-	  }
-	StringVector getVector ()
-	  { StringVector vec;
-	    while (nextLine ())
-	      if (! line. empty ())
-	  	    vec << line;
-	  	return vec;
-	  }
 };
 	
 
@@ -2624,17 +2619,17 @@ public:
 struct Token : Root
 {
 	enum Type { eName
+	          , eDelimiter  
 	          , eText
 	          , eInteger   
 	          , eDouble
-	          , eDelimiter  
+	          , eDateTime
 	          };
 	Type type {eDelimiter};
 	string name;
 	  // ename => !empty(), printable()
 	  // eText => embracing quote's are removed
 	char quote {'\0'};
-	  // eText => '\'' or '\"'
 	long long n {0};
 	double d {0.0};
   // Valid if eDouble
@@ -2694,9 +2689,19 @@ public:
 	  		case eInteger:   return "integer";
 	  		case eDouble:    return "double";
 	  		case eDelimiter: return "delimiter";
+	  		case eDateTime:  return "datetime";
 	  	}
-	  	return "?";
+	  	throw logic_error ("Token::type2str()");
 	  }
+	static Type str2type (const string &s)
+	  { if (s == "name")      return eName;
+	    if (s == "text")      return eText;
+	    if (s == "integer")   return eInteger;
+	    if (s == "double")    return eDouble;
+	    if (s == "delimiter") return eDelimiter;
+	    if (s == "datetime")  return eDateTime;
+	    throw runtime_error ("Token::str2type()");
+	  }      
 	bool isName (const string &s) const
 	  { return ! empty () && type == eName && name == s; }
 	bool isNameText (const string &s) const
@@ -2714,6 +2719,7 @@ public:
 	    switch (type)
 	    { case eName:
 	      case eText:
+	      case eDateTime:
 	      case eDelimiter: return name == other. name;
 	      case eInteger:   return n    == other. n;
 	      case eDouble:    return d    == other. d;
@@ -2721,6 +2727,9 @@ public:
 	    return false;
 	  }
 	bool operator< (const Token &other) const;
+	
+	void toNumberDate ();
+	  // Try to convert eName or eText to: eInteger, eDouble, eDateTime
 };
 
 
@@ -2751,23 +2760,13 @@ public:
 
   [[noreturn]] void error (const string &what,
 		                       bool expected = true) const
-		{ ci. error (what, expected); }
-  Token get ()
+		{ ci. error (what, expected); }  // CharInput::Error
+  Token get ();
     // Return: empty() <=> EOF
-    { const Token last_ (last);
-      last = Token ();
-      if (! last_. empty ())
-        return last_;
-      for (;;)
-      { Token t (ci);
-        if (t. empty ())
-          break;
-        if (! t. isDelimiter (commentStart))
-          return t;
-        ci. getLine ();
-      }
-      return Token ();
-    }
+  Token getXmlText ();
+  char getNextChar ();
+    // Return: '\0' <=> EOF
+    // Invokes: ci.unget()
 	void get (const string &expected)
     { const Token t (get ());
     	if (! t. isNameText (expected))
@@ -2786,7 +2785,7 @@ public:
 	void get (char expected)
     { const Token t (get ());
     	if (! t. isDelimiter (expected))
-   			ci. error (Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected))); 
+   			ci. error (Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected), '\'')); 
     }
   void setLast (Token &&t)
     { if (t. empty ())
@@ -3265,9 +3264,10 @@ struct SoftwareVersion : Root
   
 
   explicit SoftwareVersion (const string &fName)
-    { LineInput f (fName);
-      string s (f. getString ());
-      init (move (s), false);
+    { StringVector vec (fName, (size_t) 1);
+      if (vec. size () != 1)
+        throw runtime_error ("One line is expected: " + strQuote (fName));
+      init (move (vec [0]), false);
     }
   explicit SoftwareVersion (istream &is,
                             bool minorOnly = false)
@@ -3317,9 +3317,10 @@ struct DataVersion : Root
   
 
   explicit DataVersion (const string &fName)
-    { LineInput f (fName);
-      string s (f. getString ());
-      init (move (s));
+    { StringVector vec (fName, (size_t) 1);
+      if (vec. size () != 1)
+        throw runtime_error ("One line is expected: " + strQuote (fName));
+      init (move (vec [0]));
     }
   explicit DataVersion (istream &is)
     { string s;

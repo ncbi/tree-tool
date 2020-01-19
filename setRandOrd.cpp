@@ -58,11 +58,7 @@ struct ThisApplication : Application
 		const string items = getArg ("items");
 
 
-    StringVector vec;
-    {
-	    LineInput in (items, 100 * 1024);  // PAR
-	    vec = in. getVector ();
-	  }
+    StringVector vec (items, (size_t) 1000);  // PAR
 	  vec. randomOrder ();	  
 	  for (const string& s : vec)
 	    cout << s << endl;
