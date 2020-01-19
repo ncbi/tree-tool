@@ -42,8 +42,11 @@ $(CPP_DIR)/common.o:	$(COMMON_HPP)
 COMMON = $(CPP_DIR)/common $(CPP_DIR)/application
 
 $(CPP_DIR)/application.o:	$(CPP_DIR)/application.hpp $(COMMON_HPP)
-$(CPP_DIR)/xml.o: $(CPP_DIR)/xml.hpp $(COMMON_HPP)
 $(CPP_DIR)/graph.o:	$(COMMON_HPP) $(CPP_DIR)/graph.hpp
+
+
+XML_DIR=$(CPP_DIR)/xml
+$(XML_DIR)/xml.o: $(XML_DIR)/xml.hpp $(COMMON_HPP)
 
 
 AI_DIR = $(CPP_DIR)/AI

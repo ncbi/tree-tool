@@ -1,4 +1,4 @@
-// xml.hpp
+// xml_merge_schema.cpp
 
 /*===========================================================================
 *
@@ -27,98 +27,79 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   XML utilities
+*   Merge XML schemas
 *
 */
 
+#undef NDEBUG
+#include "../common.inc"
 
-#ifndef XML_HPP_78429
-#define XML_HPP_78429
-
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
+#include "xml.hpp"
 
 
 
-namespace XML_sp
+namespace
 {
-
-
-struct XmlText;
-struct XmlTags;
-
-
-
-struct XmlSentense : Root
-{
-  virtual const XmlTags* asXmlTags () const 
-    { return nullptr; }
-  virtual const XmlText* asXmlText () const 
-    { return nullptr; }
-};
-
-
-
-struct XmlText : XmlSentense
-{
-  string text;
   
-  explicit XmlText (const string &text_arg)
-    : text (text_arg)
-    {}
-
-  const XmlText* asXmlText () const final
-    { return this; }
-};
-
-
-
-struct XmlTag : Root
+  
+struct ThisApplication : Application
 {
-  string name;
-    // empty() <=> comment
-  string text;
-  bool comment {false};
-  bool whole {false};
-  Common_sp::AutoPtr<const XmlSentense> sentense;
+  ThisApplication ()
+    : Application ("Merge XML schemas")
+  	{
+  	  addPositional ("xml_list", "List of XML schemas of the same tag, outputs of xml2schema");
+  	}
+  	
+  	
+ 
+	void body () const final
+	{
+		const string xmlListFName = getArg ("xml_list");
 
 
-  XmlTag (istream &is,
-          string phrase);
-  XmlTag (const XmlTag &other)
-    : name (other. name)
-    , text (other. text)
-    , sentense (var_cast (other). sentense)
-    {}
-
-
-  bool isEnd (const string& phrase) const
-    { if (comment)
-        return isRight (phrase, "--");
-      return phrase == "</" + name;
+    string name;
+    unique_ptr<Xml::Schema> sch;
+    {
+      LineInput f (xmlListFName, 100 * 1024, 1);  // PAR
+      while (f. nextLine ())
+      {
+        string name1;	
+        unique_ptr<Xml::Schema> sch1 (Xml::Schema::readSchema (f. line, name1));
+        sch1->qc ();
+        if (name. empty ())
+        {
+          name = move (name1);
+          sch. reset (sch1. release ());
+        }
+        else
+        {
+          QC_ASSERT (name == name1);
+          sch->merge (*sch1);
+        }
+      }
     }
-  void printSiblings (const string &name1,
-                      const string &name2) const;
+    sch->qc ();
+    
+    cout << name;
+    sch->saveText (cout);
+    cout << endl;
+	}
 };
 
 
 
-struct XmlTags : XmlSentense
+}  // namespace
+
+
+
+int main (int argc, 
+          const char* argv[])
 {
-  Vector<XmlTag> vec;
-
-  const XmlTags* asXmlTags () const final
-    { return this; }
-};
+  ThisApplication app;
+  return app. run (argc, argv);
+}
 
 
 
-XmlTag readXml (istream &is);
-
-
-
-}  
-
-
-
-#endif
