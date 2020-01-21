@@ -14,7 +14,8 @@ endif
 
 all:	\
   xml2schema \
-  xml_merge_schemas
+  xml_merge_schemas \
+  xml_schema2ddl
 	
 
 xml2schema.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
@@ -27,5 +28,11 @@ xml_merge_schemas.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
 xml_merge_schemasOBJS=xml_merge_schemas.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
 xml_merge_schemas:	$(xml_merge_schemasOBJS)
 	$(CXX) -o $@ $(xml_merge_schemasOBJS) $(LIBS)
+	$(ECHO)
+
+xml_schema2ddl.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
+xml_schema2ddlOBJS=xml_schema2ddl.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
+xml_schema2ddl:	$(xml_schema2ddlOBJS)
+	$(CXX) -o $@ $(xml_schema2ddlOBJS) $(LIBS)
 	$(ECHO)
 
