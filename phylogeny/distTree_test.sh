@@ -43,7 +43,7 @@ rm Enterobacteriaceae.tree
 echo ""
 echo "Perfect tree ..."
 $THIS/makeDistTree  -qc  -data data/tree4  -variance linExp  -optimize  -output_tree tree4 | grep -v '^CHRON: ' > tree4.makeDistTree
-diff tree4.makeDistTree data/tree4.makeDistTree
+$THIS/distTree_compare_criteria.sh tree4.makeDistTree data/tree4.makeDistTree
 rm tree4.makeDistTree
 $THIS/statDistTree tree4 > tree4.stat
 rm tree4
