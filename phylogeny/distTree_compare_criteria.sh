@@ -15,6 +15,9 @@ L1=(`grep "^OUTPUT" -A 1  $OUT1 | tail -1`)
 L2=(`grep "^OUTPUT" -A 1  $OUT2 | tail -1`)
 A=${L1[7]}
 B=${L2[7]}
+if [ $A == "0.000" -a $B == "0.000" ]; then
+  exit 0
+fi
 R=`echo "($A - $B) / $A * 1000" | sed -E 's/([+-]?[0-9.]+)[eE]\+?(-?)([0-9]+)/(\1*10^\2\3)/g' | bc -l | cut -c1`
 if [ $R != '.' -a $R != '0' ]; then
   echo "NEW: ${L1[*]}"
