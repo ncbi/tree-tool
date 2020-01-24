@@ -1742,6 +1742,8 @@ Token TokenInput::getXmlText ()
 	trim (t. name);
 	if (! t. name. empty ())
     t. type = Token::eText;  
+  else
+    { ASSERT (t. empty ()); }
 	
   return t;
 }

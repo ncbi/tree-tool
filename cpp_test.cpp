@@ -204,7 +204,15 @@ struct ThisApplication : Application
     PRINT (dbDir. getParent ());
   #endif
   
-    cout << getFileSize (arg) << endl;
+  //cout << getFileSize (arg) << endl;
+  
+    PRINT (uchar2hex (' '));
+    PRINT (uchar2hex ('!'));
+    PRINT (uchar2hex (9));
+    PRINT (uchar2hex ('0'));
+    PRINT (uchar2hex (131));
+    PRINT (uchar2hex (127));
+    PRINT (uchar2hex (255));
   }
 };
 
