@@ -45,11 +45,40 @@ namespace Xml
 
 
 
+struct FlatTable : Root
+// name: file name
+{
+  OFStream f;
+  size_t keys {0};
+  VectorPtr<Token> row;
+  Token id;
+  
+  
+  FlatTable (const string &fileName,
+             size_t keys_arg,
+             size_t column_max)
+    : f (fileName)
+    , keys (keys_arg)
+    , row (column_max)
+    { row [0] = & id; 
+      id. type = Token::eInteger;
+    }
+  void qc () const override;
+    
+    
+  void write (size_t xmlNum);
+    // Update: row[]
+};
+
+
+
 struct Schema : Root
 {
   // Tree
+  const Schema* parent {nullptr};
   map<string/*name*/,const Schema*> name2schema;
     // !nullptr
+    // 1-1
   bool multiple {false};
   Set<Token::Type> types;
   bool tokensStored {false};
@@ -58,16 +87,25 @@ struct Schema : Root
   size_t len_max {0};
   size_t rows {1};
   
+  unique_ptr<const FlatTable> flatTable;
+    // get() => multiple
+  size_t column {NO_INDEX};
+    // Valid if flatTable.get()
+    // NO_INDEX <=> types.empty()
   
-  explicit Schema (bool tokensStored_arg)
-    : tokensStored (tokensStored_arg)
+  
+  Schema (const Schema* parent_arg,
+          bool tokensStored_arg)
+    : parent (parent_arg)
+    , tokensStored (tokensStored_arg)
     {}
   static Schema* readSchema (const string &fName,
                              string &name);
     // Input: fName: created by xml2schema
     // Output: name
 private:
-  Schema (const StringVector &vec,
+  Schema (const Schema* parent_arg,
+          const StringVector &vec,
           size_t &start,
           size_t depth,
           string &name);
@@ -80,7 +118,39 @@ public:
   void saveText (ostream &os) const override;
   
   
+  const string& schema2name (const Schema* sch) const
+    { for (const auto& it : name2schema)
+        if (it. second == sch)
+          return it. first;
+      throw logic_error ("Schema::schema2name()");
+    }
   void merge (Schema& other);
+
+  // SQL      
+  string getColumnName (const Schema* rootTable) const
+    { if (this == rootTable)
+        return string ();
+      if (! parent)
+        return string ();
+      string s (parent->getColumnName (rootTable));
+      if (! s. empty ())
+        s += "_";
+      return s + parent->schema2name (this);
+    }
+  void printTableDdl (ostream &os,
+                      const Schema* curTable) const;
+private:
+  void printColumnDdl (ostream &os,
+                       const Schema* curTable) const;
+public:
+  
+  // Output: flatTable, column
+  void setFlatTables (const string &dirName,
+                      const Schema* curTable);
+private:
+  void setFlatColumns (const Schema* curTable,
+                       size_t &column_max);
+public:
 };
 
 
@@ -118,8 +188,11 @@ public:
   void saveText (ostream &os) const override;
   
   
-  Schema* getSchema (bool storeTokens) const;
+  Schema* createSchema (bool storeTokens) const;
     // Return: new
+  void writeFiles (size_t xmlNum,
+                   const Schema* sch,
+                   FlatTable* flatTable) const;
 };
 
 

@@ -1,4 +1,4 @@
-// xml_schema2ddl.cpp
+// xml_schema2dml.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Generate SQL "create table" commands from an XML schema
+*   Generate tab-delimited files for SQL bulk insert from XML files and their XML schema
 *
 */
 
@@ -47,27 +47,55 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Generate SQL \"create table\" commands from an XML schema")
+    : Application ("Generate tab-delimited files for SQL bulk insert from XML files and their XML schema")
   	{
+  	  addPositional ("xml", "XML file");
+  	  addPositional ("xml_num", "XML file number");
   	  addPositional ("schema", "XML schema file");
+  	  addPositional ("out_dir", "Directory for output tab-delimited files");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string schemaFName = getArg ("schema");
+		const string xmlFName    =               getArg ("xml");
+		const size_t xml_num     = str2<size_t> (getArg ("xml_num"));
+		const string schemaFName =               getArg ("schema");
+		      string dirName     =               getArg ("out_dir");
+		      
+		if (! isDirName (dirName))
+		  dirName += '/';
 	
 		
-	  string name;
-	  unique_ptr<Xml::Schema> sch (Xml::Schema::readSchema (schemaFName, name));
+	  string schemaName;
+	  unique_ptr<Xml::Schema> sch (Xml::Schema::readSchema (schemaFName, schemaName));
 	  sch->qc ();
-	  cout << name;
-	  sch->saveText (cout);
-	  cout << endl;
 	  
-	  cout << endl << endl;
-	  sch->printTableDdl (cout, nullptr);
+	  unique_ptr<const Xml::Data> xml;
+	  {
+  	  TokenInput ti (xmlFName, '\0', 100 * 1024, 1000);  // PAR 
+      try
+      {	  
+        xml. reset (new Xml::Data (ti));	
+      }
+      catch (const CharInput::Error &e)
+        { throw e; }
+      catch (const exception &e)
+        { ti. error (e. what (), false); }
+    }    
+    xml->qc ();
+    
+    sch->setFlatTables (dirName, nullptr);
+    sch->qc ();
+    
+  #if 0
+    cout << schemaName;
+    sch->saveText (cout);
+    cout << endl;
+  #endif
+    
+    xml->writeFiles (xml_num, sch. get (), nullptr);
 	}
 };
 

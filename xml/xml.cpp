@@ -44,6 +44,52 @@ namespace Xml
 
 
 
+// FlatTable
+
+void FlatTable::qc () const
+{
+  if (! qc_on)
+    return;
+  Root::qc ();
+    
+  QC_ASSERT (keys);
+  QC_ASSERT (keys <= row. size ());
+  QC_ASSERT (keys <= 2);
+
+  FOR (size_t, i, keys)
+    QC_ASSERT (row [i]);  
+}
+
+
+
+void FlatTable::write (size_t xmlNum)
+{   
+  FOR (size_t, i, keys)
+  {
+    QC_ASSERT (! row [i] -> empty ());
+    QC_ASSERT (row [i] -> n);  
+  }
+
+  f << xmlNum;
+  FFOR (size_t, i, row. size ())
+  { 
+    f << '\t';
+    if (const Token* token = row [i])
+      if (! token->name. empty ())
+      {
+        if (! goodName (token->name))
+          throw runtime_error ("Bad value: " + strQuote (token->name));
+        f << token->name;
+      }
+    if (i >= keys)
+      row [i] = nullptr;
+  }      
+  f << endl;
+}
+
+
+
+
 // Schema
 
 Schema* Schema::readSchema (const string &fName,
@@ -53,15 +99,17 @@ Schema* Schema::readSchema (const string &fName,
   QC_ASSERT (! vec. empty ());
   
   size_t start = 0;
-  return new Schema (vec, start, 0, name);
+  return new Schema (nullptr, vec, start, 0, name);
 }
 
 
 
-Schema::Schema (const StringVector &vec,
+Schema::Schema (const Schema* parent_arg,
+                const StringVector &vec,
                 size_t &start,
                 size_t depth,
                 string &name)
+: parent (parent_arg)
 {
   ASSERT (start < vec. size ());
   ASSERT (isLeftBlank (vec [start], 2 * depth));
@@ -91,7 +139,7 @@ Schema::Schema (const StringVector &vec,
   {
     const Token::Type type = Token::str2type (typeT. name);
     types << type;
-    if (type == Token::eText)
+  //if (type == Token::eText)
     {
       // len_max
       ti. get ("size");
@@ -117,7 +165,7 @@ Schema::Schema (const StringVector &vec,
         )
   {
     string name1;
-    auto sch = new Schema (vec, start, depth, name1);
+    auto sch = new Schema (this, vec, start, depth, name1);
     QC_ASSERT (! name1. empty ());
     name2schema [name1] = sch;
   }
@@ -131,6 +179,7 @@ void Schema::qc () const
     return;
   Root::qc ();
     
+  QC_IMPLY (! parent, ! multiple);
   QC_ASSERT (! types. contains (Token::eName));
   QC_ASSERT (types. size () <= 1);  // Not guaranteed ??
   QC_ASSERT (tokens. size () <= rows);
@@ -144,7 +193,15 @@ void Schema::qc () const
   {
     QC_ASSERT (isIdentifier (it. first));
     QC_ASSERT (it. second);
+    schema2name (it. second);
     it. second->qc ();
+  }
+  
+  if (flatTable. get ())
+  {
+    flatTable->qc ();
+    QC_ASSERT (multiple);
+    QC_ASSERT ((column == NO_INDEX) == types. empty ());
   }
 }
 
@@ -161,6 +218,10 @@ void Schema::saveText (ostream &os) const
   if (! tokens. empty ())
     os << " values:" << tokens. size ();
   os << " rows:" << rows;
+
+  if (column != NO_INDEX)
+    os << " column:" << column;
+    
   {
     const Offset ofs;
     for (const auto& it : name2schema)
@@ -206,6 +267,126 @@ void Schema::merge (Schema& other)
            && types. contains (Token::eInteger)
           )
     types. erase (Token::eInteger);
+}
+
+
+
+void Schema::printTableDdl (ostream &os,
+                            const Schema* curTable) const
+{ 
+  IMPLY (curTable, curTable->multiple);
+  
+  if (multiple)
+  {
+    const string table (getColumnName (nullptr));
+    // "xml_num_", "id_" ??
+    os << "create table " + table << endl << '(' << endl
+       << "  xml_num_ int  not null" << endl
+       << ", id_ bigint  not null" << endl;  
+    const string refTable (curTable ? curTable->getColumnName (nullptr) : "");
+    if (! refTable. empty ())
+      os << ", " << refTable << "_id_ bigint  not null" << endl;  
+    curTable = this;
+    printColumnDdl (os, curTable);  
+    os << ");" << endl;
+    os << "alter table " << table << " add constraint " << table << "_pk primary key (xml_num_, id_);" << endl;
+    if (! refTable. empty ())
+    {
+      os << "create index " << table << "_idx on " << table << "(xml_num_,id_);" << endl;
+      os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_);" << endl;
+    }
+    os << endl << endl;
+  }
+
+  for (const auto& it : name2schema)
+    it. second->printTableDdl (os, curTable);
+}
+
+
+
+void Schema::printColumnDdl (ostream &os,
+                             const Schema* curTable) const
+{  
+  ASSERT (curTable);
+  ASSERT (curTable->multiple);
+  
+  if (multiple && curTable != this)
+    return;
+
+  if (! types. empty ())
+  {
+    ASSERT (types. size () == 1);
+    const Token::Type type = types. front ();
+    string sqlType;
+    switch (type)
+    {
+      case Token::eText:     sqlType = "varchar(" + (len_max > 1000 ? "max" : to_string (len_max)) + ")"; break;
+      case Token::eInteger:  sqlType = "bigint"; break;
+      case Token::eDouble:   sqlType = "float"; break;
+      case Token::eDateTime: sqlType = "datetime"; break;
+      default: throw runtime_error ("UNknown SQL type");
+    }
+    ASSERT (! sqlType. empty ());
+    string colName (getColumnName (curTable));
+    if (colName. empty ())
+      colName = "val_";  // ??
+    os << ", " << colName << ' ' << sqlType << endl;
+  }
+
+  for (const auto& it : name2schema)  
+    it. second->printColumnDdl (os, curTable);
+}
+
+
+
+void Schema::setFlatTables (const string &dirName,
+                            const Schema* curTable) 
+{ 
+  ASSERT (isDirName (dirName));
+  IMPLY (curTable, curTable->multiple);
+  
+  if (multiple)
+  {
+    const Schema* parentTable = curTable;
+    curTable = this;
+    const size_t keys = 1/*pk*/ + (bool) parentTable/*fk*/;
+    size_t column_max = keys;
+    setFlatColumns (curTable, column_max);  
+    ASSERT (! flatTable. get ());
+    flatTable. reset (new FlatTable (dirName + getColumnName (nullptr), keys, column_max));
+    if (parentTable)
+    {
+      const FlatTable* ft = parentTable->flatTable. get ();
+      ASSERT (ft);
+      var_cast (flatTable. get ()) -> row [1] = & ft->id;
+    }
+  }
+
+  for (const auto& it : name2schema)
+    var_cast (it. second) -> setFlatTables (dirName, curTable);
+}
+
+
+
+void Schema::setFlatColumns (const Schema* curTable,
+                             size_t &column_max) 
+{  
+  ASSERT (curTable);
+  ASSERT (curTable->multiple);
+  ASSERT (column == NO_INDEX);
+  QC_ASSERT (column_max < NO_INDEX);
+  
+  if (multiple && curTable != this)
+    return;
+
+  if (! types. empty ())
+  {
+    column = column_max;
+    column_max++;
+  }
+
+  for (const auto& it : name2schema)  
+    var_cast (it. second) -> setFlatColumns (curTable, column_max);
 }
 
 
@@ -315,9 +496,15 @@ void Data::readInput (TokenInput &ti)
     {
       token = move (ti. getXmlText ());
       token. toNumberDate ();
-      for (char& c : token. name)
-        if ((uchar) c >= 127)
-          c = '?';
+      string& s = token. name;
+      FOR_REV (size_t, i, s. size ())
+      {
+        const char c = s [i];
+        if (   ! printable (c)
+            || c == '|'  // Delimiter in bulk-insert
+           )
+          s = s. substr (0, i) + "%" + uchar2hex ((uchar) c) + s. substr (i + 1);
+      }
       ti. get ('/');
       const Token end (ti. get ());
       if (end. type != Token::eName)
@@ -390,13 +577,14 @@ void Data::saveText (ostream &os) const
 
 
 
-Schema* Data::getSchema (bool storeTokens) const
+Schema* Data::createSchema (bool storeTokens) const
 {
-  auto sch = new Schema (storeTokens);
+  auto sch = new Schema (nullptr, storeTokens);
   
   for (const Data* child : children)
   {
-    Schema* other = child->getSchema (storeTokens);
+    Schema* other = child->createSchema (storeTokens);
+    other->parent = sch;
     if (const Schema* childSch = findPtr (sch->name2schema, child->name))
     {
       var_cast (childSch) -> multiple = true;
@@ -412,13 +600,49 @@ Schema* Data::getSchema (bool storeTokens) const
     sch->types << token. type;
     if (storeTokens)
       sch->tokens << token;
-    if (token. type == Token::eText)
+  //if (token. type == Token::eText)
       sch->len_max = token. name. size ();
   }
   
   return sch;
 }
 
+
+
+void Data::writeFiles (size_t xmlNum,
+                       const Schema* sch,
+                       FlatTable* flatTable) const
+{
+  QC_ASSERT (sch);
+  ASSERT (sch->multiple == (bool) sch->flatTable. get ());
+
+  bool newFlatTable = false;  
+  if (const FlatTable* flatTable_ = sch->flatTable. get ())
+  {
+    flatTable = var_cast (flatTable_);
+    newFlatTable = true;
+    flatTable->id. n ++;
+    flatTable->id. name = to_string (flatTable->id. n);
+  }
+    
+  if (   ! token. empty ()
+      && flatTable
+     )
+  {
+    QC_ASSERT (sch->column < NO_INDEX);
+    QC_ASSERT (! flatTable->row [sch->column]);
+    flatTable->row [sch->column] = & token;
+  }
+  
+  for (const Data* child : children)
+    if (const Schema* childSch = findPtr (sch->name2schema, child->name))
+      child->writeFiles (xmlNum, childSch, flatTable);
+    else
+      throw runtime_error ("Schema-XML mismatch: " + child->name);
+    
+  if (newFlatTable)
+    flatTable->write (xmlNum);
+}
 
 
 }

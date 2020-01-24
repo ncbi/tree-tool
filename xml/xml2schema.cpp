@@ -74,16 +74,16 @@ struct ThisApplication : Application
         { throw e; }
       catch (const exception &e)
         { ti. error (e. what (), false); }
-    }
-    
+    }    
     xml->qc ();
+    
     if (printP)
     {
       xml->saveText (cout);
       cout << endl;
     }
 
-    unique_ptr<Xml::Schema> sch (xml->getSchema (storeValues));
+    unique_ptr<Xml::Schema> sch (xml->createSchema (storeValues));
     sch->qc ();
     cout << xml->name;
     sch->saveText (cout);
