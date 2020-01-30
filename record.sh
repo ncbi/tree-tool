@@ -10,6 +10,14 @@ TAB=$1
 ROW=$2
 
 
+L=`cat $TAB |wc -l`
+L=$(( $L - 1 ))  # minus header
+if [ $ROW -gt $L ]; then
+  echo "Max. row = $L"
+  exit 1
+fi
+
+
 TMP=`mktemp`
 #echo $TMP
 
