@@ -292,6 +292,7 @@ void Schema::printTableDdl (ostream &os,
     os << "alter table " << table << " add constraint " << table << "_pk primary key (xml_num_, id_);" << endl;
     if (! refTable. empty ())
     {
+      os << "grant select on " << table << " to public;" << endl;
       os << "create index " << table << "_idx on " << table << "(xml_num_,id_);" << endl;
       os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_);" << endl;
     }
