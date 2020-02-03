@@ -551,6 +551,13 @@ template <typename T, typename U>
       return true;
     }
 
+template <typename T, typename U>
+  void setMinus (T &t,
+                 const U &u)
+    { for (const auto& x : u)
+        t. erase (x);
+    }
+
 template <typename Key, typename Value, typename KeyParent>
   inline bool contains (const map <Key, Value> &m,
                         const KeyParent& key)
