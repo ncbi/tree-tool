@@ -376,20 +376,28 @@ void NumAttr1::getMinMax (const Sample &sample,
 
 
 
-NumAttr1::Value NumAttr1::getMedian (const Sample &sample) const
+NumAttr1::Value NumAttr1::getQuantile (const Sample &sample,
+                                       Prob p,
+                                       bool nan2inf) const
 {
+  ASSERT (isProb (p));
+  
   Vector<Value> vec;  vec. reserve (ds. objs. size ());
   for (Iterator it (sample); it ();)
   {
   	const Real x = getReal (*it);
-  	if (! isNan (x))
+  	if (isNan (x))
+  	{
+  	  if (nan2inf)
+  	    vec << INF;
+  	}
+  	else
     	vec << x;
   }
   if (vec. empty ())
   	return NaN;
-  // Time: --> linear ??
   vec. sort ();
-  return vec [vec. size () / 2];
+  return vec [size_t ((Real) vec. size () * p)];
 }
 
 
@@ -1894,8 +1902,8 @@ void Dataset::load (istream &is)
     {
       // attrName
       is >> attrName;
-      if (! isAlpha (attrName [0]))
-      	throw runtime_error (FUNC "Bad protein name: " + strQuote (attrName));
+    //if (! isAlpha (attrName [0]))
+      //throw runtime_error (FUNC "Bad attribute name: " + strQuote (attrName));
       dataS = attrName;
       strUpper (dataS);
       if (dataS == "DATA")
@@ -3917,7 +3925,7 @@ void Cauchy::estimate ()
 	const NumAttr1& attr = analysis->attr;
 	
   setParam (NaN, NaN);
-	Real loc_ = attr. getMedian (analysis->sample);
+	Real loc_ = attr. getQuantile (analysis->sample, 0.5, false);
 	Real scale_ = INF;
 	
 	// Convergence ??
@@ -6396,8 +6404,9 @@ void PositiveAverageModel::Component::setVar (Real var_arg)
   QC_ASSERT (var_arg >= 0.0);
 
   var = var_arg;
-  if (! var)
-    throw runtime_error (FUNC "name " + strQuote (name) + ": too small variance");
+//minimize (var, var_arg);
+//if (! var)
+  //throw runtime_error (FUNC "name " + strQuote (name) + ": too small variance");
     
   sd = sqrt (var);
   weight = 1.0 / var;
@@ -6465,6 +6474,7 @@ Real PositiveAverageModel::get () const
     for (const Component& comp : components)
     	if (   Component::validValue (comp. value)
     		  && ! comp. outlier
+    		  && comp. valid ()
     		 )
     	{
     		ASSERT (comp. value >= 0.0);
@@ -6485,7 +6495,8 @@ Real PositiveAverageModel::get () const
     	break;
     
     for (const Component& comp : components)
-    	comp. setOutlier (ave);
+  	  if (comp. valid ())
+      	comp. setOutlier (ave);
   }
   maximize (ave, 0.0);
     
@@ -6537,13 +6548,11 @@ PositiveAverage::PositiveAverage (const Sample &sample_arg,
   for (Vector<bool>& vec : outliers)
     vec. resize (sample. ds->objs. size (), false);
 #endif
-  
-  calibrate ();
 }
 
 
 
-void PositiveAverage::calibrate ()
+void PositiveAverage::calibrate (size_t iter_max)
 {
   ASSERT (averageAttr);
   
@@ -6553,18 +6562,22 @@ void PositiveAverage::calibrate ()
   {
     PositiveAverageModel::Component& comp = model. components [attrNum];
   	{
-      const Real center = space [attrNum] -> getMedian (sample);
+      const Real center = space [attrNum] -> getQuantile (sample, 0.5, true);  // PAR
       ASSERT (center >= 0.0);
-      if (center == 0.0)
-        throw runtime_error (FUNC + space [attrNum] -> name + ": center is 0");
+    //if (center == 0.0)
+      //throw runtime_error (FUNC + space [attrNum] -> name + ": center is 0");
       comp. coeff = 1.0 / center;
     }
   	comp. setVar (0.1);  // PAR
   }
 
   
+  size_t iter = 0;
   for (;;)
   {
+    if (iter_max && iter >= iter_max)
+      break;
+    
     // averageAttr
     // PositiveAverageModel::Component::outliers
   	FFOR (size_t, i, sample. ds->objs. size ())  
@@ -6592,13 +6605,15 @@ void PositiveAverage::calibrate ()
     const Matrix param_old (model. getParam ());
 
     FFOR (size_t, attrNum, space. size ())
-      setComponent (model. components [attrNum], * space [attrNum] /*, outliers [attrNum]*/);
+      if (model. components [attrNum]. valid ())
+        setComponent (model. components [attrNum], * space [attrNum] /*, outliers [attrNum]*/);
  		
  		const Real diff = model. getParam (). maxAbsDiff (false, param_old, false);
-    cerr << diff << endl;  /*+ " " + toString (getVar ())*/
+    cerr << iter + 1 << ' ' << diff << ' ' << model. getVar () << endl;
  		if (diff < 1e-6)  // PAR
  			break;
  			
+ 	  iter++;
  	//saveText (cout);   
  	}
 }
@@ -6652,7 +6667,7 @@ void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
     	  comp. coeff = xy_sum / x2_sum;
     }
   }
-	ASSERT (comp. coeff > 0.0);
+	ASSERT (comp. coeff >= 0.0);
 
 
   // var

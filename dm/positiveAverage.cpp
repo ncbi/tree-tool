@@ -59,6 +59,7 @@ struct ThisApplication : Application
   	  addPositional ("power", "Power for raw dissimilarities to be raised to");
   	  addPositional ("outlierSEs", "Number of standard errors for an attribute value to be an outlier");  // explain more ??
   	  addFlag ("optimize_coeff", "Fit the coefficients of the attributes to the average by intercept-free linear regression");
+  	  addKey ("iter_max", "Max. number of optimization iterations; 0 - infinity", "0");
   	  // Output
   	  addKey ("output_dissim", "Output merged dissimilarity");
   	}
@@ -71,6 +72,7 @@ struct ThisApplication : Application
 		const Real power                = str2real (getArg ("power"));
 		const Real outlierSEs           = str2real (getArg ("outlierSEs"));
 		const bool optimize_coeff       = getFlag ("optimize_coeff");
+		const size_t iter_max           = str2<size_t> (getArg ("iter_max"));
 		const string output_dissimFName = getArg ("output_dissim");
 		
 		if (outlierSEs <= 0.0)
@@ -119,8 +121,9 @@ struct ThisApplication : Application
   	  throw runtime_error ("No attributes");
 	  
 	  
-	  const PositiveAverage pa (sm, space, outlierSEs, optimize_coeff);  
-	  pa. qc ();
+	  PositiveAverage pa (sm, space, outlierSEs, optimize_coeff);  
+    pa. calibrate (iter_max);
+	  pa. qc ();  
    	pa. saveText (cout);   	
     cerr << "Effective number of attributes: " << pa. model. getEffectiveAttrs () << endl;
 	  

@@ -339,7 +339,9 @@ public:
                           Real &scatter) const;
   Real getSqr_ave (const Sample &sample) const;
     // Return: >= 0.0
-  Value getMedian (const Sample &sample) const;
+  Value getQuantile (const Sample &sample,
+                     Prob p,
+                     bool nan2inf) const;
   
   // Return: (if rightTail) max(x) s.t. (1-CDF(x)) * mult_sum > outlier_EValue_max; may be NaN
   // Idempotent after removing outliers
@@ -3979,7 +3981,7 @@ struct PositiveAverageModel : Root
 	  const PositiveAverageModel& pam;
 		Real coeff {NaN};
 			// >= 0.0
-		Real var {NaN};
+		Real var {INF};
 			// >= 0.0
 		// Functions of var
 		Real sd {NaN};
@@ -4009,14 +4011,21 @@ struct PositiveAverageModel : Root
  		       << '\t' << var
  		       << endl;
  		  }
-		  
+
+    bool valid () const
+      { return    coeff  > 0.0
+               && coeff  < INF
+               && var    < INF
+               && weight < INF;
+      }
 		static bool validValue (Real value)  
 		  { return ! isNan (value) && value != INF; }
 		void setVar (Real var_arg);
 		Real setValue (Real value_arg)
-	    { value = value_arg * coeff;  // May be NaN
+	    { value = value_arg * coeff;  
 	      return value;
 	    }
+	    // Return: may be NaN or INF
 	private:
 	  friend struct PositiveAverageModel;
 		void setOutlier (Real value_target) const;
@@ -4037,7 +4046,8 @@ struct PositiveAverageModel : Root
 	void saveText (ostream &os) const override
     { os << outlierSEs << endl;
       for (const Component& comp : components)
-	      comp. saveText (os);
+        if (comp. valid ())
+  	      comp. saveText (os);
 		}
 		
    
@@ -4052,16 +4062,19 @@ struct PositiveAverageModel : Root
   Real getVar () const
     { Real var = 0.0;
     	for (const Component& comp : components)
-   		  var += comp. weight;
+    	  if (comp. valid ())
+   		    var += comp. weight;
     	return 1.0 / var;
     }    	
   Real getEffectiveAttrs () const
     { Real s = 0.0;
     	for (const Component& comp : components)
-   		  s += comp. weight;
+    	  if (comp. valid ())
+     		  s += comp. weight;
     	Real s2 = 0.0;
     	for (const Component& comp : components)
-   		  s2 += sqr (comp. weight / s);
+    	  if (comp. valid ())
+     		  s2 += sqr (comp. weight / s);
     	return 1.0 / s2;
     }
   Matrix getParam () const;
@@ -4089,11 +4102,11 @@ public:
                    const Space1<PositiveAttr1> &space_arg,
                    Real outlierSEs_arg,
                    bool optimizeCoeff_arg);
-    // Invokes: calibrate()
-private:
-  void calibrate ();
+  void calibrate (size_t iter_max);
+    // Input: iter_max: 0 <=> infinity
     // Output: (*averageAttr)[], PositiveAverageModel::Component
     // Invokes: setComponent()
+private:
   void setComponent (PositiveAverageModel::Component &comp,
                      const PositiveAttr1 &attr/*,
                      const Vector<bool> &attrOutliers*/);
