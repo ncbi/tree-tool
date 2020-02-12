@@ -14,7 +14,7 @@ TMP=`mktemp`
 
 $THIS/compareTrees $1 $2  -frequency $3 > $TMP.out
 
-M=(`grep -w match $TMP.out | tr '\t' ' '  | sed 's/ .*$//1' | sort | uniq -c`)
+M=(`grep -w 'match' $TMP.out | tr '\t' ' '  | sed 's/ .*$//1' | sort | uniq -c`)
 #   5177 match+
 #   2092 match-
 M0=${M[0]}
