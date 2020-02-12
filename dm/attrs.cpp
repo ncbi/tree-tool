@@ -55,6 +55,7 @@ struct ThisApplication : Application
       addPositional ("file", dmSuff + "-file");
       addKey ("corr_min", "Min. correlation between two attributes to report", "nan");
       addKey ("outlier_evalue_max", "Max. outlier e-value", "0.1");
+      addFlag ("stat", "Compute statistics etc.");
     }
 	
 	
@@ -64,6 +65,7 @@ struct ThisApplication : Application
 		const string inFName = getArg ("file");
 		const Real corr_min  = str2real (getArg ("corr_min"));
 		const Prob outlier_eValue_max = str2real (getArg ("outlier_evalue_max"));
+		const bool stat      = getFlag ("stat");
 		ASSERT (outlier_eValue_max >= 0.0);
 
 
@@ -71,54 +73,65 @@ struct ThisApplication : Application
     const Sample sample (ds);
     cout << "mult_sum: " << sample. mult_sum << endl << endl;
     
-    cout << "AttrName\tDefinition\tMissings\tStatistics\tMain_interval" << endl;
-    for (const auto attrRaw : ds. attrs)
+    cout << "AttrName\tDefinition\tMissings";
+    if (stat)
+      cout << "\tStatistics\tMain_interval";
+    cout << endl;
     {
-    	cout << attrRaw->name << '\t' << attrRaw->getTypeStr () << '\t' << attrRaw->countMissings ();
-      if (const NumAttr1* num = attrRaw->asNumAttr1 ())
-	    {
-	    	const ONumber on (cout, num->decimals + 1, false);
-	      Normal normal;
-	      const UniVariate<NumAttr1> an (sample, *num);
-	      normal. analysis = & an;
-	      normal. estimate ();
-	      normal. qc ();	      
-	      cout << '\t' << normal. loc 
-	           << '\t' << normal. scale;
-		    if (! isNan (outlier_eValue_max))
-		    {
-			    Real threshold [2] = {NaN, NaN};
-			    for (const bool rightTail : {false, true})
-			    {
-			    	threshold [rightTail] = num->locScaleDistr2outlier (sample, normal, rightTail, outlier_eValue_max);
-			      cout << '\t' << threshold [rightTail];
-			    }
-			    Sample sample_pure (ds);
-		      FFOR (size_t, i, sample_pure. mult. size ())
-		        if (   (*num) [i] > threshold [true]
-		        	  || (*num) [i] < threshold [false]
-		        	 )
-		        	sample_pure. mult [i] = 0.0;
-		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
-		      normal. analysis = & an_pure;
-		      normal. estimate ();
-          const Prob pVal = normal. getFitness_entropy ();
-		      cout << '\t' << normal. loc 
-		           << '\t' << normal. scale
-		           << '\t' << pVal;
-			  }
-	    }
-      else if (const BoolAttr1* boolean = attrRaw->asBoolAttr1 ())
-	      cout << '\t' << boolean->getProb (sample);
-      else if (const NominAttr1* nomin = attrRaw->asNominAttr1 ())
+      Progress prog;
+      for (const auto attrRaw : ds. attrs)
       {
-        unique_ptr<const Categorical> cat (nomin->getCategorical (sample));
-	      cout << "  " << endl;
-        cat->print (cout);
-	    }
-      cout << endl;
-	  //other types ??
-	  }
+        prog ();
+      	cout << attrRaw->name << '\t' << attrRaw->getTypeStr () << '\t' << attrRaw->countMissings ();
+      	if (stat)
+      	{
+          if (const NumAttr1* num = attrRaw->asNumAttr1 ())
+    	    {
+    	    	const ONumber on (cout, num->decimals + 1, false);
+    	      Normal normal;
+    	      const UniVariate<NumAttr1> an (sample, *num);
+    	      normal. analysis = & an;
+    	      normal. estimate ();
+    	      normal. qc ();	      
+    	      cout << '\t' << normal. loc 
+    	           << '\t' << normal. scale;
+    		    if (! isNan (outlier_eValue_max))
+    		    {
+    			    Real threshold [2] = {NaN, NaN};
+    			    for (const bool rightTail : {false, true})
+    			    {
+    			    	threshold [rightTail] = num->locScaleDistr2outlier (sample, normal, rightTail, outlier_eValue_max);
+    			      cout << '\t' << threshold [rightTail];
+    			    }
+    			    Sample sample_pure (ds);
+    		      FFOR (size_t, i, sample_pure. mult. size ())
+    		        if (   (*num) [i] > threshold [true]
+    		        	  || (*num) [i] < threshold [false]
+    		        	  || ! DM_sp::finite ((*num) [i])
+    		        	 )
+    		        	sample_pure. mult [i] = 0.0;
+    		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
+    		      normal. analysis = & an_pure;
+    		      normal. estimate ();
+              const Prob pVal = normal. getFitness_entropy ();
+    		      cout << '\t' << normal. loc 
+    		           << '\t' << normal. scale
+    		           << '\t' << pVal;
+    			  }
+    	    }
+          else if (const BoolAttr1* boolean = attrRaw->asBoolAttr1 ())
+    	      cout << '\t' << boolean->getProb (sample);
+          else if (const NominAttr1* nomin = attrRaw->asNominAttr1 ())
+          {
+            unique_ptr<const Categorical> cat (nomin->getCategorical (sample));
+    	      cout << "  " << endl;
+            cat->print (cout);
+    	    }
+    	  }
+        cout << endl;
+  	  //other types ??
+  	  }
+  	}   	 
 
     // Correlations
     // Only for NumAttr1 ??
