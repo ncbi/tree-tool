@@ -7596,7 +7596,8 @@ void DistTree::removeLeaf (Leaf* leaf,
     ASSERT (absCriterion < INF);
     maximize (absCriterion, 0.0);
   //ASSERT (target2_sum >= absCriterion);  // Can occur just after neighbor joining
-    ASSERT (mult_sum > 0.0);
+    if (mult_sum <= 0.0)
+      throw runtime_error ("All objects are deleted");
   
     qcPaths (); 
   
