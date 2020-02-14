@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Quality of the initial tree distance tree data structure"
+  echo "Quality of the initial tree"
   echo "#1: Incremental distance tree directory"
   exit 1
 fi
