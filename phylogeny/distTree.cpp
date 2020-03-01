@@ -5561,7 +5561,7 @@ void DistTree::setDissimMult (bool usePrediction)
     for (Dissim& dissim : dissims)
       if (   dissim. valid ()
           && ! dissim. prediction
-          && dissim. target          
+          && dissim. target > 0.0       
          )
       {
         const array<const Leaf*,2> leaves (dissim. getLeaves ());
