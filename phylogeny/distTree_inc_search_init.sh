@@ -29,7 +29,6 @@ if [ -s $DIR/request ]; then
 	cp /dev/null $DIR/dissim
 else
   wc -l $DIR/request
- #flock $INC/outlier-alien -c "echo $OBJ >> $INC/outlier-alien"
-  $INC/outlier2db.sh $OBJ alien
+  $INC/outlier2db.sh $OBJ "alien"
   rm -r $DIR/
 fi
