@@ -6368,7 +6368,7 @@ PositiveAverageModel::Component::Component (const PositiveAverageModel& pam_arg,
 	iss >> name; 
 	if (loadStat)
 	{
-		iss >> coeff >> var;
+		iss /*>> universal*/ >> coeff >> var;
 		if (! (coeff >= 0.0))
 			throw runtime_error (FUNC "Coefficient should be >= 0");
     if (! (coeff < INF))
@@ -6437,6 +6437,14 @@ PositiveAverageModel::PositiveAverageModel (const string &fName,
     {
       outlierSEs = stod (f. line);
       ASSERT (! isNan (outlierSEs));
+    #if 0
+      if (isNan (universalWeight))
+      {
+        f. nextLine ();
+        universalWeight = stod (f. line);
+        ASSERT (! isNan (universalWeight));
+      }
+    #endif
     }
     else
 		{ 
@@ -6453,7 +6461,8 @@ void PositiveAverageModel::qc () const
 	if (! qc_on)
 		return;
 
-  QC_IMPLY (! isNan (outlierSEs), outlierSEs >= 0.0);
+  QC_ASSERT (outlierSEs >= 0.0);
+//QC_ASSERT (universalWeight >= 1.0);
 	for (const Component& comp : components)
 		comp. qc ();
 }
@@ -6483,7 +6492,7 @@ Real PositiveAverageModel::get () const
     		  ASSERT (comp. var == INF);
     		  continue;
     		}
-    		const Real weight = comp. weight;
+    		const Real weight = comp. weight /* * (comp. universal ? universalWeight : 1.0)*/;
     		ASSERT (weight >= 0.0);
     		ASSERT (weight < INF);
     		sum     += weight * comp. value;
@@ -6524,18 +6533,19 @@ Matrix PositiveAverageModel::getParam () const
 
 PositiveAverage::PositiveAverage (const Sample &sample_arg,
                                   const Space1<PositiveAttr1> &space_arg,
-                                  Real outlierSEs_arg,
-                                  bool optimizeCoeff_arg)
+                                //const VectorPtr<Attr>* univAttrs,
+                                  Real outlierSEs_arg/*,
+                                  Real universalWeight_arg*/)
 : P (sample_arg, space_arg)
-, model (outlierSEs_arg)
-, optimizeCoeff (optimizeCoeff_arg)
+, model (outlierSEs_arg/*, universalWeight_arg*/)
 {
   // model
   model. components. reserve (space. size ());
   streamsize decimals_max = 0;
   for (const PositiveAttr1* attr : space)
   {
-   	model. components << move (PositiveAverageModel::Component (attr->name, model));
+  //const bool universal = ! univAttrs || univAttrs->containsFast (attr);
+   	model. components << move (PositiveAverageModel::Component (attr->name, model/*, universal*/));
     maximize (decimals_max, attr->decimals);
   }
   if (model. components. empty ())
@@ -6561,6 +6571,8 @@ void PositiveAverage::calibrate (size_t iter_max)
   FFOR (size_t, attrNum, space. size ())
   {
     PositiveAverageModel::Component& comp = model. components [attrNum];
+  //if (! comp. universal)
+    //continue;
   	{
       const Real center = space [attrNum] -> getQuantile (sample, 0.5, true);  // PAR
       ASSERT (center >= 0.0);
@@ -6578,7 +6590,7 @@ void PositiveAverage::calibrate (size_t iter_max)
     if (iter_max && iter >= iter_max)
       break;
     
-    // averageAttr
+    // *averageAttr
     // PositiveAverageModel::Component::outliers
   	FFOR (size_t, i, sample. ds->objs. size ())  
   	{
@@ -6591,6 +6603,7 @@ void PositiveAverage::calibrate (size_t iter_max)
 		#endif
   	}  	
 
+  #if 0
     if (optimizeCoeff)
     {
       // Make average of averageAttr = 1
@@ -6601,12 +6614,13 @@ void PositiveAverage::calibrate (size_t iter_max)
     	FFOR (size_t, i, sample. ds->objs. size ())
     		var_cast (*averageAttr) [i] /= average;  /* use errWeight ?? */
     }
+  #endif
 
     const Matrix param_old (model. getParam ());
 
     FFOR (size_t, attrNum, space. size ())
       if (model. components [attrNum]. valid ())
-        setComponent (model. components [attrNum], * space [attrNum] /*, outliers [attrNum]*/);
+        setComponent (model. components [attrNum], * space [attrNum], false /*, outliers [attrNum]*/);
  		
  		const Real diff = model. getParam (). maxAbsDiff (false, param_old, false);
     cerr << iter + 1 << ' ' << diff << ' ' << model. getVar () << endl;
@@ -6616,12 +6630,32 @@ void PositiveAverage::calibrate (size_t iter_max)
  	  iter++;
  	//saveText (cout);   
  	}
+
+
+#if 0
+  if (model. getNonUniversals ())
+  {
+    FFOR (size_t, attrNum, space. size ())
+      if (! model. components [attrNum]. universal)
+        setComponent (model. components [attrNum], * space [attrNum], true /*, outliers [attrNum]*/);
+    // *averageAttr
+    Progress prog (0, 1000);  // PAR
+  	FFOR (size_t, i, sample. ds->objs. size ())  
+  	{
+  	  prog ();
+      FFOR (size_t, attrNum, space. size ())
+		    model. components [attrNum]. setValue ((* space [attrNum]) [i]);
+  		var_cast (*averageAttr) [i] = model. get ();
+    }
+  }
+#endif
 }
 
 
 
 void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
-                                    const PositiveAttr1 &attr/*,
+                                    const PositiveAttr1 &attr,
+                                    bool optimizeCoeff/*,
                                     const Vector<bool> &attrOutliers*/)
 {
 	ASSERT (averageAttr);
@@ -6630,6 +6664,7 @@ void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
 	if (optimizeCoeff)
 	{
   	// coeff
+  	size_t n = 0;
   	Real x2_sum = 0.0;
   	Real xy_sum = 0.0;
   	FFOR (size_t, i, sample. ds->objs. size ())
@@ -6654,10 +6689,13 @@ void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
   		ASSERT (mult >= 0.0);
   		x2_sum += mult * sqr (x);
   		xy_sum += mult * x * y;
+  		n++;
   	}
   	
    	ASSERT (x2_sum >= 0.0);
-  	if (x2_sum == 0.0)
+  	if (   n <= 1000  // PAR
+  	    || x2_sum == 0.0
+  	   )
   	  comp. coeff = INF;
   	else
   	{

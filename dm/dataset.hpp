@@ -3974,11 +3974,17 @@ struct PositiveAverageModel : Root
 //Real varPower {1.0};  // PAR
   Real outlierSEs {NaN};
     // Standard errors to be an outlier
+#if 0
+  Real universalWeight {NaN};
+    // Weight factor
+    // >= 1.0
+#endif
   
   
 	struct Component : Named
 	{
 	  const PositiveAverageModel& pam;
+	//bool universal {false};
 		Real coeff {NaN};
 			// >= 0.0
 		Real var {INF};
@@ -3995,9 +4001,11 @@ struct PositiveAverageModel : Root
 		  // Output of get()
 
     Component (const string &name_arg,
-               const PositiveAverageModel& pam_arg)
+               const PositiveAverageModel& pam_arg/*,
+               bool universal_arg*/)
       : Named (name_arg)
       , pam (pam_arg)
+    //, universal (universal_arg)
       {}
 		Component (const PositiveAverageModel& pam_arg,
 		           const string &line,
@@ -4007,6 +4015,7 @@ struct PositiveAverageModel : Root
 		void qc () const override;
 		void saveText (ostream &os) const override
 		  { os         << name
+		     //<< '\t' << universal 
  		       << '\t' << coeff
  		       << '\t' << var
  		       << endl;
@@ -4039,12 +4048,15 @@ struct PositiveAverageModel : Root
 	                      bool loadStat);
 	  // Input: fName
 	  //          format: <Outlier SEs> \n <Component>*
-	explicit PositiveAverageModel (Real outlierSEs_arg)
+	explicit PositiveAverageModel (Real outlierSEs_arg/*,
+	                               Real universalWeight_arg*/)
 	  : outlierSEs (outlierSEs_arg)
+	//, universalWeight (universalWeight_arg)
 	  {}
   void qc () const override;
 	void saveText (ostream &os) const override
     { os << outlierSEs << endl;
+    //os << universalWeight << endl;
       for (const Component& comp : components)
         if (comp. valid ())
   	      comp. saveText (os);
@@ -4055,6 +4067,15 @@ struct PositiveAverageModel : Root
     { for (Component& comp : components)
    		  comp. value = NaN;
    	}
+#if 0
+  size_t getNonUniversals () const
+    { size_t n = 0;
+      for (const Component& comp : components)
+    	  if (! comp. universal)
+    	    n++;
+    	return n;
+    }
+#endif
   Real get () const;
     // Input: Component::value
     // Output: Component::outlier
@@ -4089,7 +4110,6 @@ struct PositiveAverage : MultiVariate<PositiveAttr1>
     // components.size() = space.size()
   PositiveAttr1* averageAttr {nullptr};
     // !nullptr
-  bool optimizeCoeff {false};
 #if 0
 private:
   Vector<Vector<bool>> outliers;
@@ -4100,15 +4120,18 @@ public:
 	
 	PositiveAverage (const Sample &sample_arg,
                    const Space1<PositiveAttr1> &space_arg,
-                   Real outlierSEs_arg,
-                   bool optimizeCoeff_arg);
+                 //const VectorPtr<Attr>* univAttrs,
+                   Real outlierSEs_arg/*,
+                   Real universalWeight_arg*/);
+    // Input: univAttrs: sorted, unique, may be nullptr
   void calibrate (size_t iter_max);
     // Input: iter_max: 0 <=> infinity
     // Output: (*averageAttr)[], PositiveAverageModel::Component
     // Invokes: setComponent()
 private:
   void setComponent (PositiveAverageModel::Component &comp,
-                     const PositiveAttr1 &attr/*,
+                     const PositiveAttr1 &attr,
+                     bool optimizeCoeff/*,
                      const Vector<bool> &attrOutliers*/);
 public:
   void qc () const override;

@@ -58,9 +58,11 @@ struct ThisApplication : Application
   	  addPositional ("file", dmSuff + "-file without " + strQuote (dmSuff));
   	  addPositional ("power", "Power for raw dissimilarities to be raised to");
   	  addPositional ("outlierSEs", "Number of standard errors for an attribute value to be an outlier");  // explain more ??
-  	  addFlag ("optimize_coeff", "Fit the coefficients of the attributes to the average by intercept-free linear regression");
+  	//addPositional ("universal_weight", "Weight factor of universal attributes, >= 1.0"); 
   	  addKey ("iter_max", "Max. number of optimization iterations; 0 - infinity", "0");
+  	//addKey ("universal", "List of universal attributes");
   	  // Output
+  	  addPositional ("out", "Output attribute statistics file");
   	  addKey ("output_dissim", "Output merged dissimilarity");
   	}
 
@@ -71,10 +73,12 @@ struct ThisApplication : Application
 		const string inFName            = getArg ("file");
 		const Real power                = str2real (getArg ("power"));
 		const Real outlierSEs           = str2real (getArg ("outlierSEs"));
-		const bool optimize_coeff       = getFlag ("optimize_coeff");
+  //const Real universalWeight      = str2real (getArg ("universal_weight"));
 		const size_t iter_max           = str2<size_t> (getArg ("iter_max"));
+	//const string universalFName     = getArg ("universal");		
+		const string outFName           = getArg ("out");
 		const string output_dissimFName = getArg ("output_dissim");
-		
+				
 		if (outlierSEs <= 0.0)
 		  throw runtime_error ("outlierSEs must be positive");
 		
@@ -82,9 +86,24 @@ struct ThisApplication : Application
     Dataset ds (inFName);
     ds. qc ();
     
-    const Sample sm (ds);
-	    
-
+    const Sample sm (ds);	    
+    
+  #if 0
+    unique_ptr<VectorPtr<Attr>> univAttrs;
+    if (! universalFName. empty ())
+    {
+      univAttrs. reset (new VectorPtr<Attr> ());
+      const StringVector vec (universalFName, (size_t) 100);  // PAR
+      for (const string& s : vec)
+        if (const Attr* attr = ds. name2attr (s))
+          *univAttrs << attr;
+        else
+          throw runtime_error ("Universal attribute " + strQuote (s) + " is not in the dataset");
+      univAttrs->sort ();
+      univAttrs->uniq ();
+    }
+  #endif
+    
     Space<PositiveAttr1> space (ds, false);  space. reserve (ds. attrs. size ());
 	  for (const Attr* attr_ : ds. attrs)
 	  {
@@ -121,12 +140,15 @@ struct ThisApplication : Application
   	  throw runtime_error ("No attributes");
 	  
 	  
-	  PositiveAverage pa (sm, space, outlierSEs, optimize_coeff);  
+	  PositiveAverage pa (sm, space, /*univAttrs. get (),*/ outlierSEs/*, universalWeight*/);  
     pa. calibrate (iter_max);
 	  pa. qc ();  
-   	pa. saveText (cout);   	
     cerr << "Effective number of attributes: " << pa. model. getEffectiveAttrs () << endl;
-	  
+
+	  {
+	    OFStream f (outFName);
+     	pa. saveText (f);
+	  }	  
 
 	 	if (! output_dissimFName. empty ())
 	 	{
