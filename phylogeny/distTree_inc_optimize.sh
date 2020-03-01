@@ -7,7 +7,7 @@ if [ $# -ne 4 ]; then
   echo "#2: number of optimization iterations"
   echo "#3: parameters after -variance."
   echo "#4: output tree"
-  echo "Time: O(n log^5(n))"
+  echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
