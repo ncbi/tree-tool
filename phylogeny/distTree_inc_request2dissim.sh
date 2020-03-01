@@ -56,7 +56,9 @@ else
 		echo "Redo ..."
 	done
 	
-	rm -r $INC/dr.out
+	rm -r $INC/dr.out &
 	rm -r $INC/dr
+	wait
 fi	
+
 
