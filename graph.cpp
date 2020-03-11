@@ -595,7 +595,8 @@ void Tree::TreeNode::qc () const
     QC_IMPLY (isLeaf (), isLeafType ());
     QC_IMPLY (isInteriorType () && getParent (), getParent () -> isInteriorType ());
   }
-  QC_ASSERT (! contains (getName (), objNameSeparator));
+  if (contains (getName (), objNameSeparator))
+    throw runtime_error (strQuote (getName ()) + " contains separator " + strQuote (string (1, objNameSeparator)));
 }
   
 
