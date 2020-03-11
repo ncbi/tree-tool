@@ -13,6 +13,7 @@ namespace
   
   
   
+#if 0
 struct S : Root
 {
   vector<int> a;
@@ -49,6 +50,7 @@ struct S : Root
   void f () const
     { throw runtime_error (FUNC  + ": error"); }
 }; 
+#endif
 
 
 
@@ -112,7 +114,7 @@ struct ThisApplication : Application
 
  	void body () const final
 	{
-	   const string arg = getArg ("arg");
+    const string arg = getArg ("arg");
 	  
 	/*
 	  S s (3);
@@ -206,6 +208,7 @@ struct ThisApplication : Application
   
   //cout << getFileSize (arg) << endl;
   
+  #if 0
     PRINT (uchar2hex (' '));
     PRINT (uchar2hex ('!'));
     PRINT (uchar2hex (9));
@@ -213,6 +216,37 @@ struct ThisApplication : Application
     PRINT (uchar2hex (131));
     PRINT (uchar2hex (127));
     PRINT (uchar2hex (255));
+  #endif
+  
+    ifstream f (arg);
+    ASSERT (f. good ());
+    size_t n = 0;
+  #if 0
+    // ~30 sec./16G !
+    constexpr size_t len = 10 * 1024 * 1024;  // PAR
+    unique_ptr<char> s (new char [len]);
+    while (! f. eof ())
+    {
+      f. getline (s. get (), len, '\0');
+      f. clear (f. rdstate () & ~ios::failbit);
+      n++;
+      cerr << '\r' << n << ' ' << (int) f. rdstate ();
+      QC_ASSERT (! (f. rdstate () & ios::goodbit));
+      QC_ASSERT (! (f. rdstate () & ios::badbit));
+    }
+  #else
+    // 2 min./16G !
+    while (! f. eof ())
+    {
+      f. get ();
+      n++;
+      if (! (n % (1024 * 1024)))
+        cerr << '\r' << n << ' ' << (int) f. rdstate ();
+      QC_ASSERT (! (f. rdstate () & ios::goodbit));
+      QC_ASSERT (! (f. rdstate () & ios::badbit));
+    }
+  #endif
+    cout << n << endl;
   }
 };
 
