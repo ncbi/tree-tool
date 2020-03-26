@@ -49,7 +49,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print file hash class: 0.." + to_string (hash_class_max - 1) + ")")
+    : Application ("Print file hash class: 0.." + to_string (hash_class_max - 1))
     {
       addPositional ("file", "File name");
     }
