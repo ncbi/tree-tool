@@ -80,7 +80,7 @@ rm -r data/Mycobacterium_tuberculosis.dir/
 
 echo ""
 echo "clust"
-$THIS/clust  -qc  data/hmmScore 100 10 0.5 > hmmScore.clust
+$THIS/clust  -qc  data/hmmScore 100 10 0.5  -threshold_SDs 3 > hmmScore.clust
 diff hmmScore.clust data/hmmScore.clust
 rm hmmScore.clust
 

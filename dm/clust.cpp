@@ -49,13 +49,15 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Clustering as the decomposition of a mixture of multivariate Normal distributions")
+    : Application ("Clustering as the decomposition of a mixture of multivariate Normal distributions. Print clusters statsistics")
   	{
   	  version = VERSION;
   	  addPositional ("file", dmSuff + "-file");	  
   	  addPositional ("clusters_max", "Max. numebr of clusters");	  
   	  addPositional ("sd_min", "Min. SD of each variable in each cluster");	  
   	  addPositional ("prob_min", "probability threshold for the nominal attribute indicating the cluster; 0 - no nominal attribute");
+  	  addKey ("out", "Output " + dmSuff + "-file with cluster probabilities");
+  	  addKey ("threshold_SDs", "Number of SDs to define lower/upper boundaries for unidimensional clustering", "0");
   	}
 	
 	
@@ -66,23 +68,54 @@ struct ThisApplication : Application
 		const size_t clusters_max = str2<size_t> (getArg ("clusters_max"));
 		const Real sd_min         = str2real     (getArg ("sd_min"));
 		const Prob prob_min       = str2<Prob>   (getArg ("prob_min"));
+		const string outFName     =               getArg ("out");
+		const Real threshold_sds  = str2real     (getArg ("threshold_SDs"));
 		QC_ASSERT (sd_min > 0.0);
+		QC_ASSERT (threshold_sds >= 0.0);
 
 
     Dataset ds (inFName);
     const Sample sm (ds);
     const Space1<NumAttr1> sp (ds, true);
-
+   
 	  const Clustering cl (sm, sp, clusters_max, sd_min, false);  
     cl. print (cout);
     
-    VectorPtr<Attr> attrs;
-    attrs << cl. createSpace (ds);
-    if (prob_min)
-      attrs << cl. createNominAttr ("Cluster", prob_min, ds);
+    if (cl. mixt. getDim () == 1 && threshold_sds)
+    {
+      Real boundary_hi_prev = NaN;
+      Prob p_prev = 0.0;
+      Prob p_next = 1.0;
+      FFOR (size_t, i, cl. mixt. components. size ())
+      {
+        const MultiNormal* mn = cl. getMultiNormal (i);
+        ASSERT (mn);
+        const Real mean = mn->mu [0];
+        const Real sd = sqrt (mn->sigmaInflated. get (false, 0, 0));
+        const Real boundary_lo = mean - threshold_sds * sd;
+        if (boundary_hi_prev < boundary_lo)
+          cout         << "Threshold:" 
+               << '\t' << (boundary_hi_prev + boundary_lo) / 2.0 
+               << '\t' << p_prev 
+               << '\t' << p_next 
+               << endl;
+        boundary_hi_prev = mean + threshold_sds * sd;
+        const Prob p = cl. mixt. components [i] -> prob;
+        p_prev += p;
+        p_next -= p;
+      }
+    }
 
-    cout << endl;
-    sm. save (attrs, cout);
+
+    if (! outFName. empty ())
+    {
+      OFStream f (outFName);
+      VectorPtr<Attr> attrs;
+      attrs << cl. createSpace (ds);
+      if (prob_min)
+        attrs << cl. createNominAttr ("Cluster", prob_min, ds);
+      sm. save (attrs, f);
+    }
 	}
 };
 
