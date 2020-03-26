@@ -5337,7 +5337,8 @@ Clustering::Clustering (const Sample &sample_arg,
 	                      size_t clusters_max,
 	                      Real sd_min,
 	                      bool sd_min_is_relative,
-	                      Real entropyDimensionPrecision)
+	                      Real entropyDimensionPrecision,
+	                      bool unverbose)
 : P (sample_arg, space_arg)
 , variance_min (space. size ())
 {
@@ -5346,7 +5347,7 @@ Clustering::Clustering (const Sample &sample_arg,
   ASSERT (entropyDimensionPrecision >= 0.0);
   
   
-  // variance_min
+  // variance_min[]
   {
     const Real var_rel_min = sqr (sd_min);
     FFOR (size_t, i, space. size ())
@@ -5370,7 +5371,7 @@ Clustering::Clustering (const Sample &sample_arg,
   mixt. qc ();
   
   
-  Unverbose unv;
+  unique_ptr<Unverbose> unv (unverbose ? new Unverbose : nullptr);
   
   
   // Global cluster

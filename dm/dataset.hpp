@@ -3782,7 +3782,8 @@ struct Clustering : MultiVariate<NumAttr1>
               size_t clusters_max,
               Real sd_min,
               bool sd_min_is_relative,
-              Real entropyDimensionPrecision = 0.001);  // PAR
+              Real entropyDimensionPrecision = 0.001,
+              bool unverbose = true);  // PAR
     // Input: sd_min: (relative) min. SD for each attribute in each cluster
   Clustering (const Clustering &clustering,
               const vector<bool> &toMerge);
