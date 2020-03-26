@@ -9,17 +9,18 @@ NEW_OBJ=$1
 #set -o xtrace 
 
 
-BASE_DIR=`dirname $0`
+INC=`dirname $0`
 TMP=`mktemp`  
+#echo $TMP  
 
-blastn  -db $BASE_DIR/seq.fa  -query /home/brovervv/panfs/marker/bacteria/seq/$NEW_OBJ  -show_gis  -evalue 1e-20  -outfmt '6 sseqid' > $TMP.blastn
+blastn  -db $INC/seq.fa  -query /home/brovervv/panfs/marker/bacteria/seq/$NEW_OBJ  -strand plus  -evalue 1e-20  -outfmt '6 sseqid nident' > $TMP.blastn
 set +o errexit
-grep -v $NEW_OBJ $TMP.blastn | sort | uniq > $TMP.grep
+grep -v $NEW_OBJ $TMP.blastn > $TMP.grep 
 set -o errexit
-head -100 $TMP.grep | sed 's/$/ '$NEW_OBJ'/1'
+sort -k 2 -n -r $TMP.grep | cut -f 1 | head -100 | sort -u | sed 's/$/ '$NEW_OBJ'/1' 
 
 
-rm -fr $TMP*
+rm -fr $TMP*  
 
 
 

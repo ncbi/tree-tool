@@ -20,7 +20,7 @@ else
   mv $BASE_DIR/seq.fa1 $BASE_DIR/seq.fa
 fi
 
-makeblastdb  -in $BASE_DIR/seq.fa  -dbtype nucl  -logfile /dev/null
+makeblastdb  -in $BASE_DIR/seq.fa  -dbtype nucl  -blastdb_version 4  -logfile /dev/null
 
 
 loadLISTC $OBJ_LIST
