@@ -1052,7 +1052,7 @@ void Genome::nominals2coreSet ()
 
 void Genome::init (const Feature2index &feature2index)
 {
-	IMPLY ( ! coreSet. empty (), getFeatureTree (). featuresExist ());
+	IMPLY (! coreSet. empty (), getFeatureTree (). featuresExist ());
 
 	Phyl::init ();
 
@@ -2054,11 +2054,9 @@ FeatureTree::FeatureTree (const string &treeFName,
   ASSERT (nominal2values. empty ());
  	for (const DiGraph::Node* node : nodes)
  		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ()) 
-    { // parentheses are needed for Visual C++
  		  try { var_cast (g) -> coreSet2nominals (); } 
  		    catch (const exception &e)
  		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
-    }
 
   constexpr size_t displayPeriod = 100;  // PAR
 
@@ -2133,7 +2131,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     for (const Feature::Id& fId : commonCore)
       nonSingletons. erase (fId);    
       
-    if (featuresExist () && nonSingletons. empty ())
+    if (nonSingletons. empty ())
     	throw runtime_error ("All features are singletons or common core");
     	
     // features, feature2index
@@ -2194,11 +2192,11 @@ FeatureTree::FeatureTree (const string &treeFName,
   if (oneFeatureInTree && ! allTimeZero)
     throw runtime_error ("Optimizing time is not implemented for oneFeatureInTree");
 
-  genomeFeatures_ave = 0;  
+  genomeFeatures_ave = 0.0;  
  	for (const DiGraph::Node* node : nodes)
  		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
- 			genomeFeatures_ave += g->getFeatures ();
-  genomeFeatures_ave /= genomes;
+ 			genomeFeatures_ave += (Real) g->getFeatures ();
+  genomeFeatures_ave /= (Real) genomes;
 
   if (! allTimeZero && featuresExist ())
     loadSuperRootCoreFile (coreFeaturesFName);
@@ -2211,7 +2209,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   if (oneFeatureInTree)
   {
     {
-      VectorPtr<Phyl> phyls;  phyls. reserve (nodes. size ());
+      VectorPtr<Phyl> phyls;  phyls. reserve (nodes. size ());  // Iteration over vector is faster
      	for (const DiGraph::Node* node : nodes)
      		phyls << static_cast <const Phyl*> (node);
       float featureLen = 0.0;
@@ -2270,6 +2268,115 @@ FeatureTree::FeatureTree (const string &treeFName,
 
 
 
+FeatureTree::FeatureTree (const string &treeFName,
+      						        const string &genomesListFName,
+  	                      bool preferGain_arg)
+: inputTreeFName (treeFName)
+, preferGain (preferGain_arg)
+, allTimeZero (true)
+, oneFeatureInTree (true)
+{
+	ASSERT (! treeFName. empty ());
+	ASSERT (! genomesListFName. empty ());
+
+
+  const Feature::Id fId ("feat");  // PAR
+
+ 	loadPhylFile (treeFName);
+  ASSERT (root);
+  ASSERT (nodes. front () == root);
+  ASSERT (static_cast <const Phyl*> (root) -> asSpecies ());
+  
+  const size_t genomes = root->getLeavesSize ();
+	if (genomes <= 1)
+	  throw runtime_error ("Too few genomes");
+    
+  StringVector genomeVec (genomesListFName, (size_t) 100000);  // PAR
+  genomeVec. sort ();
+  const size_t dup = genomeVec. findDuplicate ();
+  if (dup != NO_INDEX)
+    throw runtime_error ("Duplicate genome in " + strQuote (genomesListFName) + ": " + genomeVec [dup]);
+  if (genomeVec. size () > genomes)
+    throw runtime_error ("File " + strQuote (genomesListFName) + " has more genomes than there are in the tree");
+
+  // Cf. the above constructor
+
+  // Genome::coreSet
+  {
+    size_t found = 0;
+   	for (const DiGraph::Node* node : nodes)
+   		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
+   		{
+   			if (genomeVec. containsFast (g->id))
+   			{
+   			  g->coreSet << move (Genome::GenomeFeature (fId, false));
+   			  g->coreNonSingletons = 1;
+   			  found++;
+   			}
+ 			  g->coreSet. searchSorted = true;
+ 			  g->singletons. searchSorted = true;
+   		}
+    ASSERT (found <= genomeVec. size ());
+    if (found < genomeVec. size ())
+      throw runtime_error ("Not all genomes in the file " + strQuote (genomesListFName) + " are in the tree");
+  }
+
+  if (genomeVec. size () == genomes)
+    throw runtime_error ("The feature is universal");
+  if (genomeVec. size () == 0)
+    throw runtime_error ("The feature does not occur");
+  if (genomeVec. size () == 1)
+    throw runtime_error ("The feature occurs in only one genome");
+
+  ASSERT (features. empty ());
+ 	features << move (Feature (fId));
+  features. searchSorted = true;
+  Feature& feature = features [0];
+
+  // Phyl::init()   
+  {   
+    // 288 sec./50K genomes
+    Feature2index feature2index;
+   	for (const DiGraph::Node* node : nodes)
+   	{
+   		const Phyl* p = static_cast <const Phyl*> (node);
+   		if (const Species* s = p->asSpecies ())
+ 			  var_cast (s) -> init ();
+   		else if (const Genome* g = p->asGenome ())
+   			var_cast (g) -> init (feature2index);
+   		else
+   			ERROR;
+   	}
+  }
+
+  genomeFeatures_ave = 0.0;  
+ 	for (const DiGraph::Node* node : nodes)
+ 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
+ 			genomeFeatures_ave += (Real) g->getFeatures ();
+  genomeFeatures_ave /= (Real) genomes;
+
+ 	for (DiGraph::Node* node : nodes)  
+ 		static_cast <Phyl*> (node) -> setWeight (); 		
+
+  {
+    VectorPtr<Phyl> phyls;  phyls. reserve (nodes. size ());  // Iteration over vector is faster
+   	for (const DiGraph::Node* node : nodes)
+   		phyls << static_cast <const Phyl*> (node);
+    float featureLen = 0.0;
+    Vector<size_t/*featureIndex*/> batch;  
+    batch << 0;
+    processBatch (phyls, batch, featureLen);
+    len = featureLen + static_cast <const Species*> (root) -> pooledSubtreeDistance;
+  }
+  
+  feature. gains.  searchSorted = true;
+  feature. losses. searchSorted = true;
+
+  len_min = getLength_min ();
+}
+
+
+
 void FeatureTree::processBatch (const VectorPtr<Phyl> &phyls,
                                 const Vector<size_t> &featureBatch,
                                 float &featureLen)
@@ -2293,7 +2400,7 @@ void FeatureTree::processBatch (const VectorPtr<Phyl> &phyls,
    	{
       setFeatureStats (features [featureBatch [i]], i, phyl);
       if (const Species* sp = phyl->asSpecies ())
-        var_cast (sp) -> middleCoreSize += sp->getMiddleCore (i) /*core [i]*/;
+        var_cast (sp) -> middleCoreSize += sp->getMiddleCore (i);
     }
 }
                                 
@@ -2493,10 +2600,10 @@ void FeatureTree::qc () const
 	QC_ASSERT (features. searchSorted);
 
 	QC_ASSERT (geReal (len, len_min));
-	QC_ASSERT (len_min >= 0);
+	QC_ASSERT (len_min >= 0.0);
 	
-	QC_IMPLY (! features. empty (), genomeFeatures_ave > 0);
-	QC_ASSERT (genomeFeatures_ave <= getTotalFeatures ());
+  QC_IMPLY (! features. empty (), genomeFeatures_ave >= 0.0);
+	QC_ASSERT (genomeFeatures_ave <= (Real) getTotalFeatures ());
 	
 	QC_ASSERT ((bool) distDistr. get () == (bool) depthDistr. get ());
 	

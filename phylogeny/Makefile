@@ -17,6 +17,7 @@ all:	\
   compareTrees \
   distTree_new \
   feature2dissim \
+  feature2gain_loss \
   hash2dissim \
   hash_request2dissim \
   loci_request2dissim \
@@ -75,6 +76,12 @@ feature2dissim.o:  $(DM_HPP) $(PHYL_DIR)/version.inc
 feature2dissimOBJS=feature2dissim.o $(DM_OBJ) 
 feature2dissim:	$(feature2dissimOBJS)
 	$(CXX) -o $@ $(feature2dissimOBJS) $(LIBS)
+	$(ECHO)
+
+feature2gain_loss.o:  $(COMMON_HPP) $(PHYL_DIR)/featureTree.hpp $(PHYL_DIR)/version.inc
+feature2gain_lossOBJS=feature2gain_loss.o $(FEATURE_TREE_OBJ)
+feature2gain_loss:	$(feature2gain_lossOBJS)
+	$(CXX) -o $@ $(feature2gain_lossOBJS) $(LIBS)
 	$(ECHO)
 
 hash2dissim.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp $(PHYL_DIR)/version.inc

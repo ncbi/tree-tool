@@ -1127,7 +1127,7 @@ public:
 	  // !Feature::nominalSingleton(Feature::Id)
 	Set<Feature::Id> commonCore;
 	size_t globalSingletonsSize {0};  
-	size_t genomeFeatures_ave {0};
+	Real genomeFeatures_ave {0.0};
 	float len {(float) NaN};
 	  // >= len_min
 	  // !emptySuperRoot, allTimeZero => parsimony in an undirected tree
@@ -1163,6 +1163,10 @@ public:
     // Input: coreFeaturesFName if !allTimeZero
     //        large: files in featureDir are grouped into subdirectories named str2hash_class(<file name>)
     // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore()
+  FeatureTree (const string &treeFName,
+      				 const string &genomesListFName,
+  	           bool preferGain_arg);
+  	// features.size() = 1
 private:
   void processBatch (const VectorPtr<Phyl> &phyls,
                      const Vector<size_t> &featureBatch,
