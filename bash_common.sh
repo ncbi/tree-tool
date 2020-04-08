@@ -9,6 +9,6 @@ export QSUB_5="$QSUB_  -l h_vmem=36G,mem_free=500M,m_mem_free=500M,reserve_mem=5
 export QSUB_L="$QSUB_  -l h_vmem=36G,mem_free=1G,m_mem_free=1G,reserve_mem=1G,h_rt=360000" 
 
 export NOCOLOR='\033[0m'
-export RED='\033[0;31m'
-export GREEN='\033[0;32m'
+export RED='\033[1;31m'
+export GREEN='\033[1;32m'
 export YELLOW='\033[1;33m'
