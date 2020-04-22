@@ -2508,7 +2508,7 @@ void Application::addDefaultArgs ()
 	{ 
 	  addKey ("threads", "Max. number of threads", "1", '\0', "THREADS");
 	  addFlag ("debug", "Integrity checks");
-    addKey ("log", "Error log file, appended", "", '\0', "LOG");
+    addKey ("log", "Error log file, appended, opened on application start", "", '\0', "LOG");
   }
 	else
 	{ 
@@ -2628,6 +2628,8 @@ string Application::getInstruction () const
 		instr += ")";
   
   instr += "\nHELP:    " + programName + " " + ifS (gnu, "-") + "-" + helpS;
+  if (gnu)
+    instr += " or " + programName + " -" + helpS [0];
   instr += "\nVERSION: " + programName + " " + ifS (gnu, "-") + "-" + versionS;
 
   return instr;
@@ -2748,12 +2750,12 @@ int Application::run (int argc,
           else
           	name = s1;
 
-          if (name == helpS /*&& ! contains (name2arg, helpS)*/)
+          if (name == helpS || (name. empty () && c == helpS [0] && gnu))
           {
             cout << getHelp () << endl;
             return 0;
           }
-          if (name == versionS /*&& ! contains (name2arg, versionS)*/)
+          if (name == versionS)
           {
             cout << version << endl;
             return 0;
