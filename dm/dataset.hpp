@@ -220,7 +220,8 @@ public:
     
   // Position
   void moveAfter (const Attr* pred);
-    // Update:: ds.attrs
+    // Update: ds.attrs
+    // !pred => move to the beginning
     
   // Missings
   virtual bool isMissing (size_t objNum) const = 0;

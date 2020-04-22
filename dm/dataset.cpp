@@ -147,7 +147,7 @@ void Attr::moveAfter (const Attr* pred)
   
   ASSERT (! ds. attrs. empty ());
   auto it = pred ? pred->dsIt : ds_. attrs. begin ();
-  it++;  // Visual C++: "expression: list iterator not incrementable" <= sentinel of an empty list
+//it++;  // Visual C++: "expression: list iterator not incrementable" <= sentinel of an empty list
   dsIt = ds_. attrs. insert (it, this);
 }
 
@@ -4386,12 +4386,12 @@ void MultiNormal::qc () const
 	  QC_ASSERT (mu. defined ());
 	  
 	  QC_ASSERT (sigmaExact. defined ());
-	  QC_ASSERT (sigmaExact. isSimilarity ());
+	//QC_IMPLY (sigmaExact. psd, sigmaExact. isSimilarity ()); 
 	  QC_ASSERT (sigmaExact. rowsSize (false) == getDim ());
 	  QC_ASSERT (sigmaExact. psd);
 
 	  QC_ASSERT (sigmaInflated. defined ());
-	  QC_ASSERT (sigmaInflated. isSimilarity ());
+	//QC_IMPLY (sigmaInflated. psd, sigmaInflated. isSimilarity ());  
 	  QC_ASSERT (sigmaInflated. rowsSize (false) == getDim ());
 	  QC_ASSERT (sigmaInflated. psd);
 
@@ -4404,7 +4404,7 @@ void MultiNormal::qc () const
     if (coeff != INF)
     { 
   	  QC_ASSERT (sigmaInv. defined ());
-  	  QC_ASSERT (sigmaInv. isSimilarity ());
+  	//QC_IMPLY (sigmaInv. psd, sigmaInv. isSimilarity ());  
   	  QC_ASSERT (sigmaInv. rowsSize (false) == getDim ());
   	  QC_ASSERT (sigmaInv. psd);
   	}
@@ -4624,7 +4624,7 @@ void MultiNormal::estimate ()
   mu2. multiply (false, mu, false, mu, true);
   sigmaExact. add (false, mu2, false, -1);
   
-  sigmaExact. psd = true;
+  sigmaExact. psd = true;  // ! analysis->space. existsMissing ();  // ??
   
   setParam ();
   if (verbose ())
