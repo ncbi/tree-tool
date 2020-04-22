@@ -70,15 +70,15 @@ struct ThisApplication : Application
     Dataset ds (inFName);
     if (intercept)
       ds. addRealAttr1Unit ();
-    ds. qc ();
+    ds. qc ();    
     
-    const auto targetAttr = ds. name2attr (target) -> asRealAttr1 ();
+    const auto targetAttr = checkPtr (ds. name2attr (target)) -> asRealAttr1 ();
     if (! targetAttr)
       throw runtime_error (strQuote (target) + " is not a Real attribute");
     
     Space1<NumAttr1> sp (ds, true);
     sp. removeAttr (*targetAttr);
-
+    
     const Sample sm (ds);
     
     L2LinearNumPrediction lr (sm, sp, *targetAttr);

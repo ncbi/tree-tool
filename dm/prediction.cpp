@@ -900,6 +900,14 @@ void L2LinearNumPrediction::solveUnconstrained ()
 
 
   setAttrSim (attrSim, existsMissing);
+  
+#if 0
+  // Ridge ??
+  FFOR (size_t, row, attrSim. rowsSize ())
+    FFOR (size_t, col, attrSim. rowsSize ())
+      if (row != col)
+        attrSim. put (false, row, col, 0.0);  
+#endif
 
   // betaCovariance: temporary
   betaCovariance = attrSim;

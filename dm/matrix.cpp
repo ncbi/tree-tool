@@ -1121,8 +1121,8 @@ bool Matrix::isSimilarity () const
   	FFOR (size_t, col, rowsSize (true))
   	  if (greaterReal (sqr (get (false, row, col)), getDiag (row) * getDiag (col)))
   	  {
-  	  //if (verbose ())
-  	    //cout << row << ' ' << col << ' ' << sqr (get (false, row, col)) << ' ' << getDiag (row) * getDiag (col) << endl;
+  	    if (verbose ())
+  	      cout << row + 1 << ' ' << col + 1 << ' ' << sqr (get (false, row, col)) << ' ' << getDiag (row) * getDiag (col) << endl;
   	    return false;
   	  }
 	  	
