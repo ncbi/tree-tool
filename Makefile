@@ -14,6 +14,7 @@ endif
 
 all:	\
   cpp_test \
+  csv2tab \
   extractPairs \
   file2hash \
   graph_test \
@@ -32,6 +33,12 @@ cpp_test.o:  $(COMMON_HPP)
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
 cpp_test:	$(cpp_testOBJS)
 	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS)
+	$(ECHO)
+
+csv2tab.o:  $(COMMON_HPP)  
+csv2tabOBJS=csv2tab.o $(CPP_DIR)/common.o
+csv2tab:	$(csv2tabOBJS)
+	$(CXX) -o $@ $(csv2tabOBJS) $(LIBS)
 	$(ECHO)
 
 extractPairs.o:  $(COMMON_HPP)  
