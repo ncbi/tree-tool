@@ -22,7 +22,7 @@ OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 ADD=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 
 
-if [ 1 == 1 ]; then  # was: 1 == 1  
+if [ 1 == 1 ]; then  
 date
 echo ""
 top -b -n 1 | head -15
@@ -70,13 +70,12 @@ wc -l $INC/new.list
 
 cp /dev/null $INC/dissim.add
 
-$THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD > $INC/search.list
+$THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD | sort > $INC/search.list
 wc -l $INC/search.list
 rm $INC/new.list
 
-$THIS/../trav $INC/search.list "mkdir $INC/search/%f"
-$THIS/../trav $INC/search.list "rm $INC/new/%f"
-rm $INC/search.list
+$THIS/../trav  -threads 15  $INC/search.list "mkdir $INC/search/%f"
+$THIS/../trav  -threads 15  $INC/search.list "rm $INC/new/%f"
 
 
 echo ""
@@ -90,6 +89,16 @@ else
   $THIS/../grid_wait.sh 1
   $THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
   $THIS/../qstat_wait.sh 2000 1
+  ls $INC/search/*/request | cut -f 3 -d '/' > $INC/sought.list
+  $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
+  rm $INC/search.list
+  rm $INC/sought.list
+  if [ -s $INC/missed.list ]; then
+    wc -l $INC/missed.list
+    $THIS/../trav $INC/missed.list "touch $INC/new/%f"
+    $THIS/../trav $INC/missed.list "rm -r $INC/search/%f"
+  fi
+  rm $INC/missed.list
 fi
 
 
@@ -106,6 +115,7 @@ while [ $ITER -le $ITER_MAX ]; do
 	ITER=$(( $ITER + 1 ))
   echo ""
   echo "Iteration $ITER / $ITER_MAX ..."
+  # use distTree_inc_request2dissim.sh ??
   REQ=`$THIS/../trav $INC/search "wc -l %d/%f/request" | cut -f 1 -d ' ' | $THIS/../dm/count | grep -w '^sum' | cut -f 2` 
   echo "# Requests: $REQ"
   GRID=1
@@ -120,8 +130,12 @@ while [ $ITER -le $ITER_MAX ]; do
 	  $THIS/../grid_wait.sh 1
   fi
   $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
+  WAIT=2000  # PAR
+  if [ $GRID_MIN -lt 100 ]; then  
+    WAIT=7200
+  fi
   if [ $GRID == 1 ]; then
-    $THIS/../qstat_wait.sh 2000 0
+    $THIS/../qstat_wait.sh $WAIT 0
   fi
   
   ls $INC/log > $INC/log.list-all
@@ -138,14 +152,14 @@ while [ $ITER -le $ITER_MAX ]; do
 	  # Try to fix grid problems
     $THIS/../trav $INC/log.list "$THIS/distTree_inc_unsearch.sh $INC %f"
     $THIS/../trav $INC/log "echo ''; echo %d/%f; tail -20 %d/%f" > $INC/log.out  # PAR
-    head -21 $INC/log.out # PAR
+    head -21 $INC/log.out  # PAR
     rm $INC/log.out
   fi
   rm $INC/log.list
   
   rm -r $INC/log/
       
-  $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
+  $THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
 
   echo "Processing new objects ..."
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
