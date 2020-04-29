@@ -14,7 +14,7 @@ OBJS=$2
 DB=$3
 
 
-#if [ 1 == 0 ]; then 
+#if [ 1 == 0 ]; then  
 if [ -s $INC/tree ]; then
   echo "$INC/tree must be empty"
   exit 1
@@ -32,7 +32,7 @@ $THIS/../sort.sh $OBJS
 $THIS/../list2pairs $OBJS > $INC/dissim_request
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.raw
 rm $INC/dissim_request
-cat $INC/dissim.raw | grep -vwi nan | grep -vwi inf > $INC/dissim
+cat $INC/dissim.raw | grep -vwi "nan" | grep -vwi "inf" > $INC/dissim
 rm $INC/dissim.raw
 
 echo ""
@@ -87,7 +87,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 VARIANCE=`cat $INC/variance`
-$THIS/makeDistTree  -threads 5  -data data  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 20  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
+$THIS/makeDistTree  -threads 5  -data data  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
 if [ $DB == 1 ]; then
   echo ""
