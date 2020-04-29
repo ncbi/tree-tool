@@ -57,7 +57,9 @@ echo "Final optimization ..."
 VER=`cat $INC/version`
 echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
 cp $INC/tree $INC/hist/tree.$VER
-gzip $INC/hist/tree.$VER
+if [ $VER -gt 1 ]; then
+  gzip $INC/hist/tree.$VER
+fi
 #
 VER=$(( $VER + 1 ))
 echo $VER > $INC/version
