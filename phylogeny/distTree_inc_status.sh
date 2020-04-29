@@ -11,9 +11,6 @@ INC=$1
 HIST=$2
 
 
-TMP=`mktemp`
-
-
 echo "Version: `cat $INC/version`"
 echo ""
 
@@ -21,6 +18,14 @@ set +o errexit
 OBJS=`grep -vc '^ *0x' $INC/tree`
 set -o errexit
 echo "# Objects in tree: $OBJS"  
+
+if [ $OBJS == 0 ]; then
+  exit
+fi
+
+
+TMP=`mktemp`
+
 
 ADDED=`cat $INC/leaf | wc -l`
 if [ $ADDED -gt 0 ]; then
