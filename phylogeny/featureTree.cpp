@@ -2711,8 +2711,8 @@ void FeatureTree::printInput (ostream& os) const
   os << "Tree from file: " << inputTreeFName << endl;
 	  
   const size_t genomes = root->getLeavesSize ();
-  os << "# Genomes: " << genomes << endl;
-  os << "# Species: " << nodes. size () - genomes << endl;
+  os << "# Objects:              " << genomes << endl;
+  os << "# Interior nodes:       " << nodes. size () - 2 * genomes << endl;  // Fossil's
   os << "# Common core features: " << commonCore. size () << endl;
   os << "# Singleton features:   " << globalSingletonsSize << endl;
   os << "# Other features:       " << features. size () << endl;
