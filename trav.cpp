@@ -149,13 +149,14 @@ struct ThisApplication : Application
     {
   	  unique_ptr<ItemGenerator> gen;
   	  {
+  	    const uint stepItemGen = threads_max > 1 ? 1000 : step;  // PAR
     	  const bool isFile = fileExists (itemsName);
     	  const bool isDir = directoryExists (itemsName);
     	  if (isFile || isDir)
-    	    gen. reset (new FileItemGenerator (step, isDir, itemsName));
+    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, itemsName));
         else 
           if (isDigit (itemsName [0]))
-            gen. reset (new NumberItemGenerator (step, itemsName));	  
+            gen. reset (new NumberItemGenerator (stepItemGen, itemsName));	  
           else
             throw runtime_error ("File " + strQuote (itemsName) + " does not exist");
       }
