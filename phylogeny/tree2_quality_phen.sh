@@ -79,10 +79,10 @@ $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $P
 echo ""
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
 
-cat $TMP.qual1 | sed 's/ \([^0-9+/-]\)/_\1/g' > $TMP.qual1_
-cat $TMP.qual2 | sed 's/ \([^0-9+/-]\)/_\1/g' > $TMP.qual2_
+cat $TMP.qual1 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual1_
+cat $TMP.qual2 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual2_
 # PAR
-join -1 1 -2 1 $TMP.qual1_ $TMP.qual2_ | grep '^[0-9][0-9]-00:' > qual.comp 
+join -1 1 -2 1 $TMP.qual1_ $TMP.qual2_ > qual.comp 
 
 
 rm -f $TMP*
