@@ -38,7 +38,7 @@ do
     continue
   fi
   $THIS/tree_quality_phen.sh $TMP $TMP.list $INC/phen $PHEN_LARGE 0 "" > $TMP.makeFeatureTree 2> /dev/null
-  OBJS=`grep '^# Genomes: ' $TMP.makeFeatureTree | sed 's/^#.*: //1'`
+  OBJS=`grep '^# Objects: ' $TMP.makeFeatureTree | sed 's/^#.*: //1'`
   RES=`grep ' !' $TMP.makeFeatureTree | sed 's/^#.*: //1' | sed 's/ .*$//1'`
   echo -e "$N\t$OBJS\t$RES"
 done
