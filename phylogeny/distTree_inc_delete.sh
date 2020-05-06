@@ -5,7 +5,7 @@ if [ $# -ne 2 ]; then
   echo "Delete a list of objects from an incremental distance tree"
   echo "Update: #1/"
   echo "#1: Incremental distance tree directory"
-  echo "#2: List of objects to delete"
+  echo "#2: List of objects to delete; to be moved into #1/hist/"
   exit 1
 fi
 INC=$1
@@ -27,19 +27,30 @@ $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
   -delete $DEL  \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
+  -output_dissim $INC/dissim.new \
   -output_tree $INC/tree.new > $INC/hist/makeDistTree-delete.$VER
+  
 mv $INC/tree.new $INC/tree
+
+wc -l $INC/dissim
+wc -l $INC/dissim.new
+mv $INC/dissim.new $INC/dissim
 
 echo ""
 $INC/objects_in_tree.sh $DEL null
-$THIS/../trav $DEL "rm -f $INC/new/%f"
 
-cp $DEL $INC/hist/delete.$VER
+ls $INC/new > $INC/new.list
+$THIS/../setIntersect.sh $DEL $INC/new.list 0 > $INC/new-del.list
+rm $INC/new.list
+$THIS/../trav $INC/new-del.list "rm $INC/new/%f"
+rm $INC/new-del.list
+
+mv $DEL $INC/hist/delete.$VER
 
 
 echo ""
 echo "QC ..."
-$INC/qc.sh go
+$INC/qc.sh go  
 
 
 $THIS/distTree_inc_tree1_quality.sh $INC
