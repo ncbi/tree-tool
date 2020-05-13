@@ -119,7 +119,7 @@ inline Real dist2mult (Real dist)
       case varianceType_none:   throw runtime_error ("Variance function is not specified");
       default:                  throw logic_error ("Unknown variance function");
     }  
-    return 1.0 / (variance_min + var);
+    return 1.0 / (max (variance_min, var));  // was: variance_min + var
   }
   // Return: >= 0
   //         0 <=> dist = INF
