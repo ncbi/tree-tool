@@ -32,13 +32,13 @@ if [ "$TARGET" ]; then
 fi
 $THIS/makeDistTree  -threads 15  -input_tree $TREE  $DELETE  -noqual  -output_feature_tree $TMP.feature_tree > $TMP.distTree
 
-FIND_ROOT_PARAM=""
-if [ $FIND_ROOT == 1 ]; then
-  FIND_ROOT_PARAM="-output_core $TMP.core  -save_mem"
-fi
 LARGE=""
 if [ $PHEN_LARGE == 1 ]; then
   LARGE="-large"
+fi
+FIND_ROOT_PARAM=""
+if [ $FIND_ROOT == 1 ]; then
+  FIND_ROOT_PARAM="-output_core $TMP.core  -save_mem"
 fi
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE  -prefer_gain  -nominal_singleton_is_optional  $FIND_ROOT_PARAM  -qual $TMP.qual
 
