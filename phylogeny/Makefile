@@ -26,6 +26,7 @@ all:	\
 	makeFeatureTree \
 	mergeSimilarity \
 	mlst2dissim \
+	mutation2phen \
 	newick2tree \
 	printDistTree \
 	randomDistTree \
@@ -127,6 +128,12 @@ mlst2dissim.o:  $(DM_HPP) $(PHYL_DIR)/version.inc
 mlst2dissimOBJS=mlst2dissim.o $(DM_OBJ) 
 mlst2dissim:	$(mlst2dissimOBJS)
 	$(CXX) -o $@ $(mlst2dissimOBJS) $(LIBS)
+	$(ECHO)
+
+mutation2phen.o:  $(COMMON_HPP) $(PHYL_DIR)/version.inc
+mutation2phenOBJS=mutation2phen.o $(CPP_DIR)/common.o
+mutation2phen:	$(mutation2phenOBJS)
+	$(CXX) -o $@ $(mutation2phenOBJS) $(LIBS)
 	$(ECHO)
 
 newick2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/version.inc
