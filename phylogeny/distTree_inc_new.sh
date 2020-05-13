@@ -82,23 +82,25 @@ echo ""
 echo "search/ -> leaf, dissim ..."
 
 N=`ls $INC/search/ | wc -l`
-SEARCH_GRID_MIN=$(( $GRID_MIN / 100 ))  # PAR
-if [ $N -lt $SEARCH_GRID_MIN ]; then
-  $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
-else
-  $THIS/../grid_wait.sh 1
-  $THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
-  $THIS/../qstat_wait.sh 2000 1
-  ls $INC/search/*/request | cut -f 3 -d '/' > $INC/sought.list
-  $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
-  rm $INC/search.list
-  rm $INC/sought.list
-  if [ -s $INC/missed.list ]; then
-    wc -l $INC/missed.list
-    $THIS/../trav $INC/missed.list "touch $INC/new/%f"
-    $THIS/../trav $INC/missed.list "rm -r $INC/search/%f"
+if [ $N -gt 0 ]; then
+  SEARCH_GRID_MIN=$(( $GRID_MIN / 100 ))  # PAR
+  if [ $N -lt $SEARCH_GRID_MIN ]; then
+    $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
+  else
+    $THIS/../grid_wait.sh 1
+    $THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
+    $THIS/../qstat_wait.sh 2000 1
+    ls $INC/search/*/request | cut -f 3 -d '/' > $INC/sought.list
+    $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
+    rm $INC/search.list
+    rm $INC/sought.list
+    if [ -s $INC/missed.list ]; then
+      wc -l $INC/missed.list
+      $THIS/../trav $INC/missed.list "touch $INC/new/%f"
+      $THIS/../trav $INC/missed.list "rm -r $INC/search/%f"
+    fi
+    rm $INC/missed.list
   fi
-  rm $INC/missed.list
 fi
 
 
