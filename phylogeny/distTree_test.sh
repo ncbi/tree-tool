@@ -248,7 +248,7 @@ if [ $USER == "brovervv" ]; then
   fi
   $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110.nw
   $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110-out1.nw
-  diff Virus110.nw Virus110-out1.nw 
+  diff Virus110.nw Virus110-out1.nw || true
   #
   if [ 0 == 1 ]; then  # ??
     makeDistTree  -qc  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out2.tree 1> $TMP.2 2> /dev/null
