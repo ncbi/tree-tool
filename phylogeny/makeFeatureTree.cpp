@@ -78,6 +78,7 @@ struct ThisApplication : Application
   	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistcis per feature in the indicated file: +<gaines> -<losses> / <genomes>");
   	  addFlag ("qual_nonredundant", "Non-redundify features by removing identical ones for the summary gain/loss statistics");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained; within a node features are ordered alphabetically");
+  	  addKey ("loss_nodes", "File name to save nodes where features are lost; within a node features are ordered alphabetically");
   	  addKey ("disagreement_nodes", "File name to save nodes with features not gained monophyletically");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
   	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
@@ -105,6 +106,7 @@ struct ThisApplication : Application
 		const string qual               = getArg ("qual");  
 		const bool   qual_nonredundant  = getFlag ("qual_nonredundant");
 		const string gain_nodes         = getArg ("gain_nodes");  
+		const string loss_nodes         = getArg ("loss_nodes");  
 		const string disagreement_nodes = getArg ("disagreement_nodes");  
 		const string arc_length_stat    = getArg ("arc_length_stat");
 		const string patrDistFName      = getArg ("patr_dist");
@@ -357,6 +359,15 @@ struct ThisApplication : Application
     }
 
     
+    if (! loss_nodes. empty ())
+    {
+      OFStream f (loss_nodes);
+      for (const Feature& feature : tree. features)
+        for (const Phyl* phyl : feature. losses)
+          f << phyl->getLcaName () << '\t' << feature. name << endl;          
+    }
+
+
     if (! disagreement_nodes. empty ())
     {
       OFStream f (disagreement_nodes);
