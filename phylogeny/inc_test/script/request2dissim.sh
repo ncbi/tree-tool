@@ -21,8 +21,8 @@ HASH_DIR=$THIS/../hash
 
 cat $REQ | awk '{print $1};' > $TMP.1
 cat $REQ | awk '{print $2};' > $TMP.2
-trav $TMP.1 "echo %n $HASH_DIR/%f/%f" > $TMP.f1
-trav $TMP.2 "echo %n $HASH_DIR/%f/%f" > $TMP.f2
+DT/trav $TMP.1 "echo %n $HASH_DIR/%f/%f" > $TMP.f1
+DT/trav $TMP.2 "echo %n $HASH_DIR/%f/%f" > $TMP.f2
 join  -1 1  -2 1  $TMP.f1 $TMP.f2 | cut -d ' ' -f 2,3 > $TMP.req
 
 
