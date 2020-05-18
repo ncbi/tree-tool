@@ -79,6 +79,8 @@ struct Mutation : Root
       pos    = (size_t) stoi (mut. substr (posStart, alleleStart - posStart));
       allele =                mut. substr (alleleStart);
       ASSERT (pos < NO_INDEX);
+      QC_ASSERT (pos);
+      pos--;
       if (ref == "INS")
         ref. clear ();
       if (allele == "DEL")
@@ -96,7 +98,7 @@ struct Mutation : Root
   Mutation () = default;
   Mutation (const Mutation& ) = default;
   void saveText (ostream &os) const override
-    { os << ref << pos << allele; }
+    { os << nvl (ref, "INS") << pos + 1 << nvl (allele, "DEL"); }
     
 
   bool operator== (const Mutation& other) const
@@ -135,6 +137,7 @@ void save (const Vector<Mutation> &muts,
         {
           ASSERT (! other. ambig);
           ASSERT (other. pos == i);
+          ASSERT (! muts. containsFast (other));
           if (other. stop () <= mut. stop ())  // other.ref is inside mut.ref
           {
             other. saveText (os);
@@ -159,6 +162,7 @@ struct ThisApplication : Application
 	  {
 	  	addPositional ("in", "Input directory with DNA mutations in the format <ref seq><ref pos><target seq>");
 	  	addPositional ("out", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
+	  	addFlag ("ambig5end", "Replace 5' end deletions by N-substitutions ");
 	  }
 
 
@@ -167,6 +171,7 @@ struct ThisApplication : Application
   {
     const string inDirName  = getArg ("in");
     const string outDirName = getArg ("out");
+    const bool   ambig5end  = getFlag ("ambig5end");
 
 
     unordered_map<string,Vector<Mutation>> obj2muts;  obj2muts. rehash (100000);  // PAR
@@ -185,6 +190,15 @@ struct ThisApplication : Application
             while (li. nextLine ())
             {
               Mutation mut (li. line);
+              if (ambig5end && ! mut. pos)
+              {
+                if (mut. ref. empty ())
+                  continue;
+                mut. allele = mut. ref;
+                for (char& c : mut. allele)
+                  c = 'n';
+                mut. ambig = true;
+              }
               if (! mut. ambig)
               {
                 allMuts. insert (mut);
@@ -198,7 +212,7 @@ struct ThisApplication : Application
           obj2muts [fName] = move (muts);        
         }
       }
-      cout << "Object: " << obj2muts. size () << endl;
+      cout << "Objects: " << obj2muts. size () << endl;
       cout << "Mutations: " << allMuts. size () << endl;    
       cout << "Max. position: " << pos_max + 1 << endl;
       
