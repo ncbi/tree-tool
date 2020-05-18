@@ -940,7 +940,7 @@ Genome::Genome (FeatureTree &tree,
 
 string Genome::featureLineFormat ()
 { 
-  return "{{<Boolean> [<optional (0|1)>]} | {<nominal>:<value>} \\n}*, where <value> = " NOMINAL_OTHER " means a singleton Boolean attribute"; 
+  return "{{<Boolean attribute> [<optional (0|1)>]} | {<nominal attribute>:<value>} \\n}*, where <value> = " NOMINAL_OTHER " means a singleton Boolean attribute"; 
 }
 
 
@@ -3296,24 +3296,21 @@ bool FeatureTree::optimize ()
 
 	VectorOwn<Change> changes;  changes. reserve (256);  // PAR
 	{
-	 	Vector<DiGraph::Node*> nodeVec;  nodeVec. reserve (nodes. size ());
+	 	VectorPtr<Species> nodeVec;  nodeVec. reserve (nodes. size ());
     for (DiGraph::Node* node : nodes)
-    {
-      Phyl* phyl = static_cast <Phyl*> (node);
-      if (! phyl->stable)
-        nodeVec << phyl;
-    }
+	 		if (const Species* from = static_cast <const Phyl*> (node) -> asSpecies ())
+        if (! from->stable)  
+          nodeVec << from;
 		Progress prog (nodeVec. size ());
-	 	for (const DiGraph::Node* node : nodeVec)  
+	 	for (const Species* from : nodeVec)  
 	 	{
 	   	prog ();
-	 		if (const Species* from = static_cast <const Phyl*> (node) -> asSpecies ())
-  	 	 	if (from != root)
-    		 	if (const Change* bestChange = getBestChange (from))
-    		  { 
-    		  	ASSERT (bestChange->improvement > 0.0);
-    		  	changes << bestChange;
-    		  }
+	 	 	if (from != root)
+  		 	if (const Change* bestChange = getBestChange (from))
+  		  { 
+  		  	ASSERT (bestChange->improvement > 0.0);
+  		  	changes << bestChange;
+  		  }
   	}
   }
     
