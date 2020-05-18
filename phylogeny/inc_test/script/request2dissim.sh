@@ -12,4 +12,21 @@ OUT=$2
 LOG=$3
 
 
-DT/phylogeny/hash_request2dissim $REQ $THIS/../hash $OUT  -intersection_min 50  -ratio_min 0.5  -log $LOG 
+TMP=`mktemp`
+#echo $TMP 
+
+
+HASH_DIR=$THIS/../hash
+
+
+cat $REQ | awk '{print $1};' > $TMP.1
+cat $REQ | awk '{print $2};' > $TMP.2
+trav $TMP.1 "echo %n $HASH_DIR/%f/%f" > $TMP.f1
+trav $TMP.2 "echo %n $HASH_DIR/%f/%f" > $TMP.f2
+join  -1 1  -2 1  $TMP.f1 $TMP.f2 | cut -d ' ' -f 2,3 > $TMP.req
+
+
+DT/phylogeny/hash_request2dissim $TMP.req  $OUT  -intersection_min 50  -ratio_min 0.5  -log $LOG 
+
+
+rm $TMP*
