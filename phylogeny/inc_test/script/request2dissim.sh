@@ -30,4 +30,5 @@ DT/phylogeny/hash_request2dissim $TMP.req  $TMP.out  -intersection_min 50  -rati
 sed 's|'$HASH_DIR'/||g' $TMP.out > $OUT
 
 
+rm -f $LOG  
 rm $TMP*
