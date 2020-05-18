@@ -30,6 +30,7 @@ all:	\
 	newick2tree \
 	printDistTree \
 	randomDistTree \
+	req_feature2dissim \
   sampleReport \
 	statDistTree \
 	testDistTree \
@@ -152,6 +153,12 @@ randomDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/version.in
 randomDistTreeOBJS=randomDistTree.o $(DISTTREE_OBJ)
 randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+req_feature2dissim.o:  $(COMMON_HPP) $(PHYL_DIR)/version.inc
+req_feature2dissimOBJS=req_feature2dissim.o $(DISTTREE_OBJ)
+req_feature2dissim:	$(req_feature2dissimOBJS)
+	$(CXX) -o $@ $(req_feature2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 sampleReport.o:  $(COMMON_HPP) $(PHYL_DIR)/version.inc
