@@ -4,6 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Delete a list of objects from an incremental distance tree"
   echo "Update: #1/"
+  echo "Delete: #2"
   echo "#1: Incremental distance tree directory"
   echo "#2: List of objects to delete; to be moved into #1/hist/"
   exit 1
