@@ -63,31 +63,31 @@ rm randomTree.makeDistTree
 rm random-output.tree
 
 echo ""
-echo "prot-identical_comm ..."
+echo "Salmonella ..."
 # Check time ??
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -optimize  -subgraph_iter_max 10 \
-  -delete_criterion_outliers prot-identical_comm.criterion_outliers \
-  -delete_deformation_outliers prot-identical_comm.deformation_outliers \
-  -delete_hybrids prot-identical_comm.hybrids \
-  | grep -v '^CHRON: ' > prot-identical_comm.distTree
-diff prot-identical_comm.criterion_outliers data/prot-identical_comm.criterion_outliers
-rm prot-identical_comm.criterion_outliers
-$THIS/../sort.sh prot-identical_comm.deformation_outliers
-diff prot-identical_comm.deformation_outliers data/prot-identical_comm.deformation_outliers
-rm prot-identical_comm.deformation_outliers
-diff prot-identical_comm.hybrids data/prot-identical_comm.hybrids
-rm prot-identical_comm.hybrids
-$THIS/distTree_compare_criteria.sh prot-identical_comm.distTree data/prot-identical_comm.distTree
-rm prot-identical_comm.distTree
+$THIS/makeDistTree  -qc  -data data/Salmonella  -variance linExp  -optimize  -subgraph_iter_max 10 \
+  -delete_criterion_outliers Salmonella.criterion_outliers \
+  -delete_deformation_outliers Salmonella.deformation_outliers \
+  -delete_hybrids Salmonella.hybrids \
+  | grep -v '^CHRON: ' > Salmonella.distTree
+diff Salmonella.criterion_outliers data/Salmonella.criterion_outliers
+rm Salmonella.criterion_outliers
+$THIS/../sort.sh Salmonella.deformation_outliers
+diff Salmonella.deformation_outliers data/Salmonella.deformation_outliers
+rm Salmonella.deformation_outliers
+diff Salmonella.hybrids data/Salmonella.hybrids
+rm Salmonella.hybrids
+$THIS/distTree_compare_criteria.sh Salmonella.distTree data/Salmonella.distTree
+rm Salmonella.distTree
 
 echo ""
 echo "testDistTree ..."
-$THIS/makeDistTree  -data data/prot-identical_comm  -variance linExp  -optimize  -output_tree $TMP.tree > /dev/null
-$THIS/testDistTree -qc  data/prot-identical_comm  -input_tree  $TMP.tree  -variance linExp 
+$THIS/makeDistTree  -data data/Salmonella  -variance linExp  -optimize  -output_tree $TMP.tree > /dev/null
+$THIS/testDistTree -qc  data/Salmonella  -input_tree  $TMP.tree  -variance linExp 
 
 echo ""
-echo "prot-identical_comm: delete ..."
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -delete data/delete.list  -check_delete > /dev/null
+echo "Salmonella: delete ..."
+$THIS/makeDistTree  -qc  -data data/Salmonella  -variance linExp  -delete data/delete.list  -check_delete > /dev/null
 
 if [ -d data/inc.ITS ]; then
   echo ""
@@ -123,19 +123,19 @@ rm Saccharomyces.distTree
 echo ""
 echo "-variance_min ..."
 # 0.0005 = average arc length / 100
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm  -variance linExp  -variance_min 0.0005  -optimize  -subgraph_iter_max 10 \
-  -delete_criterion_outliers prot-identical_comm-var_min.criterion_outliers \
-  -delete_deformation_outliers prot-identical_comm-var_min.deformation_outliers \
-  -delete_hybrids prot-identical_comm-var_min.hybrids \
-  | grep -v '^CHRON: ' > prot-identical_comm-var_min.distTree
-diff prot-identical_comm-var_min.criterion_outliers data/prot-identical_comm-var_min.criterion_outliers
-rm prot-identical_comm-var_min.criterion_outliers
-diff prot-identical_comm-var_min.deformation_outliers data/prot-identical_comm-var_min.deformation_outliers
-rm prot-identical_comm-var_min.deformation_outliers
-diff prot-identical_comm-var_min.hybrids data/prot-identical_comm-var_min.hybrids
-rm prot-identical_comm-var_min.hybrids
-$THIS/distTree_compare_criteria.sh prot-identical_comm-var_min.distTree data/prot-identical_comm-var_min.distTree
-rm prot-identical_comm-var_min.distTree
+$THIS/makeDistTree  -qc  -data data/Salmonella  -variance linExp  -variance_min 0.0005  -optimize  -subgraph_iter_max 10 \
+  -delete_criterion_outliers Salmonella-var_min.criterion_outliers \
+  -delete_deformation_outliers Salmonella-var_min.deformation_outliers \
+  -delete_hybrids Salmonella-var_min.hybrids \
+  | grep -v '^CHRON: ' > Salmonella-var_min.distTree
+diff Salmonella-var_min.criterion_outliers data/Salmonella-var_min.criterion_outliers
+rm Salmonella-var_min.criterion_outliers
+diff Salmonella-var_min.deformation_outliers data/Salmonella-var_min.deformation_outliers
+rm Salmonella-var_min.deformation_outliers
+diff Salmonella-var_min.hybrids data/Salmonella-var_min.hybrids
+rm Salmonella-var_min.hybrids
+$THIS/distTree_compare_criteria.sh Salmonella-var_min.distTree data/Salmonella-var_min.distTree
+rm Salmonella-var_min.distTree
 
 
 if [ $USER != "brovervv" ]; then
@@ -150,24 +150,24 @@ echo ""
 echo "Two dissimilarity types ..."
 
 echo ""
-echo "prot-identical_comm ..."
-$THIS/makeDistTree  -qc  -data data/prot-identical_comm2  -variance linExp  -optimize  -subgraph_iter_max 10  \
-  -output_dissim_coeff prot-identical_comm2.dissim_coeff \
-  -delete_criterion_outliers prot-identical_comm2.criterion_outliers \
-  -delete_deformation_outliers prot-identical_comm2.deformation_outliers \
-  -delete_hybrids prot-identical_comm2.hybrids \
-  | grep -v '^CHRON: ' > prot-identical_comm2.distTree
-diff prot-identical_comm2.dissim_coeff data/prot-identical_comm2.dissim_coeff
-rm prot-identical_comm2.dissim_coeff
-diff prot-identical_comm2.criterion_outliers data/prot-identical_comm2.criterion_outliers
-rm prot-identical_comm2.criterion_outliers
-$THIS/../sort.sh prot-identical_comm2.deformation_outliers
-diff prot-identical_comm2.deformation_outliers data/prot-identical_comm2.deformation_outliers
-rm prot-identical_comm2.deformation_outliers
-diff prot-identical_comm2.hybrids data/prot-identical_comm2.hybrids
-rm prot-identical_comm2.hybrids
-$THIS/distTree_compare_criteria.sh prot-identical_comm2.distTree data/prot-identical_comm2.distTree
-rm prot-identical_comm2.distTree
+echo "Salmonella2 ..."
+$THIS/makeDistTree  -qc  -data data/Salmonella2  -variance linExp  -optimize  -subgraph_iter_max 10  \
+  -output_dissim_coeff Salmonella2.dissim_coeff \
+  -delete_criterion_outliers Salmonella2.criterion_outliers \
+  -delete_deformation_outliers Salmonella2.deformation_outliers \
+  -delete_hybrids Salmonella2.hybrids \
+  | grep -v '^CHRON: ' > Salmonella2.distTree
+diff Salmonella2.dissim_coeff data/Salmonella2.dissim_coeff
+rm Salmonella2.dissim_coeff
+diff Salmonella2.criterion_outliers data/Salmonella2.criterion_outliers
+rm Salmonella2.criterion_outliers
+$THIS/../sort.sh Salmonella2.deformation_outliers
+diff Salmonella2.deformation_outliers data/Salmonella2.deformation_outliers
+rm Salmonella2.deformation_outliers
+diff Salmonella2.hybrids data/Salmonella2.hybrids
+rm Salmonella2.hybrids
+$THIS/distTree_compare_criteria.sh Salmonella2.distTree data/Salmonella2.distTree
+rm Salmonella2.distTree
 
 echo ""
 echo "Saccharomyces hybrids ..."
