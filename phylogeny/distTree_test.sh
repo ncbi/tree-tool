@@ -9,7 +9,7 @@ fi
 
 
 TMP=`mktemp`
-if [ $USER == "brovervv" ]; then
+if [ ${AT_NCBI:-0} == 1 ]; then
   echo $TMP
 fi
 
@@ -138,7 +138,7 @@ $THIS/distTree_compare_criteria.sh Salmonella-var_min.distTree data/Salmonella-v
 rm Salmonella-var_min.distTree
 
 
-if [ $USER != "brovervv" ]; then
+if [ ${AT_NCBI:-0} == 0 ]; then
   rm Saccharomyces.hybrid.list
   rm $TMP*
   exit 0
@@ -233,40 +233,38 @@ rm Virus9.tree Virus9-out.tree
 rm Virus9-out.dm
 
 
-if [ $USER == "brovervv" ]; then
-  echo ""
-  echo "Virus110 ..."
-  $THIS/makeDistTree  -data data/Virus110  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Virus110-out  -output_tree Virus110.tree 1> $TMP.1 
-  A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
-  #
-  $THIS/makeDistTree  -qc  -input_tree Virus110.tree  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out1.tree 1> $TMP.2 2> /dev/null
+echo ""
+echo "Virus110 ..."
+$THIS/makeDistTree  -data data/Virus110  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Virus110-out  -output_tree Virus110.tree 1> $TMP.1 
+A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
+#
+$THIS/makeDistTree  -qc  -input_tree Virus110.tree  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out1.tree 1> $TMP.2 2> /dev/null
+B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
+if [ "$A" != "$B" ]; then
+  echo "$A"
+  echo "$B"
+  exit 1
+fi
+$THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110.nw
+$THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110-out1.nw
+diff Virus110.nw Virus110-out1.nw || true
+#
+if [ 0 == 1 ]; then  # ??
+  makeDistTree  -qc  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out2.tree 1> $TMP.2 2> /dev/null
   B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
   if [ "$A" != "$B" ]; then
     echo "$A"
     echo "$B"
     exit 1
   fi
-  $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110.nw
-  $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110-out1.nw
-  diff Virus110.nw Virus110-out1.nw || true
-  #
-  if [ 0 == 1 ]; then  # ??
-    makeDistTree  -qc  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out2.tree 1> $TMP.2 2> /dev/null
-    B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
-    if [ "$A" != "$B" ]; then
-      echo "$A"
-      echo "$B"
-      exit 1
-    fi
-    $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 2  > Virus110.nw
-    $THIS/printDistTree  -qc  Virus110-out2.tree  -order  -decimals 2  > Virus110-out2.nw
-    diff Virus110.nw Virus110-out.nw
-  fi
-  #
-  rm -f Virus110.nw Virus110-out1.nw Virus110-out2.nw
-  rm -f Virus110.tree Virus110-out1.tree Virus110-out2.tree
-  rm Virus110-out.dm
+  $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 2  > Virus110.nw
+  $THIS/printDistTree  -qc  Virus110-out2.tree  -order  -decimals 2  > Virus110-out2.nw
+  diff Virus110.nw Virus110-out.nw
 fi
+#
+rm -f Virus110.nw Virus110-out1.nw Virus110-out2.nw
+rm -f Virus110.tree Virus110-out1.tree Virus110-out2.tree
+rm Virus110-out.dm
 
 
 rm $TMP*
