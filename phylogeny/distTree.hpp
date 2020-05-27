@@ -864,8 +864,8 @@ public:
              && ! to_arg->inDiscernible ()
     	       && from_arg->getParent ()
 	  	       && ! to_arg->descendantOf (from_arg)
-	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () == 2)  
-	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () == 2); 
+	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () <= 2)  
+	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () <= 2); 
 	  }
  ~Change ();
 	void qc () const override;
