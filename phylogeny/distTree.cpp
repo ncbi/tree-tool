@@ -3316,7 +3316,7 @@ private:
       const streamsize start = f. tellg ();
       len = NaN;
       f >> len;
-      pos += f. tellg () - start;
+      pos += (streamsize) f. tellg () - start;
       QC_ASSERT (! isNan (len));
       readChar ();
     }
