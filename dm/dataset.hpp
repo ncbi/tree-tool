@@ -2192,7 +2192,7 @@ public:
   virtual string nameParam () const = 0;
   
   
-  const UniDistribution* asUniDistribution () const
+  const UniDistribution* asUniDistribution () const final
     { return this; }
 
   // Parameters
@@ -2404,7 +2404,7 @@ public:
   void qc () const final;
     
 
-  const Binomial* asBinomial () const
+  const Binomial* asBinomial () const final
     { return this; }
 
   void setSeed (ulong seed) const override
@@ -2469,7 +2469,7 @@ struct UniformDiscrete : DiscreteDistribution
     { return new UniformDiscrete (*this); }
 
 
-  const UniformDiscrete* asUniformDiscrete () const
+  const UniformDiscrete* asUniformDiscrete () const final
     { return this; }
 
   // Parameters
@@ -3361,20 +3361,20 @@ public:
   const MultiDistribution* asMultiDistribution () const final
     { return this; }    
 
-  const Analysis1* getAnalysis () const 
+  const Analysis1* getAnalysis () const override
     { return analysis; }
-  Analysis1* createAnalysis (Dataset &ds);
-  void removeAnalysis () 
+  Analysis1* createAnalysis (Dataset &ds) override;
+  void removeAnalysis () override
     { analysis = nullptr; }
-  void shareAnalysis (const Distribution &distr) 
+  void shareAnalysis (const Distribution &distr) override
     { analysis = nullptr;
       if (const MultiDistribution* d = distr. asMultiDistribution ())
         if (getDim () == d->getDim ())
           analysis = d->analysis;
     }
-  void variable2analysis () const
+  void variable2analysis () const override
     { checkPtr (analysis) -> variable = variable; }
-  void analysis2variable () const
+  void analysis2variable () const override
     { variable = checkPtr (analysis) -> variable; }
   // Parameters
 //setDim(); set <Parameters>; setParam();

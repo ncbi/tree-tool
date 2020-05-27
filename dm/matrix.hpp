@@ -245,6 +245,7 @@ public:
 private:
   void delData ();
 public:
+  bool empty () const override;
   void qc () const override;
   void saveText (ostream &os) const override
     { saveFile_ (false, false, os); }
@@ -396,7 +397,6 @@ public:
     // Return: If no empty rows then NO_INDEX
   bool noEmptyRows (bool t) const
     { return firstEmptyRow (t) == NO_INDEX; }
-  bool empty () const;
   size_t firstColDefined (bool t,
                           size_t row) const
     { Real r; return nextColDefined (t, row, 0, r); }
