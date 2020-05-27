@@ -60,7 +60,7 @@ struct DiGraph : Root
     // !nullptr
 
 
-  struct Node : Root, protected DisjointCluster
+  struct Node : Root, DisjointCluster
   {
     friend struct DiGraph;
     
