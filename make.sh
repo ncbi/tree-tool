@@ -1,7 +1,8 @@
 #/bin/bash
 source bash_common.sh
 
-sed -i 's|^CPP_DIR =.*$|CPP_DIR = '$PWD'|1' MakeRules
+sed 's|^CPP_DIR =.*$|CPP_DIR = '$PWD'|1' MakeRules > MakeRules.tmp
+mv MakeRules.tmp MakeRules
 
 make all
 
