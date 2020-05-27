@@ -13,8 +13,7 @@ ifdef AT_NCBI
     -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion -Wuseless-cast 
 endif
 
-SimpleCPPFLAGS = -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
-  # -std=gnu++14  # default
+SimpleCPPFLAGS = -std=gnu++14 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
   # -Werror 
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
