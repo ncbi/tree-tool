@@ -2030,6 +2030,7 @@ bool Change::apply ()
     ASSERT (boundary. isUniq ());
     ASSERT (! area. intersectsFast_merge (boundary));
     area << boundary;  // Real area
+    ASSERT (area. size () >= 2);
     subgraph. finish ();
     ASSERT (subgraph. boundary. containsFast (from));
     ASSERT (subgraph. area. containsFast (to));
@@ -2434,6 +2435,7 @@ void Image::processSmall (const DTNode* center_arg,
   {
     center->getArea (areaRadius, area, boundary);
     subgraph. removeIndiscernibles ();
+    ASSERT (area. size () >= 2);
     if (areaRadius == 1 || boundary. size () <= boundary_size_max_std)
       break;
     area.     clear ();
@@ -2550,6 +2552,7 @@ void Image::processLarge (const Steiner* subTreeRoot,
   
   try
   {
+    ASSERT (area. size () >= 2);
     tree = new DistTree (subgraph, new2old, true);
     tree->qc ();
     rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
@@ -6231,6 +6234,7 @@ size_t DistTree::optimizeLenNode ()
     const size_t centerPos = subgraph. boundary. size () - 2;
     ASSERT (subgraph. boundary [centerPos] == star. center);
     subgraph. boundary. eraseAt (centerPos);
+    ASSERT (subgraph. area. size () >= 2);
     subgraph. finish ();
     subgraph. area2dissimNums ();
     subgraph. dissimNums2subPaths ();
