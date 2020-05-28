@@ -2002,7 +2002,7 @@ bool Change::apply ()
     const Tree::TreeNode* lca_ = nullptr;
     Tree::LcaBuffer buf;
   #if 0
-    area = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
+    area = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);   // move () ??
   #else
     const VectorPtr<Tree::TreeNode>& path = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
     area << path;
@@ -2014,7 +2014,24 @@ bool Change::apply ()
     if (   area. front () == from
         || area. front () == to
        )
+    {
+      const size_t area_size_old1 = area. size ();  // ??
       area. eraseAt (0);
+      if (area_size_old1 <= area. size ())
+      {
+        PRINT (from);
+        PRINT (to);
+        PRINT (lca);
+        PRINT (from->getParent ());
+        PRINT (to->arcs [false]. size ());
+        PRINT (area_size_old1);
+        PRINT (area. size ());
+        PRINT (lca->getParent ());      
+        for (const auto p : area)
+          PRINT (p);
+        ERROR;
+      }
+    }
     if (   area. back () == from
         || area. back () == to
        )
