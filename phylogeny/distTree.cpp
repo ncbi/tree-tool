@@ -2014,8 +2014,10 @@ bool Change::apply ()
         || area. back () == to
        )
       area. pop_back ();
+    const size_t area_size_old = area. size ();  // 
     area << lca;
     area. sort ();
+    ASSERT (area_size_old < area. size ());
     ASSERT (area. isUniq ());  // Interior area
     for (const Tree::TreeNode* node : area)
     {
@@ -2036,6 +2038,7 @@ bool Change::apply ()
       PRINT (to);
       PRINT (lca);
       PRINT (from->getParent ());
+      PRINT (to->arcs [false]. size ());
       PRINT (area. size ());
       PRINT (boundary. size ());
       PRINT (lca->getParent ());
