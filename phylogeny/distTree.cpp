@@ -2032,6 +2032,10 @@ bool Change::apply ()
     area << boundary;  // Real area
     if (area. size () < 2)
     {
+      PRINT (from);
+      PRINT (to);
+      PRINT (lca);
+      PRINT (from->getParent ());
       PRINT (area. size ());
       PRINT (boundary. size ());
       PRINT (lca->getParent ());
