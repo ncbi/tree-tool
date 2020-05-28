@@ -2032,27 +2032,28 @@ bool Change::apply ()
         ERROR;
       }
     }
-    if (   area. back () == from
-        || area. back () == to
-       )
-    {
-      const size_t area_size_old2 = area. size ();  // ??
-      area. pop_back ();
-      if (area_size_old2 <= area. size ())
+    if (! area. empty ())
+      if (   area. back () == from
+          || area. back () == to
+         )
       {
-        PRINT (from);
-        PRINT (to);
-        PRINT (lca);
-        PRINT (from->getParent ());
-        PRINT (to->arcs [false]. size ());
-        PRINT (area_size_old2);
-        PRINT (area. size ());
-        PRINT (lca->getParent ());      
-        for (const auto p : area)
-          PRINT (p);
-        ERROR;
+        const size_t area_size_old2 = area. size ();  // ??
+        area. pop_back ();
+        if (area_size_old2 <= area. size ())
+        {
+          PRINT (from);
+          PRINT (to);
+          PRINT (lca);
+          PRINT (from->getParent ());
+          PRINT (to->arcs [false]. size ());
+          PRINT (area_size_old2);
+          PRINT (area. size ());
+          PRINT (lca->getParent ());      
+          for (const auto p : area)
+            PRINT (p);
+          ERROR;
+        }
       }
-    }
     const size_t area_size_old = area. size ();  // ??
     area << lca;
     if (area_size_old >= area. size ())
