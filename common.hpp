@@ -1593,9 +1593,15 @@ public:
     { eraseMany (index, index + 1); }
   void eraseMany (size_t from,
                   size_t to)
-    { P::erase ( P::begin () + (ptrdiff_t) from
-    	         , P::begin () + (ptrdiff_t) to
-    	         ); 
+    { if (to < from)
+        throw logic_error ("Vector::eraseMany(): to < from");
+      if (to == from)
+        return;
+      auto it1 = P::begin ();
+      std::advance (it1, from);
+      auto it2 = it1;
+      std::advance (it2, to - from);
+      P::erase (it1, it2);
     }
   void wipe ()
     { P::clear ();
