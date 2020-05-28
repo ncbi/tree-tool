@@ -2030,7 +2030,13 @@ bool Change::apply ()
     ASSERT (boundary. isUniq ());
     ASSERT (! area. intersectsFast_merge (boundary));
     area << boundary;  // Real area
-    ASSERT (area. size () >= 2);
+    if (area. size () < 2)
+    {
+      PRINT (area. size ());
+      PRINT (boundary. size ());
+      PRINT (lca->getParent ());
+      ERROR;
+    }
     subgraph. finish ();
     ASSERT (subgraph. boundary. containsFast (from));
     ASSERT (subgraph. area. containsFast (to));
