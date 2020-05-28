@@ -2000,13 +2000,10 @@ bool Change::apply ()
     VectorPtr<Tree::TreeNode>& area     = subgraph. area;
     VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
     const Tree::TreeNode* lca_ = nullptr;
-    Tree::LcaBuffer buf;
-  #if 0
-    area = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);   // move () ??
-  #else
-    const VectorPtr<Tree::TreeNode>& path = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
-    area << path;
-  #endif
+    {
+      Tree::LcaBuffer buf;
+      area << move (Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf));
+    }
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
     const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
@@ -2014,64 +2011,14 @@ bool Change::apply ()
     if (   area. front () == from
         || area. front () == to
        )
-    {
-      const size_t area_size_old1 = area. size ();  // ??
       area. eraseAt (0);
-      if (area_size_old1 <= area. size ())
-      {
-        PRINT (from);
-        PRINT (to);
-        PRINT (lca);
-        PRINT (from->getParent ());
-        PRINT (to->arcs [false]. size ());
-        PRINT (area_size_old1);
-        PRINT (area. size ());
-        PRINT (lca->getParent ());      
-        for (const auto p : area)
-          PRINT (p);
-        ERROR;
-      }
-    }
     if (! area. empty ())
       if (   area. back () == from
           || area. back () == to
          )
-      {
-        const size_t area_size_old2 = area. size ();  // ??
         area. pop_back ();
-        if (area_size_old2 <= area. size ())
-        {
-          PRINT (from);
-          PRINT (to);
-          PRINT (lca);
-          PRINT (from->getParent ());
-          PRINT (to->arcs [false]. size ());
-          PRINT (area_size_old2);
-          PRINT (area. size ());
-          PRINT (lca->getParent ());      
-          for (const auto p : area)
-            PRINT (p);
-          ERROR;
-        }
-      }
-    const size_t area_size_old = area. size ();  // ??
     area << lca;
-    if (area_size_old >= area. size ())
-    {
-      PRINT (from);
-      PRINT (to);
-      PRINT (lca);
-      PRINT (from->getParent ());
-      PRINT (to->arcs [false]. size ());
-      PRINT (area_size_old);
-      PRINT (area. size ());
-      PRINT (lca->getParent ());      
-      for (const auto p : area)
-        PRINT (p);
-      ERROR;
-    }
     area. sort ();
-    ASSERT (area_size_old < area. size ());
     ASSERT (area. isUniq ());  // Interior area
     for (const Tree::TreeNode* node : area)
     {
@@ -2086,18 +2033,7 @@ bool Change::apply ()
     ASSERT (boundary. isUniq ());
     ASSERT (! area. intersectsFast_merge (boundary));
     area << boundary;  // Real area
-    if (area. size () < 2)
-    {
-      PRINT (from);
-      PRINT (to);
-      PRINT (lca);
-      PRINT (from->getParent ());
-      PRINT (to->arcs [false]. size ());
-      PRINT (area. size ());
-      PRINT (boundary. size ());
-      PRINT (lca->getParent ());
-      ERROR;
-    }
+    ASSERT (area. size () >= 2);
     subgraph. finish ();
     ASSERT (subgraph. boundary. containsFast (from));
     ASSERT (subgraph. area. containsFast (to));
