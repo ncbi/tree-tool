@@ -5,6 +5,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -107,6 +108,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Test")
   	{
+      version = VERSION;
   	  addPositional ("arg", "Argument");
   	}
   

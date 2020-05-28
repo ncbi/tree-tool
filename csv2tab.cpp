@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -47,9 +48,10 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Convert a .csv-file to a tab-delimited file")
-  {
-	  addPositional ("in", "Text file");
-	}
+    {
+      version = VERSION;
+  	  addPositional ("in", "Text file");
+  	}
 
 
 	void body () const final
