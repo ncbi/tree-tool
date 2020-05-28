@@ -1343,10 +1343,10 @@ void NominAttr1::str2value (size_t objNum,
     }
   if (index == missing)
   {
-    cout << name << "[" << ds. objs [objNum] -> name << "] = !" << s << '!' << endl;
+    string err (name + "[" + ds. objs [objNum] -> name + "] = " + strQuote (s) + "\nPossible categories:\n");
     for (const string& s1 : categories)
-      cout << s1 << endl;
-    ERROR;
+      err += s1 + "\n";
+    throw runtime_error (err);
   }
   
 	values [objNum] = index;
