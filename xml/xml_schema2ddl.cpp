@@ -37,6 +37,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
+#include "../version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Generate SQL \"create table\" commands from an XML schema")
   	{
+      version = VERSION;
   	  addPositional ("schema", "XML schema file");
   	}
   	

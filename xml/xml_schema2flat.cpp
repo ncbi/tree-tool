@@ -37,6 +37,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
+#include "../version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Generate tab-delimited files for SQL bulk insert from XML files and their XML schema")
   	{
+      version = VERSION;
   	  addPositional ("xml", "XML file");
   	  addPositional ("xml_num", "XML file number");
   	  addPositional ("schema", "XML schema file");

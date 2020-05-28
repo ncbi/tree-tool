@@ -37,6 +37,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
+#include "../version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Analyze an XML file and print the derived schema")
   	{
+      version = VERSION;
   	  addPositional ("xml", "XML file");
   	  addFlag ("print", "Print the XML file");
   	  addFlag ("store_values", "Store all field values in schema");

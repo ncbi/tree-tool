@@ -37,6 +37,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
+#include "../version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Merge XML schemas")
   	{
+      version = VERSION;
   	  addPositional ("xml_list", "List of XML schemas of the same tag, outputs of xml2schema");
   	}
   	
