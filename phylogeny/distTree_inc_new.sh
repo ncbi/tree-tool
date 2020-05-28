@@ -25,7 +25,7 @@ ADD=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 if [ 1 == 1 ]; then  
 date
 echo ""
-top -b -n 1 | head -15
+#top -b -n 1 | head -15
 echo ""
 
 
