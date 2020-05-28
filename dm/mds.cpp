@@ -42,7 +42,7 @@ using namespace Common_sp;
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 
