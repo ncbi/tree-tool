@@ -2016,7 +2016,20 @@ bool Change::apply ()
       area. pop_back ();
     const size_t area_size_old = area. size ();  // ??
     area << lca;
-    ASSERT (area_size_old < area. size ());
+    if (area_size_old >= area. size ())
+    {
+      PRINT (from);
+      PRINT (to);
+      PRINT (lca);
+      PRINT (from->getParent ());
+      PRINT (to->arcs [false]. size ());
+      PRINT (area_size_old);
+      PRINT (area. size ());
+      PRINT (lca->getParent ());      
+      for (const auto p : area)
+        PRINT (p);
+      ERROR;
+    }
     area. sort ();
     ASSERT (area_size_old < area. size ());
     ASSERT (area. isUniq ());  // Interior area
