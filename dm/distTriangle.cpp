@@ -41,7 +41,7 @@ using namespace Common_sp;
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 

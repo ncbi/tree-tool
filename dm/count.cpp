@@ -39,7 +39,7 @@
 using namespace Common_sp;
 #include "numeric.hpp"
 using namespace DM_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 

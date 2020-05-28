@@ -40,7 +40,7 @@
 using namespace Common_sp;
 #include "dataset.hpp"
 using namespace DM_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 
