@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -50,7 +51,9 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Print sorted unique 64-bit hash codes for a list of strings form stdin", false)
-    {}
+    {
+      version = VERSION;
+    }
 
 
 

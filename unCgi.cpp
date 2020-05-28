@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -58,6 +59,7 @@ struct ThisApplication : Application
     : Application ("Save HTTP parameters as files <prefix>_<parameter>")
 	  // Why not <prefix>.<parameter> ??
   	{
+      version = VERSION;
   	  addPositional("prefix", "string");
   	}
 

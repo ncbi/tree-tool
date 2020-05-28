@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -157,6 +158,7 @@ struct ThisApplication : Application
     : Application ("Print the set-theoretic minus: <list1> \\ <list2>\n\
 Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|")
   	{
+      version = VERSION;
   	  addPositional ("list1", "File with ordered set of items");
   	  addPositional ("list2", "File with ordered set of items to be removed from list1");
   	  addFlag ("number", "Items are numbers");

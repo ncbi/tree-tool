@@ -37,7 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 

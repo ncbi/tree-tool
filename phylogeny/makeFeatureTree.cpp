@@ -41,7 +41,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "featureTree.hpp"
 using namespace FeatureTree_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 

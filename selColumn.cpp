@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -48,6 +49,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Select <Column> out of <File>\nSpaces and tabs are automatically included in <delimiters>")
   	{
+      version = VERSION;
   	  addPositional ("in", "Text file name or '-'");
   	  addPositional ("col", "Column number (>=1)");
   	  addKey ("delimiters", "Delimiters");

@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -48,6 +49,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print a random reordering of the list\nRequires: Line length < 1024")
   	{
+      version = VERSION;
   	  addPositional ("items", "File with items (end-of-line separated)");
   	}
 

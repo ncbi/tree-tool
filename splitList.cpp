@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
     : Application ("Partition <in> into parts of size <size> lines sequentially.\n\
 Parts are named <out_dir>/<i>")
   {
+    version = VERSION;
 	  addPositional ("in", "Text file");
 	  addPositional ("size", "# lines in one part");
 	  addPositional ("out_dir", "Output directory");
