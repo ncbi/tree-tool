@@ -2002,7 +2002,7 @@ bool Change::apply ()
     const Tree::TreeNode* lca_ = nullptr;
     {
       Tree::LcaBuffer buf;
-      area << move (Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf));
+      area = move (Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf)); 
     }
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
