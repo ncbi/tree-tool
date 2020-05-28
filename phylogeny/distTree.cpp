@@ -2014,8 +2014,9 @@ bool Change::apply ()
         || area. back () == to
        )
       area. pop_back ();
-    const size_t area_size_old = area. size ();  // 
+    const size_t area_size_old = area. size ();  // ??
     area << lca;
+    ASSERT (area_size_old < area. size ());
     area. sort ();
     ASSERT (area_size_old < area. size ());
     ASSERT (area. isUniq ());  // Interior area
