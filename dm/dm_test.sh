@@ -125,3 +125,6 @@ $THIS/clust_binomial -qc  data/Fungi-univ-stat V1 273 -outlier_pValue 1e-5 > Fun
 diff Fungi-univ-stat.clust_binomial data/Fungi-univ-stat.clust_binomial
 rm Fungi-univ-stat.clust_binomial
 
+
+echo ""
+echo -e ${GREEN}SUCCESS!${NOCOLOR}

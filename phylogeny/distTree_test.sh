@@ -268,3 +268,7 @@ rm Virus110-out.dm
 
 
 rm $TMP*
+
+
+echo ""
+echo -e ${GREEN}SUCCESS!${NOCOLOR}
