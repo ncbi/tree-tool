@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "#1: go"
-  echo "Time: 69 min."
+  echo "Time: 110 min."
   exit 1
 fi
 
