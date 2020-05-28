@@ -39,7 +39,7 @@
 using namespace Common_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 

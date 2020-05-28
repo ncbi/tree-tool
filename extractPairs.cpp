@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -60,6 +61,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("A1<delim>A2<delim>A3...\\tB1<delim>B2<delim>B3... -> A1\\tB1\\nA1\\tB2\\nA1\\tB3\\nA2\\tB1\\nA2\\tB2\\nA2\\tB3\\nA3\\tB1\\nA3\\tB2\\nA3\\tB3...")
   	{
+      version = VERSION;
   	  addPositional ("in", "Input file");
   	  addKey ("delim", "Delimiter", " ");
   	}

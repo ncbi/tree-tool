@@ -38,6 +38,7 @@
 #include "common.hpp"
 #include "graph.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -85,6 +86,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("DiGraph test")
 	{
+    version = VERSION;
 	  addPositional ("go", "Go");
 	}
 	

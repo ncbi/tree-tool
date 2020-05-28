@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print file hash class: 0.." + to_string (hash_class_max - 1))
     {
+      version = VERSION;
       addPositional ("file", "File name");
     }
 

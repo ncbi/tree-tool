@@ -37,6 +37,7 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Merge pairs with identical first element:\nA1\tB1\nA1\tB2\nA2\tB3\nA4\tB4\n->\nA1\tB1\tB2\nA2\tB3\tB4")
   	{
+      version = VERSION;
   	  addPositional ("in", "Input file");
   	}
 

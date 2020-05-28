@@ -37,6 +37,8 @@
 
 #include "common.hpp"
 using namespace Common_sp;
+#include "version.inc"
+
 
 
 namespace 
@@ -48,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print the pairs of words from a list. In each pair: word1 < word2")
   	{
+      version = VERSION;
   	  addPositional ("list", "File with different words");
   	}
 
