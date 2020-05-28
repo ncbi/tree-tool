@@ -2001,7 +2001,12 @@ bool Change::apply ()
     VectorPtr<Tree::TreeNode>& boundary = subgraph. boundary;
     const Tree::TreeNode* lca_ = nullptr;
     Tree::LcaBuffer buf;
+  #if 0
     area = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
+  #else
+    const VectorPtr<Tree::TreeNode>& path = Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf);  
+    area << path;
+  #endif
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
     const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
