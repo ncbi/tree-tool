@@ -1563,10 +1563,7 @@ void Token::readInput (CharInput &in)
   qc ();
 
   if (verbose ())
-  {
-  	cout << type2str (type) << ' ';  
-  	cout << *this << ' ' << charNum << endl;
-  }
+  	cout << type2str (type) << ' ' << *this << ' ' << charNum + 1 << endl;
 }
 
 
