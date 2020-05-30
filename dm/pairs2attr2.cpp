@@ -110,9 +110,14 @@ struct ThisApplication : Application
 		attr_num--;
 		
 		
+		// PAR
+		constexpr size_t bufSize = 16 * 1024 * 1024;
+		constexpr size_t displayPeriod = 1000000;
+		
+		
     Set<string> objNames;
     {
-      LineInput f (pairsFName);
+      LineInput f (pairsFName, bufSize, displayPeriod);  
       while (f. nextLine ())
       {
         string obj1, obj2;
@@ -131,7 +136,7 @@ struct ThisApplication : Application
                         ? new PositiveAttr2 (attr_name, ds, decimals)
                         : new RealAttr2     (attr_name, ds, decimals);
     {
-      LineInput f (pairsFName);
+      LineInput f (pairsFName, bufSize, displayPeriod);  
       while (f. nextLine ())
       {
         string obj1, obj2;
