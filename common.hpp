@@ -788,8 +788,12 @@ public:
 	      prefixIt++;
 	    }
     }
-  List<T>& operator<< (T t) 
+  List<T>& operator<< (const T &t) 
     { P::push_back (t); 
+    	return *this;
+    }    
+  List<T>& operator<< (T &&t) 
+    { P::push_back (move (t)); 
     	return *this;
     }    
   template <typename U/*:<T>*/>
@@ -1384,7 +1388,7 @@ public:
 	virtual bool empty () const
 	  { return true; }
   virtual void clear ()
-    {}
+    { throw logic_error ("Root::clear() is not implemented"); }
     // Postcondition: empty()
   virtual void read (istream &/*is*/)
     { throw logic_error ("Root::read() is not implemented"); }
@@ -2763,6 +2767,8 @@ public:
 	void saveText (ostream &os) const override;
 	bool empty () const override
 	  { return type == eDelimiter && name. empty (); }
+	void clear () override
+	  { *this = Token (); }
 
 
 	static string type2str (Type type) 
