@@ -1128,7 +1128,7 @@ private:
     //   {# <Comment>}
     //   OBJNUM <# objects> [NO]NAME [NO]MULT
     //   ATTRIBUTES
-    //     {<Attribute name> <Type>}
+    //     {<Attribute name> <Type>}+
     //   DATA
     //     {[<Object name>] [<mult>] {<Value>}}*   // <# objects> rows
     //     [<Two-way attribute name>    {FULL <full matrix>} 
@@ -1139,7 +1139,7 @@ private:
     //    {<obj1> <obj2> <value>*}*
     //   ]
     //   [COMMENT
-    //      {<Object comment>}
+    //      {<Object comment>}+
     //   ]
     //
     // where <Type> ::= {{Real | Real2 | Positive | Positive2 | Probability} <# decimals>} |
