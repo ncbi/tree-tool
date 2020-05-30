@@ -220,35 +220,14 @@ struct ThisApplication : Application
     PRINT (uchar2hex (255));
   #endif
   
-    ifstream f (arg);
-    ASSERT (f. good ());
-    size_t n = 0;
-  #if 0
-    // ~30 sec./16G !
-    constexpr size_t len = 10 * 1024 * 1024;  // PAR
-    unique_ptr<char> s (new char [len]);
-    while (! f. eof ())
+
+    CharInput in ("/am/ftp-genomes/Viruses/FamilyPhylogeneticTree/PH.26.asn");
+    FOR (size_t, i, 10)  
     {
-      f. getline (s. get (), len, '\0');
-      f. clear (f. rdstate () & ~ios::failbit);
-      n++;
-      cerr << '\r' << n << ' ' << (int) f. rdstate ();
-      QC_ASSERT (! (f. rdstate () & ios::goodbit));
-      QC_ASSERT (! (f. rdstate () & ios::badbit));
+      const Token token (in);
+      token. qc ();
+      cout << token << endl;
     }
-  #else
-    // 2 min./16G !
-    while (! f. eof ())
-    {
-      f. get ();
-      n++;
-      if (! (n % (1024 * 1024)))
-        cerr << '\r' << n << ' ' << (int) f. rdstate ();
-      QC_ASSERT (! (f. rdstate () & ios::goodbit));
-      QC_ASSERT (! (f. rdstate () & ios::badbit));
-    }
-  #endif
-    cout << n << endl;
   }
 };
 
