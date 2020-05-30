@@ -1826,6 +1826,7 @@ void loadObjPair (const string &objName1,
     throw runtime_error (FUNC "Unknown object " + strQuote (objName2) + " while reading two-way attribute " + strQuote (attr. name));
 
   const string averageS (attr. getAverageStrValue (move (values)));
+//ASSERT (values. empty ());
   
   attr. str2value (objNum1, objNum2, averageS); 
 }
@@ -2028,7 +2029,7 @@ void Dataset::load (istream &is)
 	  strUpper (s1);
 	  if (s1 == "COMMENT")
 	  {
-	    ASSERT (! objCommented ());
+	    QC_ASSERT (! objCommented ());
       is. ignore (numeric_limits<streamsize>::max(), '\n');	    
       for (const Obj* obj_ : objs)
       {
