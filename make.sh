@@ -11,3 +11,9 @@ make all
 
 cd ../phylogeny
 make all
+
+cd ../genetics
+make all
+
+cd ../dissim
+make all
