@@ -11,32 +11,32 @@ endif
 ############################### Programs ################################
 
 all:	\
+	asnt2tree \
   attr2_2paup \
   attr2_2phylip \
-  combine_dissims \
   compareTrees \
   distTree_new \
-  feature2dissim \
   feature2gain_loss \
-  hash2dissim \
-  hash_request2dissim \
-  loci_request2dissim \
 	makeDistTree \
 	makeDistTree-dev \
 	makeFeatureTree \
 	mergeSimilarity \
-	mlst2dissim \
 	mutation2phen \
 	newick2tree \
 	printDistTree \
 	randomDistTree \
-	req_feature2dissim \
   sampleReport \
 	statDistTree \
 	testDistTree \
 	tree2clusters \
 	tree2genogroup
 	
+
+asnt2tree.o:  $(COMMON_HPP) $(CPP_DIR)/asn.hpp $(DM_DIR)/numeric.hpp $(PHYL_DIR)/distTree.hpp 
+asnt2treeOBJS=asnt2tree.o $(DISTTREE_OBJ) $(CPP_DIR)/asn.o
+asnt2tree:	$(asnt2treeOBJS)
+	$(CXX) -o $@ $(asnt2treeOBJS) $(LIBS) 
+	$(ECHO)
 
 attr2_2paup.o:  $(DM_HPP) 
 attr2_2paupOBJS=attr2_2paup.o $(DM_OBJ) 
@@ -48,18 +48,6 @@ attr2_2phylip.o:  $(DM_HPP)
 attr2_2phylipOBJS=attr2_2phylip.o $(DM_OBJ) 
 attr2_2phylip:	$(attr2_2phylipOBJS)
 	$(CXX) -o $@ $(attr2_2phylipOBJS) $(LIBS)
-	$(ECHO)
-
-attr2_multiply.o:  $(DM_HPP) 
-attr2_multiplyOBJS=attr2_multiply.o $(DM_OBJ) 
-attr2_multiply:	$(attr2_multiplyOBJS)
-	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
-	$(ECHO)
-
-combine_dissims.o:  $(NUMERIC_HPP) 
-combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
-combine_dissims:	$(combine_dissimsOBJS)
-	$(CXX) -o $@ $(combine_dissimsOBJS) $(LIBS)
 	$(ECHO)
 
 compareTrees.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/featureTree.hpp 
@@ -74,34 +62,10 @@ distTree_new:	$(distTree_newOBJS)
 	$(CXX) -o $@ $(distTree_newOBJS) $(LIBS)
 	$(ECHO)
 
-feature2dissim.o:  $(DM_HPP) 
-feature2dissimOBJS=feature2dissim.o $(DM_OBJ) 
-feature2dissim:	$(feature2dissimOBJS)
-	$(CXX) -o $@ $(feature2dissimOBJS) $(LIBS)
-	$(ECHO)
-
 feature2gain_loss.o:  $(COMMON_HPP) $(PHYL_DIR)/featureTree.hpp 
 feature2gain_lossOBJS=feature2gain_loss.o $(FEATURE_TREE_OBJ)
 feature2gain_loss:	$(feature2gain_lossOBJS)
 	$(CXX) -o $@ $(feature2gain_lossOBJS) $(LIBS)
-	$(ECHO)
-
-hash2dissim.o:  $(DM_HPP) $(PHYL_DIR)/evolution.hpp 
-hash2dissimOBJS=hash2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
-hash2dissim:	$(hash2dissimOBJS)
-	$(CXX) -o $@ $(hash2dissimOBJS) $(LIBS)
-	$(ECHO)
-
-hash_request2dissim.o:  $(NUMERIC_HPP) $(PHYL_DIR)/evolution.hpp 
-hash_request2dissimOBJS=hash_request2dissim.o $(DM_OBJ) $(PHYL_DIR)/evolution.o
-hash_request2dissim:	$(hash_request2dissimOBJS)
-	$(CXX) -o $@ $(hash_request2dissimOBJS) $(LIBS)
-	$(ECHO)
-
-loci_request2dissim.o:  $(COMMON_HPP) 
-loci_request2dissimOBJS=loci_request2dissim.o $(CPP_DIR)/common.o
-loci_request2dissim:	$(loci_request2dissimOBJS)
-	$(CXX) -o $@ $(loci_request2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 makeDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp 
@@ -123,12 +87,6 @@ mergeSimilarity.o:  $(DM_HPP)
 mergeSimilarityOBJS=mergeSimilarity.o $(DM_OBJ) 
 mergeSimilarity:	$(mergeSimilarityOBJS)
 	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
-	$(ECHO)
-
-mlst2dissim.o:  $(DM_HPP) 
-mlst2dissimOBJS=mlst2dissim.o $(DM_OBJ) 
-mlst2dissim:	$(mlst2dissimOBJS)
-	$(CXX) -o $@ $(mlst2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 mutation2phen.o:  $(COMMON_HPP) 
@@ -153,12 +111,6 @@ randomDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 randomDistTreeOBJS=randomDistTree.o $(DISTTREE_OBJ)
 randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
-	$(ECHO)
-
-req_feature2dissim.o:  $(COMMON_HPP) 
-req_feature2dissimOBJS=req_feature2dissim.o $(DISTTREE_OBJ)
-req_feature2dissim:	$(req_feature2dissimOBJS)
-	$(CXX) -o $@ $(req_feature2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 sampleReport.o:  $(COMMON_HPP) 

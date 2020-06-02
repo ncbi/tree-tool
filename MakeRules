@@ -39,24 +39,12 @@ CPP_DIR = $(CODE_DIR)/cpp
 
 COMMON_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc $(CPP_DIR)/version.inc
 $(CPP_DIR)/common.o:	$(COMMON_HPP)
-COMMON = $(CPP_DIR)/common $(CPP_DIR)/application
-
-$(CPP_DIR)/application.o:	$(CPP_DIR)/application.hpp $(COMMON_HPP)
-$(CPP_DIR)/graph.o:	$(COMMON_HPP) $(CPP_DIR)/graph.hpp
+$(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_HPP) 
+$(CPP_DIR)/asn.o:	$(CPP_DIR)/asn.hpp $(COMMON_HPP)
 
 
 XML_DIR=$(CPP_DIR)/xml
 $(XML_DIR)/xml.o: $(XML_DIR)/xml.hpp $(COMMON_HPP)
-
-
-AI_DIR = $(CPP_DIR)/AI
-$(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
-
-
-LANG_DIR = $(CODE_DIR)/lang
-$(LANG_DIR)/cfgrammar.o: $(LANG_DIR)/cfgrammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
-$(LANG_DIR)/language.o: $(COMMON_HPP) $(LANG_DIR)/language.hpp $(LANG_DIR)/utf8.hpp
-$(LANG_DIR)/preftree.o: $(COMMON_HPP) $(LANG_DIR)/preftree.hpp 
 
 
 DM_DIR = $(CPP_DIR)/dm
@@ -83,16 +71,47 @@ PREDICT = $(DM_DIR)/prediction $(DM)
 
 
 PHYL_DIR = $(CPP_DIR)/phylogeny
-
 $(PHYL_DIR)/distTree.o:	$(PHYL_DIR)/distTree.hpp $(PREDICT_HPP) $(CPP_DIR)/graph.hpp
 DISTTREE_OBJ = $(PHYL_DIR)/distTree.o $(PREDICT_OBJ) $(CPP_DIR)/graph.o
 DISTTREE = $(PHYL_DIR)/distTree $(PREDICT) $(CPP_DIR)/graph
-
-$(PHYL_DIR)/evolution.o:	$(PHYL_DIR)/evolution.hpp $(NUMERIC_HPP)
-
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP) $(CPP_DIR)/graph.hpp
 FEATURE_TREE_OBJ = $(PHYL_DIR)/featureTree.o $(DM_OBJ) $(CPP_DIR)/graph.o
 FEATURE_TREE = $(PHYL_DIR)/featureTree $(DM) $(CPP_DIR)/graph
+
+
+GEN_DIR = $(CPP_DIR)/genetics
+$(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_HPP)
+$(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_HPP)
+SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o 
+$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
+HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
+#$(GEN_DIR)/GenomeTab.o:	$(GEN_DIR)/GenomeTab.hpp $(COMMON_HPP)
+
+
+DISSIM_DIR = $(CPP_DIR)/dissim
+
+NW_DIR = $(DISSIM_DIR)/nw
+$(NW_DIR)/nw_aligner.o: $(NW_DIR)/nw_aligner.hpp
+$(NW_DIR)/nw_band_aligner.o: $(NW_DIR)/nw_band_aligner.hpp
+$(NW_DIR)/raw_scoremat.o:
+	cc  -malign-double -fno-math-errno -fdiagnostics-color=always  -O3 -c -o $(NW_DIR)/raw_scoremat.o $(NW_DIR)/raw_scoremat.c
+
+$(DISSIM_DIR)/evolution.o:	$(DISSIM_DIR)/evolution.hpp $(NUMERIC_HPP)
+$(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(DISSIM_DIR)/evolution.hpp $(COMMON_HPP)
+ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(DISSIM_DIR)/evolution.o
+
+
+#GEN_NCBI_DIR = $(CODE_DIR)/genetics
+
+
+AI_DIR = $(CPP_DIR)/AI
+$(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
+
+
+LANG_DIR = $(CODE_DIR)/lang
+$(LANG_DIR)/cfgrammar.o: $(LANG_DIR)/cfgrammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
+$(LANG_DIR)/language.o: $(COMMON_HPP) $(LANG_DIR)/language.hpp $(LANG_DIR)/utf8.hpp
+$(LANG_DIR)/preftree.o: $(COMMON_HPP) $(LANG_DIR)/preftree.hpp 
 
 
 AMRFINDER_DIR=$(CODE_DIR)/amrfinder
@@ -100,31 +119,9 @@ $(AMRFINDER_DIR)/gff.o: $(AMRFINDER_DIR)/gff.hpp $(COMMON_HPP)
 $(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_HPP)
 
 
-GEN_DIR = $(CPP_DIR)/genetics
-
-NW_DIR = $(GEN_DIR)/nw
-$(NW_DIR)/nw_aligner.o: $(NW_DIR)/nw_aligner.hpp
-$(NW_DIR)/nw_band_aligner.o: $(NW_DIR)/nw_band_aligner.hpp
-$(NW_DIR)/raw_scoremat.o:
-	cc  -malign-double -fno-math-errno -fdiagnostics-color=always  -O3 -c -o /home/brovervv/code/nw/raw_scoremat.o /home/brovervv/code/nw/raw_scoremat.c
-
-$(GEN_DIR)/asn.o:	$(GEN_DIR)/asn.hpp $(COMMON_HPP)
-$(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_HPP)
-$(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_HPP)
-SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o 
-$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
-HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
-#$(GEN_DIR)/GenomeTab.o:	$(GEN_DIR)/GenomeTab.hpp $(COMMON_HPP)
-$(GEN_DIR)/align.o: $(GEN_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(PHYL_DIR)/evolution.hpp $(COMMON_HPP)
-ALIGN_OBJ = $(GEN_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(PHYL_DIR)/evolution.o
-
-
-#GEN_NCBI_DIR = $(CODE_DIR)/genetics_ncbi
-#$(GEN_NCBI_DIR)/align.o:	$(GEN_NCBI_DIR)/align.hpp $(NUMERIC_HPP) $(GEN_DIR)/seq.hpp $(PHYL_DIR)/evolution.hpp
-#ALIGN = $(GEN_DIR)/seq $(DM) $(PHYL_DIR)/evolution $(GEN_NCBI_DIR)/align
-
-
 DATABASE_DIR = $(CODE_DIR)/database
+COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
+$(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_HPP)
 $(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_HPP)
 $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_HPP) $(DATABASE_DIR)/db.hpp
 
