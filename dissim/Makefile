@@ -11,6 +11,7 @@ endif
 ############################### Programs ################################
 
 all:	\
+  additive \
 	blast2ani \
 	blast2cons \
   combine_dissims \
@@ -28,6 +29,12 @@ all:	\
 	req_feature2dissim \
 	snp2dm
 
+
+additive.o:  $(DM_HPP) 
+additiveOBJS=additive.o $(DM_OBJ) 
+additive:	$(additiveOBJS)
+	$(CXX) -o $@ $(additiveOBJS) $(LIBS)
+	$(ECHO)
 
 blast2ani.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
 blast2aniOBJS=blast2ani.o $(NUMERIC_OBJ)
