@@ -58,6 +58,8 @@ struct ThisApplication : Application
 		  addPositional ("data", "Directory with data");
 		  addFlag ("init", "Initialize search");
 		  
+  	//addKey ("dissim_power", "Power to raise dissimilarity in", "1");
+
   	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
   	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
   	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
@@ -77,6 +79,8 @@ struct ThisApplication : Application
   {
 	  const string dataDir       = getArg ("data");
 	  const bool   init          = getFlag ("init");
+
+	             //dissim_power        = str2real (getArg ("dissim_power"));      // Global
 
 	               varianceType    = str2varianceType (getArg ("variance"));  // Global
 	               variancePower   = str2real (getArg ("variance_power"));    // Global
