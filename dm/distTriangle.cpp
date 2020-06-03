@@ -149,12 +149,12 @@ Save clusters in " + dmSuff + "-files\
   	  addKey ("distance_max", "Max. distance to merge into the same cluster; 0 - infinity", "0");
   	  addKey ("objName", "Object name to print violations for");
   	  // Output
-  	  addKey ("clustering_dir", "If specified then save the data of each non-singleton cluster in this directory");  	  
+  	  addKey ("clustering_dir", "Save the data of each non-singleton cluster in this directory");  	  
   	}
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string clustering_dir = getArg ("clustering_dir");
 		const bool   max_cliques    = getFlag ("max_cliques");
@@ -174,10 +174,10 @@ Save clusters in " + dmSuff + "-files\
     const PositiveAttr2* dist = nullptr;
     {
       const Attr* attr = ds. name2attr (attrName);
-      ASSERT (attr);
+      QC_ASSERT (attr);
       dist = attr->asPositiveAttr2 ();
     }
-    ASSERT (dist);
+    QC_ASSERT (dist);
     
 
 	  // Check dist->matr  
