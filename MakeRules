@@ -37,7 +37,8 @@ CODE_DIR = $(HOME)/code
 
 CPP_DIR = $(CODE_DIR)/cpp
 
-COMMON_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc $(CPP_DIR)/version.inc
+COMMON_RAW_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
+COMMON_HPP = $(COMMON_RAW_HPP) $(CPP_DIR)/version.inc
 $(CPP_DIR)/common.o:	$(COMMON_HPP)
 $(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_HPP) 
 $(CPP_DIR)/asn.o:	$(CPP_DIR)/asn.hpp $(COMMON_HPP)
@@ -121,11 +122,11 @@ $(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_HPP)
 
 DATABASE_DIR = $(CODE_DIR)/database
 COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
-$(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_HPP)
-$(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_HPP)
-$(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_HPP) $(DATABASE_DIR)/db.hpp
+$(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
+$(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
+$(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
 
-$(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
+$(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
 GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq $(DATABASE_DIR)/db
 
 GenBank_LIB =  xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache  bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect  
