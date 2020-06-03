@@ -14,9 +14,14 @@ INC=$1
 NEW_PAR=$2
 
 
-echo "QC ..."
-$INC/qc.sh go
-echo ""
+QC=1
+
+
+if [ $QC == 1 ]; then
+  echo "QC ..."
+  $INC/qc.sh go
+  echo ""
+fi
 
 
 if [ 1 == 1 ]; then   
@@ -88,9 +93,11 @@ if [ -e $INC/outlier-genogroup ]; then
 fi
 
 
-echo ""
-echo "QC ..."
-$INC/qc.sh go
+if [ $QC == 1 ]; then
+  echo ""
+  echo "QC ..."
+  $INC/qc.sh go
+fi
 echo ""
 echo "Tree QC ..."
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
