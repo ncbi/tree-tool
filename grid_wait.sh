@@ -27,5 +27,5 @@ while [ 1 == 1 ]; do
 done
 
 if [ $N -gt 0 ]; then
-  echo "GRID was waited for $N min."
+  echo "GRID was waited for for $N min."
 fi
