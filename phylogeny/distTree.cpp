@@ -9162,8 +9162,8 @@ void NewLeaf::process (bool init,
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
         catch (...)
-        {
-          cout << f. line << endl;
+        {          
+          cout << endl << f. lineNum + 1 << endl << f. line << endl;
           throw;
         }
     }
