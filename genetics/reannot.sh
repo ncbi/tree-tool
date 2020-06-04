@@ -17,9 +17,6 @@ PROT=$4
 LOG=$5
 
 
-#tblastn  -db genome/$DNA  -query prot  -show_gis  -word_size 3  -evalue 1e-4  -db_gencode $2  -seg no  -comp_based_stats 0  -outfmt '6 qseqid sseqid length positive qstart qend sstart send slen sseq' | awk '$4/$3 >= 0.85' | tblastn2orf -log log/$1 
-
-
 TMP=`mktemp`
 #echo $TMP 
 
