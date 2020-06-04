@@ -149,7 +149,7 @@ inline bool at_dissim_boundary (Real dissim)
   { return     dissim_boundary >= dissim 
   	       && (dissim_boundary -  dissim) / dissim_boundary <= 0.05;  // PAR 
   }
-  // Has a small probability <= choice of dissim_boundary
+  // Being true should have a small probability <= choice of dissim_boundary
 
 
 constexpr static uint dissims_max {numeric_limits<uint>::max ()};
