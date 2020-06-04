@@ -1,5 +1,6 @@
 #!/bin/bash
-source ~brovervv/code/cpp/bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Load a gzipped XML file"
   echo "#1: gzipped XML file"
