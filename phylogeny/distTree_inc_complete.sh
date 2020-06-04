@@ -3,10 +3,10 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
-  echo "#1: Incremental distance tree directory"
-  echo "#2: List of objects"
-  echo "#3: Update database (0/1)"
-  echo "Output: #1/, data.dm"
+  echo "#1: incremental distance tree directory"
+  echo "#2: list of objects"
+  echo "#3: update database (0/1)"
+  echo "Output: #1/, #1/../data.dm"
   exit 1
 fi
 INC=$1
@@ -37,14 +37,14 @@ rm $INC/dissim.raw
 
 echo ""
 echo "data.dm ..."
-$THIS/../dm/pairs2attr2 $INC/dissim 1 "cons" 6 -distance > data.dm
-echo "nan|inf:"
+$THIS/../dm/pairs2attr2 $INC/dissim 1 "cons" 6 -distance > $INC/../data.dm
+echo "nan:"
 set +o errexit
-grep -wci 'nan\|inf' data.dm
+grep -wic 'nan' $INC/../data.dm
 set -o errexit
 
 echo ""
-$THIS/../dm/dm2objs data -noprogress | sort > $INC/tree.list
+$THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
 if [ $DB == 1 ]; then
   $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
   wc -l $INC/outlier-alien
@@ -57,18 +57,17 @@ HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 if [ $HYBRIDNESS_MIN != 0 ]; then
   echo ""
   echo "distTriangle ..."
-  cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
+ #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
   mkdir $INC/clust
-  $THIS/../dm/distTriangle $INC/data1 "cons"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new
-  rm $INC/data1.dm
+  $THIS/../dm/distTriangle $INC/../data "cons"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new
   N=`ls $INC/clust/ | wc -l`
   if [ $N -gt 1 ]; then
     echo "# Clusters: $N"
     exit 1
   fi
-  mv $INC/clust/1/data1.dm data.dm
+  mv $INC/clust/1/data.dm $INC/../data.dm
   rm -r $INC/clust/
-  $THIS/../dm/dm2objs data | sort > $INC/tree.list  
+  $THIS/../dm/dm2objs $INC/../data | sort > $INC/tree.list  
   if [ $DB == 1 ]; then
     echo ""
     echo "Hybrid ..."
@@ -87,7 +86,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 VARIANCE=`cat $INC/variance`
-$THIS/makeDistTree  -threads 5  -data data  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
+$THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
 if [ $DB == 1 ]; then
   echo ""
