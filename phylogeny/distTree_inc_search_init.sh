@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Initialize a new object for a distance tree"
   echo "#1: incremental distance tree directory"
-  echo "#2: New object"
+  echo "#2: new object"
   exit 1
 fi
 INC=$1
@@ -15,10 +15,10 @@ DIR=$INC/search/$OBJ
 
 
 while [ 1 == 1 ]; do
-	set +o errexit
-	$INC/request_closest.sh $OBJ > $DIR/request
+  set +o errexit
+	$INC/request_closest.sh $OBJ | sed -e 's/$/\t'$OBJ'/1' > $DIR/request
   S=$?
-	set -o errexit
+  set -o errexit
 	if [ $S == 0 ]; then
 	  break
 	fi
