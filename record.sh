@@ -1,5 +1,6 @@
 #!/bin/bash
-source ~brovervv/code/cpp/bash_common.sh
+THIS=`dirname $0`
+source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Print a row of a tab-delimnietd table where the top row is a header"
   echo "#1: table"

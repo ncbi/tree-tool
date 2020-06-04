@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Dataset utilities
+*   "Data Master" library
 *
 */
 
