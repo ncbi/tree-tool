@@ -34,7 +34,7 @@ cp $1.dm $TMP.tmp/
 
 echo "" > $TMP.mds
 
-while [ 1 == 1 ]; do
+while true; do
   echo ""
   F=`ls $TMP.tmp | head -1`
   if [ ! "$F" ]; then

@@ -14,7 +14,7 @@ OBJ=$2
 DIR=$INC/search/$OBJ
 
 
-while [ 1 == 1 ]; do
+while true; do
   set +o errexit
 	$INC/request_closest.sh $OBJ | sed -e 's/$/\t'$OBJ'/1' > $DIR/request
   S=$?

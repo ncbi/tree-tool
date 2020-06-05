@@ -29,7 +29,7 @@ else
 	mkdir $INC/dr	
 	$THIS/../splitList $REQ $GRID_MIN $INC/dr
 	
-  while [ 1 == 1 ]; do
+  while true; do
     rm -rf $INC/dr.out
 		mkdir $INC/dr.out
 		

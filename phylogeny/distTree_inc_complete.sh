@@ -14,7 +14,7 @@ OBJS=$2
 DB=$3
 
 
-#if [ 1 == 0 ]; then  
+#if false; then  
 if [ -s $INC/tree ]; then
   echo "$INC/tree must be empty"
   exit 1

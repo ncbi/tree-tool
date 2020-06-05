@@ -37,7 +37,7 @@ cut -f 1,2,4,5 $ANNOT > $TMP.univ
 
 $THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
 
-if [ 0 == 1 ]; then
+if false; then
   mkdir $TMP.seq
   $THIS/splitFastaProt $PROT_CUT 25 $TMP.seq  -log $LOG
   $THIS/../trav $TMP.seq  -log $LOG  "hmmalign --amino --informat FASTA --outformat A2M $HMM_DIR/%f.HMM %d/%f" | sed '/^[^>]/ s/[a-z]//g' | sed '/^[[:space:]]*$/d' > $PREFIX.hmm-align

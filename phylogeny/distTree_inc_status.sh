@@ -85,7 +85,7 @@ if [ $S == 0 ]; then
   tail -$HIST $TMP
 fi
 
-if [ 0 == 1 ]; then
+if false; then
   set +o errexit
   wc -l $INC/hist/unhybrid.* 1> $TMP.out 2> /dev/null
   grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP

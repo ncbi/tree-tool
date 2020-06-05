@@ -22,7 +22,7 @@ OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 ADD=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
 
 
-if [ 1 == 1 ]; then  
+if true; then  
 date
 echo ""
 #top -b -n 1 | head -15
@@ -91,6 +91,7 @@ if [ $N -gt 0 ]; then
     $THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
     $THIS/../qstat_wait.sh 2000 1
     ls $INC/search/*/request | cut -f 3 -d '/' > $INC/sought.list
+      # Will break if "No such file or directory"
     $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
     rm $INC/search.list
     rm $INC/sought.list

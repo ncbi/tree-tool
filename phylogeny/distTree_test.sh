@@ -14,7 +14,7 @@ if [ ${AT_NCBI:-0} == 1 ]; then
 fi
 
 
-#if [ 1 == 0 ]; then  
+#if false; then  
 echo ""
 echo "mdsTree: Enterobacteriaceae ..."
 rm -rf data/Enterobacteriaceae.dir/
@@ -245,7 +245,7 @@ else
   $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110-out1.nw
   diff Virus110.nw Virus110-out1.nw || true
   #
-  if [ 0 == 1 ]; then  # ??
+  if false; then  # ??
     makeDistTree  -qc  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out2.tree 1> $TMP.2 2> /dev/null
     B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
     if [ "$A" != "$B" ]; then

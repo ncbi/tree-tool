@@ -14,7 +14,7 @@ if [ $MSG == "1" ]; then
 fi
 
 N=0
-while [ 1 == 1 ]; do
+while true; do
   set +o errexit
   qstat &> /dev/null
   S=$?

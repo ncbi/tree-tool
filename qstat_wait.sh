@@ -14,7 +14,7 @@ SLEEP_SEC=10  # PAR
 PERIODS=$(( $SECONDS / $SLEEP_SEC ))
 
 
-while  [ 1 == 1 ]; do
+while true; do
   sleep $SLEEP_SEC
   $THIS/grid_wait.sh 0
   set +o errexit
@@ -27,7 +27,7 @@ done
 
 
 N=0
-while [ 1 = 1 ]; do
+while true; do
   sleep $SLEEP_SEC
   $THIS/grid_wait.sh 0
   set +o errexit

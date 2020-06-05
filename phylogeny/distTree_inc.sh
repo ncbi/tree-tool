@@ -24,10 +24,10 @@ if [ $QC == 1 ]; then
 fi
 
 
-if [ 1 == 1 ]; then   
+if true; then   
 if [ $NEW_PAR == 1 ]; then
   # Time: O(n log^4(n))
-  while [ 1 == 1 ]; do
+  while true; do
     if [ -e $INC/stop ]; then
       echo ""
       echo '*** STOPPED ***'
