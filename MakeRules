@@ -39,6 +39,7 @@ CPP_DIR = $(CODE_DIR)/cpp
 
 COMMON_RAW_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
 COMMON_HPP = $(COMMON_RAW_HPP) $(CPP_DIR)/version.inc
+COMMON = $(CPP_DIR)/common
 $(CPP_DIR)/common.o:	$(COMMON_HPP)
 $(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_HPP) 
 $(CPP_DIR)/asn.o:	$(CPP_DIR)/asn.hpp $(COMMON_HPP)
