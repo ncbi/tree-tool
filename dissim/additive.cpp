@@ -47,14 +47,12 @@ namespace
 {
 
 
-void checkQuartet (const Matrix &matr,
-                   size_t x,
-                   size_t y,
-                   size_t u,
-                   size_t v,
-                   size_t &quartets,
-                   size_t &additive)
-// Update: m. n
+Real getAdditivity (const Matrix &matr,
+                    size_t x,
+                    size_t y,
+                    size_t u,
+                    size_t v)
+// Return: <= 1.0 <=> additive; may be NaN
 {
   // QC
   Vector<size_t> vec (4);
@@ -74,7 +72,7 @@ void checkQuartet (const Matrix &matr,
   
   const Real s = xy + xu + xv + yu + yv + uv;
   if (isNan (s) || s == INF)
-    return;
+    return NaN;
     
   ASSERT (xy >= 0.0);
   ASSERT (xu >= 0.0);
@@ -82,10 +80,8 @@ void checkQuartet (const Matrix &matr,
   ASSERT (yu >= 0.0);
   ASSERT (yv >= 0.0);
   ASSERT (uv >= 0.0);
-  
-  quartets++;
-  if (xy + uv <= max (xu + yv, yu + xv))
-    additive++;
+    
+  return (xy + uv) / max (xu + yv, yu + xv);
 }
 
 
@@ -128,14 +124,20 @@ struct ThisApplication : Application
     size_t quartets = 0;
     size_t additive = 0;
     for (size_t i = 0; i + 4 < objs. size (); i += 4)
-      checkQuartet ( dist->matr
-                   , objs [i + 0]
-                   , objs [i + 1]
-                   , objs [i + 2]
-                   , objs [i + 3]
-                   , quartets
-                   , additive
-                   );    
+    {
+      const Real additivity = getAdditivity ( dist->matr
+                                            , objs [i + 0]
+                                            , objs [i + 1]
+                                            , objs [i + 2]
+                                            , objs [i + 3]
+                                            );
+      if (isNan (additivity))
+        continue;
+      // Print distribution of additivity ??
+      quartets++;
+      if (additivity <= 1.0)
+        additive++;
+    }
     ASSERT (additive <= quartets);
     cout << additive << " / " << quartets << " = " << Real (additive) / Real (quartets) << endl;
 	}
