@@ -1,4 +1,5 @@
 #!/bin/bash
+#source bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Record genogroup outliers in a database"
   echo "#1: file genogroup_table"

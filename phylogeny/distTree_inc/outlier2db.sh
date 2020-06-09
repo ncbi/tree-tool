@@ -1,4 +1,5 @@
 #!/bin/bash
+#source bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Record an outlier in a database"
   echo "#1: object id"

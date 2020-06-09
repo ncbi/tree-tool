@@ -1,4 +1,5 @@
 #!/bin/bash
+#source bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute dissimilarities"
   echo "#1: file with pairs: <Object1> <Object2>"
