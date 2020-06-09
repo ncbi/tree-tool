@@ -37,7 +37,7 @@ rm $INC/dissim.raw
 
 echo ""
 echo "data.dm ..."
-$THIS/../dm/pairs2attr2 $INC/dissim 1 "cons" 6 -distance > $INC/../data.dm
+$THIS/../dm/pairs2attr2 $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
 set +o errexit
 grep -wic 'nan' $INC/../data.dm
@@ -59,7 +59,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   echo "distTriangle ..."
  #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
   mkdir $INC/clust
-  $THIS/../dm/distTriangle $INC/../data "cons"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new
+  $THIS/../dm/distTriangle $INC/../data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new
   N=`ls $INC/clust/ | wc -l`
   if [ $N -gt 1 ]; then
     echo "# Clusters: $N"
@@ -86,7 +86,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 VARIANCE=`cat $INC/variance`
-$THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
+$THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
 if [ $DB == 1 ]; then
   echo ""
