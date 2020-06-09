@@ -19,7 +19,10 @@ QC=""  # -qc
 RATE=0.015   # PAR
 VARIANCE=`cat $INC/variance`
 OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
-ADD=`echo "$OBJS * $RATE + 1" | bc -l | sed 's/\..*$//1'`  # PAR
+ADD=`echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1'`  # PAR
+if [ $ADD == 0 ]; then
+  ADD=1
+fi
 
 
 if true; then  
