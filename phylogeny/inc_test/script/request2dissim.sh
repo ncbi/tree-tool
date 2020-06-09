@@ -26,7 +26,7 @@ DT/trav $TMP.2 "echo %n $HASH_DIR/%f" > $TMP.f2
 join  -1 1  -2 1  $TMP.f1 $TMP.f2 | cut -d ' ' -f 2,3 > $TMP.req
 
 
-DT/phylogeny/hash_request2dissim $TMP.req  $TMP.out  -intersection_min 50  -ratio_min 0.5  -log $LOG 
+DT/dissim/hash_request2dissim $TMP.req  $TMP.out  -intersection_min 50  -ratio_min 0.5  -log $LOG 
 sed 's|'$HASH_DIR'/||g' $TMP.out > $OUT
 
 
