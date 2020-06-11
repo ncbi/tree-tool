@@ -13,8 +13,7 @@ OUT=$2
 LOG=$3
 
 
-DIR=/home/brovervv/panfs/GenBank/bacteria
 # PAR
-~/code/genetics_ncbi/combine_dissims3.sh $REQ $OUT $DIR/genome 50 0.5 $THIS/dissim_scale $THIS/hmm-univ.stat 0 0.57 $LOG
+combine_dissims3.sh $REQ $OUT $THIS/../genome 50 0.5 $THIS/dissim_scale $THIS/hmm-univ.stat 0 0.57 $LOG
 
 

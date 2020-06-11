@@ -15,8 +15,8 @@ LOG=$3
 
 DIR=/home/brovervv/panfs/GenBank/Protists
 # was:                                             200
-~/code/genetics_ncbi/combine_dissims.sh $REQ $OUT $DIR/genome  10 0.1 $THIS/dissim_scale $THIS/hmm-univ.stat 1 0.65 $LOG
-#                                       1    2    3            4  5   6                  7                   8 9    10
+~/code/genetics/combine_dissims.sh $REQ $OUT $DIR/genome  10 0.1 $THIS/dissim_scale $THIS/hmm-univ.stat 1 0.65 $LOG
+#                                  1    2    3            4  5   6                  7                   8 9    10
 
 
 

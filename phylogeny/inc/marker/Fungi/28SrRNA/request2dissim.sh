@@ -11,7 +11,7 @@ REQUEST=$1
 DISSIM=$2
 LOG=$3
 
-dna_pairs2dissim  -log $LOG  -coeff 0.0066887  $REQUEST /home/brovervv/panfs/marker/Fungi/28SrRNA/seq 300 $DISSIM
+dna_pair2dissim  -log $LOG  -coeff 0.0066887  $REQUEST /home/brovervv/panfs/marker/Fungi/28SrRNA/seq 300 $DISSIM
   # was: 0.00634 
 rm -f $LOG
 

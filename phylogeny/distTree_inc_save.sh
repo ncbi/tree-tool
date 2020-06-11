@@ -27,6 +27,10 @@ for F in `ls $INC/`; do
   
   N=`cat $INC/$F | wc -l`
   if [ $N -lt 20000 ]; then  # PAR
-    cp $INC/$F $OUT/
+    sed 's|/home/brovervv/code/cpp|CPP_DIR|g' $INC/$F | sed 's/\[ $AT_NCBI == 1 \]/false/g' | sed 's/PROTEUS/""/g' > $OUT/$F
   fi
 done
+
+
+chmod a+x $OUT/*.sh
+
