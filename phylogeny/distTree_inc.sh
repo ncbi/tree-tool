@@ -4,9 +4,10 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
-  echo "Output: leaf_errors.{dm,txt}, tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, qual.raw"
+  echo "Output: leaf_errors.dm"
+  echo "        if #1/phen exists then: tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, qual.raw"
   echo "#1: incremental distance tree directory"
-  echo "#2: add new objects (0/1)"
+  echo "#2: add new objects from #1/new/ (0/1)"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
