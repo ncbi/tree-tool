@@ -18,7 +18,7 @@ set +o errexit
 grep -v $NEW_OBJ $TMP.blastn > $TMP.grep 
 sort -k 2 -n -r $TMP.grep | cut -f 1 | head -100 > $TMP.head
 set -o errexit
-sort -u $TMP.head | sed 's/$/ '$NEW_OBJ'/1' 
+sort -u $TMP.head 
 
 
 rm -fr $TMP*  
