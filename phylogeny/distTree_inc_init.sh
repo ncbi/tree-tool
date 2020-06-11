@@ -24,6 +24,7 @@ PHEN_LARGE=$8
 
 
 if [ $GRID_MIN -le 0 ]; then
+  echo "Bad GRID_MIN"
   exit 1
 fi
 
@@ -55,7 +56,7 @@ function create_script
 	NAME=$1.sh
 	#
 	cp $THIS/distTree_inc/$NAME $INC/
-	echo "Implement $INC/$NAME !"
+	echo -e "${YELLOW}Implement $INC/$NAME !${NOCOLOR}"
 }
 create_script objects_in_tree
 create_script outlier2db
