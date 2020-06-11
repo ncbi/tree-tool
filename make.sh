@@ -22,8 +22,10 @@ make all
 
 cd ../phylogeny
 set +o errexit
-ls inc/*.sh     >  tmp.list
-ls inc/*/*.sh   >> tmp.list
-ls inc/*/*/*.sh >> tmp.list
+ls inc/*.sh       1>  tmp.list  2> /dev/null  
+ls inc/*/*.sh     1>> tmp.list  2> /dev/null
+ls inc/*/*/*.sh   1>> tmp.list  2> /dev/null
+ls inc/*/*/*/*.sh 1>> tmp.list  2> /dev/null
 set -o errexit
-../trav tmp.list -step 1 "sed 's|^CPP_DIR =.*$|CPP_DIR = '$PWD'|g' %f > %f.tmp && mv %f.tmp %f"
+../trav tmp.list -step 1 "sed 's|CPP_DIR|'$PWD'|g' %f > %f.tmp && mv %f.tmp %f && chmod a+x %f"
+rm tmp.list
