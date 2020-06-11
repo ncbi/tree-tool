@@ -1,17 +1,15 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 2 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
   echo "#1: incremental distance tree directory"
   echo "#2: list of objects"
-  echo "#3: update database (0/1)"
   echo "Output: #1/, #1/../data.dm"
   exit 1
 fi
 INC=$1
 OBJS=$2
-DB=$3
 
 
 #if false; then  
@@ -45,12 +43,11 @@ set -o errexit
 
 echo ""
 $THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
-if [ $DB == 1 ]; then
-  $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
-  wc -l $INC/outlier-alien
-  $THIS/../trav $INC/outlier-alien "$INC/outlier2db.sh %f alien"
-  rm $INC/outlier-alien
-fi
+
+$THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
+wc -l $INC/outlier-alien
+$THIS/../trav $INC/outlier-alien "$INC/outlier2db.sh %f alien"
+rm $INC/outlier-alien
 
 
 HYBRIDNESS_MIN=`cat $INC/hybridness_min`
@@ -68,13 +65,11 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   mv $INC/clust/1/data.dm $INC/../data.dm
   rm -r $INC/clust/
   $THIS/../dm/dm2objs $INC/../data | sort > $INC/tree.list  
-  if [ $DB == 1 ]; then
-    echo ""
-    echo "Hybrid ..."
-  	$THIS/distTree_inc_hybrid.sh $INC 
-   #echo "Unhybrid ..."
-   #$THIS/distTree_inc_unhybrid.sh $INC 
-  fi
+  echo ""
+  echo "Hybrid ..."
+	$THIS/distTree_inc_hybrid.sh $INC 
+ #echo "Unhybrid ..."
+ #$THIS/distTree_inc_unhybrid.sh $INC 
 fi
 
 
@@ -88,17 +83,15 @@ fi
 VARIANCE=`cat $INC/variance`
 $THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
-if [ $DB == 1 ]; then
+echo ""
+echo "Database ..."
+$INC/objects_in_tree.sh $INC/tree.list 1
+if [ $HYBRIDNESS_MIN != 0 ]; then
   echo ""
-  echo "Database ..."
-  $INC/objects_in_tree.sh $INC/tree.list 1
-  if [ $HYBRIDNESS_MIN != 0 ]; then
-    echo ""
-    echo "Hybrid ..."
-  	$THIS/distTree_inc_hybrid.sh $INC
-   #echo "Unhybrid ..."
-   #$THIS/distTree_inc_unhybrid.sh $INC
-  fi
+  echo "Hybrid ..."
+	$THIS/distTree_inc_hybrid.sh $INC
+ #echo "Unhybrid ..."
+ #$THIS/distTree_inc_unhybrid.sh $INC
 fi
 
 rm $INC/tree.list
