@@ -7,7 +7,7 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
-sqsh-ms -S PROTEUS  -D uniColl  << EOT
+sqsh-ms -S ""  -D uniColl  << EOT
   update Genome
     set outlier = '$2'
     where id = $1;

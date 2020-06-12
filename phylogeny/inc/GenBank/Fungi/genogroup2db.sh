@@ -9,7 +9,7 @@ fi
 
 loadLISTC $1
 
-sqsh-ms  -S PROTEUS  -D uniColl  -L exit_failcount=1 << EOF | sed 's/|$//1' 
+sqsh-ms  -S ""  -D uniColl  -L exit_failcount=1 << EOF | sed 's/|$//1' 
   EXEC Genogroup2outliers 4751 /*PAR*/, 0;
   go -m bcp
 EOF

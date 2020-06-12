@@ -25,7 +25,7 @@ makeblastdb  -in $BASE_DIR/seq.fa  -dbtype nucl  -blastdb_version 4  -logfile /d
 
 loadLISTC $OBJ_LIST
 
-sqsh-ms  -S PROTEUS  -D uniColl << EOT 
+sqsh-ms  -S ""  -D uniColl << EOT 
   update Locus
     set in_tree = $IN_TREE
     from      LISTC
