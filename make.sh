@@ -28,5 +28,13 @@ ls inc/*/*.sh     1>> tmp.list  2> /dev/null
 ls inc/*/*/*.sh   1>> tmp.list  2> /dev/null
 ls inc/*/*/*/*.sh 1>> tmp.list  2> /dev/null
 set -o errexit
-../trav tmp.list -step 1 "sed 's|CPP_DIR|'$DIR'|g' %f > %f.tmp && mv %f.tmp %f && chmod a+x %f"
+../trav tmp.list -noprogress "sed 's|CPP_DIR|'$DIR'|g' %f > %f.tmp && mv %f.tmp %f && chmod a+x %f"
 rm tmp.list
+
+
+echo ""
+echo "Software version:"
+./makeDistTree -version
+
+echo ""
+echo -e ${GREEN}SUCCESS!${NOCOLOR}
