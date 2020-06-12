@@ -8,6 +8,7 @@ if [ $# -ne 3 ]; then
   echo "#1: Server name"
   echo "#2: Database name"
   echo "#3: Schema name"
+  echo "Time: 5 min."
   exit 1
 fi
 SERVER=$1
@@ -58,41 +59,41 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
     create table $SCHEMA.Taxrank
     (
       id varchar(16)  not null  primary key
-    , num tinyint  not null  identity  check (num >= 1)
-    , sub_rank_max tinyint  not null  default 0  check (sub_rank_max >= 0) 
+    , num int  not null  check (num >= -1)
+    , sub_rank_max tinyint  not null  default 0 
     );
-    insert into $SCHEMA.Taxrank (id) values
-      ('all'),
-      ('superkingdom'),
-      ('kingdom'),
-      ('subkingdom'),
-      ('superphylum'),
-      ('phylum'),
-      ('subphylum'),
-      ('superclass'),
-      ('class'),
-      ('subclass'),
-      ('infraclass'),
-      ('cohort'),
-      ('subcohort'),
-      ('superorder'),
-      ('order'),
-      ('suborder'),
-      ('infraorder'),
-      ('parvorder'),
-      ('superfamily'),
-      ('family'),
-      ('subfamily'),
-      ('tribe'),
-      ('subtribe'),
-      ('genus'),
-      ('subgenus'),
-      ('species group'),
-      ('species subgroup'),
-      ('species'),
-      ('subspecies'),
-      ('varietas'),
-      ('forma');
+    insert into $SCHEMA.Taxrank (num, id) values
+      (-1, 'all'),
+      ( 0, 'superkingdom'),
+      ( 1, 'kingdom'),
+      ( 2, 'subkingdom'),
+      ( 3, 'superphylum'),
+      ( 4, 'phylum'),
+      ( 5, 'subphylum'),
+      ( 6, 'superclass'),
+      ( 7, 'class'),
+      ( 8, 'subclass'),
+      ( 9, 'infraclass'),
+      (10, 'cohort'),
+      (11, 'subcohort'),
+      (12, 'superorder'),
+      (13, 'order'),
+      (14, 'suborder'),
+      (15, 'infraorder'),
+      (16, 'parvorder'),
+      (17, 'superfamily'),
+      (18, 'family'),
+      (19, 'subfamily'),
+      (20, 'tribe'),
+      (21, 'subtribe'),
+      (22, 'genus'),
+      (23, 'subgenus'),
+      (24, 'species group'),
+      (25, 'species subgroup'),
+      (26, 'species'),
+      (27, 'subspecies'),
+      (28, 'varietas'),
+      (29, 'forma');
       -- 'section', 'series'
     grant select on $SCHEMA.Taxrank to public;
     
@@ -101,7 +102,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
       id int  not null  primary key  check (id > 0)  
     , parent int  
     , rank_name varchar(16)
-    , [rank] tinyint
+    , [rank] int
     , [name] varchar(256)  not null  
          check (    not [name] like ' %'
                 and not [name] like '% '
@@ -109,7 +110,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
                )
         -- unique scientific name
     , revised as  case when substring([name],1,1) = '[' then 1 else 0 end
-    , sub_rank tinyint  not null  default 0  check (sub_rank >= 0)
+    , sub_rank tinyint  not null  default 0  
     , endosymbiont bit  not null  default 0
     , strain bit  not null  default 0
     , unclassified bit  not null  default 0
@@ -185,7 +186,7 @@ EOT
 
 echo "Creating stored functions ..."
 sqsh-ms  -S $SERVER  -D $DB << EOT 
-  create function $SCHEMA.tax_rank_sub_rank2tax (@tax int, @rank tinyint, @sub_rank tinyint) returns int
+  create function $SCHEMA.tax_rank_sub_rank2tax (@tax int, @rank int, @sub_rank tinyint) returns int
   -- Traverse Tax lineage from @tax up to (@rank,@sub_rank)
   -- Return: Tax.id, null (root) or -1 (unclassified)
   as 
@@ -249,7 +250,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
   -- Print: <NN>-<NN>:{<tax_name>|_OTHER_}
   as
   begin
-    declare @rank tinyint;
+    declare @rank int;
     select @rank = Tax.[rank]
       from $SCHEMA.Tax
       where Tax.id = @tax;
@@ -262,7 +263,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
         where num between @rank_min and @rank  -- PAR
         order by num;
     open RankCur;
-    declare @taxrank tinyint;
+    declare @taxrank int;
     declare @sub_rank_max tinyint;
     declare @taxname varchar(256);
     declare @taxname_old varchar(128) = '';
@@ -312,7 +313,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
     -- $SCHEMA.Tax.{rank_name,[rank],sub_rank}
     update $SCHEMA.Tax
       set rank_name = 'all'
-        , [rank] = 1
+        , [rank] = -1
       where     parent is null
             and rank_name is null;
     while 1=1
@@ -330,7 +331,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
     end;
     update $SCHEMA.Tax
       set rank_name = 'all'
-        , [rank] = 1
+        , [rank] = -1
       where rank_name is null;
 
     -- Tax.depth
@@ -441,13 +442,11 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
     update $SCHEMA.Tax
       set unclassified = 1
       where     revised = 0
-          --and evolution = 1
             and sub_rank = 0
             and endosymbiont = 0
             and not [name] like 'candidate %'
             and not [name] like '% group'
             and not [name] like '''%'
-          --and division = 'BCT'
             and substring([name],1,1) = lower(substring([name],1,1));
     update $SCHEMA.Tax
       set unclassified = 1
@@ -559,6 +558,6 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
 EOT
 
 
-rm -r TMP*
+rm -r $TMP*
 
 
