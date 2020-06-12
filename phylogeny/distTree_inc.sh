@@ -6,6 +6,7 @@ if [ $# -ne 2 ]; then
   echo "Update: #1/"
   echo "Output: leaf_errors.dm"
   echo "        if #1/phen exists then: tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, qual.raw"
+  echo "Requires: large RAM, large running time"
   echo "#1: incremental distance tree directory"
   echo "#2: add new objects from #1/new/ (0/1)"
   echo "Time: O(n log^4(n))"
