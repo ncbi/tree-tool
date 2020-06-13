@@ -516,27 +516,10 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
       raiserror ('$SCHEMA.Tax.rank/rank_name is null', 11, @n);
 
     select @n = count(*)
-      from      $SCHEMA.Tax
-           join $SCHEMA.Tax P on P.id = Tax.parent
-      where Tax.[rank] < P.[rank];
+      from $SCHEMA.Tax
+      where depth is null;
     if @n > 0
-      raiserror ('$SCHEMA.Tax/Parent.rank', 11, @n);
-
-  /*select @n = count(*) 
-      from      $SCHEMA.Tax C
-           join $SCHEMA.Tax P on P.id = C.parent
-      where     C.[rank] = P.[rank]
-            and C.sub_rank != P.sub_rank + 1;
-    if @n > 0
-      raiserror ('Tax.sub_rank', 11, @n);*/
-
-    select @n = count(*)
-      from      $SCHEMA.Tax C
-           join $SCHEMA.Tax P on P.id = C.parent
-      where     C.[rank] > P.[rank]
-            and C.sub_rank >= 1;
-    if @n > 0
-      raiserror ('Tax/Parent.[rank]', 11, @n);
+      raiserror ('Tax.depth', 11, @n);
 
     select @n = count(*)
       from $SCHEMA.Tax
@@ -545,16 +528,18 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
       raiserror ('Tax.strain rank is too high', 11, @n);
 
     select @n = count(*)
-      from $SCHEMA.Tax
-      where depth is null;
+      from      $SCHEMA.Tax C
+           join $SCHEMA.Tax P on P.id = C.parent
+      where     C.[rank] > P.[rank]
+            and C.sub_rank >= 1;
     if @n > 0
-      raiserror ('Tax.depth', 11, @n);
+      raiserror ('Tax/Parent.[rank]', 11, @n);
   end try
   begin catch
     print error_message();
     raiserror ('error', 11, 1);
   end catch;
-  go
+  go -m bcp 
 EOT
 
 
