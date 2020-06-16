@@ -34,18 +34,15 @@ echo ""
 
 N=`ls $INC/search/ | head -1`
 if [ $N ]; then
-  echo "$INC/search/ is not empty"
-  exit 1
+  error "$INC/search/ is not empty"
 fi
 
 if [ -s $INC/leaf ]; then
-  echo "$INC/leaf is not empty"
-  exit 1
+  error "$INC/leaf is not empty"
 fi
 
 if [ -e $INC/dissim.add ]; then
-  echo "$INC/dissim.add exists"
-  exit 1
+  error "$INC/dissim.add exists"
 fi
 
 
