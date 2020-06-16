@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "$0"
   echo "#1: Protein FASTA"
@@ -27,7 +28,7 @@ if [ $CUTOFF == 1 ]; then
   CUT_GA="--cut_ga"
 fi
 hmmsearch  --tblout $TMP.hmmsearch  --noali  -Z 10000  $CUT_GA  --cpu 4  $HMM $PROT &>> $LOG
-prots2hmm_signature $TMP.hmmsearch  -log $LOG > $SIG
+$THIS/prots2hmm_signature $TMP.hmmsearch  -log $LOG > $SIG
 cut -f 2 $SIG | str2hash -log $LOG > $HASH
 
 
