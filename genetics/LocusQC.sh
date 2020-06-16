@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Quality control of a locus incremental distance tree directory"
   echo "#1: incremental distance tree directory"
-  echo "#2: SQL server name or ''"
+  echo "#2: SQL server name"
   echo "#3: Database"
   echo "#4: LOCUS table"
   echo "#5: LOCUS.taxroot"
@@ -12,7 +12,7 @@ if [ $# -ne 6 ]; then
   exit 1
 fi
 INC=$1
-SERVER="$2"
+SERVER=$2
 DB=$3
 LOCUS=$4
 TAXROOT=$5
@@ -50,7 +50,6 @@ if [ $N -ne ${M[5]} ]; then
 fi
 
 
-if [ $SERVER ]; then
 sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' > $TMP.locus
   select id
     from $LOCUS
@@ -74,7 +73,6 @@ EOT
 #wc -l $TMP.genome-new 
 #wc -l $TMP.new
 diff $TMP.locus-new $TMP.new
-fi
 
 
 rm $TMP*
