@@ -1,7 +1,7 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 8 ]; then
+if [ $# -ne 12 ]; then
   echo "Initialize an incremental distance tree directory"
   echo "#1: output directory"
   echo "#2: grid_min (> 0): min. number of dissimilarity requests to use GRID"
@@ -9,8 +9,12 @@ if [ $# -ne 8 ]; then
   echo "#4: hybridness_min (> 1); 0 - no hybrids"
   echo "#5: dissim_boundary (> 0 or NAN)"
   echo "#6: genogroup_barrier (> 0 or NAN)"
-  echo "#7: complete path to 'phenotype' directory or ''"
+  echo "#7: complete path to a 'phenotype' directory or ''"
   echo "#8: phen_large (0/1): 1 - files in #7 directory are grouped into subdirectories named file2hash(<file name>)"
+  echo "#9: SQL server name or ''"
+  echo "#10: database name on the SQL server or ''"
+  echo "#11: complete path to a directory for bulk insert into the database or ''"
+  echo "#12: path in Universal Naming Convention to the bulk directory #11 or ''"
   exit 1
 fi
 INC=$1
@@ -21,11 +25,34 @@ DISSIM_BOUNDARY=$5
 GENOGROUP_BARRIER=$6
 PHEN=$7
 PHEN_LARGE=$8
+SERVER=$9
+DATABASE=${10}
+BULK_LOCAL=${11}
+BULK_REMOTE=${12}
 
 
 if [ $GRID_MIN -le 0 ]; then
-  echo "Bad GRID_MIN"
-  exit 1
+  error "Bad GRID_MIN"
+fi
+
+if [ "$SERVER" -a ! "$DATABASE" ]; then
+  error "Database is empty"
+fi
+
+if [ ! "$SERVER" -a "$DATABASE" ]; then
+  error "Server is empty"
+fi
+
+if [ "$BULK_LOCAL" -a ! "$DATABASE" ]; then
+  error "Bulk directory with an emoty database"
+fi
+
+if [ "$BULK_LOCAL" -a ! "$BULK_REMOTE" ]; then
+  error "Local bulk directory with an empty remote bulk directory"
+fi
+
+if [ ! "$BULK_LOCAL" -a "$BULK_REMOTE" ]; then
+  error "Remote bulk directory with an empty local bulk directory"
 fi
 
 
@@ -49,6 +76,8 @@ echo "$VARIANCE"        > $INC/variance
 echo $DISSIM_BOUNDARY   > $INC/dissim_boundary
 echo $GENOGROUP_BARRIER > $INC/genogroup_barrier
 echo $HYBRIDNESS_MIN    > $INC/hybridness_min
+echo $SERVER            > $INC/server
+echo $DATABASE          > $INC/database
 
 
 function create_script
@@ -59,7 +88,9 @@ function create_script
 	echo -e "${YELLOW}Implement $INC/$NAME !${NOCOLOR}"
 }
 create_script objects_in_tree
-create_script outlier2db
+if [ $SERVER ]; then
+  create_script outlier2db
+fi
 create_script request2dissim
 create_script request_closest
 create_script qc
@@ -73,6 +104,10 @@ if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
   create_script genogroup2db
 fi
 
+if [ $BULK_LOCAL ]; then
+  ln -s $BULK_LOCAL $INC/bulk
+  echo $BULK_REMOTE > inc/bulk_remote
+fi
 
 if [ $PHEN ]; then
   ln -s $PHEN $INC/phen
