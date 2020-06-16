@@ -12,3 +12,11 @@ export NOCOLOR='\033[0m'
 export RED='\033[1;31m'
 export GREEN='\033[1;32m'
 export YELLOW='\033[1;33m'
+
+
+function error
+{
+	MSG="$1"
+	echo -e "${RED}$MSG${NOCOLOR}"
+	exit 1
+}
