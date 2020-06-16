@@ -20,12 +20,12 @@ else
   mv $INC/seq.fa1 $INC/seq.fa
 fi
 
-makeblastdb  -in $INC/seq.fa  -dbtype nucl  -blastdb_version 4  -logfile /dev/null
+makeblastdb  -in $INC/seq.fa  -dbtype nucl    -logfile /dev/null
 
 
 loadLISTC $OBJ_LIST
 
-sqsh-ms  -S ""  -D uniColl << EOT 
+sqsh-ms  -S PROTEUS  -D uniColl << EOT 
   update Locus
     set in_tree = $IN_TREE
     from      LISTC

@@ -7,7 +7,7 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
-sqsh-ms -S ""  -D uniColl  << EOT
+sqsh-ms -S PROTEUS  -D uniColl  << EOT
   update Locus
     set outlier = '$2'
     where id = '$1';

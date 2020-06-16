@@ -11,8 +11,10 @@ REQUEST=$1
 DISSIM=$2
 LOG=$3
 
-THIS=`dirname $0`
-CPP_DIR/dissim/dna_pair2dissim  -log $LOG  -coeff 0.00155  $REQUEST $THIS/../seq 600 $DISSIM
+
+INC=`dirname $0`
+# PAR
+CPP_DIR/dissim/dna_pair2dissim  -log $LOG  -coeff 0.00155  $REQUEST $INC/../seq 600 $DISSIM
   # was: 1200
 rm -f $LOG
 

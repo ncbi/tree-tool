@@ -11,20 +11,26 @@ if [ ! -s $OBJ_LIST ]; then
   exit 0
 fi
 
-BASE_DIR=`dirname $0`
+
+INC=`dirname $0`
 
 if [ $IN_TREE == 1 ]; then
-  CPP_DIR/trav $1 "cat $BASE_DIR/../seq/%f" >> $BASE_DIR/seq.fa
+  CPP_DIR/trav $1 "cat $INC/../seq/%f" >> $INC/seq.fa
 else
-  CPP_DIR/genetics/extractFastaDna $BASE_DIR/seq.fa $OBJ_LIST  -remove > $BASE_DIR/seq.fa1
-  mv $BASE_DIR/seq.fa1 $BASE_DIR/seq.fa
+  CPP_DIR/genetics/extractFastaDna $INC/seq.fa $OBJ_LIST  -remove > $INC/seq.fa1
+  mv $INC/seq.fa1 $INC/seq.fa
 fi
 
-makeblastdb  -in $BASE_DIR/seq.fa  -dbtype nucl    -logfile /dev/null
+makeblastdb  -in $INC/seq.fa  -dbtype nucl    -logfile /dev/null
 
-if false; then
-loadLISTC $OBJ_LIST
-sqsh-ms  -S ""  -D uniColl << EOT 
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+BULK_REMOTE=`cat $INC/bulk_remote`
+
+CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..LISTC
+#loadLISTC $OBJ_LIST
+
+sqsh-ms  -S PROTEUS  -D uniColl << EOT 
   update Locus
     set in_tree = $IN_TREE
     from      LISTC
@@ -32,4 +38,3 @@ sqsh-ms  -S ""  -D uniColl << EOT
   print @@rowcount;
   go -m bcp
 EOT
-fi

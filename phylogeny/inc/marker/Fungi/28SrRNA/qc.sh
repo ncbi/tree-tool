@@ -23,7 +23,7 @@ diff $TMP.seq-fa $TMP.seq-fa-uniq
 tree2obj.sh $INC/tree > $TMP.tree
 diff $TMP.seq-fa $TMP.tree
 
-sqsh-ms -S ""  -U anyone  -P allowed  -D uniColl << EOT | sed 's/|$//1' > $TMP.locus
+sqsh-ms -S PROTEUS  -U anyone  -P allowed  -D uniColl << EOT | sed 's/|$//1' > $TMP.locus
   select id
     from Locus
     where     taxroot = 4751
@@ -34,7 +34,7 @@ EOT
 diff $TMP.seq-fa $TMP.locus
 
 ls $INC/new/ > $TMP.new
-sqsh-ms -S ""  -D uniColl  -U anyone  -P allowed  << EOT | sed 's/|$//1' | sort > $TMP.locus-new
+sqsh-ms -S PROTEUS  -D uniColl  -U anyone  -P allowed  << EOT | sed 's/|$//1' | sort > $TMP.locus-new
   select id
     from Locus
     where     taxroot = 4751

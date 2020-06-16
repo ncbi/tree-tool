@@ -9,4 +9,6 @@ fi
 
 
 INC=`dirname $0`
-CPP_DIR/genetics/LocusQC.sh $INC "" uniColl Locus 2 "16S"
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+CPP_DIR/genetics/LocusQC.sh $INC $SERVER $DATABASE Locus 2 "16S"
