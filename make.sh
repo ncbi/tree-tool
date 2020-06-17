@@ -42,7 +42,7 @@ fi
 
 echo ""
 echo "Software version:"
-./makeDistTree -version
+phylogeny/makeDistTree -version
 
-echo ""
-echo -e ${GREEN}SUCCESS!${NOCOLOR}
+
+success

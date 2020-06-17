@@ -28,7 +28,12 @@ DebugCPPFLAGS = $(SimpleCPPFLAGS) -O3 -g
 CXX=g++
 COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c 
 LIBS=-pthread 
-ECHO = echo ""; echo ""
+
+ifdef AT_NCBI
+  ECHO = echo ""; echo ""
+else
+  ECHO = echo ""
+endif
 
 
 CODE_DIR = $(HOME)/code

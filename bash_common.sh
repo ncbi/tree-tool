@@ -20,3 +20,11 @@ function error
 	echo -e "${RED}$MSG${NOCOLOR}"
 	exit 1
 }
+
+
+function success
+{
+  echo ""
+  echo -e "${GREEN}SUCCESS!${NOCOLOR}"
+  exit 0
+}
