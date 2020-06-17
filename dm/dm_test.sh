@@ -126,5 +126,4 @@ diff Fungi-univ-stat.clust_binomial $THIS/data/Fungi-univ-stat.clust_binomial
 rm Fungi-univ-stat.clust_binomial
 
 
-echo ""
-echo -e ${GREEN}SUCCESS!${NOCOLOR}
+success

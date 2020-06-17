@@ -267,5 +267,4 @@ fi
 rm $TMP*
 
 
-echo ""
-echo -e ${GREEN}SUCCESS!${NOCOLOR}
+success
