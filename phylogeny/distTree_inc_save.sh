@@ -27,13 +27,23 @@ for F in `ls $INC/`; do
   
   N=`cat $INC/$F | wc -l`
   if [ $N -lt 20000 ]; then  # PAR
-    sed 's|/home/brovervv/code/cpp|CPP_DIR|g' $INC/$F | sed 's/-blastdb_version 4//g' > $OUT/$F
+    set +o errexit
+    EX=`file $INC/$F | grep -cw 'executable'`
+    set -o errexit
+    if [ $EX -eq 0 ]; then
+      cp $INC/$F $OUT/$F
+    else
+      sed 's|/home/brovervv/code/cpp|CPP_DIR|g' $INC/$F | sed 's/-blastdb_version 4//g' > $OUT/$F
+      chmod a+x $OUT/$F
+    fi
   fi
 done
 
 
+rm -f $OUT/tree
+rm -f $OUT/version
+rm -f $OUT/runlog
 rm -f $OUT/server
 rm -f $OUT/database
 
-chmod a+x $OUT/*.sh
 

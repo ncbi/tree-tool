@@ -10,17 +10,16 @@ ifdef AT_NCBI
     -Wcast-align -Wconversion -Wdeprecated-declarations -Wformat -Winit-self -Wlogical-op \
     -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
     -Woverloaded-virtual -pedantic -Wparentheses -Wpointer-arith -Wsequence-point -Wshadow -Wunused \
-    -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion -Wuseless-cast 
+    -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion -Wuseless-cast \
 endif
 
 SimpleCPPFLAGS = -std=gnu++14 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
-  # -Werror 
+  # -Werror   # Will break NCBI Makefiles
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
   # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
 	# -ffloat-store  # slows down two-fold
 	# -ffinite-math-only  # NAN problem
-# Disable debugging
 
 OptCPPFLAGS = $(SimpleCPPFLAGS) -O3 
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -O3 -g
@@ -35,7 +34,11 @@ ECHO = echo ""; echo ""
 CODE_DIR = $(HOME)/code
 
 
-CPP_DIR = $(CODE_DIR)/cpp
+ifdef AT_NCBI
+  CPP_DIR = $(CODE_DIR)/cpp
+else
+  CPP_DIR = $(PWD)
+endif
 
 COMMON_RAW_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
 COMMON_HPP = $(COMMON_RAW_HPP) $(CPP_DIR)/version.inc
