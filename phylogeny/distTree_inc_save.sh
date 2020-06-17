@@ -40,9 +40,14 @@ for F in `ls $INC/`; do
 done
 
 
+rm -f $OUT/dissim
+rm -f $OUT/dissim.bad
+rm -f $OUT/outlier_genogroup
 rm -f $OUT/tree
 rm -f $OUT/version
 rm -f $OUT/runlog
+
+# May be confidential
 rm -f $OUT/server
 rm -f $OUT/database
 

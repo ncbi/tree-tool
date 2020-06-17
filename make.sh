@@ -1,5 +1,6 @@
 #!/bin/bash
 # For github distribution
+cd `dirname $0`
 source ./bash_common.sh
 unset AT_NCBI
 
