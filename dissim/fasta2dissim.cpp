@@ -50,7 +50,7 @@ namespace
 {
 	
 
-const string attrName ("cons");
+const string attrName ("dissim");
 
 
 
