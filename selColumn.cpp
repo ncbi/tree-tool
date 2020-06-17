@@ -47,7 +47,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Select <Column> out of <File>\nSpaces and tabs are automatically included in <delimiters>")
+    : Application ("Select <Column> of a <File> separated by at least one delimiter.\nSpaces and tabs are automatically included in <delimiters>")
   	{
       version = VERSION;
   	  addPositional ("in", "Text file name or '-'");
