@@ -30,9 +30,9 @@ COMPILE.cpp= $(CXX) $(CPPFLAGS)  -c
 LIBS=-pthread 
 
 ifdef AT_NCBI
-  ECHO = echo ""; echo ""
+  ECHO = @echo ""; echo ""
 else
-  ECHO = echo ""
+  ECHO = @echo ""
 endif
 
 
