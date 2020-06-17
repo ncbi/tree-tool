@@ -26,6 +26,7 @@ make all
 cd ../dissim
 make all
 
+cd ..
 
 if false; then
 cd ../phylogeny
