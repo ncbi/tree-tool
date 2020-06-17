@@ -13,7 +13,6 @@ endif
 ############################### Programs ################################
 
 all:	\
-  cpp_test \
   csv2tab \
   extractPairs \
   file2hash \
