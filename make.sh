@@ -4,6 +4,8 @@ cd `dirname $0`
 source ./bash_common.sh
 unset AT_NCBI
 
+CPP_DIR=$PWD
+
 if false; then
 DIR=$PWD
 sed 's|^CPP_DIR =.*$|CPP_DIR = '$DIR'|1' MakeRules > MakeRules.tmp

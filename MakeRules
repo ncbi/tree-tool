@@ -36,8 +36,6 @@ CODE_DIR = $(HOME)/code
 
 ifdef AT_NCBI
   CPP_DIR = $(CODE_DIR)/cpp
-else
-  CPP_DIR = $(PWD)
 endif
 
 COMMON_RAW_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
