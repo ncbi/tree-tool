@@ -8,14 +8,12 @@ fi
 IN=$1
 
 
-#loadLISTC $IN
-
 INC=`dirname $0`
 SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..LISTC
+CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..ListC
 
 
 sqsh-ms  -S $SERVER  -D $DATABASE  -L exit_failcount=1 << EOF | sed 's/|$//1' 

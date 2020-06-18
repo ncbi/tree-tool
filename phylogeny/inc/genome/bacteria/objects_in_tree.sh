@@ -15,13 +15,13 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..LIST
+CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..List
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Genome
     set in_tree = $IN_TREE
-    from      LIST
-         join Genome on Genome.id = LIST.id;
+    from      List
+         join Genome on Genome.id = List.id;
   print @@rowcount;
   go -m bcp
 EOT
