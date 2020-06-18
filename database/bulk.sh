@@ -7,7 +7,7 @@ if [ $# -ne 5 ]; then
   echo "#2: local bulk directory"
   echo "#3: path in Universal Naming Convention to the bulk directory"
   echo "#4: input file"
-  echo "#5: output table on server #3"
+  echo "#5: output table on server #1"
   exit 1
 fi
 SERVER=$1
