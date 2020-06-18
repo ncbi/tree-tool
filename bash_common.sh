@@ -17,7 +17,8 @@ export YELLOW='\033[1;33m'
 function error
 {
 	MSG="$1"
-	echo -e "${RED}$MSG${NOCOLOR}"
+	echo -e "${RED}ERROR${NOCOLOR}"
+	echo "$MSG"
 	exit 1
 }
 
