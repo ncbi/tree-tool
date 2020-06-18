@@ -2,15 +2,10 @@
 # For github distribution
 cd `dirname $0`
 source ./bash_common.sh
+
+
 unset AT_NCBI
-
 export CPP_DIR=$PWD
-
-if false; then
-DIR=$PWD
-sed 's|^CPP_DIR =.*$|CPP_DIR = '$DIR'|1' MakeRules > MakeRules.tmp
-mv MakeRules.tmp MakeRules
-fi
 
 make all
 
@@ -27,18 +22,6 @@ cd ../dissim
 make all
 
 cd ..
-
-if false; then
-cd ../phylogeny
-set +o errexit
-ls inc/*.sh       1>  tmp.list  2> /dev/null  
-ls inc/*/*.sh     1>> tmp.list  2> /dev/null
-ls inc/*/*/*.sh   1>> tmp.list  2> /dev/null
-ls inc/*/*/*/*.sh 1>> tmp.list  2> /dev/null
-set -o errexit
-../trav tmp.list -noprogress "sed 's|CPP_DIR|'$DIR'|g' %f > %f.tmp && mv %f.tmp %f && chmod a+x %f"
-rm tmp.list
-fi
 
 
 echo ""
