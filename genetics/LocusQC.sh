@@ -60,7 +60,7 @@ sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' > $TMP.locus
 EOT
 diff $TMP.seq-fa $TMP.locus
 
-sqsh-ms -S $SERVER  -D $DB   << EOT | sed 's/|$//1' | sort > $TMP.locus-new
+sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus-new
   select id
     from $LOCUS
     where     taxroot = $TAXROOT
