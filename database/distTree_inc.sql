@@ -2,12 +2,14 @@ create table List
 (
   id numeric(20)  not null  primary key
 );
+go
 
 
 create table ListC
 (
   id varchar(256)  not null  primary key
 );
+go
 
 
 create table Locus
@@ -21,8 +23,11 @@ create table Locus
 , outlier varchar(16)  
 , constraint Locus_outlier_in_tree_nl check (outlier is null or in_tree is null)
 );
+go
 grant select on Locus to public;
 create index Locus_gene_idx on Locus(gene);
 create index Locus_outlier_idx on Locus(outlier);
+go
+
 
 
