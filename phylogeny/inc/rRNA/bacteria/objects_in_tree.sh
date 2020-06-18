@@ -29,7 +29,7 @@ BULK_REMOTE=`cat $INC/bulk_remote`
 
 CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
 
-sqsh-ms  -S PROTEUS  -D uniColl << EOT 
+sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Locus
     set in_tree = $IN_TREE
     from      ListC
