@@ -23,7 +23,7 @@ if [ ! -e $FROM/variance ]; then
   error "$FROM must be an incremental distance tree directory"
 fi
 
-( sqsh-ms  -S $SERVER  -D $DATABASE  -m bcp  -C "select @@version" | sed 's/|$//1' ) || error "Database is not available"
+( sqsh-ms  -S $SERVER  -D $DATABASE  -m bcp  -C "select @@version" > /dev/null ) || error "Database is not available"
 
 
 $THIS/distTree_inc_init.sh $INC 1 "" 0 NAN NAN "" 0 $SERVER $DATABASE $BULK_LOCAL $BULK_REMOTE
