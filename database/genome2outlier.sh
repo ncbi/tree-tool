@@ -19,8 +19,7 @@ H=`$THIS/../file2hash $ASM`
 F=genome/$H/$ASM/$ASM.hash-$HASHTYPE
 
 if [ ! -e $F ]; then
-  echo "$ASM No $F" 
-  exit 1
+  error "$ASM No $F" 
 fi
 
 N=`cat $F | wc -l`
