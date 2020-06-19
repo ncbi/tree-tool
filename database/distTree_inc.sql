@@ -40,7 +40,7 @@ create table Genome
 
 , dead bit  not null  default 0
 
-, total_len bigint  not null  constraint Genome_total_len_ck check (total_len >= 1000)
+, total_len bigint  constraint Genome_total_len_ck check (total_len >= 1000)
   
 , tax_root int  not null
 
