@@ -230,9 +230,9 @@ go
 
 create table GenomeHash
 (
-  [hash] numeric(20)  not null
+  genome int  not null  
 , [type] char(3)  not null  
-, genome int  not null  
+, [hash] numeric(20)  not null
 );
 create unique index GenomeHash_hash_type_uq on GenomeHash([hash], [type], genome);
 go
