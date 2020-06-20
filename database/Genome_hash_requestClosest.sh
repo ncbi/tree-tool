@@ -6,7 +6,7 @@ if [ $# != 7 ]; then
   echo "#1: SQL Server name"
   echo "#2: Database with tables Genome, GenomeHash, FreqHash"
   echo "#3: Directory for bulk insert"
-  echo "#4: path in Universal Naming Convention to the bulk directory"
+  echo "#4: path in Universal Naming Convention to the bulk insert directory"
   echo "#5: Genome.id"
   echo "#6: directory with #1/<hash>/#1.hash-{[CDS,]PRT,HMM}"
   echo "#7: Hashtype.id for lowest-level dissimilarity"
