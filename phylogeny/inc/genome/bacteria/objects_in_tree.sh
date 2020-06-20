@@ -2,7 +2,7 @@
 source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Set Genome.in_tree"
-  echo "#1: List of uniColl..Genome.id"
+  echo "#1: List of Genome.id"
   echo "#2: Genome.in_tree (1/null)"
   exit 1
 fi

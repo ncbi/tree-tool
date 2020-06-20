@@ -2,7 +2,7 @@
 source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
-  echo "#1: uniColl..Genome.id"
+  echo "#1: Genome.id"
   exit 1
 fi
 GENOME=$1
