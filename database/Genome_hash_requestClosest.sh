@@ -23,6 +23,7 @@ TYPE=$7
 
 TMP=`mktemp`  
 #echo $TMP
+#set -x
 
 
 NAME=`basename $TMP`
