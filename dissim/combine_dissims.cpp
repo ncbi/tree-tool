@@ -111,6 +111,8 @@ struct ObjPair
 	  	dissimS. clear ();
 	  	iss >> name1 >> name2 >> dissimS;
 	  	ASSERT (iss. eof ());
+	  	if (name1 > name2)
+	  	  swap (name1, name2);
 	  	ASSERT (name1 < name2);
 	  	dissim = str2real (dissimS);
 	  	IMPLY (! isNan (dissim), dissim >= 0.0);
