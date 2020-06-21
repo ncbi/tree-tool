@@ -652,7 +652,6 @@ private:
   friend DissimLine;
   void collapse (Leaf* other);
     // Output: discernible = false
-    // Requires: !DistTree_sp::variance_min
     // Invokes: setParent()
     // To be followed by: DistTree::cleanTopology()
 public:	

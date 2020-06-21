@@ -10,62 +10,66 @@ Neighbor joining ...
 
 INPUT:
 # Leaves: 291
-# Discernible leaves: 291
+# Discernible leaves: 285
 # Nodes: 580
 # Dissimilarities: 42195 (100.00 %)
-Dissimilarities factor: 25.56
-Ave. dissimilarity = 0.191845
-Abs. criterion = 1.8111e+01  Rel. criterion = 2.951 %
+Dissimilarities factor: 26.19
+Ave. dissimilarity = 0.197058
+Abs. criterion = 1.8217e+01  Rel. criterion = 2.959 %
 
 Optimizing arc lengths for the whole tree ...
 Optimizing arc lengths at each arc ...
 # Nodes deleted = 17
 Optimizing arc lengths at each node ...
-# Nodes deleted = 4
-Abs. criterion = 7.2358e+00  Rel. criterion = 1.865 %
+# Nodes deleted = 2
+Abs. criterion = 7.2835e+00  Rel. criterion = 1.871 %
 
 Optimizing topology: subgraphs ...
 # Hybrids: 0
-Abs. criterion = 6.5163e+00  Rel. criterion = 1.763 %
+Abs. criterion = 6.5364e+00  Rel. criterion = 1.766 %
 
 # Hybrids: 0
-Abs. criterion = 6.3905e+00  Rel. criterion = 1.746 %
+Abs. criterion = 6.5128e+00  Rel. criterion = 1.763 %
 
 # Hybrids: 0
-Abs. criterion = 6.2287e+00  Rel. criterion = 1.724 %
+Abs. criterion = 6.5049e+00  Rel. criterion = 1.762 %
 
 # Hybrids: 0
-Abs. criterion = 6.2112e+00  Rel. criterion = 1.722 %
+Abs. criterion = 6.5035e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Abs. criterion = 6.2088e+00  Rel. criterion = 1.721 %
+Abs. criterion = 6.5029e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Abs. criterion = 6.2084e+00  Rel. criterion = 1.721 %
+Abs. criterion = 6.5025e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Abs. criterion = 6.2082e+00  Rel. criterion = 1.721 %
+Abs. criterion = 6.5023e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Abs. criterion = 6.2081e+00  Rel. criterion = 1.721 %
+Abs. criterion = 6.5021e+00  Rel. criterion = 1.761 %
 
 # Hybrids: 0
-Abs. criterion = 6.2081e+00  Rel. criterion = 1.721 %
+Abs. criterion = 6.5020e+00  Rel. criterion = 1.761 %
 
-# Iterations of subgraph optimization: 9
-Abs. criterion = 6.2081e+00  Rel. criterion = 1.721 %
+# Hybrids: 0
+Abs. criterion = 6.5020e+00  Rel. criterion = 1.761 %
+
+# Iterations of subgraph optimization: 10
+Abs. criterion = 6.5019e+00  Rel. criterion = 1.761 %
 
 Ave. radius: 0.456
 
 # Criterion outliers: 4
-Abs. criterion = 4.8597e+00  Rel. criterion = 1.542 %
+Abs. criterion = 4.8721e+00  Rel. criterion = 1.543 %
 
-# Deformation outliers: 0
+# Deformation outliers: 22
+Abs. criterion = 3.6261e+00  Rel. criterion = 1.447 %
 
 OUTPUT:
-Abs. criterion = 4.8597e+00  Rel. criterion = 1.542 %
+Abs. criterion = 3.6261e+00  Rel. criterion = 1.447 %
 
 Relative epsilon2_0 = 0.00 %
 Mean residual = 0.00
-Correlation between residual^2 and dissimilarity = 0.09
+Correlation between residual^2 and dissimilarity = 0.12
 

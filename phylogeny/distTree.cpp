@@ -610,7 +610,7 @@ void DTNode::qc () const
     QC_ASSERT ((bool) getParent () == ! isNan (len));
     if (! childrenDiscernible ())
     {
-      QC_ASSERT (! DistTree_sp::variance_min);
+    //QC_ASSERT (! DistTree_sp::variance_min);
       QC_ASSERT (! inDiscernible ());
       for (const DiGraph::Arc* arc : arcs [false])
         QC_ASSERT (static_cast <const DTNode*> (arc->node [false]) -> inDiscernible ());
@@ -665,7 +665,7 @@ const Leaf* DTNode::inDiscernible () const
       return nullptr;
     else
     {
-      ASSERT (! DistTree_sp::variance_min);
+    //ASSERT (! DistTree_sp::variance_min);
       return g;
     }
   else
@@ -1313,7 +1313,7 @@ void Leaf::qc () const
 
   QC_ASSERT (! name. empty());
   QC_ASSERT (! isLeft (name, "0x"));
-  QC_IMPLY (DistTree_sp::variance_min, discernible);
+//QC_IMPLY (DistTree_sp::variance_min, discernible);
   if (! isNan (len) && ! discernible && len)
   {
     cout << getName () << " " << len << endl;
@@ -1375,7 +1375,7 @@ void Leaf::collapse (Leaf* other)
 {
   ASSERT (! getDistTree (). subDepth);
   ASSERT (this != other);
-  ASSERT (! DistTree_sp::variance_min);
+//ASSERT (! DistTree_sp::variance_min);
 //ASSERT (len == 0.0);
 //ASSERT (discernible);
 
@@ -1608,8 +1608,8 @@ void Subgraph::removeIndiscernibles ()
 {
   ASSERT (! area. empty ());
   
-  if (DistTree_sp::variance_min)
-    return;
+//if (DistTree_sp::variance_min)
+  //return;
   
   for (Iter<VectorPtr<Tree::TreeNode>> iter (area); iter. next (); )
     if (static_cast <const DTNode*> (*iter) -> inDiscernible ())
@@ -2888,8 +2888,8 @@ public:
         return;
       if (! leaf2)
         return;
-      if (   ! DistTree_sp::variance_min 
-          && ! dissim 
+      if (   /*! DistTree_sp::variance_min 
+          &&*/ ! dissim 
           && ! leaf1->getCollapsed (leaf2)  // Only for new Leaf's
          )  
         leaf1->collapse (leaf2);
@@ -3882,7 +3882,7 @@ bool DistTree::loadLines (const StringVector &lines,
   {
     ASSERT (parent);
     auto leaf = new Leaf (*this, parent, len, idS);
-    leaf->discernible = DistTree_sp::variance_min || ! indiscernible;
+    leaf->discernible = /*DistTree_sp::variance_min ||*/ ! indiscernible;
     leaf->normCriterion = normCriterion;
     dtNode = leaf;
   }
@@ -4191,8 +4191,8 @@ LeafCluster DistTree::getIndiscernibles ()
   ASSERT (! subDepth);
   ASSERT (optimizable ());
   
-  if (DistTree_sp::variance_min)
-    return LeafCluster ();
+//if (DistTree_sp::variance_min)
+  //return LeafCluster ();
 
   // Leaf::DisjointCluster
   for (DiGraph::Node* node : nodes)
@@ -4245,7 +4245,7 @@ size_t DistTree::leafCluster2discernibles (const LeafCluster &leafCluster)
     if (clusterNodes. size () == 1)
       continue;
       
-    ASSERT (! DistTree_sp::variance_min);
+  //ASSERT (! DistTree_sp::variance_min);
     const Leaf* first = clusterNodes [0];
     ASSERT (first);
     Steiner* parent = var_cast (static_cast <const DTNode*> (first->getParent ()) -> asSteiner ());
@@ -4321,8 +4321,8 @@ size_t DistTree::setDiscernibles_ds ()
     }
   }
   
-  if (DistTree_sp::variance_min)
-    return 0;
+//if (DistTree_sp::variance_min)
+  //return 0;
   
   FFOR (size_t, row, dissimDs->objs. size ())
     if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
@@ -4359,8 +4359,8 @@ size_t DistTree::setDiscernibles ()
       leaf->discernible = true;
   }  
   
-  if (DistTree_sp::variance_min)
-    return 0;
+//if (DistTree_sp::variance_min)
+  //return 0;
   
   const LeafCluster leafCluster (getIndiscernibles ());
   const size_t n = leafCluster2discernibles (leafCluster);
@@ -4873,7 +4873,7 @@ bool DistTree::addDissim (Leaf* leaf1,
   ASSERT (leaf1);
   ASSERT (leaf2);
   IMPLY (! multFixed, mult == 1.0);  // mult will be set later
-  IMPLY (! DistTree_sp::variance_min && ! target && dissimTypes. empty (), leaf1->getCollapsed (leaf2));  
+  IMPLY (/*! DistTree_sp::variance_min &&*/ ! target && dissimTypes. empty (), leaf1->getCollapsed (leaf2));  
 
   
   if (   isNan (target)  // prediction must be large ??
@@ -5158,7 +5158,7 @@ void DistTree::qc () const
       {
         dissim. qc ();
         QC_IMPLY (! subDepth, dissim. target >= 0.0);
-        QC_IMPLY (! DistTree_sp::variance_min && ! subDepth && ! dissim. target, dissim. indiscernible ());
+        QC_IMPLY (/*! DistTree_sp::variance_min &&*/ ! subDepth && ! dissim. target, dissim. indiscernible ());
         leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
         if (subDepth)
           { QC_ASSERT (dissim. mult < INF); }
@@ -5220,7 +5220,7 @@ void DistTree::qc () const
     {
       const VectorPtr<Leaf>& leaves = it. second;
       QC_ASSERT (leaves. size () >= 2);
-      QC_ASSERT (! DistTree_sp::variance_min);
+    //QC_ASSERT (! DistTree_sp::variance_min);
       for (const Leaf* leaf : leaves)
       {
         QC_ASSERT (leaf->graph == this);
@@ -5560,7 +5560,7 @@ void DistTree::setDissimMult (bool usePrediction)
 
 
   // To keep absCriterion < INF
-  if (! multFixed && ! variance_min && usePrediction)
+  if (! multFixed /*&& ! variance_min*/ && usePrediction)
   {  
     unordered_map<const Leaf*,Real/*dissim.target*/> leaf2target_min;  
     leaf2target_min. rehash (name2leaf. size () / 100 + 1);  // PAR

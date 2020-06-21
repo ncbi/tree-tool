@@ -63,7 +63,7 @@ struct ThisApplication : Application
   	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
   	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
   	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
-  	  addKey ("variance_min", "Min. dissimilarity variance; to be added to the computed variance. If > 0 then all objects are discernible", "0");
+  	  addKey ("variance_min", "Min. dissimilarity variance; to be added to the computed variance", "0");
   	    	  
 		  addKey ("name", "Name of the object");
 		  addKey ("dissim", "File of the format: <obj1> <obj2> <dissimilarity>");

@@ -5,7 +5,7 @@
 Tree length = 15.000
 Min. discernible leaf length = 1.000000e+00
 Ave. arc length = 2.500
-Interior height = 1
+Height ignoring indiscernibles = 1
 Bifurcating interior branching = 2.000
 Max. degree = 3
 # Frequent children interior nodes = 3
