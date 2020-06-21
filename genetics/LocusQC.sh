@@ -70,8 +70,6 @@ sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus-new
           and in_tree is null;
   go -m bcp  
 EOT
-#wc -l $TMP.genome-new 
-#wc -l $TMP.new
 diff $TMP.locus-new $TMP.new
 
 
