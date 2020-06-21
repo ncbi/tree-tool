@@ -120,11 +120,11 @@ struct ThisApplication : Application
     const string out           =               getArg ("out"); 
     const string out_prot      =               getArg ("out_prot");
     const string target_seq    =               getArg ("target_seq");
-    ASSERT (! out. empty ()); 
-    IMPLY (translate, cds);
-    IMPLY (reduce, ! cds || translate);
-    IMPLY (! out_prot. empty (), ! cds || translate);
-    IMPLY (! target_seq. empty (), ! target_hashes. empty ());
+    QC_ASSERT (! out. empty ()); 
+    QC_IMPLY (translate, cds);
+    QC_IMPLY (reduce, ! cds || translate);
+    QC_IMPLY (! out_prot. empty (), ! cds || translate);
+    QC_IMPLY (! target_seq. empty (), ! target_hashes. empty ());
     if (! gene_finders. contains (gene_finder))
     	throw runtime_error ("Uknown gene_finder: " + gene_finder);
     
@@ -138,7 +138,7 @@ struct ThisApplication : Application
     	cout << "# Target hashes: " << targetHashes. size () << endl;
     }
     targetHashes. sort ();
-    ASSERT (targetHashes. isUniq ());
+    QC_ASSERT (targetHashes. isUniq ());
     
     if (! target_seq. empty ())
       targetSeqF. reset (new OFStream (target_seq));
@@ -232,7 +232,7 @@ struct ThisApplication : Application
 	    }
     }
     cout << "Good sequences: " << sequences << endl;
-    cout << "Non-unique hashes: " << hashes. size () << endl;
+    cout << "All hashes: " << hashes. size () << endl;
 
     hashes. sort ();
     hashes. uniq ();
