@@ -49,7 +49,7 @@ namespace
 {
 
 
-const string distName ("dist"); 
+const string distName ("dissim"); 
 
 
 
@@ -63,7 +63,7 @@ struct ThisApplication : Application
 	  addPositional ("input_tree", "Distance tree file");
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
     // Output
-	  addKey ("dist2", "A " + dmSuff + "-file with a two-way distance attribute " + strQuote (distName));
+	  addKey ("dist2", "A " + dmSuff + "-file with a two-way dissimilarity attribute " + strQuote (distName) + " which equals the tree distances plus noise");
 	  addKey ("noise", strQuote (distName) + " += Normal(0,noise)", "0");
 	  addFlag ("sqrt", "Apply square root to the attribute " + strQuote (distName));
 	//addKey ("pair_residuals", "Output " + dmSuff + "-file with quality statistics for each object pair"); ??
@@ -114,7 +114,7 @@ struct ThisApplication : Application
       }
       cout << "Ave. arc length = " << tree. getAveArcLength () << endl;
         // Check exponential distribution ??
-      cout << "Interior height = " << tree. getInteriorHeight () << endl;
+      cout << "Height ignoring indiscernibles = " << tree. getInteriorHeight () << endl;
       const Real bifurcatingInteriorBranching = tree. getBifurcatingInteriorBranching ();
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
       // #dissimilarities = 2 #discernibles log_2(#discernibles) #sparsing_leaves
