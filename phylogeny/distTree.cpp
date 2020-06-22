@@ -2123,17 +2123,7 @@ bool Change::apply ()
   if (verbose ())
     lr. qc ();  
   if (isNan (lr. absCriterion))
-  {
-  #if 0
-    if (const Leaf* leaf = from->asLeaf ())  // ??
-      if (leaf->name == "AY662658.1")
-      {
-        OFStream ofs ("apply.dm");
-        ds. saveText (ofs);
-      }
-  #endif
     return false;
-  }
 
   FFOR (size_t, i, lr. beta. size ())
     maximize (lr. beta [i], 0.0);
@@ -4329,7 +4319,10 @@ size_t DistTree::setDiscernibles_ds ()
       FOR (size_t, col, row)  // dissimAttr is symmetric
         if (dissimAttr->get (row, col) <= 0.0)  // => !isNan()
           if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
+          {
             var_cast (leaf1) -> merge (* var_cast (leaf2));
+          //cout << leaf1->name << '\t' << leaf2->name << endl;  
+          }
 
   LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
   for (DiGraph::Node* node : nodes)
