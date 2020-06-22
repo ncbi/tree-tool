@@ -59,11 +59,11 @@ extern Chronometer chron_subgraph2tree;
 constexpr streamsize dissimDecimals = 6;  
 constexpr streamsize absCriterionDecimals = 4;  // Small for stability
 constexpr streamsize relCriterionDecimals = 3;
-constexpr uint areaRadius_std = 5;  
-constexpr uint areaDiameter_std = 2 * areaRadius_std; 
-constexpr uint subgraphDepth = areaRadius_std;  
-constexpr uint boundary_size_max_std = 500;  
-constexpr uint sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
+constexpr size_t areaRadius_std = 5;  
+constexpr size_t areaDiameter_std = 2 * areaRadius_std; 
+constexpr size_t subgraphDepth = areaRadius_std;  
+constexpr size_t boundary_size_max_std = 500;  
+constexpr size_t sparsingDepth = areaDiameter_std;  // must be: >= areaRadius_std
 constexpr Prob rareProb = 0.01; 
 constexpr size_t dissim_progress = 100000;
 constexpr Real dissimCoeffProd_delta = 1e-6; 
