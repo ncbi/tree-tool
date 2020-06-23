@@ -4061,7 +4061,7 @@ void DistTree::mergeDissimAttrs ()
       Real dissim_sum = 0.0;
       Real mult_sum_  = 0.0;
       Real x = NaN;
-      bool allZero = true;
+      ebool allZero = UBOOL;
       for (const DissimType& dt : dissimTypes)
         if (   dt. dissimAttr->matr. get (false, i, j, x) 
             && x < INF
@@ -4069,14 +4069,16 @@ void DistTree::mergeDissimAttrs ()
         {
           ASSERT (x >= 0.0);
           if (x)
-            allZero = false;
+            allZero = EFALSE;
+          else if (allZero == UBOOL)
+            allZero = ETRUE;            
           ASSERT (dt. scaleCoeff > 0.0);
           const Real mult = 1.0/*temporary*/ / sqr (dt. scaleCoeff);  
           dissim_sum += mult * x * dt. scaleCoeff;
           mult_sum_  += mult;
         }
       ASSERT (mult_sum_ >= 0.0);
-      if (allZero)  
+      if (allZero == ETRUE)  
         var_cast (dissimAttr) -> matr. put (false, i, j, 0.0);  // To collapse()
       else if (mult_sum_)
       {
@@ -4319,10 +4321,7 @@ size_t DistTree::setDiscernibles_ds ()
       FOR (size_t, col, row)  // dissimAttr is symmetric
         if (dissimAttr->get (row, col) <= 0.0)  // => !isNan()
           if (const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name))
-          {
             var_cast (leaf1) -> merge (* var_cast (leaf2));
-          //cout << leaf1->name << '\t' << leaf2->name << endl;  
-          }
 
   LeafCluster leafCluster;  leafCluster. rehash (nodes. size ());
   for (DiGraph::Node* node : nodes)
