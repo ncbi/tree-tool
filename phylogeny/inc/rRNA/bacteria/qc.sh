@@ -11,4 +11,4 @@ fi
 INC=`dirname $0`
 SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
-CPP_DIR/genetics/LocusQC.sh $INC $SERVER $DATABASE Locus 2 "16S"
+CPP_DIR/database/LocusQC.sh $INC $SERVER $DATABASE Locus 2 "16S"
