@@ -44,6 +44,7 @@ while true; do
     $THIS/grid_wait.sh 1
     L=(`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rTt]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`)
     set -o errexit
+    date
     if [ $QRESUB == 1 ]; then
       echo "Re-submitting ${#L[@]} grid jobs ..."
     else
