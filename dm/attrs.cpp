@@ -71,7 +71,7 @@ struct ThisApplication : Application
 
     const Dataset ds (inFName);
     const Sample sample (ds);
-    cout << "mult_sum: " << sample. mult_sum << endl << endl;
+  //cout << "mult_sum: " << sample. mult_sum << endl << endl;
     
     cout << "AttrName\tDefinition\tMissings";
     if (stat)
@@ -87,7 +87,7 @@ struct ThisApplication : Application
       	{
           if (const NumAttr1* num = attrRaw->asNumAttr1 ())
     	    {
-    	    	const ONumber on (cout, num->decimals + 1, false);
+    	    	const ONumber on (cout, num->decimals + 1 + (attrRaw->asBoolAttr1 () ? 3 : 0), false);  // PAR
     	      Normal normal;
     	      const UniVariate<NumAttr1> an (sample, *num);
     	      normal. analysis = & an;
@@ -114,6 +114,11 @@ struct ThisApplication : Application
     		      normal. analysis = & an_pure;
     		      normal. estimate ();
               const Prob pVal = normal. getFitness_entropy ();
+              if (isNan (pVal))
+      		      cout << '\t' << NaN 
+      		           << '\t' << NaN 
+      		           << '\t' << NaN;
+              else
     		      cout << '\t' << normal. loc 
     		           << '\t' << normal. scale
     		           << '\t' << pVal;
@@ -132,6 +137,7 @@ struct ThisApplication : Application
   	  //other types ??
   	  }
   	}   	 
+
 
     // Correlations
     // Only for NumAttr1 ??
