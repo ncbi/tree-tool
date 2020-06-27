@@ -265,6 +265,7 @@ void Sum::reset (Real initMaxAbs)
 void Sum::add (Real x)
 {
   ASSERT (! isNan (x));
+
   if (x == INF)
   {
     hasPlusInf = true;
