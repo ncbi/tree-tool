@@ -273,7 +273,11 @@ struct ThisApplication : Application
       cout << "# Single features:                " << singles << endl;
       cout << "# Optional features:              " << optionals << endl;
       ASSERT (optionals + commons + singles + monophyletics + nonMonophyletics == features. size ());
-      if (! qual_nonredundant && ! use_time && (size_t) round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles)
+      if (   ! qual_nonredundant 
+          && ! use_time 
+          && tree. len <= 1e5  // float precision
+          && (size_t) round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles
+         )
       {
       #if 0
         if (! save_mem)
