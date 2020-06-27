@@ -30,6 +30,7 @@ all:	\
   dm2space \
   dm2subset \
   dm_merge \
+  hgdp2dm \
   linreg \
   linreg_test \
   logreg \
@@ -169,6 +170,12 @@ dm_merge.o:  $(DM_HPP)
 dm_mergeOBJS=dm_merge.o $(DM_OBJ) 
 dm_merge:	$(dm_mergeOBJS)
 	$(CXX) -o $@ $(dm_mergeOBJS) $(LIBS)
+	$(ECHO)
+
+hgdp2dm.o:  $(DM_HPP) 
+hgdp2dmOBJS=hgdp2dm.o $(DM_OBJ) 
+hgdp2dm:	$(hgdp2dmOBJS)
+	$(CXX) -o $@ $(hgdp2dmOBJS) $(LIBS)
 	$(ECHO)
 
 linreg.o:  $(PREDICT_HPP) 
