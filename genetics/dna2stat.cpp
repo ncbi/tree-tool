@@ -53,6 +53,7 @@ struct ThisApplication : Application
     : Application ("Compute statistics for a DNA multi-FASTA file: length, ambiguities fraction, GC fraction, octamers fraction")
 	  {
 	  	addPositional ("in", "Input DNA multi-FASTA file");
+	  	addFlag ("acgt", "Add A, C, G and T fractions");
 	  }
 
 
@@ -60,12 +61,14 @@ struct ThisApplication : Application
   void body () const final
   {
     const string inFName = getArg ("in");
+    const bool acgtP     = getFlag ("acgt");
 
 
     size_t len = 0;
 	  size_t ambiguities = 0;
 	  size_t gc = 0;
     constexpr size_t repeatLen_max = 15;  // PAR
+    Vector<size_t> acgt (128, 0);
     Vector<size_t> repeat (repeatLen_max, 0);
 	  {
 		  Multifasta faIn (inFName, false);
@@ -94,6 +97,7 @@ struct ThisApplication : Application
 			          repeat [repeatLen] ++;
 			        repeatLen = 1;
 			      }
+			      acgt [(size_t) c] ++;
 			      prev = c;
 			    }
 			    else
@@ -106,18 +110,25 @@ struct ThisApplication : Application
 	    }
       ASSERT (! repeat [0]);
 		}
+		
+		const size_t len_pure = len - ambiguities;
 
 	  ONumber on (cout, 6, false);  // PAR
     cout << inFName
 	       << '\t' << len 
 	       << '\t' << (double) ambiguities / (double) len 
-	       << '\t' << (double) gc / (double) (len - ambiguities);
+	       << '\t' << (double) gc / (double) len_pure;
 	#if 0
 	  FOR_START (size_t, i, 2, repeatLen_max)
-	    cout << '\t' << (double) (repeat [i] * i) / (double) (len - ambiguities);
+	    cout << '\t' << (double) (repeat [i] * i) / (double) len_pure;
 	#else
-	    cout << '\t' << (double) (repeat [8] * 8) / (double) (len - ambiguities);
+	    cout << '\t' << (double) (repeat [8] * 8) / (double) len_pure;
 	#endif
+	  if (acgtP)
+	    cout << '\t' << (double) acgt ['a'] / (double) len_pure
+	         << '\t' << (double) acgt ['c'] / (double) len_pure
+	         << '\t' << (double) acgt ['g'] / (double) len_pure
+	         << '\t' << (double) acgt ['t'] / (double) len_pure;
 	  cout << endl;
   }  
 };
