@@ -16,6 +16,7 @@ all:	\
   attr2_2phylip \
   compareTrees \
   distTree_new \
+  dm2phen \
   feature2gain_loss \
 	makeDistTree \
 	makeDistTree-dev \
@@ -48,6 +49,12 @@ attr2_2phylip.o:  $(DM_HPP)
 attr2_2phylipOBJS=attr2_2phylip.o $(DM_OBJ) 
 attr2_2phylip:	$(attr2_2phylipOBJS)
 	$(CXX) -o $@ $(attr2_2phylipOBJS) $(LIBS)
+	$(ECHO)
+
+dm2phen.o:  $(DM_HPP) 
+dm2phenOBJS=dm2phen.o $(DM_OBJ) 
+dm2phen:	$(dm2phenOBJS)
+	$(CXX) -o $@ $(dm2phenOBJS) $(LIBS)
 	$(ECHO)
 
 compareTrees.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/featureTree.hpp 
