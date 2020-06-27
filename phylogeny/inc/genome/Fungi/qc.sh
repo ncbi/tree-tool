@@ -1,5 +1,5 @@
 #!/bin/bash
-source bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
   echo "#1: go"
@@ -8,7 +8,8 @@ fi
 
 
 INC=`dirname $0`
-
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
 
 #set -x
 
@@ -18,7 +19,7 @@ TMP=`mktemp`
 
 
 tree2obj.sh $INC/tree > $TMP.tree
-sqsh-ms -S PROTEUS  -D uniColl  -U anyone  -P allowed  << EOT | sed 's/|$//1' | sort > $TMP.genome-tree
+sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-tree
   select id
     from Genome
     where     tax_root = 4751
@@ -31,7 +32,7 @@ diff $TMP.genome-tree $TMP.tree
 
 
 ls $INC/new/ > $TMP.new
-sqsh-ms -S PROTEUS  -D uniColl  -U anyone  -P allowed  << EOT | sed 's/|$//1' | sort > $TMP.genome-new
+sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-new
   select id
     from Genome
     where     tax_root = 4751
