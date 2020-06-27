@@ -2815,7 +2815,10 @@ Real Distribution::getLogLikelihood () const
   for (Iterator it (getAnalysisCheck () -> sample); it ();)  
   {
   	data2variable (*it);
-  	s. add (it. mult * logPdfVariable ());
+  	const Real x = logPdfVariable ();
+  	if (it. mult && isNan (x))
+  	  return NaN;
+  	s. add (it. mult * x);
  /*if (! finite (s))
   	{
   	  cout << an. space. ds. objs [*it] -> name << endl;

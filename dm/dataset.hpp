@@ -1963,6 +1963,7 @@ public:
     // Invokes: getInfoMean(), getInfoVar(), info_meanVar_MC()
     
   Real getLogLikelihood () const;
+    // Return: NaN for degenerate parameters
   Real getEntropy_est () const
     { return - getLogLikelihood () / getAnalysisCheck () -> sample. mult_sum; }
   bool minimizeEntropy (Real &entropy_best,
