@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Compute MLST dissimilarities
+*   Compute wgMLST dissimilarities
 *
 */
 
@@ -51,7 +51,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert MLST data to a dissimilarity and print a " + dmSuff + "-file")
+    : Application ("Convert wgMLST data to a dissimilarity and print a " + dmSuff + "-file")
     {
       version = VERSION;
   	  addPositional ("biosamples", "File with a list of BioSamples");
