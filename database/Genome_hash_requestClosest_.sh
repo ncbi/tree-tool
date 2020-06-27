@@ -53,8 +53,8 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
     select GenomeHash.genome, count(*) c
       into #G
       from      #A
-           join GenomeHash with (nolock) on     GenomeHash.[hash] = #A.[hash]
-                                            and GenomeHash.[type] = '$TYPE'
+           join GenomeHash (nolock) on     GenomeHash.[hash] = #A.[hash]
+                                       and GenomeHash.[type] = '$TYPE'
       group by GenomeHash.genome;
 
     select top 100/*PAR*/ #G.genome
@@ -62,6 +62,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
            join Genome (nolock) on Genome.id = #G.genome
       where     Genome.in_tree = 1
             and #G.genome != $GENOME
+            and Genome.tax_root = @tax_root
       order by #G.c desc;
   end;
   go -m bcp
