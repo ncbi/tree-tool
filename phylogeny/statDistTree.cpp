@@ -56,7 +56,7 @@ const string distName ("dissim");
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Compute different statistics of a distance tree")
+	: Application ("Compute different statistics of a distance tree (without using dissimilarities)")
 	{
 	  version = VERSION;
 	  // Input
@@ -213,8 +213,6 @@ struct ThisApplication : Application
 
     if (! arc_length. empty ())
     {
-      // dm-file ??
-      // cout << arcLenRel.SD after outlier deleting ??
       OFStream f (arc_length);
       const ONumber on (f, dissimDecimals, true);
       tree. printArcLengths (f);
