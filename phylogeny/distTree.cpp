@@ -683,6 +683,21 @@ const DTNode* DTNode::getDiscernible () const
 
 
 
+Prob DTNode::getArcExistence () const
+{
+  WeightedMeanVar mv;
+  for (const uint dissimNum : pathDissimNums)
+  {
+    const Dissim& dissim = getDistTree (). dissims [dissimNum];
+    if (! dissim. validMult ())
+      continue;
+    mv. add (dissim. target - (dissim. prediction - len) > 0.0 ? 1.0 : 0.0, dissim. mult);
+  }
+  return mv. getMean ();
+}
+
+
+
 Real DTNode::getDeformation () const
 { 
   if (maxDeformationDissimNum == dissims_max)

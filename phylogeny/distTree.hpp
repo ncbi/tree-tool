@@ -467,6 +467,7 @@ public:
   Real getHeight_ave () const
     { return subtreeLen. getMean (); }    
     // After: DistTree::setHeight()
+  Prob getArcExistence () const;
   Real getDeformation () const;
     // Input: maxDeformationDissimNum
   virtual const Leaf* getReprLeaf (ulong seed) const = 0;

@@ -122,7 +122,8 @@ struct ThisApplication : Application
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
-	  addKey ("leaf_errors", "Output " + dmSuff + "-file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " for each leaf");
+	  addKey ("leaf_errors", "Output Data Master file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " for each leaf");
+	  addKey ("arc_existence", "Output Data Master  file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissim>");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
@@ -270,6 +271,7 @@ struct ThisApplication : Application
 		const string output_dissim_coeff = getArg ("output_dissim_coeff");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const string leaf_errors         = getArg ("leaf_errors");
+		const string arc_existence       = getArg ("arc_existence");
 		const string dissim_request      = getArg ("dissim_request");
 		const bool   refresh_dissim      = getFlag ("refresh_dissim");
 		const string output_dissim       = getArg ("output_dissim");
@@ -794,6 +796,27 @@ struct ThisApplication : Application
       const Dataset leafErrorDs (tree->getLeafErrorDataset (true, tree->getDeformation_mean ()));
       OFStream f (leaf_errors + dmSuff);
 	    leafErrorDs. saveText (f);    
+    }
+
+
+    if (! arc_existence. empty ())
+    {
+      Dataset ds;
+      auto len = new PositiveAttr1 ("len", ds, dissimDecimals);
+      auto prob = new ProbAttr1 ("prob", ds, 3);  // PAR
+      for (DiGraph::Node* node : tree->nodes)
+      {
+        const DTNode* dtNode = static_cast <DTNode*> (node);
+        if (dtNode != tree->root)
+        {
+          const size_t objNum = ds. appendObj (dtNode->getLcaName ());
+          (*len)  [objNum] = dtNode->len;
+          (*prob) [objNum] = dtNode->getArcExistence ();
+        }
+      }
+      ds. qc ();
+      OFStream of (arc_existence + dmSuff);
+      ds. saveText (of);
     }
 
 
