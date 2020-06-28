@@ -1,4 +1,4 @@
-// mutation2phen.cpp
+// mutation2feature.cpp
 
 /*===========================================================================
 *
@@ -161,7 +161,7 @@ struct ThisApplication : Application
     : Application ("Convert DNA mutations to 3-values Boolean attributes for makeFeatureTree")
 	  {
 	  	addPositional ("in", "Input directory with DNA mutations in the format <ref seq><ref pos><target seq>");
-	  	addPositional ("out", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
+	  	addPositional ("feature_dir", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
 	  	addFlag ("ambig5end", "Replace 5' end deletions by N-substitutions");
 	  }
 
@@ -170,7 +170,7 @@ struct ThisApplication : Application
   void body () const final
   {
     const string inDirName  = getArg ("in");
-    const string outDirName = getArg ("out");
+    const string outDirName = getArg ("feature_dir");
     const bool   ambig5end  = getFlag ("ambig5end");
 
 

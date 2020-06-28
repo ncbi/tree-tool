@@ -1,4 +1,4 @@
-// dm2phen.cpp
+// dm2feature.cpp
 
 /*===========================================================================
 *
@@ -54,14 +54,14 @@ VectorPtr<Attr1> attrs;
 void savePhen (size_t from, 
                size_t to, 
                Notype /*&res*/,
-               const string &phenDirName,
+               const string &featureDirName,
                const Dataset &ds)
 {
   Progress prog (to - from);  
   FOR_START (size_t, i, from, to)
   {
     prog ();
-    OFStream f (phenDirName, ds. objs [i] -> name, ""); 
+    OFStream f (featureDirName, ds. objs [i] -> name, ""); 
     for (const Attr1* attr : attrs)
       if (const BoolAttr1* boolAttr = attr->asBoolAttr1 ()) 
       {       
@@ -90,7 +90,7 @@ struct ThisApplication : Application
   	  version = VERSION;
   	  addPositional ("data", dmSuff + "-file"); 
   	  addPositional ("attrs", "List of Boolean or nominal attributes in <data>");
-  	  addPositional ("phen", "Directory where the files will be created");
+  	  addPositional ("feature_dir", "Directory where the files will be created");
     }
 
 
@@ -99,7 +99,7 @@ struct ThisApplication : Application
   {
 	  const string dsFName     = getArg ("data");
 	  const string attrsFName  = getArg ("attrs");
-    const string phenDirName = getArg ("phen");
+    const string featureDirName = getArg ("feature_dir");
 
 
     const Dataset ds (dsFName);
@@ -127,7 +127,7 @@ struct ThisApplication : Application
     }
 
     vector<Notype> notypes;
-	  arrayThreads (savePhen, ds. objs. size (), notypes, cref (phenDirName), cref (ds));
+	  arrayThreads (savePhen, ds. objs. size (), notypes, cref (featureDirName), cref (ds));
   }
 };
 

@@ -16,17 +16,16 @@ all:	\
   attr2_2phylip \
   compareTrees \
   distTree_new \
-  dm2phen \
+  dm2feature \
   feature2gain_loss \
 	makeDistTree \
 	makeDistTree-dev \
 	makeFeatureTree \
 	mergeSimilarity \
-	mutation2phen \
+	mutation2feature \
 	newick2tree \
 	printDistTree \
 	randomDistTree \
-  sampleReport \
 	statDistTree \
 	testDistTree \
 	tree2clusters \
@@ -51,10 +50,10 @@ attr2_2phylip:	$(attr2_2phylipOBJS)
 	$(CXX) -o $@ $(attr2_2phylipOBJS) $(LIBS)
 	$(ECHO)
 
-dm2phen.o:  $(DM_HPP) 
-dm2phenOBJS=dm2phen.o $(DM_OBJ) 
-dm2phen:	$(dm2phenOBJS)
-	$(CXX) -o $@ $(dm2phenOBJS) $(LIBS)
+dm2feature.o:  $(DM_HPP) 
+dm2featureOBJS=dm2feature.o $(DM_OBJ) 
+dm2feature:	$(dm2featureOBJS)
+	$(CXX) -o $@ $(dm2featureOBJS) $(LIBS)
 	$(ECHO)
 
 compareTrees.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp $(PHYL_DIR)/featureTree.hpp 
@@ -96,10 +95,10 @@ mergeSimilarity:	$(mergeSimilarityOBJS)
 	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
 	$(ECHO)
 
-mutation2phen.o:  $(COMMON_HPP) 
-mutation2phenOBJS=mutation2phen.o $(CPP_DIR)/common.o
-mutation2phen:	$(mutation2phenOBJS)
-	$(CXX) -o $@ $(mutation2phenOBJS) $(LIBS)
+mutation2feature.o:  $(COMMON_HPP) 
+mutation2featureOBJS=mutation2feature.o $(CPP_DIR)/common.o
+mutation2feature:	$(mutation2featureOBJS)
+	$(CXX) -o $@ $(mutation2featureOBJS) $(LIBS)
 	$(ECHO)
 
 newick2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
@@ -118,14 +117,6 @@ randomDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 randomDistTreeOBJS=randomDistTree.o $(DISTTREE_OBJ)
 randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
-	$(ECHO)
-
-sampleReport.o:  $(COMMON_HPP) 
-# $(PHYL_DIR)/distTree.hpp
-sampleReportOBJS=sampleReport.o $(CPP_DIR)/common.o
-# $(DISTTREE_OBJ)
-sampleReport:	$(sampleReportOBJS)
-	$(CXX) -o $@ $(sampleReportOBJS) $(LIBS)
 	$(ECHO)
 
 statDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp 
