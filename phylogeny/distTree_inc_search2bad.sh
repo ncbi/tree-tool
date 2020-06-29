@@ -7,9 +7,11 @@ if [ $# -ne 2 ]; then
   echo "#2: New object"
   exit 1
 fi
+INC=$1
+OBJ=$2
 
 
-DIR=$1/search/$2
+DIR=$INC/search/$OBJ
 
 
 if [ ! -e $DIR/dissim ]; then
@@ -19,8 +21,8 @@ fi
 awk '$3 == "nan"' $DIR/dissim > $DIR/dissim.bad
 
 if [ -s $DIR/dissim.bad ]; then
-  cat $DIR/dissim.bad >> $1/dissim.bad
-  $1/outlier2db.sh $2 'incomparable'
+  cat $DIR/dissim.bad >> $INC/dissim.bad
+  $INC/outlier2db.sh $OBJ 'incomparable'
   rm -r $DIR/
 else
 	rm $DIR/dissim.bad
