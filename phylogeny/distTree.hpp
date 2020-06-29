@@ -468,6 +468,7 @@ public:
     { return subtreeLen. getMean (); }    
     // After: DistTree::setHeight()
   Prob getArcExistence () const;
+    // Return: conditional probability
   Real getDeformation () const;
     // Input: maxDeformationDissimNum
   virtual const Leaf* getReprLeaf (ulong seed) const = 0;
