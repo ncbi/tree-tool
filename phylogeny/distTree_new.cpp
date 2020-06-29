@@ -50,7 +50,8 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-		: Application ("Find location of new objects in a distance tree")
+		: Application ("Find location of new objects in a distance tree.\n\
+Update: <incremental distance tree directory>/search/")
 		{
 		  version = VERSION;
 		  
