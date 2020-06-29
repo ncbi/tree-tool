@@ -1,5 +1,5 @@
 #!/bin/bash
-source bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
   echo "#1: go"
@@ -9,5 +9,7 @@ fi
 
 
 INC=`dirname $0`
-LocusQC.sh $INC Locus 4751 "5.8S"
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+CPP_DIR/database/LocusQC.sh $INC $SERVER $DATABASE Locus 4751 "5.8S"
 
