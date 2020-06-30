@@ -14,7 +14,6 @@ all:	\
   additive \
 	blast2ani \
 	blast2cons \
-	bool2dissim \
   combine_dissims \
 	dna2dissim \
 	dna_diff \
@@ -27,7 +26,8 @@ all:	\
   loci_request2dissim \
 	mlst2dissim \
 	prot2dissim \
-	prots_pair2dissim
+	prots_pair2dissim \
+	snp2dissim
 
 
 additive.o:  $(DM_HPP) 
@@ -45,12 +45,6 @@ blast2ani:	$(blast2aniOBJS)
 blast2consOBJS=blast2cons.o
 blast2cons:	$(blast2consOBJS)
 	$(CXX) -o $@ $(blast2consOBJS) $(LIBS) 
-	$(ECHO)
-
-bool2dissim.o:  $(DM_HPP) 
-bool2dissimOBJS=bool2dissim.o $(DM_OBJ) 
-bool2dissim:	$(bool2dissimOBJS)
-	$(CXX) -o $@ $(bool2dissimOBJS) $(LIBS)
 	$(ECHO)
 
 combine_dissims.o:  $(NUMERIC_HPP) 
@@ -129,5 +123,11 @@ prots_pair2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp $
 prots_pair2dissimOBJS=prots_pair2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o $(DM_DIR)/matrix.o $(DM_DIR)/optim.o
 prots_pair2dissim:	$(prots_pair2dissimOBJS)
 	$(CXX) -o $@ $(prots_pair2dissimOBJS) $(LIBS) 
+	$(ECHO)
+
+snp2dissim.o:  $(DM_HPP) 
+snp2dissimOBJS=snp2dissim.o $(DM_OBJ) 
+snp2dissim:	$(snp2dissimOBJS)
+	$(CXX) -o $@ $(snp2dissimOBJS) $(LIBS)
 	$(ECHO)
 

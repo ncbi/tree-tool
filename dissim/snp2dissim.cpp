@@ -1,4 +1,4 @@
-// bool2dissim.cpp
+// snp2dissim.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Add a dissimilarity attribute and print the resulting Data Master file
+*   Add a SNP dissimilarity attribute and print the resulting Data Master file
 *
 */
 
@@ -38,6 +38,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "../dm/dataset.hpp"
+#include "../dm/optim.hpp"
 using namespace DM_sp;
 #include "../version.inc"
 
@@ -47,15 +48,15 @@ namespace
 {
   
 
-struct WeightAttr
+struct MutAttr
 {
   const ExtBoolAttr1* attr;
-  Real weight;
+  uint mutations;
 };
 
 
   
-Vector<WeightAttr> weightAttrs;
+Vector<MutAttr> mutAttrs;
 
 
 
@@ -63,7 +64,45 @@ struct ObjPair
 {
   size_t row;
   size_t col;
-  Real diff;
+  Real dissim;
+};
+
+
+
+struct Func : Func1
+{
+  size_t row;
+  size_t col;
+  
+  Func (size_t row_arg,
+        size_t col_arg)
+    : row (row_arg)
+    , col (col_arg)
+    {}
+  
+  Real f (Real t) final
+    {
+      ASSERT (t >= 0.0);
+      if (t == 0.0)
+        return -INF;
+      Real s = 0.0;
+      for (const MutAttr& ma : mutAttrs)
+        if (   ma. mutations
+            && (* ma. attr) [row] != UBOOL
+            && (* ma. attr) [col] != UBOOL
+           )
+        {
+          const Real rate = (Real) ma. mutations;
+          const Real a = exp (- 2.0 * t * rate);
+          ASSERT (a >= 0.0);
+          ASSERT (a < 1.0);
+          const Prob p = (* ma. attr) [row] == (* ma. attr) [col]
+                           ? a * rate / (1.0 + a)
+                           : - rate / (1.0 / a - 1.0);  // = - a * rate (1.0 - a)
+          s += p;
+        }
+      return s;
+    }  
 };
 
 
@@ -78,13 +117,8 @@ void computeObjPair (size_t from,
   {
     prog ();
     ObjPair& objPair = objPairs [i];
-    objPair. diff = 0.0;
-    for (const WeightAttr& wa : weightAttrs)
-      if (   (* wa. attr) [objPair. row] != UBOOL
-          && (* wa. attr) [objPair. col] != UBOOL
-          && (* wa. attr) [objPair. row] != (* wa. attr) [objPair. col]
-         )
-        objPair. diff += wa. weight;
+    Func f (objPair. row, objPair. col);    
+    objPair. dissim = f. findZeroPositive (0.05, 1e-6);  // PAR
   }
 }
   
@@ -93,11 +127,11 @@ void computeObjPair (size_t from,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Add a dissimilarity attribute and print the resulting Data Master file")
+    : Application ("Add a SNP dissimilarity attribute and print the resulting Data Master file")
     {
   	  version = VERSION;
   	  addPositional ("data", dmSuff + "-file with Boolean attributes"); 
-  	  addPositional ("weight", "Attribute weight file where each line has format: <attr_name> <weight, >= 0>");
+  	  addPositional ("mutations", "Attribute file where each line has format: <attr_name> <# mutations>");
   	  addPositional ("dissim", "Name of two-way dissimilarity attribute to add (Hamming distance)"); 
     }
 
@@ -106,7 +140,7 @@ struct ThisApplication : Application
 	void body () const final
   {
 	  const string dsFName        = getArg ("data");
-    const string weightFName    = getArg ("weight");
+    const string mutationsFName = getArg ("mutations");
     const string dissimAttrName = getArg ("dissim"); 
 
 
@@ -114,20 +148,20 @@ struct ThisApplication : Application
     ds. qc ();
 
     {
-      LineInput f (weightFName);
+      LineInput f (mutationsFName);
       string name;
-      Real weight;
+      uint mutations;
       Istringstream iss;
       while (f. nextLine ())
       {
         iss. reset (f. line);
-        weight = NaN;
-        iss >> name >> weight;
-        QC_ASSERT (weight >= 0);
+        mutations = (uint) -1;
+        iss >> name >> mutations;
+        QC_ASSERT (mutations != (uint) -1);
         const Attr* attr = ds. name2attr (name);
         QC_ASSERT (attr);
         if (const ExtBoolAttr1* boolAttr = attr->asExtBoolAttr1 ())
-          weightAttrs << WeightAttr {boolAttr, weight};
+          mutAttrs << MutAttr {boolAttr, mutations};
       }
     }
 
@@ -135,14 +169,14 @@ struct ThisApplication : Application
 	  Vector<ObjPair> objPairs;  objPairs. reserve ((ds. objs. size () * (ds. objs. size () - 1)) / 2);
 	  FOR (size_t, row, ds. objs. size ())
 	  {
-	  	dist->matr. putDiag (row, 0);
+	  	dist->matr. putDiag (row, 0.0);
 	    FOR_START (size_t, col, row + 1, ds. objs. size ())
-	      objPairs << ObjPair {row, col, 0};
+	      objPairs << ObjPair {row, col, 0.0};
 	  }
     vector<Notype> notypes;
 	  arrayThreads (computeObjPair, objPairs. size (), notypes, ref (objPairs));
     for (const ObjPair& objPair : objPairs)
-	    dist->matr. putSymmetric (objPair. row, objPair. col, objPair. diff);
+	    dist->matr. putSymmetric (objPair. row, objPair. col, objPair. dissim);
     ds. qc ();
   	
   	
