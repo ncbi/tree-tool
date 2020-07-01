@@ -118,7 +118,8 @@ void computeObjPair (size_t from,
     prog ();
     ObjPair& objPair = objPairs [i];
     Func f (objPair. row, objPair. col);    
-    objPair. dissim = f. findZeroPositive (0.05, 1e-6);  // PAR
+    objPair. dissim = f. findZero (0.0, 1.0, 1e-5);  // PAR  // 1.0 = tree length
+      // f. findZeroPositive (0.05, 1e-6);  // PAR
   }
 }
   
