@@ -683,7 +683,7 @@ size_t Matrix::firstEmptyRow (bool t) const
     if (emptyRow (t, row))
       return row;
 
-  return NO_INDEX;
+  return no_index;
 }
 
 
@@ -706,7 +706,7 @@ size_t Matrix::nextColDefined (bool  t,
   FOR_START (size_t, col, StartCol, rowsSize (! t))
     if (get (t, row, col, r))
       return col; 
-  return NO_INDEX;
+  return no_index;
 }
 
 
@@ -719,7 +719,7 @@ size_t Matrix::prevColDefined (bool  t,
   FOR_REV (size_t, col, StartCol + 1)
     if (get (t, row, col, r))
       return col; 
-  return NO_INDEX;
+  return no_index;
 }
 
 
@@ -927,7 +927,7 @@ Real Matrix::firstNonZeroRow (bool t,
 size_t Matrix::argMaxRow (bool t,
                           size_t row) const
 {
-  size_t max_ = NO_INDEX;
+  size_t max_ = no_index;
   Real r = - INF;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
@@ -943,7 +943,7 @@ size_t Matrix::argMaxRow (bool t,
 size_t Matrix::argMinRow (bool t,
                           size_t row) const
 {
-  size_t min_ = NO_INDEX;
+  size_t min_ = no_index;
   Real r = INF;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
@@ -1234,8 +1234,8 @@ bool Matrix::getEigen (Eigen &eigen,
 {
 	ASSERT (defined ());
 	{
-  	size_t row = NO_INDEX;
-  	size_t col = NO_INDEX;
+  	size_t row = no_index;
+  	size_t col = no_index;
     if (! isSymmetric (row, col))
     {
       cout << row << " " << col << endl;
@@ -2378,29 +2378,29 @@ Determinant Matrix::inverse ()
   Vector <size_t> V (M);
   FOR (size_t, i, M)
   {
-    U [i] = NO_INDEX;
-    V [i] = NO_INDEX;
+    U [i] = no_index;
+    V [i] = no_index;
   }
 
 
   FOR (size_t, k, M)
   {
     // r, Q, coeff
-   	// fabs(get(false,r,Q)) -> max, s.t. U[r] = NO_INDEX, V[Q] = NO_INDEX
+   	// fabs(get(false,r,Q)) -> max, s.t. U[r] = no_index, V[Q] = no_index
     Real XMax = -INF;
-    size_t r = NO_INDEX;
-    size_t q = NO_INDEX;
+    size_t r = no_index;
+    size_t q = no_index;
     FOR (size_t, j, M)
-      if (U [j] == NO_INDEX)
+      if (U [j] == no_index)
         FOR (size_t, i, M)
-          if (V [i] == NO_INDEX)
+          if (V [i] == no_index)
             if (Common_sp::maximize (XMax, fabs (get (false, i, j))))
             {
               r = i;
               q = j;
             }
-    if (q == NO_INDEX || 
-        r == NO_INDEX) 
+    if (q == no_index || 
+        r == no_index) 
       return Determinant (rowsSize (false), 0.0);
     const Real f = get (false, r, q);
     // XMax = fabs (f)

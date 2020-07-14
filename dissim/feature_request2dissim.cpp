@@ -102,11 +102,11 @@ double vecs2dissim_half (const Vector<Feature> &vec1,
     const size_t index = vec1. binSearch (f);
     if (f. optional)
     {
-      if (index != NO_INDEX && ! vec1 [index]. optional)
+      if (index != no_index && ! vec1 [index]. optional)
         n += optional_weight;
     }
     else
-      if (index == NO_INDEX)
+      if (index == no_index)
         n += 1.0;
       else
         if (vec1 [index]. optional)

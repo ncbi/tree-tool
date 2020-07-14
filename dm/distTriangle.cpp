@@ -215,11 +215,11 @@ Save clusters in " + dmSuff + "-files\
       }
     }
     
-    size_t objIndex = NO_INDEX;
+    size_t objIndex = no_index;
     if (! objName. empty ())
     { 
       objIndex = ds. getName2objNum (objName);
-      ASSERT (objIndex != NO_INDEX);
+      ASSERT (objIndex != no_index);
     }
 
     // ave
@@ -377,7 +377,7 @@ Save clusters in " + dmSuff + "-files\
       Vector<size_t> middleViolations (ds. objs. size ());
       while (! violations. empty ())
       {
-        size_t i_best = NO_INDEX;
+        size_t i_best = no_index;
         {
           endViolations.    setAll (0);
           middleViolations. setAll (0);
@@ -392,7 +392,7 @@ Save clusters in " + dmSuff + "-files\
             if (maximize (a, endViolations [i] + middleViolations [i]))
               i_best = i;
         }
-        ASSERT (i_best != NO_INDEX);
+        ASSERT (i_best != no_index);
   
         const Violator v (ds. objs [i_best] -> name, endViolations [i_best], middleViolations [i_best]);
         coverage += v. num ();

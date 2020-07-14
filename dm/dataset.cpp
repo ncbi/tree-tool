@@ -170,7 +170,7 @@ bool Attr::existsMissing (size_t &objNum) const
     if (ds. objs [objNum] -> mult > 0.0 && isMissing (objNum))
       return true;
       
-  objNum = NO_INDEX;
+  objNum = no_index;
   return false;
 }
 
@@ -620,7 +620,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
     
   vec. sort ();
     
-  size_t objNum_threshold = NO_INDEX;
+  size_t objNum_threshold = no_index;
   Real negLogLikelihood_min = INF;
   const Real x_max = vec. back (). value;
   Real mult_sum = 0.0;
@@ -655,7 +655,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
       objNum_threshold = it. objNum;
   }
   
-  return objNum_threshold == NO_INDEX ? NaN : getReal (objNum_threshold);
+  return objNum_threshold == no_index ? NaN : getReal (objNum_threshold);
 }
 
 
@@ -1249,7 +1249,7 @@ void NominAttr1::Dependence::qc () const
 
 // NominAttr1
 
-const size_t NominAttr1::missing = NO_INDEX;
+const size_t NominAttr1::missing = no_index;
 	
 
 
@@ -1482,10 +1482,10 @@ void NominAttr1::deleteEmptyCategories (const Sample &sample)
 size_t NominAttr1::missing2category (const string &missingName)
 {
   if (! existsMissing ())
-    return NO_INDEX;
+    return no_index;
 
   const size_t missingCategory = categories. size ();
-  ASSERT (missingCategory != NO_INDEX);
+  ASSERT (missingCategory != no_index);
   EXEC_ASSERT (category2index (missingName) == missingCategory);
   for (size_t &val : values)
     if (val == missing)
@@ -1600,8 +1600,8 @@ bool Attr2::existsMissing2 (size_t &row,
           if (isMissing2 (row, col))
             return true;
       
-  row = NO_INDEX;
-  col = NO_INDEX;
+  row = no_index;
+  col = no_index;
   return false;
 }
 
@@ -1735,8 +1735,8 @@ bool RealAttr2::existsLessThan (Real minValue,
   for (col = 0; col < ds. objs. size (); col++)
 	  if (get (row, col) < minValue)
 	    return true;
-	row = NO_INDEX;
-	col = NO_INDEX;
+	row = no_index;
+	col = no_index;
   return false;
 }
 
@@ -1820,9 +1820,9 @@ void loadObjPair (const string &objName1,
 
   const size_t objNum1 = attr. ds. getName2objNum (objName1);
   const size_t objNum2 = attr. ds. getName2objNum (objName2);
-  if (objNum1 == NO_INDEX)
+  if (objNum1 == no_index)
     throw runtime_error (FUNC "Unknown object " + strQuote (objName1) + " while reading two-way attribute " + strQuote (attr. name));
-  if (objNum2 == NO_INDEX)
+  if (objNum2 == no_index)
     throw runtime_error (FUNC "Unknown object " + strQuote (objName2) + " while reading two-way attribute " + strQuote (attr. name));
 
   const string averageS (attr. getAverageStrValue (move (values)));
@@ -2073,10 +2073,10 @@ void Dataset::load (istream &is)
 	      objName2. clear ();
 	      is >> objName1 >> objName2;
         const size_t objNum1 = getName2objNum (objName1);
-        if (objNum1 == NO_INDEX)
+        if (objNum1 == no_index)
           throw runtime_error (FUNC "PAIR_DATA: Unknown object " + strQuote (objName1));
         const size_t objNum2 = getName2objNum (objName2);
-        if (objNum2 == NO_INDEX)
+        if (objNum2 == no_index)
           throw runtime_error (FUNC "PAIR_DATA: Unknown object " + strQuote (objName2));
         FOR (size_t, col, attrsNum)
         {
@@ -2133,7 +2133,7 @@ void Dataset::load (istream &is)
         FOR (size_t, i, matrixObjNum)
         {
           is >> s;
-          size_t objNum = NO_INDEX;
+          size_t objNum = no_index;
           if (find (name2objNum, s, objNum))
             objNums << objNum;
           else
@@ -2157,9 +2157,9 @@ void Dataset::load (istream &is)
       }
       else if (s == "PAIRS")
       {
-        size_t pairsNum = NO_INDEX;
+        size_t pairsNum = no_index;
         is >> pairsNum;
-        if (pairsNum == NO_INDEX)
+        if (pairsNum == no_index)
           throw runtime_error (FUNC "End-of-file reading " + twoWayAttrName);
       //is. ignore (numeric_limits<streamsize>::max (), '\n');
         skipLine (is);
@@ -2310,7 +2310,7 @@ size_t Dataset::getName2objNum (const string &objName) const
 {
   const auto& it = name2objNum. find (objName);
 	if (it == name2objNum. end ())
-		return NO_INDEX;
+		return no_index;
 	return it->second; 
 }
 
@@ -2731,7 +2731,7 @@ void Distribution::qc () const
 
 size_t Distribution::getModeObjNum () const
 {
-  size_t objNum = NO_INDEX;
+  size_t objNum = no_index;
   Real logPdf_max = -INF; 
   for (Iterator it (getAnalysisCheck () -> sample); it ();)  
   {
@@ -2739,7 +2739,7 @@ size_t Distribution::getModeObjNum () const
   	if (maximize (logPdf_max, logPdfVariable ()))
   	  objNum = *it;
   }
-  ASSERT (objNum != NO_INDEX);
+  ASSERT (objNum != no_index);
   return objNum;
 }
 
@@ -2873,7 +2873,7 @@ Prob Distribution::getFitness_entropy () const
 
 size_t Distribution::getWeakestObjNum () const
 {
-  size_t objNum = NO_INDEX; 
+  size_t objNum = no_index; 
   Real pdf_min = INF;
   for (Iterator it (getAnalysisCheck () -> sample); it ();)  
   {
@@ -2881,7 +2881,7 @@ size_t Distribution::getWeakestObjNum () const
     if (minimize (pdf_min, pdfVariable ()))
     	objNum = *it;
   }
-  ASSERT (objNum != NO_INDEX);
+  ASSERT (objNum != no_index);
 
   return objNum;
 }
@@ -3067,14 +3067,14 @@ void Categorical::balanceProb ()
 
 size_t Categorical::getUniqueCategory () const
 {
-  size_t unique = NO_INDEX;
+  size_t unique = no_index;
   FFOR (size_t, i, probs. size ())
     if (probs [i])
     {
-      if (unique == NO_INDEX)
+      if (unique == no_index)
         unique = i;
       else
-        return NO_INDEX;
+        return no_index;
     }
   return unique;
 }
@@ -4265,9 +4265,9 @@ size_t UniKernel::findIndex (Point x) const
   ASSERT (! points. empty ());
   const size_t index = points. binSearch (x, false);  
     // = min {index : x <= points[index].value}
-  if (index == NO_INDEX)
+  if (index == no_index)
     if (points. empty ())
-      return NO_INDEX;
+      return no_index;
     else
       return points. size () - 1;    
   else
@@ -4275,7 +4275,7 @@ size_t UniKernel::findIndex (Point x) const
       return index;
     else
       if (index == 0)
-        return NO_INDEX;
+        return no_index;
       else
         return index - 1;
 }
@@ -4291,15 +4291,15 @@ Real UniKernel::pdf_ (Real x) const
   const size_t right = findIndex (Point (x + halfWindow));
   
   Real multSumLeft = 0.0;
-  if (left == NO_INDEX)
+  if (left == no_index)
   {
-    if (right == NO_INDEX)
+    if (right == no_index)
       return 0.0;
   }
   else
     multSumLeft = multSum [left];
       
-  ASSERT (right != NO_INDEX);
+  ASSERT (right != no_index);
   ASSERT (right < multSum. size ());
   
   const Real windowMultsum = multSum [right] - multSumLeft;
@@ -4315,7 +4315,7 @@ Real UniKernel::pdf_ (Real x) const
 Prob UniKernel::cdf_ (Real x) const
 {
   const size_t index = findIndex (Point (x));
-  if (index == NO_INDEX)
+  if (index == no_index)
     return 0.0;
   ASSERT (index < multSum. size ());
   return multSum [index] / multSum. back ();
@@ -5498,7 +5498,7 @@ Clustering::Clustering (const Clustering &clustering,
   ASSERT (clustering. getOutDim () == toMerge. size ());
   mixt = clustering. mixt;
   
-  size_t compNum1 = NO_INDEX;
+  size_t compNum1 = no_index;
   FFOR (size_t, i, mixt. components. size ())
     if (toMerge [i])
     {
@@ -5506,7 +5506,7 @@ Clustering::Clustering (const Clustering &clustering,
       break;
     }
     
-  if (compNum1 != NO_INDEX)    
+  if (compNum1 != no_index)    
     FOR_REV (size_t, compNum2, mixt. components. size ())
     {
       if (compNum2 == compNum1)
@@ -5641,12 +5641,12 @@ NominAttr1* Clustering::createNominAttr (const string &attrName,
 
   for (Iterator it (sample); it ();)  
   {
-  	size_t col_best = NO_INDEX;
+  	size_t col_best = no_index;
   	Prob p_max = 0.0;
   	FFOR (size_t, col, getOutDim ())
   	  if (maximize (p_max, mixt. components [col] -> objProb [*it]))
   	  	col_best = col;
-  	ASSERT (col_best != NO_INDEX);
+  	ASSERT (col_best != no_index);
   	if (p_max >= prob_min)
  	  	(*attr) [*it] = col_best;
   }

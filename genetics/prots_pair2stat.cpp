@@ -83,13 +83,13 @@ static constexpr size_t alphabetSize = 21;
 
 
 size_t aa2index (char aa)
-// Return: < alphabetSize or NO_INDEX
+// Return: < alphabetSize or no_index
 {
   static const string alphabet ("ACDEFGHIKLMNPQRSTVWY-");
   ASSERT (alphabet. size () == alphabetSize);
   const size_t pos = alphabet. find (aa);
   if (pos == string::npos)
-    return NO_INDEX;
+    return no_index;
   return pos;
 }
 
@@ -149,9 +149,9 @@ struct ThisApplication : Application
             {
               size_t index1 = aa2index (p1. seq [j]);
               size_t index2 = aa2index (p2. seq [j]);
-              if (index1 == NO_INDEX)
+              if (index1 == no_index)
                 continue;
-              if (index2 == NO_INDEX)
+              if (index2 == no_index)
                 continue;
               if (index1 > index2)
                 swap (index1, index2);

@@ -125,7 +125,8 @@ struct ThisApplication : Application
   		  targetStop--;
   		}
     }
-		ASSERT (targetStart < targetStop);
+		if (targetStart >= targetStop)
+		  throw runtime_error ("No alignment");
 		cout << "ref_match: " << targetStart + 1 << ' ' << targetStop << endl;
   		
 
@@ -133,13 +134,13 @@ struct ThisApplication : Application
 		{
 		  OFStream f (mutFName);
 		  size_t refPos = 0;
-  		size_t mismatchStart = NO_INDEX;  
-  		size_t refStart = NO_INDEX;
+  		size_t mismatchStart = no_index;  
+  		size_t refStart = no_index;
   		FFOR (size_t, i, align. sparse1. size ())
   	  {
   		  if (align. sparse1 [i] == align. sparse2 [i])
   		  {
-  		    if (mismatchStart != NO_INDEX)
+  		    if (mismatchStart != no_index)
   		    {
   		      ASSERT (mismatchStart < i);
   		      const size_t len = i - mismatchStart;
@@ -153,12 +154,12 @@ struct ThisApplication : Application
   		      if (to. empty ())
   		        to = "DEL";
   		      f << from << refStart + 1 << to << endl;
-  		      mismatchStart = NO_INDEX;
-  		      refStart = NO_INDEX;
+  		      mismatchStart = no_index;
+  		      refStart = no_index;
   		    }
   		  }
   		  else
-  		    if (mismatchStart == NO_INDEX)
+  		    if (mismatchStart == no_index)
   		    {
   		      mismatchStart = i;
   		      refStart = refPos;

@@ -117,7 +117,7 @@ struct ThisApplication : Application
     QC_ASSERT (dist);
     
     
-    Vector<size_t> objs (ds. objs. size (), NO_INDEX);
+    Vector<size_t> objs (ds. objs. size (), no_index);
     FFOR (size_t, i, objs. size ())
       objs [i] = i;
     objs. randomOrder ();

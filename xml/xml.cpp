@@ -201,7 +201,7 @@ void Schema::qc () const
   {
     flatTable->qc ();
     QC_ASSERT (multiple);
-    QC_ASSERT ((column == NO_INDEX) == types. empty ());
+    QC_ASSERT ((column == no_index) == types. empty ());
   }
 }
 
@@ -219,7 +219,7 @@ void Schema::saveText (ostream &os) const
     os << " values:" << tokens. size ();
   os << " rows:" << rows;
 
-  if (column != NO_INDEX)
+  if (column != no_index)
     os << " column:" << column;
     
   {
@@ -374,8 +374,8 @@ void Schema::setFlatColumns (const Schema* curTable,
 {  
   ASSERT (curTable);
   ASSERT (curTable->multiple);
-  ASSERT (column == NO_INDEX);
-  QC_ASSERT (column_max < NO_INDEX);
+  ASSERT (column == no_index);
+  QC_ASSERT (column_max < no_index);
   
   if (multiple && curTable != this)
     return;
@@ -630,7 +630,7 @@ void Data::writeFiles (size_t xmlNum,
       && flatTable
      )
   {
-    QC_ASSERT (sch->column < NO_INDEX);
+    QC_ASSERT (sch->column < no_index);
     QC_ASSERT (! flatTable->row [sch->column]);
     flatTable->row [sch->column] = & token;
   }

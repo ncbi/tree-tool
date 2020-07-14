@@ -151,11 +151,11 @@ size_t findClass_last (const Vector<Bin> &bins,
                        size_t classMult_max,
                        Prob FP_fraction)
 {
-  size_t class_last = NO_INDEX;
+  size_t class_last = no_index;
   FOR (size_t, i, bins. size ())
     if ((Real) bins. at (i). classMult >= FP_fraction * (Real) classMult_max)
       class_last = i;
-  ASSERT (class_last != NO_INDEX);
+  ASSERT (class_last != no_index);
   return class_last;
 }
 
@@ -313,14 +313,14 @@ struct ThisApplication : Application
     for (const Bin& bin : bins)
       maximize (classMult_max, bin. classMult);
 
-    size_t class_last = NO_INDEX;
+    size_t class_last = no_index;
     for (Prob FP_fraction = 0.01; FP_fraction <= 0.2; FP_fraction += 0.01)  // PAR
     {
       class_last = findClass_last (bins, classMult_max, FP_fraction);  
       if (class_last < bins. size () - 1)
         break;
     }
-    ASSERT (class_last != NO_INDEX);
+    ASSERT (class_last != no_index);
               
     // It is assumed that the class objects are well separated from the others
     const size_t other_first = class_last + 1;

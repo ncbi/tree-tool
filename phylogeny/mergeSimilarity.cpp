@@ -123,11 +123,11 @@ struct ThisApplication : Application
         FOR (size_t, row, ds. objs. size ())
         {
           const size_t row_new = ds_new. getName2objNum (ds. objs [row] -> name);
-          ASSERT (row_new != NO_INDEX);
+          ASSERT (row_new != no_index);
           FOR (size_t, col, ds. objs. size ())
           {
             const size_t col_new = ds_new. getName2objNum (ds. objs [col] -> name);
-            ASSERT (col_new != NO_INDEX);
+            ASSERT (col_new != no_index);
             const Real val = matr. get (false, row, col);
             ASSERT (! isNan (val));
             sim_new->matr. putInc (false, row_new, col_new, val);  

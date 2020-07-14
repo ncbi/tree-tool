@@ -394,9 +394,9 @@ public:
                  size_t row) const
     { return getDefinedNumRow (t, row) == 0; }
   size_t firstEmptyRow (bool t) const;
-    // Return: If no empty rows then NO_INDEX
+    // Return: If no empty rows then no_index
   bool noEmptyRows (bool t) const
-    { return firstEmptyRow (t) == NO_INDEX; }
+    { return firstEmptyRow (t) == no_index; }
   size_t firstColDefined (bool t,
                           size_t row) const
     { Real r; return nextColDefined (t, row, 0, r); }
@@ -408,15 +408,15 @@ public:
 	                       size_t  StartCol,
 	                       Real &R) const;
     // Return: column >= StartCol with a defined element;
-    //         NO_INDEX if not found
-    // Output: R if result != NO_INDEX
+    //         no_index if not found
+    // Output: R if result != no_index
   size_t prevColDefined (bool  t,
 	                       size_t  row,
 	                       size_t  StartCol,
 	                       Real &R) const;
     // Return: column <= StartCol with a defined defined; 
-    //         NO_INDEX if not found
-    // Output: R if result != NO_INDEX
+    //         no_index if not found
+    // Output: R if result != no_index
   Matrix* deleteUndefinedRows (bool t) const;
     // Return: matrix with defined rows
 
@@ -469,11 +469,11 @@ public:
   size_t argMaxRow (bool t,
                     size_t row) const;
     // Return: the greatest column of row
-    //         if no result then NO_INDEX
+    //         if no result then no_index
   size_t argMinRow (bool t,
                   size_t row) const;
     // Return: the smallest column of row;
-    //         if no result then NO_INDEX
+    //         if no result then no_index
   size_t greatestColLess (bool  t,
 	                        size_t  row,
 	                        Real value) const;

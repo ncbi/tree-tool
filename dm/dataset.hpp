@@ -226,7 +226,7 @@ public:
   virtual bool isMissing (size_t objNum) const = 0;
   size_t countMissings () const;
   bool existsMissing (size_t &objNum) const;
-    // Output: objNum; !Return <=> NO_INDEX
+    // Output: objNum; !Return <=> no_index
   bool existsMissing () const
     { size_t objNum;
       return existsMissing (objNum); 
@@ -751,7 +751,7 @@ struct NominAttr1 : Attr1
   typedef size_t Value;
     // Category index
   static const Value missing;  
-    // NO_INDEX
+    // no_index
   StringVector categories;
     // Index: Value
 private:
@@ -821,7 +821,7 @@ public:
   bool isDegenerate (const Sample &sample) const;
   void deleteEmptyCategories (const Sample &sample);
   Value missing2category (const string &missingName);
-    // Return: new category or NO_INDEX
+    // Return: new category or no_index
     // Update: categories
   void renameCategories ();
     // Update: categories: C<i>
@@ -932,7 +932,7 @@ public:
                            size_t col) const = 0;
   bool existsMissing2 (size_t &row,
                        size_t &col) const;
-    // Output: row,col; !Return <=> NO_INDEX
+    // Output: row,col; !Return <=> no_index
   virtual void setMissing (size_t row,
                            size_t col) = 0;
   // values: I/O
@@ -1171,7 +1171,7 @@ public:
   bool name2objNumSet () const
     { return ! name2objNum. empty (); }
   size_t getName2objNum (const string &objName) const;
-    // Return: NO_INDEX <=> not found
+    // Return: no_index <=> not found
     // Input: name2objNum
   StringVector getObjNames () const
     { StringVector names;  names. reserve (name2objNum. size ());
@@ -1289,7 +1289,7 @@ struct Iterator : Nocopy  // --> FOR ??
 private:
   const Vector<Real>& mult_;
   // Output
-  size_t objNum {NO_INDEX};
+  size_t objNum {no_index};
 public:
   Real mult {NaN};
 
@@ -1302,7 +1302,7 @@ public:
     // Return: true => mult
 		{ if (objNum == mult_. size ())
 		    return false;
-		  for (objNum = objNum == NO_INDEX ? 0 : (objNum + 1); 
+		  for (objNum = objNum == no_index ? 0 : (objNum + 1); 
 		       objNum < mult_. size (); 
 		       objNum++
 		      )
@@ -1394,7 +1394,7 @@ template <typename T/*:Attr*/>
       { for (const T* attr : *this)
           if (attr->existsMissing (badObjNum))
             return attr;
-        badObjNum = NO_INDEX;
+        badObjNum = no_index;
         return nullptr;
       }
     bool existsMissing () const
@@ -2149,7 +2149,7 @@ public:
       return s;
     }
   size_t getUniqueCategory () const;
-    // Return: category i if it is the only one with a non-zero probs[i], otherwise NO_INDEX
+    // Return: category i if it is the only one with a non-zero probs[i], otherwise no_index
 private:
   void balanceProb ();
     // Update: probs
@@ -3304,7 +3304,7 @@ private:
     // Input: halfWindow
     // Output: uniform_prob
   size_t findIndex (Point x) const;
-    // Return: max{index : x >= points[index].value}; may be NO_INDEX
+    // Return: max{index : x >= points[index].value}; may be no_index
     // Time: O(log(analysis->sample->nEffective))
   Real getHeight () const
     { return 1 / (checkPtr (analysis) -> sample. mult_sum * 2 * halfWindow); }

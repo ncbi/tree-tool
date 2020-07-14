@@ -621,7 +621,7 @@ Real zeta (Real alpha,
 			init = true;
 		}
 	}
-	size_t index = NO_INDEX;
+	size_t index = no_index;
   if (from == 1 && alpha > 1.0 && alpha < 2.0)
   {
 	  index = (size_t) round ((alpha - 1.0) * size);
@@ -693,7 +693,7 @@ Real zetaLn (Real alpha,
 			init = true;
 		}
 	}
-	size_t index = NO_INDEX;
+	size_t index = no_index;
   if (from == 1 && alpha > 1 && alpha < 2)
   {
 	  index = (size_t) round ((alpha - 1) * size);
@@ -808,7 +808,7 @@ void Histogram::saveText (ostream &os) const
 size_t Histogram::getBin (Real x) const
 { 
   if (! betweenEqual (x, start, stop))
-    return NO_INDEX;
+    return no_index;
   size_t bin = (size_t) round (floor ((x - start) / binRange));
   if (bin == bins. size ())
     bin--;
@@ -821,7 +821,7 @@ size_t Histogram::getBin (Real x) const
 Histogram& Histogram::operator<< (Real x)
 { 
   const size_t bin = getBin (x);
-  if (bin != NO_INDEX)
+  if (bin != no_index)
     bins [bin] ++;
   return *this;
 }

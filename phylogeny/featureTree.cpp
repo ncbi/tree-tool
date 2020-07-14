@@ -192,7 +192,7 @@ void Phyl::saveContent (ostream& os) const
 	 
 #if 0
 	const size_t reportFeature = getFeatureTree (). reportFeature;
-	if (reportFeature != NO_INDEX)
+	if (reportFeature != no_index)
 	{
 	  os << "  " << getFeatureTree (). features [reportFeature]. name 
 	     << ": core=" << core [reportFeature];
@@ -991,7 +991,7 @@ void Genome::initDir (const string &featureDir,
   }
   coreSet. sort ();
   const size_t dup = coreSet. findDuplicate ();
-  if (dup != NO_INDEX)
+  if (dup != no_index)
     throw runtime_error ("Feature " + strQuote (coreSet [dup]. id) + " is duplicated");
   
   coreNonSingletons = coreSet. size ();  // Includes singletons and common core
@@ -1023,7 +1023,7 @@ void Genome::coreSet2nominals ()
 	
 	nominals. sort ();	
 	const size_t dup = nominals. findDuplicate ();
-	if (dup != NO_INDEX)
+	if (dup != no_index)
 	  throw runtime_error ("Nominal attribute " + strQuote (nominals [dup]) + " is repeated");
 }
 
@@ -1042,7 +1042,7 @@ void Genome::nominals2coreSet ()
 
   coreSet. sort ();
   const size_t dup = coreSet. findDuplicate ();
-  if (dup != NO_INDEX)
+  if (dup != no_index)
     throw runtime_error ("Nominal feature " + strQuote (coreSet [dup]. id) + " is duplicated");
         
   nominals. wipe ();
@@ -1086,16 +1086,16 @@ void Genome::init (const Vector<size_t> &featureBatch)
   
   FFOR (size_t, i, core. size ())
   {
-    size_t coreSetIndex = NO_INDEX;
+    size_t coreSetIndex = no_index;
     if (i < featureBatch. size ())
     {
       const GenomeFeature gf (getFeatureTree (). features [featureBatch [i]]. name, false);
       coreSetIndex = coreSet. binSearch (gf);
     }
   	for (const bool parentCore : {false, true})
-      parent2core [parentCore] [i]. core = (coreSetIndex == NO_INDEX ? EFALSE : ETRUE);
-    core [i] = (coreSetIndex != NO_INDEX);
-    optionalCore [i] = (coreSetIndex == NO_INDEX ? false : coreSet [coreSetIndex]. optional);
+      parent2core [parentCore] [i]. core = (coreSetIndex == no_index ? EFALSE : ETRUE);
+    core [i] = (coreSetIndex != no_index);
+    optionalCore [i] = (coreSetIndex == no_index ? false : coreSet [coreSetIndex]. optional);
   }
 }
 
@@ -2214,7 +2214,7 @@ FeatureTree::FeatureTree (const string &treeFName,
      		phyls << static_cast <const Phyl*> (node);
       float featureLen = 0.0;
       ASSERT (featureBatchSize);
-      Vector<size_t/*featureIndex*/> batch;  batch. resize (featureBatchSize, NO_INDEX);
+      Vector<size_t/*featureIndex*/> batch;  batch. resize (featureBatchSize, no_index);
       size_t j = 0;  // = real batch.size()
       Progress prog (features. size (), 1);  // PAR  
       FFOR (size_t, featureIndex, features. size ())
@@ -2222,7 +2222,7 @@ FeatureTree::FeatureTree (const string &treeFName,
         if (j == featureBatchSize)
         {
           processBatch (phyls, batch, featureLen);
-          batch. resize (featureBatchSize, NO_INDEX);
+          batch. resize (featureBatchSize, no_index);
           j = 0;
         }
         prog ();
@@ -2294,7 +2294,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   StringVector genomeVec (genomesListFName, (size_t) 100000);  // PAR
   genomeVec. sort ();
   const size_t dup = genomeVec. findDuplicate ();
-  if (dup != NO_INDEX)
+  if (dup != no_index)
     throw runtime_error ("Duplicate genome in " + strQuote (genomesListFName) + ": " + genomeVec [dup]);
   if (genomeVec. size () > genomes)
     throw runtime_error ("File " + strQuote (genomesListFName) + " has more genomes than there are in the tree");
@@ -2382,7 +2382,7 @@ void FeatureTree::processBatch (const VectorPtr<Phyl> &phyls,
                                 float &featureLen)
 {
   ASSERT (! featureBatch. empty ());
-  ASSERT (featureBatch. back () != NO_INDEX);
+  ASSERT (featureBatch. back () != no_index);
 
 
  	for (const Phyl* phyl : phyls)
@@ -3695,7 +3695,7 @@ size_t FeatureTree::findFeature (const  Feature::Id &featureName) const
   FFOR (size_t, i, features. size ())
     if (features [i]. name == featureName)
       return i;
-  return NO_INDEX;
+  return no_index;
 }
 
 

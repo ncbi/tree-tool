@@ -92,7 +92,7 @@ Objects will be named: <objName1>-<objName2>")
             if (! zero_diagonal || i != j)
               {
                 const size_t objNum = ds1. getName2objNum (ds. pair2name (i, j, symmetrize));
-                ASSERT (objNum != NO_INDEX);
+                ASSERT (objNum != no_index);
                 attr1->str2value (objNum, attr2->value2str (i, j));
               }
       }

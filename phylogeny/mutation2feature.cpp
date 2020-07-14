@@ -48,9 +48,9 @@ namespace
  
 struct Mutation : Root
 {
-  size_t pos {NO_INDEX};
+  size_t pos {no_index};
     // In reference
-    // < NO_INDEX
+    // < no_index
   string ref;
   string allele;
   
@@ -59,26 +59,26 @@ struct Mutation : Root
   
 
   explicit Mutation (const string& mut)
-    { size_t posStart = NO_INDEX;
-      size_t alleleStart = NO_INDEX;
+    { size_t posStart = no_index;
+      size_t alleleStart = no_index;
       FFOR (size_t, i, mut. size ())
         if (isDigit (mut [i]))
         {
-          if (posStart == NO_INDEX)
+          if (posStart == no_index)
             posStart = i;
         }
         else
         {
-          if (posStart != NO_INDEX)
-            if (alleleStart == NO_INDEX)
+          if (posStart != no_index)
+            if (alleleStart == no_index)
               alleleStart = i;
         }
       QC_ASSERT (posStart < alleleStart);
-      QC_ASSERT (alleleStart < NO_INDEX);
+      QC_ASSERT (alleleStart < no_index);
       ref    =                mut. substr (0, posStart);
       pos    = (size_t) stoi (mut. substr (posStart, alleleStart - posStart));
       allele =                mut. substr (alleleStart);
-      ASSERT (pos < NO_INDEX);
+      ASSERT (pos < no_index);
       QC_ASSERT (pos);
       pos--;
       if (ref == "INS")

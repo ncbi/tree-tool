@@ -884,16 +884,16 @@ struct SubstMat : Root
 struct PeptideOrf : Root
 // DNA -> translation of a segment -> ORF
 {
-  size_t translationStart {NO_INDEX};
+  size_t translationStart {no_index};
     // Start of the peptide translation
     // !strand => !translationStart
   Strand strand {0};
   // In the translation which starts from translationStart
-  size_t start {NO_INDEX};
-    // May be: NO_INDEX
+  size_t start {no_index};
+    // May be: no_index
   bool startM {false};
     // Peptide::isStartAa(peptide->seq[start])
-  size_t stop {NO_INDEX};
+  size_t stop {no_index};
     // >= start
   bool stopTerminator {false};
     // peptide->seq[stop] == *terminator
@@ -937,7 +937,7 @@ struct PeptideOrf : Root
     
     
   bool empty () const override
-    { return start == NO_INDEX; }
+    { return start == no_index; }
   bool good (size_t size_min) const
     { return    ! empty ()
     	       && startM        
@@ -1034,9 +1034,9 @@ struct Peptide : Seq
     // Requires: *this and other are aligned
 #if 0
   size_t GetLeftMPos (size_t Start) const;
-    // Return: may be NO_INDEX
+    // Return: may be no_index
   size_t GetClosestMPos (size_t Start) const;
-    // Return: may be NO_INDEX
+    // Return: may be no_index
 #endif
   size_t ambig2X ();
     // Return: # ambiguous characters converted to 'X'

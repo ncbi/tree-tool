@@ -134,6 +134,8 @@ struct ThisApplication : Application
   	  addPositional ("data", dmSuff + "-file with Boolean attributes"); 
   	  addPositional ("mutations", "Attribute file where each line has format: <attr_name> <# mutations>");
   	  addPositional ("dissim", "Name of two-way dissimilarity attribute to add (Hamming distance)"); 
+  	  addKey ("from", "Object pair number to start from, 1-based", "0");
+  	  addKey ("to", "Object pair number to finish before, 1-based", "0");
     }
 
 
@@ -143,6 +145,10 @@ struct ThisApplication : Application
 	  const string dsFName        = getArg ("data");
     const string mutationsFName = getArg ("mutations");
     const string dissimAttrName = getArg ("dissim"); 
+    const size_t from           = str2<size_t> (getArg ("from"));
+    const size_t to             = str2<size_t> (getArg ("to"));
+    
+    QC_ASSERT (from <= to);
 
 
     Dataset ds (dsFName);
@@ -166,22 +172,29 @@ struct ThisApplication : Application
       }
     }
 
-	  auto dist = new PositiveAttr2 (dissimAttrName, ds, 6);  // PAR
+	  auto dist = to ? nullptr : new PositiveAttr2 (dissimAttrName, ds, 6);  // PAR
 	  Vector<ObjPair> objPairs;  objPairs. reserve ((ds. objs. size () * (ds. objs. size () - 1)) / 2);
+	  size_t n = 0;
 	  FOR (size_t, row, ds. objs. size ())
 	  {
-	  	dist->matr. putDiag (row, 0.0);
+	    if (dist)
+	  	  dist->matr. putDiag (row, 0.0);
 	    FOR_START (size_t, col, row + 1, ds. objs. size ())
-	      objPairs << ObjPair {row, col, 0.0};
+	    {
+	      if (n >= from && n < to)
+	        objPairs << ObjPair {row, col, 0.0};
+	      n++;
+	    }
 	  }
     vector<Notype> notypes;
 	  arrayThreads (computeObjPair, objPairs. size (), notypes, ref (objPairs));
-    for (const ObjPair& objPair : objPairs)
-	    dist->matr. putSymmetric (objPair. row, objPair. col, objPair. dissim);
-    ds. qc ();
-  	
-  	
-    ds. saveText (cout);
+	  if (dist)
+	  {
+      for (const ObjPair& objPair : objPairs)
+  	    dist->matr. putSymmetric (objPair. row, objPair. col, objPair. dissim);
+      ds. qc ();  	  	
+      ds. saveText (cout);
+    }
   }
 };
 

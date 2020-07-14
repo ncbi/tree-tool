@@ -65,7 +65,7 @@ struct ThisApplication : Application
 	  const string inFName = getArg ("in");
   
   
-    Vector<size_t> aa2index (128, NO_INDEX);
+    Vector<size_t> aa2index (128, no_index);
     const string alphabet (extPeptideAlphabet);
     FOR (size_t, i, alphabet. size ())
       aa2index [(size_t) alphabet [i]] = i;

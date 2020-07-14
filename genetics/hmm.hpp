@@ -90,7 +90,7 @@ public:
 
 private:    
   static size_t aa2index (char aa);
-    // Return: < aa_size; NO_INDEX <=> bad aa
+    // Return: < aa_size; no_index <=> bad aa
 public:
   Real getDist2 (AminoAcid c1,
                  AminoAcid c2) const;

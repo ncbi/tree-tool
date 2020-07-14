@@ -89,7 +89,7 @@ struct ThisApplication : Application
     // Cf. prot2triplets.cpp
 
     
-    Vector<size_t> aa2index (128, NO_INDEX);
+    Vector<size_t> aa2index (128, no_index);
     const string alphabet (extPeptideAlphabet);
     FOR (size_t, i, alphabet. size ())
       aa2index [(size_t) alphabet [i]] = i;
@@ -203,17 +203,17 @@ struct ThisApplication : Application
 	    fingerprints. clear ();
 	    fingerprint. clear ();
 	    ASSERT (window >= 3);
-	    size_t fpIndex_prev = NO_INDEX;
+	    size_t fpIndex_prev = no_index;
 	    double weight_min_min = 1;
 	    // Heap is faster ??
 	    FOR (size_t, i, seq. size () - window + 1) 
 	    {
 	    	double weight_min = 1;
-	    	size_t fpIndex = NO_INDEX;
+	    	size_t fpIndex = no_index;
 	      FOR_START (size_t, j, i, i + (window - 3) + 1)
 	        if (minimize (weight_min, weights [j]))
 	        	fpIndex = j;
-	      ASSERT (fpIndex != NO_INDEX);
+	      ASSERT (fpIndex != no_index);
 	      if (fpIndex_prev != fpIndex)
 	      {
 	      	fpIndex_prev = fpIndex;

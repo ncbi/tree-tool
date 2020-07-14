@@ -212,7 +212,7 @@ T* selectAttrs (const Sample &sample,
       cerr << t->negLogLikelihood_ave << endl;  
     t->setAttrImportance ();
     const typename T::Predictor* attr_bad = nullptr;
-    size_t i_bad = NO_INDEX;
+    size_t i_bad = no_index;
     Real importance_min = INF;
     FOR (size_t, i, t->space. size ())
       if (minimize (importance_min, t->attrImportance [i]))

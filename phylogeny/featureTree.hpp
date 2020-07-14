@@ -213,7 +213,7 @@ public:
 	  // Return: >= 0	  
 	float feature2weight (bool thisCore,
 	                     bool parentCore) const
-	  { return feature2weight (NO_INDEX/*??*/, thisCore, parentCore); }
+	  { return feature2weight (no_index/*??*/, thisCore, parentCore); }
 	  
 	virtual void setCore () = 0;
 	  // Input: getParent()->core	
@@ -300,7 +300,7 @@ private:
   struct Movement
   {
   	bool parentCore {false};
-  	size_t featureIndex {NO_INDEX};
+  	size_t featureIndex {no_index};
     CoreEval from;  
   	Movement (bool parentCore_arg,
   	          size_t featureIndex_arg,
@@ -1334,7 +1334,7 @@ public:
   const Genome* findGenome (const string &genomeId) const;
     // Return: May be nullptr
   size_t findFeature (const Feature::Id &featureName) const;
-    // Return: may be NO_INDEX
+    // Return: may be no_index
 };
 
 

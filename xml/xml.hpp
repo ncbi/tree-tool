@@ -89,9 +89,9 @@ struct Schema : Root
   
   unique_ptr<const FlatTable> flatTable;
     // get() => multiple
-  size_t column {NO_INDEX};
+  size_t column {no_index};
     // Valid if flatTable.get()
-    // NO_INDEX <=> types.empty()
+    // no_index <=> types.empty()
   
   
   Schema (const Schema* parent_arg,

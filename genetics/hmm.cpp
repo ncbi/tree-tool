@@ -143,7 +143,7 @@ size_t Profile::aa2index (char aa)
   if (! initialized)
   {
     FOR (size_t, i, aa2index_size)
-      aa2index_ [i] = NO_INDEX;
+      aa2index_ [i] = no_index;
     const string aaVec ("ACDEFGHIKLMNPQRSTVWY-");
     ASSERT (aaVec. size () == aa_size);
     FFOR (size_t, i, aa_size)
@@ -157,7 +157,7 @@ size_t Profile::aa2index (char aa)
 
   const size_t i = (size_t) aa;
   if (i >= aa2index_size)
-    return NO_INDEX;
+    return no_index;
   return aa2index_ [i];
 }
 
@@ -168,8 +168,8 @@ Real Profile::getDist2 (AminoAcid c1,
 {
   const size_t i1 = aa2index (c1);
   const size_t i2 = aa2index (c2);
-  if (   i1 == NO_INDEX
-      || i2 == NO_INDEX
+  if (   i1 == no_index
+      || i2 == no_index
      )
     return NaN;
   

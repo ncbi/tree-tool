@@ -146,8 +146,8 @@ Columns 1 and 2: genome pair
           
         const size_t row = ds. getName2objNum (obj1);
         const size_t col = ds. getName2objNum (obj2);
-        ASSERT (row != NO_INDEX);
-        ASSERT (col != NO_INDEX);
+        ASSERT (row != no_index);
+        ASSERT (col != no_index);
         if (! attr->isMissing2 (row, col))
           cerr << obj1 << ' ' << obj2 << ": " << "duplicate value" << endl;
         attr->putSymm (row, col, dist);

@@ -72,7 +72,7 @@ size_t alphabet2Pos (const char* alphabet,
     return (size_t) (s - alphabet);
   cout << c << "  " << alphabet << endl;
   ERROR;
-  return NO_INDEX;
+  return no_index;
 }
 
 
@@ -497,7 +497,7 @@ size_t nuc2num (char wildNucleotide)
   if (charInSet (c, dnaWildcards))
     return 4;
   NEVER_CALL;
-  return NO_INDEX;
+  return no_index;
 }
 
 
@@ -3340,7 +3340,7 @@ size_t aa2num (char wildAminoacid)
     return 21;
 
   NEVER_CALL;
-  return NO_INDEX;
+  return no_index;
 }
 
 
@@ -3614,14 +3614,14 @@ size_t Peptide::GetLeftMPos (size_t Start) const
     if (seq [i] == 'M')
       return i;
 
-  return NO_INDEX;
+  return no_index;
 }
 
 
 
 size_t Peptide::GetClosestMPos (size_t Start) const
 {
-  size_t ClosestMPos = NO_INDEX;
+  size_t ClosestMPos = no_index;
   size_t Distance = MAXUINT;
   ForString (i, seq)
     if (seq [i] == 'M' &&

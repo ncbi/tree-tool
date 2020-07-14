@@ -173,7 +173,7 @@ struct Neighbor
 { 
 	const Leaf* leaf {nullptr}; 
 	  // !nullptr
-	size_t dissimType {NO_INDEX};
+	size_t dissimType {no_index};
 	Real target {NaN};
 	  // > 0
 
@@ -215,7 +215,7 @@ struct Triangle
 	array<Parent, 2> parents;	
 	bool child_hybrid {false};
 		// Cause of the triangle inequality violation
-	size_t dissimType {NO_INDEX};
+	size_t dissimType {no_index};
 
 	  
 	Triangle (const Leaf* child_arg,
@@ -290,7 +290,7 @@ struct TriangleParentPair
 	array<Parent,2> parents;	
 	Real parentsDissim {NaN};
 	  // = f(parents[0].leaf,parents[1].leaf)
-	size_t dissimType {NO_INDEX};
+	size_t dissimType {no_index};
 	
 	// Output
 	Vector<Triangle> triangles;
@@ -299,7 +299,7 @@ struct TriangleParentPair
 	  // May be empty()
     // Average size: O(p/n log(n))  
 private:
-	size_t triangle_best_index {NO_INDEX};
+	size_t triangle_best_index {no_index};
 	  // Index in triangles
 public:
 	Real hybridness_ave {NaN};
@@ -594,7 +594,7 @@ struct Leaf : DTNode
     
   // Temporary
 private:
-  size_t index {NO_INDEX};
+  size_t index {no_index};
 public:
   // For DistTree::findHybrids()
   Real badCriterion {NaN};
@@ -935,7 +935,7 @@ struct Dissim
     // Dissimilarity between leaf1 and leaf2; !isNan()
     // < INF
     // Update: = original target * DissimType::scaleCoeff
-  size_t type {NO_INDEX};
+  size_t type {no_index};
     // < DistTree::dissimTypes.size()
   
   // Output

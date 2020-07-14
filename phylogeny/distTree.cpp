@@ -177,7 +177,7 @@ void Triangle::print (ostream &os) const
   td << child->name << hybridness 
      << p1. leaf->name << p2. leaf->name << p1. dissim << p2. dissim 
      << child_hybrid << p1. hybrid << p2. hybrid;
-  if (dissimType != NO_INDEX)
+  if (dissimType != no_index)
     td << dissimType;
   os << td. str () << endl; 
 }
@@ -292,7 +292,7 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
     const Leaf* other = dissim. getOtherLeaf (parents [1]. leaf);
     ASSERT (other->graph);
     const size_t i = hybridParents. binSearch (Neighbor (other, dissim. type));
-    if (i == NO_INDEX)
+    if (i == no_index)
       continue;
     addTriangle ( triangles
                 , other
@@ -333,7 +333,7 @@ void TriangleParentPair::finish (const DistTree &tree,
     ASSERT (! parents [i]. classSize);
   }
   ASSERT (! triangles. empty ());
-  ASSERT (triangle_best_index == NO_INDEX);
+  ASSERT (triangle_best_index == no_index);
 
   triangles. sort ();
   triangles. uniq ();
@@ -421,12 +421,12 @@ void TriangleParentPair::finish (const DistTree &tree,
   }
   if (allSingletons)
   {
-    size_t i_bad = NO_INDEX;
+    size_t i_bad = no_index;
     Real badCriterion = triangles [0]. child->badCriterion;
     for (const bool i : {false, true})  
       if (maximize (badCriterion, parents [i]. leaf->badCriterion))
         i_bad = (size_t) i;
-    if (i_bad == NO_INDEX)
+    if (i_bad == no_index)
       setChildrenHybrid ();
     else  
     {
@@ -565,7 +565,7 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
     const Leaf* otherParent = dissim. getOtherLeaf (parent);
     ASSERT (otherParent->graph);
     const size_t i = hybridParents. binSearch (Neighbor (otherParent, dissim. type));
-    if (i == NO_INDEX)
+    if (i == no_index)
       continue;
     const Real hybridness = dissim. target / (parentDissim + hybridParents [i]. target);
     if (hybridness >= DistTree_sp::hybridness_min)  // otherParent's may be too diverse to be all hybrid
@@ -1259,7 +1259,7 @@ void Steiner::setSubTreeWeight ()
 
 void Steiner::threadNum2subTree (size_t threadNum_arg)
 {
-  ASSERT (threadNum_arg != NO_INDEX);
+  ASSERT (threadNum_arg != no_index);
   
   threadNum = threadNum_arg;
   for (const DiGraph::Arc* arc : arcs [false])
@@ -1271,7 +1271,7 @@ void Steiner::threadNum2subTree (size_t threadNum_arg)
 
 void Steiner::threadNum2ancestors (size_t threadNum_arg)
 {
-  ASSERT (threadNum_arg != NO_INDEX);
+  ASSERT (threadNum_arg != no_index);
 
   Steiner* n = this;
   while (Steiner* parent = const_static_cast<Steiner*> (n->getParent ()))
@@ -1336,7 +1336,7 @@ void Leaf::qc () const
   }  
   QC_ASSERT (getReprLeaf (0) == this);
   
-  QC_ASSERT (index < NO_INDEX);
+  QC_ASSERT (index < no_index);
 }
 
 
@@ -1494,7 +1494,7 @@ void Leaf::addHybridTriangles (Vector<Triangle> &triangles) const
       if (parent2 == this)
         continue;
       const size_t i = neighbors. binSearch (Neighbor (parent2, dissim2. type));
-      if (i == NO_INDEX)
+      if (i == no_index)
         continue;
       addTriangle ( triangles
                   , this
@@ -1737,7 +1737,7 @@ void Subgraph::dissimNums2subPaths ()
     {
       if (! tree. dissims [dissimNum]. valid ())  
         continue;
-      size_t index = NO_INDEX;
+      size_t index = no_index;
       if (! find (dissimNum2subPath, dissimNum, index))
       {        
       //cout << "missed: " << dtNode << endl;
@@ -1746,7 +1746,7 @@ void Subgraph::dissimNums2subPaths ()
         ASSERT (! completeBoundary);
         continue;   
       }
-      ASSERT (index != NO_INDEX); 
+      ASSERT (index != no_index); 
       SubPath& subPath = subPaths [index];
       ASSERT (subPath. dissimNum == dissimNum);
       if (! subPath. node1)
@@ -2898,7 +2898,7 @@ public:
           && ! leaf1->getCollapsed (leaf2)  // Only for new Leaf's
          )  
         leaf1->collapse (leaf2);
-      if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, NO_INDEX))
+      if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, no_index))
         throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
     }
 
@@ -3604,10 +3604,10 @@ DistTree::DistTree (Subgraph &subgraph,
             const Leaf* leaf2 = it2. second;
             if (leaf1 == leaf2)
               break;
-            dissims [dissimNum] = move (Dissim (leaf1, leaf2, 0.0, 0.0, NO_INDEX));
+            dissims [dissimNum] = move (Dissim (leaf1, leaf2, 0.0, 0.0, no_index));
             ASSERT (leaf1->index != leaf2->index);
-            ASSERT (leaf1->index < NO_INDEX);
-            ASSERT (leaf2->index < NO_INDEX);
+            ASSERT (leaf1->index < no_index);
+            ASSERT (leaf2->index < no_index);
             if (leaf1->index > leaf2->index)
               swap (leaf1, leaf2);
             leaves2dissimNum [leaf1->index * leafNum + leaf2->index] = (uint) dissimNum;
@@ -3657,7 +3657,7 @@ DistTree::DistTree (Subgraph &subgraph,
       {
         dissim = & dissimMap [index];
         if (! dissim->leaf1)
-          *dissim = move (Dissim (leaf1, leaf2, 0.0, 0.0, NO_INDEX));
+          *dissim = move (Dissim (leaf1, leaf2, 0.0, 0.0, no_index));
       }
       else
       {
@@ -4684,12 +4684,12 @@ void DistTree::neighborJoin ()
       Real dissim_min = NaN;
       {
         Real criterion = INF;
-        size_t i_best = NO_INDEX;
+        size_t i_best = no_index;
         FFOR (size_t, i, leafPairs. size ())
           // P (criterion1 < criterion2) ??
           if (minimize (criterion, leafPairs [i]. getCriterion (n)))            
             i_best = i;
-        ASSERT (i_best != NO_INDEX);
+        ASSERT (i_best != no_index);
         leafPair_best = leafPairs [i_best];
         if (verbose (-1))
         {
@@ -4822,7 +4822,7 @@ void DistTree::dissimDs2dissims ()
       {
         const Real dissim = dissimAttr->get (row, col);
         const Real mult = multAttr ? multAttr->get (row, col) : 1.0/*temporary*/;
-        addDissim (name1, name2, dissim, mult, NO_INDEX);
+        addDissim (name1, name2, dissim, mult, no_index);
       }
       else
         FFOR (size_t, type, dissimTypes. size ())
@@ -4897,7 +4897,7 @@ bool DistTree::addDissim (Leaf* leaf1,
 
   dissimTransform (target);  
     
-  if (type != NO_INDEX)
+  if (type != no_index)
     target *= dissimTypes [type]. scaleCoeff;
   
   Dissim d (leaf1, leaf2, target, mult, type);  
@@ -5172,7 +5172,7 @@ void DistTree::qc () const
         else
           { QC_IMPLY (! dissim. target && ! DistTree_sp::variance_min, dissim. mult == INF); }
         if (dissimTypes. empty ())
-          { QC_ASSERT (dissim. type == NO_INDEX); }
+          { QC_ASSERT (dissim. type == no_index); }
         else
           { QC_ASSERT (dissim. type < dissimTypes. size ()); } 
       }
@@ -5640,7 +5640,7 @@ void DistTree::setDissimMult (Dissim& dissim,
       dissim. mult = INF;
     else
     { 
-      const Real scale = (dissim. type == NO_INDEX ? 1.0 : dissimTypes [dissim. type]. scaleCoeff);
+      const Real scale = (dissim. type == no_index ? 1.0 : dissimTypes [dissim. type]. scaleCoeff);
       ASSERT (scale > 0.0);
       dissim. mult = dist2mult ((usePrediction ? dissim. prediction : dissim. target) / scale) / sqr (scale);
       if (dissim. mult == INF)  
@@ -5703,7 +5703,7 @@ bool DistTree::optimizeLenAll ()
 
   // DTNode::index, dtNodes, arcs
   for (DiGraph::Node* node : nodes)
-    static_cast <DTNode*> (node) -> index = NO_INDEX;
+    static_cast <DTNode*> (node) -> index = no_index;
   VectorPtr<DTNode> dtNodes;  dtNodes. reserve (2 * name2leaf. size ());
   size_t arcs = 0;
   for (DiGraph::Node* node : nodes)
@@ -5734,13 +5734,13 @@ bool DistTree::optimizeLenAll ()
     for (const TreeNode* node1 : path)
     {
       DTNode* dtNode1 = const_static_cast <DTNode*> (node1);
-      if (dtNode1->index == NO_INDEX)
+      if (dtNode1->index == no_index)
         continue;
       dtNode1->dissimSum += dissim * it. mult;
       for (const TreeNode* node2 : path)
       {
         const DTNode* dtNode2 = static_cast <const DTNode*> (node2);
-        if (dtNode2->index != NO_INDEX)
+        if (dtNode2->index != no_index)
           matr. putInc ( false
                        , dtNode1->index
                        , dtNode2->index
@@ -5761,7 +5761,7 @@ bool DistTree::optimizeLenAll ()
   for (const DiGraph::Node* node : nodes)
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
-    if (dtNode->index != NO_INDEX)
+    if (dtNode->index != no_index)
     {
       xy [dtNode->index] = dtNode->dissimSum;
     //matr. put (false, dtNode->index, arcs, dtNode->dissimSum);
@@ -8287,7 +8287,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
                                         , tr. parents [1]. leaf
                                         , tr. dissimType
                                         };
-        size_t index = NO_INDEX;
+        size_t index = no_index;
         if (! find (triangleType2tpp, triangleType, index))
         {
           triangleParentPairs << TriangleParentPair ( tr. parents [0]. leaf
@@ -8298,7 +8298,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
           index = triangleParentPairs. size () - 1;
           triangleType2tpp [triangleType] = index;
         }
-        ASSERT (index != NO_INDEX);
+        ASSERT (index != no_index);
         triangleParentPairs [index]. triangles << tr;
       }
   }    
@@ -8366,7 +8366,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     {
       const RequestCandidate req (dissim. leaf1, dissim. leaf2);
       const size_t index = requests. binSearch (req);
-      if (index != NO_INDEX)
+      if (index != no_index)
         requests [index]. inDissims = true;
     }
     for (const RequestCandidate& req : requests)
@@ -8675,7 +8675,7 @@ Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Lea
   pairs. uniq ();
        
   if (! dissims. empty ())
-    pairs. filterValue ([this] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second, NaN, 0.0, NO_INDEX); return dissims. containsFast (dissim); });
+    pairs. filterValue ([this] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second, NaN, 0.0, no_index); return dissims. containsFast (dissim); });
 
   return pairs;
 }
@@ -8745,12 +8745,12 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
   nodeHeights. sort (TreeNode::NodeDist::distLess);
   
   // Use outlier analysis ??
-  size_t i_best = NO_INDEX;
+  size_t i_best = no_index;
   Real diff_max = 0.0;
   FFOR (size_t, i, nodeHeights. size ())
     if (i && maximize (diff_max, nodeHeights [i]. dist - nodeHeights [i - 1]. dist))
       i_best = i;
-  ASSERT (i_best != NO_INDEX);
+  ASSERT (i_best != no_index);
   
   if (nodeHeights. size () - i_best < clusters_min)
     i_best = nodeHeights. size () - clusters_min;
@@ -9052,12 +9052,12 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
           continue;
         size_t index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf1, 0.0});
         const Leaf* leaf = dissim. leaf2;
-        if (index == NO_INDEX)
+        if (index == no_index)
         {
           index = leafDepths. binSearch (Tree::TreeNode::NodeDist {dissim. leaf2, 0.0});
           leaf = dissim. leaf1;
         }
-        ASSERT (index != NO_INDEX);
+        ASSERT (index != no_index);
         ASSERT (leaf);
         leaf2dissimMults [leaf] << DissimMult {dissim. target - leafDepths [index]. dist, dissim. mult, dissim. getAbsCriterion ()};
       }
