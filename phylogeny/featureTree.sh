@@ -17,7 +17,7 @@ TMP=`mktemp`
 QC="" # -qc
 
 
-$THIS/feature2dissim $QC $OBJ.list $FEAT > $TMP.dm
+$THIS/../dissim/feature2dissim $QC $OBJ.list $FEAT > $TMP.dm
 
 echo ""
 echo ""
