@@ -73,6 +73,10 @@ while true; do
       qrls  -h u  -u $USER > /dev/null
     fi
   fi
+  
+  if [ $SECONDS == 0 ]; then
+    break
+  fi
 done
 
 
