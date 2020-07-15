@@ -126,7 +126,7 @@ if [ -e $INC/phen ]; then
 
 	echo ""
 	echo "Setting root and sorting ..."
-  if [ ! "$NEW_ROOT" ]; then
+  if [ ! $NEW_ROOT ]; then
     NEW_ROOT=$OLD_ROOT
   fi
   # -noqual must be absent to compute quality data after reroot()

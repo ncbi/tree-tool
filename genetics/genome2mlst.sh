@@ -16,7 +16,7 @@ DNA=$2
 MLST=$3
 
 
-if [ ! "$DNA" ]; then
+if [ ! $DNA ]; then
   echo "Empty DNA file name"
   exit 1
 fi

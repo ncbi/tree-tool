@@ -36,7 +36,7 @@ echo $TMP
 
 
 #UNIV_PAR=""
-#if [ "$UNIV" ]; then
+#if [ $UNIV ]; then
 #  UNIV_PAR="-universal $UNIV"
 #fi
 # PAR

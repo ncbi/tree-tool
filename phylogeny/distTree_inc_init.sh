@@ -35,23 +35,23 @@ if [ $GRID_MIN -le 0 ]; then
   error "Bad GRID_MIN"
 fi
 
-if [ "$SERVER" -a ! "$DATABASE" ]; then
+if [ $SERVER -a ! $DATABASE ]; then
   error "Database is empty"
 fi
 
-if [ ! "$SERVER" -a "$DATABASE" ]; then
+if [ ! $SERVER -a $DATABASE ]; then
   error "Server is empty"
 fi
 
-if [ "$BULK_LOCAL" -a ! "$DATABASE" ]; then
+if [ $BULK_LOCAL -a ! $DATABASE ]; then
   error "Bulk directory with an emoty database"
 fi
 
-if [ "$BULK_LOCAL" -a ! "$BULK_REMOTE" ]; then
+if [ $BULK_LOCAL -a ! $BULK_REMOTE ]; then
   error "Local bulk directory with an empty remote bulk directory"
 fi
 
-if [ ! "$BULK_LOCAL" -a "$BULK_REMOTE" ]; then
+if [ ! $BULK_LOCAL -a $BULK_REMOTE ]; then
   error "Remote bulk directory with an empty local bulk directory"
 fi
 

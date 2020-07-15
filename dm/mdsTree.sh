@@ -37,7 +37,7 @@ echo "" > $TMP.mds
 while true; do
   echo ""
   F=`ls $TMP.tmp | head -1`
-  if [ ! "$F" ]; then
+  if [ ! $F ]; then
     break
   fi
   F=`basename $F .dm`
