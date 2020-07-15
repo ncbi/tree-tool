@@ -21,7 +21,7 @@ $THIS/../dissim/feature2dissim $QC $OBJ.list $FEAT > $TMP.dm
 
 echo ""
 echo ""
-$THIS/makeDistTree  $QC  -data $TMP  -dissim_attr cons  -variance linExp  -optimize  -output_feature_tree ${TMP}-init.tree 
+$THIS/makeDistTree  $QC  -data $TMP  -dissim_attr dissim  -variance linExp  -optimize  -output_feature_tree ${TMP}-init.tree 
 
 echo ""
 echo ""
