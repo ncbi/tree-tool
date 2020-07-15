@@ -36,7 +36,7 @@ uniq $TMP.list2 > $TMP.list2-uniq
 diff $TMP.list1 $TMP.list1-uniq
 diff $TMP.list2 $TMP.list2-uniq
 
-if [ "$TARGET" ]; then
+if [ $TARGET ]; then
   $THIS/../setIntersect.sh $TMP.list1 $TARGET 0 > $TMP.list1-good 
   $THIS/../setIntersect.sh $TMP.list2 $TARGET 0 > $TMP.list2-good 
 else

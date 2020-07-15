@@ -25,7 +25,7 @@ echo $TMP
 
 
 DELETE=""
-if [ "$TARGET" ]; then
+if [ $TARGET ]; then
   $THIS/tree2obj.sh $TREE > $TMP.cur
   $THIS/../setMinus $TMP.cur $TARGET > $TMP.del
   DELETE="-delete $TMP.del  -check_delete"
