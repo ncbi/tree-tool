@@ -6,12 +6,12 @@ if [ $# -ne 2 ]; then
   echo "#2: run qresub (0/1)"
   exit 1
 fi
-SECONDS=$1
+SECS=$1  # SECONDS is a system variable
 QRESUB=$2
 
 
 SLEEP_SEC=10  # PAR
-PERIODS=$(( $SECONDS / $SLEEP_SEC ))
+PERIODS=$(( $SECS / $SLEEP_SEC ))
 
 
 while true; do
@@ -74,7 +74,7 @@ while true; do
     fi
   fi
   
-  if [ $SECONDS == 0 ]; then
+  if [ $SECS == 0 ]; then
     break
   fi
 done
