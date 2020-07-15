@@ -1,4 +1,5 @@
 // snp2dissim.cpp
+// Merge with feature2dissim.cpp ??
 
 /*===========================================================================
 *
@@ -118,8 +119,14 @@ void computeObjPair (size_t from,
     prog ();
     ObjPair& objPair = objPairs [i];
     Func f (objPair. row, objPair. col);    
-    objPair. dissim = f. findZero (0.0, 1.0, 1e-5);  // PAR  // 1.0 = tree length
+    objPair. dissim = f. findZero (0.0, 1.0, 1e-7);  // PAR  // 1.0 = tree length
       // f. findZeroPositive (0.05, 1e-6);  // PAR
+  #if 1
+    cout << endl << objPair. dissim << '\t' << f. f (objPair. dissim) << endl;
+    constexpr Real delta = 0.04;  // PAR
+    for (Real x = objPair. dissim - delta * 10; x <= objPair. dissim + delta * 10; x += delta)
+      cout << x << '\t' << f. f (x) << endl;
+  #endif
   }
 }
   
@@ -128,14 +135,13 @@ void computeObjPair (size_t from,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Add a SNP dissimilarity attribute and print the resulting Data Master file")
+    : Application ("Add a SNP dissimilarity attribute and print the resulting Data Master file or a list of: <obj1> <obj2> <dissimilarity>")
     {
   	  version = VERSION;
   	  addPositional ("data", dmSuff + "-file with Boolean attributes"); 
   	  addPositional ("mutations", "Attribute file where each line has format: <attr_name> <# mutations>");
-  	  addPositional ("dissim", "Name of two-way dissimilarity attribute to add (Hamming distance)"); 
-  	  addKey ("from", "Object pair number to start from, 1-based", "0");
-  	  addKey ("to", "Object pair number to finish before, 1-based", "0");
+  	  addPositional ("dissim", "Name of two-way dissimilarity attribute to add"); 
+  	  addKey ("pairs", "Object pairs to compute dissimilarities for", "");
     }
 
 
@@ -145,11 +151,8 @@ struct ThisApplication : Application
 	  const string dsFName        = getArg ("data");
     const string mutationsFName = getArg ("mutations");
     const string dissimAttrName = getArg ("dissim"); 
-    const size_t from           = str2<size_t> (getArg ("from"));
-    const size_t to             = str2<size_t> (getArg ("to"));
+    const string pairsFName     = getArg ("pairs");
     
-    QC_ASSERT (from <= to);
-
 
     Dataset ds (dsFName);
     ds. qc ();
@@ -172,28 +175,59 @@ struct ThisApplication : Application
       }
     }
 
-	  auto dist = to ? nullptr : new PositiveAttr2 (dissimAttrName, ds, 6);  // PAR
-	  Vector<ObjPair> objPairs;  objPairs. reserve ((ds. objs. size () * (ds. objs. size () - 1)) / 2);
-	  size_t n = 0;
-	  FOR (size_t, row, ds. objs. size ())
-	  {
-	    if (dist)
-	  	  dist->matr. putDiag (row, 0.0);
-	    FOR_START (size_t, col, row + 1, ds. objs. size ())
-	    {
-	      if (n >= from && n < to)
-	        objPairs << ObjPair {row, col, 0.0};
-	      n++;
-	    }
-	  }
+
+    constexpr streamsize decimals = 6;  // PAR
+
+    Vector<ObjPair> objPairs;  
+    PositiveAttr2* dist = nullptr;
+    if (pairsFName. empty ())
+    {
+  	  dist = new PositiveAttr2 (dissimAttrName, ds, decimals);  
+  	  objPairs. reserve ((ds. objs. size () * (ds. objs. size () - 1)) / 2);
+  	  FOR (size_t, row, ds. objs. size ())
+  	  {
+ 	  	  dist->matr. putDiag (row, 0.0);
+  	    FOR_START (size_t, col, row + 1, ds. objs. size ())
+ 	        objPairs << ObjPair {row, col, 0.0};
+  	  }
+    }
+    else
+    {
+      LineInput f (pairsFName);
+      string name1, name2;
+      Istringstream iss;
+      while (f. nextLine ())
+      {
+        iss. reset (f. line);
+        name2. clear ();
+        iss >> name1 >> name2;
+        QC_ASSERT (! name2. empty ());
+        const size_t objNum1 = ds. getName2objNum (name1);
+        QC_ASSERT (objNum1 != no_index);
+        const size_t objNum2 = ds. getName2objNum (name2);
+        QC_ASSERT (objNum2 != no_index);
+        objPairs << ObjPair {objNum1, objNum2, 0.0};
+      }
+    }
+
     vector<Notype> notypes;
 	  arrayThreads (computeObjPair, objPairs. size (), notypes, ref (objPairs));
+	  
 	  if (dist)
 	  {
       for (const ObjPair& objPair : objPairs)
   	    dist->matr. putSymmetric (objPair. row, objPair. col, objPair. dissim);
       ds. qc ();  	  	
       ds. saveText (cout);
+    }
+    else
+    {
+      const ONumber on (cout, decimals, true);
+      for (const ObjPair& objPair : objPairs)
+        cout         << ds. objs [objPair. row] -> name
+             << '\t' << ds. objs [objPair. col] -> name
+             << '\t' << objPair. dissim
+             << endl;
     }
   }
 };

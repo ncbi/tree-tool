@@ -26,8 +26,7 @@ all:	\
   loci_request2dissim \
 	mlst2dissim \
 	prot2dissim \
-	prots_pair2dissim \
-	snp2dissim
+	prots_pair2dissim
 
 
 additive.o:  $(DM_HPP) 
@@ -72,19 +71,19 @@ dna_pair2dissim:	$(dna_pair2dissimOBJS)
 	$(ECHO)
 
 fasta2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp $(DM_DIR)/dataset.hpp $(DM_DIR)/matrix.hpp 
-fasta2dissimOBJS=fasta2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o $(DM_DIR)/matrix.o $(DM_DIR)/optim.o
+fasta2dissimOBJS=fasta2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o 
 fasta2dissim:	$(fasta2dissimOBJS)
 	$(CXX) -o $@ $(fasta2dissimOBJS) $(LIBS) 
 	$(ECHO)
 
-feature2dissim.o:  $(DM_HPP) 
-feature2dissimOBJS=feature2dissim.o $(DM_OBJ) 
+feature2dissim.o:  $(DM_HPP) $(DISSIM_DIR)/evolution.hpp
+feature2dissimOBJS=feature2dissim.o $(DM_OBJ) $(DISSIM_DIR)/evolution.o
 feature2dissim:	$(feature2dissimOBJS)
 	$(CXX) -o $@ $(feature2dissimOBJS) $(LIBS)
 	$(ECHO)
 
-feature_request2dissim.o:  $(COMMON_HPP) 
-feature_request2dissimOBJS=feature_request2dissim.o $(CPP_DIR)/common.o
+feature_request2dissim.o:  $(NUMERIC_HPP) $(DISSIM_DIR)/evolution.hpp
+feature_request2dissimOBJS=feature_request2dissim.o $(DM_OBJ) $(DISSIM_DIR)/evolution.o
 feature_request2dissim:	$(feature_request2dissimOBJS)
 	$(CXX) -o $@ $(feature_request2dissimOBJS) $(LIBS)
 	$(ECHO)
@@ -120,14 +119,8 @@ prot2dissim:	$(prot2dissimOBJS)
 	$(ECHO)
 
 prots_pair2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp $(DM_DIR)/dataset.hpp $(DISSIM_DIR)/evolution.hpp
-prots_pair2dissimOBJS=prots_pair2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o $(DM_DIR)/matrix.o $(DM_DIR)/optim.o
+prots_pair2dissimOBJS=prots_pair2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o 
 prots_pair2dissim:	$(prots_pair2dissimOBJS)
 	$(CXX) -o $@ $(prots_pair2dissimOBJS) $(LIBS) 
-	$(ECHO)
-
-snp2dissim.o:  $(DM_HPP) 
-snp2dissimOBJS=snp2dissim.o $(DM_OBJ) 
-snp2dissim:	$(snp2dissimOBJS)
-	$(CXX) -o $@ $(snp2dissimOBJS) $(LIBS)
 	$(ECHO)
 

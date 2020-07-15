@@ -38,6 +38,7 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "../dm/dataset.hpp"
+#include "evolution.hpp"
 using namespace DM_sp;
 #include "../version.inc"
 
@@ -47,32 +48,38 @@ namespace
 {
 
 
-const string dissimName = "cons";
+const string dissimName = "dissim";
 
 
 
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert feature sets to a Jaccard conservation distance " + strQuote (dissimName) + " and print a " + dmSuff + "-file")
+    : Application ("Convert feature sets to dissimilarities (Hamming distance, Jaccard index) " + strQuote (dissimName) + " and print a " + dmSuff + "-file")
     {
       version = VERSION;
   	  addPositional ("objects", "File with a list of object files with features");
-  	  addPositional ("objects_dir", "Directory with <object> files containing features");
+  	  addPositional ("dir", "Directory with <object> files containing feature-optional(0/1) pairs");
+  	  addKey ("optional_weight", "Weight of optional-nonoptional match (0..1) - for Hamming distance", "NaN");
   	}
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string objectsFName = getArg ("objects");
-		const string objects_dir  = getArg ("objects_dir");
+		const string objects_dir  = getArg ("dir");
+		const Real   optional_weight = str2real (getArg ("optional_weight"));
 		
+		if (! isNan (optional_weight))
+		{
+  		QC_ASSERT (optional_weight >= 0.0);
+  		QC_ASSERT (optional_weight <= 1.0);
+    }
 		
-		typedef  StringVector Features;
 		
     Dataset ds;
-    Vector<Features> obj2features;  
+    Vector<FeatureVector> obj2features;  
 
     size_t features_min = numeric_limits<size_t>::max();
     size_t features_max = 0;
@@ -82,51 +89,35 @@ struct ThisApplication : Application
       {
         trim (objF. line);
         ds. appendObj (objF. line);
-        Features features;
-        {
-          LineInput featF (objects_dir + "/" + objF. line);
-          while (featF. nextLine ())
-          {
-            trim (featF. line);
-            features << featF. line;
-          }
-        }
-        features. sort ();
-        features. uniq ();
-        obj2features << features;
-        minimize (features_min, features. size  ());
-        maximize (features_max, features. size  ());
+        FeatureVector features (objects_dir + "/" + objF. line);
+        minimize (features_min, features. size ());
+        maximize (features_max, features. size ());
+        obj2features << move (features);
       }
     }
     ASSERT (ds. objs. size () == obj2features. size ());
     cerr << "# Objects: " << ds. objs. size () << endl;
     cerr << "Min. features: " << features_min << endl;
     cerr << "Max. features: " << features_max << endl;
-    ASSERT (features_min);
+    QC_ASSERT (features_min);
 
 
     auto attr = new PositiveAttr2 (dissimName, ds, 6);  // PAR
-    Progress prog (ds. objs. size ());
-    FOR (size_t, i, ds. objs. size ())
     {
-      prog ();
-      const Features& f1 = obj2features [i];
-      FOR_START (size_t, j, i + 1, ds. objs. size ())
+      Progress prog (ds. objs. size ());
+      FOR (size_t, i, ds. objs. size ())
       {
-        const Features& f2 = obj2features [j];
-        const size_t intersection = f1. getIntersectSize (f2);
-        Features f (f2);
-        f << f1;
-        f. sort ();
-        f. uniq ();
-        const Prob jaccard = (Real) intersection / (Real) f. size ();
-        ASSERT (isProb (jaccard));
-        const Real dissim = - log (jaccard);
-        attr->putSymm (i, j, dissim);
+        prog ();
+        const FeatureVector& f1 = obj2features [i];
+        FOR_START (size_t, j, i + 1, ds. objs. size ())
+        {
+          const FeatureVector& f2 = obj2features [j];
+          attr->putSymm (i, j, features2dissim (f1, f2, optional_weight, Vector<pair<string,Real>> ()));
+        }
       }
     }
     FOR (size_t, row, ds. objs. size ())
-      attr->put (row, row, 0);
+      attr->put (row, row, 0.0);
 
     
     ds. qc ();

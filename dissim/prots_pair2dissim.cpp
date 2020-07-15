@@ -38,12 +38,11 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "../dm/dataset.hpp"
+#include "align.hpp"
+#include "evolution.hpp"
 using namespace DM_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
-#include "align.hpp"
-#include "evolution.hpp"
-using namespace DistTree_sp;
 
 
 #undef HMM  // ??

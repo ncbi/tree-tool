@@ -37,9 +37,12 @@
 
 #include "evolution.hpp"
 
+#include "../dm/optim.hpp"
 
 
-namespace DistTree_sp
+
+
+namespace DM_sp
 {
 
 
@@ -118,6 +121,153 @@ Hashes::Hashes (const string &fName)
 
 // Read Hashes from a binary file ??
 
+
+
+
+// Feature
+
+FeatureVector::FeatureVector (const string &fName)
+{
+  reserve (16);  // PAR
+
+  LineInput f (fName);
+  while (f. nextLine ())
+    (*this) << Feature (move (f. line));
+    
+  sort ();
+  QC_ASSERT (isUniq ());
+}
+
+
+
+
+namespace
+{
+
+Real features2hamming_half (const FeatureVector &vec1,
+                            const FeatureVector &vec2,
+                            Real optional_weight)
+{
+	ASSERT (optional_weight >= 0.0);
+	ASSERT (optional_weight <= 1.0);
+
+  Real n = 0.0;
+  for (const Feature& f : vec2)
+  {
+    const size_t index = vec1. binSearch (f);
+    if (f. optional)
+    {
+      if (index != no_index && ! vec1 [index]. optional)
+        n += optional_weight;
+    }
+    else
+      if (index == no_index)
+        n += 1.0;
+      else
+        if (vec1 [index]. optional)
+          n += optional_weight;
+  }
+  return n;
+}
+
+}
+
+
+
+
+Real features2hamming (const FeatureVector &vec1,
+                       const FeatureVector &vec2,
+                       Real optional_weight)
+{
+  return   features2hamming_half (vec1, vec2, optional_weight)
+         + features2hamming_half (vec2, vec1, optional_weight);
+}
+
+
+
+Real features2jaccard (const FeatureVector &vec1,
+                       const FeatureVector &vec2)
+{
+  const size_t intersection = vec1. getIntersectSize (vec2);
+  FeatureVector f (vec2);
+  f << vec1;
+  f. sort ();
+  f. uniq ();
+  const Prob jaccard = (Real) intersection / (Real) f. size ();
+  ASSERT (isProb (jaccard));
+  return - log (jaccard);
+}
+
+
+
+namespace
+{
+
+struct Func : Func1
+{
+  struct Snp 
+  {
+    const Real rate;
+      // > 0
+    const bool same; 
+  };
+  Vector<Snp> snps;
+  
+
+  Func (const FeatureVector &vec1,
+        const FeatureVector &vec2,
+        const Vector<pair<string,Real>> &feature2rate)
+    {
+      snps. reserve (max (vec1. size (), vec2. size ()));
+      for (const pair<string,Real>& f2r : feature2rate)
+      {
+        QC_ASSERT (f2r. second >= 0.0);
+        if (! f2r. second)
+          continue;
+        const Feature f {f2r. first, false};
+        const size_t i1 = vec1. binSearch (f);
+        if (i1 != no_index && vec1 [i1]. optional)
+          continue;
+        const size_t i2 = vec2. binSearch (f);
+        if (i2 != no_index && vec2 [i2]. optional)
+          continue;
+        snps << Snp {f2r. second, (i1 == no_index) == (i2 == no_index)};
+      }
+    }
+  
+
+  Real f (Real t) final
+    {
+      ASSERT (t >= 0.0);
+      if (t == 0.0)
+        return -INF;
+      Real s = 0.0;
+      for (const Snp& snp : snps)
+      {
+        const Real a = exp (- 2.0 * t * snp. rate);
+        ASSERT (a >= 0.0);
+        ASSERT (a < 1.0);
+        const Prob p = snp. same 
+                         ? a * snp. rate / (1.0 + a)
+                         : - snp. rate / (1.0 / a - 1.0);  // = - a * snp. rate (1.0 - a)
+        s += p;
+      }
+      return s;
+    }  
+};
+
+}
+
+
+
+Real snps2time (const FeatureVector &vec1,
+                const FeatureVector &vec2,
+                const Vector<pair<string,Real>> &feature2rate)
+{
+  ASSERT (! feature2rate. empty ());
+  Func f (vec1, vec2, feature2rate);
+  return f. findZero (0.0, 1.0, 1e-7);  // PAR  // 1.0 = tree length
+}
 
 
 

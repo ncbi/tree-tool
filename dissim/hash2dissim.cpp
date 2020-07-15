@@ -41,7 +41,7 @@ using namespace Common_sp;
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
 #include "evolution.hpp"
-using namespace DistTree_sp;
+using namespace DM_sp;
 #include "../version.inc"
 
 

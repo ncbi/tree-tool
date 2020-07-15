@@ -37,6 +37,8 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "evolution.hpp"
+using namespace DM_sp;
 #include "../version.inc"
 
 
@@ -45,115 +47,58 @@ namespace
 {
   
   
-struct Feature : Named
-{
-  bool optional {false};
-  
-  explicit Feature (string &&line)
-    : Named (move (line))
-    { trim (name);
-      if (trimSuffix (name, " 0"))
-        ;
-      else if (trimSuffix (name, " 1"))
-        optional = true;
-      trim (name);
-    }
-    
-  bool operator< (const Feature &other) const
-    { return name < other. name; }
-  bool operator== (const Feature &other) const
-    { return name == other. name; }
-};
-
-
-
-Vector<Feature> readFeatures (const string &fName)
-{
-  Vector<Feature> vec;  vec. reserve (16);  // PAR
-
-  LineInput f (fName);
-  while (f. nextLine ())
-    vec << Feature (move (f. line));
-    
-  vec. sort ();
-  QC_ASSERT (vec. isUniq ());
-
-  return vec;
-}
-
-
-
-double optional_weight = 0.0;
-
-
-
-double vecs2dissim_half (const Vector<Feature> &vec1,
-                         const Vector<Feature> &vec2)
-{
-  double n = 0.0;
-  for (const Feature& f : vec2)
-  {
-  #if 0
-    if (f. optional)
-      continue;
-    if (! vec1. containsFast (f))
-      n++;
-  #else
-    const size_t index = vec1. binSearch (f);
-    if (f. optional)
-    {
-      if (index != no_index && ! vec1 [index]. optional)
-        n += optional_weight;
-    }
-    else
-      if (index == no_index)
-        n += 1.0;
-      else
-        if (vec1 [index]. optional)
-          n += optional_weight;
-  #endif
-  }
-  return n;
-}
-
-
-
-double vecs2dissim (const Vector<Feature> &vec1,
-                    const Vector<Feature> &vec2)
-{
-  return   vecs2dissim_half (vec1, vec2)
-         + vecs2dissim_half (vec2, vec1);
-}
-
-
-
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print dissimilarities computed from features for requested pairs of objects")
+    : Application ("Print dissimilarities (Hamming distance, SNP dissimilarity, Jaccard index) computed from features for requested pairs of objects")
     {
       version = VERSION;
   	  addPositional ("req", "File with pairs of objects");
   	  addPositional ("dir", "Directory with <object> files containing feature-optional(0/1) pairs");
-  	  addPositional ("optional_weight", "Weight of optional-nonoptional match (0..1)");
+  	  addKey ("optional_weight", "For Hamming distance: Weight of optional-nonoptional match (0..1)", "NaN");
+  	  addKey ("mutation_rate", "For SNP dissimilarity: File where each line has format: <feature_name> <mutation rate>");
   	}
 
 
 
-	void body () const
+	void body () const final
 	{
-		const string reqFName        =       getArg ("req");
-		const string dir             =       getArg ("dir");
-		             optional_weight = stod (getArg ("optional_weight"));
-		QC_ASSERT (optional_weight >= 0.0);
-		QC_ASSERT (optional_weight <= 1.0);
+		const string reqFName        =           getArg ("req");
+		const string dir             =           getArg ("dir");
+		const Real   optional_weight = str2real (getArg ("optional_weight"));
+    const string mutationsFName  =           getArg ("mutation_rate");
+		
+		if (! isNan (optional_weight))
+		{
+  		QC_ASSERT (optional_weight >= 0.0);
+  		QC_ASSERT (optional_weight <= 1.0);
+  		QC_ASSERT (mutationsFName. empty ());
+    }
 		
 		
+		Vector<pair<string,Real>> feature2rate;  feature2rate. reserve (10000);  // PAR
+		if (! mutationsFName. empty ())
+    {
+      LineInput f (mutationsFName);
+      string name;
+      Real rate;
+      Istringstream iss;
+      while (f. nextLine ())
+      {
+        iss. reset (f. line);
+        rate = NaN;
+        iss >> name >> rate;
+        QC_ASSERT (! isNan (rate));
+        feature2rate << move (pair<string,Real> (name, rate));
+      }
+      QC_ASSERT (! feature2rate. empty ());
+    }
+
+
     LineInput reqF (reqFName);
     string obj1, obj2, rest;
     Istringstream iss;
-    Vector<Feature> vec1;
-    Vector<Feature> vec2;
+    const ONumber on (cout, 6, true);  // PAR
     while (reqF. nextLine ())
     {
       trim (reqF. line);
@@ -163,11 +108,9 @@ struct ThisApplication : Application
       QC_ASSERT (! obj1. empty ());
       QC_ASSERT (! obj2. empty ());
       QC_ASSERT (rest. empty ());
-
-      vec1 = readFeatures (dir + "/" + obj1);
-      vec2 = readFeatures (dir + "/" + obj2);
-      
-      cout << obj1 << '\t' << obj2 << '\t' << vecs2dissim (vec1, vec2) << endl;
+      const FeatureVector vec1 (dir + "/" + obj1);
+      const FeatureVector vec2 (dir + "/" + obj2);
+      cout << obj1 << '\t' << obj2 << '\t' << features2dissim (vec1, vec2, optional_weight, feature2rate) << endl;
     }
 	}
 };
@@ -178,8 +121,8 @@ struct ThisApplication : Application
 
 
 
-int main(int argc, 
-         const char* argv[])
+int main (int argc, 
+          const char* argv[])
 {
   ThisApplication app;
   return app. run (argc, argv);

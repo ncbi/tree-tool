@@ -42,7 +42,7 @@
 #include "nw/nw_band_aligner.hpp"
 
 #include "evolution.hpp"
-using namespace DistTree_sp;
+using namespace DM_sp;
 
 
 

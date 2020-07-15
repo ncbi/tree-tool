@@ -42,7 +42,7 @@ using namespace DM_sp;
 
 
 
-namespace DistTree_sp
+namespace DM_sp
 {
 
 
@@ -79,7 +79,73 @@ struct Hashes : Vector<size_t>
 
 
 
-}
+
+// Feature
+
+struct Feature : Named
+{
+  bool optional {false};
+  
+
+  explicit Feature (string &&line)
+    : Named (move (line))
+    { replace (name, '\t', ' ');
+      trim (name);
+      if (trimSuffix (name, " 0"))
+        ;
+      else if (trimSuffix (name, " 1"))
+        optional = true;
+      trim (name);
+    }
+  Feature (const string &name_arg,
+           bool optional_arg)
+    : Named (name_arg)
+    , optional (optional_arg)
+    {}
+  Feature () = default;
+  
+    
+  bool operator< (const Feature &other) const
+    { return name < other. name; }
+  bool operator== (const Feature &other) const
+    { return name == other. name; }
+};
+
+
+
+struct FeatureVector : Vector<Feature>
+// sort()'ed, uniq
+{
+  explicit FeatureVector (const string &fName);
+};
+
+
+
+Real features2hamming (const FeatureVector &vec1,
+                       const FeatureVector &vec2,
+                       Real optional_weight);
+
+Real features2jaccard (const FeatureVector &vec1,
+                       const FeatureVector &vec2);
+  // Feature::optional is trated as false
+
+Real snps2time (const FeatureVector &vec1,
+                const FeatureVector &vec2,
+                const Vector<pair<string,Real>> &feature2rate);
+
+inline Real features2dissim (const FeatureVector &vec1,
+                             const FeatureVector &vec2,
+                             Real optional_weight,
+                             const Vector<pair<string,Real>> &feature2rate)
+  { if (! isNan (optional_weight))
+      return features2hamming (vec1, vec2, optional_weight);
+    if (! feature2rate. empty ())
+      return snps2time (vec1, vec2, feature2rate);
+    return features2jaccard (vec1, vec2);
+  }
+         
+
+}  // namespace
 
 
 
