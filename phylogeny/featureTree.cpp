@@ -963,8 +963,8 @@ void Genome::initDir (const string &featureDir,
     while (f. nextLine ())
     {
       GenomeFeature gf; 
-      trim (f. line);
       replace (f. line, '\t', ' ');
+      trim (f. line);
       if (contains (f. line, ':'))
       {
         if (   contains (f. line, " :")
