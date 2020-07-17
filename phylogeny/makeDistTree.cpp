@@ -114,6 +114,8 @@ struct ThisApplication : Application
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
 	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
 
+	  addKey ("min_arc_prob", "Min. arc probability to retain", "0");
+
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
 	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
 
@@ -253,6 +255,8 @@ struct ThisApplication : Application
 		const bool   root_topological    = getFlag ("root_topological");
 		const string reroot_at           = getArg ("reroot_at");
 
+  	const Prob   arcExistence_min    = str2real (getArg ("min_arc_prob"));
+
 		const string delete_criterion_outliers = getArg ("delete_criterion_outliers");
 		const size_t criterion_outlier_num_max = str2<size_t> (getArg ("criterion_outlier_num_max"));
 
@@ -364,6 +368,11 @@ struct ThisApplication : Application
 		if (reroot && ! reroot_at. empty ())
 		  throw runtime_error ("-reroot excludes -reroot_at");
 
+		if (arcExistence_min && ! optimizable)
+		  throw runtime_error ("-min_arc_prob requires dissimilarities");
+		if (! isProb (arcExistence_min))
+		  throw runtime_error ("-min_arc_prob must be between 0 and 1");
+		  
     if (! output_dissim. empty () && ! optimizable)
       throw runtime_error ("-output_dissim requires dissimilarities");    	
     if (output_dist_etc && output_dissim. empty ())
@@ -378,6 +387,7 @@ struct ThisApplication : Application
       throw runtime_error ("-dissim_request requires dissimilarities");    	
     if (! output_data. empty () && ! optimizable)
       throw runtime_error ("-output_data requires dissimilarities");    	
+
 
 
     DistTree::printParam (cout);
@@ -751,6 +761,14 @@ struct ThisApplication : Application
         tree->qc ();
       }
       
+
+    if (arcExistence_min)
+    {
+      const size_t arcsDeleted = tree->deleteQuestionableArcs (arcExistence_min);
+      cout << "# Arcs deleted: " << arcsDeleted << endl;
+      cout << endl;
+    }
+
 
     if (! noqual && tree->optimizable ())
     {
