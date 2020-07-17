@@ -265,8 +265,27 @@ Real snps2time (const FeatureVector &vec1,
                 const Vector<pair<string,Real>> &feature2rate)
 {
   ASSERT (! feature2rate. empty ());
+  
   Func f (vec1, vec2, feature2rate);
-  return f. findZero (0.0, 1.0, 1e-7);  // PAR  // 1.0 = tree length
+
+  size_t same = 0;
+  size_t diff = 0;
+  for (const Func::Snp& snp : f. snps)
+    if (snp. same)
+      same++;
+    else
+      diff++;
+  if (same < diff)
+    return INF;
+
+  const Real delta = 1e-7;  // PAR
+  const Real dissim = f. findZero (0.0, 1.0, delta);  // 1.0 = tree length
+  ASSERT (dissim >= 0.0);
+  ASSERT (dissim <= 1.0);
+
+  if (dissim >= 1.0 - delta)
+    return INF;
+  return dissim;
 }
 
 

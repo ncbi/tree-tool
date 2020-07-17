@@ -131,7 +131,8 @@ Real features2jaccard (const FeatureVector &vec1,
 
 Real snps2time (const FeatureVector &vec1,
                 const FeatureVector &vec2,
-                const Vector<pair<string,Real>> &feature2rate);
+                const Vector<pair<string,Real/*>=0*/>> &feature2rate);
+  // Multiplying rates by a constant divides the result by the same constant
 
 inline Real features2dissim (const FeatureVector &vec1,
                              const FeatureVector &vec2,
