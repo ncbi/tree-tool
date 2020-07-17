@@ -62,10 +62,10 @@ struct ThisApplication : Application
 	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
+	  addFlag ("order", "Order subtrees by the number of leaves descending");
     // Output
 	  addKey ("format", "newick|itree (makeDistTree output)|ASNT (textual ASN.1)", "newick");
 	  addFlag ("ext_name", "Extended leaf names for newick");
-	  addFlag ("order", "Order subtrees by the number of leaves descending");
 	}
 
 
@@ -79,9 +79,9 @@ struct ThisApplication : Application
 	               variancePower  = str2real (getArg ("variance_power"));    // Global
 	  const string name_match     = getArg ("name_match");
 	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
+  	const bool order            = getFlag ("order");
 	  const string format         = getArg ("format");
   	const bool ext_name         = getFlag ("ext_name");
-  	const bool order            = getFlag ("order");
 
     if (input_tree. empty ())
       throw runtime_error ("-input_tree must be present");
@@ -93,9 +93,10 @@ struct ThisApplication : Application
 		  throw runtime_error ("-variance_power is needed by -variance pow");
 		if (variancePower <= 0.0)
 		  throw runtime_error ("-variance_power must be positive");
-    
+		      
 
     DistTree tree (input_tree, dataFName, dissimAttrName, string());
+    tree. qc ();    
     if (order)
       tree. sort ();
     if (! dataFName. empty ())
