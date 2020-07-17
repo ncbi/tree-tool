@@ -658,7 +658,7 @@ void Tree::TreeNode::printNewick_ (ostream &os,
 	}
 	
 	const double dist = getParentDistance ();
-	if (dist == dist && dist != -1)
+	if (dist == dist && dist != -1.0)
 		os << ":" << fixed << dist;
 }
 
