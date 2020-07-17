@@ -2095,6 +2095,8 @@ public:
 
   bool empty () const final
     { return arr. empty (); }
+  size_t size () const
+    { return arr. size (); }
   Heap& operator<< (T item)
     { arr << item;
       increaseKey (arr. size () - 1);
