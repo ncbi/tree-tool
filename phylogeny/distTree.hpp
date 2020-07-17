@@ -526,6 +526,13 @@ private:
 struct Steiner : DTNode
 // Steiner node
 {
+private:
+  Prob arcExistence {NaN};
+  size_t heapIndex {no_index};
+  friend DistTree;
+public:
+
+
 	Steiner (DistTree &tree,
 	         Steiner* parent_arg,
 	         Real len_arg);
@@ -566,9 +573,15 @@ public:
   Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) final;
     // Time: O(n log(n))+
 
+private:
+  static int arcExistance_compare (const void* a, 
+                                   const void* b);
+  static void arcExistance_index (const Steiner* &st, 
+                                  size_t index);
+public:
+
 #if 0
 private:
-	friend DistTree;
   void setSubTreeWeight ();
     // Input: lcaNum
     // Update: subTreeWeight
@@ -1467,6 +1480,8 @@ private:
   bool deleteLenZero (DTNode* node);
     // Return: success
 public:
+  size_t deleteQuestionableArcs (Prob arcExistence_min);
+    // Return: number of Steiner nodes deleted
   Real getDissimCoeffProd () const
     { Real prod = 1.0;
       for (const DissimType& dt : dissimTypes)

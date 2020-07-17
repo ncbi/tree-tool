@@ -1243,6 +1243,30 @@ Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max)
 
 
 
+int Steiner::arcExistance_compare (const void* a, 
+                                   const void* b)
+{
+  ASSERT (a);
+  ASSERT (b);
+  const Steiner* st_a = static_cast <const Steiner*> (a);
+  const Steiner* st_b = static_cast <const Steiner*> (b);
+  if (st_a->arcExistence < st_b->arcExistence)
+    return 1;
+  if (st_a->arcExistence > st_b->arcExistence)
+    return -1;
+  return 0;
+}
+
+
+
+void Steiner::arcExistance_index (const Steiner* &st, 
+                                  size_t index)
+{
+  var_cast (st) -> heapIndex = index;
+}                         
+  
+
+
 #if 0
 void Steiner::setSubTreeWeight ()
 {
@@ -7184,8 +7208,8 @@ bool DistTree::deleteLenZero (DTNode* node)
 {
   if (const Steiner* s = node->asSteiner ())
     if (   s->getParent () 
-        && ! s->len
         && s->childrenDiscernible ()
+        && ! s->len
        )
     {
       delayDeleteRetainArcs (var_cast (s));
@@ -7193,6 +7217,63 @@ bool DistTree::deleteLenZero (DTNode* node)
     }
       
   return false;
+}
+
+
+
+size_t DistTree::deleteQuestionableArcs (Prob arcExistence_min)
+{
+  ASSERT (isProb (arcExistence_min));
+  ASSERT (optimizable ());
+  
+  if (! arcExistence_min)
+    return 0;
+  
+  Heap<const Steiner*> heap (Steiner::arcExistance_compare, Steiner::arcExistance_index, nodes. size ());
+  for (const DiGraph::Node* node : nodes)
+    if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
+      if (   st->getParent () 
+          && st->childrenDiscernible ()
+         )
+      {
+        var_cast (st) -> arcExistence = st->getArcExistence ();
+        var_cast (st) -> heapIndex = no_index;
+        if (st->arcExistence >= arcExistence_min)
+          continue;
+        heap << st;
+      }
+  
+  size_t n = 0;
+  {
+    Progress prog (heap. size ());
+    while (! heap. empty ())
+    {
+      const Steiner* st = heap. getMaximum ();
+      ASSERT (st);
+      if (st->arcExistence >= arcExistence_min)
+        break;
+      heap. deleteMaximum ();
+      prog ();
+      n++;
+      const VectorPtr<DiGraph::Node> children (st->getChildren ());
+      delayDeleteRetainArcs (var_cast (st));
+      for (const DiGraph::Node* child : children)
+        if (const Steiner* childSt = static_cast <const DTNode*> (child) -> asSteiner ())
+          if (childSt->graph && childSt->heapIndex != no_index)
+          {
+          #ifndef NDEBUG
+            const Prob arcExistence_old = childSt->arcExistence;
+          #endif
+            var_cast (childSt) -> arcExistence = childSt->getArcExistence ();
+            ASSERT (arcExistence_old <= childSt->arcExistence);
+            heap. decreaseKey (childSt->heapIndex);
+          }
+    }
+  }
+      
+  toDelete. deleteData ();
+
+  return n;  
 }
 
 
