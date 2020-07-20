@@ -9,7 +9,7 @@ fi
 MSG=$1
 
 
-if [ $MSG == "1" ]; then
+if [ $MSG == 1 ]; then
   echo "Waiting for GRID ..."
 fi
 
