@@ -25,7 +25,7 @@ echo $TMP
 
 
 DELETE=""
-if [ $TARGET ]; then
+if [ "$TARGET" ]; then
   $THIS/tree2obj.sh $TREE > $TMP.cur
   $THIS/../setMinus $TMP.cur $TARGET > $TMP.del
   DELETE="-delete $TMP.del  -check_delete"
@@ -42,7 +42,7 @@ if [ $FIND_ROOT == 1 ]; then
 fi
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE  -prefer_gain  -nominal_singleton_is_optional  $FIND_ROOT_PARAM  -qual $TMP.qual
 
-if [ $QUAL ]; then
+if [ "$QUAL" ]; then
   cp $TMP.qual $QUAL
 fi
 
