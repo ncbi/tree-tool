@@ -35,23 +35,23 @@ if [ $GRID_MIN -le 0 ]; then
   error "Bad GRID_MIN"
 fi
 
-if [ $SERVER -a ! $DATABASE ]; then
+if [ -n "$SERVER" -a -z "$DATABASE" ]; then
   error "Database is empty"
 fi
 
-if [ ! $SERVER -a $DATABASE ]; then
+if [ -z "$SERVER" -a -n "$DATABASE" ]; then
   error "Server is empty"
 fi
 
-if [ $BULK_LOCAL -a ! $DATABASE ]; then
-  error "Bulk directory with an emoty database"
+if [ -n "$BULK_LOCAL" -a -z "$DATABASE" ]; then
+  error "Bulk directory with an empty database"
 fi
 
-if [ $BULK_LOCAL -a ! $BULK_REMOTE ]; then
+if [ -n "$BULK_LOCAL" -a -z "$BULK_REMOTE" ]; then
   error "Local bulk directory with an empty remote bulk directory"
 fi
 
-if [ ! $BULK_LOCAL -a $BULK_REMOTE ]; then
+if [ -z "$BULK_LOCAL" -a -n "$BULK_REMOTE" ]; then
   error "Remote bulk directory with an empty local bulk directory"
 fi
 
@@ -104,12 +104,12 @@ if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
   create_script genogroup2db
 fi
 
-if [ $BULK_LOCAL ]; then
+if [ "$BULK_LOCAL" ]; then
   ln -s $BULK_LOCAL $INC/bulk
   echo $BULK_REMOTE > inc/bulk_remote
 fi
 
-if [ $PHEN ]; then
+if [ "$PHEN" ]; then
   ln -s $PHEN $INC/phen
   echo $PHEN_LARGE > $INC/phen_large
 fi

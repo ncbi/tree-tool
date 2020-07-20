@@ -33,7 +33,7 @@ echo ""
 
 
 N=`ls $INC/search/ | head -1`
-if [ $N ]; then
+if [ "$N" ]; then
   error "$INC/search/ is not empty"
 fi
 
