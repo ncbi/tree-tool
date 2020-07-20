@@ -774,10 +774,10 @@ void DTNode::setGlobalLenDown (bool topological,
     }
     ASSERT (! isNan (lenDelta));
     
-    const Real zScore = 3.0;  // PAR
+  //constexpr Real zScore = 3.0;  // PAR
     if (! inDiscernible ())
       if (   ! bestDTNode 
-          || bestGlobalLen. getOutlier_min (zScore) /*getMean ()*/ > globalLen. getOutlier_min (zScore) /*getMean ()*/
+          || bestGlobalLen. /*getOutlier_min (zScore)*/ getMean () > globalLen. /*getOutlier_min (zScore)*/ getMean ()
          )
       {
         bestDTNode = this;
@@ -1054,6 +1054,10 @@ void Steiner::setSubtreeLenUp (bool topological)
     else
       subtreeLen. add (child->subtreeLen. getMean () + child->len, child->subtreeLen. weights + child->len);
   }
+#if 0
+  cout << this << " setSubtreeLenUp: ";
+  subtreeLen. saveText (cout); 
+#endif
 }
 
 
@@ -7781,8 +7785,9 @@ Real DistTree::reroot (bool topological)
   
   if (verbose ())
   {
-    cout << bestDTNode << " " << bestDTNodeLen_new << endl;
-    cout << bestGlobalLen. getMean () << endl;
+    PRINT (bestDTNode);
+    PRINT (bestDTNodeLen_new);
+    PRINT (bestGlobalLen. getMean ());
     print (cout);
   }
   
