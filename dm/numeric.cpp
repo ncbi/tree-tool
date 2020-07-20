@@ -732,7 +732,7 @@ void WeightedMeanVar::add (Real x,
                            Real weight)
 { 
   ASSERT (! isNan (weight));  
-  if (weight == 0)
+  if (! weight)
     return;
 
   ASSERT (! isNan (x));

@@ -465,6 +465,12 @@ struct WeightedMeanVar
       weightedSum2 = 0.0;
       weights = 0.0;
     }
+  void saveText (ostream &os) const
+    { os         << weightedSum 
+         << '\t' << weightedSum2 
+         << '\t' << weights
+         << endl; 
+    }
   void add (Real x,
             Real weight = 1.0);
     // Input: weight: may be < 0
