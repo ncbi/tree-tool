@@ -313,7 +313,7 @@ struct ThisApplication : Application
 		if (! isNan (variancePower) && varianceType != varianceType_pow)  // ??
 		  throw runtime_error ("-variance_power requires -variance pow");
 		if (isNan (variancePower) && varianceType == varianceType_pow)
-		  throw runtime_error ("-variance_power requires -variance pow");
+		  throw runtime_error ("-variance pow requires -variance_power");
 		if (variancePower < 0.0)
 		  throw runtime_error ("-variance_power must be non-negative");
 
