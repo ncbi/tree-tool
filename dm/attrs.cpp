@@ -55,7 +55,7 @@ struct ThisApplication : Application
       addPositional ("file", dmSuff + "-file");
       addKey ("corr_min", "Min. correlation between two attributes to report", "nan");
       addKey ("outlier_evalue_max", "Max. outlier e-value", "0.1");
-      addFlag ("stat", "Compute statistics etc.");
+      addFlag ("stat", "Compute statistics. For numeric attributes: mean, SD, left outlier threshold, right outlier threshold, mean w/o outliers, SD w/o outliers, normal distribution p-value");
     }
 	
 	
@@ -66,7 +66,7 @@ struct ThisApplication : Application
 		const Real corr_min  = str2real (getArg ("corr_min"));
 		const Prob outlier_eValue_max = str2real (getArg ("outlier_evalue_max"));
 		const bool stat      = getFlag ("stat");
-		ASSERT (outlier_eValue_max >= 0.0);
+		QC_ASSERT (outlier_eValue_max >= 0.0);
 
 
     const Dataset ds (inFName);
@@ -78,7 +78,7 @@ struct ThisApplication : Application
       cout << "\tStatistics\tMain_interval";
     cout << endl;
     {
-      Progress prog;
+      Progress prog (ds. attrs. size (), 100);  // PAR
       for (const auto attrRaw : ds. attrs)
       {
         prog ();
@@ -113,15 +113,15 @@ struct ThisApplication : Application
     		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
     		      normal. analysis = & an_pure;
     		      normal. estimate ();
-              const Prob pVal = normal. getFitness_entropy ();
+              const Prob pVal = 1.0 - normal. getFitness_entropy ();
               if (isNan (pVal))
       		      cout << '\t' << NaN 
       		           << '\t' << NaN 
       		           << '\t' << NaN;
               else
-    		      cout << '\t' << normal. loc 
-    		           << '\t' << normal. scale
-    		           << '\t' << pVal;
+      		      cout << '\t' << normal. loc 
+      		           << '\t' << normal. scale
+      		           << '\t' << pVal;
     			  }
     	    }
           else if (const BoolAttr1* boolean = attrRaw->asBoolAttr1 ())
