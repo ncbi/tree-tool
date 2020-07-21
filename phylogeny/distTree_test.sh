@@ -130,6 +130,7 @@ $THIS/makeDistTree  -qc  -data data/Salmonella  -variance linExp  -variance_min 
   | grep -v '^CHRON: ' > Salmonella-var_min.distTree
 diff Salmonella-var_min.criterion_outliers data/Salmonella-var_min.criterion_outliers
 rm Salmonella-var_min.criterion_outliers
+$THIS/../sort.sh Salmonella-var_min.deformation_outliers 
 diff Salmonella-var_min.deformation_outliers data/Salmonella-var_min.deformation_outliers
 rm Salmonella-var_min.deformation_outliers
 diff Salmonella-var_min.hybrids data/Salmonella-var_min.hybrids
