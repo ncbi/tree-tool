@@ -215,7 +215,7 @@ struct ThisApplication : Application
 
   #if 0
     {
-      Real score_max = -INF;	    
+      Real score_max = -inf;	    
       for (Iterator it (cl); it ();)  
         if (! scoreAttr->isMissing (*it))
           maximize (score_max, (*scoreAttr) [*it]);

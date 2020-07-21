@@ -61,7 +61,7 @@ void Obj::qc () const
 		
   QC_IMPLY (! name. empty (), goodName (name));
   QC_ASSERT (mult >= 0.0); 
-  QC_ASSERT (mult < INF);
+  QC_ASSERT (mult < inf);
 }
 
 
@@ -365,8 +365,8 @@ void NumAttr1::getMinMax (const Sample &sample,
                           Value &min, 
                           Value &max) const
 {
-  min =  INF;
-  max = -INF;
+  min =  inf;
+  max = -inf;
   for (Iterator it (sample); it ();)
   { 
     minimize (min, getReal (*it));
@@ -389,7 +389,7 @@ NumAttr1::Value NumAttr1::getQuantile (const Sample &sample,
   	if (isNan (x))
   	{
   	  if (nan2inf)
-  	    vec << INF;
+  	    vec << inf;
   	}
   	else
     	vec << x;
@@ -416,7 +416,7 @@ Real NumAttr1::locScaleDistr2outlier (const Sample &sample,
     
   vec. sort ();
     
-  Real x_prev = -INF;
+  Real x_prev = -inf;
   Real mult_sum = 0.0;
   Real s = 0.0;
   Real s2 = 0.0;
@@ -468,7 +468,7 @@ Real NumAttr1::contDistr2outlier (const Sample &sample,
     
   vec. sort ();
     
-  Real x_prev = -INF;
+  Real x_prev = -inf;
   Real mult_sum = 0.0;
   Real s = 0.0;
   Real mean = vec [0]. value;
@@ -549,8 +549,8 @@ void RealAttr1::qc () const
 
 bool RealAttr1::isConstant () const
 {
-  Real x_min = INF;
-  Real x_max = -INF;
+  Real x_min = inf;
+  Real x_max = -inf;
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
@@ -621,7 +621,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
   vec. sort ();
     
   size_t objNum_threshold = no_index;
-  Real negLogLikelihood_min = INF;
+  Real negLogLikelihood_min = inf;
   const Real x_max = vec. back (). value;
   Real mult_sum = 0.0;
   Real s = 0.0;
@@ -647,7 +647,7 @@ Real RealAttr1::normal_likelihood2max (const Sample &sample) const
         mult_sum / 2.0 * (coeff + log (var)) 
       + (rest
            ? eqReal (x, x_max) 
-             ? INF
+             ? inf
              : rest * (log ((x_max - x) / (1.0 - normal. cdf (x))))
            : 0.0
         );
@@ -1689,8 +1689,8 @@ void RealAttr2::qc () const
 
 bool RealAttr2::isConstant () const
 {
-  Real x_min = INF;
-  Real x_max = -INF;
+  Real x_min = inf;
+  Real x_max = -inf;
   FFOR (size_t, row, ds. objs. size ())
   FFOR (size_t, col, ds. objs. size ())
     if (! isMissing2 (row, col))
@@ -2732,7 +2732,7 @@ void Distribution::qc () const
 size_t Distribution::getModeObjNum () const
 {
   size_t objNum = no_index;
-  Real logPdf_max = -INF; 
+  Real logPdf_max = -inf; 
   for (Iterator it (getAnalysisCheck () -> sample); it ();)  
   {
   	data2variable (*it);
@@ -2874,7 +2874,7 @@ Prob Distribution::getFitness_entropy () const
 size_t Distribution::getWeakestObjNum () const
 {
   size_t objNum = no_index; 
-  Real pdf_min = INF;
+  Real pdf_min = inf;
   for (Iterator it (getAnalysisCheck () -> sample); it ();)  
   {
   	data2variable (*it);
@@ -3105,8 +3105,8 @@ void UniDistribution::qc () const
   	const RealAttr1* attr = analysis->space. getRealAttr1 ();
   	const Real lo = getLoBoundEffective ();
   	const Real hi = getHiBoundEffective ();
-  	if (   lo != -INF
-  		  && hi !=  INF
+  	if (   lo != -inf
+  		  && hi !=  inf
   		 )
 		  for (Iterator it (*analysis); it ();)  
 		  {
@@ -3131,8 +3131,8 @@ void DiscreteDistribution::qc () const
 		
   if (getParamSet ())
   {
-  	QC_IMPLY (loBound != -INF, isInteger (loBound));
-  	QC_IMPLY (hiBound !=  INF, isInteger (hiBound));
+  	QC_IMPLY (loBound != -inf, isInteger (loBound));
+  	QC_IMPLY (hiBound !=  inf, isInteger (hiBound));
   }
 }
 
@@ -3323,7 +3323,7 @@ void Binomial::estimate ()
   {
 	  int n_best = n;
 	  Prob p_best = p;
-	  Real entropyEst_best = INF;
+	  Real entropyEst_best = inf;
 	  while (minimizeEntropy (entropyEst_best))
 	  {
 		 	n_best = n;
@@ -3342,7 +3342,7 @@ void Binomial::estimate ()
 Real Binomial::logPmf_ (int x) const
 { 
 	if (x > n)
-		return -INF;
+		return -inf;
 	return   lnFacN - lnFactorial ((uint) x) - lnFactorial ((uint) (n - x)) 
 	       + multiplyLog ((Real) x, lnP)
 	       + multiplyLog ((Real) (n - x), lnPCompl); 
@@ -3465,7 +3465,7 @@ void Zipf::qc () const
   if (getParamSet ())
   {
     QC_ASSERT (alpha > 1.0);
-  //IMPLY (hiBound == INF, alpha > 1.0);  
+  //IMPLY (hiBound == inf, alpha > 1.0);  
   	QC_ASSERT (c > 0.0);
   }
   
@@ -3477,7 +3477,7 @@ void Zipf::qc () const
 void Zipf::setParamFunc ()
 {
  	const uint lo = (uint) real2int (getLoBoundEffective ());
-	const Real zeta_gtSupp = hiBound == INF ? 0.0 : zeta (alpha, (uint) real2int (hiBound));
+	const Real zeta_gtSupp = hiBound == inf ? 0.0 : zeta (alpha, (uint) real2int (hiBound));
 	const Real zeta_geSupp = zeta (alpha, lo);
   const Real zeta_ltSupp = lo ? zeta (alpha, 1, lo - 1) : 0.0;
 	
@@ -3489,7 +3489,7 @@ void Zipf::setParamFunc ()
  	
 //cout << lo << " " << alpha << " " << zeta (alpha, lo) << " " << zeta_gtSupp << " " << zeta_geSupp << " " << zeta_ltSupp << endl;  
  	
- 	if (hiBound < INF)
+ 	if (hiBound < inf)
  		cat. setParam (*this, (int) lo, real2int (hiBound));
 }
 
@@ -3531,7 +3531,7 @@ void Zipf::estimate ()
   Zipf_estimate_Func zf;
   {
 	  zf. from = (uint) real2int (getLoBoundEffective ());
-  	zf. to   = (uint) (hiBound == INF ? 0 : real2int (hiBound));
+  	zf. to   = (uint) (hiBound == inf ? 0 : real2int (hiBound));
 		Real s = 0.0;
 		Real w = 0.0;
 	  for (Iterator it (analysis->sample); it ();)  
@@ -3546,7 +3546,7 @@ void Zipf::estimate ()
   CONST_ITER (Data, it, data)
     cout << (*it). first << " " << (*it). second << endl;
 #endif
-  const Real alpha_max = -1.0 /*(hiBound == INF ? -1 : 0)*/ - 1e-5;  // PAR
+  const Real alpha_max = -1.0 /*(hiBound == inf ? -1 : 0)*/ - 1e-5;  // PAR
   const Real alpha_min = -10.0;  // PAR
   if (verbose ())
   {
@@ -3585,7 +3585,7 @@ Real Zipf::logPmf_ (int x) const
 
 int Zipf::randDiscrete_ () const
 { 
- 	if (hiBound == INF)
+ 	if (hiBound == inf)
  		NOT_IMPLEMENTED;
   cat. randVariable ();
 	return (int) cat. variable + real2int (getLoBoundEffective ());
@@ -3757,9 +3757,9 @@ Real Normal::getQuantile (Prob p) const
   ASSERT (isProb (p));
  
   if (p == 0.0)
-    return -INF;
+    return -inf;
   if (p == 1.0)
-    return INF;
+    return inf;
   if (scale == 0.0)
     return loc;
 
@@ -3930,7 +3930,7 @@ void Cauchy::estimate ()
 	
   setParam (NaN, NaN);
 	Real loc_ = attr. getQuantile (analysis->sample, 0.5, false);
-	Real scale_ = INF;
+	Real scale_ = inf;
 	
 	// Convergence ??
 	do
@@ -4179,7 +4179,7 @@ void UniKernel::estimate_ (Real halfWindow_lo,
   
   Real halfWindow_best = NaN;   
   Prob uniform_prob_best = NaN;   
-  Real logLikelihood_max = -INF;  
+  Real logLikelihood_max = -inf;  
   halfWindow = halfWindow_lo;
   while (halfWindow <= halfWindow_hi)
   {  
@@ -4285,7 +4285,7 @@ size_t UniKernel::findIndex (Point x) const
 Real UniKernel::pdf_ (Real x) const
 {
   if (halfWindow == 0.0)
-    return eqReal (x, attr_min) ? INF : 0.0;
+    return eqReal (x, attr_min) ? inf : 0.0;
   
   const size_t left  = findIndex (Point (x - halfWindow));
   const size_t right = findIndex (Point (x + halfWindow));
@@ -4405,7 +4405,7 @@ void MultiNormal::qc () const
 	  
 	  QC_IMPLY (variance_min. min () == 0.0, sigmaExact. maxAbsDiff (false, sigmaInflated, false) == 0.0);
 
-    if (coeff != INF)
+    if (coeff != inf)
     { 
   	  QC_ASSERT (sigmaInv. defined ());
   	//QC_IMPLY (sigmaInv. psd, sigmaInv. isSimilarity ());  
@@ -4508,7 +4508,7 @@ void MultiNormal::setParamFunc ()
 		sigmaInflated. saveText (cout);
 	}
   	
-  coeff = INF;
+  coeff = inf;
 
 	cholesky = sigmaInflated. getCholesky (false);
 	if (! cholesky. defined ())
@@ -5016,7 +5016,7 @@ void Mixture::estimate ()
 #endif
   	
 
-  Real entropyEst_best = INF;
+  Real entropyEst_best = inf;
   do
   {
     if (verbose ())
@@ -6376,7 +6376,7 @@ PositiveAverageModel::Component::Component (const PositiveAverageModel& pam_arg,
 		iss /*>> universal*/ >> coeff >> var;
 		if (! (coeff >= 0.0))
 			throw runtime_error (FUNC "Coefficient should be >= 0");
-    if (! (coeff < INF))
+    if (! (coeff < inf))
 			throw runtime_error (FUNC "Coefficient should be finite");
 		if (! (var >= 0.0))
 			throw runtime_error (FUNC "Variance should be >= 0");
@@ -6399,7 +6399,7 @@ void PositiveAverageModel::Component::qc () const
 	QC_ASSERT (goodName (name));
 	QC_ASSERT (coeff >= 0.0);
 	QC_ASSERT (var >= 0.0);
-	QC_IMPLY (coeff == 0.0, var == INF);
+	QC_IMPLY (coeff == 0.0, var == inf);
 }
 
 
@@ -6421,7 +6421,7 @@ void PositiveAverageModel::Component::setVar (Real var_arg)
 
 void PositiveAverageModel::Component::setOutlier (Real value_target) const
 { 
-	outlier = (value == INF || /*fabs*/ (value - value_target) / sd > pam. outlierSEs);
+	outlier = (value == inf || /*fabs*/ (value - value_target) / sd > pam. outlierSEs);
 }
 
 
@@ -6492,14 +6492,14 @@ Real PositiveAverageModel::get () const
     		 )
     	{
     		ASSERT (comp. value >= 0.0);
-    		if (comp. value == INF)
+    		if (comp. value == inf)
     		{
-    		  ASSERT (comp. var == INF);
+    		  ASSERT (comp. var == inf);
     		  continue;
     		}
     		const Real weight = comp. weight /* * (comp. universal ? universalWeight : 1.0)*/;
     		ASSERT (weight >= 0.0);
-    		ASSERT (weight < INF);
+    		ASSERT (weight < inf);
     		sum     += weight * comp. value;
     		weights += weight;
     	}  		
@@ -6701,11 +6701,11 @@ void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
   	if (   n <= 1000  // PAR
   	    || x2_sum == 0.0
   	   )
-  	  comp. coeff = INF;
+  	  comp. coeff = inf;
   	else
   	{
     	if (xy_sum <= 0.0)
-    	  comp. coeff = INF;
+    	  comp. coeff = inf;
     	else
     	  comp. coeff = xy_sum / x2_sum;
     }
@@ -6743,7 +6743,7 @@ void PositiveAverage::setComponent (PositiveAverageModel::Component &comp,
 
   	ASSERT (mult_sum >= 0.0);
   	if (mult_sum == 0.0)
-  		comp. setVar (INF);
+  		comp. setVar (inf);
   	else
     	comp. setVar (s / mult_sum);
   }

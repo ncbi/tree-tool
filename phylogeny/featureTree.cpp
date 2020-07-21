@@ -277,7 +277,7 @@ float Phyl::getDistance () const
   	d += feature2weight (i, core [i], feature2parentCore (i));
   ASSERT (d >= 0);
 #ifndef NDEBUG
-  if (d == INF)
+  if (d == inf)
   {
   	cout << getName () << "  " << endl;
   	saveContent (cout);
@@ -593,7 +593,7 @@ struct TimeFunc : Func1
   		if (const Prob denomin = a)
   	    lhs += parent2core [! c] [c] / denomin;
   	  else
-  	  	lhs = INF;
+  	  	lhs = inf;
   	ASSERT (lhs >= 0.0);
   	  
   	Real rhs = 0.0;
@@ -601,7 +601,7 @@ struct TimeFunc : Func1
   		if (const Real denomin = 1 / negateProb (tree. lambda0, c) - a)
   	    rhs += parent2core [c] [c] / denomin;
   	  else
-  	  	rhs = INF;
+  	  	rhs = inf;
   	ASSERT (rhs >= 0.0);
   	  
   	const Real r = rhs - lhs;
@@ -625,8 +625,8 @@ Real coreChange2time (const FeatureTree& tree,
 	if (! f. f (0))
 		return 0.0;
 
-	if (f. f (INF) <= 0.0)
-		return INF;
+	if (f. f (inf) <= 0.0)
+		return inf;
   
   Unverbose unv1;
   Unverbose unv2;
@@ -1183,7 +1183,7 @@ void Genome::setWeight ()
 	  {
 	  	// Parsimony method
 	    weight [  parentCore] [parentCore] = 0;
-	    weight [! parentCore] [parentCore] = (float) INF;  
+	    weight [! parentCore] [parentCore] = (float) inf;  
 		}
   else
   {
@@ -2546,7 +2546,7 @@ void FeatureTree::qc () const
     	for (const bool i : {false, true})
     	{
     	  QC_ASSERT (root_->weight [i] [  i] == 0);
-    	  QC_ASSERT (root_->weight [i] [! i] == INF);
+    	  QC_ASSERT (root_->weight [i] [! i] == inf);
     	}
   }
 
@@ -2790,9 +2790,9 @@ void FeatureTree::setTimeWeight ()
 void FeatureTree::optimizeTime ()
 {
   ASSERT (! oneFeatureInTree);
-  ASSERT (len < INF);
+  ASSERT (len < inf);
   
-  Real len_old = INF;  
+  Real len_old = inf;  
 	while (len_old > len + len_delta) 
 	{
 		len_old = len;
@@ -2904,7 +2904,7 @@ void FeatureTree::useTime (const string &coreFeaturesFName)
         cout << "parent2core[" << (int) i << "][" << (int) j << "]=" << parent2core [i] [j] << endl;
 
   float len_old;  
-  float len1 = (float) INF;
+  float len1 = (float) inf;
 	lambda0 = (Real) parent2core [true] [false] / ((Real) parent2core [true] [false] + (Real) parent2core [false] [true]);  // Optimal if time_init = 0
 	do 
 	{
@@ -3004,7 +3004,7 @@ struct LambdaCommonTimeFunc : Func1
 		: a (1 - exp (- time))
 		{
       ASSERT (time > 0);
-      ASSERT (time < INF);
+      ASSERT (time < inf);
     	for (const bool i : {false, true})
       	for (const bool j : {false, true})
    	      parent2core [i] [j] = (Real) parent2core_arg [i] [j];

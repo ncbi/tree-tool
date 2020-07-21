@@ -2343,7 +2343,7 @@ size_t Dna::TrimBadEnd (size_t        WindowLen,
 
 size_t Dna::TrimLowComplexityStart () const
 {        
-  Float ThisMinComplexity = INF; 
+  Float ThisMinComplexity = inf; 
   size_t Start = 0;
   ForString (i, seq)
   {
@@ -2364,7 +2364,7 @@ size_t Dna::TrimLowComplexityStart () const
 
 size_t Dna::TrimLowComplexityEnd () const
 {        
-  Float ThisMinComplexity = INF; 
+  Float ThisMinComplexity = inf; 
   int SeqEnd = strlen (seq);    
   size_t End = SeqEnd;
   ForDown (i, SeqEnd - 6)  // ??
@@ -2817,7 +2817,7 @@ PRIMER* Dna::MakePrimer (size_t        PrimerLen,
 
 
   PRIMER* BestPrimer = nullptr;
-  Float BestMeltTempDiff = INF;
+  Float BestMeltTempDiff = inf;
   ForStart (i, SearchStart, SearchEnd - PrimerLen)
     {
       PRIMER Primer (this, i, PrimerLen, 
@@ -3950,10 +3950,10 @@ struct Cell
 
   
   Cell () 
-    { constexpr AlignScore inf = numeric_limits<AlignScore>::infinity ();
-      scores [dirLeft] = - inf;
-      scores [dirUp]   = - inf;
-      scores [dirDiag] = - inf;
+    { constexpr AlignScore score_inf = numeric_limits<AlignScore>::infinity ();
+      scores [dirLeft] = - score_inf;
+      scores [dirUp]   = - score_inf;
+      scores [dirDiag] = - score_inf;
     }
 };
   

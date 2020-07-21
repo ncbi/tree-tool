@@ -213,7 +213,7 @@ T* selectAttrs (const Sample &sample,
     t->setAttrImportance ();
     const typename T::Predictor* attr_bad = nullptr;
     size_t i_bad = no_index;
-    Real importance_min = INF;
+    Real importance_min = inf;
     FOR (size_t, i, t->space. size ())
       if (minimize (importance_min, t->attrImportance [i]))
       { attr_bad = t->space [i];
@@ -365,7 +365,7 @@ public:
     // Input: absCriterion
     // Return: Criterion relative to the prediction of target by constTarget
     //         = absCriterion / maxAbsCriterion
-    //         If maxAbsCriterion = 0 then INF
+    //         If maxAbsCriterion = 0 then inf
   Real getRelCriterion () const
     { Real scatter;
     	return getRelTargetCriterion (getConstTarget (scatter)); 

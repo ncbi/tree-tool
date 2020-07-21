@@ -101,7 +101,7 @@ Real Func1::findZeroPositive (Real x_init,
 {
 	ASSERT (x_init > 0.0);
 	ASSERT (f (0.0) <= 0.0);
-	ASSERT (f (INF) >= 0.0);
+	ASSERT (f (inf) >= 0.0);
 	
   Real x_min = x_init;
   while (f (x_min) > 0.0)
@@ -500,7 +500,7 @@ bool FuncMult::optimizeGradient (bool         Min,
       Gradient. negate ();
 
     // dX, Gradient -> dK
-    Real dK = INF;
+    Real dK = inf;
     FOR (unsigned short, ArgNum, maxArgNum)
       minimize (dK, dX [ArgNum] / fabs (Gradient [ArgNum]));
     ASSERT (finite (dK));
@@ -707,7 +707,7 @@ public:
   bool SetMFX (Real X)
   // X -> 0.0: Linear (gradient) optimization
   // X = 0.0: MFX = MFX0
-  // X -> INF: Quadratic optimization
+  // X -> inf: Quadratic optimization
   {
     ASSERT (! isNan (X));
     ASSERT (X >= 0.0);
@@ -765,7 +765,7 @@ bool FuncMult::GetMarquardtX (bool         Min,
 
   const Real Y0 = f (X0);
   ASSERT (! isNan (Y0));
-  const Real YNew = MF. f (INF);
+  const Real YNew = MF. f (inf);
   if (isNan (YNew) ||
       (YNew > Y0) == Min)
   {
@@ -823,7 +823,7 @@ bool FuncMult::optimizeHypercube (bool         Min,
 
 
   // Initializing YBest, IncBest []
-  YBest = Min ? INF : -INF;
+  YBest = Min ? inf : -inf;
   FOR (unsigned short, ArgNum, maxArgNum)
     IncBest [ArgNum] = 0;
 

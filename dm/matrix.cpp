@@ -816,7 +816,7 @@ Real Matrix::getTrace () const
 Real Matrix::getMaxRow (bool t,
                         size_t row) const
 {
-  Real r = - INF;
+  Real r = - inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
@@ -829,7 +829,7 @@ Real Matrix::getMaxRow (bool t,
 Real Matrix::getMinRow (bool t,
                         size_t row) const
 {
-  Real r = INF;
+  Real r = inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
@@ -842,7 +842,7 @@ Real Matrix::getMinRow (bool t,
 Real Matrix::maxAbsRow (bool t,
                         size_t row) const
 {
-  Real r = - INF;
+  Real r = - inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
@@ -855,7 +855,7 @@ Real Matrix::maxAbsRow (bool t,
 Real Matrix::minAbsRow (bool t,
                         size_t row) const
 {
-  Real r = INF;
+  Real r = inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
@@ -867,7 +867,7 @@ Real Matrix::minAbsRow (bool t,
 
 Real Matrix::maxAbs () const
 {
-  Real maxValue = - INF;
+  Real maxValue = - inf;
   FFOR (size_t, row, rowsSize (false))
     Common_sp::maximize (maxValue, maxAbsRow (false, row));
   return maxValue;
@@ -877,7 +877,7 @@ Real Matrix::maxAbs () const
 
 Real Matrix::minAbs () const
 {
-  Real minValue = INF;
+  Real minValue = inf;
   FFOR (size_t, row, rowsSize (false))
     Common_sp::minimize (minValue, minAbsRow (false, row));
   return minValue;
@@ -900,7 +900,7 @@ void Matrix::posNegSumCols2MaxMin (bool t,
 Real Matrix::closestZeroRow (bool t,
                              size_t row) const
 {
-  Real r = INF;
+  Real r = inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (get (t, row, col, a))
@@ -928,7 +928,7 @@ size_t Matrix::argMaxRow (bool t,
                           size_t row) const
 {
   size_t max_ = no_index;
-  Real r = - INF;
+  Real r = - inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, a) 
@@ -944,7 +944,7 @@ size_t Matrix::argMinRow (bool t,
                           size_t row) const
 {
   size_t min_ = no_index;
-  Real r = INF;
+  Real r = inf;
   Real a;
   FFOR (size_t, col, rowsSize (! t))
     if (   get (t, row, col, a) 
@@ -1050,7 +1050,7 @@ size_t Matrix::meanVarianceRow (bool  t,
 
   const size_t Correction = ! Biased;
   if (DefinedNum <= Correction)
-    Variance = INF;
+    Variance = inf;
   else 
     Variance = sumSqrDevRow (t, row, mean) / ((int) DefinedNum - (int) Correction);
     
@@ -1250,7 +1250,7 @@ bool Matrix::getEigen (Eigen &eigen,
 
 
   MVector vec (rowsSize (false));
-  Real diff = INF;  
+  Real diff = inf;  
   FOR (size_t, iteration, iter_max)
   {                                        
     vec. multiply (false, 
@@ -1466,7 +1466,7 @@ Real Matrix::meanRelativeError (bool         t,
 	    if (get (t, i, j, r))
 	    {
 	      if (r == 0.0) 
-	        return INF;
+	        return inf;
 	      Real X;
 	      if (source. get (sourceT, i, j, X))
 	      {
@@ -1475,7 +1475,7 @@ Real Matrix::meanRelativeError (bool         t,
 	      }
 	    }
   if (C == 0)
-    return INF;
+    return inf;
 
   return s / (Real) C;
 }
@@ -2387,7 +2387,7 @@ Determinant Matrix::inverse ()
   {
     // r, Q, coeff
    	// fabs(get(false,r,Q)) -> max, s.t. U[r] = no_index, V[Q] = no_index
-    Real XMax = -INF;
+    Real XMax = -inf;
     size_t r = no_index;
     size_t q = no_index;
     FOR (size_t, j, M)

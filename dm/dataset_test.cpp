@@ -171,7 +171,7 @@ struct ThisApplication : Application
     if (verbose ())
       cout << "Search:" << endl;
     const Distribution* distrBest = nullptr;
-    Real entropyBest = INF;
+    Real entropyBest = inf;
     for (const Distribution* distrTry : distributions)
     {
       ASSERT (& distr != distrTry);

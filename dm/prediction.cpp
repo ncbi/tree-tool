@@ -182,8 +182,8 @@ void LogisticRegression::solve ()
   ASSERT (! target. existsMissing ());
   ASSERT (beta. size () >= 1);
 
-  target_score_min = INF;
-  non_target_score_max = -INF;
+  target_score_min = inf;
+  non_target_score_max = -inf;
 
   if (beta. size () == 1)
   {
@@ -882,7 +882,7 @@ Real L1_LINEAR_NUM_PREDICT::GetRelCriterion (Real ConstTarget) const
 
 
   if (nullFloat (MaxAbsCriterion))
-    return  -INF;
+    return  -inf;
   else
     return  1.0 - absCriterion / MaxAbsCriterion;
 }
@@ -1176,7 +1176,7 @@ Real L2LinearNumPrediction::getRelTargetCriterion (Real constTarget) const
   if (maxAbsCriterion)
     return absCriterion / maxAbsCriterion;
   else
-    return INF;
+    return inf;
 }
 
 
@@ -1337,7 +1337,7 @@ Real L_INF_LINEAR_NUM_PREDICT::AbsCriterion2Error () const
 Real L_INF_LINEAR_NUM_PREDICT::GetConstTarget () const
 { 
   ConstTarget = NaN;
-  Real MaxAbsCriterion = -INF;
+  Real MaxAbsCriterion = -inf;
   For (Row1, MaxRow)
     For (Row2, MaxRow)
       if (Y [Row2] >= Y [Row1])
@@ -1368,7 +1368,7 @@ Real L_INF_LINEAR_NUM_PREDICT::GetRelCriterion (Real ConstTarget) const
   
 
   if (nullFloat (MaxAbsCriterion))
-    return  -INF;
+    return  -inf;
   else
     return  1.0 - absCriterion / MaxAbsCriterion;
 }

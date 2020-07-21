@@ -443,15 +443,15 @@ public:
     // Requires: isSquare()
 
   // Max|Min
-  // If empty then -INF|INF
+  // If empty then -inf|inf
   Real getMaxRow (bool t,
                   size_t row) const;
   Real getMinRow (bool t,
                   size_t row) const;
   Real max () const
-    { return data. size () ? data. max () : -INF; }
+    { return data. size () ? data. max () : -inf; }
   Real min () const
-    { return data. size () ? data. min () : INF; }
+    { return data. size () ? data. min () : inf; }
   Real maxAbsRow (bool t,
                   size_t row) const;
   Real minAbsRow (bool t,
@@ -480,8 +480,8 @@ public:
     // Return: the greatest column col s.t. get (t, row, col) < value
     // Requires: elements of row increase
   bool finite () const
-    { return    max () <  INF 
-    	       && min () > -INF;
+    { return    max () <  inf 
+    	       && min () > -inf;
     }
 
   // Center
@@ -514,7 +514,7 @@ public:
 	                        bool  Biased,
 	                        Real &mean, 
 	                        Real &Variance) const;
-    // Variance: denominator is (N - Correction); If too few data then INF
+    // Variance: denominator is (N - Correction); If too few data then inf
     // Return: number of defined
     // Invokes: meanDefinedNumRow ()
 

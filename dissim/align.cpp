@@ -321,7 +321,7 @@ Real Align::getDissim () const
   if (badMatch)
   	return NaN;
 	if (score <= 0)
-		return INF;
+		return inf;
   // Heuristic
 #if 1
 	return intersection2dissim (self_score1, self_score2, score, 0, 0.5, true);  // PAR

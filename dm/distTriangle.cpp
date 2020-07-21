@@ -194,7 +194,7 @@ Save clusters in " + dmSuff + "-files\
   	  if (dist->matr. existsMissing (false, row, col))
       {
       #if 0
-      	var_cast (dist->matr). put (false, row, col, INF);
+      	var_cast (dist->matr). put (false, row, col, inf);
       #else
         cout << dist->name << " [" << row + 1 << "] [" << col + 1 << "] is missing" << endl;
         exit (1);

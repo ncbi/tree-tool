@@ -94,11 +94,11 @@ string real2str (Real x,
 
 Real str2real (const string& s);
 
-const Real INF = numeric_limits<Real>::infinity ();  
+const Real inf = numeric_limits<Real>::infinity ();  
   // No "isinf()"
 
 inline bool finite (Real x)
-  { return -INF < x && x < INF; }
+  { return -inf < x && x < inf; }
 
 inline bool isNan (Real x)
   { return x != x; }
@@ -115,10 +115,10 @@ extern Real sqrt_2;
 
 
 inline bool eqReal (Real x, Real y, Real delta = epsilon)
-  { if (x == y)  // INF
+  { if (x == y)  // inf
       return true;
     const Real m = fabs (max (x, y));
-    if (m == INF)
+    if (m == inf)
       return false;
     return fabs (x - y) <= max (m, 1.0) * delta; 
 	}
@@ -236,7 +236,7 @@ struct LogReal : Root
   Real get () const
     { return exp (n) * (sign ? 1.0 : -1.0); }
   bool isZero () const
-    { return n == -INF; }
+    { return n == -inf; }
   bool nullReal () const
     { return DM_sp::nullReal (exp (n)); }
 };
@@ -416,7 +416,7 @@ inline Real logit (Prob p)
 Real lnFactorial (uint n);
 
 inline Real multiplyLog (Real a, Real logB)
-  { if (a == 0.0 /*&& logB == -INF*/)
+  { if (a == 0.0 /*&& logB == -inf*/)
   	  return 0.0;
   	return a * logB;
   }
@@ -520,8 +520,8 @@ struct MeanVar : Root
     { n = 0;
     	s = 0.0;
     	s2 = 0.0;
-    	v_min =  INF;
-    	v_max = -INF;
+    	v_min =  inf;
+    	v_max = -inf;
     }
 
 

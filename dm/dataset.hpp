@@ -2163,8 +2163,8 @@ struct UniDistribution : Distribution
 // Bounded support (truncated distribution): [getLoBoundEffective(), getHiBoundEffective()]
 {
   // Parameters
-  Real loBound {-INF};
-  Real hiBound {INF};
+  Real loBound {-inf};
+  Real hiBound {inf};
 
   // Functions of parameters
   Prob p_supp {1.0};
@@ -2218,9 +2218,9 @@ public:
 
   // Input: bounds
   virtual Real stdLoBound () const
-    { return -INF; }
+    { return -inf; }
   virtual Real stdHiBound () const
-    { return INF; }
+    { return inf; }
   bool stdBounds () const
     { return    loBound <= stdLoBound ()
              && hiBound >= stdHiBound ();
@@ -2262,10 +2262,10 @@ public:
     // Return: >= 0.0
   Real logPdf (Real x) const
     { if (p_supp == 0.0)
-        return -INF;
+        return -inf;
       if (supported (x))
         return logPdf_ (x) - log_p_supp; 
-      return -INF;
+      return -inf;
     }
   Prob cdf (Real x) const
     { if (x < getLoBoundEffective ())
@@ -2603,7 +2603,7 @@ private:
     // > 0.0
   Real lnC {NaN};
   Categorical cat;
-    // Valid if hiBound < INF
+    // Valid if hiBound < inf
 public:
 
 
@@ -2963,9 +2963,9 @@ public:
   // ContinuousDistribution
 private:
   Real logPdfStnd (Real xStnd) const final
-    { return coeff == INF 
+    { return coeff == inf 
                ? xStnd
-                 ? -INF
+                 ? -inf
                  : 0.0  // PAR
                : - 0.5 * (coeff + sqr (xStnd)); 
     }
@@ -3325,7 +3325,7 @@ public:
 private:
   Real pdf_ (Real x) const final;
     // Invokes: findIndex()
-    // halfWindow = 0.0 => INF or 0.0
+    // halfWindow = 0.0 => inf or 0.0
   Prob cdf_ (Real x) const final;
   Real rand_ () const final
     { return points [(size_t) round (randProb () * ((Real) points. size () - 1))]. value; }
@@ -3481,8 +3481,8 @@ public:
     { if (isNan (coeff))
         throw runtime_error ("MultiNormal::coeff is NaN"); 
       x_field = variable;
-      if (coeff == INF)
-        return x_field. maxAbsDiff (false, mu, false) ? -INF : 0.0;  // PAR
+      if (coeff == inf)
+        return x_field. maxAbsDiff (false, mu, false) ? -inf : 0.0;  // PAR
       const Real mah = sigmaInv. getMahalanobis ( false
                                                 , x_field, true, 0
                                                 , mu,      true, 0
@@ -3989,7 +3989,7 @@ struct PositiveAverageModel : Root
 	//bool universal {false};
 		Real coeff {NaN};
 			// >= 0.0
-		Real var {INF};
+		Real var {inf};
 			// >= 0.0
 		// Functions of var
 		Real sd {NaN};
@@ -4025,18 +4025,18 @@ struct PositiveAverageModel : Root
 
     bool valid () const
       { return    coeff  > 0.0
-               && coeff  < INF
-               && var    < INF
-               && weight < INF;
+               && coeff  < inf
+               && var    < inf
+               && weight < inf;
       }
 		static bool validValue (Real value)  
-		  { return ! isNan (value) && value != INF; }
+		  { return ! isNan (value) && value != inf; }
 		void setVar (Real var_arg);
 		Real setValue (Real value_arg)
 	    { value = value_arg * coeff;  
 	      return value;
 	    }
-	    // Return: may be NaN or INF
+	    // Return: may be NaN or inf
 	private:
 	  friend struct PositiveAverageModel;
 		void setOutlier (Real value_target) const;

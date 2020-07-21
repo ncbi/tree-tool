@@ -164,7 +164,7 @@ struct Phyl : Tree::TreeNode
 	  // CoreEval::core: optimal given parentCore
     // size() = getFeatureTree().features.size()
 	float weight [2/*thisCore*/] [2/*parentCore*/];
-	  // = -log(prob); >= 0; may be INF
+	  // = -log(prob); >= 0; may be inf
 	Vector<bool> core;
     // size() = getFeatureTree().features.size()
 	size_t index_init;
@@ -1238,7 +1238,7 @@ public:
     }
   // Phyl::{time,weight[][]}
   Real getRootTime () const
-    { return emptySuperRoot ? INF : 0; }
+    { return emptySuperRoot ? inf : 0; }
 private:
   void setTimeWeight ();
     // Idempotent

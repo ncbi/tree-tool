@@ -54,7 +54,7 @@ struct ThisApplication : Application
       version = VERSION;
       addPositional ("file", dmSuff + "-file");
       addPositional ("attr", "Attribute name");
-      addFlag ("inf2nan", "Convert -INF to NaN");
+      addFlag ("inf2nan", "Convert -inf to NaN");
     }
 	
 	
@@ -80,7 +80,7 @@ struct ThisApplication : Application
         continue;
       ASSERT (r >= 0);
       Real res = log (r);
-      if (inf2nan && res == -INF)
+      if (inf2nan && res == -inf)
       	res = NaN;
       (*logAttr) [objNum] = res;
     }

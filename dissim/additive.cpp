@@ -71,7 +71,7 @@ Real getAdditivity (const Matrix &matr,
   const Real uv = matr. get (false, u, v);
   
   const Real s = xy + xu + xv + yu + yv + uv;
-  if (isNan (s) || s == INF)
+  if (isNan (s) || s == inf)
     return NaN;
     
   ASSERT (xy >= 0.0);

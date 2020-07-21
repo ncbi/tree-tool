@@ -69,12 +69,12 @@ bool initNumeric ()
   ASSERT (numeric_limits<Real>::has_infinity);
   ASSERT (numeric_limits<Real>::has_quiet_NaN);
 
-  ASSERT (INF / 2 == INF);
-  ASSERT (INF > 0);
+  ASSERT (inf / 2 == inf);
+  ASSERT (inf > 0);
 
   ASSERT (isNan (NaN));
-  ASSERT (isNan (INF - INF));
-  ASSERT (isNan (INF / INF));
+  ASSERT (isNan (inf - inf));
+  ASSERT (isNan (inf / inf));
 #ifdef _MSC_VER
   #pragma warning (default : 4127)
 #endif
@@ -122,9 +122,9 @@ Real str2real (const string& s)
   strLower (s1);
 
   if (s1 == "inf")
-	  return INF;
+	  return inf;
   if (s1 == "-inf")
-	  return -INF;
+	  return -inf;
 	if (   s1 == "NaN"
 	    || s1 == "-NaN"
 	    || s1 == "?"
@@ -266,12 +266,12 @@ void Sum::add (Real x)
 {
   ASSERT (! isNan (x));
 
-  if (x == INF)
+  if (x == inf)
   {
     hasPlusInf = true;
     return;
   }
-  if (x == -INF)
+  if (x == -inf)
   {
     hasMinusInf = true;
     return;
@@ -283,7 +283,7 @@ void Sum::add (Real x)
       
   
   const Real a = fabs (x);
-  ASSERT (a != INF);
+  ASSERT (a != inf);
   
   
   if (isNan (maxAbs))
@@ -322,10 +322,10 @@ Real Sum::get () const
     if (hasMinusInf)
       return NaN;
     else
-      return INF;
+      return inf;
   else
     if (hasMinusInf)
-      return -INF;
+      return -inf;
   
   Real s = 0.0;
   FOR_REV (size_t, i, n)
@@ -340,7 +340,7 @@ Real Sum::get () const
 
 void SumLn::reset ()
 {
-  maxLnX = -INF;
+  maxLnX = -inf;
   sum. reset ();
 }
 
@@ -348,7 +348,7 @@ void SumLn::reset ()
 
 void SumLn::addExp (Real lnX)
 {
-  if (lnX == -INF)
+  if (lnX == -inf)
     return;  
  
   if (lnX - maxLnX > 3.0)  // PAR

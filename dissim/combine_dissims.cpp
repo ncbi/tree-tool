@@ -53,7 +53,7 @@ namespace
 	
 struct Scale
 {
-	Real unit {INF};
+	Real unit {inf};
 	Real raw_min {0.0};
 	Real raw_max {0.0};
 #ifdef WEIGHT

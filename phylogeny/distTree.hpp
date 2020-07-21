@@ -122,7 +122,7 @@ inline Real dist2mult (Real dist)
     return 1.0 / (max (variance_min, var));  // was: variance_min + var
   }
   // Return: >= 0
-  //         0 <=> dist = INF
+  //         0 <=> dist = inf
 
 inline Real dist_max ()
   { Real x = NaN;
@@ -132,7 +132,7 @@ inline Real dist_max ()
       case varianceType_pow:    x = pow (epsilon, - 1.0 / variancePower); break;
       case varianceType_exp:    x = - 0.5 * log (epsilon); break;
       case varianceType_linExp: x = log (1.0 / epsilon + 1.0); break;
-      case varianceType_none:   x = INF; break;
+      case varianceType_none:   x = inf; break;
       default:                  throw logic_error ("Unknown variance function");
     }  
     return pow (x / dissim_coeff, 1.0 / dissim_power);
@@ -923,7 +923,7 @@ struct DissimType : Named
   const PositiveAttr2* dissimAttr {nullptr};
     // In *DistTree::dissimDs
   Real scaleCoeff {NaN}; 
-    // >= 0, < INF
+    // >= 0, < inf
     
   explicit DissimType (const PositiveAttr2* dissimAttr_arg);
   void qc () const override;
@@ -946,7 +946,7 @@ struct Dissim
   // Use 4-byte variables ??
   Real target {NaN};
     // Dissimilarity between leaf1 and leaf2; !isNan()
-    // < INF
+    // < inf
     // Update: = original target * DissimType::scaleCoeff
   size_t type {no_index};
     // < DistTree::dissimTypes.size()
@@ -957,7 +957,7 @@ struct Dissim
     // >= 0
   Real mult {NaN};
     // >= 0
-    // INF <=> leaf1 and leaf2 must be collapse()'ed
+    // inf <=> leaf1 and leaf2 must be collapse()'ed
   const Steiner* lca {nullptr};
     // Paths
   
@@ -988,7 +988,7 @@ struct Dissim
   bool validMult () const
     { return    valid ()
              && mult
-             && mult < INF;
+             && mult < inf;
     }
   bool hasLeaf (const Leaf* leaf) const
     { return    leaf == leaf1
@@ -1180,7 +1180,7 @@ public:
     //        ]
     //         [dissim.bad]               <obj1> <obj2> nan
 	  //         [dissim_request]           <obj1> <obj2>                                 Request to compute dissimilarity
-	  //       <dissimilarity>: >= 0, < INF
+	  //       <dissimilarity>: >= 0, < inf
 	  // Invokes: optimizeSmallSubgraph() for each added Leaf; Threads
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
 	  //       if !loadDissim then O(n log(n) + new_leaves)
@@ -1657,7 +1657,7 @@ public:
     Real leafLen {NaN};
     Real arcLen {NaN};
       // From anchor to leaf->getParent()
-    Real absCriterion_leaf {INF};
+    Real absCriterion_leaf {inf};
       // To be minimized, >= 0
       
     void qc () const override;
