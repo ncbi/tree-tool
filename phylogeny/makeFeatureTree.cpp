@@ -274,7 +274,7 @@ struct ThisApplication : Application
       cout << "# Optional features:              " << optionals << endl;
       ASSERT (optionals + commons + singles + monophyletics + nonMonophyletics == features. size ());
       if (   ! qual_nonredundant 
-          && ! use_time 
+          && tree. allTimeZero  
           && tree. len <= 1e5  // float precision
           && (size_t) round (tree. len) - tree. globalSingletonsSize != monophyletics + nonMonophyletics + extraMutations + singles
          )
