@@ -68,9 +68,11 @@ struct Func1 : Root
 	               Real precision);
 	  // Return: x s.t. f(x)=0, x in [x_min, x_max] or x_min or x_max
 	  // Requires: f is increasing
+	  //           f(x_min) < 0, f(x_max) > 0
 	  // Binary search
   Real findZeroPositive (Real x_init,
-                         Real precision);
+                         Real precision,
+                         Real factor = 2.0);
     // Requires: the domain of f() >= 0
     // Invokes: findZero()
   Real optimizeFibonacci (bool Min, 

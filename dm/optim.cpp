@@ -70,10 +70,10 @@ Real Func1::findZero (Real x_min,
 {
 	ASSERT (precision >= 0.0);
 		
-	if (f (x_min) > 0.0)
-	  return x_min;
-	if (f (x_max) < 0.0)
-	  return x_max;
+	if (f (x_min) >= 0.0)
+	  return NaN /*x_min*/;
+	if (f (x_max) <= 0.0)
+	  return NaN /*x_max*/;
 	
 	Unverbose unv;
 	
@@ -97,29 +97,40 @@ Real Func1::findZero (Real x_min,
 
 
 Real Func1::findZeroPositive (Real x_init,
-                              Real precision) 
+                              Real precision,
+                              Real factor) 
 {
-	ASSERT (x_init > 0.0);
-	ASSERT (f (0.0) <= 0.0);
-	ASSERT (f (inf) >= 0.0);
+	ASSERT (x_init >= 0.0);
+	ASSERT (precision > 0.0);
+	ASSERT (factor > 0.0);
+		
+	if (f (x_init) == 0.0)
+	  return x_init;
+
+#if 0
+	if (f (0.0) >= 0.0)
+	  return NaN;
+	if (f (inf) <= 0.0)
+	  return NaN;
+#endif
 	
   Real x_min = x_init;
   while (f (x_min) > 0.0)
-    x_min /= 2.0;
-  if (x_min != x_init)
-  	return findZero (x_min, 2.0 * x_min, precision);
+    x_min /= factor;
   if (verbose ())
     cout << "x_init=" << x_init << "  x_min=" << x_min << endl;  
+  if (x_min != x_init)
+  	return findZero (x_min / factor, x_min * factor, precision);
     
   Real x_max = x_init;
   while (f (x_max) < 0.0)
-    x_max *= 2.0;
-  if (x_max != x_init)
-  	return findZero (x_max / 2.0, x_max, precision);
+    x_max *= factor;
   if (verbose ())
     cout << "x_init=" << x_init << "  x_max=" << x_max << endl;   
+  ASSERT (x_max > x_init);
+  return findZero (x_max / factor, x_max * factor, precision);
     
-  return findZero (x_min, x_max, precision);
+//return findZero (x_min, x_max, precision);
 }
 
 
