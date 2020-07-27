@@ -106,14 +106,14 @@ struct ThisApplication : Application
       cout << "# Discernible objects = " << discernibles << endl;
       cout << "# Interior nodes (with root) = " << tree. countInteriorNodes () << endl;
       cout << "# Interior undirected arcs = " << tree. countInteriorUndirectedArcs () << endl;
-      cout << "Tree length = " << tree. getLength () << endl;
       {
       	const ONumber on1 (cout, dissimDecimals, true); 
+        cout << "Tree length = " << tree. getLength () << endl;
         cout << "Min. discernible leaf length = " << tree. getMinLeafLen () << endl;
           // = 0 => epsilon2_0 > 0
+        cout << "Ave. arc length = " << tree. getAveArcLength () << endl;
+          // Check exponential distribution ??
       }
-      cout << "Ave. arc length = " << tree. getAveArcLength () << endl;
-        // Check exponential distribution ??
       cout << "Height ignoring indiscernibles = " << tree. getInteriorHeight () << endl;
       const Real bifurcatingInteriorBranching = tree. getBifurcatingInteriorBranching ();
       cout << "Bifurcating interior branching = " << bifurcatingInteriorBranching << endl;
