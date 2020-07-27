@@ -479,6 +479,7 @@ public:
     // Time: O(log(n))
 private:
   void saveFeatureTree (ostream &os,
+                        bool withTime,
                         size_t offset) const;
   virtual void setSubtreeLenUp (bool topological) = 0;
     // Output: subtreeLen
@@ -1365,7 +1366,8 @@ public:
          << endl;
     }    
   void saveDissimCoeffs (const string &fName) const;
-  void saveFeatureTree (const string &fName) const;
+  void saveFeatureTree (const string &fName,
+                        bool withTime) const;
 
 private:
   void qcPaths ();

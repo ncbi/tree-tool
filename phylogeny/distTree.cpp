@@ -710,13 +710,17 @@ Real DTNode::getDeformation () const
 
 
 void DTNode::saveFeatureTree (ostream &os,
+                              bool withTime,
                               size_t offset) const
 {
   FOR (size_t, i, offset)
     os << ' ';
   const ONumber on (os, dissimDecimals, true);
   string s = (asLeaf () ? "s" : "") + getName ();
-  os << s << ": " << /*" t=" << (isNan (len) ? 0 : len) <<*/ "  C=0  dC=+0-0" << endl;
+  os << s << ": ";
+  if (withTime)
+    os << " t=" << (isNan (len) ? 0 : len);
+  os << "  C=0  dC=+0-0" << endl;
   if (asLeaf ())
   {
     FOR (size_t, i, offset + 2)
@@ -725,7 +729,7 @@ void DTNode::saveFeatureTree (ostream &os,
   }
   else
     for (const DiGraph::Arc* arc : arcs [false])
-      static_cast <const DTNode*> (arc->node [false]) -> saveFeatureTree (os, offset + 2);
+      static_cast <const DTNode*> (arc->node [false]) -> saveFeatureTree (os, withTime, offset + 2);
 }
 
 
@@ -5410,12 +5414,13 @@ void DistTree::saveDissimCoeffs (const string &fName) const
 
 
 
-void DistTree::saveFeatureTree (const string &fName) const
+void DistTree::saveFeatureTree (const string &fName,
+                                bool withTime) const
 {
   if (fName. empty ())
     return;  
   OFStream f (fName);
-  static_cast <const DTNode*> (root) -> saveFeatureTree (f, 0);
+  static_cast <const DTNode*> (root) -> saveFeatureTree (f, withTime, 0);
 }
 
 
