@@ -80,14 +80,15 @@ struct Hashes : Vector<size_t>
 
 
 
-// Feature
+// ObjFeature
 
-struct Feature : Named
+struct ObjFeature : Named
+// Feature of an object
 {
   bool optional {false};
   
 
-  explicit Feature (string &&line)
+  explicit ObjFeature (string &&line)
     : Named (move (line))
     { replace (name, '\t', ' ');
       trim (name);
@@ -97,13 +98,63 @@ struct Feature : Named
         optional = true;
       trim (name);
     }
-  Feature (const string &name_arg,
+  ObjFeature (const string &name_arg,
            bool optional_arg)
     : Named (name_arg)
     , optional (optional_arg)
     {}
+  ObjFeature () = default;
+  
+    
+  bool operator< (const ObjFeature &other) const
+    { return name < other. name; }
+  bool operator== (const ObjFeature &other) const
+    { return name == other. name; }
+};
+
+
+
+struct ObjFeatureVector : Vector<ObjFeature>
+// sort()'ed, uniq
+{
+  explicit ObjFeatureVector (const string &fName);
+  ObjFeatureVector () = default;
+
+private:
+  static map<string,ObjFeatureVector> cache;
+public:
+  static const ObjFeatureVector& getCache  (const string &fName);
+};
+
+
+
+Real features2hamming (const ObjFeatureVector &vec1,
+                       const ObjFeatureVector &vec2,
+                       Real optional_weight);
+
+Real features2jaccard (const ObjFeatureVector &vec1,
+                       const ObjFeatureVector &vec2);
+  // ObjFeature::optional is trated as false
+
+
+struct Feature : Named
+// Boolean attribute
+{
+  array<Real,2/*bool*/> lambda;
+    // >= 0
+  
+
+  explicit Feature (const string &line);
+    // Format: <name> <rate> <p>
   Feature () = default;
   
+  
+  bool redundant () const
+    { return    ! lambda [0] 
+             || ! lambda [1];
+    }
+  Real lambdaSum () const
+    { return lambda [0] + lambda [1]; }
     
   bool operator< (const Feature &other) const
     { return name < other. name; }
@@ -115,34 +166,27 @@ struct Feature : Named
 
 struct FeatureVector : Vector<Feature>
 // sort()'ed, uniq
+// !Feature::redundant()
 {
   explicit FeatureVector (const string &fName);
+  FeatureVector () = default;
 };
 
 
 
-Real features2hamming (const FeatureVector &vec1,
-                       const FeatureVector &vec2,
-                       Real optional_weight);
+Real snps2time (const ObjFeatureVector &vec1,
+                const ObjFeatureVector &vec2,
+                const FeatureVector &feature2lambda);
 
-Real features2jaccard (const FeatureVector &vec1,
-                       const FeatureVector &vec2);
-  // Feature::optional is trated as false
-
-Real snps2time (const FeatureVector &vec1,
-                const FeatureVector &vec2,
-                const Vector<pair<string,Real/*>=0*/>> &feature2rate);
-  // Multiplying rates by a constant divides the result by the same constant
-
-inline Real features2dissim (const FeatureVector &vec1,
-                             const FeatureVector &vec2,
+inline Real features2dissim (const ObjFeatureVector &vec1,
+                             const ObjFeatureVector &vec2,
                              Real optional_weight,
-                             const Vector<pair<string,Real>> &feature2rate)
+                             const FeatureVector &feature2lambda)
   { if (! isNan (optional_weight))
       return features2hamming (vec1, vec2, optional_weight);
-    if (! feature2rate. empty ())
-      return snps2time (vec1, vec2, feature2rate);
-    return features2jaccard (vec1, vec2);
+    if (feature2lambda. empty ())
+      return features2jaccard (vec1, vec2);
+    return snps2time (vec1, vec2, feature2lambda);
   }
          
 

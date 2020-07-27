@@ -79,7 +79,7 @@ struct ThisApplication : Application
 		
 		
     Dataset ds;
-    Vector<FeatureVector> obj2features;  
+    Vector<ObjFeatureVector> obj2features;  
 
     size_t features_min = numeric_limits<size_t>::max();
     size_t features_max = 0;
@@ -89,7 +89,7 @@ struct ThisApplication : Application
       {
         trim (objF. line);
         ds. appendObj (objF. line);
-        FeatureVector features (objects_dir + "/" + objF. line);
+        ObjFeatureVector features (objects_dir + "/" + objF. line);
         minimize (features_min, features. size ());
         maximize (features_max, features. size ());
         obj2features << move (features);
@@ -108,11 +108,11 @@ struct ThisApplication : Application
       FOR (size_t, i, ds. objs. size ())
       {
         prog ();
-        const FeatureVector& f1 = obj2features [i];
+        const ObjFeatureVector& f1 = obj2features [i];
         FOR_START (size_t, j, i + 1, ds. objs. size ())
         {
-          const FeatureVector& f2 = obj2features [j];
-          attr->putSymm (i, j, features2dissim (f1, f2, optional_weight, Vector<pair<string,Real>> ()));
+          const ObjFeatureVector& f2 = obj2features [j];
+          attr->putSymm (i, j, features2dissim (f1, f2, optional_weight, /*false,*/ FeatureVector ()));
         }
       }
     }

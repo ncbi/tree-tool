@@ -124,15 +124,15 @@ Hashes::Hashes (const string &fName)
 
 
 
-// Feature
+// ObjFeatureVector
 
-FeatureVector::FeatureVector (const string &fName)
+ObjFeatureVector::ObjFeatureVector (const string &fName)
 {
   reserve (16);  // PAR
 
   LineInput f (fName);
   while (f. nextLine ())
-    (*this) << Feature (move (f. line));
+    (*this) << ObjFeature (move (f. line));
     
   sort ();
   QC_ASSERT (isUniq ());
@@ -140,19 +140,34 @@ FeatureVector::FeatureVector (const string &fName)
 
 
 
+map<string,ObjFeatureVector> ObjFeatureVector::cache;
+
+
+
+const ObjFeatureVector& ObjFeatureVector::getCache  (const string &fName)
+// bad_alloc ??
+{
+  if (const ObjFeatureVector* fv = findPtr (cache, fName))
+    return *fv;
+
+  ObjFeatureVector fv (fName);
+  return (cache [fName] = move (fv));
+}
+
+
 
 namespace
 {
 
-Real features2hamming_half (const FeatureVector &vec1,
-                            const FeatureVector &vec2,
+Real features2hamming_half (const ObjFeatureVector &vec1,
+                            const ObjFeatureVector &vec2,
                             Real optional_weight)
 {
 	ASSERT (optional_weight >= 0.0);
 	ASSERT (optional_weight <= 1.0);
 
   Real n = 0.0;
-  for (const Feature& f : vec2)
+  for (const ObjFeature& f : vec2)
   {
     const size_t index = vec1. binSearch (f);
     if (f. optional)
@@ -175,8 +190,8 @@ Real features2hamming_half (const FeatureVector &vec1,
 
 
 
-Real features2hamming (const FeatureVector &vec1,
-                       const FeatureVector &vec2,
+Real features2hamming (const ObjFeatureVector &vec1,
+                       const ObjFeatureVector &vec2,
                        Real optional_weight)
 {
   return   features2hamming_half (vec1, vec2, optional_weight)
@@ -185,11 +200,11 @@ Real features2hamming (const FeatureVector &vec1,
 
 
 
-Real features2jaccard (const FeatureVector &vec1,
-                       const FeatureVector &vec2)
+Real features2jaccard (const ObjFeatureVector &vec1,
+                       const ObjFeatureVector &vec2)
 {
   const size_t intersection = vec1. getIntersectSize (vec2);
-  FeatureVector f (vec2);
+  ObjFeatureVector f (vec2);
   f << vec1;
   f. sort ();
   f. uniq ();
@@ -200,96 +215,159 @@ Real features2jaccard (const FeatureVector &vec1,
 
 
 
-namespace
-{
 
-struct Func : Func1
-{
-  struct Snp 
-  {
-    const Real rate;
-      // > 0
-    const bool same; 
-  };
-  Vector<Snp> snps;
-  
+// Feature
 
-  Func (const FeatureVector &vec1,
-        const FeatureVector &vec2,
-        const Vector<pair<string,Real>> &feature2rate)
-    {
-      snps. reserve (max (vec1. size (), vec2. size ()));
-      for (const pair<string,Real>& f2r : feature2rate)
-      {
-        QC_ASSERT (f2r. second >= 0.0);
-        if (! f2r. second)
-          continue;
-        const Feature f {f2r. first, false};
-        const size_t i1 = vec1. binSearch (f);
-        if (i1 != no_index && vec1 [i1]. optional)
-          continue;
-        const size_t i2 = vec2. binSearch (f);
-        if (i2 != no_index && vec2 [i2]. optional)
-          continue;
-        snps << Snp {f2r. second, (i1 == no_index) == (i2 == no_index)};
-      }
-    }
-  
-
-  Real f (Real t) final
-    {
-      ASSERT (t >= 0.0);
-      if (t == 0.0)
-        return -INF;
-      Real s = 0.0;
-      for (const Snp& snp : snps)
-      {
-        const Real a = exp (- 2.0 * t * snp. rate);
-        ASSERT (a >= 0.0);
-        ASSERT (a < 1.0);
-        const Prob p = snp. same 
-                         ? a * snp. rate / (1.0 + a)
-                         : - snp. rate / (1.0 / a - 1.0);  // = - a * snp. rate (1.0 - a)
-        s += p;
-      }
-      return s;
-    }  
-};
-
+Feature::Feature (const string &line)
+{ 
+  istringstream iss (line);
+  iss >> name >> lambda [0] >> lambda [1];
+  for (const bool b : {false, true})
+    QC_ASSERT (lambda [b] >= 0.0);
 }
 
 
 
-Real snps2time (const FeatureVector &vec1,
-                const FeatureVector &vec2,
-                const Vector<pair<string,Real>> &feature2rate)
+
+// FeatureVector
+
+FeatureVector::FeatureVector (const string &fName)
 {
-  ASSERT (! feature2rate. empty ());
+  reserve (1000);  // PAR
+
+  LineInput f (fName);
+  while (f. nextLine ())
+  {
+    Feature feature (f. line);
+    if (! feature. redundant ())
+    {
+      (*this) << move (feature);
+      ASSERT (feature. name. empty ());
+    }
+  }
+    
+  sort ();
+  QC_ASSERT (isUniq ());
+}
+
+
+
+//
+
+struct Func_snps2time : Func1
+{
+  struct Snp 
+  {
+    array<Real,2/*bool*/> lambda;
+      // > 0
+    ebool alleles;
+      // UBOOL <=> heterozygous
+    Real sum () const
+      { return   lambda [0] 
+               + lambda [1]; 
+      }
+  };
+  Vector<Snp> snps;
+  Real lambdaSum_ave {NaN};
+  array<size_t,2/*bool*/> num;
+  bool same {true};
   
-  Func f (vec1, vec2, feature2rate);
 
-  size_t same = 0;
-  size_t diff = 0;
-  for (const Func::Snp& snp : f. snps)
-    if (snp. same)
-      same++;
-    else
-      diff++;
-  if (same < diff)
-    return INF;
+  Func_snps2time (const ObjFeatureVector &vec1,
+                  const ObjFeatureVector &vec2,
+                  const FeatureVector &feature2lambda)
+    {
+      snps. reserve (max (vec1. size (), vec2. size ()));
+      MeanVar mv;
+      for (const bool b : {false, true})
+        num [b] = 0;
+      Real lambda = NaN;
+      for (const Feature& f : feature2lambda)
+      {
+        // Make time O(1) ??
+        const ObjFeature of {f. name, false};
+        const size_t i1 = vec1. binSearch (of);
+        if (i1 != no_index && vec1 [i1]. optional)
+          continue;
+        const size_t i2 = vec2. binSearch (of);
+        if (i2 != no_index && vec2 [i2]. optional)
+          continue;
+        const ebool alleles = (i1 != no_index && i2 != no_index
+                                 ? ETRUE
+                                 : i1 == no_index && i2 == no_index
+                                   ? EFALSE
+                                   : UBOOL
+                              );
+        snps << Snp {f. lambda, alleles};
+        mv << f. lambdaSum ();
+        num [(i1 == no_index) == (i2 == no_index)] ++;
+        if (same)
+        {
+          for (const bool b : {false, true})
+            if (isNan (lambda))
+              lambda = f. lambda [b];
+            else
+              if (lambda != f. lambda [b])
+                same = false;
+        }
+      }
+      lambdaSum_ave = mv. getMean ();
+      QC_ASSERT (lambdaSum_ave > 0.0);
+    }
+  
 
-  const Real delta = 1e-7;  // PAR
-  const Real dissim = f. findZero (0.0, 1.0, delta);  // 1.0 = tree length
-  ASSERT (dissim >= 0.0);
-  ASSERT (dissim <= 1.0);
+  Real f (Real t) final
+    // Non-monotone
+    {
+      ASSERT (t >= 0.0);
+      if (t == 0.0)
+        return -inf;
+      Real s = 0.0;  
+      for (const Snp& snp : snps)
+      {
+        const Real lambdaSum = snp. sum ();
+        const Real a = exp (t * lambdaSum);
+        ASSERT (a > 1.0);
+        const Real b = snp. alleles == UBOOL
+                         ? - lambdaSum / (a - 1.0)
+                         : lambdaSum / ((lambdaSum / snp. lambda [(bool) snp. alleles] - 1.0) * a + 1.0);  
+        s += b;
+      }
+      return s;
+    }  
+    
+  Real f_approx () const
+    // Equivalent to Jukes-Cantor model
+    { return num [true] <= num [false]
+               ? inf
+               : - 1.0 / lambdaSum_ave * log ((Real) (num [true] - num [false]) / (Real) (num [true] + num [false]));
+    }
+};
 
-  if (dissim >= 1.0 - delta)
-    return INF;
+
+
+Real snps2time (const ObjFeatureVector &vec1,
+                const ObjFeatureVector &vec2,
+                const FeatureVector &feature2lambda)
+{
+  ASSERT (! feature2lambda. empty ());
+  
+  Func_snps2time f (vec1, vec2, feature2lambda);
+
+  const Real dissim_init = f. f_approx ();
+  if (f. same)
+    return dissim_init;
+  if (dissim_init == inf)
+    return inf;
+    
+  const Real delta = dissim_init * 1e-7;  // PAR
+  const Real dissim = f. findZeroPositive (dissim_init, delta, 1.1);   // PAR
+  IMPLY (! isNan (dissim), dissim >= 0.0);
+
   return dissim;
 }
 
 
 
 }
-
 

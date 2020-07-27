@@ -56,7 +56,8 @@ struct ThisApplication : Application
   	  addPositional ("req", "File with pairs of objects");
   	  addPositional ("dir", "Directory with <object> files containing feature-optional(0/1) pairs");
   	  addKey ("optional_weight", "For Hamming distance: Weight of optional-nonoptional match (0..1)", "NaN");
-  	  addKey ("mutation_rate", "For SNP dissimilarity: File where each line has format: <feature_name> <mutation rate>");
+  	  addKey ("mutation_rate", "For SNP dissimilarity: File where each line has format: <feature_name> <mutation rate 0->1> <mutation rate 1->0>");
+  	//addFlag ("freq", "<mutation_rate> file has allele frequencies");
   	}
 
 
@@ -67,6 +68,7 @@ struct ThisApplication : Application
 		const string dir             =           getArg ("dir");
 		const Real   optional_weight = str2real (getArg ("optional_weight"));
     const string mutationsFName  =           getArg ("mutation_rate");
+  //const bool freq              =           getFlag ("freq");
 		
 		if (! isNan (optional_weight))
 		{
@@ -76,23 +78,14 @@ struct ThisApplication : Application
     }
 		
 		
-		Vector<pair<string,Real>> feature2rate;  feature2rate. reserve (10000);  // PAR
+		unique_ptr<const FeatureVector> feature2rate;
 		if (! mutationsFName. empty ())
-    {
-      LineInput f (mutationsFName);
-      string name;
-      Real rate;
-      Istringstream iss;
-      while (f. nextLine ())
-      {
-        iss. reset (f. line);
-        rate = NaN;
-        iss >> name >> rate;
-        QC_ASSERT (! isNan (rate));
-        feature2rate << move (pair<string,Real> (name, rate));
-      }
-      QC_ASSERT (! feature2rate. empty ());
+		{
+ 		  feature2rate. reset (new FeatureVector (mutationsFName));
+      QC_ASSERT (! feature2rate->empty ());
     }
+    else
+ 		  feature2rate. reset (new FeatureVector ());
 
 
     LineInput reqF (reqFName);
@@ -108,9 +101,15 @@ struct ThisApplication : Application
       QC_ASSERT (! obj1. empty ());
       QC_ASSERT (! obj2. empty ());
       QC_ASSERT (rest. empty ());
-      const FeatureVector vec1 (dir + "/" + obj1);
-      const FeatureVector vec2 (dir + "/" + obj2);
-      cout << obj1 << '\t' << obj2 << '\t' << features2dissim (vec1, vec2, optional_weight, feature2rate) << endl;
+    #if 0
+      // ??
+      const ObjFeatureVector& vec1 = ObjFeatureVector::getCache (dir + "/" + obj1);
+      const ObjFeatureVector& vec2 = ObjFeatureVector::getCache (dir + "/" + obj2);
+    #else
+      const ObjFeatureVector vec1 (dir + "/" + obj1);
+      const ObjFeatureVector vec2 (dir + "/" + obj2);
+    #endif
+      cout << obj1 << '\t' << obj2 << '\t' << features2dissim (vec1, vec2, optional_weight, /*freq,*/ *feature2rate) << endl;
     }
 	}
 };
