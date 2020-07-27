@@ -107,13 +107,6 @@ Real Func1::findZeroPositive (Real x_init,
 	if (f (x_init) == 0.0)
 	  return x_init;
 
-#if 0
-	if (f (0.0) >= 0.0)
-	  return NaN;
-	if (f (inf) <= 0.0)
-	  return NaN;
-#endif
-	
   Real x_min = x_init;
   while (f (x_min) > 0.0)
     x_min /= factor;
@@ -129,8 +122,6 @@ Real Func1::findZeroPositive (Real x_init,
     cout << "x_init=" << x_init << "  x_max=" << x_max << endl;   
   ASSERT (x_max > x_init);
   return findZero (x_max / factor, x_max * factor, precision);
-    
-//return findZero (x_min, x_max, precision);
 }
 
 
