@@ -582,7 +582,7 @@ struct TimeFunc : Func1
     }
 
   
-  Real f (Real x) 
+  Real f (Real x) final
   { 
     ASSERT (x >= 0.0);
     
@@ -598,7 +598,7 @@ struct TimeFunc : Func1
   	  
   	Real rhs = 0.0;
   	for (const bool c : {false, true})
-  		if (const Real denomin = 1 / negateProb (tree. lambda0, c) - a)
+  		if (const Real denomin = 1.0 / negateProb (tree. lambda0, c) - a)
   	    rhs += parent2core [c] [c] / denomin;
   	  else
   	  	rhs = inf;
@@ -2189,8 +2189,8 @@ FeatureTree::FeatureTree (const string &treeFName,
    	allTimeZero = timeNan;
   }
 
-  if (oneFeatureInTree && ! allTimeZero)
-    throw runtime_error ("Optimizing time is not implemented for oneFeatureInTree");
+  if (oneFeatureInTree)
+    allTimeZero = true;
 
   genomeFeatures_ave = 0.0;  
  	for (const DiGraph::Node* node : nodes)
@@ -2209,6 +2209,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   if (oneFeatureInTree)
   {
     {
+      clearStats ();
       VectorPtr<Phyl> phyls;  phyls. reserve (nodes. size ());  // Iteration over vector is faster
      	for (const DiGraph::Node* node : nodes)
      		phyls << static_cast <const Phyl*> (node);
@@ -2254,6 +2255,12 @@ FeatureTree::FeatureTree (const string &treeFName,
   len_min = getLength_min ();
 
   ASSERT (nodes. front () == root);
+  
+  if (allTimeZero)  
+   	for (const DiGraph::Node* node : nodes)
+   		if (const Species* sp = static_cast <const Phyl*> (node) -> asSpecies ())
+   			var_cast (sp) -> time = NaN;
+    
 #ifndef NDEBUG
   {
     size_t index = 0;
@@ -2365,6 +2372,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     float featureLen = 0.0;
     Vector<size_t/*featureIndex*/> batch;  
     batch << 0;
+    clearStats ();
     processBatch (phyls, batch, featureLen);
     len = featureLen + static_cast <const Species*> (root) -> pooledSubtreeDistance;
   }
@@ -3567,10 +3575,18 @@ void FeatureTree::setFeatureStats (Feature &f,
   }
   else
   {
-    if (! phyl->feature2parentCore (coreIndex) && phyl->core [coreIndex])  
+    const bool nodeCore   = phyl->core [coreIndex];
+    const bool parentCore = phyl->feature2parentCore (coreIndex);
+    if (! parentCore && nodeCore)  
       f. gains << phyl;
-    if (phyl->feature2parentCore (coreIndex) && ! phyl->core [coreIndex])
+    if (parentCore && ! nodeCore)
       f. losses << phyl;
+    if (const Species* sp = phyl->asSpecies ())
+    {
+      const bool parentCore1 = (phyl->getParent () == root && root->arcs [false]. size () == 2 ? nodeCore : parentCore);
+      f. len [nodeCore]    += 0.5 * sp->time;
+      f. len [parentCore1] += 0.5 * sp->time;
+    }
   }
 }
 

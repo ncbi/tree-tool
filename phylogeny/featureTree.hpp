@@ -70,6 +70,8 @@ struct Feature : Named
   bool rootGain {false}; 
   VectorPtr<Phyl> gains;  
   VectorPtr<Phyl> losses; 
+  array<Real,2/*bool*/> len;
+    // Root-independent
 
 
 	explicit Feature (const Id &name_arg)
@@ -78,7 +80,11 @@ struct Feature : Named
   Feature () = default;
 	void qc () const override;
 	void saveText (ostream& os) const override
-	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << " (" << optionalGenomes << ")" << endl; }
+	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << " (" << optionalGenomes << ")" 
+	       << " lambda_0=" << getLambda (false)
+	       << " lambda_1=" << getLambda (true)
+	       << endl; 
+	  }
 
 	
 	string getNominVar () const
@@ -103,6 +109,9 @@ struct Feature : Named
                         const Feature& b);
   size_t mutations () const
     { return gains. size () + losses. size (); }
+  Real getLambda (bool core) const
+    { return (Real) mutations () / len [core]; }
+    // Approximate estimation
   bool monophyletic () const
     { return realGains () == 1 && losses. empty (); }
   bool better (const Feature* other) const
@@ -116,6 +125,8 @@ struct Feature : Named
       rootGain = false;
       gains. clear ();
       losses. clear ();
+      for (const bool b : {false, true})
+        len [b] = 0.0;
     }
   
   static bool nominalSingleton (const Id &featureId);
