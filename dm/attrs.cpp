@@ -113,7 +113,7 @@ struct ThisApplication : Application
     		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);
     		      normal. analysis = & an_pure;
     		      normal. estimate ();
-              const Prob pVal = 1.0 - normal. getFitness_entropy ();
+              const Prob pVal = max (0.0, 1.0 - normal. getFitness_entropy ());
               if (isNan (pVal))
       		      cout << '\t' << NaN 
       		           << '\t' << NaN 
@@ -129,7 +129,7 @@ struct ThisApplication : Application
           else if (const NominAttr1* nomin = attrRaw->asNominAttr1 ())
           {
             unique_ptr<const Categorical> cat (nomin->getCategorical (sample));
-    	      cout << "  " << endl;
+    	      cout << "  ";
             cat->print (cout);
     	    }
     	  }
