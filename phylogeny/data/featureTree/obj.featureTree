@@ -1,0 +1,17 @@
+
+
+Tree from file: obj.tree
+# Objects:              297
+# Interior nodes:       235
+# Common core features: 0
+# Singleton features:   0
+# Other features:       907
+Genome size ave.:       487.404
+Time: Used
+Lambda_0          = 4.517e-01
+Initial time      = 7.409e-02
+timeOptimFrac     = 1.000e+00
+# Root core features = 90
+Tree length min.  = 0
+Tree length       = 73032
+
