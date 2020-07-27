@@ -1419,7 +1419,7 @@ void NominAttr1::rebuildCategMap ()
 
 Categorical* NominAttr1::getCategorical (const Sample &sample) const
 {
-  auto* cat = new Categorical ();
+  auto cat = new Categorical ();
 
   MVector categ2num (categories. size (), 0);
 //categ2num. putAll (0.0);
