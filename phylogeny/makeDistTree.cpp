@@ -123,6 +123,7 @@ struct ThisApplication : Application
 	  addFlag ("noqual", "Do not compute quality statistics");
 	  addKey ("output_tree", "Resulting tree");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
+	  addFlag ("feature_tree_time", "Add time to <output_feature_tree>");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("leaf_errors", "Output Data Master file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " for each leaf");
 	  addKey ("arc_existence", "Output Data Master  file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
@@ -274,6 +275,7 @@ struct ThisApplication : Application
 		const string output_tree         = getArg ("output_tree");
 		const string output_dissim_coeff = getArg ("output_dissim_coeff");
 		const string output_feature_tree = getArg ("output_feature_tree");
+		const bool   feature_tree_time   = getFlag ("feature_tree_time");
 		const string leaf_errors         = getArg ("leaf_errors");
 		const string arc_existence       = getArg ("arc_existence");
 		const string dissim_request      = getArg ("dissim_request");
@@ -785,7 +787,7 @@ struct ThisApplication : Application
     
     tree->saveFile (output_tree); 
     tree->saveDissimCoeffs (output_dissim_coeff);
-    tree->saveFeatureTree (output_feature_tree);
+    tree->saveFeatureTree (output_feature_tree, feature_tree_time);
 
 
     if (! output_data. empty ())
