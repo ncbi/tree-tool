@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Print objects sorted by with criterion descending"
+  echo "Print objects sorted by criterion descending"
   echo "#1: Distance tree"
   exit 1
 fi
