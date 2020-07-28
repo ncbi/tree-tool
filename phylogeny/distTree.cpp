@@ -3428,15 +3428,14 @@ DistTree::DistTree (const string &newickFName)
     ifstream f (newickFName);
     const Newick newick (f, *this);
   }
-
   ASSERT (root);
   ASSERT (nodes. front () == root);
+
   if (! static_cast <const DTNode*> (root) -> asSteiner ())
     throw runtime_error ("One-node tree");
   const_static_cast <DTNode*> (root) -> len = NaN;
-    
+  fixTransients ();
   finishChanges ();
-
   setName2leaf ();        
 }
 
