@@ -1,6 +1,8 @@
-#define VERSION "1.1.10"
+#define VERSION "1.1.11"
 
 
+// 1.1.12 07/28/2020  Newick import removes transient nodes; printDistTree: 'itree' --> 'dm'
+// 1.1.11 07/27/2020  improvement of Func::findZero(); statDistTree: length precision is increased; DistTree::saveFeatureTree(withTime); Feature::getLambda()
 // 1.1.10 07/18/2020  makeDistTree -min_arc_prob; DistTree::reroot() does not use 3*SD
 // 1.1.9  06/23/2020  DistTree::mergeDissimAttrs() bug affecting indiscernibles
 // 1.1.8  06/21/2020  variance_min > 0 => indiscernibles are used, otherwise max_degree is very large
