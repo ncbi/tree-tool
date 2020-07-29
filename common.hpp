@@ -306,12 +306,12 @@ inline bool boolPow (bool x, bool power)
 
 // ebool - extended bool
 
-enum ebool {EFALSE = false, 
-            ETRUE = true, 
-            UBOOL = true + 1};
+enum ebool {efalse = false, 
+            etrue = true, 
+            enull = true + 1};
 
 inline ebool toEbool (bool b)
-  { return b ? ETRUE : EFALSE; }
+  { return b ? etrue : efalse; }
 
 
 inline bool operator<= (ebool a, ebool b)
@@ -320,10 +320,10 @@ inline bool operator<= (ebool a, ebool b)
   }
 
 inline void toggle (ebool &b)
-  { if (b == ETRUE)
-      b = EFALSE;
-    else if (b == EFALSE)
-      b = ETRUE;
+  { if (b == etrue)
+      b = efalse;
+    else if (b == efalse)
+      b = etrue;
   }
 
 

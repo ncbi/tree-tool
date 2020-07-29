@@ -67,11 +67,11 @@ void savePhen (size_t from,
       {       
         const ebool value = boolAttr->getBool (i);
       #if 1
-        if (value != EFALSE)
-           f << attr->name << ' ' << (value == ETRUE ? '0' : '1') << endl;
+        if (value != efalse)
+           f << attr->name << ' ' << (value == etrue ? '0' : '1') << endl;
       #else
-        if (value != UBOOL)
-          f << attr->name << ':' << (value == ETRUE ? '1' : '0') << endl;
+        if (value != null)
+          f << attr->name << ':' << (value == etrue ? '1' : '0') << endl;
       #endif
       }
       else if (const NominAttr1* nominAttr = attr->asNominAttr1 ())

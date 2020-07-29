@@ -610,7 +610,7 @@ public:
     { return new JsonBoolean (getBool (objNum), parent, name); }
   Real getReal (size_t objNum) const final
     { const ebool v = getBool (objNum);
-      return v == UBOOL ? NumAttr1::missing : (Real) v; 
+      return v == enull ? NumAttr1::missing : (Real) v; 
     }
     
   virtual Value getBool (size_t objNum) const = 0;
@@ -661,11 +661,11 @@ public:
     { return "Boolean"; }
   bool isConstant () const final;
   void appendObj () final
-    { values. push_back (UBOOL); }
+    { values. push_back (enull); }
   bool isMissing (size_t objNum) const final
-    { return values [objNum] == UBOOL; }
+    { return values [objNum] == enull; }
   void setMissing (size_t objNum) final
-    { values [objNum] = UBOOL; }
+    { values [objNum] = enull; }
   string value2str (size_t objNum) const final
     { return values [objNum] ? "1" : "0"; }
   Value getBool (size_t objNum) const final 
@@ -2045,13 +2045,13 @@ struct Bernoulli : Distribution
   Real pdfVariable () const final
     { return pmf (variable); }
   void randVariable () const final
-    { variable = randProb () <= p ? ETRUE : EFALSE; }
+    { variable = randProb () <= p ? etrue : efalse; }
 
   Prob pmf (An::Value x) const
     { switch (x)
-      { case ETRUE:  return p;
-        case EFALSE: return 1 - p;
-        case UBOOL:  return NaN;
+      { case etrue:  return p;
+        case efalse: return 1 - p;
+        case enull:  return NaN;
       }
       throw runtime_error ("Unknown ebool value");
     }

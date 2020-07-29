@@ -1051,7 +1051,7 @@ bool IntAttr1::isConstant () const
 
 // BoolAttr1
 
-const BoolAttr1::Value BoolAttr1::missing = UBOOL;
+const BoolAttr1::Value BoolAttr1::missing = enull;
 
 
 
@@ -1093,9 +1093,9 @@ void BoolAttr1::getStat (const Sample &sample,
   for (Iterator it (sample); it ();)  
   	switch (getBool (*it))
   	{
-  	  case EFALSE: stat [0] ++; break;
-  	  case ETRUE:  stat [1] ++; break;
-  	  case UBOOL:  stat [2] ++; break;
+  	  case efalse: stat [0] ++; break;
+  	  case etrue:  stat [1] ++; break;
+  	  case enull:  stat [2] ++; break;
   	  default: ERROR;
   	}
 }
@@ -1110,7 +1110,7 @@ Prob BoolAttr1::getProb (const Sample &sample) const
   {
   	const ebool x = getBool (*it);
   	n += it. mult;
-  	if (x == ETRUE)
+  	if (x == etrue)
   	  s += it. mult;
   }
   return s / n;
@@ -1124,7 +1124,7 @@ Prob BoolAttr1::getProb (const Sample &sample) const
 ExtBoolAttr1::ExtBoolAttr1 (const string &name_arg,
                             Dataset &ds_arg) 
 : BoolAttr1 (name_arg, ds_arg)
-, values (ds. objs. size (), UBOOL)
+, values (ds. objs. size (), enull)
 { 
   values. reserve (ds. objs. capacity ());
 }
@@ -1155,8 +1155,8 @@ void ExtBoolAttr1::qc () const
 
 bool ExtBoolAttr1::isConstant () const
 { 
-  ebool x_min = ETRUE;
-  ebool x_max = EFALSE;
+  ebool x_min = etrue;
+  ebool x_max = efalse;
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
@@ -1373,7 +1373,7 @@ Vector<NumAttr1*> NominAttr1::toNumAttr1 (Dataset &ds_arg) const
         {
           ExtBoolAttr1* a = var_cast (vec [i] -> asExtBoolAttr1 ());
           ASSERT (a);
-          (*a) [objNum] = (value == i ? ETRUE : EFALSE);
+          (*a) [objNum] = (value == i ? etrue : efalse);
         }
       }
   }

@@ -140,13 +140,13 @@ void Phyl::qc () const
 	{
  	  QC_ASSERT (parent2core [false] [i]. core <= parent2core [true] [i]. core);
  	//QC_IMPLY (getFeatureTree (). allTimeZero, fabs (parent2core [false] [i]. treeLen - parent2core [true] [i]. treeLen) <= 1.001); ??
- 	  QC_ASSERT (! (   parent2core [false] [i]. core == UBOOL
- 	                && parent2core [true]  [i]. core == UBOOL
+ 	  QC_ASSERT (! (   parent2core [false] [i]. core == enull
+ 	                && parent2core [true]  [i]. core == enull
  	               )
  	         );
  	  if (getFeatureTree (). coreSynced)
  	  {
-	    QC_IMPLY (   parent2core [false] [i]. core  != UBOOL
+	    QC_IMPLY (   parent2core [false] [i]. core  != enull
   	    	      && parent2core [false] [i]. core == parent2core [true] [i]. core,
   	    	      (int) core [i] == (int) parent2core [false] [i]. core
   	    	     );
@@ -235,7 +235,7 @@ bool Phyl::feature2core (size_t featureIndex) const
 { 
   const bool parentCore = feature2parentCore (featureIndex);
 	const ebool c = parent2core [parentCore] [featureIndex]. core;
-  return c == UBOOL ? ! getFeatureTree (). preferGain : (bool) c; 
+  return c == enull ? ! getFeatureTree (). preferGain : (bool) c; 
 }
 
 
@@ -422,7 +422,7 @@ void Phyl::assignFeature (size_t featureIndex)
 		  distance [thisCore] =   childrenCoreDistance [thisCore] 
 		                        + feature2weight (featureIndex, thisCore, parentCore);
 		const ebool featureCore = eqReal (distance [false], distance [true])
-		                            ? UBOOL   
+		                            ? enull   
 		                            : (ebool) (distance [true] < distance [false]);
 		setCoreEval (featureIndex, parentCore, CoreEval (min (distance [false], distance [true]), featureCore));
 	}
@@ -1070,7 +1070,7 @@ void Genome::init (const Feature2index &feature2index)
 		ASSERT (contains (feature2index, gf. id));
 		const size_t featureIndex = feature2index. at (gf. id);
 		for (const bool parentCore : {false, true})
-	    parent2core [parentCore] [featureIndex]. core = ETRUE;
+	    parent2core [parentCore] [featureIndex]. core = etrue;
 	  core [featureIndex] = true;
     optionalCore [featureIndex] = gf. optional;
 	}
@@ -1093,7 +1093,7 @@ void Genome::init (const Vector<size_t> &featureBatch)
       coreSetIndex = coreSet. binSearch (gf);
     }
   	for (const bool parentCore : {false, true})
-      parent2core [parentCore] [i]. core = (coreSetIndex == no_index ? EFALSE : ETRUE);
+      parent2core [parentCore] [i]. core = (coreSetIndex == no_index ? efalse : etrue);
     core [i] = (coreSetIndex != no_index);
     optionalCore [i] = (coreSetIndex == no_index ? false : coreSet [coreSetIndex]. optional);
   }
@@ -1242,7 +1242,7 @@ void Genome::assignFeature (size_t featureIndex)
   	for (const bool parentCore : {false, true})
     {
     	const ebool core_old = parent2core [parentCore] [featureIndex]. core;
-    	ASSERT (core_old != UBOOL);
+    	ASSERT (core_old != enull);
     	setCoreEval (featureIndex, parentCore, CoreEval (feature2weight (featureIndex, core_old, parentCore), core_old));
     }
 }

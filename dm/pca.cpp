@@ -188,7 +188,7 @@ struct ThisApplication : Application
         if (eValue <= outlierEValue * 10)  // PAR
           const_cast <Obj*> (ds. objs [*it]) -> comment += string ("  [E-value = ") + real2str (eValue, eValueDecimals) + "]";
         (*outlierScore) [*it] = eValue;
-        (*outlier) [*it] = (eValue <= outlierEValue ? ETRUE : EFALSE);  
+        (*outlier) [*it] = (eValue <= outlierEValue ? etrue : efalse);  
         if ((*outlier) [*it])
         {
           if (clusteringDir. empty () || ! jRoot)

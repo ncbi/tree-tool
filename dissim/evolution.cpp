@@ -261,7 +261,7 @@ struct Func_snps2time : Func1
     array<Real,2/*bool*/> lambda;
       // > 0
     ebool alleles;
-      // UBOOL <=> heterozygous
+      // enull <=> heterozygous
     Real sum () const
       { return   lambda [0] 
                + lambda [1]; 
@@ -293,10 +293,10 @@ struct Func_snps2time : Func1
         if (i2 != no_index && vec2 [i2]. optional)
           continue;
         const ebool alleles = (i1 != no_index && i2 != no_index
-                                 ? ETRUE
+                                 ? etrue
                                  : i1 == no_index && i2 == no_index
-                                   ? EFALSE
-                                   : UBOOL
+                                   ? efalse
+                                   : enull
                               );
         snps << Snp {f. lambda, alleles};
         mv << f. lambdaSum ();
@@ -328,7 +328,7 @@ struct Func_snps2time : Func1
         const Real lambdaSum = snp. sum ();
         const Real a = exp (t * lambdaSum);
         ASSERT (a > 1.0);
-        const Real b = snp. alleles == UBOOL
+        const Real b = snp. alleles == enull
                          ? - lambdaSum / (a - 1.0)
                          : lambdaSum / ((lambdaSum / snp. lambda [(bool) snp. alleles] - 1.0) * a + 1.0);  
         s += b;

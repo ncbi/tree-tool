@@ -246,7 +246,7 @@ struct ThisApplication : Application
           bins. back (). start = score_prev;
         if (cluster != cluster_prev)
           bins << Bin (score);
-        if (classAttr->getBool (*it) == ETRUE)
+        if (classAttr->getBool (*it) == etrue)
           bins. back (). classMult++;
         score_prev = score;
         cluster_prev = cluster;

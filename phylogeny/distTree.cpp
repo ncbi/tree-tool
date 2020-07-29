@@ -2121,9 +2121,9 @@ bool Change::apply ()
   auto fromAttr  = new ExtBoolAttr1 ("from",  ds);
   auto toAttr    = new ExtBoolAttr1 ("to",    ds);
   auto interAttr = new ExtBoolAttr1 ("inter", ds);
-  fromAttr ->setAll (EFALSE);
-  toAttr   ->setAll (EFALSE);
-  interAttr->setAll (EFALSE);
+  fromAttr ->setAll (efalse);
+  toAttr   ->setAll (efalse);
+  interAttr->setAll (efalse);
   Tree::LcaBuffer buf;
   FFOR (size_t, objNum, subgraph. subPaths. size ())
   {
@@ -2131,14 +2131,14 @@ bool Change::apply ()
     const VectorPtr<Tree::TreeNode>& path = subgraph. getPath (subPath, buf);
     if (path. contains (from))
     {
-      (*fromAttr) [objNum] = ETRUE;
+      (*fromAttr) [objNum] = etrue;
       const bool toVia    = path. contains (to);
       const bool interVia = path. contains (inter);
       ASSERT (toVia != interVia);
       if (toVia)
-        (*toAttr) [objNum] = ETRUE;
+        (*toAttr) [objNum] = etrue;
       if (interVia)
-        (*interAttr) [objNum] = ETRUE;
+        (*interAttr) [objNum] = etrue;
     }
     else
     {
@@ -2147,8 +2147,8 @@ bool Change::apply ()
       ASSERT (toUsed == path. contains (inter));
       if (toUsed)
       {
-        (*toAttr)    [objNum] = ETRUE;
-        (*interAttr) [objNum] = ETRUE;
+        (*toAttr)    [objNum] = etrue;
+        (*interAttr) [objNum] = etrue;
       }
     }
     const Dissim& dissim = tree. dissims [subPath. dissimNum];
@@ -4107,7 +4107,7 @@ void DistTree::mergeDissimAttrs ()
       Real dissim_sum = 0.0;
       Real mult_sum_  = 0.0;
       Real x = NaN;
-      ebool allZero = UBOOL;
+      ebool allZero = enull;
       for (const DissimType& dt : dissimTypes)
         if (   dt. dissimAttr->matr. get (false, i, j, x) 
             && x < inf
@@ -4115,16 +4115,16 @@ void DistTree::mergeDissimAttrs ()
         {
           ASSERT (x >= 0.0);
           if (x)
-            allZero = EFALSE;
-          else if (allZero == UBOOL)
-            allZero = ETRUE;            
+            allZero = efalse;
+          else if (allZero == enull)
+            allZero = etrue;            
           ASSERT (dt. scaleCoeff > 0.0);
           const Real mult = 1.0/*temporary*/ / sqr (dt. scaleCoeff);  
           dissim_sum += mult * x * dt. scaleCoeff;
           mult_sum_  += mult;
         }
       ASSERT (mult_sum_ >= 0.0);
-      if (allZero == ETRUE)  
+      if (allZero == etrue)  
         var_cast (dissimAttr) -> matr. put (false, i, j, 0.0);  // To collapse()
       else if (mult_sum_)
       {
@@ -6292,7 +6292,7 @@ size_t DistTree::optimizeLenNode ()
     {
       auto attr = new ExtBoolAttr1 ("X" + toString (i + 1), starDs);;
       sp << attr;
-      attr->setAll (EFALSE);
+      attr->setAll (efalse);
     }
     FFOR (size_t, objNum, subgraph. subPaths. size ())
     {
@@ -6302,7 +6302,7 @@ size_t DistTree::optimizeLenNode ()
       FFOR (size_t, i, star. arcNodes. size ())
         if (path. contains (static_cast <const TreeNode*> (star. arcNodes [i])))
       //if (star. arcNodes [i] -> pathDissimNums. containsFast (wholeObjNum))  // needs sorting ??
-          (* const_static_cast <ExtBoolAttr1*> (sp [i])) [objNum] = ETRUE;        
+          (* const_static_cast <ExtBoolAttr1*> (sp [i])) [objNum] = etrue;        
       var_cast (starDs. objs [objNum]) -> mult = dissims [wholeObjNum]. mult; 
       (*targetAttr) [objNum] = dissims [wholeObjNum]. target - subPath. dist_hat_tails;
     }

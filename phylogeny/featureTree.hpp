@@ -157,7 +157,7 @@ struct Phyl : Tree::TreeNode
 	{
 		float treeLen {0.0};
 		  // >= 0
-		ebool core {EFALSE};
+		ebool core {efalse};
 		
 		CoreEval (float treeLen_arg,
 		          ebool core_arg)

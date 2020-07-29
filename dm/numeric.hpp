@@ -382,19 +382,19 @@ string prob2str (Prob x);
 inline Prob ebool2prob (ebool b)
   { switch (b)
 		{ 
-			case ETRUE:  return 1.0;
-			case EFALSE: return 0.0;
-			case UBOOL:  return 0.5;
+			case etrue:  return 1.0;
+			case efalse: return 0.0;
+			case enull:  return 0.5;
 		}
 		throw runtime_error ("Never call");
   }
 
 inline ebool prob2ebool (Prob p)
   { if (eqReal (p, 0.5))
-  	  return UBOOL;
+  	  return enull;
   	if (p < 0.5)
-  		return EFALSE;
-  	return ETRUE;
+  		return efalse;
+  	return etrue;
   }
 
 inline Real convexCombination (Prob p,
