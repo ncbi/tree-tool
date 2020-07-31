@@ -7971,7 +7971,7 @@ Dataset DistTree::getLeafErrorDataset (bool criterionAttrP,
   ASSERT (optimizable ());
   
   Dataset ds;
-  ds. objs. reserve (name2leaf. size () / 10 + 1);  // PAR
+  ds. objs. reserve (name2leaf. size ());  
   PositiveAttr1* criterionAttr   = nullptr;
   PositiveAttr1* deformationAttr = nullptr;
   if (criterionAttrP)
