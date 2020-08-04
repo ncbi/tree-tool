@@ -8,7 +8,7 @@ if [ $# -ne 6 ]; then
   echo "#3: SQL server name"
   echo "#4: database name on the SQL server"
   echo "#5: complete path to a directory for bulk insert into the database"
-  echo "#6: path in Universal Naming Convention to the bulk directory #6"
+  echo "#6: path in Universal Naming Convention to the bulk directory #5"
   exit 1
 fi
 INC=$1
