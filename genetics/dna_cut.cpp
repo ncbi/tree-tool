@@ -1,4 +1,4 @@
-// dna_excide.cpp
+// dna_cut.cpp
 
 /*===========================================================================
 *
@@ -49,20 +49,22 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Update a DNA sequence by excising a segment out of it")
+    : Application ("Cut a segment out of a DNA sequence")
     {
-  	  addPositional ("in", "DNA FASTA file with a DNA sequence");
-  	  addPositional ("excise_start", "Start position of a segment to excise, 1-based");
-  	  addPositional ("excise_stop", "Stop position of a segment to excise, >= start position");
+  	  addPositional ("in", "DNA FASTA file with one sequence");
+  	  addPositional ("start", "Start position of a segment, 1-based");
+  	  addPositional ("stop", "Stop position of a segment, >= start position");
+  	  addFlag ("excise", "Excise the segment, otherwise leave the segment");
     }
 
 
 	
 	void body () const final
   {
-	  const string inFName  = getArg ("in");
-	        size_t start    = str2<size_t> (getArg ("excise_start"));
-	  const size_t stop     = str2<size_t> (getArg ("excise_stop"));
+	  const string inFName = getArg ("in");
+	        size_t start   = str2<size_t> (getArg ("start"));
+	  const size_t stop    = str2<size_t> (getArg ("stop"));
+	  const bool excise    = getFlag ("excise");
 	  
 	  QC_ASSERT (start >= 1);
 	  QC_ASSERT (stop >= start);
@@ -79,8 +81,11 @@ struct ThisApplication : Application
     ASSERT (dna);
     dna->qc ();    
     QC_ASSERT (stop <= dna->seq. size ());
-    dna->seq = dna->seq. substr (0, start) + dna->seq. substr (stop);
-    dna->saveFile (inFName);
+    dna->seq = (excise 
+                  ? dna->seq. substr (0, start) + dna->seq. substr (stop)
+                  : dna->seq. substr (start, stop - start)
+               );
+    dna->saveText (cout);
   }
 };
 

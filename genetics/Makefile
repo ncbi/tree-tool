@@ -18,7 +18,7 @@ all:	\
 	dna2orfs \
 	dna2stat \
 	dna_coverage \
-	dna_excise \
+	dna_cut \
 	dna_trim \
 	extractFastaDna \
 	extractFastaProt \
@@ -93,10 +93,10 @@ dna_coverage:	$(dna_coverageOBJS)
 	$(CXX) -o $@ $(dna_coverageOBJS) $(LIBS) 
 	$(ECHO)
 
-dna_excise.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-dna_exciseOBJS=dna_excise.o $(SEQ_OBJ)
-dna_excise:	$(dna_exciseOBJS)
-	$(CXX) -o $@ $(dna_exciseOBJS) $(LIBS) 
+dna_cut.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_cutOBJS=dna_cut.o $(SEQ_OBJ)
+dna_cut:	$(dna_cutOBJS)
+	$(CXX) -o $@ $(dna_cutOBJS) $(LIBS) 
 	$(ECHO)
 
 dna_trim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
