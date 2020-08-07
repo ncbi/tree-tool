@@ -280,7 +280,8 @@ void Schema::printTableDdl (ostream &os,
   {
     const string table (getColumnName (nullptr));
     // "xml_num_", "id_" ??
-    os << "create table " + table << endl << '(' << endl
+    os << "drop   table " + table << ";" << endl 
+       << "create table " + table << endl << '(' << endl
        << "  xml_num_ int  not null" << endl
        << ", id_ bigint  not null" << endl;  
     const string refTable (curTable ? curTable->getColumnName (nullptr) : "");
@@ -290,10 +291,10 @@ void Schema::printTableDdl (ostream &os,
     printColumnDdl (os, curTable);  
     os << ");" << endl;
     os << "alter table " << table << " add constraint " << table << "_pk primary key (xml_num_, id_);" << endl;
+    os << "grant select on " << table << " to public;" << endl;
     if (! refTable. empty ())
     {
-      os << "grant select on " << table << " to public;" << endl;
-      os << "create index " << table << "_idx on " << table << "(xml_num_,id_);" << endl;
+      os << "create index " << table << "_idx on " << table << "(xml_num_," << refTable << "_id_);" << endl;
       os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_);" << endl;
     }
     os << endl << endl;
