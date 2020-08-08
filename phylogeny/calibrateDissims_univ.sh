@@ -4,8 +4,6 @@ source $THIS/../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "Output: hmm-univ.stat, positiveAverage.out"
   echo "#1: input .dm-file without '.dm'"
- #echo "#2: file with universal attrbutes or '' if all attributes are universal"
- #echo "#3: weight factor of universal attributes, >= 1.0"
   echo "#2: delete hybrids (0/1)"
   echo "#3: dissimilarity power (> 0)"
   echo "#4: outlierSEs"
@@ -15,8 +13,6 @@ if [ $# -ne 7 ]; then
   exit 1
 fi
 INPUT=$1
-#UNIV="$2"
-#UNIV_WEIGHT=$3
 DELETE_HYBRIDS=$2
 DISSIM_POWER=$3
 OUTLIER_SES=$4
@@ -26,7 +22,6 @@ PHEN=$7
 
 
 echo ""
-#echo "univ_weight = $UNIV_WEIGHT"
 echo "power = $DISSIM_POWER"
 echo "outlier_SEs = $OUTLIER_SES"
 
@@ -35,14 +30,10 @@ TMP=`mktemp`
 echo $TMP 
 
 
-#UNIV_PAR=""
-#if [ $UNIV ]; then
-#  UNIV_PAR="-universal $UNIV"
-#fi
 # PAR
 $THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -output_dissim $TMP.pairs > positiveAverage.out
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
-$THIS/../dm/pairs2attr2 $TMP.pairs 1 cons 6  -distance > $TMP.dm
+$THIS/../dm/pairs2dm $TMP.pairs 1 cons 6  -distance > $TMP.dm
 #cp $TMP.dm data.dm 
 
 

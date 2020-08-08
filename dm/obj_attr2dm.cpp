@@ -1,4 +1,4 @@
-// pairs2Boolean.cpp
+// obj_attr2dm.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Convert pairs of objects to a Boolean attribute
+*   Convert object-attribute pairs to a Data Master file with Boolean attributes
 *
 */
 
@@ -73,7 +73,7 @@ void parseLine (string line,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert Boolean attributes to a " + dmSuff + "-file")
+    : Application ("Convert object-attribute pairs to a " + dmSuff + "-file with Boolean attributes")
     {
       version = VERSION;
   	  addPositional ("pairs", "File with lines: <obj> <attr>");

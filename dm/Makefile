@@ -38,8 +38,8 @@ all:	\
 	mds \
 	normalCdf \
 	numeric_test \
-	pairs2attr2 \
-	pairs2Boolean \
+	obj_attr2dm \
+	pairs2dm \
 	pca \
 	pca2clusters \
 	positiveAverage \
@@ -219,16 +219,16 @@ numeric_test:	$(numeric_testOBJS)
 	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
 	$(ECHO)
 
-pairs2attr2.o:  $(DM_HPP) 
-pairs2attr2OBJS=pairs2attr2.o $(DM_OBJ) 
-pairs2attr2:	$(pairs2attr2OBJS)
-	$(CXX) -o $@ $(pairs2attr2OBJS) $(LIBS)
+obj_attr2dm.o:  $(DM_HPP) 
+obj_attr2dmOBJS=obj_attr2dm.o $(DM_OBJ) 
+obj_attr2dm:	$(obj_attr2dmOBJS)
+	$(CXX) -o $@ $(obj_attr2dmOBJS) $(LIBS)
 	$(ECHO)
 
-pairs2Boolean.o:  $(DM_HPP) 
-pairs2BooleanOBJS=pairs2Boolean.o $(DM_OBJ) 
-pairs2Boolean:	$(pairs2BooleanOBJS)
-	$(CXX) -o $@ $(pairs2BooleanOBJS) $(LIBS)
+pairs2dm.o:  $(DM_HPP) 
+pairs2dmOBJS=pairs2dm.o $(DM_OBJ) 
+pairs2dm:	$(pairs2dmOBJS)
+	$(CXX) -o $@ $(pairs2dmOBJS) $(LIBS)
 	$(ECHO)
 
 pca.o:  $(PREDICT_HPP) 

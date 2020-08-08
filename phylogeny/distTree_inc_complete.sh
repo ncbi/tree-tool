@@ -35,7 +35,7 @@ rm $INC/dissim.raw
 
 echo ""
 echo "data.dm ..."
-$THIS/../dm/pairs2attr2 $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
+$THIS/../dm/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
 set +o errexit
 grep -wic 'nan' $INC/../data.dm

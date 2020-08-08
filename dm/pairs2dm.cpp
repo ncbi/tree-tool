@@ -1,4 +1,4 @@
-// pairs2attr2.cpp
+// pairs2dm.cpp
 
 /*===========================================================================
 *
@@ -85,7 +85,7 @@ double parseLine (string line,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert two-way attributes to a " + dmSuff + "-file")
+    : Application ("Convert object pairs to a " + dmSuff + "-file with a two-way attribute")
     {
       version = VERSION;
   	  addPositional ("pairs", "File with lines: <obj1> <obj2> <attr1> <attr2> ...");
