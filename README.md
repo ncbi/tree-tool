@@ -6,4 +6,4 @@ Scripts to build a large tree incrementally.
 
 General data analysis tools.
 
-## See [Documentation at wiki](https://github.com/vbrover/dm/wiki)
+## [Documentation at wiki](https://github.com/vbrover/dm/wiki)
