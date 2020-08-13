@@ -25,7 +25,8 @@ mkdir $TMP.dmp
 cd $TMP.dmp
 
 
-wget https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz  -O $TMP.dmp/taxdump.tar.gz
+wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz  -O $TMP.dmp/taxdump.tar.gz
+#    https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz ??
 tar -xzf taxdump.tar.gz
 
 if [ ! -e nodes.dmp ]; then
