@@ -46,13 +46,13 @@ endif
 COMMON_RAW_HPP = $(CPP_DIR)/common.hpp $(CPP_DIR)/common.inc
 COMMON_HPP = $(COMMON_RAW_HPP) $(CPP_DIR)/version.inc
 COMMON = $(CPP_DIR)/common
-$(CPP_DIR)/common.o:	$(COMMON_HPP)
-$(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_HPP) 
-$(CPP_DIR)/asn.o:	$(CPP_DIR)/asn.hpp $(COMMON_HPP)
+$(CPP_DIR)/common.o:	$(COMMON_RAW_HPP)
+$(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_RAW_HPP) 
+$(CPP_DIR)/asn.o:	$(CPP_DIR)/asn.hpp $(COMMON_RAW_HPP)
 
 
 XML_DIR=$(CPP_DIR)/xml
-$(XML_DIR)/xml.o: $(XML_DIR)/xml.hpp $(COMMON_HPP)
+$(XML_DIR)/xml.o: $(XML_DIR)/xml.hpp $(COMMON_RAW_HPP)
 
 
 DM_DIR = $(CPP_DIR)/dm
@@ -88,12 +88,11 @@ FEATURE_TREE = $(PHYL_DIR)/featureTree $(DM) $(CPP_DIR)/graph
 
 
 GEN_DIR = $(CPP_DIR)/genetics
-$(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_HPP)
-$(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_HPP)
+$(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_RAW_HPP)
+$(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_RAW_HPP)
 SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o 
 $(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
 HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
-#$(GEN_DIR)/GenomeTab.o:	$(GEN_DIR)/GenomeTab.hpp $(COMMON_HPP)
 
 
 DISSIM_DIR = $(CPP_DIR)/dissim
@@ -107,38 +106,29 @@ $(NW_DIR)/raw_scoremat.o:
 	cc  -malign-double -fno-math-errno -fdiagnostics-color=always  -O3 -c -o $(NW_DIR)/raw_scoremat.o $(NW_DIR)/raw_scoremat.c
 
 $(DISSIM_DIR)/evolution.o:	$(DISSIM_DIR)/evolution.hpp $(NUMERIC_HPP)
-$(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(DISSIM_DIR)/evolution.hpp $(COMMON_HPP)
+$(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(DISSIM_DIR)/evolution.hpp $(COMMON_RAW_HPP)
 ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
 
 
-#GEN_NCBI_DIR = $(CODE_DIR)/genetics
+
+ifdef AT_NCBI
+  AMRFINDER_DIR=$(CODE_DIR)/amrfinder
+  $(AMRFINDER_DIR)/gff.o: $(AMRFINDER_DIR)/gff.hpp $(COMMON_RAW_HPP)
+  $(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_RAW_HPP)
 
 
-AI_DIR = $(CPP_DIR)/AI
-$(AI_DIR)/expr.o:	$(AI_DIR)/expr.hpp $(COMMON_HPP)
+  DATABASE_DIR = $(CODE_DIR)/database
+  COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
+  $(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
+  $(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
+  $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
 
+  $(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
+  GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq $(DATABASE_DIR)/db
 
-LANG_DIR = $(CODE_DIR)/lang
-$(LANG_DIR)/cfgrammar.o: $(LANG_DIR)/cfgrammar.hpp $(COMMON_HPP) $(CPP_DIR)/graph.hpp
-$(LANG_DIR)/language.o: $(COMMON_HPP) $(LANG_DIR)/language.hpp $(LANG_DIR)/utf8.hpp
-$(LANG_DIR)/preftree.o: $(COMMON_HPP) $(LANG_DIR)/preftree.hpp 
+  GenBank_LIB =  xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache  bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect  
+  # $(SRAREAD_LIBS) $(XFORMAT_LIBS) 
+  #  ncbi_xloader_sra  xid_wgs   ncbi_id2proc_wgs 
+  GenBank_LIBS = $(DL_LIBS)  -lz  $(BERKELEYDB_LIBS) -lxutil $(SDBAPI_LIBS) $(SYBASE_LIBS) 
+endif
 
-
-AMRFINDER_DIR=$(CODE_DIR)/amrfinder
-$(AMRFINDER_DIR)/gff.o: $(AMRFINDER_DIR)/gff.hpp $(COMMON_HPP)
-$(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_HPP)
-
-
-DATABASE_DIR = $(CODE_DIR)/database
-COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
-$(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
-$(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
-$(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
-
-$(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
-GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq $(DATABASE_DIR)/db
-
-GenBank_LIB =  xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache  bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect  
-# $(SRAREAD_LIBS) $(XFORMAT_LIBS) 
-#  ncbi_xloader_sra  xid_wgs   ncbi_id2proc_wgs 
-GenBank_LIBS = $(DL_LIBS)  -lz  $(BERKELEYDB_LIBS) -lxutil $(SDBAPI_LIBS) $(SYBASE_LIBS) 
