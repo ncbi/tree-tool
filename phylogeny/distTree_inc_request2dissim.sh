@@ -36,7 +36,7 @@ else
 		ls $INC/dr > $INC/dr.list
 		while [ -s $INC/dr.list ]; do
 		  $THIS/../grid_wait.sh 1
-  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
+  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f %Q%Q $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
   		$THIS/../qstat_wait.sh 2000 1	
  			set +o errexit	
 		  ls $INC/dr.out | grep    '\.log$' | sed 's/\.log$//1' > $INC/dr.bad

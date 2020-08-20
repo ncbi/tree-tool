@@ -19,7 +19,7 @@ DIR=$1/search/$2
 LOG=$1/log/$2
 
 
-$1/request2dissim.sh $DIR/request $DIR/dissim.add $LOG &> $LOG.request2dissim
+$1/request2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.request2dissim
 if [ ! -s $DIR/dissim.add ]; then
   echo "Empty $DIR/dissim.add" > $LOG
   exit 1
