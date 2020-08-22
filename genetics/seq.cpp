@@ -497,7 +497,6 @@ size_t nuc2num (char wildNucleotide)
   if (charInSet (c, dnaWildcards))
     return 4;
   NEVER_CALL;
-  return no_index;
 }
 
 
@@ -3340,7 +3339,6 @@ size_t aa2num (char wildAminoacid)
     return 21;
 
   NEVER_CALL;
-  return no_index;
 }
 
 

@@ -384,7 +384,6 @@ Real Series::get (Real maxError) const
 			return s + (integral (x) + integral (x + 1)) / 2;
 	}
   NEVER_CALL;
-  return NaN;
 }
 
 

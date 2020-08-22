@@ -44,6 +44,7 @@ using namespace DM_sp;
 
 
 
+
 namespace FeatureTree_sp
 {
 
@@ -722,7 +723,7 @@ public:
       return a->better (b);
     }
   virtual bool better (const Change* /*other*/) const 
-    { NEVER_CALL; return false; }
+    { NEVER_CALL; }
 };
 
 
