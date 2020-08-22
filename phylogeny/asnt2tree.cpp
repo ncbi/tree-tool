@@ -80,7 +80,7 @@ struct TreeAsn : Asn_sp::Asn
     	}
     	
     	Real len = NaN;
-    	if (! features [distNum]. empty ())
+    	if (parentNode && ! features [distNum]. empty ())
     	{
     	  len = max (0.0, str2real (features [distNum]));
     	  ASSERT (len >= 0.0);
