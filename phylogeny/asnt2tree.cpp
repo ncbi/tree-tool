@@ -39,8 +39,8 @@
 using namespace Common_sp;
 #include "../dm/numeric.hpp"
 using namespace DM_sp;
-#include "../asn.hpp"
 #include "distTree.hpp"
+#include "asn.hpp"
 using namespace DistTree_sp;
 
 

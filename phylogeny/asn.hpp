@@ -36,7 +36,7 @@
 #define ASN_HPP
 
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
 
 
