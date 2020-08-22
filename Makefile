@@ -16,7 +16,6 @@ all:	\
   csv2tab \
   extractPairs \
   file2hash \
-  graph_test \
   list2pairs \
   mergePairs \
   selColumn \
