@@ -607,7 +607,8 @@ void DTNode::qc () const
 
   if (graph)
   {
-    QC_ASSERT ((bool) getParent () == ! isNan (len));
+    QC_IMPLY (getParent (), ! isNan (len));
+    QC_IMPLY (! getParent (), isNan (len));
     if (! childrenDiscernible ())
     {
     //QC_ASSERT (! DistTree_sp::variance_min);
