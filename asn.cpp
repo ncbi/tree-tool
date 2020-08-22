@@ -21,8 +21,8 @@ public:
 	  : asn (asn_arg)
 	  { asn. expect ("{"); }
  ~Brace ()
-	  { if (! uncaught_exception ())
-	  	  asn. expect ("}"); 
+	  { if (! asn. expectTry ("}"))
+      	errorExit (asn. in. errorText (strQuote ("}")). c_str ());
 	  }
 };
 
@@ -127,31 +127,31 @@ struct Nodes : AsnList
 
 private:
 	void readElement () final
-	  { prog ();
-	  //if (prog. n >= 10)
-	  	//exit (1);  
-	  	expect ("id");
-	  	{	const Token id (asn. in, Token::eInteger);
+	  { 
+	    expect ("id");
+	  	{	
+	  	  const Token id (asn. in, Token::eInteger);
   	  	if (id. n < 0)
   	  	  asn. in. error ("Non-negative integer");
 	  	  asn. id = (uint) id. n;
+	  	  prog (to_string (asn. id));  
 	  	}
       asn. parent = Asn::no_id;
       asn. features. clear ();
       asn. features. resize (asn. fDict. size ());
-	    if (expectTry (","))
-	    { if (expectTry ("parent"))
-		    { const Token parent (asn. in, Token::eInteger);
+	    while (expectTry (","))
+	      if (expectTry ("parent"))
+		    { 
+		      const Token parent (asn. in, Token::eInteger);
     	  	if (parent. n < 0)
     	  	  asn. in. error ("Non-negative integer");
 	  	  	asn. parent = (uint) parent. n;
 	  	  }
-		    if (expectTry (","))
-		    { expect ("features");
+		    else if (expectTry ("features"))
+		    {
 			    Features features (asn);
 			    features. asnRead ();
 			  }
-		  }
 	    asn. processNode ();
 	  }
 };
@@ -168,8 +168,8 @@ void Asn::asnRead ()
 	expect (":");
 	expect (":");
 	expect ("=");
-	
-	Brace br1 (*this);
+
+  expect ("{");
 	
 	expect ("fdict");
   FeatureDictionary fDictList (*this);
@@ -179,6 +179,8 @@ void Asn::asnRead ()
 	expect ("nodes");
 	Nodes nodes (*this);
 	nodes. asnRead ();
+	
+	// "label", "user"
 }
 
 
