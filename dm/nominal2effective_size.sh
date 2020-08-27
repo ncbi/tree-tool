@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
-  echo -e "${GREEN}Print effective size"
+  echo "Print effective size"
   echo "#1: file with columns: object nominal_value"
   exit 1
 fi
