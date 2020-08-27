@@ -19,6 +19,7 @@ all:	\
 	dna2stat \
 	dna_coverage \
 	dna_cut \
+	dna_rev \
 	dna_trim \
 	extractFastaDna \
 	extractFastaProt \
@@ -44,7 +45,6 @@ all:	\
 	prot_grep_short \
 	prots2hmm_signature \
 	prots_pair2stat \
-	reverseDna \
 	splitFastaDna \
 	splitFastaProt \
 	splitHmmLib \
@@ -97,6 +97,12 @@ dna_cut.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 dna_cutOBJS=dna_cut.o $(SEQ_OBJ)
 dna_cut:	$(dna_cutOBJS)
 	$(CXX) -o $@ $(dna_cutOBJS) $(LIBS) 
+	$(ECHO)
+
+dna_rev.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_revOBJS=dna_rev.o $(SEQ_OBJ)
+dna_rev:	$(dna_revOBJS)
+	$(CXX) -o $@ $(dna_revOBJS) $(LIBS) 
 	$(ECHO)
 
 dna_trim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
@@ -247,12 +253,6 @@ prots_pair2stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp
 prots_pair2statOBJS=prots_pair2stat.o $(SEQ_OBJ) $(DM_DIR)/numeric.o
 prots_pair2stat:	$(prots_pair2statOBJS)
 	$(CXX) -o $@ $(prots_pair2statOBJS) $(LIBS) 
-	$(ECHO)
-
-reverseDna.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-reverseDnaOBJS=reverseDna.o $(SEQ_OBJ)
-reverseDna:	$(reverseDnaOBJS)
-	$(CXX) -o $@ $(reverseDnaOBJS) $(LIBS) 
 	$(ECHO)
 
 splitFastaDna.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
