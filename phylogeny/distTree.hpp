@@ -1158,7 +1158,7 @@ public:
 	          const string &dissimFName,
 	          const string &dissimAttrName,
 	          const string &multAttrName);
-	  // Input: treeDirName: if directory anme then contains the result of mdsTree.sh; ends with '/'
+	  // Input: treeDirFName: if directory name then contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
 	DistTree (const string &dissimFName,
 	          const string &dissimAttrName,
