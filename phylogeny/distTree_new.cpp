@@ -56,14 +56,14 @@ Update: <incremental distance tree directory>/search/")
 		  version = VERSION;
 		  
 		  // Input
-		  addPositional ("data", "Directory with data");
+		  addPositional ("data", "Directory with data ending with '\', or tree file");
 		  addFlag ("init", "Initialize search");
 		  
   	//addKey ("dissim_power", "Power to raise dissimilarity in", "1");
 
   	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
   	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
-  	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
+  	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");  // Can be used in inc/varaince
   	  addKey ("variance_min", "Min. dissimilarity variance; to be added to the computed variance", "0");
   	    	  
 		  addKey ("name", "Name of the object");
@@ -81,19 +81,20 @@ Update: <incremental distance tree directory>/search/")
 	  const string dataDir       = getArg ("data");
 	  const bool   init          = getFlag ("init");
 
-	             //dissim_power        = str2real (getArg ("dissim_power"));      // Global
+	             //dissim_power  = str2real (getArg ("dissim_power"));      // Global
 
-	               varianceType    = str2varianceType (getArg ("variance"));  // Global
-	               variancePower   = str2real (getArg ("variance_power"));    // Global
-	               variance_min    = str2real (getArg ("variance_min"));      // Global
-	//const bool   variance_dissim =           getFlag ("variance_dissim");  
+	               varianceType  = str2varianceType (getArg ("variance"));  // Global
+	               variancePower = str2real (getArg ("variance_power"));    // Global
+	               variance_min  = str2real (getArg ("variance_min"));      // Global
+	//const bool   variance_dissim =         getFlag ("variance_dissim");  
 
 	  const string name          = getArg ("name");
 	  const string dissimFName   = getArg ("dissim");
 	  const string requestFName  = getArg ("request");
 	  const string leafFName     = getArg ("leaf");
 	   
-    if (! isRight (dataDir, "/"))
+	   
+    if (name. empty () && ! isRight (dataDir, "/"))
       throw runtime_error (strQuote (dataDir) + " must end with '/'");
 
 		if (! isNan (variancePower) && varianceType != varianceType_pow)
@@ -103,9 +104,9 @@ Update: <incremental distance tree directory>/search/")
 		if (variancePower <= 0.0)
 		  throw runtime_error ("-variance_power must be positive");
       
-    ASSERT (name. empty () == dissimFName.  empty ());
-    ASSERT (name. empty () == requestFName. empty ());
-    ASSERT (name. empty () == leafFName.    empty ());
+    QC_ASSERT (name. empty () == dissimFName.  empty ());
+    QC_ASSERT (name. empty () == requestFName. empty ());
+    QC_ASSERT (name. empty () == leafFName.    empty ());
 
 
     if (verbose ())
@@ -114,12 +115,15 @@ Update: <incremental distance tree directory>/search/")
       cout << endl;
     }
 
-    DistTree tree (dataDir, string (), false, false, false);
-    tree. qc ();     
+    unique_ptr<const DistTree> tree (isRight (dataDir, "/")
+                                       ? new DistTree (dataDir, string (), false, false, false)
+                                       : new DistTree (dataDir, string (), string (), string ())
+                                    );
+    tree->qc ();     
 
     if (verbose ())
     {
-      tree. printInput (cout);
+      tree->printInput (cout);
       cout << endl;
     }
     
@@ -130,13 +134,13 @@ Update: <incremental distance tree directory>/search/")
   	  string item;
   	  while (fig. next (item))
       {
-        const NewLeaf nl (tree, newDir, item, init);
+        const NewLeaf nl (*tree, newDir, item, init);
         nl. qc ();
       }
     }
     else
     {
-      const NewLeaf nl (tree, name, dissimFName, leafFName, requestFName, init);
+      const NewLeaf nl (*tree, name, dissimFName, leafFName, requestFName, init);
       nl. qc ();
     }
 	}
