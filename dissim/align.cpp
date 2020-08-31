@@ -340,7 +340,7 @@ Real Align::getMinEditDistance () const
   ASSERT (self_score2 >= 0);
   
   if (badMatch)
-  	return NaN;
+  	return inf;
   const Real dist = self_score1 + self_score2 - 2 * score;
   ASSERT (dist >= 0.0);
 	return dist;
