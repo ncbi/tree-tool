@@ -2890,8 +2890,8 @@ struct DissimLine
         throw runtime_error (MSG "dissimilarity is NaN");
       if (dissim < 0.0)
         throw runtime_error (MSG "dissimilarity is negative");
-      if (! DM_sp::finite (dissim))
-        throw runtime_error (MSG "dissimilarity is infinite");
+    //if (! DM_sp::finite (dissim))
+      //throw runtime_error (MSG "dissimilarity is infinite");
       #undef MSG
     }
 private:
@@ -3096,7 +3096,11 @@ DistTree::DistTree (const string &dataDirName,
         {
           LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
           while (f. nextLine ())
-            dissimLines << move (DissimLine (f. line, f. lineNum));
+          {
+            DissimLine dl (f. line, f. lineNum);
+            if (DM_sp::finite (dl. dissim))
+              dissimLines << move (dl);
+          }
           if (! f. lineNum)
             throw runtime_error ("Empty " + fName);
         }
