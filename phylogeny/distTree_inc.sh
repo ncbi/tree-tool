@@ -1,7 +1,7 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
   echo "Output: leaf_errors.dm"
@@ -9,11 +9,13 @@ if [ $# -ne 2 ]; then
   echo "Requires: large RAM, large running time"
   echo "#1: incremental distance tree directory"
   echo "#2: add new objects from #1/new/ (0/1)"
+  echo "#3: release directory where subdirectories are numbers, or ''. Valid if #1/phen exists"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
 NEW_PAR=$2
+RELDIR="$3"
 
 
 QC=1
@@ -32,13 +34,13 @@ if [ $NEW_PAR == 1 ]; then
   while true; do
     if [ -e $INC/stop ]; then
       echo ""
-      echo '*** STOPPED ***'
+      echo -e "$YELLOW"'*** STOPPED ***'"$NOCOLOR"
       exit 2
     fi
     
     if [ -e $INC/skip ]; then
       echo ""
-      echo '*** SKIPPED ***'
+      echo -e "$YELLOW"'*** SKIPPED ***'"$NOCOLOR"
       break
     fi
     
@@ -112,7 +114,6 @@ fi
 $THIS/distTree_inc_tree1_quality.sh $INC
 
 
-
 if [ -e $INC/phen ]; then
 	DATE=`date +%Y%m%d`
 	PHEN_LARGE=`cat $INC/phen_large`
@@ -135,6 +136,31 @@ if [ -e $INC/phen ]; then
 	echo ""
 	echo "Names ..."
 	$THIS/tree2names.sh tree.$DATE $INC/phen $PHEN_LARGE > $INC/hist/tree2names.$VER
+
+
+  if [ -n "$RELDIR" ]; then
+    echo ""
+    echo ""
+    if [ ! -e $RELDIR ]; then
+      error "$RELDIR does not exist"
+    fi
+    set +o errexit
+    RELNUM=`ls $RELDIR | grep -v '[^0-9]' | sort -n -r | head -1`
+    set -o errexit
+    if [ -z "$RELNUM" ]; then
+      RELNUM=0
+    fi
+    RELNUM=$(( $RELNUM + 1 ))
+    echo "Release: $RELNUM"
+
+    mkdir $RELDIR/$RELNUM
+    mv disagreement_objects disagreement_nodes.txt disagreement_nodes gain_nodes qual tree.$DATE qual.raw leaf_errors.dm $RELDIR/$RELNUM/
+    rm -f $RELDIR/latest
+    ln -s $PWD/$RELDIR/$RELNUM $RELDIR/latest
+    
+    rm -f $INC/tree.released
+    ln -s $PWD/$RELDIR/$RELNUM/tree.$DATE $INC/tree.released
+  fi
 fi
 
 
