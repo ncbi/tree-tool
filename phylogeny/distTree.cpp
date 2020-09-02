@@ -3099,7 +3099,10 @@ DistTree::DistTree (const string &dataDirName,
           {
             DissimLine dl (f. line, f. lineNum);
             if (DM_sp::finite (dl. dissim))
+            {
               dissimLines << move (dl);
+              ASSERT (dl. name1. empty ());
+            }
           }
           if (! f. lineNum)
             throw runtime_error ("Empty " + fName);
