@@ -4,12 +4,12 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Find the place of a sequence in a sequence incremental tree"
   echo "Print: <new sequence name> <tree node> <new leaf arc length> <tree node arc length>"
-  echo "#1: sequence file"
-  echo "#2: incremental tree directory"
+  echo "#1: incremental tree directory"
+  echo "#2: sequence file"
   exit 1
 fi
-QUERY=$1
-INC=$2  
+INC=$1  
+QUERY=$2
 
 
 NAME=`basename $QUERY`
