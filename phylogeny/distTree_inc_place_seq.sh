@@ -32,9 +32,11 @@ while [ -s $TMP.request ]; do
   $INC/request2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log &> /dev/null
   rm $TMP.request
   set +o errexit
-  grep -vwi nan $TMP.dissim-add > $TMP.dissim-add1
+  grep -vwi "nan" $TMP.dissim-add > $TMP.dissim-add1
   set -o errexit
   if [ ! -s $TMP.dissim-add1 ]; then
+    wc -l $TMP.dissim-add
+    echo -e "${YELLOW}Incomparable sequences${NOCOLOR}"
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
