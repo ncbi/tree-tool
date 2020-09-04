@@ -403,6 +403,7 @@ void Align::printAlignment (size_t line_len) const
   cout << "self_score1 = " << self_score1 << endl;
   cout << "self_score2 = " << self_score2 << endl;
   cout << "length = " << tr. size () << endl;
+  cout << "matches = " << matches << endl;
   size_t qEnd = 0;
   size_t sEnd = 0;
   for (size_t i = 0; i < tr. size (); i += line_len)
