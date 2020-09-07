@@ -301,7 +301,6 @@ struct Tree : DiGraph
 	    // For a directed tree
 	  size_t frequentDegree {0};
 	    // For an undirected tree
-	    // If isLeafType(): 0 or 1; 0 <=> unstable given rareProb
 	  size_t leaves {0};
 
 		TreeNode (Tree &tree,
@@ -336,7 +335,7 @@ struct Tree : DiGraph
 		bool isLeaf () const
 		  { return arcs [false]. empty (); }
 		virtual bool isLeafType () const
-		  { return false; }
+		  { return isLeaf (); }
 		virtual bool isInteriorType () const
 		  { return false; }
 		const TreeNode* getParent () const
@@ -652,7 +651,7 @@ struct Tree : DiGraph
   void setFrequentDegree (double rareProb);
     // Input: 0 <= rareProb < 0.3
     // Output: TreeNode::frequentDegree: statistically consistent estimate
-    // Invokes: setLeaves(), TreeNode::isLeafType()
+    // Invokes: setLeaves(), isLeafType()
   void setRoot ();
     // Output: root
   size_t deleteTransients ();
