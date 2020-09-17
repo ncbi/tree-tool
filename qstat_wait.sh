@@ -80,4 +80,4 @@ while true; do
 done
 
 
-sync
+#sync
