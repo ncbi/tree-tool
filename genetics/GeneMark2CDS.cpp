@@ -185,6 +185,10 @@ struct ThisApplication : Application
 	  	    	ASSERT (frame == ".");
 	  	    	cds->exons << Exon (start, stop);
 	  	    }
+	  	    else if (type == "intron")
+	  	    {
+	  	    	ASSERT (dot == "0");
+	  	    }
 	  	    else if (   type == "start_codon"
 	  	    	       || type == "stop_codon"
 	  	    	      )
@@ -198,7 +202,7 @@ struct ThisApplication : Application
 	  	    	  cds->has_stop = true;
 	  	    }
 	  	    else
-	  	    	throw runtime_error ("Unknown type " + type);
+	  	    	throw runtime_error ("Unknown type " + strQuote (type));
 	
 	  	    gene_prev = gene;
 	      }
