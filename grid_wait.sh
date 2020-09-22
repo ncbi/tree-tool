@@ -29,3 +29,6 @@ done
 if [ $N -gt 0 ]; then
   echo "GRID was waited for for $N min."
 fi
+
+
+sync
