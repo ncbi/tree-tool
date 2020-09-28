@@ -23,6 +23,7 @@ TMP=`basename $TMP`
 
 cp $IN $BULK_LOCAL/$TMP
 unix2dos -o $BULK_LOCAL/$TMP &> /dev/null
+chmod a+r $BULK_LOCAL/$TMP
 
 sqsh-ms -S $SERVER  << EOT  
   begin try
