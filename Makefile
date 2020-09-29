@@ -24,6 +24,7 @@ all:	\
   splitList \
   str2hash \
   trav \
+  tsv_comp \
   unCgi
 	
 
@@ -103,6 +104,12 @@ trav.o:  $(COMMON_HPP)
 travOBJS=trav.o $(CPP_DIR)/common.o
 trav:	$(travOBJS)
 	$(CXX) -o $@ $(travOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_comp.o:  $(COMMON_HPP)  
+tsv_compOBJS=tsv_comp.o $(CPP_DIR)/common.o
+tsv_comp:	$(tsv_compOBJS)
+	$(CXX) -o $@ $(tsv_compOBJS) $(LIBS)
 	$(ECHO)
 
 unCgi.o:  $(COMMON_HPP)  
