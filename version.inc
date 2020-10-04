@@ -1,6 +1,7 @@
-#define VERSION "1.2.2"
+#define VERSION "1.2.3"
 
 
+// 1.2.3  10/03/2020  makeDistTree does not stop on criterion increase of dissimilarity types > 1
 // 1.2.2  08/28/2020  distTree_new.cpp accepts a tree file as input
 // 1.2.1  08/20/2020  request2dissim.sh: 4 parameters
 // 1.1.12 07/28/2020  Newick import removes transient nodes; printDistTree: 'itree' --> 'dm'

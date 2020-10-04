@@ -210,7 +210,7 @@ else
 
   echo ""
   echo "Virus9 ..."
-  $THIS/makeDistTree  -qc  -data data/Virus9  -optimize  -variance linExp  -variance_dissim  -output_dissim_coeff Virus9.coeff  -output_data Virus9-out  -output_tree Virus9.tree  1> $TMP.1 2> /dev/null
+  $THIS/makeDistTree  -qc  -data data/Virus9  -optimize  -subgraph_iter_max 100  -variance linExp  -variance_dissim  -output_dissim_coeff Virus9.coeff  -output_data Virus9-out  -output_tree Virus9.tree  1> $TMP.1 2> /dev/null
   diff Virus9.coeff data/Virus9.coeff
   rm Virus9.coeff
   A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`

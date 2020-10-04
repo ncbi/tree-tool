@@ -623,7 +623,9 @@ struct ThisApplication : Application
             #endif
               if (! absCriterion_old)
               	break;
-              if (absCriterion_old <= tree->absCriterion)
+              if (   absCriterion_old <= tree->absCriterion 
+                  && tree->dissimTypesNum () == 1
+                 )
               	break;
               tree->setDissimMult (true);
               if (! tree->multFixed)
