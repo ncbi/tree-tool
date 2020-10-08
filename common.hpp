@@ -2922,6 +2922,8 @@ public:
 
 	  
 	bool next ();
+	uint getLineNum () const
+	  { return f. lineNum; }
 };
 
 
