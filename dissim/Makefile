@@ -15,6 +15,7 @@ all:	\
 	blast2ani \
 	blast2cons \
   combine_dissims \
+  conv_comb \
 	dna2dissim \
 	dna_diff \
 	dna_pair2dissim \
@@ -50,6 +51,12 @@ combine_dissims.o:  $(NUMERIC_HPP)
 combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
 combine_dissims:	$(combine_dissimsOBJS)
 	$(CXX) -o $@ $(combine_dissimsOBJS) $(LIBS)
+	$(ECHO)
+
+conv_comb.o:  $(NUMERIC_HPP) 
+conv_combOBJS=conv_comb.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
+conv_comb:	$(conv_combOBJS)
+	$(CXX) -o $@ $(conv_combOBJS) $(LIBS)
 	$(ECHO)
 
 dna2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp 
