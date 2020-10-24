@@ -411,6 +411,7 @@ struct DTNode : Tree::TreeNode
 	  // Arc length between *this and *getParent()
 	  // *this is root => NaN
   Vector<uint/*dissimNum*/> pathDissimNums; 
+    // Unique
     // Paths: function of getDistTree().dissims
     // Dissimilarity paths passing through *this arc
     // asLeaf() => getDistTree().dissims[dissimNum].hasLeaf(this)  
@@ -701,6 +702,7 @@ struct SubPath
     : dissimNum (dissimNum_arg)
     {}
   void qc () const;
+  void saveText (ostream &os) const;
 
   
   bool contains (const DTNode* node) const
@@ -727,6 +729,7 @@ struct Subgraph : Root
     // boundary.contains(area_root)
 private:  
   const DTNode* area_underRoot {nullptr};
+    // Holds the arc of area root
     // May be nullptr
     // area.contains(area_underRoot)
   // (bool)area_underRoot = (bool)area_root
@@ -772,7 +775,7 @@ public:
   void finish ();
     // Output: area_root, area_underRoot
     // Time: O(|area| log(|area|))
-//set dissims
+//set dissimNums
   void dissimNums2subPaths ();
     // Output: subPaths, subPathsAbsCriterion
     // Time: O(|dissimNums| log(|area|)) 
@@ -794,14 +797,12 @@ public:
       return resolution <= 1.2;   // PAR 
     }
   bool viaRoot (const SubPath &subPath) const
-    { return    subPath. node1 == area_root 
-             || subPath. node2 == area_root;
-    }
+    { return subPath. contains (area_root); }
   void node2dissimNums (const DTNode* node);
     // Time: O(p/n log(n))
   void area2dissimNums ();
     // Output: dissimNums, completeBoundary
-    // Invokes: node2subPaths()
+    // Invokes: node2dissimNums()
     // Time: O(|boundary| p/n log(n))
   VectorPtr<Tree::TreeNode>& getPath (const SubPath &subPath,
   	                                  Tree::LcaBuffer &buf) const
@@ -812,7 +813,7 @@ public:
     }
     // Requires: subPath in subPaths
   const Vector<uint>& boundary2pathDissimNums (const DTNode* dtNode) const
-    { return dtNode == area_root /* && area_underRoot */
+    { return dtNode == area_root 
                ? area_underRoot->pathDissimNums
                : dtNode        ->pathDissimNums;
     }
@@ -882,7 +883,13 @@ public:
 	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () <= 2)  
 	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () <= 2); 
 	  }
- ~Change ();
+ ~Change ()
+    {
+    #ifndef NDEBUG
+      if (status == eApplied)
+        errorExit ("Change::status = eApplied");
+    #endif
+  }
 	void qc () const override;
 	  // Invokes: valid()
 protected:

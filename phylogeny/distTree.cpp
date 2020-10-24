@@ -1566,6 +1566,18 @@ void SubPath::qc () const
 
 
 
+void SubPath::saveText (ostream &os) const
+{
+  os         << dissimNum
+     << '\t' << node1
+     << '\t' << node2
+     << '\t' << dist_hat_tails
+     << endl;
+}
+
+
+
+
 // Subgraph
 
 Subgraph::Subgraph (const DistTree &tree_arg)
@@ -1584,6 +1596,7 @@ void Subgraph::qc () const
     
   // area
   QC_ASSERT (area. searchSorted);
+  QC_ASSERT (area. isUniq ());
   for (const Tree::TreeNode* node : area)
   {
     QC_ASSERT (node);
@@ -1594,10 +1607,11 @@ void Subgraph::qc () const
   // boundary
   QC_ASSERT (boundary. size () >= 2);
   QC_ASSERT (boundary. searchSorted);
+  QC_ASSERT (boundary. isUniq ());
   QC_ASSERT (area. containsFastAll (boundary));
   QC_ASSERT ((area. size () == 2) == (area. size () == boundary. size ()));
   for (const Tree::TreeNode* node : boundary)
-    QC_ASSERT (! boundary. containsFast (node->getParent ()));
+    QC_ASSERT ((area. size () == 2) == boundary. containsFast (node->getParent ()));
 
   QC_ASSERT ((bool) area_root == (bool) area_underRoot);
 
@@ -1612,7 +1626,7 @@ void Subgraph::qc () const
     // area_underRoot
     QC_ASSERT (area_underRoot->getParent () == area_root);
     QC_ASSERT (area. containsFast (area_underRoot));
-    QC_ASSERT (! boundary. containsFast (area_underRoot));  
+    QC_ASSERT ((area. size () == 2) == boundary. containsFast (area_underRoot))
   }
 
   // subPaths
@@ -1731,6 +1745,7 @@ void Subgraph::dissimNums2subPaths ()
   ASSERT (! subPathsAbsCriterion);
   ASSERT (! dissimNums. empty ());
   ASSERT (subPaths. empty ());
+  ASSERT (boundary. size () >= 2);
   
 
 #if 0
@@ -1743,7 +1758,7 @@ void Subgraph::dissimNums2subPaths ()
   }  
 #endif
   
-  unordered_set<uint> dissimSet;  
+  unordered_set<uint> dissimSet;  // --> dissimNum2subPath ??
   dissimSet. rehash (dissimNums. size ());
   for (const uint dissimNum : dissimNums)
     dissimSet. insert (dissimNum);
@@ -1761,8 +1776,7 @@ void Subgraph::dissimNums2subPaths ()
 
 
   // SubPath::{node1,node2}
-//bool missed = false; 
-  for (const Tree::TreeNode* node : boundary)
+  for (const Tree::TreeNode* node : boundary)  
   {
     const DTNode* dtNode = static_cast <const DTNode*> (node);
     const Vector<uint>& pathDissimNums = boundary2pathDissimNums (dtNode);
@@ -1773,15 +1787,13 @@ void Subgraph::dissimNums2subPaths ()
       size_t index = no_index;
       if (! find (dissimNum2subPath, dissimNum, index))
       {        
-      //cout << "missed: " << dtNode << endl;
-      //tree. dissims [dissimNum]. saveText (cout);
-      //missed = true;
         ASSERT (! completeBoundary);
         continue;   
       }
       ASSERT (index != no_index); 
       SubPath& subPath = subPaths [index];
       ASSERT (subPath. dissimNum == dissimNum);
+      ASSERT (! subPath. contains (dtNode));  
       if (! subPath. node1)
         subPath. node1 = dtNode;
       else if (! subPath. node2)
@@ -1790,19 +1802,6 @@ void Subgraph::dissimNums2subPaths ()
         { ERROR; }
     }
   }
-#if 0
-  if (missed)
-  {
-    tree. print (cout);
-    cout << "area:" << endl;
-    cout << area << endl;
-    cout << "boundary:" << endl;
-    cout << boundary << endl;
-    cout << "area_root: " << area_root << endl;
-    cout << "area_underRoot: " << area_underRoot << endl;
-    ERROR;
-  }
-#endif
 
 
   // subPathsAbsCriterion, SubPath::dist_hat_tails
@@ -1924,16 +1923,16 @@ void Subgraph::subPaths2tree ()
     }
     for (const Tree::TreeNode* node : path)
     {
-      ASSERT (node != area_root);
+      const DTNode* dtNode = static_cast <const DTNode*> (node);
+      ASSERT (dtNode != area_root);
       if (qc_on)
-        { QC_ASSERT (boundary. containsFast (node) == (node != area_underRoot && (node == subPath. node1 || node == subPath. node2))); }
-      if ((node == area_underRoot || (node != subPath. node1 && node != subPath. node2)))  
+        { QC_ASSERT (boundary. containsFast (node) == subPath. contains (dtNode)); }
+      if (! subPath. contains (dtNode))
       {
-        const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ();
+        const Steiner* st = dtNode->asSteiner ();
         ASSERT (st);
         if (qc_on && verbose ())
         {
-        //QC_ASSERT (area. containsFast (st));  
           QC_ASSERT (! st->pathDissimNums. contains (dissimNum));  
         }
         var_cast (st) -> pathDissimNums << dissimNum;
@@ -1989,13 +1988,6 @@ void Subgraph::area2dissimNums ()
 
 
 // Change
-
-Change::~Change ()
-{
-  ASSERT (status != eApplied);
-}
-
-
 
 void Change::qc () const
 {
@@ -7019,6 +7011,7 @@ void DistTree::optimizeLargeSubgraphs ()
   
   setPredictionAbsCriterion ();
   qc ();
+  qcPaths ();
   
   if (failed)
     { ERROR_MSG ("OUT OF MEMORY"); }  // if threads_num > 1 then try thread-free execution ??
@@ -7717,7 +7710,7 @@ void DistTree::removeLeaf (Leaf* leaf,
       Unverbose unv;
       ASSERT (parent);
       ASSERT (parent->graph);
-      optimizeSmallSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), 2 * areaRadius_std);  // PAR 
+      optimizeSmallSubgraph (static_cast <const DTNode*> (parent) -> asSteiner (), /*2 * */ areaRadius_std);  // PAR 
     }
   }
 
