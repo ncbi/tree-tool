@@ -113,7 +113,10 @@ Attr::Attr (const string &name_arg,
 
 Attr::~Attr ()
 {
-  ASSERT (dsIt != ds. attrs. end ());
+#ifndef NDEBUG
+  if (dsIt == ds. attrs. end ())
+    errorExit ("Attr::dsIt = end()");
+#endif
   var_cast (ds). attrs. erase (dsIt);
   var_cast (ds). name2attr_. erase (name);
 }
