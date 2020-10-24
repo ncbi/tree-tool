@@ -90,7 +90,7 @@ void DiGraph::Node::qc () const
 
 void DiGraph::Node::saveText (ostream &os) const
 {
-  os << getName ();
+  os << getName () << "  ";
   saveContent (os);
   
   if (orderDfs)
