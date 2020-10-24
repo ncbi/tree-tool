@@ -63,6 +63,7 @@ VARIANCE=`cat $INC/variance`
 echo ""
 echo ""
 echo "Final optimization ..."
+
 VER=`cat $INC/version`
 echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
 cp $INC/tree $INC/hist/tree.$VER
