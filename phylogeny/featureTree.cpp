@@ -1330,13 +1330,6 @@ Change::Change (const FeatureTree &tree_arg,
 
 
 
-Change::~Change ()
-{
-  ASSERT (status != eApplied);
-}
-
-
-
 void Change::qc () const
 {
   if (! qc_on)

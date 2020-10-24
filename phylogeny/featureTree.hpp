@@ -655,7 +655,13 @@ public:
     	       && from_arg->getParent ();   // Not needed for ChangeToSibling ??
     }
     // Requires: parameters are the same as in the constructor
- ~Change ();
+ ~Change ()
+    {
+    #ifndef NDEBUG
+      if (status == eApplied)
+        errorExit ("Change::status = eApplied");
+    #endif
+    }
 	void qc () const override;
 	  // Invokes: valid()
   void saveText (ostream& os) const override;
