@@ -247,10 +247,12 @@ namespace
 
 
 
-#ifndef _MSC_VER
 string getStack ()
 // Print function names: addr2line -f -C -e <progname>  -a <address>  // --> exec() ??
 {
+#ifdef _MSC_VER
+  return "Stack trace is not implemented";
+#else
   string s;
   constexpr size_t size = 100;  // PAR
   void* buffer [size];
@@ -266,8 +268,8 @@ string getStack ()
 //free (strings);
 
   return s;
-}
 #endif
+}
 
 
 
