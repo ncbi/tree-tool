@@ -1748,30 +1748,18 @@ void Subgraph::dissimNums2subPaths ()
   ASSERT (boundary. size () >= 2);
   
 
-#if 0
-  cout << "dissimNum: " << dissimNums. size () << endl;  
-  {
-    Vector<uint> vec (dissimNums);
-    vec. sort ();
-    vec. uniq ();
-    cout << "uniq: " << vec. size () << endl;
-  }  
-#endif
-  
-  unordered_set<uint> dissimSet;  // --> dissimNum2subPath ??
-  dissimSet. rehash (dissimNums. size ());
+  unordered_map<uint/*dissimNum*/,size_t/*SubPath index*/> dissimNum2subPath;
+  dissimNum2subPath. rehash (dissimNums. size ());
   for (const uint dissimNum : dissimNums)
-    dissimSet. insert (dissimNum);
+    dissimNum2subPath [dissimNum] = no_index;
 
   dissimNums. wipe ();
 
-  unordered_map<uint/*dissimNum*/,size_t/*SubPath index*/> dissimNum2subPath;
-  dissimNum2subPath. rehash (dissimSet. size ());
-  subPaths. reserve (dissimSet. size ());
-  for (const uint dissimNum : dissimSet)
+  subPaths. reserve (dissimNum2subPath. size ());
+  for (auto& it : dissimNum2subPath)
   {
-    subPaths << SubPath (dissimNum);
-    dissimNum2subPath [dissimNum] = subPaths. size () - 1;
+    subPaths << SubPath (it. first);
+    it. second = subPaths. size () - 1;
   }
 
 
