@@ -54,9 +54,9 @@ fi
 
 
 echo ""
-N=`cat $INC/dissim | wc -l`
-PERCENT=`echo "scale=2; 100 * $N / ($OBJS * ($OBJS - 1) / 2)" | bc -l`  # May be > 100% due to outliers which have dissimilarities
-echo "# Dissimilarities: $N"
+N=(`wc -l inc/dissim`)
+PERCENT=`echo "scale=2; 100 * ${N[0]} / ($OBJS * ($OBJS - 1) / 2)" | bc -l`  # May be > 100% due to outliers which have dissimilarities
+echo "# Dissimilarities: ${N[0]}"
 echo "Dissimilarities per object: $PERCENT % of maximum"
 
 echo ""
