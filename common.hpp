@@ -1602,6 +1602,7 @@ public:
         for (U& t : other)
           P::push_back (move (t));
         searchSorted = false;
+        other. clear ();
       	return *this;
       }
   template <typename U/*:<T>*/>
