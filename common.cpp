@@ -3016,6 +3016,16 @@ void ShellApplication::initEnvironment ()
 
 
 
+string ShellApplication::getHelp () const 
+{
+  string help (Application::getHelp ());
+  if (useTmp)
+    help += "\n\nTemporary directory used is $TMPDIR or \"/tmp\"";
+  return help;
+}
+
+
+
 void ShellApplication::body () const
 {
   if (logPtr && useTmp)

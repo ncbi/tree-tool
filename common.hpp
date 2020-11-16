@@ -3594,7 +3594,7 @@ protected:
   virtual void initEnvironment ()
     {}
   string getInstruction () const;
-  string getHelp () const;
+  virtual string getHelp () const;
 public:
   int run (int argc, 
            const char* argv []);
@@ -3633,6 +3633,7 @@ struct ShellApplication : Application
 
 protected:
   void initEnvironment () override;
+  string getHelp () const override;
 private:
   void body () const final;
   virtual void shellBody () const = 0;
