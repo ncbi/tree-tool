@@ -2232,7 +2232,7 @@ FileItemGenerator::FileItemGenerator (size_t progress_displayPeriod,
     ASSERT (lsfName [0]);
     const int res = system (("ls -a " + fName + " > " + lsfName). c_str ());
     if (res)
-      throw runtime_error ("Command ls failed: status = " + to_string (res));
+      throw runtime_error ("Command \"ls\" failed: status = " + to_string (res));
     fName = lsfName;
   #endif
   }      
@@ -2984,9 +2984,13 @@ void ShellApplication::initEnvironment ()
   // tmp
   if (useTmp)
   {
-    char templateS [] = {'/', 't', 'm', 'p', '/', 'X', 'X', 'X', 'X', 'X', 'X', '\0'}; 
-    EXEC_ASSERT (mkstemp (templateS) != -1);
-    tmp = templateS;
+    if (const char* s = getenv ("TMPDIR"))
+      tmp = s;
+    else
+      tmp = "/tmp";
+    tmp += "/XXXXXX";
+    if (mkstemp (var_cast (tmp. c_str ())) == -1)
+      throw runtime_error ("Error creating a temporary file");
   	if (tmp. empty ())
   		throw runtime_error ("Cannot create a temporary file");
   }
