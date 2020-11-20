@@ -34,4 +34,5 @@
 // 0.0.0  09/01/2019  Genogroup2outliers: p-value is lowered (two-tail test): Genome.genogroup_outlier is set to null
 // 0.0.0  09/01/2019  normalized object criterion; normalized arc error density
 // 0.0.0  09/01/2019  hybrid2db.sh, db2unhybrid.sh: obsolete; Genome.outlier = 'auto_hybrid': redo
+// 0.0.0  08/20/2019  findHybrids(): only reliable decisions are left; no unhybrid'ing 
 
