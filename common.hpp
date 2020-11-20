@@ -2982,18 +2982,20 @@ struct Stderr : Singleton<Stderr>
 
 
 
-struct Warning : Singleton<Warning>
-{
-private:
-  Stderr& stderr;
-public:  
-  
-  Warning (Stderr &stderr_arg)
-    : stderr (stderr_arg)
-    { stderr << Color::code (Color::yellow, true) << "WARNING: "; }
- ~Warning ()
-    { stderr << Color::code () << "\n"; }
-};
+#ifndef _MSC_VER
+  struct Warning : Singleton<Warning>
+  {
+  private:
+    Stderr& stderr;
+  public:  
+    
+    Warning (Stderr &stderr_arg)
+      : stderr (stderr_arg)
+      { stderr << Color::code (Color::yellow, true) << "WARNING: "; }
+   ~Warning ()
+      { stderr << Color::code () << "\n"; }
+  };
+#endif
 
 
 
@@ -3062,7 +3064,7 @@ struct TextTable : Root
 // Tab-delimited table with a header
 {
   bool pound {false};
-    // In the beginning of header
+    // '#' in the beginning of header
   StringVector header;
     // size() = number of columns
     // Can be clear()'ed
@@ -3081,6 +3083,9 @@ struct TextTable : Root
       return i;
     }
   void filterColumns (StringVector&& newHeader);
+    // Input: newHeader: elements in header
+    //          can be repeated
+    //          ordered
 };
 
 
