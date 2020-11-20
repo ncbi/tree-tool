@@ -202,10 +202,17 @@ struct ThisApplication : Application
         if (gen->prog. n < start)
           continue;
   	      
+  	    constexpr char delChar = '\177';
+  	    if (contains (item, delChar))
+  	      throw runtime_error ("Item contains an ASCII 127 (DEL) character");
+  	    replace (item, '%', delChar);
+  	      
+  	  #if 0
         // Preparing item for using it in a shell command
         FOR_REV (size_t, i, item. size ())
           if (item [i] == '\\')
           	item. replace (i, 0, "\\");
+      #endif
 
         string thisCmd (cmd);
         replaceStr (thisCmd, "%f", item);
@@ -235,6 +242,8 @@ struct ThisApplication : Application
           if (thisCmd [i] == '%' && (i == thisCmd. size () - 1 || thisCmd [i + 1] != 'P'))
             throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (i, 2)) + " in item: " + item + "\n" + thisCmd);
         replaceStr (thisCmd, "%P", "%");
+
+  	    replace (item, delChar, '%');
 
         if (verbose ())
        	  cerr << thisCmd << endl;
