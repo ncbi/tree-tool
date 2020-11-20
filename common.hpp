@@ -835,6 +835,14 @@ inline string nvl (const string& s,
                    const string& nullS = "-")
   { return s. empty () ? nullS : s; }
   	
+inline string appendS (const string &s,
+                       const string &suffix)
+  { return s. empty () ? string () : (s + suffix); }
+  	
+inline string prependS (const string &s,
+                        const string &prefix)
+  { return s. empty () ? string () : (prefix + s); }
+  	
 inline bool isQuoted (const string &s,
                       char quote = '\"')
   { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
