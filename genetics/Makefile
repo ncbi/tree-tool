@@ -48,7 +48,9 @@ all:	\
 	splitFastaDna \
 	splitFastaProt \
 	splitHmmLib \
-	tblastn2orfs
+	tblastn2orfs \
+	uniqProt \
+	uniqProtRef
 
 
 asn_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
@@ -277,5 +279,17 @@ tblastn2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 tblastn2orfsOBJS=tblastn2orfs.o $(SEQ_OBJ)
 tblastn2orfs:	$(tblastn2orfsOBJS)
 	$(CXX) -o $@ $(tblastn2orfsOBJS) $(LIBS) 
+	$(ECHO)
+
+uniqProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+uniqProtOBJS=uniqProt.o $(SEQ_OBJ)
+uniqProt:	$(uniqProtOBJS)
+	$(CXX) -o $@ $(uniqProtOBJS) $(LIBS) 
+	$(ECHO)
+
+uniqProtRef.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+uniqProtRefOBJS=uniqProtRef.o $(SEQ_OBJ)
+uniqProtRef:	$(uniqProtRefOBJS)
+	$(CXX) -o $@ $(uniqProtRefOBJS) $(LIBS) 
 	$(ECHO)
 
