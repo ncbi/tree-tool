@@ -62,7 +62,7 @@ struct ThisApplication : Application
 	  const string inFName = getArg ("in");
 
   
-    unordered_map<size_t/*hash*/,Peptide> hash2pep;
+    unordered_map<size_t/*hash*/,Peptide> hash2pep;  hash2pep. rehash (100000);  // PAR
 		{
 		  Multifasta fa (inFName, true);
 		  while (fa. next ())

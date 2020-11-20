@@ -63,8 +63,10 @@ struct ThisApplication : Application
 	  const string inFName  = getArg ("in");
 	  const string refFName = getArg ("ref");
 
+    
+    constexpr size_t hash_size = 100000;  // PAR
   
-    unordered_set<size_t/*hash*/> refSet;
+    unordered_set<size_t/*hash*/> refSet;  refSet. rehash (hash_size);
 		{
 		  Multifasta fa (refFName, true);
 		  while (fa. next ())
@@ -76,7 +78,7 @@ struct ThisApplication : Application
 		}
 
 
-    unordered_map<size_t/*hash*/,Peptide> hash2pep;
+    unordered_map<size_t/*hash*/,Peptide> hash2pep;  hash2pep. rehash (hash_size);
 		{
 		  Multifasta fa (inFName, true);
 		  while (fa. next ())
