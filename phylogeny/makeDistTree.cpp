@@ -462,10 +462,7 @@ struct ThisApplication : Application
             continue;
           }
           tree->removeLeaf (var_cast (leaf), false);
-          if (tree->optimizable ())
-            prog (tree->absCriterion2str ());
-          else
-          	prog ();
+         	prog ();
           deleted++;
         }
       }
