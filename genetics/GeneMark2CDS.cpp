@@ -95,9 +95,9 @@ struct EuCds
 	void print () const
 	  { cout         << gene 
 	  	     << '\t' << contig
-	  	     << '\t' << strand
-	  	     << '\t' << exons
-	  	     << endl;
+	  	     << '\t' << strand;
+	  	save (cout, exons, '\t');
+	  	cout << endl;
 	  }
 	char strand2char () const
 	  { return strand ? '+' : '-'; }

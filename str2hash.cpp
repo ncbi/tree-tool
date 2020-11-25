@@ -69,7 +69,7 @@ struct ThisApplication : Application
     hashes. sort ();
     hashes. uniq ();
     
-  	cout << hashes;
+  	save (cout, hashes, '\n');
   }  
 };
 

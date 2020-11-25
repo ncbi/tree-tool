@@ -716,13 +716,17 @@ template <typename From, typename What>
           from. erase (x);
     }
 
-
-template <typename T>
-  ostream& operator<< (ostream &os,
-                       const list<T> &ts)
-    { for (const auto& t : ts)
-        os << t << endl;
-      return os;
+template <typename T /*container*/>
+  void save (ostream &os,
+             const T &container,
+             char sep)
+    { bool first = true;
+      for (const auto& t : container)
+      { if (! first)
+          os << sep;
+        os << t;
+        first = false;
+      }
     }
 
 
@@ -1488,21 +1492,6 @@ inline string named2name (const Named* n)
 
 
 typedef int (*CompareInt) (const void*, const void*);
-
-
-
-template <typename T>
-  ostream& operator<< (ostream &os,
-                       const vector<T> &ts)
-    { bool first = true;
-      for (const auto& t : ts)
-      { if (! first)
-          os << '\t';
-        os << t;
-        first = false;
-      }
-      return os;
-    }
 
 
 

@@ -1958,11 +1958,15 @@ void TextTable::saveText (ostream &os) const
   { 
     if (pound)
       os << '#';
-    os << header << endl;
+    save (os, header, '\t');
+    os << endl;
   }
   
   for (const StringVector& row : rows)
-    os << row << endl;
+  {
+    save (os, row, '\t');
+    os << endl;
+  }
 }
 
     

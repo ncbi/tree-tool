@@ -101,7 +101,7 @@ struct ThisApplication : Application
 	  // Output
 	  addPositional ("out", "Output file of sorted unique hashes. Sorting is numeric.");
 	  addKey ("out_prot", "File to save proteins with hashes");
-	  addKey ("target_seq", "File to save the sequence names of the hashes in target_hashes");
+	  addKey ("target_seq", "File to save the sequence names of the hashes in -target_hashes");
 	}
 
 
@@ -125,8 +125,8 @@ struct ThisApplication : Application
     QC_IMPLY (reduce, ! cds || translate);
     QC_IMPLY (! out_prot. empty (), ! cds || translate);
     QC_IMPLY (! target_seq. empty (), ! target_hashes. empty ());
-    if (! gene_finders. contains (gene_finder))
-    	throw runtime_error ("Uknown gene_finder: " + gene_finder);
+  //if (! gene_finders. contains (gene_finder))
+    //throw runtime_error ("Uknown gene_finder: " + gene_finder);
     
 
     Vector<size_t> targetHashes;
@@ -247,7 +247,7 @@ struct ThisApplication : Application
           f << hashes [i] << endl;
       }
       else
-        f << hashes;
+        save (f, hashes, '\n');
     }
   }  
 };
