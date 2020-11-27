@@ -128,6 +128,7 @@ struct ThisApplication : Application
   	  sort (hmm. sseqids);
   	  OFStream ofs (dir, it. first, string ());
   	  save (ofs, hmm. sseqids, '\n');
+  	  ofs << endl;
 	  }
   }
 };
