@@ -103,6 +103,7 @@ struct ThisApplication : Application
       OFStream ofs (string (), outName + "-" + toString (i + 1), string ());
       sort (clusters [i]);
       save (ofs, clusters [i], '\n');
+      ofs << endl;
     }
 	}
 };
