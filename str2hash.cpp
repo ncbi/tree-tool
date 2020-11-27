@@ -70,6 +70,7 @@ struct ThisApplication : Application
     hashes. uniq ();
     
   	save (cout, hashes, '\n');
+  	cout << endl;
   }  
 };
 
