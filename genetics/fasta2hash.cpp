@@ -209,6 +209,8 @@ struct ThisApplication : Application
    	      strUpper (pep. seq);  // Start codons are lowercased
   		    if (contains (pep. seq, 'X'))
   		      continue;
+  		    if (contains (pep. seq, '*'))
+  		      throw runtime_error ("Protein " + pep. name + " contains a stop codon");
   		    if (protF. get ())
   		    	pep. saveText (*protF);
   	      if (reduce)
@@ -247,7 +249,10 @@ struct ThisApplication : Application
           f << hashes [i] << endl;
       }
       else
+      {
         save (f, hashes, '\n');
+        f << endl;
+      }
     }
   }  
 };
