@@ -2034,18 +2034,13 @@ public:
   StringVector (const string &fName,
                 size_t reserve_size);
   explicit StringVector (const string &s, 
-                         char sep = ' ');
+                         char sep,
+                         bool trimP);
 
 
-  string toString (const string& sep) const
-    { string res;
-  	  for (const string& s : *this)
-  	  { if (! res. empty ())
-  	      res += sep;
-  	    res += s;
-  	  }
-  	  return res;
-  	}
+  string toString (const string& sep) const;
+  bool same (const StringVector &vec,
+             const Vector<size_t> &indexes) const;
 };
 
 
@@ -3062,27 +3057,69 @@ struct TextTable : Root
 {
   bool pound {false};
     // '#' in the beginning of header
-  StringVector header;
+  bool saveHeader {true};
+  struct Header : Named
+  { 
+    // Type
+    bool numeric {true};
+    // Valid if numeric
+    bool scientific {false};
+    streamsize decimals {0};
+    explicit Header (const string &name_arg)
+      : Named (name_arg)
+      {}
+    void qc () const override;
+    void saveText (ostream& os) const override
+      { os << name << ' ' << (numeric ? ((scientific ? "float" : "int") + string ("(") + to_string (decimals) + ")") : "char"); }
+  };
+  Vector<Header> header;
     // size() = number of columns
-    // Can be clear()'ed
   Vector<StringVector> rows;
     // StringVector::size() = header.size()
+
     
 
   explicit TextTable (const string &fName);
+private:
+  void setHeader ();
+public:
+  void qc () const override;
   void saveText (ostream &os) const override;    
         
   
+  void printHeader (ostream &os) const;
+private:
+  size_t col2index_ (const string &columnName) const;
+public:
   size_t col2index (const string &columnName) const
-    { const size_t i = header. indexOf (columnName);
-      if (i == no_index)
-        throw runtime_error ("Cannot find column name " + strQuote (columnName));
-      return i;
+  { const size_t i = col2index_ (columnName);
+    if (i == no_index)
+      throw runtime_error ("Cannot find column name " + strQuote (columnName));
+    return i;
+  }
+  Vector<size_t> columns2indexes (const StringVector &columns) const
+    { Vector<size_t> indexes;  indexes. reserve (columns. size ());
+      for (const string &s : columns)
+        indexes << col2index (s);
+      return indexes;
     }
-  void filterColumns (StringVector&& newHeader);
-    // Input: newHeader: elements in header
+  bool hasColumn (const string &columnName) const
+    { return col2index_ (columnName) != no_index; }
+private:
+  int compare (const StringVector& row1,
+               const StringVector& row2,
+               size_t column) const;
+public:
+  void filterColumns (const StringVector &newColumnNames);
+    // Input: newColumnNames: in header::name's
     //          can be repeated
     //          ordered
+  void group (const StringVector &by,
+              const StringVector &sum);
+private:
+  void merge (size_t toIndex,
+              size_t fromIndex,
+              const Vector<size_t> &sum);
 };
 
 
