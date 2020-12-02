@@ -11,6 +11,6 @@ TYPE=$2
 
 
 H=`$THIS/../file2hash $GENOME`
-cat genome/$H/$GENOME/$GENOME.hash-$TYPE | sed -e 's/^/'$GENOME'\t'$TYPE'\t/1'
+cat genome/$H/$GENOME/$GENOME.hash-$TYPE | sed 's/^/'$GENOME'\t'$TYPE'\t/1'
 
 

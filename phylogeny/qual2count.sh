@@ -10,6 +10,6 @@ fi
 QUAL=$1
 
 
-cat $QUAL | sed 's| / .*$||1' | sed -e 's/ [-+]/\t/g' | tr ' ' '_' | awk -F '\t' '{printf "%s\t%d\n", $1, $2 + $3};' 
+cat $QUAL | sed 's| / .*$||1' | sed 's/ [-+]/\t/g' | tr ' ' '_' | awk -F '\t' '{printf "%s\t%d\n", $1, $2 + $3};' 
 
 

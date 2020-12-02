@@ -242,8 +242,8 @@ else
     echo "$B"
     exit 1
   fi
-  $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110.nw
-  $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed -e 's/,(/,\n(/g' > Virus110-out1.nw
+  $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed 's/,(/,\n(/g' > Virus110.nw
+  $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed 's/,(/,\n(/g' > Virus110-out1.nw
   diff Virus110.nw Virus110-out1.nw || true
   #
   if false; then  # ??

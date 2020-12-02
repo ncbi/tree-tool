@@ -24,10 +24,10 @@ if [ ! -s $TMP ]; then
   exit 1
 fi
 H=`head -1 $TMP`
-head -1 $DIR/$H | sed -e 's/^/Item\t/1'
+head -1 $DIR/$H | sed 's/^/Item\t/1'
 while read ASM
 do
-  tail -n +2 $DIR/$ASM | sed -e 's/^/'$ASM'\t/1'
+  tail -n +2 $DIR/$ASM | sed 's/^/'$ASM'\t/1'
 done < $TMP
 
 
