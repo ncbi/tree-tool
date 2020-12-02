@@ -85,7 +85,7 @@ fi
 # PAR
 $THIS/makeDistTree  -threads 30  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 5 \
-  -output_tree $INC/tree.new  -leaf_errors leaf_errors  > $INC/hist/makeDistTree-complete-inc.$VER
+  -output_tree $INC/tree.new  -leaf_errors leaf_errors  > $INC/hist/makeDistTree-final.$VER
 mv $INC/tree.new $INC/tree
 # -reinsert  
 #tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
