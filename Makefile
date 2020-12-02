@@ -16,6 +16,7 @@ all:	\
   csv2tab \
   extractPairs \
   file2hash \
+  group \
   list2pairs \
   mergePairs \
   selColumn \
@@ -56,6 +57,12 @@ graph_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 graph_testOBJS=graph_test.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 graph_test:	$(graph_testOBJS)
 	$(CXX) -o $@ $(graph_testOBJS) $(LIBS)
+	$(ECHO)
+
+group.o:  $(COMMON_HPP)  
+groupOBJS=group.o $(CPP_DIR)/common.o
+group:	$(groupOBJS)
+	$(CXX) -o $@ $(groupOBJS) $(LIBS)
 	$(ECHO)
 
 list2pairs.o:  $(COMMON_HPP)  
