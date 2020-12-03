@@ -45,8 +45,9 @@
 #ifndef _MSC_VER
   #include <dirent.h>
   #include <execinfo.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
   #ifdef __APPLE__
-    #include <sys/types.h>
     #include <sys/sysctl.h>
   #endif
 #endif
@@ -790,16 +791,40 @@ bool directoryExists (const string &dirName)
   }
   return yes;
 }
+
+
+
+void createDirectory (const string &dirName,
+                      bool createAncestors)
+{
+  const mode_t m = 0777;  
+  if (createAncestors)
+  {
+    const Dir dir (dirName);
+    Dir ancestorDir;
+    for (const string& s : dir. items)
+    {
+      ancestorDir. items << s;
+      const string ancestorPath (ancestorDir. get ());
+      if (! directoryExists (ancestorPath))
+        if (mkdir (ancestorPath. c_str (), m) != 0)
+          throw runtime_error ("Cannot create directory " + strQuote (ancestorPath));
+    }
+  }
+  else
+    if (mkdir (dirName. c_str (), m) != 0)
+      throw runtime_error ("Cannot create directory " + strQuote (dirName));
+}
 #endif
 
 
 
 
-Dir::Dir (const string &name)
+Dir::Dir (const string &dirName)
 {
-  ASSERT (! name. empty ());
+  ASSERT (! dirName. empty ());
   
-  items = str2list (name, fileSlash);
+  items = str2list (dirName, fileSlash);
 
   auto it = items. begin (); 
   while (it != items. end ())
@@ -1998,7 +2023,12 @@ TextTable::TextTable (const string &fName)
 
 void TextTable::setHeader ()
 {
+  size_t row_num = 0;
   for (const StringVector& row : rows)
+  {
+    row_num++;
+    if (row. size () != header. size ())
+      throw runtime_error ("Row " + to_string (row_num) + " contains " + to_string (rows. size ()) + " fields whereas table has " + to_string (header. size ()) + " columns");
     FFOR (size_t, i, row. size ())
     {
       const string& field = row [i];
@@ -2036,6 +2066,7 @@ void TextTable::setHeader ()
         }
       }
     }
+  }
 }
 
 

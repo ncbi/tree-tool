@@ -1109,6 +1109,9 @@ inline string path2canonical (const string &path)
 
 #ifndef _MSC_VER
   bool directoryExists (const string &dirName);
+  
+  void createDirectory (const string &dirName,
+                        bool createAncestors);
 #endif
 
 
@@ -1118,7 +1121,8 @@ struct Dir
     // Simplified: contains no redundant "", ".", ".."
     // items.front().empty (): root
 
-  explicit Dir (const string &name);
+  explicit Dir (const string &dirName);
+  Dir () = default;
     
   string get () const
     { return items. empty () 
