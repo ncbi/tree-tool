@@ -162,7 +162,7 @@ struct ThisApplication : Application
 		  {
 		    const Seq* seq1 = seqs [row];
 		    ASSERT (seq1);
-		  	prog (seq1->name);
+		  	prog (seq1->getId ());
 		    IMPLY (! aa, seq1->asDna ());
 		    IMPLY (aa, seq1->asPeptide ());
 		  	dissimAttr->matr. put (false, row, row, 0);
@@ -187,8 +187,8 @@ struct ThisApplication : Application
 					                             : align->getMinEditDistance ();
 					const Real dissim = coeff * pow (dissim_raw, power);
 					if (dsFName. empty ())
-						cout         << seq1->name
-						     << '\t' << seq2->name
+						cout         << seq1->getId ()
+						     << '\t' << seq2->getId ()
 						     << '\t' << dissim
 						     << '\t' << align->score
 						     << '\t' << align->self_score1
