@@ -2049,6 +2049,16 @@ public:
 
 
 
+// Search
+// Return: false <=> incrementations are exhausted
+bool inc (vector<bool> &v);
+  // Update: v
+bool inc (vector<size_t> &indexes,
+          const vector<size_t> &indexes_max);
+  // Update: indexes
+
+
+
 struct DisjointCluster
 // Cormen, Leiserson, Rivest, Introduction to Algorithms, p. 449
 {

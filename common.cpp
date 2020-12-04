@@ -1343,6 +1343,48 @@ bool StringVector::same (const StringVector &vec,
 
 
 
+bool inc (vector<bool> &v)
+{
+  const size_t s = v. size ();
+
+  size_t i = 0;
+  while (i < s && v [i])
+  {
+    v [i] = false;
+    i++;
+  }
+  if (i == s)
+    return false;
+
+  v [i] = true;
+  
+  return true;
+}
+
+
+
+bool inc (vector<size_t> &indexes,
+          const vector<size_t> &indexes_max)
+{
+  ASSERT (indexes. size () == indexes_max. size ());
+
+  FFOR (size_t, i, indexes. size ())
+  {
+    ASSERT (indexes [i] <= indexes_max [i]);
+    if (indexes [i] < indexes_max [i])
+    {
+      indexes [i] ++;
+      return true;
+    }
+    indexes [i] = 0;
+  }
+
+  return false;
+}
+
+
+
+
 // DisjointCluster
 
 void DisjointCluster::merge (DisjointCluster &other)
