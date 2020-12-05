@@ -1,4 +1,4 @@
-// extractFastaProt.cpp
+// uniqSeq.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print unique protein sequences
+*   Print unique sequences
 *
 */
 
@@ -50,34 +50,68 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print unique protein sequences")
+    : Application ("Print unique sequences")
 	  {
-		  addPositional ("in", "Input FASTA file with proteins");
+		  addPositional ("in", "Input FASTA file");
+		  addFlag ("aa", "Sequences are proteins, otherwise DNA");
+		  addKey ("pair", "Replacement id pairs: redundant id <tab> main id");
 	  }
 
   
   
 	void body () const final
   {
-	  const string inFName = getArg ("in");
+	  const string inFName   = getArg ("in");
+	  const bool   aa        = getFlag ("aa");
+	  const string pairFName = getArg ("pair");
 
-  
-    unordered_map<size_t/*hash*/,Peptide> hash2pep;  hash2pep. rehash (100000);  // PAR
+
+    OFStream* pairF = nullptr;
+    if (! pairFName. empty ())  
+      pairF = new OFStream (pairFName);
+    unordered_map<size_t/*hash*/,Seq*> hash2seq;  hash2seq. rehash (1000000);  // PAR
+      // Not delete'd
 		{
-		  Multifasta fa (inFName, true);
+		  Multifasta fa (inFName, aa);
 		  while (fa. next ())
 		  {
-		    Peptide pep (fa, 1000/*PAR*/, false);
-		    pep. qc ();
-		    const size_t h = str_hash (pep. seq);
-		    if (! contains (hash2pep, h))
-		      hash2pep [h] = move (pep);
+		    unique_ptr<Seq> seq;
+		    if (aa)
+		      seq. reset (new Peptide (fa, 1000/*PAR*/, false));
+		    else
+		      seq. reset (new Dna (fa, 1000/*PAR*/, false));  
+		    ASSERT (seq. get ());
+		    seq->qc ();
+		    
+		    const size_t h = str_hash (seq->seq);
+		    if (const Seq* const* other = findPtr (hash2seq, h))
+		    {
+		      if ((*other)->getId () > seq->getId ())
+		      {
+		        if (pairF)
+		          *pairF << (*other)->getId () << '\t' << seq->getId () << endl;
+		        var_cast (*other) -> name = seq->name;
+		      }
+		      else
+		      {
+		        if (pairF)
+		          *pairF << seq->getId () << '\t' << (*other)->getId () << endl;
+		      }
+		    }
+		    else
+		      hash2seq [h] = seq. release ();
 		  }
 		}
 
 
-    for (const auto& it : hash2pep)
-		  it. second. saveText (cout);
+    for (const auto& it : hash2seq)
+    {
+      const Seq* seq = it. second;
+      ASSERT (seq);
+		  seq->saveText (cout);
+      if (pairF)
+        *pairF << seq->getId () << '\t' << seq->getId () << endl;
+		}
   }
 };
 
