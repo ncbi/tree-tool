@@ -51,8 +51,8 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print lengths of DNA or protein sequences")
     {
-  	  addPositional ("in", "FASTA file with DNA sequences");
-  	  addFlag ("aa", "Protein sequence");
+  	  addPositional ("in", "FASTA file");
+  	  addFlag ("aa", "Protein sequence, otherwise DNA");
   	  addKey ("min_len", "Min. length", "0");
   	  addKey ("out", "Output FASTA file with sequences longer than <min_len>");
     }
