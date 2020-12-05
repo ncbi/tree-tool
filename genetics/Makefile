@@ -45,11 +45,12 @@ all:	\
 	prot_grep_short \
 	prots2hmm_signature \
 	prots_pair2stat \
+	replaceFastaNames \
 	splitFastaDna \
 	splitFastaProt \
 	splitHmmLib \
 	tblastn2orfs \
-	uniqProt \
+	uniqSeq \
 	uniqProtRef
 
 
@@ -257,6 +258,12 @@ prots_pair2stat:	$(prots_pair2statOBJS)
 	$(CXX) -o $@ $(prots_pair2statOBJS) $(LIBS) 
 	$(ECHO)
 
+replaceFastaNames.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+replaceFastaNamesOBJS=replaceFastaNames.o $(SEQ_OBJ)
+replaceFastaNames:	$(replaceFastaNamesOBJS)
+	$(CXX) -o $@ $(replaceFastaNamesOBJS) $(LIBS) 
+	$(ECHO)
+
 splitFastaDna.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
 splitFastaDnaOBJS=splitFastaDna.o $(SEQ_OBJ)
 splitFastaDna:	$(splitFastaDnaOBJS)
@@ -281,10 +288,10 @@ tblastn2orfs:	$(tblastn2orfsOBJS)
 	$(CXX) -o $@ $(tblastn2orfsOBJS) $(LIBS) 
 	$(ECHO)
 
-uniqProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-uniqProtOBJS=uniqProt.o $(SEQ_OBJ)
-uniqProt:	$(uniqProtOBJS)
-	$(CXX) -o $@ $(uniqProtOBJS) $(LIBS) 
+uniqSeq.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+uniqSeqOBJS=uniqSeq.o $(SEQ_OBJ)
+uniqSeq:	$(uniqSeqOBJS)
+	$(CXX) -o $@ $(uniqSeqOBJS) $(LIBS) 
 	$(ECHO)
 
 uniqProtRef.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
