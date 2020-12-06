@@ -46,6 +46,15 @@ namespace
 {
 	
 	
+	
+struct UniqSeq
+{
+  const Seq* seq {nullptr};
+    // Not delete'd
+  StringVector ids;
+};
+	
+	
 
 struct ThisApplication : Application
 {
@@ -54,7 +63,7 @@ struct ThisApplication : Application
 	  {
 		  addPositional ("in", "Input FASTA file");
 		  addFlag ("aa", "Sequences are proteins, otherwise DNA");
-		  addKey ("pair", "Replacement id pairs: redundant id <tab> main id");
+		  addKey ("pair", "Replacement id pairs: <redundant id> <tab> <main id>");
 	  }
 
   
@@ -69,8 +78,7 @@ struct ThisApplication : Application
     OFStream* pairF = nullptr;
     if (! pairFName. empty ())  
       pairF = new OFStream (pairFName);
-    unordered_map<size_t/*hash*/,Seq*> hash2seq;  hash2seq. rehash (1000000);  // PAR
-      // Not delete'd
+    unordered_map<size_t/*hash*/,UniqSeq> hash2useq;  hash2useq. rehash (1000000);  // PAR
 		{
 		  Multifasta fa (inFName, aa);
 		  while (fa. next ())
@@ -82,35 +90,40 @@ struct ThisApplication : Application
 		      seq. reset (new Dna (fa, 1000/*PAR*/, false));  
 		    ASSERT (seq. get ());
 		    seq->qc ();
+		    QC_ASSERT (! seq->getId (). empty ());
 		    
 		    const size_t h = str_hash (seq->seq);
-		    if (const Seq* const* other = findPtr (hash2seq, h))
-		    {
-		      if ((*other)->getId () > seq->getId ())
-		      {
-		        if (pairF)
-		          *pairF << (*other)->getId () << '\t' << seq->getId () << endl;
-		        var_cast (*other) -> name = seq->name;
-		      }
-		      else
-		      {
-		        if (pairF)
-		          *pairF << seq->getId () << '\t' << (*other)->getId () << endl;
-		      }
-		    }
+		    if (const UniqSeq* useq = findPtr (hash2useq, h))
+		      var_cast (useq) -> ids << seq->getId ();
 		    else
-		      hash2seq [h] = seq. release ();
+		    {
+		      hash2useq [h] = move (UniqSeq {seq. get (), StringVector {seq->getId ()}});
+		      seq. release ();
+		    }
 		  }
 		}
 
 
-    for (const auto& it : hash2seq)
+    for (auto& it : hash2useq)
     {
-      const Seq* seq = it. second;
-      ASSERT (seq);
-		  seq->saveText (cout);
+      UniqSeq& useq = it. second;
+      ASSERT (useq. seq);
+      useq. ids. sort ();
+      QC_ASSERT (useq. ids. isUniq ());
+		  ASSERT (! useq. ids. empty ());
+		  var_cast (useq. seq) -> name = useq. ids. front ();
+		  useq. seq->saveText (cout);
       if (pairF)
-        *pairF << seq->getId () << '\t' << seq->getId () << endl;
+      {
+        string first;
+        for (const string& s : useq. ids)
+        {
+          ASSERT (! s. empty ());
+          if (first. empty ())
+            first = s;
+          *pairF << s << '\t' << first << endl;
+        }
+      }
 		}
   }
 };
