@@ -3398,6 +3398,20 @@ public:
 
 
 
+struct Xml : Named
+{
+private:
+  ostream& os;
+  const bool active;
+public:
+
+  Xml (const string &name_arg,
+       ostream &os_arg,
+       bool active_arg = true);
+ ~Xml ();
+};
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////

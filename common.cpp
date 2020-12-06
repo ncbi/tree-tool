@@ -2604,6 +2604,31 @@ size_t Offset::size = 0;
 
 
 
+// Xml
+
+Xml::Xml (const string &name_arg,
+          ostream &os_arg,
+          bool active_arg)
+: Named (name_arg)
+, os (os_arg)
+, active (active_arg)
+{ 
+  ASSERT (! contains (name, ' '));
+  if (active)
+    os << '<' << name << '>' << endl;
+}
+
+
+
+Xml::~Xml ()
+{ 
+  if (active)
+    os << "</" << name << '>' << endl;
+}
+
+
+
+
 // FileItemGenerator
 
 FileItemGenerator::FileItemGenerator (size_t progress_displayPeriod,
