@@ -2070,7 +2070,7 @@ void TextTable::setHeader ()
   {
     row_num++;
     if (row. size () != header. size ())
-      throw runtime_error ("Row " + to_string (row_num) + " contains " + to_string (rows. size ()) + " fields whereas table has " + to_string (header. size ()) + " columns");
+      throw runtime_error ("Row " + to_string (row_num) + " contains " + to_string (row. size ()) + " fields whereas table has " + to_string (header. size ()) + " columns");
     FFOR (size_t, i, row. size ())
     {
       const string& field = row [i];
@@ -2615,7 +2615,7 @@ Xml::Xml (const string &name_arg,
 { 
   ASSERT (! contains (name, ' '));
   if (active)
-    os << '<' << name << '>' << endl;
+    os << '<' << name << '>';
 }
 
 
