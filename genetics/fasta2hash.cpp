@@ -174,7 +174,7 @@ struct ThisApplication : Application
 		  		  }
   		    if (gene_finder == "prodigal" && ! contains (dna. name, ";partial=00"))  
   		      continue;
-  		    if (contains (dna. seq, 'n'))
+  		    if (dna. getXs ())
   		      continue;
   		    if (translate)
   		    	try 
@@ -207,7 +207,7 @@ struct ThisApplication : Application
   		      continue;
   		    pep. trimStop ();
    	      strUpper (pep. seq);  // Start codons are lowercased
-  		    if (contains (pep. seq, 'X'))
+  		    if (pep. getXs ())
   		      continue;
   		    if (contains (pep. seq, '*'))
   		      throw runtime_error ("Protein " + pep. name + " contains a stop codon");
@@ -249,10 +249,8 @@ struct ThisApplication : Application
           f << hashes [i] << endl;
       }
       else
-      {
-        save (f, hashes, '\n');
-        f << endl;
-      }
+        for (const auto& h : hashes)
+          f << h << endl;
     }
   }  
 };
