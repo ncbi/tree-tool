@@ -138,7 +138,7 @@ struct ThisApplication : Application
 		  Multifasta fa (inFName, true);
 		  while (fa. next ())
 		  {
-		    const Peptide pep (fa, 1000/*PAR*/, false);
+		    const Peptide pep (fa, 1000/*PAR*/, true);
 		    ASSERT (! strBlank (pep. seq));		
 		    if ((! removeTarget) == contains (name2replacement, pep. getId ()))   
 		    {
