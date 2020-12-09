@@ -68,9 +68,8 @@ struct ThisApplication : Application
 
     hashes. sort ();
     hashes. uniq ();
-    
-  	save (cout, hashes, '\n');
-  	cout << endl;
+  	for (const auto& h : hashes)
+  	  cout << h << endl;
   }  
 };
 
