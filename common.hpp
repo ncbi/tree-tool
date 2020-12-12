@@ -1477,6 +1477,13 @@ inline ostream& operator<< (ostream &os,
     return os;
   }
   
+inline Xml::File& operator<< (Xml::File &f,
+                              const Root &r) 
+  { r. saveXml (f);
+    return f;
+  }
+  
+
 
 
 template <typename T /*Root*/> 
