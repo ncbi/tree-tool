@@ -62,7 +62,7 @@ struct ThisApplication : Application
 	
 		
 	  string name;
-	  unique_ptr<Xml::Schema> sch (Xml::Schema::readSchema (schemaFName, name));
+	  unique_ptr<Xml_sp::Schema> sch (Xml_sp::Schema::readSchema (schemaFName, name));
 	  sch->qc ();
 	  cout << name;
 	  sch->saveText (cout);

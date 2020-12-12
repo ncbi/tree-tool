@@ -1379,6 +1379,53 @@ class Notype {};
 
 
 
+struct Xml
+{
+  struct File;
+
+
+  struct Tag
+  {
+  private:
+    const string name;
+    File &f;
+    const bool active;
+  public:
+
+    Tag (File &f_arg,
+         const string &name_arg,
+         bool active_arg = true);
+   ~Tag ();
+  };
+  
+  
+  struct File
+  {
+  private:
+    ostream& os;
+    const Tag tag;
+  public:
+    
+    File (ostream &os_arg,
+          const string &tagName)
+      : os (os_arg)
+      , tag (*this, tagName)
+      {}
+      
+    void print (const string &s)
+      { os << s; }
+    template <typename T>
+      File& operator<< (const T &t)
+        { os << t;
+          return *this;
+        }
+  };
+    
+    
+};
+
+
+
 struct Root
 {
 protected:
@@ -1407,6 +1454,8 @@ public:
   virtual void print (ostream& os) const
     { saveText (os); }
     // Human-friendly
+  virtual void saveXml (Xml::File& /*f*/) const 
+    { throw logic_error ("Root::saveXml() is not implemented"); }
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
                         const string& /*name_arg*/) const
     { throw logic_error ("Root::toJson() is not implemented"); }
@@ -3394,21 +3443,6 @@ public:
 
   static void newLn (ostream &os) 
     { os << endl << string (size, ' '); }
-};
-
-
-
-struct Xml : Named
-{
-private:
-  ostream& os;
-  const bool active;
-public:
-
-  Xml (const string &name_arg,
-       ostream &os_arg,
-       bool active_arg = true);
- ~Xml ();
 };
 
 

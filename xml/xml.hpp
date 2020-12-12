@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   XML utilities
+*   XML analysis utilities
 *
 */
 
@@ -40,10 +40,13 @@ using namespace Common_sp;
 
 
 
-namespace Xml
+
+namespace Xml_sp
 {
 
 
+
+// Analysis
 
 struct FlatTable : Root
 // name: file name

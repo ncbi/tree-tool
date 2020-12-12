@@ -62,13 +62,13 @@ struct ThisApplication : Application
 
 
     string name;
-    unique_ptr<Xml::Schema> sch;
+    unique_ptr<Xml_sp::Schema> sch;
     {
       LineInput f (xmlListFName, 100 * 1024, 1);  // PAR
       while (f. nextLine ())
       {
         string name1;	
-        unique_ptr<Xml::Schema> sch1 (Xml::Schema::readSchema (f. line, name1));
+        unique_ptr<Xml_sp::Schema> sch1 (Xml_sp::Schema::readSchema (f. line, name1));
         sch1->qc ();
         if (name. empty ())
         {

@@ -1237,6 +1237,32 @@ Threads::~Threads ()
 
 
 
+
+// Xml::Tag
+
+Xml::Tag::Tag (Xml::File &f_arg,
+               const string &name_arg,
+               bool active_arg)
+: name (name_arg)
+, f (f_arg)
+, active (active_arg)
+{ 
+  ASSERT (! contains (name, ' '));
+  if (active)
+    f. print ("<" + name + ">");
+}
+
+
+
+Xml::Tag::~Tag ()
+{ 
+  if (active)
+    f. print ("</" + name + ">\n");
+}
+
+
+
+
 // Root
 
 void Root::saveFile (const string &fName) const
@@ -2601,30 +2627,6 @@ JsonMap* jRoot = nullptr;
 
 size_t Offset::size = 0;
 
-
-
-
-// Xml
-
-Xml::Xml (const string &name_arg,
-          ostream &os_arg,
-          bool active_arg)
-: Named (name_arg)
-, os (os_arg)
-, active (active_arg)
-{ 
-  ASSERT (! contains (name, ' '));
-  if (active)
-    os << '<' << name << '>';
-}
-
-
-
-Xml::~Xml ()
-{ 
-  if (active)
-    os << "</" << name << '>' << endl;
-}
 
 
 
