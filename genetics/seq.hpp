@@ -292,7 +292,6 @@ public:
   size_t* GetAlphabetCount () const;
     // Return: length = strlen (SeqAlphabet)
     // Invokes: NewUintArray ()
-
 #endif
   void unSparse ()
     { strDeleteSet (seq, "-"); 
@@ -300,51 +299,6 @@ public:
     }
   map<char,size_t> getCharCount () const;
 };
-
-
-
-#if 0
-inline void PrintSaveSeqInstruction ()
-  {
-    printf ("If <DirName> = \"\" then print all sequences to screen, else save them in separate files in <DirName>\n");
-    printf ("   Convert sequences to lower-case\n");
-  }
-
-void SaveSeq (const Seq* seq,
-              const char* DirName);
-  // `PrintSaveSeqInstruction ();`
-  // File names = sequence names before the first space
-#endif
-
-
-
-
-#if 0
-class _SEQ_COLLECTION: public NAMED_COLLECTION
-// of Seq*
-{
-typedef NAMED_COLLECTION inherited;
-
-public:
-  _SEQ_COLLECTION (): inherited () {}
-
-
-  Seq* GetSeq (size_t i) const
-    { return (Seq*) AtCheck (i); }
-
-  void SaveFile (FILE* F,
-             		 bool  UpperCase) const;
-    // Multi-FASTA format
-    // Invokes: Seq::SaveFile ()
-  void Print (bool UpperCase) const;
-    // Invokes: SaveFile
-  void Save (const char* FName,
-	            bool        UpperCase) const;
-    // Invokes: SaveFile
-  void SaveDir (const char* DirName) const;
-    // Invokes: SaveSeq()
-};
-#endif
 
 
 
