@@ -104,7 +104,7 @@ struct ThisApplication : Application
 	    zipf_est. setParam (1.5 /*, 10000*/);  // PAR
 	    zipf_est. analysis = & an;
 	    zipf_est. estimate ();
-	    zipf_est. print (cout);
+	    zipf_est. saveText (cout);
 	    cout << endl;
 	    cout << "P-value = " << zipf_est. getFitness_entropy () << endl;
 	    cout << endl;
@@ -139,7 +139,7 @@ struct ThisApplication : Application
 	    zipf_est. setParam (1.5 /*, (uint) freqVec. size ()*/); 
 	    zipf_est. analysis = & an;
 	    zipf_est. estimate ();
-	    zipf_est. print (cout);
+	    zipf_est. saveText (cout);
 	    cout << endl;
 	    cout << "P-value = " << zipf_est. getFitness_entropy () << endl;
 	    cout << endl;
@@ -175,7 +175,7 @@ struct ThisApplication : Application
 	    zipf_est. setParam (1.5, (uint) freqCum. size ()); 
 	    zipf_est. analysis = & an;
 	    zipf_est. estimate ();
-	    zipf_est. print (cout);
+	    zipf_est. saveText (cout);
 	    cout << endl;
 	    cout << "P-value = " << zipf_est. getFitness_entropy () << endl;
 	    cout << endl;
@@ -209,7 +209,7 @@ struct ThisApplication : Application
 	    zipf_est. setParam (1.5 /*, (uint) dataSize*/);  
 	    zipf_est. analysis = & an;
 	    zipf_est. estimate ();
-	    zipf_est. print (cout);
+	    zipf_est. saveText (cout);
 	    cout << endl;
 	  //cout << "A = " << zipf_est. freqAlpha2alpha () << endl;
 	    cout << "P-value = " << zipf_est. getFitness_entropy () << endl;

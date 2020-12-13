@@ -218,7 +218,7 @@ struct ThisApplication : Application
 	  {
 	    cout << endl;
 	    cout << "Double-cenetered generalized similarities:" << endl;
-	    sim->print (cout);
+	    sim->saveText (cout);
 	  }
 	
 
@@ -253,7 +253,7 @@ struct ThisApplication : Application
     {
       // Measurement noise
       Matrix& matr = sim->matr;
-      matr. print (cout);
+      matr. saveText (cout);
       Normal norm;
       norm. setParam (0, sqr (globalSD) * 0.5);  // PAR
       FOR (size_t, row, matr. rowsSize (false))
@@ -265,14 +265,14 @@ struct ThisApplication : Application
       Matrix rowMean;
       Real totalMean;
       matr. centerSimilarity (rowMean, totalMean);
-      matr. print (cout);
+      matr. saveText (cout);
     }
     
 
     cerr << "MDS ..." << endl;
     const Mds mds (sm, *sim, maxAttr, maxTotalExpl, minExpl); 
     mds. qc ();
-    mds. print (cout);
+    mds. saveText (cout);
     cout << endl;
     
     const Space1<RealAttr1> spMds_ (mds. createSpace ("PC_", "IM_", ds));
@@ -297,7 +297,7 @@ struct ThisApplication : Application
   	  const Clustering cl (sm, spMds, maxClusters, globalSD * minClusteringSDRel, /*true*/ false);
       cl. qc ();
   	  if (verbose ())
-        cl. print (cout);
+        cl. saveText (cout);
       cout << "# Clusters = " << cl. mixt. components. size () << endl;
       cout << "Entropy = " << cl. mixt. getEntropy_est () << endl;
       JsonArray* jClusts = jRoot ? new JsonArray (jRoot, "clusters") : nullptr;

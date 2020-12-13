@@ -121,7 +121,7 @@ struct ThisApplication : Application
       if (verbose ())
       {
         lr. getPredictionAttr ("hat");
-        ds. print (cout);  
+        ds. saveText (cout);  
       }
     }
   

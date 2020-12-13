@@ -1239,7 +1239,7 @@ bool Matrix::getEigen (Eigen &eigen,
     if (! isSymmetric (row, col))
     {
       cout << row << " " << col << endl;
-      print (cout);
+      saveText (cout);
       ERROR;
     }
   }
@@ -1299,7 +1299,7 @@ bool Matrix::getEigen (Eigen &eigen,
 
   if (verbose ())
   {
-	  eigen. vec. print (cout);         
+	  eigen. vec. saveText (cout);         
 	  cout << "diff = " << diff << "  error = " << error << endl;
 	}
   return false;
@@ -2707,7 +2707,7 @@ Eigens::Eigens (const Matrix &matr,
 , orthogonal (true)
 {
   if (verbose ())
-    matr. print (cout);
+    matr. saveText (cout);
   ASSERT (matr. defined ());
   ASSERT (matr. isSymmetric ());
   ASSERT (isProb (totalExplainedFrac_max));  
@@ -2788,7 +2788,7 @@ Eigens::Eigens (const Matrix &matr,
     {
       if (verbose ())
       {
-        eigen->print (cout);
+        eigen->saveText (cout);
         cout << "getEigen failed" << endl;
       }
       break;      

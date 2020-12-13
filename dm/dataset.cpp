@@ -5061,7 +5061,7 @@ void Mixture::estimate ()
 	  #if 1
 	    var_cast (components [i]) -> estimate ();
 	    if (verbose ())
-	      components [i] -> print (cout);
+	      components [i] -> saveText (cout);
 	  #else
 	    if (   ! var_cast (components [i]) -> estimate ()
 	        && components. size () >= 2
@@ -5407,7 +5407,7 @@ Clustering::Clustering (const Sample &sample_arg,
 	  	  Unverbose unv1;
 		  	if (verbose ())
 		  	{
-  	      mixt. print (cout);  
+  	      mixt. saveText (cout);  
 		  	  cout << endl;  
   	    }
 	  	}
@@ -5422,7 +5422,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	{
   	  		Clustering work (*this);
   	  		work. setAnalysis ();  // --> Clustering copy constructor ??
-  	  	//work. print (cout);  
+  	  	//work. saveText (cout);  
   	  	  work. splitCluster (i);
   	  	  work. mixt. estimate ();
   	  	  if (verbose ())
@@ -5434,7 +5434,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	             << "  mult_sum = " << sample. mult_sum
   	  	             << "  entropy_best = " << entropy_best
   	  	             << endl;
-  	  	    work. mixt. print (cout);
+  	  	    work. mixt. saveText (cout);
   	  	  }
   	  	  if (   work. mixt. getParamSet ()
   	  	      && work. mixt. minimizeEntropy (entropy_best, entropyDimensionPrecision) 
@@ -5453,7 +5453,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	{
   	  		Clustering work (*this);
   	  		work. setAnalysis ();
-  	  	//work. print (cout);  
+  	  	//work. saveText (cout);  
   	  	  if (! work. deleteCluster (i))
   	  	    continue;
   	  	  work. mixt. estimate ();
@@ -5466,7 +5466,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	             << "  mult_sum = " << sample. mult_sum
   	  	             << "  entropy_best = " << entropy_best
   	  	             << endl;
-  	  	    work. mixt. print (cout);
+  	  	    work. mixt. saveText (cout);
   	  	  }
   	  	  if (   work. mixt. getParamSet ()
   	  	      && work. mixt. minimizeEntropy (entropy_best, entropyDimensionPrecision) 
@@ -5969,7 +5969,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         if (verbose ())
         {
           cout << "Separating cluster " << i + 1 << ": " << can. eigenValues [0] << endl;
-          can. print (cout);
+          can. saveText (cout);
         }
       #if 0
         Real average = NaN;

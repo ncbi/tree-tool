@@ -85,7 +85,7 @@ struct ThisApplication : Application
       (*logAttr) [objNum] = res;
     }
     
-    ds. print (cout);
+    ds. saveText (cout);
 	}
 };
 

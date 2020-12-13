@@ -110,7 +110,7 @@ struct ThisApplication : Application
   //mixt. qc ();
     mixt. estimate ();
     mixt. qc ();
-    mixt. print (cout);
+    mixt. saveText (cout);
     
     if (outlier_pValue)
 	    FOR_REV (int, val, bin_n)

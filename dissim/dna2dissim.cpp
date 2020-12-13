@@ -95,7 +95,7 @@ struct ThisApplication : Application
 		Align_sp::Align align (dna1, dna2, ! global, match_len_min, /*false,*/ 0);
 		
 		if (verbose ())
-		  align. print (cout);
+		  align. saveText (cout);
 		
 		cout << "Identity = " << align. matches << '/' << align. tr. size () 
 		     << " (" << ((double) align. matches / (double) align. tr. size () * 100) << "%)" << endl;

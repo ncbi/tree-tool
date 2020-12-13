@@ -90,7 +90,7 @@ struct ThisApplication : Application
   	  if (verbose ())
 		  {
 		  	cout << endl << "PD:" << endl;
-	  	  pd. print (cout);
+	  	  pd. saveText (cout);
 	  	}
 		}
 	  
@@ -101,7 +101,7 @@ struct ThisApplication : Application
 		  if (verbose ())
 		  {
 		  	cout << endl << "Choleski:" << endl;
-		    ch. print (cout);
+		    ch. saveText (cout);
 		  }
 	  
 		  Matrix m1 (false, pd, false);
@@ -110,7 +110,7 @@ struct ThisApplication : Application
 		  if (verbose ())
 		  {
 		  	cout << endl << "Back to PD:" << endl;
-	  	  m1. print (cout);
+	  	  m1. saveText (cout);
 	  	}
 		  ASSERT (pd. maxAbsDiff (false, m1, false) < 1e-3);
 		}
@@ -127,7 +127,7 @@ struct ThisApplication : Application
 		  if (verbose ())
 		  {
 		  	cout << "Back form eigens to PD: " << endl;
-		    back. print (cout);
+		    back. saveText (cout);
 		  }
 		  ASSERT (pd. maxAbsDiff (false, back, false) < 1e-3);
 		}
@@ -156,9 +156,9 @@ struct ThisApplication : Application
       ASSERT (eigens. getDim () == 2);
   	  if (verbose ())
   	  {
-  			eigens. print (cout);
+  			eigens. saveText (cout);
   			cout << endl;
-  			eigens. basis. print (cout);
+  			eigens. basis. saveText (cout);
   		}
     }
 		
@@ -180,16 +180,16 @@ struct ThisApplication : Application
       size_t col_bad;	  
 		  m. symmetrize (maxCorrection, row_bad, col_bad);
 		  if (verbose ())
-		    m. print (cout);
+		    m. saveText (cout);
 		  ASSERT (! m. psd);
 		  m. qc ();
   		Eigens eigens (m, 3, 1, 0, 1e-6, 1000/*, false*/);
   		eigens. qc ();
   	  if (verbose ())
   	  {
-  			eigens. print (cout);
+  			eigens. saveText (cout);
   			cout << endl;
-  			eigens. basis. print (cout);
+  			eigens. basis. saveText (cout);
   		}
       ASSERT (eigens. getDim () == 3);
       ASSERT_EQ (eigens. totalExplainedFrac (), 1, 1e-4);
@@ -283,7 +283,7 @@ struct ThisApplication : Application
 		  if (eigensP)
 		  {
 			  Eigens ei (mat, mat. rowsSize (), 1, 0, 1e-5, 10000);   // PAR
-			  ei. values. print (cout);
+			  ei. values. saveText (cout);
 			  cout << endl;
 		  			  	
 		  	// Choleski iterations

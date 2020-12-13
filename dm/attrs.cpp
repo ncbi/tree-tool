@@ -130,7 +130,7 @@ struct ThisApplication : Application
           {
             unique_ptr<const Categorical> cat (nomin->getCategorical (sample));
     	      cout << "  ";
-            cat->print (cout);
+            cat->saveText (cout);
     	    }
     	  }
         cout << endl;

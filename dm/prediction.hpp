@@ -134,7 +134,7 @@ struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
     { return new LogisticRegression (*this); }
   void qc () const override;
     // Requires: space[0] = ds.addNumAttrUnit()
-  void print (ostream &os) const override
+  void saveText (ostream &os) const override
     { os << "-logL = " << negLogLikelihood_ave << endl;
       os << "P(Correct) = " << getCorrectPredictionFrac () << endl;
       os << "Target_score_min = " << target_score_min << endl;

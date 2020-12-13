@@ -84,7 +84,7 @@ struct ThisApplication : Application
     
     ds. qc ();
     
-    ds. print (cout);
+    ds. saveText (cout);
 	}
 };
 

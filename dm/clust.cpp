@@ -79,7 +79,7 @@ struct ThisApplication : Application
     const Space1<NumAttr1> sp (ds, true);
    
 	  const Clustering cl (sm, sp, clusters_max, sd_min, false);  
-    cl. print (cout);
+    cl. saveText (cout);
     
     if (cl. mixt. getDim () == 1 && threshold_sds)
     {

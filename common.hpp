@@ -1420,8 +1420,6 @@ struct Xml
           return *this;
         }
   };
-    
-    
 };
 
 
@@ -1442,7 +1440,6 @@ public:
     // Input: qc_on
   virtual void saveText (ostream& /*os*/) const 
     { throw logic_error ("Root::saveText() is not implemented"); }
-    // Parsable output
   void saveFile (const string &fName) const;
     // if fName.empty() then do nothing
     // Invokes: saveText()
@@ -1451,9 +1448,6 @@ public:
       saveText (oss);
       return oss. str ();
     }
-  virtual void print (ostream& os) const
-    { saveText (os); }
-    // Human-friendly
   virtual void saveXml (Xml::File& /*f*/) const 
     { throw logic_error ("Root::saveXml() is not implemented"); }
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
@@ -3213,7 +3207,7 @@ protected:
         const string& name);
   Json () = default;
 public:  
-  void print (ostream& os) const override = 0;
+  void saveText (ostream& os) const override = 0;
   
   virtual const JsonNull* asJsonNull () const
     { return nullptr; }  
@@ -3261,7 +3255,7 @@ struct JsonNull : Json
                      const string& name = noString)
     : Json (parent, name)
     {}    
-  void print (ostream& os) const final
+  void saveText (ostream& os) const final
     { os << "null"; }
 
   const JsonNull* asJsonNull () const final
@@ -3279,7 +3273,7 @@ struct JsonString : Json
     : Json (parent, name)
     , s (s_arg)
     {}
-  void print (ostream& os) const final
+  void saveText (ostream& os) const final
     { os << toStr (s); }
 
   const JsonString* asJsonString () const final
@@ -3297,7 +3291,7 @@ struct JsonInt : Json
     : Json (parent, name)
     , n (n_arg)
     {}
-  void print (ostream& os) const final
+  void saveText (ostream& os) const final
     { os << n; }
 
   const JsonInt* asJsonInt () const final
@@ -3320,7 +3314,7 @@ struct JsonDouble : Json
     , decimals (decimals_arg == numeric_limits<streamsize>::max() ? double2decimals (n_arg) : decimals_arg)
     {}
     // decimals_arg = -1: default
-  void print (ostream& os) const final
+  void saveText (ostream& os) const final
     { const ONumber on (os, (streamsize) decimals, scientific);
     	if (n == n)
         os << n; 
@@ -3343,7 +3337,7 @@ struct JsonBoolean : Json
     : Json (parent, name)
     , b (b_arg)
     {}
-  void print (ostream& os) const final
+  void saveText (ostream& os) const final
     { os << (b ? "true" : "false"); }
 
   const JsonBoolean* asJsonBoolean () const final
@@ -3379,7 +3373,7 @@ private:
              JsonContainer* parent,
              const string& name);
 public:
-  void print (ostream& os) const final;
+  void saveText (ostream& os) const final;
 
   const JsonArray* asJsonArray () const final
     { return this; }
@@ -3413,7 +3407,7 @@ private:
   void parse (CharInput& in);
 public:
  ~JsonMap ();
-  void print (ostream& os) const final;
+  void saveText (ostream& os) const final;
 
   const JsonMap* asJsonMap () const final
     { return this; }

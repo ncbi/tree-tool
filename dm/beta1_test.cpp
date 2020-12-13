@@ -96,7 +96,7 @@ struct ThisApplication : Application
 	    beta_est. estimate ();
 	    if (verbose ())
 	    {
-	      beta_est. print (cout);
+	      beta_est. saveText (cout);
   	    cout << endl;
   	    cout << "P-value = " << beta_est. getFitness_entropy () << endl;
   	    cout << endl;
@@ -115,7 +115,7 @@ struct ThisApplication : Application
 	    zipf_est. estimate ();
 	    if (verbose ())
 	    {
-  	    zipf_est. print (cout);
+  	    zipf_est. saveText (cout);
   	    cout << endl;
   	    cout << "P-value = " << zipf_est. getFitness_entropy () << endl;  // = 0.98 ??
   	  //cout << "Beta-alpha = " << zipf_est. getBetaAlpha () << endl;

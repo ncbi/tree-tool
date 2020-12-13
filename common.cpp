@@ -2520,7 +2520,7 @@ JsonArray::JsonArray (CharInput& in,
 
 
 
-void JsonArray::print (ostream& os) const
+void JsonArray::saveText (ostream& os) const
 { 
   os << "[";
   bool first = true;
@@ -2529,7 +2529,7 @@ void JsonArray::print (ostream& os) const
     ASSERT (j);
     if (! first)
       os << ",";
-    j->print (os);
+    j->saveText (os);
     first = false;
   }
   os << "]";
@@ -2598,7 +2598,7 @@ JsonMap::~JsonMap ()
 
 
 
-void JsonMap::print (ostream& os) const
+void JsonMap::saveText (ostream& os) const
 { 
   os << "{";
   bool first = true;
@@ -2609,7 +2609,7 @@ void JsonMap::print (ostream& os) const
     os << toStr (it. first) << ":";
     const Json* j = it. second;
     ASSERT (j);
-    j->print (os);
+    j->saveText (os);
     first = false;
   }
   os << "}";
@@ -3362,7 +3362,7 @@ int Application::run (int argc,
   	{
   	  ASSERT (jRoot);
   		OFStream f (jsonFName);
-      jRoot->print (f);
+      jRoot->saveText (f);
       delete jRoot;
       jRoot = nullptr;
     }

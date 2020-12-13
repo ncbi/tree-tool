@@ -150,13 +150,13 @@ struct ThisApplication : Application
       mn. qc ();
       mn. estimate ();
       if (verbose ())
-      	mn. print (osPar);    	
+      	mn. saveText (osPar);    	
     }
     	
     cerr << "PC ..." << endl;
     const PrinComp pc (sm, an. space, mn, maxAttr, maxTotalExpl, minExpl, 1e-4/*PAR*/);
     pc. qc ();
-    pc. print (osPar);
+    pc. saveText (osPar);
     
     const Space1<RealAttr1> spOut (pc. createSpace ("PC_", ds));
     
@@ -179,7 +179,7 @@ struct ThisApplication : Application
 	    normal. estimate ();
 	    normal. qc ();
 	    if (verbose ())
-	      normal. print (cout);
+	      normal. saveText (cout);
       for (Iterator it (sm); it ();)  
       {
         const Prob pValue = 1 - normal. cdf ((*outlierScore) [*it]);
@@ -228,7 +228,7 @@ struct ThisApplication : Application
   	  const Clustering cl (sm, spPC, maxClusters, globalSD * minClusteringSDRel, /*true*/ false); 
       cl. qc ();
   	  if (verbose ()) 
-        cl. print (cout);
+        cl. saveText (cout);
       cout << "# Clusters = " << cl. mixt. components. size () << endl;
       cout << "Entropy = " << cl. mixt. getEntropy_est () << endl;
       JsonArray* jClusts = jRoot ? new JsonArray (jRoot, "clusters") : nullptr;
@@ -250,7 +250,7 @@ struct ThisApplication : Application
     	const Dataset dsMds (pc. createAttrMds ("PC_", quality));    	
     	ASSERT (quality. size () == dsMds. attrs. size ());
       OFStream osMds ("", outFName, "mds");
-    	dsMds. print (osMds);
+    	dsMds. saveText (osMds);
     	if (jRoot)
     	{
         auto jMds = new JsonMap (jRoot, "attr_mds");

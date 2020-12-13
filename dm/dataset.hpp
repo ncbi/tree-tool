@@ -971,7 +971,7 @@ struct RealAttr2 : Attr2, RealScale
   void saveText (ostream &os) const final
     { Attr2::saveText (os);
       os << endl;
-      matr. print (os);
+      matr. saveText (os);
     }
 
 

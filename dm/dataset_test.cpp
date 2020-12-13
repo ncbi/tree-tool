@@ -130,7 +130,7 @@ struct ThisApplication : Application
 
     if (verbose ())
     {
-	    distr_est. print (cout);
+	    distr_est. saveText (cout);
 	    cout << endl;
 	  }
     ASSERT (distr_est. similar (distr, delta));
@@ -185,7 +185,7 @@ struct ThisApplication : Application
 	    const Real entropy_est = distrTry->getEntropy_est ();
 		  if (verbose ())
 		  {
-		    distrTry->print (cout);
+		    distrTry->saveText (cout);
      	  cout << "  Entropy^: " << entropy_est 
              << "  P-value = " << distrTry->getFitness_entropy () << endl;
 		  }
@@ -195,8 +195,8 @@ struct ThisApplication : Application
 	  }
     if (distrBest && ! distrBest->similar (distr, delta))
     {
-      distr. print (cout);
-      distrBest->print (cout);
+      distr. saveText (cout);
+      distrBest->saveText (cout);
       ERROR;
     }
 
@@ -212,7 +212,7 @@ struct ThisApplication : Application
       	ASSERT (pVal <= 0.001);
   		  if (verbose ())
   		  {
-  		    distrTry->print (cout);
+  		    distrTry->saveText (cout);
        	  cout << "  p-value: " << pVal << endl;
   		  }
       }
@@ -488,10 +488,10 @@ struct ThisApplication : Application
 		  if (verbose ())
 		  {
 		    cout << endl;
-		    cl. print (cout);
+		    cl. saveText (cout);
 		    const Space1<ProbAttr1> spOut (cl. createSpace (ds));
 		    cout << endl;
-		    ds. print (cout);
+		    ds. saveText (cout);
 		  }
 		  ASSERT (cl. mixt. components. size () == 2);
 	  }

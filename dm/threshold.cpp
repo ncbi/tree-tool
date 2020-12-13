@@ -289,10 +289,10 @@ struct ThisApplication : Application
         cout << td. str () << endl;
       }
       for (const Bin& bin : bins)
-        bin. print (cout);
+        bin. saveText (cout);
       cout << endl;
 
-      cl. print (cout);
+      cl. saveText (cout);
       
       VectorPtr<Attr> attrs;
       attrs << clusterAttr << scoreAttr << classAttr;
@@ -305,7 +305,7 @@ struct ThisApplication : Application
       Histogram h (0, score_max, 5);  // PAR
       for (Iterator it (sm); it ();)  
         h << (*scoreAttr) [*it];
-      h. print (cout);
+      h. saveText (cout);
     }
 
  

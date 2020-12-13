@@ -86,7 +86,7 @@ struct ThisApplication : Application
     cerr << "Solving ..." << endl;
     lr. solve ();
     lr. qc ();
-    lr. print (cout);
+    lr. saveText (cout);
           
     LogisticRegression* lrFinal = & lr;
     unique_ptr<LogisticRegression> lrSel;
@@ -101,7 +101,7 @@ struct ThisApplication : Application
         lrFinal->qc ();
         cout << endl;
         cout << "Selected attributes:" << endl;
-        lrFinal->print (cout);
+        lrFinal->saveText (cout);
       }
     }
     ASSERT (lrFinal);
@@ -111,7 +111,7 @@ struct ThisApplication : Application
       lr. getPredictionAttr ("hat");
       lr. getScoreAttr ("score");
       cout << endl;
-      ds. print (cout);  
+      ds. saveText (cout);  
     }
 
     cout << endl;
@@ -127,7 +127,7 @@ struct ThisApplication : Application
     LogisticRegression lr0 (sm, sp0, *targetAttr);
     lr0. solve ();
     lr0. qc ();    
-    lr0. print (cout);
+    lr0. saveText (cout);
 	}
 };
 
