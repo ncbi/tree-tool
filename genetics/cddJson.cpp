@@ -63,7 +63,7 @@ struct ThisApplication : Application
     const JsonMap cdannots (fName);
     if (verbose ())
     {
-      cdannots. print (cout);
+      cdannots. saveText (cout);
       cout << endl;
     }
     try
