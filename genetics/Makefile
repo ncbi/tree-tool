@@ -14,7 +14,6 @@ all:	\
 	asn_grep \
 	blastmat \
 	blastp_merge \
-	cddJson \
 	dna2orfs \
 	dna2stat \
 	dna_coverage \
@@ -70,12 +69,6 @@ blastp_merge.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
 blastp_mergeOBJS=blastp_merge.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o $(DM_DIR)/matrix.o
 blastp_merge:	$(blastp_mergeOBJS)
 	$(CXX) -o $@ $(blastp_mergeOBJS) $(LIBS) 
-	$(ECHO)
-
-cddJson.o:  $(COMMON_HPP) 
-cddJsonOBJS=cddJson.o $(CPP_DIR)/common.o
-cddJson:	$(cddJsonOBJS)
-	$(CXX) -o $@ $(cddJsonOBJS) $(LIBS)
 	$(ECHO)
 
 dna2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
