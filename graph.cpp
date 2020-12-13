@@ -1290,7 +1290,8 @@ void Tree::qc () const
   bool transient = false;
 	for (const DiGraph::Node* node : nodes)
 	{
-	  if (node->arcs [true]. size () > 1)
+	  QC_ASSERT (node->arcs [true]. size () <= 1);
+	#if 0
 	  {
 	    cout << "Multiple parents of " << node->getHumanName () << endl;
 	    const VectorPtr<DiGraph::Node> neighbors (node->getNeighborhood (true));
@@ -1299,9 +1300,10 @@ void Tree::qc () const
 	      cout << " " << neighbor->getHumanName ();
 	    cout << endl << endl;
 	    if (verbose ())
-	      print (cout);
+	      saveText (cout);
 	    ERROR;
 	  }
+	#endif
 	  const TreeNode* n = static_cast <const TreeNode*> (node);
 	  if (n->isLeaf ())
 	  {

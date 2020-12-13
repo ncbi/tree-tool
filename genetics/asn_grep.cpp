@@ -70,7 +70,7 @@ struct ThisApplication : Application
 	  {
   	  const Asn_sp::GenbankText gt (f);
   	  if (verbose ())
-  	    gt. print (cout);  
+  	    gt. saveText (cout);  
   	    
   	  const string acc_ver (gt. name2value ("VERSION"));
   	  

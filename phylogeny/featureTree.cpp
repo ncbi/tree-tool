@@ -1128,7 +1128,7 @@ void Genome::qc () const
 /*
 	if (getFeatureTree (). coreSynced && coreNonSingletons < getCoreSize ())
 	{
-	  print (cout);
+	  saveText (cout);
 	  cout << endl;
 	  cout << coreNonSingletons << ' ' << getCoreSize () << ' ' << singletons. size () << endl;
     FFOR (size_t, i, getFeatureTree (). features. size ())
@@ -2653,6 +2653,7 @@ void FeatureTree::saveText (ostream& os) const
 
 
 
+#if 0
 void FeatureTree::print (ostream& os) const
 { 
 	os << "TREE" << endl;
@@ -2666,6 +2667,7 @@ void FeatureTree::print (ostream& os) const
   }
 #endif
 }
+#endif
 
 
 

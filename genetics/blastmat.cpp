@@ -76,7 +76,7 @@ struct ThisApplication : Application
     mat. qc ();
     
     if (verbose ())
-      mat. print (cout);
+      mat. saveText (cout);
 
     double dist [SubstMat::sim_size + 1] [SubstMat::sim_size + 1];  // (chars + gap) * (chars + gap)
     

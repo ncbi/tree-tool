@@ -148,7 +148,7 @@ struct ThisApplication : Application
       }
 
 
-    ds_new. print (cout);
+    ds_new. saveText (cout);
 	}
 };
 

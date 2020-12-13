@@ -114,7 +114,7 @@ struct Hmm : Named
         QC_ASSERT (geReal ((Real) seedNames. size (), score. n));
         QC_ASSERT (! isNan (score. getMean ()));
 		    if (score. getMean () <= 0)
-		    { print (cout);
+		    { saveText (cout);
 		      ERROR;
 		    }
 		    if (! separating)
@@ -252,7 +252,7 @@ struct ThisApplication : Application
 	      hmm. hits << hit;
 	      if (verbose ())
 	      {
-	        hit. print (cout);
+	        hit. saveText (cout);
 	        cout << endl;
 	      }
 	    }

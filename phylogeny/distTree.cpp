@@ -6687,7 +6687,8 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
       if (verbose (1))
       {
         cout << "Apply " << nChange << "/" << changes. size () << ": ";
-        ch->print (cout);  
+        ch->saveText (cout);  
+        cout << endl;
       }
       const bool success = ch->apply ();
       if (verbose (1))
@@ -6779,7 +6780,8 @@ void DistTree::tryChange (Change* ch,
   
   if (verbose ())
   {
-    ch->print (cout); 
+    ch->saveText (cout); 
+    cout << endl;
     ch->qc ();
   }
 
@@ -6789,7 +6791,10 @@ void DistTree::tryChange (Change* ch,
 
   Unverbose unv;
   if (verbose ())
-    ch->print (cout); 
+  {
+    ch->saveText (cout); 
+    cout << endl;
+  }
   
   if (Change::strictlyBetter (ch, bestChange))
   {
@@ -7781,7 +7786,7 @@ Real DistTree::reroot (bool topological)
     PRINT (bestDTNode);
     PRINT (bestDTNodeLen_new);
     PRINT (bestGlobalLen. getMean ());
-    print (cout);
+    saveText (cout);
   }
   
   clearSubtreeLen ();

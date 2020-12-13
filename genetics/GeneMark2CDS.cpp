@@ -308,7 +308,7 @@ struct ThisApplication : Application
 	        catch (...)
 	        {
 	        	cds->print ();
-	        	cdsDna. print (cout);
+	        	cdsDna. saveText (cout);
 	        	if (! noerror)
 	        	  throw;
 	        }

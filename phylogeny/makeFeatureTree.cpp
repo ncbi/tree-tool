@@ -262,7 +262,7 @@ struct ThisApplication : Application
             extraMutations += f. mutations () - 1;
             nonMonophyletics++;
           }
-          f. print (out);
+          f. saveText (out);
         }
       }
       const ONumber on (cout, 2, false);  // PAR

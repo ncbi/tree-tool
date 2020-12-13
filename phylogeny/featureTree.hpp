@@ -667,7 +667,7 @@ public:
   void saveText (ostream& os) const override;
     // W/o endl
     // Requires: tree topology has not changed after loading the tree
-	void print (ostream& os) const override
+	virtual void print (ostream& os) const
 	  { os << from->getName () << " -> " << type () << "  improvement = ";
 	    ONumber oNum (os, 1, false);  // PAR
 	    os << improvementDeinflated () << endl; 
@@ -1209,7 +1209,6 @@ public:
 	  //          time_init
 	  //        topology
 	  // Requires: coreSynced
-	void print (ostream& os) const override;
 
 	
   void deleteLeaf (TreeNode* leaf,

@@ -889,18 +889,12 @@ public:
       if (status == eApplied)
         errorExit ("Change::status = eApplied");
     #endif
-  }
+    }
 	void qc () const override;
 	  // Invokes: valid()
-protected:
 	void saveText (ostream& os) const override
 	  { os << from->getName () << " (parent = " << (from->getParent () ? from->getParent () -> getName () : "null") << ") -> " << to->getName () 
          << "  improvement = " << improvement; 
-	  }
-public:
-	void print (ostream& os) const override
-	  { saveText (os);
-	    os << endl; 
 	  }
 
 
@@ -920,7 +914,7 @@ public:
     // May invoke: tree.delayDeleteRetainArcs()
     // Time: O(log^2(n))
 	static bool strictlyBetter (const Change* a, 
-	                           const Change* b);
+	                            const Change* b);
     // Requires: (bool)a
 };
 

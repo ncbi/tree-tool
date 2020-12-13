@@ -553,7 +553,7 @@ struct ThisApplication : Application
             
             tree->qc ();
             if (verbose ())
-              tree->print (cout);  
+              tree->saveText (cout);  
             tree->reportErrors (cout);
             
             if (lenArc_deleted || lenNode_deleted)

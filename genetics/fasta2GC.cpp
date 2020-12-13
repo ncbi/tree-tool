@@ -91,7 +91,7 @@ struct ThisApplication : Application
 		  }
 		}
 		
-		ds. print (cout);
+		ds. saveText (cout);
   }
 };
 
