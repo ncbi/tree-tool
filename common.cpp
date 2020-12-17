@@ -1241,25 +1241,25 @@ Threads::~Threads ()
 // Xml::Tag
 
 Xml::Tag::Tag (Xml::File &f_arg,
-               const string &name_arg,
-               bool active_arg)
+               const string &name_arg)
 : name (name_arg)
 , f (f_arg)
-, active (active_arg)
 { 
   ASSERT (! contains (name, ' '));
-  if (active)
-    f. print ("<" + name + ">");
+  f. print ("<" + name + ">");
 }
 
 
 
 Xml::Tag::~Tag ()
 { 
-  if (active)
-    f. print ("</" + name + ">\n");
+  f. print ("</" + name + ">\n");
 }
 
+
+
+unique_ptr<Xml::File> cxml;
+  
 
 
 

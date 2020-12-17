@@ -1389,12 +1389,10 @@ struct Xml
   private:
     const string name;
     File &f;
-    const bool active;
   public:
 
     Tag (File &f_arg,
-         const string &name_arg,
-         bool active_arg = true);
+         const string &name_arg);
    ~Tag ();
   };
   
@@ -1421,6 +1419,10 @@ struct Xml
         }
   };
 };
+
+
+
+extern unique_ptr<Xml::File> cxml;
 
 
 
