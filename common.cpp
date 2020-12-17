@@ -1258,13 +1258,6 @@ Xml::Tag::~Tag ()
 
 
 
-Xml::File& Xml::File::operator<< (const Root &r) 
-{ 
-  r. saveXml (*this);
-  return *this;
-}
-
-
 
 unique_ptr<Xml::File> cxml;
   

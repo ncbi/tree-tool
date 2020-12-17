@@ -1413,7 +1413,6 @@ struct Xml
       
     void print (const string &s)
       { os << s; }
-    File& operator<< (const Root &r);
     template <typename T>
       File& operator<< (const T &t)
         { os << t;
