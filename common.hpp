@@ -1370,6 +1370,7 @@ struct Unverbose
 
 
 
+struct Root;
 struct Json;
 struct JsonContainer;
 
@@ -1412,6 +1413,7 @@ struct Xml
       
     void print (const string &s)
       { os << s; }
+    File& operator<< (const Root &r);
     template <typename T>
       File& operator<< (const T &t)
         { os << t;
@@ -1471,14 +1473,8 @@ inline ostream& operator<< (ostream &os,
                             const Root &r) 
   { r. saveText (os);
     return os;
-  }
-  
-inline Xml::File& operator<< (Xml::File &f,
-                              const Root &r) 
-  { r. saveXml (f);
-    return f;
-  }
-  
+  }  
+
 
 
 
