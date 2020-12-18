@@ -1369,14 +1369,13 @@ struct Unverbose
   
 
 
-
-struct Root;
 struct Json;
 struct JsonContainer;
 
 
 
 class Notype {};
+
 
 
 
@@ -1407,10 +1406,17 @@ struct Xml
     
     File (ostream &os_arg,
           const string &tagName)
-      : os (os_arg)
+      : os (init (os_arg))
       , tag (*this, tagName)
       {}
-      
+  private:
+    static ostream& init (ostream &os_arg)
+      { os_arg << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>" << endl;  // PAR
+        return os_arg;
+      }
+  public:
+
+
     void print (const string &s)
       { os << s; }
     template <typename T>
@@ -1424,6 +1430,7 @@ struct Xml
 
 
 extern unique_ptr<Xml::File> cxml;
+  
 
 
 

@@ -191,6 +191,11 @@ public:
   void saveText (ostream &os) const override;
   
   
+  size_t getDepth () const
+    { if (parent)
+        return parent->getDepth () + 1;
+      return 0;
+    }
   Schema* createSchema (bool storeTokens) const;
     // Return: new
   void writeFiles (size_t xmlNum,
