@@ -45,8 +45,7 @@ all:	\
 	prots2hmm_signature \
 	prots_pair2stat \
 	replaceFastaNames \
-	splitFastaDna \
-	splitFastaProt \
+	splitFasta \
 	splitHmmLib \
 	tblastn2orfs \
 	uniqSeq \
@@ -257,16 +256,10 @@ replaceFastaNames:	$(replaceFastaNamesOBJS)
 	$(CXX) -o $@ $(replaceFastaNamesOBJS) $(LIBS) 
 	$(ECHO)
 
-splitFastaDna.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-splitFastaDnaOBJS=splitFastaDna.o $(SEQ_OBJ)
-splitFastaDna:	$(splitFastaDnaOBJS)
-	$(CXX) -o $@ $(splitFastaDnaOBJS) $(LIBS) 
-	$(ECHO)
-
-splitFastaProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-splitFastaProtOBJS=splitFastaProt.o $(SEQ_OBJ)
-splitFastaProt:	$(splitFastaProtOBJS)
-	$(CXX) -o $@ $(splitFastaProtOBJS) $(LIBS) 
+splitFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+splitFastaOBJS=splitFasta.o $(SEQ_OBJ)
+splitFasta:	$(splitFastaOBJS)
+	$(CXX) -o $@ $(splitFastaOBJS) $(LIBS) 
 	$(ECHO)
 
 splitHmmLib.o:	$(COMMON_HPP) 

@@ -16,7 +16,7 @@ echo $TMP
 
 
 mkdir $TMP.seq
-$THIS/splitFastaDna $FASTA $TMP.seq
+$THIS/splitFasta $FASTA $TMP.seq
 
 $THIS/../trav -step 1  -errors /dev/stdout  $TMP.seq  "CDS_check.sh %d/%f" > $OUT
 

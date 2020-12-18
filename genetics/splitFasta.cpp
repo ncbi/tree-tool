@@ -1,4 +1,4 @@
-// splitFastaProt.cpp
+// splitFasta.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Split a peptide multi-fasta file into a set of fasta files each containing one sequence
+*   Split a multi-fasta file into a set of fasta files each containing one sequence
 *
 */
 
@@ -49,37 +49,60 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Split a peptide multi-fasta file into a set of fasta files each containing one sequence")
+    : Application ("Split a multi-fasta file into a set of fasta files each containing one sequence")
   	{
-  	  addFlag ("sparse", "Sparse sequence");
-  	  addPositional ("in", "Input multi-fasta file with peptides");
-  	  addPositional ("len_min", "Minimum peptide length");
+  	  addPositional ("in", "Input multi-FASTA file");
   	  addPositional ("out_dir", "Output directory");
+  	  addFlag ("aa", "Multi-FASTA file contains protein sequences, otherwise DNA sequences");
+  	  addFlag ("sparse", "Sparse sequence");
+  	  addKey ("len_min", "Minimum sequence length", "0");
+    #ifndef _MSC_VER
+  	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
+  	#endif
   	}
 
 
 
 	void body () const final
   {
-		const bool sparse    = getFlag ("sparse");
 		const string in      = getArg ("in");
-		const size_t len_min = (size_t) arg2uint ("len_min");
 		const string out_dir = getArg ("out_dir");
+		const bool   aa      = getFlag ("aa");
+		const bool   sparse  = getFlag ("sparse");
+		const size_t len_min = (size_t) arg2uint ("len_min");
+  #ifndef _MSC_VER
+		const bool   large   = getFlag ("large");
+  #endif
 
-    {    
+
+    {
       // For ~Progress()
-		  Multifasta fa (in, true);
-		  while (fa. next ())
-		  {
-	      const Peptide seq (fa, Peptide::stdAveLen, sparse);
-		    ASSERT (! seq. name. empty ());
-		    if (seq. seq. size () < (size_t) len_min)
+  	  Multifasta fa (in, aa, 16 * 1024 * 1024);  // PAR
+  	  while (fa. next ())
+  	  {
+  	    unique_ptr<const Seq> seq;
+  	    if (aa)
+  	      seq. reset (new Peptide (fa, Peptide::stdAveLen, sparse));  
+  	    else
+  	      seq. reset (new Dna (fa, 128 * 1024, sparse));  
+  	    seq->qc ();
+  	    ASSERT (! seq->name. empty ());
+		    if (seq->seq. size () < len_min)
 		    	continue;
-		    string s (seq. name);
+  	    string s (seq->name);
 		    s = findSplit (s);
-		    seq. saveFile (out_dir + "/" + findSplit (s, '|'));
-		  }
-		}
+		    s = findSplit (s, '|');
+		    string dir (out_dir);
+      #ifndef _MSC_VER
+		    if (large)
+		    {
+		      dir += "/" + to_string (str2hash_class (s));
+		      createDirectory (dir, true);
+		    }
+		  #endif
+  	    seq->saveFile (dir + "/" + s);
+  	  }
+  	}
 	}
 };
 
@@ -89,8 +112,9 @@ struct ThisApplication : Application
 
 
 
-int main(int argc, 
-         const char* argv[])
+
+int main (int argc, 
+          const char* argv[])
 {
   ThisApplication app;
   return app. run (argc, argv);  
