@@ -1,5 +1,5 @@
 #!/bin/bash
-source bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
   exit 1
@@ -13,15 +13,13 @@ INC=`dirname $0`
 TMP=`mktemp`  
 #echo $TMP  
 
-blastn  -db $INC/seq.fa  -query /home/brovervv/panfs/marker/Fungi/28SrRNA/seq/$NEW_OBJ  -strand plus  -evalue 1e-20  -task blastn  -outfmt '6 sseqid nident' > $TMP.blastn
+blastn  -db $INC/seq.fa  -query $INC/../seq/$NEW_OBJ  -strand plus  -task blastn  -outfmt '6 sseqid nident' > $TMP.blastn
+  # -evalue 1e-20
 set +o errexit
 grep -v $NEW_OBJ $TMP.blastn > $TMP.grep 
 sort -k 2 -n -r $TMP.grep | cut -f 1 | head -100 > $TMP.head
 set -o errexit
-sort -u $TMP.head | sed 's/$/ '$NEW_OBJ'/1' 
+sort -u $TMP.head 
 
 
 rm -fr $TMP*  
-
-
-

@@ -14,6 +14,10 @@ DISSIM=$3
 LOG=$4
 
 
+TMP=`mktemp`
+#echo $TMP
+
+
 NEW=""
 if [ -n "$FILE_NEW" ]; then
   NAME=`head -1 $FILE_NEW | sed 's/^>//1' | cut -f 1 -d ' '`
@@ -21,8 +25,14 @@ if [ -n "$FILE_NEW" ]; then
 fi
 
 INC=`dirname $0`
-CPP_DIR/dissim/dna_pair2dissim  $REQUEST $INC/../seq 140 $DISSIM  $NEW  -coeff 0.0082  -log $LOG
-
+if false; then
+  CPP_DIR/dissim/dna_pair2dissim $REQUEST $INC/../seq-long  140 $TMP.long   $NEW  -coeff 0.0095  -log $LOG
+  CPP_DIR/dissim/dna_pair2dissim $REQUEST $INC/../seq-short 120 $TMP.short  $NEW  -coeff 0.1     -log $LOG
+  CPP_DIR/dissim/conv_comb $TMP.long $TMP.short 0.95  -log $LOG > $DISSIM
+else
+  CPP_DIR/dissim/dna_pair2dissim $REQUEST $INC/../seq-long 140 $DISSIM  $NEW  -coeff 0.0082  -log $LOG
+fi
 
 rm -f $LOG
+rm $TMP*
 

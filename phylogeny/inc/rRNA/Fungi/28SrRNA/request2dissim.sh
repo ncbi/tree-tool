@@ -26,3 +26,4 @@ CPP_DIR/dissim/dna_pair2dissim  -log $LOG  -coeff 0.0066887  $NEW  $REQUEST $INC
   
 rm -f $LOG
 
+

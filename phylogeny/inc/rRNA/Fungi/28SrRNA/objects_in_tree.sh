@@ -1,5 +1,5 @@
 #!/bin/bash 
-source bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   exit 1
 fi
@@ -11,25 +11,30 @@ if [ ! -s $OBJ_LIST ]; then
   exit 0
 fi
 
-BASE_DIR=`dirname $0`
+INC=`dirname $0`
 
 if [ $IN_TREE == 1 ]; then
-  trav $1 "cat /home/brovervv/panfs/marker/Fungi/28SrRNA/seq/%f" >> $BASE_DIR/seq.fa
+  CPP_DIR//trav $OBJ_LIST "cat $INC/../seq/%f" >> $INC/seq.fa
 else
-  extractFastaDna $BASE_DIR/seq.fa $OBJ_LIST  -remove > $BASE_DIR/seq.fa1
-  mv $BASE_DIR/seq.fa1 $BASE_DIR/seq.fa
+  CPP_DIR/genetics/extractFastaDna $INC/seq.fa $OBJ_LIST  -remove > $INC/seq.fa1
+  mv $INC/seq.fa1 $INC/seq.fa
 fi
 
-makeblastdb  -in $BASE_DIR/seq.fa  -dbtype nucl    -logfile /dev/null
+makeblastdb  -in $INC/seq.fa  -dbtype nucl    -logfile /dev/null
 
 
-loadLISTC $OBJ_LIST
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+BULK_REMOTE=`cat $INC/bulk_remote`
+
+CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
+
 
 sqsh-ms  -S PROTEUS  -D uniColl << EOT 
   update Locus
     set in_tree = $IN_TREE
-    from      LISTC
-         join Locus on Locus.id = LISTC.id;
+    from      ListC
+         join Locus on Locus.id = ListC.id;
   print @@rowcount;
   go -m bcp
 EOT

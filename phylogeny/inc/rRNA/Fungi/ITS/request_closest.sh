@@ -9,7 +9,7 @@ NEW_OBJ=$1
 
 
 INC=`dirname $0`
-CPP_DIR/genetics/dna_closest.sh $INC/../seq/$NEW_OBJ $INC/seq.fa
+CPP_DIR/genetics/dna_closest.sh $INC/../seq-long/$NEW_OBJ $INC/seq.fa
 
 
 

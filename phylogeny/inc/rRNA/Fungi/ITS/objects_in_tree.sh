@@ -14,7 +14,7 @@ fi
 INC=`dirname $0`
 
 if [ $IN_TREE == 1 ]; then
-  CPP_DIR/trav $OBJ_LIST "cat $INC/../seq/%f" >> $INC/seq.fa
+  CPP_DIR/trav $OBJ_LIST "cat $INC/../seq-long/%f" >> $INC/seq.fa
 else
   CPP_DIR/genetics/extractFastaDna $INC/seq.fa $OBJ_LIST  -remove > $INC/seq.fa1
   mv $INC/seq.fa1 $INC/seq.fa
