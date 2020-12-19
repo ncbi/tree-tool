@@ -1246,6 +1246,13 @@ Xml::Tag::Tag (Xml::File &f_arg,
 , f (f_arg)
 { 
   ASSERT (! contains (name, ' '));
+  if (f. printOffset)
+  {
+    f. print ("\n");
+    f. offset++;
+    FOR (size_t, i, f. offset * File::offset_spaces)
+      f . print (" ");
+  }
   f. print ("<" + name + ">");
 }
 
@@ -1253,7 +1260,22 @@ Xml::Tag::Tag (Xml::File &f_arg,
 
 Xml::Tag::~Tag ()
 { 
-  f. print ("</" + name + ">\n");
+  if (f. printOffset && f. printBrief)
+  {
+    f. offset--;
+    return;
+  }
+  
+  if (f. printOffset)
+  {
+    f. print ("\n");
+    FOR (size_t, i, f. offset * File::offset_spaces)
+      f . print (" ");
+    f. offset--;
+  }
+  f. print ("</" + name + ">");
+  if (! f. printOffset)
+    f. print ("\n");
 }
 
 
@@ -1785,16 +1807,23 @@ void Token::saveText (ostream &os) const
   switch (type)
 	{ 
 	  case eName:      
-	  case eDateTime:
-	                   os          << name;          break;
-		case eText:      os << quote << name << quote; break;
-		case eInteger:   os          << n;             break;
+	  case eDateTime:  os << name; 
+	                   break;
+		case eText:      if (quote)
+		                   os << quote;
+		                 os << name;
+		                 if (quote)
+		                   os << quote; 
+		                 break;
+		case eInteger:   os << n;             
+		                 break;
 		case eDouble:    { 
 		                   const ONumber on (os, decimals, scientific); 
 		                   os << d; 
 		                 } 
 		                 break;
-		case eDelimiter: os          << name;          break;
+		case eDelimiter: os << name;          
+		                 break;
  		default: throw runtime_error ("Token: Unknown type");
 	}
 }

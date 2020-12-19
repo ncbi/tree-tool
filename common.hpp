@@ -1402,7 +1402,12 @@ struct Xml
   private:
     ostream& os;
     const Tag tag;
+    size_t offset {0};
+    static constexpr size_t offset_spaces {2};  // PAR
+    friend Tag;
   public:
+    bool printOffset {false};
+    bool printBrief {false};
     
     File (ostream &os_arg,
           const string &tagName)
@@ -2804,6 +2809,7 @@ struct Token : Root
 	  // eText => embracing quote's are removed
 	  // Valid if !empty()
 	char quote {'\0'};
+	  // '\0': no quote
 	long long n {0};
 	double d {0.0};
   // Valid if eDouble
