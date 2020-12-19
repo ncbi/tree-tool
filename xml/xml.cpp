@@ -532,6 +532,10 @@ void Data::qc () const
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
     QC_IMPLY (! token. name. empty (), goodName (token. name));
+    token. qc ();
+    QC_ASSERT (! contains (token. name, '<'));
+    QC_ASSERT (! contains (token. name, '>'));
+      // Other characters prohibited in XML ??
     for (const Data* child : children)
     {
       QC_ASSERT (child);
@@ -540,41 +544,20 @@ void Data::qc () const
   }
   catch (const exception &e)
   {
-    saveText (cout);
+    Xml::File f (cout, "XML");
+    saveXml (f);
     errorExit (e. what ());
   }
 }
 
 
 
-void Data::saveText (ostream &os) const 
+void Data::saveXml (Xml::File &f) const
 {
-  Offset::newLn (os);
-  os << '<' << name << '>';
-  
-  if (children. empty ())
-  {
-    if (! token. empty ())
-    {
-      os << ": ";
-      token. saveText (os);
-    }
-  }
-  else
-  {  
-    {
-      const Offset ofs;
-      for (const Data* child : children)
-        child->saveText (os);
-      if (! token. empty ())
-      {
-        Offset::newLn (os);
-        token. saveText (os);
-      }
-    }
-    Offset::newLn (os);
-    os << "</" << name << '>';
-  }
+  const Xml::Tag tag (f, name);
+  for (const Data* child : children)
+    child->saveXml (f);
+  f << token. str ();
 }
 
 

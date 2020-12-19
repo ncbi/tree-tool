@@ -81,8 +81,11 @@ struct ThisApplication : Application
     
     if (printP)
     {
-      xml->saveText (cout);
-      cout << endl;
+      Xml::File f (cout, "XML");
+      // PAR
+      f. printOffset = true;
+      f. printBrief = true;
+      xml->saveXml (f);
     }
 
     unique_ptr<Xml_sp::Schema> sch (xml->createSchema (storeValues));

@@ -188,7 +188,7 @@ private:
   void readInput (TokenInput &ti);
 public:
   void qc () const override;
-  void saveText (ostream &os) const override;
+  void saveXml (Xml::File &f) const override;
   
   
   size_t getDepth () const
