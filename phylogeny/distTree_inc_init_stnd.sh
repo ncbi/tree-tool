@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Initialize an incremental distance tree directory with standard parameters for a specific biological project in $THIS/inc"
   echo "#1: output directory"
-  echo "#2: biological project"
+  echo "#2: biological project (incremental distance tree directory)"
   echo "#3: SQL server name"
   echo "#4: database name on the SQL server"
   echo "#5: complete path to a directory for bulk insert into the database"
