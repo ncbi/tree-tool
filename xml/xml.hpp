@@ -196,6 +196,10 @@ public:
         return parent->getDepth () + 1;
       return 0;
     }
+  bool contains (const string &what,
+                 bool equalName,
+                 bool tokenSubstr,
+                 bool tokenWord) const;
   bool find (VectorPtr<Data> &path,
              const string &what,
              bool equalName,
@@ -204,6 +208,7 @@ public:
     // DFS
     // Update: path: reverse path to *Data containing <what>
     //               valid if Return
+    // Invokes: contains()
   Schema* createSchema (bool storeTokens) const;
     // Return: new
   void writeFiles (size_t xmlNum,

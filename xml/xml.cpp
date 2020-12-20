@@ -533,8 +533,8 @@ void Data::qc () const
   //QC_ASSERT (! children. empty () || ! text. empty ());
     QC_IMPLY (! token. name. empty (), goodName (token. name));
     token. qc ();
-    QC_ASSERT (! contains (token. name, '<'));
-    QC_ASSERT (! contains (token. name, '>'));
+    QC_ASSERT (! Common_sp::contains (token. name, '<'));
+    QC_ASSERT (! Common_sp::contains (token. name, '>'));
       // Other characters prohibited in XML ??
     for (const Data* child : children)
     {
@@ -562,6 +562,34 @@ void Data::saveXml (Xml::File &f) const
 
 
 
+bool Data::contains (const string &what,
+                     bool equalName,
+                     bool tokenSubstr,
+                     bool tokenWord) const
+{
+  if (   ! equalName
+      && ! tokenSubstr
+      && ! tokenWord
+     )
+    return false;
+    
+  if (equalName && name == what)
+    return true;
+
+  if (tokenSubstr || tokenWord)
+  {
+    const string s (token. str ());
+    if (tokenSubstr && Common_sp::contains (s, what))
+      return true;
+    if (tokenWord && containsWord (s, what))
+      return true;
+  }
+    
+  return false;
+}
+
+
+
 bool Data::find (VectorPtr<Data> &path,
                  const string &what,
                  bool equalName,
@@ -574,16 +602,8 @@ bool Data::find (VectorPtr<Data> &path,
      )
     return false;
     
-  if (equalName && name == what)
+  if (contains (what, equalName, tokenSubstr, tokenWord))
     return true;
-  if (tokenSubstr || tokenWord)
-  {
-    const string s (token. str ());
-    if (tokenSubstr && contains (s, what))
-      return true;
-    if (tokenWord && containsWord (s, what))
-      return true;
-  }
     
   for (const Data* child : children)
     if (child->find (path, what, equalName, tokenSubstr, tokenWord))
