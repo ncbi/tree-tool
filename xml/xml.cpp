@@ -581,7 +581,7 @@ bool Data::contains (const string &what,
     const string s (token. str ());
     if (tokenSubstr && Common_sp::contains (s, what))
       return true;
-    if (tokenWord && containsWord (s, what))
+    if (tokenWord && containsWord (s, what) != string::npos)
       return true;
   }
     
