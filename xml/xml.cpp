@@ -562,6 +562,41 @@ void Data::saveXml (Xml::File &f) const
 
 
 
+bool Data::find (VectorPtr<Data> &path,
+                 const string &what,
+                 bool equalName,
+                 bool tokenSubstr,
+                 bool tokenWord) const
+{
+  if (   ! equalName
+      && ! tokenSubstr
+      && ! tokenWord
+     )
+    return false;
+    
+  if (equalName && name == what)
+    return true;
+  if (tokenSubstr || tokenWord)
+  {
+    const string s (token. str ());
+    if (tokenSubstr && contains (s, what))
+      return true;
+    if (tokenWord && containsWord (s, what))
+      return true;
+  }
+    
+  for (const Data* child : children)
+    if (child->find (path, what, equalName, tokenSubstr, tokenWord))
+    {
+      path << child;
+      return true;
+    }
+    
+  return false;
+}
+
+
+
 Schema* Data::createSchema (bool storeTokens) const
 {
   auto sch = new Schema (nullptr, storeTokens);
