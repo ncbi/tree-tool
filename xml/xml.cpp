@@ -544,7 +544,7 @@ void Data::qc () const
   }
   catch (const exception &e)
   {
-    Xml::File f (cout, "XML");
+    Xml::File f (cout, false, false, "XML");
     saveXml (f);
     errorExit (e. what ());
   }

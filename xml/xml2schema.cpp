@@ -81,10 +81,7 @@ struct ThisApplication : Application
     
     if (printP)
     {
-      Xml::File f (cout, "XML");
-      // PAR
-      f. printOffset = true;
-      f. printBrief = true;
+      Xml::File f (cout, true, true, "XML");  // PAR
       xml->saveXml (f);
     }
 

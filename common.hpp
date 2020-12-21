@@ -1401,17 +1401,22 @@ struct Xml
   {
   private:
     ostream& os;
-    const Tag tag;
     size_t offset {0};
-    static constexpr size_t offset_spaces {2};  // PAR
     friend Tag;
   public:
-    bool printOffset {false};
-    bool printBrief {false};
-    
+    static constexpr size_t offset_spaces {2};  // PAR
+    const bool printOffset;
+    const bool printBrief;
+    const Tag tag;
+
+
     File (ostream &os_arg,
+          bool printOffset_arg,
+          bool printBrief_arg,
           const string &tagName)
       : os (init (os_arg))
+      , printOffset (printOffset_arg)
+      , printBrief (printBrief_arg)
       , tag (*this, tagName)
       {}
   private:
