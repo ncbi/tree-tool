@@ -196,6 +196,14 @@ public:
         return parent->getDepth () + 1;
       return 0;
     }
+  size_t getLeaves () const
+    { if (children. empty ())
+        return 1;
+      size_t n = 0;
+      for (const Data* child : children)
+        n += child->getLeaves ();
+      return n;
+    }
   bool contains (const string &what,
                  bool equalName,
                  bool tokenSubstr,
