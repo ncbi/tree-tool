@@ -196,6 +196,12 @@ public:
         return parent->getDepth () + 1;
       return 0;
     }
+  size_t getNodes () const
+    { size_t n = 1;
+      for (const Data* child : children)
+        n += child->getLeaves ();
+      return n;
+    }
   size_t getLeaves () const
     { if (children. empty ())
         return 1;
