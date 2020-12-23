@@ -12,12 +12,20 @@ endif
 
 ############################### Programs ################################
 
-all:	\
+ALL=	\
   xml2schema \
   xml_merge_schemas \
   xml_schema2ddl \
   xml_schema2flat
-	
+  
+ifdef AT_NCBI
+  all:  $(ALL) \
+    xml_view
+else
+  all:  $(ALL)
+endif
+
+
 
 xml2schema.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
 xml2schemaOBJS=xml2schema.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
@@ -43,3 +51,8 @@ xml_schema2flat:	$(xml_schema2flatOBJS)
 	$(CXX) -o $@ $(xml_schema2flatOBJS) $(LIBS)
 	$(ECHO)
 
+xml_view.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
+xml_showOBJS=xml_view.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
+xml_view:	$(xml_showOBJS)
+	$(CXX) -o $@ $(xml_showOBJS) $(LIBS) -lncurses
+	$(ECHO)
