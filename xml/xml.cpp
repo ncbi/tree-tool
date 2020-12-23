@@ -498,6 +498,7 @@ void Data::readInput (TokenInput &ti)
     {
       token = move (ti. getXmlText ());
       token. toNumberDate ();
+    #if 0
       string& s = token. name;
       FOR_REV (size_t, i, s. size ())
       {
@@ -507,6 +508,7 @@ void Data::readInput (TokenInput &ti)
            )
           s = s. substr (0, i) + "%" + uchar2hex ((uchar) c) + s. substr (i + 1);
       }
+    #endif
       ti. get ('/');
       const Token end (ti. get ());
       if (end. type != Token::eName)
