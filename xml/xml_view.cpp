@@ -1,5 +1,37 @@
 // xml_view.cpp
 
+/*===========================================================================
+*
+*                            PUBLIC DOMAIN NOTICE                          
+*               National Center for Biotechnology Information
+*                                                                          
+*  This software/database is a "United States Government Work" under the   
+*  terms of the United States Copyright Act.  It was written as part of    
+*  the author's official duties as a United States Government employee and 
+*  thus cannot be copyrighted.  This software/database is freely available 
+*  to the public for use. The National Library of Medicine and the U.S.    
+*  Government have not placed any restriction on its use or reproduction.  
+*                                                                          
+*  Although all reasonable efforts have been taken to ensure the accuracy  
+*  and reliability of the software and data, the NLM and the U.S.          
+*  Government do not and cannot warrant the performance or results that    
+*  may be obtained by using this software or data. The NLM and the U.S.    
+*  Government disclaim all warranties, express or implied, including       
+*  warranties of performance, merchantability or fitness for any particular
+*  purpose.                                                                
+*                                                                          
+*  Please cite the author in any work or product based on this material.   
+*
+* ===========================================================================
+*
+* Author: Vyacheslav Brover
+*
+* File Description:
+*   XML viewer
+*
+*/
+
+
 #undef NDEBUG
 #include "../common.inc"
 
@@ -18,27 +50,104 @@ extern "C"
 
 namespace
 {
+  
+  
 
+struct NCurses : Singleton<NCurses>
+{
+  bool hasColors {false};
+  enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan};
+  // Change after screen resizing
+  int row_max {0};
+  int col_max {0};
+  
+  explicit NCurses (bool hideCursor)
+    { initscr (); 
+      cbreak ();
+      noecho ();
+      keypad (stdscr, TRUE);
+      wclear (stdscr);
+      if (hideCursor)
+        curs_set (0);  
+      hasColors = has_colors ();
+      if (hasColors)
+        { EXEC_ASSERT (start_color () == OK); }
+      resize ();
+      constexpr short bkgdColor = COLOR_BLACK;
+      init_pair (1, COLOR_RED,     bkgdColor);
+      init_pair (2, COLOR_GREEN,   bkgdColor);
+      init_pair (3, COLOR_YELLOW,  bkgdColor);
+      init_pair (4, COLOR_BLUE,    bkgdColor);
+      init_pair (5, COLOR_MAGENTA, bkgdColor);
+      init_pair (6, COLOR_CYAN,    bkgdColor);
+    }
+ ~NCurses ()
+    { endwin (); }
+
+   void resize ()
+     { getmaxyx (stdscr, row_max, col_max); }
+};
+
+
+
+struct NCAttr 
+{
+  const int attr;
+  const bool active;
+
+  explicit NCAttr (int attr_arg,
+                   bool active_arg = true)
+    : attr (attr_arg)
+    , active (active_arg)
+    { if (active)
+        attron (attr); 
+    }
+ ~NCAttr ()
+    { if (active)
+        attroff (attr); 
+    }
+};
+
+
+
+struct NCBackground 
+{
+  const chtype background_old;
+  
+  explicit NCBackground (chtype background)
+    : background_old (getbkgd (stdscr))
+    { bkgdset (background); }
+ ~NCBackground ()
+    { bkgdset (background_old); }
+};
+
+
+
+
+//
 
 struct Row
 {
   const Xml_sp::Data* data {nullptr};
     // !nullptr
+  size_t childNum {0};
   size_t nodes {0};
   // Variable
   bool open {false};
   bool found {false};
+  NCurses::Color color {NCurses::colorNone};
 
-  explicit Row (const Xml_sp::Data *data_arg)
+  Row (const Xml_sp::Data *data_arg,
+       size_t childNum_arg)
     : data (data_arg)
+    , childNum (childNum_arg)
     , nodes (data->getNodes ())
     { ASSERT (data); }
 
   size_t getDepth () const
     { return data->getDepth (); }
-  bool operator== (const Row &other) const
-    { return data == other. data; }
 };
+
 
 
 
@@ -74,18 +183,11 @@ struct ThisApplication : Application
 
 
     Vector<Row> rows;  rows. reserve (10000);  // PAR
-    rows << Row (xml. get ());
+    rows << Row (xml. get (), 0);
     size_t topIndex = 0;
     size_t curIndex = topIndex;
-    int row_max = 0;
-    int col_max = 0;
     string what;  // For search
-    initscr ();
-    cbreak ();
-    noecho ();
-    keypad (stdscr, TRUE);
-    curs_set (0);  // does not work ??
-    wclear (stdscr);
+    NCurses nc (true);
     bool quit = false;
     while (! quit)
     {
@@ -96,29 +198,40 @@ struct ThisApplication : Application
           QC_ASSERT (rows [i + 1]. getDepth () <= rows [i]. getDepth () + 1);
           QC_IMPLY (rows [i + 1]. getDepth () == rows [i]. getDepth () + 1, rows [i]. open);
         }
-      getmaxyx (stdscr, row_max, col_max);
-      const size_t fieldSize = (size_t) (row_max - 1);  // Last row is for menu
+      nc. resize ();
+      const size_t fieldSize = (size_t) (nc. row_max - 1);  // Last row is for menu
       const size_t pageScroll = fieldSize - 1;
       const size_t bottomIndex_max = topIndex + fieldSize;
       const size_t bottomIndex = min (rows. size (), bottomIndex_max);
-      if (   row_max > 2
-          && col_max > 10  // PAR
+      if (   nc. row_max > 2
+          && nc. col_max > 10  // PAR
          )
       {
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
         move ((int) fieldSize, 0);
-        attron (A_DIM);
-        addstr (("[" + getFileName (xmlFName) + "]   "). c_str ());
-        addstr ("Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor   F10,q:Quit");
-          // "F1,h": explain "[%d/%d]"
-          // Most of keys are intercepted by treminal
-        attroff (A_DIM);
+        {
+          const NCAttr attr (A_STANDOUT);
+          addstr (("[" + getFileName (xmlFName) + "] "). c_str ());
+          // Most of keys are intercepted by the terminal
+          addstr ("Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor");
+          if (nc. hasColors)
+            addstr ("   c:color");
+          addstr ("   F10,q:Quit");
+          int y = 0;
+          int x = 0;
+          getyx (stdscr, y, x);
+          QC_ASSERT (y == (int) fieldSize);  // getyx() is a macro
+          FOR_START (int, i, x, nc. col_max + 1)
+            addch (' ' );
+            // "F1,h": explain "[%d/%d]" at the end of lines
+        }
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
           const Row& row = rows [i];
           move ((int) (i - topIndex), 0);
+          const NCAttr attrMain (A_DIM);
           const size_t x = row. getDepth () * 2;  // PAR
           FFOR (size_t, j, x)
             addch (' ');
@@ -127,32 +240,27 @@ struct ThisApplication : Application
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          if (i == curIndex)
-            attron (A_REVERSE);
-          printw ("<%s>", row. data->name. c_str ());
+          const NCAttr attrColor (COLOR_PAIR (row. color), row. color != NCurses::colorNone);
+          const NCAttr attrCurrent (A_REVERSE, i == curIndex);
+          printw ("%lu <%s>", row. childNum + 1, row. data->name. c_str ());
           if (! row. data->token. empty ())
           {
             addch (' ');
-            if (row. found)
-          	  attron (A_BOLD | A_UNDERLINE);
+            const NCAttr attrFound (A_BOLD, row. found);
             printw ("%s", row. data->token. str (). c_str ());
-            if (row. found)
-          	  attroff (A_BOLD | A_UNDERLINE);
           }
           if (const size_t n = row. data->children. size ())
-            printw (" [%s/%s]", to_string (n). c_str (), to_string (row. nodes). c_str ());
+            printw (" [%lu/%lu]", n, row. nodes);
         #if 0
           printw (" %s %s %s %s"
                  , to_string (rows. size ()). c_str ()
                  , to_string (topIndex). c_str ()
                  , to_string (bottomIndex). c_str ()
-                 , to_string (row_max). c_str ()
+                 , to_string (nc. row_max). c_str ()
                  );
         #endif
           // Too long line ??
           clrtoeol ();
-          if (i == curIndex)
-            attroff (A_REVERSE);
         }
         FFOR_START (size_t, i, bottomIndex, fieldSize)
         {
@@ -254,8 +362,8 @@ struct ThisApplication : Application
                 Vector<Row> newRows;
                 const VectorOwn<Xml_sp::Data>& children = rows [curIndex]. data->children;
                 newRows. reserve (children. size ());
-                for (const Xml_sp::Data* child : children)
-                  newRows << Row (child);
+                FFOR (size_t, i, children. size ())
+                  newRows << Row (children [i], i);
                 rows. insert (itStart, newRows. begin (), newRows. end ());
               }
               else
@@ -283,7 +391,8 @@ struct ThisApplication : Application
               clrtoeol ();
             #if 0
               char format [32];
-              sprintf (format, ("%" + to_string (size) + "s"). c_str ());
+              sprintf (format, "%c%lu%s", '%', size, "%s");
+            //strcat (format, "%s");
               scanw (format, search);  // does not work
             #else
               getstr (search);
@@ -335,12 +444,11 @@ struct ThisApplication : Application
                 Vector<Row> newRows;
                 const VectorOwn<Xml_sp::Data>& children = rows [i]. data->children;
                 newRows. reserve (children. size ());
-                for (const Xml_sp::Data* child : children)
-                  newRows << Row (child);
-                const Row back (path. back ());
-                const size_t j = newRows. indexOf (back);
-                ASSERT (j != no_index);
+                FFOR (size_t, k, children. size ())
+                  newRows << Row (children [k], k);
                 rows. insert (itStart, newRows. begin (), newRows. end ());
+                const size_t j = children. indexOf (path. back ());
+                ASSERT (j != no_index);
                 i += 1 + j;
                 path. pop ();
               }
@@ -352,14 +460,28 @@ struct ThisApplication : Application
                 topIndex = curIndex - pageScroll;
             }
             break;
+          case 'c':  // Row::color
+            {
+              // draw a menu ??
+              Row& row = rows [curIndex];
+              switch (getch ())
+              {
+                case 'n': row. color = NCurses::colorNone; break;
+                case 'r': row. color = NCurses::colorRed; break;
+                case 'g': row. color = NCurses::colorGreen; break;
+                case 'y': row. color = NCurses::colorYellow; break;
+                case 'b': row. color = NCurses::colorBlue; break;
+                case 'm': row. color = NCurses::colorMagenta; break;
+                case 'c': row. color = NCurses::colorCyan; break;
+              }
+            }
+            break;
           default:
             keyAccepted = false;
             break;
         }
       }
     }
-    curs_set (1);
-    endwin ();
 	}
 };
 
