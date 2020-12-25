@@ -222,7 +222,8 @@ struct ThisApplication : Application
           int y = 0;
           int x = 0;
           getyx (stdscr, y, x);
-          QC_ASSERT (y == (int) fieldSize);  // getyx() is a macro
+          if (y != (int) fieldSize)  // getyx() is a macro
+            throw runtime_error (to_string (y) + " " + to_string (fieldSize));
           FOR_START (int, i, x, nc. col_max + 1)
             addch (' ' );
             // "F1,h": explain "[%d/%d]" at the end of lines
@@ -231,7 +232,7 @@ struct ThisApplication : Application
         {
           const Row& row = rows [i];
           move ((int) (i - topIndex), 0);
-          const NCAttr attrMain (A_DIM);
+        //const NCAttr attrMain (A_DIM);
           const size_t x = row. getDepth () * 2;  // PAR
           FFOR (size_t, j, x)
             addch (' ');
