@@ -50,6 +50,7 @@ namespace
 struct UniqSeq
 {
   const Seq* seq {nullptr};
+    // !nullptr
     // Not delete'd
   StringVector ids;
 };
@@ -109,7 +110,7 @@ struct ThisApplication : Application
       UniqSeq& useq = it. second;
       ASSERT (useq. seq);
       useq. ids. sort ();
-      QC_ASSERT (useq. ids. isUniq ());
+      useq. ids. uniq ();
 		  ASSERT (! useq. ids. empty ());
 		  var_cast (useq. seq) -> name = useq. ids. front ();
 		  useq. seq->saveText (cout);
