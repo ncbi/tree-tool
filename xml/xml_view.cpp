@@ -57,6 +57,7 @@ struct NCurses : Singleton<NCurses>
 {
   bool hasColors {false};
   enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan};
+  chtype background {0};
   // Change after screen resizing
   int row_max {0};
   int col_max {0};
@@ -66,7 +67,6 @@ struct NCurses : Singleton<NCurses>
       cbreak ();
       noecho ();
       keypad (stdscr, TRUE);
-      wclear (stdscr);
       if (hideCursor)
         curs_set (0);  
       hasColors = has_colors ();
@@ -74,24 +74,31 @@ struct NCurses : Singleton<NCurses>
         { EXEC_ASSERT (start_color () == OK); }
       resize ();
       constexpr short bkgdColor = COLOR_BLACK;
-      init_pair (1, COLOR_WHITE,   bkgdColor);
+      init_pair (1, COLOR_WHITE,   bkgdColor);  // colorNone
       init_pair (2, COLOR_RED,     bkgdColor);
       init_pair (3, COLOR_GREEN,   bkgdColor);
       init_pair (4, COLOR_YELLOW,  bkgdColor);
       init_pair (5, COLOR_BLUE,    bkgdColor);
       init_pair (6, COLOR_MAGENTA, bkgdColor);
       init_pair (7, COLOR_CYAN,    bkgdColor);
+      background = COLOR_PAIR (1);
+      bkgdset (background);
+      attron (COLOR_PAIR (1)); 
+      wclear (stdscr);
     }
  ~NCurses ()
     { endwin (); }
 
    void resize ()
-     { getmaxyx (stdscr, row_max, col_max); }
+     { getmaxyx (stdscr, row_max, col_max); 
+       QC_ASSERT (row_max >= 0);
+       QC_ASSERT (col_max >= 0);
+     }
 };
 
 
 
-struct NCAttr 
+struct NCAttr : Root
 {
   const int attr;
   const bool active;
@@ -107,6 +114,16 @@ struct NCAttr
     { if (active)
         attroff (attr); 
     }
+};
+
+
+
+struct NCAttrColor : NCAttr
+{
+  explicit NCAttrColor (NCurses::Color color,
+                        bool active_arg = true)
+    : NCAttr (COLOR_PAIR (color + 1), active_arg)
+    {}
 };
 
 
@@ -189,7 +206,6 @@ struct ThisApplication : Application
     size_t curIndex = topIndex;
     string what;  // For search
     NCurses nc (true);
-    const NCAttr attrDefColor (COLOR_PAIR (NCurses::colorNone + 1));
     bool quit = false;
     while (! quit)
     {
@@ -214,19 +230,15 @@ struct ThisApplication : Application
         minimize (curIndex, bottomIndex - 1);
         move ((int) fieldSize, 0);
         {
-          const NCAttr attr (A_STANDOUT);
+          const NCAttr attr (A_REVERSE);
+          const NCBackground bkgr (nc. background | A_REVERSE);
           addstr (("[" + getFileName (xmlFName) + "] "). c_str ());
           // Most of keys are intercepted by the terminal
           addstr ("Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor");
           if (nc. hasColors)
             addstr ("   c:color");
           addstr ("   F10,q:Quit");
-          int y = 0;
-          int x = 0;
-          getyx (stdscr, y, x);
-          QC_ASSERT (y == (int) fieldSize);  // getyx() is a macro
-          FOR_START (int, i, x, nc. col_max + 1)
-            addch (' ' );
+          clrtoeol ();
             // "F1,h": explain "[%d/%d]" at the end of lines
         }
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -241,7 +253,7 @@ struct ThisApplication : Application
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttr attrColor (COLOR_PAIR (row. color + 1), row. color != NCurses::colorNone);
+          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone);
           const NCAttr attrCurrent (A_REVERSE, i == curIndex);
           printw ("%lu <%s>", row. childNum + 1, row. data->name. c_str ());
           if (! row. data->token. empty ())
