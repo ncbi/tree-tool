@@ -74,12 +74,13 @@ struct NCurses : Singleton<NCurses>
         { EXEC_ASSERT (start_color () == OK); }
       resize ();
       constexpr short bkgdColor = COLOR_BLACK;
-      init_pair (1, COLOR_RED,     bkgdColor);
-      init_pair (2, COLOR_GREEN,   bkgdColor);
-      init_pair (3, COLOR_YELLOW,  bkgdColor);
-      init_pair (4, COLOR_BLUE,    bkgdColor);
-      init_pair (5, COLOR_MAGENTA, bkgdColor);
-      init_pair (6, COLOR_CYAN,    bkgdColor);
+      init_pair (1, COLOR_WHITE,   bkgdColor);
+      init_pair (2, COLOR_RED,     bkgdColor);
+      init_pair (3, COLOR_GREEN,   bkgdColor);
+      init_pair (4, COLOR_YELLOW,  bkgdColor);
+      init_pair (5, COLOR_BLUE,    bkgdColor);
+      init_pair (6, COLOR_MAGENTA, bkgdColor);
+      init_pair (7, COLOR_CYAN,    bkgdColor);
     }
  ~NCurses ()
     { endwin (); }
@@ -188,6 +189,7 @@ struct ThisApplication : Application
     size_t curIndex = topIndex;
     string what;  // For search
     NCurses nc (true);
+    const NCAttr attrDefColor (COLOR_PAIR (NCurses::colorNone));
     bool quit = false;
     while (! quit)
     {
@@ -222,8 +224,7 @@ struct ThisApplication : Application
           int y = 0;
           int x = 0;
           getyx (stdscr, y, x);
-          if (y != (int) fieldSize)  // getyx() is a macro
-            throw runtime_error (to_string (y) + " " + to_string (fieldSize));
+          QC_ASSERT (y == (int) fieldSize);  // getyx() is a macro
           FOR_START (int, i, x, nc. col_max + 1)
             addch (' ' );
             // "F1,h": explain "[%d/%d]" at the end of lines
@@ -232,7 +233,6 @@ struct ThisApplication : Application
         {
           const Row& row = rows [i];
           move ((int) (i - topIndex), 0);
-        //const NCAttr attrMain (A_DIM);
           const size_t x = row. getDepth () * 2;  // PAR
           FFOR (size_t, j, x)
             addch (' ');
@@ -241,7 +241,7 @@ struct ThisApplication : Application
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttr attrColor (COLOR_PAIR (row. color), row. color != NCurses::colorNone);
+          const NCAttr attrColor (COLOR_PAIR (row. color + 1), row. color != NCurses::colorNone);
           const NCAttr attrCurrent (A_REVERSE, i == curIndex);
           printw ("%lu <%s>", row. childNum + 1, row. data->name. c_str ());
           if (! row. data->token. empty ())
