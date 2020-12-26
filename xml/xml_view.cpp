@@ -189,7 +189,7 @@ struct ThisApplication : Application
     size_t curIndex = topIndex;
     string what;  // For search
     NCurses nc (true);
-    const NCAttr attrDefColor (COLOR_PAIR (NCurses::colorNone));
+    const NCAttr attrDefColor (COLOR_PAIR (NCurses::colorNone + 1));
     bool quit = false;
     while (! quit)
     {
