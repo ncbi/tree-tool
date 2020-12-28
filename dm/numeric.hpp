@@ -76,9 +76,6 @@ template <class T>
   inline T sqr (T x)
     { return x * x; }
 
-template <class T>
-  inline T absDiffUnsigned (T x, T y)
-    { if (x > y) return x - y; return y - x; }
 
 
 
