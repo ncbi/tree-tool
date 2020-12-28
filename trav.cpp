@@ -118,7 +118,7 @@ struct ThisApplication : Application
 ... \
 \"%9\" - subitem #9, \
 \"%h\" - item hash (0.." + to_string (hash_class_max - 1) + "), \
-\"%n\" - sequential number, \
+\"%n\" - item number, \
 \"%q\" - single quote, \
 \"%Q\" - double quote, \
 \"%D\" - $, \
@@ -129,6 +129,7 @@ struct ThisApplication : Application
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
+  	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
   	  addFlag ("print", "Print command, not execute");
   	}
   	
@@ -142,6 +143,7 @@ struct ThisApplication : Application
 		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
+		const bool zero          = getFlag ("zero");
 		const bool printP        = getFlag ("print");
     QC_ASSERT (! itemsName. empty ());
     QC_ASSERT (! cmd_. empty ());
@@ -199,7 +201,9 @@ struct ThisApplication : Application
           continue;
         //throw runtime_error ("Empty item");
         
-        if (gen->prog. n < start)
+        ASSERT (gen->prog. n);
+        const size_t n = gen->prog. n - (zero ? 1 : 0);
+        if (n < start)
           continue;
   	      
   	    constexpr char delChar = '\177';
@@ -217,7 +221,7 @@ struct ThisApplication : Application
         string thisCmd (cmd);
         replaceStr (thisCmd, "%f", item);
         replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
-        replaceStr (thisCmd, "%n", to_string (gen->prog. n));  
+        replaceStr (thisCmd, "%n", to_string (n));
 
         if (subitemsP)
         {
