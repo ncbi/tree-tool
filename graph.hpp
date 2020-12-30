@@ -600,7 +600,7 @@ struct Tree : DiGraph
     }
   static size_t radius2boundarySize (uint radius) 
     { return radius 
-               ? 3 * (size_t) powInt (2, radius - 1) 
+               ? 3 * powInt (2, radius - 1) 
                : 1; 
     }
     // Requires: binary tree
