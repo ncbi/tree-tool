@@ -179,7 +179,7 @@ Align::Align (const Peptide &pep1,
 	score = al. Run ();
   tr = al. GetTranscriptString ();  
   
-	finish (pep1, pep2, match_len_min);
+	finish (pep1, pep2, match_len_min, Peptide::stdMinComplexity);
 		
   const SNCBIFullScoreMatrix& mat = al. GetScoreMatrix ();
 	self_score1 = pep2selfScore (mat, pep1, start1, stop1);
@@ -251,7 +251,7 @@ Align::Align (const Dna &dna1,
 	al->SetEndSpaceFree (semiglobal, semiglobal, semiglobal, semiglobal);
 	score = al->Run ();		
   tr = al->GetTranscriptString();  	
-	finish (dna1, dna2, match_len_min);
+	finish (dna1, dna2, match_len_min, Dna::stdMinComplexity);
 	
 	self_score1 = match_score * (int) (stop1 - start1);
 	self_score2 = match_score * (int) (stop2 - start2);
@@ -263,7 +263,8 @@ Align::Align (const Dna &dna1,
 
 void Align::finish (const Seq &seq1,
 	                  const Seq &seq2,
-	                  size_t match_len_min)
+	                  size_t match_len_min,
+	                  double stdMinComplexity)
 {
   ASSERT ((bool) match_len_min == semiglobal);
 
@@ -299,8 +300,8 @@ void Align::finish (const Seq &seq1,
 	ASSERT (start1 <= stop1);
 	ASSERT (start2 <= stop2);
 	
-	lowComplexity1 = seq1. getComplexityInt (start1, stop1) < seq1. getMinComplexity ();
-	lowComplexity2 = seq2. getComplexityInt (start2, stop2) < seq2. getMinComplexity ();
+	lowComplexity1 = seq1. getComplexityInt (start1, stop1) < stdMinComplexity;
+	lowComplexity2 = seq2. getComplexityInt (start2, stop2) < stdMinComplexity;
 
   if (semiglobal)
   	if (   stop1 - start1 < match_len_min

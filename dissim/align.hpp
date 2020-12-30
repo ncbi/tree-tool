@@ -120,7 +120,8 @@ struct Align : Root
 private:
 	void finish (const Seq &seq1,
 	             const Seq &seq2,
-	             size_t match_len_min);
+	             size_t match_len_min,
+	             double stdMinComplexity);
 public:
 	
 	

@@ -1492,7 +1492,7 @@ PROBABILITY Nucleotide_MonoErrorProb2WildNucleotide (uint        ACGTBNum,
 
 // Dna
 
-const double Dna::stdMinComplexity = 2.0;  // PAR
+//const double Dna::stdMinComplexity = 2.0;  // PAR
 
 
 
@@ -3365,11 +3365,7 @@ bool moreGeneralAminoacid (char wildAminoacid1,
 
 
 
-// PAR
-//const size_t Peptide::stdAveLen = 400;
-//const double Peptide::stdMinComplexity = 2.5;  
-
-
+// Peptide
 
 Peptide::Peptide (Multifasta &fasta,
                   size_t reserveLen,

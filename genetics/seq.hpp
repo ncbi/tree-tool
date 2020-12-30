@@ -257,7 +257,7 @@ public:
     { return nullptr; }
 
   virtual const char* getSeqAlphabet () const = 0;
-  virtual double getMinComplexity () const = 0;
+//virtual double getMinComplexity () const = 0;
   virtual bool isAmbiguous (char c) const = 0;
   void printCase (ostream &os,
            	      bool makeUpper) const;    
@@ -279,13 +279,14 @@ public:
   string getDescription (bool trimTaxon) const;
     // Return: between Id and taxon
   size_t getXs () const;
+    // Invokes: isAmbiguous()
   size_t getContiguousXs () const;
     // Return: max. length of contiguous ambiguous characters
   virtual double getComplexityInt (size_t start,
                                    size_t end) const = 0;
     // Input: Subsequence form start to end
     // Return: Entropy of diletters divided by log_2 e; >= 0
-    //         If > getMinComplexity() then no repeats
+    //         If > stdMinComplexity then no repeats
   double getComplexity () const 
     { return getComplexityInt (0, seq. size ()); }
 #if 0
@@ -467,7 +468,7 @@ size_t Peptide2DnaPos (size_t  PeptidePos,
 
 struct Dna : Seq
 {
-  static const double stdMinComplexity;
+  static constexpr double stdMinComplexity {2.0};  // PAR
 
 
   Dna () = default;
@@ -500,8 +501,8 @@ struct Dna : Seq
 
   const char* getSeqAlphabet () const final
     { return sparse ? extSparseDnaAlphabet : extDnaAlphabet; }
-  double getMinComplexity () const final
-    { return stdMinComplexity; }  
+//double getMinComplexity () const final
+  //{ return stdMinComplexity; }  
   bool isAmbiguous (char c) const final
     { return ! strchr (dnaAlphabet, c); }
   double getComplexityInt (size_t start, 
@@ -919,8 +920,8 @@ struct PeptideOrf : Root
 
 struct Peptide : Seq
 {
-  static constexpr const size_t stdAveLen {400};
-  static constexpr const double stdMinComplexity {2.5};
+  static constexpr const size_t stdAveLen {400};  // PAR
+  static constexpr double stdMinComplexity {2.5};  // PAR
   bool pseudo {false};
 
 
@@ -955,8 +956,8 @@ struct Peptide : Seq
 
   const char* getSeqAlphabet () const final
     { return sparse ? extSparseTermPeptideAlphabet : extTermPeptideAlphabet; }
-  double getMinComplexity () const final
-    { return stdMinComplexity; }  
+//double getMinComplexity () const final
+  //{ return stdMinComplexity; }  
   bool isAmbiguous (char c) const final
     { return c == 'X'; }
   bool hasInsideStop () const
