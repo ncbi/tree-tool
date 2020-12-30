@@ -277,24 +277,24 @@ string getStack ()
 namespace
 {
 	
-uint powInt_ (uint a,
-              uint b)
+size_t powInt_ (size_t a,
+                size_t b)
 // Input: a: !0, != 1
 {
 	if (! b)
 		return 1;
 	if (b == 1)
 		return a;
-	const uint half = b / 2;
-	const uint res = powInt_ (a, half);
+	const size_t half = b / 2;
+	const size_t res = powInt_ (a, half);
 	return res * res * (divisible (b, 2) ? 1 : a);
 }
 	
 }
 
 
-uint powInt (uint a,
-             uint b)
+size_t powInt (size_t a,
+               size_t b)
 {
 	if (a)
 		if (a == 1)
@@ -871,7 +871,7 @@ Dir::Dir (const string &dirName)
 
 
 
-streampos getFileSize (const string &fName)
+streamsize getFileSize (const string &fName)
 {
   ifstream f (fName, ifstream::binary);
   if (! f. good ())
@@ -889,7 +889,11 @@ streampos getFileSize (const string &fName)
 
   if (end < start)
     throw runtime_error ("Bad file " + shellQuote (fName));    
-  return end - start; 
+  const streampos len = end - start;
+  ASSERT (len >= 0);
+  QC_ASSERT (len <= (streampos) numeric_limits<streamsize>::max());
+  
+  return (streamsize) len; 
 }
 
 

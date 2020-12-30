@@ -364,8 +364,8 @@ template <typename T/*:integer*/>
       return x % 2 == 0; 
     }
 
-inline bool divisible (uint n,
-                       uint divisor)
+inline bool divisible (size_t n,
+                       size_t divisor)
   { return ! (n % divisor); }
   
 inline uint remainder (int n, uint div)
@@ -385,8 +385,8 @@ inline uint gcd (uint a,
 		return gcd (b, a % b);
 	}
 
-uint powInt (uint a,
-             uint b);
+size_t powInt (size_t a,
+               size_t b);
   // Return: a^b
   // Time: O(log(b))
 
@@ -1086,7 +1086,7 @@ inline void checkFile (const string &fName)
       throw runtime_error ("File " + strQuote (fName) + " does not exist");
   }
 
-streampos getFileSize (const string &fName);
+streamsize getFileSize (const string &fName);
 
 inline void removeFile (const string &fName)
   { if (std::remove (fName. c_str ()))
