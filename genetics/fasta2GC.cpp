@@ -58,7 +58,7 @@ struct ThisApplication : Application
 
 
 	
-	void body () const
+	void body () const final
   {
 	  const string inFName = getArg ("Multi_FASTA");
 
