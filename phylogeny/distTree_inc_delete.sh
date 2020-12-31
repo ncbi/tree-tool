@@ -42,10 +42,10 @@ mv $INC/dissim.new $INC/dissim
 echo ""
 $INC/objects_in_tree.sh $DEL null
 
-ls $INC/new > $INC/new.list
+$THIS/distTree_inc_new_list.sh > $INC/new.list
 $THIS/../setIntersect.sh $DEL $INC/new.list 0 > $INC/new-del.list
 rm $INC/new.list
-$THIS/../trav $INC/new-del.list "rm $INC/new/%f"
+$THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/new-del.list
 rm $INC/new-del.list
 
 mv $DEL $INC/hist/delete.$VER

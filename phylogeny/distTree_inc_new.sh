@@ -65,7 +65,7 @@ echo "# Objects: $OBJS"
 
 echo "To add at this step: $ADD"
 
-ls $INC/new/ > $INC/new.list
+$THIS/distTree_inc_new_list.sh $INC > $INC/new.list
 wc -l $INC/new.list
 
 cp /dev/null $INC/dissim.add
@@ -75,7 +75,7 @@ wc -l $INC/search.list
 rm $INC/new.list
 
 $THIS/../trav  -threads 15  $INC/search.list "mkdir $INC/search/%f"
-$THIS/../trav  -threads 15  $INC/search.list "rm $INC/new/%f"
+$THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
 
 
 echo ""
@@ -97,7 +97,7 @@ if [ $N -gt 0 ]; then
     rm $INC/sought.list
     if [ -s $INC/missed.list ]; then
       wc -l $INC/missed.list
-      $THIS/../trav $INC/missed.list "touch $INC/new/%f"
+      $THIS/distTree_inc_new_cmd.sh $INC "touch" $INC/missed.list
       $THIS/../trav $INC/missed.list "rm -r $INC/search/%f"
     fi
     rm $INC/missed.list
@@ -290,7 +290,7 @@ echo "QC ..."
 $INC/qc.sh go
 
 
-NEW=`ls $INC/new | wc -l`
+NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
 if [ $NEW == 0 ]; then
   touch $INC/finished
 else

@@ -1,22 +1,17 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
-  echo "Restore #1/search/#2/"
+if [ $# -ne 1 ]; then
+  echo "Print the list of objects in #1/new/"
   echo "#1: incremental distance tree directory"
-  echo "#2: new object"
   exit 1
 fi
 INC=$1
-OBJ=$2
 
 
-H=""
 LARGE=`cat $INC/large`
 if [ $LARGE == 1 ]; then
-  H="%h/"
+  $THIS/../trav $INC/new "ls %d/%f" | sort
+else
+  ls $INC/new/
 fi
-touch $INC/new/$H$OBJ
-
-rm -r $INC/search/$OBJ/
-

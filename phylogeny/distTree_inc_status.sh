@@ -38,7 +38,7 @@ if [ $SEARCH -gt 0 ]; then
 fi
 
 
-N=`ls $INC/new/ | wc -l`
+N=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
 if [ $N -gt 0 ]; then
   echo ""
   echo "# New: $N"

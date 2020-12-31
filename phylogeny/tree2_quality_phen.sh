@@ -7,14 +7,14 @@ if [ $# -ne 5 ]; then
   echo "#1: distance tree 1"
   echo "#2: distance tree 2"
   echo "#3: phen/"
-  echo "#4: phen_large (0/1)"
+  echo "#4: large directories (0/1)"
   echo "#5: list of objects to intersect with (sorted) | ''"
   exit 1
 fi
 T1=$1
 T2=$2
 PHEN=$3
-PHEN_LARGE=$4
+LARGE=$4
 TARGET="$5"
 
 
@@ -69,15 +69,15 @@ $THIS/makeDistTree  -threads 15  -input_tree $T1  -delete $TMP.list1-del  -check
 $THIS/makeDistTree  -threads 15  -input_tree $T2  -delete $TMP.list2-del  -check_delete  -noqual  -output_tree $TMP.tree2  -output_feature_tree $TMP.feature_tree2 > $TMP.makeDistTree2
 
 
-LARGE=""
-if [ $PHEN_LARGE == 1 ]; then
-  LARGE="-large"
+LARGE_PAR=""
+if [ $LARGE == 1 ]; then
+  LARGE_PAR="-large"
 fi
 
 echo ""
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
 echo ""
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
 
 cat $TMP.qual1 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual1_
 cat $TMP.qual2 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual2_

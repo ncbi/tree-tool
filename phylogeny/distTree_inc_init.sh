@@ -10,7 +10,7 @@ if [ $# -ne 12 ]; then
   echo "#5: dissim_boundary (> 0 or NAN)"
   echo "#6: genogroup_barrier (> 0 or NAN)"
   echo "#7: complete path to a 'phenotype' directory or ''"
-  echo "#8: phen_large (0/1): 1 - files in #7 directory are grouped into subdirectories named file2hash(<file name>)"
+  echo "#8: large directories (0/1): 1 - files in #1/new/ and #7/ are grouped into subdirectories named file2hash(<file name>)"
   echo "#9: SQL server name or ''"
   echo "#10: database name on the SQL server or ''"
   echo "#11: complete path to a directory for bulk insert into the database or ''"
@@ -24,7 +24,7 @@ HYBRIDNESS_MIN=$4
 DISSIM_BOUNDARY=$5
 GENOGROUP_BARRIER=$6
 PHEN=$7
-PHEN_LARGE=$8
+LARGE=$8
 SERVER=$9
 DATABASE=${10}
 BULK_LOCAL=${11}
@@ -111,5 +111,5 @@ fi
 
 if [ "$PHEN" ]; then
   ln -s $PHEN $INC/phen
-  echo $PHEN_LARGE > $INC/phen_large
+  echo $LARGE > $INC/large
 fi

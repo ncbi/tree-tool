@@ -44,9 +44,8 @@ if [ $NEW_PAR == 1 ]; then
       break
     fi
     
-    NEW=`ls $INC/new/ | wc -l`
     VER=`cat $INC/version`
-    echo "$VER  # New: $NEW  `date`  `date +%s`" >> $INC/runlog  
+    echo "$VER  `date`  `date +%s`" >> $INC/runlog  
     echo ""
     echo ""
     $THIS/distTree_inc_new.sh $INC 
@@ -117,11 +116,11 @@ $THIS/distTree_inc_tree1_quality.sh $INC
 
 if [ -e $INC/phen ]; then
 	DATE=`date +%Y%m%d`
-	PHEN_LARGE=`cat $INC/phen_large`
+	LARGE=`cat $INC/large`
 
 	echo ""
 	echo "Root and quality ..."
-	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $PHEN_LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
+	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
@@ -136,7 +135,7 @@ if [ -e $INC/phen ]; then
 	
 	echo ""
 	echo "Names ..."
-	$THIS/tree2names.sh tree.$DATE $INC/phen $PHEN_LARGE > $INC/hist/tree2names.$VER
+	$THIS/tree2names.sh tree.$DATE $INC/phen $LARGE > $INC/hist/tree2names.$VER
 
 
   if [ -n "$RELDIR" ]; then
