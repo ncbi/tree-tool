@@ -290,7 +290,9 @@ echo "QC ..."
 $INC/qc.sh go
 
 
+echo ""
 NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
+echo "# New objects left: $NEW"
 if [ $NEW == 0 ]; then
   touch $INC/finished
 else
