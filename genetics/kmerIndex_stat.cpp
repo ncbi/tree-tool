@@ -65,12 +65,15 @@ struct ThisApplication : Application
     KmerIndex kmi (kmerFName);
     kmi. qc ();
        
-    const size_t kmers = kmi. getKmers ();
     cout << "K-mer size: " << kmi. kmer_size << endl;
     cout << "# DNA sequences: " << kmi. items << endl;
     cout << "# Identifier records per DNA sequence: " << (double) kmi. getIdRecords () / (double) kmi. items << endl;
-    cout << "# K-mers: " << kmers << endl;
-    cout << "# Identifier records per k-mer: " << (double) kmi. getIdRecords () / (double) kmers << endl;
+    if (verbose ())
+    {
+      const size_t kmers = kmi. getKmers ();
+      cout << "# K-mers: " << kmers << endl;
+      cout << "# Identifier records per k-mer: " << (double) kmi. getIdRecords () / (double) kmers << endl;
+    }
   }
 };
 
