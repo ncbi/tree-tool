@@ -82,7 +82,7 @@ Time: O(log n), where n is the number of DNA sequences in the index\
     const Vector<KmerIndex::NumId> numIds (kmi. find (dna, idRecordsPerKmer_max));
 
     size_t num_prev = numeric_limits<size_t>::max ();
-    FOR (size_t, i, top)
+    FFOR (size_t, i, min (top, numIds. size ()))
     {
       const KmerIndex::NumId& numId = numIds [i];
       cout << numId. id;
