@@ -4381,4 +4381,406 @@ void Align::printAlignment (const string &seq1,
 
 
 
+
+// KmerIndex
+
+KmerIndex::IdRecord::IdRecord (fstream &f_arg,
+                               Addr addr_arg,
+                               bool isNew)
+: f (f_arg)
+, addr (addr_arg)
+{ 
+  ASSERT (addr != nil);
+  
+  if (isNew)
+  {
+    FOR (size_t, i, textSize)
+      text [i] = no_char;
+    ASSERT (! full ());
+  }
+  else
+  {
+    f. seekg ((streamoff) addr);
+    readBin (f, prev);
+    FOR (size_t, i, textSize)
+      f. get (text [i]);
+    start = getStart ();
+    QC_ASSERT (start);
+  }
+}
+
+
+
+bool KmerIndex::IdRecord::full () const
+{
+  ASSERT (start <= textSize);
+  return start == textSize;
+}
+
+
+
+void KmerIndex::IdRecord::save () const
+{         
+  f. seekp ((streamoff) addr);
+  writeBin (f, prev);
+  FOR (size_t, i, textSize)
+    f. put (text [i]);
+}
+
+
+
+void KmerIndex::IdRecord::renew (Addr addr_arg)
+{
+  ASSERT (addr_arg != nil);
+  
+  prev = addr;
+  addr = addr_arg;
+  ASSERT (prev < addr);
+  
+  FOR (size_t, i, textSize)
+    text [i] = no_char;
+    
+  start = 0;
+  
+  ASSERT (! full ());
+}
+
+
+
+size_t KmerIndex::IdRecord::getStart () const
+{ 
+  size_t i = 0;
+  for (; i < textSize; i++)
+    if (text [i] == no_char)
+      break;
+  return i;
+}
+
+
+
+void KmerIndex::IdRecord::put (string &s)
+{ 
+  ASSERT (! s. empty ());
+  ASSERT (! contains (s, no_char));
+  
+  size_t i = s. size ();
+  while (i-- > 0)
+  {
+    if (full ())
+    {
+      s. erase (i + 1);
+      return;
+    }
+    ASSERT (text [start] == no_char);
+    text [start] = s [i];
+    start++;
+  }
+  s. clear ();
+}
+
+
+
+string KmerIndex::IdRecord::get () const
+{
+  string s; s. reserve (textSize);
+  FOR_REV (size_t, i, start)
+    s += text [i];
+  return s;
+}
+
+
+
+KmerIndex::KmerIndex (const string &name_arg,
+                      size_t kmer_size_arg)
+: Named (name_arg)
+, f (name, ios_base::out | ios_base::binary)
+, canRead (false)
+, kmer_size (kmer_size_arg)
+, code_max (powInt (2, 2 * kmer_size))
+, addr_new (code2addr (code_max))
+{
+  QC_ASSERT (kmer_size);
+  QC_ASSERT (kmer_size <= kmer_size_max);  
+  ASSERT (code_max);
+  
+  writeBin (f, kmer_size);
+  writeBin (f, items);
+  ASSERT (f. tellp () == (streamoff) code2addr (0));
+  
+  {
+    Progress prog (code_max, progressSize);  
+    const Addr addr = nil;
+    FOR (size_t, i, code_max)
+    {
+      prog ();
+      writeBin (f, addr);
+    }
+  }
+  
+  QC_ASSERT (f. tellp () == (streamoff) addr_new);
+  QC_ASSERT (f. good ());
+}
+
+
+
+KmerIndex::KmerIndex (const string &name_arg)
+: Named (name_arg)
+, f (name, ios_base::in | ios_base::out | ios_base::binary)
+, canRead (true)
+, kmer_size (readKmerSize (f))
+, code_max (powInt (2, 2 * kmer_size))
+{
+  checkFile (name);
+
+  readBin (f, items);
+
+  f. seekg (0, ios_base::end);
+  addr_new = (Addr) f. tellg ();
+
+  QC_ASSERT (f. good ());
+}
+
+
+
+size_t KmerIndex::readKmerSize (fstream &fIn)
+{ 
+  size_t k;
+  readBin (fIn, k);
+  return k;
+}
+
+
+
+void KmerIndex::qc () const
+{
+  ASSERT (canRead);
+  if (! qc_on)
+    return;
+    
+  Named::qc ();
+    
+  QC_ASSERT (kmer_size);
+  QC_ASSERT (kmer_size <= kmer_size_max);  
+  QC_ASSERT (f. good ());
+  QC_ASSERT (getFileSize (name) == (streamsize) addr_new);
+  // ??
+}
+
+
+
+size_t KmerIndex::dna2code (const Dna &dna)
+{
+  size_t code = 0;
+  for (const char c : dna. seq)
+  {
+    code *= 4;
+    size_t delta = 0;
+    switch (c)
+    {
+      case 'a': delta = 0; break;
+      case 'c': delta = 1; break;
+      case 'g': delta = 2; break;
+      case 't': delta = 3; break;
+      default: throw runtime_error ("Unknown nucleotide: " + to_string (c));
+    }
+    code += delta;
+  }
+  return code;
+}
+
+
+
+size_t KmerIndex::getKmers ()
+{
+  size_t kmers = 0;
+  f. seekg ((streamoff) code2addr (0));
+  Progress prog (code_max, progressSize);  
+  Addr addr = nil;
+  FOR (size_t, i, code_max)
+  {
+    prog ();
+    readBin (f, addr);
+    if (addr != nil)
+      kmers++;
+  }
+  return kmers;
+}
+
+
+
+void KmerIndex::add (const Dna &dna,
+                     size_t &kmers,
+                     size_t &kmersRejected)
+{
+  ASSERT (canRead);
+  
+  const size_t seqSize = dna. seq. size ();
+  const string id (dna. getId ());
+  kmers = 0;
+  size_t kmersUsed = 0;
+  FOR (size_t, i, seqSize)
+    if (i + kmer_size <= seqSize)
+    {
+      kmers++;
+      const Dna kmer ("x", dna. seq. substr (i, kmer_size), false);
+      kmer. qc ();
+      ASSERT (kmer. seq. size () == kmer_size);
+      if (kmer. getXs ())
+        continue;
+      kmersUsed++;
+      addId (dna2code (kmer), id);
+    }
+  ASSERT (kmers >= kmersUsed);
+  kmersRejected = kmers - kmersUsed;
+  
+  items++;
+  f. seekp (sizeof (kmer_size));
+  writeBin (f, items);
+}
+
+
+
+void KmerIndex::addId (size_t code,
+                       const string &id)
+{
+  ASSERT (canRead);
+  ASSERT (code < code_max);
+  QC_ASSERT (! id. empty ());
+  QC_ASSERT (! contains (id, IdRecord::no_char));
+
+  const streamoff pos = (streamoff) code2addr (code);
+  
+  Addr addr = 0;
+  f. seekg (pos);
+  readBin (f, addr);
+  QC_ASSERT (addr == nil || (addr >= code2addr (code_max) && addr < addr_new));
+  if (addr == nil)
+    addr = addr_new;
+
+  // s      
+  static_assert (gap != IdRecord::no_char, "gap = no_char");
+  string s (id);
+  s += gap;
+  
+  IdRecord rec (f, addr, addr == addr_new);
+  while (! s. empty ())
+  {
+    if (rec. full ())
+    {
+      ASSERT (rec. addr != addr_new);
+      rec. renew (addr_new);
+    }
+    ASSERT (! rec. full ());
+  #ifndef NDEBUG
+    const size_t size_old = s. size ();
+  #endif
+    rec. put (s);
+    ASSERT (s. size () < size_old);
+    IMPLY (! s. empty (), rec. full ());
+    rec. save ();
+    if (rec. addr == addr_new)
+      addr_new += IdRecord::size;
+  }
+  
+  f. seekp (pos);
+  writeBin (f, rec. addr);
+
+  QC_ASSERT (f. good ());
+}
+
+
+
+KmerIndex::NumId::NumId (size_t n_arg,
+                         const string &id_arg)
+: n (n_arg)
+, id (id_arg)
+{
+  ASSERT (n);
+  ASSERT (! id. empty ());
+}
+
+
+
+bool KmerIndex::NumId::operator< (const NumId &other) const
+{ 
+  LESS_PART (other, *this, n);
+  LESS_PART (*this, other, id);
+  return false;
+}
+
+
+
+Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
+                                          size_t idRecordsPerKmer_max) 
+{
+  ASSERT (canRead);
+  ASSERT (idRecordsPerKmer_max);
+  
+  unordered_map<string,size_t> id2num;  id2num. rehash (100000);  // PAR
+  const size_t seqSize = dna. seq. size ();
+  FOR (size_t, i, seqSize)
+    if (i + kmer_size <= seqSize)
+    {
+      const Dna kmer ("x", dna. seq. substr (i, kmer_size), false);
+      kmer. qc ();
+      ASSERT (kmer. seq. size () == kmer_size);
+      if (kmer. getXs ())
+        continue;
+      const StringVector ids (code2ids (dna2code (kmer), idRecordsPerKmer_max));
+      for (const string& id : ids)
+        id2num [id] ++;
+    }
+    
+  Vector<NumId> num2id;  num2id. reserve (id2num. size ());
+  for (auto& it : id2num)
+    num2id << move (NumId (it. second, it. first));
+  num2id. sort ();
+ 
+  return num2id; 
+}
+
+
+
+StringVector KmerIndex::code2ids (size_t code,
+                                  size_t idRecords_max)
+{
+  ASSERT (canRead);
+  ASSERT (code < code_max);
+  ASSERT (idRecords_max);
+
+  Addr addr = 0;
+  {
+    const streamoff pos = (streamoff) code2addr (code);  
+    f. seekg (pos);
+    readBin (f, addr);
+  }
+  QC_ASSERT (addr == nil || (addr >= code2addr (code_max) && addr < addr_new));
+  
+  string s;
+  size_t n = 0;
+  while (   addr != nil 
+         && n < idRecords_max
+        )
+  {
+    const IdRecord rec (f, addr, false);
+    s += rec. get ();
+    addr = rec. prev;
+    n++;
+  }
+  
+  if (addr != nil)
+    while (! s. empty () && s. back () != gap)
+      s. erase (s. size () - 1, 1);
+    
+  if (s. empty ())
+    return StringVector ();
+    
+  ASSERT (s. back () == gap);
+  s. erase (s. size () - 1, 1);
+
+  return StringVector (s, gap, false);
+}
+
+
+
 }

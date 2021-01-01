@@ -34,6 +34,10 @@ all:	\
 	hmmAddCutoff \
 	hmmNAME2ACC \
 	hmmsearch2besthits \
+	kmerIndex_add \
+	kmerIndex_find \
+	kmerIndex_make \
+	kmerIndex_stat \
 	mlst2hash \
 	mutation_tab \
 	orf2prot \
@@ -188,6 +192,30 @@ hmmsearch2besthits.o:  $(COMMON_HPP) $(GEN_DIR)/hmm.hpp
 hmmsearch2besthitsOBJS=hmmsearch2besthits.o $(HMM_OBJ) 
 hmmsearch2besthits:	$(hmmsearch2besthitsOBJS)
 	$(CXX) -o $@ $(hmmsearch2besthitsOBJS) $(LIBS) 
+	$(ECHO)
+
+kmerIndex_add.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+kmerIndex_addOBJS=kmerIndex_add.o $(SEQ_OBJ)
+kmerIndex_add:	$(kmerIndex_addOBJS)
+	$(CXX) -o $@ $(kmerIndex_addOBJS) $(LIBS) 
+	$(ECHO)
+
+kmerIndex_find.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+kmerIndex_findOBJS=kmerIndex_find.o $(SEQ_OBJ)
+kmerIndex_find:	$(kmerIndex_findOBJS)
+	$(CXX) -o $@ $(kmerIndex_findOBJS) $(LIBS) 
+	$(ECHO)
+
+kmerIndex_make.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+kmerIndex_makeOBJS=kmerIndex_make.o $(SEQ_OBJ)
+kmerIndex_make:	$(kmerIndex_makeOBJS)
+	$(CXX) -o $@ $(kmerIndex_makeOBJS) $(LIBS) 
+	$(ECHO)
+
+kmerIndex_stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+kmerIndex_statOBJS=kmerIndex_stat.o $(SEQ_OBJ)
+kmerIndex_stat:	$(kmerIndex_statOBJS)
+	$(CXX) -o $@ $(kmerIndex_statOBJS) $(LIBS) 
 	$(ECHO)
 
 mlst2hash.o:  $(COMMON_HPP) 

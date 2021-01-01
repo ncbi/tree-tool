@@ -317,10 +317,11 @@ struct Multifasta : Root
 
 	Multifasta (const string &fName,
 	            bool aa_arg,
-	            size_t bufSize = 512 * 1024)  // PAR
+	            size_t bufSize = 512 * 1024,  
+	            size_t displayPeriod = 1000)  
 		: in (fName, bufSize) 
 		, aa (aa_arg)
-		, prog (0, 1000)  // PAR
+		, prog (0, displayPeriod)  
 		{ in. nextLine (); 
 			qcNewSeq ();
 		}
@@ -1217,6 +1218,121 @@ public:
 	                     size_t line_len) const;
 };
 
+
+
+struct KmerIndex : Named, Singleton<KmerIndex>
+// DNA k-mer index
+// Assumption for time: average DNA identifier length is constant
+{
+  typedef  size_t  Addr;
+  static_assert (! numeric_limits<Addr>::is_signed, "addr is signed");
+  static_assert (sizeof (Addr) <= sizeof (streamsize), "Addr is larger than streamsize");
+  static constexpr Addr nil {(Addr) -1};
+
+
+  struct IdRecord
+  {
+    static constexpr size_t size {32};
+  private:
+    fstream& f;
+  public:
+    Addr addr {nil};
+      // != nil
+    Addr prev {nil};
+    static constexpr size_t textSize {size - sizeof (prev)};
+    static constexpr char no_char {'\0'};
+    char text [textSize];
+      // Reversed text
+  private:
+    size_t start {0};
+      // <= textSize
+  public:
+      
+    IdRecord (fstream &f_arg,
+              Addr addr_arg,
+              bool isNew);
+      
+    bool full () const;
+    void save () const;
+    void renew (Addr addr_arg);
+  private:
+    size_t getStart () const;
+  public:
+    void put (string &s);
+      // Reversed s --> text[]
+    string get () const;
+      // Iteration over text[] from start to 0
+  };
+  
+  
+  static constexpr size_t progressSize {1000000};  // PAR
+private:
+  fstream f;
+    // binary
+public:
+  const bool canRead;
+  static constexpr size_t header_size {2};
+  static constexpr size_t kmer_size_max {16};  // PAR
+  const size_t kmer_size;
+  const size_t code_max;
+    // = 2 ^ (2 * kmer_size)
+  size_t items {0};
+  Addr addr_new {0};
+    // = file size of f
+private:
+  static constexpr char gap {' '};
+public:
+  
+  
+  KmerIndex (const string &name_arg,
+             size_t kmer_size_arg);
+  explicit KmerIndex (const string &name_arg);
+private:
+  static size_t readKmerSize (fstream &fIn);
+public:
+  void qc () const final;
+    // Requires: canRead
+    
+    
+private:
+  static size_t dna2code (const Dna &dna);
+    // Time: O(dna.seq.size())
+  static Addr code2addr (size_t code)
+    { return header_size * sizeof (size_t) + code * sizeof (Addr); }
+public:
+  size_t getIdRecords () const
+    { return (addr_new - code2addr (code_max)) / IdRecord::size; }
+  size_t getKmers ();
+    // Time: O(code_max)
+  void add (const Dna &dna,
+            size_t &kmers,
+            size_t &kmersRejected);
+    // Update: items++
+    // Time: O(dna.seq.size() * kmer_size)
+private:
+  void addId (size_t code,
+              const string &id);
+public:
+              
+  struct NumId
+  {
+    size_t n {0};
+      // > 0
+    string id;  // DNA::getId()
+      // !empty()
+    NumId (size_t n_arg,
+           const string &id_arg);
+    bool operator< (const NumId &other) const;
+  };
+  Vector<NumId> find (const Dna &dna,
+                      size_t idRecordsPerKmer_max);
+    // Return: sorted by NumId::n descending
+    // Time: O(dna.seq.size() * (kmer_size + idRecordsPerKmer_max))
+private:
+  StringVector code2ids (size_t code,
+                         size_t idRecords_max);
+    // Time: O(idRecords_max)
+};
 
 
 
