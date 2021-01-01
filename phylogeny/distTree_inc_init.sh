@@ -104,12 +104,18 @@ if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
   create_script genogroup2db
 fi
 
+
 if [ "$BULK_LOCAL" ]; then
   ln -s $BULK_LOCAL $INC/bulk
-  echo $BULK_REMOTE > inc/bulk_remote
+  echo $BULK_REMOTE > $INC/bulk_remote
 fi
 
 if [ "$PHEN" ]; then
   ln -s $PHEN $INC/phen
-  echo $LARGE > $INC/large
 fi
+
+echo $LARGE > $INC/large
+if [ $LARGE == 1 ]; then
+  $THIS/../trav 1000 -zero -start 0 "mkdir $INC/new/%n"
+fi
+
