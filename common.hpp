@@ -3070,6 +3070,21 @@ struct Stderr : Singleton<Stderr>
 
 
 
+// Binary streams
+// File content is platform-dependent
+
+template <typename T>
+  inline void writeBin (ostream &f,
+                        const T &t)
+    { f. write (reinterpret_cast <const char*> (& t), sizeof (t)); }
+
+template <typename T>
+  inline void readBin (istream &f,
+                       T &t)
+    { f. read (reinterpret_cast <char*> (& t), sizeof (t)); }
+
+  
+
 struct Csv : Root
 // Line of Excel .csv-file
 {
