@@ -1330,7 +1330,9 @@ public:
     // Time: O(dna.seq.size() * (kmer_size + idRecordsPerKmer_max))
 private:
   StringVector code2ids (size_t code,
-                         size_t idRecords_max);
+                         size_t idRecords_max,
+                         bool &nonspecific);
+    // Update: nonspecific = true
     // Time: O(idRecords_max)
 };
 

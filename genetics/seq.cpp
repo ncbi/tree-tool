@@ -4717,6 +4717,7 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
   ASSERT (idRecordsPerKmer_max);
   
   unordered_map<string,size_t> id2num;  id2num. rehash (100000);  // PAR
+  bool nonspecific = false;
   const size_t seqSize = dna. seq. size ();
   FOR (size_t, i, seqSize)
     if (i + kmer_size <= seqSize)
@@ -4726,7 +4727,7 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
       ASSERT (kmer. seq. size () == kmer_size);
       if (kmer. getXs ())
         continue;
-      const StringVector ids (code2ids (dna2code (kmer), idRecordsPerKmer_max));
+      const StringVector ids (code2ids (dna2code (kmer), idRecordsPerKmer_max, nonspecific));
       for (const string& id : ids)
         id2num [id] ++;
     }
@@ -4735,6 +4736,9 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
   for (auto& it : id2num)
     num2id << move (NumId (it. second, it. first));
   num2id. sort ();
+  
+  if (num2id. empty () && nonspecific)
+    throw runtime_error (dna. getId () + " has only non-specific k-mers");
  
   return num2id; 
 }
@@ -4742,12 +4746,13 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
 
 
 StringVector KmerIndex::code2ids (size_t code,
-                                  size_t idRecords_max)
+                                  size_t idRecords_max,
+                                  bool &nonspecific)
 {
   ASSERT (canRead);
   ASSERT (code < code_max);
   ASSERT (idRecords_max);
-
+  
   Addr addr = 0;
   {
     const streamoff pos = (streamoff) code2addr (code);  
@@ -4769,8 +4774,15 @@ StringVector KmerIndex::code2ids (size_t code,
   }
   
   if (addr != nil)
+  #if 1
+  {
+    s. clear ();  // Flag code in f, recycle IdRecord's ??
+    nonspecific = true;
+  }
+  #else
     while (! s. empty () && s. back () != gap)
       s. erase (s. size () - 1, 1);
+  #endif
     
   if (s. empty ())
     return StringVector ();
