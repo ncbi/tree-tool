@@ -31,4 +31,4 @@ if [ $N -gt 0 ]; then
 fi
 
 
-sync
+#sync
