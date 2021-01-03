@@ -18,6 +18,7 @@ GRID_MIN=`cat $INC/grid_min`
 QC=""  # -qc  
 RATE=0.015   # PAR
 VARIANCE=`cat $INC/variance`
+REQUEST_CLOSEST_SQL=`cat $INC/request_closest_sql`
 OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 ADD=`echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1'`  # PAR
 if [ $ADD == 0 ]; then
@@ -88,7 +89,11 @@ if [ $N -gt 0 ]; then
     $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
   else
     $THIS/../grid_wait.sh 1
-    $THIS/../trav  -step 1  $INC/search "$QSUB_5,ul1=30  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
+    UL1=""
+    if [ $REQUEST_CLOSEST_SQL == 1 ]; then
+      UL1=",ul1=30"
+    fi
+    $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
     $THIS/../qstat_wait.sh 2000 1
     ls $INC/search/*/request | cut -f 3 -d '/' > $INC/sought.list
       # Will break if "No such file or directory"
