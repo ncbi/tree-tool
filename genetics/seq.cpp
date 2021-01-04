@@ -4704,7 +4704,7 @@ KmerIndex::NumId::NumId (size_t n_arg,
 bool KmerIndex::NumId::operator< (const NumId &other) const
 { 
   LESS_PART (other, *this, n);
-  LESS_PART (*this, other, id);
+  LESS_PART (*this, other, id);  // Tie resolution
   return false;
 }
 

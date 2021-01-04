@@ -1222,7 +1222,7 @@ public:
 
 struct KmerIndex : Named, Singleton<KmerIndex>
 // DNA k-mer index
-// Assumption for time: average DNA identifier length is constant
+// Assumption for time: DNA identifier length is O(1)
 {
   typedef  size_t  Addr;
   static_assert (! numeric_limits<Addr>::is_signed, "addr is signed");
