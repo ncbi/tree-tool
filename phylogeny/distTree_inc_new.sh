@@ -29,7 +29,6 @@ fi
 if true; then  
 date
 echo ""
-#top -b -n 1 | head -15
 echo ""
 
 
@@ -95,19 +94,20 @@ if [ $N -gt 0 ]; then
     fi
     $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
     $THIS/../qstat_wait.sh 2000 1
-    ls $INC/search/*/request | cut -f 3 -d '/' > $INC/sought.list
-      # Will break if "No such file or directory"
-    $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
-    rm $INC/search.list
-    rm $INC/sought.list
-    if [ -s $INC/missed.list ]; then
-      wc -l $INC/missed.list
-      $THIS/distTree_inc_new_cmd.sh $INC "touch" $INC/missed.list
-      $THIS/../trav $INC/missed.list "rm -r $INC/search/%f"
+    if false; then  # This is done by distTree_inc_search_init.sh
+      ls $INC/search/*/request | sed 's|/request$||1' | sed 's|^.*/||1' > $INC/sought.list
+        # Will break if "No such file or directory"
+      $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
+      rm $INC/sought.list
+      if [ -s $INC/missed.list ]; then
+        wc -l $INC/missed.list
+        $THIS/distTree_inc_new_cmd.sh $INC "touch" $INC/missed.list
+      fi
+      rm $INC/missed.list
     fi
-    rm $INC/missed.list
   fi
 fi
+rm $INC/search.list
 
 
 ITER=0
