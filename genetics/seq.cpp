@@ -4737,7 +4737,7 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
     num2id << move (NumId (it. second, it. first));
   num2id. sort ();
   
-  if (num2id. empty () && nonspecific)
+  if (num2id. empty () && nonspecific)  // ??
     throw runtime_error (dna. getId () + " has only non-specific k-mers");
  
   return num2id; 
@@ -4774,15 +4774,15 @@ StringVector KmerIndex::code2ids (size_t code,
   }
   
   if (addr != nil)
-  #if 1
   {
-    s. clear ();  // Flag code in f, recycle IdRecord's ??
     nonspecific = true;
-  }
+  #if 0
+    s. clear ();  // Flag code in f, recycle IdRecord's ??
   #else
     while (! s. empty () && s. back () != gap)
       s. erase (s. size () - 1, 1);
   #endif
+  }
     
   if (s. empty ())
     return StringVector ();
