@@ -257,7 +257,6 @@ public:
     { return nullptr; }
 
   virtual const char* getSeqAlphabet () const = 0;
-//virtual double getMinComplexity () const = 0;
   virtual bool isAmbiguous (char c) const = 0;
   void printCase (ostream &os,
            	      bool makeUpper) const;    
@@ -502,8 +501,6 @@ struct Dna : Seq
 
   const char* getSeqAlphabet () const final
     { return sparse ? extSparseDnaAlphabet : extDnaAlphabet; }
-//double getMinComplexity () const final
-  //{ return stdMinComplexity; }  
   bool isAmbiguous (char c) const final
     { return ! strchr (dnaAlphabet, c); }
   double getComplexityInt (size_t start, 
@@ -561,16 +558,18 @@ struct Dna : Seq
                        bool lowercaseStartcodon,
                        bool firstStartCodon2M,
                        size_t &translationStart) const;
-    // Return: !nullptr
     // Output: translationStart
     // Requires: firstStartCodon2M => lowercaseStartcodon
   Peptide cds2prot (Gencode gencode,
+                    bool trunc5,
+                    bool trunc3,
 	                  bool hasStopCodon) const;
 	  // Return: no '*'
+	  // Invokes: makePeptide()
   Vector<Peptide> getOrfs (Frame frame,
                            Gencode gencode,
                            size_t len_min) const;
-    // Input: len_min: min. Peptide length withoyt 'X'
+    // Input: len_min: min. Peptide length without 'X'
     // Return: Peptide: from '*' to '*'
 #if 0
   bool ExistsPeptide () const;
@@ -957,8 +956,6 @@ struct Peptide : Seq
 
   const char* getSeqAlphabet () const final
     { return sparse ? extSparseTermPeptideAlphabet : extTermPeptideAlphabet; }
-//double getMinComplexity () const final
-  //{ return stdMinComplexity; }  
   bool isAmbiguous (char c) const final
     { return c == 'X'; }
   bool hasInsideStop () const
@@ -1037,6 +1034,10 @@ inline Seq* makeSeq (Multifasta &fa,
   	return s;
   }
 
+
+
+
+//
 
 struct Cds : Root
 // All lengths are in na
@@ -1222,7 +1223,9 @@ public:
 
 struct KmerIndex : Named, Singleton<KmerIndex>
 // DNA k-mer index
-// Assumption for time: DNA identifier length is O(1)
+// Assumptions for time: DNA sequence length is O(1)
+//                       DNA identifier length is O(1)
+//                       kmer_size = O(log(items))
 {
   typedef  size_t  Addr;
   static_assert (! numeric_limits<Addr>::is_signed, "addr is signed");
@@ -1276,6 +1279,7 @@ public:
   const size_t kmer_size;
   const size_t code_max;
     // = 2 ^ (2 * kmer_size)
+    // Use hashes of k-mers to make code_max O(1) ??!
   size_t items {0};
   Addr addr_new {0};
     // = file size of f
@@ -1286,6 +1290,7 @@ public:
   
   KmerIndex (const string &name_arg,
              size_t kmer_size_arg);
+    // Time: O(1) ??!
   explicit KmerIndex (const string &name_arg);
 private:
   static size_t readKmerSize (fstream &fIn);
@@ -1308,7 +1313,8 @@ public:
             size_t &kmers,
             size_t &kmersRejected);
     // Update: items++
-    // Time: O(dna.seq.size() * kmer_size)
+    // Time: O(kmer_size)
+    // For long sequences use only k-mers preceded by a specific prefix ??!
 private:
   void addId (size_t code,
               const string &id);
@@ -1324,16 +1330,12 @@ public:
            const string &id_arg);
     bool operator< (const NumId &other) const;
   };
-  Vector<NumId> find (const Dna &dna,
-                      size_t idRecordsPerKmer_max);
+  Vector<NumId> find (const Dna &dna);
     // Return: sorted by NumId::n descending
-    // Time: O(dna.seq.size() * (kmer_size + idRecordsPerKmer_max))
+    // Time: O(kmer_size) 
 private:
-  StringVector code2ids (size_t code,
-                         size_t idRecords_max,
-                         bool &nonspecific);
-    // Update: nonspecific = true
-    // Time: O(idRecords_max)
+  StringVector code2ids (size_t code);
+    // Time: O(1)
 };
 
 

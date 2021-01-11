@@ -54,20 +54,22 @@ struct ThisApplication : Application
 Time: O(log n), where n is the number of DNA sequences in the index\
 ")
     {
-  	  addPositional ("kmer_name", "DNA k-mer index file name");
-  	  addPositional ("FASTA", "DNA sequence");  
+  	  addPositional ("kmer_index", "DNA k-mer index file name");
+  	  addPositional ("FASTA", "Input DNA sequence");  
   	  addPositional ("top", "Number of closest sequence identifiers to print");
   	  addFlag ("common_kmers", "Print number of common k-mers");
+  	  addFlag ("self", "Do not remove the input DNA identifier");
     }
 
 
 	
 	void body () const final
   {
-	  const string kmerFName  = getArg ("kmer_name");
+	  const string kmerFName  = getArg ("kmer_index");
 	  const string inFName    = getArg ("FASTA");
 	  const size_t top        = (size_t) arg2uint ("top");
 	  const bool common_kmers = getFlag ("common_kmers");
+	  const bool self         = getFlag ("self");
 
 
     KmerIndex kmi (kmerFName);
@@ -78,19 +80,29 @@ Time: O(log n), where n is the number of DNA sequences in the index\
     const Dna dna (li, 10000, false);  // PAR
     dna. qc ();
 
-    const size_t idRecordsPerKmer_max = (size_t) (100 * log ((double) kmi. items)) + 100;  // PAR
-    const Vector<KmerIndex::NumId> numIds (kmi. find (dna, idRecordsPerKmer_max));
+    const Vector<KmerIndex::NumId> numIds (kmi. find (dna));
 
+  #ifndef NDEBUG
     size_t num_prev = numeric_limits<size_t>::max ();
-    FFOR (size_t, i, min (top, numIds. size ()))
+  #endif
+    const string id (dna. getId ());
+    size_t n = 0;
+    for (const KmerIndex::NumId& numId : numIds)
     {
-      const KmerIndex::NumId& numId = numIds [i];
-      cout << numId. id;
-      if (common_kmers)
-        cout << '\t' << numId. n;
-      cout << endl;
+      if (n >= top)
+        break;
+      if (self || numId. id != id)
+      {
+        cout << numId. id;
+        if (common_kmers)
+          cout << '\t' << numId. n;
+        cout << endl;
+        n++;
+      }
       ASSERT (num_prev >= numId. n);
+    #ifndef NDEBUG
       num_prev = numId. n;
+    #endif
     }
   }
 };

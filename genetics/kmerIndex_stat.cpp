@@ -52,28 +52,31 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print statsitics of DNA k-mer index")
     {
-  	  addPositional ("kmer_name", "DNA k-mer index file name");
+  	  addPositional ("kmer_index", "DNA k-mer index file name");
     }
 
 
 	
 	void body () const final
   {
-	  const string kmerFName = getArg ("kmer_name");
+	  const string kmerFName = getArg ("kmer_index");
 
 
     KmerIndex kmi (kmerFName);
     kmi. qc ();
        
-    cout << "K-mer size: " << kmi. kmer_size << endl;
+    cout << "K: " << kmi. kmer_size << endl;
+    cout << "K-mer space size: " << kmi. code_max << endl;
     cout << "# DNA sequences: " << kmi. items << endl;
     cout << "# Identifier records per DNA sequence: " << (double) kmi. getIdRecords () / (double) kmi. items << endl;
     if (verbose ())
     {
       const size_t kmers = kmi. getKmers ();
       cout << "# K-mers: " << kmers << endl;
+      cout << "# K-mers per k-mer space size: " << (double) kmers / (double) kmi. code_max << endl;
       cout << "# Identifier records per k-mer: " << (double) kmi. getIdRecords () / (double) kmers << endl;
     }
+    // Distribution of identifier records number per k-mer ??
   }
 };
 

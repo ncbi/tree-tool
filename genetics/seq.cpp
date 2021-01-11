@@ -1992,31 +1992,33 @@ Peptide Dna::makePeptide (Frame frame,
 
 
 Peptide Dna::cds2prot (Gencode gencode,
+                       bool trunc5,
+                       bool trunc3,
 	                     bool hasStopCodon) const
 {
   size_t translationStart = 0;
-  Peptide pep (makePeptide (1, gencode, true, true, translationStart));
+  Peptide pep (makePeptide (1 /*frame*/, gencode, true, true, translationStart));
   
   EXEC_ASSERT (trimSuffix (pep. name, ".fr1"));
   
-  if (pep. seq. size () * 3 != seq. size ())
-    throw runtime_error ("cds2prot: incomplete codon");  
   if (pep. seq. empty ())
-    throw runtime_error ("cds2prot: empty sequence");
-  if (pep. seq [0] != 'm')
-    throw runtime_error ("cds2prot: no start codon");
+    throw runtime_error (FUNC "empty sequence");
+  if (! trunc5 && ! trunc3 && pep. seq. size () * 3 != seq. size ())
+    throw runtime_error (FUNC "incomplete codon");  
+  if (! trunc5 && pep. seq [0] != 'm')
+    throw runtime_error (FUNC "no start codon");
     
   const size_t starPos = pep. seq. find ("*");
-  if (hasStopCodon)
+  if (! trunc3 && hasStopCodon)
   {
   	if (starPos != pep. seq. size () - 1)
-      throw runtime_error ("cds2prot: no stop codon at the end");
+      throw runtime_error (FUNC "no stop codon at the end");
 	  trimSuffix (pep. seq, "*");
   }
   else   
   {
 	  if (starPos != string::npos)
-	    throw runtime_error ("cds2prot: has stop codon");
+	    throw runtime_error (FUNC "has a stop codon");
   }
   
   return pep;
@@ -4563,6 +4565,7 @@ void KmerIndex::qc () const
   QC_ASSERT (kmer_size <= kmer_size_max);  
   QC_ASSERT (f. good ());
   QC_ASSERT (getFileSize (name) == (streamsize) addr_new);
+  QC_ASSERT (addr_new < nil);
   // ??
 }
 
@@ -4679,7 +4682,10 @@ void KmerIndex::addId (size_t code,
     IMPLY (! s. empty (), rec. full ());
     rec. save ();
     if (rec. addr == addr_new)
+    {
       addr_new += IdRecord::size;
+      QC_ASSERT (addr_new < nil);
+    }
   }
   
   f. seekp (pos);
@@ -4710,14 +4716,11 @@ bool KmerIndex::NumId::operator< (const NumId &other) const
 
 
 
-Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
-                                          size_t idRecordsPerKmer_max) 
+Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna) 
 {
   ASSERT (canRead);
-  ASSERT (idRecordsPerKmer_max);
   
   unordered_map<string,size_t> id2num;  id2num. rehash (100000);  // PAR
-  bool nonspecific = false;
   const size_t seqSize = dna. seq. size ();
   FOR (size_t, i, seqSize)
     if (i + kmer_size <= seqSize)
@@ -4727,7 +4730,7 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
       ASSERT (kmer. seq. size () == kmer_size);
       if (kmer. getXs ())
         continue;
-      const StringVector ids (code2ids (dna2code (kmer), idRecordsPerKmer_max, nonspecific));
+      const StringVector ids (code2ids (dna2code (kmer)));
       for (const string& id : ids)
         id2num [id] ++;
     }
@@ -4737,21 +4740,15 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna,
     num2id << move (NumId (it. second, it. first));
   num2id. sort ();
   
-  if (num2id. empty () && nonspecific)  // ??
-    throw runtime_error (dna. getId () + " has only non-specific k-mers");
- 
   return num2id; 
 }
 
 
 
-StringVector KmerIndex::code2ids (size_t code,
-                                  size_t idRecords_max,
-                                  bool &nonspecific)
+StringVector KmerIndex::code2ids (size_t code)
 {
   ASSERT (canRead);
   ASSERT (code < code_max);
-  ASSERT (idRecords_max);
   
   Addr addr = 0;
   {
@@ -4763,9 +4760,7 @@ StringVector KmerIndex::code2ids (size_t code,
   
   string s;
   size_t n = 0;
-  while (   addr != nil 
-         && n < idRecords_max
-        )
+  while (addr != nil)
   {
     const IdRecord rec (f, addr, false);
     s += rec. get ();
@@ -4773,17 +4768,6 @@ StringVector KmerIndex::code2ids (size_t code,
     n++;
   }
   
-  if (addr != nil)
-  {
-    nonspecific = true;
-  #if 0
-    s. clear ();  // Flag code in f, recycle IdRecord's ??
-  #else
-    while (! s. empty () && s. back () != gap)
-      s. erase (s. size () - 1, 1);
-  #endif
-  }
-    
   if (s. empty ())
     return StringVector ();
     

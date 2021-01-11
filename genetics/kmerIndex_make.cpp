@@ -51,10 +51,10 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Make a DNA k-mer index.\n\
-Index size = 2 ^ (2 * k) + O(n), where n is the number of sequences.\
-")
+Index size = O(n), where n is the number of sequences.\
+")  // ??
     {
-  	  addPositional ("kmer_name", "K-mer index file name");
+  	  addPositional ("kmer_index", "K-mer index file name");
   	  addPositional ("kmer_size", "K-mer size (1..14)");
     }
 
@@ -62,7 +62,7 @@ Index size = 2 ^ (2 * k) + O(n), where n is the number of sequences.\
 	
 	void body () const final
   {
-	  const string kmerFName =          getArg ("kmer_name");
+	  const string kmerFName =          getArg ("kmer_index");
 	  const size_t kmer_size = (size_t) arg2uint ("kmer_size");
 	  
     const KmerIndex kmi (kmerFName, kmer_size);

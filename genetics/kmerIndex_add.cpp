@@ -54,7 +54,7 @@ struct ThisApplication : Application
 Time: O(n), where n is the number of sequences, assuming constant average length of sequences and sequence identifiers\
 ")
     {
-  	  addPositional ("kmer_name", "K-mer index file name");
+  	  addPositional ("kmer_index", "K-mer index file name");
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with DNA sequences");  
     }
 
@@ -62,7 +62,7 @@ Time: O(n), where n is the number of sequences, assuming constant average length
 	
 	void body () const final
   {
-	  const string kmerFName = getArg ("kmer_name");
+	  const string kmerFName = getArg ("kmer_index");
 	  const string inFName   = getArg ("Multi_FASTA");
 
 

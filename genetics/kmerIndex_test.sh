@@ -23,7 +23,7 @@ mkdir $TMP.seq
 $THIS/splitFasta $TMP.fa $TMP.seq -qc 
 
 mkdir $TMP.out
-$THIS/../trav $TMP.seq "$THIS/kmerIndex_find $TMP.kmi %d/%f 100 -qc > $TMP.out/%f"
+$THIS/../trav $TMP.seq "$THIS/kmerIndex_find $TMP.kmi %d/%f 100 -qc -self > $TMP.out/%f"
 $THIS/../trav $TMP.out '[ `cat %d/%f | wc -l` == 100 ]'
 $THIS/../trav $TMP.out 'grep -w %f %d/%f'
 
