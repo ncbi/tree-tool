@@ -1,6 +1,7 @@
 #define VERSION "1.2.3"
 
 
+// 1.3.2  01/10/2021  GeneMark2CDS prints incomplete and ambiguous proteins as well
 // 1.3.1  12/18/2020  inc/phen_large --> inc/large; inc/request_closest_sql
 // 1.2.3  10/03/2020  makeDistTree does not stop on criterion increase of dissimilarity types > 1
 // 1.2.2  08/28/2020  distTree_new.cpp accepts a tree file as input

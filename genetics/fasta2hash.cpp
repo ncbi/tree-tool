@@ -168,10 +168,12 @@ struct ThisApplication : Application
 		    	try { dna. qc (); }
 	  		    catch (...)
 		  		  {
-	    	    	if (gene_finder == "GeneMark")
-		    	      continue;
+	    	   //if (gene_finder == "GeneMark")
+		    	    //continue;
 	   	    		throw;
 		  		  }
+  		    if (gene_finder == "GeneMark" && ! contains (dna. name, "trunc5:0 trunc3:0"))  
+  		      continue;
   		    if (gene_finder == "prodigal" && ! contains (dna. name, ";partial=00"))  
   		      continue;
   		    if (dna. getXs ())
@@ -179,7 +181,7 @@ struct ThisApplication : Application
   		    if (translate)
   		    	try 
 	  		    {
-	    		    Peptide pep (dna. cds2prot (11, true));  // gencode - PAR ??
+	    		    Peptide pep (dna. cds2prot (11, false, false, true));  // gencode - PAR ??
 	    		    pep. qc ();
 						  ASSERT (! pep. getXs ());  
 	    	      strUpper (pep. seq);  // Start codons are lowercased

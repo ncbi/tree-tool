@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Save full-length CDSs predicted by GeneMark
+*   Save CDSs predicted by GeneMark
 *
 */
 
@@ -49,18 +49,32 @@ namespace
 	
 struct Exon : Root
 {
-  size_t start;
-  size_t stop;
+  size_t start {0};
+  size_t stop {0};
+  size_t codonStart {0};
+    // Incomplete first codon length
+  
   
   Exon (size_t start_arg,
-        size_t stop_arg)
+        size_t stop_arg,
+        size_t codonStart_arg)
     : start (start_arg)
     , stop (stop_arg)
+    , codonStart (codonStart_arg)
     {
-    	ASSERT (start < stop);
+    	QC_ASSERT (start < stop);
+    }
+  void qc () const override
+    {
+      if (! qc_on)
+        return;
+      QC_ASSERT (start < stop);
+      QC_ASSERT (codonStart < 3);
+      QC_ASSERT (getLen () > codonStart);
     }
   void saveText (ostream &os) const override
-    { os << start << ".." << stop; }
+    { os << start << ".." << stop << '(' << codonStart << ')'; }
+
 
   size_t getLen () const
     { return stop - start; }
@@ -70,14 +84,20 @@ struct Exon : Root
 
 	
 	
-struct EuCds
+struct EuCds : Root
+// Eukaryotic CDS
 {
-	uint gene;
-	string contig;
-	bool strand;
+	const uint gene;
+	const string contig;
+	  // Name
+	const bool strand;
 	Vector<Exon> exons;
-	bool has_start {false};
-	bool has_stop {false};
+	size_t start {no_index};
+	size_t stop {no_index};
+private:
+	bool cut {false};
+public:
+	
 	
 	EuCds (uint gene_arg,
 	       const string &contig_arg,
@@ -85,27 +105,116 @@ struct EuCds
 	  : gene (gene_arg)
 	  , contig (contig_arg)
 	  , strand (strand_arg == "+")
-	  { ASSERT (gene);
-	  	ASSERT (! contig. empty ());
-	  	ASSERT (! contains (contig, ' '));
-	  //ASSERT (! contains (contig, '.'));
-	  	ASSERT (strand_arg == "+" || strand_arg == "-");
+	  { 
+	  	QC_ASSERT (strand_arg == "+" || strand_arg == "-");
+	  }	     
+	void qc () const override
+	  { 
+	    if (! qc_on)
+	      return;
+	    QC_ASSERT (gene);
+	  	QC_ASSERT (! contig. empty ());
+	  	QC_ASSERT (! contains (contig, ' '));
+	  	size_t prev_stop = 0;
+	  	for (const Exon& exon : exons)
+	  	{
+	  	  exon. qc ();
+	  	  QC_ASSERT (exon. start >= prev_stop);
+	  	  prev_stop = exon. stop;
+	  	}
+	  	QC_IMPLY (start != no_index && stop != no_index, start < stop);
+	  	QC_ASSERT (cut);
+  	  const Exon* prev = nullptr;
+  	  if (strand)
+  	  	for (const Exon& exon : exons)
+  	  	{
+  	  	  QC_IMPLY (! prev, ! exon. codonStart);
+  	  	  QC_IMPLY (prev, (prev->getLen () - prev->codonStart + exon. codonStart) % 3 == 0);
+  	  	  prev = & exon;
+  	  	}
+  	  else
+  	  	FOR_REV (size_t, i, exons. size ())
+  	  	{
+  	  	  const Exon& exon = exons [i];
+  	  	  QC_IMPLY (! prev, ! exon. codonStart);
+  	  	  QC_IMPLY (prev, (prev->getLen () - prev->codonStart + exon. codonStart) % 3 == 0);
+  	  	  prev = & exon;
+  	  	}
 	  }
-	     
-	void print () const
-	  { cout         << gene 
-	  	     << '\t' << contig
-	  	     << '\t' << strand;
-	  	save (cout, exons, '\t');
-	  	cout << endl;
+	void saveText (ostream &os) const override
+	  { os         << gene 
+	  	   << '\t' << contig
+	  	   << '\t' << strand
+	  	   << '\t' << start
+	  	   << '\t' << stop
+	  	   << '\t';
+	  	save (os, exons, '\t');
+	  	os << endl;
 	  }
+	 
+	  
 	char strand2char () const
 	  { return strand ? '+' : '-'; }
+	bool trunc5 () const
+	  { return (strand ? start : stop) == no_index; }
+	bool trunc3 () const
+	  { return (strand ? stop : start) == no_index; }
+	void cutExons ()
+	  { ASSERT (! cut);
+	    for (Iter<Vector<Exon>> it (exons); it. next (); )
+	    {
+	      if (start != no_index)
+	      {
+	        if (start >= it->stop)
+	        {
+	          QC_ASSERT (! it->codonStart);
+	          it. erase ();
+	          continue;
+	        }
+	        else if (start >= it->start)
+	        {
+	          QC_IMPLY (strand, ! it->codonStart);
+	          it->start = start;
+	        }
+	      }
+	      if (stop != no_index)
+	      {
+	        if (stop <= it->start)
+	        {
+	          QC_ASSERT (! it->codonStart);
+	          it. erase ();
+	        }
+	        else if (stop < it->stop)
+	        {
+	          QC_IMPLY (! strand, ! it->codonStart);
+	          it->stop = stop;
+	        }
+	      }
+	    }
+	    
+	    if (! exons. empty ())
+	    {
+	      if (start == no_index && strand)
+	      {
+	        Exon& exon = exons. front ();
+	        exon. start += exon. codonStart;
+	        exon. codonStart = 0;
+	      }
+	      if (stop == no_index && ! strand)
+	      {
+	        Exon& exon = exons. back ();
+	        exon. stop -= exon. codonStart;
+	        exon. codonStart = 0;
+	      }
+	    }
+	    cut = true;
+	  }
 	Dna getDna (const Dna &contigDna) const
-	  { string s;
+	  { ASSERT (cut);
+	    string s;
 	  	for (const Exon& exon : exons)
 	  		s += exon. getSeq (contigDna. seq);
-	  	Dna dna (contig + "." + toString (gene), s, false);
+	  	Dna dna (contig + "." + to_string (gene) + " trunc5:" + to_string (trunc5 ()) + " trunc3:" + to_string (trunc3 ()), s, false);
 	  	if (! strand)
 	  		dna. reverse ();
 	  	return dna;
@@ -118,7 +227,7 @@ struct EuCds
 struct ThisApplication : Application
 {
   ThisApplication ()
-  : Application ("Save full-length CDSs predicted by GeneMark")
+  : Application ("Save CDSs predicted by GeneMark; FASTA description contains: trunc5:(0/1) trunc3:(0/1) ")
   { 
 	  addPositional ("fasta", "FASTA DNA file");
 	  addPositional ("annot", "GeneMark file with annotations");
@@ -127,7 +236,8 @@ struct ThisApplication : Application
 	  addKey ("prot", "Output FASTA DNA file of proteins");
 	  addKey ("min_prot_len", "Min. protein length", "20");
 	  addKey ("gencode", "NCBI genetic code", "0");
-	  addFlag ("noerror", "Do not abort on errors");
+	  addFlag ("complete", "Save only non-truncated, non-ambiguous proteins");
+	//addFlag ("noerror", "Do not abort on errors");
 	}
 
 
@@ -141,19 +251,21 @@ struct ThisApplication : Application
     const string protFName  = getArg ("prot"); 
     const size_t min_prot_len = str2<size_t> (getArg ("min_prot_len"));
     const Gencode gencode   = (Gencode) str2<int> (getArg ("gencode"));
-    const bool noerror      = getFlag ("noerror");
+    const bool complete     = getFlag ("complete");
+  //const bool noerror      = getFlag ("noerror");
     
     
     if (! gencode)
     	throw runtime_error ("Bad genocde");
         
     
-    Vector<EuCds> cdss;  cdss. reserve (10000);  // PAR
+    VectorOwn<EuCds> cdss;  cdss. reserve (10000);  // PAR
     if (gtf)
     {
     	uint gene_prev = 0;
     	LineInput f (annotFName, 1000 * 1024, 1000);  // PAR
  	    Istringstream iss;
+ 	    EuCds* cds = nullptr;
     	while (f. nextLine ())
     	  try
 	    	{
@@ -161,56 +273,72 @@ struct ThisApplication : Application
 	        string contig, method, type, dot, strand, frame, gene_id_txt, gene_idS;
 	        size_t start, stop;
 	  	    iss >> contig >> method >> type >> start >> stop >> dot >> strand >> frame >> gene_id_txt >> gene_idS;
-	  	    ASSERT (method == "GeneMark.hmm");  // PAR
-	  	    ASSERT (start <= stop);
-	  	    ASSERT (start >= 1);
-	  	    ASSERT (gene_id_txt == "gene_id");
-	  	    if (type == "CDS")
+	  	    QC_ASSERT (method == "GeneMark.hmm");  // PAR
+	  	    QC_ASSERT (start <= stop);
+	  	    QC_ASSERT (start >= 1);
+	  	    QC_ASSERT (gene_id_txt == "gene_id");
+	  	    if (type == "exon" /*"CDS"*/)
 	  	    	continue;	
 	
 	  	    start--;
 	  	    EXEC_ASSERT (trimPrefix (gene_idS, "\""));
 	  	    const uint gene = str2<uint> (findSplit (gene_idS, '_'));
 	  	  //ASSERT (isLeft (descr, "g\"; transcript_id \""));
-	  	    ASSERT (gene);
-	  	    ASSERT (gene == gene_prev || gene == gene_prev + 1);
+	  	    QC_ASSERT (gene);
+	  	    QC_ASSERT (gene == gene_prev || gene == gene_prev + 1);
 	  	    if (gene != gene_prev)
-	  	    	cdss << EuCds (gene, contig, strand);
-	  	    EuCds* cds = & cdss. back ();
-	  	    ASSERT (cds->contig == contig);
-	  	    ASSERT (strand == string (1, cds->strand2char ()));
-	  	    if (type == "exon")
 	  	    {
-	  	    	ASSERT (dot == "0");
-	  	    	ASSERT (frame == ".");
-	  	    	cds->exons << Exon (start, stop);
+	  	      if (cds)
+	  	      {
+	  	        cds->cutExons ();
+	  	        cds->qc ();
+	  	      }
+	  	      cds = new EuCds (gene, contig, strand);
+	  	    	cdss << cds;
+	  	    }
+	  	    ASSERT (cds);
+	  	    QC_ASSERT (cds->contig == contig);
+	  	    QC_ASSERT (strand == string (1, cds->strand2char ()));
+	  	    if (type == "CDS" /*"exon"*/)
+	  	    {
+	  	    	QC_ASSERT (dot == "." /*"0"*/);
+	  	      QC_ASSERT (frame != ".");
+	  	      const size_t codonStart = str2<size_t> (frame);
+	  	      QC_ASSERT (codonStart < 3);
+	  	    	cds->exons << Exon (start, stop, codonStart);
 	  	    }
 	  	    else if (type == "intron")
 	  	    {
-	  	    	ASSERT (dot == "0");
+	  	    	QC_ASSERT (dot == "0");
 	  	    }
 	  	    else if (   type == "start_codon"
 	  	    	       || type == "stop_codon"
 	  	    	      )
 	  	    {
-	  	    	ASSERT (dot == ".");
-	  	    	ASSERT (frame == "0");
-	  	    	ASSERT (stop - start == 3);
-	  	    	if (type == "start_codon")
-	  	    	  cds->has_start = true;
+	  	    	QC_ASSERT (dot == ".");
+	  	    	QC_ASSERT (frame == "0");
+	  	    	QC_ASSERT (stop - start == 3);
+	  	    	if ((type == "start_codon") == cds->strand)
+	  	    	  cds->start = start;
 	  	    	else
-	  	    	  cds->has_stop = true;
+	  	    	  cds->stop = stop;
 	  	    }
 	  	    else
 	  	    	throw runtime_error ("Unknown type " + strQuote (type));
 	
 	  	    gene_prev = gene;
 	      }
-	      catch (...)
+	      catch (const exception &e)
 	      {
-	      	cout << "Line # " << f. lineNum << endl;
-	      	throw;
+	      	throw runtime_error (  "Line # " + to_string (f. lineNum) + "\n" 
+	      	                     + (cds ? cds->contig + "." + to_string (cds->gene) + "\n" : "")
+	      	                     + e. what ());
 	      }
+      if (cds)
+      {
+        cds->cutExons ();
+        cds->qc ();
+      }
     }
     else
     {
@@ -218,6 +346,7 @@ struct ThisApplication : Application
     	while (f. nextLine () && ! f. line. empty ())
     	  ;
     	uint n = 0;
+    	EuCds* cds = nullptr;
     	for (;;)
     	  try
 	    	{
@@ -236,36 +365,45 @@ struct ThisApplication : Application
 		        string strand, leftEndS, rightEndS;
 		  	    iss >> gene >> strand >> leftEndS >> rightEndS >> len >> geneClass;
 		  	    n++;
-		  	    ASSERT (n == gene);
-		  	    EuCds cds (gene, contig, strand);
-		  	    cds. has_start = ! trimPrefix (leftEndS,  "<");
-		  	    cds. has_stop  = ! trimPrefix (rightEndS, ">");
-		  	    const Exon exon (str2<size_t> (leftEndS) - 1, str2<size_t> (rightEndS));
-		  	    cds. exons << exon;
-		  	    ASSERT (exon. getLen () == len);
+		  	    QC_ASSERT (n == gene);
+		  	    cds = new EuCds (gene, contig, strand);
+		  	    Exon exon (str2<size_t> (leftEndS) - 1, str2<size_t> (rightEndS), 0 /*??*/);
+		  	    if (trimPrefix (leftEndS,  "<"))
+		  	      cds->start = exon. start;
+		  	    if (trimPrefix (rightEndS, ">"))
+		  	      cds->stop  = exon. stop;
+		  	    cds->exons << exon;
+		  	    QC_ASSERT (exon. getLen () == len);
+		  	    cds->cutExons ();
+		  	    cds->qc ();
 		  	    cdss << cds;
 	    		}
 	    	}
-	    	catch (...)
-	    	{
-	      	cout << "Line # " << f. lineNum << endl;
-	    		throw;
-	    	}
+	      catch (const exception &e)
+	      {
+	      	throw runtime_error (  "Line # " + to_string (f. lineNum) + "\n" 
+	      	                     + (cds ? cds->contig + "." + to_string (cds->gene) + "\n" : "")
+	      	                     + e. what ());
+	      }
     }
     cout << "# CDSs: " << cdss. size () << endl;
     
     
     map <string/*contig*/, VectorPtr<EuCds>> contig2cdss;
     size_t good = 0;
-    for (const EuCds& cds : cdss)
-    	if (   cds. has_start
-    		  && cds. has_stop
-    		  && ! cds. exons. empty ()
+    for (const EuCds* cds : cdss)
+    {
+      if (cds->exons. empty ())
+        continue;
+    	if (   complete
+    	    && (   cds->trunc5 ()
+    		      || cds->trunc3 ()
+    		     )
     		 )
-    	{
-    		good++;
-    		contig2cdss [cds. contig] << & cds;
-    	}
+    		continue;
+  		good++;
+  		contig2cdss [cds->contig] << cds;
+  	}
     cout << "# Good CDSs: " << good << endl;
 
 
@@ -279,8 +417,7 @@ struct ThisApplication : Application
     	if (! protFName. empty ())
     		protF. reset (new OFStream (protFName));
     		
-		  Multifasta f (fastaFName, false);
-		  f. prog. active = false;
+		  Multifasta f (fastaFName, false, 1024 * 1024, 100);  // PAR
 		  while (f. next ())
 		  {
 		    const Dna contigDna (f, 10000, false);  // PAR
@@ -293,11 +430,12 @@ struct ThisApplication : Application
         	cdsDna. qc ();
         	try 
         	{
-	        	const Peptide pep (cdsDna. cds2prot (gencode, true));
+	        	Peptide pep (cdsDna. cds2prot (gencode, cds->trunc5 (), cds->trunc3 (), true));
+	        	pep. name += " " + cdsDna. getDescription (false);
 	        	pep. qc ();
 	        	if (pep. seq. size () < min_prot_len)
 	        		continue;
-	        	if (pep. getXs ())
+	        	if (complete && pep. getXs ())
 	        		continue;
 	        	if (cdsF)
 	        	  cdsDna. saveText (*cdsF);
@@ -307,9 +445,9 @@ struct ThisApplication : Application
 	        }
 	        catch (...)
 	        {
-	        	cds->print ();
+	        	cds->saveText (cout);
 	        	cdsDna. saveText (cout);
-	        	if (! noerror)
+	        //if (! noerror)
 	        	  throw;
 	        }
 	      }
