@@ -9,4 +9,4 @@ fi
 F=$1
 
 
-grep '^>' $F | sed 's/^>//1'| sed 's/ .*$//1'
+grep '^>' $F | sed 's/^>//1'| sed -e 's/[ \t].*$//1'
