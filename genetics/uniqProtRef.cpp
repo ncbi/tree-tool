@@ -73,7 +73,7 @@ struct ThisApplication : Application
 		  {
 		    const Peptide pep (fa, 1000/*PAR*/, false);
 		    pep. qc ();
-		    EXEC_ASSERT (refSet. insert (str_hash (pep. seq)). second);
+		    refSet. insert (str_hash (pep. seq));
 		  }
 		}
 
