@@ -125,8 +125,8 @@ struct ThisApplication : Application
     QC_IMPLY (reduce, ! cds || translate);
     QC_IMPLY (! out_prot. empty (), ! cds || translate);
     QC_IMPLY (! target_seq. empty (), ! target_hashes. empty ());
-  //if (! gene_finders. contains (gene_finder))
-    //throw runtime_error ("Uknown gene_finder: " + gene_finder);
+    if (! gene_finder. empty () && ! gene_finders. contains (gene_finder))
+      throw runtime_error ("Uknown gene_finder: " + strQuote (gene_finder));
     
 
     Vector<size_t> targetHashes;
@@ -165,38 +165,27 @@ struct ThisApplication : Application
 		    {
   		    const Dna dna (f, 10000, false);  // PAR
   		    seqName = dna. name;
-		    	try { dna. qc (); }
-	  		    catch (...)
-		  		  {
-	    	   //if (gene_finder == "GeneMark")
-		    	    //continue;
-	   	    		throw;
-		  		  }
-  		    if (gene_finder == "GeneMark" && ! contains (dna. name, "trunc5:0 trunc3:0"))  
+		    	dna. qc (); 
+  		    if (gene_finder == "GeneMark" && ! contains (dna. name, " trunc5:0 trunc3:0"))  
   		      continue;
   		    if (gene_finder == "prodigal" && ! contains (dna. name, ";partial=00"))  
   		      continue;
   		    if (dna. getXs ())
   		      continue;
   		    if (translate)
-  		    	try 
-	  		    {
-	    		    Peptide pep (dna. cds2prot (11, false, false, true));  // gencode - PAR ??
-	    		    pep. qc ();
-						  ASSERT (! pep. getXs ());  
-	    	      strUpper (pep. seq);  // Start codons are lowercased
-		  		    if (protF. get ())
-		  		    	pep. saveText (*protF);
-	    	      if (reduce)
-	    	        reducePep (pep);
-	    	      s = pep. seq;
-	    	    }
-	    	    catch (...)
-	    	    {	    	    	
-	    	    	if (gene_finder == "prodigal")
-	    	    		throw;
-	    	      continue;
-	    	    }
+  		    {
+    		    Peptide pep (dna. cds2prot (11, false, false, true));  // gencode - PAR ??
+    		    pep. qc ();
+    		    QC_ASSERT (! pep. seq. empty ());
+    		    QC_ASSERT (pep. seq. front () == 'm');
+					  QC_ASSERT (! pep. getXs ());  
+    	      strUpper (pep. seq);  // Start codons are lowercased
+	  		    if (protF. get ())
+	  		    	pep. saveText (*protF);
+    	      if (reduce)
+    	        reducePep (pep);
+    	      s = pep. seq;
+    	    }
   		    else
   		      s = dna. seq;
 	  		}
@@ -205,10 +194,14 @@ struct ThisApplication : Application
   		    Peptide pep (f, 1000, false);  // PAR
   		    seqName = pep. name;
   		    pep. qc ();
+  		    if (gene_finder == "GeneMark" && ! contains (pep. name, " trunc5:0 trunc3:0"))  
+  		      continue;
   		    if (gene_finder == "prodigal" && ! contains (pep. name, ";partial=00"))  
   		      continue;
   		    pep. trimStop ();
    	      strUpper (pep. seq);  // Start codons are lowercased
+  		    QC_ASSERT (! pep. seq. empty ());
+  		    QC_ASSERT (pep. seq. front () == 'm');
   		    if (pep. getXs ())
   		      continue;
   		    if (contains (pep. seq, '*'))
