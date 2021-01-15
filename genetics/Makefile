@@ -48,6 +48,7 @@ all:	\
 	prot_grep_short \
 	prots2hmm_signature \
 	prots_pair2stat \
+	replaceFastaHeader \
 	replaceFastaNames \
 	splitFasta \
 	splitHmmLib \
@@ -276,6 +277,12 @@ prots_pair2stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp
 prots_pair2statOBJS=prots_pair2stat.o $(SEQ_OBJ) $(DM_DIR)/numeric.o
 prots_pair2stat:	$(prots_pair2statOBJS)
 	$(CXX) -o $@ $(prots_pair2statOBJS) $(LIBS) 
+	$(ECHO)
+
+replaceFastaHeader.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+replaceFastaHeaderOBJS=replaceFastaHeader.o $(SEQ_OBJ)
+replaceFastaHeader:	$(replaceFastaHeaderOBJS)
+	$(CXX) -o $@ $(replaceFastaHeaderOBJS) $(LIBS) 
 	$(ECHO)
 
 replaceFastaNames.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
