@@ -2471,7 +2471,7 @@ void Image::processSmall (const DTNode* center_arg,
 
   ASSERT (area. containsFast (center));
   if (boundary. size () > boundary_size_max_std)
-    throw runtime_error ("Boundary size > " + to_string (boundary_size_max_std));
+    throw runtime_error (FUNC "Boundary size > " + to_string (boundary_size_max_std));
 #ifndef NDEBUG
   for (const auto& it : new2old)
   {
@@ -2888,13 +2888,13 @@ public:
       leaf1 = var_cast (findPtr (name2leaf, name1));
       if (! leaf1)
         return;
-      //throw runtime_error ("Tree has no object " + name1);
+      //throw runtime_error (FUNC "Tree has no object " + name1);
       leaf1->badCriterion = -1.0;  // temporary
     
       leaf2 = var_cast (findPtr (name2leaf, name2));
       if (! leaf2)
         return;
-      //throw runtime_error ("Tree has no object " + name2);
+      //throw runtime_error (FUNC "Tree has no object " + name2);
       leaf2->badCriterion = -1.0;  // temporary
     }
     
@@ -2912,7 +2912,7 @@ public:
          )  
         leaf1->collapse (leaf2);
       if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, no_index))
-        throw runtime_error ("Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
+        throw runtime_error (FUNC "Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
     }
 
 
@@ -3085,7 +3085,7 @@ DistTree::DistTree (const string &dataDirName,
             }
           }
           if (! f. lineNum)
-            throw runtime_error ("Empty " + fName);
+            throw runtime_error (FUNC "Empty " + fName);
         }
         dissimLines. sort ();
         dissimLines. uniq ();
@@ -3106,7 +3106,7 @@ DistTree::DistTree (const string &dataDirName,
     {
       const Leaf* leaf = it. second;
       if (isNan (leaf->badCriterion))
-        throw runtime_error ("No dissimilarities for object " + leaf->name);
+        throw runtime_error (FUNC "No dissimilarities for object " + leaf->name);
       var_cast (leaf) -> badCriterion = NaN;
     }
 
@@ -3122,7 +3122,7 @@ DistTree::DistTree (const string &dataDirName,
       if (pairs. size () != size_init)
       {
         cout << size_init << " -> " << pairs. size () << endl;
-        throw runtime_error (fName + ": non-unique pairs");
+        throw runtime_error (FUNC + fName + ": non-unique pairs");
       }
     }
   } 
@@ -3130,7 +3130,7 @@ DistTree::DistTree (const string &dataDirName,
   
   cleanTopology ();
   if (getDiscernibles (). size () <= 1)
-    throw runtime_error ("No discernible objects");
+    throw runtime_error (FUNC "No discernible objects");
     
      
   if (loadDissim)
@@ -3420,7 +3420,7 @@ DistTree::DistTree (const string &newickFName)
   ASSERT (nodes. front () == root);
 
   if (! static_cast <const DTNode*> (root) -> asSteiner ())
-    throw runtime_error ("One-node tree");
+    throw runtime_error (FUNC "One-node tree");
   const_static_cast <DTNode*> (root) -> len = NaN;
   fixTransients ();
   finishChanges ();
@@ -3478,7 +3478,7 @@ DistTree::DistTree (Prob branchProb,
   ASSERT (root);
   ASSERT (nodes. front () == root);
   if (! static_cast <const DTNode*> (root) -> asSteiner ())
-    throw runtime_error ("One-node tree");
+    throw runtime_error (FUNC "One-node tree");
 
   setName2leaf ();
 }
@@ -3632,7 +3632,7 @@ DistTree::DistTree (Subgraph &subgraph,
             leaves2dissimNum [leaf1->index * leafNum + leaf2->index] = (uint) dissimNum;
             dissimNum++;
             if (dissimNum >= (size_t) dissims_max)
-              throw runtime_error ("dissimNum is out of uint limit");
+              throw runtime_error (FUNC "dissimNum is out of uint limit");
           }
         ASSERT (dissims. size () == dissimNum);
       }
@@ -3815,7 +3815,7 @@ namespace
     string valueS (s1. substr (pos + token1. size ()));
     trim (valueS);
     if (valueS. empty ())
-      throw runtime_error ("Empty token '" + token + "' in: " + s);
+      throw runtime_error (FUNC "Empty token '" + token + "' in: " + s);
       
     if (valueS [0] == '\'')
     {
@@ -3825,7 +3825,7 @@ namespace
       {
         i++;
         if (! valueS [i])
-          throw runtime_error ("No closing single quote");
+          throw runtime_error (FUNC "No closing single quote");
         if (valueS [i] == '\'')
           break;
         else
@@ -3870,14 +3870,14 @@ bool DistTree::loadLines (const StringVector &lines,
   if (offset != expectedOffset)
   {
     cout << "Line " << lineNum + 1 << ": " << line << endl;
-    throw runtime_error ("Tree file is damaged");
+    throw runtime_error (FUNC "Tree file is damaged");
   }
   
   lineNum++;
 
   string idS (findSplit (s, ':'));
   if (idS. empty () || s. empty ())
-    throw runtime_error ("Bad format of line " + toString (lineNum));
+    throw runtime_error (FUNC "Bad format of line " + toString (lineNum));
   const Real   len               = token2real (s, lenS);
   const Real   errorDensity      = token2real (s, err_densityS);
   const Real   normCriterion     = token2real (s, normCriterionS);  
@@ -3981,7 +3981,7 @@ void DistTree::loadDissimDs (const string &dissimFName,
   IMPLY (dissimAttrName. empty (), multAttrName. empty ());
 
   if (dissimFName. empty ())
-    throw runtime_error ("Dataset " + dissimFName + " must exist");
+    throw runtime_error (FUNC "Dataset " + dissimFName + " must exist");
 
 
   // dissimDs, dissimAttr, multAttr
@@ -3999,7 +3999,7 @@ void DistTree::loadDissimDs (const string &dissimFName,
         dissimTypes << move (DissimType (attr));
       }
     if (dissimTypes. empty ())
-      throw runtime_error ("No dissimilarities in " + strQuote (dissimFName));
+      throw runtime_error (FUNC "No dissimilarities in " + strQuote (dissimFName));
     if (dissimTypes. size () == 1)
     {
       dissimAttr = dissimTypes [0]. dissimAttr;
@@ -4071,13 +4071,13 @@ void DistTree::mergeDissimAttrs ()
           }
     }
     if (n == 0)
-      throw runtime_error ("No data in dissimilarity " + strQuote (dt. dissimAttr->name));
+      throw runtime_error (FUNC "No data in dissimilarity " + strQuote (dt. dissimAttr->name));
     if (n == 1)
-      throw runtime_error ("Only one value in dissimilarity " + strQuote (dt. dissimAttr->name));
+      throw runtime_error (FUNC "Only one value in dissimilarity " + strQuote (dt. dissimAttr->name));
     const Real average = s / (Real) n;
     ASSERT (average >= 0.0);
     if (average == 0.0)
-      throw runtime_error ("Zero dissimilarity " + strQuote (dt. dissimAttr->name));
+      throw runtime_error (FUNC "Zero dissimilarity " + strQuote (dt. dissimAttr->name));
     dt. scaleCoeff = 1.0 / average;
     dt. qc ();
     ASSERT (dt. scaleCoeff > 0.0);
@@ -4244,7 +4244,7 @@ LeafCluster DistTree::getIndiscernibles ()
   }
   
   if (leafCluster. size () == 1)
-    throw runtime_error ("No discernible objects");
+    throw runtime_error (FUNC "No discernible objects");
  
   for (Iter<LeafCluster> iter (leafCluster); iter. next (); )
   {
@@ -4366,7 +4366,7 @@ size_t DistTree::setDiscernibles_ds ()
   }
   
   if (leafCluster. size () == 1)
-    throw runtime_error ("No discernible objects");
+    throw runtime_error (FUNC "No discernible objects");
  
   return leafCluster2discernibles (leafCluster);
 }
@@ -4645,7 +4645,7 @@ void DistTree::neighborJoin ()
         if (leafPair. same ())
           continue;
         if (leafPair. dissim < 0.0)
-          throw runtime_error ("Negative distance for " + leaf1->name + " - " + leaf2->name);
+          throw runtime_error (FUNC "Negative distance for " + leaf1->name + " - " + leaf2->name);
         if (leafPair. dissim == inf || isNan (leafPair. dissim))
         {
           missing++;
@@ -4806,7 +4806,7 @@ void DistTree::dissimDs2dissims ()
   {
     const StringVector objNames (dissimDs->getObjNames ());
     if (! objNames. containsFastAll (name2leaf))
-      throw runtime_error ("Tree has more objects than the dataset");
+      throw runtime_error (FUNC "Tree has more objects than the dataset");
   }
 
   // Leaf::comment
@@ -4815,12 +4815,12 @@ void DistTree::dissimDs2dissims ()
     const Obj* obj = dissimDs->objs [objNum];
     const Leaf* leaf = findPtr (name2leaf, obj->name);
     if (! leaf)
-      throw runtime_error ("Object " + strQuote (obj->name) + " is not in the tree");
+      throw runtime_error (FUNC "Object " + strQuote (obj->name) + " is not in the tree");
     var_cast (leaf) -> comment = obj->comment;
   }
 
   if (name2leaf. size () != dissimDs->objs. size ())
-    throw runtime_error ("Mismatch of the tree objects and the dataset objects");
+    throw runtime_error (FUNC "Mismatch of the tree objects and the dataset objects");
 
 
   // dissims[]
@@ -4967,7 +4967,7 @@ void DistTree::setPaths (bool setDissimMultP)
 {
 //ASSERT (optimizable ());
   if (dissims. size () > (size_t) dissims_max)
-    throw runtime_error ("setPaths: Too large dissimNum");
+    throw runtime_error (FUNC "Too large dissimNum");
     
   setLca ();  
   
@@ -5251,7 +5251,7 @@ void DistTree::qc () const
       {
         QC_ASSERT (leaf->graph == this);
         if (leaf->getParent () != leaves [0] -> getParent ())
-          throw runtime_error ("Indiscernibles have different parents: " + leaves [0] -> name + " and " + leaf->name);
+          throw runtime_error (FUNC "Indiscernibles have different parents: " + leaves [0] -> name + " and " + leaf->name);
       }
     }
     for (const DiGraph::Node* node : nodes)
@@ -5267,7 +5267,7 @@ void DistTree::qc () const
         if (dc)
         { 
           if (child->DisjointCluster::getDisjointCluster () != dc)
-            throw runtime_error ("Bad indiscernible: " + child->name);
+            throw runtime_error (FUNC "Bad indiscernible: " + child->name);
         }
         else
           dc = child->DisjointCluster::getDisjointCluster ();
@@ -5337,9 +5337,11 @@ const DTNode* DistTree::lcaName2node (const string &lcaName,
   string s (lcaName);
   const string name1 = findSplit (s, objNameSeparator);
   const Leaf* leaf1 = findPtr (name2leaf, name1);
-  ASSERT (leaf1);
+  if (! leaf1)
+    throw runtime_error (FUNC "Object " + strQuote (name1) + " is not in the tree");
   const Leaf* leaf2 = s. empty () ? leaf1 : findPtr (name2leaf, s);
-  ASSERT (leaf2);
+  if (! leaf2)
+    throw runtime_error (FUNC "Object " + strQuote (s) + " is not in the tree");
   const DTNode* node = static_cast<const DTNode*> (getLca (leaf1, leaf2, buf));
   ASSERT (node);
   
@@ -6036,7 +6038,7 @@ bool DistTree::optimizeLenWhole ()
     return false;
   }
   if (! predict2)
-    throw runtime_error ("No arcs");
+    throw runtime_error (FUNC "No arcs");
   if (   covar    > 1.0 / epsilon
       && predict2 > 1.0 / epsilon
      )
@@ -7608,7 +7610,7 @@ void DistTree::removeLeaf (Leaf* leaf,
 
   const TreeNode* parent = leaf->getParent ();
   if (! parent)
-    throw runtime_error ("removeLeaf: Empty tree");
+    throw runtime_error (FUNC "removeLeaf: Empty tree");
   ASSERT (parent->graph);
     
   leaf->detachChildrenUp ();  
@@ -7694,7 +7696,7 @@ void DistTree::removeLeaf (Leaf* leaf,
     maximize (absCriterion, 0.0);
   //ASSERT (target2_sum >= absCriterion);  // Can occur just after neighbor joining
     if (mult_sum <= 0.0)
-      throw runtime_error ("All objects are deleted");
+      throw runtime_error (FUNC "All objects are deleted");
   
     qcPaths (); 
   
@@ -9051,7 +9053,7 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 , mult (isNan (mult_arg) ? dist2mult (dissim_arg) : mult_arg)
 { 
   if (! leaf)
-    throw runtime_error ("No other leaf found for a new leaf placement");
+    throw runtime_error (FUNC "No other leaf found for a new leaf placement");
 //ASSERT (dissim >= 0.0);
   ASSERT (! isNan (dissim));
   ASSERT (mult >= 0.0);
@@ -9219,15 +9221,15 @@ void NewLeaf::process (bool init,
   if (init)
   { 
     if (fileExists (leafFName))
-      throw runtime_error ("File " + strQuote (leafFName) + " exists");
+      throw runtime_error (FUNC "File " + strQuote (leafFName) + " exists");
     if (fileExists (dissimFName))
-      throw runtime_error ("File " + strQuote (dissimFName) + " exists");
+      throw runtime_error (FUNC "File " + strQuote (dissimFName) + " exists");
     { OFStream of (dissimFName); }  // destructor creates an empty file
   }
   else
   {
     if (! fileExists (dissimFName))
-      throw runtime_error ("File " + strQuote (dissimFName) + " does not exist");
+      throw runtime_error (FUNC "File " + strQuote (dissimFName) + " does not exist");
     {
       LineInput f (dissimFName);
       string name1, name2, dissimS;
@@ -9246,10 +9248,10 @@ void NewLeaf::process (bool init,
           if (name1 != name)
             swap (name1, name2);
           if (name1 != name)
-            throw runtime_error (dissimFName + " must contain " + name);
+            throw runtime_error (FUNC + dissimFName + " must contain " + name);
           const Real dissim = str2real (dissimS);
           if (! (dissim >= 0.0))  // To include isNan()
-            throw runtime_error ("Dissimilarity must be non-negative");
+            throw runtime_error (FUNC "Dissimilarity must be non-negative");
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
         catch (...)
@@ -9278,7 +9280,7 @@ void NewLeaf::saveRequest (const string &requestFName) const
   for (const Leaf* leaf : requested)
   {
     if (name == leaf->name)
-      throw runtime_error ("Object " + name + " already exists in the tree");
+      throw runtime_error (FUNC "Object " + name + " already exists in the tree");
     const string* n1 = & name;
     const string* n2 = & leaf->name;
     if (*n1 > *n2)

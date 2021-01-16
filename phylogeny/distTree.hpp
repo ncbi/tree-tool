@@ -1541,7 +1541,7 @@ public:
     // Invokes: DTNode::setErrorDensity()
 	  // Time: O(p log(n))
 	void setLeafNormCriterion ();
-    // Output: Leaf::{absCriterion,absCriterion_ave}
+    // Output: Leaf::{normCriterion,absCriterion,absCriterion_ave}
     // Time: O(p)
 	void setNodeMaxDeformationDissimNum ();
     // Output: DTNode::maxDeformationDissimNum
@@ -1552,7 +1552,7 @@ public:
   Dataset getLeafErrorDataset (bool criterionAttrP,
                                Real deformation_mean) const;
     // Input: deformation_mean: may be NaN
-    // Return: attrs: PositiveAttr1 "leaf_error", "deformation" if deformation_mean is not NaN
+    // Return: attrs: PositiveAttr1 "leaf_error" (normalized object criterion), "deformation" (relative object deformation) if deformation_mean is not NaN
     // Invokes: Leaf::getDeformation()
     // Requires: setLeafNormCriterion(), setNodeMaxDeformationDissimNum()
     // Time: O(n)
