@@ -180,7 +180,7 @@ struct ThisApplication : Application
       size_t pos_max = 0;
       unordered_set<Mutation,Mutation::Hash> allMuts;  allMuts. rehash (10000);  // PAR
       {
-        FileItemGenerator fig (1000, true, inDirName);
+        FileItemGenerator fig (1000, true, inDirName);  // PAR
         string fName;
     	  while (fig. next (fName))
         {
