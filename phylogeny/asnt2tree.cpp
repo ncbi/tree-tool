@@ -49,7 +49,8 @@ namespace
 {
 
 
-OFStream* taxF = nullptr;
+OFStream* featureF = nullptr;
+bool featureHeader = false;
 
 
 
@@ -70,12 +71,13 @@ struct TreeAsn : Asn_sp::Asn
     
   void processNode () final
     { 
-      constexpr size_t labelNum = 0;
-    	constexpr size_t distNum  = 1;
-    	constexpr size_t taxNum   = 24;
+      constexpr size_t labelNum   =  0;
+    	constexpr size_t distNum    =  1;
     	QC_ASSERT (fDict [labelNum] == "label");
     	QC_ASSERT (fDict [distNum] == "dist");
-    	QC_ASSERT (fDict [taxNum] == "taxa_id");
+    	
+    	QC_ASSERT (fDict. size () == features. size ());
+    	
     	
     	Steiner* parentNode = nullptr;
     	if (parent != no_id)
@@ -98,12 +100,17 @@ struct TreeAsn : Asn_sp::Asn
     	else
     	{
     	  tree. name2leaf [name] = new Leaf (tree, parentNode, len, name);
-    	  if (   taxF
-    	      && ! features [taxNum]. empty ()
-    	     )
+    	  if (featureF)
     	  {
-    	    const uint taxid = str2<uint> (features [taxNum]);
-    	    *taxF << name << '\t' << taxid << endl;
+          if (! featureHeader)
+          {
+      	    *featureF << '#';
+      	    save (*featureF, fDict, '\t');
+      	    *featureF << endl;
+      	    featureHeader = true;
+          }
+          save (*featureF, features, '\t');
+    	    *featureF << endl;
     	  }
     	}
     }
@@ -119,23 +126,24 @@ struct ThisApplication : Application
 	{
 	  // Input
 	  addPositional ("input_tree", "Tree in textual ASN.1 format (BioTreeContainer)");
-	  addKey ("tax", "Output file with pairs: <leaf name> <taxid>");
+	  addKey ("feature", "Output file with features");
 	}
 
 
 
 	void body () const final
   {
-		const string input_tree = getArg ("input_tree");    
-		const string taxFName   = getArg ("tax");
+		const string input_tree   = getArg ("input_tree");    
+		const string featureFName = getArg ("feature");
 
 
     DistTree tree;
-    if (! taxFName. empty ())
-      taxF = new OFStream (taxFName);
+    if (! featureFName. empty ())
+      featureF = new OFStream (featureFName);
     {
       TreeAsn asn (input_tree, tree);
       asn. asnRead ();
+      asn. qc ();
       const string title ("BioTreeContainer");
       if (asn. title != title)
         throw runtime_error ("Title " + strQuote (title) + " is expected");
