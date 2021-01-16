@@ -2,8 +2,8 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
-  echo "Input: #1.prot"
-  echo "Output: #1.{univ,prot-univ,hmm-align}"
+  echo "Input: #1.prot or #1.prot-genbank"
+  echo "Output: #1.{univ,prot-univ}"
   echo "#1: assembly file prefix"
   echo "#2: HMM library"
  #echo "#3: HMM directory with .HMM-files (should match #2)"
@@ -18,7 +18,11 @@ CUTOFF=$3
 LOG=$4
 
 
-IN=$PREFIX.prot
+IN=$PREFIX.prot_genbank
+if [ ! -e $IN ]; then
+  IN=$PREFIX.prot
+fi
+
 ANNOT=$PREFIX.univ
 PROT_CUT=$PREFIX.prot-univ
 
