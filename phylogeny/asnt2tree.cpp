@@ -49,6 +49,10 @@ namespace
 {
 
 
+OFStream* taxF = nullptr;
+
+
+
 struct TreeAsn : Asn_sp::Asn
 {
   DistTree& tree;
@@ -68,8 +72,10 @@ struct TreeAsn : Asn_sp::Asn
     { 
       constexpr size_t labelNum = 0;
     	constexpr size_t distNum  = 1;
-    	ASSERT (fDict [labelNum] == "label");
-    	ASSERT (fDict [distNum] == "dist");
+    	constexpr size_t taxNum   = 24;
+    	QC_ASSERT (fDict [labelNum] == "label");
+    	QC_ASSERT (fDict [distNum] == "dist");
+    	QC_ASSERT (fDict [taxNum] == "taxa_id");
     	
     	Steiner* parentNode = nullptr;
     	if (parent != no_id)
@@ -90,7 +96,16 @@ struct TreeAsn : Asn_sp::Asn
     	if (name. empty ())
     	  id2steiner [id] = new Steiner (tree, parentNode, len);
     	else
+    	{
     	  tree. name2leaf [name] = new Leaf (tree, parentNode, len, name);
+    	  if (   taxF
+    	      && ! features [taxNum]. empty ()
+    	     )
+    	  {
+    	    const uint taxid = str2<uint> (features [taxNum]);
+    	    *taxF << name << '\t' << taxid << endl;
+    	  }
+    	}
     }
 };
 
@@ -104,6 +119,7 @@ struct ThisApplication : Application
 	{
 	  // Input
 	  addPositional ("input_tree", "Tree in textual ASN.1 format (BioTreeContainer)");
+	  addKey ("tax", "Output file with pairs: <leaf name> <taxid>");
 	}
 
 
@@ -111,9 +127,12 @@ struct ThisApplication : Application
 	void body () const final
   {
 		const string input_tree = getArg ("input_tree");    
+		const string taxFName   = getArg ("tax");
 
 
     DistTree tree;
+    if (! taxFName. empty ())
+      taxF = new OFStream (taxFName);
     {
       TreeAsn asn (input_tree, tree);
       asn. asnRead ();
