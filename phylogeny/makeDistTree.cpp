@@ -50,8 +50,8 @@ namespace
   
 
 
-const string criterionOutlier_definition ("relative unweighted average leaf error");
-const string deformationOutlier_definition ("max. squared residual to min(dissimilarity,distance) ratio");
+const string criterionOutlier_definition ("normalized object criterion");
+const string deformationOutlier_definition ("relative object deformation");
 
 
 
@@ -659,6 +659,7 @@ struct ThisApplication : Application
 	      const VectorPtr<Leaf> outliers (tree->findCriterionOutliers (leafErrorDs, 1e-6, outlier_min_excl));  // PAR
 	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Criterion outliers: " << outliers. size () << endl;
+	      cout << "# Criterion outlier threshold: " << outlier_min_excl << endl;
         OFStream f (delete_criterion_outliers);
 	      if (! outliers. empty ())
 	      {
@@ -693,6 +694,7 @@ struct ThisApplication : Application
 	      const VectorPtr<Leaf> outliers (tree->findDeformationOutliers (tree->getDeformation_mean (), 1e-10, outlier_min_excl));  // PAR  
 	      const ONumber on (cout, absCriterionDecimals, false);  
 	      cout << "# Deformation outliers: " << outliers. size () << endl;
+	      cout << "# Deformation outlier threshold: " << outlier_min_excl << endl;
         OFStream f (delete_deformation_outliers);
 	      if (! outliers. empty ())
 	      {
