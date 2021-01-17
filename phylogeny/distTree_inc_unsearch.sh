@@ -14,7 +14,8 @@ OBJ=$2
 H=""
 LARGE=`cat $INC/large`
 if [ $LARGE == 1 ]; then
-  H="%h/"
+  H=`$THIS/../file2hash $OBJ`
+  H="$H/"
 fi
 touch $INC/new/$H$OBJ
 
