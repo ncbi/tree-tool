@@ -5,7 +5,7 @@ if [ $# -ne 3 ]; then
   echo "Execute a command for each object in a list of objects for #1/new/"
   echo "#1: incremental distance tree directory"
   echo "#2: command (e.g., touch, rm)"
-  echo "#3: list of objecvts"
+  echo "#3: list of objects"
   exit 1
 fi
 INC=$1
