@@ -4020,6 +4020,8 @@ struct PositiveAverageModel : Root
 		     //<< '\t' << universal 
  		       << '\t' << coeff
  		       << '\t' << var
+ 		       << '\t' << value
+ 		       << '\t' << outlier
  		       << endl;
  		  }
 

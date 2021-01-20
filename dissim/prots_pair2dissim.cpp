@@ -239,7 +239,11 @@ struct ThisApplication : Application
     	if (separate)
       	out << td. str ();
       else
+      {
     		out << pam. get ();
+    		if (verbose ())
+    		  pam. saveText (cout);
+      }
     		
       out << endl;
     }
