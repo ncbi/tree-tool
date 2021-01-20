@@ -87,6 +87,8 @@ struct ThisApplication : Application
 		report ("SD",      mv. getSD ());
 	  report ("sum",     mv. s);
 		report ("mean SD", mv. getSD () / sqrt (mv. n));
+	  report ("min",     mv. v_min);
+	  report ("max",     mv. v_max);
 	}
 };
 
