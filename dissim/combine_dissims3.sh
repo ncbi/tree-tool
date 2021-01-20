@@ -44,6 +44,7 @@ fi
 
 TMP=`mktemp`
 #echo $TMP 
+#set -x
 
 
 cat $IN | awk '{print $1};' > $TMP.1
@@ -55,9 +56,9 @@ join  -1 1  -2 1  $TMP.f1 $TMP.f2 | cut -d ' ' -f 2,3 > $TMP.req
 # $TMP.prt{0|1}
 $THIS/hash_request2dissim $TMP.req $TMP.prt  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
 set +o errexit
-grep -w  nan $TMP.prt                           >  $TMP.prt1
-grep -wv nan $TMP.prt | awk '$3 >  '$DISSIM_MAX >> $TMP.prt1
-grep -wv nan $TMP.prt | awk '$3 <= '$DISSIM_MAX >  $TMP.prt0
+grep -w  "nan" $TMP.prt                           >  $TMP.prt1
+grep -wv "nan" $TMP.prt | awk '$3 >  '$DISSIM_MAX >> $TMP.prt1
+grep -wv "nan" $TMP.prt | awk '$3 <= '$DISSIM_MAX >  $TMP.prt0
 set -o errexit
 
 # $TMP.prt0 -> $TMP.{cds,univ}0
