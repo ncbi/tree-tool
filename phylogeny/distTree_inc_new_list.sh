@@ -11,6 +11,10 @@ INC=$1
 
 LARGE=`cat $INC/large`
 if [ $LARGE == 1 ]; then
+  N=`ls $INC/new | wc -l`
+  if [ $N -ne 1000 ]; then
+    error "$INC/new/ has no 1000 subdirectories (it has $N)"
+  fi
   $THIS/../trav $INC/new "ls %d/%f" | sort
 else
   ls $INC/new/
