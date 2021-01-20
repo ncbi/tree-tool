@@ -34,6 +34,7 @@ all:	\
 	hmmAddCutoff \
 	hmmNAME2ACC \
 	hmmsearch2besthits \
+	interSeq \
 	kmerIndex_add \
 	kmerIndex_find \
 	kmerIndex_make \
@@ -193,6 +194,12 @@ hmmsearch2besthits.o:  $(COMMON_HPP) $(GEN_DIR)/hmm.hpp
 hmmsearch2besthitsOBJS=hmmsearch2besthits.o $(HMM_OBJ) 
 hmmsearch2besthits:	$(hmmsearch2besthitsOBJS)
 	$(CXX) -o $@ $(hmmsearch2besthitsOBJS) $(LIBS) 
+	$(ECHO)
+
+interSeq.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+interSeqOBJS=interSeq.o $(SEQ_OBJ)
+interSeq:	$(interSeqOBJS)
+	$(CXX) -o $@ $(interSeqOBJS) $(LIBS) 
 	$(ECHO)
 
 kmerIndex_add.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
