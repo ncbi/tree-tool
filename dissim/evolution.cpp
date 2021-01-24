@@ -194,8 +194,9 @@ Real features2hamming (const ObjFeatureVector &vec1,
                        const ObjFeatureVector &vec2,
                        Real optional_weight)
 {
-  return   features2hamming_half (vec1, vec2, optional_weight)
-         + features2hamming_half (vec2, vec1, optional_weight);
+  const Real w = optional_weight / 2.0;
+  return   features2hamming_half (vec1, vec2, w)
+         + features2hamming_half (vec2, vec1, w);
 }
 
 
