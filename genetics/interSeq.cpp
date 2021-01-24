@@ -60,7 +60,7 @@ struct UniqSeq
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Find identical (intersection) sequences in 2 FASTA files")
+    : Application ("Print identical (intersection) sequences in 2 FASTA files: <seqid of in1> <seqid of in2>")
 	  {
 		  addPositional ("in1", "Input FASTA file 1");
 		  addPositional ("in2", "Input FASTA file 2");
@@ -110,7 +110,7 @@ struct ThisApplication : Application
 		    
 		    const size_t h = str_hash (seq->seq);
 		    if (const string* s = findPtr (hash2id, h))
-		      cout << seq->name << '\t' << *s << endl;
+		      cout << *s << '\t' << seq->name << endl;
 		  }
 		}
 
