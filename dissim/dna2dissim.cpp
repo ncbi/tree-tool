@@ -167,6 +167,7 @@ struct ThisApplication : Application
   		  if (align. sparse2 [i] != '-')
   		    refPos++;
   		}
+  		// mutation at 3' end is not reported ??
     }
 
 
