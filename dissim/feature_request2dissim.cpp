@@ -109,7 +109,7 @@ struct ThisApplication : Application
       const ObjFeatureVector vec1 (dir + "/" + obj1);
       const ObjFeatureVector vec2 (dir + "/" + obj2);
     #endif
-      cout << obj1 << '\t' << obj2 << '\t' << features2dissim (vec1, vec2, optional_weight, /*freq,*/ *feature2rate) << endl;
+      cout << obj1 << '\t' << obj2 << '\t' << features2dissim (vec1, vec2, optional_weight, *feature2rate) << endl;
     }
 	}
 };
