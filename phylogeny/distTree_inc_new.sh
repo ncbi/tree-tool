@@ -26,7 +26,7 @@ if [ $ADD == 0 ]; then
 fi
 
 
-if true; then  
+if true; then
 date
 echo ""
 echo ""
