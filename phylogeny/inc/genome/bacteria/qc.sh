@@ -31,7 +31,7 @@ EOT
 diff $TMP.genome-tree $TMP.tree
 
 
-ls $INC/new/ > $TMP.new
+CPP_DIR/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-new
   select id
     from Genome
@@ -42,8 +42,6 @@ sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-ne
           and in_tree is null;
   go -m bcp  
 EOT
-#wc -l $TMP.genome-new 
-#wc -l $TMP.new
 diff $TMP.genome-new $TMP.new
 
 
