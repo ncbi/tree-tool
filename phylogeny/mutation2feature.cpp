@@ -158,7 +158,7 @@ void save (const Vector<Mutation> &muts,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert DNA mutations to 3-values Boolean attributes for makeFeatureTree")
+    : Application ("Convert DNA mutations to 3-valued Boolean attributes of non-ambiguous mutations for makeFeatureTree")
 	  {
 	  	addPositional ("in", "Input directory with DNA mutations in the format <ref seq><ref pos><target seq>");
 	  	addPositional ("feature_dir", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
@@ -176,9 +176,11 @@ struct ThisApplication : Application
 
     unordered_map<string,Vector<Mutation>> obj2muts;  obj2muts. rehash (100000);  // PAR
     Vector<Vector<Mutation>> pos2muts;  // !ambig
+      // !Mutation::ambig
     {
       size_t pos_max = 0;
       unordered_set<Mutation,Mutation::Hash> allMuts;  allMuts. rehash (10000);  // PAR
+        // !Mutation::ambig
       {
         FileItemGenerator fig (1000, true, inDirName);  // PAR
         string fName;
