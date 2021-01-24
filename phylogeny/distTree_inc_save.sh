@@ -12,17 +12,19 @@ OUT=$2
 
 
 rm -rf $OUT
-mkdir $OUT
+mkdir -p $OUT
 for F in `ls $INC/`; do
   if [ -d $INC/$F -o $F == "tree" -o $F == "dissim" ]; then
     continue;
   fi
 
-  set +o errexit
-  N=`file $INC/$F | grep -c 'ASCII text'`
-  set -o errexit
-  if [ $N -eq 0 ]; then
-    continue
+  if [ -s $INC/$F ]; then
+    set +o errexit
+    N=`file $INC/$F | grep -c 'ASCII text'`
+    set -o errexit
+    if [ $N -eq 0 ]; then
+      continue
+    fi
   fi
   
   N=`cat $INC/$F | wc -l`
@@ -46,9 +48,13 @@ rm -f $OUT/outlier_genogroup
 rm -f $OUT/tree
 rm -f $OUT/version
 rm -f $OUT/runlog
+rm -f $OUT/finished
+rm -f $OUT/leaf
+rm -f $OUT/search.list
 
 # May be confidential
 rm -f $OUT/server
 rm -f $OUT/database
+rm -f $OUT/bulk_remote
 
 
