@@ -116,7 +116,11 @@ $THIS/distTree_inc_tree1_quality.sh $INC
 
 if [ -e $INC/phen ]; then
 	DATE=`date +%Y%m%d`
-	LARGE=`cat $INC/large`
+
+	LARGE=0
+	if [ -e $INC/large ]; then
+	  LARGE=1
+	fi
 
 	echo ""
 	echo "Root and quality ..."

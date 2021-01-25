@@ -12,8 +12,7 @@ OBJ=$2
 
 
 H=""
-LARGE=`cat $INC/large`
-if [ $LARGE == 1 ]; then
+if [ -e $INC/large ]; then
   H=`$THIS/../file2hash $OBJ`
   H="$H/"
 fi

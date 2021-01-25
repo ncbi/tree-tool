@@ -21,7 +21,10 @@ echo $TMP > /dev/stderr
 VER=`cat $INC/version`
 echo $VER > /dev/stderr
 $THIS/tree2obj.sh $INC/hist/tree.1 > $TMP.init
-LARGE=`cat $INC/large`
+LARGE=0
+if [ -e $INC/large ]; then
+  LARGE=1
+fi
 $THIS/tree2obj.sh $INC/tree > $TMP.last
 $THIS/../setIntersect.sh $TMP.init $TMP.last 0 > $TMP.list
 

@@ -9,8 +9,7 @@ fi
 INC=$1
 
 
-LARGE=`cat $INC/large`
-if [ $LARGE == 1 ]; then
+if [ -e $INC/large ]; then
   N=`ls $INC/new | wc -l`
   if [ $N -ne 1000 ]; then
     error "$INC/new/ has no 1000 subdirectories (it has $N)"

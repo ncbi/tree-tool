@@ -102,7 +102,10 @@ cp $INC/tree $INC/hist/tree.1
 if [ -e $INC/phen ]; then
   echo ""
   echo "Quality ..."
-	LARGE=`cat $INC/large`
+  LARGE=0
+  if [ -e $INC/large ]; then
+    LARGE=1
+  fi
   $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 0 "" > $INC/hist/tree_quality_phen.1
 	grep ' !' $INC/hist/tree_quality_phen.1
 fi

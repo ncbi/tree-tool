@@ -23,12 +23,11 @@ $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -dissim_coeff
 
 echo ""
 echo ""
-LARGE=`cat $INC/large`
-LARGE_PAR=""
-if [ $LARGE == 1 ]; then
-  LARGE_PAR="-large"
+LARGE=""
+if [ -e $INC/large ]; then
+  LARGE="-large"
 fi
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $INC/phen  $LARGE_PAR \
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $INC/phen  $LARGE \
   -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual   -output_core $TMP.core  -save_mem
 
 

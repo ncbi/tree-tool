@@ -26,6 +26,9 @@ $THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_l
 
 echo ""
 echo "Quality ..."
-LARGE=`cat $INC/large`
+LARGE=0
+if [ -e $INC/large ]; then
+  LARGE=1
+fi
 $THIS/tree_quality_phen.sh $OUT_TREE "" $INC/phen $LARGE 1 ""
 
