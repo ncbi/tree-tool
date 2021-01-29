@@ -32,3 +32,6 @@ else
   $INC/outlier2db.sh $OBJ "alien"
   rm -r $DIR/
 fi
+
+
+rm $INC/log/$OBJ
