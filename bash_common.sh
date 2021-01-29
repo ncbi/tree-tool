@@ -23,9 +23,24 @@ function error
 }
 
 
+function section
+{
+	MSG="$1"
+  echo ""
+  echo -e "${GREEN}${MSG}${NOCOLOR}"
+}
+
+
+function warning
+{
+	MSG="$1"
+  echo ""
+  echo -e "${YELLOW}${MSG}${NOCOLOR}"
+}
+
+
 function success
 {
-  echo ""
-  echo -e "${GREEN}SUCCESS!${NOCOLOR}"
+  section "SUCCESS!"
   exit 0
 }

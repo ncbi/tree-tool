@@ -22,9 +22,8 @@ QC=1
 
 
 if [ $QC == 1 ]; then
-  echo "QC ..."
+  section "QC ..."
   $INC/qc.sh go
-  echo ""
 fi
 
 
@@ -33,20 +32,17 @@ if [ $NEW_PAR == 1 ]; then
   # Time: O(n log^4(n))
   while true; do
     if [ -e $INC/stop ]; then
-      echo ""
-      echo -e "$YELLOW"'*** STOPPED ***'"$NOCOLOR"
+      warning '*** STOPPED ***'
       exit 2
     fi
     
     if [ -e $INC/skip ]; then
-      echo ""
-      echo -e "$YELLOW"'*** SKIPPED ***'"$NOCOLOR"
+      warning '*** SKIPPED ***'
       break
     fi
     
     VER=`cat $INC/version`
     echo "$VER  `date`  `date +%s`" >> $INC/runlog  
-    echo ""
     echo ""
     $THIS/distTree_inc_new.sh $INC 
     if [ -e $INC/finished ]; then
@@ -60,8 +56,7 @@ VARIANCE=`cat $INC/variance`
 
 
 echo ""
-echo ""
-echo "Final optimization ..."
+section "Final optimization ..."
 
 VER=`cat $INC/version`
 echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
@@ -90,20 +85,17 @@ mv $INC/tree.new $INC/tree
 #tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
 if [ -e $INC/outlier-genogroup ]; then
-  echo ""
-  echo "Database: genogroup outliers ..."
+  section "Database: genogroup outliers ..."
   $INC/objects_in_tree.sh $INC/outlier-genogroup null
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
 
 if [ $QC == 1 ]; then
-  echo ""
-  echo "QC ..."
+  section "QC ..."
   $INC/qc.sh go
 fi
-echo ""
-echo "Tree QC ..."
+section "Tree QC ..."
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
   VER=`cat $INC/version`
@@ -122,29 +114,26 @@ if [ -e $INC/phen ]; then
 	  LARGE=1
 	fi
 
-	echo ""
-	echo "Root and quality ..."
+	section "Root and quality ..."
 	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 
-	echo ""
-	echo "Setting root and sorting ..."
+	section "Setting root and sorting ..."
   if [ ! $NEW_ROOT ]; then
     NEW_ROOT=$OLD_ROOT
   fi
   # -noqual must be absent to compute quality data after reroot()
 	$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
 	
-	echo ""
-	echo "Names ..."
+	section "Names ..."
 	$THIS/tree2names.sh tree.$DATE $INC/phen $LARGE > $INC/hist/tree2names.$VER
 
 
   if [ -n "$RELDIR" ]; then
     echo ""
-    echo ""
+    section "Release ..."
     if [ ! -e $RELDIR ]; then
       error "$RELDIR does not exist"
     fi
