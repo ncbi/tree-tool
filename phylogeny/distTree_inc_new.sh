@@ -55,13 +55,11 @@ fi
 
 VER=$(( $VER_OLD + 1 ))
 echo $VER > $INC/version
-echo "version: $VER"
+section "version: $VER"
 
 
-echo "new/ -> search/ ..."
-
+section "new/ -> search/ ..."
 echo "# Objects: $OBJS"  
-
 echo "To add at this step: $ADD"
 
 $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
@@ -75,17 +73,22 @@ rm $INC/new.list
 
 $THIS/../trav  -threads 15  $INC/search.list "mkdir $INC/search/%f"
 $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
+rm $INC/search.list
 
 
-echo ""
-echo "search/ -> leaf, dissim ..."
+section "search/ -> leaf, dissim ..."
 
 N=`ls $INC/search/ | wc -l`
 if [ $N -gt 0 ]; then
+  rm -rf $INC/log/
+  mkdir $INC/log
+  $THIS/../trav  $INC/search "touch $INC/log/%f" 
   SEARCH_GRID_MIN=$(( $GRID_MIN / 100 ))  # PAR
+  GRID=0
   if [ $N -lt $SEARCH_GRID_MIN ]; then
     $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
   else
+    GRID=1
     $THIS/../grid_wait.sh 1
     UL1=""
     if [ -e $INC/request_closest_sql ]; then
@@ -93,20 +96,9 @@ if [ $N -gt 0 ]; then
     fi
     $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
     $THIS/../qstat_wait.sh 2000 1
-    if false; then  # This is done by distTree_inc_search_init.sh
-      ls $INC/search/*/request | sed 's|/request$||1' | sed 's|^.*/||1' > $INC/sought.list
-        # Will break if "No such file or directory"
-      $THIS/../setMinus $INC/search.list $INC/sought.list > $INC/missed.list
-      rm $INC/sought.list
-      if [ -s $INC/missed.list ]; then
-        wc -l $INC/missed.list
-        $THIS/distTree_inc_new_cmd.sh $INC "touch" $INC/missed.list
-      fi
-      rm $INC/missed.list
-    fi
   fi
+  $THIS/distTree_inc_new_log.sh $INC $GRID  
 fi
-rm $INC/search.list
 
 
 ITER=0
@@ -120,10 +112,9 @@ while [ $ITER -le $ITER_MAX ]; do
   fi
 
 	ITER=$(( $ITER + 1 ))
-  echo ""
-  echo "Iteration $ITER / $ITER_MAX ..."
+  section "Iteration $ITER / $ITER_MAX ..."
   # use distTree_inc_request2dissim.sh ??
-  REQ=`$THIS/../trav $INC/search "wc -l %d/%f/request" | cut -f 1 -d ' ' | $THIS/../dm/count | grep -w '^sum' | cut -f 2` 
+  REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
   echo "# Requests: $REQ"
   GRID=1
   if [ $REQ -lt $GRID_MIN ]; then
@@ -145,27 +136,8 @@ while [ $ITER -le $ITER_MAX ]; do
     $THIS/../qstat_wait.sh $WAIT 0
   fi
   
-  ls $INC/log > $INC/log.list-all
-  ls $INC/search > $INC/search.list
-  $THIS/../setIntersect.sh $INC/log.list-all $INC/search.list 0 > $INC/log.list
-  rm $INC/log.list-all
-  rm $INC/search.list
-  L=`cat $INC/log.list | wc -l`
-  if [ $L -gt 0 ]; then
-    echo "# Failed tasks: $L"
-    if [ $GRID == 0 ]; then
-      exit 1
-    fi
-	  # Try to fix grid problems
-    $THIS/../trav $INC/log.list "$THIS/distTree_inc_unsearch.sh $INC %f"
-    $THIS/../trav $INC/log "echo ''; echo %d/%f; tail -20 %d/%f" > $INC/log.out  # PAR
-    head -21 $INC/log.out  # PAR
-    rm $INC/log.out
-  fi
-  rm $INC/log.list
-  
-  rm -r $INC/log/
-      
+  $THIS/distTree_inc_new_log.sh $INC $GRID  
+
   $THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
 
   echo "Processing new objects ..."
@@ -173,8 +145,7 @@ while [ $ITER -le $ITER_MAX ]; do
 done
 
 
-echo ""
-echo "leaf, dissim.add -> tree, dissim ..."
+section "leaf, dissim.add -> tree, dissim ..."
 
 wc -l $INC/dissim.add
 cat $INC/dissim.add >> $INC/dissim
@@ -219,24 +190,21 @@ cp /dev/null $INC/leaf
 mv $INC/tree.new $INC/tree
 
 if [ -s $INC/hist/leaf.$VER ]; then
-  echo ""
-  echo "Database: new -> tree ..."
+  section "Database: new -> tree ..."
   cut -f 1 $INC/hist/leaf.$VER | sort > $INC/leaf.list
   $INC/objects_in_tree.sh $INC/leaf.list 1
   rm $INC/leaf.list
 fi
 
 if [ -e $INC/outlier-genogroup ]; then
-  echo ""
- #echo "Database: genogroup outliers ..."
+  section "Database: genogroup outliers ..."
   wc -l $INC/outlier-genogroup
   $INC/objects_in_tree.sh $INC/outlier-genogroup null
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
 if [ -e $INC/outlier-criterion ]; then
-  echo ""
-  #echo "Database: criterion outliers ..."
+  section "Database: criterion outliers ..."
   wc -l $INC/outlier-criterion
   $INC/objects_in_tree.sh $INC/outlier-criterion null
   $THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
@@ -244,8 +212,7 @@ if [ -e $INC/outlier-criterion ]; then
 fi
 
 if [ -e $INC/outlier-deformation ]; then
-  echo ""
-  #echo "Database: deformation outliers ..."
+  section "Database: deformation outliers ..."
   wc -l $INC/outlier-deformation
   $INC/objects_in_tree.sh $INC/outlier-deformation null
   $THIS/../trav $INC/outlier-deformation "$INC/outlier2db.sh %f deformation"  
@@ -253,8 +220,7 @@ if [ -e $INC/outlier-deformation ]; then
 fi
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
-  echo ""
-  echo "Hybrid ..."
+  section "Hybrid ..."
 	$THIS/distTree_inc_hybrid.sh $INC 
  #echo "Unhybrid ..."
  #$THIS/distTree_inc_unhybrid.sh $INC 
@@ -263,8 +229,7 @@ fi
 # Must be the last database change in this script
 GENOGROUP_BARRIER=`cat $INC/genogroup_barrier`
 if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
-  echo ""
-  echo "New genogroup outliers ..."
+  section "New genogroup outliers ..."
   $THIS/tree2genogroup $INC/tree  $GENOGROUP_BARRIER  -genogroup_table $INC/genogroup_table
   $INC/genogroup2db.sh $INC/genogroup_table > $INC/outlier-genogroup  
   mv $INC/genogroup_table $INC/hist/genogroup_table.$VER
@@ -277,7 +242,7 @@ if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
 fi
 
 
-echo ""
+section "Additional requests ..."
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.add-req
 if [ -s $INC/dissim.add-req ]; then
   grep -vwi nan $INC/dissim.add-req | grep -vwi inf >> $INC/dissim
@@ -289,14 +254,12 @@ rm $INC/dissim_request
 $THIS/distTree_inc_tree1_quality.sh $INC
 
 
-echo ""
-echo "QC ..."
+section "QC ..."
 $INC/qc.sh go
 
 
-echo ""
 NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
-echo "# New objects left: $NEW"
+section "# New objects left: $NEW"
 if [ $NEW == 0 ]; then
   touch $INC/finished
 else

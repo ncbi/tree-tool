@@ -1,6 +1,7 @@
-#define VERSION "1.4.1"
+#define VERSION "1.4.2"
 
 
+// 1.4.2  01/28/2021  distTree_inc_new_log.sh
 // 1.4.1  01/24/2021  inc/{large,request_closest_sql} /dev/null or absent
 // 1.3.2  01/10/2021  GeneMark2CDS prints incomplete and ambiguous proteins as well
 // 1.3.1  12/18/2020  inc/phen_large --> inc/large; inc/request_closest_sql
