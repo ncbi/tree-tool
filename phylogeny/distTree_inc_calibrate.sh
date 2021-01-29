@@ -16,13 +16,12 @@ TMP=`mktemp`
 echo $TMP 
 
 
+section "Building tree ..."
 VARIANCE=`cat $INC/variance`
-
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -dissim_coeff $DISSIM_COEFF  -dissim_power $DISSIM_POWER \
   -optimize  -skip_len  -reinsert  -subgraph_iter_max 5  -noqual  -output_feature_tree $TMP.feature_tree 
 
-echo ""
-echo ""
+section "Evaluating tree ..."
 LARGE=""
 if [ -e $INC/large ]; then
   LARGE="-large"

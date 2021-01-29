@@ -25,6 +25,7 @@ echo $VER > $INC/version
 
 VARIANCE=`cat $INC/variance`
 
+section "Building tree ..."
 # Cf. distTree_inc_new.sh
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
   -delete $DEL  \
@@ -39,7 +40,7 @@ wc -l $INC/dissim
 wc -l $INC/dissim.new
 mv $INC/dissim.new $INC/dissim
 
-echo ""
+section "Database ..."
 $INC/objects_in_tree.sh $DEL null
 
 $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
@@ -51,8 +52,7 @@ rm $INC/new-del.list
 mv $DEL $INC/hist/delete.$VER
 
 
-echo ""
-echo "QC ..."
+section "QC ..."
 $INC/qc.sh go  
 
 

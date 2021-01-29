@@ -12,12 +12,11 @@ HIST=$2
 
 
 echo "Version: `cat $INC/version`"
-echo ""
 
 set +o errexit
 OBJS=`grep -vc '^ *0x' $INC/tree`
 set -o errexit
-echo "# Objects in tree: $OBJS"  
+section "# Objects in tree: $OBJS"  
 
 if [ $OBJS == 0 ]; then
   exit
@@ -40,15 +39,13 @@ fi
 
 N=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
 if [ $N -gt 0 ]; then
-  echo ""
-  echo "# New: $N"
+  section "# New: $N"
   echo "# To process: $(( $ADDED + $SEARCH + $N ))"
 fi
 
 if [ -e $INC/outlier-genogroup ]; then
 	N=`cat $INC/outlier-genogroup | wc -l`
-  echo ""
-  echo "# Genogroup outliers: $N"
+  section "# Genogroup outliers: $N"
   echo "# Objects to be in tree: $(( $OBJS - $N ))"
 fi
 

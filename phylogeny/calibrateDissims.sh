@@ -22,13 +22,11 @@ TMP=`mktemp`
 echo $TMP 
 
 
-echo ""
-echo ""
+section "Bulding tree ..."
 $THIS/makeDistTree  -threads 5  -data $INPUT  -dissim_attr $DISSIM  -variance $VARIANCE_PAR \
      -optimize  -subgraph_iter_max $ITER_MAX  -noqual  -output_feature_tree $TMP.feature_tree
 
-echo ""
-echo ""
+section "Evaluating tree ..."
 LARGE_PAR=""
 if [ $LARGE -eq 1 ]; then
   LARGE_PAR="-large"

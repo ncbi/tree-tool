@@ -37,9 +37,6 @@ $THIS/../dm/pairs2dm $TMP.pairs 1 cons 6  -distance > $TMP.dm
 #cp $TMP.dm data.dm 
 
 
-echo ""
-echo ""
-
 HYBRID=""
 if [ $DELETE_HYBRIDS -eq 1 ]; then
   HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
@@ -52,12 +49,10 @@ if [ $DISSIM_COEFF == 0 ]; then
   DISSIM_COEFF_OPTION=""
 fi
 
-echo ""
-echo ""
+section "Building tree ..."
 $THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  -subgraph_iter_max 10  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree  
 
-echo ""
-echo ""
+section "Evaluating tree ..."
 $THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -large  -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual
 
 
