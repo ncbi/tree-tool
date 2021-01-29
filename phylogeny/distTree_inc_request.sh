@@ -10,16 +10,18 @@ if [ $# -ne 2 ]; then
   echo "#2: New object"
   exit 1
 fi
+INC=$1
+OBJ=$2
 
 
 #set -x
 
 
-DIR=$1/search/$2
-LOG=$1/log/$2
+DIR=$INC/search/$OBJ
+LOG=$INC/log/$OBJ
 
 
-$1/request2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.request2dissim
+$INC/request2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.request2dissim
 if [ ! -s $DIR/dissim.add ]; then
   echo "Empty $DIR/dissim.add" > $LOG
   exit 1
