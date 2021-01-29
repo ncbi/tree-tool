@@ -19,17 +19,14 @@ QC="" # -qc
 
 $THIS/../dissim/feature2dissim $QC $OBJ.list $FEAT > $TMP.dm
 
-echo ""
-echo ""
+section "Building distance tree ..."
 $THIS/makeDistTree  $QC  -data $TMP  -dissim_attr dissim  -variance linExp  -optimize  -output_feature_tree ${TMP}-init.tree 
 
-echo ""
-echo ""
+section "Building feature tree without time ..."
 $THIS/makeFeatureTree  $QC  -input_tree ${TMP}-init.tree  -features $FEAT  -optim_iter_max 100  -output_core ${TMP}-maxParsimony.core  -prefer_gain  -output_tree ${TMP}-maxParsimony.tree  
 
 # MLE
-echo ""
-echo ""
+section "Building feature tree with time ..."
 $THIS/makeFeatureTree  $QC  -input_tree ${TMP}-maxParsimony.tree  -features $FEAT  -input_core ${TMP}-maxParsimony.core  -optim_iter_max 100  -use_time  -output_tree $OBJ.tree  -output_core $OBJ.core 
 
 
