@@ -1088,10 +1088,12 @@ inline void checkFile (const string &fName)
 
 streamsize getFileSize (const string &fName);
 
-inline void removeFile (const string &fName)
-  { if (std::remove (fName. c_str ()))
-      throw runtime_error ("Cannot remove file + " + shellQuote (fName));
-  }
+#ifndef _MSC_VER
+  inline void removeFile (const string &fName)
+    { if (::remove (fName. c_str ()))
+        throw runtime_error ("Cannot remove file + " + shellQuote (fName));
+    }
+#endif
   
 inline string path2canonical (const string &path)
   { if (char* p = realpath (path. c_str (), nullptr))

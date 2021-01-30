@@ -2679,7 +2679,7 @@ FileItemGenerator::FileItemGenerator (size_t progress_displayPeriod,
     trimSuffix (fName,  "/");
 	  char lsfName [4096] = {'\0'};
   #ifdef _MSC_VER
-    throw runtime_error ("Windows");  // ??
+    NOT_IMPLEMENTED;
   #else
     strcpy (lsfName, P_tmpdir);
     strcat (lsfName, "/XXXXXX");

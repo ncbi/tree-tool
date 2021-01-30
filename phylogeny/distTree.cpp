@@ -3744,10 +3744,15 @@ void DistTree::loadTreeDir (const string &dir)
   ASSERT (! dir. empty ());
   ASSERT (isDirName (dir));
 
+#ifndef _MSC_VER
   const string outFName (dir + ".list");
   EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
   const StringVector fileNames (outFName, (size_t) 100);  // PAR
+#if 1
+  removeFile (outFName);
+#else
   EXEC_ASSERT (system (("rm " + outFName). c_str ()) == 0);
+#endif
   QC_ASSERT (! fileNames. empty ());
 
   Name2steiner name2steiner;
@@ -3764,6 +3769,9 @@ void DistTree::loadTreeDir (const string &dir)
   }
 
   deleteTransients ();  
+#else
+  NOT_IMPLEMENTED;
+#endif
 }
 
 
