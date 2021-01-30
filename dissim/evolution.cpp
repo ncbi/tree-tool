@@ -80,8 +80,8 @@ Real intersection2dissim (Real size1,
   	
   const Real dissim1 = log (size1 / intersection);
   const Real dissim2 = log (size2 / intersection);
-  ASSERT (dissim1 >= 0);
-  ASSERT (dissim2 >= 0);
+  ASSERT (dissim1 >= 0.0);
+  ASSERT (dissim2 >= 0.0);
   
   if (ave_arithP)
     return ave_arith (dissim1, dissim2);
