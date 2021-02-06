@@ -1,13 +1,21 @@
 #!/bin/bash
 source CPP_DIR/bash_common.sh
-if [ $# -ne 1 ]; then
-  echo "$0"
+if [ $# -ne 2 ]; then
+  echo "Find closest virus"
+  echo "#1: Virus.id"
+  echo "#2: directory or ''"
   exit 1
 fi
 NEW_OBJ=$1
+DIR="$2"
 
 
 #set -o xtrace 
+
+
+if [ $DIR ]; then
+  error "Not implemented"
+fi
 
 
 TMP=`mktemp`  
