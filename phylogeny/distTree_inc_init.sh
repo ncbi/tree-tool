@@ -105,6 +105,7 @@ fi
 create_script request2dissim
 create_script request_closest
 create_script qc
+create_script qc_object
 if false; then  # deprecated
   if [ $HYBRIDNESS_MIN != 0 ]; then
   	create_script db2unhybrid
