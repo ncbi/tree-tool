@@ -265,7 +265,7 @@ struct ThisApplication : Application
           f. saveText (out);
         }
       }
-      const ONumber on (cout, 2, false);  // PAR
+      const ONumber on (cout, 3, false);  // PAR
       cout << "# Monophyletic features:          " << monophyletics    << " (" << (Real) monophyletics    / (Real) genomes << ") ^" << endl;  
       cout << "# Non-monophyletic features:      " << nonMonophyletics << " (" << (Real) nonMonophyletics / (Real) genomes << ") V" << endl;  
       cout << "# Non-monophyletic disagreements: " << extraMutations   << " (" << (Real) extraMutations   / (Real) genomes << ") V !" << endl;  // = Taxonomy miscongruence for taxonomy features
