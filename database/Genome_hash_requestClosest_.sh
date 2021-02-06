@@ -63,7 +63,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
       where     Genome.in_tree = 1
             and #G.genome != $GENOME
             and Genome.tax_root = @tax_root
-      order by #G.c desc;
+      order by #G.c desc, #G.genome /*tie resolution*/;
   end;
   go -m bcp
 EOT
