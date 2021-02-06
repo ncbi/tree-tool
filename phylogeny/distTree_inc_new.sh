@@ -56,6 +56,7 @@ fi
 VER=$(( $VER_OLD + 1 ))
 echo $VER > $INC/version
 section "version: $VER"
+pwd
 
 
 section "new/ -> search/ ..."
@@ -258,9 +259,8 @@ section "QC ..."
 $INC/qc.sh go
 
 
-NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
-section "# New objects left: $NEW"
-if [ $NEW == 0 ]; then
+NEW_EXIST=`$THIS/distTree_inc_new_list.sh $INC | head -1 | wc -l`
+if [ $NEW_EXIST == 0 ]; then
   touch $INC/finished
 else
   rm -f $INC/finished
