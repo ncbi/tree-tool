@@ -9061,7 +9061,7 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 , mult (isNan (mult_arg) ? dist2mult (dissim_arg) : mult_arg)
 { 
   if (! leaf)
-    throw runtime_error (FUNC "No other leaf found for a new leaf placement");
+    throw runtime_error (FUNC "The other leaf is not found in the tree for a new leaf placement");
 //ASSERT (dissim >= 0.0);
   ASSERT (! isNan (dissim));
   ASSERT (mult >= 0.0);
@@ -9262,10 +9262,9 @@ void NewLeaf::process (bool init,
             throw runtime_error (FUNC "Dissimilarity must be non-negative");
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
-        catch (...)
+        catch (const exception &e)
         {          
-          cout << endl << f. lineNum + 1 << endl << f. line << endl;
-          throw;
+          throw runtime_error (FUNC "Line " + to_string (f. lineNum) + " of " + dissimFName + "\n" + f. line + "\n" + e. what ());
         }
     }
     leaf2dissims. sort ();
