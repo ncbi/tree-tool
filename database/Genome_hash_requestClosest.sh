@@ -8,7 +8,7 @@ if [ $# != 7 ]; then
   echo "#3: Directory for bulk insert"
   echo "#4: path in Universal Naming Convention to the bulk insert directory"
   echo "#5: Genome.id"
-  echo "#6: directory with #1/<hash>/#1.hash-{[CDS,]PRT,HMM}"
+  echo "#6: directory with #1/#1.hash-{[CDS,]PRT,HMM}"
   echo "#7: Hashtype.id for lowest-level dissimilarity"
   exit 1
 fi
@@ -29,8 +29,7 @@ TMP=`mktemp`
 NAME=`basename $TMP`
 BULK_FILE=$BULK/$NAME
 
-FILE_HASH=`$THIS/../file2hash $GENOME`
-FILE=$DIR/$FILE_HASH/$GENOME/$GENOME
+FILE=$DIR/$GENOME/$GENOME
 
 cp $FILE.hash-$TYPE $BULK_FILE
 unix2dos -o $BULK_FILE &> /dev/null
