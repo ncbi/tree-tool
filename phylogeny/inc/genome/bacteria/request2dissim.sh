@@ -14,12 +14,9 @@ OUT=$3
 LOG=$4
 
 
-if [ -n "$FILE_NEW" ]; then
-  error "New object is not implemented"
-fi
-
 INC=`dirname $0`
 # PAR
-CPP_DIR/dissim/combine_dissims3.sh $REQ $OUT $INC/../genome 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0 0.57 $LOG
+CPP_DIR/dissim/combine_dissims.sh $REQ $INC/../genome "$FILE_NEW" $OUT 1 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0  0.57 $LOG
+#                                                 1    2              3           4    5 6  7   8                  9                 10 11   12
 
 
