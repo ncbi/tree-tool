@@ -1573,7 +1573,7 @@ bool LineInput::nextLine ()
   }
   catch (const exception &e)
   {
-    throw runtime_error ("Reading line " + to_string (lineNum) + ":\n" + line + "\n" + e. what ());
+    throw runtime_error ("Reading line " + to_string (lineNum + 1) + ":\n" + line + "\n" + e. what ());
   }
 }
 
@@ -1592,6 +1592,7 @@ bool ObjectInput::next (Root &row)
 	  return false;
 
 	row. read (*is);
+	row. qc ();
 	lineNum++;
 
  	eof = is->eof ();
@@ -1604,7 +1605,6 @@ bool ObjectInput::next (Root &row)
 	prog ();
 	
   ASSERT (is->peek () == '\n');
-	row. qc ();
 
   skipLine (*is);
 
