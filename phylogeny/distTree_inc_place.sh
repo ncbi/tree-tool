@@ -21,6 +21,12 @@ TMP=`mktemp`
 
 NAME=`basename $QUERY`
 
+grep '^ *'$NAME':' $INC/tree > $TMP.grep || true
+if [ -s $TMP.grep ]; then
+  rm $TMP*
+  error "$NAME is already in $INC/tree"
+fi
+
 section "Finding closest objects ..."
 $INC/request_closest.sh $NAME `dirname $QUERY` | grep -vw "$NAME" | sed 's/$/ '$NAME'/1' > $TMP.request
 
