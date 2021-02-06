@@ -60,6 +60,7 @@ StringVector readSeqs (const string &fName)
     const Peptide pep (fa, Peptide::stdAveLen, false);  
     pep. qc ();
     seqs << pep. seq;
+      // Convert to "positives" ??
   }
   return seqs;
 }
