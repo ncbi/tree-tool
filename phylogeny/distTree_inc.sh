@@ -27,6 +27,9 @@ if [ $QC == 1 ]; then
 fi
 
 
+VARIANCE=`cat $INC/variance`
+
+
 if true; then   
 if [ $NEW_PAR == 1 ]; then
   # Time: O(n log^4(n))
@@ -52,7 +55,6 @@ if [ $NEW_PAR == 1 ]; then
 fi
   
 
-VARIANCE=`cat $INC/variance`
 
 
 echo ""
@@ -99,7 +101,6 @@ section "Tree QC ..."
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
   VER=`cat $INC/version`
-  VARIANCE=`cat $INC/variance`
 fi 
 
 
