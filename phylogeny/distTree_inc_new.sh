@@ -60,7 +60,7 @@ pwd
 
 
 section "new/ -> search/ ..."
-echo "# Objects: $OBJS"  
+echo "# Objects in tree: $OBJS"  
 echo "To add at this step: $ADD"
 
 $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
@@ -259,8 +259,10 @@ section "QC ..."
 $INC/qc.sh go
 
 
-NEW_EXIST=`$THIS/distTree_inc_new_list.sh $INC | head -1 | wc -l`
-if [ $NEW_EXIST == 0 ]; then
+echo ""
+NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
+echo "# New objects: $NEW"
+if [ $NEW == 0 ]; then
   touch $INC/finished
 else
   rm -f $INC/finished
