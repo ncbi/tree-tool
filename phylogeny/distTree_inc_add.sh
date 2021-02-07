@@ -14,6 +14,7 @@ OUT=$2
 PLACEMENT=$3
 
 
+# Cf. distTree_inc_new.sh
 GRID_MIN=`cat $INC/grid_min`
 QC=""  # -qc  
 VARIANCE=`cat $INC/variance`
@@ -123,17 +124,13 @@ while [ $ITER -le $ITER_MAX ]; do
   echo "Processing new objects ..."
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
+rm $INC/dissim.add
 
 
 section "leaf -> tree ..."
-# Time: O(n log^4(n)) 
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE  -noqual  -output_tree $OUT
 mv $INC/leaf $PLACEMENT
 cp /dev/null $INC/leaf
-rm dissim.add
-
-
-#$THIS/distTree_inc_tree1_quality.sh $INC
 
 
 section "QC ..."
