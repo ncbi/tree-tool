@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "Symmetric best hits dissimilarity by 5-mers"
+  echo "Symmetric best hits dissimilarity by 5-mers:>= 0 or nan"
   echo "#1: gzip'ed protein FASTA 1"
   echo "#2: gzip'ed protein FASTA 2"
   exit 1
