@@ -133,7 +133,7 @@ Vector<size_t> getBests (const StringVector &seqs1,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print dissimilarity by k-mer symmetric best hits")
+    : Application ("Print dissimilarity by k-mer symmetric best hits: >= 0 or nan")
     {
       version = VERSION;
   	  addPositional ("fasta1", "Protein FASTA file 1");
