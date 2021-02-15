@@ -13,8 +13,9 @@ endif
 all:	\
   attr2_2attr1 \
   attr2_2pairs \
-  attr2_multiply \
   attr2_2power \
+  attr2_multiply \
+  attr2_nan \
   attr2log \
   attr2power \
   attrs \
@@ -62,16 +63,22 @@ attr2_2pairs:	$(attr2_2pairsOBJS)
 	$(CXX) -o $@ $(attr2_2pairsOBJS) $(LIBS)
 	$(ECHO)
 
+attr2_2power.o:  $(DM_HPP) 
+attr2_2powerOBJS=attr2_2power.o $(DM_OBJ) 
+attr2_2power:	$(attr2_2powerOBJS)
+	$(CXX) -o $@ $(attr2_2powerOBJS) $(LIBS)
+	$(ECHO)
+
 attr2_multiply.o:  $(DM_HPP) 
 attr2_multiplyOBJS=attr2_multiply.o $(DM_OBJ) 
 attr2_multiply:	$(attr2_multiplyOBJS)
 	$(CXX) -o $@ $(attr2_multiplyOBJS) $(LIBS)
 	$(ECHO)
 
-attr2_2power.o:  $(DM_HPP) 
-attr2_2powerOBJS=attr2_2power.o $(DM_OBJ) 
-attr2_2power:	$(attr2_2powerOBJS)
-	$(CXX) -o $@ $(attr2_2powerOBJS) $(LIBS)
+attr2_nan.o:  $(DM_HPP) 
+attr2_nanOBJS=attr2_nan.o $(DM_OBJ) 
+attr2_nan:	$(attr2_nanOBJS)
+	$(CXX) -o $@ $(attr2_nanOBJS) $(LIBS)
 	$(ECHO)
 
 attr2log.o:  $(DM_HPP) 
