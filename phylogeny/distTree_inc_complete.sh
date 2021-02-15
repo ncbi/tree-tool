@@ -13,12 +13,13 @@ OBJS=$2
 
 
 #if false; then  
+section "QC $INC/ ..."
 if [ -s $INC/tree ]; then
   echo "$INC/tree must be empty"
   exit 1
 fi
 
-N=`ls $INC/new/ | wc -l`
+N=`distTree_inc_new_list.sh $INC | wc -l`
 if [ $N -gt 0 ]; then
   echo "$INC/new/ must be empty"
   exit 1
@@ -27,6 +28,7 @@ fi
 
 $THIS/../sort.sh $OBJS
 
+section "Computing dissimilarities ..."
 $THIS/../list2pairs $OBJS > $INC/dissim_request
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.raw
 rm $INC/dissim_request
