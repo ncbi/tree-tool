@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print hash codes for full-length CDSs or proteins
+*   Print hash codes for CDSs or proteins
 *
 */
 
@@ -68,7 +68,7 @@ unique_ptr<OFStream> targetSeqF;
 
 
 void addHash (const string &s,
-              const string &seqName,
+              const string &seqId,
               Vector<size_t> &hashes,
               Vector<size_t> &targetHashes)
 {
@@ -78,7 +78,7 @@ void addHash (const string &s,
   if (   targetSeqF. get ()
       && targetHashes. containsFast (h)
      )
-  	*targetSeqF << seqName << endl;
+  	*targetSeqF << seqId << endl;
 }
   
 
@@ -86,18 +86,21 @@ void addHash (const string &s,
 struct ThisApplication : Application
 {
   ThisApplication ()
-  : Application ("Print hash codes for full-length CDSs or proteins")
+  : Application ("Print hash codes for CDSs or proteins")
   { 
   	// Input
 	  addPositional ("in", "Multi-FASTA file");
 	  addKey ("gene_finder", "Gene finder used to find CDSs: " + gene_finders. toString (", "));
 	  addFlag ("cds", "Are input sequences CDSs? If not then proteins");
+	  addFlag ("segment", "Sequences are not full-length");  
+	  addFlag ("ambig", "Ambiguous characters in sequences are allowed");  
 	  addFlag ("translate", "Translate CDSs to proteins");
 	  addFlag ("reduce", "Reduce 20 amino acids to 13 characters");
 	  addKey ("kmer", "Cut the sequences into k-mers of this size. 0 - do not cut", "0");
 	  addKey ("min_prot_len", "Min. protein length of input sequences", "0");
 	  addKey ("max_hashes", "Max. number of hashes to print. 0 - print all", "0");
 	  addKey ("target_hashes", "Target hashes");
+	  addFlag ("named", "Save hashes with sequence names");
 	  // Output
 	  addPositional ("out", "Output file of sorted unique hashes. Sorting is numeric.");
 	  addKey ("out_prot", "File to save proteins with hashes");
@@ -111,16 +114,21 @@ struct ThisApplication : Application
     const string in            =               getArg ("in");  
     const string gene_finder   =               getArg ("gene_finder");
     const bool cds             =               getFlag ("cds");
+    const bool segment         =               getFlag ("segment");
+    const bool ambig           =               getFlag ("ambig");
     const bool translate       =               getFlag ("translate");
     const bool reduce          =               getFlag ("reduce");
     const size_t kmer          = str2<size_t> (getArg ("kmer"));
     const size_t prot_len_min  = str2<size_t> (getArg ("min_prot_len"));
     const size_t max_hashes    = str2<size_t> (getArg ("max_hashes"));
     const string target_hashes =               getArg ("target_hashes");
+    const bool   named         =               getFlag ("named");
     const string out           =               getArg ("out"); 
     const string out_prot      =               getArg ("out_prot");
     const string target_seq    =               getArg ("target_seq");
     QC_ASSERT (! out. empty ()); 
+    QC_IMPLY (cds, ! segment);
+    QC_IMPLY (kmer, ! segment);
     QC_IMPLY (translate, cds);
     QC_IMPLY (reduce, ! cds || translate);
     QC_IMPLY (! out_prot. empty (), ! cds || translate);
@@ -151,6 +159,8 @@ struct ThisApplication : Application
     
     static_assert (sizeof (size_t) == 8, "Size of size_t must be 8 bytes");
     
+    OFStream fOut (out);
+
     Vector<size_t> hashes;  hashes. reserve (10000);   // PAR
     size_t sequences = 0;
     unique_ptr<OFStream> protF (out_prot. empty () ? nullptr : new OFStream (out_prot));
@@ -160,17 +170,17 @@ struct ThisApplication : Application
 		  while (f. next ())
 		  {
 		    string s;
-		    string seqName;
+		    string seqId;
 		    if (cds)
 		    {
   		    const Dna dna (f, 10000, false);  // PAR
-  		    seqName = dna. name;
+  		    seqId = dna. getId ();;
 		    	dna. qc (); 
   		    if (gene_finder == "GeneMark" && ! contains (dna. name, " trunc5:0 trunc3:0"))  
   		      continue;
   		    if (gene_finder == "prodigal" && ! contains (dna. name, ";partial=00"))  
   		      continue;
-  		    if (dna. getXs ())
+  		    if (! ambig && dna. getXs ())
   		      continue;
   		    if (translate)
   		    {
@@ -178,7 +188,7 @@ struct ThisApplication : Application
     		    pep. qc ();
     		    QC_ASSERT (! pep. seq. empty ());
     		    QC_ASSERT (pep. seq. front () == 'm');
-					  QC_ASSERT (! pep. getXs ());  
+					  QC_IMPLY (! ambig, ! pep. getXs ());  
     	      strUpper (pep. seq);  // Start codons are lowercased
 	  		    if (protF. get ())
 	  		    	pep. saveText (*protF);
@@ -192,17 +202,20 @@ struct ThisApplication : Application
     		else
     		{
   		    Peptide pep (f, 1000, false);  // PAR
-  		    seqName = pep. name;
+  		    seqId = pep. getId ();
   		    pep. qc ();
-  		    if (gene_finder == "GeneMark" && ! contains (pep. name, " trunc5:0 trunc3:0"))  
-  		      continue;
-  		    if (gene_finder == "prodigal" && ! contains (pep. name, ";partial=00"))  
-  		      continue;
+  		    if (! segment)
+  		    {
+    		    if (gene_finder == "GeneMark" && ! contains (pep. name, " trunc5:0 trunc3:0"))  
+    		      continue;
+    		    if (gene_finder == "prodigal" && ! contains (pep. name, ";partial=00"))  
+    		      continue;
+    		  }
   		    pep. trimStop ();
    	      strUpper (pep. seq);  // Start codons are lowercased
   		    QC_ASSERT (! pep. seq. empty ());
-  		    QC_ASSERT (pep. seq. front () == 'm');
-  		    if (pep. getXs ())
+  		    QC_IMPLY (! segment, pep. seq. front () == 'M');
+  		    if (! ambig && pep. getXs ())
   		      continue;
   		    if (contains (pep. seq, '*'))
   		      throw runtime_error ("Protein " + pep. name + " contains a stop codon");
@@ -222,30 +235,33 @@ struct ThisApplication : Application
             const string sub (s. substr (i, kmer));
             if (sub. size () < kmer)
               break;
-            addHash (sub, seqName, hashes, targetHashes);
+            addHash (sub, seqId, hashes, targetHashes);
           }
         else
-          addHash (s, seqName, hashes, targetHashes);
+          if (named)
+            fOut << seqId << '\t' << str_hash (s) << endl;
+          else
+            addHash (s, seqId, hashes, targetHashes);
 	    }
     }
     cout << "Good sequences: " << sequences << endl;
-    cout << "All hashes: " << hashes. size () << endl;
-
-    hashes. sort ();
-    hashes. uniq ();
-    cout << "Unique hashes: " << hashes. size () << endl;
-    
+    if (! named)
     {
-      OFStream f (out);
-      if (max_hashes)
+      cout << "All hashes: " << hashes. size () << endl;
+      hashes. sort ();
+      hashes. uniq ();
+      cout << "Unique hashes: " << hashes. size () << endl;    
       {
-        const size_t size = min (hashes. size (), max_hashes);
-        FOR (size_t, i, size)
-          f << hashes [i] << endl;
+        if (max_hashes)
+        {
+          const size_t size = min (hashes. size (), max_hashes);
+          FOR (size_t, i, size)
+            fOut << hashes [i] << endl;
+        }
+        else
+          for (const auto& h : hashes)
+            fOut << h << endl;
       }
-      else
-        for (const auto& h : hashes)
-          f << h << endl;
     }
   }  
 };
