@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "Output: hmm-univ.stat, positiveAverage.out"
-  echo "#1: input .dm-file without '.dm'"
+  echo "#1: input .dm-file without '.dm' created from prots_pair2dissim_separate.sh"
   echo "#2: delete hybrids (0/1)"
   echo "#3: dissimilarity power (> 0)"
   echo "#4: outlierSEs"
@@ -30,8 +30,8 @@ TMP=`mktemp`
 echo $TMP 
 
 
-# PAR
-$THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -output_dissim $TMP.pairs > positiveAverage.out
+section "Estimating hmm-univ.stat ..."
+$THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -ignoreZero  -output_dissim $TMP.pairs > positiveAverage.out
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
 $THIS/../dm/pairs2dm $TMP.pairs 1 cons 6  -distance > $TMP.dm
 #cp $TMP.dm data.dm 
@@ -42,7 +42,7 @@ if [ $DELETE_HYBRIDS -eq 1 ]; then
   HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
 fi
 
-VARIANCE=linExp
+VARIANCE="linExp"
 DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
 if [ $DISSIM_COEFF == 0 ]; then
   VARIANCE="pow  -variance_power $VAR_POWER"
