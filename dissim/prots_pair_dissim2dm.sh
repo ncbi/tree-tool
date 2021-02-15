@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then 
   echo "Create a .dm-file with two-way attributes"
-  echo "#1: prots_pair2dissim.sh output"
+  echo "#1: prots_pair2dissim output"
   echo "#2: hmm-univ.list"
   echo "#3: Output .dm-file"
   exit 1
