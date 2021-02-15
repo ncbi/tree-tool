@@ -1,5 +1,6 @@
 #!/bin/bash
-source bash_common.sh
+THIS=`dirname $0`
+source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Create #1.log/ and populate with items from #1/"
   echo "#1: directory with items"
@@ -9,5 +10,5 @@ DIR=$1
 
 
 mkdir $DIR.log
-trav $DIR  -step 10  -threads 10 "touch $DIR.log/%f"
+$THIS/trav $DIR  -step 10  -threads 10 "touch $DIR.log/%f"
 
