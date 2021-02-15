@@ -1,6 +1,7 @@
-#define VERSION "1.5.1"
+#define VERSION "1.5.2"
 
 
+// 1.5.2  02/15/2021  PositiveAverageModel::ignoreZero
 // 1.5.1  01/31/2021  inc/request_closest.sh has 2 parameters; inc/qc_object.sh
 // 1.4.2  01/28/2021  distTree_inc_new_log.sh
 // 1.4.1  01/24/2021  inc/{large,request_closest_sql} /dev/null or absent
