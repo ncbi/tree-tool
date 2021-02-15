@@ -58,6 +58,7 @@ struct ThisApplication : Application
   	  addPositional ("file", dmSuff + "-file without " + strQuote (dmSuff));
   	  addPositional ("power", "Power for raw dissimilarities to be raised to");
   	  addPositional ("outlierSEs", "Number of standard errors for an attribute value to be an outlier");  // explain more ??
+  	  addFlag ("ignoreZero", "Ignore attribute values 0");
   	//addPositional ("universal_weight", "Weight factor of universal attributes, >= 1.0"); 
   	  addKey ("iter_max", "Max. number of optimization iterations; 0 - infinity", "0");
   	//addKey ("universal", "List of universal attributes");
@@ -73,6 +74,7 @@ struct ThisApplication : Application
 		const string inFName            = getArg ("file");
 		const Real power                = str2real (getArg ("power"));
 		const Real outlierSEs           = str2real (getArg ("outlierSEs"));
+		const bool ignoreZero           = getFlag ("ignoreZero");
   //const Real universalWeight      = str2real (getArg ("universal_weight"));
 		const size_t iter_max           = str2<size_t> (getArg ("iter_max"));
 	//const string universalFName     = getArg ("universal");		
@@ -140,7 +142,7 @@ struct ThisApplication : Application
   	  throw runtime_error ("No attributes");
 	  
 	  
-	  PositiveAverage pa (sm, space, /*univAttrs. get (),*/ outlierSEs/*, universalWeight*/);  
+	  PositiveAverage pa (sm, space, /*univAttrs. get (),*/ outlierSEs, ignoreZero /*, universalWeight*/);  
     pa. calibrate (iter_max);
 	  pa. qc ();  
     cerr << "Effective number of attributes: " << pa. model. getEffectiveAttrs () << endl;

@@ -3976,6 +3976,9 @@ struct PositiveAverageModel : Root
 //Real varPower {1.0};  // PAR
   Real outlierSEs {NaN};
     // Standard errors to be an outlier
+  bool ignoreZero {false};
+    // Ignore Component's with value = 0 
+    // Because low values of get() are better to be measured by a different method, and Component::value = 0 increases variance of get()
 #if 0
   Real universalWeight {NaN};
     // Weight factor
@@ -4052,14 +4055,16 @@ struct PositiveAverageModel : Root
 	                      bool loadStat);
 	  // Input: fName
 	  //          format: <Outlier SEs> \n <Component>*
-	explicit PositiveAverageModel (Real outlierSEs_arg/*,
-	                               Real universalWeight_arg*/)
+	PositiveAverageModel (Real outlierSEs_arg,
+	                      bool ignoreZero_arg /*,
+	                      Real universalWeight_arg*/)
 	  : outlierSEs (outlierSEs_arg)
+	  , ignoreZero (ignoreZero_arg)
 	//, universalWeight (universalWeight_arg)
 	  {}
   void qc () const override;
 	void saveText (ostream &os) const override
-    { os << outlierSEs << endl;
+    { os << outlierSEs << '\t' << ignoreZero << endl;
     //os << universalWeight << endl;
       for (const Component& comp : components)
         if (comp. valid ())
@@ -4125,8 +4130,9 @@ public:
 	PositiveAverage (const Sample &sample_arg,
                    const Space1<PositiveAttr1> &space_arg,
                  //const VectorPtr<Attr>* univAttrs,
-                   Real outlierSEs_arg/*,
-                   Real universalWeight_arg*/);
+                   Real outlierSEs,
+                   bool ignoreZero/*,
+                   Real universalWeight*/);
     // Input: univAttrs: sorted, unique, may be nullptr
   void calibrate (size_t iter_max);
     // Input: iter_max: 0 <=> infinity

@@ -6443,8 +6443,9 @@ PositiveAverageModel::PositiveAverageModel (const string &fName,
 	    
     if (loadStat && isNan (outlierSEs))
     {
-      outlierSEs = stod (f. line);
-      ASSERT (! isNan (outlierSEs));
+      istringstream iss (f. line);
+      iss >> outlierSEs >> ignoreZero;
+      QC_ASSERT (! isNan (outlierSEs));
     #if 0
       if (isNan (universalWeight))
       {
@@ -6500,6 +6501,8 @@ Real PositiveAverageModel::get () const
     		  ASSERT (comp. var == inf);
     		  continue;
     		}
+    		if (ignoreZero && comp. value == 0.0)
+    		  continue;
     		const Real weight = comp. weight /* * (comp. universal ? universalWeight : 1.0)*/;
     		ASSERT (weight >= 0.0);
     		ASSERT (weight < inf);
@@ -6542,10 +6545,11 @@ Matrix PositiveAverageModel::getParam () const
 PositiveAverage::PositiveAverage (const Sample &sample_arg,
                                   const Space1<PositiveAttr1> &space_arg,
                                 //const VectorPtr<Attr>* univAttrs,
-                                  Real outlierSEs_arg/*,
-                                  Real universalWeight_arg*/)
+                                  Real outlierSEs,
+                                  bool ignoreZero/*,
+                                  Real universalWeight*/)
 : P (sample_arg, space_arg)
-, model (outlierSEs_arg/*, universalWeight_arg*/)
+, model (outlierSEs, ignoreZero/*, universalWeight*/)
 {
   // model
   model. components. reserve (space. size ());
