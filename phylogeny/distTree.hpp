@@ -1627,7 +1627,7 @@ public:
     // Output: os: <dmSuff>-file with attributes: dissim, distHat, resid2, logDiff
 #endif
 
-  static constexpr const char* dissimExtra {"<prediction>, <absCriterion>, <squared difference>"};
+  static constexpr const char* dissimExtra {"<tree distance>, <absCriterion>, <squared difference>"};
   void saveDissim (ostream &os,
                    bool addExtra) const;
     // Input: addExtra: add dissimExtra
