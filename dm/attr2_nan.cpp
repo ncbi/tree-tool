@@ -50,7 +50,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print a " + dmSuff + "-file setting the values of a two-way attribute to NaN for specified pairs of objects")
+    : Application ("Print a " + dmSuff + "-file setting the values of a symmetric two-way attribute to NaN for specified pairs of objects")
     {
       version = VERSION;
       addPositional ("file", dmSuff + "-file");
@@ -74,7 +74,7 @@ struct ThisApplication : Application
     const RealAttr2* attr = attr_->asRealAttr2 ();
     QC_ASSERT (attr);
     
-    PairFile f (pairFName, false, false);
+    PairFile f (pairFName, true, false);
     while (f. next ())
     {
       const size_t i = ds. getName2objNum (f. name1);
