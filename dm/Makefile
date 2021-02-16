@@ -16,6 +16,7 @@ all:	\
   attr2_2power \
   attr2_multiply \
   attr2_nan \
+  attr2_set \
   attr2log \
   attr2power \
   attrs \
@@ -79,6 +80,12 @@ attr2_nan.o:  $(DM_HPP)
 attr2_nanOBJS=attr2_nan.o $(DM_OBJ) 
 attr2_nan:	$(attr2_nanOBJS)
 	$(CXX) -o $@ $(attr2_nanOBJS) $(LIBS)
+	$(ECHO)
+
+attr2_set.o:  $(DM_HPP) 
+attr2_setOBJS=attr2_set.o $(DM_OBJ) 
+attr2_set:	$(attr2_setOBJS)
+	$(CXX) -o $@ $(attr2_setOBJS) $(LIBS)
 	$(ECHO)
 
 attr2log.o:  $(DM_HPP) 
