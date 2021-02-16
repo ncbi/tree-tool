@@ -3093,7 +3093,7 @@ struct Stderr : Singleton<Stderr>
     Stderr& stderr;
   public:  
     
-    Warning (Stderr &stderr_arg)
+    explicit Warning (Stderr &stderr_arg)
       : stderr (stderr_arg)
       { stderr << Color::code (Color::yellow, true) << "WARNING: "; }
    ~Warning ()
