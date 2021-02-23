@@ -96,8 +96,8 @@ HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
 
 
 DISSIM_DIR = $(CPP_DIR)/dissim
-EVOLUTION_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
-$(DISSIM_DIR)/evolution.o: $(EVOLUTION_OBJ)
+$(DISSIM_DIR)/evolution.o: $(NUMERIC_OBJ) $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
+EVOLUTION_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/optim.o $(DM_DIR)/matrix.o $(DISSIM_DIR)/evolution.o
 
 NW_DIR = $(DISSIM_DIR)/nw
 $(NW_DIR)/nw_aligner.o: $(NW_DIR)/nw_aligner.hpp
