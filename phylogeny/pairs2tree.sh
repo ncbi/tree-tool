@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
-  echo "Evaluate the quality of a dissimilarity"
+  echo "Given a dissimilarity build a tree and evaluate the quality"
   echo "#1: file with dissimilarities, line format: <obj1> <obj2> <dissim>"
   echo "#2: directory with reference classifications or ''"
     # #2 is small (one-level)
