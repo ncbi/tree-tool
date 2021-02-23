@@ -31,6 +31,16 @@ function section
 }
 
 
+function super_section
+{
+  MSG="$1"
+  S=`echo '*' $MSG '*'`
+  T=`echo "$S" | sed 's/./*/g'`
+  echo ""
+  section "$T\n$S\n$T"
+}
+
+
 function warning
 {
 	MSG="$1"
