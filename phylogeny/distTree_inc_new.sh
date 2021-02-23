@@ -55,7 +55,7 @@ fi
 
 VER=$(( $VER_OLD + 1 ))
 echo $VER > $INC/version
-section "version: $VER"
+super_section "version: $VER"
 pwd
 
 
@@ -174,7 +174,7 @@ REINSERT=""
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == 0 ]; then  # PAR
   REINSERT="-reinsert"
-  echo "Reinsert"
+  warning "Reinsert\nTree quality will be lower due to missing dissimilarities to close tree neighbors"
 fi
 
 # Time: O(n log^4(n)) 
@@ -262,7 +262,7 @@ $INC/qc.sh go
 echo ""
 NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
 echo "# New objects: $NEW"
-if [ $NEW == 0 ]; then
+if [ $NEW == 0 -a -z "$REINSERT" ]; then
   touch $INC/finished
 else
   rm -f $INC/finished
