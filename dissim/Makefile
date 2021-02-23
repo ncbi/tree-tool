@@ -28,6 +28,7 @@ all:	\
 	mlst2dissim \
 	prot2dissim \
 	prots_pair2dissim \
+	symbet \
 	symbet_blastp
 
 
@@ -132,14 +133,14 @@ prots_pair2dissim:	$(prots_pair2dissimOBJS)
 	$(CXX) -o $@ $(prots_pair2dissimOBJS) $(LIBS) 
 	$(ECHO)
 
-symbet.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/evolution.hpp
-symbetOBJS=symbet.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o 
+symbet.o:  $(NUMERIC_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/evolution.hpp
+symbetOBJS=symbet.o $(EVOLUTION_OBJ) $(GEN_DIR)/seq.o
 symbet:	$(symbetOBJS)
 	$(CXX) -o $@ $(symbetOBJS) $(LIBS) 
 	$(ECHO)
 
 symbet_blastp.o:  $(NUMERIC_HPP) $(DISSIM_DIR)/evolution.hpp
-symbet_blastpOBJS=symbet_blastp.o $(DM_OBJ) $(DISSIM_DIR)/evolution.o
+symbet_blastpOBJS=symbet_blastp.o $(EVOLUTION_OBJ)
 symbet_blastp:	$(symbet_blastpOBJS)
 	$(CXX) -o $@ $(symbet_blastpOBJS) $(LIBS)
 	$(ECHO)
