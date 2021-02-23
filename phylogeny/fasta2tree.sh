@@ -16,15 +16,19 @@ TREE=$3
 TMP=`mktemp`
 
 
+section "Computing dissimilarities ..."
 # PAR
 if [ $PROT == 1 ]; then
-  $THIS/../dissim/fasta2dissim  -aa  -global  -blosum62  -power 0.5  -dataset $TMP  $FASTA
+  $THIS/../dissim/fasta2dissim  $FASTA  -aa  -global  -blosum62  -power 0.5  -dataset $TMP  
 else
-  error "Not implemented yet for DNA"
+  error "Not implemented for DNA"
 fi
 
-$THIS/makeDistTree  -data $TMP  -dissim_attr "dissim"  -optimize  -output_tree $TREE
+echo ""
+section "Builing tree ..."
+# PAR
+$THIS/makeDistTree  -data $TMP  -dissim_attr "dissim"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TREE
 
 
-rm -f $TMP*
+rm $TMP*
 
