@@ -182,9 +182,9 @@ struct ThisApplication : Application
 					ASSERT (align. get ());
 					const Real dissim_raw = mismatch_frac
 					                          ? align->getMismatchFrac ()
-					                          : aa 
-					                             ? align->getDissim () 
-					                             : align->getMinEditDistance ();
+					                          : /*aa 
+					                             ? align->getDissim ()   // Can be NaN
+					                             :*/ align->getMinEditDistance ();
 					const Real dissim = coeff * pow (dissim_raw, power);
 					if (dsFName. empty ())
 						cout         << seq1->getId ()
