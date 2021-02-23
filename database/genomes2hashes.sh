@@ -15,8 +15,8 @@ G2=$3
 TYPE=$4
 
 
-H1=`file2hash $G1`
-H2=`file2hash $G2`
+H1=`$THIS/../file2hash $G1`
+H2=`$THIS/../file2hash $G2`
 F1=$DIR/$H1/$G1/$G1.hash-$TYPE
 F2=$DIR/$H2/$G2/$G2.hash-$TYPE
 N1=`cat $F1 | wc -l`
