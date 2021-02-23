@@ -58,7 +58,7 @@ fi
 
 
 echo ""
-section "Final optimization ..."
+super_section "Final optimization"
 
 VER=`cat $INC/version`
 echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
@@ -115,7 +115,7 @@ if [ -e $INC/phen ]; then
 	  LARGE=1
 	fi
 
-	section "Root and quality ..."
+	super_section "Root and quality"
 	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
@@ -128,7 +128,7 @@ if [ -e $INC/phen ]; then
   # -noqual must be absent to compute quality data after reroot()
 	$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
 	
-	section "Names ..."
+	super_section "Names"
 	$THIS/tree2names.sh tree.$DATE $INC/phen $LARGE > $INC/hist/tree2names.$VER
 
 
