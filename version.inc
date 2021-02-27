@@ -1,6 +1,9 @@
-#define VERSION "1.5.2"
+#define VERSION "1.5.4"
 
 
+// 1.5.4  02/25/2021  combine_dissims.cpp: linear combination
+//                    d_symbet
+// 1.5.3  02/24/2021  reinsert: arcDist >= max ((size_t) log (name2leaf. size () + 1), areaRadius_std)
 // 1.5.2  02/15/2021  PositiveAverageModel::ignoreZero
 // 1.5.1  01/31/2021  inc/request_closest.sh has 2 parameters; inc/qc_object.sh
 // 1.4.2  01/28/2021  distTree_inc_new_log.sh
