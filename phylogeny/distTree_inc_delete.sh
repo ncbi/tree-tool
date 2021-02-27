@@ -25,7 +25,7 @@ echo $VER > $INC/version
 
 VARIANCE=`cat $INC/variance`
 
-section "Building tree ..."
+section "Adjusting tree ..."
 # Cf. distTree_inc_new.sh
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
   -delete $DEL  \
