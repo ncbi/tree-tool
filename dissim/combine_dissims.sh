@@ -1,52 +1,71 @@
 #!/bin/bash
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 12 ]; then
+if [ $# -ne 11 ]; then
   echo "Compute dissimilarities"
-  echo " #1: file with pairs <Object1> <Object2>"
-  echo " #2: directory with: <Object hash>/<Object>/<Object>.hash-{CDS|PRT}"
+  echo " #1: file with pairs <object1> <object2>"
+  echo " #2: directory with: <object hash>/<object>/<object>.hash-{CDS|PRT}"
   echo " #3: directory with a new object data or ''"
-  echo " #4: Output file"
-  echo " #5: CDS is used (0/1)"
-  echo " #6: hashes intersection_min"
-  echo " #7: hashes ratio_min"
-  echo " #8: dissim_scale"
-  echo " #9: hmm-univ.stat"
-  echo "#10: 1 - BLOSUM62, 0 - PAM30"
-  echo "#11: power for universal proteins dissimilarity"
-  echo "#12: log file (delete on success)"
+  echo " #4: Output file: <object1> <object2> <dissimilarity>"
+  echo " #5: hashes intersection_min"
+  echo " #6: hashes ratio_min"
+  echo " #7: dissim_scale file with dissimilarity thresholds: [CDS] PRT symbet univ"
+  echo " #8: hmm-univ.stat"
+  echo " #9: 1 - BLOSUM62, 0 - PAM30"
+  echo "#10: power for universal proteins dissimilarity"
+  echo "#11: log file (delete on success)"
   exit 1
 fi
-IN=$1
+REQ=$1
 GENOME_DIR=$2
 NEW_DIR="$3"
 OUT=$4
-CDS=$5
-HASH_INTERSECTION_MIN=$6
-HASH_RATIO_MIN=$7
-DISSIM_SCALE=$8
-AVERAGE_MODEL=$9
-BLOSUM62_ARG=${10}
-POWER=${11}
-LOG=${12}
+HASH_INTERSECTION_MIN=$5
+HASH_RATIO_MIN=$6
+DISSIM_SCALE=$7
+AVERAGE_MODEL=$8
+BLOSUM62_ARG=$9
+POWER=${10}
+LOG=${11}
 
 
-DISSIM_SCALE_LINES=2
+CDS=1
+DISSIM_SCALE_LINES=`cat $DISSIM_SCALE | grep -v '^ *$' | wc -l`
+case $DISSIM_SCALE_LINES in
+  0|1|2) 
+    error "Too few rows in $DISSIM_SCALE"
+    ;;
+  3)
+    CDS=0
+    ;;
+  4)
+    ;;
+  *)
+    error "Too many rows in $DISSIM_SCALE"
+    ;;
+esac
+
+# {CDS,PRT}_DISSIM_MAX, UNIV_DISSIM_AVG
+CDS_DISSIM_MAX="nan"
+N=0
 if [ $CDS == 1 ]; then
-  DISSIM_SCALE_LINES=3
+  N=$(( $N + 1 ))
+  L=(`head -$N $DISSIM_SCALE | tail -1`)
+  CDS_DISSIM_MAX=${L[1]}
 fi
-N=`cat $DISSIM_SCALE | wc -l`
-if [ $N -ne $DISSIM_SCALE_LINES ]; then
-  echo "$DISSIM_SCALE must have $DISSIM_SCALE_LINES lines" >> $LOG
-  exit 1
-fi
-
-PRT_LINE=1
-if [ $CDS == 1 ]; then
-  PRT_LINE=2
-fi
-L=(`head -$PRT_LINE $DISSIM_SCALE | tail -1`)
-DISSIM_MAX=${L[2]}
+#
+N=$(( $N + 1 ))
+L=(`head -$N $DISSIM_SCALE | tail -1`)
+PRT_DISSIM_MAX=${L[1]}
+#
+N=$(( $N + 1 ))
+L=(`head -$N $DISSIM_SCALE | tail -1`)
+SYMBET_DISSIM_MAX_GLOBAL=`echo "${L[0]} * ${L[1]}" | bc -l`
+#
+N=$(( $N + 1 ))
+L=(`head -$N $DISSIM_SCALE | tail -1`)
+UNIV_DISSIM_AVG=`echo "$SYMBET_DISSIM_MAX_GLOBAL / ${L[0]}" | bc -l`
+#echo $CDS_DISSIM_MAX $PRT_DISSIM_MAX $SYMBET_DISSIM_MAX_GLOBAL $UNIV_DISSIM_AVG
 
 BLOSUM62=""
 if [ $BLOSUM62_ARG == 1 ]; then
@@ -59,52 +78,73 @@ TMP=`mktemp`
 #set -x
 
 
-# $TMP.req
-cat $IN | awk '{print $1};' > $TMP.1
-cat $IN | awk '{print $2};' > $TMP.2
-$THIS/../trav $TMP.1 "echo $GENOME_DIR/%h/%f/%f.hash-PRT" > $TMP.f1
-$THIS/../trav $TMP.2 "echo $GENOME_DIR/%h/%f/%f.hash-PRT" > $TMP.f2
-paste $TMP.f1 $TMP.f2 | tr '\t' ' ' > $TMP.req
-if [ $NEW_DIR ]; then
-  NAME=`basename $NEW_DIR`
-  sed 's|^\(.*/'$NAME'\.hash-PRT\) |'$NEW_DIR/$NAME'.hash-PRT |1' $TMP.req | sed 's| \(.*/'$NAME'\.hash-PRT\)$| '$NEW_DIR/$NAME'.hash-PRT|1' > $TMP.req-mod
-  mv $TMP.req-mod $TMP.req
-fi
+function req2file
+{
+  REQ_=$1
+  COL=$2  # 1|2
+  SUF=$3
+  #
+  cut -f $COL $REQ_ > $TMP.req2file_req
+  $THIS/../trav $TMP.req2file_req "echo $GENOME_DIR/%h/%f/%f.$SUF"  -log $LOG  -noprogress > $TMP.req2file_col
+  if [ $NEW_DIR ]; then
+    NAME=`basename $NEW_DIR`
+    sed 's|^\(.*/'$NAME'\.'$SUF'\)$|'$NEW_DIR/$NAME'.'$SUF'|1' $TMP.req2file_col
+  else
+    cat $TMP.req2file_col
+  fi
+}
 
-# $TMP.prt{0|1}
-$THIS/hash_request2dissim $TMP.req $TMP.prt  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
-set +o errexit
-grep -w  "nan" $TMP.prt                           >  $TMP.prt1
-grep -wv "nan" $TMP.prt | awk '$3 >  '$DISSIM_MAX >> $TMP.prt1
-grep -wv "nan" $TMP.prt | awk '$3 <= '$DISSIM_MAX >  $TMP.prt0
-set -o errexit
 
-# $TMP.prt0 -> $TMP.{cds,univ}0
-cat $TMP.prt0 | tr '\t' ' ' | sed 's/ [^ ]\+$/ /1' | sed 's/\.hash-PRT /.hash-CDS /g' > $TMP.req0
+$THIS/../trav $REQ "echo -e '%1\t%2'" -noprogress > $TMP.req
+
+echo "$TMP.req-PRT ..."
+req2file $TMP.req 1 "hash-PRT" > $TMP.f1
+req2file $TMP.req 2 "hash-PRT" > $TMP.f2
+paste $TMP.f1 $TMP.f2 > $TMP.req-PRT
+
+echo "$TMP.dissim-PRT ..."
+$THIS/hash_request2dissim $TMP.req-PRT $TMP.PRT  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
+cut -f 3 $TMP.PRT > $TMP.dissim-PRT
+
+echo "$TMP.dissim-CDS ..."
 if [ $CDS == 1 ]; then
-  $THIS/hash_request2dissim $TMP.req0 $TMP.cds0  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
-fi
-sed 's/$/ nan/1' $TMP.req0 > $TMP.univ0
-
-# $TMP.prt1 -> $TMP.{cds,univ}1
-cat $TMP.prt1 | tr '\t' ' ' | sed 's/ [^ ]\+$/ /1' | sed 's/\.hash-PRT /.prot-univ /g' > $TMP.req1
-if [ $CDS == 1 ]; then
-  sed 's/$/ nan/1' $TMP.req1 > $TMP.cds1
-fi
-$THIS/prots_pair2dissim  -log $LOG  -power $POWER  $BLOSUM62  $AVERAGE_MODEL $TMP.req1 $TMP.univ1
-
-# $TMP.combo-raw
-if [ $CDS == 1 ]; then
-  cat $TMP.cds0 $TMP.cds1 $TMP.prt0 $TMP.prt1 $TMP.univ0 $TMP.univ1 > $TMP.combo-raw
+  req2file $TMP.req 1 "hash-CDS" > $TMP.f1
+  req2file $TMP.req 2 "hash-CDS" > $TMP.f2
+  paste $TMP.f1 $TMP.f2 > $TMP.req-CDS
+  $THIS/hash_request2dissim $TMP.req-CDS $TMP.CDS  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
+  cut -f 3 $TMP.CDS > $TMP.dissim-CDS
 else
-  cat                     $TMP.prt0 $TMP.prt1 $TMP.univ0 $TMP.univ1 > $TMP.combo-raw
+  sed 's/^.*$/nan/1' $TMP.req-PRT > $TMP.dissim-CDS
 fi
 
-# $TMP.combo
-cat $TMP.combo-raw | tr '\t' ' ' | sed 's|'$GENOME_DIR'/[^/]\+/[^/]\+/||g' | sed 's/\.hash-... / /g' | sed 's/\.prot-univ / /g' > $TMP.combo
-if [ $NEW_DIR ]; then
-  sed 's|^'$NEW_DIR'/||1' $TMP.combo | sed 's| '$NEW_DIR'/| |1' > $TMP.combo-mod
-  mv $TMP.combo-mod $TMP.combo
+paste $TMP.req $TMP.dissim-CDS $TMP.dissim-PRT > $TMP.req-dissim-PRT
+#     1,2      3               4
+
+echo "$TMP.req-dissim-univ ..."
+awk '! ($4 == "nan" || $4 > '$PRT_DISSIM_MAX')' $TMP.req-dissim-PRT | sed 's/$/\tnan/1' > $TMP.req-dissim-univ_0
+awk    '$4 == "nan" || $4 > '$PRT_DISSIM_MAX    $TMP.req-dissim-PRT > $TMP.req-dissim-PRT_1
+req2file $TMP.req-dissim-PRT_1 1 "prot-univ" > $TMP.f1
+req2file $TMP.req-dissim-PRT_1 2 "prot-univ" > $TMP.f2
+paste $TMP.f1 $TMP.f2 > $TMP.req-univ
+$THIS/prots_pair2dissim  -log $LOG  -power $POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
+cut -f 3 $TMP.univ > $TMP.dissim-univ_1
+paste $TMP.req-dissim-PRT_1 $TMP.dissim-univ_1 > $TMP.req-dissim-univ_1
+cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
+  # column 5: d_univ
+
+echo "$TMP.combo_raw ..."
+awk '! ($3 != "nan" && $3 > '$CDS_DISSIM_MAX' || $5 != "nan" && $5 < '$UNIV_DISSIM_AVG')' $TMP.req-dissim-univ | sed 's/$/\tnan/1' > $TMP.req-dissim-symbet_0
+awk    '$3 != "nan" && $3 > '$CDS_DISSIM_MAX' || $5 != "nan" && $5 < '$UNIV_DISSIM_AVG    $TMP.req-dissim-univ > $TMP.req-dissim-univ_1
+cut -f 1,2 $TMP.req-dissim-univ_1 > $TMP.req-symbet_1
+$THIS/../trav -step 1 $TMP.req-symbet_1 "$THIS/../database/symbet.sh $GENOME_DIR %f 2> /dev/null" -log $LOG > $TMP.dissim-symbet
+paste $TMP.req-dissim-univ_1 $TMP.dissim-symbet > $TMP.req-dissim-symbet_1
+cat $TMP.req-dissim-symbet_0 $TMP.req-dissim-symbet_1 | awk '{OFS="\t"; print $1,$2,$3,$4,$6,$5};' > $TMP.combo_raw
+
+echo "$TMP.combo ..."
+if [ $CDS == 1 ]; then
+  mv $TMP.combo_raw $TMP.combo
+else
+  cut -f 3  --complement $TMP.combo_raw > $TMP.combo
 fi
 
 $THIS/combine_dissims $TMP.combo $DISSIM_SCALE  -log $LOG > $OUT
