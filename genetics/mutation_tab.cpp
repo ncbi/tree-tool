@@ -241,7 +241,7 @@ struct ThisApplication : Application
     : Application ("Print mutations table in a tab-delimited fromat")
     {
       addPositional ("blastp", "blastp output in the format: qseqid qseq sseq. qseqid has format: accession|.... Sequences should have flanking stop codons");
-      addPositional ("ref_accession", "Accession of the referebce protein");
+      addPositional ("ref_accession", "Accession of the reference protein");
       addPositional ("metadata_headers", "Column names for metadata, separated by '|'");
     }
 
