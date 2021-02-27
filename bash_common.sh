@@ -34,7 +34,7 @@ function section
 function super_section
 {
   MSG="$1"
-  S=`echo '*' $MSG '*'`
+  S=`echo '***' $MSG '***'`
   T=`echo "$S" | sed 's/./*/g'`
   echo ""
   section "$T\n$S\n$T"
