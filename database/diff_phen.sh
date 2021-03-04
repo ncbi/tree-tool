@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 if [ $# -ne 1 ]; then
   echo "Exit 1 if there are lineage differences between phen.old/ and phen/"
   echo "#1: Genome.id"

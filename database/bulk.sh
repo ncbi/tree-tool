@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
@@ -17,15 +17,18 @@ IN=$4
 TABLE=$5
 
 
+#set -x
+
 
 TMP=`mktemp`
+#echo $TMP 
 TMP=`basename $TMP`
 
 cp $IN $BULK_LOCAL/$TMP
 unix2dos -o $BULK_LOCAL/$TMP &> /dev/null
 chmod a+r $BULK_LOCAL/$TMP
 
-sqsh-ms -S $SERVER  << EOT  
+sqsh-ms -S $SERVER  << EOT
   begin try
     set nocount on;
     delete from $TABLE;

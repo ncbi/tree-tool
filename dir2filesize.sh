@@ -1,10 +1,6 @@
-#!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
+#!/bin/bash --noprofile
+THIS=`dirname $0`
+source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Sort files by size"
   echo "#1: Input directory"
