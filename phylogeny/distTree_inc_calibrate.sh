@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
@@ -12,6 +12,7 @@ DISSIM_POWER=$2
 DISSIM_COEFF=$3
 
 
+$THIS/../check_tmp.sh
 TMP=`mktemp`
 echo $TMP 
 

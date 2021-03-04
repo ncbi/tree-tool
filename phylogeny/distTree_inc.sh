@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
@@ -16,6 +16,9 @@ fi
 INC=$1
 NEW_PAR=$2
 RELDIR="$3"
+
+
+$THIS/../check_tmp.sh
 
 
 QC=1

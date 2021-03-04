@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Delete a list of objects from an incremental distance tree"
   echo "Update: #1/"
   echo "Delete: #2"
-  echo "#1: Incremental distance tree directory"
-  echo "#2: List of objects to delete; to be moved into #1/hist/"
+  echo "#1: incremental distance tree directory"
+  echo "#2: list of objects to delete; to be moved into #1/hist/"
   exit 1
 fi
 INC=$1
@@ -23,9 +23,9 @@ fi
 VER=$(( $VER + 1 ))
 echo $VER > $INC/version
 
-VARIANCE=`cat $INC/variance`
 
 section "Adjusting tree ..."
+VARIANCE=`cat $INC/variance`
 # Cf. distTree_inc_new.sh
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
   -delete $DEL  \
@@ -40,6 +40,7 @@ wc -l $INC/dissim
 wc -l $INC/dissim.new
 mv $INC/dissim.new $INC/dissim
 
+
 section "Database ..."
 $INC/objects_in_tree.sh $DEL null
 
@@ -48,6 +49,8 @@ $THIS/../setIntersect.sh $DEL $INC/new.list 0 > $INC/new-del.list
 rm $INC/new.list
 $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/new-del.list
 rm $INC/new-del.list
+
+$THIS/distTree_inc_new_cmd.sh inc "rm -f" $DEL
 
 mv $DEL $INC/hist/delete.$VER
 

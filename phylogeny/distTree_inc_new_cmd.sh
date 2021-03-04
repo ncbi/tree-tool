@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
@@ -9,7 +9,7 @@ if [ $# -ne 3 ]; then
   exit 1
 fi
 INC=$1
-CMD=$2
+CMD="$2"
 LIST=$3
 
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
@@ -8,6 +8,10 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 INC=$1
+
+
+
+$THIS/../check_tmp.sh
 
 
 # PAR
@@ -174,7 +178,7 @@ REINSERT=""
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == 0 ]; then  # PAR
   REINSERT="-reinsert"
-  warning "Reinsert\nTree quality will be lower due to missing dissimilarities to close tree neighbors"
+  warning "Reinsert\nTree quality will temporarily get lower due to missing dissimilarities to close tree neighbors"
 fi
 
 # Time: O(n log^4(n)) 

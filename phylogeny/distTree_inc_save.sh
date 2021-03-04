@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
@@ -35,7 +35,7 @@ for F in `ls $INC/`; do
     if [ $EX -eq 0 ]; then
       cp $INC/$F $OUT/$F
     else
-      sed 's|/home/brovervv/code/cpp|CPP_DIR|g' $INC/$F | sed 's/-blastdb_version 4//g' > $OUT/$F
+      sed 's|$PANFS/code/cpp|CPP_DIR|g' $INC/$F | sed 's/-blastdb_version 4//g' > $OUT/$F
       chmod a+x $OUT/$F
     fi
   fi
