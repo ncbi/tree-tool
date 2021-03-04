@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 11 ]; then
@@ -85,7 +85,7 @@ function req2file
   SUF=$3
   #
   cut -f $COL $REQ_ > $TMP.req2file_req
-  $THIS/../trav $TMP.req2file_req "echo $GENOME_DIR/%h/%f/%f.$SUF"  -log $LOG  -noprogress > $TMP.req2file_col
+  $THIS/../file2hash $TMP.req2file_req -file -append  -log $LOG  -noprogress | awk '{printf "'$GENOME_DIR'/%s/%s/%s.'$SUF'\n", $1, $2, $2};' > $TMP.req2file_col
   if [ $NEW_DIR ]; then
     NAME=`basename $NEW_DIR`
     sed 's|^\(.*/'$NAME'\.'$SUF'\)$|'$NEW_DIR/$NAME'.'$SUF'|1' $TMP.req2file_col
@@ -95,7 +95,7 @@ function req2file
 }
 
 
-$THIS/../trav $REQ "echo -e '%1\t%2'" -noprogress > $TMP.req
+awk '{printf "%s\t%s\n", $1, $2};' $REQ > $TMP.req
 
 echo "$TMP.req-PRT ..."
 req2file $TMP.req 1 "hash-PRT" > $TMP.f1
@@ -136,7 +136,7 @@ echo "$TMP.combo_raw ..."
 awk '! ($3 != "nan" && $3 > '$CDS_DISSIM_MAX' || $5 != "nan" && $5 < '$UNIV_DISSIM_AVG')' $TMP.req-dissim-univ | sed 's/$/\tnan/1' > $TMP.req-dissim-symbet_0
 awk    '$3 != "nan" && $3 > '$CDS_DISSIM_MAX' || $5 != "nan" && $5 < '$UNIV_DISSIM_AVG    $TMP.req-dissim-univ > $TMP.req-dissim-univ_1
 cut -f 1,2 $TMP.req-dissim-univ_1 > $TMP.req-symbet_1
-$THIS/../trav -step 1 $TMP.req-symbet_1 "$THIS/../database/symbet.sh $GENOME_DIR %f 2> /dev/null" -log $LOG > $TMP.dissim-symbet
+$THIS/../trav  -step 1  $TMP.req-symbet_1 "$THIS/../database/symbet.sh $GENOME_DIR %f 2> /dev/null"  -log $LOG > $TMP.dissim-symbet
 paste $TMP.req-dissim-univ_1 $TMP.dissim-symbet > $TMP.req-dissim-symbet_1
 cat $TMP.req-dissim-symbet_0 $TMP.req-dissim-symbet_1 | awk '{OFS="\t"; print $1,$2,$3,$4,$6,$5};' > $TMP.combo_raw
 

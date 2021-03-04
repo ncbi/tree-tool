@@ -46,6 +46,16 @@ namespace
 {
   
   
+void process (const string &name,
+              bool append)
+{
+  cout << str2hash_class (name);
+  if (append)
+    cout << '\t' << name;
+  cout << endl;
+}
+  
+  
   
 struct ThisApplication : Application
 {
@@ -53,16 +63,29 @@ struct ThisApplication : Application
     : Application ("Print file hash class: 0.." + to_string (hash_class_max - 1))
     {
       version = VERSION;
-      addPositional ("file", "File name");
+      addPositional ("name", "File name");
+      addFlag ("file", "<file> is a file with names");
+      addFlag ("append", "Append the file name");
     }
 
 
 
 	void body () const final
 	{
-	  const string file = getArg ("file");
-	  	  
-    cout << str2hash_class (file) << endl;
+	  const string name = getArg ("name");
+	  const bool isFile = getFlag ("file");
+	  const bool append = getFlag ("append");
+	  
+	  
+	  if (isFile)
+	  {
+	    LineInput f (name);
+	    while (f. nextLine ())
+	      if (! strBlank (f. line))
+    	    process (f. line, append);
+	  }
+	  else	  
+	    process (name, append);
   }  
 };
 
