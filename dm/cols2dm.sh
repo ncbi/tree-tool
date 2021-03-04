@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
@@ -12,8 +12,7 @@ fi
 
 N=`cat $1 | wc -l`
 if [ $N == 0 ]; then
-  echo "No data"
-  exit 1
+  error "No data"
 fi
 
 C=`head -1 $1 | wc -w`

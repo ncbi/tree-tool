@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
@@ -19,14 +19,13 @@ TMP=`mktemp`
 #echo $TMP  
 
 
-trav $LIST "cat %f | tr ' ' '\t' | cut -f 1" >  $TMP.obj_raw
-trav $LIST "cat %f | tr ' ' '\t' | cut -f 2" >> $TMP.obj_raw
+$THIS/../trav $LIST "cat %f | tr ' ' '\t' | cut -f 1" >  $TMP.obj_raw
+$THIS/../trav $LIST "cat %f | tr ' ' '\t' | cut -f 2" >> $TMP.obj_raw
 sort -u $TMP.obj_raw > $TMP.obj
 
 N=`cat $TMP.obj | wc -l`
 if [ $N == 0 ]; then
-  echo "No data"
-  exit 1
+  error "No data"
 fi
 
 echo "ObjNum $N name nomult"
@@ -37,12 +36,12 @@ if [ $POS == 1 ]; then
   ATTR="Positive2"
 fi
 ATTR="$ATTR $DEC"
-trav $LIST "basename %f" | sed 's/$/ '"$ATTR"'/1' | sed 's/^/  /1'
+$THIS/../trav $LIST "basename %f" | sed 's/$/ '"$ATTR"'/1' | sed 's/^/  /1'
 
 echo "DATA"
 cat $TMP.obj
 
-trav $LIST "basename %f; echo PAIRS; wc -l %f | awk %q{print %D1};%q; sort %f"
+$THIS/../trav $LIST "basename %f; echo PAIRS; wc -l %f | awk %q{print %D1};%q; sort %f"
 
 
 rm $TMP*  
