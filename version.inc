@@ -1,6 +1,7 @@
-#define VERSION "1.5.4"
+#define VERSION "1.5.5"
 
 
+// 1.5.5  02/28/2021  DTNode::mtx, Subgraph::subPaths2tree() uses threads
 // 1.5.4  02/25/2021  combine_dissims.cpp: linear combination
 //                    d_symbet
 // 1.5.3  02/24/2021  reinsert: arcDist >= max ((size_t) log (name2leaf. size () + 1), areaRadius_std)
