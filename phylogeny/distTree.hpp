@@ -419,6 +419,7 @@ struct DTNode : Tree::TreeNode
     // !asLeaf(): aggregate size = O(p log(n))
     // Distribution of size ??
     // Max. size() is at about the topological center
+  mutex mtx;
 private:
   bool stable {false};
     // Init: false
@@ -740,6 +741,7 @@ private:
 public:  
   Vector<SubPath> subPaths;
     // Size: O(|bounadry| p/n log(n))
+    // SubPath::dissimNum's are unique 
   Real subPathsAbsCriterion {0.0};
   
   

@@ -1843,91 +1843,212 @@ Real Subgraph::getImprovement (const DiGraph::Node2Node &boundary2new) const
 
 
 
+namespace
+{
+  
+void subPath2tree_dissim (Subgraph &subgraph,
+                          const SubPath &subPath,
+                          Tree::LcaBuffer &buf,
+                          Real &absCriterion,
+                          bool threadsUsed)
+// Update: absCriterion
+{
+  subPath. qc ();
+  ASSERT (subPath. node1->graph == & subgraph. tree);
+  ASSERT (subPath. node2->graph == & subgraph. tree);
+  const uint dissimNum = subPath. dissimNum;
+  const Tree::TreeNode* lca_ = nullptr;
+  const VectorPtr<Tree::TreeNode>& path = Tree::getPath (subPath. node1, subPath. node2, subgraph. area_root, lca_, buf);
+  ASSERT (lca_);
+  Dissim& dissim = var_cast (subgraph. tree). dissims [dissimNum];
+  if (! subgraph. viaRoot (subPath))
+  {
+    const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
+    ASSERT (lca);
+    dissim. lca = lca;
+  }
+  for (const Tree::TreeNode* node : path)
+  {
+    const DTNode* dtNode = static_cast <const DTNode*> (node);
+    ASSERT (dtNode != subgraph. area_root);
+    if (qc_on)
+      { QC_ASSERT (subgraph. boundary. containsFast (node) == subPath. contains (dtNode)); }
+    if (! subPath. contains (dtNode))
+    {
+      Steiner* st = var_cast (dtNode->asSteiner ());
+      ASSERT (st);
+      if (qc_on && verbose ())
+        { QC_ASSERT (! st->pathDissimNums. contains (dissimNum)); }
+      if (threadsUsed)
+        st->mtx. lock ();
+      st->pathDissimNums << dissimNum;
+      if (threadsUsed)
+        st->mtx. unlock ();
+    }
+  }
+  dissim. prediction = subPath. dist_hat_tails + DistTree::path2prediction (path);
+  absCriterion += dissim. getAbsCriterion ();
+}
+  
+
+
+void subPath2tree_dissim_array (size_t from,
+                                size_t to,
+                                Real &absCriterion,
+                                Subgraph &subgraph)
+// Output: absCriterion
+{
+  absCriterion = 0.0;
+  Tree::LcaBuffer buf;
+  FOR_START (size_t, i, from, to)
+    subPath2tree_dissim (subgraph, subgraph. subPaths [i], buf, absCriterion, true);
+}
+
+
+
+#if 0
+void subPath2tree_subPathDissimsSets_array (size_t from,
+                                            size_t to,
+                                            unordered_set<uint>* &subPathDissimsSet,
+                                            const Vector<SubPath> &subPaths)
+{
+  ASSERT (! subPathDissimsSet);
+  subPathDissimsSet = new unordered_set<uint> ();
+  subPathDissimsSet->rehash (to - from);
+  FOR_START (size_t, i, from, to)
+    subPathDissimsSet->insert (subPaths [i]. dissimNum);  
+}
+
+
+
+void subPath2tree_pathDissimNums_array (size_t from,
+                                        size_t to,
+                                        Notype /*&res*/,
+                                        const VectorPtr<Tree::TreeNode> &area,
+                                        const VectorPtr<Tree::TreeNode> &boundary,
+                                        const Vector<unordered_set<uint>*> &subPathDissimsSets)
+{
+  FOR_START (size_t, i, from, to)
+  {
+    const Tree::TreeNode* node = area [i];
+    if (! boundary. containsFast (node))
+      const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
+        ([&subPathDissimsSets] (uint dissimNum) 
+          { for (const unordered_set<uint>* subPathDissimsSet : subPathDissimsSets)
+              if (subPathDissimsSet->find (dissimNum) != subPathDissimsSet->end ())
+                return true;
+            return false;
+          }
+        );
+  }
+}
+#endif
+
+
+
+void subPath2tree_subPathDissimsVec_array (size_t from,
+                                           size_t to,
+                                           Notype /*&res*/,
+                                           const VectorPtr<Tree::TreeNode> &area,
+                                           const VectorPtr<Tree::TreeNode> &boundary,
+                                           const Vector<bool> &subPathDissimsVec)
+{
+  FOR_START (size_t, i, from, to)
+  {
+    const Tree::TreeNode* node = area [i];
+    if (! boundary. containsFast (node))
+      const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
+        ([&subPathDissimsVec] (uint dissimNum) { return subPathDissimsVec [dissimNum]; });
+  }
+}
+
+
+
+void subPath2tree_subPathDissimsSet_array (size_t from,
+                                           size_t to,
+                                           Notype /*&res*/,
+                                           const VectorPtr<Tree::TreeNode> &area,
+                                           const VectorPtr<Tree::TreeNode> &boundary,
+                                           const unordered_set<uint> &subPathDissimsSet)
+{
+  FOR_START (size_t, i, from, to)
+  {
+    const Tree::TreeNode* node = area [i];
+    if (! boundary. containsFast (node))
+      const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
+        ([&subPathDissimsSet] (uint dissimNum) { return subPathDissimsSet. find (dissimNum) != subPathDissimsSet. end (); });
+  }
+}
+
+}
+
+
+
 void Subgraph::subPaths2tree ()
 {
   ASSERT (dissimNums. empty ());
 
   chron_subgraph2tree. start ();  
 
+
   DistTree& tree_ = var_cast (tree);
 
+  const size_t dissims_big = 5 * 1024 * 1024;  // PAR
+  const bool useThreads = (threads_max > 1 && Threads::empty () && subPaths. size () >= dissims_big);  // PAR
   
   // Delete subPaths from tree
-  // Time: O(|subPaths|)
-  unique_ptr<Vector<bool>> subPathDissimsVec;
-  unique_ptr<unordered_set<uint>> subPathDissimsSet;  
-  if (tree. dissims. size () < 1024 * 1024)  // PAR
+  if (tree. dissims. size () < dissims_big)  // PAR
   {
-    subPathDissimsVec. reset (new Vector<bool> (tree. dissims. size (), false));  
+    // Time: O(1)
+    ASSERT (! useThreads);
+    Vector<bool> subPathDissimsVec (tree. dissims. size (), false);
     for (const SubPath& subPath : subPaths)
-      (*subPathDissimsVec) [subPath. dissimNum] = true;
+      subPathDissimsVec [subPath. dissimNum] = true;
+    vector<Notype> notypes;
+    arrayThreads (true, subPath2tree_subPathDissimsVec_array, area. size (), notypes, cref (area), cref (boundary), cref (subPathDissimsVec));
   }
   else
   {
-    subPathDissimsSet. reset (new unordered_set<uint> ());
-    subPathDissimsSet->rehash (subPaths. size ());
-    for (const SubPath& subPath : subPaths)
-      subPathDissimsSet->insert (subPath. dissimNum);  
-  }
-  ASSERT ((bool) subPathDissimsVec. get () != (bool) subPathDissimsSet. get ());
-  
-  // Time: O(|area| (log(|boundary|) + p/n log(n)))  
-  for (const Tree::TreeNode* node : area)
-    if (! boundary. containsFast (node))
+  #if 0
+    if (useThreads)
     {
-      if (const Vector<bool>* vec = subPathDissimsVec. get ())
-        const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
-          ([vec] (uint dissimNum) { return (*vec) [dissimNum]; });
-      else
-      {
-        const unordered_set<uint>* s = subPathDissimsSet. get ();
-        ASSERT (s);
-        const_static_cast <DTNode*> (node) -> pathDissimNums. filterValue 
-          ([s] (uint dissimNum) { return s->find (dissimNum) != s->end (); });
-      }
+      Vector<unordered_set<uint>*> subPathDissimsSets;  subPathDissimsSets. reserve (threads_max);
+      arrayThreads (true, subPath2tree_subPathDissimsSets_array, subPaths. size (), subPathDissimsSets, cref (subPaths));
+      vector<Notype> notypes;
+      arrayThreads (true, subPath2tree_pathDissimNums_array, area. size (), notypes, cref (area), cref (boundary), cref (subPathDissimsSets));
+      for (unordered_set<uint>* s : subPathDissimsSets)
+        delete s;
     }
+    else
+  #endif
+    {
+      unordered_set<uint> subPathDissimsSet;  
+      // Time: O(|subPaths|)
+      subPathDissimsSet. rehash (subPaths. size ());
+      for (const SubPath& subPath : subPaths)
+        subPathDissimsSet. insert (subPath. dissimNum);  
+      // Time: O(|area| (log(|boundary|) + p/n log(n)))  
+      vector<Notype> notypes;
+      arrayThreads (true, subPath2tree_subPathDissimsSet_array, area. size (), notypes, cref (area), cref (boundary), cref (subPathDissimsSet));
+    }
+  }
   
-
   // Add subPaths in area to tree
   tree_. absCriterion -= subPathsAbsCriterion;
   ASSERT (tree. absCriterion < inf);
-  Tree::LcaBuffer buf;
   // Time: O(|subPaths| log(|area|))
-  for (const SubPath& subPath : subPaths)
+  if (useThreads)
   {
-    subPath. qc ();
-    ASSERT (subPath. node1->graph == & tree);
-    ASSERT (subPath. node2->graph == & tree);
-    const uint dissimNum = subPath. dissimNum;
-    const Tree::TreeNode* lca_ = nullptr;
-    const VectorPtr<Tree::TreeNode>& path = Tree::getPath (subPath. node1, subPath. node2, area_root, lca_, buf);
-    ASSERT (lca_);
-    Dissim& dissim = tree_. dissims [dissimNum];
-    if (! viaRoot (subPath))
-    {
-      const Steiner* lca = static_cast <const DTNode*> (lca_) -> asSteiner ();
-      ASSERT (lca);
-      dissim. lca = lca;
-    }
-    for (const Tree::TreeNode* node : path)
-    {
-      const DTNode* dtNode = static_cast <const DTNode*> (node);
-      ASSERT (dtNode != area_root);
-      if (qc_on)
-        { QC_ASSERT (boundary. containsFast (node) == subPath. contains (dtNode)); }
-      if (! subPath. contains (dtNode))
-      {
-        const Steiner* st = dtNode->asSteiner ();
-        ASSERT (st);
-        if (qc_on && verbose ())
-        {
-          QC_ASSERT (! st->pathDissimNums. contains (dissimNum));  
-        }
-        var_cast (st) -> pathDissimNums << dissimNum;
-      }
-    }
-    dissim. prediction = subPath. dist_hat_tails + DistTree::path2prediction (path);
-    tree_. absCriterion += dissim. getAbsCriterion ();
+    vector<Real> absCriteria;  absCriteria. reserve (threads_max);
+    arrayThreads (true, subPath2tree_dissim_array, subPaths. size (), absCriteria, ref (*this));
+    for (const Real& absCriterion : absCriteria)
+      tree_. absCriterion += absCriterion;
+  }
+  else
+  {
+    Tree::LcaBuffer buf;
+    for (const SubPath& subPath : subPaths)
+      subPath2tree_dissim (*this, subPath, buf, tree_. absCriterion, false);
   }
   ASSERT (tree. absCriterion < inf);
   maximize (tree_. absCriterion, 0.0);
@@ -3091,7 +3212,7 @@ DistTree::DistTree (const string &dataDirName,
         dissimLines. uniq ();
       }
       vector<Notype> notypes;
-      arrayThreads (processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
+      arrayThreads (true, processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
       {
         Progress prog (dissimLines. size (), displayPeriod);
         for (const DissimLine &dl : dissimLines)
@@ -5543,7 +5664,7 @@ void DistTree::setPredictionAbsCriterion ()
   {
     absCriterion = 0.0;
     vector<Real> absCriteria;
-    arrayThreads (setPredictionAbsCriterion_thread, dissims. size (), absCriteria, ref (dissims)); 
+    arrayThreads (true, setPredictionAbsCriterion_thread, dissims. size (), absCriteria, ref (dissims)); 
     for (const Real x : absCriteria)
       absCriterion += x;
     ASSERT (absCriterion < inf);
@@ -6483,9 +6604,10 @@ void reinsert_thread (size_t from,
   const size_t q_max = 10 * tree. getSparseDissims_size ();  // PAR
   Tree::LcaBuffer buf;
   Progress prog (to - from);
+  size_t arcDist_prev = 0;
   FOR_START (size_t, i, from, to)
   {
-    prog ();
+    prog (to_string (arcDist_prev));
     const DTNode* fromNode = nodeVec [i];
     Real nodeAbsCriterion_old = NaN;
     const NewLeaf nl (fromNode, q_max, nodeAbsCriterion_old);
@@ -6508,6 +6630,7 @@ void reinsert_thread (size_t from,
       cout << fromNode->getLcaName () << " -> " << toNode->getLcaName () << ' ' << improvement << ' ' << arcDist << endl;
     if (arcDist < areaRadius_std)  // PAR 
       continue;
+    arcDist_prev = arcDist;
     auto change = new Change (fromNode, toNode);
     change->improvement = improvement;
   #if 0
@@ -6545,7 +6668,7 @@ bool DistTree::optimizeReinsert ()
   nodeVec. randomOrder ();
 
   vector<VectorPtr<Change>> results;
-  arrayThreads (reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
+  arrayThreads (true, reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
 
   VectorOwn<Change> changes;  changes. reserve (256);  // PAR 
   for (const VectorPtr<Change>& threadChanges : results)
@@ -6700,7 +6823,7 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
         ch->saveText (cout);  
         cout << endl;
       }
-      const bool success = ch->apply ();
+      const bool success = ch->apply (); 
       if (verbose (1))
         cout << "Success: " << success << "  improvement = " << ch->improvement << endl;
       IMPLY (first && ! byNewLeaf, success && ch->improvement > 0.0);
@@ -6721,11 +6844,11 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
       //ASSERT (! first);
         if (verbose (1))
           cout << "Restore" << endl;
-        ch->restore ();
+        ch->restore (); 
       }
       else
       {
-        ch->commit ();
+        ch->commit ();  
         commits++;
         if (verbose ())
         {
@@ -6988,7 +7111,7 @@ void DistTree::optimizeLargeSubgraphs ()
       {
         if (! failed && ! var_cast (image) -> apply ())
           failed = true;
-        prog (absCriterion2str () + " (approx.)"); 
+        prog (absCriterion2str () + " (approx.)" /*+ " " + to_string (image->subgraph. subPaths. size ())*/); 
       }
     }
   }
@@ -8340,7 +8463,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
       badLeaves. randomOrder ();
     vector<Vector<Triangle>> resVec;
     // Time: O(n/log^2(n) * p^2/n^2 log^2(n) / threads_max) = O(p^2/n / threads_max)
-    arrayThreads (addHybridTriangles_thread, badLeaves_size, resVec, cref (badLeaves));
+    arrayThreads (false, addHybridTriangles_thread, badLeaves_size, resVec, cref (badLeaves));
     for (const Vector<Triangle>& res : resVec)
       for (const Triangle& tr : res)  
         triangleParentPairs_init << TriangleParentPair ( tr. parents [0]. leaf
@@ -8363,7 +8486,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   {
     triangleParentPairs_init. randomOrder ();
     vector<Notype> notypes;  
-    arrayThreads (setTriangles_thread, triangleParentPairs_init. size (), notypes, ref (triangleParentPairs_init), cref (*this));
+    arrayThreads (false, setTriangles_thread, triangleParentPairs_init. size (), notypes, ref (triangleParentPairs_init), cref (*this));
     triangleParentPairs_init. sort ();
   }
 
@@ -8445,7 +8568,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     triangleParentPairs_init. randomOrder ();
     {
       vector<Vector<RequestCandidate>> requests_vec;  
-      arrayThreads (hybrid2requests, leaves. size (), requests_vec, cref (triangleParentPairs_init));
+      arrayThreads (true, hybrid2requests, leaves. size (), requests_vec, cref (triangleParentPairs_init));
       for (const auto& requests_ : requests_vec)
         requests << requests_;
     }
@@ -8982,7 +9105,10 @@ void DistTree::saveDissim (ostream &os,
   ASSERT (optimizable ());
 
   const ONumber on (os, dissimDecimals, true);
+  Progress prog (dissims. size (), 1000);  // PAR
   for (const Dissim& dissim : dissims)
+  {
+    prog ();
     if (dissim. valid ())
     {
       os         << dissim. leaf1->name
@@ -8994,6 +9120,7 @@ void DistTree::saveDissim (ostream &os,
            << '\t' << sqr (dissim. target - dissim. prediction);
       os << endl;
     }
+  }
 }
 
 
