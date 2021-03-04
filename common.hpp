@@ -1314,7 +1314,8 @@ public:
 
 
 template <typename Func, typename Res, typename... Args>
-  void arrayThreads (const Func& func,
+  void arrayThreads (bool quiet,
+                     const Func& func,
                      size_t i_max,
                      vector<Res> &results,
                      Args&&... args)
@@ -1324,7 +1325,7 @@ template <typename Func, typename Res, typename... Args>
   	ASSERT (threads_max >= 1);
 		results. clear ();
 		results. reserve (threads_max);
-  	if (threads_max == 1 || i_max <= 1)
+  	if (threads_max == 1 || i_max <= 1 || ! Threads::empty ())
   	{
   		results. push_back (Res ());
     	func (0, i_max, results. front (), forward<Args>(args)...);
@@ -1334,7 +1335,7 @@ template <typename Func, typename Res, typename... Args>
 		if (chunk * threads_max < i_max)
 			chunk++;
 		ASSERT (chunk * threads_max >= i_max);
-		Threads th (threads_max - 1);
+		Threads th (threads_max - 1, quiet);
 		FFOR (size_t, tn, threads_max)
 	  {
 	    const size_t from = tn * chunk;
@@ -2690,7 +2691,7 @@ public:
 	static bool isUsed ()
 	  { return beingUsed; }
 	static bool enabled ()
-	  { return ! beingUsed && verbose (1); }
+	  { return ! beingUsed && ! Threads:;quiet && verbose (1); }
 };
 
 
