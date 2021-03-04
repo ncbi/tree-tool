@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 # For github distribution
 cd `dirname $0`
 source ./bash_common.sh
