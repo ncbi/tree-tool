@@ -132,7 +132,7 @@ struct ThisApplication : Application
     }
 
     vector<Notype> notypes;
-	  arrayThreads (savePhen, ds. objs. size (), notypes, cref (featureDirName), cref (ds));
+	  arrayThreads (false, savePhen, ds. objs. size (), notypes, cref (featureDirName), cref (ds));
   }
 };
 
