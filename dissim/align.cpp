@@ -72,6 +72,8 @@ int pep2selfScore (const SNCBIFullScoreMatrix &mat,
 	  const char c = pep. seq [i];
 	  if (c == '-')
 	    continue;
+	  if (pep. isAmbiguous (c))
+	    continue;
 		const int num = (int) c;
 	  score += mat. s [num] [num];
 	}
