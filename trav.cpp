@@ -267,7 +267,7 @@ struct ThisApplication : Application
     {
       commands. randomOrder ();
       vector<Notype> notypes;
-  	  arrayThreads (executeCommands, commands. size (), notypes, cref (commands), step, blank_lines);
+  	  arrayThreads (false, executeCommands, commands. size (), notypes, cref (commands), step, blank_lines);
   	}
 	}
 };
