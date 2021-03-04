@@ -1,10 +1,6 @@
-#!/bin/bash
-set -o nounset
-set -o errexit
-set -o posix
-set -o pipefail
-export LC_ALL=C
-
+#!/bin/bash --noprofile
+THIS=`dirname $0`
+source $THIS/bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Apply #3 to each file of #1, save in #2/"
   echo "#1: Directory with input files"
