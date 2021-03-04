@@ -211,6 +211,7 @@ struct ThisApplication : Application
       		#endif
       		}
       		else
+      		try
       		{
     				Align_sp::Align al (*pep1, *pep2, false, 0, blosum62);  // PAR
     	      dissim = al. getDissim ();  
@@ -220,6 +221,10 @@ struct ThisApplication : Application
     	        al. printAlignment (60);  // PAR
     	        cout << "dissim = " << dissim << endl;
     	      }
+    	    }
+    	    catch (const exception &e)
+    	    {
+    	      throw runtime_error (pep1->str () + "\n" + pep2->str () + "\n" + e. what ());
     	    }
   	      IMPLY (! isNan (dissim), dissim >= 0.0);
   	      
