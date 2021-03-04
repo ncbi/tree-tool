@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
@@ -27,7 +27,10 @@ if [ $N -le $GRID_MIN ]; then
   fi
 else
 	mkdir $INC/dr	
-	$THIS/../splitList $REQ $GRID_MIN $INC/dr
+	TMP=`mktemp`
+	sort -R $REQ > $TMP
+	$THIS/../splitList $TMP $GRID_MIN $INC/dr
+	rm $TMP
 	
   while true; do
     rm -rf $INC/dr.out
@@ -36,17 +39,17 @@ else
 		ls $INC/dr > $INC/dr.list
 		while [ -s $INC/dr.list ]; do
 		  wc -l $INC/dr.list
+		  mkdir $INC/dr.log
 		  $THIS/../grid_wait.sh 1
-  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f %Q%Q $INC/dr.out/%f $INC/dr.out/%f.log%q > /dev/null"		
-  		$THIS/../qstat_wait.sh 3000 1	
- 			set +o errexit	
-		  ls $INC/dr.out | grep    '\.log$' | sed 's/\.log$//1' > $INC/dr.bad
-		  ls $INC/dr.out | grep -v '\.log$' > $INC/dr.good
-	  	set -o errexit
+  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f %Q%Q $INC/dr.out/%f $INC/dr.log/%f%q > /dev/null"		
+  		$THIS/../qstat_wait.sh 3000 1	 
+		  ls $INC/dr.log > $INC/dr.bad
+		  ls $INC/dr.out > $INC/dr.good
 	  	$THIS/../setMinus $INC/dr.list $INC/dr.good >> $INC/dr.bad
 	  	rm $INC/dr.good
 	  	sort -u $INC/dr.bad > $INC/dr.list
 	  	rm $INC/dr.bad
+	  	rm -r $INC/dr.log
 		done
 		rm $INC/dr.list
 		
