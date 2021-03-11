@@ -1,23 +1,32 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
-  echo "Print <start> <end> <strand> of protein including stop codon in #2 if matched"
-  echo "#1: protein sequence file (1 line, not FASTA, without stop codon)"
-  echo "#2: DNA FASTA file"
+if [ $# -ne 4 ]; then
+  echo "Print <start> <end> <strand> of protein including stop codon in #2, 1-based, if matched"
+  echo "#1: file with protein sequence without stop codon"
+  echo "#2: #1 is FASTA (0/1)"
+  echo "#3: add stop codon to #1 (0/1)"
+  echo "#4: DNA FASTA file"
   exit 1
 fi
 PROT=$1
-DNA=$2
+IS_FASTA=$2
+ADD_STOP_CODON=$3
+DNA=$4
 
 
 TMP=`mktemp`
 #echo $TMP
 
 
-echo '>seq' >  $TMP.prot
-cat $PROT   >> $TMP.prot
-echo '*'    >> $TMP.prot
+# $TMP.prot
+if [ $IS_FASTA == 0 ]; then
+  echo '>seq' > $TMP.prot
+fi
+cat $PROT >> $TMP.prot
+if [ $ADD_STOP_CODON == 1 ]; then
+  echo '*' >> $TMP.prot
+fi
 
 cp $DNA $TMP.dna
 makeblastdb  -in $TMP.dna  -dbtype nucl  -logfile /dev/null  -blastdb_version 4
