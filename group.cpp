@@ -53,6 +53,7 @@ struct ThisApplication : Application
   	  addPositional ("table", "Table file with a header");
   	  addKey ("by", "Comma-separated list of columns to group by"); 
   	  addKey ("sum", "Comma-separated list of columns to sum"); 
+  	  addKey ("aggr", "Comma-separated list of columns to aggregate: make unique and sort"); 
   	}
   	
   	
@@ -62,6 +63,7 @@ struct ThisApplication : Application
 		const string fName = getArg ("table");
 		const string byS   = getArg ("by");
 		const string sumS  = getArg ("sum");
+		const string aggrS = getArg ("aggr");
 
 
     TextTable tt (fName);
@@ -69,28 +71,36 @@ struct ThisApplication : Application
     if (verbose ())
       tt. printHeader (cout);      
     
-    const StringVector by  (byS,  ',', true);
-    const StringVector sum (sumS, ',', true);    
+    const StringVector by   (byS,   ',', true);
+    const StringVector sum  (sumS,  ',', true);    
+    const StringVector aggr (aggrS, ',', true);    
+
 
     // QC
     for (const string& s : by)
-    {
       if (! tt. hasColumn (s))
         throw runtime_error ("Table has no by-column " + strQuote (s));
-      if (sum. contains (s))
-        throw runtime_error ("Same by-column and sum-column: " + strQuote (s));
-    }
-
+    
     for (const string& s : sum)
     {
       if (! tt. hasColumn (s))
         throw runtime_error ("Table has no sum-column " + strQuote (s));
+      if (by. contains (s))
+        throw runtime_error ("Same by-column and sum-column: " + strQuote (s));
       if (! tt. header [tt. col2index (s)]. numeric)
         throw runtime_error ("Column " + strQuote (s) + " is not numeric");
     }
         
+    for (const string& s : aggr)
+    {
+      if (! tt. hasColumn (s))
+        throw runtime_error ("Table has no aggregation column " + strQuote (s));
+      if (by. contains (s))
+        throw runtime_error ("Same by-column and aggregation column: " + strQuote (s));
+    }
+        
 
-    tt. group (by, sum);
+    tt. group (by, sum, aggr);
     tt. qc ();
     
     tt. saveText (cout);
