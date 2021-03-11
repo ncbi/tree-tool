@@ -1089,6 +1089,7 @@ void Rand::run ()
 // Threads
 
 size_t Threads::threadsToStart = 0;
+bool Threads::quiet = false;
 	
 	
 
@@ -1202,7 +1203,6 @@ string which (const string &progName)
 
 Threads::Threads (size_t threadsToStart_arg, 
                   bool quiet_arg)
-: quiet (quiet_arg)
 { 
   if (! isMainThread ())
 	  throw logic_error ("Threads are started not from the main thread");
@@ -1212,6 +1212,8 @@ Threads::Threads (size_t threadsToStart_arg,
 	threadsToStart = threadsToStart_arg;
 	if (threadsToStart >= threads_max)
 		throw logic_error ("Too many threads to start");
+		
+  quiet = quiet_arg;
 		
 	threads. reserve (threadsToStart);
 	
@@ -1236,6 +1238,7 @@ Threads::~Threads ()
 	  
 	threads. clear ();
 	threadsToStart = 0;
+	quiet = false;
 }
 
 
@@ -2306,10 +2309,12 @@ void TextTable::filterColumns (const StringVector &newColumnNames)
 
 
 void TextTable::group (const StringVector &by,
-                       const StringVector &sum)
+                       const StringVector &sum,
+                       const StringVector &aggr)
 {
-  const Vector<size_t> byIndex  (columns2indexes (by));
-  const Vector<size_t> sumIndex (columns2indexes (sum));
+  const Vector<size_t> byIndex   (columns2indexes (by));
+  const Vector<size_t> sumIndex  (columns2indexes (sum));
+  const Vector<size_t> aggrIndex (columns2indexes (aggr));
   
   const auto lt = [&byIndex,this] (const StringVector &a, const StringVector &b) 
                     { for (const size_t i : byIndex) 
@@ -2332,7 +2337,7 @@ void TextTable::group (const StringVector &by,
   {
     ASSERT (i < j);
     if (rows [i]. same (rows [j], byIndex))
-      merge (i, j, sumIndex);
+      merge (i, j, sumIndex, aggrIndex);
     else
     {
       i++;
@@ -2350,10 +2355,13 @@ void TextTable::group (const StringVector &by,
 
 void TextTable::merge (RowNum toIndex,
                        RowNum fromIndex,
-                       const Vector<size_t> &sum) 
+                       const Vector<size_t> &sum,
+                       const Vector<size_t> &aggr) 
 {
+  ASSERT (toIndex < fromIndex);
   StringVector& to = rows [toIndex];
   const StringVector& from = rows [fromIndex];
+
   for (const size_t i : sum)
   {
     const Header& h = header [i];
@@ -2362,6 +2370,23 @@ void TextTable::merge (RowNum toIndex,
     ONumber on (oss, h. decimals, h. scientific);
     oss << stod (to [i]) + stod (from [i]);
     to [i] = oss. str ();
+  }
+
+  for (const size_t i : aggr)
+  {
+    constexpr char sep = ',';
+    if (from [i]. empty ())
+      continue;
+    if (to [i]. empty ())
+      to [i] = from [i];
+    else
+    {
+      StringVector vec (to [i], sep, true);
+      vec << from [i];
+      vec. sort ();
+      vec. uniq ();
+      to [i] = vec. toString (string (1, sep));
+    }
   }
 }
 

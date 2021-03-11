@@ -1278,7 +1278,7 @@ struct Threads : Singleton<Threads>
 private:
 	static size_t threadsToStart;
 	vector<thread> threads;
-	const bool quiet;
+	static bool quiet;
 public:
 
 
@@ -1289,6 +1289,8 @@ public:
   	
 	static bool empty () 
 	  { return ! threadsToStart; }
+	static bool isQuiet () 
+	  { return quiet; }
 	size_t getAvailable () const
 	  { return threadsToStart < threads. size () ? 0 : (threadsToStart - threads. size ()); }
 	Threads& operator<< (thread &&t)
@@ -2691,7 +2693,7 @@ public:
 	static bool isUsed ()
 	  { return beingUsed; }
 	static bool enabled ()
-	  { return ! beingUsed && ! Threads:;quiet && verbose (1); }
+	  { return ! beingUsed && ! Threads::isQuiet () && verbose (1); }
 };
 
 
@@ -3254,11 +3256,13 @@ public:
     //          can be repeated
     //          ordered
   void group (const StringVector &by,
-              const StringVector &sum);
+              const StringVector &sum,
+              const StringVector &aggr);
 private:
   void merge (RowNum toIndex,
               RowNum fromIndex,
-              const Vector<size_t> &sum);
+              const Vector<size_t> &sum,
+              const Vector<size_t> &aggr);
 public:
   void indexes2values (const Vector<size_t> &indexes,
                        RowNum row_num,
