@@ -52,6 +52,7 @@ struct ThisApplication : Application
     : Application ("Convert ORFs into proteins")
     {
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with ORFs");
+  	  addFlag ("no_stop", "It is allowed to miss the stop codon");
   	  addKey ("error", "File with errors", "");
     }
 
@@ -60,6 +61,7 @@ struct ThisApplication : Application
 	void body () const final
   {
 	  const string inFName  = getArg ("Multi_FASTA");
+	  const bool   no_stop  = getFlag ("no_stop");
 	  const string errFName = getArg ("error");
 
 
@@ -77,7 +79,8 @@ struct ThisApplication : Application
 	    size_t translationStart = 0;
 	    Peptide pep (dna. makePeptide (1, gencode, true, true, translationStart));
 	    ASSERT (translationStart == 0);
-	    trimSuffix (pep. name, ".fr1");
+	    pep. name = dna. name;
+	  //trimSuffix (pep. name, ".fr1");
 	    pep. saveText (cout);
 	    pep. pseudo = true;  // For qc()
 	    pep. qc ();
@@ -85,15 +88,16 @@ struct ThisApplication : Application
 	    {
 	      string err;
 	      if (pep. seq. empty ())
-	        err = "empty";
-	      else if (!trimSuffix (pep. seq, "*"))
-	          err = "bad stop codon";
-	      else if (pep. hasInsideStop ())
-	        err = "in-frame stop codon";
-	      else if (pep. seq [0] != 'm')
-	        err = "bad start codon";
+	        err += "\tno sequence";
+	      if (! trimSuffix (pep. seq, "*"))
+	        if (! no_stop)
+	          err += "\tno stop codon";
+	      if (pep. hasInsideStop ())
+	        err += "\tin-frame stop codon";
+	      if (pep. seq [0] != 'm')
+	        err += "\tno start codon";
 	      if (! err. empty ())
-          *fOut << pep. name << '\t' << err << endl;
+          *fOut << pep. name << err << endl;
 	    }
 	  }
   }
