@@ -1994,7 +1994,7 @@ void Subgraph::subPaths2tree ()
   DistTree& tree_ = var_cast (tree);
 
   const size_t dissims_big = 5 * 1024 * 1024;  // PAR
-  const bool useThreads = (threads_max > 1 && Threads::empty () && subPaths. size () >= dissims_big);  // PAR
+  const bool useThreads = false;  // (threads_max > 1 && Threads::empty () && subPaths. size () >= dissims_big);  // PAR 
   
   // Delete subPaths from tree
   if (tree. dissims. size () < dissims_big)  // PAR
@@ -2037,7 +2037,7 @@ void Subgraph::subPaths2tree ()
   tree_. absCriterion -= subPathsAbsCriterion;
   ASSERT (tree. absCriterion < inf);
   // Time: O(|subPaths| log(|area|))
-  if (useThreads)
+  if (useThreads)  // slow 
   {
     vector<Real> absCriteria;  absCriteria. reserve (threads_max);
     arrayThreads (true, subPath2tree_dissim_array, subPaths. size (), absCriteria, ref (*this));
@@ -6668,7 +6668,7 @@ bool DistTree::optimizeReinsert ()
   nodeVec. randomOrder ();
 
   vector<VectorPtr<Change>> results;
-  arrayThreads (true, reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
+  arrayThreads (false, reinsert_thread, nodeVec. size (), results, cref (*this), cref (nodeVec));
 
   VectorOwn<Change> changes;  changes. reserve (256);  // PAR 
   for (const VectorPtr<Change>& threadChanges : results)
