@@ -60,7 +60,6 @@ fi
 VER=$(( $VER_OLD + 1 ))
 echo $VER > $INC/version
 super_section "version: $VER"
-pwd
 
 
 section "new/ -> search/ ..."
@@ -134,7 +133,7 @@ while [ $ITER -le $ITER_MAX ]; do
   fi
   $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
   WAIT=2000  # PAR
-  if [ $GRID_MIN -lt 100 ]; then  
+  if [ $GRID_MIN -le 200 ]; then  
     WAIT=7200
   fi
   if [ $GRID == 1 ]; then
