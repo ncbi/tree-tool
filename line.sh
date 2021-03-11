@@ -11,7 +11,7 @@ L=$2
 
 
 N=`cat $F | wc -l`
-if [ $L-gt $N ]; then
+if [ $L -gt $N ]; then
   error "Max. line = $N"
 fi
 
