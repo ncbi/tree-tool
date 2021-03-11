@@ -49,6 +49,7 @@ if [ $NEW_PAR == 1 ]; then
     
     VER=`cat $INC/version`
     echo "$VER  `date`  `date +%s`" >> $INC/runlog  
+    pwd
     echo ""
     $THIS/distTree_inc_new.sh $INC 
     if [ -e $INC/finished ]; then
@@ -82,7 +83,7 @@ fi
 
 # Time: O(n log^4(n))
 # PAR
-$THIS/makeDistTree  -threads 30  -data $INC/  -variance $VARIANCE  $DELETE \
+$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 5 \
   -output_tree $INC/tree.new  -leaf_errors leaf_errors  > $INC/hist/makeDistTree-final.$VER
 mv $INC/tree.new $INC/tree
