@@ -1850,7 +1850,10 @@ void subPath2tree_dissim (Subgraph &subgraph,
                           const SubPath &subPath,
                           Tree::LcaBuffer &buf,
                           Real &absCriterion,
-                          bool threadsUsed)
+                        #ifdef MUTEX
+                          bool threadsUsed
+                        #endif
+                         )
 // Update: absCriterion
 {
   subPath. qc ();
@@ -1879,11 +1882,15 @@ void subPath2tree_dissim (Subgraph &subgraph,
       ASSERT (st);
       if (qc_on && verbose ())
         { QC_ASSERT (! st->pathDissimNums. contains (dissimNum)); }
+    #ifdef MUTEX
       if (threadsUsed)
         st->mtx. lock ();
+    #endif
       st->pathDissimNums << dissimNum;
+    #ifdef MUTEX
       if (threadsUsed)
         st->mtx. unlock ();
+    #endif
     }
   }
   dissim. prediction = subPath. dist_hat_tails + DistTree::path2prediction (path);
@@ -1892,6 +1899,7 @@ void subPath2tree_dissim (Subgraph &subgraph,
   
 
 
+#ifdef MUTEX
 void subPath2tree_dissim_array (size_t from,
                                 size_t to,
                                 Real &absCriterion,
@@ -1903,6 +1911,7 @@ void subPath2tree_dissim_array (size_t from,
   FOR_START (size_t, i, from, to)
     subPath2tree_dissim (subgraph, subgraph. subPaths [i], buf, absCriterion, true);
 }
+#endif
 
 
 
@@ -1994,13 +2003,17 @@ void Subgraph::subPaths2tree ()
   DistTree& tree_ = var_cast (tree);
 
   const size_t dissims_big = 5 * 1024 * 1024;  // PAR
-  const bool useThreads = false;  // (threads_max > 1 && Threads::empty () && subPaths. size () >= dissims_big);  // PAR 
+#ifdef MUTEX
+  const bool useThreads = (threads_max > 1 && Threads::empty () && subPaths. size () >= dissims_big);  // PAR 
+#endif
   
   // Delete subPaths from tree
   if (tree. dissims. size () < dissims_big)  // PAR
   {
     // Time: O(1)
+  #ifdef MUTEX
     ASSERT (! useThreads);
+  #endif
     Vector<bool> subPathDissimsVec (tree. dissims. size (), false);
     for (const SubPath& subPath : subPaths)
       subPathDissimsVec [subPath. dissimNum] = true;
@@ -2037,6 +2050,7 @@ void Subgraph::subPaths2tree ()
   tree_. absCriterion -= subPathsAbsCriterion;
   ASSERT (tree. absCriterion < inf);
   // Time: O(|subPaths| log(|area|))
+#ifdef MUTEX
   if (useThreads)  // slow 
   {
     vector<Real> absCriteria;  absCriteria. reserve (threads_max);
@@ -2045,10 +2059,11 @@ void Subgraph::subPaths2tree ()
       tree_. absCriterion += absCriterion;
   }
   else
+#endif
   {
     Tree::LcaBuffer buf;
     for (const SubPath& subPath : subPaths)
-      subPath2tree_dissim (*this, subPath, buf, tree_. absCriterion, false);
+      subPath2tree_dissim (*this, subPath, buf, tree_. absCriterion /*, false*/);
   }
   ASSERT (tree. absCriterion < inf);
   maximize (tree_. absCriterion, 0.0);
