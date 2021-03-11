@@ -44,6 +44,10 @@ using namespace DM_sp;
 
 
 
+#undef MUTEX
+
+
+
 namespace DistTree_sp
 {
 
@@ -419,7 +423,9 @@ struct DTNode : Tree::TreeNode
     // !asLeaf(): aggregate size = O(p log(n))
     // Distribution of size ??
     // Max. size() is at about the topological center
+#ifdef MUTEX
   mutex mtx;
+#endif
 private:
   bool stable {false};
     // Init: false
