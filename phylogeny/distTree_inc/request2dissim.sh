@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 #source bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute dissimilarities"

@@ -1,6 +1,5 @@
-#!/bin/bash
-THIS=`dirname $0`
-source /home/brovervv/code/cpp/bash_common.sh
+#!/bin/bash --noprofile
+#source bash_common.sh
 if [ $# -ne 1 ]; then
   echo "QC an object"
   echo "#1: file or directory with object data"

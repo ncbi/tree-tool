@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 #source bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Record genogroup outliers in a database"
