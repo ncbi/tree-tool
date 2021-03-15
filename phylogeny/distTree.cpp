@@ -1849,9 +1849,9 @@ namespace
 void subPath2tree_dissim (Subgraph &subgraph,
                           const SubPath &subPath,
                           Tree::LcaBuffer &buf,
-                          Real &absCriterion,
+                          Real &absCriterion
                         #ifdef MUTEX
-                          bool threadsUsed
+                         ,bool threadsUsed
                         #endif
                          )
 // Update: absCriterion
