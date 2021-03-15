@@ -27,10 +27,10 @@ if [ -s $TMP.grep ]; then
   error "$NAME is already in $INC/tree"
 fi
 
-section "Finding closest objects ..."
+section "Finding closest objects"
 $INC/request_closest.sh $NAME `dirname $QUERY` | grep -vw "$NAME" | sed 's/$/ '$NAME'/1' > $TMP.request
 
-section "Fitting to the tree ..."
+section "Fitting to the tree"
 cp /dev/null $TMP.dissim
 echo "FAIL" > $TMP.leaf
 VARIANCE=`cat $INC/variance`

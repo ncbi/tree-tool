@@ -16,7 +16,7 @@ TREE=$3
 TMP=`mktemp`
 
 
-section "Computing dissimilarities ..."
+section "Computing dissimilarities"
 # PAR
 if [ $PROT == 1 ]; then
   $THIS/../dissim/fasta2dissim  $FASTA  -aa  -global  -blosum62  -power 0.5  -dataset $TMP  
@@ -25,7 +25,7 @@ else
 fi
 
 echo ""
-section "Builing tree ..."
+section "Builing tree"
 # PAR
 $THIS/makeDistTree  -data $TMP  -dissim_attr "dissim"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TREE
 

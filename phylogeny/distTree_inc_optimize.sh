@@ -25,7 +25,7 @@ $THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_l
   # -reinsert  
 
 echo ""
-echo "Quality ..."
+echo "Quality"
 LARGE=0
 if [ -e $INC/large ]; then
   LARGE=1

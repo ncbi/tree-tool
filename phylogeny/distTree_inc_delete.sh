@@ -24,7 +24,7 @@ VER=$(( $VER + 1 ))
 echo $VER > $INC/version
 
 
-section "Adjusting tree ..."
+section "Adjusting tree"
 VARIANCE=`cat $INC/variance`
 # Cf. distTree_inc_new.sh
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
@@ -41,7 +41,7 @@ wc -l $INC/dissim.new
 mv $INC/dissim.new $INC/dissim
 
 
-section "Database ..."
+section "Database"
 $INC/objects_in_tree.sh $DEL null
 
 $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
@@ -55,7 +55,7 @@ $THIS/distTree_inc_new_cmd.sh inc "rm -f" $DEL
 mv $DEL $INC/hist/delete.$VER
 
 
-section "QC ..."
+section "QC"
 $INC/qc.sh go  
 
 

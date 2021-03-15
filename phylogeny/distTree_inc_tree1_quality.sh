@@ -14,7 +14,7 @@ if [ ! -e $INC/phen ]; then
 fi
 
 
-section "Quality of the initial tree ..."
+section "Quality of the initial tree"
 VER=`cat $INC/version`
 $THIS/tree2obj.sh $INC/hist/tree.1 > $INC/_init.list
 LARGE=0

@@ -34,7 +34,7 @@ if [ -e $INC/dissim.add ]; then
 fi
 
 
-section "new/ -> search/ ..."
+section "new/ -> search/"
 $THIS/distTree_inc_new_list.sh $INC > $INC/search.list
 OBJS=`cat $INC/search.list | wc -l`
 wc -l $INC/search.list
@@ -57,7 +57,7 @@ $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
 rm $INC/search.list
 
 
-section "search/ -> leaf, dissim ..."
+section "search/ -> leaf, dissim"
 
 N=`ls $INC/search/ | wc -l`
 if [ $N -gt 0 ]; then
@@ -93,7 +93,7 @@ while [ $ITER -le $ITER_MAX ]; do
   fi
 
 	ITER=$(( $ITER + 1 ))
-  section "Iteration $ITER / $ITER_MAX ..."
+  section "Iteration $ITER / $ITER_MAX"
   # use distTree_inc_request2dissim.sh ??
   REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
   echo "# Requests: $REQ"
@@ -121,17 +121,17 @@ while [ $ITER -le $ITER_MAX ]; do
 
   $THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
 
-  echo "Processing new objects ..."
+  echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
 rm $INC/dissim.add
 
 
-section "leaf -> tree ..."
+section "leaf -> tree"
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE  -noqual  -output_tree $OUT
 mv $INC/leaf $PLACEMENT
 cp /dev/null $INC/leaf
 
 
-section "QC ..."
+section "QC"
 $INC/qc.sh go
