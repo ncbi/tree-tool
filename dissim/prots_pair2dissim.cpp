@@ -43,6 +43,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 #undef HMM  // ??
@@ -92,6 +93,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Compute dissimilarity between proteins")
     {
+      version = VERSION;
   	  // Input
   	  addPositional ("prot_info", "List of target protein identifiers in <FASTA1> and <FASTA2> with optional means and variances of logarithmized alignment scores");
   	  addPositional ("in", "File with pairs of protein FASTA file names. Protein sequences may contain stop codons");
