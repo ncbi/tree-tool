@@ -99,7 +99,7 @@ struct ObjFeature : Named
       trim (name);
     }
   ObjFeature (const string &name_arg,
-           bool optional_arg)
+              bool optional_arg)
     : Named (name_arg)
     , optional (optional_arg)
     {}
@@ -123,7 +123,7 @@ struct ObjFeatureVector : Vector<ObjFeature>
 private:
   static map<string,ObjFeatureVector> cache;
 public:
-  static const ObjFeatureVector& getCache  (const string &fName);
+  static const ObjFeatureVector& getCache (const string &fName);
 };
 
 
