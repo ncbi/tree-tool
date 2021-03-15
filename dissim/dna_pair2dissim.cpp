@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace Seq_sp;
 #include "align.hpp"
 using namespace Align_sp;
+#include "../version.inc"
 
 
 
@@ -65,6 +66,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Align and compute dissimilarity for a pair of DNA sequences")
     {
+      version = VERSION;
   	  addPositional ("pairs", "File with pairs of DNA file names");
   	  addPositional ("dnaDir", "Directory with DNA sequences");
   	  addPositional ("align_len_min", "Min. sequence length");
