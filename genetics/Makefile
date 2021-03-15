@@ -40,6 +40,7 @@ all:	\
 	kmerIndex_make \
 	kmerIndex_stat \
 	mlst2hash \
+	mutation_dna2prot \
 	mutation_tab \
 	orf2prot \
 	prot2fingerprints \
@@ -230,6 +231,12 @@ mlst2hash.o:  $(COMMON_HPP)
 mlst2hashOBJS=mlst2hash.o $(CPP_DIR)/common.o
 mlst2hash:	$(mlst2hashOBJS)
 	$(CXX) -o $@ $(mlst2hashOBJS) $(LIBS) 
+	$(ECHO)
+
+mutation_dna2prot.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
+mutation_dna2protOBJS=mutation_dna2prot.o $(SEQ_OBJ)
+mutation_dna2prot:	$(mutation_dna2protOBJS)
+	$(CXX) -o $@ $(mutation_dna2protOBJS) $(LIBS) 
 	$(ECHO)
 
 mutation_tab.o:	$(COMMON_HPP) 
