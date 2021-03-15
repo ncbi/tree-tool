@@ -100,7 +100,7 @@ struct Align : Root
 	       bool semiglobal_arg,
 	       size_t match_len_min,
 	       size_t band);
-	  // Input: band => us banded aligner
+	  // Input: band => use banded aligner
 	void saveText (ostream &os) const override
 	  { os << tr << endl
 	  	   <<        score 
