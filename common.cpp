@@ -1217,7 +1217,7 @@ Threads::Threads (size_t threadsToStart_arg,
 		
 	threads. reserve (threadsToStart);
 	
-	if (! quiet && verbose (1))
+	if (! quiet && verbose (1) && threadsToStart)
     cerr << "# Threads started: " << threadsToStart + 1 << endl;
 }	
 
