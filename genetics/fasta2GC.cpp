@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace Seq_sp;
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
+#include "../version.inc"
 
 
 
@@ -53,6 +54,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print " + dmSuff + "-file with GC% of DNA sequences")
     {
+      version = VERSION;
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with DNA sequences");
     }
 

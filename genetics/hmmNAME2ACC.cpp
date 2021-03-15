@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "../version.inc"
 
 
 
@@ -49,6 +50,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Add ACC=NAME in an HMM library")
   	{
+      version = VERSION;
   	  addPositional ("in", "Input NCBI HMM library");
   	  addPositional ("out", "Output NCBI HMM library");
   	}

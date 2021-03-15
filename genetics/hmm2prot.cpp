@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace DM_sp;
 #include "hmm.hpp"
 using namespace Hmm_sp;
+#include "../version.inc"
 
 
 
@@ -80,6 +81,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	  : Application ("Find new seeds for a set of HMMs")
 	  {
+      version = VERSION;
 		  addPositional ("hmmsearch", "Output of hmmsearch");
 		  addPositional ("dir", "Directory for output files with ordered seed ids");
 	  }

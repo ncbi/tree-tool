@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -88,6 +89,7 @@ struct ThisApplication : Application
   ThisApplication ()
   : Application ("Print hash codes for CDSs or proteins")
   { 
+    version = VERSION;
   	// Input
 	  addPositional ("in", "Multi-FASTA file");
 	  addKey ("gene_finder", "Gene finder used to find CDSs: " + gene_finders. toString (", "));

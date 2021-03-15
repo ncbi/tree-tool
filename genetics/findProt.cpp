@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -77,6 +78,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print protein sequence closest to a target")
 	  {
+      version = VERSION;
 		  addPositional ("in",  "Multi-FASTA file with proteins");
 		  addPositional ("target", "FASTA file with a target protein");
 	  }

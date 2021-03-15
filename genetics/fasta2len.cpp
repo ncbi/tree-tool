@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print lengths of DNA or protein sequences")
     {
+      version = VERSION;
   	  addPositional ("in", "FASTA file");
   	  addFlag ("aa", "Protein sequence, otherwise DNA");
   	  addKey ("min_len", "Min. length", "0");

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print a DNA multi-fasta file as pairs: <id> <sequence>")
   	{
+      version = VERSION;
   	  addPositional ("in", "Input multi-fasta file with DNA sequences");
   	}
 

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -54,6 +55,7 @@ struct ThisApplication : Application
 Time: O(n), where n is the number of sequences, assuming constant average length of sequences and sequence identifiers\
 ")
     {
+      version = VERSION;
   	  addPositional ("kmer_index", "K-mer index file name");
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with DNA sequences");  
     }

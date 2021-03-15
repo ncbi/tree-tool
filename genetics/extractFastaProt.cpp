@@ -39,6 +39,8 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
+
 
 
 
@@ -77,6 +79,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print protein sequences which are [not] in the target list")
 	  {
+      version = VERSION;
 		  addPositional ("in",  "Input FASTA file with proteins");
 		  addPositional ("target", "File with line format: <sequence id> [<replacement id> [<from> <to>]] [...]");
 		  addFlag ("remove", "Target list must be removed from the input file, otherwise only the target list is saved");

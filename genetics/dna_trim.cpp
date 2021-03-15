@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Update a DNA sequence by trimming head and tail")
     {
+      version = VERSION;
   	  addPositional ("in", "DNA FASTA file with a DNA sequence");
   	  addPositional ("head", "Head length");
   	  addPositional ("tail", "Tail length");

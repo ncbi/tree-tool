@@ -45,6 +45,7 @@ using namespace DM_sp;
 using namespace Seq_sp;
 #include "hmm.hpp"
 using namespace Hmm_sp;
+#include "../version.inc"
 
 
 
@@ -206,6 +207,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find TC1 for an HMM")
 	  {
+      version = VERSION;
 		  addKey ("hmmsearch", "Output of hmmsearch of <seqFName> against one HMM");
 		  addKey ("error_max", "Max. error fraction w.r.t. seeds to be \"good\"", "0");
 		  addKey ("seqFName", "File with seed protein sequences");

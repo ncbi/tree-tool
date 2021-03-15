@@ -39,6 +39,8 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
+
 
 
 namespace 
@@ -50,6 +52,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	  : Application ("Print DNA sequences which are [not] in the target list")
 	  {
+      version = VERSION;
 		  addPositional ("in",  "Input FASTA file with DNAs");
 		  addPositional ("target", "List of sequence ids");
 		  addFlag ("remove", "Target list must be removed from the input file, otherwise only the target list is printed");

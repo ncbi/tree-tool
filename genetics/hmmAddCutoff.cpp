@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "../version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	  : Application ("Add cutoffs to an HMM library")
 		{
+      version = VERSION;
 		  addPositional ("in", "Input HMM library");
 		  addPositional ("cutoffFile", "File with lines: <hmmName> <cuttoff> ...");
 		  addPositional ("type", "Cutoff type: TC|GA|NC");

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -54,6 +55,7 @@ struct ThisApplication : Application
 Time: O(log n), where n is the number of DNA sequences in the index\
 ")
     {
+      version = VERSION;
   	  addPositional ("kmer_index", "DNA k-mer index file name");
   	  addPositional ("FASTA", "Input DNA sequence");  
   	  addPositional ("top", "Number of closest sequence identifiers to print");

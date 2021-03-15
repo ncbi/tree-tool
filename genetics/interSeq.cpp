@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -62,6 +63,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print identical (intersection) sequences in 2 FASTA files: <seqid of in1> <seqid of in2>")
 	  {
+      version = VERSION;
 		  addPositional ("in1", "Input FASTA file 1");
 		  addPositional ("in2", "Input FASTA file 2");
 		  addFlag ("aa", "Sequences are proteins, otherwise DNA");

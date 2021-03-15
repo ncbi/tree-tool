@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Cut a segment out of a DNA sequence")
     {
+      version = VERSION;
   	  addPositional ("in", "DNA FASTA file with one sequence");
   	  addPositional ("start", "Start position of a segment, 1-based");
   	  addPositional ("stop", "Stop position of a segment, >= start position");

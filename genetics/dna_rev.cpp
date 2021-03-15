@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	  : Application ("Reverse-complement a DNA")
 		{
+      version = VERSION;
 		  addPositional ("in", "Input FASTA file with a DNA sequence");
 		}
 

@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "../version.inc"
 
 
 
@@ -120,6 +121,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find coverage of DNA")
     {
+      version = VERSION;
       addPositional ("in", "BLASTN output in format: " XSTR(FORMAT) ", sorted by sseqid");
       addFlag ("plasmid", "Report plasmid name");
     }

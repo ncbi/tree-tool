@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "hmm.hpp"
 using namespace Hmm_sp;
+#include "../version.inc"
 
 
 
@@ -72,6 +73,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Select a best protein hit for each HMM. Print: <protein> <HMM> <score> <ali_from> <ali_to>")
   	{
+      version = VERSION;
   	  addPositional ("tblout", "hmmsearch --tblout result");
   	  addKey ("domtblout", "hmmsearch --domtblout result");
   	}

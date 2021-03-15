@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -57,6 +58,7 @@ struct ThisApplication : Application
 	  : Application ("Create a FASTA file <fasta>.out where each identifier is prepended by a new gi starting from <min_gi>")
            //"Create the map file <fasta>.map"; 
 	  {
+      version = VERSION;
 		  addPositional ("fasta", "Input FASTA file");
 		  addPositional ("min_gi", "Min. gi");
 		  addFlag ("aa", "Amino acid sequence, otherwise nucleotide");
