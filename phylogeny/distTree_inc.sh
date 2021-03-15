@@ -25,7 +25,7 @@ QC=1
 
 
 if [ $QC == 1 ]; then
-  section "QC ..."
+  section "QC"
   $INC/qc.sh go
 fi
 
@@ -91,17 +91,17 @@ mv $INC/tree.new $INC/tree
 #tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
 if [ -e $INC/outlier-genogroup ]; then
-  section "Database: genogroup outliers ..."
+  section "Database: genogroup outliers"
   $INC/objects_in_tree.sh $INC/outlier-genogroup null
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
 
 if [ $QC == 1 ]; then
-  section "QC ..."
+  section "QC"
   $INC/qc.sh go
 fi
-section "Tree QC ..."
+section "Tree QC"
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
   VER=`cat $INC/version`
@@ -125,7 +125,7 @@ if [ -e $INC/phen ]; then
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
 	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
 
-	section "Setting root and sorting ..."
+	section "Setting root and sorting"
   if [ ! $NEW_ROOT ]; then
     NEW_ROOT=$OLD_ROOT
   fi
@@ -138,7 +138,7 @@ if [ -e $INC/phen ]; then
 
   if [ -n "$RELDIR" ]; then
     echo ""
-    section "Release ..."
+    section "Release"
     if [ ! -e $RELDIR ]; then
       error "$RELDIR does not exist"
     fi

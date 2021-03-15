@@ -13,7 +13,7 @@ OBJS=$2
 
 
 #if false; then  
-section "QC $INC/ ..."
+section "QC $INC/"
 if [ -s $INC/tree ]; then
   echo "$INC/tree must be empty"
   exit 1
@@ -28,21 +28,21 @@ fi
 
 $THIS/../sort.sh $OBJS
 
-section "Computing dissimilarities ..."
+section "Computing dissimilarities"
 $THIS/../list2pairs $OBJS > $INC/dissim_request
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.raw
 rm $INC/dissim_request
 cat $INC/dissim.raw | grep -vwi "nan" | grep -vwi "inf" > $INC/dissim
 rm $INC/dissim.raw
 
-section "data.dm ..."
+section "data.dm"
 $THIS/../dm/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
 set +o errexit
 grep -wic 'nan' $INC/../data.dm
 set -o errexit
 
-section "Outliers ..."
+section "Outliers"
 $THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
 
 $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
@@ -53,7 +53,7 @@ rm $INC/outlier-alien
 
 HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 if [ $HYBRIDNESS_MIN != 0 ]; then
-  section "distTriangle ..."
+  section "distTriangle"
  #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
   mkdir $INC/clust
   $THIS/../dm/distTriangle $INC/../data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new
@@ -65,14 +65,14 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   mv $INC/clust/1/data.dm $INC/../data.dm
   rm -r $INC/clust/
   $THIS/../dm/dm2objs $INC/../data | sort > $INC/tree.list  
-  section "Hybrid ..."
+  section "Hybrid"
 	$THIS/distTree_inc_hybrid.sh $INC 
- #echo "Unhybrid ..."
+ #echo "Unhybrid"
  #$THIS/distTree_inc_unhybrid.sh $INC 
 fi
 
 
-section "Tree ..."
+section "Tree"
 HYBRID=""
 if [ $HYBRIDNESS_MIN != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
@@ -81,12 +81,12 @@ fi
 VARIANCE=`cat $INC/variance`
 $THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
-section "Database ..."
+section "Database"
 $INC/objects_in_tree.sh $INC/tree.list 1
 if [ $HYBRIDNESS_MIN != 0 ]; then
-  section "Hybrid ..."
+  section "Hybrid"
 	$THIS/distTree_inc_hybrid.sh $INC
- #echo "Unhybrid ..."
+ #echo "Unhybrid"
  #$THIS/distTree_inc_unhybrid.sh $INC
 fi
 
@@ -96,7 +96,7 @@ cp $INC/tree $INC/hist/tree.1
 
 
 if [ -e $INC/phen ]; then
-  section "Quality ..."
+  section "Quality"
   LARGE=0
   if [ -e $INC/large ]; then
     LARGE=1
