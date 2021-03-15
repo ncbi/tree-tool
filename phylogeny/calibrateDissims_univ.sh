@@ -30,7 +30,7 @@ TMP=`mktemp`
 echo $TMP 
 
 
-section "Estimating hmm-univ.stat ..."
+section "Estimating hmm-univ.stat"
 $THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -ignoreZero  -output_dissim $TMP.pairs > positiveAverage.out
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
 $THIS/../dm/pairs2dm $TMP.pairs 1 cons 6  -distance > $TMP.dm
@@ -49,10 +49,10 @@ if [ $DISSIM_COEFF == 0 ]; then
   DISSIM_COEFF_OPTION=""
 fi
 
-section "Building tree ..."
+section "Building tree"
 $THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  -subgraph_iter_max 10  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree  
 
-section "Evaluating tree ..."
+section "Evaluating tree"
 $THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -large  -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual
 
 

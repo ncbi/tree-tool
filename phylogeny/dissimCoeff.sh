@@ -20,14 +20,14 @@ VARIANCE=$5
 TMP=`mktemp`
 
 
-section "Building tree ..."
+section "Building tree"
 echo "dissim_power = $DISSIM_POWER"
 echo "dissim_coeff = $DISSIM_COEFF"
 echo "variance     = $VARIANCE"
 $THIS/makeDistTree  -threads 5  -data $DATA  -dissim_attr cons  -dissim_power $DISSIM_POWER  -dissim_coeff $DISSIM_COEFF  -variance $VARIANCE  \
   -optimize  -subgraph_iter_max 10  -noqual  -output_tree $TMP.tree  -output_feature_tree $TMP.feature_tree
 
-section "Evaluating tree ..."
+section "Evaluating tree"
 $THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -nominal_singleton_is_optional  -qual $TMP.qual
 
 

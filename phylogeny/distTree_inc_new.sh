@@ -62,7 +62,7 @@ echo $VER > $INC/version
 super_section "version: $VER"
 
 
-section "new/ -> search/ ..."
+section "new/ -> search/"
 echo "# Objects in tree: $OBJS"  
 echo "To add at this step: $ADD"
 
@@ -80,7 +80,7 @@ $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
 rm $INC/search.list
 
 
-section "search/ -> leaf, dissim ..."
+section "search/ -> leaf, dissim"
 
 N=`ls $INC/search/ | wc -l`
 if [ $N -gt 0 ]; then
@@ -116,7 +116,7 @@ while [ $ITER -le $ITER_MAX ]; do
   fi
 
 	ITER=$(( $ITER + 1 ))
-  section "Iteration $ITER / $ITER_MAX ..."
+  section "Iteration $ITER / $ITER_MAX"
   # use distTree_inc_request2dissim.sh ??
   REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
   echo "# Requests: $REQ"
@@ -144,12 +144,12 @@ while [ $ITER -le $ITER_MAX ]; do
 
   $THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
 
-  echo "Processing new objects ..."
+  echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
 
 
-section "leaf, dissim.add -> tree, dissim ..."
+section "leaf, dissim.add -> tree, dissim"
 
 wc -l $INC/dissim.add
 cat $INC/dissim.add >> $INC/dissim
@@ -177,7 +177,7 @@ REINSERT=""
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == 0 ]; then  # PAR
   REINSERT="-reinsert"
-  warning "Reinsert\nTree quality will temporarily get lower due to missing dissimilarities to close tree neighbors"
+  warning "REINSERT\nTree quality temporarily lowers due to missing dissimilarities to close tree neighbors"
 fi
 
 # Time: O(n log^4(n)) 
@@ -194,21 +194,21 @@ cp /dev/null $INC/leaf
 mv $INC/tree.new $INC/tree
 
 if [ -s $INC/hist/leaf.$VER ]; then
-  section "Database: new -> tree ..."
+  section "Database: new -> tree"
   cut -f 1 $INC/hist/leaf.$VER | sort > $INC/leaf.list
   $INC/objects_in_tree.sh $INC/leaf.list 1
   rm $INC/leaf.list
 fi
 
 if [ -e $INC/outlier-genogroup ]; then
-  section "Database: genogroup outliers ..."
+  section "Database: genogroup outliers"
   wc -l $INC/outlier-genogroup
   $INC/objects_in_tree.sh $INC/outlier-genogroup null
   mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
 fi
 
 if [ -e $INC/outlier-criterion ]; then
-  section "Database: criterion outliers ..."
+  section "Database: criterion outliers"
   wc -l $INC/outlier-criterion
   $INC/objects_in_tree.sh $INC/outlier-criterion null
   $THIS/../trav $INC/outlier-criterion "$INC/outlier2db.sh %f criterion"  
@@ -216,7 +216,7 @@ if [ -e $INC/outlier-criterion ]; then
 fi
 
 if [ -e $INC/outlier-deformation ]; then
-  section "Database: deformation outliers ..."
+  section "Database: deformation outliers"
   wc -l $INC/outlier-deformation
   $INC/objects_in_tree.sh $INC/outlier-deformation null
   $THIS/../trav $INC/outlier-deformation "$INC/outlier2db.sh %f deformation"  
@@ -224,16 +224,16 @@ if [ -e $INC/outlier-deformation ]; then
 fi
 
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
-  section "Hybrid ..."
+  section "Hybrid"
 	$THIS/distTree_inc_hybrid.sh $INC 
- #echo "Unhybrid ..."
+ #echo "Unhybrid"
  #$THIS/distTree_inc_unhybrid.sh $INC 
 fi
 
 # Must be the last database change in this script
 GENOGROUP_BARRIER=`cat $INC/genogroup_barrier`
 if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
-  section "New genogroup outliers ..."
+  section "New genogroup outliers"
   $THIS/tree2genogroup $INC/tree  $GENOGROUP_BARRIER  -genogroup_table $INC/genogroup_table
   $INC/genogroup2db.sh $INC/genogroup_table > $INC/outlier-genogroup  
   mv $INC/genogroup_table $INC/hist/genogroup_table.$VER
@@ -246,7 +246,7 @@ if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
 fi
 
 
-section "Additional requests ..."
+section "Additional requests"
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.add-req
 if [ -s $INC/dissim.add-req ]; then
   grep -vwi nan $INC/dissim.add-req | grep -vwi inf >> $INC/dissim
@@ -258,7 +258,7 @@ rm $INC/dissim_request
 $THIS/distTree_inc_tree1_quality.sh $INC
 
 
-section "QC ..."
+section "QC"
 $INC/qc.sh go
 
 

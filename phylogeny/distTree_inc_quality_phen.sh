@@ -44,8 +44,7 @@ if [ ! -s $TMP.test ]; then
   cp $1/hist/tree.$2 $TMP.tree
 	$THIS/makeDistTree  -input_tree $TMP.tree  -output_feature_tree $TMP.feature_tree1 | grep "# Discernible leaves:"
 else
-	echo ""
-	echo "Complete optimization  ..."
+	section "Complete optimization"
 	cat $TMP.init >> $TMP.test
 	sort.sh $TMP.test
 	$THIS/../list2pairs $TMP.test > $TMP.pairs
