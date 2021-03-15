@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print all ORFs between stop codons")
 	  {
+      version = VERSION;
 	  	addPositional ("in", "Input DNA multi-FASTA file");
 	  	addPositional ("gencode", "NCBI genetic code");
 	  	addPositional ("len_min", "Min. ORF length without 'X'");

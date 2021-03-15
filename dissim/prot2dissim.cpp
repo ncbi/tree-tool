@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -63,6 +64,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Align and compute dissimilarity for a pair of proteins")
     {
+      version = VERSION;
   	  addPositional ("FASTA1", "FASTA file 1 with a protein sequence");
   	  addPositional ("FASTA2", "FASTA file 1 with a protein sequence");
   	  addPositional ("mat", "Amino acid substution matrix");

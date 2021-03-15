@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "../dm/numeric.hpp"
 using namespace DM_sp;
+#include "../version.inc"
 
 
 
@@ -639,6 +640,7 @@ struct ThisApplication : Application
 Console input: BLASTN HSP: 'qseqid sseqid qstart qend sstart send nident length qseq sseq' (capital letters)\n\
 Print: <jc_whole> [<jc_ave> <jc_sd/jc_ave>] <jc_cluster_ave>")
   { 
+    version = VERSION;
 	  addPositional ("piece_len", "Minimum piece length");
 	  addFlag ("cut", "cut into pieces of <piece_len>: if true then 'qseq sseq' should be absent, only 3rd codon positions in reduced alphabet (M/not M) are used");
 	  addFlag ("print_matches", "print matching nt pairs (if <cut>)");

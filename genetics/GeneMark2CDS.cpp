@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -229,6 +230,7 @@ struct ThisApplication : Application
   ThisApplication ()
   : Application ("Save CDSs predicted by GeneMark; FASTA description contains: trunc5:(0/1) trunc3:(0/1) ")
   { 
+    version = VERSION;
 	  addPositional ("fasta", "FASTA DNA file");
 	  addPositional ("annot", "GeneMark file with annotations");
 	  addFlag ("gtf", "<annot> is a GeneMark .gtf-file, otherwise a GeneMark .lst-file");

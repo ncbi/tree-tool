@@ -40,6 +40,7 @@ using namespace Common_sp;
 #include "../dm/numeric.hpp"
 #include "../dm/matrix.hpp"
 using namespace DM_sp;
+#include "../version.inc"
 
 
 
@@ -343,6 +344,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("For multiple BLASTP HSPs with the same queries and subjects: trim bad ends and merge the HSPs\nPrint: qseqid sseqid ident_frac p_target_coverage p_ref_coverage")
     {
+      version = VERSION;
       // Input
       const string blastFormat ("qseqid sseqid length nident qstart qend qlen sstart send slen sseq qseq");
       addPositional ("blastp", "blastp output in the format: " + blastFormat + "\nSorted by qseqid, sseqid"); 

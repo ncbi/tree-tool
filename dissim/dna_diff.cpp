@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print the number of nucleotide differences between two DNA sequences, case-insensitive")
 	  {
+      version = VERSION;
 	  	addPositional ("in", "Input file with two DNA sequences");
 	  }
 

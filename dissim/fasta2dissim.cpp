@@ -43,6 +43,7 @@ using namespace DM_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
 #include "align.hpp"
+#include "../version.inc"
 
 
 
@@ -59,6 +60,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Create a dataset with a dissimilarity attribute \"" + attrName + "\" of a collection of DNA or proteins or print: <obj1> <obj2> <dissim> <score> <self-score1> <self-score2>")
     {
+      version = VERSION;
   	  // Input
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with DNA or protein sequences");
   	  addFlag ("aa", "Amino-acid (protein) sequences, otherwise DNA");

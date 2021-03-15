@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Compute statistics for a DNA multi-FASTA file: length, ambiguities fraction, GC fraction, octamers fraction")
 	  {
+      version = VERSION;
 	  	addPositional ("in", "Input DNA multi-FASTA file");
 	  	addFlag ("acgt", "Add A, C, G and T fractions");
 	  }

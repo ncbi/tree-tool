@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -53,6 +54,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	  : Application ("Convert a BLAST similarity matrix to a distance matrix, analyze")
 	  {
+      version = VERSION;
 		  addPositional ("mat", "File with a BLAST score matrix"); 
 		  addPositional ("gap", "Gap cost, >= 0");
 		  addPositional ("gap_open", "Gap open cost, >= 0");
