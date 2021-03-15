@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -54,6 +55,7 @@ struct ThisApplication : Application
 Index size = O(n), where n is the number of sequences.\
 ")  // ??
     {
+      version = VERSION;
   	  addPositional ("kmer_index", "K-mer index file name");
   	  addPositional ("kmer_size", "K-mer size (1..14)");
     }

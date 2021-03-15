@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -62,6 +63,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print unique sequences")
 	  {
+      version = VERSION;
 		  addPositional ("in", "Input FASTA file");
 		  addFlag ("aa", "Sequences are proteins, otherwise DNA");
 		  addKey ("pair", "Replacement id pairs: <redundant id> <tab> <main id>");

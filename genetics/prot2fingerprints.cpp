@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -72,6 +73,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find the triplet fingerprints of proteins")
     {
+      version = VERSION;
   	  addPositional ("in", "Input file of proteins");
   	  addPositional ("triplets", "Input file with triplet statistics");
   	  addPositional ("out_dir", "Output directory for proteins");

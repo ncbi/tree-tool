@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print unique protein sequences not present in the reference set")
 	  {
+      version = VERSION;
 		  addPositional ("in", "Input FASTA file with proteins");
 		  addPositional ("ref", "Reference FASTA file with proteins");
 	  }

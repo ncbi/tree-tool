@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print statsitics of DNA k-mer index")
     {
+      version = VERSION;
   	  addPositional ("kmer_index", "DNA k-mer index file name");
     }
 

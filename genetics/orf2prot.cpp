@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Convert ORFs into proteins")
     {
+      version = VERSION;
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with ORFs");
   	  addFlag ("no_stop", "It is allowed to miss the stop codon");
   	  addKey ("error", "File with errors", "");

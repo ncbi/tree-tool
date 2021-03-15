@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -50,6 +51,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find proteins in <short> which are substrings of proteins in <in>")
     {
+      version = VERSION;
   	  addPositional ("in", "FASTA file with all proteins");
   	  addPositional ("short", "FASTA file with short proteins");
     }

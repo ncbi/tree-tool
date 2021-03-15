@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "hmm.hpp"
 using namespace Hmm_sp;
+#include "../version.inc"
 
 
 
@@ -52,6 +53,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	  : Application ("Print HMM signature for each protein")
 	  {
+      version = VERSION;
 		  addPositional ("hmmsearch", "Output of hmmsearch");
 	  }
 

@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find best annotation and print proteins")
     {
+      version = VERSION;
   	  addPositional ("dna", "DNA multi-FASTA file used fro TBLASTN");
   	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid length positive qstart qend sstart send slen sseq");
   	  addPositional ("gencode", "Genetic code");

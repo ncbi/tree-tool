@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "../version.inc"
 
 
 
@@ -240,6 +241,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print mutations table in a tab-delimited fromat")
     {
+      version = VERSION;
       addPositional ("blastp", "blastp output in the format: qseqid qseq sseq. qseqid has format: accession|.... Sequences should have flanking stop codons");
       addPositional ("ref_accession", "Accession of the reference protein");
       addPositional ("metadata_headers", "Column names for metadata, separated by '|'");

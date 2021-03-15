@@ -37,6 +37,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "../version.inc"
 
 
 
@@ -70,6 +71,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print 64-bit MLST hashes")
     {
+      version = VERSION;
       addPositional ("loci", "Number of MLST loci");
       addPositional ("blastn", "BLASTN output in the format: qseqid sseq");  
       addPositional ("out", "Output file with 64-bit MLST hash, or " + strQuote (noType) + " if type cannot be computed");

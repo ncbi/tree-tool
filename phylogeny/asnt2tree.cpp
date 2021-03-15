@@ -42,6 +42,7 @@ using namespace DM_sp;
 #include "distTree.hpp"
 #include "asn.hpp"
 using namespace DistTree_sp;
+#include "../version.inc"
 
 
 
@@ -124,6 +125,7 @@ struct ThisApplication : Application
 	ThisApplication ()
 	: Application ("Convert a tree in textual ASN.1 format to internal format")
 	{
+    version = VERSION;
 	  // Input
 	  addPositional ("input_tree", "Tree in textual ASN.1 format (BioTreeContainer)");
 	  addKey ("feature", "Output file with features");

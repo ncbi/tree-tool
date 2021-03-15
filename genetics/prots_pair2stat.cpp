@@ -41,6 +41,7 @@ using namespace Common_sp;
 using namespace Seq_sp;
 #include "../dm/numeric.hpp"
 using namespace DM_sp;
+#include "../version.inc"
 
 
 
@@ -105,6 +106,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Compute amino acid substitution statistic")
   {
+    version = VERSION;
 	  addPositional ("pairs_dist", "File with lines: <Alignment file1> <Alignment file2> <evolution distance>");
   }
 

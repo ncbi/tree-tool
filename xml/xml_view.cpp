@@ -38,6 +38,8 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
+#include "../version.inc"
+
 
 // ftp://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
 // Old: ftp://ftp.gnu.org/pub/gnu/ncurses/ncurses.tar.gz
@@ -174,6 +176,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("View an XML file")
   	{
+      version = VERSION;
   	  addPositional ("xml", "XML file");
   	}
 

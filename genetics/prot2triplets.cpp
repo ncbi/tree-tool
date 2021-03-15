@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -55,6 +56,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("AA tiplet statistics. Create file \"" + shortFName + "\" with short proteins")
     {
+      version = VERSION;
   	  addPositional ("in", "Input FASTA file of proteins");
     }
 

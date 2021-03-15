@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print FASTA file with replaced names of sequences")
     {
+      version = VERSION;
   	  addPositional ("in", "FASTA file");
   	  addPositional ("pair", "Old - new name pairs");
   	  addFlag ("aa", "Protein sequence, otherwise DNA");

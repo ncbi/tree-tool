@@ -39,6 +39,7 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
 
 
 
@@ -51,6 +52,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Print FASTA file with replaced headers")
     {
+      version = VERSION;
   	  addPositional ("in", "FASTA file");
   	  addPositional ("headers", "Lines: <identifier> <new header>");
   	  addFlag ("aa", "Protein sequence, otherwise DNA");
