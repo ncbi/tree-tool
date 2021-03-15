@@ -11,7 +11,7 @@ IN=$1
 OUT=$2
 
 
-if [ $IN == $OUT ];
+if [ $IN == $OUT ]; then
   error "$IN = $OUT"
 fi
 
