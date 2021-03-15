@@ -95,8 +95,8 @@ mergeSimilarity:	$(mergeSimilarityOBJS)
 	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
 	$(ECHO)
 
-mutation2feature.o:  $(COMMON_HPP) 
-mutation2featureOBJS=mutation2feature.o $(CPP_DIR)/common.o
+mutation2feature.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
+mutation2featureOBJS=mutation2feature.o $(SEQ_OBJ)
 mutation2feature:	$(mutation2featureOBJS)
 	$(CXX) -o $@ $(mutation2featureOBJS) $(LIBS)
 	$(ECHO)

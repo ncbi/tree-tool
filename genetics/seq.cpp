@@ -1965,6 +1965,7 @@ Peptide Dna::makePeptide (Frame frame,
   const size_t aaSeqLen = seq. size () >= 3 ? (seq. size () - frameOffset) / 3 : 0;
 
   Peptide peptide (peptideName, aaSeqLen, false);
+  peptide. pseudo = true;
 
   // dna
   unique_ptr<Dna> compDna;
@@ -2015,11 +2016,9 @@ Peptide Dna::cds2prot (Gencode gencode,
       throw runtime_error (FUNC "no stop codon at the end");
 	  trimSuffix (pep. seq, "*");
   }
-  else   
-  {
+  if (! hasStopCodon)
 	  if (starPos != string::npos)
 	    throw runtime_error (FUNC "has a stop codon");
-  }
   
   return pep;
 }
@@ -2047,7 +2046,7 @@ Vector<Peptide> Dna::getOrfs (Frame frame,
   {
     const char aa = codon2aa (& dnaSeq [i], gencode, false);
     stop = i;
-    if (aa == '*')
+    if (aa == *terminator)
     {
       if (len >= len_min)
       {
@@ -2870,7 +2869,7 @@ PROBABILITY Dna::NucleotideFreqFrame (size_t        Start,
 
 
 static void Frame2Prob (Frame       frame,
-                     			PROBABILITY Prob [3] [4])
+                     	  PROBABILITY Prob [3] [4])
 // Output: Prob [] []
 {
   ASSERT (isFrame (frame));
@@ -2893,7 +2892,7 @@ static void Frame2Prob (Frame       frame,
 
 
 static Float _GetFrameProb (const uint        Y    [3] [4],
-                    			     const PROBABILITY Prob [3] [4])
+                    			  const PROBABILITY Prob [3] [4])
 // Return: probability * Const
 {
   PROBABILITY T = 1;
@@ -2907,7 +2906,7 @@ static Float _GetFrameProb (const uint        Y    [3] [4],
 
 
 static void GetFrameProb (const uint  Y [3] [4],
-                     			  PROBABILITY FrameProb [3])
+                     			PROBABILITY FrameProb [3])
 {
   PROBABILITY Prob [3] [4];
 
@@ -2928,8 +2927,8 @@ static void GetFrameProb (const uint  Y [3] [4],
 
 
 void Dna::GetOpenFrameProb (size_t        Start,
-                     			    size_t        Count,
-                     			    PROBABILITY FrameProb [3]) const
+                     			  size_t        Count,
+                     			  PROBABILITY FrameProb [3]) const
 {
   // Y
   uint Y [3] [4];  // frame, "acgt"
@@ -4379,6 +4378,135 @@ void Align::printAlignment (const string &seq1,
     cout << sStr << ' ' << sEnd << endl;
     cout << endl;
   }
+}
+
+
+
+
+// Mutation
+
+Mutation::Mutation (bool prot_arg,
+                    const string& line)
+: prot (prot_arg)
+{ 
+  string s (line);
+  trim (s);
+  
+  const size_t dash_pos = s. find ('-');
+  
+  // geneName
+  if (dash_pos != string::npos)
+  {
+    geneName = s. substr (0, dash_pos);
+    QC_ASSERT (! geneName. empty ());
+  }
+
+  // ref, pos, allele
+  const size_t refStart = dash_pos == string::npos ? 0 : (dash_pos + 1);
+  size_t posStart = no_index;
+  size_t alleleStart = no_index;
+  FFOR_START (size_t, i, refStart, s. size ())
+    if (isDigit (s [i]))
+    {
+      if (posStart == no_index)
+        posStart = i;
+    }
+    else
+    {
+      if (posStart != no_index)
+        if (alleleStart == no_index)
+        {
+          alleleStart = i;
+          break;
+        }
+    }
+  QC_ASSERT (refStart < posStart);
+  QC_ASSERT (posStart < alleleStart);
+  QC_ASSERT (alleleStart < s. size ());
+  ref    =                s. substr (refStart, posStart - refStart);
+  pos    = (size_t) stoi (s. substr (posStart, alleleStart - posStart));
+  allele =                s. substr (alleleStart);
+  QC_ASSERT (pos);
+  pos--;
+
+  // frameshift, ambig 
+  if (prot)
+  {
+    if (ref == "ins")
+      ref. clear ();
+    if (allele == "del")
+      allele. clear ();
+    if (allele == "fs")
+    {
+      frameshift = true;
+      allele. clear ();
+    }
+    for (const char c : allele)
+      if (strchr (peptideWildcards, c))
+        ambig = true;
+  }
+  else
+  {
+    if (ref == "INS")
+      ref. clear ();
+    if (allele == "DEL")
+      allele. clear ();
+    for (const char c : allele)
+      if (strchr (dnaWildcards, c))
+        ambig = true;
+  }
+}
+
+
+
+void Mutation::qc () const
+{
+  if (! qc_on)
+    return;
+    
+  QC_IMPLY (! geneName. empty (), isIdentifier (geneName));
+  QC_ASSERT (pos != no_index);
+  
+  if (prot)
+  {
+    for (const char c : ref)
+      QC_ASSERT (c == *terminator || strchr (peptideAlphabet, c));
+    for (const char c : allele)
+      QC_ASSERT (strchr (extTermPeptideAlphabet, c));
+  }
+  else
+  {
+    for (const char c : ref)
+      QC_ASSERT (strchr (dnaAlphabet, c));
+    for (const char c : allele)
+      QC_ASSERT (strchr (extDnaAlphabet, c));
+  }
+
+  QC_IMPLY (! frameshift, ref != allele);
+  QC_IMPLY (frameshift, prot && allele. empty ());
+}
+
+
+
+bool Mutation::operator< (const Mutation& other) const
+{ 
+  LESS_PART (*this, other, prot);
+  LESS_PART (*this, other, geneName);
+  LESS_PART (*this, other, pos);
+  LESS_PART (*this, other, ref);
+  LESS_PART (*this, other, allele);
+  LESS_PART (*this, other, frameshift);
+  return false;
+}
+
+
+
+void Mutation::replace (Dna &refDna) const
+{
+  ASSERT (! prot);
+  ASSERT (stop () <= refDna. seq. size ());
+  ASSERT (refDna. seq. substr (pos, ref. size ()) == ref);
+  refDna. seq. replace (pos, ref. size (), allele);
 }
 
 

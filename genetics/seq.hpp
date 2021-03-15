@@ -443,6 +443,9 @@ char codon2aa (const char codon [3],
   // Return: in extTermPeptideAlphabet; lowercasePossibleStartcodon => lower-case
   // Requires: codon[] is in extDnaAlphabet
 
+inline size_t dna2codons_len (size_t dna_len)
+  { return dna_len ? (dna_len - 1) / 3 + 1 : 0; }
+
 #if 0
 inline bool CodonMatch (const char Codon1 [3],
            		           const char Codon2 [3])
@@ -564,8 +567,8 @@ struct Dna : Seq
                     bool trunc5,
                     bool trunc3,
 	                  bool hasStopCodon) const;
-	  // Return: no '*'
-	  // Invokes: makePeptide()
+	  // Return: if !trunc3 && hasStopCodon then no '*'
+	  // Invokes: makePeptide(1,gencode,true,true)
   Vector<Peptide> getOrfs (Frame frame,
                            Gencode gencode,
                            size_t len_min) const;
@@ -699,7 +702,7 @@ struct Dna : Seq
                      			         const char* Alphabet) const;
   void GetOpenFrameProb (size_t        Start,
 		                     size_t        Count,
-                     		 ROBABILITY FrameProb [3]) const;
+                     		 PROBABILITY FrameProb [3]) const;
     // Output: FrameProb []
 
   // Author: Max Troukhan
@@ -716,7 +719,7 @@ struct Dna : Seq
     //         CDS_Start < CDS_End
     // Return: true if Orf is found
   double CompareOrfs (const CodStatistics* StatTable1,
-                     const CodStatistics* StatTable2) const;
+                      const CodStatistics* StatTable2) const;
     // Return: Positive iff seq is more probable to be of organism of StatTable1
     //         CompareOrfs (a,b) = - CompareOrfs (b,a)
   double Orf2Strand (const CodStatistics* StatTable) const;
@@ -1220,6 +1223,93 @@ public:
 };
 
 
+
+struct Mutation : Root
+{
+  bool prot {false};
+  string geneName;
+    // May be empty()
+  // !prot => positive strand
+  size_t pos {no_index};
+    // In reference
+    // != no_index
+  string ref;
+  string allele;
+  bool frameshift {false};
+    // => prot
+  
+  bool ambig {false};
+    // Function of allele
+    
+
+  Mutation (bool prot_arg,
+            const string& line);
+  Mutation (string geneName_arg,
+            size_t pos_arg,
+            string ref_arg,
+            string allele_arg)
+    : geneName (geneName_arg)
+    , pos (pos_arg)
+    , ref (ref_arg)
+    , allele (allele_arg)
+    {}
+  Mutation (string geneName_arg,
+            size_t pos_arg,
+            string ref_arg,
+            string allele_arg,
+            bool frameshift_arg)
+    : prot (true)
+    , geneName (geneName_arg)
+    , pos (pos_arg)
+    , ref (ref_arg)
+    , allele (allele_arg)
+    , frameshift (frameshift_arg)
+    {}
+  Mutation () = default;
+  Mutation (const Mutation&) = default;
+  Mutation& operator= (const Mutation&) = default;
+  Mutation (Mutation&&) = default;
+  Mutation& operator= (Mutation&&) = default;
+  void qc () const override;
+  void saveText (ostream &os) const override
+    { if (prot)
+        os << geneName << '-' << nvl (ref, "ins") << pos + 1 << (frameshift ? "fs" : nvl (allele, "del")); 
+      else
+        os <<                    nvl (ref, "INS") << pos + 1 <<                      nvl (allele, "DEL"); 
+    }
+    
+
+  bool operator== (const Mutation& other) const
+    { return    prot       == other. prot
+             && geneName   == other. geneName
+             && pos        == other. pos
+             && ref        == other. ref
+             && allele     == other. allele
+             && frameshift == other. frameshift;
+    }
+  bool operator< (const Mutation& other) const;
+  struct Hash
+  { size_t operator() (const Mutation &mut) const
+      { static hash<string> strHash;
+        return   (size_t) mut. prot
+               ^ strHash (mut. geneName) 
+               ^          mut. pos 
+               ^ strHash (mut. ref) 
+               ^ strHash (mut. allele)
+               ^ (size_t) mut. frameshift;
+      }
+  };  
+  size_t stop () const
+    { return pos + ref. size (); }
+
+  // Requires: !prot
+  bool isFrameshift () const
+    { return difference (ref. size (), allele. size ()) % 3; }
+  void replace (Dna &refDna) const;
+    // Update: refDna
+};
+
+    
 
 struct KmerIndex : Named, Singleton<KmerIndex>
 // DNA k-mer index

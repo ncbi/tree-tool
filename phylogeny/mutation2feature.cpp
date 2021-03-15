@@ -37,6 +37,8 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
+#include "../genetics/seq.hpp"
+using namespace Seq_sp;
 #include "../version.inc"
 
 
@@ -46,110 +48,43 @@ namespace
   
   
  
-struct Mutation : Root
-{
-  size_t pos {no_index};
-    // In reference
-    // < no_index
-  string ref;
-  string allele;
-  
-  bool ambig {false};
-    // Function of allele
-  
+map<string/*Mutation::geneName*/,Vector<Vector<Mutation>>> gene2pos2muts;  
+  // !Mutation::ambig
 
-  explicit Mutation (const string& mut)
-    { size_t posStart = no_index;
-      size_t alleleStart = no_index;
-      FFOR (size_t, i, mut. size ())
-        if (isDigit (mut [i]))
-        {
-          if (posStart == no_index)
-            posStart = i;
-        }
-        else
-        {
-          if (posStart != no_index)
-            if (alleleStart == no_index)
-              alleleStart = i;
-        }
-      QC_ASSERT (posStart < alleleStart);
-      QC_ASSERT (alleleStart < no_index);
-      ref    =                mut. substr (0, posStart);
-      pos    = (size_t) stoi (mut. substr (posStart, alleleStart - posStart));
-      allele =                mut. substr (alleleStart);
-      ASSERT (pos < no_index);
-      QC_ASSERT (pos);
-      pos--;
-      if (ref == "INS")
-        ref. clear ();
-      if (allele == "DEL")
-        allele. clear ();
-      QC_ASSERT (! (ref. empty () && allele. empty ()));    
-      static const string acgt ("acgt");
-      for (const char c : ref)
-        QC_ASSERT (charInSet (c, acgt));
 
-      // ambig        
-      for (const char c : allele)
-        if (! charInSet (c, acgt))
-          ambig = true;
-    }
-  Mutation () = default;
-  Mutation (const Mutation& ) = default;
-  void saveText (ostream &os) const override
-    { os << nvl (ref, "INS") << pos + 1 << nvl (allele, "DEL"); }
-    
 
-  bool operator== (const Mutation& other) const
-    { return    pos    == other. pos
-             && ref    == other. ref
-             && allele == other. allele;
-    }
-  bool operator< (const Mutation& other) const
-    { LESS_PART (*this, other, pos);
-      LESS_PART (*this, other, ref);
-      LESS_PART (*this, other, allele);
-      return false;
-    }
-  struct Hash
-  {
-    size_t operator() (const Mutation &mut) const
-      { static hash<string> strHash;
-        return mut. pos ^ strHash (mut. ref) ^ strHash (mut. allele);
-      }
-  };  
-  size_t stop () const
-    { return pos + ref. size (); }    
-};
-
-  
-  
 void save (const Vector<Mutation> &muts, 
-           const Vector<Vector<Mutation>> &pos2muts,
            ostream &os) 
 { 
+  Set<Mutation> realMuts;
+  Set<Mutation> addedMuts;
   for (const Mutation& mut : muts)
     if (mut. ambig)
     {
+      const Vector<Vector<Mutation>>& pos2muts = gene2pos2muts [mut. geneName];      
       FFOR_START (size_t, i, mut. pos, min (mut. stop (), pos2muts. size ()))
-        for (const Mutation& other : pos2muts [i])
+        for (const Mutation& refMut : pos2muts [i])
         {
-          ASSERT (! other. ambig);
-          ASSERT (other. pos == i);
-          ASSERT (! muts. containsFast (other));
-          if (other. stop () <= mut. stop ())  // other.ref is inside mut.ref
+          ASSERT (! refMut. ambig);
+          ASSERT (refMut. pos == i);
+          if (muts. containsFast (refMut))
           {
-            other. saveText (os);
-            os << " 1" << endl;
+            ASSERT (mut. prot);
+            continue;
           }
+          if (refMut. stop () <= mut. stop ())  // refMut.ref is inside mut.ref
+            addedMuts << refMut;
         }
     }
     else
-    {
-      mut. saveText (os);
-      os << " 0" << endl;
-    }
+      realMuts << mut;
+    
+  // !Mutation::ambig
+  for (const Mutation& mut : realMuts)
+    os << mut << " 0" << endl;    
+  for (const Mutation& mut : addedMuts)
+    if (! realMuts. contains (mut))
+      os << mut << " 1" << endl;    
 }
 
   
@@ -158,11 +93,13 @@ void save (const Vector<Mutation> &muts,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert DNA mutations to 3-valued Boolean attributes of non-ambiguous mutations for makeFeatureTree")
+    : Application ("Convert mutations to 3-valued Boolean attributes of non-ambiguous mutations for makeFeatureTree")
 	  {
+      version = VERSION;
 	  	addPositional ("in", "Input directory with DNA mutations in the format <ref seq><ref pos><target seq>");
 	  	addPositional ("feature_dir", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
-	  	addFlag ("ambig5end", "Replace 5' end deletions by N-substitutions");
+	  	addFlag ("aa", "Mutations of protein sequences, otherwise of DNA sequences");
+	  	addFlag ("append", "Append existing files in <feature_dir>");
 	  }
 
 
@@ -171,15 +108,13 @@ struct ThisApplication : Application
   {
     const string inDirName  = getArg ("in");
     const string outDirName = getArg ("feature_dir");
-    const bool   ambig5end  = getFlag ("ambig5end");
+    const bool   aa         = getFlag ("aa");
+    const bool   append     = getFlag ("append");
 
 
     unordered_map<string,Vector<Mutation>> obj2muts;  obj2muts. rehash (100000);  // PAR
-    Vector<Vector<Mutation>> pos2muts;  // !ambig
-      // !Mutation::ambig
     {
-      size_t pos_max = 0;
-      unordered_set<Mutation,Mutation::Hash> allMuts;  allMuts. rehash (10000);  // PAR
+      map<string/*Mutation::geneName*/,unordered_set<Mutation,Mutation::Hash>> gene2muts;  
         // !Mutation::ambig
       {
         FileItemGenerator fig (1000, true, inDirName);  // PAR
@@ -191,20 +126,16 @@ struct ThisApplication : Application
             LineInput li (inDirName + '/' + fName);
             while (li. nextLine ())
             {
-              Mutation mut (li. line);
-              if (ambig5end && ! mut. pos)
-              {
-                if (mut. ref. empty ())
-                  continue;
-                mut. allele = mut. ref;
-                for (char& c : mut. allele)
-                  c = 'n';
-                mut. ambig = true;
-              }
+              Mutation mut (aa, li. line);
+              try { mut. qc (); }
+                catch (const exception &e)
+                  { throw runtime_error (fName + "\n" + li. line + "\n" + e. what ()); }
               if (! mut. ambig)
               {
-                allMuts. insert (mut);
-                maximize (pos_max, mut. pos);
+                unordered_set<Mutation,Mutation::Hash>& gene_muts = gene2muts [mut. geneName];
+                if (gene_muts. empty ())
+                  gene_muts. rehash (10000);  // PAR
+                gene_muts. insert (mut);
               }
               muts << move (mut);
             }
@@ -215,27 +146,37 @@ struct ThisApplication : Application
         }
       }
       cout << "Objects: " << obj2muts. size () << endl;
-      cout << "Mutations: " << allMuts. size () << endl;    
-      cout << "Max. position: " << pos_max + 1 << endl;
       
-      pos2muts. resize (pos_max + 1);
-      for (const Mutation& mut : allMuts) 
-        pos2muts [mut. pos] << mut;
+      // gene2pos2muts
+      for (const auto& it : gene2muts)
+      {
+        const unordered_set<Mutation,Mutation::Hash>& gene_muts = it. second;
+        ASSERT (! gene_muts. empty ());
+        size_t pos_max = 0;
+        const bool prot = (* gene_muts. begin ()). prot;
+        for (const Mutation& mut : gene_muts)
+        {
+          ASSERT (mut. prot == prot);
+          maximize (pos_max, mut. pos);
+        }
+        Vector<Vector<Mutation>>& pos2muts = gene2pos2muts [it. first];
+        pos2muts. resize (pos_max + 1);
+        for (const Mutation& mut : gene_muts) 
+          pos2muts [mut. pos] << mut;
+      }
     }
     
-    size_t pos_used = 0;
-    for (const auto& muts : pos2muts)
-      if (! muts. empty ())
-        pos_used++;
-    cout << "Positions: " << pos_used << endl;
     
     {
       Progress prog (obj2muts. size (), 100);  // PAR
       for (const auto& it : obj2muts)
       {
         prog (it. first);
-        OFStream of (outDirName + "/" + it. first);
-        save (it. second, pos2muts, of);
+        const ios_base::openmode mode = append ? ios_base::app : ios_base::out;
+        ofstream of (outDirName + "/" + it. first, mode);
+        try { save (it. second, of); }
+          catch (const exception &e)
+            { throw runtime_error (it. first + "\n" + e. what ()); }
       }
     }
   }  
