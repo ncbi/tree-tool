@@ -39,18 +39,21 @@
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+#include "../version.inc"
+
 
 
 
 namespace 
 {
-
-
+  
+  
 struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Split a multi-fasta file into a set of fasta files each containing one sequence")
   	{
+      version = VERSION;
   	  addPositional ("in", "Input multi-FASTA file");
   	  addPositional ("out_dir", "Output directory");
   	  addFlag ("aa", "Multi-FASTA file contains protein sequences, otherwise DNA sequences");
@@ -89,18 +92,18 @@ struct ThisApplication : Application
   	    ASSERT (! seq->name. empty ());
 		    if (seq->seq. size () < len_min)
 		    	continue;
-  	    string s (seq->name);
-		    s = findSplit (s);
-		    s = findSplit (s, '|');
-		    string dir (out_dir);
+        string s (seq->name);
+        s = findSplit (s);
+        s = findSplit (s, '|');
+        string dir (out_dir);
       #ifndef _MSC_VER
-		    if (large)
-		    {
-		      dir += "/" + to_string (str2hash_class (s));
-		      createDirectory (dir, true);
-		    }
-		  #endif
-  	    seq->saveFile (dir + "/" + s);
+        if (large)
+        {
+          dir += "/" + to_string (str2hash_class (s));
+          createDirectory (dir, true);
+        }
+      #endif
+        seq->saveFile (dir + "/" + s);
   	  }
   	}
 	}
