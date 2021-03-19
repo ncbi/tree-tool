@@ -81,7 +81,8 @@ struct ThisApplication : Application
   	  addKey ("optional_weight", "For Hamming distance: Weight of optional-nonoptional match (0..1)", "NaN");
   	  addKey ("mutation_rate", "For SNP dissimilarity: file where each line has format: <feature_name> <mutation rate 0->1> <mutation rate 1->0>");
   	//addFlag ("freq", "<mutation_rate> file has allele frequencies");
-  	  addKey ("dna_weight", "Weight of DNA mutations (0..1). Protein mutations are weighted as 1. Features are DNA or protein mutations, where DNA is not named and proteins are named", "NaN");
+  	  addKey ("dna_weight", "Weight of DNA mutations (>=0). Protein mutations are weighted as 1. Features are DNA or protein mutations, where DNA is not named and proteins are named", "NaN");
+  	  addFlag ("virus", "Features are DNA and protein mutations, protein mutations are ignored");
   	}
 
 
@@ -94,17 +95,19 @@ struct ThisApplication : Application
     const string mutationsFName  =           getArg ("mutation_rate");
   //const bool   freq            =           getFlag ("freq");
     const Prob   dnaWeight       = str2real (getArg ("dna_weight"));
+    const bool   virus           =           getFlag ("virus");
 		
 		if (! isNan (optional_weight))
 		{
   		QC_ASSERT (isProb (optional_weight));
   		QC_ASSERT (mutationsFName. empty ());
     }    
-    
+        
     if (! isNan (dnaWeight))
     { 
-      QC_ASSERT (isProb (dnaWeight));    
+      QC_ASSERT (dnaWeight >= 0.0);
       QC_ASSERT (mutationsFName. empty ());
+      QC_ASSERT (! virus);
     }
 		
 		
@@ -140,7 +143,7 @@ struct ThisApplication : Application
       const ObjFeatureVector vec2 (dir + "/" + obj2);
     #endif
       Real dissim = NaN;
-      if (isNan (dnaWeight))
+      if (isNan (dnaWeight) && ! virus)
         dissim = features2dissim (vec1, vec2, optional_weight, *feature2rate);
       else
       {
@@ -149,8 +152,13 @@ struct ThisApplication : Application
         vec2dna_prot (vec1, dnaVec1, protVec1);
         vec2dna_prot (vec2, dnaVec2, protVec2);
         const Real dnaDissim  = features2hamming (dnaVec1,  dnaVec2,  optional_weight);
-        const Real protDissim = features2hamming (protVec1, protVec2, optional_weight);
-        dissim = dnaWeight * dnaDissim + protDissim;  
+        if (virus)
+          dissim = dnaDissim;
+        else
+        {
+          const Real protDissim = features2hamming (protVec1, protVec2, optional_weight);
+          dissim = dnaWeight * dnaDissim + protDissim;  
+        }
       }
       ASSERT (dissim >= 0.0);
       cout << obj1 << '\t' << obj2 << '\t' << dissim << endl;
