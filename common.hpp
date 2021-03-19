@@ -2424,6 +2424,16 @@ private:
       return false;
     }
 public:
+  bool intersects (const unordered_set<T> &other) const
+     { if (universal)
+     	   return ! other. empty ();
+       if (other. empty ())
+         return false;
+       for (const T& t : *this)
+         if (contains (other, t))
+           return true;
+       return false;     
+     }
 
   Set<T>& operator<< (const T &el)
     { if (! universal)
