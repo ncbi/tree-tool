@@ -7,7 +7,7 @@ if [ $# -ne 6 ]; then
   echo "#2: target list of objects (superset) | '' - all"
   echo "#3: phen/"
   echo "#4: large directories (0/1)"
-  echo "#5: find root and save RAM (0/1)"
+  echo "#5: find root, save RAM (0/1)"
   echo "#6: output .qual-file or ''"
   echo "Time: 3.5 hours/172K genomes"
   exit 1
