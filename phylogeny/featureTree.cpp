@@ -440,7 +440,6 @@ void Phyl::assignFeatures ()
 
 void Phyl::assignFeaturesDown ()
 { 
-  // Threads ??
 	for (DiGraph::Arc* arc : arcs [false])
 		static_cast <Phyl*> (arc->node [false]) -> assignFeaturesDown ();
   assignFeatures ();
@@ -931,9 +930,9 @@ Genome::Genome (FeatureTree &tree,
 , id (id_arg)
 { 
 	ASSERT (parent_arg);
-	ASSERT (! id. empty ()); 
+	QC_ASSERT (! id. empty ()); 
 //ASSERT (! contains (id, ' '));
-  ASSERT (! contains (id, '\''));
+  QC_ASSERT (! contains (id, '\''));
 }
 
 
@@ -965,7 +964,7 @@ void Genome::initDir (const string &featureDir,
       GenomeFeature gf; 
       replace (f. line, '\t', ' ');
       trim (f. line);
-      if (contains (f. line, ':'))
+      if (contains (f. line, ':'))  // Nominal feature
       {
         if (   contains (f. line, " :")
             || contains (f. line, ": ")
@@ -987,14 +986,15 @@ void Genome::initDir (const string &featureDir,
       trim (gf. id);
       QC_ASSERT (! gf. id. empty ());
       coreSet << move (gf);
+      if (! gf. optional)
+        coreNonSingletons++;
     }
   }
+
   coreSet. sort ();
   const size_t dup = coreSet. findDuplicate ();
   if (dup != no_index)
     throw runtime_error ("Feature " + strQuote (coreSet [dup]. id) + " is duplicated");
-  
-  coreNonSingletons = coreSet. size ();  // Includes singletons and common core
 }
 
 
@@ -1031,13 +1031,15 @@ void Genome::coreSet2nominals ()
 
 void Genome::nominals2coreSet ()
 {
+  ASSERT (! getFeatureTree (). oneFeatureInTree);
+  
   for (const auto& it : getFeatureTree (). nominal2values)
     if (! nominals. containsFast (it. first))
       for (const string& value : it. second)
       {
         ASSERT (value != NOMINAL_OTHER);
         coreSet << move (GenomeFeature (it. first + ":" + value, true));
-        coreNonSingletons++;
+      //coreNonSingletons++;
       }
 
   coreSet. sort ();
@@ -1087,15 +1089,31 @@ void Genome::init (const Vector<size_t> &featureBatch)
   FFOR (size_t, i, core. size ())
   {
     size_t coreSetIndex = no_index;
+    bool isOptionalNominal = false;
     if (i < featureBatch. size ())
     {
-      const GenomeFeature gf (getFeatureTree (). features [featureBatch [i]]. name, false);
+      const string& featureName = getFeatureTree (). features [featureBatch [i]]. name;
+      const GenomeFeature gf (featureName, false/*irrelevant*/);
       coreSetIndex = coreSet. binSearch (gf);
+      if (coreSetIndex == no_index)
+      {
+    	  const size_t pos = featureName. find (':');
+    	  if (pos != string::npos)
+    	  {
+    	    const string attrName (featureName. substr (0, pos));
+          isOptionalNominal = ! nominals. containsFast (attrName);
+        }
+      }
     }
+    const bool isCore = (coreSetIndex != no_index || isOptionalNominal);
   	for (const bool parentCore : {false, true})
-      parent2core [parentCore] [i]. core = (coreSetIndex == no_index ? efalse : etrue);
-    core [i] = (coreSetIndex != no_index);
-    optionalCore [i] = (coreSetIndex == no_index ? false : coreSet [coreSetIndex]. optional);
+      parent2core [parentCore] [i]. core = toEbool (isCore);
+    core [i] = isCore;
+    optionalCore [i] = isOptionalNominal
+                         ? true
+                         : coreSetIndex == no_index 
+                            ? false 
+                            : coreSet [coreSetIndex]. optional;
   }
 }
 
@@ -1121,9 +1139,10 @@ void Genome::qc () const
 
   QC_ASSERT (! id. empty ());
   QC_ASSERT (! contains (id, ' '));
-  QC_ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
-	QC_ASSERT (nominals. empty ());
+//QC_ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
+	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, nominals. empty ());
 	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, coreSet. empty ());
+	QC_ASSERT (nominals. searchSorted);
 	QC_ASSERT (singletons. searchSorted);
 /*
 	if (getFeatureTree (). coreSynced && coreNonSingletons < getCoreSize ())
@@ -1252,12 +1271,6 @@ void Genome::assignFeature (size_t featureIndex)
 void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
                             Set<Feature::Id> &nonSingletons) const
 { 
-	if (getFeatureTree (). featuresExist () && coreSet. empty ())
-	{
-	  cout << getName () << endl;  
-	  ERROR;
-	}
-	
 	for (const GenomeFeature& gf : coreSet)
 	{
 	  const Feature::Id& featureId = gf. id;
@@ -1266,7 +1279,7 @@ void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
 	    ASSERT (! globalSingletons. contains (featureId));
 	    ASSERT (! nonSingletons.    contains (featureId));
 	  }
-	  else
+	  else if (! gf. optional) 
 	  {
   	  if (nonSingletons. contains (featureId))
   	  	;
@@ -1283,35 +1296,35 @@ void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
 size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
 { 
   ASSERT (singletons. empty ());
-  
-  Vector<Feature::Id> featureSingletons;
-  for (Iter<CoreSet> iter (coreSet); iter. next (); )
-  {
-	  const GenomeFeature& gf = *iter;
+
+  size_t n = 0;
+	for (const GenomeFeature& gf : coreSet)
+	{
+	  bool isSingleton = false;
 		if (Feature::nominalSingleton (gf. id))
 		{
 		  ASSERT (! gf. optional);  
-  		featureSingletons << move (var_cast (gf. id));
-			iter. erase ();
+		  isSingleton = true;
+  		n++;
 		}
-	}
-		
-	for (const GenomeFeature& gf : coreSet)
-	  if (globalSingletons. contains (gf. id))
+		else if (globalSingletons. contains (gf. id))
+		  isSingleton = true;
+		if (isSingleton)
+    {
 	    singletons << gf. id;
+	    if (! gf. optional)
+	    {
+        ASSERT (coreNonSingletons);
+        coreNonSingletons--;
+      }
+	  }
+	}
   singletons. sort ();
+  ASSERT (singletons. isUniq ());
 		
   coreSet. filterValue ([&] (const GenomeFeature &gf) { return singletons. containsFast (gf. id); });
-    
-  singletons << featureSingletons;  // ??
-
-  singletons. sort ();
-  singletons. uniq ();
-  
-  ASSERT (coreNonSingletons >= singletons. size ());
-  coreNonSingletons -= singletons. size ();
-
-  return featureSingletons. size ();
+      
+  return n;
 }
 
 
@@ -1999,14 +2012,41 @@ namespace
 
 
 
+namespace
+{
+  
+void genomes_initDir (size_t from,
+                      size_t to,
+                      Notype /*&res*/,
+                      const VectorPtr<Genome> &genomes,
+                      const string &featureDir,
+                      bool large,
+                      bool nominalSingletonIsOptional)
+{
+  Progress prog (to - from, 1);
+  FOR_START (size_t, i, from, to)
+  {
+    const Genome* g = genomes [i];
+		prog (g->getName ());
+    try { var_cast (g) -> initDir (featureDir, large, nominalSingletonIsOptional); }
+	    catch (const exception &e)
+	      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
+  }
+}
+  
+}
+
+
+
 FeatureTree::FeatureTree (const string &treeFName,
       						        const string &featureDir,
       						        bool large,
       						        const string &coreFeaturesFName,
-      						        bool nominalSingletonIsOptional,
+      						        bool nominalSingletonIsOptional_arg,
   	                      bool preferGain_arg,
   	                      bool oneFeatureInTree_arg)
 : inputTreeFName (treeFName)
+, nominalSingletonIsOptional (nominalSingletonIsOptional_arg)
 , preferGain (preferGain_arg)
 , oneFeatureInTree (oneFeatureInTree_arg)
 {
@@ -2016,7 +2056,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   const Chronometer_OnePass copInit ("Initialization");  
 
  	loadPhylFile (treeFName);
-  ASSERT (root);
+  QC_ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const Phyl*> (root) -> asSpecies ());
 
@@ -2025,23 +2065,19 @@ FeatureTree::FeatureTree (const string &treeFName,
    
   size_t genomes = 0; 
   {
+    // Genome::coreSet: incomplete
     cerr << "Genomes ..." << endl;
     const size_t genomes_ = root->getLeavesSize ();
-	  Progress prog (genomes_, 1);
-	  // Threads ??
-    // Genome::coreSet
+    VectorPtr<Genome> genomeVec;  genomeVec. reserve (genomes_);
 	 	for (const DiGraph::Node* node : nodes)
 	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
-	 		{
-	 			prog (g->getName ());
-	      try { var_cast (g) -> initDir (featureDir, large, nominalSingletonIsOptional); }
-   		    catch (const exception &e)
-   		      { throw runtime_error ("In genome " + g->id + ": " + e. what ()); }
-	      genomes++;
-	    }
+	 		  genomeVec << g;
+	  genomes = genomeVec. size ();
+    vector<Notype> notypes;
+    arrayThreads (false, genomes_initDir, genomeVec. size (), notypes, cref (genomeVec), cref (featureDir), large, nominalSingletonIsOptional);
 	  ASSERT (genomes == genomes_);
 	}
-	ASSERT (genomes);
+	QC_ASSERT (genomes);
 
   // nominal2values, Genome::nominals
   ASSERT (nominal2values. empty ());
@@ -2053,10 +2089,13 @@ FeatureTree::FeatureTree (const string &treeFName,
 
   constexpr size_t displayPeriod = 100;  // PAR
 
-  // Genome::coreSet
+  // Genome::coreSet: add all optional GenomeFeature's
+  if (! oneFeatureInTree)
   {
+    const Chronometer_OnePass cop ("Genome: nominals to coreSet");  
     Progress prog (genomes, displayPeriod);
     // 86 sec./50K genomes
+    // Threads ??
    	for (const DiGraph::Node* node : nodes)
    		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
    		{
@@ -2065,13 +2104,11 @@ FeatureTree::FeatureTree (const string &treeFName,
    		}
   }
 
-  // optionalCore[i] in all Genome's => remove Feature i ??
-
 
   Feature2index feature2index;
   {
-    Set<Feature::Id> globalSingletons;
     Set<Feature::Id> nonSingletons;
+    Set<Feature::Id> globalSingletons;
     // 196 sec./50K genomes
     {
       Progress prog (genomes, displayPeriod);
@@ -2085,6 +2122,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     ASSERT (! globalSingletons. intersects (nonSingletons));
     globalSingletonsSize = globalSingletons. size ();
     {
+    //const Chronometer_OnePass cop ("Genome: set singletons");  
       Progress prog (genomes, displayPeriod);
      	for (const DiGraph::Node* node : nodes)
      		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
@@ -2094,21 +2132,40 @@ FeatureTree::FeatureTree (const string &treeFName,
         }
     }
     
+    // Redundant optional GenomeFeature's
+    {
+    //const Chronometer_OnePass cop ("Genome: redundant optional features");  
+      Progress prog (genomes, displayPeriod);
+     	for (const DiGraph::Node* node : nodes)
+     		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
+        { 
+          prog ();
+          g->coreSet. filterValue ([&] (const Genome::GenomeFeature &gf) { return gf. optional && ! nonSingletons. contains (gf. id); });
+        }
+    }      
+
     // commonCore
     // 64 sec./50K genomes
     ASSERT (commonCore. empty ());
-    commonCore = nonSingletons;
     {
       Progress prog (genomes, displayPeriod);
      	for (const DiGraph::Node* node : nodes)
      		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
      		{
      		  prog ();
-     		  g->getCommonCore (commonCore);
+     		  if (commonCore. empty ())  // First Genome
+     		    for (const Genome::GenomeFeature &gf : g->coreSet)
+     		      commonCore << gf. id;
+     		  else     		    
+     		    g->getCommonCore (commonCore);
+   		    if (commonCore. empty ()) 
+   		      break;
      		}
     }
     ASSERT (! globalSingletons. intersects (commonCore));
+    if (! commonCore. empty ())
     {
+    //const Chronometer_OnePass cop ("Genome: remove common core");  
       Progress prog (genomes, displayPeriod);
      	for (const DiGraph::Node* node : nodes)
      		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
@@ -2117,13 +2174,14 @@ FeatureTree::FeatureTree (const string &treeFName,
         #ifndef NDEBUG
           const size_t coreSet_old = g->coreSet. size ();
         #endif
-          g->removeFromCoreSet (commonCore);
+          g->coreSet. filterValue ([&] (const Genome::GenomeFeature &gf) { return commonCore. contains (gf. id); });
           ASSERT (coreSet_old - g->coreSet. size () == commonCore. size ()); 
         }
-    }      
+    }
+    
+    // nonSingletons
     for (const Feature::Id& fId : commonCore)
-      nonSingletons. erase (fId);    
-      
+      nonSingletons. erase (fId);
     if (nonSingletons. empty ())
     	throw runtime_error ("All features are singletons or common core");
     	
@@ -2147,16 +2205,17 @@ FeatureTree::FeatureTree (const string &treeFName,
     }
     features. searchSorted = true;
     ASSERT (features. size () == nonSingletons. size ());
-    IMPLY (! oneFeatureInTree, feature2index. size () == features. size ());
     cerr << "# Features: " << features. size () << endl;
   }
+  IMPLY (oneFeatureInTree, feature2index. empty ());
+  IMPLY (! oneFeatureInTree, feature2index. size () == features. size ());
 
 
   // allTimeZero, Phyl::init()   
-  if (! oneFeatureInTree)
-    cerr << "Memory ..." << endl;
   {   
-    // 288 sec./50K genomes
+    // !oneFeatureInTree => 288 sec./50K genomes
+    cerr << "Memory ..." << endl;
+  //const Chronometer_OnePass cop ("Node initialization");  
     size_t timeNan = 0;
     size_t timeNonNan = 0;
     Progress prog (nodes. size (), displayPeriod); 
@@ -2185,14 +2244,14 @@ FeatureTree::FeatureTree (const string &treeFName,
   if (oneFeatureInTree)
     allTimeZero = true;
 
+  if (! allTimeZero && featuresExist ())
+    loadSuperRootCoreFile (coreFeaturesFName);
+
   genomeFeatures_ave = 0.0;  
  	for (const DiGraph::Node* node : nodes)
  		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
  			genomeFeatures_ave += (Real) g->getFeatures ();
   genomeFeatures_ave /= (Real) genomes;
-
-  if (! allTimeZero && featuresExist ())
-    loadSuperRootCoreFile (coreFeaturesFName);
 
  	for (DiGraph::Node* node : nodes)  
  		static_cast <Phyl*> (node) -> setWeight (); 		
@@ -2272,6 +2331,7 @@ FeatureTree::FeatureTree (const string &treeFName,
       						        const string &genomesListFName,
   	                      bool preferGain_arg)
 : inputTreeFName (treeFName)
+, nominalSingletonIsOptional (true)  // PAR
 , preferGain (preferGain_arg)
 , allTimeZero (true)
 , oneFeatureInTree (true)
@@ -2382,6 +2442,7 @@ void FeatureTree::processBatch (const VectorPtr<Phyl> &phyls,
                                 const Vector<size_t> &featureBatch,
                                 float &featureLen)
 {
+  ASSERT (oneFeatureInTree);
   ASSERT (! featureBatch. empty ());
   ASSERT (featureBatch. back () != no_index);
 
@@ -2724,6 +2785,8 @@ void FeatureTree::printInput (ostream& os) const
   os << "Time: " << (allTimeZero ? "Not used" : "Used") << endl;
   if (allTimeZero)
   {
+    if (nominalSingletonIsOptional)
+      os << "Nominal singletons are optional" << endl;
     if (preferGain)
       os << "Gains are preferred over losses" << endl;
   }
@@ -2774,6 +2837,15 @@ float FeatureTree::getLength () const
   if (! oneFeatureInTree)
     s += root_->pooledSubtreeDistance;
   return s;
+}
+
+
+
+void FeatureTree::setLenGlobal ()
+{ 
+  // Threads ??
+  const_static_cast <Species*> (root) -> assignFeaturesDown ();
+	len = getLength ();
 }
 
 

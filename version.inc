@@ -1,6 +1,10 @@
-#define VERSION "1.5.5"
+#define VERSION "1.5.6"
 
 
+// 1.5.6  03/17/2021  feature tree: only-optional features are removed; 
+//                                  Genome::coreNonSingletons does not include optionalCore[]  
+//                                  oneFeatureInTree => Genome::coreSet has no optional nominal attributes
+//                                  use threads
 // 1.5.5  02/28/2021  DTNode::mtx, Subgraph::subPaths2tree() uses threads
 // 1.5.4  02/25/2021  combine_dissims.cpp: linear combination
 //                    d_symbet

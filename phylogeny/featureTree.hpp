@@ -497,16 +497,22 @@ struct Genome : Phyl
 {
   friend FeatureTree;
   
-  struct GenomeFeature
+  struct GenomeFeature  // = ObjFeature in evolution.hpp ??
   { 
     Feature::Id id;
     bool optional {false};
+    
     GenomeFeature (const Feature::Id &id_arg,
                    bool optional_arg)
       : id (id_arg)
       , optional (optional_arg)
       {}
     GenomeFeature () = default;
+    
+    static bool isFeatureNominal (const string &s)
+      { return contains (s, ':'); }
+    bool isFeatureNominal () const
+      { return isFeatureNominal (id); }
     bool operator< (const GenomeFeature& gf) const
       { return id < gf. id; }
     bool operator== (const GenomeFeature& gf) const
@@ -529,7 +535,7 @@ private:
     // Subset of getFeatureTree().nominal2values
 public:
   size_t coreNonSingletons {0};
-    // Includes optionalCore[]  
+    // Does not include optionalCore[]  
   Vector<Feature::Id> singletons;
     // searchSorted
 //Set<Feature::Id> missedCore;  ??
@@ -541,27 +547,25 @@ public:
 	        const string &id_arg);
 	  // To be followed by: initDir(), init()
   static string featureLineFormat ();
-private:
 	void initDir (const string &featureDir,
 	              bool large,
 	              bool nominalSingletonIsOptional);
 	  // Input: file "featureDir/id" with the format: `featureLineFormat()`
     //        large: files in featureDir are grouped into subdirectories named str2hash_class(<file name>)
 	  // Output: coreSet, coreNonSingletons
+private:
 	void coreSet2nominals ();
 	  // Update: getFeatureTree().nominal2values, nominals
 	void nominals2coreSet ();
-	  // Update: coreSet
+	  // Update: coreSet: add optional GenomeFeature's
 	void getSingletons (Set<Feature::Id> &globalSingletons,
 	                    Set<Feature::Id> &nonSingletons) const;
     // Update: globalSingletons, nonSingletons: !intersect()
 	void getCommonCore (Set<Feature::Id> &commonCore) const
     { for (Iter<Set<Feature::Id>> iter (commonCore); iter. next (); )
-				if (! coreSet. containsFast (GenomeFeature (*iter, false)))
+				if (! coreSet. containsFast (GenomeFeature (*iter, false/*irrelevant*/)))
 					iter. erase ();
       }
-	void removeFromCoreSet (const Set<Feature::Id> &toRemove)
-    { coreSet. filterValue ([&toRemove] (const GenomeFeature &gf) { return toRemove. contains (gf. id); }); }
 	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
 	  // Return: number of Feature::Id's s.t. Feature::nominalSingleton()
 	  // Update: coreSet, singletons, coreNonSingletons
@@ -1122,7 +1126,8 @@ struct FeatureTree : Tree
 
   // For FeatureTree::len
   static constexpr bool emptySuperRoot {false};  // PAR
-  const bool preferGain;
+  const bool nominalSingletonIsOptional;
+  const bool preferGain;  
 	bool allTimeZero {false}; 
 	  // true <=> parsimony method, Species::time is not used
 	  // Init: = isNan(Species::time) 
@@ -1182,7 +1187,7 @@ public:
   	           bool oneFeatureInTree_arg);
     // Input: coreFeaturesFName if !allTimeZero
     //        large: files in featureDir are grouped into subdirectories named str2hash_class(<file name>)
-    // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore()
+    // Invokes: loadPhylFile(), Genome::initDir(), setLenGlobal(), setCore(), Threads
   FeatureTree (const string &treeFName,
       				 const string &genomesListFName,
   	           bool preferGain_arg);
@@ -1246,10 +1251,7 @@ public:
 
   // OPTIMIZATION 
   // Phyl::parent2core[]
-  void setLenGlobal ()
-    { const_static_cast <Species*> (root) -> assignFeaturesDown ();
-    	len = getLength ();
-    }
+  void setLenGlobal ();
   // Phyl::core[]
   void setCore ()
     { coreSynced = true;

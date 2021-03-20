@@ -89,7 +89,7 @@ if [ -d data/inc.ITS ]; then
 fi
 
 section "Saccharomyces hybrids"
-$THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
+$THIS/makeDistTree -qc  -threads 10  -data data/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -dissim_boundary 0.675 \
   -delete_criterion_outliers Saccharomyces.criterion_outliers  -criterion_outlier_num_max 1 \
   -delete_deformation_outliers Saccharomyces.deformation_outliers  -deformation_outlier_num_max 1 \
@@ -106,7 +106,7 @@ rm Saccharomyces.deformation_outliers
 # Saccharomyces.distTree
 $THIS/tree2obj.sh $TMP.tree > $TMP.list
 $THIS/../dm/dm2subset data/Saccharomyces $TMP.list > $TMP.dm
-$THIS/makeDistTree  -threads 3  -data $TMP  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces.distTree
+$THIS/makeDistTree  -threads 10  -data $TMP  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces.distTree
 $THIS/distTree_compare_criteria.sh Saccharomyces.distTree data/Saccharomyces.distTree
 rm Saccharomyces.distTree
 
@@ -154,7 +154,7 @@ else
   rm Salmonella2.distTree
 
   section "Saccharomyces hybrids"
-  $THIS/makeDistTree -qc  -threads 3  -data data/Saccharomyces2  -variance linExp  -optimize  -subgraph_iter_max 2  \
+  $THIS/makeDistTree -qc  -threads 10  -data data/Saccharomyces2  -variance linExp  -optimize  -subgraph_iter_max 2  \
     -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
     -delete_criterion_outliers Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
     -delete_deformation_outliers Saccharomyces2.deformation_outliers  -deformation_outlier_num_max 1 \
@@ -175,7 +175,7 @@ else
   # Saccharomyces2.distTree
   $THIS/tree2obj.sh $TMP.tree > $TMP.list
   $THIS/../dm/dm2subset data/Saccharomyces2 $TMP.list > $TMP.dm
-  $THIS/makeDistTree  -threads 3  -data $TMP  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces2.distTree
+  $THIS/makeDistTree  -threads 10  -data $TMP  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces2.distTree
   $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree data/Saccharomyces2.distTree
   rm Saccharomyces2.distTree
 
