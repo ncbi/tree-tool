@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/bash_common.sh
+source /home/brovervv/code/cpp/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Find closest genomes"
   echo "#1: Genome.id"
@@ -18,12 +18,12 @@ BULK_REMOTE=`cat $INC/bulk_remote`
 if [ -z $DIR ]; then
   DIR=$INC/../genome
   if [ -e $INC/large ]; then
-    H=`CPP_DIR/file2hash $GENOME`
+    H=`/home/brovervv/code/cpp/file2hash $GENOME`
     DIR=$DIR/$H
   fi
 fi
 
-CPP_DIR/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME $DIR PRT
+/home/brovervv/code/cpp/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME $DIR PRT
 
 
 

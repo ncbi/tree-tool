@@ -29,7 +29,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-CPP_DIR/phylogeny/../database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
+CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Locus5_8S

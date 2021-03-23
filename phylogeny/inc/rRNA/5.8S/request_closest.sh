@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/phylogeny/../bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Find 100 closest sequences in the tree"
   echo "#1: Input sequence"

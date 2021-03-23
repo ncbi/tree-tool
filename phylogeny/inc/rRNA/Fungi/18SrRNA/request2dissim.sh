@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/bash_common.sh
+source /home/brovervv/code/cpp/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Compute dissimilarities for pairs of objects"
   echo "#1: input dissimilarity requests (pairs of objects)"
@@ -20,7 +20,7 @@ if [ -n "$FILE_NEW" ]; then
   NEW="-name_new $NAME  -file_new $FILE_NEW"
 fi
 
-CPP_DIR/dissim/dna_pairs2dissim  -log $LOG  -coeff 25  -relative  $NEW  $REQUEST /home/brovervv/panfs/marker/Fungi/18SrRNA/seq 300 $DISSIM
+/home/brovervv/code/cpp/dissim/dna_pairs2dissim  -log $LOG  -coeff 25  -relative  $NEW  $REQUEST /home/brovervv/panfs/marker/Fungi/18SrRNA/seq 300 $DISSIM
   # 0.01 * 2500 = 25
 rm -f $LOG
 

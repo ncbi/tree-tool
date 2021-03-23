@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/phylogeny/../bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Add an outlier to database"
   echo "#1: Locus5_8S.accession"

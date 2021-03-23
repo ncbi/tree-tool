@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/phylogeny/../bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Compute dissimilarities for pairs of objects"
   echo "#1: input dissimilarity requests (pairs of objects)"
@@ -25,7 +25,7 @@ if [ -n "$FILE_NEW" ]; then
 fi
 
 INC=`dirname $0`
-CPP_DIR/phylogeny/../dissim/dna_pair2dissim $REQUEST $INC/../seq 70 $DISSIM  $NEW  -large  -diff  -global  -power 0.9  -log $LOG
+CPP_DIR/dissim/dna_pair2dissim $REQUEST $INC/../seq 70 $DISSIM  $NEW  -large  -diff  -global  -power 0.9  -log $LOG
 
 rm -f $LOG
 rm $TMP*

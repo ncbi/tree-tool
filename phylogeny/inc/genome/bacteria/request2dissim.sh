@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Compute dissimilarities for pairs of objects"
@@ -15,8 +15,14 @@ LOG=$4
 
 
 INC=`dirname $0`
+GENOME=$INC/../genome
 # PAR
-CPP_DIR/dissim/combine_dissims.sh $REQ $INC/../genome "$FILE_NEW" $OUT 1 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0  0.57 $LOG
-#                                                 1    2              3           4    5 6  7   8                  9                 10 11   12
+CPP_DIR/dissim/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0 0.56 $LOG
+#                                         1    2        3          4    5  6   7                  8                 9 10   11
+#  was: 10: 0.57
+
+
+rm -f $LOG
+
 
 
