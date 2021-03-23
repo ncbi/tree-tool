@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/bash_common.sh
+source /home/brovervv/code/cpp/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
   exit 1
