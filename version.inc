@@ -1,6 +1,8 @@
-#define VERSION "1.5.6"
+#define VERSION "1.5.8"
 
 
+// 1.5.8  03/22/2021  makeDistTree: quality calculation uses threads
+// 1.5.7  03/21/2021  FeatureTree::globalSingletonsSize bug
 // 1.5.6  03/17/2021  feature tree: only-optional features are removed; 
 //                                  Genome::coreNonSingletons does not include optionalCore[]  
 //                                  oneFeatureInTree => Genome::coreSet has no optional nominal attributes

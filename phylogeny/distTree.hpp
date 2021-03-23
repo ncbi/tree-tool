@@ -485,6 +485,9 @@ public:
     // Deterministic <=> (bool)seed
     // Invokes: getDistTree().rand
     // Time: O(log(n))
+  void setErrorDensity (Real absCriterion_ave);
+    // Output: errorDensity
+    // Time: O(|pathDissimNums|)
 private:
   void saveFeatureTree (ostream &os,
                         bool withTime,
@@ -506,9 +509,6 @@ private:
   Vector<uint/*dissimNum*/> getLcaDissimNums ();
     // Return: dissimNum's s.t. getDistTree().dissims[dissimNum].lca = this
     // Invokes: DTNode::pathDissimNums.sort()
-  void setErrorDensity (Real absCriterion_ave);
-    // Output: errorDensity
-    // Time: O(|pathDissimNums|)
   VectorPtr<Leaf> getSparseLeafMatches (const string &targetName,
                                         size_t depth_max,
                                         bool subtractDissims,

@@ -8012,6 +8012,26 @@ Real DistTree::getUnoptimizable () const
 
 
 
+namespace
+{
+
+void setErrorDensity_array (size_t from,
+                            size_t to,
+                            Notype /*&res*/,
+                            const VectorPtr<DiGraph::Node> &nodeVec,
+                            Real c)
+{
+  FOR_START (size_t, i, from, to)
+  {
+    DTNode* dtNode = const_static_cast <DTNode*> (nodeVec [i]);
+    dtNode->setErrorDensity (c);
+  }
+}
+
+}
+
+
+
 void DistTree::setErrorDensities () 
 {
   ASSERT (optimizable ());
@@ -8024,11 +8044,14 @@ void DistTree::setErrorDensities ()
 
   const Real c = absCriterion / (Real) n;
   ASSERT (c >= 0.0);
-  for (DiGraph::Node* node : nodes)  // --> Threads ??
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->setErrorDensity (c);
-  }
+
+  VectorPtr<DiGraph::Node> nodeVec;  nodeVec. reserve (nodes. size ());
+  for (DiGraph::Node* node : nodes)  
+    nodeVec << node;
+  nodeVec. randomOrder ();
+
+  vector<Notype> notypes;
+  arrayThreads (false, setErrorDensity_array, nodeVec. size (), notypes, cref (nodeVec), c);
 }
 
 
@@ -8068,23 +8091,45 @@ void DistTree::setLeafNormCriterion ()
 
 
 
-void DistTree::setNodeMaxDeformationDissimNum ()
+namespace
 {
- ASSERT (optimizable ());
-  
-  for (DiGraph::Node* node : nodes)  // --> Threads ??
+
+void setNodeMaxDeformationDissimNum_array (size_t from,
+                                           size_t to,
+                                           Notype /*&res*/,
+                                           const VectorPtr<DiGraph::Node> &nodeVec,
+                                           const DistTree &tree)
+{
+  FOR_START (size_t, i, from, to)
   {
-    DTNode* dtNode = static_cast <DTNode*> (node);
+    DTNode* dtNode = const_static_cast <DTNode*> (nodeVec [i]);
     dtNode->maxDeformationDissimNum = dissims_max;
     Real target = 0.0;
     for (const uint dissimNum : dtNode->pathDissimNums)
     {
-      const Dissim& dissim = dissims [dissimNum];
+      const Dissim& dissim = tree. dissims [dissimNum];
       if (dissim. validMult ())
         if (maximize (target, dissim. getDeformation ()))
           dtNode->maxDeformationDissimNum = dissimNum;
     }
   }
+}
+
+}
+
+
+
+void DistTree::setNodeMaxDeformationDissimNum ()
+{
+  ASSERT (optimizable ());
+  
+  VectorPtr<DiGraph::Node> nodeVec;  nodeVec. reserve (nodes. size ());
+  for (DiGraph::Node* node : nodes)  
+    nodeVec << node;
+  nodeVec. randomOrder ();
+
+  vector<Notype> notypes;
+  arrayThreads (false, setNodeMaxDeformationDissimNum_array, nodeVec. size (), notypes, cref (nodeVec), cref (*this));
 }
 
 
