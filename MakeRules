@@ -91,8 +91,9 @@ GEN_DIR = $(CPP_DIR)/genetics
 $(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_RAW_HPP)
 $(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_RAW_HPP)
 SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o 
-$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
+$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(DM_DIR)/numeric.hpp $(COMMON_RAW_HPP)
 HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
+$(GEN_DIR)/gff.o: $(GEN_DIR)/gff.hpp $(COMMON_RAW_HPP)
 
 
 DISSIM_DIR = $(CPP_DIR)/dissim
@@ -113,9 +114,7 @@ ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_al
 
 ifdef AT_NCBI
   AMRFINDER_DIR=$(CODE_DIR)/amrfinder
-  $(AMRFINDER_DIR)/gff.o: $(AMRFINDER_DIR)/gff.hpp $(COMMON_RAW_HPP)
   $(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_RAW_HPP)
-
 
   DATABASE_DIR = $(CODE_DIR)/database
   COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
