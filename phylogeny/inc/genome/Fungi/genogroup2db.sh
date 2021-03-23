@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/bash_common.sh
+source /home/brovervv/code/cpp/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
   echo "#1: File genogroup_table"
@@ -13,7 +13,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..ListC
+/home/brovervv/code/cpp/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..ListC
 
 
 sqsh-ms  -S $SERVER  -D $DATABASE  -L exit_failcount=1 << EOF | sed 's/|$//1' 

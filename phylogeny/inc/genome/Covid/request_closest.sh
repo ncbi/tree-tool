@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Find closest virus"
