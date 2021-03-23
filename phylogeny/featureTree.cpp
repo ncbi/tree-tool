@@ -1293,11 +1293,10 @@ void Genome::getSingletons (Set<Feature::Id> &globalSingletons,
 
 
 
-size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
+void Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
 { 
   ASSERT (singletons. empty ());
 
-  size_t n = 0;
 	for (const GenomeFeature& gf : coreSet)
 	{
 	  bool isSingleton = false;
@@ -1305,7 +1304,6 @@ size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
 		{
 		  ASSERT (! gf. optional);  
 		  isSingleton = true;
-  		n++;
 		}
 		else if (globalSingletons. contains (gf. id))
 		  isSingleton = true;
@@ -1323,8 +1321,6 @@ size_t Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
   ASSERT (singletons. isUniq ());
 		
   coreSet. filterValue ([&] (const GenomeFeature &gf) { return singletons. containsFast (gf. id); });
-      
-  return n;
 }
 
 
@@ -2120,7 +2116,6 @@ FeatureTree::FeatureTree (const string &treeFName,
      		}
     }
     ASSERT (! globalSingletons. intersects (nonSingletons));
-    globalSingletonsSize = globalSingletons. size ();
     {
     //const Chronometer_OnePass cop ("Genome: set singletons");  
       Progress prog (genomes, displayPeriod);
@@ -2128,9 +2123,11 @@ FeatureTree::FeatureTree (const string &treeFName,
      		if (Genome* g = var_cast (static_cast <const Phyl*> (node) -> asGenome ()))
      		{
      		  prog ();
-          globalSingletonsSize += g->setSingletons (globalSingletons);
+     		  g->setSingletons (globalSingletons);
+          globalSingletonsSize += g->singletons. size ();
         }
     }
+    ASSERT (globalSingletonsSize >= globalSingletons. size ());
     
     // Redundant optional GenomeFeature's
     {

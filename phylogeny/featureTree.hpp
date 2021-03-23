@@ -565,9 +565,8 @@ private:
     { for (Iter<Set<Feature::Id>> iter (commonCore); iter. next (); )
 				if (! coreSet. containsFast (GenomeFeature (*iter, false/*irrelevant*/)))
 					iter. erase ();
-      }
-	size_t setSingletons (const Set<Feature::Id> &globalSingletons);
-	  // Return: number of Feature::Id's s.t. Feature::nominalSingleton()
+    }
+	void setSingletons (const Set<Feature::Id> &globalSingletons);
 	  // Update: coreSet, singletons, coreNonSingletons
 	void init (const Feature2index &feature2index);
 	  // Output: CoreEval::core, core
