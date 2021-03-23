@@ -1,5 +1,5 @@
 #!/bin/bash
-source CPP_DIR/bash_common.sh
+source /home/brovervv/code/cpp/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Add an outlier to database"
   echo "#1: Locus.id"
