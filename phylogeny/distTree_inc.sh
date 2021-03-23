@@ -137,8 +137,7 @@ if [ -e $INC/phen ]; then
 
 
   if [ -n "$RELDIR" ]; then
-    echo ""
-    section "Release"
+    super_section "Release"
     if [ ! -e $RELDIR ]; then
       error "$RELDIR does not exist"
     fi
