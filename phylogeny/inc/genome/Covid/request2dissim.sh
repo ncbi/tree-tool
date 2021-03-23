@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "$0"
@@ -23,21 +23,8 @@ if [ -n "$NEW_OBJ" ]; then
 fi
 
 INC=`dirname $0`
-
-DIR=$INC/../seq
-MUT=$INC/../mut
-
-if false; then
-  TMP=`mktemp`
- #echo $TMP
-  # Ambiguities are replaced by 'N' by BLASTN
-  CPP_DIR/trav $REQUEST -errors $LOG "dna_diff.sh $DIR/%1 $DIR/%2 29000" > $TMP 
-  paste $REQUEST $TMP > $DISSIM
-  rm $TMP*
-else
- #dna_pairs2dissim  -log $LOG  -diff  -band 100  $REQUEST $DIR 20000 $DISSIM
-  CPP_DIR/dissim/feature_request2dissim $REQUEST $MUT  -optional_weight 0.2  -log $LOG  > $DISSIM
-fi
+#dna_pairs2dissim  -log $LOG  -diff  -band 100  $REQUEST $INC/../seq 20000 $DISSIM
+CPP_DIR/dissim/feature_request2dissim $REQUEST $INC/../mut.feature  -optional_weight 0.2  -virus  -log $LOG  > $DISSIM
 
 if [ ! -s $DISSIM ]; then
   error "Empty dissim" >> $LOG
