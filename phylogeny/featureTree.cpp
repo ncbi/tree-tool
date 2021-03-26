@@ -1298,25 +1298,23 @@ void Genome::setSingletons (const Set<Feature::Id> &globalSingletons)
   ASSERT (singletons. empty ());
 
 	for (const GenomeFeature& gf : coreSet)
-	{
-	  bool isSingleton = false;
-		if (Feature::nominalSingleton (gf. id))
-		{
-		  ASSERT (! gf. optional);  
-		  isSingleton = true;
-		}
-		else if (globalSingletons. contains (gf. id))
-		  isSingleton = true;
-		if (isSingleton)
-    {
-	    singletons << gf. id;
-	    if (! gf. optional)
-	    {
+    if (! gf. optional)
+  	{
+  	  bool isSingleton = false;
+  		if (Feature::nominalSingleton (gf. id))
+  		{
+  		  ASSERT (! gf. optional);  
+  		  isSingleton = true;
+  		}
+  		else if (globalSingletons. contains (gf. id))
+  		  isSingleton = true;
+  		if (isSingleton)
+      {
+  	    singletons << gf. id;
         ASSERT (coreNonSingletons);
         coreNonSingletons--;
-      }
-	  }
-	}
+  	  }
+  	}
   singletons. sort ();
   ASSERT (singletons. isUniq ());
 		
