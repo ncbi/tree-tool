@@ -64,7 +64,7 @@ echo ""
 tail -$HIST $INC/runlog
 
 set +o errexit
-grep ' V !' $INC/hist/makeFeatureTree-tree1.* 1> $TMP.grep 2> /dev/null
+grep ' V !$' $INC/hist/makeFeatureTree-tree1.* 1> $TMP.grep 2> /dev/null
 set -o errexit
 if [ -s $TMP.grep ]; then
   sed 's|^'$INC'/hist/makeFeatureTree-tree1\.||1' $TMP.grep | sed 's/:#/ #/1' | sort -k 1 -n > $TMP 
@@ -74,7 +74,7 @@ fi
 
 set +o errexit
 wc -l $INC/hist/hybrid.* 1> $TMP.out 2> /dev/null
-grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+grep -v "total" $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
 S=$?
 set -o errexit
 if [ $S == 0 ]; then
@@ -85,7 +85,7 @@ fi
 if false; then
   set +o errexit
   wc -l $INC/hist/unhybrid.* 1> $TMP.out 2> /dev/null
-  grep -v total $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
+  grep -v "total" $TMP.out | sed 's/^\(.*\)\.\([0-9]\+\)$/\2 \1/1' | sort -n  > $TMP
   S=$?
   set -o errexit
   if [ $S == 0 ]; then

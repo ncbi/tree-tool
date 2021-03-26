@@ -10,8 +10,7 @@ INC=$1
 
 
 if [ ! -e $INC/phen ]; then
-  echo "$INC/phen/ must exist"
-  exit 1
+  error "$INC/phen/ must exist"
 fi
 
 
@@ -42,7 +41,7 @@ do
   fi
   $THIS/tree_quality_phen.sh $TMP $TMP.list $INC/phen $LARGE 0 "" > $TMP.makeFeatureTree 2> /dev/null
   OBJS=`grep '^# Objects: ' $TMP.makeFeatureTree | sed 's/^#.*: //1'`
-  RES=`grep ' !' $TMP.makeFeatureTree | sed 's/^#.*: //1' | sed 's/ .*$//1'`
+  RES=`grep ' V !$' $TMP.makeFeatureTree | sed 's/^#.*: //1' | sed 's/ .*$//1'`
   echo -e "$N\t$OBJS\t$RES"
 done
 echo "" > /dev/stderr

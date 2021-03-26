@@ -23,6 +23,6 @@ if [ -e $INC/large ]; then
 fi
 $THIS/tree_quality_phen.sh $INC/tree $INC/_init.list $INC/phen $LARGE 0 "" > $INC/hist/makeFeatureTree-tree1.$VER
 rm $INC/_init.list
-grep ' !' $INC/hist/makeFeatureTree-tree1.$VER
+grep ' V !$' $INC/hist/makeFeatureTree-tree1.$VER
 
 
