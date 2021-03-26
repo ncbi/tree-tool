@@ -249,7 +249,7 @@ fi
 section "Additional requests"
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.add-req
 if [ -s $INC/dissim.add-req ]; then
-  grep -vwi nan $INC/dissim.add-req | grep -vwi inf >> $INC/dissim
+  grep -vwi 'nan$' $INC/dissim.add-req | grep -vwi 'inf$' >> $INC/dissim || true
 fi
 rm $INC/dissim.add-req
 rm $INC/dissim_request
