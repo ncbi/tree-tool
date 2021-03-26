@@ -28,7 +28,7 @@ if [ -s $TMP.grep ]; then
 fi
 
 section "Finding closest objects"
-$INC/request_closest.sh $NAME `dirname $QUERY` | grep -vw "$NAME" | sed 's/$/ '$NAME'/1' > $TMP.request
+$INC/request_closest.sh $NAME `dirname $QUERY` | grep -vw "^${NAME}$" | sed 's/$/\t'$NAME'/1' > $TMP.request
 
 section "Fitting to the tree"
 cp /dev/null $TMP.dissim
@@ -39,11 +39,11 @@ while [ -s $TMP.request ]; do
   $INC/request2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log  &> /dev/null
   rm $TMP.request
   set +o errexit
-  grep -vwi "nan" $TMP.dissim-add > $TMP.dissim-add1
+  grep -vwi "nan$" $TMP.dissim-add > $TMP.dissim-add1
   set -o errexit
   if [ ! -s $TMP.dissim-add1 ]; then
     wc -l $TMP.dissim-add
-    echo -e "${YELLOW}Incomparable objects${NOCOLOR}"
+    warning "Incomparable objects"
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
