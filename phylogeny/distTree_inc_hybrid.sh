@@ -27,10 +27,8 @@ if [ ! -s $INC/hybrid.new ]; then
   exit 0
 fi
 
-#$INC/hybrid2db.sh $INC/hybrid.new
 $THIS/hybrid2list.sh $INC/hybrid.new > $INC/hybrid.add
 $INC/objects_in_tree.sh $INC/hybrid.add null
-  # was: 0
 $THIS/../trav $INC/hybrid.add "$INC/outlier2db.sh %f auto_hybrid"  
 rm $INC/hybrid.add
 
