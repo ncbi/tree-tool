@@ -2141,6 +2141,7 @@ void TextTable::setHeader ()
       if (field. empty ())
         continue;
       Header& h = header [i];
+      maximize (h. len_max, field. size ());
       if (! h. numeric)
         continue;
       {
@@ -3464,6 +3465,7 @@ int Application::run (int argc,
 	  	
   
 		qc ();
+		createTmp ();
   	body ();
 
   
@@ -3492,7 +3494,7 @@ int Application::run (int argc,
 
 ShellApplication::~ShellApplication ()
 {
-	if (! tmp. empty () && ! logPtr)
+	if (tmpCreated && ! logPtr)
 	  exec ("rm -fr " + tmp + "*");  
 }
 
@@ -3510,12 +3512,6 @@ void ShellApplication::initEnvironment ()
       tmp = s;
     else
       tmp = "/tmp";
-    const string tmpDir (tmp);
-    tmp += "/XXXXXX";
-    if (mkstemp (var_cast (tmp. c_str ())) == -1)
-      throw runtime_error ("Error creating a temporary file in " + tmpDir);
-  	if (tmp. empty ())
-  		throw runtime_error ("Cannot create a temporary file in " + tmpDir);
   }
 
   // execDir, programName
@@ -3535,6 +3531,24 @@ void ShellApplication::initEnvironment ()
   for (Key& key : keys)
     if (! key. flag)
       replaceStr (key. defaultValue, "$BASE", execDir_);
+}
+
+
+
+void ShellApplication::createTmp () 
+{
+  ASSERT (! tmpCreated);
+  
+  if (useTmp)
+  {
+    const string tmpDir (tmp);
+    tmp += "/XXXXXX";
+    if (mkstemp (var_cast (tmp. c_str ())) == -1)
+      throw runtime_error ("Error creating a temporary file in " + tmpDir);
+  	if (tmp. empty ())
+  		throw runtime_error ("Cannot create a temporary file in " + tmpDir);
+    tmpCreated = true;
+  }
 }
 
 

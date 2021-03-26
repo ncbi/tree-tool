@@ -2675,7 +2675,8 @@ public:
  ~Progress () 
     { if (active)
     	{ if (! uncaught_exception ())
-    	  { report ();
+    	  { step. clear ();
+    	    report ();
     	    cerr << endl;
     	  }
     	  beingUsed--;
@@ -3201,6 +3202,7 @@ struct TextTable : Named
   bool saveHeader {true};
   struct Header : Named
   { 
+    size_t len_max {0};
     // Type
     bool numeric {true};
     // Valid if numeric
@@ -3211,7 +3213,7 @@ struct TextTable : Named
       {}
     void qc () const override;
     void saveText (ostream& os) const override
-      { os << name << ' ' << (numeric ? ((scientific ? "float" : "int") + string ("(") + to_string (decimals) + ")") : "char"); }
+      { os << name << ' ' << len_max << ' ' << (numeric ? ((scientific ? "float" : "int") + string ("(") + to_string (decimals) + ")") : "char"); }
   };
   Vector<Header> header;
     // size() = number of columns
@@ -3888,6 +3890,8 @@ protected:
 protected:
   virtual void initEnvironment ()
     {}
+  virtual void createTmp ()
+    {}
   string getInstruction () const;
   virtual string getHelp () const;
 public:
@@ -3910,6 +3914,9 @@ struct ShellApplication : Application
   string tmp;
     // Temporary file prefix: ($TMPDIR or "/tmp") + "/XXXXXX"
     // If log is used then tmp is printed in the log file and the temporary files are not deleted 
+private:
+  bool tmpCreated {false};
+public:
   string execDir;
     // Ends with '/'
     // Physically real directory of the software
@@ -3928,6 +3935,7 @@ struct ShellApplication : Application
 
 protected:
   void initEnvironment () override;
+  void createTmp () override;
   string getHelp () const override;
 private:
   void body () const final;
