@@ -59,9 +59,6 @@ if [ $NEW_PAR == 1 ]; then
 fi
   
 
-
-
-echo ""
 super_section "Final optimization"
 
 VER=`cat $INC/version`
