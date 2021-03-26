@@ -120,6 +120,7 @@ ifdef AT_NCBI
   COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
   $(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
+  $(DATABASE_DIR)/dbPhyl.o:	$(DATABASE_DIR)/dbPhyl.hpp $(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
 
   $(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
