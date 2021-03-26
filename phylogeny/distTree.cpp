@@ -3159,41 +3159,40 @@ DistTree::DistTree (const string &dataDirName,
     {
       iss. reset (f. line);
       iss >> leafName >> anchorName >> leafLen >> arcLen;
-      ASSERT (leafLen >= 0.0);
-      ASSERT (arcLen >= 0.0);
+      QC_ASSERT (leafLen >= 0.0);
+      QC_ASSERT (arcLen >= 0.0);
     //ASSERT (iss. eof ());  // Extra fields
+
       const DTNode* anchor = lcaName2node (anchorName, buf);
-      ASSERT (anchor);
-      // Attach a leaf
-      Leaf* leaf = nullptr;
+      QC_ASSERT (anchor);
       if (const Leaf* anchorLeaf = anchor->asLeaf ())
         if (! anchorLeaf->discernible)
           anchor = static_cast <const DTNode*> (anchor->getParent ());
       ASSERT (anchor);
-      if (! leaf)
+      while (   anchor != root 
+             && arcLen > anchor->len
+            )
       {
-        while (   anchor != root 
-               && arcLen > anchor->len
-              )
-        {
-          arcLen -= anchor->len;
-          anchor = static_cast <const DTNode*> (anchor->getParent ());
-        }
-        if (anchor == root)  
-          leaf = new Leaf (*this, const_static_cast <Steiner*> (root), arcLen + leafLen, leafName);
-        else
-        {
-          auto st = new Steiner ( *this
-                                , const_static_cast <Steiner*> (anchor->getParent ())
-                                , anchor->len - arcLen
-                                );
-          ASSERT (st);
-          var_cast (anchor) -> setParent (st);
-          var_cast (anchor) -> len = max (0.0, arcLen);
-          leaf = new Leaf (*this, st, leafLen, leafName);
-        }
+        arcLen -= anchor->len;
+        anchor = static_cast <const DTNode*> (anchor->getParent ());
+      }
+
+      Leaf* leaf = nullptr;
+      if (anchor == root)  
+        leaf = new Leaf (*this, const_static_cast <Steiner*> (root), arcLen + leafLen, leafName);
+      else
+      {
+        auto st = new Steiner ( *this
+                              , const_static_cast <Steiner*> (anchor->getParent ())
+                              , anchor->len - arcLen
+                              );
+        ASSERT (st);
+        var_cast (anchor) -> setParent (st);
+        var_cast (anchor) -> len = max (0.0, arcLen);
+        leaf = new Leaf (*this, st, leafLen, leafName);
       }
       ASSERT (leaf);
+
       name2leaf [leaf->name] = leaf;
       newLeaves << leaf;
     }
@@ -9215,6 +9214,7 @@ void NewLeaf::Location::qc () const
 
   QC_ASSERT (leafLen >= 0.0);
   QC_ASSERT (leafLen < inf);
+  QC_IMPLY (indiscernibleFound, ! leafLen && ! arcLen);
   
 //QC_IMPLY (leafLen == 0 && arcLen == 0, anchor->asLeaf ());
   
@@ -9467,10 +9467,14 @@ void NewLeaf::process (bool init,
 
 void NewLeaf::saveRequest (const string &requestFName) const
 { 
+  OFStream f (requestFName);
+
+  if (location. indiscernibleFound)
+    return;
+
   VectorPtr<Leaf> requested (location. anchor->getSparseLeafMatches (name, sparsingDepth, false, false));
   requested. filterValue ([this] (const Leaf* leaf) { const Leaf2dissim ld (leaf); return leaf2dissims. containsFast (ld); });
   
-  OFStream f (requestFName);
   for (const Leaf* leaf : requested)
   {
     if (name == leaf->name)
@@ -9487,6 +9491,8 @@ void NewLeaf::saveRequest (const string &requestFName) const
 
 void NewLeaf::optimize ()
 {
+  ASSERT (! location. indiscernibleFound);
+
   bool dissimExists = false;
   for (const Leaf2dissim& ld : leaf2dissims)
   {
@@ -9501,6 +9507,7 @@ void NewLeaf::optimize ()
         location. leafLen = 0.0;
         location. arcLen = 0.0;
         location. absCriterion_leaf = 0.0;
+        location. indiscernibleFound = true;
         return;
       }
     }

@@ -1670,6 +1670,7 @@ public:
       // From anchor to leaf->getParent()
     Real absCriterion_leaf {inf};
       // To be minimized, >= 0
+    bool indiscernibleFound {false};
       
     void qc () const override;
     void saveText (ostream &os) const override
