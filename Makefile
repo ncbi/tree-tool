@@ -24,6 +24,7 @@ all:	\
   setRandOrd \
   splitList \
   str2hash \
+  textTab \
   trav \
   tsv_comp \
   unCgi
@@ -105,6 +106,12 @@ str2hash.o:  $(COMMON_HPP)
 str2hashOBJS=str2hash.o $(CPP_DIR)/common.o
 str2hash:	$(str2hashOBJS)
 	$(CXX) -o $@ $(str2hashOBJS) $(LIBS)
+	$(ECHO)
+
+textTab.o:  $(COMMON_HPP)  
+textTabOBJS=textTab.o $(CPP_DIR)/common.o
+textTab:	$(textTabOBJS)
+	$(CXX) -o $@ $(textTabOBJS) $(LIBS)
 	$(ECHO)
 
 trav.o:  $(COMMON_HPP)  
