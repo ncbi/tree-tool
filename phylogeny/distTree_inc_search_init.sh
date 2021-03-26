@@ -16,7 +16,7 @@ DIR=$INC/search/$OBJ
 
 while true; do
   set +o errexit
-	$INC/request_closest.sh $OBJ "" | sed 's/$/\t'$OBJ'/1' > $DIR/request
+	$INC/request_closest.sh $OBJ "" > $DIR/request.raw
   S=$?
   set -o errexit
 	if [ $S == 0 ]; then
@@ -24,6 +24,9 @@ while true; do
 	fi
 	sleep 30
 done
+
+grep -v "^${OBJ}$" $DIR/request.raw | sed 's/$/\t'$OBJ'/1' > $DIR/request || true
+rm $DIR/request.raw
 
 if [ -s $DIR/request ]; then
 	cp /dev/null $DIR/dissim

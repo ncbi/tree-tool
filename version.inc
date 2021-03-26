@@ -1,6 +1,8 @@
-#define VERSION "1.5.8"
+#define VERSION "1.5.10"
 
 
+// 1.5.10 03/25/2021  inc/request_closest.sh $OBJ may return $OBJ
+// 1.5.9  03/24/2021  NewLeaf::saveRequest() prints empty list of requests if location.indiscernible()
 // 1.5.8  03/22/2021  makeDistTree: quality calculation uses threads
 // 1.5.7  03/21/2021  FeatureTree::globalSingletonsSize bug
 // 1.5.6  03/17/2021  feature tree: only-optional features are removed; 
