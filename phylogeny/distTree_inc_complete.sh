@@ -12,17 +12,18 @@ INC=$1
 OBJS=$2
 
 
+#set -x
+
+
 #if false; then  
 section "QC $INC/"
 if [ -s $INC/tree ]; then
-  echo "$INC/tree must be empty"
-  exit 1
+  error "$INC/tree must be empty"
 fi
 
 N=`distTree_inc_new_list.sh $INC | wc -l`
 if [ $N -gt 0 ]; then
-  echo "$INC/new/ must be empty"
-  exit 1
+  error "$INC/new/ must be empty"
 fi
 
 sort -c $OBJS

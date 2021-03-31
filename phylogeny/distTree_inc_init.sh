@@ -4,14 +4,14 @@ source $THIS/../bash_common.sh
 if [ $# -ne 13 ]; then
   echo "Initialize an incremental distance tree directory"
   echo "#1: output directory"
-  echo "#2: grid_min (> 0): min. number of dissimilarity requests to use GRID"
+  echo "#2: min. number of dissimilarity requests to use GRID (> 0)"
   echo "#3: variance: lin|linExp|..."
   echo "#4: hybridness_min (> 1); 0 - no hybrids"
   echo "#5: dissim_boundary (> 0 or NAN)"
   echo "#6: genogroup_barrier (> 0 or NAN)"
   echo "#7: complete path to a 'phenotype' directory or ''"
   echo "#8: large (0/1): 1 - files in #1/new/ and #7/ are grouped into subdirectories named file2hash(<file name>)"
-  echo "#9: request_closest_sql (0/1): 1 - request_closest.sh queries an SQL database and the number of concurrent connections is restricted to 30"
+  echo "#9: object2closest.sql (0/1): 1 - object2closest.sh queries an SQL database and the number of concurrent connections is restricted to 30"
   echo "#10: SQL server name or ''"
   echo "#11: database name on the SQL server or ''"
   echo "#12: complete path to a directory for bulk insert into the database or ''"
@@ -71,7 +71,8 @@ echo "1" > $INC/version
 
 mkdir $INC/hist
 
-echo $GRID_MIN > $INC/grid_min
+echo $GRID_MIN > $INC/object2closest.grid
+echo $GRID_MIN > $INC/pairs2dissim.grid
 touch $INC/runlog
 
 echo "$VARIANCE"          > $INC/variance
@@ -86,7 +87,7 @@ if [ $LARGE == 1 ]; then
 fi
 
 if [ $REQUEST_CLOSEST_SQL == 1 ]; then
-  touch $INC/request_closest_sql
+  touch $INC/object2closest.sql
 fi
 
 
@@ -102,8 +103,8 @@ create_script objects_in_tree
 if [ $SERVER ]; then
   create_script outlier2db
 fi
-create_script request2dissim
-create_script request_closest
+create_script pairs2dissim
+create_script object2closest
 create_script qc
 create_script qc_object
 if false; then  # deprecated

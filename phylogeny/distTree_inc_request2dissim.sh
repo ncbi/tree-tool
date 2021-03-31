@@ -15,9 +15,9 @@ OUT=$3
 
 N=`cat $REQ | wc -l`
 echo "$N $REQ"
-GRID_MIN=`cat $INC/grid_min`
+GRID_MIN=`cat $INC/pairs2dissim.grid`
 if [ $N -le $GRID_MIN ]; then 
-  $INC/request2dissim.sh $REQ "" $OUT $OUT.log > /dev/null
+  $INC/pairs2dissim.sh $REQ "" $OUT $OUT.log > /dev/null
   if [ -e $OUT.log ]; then
     if [ -s $OUT.log ]; then
       head $OUT.log
@@ -41,7 +41,7 @@ else
 		  wc -l $INC/dr.list
 		  mkdir $INC/dr.log
 		  $THIS/../grid_wait.sh 1
-  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/request2dissim.sh $INC/dr/%f %Q%Q $INC/dr.out/%f $INC/dr.log/%f%q > /dev/null"		
+  		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/pairs2dissim.sh $INC/dr/%f %Q%Q $INC/dr.out/%f $INC/dr.log/%f%q > /dev/null"		
   		$THIS/../qstat_wait.sh 3000 1	 
 		  ls $INC/dr.log > $INC/dr.bad
 		  ls $INC/dr.out > $INC/dr.good

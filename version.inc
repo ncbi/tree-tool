@@ -1,6 +1,10 @@
-#define VERSION "1.5.10"
+#define VERSION "1.6.1"
 
 
+// 1.6.1  03/31/2021  inc/: request2dissim.sh -> pairs2dissim.sh
+//                          request_closest.sh -> object2closest.sh
+//                          request_closest_sql -> object2closest.sql
+//                          grid_min -> pairs2dissim.grid and object2closest.grid
 // 1.5.10 03/25/2021  inc/request_closest.sh $OBJ may return $OBJ
 // 1.5.9  03/24/2021  NewLeaf::saveRequest() prints empty list of requests if location.indiscernible()
 // 1.5.8  03/22/2021  makeDistTree: quality calculation uses threads

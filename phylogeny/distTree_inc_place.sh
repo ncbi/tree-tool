@@ -28,7 +28,7 @@ if [ -s $TMP.grep ]; then
 fi
 
 section "Finding closest objects"
-$INC/request_closest.sh $NAME `dirname $QUERY` | grep -vw "^${NAME}$" | sed 's/$/\t'$NAME'/1' > $TMP.request
+$INC/object2closest.sh $NAME `dirname $QUERY` | grep -vw "^${NAME}$" | sed 's/$/\t'$NAME'/1' > $TMP.request
 
 section "Fitting to the tree"
 cp /dev/null $TMP.dissim
@@ -36,7 +36,7 @@ echo "FAIL" > $TMP.leaf
 VARIANCE=`cat $INC/variance`
 while [ -s $TMP.request ]; do
   printf "."
-  $INC/request2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log  &> /dev/null
+  $INC/pairs2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log  &> /dev/null
   rm $TMP.request
   set +o errexit
   grep -vwi "nan$" $TMP.dissim-add > $TMP.dissim-add1

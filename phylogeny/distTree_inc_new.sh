@@ -18,7 +18,9 @@ $THIS/../check_tmp.sh
 SEED=1  # >= 1
 
 
-GRID_MIN=`cat $INC/grid_min`
+GRID_MIN=`cat $INC/pairs2dissim.grid`
+SEARCH_GRID_MIN=`cat $INC/object2closest.grid`  
+  # was: $GRID_MIN / 100
 QC=""  # -qc  
 RATE=0.015   # PAR
 VARIANCE=`cat $INC/variance`
@@ -87,7 +89,6 @@ if [ $N -gt 0 ]; then
   rm -rf $INC/log/
   mkdir $INC/log
   $THIS/../trav  $INC/search "touch $INC/log/%f" 
-  SEARCH_GRID_MIN=$(( $GRID_MIN / 100 ))  # PAR
   GRID=0
   if [ $N -lt $SEARCH_GRID_MIN ]; then
     $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
@@ -95,7 +96,8 @@ if [ $N -gt 0 ]; then
     GRID=1
     $THIS/../grid_wait.sh 1
     UL1=""
-    if [ -e $INC/request_closest_sql ]; then
+    if [ -e $INC/object2closest.sql ]; then
+      # PAR
       UL1=",ul1=30"
     fi
     $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 

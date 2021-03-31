@@ -16,7 +16,7 @@ DIR=$INC/search/$OBJ
 
 while true; do
   set +o errexit
-	$INC/request_closest.sh $OBJ "" > $DIR/request.raw
+	$INC/object2closest.sh $OBJ "" > $DIR/request.raw
   S=$?
   set -o errexit
 	if [ $S == 0 ]; then

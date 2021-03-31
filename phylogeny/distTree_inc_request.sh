@@ -21,7 +21,7 @@ DIR=$INC/search/$OBJ
 LOG=$INC/log/$OBJ
 
 
-$INC/request2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.request2dissim
+$INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.pairs2dissim
 if [ ! -s $DIR/dissim.add ]; then
   echo "Empty $DIR/dissim.add" > $LOG
   exit 1
