@@ -10,4 +10,4 @@ IN=$1
 IN_TREE=$2
 
 
-exit 1
+error "$0 is not implemented"

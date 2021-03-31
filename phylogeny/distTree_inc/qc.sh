@@ -8,6 +8,7 @@ if [ $# -ne 1 ]; then
 fi
 
 
+warning "$0 is not implemented"
 exit 0
 
 

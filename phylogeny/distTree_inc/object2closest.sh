@@ -1,13 +1,13 @@
 #!/bin/bash --noprofile
 #source bash_common.sh
-if [ $# -ne 2 ]; then
-  echo "Record an outlier in a database"
+if [ $# -ne 1 ]; then
+  echo "Print 100 approximately closest objects to #1"
   echo "#1: object id"
-  echo "#2: outlier type"
+  echo "Requires: Time: O(log^4(n))"
   exit 1
 fi
 OBJ=$1
-OUTLIER=$2
 
 
 error "$0 is not implemented"
+

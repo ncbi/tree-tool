@@ -8,4 +8,4 @@ fi
 FD=$1
 
 
-exit 0
+warning "$0 is not implemented"
