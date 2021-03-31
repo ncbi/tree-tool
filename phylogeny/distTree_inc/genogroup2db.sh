@@ -8,4 +8,5 @@ fi
 IN=$1
 
 
-exit 1
+error "$0 is not implemented"
+
