@@ -11,21 +11,4 @@ QUERY=$1
 DB=$2
 
 
-
-TMP=`mktemp`  
-#echo $TMP  
-
-
-blastn  -db $DB  -query $QUERY  -strand plus  -task blastn  -outfmt '6 sseqid nident' > $TMP.blastn
-NAME=`head -1 $QUERY | sed 's/^>//1' | cut -f 1 -d ' '`
-set +o errexit
-grep -v $NAME $TMP.blastn > $TMP.grep 
-sort -k 2 -n -r $TMP.grep | cut -f 1 | head -100 > $TMP.head
-set -o errexit
-sort -u $TMP.head 
-
-
-rm $TMP*  
-
-
-
+blastn  -db $DB  -query $QUERY  -strand plus  -task blastn  -num_threads 5  -outfmt '6 sseqid nident' | sort -k 2 -n -r | cut -f 1 | head -100 | sort -u
