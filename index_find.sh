@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/../bash_common.sh
+source $THIS/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Find approximately closest objects ordered by proximity"
   echo "An object is a list of attributes"
@@ -8,7 +8,7 @@ if [ $# -ne 4 ]; then
   echo "#2: directory with attribute index"
   echo "#3: object size limit (S)"
   echo "#4: target object"  
-  echo "Average time: O(S A^2 (A + log S)), where A is the average number of attributes in an object"
+  echo "Average time: O(A^2 S (A + log A + log N)), where N is the number of objects, and A is the average number of attributes in an object"
   exit 1
 fi
 OBJ_DIR=$1
@@ -21,8 +21,11 @@ TMP=`mktemp`
 #echo $TMP
 
 
+# |$INDEX| + O(N A)
+
 # $TMP.obj, $TMP.big_attr
-# |$TMP.obj| = O(S A)
+# |$TMP.obj| = O(A S)
+# Time = O(A (S + log N + log A))
 touch $TMP.obj
 while read ATTR
 do
@@ -37,14 +40,14 @@ do
   fi
 done < $TARGET
 
-# Time: O(S A (log A + log A))
+# Time: O(A S (log A + log S))
 sort -u $TMP.obj > $TMP.small_obj
 
 # append: $TMP.obj
-# Time: O(S A^3)
+# Time: O(A^2 S (A + log N))
 while read OBJ
 do
-  # Time: O(A^2)
+  # Time: O(A (A + log N))
   while read ATTR
   do
     if grep -x "$ATTR" $OBJ_DIR/$OBJ &> /dev/null; then
@@ -52,9 +55,9 @@ do
     fi
   done < $TMP.big_attr
 done < $TMP.small_obj
-# |$TMP.obj| = O(S A^2)
+# |$TMP.obj| = O(A^2 S)
 
-# Time: O(S A^2 (log S + log A))
+# Time: O(A^2 S (log A + log S))
 sort $TMP.obj | uniq -c | sort -k 1 -n -r | sed 's/^ *[0-9]\+ \+//1'
 
 
