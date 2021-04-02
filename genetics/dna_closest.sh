@@ -3,8 +3,8 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Return: top 100 BLASTN hits in top strand"
-  echo "#1; Query DNA sequence"
-  echo "#2: Subject DNA database"
+  echo "#1; query DNA sequence"
+  echo "#2: subject DNA BLAST database"
   exit 1
 fi
 QUERY=$1
