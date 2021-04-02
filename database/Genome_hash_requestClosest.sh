@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# != 7 ]; then
-  echo "Print Genomes approximately closest to #1, where Genome.in_tree = 1"
+  echo "Print Genome.id's approximately closest to #1, where Genome.in_tree = 1"
   echo "#1: SQL Server name"
   echo "#2: Database with tables Genome, GenomeHash, FreqHash"
   echo "#3: Directory for bulk insert"
