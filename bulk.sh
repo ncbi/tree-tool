@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/../bash_common.sh
+source $THIS/bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Bulk-insert"
   echo "#1: SQL server name"
