@@ -2675,7 +2675,7 @@ public:
  ~Progress () 
     { if (active)
     	{ if (! uncaught_exception ())
-    	  { step. clear ();
+    	  { // step. clear ();
     	    report ();
     	    cerr << endl;
     	  }
