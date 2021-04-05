@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Process new objects for a distance tree: new/ -> leaf, dissim"
+  echo "Add new objects to the distance tree: new/ -> leaf, dissim; optimize the tree"
   echo "#1: incremental distance tree directory"
   echo "Time: O(n log^4(n))"
   exit 1
@@ -167,10 +167,18 @@ fi
 
 HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 
+DELETE_CRITERION_OUTLIERS=""
+if [ -e $INC/delete_criterion_outliers ]; then
+  DELETE_CRITERION_OUTLIERS="-delete_criterion_outliers $INC/outlier-criterion"
+fi
+
 HYBRID=""
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
-	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY  -delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_deformation_outliers $INC/outlier-deformation  -deformation_outlier_num_max 1"
+	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
+  if [ ! -e $INC/delete_criterion_outliers ]; then
+	  DELETE_CRITERION_OUTLIERS="-delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_deformation_outliers $INC/outlier-deformation  -deformation_outlier_num_max 1"
+	fi
 fi
 
 DELETE=""
@@ -191,6 +199,7 @@ $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE \
   $REINSERT  -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
+  $DELETE_CRITERION_OUTLIERS \
   $HYBRID \
   -output_tree $INC/tree.new \
   -dissim_request $INC/dissim_request \
