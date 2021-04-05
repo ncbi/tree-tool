@@ -14,6 +14,7 @@ endif
 
 all:	\
   csv2tab \
+  effectiveSize \
   extractPairs \
   file2hash \
   group \
@@ -40,6 +41,12 @@ csv2tab.o:  $(COMMON_HPP)
 csv2tabOBJS=csv2tab.o $(CPP_DIR)/common.o
 csv2tab:	$(csv2tabOBJS)
 	$(CXX) -o $@ $(csv2tabOBJS) $(LIBS)
+	$(ECHO)
+
+effectiveSize.o:  $(COMMON_HPP)  
+effectiveSizeOBJS=effectiveSize.o $(CPP_DIR)/common.o
+effectiveSize:	$(effectiveSizeOBJS)
+	$(CXX) -o $@ $(effectiveSizeOBJS) $(LIBS)
 	$(ECHO)
 
 extractPairs.o:  $(COMMON_HPP)  
