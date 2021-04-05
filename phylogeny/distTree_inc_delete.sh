@@ -6,11 +6,15 @@ if [ $# -ne 2 ]; then
   echo "Update: #1/"
   echo "Delete: #2"
   echo "#1: incremental distance tree directory"
-  echo "#2: list of objects to delete; to be moved into #1/hist/"
+  echo "#2: sorted list of objects to delete; to be moved into #1/hist/"
   exit 1
 fi
 INC=$1
 DEL=$2
+
+
+# QC
+sort -c $DEL
 
 
 VER=`cat $INC/version`
@@ -61,7 +65,4 @@ $INC/qc.sh go
 
 $THIS/distTree_inc_tree1_quality.sh $INC
 
-
-echo ""
-date
 
