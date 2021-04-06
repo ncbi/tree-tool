@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/../bash_common.sh
+source $THIS/../../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Symmetric best hits dissimilarity by k-mers: >= 0 or nan"
   echo "#1: genome/ (large directory)"

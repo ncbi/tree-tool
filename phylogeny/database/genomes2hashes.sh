@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/../bash_common.sh
+source $THIS/../../bash_common.sh
 if [ $# != 4 ]; then
   echo "Print the number of common hashes for 2 genomes"
   echo "#1: genome/"

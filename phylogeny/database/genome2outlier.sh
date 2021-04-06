@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/../bash_common.sh
+source $THIS/../../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print assemblies with too few univesal proteins"
   echo "#1: assembly id. Input: genome/#1/#1.{prot-univ,hash}"

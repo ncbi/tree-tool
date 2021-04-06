@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/../bash_common.sh
+source $THIS/../../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "Quality control of a locus incremental distance tree directory"
   echo "#1: incremental distance tree directory"
