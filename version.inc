@@ -1,6 +1,12 @@
-#define VERSION "1.6.1"
+#define VERSION "1.7.1"
 
 
+// 1.7.1  04/08/2021  inc/indiscern: pairs of indiscernible objects
+//                    hybrids are identified for indiscernibility classes
+//                    getMissingLeafPairs_ancestors(): only for the member with smallest name of an indiscernibility class
+//                    inc/good
+// 1.6.2  04/06/2021  makeDistTree: hybrid removal: neighbors are optimized only at the last subgraph optimization iteration
+//                                  -delete_deformation_outliers: deformation pair and deformation value are saved
 // 1.6.1  03/31/2021  inc/: request2dissim.sh -> pairs2dissim.sh
 //                          request_closest.sh -> object2closest.sh
 //                          request_closest_sql -> object2closest.sql

@@ -78,6 +78,8 @@ struct ThisApplication : Application
 	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
 	  addKey ("variance_min", "Min. dissimilarity variance", "0");  // ; to be added to the computed variance
 	  
+	  addKey ("good", "List of objects, which will not be flagged as outliers");
+	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
 	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
@@ -86,12 +88,10 @@ struct ThisApplication : Application
 
 	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
 	//addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
-	//addFlag ("subgraph_fast", "Limit the number of iterations of subgraph optimizations over the whole tree");
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
 	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations");
 	//addFlag ("reinsert_orig_weights", "Use original weights in the reinsert optimization");  
-	//addFlag ("reinsert_iter", "Reinsert subtrees at each iteration of subgraph optimization");
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
 
@@ -134,11 +134,11 @@ struct ThisApplication : Application
 	
 	
 	
-	bool deleteHybrids (DistTree &tree,
+	void deleteHybrids (DistTree &tree,
+	                    bool optimizeLeafNeighbors,
 	                    OFStream *triangleParentPairsOs,
 	                    OFStream &hybridTrianglesOs,
 	                    Vector<Pair<const Leaf*>> *hybridDissimRequests) const
-	// Return: true <=> hybrids are deleted
 	// Append: *hybridDissimRequests
 	{
 	#if 1
@@ -180,41 +180,37 @@ struct ThisApplication : Application
     for (const TriangleParentPair& tpp : triangleParentPairs)
       tpp. qcMatchHybrids (hybrids);
     
-  #if 0
-    // Should be in hybridTrianglesOs
-    Set<const Leaf*> extra;
-    for (const Leaf* leaf : hybrids)
-    	if (! leaf->discernible)
-    		for (const DiGraph::Node* child : leaf->getParent () -> getChildren ())
-    			if (const Leaf* other = static_cast <const DTNode*> (child) -> asLeaf ())
+    {
+      Set<const Leaf*> extra;  // These objects will not be in hybridTrianglesOs !
+      for (const Leaf* leaf : hybrids)
+      	if (! leaf->discernible)
+      		for (const DiGraph::Node* child : leaf->getParent () -> getChildren ())
+      		{
+      			const Leaf* other = static_cast <const DTNode*> (child) -> asLeaf ();
+      			ASSERT (other);
+   			  	ASSERT (! other->discernible);
     			  if (! hybrids. containsFast (other))
-    			  {
-    			  	ASSERT (! other->discernible);
     			  	extra << other;
-    			  }
-    Common_sp::insertAll (hybrids, extra);
-  #endif
+      	  }
+      Common_sp::insertAll (hybrids, extra);
+    }
     			  	      
     cout << "# Hybrids: " << hybrids. size () << endl;        
 
     cerr << "Deleting hybrids ..." << endl;
-    bool deleted = false;
     {
       Progress prog (hybrids. size ());
       for (const Leaf* leaf : hybrids)
       {
       	ASSERT (leaf->graph);
-        tree. removeLeaf (var_cast (leaf), true);
+        tree. removeLeaf (var_cast (leaf), optimizeLeafNeighbors);
         prog (tree. absCriterion2str ());
-        deleted = true;
       }
     }
     
     tree. reportErrors (cout);
     cout << endl;
     tree. qc ();
-    
-    return deleted;
 	}
 	
 	
@@ -232,6 +228,7 @@ struct ThisApplication : Application
 	               variance_min        = str2real (getArg ("variance_min"));      // Global
 	  const bool   variance_dissim     = getFlag ("variance_dissim");
 	  const bool   reinsert_variance_dist = getFlag ("reinsert_variance_dist");
+	  const string goodFName           = getArg ("good");
 	               
 		const string deleteFName         = getArg ("delete");
 		const bool   check_delete        = getFlag ("check_delete");
@@ -240,12 +237,10 @@ struct ThisApplication : Application
 		      
 		const bool   optimize            = getFlag ("optimize");
 	//const bool   whole               = getFlag ("whole");
-	//const bool   subgraph_fast       = getFlag ("subgraph_fast");
 		const size_t subgraph_iter_max   = str2<size_t> (getArg ("subgraph_iter_max"));
 		const bool   skip_len            = getFlag ("skip_len");
 		const bool   reinsert            = getFlag ("reinsert");
 	//const bool   reinsert_orig_weights = getFlag ("reinsert_orig_weights");		
-	//const bool   reinsert_iter       = getFlag ("reinsert_iter");
 		const bool   skip_topology       = getFlag ("skip_topology");
 	  const bool   new_only            = getFlag ("new_only");
 
@@ -328,8 +323,6 @@ struct ThisApplication : Application
 
     if (optimize && ! optimizable)
       throw runtime_error ("-optimize requires dissimilarities");
-  //if (subgraph_fast && ! optimize)
-    //throw runtime_error ("-subgraph_fast requires -optimize");
     if (subgraph_iter_max && ! optimize)
       throw runtime_error ("-subgraph_iter_max requires -optimize");
     if (skip_len && ! optimize)
@@ -338,7 +331,6 @@ struct ThisApplication : Application
       throw runtime_error ("-reinsert requires -optimize");
   //if (reinsert_orig_weights && ! reinsert)
     //throw runtime_error ("-reinsert_orig_weights requires -reinsert");
-  //IMPLY (reinsert_iter,     optimize);
     if (skip_topology && ! optimize)
       throw runtime_error ("-skip_topology requires -optimize");
     if (new_only && optimize)
@@ -432,6 +424,9 @@ struct ThisApplication : Application
     
     if (fix_transient)
       tree->fixTransients ();
+      
+    if (! goodFName. empty ())
+      tree->setGoodLeaves (goodFName);
       
     if (qc_on)
     {
@@ -585,16 +580,11 @@ struct ThisApplication : Application
             cout << "Optimizing topology: subgraphs ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();
-          #if 0
-            if (subgraph_fast)
-              minimize (iter_max, max<size_t> (1, (size_t) log2 ((Real) leaves) / areaRadius_std));  // PAR
-          #endif
             if (subgraph_iter_max)
             	minimize (iter_max, subgraph_iter_max);
             ASSERT (iter_max);
-          //bool hybridDeleted = true;
             size_t iter = 0;
-            while (iter < iter_max /*|| (delete_all_hybrids && hybridDeleted)*/)
+            while (iter < iter_max)
           	{
               cerr << "Iteration " << iter + 1;
           		if (iter_max < numeric_limits<size_t>::max ())
@@ -603,21 +593,17 @@ struct ThisApplication : Application
           		const Real absCriterion_old = tree->absCriterion;
           		ASSERT (absCriterion_old < inf);
               tree->optimizeDissimCoeffs ();  
-            #if 0
-              if (reinsert_iter)  
-                tree->optimizeReinsert ();  
-            #endif
               tree->optimizeLargeSubgraphs ();  
-            //hybridDeleted = false;
               if (hybridF. get ())
-              	/*hybridDeleted =*/ deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+              	deleteHybrids ( *tree
+              	              , iter + 1 == iter_max
+              	              , hybridParentPairsF. get ()
+              	              , *hybridF
+              	              , dissim_request. empty () ? nullptr : & hybridDissimRequests
+              	              );
               if (verbose ())
                 tree->saveFile (output_tree); 
               iter++;
-            #if 0
-              if (hybridDeleted)
-              	continue;
-            #endif
               if (! absCriterion_old)
               	break;
               if (   absCriterion_old <= tree->absCriterion 
@@ -647,7 +633,7 @@ struct ThisApplication : Application
       }
       else
         if (hybridF. get ())
-          deleteHybrids (*tree, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+          deleteHybrids (*tree, true, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
 
 
       if (! delete_criterion_outliers. empty ())
@@ -706,7 +692,7 @@ struct ThisApplication : Application
             {
               if (deformation_outlier_num_max && removed >= deformation_outlier_num_max)
                 break;
-              f << leaf->name << endl;
+              f << leaf->name << '\t' << leaf->getDeformationS () << endl;
               tree->removeLeaf (var_cast (leaf), true);
               prog (tree->absCriterion2str ());
               removed++;

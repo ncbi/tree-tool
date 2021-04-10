@@ -173,31 +173,6 @@ struct DissimLine;
 
 
 
-struct Neighbor 
-{ 
-	const Leaf* leaf {nullptr}; 
-	  // !nullptr
-	size_t dissimType {no_index};
-	Real target {NaN};
-	  // > 0
-
-	  
-	Neighbor (const Leaf* leaf_arg,
-	          size_t dissimType_arg,
-	          Real target_arg);
-  Neighbor (const Leaf* leaf_arg,
-            size_t dissimType_arg);
-
-	  
-	bool operator< (const Neighbor &other) const;
-	bool operator== (const Neighbor &other) const
-	  { return    leaf       == other. leaf
-	           && dissimType == other. dissimType; 
-	  }
-};
-
-
-
 struct Triangle  
 // Triple of Leaf's with a triangle inequality violation
 { 
@@ -389,10 +364,8 @@ private:
                                const Leaf* parent,
                                Real parentDissim) const;
 	  // Average time: O(p/n log(n))
-	void setChildrenHybrid ()
-	  { for (Triangle& tr : triangles)
-	  	  tr. child_hybrid = true;
-	  }
+  bool childrenGood () const;
+	void setChildrenHybrid ();
 };
 
 
@@ -479,6 +452,7 @@ public:
     // Return: conditional probability
   Real getDeformation () const;
     // Input: maxDeformationDissimNum
+  string getDeformationS () const;
   virtual const Leaf* getReprLeaf (ulong seed) const = 0;
     // Return: !nullptr, in subtree
     // For sparse *getDistTree().dissimAttr
@@ -611,6 +585,7 @@ struct Leaf : DTNode
   static const string non_discernible;
   bool discernible {true};  // May be not used: parameter ??
     // false => getParent()->getChildren() is an equivalence class of indiscernibles
+  bool good {false};
   Real normCriterion {NaN};
     // ~ Normal(0,1)
     
@@ -1309,12 +1284,12 @@ public:
 	  // Invokes: getIndiscernibles()
 
 
-  size_t dissimTypesNum () const
-    { return dissimTypes. empty () ? 1 : dissimTypes. size (); }
   void deleteLeaf (TreeNode* leaf,
                    bool deleteTransientAncestor) final;
     // Requires: !optimizable()
     
+  size_t dissimTypesNum () const
+    { return dissimTypes. empty () ? 1 : dissimTypes. size (); }
   static string getObjName (const string &name1,
                             const string &name2);
   const DTNode* lcaName2node (const string &lcaName,   
@@ -1329,6 +1304,8 @@ public:
     { return 7 * getPathDissimNums_size (); }  // PAR
   VectorPtr<DTNode> getDiscernibles () const;
     // Logical leaves
+  void setGoodLeaves (const string &goodFName);
+    // Output: Leaf::good
   static void printParam (ostream &os) 
     { os << "PARAMETERS:" << endl;
       os << "# Threads: " << threads_max << endl;

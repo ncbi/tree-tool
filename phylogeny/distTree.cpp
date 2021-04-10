@@ -81,36 +81,46 @@ void dissimTransform (Real &target)
 
 // Neighbor
 
-Neighbor::Neighbor (const Leaf* leaf_arg,
-                    size_t dissimType_arg,
-                    Real target_arg)
-: leaf (leaf_arg)
-, dissimType (dissimType_arg)
-, target (target_arg)
+struct Neighbor 
 { 
-  ASSERT (leaf);
-  ASSERT (leaf->graph);
-  ASSERT (target >= 0.0); 
-}
+	const Leaf* leaf {nullptr}; 
+	  // !nullptr
+	size_t dissimType {no_index};
+	Real target {NaN};
+	  // > 0
 
+	  
+  Neighbor (const Leaf* leaf_arg,
+            size_t dissimType_arg,
+            Real target_arg)
+    : leaf (leaf_arg)
+    , dissimType (dissimType_arg)
+    , target (target_arg)
+    { 
+      ASSERT (leaf);
+      ASSERT (leaf->graph);
+      ASSERT (target >= 0.0); 
+    }
+  Neighbor (const Leaf* leaf_arg,
+            size_t dissimType_arg)
+    : leaf (leaf_arg)
+    , dissimType (dissimType_arg)
+    { 
+      ASSERT (leaf);
+      ASSERT (leaf->graph);
+    }
 
-
-Neighbor::Neighbor (const Leaf* leaf_arg,
-                    size_t dissimType_arg)
-: leaf (leaf_arg)
-, dissimType (dissimType_arg)
-{ 
-  ASSERT (leaf);
-  ASSERT (leaf->graph);
-}
-
-
-
-bool Neighbor::operator< (const Neighbor &other) const
-{ 
-  LESS_PART (*this, other, dissimType);
-  return leaf < other. leaf; 
-}
+	  
+  bool operator< (const Neighbor &other) const
+    { 
+      LESS_PART (*this, other, dissimType);
+      return leaf < other. leaf; 
+    }
+	bool operator== (const Neighbor &other) const
+	  { return    leaf       == other. leaf
+	           && dissimType == other. dissimType; 
+	  }
+};
 
 
 
@@ -148,6 +158,7 @@ void Triangle::qc () const
   QC_ASSERT (child);
   QC_ASSERT (child->graph);
   QC_ASSERT (child->badCriterion >= 0.0);
+  QC_IMPLY (child->good, ! child_hybrid);
   for (const bool i : {false, true})
   {
     const Parent& p = parents [i];
@@ -156,6 +167,7 @@ void Triangle::qc () const
     QC_ASSERT (p. leaf->badCriterion >= 0.0);
     QC_ASSERT (child->getDiscernible () != p. leaf->getDiscernible ());
     QC_ASSERT (p. dissim > 0.0);
+    QC_IMPLY (p. leaf->good, ! p. hybrid);
   }
   QC_ASSERT (! (   child_hybrid 
                 && parents [false]. hybrid 
@@ -378,11 +390,18 @@ void TriangleParentPair::finish (const DistTree &tree,
        ) 
     {
       const Parent& p = parents [i];    
-      if (child_classSize < all * classSizeFrac_max)
+      if (   ! childrenGood () 
+          && child_classSize < all * classSizeFrac_max
+         )
         setChildrenHybrid ();
-      else if ((Real) p. classSize < all * classSizeFrac_max)
+      else if (   ! best->parents [i]. leaf->good 
+               && (Real) p. classSize < all * classSizeFrac_max
+              )
         best->parents [i]. hybrid = true;   
-      else if (child_classSize + (Real) p. classSize < all * classSizeFrac_max)
+      else if (   ! childrenGood () 
+               && ! best->parents [i]. leaf->good
+               && child_classSize + (Real) p. classSize < all * classSizeFrac_max
+              )
       {
         setChildrenHybrid ();
         best->parents [i]. hybrid = true;   
@@ -392,13 +411,18 @@ void TriangleParentPair::finish (const DistTree &tree,
   
   {
     const Prob p = child_classSize / all;
-    if (p <= classSizeFrac_max)
+    if (   ! childrenGood () 
+        && p <= classSizeFrac_max
+       )
     {
       // aa bb ab
       setChildrenHybrid ();
       return;
     }
-    if (p >= 1.0 - classSizeFrac_max)
+    if (   ! best->parents [0]. leaf->good
+        && ! best->parents [1]. leaf->good
+        && p >= 1.0 - classSizeFrac_max
+       )
     {
       // ab ac aa
       // common(ab,ac) = 1/4 aa <= random halves of aa
@@ -577,6 +601,25 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
 
 
 
+bool TriangleParentPair::childrenGood () const
+{ 
+  for (const Triangle& tr : triangles)
+	  if (tr. child->good)
+	    return true;
+	return false;
+}
+
+
+
+void TriangleParentPair::setChildrenHybrid ()
+{ 
+  ASSERT (! childrenGood ());
+  for (Triangle& tr : triangles)
+	  tr. child_hybrid = true;
+}
+
+
+
 
 //
 
@@ -614,7 +657,12 @@ void DTNode::qc () const
     //QC_ASSERT (! DistTree_sp::variance_min);
       QC_ASSERT (! inDiscernible ());
       for (const DiGraph::Arc* arc : arcs [false])
-        QC_ASSERT (static_cast <const DTNode*> (arc->node [false]) -> inDiscernible ());
+      {
+        const Leaf* leaf = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+        QC_ASSERT (leaf);
+        QC_ASSERT (leaf->inDiscernible ());
+        QC_ASSERT (leaf->good == static_cast <const DTNode*> (arcs [false]. front () -> node [false]) -> asLeaf () -> good);
+      }
     }
   }
   
@@ -637,12 +685,7 @@ void DTNode::saveContent (ostream& os) const
     os << "  " << err_densityS << "=" << errorDensity;
     
 	if (maxDeformationDissimNum != dissims_max)
-	{
-	  const Dissim& dissim = getDistTree (). dissims [maxDeformationDissimNum];
-	  os << "  " << deformationS << "=" << dissim. leaf1->getName () 
-	                             << ':' << dissim. leaf2->getName ();
-	  os << "  " << deformation_criterionS << "=" << dissim. getDeformation ();
-	}
+	  os << "  " << getDeformationS ();
   else if (const DistTree::DeformationPair* dp = findPtr (getDistTree (). node2deformationPair, this))
     os << "  " << deformationS << '=' << dp->leafName1 
                                << ':' << dp->leafName2 
@@ -706,6 +749,20 @@ Real DTNode::getDeformation () const
   const Real deformation = getDistTree (). dissims [maxDeformationDissimNum]. getDeformation ();
   ASSERT (deformation >= 0.0);
   return deformation;
+}
+
+
+
+string DTNode::getDeformationS () const
+{
+  ASSERT (maxDeformationDissimNum != dissims_max);
+  
+  ostringstream os;
+  const Dissim& dissim = getDistTree (). dissims [maxDeformationDissimNum];
+  os << deformationS << "=" << dissim. leaf1->getName () 
+                     << ':' << dissim. leaf2->getName ()
+     << "  " << deformation_criterionS << "=" << dissim. getDeformation ();
+  return os. str ();
 }
 
 
@@ -5506,6 +5563,32 @@ VectorPtr<DTNode> DistTree::getDiscernibles () const
 }
 
   
+  
+void DistTree::setGoodLeaves (const string &goodFName)
+{
+  LineInput f (goodFName);
+  while (f. nextLine ()) 
+  {
+    trim (f. line);
+    if (strBlank (f. line))
+      continue;
+    if (const Leaf* leaf = findPtr (name2leaf, f. line))
+    {
+      for (const DiGraph::Arc* arc : leaf->getDiscernible () -> arcs [false])
+      {
+        const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+        ASSERT (child);
+        if (child->good)
+          break;  // All children are good
+        var_cast (child) -> good = true;
+      }
+      var_cast (leaf) -> good = true;
+    }
+  }
+}
+
+  
+  
 
 void DistTree::printInput (ostream &os) const
 {
@@ -8216,9 +8299,11 @@ VectorPtr<Leaf> DistTree::findCriterionOutliers (const Dataset &leafErrorDs,
     for (const auto& it : name2leaf)
     {
       const Leaf* leaf = it. second;
-      if (leaf->graph)
-        if (leaf->normCriterion > outlier_min_excl)
-          res << leaf;
+      if (   leaf->graph
+          && ! leaf->good
+          && leaf->normCriterion > outlier_min_excl
+         )
+        res << leaf;
     }
     
   res. sort (leafRelCriterionStrictlyGreater);
@@ -8272,9 +8357,11 @@ VectorPtr<Leaf> DistTree::findDeformationOutliers (Real deformation_mean,
   for (const auto& it : name2leaf)
   {
     const Leaf* leaf = it. second;
-    if (leaf->graph)
-      if (leaf->getDeformation () / deformation_mean > outlier_min_excl)
-        res << leaf;
+    if (   leaf->graph
+        && ! leaf->good
+        && leaf->getDeformation () / deformation_mean > outlier_min_excl
+       )
+      res << leaf;
   }
   res. sort (leafDeformationStrictlyGreater);  
 
@@ -8288,7 +8375,7 @@ VectorPtr<Leaf> DistTree::findDeformationOutliers (Real deformation_mean,
 namespace
 {
   
-  
+
 struct TriangleType
 {
   const Leaf* parent1;
@@ -8313,6 +8400,8 @@ struct TriangleType
 
 
 
+#if 0
+??
 struct RequestCandidate
 {
   const Leaf* leaf1 {nullptr};
@@ -8339,8 +8428,6 @@ struct RequestCandidate
 
 
 
-#if 0
-??
 void hybrid2requests (size_t from, 
                       size_t to, 
                       Vector<RequestCandidate> &res, 
@@ -8818,6 +8905,23 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
       ASSERT (leaf);
       if (! leaf->graph)
         continue;
+      if (! leaf->discernible)
+      {
+        bool main = true;
+        for (const DiGraph::Arc* arc : leaf->getParent () -> arcs [false])
+        {
+          const Leaf* sibling = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+          ASSERT (sibling);
+          ASSERT (! sibling->discernible);
+          if (sibling->name < leaf->name)
+          {
+            main = false;
+            break;
+          }
+        }
+        if (! main)
+          continue;
+      }
       const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (leaf->name, depth_max, true, refreshDissims));
       for (const Leaf* match : matches)
         if (leaf->getDiscernible () != match->getDiscernible ())
