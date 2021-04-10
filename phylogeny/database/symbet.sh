@@ -22,18 +22,18 @@ function prepare
   ASM=$1
   OUT=$2
   #
-  H=`$THIS/../file2hash $ASM`
+  H=`$THIS/../../file2hash $ASM`
   DIR=$GENOME/$H/$ASM
   gunzip $DIR/$ASM.prot.gz -c > $TMP.fa
   cut -f 1 $DIR/$ASM.univ > $TMP.univ
-  $THIS/../genetics/extractFastaProt $TMP.fa $TMP.univ -remove > $OUT
+  $THIS/../../genetics/extractFastaProt $TMP.fa $TMP.univ -remove > $OUT
 }
 
 
 prepare $ASM1 $TMP.1
 prepare $ASM2 $TMP.2
 
-$THIS/../dissim/symbet $TMP.1 $TMP.2  
+$THIS/../../dissim/symbet $TMP.1 $TMP.2  
   # -min_prot_len 150
 
 
