@@ -113,7 +113,7 @@ fi
 
 ITER=0
 ITER_MAX=`echo $OBJS | awk '{printf "%d", log($1)+3};'`
-while [ $ITER -le $ITER_MAX ]; do
+while [ $ITER -lt $ITER_MAX ]; do
   # Time: O(log^4(n)) per one new object
   
   N=`ls $INC/search/ | wc -l`
@@ -159,6 +159,7 @@ section "leaf, dissim.add -> tree, dissim"
 
 wc -l $INC/dissim.add
 cat $INC/dissim.add >> $INC/dissim
+$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
 rm $INC/dissim.add
 else
   VER=`cat $INC/version`
@@ -187,6 +188,11 @@ if [ -e $INC/outlier-genogroup ]; then
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
 
+GOOD=""
+if [ -e $INC/good ]; then
+  GOOD="-good $INC/good"
+fi
+
 REINSERT=""
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == 0 ]; then  # PAR
@@ -201,6 +207,7 @@ $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   -noqual \
   $DELETE_CRITERION_OUTLIERS \
   $HYBRID \
+  $GOOD \
   -output_tree $INC/tree.new \
   -dissim_request $INC/dissim_request \
   > $INC/hist/makeDistTree.$VER
@@ -233,8 +240,10 @@ fi
 if [ -e $INC/outlier-deformation ]; then
   section "Database: deformation outliers"
   wc -l $INC/outlier-deformation
-  $INC/objects_in_tree.sh $INC/outlier-deformation null
-  $THIS/../trav $INC/outlier-deformation "$INC/outlier2db.sh %f deformation"  
+  cut -f 1 $INC/outlier-deformation > $INC/outlier-deformation.list
+  $INC/objects_in_tree.sh $INC/outlier-deformation.list null
+  $THIS/../trav $INC/outlier-deformation.list "$INC/outlier2db.sh %f deformation"  
+  rm $INC/outlier-deformation.list
   mv $INC/outlier-deformation $INC/hist/outlier-deformation.$VER
 fi
 
@@ -264,6 +273,7 @@ fi
 section "Additional requests"
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.add-req
 if [ -s $INC/dissim.add-req ]; then
+  $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add-req
   grep -vwi 'nan$' $INC/dissim.add-req | grep -vwi 'inf$' >> $INC/dissim || true
 fi
 rm $INC/dissim.add-req
