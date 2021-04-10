@@ -3547,6 +3547,18 @@ void ShellApplication::createTmp ()
       throw runtime_error ("Error creating a temporary file in " + tmpDir);
   	if (tmp. empty ())
   		throw runtime_error ("Cannot create a temporary file in " + tmpDir);
+
+    {
+    	const string testFName (tmp + ".test");
+      {
+        ofstream f (testFName);
+        f << "abc" << endl;
+        if (! f. good ())
+  		    throw runtime_error (tmpDir + " is full, make space there or use environment variable TMPDIR to change location for temporary files");
+      }
+      removeFile (testFName);
+    }
+    
     tmpCreated = true;
   }
 }
