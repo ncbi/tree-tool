@@ -63,6 +63,7 @@ mkdir $INC
 touch $INC/dissim
 touch $INC/leaf
 touch $INC/tree
+touch $INC/indiscern
 
 mkdir $INC/new
 mkdir $INC/search
