@@ -124,6 +124,7 @@ while [ $ITER -le $ITER_MAX ]; do
   echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
+$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
 rm $INC/dissim.add
 
 
