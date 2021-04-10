@@ -17,8 +17,14 @@ SIZE_MAX=$3
 TARGET=$4
 
 
+if [ ! -e $TARGET ]; then
+  error "$TARGET does not exist"
+fi
+
+
 TMP=`mktemp`
 #echo $TMP
+#set -x
 
 
 # |$INDEX| + O(N A)
