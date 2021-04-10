@@ -67,7 +67,9 @@ $THIS/makeDistTree  -qc  -data data/Salmonella  -variance linExp  -optimize  -su
 diff Salmonella.criterion_outliers data/Salmonella.criterion_outliers
 rm Salmonella.criterion_outliers
 $THIS/../sort.sh Salmonella.deformation_outliers
-diff Salmonella.deformation_outliers data/Salmonella.deformation_outliers
+cut -f 1      Salmonella.deformation_outliers > $TMP.Salmonella.deformation_outliers
+cut -f 1 data/Salmonella.deformation_outliers > $TMP.data.Salmonella.deformation_outliers
+diff $TMP.Salmonella.deformation_outliers $TMP.data.Salmonella.deformation_outliers
 rm Salmonella.deformation_outliers
 diff Salmonella.hybrids data/Salmonella.hybrids
 rm Salmonella.hybrids
@@ -101,7 +103,9 @@ diff Saccharomyces.hybrid_parent_pairs data/Saccharomyces.hybrid_parent_pairs
 rm Saccharomyces.hybrid_parent_pairs
 diff Saccharomyces.criterion_outliers data/Saccharomyces.criterion_outliers
 rm Saccharomyces.criterion_outliers
-diff Saccharomyces.deformation_outliers data/Saccharomyces.deformation_outliers
+cut -f 1      Saccharomyces.deformation_outliers > $TMP.Saccharomyces.deformation_outliers
+cut -f 1 data/Saccharomyces.deformation_outliers > $TMP.data.Saccharomyces.deformation_outliers
+diff $TMP.Saccharomyces.deformation_outliers $TMP.data.Saccharomyces.deformation_outliers
 rm Saccharomyces.deformation_outliers
 # Saccharomyces.distTree
 $THIS/tree2obj.sh $TMP.tree > $TMP.list
@@ -120,7 +124,9 @@ $THIS/makeDistTree  -qc  -data data/Salmonella  -variance linExp  -variance_min 
 diff Salmonella-var_min.criterion_outliers data/Salmonella-var_min.criterion_outliers
 rm Salmonella-var_min.criterion_outliers
 $THIS/../sort.sh Salmonella-var_min.deformation_outliers 
-diff Salmonella-var_min.deformation_outliers data/Salmonella-var_min.deformation_outliers
+cut -f 1      Salmonella-var_min.deformation_outliers > $TMP.Salmonella-var_min.deformation_outliers
+cut -f 1 data/Salmonella-var_min.deformation_outliers > $TMP.data.Salmonella-var_min.deformation_outliers
+diff $TMP.Salmonella-var_min.deformation_outliers $TMP.data.Salmonella-var_min.deformation_outliers
 rm Salmonella-var_min.deformation_outliers
 diff Salmonella-var_min.hybrids data/Salmonella-var_min.hybrids
 rm Salmonella-var_min.hybrids
@@ -146,7 +152,9 @@ else
   diff Salmonella2.criterion_outliers data/Salmonella2.criterion_outliers
   rm Salmonella2.criterion_outliers
   $THIS/../sort.sh Salmonella2.deformation_outliers
-  diff Salmonella2.deformation_outliers data/Salmonella2.deformation_outliers
+  cut -f 1      Salmonella2.deformation_outliers > $TMP.Salmonella2.deformation_outliers
+  cut -f 1 data/Salmonella2.deformation_outliers > $TMP.data.Salmonella2.deformation_outliers
+  diff $TMP.Salmonella2.deformation_outliers $TMP.data.Salmonella2.deformation_outliers
   rm Salmonella2.deformation_outliers
   diff Salmonella2.hybrids data/Salmonella2.hybrids
   rm Salmonella2.hybrids
@@ -170,8 +178,10 @@ else
   rm Saccharomyces2.hybrid_parent_pairs
   diff Saccharomyces2.criterion_outliers data/Saccharomyces2.criterion_outliers
   rm Saccharomyces2.criterion_outliers
-  diff Saccharomyces2.deformation_outliers data/Saccharomyces2.deformation_outliers
-  rm Saccharomyces2.deformation_outliers
+  cut -f 1      Saccharomyces2.deformation_outliers > $TMP.Saccharomyces2.deformation_outliers
+  cut -f 1 data/Saccharomyces2.deformation_outliers > $TMP.data.Saccharomyces2.deformation_outliers
+  diff $TMP.Saccharomyces2.deformation_outliers $TMP.data.Saccharomyces2.deformation_outliers
+  rm Saccharomyces2.deformation_outliers 
   # Saccharomyces2.distTree
   $THIS/tree2obj.sh $TMP.tree > $TMP.list
   $THIS/../dm/dm2subset data/Saccharomyces2 $TMP.list > $TMP.dm
@@ -187,7 +197,9 @@ else
   fi
   rm Saccharomyces.hybrid.list Saccharomyces2.hybrid.list
   diff data/Saccharomyces2.criterion_outliers data/Saccharomyces.criterion_outliers
-  diff data/Saccharomyces2.deformation_outliers data/Saccharomyces.deformation_outliers
+  cut -f 1 data/Saccharomyces2.deformation_outliers > $TMP.Saccharomyces2.deformation_outliers
+  cut -f 1 data/Saccharomyces.deformation_outliers  > $TMP.Saccharomyces.deformation_outliers
+  diff $TMP.Saccharomyces2.deformation_outliers $TMP.Saccharomyces.deformation_outliers
 
 
   super_section "Many dissimilarity types"
