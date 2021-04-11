@@ -33,7 +33,7 @@ fi
 VARIANCE=`cat $INC/variance`
 
 
-if true; then   
+if true; then  
 if [ $NEW_PAR == 1 ]; then
   # Time: O(n log^4(n))
   while true; do
