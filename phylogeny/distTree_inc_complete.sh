@@ -45,7 +45,9 @@ set -o errexit
 
 $THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
 
-if [ -s $INC/server ]; then
+SERVER=`cat $INC/server`
+
+if [ $SERVER ]; then
   section "Outliers"
   $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
   wc -l $INC/outlier-alien
@@ -66,7 +68,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   fi
   mv $INC/clust/1/data.dm $INC/../data.dm
   rm -r $INC/clust/
-  if [ -s $INC/server ]; then
+  if [ $SERVER ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
   fi
@@ -82,7 +84,7 @@ fi
 VARIANCE=`cat $INC/variance`
 $THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
 
-if [ -s $INC/server ]; then
+if [ $SERVER ]; then
   section "Database"
   $INC/objects_in_tree.sh $INC/tree.list 1
   if [ $HYBRIDNESS_MIN != 0 ]; then
