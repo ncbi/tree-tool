@@ -7,6 +7,6 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-grep -v '^ *0x' $1 | sed 's/^ *//1' | sed 's/:.*$//1' | sort
+grep -v '^ *0x' $1 | sed 's/^ *//1' | sed 's/: .*$//1' | sort
 
 
