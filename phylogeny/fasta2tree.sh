@@ -21,7 +21,7 @@ section "Computing dissimilarities"
 if [ $PROT == 1 ]; then
   $THIS/../dissim/fasta2dissim  $FASTA  -aa  -global  -blosum62  -power 0.5  -dataset $TMP  
 else
-  error "Not implemented for DNA"
+  $THIS/../dissim/fasta2dissim  $FASTA  -dataset $TMP  
 fi
 
 echo ""
