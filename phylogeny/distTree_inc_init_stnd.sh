@@ -13,10 +13,10 @@ if [ $# -ne 6 ]; then
 fi
 INC=$1
 FROM=$2
-SERVER=$3
-DATABASE=$4
-BULK_LOCAL=$5
-BULK_REMOTE=$6
+SERVER="$3"
+DATABASE="$4"
+BULK_LOCAL="$5"
+BULK_REMOTE="$6"
 
 
 if [ ! -e $FROM/variance ]; then
@@ -26,8 +26,8 @@ fi
 ( sqsh-ms  -S $SERVER  -D $DATABASE  -m bcp  -C "select @@version" > /dev/null ) || error "Database is not available"
 
 
-$THIS/distTree_inc_init.sh $INC 1 "" 0 NAN NAN "" 0 0 $SERVER $DATABASE $BULK_LOCAL $BULK_REMOTE
-#                          1    2 3  4 5   6   7  8 9 10       11        12          13
+$THIS/distTree_inc_init.sh $INC 1 "" 0 NAN NAN "" 0 0 "$SERVER" "$DATABASE" "$BULK_LOCAL" "$BULK_REMOTE"
+#                          1    2 3  4 5   6   7  8 9 10        11          12            13
 cp $FROM/* $INC/
 
 
