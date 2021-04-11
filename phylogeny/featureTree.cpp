@@ -2501,9 +2501,17 @@ bool FeatureTree::loadPhylLines (const StringVector& lines,
 	
 	lineNum++;
 
+#if 0
   if (! contains (s, ':'))
     throw runtime_error ("No ':' on line " + toString (lineNum));
   string idS (findSplit (s, ':'));
+#else
+  const size_t colonPos = s. find (": ");
+  if (colonPos == string::npos)
+    throw runtime_error (FUNC "No colon in line " + toString (lineNum));
+  string idS = s. substr (0, colonPos);
+  s. erase (0, colonPos + 2);
+#endif
 	if (isLeft (idS, "g"))
 	{
 	  idS. erase (0, 1);

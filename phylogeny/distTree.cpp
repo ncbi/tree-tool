@@ -4075,7 +4075,11 @@ bool DistTree::loadLines (const StringVector &lines,
   
   lineNum++;
 
-  string idS (findSplit (s, ':'));
+  const size_t colonPos = s. find (": ");
+  if (colonPos == string::npos)
+    throw runtime_error (FUNC "No colon in line " + toString (lineNum));
+  const string idS = s. substr (0, colonPos);
+  s. erase (0, colonPos + 2);
   if (idS. empty () || s. empty ())
     throw runtime_error (FUNC "Bad format of line " + toString (lineNum));
   const Real   len               = token2real (s, lenS);
