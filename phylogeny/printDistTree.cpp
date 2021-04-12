@@ -61,6 +61,8 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
+	  addKey ("clade_name", "File with lines: {<name>|<name1>:<name2>} <tab> <clade name>");
+	  addKey ("root_name", "Root name");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
 	  addFlag ("order", "Order subtrees by the number of leaves descending");
     // Output
@@ -78,6 +80,8 @@ struct ThisApplication : Application
 	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
 	               variancePower  = str2real (getArg ("variance_power"));    // Global
 	  const string name_match     = getArg ("name_match");
+	  const string clade_name     = getArg ("clade_name");
+	  const string root_name      = getArg ("root_name");
 	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
   	const bool order            = getFlag ("order");
 	  const string format         = getArg ("format");
@@ -93,6 +97,10 @@ struct ThisApplication : Application
 		  throw runtime_error ("-variance_power is needed by -variance pow");
 		if (variancePower <= 0.0)
 		  throw runtime_error ("-variance_power must be positive");
+		if (! clade_name. empty () && format == "dm")
+		  throw runtime_error ("-clade_name does not work with the format " + strQuote (format));
+		if (! root_name. empty () && format == "dm")
+		  throw runtime_error ("-root_name does not work with the format " + strQuote (format));
 		      
 
     DistTree tree (input_tree, dataFName, dissimAttrName, string());
@@ -109,22 +117,44 @@ struct ThisApplication : Application
       string name_old, name_new;
       while (f. nextLine ())
       {
+        trim (f. line);
         name_new = f. line;
         name_old = findSplit (name_new, '\t');
         QC_ASSERT (! name_old. empty ());
         QC_ASSERT (! name_new. empty ());
         if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
           var_cast (leaf) -> name = name_new;
-      #if 0
-        else
-          throw runtime_error ("Object '" + name_old + "' does not exist");
-      #endif
       }
     }
-
+    
+    if (! clade_name. empty ())
+    {
+      LineInput f (clade_name, 10 * 1024, 1000);  // PAR
+      string lcaName, cladeName;
+      Tree::LcaBuffer buf;
+      while (f. nextLine ())
+      {
+        trim (f. line);
+        cladeName = f. line;
+        lcaName = findSplit (cladeName, '\t');
+        QC_ASSERT (! lcaName. empty ());
+        QC_ASSERT (! cladeName. empty ());
+        const DTNode* lca = tree. lcaName2node (lcaName, buf);
+        if (! lca)
+          throw runtime_error ("Clade node " + lcaName + " is not found");
+        if (const Leaf* leaf = lca->asLeaf ())
+          var_cast (leaf) -> name = cladeName + " | " + leaf->name;
+        else
+          var_cast (lca) -> name = cladeName;
+      }
+    }
+    
+    if (! root_name. empty ())
+      var_cast (static_cast <const DTNode*> (tree. root)) -> name = root_name;
+    
    	cout << fixed << setprecision ((int) decimals);  
     if (format == "newick")
-      tree. printNewick (cout, false, ! ext_name);
+      tree. printNewick (cout, true, ! ext_name);
     else if (format == "dm")
       tree. saveText (cout);
     else if (format == "ASNT")

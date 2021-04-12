@@ -528,6 +528,8 @@ public:
 
   bool isInteriorType () const final
     { return childrenDiscernible (); }
+  string getNewickName (bool /*minimal*/) const final
+    { return name; }
 
 private:
   const Leaf* getReprLeaf (ulong seed) const final;
