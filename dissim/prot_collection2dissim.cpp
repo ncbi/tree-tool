@@ -1,4 +1,4 @@
-// prots_pair2dissim.cpp
+// prot_collection2dissim.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Compute dissimilarity between proteins
+*   Compute dissimilarity between collections of proteins
 *
 */
 
@@ -91,11 +91,11 @@ struct Fasta
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Compute dissimilarity between proteins")
+    : Application ("Compute dissimilarity between collections of proteins")
     {
       version = VERSION;
   	  // Input
-  	  addPositional ("prot_info", "List of target protein identifiers in <FASTA1> and <FASTA2> with optional means and variances of logarithmized alignment scores");
+  	  addPositional ("prot_info", "Collection of target protein identifiers in <FASTA1> and <FASTA2> with optional means and variances of logarithmized alignment scores");
   	  addPositional ("in", "File with pairs of protein FASTA file names. Protein sequences may contain stop codons");
   	  addFlag ("blosum62", "Use BLOSUM62, otherwise PAM30");
   	  addFlag ("aligned", "Sequences are already aligned");

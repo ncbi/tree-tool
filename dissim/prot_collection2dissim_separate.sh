@@ -40,7 +40,7 @@ $THIS/../trav $TMP.2 "echo -e '%f\t%h'" > $TMP.2h
 paste $TMP.1h $TMP.2h > $TMP.ext
 $THIS/../trav $TMP.ext "echo '$GENOME/%2/%1/%1.prot-univ $GENOME/%4/%3/%3.prot-univ'" > $TMP.filepair
 
-$THIS/prots_pair2dissim  -log $LOG  -separate  $BLOSUM62  hmm-univ.list $TMP.filepair $TMP
+$THIS/prot_collection2dissim  -log $LOG  -separate  $BLOSUM62  hmm-univ.list $TMP.filepair $TMP
 cat $TMP | tr '\t' ' ' | sed 's/\.prot-univ / /g' | sed 's|'$GENOME'/[^/]\+/[^/]\+/||g' | tr ' ' '\t' > $OUT_DIR/$FILE
 
 
