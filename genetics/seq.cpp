@@ -4459,6 +4459,23 @@ Mutation::Mutation (bool prot_arg,
 
 
 
+Mutation::Mutation (string geneName_arg,
+                    size_t pos_arg,
+                    string ref_arg,
+                    string allele_arg,
+                    bool frameshift_arg)
+: prot (true)
+, geneName (geneName_arg)
+, pos (pos_arg)
+, ref (ref_arg)
+, allele (allele_arg)
+, frameshift (frameshift_arg)
+{
+  ASSERT (! geneName. empty ());
+}
+
+
+
 void Mutation::qc () const
 {
   if (! qc_on)

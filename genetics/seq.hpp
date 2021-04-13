@@ -1248,7 +1248,8 @@ struct Mutation : Root
             size_t pos_arg,
             string ref_arg,
             string allele_arg)
-    : geneName (geneName_arg)
+    : prot (! geneName_arg. empty ())
+    , geneName (geneName_arg)
     , pos (pos_arg)
     , ref (ref_arg)
     , allele (allele_arg)
@@ -1257,14 +1258,7 @@ struct Mutation : Root
             size_t pos_arg,
             string ref_arg,
             string allele_arg,
-            bool frameshift_arg)
-    : prot (true)
-    , geneName (geneName_arg)
-    , pos (pos_arg)
-    , ref (ref_arg)
-    , allele (allele_arg)
-    , frameshift (frameshift_arg)
-    {}
+            bool frameshift_arg);
   Mutation () = default;
   Mutation (const Mutation&) = default;
   Mutation& operator= (const Mutation&) = default;
