@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "Output: hmm-univ.stat, positiveAverage.out"
-  echo "#1: input .dm-file without '.dm' created from prots_pair2dissim_separate.sh"
+  echo "#1: input .dm-file without '.dm' created from prot_collection2dissim_separate.sh"
   echo "#2: delete hybrids (0/1)"
   echo "#3: dissimilarity power (> 0)"
   echo "#4: outlierSEs"
