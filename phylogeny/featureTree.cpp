@@ -80,6 +80,58 @@ bool Feature::statLess (const Feature& a,
 
 
 
+size_t Feature::getLeaves (const Phyl* phyl,
+                           bool gained) const
+{
+  ASSERT (phyl);
+  ASSERT (phyl->leaves);  
+  IMPLY (gains.  contains (phyl), gained);
+  IMPLY (losses. contains (phyl), ! gained);
+  
+  const VectorPtr<Phyl>& allChangeNodes = gained ? losses : gains;
+  VectorPtr<Phyl> allLimits;  allLimits. reserve (allChangeNodes. size ());
+  for (const Phyl* child : allChangeNodes)
+  {
+    ASSERT (child);
+    ASSERT (child->graph == phyl->graph);
+    ASSERT (child != phyl);
+    if (child->descendantOf (phyl))
+      allLimits << child;
+  }
+  if (qc_on)
+  {
+    allLimits. sort ();
+    ASSERT (allLimits. isUniq ());
+  }
+  
+  VectorPtr<Phyl> limits;  limits. reserve (allLimits. size ());
+  for (const Phyl* limit : allLimits)
+  {
+    bool redundant = false;
+    for (const Phyl* other : allLimits)
+      if (limit != other && limit->descendantOf (other))
+      {
+        redundant = true;
+        break;
+      }
+    if (! redundant)
+      limits << limit;
+  }
+  
+  size_t n = phyl->leaves;
+  for (const Phyl* limit : limits)
+  {
+    ASSERT (limit->leaves);
+    ASSERT (limit->leaves < n);
+    n -= limit->leaves;
+  }
+  ASSERT (n);
+  
+  return n;
+}
+
+
+
 bool Feature::nominalSingleton (const Id &featureId)
 { 
   return isRight (featureId, ":" NOMINAL_OTHER); 

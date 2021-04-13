@@ -79,6 +79,7 @@ struct ThisApplication : Application
   	  addFlag ("qual_nonredundant", "Non-redundify features by removing identical ones for the summary gain/loss statistics");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained; within a node features are ordered alphabetically");
   	  addKey ("loss_nodes", "File name to save nodes where features are lost; within a node features are ordered alphabetically");
+  	  addFlag ("gain_loss_leaves", "Add number of leaves for node-feature gain or loss");
   	  addKey ("disagreement_nodes", "File name to save nodes with features not gained monophyletically");
   	  addKey ("arc_length_stat", "File with arc length statistics in format " + Tree::printArcLengthsColumns ());
   	  addKey ("patr_dist", "File with patristic distances in format: <leaf name1> <leaf name2> <distance>, where <leaf name1> < <leaf name2>");
@@ -107,6 +108,7 @@ struct ThisApplication : Application
 		const bool   qual_nonredundant  = getFlag ("qual_nonredundant");
 		const string gain_nodes         = getArg ("gain_nodes");  
 		const string loss_nodes         = getArg ("loss_nodes");  
+		const bool   gain_loss_leaves   = getFlag ("gain_loss_leaves");
 		const string disagreement_nodes = getArg ("disagreement_nodes");  
 		const string arc_length_stat    = getArg ("arc_length_stat");
 		const string patrDistFName      = getArg ("patr_dist");
@@ -119,6 +121,8 @@ struct ThisApplication : Application
 		  throw runtime_error ("-optim_iter_max cannot be less than -1");
 		if (qual_nonredundant && qual. empty ())
 		  throw runtime_error ("if -qual_nonredundant then -qual cannot be empty");
+		if (gain_loss_leaves && (gain_nodes. empty () || loss_nodes. empty ()))
+		  throw runtime_error ("-gain_loss_leaves requires -gain_nodes or -loss_nodes");
 		
 		
     const Chronometer_OnePass cop ("Total");  
@@ -344,6 +348,9 @@ struct ThisApplication : Application
       }
     }
 
+
+    if (gain_loss_leaves)
+      tree. setLeaves ();
     
     if (! gain_nodes. empty ())
     {
@@ -351,24 +358,43 @@ struct ThisApplication : Application
       for (const Feature& feature : tree. features)
       {        
         for (const Phyl* phyl : feature. gains)
-          f << phyl->getLcaName () << '\t' << feature. name << endl;          
+        {
+          f << phyl->getLcaName () << '\t' << feature. name;
+          if (gain_loss_leaves)
+            f << '\t' << feature. getLeaves (phyl, true);
+          f << endl; 
+        }
         if (feature. rootGain)
-          f << tree. root->getLcaName () << '\t' << feature. name << endl;          
+        {
+          f << tree. root->getLcaName () << '\t' << feature. name;
+          if (gain_loss_leaves)
+            f << '\t' << feature. getLeaves (static_cast <const Phyl*> (tree. root), true);
+          f << endl;
+        }
       }
   	 	for (const DiGraph::Node* node : tree. nodes)
   	 		if (const Genome* g = static_cast <const Phyl*> (node) -> asGenome ())
   	 		  for (const Feature::Id& featureId : g->singletons)
   	 		    if (! Feature::nominalSingleton (featureId))
-  	 		      f << g->getLcaName () << '\t' << featureId << endl;
+  	 		    {
+  	 		      f << g->getLcaName () << '\t' << featureId;
+              if (gain_loss_leaves)
+                f << '\t' << 1;
+  	 		      f << endl;
+  	 		    }
     }
-
     
     if (! loss_nodes. empty ())
     {
       OFStream f (loss_nodes);
       for (const Feature& feature : tree. features)
         for (const Phyl* phyl : feature. losses)
-          f << phyl->getLcaName () << '\t' << feature. name << endl;          
+        {
+          f << phyl->getLcaName () << '\t' << feature. name;
+          if (gain_loss_leaves)
+            f << '\t' << feature. getLeaves (phyl, false);
+          f << endl;
+        }
     }
 
 

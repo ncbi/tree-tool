@@ -50,6 +50,8 @@ namespace FeatureTree_sp
 
 
 
+struct FeatureTree;
+
 struct Phyl;
   struct Species;
     struct Fossil;
@@ -131,6 +133,9 @@ struct Feature : Named
       for (const bool b : {false, true})
         len [b] = 0.0;
     }
+  size_t getLeaves (const Phyl* phyl,
+                    bool gained) const;
+    // Return: > 0
   
   static bool nominalSingleton (const Id &featureId);
 };
@@ -144,10 +149,6 @@ typedef  unordered_map<Feature::Id, size_t>  Feature2index;
 inline bool eqTreeLen (float len1,
                        float len2)
   { return eqReal (len1, len2, 1e-4 /*PAR*/); }  
-
-
-
-struct FeatureTree;
 
 
 
