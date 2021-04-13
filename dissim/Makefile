@@ -16,7 +16,6 @@ all:	\
 	blast2cons \
   combine_dissims \
   conv_comb \
-	dna2dissim \
 	dna_diff \
 	dna_pair2dissim \
 	fasta2dissim \
@@ -26,8 +25,9 @@ all:	\
   hash_request2dissim \
   loci_request2dissim \
 	mlst2dissim \
-	prot2dissim \
-	prots_pair2dissim \
+	prot_collection2dissim \
+	prot_mat2dissim \
+	seq2dissim \
 	symbet \
 	symbet_blastp
 
@@ -59,12 +59,6 @@ conv_comb.o:  $(NUMERIC_HPP)
 conv_combOBJS=conv_comb.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
 conv_comb:	$(conv_combOBJS)
 	$(CXX) -o $@ $(conv_combOBJS) $(LIBS)
-	$(ECHO)
-
-dna2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp 
-dna2dissimOBJS=dna2dissim.o $(ALIGN_OBJ)
-dna2dissim:	$(dna2dissimOBJS)
-	$(CXX) -o $@ $(dna2dissimOBJS) $(LIBS) 
 	$(ECHO)
 
 dna_diff.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
@@ -121,16 +115,22 @@ mlst2dissim:	$(mlst2dissimOBJS)
 	$(CXX) -o $@ $(mlst2dissimOBJS) $(LIBS)
 	$(ECHO)
 
-prot2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-prot2dissimOBJS=prot2dissim.o $(SEQ_OBJ)
-prot2dissim:	$(prot2dissimOBJS)
-	$(CXX) -o $@ $(prot2dissimOBJS) $(LIBS) 
+prot_collection2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp $(DM_DIR)/dataset.hpp $(DISSIM_DIR)/evolution.hpp
+prot_collection2dissimOBJS=prot_collection2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o 
+prot_collection2dissim:	$(prot_collection2dissimOBJS)
+	$(CXX) -o $@ $(prot_collection2dissimOBJS) $(LIBS) 
 	$(ECHO)
 
-prots_pair2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp $(DM_DIR)/dataset.hpp $(DISSIM_DIR)/evolution.hpp
-prots_pair2dissimOBJS=prots_pair2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o 
-prots_pair2dissim:	$(prots_pair2dissimOBJS)
-	$(CXX) -o $@ $(prots_pair2dissimOBJS) $(LIBS) 
+prot_mat2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+prot_mat2dissimOBJS=prot_mat2dissim.o $(SEQ_OBJ)
+prot_mat2dissim:	$(prot_mat2dissimOBJS)
+	$(CXX) -o $@ $(prot_mat2dissimOBJS) $(LIBS) 
+	$(ECHO)
+
+seq2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp 
+seq2dissimOBJS=seq2dissim.o $(ALIGN_OBJ)
+seq2dissim:	$(seq2dissimOBJS)
+	$(CXX) -o $@ $(seq2dissimOBJS) $(LIBS) 
 	$(ECHO)
 
 symbet.o:  $(NUMERIC_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/evolution.hpp
