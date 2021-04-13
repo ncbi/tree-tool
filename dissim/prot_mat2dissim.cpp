@@ -1,4 +1,4 @@
-// prot2dissim.cpp
+// prot_mat2dissim.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Align and compute dissimilarity for a pair of proteins
+*   Align and compute dissimilarity for a pair of proteins given a substituion matrix
 *
 */
 
@@ -62,7 +62,7 @@ Peptide readPeptide (const string &fName)
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Align and compute dissimilarity for a pair of proteins")
+    : Application ("Align and compute dissimilarity for a pair of proteins given a substituion matrix")
     {
       version = VERSION;
   	  addPositional ("FASTA1", "FASTA file 1 with a protein sequence");
@@ -104,6 +104,10 @@ struct ThisApplication : Application
 		cout << "Identity = " << align. matches << '/' << align. transformations. size () 
 		     << " (" << ((double) align. matches / (double) align. transformations. size () * 100) << "%)" << endl;
 		cout << "Min. edit distance = " << align. getMinEditDistance () << endl;
+	  cout << "# Substitutions = "    << align. substitutions << endl;
+	  cout << "# Insertions = "       << align. insertions << endl;
+	  cout << "# Deletions = "        << align. deletions << endl;
+	
 		cout << endl;
 		align. printAlignment (pep1. seq, pep2. seq, 60);  // PAR
   }
