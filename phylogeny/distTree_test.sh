@@ -213,9 +213,7 @@ else
   $THIS/makeDistTree  -qc  -data Virus9-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus9-out.tree  1> $TMP.2 2> $TMP.out
   B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
   if [ "$A" != "$B" ]; then
-    echo "$A"
-    echo "$B"
-    exit 1
+    error "$A != $B"
   fi
   $THIS/printDistTree  -qc  Virus9.tree      -order  -decimals 3  > Virus9.nw
   $THIS/printDistTree  -qc  Virus9-out.tree  -order  -decimals 3  > Virus9-out.nw
@@ -232,9 +230,7 @@ else
   $THIS/makeDistTree  -qc  -input_tree Virus110.tree  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out1.tree 1> $TMP.2 2> $TMP.out
   B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
   if [ "$A" != "$B" ]; then
-    echo "$A"
-    echo "$B"
-    exit 1
+    error "$A != $B"
   fi
   $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 1 | sed 's/,(/,\n(/g' > Virus110.nw
   $THIS/printDistTree  -qc  Virus110-out1.tree  -order  -decimals 1 | sed 's/,(/,\n(/g' > Virus110-out1.nw
@@ -244,9 +240,7 @@ else
     makeDistTree  -qc  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out2.tree 1> $TMP.2 2> $TMP.out
     B=`grep -w '^OUTPUT' -A 1 $TMP.2 | tail -1`
     if [ "$A" != "$B" ]; then
-      echo "$A"
-      echo "$B"
-      exit 1
+      error "$A != $B"
     fi
     $THIS/printDistTree  -qc  Virus110.tree       -order  -decimals 2  > Virus110.nw
     $THIS/printDistTree  -qc  Virus110-out2.tree  -order  -decimals 2  > Virus110-out2.nw
