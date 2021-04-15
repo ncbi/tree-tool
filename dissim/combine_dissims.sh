@@ -126,17 +126,19 @@ awk    '$4 == "nan" || $4 > '$PRT_DISSIM_MAX    $TMP.req-dissim-PRT > $TMP.req-d
 req2file $TMP.req-dissim-PRT_1 1 "prot-univ" > $TMP.f1
 req2file $TMP.req-dissim-PRT_1 2 "prot-univ" > $TMP.f2
 paste $TMP.f1 $TMP.f2 > $TMP.req-univ
-$THIS/prots_pair2dissim  -log $LOG  -power $POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
+$THIS/prot_collection2dissim  -log $LOG  -power $POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
 cut -f 3 $TMP.univ > $TMP.dissim-univ_1
 paste $TMP.req-dissim-PRT_1 $TMP.dissim-univ_1 > $TMP.req-dissim-univ_1
 cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
   # column 5: d_univ
 
+# Slowest dissimilarity
 echo "$TMP.combo_raw ..."
-awk '! ($3 != "nan" && $3 > '$CDS_DISSIM_MAX' || $5 != "nan" && $5 < '$UNIV_DISSIM_AVG')' $TMP.req-dissim-univ | sed 's/$/\tnan/1' > $TMP.req-dissim-symbet_0
-awk    '$3 != "nan" && $3 > '$CDS_DISSIM_MAX' || $5 != "nan" && $5 < '$UNIV_DISSIM_AVG    $TMP.req-dissim-univ > $TMP.req-dissim-univ_1
+awk '! (($3 == "nan" || $3 > '$CDS_DISSIM_MAX') && ($5 == "nan" || $5 < '$UNIV_DISSIM_AVG'))' $TMP.req-dissim-univ | sed 's/$/\tnan/1' > $TMP.req-dissim-symbet_0
+awk    '($3 == "nan" || $3 > '$CDS_DISSIM_MAX') && ($5 == "nan" || $5 < '$UNIV_DISSIM_AVG')'  $TMP.req-dissim-univ > $TMP.req-dissim-univ_1
 cut -f 1,2 $TMP.req-dissim-univ_1 > $TMP.req-symbet_1
-$THIS/../trav  -step 1  $TMP.req-symbet_1 "$THIS/../database/symbet.sh $GENOME_DIR %f 2> /dev/null"  -log $LOG > $TMP.dissim-symbet
+wc -l $TMP.req-symbet_1
+$THIS/../trav  -step 1  $TMP.req-symbet_1 "$THIS/../phylogeny/database/symbet.sh $GENOME_DIR %f 2> /dev/null"  -log $LOG > $TMP.dissim-symbet
 paste $TMP.req-dissim-univ_1 $TMP.dissim-symbet > $TMP.req-dissim-symbet_1
 cat $TMP.req-dissim-symbet_0 $TMP.req-dissim-symbet_1 | awk '{OFS="\t"; print $1,$2,$3,$4,$6,$5};' > $TMP.combo_raw
 
