@@ -1,5 +1,5 @@
-#!/bin/bash
-source /home/brovervv/code/cpp/bash_common.sh
+#!/bin/bash --noprofile
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Set Genome.in_tree"
   echo "#1: List of Genome.id"
@@ -15,7 +15,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-/home/brovervv/code/cpp/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..List
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..List
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Genome

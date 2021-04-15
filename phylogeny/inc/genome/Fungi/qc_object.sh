@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/bash --noprofile
 THIS=`dirname $0`
-source /home/brovervv/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "QC an object"
   echo "#1: file or directory with object data"
@@ -9,4 +9,4 @@ fi
 FD=$1
 
 
-exit 0
+warning "$0 is not implemented"

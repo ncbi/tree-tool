@@ -1,5 +1,5 @@
-#!/bin/bash
-source /home/brovervv/code/cpp/bash_common.sh
+#!/bin/bash --noprofile
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
   echo "#1: go"
@@ -18,7 +18,7 @@ TMP=`mktemp`
 #echo $TMP
 
 
-/home/brovervv/code/cpp/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
+CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-tree
   select id
     from Genome
@@ -31,7 +31,7 @@ EOT
 diff $TMP.genome-tree $TMP.tree
 
 
-/home/brovervv/code/cpp/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
+CPP_DIR/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-new
   select id
     from Genome

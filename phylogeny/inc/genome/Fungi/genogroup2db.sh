@@ -1,5 +1,5 @@
-#!/bin/bash
-source /home/brovervv/code/cpp/bash_common.sh
+#!/bin/bash --noprofile
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
   echo "#1: File genogroup_table"
@@ -13,8 +13,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-/home/brovervv/code/cpp/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..ListC
-
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..ListC
 
 sqsh-ms  -S $SERVER  -D $DATABASE  -L exit_failcount=1 << EOF | sed 's/|$//1' 
   EXEC Genogroup2outliers 4751 /*PAR*/, 0;
