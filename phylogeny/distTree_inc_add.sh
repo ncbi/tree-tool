@@ -76,7 +76,11 @@ if [ $N -gt 0 ]; then
       UL1=",ul1=30"
     fi
     $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
-    $THIS/../qstat_wait.sh 2000 1
+    WAIT=2000  # PAR
+    if [ $SEARCH_GRID_MIN -le 200 ]; then  
+      WAIT=7200
+    fi
+    $THIS/../qstat_wait.sh $WAIT 1
   fi
   $THIS/distTree_inc_new_log.sh $INC $GRID  
 fi
