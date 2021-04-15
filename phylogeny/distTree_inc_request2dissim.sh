@@ -42,7 +42,7 @@ else
 		  mkdir $INC/dr.log
 		  $THIS/../grid_wait.sh 1
   		$THIS/../trav  -step 1  $INC/dr.list "$QSUB_5 -N j%f %q$INC/pairs2dissim.sh $INC/dr/%f %Q%Q $INC/dr.out/%f $INC/dr.log/%f%q > /dev/null"		
-  		$THIS/../qstat_wait.sh 3000 1	 
+  		$THIS/../qstat_wait.sh 7200 1	 
 		  ls $INC/dr.log > $INC/dr.bad
 		  ls $INC/dr.out > $INC/dr.good
 	  	$THIS/../setMinus $INC/dr.list $INC/dr.good >> $INC/dr.bad
@@ -60,7 +60,8 @@ else
 		if [ $N -eq $N_new ]; then 
 		  break
 		fi
-		echo "Redo ..."
+    echo "$N_new $OUT"
+		warning "Redo"
 	done
 	
 	rm -r $INC/dr.out &
