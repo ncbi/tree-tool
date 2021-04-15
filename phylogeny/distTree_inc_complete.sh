@@ -21,7 +21,7 @@ if [ -s $INC/tree ]; then
   error "$INC/tree must be empty"
 fi
 
-N=`distTree_inc_new_list.sh $INC | wc -l`
+N=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
 if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
 fi
