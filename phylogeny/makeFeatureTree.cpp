@@ -246,15 +246,15 @@ struct ThisApplication : Application
       for (const Feature& f : features)
       {
         f. qc ();
-        if (f. genomes == 0)
+        if (f. allGenomes () == 0)
           optionals++;
-        else if (f. genomes == genomes)
+        else if (f. allGenomes () == genomes)
         {
           ASSERT (f. realGains () == 1);
           ASSERT (f. losses. empty ());
           commons++;
         }
-        else if (f. genomes == 1)
+        else if (f. allGenomes () == 1)
           singles++;
         else   // Non-trivial features
         {
@@ -297,15 +297,15 @@ struct ThisApplication : Application
             size_t feature_singles = 0;  
             const Feature& f = features [i];
             f. qc ();
-            if (f. genomes == 0)
+            if (f. allGenomes () == 0)
               feature_optionals++;
-            else if (f. genomes == genomes)
+            else if (f. allGenomes () == genomes)
             {
               ASSERT (f. realGains () == 1);
               ASSERT (f. losses. empty ());
               feature_commons++;
             }
-            else if (f. genomes == 1)
+            else if (f. allGenomes () == 1)
               feature_singles++;
             else   // Non-trivial features
             {

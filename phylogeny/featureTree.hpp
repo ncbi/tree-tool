@@ -108,6 +108,8 @@ struct Feature : Named
              && a. gains    == b. gains
     	       && a. losses   == b. losses;
     }
+  size_t allGenomes () const
+    { return genomes + optionalGenomes; }
   size_t realGains () const
     { return rootGain + gains. size (); }
   static bool statLess (const Feature& a,
