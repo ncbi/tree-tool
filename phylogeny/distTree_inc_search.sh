@@ -30,13 +30,11 @@ if [ ! -e $DIR/request -a -e $DIR/dissim -a -s $DIR/dissim ]; then
 fi
 
 if [ ! -e $DIR/request ]; then
-  echo "$DIR/request does not exist" 
-  exit 1
+  error "$DIR/request does not exist" 
 fi
 
 if [ ! -e $DIR/dissim ]; then
-  echo "$DIR/dissim does not exist" 
-  exit 1
+  error "$DIR/dissim does not exist" 
 fi
 
 
