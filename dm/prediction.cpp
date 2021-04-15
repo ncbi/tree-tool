@@ -261,6 +261,7 @@ void LogisticRegression::setAttrImportance ()
 
   attrImportance [0] = NaN;
   const Real negLogLikelihood_ave_old = negLogLikelihood_ave;
+  Progress prog (space. size () - 1, 1);
   for (Iter <VectorPtr<NumAttr1>> iter (space); iter. next (); )
   {
     const size_t i = iter. getIndex ();
@@ -268,17 +269,17 @@ void LogisticRegression::setAttrImportance ()
       continue;
 
     const NumAttr1* attr = iter. erase ();  
+    prog (attr->name);
     resize ();  
     
     solve ();  
     const Real negLogLikelihood_ave_without_attr = negLogLikelihood_ave;
-    const bool separated = getSeparated ();
+  //const bool separated = getSeparated ();
     
     iter. insert (attr);
     resize ();  
 
-    attrImportance [i] = (negLogLikelihood_ave_without_attr - negLogLikelihood_ave_old) / negLogLikelihood_ave_old;
-    IMPLY (! separated, attrImportance [i] >= 0.0);
+    attrImportance [i] = max (0.0, (negLogLikelihood_ave_without_attr - negLogLikelihood_ave_old) / negLogLikelihood_ave_old);
   }
   
 #ifndef NDEBUG
