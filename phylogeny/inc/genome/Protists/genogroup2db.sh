@@ -1,5 +1,5 @@
-#!/bin/bash
-source bash_common.sh
+#!/bin/bash --noprofile
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
   echo "#1: File genogroup_table"

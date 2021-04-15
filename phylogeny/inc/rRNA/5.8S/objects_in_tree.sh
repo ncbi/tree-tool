@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash  --noprofile
 source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   exit 1
@@ -29,7 +29,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-CPP_DIR/database/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Locus5_8S
