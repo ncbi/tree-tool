@@ -17,8 +17,7 @@ OUT_TREE=$4
 
 
 if [ ! -e $INC/phen ]; then
-  echo "No $INC/phen"
-  exit 1
+  error "No $INC/phen"
 fi
 
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
