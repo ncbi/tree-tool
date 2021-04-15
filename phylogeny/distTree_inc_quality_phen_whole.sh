@@ -10,12 +10,16 @@ if [ $# -ne 4 ]; then
   echo "#4: Directory for output trees: #2.tree, #2.makeDistTree, #2.makeFeatureTree, #2.qual"
   exit 1
 fi
+INC=$1
+VER_MAX=$2
+VER_STEP=$3
+OUT_DIR=$4
 
 
-if [ $2 < 1 ]; then
+if [ $VER_MAX < 1 ]; then
   exit 1
 fi
-if [ $3 < 1 ]; then  
+if [ $VER_STEP < 1 ]; then  
   exit 1
 fi
 
@@ -24,16 +28,16 @@ TMP=`mktemp`
 #echo $TMP  
 
 
-cp $1/hist/tree.1 $TMP.tree
+cp $INC/hist/tree.1 $TMP.tree
 
-$THIS/tree2obj.sh $1/hist/tree.1 > $TMP.init
+$THIS/tree2obj.sh $INC/hist/tree.1 > $TMP.init
 
 
 i=1
-while [ $i <= $2 ]
+while [ $i -le $VER_MAX ]
 do
-	$THIS/distTree_inc_quality_phen_step.sh $1 $TMP.init $i $TMP $4
-	i = $(( $i + $3 ))
+	$THIS/distTree_inc_quality_phen_step.sh $INC $TMP.init $i $TMP $OUT_DIR
+	i = $(( $i + $VER_STEP ))
 done
 
 
