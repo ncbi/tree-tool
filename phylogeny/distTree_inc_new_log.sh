@@ -11,16 +11,18 @@ INC=$1
 GRID=$2
 
   
+# $INC/log.list
 ls $INC/log > $INC/log.list-all
 ls $INC/search > $INC/search.list
 $THIS/../setIntersect.sh $INC/log.list-all $INC/search.list 0 > $INC/log.list
 rm $INC/log.list-all
 rm $INC/search.list
+
 L=`cat $INC/log.list | wc -l`
 if [ $L -gt 0 ]; then
-  echo -e "${RED}# Failed tasks: $L${NOCOLOR}"
+  warning "# Failed tasks: $L"
   if [ $GRID == 0 ]; then
-    exit 1
+    error "No GRID"
   fi
   # Try to fix grid problems
   $THIS/../trav $INC/log.list -step 1 "$THIS/distTree_inc_unsearch.sh $INC %f"
