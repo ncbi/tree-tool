@@ -22,21 +22,22 @@ TMP=`mktemp`
 #set -x
 
 
-grep '^>' $INC/seq.fa | sed 's/^>//1' | sed 's/ .*$//1' | sort > $TMP.seq-fa
-
-sort -u $TMP.seq-fa > $TMP.seq-fa-uniq
-diff $TMP.seq-fa $TMP.seq-fa-uniq
-
 CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
-diff $TMP.seq-fa $TMP.tree
 
-sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' > $TMP.locus
+if false; then
+  grep '^>' $INC/seq.fa | sed 's/^>//1' | sed 's/ .*$//1' | sort > $TMP.seq-fa
+  sort -u $TMP.seq-fa > $TMP.seq-fa-uniq
+  diff $TMP.seq-fa $TMP.seq-fa-uniq
+  diff $TMP.seq-fa $TMP.tree
+fi
+
+sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.locus
   select id
     from Virus
     where in_tree = 1;
   go -m bcp  
 EOT
-diff $TMP.seq-fa $TMP.locus
+diff $TMP.tree $TMP.locus
 
 ls $INC/new/ > $TMP.new
 sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.locus-new
@@ -51,16 +52,56 @@ EOT
 #wc -l $TMP.new
 diff $TMP.locus-new $TMP.new
 
+CPP_DIR/setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.inter
+if [ -s $TMP.inter ]; then
+  error "$INC/new are in the tree"
+fi
+
+sort -u $INC/../deleted.all > $TMP.deleted
+
+CPP_DIR/setIntersect.sh $TMP.deleted $TMP.tree 0 > $TMP.inter
+if [ -s $TMP.inter ]; then
+  error "deleted.all are in the tree"
+fi
+
+CPP_DIR/setIntersect.sh $TMP.deleted $TMP.new 0 > $TMP.inter
+if [ -s $TMP.inter ]; then
+  error "deleted.all are in the $INC/new"
+fi
+
+sort -u $INC/good > $TMP.good
+
+CPP_DIR/setIntersect.sh $TMP.deleted $TMP.good 0 > $TMP.inter
+if [ -s $TMP.inter ]; then
+  error "deleted.all are in the $INC/good"
+fi
+
+sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.bad
+  select id
+    from Virus
+    where     dead = 1
+          or outlier is not null;
+  go -m bcp  
+EOT
+
+CPP_DIR/setIntersect.sh $TMP.bad $TMP.good 0 > $TMP.inter
+if [ -s $TMP.inter ]; then
+  error "Bad are in the $INC/good"
+fi
+
+
 #ls $INC/../seq/ > $TMP.seq
 #diff $TMP.seq-fa $TMP.seq
 
-echo ">aa" > $TMP.seq
-echo "tttttttttttttttttttttttttt" >> $TMP.seq
-blastn -query $TMP.seq  -db $INC/seq.fa | grep "Number of sequences in database:" | sed 's/,//1' | sed 's/^ *//1' > $TMP.blastn
-N=`cat $TMP.seq-fa | wc -l`
-M=(`cat $TMP.blastn`)
-if [ $N -ne ${M[5]} ]; then
-  error "$N != ${M[5]}"
+if false; then
+  echo ">aa" > $TMP.seq
+  echo "tttttttttttttttttttttttttt" >> $TMP.seq
+  blastn -query $TMP.seq  -db $INC/seq.fa | grep "Number of sequences in database:" | sed 's/,//1' | sed 's/^ *//1' > $TMP.blastn
+  N=`cat $TMP.seq-fa | wc -l`
+  M=(`cat $TMP.blastn`)
+  if [ $N -ne ${M[5]} ]; then
+    error "$N != ${M[5]}"
+  fi
 fi
 
 
