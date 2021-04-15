@@ -15,7 +15,7 @@ DIR=$INC/search/$OBJ
 
 
 if [ ! -e $DIR/dissim ]; then
-  exit 1
+  error "$DIR/dissim does not exist"
 fi
 
 awk '$3 == "nan"' $DIR/dissim > $DIR/dissim.bad
