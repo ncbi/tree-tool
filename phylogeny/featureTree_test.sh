@@ -30,3 +30,6 @@ rm obj.core
 rm obj.featureTree
 rm -r gene/
 rm gene.tar
+
+
+success
