@@ -24,6 +24,7 @@ SEARCH_GRID_MIN=`cat $INC/object2closest.grid`
 QC=""  # -qc  
 RATE=0.015   # PAR
 VARIANCE=`cat $INC/variance`
+HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
 ADD=`echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1'`  # PAR
 if [ $ADD == 0 ]; then
@@ -31,7 +32,7 @@ if [ $ADD == 0 ]; then
 fi
 
 
-if true; then
+if true; then  
 date
 echo ""
 echo ""
@@ -131,7 +132,7 @@ while [ $ITER -lt $ITER_MAX ]; do
     GRID=0  
   fi
 
-  rm -rf $INC/log/
+ #rm -rf $INC/log/
   mkdir $INC/log
 
   if [ $GRID == 1 ]; then
@@ -153,6 +154,7 @@ while [ $ITER -lt $ITER_MAX ]; do
   echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
+$THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search_stop.sh $INC %f"
 
 
 section "leaf, dissim.add -> tree, dissim"
@@ -165,8 +167,6 @@ else
   VER=`cat $INC/version`
 fi
 
-
-HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 
 DELETE_CRITERION_OUTLIERS=""
 if [ -e $INC/delete_criterion_outliers ]; then
