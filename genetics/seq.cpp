@@ -4487,14 +4487,16 @@ void Mutation::qc () const
   if (prot)
   {
     for (const char c : ref)
-      QC_ASSERT (c == *terminator || strchr (peptideAlphabet, c));
+      if (c != *terminator && ! strchr (peptideAlphabet, c))
+        throw runtime_error ("Protein mutation cannot have ambiguities in the reference sequence");
     for (const char c : allele)
       QC_ASSERT (strchr (extTermPeptideAlphabet, c));
   }
   else
   {
     for (const char c : ref)
-      QC_ASSERT (strchr (dnaAlphabet, c));
+      if (! strchr (dnaAlphabet, c))
+        throw runtime_error ("DNA mutation cannot have ambiguities in the reference sequence");
     for (const char c : allele)
       QC_ASSERT (strchr (extDnaAlphabet, c));
   }
