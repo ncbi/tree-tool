@@ -16,7 +16,8 @@ export YELLOW='\033[1;33m'
 
 function error
 {
-	MSG="$1"
+	local MSG="$1"
+  echo ""
 	echo -e "${RED}ERROR${NOCOLOR}"
 	echo "$MSG"
 	exit 1
@@ -25,7 +26,7 @@ function error
 
 function section
 {
-	MSG="$1"
+	local MSG="$1"
   echo ""
   echo -e "${GREEN}${MSG}${NOCOLOR}"
 }
@@ -33,9 +34,9 @@ function section
 
 function super_section
 {
-  MSG="$1"
-  S=`echo '***' $MSG '***'`
-  T=`echo "$S" | sed 's/./*/g'`
+  local MSG="$1"
+  local S=`echo '***' $MSG '***'`
+  local T=`echo "$S" | sed 's/./*/g'`
   echo ""
   section "$T\n$S\n$T"
 }
@@ -43,8 +44,7 @@ function super_section
 
 function warning
 {
-	MSG="$1"
-  echo ""
+	local MSG="$1"
   echo -e "${YELLOW}${MSG}${NOCOLOR}"
 }
 
@@ -54,3 +54,5 @@ function success
   section "SUCCESS!"
   exit 0
 }
+
+
