@@ -56,7 +56,7 @@ const string distName ("dissim");
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Compute different statistics of a distance tree (without using dissimilarities)")
+	: Application ("Compute different statistics of a distance tree without using dissimilarities")
 	{
 	  version = VERSION;
 	  // Input
