@@ -1476,6 +1476,25 @@ const Leaf* Leaf::getDissimOther (size_t dissimNum) const
 
 
 
+bool Leaf::isMainIndiscernible () const
+{
+  if (discernible)
+    return true;
+    
+  for (const DiGraph::Arc* arc : getParent () -> arcs [false])
+  {
+    const Leaf* sibling = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
+    ASSERT (sibling);
+    ASSERT (! sibling->discernible);
+    if (sibling->name < name)
+      return false;
+  }
+  
+  return true;
+}
+
+
+
 void Leaf::collapse (Leaf* other)
 {
   ASSERT (! getDistTree (). subDepth);
@@ -8909,23 +8928,8 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
       ASSERT (leaf);
       if (! leaf->graph)
         continue;
-      if (! leaf->discernible)
-      {
-        bool main = true;
-        for (const DiGraph::Arc* arc : leaf->getParent () -> arcs [false])
-        {
-          const Leaf* sibling = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
-          ASSERT (sibling);
-          ASSERT (! sibling->discernible);
-          if (sibling->name < leaf->name)
-          {
-            main = false;
-            break;
-          }
-        }
-        if (! main)
-          continue;
-      }
+      if (! leaf->isMainIndiscernible ())
+        continue;
       const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (leaf->name, depth_max, true, refreshDissims));
       for (const Leaf* match : matches)
         if (leaf->getDiscernible () != match->getDiscernible ())
@@ -9267,6 +9271,7 @@ void DistTree::pairResiduals2dm (const RealAttr1* resid2Attr,
 
 
 void DistTree::saveDissim (ostream &os,
+                           bool redundantIndiscernible,
                            bool addExtra) const
 {
   ASSERT (optimizable ());
@@ -9276,17 +9281,18 @@ void DistTree::saveDissim (ostream &os,
   for (const Dissim& dissim : dissims)
   {
     prog ();
-    if (dissim. valid ())
-    {
-      os         << dissim. leaf1->name
-         << '\t' << dissim. leaf2->name
-         << '\t' << dissim. target;
-      if (addExtra)
-        os << '\t' << dissim. prediction 
-           << '\t' << dissim. getAbsCriterion ()
-           << '\t' << sqr (dissim. target - dissim. prediction);
-      os << endl;
-    }
+    if (! dissim. valid ())
+      continue;
+    if (! redundantIndiscernible && dissim. redundantIndiscernible ())
+      continue;
+    os         << dissim. leaf1->name
+       << '\t' << dissim. leaf2->name
+       << '\t' << dissim. target;
+    if (addExtra)
+      os << '\t' << dissim. prediction 
+         << '\t' << dissim. getAbsCriterion ()
+         << '\t' << sqr (dissim. target - dissim. prediction);
+    os << endl;
   }
 }
 

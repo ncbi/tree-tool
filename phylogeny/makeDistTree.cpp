@@ -128,6 +128,7 @@ struct ThisApplication : Application
 	  addKey ("leaf_errors", "Output Data Master file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " and " + deformationOutlier_definition + " for each leaf");
 	  addKey ("arc_existence", "Output Data Master  file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissimilarity>");
+	  addFlag ("deredundify_indiscernible", "Remove dissimilarities from the file <output_dissim> for indiscernible objects with non-smallest names in indiscernibility classes");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
 	}
@@ -276,6 +277,7 @@ struct ThisApplication : Application
 		const string dissim_request      = getArg ("dissim_request");
 		const bool   refresh_dissim      = getFlag ("refresh_dissim");
 		const string output_dissim       = getArg ("output_dissim");
+		const bool   deredundify_indiscernible = getFlag ("deredundify_indiscernible");
 		const bool   output_dist_etc     = getFlag ("output_dist_etc");
 		const string output_data         = getArg ("output_data");
 		
@@ -371,6 +373,8 @@ struct ThisApplication : Application
       throw runtime_error ("-output_dissim requires dissimilarities");    	
     if (output_dist_etc && output_dissim. empty ())
     	throw runtime_error ("-output_dist_etc requires -output_dissim");
+    if (deredundify_indiscernible && output_dissim. empty ())
+    	throw runtime_error ("-deredundify_indiscernible requires -output_dissim");
     if (! leaf_errors. empty () && ! optimizable)
       throw runtime_error ("-leaf_errors requires dissimilarities");    	
     if (! leaf_errors. empty () && noqual)
@@ -830,7 +834,7 @@ struct ThisApplication : Application
     if (! output_dissim. empty ())
     {
       OFStream f (output_dissim);
-      tree->saveDissim (f, output_dist_etc);
+      tree->saveDissim (f, ! deredundify_indiscernible, output_dist_etc);
     }
     
     

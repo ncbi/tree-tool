@@ -649,6 +649,7 @@ public:
              && ! discernible
              && ! other->discernible;
     }
+  bool isMainIndiscernible () const;
 private:
   friend DissimLine;
   void collapse (Leaf* other);
@@ -990,6 +991,12 @@ struct Dissim
     { return    ! leaf1->discernible
              && ! leaf2->discernible
              && leaf1->getParent () == leaf2->getParent ();
+    }
+  bool redundantIndiscernible () const
+    { return    ! indiscernible ()
+             && ! (   leaf1->isMainIndiscernible ()
+                   && leaf2->isMainIndiscernible ()
+                  );
     }
   string getObjName () const;
   VectorPtr<Tree::TreeNode>& getPath (Tree::LcaBuffer &buf) const;
@@ -1616,6 +1623,7 @@ public:
 
   static constexpr const char* dissimExtra {"<tree distance>, <absCriterion>, <squared difference>"};
   void saveDissim (ostream &os,
+                   bool redundantIndiscernible,
                    bool addExtra) const;
     // Input: addExtra: add dissimExtra
 };
