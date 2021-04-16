@@ -1,4 +1,4 @@
-// tsv_comp.cpp
+// tsv_comp.cpp  // --> textTab_comp.cpp ??
 
 /*===========================================================================
 *
@@ -42,6 +42,7 @@ using namespace Common_sp;
 
 
 struct Tsv : Root
+// --> TextTable ??
 {
   StringVector header;
     // empty() <=> no file
