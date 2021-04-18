@@ -800,6 +800,7 @@ public:
                           size_t objNum) const final
     { return new JsonString (value2str (objNum), parent, name); }
   Vector<NumAttr1*> toNumAttr1 (Dataset &ds_arg) const final;
+    // Return: Vector<ExtBoolAttr1*>
   Vector<RealAttr1*> standardize (Dataset &ds_arg,
                                   const Sample &sample) const final;
 
@@ -1513,8 +1514,20 @@ template <typename T/*:Attr1*/>
           }
         return sp;
       }
+    Space1<BoolAttr1> toBoolAttr1 (Dataset &ds_arg) const
+      { ASSERT (P::dsPtr () == & ds_arg);
+        Space1<BoolAttr1> sp (ds_arg, false);
+        for (const T* attr : *this)
+          if (const BoolAttr1* boolAttr = attr->asBoolAttr1 ())
+            sp << boolAttr;
+          else if (const NominAttr1* nominAttr = attr->asNominAttr1 ())
+          { const Vector<NumAttr1*> vec (nominAttr->toNumAttr1 (ds_arg));
+            for (const NumAttr1* numAttr : vec)
+              sp << numAttr->asExtBoolAttr1 ();
+          }
+        return sp;
+      }
   };
-
 
 
 
