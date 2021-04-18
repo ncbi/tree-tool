@@ -56,8 +56,7 @@ all:	\
 	splitHmmLib \
 	tblastn2orfs \
 	uniqSeq \
-	uniqProtRef \
-	virus2host
+	uniqProtRef
 
 
 asn_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
