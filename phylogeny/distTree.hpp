@@ -559,9 +559,9 @@ public:
     // Time: O(n log(n))+
 
 private:
-  static int arcExistance_compare (const void* a, 
+  static int arcExistence_compare (const void* a, 
                                    const void* b);
-  static void arcExistance_index (const Steiner* &st, 
+  static void arcExistence_index (Steiner &st, 
                                   size_t index);
 public:
 
@@ -825,6 +825,8 @@ public:
 	const DTNode* to;
 	  // !nullptr
 	// Output of apply_()
+  size_t arcDist {0};
+    // Topological distance from *from to *to
 	VectorPtr<DTNode> targets;  
 	  // DTNode's whose len may be changed 
 	Real improvement {NaN};
@@ -901,6 +903,9 @@ public:
     // Time: O(log^2(n))
 	static bool strictlyBetter (const Change* a, 
 	                            const Change* b);
+    // Requires: (bool)a
+	static bool longer (const Change* a, 
+	                    const Change* b);
     // Requires: (bool)a
 };
 
@@ -1440,7 +1445,7 @@ private:
     // Return: May be nullptr
     // Invokes: tryChange()
     // Time: O(min(n,2^areaRadius_std) log^4(n))
-  bool applyChanges (VectorOwn<Change> &changes,
+  bool applyChanges (const VectorOwn<Change> &changes,
                      bool byNewLeaf);
 	  // Return: false <=> finished
 	  // Input: changes: !byNewLeaf <=> Change::apply()/restore() was done
