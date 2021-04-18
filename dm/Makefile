@@ -185,6 +185,12 @@ dm_merge:	$(dm_mergeOBJS)
 	$(CXX) -o $@ $(dm_mergeOBJS) $(LIBS)
 	$(ECHO)
 
+dnf.o:  $(PREDICT_HPP) 
+dnfOBJS=dnf.o $(PREDICT_OBJ)
+dnf:	$(dnfOBJS)
+	$(CXX) -o $@ $(dnfOBJS) $(LIBS)
+	$(ECHO)
+
 linreg.o:  $(PREDICT_HPP) 
 linregOBJS=linreg.o $(PREDICT_OBJ)
 linreg:	$(linregOBJS)
