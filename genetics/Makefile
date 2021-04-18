@@ -56,7 +56,8 @@ all:	\
 	splitHmmLib \
 	tblastn2orfs \
 	uniqSeq \
-	uniqProtRef
+	uniqProtRef \
+	virus2host
 
 
 asn_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
@@ -333,5 +334,11 @@ uniqProtRef.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 uniqProtRefOBJS=uniqProtRef.o $(SEQ_OBJ)
 uniqProtRef:	$(uniqProtRefOBJS)
 	$(CXX) -o $@ $(uniqProtRefOBJS) $(LIBS) 
+	$(ECHO)
+
+virus2host.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+virus2hostOBJS=virus2host.o $(SEQ_OBJ)
+virus2host:	$(virus2hostOBJS)
+	$(CXX) -o $@ $(virus2hostOBJS) $(LIBS) 
 	$(ECHO)
 
