@@ -2184,19 +2184,19 @@ public:
 
 
 template <typename T>
-struct Heap : Root, Nocopy
+struct Heap : Root
 // Priority queue
-// Heap property: comp(&arr[parent(index)],&arr[index]) >= 0
+// Heap property: comp(arr[parent(index)],arr[index]) >= 0
 // More operations than in std::priority_queue
 {
 private:
-  Vector<T> arr;
+  Vector<T*> arr;
     // Elements are not owned by arr
-  const CompareInt comp;
+  CompareInt comp {nullptr};
     // !nullptr
   typedef void (*SetHeapIndex) (T &item, size_t index);
     // Example: item.heapIndex = index
-  const SetHeapIndex setHeapIndex;
+  SetHeapIndex setHeapIndex {nullptr};
     // Needed to invoke increaseKey()
 public:
 
@@ -2217,27 +2217,25 @@ public:
     { return arr. empty (); }
   size_t size () const
     { return arr. size (); }
-  Heap& operator<< (T item)
-    { arr << item;
+  Heap& operator<< (T* item)
+    { if (! item)
+        throw Error ("null item");
+      arr << item;
       increaseKey (arr. size () - 1);
       return *this;
     }
-  T increaseKey (size_t index)
-    { T item = arr [index];
-      size_t p;
-      while (index && comp (& arr [p = parent (index)], & item) < 0)
+  void increaseKey (size_t index)
+    { T* item = arr [index];
+      size_t p = no_index;
+      while (index && comp (arr [p = parent (index)], item) < 0)
       { assign (arr [p], index);
         index = p;
       }
       assign (item, index);
-      return item;
     }
-  T decreaseKey (size_t index)
-    { T item = arr [index];
-      heapify (index, arr. size ());
-      return item;
-    }
-  T getMaximum () const
+  void decreaseKey (size_t index)
+    { heapify (index, arr. size ()); }
+  T* getMaximum () const
     { if (arr. empty ()) 
     	  throw Error ("getMaximum");
       return arr [0];
@@ -2246,7 +2244,7 @@ public:
     // Time: O(1) amortized
     { if (arr. empty ()) 
     	  throw Error ("deleteMaximum");
-      T item = arr. back ();
+      T* item = arr. back ();
       arr. pop_back ();
       if (arr. empty ())
         return;
@@ -2265,40 +2263,44 @@ public:
       }
     }
 private:
-  size_t parent (size_t index) const
-    { if (! index) throw Error ("parent");
+  static size_t parent (size_t index) 
+    { if (! index)  throw Error ("parent");
       return (index + 1) / 2 - 1;
     }
-  size_t left (size_t index) const
+  static size_t left (size_t index) 
     { return 2 * (index + 1) - 1; }
-  size_t right (size_t index) const
+  static size_t right (size_t index) 
     { return left (index) + 1; }
-  void assign (T item,
+  void assign (T* item,
                size_t index)
     { arr [index] = item;
       if (setHeapIndex)
-        setHeapIndex (item, index);
+        setHeapIndex (*item, index);
     }
   void swap (size_t i,
              size_t j)
-    { T item = arr [i];
+    { if (i == j)
+        return;
+      T* item = arr [i];
       assign (arr [j], i);
       assign (item, j);
     }
   void heapify (size_t index,
                 size_t maxIndex)
     // Requires: Heap property holds for all index1 < maxIndex except parent(index1) == index
-    { if (maxIndex > arr. size ()) throw Error ("heapify: maxIndex");
-      if (index >= maxIndex)       throw Error ("heapify: index");
+    { if (maxIndex > arr. size ())  throw Error ("heapify: maxIndex");
+      if (index >= maxIndex)        throw Error ("heapify: index");
       for (;;)
       { size_t extr = index;
         const size_t l = left (index);
         if (   l < maxIndex
-            && comp (& arr [extr], & arr [l]) < 0)
+            && comp (arr [extr], arr [l]) < 0
+           )
           extr = l;
         const size_t r = right (index);
         if (   r < maxIndex
-            && comp (& arr [extr], & arr [r]) < 0)
+            && comp (arr [extr], arr [r]) < 0
+           )
           extr = r;
         if (extr == index)
           break;
@@ -2309,11 +2311,13 @@ private:
 public:
 
   // Test
-  static void testStr ()
-    { Heap <string> heap (strComp);
-      heap << "Moscow" << "San Diego" << "Los Angeles" << "Paris";
+  static void testStr ()    
+    { StringVector vec {"Moscow", "San Diego", "Los Angeles", "Paris"};
+      Heap<string> heap (strComp);
+      for (string& s : vec)
+        heap << & s;
       while (! heap. empty ())  
-      { cout << heap. getMaximum () << endl;
+      { cout << * heap. getMaximum () << endl;
         heap. deleteMaximum ();
       }
     }
@@ -2322,9 +2326,9 @@ private:
                       const void* s2)
     { const string& s1_ = * static_cast <const string*> (s1);
       const string& s2_ = * static_cast <const string*> (s2);
-      if (s1_ < s2_) return -1;
-      if (s1_ > s2_) return  1;
-      return  0;
+      if (s1_ > s2_)  return -1;
+      if (s1_ < s2_)  return  1;
+      return 0;
     }
 };
 
