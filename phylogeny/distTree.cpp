@@ -1309,7 +1309,7 @@ Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max)
 
 
 
-int Steiner::arcExistance_compare (const void* a, 
+int Steiner::arcExistence_compare (const void* a, 
                                    const void* b)
 {
   ASSERT (a);
@@ -1325,10 +1325,10 @@ int Steiner::arcExistance_compare (const void* a,
 
 
 
-void Steiner::arcExistance_index (const Steiner* &st, 
+void Steiner::arcExistence_index (Steiner &st, 
                                   size_t index)
 {
-  var_cast (st) -> heapIndex = index;
+  st. heapIndex = index;
 }                         
   
 
@@ -2477,6 +2477,17 @@ bool Change::strictlyBetter (const Change* a,
   if (a->improvement < b->improvement)  return false;
   if (a < b)  return true;  // non-stable result ??
     
+  return false;
+}
+
+
+
+bool Change::longer (const Change* a, 
+                     const Change* b)
+{ 
+  ASSERT (a);
+  ASSERT (b);
+  LESS_PART (*b, *a, arcDist);  
   return false;
 }
 
@@ -6753,6 +6764,7 @@ void reinsert_thread (size_t from,
     arcDist_prev = arcDist;
     auto change = new Change (fromNode, toNode);
     change->improvement = improvement;
+    change->arcDist = arcDist;
   #if 0
     if (const Leaf* leaf = change->from->asLeaf ())  
       if (leaf->name == "AY662658.1")
@@ -6793,6 +6805,8 @@ bool DistTree::optimizeReinsert ()
   VectorOwn<Change> changes;  changes. reserve (256);  // PAR 
   for (const VectorPtr<Change>& threadChanges : results)
     changes << threadChanges;
+
+  changes. sort (Change::longer); 
 
   return applyChanges (changes, true); 
 }
@@ -6850,6 +6864,8 @@ bool DistTree::optimizeWhole ()
       chron_getBestChange. stop ();
     }
   }
+
+  changes. sort (Change::strictlyBetter); 
     
   return applyChanges (changes, false);
 }
@@ -6890,13 +6906,17 @@ const Change* DistTree::getBestChange (const DTNode* from)
 
 
 
-bool DistTree::applyChanges (VectorOwn<Change> &changes,
+bool DistTree::applyChanges (const VectorOwn<Change> &changes,
                              bool byNewLeaf)
 { 
   ASSERT (toDelete. empty ());
   ASSERT (absCriterion >= 0.0);
   
   
+  if (verbose (1))
+    cout << "# Changes: " << changes. size () << endl;
+
+
   const Real absCriterion_init = absCriterion;
 
 
@@ -6905,9 +6925,6 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
     static_cast <DTNode*> (node) -> stable = true;
 
 
-  if (verbose (1))
-    cout << "# Changes: " << changes. size () << endl;
-  changes. sort (Change::strictlyBetter); 
   size_t commits = 0;
   {
   //Unverbose un;
@@ -6915,13 +6932,13 @@ bool DistTree::applyChanges (VectorOwn<Change> &changes,
     Progress prog (changes. size ());
     for (const Change* ch_ : changes)
     {
-      prog (absCriterion2str ());
-      nChange++;
-      
       Change* ch = var_cast (ch_);
       ASSERT (ch);
       ASSERT (ch->improvement > 0.0);
 
+      prog (absCriterion2str () + ifS (byNewLeaf, " " + to_string (ch->arcDist)));
+      nChange++;
+      
       if (! ch->valid ())
         continue;
         
@@ -7484,7 +7501,7 @@ size_t DistTree::deleteQuestionableArcs (Prob arcExistence_min)
   if (! arcExistence_min)
     return 0;
   
-  Heap<const Steiner*> heap (Steiner::arcExistance_compare, Steiner::arcExistance_index, nodes. size ());
+  Heap<Steiner> heap (Steiner::arcExistence_compare, Steiner::arcExistence_index, nodes. size ());
   for (const DiGraph::Node* node : nodes)
     if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
       if (   st->getParent () 
@@ -7495,7 +7512,7 @@ size_t DistTree::deleteQuestionableArcs (Prob arcExistence_min)
         var_cast (st) -> heapIndex = no_index;
         if (st->arcExistence >= arcExistence_min)
           continue;
-        heap << st;
+        heap << var_cast (st);
       }
   
   size_t n = 0;
@@ -7946,8 +7963,12 @@ void DistTree::removeLeaf (Leaf* leaf,
     ASSERT (absCriterion < inf);
     maximize (absCriterion, 0.0);
   //ASSERT (target2_sum >= absCriterion);  // Can occur just after neighbor joining
+  #if 1
+    maximize (mult_sum, 0.0);
+  #else
     if (mult_sum <= 0.0)
       throw runtime_error (FUNC "All objects are deleted");
+  #endif
   
     qcPaths (); 
   
