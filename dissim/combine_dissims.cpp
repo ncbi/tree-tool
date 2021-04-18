@@ -1,4 +1,4 @@
-// combine_dissim.cpp
+// combine_dissims.cpp
 
 /*===========================================================================
 *
@@ -53,25 +53,37 @@ struct Scale
 	Real raw_max {NaN};
 
 	
-	Scale (const string &line,
-	       Real coeff)
+	explicit Scale (const string &line/*,
+	                Real coeff*/)
 	  {
 	  	istringstream iss (line);
-	  	string raw_maxS;
-	  	iss >> unit >> raw_maxS;
-	  	unit *= coeff;
+	  	string unitS, raw_maxS;
+	  	iss >> unitS >> raw_maxS;
+	  	unit    = str2real (unitS);
 	  	raw_max = str2real (raw_maxS);
-	  	QC_ASSERT (unit > 0.0);
-	  	QC_ASSERT (raw_max > 0.0);
-	  	ASSERT (! isNan (dissim_max ()));
+	 //unit *= coeff;
+	    if (isNan (unit))
+	    {
+	      QC_ASSERT (isNan (raw_max));
+	    }
+	    else
+	    {
+  	  	QC_ASSERT (unit > 0.0);
+  	  	QC_ASSERT (raw_max > 0.0);
+  	  	ASSERT (! isNan (dissim_max ()));
+  	  }
 	  }
 	Scale () = default;
 
 	  
+	bool valid () const 
+	  { return ! isNan (unit); }
 	Real raw2dissim (Real raw) const
 	  { if (isNan (raw))
 	  	  return NaN;
 	  	QC_ASSERT (raw >= 0.0);
+	  	if (! valid ())
+	  	  return NaN;
 	  	if (raw > raw_max)
 	  	  return NaN;
 	  	return raw * unit; 
@@ -92,7 +104,7 @@ struct ThisApplication : Application
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity 1> <dissimilarity 2> ...");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by <unit> * <raw_max>.\n\
 Line format: <unit> <raw_max>");
-      addKey ("coeff", "Coefficient to multiply all dissimilarities, > 0", "1");
+    //addKey ("coeff", "Coefficient to multiply all dissimilarities, > 0", "1");
   	}
 
 
@@ -101,23 +113,28 @@ Line format: <unit> <raw_max>");
 	{
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
-		const Real coeff         = str2real (getArg ("coeff"));
-		QC_ASSERT (coeff > 0.0);
+	//const Real coeff         = str2real (getArg ("coeff"));
+//QC_ASSERT (coeff > 0.0);
 		
 		
 		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
-			LineInput f (scaleFName);			
+			LineInput f (scaleFName);
+			Scale prev;
 			while (f. nextLine ())
 			{
-	      scales << Scale (f. line, coeff);
-	      const size_t i = scales. size ();
-	      if (i >= 2)
-	      	if (   scales [i - 2]. dissim_max () 
-	      		  >= scales [i - 1]. dissim_max ()
-	      		 )
-	      	  throw runtime_error ("dissim_max must increase");
+			  const Scale scale (f. line/*, coeff*/);
+	      scales << scale;
+	      if (   prev. valid ()
+	          && scale. valid ()
+	      	  && prev. dissim_max () >= scale. dissim_max ()
+	      	 )
+	      	throw runtime_error ("dissim_max must increase");
+	      if (scale. valid ())
+	        prev = scale;
 	    }
+  		QC_ASSERT (prev. valid ());
+  		QC_ASSERT (prev. raw_max == inf);
 		}
 		QC_ASSERT (scales. size () >= 2);
 
@@ -131,52 +148,61 @@ Line format: <unit> <raw_max>");
     {
 	  	iss. reset (f. line);
 	  	iss >> name1 >> name2;
+	  	QC_ASSERT (! name2. empty ());
 	  	if (name1 > name2)
 	  	  swap (name1, name2);
 	  	ASSERT (name1 < name2);
 
 	    Real dissim = NaN;
-	    Real dissim_prev = NaN;	    
-	  	FFOR (size_t, i, scales. size ())
-	  	{
-	  	  dissimS. clear ();
-	  	  iss >> dissimS;
-	  	  QC_ASSERT (! dissimS. empty ());
-  	  	const Real raw = str2real (dissimS);
-  	  	QC_IMPLY (! isNan (raw), raw >= 0.0);
-        dissim = scales [i]. raw2dissim (raw);
-        if (dissim == 0.0 && i) 
-          dissim = NaN;
-        if (isNan (dissim))
-        {
-          if (! isNan (dissim_prev))
+	    {
+  	    Real dissim_prev = NaN;	    
+  	  	const Scale* scale_prev = nullptr;
+  	  	const Scale* scale_prev_prev = nullptr;
+  	  	for (const Scale& scale : scales)
+  	  	{
+  	  	  dissimS. clear ();
+  	  	  iss >> dissimS;
+  	  	  QC_ASSERT (! dissimS. empty ());
+    	  	const Real raw = str2real (dissimS);
+    	  	QC_IMPLY (! isNan (raw), raw >= 0.0);
+    	  	if (! scale. valid ())
+    	  	  continue;
+          dissim = scale. raw2dissim (raw);
+          if (dissim == 0.0 && scale_prev) 
+            dissim = NaN;
+          if (isNan (dissim))
           {
-            dissim = dissim_prev;
-            break;
+            if (! isNan (dissim_prev))
+            {
+              dissim = dissim_prev;
+              break;
+            }
           }
-        }
-        else
-        {
-          ASSERT (dissim >= 0.0);
-          if (isNan (dissim_prev))
-            dissim_prev = dissim;
           else
           {
-            // Merging dissimilarities of adjacent scales
-            ASSERT (i);
-            const Real prev_max = scales [i - 1]. dissim_max ();
-            ASSERT (dissim_prev <= prev_max);
-            const Real prev_prev_max = (i - 1 ? scales [i - 2]. dissim_max () : 0.0);
-            ASSERT (prev_prev_max < prev_max);
-            if (dissim_prev <= prev_prev_max)
-              dissim = dissim_prev;
+            ASSERT (dissim >= 0.0);
+            if (isNan (dissim_prev))
+              dissim_prev = dissim;
             else
             {
-              const Prob weight = (dissim_prev - prev_prev_max) / (prev_max - prev_prev_max);
-              dissim = weight * dissim + (1.0 - weight) * dissim_prev;
+              // Merging dissimilarities of adjacent scales
+              ASSERT (scale_prev);
+              const Real dissim_prev_max = scale_prev->dissim_max ();
+              ASSERT (dissim_prev <= dissim_prev_max);
+              const Real dissim_prev_prev_max = scale_prev_prev ? scale_prev_prev->dissim_max () : 0.0;
+              ASSERT (dissim_prev_prev_max < dissim_prev_max);
+              if (dissim_prev <= dissim_prev_prev_max)
+                dissim = dissim_prev;
+              else
+              {
+                const Prob weight = (dissim_prev - dissim_prev_prev_max) / (dissim_prev_max - dissim_prev_prev_max);
+                dissim = weight * dissim + (1.0 - weight) * dissim_prev;
+              }
+              break;
             }
-            break;
           }
+          scale_prev_prev = scale_prev;
+          scale_prev = & scale;
         }
       }
       cout         << name1 
