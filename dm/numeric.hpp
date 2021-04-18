@@ -78,12 +78,9 @@ template <class T>
 
 
 
-
-///////////// Platform-specific /////////////////////
-typedef double Real;
+typedef  double  Real;
   // The floating-point datatype (short and fast)
-  // See fstFloat.cpp  
-/////////////////////////////////////////////////////
+  // Platform-specific
 
 string real2str (Real x,
                  streamsize decimals = 2,
@@ -92,7 +89,6 @@ string real2str (Real x,
 Real str2real (const string& s);
 
 const Real inf = numeric_limits<Real>::infinity ();  
-  // No "isinf()"
 
 inline bool finite (Real x)
   { return -inf < x && x < inf; }
@@ -105,6 +101,7 @@ inline Real nvlReal (Real x, Real val)
 
 extern const Real epsilon;
   // Precision
+
 extern const Real pi;
 extern Real log_2;
 extern Real log_10;
