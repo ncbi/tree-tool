@@ -34,7 +34,7 @@ prepare $ASM1 $TMP.1
 prepare $ASM2 $TMP.2
 
 $THIS/../../dissim/symbet $TMP.1 $TMP.2  -k 5
-  # -min_prot_len 150
+  # -min_prot_len 150  -k 5
 
 
 rm $TMP*
