@@ -1,6 +1,8 @@
-#define VERSION "1.7.1"
+#define VERSION "1.7.2"
 
 
+// 1.7.2  04/19/2021  d_{CDS,PRT}: arithmetic average is used
+//                    reinsert: sort by Change::arcDist decsending
 // 1.7.1  04/08/2021  inc/indiscern: pairs of indiscernible objects
 //                    hybrids are identified for indiscernibility classes
 //                    getMissingLeafPairs_ancestors(): only for the member with smallest name of an indiscernibility class
