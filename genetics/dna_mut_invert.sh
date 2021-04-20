@@ -16,8 +16,8 @@ TMP=`mktemp`
 
 
 NAME=`basename $IN`
-grep -v '[^acgt0-9]' $IN > $TMP || true
-$THIS/../trav $TMP -noprogress "echo $NAME >> $DIR/%f"
+grep -v '[^acgtINSDEL0-9]' $IN > $TMP || true
+$THIS/../trav $TMP  -noprogress  "flock $DIR/%f -c 'echo $NAME >> $DIR/%f'" 
 
 
 rm $TMP*
