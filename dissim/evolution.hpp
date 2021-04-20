@@ -72,9 +72,10 @@ struct Hashes : Vector<size_t>
 			                           , (Real) getIntersectSize (other)
 			                           , (Real) intersection_min
 			                           , hashes_ratio_min
-			                           , false  // PAR
+			                           , true  // PAR
 			                           ); 
 		}
+		// Symmetric
 };
 
 
