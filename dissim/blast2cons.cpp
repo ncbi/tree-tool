@@ -176,7 +176,6 @@ template <const bool b>
   }
 
 
-
 }  // namespace
 
 
