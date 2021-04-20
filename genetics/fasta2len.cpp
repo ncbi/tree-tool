@@ -81,7 +81,7 @@ struct ThisApplication : Application
 	  	else
 	  		seq. reset (new Dna     (faIn, 1024 * 1024, false));
 	    seq->qc ();
-	    cout << seq->getId () << ' ' << seq->seq. size () << endl;
+	    cout << seq->getId () << '\t' << seq->seq. size () << endl;
 	    if (outF. get () && seq->seq. size () >= len_min)
 	    	seq->saveText (*outF);
 	  }
