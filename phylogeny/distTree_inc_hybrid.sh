@@ -27,13 +27,13 @@ if [ ! -s $INC/hybrid.new ]; then
   exit 0
 fi
 
-$THIS/hybrid2list.sh $INC/hybrid.new > $INC/hybrid.add-raw
-$THIS/distTree_inc_expand_indiscern.sh $INC $INC/hybrid.add-raw > $INC/hybrid.add
-rm $INC/hybrid.add-raw
+# $INC/hybrid-indiscern
+$THIS/hybrid2list.sh $INC/hybrid.new > $INC/hybrid-indiscern.raw
+$THIS/distTree_inc_expand_indiscern.sh $INC $INC/hybrid-indiscern.raw > $INC/hybrid-indiscern
+rm $INC/hybrid-indiscern.raw
 
-$INC/objects_in_tree.sh $INC/hybrid.add null
-$THIS/../trav $INC/hybrid.add "$INC/outlier2db.sh %f auto_hybrid"  
+$INC/objects_in_tree.sh $INC/hybrid-indiscern "null"
+$THIS/../trav $INC/hybrid-indiscern "$INC/outlier2db.sh %f auto_hybrid"  
 
-rm $INC/hybrid.add
-
+mv $INC/hybrid-indiscern $INC/hist/hybrid-indiscern.$VER
 mv $INC/hybrid.new $INC/hist/hybrid.$VER
