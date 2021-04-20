@@ -142,10 +142,14 @@ struct ThisApplication : Application
         const DTNode* lca = tree. lcaName2node (lcaName, buf);
         if (! lca)
           throw runtime_error ("Clade node " + lcaName + " is not found");
+      #if 1
+        var_cast (lca) -> name = cladeName + (lca->name. empty () ? "" : " | " + lca->name);
+      #else
         if (const Leaf* leaf = lca->asLeaf ())
           var_cast (leaf) -> name = cladeName + " | " + leaf->name;
         else
           var_cast (lca) -> name = cladeName;
+      #endif
       }
     }
     
