@@ -197,7 +197,7 @@ REINSERT=""
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == 0 ]; then  # PAR
   REINSERT="-reinsert"
-  warning "REINSERT\nTree quality temporarily lowers due to missing dissimilarities to close tree neighbors"
+  warning "REINSERT\nTree quality temporarily decreases due to missing dissimilarities to close tree neighbors"
 fi
 
 # Time: O(n log^4(n)) 
