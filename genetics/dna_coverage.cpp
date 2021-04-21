@@ -73,19 +73,20 @@ struct Subject
     { string stitle_ (stitle);
       trimPrefix (stitle_, sseqid + "_");
       replace (stitle_, '_', ' ');
-      os         << sseqid                  // 1
-         << '\t' << qstart                  // 2
-         << '\t' << qend                    // 3
-         << '\t' << sstart                  // 4
-         << '\t' << send                    // 5
-         << '\t' << slen                    // 6
-       //<< '\t' << nvl (plasmidName, "NA") // 7
-         << '\t' << coverage                // 8
-         << '\t' << double (coverage) / double (qlen)  // 9
-         << '\t' << double (coverage) / double (slen)  // 10
-         << '\t' << double (nident) / double (length)  // 11
+      os         << qstart                  
+         << '\t' << qend                    
+         << '\t' << qlen
+         << '\t' << coverage                
+         << '\t' << double (coverage) / double (qlen)  
          << '\t' << length                  // 12
-         << '\t' << stitle_                 // 13
+         << '\t' << double (nident) / double (length)  
+         << '\t' << sseqid                  
+         << '\t' << sstart                  
+         << '\t' << send                    
+         << '\t' << slen                    
+       //<< '\t' << nvl (plasmidName, "NA") 
+         << '\t' << double (coverage) / double (slen)  
+         << '\t' << stitle_                 
          ;
     }
     
@@ -139,7 +140,7 @@ void processSubjects (const string &qseqid,
 
 // ThisApplication
 
-static const string outFormat {"#qseqid\tqlen\tsseqid\tqstart\tqend\tsstart\tseend\tslen\tcoverage\tqcoverage\tscoverage\tpident\talign_length\ttitle"};
+static const string outFormat {"#qseqid\tqstart\tqend\tqlen\tcoverage\tqcoverage\talign_length\tpident\tsseqid\tsstart\tsend\tslen\tscoverage\ttitle"};
 
 
 
