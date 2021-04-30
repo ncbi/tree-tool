@@ -13,6 +13,7 @@ endif
 ############################### Programs ################################
 
 all:	\
+  connectPairs \
   csv2tab \
   effectiveSize \
   extractPairs \
@@ -30,6 +31,12 @@ all:	\
   tsv_comp \
   unCgi
 	
+
+connectPairs.o:  $(COMMON_HPP)  
+connectPairsOBJS=connectPairs.o $(CPP_DIR)/common.o
+connectPairs:	$(connectPairsOBJS)
+	$(CXX) -o $@ $(connectPairsOBJS) $(LIBS)
+	$(ECHO)
 
 cpp_test.o:  $(COMMON_HPP)  
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
