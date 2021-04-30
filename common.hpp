@@ -1475,6 +1475,8 @@ public:
   virtual void saveText (ostream& /*os*/) const 
     { throw logic_error ("Root::saveText() is not implemented"); }
   void saveFile (const string &fName) const;
+    // if fName.empty() then do nothing
+    // Invokes: saveText()
   string str () const
     { ostringstream oss;
       saveText (oss);
