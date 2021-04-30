@@ -38,16 +38,14 @@ while [ -s $TMP.request ]; do
   printf "."
   $INC/pairs2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log  &> /dev/null
   rm $TMP.request
-  set +o errexit
-  grep -vwi "nan$" $TMP.dissim-add > $TMP.dissim-add1
-  set -o errexit
+  grep -vwi "nan$" $TMP.dissim-add | grep -vwi "inf$" > $TMP.dissim-add1 || true
   if [ ! -s $TMP.dissim-add1 ]; then
     wc -l $TMP.dissim-add
     warning "Incomparable objects"
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
-  $THIS/../phylogeny/distTree_new  $INC/tree  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf
+  $THIS/distTree_new  $INC/tree  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf
 done
 echo ""
 echo ""
