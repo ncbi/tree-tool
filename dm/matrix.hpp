@@ -1012,7 +1012,7 @@ struct Eigen : Root
 
   Real getNorm2 () const
     { return vec. sumSqr (); }  
-  bool operator> (const Eigen &other) const
+  bool operator< (const Eigen &other) const
     { return fabs (value) > fabs (other. value); }
   bool makePositiveVec ();
     // Return: vec is negateRow()'d
