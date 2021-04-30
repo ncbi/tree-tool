@@ -1475,8 +1475,6 @@ public:
   virtual void saveText (ostream& /*os*/) const 
     { throw logic_error ("Root::saveText() is not implemented"); }
   void saveFile (const string &fName) const;
-    // if fName.empty() then do nothing
-    // Invokes: saveText()
   string str () const
     { ostringstream oss;
       saveText (oss);
@@ -1567,6 +1565,9 @@ struct Named : Root
     { name. clear (); }
   void read (istream &is) override
 	  { is >> name; }
+	static bool lessPtr (const Named* x,
+	                     const Named* y)
+	  { return x->name < y->name; }
 };
 
 
@@ -1814,7 +1815,7 @@ public:
         return;
       FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
-		      if ((*this) [j + 1] > (*this) [j])
+		      if ((*this) [j + 1] < (*this) [j])
         	  std::swap ((*this) [j], (*this) [j + 1]);
 		      else
 		      	break;
@@ -2055,10 +2056,11 @@ public:
   void sortBubblePtr ()
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
-		      if (* (*this) [j + 1] > * (*this) [j])
+		      if (* (*this) [j + 1] < * (*this) [j])
         	  std::swap ((*this) [j], (*this) [j + 1]);
 		      else
 		      	break;
+		  P::searchSorted = false;
     }
 };
 
