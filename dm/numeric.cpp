@@ -125,8 +125,8 @@ Real str2real (const string& s)
 	  return inf;
   if (s1 == "-inf")
 	  return -inf;
-	if (   s1 == "NaN"
-	    || s1 == "-NaN"
+	if (   s1 == "nan"
+	    || s1 == "-nan"
 	    || s1 == "?"
 	   )
 	  return NaN;
