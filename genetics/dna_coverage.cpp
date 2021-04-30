@@ -128,7 +128,7 @@ void processSubjects (const string &qseqid,
 
   // Best Subject
   subjects. sort ();
-  cout << qseqid << '\t' << qlen << '\t';
+  cout << qseqid << '\t';
   subjects [0]. saveText (cout, qlen);      
   cout << endl;
   
