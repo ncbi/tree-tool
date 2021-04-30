@@ -274,7 +274,7 @@ section "Additional requests"
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.add-req
 if [ -s $INC/dissim.add-req ]; then
   $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add-req
-  grep -vwi 'nan$' $INC/dissim.add-req | grep -vwi 'inf$' >> $INC/dissim || true
+  cat $INC/dissim.add-req >> $INC/dissim
 fi
 rm $INC/dissim.add-req
 rm $INC/dissim_request
