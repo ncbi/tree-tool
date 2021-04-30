@@ -8,7 +8,7 @@ fi
 G=$1
 
 
-H=`$THIS/../file2hash $G`
+H=`$THIS/../../file2hash $G`
 
 set +o errexit
 N=`grep -c ">" genome/$H/$G/$G.prot-univ`

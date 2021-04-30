@@ -9,7 +9,7 @@ fi
 ASM=$1
 
 
-H=`$THIS/../file2hash $ASM`
+H=`$THIS/../../file2hash $ASM`
 
 diff phen/$H/$ASM phen.old/$H/$ASM | grep '^[><]' | sed 's/^..//1' | sed 's/:.*$//1' | sort | uniq -c | grep -v ' 1 ' 
 if [ $? == 0 ]; then

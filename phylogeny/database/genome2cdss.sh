@@ -8,6 +8,6 @@ fi
 G=$1
 
 
-H=`$THIS/../file2hash $G`
+H=`$THIS/../../file2hash $G`
 N=`cat genome/$H/$G/$G.hash-CDS | wc -l`
 echo $G $N

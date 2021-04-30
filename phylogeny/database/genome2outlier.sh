@@ -15,7 +15,7 @@ MIN=$3
 MAX=$4
 
 
-H=`$THIS/../file2hash $ASM`
+H=`$THIS/../../file2hash $ASM`
 F=genome/$H/$ASM/$ASM.hash-$HASHTYPE
 
 if [ ! -e $F ]; then
