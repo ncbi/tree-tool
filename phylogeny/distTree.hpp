@@ -370,7 +370,7 @@ private:
 
 
 
-typedef  unordered_map <const DisjointCluster*, VectorPtr<Leaf>>  LeafCluster;
+typedef  unordered_map <const DisjointCluster*, VectorPtr<Leaf>>  Cluster2Leaves;
 
 
 
@@ -553,7 +553,8 @@ public:
   const Steiner* makeDTRoot ();
     // Return: Old root, !nullptr
     // Invokes: makeRoot(getTree().root)
-  LeafCluster getIndiscernibles ();
+  Cluster2Leaves getIndiscernibles ();
+    // Requires: !childrenDiscernible(), getDistTree().optimizable()
     // Invokes: Leaf->DisjointCluster
   Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) final;
     // Time: O(n log(n))+
@@ -1238,11 +1239,11 @@ private:
     // Return: true <=> 1 connected component
     // Input: dissims
     // Output: DisjointCluster
-  LeafCluster getIndiscernibles ();
+  Cluster2Leaves getIndiscernibles ();
     // Return: VectorPtr::size() >= 2
     // Invokes: Leaf->DisjointCluster
     // Time: ~ O(p)
-  size_t leafCluster2discernibles (const LeafCluster &leafCluster);
+  size_t leafCluster2discernibles (const Cluster2Leaves &cluster2leaves);
     // Return: Number of indiscernible leaves
     // Output: Leaf::len = 0, Leaf::discernible = false, topology
     // Invokes: cleanTopology()
