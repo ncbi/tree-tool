@@ -197,7 +197,7 @@ void Seq::qcAlphabet () const
 {
   const string::const_iterator it = stringInSet (seq, getSeqAlphabet ());
   if (it != seq. end ())	
-    throw runtime_error ("Bad sequence character in " + strQuote (getId ()) + ": " + toString (int (*it)) + " " + seq. substr ((size_t) (it - seq. begin ())));
+    throw runtime_error ("Bad sequence character in " + strQuote (getId ()) + ": " + to_string (int (*it)) + " " + seq. substr ((size_t) (it - seq. begin ())));
 }
 
 
@@ -1042,7 +1042,7 @@ char complementaryNucleotide (char wildNucleotide)
     case 'b': r = 'v'; break;
     case 'n': r = 'n'; break;
     default: 
-    	throw runtime_error ("Bad wild nucleotide " + toString (wildNucleotide));
+    	throw runtime_error ("Bad wild nucleotide " + to_string (wildNucleotide));
   }
   if (isupper (wildNucleotide))
     r = toUpper (r);
@@ -1959,7 +1959,7 @@ Peptide Dna::makePeptide (Frame frame,
   ASSERT (isFrame (frame));
   IMPLY (firstStartCodon2M, lowercasePossibleStartCodon);
 
-  const string peptideName (getId () + ".fr" + toString ((int) frame));
+  const string peptideName (getId () + ".fr" + to_string ((int) frame));
   const size_t frameOffset = (size_t) abs (frame) - 1;
   ASSERT (frameOffset <= 2);
   const size_t aaSeqLen = seq. size () >= 3 ? (seq. size () - frameOffset) / 3 : 0;
