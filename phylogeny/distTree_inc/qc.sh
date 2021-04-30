@@ -15,13 +15,16 @@ exit 0
 INC=`dirname $0`
 
 
+distTree_inc_indiscern_qc.sh $INC
+
+
 TMP=`mktemp`
 #echo $TMP
 #set -x
 
 
 tree2obj.sh $INC/tree > $TMP.tree
-ls $INC/new/ > $TMP.new
+distTree_inc_new_list.sh $INC > $TMP.new
 setIntersect.sh $TMP.tree $TMP.new > $TMP.tree-new
 if [ -s $TMP.tree-new ]; then
   wc -l $TMP.tree-new
