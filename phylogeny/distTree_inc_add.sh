@@ -1,17 +1,19 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
   echo "Add new objects in #1/new/ to a distance tree without the optimization of the original tree"
   echo "#1: incremental distance tree directory"
-  echo "#2: output tree"
-  echo "#3: new leaf placement data"
+  echo "#2: input tree ('' = #1/tree)"
+  echo "#3: output tree"
+  echo "#4: new leaf placement data"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
-OUT=$2
-PLACEMENT=$3
+IN="$2"
+OUT=$3
+PLACEMENT=$4
 
 
 # Cf. distTree_inc_new.sh
@@ -39,6 +41,11 @@ section "new/ -> search/"
 $THIS/distTree_inc_new_list.sh $INC > $INC/search.list
 OBJS=`cat $INC/search.list | wc -l`
 wc -l $INC/search.list
+if [ ! -s $INC/search.list ]; then
+  warning "No objects to add"
+  rm $INC/search.list
+  exit 0
+fi
 
 $THIS/tree2obj.sh $INC/tree > $INC/tree.list
 $THIS/../setIntersect.sh $INC/tree.list $INC/search.list 0 > $INC/tree-search.list
@@ -48,6 +55,23 @@ if [ -s $INC/tree-search.list ]; then
 fi
 rm $INC/tree.list
 rm $INC/tree-search.list
+
+
+if [ $IN ]; then
+  if [ -s $INC/tree.cur ]; then
+    error "$INC/tree.cur exists"
+  fi
+  $THIS/tree2obj.sh $INC/tree > $INC/tree.list
+  $THIS/tree2obj.sh $IN       > $INC/tree.list1
+  if diff $INC/tree.list $INC/tree.list1; then
+    rm $INC/tree.list
+    rm $INC/tree.list1
+    mv $INC/tree $INC/tree.cur
+    cp $IN $INC/tree
+  else
+    error "$IN and $INC/tree have different objects"
+  fi
+fi
 
 
 cp /dev/null $INC/dissim.add
@@ -87,7 +111,7 @@ fi
 
 
 ITER=0
-ITER_MAX=`echo $OBJS | awk '{printf "%d", log($1)+3};'`
+ITER_MAX=`echo $OBJS | awk '{printf "%d", 2*log($1)+3};'`
 while [ $ITER -le $ITER_MAX ]; do
   # Time: O(log^4(n)) per one new object
   
@@ -128,7 +152,7 @@ while [ $ITER -le $ITER_MAX ]; do
   echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
-$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
+#$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
 rm $INC/dissim.add
 
 
@@ -136,6 +160,11 @@ section "leaf -> tree"
 $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE  -noqual  -output_tree $OUT
 mv $INC/leaf $PLACEMENT
 cp /dev/null $INC/leaf
+
+
+if [ $IN ]; then
+  mv $INC/tree.cur $INC/tree
+fi
 
 
 section "QC"
