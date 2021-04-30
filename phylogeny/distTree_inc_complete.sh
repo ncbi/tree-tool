@@ -21,6 +21,10 @@ if [ -s $INC/tree ]; then
   error "$INC/tree must be empty"
 fi
 
+if [ -s $INC/indiscern ]; then
+  error "$INC/indiscern must be empty"
+fi
+
 N=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
 if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
@@ -31,10 +35,11 @@ sort -c $OBJS
 
 section "Computing dissimilarities"
 $THIS/../list2pairs $OBJS > $INC/dissim_request
-$THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim.raw
+$THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim
 rm $INC/dissim_request
-cat $INC/dissim.raw | grep -vwi "nan$" | grep -vwi "inf$" > $INC/dissim
-rm $INC/dissim.raw
+$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
+
+#exit 2  
 
 section "data.dm"
 $THIS/../dm/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
