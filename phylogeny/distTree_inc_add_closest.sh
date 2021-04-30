@@ -57,10 +57,8 @@ sort -u $TMP.pair > $TMP.pair1
 
 $THIS/../setMinus $TMP.req2 $TMP.pair1 > $TMP.req
 
-$THIS/distTree_inc_request2dissim.sh $INC $TMP.req $INC/dissim.add-req
-wc -l $INC/dissim.add-req
-grep -vwi 'nan$' $INC/dissim.add-req | grep -vwi 'inf$' >> $INC/dissim || true
-rm $INC/dissim.add-req
+$THIS/distTree_inc_request2dissim.sh $INC $TMP.req $INC/dissim
+wc -l $INC/dissim
 
 
 rm $TMP*

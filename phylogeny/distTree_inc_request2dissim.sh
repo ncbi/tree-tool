@@ -31,7 +31,8 @@ else
 	sort -R $REQ > $TMP
 	$THIS/../splitList $TMP $GRID_MIN $INC/dr
 	rm $TMP
-	
+
+  # $INC/dr.{out/,res}
   while true; do
     rm -rf $INC/dr.out
 		mkdir $INC/dr.out
@@ -53,16 +54,19 @@ else
 		done
 		rm $INC/dr.list
 		
-		$THIS/../trav $INC/dr.out "cat %d/%f" > $OUT
-		wc -l $OUT
-		
-		N_new=`cat $OUT | wc -l`
+		$THIS/../trav $INC/dr.out "cat %d/%f" > $INC/dr.res
+
+		N_new=`cat $INC/dr.res | wc -l`
+		echo "$N_new $INC/dr.res"
 		if [ $N -eq $N_new ]; then 
 		  break
 		fi
-    echo "$N_new $OUT"
 		warning "Redo"
 	done
+
+	grep -vwi 'nan$' $INC/dr.res | grep -vwi 'inf$' > $OUT || true
+	rm $INC/dr.res
+	wc -l $OUT
 	
 	rm -r $INC/dr.out &
 	rm -r $INC/dr
