@@ -26,7 +26,7 @@ QC=1
 
 if [ $QC == 1 ]; then
   section "QC"
-  $INC/qc.sh go
+  $INC/qc.sh 0
 fi
 
 
@@ -96,7 +96,7 @@ fi
 
 if [ $QC == 1 ]; then
   section "QC"
-  $INC/qc.sh go
+  $INC/qc.sh 0
 fi
 section "Tree QC"
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER

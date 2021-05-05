@@ -190,7 +190,8 @@ fi
 
 GOOD=""
 if [ -e $INC/good ]; then
-  GOOD="-good $INC/good"
+  $THIS/distTree_inc_expand_indiscern.sh $INC $INC/good 0 > $INC/good.expanded
+  GOOD="-good $INC/good.expanded"
 fi
 
 REINSERT=""
@@ -208,9 +209,11 @@ $THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
   $DELETE_CRITERION_OUTLIERS \
   $HYBRID \
   $GOOD \
-  -output_tree $INC/tree.new \
+  -output_tree     $INC/tree.new \
+  -output_tree_tmp $INC/tree.tmp \
   -dissim_request $INC/dissim_request \
   > $INC/hist/makeDistTree.$VER
+rm $INC/tree.tmp
 mv $INC/leaf $INC/hist/leaf.$VER
 cp /dev/null $INC/leaf
 mv $INC/tree.new $INC/tree
@@ -284,7 +287,7 @@ $THIS/distTree_inc_tree1_quality.sh $INC
 
 
 section "QC"
-$INC/qc.sh go
+$INC/qc.sh 0
 
 
 echo ""

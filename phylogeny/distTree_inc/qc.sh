@@ -2,14 +2,11 @@
 source bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality check"
-  echo "#1: go"
+  echo "#1: verbose (0/1)"
   echo "Requires: Time: O(n log^4(n))"
   exit 1
 fi
-
-
-warning "$0 is not implemented"
-exit 0
+VERB=$1
 
 
 INC=`dirname $0`
@@ -17,10 +14,16 @@ INC=`dirname $0`
 
 distTree_inc_indiscern_qc.sh $INC
 
+if [ -e $INC/good ]; then
+  sort -cu $INC/good
+fi
+
 
 TMP=`mktemp`
-#echo $TMP
-#set -x
+if [ $VERB == 1 ]; then
+  echo $TMP
+  set -x
+fi
 
 
 tree2obj.sh $INC/tree > $TMP.tree
@@ -30,6 +33,9 @@ if [ -s $TMP.tree-new ]; then
   wc -l $TMP.tree-new
   exit 1
 fi
+
+
+warning "$0 is not implemented completely"
 
 
 rm $TMP*

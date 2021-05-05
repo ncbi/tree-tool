@@ -168,4 +168,4 @@ fi
 
 
 section "QC"
-$INC/qc.sh go
+$INC/qc.sh 0
