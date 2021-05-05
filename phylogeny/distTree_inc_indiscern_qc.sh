@@ -9,6 +9,7 @@ INC=$1
 
 
 TMP=`mktemp`
+#echo $TMP
 
 
 awk '{if ($3 == 0 && $1 < $2)  print $1, $2};' $INC/dissim >  $TMP
