@@ -46,22 +46,24 @@ namespace DM_sp
 {
 
 
-Real intersection2dissim (Real size1,
-                          Real size2,
-                          Real intersection,
-                          Real intersection_min,
-	                        Prob sizes_ratio_min,
-	                        bool ave_arithP)
+Real maps2dissim (Real size1,
+                  Real size2,
+                  Real maps1,
+                  Real maps2,
+                  Real maps_min,
+                  Prob sizes_ratio_min,
+                  bool ave_arithP)
 {
-	ASSERT (size1 >= 0);
-	ASSERT (size2 >= 0);
-  ASSERT (intersection <= size1);
-  ASSERT (intersection <= size2);
+	ASSERT (size1 >= 0.0);
+	ASSERT (size2 >= 0.0);
+  ASSERT (maps1 <= size1);
+  ASSERT (maps2 <= size2);
   ASSERT (isProb (sizes_ratio_min));
   
   
   if (verbose ())
-    cout << '\t' << intersection 
+    cout << '\t' << maps1 
+         << '\t' << maps2
          << '\t' << size1 
          << '\t' << size2 
          << endl;
@@ -75,11 +77,13 @@ Real intersection2dissim (Real size1,
   	 )
   	return NaN;
          
-  if (intersection < intersection_min)
+  if (maps1 < maps_min)
+  	return NaN;
+  if (maps2 < maps_min)
   	return NaN;
   	
-  const Real dissim1 = log (size1 / intersection);
-  const Real dissim2 = log (size2 / intersection);
+  const Real dissim1 = log (size1 / maps1);
+  const Real dissim2 = log (size2 / maps2);
   ASSERT (dissim1 >= 0.0);
   ASSERT (dissim2 >= 0.0);
   

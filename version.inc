@@ -1,6 +1,8 @@
-#define VERSION "1.7.2"
+#define VERSION "1.7.3"
 
 
+// 1.7.3  04/23/2021  combine_dissims.cpp: weighted combination of all dissimilarities
+//                    str2real() bug in reading nan's
 // 1.7.2  04/19/2021  d_{CDS,PRT}: arithmetic average is used
 //                    reinsert: sort by Change::arcDist decsending
 // 1.7.1  04/08/2021  inc/indiscern: pairs of indiscernible objects

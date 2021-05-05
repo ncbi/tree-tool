@@ -51,17 +51,22 @@ struct Scale
 {
 	Real unit {NaN};
 	Real raw_max {NaN};
+	//	
+	Real dissim_min {NaN};
+	Real dissim_center {NaN};
 
 	
-	explicit Scale (const string &line/*,
-	                Real coeff*/)
+	Scale (const string &line,
+         Real dissim_min_arg,
+         Real dissim_center_arg)
+    : dissim_min    (nvlReal (dissim_min_arg,    0.0))
+    , dissim_center (nvlReal (dissim_center_arg, 0.0))
 	  {
 	  	istringstream iss (line);
 	  	string unitS, raw_maxS;
 	  	iss >> unitS >> raw_maxS;
 	  	unit    = str2real (unitS);
 	  	raw_max = str2real (raw_maxS);
-	 //unit *= coeff;
 	    if (isNan (unit))
 	    {
 	      QC_ASSERT (isNan (raw_max));
@@ -70,10 +75,19 @@ struct Scale
 	    {
   	  	QC_ASSERT (unit > 0.0);
   	  	QC_ASSERT (raw_max > 0.0);
-  	  	ASSERT (! isNan (dissim_max ()));
+  	  	QC_ASSERT (dissim_min <= dissim_center);
+  	  	QC_ASSERT (dissim_center < dissim_max ());
   	  }
 	  }
 	Scale () = default;
+	void saveText (ostream &os) const
+	  { os         << unit 
+	       << '\t' << raw_max 
+	       << '\t' << dissim_min
+	       << '\t' << dissim_center
+	       << '\t' << dissim_max ()
+	       << endl; 
+	  }
 
 	  
 	bool valid () const 
@@ -82,19 +96,27 @@ struct Scale
 	  { if (isNan (raw))
 	  	  return NaN;
 	  	QC_ASSERT (raw >= 0.0);
-	  	if (! valid ())
-	  	  return NaN;
-	  	if (raw > raw_max)
-	  	  return NaN;
 	  	return raw * unit; 
 	  }
 	Real dissim_max () const
 	  { return raw2dissim (raw_max); }
+	Real getWeight (Real dissim) const
+	  // Return: 0..1
+	  { if (dissim < dissim_min)  // May be: dissim_min = dissim_center = 0
+	      return 0.0;
+	    if (dissim >= dissim_max ())
+	      return 0.0;
+	    if (dissim < dissim_center)
+	      return (dissim - dissim_min) / (dissim_center - dissim_min);
+	    if (dissim_max () == inf)
+	      return 1.0;
+	    return (dissim_max () - dissim) / (dissim_max () - dissim_center);
+	  }
 };
-	
-	
-	
-	
+
+
+
+
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -104,7 +126,7 @@ struct ThisApplication : Application
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity 1> <dissimilarity 2> ...");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by <unit> * <raw_max>.\n\
 Line format: <unit> <raw_max>");
-    //addKey ("coeff", "Coefficient to multiply all dissimilarities, > 0", "1");
+      addFlag ("print_raw", "Print raw dissimilarities");
   	}
 
 
@@ -113,17 +135,17 @@ Line format: <unit> <raw_max>");
 	{
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
-	//const Real coeff         = str2real (getArg ("coeff"));
-//QC_ASSERT (coeff > 0.0);
+		const bool   print_raw   = getFlag ("print_raw");
 		
 		
 		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
 			LineInput f (scaleFName);
+			Scale prev_prev;
 			Scale prev;
 			while (f. nextLine ())
 			{
-			  const Scale scale (f. line/*, coeff*/);
+			  const Scale scale (f. line, prev_prev. dissim_max (), prev. dissim_max ());
 	      scales << scale;
 	      if (   prev. valid ()
 	          && scale. valid ()
@@ -131,83 +153,102 @@ Line format: <unit> <raw_max>");
 	      	 )
 	      	throw runtime_error ("dissim_max must increase");
 	      if (scale. valid ())
+	      {
+	        prev_prev = prev;
 	        prev = scale;
+	      }
 	    }
+	    // At least one valid Scale should exist
   		QC_ASSERT (prev. valid ());
   		QC_ASSERT (prev. raw_max == inf);
 		}
 		QC_ASSERT (scales. size () >= 2);
 
       
-  	LineInput f (dissimFName, 1024 * 100, 1);
-  	string name1;
-  	string name2;
-  	string dissimS;
-   	Istringstream iss;
+  	LineInput f (dissimFName, 1024 * 100, 1);  // PAE
   	while (f. nextLine ())
     {
-	  	iss. reset (f. line);
-	  	iss >> name1 >> name2;
-	  	QC_ASSERT (! name2. empty ());
-	  	if (name1 > name2)
-	  	  swap (name1, name2);
-	  	ASSERT (name1 < name2);
+     	stringstream iss (f. line);
 
-	    Real dissim = NaN;
-	    {
-  	    Real dissim_prev = NaN;	    
-  	  	const Scale* scale_prev = nullptr;
-  	  	const Scale* scale_prev_prev = nullptr;
-  	  	for (const Scale& scale : scales)
-  	  	{
-  	  	  dissimS. clear ();
-  	  	  iss >> dissimS;
-  	  	  QC_ASSERT (! dissimS. empty ());
-    	  	const Real raw = str2real (dissimS);
-    	  	QC_IMPLY (! isNan (raw), raw >= 0.0);
-    	  	if (! scale. valid ())
-    	  	  continue;
-          dissim = scale. raw2dissim (raw);
-          if (dissim == 0.0 && scale_prev) 
-            dissim = NaN;
-          if (isNan (dissim))
-          {
-            if (! isNan (dissim_prev))
-            {
-              dissim = dissim_prev;
-              break;
-            }
-          }
-          else
-          {
-            ASSERT (dissim >= 0.0);
-            if (isNan (dissim_prev))
-              dissim_prev = dissim;
-            else
-            {
-              // Merging dissimilarities of adjacent scales
-              ASSERT (scale_prev);
-              const Real dissim_prev_max = scale_prev->dissim_max ();
-              ASSERT (dissim_prev <= dissim_prev_max);
-              const Real dissim_prev_prev_max = scale_prev_prev ? scale_prev_prev->dissim_max () : 0.0;
-              ASSERT (dissim_prev_prev_max < dissim_prev_max);
-              if (dissim_prev <= dissim_prev_prev_max)
-                dissim = dissim_prev;
-              else
-              {
-                const Prob weight = (dissim_prev - dissim_prev_prev_max) / (dissim_prev_max - dissim_prev_prev_max);
-                dissim = weight * dissim + (1.0 - weight) * dissim_prev;
-              }
-              break;
-            }
-          }
-          scale_prev_prev = scale_prev;
-          scale_prev = & scale;
-        }
+      {
+      	string name1;
+      	string name2;
+  	  	iss >> name1 >> name2;
+  	  	QC_ASSERT (! name2. empty ());
+  	  	if (name1 > name2)
+  	  	  swap (name1, name2);
+  	  	ASSERT (name1 < name2);
+        cout         << name1 
+             << '\t' << name2;
       }
-      cout         << name1 
-           << '\t' << name2
-           << '\t' << dissim 
+
+	    Real dissim_weighted_sum = 0.0;
+	    Real weight_sum = 0.0;
+	    bool first = true;
+	    size_t n = 0;
+	  	for (const Scale& scale : scales)
+	  	{
+      	string dissimS;
+	  	  iss >> dissimS;
+	  	  QC_ASSERT (! dissimS. empty ());
+
+  	  	if (! scale. valid ())
+  	  	  continue;
+
+  	  	const Real raw = str2real (dissimS);
+  	  	if (print_raw)
+  	  	  cout << '\t' << raw;
+        if (isNan (raw))
+        {
+          if (n)
+            break;
+        }
+        else
+        {
+          if (n >= 2)
+            break;
+          const Real dissim = scale. raw2dissim (raw);
+          const Real weight = scale. getWeight (dissim);
+          ASSERT (dissim >= 0.0);
+          ASSERT (weight >= 0.0);
+          dissim_weighted_sum += weight * dissim;
+          weight_sum          += weight;
+          n++;
+          if (verbose ())
+          {
+            cout << endl;
+            cout << "scale: ";
+            scale. saveText (cout);
+            PRINT (raw);
+            PRINT (dissim);
+            PRINT (weight);
+            PRINT (first);
+            PRINT (dissim_weighted_sum);
+            PRINT (weight_sum);
+          }
+        }
+
+        if (   first
+            && dissim_weighted_sum == 0.0
+            && weight_sum > 0.0
+           )
+          break;
+          
+        first = false;
+      }
+      if (   ! first
+          && dissim_weighted_sum == 0.0
+          && weight_sum > 0.0
+         )
+        weight_sum = 0.0;
+      if (verbose ())
+      {
+        PRINT (first);
+        PRINT (dissim_weighted_sum);
+        PRINT (weight_sum);
+      }
+
+      cout << '\t' << dissim_weighted_sum / weight_sum
            << endl;
     }
 	}

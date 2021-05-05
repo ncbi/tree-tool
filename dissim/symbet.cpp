@@ -88,13 +88,68 @@ double kmer2weight (const string &kmer)
 
 
 
-Vector<size_t> getBests (const unordered_set<string> &seqs1,
-                         const unordered_set<string> &seqs2,
-                         size_t k)
+struct TopMatches
+{
+  struct Item
+  {
+    size_t id {no_index};
+    double weight {NaN};
+    bool operator< (const Item &other) const
+      { return weight > other. weight; }
+  };
+  size_t size_max {0};
+  Vector<Item> items;
+    // size() <= size_max
+    // Orderted by Item::weight descending
+  
+
+  explicit TopMatches (size_t size_max_arg)
+    : size_max (size_max_arg)
+    {
+      ASSERT (size_max);
+      items. reserve (size_max);
+    }
+
+
+  void add (size_t id,
+            double weight)
+    { 
+      ASSERT (id != no_index);
+      ASSERT (weight > 0.0);
+      if (! items. empty () && greaterReal (items. back (). weight, weight))
+        return;
+      ASSERT (items. size () <= size_max);
+      if (items. size () == size_max)
+        items. pop_back ();
+      items << Item {id, weight};
+      items. sortBubble ();
+    }
+  Vector<size_t> getIds () const
+    // Sorted
+    {
+      Vector<size_t> ids;  ids. reserve (items. size ());
+      for (const Item& item : items)
+        ids << item. id;
+      ids. sort ();
+      return ids;
+    }
+};
+
+
+
+typedef  Vector<Vector<size_t>>  Bests;
+
+
+
+Bests getBests (const unordered_set<string> &seqs1,
+                const unordered_set<string> &seqs2,
+                size_t k,
+                size_t ploidy)
 // Return: size() = seqs1.size()
 //         values are indexes of seqs2 or no_index
 {
   ASSERT (k);
+  ASSERT (ploidy);
   
   unordered_map<string/*kmer*/,Vector<size_t/*id*/>> kmer2ids;  kmer2ids. rehash (seqs2. size () * 100);  // PAR
   {
@@ -116,7 +171,7 @@ Vector<size_t> getBests (const unordered_set<string> &seqs1,
     }
   }
 
-  Vector<size_t> bests;  bests. reserve (seqs1. size ());
+  Bests bests;  bests. reserve (seqs1. size ());
   {
     unordered_map<size_t/*id*/,double> id2weight;  id2weight. rehash (100000);  // PAR
     for (const string& seq : seqs1)
@@ -139,13 +194,11 @@ Vector<size_t> getBests (const unordered_set<string> &seqs1,
               id2weight [id] += weight;
             }
         }
-      size_t id_best = no_index;
-      double weight_max = 0;
+      TopMatches tm (ploidy); 
       for (const auto& it : id2weight)
-        // ignore small it.second ??
-        if (maximize (weight_max, it. second))
-          id_best = it. first;
-      bests << id_best;
+        tm. add (it. first, it. second);
+          // Skip if it.second is too small ??
+      bests. push_back (tm. getIds ());
 	  }
 	}
 	ASSERT (bests. size () == seqs1. size ());
@@ -153,6 +206,21 @@ Vector<size_t> getBests (const unordered_set<string> &seqs1,
 	return bests;
 }
 
+
+
+size_t getMaps (const Bests &bests1,
+                const Bests &bests2)
+{
+	size_t maps = 0;
+	FFOR (size_t, i, bests1. size ())
+	  for (const size_t j : bests1 [i])
+	    if (bests2 [j]. containsFast (i))
+	    {
+	      maps++;
+	      break;
+	    }
+	return maps;
+}
 
 
 
@@ -166,47 +234,56 @@ struct ThisApplication : Application
   	  addPositional ("fasta2", "Protein FASTA file 2");
   	  addKey ("k", "k-mer size, >= 3", "5");
   	  addKey ("min_prot_len", "Min. protein length", "0");
+  	  addKey ("ploidy", "Number of chromosome copies", "1");
   	}
 
 
 
 	void body () const final
 	{
-		const string fName1  = getArg ("fasta1");
-		const string fName2  = getArg ("fasta2");
-		const size_t k       = (size_t) arg2uint ("k");
-		const size_t len_min = (size_t) arg2uint ("min_prot_len");
+		const string fName1   = getArg ("fasta1");
+		const string fName2   = getArg ("fasta2");
+		const size_t k        = (size_t) arg2uint ("k");
+		const size_t len_min  = (size_t) arg2uint ("min_prot_len");
+		const size_t ploidy = (size_t) arg2uint ("ploidy");
 		QC_ASSERT (k >= 3);  // PAR
+		QC_ASSERT (ploidy >= 1);
 		
 		
 		const unordered_set<string> seqs1 (readSeqs (fName1, len_min));
-		const unordered_set<string> seqs2 (readSeqs (fName2, len_min));
+		const unordered_set<string> seqs2 (readSeqs (fName2, len_min));		
+		const Real size1 = (Real) seqs1. size ();
+		const Real size2 = (Real) seqs2. size ();
 		
-		const Vector<size_t> bests1 (getBests (seqs1, seqs2, k));
-		const Vector<size_t> bests2 (getBests (seqs2, seqs1, k));
-		
-		// For approximate k-mer symbets run Needleman-Wunsch ??!
-		
-		size_t symbet = 0;
-		FFOR (size_t, i, bests1. size ())
-		  if (bests1 [i] != no_index)
-		    if (bests2 [bests1 [i]] == i)
-		      symbet++;
-
-
-	  if (verbose ())
-	  {
-  	  PRINT (seqs1. size ());
-  	  PRINT (seqs2. size ());
-  	  PRINT (symbet);
-  	}
-	  cout << intersection2dissim ( (Real) seqs1. size ()
-	                              , (Real) seqs2. size ()
-	                              , (Real) symbet
-	                              , 50.0   // PAR
-	                              , 0.5    // PAR
-	                              , true)  
-	       << endl; 
+		Real dissim = NaN;
+		constexpr Real sizes_ratio_min = 0.5;  // PAR
+    if (  min (size1, size2) 
+    	  / max (size1, size2)
+  	    >= sizes_ratio_min   // Cf. maps2dissim()
+  	   )
+  	{
+  		const Bests bests1 (getBests (seqs1, seqs2, k, ploidy));
+  		const Bests bests2 (getBests (seqs2, seqs1, k, ploidy));
+  		// For approximate k-mer symbets run Needleman-Wunsch ??!
+      const size_t maps1 = getMaps (bests1, bests2);
+      const size_t maps2 = getMaps (bests2, bests1);
+  	  if (verbose ())
+  	  {
+    	  PRINT (seqs1. size ());
+    	  PRINT (seqs2. size ());
+    	  PRINT (maps1);
+    	  PRINT (maps2);
+    	}
+    	dissim = maps2dissim ( size1
+                           , size2
+                           , (Real) maps1
+                           , (Real) maps2
+                           , 50.0   // PAR
+                           , sizes_ratio_min
+                           , true);
+    }
+  	
+	  cout << dissim << endl; 
 	}
 };
 

@@ -46,15 +46,24 @@ namespace DM_sp
 {
 
 
-Real intersection2dissim (Real size1,
-                          Real size2,
-                          Real intersection,
-                          Real intersection_min,
-	                        Prob sizes_ratio_min,
-	                        bool ave_arithP);
+Real maps2dissim (Real size1,
+                  Real size2,
+                  Real maps1,
+                  Real maps2,
+                  Real maps_min,
+                  Prob sizes_ratio_min,
+                  bool ave_arithP);
   // Input: ave_arithP; false <=> ave_harm()
   // Return: >= 0; may be NaN
-  // Symmetric
+
+inline Real intersection2dissim (Real size1,
+                                 Real size2,
+                                 Real intersection,
+                                 Real intersection_min,
+                                 Prob sizes_ratio_min,
+                                 bool ave_arithP)
+  { return maps2dissim (size1, size2, intersection, intersection, intersection_min, sizes_ratio_min, ave_arithP); }
+    // Symmetric
 
 
 
