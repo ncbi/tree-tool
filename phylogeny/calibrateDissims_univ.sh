@@ -21,7 +21,6 @@ VAR_POWER=$6
 PHEN=$7
 
 
-echo ""
 echo "power = $DISSIM_POWER"
 echo "outlier_SEs = $OUTLIER_SES"
 
