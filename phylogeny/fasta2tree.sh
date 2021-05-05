@@ -24,7 +24,6 @@ else
   $THIS/../dissim/fasta2dissim  $FASTA  -dataset $TMP  
 fi
 
-echo ""
 section "Builing tree"
 # PAR
 $THIS/makeDistTree  -data $TMP  -dissim_attr "dissim"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TREE
