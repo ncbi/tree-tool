@@ -31,11 +31,11 @@ grep '^>' $INC/seq.fa | sed 's/^>//1' | sed 's/ .*$//1' | sort > $TMP.seq-fa
 sort -u $TMP.seq-fa > $TMP.seq-fa-uniq
 diff $TMP.seq-fa $TMP.seq-fa-uniq
 
-$THIS/../phylogeny/tree2obj.sh $INC/tree > $TMP.tree
+$THIS/../tree2obj.sh $INC/tree > $TMP.tree
 diff $TMP.seq-fa $TMP.tree
 
-$THIS/../phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
-$THIS/../setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.intersect
+$THIS/../distTree_inc_new_list.sh $INC > $TMP.new
+$THIS/../../setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.intersect
 if [ -s $TMP.intersect ]; then
   wc -l $TMP.intersect
   exit 1
