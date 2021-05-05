@@ -29,11 +29,12 @@ fi
 
 # $INC/hybrid-indiscern
 $THIS/hybrid2list.sh $INC/hybrid.new > $INC/hybrid-indiscern.raw
-$THIS/distTree_inc_expand_indiscern.sh $INC $INC/hybrid-indiscern.raw > $INC/hybrid-indiscern
+$THIS/distTree_inc_expand_indiscern.sh $INC $INC/hybrid-indiscern.raw 0 > $INC/hybrid-indiscern
 rm $INC/hybrid-indiscern.raw
 
 $INC/objects_in_tree.sh $INC/hybrid-indiscern "null"
 $THIS/../trav $INC/hybrid-indiscern "$INC/outlier2db.sh %f auto_hybrid"  
+$THIS/distTree_inc_new_cmd.sh $INC "rm -f" $INC/hybrid-indiscern
 
 mv $INC/hybrid-indiscern $INC/hist/hybrid-indiscern.$VER
 mv $INC/hybrid.new $INC/hist/hybrid.$VER
