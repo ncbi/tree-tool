@@ -1,18 +1,20 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Expand #1 by adding indiscernibile objects"
-  echo "#1: incremental distance tree directory"
-  echo "#2: sorted list of objects"
+  echo "#1: incremental distance tree directory" 
+  echo "#2: sorted and distinct list of objects"
+  echo "#3: restrict to the objects in #1/tree (0/1)"
   exit 1
 fi
 INC=$1
 LIST=$2
+IN_TREE=$3
 
 
 # QC
-sort -c $LIST
+sort -cu $LIST
 
 
 TMP=`mktemp`
@@ -35,7 +37,13 @@ while true; do
   fi
   mv $TMP.next $TMP.list
 done
-cat $TMP.list
+
+if [ $IN_TREE == 1 ]; then
+  $THIS/tree2obj.sh $INC/tree > $TMP.tree
+  $THIS/../setIntersect.sh $TMP.list $TMP.tree 0
+else
+  cat $TMP.list
+fi
 
 
 rm $TMP*
