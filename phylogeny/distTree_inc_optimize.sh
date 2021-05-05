@@ -23,8 +23,7 @@ fi
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
   # -reinsert  
 
-echo ""
-echo "Quality"
+section "Quality"
 LARGE=0
 if [ -e $INC/large ]; then
   LARGE=1
