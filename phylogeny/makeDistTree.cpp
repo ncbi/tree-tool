@@ -78,7 +78,7 @@ struct ThisApplication : Application
 	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
 	  addKey ("variance_min", "Min. dissimilarity variance", "0");  // ; to be added to the computed variance
 	  
-	  addKey ("good", "List of objects, which will not be flagged as outliers");
+	  addKey ("good", "List of objects, which should not be outliers");
 	  
 	  // Processing
 	  addKey ("delete", "Delete leaves whose names are in the indicated file");
@@ -121,7 +121,8 @@ struct ThisApplication : Application
 
     // Output
 	  addFlag ("noqual", "Do not compute quality statistics");
-	  addKey ("output_tree", "Resulting tree");
+	  addKey ("output_tree", "Save the tesulting tree");
+	  addKey ("output_tree_tmp", "Save resulting trees after intermediary steps");
 	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
 	  addFlag ("feature_tree_time", "Add time to <output_feature_tree>");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
@@ -182,7 +183,7 @@ struct ThisApplication : Application
       tpp. qcMatchHybrids (hybrids);
     
     {
-      Set<const Leaf*> extra;  // These objects will not be in hybridTrianglesOs !
+      Set<const Leaf*> extra;  // These objects will not be in hybridTriangle's !
       for (const Leaf* leaf : hybrids)
       	if (! leaf->discernible)
       		for (const DiGraph::Node* child : leaf->getParent () -> getChildren ())
@@ -269,6 +270,7 @@ struct ThisApplication : Application
 		const bool   noqual              = getFlag ("noqual");
 
 		const string output_tree         = getArg ("output_tree");
+		const string output_tree_tmp     = getArg ("output_tree_tmp");
 		const string output_dissim_coeff = getArg ("output_dissim_coeff");
 		const string output_feature_tree = getArg ("output_feature_tree");
 		const bool   feature_tree_time   = getFlag ("feature_tree_time");
@@ -309,7 +311,7 @@ struct ThisApplication : Application
       throw runtime_error ("Variance function requires a data file");
     if (varianceType != varianceType_none && ! multAttrName. empty ())
       throw runtime_error ("Variance function excludes a dissimilarity weight attribute");
-		if (! isNan (variancePower) && varianceType != varianceType_pow)  // ??
+		if (! isNan (variancePower) && varianceType != varianceType_pow) 
 		  throw runtime_error ("-variance_power requires -variance pow");
 		if (isNan (variancePower) && varianceType == varianceType_pow)
 		  throw runtime_error ("-variance pow requires -variance_power");
@@ -397,7 +399,7 @@ struct ThisApplication : Application
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree. reset (isDirName (dataFName)
-                     ? new DistTree (dataFName, input_tree, true, true, /*optimize*/ new_only)
+                     ? new DistTree (dataFName, input_tree, true, true, new_only)
                      : input_tree. empty ()
                        ? new DistTree (            dataFName, dissimAttrName, multAttrName)
                        : new DistTree (input_tree, dataFName, dissimAttrName, multAttrName)
@@ -533,8 +535,7 @@ struct ThisApplication : Application
         const size_t leaves = tree->root->getLeavesSize ();
         if (leaves > 3)
         {
-          if (verbose ())
-            tree->saveFile (output_tree);  
+          tree->saveFile (output_tree_tmp);  
 
           bool predictionImproved = false;
 
@@ -570,6 +571,7 @@ struct ThisApplication : Application
               cerr << tree->absCriterion2str () << endl; 
          	  }
             tree->optimizeReinsert ();  
+            tree->saveFile (output_tree_tmp); 
             predictionImproved = true;
           }
           
@@ -605,8 +607,7 @@ struct ThisApplication : Application
               	              , *hybridF
               	              , dissim_request. empty () ? nullptr : & hybridDissimRequests
               	              );
-              if (verbose ())
-                tree->saveFile (output_tree); 
+              tree->saveFile (output_tree_tmp); 
               iter++;
               if (! absCriterion_old)
               	break;
@@ -770,7 +771,7 @@ struct ThisApplication : Application
       cout << "Relative epsilon2_0 = " << sqrt (dissim_var / tree->target2_sum) * 100.0 << " %" << endl;
         // Must be << "Average arc error"
       cout << "Mean residual = " << tree->getMeanResidual () << endl;
-      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl;  // ??
+      cout << "Correlation between residual^2 and dissimilarity = " << tree->getSqrResidualCorr () << endl; 
       cout << endl;
       tree->qc ();
     }
