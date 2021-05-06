@@ -44,6 +44,9 @@ wc -l $INC/dissim
 wc -l $INC/dissim.new
 mv $INC/dissim.new $INC/dissim
 
+cp /dev/null $INC/indiscern
+$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
+
 
 section "Database"
 $INC/objects_in_tree.sh $DEL null
