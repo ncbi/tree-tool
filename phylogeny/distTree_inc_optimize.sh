@@ -5,9 +5,8 @@ if [ $# -ne 4 ]; then
   echo "Optimize a distance tree and evaluate"
   echo "#1: incremental distance tree directory"
   echo "#2: number of optimization iterations"
-  echo "#3: parameters after -variance"
+  echo "#3: parameters after -variance (non-empty string)"
   echo "#4: output tree"
-  echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
@@ -20,6 +19,8 @@ if [ ! -e $INC/phen ]; then
   error "No $INC/phen"
 fi
 
+section "Tree"
+# Time: O(n log^4(n))
 $THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
   # -reinsert  
 
