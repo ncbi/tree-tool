@@ -6,11 +6,18 @@ if [ $# -ne 2 ]; then
   echo "#2: Locus.outlier"
   exit 1
 fi
+OBJ=$1
+OUTLIER=$2
 
-sqsh-ms -S PROTEUS  -D uniColl  << EOT
+
+INC=`dirname $0`
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+
+sqsh-ms -S $SEVVER  -D $DATABASE  << EOT
   update Locus
-    set outlier = '$2'
-    where id = '$1';
+    set outlier = '$OUTLIER'
+    where id = '$OBJ';
   if @@rowcount != 1
     raiserror ('Locus not found', 11, 1);
   go -m bcp 

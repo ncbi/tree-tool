@@ -29,8 +29,12 @@ if [ -s $TMP ]; then
   grep -f $INC/../deleted.all -vx $TMP > $TMP.out
   head -100 $TMP.out
 else
-  REAL_REF=`readlink $INC/../ref`
-  basename $REAL_REF
+  if true; then  
+    REAL_REF=`readlink $INC/../ref`
+    basename $REAL_REF
+  else
+    echo "MW737421.1"
+  fi
 fi
 
 

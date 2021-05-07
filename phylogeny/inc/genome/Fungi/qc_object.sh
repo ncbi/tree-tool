@@ -9,4 +9,22 @@ fi
 FD=$1
 
 
-warning "$0 is not implemented"
+NAME=`basename $FD`
+PREF=$FD/$NAME
+
+function check 
+{
+  SUF=$1
+  #
+  if [ ! -e $PREF.$SUF ]; then
+    error "File $PREF.$SUF does not exist"
+  fi
+}
+
+check "hash-CDS"
+check "hash-HMM"
+check "hash-PRT"
+check "prot-univ"
+check "prot.gz"
+check "stat"
+check "univ"

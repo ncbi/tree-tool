@@ -24,7 +24,7 @@ if false; then
   makeblastdb  -in $INC/seq.fa  -dbtype nucl    -logfile /dev/null
 else
   if [ $IN_TREE == 1 ]; then
-    CPP_DIR/trav $OBJ_LIST "CPP_DIR/genetics/dna_mut_invert.sh $INC/../mut.dna/%f $INC/../mut.index"
+    CPP_DIR/trav $OBJ_LIST "CPP_DIR/genetics/dna_mut_invert.sh $INC/../mut.dna/%f $INC/../mut.index" -threads 15  -step 1 
   else
     cat $OBJ_LIST >> $INC/../deleted.all
   fi  

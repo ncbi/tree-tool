@@ -2,10 +2,11 @@
 source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
-  echo "#1: go"
+  echo "#1: verbose (0/1)"
   echo "Requires: Time: O(n log^3(n))"
   exit 1
 fi
+VERB=$1
 
 
 INC=`dirname $0`
@@ -17,9 +18,15 @@ DATABASE=`cat $INC/database`
 # Cf. LocusQC.sh
 
 
+CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
+sort -cu $INC/good
+
+
 TMP=`mktemp`
-#echo $TMP
-#set -x
+if [ $VERB == 1 ]; then
+  echo $TMP
+  set -x
+fi
 
 
 CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
@@ -31,16 +38,16 @@ if false; then
   diff $TMP.seq-fa $TMP.tree
 fi
 
-sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.locus
+sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.db-tree
   select id
     from Virus
     where in_tree = 1;
   go -m bcp  
 EOT
-diff $TMP.tree $TMP.locus
+diff $TMP.tree $TMP.db-tree
 
 ls $INC/new/ > $TMP.new
-sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.locus-new
+sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.db-new
   select id
     from Virus
     where     dead = 0
@@ -50,7 +57,7 @@ sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.locus-new
 EOT
 #wc -l $TMP.genome-new 
 #wc -l $TMP.new
-diff $TMP.locus-new $TMP.new
+diff $TMP.db-new $TMP.new
 
 CPP_DIR/setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.inter
 if [ -s $TMP.inter ]; then
@@ -79,7 +86,7 @@ fi
 sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.bad
   select id
     from Virus
-    where     dead = 1
+    where    dead = 1
           or outlier is not null;
   go -m bcp  
 EOT

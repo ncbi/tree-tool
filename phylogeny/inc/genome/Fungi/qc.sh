@@ -14,6 +14,9 @@ DATABASE=`cat $INC/database`
 #set -x
 
 
+CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
+
+
 TMP=`mktemp`
 #echo $TMP
 
