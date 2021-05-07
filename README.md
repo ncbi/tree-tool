@@ -1,9 +1,9 @@
-# Incremental Building of a Phylogenetic Distance Tree
+# Phylogenetic Distance Tree
 
 Build a least squares distance tree given a matrix of dissimilarities.
 
-Scripts to build a large tree incrementally.
+Build a large tree incrementally.
 
 General data analysis tools.
 
-## [Documentation at wiki](https://github.com/ncbi/tree-tool/wiki)
+## [Documentation at Wiki](https://github.com/ncbi/tree-tool/wiki)
