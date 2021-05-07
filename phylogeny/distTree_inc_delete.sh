@@ -44,6 +44,8 @@ wc -l $INC/dissim
 wc -l $INC/dissim.new
 mv $INC/dissim.new $INC/dissim
 
+
+section "indiscern"
 cp /dev/null $INC/indiscern
 $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 
