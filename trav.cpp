@@ -124,6 +124,7 @@ struct ThisApplication : Application
 \"%D\" - $, \
 \"%G\" - `, \
 \"%P\" - %");
+      addFlag ("large", "Directory <items> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
   	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
@@ -139,6 +140,7 @@ struct ThisApplication : Application
 	{
 		      string itemsName   = getArg ("items");
 		const string cmd_        = getArg ("command");
+		const bool   large       = getFlag ("large");
 		const string errorsFName = getArg ("errors");
 		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
 		const uint step          = str2<uint> (getArg ("step"));
@@ -157,7 +159,7 @@ struct ThisApplication : Application
     	  const bool isFile = fileExists (itemsName);
     	  const bool isDir = directoryExists (itemsName);
     	  if (isFile || isDir)
-    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, itemsName));
+    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, large, itemsName));
         else 
           if (isDigit (itemsName [0]))
             gen. reset (new NumberItemGenerator (stepItemGen, itemsName));	  
