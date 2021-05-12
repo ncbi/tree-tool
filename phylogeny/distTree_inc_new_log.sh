@@ -24,7 +24,7 @@ if [ $L -gt 0 ]; then
   if [ $GRID == 0 ]; then
     error "No GRID"
   fi
-  # Try to fix grid problems
+  # Trying to fix grid problems
   $THIS/../trav $INC/log.list -step 1 "$THIS/distTree_inc_unsearch.sh $INC %f"
   $THIS/../trav $INC/log "echo ''; echo %d/%f; tail -20 %d/%f" > $INC/log.out  # PAR
   head -21 $INC/log.out  # PAR
