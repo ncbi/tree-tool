@@ -44,9 +44,7 @@ $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 section "data.dm"
 $THIS/../dm/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
-set +o errexit
-grep -wic 'nan$' $INC/../data.dm
-set -o errexit
+grep -wic 'nan$' $INC/../data.dm || true
 
 $THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
 
