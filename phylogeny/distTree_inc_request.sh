@@ -6,8 +6,8 @@ if [ $# -ne 2 ]; then
   echo "Update: append: #1/search/#2/dissim"
   echo "                #1/log/#2"
   echo "        delete: #1/search/#2/request"
-  echo "#1: Directory containing search/"
-  echo "#2: New object"
+  echo "#1: incremental distance tree directory"
+  echo "#2: new object"
   exit 1
 fi
 INC=$1
@@ -21,9 +21,16 @@ DIR=$INC/search/$OBJ
 LOG=$INC/log/$OBJ
 
 
-$INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.pairs2dissim
-if [ ! -s $DIR/dissim.add ]; then
-  echo "Empty $DIR/dissim.add" > $LOG
+$INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &>> $LOG.pairs2dissim
+
+# QC
+N=`cat $DIR/request    | wc -l`
+M=`cat $DIR/dissim.add | wc -l`
+#if [ ! -s $DIR/dissim.add ]; then
+if [ $N -ne $M ]; then
+ #echo "Empty $DIR/dissim.add" > $LOG
+  wc -l $DIR/request    >> $LOG
+  wc -l $DIR/dissim.add >> $LOG
   exit 1
 fi
 
