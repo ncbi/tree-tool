@@ -243,30 +243,34 @@ struct ThisApplication : Application
       size_t commons = 0;  // Feature may be optional
       size_t singles = 0;  // Feature may be optional
       const size_t genomes = tree. root->getLeavesSize ();
-      for (const Feature& f : features)
       {
-        f. qc ();
-        if (f. allGenomes () == 0)
-          optionals++;
-        else if (f. allGenomes () == genomes)
+        Progress prog (features. size ());
+        for (const Feature& f : features)
         {
-          ASSERT (f. realGains () == 1);
-          ASSERT (f. losses. empty ());
-          commons++;
-        }
-        else if (f. allGenomes () == 1)
-          singles++;
-        else   // Non-trivial features
-        {
-        	ASSERT (f. mutations () >= 1);
-          if (f. mutations () == 1)
-            monophyletics++;
-          else
+          prog (f. name);
+          f. qc ();
+          if (f. allGenomes () == 0)
+            optionals++;
+          else if (f. allGenomes () == genomes)
           {
-            extraMutations += f. mutations () - 1;
-            nonMonophyletics++;
+            ASSERT (f. realGains () == 1);
+            ASSERT (f. losses. empty ());
+            commons++;
           }
-          f. saveText (out);
+          else if (f. allGenomes () == 1)
+            singles++;
+          else   // Non-trivial features
+          {
+          	ASSERT (f. mutations () >= 1);
+            if (f. mutations () == 1)
+              monophyletics++;
+            else
+            {
+              extraMutations += f. mutations () - 1;
+              nonMonophyletics++;
+            }
+            f. saveText (out);
+          }
         }
       }
       const ONumber on (cout, 3, false);  // PAR
