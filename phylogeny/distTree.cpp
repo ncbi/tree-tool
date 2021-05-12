@@ -3971,7 +3971,7 @@ void DistTree::loadTreeDir (const string &dir)
 #ifndef _MSC_VER
   const string outFName (dir + ".list");
   EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
-  const StringVector fileNames (outFName, (size_t) 100);  // PAR
+  const StringVector fileNames (outFName, (size_t) 100, true);  // PAR
 #if 1
   removeFile (outFName);
 #else
@@ -4023,12 +4023,15 @@ void DistTree::loadTreeFile (const string &fName)
   ASSERT (! subDepth);
   ASSERT (! fName. empty ());
 
-  const StringVector lines (fName, (size_t) 10000);  // PAR
+  const StringVector lines (fName, (size_t) 10000, false);  // PAR
   QC_ASSERT (! lines. empty ());
 
   size_t lineNum = 0; 
   Steiner* steiner = nullptr;   
   EXEC_ASSERT (loadLines (lines, lineNum, steiner, 0));
+  ASSERT (lineNum <= lines. size ());
+  if (lineNum < lines. size ())
+    throw runtime_error ("Only " + to_string (lineNum) + " line(s) of " + strQuote (fName) + " have been loaded");
 }
 
 
