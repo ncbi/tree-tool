@@ -78,7 +78,7 @@ struct Hashes : Vector<size_t>
 	                Prob hashes_ratio_min) const
 		{ return intersection2dissim ( (Real) size ()
 			                           , (Real) other. size ()
-			                           , (Real) getIntersectSize (other)
+			                           , (Real) getIntersectionSize (other)
 			                           , (Real) intersection_min
 			                           , hashes_ratio_min
 			                           , true  // PAR

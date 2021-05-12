@@ -208,7 +208,7 @@ Real features2hamming (const ObjFeatureVector &vec1,
 Real features2jaccard (const ObjFeatureVector &vec1,
                        const ObjFeatureVector &vec2)
 {
-  const size_t intersection = vec1. getIntersectSize (vec2);
+  const size_t intersection = vec1. getIntersectionSize (vec2);
   ObjFeatureVector f (vec2);
   f << vec1;
   f. sort ();
