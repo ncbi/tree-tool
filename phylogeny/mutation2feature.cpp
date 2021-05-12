@@ -100,6 +100,7 @@ struct ThisApplication : Application
 	  	addPositional ("feature_dir", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
 	  	addFlag ("aa", "Mutations of protein sequences, otherwise of DNA sequences");
 	  	addFlag ("append", "Append existing files in <feature_dir>");
+  	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
 	  }
 
 
@@ -110,6 +111,7 @@ struct ThisApplication : Application
     const string outDirName = getArg ("feature_dir");
     const bool   aa         = getFlag ("aa");
     const bool   append     = getFlag ("append");
+		const bool   large      = getFlag ("large");
 
 
     unordered_map<string,Vector<Mutation>> obj2muts;  obj2muts. rehash (100000);  // PAR
@@ -117,13 +119,13 @@ struct ThisApplication : Application
       map<string/*Mutation::geneName*/,unordered_set<Mutation,Mutation::Hash>> gene2muts;  
         // !Mutation::ambig
       {
-        FileItemGenerator fig (1000, true, inDirName);  // PAR
+        FileItemGenerator fig (1000, true, large, inDirName);  // PAR
         string fName;
     	  while (fig. next (fName))
         {
           Vector<Mutation> muts;  muts. reserve (16);  // PAR
           {
-            LineInput li (inDirName + '/' + fName);
+            LineInput li (inDirName + (large ? "/" + to_string (str2hash_class (fName)) : "") + "/" + fName);
             while (li. nextLine ())
             {
               Mutation mut (aa, li. line);
@@ -172,8 +174,14 @@ struct ThisApplication : Application
       for (const auto& it : obj2muts)
       {
         prog (it. first);
+        string dir (outDirName);
+        if (large)
+        {
+          dir += "/" + to_string (str2hash_class (it. first));
+          createDirectory (dir, true);
+        }
         const ios_base::openmode mode = append ? ios_base::app : ios_base::out;
-        ofstream of (outDirName + "/" + it. first, mode);
+        ofstream of (dir + "/" + it. first, mode);
         try { save (it. second, of); }
           catch (const exception &e)
             { throw runtime_error (it. first + "\n" + e. what ()); }
