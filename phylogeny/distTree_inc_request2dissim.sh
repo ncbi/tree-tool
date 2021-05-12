@@ -15,9 +15,12 @@ OUT=$3
 
 N=`cat $REQ | wc -l`
 echo "$N $REQ"
+
+
+# $INC/dr.res
 GRID_MIN=`cat $INC/pairs2dissim.grid`
-if [ $N -le $GRID_MIN ]; then 
-  $INC/pairs2dissim.sh $REQ "" $OUT $OUT.log > /dev/null
+if [ -e $INC/dissim_full -o $N -le $GRID_MIN ]; then 
+  $INC/pairs2dissim.sh $REQ "" $INC/dr.res $OUT.log > /dev/null
   if [ -e $OUT.log ]; then
     if [ -s $OUT.log ]; then
       head $OUT.log
@@ -63,14 +66,15 @@ else
 		fi
 		warning "Redo"
 	done
-
-	grep -vwi 'nan$' $INC/dr.res | grep -vwi 'inf$' > $OUT || true
-	rm $INC/dr.res
-	wc -l $OUT
 	
 	rm -r $INC/dr.out &
-	rm -r $INC/dr
-	wait
+	rm -r $INC/dr &
 fi	
 
 
+grep -vwi 'nan$' $INC/dr.res | grep -vwi 'inf$' > $OUT || true
+rm $INC/dr.res
+wc -l $OUT
+
+
+wait
