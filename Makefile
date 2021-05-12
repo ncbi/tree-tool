@@ -19,6 +19,7 @@ all:	\
   extractPairs \
   file2hash \
   group \
+  index_find \
   list2pairs \
   mergePairs \
   selColumn \
@@ -78,6 +79,12 @@ group.o:  $(COMMON_HPP)
 groupOBJS=group.o $(CPP_DIR)/common.o
 group:	$(groupOBJS)
 	$(CXX) -o $@ $(groupOBJS) $(LIBS)
+	$(ECHO)
+
+index_find.o:  $(COMMON_HPP)  
+index_findOBJS=index_find.o $(CPP_DIR)/common.o
+index_find:	$(index_findOBJS)
+	$(CXX) -o $@ $(index_findOBJS) $(LIBS)
 	$(ECHO)
 
 list2pairs.o:  $(COMMON_HPP)  
