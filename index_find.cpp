@@ -63,13 +63,13 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Find approximately closest objects ordered by proximity using an index.\n\
 An object is a file with a list of attributes.\n\
-Average time: O(A size_max (A log A + A log size_max + log N)), where N is the number of objects, and A is the average number of attributes in an object.\n\
+Average time: O(A S (A (log A + log S) + log N)), where N is the number of objects, and A is the average number of attributes in an object, S = attr_size_max.\n\
 ")
   	{
       version = VERSION;
       addPositional ("dir", "Directory with objects");
       addPositional ("index", "Directory with an attribute index for <dir>");
-      addPositional ("size_max", "Object file size limit");
+      addPositional ("attr_size_max", "Attribute file size limit; objects having only attrbutes whose index files exceed <attr_size_max> are indiscernible");
       addPositional ("target", "Target object");
       addFlag ("large", "Directory <dir> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	}
@@ -78,11 +78,11 @@ Average time: O(A size_max (A log A + A log size_max + log N)), where N is the n
  
 	void body () const final
 	{
-		const string dir          = getArg ("dir");
-		const string index        = getArg ("index");
-		const streamsize size_max = (streamsize) arg2uint ("size_max");
-		const string target       = getArg ("target");
-		const bool   large        = getFlag ("large");
+		const string dir               = getArg ("dir");
+		const string index             = getArg ("index");
+		const streamsize attr_size_max = (streamsize) arg2uint ("attr_size_max");
+		const string target            = getArg ("target");
+		const bool   large             = getFlag ("large");
 
 
     // size(index) = O(N A)
@@ -90,7 +90,7 @@ Average time: O(A size_max (A log A + A log size_max + log N)), where N is the n
     StringVector attrObjs;  // Repeated objects
     {      
       StringVector bigAttrs;
-      // Time = O(A (log N + log A + size_max))
+      // Time = O(A (log N + log A + S))
       {
         LineInput f (target);
         while (f. nextLine ())
@@ -100,13 +100,13 @@ Average time: O(A size_max (A log A + A log size_max + log N)), where N is the n
           const string attrFName (index + "/" + attr);
           if (! fileExists (attrFName))
             continue;
-          if (getFileSize (attrFName) >= size_max)
+          if (getFileSize (attrFName) >= attr_size_max)
             bigAttrs << attr;
           else
             attrObjs << StringVector (attrFName, (size_t) 1000, true);  // PAR
         }
       }
-      // size(attrObjs) = O(A size_max)
+      // size(attrObjs) = O(A S)
       // size(bigAttrs) = O(A)
       if (verbose ())
       {
@@ -118,16 +118,16 @@ Average time: O(A size_max (A log A + A log size_max + log N)), where N is the n
       bigAttrs. sort ();
       QC_ASSERT (bigAttrs. isUniq ());
       
-      // Time: O(A size_max (log A + log size_max))
+      // Time: O(A S (log A + log S))
       StringVector objs (attrObjs);
       objs. sort ();
       objs. uniq ();
-      // size(objs) = O(A size_max)
+      // size(objs) = O(A S)
       if (verbose ())
         PRINT (objs. size ());
       
       // Append: attrObjs
-      // Time: O(A size_max (log N + A log A))
+      // Time: O(A S (log N + A log A))
       if (! bigAttrs. empty ())
         for (const string& obj : objs)
         {
@@ -142,20 +142,20 @@ Average time: O(A size_max (A log A + A log size_max + log N)), where N is the n
             attrObjs << obj;
         }
     }
-    // size(attrObjs) = O(A^2 size_max)
+    // size(attrObjs) = O(A^2 S)
     
-    // Time: O(A^2 size_max)
+    // Time: O(A^2 S)
     unordered_map<string,size_t> obj2num;  obj2num. rehash (attrObjs. size ());
     for (const string& obj : attrObjs)
       obj2num [obj] ++;
-    // size(obj2num) = O(A^2 size_max)
+    // size(obj2num) = O(A^2 S)
 
-    // Time: O(A^2 size_max (log A + log size_max))
+    // Time: O(A^2 S (log A + log S))
     Vector<ObjNum> objNums;  objNums. reserve (obj2num. size ());
     for (const auto& it : obj2num)
       objNums << move (ObjNum {it. first, it. second});
     objNums. sort ();
-    // size(objNums) = O(A^2 size_max)
+    // size(objNums) = O(A^2 S)
     
     for (const ObjNum& objNum : objNums)
       cout << objNum. obj << endl;
