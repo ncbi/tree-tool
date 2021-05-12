@@ -3,8 +3,8 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Initialize an incremental distance tree directory with standard parameters for a specific biological project in #1/"
-  echo "#1: output directory"
-  echo "#2: biological project (incremental distance tree directory)"
+  echo "#1: output directory (incremental distance tree directory)"
+  echo "#2: biological project: directory in $THIS/inc"
   echo "#3: SQL server name or ''"
   echo "#4: database name on the SQL server or ''"
   echo "#5: complete path to a directory for bulk insert into the database or ''"
