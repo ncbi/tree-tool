@@ -95,7 +95,7 @@ void FlatTable::write (size_t xmlNum)
 Schema* Schema::readSchema (const string &fName,
                             string &name)
 {
-  const StringVector vec (fName, (size_t) 100);  // PAR
+  const StringVector vec (fName, (size_t) 100, false);  // PAR
   QC_ASSERT (! vec. empty ());
   
   size_t start = 0;
