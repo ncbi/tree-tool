@@ -2398,7 +2398,7 @@ FeatureTree::FeatureTree (const string &treeFName,
 	if (genomes <= 1)
 	  throw runtime_error ("Too few genomes");
     
-  StringVector genomeVec (genomesListFName, (size_t) 100000);  // PAR
+  StringVector genomeVec (genomesListFName, (size_t) 100000, true);  // PAR
   genomeVec. sort ();
   const size_t dup = genomeVec. findDuplicate ();
   if (dup != no_index)
@@ -2626,7 +2626,7 @@ void FeatureTree::loadPhylFile (const string &treeFName)
 	ASSERT (! treeFName. empty ());
 	
 		
-  const StringVector lines (treeFName, (size_t) 10000);  // PAR
+  const StringVector lines (treeFName, (size_t) 10000, false);  // PAR
   QC_ASSERT (! lines. empty ());
 	size_t lineNum = 0; 
 
@@ -2639,6 +2639,9 @@ void FeatureTree::loadPhylFile (const string &treeFName)
 
   Species* sp = nullptr;  	
 	EXEC_ASSERT (loadPhylLines (lines, lineNum, sp, 0));
+  ASSERT (lineNum <= lines. size ());
+  if (lineNum < lines. size ())
+    throw runtime_error ("Only " + to_string (lineNum) + " line(s) of " + strQuote (treeFName) + " have been loaded");
 }
 
 

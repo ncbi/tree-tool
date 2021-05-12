@@ -146,7 +146,7 @@ struct ThisApplication : Application
 			
     if (! classF. empty ())
     {
-      StringVector seqClass (classF, (size_t) 1000);  // PAR
+      StringVector seqClass (classF, (size_t) 1000, true);  // PAR
       if (seqClass. size () != seqs. size ())
         throw runtime_error ("# Sequences does not match # classes");
       for (string& s : seqClass)

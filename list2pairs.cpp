@@ -61,7 +61,7 @@ struct ThisApplication : Application
 		const string listFName = getArg ("list");
 
 
-    StringVector words (listFName, (size_t) 1000);  // PAR
+    StringVector words (listFName, (size_t) 1000, true);  // PAR
     words. sort ();
     ASSERT (words. isUniq ());
     

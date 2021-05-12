@@ -60,7 +60,7 @@ struct ThisApplication : Application
 		const string items = getArg ("items");
 
 
-    StringVector vec (items, (size_t) 1000);  // PAR
+    StringVector vec (items, (size_t) 1000, true);  // PAR
 	  vec. randomOrder ();	  
 	  for (const string& s : vec)
 	    cout << s << endl;
