@@ -51,7 +51,7 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Test a tree made by makeDistTree")
+	: Application ("Test the optimiality of a tree")
 	{
 	  version = VERSION;
     // Input
