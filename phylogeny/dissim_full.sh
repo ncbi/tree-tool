@@ -16,7 +16,7 @@ mkdir $DIR
 cd $DIR
 
 
-section "list"
+section "Object list"
 awk '{print $1};' $FULL >  tmp
 awk '{print $2};' $FULL >> tmp
 sort -u tmp > list
@@ -36,15 +36,18 @@ $THIS/distTree_inc_init_stnd.sh inc $THIS/inc/dissim_full "" "" "" ""
 touch inc/dissim_full
 
 section "inc/dissim"
-sort -R list | head -3000 | sort > list.init
-$THIS/../list2pairs list.init | tr '\t' '-' | sort > dissim_request
+sort -R list | head -3000 | sort > list.init || true
+$THIS/../list2pairs list.init > dissim_request
 rm list.init
 inc/pairs2dissim.sh dissim_request "" inc/dissim log
+if [ -e log ]; then
+  error "File 'log' contains errors"
+fi
 rm dissim_request
 $THIS/distTree_inc_dissim2indiscern.sh inc inc/dissim
 $THIS/../dm/pairs2dm inc/dissim 1 "dissim" 6 -distance > data.dm
 
-section "Initial tree"
+section "Initial tree (version: 1)"
 VARIANCE=`cat inc/variance`
 $THIS/makeDistTree  -threads 5  -data data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  -output_tree inc/tree  > inc/hist/makeDistTree-complete.1
 rm data.dm
