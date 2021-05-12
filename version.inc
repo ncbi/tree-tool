@@ -1,6 +1,7 @@
-#define VERSION "1.7.3"
+#define VERSION "1.8.1"
 
 
+// 1.8.1  05/11/2021  inc/dissim_full
 // 1.7.3  04/23/2021  combine_dissims.cpp: weighted combination of all dissimilarities
 //                    str2real() bug in reading nan's
 // 1.7.2  04/19/2021  d_{CDS,PRT}: arithmetic average is used
