@@ -14,21 +14,11 @@ fi
 INC=`dirname $0`
 
 
-if false; then
-  if [ $IN_TREE == 1 ]; then
-    CPP_DIR/trav $1 "cat $INC/../seq/%f" >> $INC/seq.fa
-  else
-    CPP_DIR/genetics/extractFastaDna $INC/seq.fa $OBJ_LIST  -remove > $INC/seq.fa1
-    mv $INC/seq.fa1 $INC/seq.fa
-  fi
-  makeblastdb  -in $INC/seq.fa  -dbtype nucl    -logfile /dev/null
+if [ $IN_TREE == 1 ]; then
+  CPP_DIR/trav $OBJ_LIST "CPP_DIR/genetics/dna_mut_invert.sh $INC/../mut.dna/%h/%f $INC/../mut.index" -threads 15  -step 1 
 else
-  if [ $IN_TREE == 1 ]; then
-    CPP_DIR/trav $OBJ_LIST "CPP_DIR/genetics/dna_mut_invert.sh $INC/../mut.dna/%f $INC/../mut.index" -threads 15  -step 1 
-  else
-    cat $OBJ_LIST >> $INC/../deleted.all
-  fi  
-fi
+  cat $OBJ_LIST >> $INC/../deleted.all
+fi  
 
 
 SERVER=`cat $INC/server`

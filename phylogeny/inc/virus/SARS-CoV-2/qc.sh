@@ -31,12 +31,6 @@ fi
 
 CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
 
-if false; then
-  grep '^>' $INC/seq.fa | sed 's/^>//1' | sed 's/ .*$//1' | sort > $TMP.seq-fa
-  sort -u $TMP.seq-fa > $TMP.seq-fa-uniq
-  diff $TMP.seq-fa $TMP.seq-fa-uniq
-  diff $TMP.seq-fa $TMP.tree
-fi
 
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.db-tree
   select id
@@ -46,7 +40,7 @@ sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.db-tree
 EOT
 diff $TMP.tree $TMP.db-tree
 
-ls $INC/new/ > $TMP.new
+CPP_DIR/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
 sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.db-new
   select id
     from Virus
@@ -94,21 +88,6 @@ EOT
 CPP_DIR/setIntersect.sh $TMP.bad $TMP.good 0 > $TMP.inter
 if [ -s $TMP.inter ]; then
   error "Bad are in the $INC/good"
-fi
-
-
-#ls $INC/../seq/ > $TMP.seq
-#diff $TMP.seq-fa $TMP.seq
-
-if false; then
-  echo ">aa" > $TMP.seq
-  echo "tttttttttttttttttttttttttt" >> $TMP.seq
-  blastn -query $TMP.seq  -db $INC/seq.fa | grep "Number of sequences in database:" | sed 's/,//1' | sed 's/^ *//1' > $TMP.blastn
-  N=`cat $TMP.seq-fa | wc -l`
-  M=(`cat $TMP.blastn`)
-  if [ $N -ne ${M[5]} ]; then
-    error "$N != ${M[5]}"
-  fi
 fi
 
 

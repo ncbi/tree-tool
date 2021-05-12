@@ -24,7 +24,7 @@ fi
 
 INC=`dirname $0`
 #dna_pairs2dissim  -log $LOG  -diff  -band 100  $REQUEST $INC/../seq 20000 $DISSIM
-CPP_DIR/dissim/feature_request2dissim $REQUEST $INC/../mut.feature  -optional_weight 0.2  -virus  -log $LOG  > $DISSIM
+CPP_DIR/dissim/feature_request2dissim $REQUEST $INC/../mut.feature  -optional_weight 0.2  -virus  -large  -log $LOG  > $DISSIM
 
 if [ ! -s $DISSIM ]; then
   error "Empty dissim" >> $LOG
