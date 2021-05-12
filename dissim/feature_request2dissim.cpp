@@ -79,10 +79,11 @@ struct ThisApplication : Application
   	  addPositional ("req", "File with pairs of objects");
   	  addPositional ("dir", "Directory with <object> files containing feature-optional(0/1) pairs");
   	  addKey ("optional_weight", "For Hamming distance: Weight of optional-nonoptional match (0..1)", "NaN");
-  	  addKey ("mutation_rate", "For SNP dissimilarity: file where each line has format: <feature_name> <mutation rate 0->1> <mutation rate 1->0>");
+  	  addKey ("mutation_rate", "For SNP dissimilarity: file where each line has format: <feature_name> <rate of mutation 0->1> <rate of mutation 1->0>");
   	//addFlag ("freq", "<mutation_rate> file has allele frequencies");
   	  addKey ("dna_weight", "Weight of DNA mutations (>=0). Protein mutations are weighted as 1. Features are DNA or protein mutations, where DNA is not named and proteins are named", "NaN");
   	  addFlag ("virus", "Features are DNA and protein mutations, protein mutations are ignored");
+  	  addFlag ("large", "Object files are in subdirectories of <dir> named \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of the object names");
   	}
 
 
@@ -96,6 +97,8 @@ struct ThisApplication : Application
   //const bool   freq            =           getFlag ("freq");
     const Prob   dnaWeight       = str2real (getArg ("dna_weight"));
     const bool   virus           =           getFlag ("virus");
+		const bool   large      = getFlag ("large");
+
 		
 		if (! isNan (optional_weight))
 		{
@@ -139,8 +142,8 @@ struct ThisApplication : Application
       const ObjFeatureVector& vec1 = ObjFeatureVector::getCache (dir + "/" + obj1);
       const ObjFeatureVector& vec2 = ObjFeatureVector::getCache (dir + "/" + obj2);
     #else
-      const ObjFeatureVector vec1 (dir + "/" + obj1);
-      const ObjFeatureVector vec2 (dir + "/" + obj2);
+      const ObjFeatureVector vec1 (dir + (large ? "/" + to_string (str2hash_class (obj1)) : "") + "/" + obj1);
+      const ObjFeatureVector vec2 (dir + (large ? "/" + to_string (str2hash_class (obj2)) : "") + "/" + obj2);
     #endif
       Real dissim = NaN;
       if (isNan (dnaWeight) && ! virus)
