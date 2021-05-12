@@ -1,20 +1,22 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/bash_common.sh
-if [ $# -ne 4 ]; then
+if [ $# -ne 5 ]; then
   echo "Find approximately closest objects ordered by proximity"
   echo "An object is a list of attributes"
   echo "#1: directory with objects"
-  echo "#2: directory with attribute index"
-  echo "#3: object size limit (S)"
-  echo "#4: target object"  
+  echo "#2: #1 is large (0/1)"
+  echo "#3: directory with attribute index"
+  echo "#4: object size limit (S)"
+  echo "#5: target object"  
   echo "Average time: O(A^2 S (A + log A + log N)), where N is the number of objects, and A is the average number of attributes in an object"
   exit 1
 fi
 OBJ_DIR=$1
-INDEX=$2
-SIZE_MAX=$3
-TARGET=$4
+LARGE=$2
+INDEX=$3
+SIZE_MAX=$4
+TARGET=$5
 
 
 if [ ! -e $TARGET ]; then
@@ -54,9 +56,13 @@ sort -u $TMP.obj > $TMP.small_obj
 while read OBJ
 do
   # Time: O(A (A + log N))
+  H=""
+  if [ $LARGE == 1 ]; then
+    H=`$THIS/file2hash $OBJ`
+  fi
   while read ATTR
   do
-    if grep -x "$ATTR" $OBJ_DIR/$OBJ &> /dev/null; then
+    if grep -x "$ATTR" $OBJ_DIR/$H/$OBJ &> /dev/null; then
       echo $OBJ >> $TMP.obj
     fi
   done < $TMP.big_attr
