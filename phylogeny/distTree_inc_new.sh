@@ -132,7 +132,6 @@ while [ $ITER -lt $ITER_MAX ]; do
     GRID=0  
   fi
 
- #rm -rf $INC/log/
   mkdir $INC/log
 
   if [ $GRID == 1 ]; then
