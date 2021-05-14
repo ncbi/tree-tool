@@ -150,7 +150,9 @@ struct ThisApplication : Application
     : Application ("Print coverage of a DNA: " + outFormat)
     {
       version = VERSION;
-      addPositional ("in", "BLASTN output in format: " XSTR(FORMAT) ", sorted by qseqid, sseqid");
+      string format (XSTR(FORMAT));
+      replaceStr (format, " >>", "");
+      addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid, sseqid");
     //addFlag ("plasmid", "Report plasmid name");
     }
 
