@@ -147,8 +147,6 @@ while [ $ITER -le $ITER_MAX ]; do
   
   $THIS/distTree_inc_new_log.sh $INC $GRID  
 
-  $THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
-
   echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done

@@ -9420,7 +9420,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
 , tree (tree_arg)
 {
   ASSERT (isDirName (dataDir));  
-  const string nameDir (dataDir + "/" + name + "/");
+  const string nameDir (dataDir + name + "/");
   const string dissimFName  (nameDir + "dissim");
   const string leafFName    (nameDir + "leaf");
   const string requestFName (nameDir + "request");
@@ -9586,8 +9586,10 @@ void NewLeaf::process (bool init,
             swap (name1, name2);
           if (name1 != name)
             throw runtime_error (FUNC + dissimFName + " must contain " + name);
-          const Real dissim = str2real (dissimS);
-          if (! (dissim >= 0.0))  // To include isNan()
+          Real dissim = str2real (dissimS);
+          if (isNan (dissim))
+            dissim = inf;  // To process "incomparable" objects by distTree_inc_add.sh
+          if (dissim < 0.0)
             throw runtime_error (FUNC "Dissimilarity must be non-negative");
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
