@@ -6,14 +6,14 @@ if [ $# -ne 1 ]; then
   echo "Append: #1/dissim"
   echo "#1: incremental distance tree directory"
   echo "Time: O(n log^5 n)"
-  echo "To be run if object2closest.sh changes"
+  echo "To be run if #1/object2closest.sh or #1/pairs2dissim.sh change"
   exit 1
 fi
 INC=$1
 
 
-if [ -e $INC/dissim.add-req ]; then
-  error "File $INC/dissim.add-req exists"
+if [ -e $INC/dissim.add ]; then
+  error "File $INC/dissim.add exists"
 fi
 
 
@@ -21,6 +21,11 @@ TMP=`mktemp`
 echo $TMP
 
 
+section "Old dissimilarities"
+wc -l $INC/dissim
+
+
+section "$INC/object2closest.sh"
 mkdir $INC/closest
 $THIS/../trav 1000 -zero -start 0 "mkdir $INC/closest/%n" -threads 10
 
@@ -42,6 +47,8 @@ if [ $SEARCH_GRID_MIN -le 200 ]; then
 fi
 $THIS/../qstat_wait.sh $WAIT 1
 
+
+section "Requests"
 $THIS/../trav $INC/closest "$THIS/../trav -noprogress %d/%f %Qgrep -vx %Pf %Pd/%Pf | sed 's/$/\t%Pf/1'%Q" > $TMP.req0
 rm -r $INC/closest/ &
 
@@ -57,8 +64,15 @@ sort -u $TMP.pair > $TMP.pair1
 
 $THIS/../setMinus $TMP.req2 $TMP.pair1 > $TMP.req
 
-$THIS/distTree_inc_request2dissim.sh $INC $TMP.req $INC/dissim
+
+section "New dissimilarities"
+$THIS/distTree_inc_request2dissim.sh $INC $TMP.req $INC/dissim.add
+cat $INC/dissim.add >> $INC/dissim
+rm $INC/dissim.add
+
 wc -l $INC/dissim
 
 
 rm $TMP*
+wait
+
