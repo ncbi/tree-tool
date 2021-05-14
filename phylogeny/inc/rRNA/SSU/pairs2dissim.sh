@@ -21,8 +21,8 @@ if [ -n "$FILE_NEW" ]; then
 fi
 
 INC=`dirname $0`
-CPP_DIR/dissim/dna_pairs2dissim  -log $LOG  -coeff 37.5  -relative  $NEW  $REQUEST $INC/../seq 300 $DISSIM
-  # 0.01 * 2500 * 1.5 = 37.5
+CPP_DIR/dissim/dna_pair2dissim  -log $LOG  -coeff 37.125  -relative  $NEW  $REQUEST $INC/../seq 300 $DISSIM
+  # 37.5 * 0.99 = 37.125
   
 rm -f $LOG
 

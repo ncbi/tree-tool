@@ -14,7 +14,7 @@ INC=`dirname $0`
 SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 
-sqsh-ms -S $SEVVER  -D $DATABASE  << EOT
+sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update Locus
     set outlier = '$OUTLIER'
     where id = '$OBJ';
