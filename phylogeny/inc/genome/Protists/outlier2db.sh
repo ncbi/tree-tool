@@ -6,12 +6,18 @@ if [ $# -ne 2 ]; then
   echo "#2: Genome.outlier"
   exit 1
 fi
+ASM=$1
+OUTLIER="$2"
 
-sqsh-ms -S PROTEUS  -D uniColl  << EOT
+
+INC=`dirname $0`
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+
+sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update Genome
-    set outlier = '$2'
-    where id = $1;
+    set outlier = '$OUTLIER'
+    where id = $ASM;
   go -m bcp 
 EOT
-
 

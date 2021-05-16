@@ -23,15 +23,21 @@ fi
 makeblastdb  -in $INC/seq.fa  -dbtype nucl    -logfile /dev/null
 
 
-loadLISTC $OBJ_LIST
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+BULK_REMOTE=`cat $INC/bulk_remote`
 
-sqsh-ms  -S PROTEUS  -D uniColl << EOT 
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
+
+sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Locus
     set in_tree = $IN_TREE
-    from      LISTC
-         join Locus on Locus.id = LISTC.id
+    from      ListC
+         join Locus on Locus.id = ListC.id
     where     Locus.taxroot = 4751
           and Locus.gene = '18S';
   print @@rowcount;
   go -m bcp
 EOT
+
+
