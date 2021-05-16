@@ -14,8 +14,14 @@ DEL=$2
 
 
 # QC
-sort -cu $DEL
+sort -c -u $DEL
 
+
+N=15
+if [ -e $INC/threads ]; then
+  N=`cat $INC/threads`
+fi
+THREADS="-threads $N"
 
 VER=`cat $INC/version`
 
@@ -31,7 +37,7 @@ echo $VER > $INC/version
 section "Deleting from the tree"
 VARIANCE=`cat $INC/variance`
 # Cf. distTree_inc_new.sh
-$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE \
+$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE \
   -delete $DEL  \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \

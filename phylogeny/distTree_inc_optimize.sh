@@ -19,9 +19,15 @@ if [ ! -e $INC/phen ]; then
   error "No $INC/phen"
 fi
 
+N=15
+if [ -e $INC/threads ]; then
+  N=`cat $INC/threads`
+fi
+THREADS="-threads $N"
+
 section "Tree"
 # Time: O(n log^4(n))
-$THIS/makeDistTree  -threads 15  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
+$THIS/makeDistTree  $THREADS  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
   # -reinsert  
 
 section "Quality"

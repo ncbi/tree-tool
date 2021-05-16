@@ -78,9 +78,15 @@ if [ -e $INC/outlier-genogroup ]; then
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
 
+N=15
+if [ -e $INC/threads ]; then
+  N=`cat $INC/threads`
+fi
+THREADS="-threads $N"
+
 # Time: O(n log^4(n))
 # PAR
-$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  $DELETE \
+$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 5 \
   -output_tree $INC/tree.new  -leaf_errors leaf_errors  > $INC/hist/makeDistTree-final.$VER
 mv $INC/tree.new $INC/tree
@@ -99,7 +105,7 @@ if [ $QC == 1 ]; then
   $INC/qc.sh 0
 fi
 section "Tree QC"
-$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
+$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
   VER=`cat $INC/version`
 fi 
@@ -127,7 +133,7 @@ if [ -e $INC/phen ]; then
     NEW_ROOT=$OLD_ROOT
   fi
   # -noqual must be absent to compute quality data after reroot()
-	$THIS/makeDistTree  -threads 15  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
+	$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
 	
 	super_section "Names"
 	$THIS/tree2names.sh tree.$DATE $INC/phen $LARGE > $INC/hist/tree2names.$VER

@@ -22,6 +22,12 @@ SEARCH_GRID_MIN=`cat $INC/object2closest.grid`
 QC=""  # -qc  
 VARIANCE=`cat $INC/variance`
 
+N=15
+if [ -e $INC/threads ]; then
+  N=`cat $INC/threads`
+fi
+THREADS="-threads $N"
+
 
 N=`ls $INC/search/ | head -1`
 if [ "$N" ]; then
@@ -77,7 +83,7 @@ fi
 cp /dev/null $INC/dissim.add
 
 
-$THIS/../trav  -threads 15  $INC/search.list "mkdir $INC/search/%f"
+$THIS/../trav  $THREADS  $INC/search.list "mkdir $INC/search/%f"
 $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
 rm $INC/search.list
 
@@ -155,7 +161,7 @@ rm $INC/dissim.add
 
 
 section "leaf -> tree"
-$THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE  -noqual  -output_tree $OUT
+$THIS/makeDistTree $QC  $THREADS  -data $INC/  -variance $VARIANCE  -noqual  -output_tree $OUT
 mv $INC/leaf $PLACEMENT
 cp /dev/null $INC/leaf
 
