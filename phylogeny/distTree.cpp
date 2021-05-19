@@ -2763,7 +2763,8 @@ void Image::processSmall (const DTNode* center_arg,
 
 
 void Image::processLarge (const Steiner* subTreeRoot,
-                          const VectorPtr<Tree::TreeNode> &possibleBoundary)
+                          const VectorPtr<Tree::TreeNode> &possibleBoundary,
+                          const VectorOwn<Change>* changes)
 {
   ASSERT (subgraph. empty ());
   ASSERT (! tree);              
@@ -2803,7 +2804,49 @@ void Image::processLarge (const Steiner* subTreeRoot,
     rootInArea = (! subgraph. area_root || subgraph. area_root == wholeTree. root);
 
     // Optimization
-    tree->optimizeLargeSubgraphs ();
+    if (changes)
+    {
+      VectorOwn<Change> newChanges;  newChanges. reserve (changes->size ());
+      const DiGraph::Node2Node old2new (DiGraph::reverse (new2old));
+      Tree::LcaBuffer buf;
+      for (const Change* change : *changes)
+        if (const DTNode* from = getOld2new (change->from, old2new, buf))
+        {
+          ASSERT (from->graph == tree);
+          const DTNode* to = getOld2new (change->to, old2new, buf);
+          if (! to)
+          {
+            const Tree::TreeNode* lca_ = nullptr;
+            const VectorPtr<Tree::TreeNode>& path = Tree::getPath (change->from, change->to, nullptr, lca_, buf);
+            ASSERT (lca_);
+            for (const Tree::TreeNode* node : path)
+              if (node != change->from && boundary. containsFast (node))
+              {
+                EXEC_ASSERT (to = static_cast <const DistTree_sp::DTNode*> (findPtr (old2new, node)));
+                break;
+              }
+          }
+          if (   to
+              && (   from->getParent () == to
+                  || from->getParent () == to->getParent () 
+                 ) 
+              && from->getParent () -> arcs [false]. size () <= 2
+             )  
+            to = nullptr;
+          if (to)
+          {
+            auto newChange = new Change (from, to);
+            ASSERT (newChange->valid ());
+            newChange->improvement = change->improvement;
+            newChange->arcDist     = change->arcDist;  // May be not correct due to *to change
+            newChanges << newChange;
+          }
+        }
+    //PRINT (newChanges. size ());  
+      tree->applyChanges (newChanges, true); 
+    }
+    else
+      tree->optimizeLargeSubgraphs (nullptr);
     
     tree->qc ();
   }
@@ -2993,6 +3036,42 @@ bool Image::apply ()
 
     
   return true;
+}
+
+
+
+const DTNode* Image::getOld2new (const DTNode* old,
+                                 const DiGraph::Node2Node &old2new,
+                                 Tree::LcaBuffer &buf) const
+{
+  ASSERT (old);
+  ASSERT (tree);
+  ASSERT (old->graph == & subgraph. tree);
+  
+  if (! subgraph. area. containsFast (old))
+    return nullptr;
+  
+  const DTNode* node1 = old;
+  while (! subgraph. boundary. containsFast (node1))
+  {
+    ASSERT (node1->arcs [false]. size () >= 2);
+    node1 =  static_cast <const DTNode*> (node1->arcs [false]. front () -> node [false]);
+  }
+   
+  const DTNode* node2 = old;
+  while (! subgraph. boundary. containsFast (node2))
+  {
+    ASSERT (node2->arcs [false]. size () >= 2);
+    node2 =  static_cast <const DTNode*> (node2->arcs [false]. back () -> node [false]);
+  }
+
+  const Tree::TreeNode* lca = Tree::getLca ( static_cast <const Tree::TreeNode*> (findPtr (old2new, node1))
+                                           , static_cast <const Tree::TreeNode*> (findPtr (old2new, node2))
+                                           , buf
+                                           );
+  ASSERT (lca);
+   
+  return static_cast <const DTNode*> (lca);
 }
 
 
@@ -6788,7 +6867,7 @@ void reinsert_thread (size_t from,
 
 
 
-bool DistTree::optimizeReinsert ()
+void DistTree::optimizeReinsert ()
 {
   ASSERT (! subDepth);
 
@@ -6814,8 +6893,10 @@ bool DistTree::optimizeReinsert ()
     changes << threadChanges;
 
   changes. sort (Change::longer); 
+//PRINT (changes. size ());  
 
-  return applyChanges (changes, true); 
+  optimizeLargeSubgraphs (& changes);
+    // Invokes: applyChanges (changes, true); 
 }
 
 
@@ -7089,16 +7170,17 @@ namespace
 
 void processLargeImage_thread (Image &image,
                                const Steiner* subTreeRoot,
-                               const VectorPtr<Tree::TreeNode> possibleBoundary)  // needs a copy
+                               const VectorPtr<Tree::TreeNode> possibleBoundary,  // needs a copy
+                               const VectorOwn<Change>* changes)
 { 
-  image. processLarge (subTreeRoot, possibleBoundary); 
+  image. processLarge (subTreeRoot, possibleBoundary, changes); 
 }
 
 }
                         
 
 
-void DistTree::optimizeLargeSubgraphs ()
+void DistTree::optimizeLargeSubgraphs (const VectorOwn<Change>* changes)
 {
   ASSERT (threads_max);
   
@@ -7116,7 +7198,10 @@ void DistTree::optimizeLargeSubgraphs ()
 
   if (! largeParts)  
   {
-    optimizeSmallSubgraphs (areaRadius_std);
+    if (changes)
+      applyChanges (*changes, true); 
+    else
+      optimizeSmallSubgraphs (areaRadius_std);
     return;
   }
     
@@ -7196,7 +7281,10 @@ void DistTree::optimizeLargeSubgraphs ()
     }
     if (cuts. empty ()) 
     {
-      optimizeSmallSubgraphs (areaRadius_std);
+      if (changes)
+        applyChanges (*changes, true); 
+      else
+        optimizeSmallSubgraphs (areaRadius_std);
       return;
     }
     ASSERT (boundary. empty ());
@@ -7234,15 +7322,15 @@ void DistTree::optimizeLargeSubgraphs ()
         images << image;
         ASSERT (cut->isTransient ());
         if (th. get ())
-          *th << thread (processLargeImage_thread, ref (*image), cut, possibleBoundary);
+          *th << thread (processLargeImage_thread, ref (*image), cut, possibleBoundary, changes);
             // Use functional ??
         else
-          image->processLarge (cut, possibleBoundary);
+          image->processLarge (cut, possibleBoundary, changes);
         possibleBoundary << cut;
       }   
       // Top subgraph
       prog ();
-      mainImage. processLarge (nullptr, possibleBoundary);
+      mainImage. processLarge (nullptr, possibleBoundary, changes);
     }
     // Image::apply() can be done by Threads if it is done in the order of cuts and for sibling subtrees ??!
     {
@@ -7259,7 +7347,9 @@ void DistTree::optimizeLargeSubgraphs ()
       }
     }
   }
-  
+  if (failed)
+    throw runtime_error (FUNC "OUT OF MEMORY");   // if threads_num > 1 then try thread-free execution ??
+    
   // DTNode::stable
   for (DiGraph::Node* node : nodes)
     static_cast <DTNode*> (node) -> stable = true;
@@ -7283,16 +7373,11 @@ void DistTree::optimizeLargeSubgraphs ()
   qc ();
   qcPaths ();
   
-  if (failed)
-    { ERROR_MSG ("OUT OF MEMORY"); }  // if threads_num > 1 then try thread-free execution ??
-  else
-  {
-    if (! subDepth)
-      cerr << "Optimizing cut nodes ..." << endl;
-    optimizeSmallSubgraphsUnstable (areaRadius_std);  // PAR
-    qc ();
-    qcPredictionAbsCriterion ();
-  }
+  if (! subDepth)
+    cerr << "Optimizing cut nodes ..." << endl;
+  optimizeSmallSubgraphsUnstable (areaRadius_std);  // PAR
+  qc ();
+  qcPredictionAbsCriterion ();
 }
 
 

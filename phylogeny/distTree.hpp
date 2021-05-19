@@ -869,8 +869,8 @@ public:
              && ! to_arg->inDiscernible ()
     	       && from_arg->getParent ()
 	  	       && ! to_arg->descendantOf (from_arg)
-	  	       && ! (from_arg->getParent() == to_arg->getParent() && from_arg->getParent() -> arcs [false]. size () <= 2)  
-	  	       && ! (from_arg->getParent() == to_arg              && from_arg->getParent() -> arcs [false]. size () <= 2); 
+	  	       && ! (from_arg->getParent () == to_arg->getParent() && from_arg->getParent () -> arcs [false]. size () <= 2)  
+	  	       && ! (from_arg->getParent () == to_arg              && from_arg->getParent () -> arcs [false]. size () <= 2); 
 	  }
  ~Change ()
     {
@@ -1048,7 +1048,6 @@ struct Image : Nocopy
     // In subgraph.tree
     // May be delete'd
   DistTree* tree {nullptr};
-    // = &subgraph.tree
     // nullptr <=> bad_alloc
   DiGraph::Node2Node new2old;  
     // Initially: newLeaves2boundary
@@ -1065,12 +1064,16 @@ struct Image : Nocopy
 	  // Invokes: tree->{optimizeLenArc(),optimizeLenNode(),optimizeWholeIter() or optimizeSmallSubgraphs()}
 	  // Time: ~ O(|area| (log(|area|) log^2(n) + |area|) + Time(optimizeWholeIter(|area|)))
 	void processLarge (const Steiner* subTreeRoot,
-	                   const VectorPtr<Tree::TreeNode> &possibleBoundary);
+	                   const VectorPtr<Tree::TreeNode> &possibleBoundary,
+	                   const VectorOwn<Change>* changes);
 	  // Time: ~ O(|area| log(|area|) log^2(n) + Time(optimizeSmallSubgraphs(|area|)))
   bool apply ();
     // Return: false <=> bad_alloc
 	  // Output: DTNode::stable = true
     // Time: ~ O(|area| log(|area|) log^2(n))
+  const DTNode* getOld2new (const DTNode* old,
+                            const DiGraph::Node2Node &old2new,
+                            Tree::LcaBuffer &buf) const;
 };
 
 
@@ -1426,10 +1429,10 @@ public:
 	void optimize3 ();
 	  // Optimal solution, does not depend on Obj::mult
 	  // Requires: 3 leaves
-  bool optimizeReinsert ();
+  void optimizeReinsert ();
     // Re-inserts subtrees with small DTNode::pathDissimNums.size()
-	  // Return: false <=> finished
     // Invokes: NewLeaf(DTNode*), Change, applyChanges(), Threads
+    // Time: O((p + n log^2 n + |changes| p/n log n) log n)
 	void optimizeWholeIter (uint iter_max,
 	                        const string &output_tree);
 	  // Input: iter_max: 0 <=> infinity
@@ -1448,7 +1451,7 @@ private:
     // Time: O(min(n,2^areaRadius_std) log^4(n))
   bool applyChanges (const VectorOwn<Change> &changes,
                      bool byNewLeaf);
-	  // Return: false <=> finished
+	  // Return: false <=> no commits
 	  // Input: changes: !byNewLeaf <=> Change::apply()/restore() was done
     // Update: topology, changes (sort by Change::improvement descending)
     // Output: DTNode::stable
@@ -1458,8 +1461,8 @@ private:
     // Update: bestChange: positive(improvement)
     // Invokes: Change::{apply(),restore()}
 public:
-  void optimizeLargeSubgraphs ();
-    // Invokes: optimizeSmallSubgraphs(), Threads
+  void optimizeLargeSubgraphs (const VectorOwn<Change>* changes);
+    // Invokes: optimizeSmallSubgraphs() or applyChanges(*changes), Threads
 	  // Time: ~ O(threads_max n log^3(n))
 
 private:

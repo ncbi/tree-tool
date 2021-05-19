@@ -90,7 +90,7 @@ struct ThisApplication : Application
 	//addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
 	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
 	  addFlag ("skip_len", "Skip length-only optimization");
-	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations");
+	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations; works faster if hybrid objects have been removed");
 	//addFlag ("reinsert_orig_weights", "Use original weights in the reinsert optimization");  
 	  addFlag ("skip_topology", "Skip topology optimization");	  
 	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
@@ -599,7 +599,7 @@ struct ThisApplication : Application
           		const Real absCriterion_old = tree->absCriterion;
           		ASSERT (absCriterion_old < inf);
               tree->optimizeDissimCoeffs ();  
-              tree->optimizeLargeSubgraphs ();  
+              tree->optimizeLargeSubgraphs (nullptr);
               if (hybridF. get ())
               	deleteHybrids ( *tree
               	              , iter + 1 == iter_max

@@ -1,6 +1,9 @@
-#define VERSION "1.8.1"
+#define VERSION "1.9.2"
 
 
+// 1.9.2  05/18/2021  optimizeReinsert() invokes optimizeLargeSubgraphs(&changes)
+// 1.9.1  05/15/2021  inc/threads
+//                    distTree_inc_new.sh -reinsert does not process inc/new/
 // 1.8.1  05/11/2021  inc/dissim_full
 // 1.7.3  04/23/2021  combine_dissims.cpp: weighted combination of all dissimilarities
 //                    str2real() bug in reading nan's
