@@ -88,8 +88,6 @@ struct ThisApplication : Application
         s2. clear ();
         iss >> s1 >> s2;
         QC_ASSERT (! s2. empty ());
-        if (s1 == s2)
-          continue;
         if (! contains (items, s1))
           items [s1] = new Item (s1);
         if (! contains (items, s2))
