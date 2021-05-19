@@ -31,6 +31,12 @@ if [ $ADD == 0 ]; then
   ADD=1
 fi
 
+N=15
+if [ -e $INC/threads ]; then
+  N=`cat $INC/threads`
+fi
+THREADS="-threads $N"
+
 
 if true; then  
 date
@@ -65,103 +71,110 @@ echo $VER > $INC/version
 super_section "version: $VER"
 
 
-section "new/ -> search/"
-echo "# Objects in tree: $OBJS"  
-echo "To add at this step: $ADD"
+REINSERT=""
+POS=$(( ${#VER} - 1 ))
+if [ "${VER:$POS}" == "0" ]; then  # PAR
+  REINSERT="-reinsert"
+  warning "REINSERT\nTree quality temporarily decreases due to missing dissimilarities to close tree neighbors"
+else
+  section "new/ -> search/"
+  echo "# Objects in tree: $OBJS"  
+  echo "To add at this step: $ADD"
 
-$THIS/distTree_inc_new_list.sh $INC > $INC/new.list
-wc -l $INC/new.list
+  $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
+  wc -l $INC/new.list
 
-cp /dev/null $INC/dissim.add
+  cp /dev/null $INC/dissim.add
 
-$THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD | sort > $INC/search.list
-wc -l $INC/search.list
-rm $INC/new.list
+  $THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD | sort > $INC/search.list
+  wc -l $INC/search.list
+  rm $INC/new.list
 
-$THIS/../trav  -threads 15  $INC/search.list "mkdir $INC/search/%f"
-$THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
-rm $INC/search.list
-
-
-section "search/ -> leaf, dissim"
-
-N=`ls $INC/search/ | wc -l`
-if [ $N -gt 0 ]; then
-  rm -rf $INC/log/
-  mkdir $INC/log
-  $THIS/../trav  $INC/search "touch $INC/log/%f" 
-  GRID=0
-  if [ $N -lt $SEARCH_GRID_MIN ]; then
-    $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
-  else
-    GRID=1
-    $THIS/../grid_wait.sh 1
-    UL1=""
-    if [ -e $INC/object2closest.sql ]; then
-      # PAR
-      UL1=",ul1=30"
-    fi
-    $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
-    WAIT=2000  # PAR
-    if [ $SEARCH_GRID_MIN -le 200 ]; then  
-      WAIT=7200
-    fi
-    $THIS/../qstat_wait.sh $WAIT 1
-  fi
-  $THIS/distTree_inc_new_log.sh $INC $GRID  
-fi
+  $THIS/../trav  $THREADS  $INC/search.list "mkdir $INC/search/%f"
+  $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/search.list
+  rm $INC/search.list
 
 
-ITER=0
-ITER_MAX=`echo $OBJS | awk '{printf "%d", log($1)+3};'`
-while [ $ITER -lt $ITER_MAX ]; do
-  # Time: O(log^4(n)) per one new object
-  
+  section "search/ -> leaf, dissim"
+
   N=`ls $INC/search/ | wc -l`
-  if [ $N == 0 ]; then
-    break  
-  fi
-
-	ITER=$(( $ITER + 1 ))
-  section "Iteration $ITER / $ITER_MAX"
-  # use distTree_inc_request2dissim.sh ??
-  REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
-  echo "# Requests: $REQ"
-  GRID=1
-  if [ $REQ -lt $GRID_MIN ]; then
-    GRID=0  
-  fi
-
-  mkdir $INC/log
-
-  if [ $GRID == 1 ]; then
-	  $THIS/../grid_wait.sh 1
-  fi
-  $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
-  if [ $GRID == 1 ]; then
-    WAIT=2000  # PAR
-    if [ $GRID_MIN -le 200 ]; then  
-      WAIT=7200
+  if [ $N -gt 0 ]; then
+    rm -rf $INC/log/
+    mkdir $INC/log
+    $THIS/../trav  $INC/search "touch $INC/log/%f" 
+    GRID=0
+    if [ $N -lt $SEARCH_GRID_MIN ]; then
+      $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
+    else
+      GRID=1
+      $THIS/../grid_wait.sh 1
+      UL1=""
+      if [ -e $INC/object2closest.sql ]; then
+        # PAR
+        UL1=",ul1=30"
+      fi
+      $THIS/../trav  -step 1  $INC/search "$QSUB_5$UL1  -N j%n  %Q$THIS/distTree_inc_search_init.sh $INC %f%Q > /dev/null" 
+      WAIT=2000  # PAR
+      if [ $SEARCH_GRID_MIN -le 200 ]; then  
+        WAIT=7200
+      fi
+      $THIS/../qstat_wait.sh $WAIT 1
     fi
-    $THIS/../qstat_wait.sh $WAIT 0
+    $THIS/distTree_inc_new_log.sh $INC $GRID  
   fi
-  
-  $THIS/distTree_inc_new_log.sh $INC $GRID  
-
-  $THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
-
-  echo "Processing new objects"
-  $THIS/distTree_new $QC $INC/  -variance $VARIANCE
-done
-$THIS/../trav  -step 1  -threads 15  $INC/search "$THIS/distTree_inc_search_stop.sh $INC %f"
 
 
-section "leaf, dissim.add -> tree, dissim"
+  ITER=0
+  ITER_MAX=`echo $OBJS | awk '{printf "%d", log($1)+3};'`
+  while [ $ITER -lt $ITER_MAX ]; do
+    # Time: O(log^4(n)) per one new object
+    
+    N=`ls $INC/search/ | wc -l`
+    if [ $N == 0 ]; then
+      break  
+    fi
 
-wc -l $INC/dissim.add
-cat $INC/dissim.add >> $INC/dissim
-$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
-rm $INC/dissim.add
+  	ITER=$(( $ITER + 1 ))
+    section "Iteration $ITER / $ITER_MAX"
+    # use distTree_inc_request2dissim.sh ??
+    REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
+    echo "# Requests: $REQ"
+    GRID=1
+    if [ $REQ -lt $GRID_MIN ]; then
+      GRID=0  
+    fi
+
+    mkdir $INC/log
+
+    if [ $GRID == 1 ]; then
+  	  $THIS/../grid_wait.sh 1
+    fi
+    $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
+    if [ $GRID == 1 ]; then
+      WAIT=2000  # PAR
+      if [ $GRID_MIN -le 200 ]; then  
+        WAIT=7200
+      fi
+      $THIS/../qstat_wait.sh $WAIT 0
+    fi
+    
+    $THIS/distTree_inc_new_log.sh $INC $GRID  
+
+    $THIS/../trav  -step 1  $THREADS  $INC/search "$THIS/distTree_inc_search2bad.sh $INC %f"
+
+    echo "Processing new objects"
+    $THIS/distTree_new $QC $INC/  -variance $VARIANCE
+  done
+  $THIS/../trav  -step 1  $THREADS  $INC/search "$THIS/distTree_inc_search_stop.sh $INC %f"
+
+
+  section "leaf, dissim.add -> tree, dissim"
+
+  wc -l $INC/dissim.add
+  cat $INC/dissim.add >> $INC/dissim
+  $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
+  rm $INC/dissim.add
+fi
 else
   VER=`cat $INC/version`
 fi
@@ -193,15 +206,8 @@ if [ -e $INC/good ]; then
   GOOD="-good $INC/good.expanded"
 fi
 
-REINSERT=""
-POS=$(( ${#VER} - 1 ))
-if [ "${VER:$POS}" == 0 ]; then  # PAR
-  REINSERT="-reinsert"
-  warning "REINSERT\nTree quality temporarily decreases due to missing dissimilarities to close tree neighbors"
-fi
-
 # Time: O(n log^4(n)) 
-$THIS/makeDistTree $QC  -threads 15  -data $INC/  -variance $VARIANCE \
+$THIS/makeDistTree $QC  $THREADS  -data $INC/  -variance $VARIANCE \
   $DELETE \
   $REINSERT  -optimize  -skip_len  -subgraph_iter_max 2 \
   -noqual \
