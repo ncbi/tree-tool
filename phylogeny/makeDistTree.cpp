@@ -48,8 +48,7 @@ using namespace DistTree_sp;
 namespace 
 {
   
-
-
+ 
 const string criterionOutlier_definition ("normalized object criterion");
 const string deformationOutlier_definition ("relative object deformation");
 
@@ -197,7 +196,7 @@ struct ThisApplication : Application
       Common_sp::insertAll (hybrids, extra);
     }
     			  	      
-    cout << "# Hybrids: " << hybrids. size () << endl;        
+    couterr << "# Hybrids: " << hybrids. size () << endl;        
 
     cerr << "Deleting hybrids ..." << endl;
     {
@@ -211,7 +210,7 @@ struct ThisApplication : Application
     }
     
     tree. reportErrors (cout);
-    cout << endl;
+  //cout << endl;
     tree. qc ();
 	}
 	
@@ -543,13 +542,19 @@ struct ThisApplication : Application
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
 
+            couterr << "Optimizing topology: arc lengths for the whole tree ..." << endl;    
             tree->optimizeLenWhole ();
+            cout << tree->absCriterion2str () << endl;
 
+            couterr << "Optimizing topology: arc lengths at each arc ..." << endl;
             const size_t lenArc_deleted = tree->optimizeLenArc ();
             cout << "# Nodes deleted = " << lenArc_deleted << endl;
+            cout << tree->absCriterion2str () << endl;
 
+            couterr << "Optimizing topology: arc lengths at each node ..." << endl;
             const size_t lenNode_deleted = tree->optimizeLenNode ();
             cout << "# Nodes deleted = " << lenNode_deleted << endl;
+            cout << tree->absCriterion2str () << endl;
             
             tree->qc ();
             if (verbose ())
@@ -563,12 +568,12 @@ struct ThisApplication : Application
 
           if (reinsert)
           {
-            cerr << "Optimizing topology: reinsert ..." << endl;
+            couterr << "Optimizing topology: reinsert ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: reinsert");
             if (! tree->multFixed && ! reinsert_variance_dist)
             {
          	    tree->setDissimMult (false);   // may damage topology for big variance functions
-              cerr << tree->absCriterion2str () << endl; 
+              couterr << tree->absCriterion2str () << endl; 
          	  }
             tree->optimizeReinsert ();  
             tree->saveFile (output_tree_tmp); 
@@ -578,12 +583,12 @@ struct ThisApplication : Application
           if (predictionImproved)
           {
          		tree->setDissimMult (true);
-            cerr << tree->absCriterion2str () << endl; 
+            couterr << tree->absCriterion2str () << endl; 
          	}
           
           if (! skip_topology)
           {
-            cout << "Optimizing topology: subgraphs ..." << endl;
+            couterr << "Optimizing topology: subgraphs ..." << endl;
             const Chronometer_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();
             if (subgraph_iter_max)
@@ -592,14 +597,15 @@ struct ThisApplication : Application
             size_t iter = 0;
             while (iter < iter_max)
           	{
-              cerr << "Iteration " << iter + 1;
+              couterr << "Iteration " << iter + 1;
           		if (iter_max < numeric_limits<size_t>::max ())
-          	    cerr << " / " << iter_max; 
-          	  cerr << " ..." << endl;
+          	    couterr << " / " << iter_max; 
+          	  couterr << " ..." << endl;
           		const Real absCriterion_old = tree->absCriterion;
           		ASSERT (absCriterion_old < inf);
               tree->optimizeDissimCoeffs ();  
               tree->optimizeLargeSubgraphs (nullptr);
+              cout << tree->absCriterion2str () << endl; 
               if (hybridF. get ())
               	deleteHybrids ( *tree
               	              , iter + 1 == iter_max
@@ -617,7 +623,7 @@ struct ThisApplication : Application
               	break;
               tree->setDissimMult (true);
               if (! tree->multFixed)
-                cerr << tree->absCriterion2str () << endl; 
+                couterr << tree->absCriterion2str () << endl; 
             }
             cout << "# Iterations of subgraph optimization: " << iter << endl;
             tree->reportErrors (cout);
@@ -638,7 +644,10 @@ struct ThisApplication : Application
       }
       else
         if (hybridF. get ())
+        {
           deleteHybrids (*tree, true, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
+          cout << endl;
+        }
 
 
       if (! delete_criterion_outliers. empty ())
