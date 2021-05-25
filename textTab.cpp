@@ -60,7 +60,7 @@ struct ThisApplication : Application
 		const string fName = getArg ("table");
 
 
-    TextTable tt (fName);
+    const TextTable tt (fName);
     tt. qc ();
     if (verbose ())
       tt. printHeader (cout);      
