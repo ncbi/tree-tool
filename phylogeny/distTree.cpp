@@ -3304,7 +3304,7 @@ DistTree::DistTree (const string &dataDirName,
   ASSERT (dataDirName. back () == '/');
   IMPLY (optimizeP, loadDissim);
   
-
+  
   // Initial tree topology
   loadTreeFile (nvl (treeFName, dataDirName + "tree"));  
   ASSERT (root);
@@ -3317,6 +3317,7 @@ DistTree::DistTree (const string &dataDirName,
   VectorPtr<Leaf> newLeaves;  newLeaves. reserve (name2leaf. size () / 10 + 1);  // PAR
   if (loadNewLeaves)
   {
+    couterr << "Loading new leaves ..." << endl;
     LineInput f (dataDirName + "leaf", 10 * 1024, 1);  // PAR
     string leafName, anchorName;
     Real leafLen, arcLen;
@@ -3374,7 +3375,7 @@ DistTree::DistTree (const string &dataDirName,
       Vector<DissimLine> dissimLines;  dissimLines. reserve (dissims. capacity ());
       constexpr uint displayPeriod = 100000;  // PAR
       {
-        cout << "Loading " << fName << " ..." << endl;
+        couterr << "Loading " << fName << " ..." << endl;
         {
           LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
           while (f. nextLine ())
@@ -6364,9 +6365,6 @@ void DistTree::quartet2arcLen ()
 
 bool DistTree::optimizeLenWhole ()
 {
-  if (verbose (1))
-    cout << "Optimizing arc lengths for the whole tree ..." << endl;
-    
   node2deformationPair. clear ();
   
   // beta
@@ -6414,10 +6412,6 @@ bool DistTree::optimizeLenWhole ()
       absCriterion += dissim. getAbsCriterion ();
   }
   ASSERT (absCriterion < inf);
-
-  if (Progress::enabled ())
-    cerr << absCriterion2str () << endl;
-
   ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
   
   return true;
@@ -6444,9 +6438,6 @@ bool DTNode_len_strictlyLess (const DTNode* a,
 
 size_t DistTree::optimizeLenArc ()
 {
-  if (verbose (1))
-    cout << "Optimizing arc lengths at each arc ..." << endl;
-    
   node2deformationPair. clear ();
 
   VectorPtr<DTNode> dtNodes;  dtNodes. reserve (2 * name2leaf. size ());
@@ -6572,9 +6563,6 @@ struct Star
 
 size_t DistTree::optimizeLenNode ()  
 {
-  if (verbose (1))
-    cout << "Optimizing arc lengths at each node ..." << endl;
-
   node2deformationPair. clear ();
 
   Vector<Star> stars;  stars. reserve (2 * name2leaf. size ());
@@ -7330,7 +7318,10 @@ void DistTree::optimizeLargeSubgraphs (const VectorOwn<Change>* changes)
       }   
       // Top subgraph
       prog ();
-      mainImage. processLarge (nullptr, possibleBoundary, changes);
+      {
+        Unverbose unv;
+        mainImage. processLarge (nullptr, possibleBoundary, changes);
+      }
     }
     // Image::apply() can be done by Threads if it is done in the order of cuts and for sibling subtrees ??!
     {
