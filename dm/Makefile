@@ -124,6 +124,12 @@ char2attr:	$(char2attrOBJS)
 	$(CXX) -o $@ $(char2attrOBJS) $(LIBS)
 	$(ECHO)
 
+circuit.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
+circuitOBJS=circuit.o $(NUMERIC_OBJ) $(DM_DIR)/matrix.o
+circuit:	$(circuitOBJS)
+	$(CXX) -o $@ $(circuitOBJS) $(LIBS)  
+	$(ECHO)
+
 clust.o:	$(DM_HPP) 
 clustOBJS=clust.o $(DM_OBJ) 
 clust:	$(clustOBJS)
