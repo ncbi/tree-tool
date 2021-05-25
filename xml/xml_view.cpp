@@ -91,11 +91,11 @@ struct NCurses : Singleton<NCurses>
  ~NCurses ()
     { endwin (); }
 
-   void resize ()
-     { getmaxyx (stdscr, row_max, col_max); 
-       QC_ASSERT (row_max >= 0);
-       QC_ASSERT (col_max >= 0);
-     }
+  void resize ()
+    { getmaxyx (stdscr, row_max, col_max); 
+      QC_ASSERT (row_max >= 0);
+      QC_ASSERT (col_max >= 0);
+    }
 };
 
 
