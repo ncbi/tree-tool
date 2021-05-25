@@ -105,6 +105,9 @@ ulong seed_global = 1;
 bool sigpipe = false;
 
 
+const COutErr couterr;
+
+
 // thread
 size_t threads_max = 1;
 
@@ -1110,7 +1113,9 @@ int getVerbosity ()
 
 bool verbose (int inc)
 { 
-	return Verbose::enabled () ? (verbose_ + inc > 0) : false;
+  if (! Verbose::enabled ())
+    return false;
+	return verbose_ + inc > 0;
 }
 
 

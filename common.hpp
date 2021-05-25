@@ -151,6 +151,24 @@ protected:
 
 
 
+template <typename T>
+  struct Singleton : Nocopy
+  {
+  private:
+  	static bool beingRun;
+  protected:
+  	Singleton ()
+  	  { if (beingRun)
+  	  	  throw runtime_error ("Singleton");
+  	  	beingRun = true;
+  	  }
+   ~Singleton () 
+      { beingRun = false; }
+  };
+template <typename T> bool Singleton<T>::beingRun = false;
+
+
+
 #ifndef _MSC_VER
   struct Color
   {
@@ -172,6 +190,25 @@ protected:
 #endif
   
   
+
+struct COutErr : Singleton<COutErr>
+{
+template <class T>
+  const COutErr& operator<< (const T &val) const
+    { cout << val;
+      cerr << val;
+      return *this;
+    }
+  const COutErr& operator<< (ostream& (*pfun) (ostream&)) const
+    { pfun (cout);
+      pfun (cerr);
+      return *this;
+    }
+};
+
+extern const COutErr couterr;
+
+
 
 class ONumber
 {
@@ -1213,24 +1250,6 @@ private:
 	void qc () const;
 	void run ();	
 };
-
-
-
-template <typename T>
-struct Singleton : Nocopy
-{
-private:
-	static bool beingRun;
-protected:
-	Singleton ()
-	  { if (beingRun)
-	  	  throw runtime_error ("Singleton");
-	  	beingRun = true;
-	  }
- ~Singleton () 
-    { beingRun = false; }
-};
-template <typename T> bool Singleton<T>::beingRun = false;
 
 
 
