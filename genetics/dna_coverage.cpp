@@ -48,6 +48,7 @@ using namespace Common_sp;
 
 struct Subject
 {
+  // 1-based, end - last character position
   string sseqid;
   size_t qstart {numeric_limits<size_t>::max()};
     // Minimum
@@ -64,51 +65,77 @@ struct Subject
     // Cumulative
   string stitle;
 //string plasmidName;
-  size_t coverage {0};
-    // Query coverage
+  size_t qcoverage {0};
+  size_t scoverage {0};
   
   Subject () = default;
   void saveText (ostream &os,
                  size_t qlen) const
-    { string stitle_ (stitle);
+    { QC_ASSERT (qend <= qlen);
+      string stitle_ (stitle);
       trimPrefix (stitle_, sseqid + "_");
       replace (stitle_, '_', ' ');
-      os         << qstart                  
+      os         << qlen
+         << '\t' << qstart                  
          << '\t' << qend                    
-         << '\t' << qlen
-         << '\t' << coverage                
-         << '\t' << double (coverage) / double (qlen)  
+         << '\t' << qcoverage                
+         << '\t' << double (qcoverage) / double (qlen)  
          << '\t' << length                  // 12
          << '\t' << double (nident) / double (length)  
          << '\t' << sseqid                  
+         << '\t' << slen                    
          << '\t' << sstart                  
          << '\t' << send                    
-         << '\t' << slen                    
        //<< '\t' << nvl (plasmidName, "NA") 
-         << '\t' << double (coverage) / double (slen)  
+         << '\t' << scoverage                
+         << '\t' << double (scoverage) / double (slen)  
          << '\t' << stitle_                 
          ;
     }
+  void qc () const
+    { if (! qc_on)
+        return;
+      QC_ASSERT (! sseqid. empty ());
+      QC_ASSERT (qstart < qend);
+      QC_ASSERT (sstart < send);
+      QC_ASSERT (send <= slen);
+      QC_ASSERT (nident <= length);
+      QC_ASSERT (qcoverage); 
+      QC_ASSERT (scoverage); 
+      QC_ASSERT (qcoverage <= qend - qstart + 1);
+      QC_ASSERT (scoverage <= send - sstart + 1);
+    }
     
   bool operator< (const Subject& other) const
-    { LESS_PART (other, *this, coverage);
-      LESS_PART (*this, other, sseqid);
+    { LESS_PART (other, *this, qcoverage);
+      LESS_PART (other, *this, scoverage);
+      LESS_PART (*this, other, sseqid);  // Tie resolution
       return false;
     }
 };
 
 
 
-void addSubject (Vector<Subject> &subjects, 
-                 Subject &subj,
-                 const Vector<uint> &chars)
+void addPrevSubject (Vector<Subject> &subjects, 
+                     Subject &subj,
+                     const Vector<uint> &qchars,
+                     const Vector<uint> &schars)
+// Update: subj
 {
   if (subj. sseqid. empty ())
     return;
     
-  subj. coverage = 0;
-  for (const uint c : chars)
-    subj. coverage += (bool) c;    
+  ASSERT (schars. size () == subj. slen);
+    
+  subj. qcoverage = 0;
+  for (const uint c : qchars)
+    subj. qcoverage += (bool) c;   
+
+  subj. scoverage = 0;
+  for (const uint c : schars)
+    subj. scoverage += (bool) c;   
+    
+  subj. qc ();
 
   subjects << move (subj);
   subj = Subject ();
@@ -118,7 +145,8 @@ void addSubject (Vector<Subject> &subjects,
 
 void processSubjects (const string &qseqid,
                       size_t qlen,
-                      Vector<Subject> &subjects)
+                      Vector<Subject> &subjects,
+                      bool best)
 {
   ASSERT (! qseqid. empty ());
   ASSERT (qlen);
@@ -128,9 +156,14 @@ void processSubjects (const string &qseqid,
 
   // Best Subject
   subjects. sort ();
-  cout << qseqid << '\t';
-  subjects [0]. saveText (cout, qlen);      
-  cout << endl;
+  for (const Subject& subj : subjects)
+  {
+    cout << qseqid << '\t';
+    subj. saveText (cout, qlen);      
+    cout << endl;
+    if (best)
+      break;
+  }
   
   subjects. clear ();
 }
@@ -140,19 +173,20 @@ void processSubjects (const string &qseqid,
 
 // ThisApplication
 
-static const string outFormat {"#qseqid\tqstart\tqend\tqlen\tcoverage\tqcoverage\talign_length\tpident\tsseqid\tsstart\tsend\tslen\tscoverage\ttitle"};
+static const string outFormat {"#qseqid\tqlen\tqstart\tqend\tqcoverage\tpqcoverage\talign_length\tpident\tsseqid\tslen\tsstart\tsend\tscoverage\tpscoverage\ttitle"};
 
 
 
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print coverage of a DNA: " + outFormat)
+    : Application ("Print the coverage of a query DNA by subject DNAs: " + outFormat)
     {
       version = VERSION;
       string format (XSTR(FORMAT));
       replaceStr (format, " >>", "");
       addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid, sseqid");
+      addFlag ("best", "Print only the best coverage by subjects DNAs");
     //addFlag ("plasmid", "Report plasmid name");
     }
 
@@ -161,6 +195,7 @@ struct ThisApplication : Application
   void body () const final
   {
     const string inFName = getArg ("in");
+    const bool   best    = getFlag ("best");
   //const bool   plasmid = getFlag ("plasmid");
     
     
@@ -173,14 +208,15 @@ struct ThisApplication : Application
     {
       LineInput f (inFName);
       string qseqid, sseqid;
-      size_t length, nident, qstart, qend, qlen, sstart, send, slen;
       string stitle;
-      Vector<uint> chars;    
+      Vector<uint> qchars;    
+      Vector<uint> schars;    
       while (f. nextLine ())
         try
         {
           replace (f. line, ' ', '_');  // For stitle processing
           istringstream iss (f. line);
+          size_t length, nident, qstart, qend, qlen, sstart, send, slen;
           slen = 0;
           iss >> FORMAT;
           const size_t sstart_ = min (sstart, send);
@@ -220,6 +256,18 @@ struct ThisApplication : Application
           }
         #endif
           
+          if (! (         qseqid_prev == qseqid
+                 && subj. sseqid      == sseqid
+                )
+             )
+          {
+            addPrevSubject (subjects, subj, qchars, schars);
+            qchars. resize (qlen, 0);
+            qchars. setAll (0);
+            schars. resize (slen, 0);
+            schars. setAll (0);
+          }
+          
           if (qseqid_prev == qseqid)
           { 
             QC_ASSERT (qlen_prev == qlen); 
@@ -227,29 +275,22 @@ struct ThisApplication : Application
           else
           {
             if (! qseqid_prev. empty ())
-              processSubjects (qseqid_prev, qlen_prev, subjects);
+              processSubjects (qseqid_prev, qlen_prev, subjects, best);
             qseqid_prev = qseqid;
             qlen_prev = qlen;
-            chars. resize (qlen, 0);
           }
           
-          if (! (         qseqid_prev == qseqid
-                 && subj. sseqid      == sseqid
-                )
-             )
-          {
-            addSubject (subjects, subj, chars);
-            chars. setAll (0);
-          }
           FOR_START (size_t, i, qstart - 1, qend)  // 1-based
-            chars [i] ++;
+            qchars [i] ++;
+          FOR_START (size_t, i, sstart_ - 1, send_)  // 1-based
+            schars [i] ++;
             
           // Subject attributes
           subj. sseqid = move (sseqid);
           minimize (subj. qstart, qstart);
           maximize (subj. qend, qend);
-          minimize (subj. sstart, sstart);
-          maximize (subj. send, send);
+          minimize (subj. sstart, sstart_);
+          maximize (subj. send, send_);
           subj. slen = slen;
           subj. length += length;
           subj. nident += nident;
@@ -260,9 +301,9 @@ struct ThisApplication : Application
         {
           throw runtime_error (string (e. what ()) + "\nat line " + to_string (f. lineNum));
         }
-      addSubject (subjects, subj, chars);
+      addPrevSubject (subjects, subj, qchars, schars);
       if (! qseqid_prev. empty ())
-        processSubjects (qseqid_prev, qlen_prev, subjects);
+        processSubjects (qseqid_prev, qlen_prev, subjects, best);
     }
   }
 };
