@@ -211,9 +211,12 @@ Line format: <unit> <raw_max>");
           const Real weight = scale. getWeight (dissim);
           ASSERT (dissim >= 0.0);
           ASSERT (weight >= 0.0);
-          dissim_weighted_sum += weight * dissim;
-          weight_sum          += weight;
-          n++;
+          if (weight)
+          {
+            dissim_weighted_sum += weight * dissim;
+            weight_sum          += weight;
+            n++;
+          }
           if (verbose ())
           {
             cout << endl;
@@ -248,8 +251,7 @@ Line format: <unit> <raw_max>");
         PRINT (weight_sum);
       }
 
-      cout << '\t' << dissim_weighted_sum / weight_sum
-           << endl;
+      cout << '\t' << dissim_weighted_sum / weight_sum << endl;
     }
 	}
 };
