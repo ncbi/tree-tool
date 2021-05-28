@@ -29,7 +29,10 @@ POWER=${10}
 LOG=${11}
 
 
-CDS_SYMBET=1
+#set -x
+
+
+CDS_SYMBET=1  # d_CDS and d_SYMBET are used
 DISSIM_SCALE_LINES=`cat $DISSIM_SCALE | grep -v '^ *$' | wc -l`
 case $DISSIM_SCALE_LINES in
   2)
@@ -134,6 +137,7 @@ cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
 echo "$TMP.combo ..."
 if [ $CDS_SYMBET == 1 ]; then
   # Slowest dissimilarity
+  # $4 is small => $5 is "nan"
   awk '! (($3 == "nan" || $3 > '$CDS_RAW_MAX') && ($5 == "nan" || $5 < '$UNIV_RAW_CENTER'))' $TMP.req-dissim-univ | sed 's/$/\tnan/1' > $TMP.req-dissim-symbet_0
   awk    '($3 == "nan" || $3 > '$CDS_RAW_MAX') && ($5 == "nan" || $5 < '$UNIV_RAW_CENTER')'  $TMP.req-dissim-univ > $TMP.req-dissim-univ_1
   cut -f 1,2 $TMP.req-dissim-univ_1 > $TMP.req-symbet_1
