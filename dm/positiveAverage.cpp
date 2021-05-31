@@ -1,4 +1,4 @@
-// calibrateDissims.cpp  // --> dm/positiveAverage.cpp ??
+// positiveAverage.cpp
 
 /*===========================================================================
 *
