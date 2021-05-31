@@ -1,15 +1,16 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 7 ]; then
-  echo "Output: hmm-univ.stat, positiveAverage.out"
-  echo "#1: input .dm-file without '.dm' created from prot_collection2dissim_separate.sh"
+if [ $# -ne 8 ]; then
+  echo "Output: hmm-univ.stat, positiveAverage.out, data.dm, tree"
+  echo "#1: input .dm-file without '.dm' created by univ_separate.sh"
   echo "#2: delete hybrids (0/1)"
   echo "#3: dissimilarity power (> 0)"
   echo "#4: outlierSEs"
-  echo "#5: dissim_coeff: >0 <=> variance linExp"
-  echo "#6: variance power (NAN <=> variance = linExp)"
-  echo "#7: phen/ (large storage)"
+  echo "#5: dissim_coeff: >=0 (>0 <=> variance = linExp)"
+  echo "#6: variance_power (NAN <=> variance = linExp)"
+  echo "#7: phen/"
+  echo "#8: phen/ is large (0/1)"
   exit 1
 fi
 INPUT=$1
@@ -19,10 +20,7 @@ OUTLIER_SES=$4
 DISSIM_COEFF=$5
 VAR_POWER=$6
 PHEN=$7
-
-
-echo "power = $DISSIM_POWER"
-echo "outlier_SEs = $OUTLIER_SES"
+LARGE=$8
 
 
 TMP=`mktemp`
@@ -30,17 +28,12 @@ echo $TMP
 
 
 section "Estimating hmm-univ.stat"
-$THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -ignoreZero  -output_dissim $TMP.pairs > positiveAverage.out
+$THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -ignoreZero  -iter_max 30  -output_dissim $TMP.pairs > positiveAverage.out
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
-$THIS/../dm/pairs2dm $TMP.pairs 1 cons 6  -distance > $TMP.dm
-#cp $TMP.dm data.dm 
+$THIS/../dm/pairs2dm $TMP.pairs 1 cons 6  -distance > data.dm
 
 
-HYBRID=""
-if [ $DELETE_HYBRIDS -eq 1 ]; then
-  HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
-fi
-
+section "Building tree"
 VARIANCE="linExp"
 DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
 if [ $DISSIM_COEFF == 0 ]; then
@@ -48,11 +41,20 @@ if [ $DISSIM_COEFF == 0 ]; then
   DISSIM_COEFF_OPTION=""
 fi
 
-section "Building tree"
-$THIS/makeDistTree  -threads 5  -data $TMP  -dissim_attr cons  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  -subgraph_iter_max 10  $HYBRID  -noqual  -output_feature_tree $TMP.feature_tree  
+HYBRID=""
+if [ $DELETE_HYBRIDS -eq 1 ]; then
+  HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
+fi
+
+$THIS/makeDistTree  -threads 5  -data data  -dissim_attr "cons"  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  -subgraph_iter_max 10  $HYBRID  -noqual  -output_tree tree  -output_feature_tree $TMP.feature_tree  
+
 
 section "Evaluating tree"
-$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  -large  -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual
+LARGE_PAR=""
+if [ $LARGE == 1 ]; then
+  LARGE_PAR="-large"
+fi
+$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -qual $TMP.qual
 
 
 rm $TMP*  
