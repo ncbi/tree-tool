@@ -58,6 +58,18 @@ namespace Align_sp
 namespace 
 {
 
+string peptide2stnd (const Peptide &pep)
+{
+  string s (pep. seq);
+  replace (s, 'J', 'X');
+  replace (s, 'U', 'X');
+  replace (s, 'O', 'X');
+  ASSERT (s. size () == pep. seq. size ());
+  return s;
+}
+
+
+
 int pep2selfScore (const SNCBIFullScoreMatrix &mat,
 	                 const Peptide &pep,
 	                 size_t start,
@@ -66,14 +78,16 @@ int pep2selfScore (const SNCBIFullScoreMatrix &mat,
   ASSERT (start <= stop);
   ASSERT (stop <= pep. seq. size ());
   
+  const string seq (peptide2stnd (pep));
+  
 	int score = 0;
 	FOR_START (size_t, i, start, stop)
 	{
-	  const char c = pep. seq [i];
+	  const char c = seq [i];
 	  if (c == '-')
 	    continue;
-	  if (pep. isAmbiguous (c))
-	    continue;
+	//if (pep. isAmbiguous (c))
+	  //continue;
 		const int num = (int) c;
 	  score += mat. s [num] [num];
 	}
@@ -174,7 +188,10 @@ Align::Align (const Peptide &pep1,
 	NCBISM_Unpack (blosum62 ? & SNCBIPackedScoreMatrix NCBISM_Blosum62 : & SNCBIPackedScoreMatrix NCBISM_Pam30, & mat);
 #endif
 
-	CNWAligner al (pep1. seq, pep2. seq, blosum62 ? & NCBISM_Blosum62 : & NCBISM_Pam30);
+	CNWAligner al ( peptide2stnd (pep1)
+	              , peptide2stnd (pep2)
+	              , blosum62 ? & NCBISM_Blosum62 : & NCBISM_Pam30
+	              );
   al. SetWg (gap_open);
   al. SetWs (gap_extent);
 	al. SetEndSpaceFree (semiglobal, semiglobal, semiglobal, semiglobal);
