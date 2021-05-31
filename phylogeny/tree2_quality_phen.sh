@@ -75,9 +75,11 @@ if [ $LARGE == 1 ]; then
 fi
 
 echo ""
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
+  # -prefer_gain  
 echo ""
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -prefer_gain  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
+  # -prefer_gain  
 
 cat $TMP.qual1 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual1_
 cat $TMP.qual2 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual2_

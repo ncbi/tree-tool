@@ -1,6 +1,8 @@
-#define VERSION "1.9.2"
+#define VERSION "1.9.3"
 
 
+// 1.9.3  05/30/2021  align.cpp: ambiguous aa J,U,O are replaced by X, selfScore is using X
+//                    -prefer_gain is removed
 // 1.9.2  05/18/2021  optimizeReinsert() invokes optimizeLargeSubgraphs(&changes)
 // 1.9.1  05/15/2021  inc/threads
 //                    distTree_inc_new.sh -reinsert does not process inc/new/

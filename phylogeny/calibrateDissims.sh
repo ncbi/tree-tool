@@ -31,7 +31,8 @@ LARGE_PAR=""
 if [ $LARGE -eq 1 ]; then
   LARGE_PAR="-large"
 fi
-$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual
+$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -qual $TMP.qual
+  # -prefer_gain  
 
 
 rm $TMP*  

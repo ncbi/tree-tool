@@ -24,8 +24,9 @@ LARGE_PAR=""
 if [ $LARGE == 1 ]; then
   LARGE_PAR="-large"
 fi
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -prefer_gain  -save_mem \
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR    -save_mem \
   -qual qual  -gain_nodes gain_nodes  -disagreement_nodes disagreement_nodes
+  # -prefer_gain
   
 cut -f 1 disagreement_nodes | sort | uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
 set +o errexit

@@ -40,7 +40,8 @@ FIND_ROOT_PARAM=""
 if [ $FIND_ROOT == 1 ]; then
   FIND_ROOT_PARAM="-output_core $TMP.core  -save_mem"
 fi
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -prefer_gain  -nominal_singleton_is_optional  $FIND_ROOT_PARAM  -qual $TMP.qual
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  $FIND_ROOT_PARAM  -qual $TMP.qual
+  # -prefer_gain  
 
 if [ "$QUAL" ]; then
   cp $TMP.qual $QUAL
