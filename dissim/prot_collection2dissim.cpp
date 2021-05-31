@@ -102,7 +102,7 @@ struct ThisApplication : Application
   	  // Output
   	  addPositional("out", "Output list of dissimilarities for each identifier in <prot_list> if -separate, or one dissimilarity otherwise");  
   	  addFlag ("separate", "Print scores for each target protein separately");
-  	  addKey ("power", "Raise raw dissimilarity to this power", "1");
+  	  addKey ("power", "Raise raw (not averaged) dissimilarity to this power", "1");
     }
 
 
