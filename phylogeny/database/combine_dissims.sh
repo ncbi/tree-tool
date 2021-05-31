@@ -12,7 +12,7 @@ if [ $# -ne 11 ]; then
   echo " #7: dissim_scale file with dissimilarity thresholds: {CDS PRT symbet univ} | {PRT univ}"
   echo " #8: hmm-univ.stat"
   echo " #9: 1 - BLOSUM62, 0 - PAM30"
-  echo "#10: power for universal proteins dissimilarity"
+  echo "#10: power of universal proteins dissimilarity before averaging"
   echo "#11: log file (delete on success)"
   exit 1
 fi
