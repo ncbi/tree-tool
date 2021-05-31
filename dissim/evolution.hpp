@@ -63,7 +63,7 @@ inline Real intersection2dissim (Real size1,
                                  Prob sizes_ratio_min,
                                  bool ave_arithP)
   { return maps2dissim (size1, size2, intersection, intersection, intersection_min, sizes_ratio_min, ave_arithP); }
-    // Symmetric
+  // Symmetric
 
 
 
