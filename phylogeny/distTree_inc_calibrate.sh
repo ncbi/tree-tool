@@ -28,7 +28,8 @@ if [ -e $INC/large ]; then
   LARGE="-large"
 fi
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $INC/phen  $LARGE \
-  -prefer_gain  -nominal_singleton_is_optional  -qual $TMP.qual   -output_core $TMP.core  -save_mem
+  -nominal_singleton_is_optional  -qual $TMP.qual   -output_core $TMP.core  -save_mem
+  # -prefer_gain
 
 
 rm $TMP*  
