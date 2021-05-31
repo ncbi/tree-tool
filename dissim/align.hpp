@@ -94,7 +94,7 @@ struct Align : Root
 	       bool semiglobal_arg,
 	       size_t match_len_min,
 	       bool blosum62);
-	  // Input: blsum62: false <=> PAM30
+	  // Input: blosum62: false <=> PAM30
 	Align (const Dna &dna1,
 	       const Dna &dna2,
 	       bool semiglobal_arg,
