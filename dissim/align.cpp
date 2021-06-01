@@ -81,17 +81,22 @@ int pep2selfScore (const SNCBIFullScoreMatrix &mat,
   const string seq (peptide2stnd (pep));
   
 	int score = 0;
+#ifndef NDEBUG
+	bool ambig = false;
+#endif
 	FOR_START (size_t, i, start, stop)
 	{
 	  const char c = seq [i];
 	  if (c == '-')
 	    continue;
-	//if (pep. isAmbiguous (c))
-	  //continue;
+  #ifndef NDEBUG
+	  if (pep. isAmbiguous (c))
+	    ambig = true;
+	#endif
 		const int num = (int) c;
 	  score += mat. s [num] [num];
 	}
-	ASSERT (score >= 0);	
+	IMPLY (! ambig, score >= 0);	
 
 	return score;
 }
@@ -335,13 +340,16 @@ void Align::finish (const Seq &seq1,
 
 Real Align::getDissim () const
 {	
-  ASSERT (self_score1 >= 0);
-  ASSERT (self_score2 >= 0);
+  if (self_score1 <= 0)
+    return NaN;
+  if (self_score2 <= 0)
+    return NaN;
   
   if (badMatch)
   	return NaN;
 	if (score <= 0)
 		return inf;
+		
   // Heuristic
 #if 1
 	return intersection2dissim (self_score1, self_score2, score, 0, 0.5, true);  // PAR
