@@ -1,19 +1,21 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
-if [ $# -ne 11 ]; then
+if [ $# -ne 13 ]; then
   echo "Compute dissimilarities"
   echo " #1: file with pairs <object1> <object2>"
   echo " #2: directory with: <object hash>/<object>/<object>.hash-{CDS|PRT}"
   echo " #3: directory with a new object data or ''"
-  echo " #4: Output file: <object1> <object2> <dissimilarity>"
+  echo " #4: output file: <object1> <object2> <dissimilarity>"
   echo " #5: hashes intersection_min"
   echo " #6: hashes ratio_min"
   echo " #7: dissim_scale file with dissimilarity thresholds: {CDS PRT symbet univ} | {PRT univ}"
   echo " #8: hmm-univ.stat"
   echo " #9: 1 - BLOSUM62, 0 - PAM30"
-  echo "#10: power of universal proteins dissimilarity before averaging"
-  echo "#11: log file (delete on success)"
+  echo "#10: raw power of universal proteins dissimilarity (before averaging)"
+  echo "#11: coefficient to multiply the combined dissimilarity by"
+  echo "#12: power to raise the combined dissimilarity in"
+  echo "#13: log file (delete on success)"
   exit 1
 fi
 REQ=$1
@@ -25,8 +27,10 @@ HASH_RATIO_MIN=$6
 DISSIM_SCALE=$7
 AVERAGE_MODEL=$8
 BLOSUM62_ARG=$9
-POWER=${10}
-LOG=${11}
+UNIV_POWER=${10}
+COEFF=${11}
+POWER=${21}
+LOG=${13}
 
 
 #set -x
@@ -128,7 +132,7 @@ awk    '$4 == "nan" || $4 > '$PRT_RAW_MAX    $TMP.req-dissim-PRT > $TMP.req-diss
 req2file $TMP.req-dissim-PRT_1 1 "prot-univ" > $TMP.f1
 req2file $TMP.req-dissim-PRT_1 2 "prot-univ" > $TMP.f2
 paste $TMP.f1 $TMP.f2 > $TMP.req-univ
-$THIS/../../dissim/prot_collection2dissim  -log $LOG  -power $POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
+$THIS/../../dissim/prot_collection2dissim  -log $LOG  -raw_power $UNIV_POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
 cut -f 3 $TMP.univ > $TMP.dissim-univ_1
 paste $TMP.req-dissim-PRT_1 $TMP.dissim-univ_1 > $TMP.req-dissim-univ_1
 cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
@@ -149,7 +153,7 @@ else
   cut -f 3  --complement $TMP.req-dissim-univ > $TMP.combo
 fi
 
-$THIS/../../dissim/combine_dissims $TMP.combo $DISSIM_SCALE  -log $LOG  > $OUT
+$THIS/../../dissim/combine_dissims $TMP.combo $DISSIM_SCALE  -coeff $COEFF  -power $POWER  -log $LOG  > $OUT
   # -print_raw 
 
 

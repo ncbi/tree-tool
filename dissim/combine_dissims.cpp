@@ -126,6 +126,8 @@ struct ThisApplication : Application
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity 1> <dissimilarity 2> ...");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by <unit> * <raw_max>.\n\
 Line format: <unit> <raw_max>");
+  	  addKey ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");
+  	  addKey ("power", "Power to raise the dissimilarity in",  "1.0");
       addFlag ("print_raw", "Print raw dissimilarities");
   	}
 
@@ -135,8 +137,12 @@ Line format: <unit> <raw_max>");
 	{
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
-		const bool   print_raw   = getFlag ("print_raw");
-		
+	  const Real   coeff       = str2real (getArg ("coeff"));
+	  const Real   power       = str2real (getArg ("power"));
+		const bool   print_raw   = getFlag ("print_raw");		
+	  QC_ASSERT (coeff > 0.0);
+	  QC_ASSERT (power > 0.0);
+
 		
 		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
@@ -251,7 +257,9 @@ Line format: <unit> <raw_max>");
         PRINT (weight_sum);
       }
 
-      cout << '\t' << dissim_weighted_sum / weight_sum << endl;
+
+      const Real d = dissim_weighted_sum / weight_sum;
+      cout << '\t' << coeff * pow (d, power) << endl;
     }
 	}
 };
