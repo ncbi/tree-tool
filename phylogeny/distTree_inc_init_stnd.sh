@@ -12,7 +12,7 @@ if [ $# -ne 6 ]; then
   exit 1
 fi
 INC=$1
-FROM=$2
+FROM=$THIS/inc/$2
 SERVER="$3"
 DATABASE="$4"
 BULK_LOCAL="$5"
