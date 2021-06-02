@@ -15,8 +15,9 @@ DIR="$2"
 
 INC=`dirname $0`
 
-if [ $DIR ]; then
-  error "Novel object is not implemented"
+if [ -z $DIR ]; then
+  H=`CPP_DIR/file2hash $NEW_OBJ`
+  DIR=$INC/../mut.dna/$H
 fi
 
 
@@ -24,8 +25,7 @@ TMP=`mktemp`
 
 
 SIZE=20000  # = ln(tree size)  * 1000
-H=`CPP_DIR/file2hash $NEW_OBJ`
-CPP_DIR/index_find $INC/../mut.dna $INC/../mut.index $SIZE $INC/../mut.dna/$H/$NEW_OBJ -large > $TMP
+CPP_DIR/index_find $INC/../mut.dna $INC/../mut.index $SIZE $DIR/$NEW_OBJ -large > $TMP
 if [ -s $TMP ]; then
   grep -f $INC/../deleted.all -vx $TMP > $TMP.out
   head -100 $TMP.out
