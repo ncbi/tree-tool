@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Find closest objects"
   echo "#1: object"

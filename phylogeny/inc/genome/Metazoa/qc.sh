@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality check"
   echo "#1: verbose (0/1)"
@@ -12,7 +12,7 @@ VERB=$1
 INC=`dirname $0`
 
 
-distTree_inc_indiscern_qc.sh $INC
+CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
 
 if [ -e $INC/good ]; then
   sort -cu $INC/good
@@ -26,9 +26,9 @@ if [ $VERB == 1 ]; then
 fi
 
 
-tree2obj.sh $INC/tree > $TMP.tree
-distTree_inc_new_list.sh $INC > $TMP.new
-setIntersect.sh $TMP.tree $TMP.new > $TMP.tree-new
+CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
+CPP_DIR/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
+CPP_DIR/setIntersect.sh $TMP.tree $TMP.new > $TMP.tree-new
 if [ -s $TMP.tree-new ]; then
   wc -l $TMP.tree-new
   exit 1
