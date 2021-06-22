@@ -52,7 +52,7 @@ echo "Verbose ..."
 $THIS/makeDistTree -qc  -data $DATA/tree4  -variance linExp  -optimize  -verbose 2 &> $TMP.out
 
 section "Random tree"
-$THIS/makeDistTree  -qc   -data $DATA/randomTree  -variance lin  -output_tree random-output.tree > $TMP.out
+$THIS/makeDistTree  -qc  -data $DATA/randomTree  -variance lin  -output_tree random-output.tree > $TMP.out
 $THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $DATA/randomTree  -variance lin  -optimize | grep -v '^CHRON: ' > randomTree.makeDistTree
 $THIS/distTree_compare_criteria.sh randomTree.makeDistTree $DATA/randomTree.makeDistTree
 echo "Verbose ..."
