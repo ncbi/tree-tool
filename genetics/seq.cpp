@@ -2010,13 +2010,21 @@ Peptide Dna::cds2prot (Gencode gencode,
     throw runtime_error (FUNC "no start codon");
     
   const size_t starPos = pep. seq. find ("*");
-  if (! trunc3 && hasStopCodon)
+  if (hasStopCodon)
   {
-  	if (starPos != pep. seq. size () - 1)
-      throw runtime_error (FUNC "no stop codon at the end");
-	  trimSuffix (pep. seq, "*");
+  	if (starPos == string::npos)
+  	{
+  	  if (! trunc3)
+        throw runtime_error (FUNC "no stop codon");
+    }
+    else
+    {
+    	if (starPos != pep. seq. size () - 1)
+        throw runtime_error (FUNC "stop codon at peptide position " + to_string (starPos + 1));
+  	  EXEC_ASSERT (trimSuffix (pep. seq, "*"));
+  	}
   }
-  if (! hasStopCodon)
+  else
 	  if (starPos != string::npos)
 	    throw runtime_error (FUNC "has a stop codon");
   
