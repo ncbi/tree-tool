@@ -64,6 +64,7 @@ struct ThisApplication : Application
 		const bool comments  = getFlag ("comments");
 
 
+    Progress::disable ();
     const Dataset ds (inFName);
     
     for (const Obj* obj : ds. objs)
