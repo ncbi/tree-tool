@@ -430,6 +430,7 @@ size_t powInt (size_t a,
 
 
 constexpr size_t no_index = numeric_limits<size_t>::max ();
+static_assert ((size_t) 0 - 1 == no_index, "0 - 1 != no_index");
 
 
 
@@ -2703,7 +2704,7 @@ public:
 
 	const size_t n_max;
 	  // 0 <=> unknown
-	bool active {false};
+	const bool active;
 	const size_t displayPeriod;
 	size_t n {0};
 	string step;
@@ -2721,11 +2722,8 @@ public:
 	  }
  ~Progress () 
     { if (active)
-    	{ if (! uncaught_exception ())
-    	  { // step. clear ();
-    	    report ();
-    	    cerr << endl;
-    	  }
+    	{ report ();
+    	  cerr << endl;
     	  beingUsed--;
     	}
     }
