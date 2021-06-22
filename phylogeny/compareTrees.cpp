@@ -221,7 +221,7 @@ Signature leaves2signature (const Leaves &leaves)
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Remove " + toString (DistTree_sp::rareProb * 100.0) + "%-infrequent leaves from tree 1, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1.\n\
+	: Application ("Remove " + toString (DistTree_sp::rareProb * 100.0) + "%-infrequent leaves from Tree 1, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1.\n\
 A node with an empty set of leaves matches.")
 	{
 	  version = VERSION;
@@ -229,7 +229,7 @@ A node with an empty set of leaves matches.")
 	  addPositional ("input_tree1", "Tree 1");
 	  addPositional ("input_tree2", "Tree 2");
 	  addKey ("type", "Tree type: dist|feature", "dist");
-	  addKey ("frequency", "Node frequency is computed for directed|undirected tree; 'none' - not used", "none");
+	  addKey ("frequency", "Node frequency to infrequent leaves from Tree 1 is computed for directed|undirected tree; 'none' - not used", "none");
 	    // "local"|"global" ??
 	//addFlag ("skip_empty", "Skip arcs with empty sets of leaves");
 	  addFlag ("arc_info", "Print arc information: length, depth, # leaves");
