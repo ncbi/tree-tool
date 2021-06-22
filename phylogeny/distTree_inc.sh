@@ -87,7 +87,7 @@ THREADS="-threads $N"
 # Time: O(n log^4(n))
 # PAR
 $THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  $DELETE \
-  -optimize  -skip_len  -subgraph_iter_max 5 \
+  -optimize  -skip_len  -subgraph_iter_max 2 \
   -output_tree $INC/tree.new  -leaf_errors leaf_errors  > $INC/hist/makeDistTree-final.$VER
 mv $INC/tree.new $INC/tree
 # -reinsert  
