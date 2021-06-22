@@ -46,13 +46,6 @@ using namespace Seq_sp;
 #include "../version.inc"
 
 
-#undef HMM  // ??
-
-#ifdef HMM
-  #include "hmm.hpp"
-  using namespace Hmm_sp;
-#endif
-
 
 
 namespace 
@@ -61,7 +54,7 @@ namespace
 	
 struct Fasta
 {
-  typedef  unordered_map<string/*Peptede::getid()*/,Peptide>  Peptides; 
+  typedef  unordered_map<string/*Peptede::getId()*/,Peptide>  Peptides; 
   Peptides peptides;
   
 
@@ -70,7 +63,9 @@ struct Fasta
 
   void readPeptides (const string &fName,
                      bool sparse,
-                     size_t num)
+                     size_t num
+                  //,const StringVector& pamNames
+                    )
     {
       peptides. rehash (num);
       Unverbose unv;
@@ -81,7 +76,12 @@ struct Fasta
       //pep. ambig2X ();
         pep. pseudo = true;
         pep. qc ();
-        peptides [pep. getId ()] = move (pep);
+        const string id (pep. getId ());
+      #if 0  // Some HMMs may be discarded by positiveAverage: fix positiveAverage.cpp to keep them!
+        if (! pamNames. contains (id))
+          throw runtime_error ("Unknown component name: " + strQuote (id));
+      #endif
+        peptides [id] = move (pep);
       }
     }
 };
@@ -98,7 +98,6 @@ struct ThisApplication : Application
   	  addPositional ("prot_info", "Collection of target protein identifiers in <FASTA1> and <FASTA2> with optional means and variances of logarithmized alignment scores");
   	  addPositional ("in", "File with pairs of protein FASTA file names. Protein sequences may contain stop codons");
   	  addFlag ("blosum62", "Use BLOSUM62, otherwise PAM30");
-  	  addFlag ("aligned", "Sequences are already aligned");
   	  // Output
   	  addPositional("out", "Output list of dissimilarities for each identifier in <prot_list> if -separate, or one dissimilarity otherwise");  
   	  addFlag ("separate", "Print scores for each target protein separately");
@@ -113,7 +112,6 @@ struct ThisApplication : Application
 	  const string prot_infoFName = getArg ("prot_info");
 	  const string inFName        = getArg ("in");
 	  const bool blosum62         = getFlag ("blosum62");
-	  const bool aligned          = getFlag ("aligned");
 
 	  const string outFName       = getArg ("out");
 	  const bool separate         = getFlag ("separate");
@@ -133,6 +131,12 @@ struct ThisApplication : Application
     PositiveAverageModel pam (prot_infoFName, ! separate);  
     cout << "# Targets: " << pam. components. size () << endl;
     pam. qc ();
+    
+    StringVector pamNames;
+    for (PositiveAverageModel::Component& comp : pam. components)
+    	pamNames << comp. name;
+    pamNames. sort ();
+    QC_ASSERT (pamNames. isUniq ());    
 
 
     Vector<Pair<string>> pairs;  pairs. reserve (10000);  // PAR
@@ -150,25 +154,9 @@ struct ThisApplication : Application
     }
 
     for (auto& it : file2fasta)
-      it. second. readPeptides (it. first, aligned, pam. components. size ());
+      it. second. readPeptides (it. first, false, pam. components. size () /*, pamNames*/);
 
-    
-  #ifdef HMM
-    HmmLib hmmLib;
-    if (aligned)
-      hmmLib = loadHmmLib ("/home/brovervv/panfs/GenBank/bacteria/hmm-univ.LIB");  // PAR ??
-  #else
-    SubstMat* mat = nullptr;
-    if (aligned)
-    {
-      mat = new SubstMat (blosum62 ? "/am/ftp-blast/matrices/BLOSUM62" : "/am/ftp-blast/matrices/PAM30");  // PAR
-         // WAG matrix: https://www.ebi.ac.uk/goldman-srv/WAG/wagstar.dat ??
-      mat->qc ();
-    }
-  #endif
-    
-    
-    
+        
     Progress prog (pairs. size ());
     OFStream out (outFName);
     const ONumber on (out, 6, true);  // PAR
@@ -197,28 +185,6 @@ struct ThisApplication : Application
       		ASSERT (pep2);
       		
       		Real dissim = NaN;
-      		if (aligned)
-      		{
-      		  if (pep1->seq. size () != pep2->seq. size ())
-      		    throw runtime_error ("Aligned sequences must have the same length: " + pep1->name + " and " + pep2->name);
-      		#ifdef HMM
-      		  const Hmm* hmm = findPtr (hmmLib, comp. name);
-      		  ASSERT (hmm);
-      		  dissim = hmm->getDist2 (*pep1, *pep2);
-      		#else    		
-      		  const double self_score1 = pep1->getSelfSimilarity (*mat);
-      		  const double self_score2 = pep2->getSelfSimilarity (*mat);
-      		  const double score = pep1->getSimilarity (*pep2, *mat, blosum62 ? 11.0 : 8.0, 2.0);  // PAR
-      		  if (verbose ())
-      		    cout << comp. name << ": " << self_score1 << ' ' << self_score2 << ' ' << score << endl;
-      		  if (   self_score1 >  0 
-      		      && self_score2 >  0 
-      		      && score       >= 0
-      		     )
-      		    dissim = intersection2dissim (self_score1, self_score2, score, 0, 0.5, true);  // PAR
-      		#endif
-      		}
-      		else
       		try
       		{
     				Align_sp::Align al (*pep1, *pep2, false, 0, blosum62);  // PAR
