@@ -6,8 +6,7 @@ if [ $# -ne 4 ]; then
   echo "Output: #1.{univ,prot-univ}"
   echo "#1: assembly file prefix"
   echo "#2: HMM library"
- #echo "#3: HMM directory with .HMM-files (should match #2)"
-  echo "#3: Use HMM cutoffs (0/1)"
+  echo "#3: use cut_ga (0/1)"
   echo "#4: log file"
   exit 1
 fi
