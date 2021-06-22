@@ -16,6 +16,7 @@ all:	\
 	blastp_merge \
 	dna2orfs \
 	dna2stat \
+	dna_complexity \
 	dna_coverage \
 	dna_cut \
 	dna_rev \
@@ -32,8 +33,10 @@ all:	\
 	hmm2prot \
 	hmm_tc1 \
 	hmmAddCutoff \
+	hmmExtract \
 	hmmNAME2ACC \
 	hmmsearch2besthits \
+	hmmSplit \
 	interSeq \
 	kmerIndex_add \
 	kmerIndex_find \
@@ -53,7 +56,6 @@ all:	\
 	replaceFastaHeader \
 	replaceFastaNames \
 	splitFasta \
-	splitHmmLib \
 	tblastn2orfs \
 	uniqSeq \
 	uniqProtRef
@@ -87,6 +89,12 @@ dna2stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 dna2statOBJS=dna2stat.o $(SEQ_OBJ)
 dna2stat:	$(dna2statOBJS)
 	$(CXX) -o $@ $(dna2statOBJS) $(LIBS) 
+	$(ECHO)
+
+dna_complexity.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_complexityOBJS=dna_complexity.o $(SEQ_OBJ)
+dna_complexity:	$(dna_complexityOBJS)
+	$(CXX) -o $@ $(dna_complexityOBJS) $(LIBS) 
 	$(ECHO)
 
 dna_coverage.o:  $(COMMON_HPP) 
@@ -185,6 +193,12 @@ hmmAddCutoff:	$(hmmAddCutoffOBJS)
 	$(CXX) -o $@ $(hmmAddCutoffOBJS) $(LIBS) 
 	$(ECHO)
 
+hmmExtract.o:	$(COMMON_HPP) 
+hmmExtractOBJS=hmmExtract.o $(CPP_DIR)/common.o
+hmmExtract:	$(hmmExtractOBJS)
+	$(CXX) -o $@ $(hmmExtractOBJS) $(LIBS) 
+	$(ECHO)
+
 hmmNAME2ACC.o:  $(COMMON_HPP) 
 hmmNAME2ACCOBJS=hmmNAME2ACC.o $(CPP_DIR)/common.o
 hmmNAME2ACC:	$(hmmNAME2ACCOBJS)
@@ -195,6 +209,12 @@ hmmsearch2besthits.o:  $(COMMON_HPP) $(GEN_DIR)/hmm.hpp
 hmmsearch2besthitsOBJS=hmmsearch2besthits.o $(HMM_OBJ) 
 hmmsearch2besthits:	$(hmmsearch2besthitsOBJS)
 	$(CXX) -o $@ $(hmmsearch2besthitsOBJS) $(LIBS) 
+	$(ECHO)
+
+hmmSplit.o:	$(COMMON_HPP) 
+hmmSplitOBJS=hmmSplit.o $(CPP_DIR)/common.o
+hmmSplit:	$(hmmSplitOBJS)
+	$(CXX) -o $@ $(hmmSplitOBJS) $(LIBS) 
 	$(ECHO)
 
 interSeq.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
@@ -309,12 +329,6 @@ splitFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 splitFastaOBJS=splitFasta.o $(SEQ_OBJ)
 splitFasta:	$(splitFastaOBJS)
 	$(CXX) -o $@ $(splitFastaOBJS) $(LIBS) 
-	$(ECHO)
-
-splitHmmLib.o:	$(COMMON_HPP) 
-splitHmmLibOBJS=splitHmmLib.o $(CPP_DIR)/common.o
-splitHmmLib:	$(splitHmmLibOBJS)
-	$(CXX) -o $@ $(splitHmmLibOBJS) $(LIBS) 
 	$(ECHO)
 
 tblastn2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
