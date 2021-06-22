@@ -127,7 +127,7 @@ struct ThisApplication : Application
       addFlag ("large", "Directory <items> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
-  	  addKey ("blank_lines", "# Blank lines to be printed on the screen after each command", "0");
+  	  addKey ("blank_lines", "# Blank lines to be printed to stderr after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
@@ -147,8 +147,15 @@ struct ThisApplication : Application
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool zero          = getFlag ("zero");
 		const bool printP        = getFlag ("print");
-    QC_ASSERT (! itemsName. empty ());
-    QC_ASSERT (! cmd_. empty ());
+
+    if (itemsName. empty ())
+      throw runtime_error ("Empty items list name");
+    if (cmd_. empty ())
+      throw runtime_error ("Empty command");    
+    if (! step)
+      throw runtime_error ("-step must be >= 1");
+    if (blank_lines && step > 1)
+      throw runtime_error ("-blank_lines requires -step to be > 1");
 
 
 	  Vector<Command> commands;  commands. reserve (100000);  // PAR
