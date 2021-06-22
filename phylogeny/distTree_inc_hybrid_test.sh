@@ -13,6 +13,7 @@ LINE=($2)
 
 TMP=`mktemp`
 #echo $TMP
+#set -x
 
 
 G1=${LINE[0]}
@@ -26,7 +27,7 @@ echo $G1 $G3 >> $TMP.req
 $INC/pairs2dissim.sh $TMP.req "" $TMP.out $TMP.log &> /dev/null
 
 L=(`cut -f 3 $TMP.out | sort -n -r | tr '\n' ' '`)
-R=`echo "${L[0]} / (${L[1]} + ${L[2]})" | bc -l`
+R=`echo "scale=2; ${L[0]} / (${L[1]} + ${L[2]})" | bc -l`
 echo $G1 $G2 $G3 ${L[0]} ${L[1]} ${L[2]} $R | tr ' ' '\t'
 
 
