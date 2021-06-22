@@ -137,14 +137,8 @@ struct ThisApplication : Application
       QC_ASSERT (! obj1. empty ());
       QC_ASSERT (! obj2. empty ());
       QC_ASSERT (rest. empty ());
-    #if 0
-      // ??
-      const ObjFeatureVector& vec1 = ObjFeatureVector::getCache (dir + "/" + obj1);
-      const ObjFeatureVector& vec2 = ObjFeatureVector::getCache (dir + "/" + obj2);
-    #else
       const ObjFeatureVector vec1 (dir + (large ? "/" + to_string (str2hash_class (obj1)) : "") + "/" + obj1);
       const ObjFeatureVector vec2 (dir + (large ? "/" + to_string (str2hash_class (obj2)) : "") + "/" + obj2);
-    #endif
       Real dissim = NaN;
       if (isNan (dnaWeight) && ! virus)
         dissim = features2dissim (vec1, vec2, optional_weight, *feature2rate);
