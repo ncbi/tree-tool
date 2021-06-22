@@ -6,7 +6,7 @@ if [ $# -ne 3 ]; then
   echo "Create #1-univ-separate.dm"
   echo "Input: #1.list, $GENOME/*/[*/]*.prot-univ, hmm-univ.list"
   echo "Temporary output: #1.pairs.dir/, #1.pairs.dir.log/, #1-univ/"
-  echo "#1: List of objects (file prefix)"
+  echo "#1: list of objects (file prefix)"
   echo "#2: 1 - BLOSUM62, 0 - PAM30"
   echo "#3: $GENOME/ is large (0/1)"
   exit 1
@@ -16,12 +16,18 @@ BLOSUM62=$2
 LARGE=$3
 
 
+LIST=$F.list
+if [ ! -e $LIST ]; then
+  error "File $LIST does not exist"
+fi
+
+
 TMP=`mktemp`
 echo $TMP
 
 
 # $F.pairs.dir
-$THIS/../../list2pairs $F.list > $TMP
+$THIS/../../list2pairs $LIST > $TMP
 mkdir $F.pairs.dir
 $THIS/../../splitList $TMP 500 $F.pairs.dir
   # PAR
