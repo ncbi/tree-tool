@@ -168,7 +168,6 @@ struct ThisApplication : Application
     unique_ptr<OFStream> protF (out_prot. empty () ? nullptr : new OFStream (out_prot));
     {
 		  Multifasta f (in, ! cds);
-		  f. prog. active = false;
 		  while (f. next ())
 		  {
 		    string s;
@@ -176,7 +175,7 @@ struct ThisApplication : Application
 		    if (cds)
 		    {
   		    const Dna dna (f, 10000, false);  // PAR
-  		    seqId = dna. getId ();;
+  		    seqId = dna. getId ();
 		    	dna. qc (); 
   		    if (gene_finder == "GeneMark" && ! contains (dna. name, " trunc5:0 trunc3:0"))  
   		      continue;
