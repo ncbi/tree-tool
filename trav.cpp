@@ -56,7 +56,8 @@ void executeCommand (const string &cmd,
   ASSERT (! cmd. empty ());
   ASSERT (! item. empty ());
   
-  const int exitStatus = system (("set -o pipefail && " + cmd). c_str ());
+  const int exitStatus = system (cmd. c_str ());
+    // "set -o pipefail && ..." does not work with dash
   if (exitStatus)
   {
     if (errors. get ())
