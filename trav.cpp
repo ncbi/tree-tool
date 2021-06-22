@@ -56,7 +56,7 @@ void executeCommand (const string &cmd,
   ASSERT (! cmd. empty ());
   ASSERT (! item. empty ());
   
-  const int exitStatus = system (cmd. c_str ());
+  const int exitStatus = system (("set -o pipefail && " + cmd). c_str ());
   if (exitStatus)
   {
     if (errors. get ())
