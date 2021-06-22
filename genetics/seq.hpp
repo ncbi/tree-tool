@@ -311,7 +311,7 @@ struct Multifasta : Root
 */
 {
   LineInput in;
-  bool aa {false};
+  const bool aa;
   Progress prog;
 
 	Multifasta (const string &fName,
