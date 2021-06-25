@@ -83,9 +83,11 @@ struct ThisApplication : Application
 		  Multifasta fa (inFName, false);
 		  while (fa. next ())
 		  {
-		    Dna dna (fa, 100000/*PAR*/, true);
+		    const Dna dna (fa, 100000/*PAR*/, true);
 		    ASSERT (! strBlank (dna. seq));		
-		    if ((! removeTarget) == names. contains (dna. getId ()))   
+		    string id (dna. getId ());
+		    const string id_ (findSplit (id, '|'));
+		    if ((! removeTarget) == names. contains (id_))   
 		      dna. saveText (cout);
 		  }
 		}
