@@ -17,7 +17,7 @@ ALL=	\
   xml_merge_schemas \
   xml_schema2ddl \
   xml_schema2flat
-  
+
 ifdef AT_NCBI
   all:  $(ALL) \
     xml_view
@@ -51,8 +51,8 @@ xml_schema2flat:	$(xml_schema2flatOBJS)
 	$(CXX) -o $@ $(xml_schema2flatOBJS) $(LIBS)
 	$(ECHO)
 
-xml_view.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
-xml_showOBJS=xml_view.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
-xml_view:	$(xml_showOBJS)
-	$(CXX) -o $@ $(xml_showOBJS) $(LIBS) -lncurses
+xml_view.o:  $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp $(XML_DIR)/xml.hpp
+xml_viewOBJS=xml_view.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o $(XML_DIR)/xml.o
+xml_view:	$(xml_viewOBJS)
+	$(CXX) -o $@ $(xml_viewOBJS) $(LIBS) -lncurses
 	$(ECHO)
