@@ -193,15 +193,34 @@ template <typename T> bool Singleton<T>::beingRun = false;
 
 struct COutErr : Singleton<COutErr>
 {
+  const bool both;
+  
+  COutErr ()
+    : both (
+           #ifdef _MSC_VER
+             true
+           #else
+             sameFiles (fileno (stdout), fileno (stderr))
+           #endif
+           )
+    {}
+#ifndef _MSC_VER
+private:
+  static bool sameFiles (int fd1, 
+                         int fd2);
+public:
+#endif
 template <class T>
   const COutErr& operator<< (const T &val) const
     { cout << val;
-      cerr << val;
+      if (! both)
+        cerr << val;
       return *this;
     }
   const COutErr& operator<< (ostream& (*pfun) (ostream&)) const
     { pfun (cout);
-      pfun (cerr);
+      if (! both)
+        pfun (cerr);
       return *this;
     }
 };
@@ -964,6 +983,10 @@ inline bool isLeftBlank (const string &s,
       i++;
     return i == spaces;
   }
+
+string pad (const string &s,
+            size_t size,
+            bool right);
 
 bool goodName (const string &name);
 
@@ -3239,7 +3262,7 @@ public:
 
 
 struct TextTable : Named
-// Tab-delimited table with a header
+// Tab-delimited (tsv) table with a header
 // name: file name
 {
   bool pound {false};
@@ -3258,7 +3281,7 @@ struct TextTable : Named
       {}
     void qc () const override;
     void saveText (ostream& os) const override
-      { os << name << ' ' << len_max << ' ' << (numeric ? ((scientific ? "float" : "int") + string ("(") + to_string (decimals) + ")") : "char"); }
+      { os << name << '\t' << len_max << '\t' << (numeric ? ((scientific ? "float" : "int") + string ("(") + to_string (decimals) + ")") : "char"); }
   };
   Vector<Header> header;
     // size() = number of columns
@@ -3278,6 +3301,11 @@ struct TextTable : Named
     
 
   explicit TextTable (const string &fName);
+  TextTable (bool pound_arg,
+             const Vector<Header> &header_arg)
+    : pound (pound_arg)
+    , header (header_arg)
+    {}
 private:
   void setHeader ();
 public:
