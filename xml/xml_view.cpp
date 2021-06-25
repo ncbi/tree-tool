@@ -38,15 +38,9 @@
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
+#include "../ncurses.hpp"
 #include "../version.inc"
 
-
-// ftp://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
-// Old: ftp://ftp.gnu.org/pub/gnu/ncurses/ncurses.tar.gz
-extern "C"
-{
-  #include <ncurses.h>
-}
 
 
 
@@ -54,98 +48,6 @@ namespace
 {
   
   
-
-struct NCurses : Singleton<NCurses>
-{
-  bool hasColors {false};
-  enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan};
-  chtype background {0};
-  // Change after screen resizing
-  int row_max {0};
-  int col_max {0};
-  
-  explicit NCurses (bool hideCursor)
-    { initscr (); 
-      cbreak ();
-      noecho ();
-      keypad (stdscr, TRUE);
-      if (hideCursor)
-        curs_set (0);  
-      hasColors = has_colors ();
-      if (hasColors)
-        { EXEC_ASSERT (start_color () == OK); }
-      resize ();
-      constexpr short bkgdColor = COLOR_BLACK;
-      init_pair (1, COLOR_WHITE,   bkgdColor);  // colorNone
-      init_pair (2, COLOR_RED,     bkgdColor);
-      init_pair (3, COLOR_GREEN,   bkgdColor);
-      init_pair (4, COLOR_YELLOW,  bkgdColor);
-      init_pair (5, COLOR_BLUE,    bkgdColor);
-      init_pair (6, COLOR_MAGENTA, bkgdColor);
-      init_pair (7, COLOR_CYAN,    bkgdColor);
-      background = COLOR_PAIR (1);
-      bkgdset (background);
-      attron (COLOR_PAIR (1)); 
-      wclear (stdscr);
-    }
- ~NCurses ()
-    { endwin (); }
-
-  void resize ()
-    { getmaxyx (stdscr, row_max, col_max); 
-      QC_ASSERT (row_max >= 0);
-      QC_ASSERT (col_max >= 0);
-    }
-};
-
-
-
-struct NCAttr : Root
-{
-  const int attr;
-  const bool active;
-
-  explicit NCAttr (int attr_arg,
-                   bool active_arg = true)
-    : attr (attr_arg)
-    , active (active_arg)
-    { if (active)
-        attron (attr); 
-    }
- ~NCAttr ()
-    { if (active)
-        attroff (attr); 
-    }
-};
-
-
-
-struct NCAttrColor : NCAttr
-{
-  explicit NCAttrColor (NCurses::Color color,
-                        bool active_arg = true)
-    : NCAttr (COLOR_PAIR (color + 1), active_arg)
-    {}
-};
-
-
-
-struct NCBackground 
-{
-  const chtype background_old;
-  
-  explicit NCBackground (chtype background)
-    : background_old (getbkgd (stdscr))
-    { bkgdset (background); }
- ~NCBackground ()
-    { bkgdset (background_old); }
-};
-
-
-
-
-//
-
 struct Row
 {
   const Xml_sp::Data* data {nullptr};
@@ -220,7 +122,7 @@ struct ThisApplication : Application
           QC_IMPLY (rows [i + 1]. getDepth () == rows [i]. getDepth () + 1, rows [i]. open);
         }
       nc. resize ();
-      const size_t fieldSize = (size_t) (nc. row_max - 1);  // Last row is for menu
+      const size_t fieldSize = nc. row_max - 1;  // Last row is for menu
       const size_t pageScroll = fieldSize - 1;
       const size_t bottomIndex_max = topIndex + fieldSize;
       const size_t bottomIndex = min (rows. size (), bottomIndex_max);
@@ -278,7 +180,7 @@ struct ThisApplication : Application
           // Too long line ??
           clrtoeol ();
         }
-        FFOR_START (size_t, i, bottomIndex, fieldSize)
+        FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
           move ((int) (i - topIndex), 0);
           clrtoeol ();
@@ -429,7 +331,7 @@ struct ThisApplication : Application
               bool equalName = false;  // PAR ??
               bool tokenSubstr = false; // PAR ??
               bool tokenWord = true;  // PAR ??
-              size_t i = curIndex + (rows [curIndex]. found ? 1 : 0);
+              size_t i = curIndex + rows [curIndex]. found;
               VectorPtr<Xml_sp::Data> path;
               for (; i < rows. size (); i++)
               {
