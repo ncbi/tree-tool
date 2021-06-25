@@ -45,6 +45,9 @@ using namespace Common_sp;
 
 
 
+static const string na ("NA");
+      
+
 
 struct Subject
 {
@@ -72,24 +75,28 @@ struct Subject
   void saveText (ostream &os,
                  size_t qlen) const
     { QC_ASSERT (qend <= qlen);
-      string stitle_ (stitle);
-      trimPrefix (stitle_, sseqid + "_");
-      replace (stitle_, '_', ' ');
       os         << qlen
          << '\t' << qstart                  
          << '\t' << qend                    
          << '\t' << qcoverage                
          << '\t' << double (qcoverage) / double (qlen)  
-         << '\t' << length                  // 12
-         << '\t' << double (nident) / double (length)  
-         << '\t' << sseqid                  
+         << '\t' << length                  
+         << '\t' << nident
+         << '\t' << double (nident) / double (length);
+      if (sseqid. empty ())
+        return;
+      string stitle_ (stitle + "_");
+      trimPrefix (stitle_, sseqid + "_");
+      replace (stitle_, '_', ' ');
+      trim (stitle_);
+      os << '\t' << sseqid                  
          << '\t' << slen                    
          << '\t' << sstart                  
          << '\t' << send                    
        //<< '\t' << nvl (plasmidName, "NA") 
          << '\t' << scoverage                
          << '\t' << double (scoverage) / double (slen)  
-         << '\t' << stitle_                 
+         << '\t' << nvl (stitle_, na)
          ;
     }
   void qc () const
@@ -146,19 +153,40 @@ void addPrevSubject (Vector<Subject> &subjects,
 void processSubjects (const string &qseqid,
                       size_t qlen,
                       Vector<Subject> &subjects,
-                      bool best)
+                      bool best,
+                      bool combine)
 {
   ASSERT (! qseqid. empty ());
   ASSERT (qlen);
+  ASSERT (! (best && combine));
 
   if (subjects. empty ())
     return;
 
-  // Best Subject
+  if (combine)
+  {
+    Subject last (subjects. pop ());  // Has right qcoverage
+    last. sseqid. clear ();
+    for (const Subject& subj : subjects)
+    {
+      minimize (last. qstart, subj. qstart);
+      maximize (last. qend,   subj. qend);
+      last. length += subj. length;
+      last. nident += subj. nident;
+    }
+    subjects. clear ();
+    subjects << last;
+    ASSERT (subjects. size () == 1);
+  }
+
   subjects. sort ();
+  string qtitle (qseqid);
+  const string qseqid_ (findSplit (qtitle, '|'));
+  replace (qtitle, '_', ' ');
+  trim (qtitle);
   for (const Subject& subj : subjects)
   {
-    cout << qseqid << '\t';
+    cout << qseqid_ << '\t' << nvl (qtitle, na) << '\t';
     subj. saveText (cout, qlen);      
     cout << endl;
     if (best)
@@ -173,21 +201,18 @@ void processSubjects (const string &qseqid,
 
 // ThisApplication
 
-static const string outFormat {"#qseqid\tqlen\tqstart\tqend\tqcoverage\tpqcoverage\talign_length\tpident\tsseqid\tslen\tsstart\tsend\tscoverage\tpscoverage\ttitle"};
-
-
-
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the coverage of a query DNA by subject DNAs: " + outFormat)
+    : Application ("Print the coverage of a query DNA by subject DNAs")
     {
       version = VERSION;
       string format (XSTR(FORMAT));
       replaceStr (format, " >>", "");
-      addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid, sseqid");
-      addFlag ("best", "Print only the best coverage by subjects DNAs");
-    //addFlag ("plasmid", "Report plasmid name");
+      addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid, sseqid.\n\
+qseqid can have a suffix \"|qtitle\"");
+      addFlag ("best", "Print only the best coverage by a subject DNA");
+      addFlag ("combine", "Combine the coverages by subject DNAs");
     }
 
 
@@ -196,10 +221,19 @@ struct ThisApplication : Application
   {
     const string inFName = getArg ("in");
     const bool   best    = getFlag ("best");
-  //const bool   plasmid = getFlag ("plasmid");
+    const bool   combine = getFlag ("combine");
+    
+    if (best && combine)
+      throw runtime_error ("-best and -combine are incompatible");
     
     
-    cout << outFormat << endl;
+    cout << "#qseqid\tqtitle\tqlen\tqstart\tqend\tqcoverage\tpqcoverage\talign_length\tnident\tpident";
+      //      1       2       3     4       5     6          7           8             9       10          
+    if (! combine)
+      cout << "\tsseqid\tslen\tsstart\tsend\tscoverage\tpscoverage\tstitle";
+        //       11      12    13      14    15         16          17
+    cout << endl;
+
 
     string qseqid_prev;
     size_t qlen_prev = 0;  // >0 => constant
@@ -236,34 +270,17 @@ struct ThisApplication : Application
           QC_ASSERT (qlen);
           QC_ASSERT (slen);
           
-        #if 0
-          string plasmidName;
-          if (plasmid)
-          {
-            string s = stitle;
-            do 
-            { 
-              trimSuffix (s, ",");
-              if (   s. size () >= 2 
-                  && s [0] == 'p'
-                  && isUpper (s [1])
-                 )
-                plasmidName = s;
-              s. clear ();
-              iss >> s; 
-            }
-            while (plasmidName. empty () && ! s. empty ());
-          }
-        #endif
-          
           if (! (         qseqid_prev == qseqid
                  && subj. sseqid      == sseqid
                 )
              )
           {
             addPrevSubject (subjects, subj, qchars, schars);
-            qchars. resize (qlen, 0);
-            qchars. setAll (0);
+            if (! (combine && qseqid_prev == qseqid))
+            {
+              qchars. resize (qlen, 0);
+              qchars. setAll (0);
+            }
             schars. resize (slen, 0);
             schars. setAll (0);
           }
@@ -275,7 +292,7 @@ struct ThisApplication : Application
           else
           {
             if (! qseqid_prev. empty ())
-              processSubjects (qseqid_prev, qlen_prev, subjects, best);
+              processSubjects (qseqid_prev, qlen_prev, subjects, best, combine);
             qseqid_prev = qseqid;
             qlen_prev = qlen;
           }
@@ -303,7 +320,7 @@ struct ThisApplication : Application
         }
       addPrevSubject (subjects, subj, qchars, schars);
       if (! qseqid_prev. empty ())
-        processSubjects (qseqid_prev, qlen_prev, subjects, best);
+        processSubjects (qseqid_prev, qlen_prev, subjects, best, combine);
     }
   }
 };
