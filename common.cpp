@@ -105,6 +105,21 @@ ulong seed_global = 1;
 bool sigpipe = false;
 
 
+
+// COutErr
+
+#ifndef _MSC_VER
+bool COutErr::sameFiles (int fd1, 
+                         int fd2)
+{ 
+  struct stat stat1;
+  struct stat stat2;
+  fstat (fd1, & stat1);
+  fstat (fd2, & stat2);
+  return stat1. st_ino == stat2. st_ino;
+}
+#endif
+
 const COutErr couterr;
 
 
@@ -396,6 +411,27 @@ bool goodName (const string &name)
       return false;
       
   return true;
+}
+
+
+
+string pad (const string &s,
+            size_t size,
+            bool right)
+{
+  string s1 (s);
+  trim (s1);
+ 
+  if (s1. size () >= size)
+    return s1. substr (0, size);
+  
+  string sp;
+  while (sp. size () + s1. size () < size)
+    sp += ' ';
+    
+  if (right)
+    return s1 + sp;
+  return sp + s1;
 }
 
 
@@ -2247,9 +2283,10 @@ void TextTable::saveText (ostream &os) const
   
 void TextTable::printHeader (ostream &os) const
 {
-  for (const Header& h : header)
+  FFOR (size_t, i, header. size ())
   {
-    h. saveText (os);
+    os << i + 1 << '\t';
+    header [i]. saveText (os);
     os << endl;
   }
 }
