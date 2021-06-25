@@ -29,7 +29,7 @@ if [ $CUTOFF == 1 ]; then
 fi
 hmmsearch  --tblout $TMP.hmmsearch  --noali  -Z 10000  $CUT_GA  --cpu 4  $HMM $PROT &>> $LOG
 $THIS/prots2hmm_signature $TMP.hmmsearch  -log $LOG > $SIG
-cut -f 2 $SIG | str2hash -log $LOG > $HASH
+cut -f 2 $SIG | $THIS/../str2hash -log $LOG > $HASH
 
 
 rm -f $TMP*
