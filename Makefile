@@ -9,16 +9,14 @@ endif
 
 
 
-
 ############################### Programs ################################
 
-all:	\
+ALL=	\
   connectPairs \
   csv2tab \
   effectiveSize \
   extractPairs \
   file2hash \
-  group \
   index_find \
   list2pairs \
   mergePairs \
@@ -27,33 +25,43 @@ all:	\
   setRandOrd \
   splitList \
   str2hash \
-  textTab \
   trav \
   tsv_comp \
+  tsv_group \
+  tsv_join \
+  tsv_schema \
   unCgi
-	
 
-connectPairs.o:  $(COMMON_HPP)  
+ifdef AT_NCBI
+  all: $(ALL) \
+    tsv_view
+else
+  all:  $(ALL)
+endif
+
+
+
+connectPairs.o: $(COMMON_HPP)  
 connectPairsOBJS=connectPairs.o $(CPP_DIR)/common.o
-connectPairs:	$(connectPairsOBJS)
+connectPairs: $(connectPairsOBJS)
 	$(CXX) -o $@ $(connectPairsOBJS) $(LIBS)
 	$(ECHO)
 
-cpp_test.o:  $(COMMON_HPP)  
+cpp_test.o: $(COMMON_HPP)  
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
-cpp_test:	$(cpp_testOBJS)
+cpp_test: $(cpp_testOBJS)
 	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS)
 	$(ECHO)
 
 csv2tab.o:  $(COMMON_HPP)  
 csv2tabOBJS=csv2tab.o $(CPP_DIR)/common.o
-csv2tab:	$(csv2tabOBJS)
+csv2tab:  $(csv2tabOBJS)
 	$(CXX) -o $@ $(csv2tabOBJS) $(LIBS)
 	$(ECHO)
 
 effectiveSize.o:  $(COMMON_HPP)  
 effectiveSizeOBJS=effectiveSize.o $(CPP_DIR)/common.o
-effectiveSize:	$(effectiveSizeOBJS)
+effectiveSize:  $(effectiveSizeOBJS)
 	$(CXX) -o $@ $(effectiveSizeOBJS) $(LIBS)
 	$(ECHO)
 
@@ -73,12 +81,6 @@ graph_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 graph_testOBJS=graph_test.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 graph_test:	$(graph_testOBJS)
 	$(CXX) -o $@ $(graph_testOBJS) $(LIBS)
-	$(ECHO)
-
-group.o:  $(COMMON_HPP)  
-groupOBJS=group.o $(CPP_DIR)/common.o
-group:	$(groupOBJS)
-	$(CXX) -o $@ $(groupOBJS) $(LIBS)
 	$(ECHO)
 
 index_find.o:  $(COMMON_HPP)  
@@ -129,12 +131,6 @@ str2hash:	$(str2hashOBJS)
 	$(CXX) -o $@ $(str2hashOBJS) $(LIBS)
 	$(ECHO)
 
-textTab.o:  $(COMMON_HPP)  
-textTabOBJS=textTab.o $(CPP_DIR)/common.o
-textTab:	$(textTabOBJS)
-	$(CXX) -o $@ $(textTabOBJS) $(LIBS)
-	$(ECHO)
-
 trav.o:  $(COMMON_HPP)  
 travOBJS=trav.o $(CPP_DIR)/common.o
 trav:	$(travOBJS)
@@ -145,6 +141,30 @@ tsv_comp.o:  $(COMMON_HPP)
 tsv_compOBJS=tsv_comp.o $(CPP_DIR)/common.o
 tsv_comp:	$(tsv_compOBJS)
 	$(CXX) -o $@ $(tsv_compOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_group.o:  $(COMMON_HPP)  
+tsv_groupOBJS=tsv_group.o $(CPP_DIR)/common.o
+tsv_group:	$(tsv_groupOBJS)
+	$(CXX) -o $@ $(tsv_groupOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_join.o:  $(COMMON_HPP)  
+tsv_joinOBJS=tsv_join.o $(CPP_DIR)/common.o
+tsv_join: $(tsv_joinOBJS)
+	$(CXX) -o $@ $(tsv_joinOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_schema.o:  $(COMMON_HPP)  
+tsv_schemaOBJS=tsv_schema.o $(CPP_DIR)/common.o
+tsv_schema: $(tsv_schemaOBJS)
+	$(CXX) -o $@ $(tsv_schemaOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_view.o:  $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp 
+tsv_viewOBJS=tsv_view.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o 
+tsv_view:	$(tsv_viewOBJS)
+	$(CXX) -o $@ $(tsv_viewOBJS) $(LIBS) -lncurses
 	$(ECHO)
 
 unCgi.o:  $(COMMON_HPP)  
