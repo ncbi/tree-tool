@@ -13,12 +13,15 @@ fi
 DEBUG=0  # or 1 
 
 
+TMP=`mktemp` 
+
+
 # TMP, VERBOSE
 if [ $DEBUG == 1 ]; then
-  TMP=tmp
   VERBOSE=2
+  echo $TMP
+  set -x
 else
-  TMP=`mktemp` 
   VERBOSE=0
 fi
 
@@ -36,14 +39,14 @@ echo "" > $TMP.mds
 
 while true; do
   echo ""
-  F=`ls $TMP.tmp | head -1`
-  if [ ! $F ]; then
+  F_FULL=`ls $TMP.tmp`
+  if [ -z "$F_FULL" ]; then
     break
   fi
-  F=`basename $F .dm`
-  echo $F ...
-  set +o errexit
-  N=(`grep -v '^#' $TMP.tmp/$F.dm | head -1`)
+  F=($F_FULL)
+  F=`basename ${F[0]} .dm`
+  grep -v '^#' $TMP.tmp/$F.dm > $TMP.grep || true
+  N=(`head -1 $TMP.grep`)
   set -o errexit
   echo "# objects =  ${N[1]}"
   if [ ${N[1]} -le 5 ]; then  # PAR

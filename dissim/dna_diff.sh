@@ -20,8 +20,9 @@ TMP=`mktemp`
 cp $DNA1 $TMP
 makeblastdb  -in $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null
 set +o pipefail
-blastn  -db $TMP  -query $DNA2   -evalue 1e-100  -dust no  -task blastn  -outfmt '6 length qstart qend qlen sstart send slen qseq sseq' | head -1 | awk '$1 > '$LEN_MIN' && ($2 == 1 || $5 == 1) && ($3 == $4 || $6 == $7)' | awk '{printf "%s\n%s\n", $8, $9};' > $TMP.pair
+blastn  -db $TMP  -query $DNA2   -evalue 1e-100  -dust no  -task blastn  -outfmt '6 length qstart qend qlen sstart send slen qseq sseq' > $TMP.blastn
 #                                                                                   1      2      3    4    5      6    7    8    9    
+head -1 $TMP.blastn | awk '$1 > '$LEN_MIN' && ($2 == 1 || $5 == 1) && ($3 == $4 || $6 == $7)' | awk '{printf "%s\n%s\n", $8, $9};' > $TMP.pair
 if [ -s $TMP.pair ]; then
   $THIS/dna_diff $TMP.pair 
 else
