@@ -12,4 +12,4 @@ P=$2
 
 
 head -1 $F
-tail -n +2 $F | sort $P
+tail -n +2 $F | sort -t $'\t' $P
