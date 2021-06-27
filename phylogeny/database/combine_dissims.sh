@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
-if [ $# -ne 13 ]; then
+if [ $# -ne 12 ]; then
   echo "Compute dissimilarities"
   echo " #1: file with pairs <object1> <object2>"
   echo " #2: directory with: <object hash>/<object>/<object>.hash-{CDS|PRT}"
@@ -9,13 +9,12 @@ if [ $# -ne 13 ]; then
   echo " #4: output file: <object1> <object2> <dissimilarity>"
   echo " #5: hashes intersection_min"
   echo " #6: hashes ratio_min"
-  echo " #7: dissim_scale file with dissimilarity thresholds: {CDS PRT symbet univ} | {PRT univ}"
+  echo " #7: dissim_scale file with dissimilarity thresholds: {CDS PRT univ} | {PRT univ}"
   echo " #8: hmm-univ.stat"
   echo " #9: 1 - BLOSUM62, 0 - PAM30"
   echo "#10: raw power of universal proteins dissimilarity (before averaging)"
   echo "#11: coefficient to multiply the combined dissimilarity by"
-  echo "#12: power to raise the combined dissimilarity in"
-  echo "#13: log file (delete on success)"
+  echo "#12: log file (delete on success)"
   exit 1
 fi
 REQ=$1
@@ -29,48 +28,46 @@ AVERAGE_MODEL=$8
 BLOSUM62_ARG=$9
 UNIV_POWER=${10}
 COEFF=${11}
-POWER=${21}
-LOG=${13}
+LOG=${12}
 
 
 #set -x
 
 
-CDS_SYMBET=1  # d_CDS and d_SYMBET are used
+CDS=1  # d_CDS is used
 DISSIM_SCALE_LINES=`cat $DISSIM_SCALE | grep -v '^ *$' | wc -l`
 case $DISSIM_SCALE_LINES in
   2)
-    CDS_SYMBET=0
+    CDS=0
     ;;
-  4)
+  3)
     ;;
   *)
     error "Wrong number of rows in $DISSIM_SCALE"
     ;;
 esac
 
-# {CDS,PRT}_DISSIM_MAX, UNIV_RAW_CENTER
+# {CDS,PRT}_RAW_MAX, BARRIER
 CDS_RAW_MAX="nan"
+BARRIER=1
 N=0
-if [ $CDS_SYMBET == 1 ]; then
+if [ $CDS == 1 ]; then
   N=$(( $N + 1 ))
   L=(`head -$N $DISSIM_SCALE | tail -1`)
   CDS_RAW_MAX=${L[1]}
+  BARRIER=2
 fi
 #
 N=$(( $N + 1 ))
 L=(`head -$N $DISSIM_SCALE | tail -1`)
 PRT_RAW_MAX=${L[1]}  # Species barrier
 #
-if [ $CDS_SYMBET == 1 ]; then
+if [ $CDS == 1 ]; then
   N=$(( $N + 1 ))
   L=(`head -$N $DISSIM_SCALE | tail -1`)
-  SYMBET_DISSIM_MAX=`echo "${L[0]} * ${L[1]}" | bc -l`
   #
   N=$(( $N + 1 ))
   L=(`head -$N $DISSIM_SCALE | tail -1`)
-  UNIV_RAW_CENTER=`echo "$SYMBET_DISSIM_MAX / ${L[0]}" | bc -l`
-  #echo $CDS_RAW_MAX $PRT_RAW_MAX $SYMBET_DISSIM_MAX $UNIV_RAW_CENTER
 fi
 
 BLOSUM62=""
@@ -113,7 +110,7 @@ $THIS/../../dissim/hash_request2dissim $TMP.req-PRT $TMP.PRT  -intersection_min 
 cut -f 3 $TMP.PRT > $TMP.dissim-PRT
 
 echo "$TMP.dissim-CDS ..."
-if [ $CDS_SYMBET == 1 ]; then
+if [ $CDS == 1 ]; then
   req2file $TMP.req 1 "hash-CDS" > $TMP.f1
   req2file $TMP.req 2 "hash-CDS" > $TMP.f2
   paste $TMP.f1 $TMP.f2 > $TMP.req-CDS
@@ -139,22 +136,13 @@ cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
   # column 5: d_univ
 
 echo "$TMP.combo ..."
-if [ $CDS_SYMBET == 1 ]; then
-  # Slowest dissimilarity
-  # $4 is small => $5 is "nan"
-  awk '! (($3 == "nan" || $3 > '$CDS_RAW_MAX') && ($5 == "nan" || $5 < '$UNIV_RAW_CENTER'))' $TMP.req-dissim-univ | sed 's/$/\tnan/1' > $TMP.req-dissim-symbet_0
-  awk    '($3 == "nan" || $3 > '$CDS_RAW_MAX') && ($5 == "nan" || $5 < '$UNIV_RAW_CENTER')'  $TMP.req-dissim-univ > $TMP.req-dissim-univ_1
-  cut -f 1,2 $TMP.req-dissim-univ_1 > $TMP.req-symbet_1
-  wc -l $TMP.req-symbet_1
-  $THIS/../../trav  -step 1  $TMP.req-symbet_1 "$THIS/symbet.sh $GENOME_DIR %f 1 2> /dev/null"  -log $LOG > $TMP.dissim-symbet
-  paste $TMP.req-dissim-univ_1 $TMP.dissim-symbet > $TMP.req-dissim-symbet_1
-  cat $TMP.req-dissim-symbet_0 $TMP.req-dissim-symbet_1 | awk '{OFS="\t"; print $1,$2,$3,$4,$6,$5};' > $TMP.combo
+if [ $CDS == 1 ]; then
+  mv $TMP.req-dissim-univ $TMP.combo
 else
   cut -f 3  --complement $TMP.req-dissim-univ > $TMP.combo
 fi
 
-$THIS/../../dissim/combine_dissims $TMP.combo $DISSIM_SCALE  -coeff $COEFF  -power $POWER  -log $LOG  > $OUT
-  # -print_raw 
+$THIS/../../dissim/combine_dissims $TMP.combo $DISSIM_SCALE  -barrier $BARRIER  -coeff $COEFF  -log $LOG  > $OUT
 
 
 rm -f $LOG  
