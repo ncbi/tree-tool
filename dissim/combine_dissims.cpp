@@ -67,17 +67,11 @@ struct Scale
 	  	iss >> unitS >> raw_maxS;
 	  	unit    = str2real (unitS);
 	  	raw_max = str2real (raw_maxS);
-	    if (isNan (unit))
-	    {
-	      QC_ASSERT (isNan (raw_max));
-	    }
-	    else
-	    {
-  	  	QC_ASSERT (unit > 0.0);
-  	  	QC_ASSERT (raw_max > 0.0);
-  	  	QC_ASSERT (dissim_min <= dissim_center);
-  	  	QC_ASSERT (dissim_center < dissim_max ());
-  	  }
+	  	QC_ASSERT (unit > 0.0);
+	  	QC_ASSERT (raw_max > 0.0);
+	  	QC_ASSERT (dissim_min <= dissim_center);
+	  	QC_ASSERT (dissim_center < dissim_max ());
+	  	QC_ASSERT (valid ());
 	  }
 	Scale () = default;
 	void saveText (ostream &os) const
@@ -100,14 +94,18 @@ struct Scale
 	  }
 	Real dissim_max () const
 	  { return raw2dissim (raw_max); }
-	Real getWeight (Real dissim) const
-	  // Return: 0..1
-	  { if (dissim < dissim_min)  // May be: dissim_min = dissim_center = 0
-	      return 0.0;
+	Prob getWeight (Real dissim,
+	                bool first) const
+	  { if (dissim < dissim_center)
+	    {
+	      if (first)
+	        return 1.0;
+        if (dissim < dissim_min)  // May be: dissim_min = dissim_center = 0
+	        return 0.0;
+	    	return (dissim - dissim_min) / (dissim_center - dissim_min);
+	    }
 	    if (dissim >= dissim_max ())
 	      return 0.0;
-	    if (dissim < dissim_center)
-	      return (dissim - dissim_min) / (dissim_center - dissim_min);
 	    if (dissim_max () == inf)
 	      return 1.0;
 	    return (dissim_max () - dissim) / (dissim_max () - dissim_center);
@@ -127,7 +125,8 @@ struct ThisApplication : Application
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by <unit> * <raw_max>.\n\
 Line format: <unit> <raw_max>");
   	  addKey ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");
-  	  addKey ("power", "Power to raise the dissimilarity in",  "1.0");
+  	//addKey ("power", "Power to raise the dissimilarity in",  "1.0");
+  	  addKey ("barrier", "Scale sequential number, 1-based, 0 - no barrier. If i > barrier then dissim[i] >= dissim[barrier]");
       addFlag ("print_raw", "Print raw dissimilarities");
   	}
 
@@ -138,12 +137,13 @@ Line format: <unit> <raw_max>");
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
 	  const Real   coeff       = str2real (getArg ("coeff"));
-	  const Real   power       = str2real (getArg ("power"));
+	//const Real   power       = str2real (getArg ("power"));
+	  const size_t barrier    = (size_t) arg2uint ("barrier") - 1;
 		const bool   print_raw   = getFlag ("print_raw");		
 	  QC_ASSERT (coeff > 0.0);
-	  QC_ASSERT (power > 0.0);
-
-		
+	//QC_ASSERT (power > 0.0);
+	  
+	  
 		Vector<Scale> scales;  scales. reserve (16); // PAR
 		{
 			LineInput f (scaleFName);
@@ -154,21 +154,18 @@ Line format: <unit> <raw_max>");
 			  const Scale scale (f. line, prev_prev. dissim_max (), prev. dissim_max ());
 	      scales << scale;
 	      if (   prev. valid ()
-	          && scale. valid ()
 	      	  && prev. dissim_max () >= scale. dissim_max ()
 	      	 )
 	      	throw runtime_error ("dissim_max must increase");
-	      if (scale. valid ())
-	      {
-	        prev_prev = prev;
-	        prev = scale;
-	      }
+        prev_prev = prev;
+        prev = scale;
 	    }
 	    // At least one valid Scale should exist
   		QC_ASSERT (prev. valid ());
   		QC_ASSERT (prev. raw_max == inf);
 		}
 		QC_ASSERT (scales. size () >= 2);
+		QC_IMPLY (barrier != no_index, barrier < scales. size ());
 
       
   	LineInput f (dissimFName, 1024 * 100, 1);  // PAE
@@ -189,17 +186,16 @@ Line format: <unit> <raw_max>");
       }
 
 	    Real dissim_weighted_sum = 0.0;
-	    Real weight_sum = 0.0;
-	    bool first = true;
+	    Prob weight_sum = 0.0;
+	    Prob weight_whole = 1.0;
 	    size_t n = 0;
-	  	for (const Scale& scale : scales)
+	  	size_t i = 0;
+	  	for (; i < scales. size (); i++)
 	  	{
+	  	  const Scale& scale = scales [i];
       	string dissimS;
 	  	  iss >> dissimS;
 	  	  QC_ASSERT (! dissimS. empty ());
-
-  	  	if (! scale. valid ())
-  	  	  continue;
 
   	  	const Real raw = str2real (dissimS);
   	  	if (print_raw)
@@ -211,14 +207,18 @@ Line format: <unit> <raw_max>");
         }
         else
         {
-          if (n >= 2)
-            break;
-          const Real dissim = scale. raw2dissim (raw);
-          const Real weight = scale. getWeight (dissim);
+        //if (n >= 2)
+          //break;
+          const Real dissim_ = scale. raw2dissim (raw);
+          const Real dissim = barrier == no_index || i <= barrier ? dissim_ : max (dissim_, scales [barrier]. dissim_max ());
+          const Prob weight_raw = scale. getWeight (dissim, ! weight_sum);
           ASSERT (dissim >= 0.0);
-          ASSERT (weight >= 0.0);
-          if (weight)
+          ASSERT (isProb (weight_raw));
+          if (weight_raw)
           {
+            ASSERT (isProb (weight_whole));
+            const Prob weight = weight_whole * weight_raw;
+            weight_whole *= 1.0 - weight_raw;
             dissim_weighted_sum += weight * dissim;
             weight_sum          += weight;
             n++;
@@ -230,36 +230,37 @@ Line format: <unit> <raw_max>");
             scale. saveText (cout);
             PRINT (raw);
             PRINT (dissim);
-            PRINT (weight);
-            PRINT (first);
+            PRINT (weight_raw);
+            PRINT (i);
             PRINT (dissim_weighted_sum);
             PRINT (weight_sum);
           }
         }
 
-        if (   first
+        if (   ! i
             && dissim_weighted_sum == 0.0
             && weight_sum > 0.0
            )
           break;
-          
-        first = false;
       }
-      if (   ! first
+      ASSERT (isProb (weight_sum));
+      if (   i
           && dissim_weighted_sum == 0.0
           && weight_sum > 0.0
          )
         weight_sum = 0.0;
       if (verbose ())
       {
-        PRINT (first);
+        cout << endl;
+        PRINT (i);
         PRINT (dissim_weighted_sum);
         PRINT (weight_sum);
       }
 
 
       const Real d = dissim_weighted_sum / weight_sum;
-      cout << '\t' << coeff * pow (d, power) << endl;
+    //cout << '\t' << coeff * pow (d, power) << endl;
+      cout << '\t' << coeff * d << endl;
     }
 	}
 };
