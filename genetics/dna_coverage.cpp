@@ -75,29 +75,31 @@ struct Subject
   void saveText (ostream &os,
                  size_t qlen) const
     { QC_ASSERT (qend <= qlen);
-      os         << qlen
-         << '\t' << qstart                  
-         << '\t' << qend                    
-         << '\t' << qcoverage                
-         << '\t' << double (qcoverage) / double (qlen)  
-         << '\t' << length                  
-         << '\t' << nident
-         << '\t' << double (nident) / double (length);
+      os         
+        /* 3*/         << qlen
+        /* 4*/ << '\t' << qstart                  
+        /* 5*/ << '\t' << qend                    
+        /* 6*/ << '\t' << qcoverage                
+        /* 7*/ << '\t' << double (qcoverage) / double (qlen) * 100.0
+        /* 8*/ << '\t' << length                  
+        /* 9*/ << '\t' << nident
+        /*10*/ << '\t' << double (nident) / double (length) * 100.0
+        ;
       if (sseqid. empty ())
         return;
       string stitle_ (stitle + "_");
       trimPrefix (stitle_, sseqid + "_");
       replace (stitle_, '_', ' ');
       trim (stitle_);
-      os << '\t' << sseqid                  
-         << '\t' << slen                    
-         << '\t' << sstart                  
-         << '\t' << send                    
-       //<< '\t' << nvl (plasmidName, "NA") 
-         << '\t' << scoverage                
-         << '\t' << double (scoverage) / double (slen)  
-         << '\t' << nvl (stitle_, na)
-         ;
+      os 
+        /*11*/ << '\t' << sseqid                  
+        /*12*/ << '\t' << slen                    
+        /*13*/ << '\t' << sstart                  
+        /*14*/ << '\t' << send                    
+        /*15*/ << '\t' << scoverage                
+        /*16*/ << '\t' << double (scoverage) / double (slen) * 100.0
+        /*17*/ << '\t' << nvl (stitle_, na)
+        ;
     }
   void qc () const
     { if (! qc_on)
