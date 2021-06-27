@@ -18,7 +18,7 @@ while true; do
   sleep $SLEEP_SEC
   $THIS/grid_wait.sh 0
   set +o errexit
-  Q=`qstat | grep -v '^job-ID' | grep -v '^---' | grep '   qw   ' | head -1 | wc -l`
+  Q=`qstat | grep -v '^job-ID' | grep -v '^---' | grep '   qw   ' | wc -l`
   set -o errexit
   if [ $Q == 0 ]; then
     break
@@ -31,7 +31,7 @@ while true; do
   sleep $SLEEP_SEC
   $THIS/grid_wait.sh 0
   set +o errexit
-  Q=`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | head -1 | wc -l`
+  Q=`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | wc -l`
   set -o errexit
   if [ $Q == 0 ]; then
     break
