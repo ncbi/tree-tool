@@ -88,7 +88,7 @@ function report_count
 }
 
 
-report_count "hybrid"  # ??
+#report_count "hybrid"  
 report_count "hybrid-indiscern"
 #report_count "unhybrid"
 report_count "outlier-genogroup"
