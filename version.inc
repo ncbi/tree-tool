@@ -1,6 +1,7 @@
-#define VERSION "1.9.3"
+#define VERSION "1.9.4"
 
 
+// 1.9.4  06/09/2021  combine_dissims.cpp: -barrier
 // 1.9.3  05/30/2021  align.cpp: ambiguous aa J,U,O are replaced by X, selfScore is using X
 //                    -prefer_gain is removed
 // 1.9.2  05/18/2021  optimizeReinsert() invokes optimizeLargeSubgraphs(&changes)
