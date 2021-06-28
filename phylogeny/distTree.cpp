@@ -1050,7 +1050,7 @@ void DTNode::ClosestLeaf::qc () const
   if (! qc_on)
     return;
   QC_ASSERT (leaf);
-  QC_ASSERT (isNan (dist) || dist >= 0.0);
+  QC_ASSERT (/*isNan (dist) ||*/ dist >= 0.0);
 }
 
 
@@ -1297,7 +1297,7 @@ Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max)
   }
   
   ASSERT (res. empty ());
-  vec. reserve (leaf2dist. size ()); 
+  res. reserve (leaf2dist. size ()); 
   for (const auto& it : leaf2dist)
   {
     const Real dist = it. second + len;
@@ -4049,14 +4049,10 @@ void DistTree::loadTreeDir (const string &dir)
   ASSERT (isDirName (dir));
 
 #ifndef _MSC_VER
-  const string outFName (dir + ".list");
+  const string outFName (dir + ".list");  // Use "tmp" ??
   EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
   const StringVector fileNames (outFName, (size_t) 100, true);  // PAR
-#if 1
   removeFile (outFName);
-#else
-  EXEC_ASSERT (system (("rm " + outFName). c_str ()) == 0);
-#endif
   QC_ASSERT (! fileNames. empty ());
 
   Name2steiner name2steiner;
@@ -8046,12 +8042,7 @@ void DistTree::removeLeaf (Leaf* leaf,
     ASSERT (absCriterion < inf);
     maximize (absCriterion, 0.0);
   //ASSERT (target2_sum >= absCriterion);  // Can occur just after neighbor joining
-  #if 1
     maximize (mult_sum, 0.0);
-  #else
-    if (mult_sum <= 0.0)
-      throw runtime_error (FUNC "All objects are deleted");
-  #endif
   
     qcPaths (); 
   

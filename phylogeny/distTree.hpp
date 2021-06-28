@@ -150,8 +150,9 @@ void dissimTransform (Real &target);
 
 
 inline bool at_dissim_boundary (Real dissim)
-  { return     dissim_boundary >= dissim 
-  	       && (dissim_boundary -  dissim) / dissim_boundary <= 0.05;  // PAR 
+  { 
+    return    dissim <= dissim_boundary
+           && dissim / dissim_boundary >= 0.95;  // PAR  
   }
   // Being true should have a small probability <= choice of dissim_boundary
 
@@ -498,6 +499,7 @@ private:
   {
     const Leaf* leaf;
     Real dist;
+      // Distance from leaf to getParent()
     void qc () const;
   };
   virtual Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) = 0;
@@ -1337,10 +1339,10 @@ public:
         os << "Dissimilarity power: " << dissim_power << endl;
       if (dissim_coeff != 1.0)
         os << "Dissimilarity coefficient: " << dissim_coeff << endl;
-    /*if (hybridness_min != 1.0)  // always > 1.0
+      if (hybridness_min != 1.0)  // always > 1.0
         os << "Min. hybridness: " << hybridness_min << endl;
       if (! isNan (dissim_boundary))
-        os << "Dissimilarity boundary (for hybrids): " << dissim_boundary << endl;*/
+        os << "Dissimilarity boundary (for hybrids): " << dissim_boundary << endl;
       os << "Subgraph radius: " << areaRadius_std << endl;
     }
 	void printInput (ostream &os) const;
@@ -1611,7 +1613,8 @@ public:
   VectorPtr<DTNode> findDepthClusters (size_t clusters_min) const;
     // Return: connected subgraph including root
   void findGenogroups (Real genogroup_dist_max);  
-    // Output: DTNode->DisjointCluster
+    // Single linkage clustering
+    // Output: Leaf::DisjointCluster
     // For different genogroups their interior nodes do not intersect
     // Time: O(n log(n)) 
 
