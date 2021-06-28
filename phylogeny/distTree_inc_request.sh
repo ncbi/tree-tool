@@ -21,18 +21,24 @@ DIR=$INC/search/$OBJ
 LOG=$INC/log/$OBJ
 
 
+cp /dev/null $LOG
 $INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &>> $LOG.pairs2dissim
 
+
 # QC
+if [ ! -s $DIR/dissim.add ]; then
+  echo "Empty $DIR/dissim.add" >> $LOG
+  exit 1
+fi
+
 N=`cat $DIR/request    | wc -l`
 M=`cat $DIR/dissim.add | wc -l`
-#if [ ! -s $DIR/dissim.add ]; then
 if [ $N -ne $M ]; then
- #echo "Empty $DIR/dissim.add" > $LOG
   wc -l $DIR/request    >> $LOG
   wc -l $DIR/dissim.add >> $LOG
   exit 1
 fi
+
 
 rm $DIR/request
 
