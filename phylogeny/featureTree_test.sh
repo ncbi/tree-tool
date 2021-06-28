@@ -8,28 +8,33 @@ if [ $# -ne 1 ]; then
 fi
 
 
-DIR=data/featureTree
+TMP=`mktemp`
+echo $TMP
+#set -x
 
-cp $DIR/gene.tar.gz .
-cp $DIR/obj.list .
 
-gunzip gene.tar.gz
-tar -xf gene.tar
+DIR=$THIS/data/featureTree
 
-$THIS/featureTree.sh obj gene
+mkdir $TMP.dir
+
+cp $DIR/gene.tar.gz $TMP.dir/
+cp $DIR/obj.list    $TMP.dir/
+
+gunzip $TMP.dir/gene.tar.gz
+tar  -xf $TMP.dir/gene.tar  -C $TMP.dir
+
+$THIS/featureTree.sh $TMP.dir/obj $TMP.dir/gene
 
 echo ""
-$THIS/makeFeatureTree  -qc  -threads 10  -input_tree obj.tree  -features gene  -input_core obj.core  -use_time | grep -vw "^CHRON" > obj.featureTree
+$THIS/makeFeatureTree  -qc  -threads 10  -input_tree $TMP.dir/obj.tree  -features $TMP.dir/gene  -input_core $TMP.dir/obj.core  -use_time | grep -vw "^CHRON" | grep -v "^Tree from file:" > $TMP.dir/obj.featureTree
  
-diff obj.core $DIR/obj.core
-diff obj.featureTree $DIR/obj.featureTree
+diff $TMP.dir/obj.core        $DIR/obj.core
+diff $TMP.dir/obj.featureTree $DIR/obj.featureTree
 
-rm obj.list
-rm obj.tree
-rm obj.core
-rm obj.featureTree
-rm -r gene/
-rm gene.tar
+
+rm -r $TMP*
 
 
 success
+
+

@@ -12,6 +12,8 @@ FEAT=$2
 
 
 TMP=`mktemp`
+#echo $TMP
+#set -x
 
 
 QC="" # -qc
