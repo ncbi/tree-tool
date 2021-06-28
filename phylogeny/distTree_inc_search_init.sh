@@ -25,7 +25,7 @@ while true; do
 	sleep 30
 done
 
-grep -v "^${OBJ}$" $DIR/request.raw | sed 's/$/\t'$OBJ'/1' > $DIR/request || true
+grep -vx $OBJ $DIR/request.raw | sed 's/$/\t'$OBJ'/1' > $DIR/request || true
 rm $DIR/request.raw
 
 if [ -s $DIR/request ]; then
