@@ -24,7 +24,7 @@ fi
 TMP=`mktemp`
 
 
-SIZE=20000  # = ln(tree size)  * 1000
+SIZE=30000  # = ln(tree size)  * 2000
 CPP_DIR/index_find $INC/../mut.dna $INC/../mut.index $SIZE $DIR/$NEW_OBJ -large > $TMP
 if [ -s $TMP ]; then
   grep -f $INC/../deleted.all -vx $TMP > $TMP.out

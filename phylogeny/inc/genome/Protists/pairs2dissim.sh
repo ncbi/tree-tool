@@ -16,5 +16,5 @@ LOG=$4
 
 INC=`dirname $0`
 # PAR
-CPP_DIR/dissim/combine_dissims.sh $REQ $INC/../genome "$FILE_NEW" $OUT 10 0.1 $INC/dissim_scale $INC/hmm-univ.stat 1 0.65 1  1  $LOG
-#                                         1    2              3           4    5  6   7                  8                 9 10   11 12 13
+CPP_DIR/dissim/combine_dissims.sh $REQ $INC/../genome "$FILE_NEW" $OUT 10 0.1 $INC/dissim_scale $INC/hmm-univ.stat 1 0.65 1  $LOG
+#                                         1    2              3           4    5  6   7                  8                 9 10   11 12 

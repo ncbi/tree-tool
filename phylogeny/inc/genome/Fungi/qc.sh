@@ -2,23 +2,29 @@
 source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
-  echo "#1: go"
+  echo "#1: verbose (0/1)"
   exit 1
 fi
+VERB=$1
 
 
 INC=`dirname $0`
 SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 
-#set -x
-
 
 CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
 
+if [ -e $INC/good ]; then
+  sort -c -u $INC/good
+fi
+
 
 TMP=`mktemp`
-#echo $TMP
+if [ $VERB == 1 ]; then
+  echo $TMP
+  set -x
+fi
 
 
 CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
