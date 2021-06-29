@@ -1,4 +1,4 @@
-// tree2clusters.cpp
+// tree2indiscern.cpp
 
 /*===========================================================================
 *
@@ -54,7 +54,7 @@ const string distName = "dist";
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Print indiscernibility clusters of a distance tree")
+	: Application ("Print indiscernibility clusters of a distance tree: <object> <cluster leading object>")
 	{
 	  version = VERSION;
 	  addPositional ("input_tree", "File with the tree and arc lengths");
@@ -67,16 +67,18 @@ struct ThisApplication : Application
 		const string input_tree = getArg ("input_tree");
 				
     
-    const DistTree tree (input_tree, string (), string (), string()); 
+    const DistTree tree (input_tree, string (), string (), string ()); 
     tree. qc (); 
     
     for (const auto& it : tree. name2leaf)
     {
       const Leaf* leaf = it. second;
       if (! leaf->discernible)
-        cout << leaf->name 
-             << '\t' << static_cast <const DTNode*> (leaf->getParent ()) -> getFirstDecendant () -> getName ()
-             << endl;
+      {
+        const string s1 (leaf->name);
+        const string s2 (static_cast <const DTNode*> (leaf->getParent ()) -> getFirstDecendant () -> getName ());
+        cout << s1 << '\t' << s2 << endl;
+      }
     }
 	}
 };

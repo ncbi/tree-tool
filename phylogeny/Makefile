@@ -28,8 +28,8 @@ all:	\
 	randomDistTree \
 	statDistTree \
 	testDistTree \
-	tree2clusters \
-	tree2genogroup
+	tree2genogroup \
+	tree2indiscern
 	
 
 asnt2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/asn.hpp $(DM_DIR)/numeric.hpp $(PHYL_DIR)/distTree.hpp 
@@ -131,15 +131,15 @@ testDistTree:	$(testDistTreeOBJS)
 	$(CXX) -o $@ $(testDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-tree2clusters.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
-tree2clustersOBJS=tree2clusters.o $(DISTTREE_OBJ)
-tree2clusters:	$(tree2clustersOBJS)
-	$(CXX) -o $@ $(tree2clustersOBJS) $(LIBS)
-	$(ECHO)
-
 tree2genogroup.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
 tree2genogroupOBJS=tree2genogroup.o $(DISTTREE_OBJ)
 tree2genogroup:	$(tree2genogroupOBJS)
 	$(CXX) -o $@ $(tree2genogroupOBJS) $(LIBS)
+	$(ECHO)
+
+tree2indiscern.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+tree2indiscernOBJS=tree2indiscern.o $(DISTTREE_OBJ)
+tree2indiscern:	$(tree2indiscernOBJS)
+	$(CXX) -o $@ $(tree2indiscernOBJS) $(LIBS)
 	$(ECHO)
 
