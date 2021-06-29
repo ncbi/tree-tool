@@ -187,6 +187,18 @@ private:
     {}
   void readInput (TokenInput &ti);
 public:
+  static Data* load (const string &fName)
+    { unique_ptr<Xml_sp::Data> f;
+  	  { TokenInput ti (fName, '\0', 100 * 1024, 1000);  // PAR 
+        try 
+          { f. reset (new Xml_sp::Data (ti));	}
+        catch (const CharInput::Error &e)
+          { throw e; }
+        catch (const exception &e)
+          { ti. error (e. what (), false); }
+      }
+      return f. release ();
+    }
   void qc () const override;
   void saveXml (Xml::File &f) const override;
   
@@ -223,6 +235,24 @@ public:
     // Update: path: reverse path to *Data containing <what>
     //               valid if Return
     // Invokes: contains()
+  const Data* name2child (const string &name_arg) const
+    { for (const Data* child : children)
+        if (child->name == name_arg)
+          return child;
+      return nullptr;
+    }
+  StringVector tagName2text (const string &tagName) const
+    { StringVector vec;
+      if (name == tagName)
+        vec << token. str ();
+      for (const Data* child : children)
+        vec << move (child->tagName2text (tagName));
+      return vec;
+    }
+  void unify (const Data& query,
+              const string &variableTagName,
+              Vector<Pair<string>> &output) const;
+    // Update: output (append)
   Schema* createSchema (bool storeTokens) const;
     // Return: new
   void writeFiles (size_t xmlNum,

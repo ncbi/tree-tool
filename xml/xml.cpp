@@ -559,7 +559,17 @@ void Data::saveXml (Xml::File &f) const
   const Xml::Tag tag (f, name);
   for (const Data* child : children)
     child->saveXml (f);
-  f << token. str ();
+    
+  const string value (token. str ());
+  if (! value. empty ())
+  {
+    unique_ptr<const Xml::Tag> valueTag;
+    if (children. empty ())
+      f << ' ';
+    else
+      valueTag. reset (new Xml::Tag (f, string ()));
+    f << value;
+  }
 }
 
 
@@ -615,6 +625,49 @@ bool Data::find (VectorPtr<Data> &path,
     }
     
   return false;
+}
+
+
+
+void Data::unify (const Data& query,
+                  const string &variableTagName,
+                  Vector<Pair<string>> &output) const
+{
+  ASSERT (! variableTagName. empty ());
+  
+  if (query. name == variableTagName)
+    return;
+  if (name != query. name)
+    return;
+  if (   ! query. token. empty () 
+      && ! (query. token == token)
+     )
+    return;
+    
+  if ((bool) query. name2child (variableTagName) == query. children. size ())
+  {
+    const Data* targetData = this;
+    const Data* queryData = & query;
+    while (targetData)
+    {
+      ASSERT (queryData);
+      ASSERT (targetData->name == queryData->name);
+      if (const Data* queryVar = queryData->name2child (variableTagName))
+        if (! targetData->token. empty ())
+        {
+          Token t (targetData->token);
+          t. quote = '\0';
+          output << move (Pair<string> (queryVar->token. str (), t. str ()));
+        }
+      targetData = targetData->parent;
+      queryData = queryData->parent;
+    }
+    ASSERT (! queryData);
+  }
+    
+  for (const Data* child1 : children)
+    for (const Data* child2 : query. children)
+      child1->unify (*child2, variableTagName, output);
 }
 
 

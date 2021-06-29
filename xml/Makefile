@@ -14,6 +14,7 @@ endif
 
 ALL=	\
   xml2schema \
+  xml_find \
   xml_merge_schemas \
   xml_schema2ddl \
   xml_schema2flat
@@ -31,6 +32,12 @@ xml2schema.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
 xml2schemaOBJS=xml2schema.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
 xml2schema:	$(xml2schemaOBJS)
 	$(CXX) -o $@ $(xml2schemaOBJS) $(LIBS)
+	$(ECHO)
+
+xml_find.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
+xml_findOBJS=xml_find.o $(CPP_DIR)/common.o $(XML_DIR)/xml.o
+xml_find:	$(xml_findOBJS)
+	$(CXX) -o $@ $(xml_findOBJS) $(LIBS)
 	$(ECHO)
 
 xml_merge_schemas.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
