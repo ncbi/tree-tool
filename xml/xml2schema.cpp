@@ -65,24 +65,14 @@ struct ThisApplication : Application
 		const bool storeValues = getFlag ("store_values");
 	
 	
-	  unique_ptr<const Xml_sp::Data> xml;
-	  {
-  	  TokenInput ti (xmlFName, '\0', 100 * 1024, 1000);  // PAR 
-      try
-      {	  
-        xml. reset (new Xml_sp::Data (ti));	
-      }
-      catch (const CharInput::Error &e)
-        { throw e; }
-      catch (const exception &e)
-        { ti. error (e. what (), false); }
-    }    
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (xmlFName));
     xml->qc ();
     
     if (printP)
     {
       Xml::File f (cout, true, true, "XML");  // PAR
       xml->saveXml (f);
+      cout << endl << endl;
     }
 
     unique_ptr<Xml_sp::Schema> sch (xml->createSchema (storeValues));
