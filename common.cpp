@@ -1299,29 +1299,33 @@ Xml::Tag::Tag (Xml::File &f_arg,
     f. print ("\n");
     f. offset++;
     FOR (size_t, i, f. offset * File::offset_spaces)
-      f . print (" ");
+      f. print (" ");
   }
-  f. print ("<" + name + ">");
+  if (! name. empty ())
+    f. print ("<" + name + ">");
 }
 
 
 
 Xml::Tag::~Tag ()
 { 
-  if (f. printOffset && f. printBrief)
-  {
-    f. offset--;
-    return;
-  }
-  
   if (f. printOffset)
   {
-    f. print ("\n");
-    FOR (size_t, i, f. offset * File::offset_spaces)
-      f . print (" ");
-    f. offset--;
+    if (f. printBrief)
+    {
+      f. offset--;
+      return;
+    }
+    else
+    {
+      f. print ("\n");
+      FOR (size_t, i, f. offset * File::offset_spaces)
+        f . print (" ");
+      f. offset--;
+    }    
   }
-  f. print ("</" + name + ">");
+  if (! name. empty ())
+    f. print ("</" + name + ">");
   if (! f. printOffset)
     f. print ("\n");
 }
