@@ -45,7 +45,7 @@ namespace
 {
   
   
-static const string ext = "component";
+static const string ext ("component");
 
 
 
@@ -67,19 +67,31 @@ struct ThisApplication : Application
     version = VERSION;
 	  addPositional ("in", "List of pairs of connected items: <item1> <item2>\nwhere <item1>, <item2> are strings with no spaces");
 	  addPositional ("out", "Output directory with the sets of connected items. Each set is named by its lexicographycally smaller item with the added extension " + strQuote ("." + ext));
+	  addKey ("subset", "List of items. Item pairs are restricted to this list");
+	  addFlag ("pairs", "<out> is a list of pairs: <item1> <item_min>, where <item_min> is lexicographycally smallest item of the cluster");
 	}
 
 
 	void body () const final
 	{
-		const string in  = getArg ("in");
-		const string out = getArg ("out");
+		const string inFName     = getArg ("in");
+		const string outFName    = getArg ("out");
+		const string subsetFName = getArg ("subset");
+		const bool   pairs  = getFlag ("pairs");
 
 
+    unique_ptr<StringVector> subset;
+    if (! subsetFName. empty ())
+    {
+      subset. reset (new StringVector (subsetFName, (size_t) 10000, true));  // PAR 
+      subset->sort ();
+      QC_ASSERT (subset->isUniq ());
+    }
+      
     unordered_map<string/*Item::name*/,Item*> items;  items. rehash (100000);  // PAR
       // Not delete'd
     {
-      LineInput fIn (in, 1024 * 1024);  // PAR
+      LineInput fIn (inFName, 1024 * 1024);  // PAR
       string s1, s2;
       Istringstream iss;
       while (fIn. nextLine ())
@@ -88,6 +100,13 @@ struct ThisApplication : Application
         s2. clear ();
         iss >> s1 >> s2;
         QC_ASSERT (! s2. empty ());
+        if (subset. get ())
+        {
+          if (! subset->containsFast (s1))
+            continue;
+          if (! subset->containsFast (s2))
+            continue;
+        }
         if (! contains (items, s1))
           items [s1] = new Item (s1);
         if (! contains (items, s2))
@@ -100,14 +119,23 @@ struct ThisApplication : Application
     for (auto& it : items)
       clusters [it. second->getDisjointCluster ()] << it. second;
       
+    unique_ptr<OFStream> fOut;
+    if (pairs)
+      fOut. reset (new OFStream (outFName));
     for (auto& it : clusters)
     {
       VectorPtr<Item>& cluster = it. second;
       cluster. sort (Named::lessPtr);
       ASSERT (! cluster . empty ());
-      OFStream fOut (out, cluster [0] -> name, ext);
+      if (! pairs)
+        fOut. reset (new OFStream (outFName, cluster [0] -> name, ext));
       for (const Item* item : cluster)
-        fOut << item->name << endl;
+        if (pairs)
+          *fOut << item->name << '\t' << cluster [0] -> name << endl;
+        else
+          *fOut << item->name << endl;
+      if (! pairs)
+        fOut. reset ();
     } 
 	}
 };
