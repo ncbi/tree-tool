@@ -75,8 +75,9 @@ void printRow (const StringVector &values,
     const TextTable::Header& h = header [col];
     if (! printString (pad (values [col - col_start], h. len_max, ! h. numeric), screen_col_max, x))
       break;
-    if (! printString ("  ", screen_col_max, x))
-      break;
+    if (col + 1 < header. size ())
+      if (! printString ("  ", screen_col_max, x))
+        break;
   }
 
   clrtoeol ();
