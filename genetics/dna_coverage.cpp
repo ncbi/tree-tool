@@ -152,20 +152,26 @@ void addPrevSubject (Vector<Subject> &subjects,
 
 
 
+enum class Mode {best, combine, missed, none};
+
+
+
 void processSubjects (const string &qseqid,
                       size_t qlen,
                       Vector<Subject> &subjects,
-                      bool best,
-                      bool combine)
+                      Mode mode)
 {
-  ASSERT (! qseqid. empty ());
+  if (qseqid. empty ())
+    return;
+  if (mode == Mode::missed)
+    return;
+    
   ASSERT (qlen);
-  ASSERT (! (best && combine));
 
   if (subjects. empty ())
     return;
 
-  if (combine)
+  if (mode == Mode::combine)
   {
     Subject last (subjects. pop ());  // Has right qcoverage
     last. sseqid. clear ();
@@ -191,11 +197,43 @@ void processSubjects (const string &qseqid,
     cout << qseqid_ << '\t' << nvl (qtitle, na) << '\t';
     subj. saveText (cout, qlen);      
     cout << endl;
-    if (best)
+    if (mode == Mode::best)
       break;
   }
   
   subjects. clear ();
+}
+
+
+
+void reportMissed (const string &qseqid,
+                   const Vector<uint> &qchars)
+{
+  if (qseqid. empty ())
+    return;
+    
+  ASSERT (! qchars. empty ());
+
+  string qtitle (qseqid);
+  const string qseqid_ (findSplit (qtitle, '|'));
+  replace (qtitle, '_', ' ');
+  trim (qtitle);
+
+  size_t start = 0;    
+  FFOR (size_t, i, qchars. size () + 1)
+    if (i == qchars. size () || qchars [i])
+    {
+      if (start < i)
+        cout         << qseqid_ 
+             << '\t' << nvl (qtitle, na) 
+             << '\t' << qchars. size ()
+             << '\t' << start + 1
+             << '\t' << i
+             << '\t' << i - start
+             << '\t' << double (i - start) / double (qchars. size ()) * 100.0
+             << endl;
+      start = i + 1;
+    }
 }
 
 
@@ -213,8 +251,11 @@ struct ThisApplication : Application
       replaceStr (format, " >>", "");
       addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid, sseqid.\n\
 qseqid can have a suffix \"|qtitle\"");
-      addFlag ("best", "Print only the best coverage by a subject DNA");
-      addFlag ("combine", "Combine the coverages by subject DNAs");
+      addKey ("mode", "\
+best: print only the best coverage by a subject DNA\n\
+combine: combine the coverages by subject DNAs\n\
+missed: report non-covered query DNA segments\n\
+none: report all covered segments", "none");
     }
 
 
@@ -222,18 +263,31 @@ qseqid can have a suffix \"|qtitle\"");
   void body () const final
   {
     const string inFName = getArg ("in");
-    const bool   best    = getFlag ("best");
-    const bool   combine = getFlag ("combine");
+    const string modeS   = getArg ("mode");
     
-    if (best && combine)
-      throw runtime_error ("-best and -combine are incompatible");
+    Mode mode;
+    if (modeS == "best")
+      mode = Mode::best;
+    else if (modeS == "combine")
+      mode = Mode::combine;
+    else if (modeS == "missed")
+      mode = Mode::missed;
+    else if (modeS == "none")
+      mode = Mode::none;
+    else
+      throw runtime_error ("Unknown mode: " + strQuote (modeS));
+        
     
-    
-    cout << "#qseqid\tqtitle\tqlen\tqstart\tqend\tqcoverage\tpqcoverage\talign_length\tnident\tpident";
-      //      1       2       3     4       5     6          7           8             9       10          
-    if (! combine)
-      cout << "\tsseqid\tslen\tsstart\tsend\tscoverage\tpscoverage\tstitle";
-        //       11      12    13      14    15         16          17
+    cout << "#qseqid\tqtitle\tqlen\tqstart\tqend\tqcoverage\tpqcoverage";
+      //      1       2       3     4       5     6          7           
+    if (mode != Mode::missed)
+    {
+      cout << "\talign_length\tnident\tpident";
+        //       8             9       10 
+      if (mode != Mode::combine)
+        cout << "\tsseqid\tslen\tsstart\tsend\tscoverage\tpscoverage\tstitle";
+          //       11      12    13      14    15         16          17
+    }
     cout << endl;
 
 
@@ -271,14 +325,25 @@ qseqid can have a suffix \"|qtitle\"");
           QC_ASSERT (nident <= min (qlen, slen));
           QC_ASSERT (qlen);
           QC_ASSERT (slen);
-          
+          QC_IMPLY (qseqid_prev == qseqid, qlen_prev == qlen); 
+
+          if (   mode == Mode::missed 
+              && qseqid_prev != qseqid
+             )
+            reportMissed (qseqid_prev, qchars);
+
           if (! (         qseqid_prev == qseqid
                  && subj. sseqid      == sseqid
                 )
              )
           {
             addPrevSubject (subjects, subj, qchars, schars);
-            if (! (combine && qseqid_prev == qseqid))
+            if (! ((   mode == Mode::combine 
+                    || mode == Mode::missed
+                   )
+                   && qseqid_prev == qseqid
+                  )
+               )
             {
               qchars. resize (qlen, 0);
               qchars. setAll (0);
@@ -287,14 +352,9 @@ qseqid can have a suffix \"|qtitle\"");
             schars. setAll (0);
           }
           
-          if (qseqid_prev == qseqid)
-          { 
-            QC_ASSERT (qlen_prev == qlen); 
-          }
-          else
+          if (qseqid_prev != qseqid)
           {
-            if (! qseqid_prev. empty ())
-              processSubjects (qseqid_prev, qlen_prev, subjects, best, combine);
+            processSubjects (qseqid_prev, qlen_prev, subjects, mode);
             qseqid_prev = qseqid;
             qlen_prev = qlen;
           }
@@ -321,8 +381,9 @@ qseqid can have a suffix \"|qtitle\"");
           throw runtime_error (string (e. what ()) + "\nat line " + to_string (f. lineNum));
         }
       addPrevSubject (subjects, subj, qchars, schars);
-      if (! qseqid_prev. empty ())
-        processSubjects (qseqid_prev, qlen_prev, subjects, best, combine);
+      if (mode == Mode::missed)
+        reportMissed (qseqid_prev, qchars);
+      processSubjects (qseqid_prev, qlen_prev, subjects, mode);
     }
   }
 };
