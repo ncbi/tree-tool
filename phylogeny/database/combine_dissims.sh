@@ -61,14 +61,6 @@ fi
 N=$(( $N + 1 ))
 L=(`head -$N $DISSIM_SCALE | tail -1`)
 PRT_RAW_MAX=${L[1]}  # Species barrier
-#
-if [ $CDS == 1 ]; then
-  N=$(( $N + 1 ))
-  L=(`head -$N $DISSIM_SCALE | tail -1`)
-  #
-  N=$(( $N + 1 ))
-  L=(`head -$N $DISSIM_SCALE | tail -1`)
-fi
 
 BLOSUM62=""
 if [ $BLOSUM62_ARG == 1 ]; then
