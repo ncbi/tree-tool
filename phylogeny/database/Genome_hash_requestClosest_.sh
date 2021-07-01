@@ -27,7 +27,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
   --       k = O(1) artificially
   -- Time to populate GenomeHash: O(sort(h n))+
   begin
-    create table #H ([hash] numeric(20)  not null);
+    create table #H ([hash] numeric(20)  not null)
     bulk insert #H from '$BULK_REMOTE\\$FILE'
       with
       (
@@ -35,12 +35,12 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
       , CHECK_CONSTRAINTS
       , FIRE_TRIGGERS 
       , fieldterminator = '|'
-      );
+      )
 
-    declare @tax_root int;
+    declare @tax_root int
     select @tax_root = tax_root
       from Genome (nolock)
-      where id = $GENOME;
+      where id = $GENOME
 
     select #H.[hash]  
       into #A
@@ -48,14 +48,14 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
            left join FreqHash (nolock) on     FreqHash.[hash] = #H.[hash]
                                           and FreqHash.[type] = '$TYPE'
                                           and FreqHash.tax_root = @tax_root
-      where FreqHash.[hash] is null;
+      where FreqHash.[hash] is null
 
     select GenomeHash.genome, count(*) c
       into #G
       from      #A
            join GenomeHash (nolock) on     GenomeHash.[hash] = #A.[hash]
                                        and GenomeHash.[type] = '$TYPE'
-      group by GenomeHash.genome;
+      group by GenomeHash.genome
 
     select top 100/*PAR*/ #G.genome
       from      #G
@@ -63,8 +63,8 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1'
       where     Genome.in_tree = 1
             and #G.genome != $GENOME
             and Genome.tax_root = @tax_root
-      order by #G.c desc, #G.genome /*tie resolution*/;
-  end;
+      order by #G.c desc, #G.genome /*tie resolution*/
+  end
   go -m bcp
 EOT
 
