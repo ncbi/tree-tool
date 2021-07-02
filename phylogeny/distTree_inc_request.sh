@@ -21,8 +21,12 @@ DIR=$INC/search/$OBJ
 LOG=$INC/log/$OBJ
 
 
-cp /dev/null $LOG
-$INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &>> $LOG.pairs2dissim
+if [ ! -e $LOG ]; then
+  error "$LOG does not exist"
+fi
+
+
+$INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.pairs2dissim
 
 
 # QC
@@ -46,4 +50,5 @@ cat $DIR/dissim.add >> $DIR/dissim
 rm $DIR/dissim.add
 
 
-rm -f $LOG*
+rm $LOG.pairs2dissim
+rm $LOG
