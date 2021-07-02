@@ -1049,8 +1049,8 @@ void DTNode::ClosestLeaf::qc () const
 {
   if (! qc_on)
     return;
-  QC_ASSERT (leaf);
-  QC_ASSERT (/*isNan (dist) ||*/ dist >= 0.0);
+  QC_ASSERT (dc);
+  QC_ASSERT (dist >= 0.0);
 }
 
 
@@ -1259,46 +1259,51 @@ Cluster2Leaves Steiner::getIndiscernibles ()
 
 Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max) 
 {
+  ASSERT (genogroup_dist_max > 0.0);
+  ASSERT (genogroup_dist_max < inf);
+
+
   Vector<ClosestLeaf> res;
   
   Vector<ClosestLeaf> vec;  vec. reserve (16); // PAR
-    // Total length for nodes of the same depth = n
   for (const DiGraph::Arc* arc : arcs [false])
     vec << static_cast <DTNode*> (arc->node [false]) -> findGenogroups (genogroup_dist_max);
   if (vec. empty ())
     return res;
-  
-  ClosestLeaf* cf_min = nullptr;
-  Real dist_min = inf;
-  for (ClosestLeaf &cf : vec)
-  {
-    cf. qc ();
-    ASSERT (cf. dist <= genogroup_dist_max);
-    if (minimize (dist_min, cf. dist))
-      cf_min = & cf;
-  }
-  ASSERT (cf_min);
 
-  for (ClosestLeaf &cf : vec)
-    if (   cf_min != & cf
-        && cf_min->dist + cf. dist <= genogroup_dist_max
-       )
-      var_cast (cf_min->leaf) -> DisjointCluster::merge (* var_cast (cf. leaf));
+  {  
+    ClosestLeaf* cl_min = nullptr;
+    Real dist_min = inf;
+    for (ClosestLeaf &cl : vec)
+    {
+      cl. qc ();
+      ASSERT (cl. dist <= genogroup_dist_max);
+      if (minimize (dist_min, cl. dist))
+        cl_min = & cl;
+    }
+    ASSERT (cl_min);
+    for (ClosestLeaf &cl : vec)
+      if (   cl_min != & cl
+          && cl_min->dist + cl. dist <= genogroup_dist_max
+         )
+        var_cast (cl_min->dc) -> DisjointCluster::merge (* var_cast (cl. dc));
+  }
         
-  unordered_map<const Leaf*,Real/*dist*/> leaf2dist;
-  leaf2dist. rehash (vec. size ());
-  for (const ClosestLeaf &cf : vec)
+  unordered_map<const DisjointCluster*,Real/*dist*/> dc2dist;
+  dc2dist. rehash (vec. size ());
+  for (ClosestLeaf &cl : vec)
   {
-    auto it = leaf2dist. find (cf. leaf);
-    if (it == leaf2dist. end ())
-      leaf2dist [cf. leaf] = cf. dist;
+    const DisjointCluster* dc = var_cast (cl. dc) -> getDisjointCluster ();
+    auto it = dc2dist. find (dc);
+    if (it == dc2dist. end ())
+      dc2dist [dc] = cl. dist;
     else
-      minimize (it->second, cf. dist);
+      minimize (it->second, cl. dist);
   }
   
   ASSERT (res. empty ());
-  res. reserve (leaf2dist. size ()); 
-  for (const auto& it : leaf2dist)
+  res. reserve (dc2dist. size ()); 
+  for (const auto& it : dc2dist)
   {
     const Real dist = it. second + len;
     if (dist <= genogroup_dist_max)
@@ -9250,55 +9255,6 @@ VectorPtr<DTNode> DistTree::findDepthClusters (size_t clusters_min) const
 #endif
   
   return clusters;
-}
-
-
-
-void DistTree::findGenogroups (Real genogroup_dist_max) 
-{
-  ASSERT (genogroup_dist_max > 0.0);
-  ASSERT (genogroup_dist_max < inf);
-
-
-#if 1
-  const_static_cast<DTNode*> (root) -> findGenogroups (genogroup_dist_max);
-#else
-  // DTNode::DisjointCluster
-  VectorPtr<Leaf> leaves;  leaves. reserve (nodes. size ());
-  for (DiGraph::Node* node : nodes)
-  {
-    DTNode* dtNode = static_cast <DTNode*> (node);
-    dtNode->DisjointCluster::init ();
-    if (const Leaf* leaf = dtNode->asLeaf ())
-      if (leaf->graph)
-        leaves << leaf;
-  }
-
-  
-  // Molecular clock => 
-  //   topological tree height = O(log(n))
-  //   ave. arc len = const / log(n)
-  //   topological radius = genogroup_dist_max / ave. arc len = O(log(n))
-
-  // Time: O(n log(n))
-  Progress prog (leaves. size (), 1000);  // PAR
-  Tree::LcaBuffer buf;
-  VectorPtr<TreeNode> area;
-  VectorPtr<TreeNode> boundary;
-  for (const Leaf* leaf : leaves)
-  {
-    prog ();
-    area. clear ();
-    boundary. clear ();
-    leaf->getDistanceArea (genogroup_dist_max, area, boundary); 
-    for (const TreeNode* treeNode : boundary)
-      if (const Leaf* other = static_cast <const DTNode*> (treeNode) -> asLeaf ())
-      {
-        ASSERT (other->graph);
-        var_cast (leaf) -> DisjointCluster::merge (* var_cast (other));
-      }
-  }
-#endif
 }
 
 

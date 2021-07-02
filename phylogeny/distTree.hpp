@@ -497,12 +497,16 @@ private:
 
   struct ClosestLeaf
   {
-    const Leaf* leaf;
+    const DisjointCluster* dc;
+      // !nullptr
     Real dist;
-      // Distance from leaf to getParent()
+      // For single limkage:   minimum distance from a leaf of dc to getParent()
+      // For complete linkage: maximum distance from a leaf of dc to getParent()
+      // >= 0
     void qc () const;
   };
   virtual Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) = 0;
+    // Output: Leaf::DisjointCluster
     // Return: dist <= genogroup_dist_max
 };
 
@@ -1612,9 +1616,9 @@ public:
     // Output: DisjointCluster::<Leaf>
   VectorPtr<DTNode> findDepthClusters (size_t clusters_min) const;
     // Return: connected subgraph including root
-  void findGenogroups (Real genogroup_dist_max);  
+  void findGenogroups (Real genogroup_dist_max)
+    { const_static_cast<DTNode*> (root) -> findGenogroups (genogroup_dist_max); }
     // Single linkage clustering
-    // Output: Leaf::DisjointCluster
     // For different genogroups their interior nodes do not intersect
     // Time: O(n log(n)) 
 
