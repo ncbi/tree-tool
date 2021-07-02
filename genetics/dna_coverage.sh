@@ -3,8 +3,8 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# != 3 ]; then
   echo "Contig coverage report"
-  echo "#1: query QUERY FASTA file"
-  echo "#2: subject QUERY FASTA file"
+  echo "#1: query FASTA file"
+  echo "#2: subject FASTA file"
   echo "#3: report non-covered query segments (0/1)"
   exit 1
 fi
@@ -33,7 +33,8 @@ blastn  -query $QUERY  -db $TMP  -dust no  -evalue 1e-100  -dbsize 10000000  -ou
 if [ $MISSED == 1 ]; then
   dna_coverage $TMP.blastn  -mode missed
 else
-  dna_coverage $TMP.blastn | awk -F '\t' '$10 > '$T' && $16 > '$T
+  dna_coverage $TMP.blastn 
+    # | awk -F '\t' '$10 > '$T' && $16 > '$T
 fi
 
 
