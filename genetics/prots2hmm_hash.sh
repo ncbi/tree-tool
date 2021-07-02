@@ -33,6 +33,6 @@ cut -f 2 $SIG | $THIS/../str2hash -log $LOG > $HASH
 
 
 rm -f $TMP*
-rm $LOG*
+rm $LOG
 
 
