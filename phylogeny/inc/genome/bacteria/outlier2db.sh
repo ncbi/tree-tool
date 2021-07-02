@@ -17,7 +17,9 @@ DATABASE=`cat $INC/database`
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update Genome
     set outlier = '$OUTLIER'
-    where id = $ASM;
+    where id = $ASM
+  if @@rowcount != 1
+    raiserror ('update failed', 11, 1)
   go -m bcp 
 EOT
 

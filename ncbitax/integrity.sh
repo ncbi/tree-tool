@@ -15,22 +15,22 @@ SCHEMA=$3
 
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   begin
-    set nocount on;
+    set nocount on
 
-    print '$SCHEMA.Tax/Parent.rank:';
+    print '$SCHEMA.Tax/Parent.rank:'
     select Tax.id, Tax.[rank], P.[rank] parent_rank
       from      $SCHEMA.Tax
            join $SCHEMA.Tax P on P.id = Tax.parent
-      where Tax.[rank] < P.[rank];
+      where Tax.[rank] < P.[rank]
 
-    print '';
-    print '$SCHEMA.Tax.sub_rank:';
+    print ''
+    print '$SCHEMA.Tax.sub_rank:'
     select C.id, C.[rank], C.sub_rank, P.sub_rank
       from      $SCHEMA.Tax C
            join $SCHEMA.Tax P on P.id = C.parent
       where     C.[rank] = P.[rank]
-            and C.sub_rank != P.sub_rank + 1;
-  end;
+            and C.sub_rank != P.sub_rank + 1
+  end
   go 
 EOT
 

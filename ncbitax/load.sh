@@ -43,12 +43,12 @@ fi
 sqsh-ms  -S $SERVER  -D $DB << EOT > $TMP.schema
   select 1 
     from sys.schemas 
-    where [name] = '$SCHEMA';
+    where [name] = '$SCHEMA'
   go -m bcp
 EOT
 if [ ! -s $TMP.schema ]; then
   sqsh-ms  -S $SERVER  -D $DB << EOT 
-    create schema $SCHEMA;
+    create schema $SCHEMA
     go
 EOT
 fi
@@ -62,7 +62,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
       id varchar(16)  not null  primary key
     , num int  not null  check (num >= -1)
     , sub_rank_max tinyint  not null  default 0 
-    );
+    )
     insert into $SCHEMA.Taxrank (num, id) values
       (-1, 'all'),
       ( 0, 'superkingdom'),
@@ -94,9 +94,9 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
       (26, 'species'),
       (27, 'subspecies'),
       (28, 'varietas'),
-      (29, 'forma');
+      (29, 'forma')
       -- 'section', 'series'
-    grant select on $SCHEMA.Taxrank to public;
+    grant select on $SCHEMA.Taxrank to public
     
     create table $SCHEMA.Tax
     (
@@ -116,13 +116,13 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
     , strain bit  not null  default 0
     , unclassified bit  not null  default 0
     , depth int  check (depth >= 0)
-    );
-    grant select on $SCHEMA.Tax to public;
+    )
+    grant select on $SCHEMA.Tax to public
   end try
   begin catch
-    print error_message();
-    raiserror ('error', 11, 1);
-  end catch;
+    print error_message()
+    raiserror ('error', 11, 1)
+  end catch
   go
 EOT
 
@@ -160,27 +160,27 @@ fi
 echo "Indexing ..."
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   begin try
-    create index Tax_parent_idx on $SCHEMA.Tax(parent);
+    create index Tax_parent_idx on $SCHEMA.Tax(parent)
     update $SCHEMA.Tax 
       set parent = null
-      where id = 1;
-    alter table $SCHEMA.Tax add constraint Tax_fk foreign key (parent) references $SCHEMA.Tax(id);
+      where id = 1
+    alter table $SCHEMA.Tax add constraint Tax_fk foreign key (parent) references $SCHEMA.Tax(id)
     update $SCHEMA.Tax
       set rank_name = null
-      where not rank_name in (select Taxrank.id from $SCHEMA.Taxrank);
-    alter table $SCHEMA.Tax add constraint Tax_rank_fk foreign key (rank_name) references $SCHEMA.Taxrank(id);
-    create unique index Tax_uq on $SCHEMA.Tax([name]);
-    create index Tax_depth_idx on $SCHEMA.Tax(depth);
+      where not rank_name in (select Taxrank.id from $SCHEMA.Taxrank)
+    alter table $SCHEMA.Tax add constraint Tax_rank_fk foreign key (rank_name) references $SCHEMA.Taxrank(id)
+    create unique index Tax_uq on $SCHEMA.Tax([name])
+    create index Tax_depth_idx on $SCHEMA.Tax(depth)
     update Tax
       set [rank] = Taxrank.num
       from      $SCHEMA.Tax
-           join $SCHEMA.Taxrank on Taxrank.id = Tax.rank_name;
-    create index Tax_rank_idx on $SCHEMA.Tax([rank]);
+           join $SCHEMA.Taxrank on Taxrank.id = Tax.rank_name
+    create index Tax_rank_idx on $SCHEMA.Tax([rank])
   end try
   begin catch
-    print error_message();
-    raiserror ('error', 11, 1);
-  end catch;
+    print error_message()
+    raiserror ('error', 11, 1)
+  end catch
   go
 EOT
 
@@ -192,39 +192,39 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
   -- Return: Tax.id, null (root) or -1 (unclassified)
   as 
   begin   
-    declare @parent int;  
-    declare @found bit;
-    declare @unclassified bit = 0;
+    declare @parent int  
+    declare @found bit
+    declare @unclassified bit = 0
     while 1=1
     begin
-      set @found = null;
+      set @found = null
       select @parent = parent
            , @found = case when [rank] = @rank and sub_rank = @sub_rank and strain = 0 then 1 else 0 end
            , @unclassified = unclassified
         from $SCHEMA.Tax
-        where id = @tax;
+        where id = @tax
       if @found is null
-        return null; 
+        return null 
       if @found = 1 
       begin
         if @unclassified = 1
-          return -1;
-        return @tax;
-      end;
+          return -1
+        return @tax
+      end
       if @parent is null
-        return null;
-      set @tax = @parent;
-    end;
-    return null;
-  end;
+        return null
+      set @tax = @parent
+    end
+    return null
+  end
   go
 
 
   create function $SCHEMA.tax_rank2tax (@tax int, @rank int) returns int
   as
   begin
-    return $SCHEMA.tax_rank_sub_rank2tax (@tax, @rank, 0);
-  end;
+    return $SCHEMA.tax_rank_sub_rank2tax (@tax, @rank, 0)
+  end
   go
 
 
@@ -232,18 +232,18 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
   -- Return: null (root), '_OTHER_' (unclassified) or name
   as
   begin
-    declare @ancestor_tax int;
-    select @ancestor_tax = $SCHEMA.tax_rank_sub_rank2tax (@tax, @rank, @sub_rank);
+    declare @ancestor_tax int
+    select @ancestor_tax = $SCHEMA.tax_rank_sub_rank2tax (@tax, @rank, @sub_rank)
     if @ancestor_tax is null
-      return null;
+      return null
     if @ancestor_tax = -1
-      return '_OTHER_';
-    declare @name varchar(256);
+      return '_OTHER_'
+    declare @name varchar(256)
     select @name = [name]
       from $SCHEMA.Tax
-      where id = @ancestor_tax;
-    return @name;
-  end;
+      where id = @ancestor_tax
+    return @name
+  end
   go
 
 
@@ -251,57 +251,57 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
   -- Print: <NN>-<NN>:{<tax_name>|_OTHER_}
   as
   begin
-    declare @rank int;
+    declare @rank int
     select @rank = Tax.[rank]
       from $SCHEMA.Tax
-      where Tax.id = @tax;
+      where Tax.id = @tax
     if @rank is null
-      raiserror ('No record in $SCHEMA.Tax', 11, @tax);
+      raiserror ('No record in $SCHEMA.Tax', 11, @tax)
 
     declare RankCur cursor local for
       select num, sub_rank_max
         from $SCHEMA.Taxrank
         where num between @rank_min and @rank  -- PAR
-        order by num;
-    open RankCur;
-    declare @taxrank int;
-    declare @sub_rank_max tinyint;
-    declare @taxname varchar(256);
-    declare @taxname_old varchar(128) = '';
-    declare @sub_rank tinyint;
-    declare @name_prefix varchar(128);
+        order by num
+    open RankCur
+    declare @taxrank int
+    declare @sub_rank_max tinyint
+    declare @taxname varchar(256)
+    declare @taxname_old varchar(128) = ''
+    declare @sub_rank tinyint
+    declare @name_prefix varchar(128)
     while 1=1
     begin
-      fetch next from RankCur into @taxrank, @sub_rank_max;
+      fetch next from RankCur into @taxrank, @sub_rank_max
       if @@fetch_status != 0
-        break;
-      set @sub_rank = 0;
+        break
+      set @sub_rank = 0
       while @sub_rank <= @sub_rank_max
       begin
         if @taxrank >= 100
-          raiserror ('@taxrank >= 100', 11, @tax);
+          raiserror ('@taxrank >= 100', 11, @tax)
         if @sub_rank >= 100
-          raiserror ('@sub_rank >= 100', 11, @tax);
-        set @taxname = $SCHEMA.tax_rank_sub_rank2name (@tax, @taxrank, @sub_rank);
-        set @name_prefix = replace(str(@taxrank, 2),' ','0') + '-' + replace(str(@sub_rank,2),' ','0') + ':';
+          raiserror ('@sub_rank >= 100', 11, @tax)
+        set @taxname = $SCHEMA.tax_rank_sub_rank2name (@tax, @taxrank, @sub_rank)
+        set @name_prefix = replace(str(@taxrank, 2),' ','0') + '-' + replace(str(@sub_rank,2),' ','0') + ':'
         if @taxname is not null
         begin
-          print @name_prefix + @taxname;
-          set @taxname_old = @taxname;
-        end;
+          print @name_prefix + @taxname
+          set @taxname_old = @taxname
+        end
         else
         begin
           if @taxname_old != '' 
-            print @name_prefix + @taxname_old;  
-        end;
-        set @sub_rank = @sub_rank + 1;
-      end;
-    end;
-    close RankCur;
-    deallocate RankCur;
-  end;
+            print @name_prefix + @taxname_old  
+        end
+        set @sub_rank = @sub_rank + 1
+      end
+    end
+    close RankCur
+    deallocate RankCur
+  end
   go
-  grant execute on $SCHEMA.tax2phen to public;
+  grant execute on $SCHEMA.tax2phen to public
   go
 EOT
 
@@ -309,14 +309,14 @@ EOT
 echo "Finishing ..."
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   begin try
-    set nocount on;
+    set nocount on
 
     -- $SCHEMA.Tax.{rank_name,[rank],sub_rank}
     update $SCHEMA.Tax
       set rank_name = 'all'
         , [rank] = -1
       where     parent is null
-            and rank_name is null;
+            and rank_name is null
     while 1=1
     begin
       update Tax
@@ -326,19 +326,19 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
         from      $SCHEMA.Tax
              join $SCHEMA.Tax P on P.id = Tax.parent
         where     Tax.rank_name is null
-              and P.rank_name is not null;
+              and P.rank_name is not null
       if @@rowcount = 0
-        break;
-    end;
+        break
+    end
     update $SCHEMA.Tax
       set rank_name = 'all'
         , [rank] = -1
-      where rank_name is null;
+      where rank_name is null
 
     -- Tax.depth
     update $SCHEMA.Tax
       set depth = 0
-      where parent is null;
+      where parent is null
     while 1=1
     begin
       update Tax
@@ -346,10 +346,10 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
         from      $SCHEMA.Tax
              join $SCHEMA.Tax P on P.id = Tax.parent
         where     Tax.depth is null
-              and P.depth is not null;
+              and P.depth is not null
       if @@rowcount = 0
-        break;
-    end;
+        break
+    end
 
     -- Taxrank.sub_rank_max
   	update Taxrank
@@ -358,7 +358,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
   	       join (select rank_name, max(sub_rank) sub_rank_max
                    from $SCHEMA.Tax
                    group by rank_name
-                ) T on T.rank_name = Taxrank.id;
+                ) T on T.rank_name = Taxrank.id
 
     -- Tax.endosymbiont
     update $SCHEMA.Tax
@@ -371,13 +371,13 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
               , 780     -- Rickettsia
               , 138074  -- Serratia symbiotica
               , 51229	  -- Wigglesworthia glossinidia
-              );
+              )
     update $SCHEMA.Tax
       set endosymbiont = 1
-      where lower(name) like '%endosymbiont%';
+      where lower(name) like '%endosymbiont%'
     update $SCHEMA.Tax
       set endosymbiont = 1
-      where lower(name) like '%phytoplasma%';
+      where lower(name) like '%phytoplasma%'
     while 1=1
     begin
       update Tax
@@ -385,61 +385,61 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
         from      $SCHEMA.Tax
              join $SCHEMA.Tax P on P.id = Tax.parent
         where     Tax.endosymbiont = 0
-              and P.endosymbiont = 1;
+              and P.endosymbiont = 1
       if @@rowcount = 0
-        break;
-    end;
+        break
+    end
 
     -- Tax.unclassified
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '%unclassified%';
+      where lower(name) like '%unclassified%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '%unassigned%';
+      where lower(name) like '%unassigned%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '%unidentified%';
+      where lower(name) like '%unidentified%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where [name] like '% candidate phyla';
+      where [name] like '% candidate phyla'
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '%incertae sedis%';
+      where lower(name) like '%incertae sedis%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '%symbionts';
+      where lower(name) like '%symbionts'
     update $SCHEMA.Tax
       set unclassified = 1
       where     name like '% sp.%'
-            and not [name] like '% f. sp.%';  -- "Forma speciales"
+            and not [name] like '% f. sp.%'  -- "Forma speciales"
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '% taxa';
+      where lower(name) like '% taxa'
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '% taxon %';
+      where lower(name) like '% taxon %'
     update $SCHEMA.Tax
       set unclassified = 1
-      where lower(name) like '%uncultured%';
+      where lower(name) like '%uncultured%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where name like 'bacterium%';
+      where name like 'bacterium%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where name like '% bacterium%';
+      where name like '% bacterium%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where name like 'actinobacterium%';
+      where name like 'actinobacterium%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where name like '% actinobacterium%';
+      where name like '% actinobacterium%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where name like 'proteobacterium%';
+      where name like 'proteobacterium%'
     update $SCHEMA.Tax
       set unclassified = 1
-      where name like '% proteobacterium%';
+      where name like '% proteobacterium%'
     update $SCHEMA.Tax
       set unclassified = 1
       where     revised = 0
@@ -448,11 +448,11 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
             and not [name] like 'candidate %'
             and not [name] like '% group'
             and not [name] like '''%'
-            and substring([name],1,1) = lower(substring([name],1,1));
+            and substring([name],1,1) = lower(substring([name],1,1))
     update $SCHEMA.Tax
       set unclassified = 1
       where     id = 46583  -- Candida tanzawaensis
-            and $SCHEMA.tax_rank2tax (id, 22/*genus*/) is null;
+            and $SCHEMA.tax_rank2tax (id, 22/*genus*/) is null
 
 
     -- Tax.strain
@@ -474,7 +474,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
                  or [name] like '%[ (]JCM%'
                  or [name] like '%[ (]IFO%'
                  or [name] like '%[ (]NBRC%'
-                );
+                )
     update $SCHEMA.Tax
       set strain = 1
       where     [rank] >= 26
@@ -485,7 +485,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
                        272620, 378753, 1263082, 393127, 637915, 1201294, 876269, 1807683, 1807684, 1807685, 1807686, 1807687, 1807688, 1807689,
                        1960879, 1727164, 1158338, 1158345, 754252, 281093, 1078464, 1749078, 1798213, 1165861, 1125979, 234621, 193079, 1298918,
                        2043162, 1112349, 1297534, 869303, 869304, 869306, 869307, 1882757, 1984801, 2043167, 2043168, 1313298, 1629664, 223789,
-                       679716, 223926, 223926);
+                       679716, 223926, 223926)
     while 1=1
     begin
       update C
@@ -493,53 +493,53 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
         from      $SCHEMA.Tax P
              join $SCHEMA.Tax C on C.parent = P.id
         where     P.strain = 1
-              and C.strain = 0;
+              and C.strain = 0
       if @@rowcount = 0
-        break;
-    end;
+        break
+    end
 
 
     -- Integrity
-    declare @n int;
+    declare @n int
     
     select @n = count(*)
       from $SCHEMA.Tax
       where     parent is null
-            and id != 1;
+            and id != 1
     if @n > 0
-      raiserror ('$SCHEMA.Tax.parent', 11, @n);
+      raiserror ('$SCHEMA.Tax.parent', 11, @n)
 
     select @n = count(*)
       from $SCHEMA.Tax
       where    [rank] is null
-            or rank_name is null;
+            or rank_name is null
     if @n > 0
-      raiserror ('$SCHEMA.Tax.rank/rank_name is null', 11, @n);
+      raiserror ('$SCHEMA.Tax.rank/rank_name is null', 11, @n)
 
     select @n = count(*)
       from $SCHEMA.Tax
-      where depth is null;
+      where depth is null
     if @n > 0
-      raiserror ('Tax.depth', 11, @n);
+      raiserror ('Tax.depth', 11, @n)
 
     select @n = count(*)
       from $SCHEMA.Tax
-      where not (strain = 0 or [rank] >= 26);
+      where not (strain = 0 or [rank] >= 26)
     if @n > 0
-      raiserror ('Tax.strain rank is too high', 11, @n);
+      raiserror ('Tax.strain rank is too high', 11, @n)
 
     select @n = count(*)
       from      $SCHEMA.Tax C
            join $SCHEMA.Tax P on P.id = C.parent
       where     C.[rank] > P.[rank]
-            and C.sub_rank >= 1;
+            and C.sub_rank >= 1
     if @n > 0
-      raiserror ('Tax/Parent.[rank]', 11, @n);
+      raiserror ('Tax/Parent.[rank]', 11, @n)
   end try
   begin catch
-    print error_message();
-    raiserror ('error', 11, 1);
-  end catch;
+    print error_message()
+    raiserror ('error', 11, 1)
+  end catch
   go -m bcp 
 EOT
 
