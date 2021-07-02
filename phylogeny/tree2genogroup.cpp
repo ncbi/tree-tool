@@ -54,7 +54,9 @@ struct Genogroup
     // Distinct
   const Steiner* lca {nullptr};
     // Root of the genogroup subgraph
+    // nullptr <=> singleton
   const Leaf* leader {nullptr};
+    // !nullptr
     // Prefer complete, well annotated objects !??
   
   Genogroup () = default;
@@ -78,7 +80,7 @@ struct Genogroup
 struct ThisApplication : Application
 {
 	ThisApplication ()
-		: Application ("Find genogroups in a distance tree")
+		: Application ("Find genogroups in a distance tree by single linkage clustering")
 		{
 		  version = VERSION;
 		  // Input
@@ -114,10 +116,9 @@ struct ThisApplication : Application
     genogroups. rehash (tree. nodes. size ());
 	 	for (DiGraph::Node* node_ : tree. nodes)
 	 	{
-	 		const DiGraph::Node* cluster = node_->getDisjointCluster ();
 	 		const DTNode* node = static_cast <const DTNode*> (node_);
 	 		if (const Leaf* leaf = node->asLeaf ())
- 		    genogroups [cluster]. leaves << leaf;
+ 		    genogroups [node_->getDisjointCluster ()]. leaves << leaf;
 	 	}
     for (auto& it : genogroups)
       it. second. finish ();
@@ -131,6 +132,7 @@ struct ThisApplication : Application
          A genogroups with its interior nodes is a connected subgraph. It has a unique root.
     */
     VectorPtr<Tree::TreeNode> lcas;  lcas. reserve (genogroups. size ());
+        // !nullptr
     for (const auto& it : genogroups)
       if (const Steiner* lca = it. second. lca)
         lcas << lca;
