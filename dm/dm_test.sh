@@ -31,7 +31,8 @@ $THIS/pca  -qc  -maxClusters 4  -mds  Listeria_monocytogenes-qc pc
 diff Listeria_monocytogenes-qc-pc.txt $THIS/data/Listeria_monocytogenes-qc-pc.txt
 diff Listeria_monocytogenes-qc-pc.dm $THIS/data/Listeria_monocytogenes-qc-pc.dm
 diff Listeria_monocytogenes-qc-pc.mds $THIS/data/Listeria_monocytogenes-qc-pc.mds
-rm Listeria_monocytogenes-qc*
+rm Listeria_monocytogenes-qc.dm
+rm Listeria_monocytogenes-qc-pc.*
 
 
 super_section "MDS"
