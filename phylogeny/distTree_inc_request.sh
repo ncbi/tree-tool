@@ -51,4 +51,4 @@ rm $DIR/dissim.add
 
 
 rm $LOG.pairs2dissim
-rm $LOG
+rm -f $LOG
