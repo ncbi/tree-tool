@@ -61,7 +61,8 @@ bool printString (string s,
   
   
   
-void printRow (const StringVector &values,
+void printRow (bool is_header,
+               const StringVector &values,
                size_t col_start,
                const Vector<TextTable::Header> &header,
                size_t screen_col_max)
@@ -73,7 +74,20 @@ void printRow (const StringVector &values,
   {
     ASSERT (x <= screen_col_max);
     const TextTable::Header& h = header [col];
-    if (! printString (pad (values [col - col_start], h. len_max, ! h. numeric), screen_col_max, x))
+    string value (values [col - col_start]);
+    if (   ! is_header 
+        && h. numeric 
+        && h. decimals
+       )
+    {
+      bool hasPoint = false;
+      streamsize decimals = 0;
+      TextTable::getDecimals (value, hasPoint, decimals);
+      ASSERT (h. decimals >= decimals);
+      value += string ((size_t) (h. decimals - decimals) + (! hasPoint), ' ');
+    }
+    ASSERT (value. size () <= h. len_max);
+    if (! printString (pad (value, h. len_max, ! h. numeric), screen_col_max, x))
       break;
     if (col + 1 < header. size ())
       if (! printString ("  ", screen_col_max, x))
@@ -118,11 +132,12 @@ struct ThisApplication : Application
     while (! quit)
     {
       nc. resize ();
-      const size_t fieldSize = nc. row_max - 2;  // Top row is for header, last row is for menu
+      constexpr size_t headerSize = 2;  // File name, header
+      const size_t fieldSize = nc. row_max - (headerSize + 1 /*menu row*/); 
       const size_t pageScroll = fieldSize - 1;
       const size_t bottomIndex_max = topIndex + fieldSize;
       const size_t bottomIndex = min (tt. rows. size (), bottomIndex_max);
-      if (   nc. row_max > 3
+      if (   nc. row_max > headerSize + 2
           && nc. col_max > 10  // PAR
          )
       {
@@ -132,35 +147,44 @@ struct ThisApplication : Application
         move (0, 0);
         {
           const NCAttr attr (A_BOLD);
+          addstr (tableFName. c_str ());
+          clrtoeol ();
+        }
+        move (1, 0);
+        {
+          const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (7) /*nc. background*/ | A_BOLD);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. header [j]. name;
-          printRow (values, curCol, tt. header, nc. col_max);
+          printRow (true, values, curCol, tt. header, nc. col_max);
         }        
-        move ((int) fieldSize + 1, 0);
+        move ((int) (fieldSize + headerSize), 0);
         {
           const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          addstr (("[" + getFileName (tableFName) + "]"). c_str ());
-          addstr ("   Up   Down   Left  Right  PgUp,b   PgDn,f   Home,B   End,F   F3,s:Search from cursor   F10,q:Quit");
-            // Most of keys are intercepted by the terminal
-          addstr (("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]"). c_str ());
+          const string keyS ("Up   Down   Left  Right  PgUp,b   PgDn,f   Home,B   End,F   F3,s:Search from cursor   F10,q:Quit");
+            // Non-character keys may be intercepted by the terminal
+          const string posS ("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]");
+          string spacer;
+          if (nc. col_max > keyS. size () + posS. size ())
+            spacer = string (nc. col_max - (keyS. size () + posS. size ()), ' ');
+          addstr ((keyS + spacer + posS). c_str ());
           clrtoeol ();
         }
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
-          move ((int) (i - topIndex) + 1, 0);
+          move ((int) (i - topIndex + headerSize), 0);
           const NCAttr attrCurrent (A_REVERSE, i == curIndex);
           const NCAttr attrFound (A_BOLD, rowFound [i]);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. rows [i] [j];
-          printRow (values, curCol, tt. header, nc. col_max);
+          printRow (false, values, curCol, tt. header, nc. col_max);
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
-          move ((int) (i - topIndex) + 1, 0);
+          move ((int) (i - topIndex + headerSize), 0);
           clrtoeol ();
         }
         refresh ();
