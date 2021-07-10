@@ -178,7 +178,7 @@ struct ThisApplication : Application
         if (large)
         {
           dir += "/" + to_string (str2hash_class (it. first));
-          createDirectory (dir, true);
+          Dir (dir). create ();
         }
         const ios_base::openmode mode = append ? ios_base::app : ios_base::out;
         ofstream of (dir + "/" + it. first, mode);
