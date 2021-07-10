@@ -31,7 +31,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT
   update Virus
     set in_tree = $IN_TREE
     from      ListC
-         join Virus on Virus.id = ListC.id;
-  print @@rowcount;
+         join Virus on Virus.id = ListC.id
+  print @@rowcount
   go -m bcp
 EOT

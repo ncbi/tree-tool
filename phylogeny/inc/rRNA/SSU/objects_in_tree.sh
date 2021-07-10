@@ -33,7 +33,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT
   update Locus
     set in_tree = $IN_TREE
     from      ListC
-         join Locus on Locus.id = ListC.id;
-  print @@rowcount;
+         join Locus on Locus.id = ListC.id
+  print @@rowcount
   go -m bcp
 EOT

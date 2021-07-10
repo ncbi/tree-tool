@@ -17,9 +17,9 @@ DATABASE=`cat $INC/database`
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update Locus
     set outlier = '$OUTLIER'
-    where id = '$OBJ';
+    where id = '$OBJ'
   if @@rowcount != 1
-    raiserror ('Locus not found', 11, 1);
+    raiserror ('Locus not found', 11, 1)
   go -m bcp 
 EOT
 

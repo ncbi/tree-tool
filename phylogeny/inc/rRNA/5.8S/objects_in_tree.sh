@@ -36,7 +36,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT
     set in_tree = $IN_TREE
     from      ListC
          join Locus5_8S on     Locus5_8S.accession = ListC.id
-                           and Locus5_8S.selected = 1;
-  print @@rowcount;
+                           and Locus5_8S.selected = 1
+  print @@rowcount
   go -m bcp
 EOT

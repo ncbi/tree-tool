@@ -21,8 +21,8 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT
   update Genome
     set in_tree = $IN_TREE
     from      List
-         join Genome on Genome.id = List.id;
-  print @@rowcount;
+         join Genome on Genome.id = List.id
+  print @@rowcount
   go -m bcp
 EOT
 

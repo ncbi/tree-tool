@@ -17,7 +17,7 @@ CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $IN $DATABASE..ListC
 
 
 sqsh-ms  -S $SERVER  -D $DATABASE  -L exit_failcount=1 << EOF | sed 's/|$//1' 
-  EXEC Genogroup2outliers 2759 /*PAR*/, 0;
+  EXEC Genogroup2outliers 2759 /*PAR*/, 0
   go -m bcp
 EOF
 

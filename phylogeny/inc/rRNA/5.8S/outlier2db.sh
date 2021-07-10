@@ -15,7 +15,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE  << EOT
   update Locus5_8S
     set outlier = '$2'
     where     accession = '$1'
-          and selected = 1;
+          and selected = 1
   go -m bcp 
 EOT
 

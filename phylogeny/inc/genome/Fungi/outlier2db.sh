@@ -15,6 +15,6 @@ DATABASE=`cat $INC/database`
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update Genome
     set outlier = '$2'
-    where id = $1;
+    where id = $1
   go -m bcp 
 EOT

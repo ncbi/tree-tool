@@ -42,7 +42,7 @@ sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus
   select accession
     from Locus5_8S
     where     selected = 1
-          and in_tree = 1;
+          and in_tree = 1
   go -m bcp  
 EOT
 diff $TMP.tree $TMP.locus
@@ -52,7 +52,7 @@ sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus-new
     from Locus5_8S
     where     selected = 1
           and in_tree is null
-          and outlier is null;
+          and outlier is null
   go -m bcp  
 EOT
 diff $TMP.locus-new $TMP.new

@@ -32,7 +32,7 @@ sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-tr
   select id
     from Genome
     where     tax_root = 4751
-          and in_tree = 1;
+          and in_tree = 1
   go -m bcp  
 EOT
 #wc -l $TMP.genome-tree 
@@ -48,7 +48,7 @@ sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.genome-ne
           and dead = 0
           and prots is not null
           and outlier is null
-          and in_tree is null;
+          and in_tree is null
   go -m bcp  
 EOT
 diff $TMP.genome-new $TMP.new

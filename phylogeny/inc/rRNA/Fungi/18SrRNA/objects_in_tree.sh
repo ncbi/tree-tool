@@ -35,8 +35,8 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT
     from      ListC
          join Locus on Locus.id = ListC.id
     where     Locus.taxroot = 4751
-          and Locus.gene = '18S';
-  print @@rowcount;
+          and Locus.gene = '18S'
+  print @@rowcount
   go -m bcp
 EOT
 

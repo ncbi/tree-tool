@@ -35,7 +35,7 @@ CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT | sed 's/|$//1' | sort > $TMP.db-tree
   select id
     from Virus
-    where in_tree = 1;
+    where in_tree = 1
   go -m bcp  
 EOT
 diff $TMP.tree $TMP.db-tree
@@ -46,7 +46,7 @@ sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.db-new
     from Virus
     where     dead = 0
           and outlier is null
-          and in_tree is null;
+          and in_tree is null
   go -m bcp  
 EOT
 #wc -l $TMP.genome-new 
@@ -81,7 +81,7 @@ sqsh-ms -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | sort > $TMP.bad
   select id
     from Virus
     where    dead = 1
-          or outlier is not null;
+          or outlier is not null
   go -m bcp  
 EOT
 
