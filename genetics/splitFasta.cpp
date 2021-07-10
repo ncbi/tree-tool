@@ -100,7 +100,7 @@ struct ThisApplication : Application
         if (large)
         {
           dir += "/" + to_string (str2hash_class (s));
-          createDirectory (dir, true);
+          Dir (dir). create ();
         }
       #endif
         seq->saveFile (dir + "/" + s);
