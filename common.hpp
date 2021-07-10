@@ -1185,8 +1185,7 @@ inline string path2canonical (const string &path)
 #ifndef _MSC_VER
   bool directoryExists (const string &dirName);
   
-  void createDirectory (const string &dirName,
-                        bool createAncestors);
+  void createDirectory (const string &dirName);
 #endif
 
 
@@ -1215,6 +1214,11 @@ struct Dir
       const Dir parent (get () + "/..");
       return parent. get ();
     }
+#ifndef _MSC_VER
+  size_t create ();
+    // Return: number of directories created
+    //         0 <=> complete directory exists
+#endif
 };
 
 
@@ -3327,6 +3331,10 @@ public:
   void saveText (ostream &os) const override;    
         
   
+  static bool getDecimals (string s,
+                           bool &hasPoint,
+                           streamsize &decimals);
+    // Return: true => scientific number
   void printHeader (ostream &os) const;
 private:
   size_t col2index_ (const string &columnName) const;
