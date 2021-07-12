@@ -47,10 +47,10 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print a random reordering of the list\nRequires: Line length < 1024")
+    : Application ("Print a random reordering of <items>")
   	{
       version = VERSION;
-  	  addPositional ("items", "File with items (end-of-line separated)");
+  	  addPositional ("items", "File with items");
   	}
 
 
