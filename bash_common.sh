@@ -39,6 +39,7 @@ function super_section
   local T=`echo "$S" | sed 's/./*/g'`
   echo ""
   section "$T\n$S\n$T"
+  date
 }
 
 
@@ -52,6 +53,7 @@ function warning
 function success
 {
   section "SUCCESS!"
+  date
   exit 0
 }
 
