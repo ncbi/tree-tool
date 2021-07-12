@@ -4891,7 +4891,7 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna)
     }
     
   Vector<NumId> num2id;  num2id. reserve (id2num. size ());
-  for (auto& it : id2num)
+  for (const auto& it : id2num)
     num2id << move (NumId (it. second, it. first));
   num2id. sort ();
   
