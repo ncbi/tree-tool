@@ -164,6 +164,5 @@ if [ -e $INC/phen ]; then
 fi
 
 
-echo ""
-date
+success
 
