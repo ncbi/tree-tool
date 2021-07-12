@@ -22,8 +22,8 @@ section "stat"
 $THIS/kmerIndex_stat $TMP.kmi -qc
 
 section "$TMP.seq/"
-$THIS/fa2list.sh $THIS/data/5_8S.fa | sort -R > $TMP.list-all
-head $TMP.list-all | sort > $TMP.list
+$THIS/fa2list.sh $THIS/data/5_8S.fa > $TMP.acc
+$THIS/../setRandOrd $TMP.acc -sigpipe -qc | head -10 | sort > $TMP.list
 $THIS/extractFastaDna $THIS/data/5_8S.fa $TMP.list -qc > $TMP.fa
 mkdir $TMP.seq
 $THIS/splitFasta $TMP.fa $TMP.seq -qc 
@@ -31,8 +31,8 @@ $THIS/splitFasta $TMP.fa $TMP.seq -qc
 section "find"
 mkdir $TMP.out
 $THIS/../trav $TMP.seq "$THIS/kmerIndex_find $TMP.kmi %d/%f 100 -qc -self > $TMP.out/%f"
-$THIS/../trav $TMP.out '[ `cat %d/%f | wc -l` == 100 ]'
 $THIS/../trav $TMP.out 'grep -w %f %d/%f'
+$THIS/../trav $TMP.out '[ `cat %d/%f | wc -l` == 100 ]'
 
 
 rm -r $TMP*
