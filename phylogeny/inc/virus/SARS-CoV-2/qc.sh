@@ -18,15 +18,14 @@ DATABASE=`cat $INC/database`
 # Cf. LocusQC.sh
 
 
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-sort -cu $INC/good
-
-
 TMP=`mktemp`
 if [ $VERB == 1 ]; then
   echo $TMP
   set -x
 fi
+
+
+sort -cu $INC/good
 
 
 CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree

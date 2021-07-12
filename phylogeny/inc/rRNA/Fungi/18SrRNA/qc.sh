@@ -9,6 +9,5 @@ fi
 
 
 INC=`dirname $0`
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-CPP_DIR/phylogeny/database/LocusQC.sh $INC Locus 4751 18S
+CPP_DIR/phylogeny/database/LocusQC.sh $INC "Locus" "id" 4751 "18S"
 

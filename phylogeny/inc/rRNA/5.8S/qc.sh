@@ -13,9 +13,6 @@ SERVER=`cat $INC/server`
 DB=`cat $INC/database`
 
 
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-
-
 TMP=`mktemp`
 #echo $TMP
 #set -x

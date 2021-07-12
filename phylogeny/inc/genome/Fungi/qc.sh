@@ -13,8 +13,6 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 
 
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-
 if [ -e $INC/good ]; then
   sort -c -u $INC/good
 fi

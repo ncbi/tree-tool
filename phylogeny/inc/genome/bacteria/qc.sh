@@ -13,9 +13,6 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 
 
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-
-
 TMP=`mktemp`
 if [ $VERB == 1 ]; then
   echo $TMP

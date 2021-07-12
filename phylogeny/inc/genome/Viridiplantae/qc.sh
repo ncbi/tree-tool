@@ -12,8 +12,6 @@ VERB=$1
 INC=`dirname $0`
 
 
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-
 if [ -e $INC/good ]; then
   sort -cu $INC/good
 fi

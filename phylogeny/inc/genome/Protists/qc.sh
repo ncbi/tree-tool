@@ -10,9 +10,6 @@ fi
 INC=`dirname $0`
 
 
-CPP_DIR/phylogeny/distTree_inc_indiscern_qc.sh $INC
-
-
 
 exit 0
 
