@@ -3760,7 +3760,7 @@ public:
         return false;
       i++;
       item = to_string (i);
-      prog (item);
+      prog ();
       return true;
     }
 };
