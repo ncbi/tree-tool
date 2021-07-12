@@ -12,17 +12,15 @@ VERB=$1
 INC=`dirname $0`
 
 
-distTree_inc_indiscern_qc.sh $INC
-
-if [ -e $INC/good ]; then
-  sort -cu $INC/good
-fi
-
-
 TMP=`mktemp`
 if [ $VERB == 1 ]; then
   echo $TMP
   set -x
+fi
+
+
+if [ -e $INC/good ]; then
+  sort -cu $INC/good
 fi
 
 

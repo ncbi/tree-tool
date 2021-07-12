@@ -30,6 +30,7 @@ ADD=`echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1'`  # PAR
 if [ $ADD == 0 ]; then
   ADD=1
 fi
+REINSERT=""
 
 N=15
 if [ -e $INC/threads ]; then
@@ -38,7 +39,7 @@ fi
 THREADS="-threads $N"
 
 
-if true; then  
+if true; then 
 date
 echo ""
 echo ""
@@ -71,7 +72,6 @@ echo $VER > $INC/version
 super_section "version: $VER"
 
 
-REINSERT=""
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == "0" ]; then  # PAR
   REINSERT="-reinsert"
@@ -276,6 +276,10 @@ if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
     rm $INC/outlier-genogroup
   fi
 fi
+
+
+section "QC $INC/indiscern"
+$THIS/distTree_inc_indiscern_qc.sh $INC 0
 
 
 section "Additional requests"
