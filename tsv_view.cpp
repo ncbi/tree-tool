@@ -125,6 +125,7 @@ struct ThisApplication : Application
     size_t curIndex = topIndex;
     size_t curCol = 0;
     string what;  // For search
+    bool numP = false;
     NCurses nc (true);
     bool quit = false;
     Vector<bool> rowFound;
@@ -132,7 +133,7 @@ struct ThisApplication : Application
     while (! quit)
     {
       nc. resize ();
-      constexpr size_t headerSize = 2;  // File name, header
+      const size_t headerSize = 2 /* file name, header */ + (size_t) numP; 
       const size_t fieldSize = nc. row_max - (headerSize + 1 /*menu row*/); 
       const size_t pageScroll = fieldSize - 1;
       const size_t bottomIndex_max = topIndex + fieldSize;
@@ -159,18 +160,26 @@ struct ThisApplication : Application
             values << tt. header [j]. name;
           printRow (true, values, curCol, tt. header, nc. col_max);
         }        
+        if (numP)
+        {
+          move (2, 0);
+          const NCAttr attr (A_BOLD);
+          StringVector values;
+          FFOR_START (size_t, j, curCol, tt. header. size ())
+            values << to_string (j + 1);
+          printRow (true, values, curCol, tt. header, nc. col_max);          
+        }
         move ((int) (fieldSize + headerSize), 0);
         {
           const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          const string keyS ("Up   Down   Left  Right  PgUp,b   PgDn,f   Home,B   End,F   F3,s:Search from cursor   F10,q:Quit");
+          const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor  #:numbers  F10,q:Quit");
             // Non-character keys may be intercepted by the terminal
           const string posS ("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]");
-          string spacer;
-          if (nc. col_max > keyS. size () + posS. size ())
-            spacer = string (nc. col_max - (keyS. size () + posS. size ()), ' ');
-          addstr ((keyS + spacer + posS). c_str ());
-          clrtoeol ();
+          if (nc. col_max > posS. size ())
+            addstr ((pad (keyS, nc. col_max - posS. size (), true) + posS). c_str ());
+          else
+            addstr (posS. c_str ());
         }
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
@@ -346,6 +355,9 @@ struct ThisApplication : Application
               if (curIndex >= bottomIndex_max)
                 topIndex = curIndex - pageScroll;
             }
+            break;
+          case '#':   
+            toggle (numP);
             break;
           default:
             keyAccepted = false;
