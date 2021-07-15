@@ -75,6 +75,7 @@ struct Subject
   void saveText (ostream &os,
                  size_t qlen) const
     { QC_ASSERT (qend <= qlen);
+      const ONumber on (os, 2, false);  // PAR
       os         
         /* 3*/         << qlen
         /* 4*/ << '\t' << qstart                  
