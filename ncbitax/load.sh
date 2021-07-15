@@ -25,18 +25,17 @@ mkdir $TMP.dmp
 cd $TMP.dmp
 
 
+section "Downloading data"
 wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz  -O $TMP.dmp/taxdump.tar.gz
 #    https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz ??
 tar -xzf taxdump.tar.gz
 
 if [ ! -e nodes.dmp ]; then
-  echo "No nodes.dmp"
-  exit 1
+  error "No nodes.dmp"
 fi
 
 if [ ! -e names.dmp ]; then
-  echo "No names.dmp"
-  exit 1
+  error "No names.dmp"
 fi
 
 
@@ -54,7 +53,7 @@ EOT
 fi
 
 
-echo "Creating tables ..."
+section "Creating tables"
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   begin try
     create table $SCHEMA.Taxrank
@@ -127,7 +126,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
 EOT
 
 
-echo "Populating Tax .."
+section "Populating Tax"
 awk -F '\t' '$7 =="scientific name"' names.dmp | awk -F '\t' '$5 != ""' | cut -f 1,5 >  $TMP.names
 awk -F '\t' '$7 =="scientific name"' names.dmp | awk -F '\t' '$5 == ""' | cut -f 1,3 >> $TMP.names
 set +o errexit
@@ -157,7 +156,7 @@ if [ $S != 1 ]; then
 fi
 
 
-echo "Indexing ..."
+section "Indexing"
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   begin try
     create index Tax_parent_idx on $SCHEMA.Tax(parent)
@@ -185,7 +184,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
 EOT
 
 
-echo "Creating stored functions ..."
+section "Creating stored functions"
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   create function $SCHEMA.tax_rank_sub_rank2tax (@tax int, @rank int, @sub_rank tinyint) returns int
   -- Traverse Tax lineage from @tax up to (@rank,@sub_rank)
@@ -306,7 +305,7 @@ sqsh-ms  -S $SERVER  -D $DB << EOT
 EOT
 
 
-echo "Finishing ..."
+section "Finishing"
 sqsh-ms  -S $SERVER  -D $DB << EOT 
   begin try
     set nocount on
@@ -547,3 +546,4 @@ EOT
 rm -r $TMP*
 
 
+success
