@@ -13,8 +13,22 @@ SUBJ=$2
 MISSED=$3
 
 
-# Threashold
-T=90.0  
+if [ ! -e $QUERY -o -d $QUERY ]; then
+  error "Query file $QUERY does not exist"
+fi
+
+if [ ! -e $SUBJ -o -d $SUBJ ]; then
+  error "Subject file $SUBJ does not exist"
+fi
+
+MT_MODE=""
+N=`grep -c ">" $QUERY`
+if [ $N == 0 ]; then
+  error "$QUERY is not FASTA"
+fi
+if [ $N -gt 1 ]; then
+  MT_MODE="-mt_mode 1"
+fi
 
 
 TMP=`mktemp`  
@@ -27,14 +41,13 @@ HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
 
 echo "Running BLAST ..." > /dev/stderr
 makeblastdb  -in $SUBJ  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
-blastn  -query $QUERY  -db $TMP  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  -mt_mode 1 | sort > $TMP.blastn
-
+blastn  -query $QUERY  -db $TMP  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE | sort > $TMP.blastn
+  # PAR
 
 if [ $MISSED == 1 ]; then
   dna_coverage $TMP.blastn  -mode missed
 else
   dna_coverage $TMP.blastn 
-    # | awk -F '\t' '$10 > '$T' && $16 > '$T
 fi
 
 
