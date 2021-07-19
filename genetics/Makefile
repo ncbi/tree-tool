@@ -19,6 +19,7 @@ all:	\
 	dna_complexity \
 	dna_coverage \
 	dna_cut \
+	dna_gc_skew \
 	dna_rev \
 	dna_trim \
 	extractFastaDna \
@@ -107,6 +108,12 @@ dna_cut.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 dna_cutOBJS=dna_cut.o $(SEQ_OBJ)
 dna_cut:	$(dna_cutOBJS)
 	$(CXX) -o $@ $(dna_cutOBJS) $(LIBS) 
+	$(ECHO)
+
+dna_gc_skew.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_gc_skewOBJS=dna_gc_skew.o $(SEQ_OBJ)
+dna_gc_skew:	$(dna_gc_skewOBJS)
+	$(CXX) -o $@ $(dna_gc_skewOBJS) $(LIBS) 
 	$(ECHO)
 
 dna_rev.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
