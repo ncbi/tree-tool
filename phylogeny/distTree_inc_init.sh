@@ -129,6 +129,6 @@ if [ "$PHEN" ]; then
 fi
 
 if [ $LARGE == 1 ]; then
-  $THIS/../trav 1000 -zero -start 0 "mkdir $INC/new/%n" -threads 10
+  $THIS/../trav 1000 -zero -start 0 "mkdir $INC/new/%n" -threads 10  -step 1
 fi
 
