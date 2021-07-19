@@ -245,7 +245,7 @@ void reportMissed (const string &qseqid,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the coverage of a query DNA by subject DNAs")
+    : Application ("Print the coverage of a query DNA by subject DNAs, sorted by qcoverage descending")
     {
       version = VERSION;
       string format (XSTR(FORMAT));
