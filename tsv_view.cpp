@@ -42,6 +42,9 @@ using namespace Common_sp;
 
 
 
+#define NUM_P  // ??
+
+
 
 namespace
 {
@@ -125,7 +128,11 @@ struct ThisApplication : Application
     size_t curIndex = topIndex;
     size_t curCol = 0;
     string what;  // For search
+  #ifdef NUM_P
+    constexpr bool numP = true;
+  #else
     bool numP = false;
+  #endif
     NCurses nc (true);
     bool quit = false;
     Vector<bool> rowFound;
@@ -133,7 +140,7 @@ struct ThisApplication : Application
     while (! quit)
     {
       nc. resize ();
-      const size_t headerSize = 2 /* file name, header */ + (size_t) numP; 
+      const size_t headerSize = 2 /*file name, header*/ + (size_t) numP; 
       const size_t fieldSize = nc. row_max - (headerSize + 1 /*menu row*/); 
       const size_t pageScroll = fieldSize - 1;
       const size_t bottomIndex_max = topIndex + fieldSize;
@@ -173,9 +180,18 @@ struct ThisApplication : Application
         {
           const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor  #:numbers  F10,q:Quit");
+          const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor"
+                           #ifndef NUM_P
+                             "  #:numbers"
+                           #endif
+                             "  F10,q:Quit"
+                            );
             // Non-character keys may be intercepted by the terminal
+        #ifdef NUM_P
+          const string posS ("  " + to_string (curIndex + 1) + " / " + to_string (tt. rows. size ()));
+        #else
           const string posS ("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]");
+        #endif
           if (nc. col_max > posS. size ())
             addstr ((pad (keyS, nc. col_max - posS. size (), true) + posS). c_str ());
           else
@@ -356,9 +372,11 @@ struct ThisApplication : Application
                 topIndex = curIndex - pageScroll;
             }
             break;
+        #ifndef NUM_P
           case '#':   
             toggle (numP);
             break;
+        #endif
           default:
             keyAccepted = false;
             break;
