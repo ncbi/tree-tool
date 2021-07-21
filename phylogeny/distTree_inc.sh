@@ -32,6 +32,12 @@ fi
 
 VARIANCE=`cat $INC/variance`
 
+N=15
+if [ -e $INC/threads ]; then
+  N=`cat $INC/threads`
+fi
+THREADS="-threads $N"
+
 
 if true; then  
 if [ $NEW_PAR == 1 ]; then
@@ -77,12 +83,6 @@ if [ -e $INC/outlier-genogroup ]; then
   wc -l $INC/outlier-genogroup
   DELETE="-delete $INC/outlier-genogroup  -check_delete"
 fi
-
-N=15
-if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
-fi
-THREADS="-threads $N"
 
 # Time: O(n log^4(n))
 # PAR
