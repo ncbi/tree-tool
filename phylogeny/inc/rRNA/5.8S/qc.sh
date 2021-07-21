@@ -2,20 +2,23 @@
 source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
-  echo "#1: go"
+  echo "#1: verbose (0/1)"
   echo "Requires: Time: O(n log^3(n))"
   exit 1
+fi
+VERB=$1
+
+
+TMP=`mktemp`
+if [ $VERB == 1 ]; then
+  echo $TMP
+  set -x
 fi
 
 
 INC=`dirname $0`
 SERVER=`cat $INC/server`
 DB=`cat $INC/database`
-
-
-TMP=`mktemp`
-#echo $TMP
-#set -x
 
 
 CPP_DIR/genetics/kmerIndex_stat $INC/seq.kmi -qc > $TMP.stat

@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
-if [ $# -ne 7 ]; then
+if [ $# -ne 8 ]; then
   echo "Quality control of a locus incremental distance tree directory"
   echo "#1: incremental distance tree directory"
   echo "#2: SQL server name"
@@ -10,6 +10,7 @@ if [ $# -ne 7 ]; then
   echo "#5: LOCUS id"
   echo "#6: LOCUS.taxroot"
   echo "#7: LOCUS.gene"
+  echo "#8: verbose (0/1)"
   exit 1
 fi
 INC=$1
@@ -19,11 +20,14 @@ LOCUS=$4
 ID=$5
 TAXROOT=$6
 GENE=$7
+VERB=$8
 
 
 TMP=`mktemp`
-#echo $TMP
-#set -x
+if [ $VERB == 1 ]; then
+  echo $TMP
+  set -x
+fi
 
 
 grep '^>' $INC/seq.fa | sed 's/^>//1' | sed 's/ .*$//1' | sort > $TMP.seq-fa

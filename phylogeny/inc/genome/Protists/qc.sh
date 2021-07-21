@@ -1,9 +1,16 @@
 #!/bin/bash --noprofile
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
-  echo "#1: go"
+  echo "#1: verbose (0/1)"
   echo "Require: Time: O(n log^3(n))"
   exit 1
+fi
+VERB=$1
+
+
+if [ $VERB == 1 ]; then
+  set -x
 fi
 
 

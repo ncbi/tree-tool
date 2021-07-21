@@ -18,4 +18,4 @@ INC=`dirname $0`
 
 SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
-CPP_DIR/phylogeny/database/LocusQC.sh $INC $SERVER $DATABASE "Locus" "id" 2759 "18S"
+CPP_DIR/phylogeny/database/LocusQC.sh $INC $SERVER $DATABASE "Locus" "id" 2759 "18S" $VERB
