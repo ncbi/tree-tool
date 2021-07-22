@@ -50,8 +50,8 @@ std::mutex errorsMtx;
 
 
 void executeCommand (const string &cmd,
-                     const string &item,
-                     uint blank_lines)
+                     const string &item/*,
+                     uint blank_lines*/)
 {
   ASSERT (! cmd. empty ());
   ASSERT (! item. empty ());
@@ -71,9 +71,11 @@ void executeCommand (const string &cmd,
     else
       throw runtime_error ("item=" + item + "  status=" + to_string (WEXITSTATUS (exitStatus)) + "\n" + cmd);
   }
+#if 0
   if (isMainThread ())
     FOR (uint, i, blank_lines)
       cerr << " " << endl;
+#endif
 }
   
   
@@ -90,15 +92,15 @@ void executeCommands (size_t from,
                       size_t to,
                       Notype /*&res*/,
                       const Vector<Command> &commands,
-                      uint step,
-                      uint blank_lines)
+                      uint step/*,
+                      uint blank_lines*/)
 {
   Progress prog (to - from, step);  
   FOR_START (size_t, i, from, to)
   {
     prog ();
     const Command& command = commands [i];
-    executeCommand (command. cmd, command. item, blank_lines);
+    executeCommand (command. cmd, command. item/*, blank_lines*/);
   }
 }
 
@@ -128,7 +130,7 @@ struct ThisApplication : Application
       addFlag ("large", "Directory <items> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
-  	  addKey ("blank_lines", "# Blank lines to be printed to stderr after each command", "0");
+  	//addKey ("blank_lines", "# Blank lines to be printed to stderr after each command", "0");
   	  addKey ("step", "# Items processed to output the progress for", "100");
   	  addKey ("start", "# Item to start with", "1");
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
@@ -143,7 +145,7 @@ struct ThisApplication : Application
 		const string cmd_        = getArg ("command");
 		const bool   large       = getFlag ("large");
 		const string errorsFName = getArg ("errors");
-		const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
+//const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool zero          = getFlag ("zero");
@@ -155,8 +157,8 @@ struct ThisApplication : Application
       throw runtime_error ("Empty command");    
     if (! step)
       throw runtime_error ("-step must be >= 1");
-    if (blank_lines && step > 1)
-      throw runtime_error ("-blank_lines requires -step to be > 1");
+  //if (blank_lines && step > 1)
+    //throw runtime_error ("-blank_lines requires -step to be 1");
 
 
 	  Vector<Command> commands;  commands. reserve (100000);  // PAR
@@ -266,7 +268,7 @@ struct ThisApplication : Application
           cout << thisCmd << endl;
         else
           if (threads_max == 1)
-            executeCommand (thisCmd, item, blank_lines);
+            executeCommand (thisCmd, item/*, blank_lines*/);
       	  else
       	    commands << move (Command {move (thisCmd), move (item)});
       }
@@ -277,7 +279,7 @@ struct ThisApplication : Application
     {
       commands. randomOrder ();
       vector<Notype> notypes;
-  	  arrayThreads (false, executeCommands, commands. size (), notypes, cref (commands), step, blank_lines);
+  	  arrayThreads (false, executeCommands, commands. size (), notypes, cref (commands), step/*, blank_lines*/);
   	}
 	}
 };
