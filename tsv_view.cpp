@@ -80,6 +80,7 @@ void printRow (bool is_header,
     string value (values [col - col_start]);
     if (   ! is_header 
         && h. numeric 
+        && ! h. scientific
         && h. decimals
        )
     {
@@ -90,7 +91,7 @@ void printRow (bool is_header,
       value += string ((size_t) (h. decimals - decimals) + (! hasPoint), ' ');
     }
     ASSERT (value. size () <= h. len_max);
-    if (! printString (pad (value, h. len_max, ! h. numeric), screen_col_max, x))
+    if (! printString (pad (value, h. len_max, ! (h. numeric && ! h. scientific)), screen_col_max, x))
       break;
     if (col + 1 < header. size ())
       if (! printString ("  ", screen_col_max, x))
