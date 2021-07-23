@@ -126,7 +126,7 @@ struct ThisApplication : Application
 	  addFlag ("feature_tree_time", "Add arc time to <output_feature_tree>");
 	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
 	  addKey ("leaf_errors", "Output Data Master file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " and " + deformationOutlier_definition + " for each leaf");
-	  addKey ("arc_existence", "Output Data Master  file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
+	  addKey ("arc_existence", "Output Data Master file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
 	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissimilarity>");
 	//addFlag ("deredundify_indiscernible", "Remove dissimilarities from the file <output_dissim> for indiscernible objects with non-smallest names in indiscernibility classes");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
