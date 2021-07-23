@@ -155,6 +155,7 @@ if [ -e $INC/phen ]; then
 
     mkdir $RELDIR/$RELNUM
     mv disagreement_objects disagreement_nodes.txt disagreement_nodes gain_nodes qual tree.$DATE qual.raw leaf_errors.dm $RELDIR/$RELNUM/
+    
     rm -f $RELDIR/latest
     ln -s $PWD/$RELDIR/$RELNUM $RELDIR/latest
     
