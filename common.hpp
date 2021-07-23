@@ -2768,16 +2768,20 @@ public:
     }
     
 
-  void operator() (const string& step_arg = string ())
+  bool operator() (const string& step_arg = string ())
     { n++;
     	step = step_arg;
     	if (   active 
     		  && n % displayPeriod == 0
     		 )
-    	  report ();
+    	{ report ();
+    	  return true;
+    	}
+    	return false;
     }
 private:
 	void report () const;
+	  // Output: cerr
 public:
   void reset ()
     { n = 0;
