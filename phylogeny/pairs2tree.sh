@@ -6,7 +6,7 @@ if [ $# -ne 6 ]; then
   echo "#1: file with dissimilarities, line format: <obj1> <obj2> <dissim>"
   echo "#2: directory with reference classifications or ''"
     # #2 is small (one-level)
-  echo "#3: parameters after '-variance' in makeDistTree "
+  echo "#3: parameters after '-variance' in makeDistTree (e.g. 'linExp')"
   echo "#4: object list to measure quality for or ''"
   echo "#5: output tree file"
   echo "#6: output tree format: ASNT, newick, dm"
