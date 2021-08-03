@@ -189,11 +189,11 @@ int main (int argc,
   {
     if (argc != 4)
       throw runtime_error ("\
-Console: file with BLAST output: qseqid sseqid qstart qend sstart send nident length\n\
+Stdin: file with BLAST output: qseqid sseqid qstart qend sstart send nident length\n\
 #1: 0 - BLASTN, 1 - TBLASTX\n\
 #2: q-genome length\n\
 #3: s-genome length\n\
-Print: q-coverage s-coverage\
+Print: conservation dissimilarity\
 ");
     
     const bool tblastx = (string (argv [1]) == "1");
