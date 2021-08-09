@@ -846,6 +846,15 @@ public:
 	  	  	i++;
 	  	return no_index;
 	  }
+	size_t find (const T* t) const
+	  { size_t i = 0;
+	  	for (const T& item : *this)
+	  	  if (& item == t)
+	  	  	return i;
+	  	  else
+	  	  	i++;
+	  	return no_index;
+	  }
   bool isPrefix (const List<T> &prefix) const
     { typename List<T>::const_iterator wholeIt  =      P::begin ();
     	typename List<T>::const_iterator prefixIt = prefix. begin ();
