@@ -1,8 +1,8 @@
-# Phylogenetic Distance Tree
+# Phylogenetic Distance Tree 
 
 Build a least squares distance tree given a matrix of dissimilarities.
 
-Build a large tree incrementally.
+Build a large tree incrementally. 
 
 General data analysis tools.
 
