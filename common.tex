@@ -1,0 +1,73 @@
+\newcommand {\subsubsubsection} [1] {\vskip 0.5em {\bf \em #1}}
+
+%\newcommand {\comm} [1] {}
+\newcommand {\comm} [1] 
+{
+\par
+\setlength{\leftskip}{-0.8in}
+\begin{tabular} {p{0.1cm} | p{\textwidth}}
+  {\bf ?} & {#1}
+\end{tabular}
+\par
+\setlength{\leftskip}{0in}
+}
+
+
+\newcommand {\Forall} {\forall \ }
+\newcommand {\eqdef} {\triangleq}
+\newcommand {\equivalent} {\Leftrightarrow}
+\renewcommand {\implies} {\Rightarrow}
+\renewcommand {\impliedby} {\Leftarrow}
+\renewcommand {\And}  {\ \& \ }
+\newcommand {\Or}  {\vee}
+\newcommand {\QED} {$\blacksquare$\ \par }
+\newcommand {\proof} [1] {\par {\sf Proof:\ } #1 \QED \par}
+\newcommand {\definition} [2] {\bigskip {\bf Definition} {\rm \sc #1} \par #2 \QED \bigskip}
+\newcommand {\example} [2] {\bigskip {\bf Example.} {#1} \par #2 \QED}
+\newcommand {\theorem} [2] {\bigskip {\bf Theorem} {\rm \sc #1} \par #2 \QED \bigskip}
+\newcommand {\ve} {\mathbf}
+\newcommand {\Questions} {\vspace{5mm} {\bf Unresolved Questions:}}
+
+\renewcommand {\P} {\mathrm P}
+\newcommand {\E} {\mathrm E \ }
+\newcommand {\var} {\mathrm {var} \ }
+\newcommand {\cov} {\mathrm {cov} }
+\newcommand {\cor} {\mathrm {cor} }
+\newcommand {\N} {\mathrm N}
+\newcommand {\Z} {\mathrm Z}
+\newcommand {\R} {\mathbb R}
+\newcommand {\C} {\mathbb C}
+\newcommand {\I} {\mathbb I}
+\newcommand {\supp} {\mathrm {Supp}}
+\newcommand {\mat} {\mathrm}
+\newcommand {\trc} {\mathrm {tr} \ }
+\newcommand {\VC} {\mathrm {VC} }
+\newcommand {\const} {\mathrm {const} }
+
+\newcommand {\LCA} {\mathrm {LCA} }  % least common ancestor (in a tree)
+
+\newcommand {\nul} {\mathrm {null}}
+\newcommand {\Dt} {\Delta t}
+\newcommand {\PC} {\mathrm {PC} }
+\newcommand {\MDS} {\mathrm {MDS} }
+\newcommand {\CC} {\mathrm {CC} }
+
+\newcommand {\re} {\mathrm {re}}
+\newcommand {\cl} {\mathrm {cl}}
+\newcommand {\intr} {\mathrm {int}}
+
+\newcommand {\<} {\langle}
+\renewcommand {\>} {\rangle}
+
+\newcommand {\dotve} [1] {\dot {\ve #1}}
+
+\newcommand {\la} [1] {\lambda (#1) \ }
+
+\newcommand {\lhs} {\mathrm {lhs}}
+\newcommand {\rhs} {\mathrm {rhs}}
+
+\providecommand{\keywords}[1]
+{
+  \small	
+  \textbf{\textit{Keywords---}} #1
+}
