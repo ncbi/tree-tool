@@ -61,6 +61,7 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
+	  addKey ("name_extend", "File with lines: <name> <tab> <name_extension>, to replace leaf names");
 	  addKey ("clade_name", "File with lines: {<name>|<name1>:<name2>} <tab> <clade name>");
 	  addKey ("root_name", "Root name");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
@@ -80,6 +81,7 @@ struct ThisApplication : Application
 	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
 	               variancePower  = str2real (getArg ("variance_power"));    // Global
 	  const string name_match     = getArg ("name_match");
+	  const string name_extend    = getArg ("name_extend");
 	  const string clade_name     = getArg ("clade_name");
 	  const string root_name      = getArg ("root_name");
 	  const size_t decimals       = str2<size_t> (getArg ("decimals"));
@@ -101,6 +103,8 @@ struct ThisApplication : Application
 		  throw runtime_error ("-clade_name does not work with the format " + strQuote (format));
 		if (! root_name. empty () && format == "dm")
 		  throw runtime_error ("-root_name does not work with the format " + strQuote (format));
+		if (! name_match. empty () && ! name_extend. empty ())
+		  throw runtime_error ("-name_match and -name_extend cannot be used together");
 		      
 
     DistTree tree (input_tree, dataFName, dissimAttrName, string());
@@ -124,6 +128,22 @@ struct ThisApplication : Application
         QC_ASSERT (! name_new. empty ());
         if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
           var_cast (leaf) -> name = name_new;
+      }
+    }
+    
+    if (! name_extend. empty ())
+    {
+      LineInput f (name_extend, 10 * 1024, 1000);  // PAR
+      string name, name_ext;
+      while (f. nextLine ())
+      {
+        trim (f. line);
+        name_ext = f. line;
+        name = findSplit (name_ext, '\t');
+        QC_ASSERT (! name. empty ());
+        if (! name_ext. empty ())
+          if (const Leaf* leaf = findPtr (tree. name2leaf, name))
+            var_cast (leaf) -> name += " " + name_ext;
       }
     }
     
