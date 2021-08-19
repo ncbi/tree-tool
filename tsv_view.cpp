@@ -64,15 +64,17 @@ bool printString (string s,
   
   
   
-void printRow (bool is_header,
-               const StringVector &values,
-               size_t col_start,
-               const Vector<TextTable::Header> &header,
-               size_t screen_col_max)
+size_t printRow (bool is_header,
+                 const StringVector &values,
+                 size_t col_start,
+                 const Vector<TextTable::Header> &header,
+                 size_t screen_col_max)
+// Return: Last printed column
 {
   ASSERT (col_start + values. size () == header. size ());
 
   size_t x = 0;
+  size_t lastCol = col_start;
   FFOR_START (size_t, col, col_start, header. size ())
   {
     ASSERT (x <= screen_col_max);
@@ -93,12 +95,15 @@ void printRow (bool is_header,
     ASSERT (value. size () <= h. len_max);
     if (! printString (pad (value, h. len_max, ! (h. numeric && ! h. scientific)), screen_col_max, x))
       break;
+    lastCol = col;
     if (col + 1 < header. size ())
       if (! printString ("  ", screen_col_max, x))
         break;
   }
 
   clrtoeol ();
+  
+  return lastCol;
 }
 
   
@@ -128,6 +133,7 @@ struct ThisApplication : Application
     size_t topIndex = 0;
     size_t curIndex = topIndex;
     size_t curCol = 0;
+    size_t curLastCol = curCol;
     string what;  // For search
   #ifdef NUM_P
     constexpr bool numP = true;
@@ -166,7 +172,7 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. header [j]. name;
-          printRow (true, values, curCol, tt. header, nc. col_max);
+          curLastCol = printRow (true, values, curCol, tt. header, nc. col_max);
         }        
         if (numP)
         {
@@ -301,7 +307,7 @@ struct ThisApplication : Application
               beep ();            
             break;
           case KEY_RIGHT:
-            if (curCol + 1 < tt. header. size ())
+            if (curLastCol + 1 < tt. header. size ())
               curCol++;
             else
               beep ();            
@@ -314,7 +320,7 @@ struct ThisApplication : Application
               char search [size] = "";
               echo ();
               curs_set (1);
-              move ((int) fieldSize + 1, 0);
+              move ((int) (fieldSize + headerSize), 0);
               clrtoeol ();
             #if 0
               char format [32];
