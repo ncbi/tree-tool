@@ -40,14 +40,20 @@ HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
 #       1      2      3      4      5      6    7    8      9    10   11
 
 echo "Running BLAST ..." > /dev/stderr
-makeblastdb  -in $SUBJ  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
-blastn  -query $QUERY  -db $TMP  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE | sort > $TMP.blastn
+# DB
+if [ -e $SUBJ.nhr ]; then
+  DB=$SUBJ
+else
+  makeblastdb  -in $SUBJ  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
+  DB=$TMP
+fi
+blastn  -query $QUERY  -db $DB  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE | sort > $TMP.blastn
   # PAR
 
 if [ $MISSED == 1 ]; then
-  dna_coverage $TMP.blastn  -mode missed
+  $THIS/dna_coverage $TMP.blastn  -mode missed
 else
-  dna_coverage $TMP.blastn 
+  $THIS/dna_coverage $TMP.blastn 
 fi
 
 
