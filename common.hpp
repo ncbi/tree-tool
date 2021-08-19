@@ -4027,7 +4027,7 @@ struct ShellApplication : Application
   // Environment
   const bool useTmp;
   string tmp;
-    // Temporary file prefix: ($TMPDIR or "/tmp") + "/XXXXXX"
+    // Temporary file prefix: ($TMPDIR or "/tmp") + "/" + programName + "XXXXXX"
     // If log is used then tmp is printed in the log file and the temporary files are not deleted 
 private:
   bool tmpCreated {false};

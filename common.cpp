@@ -922,7 +922,7 @@ streamsize getFileSize (const string &fName)
 {
   ifstream f (fName, ifstream::binary);
   if (! f. good ())
-    throw runtime_error ("Cannot open file " + shellQuote (fName));
+    throw runtime_error ("Cannot open file " + shellQuote (fName) + " to get file size");
 
   const streampos start = f. tellg ();
   QC_ASSERT (start >= 0); 
@@ -2844,7 +2844,7 @@ FileItemGenerator::FileItemGenerator (size_t progress_displayPeriod,
   #else
 	  char lsfName [4096] = {'\0'};
     strcpy (lsfName, P_tmpdir);
-    strcat (lsfName, "/XXXXXX");
+    strcat (lsfName, ("/" + programName + ".XXXXXX"). c_str ());
     EXEC_ASSERT (mkstemp (lsfName) != -1);
     ASSERT (lsfName [0]);
     const string cmd ("ls -a " + dirName + " > " + lsfName);
@@ -3657,7 +3657,7 @@ void ShellApplication::createTmp ()
   if (useTmp)
   {
     const string tmpDir (tmp);
-    tmp += "/XXXXXX";
+    tmp += "/" + programName + ".XXXXXX";
     if (mkstemp (var_cast (tmp. c_str ())) == -1)
       throw runtime_error ("Error creating a temporary file in " + tmpDir);
   	if (tmp. empty ())
