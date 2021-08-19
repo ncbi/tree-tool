@@ -242,7 +242,7 @@ protected:
       return in;
     }
 public:
-  virtual Seq* copy () const = 0;
+  virtual Seq* copy () const override = 0;
   void qc () const override
     { if (qc_on)
         return;
