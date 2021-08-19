@@ -405,7 +405,7 @@ void Align::setAlignment (const string &seq1,
   			        break;
   		case 'D': c1 = seq1 [i1];  // Deletion
   			        break;
-  		default : ERROR_MSG ("Unknown alignment trace: " + c);
+  		default : ERROR_MSG ("Unknown alignment trace: " + to_string (c));
   	}
     sparse1 += c1; 
   	sparse2 += c2; 
