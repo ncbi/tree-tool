@@ -56,6 +56,7 @@ struct ThisApplication : Application
 		  addPositional ("in",  "Input FASTA file with DNAs");
 		  addPositional ("target", "List of sequence ids");
 		  addFlag ("remove", "Target list must be removed from the input file, otherwise only the target list is printed");
+		  addFlag ("whole", "Sequence identifiers are whole strings which shoudl not be split by '|'");
 	  }
 
   
@@ -65,6 +66,7 @@ struct ThisApplication : Application
 	  const string inFName     = getArg ("in");
 	  const string targetFName = getArg ("target");
 	  const bool removeTarget  = getFlag ("remove");
+	  const bool whole         = getFlag ("whole");
 
   
     Set<string> names;
@@ -86,7 +88,7 @@ struct ThisApplication : Application
 		    const Dna dna (fa, 100000/*PAR*/, true);
 		    ASSERT (! strBlank (dna. seq));		
 		    string id (dna. getId ());
-		    const string id_ (findSplit (id, '|'));
+		    const string id_ (whole ? id : findSplit (id, '|'));
 		    if ((! removeTarget) == names. contains (id_))   
 		      dna. saveText (cout);
 		  }
