@@ -75,7 +75,7 @@ super_section "version: $VER"
 POS=$(( ${#VER} - 1 ))
 if [ "${VER:$POS}" == "0" ]; then  # PAR
   REINSERT="-reinsert"
-  warning "REINSERT\nTree quality temporarily decreases due to missing dissimilarities to close tree neighbors"
+  warning "REINSERT\nTree quality temporarily decreases due to missing dissimilarities of close tree neighbors"
 else
   section "new/ -> search/"
   echo "# Objects in tree: $OBJS"  
