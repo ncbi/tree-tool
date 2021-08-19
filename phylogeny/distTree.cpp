@@ -2700,7 +2700,8 @@ void Image::processSmall (const DTNode* center_arg,
 
   ASSERT (area. containsFast (center));
   if (boundary. size () > boundary_size_max_std)
-    throw runtime_error (FUNC "Boundary size > " + to_string (boundary_size_max_std));
+  //throw runtime_error (FUNC "Boundary size " + to_string (boundary. size ()) + " > " + to_string (boundary_size_max_std));
+    couterr << "!!Boundary size = " << boundary. size () << endl;
 #ifndef NDEBUG
   for (const auto& it : new2old)
   {
@@ -6655,7 +6656,12 @@ size_t DistTree::optimizeLenNode ()
         const_static_cast <DTNode*> (arcNodes [attrNum]) -> len = lr. beta [attrNum];
       const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
-      ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
+      if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR 
+      {
+        couterr << "!!optimizeLenNode" << endl;  // ??
+        PRINT (absCriterion);
+        PRINT (absCriterion_old);
+      }
     #if 0
       { 
         cout << "!!optimizeLenNode1" << endl;  
@@ -7485,7 +7491,7 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
 
   if (! subDepth && ! leRealRel (absCriterion, absCriterion_old, 1e-4))  // PAR
   {
-    cout << "!!optimizeSmallSubgraph" << endl;  // ??
+    couterr << "!!optimizeSmallSubgraph" << endl;  // ??
     PRINT (absCriterion);
     PRINT (absCriterion_old);
   }
