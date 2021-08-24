@@ -46,6 +46,8 @@ using namespace Common_sp;
 
 
 static const string na ("NA");
+string query;
+string subject;
       
 
 
@@ -85,22 +87,24 @@ struct Subject
         /* 8*/ << '\t' << length                  
         /* 9*/ << '\t' << nident
         /*10*/ << '\t' << double (nident) / double (length) * 100.0
-        ;
-      if (sseqid. empty ())
-        return;
-      string stitle_ (stitle + "_");
-      trimPrefix (stitle_, sseqid + "_");
-      replace (stitle_, '_', ' ');
-      trim (stitle_);
-      os 
-        /*11*/ << '\t' << sseqid                  
-        /*12*/ << '\t' << slen                    
-        /*13*/ << '\t' << sstart                  
-        /*14*/ << '\t' << send                    
+        /*11*/ << '\t' << (sseqid. empty () ? nvl(subject,"NA") : sseqid)
+        /*12*/ << '\t' << slen;
+      if (! sseqid. empty ())
+      {
+        os /*13*/ << '\t' << sstart                  
+           /*14*/ << '\t' << send;
+      }
+      os
         /*15*/ << '\t' << scoverage                
-        /*16*/ << '\t' << double (scoverage) / double (slen) * 100.0
-        /*17*/ << '\t' << nvl (stitle_, na)
-        ;
+        /*16*/ << '\t' << double (scoverage) / double (slen) * 100.0;
+      if (! sseqid. empty ())
+      {
+        string stitle_ (stitle + "_");
+        trimPrefix (stitle_, sseqid + "_");
+        replace (stitle_, '_', ' ');
+        trim (stitle_);
+        os /*17*/ << '\t' << nvl (stitle_, na);
+      }
     }
   void qc () const
     { if (! qc_on)
@@ -153,7 +157,7 @@ void addPrevSubject (Vector<Subject> &subjects,
 
 
 
-enum class Mode {best, combine, missed, none};
+enum class Mode {best, combine, missed, all};
 
 
 
@@ -180,8 +184,10 @@ void processSubjects (const string &qseqid,
     {
       minimize (last. qstart, subj. qstart);
       maximize (last. qend,   subj. qend);
-      last. length += subj. length;
-      last. nident += subj. nident;
+      last. slen      += subj. slen;
+      last. length    += subj. length;
+      last. nident    += subj. nident;
+      last. scoverage += subj. scoverage;
     }
     subjects. clear ();
     subjects << last;
@@ -195,7 +201,10 @@ void processSubjects (const string &qseqid,
   trim (qtitle);
   for (const Subject& subj : subjects)
   {
+    if (! query. empty ())
+      /* 0 */ cout << query << '\t';
     cout << qseqid_ << '\t' << nvl (qtitle, na) << '\t';
+      //    1                  2
     subj. saveText (cout, qlen);      
     cout << endl;
     if (mode == Mode::best)
@@ -225,6 +234,9 @@ void reportMissed (const string &qseqid,
     if (i == qchars. size () || qchars [i])
     {
       if (start < i)
+      {
+        if (! query. empty ())
+          /* 0 */ cout << query << '\t';
         cout         << qseqid_ 
              << '\t' << nvl (qtitle, na) 
              << '\t' << qchars. size ()
@@ -233,6 +245,7 @@ void reportMissed (const string &qseqid,
              << '\t' << i - start
              << '\t' << double (i - start) / double (qchars. size ()) * 100.0
              << endl;
+      }
       start = i + 1;
     }
 }
@@ -256,7 +269,9 @@ qseqid can have a suffix \"|qtitle\"");
 best: print only the best coverage by a subject DNA\n\
 combine: combine the coverages by subject DNAs\n\
 missed: report non-covered query DNA segments\n\
-none: report all covered segments", "none");
+all: report all covered segments", "all");
+      addKey ("query", "Query DNA name");
+      addKey ("subject", "Subject DNA name, used if mode = combine");
     }
 
 
@@ -265,6 +280,8 @@ none: report all covered segments", "none");
   {
     const string inFName = getArg ("in");
     const string modeS   = getArg ("mode");
+                 query   = getArg ("query");
+                 subject = getArg ("subject");
     
     Mode mode;
     if (modeS == "best")
@@ -273,21 +290,30 @@ none: report all covered segments", "none");
       mode = Mode::combine;
     else if (modeS == "missed")
       mode = Mode::missed;
-    else if (modeS == "none")
-      mode = Mode::none;
+    else if (modeS == "all")
+      mode = Mode::all;
     else
       throw runtime_error ("Unknown mode: " + strQuote (modeS));
-        
+              
     
-    cout << "#qseqid\tqtitle\tqlen\tqstart\tqend\tqcoverage\tpqcoverage";
-      //      1       2       3     4       5     6          7           
+    cout << '#';
+    if (! query. empty ())
+      cout << "query\t";
+        //     0
+    cout << "qseqid\tqtitle\tqlen\tqstart\tqend\tqcoverage\tpqcoverage";
+      //     1       2       3     4       5     6          7           
     if (mode != Mode::missed)
     {
-      cout << "\talign_length\tnident\tpident";
-        //       8             9       10 
+      cout << "\talign_length\tnident\tpident\tsseqid\tslen";
+        //       8             9       10      11      12
       if (mode != Mode::combine)
-        cout << "\tsseqid\tslen\tsstart\tsend\tscoverage\tpscoverage\tstitle";
-          //       11      12    13      14    15         16          17
+        cout << "\tsstart\tsend";
+          //       13      14
+      cout << "\tscoverage\tpscoverage";
+        //       15         16         
+      if (mode != Mode::combine)
+        cout << "\tstitle";
+          //       17
     }
     cout << endl;
 
