@@ -48,7 +48,7 @@ namespace Common_sp
 
 // DiGraph::Node
 
-void DiGraph::Node::attach (DiGraph &graph_arg) 
+void DiGraph::Node::attach (DiGraph &graph_arg)
 {
   ASSERT (! graph);
 #ifndef NDEBUG
