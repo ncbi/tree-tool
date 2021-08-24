@@ -39,7 +39,7 @@ fi
 THREADS="-threads $N"
 
 
-if true; then 
+if true; then   
 date
 echo ""
 echo ""
