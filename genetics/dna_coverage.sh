@@ -5,12 +5,12 @@ if [ $# != 3 ]; then
   echo "Contig coverage report"
   echo "#1: query FASTA file"
   echo "#2: subject FASTA file"
-  echo "#3: report non-covered query segments (0/1)"
+  echo "#3: dna_coverage mode: all, best, missed, combined"
   exit 1
 fi
 QUERY=$1
 SUBJ=$2
-MISSED=$3
+MODE=$3
 
 
 if [ ! -e $QUERY -o -d $QUERY ]; then
@@ -36,9 +36,6 @@ TMP=`mktemp`
 #set -x
 
 
-HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
-#       1      2      3      4      5      6    7    8      9    10   11
-
 echo "Running BLAST ..." > /dev/stderr
 # DB
 if [ -e $SUBJ.nhr ]; then
@@ -47,14 +44,15 @@ else
   makeblastdb  -in $SUBJ  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
   DB=$TMP
 fi
+
+HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
+#       1      2      3      4      5      6    7    8      9    10   11
 blastn  -query $QUERY  -db $DB  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE | sort > $TMP.blastn
   # PAR
 
-if [ $MISSED == 1 ]; then
-  $THIS/dna_coverage $TMP.blastn  -mode missed
-else
-  $THIS/dna_coverage $TMP.blastn 
-fi
+QUERY_NAME=`basename $QUERY`  
+SUBJ_NAME=`basename $SUBJ`
+$THIS/dna_coverage $TMP.blastn  -mode $MODE  -query "$QUERY_NAME"  -subject "$SUBJ_NAME"
 
 
 rm $TMP*  
