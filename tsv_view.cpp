@@ -90,7 +90,10 @@ size_t printRow (bool is_header,
       streamsize decimals = 0;
       TextTable::getDecimals (value, hasPoint, decimals);
       ASSERT (h. decimals >= decimals);
-      value += string ((size_t) (h. decimals - decimals) + (! hasPoint), ' ');
+      // Data modification ??
+      if (! hasPoint)
+        value += ".";
+      value += string ((size_t) (h. decimals - decimals), '0');  
     }
     ASSERT (value. size () <= h. len_max);
     if (! printString (pad (value, h. len_max, ! (h. numeric && ! h. scientific)), screen_col_max, x))
