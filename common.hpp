@@ -632,6 +632,20 @@ template <typename T, typename U>
       return false;
     }
 
+template <typename T>
+  unordered_set<T> setIntersect (const unordered_set<T> &s1,
+                                 const unordered_set<T> &s2)
+    { const unordered_set<T>* s1_ = & s1;
+      const unordered_set<T>* s2_ = & s2;
+      if (s1. size () > s2. size ())
+        swap (s1_, s2_);
+      unordered_set<T> res;  res. rehash (s1_->size ());
+      for (const T& t : *s1_)
+        if (contains (*s2_, t))
+          res. insert (t);
+      return res;
+    }
+    
 template <typename T, typename U>
   bool containsSubset (const T &t,
                        const U &u)
@@ -639,6 +653,16 @@ template <typename T, typename U>
         if (t. find (static_cast <typename U::value_type> (x)) == t. end ())
           return false;
       return true;
+    }
+
+template <typename T>
+  unordered_set<T> getSetMinus (const unordered_set<T> &s1,
+                                const unordered_set<T> &s2)
+    { unordered_set<T> res;  res. rehash (s1. size ());
+      for (const T& t : s1)
+        if (! contains (s2, t))
+          res. insert (t);
+      return res;
     }
 
 template <typename T, typename U>

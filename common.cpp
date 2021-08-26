@@ -1796,9 +1796,9 @@ void Token::readInput (CharInput &in)
 	  {
 	    type = eText;
 	    toNumberDate ();
-	    QC_ASSERT (   type == eInteger
+	  /*QC_ASSERT (   type == eInteger
 	               || type == eDouble
-	              );
+	              );*/
 	  }
 	}
 	else if (isLetter (c))
