@@ -125,8 +125,9 @@ struct ThisApplication : Application
 \"%q\" - single quote, \
 \"%Q\" - double quote, \
 \"%D\" - $, \
-\"%G\" - `, \
-\"%P\" - %");
+\"%g\" - `, \
+\"%b\" - backslash, \
+\"%p\" - %");
       addFlag ("large", "Directory <items> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
@@ -184,7 +185,7 @@ struct ThisApplication : Application
       replaceStr (cmd, "%q", "'");  
       replaceStr (cmd, "%Q", "\"");  
       replaceStr (cmd, "%D", "$");  
-      replaceStr (cmd, "%G", "`");
+      replaceStr (cmd, "%g", "`");
   	
 
       ASSERT (! errors. get ());
@@ -255,9 +256,16 @@ struct ThisApplication : Application
         }        
 
         FFOR (size_t, i, thisCmd. size ())
-          if (thisCmd [i] == '%' && (i == thisCmd. size () - 1 || thisCmd [i + 1] != 'P'))
+          if (   thisCmd [i] == '%' 
+              && (   i == thisCmd. size () - 1 
+                  || ! (   thisCmd [i + 1] == 'p'
+                        || thisCmd [i + 1] == 'b'
+                       )
+                 )
+             )
             throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (i, 2)) + " in item: " + item + "\n" + thisCmd);
-        replaceStr (thisCmd, "%P", "%");
+        replaceStr (thisCmd, "%p", "%");
+        replaceStr (thisCmd, "%b", "\\");
 
   	    replace (item, delChar, '%');
 

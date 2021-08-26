@@ -49,7 +49,7 @@ $THIS/../qstat_wait.sh $WAIT 1
 
 
 section "Requests"
-$THIS/../trav $INC/closest "$THIS/../trav -noprogress %d/%f %Qgrep -vx %Pf %Pd/%Pf | sed 's/$/\t%Pf/1'%Q" > $TMP.req0
+$THIS/../trav $INC/closest "$THIS/../trav -noprogress %d/%f %Qgrep -vx %pf %pd/%pf | sed 's/$/\t%pf/1'%Q" > $TMP.req0
 rm -r $INC/closest/ &
 
 # Time: O(n log^5 n)
