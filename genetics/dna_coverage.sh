@@ -5,7 +5,7 @@ if [ $# != 3 ]; then
   echo "Contig coverage report"
   echo "#1: query FASTA file"
   echo "#2: subject FASTA file"
-  echo "#3: dna_coverage mode: all, best, missed, combined"
+  echo "#3: dna_coverage mode: all, best, missed, combine"
   exit 1
 fi
 QUERY=$1
