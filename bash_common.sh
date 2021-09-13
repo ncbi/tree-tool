@@ -12,6 +12,7 @@ export NOCOLOR='\033[0m'
 export RED='\033[1;31m'
 export GREEN='\033[1;32m'
 export YELLOW='\033[1;33m'
+export BLUE='\033[1;34m'
 
 
 function error
@@ -52,7 +53,9 @@ function warning
 
 function success
 {
-  section "SUCCESS!"
+  echo ""
+  echo ""
+  echo -e "${BLUE}SUCCESS!${NOCOLOR}"
   date
   exit 0
 }
