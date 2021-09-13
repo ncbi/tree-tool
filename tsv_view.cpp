@@ -180,7 +180,7 @@ struct ThisApplication : Application
         if (numP)
         {
           move (2, 0);
-          const NCAttr attr (A_BOLD);
+          const NCAttr attr (COLOR_PAIR (4) /*| A_BOLD*/);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << to_string (j + 1);
