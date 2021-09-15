@@ -3318,7 +3318,7 @@ public:
 
 struct TextTable : Named
 // Tab-delimited (tsv) table with a header
-// name: file name
+// name: file name or empty()
 {
   bool pound {false};
     // '#' in the beginning of header
@@ -3356,6 +3356,7 @@ struct TextTable : Named
     
 
   explicit TextTable (const string &fName);
+  TextTable () = default;
   TextTable (bool pound_arg,
              const Vector<Header> &header_arg)
     : pound (pound_arg)
