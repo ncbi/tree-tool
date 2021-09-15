@@ -2227,13 +2227,19 @@ void TextTable::qc () const
 {
   if (! qc_on)
     return;
-  Named::qc ();
+  if (! name. empty ())
+    Named::qc (); 
 
   {    
     StringVector v;  v. reserve (header. size ());
-    for (const Header& h : header)
+    FFOR (size_t, i, header. size ())
     {
-      h. qc ();
+      const Header& h = header [i];
+      try { h. qc (); }
+        catch (const exception &e)
+        {
+          throw ("Header column #" + to_string (i + 1) + ": " + e. what ());
+        }
       v << h. name;
     }
     v. sort ();
