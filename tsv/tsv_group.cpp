@@ -1,4 +1,4 @@
-// tsv_schema.cpp
+// tsv_group.cpp
 
 /*===========================================================================
 *
@@ -27,16 +27,16 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Read a tsv-table
+*   Group columns of a table
 *
 */
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 
@@ -47,10 +47,13 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the schema of a tsv-table")
+    : Application ("Group columns of a tsv-table")
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table file with a header");
+  	  addKey ("by", "Comma-separated list of columns to group by"); 
+  	  addKey ("sum", "Comma-separated list of columns to sum"); 
+  	  addKey ("aggr", "Comma-separated list of columns to aggregate: make unique and sort"); 
   	}
   	
   	
@@ -58,14 +61,49 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string fName = getArg ("table");
+		const string byS   = getArg ("by");
+		const string sumS  = getArg ("sum");
+		const string aggrS = getArg ("aggr");
 
 
-    const TextTable tt (fName);
+    TextTable tt (fName);
     tt. qc ();
-    tt. printHeader (cout);      
+    if (verbose ())
+      tt. printHeader (cout);      
     
+    const StringVector by   (byS,   ',', true);
+    const StringVector sum  (sumS,  ',', true);    
+    const StringVector aggr (aggrS, ',', true);    
+
+
+    // QC
+    for (const string& s : by)
+      if (! tt. hasColumn (s))
+        throw runtime_error ("Table has no by-column " + strQuote (s));
     
-  //tt. saveText (cout);
+    for (const string& s : sum)
+    {
+      if (! tt. hasColumn (s))
+        throw runtime_error ("Table has no sum-column " + strQuote (s));
+      if (by. contains (s))
+        throw runtime_error ("Same by-column and sum-column: " + strQuote (s));
+      if (! tt. header [tt. col2index (s)]. numeric)
+        throw runtime_error ("Column " + strQuote (s) + " is not numeric");
+    }
+        
+    for (const string& s : aggr)
+    {
+      if (! tt. hasColumn (s))
+        throw runtime_error ("Table has no aggregation column " + strQuote (s));
+      if (by. contains (s))
+        throw runtime_error ("Same by-column and aggregation column: " + strQuote (s));
+    }
+        
+
+    tt. group (by, sum, aggr);
+    tt. qc ();
+    
+    tt. saveText (cout);
 	}
 };
 

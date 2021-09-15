@@ -33,12 +33,12 @@
 
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
-#include "ncurses.hpp"
-#include "version.inc"
+#include "../ncurses.hpp"
+#include "../version.inc"
 
 
 
@@ -53,13 +53,16 @@ namespace
 bool printString (string s,
                   size_t screen_col_max,
                   size_t &x)
-// Return: false <=> print is truncated
 {
-  if (s. size () >= screen_col_max - x)
+  bool truncated = false;
+  if (s. size () > screen_col_max - x)
+  {
     s. erase (screen_col_max - x);
+    truncated = true;
+  }
   addstr (s. c_str ());
   x += s. size ();
-  return x < screen_col_max;
+  return ! truncated;
 }
   
   
@@ -104,7 +107,9 @@ size_t printRow (bool is_header,
         break;
   }
 
-  clrtoeol ();
+  FFOR_START (size_t, i, x, screen_col_max)
+    addstr (" ");
+  //clrtoeol ();  // may start erasing before the cursor
   
   return lastCol;
 }
@@ -129,8 +134,11 @@ struct ThisApplication : Application
 
     TextTable tt (tableFName);
     tt. qc ();
-    for (TextTable::Header& h : tt. header)
-      maximize (h. len_max, h. name. size ());
+    FFOR (size_t, i, tt. header. size ())
+    {
+      TextTable::Header& h = tt. header [i];
+      maximize (h. len_max, max (h. name. size (), to_string (i + 1). size ()));
+    }
 
 
     size_t topIndex = 0;
@@ -162,14 +170,14 @@ struct ThisApplication : Application
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
-        move (0, 0);
         {
+          move (0, 0);
           const NCAttr attr (A_BOLD);
           addstr (tableFName. c_str ());
           clrtoeol ();
         }
-        move (1, 0);
         {
+          move (1, 0);
           const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (7) /*nc. background*/ | A_BOLD);
           StringVector values;
@@ -187,6 +195,10 @@ struct ThisApplication : Application
           printRow (true, values, curCol, tt. header, nc. col_max);          
         }
         move ((int) (fieldSize + headerSize), 0);
+      #if 0
+        // For testing
+        addstr (to_string (curLastCol). c_str ());  
+      #else
         {
           const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
@@ -207,6 +219,7 @@ struct ThisApplication : Application
           else
             addstr (posS. c_str ());
         }
+      #endif
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
           move ((int) (i - topIndex + headerSize), 0);
@@ -229,6 +242,11 @@ struct ThisApplication : Application
       while (! keyAccepted)
       {
         const int key = getch ();  // Invokes refresh()
+      #if 0
+        endwin(); 
+        cout << "KEY NAME: " << keyname (key) << " - " << key << endl;
+        exit (0);
+      #endif
         keyAccepted = true;
         switch (key)
         {

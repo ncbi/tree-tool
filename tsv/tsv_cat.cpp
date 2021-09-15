@@ -1,4 +1,4 @@
-// tsv_group.cpp
+// tsv_cat.cpp
 
 /*===========================================================================
 *
@@ -27,16 +27,16 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Group columns of a table
+*   Concatenate tsv-tables
 *
 */
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 
@@ -47,63 +47,60 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Group columns of a tsv-table")
+    : Application ("Concatenate tsv-tables. File names are adeed as the new last column")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table file with a header");
-  	  addKey ("by", "Comma-separated list of columns to group by"); 
-  	  addKey ("sum", "Comma-separated list of columns to sum"); 
-  	  addKey ("aggr", "Comma-separated list of columns to aggregate: make unique and sort"); 
+  	  addPositional ("list", "List of tsv-tables with the same headers");
+  	  addPositional ("col_name", "Column name of the added file names");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string fName = getArg ("table");
-		const string byS   = getArg ("by");
-		const string sumS  = getArg ("sum");
-		const string aggrS = getArg ("aggr");
-
-
-    TextTable tt (fName);
-    tt. qc ();
-    if (verbose ())
-      tt. printHeader (cout);      
-    
-    const StringVector by   (byS,   ',', true);
-    const StringVector sum  (sumS,  ',', true);    
-    const StringVector aggr (aggrS, ',', true);    
-
-
-    // QC
-    for (const string& s : by)
-      if (! tt. hasColumn (s))
-        throw runtime_error ("Table has no by-column " + strQuote (s));
-    
-    for (const string& s : sum)
-    {
-      if (! tt. hasColumn (s))
-        throw runtime_error ("Table has no sum-column " + strQuote (s));
-      if (by. contains (s))
-        throw runtime_error ("Same by-column and sum-column: " + strQuote (s));
-      if (! tt. header [tt. col2index (s)]. numeric)
-        throw runtime_error ("Column " + strQuote (s) + " is not numeric");
-    }
+		const string listFName = getArg ("list");
+		const string colName   = getArg ("col_name");
+		
+		QC_ASSERT (! colName. empty ());
+		
+		
+		TextTable total;
+		total. pound = true;
+		{
+  		LineInput li (listFName, 1024, 1);  // PAR
+  		while (li. nextLine ())
+  		{
+        TextTable tab (li. line);
+        tab. qc ();
         
-    for (const string& s : aggr)
-    {
-      if (! tt. hasColumn (s))
-        throw runtime_error ("Table has no aggregation column " + strQuote (s));
-      if (by. contains (s))
-        throw runtime_error ("Same by-column and aggregation column: " + strQuote (s));
-    }
-        
+  		  if (tab. hasColumn (colName))
+  		    throw runtime_error ("Files already have column " + strQuote (colName));
 
-    tt. group (by, sum, aggr);
-    tt. qc ();
-    
-    tt. saveText (cout);
+        // header
+        QC_ASSERT (! tab. header. empty ());
+  		  if (total. header. empty ())
+  		    total. header = tab. header;
+  		  else
+  		  {
+  		    if (total. header. size () != tab. header. size ())
+  		      throw runtime_error ("Different number of columns in files");
+  		    FFOR (size_t, i, total. header. size ())
+  		      if (total. header [i]. name != tab. header [i]. name)
+  		        throw runtime_error ("Different column #" + to_string (i + 1) + " in files");
+  		  }
+  		  
+  		  const string fName = getFileName (li. line);
+  		  for (StringVector& row : tab. rows)
+  		    row << fName;
+  		  
+  		  total. rows << tab. rows;		  
+  		}
+    }
+		total. header << TextTable::Header (colName);
+		total. qc ();
+
+
+    total. saveText (cout);
 	}
 };
 
