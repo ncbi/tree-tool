@@ -148,6 +148,7 @@ struct Annot : Named
 
 
 
+
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -158,16 +159,18 @@ struct ThisApplication : Application
   	  addPositional ("ref", "Reference DNA sequence file");
   	  addPositional ("annot", "File with CDS annotations in <ref>, line format: <CDS name> <start> <stop>; 1-based, <stop> is the last nucleotide position");
   	  addKey ("gencode", "NCBI genetic code", "1");
+  	  addFlag ("dna_mut", "print DNA mutation");
   	}
 
 
 
 	void body () const final
   {
-		const string mutFName   = getArg ("mut");
-		const string refFName   = getArg ("ref");
-		const string annotFName = getArg ("annot");
-		const Gencode gencode   = (Gencode) arg2uint ("gencode");
+		const string  mutFName    = getArg ("mut");
+		const string  refFName    = getArg ("ref");
+		const string  annotFName  = getArg ("annot");
+		const Gencode gencode     = (Gencode) arg2uint ("gencode");
+		const bool    printDnaMut = getFlag ("dna_mut");
 
 
     unique_ptr<const Dna> ref;
@@ -283,7 +286,11 @@ struct ThisApplication : Application
           protMut. qc ();
           ASSERT (protMut. prot); 
           if (! (protMut == protMut_prev))
+          {
+            if (printDnaMut)
+              cout << dnaMut << '\t';
             cout << protMut << endl;
+          }
           protMut_prev = protMut;
         }
       }
