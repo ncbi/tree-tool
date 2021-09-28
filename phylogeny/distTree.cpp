@@ -6659,8 +6659,10 @@ size_t DistTree::optimizeLenNode ()
       if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR 
       {
         couterr << "!!optimizeLenNode" << endl;  // ??
+        const ONumber on (cout, absCriterionDecimals, true);
         PRINT (absCriterion);
         PRINT (absCriterion_old);
+        PRINT (subDepth);
       }
     #if 0
       { 
@@ -6689,17 +6691,14 @@ size_t DistTree::optimizeLenNode ()
   }
 
   
-  ASSERT (leRealRel (absCriterion, absCriterion_old1, 1e-4));  // PAR
-#if 0
+  if (! leRealRel (absCriterion, absCriterion_old1, 1e-4))  // PAR
   {
-    cout << "!!optimizeLenNode2" << endl;  
+    couterr << "!!optimizeLenNode2" << endl;  
     const ONumber on (cout, absCriterionDecimals, true);
     PRINT (absCriterion);
     PRINT (absCriterion_old1);
     PRINT (subDepth);
-    ERROR;
   }
-#endif
 
   return finishChanges ();
 }
