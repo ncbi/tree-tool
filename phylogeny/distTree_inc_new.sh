@@ -165,7 +165,7 @@ else
     echo "Processing new objects"
     $THIS/distTree_new $QC $INC/  -variance $VARIANCE
   done
-  $THIS/../trav  -step 1  $THREADS  $INC/search "$THIS/distTree_inc_search_stop.sh $INC %f"
+  $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_stop.sh $INC %f"
 
 
   section "leaf, dissim.add -> tree, dissim"
