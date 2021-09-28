@@ -21,7 +21,7 @@ fi
 awk '$3 == "nan" || $3 == "-nan"' $DIR/dissim > $DIR/dissim.bad
 
 if [ -s $DIR/dissim.bad ]; then
-  cat $DIR/dissim.bad >> $INC/dissim.bad
+  flock $INC/dissim.bad -c "cat $DIR/dissim.bad >> $INC/dissim.bad"
   $INC/outlier2db.sh $OBJ 'incomparable'
   rm -r $DIR/
 else
