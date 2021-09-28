@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $THIS/bash_common.sh
+source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Sort s tsv-file"
   echo "#1: tsv-file name"
