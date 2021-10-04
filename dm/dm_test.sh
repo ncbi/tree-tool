@@ -6,6 +6,10 @@ if [ $# -ne 1 ]; then
   echo "#1: seed (>=1)"
   exit 1
 fi
+SEED=$1
+
+
+cd $THIS
 
 
 section "numeric"
@@ -15,7 +19,7 @@ section "matrix"
 $THIS/matrix_test -qc go
 
 section "dataset"
-$THIS/dataset_test -qc  -seed $1  go
+$THIS/dataset_test -qc  -seed $SEED  go
 
 
 super_section "PCA"
@@ -86,12 +90,12 @@ rm Fungi-univ-stat.clust_binomial
 
 super_section "Prediction"
 section "linreg"
-$THIS/linreg_test  -qc  -seed $1
-$THIS/linreg_test  -qc  -lin_dep  -seed $1
+$THIS/linreg_test  -qc  -seed $SEED
+$THIS/linreg_test  -qc  -lin_dep  -seed $SEED
 
 section "logreg"
-$THIS/logreg_test  -qc  -seed $1
-$THIS/logreg_test  -qc  -lin_dep  -seed $1
+$THIS/logreg_test  -qc  -seed $SEED
+$THIS/logreg_test  -qc  -lin_dep  -seed $SEED
 
 section "logreg GENOME.dm"
 $THIS/logreg  -qc  $THIS/data/GENOME target > logreg.out
@@ -101,10 +105,10 @@ rm logreg.out
 
 super_section "Distributions"
 section "Beta1"
-$THIS/beta1_test  -qc  1000  -seed $1 
+$THIS/beta1_test  -qc  1000  -seed $SEED 
 
 #section "Zipf" ??
-#$THIS/testZipf  -qc  1000  -seed $1
+#$THIS/testZipf  -qc  1000  -seed $SEED
 
 section "uniKernel"
 $THIS/uniKernel  -qc  $THIS/data/bimodal Z1_1 > bimodal.uniKernel
