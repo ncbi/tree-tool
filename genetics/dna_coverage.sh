@@ -13,6 +13,9 @@ SUBJ=$2
 MODE=$3
 
 
+#set -x
+
+
 if [ ! -e $QUERY -o -d $QUERY ]; then
   error "Query file $QUERY does not exist"
 fi
@@ -22,9 +25,9 @@ if [ ! -e $SUBJ -o -d $SUBJ ]; then
 fi
 
 MT_MODE=""
-N=`grep -c ">" $QUERY`
+N=`grep -c ">" $QUERY || true`
 if [ $N == 0 ]; then
-  error "$QUERY is not FASTA"
+  exit
 fi
 if [ $N -gt 1 ]; then
   MT_MODE="-mt_mode 1"
@@ -33,7 +36,6 @@ fi
 
 TMP=`mktemp`  
 #echo $TMP > /dev/stderr
-#set -x
 
 
 echo "Running BLAST ..." > /dev/stderr
