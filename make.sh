@@ -21,11 +21,13 @@ make all
 cd ../dissim
 make all
 
+cd ../tsv
+make all
+
 cd ..
 
 
-echo ""
-echo "Software version:"
+section "Software version"
 phylogeny/makeDistTree -version
 
 
