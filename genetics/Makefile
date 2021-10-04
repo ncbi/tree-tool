@@ -11,6 +11,7 @@ endif
 ############################### Programs ################################
 
 all:	\
+  asm_gap \
 	asn_grep \
 	blastmat \
 	blastp_merge \
@@ -61,6 +62,12 @@ all:	\
 	uniqSeq \
 	uniqProtRef
 
+
+asm_gap.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
+asm_gapOBJS=asm_gap.o $(GEN_DIR)/seq.o $(DM_OBJ)
+asm_gap:	$(asm_gapOBJS)
+	$(CXX) -o $@ $(asm_gapOBJS) $(LIBS) 
+	$(ECHO)
 
 asn_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
 asn_grepOBJS=asn_grep.o $(CPP_DIR)/common.o $(GEN_DIR)/genbank_text.o
