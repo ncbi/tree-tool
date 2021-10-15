@@ -116,7 +116,7 @@ struct ThisApplication : Application
 	  addKey ("min_arc_prob", "Min. arc probability to retain", "0");
 
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
-	  addFlag ("refresh_dissim", "Add more requests to <dissim_request>");
+	  addFlag ("refresh_dissim", "Disregard existing dissimilarities when computing -dissim_request");
 
     // Output
 	  addFlag ("noqual", "Do not compute quality statistics");
@@ -382,7 +382,7 @@ struct ThisApplication : Application
       throw runtime_error ("-noqual excludes -leaf_errors");
     if (refresh_dissim && dissim_request. empty ())
       throw runtime_error ("-refresh_dissim requires -dissim_request");
-    if (! dissim_request. empty () && ! optimizable)
+    if (! dissim_request. empty () && ! refresh_dissim && ! optimizable)
       throw runtime_error ("-dissim_request requires dissimilarities");    	
     if (! output_data. empty () && ! optimizable)
       throw runtime_error ("-output_data requires dissimilarities");    	
@@ -825,19 +825,32 @@ struct ThisApplication : Application
       Dataset ds;
       auto len = new PositiveAttr1 ("len", ds, dissimDecimals);
       auto prob = new ProbAttr1 ("prob", ds, 3);  // PAR
-      for (DiGraph::Node* node : tree->nodes)
+      Real realArcs = 0.0;
+      size_t n = 0;
       {
-        const DTNode* dtNode = static_cast <DTNode*> (node);
-        if (dtNode != tree->root)
+        const size_t nodesSize = tree->nodes. size ();
+        Progress prog (nodesSize, 1000);  // PAR
+        for (const DiGraph::Node* node : tree->nodes)
         {
+          prog ();
+          const DTNode* dtNode = static_cast <const DTNode*> (node);
+          if (dtNode == tree->root)
+            continue;
+          if (dtNode->inDiscernible ())
+            continue;
           const size_t objNum = ds. appendObj (dtNode->getLcaName ());
+          const Prob arcExists = dtNode->getArcExistence ();
           (*len)  [objNum] = dtNode->len;
-          (*prob) [objNum] = dtNode->getArcExistence ();
+          (*prob) [objNum] = arcExists;
+          realArcs += arcExists;
+          n++;
         }
       }
       ds. qc ();
       OFStream of (arc_existence + dmSuff);
       ds. saveText (of);
+      const ONumber on (cout, 3, false);  // PAR
+      cout << "Fraction of real interior arcs: " << realArcs / (Real) n << " (" << realArcs << " / " << n << ')' << endl;
     }
 
 
