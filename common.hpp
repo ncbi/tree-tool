@@ -1260,7 +1260,7 @@ struct Dir
 
 bool getChar (istream &is,
               char &c);
-  // Output: s if (bool)Return
+  // Output: c if (bool)Return
 
 void skipLine (istream &is);
 
