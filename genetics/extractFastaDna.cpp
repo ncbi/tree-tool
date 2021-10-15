@@ -56,7 +56,7 @@ struct ThisApplication : Application
 		  addPositional ("in",  "Input FASTA file with DNAs");
 		  addPositional ("target", "List of sequence ids");
 		  addFlag ("remove", "Target list must be removed from the input file, otherwise only the target list is printed");
-		  addFlag ("whole", "Sequence identifiers are whole strings which shoudl not be split by '|'");
+		  addFlag ("whole", "Sequence identifiers are whole strings which should not be split by '|'");
 	  }
 
   
