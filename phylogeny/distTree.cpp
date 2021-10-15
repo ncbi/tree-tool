@@ -68,6 +68,17 @@ Real dissim_boundary = NaN;
 
 
 
+#define BAD_CRITERION(func)  \
+  { \
+    couterr << "!!" #func << endl;  \
+    const ONumber on (cout, absCriterionDecimals, true); \
+    PRINT (absCriterion); \
+    PRINT (absCriterion_old); \
+    PRINT (subDepth); \
+  }
+
+
+
 void dissimTransform (Real &target)
 {
   ASSERT (target >= 0.0);  
@@ -703,8 +714,8 @@ const DistTree& DTNode::getDistTree () const
 
 const Leaf* DTNode::inDiscernible () const
 { 
-  const Leaf* g = asLeaf ();
-  if (g)
+  if (const Leaf* g = asLeaf ())
+  {
     if (g->discernible)
       return nullptr;
     else
@@ -712,6 +723,7 @@ const Leaf* DTNode::inDiscernible () const
     //ASSERT (! DistTree_sp::variance_min);
       return g;
     }
+  }
   else
     return nullptr;
 }
@@ -961,9 +973,10 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
 {
   IMPLY (depth_max, depth_max >= sparsingDepth);
   IMPLY (subtractDissims, asLeaf ());
+  IMPLY (subtractDissims, getDistTree (). optimizable ());
   
-  hash<string> hash_str;
-  const ulong seed = hash_str (targetName) + 1;
+//hash<string> hash_str;
+  const ulong seed = str_hash (targetName) + 1;
 
   unordered_map <const Steiner* /*lca*/, VectorPtr<Leaf>> lca2leaves;  lca2leaves. rehash (pathDissimNums. size ());  
   if (subtractDissims)
@@ -6414,7 +6427,8 @@ bool DistTree::optimizeLenWhole ()
       absCriterion += dissim. getAbsCriterion ();
   }
   ASSERT (absCriterion < inf);
-  ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
+  if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR
+    BAD_CRITERION (optimizeLenWhole);
   
   return true;
 }
@@ -6657,13 +6671,7 @@ size_t DistTree::optimizeLenNode ()
       const Real absCriterion_old = absCriterion;  
       subgraph. subPaths2tree ();
       if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR 
-      {
-        couterr << "!!optimizeLenNode" << endl;  // ??
-        const ONumber on (cout, absCriterionDecimals, true);
-        PRINT (absCriterion);
-        PRINT (absCriterion_old);
-        PRINT (subDepth);
-      }
+        BAD_CRITERION (optimizeLenNode);
     #if 0
       { 
         cout << "!!optimizeLenNode1" << endl;  
@@ -6693,11 +6701,8 @@ size_t DistTree::optimizeLenNode ()
   
   if (! leRealRel (absCriterion, absCriterion_old1, 1e-4))  // PAR
   {
-    couterr << "!!optimizeLenNode2" << endl;  
-    const ONumber on (cout, absCriterionDecimals, true);
-    PRINT (absCriterion);
-    PRINT (absCriterion_old1);
-    PRINT (subDepth);
+    const Real absCriterion_old = absCriterion_old1;
+    BAD_CRITERION (optimizeLenNode2);
   }
 
   return finishChanges ();
@@ -7489,11 +7494,7 @@ void DistTree::optimizeSmallSubgraph (const DTNode* center,
   qcPredictionAbsCriterion ();
 
   if (! subDepth && ! leRealRel (absCriterion, absCriterion_old, 1e-4))  // PAR
-  {
-    couterr << "!!optimizeSmallSubgraph" << endl;  // ??
-    PRINT (absCriterion);
-    PRINT (absCriterion_old);
-  }
+    BAD_CRITERION (optimizeSmallSubgraph);
 }
 
 
@@ -9035,7 +9036,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
         continue;
       if (! leaf->isMainIndiscernible ())
         continue;
-      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (leaf->name, depth_max, true, refreshDissims));
+      const VectorPtr<Leaf> matches (leaf->getSparseLeafMatches (leaf->name, depth_max, ! refreshDissims, refreshDissims));
       for (const Leaf* match : matches)
         if (leaf->getDiscernible () != match->getDiscernible ())
         {
