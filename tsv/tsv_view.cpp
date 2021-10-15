@@ -139,6 +139,12 @@ struct ThisApplication : Application
       TextTable::Header& h = tt. header [i];
       maximize (h. len_max, max (h. name. size (), to_string (i + 1). size ()));
     }
+    
+    if (tt. rows. empty ())
+    {
+      cout << "No data" << endl;
+      return;
+    }
 
 
     size_t topIndex = 0;
