@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
-  echo "Output: leaf_errors.dm"
+  echo "Output: leaf_errors.dm, arc_existence.dm"
   echo "        if #1/phen exists then: tree.<DATE>, disagreement_nodes[.txt], disagreement_objects, gain_nodes, qual, qual.raw"
   echo "Requires: large RAM, large running time"
   echo "#1: incremental distance tree directory"
@@ -88,10 +88,13 @@ fi
 # PAR
 $THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  $DELETE \
   -optimize  -skip_len  -subgraph_iter_max 2 \
-  -output_tree $INC/tree.new  -leaf_errors leaf_errors  > $INC/hist/makeDistTree-final.$VER
+  -output_tree $INC/tree.new  -leaf_errors leaf_errors  -arc_existence arc_existence  > $INC/hist/makeDistTree-final.$VER
 mv $INC/tree.new $INC/tree
 # -reinsert  
 #tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
+
+echo ""
+tail -n +6 arc_existence.dm | awk '{print $3};'| count  # compare "count" and "sum"
 
 if [ -e $INC/outlier-genogroup ]; then
   section "Database: genogroup outliers"
@@ -154,7 +157,7 @@ if [ -e $INC/phen ]; then
     echo "Release: $RELNUM"
 
     mkdir $RELDIR/$RELNUM
-    mv disagreement_objects disagreement_nodes.txt disagreement_nodes gain_nodes qual tree.$DATE qual.raw leaf_errors.dm $RELDIR/$RELNUM/
+    mv disagreement_objects disagreement_nodes.txt disagreement_nodes gain_nodes qual tree.$DATE qual.raw leaf_errors.dm arc_existence.dm $RELDIR/$RELNUM/
     
     rm -f $RELDIR/latest
     ln -s $PWD/$RELDIR/$RELNUM $RELDIR/latest
