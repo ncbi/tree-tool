@@ -450,7 +450,7 @@ public:
     { return subtreeLen. getMean (); }    
     // After: DistTree::setHeight()
   Prob getArcExistence () const;
-    // Return: conditional probability
+    // Input: pathDissimNums, Dissim::mult
   Real getDeformation () const;
     // Input: maxDeformationDissimNum
   string getDeformationS () const;
@@ -1494,6 +1494,7 @@ private:
 public:
   size_t deleteQuestionableArcs (Prob arcExistence_min);
     // Return: number of Steiner nodes deleted
+    // Invokes: DTNode::getArcExistence()
   Real getDissimCoeffProd () const
     { Real prod = 1.0;
       for (const DissimType& dt : dissimTypes)
