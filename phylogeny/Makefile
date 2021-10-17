@@ -16,6 +16,7 @@ all:	\
   attr2_2phylip \
   compareTrees \
   distTree_new \
+  distTree_refresh_dissim \
   dm2feature \
   feature2gain_loss \
 	makeDistTree \
@@ -66,6 +67,12 @@ distTree_new.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 distTree_newOBJS=distTree_new.o $(DISTTREE_OBJ)
 distTree_new:	$(distTree_newOBJS)
 	$(CXX) -o $@ $(distTree_newOBJS) $(LIBS)
+	$(ECHO)
+
+distTree_refresh_dissim.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+distTree_refresh_dissimOBJS=distTree_refresh_dissim.o $(DISTTREE_OBJ)
+distTree_refresh_dissim:	$(distTree_refresh_dissimOBJS)
+	$(CXX) -o $@ $(distTree_refresh_dissimOBJS) $(LIBS)
 	$(ECHO)
 
 feature2gain_loss.o:  $(COMMON_HPP) $(PHYL_DIR)/featureTree.hpp 
