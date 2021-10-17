@@ -678,6 +678,12 @@ public:
 
 
 
+
+typedef  Pair<const Leaf*>  LeafPair;
+
+
+
+
 struct SubPath
 // Path going through a connected subgraph
 {
@@ -1038,11 +1044,10 @@ struct Dissim
     
   bool operator< (const Dissim &other) const;
   bool operator== (const Dissim &other) const
-   { return    Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2)
+   { return    LeafPair (leaf1, leaf2) == LeafPair (other. leaf1, other. leaf2)
             && type == other. type; 
    }
 };
-
 
 
 
@@ -1209,6 +1214,9 @@ public:
     //         newLeaves2boundary
 	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + (sparse ? log(|area|) : |area|)))
   DistTree () = default;
+  Vector<DissimLine> getDissimLines (const string& fName,
+                                     size_t reserveSize) const;
+    // Return: sort()'ed, unique
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files
@@ -1587,7 +1595,7 @@ public:
     // Invokes: Leaf::getDeformation(), MaxDistribution::getQuantileComp()
     // Time: O(n log(n))  // sorting of result
   Vector<TriangleParentPair> findHybrids (Real dissimOutlierEValue_max,
-	                                        Vector<Pair<const Leaf*>> *dissimRequests) const;
+	                                        Vector<LeafPair>* dissimRequests) const;
     // ~Idempotent w.r.t. restoring hybrids in the tree
     // Update (append): *dissimRequests if !nullptr  // Not implemented ??
     // After: setLeafNormCriterion() 
@@ -1603,13 +1611,13 @@ public:
     
   // Missing dissimilarities
   // Return: not in dissims; sort()'ed, uniq()'ed
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_ancestors (size_t depth_max,
-                                                           bool refreshDissims) const;
-    // Return: almost a superset of getMissingLeafPairs_subgraphs()
+  Vector<LeafPair> getMissingLeafPairs_ancestors (size_t depth_max,
+                                                  bool refreshDissims) const;
+    // Return: almost a superset of getMissingLeafPairs_subgraphs(); sort()'ed; first->name < second->name
     // Invokes: DTNode::getSparseLeafMatches()
     // Time: ~ O(n log^2(n))
-  Vector<Pair<const Leaf*>> getMissingLeafPairs_subgraphs () const;
-  Vector<Pair<const Leaf*>> leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const;
+  Vector<LeafPair> getMissingLeafPairs_subgraphs () const;
+  Vector<LeafPair> leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const;
     // After: dissims.sort()
 
   // Clustering
@@ -1649,6 +1657,43 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////////////
+
+struct DissimLine
+{
+  // Input
+  string name1;
+  string name2;
+  // name1 < name2
+  Real dissim {NaN};
+  // Output
+  Leaf* leaf1 {nullptr};
+  Leaf* leaf2 {nullptr};
+  
+
+  DissimLine () = default;
+  DissimLine (string &line,
+              uint lineNum);
+  DissimLine (const string &name1_arg,
+              const string &name2_arg)
+    : name1 (name1_arg)
+    , name2 (name2_arg)
+    {}
+private:
+  static string getErrorStr (uint lineNum) 
+    { return "Line " + toString (lineNum) + ": "; }
+public:
+    
+
+  void process (const DistTree::Name2leaf &name2leaf);
+  void apply (DistTree &tree) const;
+  bool operator< (const DissimLine &other) const;
+  bool operator== (const DissimLine &other) const
+    { return    name1 == other. name1
+             && name2 == other. name2;
+    }
+};
+
+
 
 struct NewLeaf : Named
 // To become Leaf

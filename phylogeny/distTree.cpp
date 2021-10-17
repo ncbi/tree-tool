@@ -3163,94 +3163,6 @@ DistTree::DistTree (const string &dissimFName,
 
 
 
-struct DissimLine
-{
-  // Input
-  string name1;
-  string name2;
-  Real dissim {NaN};
-  // Output
-  Leaf* leaf1 {nullptr};
-  Leaf* leaf2 {nullptr};
-  
-
-  DissimLine () = default;
-  DissimLine (string &line,
-              uint lineNum)
-    { replace (line, '\t', ' ');
-      name1 = findSplit (line);
-      name2 = findSplit (line);
-      #define MSG  getErrorStr (lineNum) + 
-      if (name2. empty ())
-        throw runtime_error (MSG "empty name2");
-      if (name1 == name2)
-        throw runtime_error (MSG "name1 == name2");
-      if (name1 > name2)
-        swap (name1, name2);
-      dissim = str2real (line);
-      if (isNan (dissim))
-        throw runtime_error (MSG "dissimilarity is NaN");
-      if (dissim < 0.0)
-        throw runtime_error (MSG "dissimilarity is negative");
-    //if (! DM_sp::finite (dissim))
-      //throw runtime_error (MSG "dissimilarity is infinite");
-      #undef MSG
-    }
-private:
-  static string getErrorStr (uint lineNum) 
-    { return "Line " + toString (lineNum) + ": "; }
-public:
-    
-
-  void process (const DistTree::Name2leaf &name2leaf)
-    {
-      ASSERT (! leaf1);
-      ASSERT (! leaf2);
-      
-      leaf1 = var_cast (findPtr (name2leaf, name1));
-      if (! leaf1)
-        return;
-      //throw runtime_error (FUNC "Tree has no object " + name1);
-      leaf1->badCriterion = -1.0;  // temporary
-    
-      leaf2 = var_cast (findPtr (name2leaf, name2));
-      if (! leaf2)
-        return;
-      //throw runtime_error (FUNC "Tree has no object " + name2);
-      leaf2->badCriterion = -1.0;  // temporary
-    }
-    
-    
-  void apply (DistTree &tree) const
-    { ASSERT (! isNan (dissim));
-      ASSERT (dissim >= 0.0);
-      if (! leaf1)
-        return;
-      if (! leaf2)
-        return;
-      if (   /*! DistTree_sp::variance_min 
-          &&*/ ! dissim 
-          && ! leaf1->getCollapsed (leaf2)  // Only for new Leaf's
-         )  
-        leaf1->collapse (leaf2);
-      if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, no_index))
-        throw runtime_error (FUNC "Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
-    }
-
-
-  bool operator< (const DissimLine &other) const
-    { LESS_PART (*this, other, name1);
-      LESS_PART (*this, other, name2);
-      return false;
-    }
-  bool operator== (const DissimLine &other) const
-    { return    name1 == other. name1
-             && name2 == other. name2;
-    }
-};
-
-
-
 namespace
 {
 
@@ -3307,6 +3219,7 @@ void processOptimizeSmallSubgraph (OptimizeSmallSubgraph &oss)
 {
   oss. process ();
 }
+
 
 }
 
@@ -3391,31 +3304,9 @@ DistTree::DistTree (const string &dataDirName,
     loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
     const string fName (dataDirName + "dissim");
     {
-      Vector<DissimLine> dissimLines;  dissimLines. reserve (dissims. capacity ());
-      constexpr uint displayPeriod = 100000;  // PAR
+      const Vector<DissimLine> dissimLines (getDissimLines (fName, dissims. capacity ()));
       {
-        couterr << "Loading " << fName << " ..." << endl;
-        {
-          LineInput f (fName, 10 * 1024 * 1024, displayPeriod);  
-          while (f. nextLine ())
-          {
-            DissimLine dl (f. line, f. lineNum);
-            if (DM_sp::finite (dl. dissim))
-            {
-              dissimLines << move (dl);
-              ASSERT (dl. name1. empty ());
-            }
-          }
-          if (! f. lineNum)
-            throw runtime_error (FUNC "Empty " + fName);
-        }
-        dissimLines. sort ();
-        dissimLines. uniq ();
-      }
-      vector<Notype> notypes;
-      arrayThreads (true, processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
-      {
-        Progress prog (dissimLines. size (), displayPeriod);
+        Progress prog (dissimLines. size (), dissim_progress);
         for (const DissimLine &dl : dissimLines)
         {
           prog ();
@@ -3436,9 +3327,9 @@ DistTree::DistTree (const string &dataDirName,
     // qc: pairs of <leaf1,leaf2> must be unique in dissims
     if (qc_on)
     {
-      Vector<Pair<const Leaf*>> pairs;  pairs. reserve (dissims. size ());
+      Vector<LeafPair> pairs;  pairs. reserve (dissims. size ());
       for (const Dissim& d : dissims)
-        pairs << Pair<const Leaf*> (d. leaf1, d. leaf2);
+        pairs << LeafPair (d. leaf1, d. leaf2);
       const size_t size_init = pairs. size ();
       pairs. sort ();
       pairs. uniq ();
@@ -4860,7 +4751,7 @@ void DistTree::setGlobalLen ()
 
 namespace
 {
-  struct LeafPair
+  struct NodePair
   {
     // !nullptr, discernible
     array <const DTNode*, 2> nodes;
@@ -4868,11 +4759,11 @@ namespace
     Real dissim {NaN};
       // !isNan()
 
-    LeafPair ()
+    NodePair ()
       { nodes [0] = nullptr;
         nodes [1] = nullptr;
       }
-    LeafPair (const Leaf* leaf1,
+    NodePair (const Leaf* leaf1,
               const Leaf* leaf2,
               Real dissim_arg)
       : dissim (dissim_arg)
@@ -4889,7 +4780,7 @@ namespace
            << ' ' << dissim 
            << endl; 
       }
-    bool operator== (const LeafPair& other) const
+    bool operator== (const NodePair& other) const
       { return    nodes [0] == other. nodes [0]
                && nodes [1] == other. nodes [1];
       }
@@ -4897,7 +4788,7 @@ namespace
       { swapGreater (nodes [0], nodes [1]); }
     bool same () const
       { return nodes [0] == nodes [1]; }
-    bool merge (const LeafPair &from)
+    bool merge (const NodePair &from)
       { if (! (*this == from))
           return false;
         dissim = (dissim + from. dissim) / 2.0;
@@ -4912,8 +4803,8 @@ namespace
       { ASSERT (n > 2);
         return min (dissim, max (0.0, 0.5 * (dissim + (nodes [0] -> len - nodes [1] -> len) / (Real) (n - 2)))); 
       }
-    static bool strictlyLess (const LeafPair& n1,
-                              const LeafPair& n2)
+    static bool strictlyLess (const NodePair& n1,
+                              const NodePair& n2)
       { LESS_PART (n1, n2, nodes [0]);
         LESS_PART (n1, n2, nodes [1]);
         return false;  
@@ -4939,7 +4830,7 @@ void DistTree::neighborJoin ()
   }
     
   size_t missing = 0;
-  Vector<LeafPair> leafPairs;  leafPairs. reserve (getOneDissimSize_max ());  
+  Vector<NodePair> leafPairs;  leafPairs. reserve (getOneDissimSize_max ());  
   if (optimizable ())
   {
     ASSERT (dissims. size () == getOneDissimSize_max ());
@@ -4951,7 +4842,7 @@ void DistTree::neighborJoin ()
         missing++;
         continue;
       }
-      const LeafPair leafPair (dissim. leaf1, dissim. leaf2, dissim. target);  
+      const NodePair leafPair (dissim. leaf1, dissim. leaf2, dissim. target);  
       if (leafPair. same ())
         continue;
       if (leafPair. dissim == inf)
@@ -4975,7 +4866,7 @@ void DistTree::neighborJoin ()
       {
         const Leaf* leaf2 = findPtr (name2leaf, dissimDs->objs [col] -> name);
         ASSERT (leaf2);
-        LeafPair leafPair (leaf1, leaf2, dissimAttr->get (row, col));
+        NodePair leafPair (leaf1, leaf2, dissimAttr->get (row, col));
         if (leafPair. same ())
           continue;
         if (leafPair. dissim < 0.0)
@@ -4995,13 +4886,13 @@ void DistTree::neighborJoin ()
   
 
   Progress prog (n - 1);
-  LeafPair leafPair_best;
+  NodePair leafPair_best;
   for (;;)
   {
     prog ();
     
-    // Remove duplicate LeafPair 
-    leafPairs. sort (LeafPair::strictlyLess);
+    // Remove duplicate NodePair 
+    leafPairs. sort (NodePair::strictlyLess);
     leafPairs. filterIndex ([&leafPairs, &leafPair_best] (size_t i) 
                                  { return    leafPairs [i] == leafPair_best 
                                           || (i && leafPairs [i - 1]. merge (leafPairs [i]));
@@ -5013,7 +4904,7 @@ void DistTree::neighborJoin ()
     ASSERT (n > 2);
     
     if (! leafPair_best. nodes [0])  // First iteration
-      for (LeafPair& leafPair : leafPairs)
+      for (NodePair& leafPair : leafPairs)
         for (const bool first : {false, true})
           var_cast (leafPair. nodes [first]) -> len += leafPair. dissim;
           
@@ -5026,7 +4917,7 @@ void DistTree::neighborJoin ()
         cout << node->getLcaName () << ": " << node->len << endl;
       }     
       cout << endl << "Pairs:" << endl;
-      for (const LeafPair& leafPair : leafPairs)
+      for (const NodePair& leafPair : leafPairs)
         leafPair. print (cout);
     }
       
@@ -5075,7 +4966,7 @@ void DistTree::neighborJoin ()
     ASSERT (newNode);
     
     // leafPairs
-    for (LeafPair& leafPair : leafPairs)
+    for (NodePair& leafPair : leafPairs)
       if (! (leafPair == leafPair_best))
         for (const bool first : {false, true})
         {
@@ -5103,7 +4994,7 @@ void DistTree::neighborJoin ()
   IMPLY (! missing, n == 2);
   
   
-  LeafPair& leafPair = leafPairs [0];
+  NodePair& leafPair = leafPairs [0];
   ASSERT (! leafPair. same ());
   for (const bool first : {false, true})  
   {
@@ -5215,6 +5106,37 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
     ASSERT (dtNode->pathDissimNums. empty ());
     var_cast (dtNode) -> pathDissimNums. reserve (reserve_size);  
   }
+}
+
+
+
+Vector<DissimLine> DistTree::getDissimLines (const string& fName,
+                                             size_t reserveSize) const
+{
+  Vector<DissimLine> dissimLines;  dissimLines. reserve (reserveSize);
+  {
+    couterr << "Loading " << fName << " ..." << endl;
+    {
+      LineInput f (fName, 10 * 1024 * 1024, dissim_progress);  
+      while (f. nextLine ())
+      {
+        DissimLine dl (f. line, f. lineNum);
+        if (DM_sp::finite (dl. dissim))
+        {
+          dissimLines << move (dl);
+          ASSERT (dl. name1. empty ());
+        }
+      }
+      if (! f. lineNum)
+        throw runtime_error (FUNC "Empty " + fName);
+    }
+    dissimLines. sort ();
+    dissimLines. uniq ();
+  }
+  vector<Notype> notypes;
+  arrayThreads (true, processDissimLine, dissimLines. size (), notypes, ref (dissimLines), cref (name2leaf));
+  
+  return dissimLines;
 }
   
 
@@ -5512,14 +5434,14 @@ void DistTree::qc () const
   size_t leafDissims = 0;
   if (optimizable ())
   {
-    Set<Pair<const Leaf*>> leafSet;
+    Set<LeafPair> leafSet;
     for (const Dissim& dissim : dissims)
       if (dissim. mult)
       {
         dissim. qc ();
         QC_IMPLY (! subDepth, dissim. target >= 0.0);
         QC_IMPLY (/*! DistTree_sp::variance_min &&*/ ! subDepth && ! dissim. target, dissim. indiscernible ());
-        leafSet. addUnique (Pair<const Leaf*> (dissim. leaf1, dissim. leaf2));
+        leafSet. addUnique (LeafPair (dissim. leaf1, dissim. leaf2));
         if (subDepth)
           { QC_ASSERT (dissim. mult < inf); }
         else
@@ -8550,9 +8472,9 @@ struct RequestCandidate
   RequestCandidate () = default;
     
   bool operator< (const RequestCandidate &other) const
-    { return Pair<const Leaf*> (leaf1, leaf2) < Pair<const Leaf*> (other. leaf1, other. leaf2); }
+    { return LeafPair (leaf1, leaf2) < LeafPair (other. leaf1, other. leaf2); }
   bool operator== (const RequestCandidate &other) const
-    { return Pair<const Leaf*> (leaf1, leaf2) == Pair<const Leaf*> (other. leaf1, other. leaf2); }
+    { return LeafPair (leaf1, leaf2) == LeafPair (other. leaf1, other. leaf2); }
 };
 
 
@@ -8641,7 +8563,7 @@ void setTriangles_thread (size_t from,
 
 
 Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
-                                                  Vector<Pair<const Leaf*>> *dissimRequests) const
+                                                  Vector<LeafPair>* dissimRequests) const
 {
   ASSERT (! subDepth);
   ASSERT (optimizable ());
@@ -8863,7 +8785,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
     }
     for (const RequestCandidate& req : requests)
       if (! req. inDissims)
-        *dissimRequests << Pair<const Leaf*> (req. leaf1, req. leaf2);
+        *dissimRequests << LeafPair (req. leaf1, req. leaf2);
   #endif
   }
     
@@ -9019,12 +8941,12 @@ VectorPtr<Leaf> DistTree::findDepthOutliers () const
   
 
 
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_max,
-                                                                   bool refreshDissims) const
+Vector<LeafPair> DistTree::getMissingLeafPairs_ancestors (size_t depth_max,
+                                                          bool refreshDissims) const
 {
   ASSERT (! subDepth);
 
-  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
+  Vector<LeafPair> pairs;  pairs. reserve (name2leaf. size () * getSparseDissims_size ());
   {
     Progress prog (name2leaf. size (), 1000);  // PAR
     for (const auto& it : name2leaf)
@@ -9040,7 +8962,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
       for (const Leaf* match : matches)
         if (leaf->getDiscernible () != match->getDiscernible ())
         {
-          Pair<const Leaf*> p (leaf, match);
+          LeafPair p (leaf, match);
           ASSERT (! p. same ());
           if (p. first->name > p. second->name)
             p. swap ();
@@ -9056,11 +8978,11 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_ancestors (size_t depth_
 
 
 
-Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
+Vector<LeafPair> DistTree::getMissingLeafPairs_subgraphs () const
 {
   ASSERT (! subDepth);
 
-  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (name2leaf. size ()); 
+  Vector<LeafPair> pairs;  pairs. reserve (name2leaf. size ()); 
   {
     Subgraph subgraph (*this);
     subgraph. reserve (areaRadius_std);
@@ -9088,7 +9010,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
           const Vector<uint>& pathObjNums1 = subgraph. boundary2pathDissimNums (dtNode1);
           if (pathObjNums1. intersectsFast_merge (pathObjNums2))
             continue;
-          Pair<const Leaf*> leafPair (subgraph. getReprLeaf (dtNode1), subgraph. getReprLeaf (dtNode2));
+          LeafPair leafPair (subgraph. getReprLeaf (dtNode1), subgraph. getReprLeaf (dtNode2));
           ASSERT (leafPair. first);
           ASSERT (leafPair. second);
           ASSERT (! leafPair. same ());
@@ -9122,7 +9044,7 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
         ASSERT (lca);
         const DTNode* reprNode1 = lca == node1 ? static_cast <const DTNode*> (node1->getParent () -> getDifferentChild (node1)) : node1;
         const DTNode* reprNode2 = lca == node2 ? static_cast <const DTNode*> (node2->getParent () -> getDifferentChild (node2)) : node2;
-        Pair<const Leaf*> leafPair (reprNode1->getReprLeaf (), reprNode2->getReprLeaf ());
+        LeafPair leafPair (reprNode1->getReprLeaf (), reprNode2->getReprLeaf ());
         ASSERT (leafPair. first);
         ASSERT (leafPair. second);
         ASSERT (! leafPair. same ());
@@ -9142,11 +9064,11 @@ Vector<Pair<const Leaf*>> DistTree::getMissingLeafPairs_subgraphs () const
 
 
 
-Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const
+Vector<LeafPair> DistTree::leaves2missingLeafPairs (const VectorPtr<Leaf> &leaves) const
 {
   ASSERT (! subDepth);
 
-  Vector<Pair<const Leaf*>> pairs;  pairs. reserve (leaves. size () * (leaves. size () - 1) / 2);  
+  Vector<LeafPair> pairs;  pairs. reserve (leaves. size () * (leaves. size () - 1) / 2);  
   {
     Progress prog (leaves. size (), 100);  // PAR
     for (const Leaf* leaf2 : leaves)
@@ -9156,7 +9078,7 @@ Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Lea
       {
         if (leaf1 == leaf2)
           break;
-        Pair<const Leaf*> leafPair (leaf1, leaf2);
+        LeafPair leafPair (leaf1, leaf2);
         ASSERT (! leafPair. same ());
         if (leafPair. first->name > leafPair. second->name)
           leafPair. swap ();
@@ -9169,7 +9091,7 @@ Vector<Pair<const Leaf*>> DistTree::leaves2missingLeafPairs (const VectorPtr<Lea
   pairs. uniq ();
        
   if (! dissims. empty ())
-    pairs. filterValue ([this] (Pair<const Leaf*> p) { const Dissim dissim (p. first, p. second, NaN, 0.0, no_index); return dissims. containsFast (dissim); });
+    pairs. filterValue ([this] (const LeafPair& p) { const Dissim dissim (p. first, p. second, NaN, 0.0, no_index); return dissims. containsFast (dissim); });
 
   return pairs;
 }
@@ -9434,6 +9356,81 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
   }
   ASSERT (dist_hat >= 0.0);
   ASSERT (dist_hat < inf);
+}
+
+
+
+
+// DissimLine
+
+DissimLine::DissimLine (string &line,
+                        uint lineNum)
+{ 
+  replace (line, '\t', ' ');
+  name1 = findSplit (line);
+  name2 = findSplit (line);
+  #define MSG  getErrorStr (lineNum) + 
+  if (name2. empty ())
+    throw runtime_error (MSG "empty name2");
+  if (name1 == name2)
+    throw runtime_error (MSG "name1 == name2");
+  if (name1 > name2)
+    swap (name1, name2);
+  dissim = str2real (line);
+  if (isNan (dissim))
+    throw runtime_error (MSG "dissimilarity is NaN");
+  if (dissim < 0.0)
+    throw runtime_error (MSG "dissimilarity is negative");
+//if (! DM_sp::finite (dissim))
+  //throw runtime_error (MSG "dissimilarity is infinite");
+  #undef MSG
+}
+
+
+
+void DissimLine::process (const DistTree::Name2leaf &name2leaf)
+{
+  ASSERT (! leaf1);
+  ASSERT (! leaf2);
+  
+  leaf1 = var_cast (findPtr (name2leaf, name1));
+  if (! leaf1)
+    return;
+  //throw runtime_error (FUNC "Tree has no object " + name1);
+  leaf1->badCriterion = -1.0;  // temporary
+
+  leaf2 = var_cast (findPtr (name2leaf, name2));
+  if (! leaf2)
+    return;
+  //throw runtime_error (FUNC "Tree has no object " + name2);
+  leaf2->badCriterion = -1.0;  // temporary
+}
+
+
+
+void DissimLine::apply (DistTree &tree) const
+{ 
+  ASSERT (! isNan (dissim));
+  ASSERT (dissim >= 0.0);
+  if (! leaf1)
+    return;
+  if (! leaf2)
+    return;
+  if (   /*! DistTree_sp::variance_min 
+      &&*/ ! dissim 
+      && ! leaf1->getCollapsed (leaf2)  // Only for new Leaf's
+     )  
+    leaf1->collapse (leaf2);
+  if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, no_index))
+    throw runtime_error (FUNC "Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
+}
+
+
+bool DissimLine::operator< (const DissimLine &other) const
+{ 
+  LESS_PART (*this, other, name1);
+  LESS_PART (*this, other, name2);
+  return false;
 }
 
 
