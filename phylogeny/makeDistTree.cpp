@@ -116,7 +116,6 @@ struct ThisApplication : Application
 	  addKey ("min_arc_prob", "Min. arc probability to retain", "0");
 
 	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
-	  addFlag ("refresh_dissim", "Disregard existing dissimilarities when computing -dissim_request");
 
     // Output
 	  addFlag ("noqual", "Do not compute quality statistics");
@@ -276,7 +275,6 @@ struct ThisApplication : Application
 		const string leaf_errors         = getArg ("leaf_errors");
 		const string arc_existence       = getArg ("arc_existence");
 		const string dissim_request      = getArg ("dissim_request");
-		const bool   refresh_dissim      = getFlag ("refresh_dissim");
 		const string output_dissim       = getArg ("output_dissim");
   //const bool   deredundify_indiscernible = getFlag ("deredundify_indiscernible");
 		const bool   output_dist_etc     = getFlag ("output_dist_etc");
@@ -380,9 +378,7 @@ struct ThisApplication : Application
       throw runtime_error ("-leaf_errors requires dissimilarities");    	
     if (! leaf_errors. empty () && noqual)
       throw runtime_error ("-noqual excludes -leaf_errors");
-    if (refresh_dissim && dissim_request. empty ())
-      throw runtime_error ("-refresh_dissim requires -dissim_request");
-    if (! dissim_request. empty () && ! refresh_dissim && ! optimizable)
+    if (! dissim_request. empty () && ! optimizable)
       throw runtime_error ("-dissim_request requires dissimilarities");    	
     if (! output_data. empty () && ! optimizable)
       throw runtime_error ("-output_data requires dissimilarities");    	
@@ -864,7 +860,7 @@ struct ThisApplication : Application
     if (! dissim_request. empty ())
     {
       cerr << "Finding missing leaf pairs ..." << endl;      
-      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, refresh_dissim));
+      Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, false));
       cout << endl;
       cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
 
