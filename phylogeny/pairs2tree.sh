@@ -24,13 +24,13 @@ TMP=`mktemp`
 
 
 section "Preparing data"
-$THIS/../dm/pairs2dm $DISSIM 1 symbet 8 -distance -qc > $TMP.dm
+$THIS/../dm/pairs2dm $DISSIM 1 symbet 8 -distance  > $TMP.dm
 
 section "Building tree"
 $THIS/makeDistTree  -data $TMP  -dissim_attr symbet  -variance $VARIANCE  -optimize  -subgraph_iter_max 5  -output_tree $TMP.tree  -threads 10
 
 section "Creating $TREE"
-$THIS/printDistTree $TMP.tree -qc  -order  -format $FORMAT > $TREE
+$THIS/printDistTree $TMP.tree  -order  -format $FORMAT > $TREE
 
 if [ $PHEN ]; then
   section "Calculating miscongruence of $TREE with $PHEN"
