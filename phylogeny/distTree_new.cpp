@@ -130,7 +130,7 @@ Update: <incremental distance tree directory>/search/")
     if (name. empty ())
     {
       const string newDir (dataDir + "search/");
-      FileItemGenerator fig (1, true, false, newDir);  // PAR
+      FileItemGenerator fig (1, true, false, newDir, false);  // PAR
   	  string item;
   	  while (fig. next (item))
       {

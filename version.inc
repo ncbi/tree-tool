@@ -1,6 +1,7 @@
-#define VERSION "1.9.5"
+#define VERSION "1.9.6"
 
 
+// 1.9.6  10/18/2021  distTree_inc_refresh_dissim.sh
 // 1.9.5  07/23/2021  -prefer_gain is restored in tree2names.sh
 // 1.9.4  06/09/2021  combine_dissims.cpp: -barrier
 // 1.9.3  05/30/2021  align.cpp: ambiguous aa J,U,O are replaced by X, selfScore is using X
