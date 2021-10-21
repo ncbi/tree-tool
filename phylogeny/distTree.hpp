@@ -536,6 +536,8 @@ public:
     { return childrenDiscernible (); }
   string getNewickName (bool /*minimal*/) const final
     { return name; }
+  bool isLeafType () const final
+    { return false; }
 
 private:
   const Leaf* getReprLeaf (ulong seed) const final;
