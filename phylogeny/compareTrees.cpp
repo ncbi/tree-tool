@@ -49,11 +49,7 @@ namespace
 {
   
   
-string frequencyS;
-
-  
-
-map <const Tree::TreeNode* /*isInteriorType()*/, string/*lcaName*/>  node2name;
+map <const Tree::TreeNode* /*!isLeafType()*/, string/*lcaName*/>  node2name;
   // For all Tree's
   
 
@@ -63,10 +59,11 @@ void tree2names (const Tree &tree)
  	for (const DiGraph::Node* node_ : tree. nodes)  
  	{
  	  const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (node_);
-    if (node->isInteriorType ())
+    if (! node->isLeafType ())
       node2name [node] = node->getLcaName ();
   }
 }
+
 
 
 string getNodeName (const Tree::TreeNode* node)
@@ -85,20 +82,14 @@ typedef  StringVector  Leaves;
 
 
 
-Leaves tree2leaves (const Tree &tree,
-                    bool frequentOnly)
+Leaves tree2leaves (const Tree &tree)
 {
   Leaves leaves;  leaves. reserve (tree. nodes. size ());
  	for (const DiGraph::Node* node : tree. nodes)  
  	{
  	  const Tree::TreeNode* tn = static_cast <const Tree::TreeNode*> (node);
     if (tn->isLeafType ())
-      if (! frequentOnly || (    frequencyS == "none"
-                             || (frequencyS ==   "directed" && tn->frequentChild)
-                             || (frequencyS == "undirected" && tn->frequentDegree == 1)
-                            )
-         )
-        leaves << node->getName ();
+      leaves << node->getName ();
   }
   leaves. sort ();
   ASSERT (leaves. isUniq ());
@@ -132,10 +123,12 @@ void setNode2leaves (const Tree::TreeNode* node)
 
 
 
+#if 0
 inline bool even (size_t x)
 {
   return x % 2 == 0;
 }
+#endif
   
   
   
@@ -221,17 +214,13 @@ Signature leaves2signature (const Leaves &leaves)
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Remove " + toString (DistTree_sp::rareProb * 100.0) + "%-infrequent leaves from Tree 1, compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1.\n\
-A node with an empty set of leaves matches.")
+	: Application ("Compare two trees by Robinson-Foulds method, print matching and mismatching interior nodes for Tree 1")
 	{
 	  version = VERSION;
 		// Input
 	  addPositional ("input_tree1", "Tree 1");
 	  addPositional ("input_tree2", "Tree 2");
 	  addKey ("type", "Tree type: dist|feature", "dist");
-	  addKey ("frequency", "Node frequency to infrequent leaves from Tree 1 is computed for directed|undirected tree; 'none' - not used", "none");
-	    // "local"|"global" ??
-	//addFlag ("skip_empty", "Skip arcs with empty sets of leaves");
 	  addFlag ("arc_info", "Print arc information: length, depth, # leaves");
 	}
 
@@ -242,8 +231,6 @@ A node with an empty set of leaves matches.")
 		const string input_tree1 = getArg ("input_tree1");
 		const string input_tree2 = getArg ("input_tree2");
 		const string treeType    = getArg ("type");
-		             frequencyS  = getArg ("frequency");
-	//const bool   skip_empty  = getFlag ("skip_empty");
 	  const bool   arc_info    = getFlag ("arc_info");
 		             
 		if (! (   treeType == "dist" 
@@ -251,17 +238,11 @@ A node with an empty set of leaves matches.")
 		      )
 		   )
 		  throw runtime_error ("Wrong tree type");
-		if (! (   frequencyS == "none"       
-		       || frequencyS == "directed"
-		       || frequencyS == "undirected"  
-		      )
-		   )
-		  throw runtime_error ("Wrong frequency");
 		       
 		       
     unique_ptr<Tree> tree1;
     if (treeType == "dist")
-      tree1. reset (new DistTree (input_tree1, string (), string (), string()));
+      tree1. reset (new DistTree (input_tree1, string (), string (), string ()));
     else
       tree1. reset (new FeatureTree (input_tree1, string (), false, string (), false, true, false));
     if (verbose ())
@@ -279,14 +260,43 @@ A node with an empty set of leaves matches.")
     tree2names (*tree2);
 
 
+    {  
+      const Leaves leaves1 (tree2leaves (*tree1));
+      const Leaves leaves2 (tree2leaves (*tree2));
+      cout << "# Leaves in " << input_tree1 << ": " << leaves1. size () << endl;
+      cout << "# Leaves in " << input_tree2 << ": " << leaves2. size () << endl;
+      cout << endl;
+      
+      cout << "Deleting from " << input_tree1 << endl;
+      const size_t n1 = tree1->restrictLeaves (leaves2, true);
+      cout << "# Deleted: " << n1 << endl;
+      cout << endl;
+      
+      cout << "Deleting from " << input_tree2 << endl;
+      const size_t n2 = tree2->restrictLeaves (leaves1, true);
+      cout << "# Deleted: " << n2 << endl;
+      cout << endl;
+      
+      // Problem with Leaf::discernible
+    //tree1->qc ();
+    //tree2->qc ();
+    }
+    if (qc_on)
+    {
+    	const auto pred = [] (const DiGraph::Node* n) { return static_cast <const Tree::TreeNode*> (n) -> isLeafType (); };
+      const size_t leaf_num_1 = Common_sp::count_if (tree1->nodes, pred);
+      const size_t leaf_num_2 = Common_sp::count_if (tree2->nodes, pred);
+      QC_ASSERT (leaf_num_1 == leaf_num_2);
+    }
+        
+
     VectorPtr<Tree::TreeNode> interiorArcNodes1;  interiorArcNodes1. reserve (tree1->nodes. size ());
-      // Does not depend on *tree2
    	for (const DiGraph::Node* node_ : tree1->nodes)  
    	{
    	  const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (node_);
    	  if (node == tree1->root)
    	    continue;
-      if (! node->isInteriorType ())
+      if (node->isLeafType ())
         continue;
       const Tree::TreeNode* parent = node->getParent ();
       ASSERT (parent);
@@ -300,7 +310,7 @@ A node with an empty set of leaves matches.")
           for (const DiGraph::Node* child : children)
           {
             const Tree::TreeNode* treeChild = static_cast <const Tree::TreeNode*> (child);
-            if (treeChild->isInteriorType ())
+            if (! treeChild->isLeafType ())
               interiors << treeChild;
           }
           if (interiors. size () < 2)
@@ -315,41 +325,10 @@ A node with an empty set of leaves matches.")
    	}
 
     
-    {  
-      tree1->setFrequentChild  (DistTree_sp::rareProb);   // ??
-      tree1->setFrequentDegree (DistTree_sp::rareProb);   // ??
-
-      const Leaves leaves1 (tree2leaves (*tree1, true));
-      const Leaves leaves2 (tree2leaves (*tree2, false));
-      cout << "# Leaves in " << input_tree1 << ": " << leaves1. size () << endl;
-      cout << "# Leaves in " << input_tree2 << ": " << leaves2. size () << endl;
-      cout << endl;
-      
-      cout << "Deleting from " << input_tree1 << endl;
-      const size_t n1 =   tree1->restrictLeaves (leaves1, false)   // Keep only frequent (stable) leaves
-                        + tree1->restrictLeaves (leaves2, false);
-      cout << "# Deleted: " << n1 << endl;
-      cout << endl;
-      
-      cout << "Deleting from " << input_tree2 << endl;
-      const size_t n2 = tree2->restrictLeaves (leaves1, true);
-      cout << "# Deleted: " << n2 << endl;
-      cout << endl;
-      
-    //tree1->qc ();
-      tree2->qc ();
-    }
-    {
-    	const auto pred = [] (const DiGraph::Node* n) { return static_cast <const Tree::TreeNode*> (n) -> isLeafType (); };
-      const auto leaf_num_1 = Common_sp::count_if (tree1->nodes, pred);
-      const auto leaf_num_2 = Common_sp::count_if (tree2->nodes, pred);
-      ASSERT (leaf_num_1 == leaf_num_2);
-    }
-        
     setNode2leaves (tree1->root);
     setNode2leaves (tree2->root); 
     {
-      const Leaves allLeaves (tree2leaves (*tree1, false));  // Same for *tree2
+      const Leaves allLeaves (tree2leaves (*tree1));  // Same for *tree2
       adjustNode2leaves (*tree1, allLeaves);   
       adjustNode2leaves (*tree2, allLeaves);   
     }
