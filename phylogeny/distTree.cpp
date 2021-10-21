@@ -724,8 +724,7 @@ const Leaf* DTNode::inDiscernible () const
       return g;
     }
   }
-  else
-    return nullptr;
+  return nullptr;
 }
 
 
