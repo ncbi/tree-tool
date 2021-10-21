@@ -32,6 +32,8 @@ fi
 
 sort -cu $OBJS
 
+SERVER=`cat $INC/server`
+
 
 section "Computing dissimilarities"
 $THIS/../list2pairs $OBJS > $INC/dissim_request
@@ -47,8 +49,6 @@ echo "nan:"
 grep -wic 'nan$' $INC/../data.dm || true
 
 $THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
-
-SERVER=`cat $INC/server`
 
 if [ $SERVER ]; then
   section "Outliers"

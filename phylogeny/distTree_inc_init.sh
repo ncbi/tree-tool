@@ -80,8 +80,8 @@ echo "$VARIANCE"          > $INC/variance
 echo $DISSIM_BOUNDARY     > $INC/dissim_boundary
 echo $GENOGROUP_BARRIER   > $INC/genogroup_barrier
 echo $HYBRIDNESS_MIN      > $INC/hybridness_min
-echo $SERVER              > $INC/server
-echo $DATABASE            > $INC/database
+echo "$SERVER"            > $INC/server
+echo "$DATABASE"          > $INC/database
 
 if [ $LARGE == 1 ]; then
   touch $INC/large
