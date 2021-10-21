@@ -136,13 +136,14 @@ struct ThisApplication : Application
   	  addKey ("start", "# Item to start with", "1");
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
   	  addFlag ("print", "Print command, not execute");
+  	  addFlag ("header", "<items> file has a header line which must be skipped");
   	}
   	
   	
  
 	void body () const final
 	{
-		      string itemsName   = getArg ("items");
+		const string itemsName   = getArg ("items");
 		const string cmd_        = getArg ("command");
 		const bool   large       = getFlag ("large");
 		const string errorsFName = getArg ("errors");
@@ -151,6 +152,7 @@ struct ThisApplication : Application
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool zero          = getFlag ("zero");
 		const bool printP        = getFlag ("print");
+		const bool header        = getFlag ("header");
 
     if (itemsName. empty ())
       throw runtime_error ("Empty items list name");
@@ -169,11 +171,17 @@ struct ThisApplication : Application
   	    const uint stepItemGen = threads_max > 1 ? 1000 : step;  // PAR
     	  const bool isFile = fileExists (itemsName);
     	  const bool isDir = directoryExists (itemsName);
+    	  if (isDir && header)
+    	    throw runtime_error ("-header cannot be used if <items> is a directory");
     	  if (isFile || isDir)
-    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, large, itemsName));
+    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, large, itemsName, header));
         else 
           if (isDigit (itemsName [0]))
+          {
+        	  if (header)
+        	    throw runtime_error ("-header cannot be used if <items> is a number");
             gen. reset (new NumberItemGenerator (stepItemGen, itemsName));	  
+          }
           else
             throw runtime_error ("File " + strQuote (itemsName) + " does not exist");
       }
