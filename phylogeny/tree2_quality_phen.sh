@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Phenotypic quality comparison of 2 distance trees"
-  echo "Output: qual.comp"
+  echo "Output: qual.comp, gain1, gain2, loss1, loss2"
   echo "#1: distance tree 1"
   echo "#2: distance tree 2"
   echo "#3: phen/"
@@ -75,16 +75,16 @@ if [ $LARGE == 1 ]; then
 fi
 
 echo ""
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes $TMP.gain_nodes1  -disagreement_nodes $TMP.disagreement_nodes1
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes gain1  -loss_nodes loss1  -disagreement_nodes $TMP.disagreement_nodes1
   # -prefer_gain  
 echo ""
-$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes $TMP.gain_nodes2  -disagreement_nodes $TMP.disagreement_nodes2
+$THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes gain2  -loss_nodes loss2  -disagreement_nodes $TMP.disagreement_nodes2
   # -prefer_gain  
 
 cat $TMP.qual1 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual1_
 cat $TMP.qual2 | sed 's/ \([^1-9\(/+-]\)/_\1/g' > $TMP.qual2_
 # PAR
-join -1 1 -2 1 $TMP.qual1_ $TMP.qual2_ > qual.comp 
+join -1 1 -2 1 $TMP.qual1_ $TMP.qual2_ | sed 's/ [-+]/ /g' | awk '$2 + $3 != $7 + $8' > qual.comp 
 
 
 rm -f $TMP*
