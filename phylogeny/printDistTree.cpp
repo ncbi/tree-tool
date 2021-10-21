@@ -61,7 +61,7 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
-	  addKey ("name_extend", "File with lines: <name> <tab> <name_extension>, to replace leaf names");
+	  addKey ("name_extend", "File with lines: <name> <tab> <name_extension>, to extend leaf names");
 	  addKey ("clade_name", "File with lines: {<name>|<name1>:<name2>} <tab> <clade name>");
 	  addKey ("root_name", "Root name");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
