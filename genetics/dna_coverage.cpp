@@ -164,18 +164,29 @@ enum class Mode {best, combine, missed, all};
 void processSubjects (const string &qseqid,
                       size_t qlen,
                       Vector<Subject> &subjects,
-                      Mode mode)
+                      Mode mode,
+                      bool force)
 {
-  if (qseqid. empty ())
-    return;
+  IMPLY (qseqid. empty (), subjects. empty ());
+
   if (mode == Mode::missed)
     return;
     
-  ASSERT (qlen);
-
   if (subjects. empty ())
-    return;
-
+  {
+    if (force)
+    {
+      Subject s;
+      s. qstart = 0;
+      s. sstart = 0;
+      subjects << move (s);
+    }
+    else
+      return;
+  }
+  else
+    ASSERT (qlen);
+    
   if (mode == Mode::combine)
   {
     Subject last (subjects. pop ());  // Has right qcoverage
@@ -272,6 +283,7 @@ missed: report non-covered query DNA segments\n\
 all: report all covered segments", "all");
       addKey ("query", "Query DNA name");
       addKey ("subject", "Subject DNA name, used if mode = combine");
+      addFlag ("force", "Force one-line report if there is no match");
     }
 
 
@@ -282,6 +294,7 @@ all: report all covered segments", "all");
     const string modeS   = getArg ("mode");
                  query   = getArg ("query");
                  subject = getArg ("subject");
+    const bool   force   = getFlag ("force");
     
     Mode mode;
     if (modeS == "best")
@@ -316,6 +329,10 @@ all: report all covered segments", "all");
           //       17
     }
     cout << endl;
+    
+    
+    if (inFName. empty ())
+      return;
 
 
     string qseqid_prev;
@@ -381,7 +398,7 @@ all: report all covered segments", "all");
           
           if (qseqid_prev != qseqid)
           {
-            processSubjects (qseqid_prev, qlen_prev, subjects, mode);
+            processSubjects (qseqid_prev, qlen_prev, subjects, mode, false);
             qseqid_prev = qseqid;
             qlen_prev = qlen;
           }
@@ -410,7 +427,8 @@ all: report all covered segments", "all");
       addPrevSubject (subjects, subj, qchars, schars);
       if (mode == Mode::missed)
         reportMissed (qseqid_prev, qchars);
-      processSubjects (qseqid_prev, qlen_prev, subjects, mode);
+        
+      processSubjects (qseqid_prev, qlen_prev, subjects, mode, force);
     }
   }
 };
