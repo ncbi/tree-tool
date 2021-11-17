@@ -2215,10 +2215,26 @@ void TextTable::setHeader ()
         if (getDecimals (field, hasPoint, decimals))
           h. scientific = true;
         maximize<streamsize> (h. decimals, decimals);
-        maximize (h. len_max, field. size () + (size_t) (h. decimals - decimals) + (! hasPoint));
       }
     }
   }
+
+  // Header::len_max for numeric
+  for (const StringVector& row : rows)
+    FFOR (RowNum, i, row. size ())
+    {
+      const string& field = row [i];
+      if (field. empty ())
+        continue;
+      Header& h = header [i];
+      if (h. numeric)
+      {
+        bool hasPoint = false;
+        streamsize decimals = 0;
+        getDecimals (field, hasPoint, decimals);
+        maximize (h. len_max, field. size () + (size_t) (h. decimals - decimals) + (! hasPoint));
+      }
+    }
 }
 
 
