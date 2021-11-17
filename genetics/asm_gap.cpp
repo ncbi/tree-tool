@@ -90,7 +90,6 @@ struct ThisApplication : Application
 			  size_t gapLen = 0;
 			  size_t start = 0;
 			  FFOR (size_t, i, dna. seq. size ())
-			  {
 			    if (charInSet (dna. seq [i], "acgt"))
 			    {
 			      if (gapLen)
@@ -101,15 +100,18 @@ struct ThisApplication : Application
       		    {
       		      ASSERT (i >= start + gapLen);
       		      const size_t contigLen = i - start - gapLen;
-    		        contigs << contigLen;
-    		        if (outF. get ())
-  		          {
-  		            const Dna contig ( dna. getId () + ":" + to_string (start + 1) + "-" + to_string (i)
-  		                             , dna. seq. substr (start, contigLen)
-  		                             , false
-  		                             );
-  		            contig. saveText (*outF);
-  		          }
+      		      if (contigLen)
+      		      {
+      		        contigs << contigLen;
+      		        if (outF. get ())
+    		          {
+    		            const Dna contig ( dna. getId () + ":" + to_string (start + 1) + "-" + to_string (i)
+    		                             , dna. seq. substr (start, contigLen)
+    		                             , false
+    		                             );
+    		            contig. saveText (*outF);
+    		          }
+    		        }
     		        start = i;
       		    }
 			      }
@@ -117,31 +119,29 @@ struct ThisApplication : Application
 			    }
 			    else
 			      gapLen++;
-			  }
-	      if (gapLen)
+			      
 	      {			        
-  		    const size_t objNum = ds. appendObj ();
-  		    (*gapAttr) [objNum] = (int) gapLen;
-  		    if (gapLen >= gap_min)
-  		    {
-  		      const size_t dnaSize = dna. seq. size ();
-  		      ASSERT (dnaSize >= start + gapLen);		        
-  		      const size_t contigLen = dnaSize - start - gapLen;
-		        contigs << contigLen;
-		        if (outF. get ())
-	          {
-	            const Dna contig ( dna. getId () + ":" + to_string (start + 1) + "-" + to_string (dnaSize)
-	                             , dna. seq. substr (start, contigLen)
-	                             , false
-	                             );
-	            contig. saveText (*outF);
-	          }
-  		    }
+		      const size_t dnaSize = dna. seq. size ();
+		      ASSERT (dnaSize >= start);		        
+		      const size_t contigLen = dnaSize - start;
+		      if (contigLen)
+		      {
+  	        contigs << contigLen;
+  	        if (outF. get ())
+            {
+              const Dna contig ( dna. getId () + ":" + to_string (start + 1) + "-" + to_string (dnaSize)
+                               , dna. seq. substr (start, contigLen)
+                               , false
+                               );
+              contig. saveText (*outF);
+            }
+          }
 	      }
 	    }
 		}
 		
 		
+		ASSERT (! contigs. empty ());
 		cout << contigs. size () << endl;
 		cout << contigs [contigs. size () / 2] << endl;
 		
