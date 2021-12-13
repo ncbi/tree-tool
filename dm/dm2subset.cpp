@@ -60,7 +60,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const bool   exclude      = getFlag ("exclude");
 		const string fName        = getArg ("file");
@@ -79,7 +79,7 @@ struct ThisApplication : Application
     Sample sm (ds);
     FOR (size_t, row, ds. objs. size ())
       if (objNames. contains (ds. objs [row] -> name) == exclude)
-        sm. mult [row] = 0;
+        sm. mult [row] = 0.0;
     sm. finish ();    
 
     sm. save (VectorPtr<Attr> (ds. attrs), cout);  
