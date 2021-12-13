@@ -37,7 +37,7 @@ if [ $N -gt 0 -a -s $SUBJ ]; then
   if [ $N -gt 1 ]; then
     MT_MODE="-mt_mode 1"
   fi
-  echo "Running BLAST ..." > /dev/stderr
+ #echo "Running BLAST ..." > /dev/stderr
   # DB
   if [ -e $SUBJ.nhr ]; then
     DB=$SUBJ
@@ -47,7 +47,7 @@ if [ $N -gt 0 -a -s $SUBJ ]; then
   fi
   HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
   #       1      2      3      4      5      6    7    8      9    10   11
-  blastn  -query $QUERY  -db $DB  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE | sort > $TMP.blastn
+  blastn  -query $QUERY  -db $DB  -dust no  -evalue 1e-100  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE 2> /dev/null | sort > $TMP.blastn
     # PAR
 else
   touch $TMP.blastn
