@@ -21,6 +21,10 @@ if [ ! -e $LIST ]; then
   error "File $LIST does not exist"
 fi
 
+if [ ! -e hmm-univ.list ]; then
+  error "File hmm-univ.list does not exist"
+fi
+
 
 TMP=`mktemp`
 echo $TMP
