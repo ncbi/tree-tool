@@ -41,4 +41,4 @@ $THIS/distTree_inc_dissim2indiscern.sh $INC $TMP.dissim-add
 cat $TMP.dissim-add >> $INC/dissim
 
 
-rm TMP*
+rm $TMP*
