@@ -2056,6 +2056,7 @@ void subPath2tree_subPathDissimsVec_array (size_t from,
                                            const VectorPtr<Tree::TreeNode> &boundary,
                                            const Vector<bool> &subPathDissimsVec)
 {
+  // Time: O(|area| (log |boundary| + p log(n) / n))
   FOR_START (size_t, i, from, to)
   {
     const Tree::TreeNode* node = area [i];
@@ -2096,21 +2097,23 @@ void Subgraph::subPaths2tree ()
 
   DistTree& tree_ = var_cast (tree);
 
-  const size_t dissims_big = 5 * 1024 * 1024;  // PAR
+//const size_t dissims_big = 5 * 1024 * 1024;  // PAR  
 #ifdef MUTEX
   const bool useThreads = (threads_max > 1 && Threads::empty () && subPaths. size () >= dissims_big);  // PAR 
 #endif
   
   // Delete subPaths from tree
-  if (tree. dissims. size () < dissims_big)  // PAR
+  if (true /*tree. dissims. size () < dissims_big*/)  // PAR  
   {
-    // Time: O(1)
   #ifdef MUTEX
     ASSERT (! useThreads);
   #endif
+    // Time: const * p/8
     Vector<bool> subPathDissimsVec (tree. dissims. size (), false);
+    // Time: O(|subPaths|)
     for (const SubPath& subPath : subPaths)
       subPathDissimsVec [subPath. dissimNum] = true;
+    // Time: O(|area| (log(|boundary|) + p/n log(n)))  
     vector<Notype> notypes;
     arrayThreads (true, subPath2tree_subPathDissimsVec_array, area. size (), notypes, cref (area), cref (boundary), cref (subPathDissimsVec));
   }
@@ -2129,6 +2132,7 @@ void Subgraph::subPaths2tree ()
     else
   #endif
     {
+      // bad_alloc
       unordered_set<uint> subPathDissimsSet;  
       // Time: O(|subPaths|)
       subPathDissimsSet. rehash (subPaths. size ());
@@ -9531,7 +9535,12 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
             absCriterion += dm. absCriterion;
             dissim2      += dm. mult * sqr (dm. dissim - dissim_ave);          
           }
-          ASSERT (geReal (absCriterion, dissim2, 1e-6));  // PAR
+          if (! geReal (absCriterion, dissim2, 1e-6))  // PAR
+          {
+            const Real absCriterion_old = dissim2; 
+            const uint subDepth = 0;
+            BAD_CRITERION (NewLeaf);
+          }
           ld. absCriterion_sub = max (0.0, absCriterion - dissim2);
         }
         leaf2dissims << ld;
