@@ -1,28 +1,30 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 9 ]; then
+if [ $# -ne 10 ]; then
   echo "Output: hmm-univ.stat, positiveAverage.out, data.dm, tree"
   echo "#1: input .dm-file without '.dm' created by univ_separate.sh"
   echo "#2: delete hybrids (0/1)"
   echo "#3: dissimilarity power (> 0)"
   echo "#4: outlierSEs"
-  echo "#5: dissim_coeff: >=0 (>0 <=> variance = linExp)"
-  echo "#6: variance_power (NAN <=> variance = linExp)"
-  echo "#7: variance_dissim (0/1)"
-  echo "#8: phen/"
-  echo "#9: phen/ is large (0/1)"
+  echo "#5: ignoreZero (0/1)"
+  echo "#6: dissim_coeff: >=0 (>0 <=> variance = linExp)"
+  echo "#7: variance_power (NAN <=> variance = linExp)"
+  echo "#8: variance_dissim (0/1)"
+  echo "#9: phen/"
+  echo "#10: phen/ is large (0/1)"
   exit 1
 fi
 INPUT=$1
 DELETE_HYBRIDS=$2
 DISSIM_POWER=$3
 OUTLIER_SES=$4
-DISSIM_COEFF=$5
-VAR_POWER=$6
-VARIANCE_DISSIM=$7
-PHEN=$8
-LARGE=$9
+IGNORE_ZERO=$5
+DISSIM_COEFF=$6
+VAR_POWER=$7
+VARIANCE_DISSIM=$8
+PHEN=$9
+LARGE=$10
 
 
 TMP=`mktemp`
@@ -30,7 +32,11 @@ echo $TMP
 
 
 section "Estimating hmm-univ.stat"
-$THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  -ignoreZero  -iter_max 30  -output_dissim $TMP.pairs > positiveAverage.out
+IGNORE_ZERO_PAR=""
+if [ $IGNORE_ZERO == 1 ]; then
+  IGNORE_ZERO_PAR="-ignoreZero"
+fi
+$THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  $IGNORE_ZERO_PAR  -iter_max 30  -output_dissim $TMP.pairs > positiveAverage.out
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
 $THIS/../dm/pairs2dm $TMP.pairs 1 "cons" 6  -distance > data.dm
 
