@@ -4067,7 +4067,7 @@ struct PositiveAverageModel : Root
 	PositiveAverageModel (const string &fName,
 	                      bool loadStat);
 	  // Input: fName
-	  //          format: <Outlier SEs> \n <Component>*
+	  //          format: <Outlier SEs> <ignoreZero> \n <Component>*
 	PositiveAverageModel (Real outlierSEs_arg,
 	                      bool ignoreZero_arg /*,
 	                      Real universalWeight_arg*/)
