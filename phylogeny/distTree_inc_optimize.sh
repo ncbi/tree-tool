@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Optimize a distance tree and evaluate"
-  echo "#1: incremental distance tree directory"
+  echo "#1: incremental distance tree directory (no updating)"
   echo "#2: number of optimization iterations"
   echo "#3: parameters after -variance (non-empty string)"
   echo "#4: output tree"
