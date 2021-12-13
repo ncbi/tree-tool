@@ -21,6 +21,14 @@ if [ -s $INC/tree ]; then
   error "$INC/tree must be empty"
 fi
 
+if [ -s $INC/dissim ]; then
+  error "$INC/dissim must be empty"
+fi
+
+if [ -s $INC/dissim.bad ]; then
+  error "$INC/dissim.bad must be empty"
+fi
+
 if [ -s $INC/indiscern ]; then
   error "$INC/indiscern must be empty"
 fi
@@ -30,7 +38,17 @@ if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
 fi
 
+if [ -s $INC/runlog ]; then
+  error "$INC/runlog must be empty"
+fi
+
+VER=`cat $INC/version`
+if [ $VER -ne 1 ]; then
+  error "version must be 1"
+fi
+
 sort -cu $OBJS
+
 
 SERVER=`cat $INC/server`
 
@@ -40,8 +58,6 @@ $THIS/../list2pairs $OBJS > $INC/dissim_request
 $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim
 rm $INC/dissim_request
 $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
-
-#exit 2  
 
 section "data.dm"
 $THIS/../dm/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
@@ -58,7 +74,6 @@ if [ $SERVER ]; then
   rm $INC/outlier-alien
 fi
 
-
 HYBRIDNESS_MIN=`cat $INC/hybridness_min`
 if [ $HYBRIDNESS_MIN != 0 ]; then
   section "distTriangle"
@@ -74,9 +89,10 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   if [ $SERVER ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
+  	$THIS/../dm/dm2subset $INC/../data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
+  	mv $INC/data.dm $INC/../
   fi
 fi
-
 
 section "Tree"
 HYBRID=""
@@ -89,6 +105,7 @@ $THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -vari
 
 if [ $SERVER ]; then
   section "Database"
+  $THIS/tree2obj.sh $INC/tree > $INC/tree.list
   $INC/objects_in_tree.sh $INC/tree.list 1
   if [ $HYBRIDNESS_MIN != 0 ]; then
     section "Hybrid"
@@ -99,7 +116,6 @@ fi
 rm $INC/tree.list
 
 cp $INC/tree $INC/hist/tree.1
-
 
 if [ -e $INC/phen ]; then
   section "Quality"
