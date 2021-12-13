@@ -818,6 +818,7 @@ struct ThisApplication : Application
 
     if (! arc_existence. empty ())
     {
+      cerr << "Arc existence ..." << endl;
       Dataset ds;
       auto len = new PositiveAttr1 ("len", ds, dissimDecimals);
       auto prob = new ProbAttr1 ("prob", ds, 3);  // PAR
