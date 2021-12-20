@@ -283,6 +283,7 @@ missed: report non-covered query DNA segments\n\
 all: report all covered segments", "all");
       addKey ("query", "Query DNA name");
       addKey ("subject", "Subject DNA name, used if mode = combine");
+      addKey ("pident_min", "Min. percent of identity", "0");
       addFlag ("force", "Force one-line report if there is no match");
     }
 
@@ -294,6 +295,7 @@ all: report all covered segments", "all");
     const string modeS   = getArg ("mode");
                  query   = getArg ("query");
                  subject = getArg ("subject");
+    const double pident_min = str2<double> (getArg ("pident_min"));
     const bool   force   = getFlag ("force");
     
     Mode mode;
@@ -370,6 +372,9 @@ all: report all covered segments", "all");
           QC_ASSERT (qlen);
           QC_ASSERT (slen);
           QC_IMPLY (qseqid_prev == qseqid, qlen_prev == qlen); 
+          
+          if ((double) nident / (double) length * 100.0 < pident_min)
+            continue;
 
           if (   mode == Mode::missed 
               && qseqid_prev != qseqid

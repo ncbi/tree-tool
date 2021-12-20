@@ -59,7 +59,11 @@ FORCE=""
 if [ $ONE_LINE -eq 1 ]; then
   FORCE="-force"
 fi
-$THIS/dna_coverage $TMP.blastn  -mode $MODE  -query "$QUERY_NAME"  -subject "$SUBJ_NAME"  $FORCE
+PIDENT_MIN=""
+if [ $MODE == "missed" ]; then
+  PIDENT_MIN="-pident_min 90"  # PAR
+fi
+$THIS/dna_coverage $TMP.blastn  -mode $MODE  -query "$QUERY_NAME"  -subject "$SUBJ_NAME"  $PIDENT_MIN  $FORCE
 
 
 rm $TMP*  
