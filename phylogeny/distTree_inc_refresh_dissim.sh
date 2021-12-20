@@ -23,6 +23,7 @@ if [ -e $INC/dissim.$VER ]; then
   error "$INC/dissim.$VER exists"
 fi
 cp $INC/dissim $INC/dissim.$VER
+gzip $INC/dissim.$VER &
 
 
 TMP=`mktemp`
@@ -42,3 +43,4 @@ cat $TMP.dissim-add >> $INC/dissim
 
 
 rm $TMP*
+wait
