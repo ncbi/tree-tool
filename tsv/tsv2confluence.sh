@@ -11,7 +11,7 @@ F=$1
 TMP=`mktemp`
 
 
-cat $F | tr '\t' '|' | sed 's/^/|/1' | sed 's/$/|/1' > $TMP
+cat $F | tr '\t' '|' | sed 's/^/|/1' | sed 's/$/|/1' | sed 's/||/| |/g' | sed 's/||/| |/g' > $TMP
 head -1 $TMP | sed 's/|/||/g'
 tail -n +2 $TMP
 
