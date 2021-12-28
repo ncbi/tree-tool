@@ -56,21 +56,33 @@ struct ThisApplication : Application
   	  addPositional ("in", "DNA FASTA file with one sequence");
   	  addPositional ("start", "Start position of a segment, 1-based");
   	  addPositional ("stop", "Stop position of a segment, >= start position");
+  	  addKey ("flank", "length of flanking sequence", "0");
   	  addFlag ("excise", "Excise the segment, otherwise leave the segment");
+  	  addKey ("reverse", "Reverse strand after cutting (0 or - / 1 or +)", "0");
     }
 
 
 	
 	void body () const final
   {
-	  const string inFName = getArg ("in");
-	        size_t start   = str2<size_t> (getArg ("start"));
-	  const size_t stop    = str2<size_t> (getArg ("stop"));
-	  const bool excise    = getFlag ("excise");
+	  const string inFName  = getArg ("in");
+	        size_t start    = str2<size_t> (getArg ("start"));
+	        size_t stop     = str2<size_t> (getArg ("stop"));
+	  const size_t flank    = str2<size_t> (getArg ("flank"));
+	  const bool excise     = getFlag ("excise");
+	  const string reverseS = getArg ("reverse");
 	  
 	  QC_ASSERT (start >= 1);
 	  QC_ASSERT (stop >= start);
 	  start--;  // To make 0-based
+	  
+	  bool reverse = false;
+	  if (reverseS == "0" || reverseS == "-")
+	    ;
+	  else if (reverseS == "1" || reverseS == "+")
+	    reverse = true;
+	  else
+	    throw runtime_error ("Wrong \"reverse\" parameter");
 
 	  
 	  Dna* dna = nullptr;  // Not delete'd
@@ -82,11 +94,25 @@ struct ThisApplication : Application
     }
     ASSERT (dna);
     dna->qc ();    
-    QC_ASSERT (stop <= dna->seq. size ());
+    const size_t len = dna->seq. size ();
+    QC_ASSERT (stop <= len);
+    
+    if (start > flank)
+      start -= flank;
+    else
+      start = 0;
+      
+    if (stop + flank < len)
+      stop += flank;
+    else
+      stop = len;
+      
     dna->seq = (excise 
                   ? dna->seq. substr (0, start) + dna->seq. substr (stop)
                   : dna->seq. substr (start, stop - start)
                );
+    if (reverse)
+      dna->reverse ();
     dna->saveText (cout);
   }
 };
