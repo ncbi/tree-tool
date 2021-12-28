@@ -351,6 +351,8 @@ all: report all covered segments", "all");
         try
         {
           replace (f. line, ' ', '_');  // For stitle processing
+          if (verbose ())
+            cerr << f. line << endl;
           istringstream iss (f. line);
           size_t length, nident, qstart, qend, qlen, sstart, send, slen;
           slen = 0;
