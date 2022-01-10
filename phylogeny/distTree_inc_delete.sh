@@ -59,13 +59,15 @@ $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 section "Database"
 $INC/objects_in_tree.sh $DEL null
 
-$THIS/distTree_inc_new_list.sh $INC > $INC/new.list
-$THIS/../setIntersect.sh $DEL $INC/new.list 0 > $INC/new-del.list
-rm $INC/new.list
-$THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/new-del.list
-rm $INC/new-del.list
-
-$THIS/distTree_inc_new_cmd.sh $INC "rm -f" $DEL
+if false; then  # ??
+  $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
+  $THIS/../setIntersect.sh $DEL $INC/new.list 0 > $INC/new-del.list
+  rm $INC/new.list
+  $THIS/distTree_inc_new_cmd.sh $INC "rm" $INC/new-del.list
+  rm $INC/new-del.list
+else
+  $THIS/distTree_inc_new_cmd.sh $INC "rm -f" $DEL
+fi
 
 mv $DEL $INC/hist/delete.$VER
 
