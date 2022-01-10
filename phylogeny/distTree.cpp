@@ -3279,11 +3279,12 @@ DistTree::DistTree (const string &dataDirName,
         arcLen -= anchor->len;
         anchor = static_cast <const DTNode*> (anchor->getParent ());
       }
+      maximize (arcLen, 0.0);
 
       Leaf* leaf = nullptr;
       if (anchor == root)  
         leaf = new Leaf (*this, const_static_cast <Steiner*> (root), arcLen + leafLen, leafName);
-      else
+      else 
       {
         auto st = new Steiner ( *this
                               , const_static_cast <Steiner*> (anchor->getParent ())
@@ -3291,8 +3292,15 @@ DistTree::DistTree (const string &dataDirName,
                               );
         ASSERT (st);
         var_cast (anchor) -> setParent (st);
-        var_cast (anchor) -> len = max (0.0, arcLen);
+        var_cast (anchor) -> len = arcLen;
         leaf = new Leaf (*this, st, leafLen, leafName);
+        if (! arcLen && anchor->asSteiner ())  // anchor will be delete'd
+        {          
+          st->errorDensity = anchor->errorDensity;
+          ASSERT (anchor->maxDeformationDissimNum == dissims_max);
+          if (const DeformationPair* dp = findPtr (node2deformationPair, anchor))
+            node2deformationPair [st] = move (DeformationPair {dp->leafName1, dp->leafName2, dp->deformation});
+        }
       }
       ASSERT (leaf);
 
@@ -4113,11 +4121,11 @@ bool DistTree::loadLines (const StringVector &lines,
   const Real   deformation       = token2real (s, deformation_criterionS);
   const string name              = token2string (s, "name");
   const bool indiscernible = contains (s, Leaf::non_discernible);
-  IMPLY (parent, len >= 0);
+  QC_IMPLY (parent, len >= 0.0);
   DTNode* dtNode = nullptr;
   if (isLeft (idS, "0x"))
   {
-    ASSERT (! indiscernible);
+    QC_ASSERT (! indiscernible);
     Steiner* steinerParent = nullptr;
     if (parent)
     {
@@ -4128,11 +4136,11 @@ bool DistTree::loadLines (const StringVector &lines,
     while (loadLines (lines, lineNum, steiner, expectedOffset + Offset::delta))
       ;
     dtNode = steiner;
-    ASSERT (isNan (normCriterion));
+    QC_ASSERT (isNan (normCriterion));
   }
   else
   {
-    ASSERT (parent);
+    QC_ASSERT (parent);
     auto leaf = new Leaf (*this, parent, len, idS);
     leaf->discernible = /*DistTree_sp::variance_min ||*/ ! indiscernible;
     leaf->normCriterion = normCriterion;
@@ -4143,16 +4151,16 @@ bool DistTree::loadLines (const StringVector &lines,
   dtNode->errorDensity = errorDensity;
   if (! name. empty ())
   {
-    ASSERT (! dtNode->asLeaf ());
+    QC_ASSERT (! dtNode->asLeaf ());
     dtNode->name = name;
   }
   
-  ASSERT (deformationObj. empty () == isNan (deformation));
+  QC_ASSERT (deformationObj. empty () == isNan (deformation));
   if (! deformationObj. empty ())
   {
     const string leafName1 (findSplit (deformationObj, ':'));
-    ASSERT (! deformationObj. empty ());
-    ASSERT (deformation >= 0.0);
+    QC_ASSERT (! deformationObj. empty ());
+    QC_ASSERT (deformation >= 0.0);
     ASSERT (! contains (node2deformationPair, dtNode));
     node2deformationPair [dtNode] = move (DeformationPair {leafName1, deformationObj, deformation});
   }
