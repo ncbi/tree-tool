@@ -279,7 +279,7 @@ fi
 
 
 section "QC $INC/indiscern"
-$THIS/distTree_inc_indiscern_qc.sh $INC 0
+$THIS/distTree_inc_indiscern_qc.sh $INC 0 0
 
 
 section "Additional requests"
