@@ -1,18 +1,22 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "#1: incremental distance tree directory"
   echo "#2: compute dissimilarities (0/1)"
+  echo "#3: verbose (0/1)"
   exit 1
 fi
 INC=$1
 COMP=$2
+VERB=$3
 
 
 TMP=`mktemp`
-#echo $TMP
-#set -x
+if [ $VERB == 1 ]; then
+  echo $TMP
+  set -x
+fi
 
 
 awk '{if ($3 == 0 && $1 < $2)  print $1, $2};' $INC/dissim >  $TMP
