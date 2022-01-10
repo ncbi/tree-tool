@@ -30,12 +30,21 @@ TMP=`mktemp`
 #echo $TMP > /dev/stderr
 
 
+QUERY_NAME=`basename $QUERY`  
+SUBJ_NAME=`basename $SUBJ`
+
+
 # $TMP.blastn
 N=`grep -c ">" $QUERY || true`
 if [ $N -gt 0 -a -s $SUBJ ]; then
   MT_MODE=""
   if [ $N -gt 1 ]; then
     MT_MODE="-mt_mode 1"
+  fi
+  file $SUBJ > $TMP.file
+  if grep ": gzip compressed data" $TMP.file &> /dev/null; then
+    gunzip -c $SUBJ > $TMP.subj
+    SUBJ=$TMP.subj
   fi
  #echo "Running BLAST ..." > /dev/stderr
   # DB
@@ -53,8 +62,6 @@ else
   touch $TMP.blastn
 fi
 
-QUERY_NAME=`basename $QUERY`  
-SUBJ_NAME=`basename $SUBJ`
 FORCE=""
 if [ $ONE_LINE -eq 1 ]; then
   FORCE="-force"
