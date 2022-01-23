@@ -6444,8 +6444,11 @@ PositiveAverageModel::PositiveAverageModel (const string &fName,
     if (loadStat && isNan (outlierSEs))
     {
       istringstream iss (f. line);
-      iss >> outlierSEs >> ignoreZero;
+      int ignoreZeroN = -1;
+      iss >> outlierSEs >> ignoreZeroN;
       QC_ASSERT (! isNan (outlierSEs));
+      QC_ASSERT (ignoreZeroN == 0 || ignoreZeroN == 1);
+      ignoreZero = ignoreZeroN;
     #if 0
       if (isNan (universalWeight))
       {
