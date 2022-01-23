@@ -40,8 +40,8 @@ while true; do
   N=$(( $N + 1 ))
   if [ $N -gt $PERIODS ]; then  
     N=0
-    set +o errexit
     $THIS/grid_wait.sh 1
+    set +o errexit
     L=(`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rTt]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`)
     set -o errexit
     date
@@ -52,22 +52,14 @@ while true; do
     fi
     i=0
     while [ $i -lt ${#L[@]} ]; do
-      set +o errexit
       if [ $QRESUB == 1 ]; then
         $THIS/grid_wait.sh 1
-	      qresub ${L[i]} -h u
-	      S=$?
-	      if [ $S == 0 ]; then
-          $THIS/grid_wait.sh 1
-	        qdel -f ${L[i]}
-	      fi
-	    else
-        $THIS/grid_wait.sh 1
-	      qdel -f ${L[i]}
+	      qresub ${L[i]} -h u || true
 	    fi
-      set -o errexit
       i=$(( $i + 1 ))
     done
+    $THIS/grid_wait.sh 1
+    qdel -f ${L[*]} || true
     if [ $QRESUB == 1 ]; then
       $THIS/grid_wait.sh 1
       qrls  -h u  -u $USER > /dev/null
