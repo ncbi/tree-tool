@@ -2,6 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
+  echo "output: tree"
   echo "#1: input .dm-file without '.dm'"
   echo "#2: dissimilarity attribute in #1"
   echo "#3: parameters of makeDistTree after -variance"
@@ -24,7 +25,7 @@ echo $TMP
 
 section "Bulding tree"
 $THIS/makeDistTree  -threads 5  -data $INPUT  -dissim_attr $DISSIM  -variance $VARIANCE_PAR \
-     -optimize  -subgraph_iter_max $ITER_MAX  -noqual  -output_feature_tree $TMP.feature_tree
+     -optimize  -subgraph_iter_max $ITER_MAX  -noqual  -output_feature_tree $TMP.feature_tree  -output_tree tree
 
 section "Evaluating tree"
 LARGE_PAR=""
