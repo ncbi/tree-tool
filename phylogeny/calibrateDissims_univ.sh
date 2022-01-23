@@ -24,14 +24,15 @@ DISSIM_COEFF=$6
 VAR_POWER=$7
 VARIANCE_DISSIM=$8
 PHEN=$9
-LARGE=$10
+LARGE=${10}
 
 
-TMP=`mktemp`
-echo $TMP 
 
 
 section "Estimating hmm-univ.stat"
+TMP=`mktemp`
+echo $TMP 
+
 IGNORE_ZERO_PAR=""
 if [ $IGNORE_ZERO == 1 ]; then
   IGNORE_ZERO_PAR="-ignoreZero"
@@ -40,8 +41,10 @@ $THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  $IG
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
 $THIS/../dm/pairs2dm $TMP.pairs 1 "cons" 6  -distance > data.dm
 
+rm $TMP*  
 
-section "Building tree"
+
+section "Parameters after -variance"
 VARIANCE="linExp"
 DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
 if [ $DISSIM_COEFF == 0 ]; then
@@ -57,15 +60,8 @@ if [ $DELETE_HYBRIDS -eq 1 ]; then
   HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
 fi
 
-$THIS/makeDistTree  -threads 5  -data data  -dissim_attr "cons"  -variance $VARIANCE  $DISSIM_COEFF_OPTION  -optimize  -subgraph_iter_max 10  $HYBRID  -noqual  -output_tree tree  -output_feature_tree $TMP.feature_tree  
+PARAM="$VARIANCE  $DISSIM_COEFF_OPTION  $HYBRID"
+warning "$PARAM"
+echo ""
+$THIS/calibrateDissims.sh data "cons" "$PARAM" 10 $PHEN $LARGE
 
-
-section "Evaluating tree"
-LARGE_PAR=""
-if [ $LARGE == 1 ]; then
-  LARGE_PAR="-large"
-fi
-$THIS/makeFeatureTree  -input_tree $TMP.feature_tree  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -qual $TMP.qual
-
-
-rm $TMP*  
