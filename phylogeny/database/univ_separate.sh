@@ -40,7 +40,7 @@ mkdir $F-univ
 $THIS/../../dir2log.sh $F.pairs.dir
 $THIS/../../grid_wait.sh 1
 $THIS/../../trav $F.pairs.dir.log "$QSUB_5 -N j%f '$THIS/prot_collection2dissim_separate.sh %f $BLOSUM62 $F.pairs.dir $F-univ $LARGE' > /dev/null"
-$THIS/../../qstat_wait.sh 2000 1
+$THIS/../../qstat_wait.sh 6000 1
 rmdir $F.pairs.dir.log/
 
 rm -r $F.pairs.dir &
