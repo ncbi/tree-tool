@@ -119,7 +119,7 @@ size_t printRow (bool is_header,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("View an tsv-table")
+    : Application ("View a tsv-table")
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table");
