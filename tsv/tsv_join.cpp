@@ -47,42 +47,101 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Join a tsv-table with a list")
+    : Application ("Join 2 tsv-tables by identical columns, print the result")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table file with a header");
-  	  addPositional ("col", "Column number of <table> to join with, 1-based");
-  	  addPositional ("list", "List of column values");
-  	  addFlag ("remove", "Remove the joined rows");
+  	  addPositional ("table1", "tsv-table");
+  	  addPositional ("table2", "tsv-table");
+  	  addFlag ("remove", "Remove the rows from <table1> which are in <table2>");
+  	  addKey ("common", "Output file to print common columns");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string tabFName  = getArg ("table");
-		const size_t col       = arg2uint ("col") - 1;
-		const string listFName = getArg ("list");
-		const bool   remove    = getFlag ("remove");
+		const string tab1FName   = getArg ("table1");
+		const string tab2FName   = getArg ("table2");
+    const bool   remove      = getFlag ("remove");  
+    const string commonFName = getArg ("common");
 		
-		QC_ASSERT (col != no_index);
+
+    const TextTable t1 (tab1FName);
+    t1. qc ();    
+    
+    const TextTable t2 (tab2FName);
+    t2. qc ();    
+    
+    StringVector commonCols;
+    for (const TextTable::Header& h : t1. header)
+      commonCols << h. name;
+    FOR_REV (size_t, i, commonCols. size ())
+      if (! t2. hasColumn (commonCols [i]))
+        commonCols. eraseAt (i);
+    {
+      StringVector s (commonCols);
+      s. sort ();
+      const size_t i = s. findDuplicate ();
+      if (i != no_index)
+        throw runtime_error ("Duplicate common column in " + strQuote (tab1FName) + ": " + s [i]);
+      StringVector s2;
+      for (const TextTable::Header& h : t2. header)
+        if (s. containsFast (h. name))
+          s2 << h. name;
+      for (const string& name : s)
+        if (s2. countValue (name) > 1)
+          throw runtime_error ("Duplicate common column in " + strQuote (tab2FName) + ": " + name);
+    }
+    if (! commonFName. empty ())
+    {
+      OFStream f (commonFName);
+      save (f, commonCols, '\n');
+      f  << endl;
+    }
+      
+    const TextTable::Index index (t2, commonCols);        
 
 
-    TextTable tIn (tabFName);
-    tIn. qc ();    
-    QC_ASSERT (col < tIn. header. size ());
-    
-    StringVector lst (listFName, (size_t) 1000, true);
-    lst. sort ();
-    lst. uniq ();
-    
-    TextTable tOut (tIn. pound, tIn. header);
-    
-    for (StringVector& row : tIn. rows)
-      if (lst. containsFast (row [col]) == ! remove)
-        tOut. rows << move (row);    
-    tOut. qc ();
-    
+    TextTable tOut (t1. pound, t1. header);
+    {
+      Vector<TextTable::ColNum> addedColNums;
+      if (! remove)
+        FOR (TextTable::ColNum, colNum, t2. header. size ())
+        {
+          const TextTable::Header& h = t2. header [colNum];
+          if (! commonCols. contains (h. name))
+          {
+            tOut. header << h;
+            addedColNums << colNum;
+          }
+        }
+
+      const Vector<TextTable::ColNum> indexColNums1 (t1. columns2nums (commonCols));     
+      StringVector indexValues;
+      StringVector values2;
+      StringVector outValues;
+      FOR (TextTable::RowNum, rowNum1, t1. rows. size ())
+      {
+        t1. colNums2values (indexColNums1, rowNum1, indexValues);
+        if (const Vector<TextTable::RowNum>* rowNums2 = index. find (indexValues))
+        {
+          if (! remove)
+            for (TextTable::RowNum rowNum2 : *rowNums2)
+            {
+              t2. colNums2values (addedColNums, rowNum2, values2);
+              outValues. clear ();
+              outValues << t1. rows [rowNum1] << values2;
+              tOut. rows << move (outValues);
+            }
+        }
+        else 
+        {
+          if (remove)
+            tOut. rows << move (t1. rows [rowNum1]);
+        }
+      }
+    }
+    tOut. qc ();    
     tOut. saveText (cout);
 	}
 };
