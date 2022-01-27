@@ -87,7 +87,7 @@ struct ThisApplication : Application
         throw runtime_error ("Table has no sum-column " + strQuote (s));
       if (by. contains (s))
         throw runtime_error ("Same by-column and sum-column: " + strQuote (s));
-      if (! tt. header [tt. col2index (s)]. numeric)
+      if (! tt. header [tt. col2num (s)]. numeric)
         throw runtime_error ("Column " + strQuote (s) + " is not numeric");
     }
         
