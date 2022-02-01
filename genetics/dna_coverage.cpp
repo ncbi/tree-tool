@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Coverage length of DNA
+*   Coverage of DNA
 *
 */
    
@@ -45,188 +45,240 @@ using namespace Common_sp;
 
 
 
-static const string na ("NA");
-string query;
-string subject;
+struct Hsp
+{
+  size_t qstart {0};
+  size_t qend {0};
+  size_t sstart {0};
+  size_t send {0};
+  bool strand {false};
+  // Alignment
+  size_t length {0};
+  size_t nident {0};
+  
+  
+  Hsp (size_t qstart_arg,
+       size_t qend_arg,
+       size_t sstart_arg,
+       size_t send_arg,
+       size_t length_arg,
+       size_t nident_arg)
+    // 1-based, end = last position
+    : qstart (qstart_arg)
+    , qend (qend_arg)
+    , sstart (min (sstart_arg, send_arg))
+    , send   (max (sstart_arg, send_arg))
+    , strand (sstart_arg <= send_arg)
+    , length (length_arg)
+    , nident (nident_arg)
+    {
+      QC_ASSERT (qstart);
+      qstart--;
+      QC_ASSERT (qstart < qend);
+      
+      QC_ASSERT (sstart);
+      sstart--;
+      QC_ASSERT (sstart < send);
+      
+      QC_ASSERT (nident);
+      QC_ASSERT (nident <= length);
+      QC_ASSERT (nident <= qLen ());
+      QC_ASSERT (nident <= sLen ());
+      QC_ASSERT (length < qLen () + sLen ());
+    }
+  Hsp () = default;
+    
+    
+  size_t qLen () const
+    { return qend - qstart; }
+  size_t sLen () const
+    { return send - sstart; }
+  void saveText (ostream &os) const
+    { os         << qstart + 1
+         << '\t' << qend
+         << '\t' << sstart + 1
+         << '\t' << send
+         << '\t' << strand
+         << '\t' << length
+         << '\t' << nident;
+    }
+  static void saveHeader (ostream &os)
+    { os         << "qstart"
+         << '\t' << "qend"
+         << '\t' << "sstart"
+         << '\t' << "send"
+         << '\t' << "strand"
+         << '\t' << "length"
+         << '\t' << "nident";
+    }
+};
       
 
 
 struct Subject
 {
-  // 1-based, end - last character position
-  string sseqid;
-  size_t qstart {numeric_limits<size_t>::max()};
-    // Minimum
-  size_t qend {0};
-    // Maximum
-  size_t sstart {numeric_limits<size_t>::max()};
-    // Minimum
-  size_t send {0};
-    // Maximum
-  size_t slen {0};
-  size_t length {0};
-    // Alignment length, cumulative
-  size_t nident {0};
-    // Cumulative
   string stitle;
-//string plasmidName;
-  size_t qcoverage {0};
+  Vector<Hsp> hsps;
+    // !empty()
+  // Function of hsps
+  Vector<uint> schars;    
+    // slen = schars.size()
+  size_t length_sum {0};
+  size_t nident_sum {0}; 
   size_t scoverage {0};
   
+  
+  Subject (string &&stitle_arg,
+           size_t slen)
+    : stitle (move (stitle_arg))
+    , schars (slen)
+    { QC_ASSERT (! schars. empty ()); }
   Subject () = default;
-  void saveText (ostream &os,
-                 size_t qlen) const
-    { QC_ASSERT (qend <= qlen);
-      const ONumber on (os, 2, false);  // PAR
-      os         
-        /* 3*/         << qlen
-        /* 4*/ << '\t' << qstart                  
-        /* 5*/ << '\t' << qend                    
-        /* 6*/ << '\t' << qcoverage                
-        /* 7*/ << '\t' << double (qcoverage) / double (qlen) * 100.0
-        /* 8*/ << '\t' << length                  
-        /* 9*/ << '\t' << nident
-        /*10*/ << '\t' << double (nident) / double (length) * 100.0
-        /*11*/ << '\t' << (sseqid. empty () ? nvl(subject,"NA") : sseqid)
-        /*12*/ << '\t' << slen;
-      if (! sseqid. empty ())
-      {
-        os /*13*/ << '\t' << sstart                  
-           /*14*/ << '\t' << send;
-      }
-      os
-        /*15*/ << '\t' << scoverage                
-        /*16*/ << '\t' << double (scoverage) / double (slen) * 100.0;
-      if (! sseqid. empty ())
-      {
-        string stitle_ (stitle + "_");
-        trimPrefix (stitle_, sseqid + "_");
-        replace (stitle_, '_', ' ');
-        trim (stitle_);
-        os /*17*/ << '\t' << nvl (stitle_, na);
-      }
+  Subject (Subject &&) = default;
+  Subject& operator= (Subject &&) = default;
+  void addHsp (const Hsp& hsp)
+    {
+      hsps << hsp;
+      QC_ASSERT (hsp. send <= schars. size ());
+      FOR_START (size_t, i, hsp. sstart, hsp. send) 
+        schars [i] ++;
+      length_sum += hsp. length;
+      nident_sum += hsp. nident;
     }
-  void qc () const
-    { if (! qc_on)
-        return;
-      QC_ASSERT (! sseqid. empty ());
-      QC_ASSERT (qstart < qend);
-      QC_ASSERT (sstart < send);
-      QC_ASSERT (send <= slen);
-      QC_ASSERT (nident <= length);
-      QC_ASSERT (qcoverage); 
-      QC_ASSERT (scoverage); 
-      QC_ASSERT (qcoverage <= qend - qstart + 1);
-      QC_ASSERT (scoverage <= send - sstart + 1);
-    }
-    
-  bool operator< (const Subject& other) const
-    { LESS_PART (other, *this, qcoverage);
-      LESS_PART (other, *this, scoverage);
-      LESS_PART (*this, other, sseqid);  // Tie resolution
-      return false;
+  void finish ()
+    {
+      ASSERT (! hsps. empty ());
+      ASSERT (scoverage == 0);
+      for (const uint c : schars)
+        scoverage += (bool) c;   
+      
     }
 };
 
 
 
-void addPrevSubject (Vector<Subject> &subjects, 
-                     Subject &subj,
-                     const Vector<uint> &qchars,
-                     const Vector<uint> &schars)
-// Update: subj
+static const string na ("NA");
+string queryName;
+string subjectName;
+enum class Mode {none, combine, /*missed,*/ all};
+Mode mode {Mode::none};
+Vector<uint> qchars;    
+map<string/*sseqid*/,Subject> sseqid2subject; 
+
+
+
+void reportSubjects (const string &qseqid,
+                     bool force)
 {
-  if (subj. sseqid. empty ())
-    return;
+  ASSERT (mode != Mode::none);
+  ASSERT (qseqid. empty () == qchars. empty ());
+  IMPLY (qseqid. empty (), sseqid2subject. empty ());
+
+//if (mode == Mode::missed)
+  //return;
     
-  ASSERT (schars. size () == subj. slen);
-    
-  subj. qcoverage = 0;
+  size_t qcoverage = 0;
   for (const uint c : qchars)
-    subj. qcoverage += (bool) c;   
+    qcoverage += (bool) c;   
 
-  subj. scoverage = 0;
-  for (const uint c : schars)
-    subj. scoverage += (bool) c;   
-    
-  subj. qc ();
-
-  subjects << move (subj);
-  subj = Subject ();
-}
-
-
-
-enum class Mode {best, combine, missed, all};
-
-
-
-void processSubjects (const string &qseqid,
-                      size_t qlen,
-                      Vector<Subject> &subjects,
-                      Mode mode,
-                      bool force)
-{
-  IMPLY (qseqid. empty (), subjects. empty ());
-
-  if (mode == Mode::missed)
-    return;
-    
-  if (subjects. empty ())
+  if (sseqid2subject. empty ())
   {
-    if (force)
-    {
-      Subject s;
-      s. qstart = 0;
-      s. sstart = 0;
-      subjects << move (s);
-    }
-    else
+    if (! force)
       return;
   }
   else
-    ASSERT (qlen);
+    ASSERT (qcoverage);
     
-  if (mode == Mode::combine)
-  {
-    Subject last (subjects. pop ());  // Has right qcoverage
-    last. sseqid. clear ();
-    for (const Subject& subj : subjects)
-    {
-      minimize (last. qstart, subj. qstart);
-      maximize (last. qend,   subj. qend);
-      last. slen      += subj. slen;
-      last. length    += subj. length;
-      last. nident    += subj. nident;
-      last. scoverage += subj. scoverage;
-    }
-    subjects. clear ();
-    subjects << last;
-    ASSERT (subjects. size () == 1);
-  }
+  // Subject::scoverage
+  for (auto& it : sseqid2subject)
+    it. second. finish ();
 
-  subjects. sort ();
+  // blast has no qtitle
   string qtitle (qseqid);
   const string qseqid_ (findSplit (qtitle, '|'));
+  ASSERT (! qseqid_. empty ());
   replace (qtitle, '_', ' ');
   trim (qtitle);
-  for (const Subject& subj : subjects)
-  {
-    if (! query. empty ())
-      /* 0 */ cout << query << '\t';
-    cout << qseqid_ << '\t' << nvl (qtitle, na) << '\t';
-      //    1                  2
-    subj. saveText (cout, qlen);      
-    cout << endl;
-    if (mode == Mode::best)
-      break;
-  }
   
-  subjects. clear ();
+
+  // cout
+  switch (mode)
+  {
+    case Mode::combine:
+      {
+        size_t slen_sum = 0;
+        size_t scoverage_sum = 0;
+        size_t length_sum = 0;
+        size_t nident_sum = 0;
+        for (const auto& it : sseqid2subject)
+        {
+          const Subject& subj = it. second;
+          slen_sum      += subj. schars. size ();
+          scoverage_sum += subj. scoverage;
+          length_sum    += subj. length_sum;
+          nident_sum    += subj. nident_sum;
+        }
+        ASSERT (scoverage_sum <= slen_sum);
+        ASSERT (nident_sum <= length_sum);
+
+        if (! queryName. empty ())
+          /* 0 */ cout << queryName << '\t';
+        cout << qseqid_ << '\t' << nvl (qtitle, na);
+          //    1                  2
+        const ONumber on (cout, 2, false);  // PAR
+        cout         
+          /* 3*/ << '\t' << qchars. size ()
+          /* 4*/ << '\t' << qcoverage                
+          /* 5*/ << '\t' << double (qcoverage) / double (qchars. size ()) * 100.0
+          /* 6*/ << '\t' << length_sum                  
+          /* 7*/ << '\t' << nident_sum
+          /* 8*/ << '\t' << double (nident_sum) / double (length_sum) * 100.0;
+        if (! subjectName. empty ())
+          cout /* 9 */ << '\t' << subjectName;
+        cout 
+          /*10*/ << '\t' << slen_sum
+          /*11*/ << '\t' << scoverage_sum
+          /*12*/ << '\t' << double (scoverage_sum) / double (slen_sum) * 100.0;
+        cout << endl;
+      }
+      break;
+      
+    case Mode::all:
+      {
+        for (const auto& it : sseqid2subject)
+        {
+          const string& sseqid = it. first;
+          const Subject& subj  = it. second;
+          for (const Hsp& hsp : subj. hsps)
+          {
+            if (! queryName. empty ())
+              /* 0 */ cout << queryName << '\t';
+            cout 
+              /* 1 */         << qseqid_ 
+              /* 2 */ << '\t' << nvl (qtitle, na)
+              /* 3 */ << '\t' << qchars. size ();
+            if (! subjectName. empty ())
+              cout /* 4 */ << '\t' << subjectName;
+            cout << /* 5 */ '\t' << sseqid 
+                 << /* 6 */ '\t' << subj. stitle
+                 << /* 7 */ '\t' << subj. schars. size ()
+                 << /* 8 */ '\t' << subj. scoverage
+                 << '\t';
+              hsp. saveText (cout);
+            cout << endl;
+          }
+        }
+      }
+      break;
+      
+    default:
+      NEVER_CALL;
+  }
 }
 
 
 
+#if 0
 void reportMissed (const string &qseqid,
                    const Vector<uint> &qchars)
 {
@@ -246,8 +298,8 @@ void reportMissed (const string &qseqid,
     {
       if (start < i)
       {
-        if (! query. empty ())
-          /* 0 */ cout << query << '\t';
+        if (! queryName. empty ())
+          /* 0 */ cout << queryName << '\t';
         cout         << qseqid_ 
              << '\t' << nvl (qtitle, na) 
              << '\t' << qchars. size ()
@@ -260,6 +312,7 @@ void reportMissed (const string &qseqid,
       start = i + 1;
     }
 }
+#endif
 
 
 
@@ -269,21 +322,22 @@ void reportMissed (const string &qseqid,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the coverage of a query DNA by subject DNAs, sorted by qcoverage descending")
+    : Application ("Print the coverage of a query DNA by subject DNAs, sorted by qseqid")
     {
       version = VERSION;
       string format (XSTR(FORMAT));
       replaceStr (format, " >>", "");
-      addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid, sseqid.\n\
+      addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid and nident descending.\n\
 qseqid can have a suffix \"|qtitle\"");
       addKey ("mode", "\
-best: print only the best coverage by a subject DNA\n\
 combine: combine the coverages by subject DNAs\n\
-missed: report non-covered query DNA segments\n\
 all: report all covered segments", "all");
+// best: print only the best coverage by a subject DNA
+// missed: report non-covered query DNA segments
       addKey ("query", "Query DNA name");
       addKey ("subject", "Subject DNA name, used if mode = combine");
       addKey ("pident_min", "Min. percent of identity", "0");
+      addKey ("align_min", "Min. alignment length", "0");
       addFlag ("force", "Force one-line report if there is no match");
     }
 
@@ -291,44 +345,68 @@ all: report all covered segments", "all");
 
   void body () const final
   {
-    const string inFName = getArg ("in");
-    const string modeS   = getArg ("mode");
-                 query   = getArg ("query");
-                 subject = getArg ("subject");
-    const double pident_min = str2<double> (getArg ("pident_min"));
-    const bool   force   = getFlag ("force");
+    const string inFName     = getArg ("in");
+    const string modeS       = getArg ("mode");
+                 queryName   = getArg ("query");
+                 subjectName = getArg ("subject");
+    const double pident_min  = str2<double> (getArg ("pident_min"));
+    const size_t align_min   = str2<size_t> (getArg ("align_min"));
+    const bool force         = getFlag ("force");
     
-    Mode mode;
-    if (modeS == "best")
+    // mode
+    ASSERT (mode == Mode::none);
+  /*if (modeS == "best")
       mode = Mode::best;
-    else if (modeS == "combine")
+    else*/ if (modeS == "combine")
       mode = Mode::combine;
-    else if (modeS == "missed")
-      mode = Mode::missed;
+  //else if (modeS == "missed")
+    //mode = Mode::missed;
     else if (modeS == "all")
       mode = Mode::all;
     else
       throw runtime_error ("Unknown mode: " + strQuote (modeS));
+    ASSERT (mode != Mode::none);
+      
+    QC_IMPLY (force, mode == Mode::combine);
               
     
+    // Header
     cout << '#';
-    if (! query. empty ())
+    if (! queryName. empty ())
       cout << "query\t";
         //     0
-    cout << "qseqid\tqtitle\tqlen\tqstart\tqend\tqcoverage\tpqcoverage";
-      //     1       2       3     4       5     6          7           
-    if (mode != Mode::missed)
+    switch (mode)
     {
-      cout << "\talign_length\tnident\tpident\tsseqid\tslen";
-        //       8             9       10      11      12
-      if (mode != Mode::combine)
-        cout << "\tsstart\tsend";
-          //       13      14
-      cout << "\tscoverage\tpscoverage";
-        //       15         16         
-      if (mode != Mode::combine)
-        cout << "\tstitle";
-          //       17
+      case Mode::combine:
+        {    
+          cout << "qseqid\tqtitle\tqlen\tqcoverage\tpqcoverage";
+            //     1       2       3     4          5        
+        //if (mode != Mode::missed)
+          {
+            cout << "\talign_length\tnident\tpident";
+              //       6             7       8       
+            if (! subjectName. empty ())
+              cout << "\tsubject";
+                //       9
+            cout << "\tslen\tscoverage\tpscoverage";
+              //       10     11         12
+          }
+        }
+        break;
+      case Mode::all:
+        {    
+          cout << "qseqid\tqtitle\tqlen";
+            //     1       2       3    
+          if (! subjectName. empty ())
+            cout << "\tsubject";
+              //       4
+          cout << "\tsseqid\tstitle\tslen\tscoverage\t";
+            //       5       6        7    8
+          Hsp::saveHeader (cout);
+        }
+        break;
+      default: 
+        NEVER_CALL;
     }
     cout << endl;
     
@@ -339,104 +417,91 @@ all: report all covered segments", "all");
 
     string qseqid_prev;
     size_t qlen_prev = 0;  // >0 => constant
-    Vector<Subject> subjects;  subjects. reserve (10000);  // PAR
-    Subject subj;  // previous
-    {
-      LineInput f (inFName);
-      string qseqid, sseqid;
-      string stitle;
-      Vector<uint> qchars;    
-      Vector<uint> schars;    
-      while (f. nextLine ())
-        try
-        {
-          replace (f. line, ' ', '_');  // For stitle processing
-          if (verbose ())
-            cerr << f. line << endl;
-          istringstream iss (f. line);
-          size_t length, nident, qstart, qend, qlen, sstart, send, slen;
-          slen = 0;
-          iss >> FORMAT;
-          const size_t sstart_ = min (sstart, send);
-          const size_t send_   = max (sstart, send);
-          QC_ASSERT (! qseqid. empty ());
-          QC_ASSERT (! sseqid. empty ());
-          QC_ASSERT (qseqid_prev <= qseqid);
-          QC_IMPLY (qseqid_prev == qseqid, subj. sseqid <= sseqid);
-          QC_ASSERT (nident);
-          QC_ASSERT (nident <= length);
-          QC_ASSERT (qstart);
-          QC_ASSERT (qstart < qend);
-          QC_ASSERT (qend <= qlen);
-          QC_ASSERT (sstart_);
-          QC_ASSERT (send_ <= slen);
-          QC_ASSERT (nident <= min (qlen, slen));
-          QC_ASSERT (qlen);
-          QC_ASSERT (slen);
-          QC_IMPLY (qseqid_prev == qseqid, qlen_prev == qlen); 
-          
-          if ((double) nident / (double) length * 100.0 < pident_min)
-            continue;
-
-          if (   mode == Mode::missed 
-              && qseqid_prev != qseqid
-             )
-            reportMissed (qseqid_prev, qchars);
-
-          if (! (         qseqid_prev == qseqid
-                 && subj. sseqid      == sseqid
-                )
-             )
-          {
-            addPrevSubject (subjects, subj, qchars, schars);
-            if (! ((   mode == Mode::combine 
-                    || mode == Mode::missed
-                   )
-                   && qseqid_prev == qseqid
-                  )
-               )
-            {
-              qchars. resize (qlen, 0);
-              qchars. setAll (0);
-            }
-            schars. resize (slen, 0);
-            schars. setAll (0);
-          }
-          
-          if (qseqid_prev != qseqid)
-          {
-            processSubjects (qseqid_prev, qlen_prev, subjects, mode, false);
-            qseqid_prev = qseqid;
-            qlen_prev = qlen;
-          }
-          
-          FOR_START (size_t, i, qstart - 1, qend)  // 1-based
-            qchars [i] ++;
-          FOR_START (size_t, i, sstart_ - 1, send_)  // 1-based
-            schars [i] ++;
-            
-          // Subject attributes
-          subj. sseqid = move (sseqid);
-          minimize (subj. qstart, qstart);
-          maximize (subj. qend, qend);
-          minimize (subj. sstart, sstart_);
-          maximize (subj. send, send_);
-          subj. slen = slen;
-          subj. length += length;
-          subj. nident += nident;
-          subj. stitle = stitle;
-        //subj. plasmidName = plasmidName;
-        }
-        catch (const exception &e)
-        {
-          throw runtime_error (string (e. what ()) + "\nat line " + to_string (f. lineNum));
-        }
-      addPrevSubject (subjects, subj, qchars, schars);
-      if (mode == Mode::missed)
-        reportMissed (qseqid_prev, qchars);
+    LineInput f (inFName);
+    string qseqid, sseqid;
+    string stitle;
+    while (f. nextLine ())
+      try
+      {
+        replace (f. line, ' ', '_');  // For qtitle, stitle processing
+        if (verbose ())
+          cerr << f. line << endl;
+        istringstream iss (f. line);
+        size_t length, nident, qstart, qend, qlen, sstart, send, slen;
+        slen = 0;
+        iss >> FORMAT;
+        QC_ASSERT (! sseqid. empty ());
+        QC_ASSERT (! qseqid. empty ());
+        QC_ASSERT (qseqid_prev <= qseqid);
+        QC_ASSERT (qlen);
+        QC_ASSERT (slen);
+        QC_IMPLY (qseqid_prev == qseqid, qlen_prev == qlen); 
         
-      processSubjects (qseqid_prev, qlen_prev, subjects, mode, force);
-    }
+        const Hsp hsp (qstart, qend, sstart, send, length, nident);
+          // Invokes: QC_ASSERT
+        QC_ASSERT (hsp. qend <= qlen);
+        QC_ASSERT (hsp. send <= slen);
+
+        if (length < align_min)
+          continue;
+        if ((double) nident / (double) length * 100.0 < pident_min)
+          continue;
+
+        if (qseqid_prev != qseqid)
+        {
+          reportSubjects (qseqid_prev, false);  
+          sseqid2subject. clear ();
+          qseqid_prev = qseqid;
+          qlen_prev = qlen;
+          qchars. resize (qlen, 0);
+          qchars. setAll (0);
+        }
+
+      #if 0
+        if (   mode == Mode::missed 
+            && qseqid_prev != qseqid
+           )
+          reportMissed (qseqid_prev, qchars);
+      #endif
+      
+        bool novel = false;
+        ASSERT (hsp. qend <= qchars. size ());
+        FOR_START (size_t, i, hsp. qstart, hsp. qend) 
+        {
+          if (! qchars [i])
+            novel = true;
+          qchars [i] ++;
+        }
+        if (! novel)
+        {
+          ASSERT (! sseqid2subject. empty ());
+          continue;
+        }
+      
+        const Subject* subj = findPtr (sseqid2subject, sseqid);
+        if (! subj)
+        {
+          stitle += "_";
+          trimPrefix (stitle, sseqid + "_");  // stitle has sseqid as a prefix
+          replace (stitle, '_', ' ');
+          trim (stitle);
+          sseqid2subject [sseqid] = move (Subject (move (stitle), slen));
+          ASSERT (stitle. empty ());
+          subj = & sseqid2subject [sseqid];
+        }
+        ASSERT (subj);
+      
+        var_cast (subj) -> addHsp (hsp);
+      }
+      catch (const exception &e)
+      {
+        throw runtime_error (string (e. what ()) + "\nat line " + to_string (f. lineNum));
+      }
+  #if 0
+    if (mode == Mode::missed)
+      reportMissed (qseqid_prev, qchars);
+  #endif      
+    reportSubjects (qseqid_prev, force);
   }
 };
 
