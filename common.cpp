@@ -2540,6 +2540,9 @@ TextTable::Key::Key (const TextTable &tab,
   FFOR (RowNum, i, tab. rows. size ())
   {
     tab. colNums2values (colNums, i, values);
+    for (const string& s : values)
+      if (s. empty ())
+        throw Error (tab, "Empty value in key, in row " + to_string (i + 1));
     if (data. find (values) != data. end ())
       throw Error (tab, "Duplicate key " + values. toString (",") + " for the key on " + columns. toString (","));
     ASSERT (i != no_index);
