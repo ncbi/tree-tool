@@ -52,6 +52,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("table1", "tsv-table");
   	  addPositional ("table2", "tsv-table");
+  	  addFlag ("left", "SQL left join");
   	  addFlag ("remove", "Remove the rows from <table1> which are in <table2>");
   	  addKey ("common", "Output file to print common columns");
   	}
@@ -62,8 +63,11 @@ struct ThisApplication : Application
 	{
 		const string tab1FName   = getArg ("table1");
 		const string tab2FName   = getArg ("table2");
+		const bool   leftjoin    = getFlag ("left");
     const bool   remove      = getFlag ("remove");  
     const string commonFName = getArg ("common");
+    
+    QC_IMPLY (remove, ! leftjoin);
 		
 
     const TextTable t1 (tab1FName);
@@ -73,36 +77,47 @@ struct ThisApplication : Application
     t2. qc ();    
     
     StringVector commonCols;
-    for (const TextTable::Header& h : t1. header)
-      commonCols << h. name;
-    FOR_REV (size_t, i, commonCols. size ())
-      if (! t2. hasColumn (commonCols [i]))
-        commonCols. eraseAt (i);
     {
-      StringVector s (commonCols);
-      s. sort ();
-      const size_t i = s. findDuplicate ();
-      if (i != no_index)
-        throw runtime_error ("Duplicate common column in " + strQuote (tab1FName) + ": " + s [i]);
-      StringVector s2;
-      for (const TextTable::Header& h : t2. header)
-        if (s. containsFast (h. name))
-          s2 << h. name;
-      for (const string& name : s)
-        if (s2. countValue (name) > 1)
-          throw runtime_error ("Duplicate common column in " + strQuote (tab2FName) + ": " + name);
+      for (const TextTable::Header& h : t1. header)
+        commonCols << h. name;
+      FOR_REV (size_t, i, commonCols. size ())
+        if (! t2. hasColumn (commonCols [i]))
+          commonCols. eraseAt (i);
+      {
+        StringVector s (commonCols);
+        s. sort ();
+        const size_t i = s. findDuplicate ();
+        if (i != no_index)
+          throw runtime_error ("Duplicate common column in " + strQuote (tab1FName) + ": " + s [i]);
+        StringVector s2;
+        for (const TextTable::Header& h : t2. header)
+          if (s. containsFast (h. name))
+            s2 << h. name;
+        for (const string& name : s)
+          if (s2. countValue (name) > 1)
+            throw runtime_error ("Duplicate common column in " + strQuote (tab2FName) + ": " + name);
+      }
+      if (commonFName. empty ())
+      {
+        cerr << "Common columns:" << endl;
+        save (cerr, commonCols, '\n');
+        cerr << endl;
+      }
+      else
+      {
+        OFStream f (commonFName);
+        save (f, commonCols, '\n');
+        f << endl;
+      }
     }
-    if (! commonFName. empty ())
-    {
-      OFStream f (commonFName);
-      save (f, commonCols, '\n');
-      f  << endl;
-    }
+    ASSERT (commonCols. size () <= t1. header. size ());
+    ASSERT (commonCols. size () <= t2. header. size ());
       
     const TextTable::Index index (t2, commonCols);        
 
 
     TextTable tOut (t1. pound, t1. header);
+    tOut. name = "Output";
     {
       Vector<TextTable::ColNum> addedColNums;
       if (! remove)
@@ -123,8 +138,12 @@ struct ThisApplication : Application
       FOR (TextTable::RowNum, rowNum1, t1. rows. size ())
       {
         t1. colNums2values (indexColNums1, rowNum1, indexValues);
+        for (const string& s : indexValues)
+          if (s. empty ())
+            throw TextTable::Error (t1, "Empty value in index, in row " + to_string (rowNum1 + 1));
         if (const Vector<TextTable::RowNum>* rowNums2 = index. find (indexValues))
         {
+          ASSERT (! rowNums2->empty ());
           if (! remove)
             for (TextTable::RowNum rowNum2 : *rowNums2)
             {
@@ -136,8 +155,12 @@ struct ThisApplication : Application
         }
         else 
         {
-          if (remove)
+          if (remove || leftjoin)
+          {
             tOut. rows << move (t1. rows [rowNum1]);
+            if (leftjoin)
+              tOut. rows. back (). resize (t1. header. size () + t2. header. size () - commonCols. size ());
+          }
         }
       }
     }
