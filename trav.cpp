@@ -116,10 +116,8 @@ struct ThisApplication : Application
   	  addPositional ("command", "Text with special symbols: \
 \"%d\" = <items>, \
 \"%f\" - item, \
-\"%1\" - subitem #1, \
-\"%2\" - subitem #2, \
-... \
-\"%9\" - subitem #9, \
+\"%<n>\" - subitem #n (1 <= n <= 9), \
+\"%{<n>}\" - subitem #n (n >= 10), \
 \"%h\" - item hash (0.." + to_string (hash_class_max - 1) + "), \
 \"%n\" - item number, \
 \"%q\" - single quote, \
@@ -203,8 +201,7 @@ struct ThisApplication : Application
       bool subitemsP = false;
       FFOR (size_t, i, cmd. size () - 1)
         if (   cmd [i] == '%'
-            && isDigit (cmd [i + 1])
-            && cmd [i + 1] != '0'
+            && ((isDigit (cmd [i + 1]) && cmd [i + 1] != '0') || cmd [i + 1] == '{')
            )
         {
           subitemsP = true;
@@ -213,8 +210,7 @@ struct ThisApplication : Application
 
   	  string item;
   	  Istringstream iss;
-  	  constexpr size_t subitems_max = 9;
-      StringVector subitems;  subitems. reserve (subitems_max);  
+      StringVector subitems;  
   	  while (gen->next (item))
       {
         trim (item);
@@ -257,10 +253,12 @@ struct ThisApplication : Application
             subitems << move (s);
           }
           ASSERT (! subitems. empty ());
-          if (subitems. size () > subitems_max)
-            throw runtime_error ("Number of subitems is " + to_string (subitems. size ()) + " wheras the maximum is " + to_string (subitems_max));
           FFOR (size_t, i, subitems. size ())
-            replaceStr (thisCmd, "%" + to_string (i + 1), subitems [i]); 
+          {
+            const string numS (to_string (i + 1));
+            const bool longS = numS. size () > 1;
+            replaceStr (thisCmd, string ("%") + (longS ? "{" : "") + numS + (longS ? "}" : ""), subitems [i]); 
+          }
         }        
 
         FFOR (size_t, i, thisCmd. size ())
