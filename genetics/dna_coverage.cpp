@@ -196,7 +196,7 @@ void reportSubjects (const string &qseqid,
   // blast has no qtitle
   string qtitle (qseqid);
   const string qseqid_ (findSplit (qtitle, '|'));
-  ASSERT (! qseqid_. empty ());
+  IMPLY (qseqid_. empty (), force && mode == Mode::combine);
   replace (qtitle, '_', ' ');
   trim (qtitle);
   
@@ -223,7 +223,7 @@ void reportSubjects (const string &qseqid,
 
         if (! queryName. empty ())
           /* 0 */ cout << queryName << '\t';
-        cout << qseqid_ << '\t' << nvl (qtitle, na);
+        cout << nvl (qseqid_, na) << '\t' << nvl (qtitle, na);
           //    1                  2
         const ONumber on (cout, 2, false);  // PAR
         cout         
@@ -420,6 +420,7 @@ all: report all covered segments", "all");
     LineInput f (inFName);
     string qseqid, sseqid;
     string stitle;
+    size_t nident_prev = 0;
     while (f. nextLine ())
       try
       {
@@ -435,7 +436,9 @@ all: report all covered segments", "all");
         QC_ASSERT (qseqid_prev <= qseqid);
         QC_ASSERT (qlen);
         QC_ASSERT (slen);
-        QC_IMPLY (qseqid_prev == qseqid, qlen_prev == qlen); 
+        QC_IMPLY (qseqid_prev == qseqid, qlen == qlen_prev); 
+        QC_IMPLY (qseqid_prev == qseqid, nident <= nident_prev); 
+        nident_prev = nident;
         
         const Hsp hsp (qstart, qend, sstart, send, length, nident);
           // Invokes: QC_ASSERT
