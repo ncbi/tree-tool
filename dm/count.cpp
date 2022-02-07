@@ -81,14 +81,14 @@ struct ThisApplication : Application
 				mv << x;
 		}
 		
-		report ("count",   mv. n);
-		report ("mean",    mv. getMean ());
-		report ("var",     mv. getVar ());
-		report ("SD",      mv. getSD ());
-	  report ("sum",     mv. s);
-		report ("mean SD", mv. getSD () / sqrt (mv. n));
-	  report ("min",     mv. v_min);
-	  report ("max",     mv. v_max);
+		report ("count",  mv. n);
+		report ("mean",   mv. getMean ());
+		report ("var",    mv. getVar ());
+		report ("SD",     mv. getSD ());
+	  report ("sum",    mv. s);
+		report ("meanSD", mv. getSD () / sqrt (mv. n));
+	  report ("min",    mv. v_min);
+	  report ("max",    mv. v_max);
 	}
 };
 
