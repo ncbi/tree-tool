@@ -15,6 +15,7 @@ all:	\
 	asn_grep \
 	blastmat \
 	blastp_merge \
+	contig2read_coverage \
 	dna2orfs \
 	dna2stat \
 	dna_complexity \
@@ -85,6 +86,12 @@ blastp_merge.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
 blastp_mergeOBJS=blastp_merge.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o $(DM_DIR)/matrix.o
 blastp_merge:	$(blastp_mergeOBJS)
 	$(CXX) -o $@ $(blastp_mergeOBJS) $(LIBS) 
+	$(ECHO)
+
+contig2read_coverage.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp 
+contig2read_coverageOBJS=contig2read_coverage.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o 
+contig2read_coverage:	$(contig2read_coverageOBJS)
+	$(CXX) -o $@ $(contig2read_coverageOBJS) $(LIBS) 
 	$(ECHO)
 
 dna2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
