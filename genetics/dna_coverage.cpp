@@ -96,20 +96,26 @@ struct Hsp
   void saveText (ostream &os) const
     { os         << qstart + 1
          << '\t' << qend
+         << '\t' << qLen ()
          << '\t' << sstart + 1
          << '\t' << send
+         << '\t' << sLen ()
          << '\t' << strand
          << '\t' << length
-         << '\t' << nident;
+         << '\t' << nident
+         << '\t' << (double) nident / (double) length * 100.0;
     }
   static void saveHeader (ostream &os)
     { os         << "qstart"
          << '\t' << "qend"
+         << '\t' << "qcoverage"
          << '\t' << "sstart"
          << '\t' << "send"
+         << '\t' << "scoverage"
          << '\t' << "strand"
          << '\t' << "length"
-         << '\t' << "nident";
+         << '\t' << "nident"
+         << '\t' << "pident";
     }
 };
       
@@ -253,10 +259,11 @@ void reportSubjects (const string &qseqid,
           {
             if (! queryName. empty ())
               /* 0 */ cout << queryName << '\t';
+            const size_t qlen = qchars. size ();
             cout 
               /* 1 */         << qseqid_ 
               /* 2 */ << '\t' << nvl (qtitle, na)
-              /* 3 */ << '\t' << qchars. size ();
+              /* 3 */ << '\t' << qlen;
             if (! subjectName. empty ())
               cout /* 4 */ << '\t' << subjectName;
             cout << /* 5 */ '\t' << sseqid 
@@ -264,7 +271,8 @@ void reportSubjects (const string &qseqid,
                  << /* 7 */ '\t' << subj. schars. size ()
                  << /* 8 */ '\t' << subj. scoverage
                  << '\t';
-              hsp. saveText (cout);
+            hsp. saveText (cout);
+            cout << '\t' << (double) hsp. qLen () / (double) qlen * 100.0;
             cout << endl;
           }
         }
@@ -400,9 +408,10 @@ all: report all covered segments", "all");
           if (! subjectName. empty ())
             cout << "\tsubject";
               //       4
-          cout << "\tsseqid\tstitle\tslen\tscoverage\t";
+          cout << "\tsseqid\tstitle\tslen\tscoverage_sum\t";
             //       5       6        7    8
           Hsp::saveHeader (cout);
+          cout << "\tpqcoverage";
         }
         break;
       default: 
