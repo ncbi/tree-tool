@@ -50,7 +50,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print a tsv-table with columns: Contig\tLength\tCoverage_avg\tNoise");
+    : Application ("Print a tsv-table with columns: Contig\tLength\tCoverage_avg\tNoise")
 	  {
       version = VERSION;
 		  addPositional ("in", "Tab-delimited file where each line corresponds to one nucleotide and has format: <contig>\t<coverage>");
