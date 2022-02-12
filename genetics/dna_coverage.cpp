@@ -183,9 +183,12 @@ void reportSubjects (const string &qseqid,
 //if (mode == Mode::missed)
   //return;
     
+  const size_t qlen = qchars. size ();
+
   size_t qcoverage = 0;
   for (const uint c : qchars)
     qcoverage += (bool) c;   
+  ASSERT (qcoverage <= qlen);
 
   if (sseqid2subject. empty ())
   {
@@ -233,17 +236,22 @@ void reportSubjects (const string &qseqid,
           //    1                  2
         const ONumber on (cout, 2, false);  // PAR
         cout         
-          /* 3*/ << '\t' << qchars. size ()
+          /* 3*/ << '\t' << qlen
           /* 4*/ << '\t' << qcoverage                
-          /* 5*/ << '\t' << double (qcoverage) / double (qchars. size ()) * 100.0
-          /* 6*/ << '\t' << length_sum                  
-          /* 7*/ << '\t' << nident_sum
+          /* 5*/ << '\t' << double (qcoverage) / double (qlen) * 100.0;
+        if (verbose ())
+          cout 
+            /* 6*/ << '\t' << length_sum                  
+            /* 7*/ << '\t' << nident_sum;
+        cout
           /* 8*/ << '\t' << double (nident_sum) / double (length_sum) * 100.0;
         if (! subjectName. empty ())
           cout /* 9 */ << '\t' << subjectName;
-        cout 
-          /*10*/ << '\t' << slen_sum
-          /*11*/ << '\t' << scoverage_sum
+        if (verbose ())
+          cout 
+            /*10*/ << '\t' << slen_sum
+            /*11*/ << '\t' << scoverage_sum;
+        cout
           /*12*/ << '\t' << double (scoverage_sum) / double (slen_sum) * 100.0;
         cout << endl;
       }
@@ -255,11 +263,11 @@ void reportSubjects (const string &qseqid,
         {
           const string& sseqid = it. first;
           const Subject& subj  = it. second;
+          const size_t slen = subj. schars. size ();
           for (const Hsp& hsp : subj. hsps)
           {
             if (! queryName. empty ())
               /* 0 */ cout << queryName << '\t';
-            const size_t qlen = qchars. size ();
             cout 
               /* 1 */         << qseqid_ 
               /* 2 */ << '\t' << nvl (qtitle, na)
@@ -268,11 +276,12 @@ void reportSubjects (const string &qseqid,
               cout /* 4 */ << '\t' << subjectName;
             cout << /* 5 */ '\t' << sseqid 
                  << /* 6 */ '\t' << subj. stitle
-                 << /* 7 */ '\t' << subj. schars. size ()
+                 << /* 7 */ '\t' << slen
                  << /* 8 */ '\t' << subj. scoverage
                  << '\t';
             hsp. saveText (cout);
-            cout << '\t' << (double) hsp. qLen () / (double) qlen * 100.0;
+            cout << '\t' << (double) hsp. qLen () / (double) qlen * 100.0
+                 << '\t' << (double) hsp. sLen () / (double) slen * 100.0;
             cout << endl;
           }
         }
@@ -389,16 +398,17 @@ all: report all covered segments", "all");
         {    
           cout << "qseqid\tqtitle\tqlen\tqcoverage\tpqcoverage";
             //     1       2       3     4          5        
-        //if (mode != Mode::missed)
-          {
-            cout << "\talign_length\tnident\tpident";
-              //       6             7       8       
-            if (! subjectName. empty ())
-              cout << "\tsubject";
-                //       9
-            cout << "\tslen\tscoverage\tpscoverage";
-              //       10     11         12
-          }
+          if (verbose ())
+            cout << "\talign_length\tnident";
+              //       6             7  
+          cout  << "\tpident";  // 8
+          if (! subjectName. empty ())
+            cout << "\tsubject";
+              //       9
+          if (verbose ())
+            cout << "\tslen\tscoverage";
+              //       10     11
+          cout << "\tpscoverage";  // 12
         }
         break;
       case Mode::all:
@@ -411,7 +421,7 @@ all: report all covered segments", "all");
           cout << "\tsseqid\tstitle\tslen\tscoverage_sum\t";
             //       5       6        7    8
           Hsp::saveHeader (cout);
-          cout << "\tpqcoverage";
+          cout << "\tpqcoverage\tpscoverage";
         }
         break;
       default: 
@@ -434,7 +444,7 @@ all: report all covered segments", "all");
       try
       {
         replace (f. line, ' ', '_');  // For qtitle, stitle processing
-        if (verbose ())
+        if (verbose (-1))
           cerr << f. line << endl;
         istringstream iss (f. line);
         size_t length, nident, qstart, qend, qlen, sstart, send, slen;
