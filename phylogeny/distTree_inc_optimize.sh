@@ -30,7 +30,7 @@ section "Tree"
 $THIS/makeDistTree  $THREADS  -data $INC/  -variance $PAR  -optimize  -skip_len  -subgraph_iter_max $ITER_MAX  -output_tree $OUT_TREE
   # -reinsert  
 
-section "Quality"
+super_section "Quality"
 LARGE=0
 if [ -e $INC/large ]; then
   LARGE=1
