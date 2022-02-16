@@ -215,12 +215,15 @@ void reportSubjects (const string &qseqid,
   {
     case Mode::combine:
       {
+        StringVector sseqids;
         size_t slen_sum = 0;
         size_t scoverage_sum = 0;
         size_t length_sum = 0;
-        size_t nident_sum = 0;
+        size_t nident_sum = 0;        
         for (const auto& it : sseqid2subject)
         {
+          QC_ASSERT (! contains (it. first, ' '));
+          sseqids << it. first;
           const Subject& subj = it. second;
           slen_sum      += subj. schars. size ();
           scoverage_sum += subj. scoverage;
@@ -229,6 +232,8 @@ void reportSubjects (const string &qseqid,
         }
         ASSERT (scoverage_sum <= slen_sum);
         ASSERT (nident_sum <= length_sum);
+        sseqids. sort ();
+        ASSERT (sseqids. isUniq ());
 
         if (! queryName. empty ())
           /* 0 */ cout << queryName << '\t';
@@ -252,7 +257,8 @@ void reportSubjects (const string &qseqid,
             /*10*/ << '\t' << slen_sum
             /*11*/ << '\t' << scoverage_sum;
         cout
-          /*12*/ << '\t' << double (scoverage_sum) / double (slen_sum) * 100.0;
+          /*12*/ << '\t' << double (scoverage_sum) / double (slen_sum) * 100.0
+          /*13*/ << '\t' << sseqids. toString (" ");        
         cout << endl;
       }
       break;
@@ -408,7 +414,8 @@ all: report all covered segments", "all");
           if (verbose ())
             cout << "\tslen\tscoverage";
               //       10     11
-          cout << "\tpscoverage";  // 12
+          cout << "\tpscoverage\tscontigs";  
+              //     12          13
         }
         break;
       case Mode::all:
