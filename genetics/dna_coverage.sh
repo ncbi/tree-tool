@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# != 7 ]; then
   echo "Contig coverage report"
   echo "#1: query FASTA file"
-  echo "#2: subject FASTA file"
+  echo "#2: subject FASTA file (can be gzip'ped or converted into a BLAST database)"
   echo "#3: dna_coverage mode: all, combine"
   echo "#4: min. identity percent"
   echo "#5: min. alignment length"
