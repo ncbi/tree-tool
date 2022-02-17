@@ -134,7 +134,7 @@ struct ThisApplication : Application
   	  addKey ("start", "# Item to start with", "1");
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
   	  addFlag ("print", "Print command, not execute");
-  	  addFlag ("header", "<items> file has a header line which must be skipped");
+  	  addFlag ("tsv", "<items> is a tsv-file");
   	}
   	
   	
@@ -150,7 +150,7 @@ struct ThisApplication : Application
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool zero          = getFlag ("zero");
 		const bool printP        = getFlag ("print");
-		const bool header        = getFlag ("header");
+		const bool tsv           = getFlag ("tsv");
 
     if (itemsName. empty ())
       throw runtime_error ("Empty items list name");
@@ -169,15 +169,15 @@ struct ThisApplication : Application
   	    const uint stepItemGen = threads_max > 1 ? 1000 : step;  // PAR
     	  const bool isFile = fileExists (itemsName);
     	  const bool isDir = directoryExists (itemsName);
-    	  if (isDir && header)
-    	    throw runtime_error ("-header cannot be used if <items> is a directory");
+    	  if (isDir && tsv)
+    	    throw runtime_error ("-tsv cannot be used if <items> is a directory");
     	  if (isFile || isDir)
-    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, large, itemsName, header));
+    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, large, itemsName, tsv));
         else 
           if (isDigit (itemsName [0]))
           {
-        	  if (header)
-        	    throw runtime_error ("-header cannot be used if <items> is a number");
+        	  if (tsv)
+        	    throw runtime_error ("-tsv cannot be used if <items> is a number");
             gen. reset (new NumberItemGenerator (stepItemGen, itemsName));	  
           }
           else
@@ -242,15 +242,24 @@ struct ThisApplication : Application
 
         if (subitemsP)
         {
-          iss. reset (item);
           subitems. clear ();
-          string s;
-          while (! iss. eof ())
+          if (tsv)
           {
-            ASSERT (s. empty ());
-            iss >> s;
-            ASSERT (! s. empty ());
-            subitems << move (s);
+            string s (item);
+            while (! s. empty ())
+              subitems << findSplit (s, '\t');
+          }
+          else
+          {
+            iss. reset (item);
+            string s;
+            while (! iss. eof ())
+            {
+              ASSERT (s. empty ());
+              iss >> s;
+              ASSERT (! s. empty ());
+              subitems << move (s);
+            }
           }
           ASSERT (! subitems. empty ());
           FFOR (size_t, i, subitems. size ())
