@@ -51,7 +51,7 @@ struct Hsp
   size_t qend {0};
   size_t sstart {0};
   size_t send {0};
-  bool strand {false};
+  bool sstrand {false};
   // Alignment
   size_t length {0};
   size_t nident {0};
@@ -68,7 +68,7 @@ struct Hsp
     , qend (qend_arg)
     , sstart (min (sstart_arg, send_arg))
     , send   (max (sstart_arg, send_arg))
-    , strand (sstart_arg <= send_arg)
+    , sstrand (sstart_arg <= send_arg)
     , length (length_arg)
     , nident (nident_arg)
     {
@@ -100,7 +100,7 @@ struct Hsp
          << '\t' << sstart + 1
          << '\t' << send
          << '\t' << sLen ()
-         << '\t' << strand
+         << '\t' << sstrand
          << '\t' << length
          << '\t' << nident
          << '\t' << (double) nident / (double) length * 100.0;
@@ -112,7 +112,7 @@ struct Hsp
          << '\t' << "sstart"
          << '\t' << "send"
          << '\t' << "scoverage"
-         << '\t' << "strand"
+         << '\t' << "sstrand"
          << '\t' << "length"
          << '\t' << "nident"
          << '\t' << "pident";
