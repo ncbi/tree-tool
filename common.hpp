@@ -3377,9 +3377,7 @@ public:
                            streamsize &decimals);
     // Return: true => scientific number
   void printHeader (ostream &os) const;
-private:
   ColNum col2num_ (const string &columnName) const;
-public:
   ColNum col2num (const string &columnName) const
   { const ColNum i = col2num_ (columnName);
     if (i == no_index)
