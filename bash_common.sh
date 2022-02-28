@@ -20,7 +20,7 @@ function error
 	local MSG="$1"
   echo ""
 	echo -e "${RED}ERROR${NOCOLOR}"
-	echo "$MSG"
+	echo -e "$MSG"
 	exit 1
 }
 
