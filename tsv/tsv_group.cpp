@@ -52,6 +52,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("table", "tsv-table file with a header");
   	  addKey ("by", "Comma-separated list of columns to group by"); 
+  	  addKey ("count", "name of the added \"count\" column");
   	  addKey ("sum", "Comma-separated list of columns to sum"); 
   	  addKey ("aggr", "Comma-separated list of columns to aggregate: make unique and sort"); 
   	}
@@ -60,10 +61,11 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string fName = getArg ("table");
-		const string byS   = getArg ("by");
-		const string sumS  = getArg ("sum");
-		const string aggrS = getArg ("aggr");
+		const string fName  = getArg ("table");
+		const string byS    = getArg ("by");
+		const string countS = getArg ("count");
+		const string sumS   = getArg ("sum");
+		const string aggrS  = getArg ("aggr");
 
 
     TextTable tt (fName);
@@ -72,7 +74,7 @@ struct ThisApplication : Application
       tt. printHeader (cout);      
     
     const StringVector by   (byS,   ',', true);
-    const StringVector sum  (sumS,  ',', true);    
+          StringVector sum  (sumS,  ',', true);    
     const StringVector aggr (aggrS, ',', true);    
 
 
@@ -80,6 +82,17 @@ struct ThisApplication : Application
     for (const string& s : by)
       if (! tt. hasColumn (s))
         throw runtime_error ("Table has no by-column " + strQuote (s));
+        
+    if (! countS. empty ())
+    { 
+      if ( tt. hasColumn (countS))
+        throw runtime_error ("Table already has the column " + strQuote (countS));
+      tt. header << TextTable::Header (countS);
+      for (StringVector& row : tt. rows)
+        row << "1";
+      tt. qc ();
+      sum << countS;
+    }
     
     for (const string& s : sum)
     {
