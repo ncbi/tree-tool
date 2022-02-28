@@ -17,6 +17,7 @@ ALL=	\
   tsv_comp \
   tsv_group \
   tsv_join \
+  tsv_rename \
   tsv_schema
 
 ifdef AT_NCBI
@@ -56,6 +57,12 @@ tsv_join.o:  $(COMMON_HPP)
 tsv_joinOBJS=tsv_join.o $(CPP_DIR)/common.o
 tsv_join: $(tsv_joinOBJS)
 	$(CXX) -o $@ $(tsv_joinOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_rename.o:  $(COMMON_HPP)  
+tsv_renameOBJS=tsv_rename.o $(CPP_DIR)/common.o
+tsv_rename:	$(tsv_renameOBJS)
+	$(CXX) -o $@ $(tsv_renameOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_schema.o:  $(COMMON_HPP)  
