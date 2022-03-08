@@ -6,7 +6,7 @@ if [ $# -ne 3 ]; then
   echo "create #1.bak"
   echo "#1: tsv-file name 1"
   echo "#2: tsv-file name 2"
-  echo "#3: tsv_joinoption: -left|-remove|''"
+  echo "#3: tsv_join option: -left|-remove|''"
   exit 1
 fi
 F1=$1
@@ -15,7 +15,13 @@ OPT="$3"
 
 
 mv $F1 $F1.bak
-$THIS/tsv_join $F1.bak $F2 -qc $OPT > $F1
+
+SYN=""
+if [ -e $PWD/.tsv-syn ]; then
+  SYN="-syn $PWD/.tsv-syn"
+fi
+
+$THIS/tsv_join $F1.bak $F2  -qc  $SYN  $OPT > $F1
 
 
 
