@@ -50,7 +50,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Cut a segment out of a DNA sequence")
+    : Application ("Cut a segment out of a DNA sequence, make it to be in a positive strand")
     {
       version = VERSION;
   	  addPositional ("in", "DNA FASTA file with one sequence");
@@ -58,31 +58,31 @@ struct ThisApplication : Application
   	  addPositional ("stop", "Stop position of a segment, >= start position");
   	  addKey ("flank", "length of flanking sequence", "0");
   	  addFlag ("excise", "Excise the segment, otherwise leave the segment");
-  	  addKey ("reverse", "Reverse strand after cutting (0 or - / 1 or +)", "0");
+  	  addKey ("strand", "Strand (0 or - / 1 or +)", "1");
     }
 
 
 	
 	void body () const final
   {
-	  const string inFName  = getArg ("in");
-	        size_t start    = str2<size_t> (getArg ("start"));
-	        size_t stop     = str2<size_t> (getArg ("stop"));
-	  const size_t flank    = str2<size_t> (getArg ("flank"));
-	  const bool excise     = getFlag ("excise");
-	  const string reverseS = getArg ("reverse");
+	  const string inFName = getArg ("in");
+	        size_t start   = str2<size_t> (getArg ("start"));
+	        size_t stop    = str2<size_t> (getArg ("stop"));
+	  const size_t flank   = str2<size_t> (getArg ("flank"));
+	  const bool excise    = getFlag ("excise");
+	  const string strandS = getArg ("strand");
 	  
 	  QC_ASSERT (start >= 1);
 	  QC_ASSERT (stop >= start);
 	  start--;  // To make 0-based
 	  
-	  bool reverse = false;
-	  if (reverseS == "0" || reverseS == "-")
+	  bool strand = false;
+	  if (strandS == "0" || strandS == "-")
 	    ;
-	  else if (reverseS == "1" || reverseS == "+")
-	    reverse = true;
+	  else if (strandS == "1" || strandS == "+")
+	    strand = true;
 	  else
-	    throw runtime_error ("Wrong \"reverse\" parameter");
+	    throw runtime_error ("Wrong \"strand\" parameter");
 
 	  
 	  Dna* dna = nullptr;  // Not delete'd
@@ -111,7 +111,7 @@ struct ThisApplication : Application
                   ? dna->seq. substr (0, start) + dna->seq. substr (stop)
                   : dna->seq. substr (start, stop - start)
                );
-    if (reverse)
+    if (! strand)
       dna->reverse ();
     dna->saveText (cout);
   }
