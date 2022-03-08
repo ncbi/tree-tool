@@ -52,6 +52,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("table1", "tsv-table");
   	  addPositional ("table2", "tsv-table");
+  	  addKey ("syn", TextTable::syn_format);
   	  addFlag ("left", "SQL left join");
   	  addFlag ("remove", "Remove the rows from <table1> which are in <table2>");
   	  addKey ("common", "Output file to print common columns");
@@ -63,6 +64,7 @@ struct ThisApplication : Application
 	{
 		const string tab1FName   = getArg ("table1");
 		const string tab2FName   = getArg ("table2");
+		const string synFName    = getArg ("syn");
 		const bool   leftjoin    = getFlag ("left");
     const bool   remove      = getFlag ("remove");  
     const string commonFName = getArg ("common");
@@ -70,10 +72,10 @@ struct ThisApplication : Application
     QC_IMPLY (remove, ! leftjoin);
 		
 
-    const TextTable t1 (tab1FName);
+    const TextTable t1 (tab1FName, synFName);
     t1. qc ();    
     
-    const TextTable t2 (tab2FName);
+    const TextTable t2 (tab2FName, synFName);
     t2. qc ();    
     
     StringVector commonCols;
