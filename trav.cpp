@@ -213,10 +213,10 @@ struct ThisApplication : Application
       StringVector subitems;  
   	  while (gen->next (item))
       {
-        trim (item);
+        if (! tsv)
+          trim (item);
         if (item. empty ())
           continue;
-        //throw runtime_error ("Empty item");
         
         ASSERT (gen->prog. n);
         const size_t n = gen->prog. n - (zero ? 1 : 0);
@@ -228,13 +228,6 @@ struct ThisApplication : Application
   	      throw runtime_error ("Item contains an ASCII 127 (DEL) character");
   	    replace (item, '%', delChar);
   	      
-  	  #if 0
-        // Preparing item for using it in a shell command
-        FOR_REV (size_t, i, item. size ())
-          if (item [i] == '\\')
-          	item. replace (i, 0, "\\");
-      #endif
-
         string thisCmd (cmd);
         replaceStr (thisCmd, "%f", item);
         replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
@@ -245,9 +238,16 @@ struct ThisApplication : Application
           subitems. clear ();
           if (tsv)
           {
+          #ifndef NDEBUG
+            const size_t colNum = strCountSet (item, "\t") + 1;
+          #endif
             string s (item);
+            const bool lastEmpty = isRight (item, "\t");
             while (! s. empty ())
               subitems << findSplit (s, '\t');
+            if (lastEmpty)
+              subitems << string ();
+            ASSERT (subitems. size () == colNum);
           }
           else
           {
@@ -265,8 +265,8 @@ struct ThisApplication : Application
           FFOR (size_t, i, subitems. size ())
           {
             const string numS (to_string (i + 1));
-            const bool longS = numS. size () > 1;
-            replaceStr (thisCmd, string ("%") + (longS ? "{" : "") + numS + (longS ? "}" : ""), subitems [i]); 
+            const bool longP = numS. size () > 1;
+            replaceStr (thisCmd, string ("%") + (longP ? "{" : "") + numS + (longP ? "}" : ""), subitems [i]); 
           }
         }        
 
