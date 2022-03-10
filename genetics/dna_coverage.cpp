@@ -244,7 +244,7 @@ void reportSubjects (const string &qseqid,
           /* 3*/ << '\t' << qlen
           /* 4*/ << '\t' << qcoverage                
           /* 5*/ << '\t' << double (qcoverage) / double (qlen) * 100.0;
-        if (verbose ())
+      //if (verbose ())
           cout 
             /* 6*/ << '\t' << length_sum                  
             /* 7*/ << '\t' << nident_sum;
@@ -252,7 +252,7 @@ void reportSubjects (const string &qseqid,
           /* 8*/ << '\t' << double (nident_sum) / double (length_sum) * 100.0;
         if (! subjectName. empty ())
           cout /* 9 */ << '\t' << subjectName;
-        if (verbose ())
+      //if (verbose ())
           cout 
             /*10*/ << '\t' << slen_sum
             /*11*/ << '\t' << scoverage_sum;
@@ -404,14 +404,14 @@ all: report all covered segments", "all");
         {    
           cout << "qseqid\tqtitle\tqlen\tqcoverage\tpqcoverage";
             //     1       2       3     4          5        
-          if (verbose ())
+        //if (verbose ())
             cout << "\talign_length\tnident";
               //       6             7  
           cout  << "\tpident";  // 8
           if (! subjectName. empty ())
             cout << "\tsubject";
               //       9
-          if (verbose ())
+        //if (verbose ())
             cout << "\tslen\tscoverage";
               //       10     11
           cout << "\tpscoverage\tscontigs";  
