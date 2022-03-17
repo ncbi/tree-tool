@@ -51,7 +51,98 @@ namespace
 {
 	
 
+bool aa = false;
+bool unknown_strand = false;
+bool global = false;
+size_t match_len_min = 0;
+bool blosum62 = false;
+bool mismatch_frac = false;
+Real power = 0.0;
+Real coeff = 0.0;
+
 const string attrName ("dissim");
+
+
+
+struct Match
+{
+  // Input
+  size_t row {no_index};
+  size_t col {no_index};
+  const VectorOwn<Seq>* seqs {nullptr};
+  // Output
+  Real dissim {NaN};
+  Real score {NaN};
+  Real self_score1 {NaN};
+  Real self_score2 {NaN};
+  
+  
+  Match (size_t row_arg,
+         size_t col_arg,
+         const VectorOwn<Seq> &seqs_arg)
+    : row (row_arg)
+    , col (col_arg)
+    , seqs (& seqs_arg)
+    { ASSERT (row < seqs->size ());
+      ASSERT (col < seqs->size ());
+    }
+    
+    
+  void process ()
+    {
+	    const Seq* seq1 = (*seqs) [row];
+	    const Seq* seq2 = (*seqs) [col];
+	    ASSERT (seq1);
+	    ASSERT (seq2);
+	    IMPLY (! aa, seq1->asDna ());
+	    IMPLY (aa, seq1->asPeptide ());
+	    IMPLY (! aa, seq2->asDna ());
+	    IMPLY (aa, seq2->asPeptide ());
+	    unique_ptr<const Align_sp::Align> align;
+	    if (const Dna* dna1 = seq1->asDna ())
+	    {
+				align. reset (new Align_sp::Align (*dna1, * seq2->asDna (), ! global, match_len_min, 0));
+				if (unknown_strand)
+				{
+				  unique_ptr<Dna> dna2 (seq2->asDna () -> copy ());
+				  dna2->reverse ();
+				  unique_ptr<Align_sp::Align> align1 (new Align_sp::Align (*dna1, *dna2, ! global, match_len_min, 0));
+				  if (align1->getMinEditDistance () < align->getMinEditDistance ())
+				    align. reset (align1. release ());
+				}
+		  }
+			else if (const Peptide* pep1 = seq1->asPeptide ())
+				align. reset (new Align_sp::Align (*pep1, * seq2->asPeptide (), ! global, match_len_min, blosum62));
+			else
+				ERROR;
+			ASSERT (align. get ());
+			const Real dissim_raw = mismatch_frac
+			                          ? align->getMismatchFrac ()
+			                          : /*aa 
+			                             ? align->getDissim ()   // Can be NaN
+			                             :*/ align->getMinEditDistance ();
+			dissim = coeff * pow (dissim_raw, power);
+			score = align->score;
+			self_score1 = align->self_score1;
+			self_score2 = align->self_score2;
+    }
+};
+
+
+
+
+void runMatches (size_t from,
+                 size_t to,
+                 Notype /*&res*/,
+                 Vector<Match> &matches)
+{
+  Progress prog (to - from);  
+  FOR_START (size_t, i, from, to)
+  {
+    prog ();
+    matches [i]. process ();
+  }
+}
 
 
 
@@ -64,13 +155,14 @@ struct ThisApplication : Application
   	  // Input
   	  addPositional ("Multi_FASTA", "Multi-FASTA file with DNA or protein sequences");
   	  addFlag ("aa", "Amino-acid (protein) sequences, otherwise DNA");
+  	  addFlag ("unknown_strand", "DNA strand is unknown");
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addFlag ("blosum62", "Use BLOSUM62, otherwise PAM30");
   	  addFlag ("mismatch_frac", "Distance is mismatch fraction");
   	  addKey ("power", "Raise raw dissimilarity to this power", "1");
   	  addKey ("coeff", "Multiply raw dissimilarity by this coefficient", "1");
-  	  addKey("class", "File with classes of the sequencess (in the same order as Multi_FASTA)");
+  	  addKey ("class", "File with classes of the sequencess (in the same order as Multi_FASTA)");
   	  // Output
   	  addKey ("dataset", "Output dataset file with dissimilarity matrix without " + dmSuff);  
     }
@@ -81,16 +173,17 @@ struct ThisApplication : Application
   {
 	  const string inFName       =               getArg ("Multi_FASTA");
 	  const string dsFName       =               getArg ("dataset");
-	  const bool aa              =               getFlag ("aa");
-	  const bool global          =               getFlag ("global");
-	        size_t match_len_min = str2<size_t> (getArg ("match_len_min"));
-	  const bool blosum62        =               getFlag ("blosum62");
-	  const bool mismatch_frac   =               getFlag ("mismatch_frac");
-	  const Real power           = str2real     (getArg ("power"));
-	  const Real coeff           = str2real     (getArg ("coeff"));
+	             aa              =               getFlag ("aa");
+	             unknown_strand  =               getFlag ("unknown_strand");
+	             global          =               getFlag ("global");
+	             match_len_min   = str2<size_t> (getArg ("match_len_min"));
+	             blosum62        =               getFlag ("blosum62");
+	             mismatch_frac   =               getFlag ("mismatch_frac");
+	             power           = str2real     (getArg ("power"));
+	             coeff           = str2real     (getArg ("coeff"));
 	  const string classF        =               getArg ("class");
-    QC_ASSERT (power > 0);
-    QC_ASSERT (coeff > 0);
+    QC_ASSERT (power > 0.0);
+    QC_ASSERT (coeff > 0.0);
     
     if (global)
     	match_len_min = 0;
@@ -99,6 +192,7 @@ struct ThisApplication : Application
     		throw runtime_error ("match_len_min cannot be 0 for a semiglobal alignment");    		
 
     QC_ASSERT (! (blosum62 && mismatch_frac));
+    QC_IMPLY (unknown_strand, ! aa);
 
 
     Dataset ds;  
@@ -158,50 +252,33 @@ struct ThisApplication : Application
     }
 
 	  auto dissimAttr = new PositiveAttr2 (attrName, ds, 6);  // PAR
+
+    Vector<Match> matches;  matches. reserve (seqs. size () * (seqs. size () - 1) / 2);
+	  FFOR (size_t, row, seqs. size ())
 	  {
-		  Progress prog;
-		  FFOR (size_t, row, seqs. size ())
-		  {
-		    const Seq* seq1 = seqs [row];
-		    ASSERT (seq1);
-		  	prog (seq1->getId ());
-		    IMPLY (! aa, seq1->asDna ());
-		    IMPLY (aa, seq1->asPeptide ());
-		  	dissimAttr->matr. put (false, row, row, 0);
-		    FFOR_START (size_t, col, row + 1, seqs. size ())
-		    {
-			    const Seq* seq2 = seqs [col];
-			    ASSERT (seq2);
-			    IMPLY (! aa, seq2->asDna ());
-			    IMPLY (aa, seq2->asPeptide ());
-			    unique_ptr<const Align_sp::Align> align;
-			    if (const Dna* dna1 = seq1->asDna ())
-						align. reset (new Align_sp::Align (*dna1, * seq2->asDna (),     ! global, match_len_min, 0));
-					else if (const Peptide* pep1 = seq1->asPeptide ())
-						align. reset (new Align_sp::Align (*pep1, * seq2->asPeptide (), ! global, match_len_min, blosum62));
-					else
-						ERROR;
-					ASSERT (align. get ());
-					const Real dissim_raw = mismatch_frac
-					                          ? align->getMismatchFrac ()
-					                          : /*aa 
-					                             ? align->getDissim ()   // Can be NaN
-					                             :*/ align->getMinEditDistance ();
-					const Real dissim = coeff * pow (dissim_raw, power);
-					if (dsFName. empty ())
-						cout         << seq1->getId ()
-						     << '\t' << seq2->getId ()
-						     << '\t' << dissim
-						     << '\t' << align->score
-						     << '\t' << align->self_score1
-						     << '\t' << align->self_score2
-						     << endl;
-					else
-  				  dissimAttr->matr. putSymmetric (row, col, dissim); 
-		    }
-		  }
-		}
+	  	dissimAttr->matr. put (false, row, row, 0.0);
+	    FFOR_START (size_t, col, row + 1, seqs. size ())
+	      matches << Match (row, col, seqs);
+	  }
 		
+    matches. randomOrder ();
+    vector<Notype> notypes;
+	  arrayThreads (false, runMatches, matches. size (), notypes, ref (matches));
+
+	  for (const Match& m : matches)
+    {
+			if (dsFName. empty ())
+				cout         << seqs [m. row] -> getId ()
+				     << '\t' << seqs [m. col] -> getId ()
+				     << '\t' << m. dissim
+				     << '\t' << m. score
+				     << '\t' << m. self_score1
+				     << '\t' << m. self_score2
+				     << endl;
+			else
+			  dissimAttr->matr. putSymmetric (m. row, m. col, m. dissim); 
+    }
+
 		if (! dsFName. empty ())
 		{
 	    OFStream os ("", dsFName, dmExt); 
