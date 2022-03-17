@@ -390,7 +390,8 @@ all: report all covered segments", "all");
       throw runtime_error ("Unknown mode: " + strQuote (modeS));
     ASSERT (mode != Mode::none);
       
-    QC_IMPLY (force, mode == Mode::combine);
+    if (force && mode != Mode::combine)
+      throw runtime_error ("-force requires 'combine'");      
               
     
     // Header
