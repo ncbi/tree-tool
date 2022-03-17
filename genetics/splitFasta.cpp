@@ -59,6 +59,7 @@ struct ThisApplication : Application
   	  addFlag ("aa", "Multi-FASTA file contains protein sequences, otherwise DNA sequences");
   	  addFlag ("sparse", "Sparse sequence");
   	  addKey ("len_min", "Minimum sequence length", "0");
+		  addFlag ("whole", "Sequence identifiers are whole strings which should not be split by '|'");
     #ifndef _MSC_VER
   	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	#endif
@@ -73,6 +74,7 @@ struct ThisApplication : Application
 		const bool   aa      = getFlag ("aa");
 		const bool   sparse  = getFlag ("sparse");
 		const size_t len_min = (size_t) arg2uint ("len_min");
+	  const bool   whole   = getFlag ("whole");
   #ifndef _MSC_VER
 		const bool   large   = getFlag ("large");
   #endif
@@ -94,7 +96,8 @@ struct ThisApplication : Application
 		    	continue;
         string s (seq->name);
         s = findSplit (s);
-        s = findSplit (s, '|');
+        if (! whole)
+          s = findSplit (s, '|');
         string dir (out_dir);
       #ifndef _MSC_VER
         if (large)
