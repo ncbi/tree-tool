@@ -1,34 +1,42 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 4 ]; then
+if [ $# -ne 5 ]; then
   echo "Create a phylogenetic tree from a FASTA files"
   echo "#1: FASTA"
   echo "#2: #1 is proteins (1/0)"
-  echo "#3: global alignment (0/1)"
-  echo "#4: output tree"
+  echo "#3: DNA strand is known (0/1)"
+  echo "#4: global alignment (0/1)"
+  echo "#5: output tree"
   exit 1
 fi
 FASTA=$1
 PROT=$2
-GLOB=$3
-TREE=$4
+KNOWN_STRAND=$3
+GLOB=$4
+TREE=$5
 
 
 TMP=`mktemp`
 
 
 section "Computing dissimilarities"
-GLOB_PAR=""
+
+PAR=""
 if [ $GLOB == 1 ]; then
-  GLOB_PAR="-global"
+  PAR="-global"
 fi
+if [ $KNOWN_STRAND == 0 ]; then
+  PAR="$PAR -unknown_strand"
+fi
+
 # PAR
 if [ $PROT == 1 ]; then
-  $THIS/../dissim/fasta2dissim  $FASTA  $GLOB_PAR  -aa  -blosum62  -power 0.5  -dataset $TMP  
+  $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -aa  -blosum62  -power 0.5  -dataset $TMP  
 else
-  $THIS/../dissim/fasta2dissim  $FASTA  $GLOB_PAR  -dataset $TMP  
+  $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $TMP  
 fi
+
 
 section "Builing tree"
 # PAR
