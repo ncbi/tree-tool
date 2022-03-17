@@ -58,27 +58,45 @@ struct ThisApplication : Application
 	{
 	  version = VERSION;
 	  addPositional ("input_tree", "File with the tree and arc lengths");
+	  addFlag ("discern", "Print discernible objects");
 	}
 
 
 
 	void body () const final
   {
-		const string input_tree = getArg ("input_tree");
+		const string input_tree  = getArg ("input_tree");
+		const bool   discernible = getFlag ("discern");
 				
     
     const DistTree tree (input_tree, string (), string (), string ()); 
     tree. qc (); 
     
+    Set<string> repr;
     for (const auto& it : tree. name2leaf)
     {
       const Leaf* leaf = it. second;
-      if (! leaf->discernible)
+      if (discernible)
       {
-        const string s1 (leaf->name);
-        const string s2 (static_cast <const DTNode*> (leaf->getParent ()) -> getFirstDecendant () -> getName ());
-        cout << s1 << '\t' << s2 << endl;
+        if (leaf->discernible)
+          cout << leaf->name << endl;
+        else
+        {
+          string s (static_cast <const DTNode*> (leaf->getParent ()) -> getFirstDecendant () -> getName ());
+          if (! repr. contains (s))
+          {
+            cout << s << endl;
+            repr << move (s);
+          }
+        }
       }
+      else
+        if (! leaf->discernible)
+        {
+          const string s1 (leaf->name);
+          const string s2 (static_cast <const DTNode*> (leaf->getParent ()) -> getFirstDecendant () -> getName ());
+          cout << s1 << '\t' << s2 << endl;
+        }
     }
 	}
 };
