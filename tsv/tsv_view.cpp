@@ -208,7 +208,7 @@ struct ThisApplication : Application
         {
           const NCAttr attr (A_BOLD);
           const NCBackground bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor"
+          const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor  m:(un)mark row  a:(un)mark all rows"
                            #ifndef NUM_P
                              "  #:numbers"
                            #endif
@@ -404,6 +404,16 @@ struct ThisApplication : Application
               }
               if (curIndex >= bottomIndex_max)
                 topIndex = curIndex - pageScroll;
+            }
+            break;
+          case 'm':
+            rowFound [curIndex] = ! rowFound [curIndex];
+            break;
+          case 'a':
+            {
+              const bool on = rowFound [0];
+              FFOR (size_t, i, rowFound. size ())
+                rowFound [i] = ! on;
             }
             break;
         #ifndef NUM_P
