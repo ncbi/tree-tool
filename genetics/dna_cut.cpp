@@ -113,6 +113,13 @@ struct ThisApplication : Application
                );
     if (! strand)
       dna->reverse ();
+    {
+      size_t start_human = start + 1;
+      size_t stop_human = stop;
+      if (! strand)
+        swap (start_human, stop_human);
+      dna->name = dna->getId () + ":" + to_string (start_human) + "-" + to_string (stop_human) + " " + dna->getDescription (false);
+    }
     dna->saveText (cout);
   }
 };
