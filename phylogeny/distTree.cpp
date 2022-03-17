@@ -1004,12 +1004,15 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
   size_t height = 0;  // From ancestor to *this
   const DTNode* ancestor = this;
   const DTNode* ancestor_prev = nullptr;
+  constexpr size_t depth_min = 3;  // PAR
+  constexpr Prob p_delta = 1.0 - 1e-2;  // PAR
+  Prob p = 1.0;
   // Time: ~ O(log^2(n))
   while (ancestor) 
   {
     descendants. clear ();
+    size_t searchDepth = sparsingDepth;
     {
-      size_t searchDepth = sparsingDepth;
       if (depth_max && height > depth_max)
       {
         const size_t dec = height - depth_max;
@@ -1018,11 +1021,24 @@ VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
         else
           searchDepth = 1;
       }
-      maximize<size_t> (searchDepth, 3);  // PAR
+      maximize<size_t> (searchDepth, depth_min);  
       ASSERT (searchDepth);
       ancestor->getDescendants (descendants, searchDepth, ancestor_prev);  
     }
     ASSERT (! descendants. empty ());
+    ASSERT (searchDepth >= depth_min);
+    if (searchDepth == depth_min)
+    {
+      descendants. randomOrder ();
+      p *= p_delta;
+      Rand rand (seed_global);
+      FFOR (size_t, i, descendants. size ())
+        if (rand. getProb () >= p)
+        {
+          descendants. eraseMany (i, descendants. size ());
+          break;
+        }
+    }
     {
       size_t added = 0;
       const VectorPtr<Leaf>* otherLeaves = nullptr;  // having a dissimilarity with *this where LCA = ancestor
