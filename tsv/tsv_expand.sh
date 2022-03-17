@@ -4,6 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "tsv_join: #1 + #2 -> #1"
   echo "create #1.bak"
+  echo "input: $PWD/.tsv-syn"
   echo "#1: tsv-file name 1"
   echo "#2: tsv-file name 2"
   echo "#3: tsv_join option: -left|-remove|''"
