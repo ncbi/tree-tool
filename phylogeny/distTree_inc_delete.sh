@@ -70,7 +70,11 @@ mv $DEL $INC/hist/delete.$VER
 
 
 section "QC"
-$INC/qc.sh 0
+$INC/qc.sh 0 > $INC/qc.out
+if [ -s $INC/qc.out ]; then
+  exit 1
+fi
+rm $INC/qc.out
 
 
 $THIS/distTree_inc_tree1_quality.sh $INC
