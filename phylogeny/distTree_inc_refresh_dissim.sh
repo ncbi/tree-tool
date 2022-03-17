@@ -22,12 +22,13 @@ section "Saving $INC/dissim to $INC/dissim.$VER"
 if [ -e $INC/dissim.$VER ]; then
   error "$INC/dissim.$VER exists"
 fi
+wc -l $INC/dissim
 cp $INC/dissim $INC/dissim.$VER
 gzip $INC/dissim.$VER &
 
 
 TMP=`mktemp`
-#echo $TMP
+echo $TMP
 
 
 section "Computing dissimilarity requests"
