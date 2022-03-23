@@ -26,21 +26,23 @@ PAR=""
 if [ $GLOB == 1 ]; then
   PAR="-global"
 fi
-if [ $KNOWN_STRAND == 0 ]; then
+if [ $PROT == 0 -a $KNOWN_STRAND == 0 ]; then
   PAR="$PAR -unknown_strand"
 fi
 
 # PAR
+VAR="linExp"
 if [ $PROT == 1 ]; then
   $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -aa  -blosum62  -power 0.5  -dataset $TMP  
 else
   $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $TMP  
+  VAR="pow  -variance_power 2"
 fi
 
 
-section "Builing tree"
+section "Building tree"
 # PAR
-$THIS/makeDistTree  -data $TMP  -dissim_attr "dissim"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TREE
+$THIS/makeDistTree  -data $TMP  -dissim_attr "dissim"  -variance $VAR  -optimize  -subgraph_iter_max 5  -output_tree $TREE  -threads 10
 
 
 rm $TMP*
