@@ -13,6 +13,7 @@ endif
 
 ALL=	\
   fixed2tsv \
+  tsv2insert \
   tsv_cat \
   tsv_comp \
   tsv_group \
@@ -33,6 +34,12 @@ fixed2tsv.o:  $(COMMON_HPP)
 fixed2tsvOBJS=fixed2tsv.o $(CPP_DIR)/common.o
 fixed2tsv:	$(fixed2tsvOBJS)
 	$(CXX) -o $@ $(fixed2tsvOBJS) $(LIBS)
+	$(ECHO)
+
+tsv2insert.o:  $(COMMON_HPP)  
+tsv2insertOBJS=tsv2insert.o $(CPP_DIR)/common.o
+tsv2insert:	$(tsv2insertOBJS)
+	$(CXX) -o $@ $(tsv2insertOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_cat.o:  $(COMMON_HPP)  
