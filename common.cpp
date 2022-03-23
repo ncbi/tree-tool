@@ -2156,7 +2156,7 @@ void TextTable::Header::qc () const
 TextTable::TextTable (const string &tableFName,
                       const string &columnSynonymsFName)
 : Named (tableFName)
-{
+{  
   {
     LineInput f (tableFName);
     if (! f. nextLine ())
