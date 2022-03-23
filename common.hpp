@@ -1185,6 +1185,14 @@ inline string shellQuote (string s)
   	return "\'" + s + "\'";
   }
 
+inline string trimExtension (const string &path)
+  {
+    const size_t pos = path. rfind ('.');
+    if (pos == string::npos)
+      return path;
+    return path. substr (0, pos);
+  }
+
 bool fileExists (const string &fName);
 
 inline void checkFile (const string &fName)
