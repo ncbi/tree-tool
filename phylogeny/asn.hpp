@@ -45,46 +45,6 @@ namespace Asn_sp
 {
 
 
-struct Asn : Root
-{
-	CharInput in;
-	  // ASN.1 text
-  string title;    
-  StringVector fDict;
-    // Index: feature id
-
-  // Current node
-  constexpr static const uint no_id {numeric_limits<uint>::max ()};
-  uint id {0};
-  uint parent {no_id};
-  StringVector features;
-    // size() = fDict.size()
-
-private:
-	Token last;
-public:
-    
-
-protected:
-  explicit Asn (const string &fName)
-		: in (fName, 100000)  // PAR
-		{}
-public:
-		
-		
-  void asnRead ();
-    // Invokes: processNode()
-  virtual void processNode () = 0;
-  bool expectTry (const string& text);
-  void expect (const string& text)
-    { if (! expectTry (text))
-      	in. error (strQuote (text));
-    }
-	void printFeatures (ostream &os) const;
-};
-
-
-
 }
 
 

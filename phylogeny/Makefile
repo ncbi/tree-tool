@@ -33,8 +33,8 @@ all:	\
 	tree2indiscern
 	
 
-asnt2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/asn.hpp $(DM_DIR)/numeric.hpp $(PHYL_DIR)/distTree.hpp 
-asnt2treeOBJS=asnt2tree.o $(DISTTREE_OBJ) $(PHYL_DIR)/asn.o
+asnt2tree.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(PHYL_DIR)/distTree.hpp 
+asnt2treeOBJS=asnt2tree.o $(DISTTREE_OBJ) 
 asnt2tree:	$(asnt2treeOBJS)
 	$(CXX) -o $@ $(asnt2treeOBJS) $(LIBS) 
 	$(ECHO)
