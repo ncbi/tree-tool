@@ -408,7 +408,7 @@ bool goodName (const string &name)
   if (name. back () == ' ')
     return false;
 
-  for (const char c : name)
+  for (const char c : name)  
     if (! printable (c))
       return false;
       
@@ -2144,7 +2144,7 @@ void TextTable::Header::qc () const
 {
   if (! qc_on)
     return;
-    
+
   Named::qc ();
     
   QC_IMPLY (scientific, numeric);
@@ -2287,7 +2287,7 @@ void TextTable::qc () const
       try { h. qc (); }
         catch (const exception &e)
         {
-          throw ("Header column #" + to_string (i + 1) + ": " + e. what ());
+          throw runtime_error ("Header column #" + to_string (i + 1) + ": " + e. what ());
         }
       v << h. name;
     }
