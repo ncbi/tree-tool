@@ -12,6 +12,7 @@ endif
 ############################### Programs ################################
 
 ALL=	\
+  csv2tab \
   fixed2tsv \
   tsv2insert \
   tsv_cat \
@@ -29,6 +30,12 @@ else
 endif
 
 
+
+csv2tab.o:  $(COMMON_HPP)  
+csv2tabOBJS=csv2tab.o $(CPP_DIR)/common.o
+csv2tab:  $(csv2tabOBJS)
+	$(CXX) -o $@ $(csv2tabOBJS) $(LIBS)
+	$(ECHO)
 
 fixed2tsv.o:  $(COMMON_HPP)  
 fixed2tsvOBJS=fixed2tsv.o $(CPP_DIR)/common.o

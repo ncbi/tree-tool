@@ -13,7 +13,6 @@ endif
 
 all:	\
   connectPairs \
-  csv2tab \
   effectiveSize \
   extractPairs \
   file2hash \
@@ -40,12 +39,6 @@ cpp_test.o: $(COMMON_HPP)
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
 cpp_test: $(cpp_testOBJS)
 	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS)
-	$(ECHO)
-
-csv2tab.o:  $(COMMON_HPP)  
-csv2tabOBJS=csv2tab.o $(CPP_DIR)/common.o
-csv2tab:  $(csv2tabOBJS)
-	$(CXX) -o $@ $(csv2tabOBJS) $(LIBS)
 	$(ECHO)
 
 effectiveSize.o:  $(COMMON_HPP)  

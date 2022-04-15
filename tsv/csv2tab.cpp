@@ -33,11 +33,11 @@
 
 
 #undef NDEBUG
-#include "common.inc"
+#include "../common.inc"
 
-#include "common.hpp"
+#include "../common.hpp"
 using namespace Common_sp;
-#include "version.inc"
+#include "../version.inc"
 
 
 
@@ -51,12 +51,14 @@ struct ThisApplication : Application
     {
       version = VERSION;
   	  addPositional ("in", "Text file");
+  	  addFlag ("tsv", "First line is a header");
   	}
 
 
 	void body () const final
 	{
-		const string in = getArg ("in");
+		const string in  = getArg ("in");
+		const bool   tsv = getFlag ("tsv");
 
 
     LineInput f (in, 1024 * 1024);  // PAR
@@ -64,6 +66,8 @@ struct ThisApplication : Application
     {
       if (contains (f. line, '\t'))
         throw runtime_error ("File contains tabs");
+      if (tsv && f. lineNum == 1)
+        cout << '#';
       bool quote = false;
       for (const char c : f. line)
         if (c == '\"')
