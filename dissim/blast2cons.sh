@@ -15,8 +15,8 @@ TMP=`mktemp`
 #echo $TMP 
 
 
-N1=`$THIS/../genetics/fasta2len $DNA1 | cut -f 2`
-N2=`$THIS/../genetics/fasta2len $DNA2 | cut -f 2`
+N1=`$THIS/../genetics/fasta2len $DNA1 -noprogress | cut -f 2`
+N2=`$THIS/../genetics/fasta2len $DNA2 -noprogress | cut -f 2`
 
 cp $DNA1 $TMP
 makeblastdb  -in $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null
