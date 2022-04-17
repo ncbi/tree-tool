@@ -2985,11 +2985,12 @@ struct Token : Root
 	          , eDouble
 	          , eDateTime
 	          };
+ // Valid if !empty()
 	Type type {eDelimiter};
 	string name;
 	  // eName => !empty(), printable()
 	  // eText => embracing quote's are removed
-	  // Valid if !empty()
+	  // eDilimiter => name.size() = 1
 	char quote {'\0'};
 	  // '\0': no quote
 	long long n {0};
@@ -3025,18 +3026,21 @@ struct Token : Root
 	  : type (eDelimiter)
 	  , name (1, delimiter_arg)
 	  {}
-	explicit Token (CharInput &in)
-	  { readInput (in); }
 	Token (CharInput &in,
-	       Type expected)
-    { readInput (in);
+	       bool dashInName)
+	  { readInput (in, dashInName); }
+	Token (CharInput &in,
+	       Type expected,
+	       bool dashInName)
+    { readInput (in, dashInName);
     	if (empty ())
  			  in. error ("No token", false); 
     	if (type != expected)
  			  in. error (type2str (type)); 
     }
 private:
-	void readInput (CharInput &in);  
+	void readInput (CharInput &in,
+	                bool dashInName);  
 public:
 	void qc () const override;
 	void saveText (ostream &os) const override;
@@ -3102,23 +3106,28 @@ struct TokenInput : Root
 {
 private:
   CharInput ci;
-  const char commentStart {'\0'};
+  const char commentStart;
+  const bool dashInName;
   Token last;
 public:
 
 
   explicit TokenInput (const string &fName,
                        char commentStart_arg = '\0',
+                       bool dashInName_arg = false,
                 	     size_t bufSize = 100 * 1024,
                        uint displayPeriod = 0)
     : ci (fName, bufSize, displayPeriod)
     , commentStart (commentStart_arg)
+    , dashInName (dashInName_arg)
     {}
   explicit TokenInput (istream &is_arg,
                        char commentStart_arg = '\0',
+                       bool dashInName_arg = false,
                        uint displayPeriod = 0)
     : ci (is_arg, displayPeriod)
     , commentStart (commentStart_arg)
+    , dashInName (dashInName_arg)
     {}
 
 

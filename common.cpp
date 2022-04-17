@@ -1741,7 +1741,8 @@ string CharInput::getLine ()
 
 // Token
 
-void Token::readInput (CharInput &in)
+void Token::readInput (CharInput &in,
+                       bool dashInName)
 {
 	ASSERT (empty ());
 
@@ -1806,7 +1807,7 @@ void Token::readInput (CharInput &in)
 	else if (isLetter (c))
 	{
 		type = eName;
-		while (! in. eof && isLetter (c))
+		while (! in. eof && (isLetter (c) || (dashInName && c == '-')))
 		{ 
 			name += c;
 			c = in. get (); 
@@ -1983,7 +1984,7 @@ Token TokenInput::get ()
     
   for (;;)  
   { 
-    Token t (ci);
+    Token t (ci, dashInName);
     if (t. empty ())
       break;
     if (! t. isDelimiter (commentStart))
@@ -2775,14 +2776,14 @@ JsonArray::JsonArray (CharInput& in,
   bool first = true;
   for (;;)
   {
-    Token token (in);
+    Token token (in, false);
     if (token. isDelimiter (']'))
       break;
     if (! first)
     {
       if (! token. isDelimiter (','))
         in. error ("\',\'");
-      token = Token (in);
+      token = Token (in, false);
     }
     parse (in, token, this, string());
     first = false;
@@ -2821,7 +2822,7 @@ JsonMap::JsonMap ()
 JsonMap::JsonMap (const string &fName)
 {
   CharInput in (fName);
-  const Token token (in);
+  const Token token (in, false);
   if (! token. isDelimiter ('{'))
     in. error ("Json file " + shellQuote (fName) + ": text should start with '{'", false);
   parse (in);
@@ -2836,24 +2837,24 @@ void JsonMap::parse (CharInput& in)
   bool first = true;
   for (;;)
   {
-    Token token (in);
+    Token token (in, false);
     if (token. isDelimiter ('}'))
       break;
     if (! first)
     {
       if (! token. isDelimiter (','))
         in. error ("\',\'");
-      token = Token (in);
+      token = Token (in, false);
     }
     if (   token. type != Token::eName
         && token. type != Token::eText
        )
       in. error ("name or text");
     string name (token. name);
-    const Token colon (in);
+    const Token colon (in, false);
     if (! colon. isDelimiter (':'))
       in. error ("\':\'");
-    token = Token (in);
+    token = Token (in, false);
     Json::parse (in, token, this, name);
     first = false;
   }
