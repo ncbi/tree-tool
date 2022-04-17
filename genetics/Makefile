@@ -12,7 +12,7 @@ endif
 
 all:	\
   asm_gap \
-	asn_grep \
+  asnt \
 	blastmat \
 	blastp_merge \
 	contig2read_coverage \
@@ -32,6 +32,7 @@ all:	\
 	fastaAddGi \
 	fastaDna2pairs \
 	findProt \
+	genbank_grep \
 	GeneMark2CDS \
 	hmm2prot \
 	hmm_tc1 \
@@ -70,10 +71,10 @@ asm_gap:	$(asm_gapOBJS)
 	$(CXX) -o $@ $(asm_gapOBJS) $(LIBS) 
 	$(ECHO)
 
-asn_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
-asn_grepOBJS=asn_grep.o $(CPP_DIR)/common.o $(GEN_DIR)/genbank_text.o
-asn_grep:	$(asn_grepOBJS)
-	$(CXX) -o $@ $(asn_grepOBJS) $(LIBS) 
+asnt.o:  $(COMMON_HPP) 
+asntOBJS=asnt.o $(CPP_DIR)/common.o
+asnt:	$(asntOBJS)
+	$(CXX) -o $@ $(asntOBJS) $(LIBS) 
 	$(ECHO)
 
 blastmat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
@@ -188,6 +189,12 @@ findProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 findProtOBJS=findProt.o $(SEQ_OBJ)
 findProt:	$(findProtOBJS)
 	$(CXX) -o $@ $(findProtOBJS) $(LIBS) 
+	$(ECHO)
+
+genbank_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
+genbank_grepOBJS=genbank_grep.o $(CPP_DIR)/common.o $(GEN_DIR)/genbank_text.o
+genbank_grep:	$(genbank_grepOBJS)
+	$(CXX) -o $@ $(genbank_grepOBJS) $(LIBS) 
 	$(ECHO)
 
 GeneMark2CDS.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
