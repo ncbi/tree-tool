@@ -1745,7 +1745,8 @@ string CharInput::getLine ()
 // Token
 
 void Token::readInput (CharInput &in,
-                       bool dashInName_arg)
+                       bool dashInName_arg,
+                       bool consecutiveQuotesInText)
 {
 	ASSERT (empty ());
 
@@ -1765,16 +1766,35 @@ void Token::readInput (CharInput &in,
 	{
 		type = eText;
 		quote = c;
+		bool prevQuote = false;  // Valid if consecutiveQuotesInText
 		for (;;)
 		{ 
 			c = in. get (); 
-			if (in. eof)
+			if (in. eof && (! consecutiveQuotesInText || ! prevQuote))
 		    in. error ("Text is not finished: end of file", false);
 			if (in. eol)
-		  //in. error ("ending quote", false);
 		    continue;
 			if (c == quote)
-				break;
+			{
+			  if (consecutiveQuotesInText)
+  			{
+  		    if (prevQuote)
+  		      prevQuote = false;
+  		    else
+  		    {
+  		      prevQuote = true;
+  		      continue;
+  		    }
+  		  }
+  		  else 
+  		    break;
+  		}
+		  else
+		    if (consecutiveQuotesInText && prevQuote)
+		    {
+		      in. unget ();
+		      break;
+		    }
 			name += c;
 		}
 	}
@@ -1846,7 +1866,7 @@ void Token::qc () const
   	QC_IMPLY (type != eText, ! contains (name, ' '));
     QC_IMPLY (type == eName || type == eDelimiter, quote == '\0');
     QC_IMPLY (dashInName, type == eName);
-    QC_ASSERT (! contains (name, quote));
+  //QC_ASSERT (! contains (name, quote));
     QC_IMPLY (type != eDouble, decimals == 0);
   	switch (type)
   	{ 
@@ -1989,7 +2009,7 @@ Token TokenInput::get ()
     
   for (;;)  
   { 
-    Token t (ci, dashInName);
+    Token t (ci, dashInName, consecutiveQuotesInText);
     if (t. empty ())
       break;
     if (! t. isDelimiter (commentStart))
@@ -2781,14 +2801,14 @@ JsonArray::JsonArray (CharInput& in,
   bool first = true;
   for (;;)
   {
-    Token token (in, false);
+    Token token (in, false, false);
     if (token. isDelimiter (']'))
       break;
     if (! first)
     {
       if (! token. isDelimiter (','))
         in. error ("\',\'");
-      token = Token (in, false);
+      token = Token (in, false, false);
     }
     parse (in, token, this, string());
     first = false;
@@ -2827,7 +2847,7 @@ JsonMap::JsonMap ()
 JsonMap::JsonMap (const string &fName)
 {
   CharInput in (fName);
-  const Token token (in, false);
+  const Token token (in, false, false);
   if (! token. isDelimiter ('{'))
     in. error ("Json file " + shellQuote (fName) + ": text should start with '{'", false);
   parse (in);
@@ -2842,24 +2862,24 @@ void JsonMap::parse (CharInput& in)
   bool first = true;
   for (;;)
   {
-    Token token (in, false);
+    Token token (in, false, false);
     if (token. isDelimiter ('}'))
       break;
     if (! first)
     {
       if (! token. isDelimiter (','))
         in. error ("\',\'");
-      token = Token (in, false);
+      token = Token (in, false, false);
     }
     if (   token. type != Token::eName
         && token. type != Token::eText
        )
       in. error ("name or text");
     string name (token. name);
-    const Token colon (in, false);
+    const Token colon (in, false, false);
     if (! colon. isDelimiter (':'))
       in. error ("\':\'");
-    token = Token (in, false);
+    token = Token (in, false, false);
     Json::parse (in, token, this, name);
     first = false;
   }

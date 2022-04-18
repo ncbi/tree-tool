@@ -3031,12 +3031,14 @@ struct Token : Root
 	  , name (1, delimiter_arg)
 	  {}
 	Token (CharInput &in,
-	       bool dashInName_arg)
-	  { readInput (in, dashInName_arg); }
+	       bool dashInName_arg,
+	       bool consecutiveQuotesInText)
+	  { readInput (in, dashInName_arg, consecutiveQuotesInText); }
 	Token (CharInput &in,
 	       Type expected,
-	       bool dashInName_arg)
-    { readInput (in, dashInName_arg);
+	       bool dashInName_arg,
+	       bool consecutiveQuotesInText)
+    { readInput (in, dashInName_arg, consecutiveQuotesInText);
     	if (empty ())
  			  in. error ("No token", false); 
     	if (type != expected)
@@ -3044,7 +3046,8 @@ struct Token : Root
     }
 private:
 	void readInput (CharInput &in,
-	                bool dashInName_arg);  
+	                bool dashInName_arg,
+	                bool consecutiveQuotesInText);  
 public:
 	void qc () const override;
 	void saveText (ostream &os) const override;
@@ -3112,6 +3115,8 @@ private:
   CharInput ci;
   const char commentStart;
   const bool dashInName;
+  const bool consecutiveQuotesInText;
+    // Two quotes encode one quote
   Token last;
 public:
 
@@ -3119,19 +3124,23 @@ public:
   explicit TokenInput (const string &fName,
                        char commentStart_arg = '\0',
                        bool dashInName_arg = false,
+                       bool consecutiveQuotesInText_arg = false,
                 	     size_t bufSize = 100 * 1024,
                        uint displayPeriod = 0)
     : ci (fName, bufSize, displayPeriod)
     , commentStart (commentStart_arg)
     , dashInName (dashInName_arg)
+    , consecutiveQuotesInText (consecutiveQuotesInText_arg)
     {}
   explicit TokenInput (istream &is_arg,
                        char commentStart_arg = '\0',
                        bool dashInName_arg = false,
+                       bool consecutiveQuotesInText_arg = false,
                        uint displayPeriod = 0)
     : ci (is_arg, displayPeriod)
     , commentStart (commentStart_arg)
     , dashInName (dashInName_arg)
+    , consecutiveQuotesInText (consecutiveQuotesInText_arg)
     {}
 
 

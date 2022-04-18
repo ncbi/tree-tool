@@ -56,7 +56,6 @@ struct Item : Root
   StringVector names;
     // !empty()
   unique_ptr<Value> value;
-    // (bool)get()
     
 
   Item (TokenInput &in,
@@ -126,7 +125,7 @@ public:
     
 
   explicit Asn (const string &fName)
-		: in (fName, '\0', true)  		  
+		: in (fName, '\0', true, true)  		  
 		{ Unverbose unv;
 		  const Token titleToken (in. get ());
 		  QC_ASSERT (titleToken. type == Token::eName);
@@ -176,8 +175,8 @@ Item::Item (TokenInput &in,
           case '}':
             if (! value. get ())
             {
-              QC_ASSERT (names. size () >= 2);
-              value. reset (new Value (names. pop ()));
+              if (names. size () >= 2)
+                value. reset (new Value (names. pop ()));
             }
             followingDelimiter = t. name [0];
             break;
@@ -192,7 +191,8 @@ Item::Item (TokenInput &in,
               if (delimiterChar == '\0')
               {
                 const Token delimiter (in. get ());
-                QC_ASSERT (delimiter. type == Token::eDelimiter);
+                if (delimiter. type != Token::eDelimiter)
+                  in. error ("delimiter");
                 delimiterChar = delimiter. name [0];
               }
               if (delimiterChar == ',')
@@ -225,8 +225,8 @@ void Item::qc () const
 { 
   if (! qc_on)
     return;
-  QC_ASSERT (value. get ());
-  value->qc ();
+  if (value. get ())
+    value->qc ();
 }
 
 
@@ -246,6 +246,8 @@ void Item::saveText (ostream &os) const
 void Item::names2values (const StringVector &names_arg,
                          VectorPtr<Value> &res) const
 { 
+  if (! value. get ())
+    return;
   if (names == names_arg)
     res << value. get ();
   if (value->t. empty ())
@@ -263,7 +265,7 @@ struct ThisApplication : Application
   ThisApplication ()
     : Application ("Parse a text ASN.1 file.\n\
 <ASN.1> ::= <name> \"::=\" <node>\n\
-<node> ::= <name>* <value>\n\
+<node> ::= <name>* [<value>]\n\
 <value> ::= <name | \"<text>\" | <number> | '<hex_text>'H | { <nodes> }\n\
 <nodes> ::= <node> | <nodes>, <node>\n\
 ")
@@ -279,7 +281,7 @@ struct ThisApplication : Application
   {
     const string inFName = getArg ("in");
     const StringVector names (getArg ("names"), ' ', true);
-
+    
     const Asn asn (inFName);
     asn. qc ();
     if (verbose ())

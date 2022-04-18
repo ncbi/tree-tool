@@ -189,7 +189,7 @@ private:
 public:
   static Data* load (const string &fName)
     { unique_ptr<Xml_sp::Data> f;
-  	  { TokenInput ti (fName, '\0', false, 100 * 1024, 1000);  // PAR 
+  	  { TokenInput ti (fName, '\0', false, false, 100 * 1024, 1000);  // PAR 
         try 
           { f. reset (new Xml_sp::Data (ti));	}
         catch (const CharInput::Error &e)
