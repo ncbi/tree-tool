@@ -435,14 +435,17 @@ string pad (const string &s,
 
 
 
-bool isIdentifier (const string& name)
+bool isIdentifier (const string& name,
+                   bool dashInName)
 {
   if (name. empty ())
     return false;
   if (isDigit (name [0]))
     return false;
+  if (dashInName && name [0] == '-')
+    return false;
   for (const char c : name)
-    if (! isLetter (c))
+    if (! isLetter (c) && (! dashInName || c != '-'))
       return false;
   return true;
 }
@@ -1742,7 +1745,7 @@ string CharInput::getLine ()
 // Token
 
 void Token::readInput (CharInput &in,
-                       bool dashInName)
+                       bool dashInName_arg)
 {
 	ASSERT (empty ());
 
@@ -1807,6 +1810,7 @@ void Token::readInput (CharInput &in,
 	else if (isLetter (c))
 	{
 		type = eName;
+		dashInName = dashInName_arg;
 		while (! in. eof && (isLetter (c) || (dashInName && c == '-')))
 		{ 
 			name += c;
@@ -1841,11 +1845,12 @@ void Token::qc () const
   	QC_IMPLY (type != eText, ! name. empty ());
   	QC_IMPLY (type != eText, ! contains (name, ' '));
     QC_IMPLY (type == eName || type == eDelimiter, quote == '\0');
+    QC_IMPLY (dashInName, type == eName);
     QC_ASSERT (! contains (name, quote));
     QC_IMPLY (type != eDouble, decimals == 0);
   	switch (type)
   	{ 
-  		case eName:      if (! isIdentifier (name))
+  		case eName:      if (! isIdentifier (name, dashInName))
   		                   throw runtime_error ("Not an identifier: " + strQuote (name));
   		                 break;
   	  case eText:      break;

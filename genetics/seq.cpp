@@ -4489,7 +4489,7 @@ void Mutation::qc () const
   if (! qc_on)
     return;
     
-  QC_IMPLY (! geneName. empty (), isIdentifier (geneName));
+  QC_IMPLY (! geneName. empty (), isIdentifier (geneName, false));
   QC_ASSERT (pos != no_index);
   
   if (prot)

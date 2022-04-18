@@ -191,7 +191,7 @@ void Schema::qc () const
   
   for (const auto& it : name2schema)
   {
-    QC_ASSERT (isIdentifier (it. first));
+    QC_ASSERT (isIdentifier (it. first, false));
     QC_ASSERT (it. second);
     schema2name (it. second);
     it. second->qc ();
@@ -530,7 +530,7 @@ void Data::qc () const
    
   try 
   {
-    QC_ASSERT (isIdentifier (name));
+    QC_ASSERT (isIdentifier (name, false));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
     QC_IMPLY (! token. name. empty (), goodName (token. name));

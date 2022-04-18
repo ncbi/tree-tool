@@ -1035,7 +1035,8 @@ string pad (const string &s,
 
 bool goodName (const string &name);
 
-bool isIdentifier (const string& name);
+bool isIdentifier (const string& name,
+                   bool dashInName);
 
 void strUpper (string &s);
 
@@ -2987,6 +2988,7 @@ struct Token : Root
 	          };
  // Valid if !empty()
 	Type type {eDelimiter};
+	bool dashInName {false};
 	string name;
 	  // eName => !empty(), printable()
 	  // eText => embracing quote's are removed
@@ -3004,8 +3006,10 @@ struct Token : Root
 
 	  
 	Token () = default;
-	explicit Token (const string& name_arg)
+	Token (const string& name_arg,
+	       bool dashInName_arg)
 	  : type (eName)
+	  , dashInName (dashInName_arg)
 	  , name (name_arg)
 	  {}
 	Token (const string& name_arg,
@@ -3027,12 +3031,12 @@ struct Token : Root
 	  , name (1, delimiter_arg)
 	  {}
 	Token (CharInput &in,
-	       bool dashInName)
-	  { readInput (in, dashInName); }
+	       bool dashInName_arg)
+	  { readInput (in, dashInName_arg); }
 	Token (CharInput &in,
 	       Type expected,
-	       bool dashInName)
-    { readInput (in, dashInName);
+	       bool dashInName_arg)
+    { readInput (in, dashInName_arg);
     	if (empty ())
  			  in. error ("No token", false); 
     	if (type != expected)
@@ -3040,7 +3044,7 @@ struct Token : Root
     }
 private:
 	void readInput (CharInput &in,
-	                bool dashInName);  
+	                bool dashInName_arg);  
 public:
 	void qc () const override;
 	void saveText (ostream &os) const override;
