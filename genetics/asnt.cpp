@@ -62,7 +62,12 @@ struct Item : Root
   Item (TokenInput &in,
         char &followingDelimiter);
     // Output: followingDelimiter: '\0' | ',' | '}'
+  void qc () const final;
   void saveText (ostream &os) const final;
+  
+  
+  void names2values (const StringVector &names_arg,
+                     VectorPtr<Value> &res) const;
 };
 
 
@@ -70,18 +75,26 @@ struct Item : Root
 struct Value : Root
 {
   Token t;
-    // t.type = eText && t.quote = '\'' then hexadecimal
+    // t.type = eText && t.quote = '\'' then hexadecimal and followed by 'H'
   Vector<Item> items;
-    // !empty() => t.empty()
+  // t.empty() || items.empty()
 
 
   explicit Value (const string &s)
-    : t (Token (s))
+    : t (Token (s, true))
     {}
   explicit Value (Token &&t_arg)
     : t (move (t_arg))
     {}
   Value () = default;
+  void qc () const final
+    { if (! qc_on)
+        return;
+      QC_ASSERT (t. empty () == ! items. empty ());
+      t. qc ();  
+      for (const Item& item : items)
+        item. qc ();
+    }
   void saveText (ostream &os) const final
     { if (t. empty ())
       { os << '{';
@@ -106,7 +119,6 @@ struct Asn : Root
 private:
 	TokenInput in;
 	  // ASN.1 text
-	Token last;
 public:
   string title;    
 	unique_ptr<Item> item;
@@ -115,7 +127,8 @@ public:
 
   explicit Asn (const string &fName)
 		: in (fName, '\0', true)  		  
-		{ const Token titleToken (in. get ());
+		{ Unverbose unv;
+		  const Token titleToken (in. get ());
 		  QC_ASSERT (titleToken. type == Token::eName);
     	title = titleToken. name;
     	in. get (':');
@@ -124,6 +137,12 @@ public:
     	char followingDelimiter = '\0';
 		  item. reset (new Item (in, followingDelimiter));
 		}
+  void qc () const final
+    { if (! qc_on)
+        return;
+      QC_ASSERT (item. get ());
+      item->qc ();
+    }
   void saveText (ostream &os) const final
     { os << title << " ::= ";
       if (item. get ())
@@ -148,7 +167,6 @@ Item::Item (TokenInput &in,
       names << move (t. name);
     else
     {
-    //QC_ASSERT (! names. empty ());
       if (t. type == Token::eDelimiter)
       {
         ASSERT (t. name. size () == 1);
@@ -203,6 +221,16 @@ Item::Item (TokenInput &in,
 
 
 
+void Item::qc () const
+{ 
+  if (! qc_on)
+    return;
+  QC_ASSERT (value. get ());
+  value->qc ();
+}
+
+
+
 void Item::saveText (ostream &os) const 
 { 
   for (const string& s : names)
@@ -215,15 +243,34 @@ void Item::saveText (ostream &os) const
 
 
 
+void Item::names2values (const StringVector &names_arg,
+                         VectorPtr<Value> &res) const
+{ 
+  if (names == names_arg)
+    res << value. get ();
+  if (value->t. empty ())
+    for (const Item& item : value->items)
+      item. names2values (names_arg, res);
+}
+
+
+
+
 //
 
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Parse a text ASN.1 file")
+    : Application ("Parse a text ASN.1 file.\n\
+<ASN.1> ::= <name> \"::=\" <node>\n\
+<node> ::= <name>* <value>\n\
+<value> ::= <name | \"<text>\" | <number> | '<hex_text>'H | { <nodes> }\n\
+<nodes> ::= <node> | <nodes>, <node>\n\
+")
 	  {
       version = VERSION;
 	  	addPositional ("in", "Text ASN.1 file");
+	  	addPositional ("names", "Search node names"); 
 	  }
 
 
@@ -231,10 +278,24 @@ struct ThisApplication : Application
   void body () const final
   {
     const string inFName = getArg ("in");
-
+    const StringVector names (getArg ("names"), ' ', true);
 
     const Asn asn (inFName);
-    asn. saveText (cout);
+    asn. qc ();
+    if (verbose ())
+    {
+      asn. saveText (cout);
+      cout << endl;
+    }
+    QC_ASSERT (asn. item. get ());
+    
+    VectorPtr<Value> values;
+    asn. item->names2values (names, values);   
+    for (const Value* v : values)
+    {
+      v->saveText (cout);
+      cout << endl;
+    }
   }  
 };
 
