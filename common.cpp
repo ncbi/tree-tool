@@ -2028,17 +2028,107 @@ Token TokenInput::getXmlText ()
 
   Token t;
   t. charNum = ci. charNum;
+  size_t htmlTags = 0;
 	for (;;)
 	{ 
 	  char c = ci. get (); 
 		if (ci. eof)
 	    ci. error ("XML text is not finished: end of file", false);
 	  if (c == '<')
-	    break;
+	  {
+	    if (getNextChar () == '/')
+	    {
+	      if (htmlTags)
+	        htmlTags--;
+	      else
+	        break;
+	    }
+	    else
+	      htmlTags++;
+	  }
 	  if (isSpace (c))
 	    c = ' ';
 		t. name += c;
 	}
+	
+	trim (t. name);
+	if (! t. name. empty ())
+    t. type = Token::eText;  
+  else
+    { ASSERT (t. empty ()); }
+	
+  return t;
+}
+
+
+
+Token TokenInput::getXmlComment ()
+{ 
+  QC_ASSERT (last. empty ());
+
+  // Embedded comments ??
+
+  QC_ASSERT (ci. get () == '-');
+  QC_ASSERT (ci. get () == '-');
+
+  Token t;
+  t. charNum = ci. charNum;
+  array<char,4> lastChars {{'-', '-', '\0', '\0'}};
+  size_t i = 2; 
+	for (;;)
+	{ 
+	  char c = ci. get (); 
+		if (ci. eof)
+	    ci. error ("XML comment is not finished: end of file", false);
+	  QC_ASSERT (c);
+	  if (isSpace (c))
+	    c = ' ';
+
+    ASSERT (i < 4);
+    lastChars [i] = c;
+    i = (i + 1) % 4;
+    if (   lastChars [(i + 1) % 4] == '-'
+        && lastChars [(i + 2) % 4] == '-'
+        && lastChars [(i + 3) % 4] == '>'
+       )
+      break;
+      
+    if (lastChars [i])
+		  t. name += lastChars [i];
+	}
+	
+	trim (t. name);
+	if (! t. name. empty ())
+    t. type = Token::eText;  
+  else
+    { ASSERT (t. empty ()); }
+	
+  return t;
+}
+
+
+
+Token TokenInput::getXmlProcessingInstruction ()
+{ 
+  QC_ASSERT (last. empty ());
+  
+  // Embedded processing instructions ??
+
+  Token t;
+  t. charNum = ci. charNum;
+	for (;;)
+	{ 
+	  char c = ci. get (); 
+		if (ci. eof)
+	    ci. error ("XML comment is not finished: end of file", false);
+	  QC_ASSERT (c);
+	  if (isSpace (c))
+	    c = ' ';	    
+	  if (c == '?')
+	    break;
+    t. name += c;
+	}
+	get ('>');
 	
 	trim (t. name);
 	if (! t. name. empty ())
