@@ -3150,6 +3150,9 @@ public:
   Token get ();
     // Return: empty() <=> EOF
   Token getXmlText ();
+    // Last character read is '<'
+  Token getXmlComment ();
+  Token getXmlProcessingInstruction ();
   char getNextChar ();
     // Return: '\0' <=> EOF
     // Invokes: ci.unget()
