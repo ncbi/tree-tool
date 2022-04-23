@@ -59,12 +59,14 @@ struct Row
   bool found {false};
   NCurses::Color color {NCurses::colorNone};
 
+
   Row (const Xml_sp::Data *data_arg,
        size_t childNum_arg)
     : data (data_arg)
     , childNum (childNum_arg)
     , nodes (data->getNodes ())
     { ASSERT (data); }
+
 
   size_t getDepth () const
     { return data->getDepth (); }
@@ -76,7 +78,9 @@ struct Row
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("View an XML file")
+    : Application ("View an XML file.\n\
+At line ends: [<# children>|<# nodes in subtree>]\
+")
   	{
       version = VERSION;
   	  addPositional ("xml", "XML file");
@@ -91,9 +95,10 @@ struct ThisApplication : Application
 
 	  unique_ptr<const Xml_sp::Data> xml;
 	  {
-  	  TokenInput ti (xmlFName, '\0', false, false, 100 * 1024, 1000);  // PAR
+  	  TokenInput ti (xmlFName, '\0', true, false, 100 * 1024, 1000);  // PAR
       try
       {
+        Unverbose unv;
         xml. reset (new Xml_sp::Data (ti));
       }
       catch (const CharInput::Error &e)
@@ -103,6 +108,11 @@ struct ThisApplication : Application
     }
     ASSERT (xml. get ());
     xml->qc ();
+    if (verbose ())
+    {
+      Xml::File f (cout, false, false, "XML");
+      xml->saveXml (f);
+    }
 
 
     Vector<Row> rows;  rows. reserve (10000);  // PAR
