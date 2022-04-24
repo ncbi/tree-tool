@@ -53,7 +53,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("target", "Target XML file");
   	  addPositional ("query", "Query XML file");
-  	  addKey ("variable_tag", "Tag name indicating variables", "q");
+  	  addKey ("variable_tag", "Tag name in query indicating tsv-columns", "q");
   	}
   	
   	
@@ -63,6 +63,8 @@ struct ThisApplication : Application
 		const string targetFName = getArg ("target");
 		const string queryFName  = getArg ("query");
 		const string variableTag = getArg ("variable_tag");
+		
+		QC_ASSERT (! variableTag. empty ());
 	
 	
 	  unique_ptr<const Xml_sp::Data> target (Xml_sp::Data::load (targetFName));
@@ -76,27 +78,10 @@ struct ThisApplication : Application
       query->saveXml (f);
       cout << endl << endl;
     }
-    
-    const StringVector header (query->tagName2text (variableTag));
-    {
-      StringVector vec (header);
-      vec. sort ();
-      if (! vec. isUniq ())
-        throw runtime_error ("Variable tag names are not unique");
-    }
-    cout << '#' << header. toString ("\t") << endl;
-      
-    Vector<Pair<string>> output;  output. reserve (1000);  // PAR
-    target->unify (*query, variableTag, output);
-    
-    StringVector values (header. size ());
-    for (const Pair<string>& p : output)
-    {
-      const size_t i = header. indexOf (p. first);
-      ASSERT (i != no_index);
-      values [i] = p. second;
-    }
-    cout << values. toString ("\t") << endl;
+          
+    const TextTable tt (target->unify (*query, variableTag));
+    tt. qc ();
+    tt. saveText (cout);
 	}
 };
 

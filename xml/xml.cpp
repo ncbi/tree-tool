@@ -115,7 +115,7 @@ Schema::Schema (const Schema* parent_arg,
   ASSERT (isLeftBlank (vec [start], 2 * depth));
   
   istringstream iss (vec [start]);
-  TokenInput ti (iss);
+  TokenInput ti (iss, '\0', true);
   
   // name
   Token nameT (ti. get ());
@@ -397,6 +397,8 @@ void Schema::setFlatColumns (const Schema* curTable,
 // Data
 
 Data::Data (TokenInput &ti)
+: attribute (false)
+, colonInName (false)
 {
   ti. get ('<');
   ti. get ('?');
@@ -420,14 +422,34 @@ void Data::readInput (TokenInput &ti)
   ASSERT (children. empty ());
   ASSERT (token. empty ());
   
+  token = ti. get ();
+  if (! token. isDelimiter ('<'))
+  {
+    name = "word";  // convert to text ??
+    return;
+  }
+  else
+    token. clear ();
+
   // name, isEnd
-  ti. get ('<');
   {
     Token nameT (ti. get ());
     if (nameT. isDelimiter ('/'))
     {
       isEnd = true;
       nameT = move (ti. get ());
+    }
+    else if (nameT. isDelimiter ('!'))  
+    {
+      name = "!--";
+      token = move (ti. getXmlComment ());
+      return;
+    }
+    else if (nameT. isDelimiter ('?'))  
+    {
+      name = "ProcessingInstruction";
+      token = move (ti. getXmlProcessingInstruction ());
+      return;
     }
     if (nameT. type != Token::eName)
       ti. error ("Name");
@@ -450,16 +472,16 @@ void Data::readInput (TokenInput &ti)
     if (attr. type != Token::eName)
       ti. error ("Name");
     Token eq (ti. get ());
-    bool xmlAttr = false;
+    bool colonInName_arg = false;
     if (! eq. isDelimiter ('='))
     {
       QC_ASSERT (eq. isDelimiter (':'));
-      QC_ASSERT (isLeft (attr. name, "xml"));
+    //ASSERT (isLeft (attr. name, "xml"));
       Token attr1 (ti. get ());
       QC_ASSERT (attr1. type == Token::eName);
       attr. name += ":" + attr1. name;
       ti. get ('=');
-      xmlAttr = true;      
+      colonInName_arg = true;      
     }
     Token value (ti. get ());  
     if (value. type != Token::eText)
@@ -469,8 +491,7 @@ void Data::readInput (TokenInput &ti)
       if ((uchar) c >= 127)
         c = '?';
     value. toNumberDate ();
-    if (! xmlAttr)
-      children << new Data (this, move (attr. name), move (value));
+    children << new Data (this, true, colonInName_arg, move (attr. name), move (value));
   }
 
   if (isEnd)
@@ -522,6 +543,26 @@ void Data::readInput (TokenInput &ti)
 
 
 
+Data* Data::load (const string &fName)
+{ 
+  unique_ptr<Xml_sp::Data> f;
+  { 
+    TokenInput ti (fName, '\0', true, false, 100 * 1024, 1000);  // PAR 
+    try 
+      { f. reset (new Xml_sp::Data (ti));	}
+    catch (const CharInput::Error &e)
+      { throw e; }
+    catch (const exception &e)
+      { ti. error (e. what (), false); }
+    const Token t (ti. get ());
+    if (! t. empty ())
+      ti. error ("Token after the XML end: " + strQuote (t. str ()), false);
+  }
+  return f. release ();
+}
+
+
+
 void Data::qc () const
 {
   if (! qc_on)
@@ -530,13 +571,14 @@ void Data::qc () const
    
   try 
   {
-    QC_ASSERT (isIdentifier (name, false));
+    QC_IMPLY (colonInName, attribute);
+    QC_IMPLY (! colonInName, name == "!--" || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
     QC_IMPLY (! token. name. empty (), goodName (token. name));
     token. qc ();
-    QC_ASSERT (! Common_sp::contains (token. name, '<'));
-    QC_ASSERT (! Common_sp::contains (token. name, '>'));
+    QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
+    QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));
       // Other characters prohibited in XML ??
     for (const Data* child : children)
     {
@@ -570,6 +612,21 @@ void Data::saveXml (Xml::File &f) const
       valueTag. reset (new Xml::Tag (f, string ()));
     f << value;
   }
+}
+
+
+
+void Data::saveText (ostream &os) const 
+{
+  if (attribute)
+    return;
+  
+  for (const Data* child : children)
+    child->saveText (os);
+    
+  const string value (token. str ());
+  if (! value. empty ())
+    os << value << "; ";
 }
 
 
@@ -629,45 +686,114 @@ bool Data::find (VectorPtr<Data> &path,
 
 
 
-void Data::unify (const Data& query,
-                  const string &variableTagName,
-                  Vector<Pair<string>> &output) const
+TextTable Data::unify (const Data& query,
+                       const string &variableTagName) const
+{
+  const StringVector header (query. tagName2texts (variableTagName));
+  ASSERT (header. size () == query. columnTags);
+  if (header. empty ())  
+    throw runtime_error ("No variable tags");
+  {
+    StringVector vec (header);
+    vec. sort ();
+    if (! vec. isUniq ())
+      throw runtime_error ("Column names are not unique");
+  }
+
+  TextTable tt;
+  tt. pound = true;
+  for (const string& s : header)
+    tt. header << TextTable::Header (s);
+  tt. qc ();
+  
+  map<string,StringVector> tag2values;
+  unify_ (query, variableTagName, header. size (), tag2values, tt);
+  
+  return tt;
+}
+
+
+
+StringVector Data::tagName2texts (const string &tagName) const
+{ 
+  ASSERT (! tagName. empty ());
+  
+  StringVector vec;
+  if (name == tagName)
+  {
+    QC_ASSERT (parent);
+    QC_ASSERT (children. empty ());
+    vec << token. str ();
+  }
+  else
+    for (const Data* child : children)
+      vec << move (child->tagName2texts (tagName));
+
+  columnTags = vec. size ();
+
+  return vec;
+}
+
+
+
+bool Data::unify_ (const Data& query,
+                   const string &variableTagName,
+                   size_t columnTags_root,
+                   map<string,StringVector> &tag2values,
+                   TextTable &tt) const
 {
   ASSERT (! variableTagName. empty ());
   
-  if (query. name == variableTagName)
-    return;
   if (name != query. name)
-    return;
+    return false;
   if (   ! query. token. empty () 
       && ! (query. token == token)
      )
-    return;
+    return false;
     
-  if ((bool) query. name2child (variableTagName) == query. children. size ())
   {
-    const Data* targetData = this;
-    const Data* queryData = & query;
-    while (targetData)
+    map<string,StringVector> child_tag2values;
+    bool allFound = true;
+    for (const Data* queryChild : query. children)
+      if (queryChild->name != variableTagName)
+      {
+        bool found = false;
+        for (const Data* dataChild : children)
+          if (dataChild->unify_ (*queryChild, variableTagName, columnTags_root, child_tag2values, tt))
+            found = true;
+        if (! found)
+          allFound = false;
+      }
+    if (! allFound)
+      return (bool) query. columnTags;
+    for (const auto& it : child_tag2values)
+      tag2values [it. first] << it. second;
+  }
+  
+  if (const Data* columnData = query. name2child (variableTagName))
+  {    
+    Token t (token);
+    t. quote = '\0';
+    tag2values [columnData->token. str ()] << (t. empty () ? str () : t. str ());
+    if (verbose ())
     {
-      ASSERT (queryData);
-      ASSERT (targetData->name == queryData->name);
-      if (const Data* queryVar = queryData->name2child (variableTagName))
-        if (! targetData->token. empty ())
-        {
-          Token t (targetData->token);
-          t. quote = '\0';
-          output << move (Pair<string> (queryVar->token. str (), t. str ()));
-        }
-      targetData = targetData->parent;
-      queryData = queryData->parent;
+      PRINT (columnData->token. str ());
+      PRINT (t. empty () ? str () : t. str ());
     }
-    ASSERT (! queryData);
   }
     
-  for (const Data* child1 : children)
-    for (const Data* child2 : query. children)
-      child1->unify (*child2, variableTagName, output);
+  if (   query. columnTags == columnTags_root
+      && ! tag2values. empty ()
+     )
+  {
+    StringVector row (tt. header. size ());
+    for (const auto& it : tag2values)
+      row [tt. col2num (it. first)] = it. second. toString ("; ");
+    tt. rows << move (row);
+    tag2values. clear ();
+  }
+  
+  return true;
 }
 
 
@@ -695,8 +821,7 @@ Schema* Data::createSchema (bool storeTokens) const
     sch->types << token. type;
     if (storeTokens)
       sch->tokens << token;
-  //if (token. type == Token::eText)
-      sch->len_max = token. name. size ();
+    sch->len_max = token. name. size ();
   }
   
   return sch;

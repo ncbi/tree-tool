@@ -165,10 +165,13 @@ struct Data : Named
   VectorOwn<Data> children;
     // May be empty()
 
+  const bool attribute;
+  const bool colonInName;
   Token token;
     // May be empty()
 private:
   bool isEnd {false};
+  mutable size_t columnTags {0};
 public:
   
 
@@ -177,30 +180,27 @@ private:
   Data (Data* parent_arg,
         TokenInput &ti)
     : parent (parent_arg)
+    , attribute (false)
+    , colonInName (false)
     { readInput (ti); }
   Data (Data* parent_arg,
+        bool attribute_arg,
+        bool colonInName_arg,
         string &&attr,
         Token &&value)
     : Named (move (attr))
     , parent (parent_arg)
+    , attribute (attribute_arg)
+    , colonInName (colonInName_arg)
     , token (move (value))
     {}
   void readInput (TokenInput &ti);
 public:
-  static Data* load (const string &fName)
-    { unique_ptr<Xml_sp::Data> f;
-  	  { TokenInput ti (fName, '\0', false, false, 100 * 1024, 1000);  // PAR 
-        try 
-          { f. reset (new Xml_sp::Data (ti));	}
-        catch (const CharInput::Error &e)
-          { throw e; }
-        catch (const exception &e)
-          { ti. error (e. what (), false); }
-      }
-      return f. release ();
-    }
+  static Data* load (const string &fName);
   void qc () const override;
   void saveXml (Xml::File &f) const override;
+  void saveText (ostream &os) const override;
+    // attribute => skip
   
   
   size_t getDepth () const
@@ -241,18 +241,18 @@ public:
           return child;
       return nullptr;
     }
-  StringVector tagName2text (const string &tagName) const
-    { StringVector vec;
-      if (name == tagName)
-        vec << token. str ();
-      for (const Data* child : children)
-        vec << move (child->tagName2text (tagName));
-      return vec;
-    }
-  void unify (const Data& query,
-              const string &variableTagName,
-              Vector<Pair<string>> &output) const;
-    // Update: output (append)
+  TextTable unify (const Data& query,
+                   const string &variableTagName) const;
+private:
+  StringVector tagName2texts (const string &tagName) const;
+    // Output: columnTags
+  bool unify_ (const Data& query,
+               const string &variableTagName,
+               size_t columnTags_root,
+               map<string,StringVector> &tag2values,
+               TextTable &tt) const;
+    // Update: tag2values, tt (append)
+public:
   Schema* createSchema (bool storeTokens) const;
     // Return: new
   void writeFiles (size_t xmlNum,
