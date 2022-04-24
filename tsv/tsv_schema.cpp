@@ -47,7 +47,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the schema of a tsv-table")
+    : Application ("Print the schema of a tsv-table: # name length type(decimals)")
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table file with a header");
@@ -59,13 +59,9 @@ struct ThisApplication : Application
 	{
 		const string fName = getArg ("table");
 
-
     const TextTable tt (fName);
     tt. qc ();
     tt. printHeader (cout);      
-    
-    
-  //tt. saveText (cout);
 	}
 };
 
