@@ -3048,6 +3048,7 @@ private:
 	void readInput (CharInput &in,
 	                bool dashInName_arg,
 	                bool consecutiveQuotesInText);  
+	  // Input: consecutiveQuotesInText means that '' = '
 public:
 	void qc () const override;
 	void saveText (ostream &os) const override;
@@ -3150,9 +3151,11 @@ public:
   Token get ();
     // Return: empty() <=> EOF
   Token getXmlText ();
-    // Last character read is '<'
+    // Last character read is '<', must be followed by '/'
   Token getXmlComment ();
+    // -- ... -->
   Token getXmlProcessingInstruction ();
+    // ... &>
   char getNextChar ();
     // Return: '\0' <=> EOF
     // Invokes: ci.unget()
