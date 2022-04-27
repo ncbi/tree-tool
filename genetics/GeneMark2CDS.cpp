@@ -266,15 +266,33 @@ struct ThisApplication : Application
     {
     	uint gene_prev = 0;
     	LineInput f (annotFName, 1000 * 1024, 1000);  // PAR
- 	    Istringstream iss;
+ 	  //Istringstream iss;
  	    EuCds* cds = nullptr;
     	while (f. nextLine ())
     	  try
 	    	{
+	    	#if 1
+	    	        string contig      = findSplit (f. line, '\t');
+	    	  const string method      = findSplit (f. line, '\t');
+	    	  const string type        = findSplit (f. line, '\t');
+	    	        size_t start       = str2<size_t> (findSplit (f. line, '\t'));
+	    	  const size_t stop        = str2<size_t> (findSplit (f. line, '\t'));
+	    	  const string dot         = findSplit (f. line, '\t');
+	    	  const string strand      = findSplit (f. line, '\t');
+	    	  const string frame       = findSplit (f. line, '\t');
+	    	  const string gene_id_txt = findSplit (f. line, ' ');
+	    	        string gene_idS    = move (f. line);
+	    	#else
 	  	    iss. reset (f. line);
-	        string contig, method, type, dot, strand, frame, gene_id_txt, gene_idS;
+	        string contig, method, type, dot, strand, frame, gene_id_txt, gene_idS;	        
 	        size_t start, stop;
 	  	    iss >> contig >> method >> type >> start >> stop >> dot >> strand >> frame >> gene_id_txt >> gene_idS;
+	  	  #endif
+	  	    
+	  	    const size_t spacePos = contig. find (' ');
+	  	    if (spacePos != string::npos)
+	  	      contig. erase (spacePos);
+
 	  	    QC_ASSERT (method == "GeneMark.hmm");  // PAR
 	  	    QC_ASSERT (start <= stop);
 	  	    QC_ASSERT (start >= 1);
@@ -424,7 +442,7 @@ struct ThisApplication : Application
 		  {
 		    const Dna contigDna (f, 10000, false);  // PAR
 		    contigDna. qc ();
-        const VectorPtr<EuCds>& contigCdss = contig2cdss [contigDna. name];
+        const VectorPtr<EuCds>& contigCdss = contig2cdss [contigDna. getId ()];
         for (const EuCds* cds : contigCdss)
         {
         	const Dna cdsDna (cds->getDna (contigDna));
