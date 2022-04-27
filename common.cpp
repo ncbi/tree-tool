@@ -1863,7 +1863,7 @@ void Token::qc () const
   if (! empty ())
   {
   	QC_IMPLY (type != eText, ! name. empty ());
-  	QC_IMPLY (type != eText, ! contains (name, ' '));
+  	QC_IMPLY (type != eText,  ! contains (name, ' '));
     QC_IMPLY (type == eName || type == eDelimiter, quote == '\0');
     QC_IMPLY (dashInName, type == eName);
   //QC_ASSERT (! contains (name, quote));
@@ -2029,26 +2029,37 @@ Token TokenInput::getXmlText ()
   Token t;
   t. charNum = ci. charNum;
   size_t htmlTags = 0;
+  bool prevSlash = false;
 	for (;;)
 	{ 
 	  char c = ci. get (); 
 		if (ci. eof)
-	    ci. error ("XML text is not finished: end of file", false);
+	    ci. error ("XML text is not finished: end of file\n" + t. name, false);
 	  if (c == '<')
 	  {
-	    if (getNextChar () == '/')
+	    const char nextChar = getNextChar ();
+	    if (nextChar == '/')
 	    {
 	      if (htmlTags)
 	        htmlTags--;
 	      else
 	        break;
 	    }
-	    else
+	    else if (   nextChar != '?' 
+	             && nextChar != '!' 
+	            )
 	      htmlTags++;
 	  }
+	  else if (c == '>')
+	    if (prevSlash)
+	    {
+	      QC_ASSERT (htmlTags);
+	      htmlTags--;
+	    }
 	  if (isSpace (c))
 	    c = ' ';
 		t. name += c;
+		prevSlash = (c == '/');		  
 	}
 	
 	trim (t. name);
