@@ -166,11 +166,12 @@ struct Data : Named
     // May be empty()
 
   const bool attribute;
-  const bool colonInName;
+  bool colonInName {false};
   Token token;
     // May be empty()
 private:
   bool isEnd {false};
+  bool xmlText {false};
   mutable size_t columnTags {0};
 public:
   
@@ -181,7 +182,6 @@ private:
         TokenInput &ti)
     : parent (parent_arg)
     , attribute (false)
-    , colonInName (false)
     { readInput (ti); }
   Data (Data* parent_arg,
         bool attribute_arg,
@@ -195,6 +195,15 @@ private:
     , token (move (value))
     {}
   void readInput (TokenInput &ti);
+    // <tag attribute1="value1" attribute2="value2" ... />
+    // <tag attribute1="value1" attribute2="value2" ... > Data1 Data2 ... </tag>
+    // <tag attribute1="value1" attribute2="value2" ... > XmlText </tag>
+    // </tag>
+    // <!-- comment -->
+    // <? ProcessingInstruction ?>
+  static bool readColonName (TokenInput &ti,
+                             string &name);
+    // Update: name
 public:
   static Data* load (const string &fName);
   void qc () const override;

@@ -398,7 +398,6 @@ void Schema::setFlatColumns (const Schema* curTable,
 
 Data::Data (TokenInput &ti)
 : attribute (false)
-, colonInName (false)
 {
   ti. get ('<');
   ti. get ('?');
@@ -421,15 +420,21 @@ void Data::readInput (TokenInput &ti)
 {
   ASSERT (children. empty ());
   ASSERT (token. empty ());
+  ASSERT (! attribute);
+  ASSERT (! colonInName);
+  ASSERT (! isEnd);
+  ASSERT (! xmlText);
   
-  token = ti. get ();
-  if (! token. isDelimiter ('<'))
+  if (ti. getNextChar () == '<')
+    ti. get ('<');
+  else
   {
-    name = "word";  // convert to text ??
+    name = "XmlText";   // *this will be deleted
+    xmlText = true; 
+    token = move (ti. getXmlText ());
+    token. toNumberDate ();
     return;
   }
-  else
-    token. clear ();
 
   // name, isEnd
   {
@@ -454,6 +459,8 @@ void Data::readInput (TokenInput &ti)
     if (nameT. type != Token::eName)
       ti. error ("Name");
     name = move (nameT. name);
+    if (readColonName (ti, name))
+      colonInName = true;
   }
   
   // children
@@ -471,18 +478,10 @@ void Data::readInput (TokenInput &ti)
       break;
     if (attr. type != Token::eName)
       ti. error ("Name");
-    Token eq (ti. get ());
     bool colonInName_arg = false;
-    if (! eq. isDelimiter ('='))
-    {
-      QC_ASSERT (eq. isDelimiter (':'));
-    //ASSERT (isLeft (attr. name, "xml"));
-      Token attr1 (ti. get ());
-      QC_ASSERT (attr1. type == Token::eName);
-      attr. name += ":" + attr1. name;
-      ti. get ('=');
-      colonInName_arg = true;      
-    }
+    if (readColonName (ti, attr. name))
+      colonInName_arg = true;
+    ti. get ('=');
     Token value (ti. get ());  
     if (value. type != Token::eText)
       ti. error ("Text");
@@ -498,53 +497,107 @@ void Data::readInput (TokenInput &ti)
   {
     if (! children. empty ())
       ti. error ("Ending tag has children");
+    if (finished)
+      ti. error ("Ending tag has two slashes");
     return;
   }
+  
+  if (finished)
+    return;
 
   // text, children
-  if (! finished)
-  {
-    if (ti. getNextChar () == '<')
-      for (;;)
-      {
-        auto xml = new Data (this, ti);
-        if (xml->isEnd)
-        {
-          delete xml;
-          break;
-        }
-        children << xml;
-      }
-    else
+  if (ti. getNextChar () == '<')
+    for (;;)
     {
-      token = move (ti. getXmlText ());
-      token. toNumberDate ();
-    #if 0
-      string& s = token. name;
-      FOR_REV (size_t, i, s. size ())
+      auto xml = new Data (this, ti);
+      if (xml->isEnd)
       {
-        const char c = s [i];
-        if (   ! printable (c)
-            || c == '|'  // Delimiter in bulk-insert
-           )
-          s = s. substr (0, i) + "%" + uchar2hex ((uchar) c) + s. substr (i + 1);
+        QC_ASSERT (xml->name == name);
+        ASSERT (! xml->xmlText);
+        delete xml;
+        break;
       }
-    #endif
-      ti. get ('/');
-      const Token end (ti. get ());
-      if (end. type != Token::eName)
-        ti. error ("Name");
-      if (end. name != name)
-        ti. error ("Name " + strQuote (name));
-      ti. get ('>');
+      if (xml->xmlText)
+      {
+        ASSERT (token. empty ());
+        token. type = Token::eText;
+        for (const Data* child : children)
+        {
+          if (! token. name. empty ())
+            token. name += ' ';
+          token. name += child->str ();
+        }
+        if (! token. name. empty ())
+          token. name += ' ';
+        token. name += xml->str ();
+        trim (token. name);
+        children. deleteData ();
+        delete xml;
+        ti. get ('/');
+        Token end = move (ti. get ());
+        if (end. type != Token::eName)
+          ti. error ("Name");
+        readColonName (ti, end. name);
+        if (end. name != name)
+          ti. error ("Name " + strQuote (name));
+        ti. get ('>');
+        break;
+      }
+      children << xml;
     }
+  else
+  {
+    token = move (ti. getXmlText ());
+    token. toNumberDate ();
+  #if 0
+    string& s = token. name;
+    FOR_REV (size_t, i, s. size ())
+    {
+      const char c = s [i];
+      if (   ! printable (c)
+          || c == '|'  // Delimiter in bulk-insert
+         )
+        s = s. substr (0, i) + "%" + uchar2hex ((uchar) c) + s. substr (i + 1);
+    }
+  #endif
+    ti. get ('/');
+    Token end (ti. get ());
+    if (end. type != Token::eName)
+      ti. error ("Name");
+    readColonName (ti, end. name);
+    if (end. name != name)
+      ti. error ("Name " + strQuote (name));
+    ti. get ('>');
   }
+}
+
+
+
+bool Data::readColonName (TokenInput &ti,
+                          string &name) 
+{
+  ASSERT (! name. empty ());
+  
+  if (ti. getNextChar () != ':')
+    return false;
+  ti. get (':');
+  
+  const Token name1 (ti. get ());
+  if (name1. type != Token::eName)
+    ti. error ("Name (2nd half)");
+  if (name1. name. empty ())
+    ti. error ("Name (2nd half) is empty");
+
+  name += ":" + name1. name;
+  
+  return true;
 }
 
 
 
 Data* Data::load (const string &fName)
 { 
+  Unverbose unv;
   unique_ptr<Xml_sp::Data> f;
   { 
     TokenInput ti (fName, '\0', true, false, 100 * 1024, 1000);  // PAR 
@@ -571,7 +624,7 @@ void Data::qc () const
    
   try 
   {
-    QC_IMPLY (colonInName, attribute);
+  //QC_IMPLY (colonInName, attribute);
     QC_IMPLY (! colonInName, name == "!--" || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
@@ -590,6 +643,9 @@ void Data::qc () const
   {
     Xml::File f (cout, false, false, "XML");
     saveXml (f);
+    PRINT (name);
+    PRINT (Token::type2str (token. type));
+    PRINT (token);
     errorExit (e. what ());
   }
 }
@@ -689,16 +745,15 @@ bool Data::find (VectorPtr<Data> &path,
 TextTable Data::unify (const Data& query,
                        const string &variableTagName) const
 {
-  const StringVector header (query. tagName2texts (variableTagName));
+  StringVector header (query. tagName2texts (variableTagName));
   ASSERT (header. size () == query. columnTags);
   if (header. empty ())  
     throw runtime_error ("No variable tags");
-  {
-    StringVector vec (header);
-    vec. sort ();
-    if (! vec. isUniq ())
-      throw runtime_error ("Column names are not unique");
-  }
+    
+  const size_t columnTags_root = header. size ();
+  
+  header. sort ();
+  header. uniq ();
 
   TextTable tt;
   tt. pound = true;
@@ -707,7 +762,7 @@ TextTable Data::unify (const Data& query,
   tt. qc ();
   
   map<string,StringVector> tag2values;
-  unify_ (query, variableTagName, header. size (), tag2values, tt);
+  unify_ (query, variableTagName, columnTags_root, tag2values, tt);
   
   return tt;
 }
@@ -761,11 +816,15 @@ bool Data::unify_ (const Data& query,
         for (const Data* dataChild : children)
           if (dataChild->unify_ (*queryChild, variableTagName, columnTags_root, child_tag2values, tt))
             found = true;
-        if (! found)
+        if (! found && ! queryChild->columnTags)
           allFound = false;
+      //PRINT (queryChild->name);
+      //PRINT (found);
+      //PRINT (allFound);
       }
+  //cout << allFound << ' ' << child_tag2values. size () << ' ' << tag2values. size () << endl;
     if (! allFound)
-      return (bool) query. columnTags;
+      return false; // (bool) query. columnTags;
     for (const auto& it : child_tag2values)
       tag2values [it. first] << it. second;
   }
@@ -782,6 +841,9 @@ bool Data::unify_ (const Data& query,
     }
   }
     
+//PRINT (query. columnTags);
+//PRINT (columnTags_root);
+//PRINT (tag2values. size ());
   if (   query. columnTags == columnTags_root
       && ! tag2values. empty ()
      )
@@ -791,6 +853,7 @@ bool Data::unify_ (const Data& query,
       row [tt. col2num (it. first)] = it. second. toString ("; ");
     tt. rows << move (row);
     tag2values. clear ();
+  //PRINT (tt. rows. size ());
   }
   
   return true;
