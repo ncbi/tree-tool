@@ -51,7 +51,7 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("list", "List of tsv-tables with the same headers");
-  	  addPositional ("col_name", "Column name of the added file names");
+  	  addPositional ("col_name", "Column name of the added file names; may be empty");
   	}
   	
   	
@@ -60,8 +60,6 @@ struct ThisApplication : Application
 	{
 		const string listFName = getArg ("list");
 		const string colName   = getArg ("col_name");
-		
-		QC_ASSERT (! colName. empty ());
 		
 		
 		TextTable total;
@@ -73,8 +71,9 @@ struct ThisApplication : Application
         TextTable tab (li. line);
         tab. qc ();
         
-  		  if (tab. hasColumn (colName))
-  		    throw runtime_error ("Files already have column " + strQuote (colName));
+        if (! colName. empty ())
+    		  if (tab. hasColumn (colName))
+    		    throw runtime_error ("Files already have column " + strQuote (colName));
 
         // header
         QC_ASSERT (! tab. header. empty ());
@@ -89,14 +88,18 @@ struct ThisApplication : Application
   		        throw runtime_error ("Different column #" + to_string (i + 1) + " in files");
   		  }
   		  
-  		  const string fName = getFileName (li. line);
-  		  for (StringVector& row : tab. rows)
-  		    row << fName;
+        if (! colName. empty ())
+        {
+    		  const string fName = getFileName (li. line);
+    		  for (StringVector& row : tab. rows)
+    		    row << fName;
+    		}
   		  
   		  total. rows << tab. rows;		  
   		}
     }
-		total. header << TextTable::Header (colName);
+    if (! colName. empty ())
+  		total. header << TextTable::Header (colName);
 		total. qc ();
 
 
