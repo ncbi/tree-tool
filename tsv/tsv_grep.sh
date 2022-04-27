@@ -13,4 +13,4 @@ P="$2"
 
 
 head -1 $F
-tail -n +2 $F | grep $P
+tail -n +2 $F | grep $P || true
