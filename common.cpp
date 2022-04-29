@@ -807,8 +807,8 @@ string list2str (const List<string> &strList,
 
 
 bool fileExists (const string &fName)
-{
-  ifstream f (fName. c_str ());
+{ 
+  const ifstream f (fName. c_str ());
   bool ok = f. good ();
 #ifndef _MSC_VER
   if (ok)
@@ -2564,6 +2564,29 @@ void TextTable::filterColumns (const StringVector &newColumnNames)
 
 
 
+void TextTable::sort (const StringVector &by)
+{
+  const Vector<ColNum> byIndex (columns2nums (by));
+  
+  const auto lt = [&byIndex,this] (const StringVector &a, const StringVector &b) 
+                    { for (const ColNum i : byIndex) 
+                        switch (this->compare (a, b, i))
+                        { case -1: return true;
+                          case  1: return false;
+                        }
+                      // Tie resolution
+                      FFOR (size_t, i, a. size ())
+                        switch (this->compare (a, b, i))
+                        { case -1: return true;
+                          case  1: return false;
+                        }
+                      return false;
+                    };
+  Common_sp::sort (rows, lt);
+}
+
+
+
 void TextTable::group (const StringVector &by,
                        const StringVector &sum,
                        const StringVector &aggr)
@@ -2654,9 +2677,9 @@ void TextTable::merge (RowNum toRowNum,
 
 
 
-void TextTable::colNums2values (const Vector<ColNum> &colNums,
-                                RowNum row_num,
-                                StringVector &values) const
+void TextTable::colNumsRow2values (const Vector<ColNum> &colNums,
+                                   RowNum row_num,
+                                   StringVector &values) const
 {
   values. clear ();
   values. reserve (colNums. size ());
@@ -2676,11 +2699,28 @@ TextTable::RowNum TextTable::find (const Vector<ColNum> &colNums,
   StringVector values;
   FOR_START (RowNum, i, row_num_start, rows. size ())
   {
-    colNums2values (colNums, i, values);
+    colNumsRow2values (colNums, i, values);
     if (values == targetValues)
       return i;
   }
   return no_index;
+}
+
+
+
+StringVector TextTable::col2values (ColNum col) const
+{
+  QC_ASSERT (col < header. size ());
+  
+  Set<string> s;
+  for (const StringVector& row : rows)
+    if (! row [col]. empty ())
+      s << row [col];
+            
+  StringVector vec;  vec. reserve (s. size ());
+  insertAll (vec, s);
+  
+  return vec;
 }
 
 
@@ -2697,7 +2737,7 @@ TextTable::Key::Key (const TextTable &tab,
   StringVector values;  
   FFOR (RowNum, i, tab. rows. size ())
   {
-    tab. colNums2values (colNums, i, values);
+    tab. colNumsRow2values (colNums, i, values);
     for (const string& s : values)
       if (s. empty ())
         throw Error (tab, "Empty value in key, in row " + to_string (i + 1));
@@ -2722,7 +2762,7 @@ TextTable::Index::Index (const TextTable &tab,
   StringVector values;  
   FFOR (RowNum, i, tab. rows. size ())
   {
-    tab. colNums2values (colNums, i, values);
+    tab. colNumsRow2values (colNums, i, values);
     data [values] << i;
   }  
 }

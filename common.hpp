@@ -1204,6 +1204,12 @@ inline void checkFile (const string &fName)
 streamsize getFileSize (const string &fName);
 
 #ifndef _MSC_VER
+  inline void moveFile (const string &from,
+                        const string &to)
+    { if (::rename (from. c_str (), to. c_str ()))
+        throw runtime_error ("Cannot move file + " + shellQuote (from) + " to " + shellQuote (to));
+    }
+
   inline void removeFile (const string &fName)
     { if (::remove (fName. c_str ()))
         throw runtime_error ("Cannot remove file + " + shellQuote (fName));
@@ -3383,7 +3389,7 @@ struct TextTable : Named
     // no_index <=> no column
   typedef  size_t  RowNum;
     // no_index <=> no row
-
+    
     
   struct Error : runtime_error
   {
@@ -3441,6 +3447,7 @@ public:
     // Input: newColumnNames: in header::name's
     //          can be repeated
     //          ordered
+  void sort (const StringVector &by);
   void group (const StringVector &by,
               const StringVector &sum,
               const StringVector &aggr);
@@ -3451,13 +3458,14 @@ private:
               const Vector<ColNum> &sum,
               const Vector<ColNum> &aggr);
 public:
-  void colNums2values (const Vector<ColNum> &colNums,
-                       RowNum row_num,
-                       StringVector &values) const;
+  void colNumsRow2values (const Vector<ColNum> &colNums,
+                          RowNum row_num,
+                          StringVector &values) const;
     // Output: values
   RowNum find (const Vector<ColNum> &colNums,
                const StringVector &targetValues,
                RowNum rowNum_start) const;
+  StringVector col2values (ColNum col) const;
 
 
   struct Key
