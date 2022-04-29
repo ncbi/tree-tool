@@ -191,7 +191,7 @@ void Schema::qc () const
   
   for (const auto& it : name2schema)
   {
-    QC_ASSERT (isIdentifier (it. first, false));
+    QC_IMPLY (! contains (it. first, ':'), isIdentifier (it. first, true));
     QC_ASSERT (it. second);
     schema2name (it. second);
     it. second->qc ();
@@ -826,7 +826,7 @@ bool Data::unify_ (const Data& query,
     if (! allFound)
       return false; // (bool) query. columnTags;
     for (const auto& it : child_tag2values)
-      tag2values [it. first] << it. second;
+      tag2values [it. first] << it. second;  // move() ??
   }
   
   if (const Data* columnData = query. name2child (variableTagName))
