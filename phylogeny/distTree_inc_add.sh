@@ -6,7 +6,7 @@ if [ $# -ne 4 ]; then
   echo "#1: incremental distance tree directory"
   echo "#2: input tree ('' = #1/tree)"
   echo "#3: output tree"
-  echo "#4: new leaf placement data file"
+  echo "#4: output new leaf placement data file"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
