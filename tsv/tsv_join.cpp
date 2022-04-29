@@ -139,7 +139,7 @@ struct ThisApplication : Application
       StringVector outValues;
       FOR (TextTable::RowNum, rowNum1, t1. rows. size ())
       {
-        t1. colNums2values (indexColNums1, rowNum1, indexValues);
+        t1. colNumsRow2values (indexColNums1, rowNum1, indexValues);
         for (const string& s : indexValues)
           if (s. empty ())
             throw TextTable::Error (t1, "Empty value in index, in row " + to_string (rowNum1 + 1));
@@ -149,7 +149,7 @@ struct ThisApplication : Application
           if (! remove)
             for (TextTable::RowNum rowNum2 : *rowNums2)
             {
-              t2. colNums2values (addedColNums, rowNum2, values2);
+              t2. colNumsRow2values (addedColNums, rowNum2, values2);
               outValues. clear ();
               outValues << t1. rows [rowNum1] << values2;
               tOut. rows << move (outValues);
