@@ -55,7 +55,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("in", "DNA FASTA file with one sequence");
   	  addPositional ("start", "Start position of a segment, 1-based");
-  	  addPositional ("stop", "Stop position of a segment, >= start position");
+  	  addPositional ("stop", "Stop position of a segment, can be equal start");
   	  addKey ("flank", "length of flanking sequence", "0");
   	  addFlag ("excise", "Excise the segment, otherwise leave the segment");
   	  addKey ("strand", "Strand (0 or - / 1 or +)", "1");
@@ -66,11 +66,14 @@ struct ThisApplication : Application
 	void body () const final
   {
 	  const string inFName = getArg ("in");
-	        size_t start   = str2<size_t> (getArg ("start"));
-	        size_t stop    = str2<size_t> (getArg ("stop"));
+	  const size_t start_  = str2<size_t> (getArg ("start"));
+	  const size_t stop_   = str2<size_t> (getArg ("stop"));
 	  const size_t flank   = str2<size_t> (getArg ("flank"));
 	  const bool excise    = getFlag ("excise");
 	  const string strandS = getArg ("strand");
+	  
+	  size_t start = min (start_, stop_);
+	  size_t stop  = max (start_, stop_);
 	  
 	  QC_ASSERT (start >= 1);
 	  QC_ASSERT (stop >= start);
