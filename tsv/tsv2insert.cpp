@@ -47,7 +47,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Comvert a tsv-table into SQL insert statements")
+    : Application ("Convert a tsv-table into SQL insert statements")
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table file with a header");
