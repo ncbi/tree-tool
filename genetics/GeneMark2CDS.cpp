@@ -450,7 +450,7 @@ struct ThisApplication : Application
         	cdsDna. qc ();
         	try 
         	{
-	        	Peptide pep (cdsDna. cds2prot (gencode, cds->trunc5 (), cds->trunc3 (), true));
+	        	Peptide pep (cdsDna. cds2prot (gencode, cds->trunc5 (), cds->trunc3 (), true, true /*'tar' etc.*/));
 	        	pep. name += " " + cdsDna. getDescription (false);
 	        	pep. qc ();
 	        	if (pep. seq. size () < min_prot_len)

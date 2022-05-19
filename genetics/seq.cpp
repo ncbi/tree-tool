@@ -1995,7 +1995,8 @@ Peptide Dna::makePeptide (Frame frame,
 Peptide Dna::cds2prot (Gencode gencode,
                        bool trunc5,
                        bool trunc3,
-	                     bool hasStopCodon) const
+	                     bool hasStopCodon,
+	                     bool allowExtraStopCodon) const
 {
   size_t translationStart = 0;
   Peptide pep (makePeptide (1 /*frame*/, gencode, true, true, translationStart));
@@ -2019,9 +2020,17 @@ Peptide Dna::cds2prot (Gencode gencode,
     }
     else
     {
-    	if (starPos != pep. seq. size () - 1)
-        throw runtime_error (FUNC "stop codon at peptide position " + to_string (starPos + 1));
-  	  EXEC_ASSERT (trimSuffix (pep. seq, "*"));
+  	  if (starPos == pep. seq. size () - 1)
+  	  {
+    	  EXEC_ASSERT (trimSuffix (pep. seq, "*"));
+    	}
+    	else
+    	{
+        if (allowExtraStopCodon)
+          pep. seq. erase (starPos);
+        else
+          throw runtime_error (FUNC "stop codon at peptide position " + to_string (starPos + 1) + "\n" + seq. substr (starPos * 3));
+      }
   	}
   }
   else

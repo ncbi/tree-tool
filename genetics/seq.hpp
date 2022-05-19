@@ -566,7 +566,8 @@ struct Dna : Seq
   Peptide cds2prot (Gencode gencode,
                     bool trunc5,
                     bool trunc3,
-	                  bool hasStopCodon) const;
+	                  bool hasStopCodon,
+	                  bool allowExtraStopCodon) const;
 	  // Return: if !trunc3 && hasStopCodon then no '*'
 	  // Invokes: makePeptide(1,gencode,true,true)
   Vector<Peptide> getOrfs (Frame frame,
