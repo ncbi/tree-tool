@@ -185,7 +185,7 @@ struct ThisApplication : Application
   		      continue;
   		    if (translate)
   		    {
-    		    Peptide pep (dna. cds2prot (11, false, false, true));  // gencode - PAR ??
+    		    Peptide pep (dna. cds2prot (11, false, false, true, false));  // gencode - PAR ??
     		    pep. qc ();
     		    QC_ASSERT (! pep. seq. empty ());
     		    QC_ASSERT (pep. seq. front () == 'm');
