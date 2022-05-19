@@ -21,6 +21,7 @@ all:	\
 	dna_complexity \
 	dna_coverage \
 	dna_cut \
+	dna_find \
 	dna_gc_skew \
 	dna_rev \
 	dna_trim \
@@ -31,7 +32,6 @@ all:	\
 	fasta2len \
 	fastaAddGi \
 	fastaDna2pairs \
-	findProt \
 	genbank_grep \
 	GeneMark2CDS \
 	hmm2prot \
@@ -53,6 +53,7 @@ all:	\
 	prot2fingerprints \
 	prot2triplets \
 	prot_check \
+	prot_find \
 	prot_fingerprint_grep \
 	prot_grep_short \
 	prots2hmm_signature \
@@ -125,6 +126,12 @@ dna_cut:	$(dna_cutOBJS)
 	$(CXX) -o $@ $(dna_cutOBJS) $(LIBS) 
 	$(ECHO)
 
+dna_find.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_findOBJS=dna_find.o $(SEQ_OBJ)
+dna_find:	$(dna_findOBJS)
+	$(CXX) -o $@ $(dna_findOBJS) $(LIBS) 
+	$(ECHO)
+
 dna_gc_skew.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
 dna_gc_skewOBJS=dna_gc_skew.o $(SEQ_OBJ)
 dna_gc_skew:	$(dna_gc_skewOBJS)
@@ -183,12 +190,6 @@ fastaDna2pairs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 fastaDna2pairsOBJS=fastaDna2pairs.o $(SEQ_OBJ)
 fastaDna2pairs:	$(fastaDna2pairsOBJS)
 	$(CXX) -o $@ $(fastaDna2pairsOBJS) $(LIBS) 
-	$(ECHO)
-
-findProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-findProtOBJS=findProt.o $(SEQ_OBJ)
-findProt:	$(findProtOBJS)
-	$(CXX) -o $@ $(findProtOBJS) $(LIBS) 
 	$(ECHO)
 
 genbank_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
@@ -303,6 +304,12 @@ prot_check.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 prot_checkOBJS=prot_check.o $(SEQ_OBJ)
 prot_check:	$(prot_checkOBJS)
 	$(CXX) -o $@ $(prot_checkOBJS) $(LIBS) 
+	$(ECHO)
+
+prot_find.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+prot_findOBJS=prot_find.o $(SEQ_OBJ)
+prot_find:	$(prot_findOBJS)
+	$(CXX) -o $@ $(prot_findOBJS) $(LIBS) 
 	$(ECHO)
 
 prot_fingerprint_grep.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
