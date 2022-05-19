@@ -21,7 +21,7 @@ QUAL="$6"
 
 
 TMP=`mktemp`
-echo $TMP
+echo $TMP > /dev/stderr
 
 
 DELETE=""
