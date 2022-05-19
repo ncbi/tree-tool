@@ -263,7 +263,7 @@ void Item::names2values (const StringVector &names_arg,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Parse a text ASN.1 file.\n\
+    : Application ("Parse an ASN.1 text file.\n\
 <ASN.1> ::= <name> \"::=\" <node>\n\
 <node> ::= <name>* [<value>]\n\
 <value> ::= <name | \"<text>\" | <number> | '<hex_text>'H | { <nodes> }\n\
