@@ -47,28 +47,32 @@ using namespace Common_sp;
 
 struct Hsp
 {
+  bool subjectProt {false};
   size_t qstart {0};
   size_t qend {0};
   size_t sstart {0};
   size_t send {0};
   bool sstrand {false};
+    // subjectProt => qstrand
   // Alignment
   size_t length {0};
   size_t nident {0};
   
   
-  Hsp (size_t qstart_arg,
+  Hsp (bool subjectProt_arg,
+       size_t qstart_arg,
        size_t qend_arg,
        size_t sstart_arg,
        size_t send_arg,
        size_t length_arg,
        size_t nident_arg)
     // 1-based, end = last position
-    : qstart (qstart_arg)
-    , qend (qend_arg)
+    : subjectProt (subjectProt_arg)
+    , qstart (subjectProt_arg ? min (qstart_arg, qend_arg) : qstart_arg)
+    , qend   (subjectProt_arg ? max (qstart_arg, qend_arg) : qend_arg)
     , sstart (min (sstart_arg, send_arg))
     , send   (max (sstart_arg, send_arg))
-    , sstrand (sstart_arg <= send_arg)
+    , sstrand (subjectProt_arg ? qstart_arg <= qend_arg : sstart_arg <= send_arg)
     , length (length_arg)
     , nident (nident_arg)
     {
@@ -82,9 +86,9 @@ struct Hsp
       
       QC_ASSERT (nident);
       QC_ASSERT (nident <= length);
-      QC_ASSERT (nident <= qLen ());
+      QC_ASSERT (nident * (subjectProt ? 3 : 1) <= qLen ());
       QC_ASSERT (nident <= sLen ());
-      QC_ASSERT (length < qLen () + sLen ());
+      QC_ASSERT (length * (subjectProt ? 3 : 1) < qLen () * (subjectProt ? 3 : 1) + sLen ());
     }
   Hsp () = default;
     
@@ -345,13 +349,14 @@ void reportMissed (const string &qseqid,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print the coverage of a query DNA by subject DNAs, sorted by qseqid")
+    : Application ("Print the coverage of a query DNA by subject DNAs or proteins, sorted by qseqid")
     {
       version = VERSION;
       string format (XSTR(FORMAT));
       replaceStr (format, " >>", "");
       addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid and nident descending.\n\
 qseqid can have a suffix \"|qtitle\"");
+      addFlag ("prot", "Subject is proteins");  // ??
       addKey ("mode", "\
 combine: combine the coverages by subject DNAs\n\
 all: report all covered segments", "all");
@@ -369,6 +374,7 @@ all: report all covered segments", "all");
   void body () const final
   {
     const string inFName     = getArg ("in");
+    const bool   subjectProt = getFlag ("prot");
     const string modeS       = getArg ("mode");
                  queryName   = getArg ("query");
                  subjectName = getArg ("subject");
@@ -467,7 +473,7 @@ all: report all covered segments", "all");
         QC_IMPLY (qseqid_prev == qseqid, nident <= nident_prev); 
         nident_prev = nident;
         
-        const Hsp hsp (qstart, qend, sstart, send, length, nident);
+        const Hsp hsp (subjectProt, qstart, qend, sstart, send, length, nident);
           // Invokes: QC_ASSERT
         QC_ASSERT (hsp. qend <= qlen);
         QC_ASSERT (hsp. send <= slen);
