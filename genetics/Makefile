@@ -14,6 +14,7 @@ all:	\
   asm_gap \
   asnt \
 	blastmat \
+	blast_best_hits \
 	blastp_merge \
 	contig2read_coverage \
 	dna2orfs \
@@ -42,6 +43,7 @@ all:	\
 	hmmsearch2besthits \
 	hmmSplit \
 	interSeq \
+	islander \
 	kmerIndex_add \
 	kmerIndex_find \
 	kmerIndex_make \
@@ -82,6 +84,12 @@ blastmat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 blastmatOBJS=blastmat.o $(SEQ_OBJ)
 blastmat:	$(blastmatOBJS)
 	$(CXX) -o $@ $(blastmatOBJS) $(LIBS) 
+	$(ECHO)
+
+blast_best_hits.o:  $(COMMON_HPP) 
+blast_best_hitsOBJS=blast_best_hits.o $(CPP_DIR)/common.o
+blast_best_hits:	$(blast_best_hitsOBJS)
+	$(CXX) -o $@ $(blast_best_hitsOBJS) $(LIBS) 
 	$(ECHO)
 
 blastp_merge.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
@@ -250,6 +258,12 @@ interSeq.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 interSeqOBJS=interSeq.o $(SEQ_OBJ)
 interSeq:	$(interSeqOBJS)
 	$(CXX) -o $@ $(interSeqOBJS) $(LIBS) 
+	$(ECHO)
+
+islander.o:  $(COMMON_HPP) 
+islanderOBJS=islander.o $(CPP_DIR)/common.o
+islander:	$(islanderOBJS)
+	$(CXX) -o $@ $(islanderOBJS) $(LIBS) 
 	$(ECHO)
 
 kmerIndex_add.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
