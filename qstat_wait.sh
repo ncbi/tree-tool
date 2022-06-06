@@ -44,25 +44,26 @@ while true; do
     set +o errexit
     L=(`qstat | grep -v '^job-ID' | grep -v '^---' | grep -v '   d[tr]   ' | grep '  [rTt]  ' | sed 's/^ *//1' | cut -f 1 -d ' '`)
     set -o errexit
-    date
-    if [ $QRESUB == 1 ]; then
-      echo "Re-submitting ${#L[@]} grid jobs ..."
-    else
-      echo "Deleting ${#L[@]} grid jobs ..."
-    fi
-    i=0
-    while [ $i -lt ${#L[@]} ]; do
+    M=${#L[@]}
+    if [ $M -ne 0 ]; then 
+      date
+      if [ $QRESUB == 1 ]; then
+        echo "Re-submitting $M grid jobs ..."
+      else
+        echo "Deleting $M grid jobs ..."
+      fi
+      for i in $M; do
+        if [ $QRESUB == 1 ]; then
+          $THIS/grid_wait.sh 1
+  	      qresub ${L[$i]} -h u || true
+  	    fi
+      done
+      $THIS/grid_wait.sh 1
+      qdel -f ${L[@]} || true
       if [ $QRESUB == 1 ]; then
         $THIS/grid_wait.sh 1
-	      qresub ${L[i]} -h u || true
-	    fi
-      i=$(( $i + 1 ))
-    done
-    $THIS/grid_wait.sh 1
-    qdel -f ${L[*]} || true
-    if [ $QRESUB == 1 ]; then
-      $THIS/grid_wait.sh 1
-      qrls  -h u  -u $USER > /dev/null
+        qrls  -h u  -u $USER > /dev/null
+      fi
     fi
   fi
   
