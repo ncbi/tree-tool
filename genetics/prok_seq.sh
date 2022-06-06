@@ -47,12 +47,12 @@ rm $NAME.hash-PRT1
 rm $NAME.cds
 
 if [ $UNIV ]; then
-  echo "univ ..."
+  section "univ"
   $THIS/prots2hmm_univ.sh $NAME $UNIV 1 $LOG
 fi
 
 if [ $PFAM ]; then
-  echo "Pfam ..."
+  section "Pfam"
   $THIS/prots2hmm_hash.sh $NAME.prot $PFAM $PFAM_CUTOFF $NAME.HMM $NAME.hash-HMM $LOG
   gzip $NAME.HMM
 fi
