@@ -7,21 +7,29 @@ OBJ_LIST=$1
 IN_TREE=$2  # 0/1/null
 
 
-if [ $IN_TREE == 0 ]; then
-  error "Cannot remove sequences from a K-mer index"
-fi
-
 if [ ! -s $OBJ_LIST ]; then
   exit 0
 fi
 
 INC=`dirname $0`
+KMER=14
 
-CPP_DIR/trav $OBJ_LIST "cat $INC/../seq/%h/%f" > $INC/seq.fa
-if [ ! -e $INC/seq.kmi ]; then
-  CPP_DIR/genetics/kmerIndex_make $INC/seq.kmi 14 -qc
+if [ $IN_TREE == 1 ]; then
+  CPP_DIR/trav $OBJ_LIST "cat $INC/../seq/%h/%f" > $INC/seq.fa
+  if [ ! -e $INC/seq.kmi ]; then
+    CPP_DIR/genetics/kmerIndex_make $INC/seq.kmi $KMER -qc
+  fi
+  CPP_DIR/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
+else
+  CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $INC/tree.list
+  CPP_DIR/setMinus $INC/tree.list $OBJ_LIST > $INC/tree.list-new
+  rm $INC/tree.list
+  wc -l $INC/tree.list-new
+  CPP_DIR/trav $INC/tree.list-new "cat $INC/../seq/%h/%f" > $INC/seq.fa
+  rm $INC/tree.list-new
+  CPP_DIR/genetics/kmerIndex_make $INC/seq.kmi $KMER -qc
+  CPP_DIR/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
 fi
-CPP_DIR/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
 rm $INC/seq.fa
 
 
