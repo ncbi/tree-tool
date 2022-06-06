@@ -60,7 +60,8 @@ struct Island
 void process (const string &accession,
               size_t len,
               size_t gap_max,
-              Vector<Island> &islands)
+              Vector<Island> &islands,
+              ostream* nonIslandCoor)
 {
   IMPLY (accession. empty (), islands. empty ());
   if (accession. empty ())
@@ -81,20 +82,37 @@ void process (const string &accession,
       if (verbose ())
         cout << accession << '\t' << island. start << '\t' << island. stop << endl;
     }
-    if (islands. front (). start && islands. front (). start <= gap_max)
+    Island& front = islands. front ();
+    if (front. start && front. start <= gap_max)
     {
       dropped++;
-      dropped_len += islands. front (). start;
+      dropped_len += front. start;
+      front. start = 0;
     }
-    ASSERT (islands. back (). stop <= len);
-    const size_t tail = len - islands. back (). stop;
+    Island& back = islands. back ();
+    ASSERT (back. stop <= len);
+    const size_t tail = len - back. stop;
     if (tail && tail <= gap_max)
     {
       dropped++;
       dropped_len += tail;
+      back. stop = len;
     }
   }
   
+  if (nonIslandCoor)
+  {
+    size_t start = 0;
+    for (const Island& island : islands)
+    {
+      if (island. start > start)
+        *nonIslandCoor << accession << '\t' << start << '\t' << island. start << endl;
+      start = island. stop;
+    }
+    if (len > start)
+      *nonIslandCoor << accession << '\t' << start << '\t' << len << endl;
+  }
+
   cout         << accession 
        << '\t' << islands_len
        << '\t' << islands. size ()
@@ -114,12 +132,13 @@ void process (const string &accession,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Find annotation islands")
+    : Application ("Find annotation islands, print summary statistics")
     {
       version = VERSION;
       // Input
       addPositional ("annot", "Annotation tsv-file with columns: plasmid\tcontig_len\tstart\tstop (1-based), sorted by plasmid (accession), start, stop desc"); 
       addPositional ("gap_max", "Max. gap to merge annotations into an island");
+      addKey ("non_island_coor", "Coordinates of non-islands");
     }
 
 
@@ -128,6 +147,7 @@ struct ThisApplication : Application
   {
     const string annotFName =               getArg ("annot");
     const size_t gap_max    = str2<size_t> (getArg ("gap_max"));    
+    const string non_island_coor = getArg ("non_island_coor");
     
 
     const TextTable annot (annotFName);
@@ -136,6 +156,10 @@ struct ThisApplication : Application
     QC_ASSERT (annot. header [1]. numeric);
     QC_ASSERT (annot. header [2]. numeric);
     QC_ASSERT (annot. header [3]. numeric);
+    
+    unique_ptr<OFStream> non_island_coorF;
+    if (! non_island_coor. empty ())
+      non_island_coorF. reset (new OFStream (non_island_coor));
     
     cout         << "#plasmid"
          << '\t' << "non_core_length"
@@ -163,7 +187,7 @@ struct ThisApplication : Application
         if (row [2]. empty ())
         {
           QC_ASSERT (accession_prev < accession);
-          process (accession_prev, len_prev, gap_max, islands);
+          process (accession_prev, len_prev, gap_max, islands, non_island_coorF. get ());
           start_prev = 0;
           stop_prev = 0;
         }
@@ -191,7 +215,7 @@ struct ThisApplication : Application
             }
           }
           else
-            process (accession_prev, len_prev, gap_max, islands);
+            process (accession_prev, len_prev, gap_max, islands, non_island_coorF. get ());
           if (newIsland)
             islands << Island {start, stop};
           start_prev = start;
@@ -205,7 +229,7 @@ struct ThisApplication : Application
         save (cout, row, ',');
         throw;
       }
-    process (accession_prev, len_prev, gap_max, islands);
+    process (accession_prev, len_prev, gap_max, islands, non_island_coorF. get ());
   }
 };
 
