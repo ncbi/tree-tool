@@ -5,7 +5,7 @@ if [ $# -ne 2 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
   echo "#1: incremental distance tree directory"
   echo "#2: sorted and distinct list of objects"
-  echo "Output: #1/, #1/../data.dm"
+  echo "output: #1/, #1/../data.dm"
   exit 1
 fi
 INC=$1
