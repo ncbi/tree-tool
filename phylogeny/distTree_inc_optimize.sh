@@ -4,14 +4,14 @@ source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Optimize a distance tree and evaluate"
   echo "#1: incremental distance tree directory (no updating)"
-  echo "#2: number of optimization iterations"
-  echo "#3: parameters after -variance (non-empty string)"
+  echo "#2: new contents of #1/variance (non-empty string)"
+  echo "#3: number of optimization iterations"
   echo "#4: output tree"
   exit 1
 fi
 INC=$1
-ITER_MAX=$2
-PAR="$3"
+PAR="$2"
+ITER_MAX=$3
 OUT_TREE=$4
 
 
