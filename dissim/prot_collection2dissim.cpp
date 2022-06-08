@@ -95,7 +95,7 @@ struct ThisApplication : Application
     {
       version = VERSION;
   	  // Input
-  	  addPositional ("prot_info", "Collection of target protein identifiers in <FASTA1> and <FASTA2> with optional means and variances of logarithmized alignment scores");
+  	  addPositional ("prot_info", string ("Format: ") + PositiveAverageModel::format + ", where <attrname>'s are the protein identifiers in <in>");
   	  addPositional ("in", "File with pairs of protein FASTA file names. Protein sequences may contain stop codons");
   	  addFlag ("blosum62", "Use BLOSUM62, otherwise PAM30");
   	  // Output
