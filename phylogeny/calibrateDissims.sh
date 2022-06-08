@@ -6,7 +6,7 @@ if [ $# -ne 6 ]; then
   echo "#1: input .dm-file without '.dm'"
   echo "#2: dissimilarity attribute in #1"
   echo "#3: parameters of makeDistTree after -variance"
-  echo "#4: max. optimization iterations (> 0, normally 20)"
+  echo "#4: max. optimization iterations (> 0, normally 10)"
   echo "#5: phen/"
   echo "#6: large directores (0/1)"
   exit 1
