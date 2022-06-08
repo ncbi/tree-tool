@@ -18,6 +18,7 @@ LARGE=$4
 TARGET="$5"
 
 
+$THIS/../check_tmp.sh
 TMP=`mktemp`
 echo $TMP  
 
