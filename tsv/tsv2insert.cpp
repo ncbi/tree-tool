@@ -51,13 +51,15 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table file with a header");
+  	  addFlag ("add_go", "Add 'go' at the end of the SQL statements");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string fName  = getArg ("table");
+		const string fName = getArg ("table");
+		const bool add_go  = getFlag ("add_go");
 
 
     TextTable tt (fName);
@@ -95,8 +97,10 @@ struct ThisApplication : Application
         }
         first = false;
       }
-      cout << ");" << endl;
+      cout << ");" << endl;      
     }
+  	if (add_go)
+  	  cout << "go" << endl;
 	}
 };
 
@@ -112,6 +116,4 @@ int main (int argc,
   ThisApplication app;
   return app. run (argc, argv);
 }
-
-
 
