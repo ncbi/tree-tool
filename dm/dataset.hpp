@@ -4029,7 +4029,8 @@ struct PositiveAverageModel : Root
 		           const string &line,
 		           bool loadStat);
 		  // Input: line
-		  //          format: <name> <coeff> <var>
+		  //          format: format
+		static constexpr const char* format {"<attrname> <coeff> <var>"};
 		void qc () const override;
 		void saveText (ostream &os) const override
 		  { os         << name
@@ -4067,7 +4068,9 @@ struct PositiveAverageModel : Root
 	PositiveAverageModel (const string &fName,
 	                      bool loadStat);
 	  // Input: fName
-	  //          format: <Outlier SEs> <ignoreZero> \n <Component>*
+	  //          format: format
+  static constexpr const char* format {"<Outlier SEs> <ignoreZero (0/1)> <newline> {<attrname> <coeff> <var> <newline>}*"};
+    // Cf. Component::format
 	PositiveAverageModel (Real outlierSEs_arg,
 	                      bool ignoreZero_arg /*,
 	                      Real universalWeight_arg*/)
