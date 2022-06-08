@@ -22,7 +22,7 @@ awk '{print $2};' $FULL >> tmp
 sort -u tmp > list
 rm tmp
 if grep '-' list; then
-  error "Names should have not contain dashes"
+  error "Names should not contain dashes"
 fi
 wc -l list
 
