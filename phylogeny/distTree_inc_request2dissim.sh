@@ -3,9 +3,9 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute requested dissimilarities"
-  echo "#1: Incremental tree directory"
-  echo "#2: Pairs of objects"  
-  echo "#3: Output file with dissimilarities"
+  echo "#1: incremental tree directory"
+  echo "#2: pairs of objects"  
+  echo "#3: output file with dissimilarities"
   exit 1
 fi
 INC=$1
