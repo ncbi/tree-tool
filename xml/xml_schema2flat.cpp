@@ -79,7 +79,8 @@ struct ThisApplication : Application
   	  TokenInput ti (xmlFName, '\0', false, false, 100 * 1024, 1000);  // PAR 
       try
       {	  
-        xml. reset (new Xml_sp::Data (ti));	
+    	  VectorOwn<Xml_sp::Data> markupDeclarations;
+        xml. reset (new Xml_sp::Data (ti, markupDeclarations));	
       }
       catch (const CharInput::Error &e)
         { throw e; }

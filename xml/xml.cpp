@@ -396,7 +396,8 @@ void Schema::setFlatColumns (const Schema* curTable,
 
 // Data
 
-Data::Data (TokenInput &ti)
+Data::Data (TokenInput &ti,
+            VectorOwn<Data> &markupDeclarations)
 : attribute (false)
 {
   ti. get ('<');
@@ -411,7 +412,29 @@ Data::Data (TokenInput &ti)
       throw runtime_error ("XML header is not finished");
   }
   
-  readInput (ti);
+  for (;;)
+  {
+    readInput (ti);
+    if (name. empty () || name [0] != '!')
+      break;
+    markupDeclarations << new Data (*this);
+    clear ();
+  }
+}
+
+
+
+void Data::clear ()
+{
+  ASSERT (! parent);
+  ASSERT (children. empty ());
+  ASSERT (! attribute);
+  
+  colonInName = false;
+  token. clear ();
+  isEnd = false;
+  xmlText = false;
+  columnTags = 0;
 }
 
 
@@ -444,10 +467,19 @@ void Data::readInput (TokenInput &ti)
       isEnd = true;
       nameT = move (ti. get ());
     }
-    else if (nameT. isDelimiter ('!'))  
+    else if (nameT. isDelimiter ('!'))        
     {
-      name = "!--";
-      token = move (ti. getXmlComment ());
+      if (ti. getNextChar () == '-')
+      {
+        name = "!--";
+        token = move (ti. getXmlComment ());
+      }
+      else
+      {
+        nameT = ti. get ();
+        name = "!" + nameT. name;
+        token = move (ti. getXmlMarkupDeclaration ());        
+      }
       return;
     }
     else if (nameT. isDelimiter ('?'))  
@@ -595,14 +627,15 @@ bool Data::readColonName (TokenInput &ti,
 
 
 
-Data* Data::load (const string &fName)
+Data* Data::load (const string &fName,
+                  VectorOwn<Data> &markupDeclarations)
 { 
   Unverbose unv;
   unique_ptr<Xml_sp::Data> f;
   { 
     TokenInput ti (fName, '\0', true, false, 100 * 1024, 1000);  // PAR 
     try 
-      { f. reset (new Xml_sp::Data (ti));	}
+      { f. reset (new Xml_sp::Data (ti, markupDeclarations));	}
     catch (const CharInput::Error &e)
       { throw e; }
     catch (const exception &e)
@@ -628,7 +661,14 @@ void Data::qc () const
     QC_IMPLY (! colonInName, name == "!--" || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
-    QC_IMPLY (! token. name. empty (), goodName (token. name));
+  #if 0
+    if (! token. name. empty () && token. name [0] != '!' && ! goodName (token. name))  // Unicode ??
+    {
+      PRINT (token. name);
+      PRINT (token);
+      ERROR;
+    }
+  #endif
     token. qc ();
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));

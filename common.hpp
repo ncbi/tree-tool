@@ -3162,6 +3162,8 @@ public:
     // -- ... -->
   Token getXmlProcessingInstruction ();
     // ... &>
+  Token getXmlMarkupDeclaration ();
+    // ... >
   char getNextChar ();
     // Return: '\0' <=> EOF
     // Invokes: ci.unget()

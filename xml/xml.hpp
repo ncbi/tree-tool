@@ -176,7 +176,8 @@ private:
 public:
   
 
-  explicit Data (TokenInput &ti);
+  Data (TokenInput &tin,
+        VectorOwn<Data> &markupDeclarations);
 private:
   Data (Data* parent_arg,
         TokenInput &ti)
@@ -194,6 +195,8 @@ private:
     , colonInName (colonInName_arg)
     , token (move (value))
     {}
+  Data (const Data &) = default;
+  void clear () override;
   void readInput (TokenInput &ti);
     // <tag attribute1="value1" attribute2="value2" ... />
     // <tag attribute1="value1" attribute2="value2" ... > Data1 Data2 ... </tag>
@@ -205,7 +208,8 @@ private:
                              string &name);
     // Update: name
 public:
-  static Data* load (const string &fName);
+  static Data* load (const string &fName,
+                     VectorOwn<Data> &markupDeclarations);
   void qc () const override;
   void saveXml (Xml::File &f) const override;
   void saveText (ostream &os) const override;

@@ -67,10 +67,12 @@ struct ThisApplication : Application
 		QC_ASSERT (! variableTag. empty ());
 	
 	
-	  unique_ptr<const Xml_sp::Data> target (Xml_sp::Data::load (targetFName));
+	  VectorOwn<Xml_sp::Data> targetMarkupDeclarations;
+	  unique_ptr<const Xml_sp::Data> target (Xml_sp::Data::load (targetFName, targetMarkupDeclarations));
     target->qc ();
 
-	  unique_ptr<const Xml_sp::Data> query (Xml_sp::Data::load (queryFName));
+	  VectorOwn<Xml_sp::Data> queryMarkupDeclarations;
+	  unique_ptr<const Xml_sp::Data> query (Xml_sp::Data::load (queryFName, queryMarkupDeclarations));
     query->qc ();
     if (verbose ())
     {

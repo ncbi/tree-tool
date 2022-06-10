@@ -2152,6 +2152,36 @@ Token TokenInput::getXmlProcessingInstruction ()
 
 
 
+Token TokenInput::getXmlMarkupDeclaration ()
+{ 
+  QC_ASSERT (last. empty ());
+  
+  Token t;
+  t. charNum = ci. charNum;
+	for (;;)
+	{ 
+	  char c = ci. get (); 
+		if (ci. eof)
+	    ci. error ("XML comment is not finished: end of file", false);
+	  QC_ASSERT (c);
+	  if (isSpace (c))
+	    c = ' ';	    
+	  if (c == '>')
+	    break;
+    t. name += c;
+	}
+	
+	trim (t. name);
+	if (! t. name. empty ())
+    t. type = Token::eText;  
+  else
+    { ASSERT (t. empty ()); }
+	
+  return t;
+}
+
+
+
 char TokenInput::getNextChar () 
 { 
   QC_ASSERT (last. empty ());

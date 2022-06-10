@@ -65,7 +65,8 @@ struct ThisApplication : Application
 		const bool storeValues = getFlag ("store_values");
 	
 	
-	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (xmlFName));
+	  VectorOwn<Xml_sp::Data> markupDeclarations;
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (xmlFName, markupDeclarations));
     xml->qc ();
     
     if (printP)
