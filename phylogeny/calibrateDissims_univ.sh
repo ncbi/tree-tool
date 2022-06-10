@@ -33,11 +33,18 @@ section "Estimating hmm-univ.stat"
 TMP=`mktemp`
 echo $TMP 
 
+# $TMP.pairs
 IGNORE_ZERO_PAR=""
 if [ $IGNORE_ZERO == 1 ]; then
   IGNORE_ZERO_PAR="-ignoreZero"
 fi
 $THIS/../dm/positiveAverage $INPUT $DISSIM_POWER $OUTLIER_SES hmm-univ.stat  $IGNORE_ZERO_PAR  -iter_max 30  -output_dissim $TMP.pairs > positiveAverage.out
+if [ -s positiveAverage.out ]; then
+  cat positiveAverage.out
+  exit 1
+fi
+rm positiveAverage.out
+
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
 $THIS/../dm/pairs2dm $TMP.pairs 1 "cons" 6  -distance > data.dm
 
