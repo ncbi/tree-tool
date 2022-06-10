@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "For #1.list compute dissimilarities #1.dm, distance tree #1.tree and evaluate it"
+  echo "For #1.list compute dissimilarities #1.dm, distance tree #1.tree, quality file #1.qual and evaluate it"
   echo "#1: list of objects (file prefix)"
   echo "#2: incremental distance tree directory (no updating)"
   exit 1
@@ -21,10 +21,9 @@ if [ ! -e $INC/phen ]; then
 fi
 
 
-
 section "Dissimilarities"
 TMP=`mktemp`
-echo $TMP
+echo $TMP > /dev/stderr
 
 $THIS/../list2pairs $LIST > $TMP.req
 $THIS/distTree_inc_request2dissim.sh $INC $TMP.req $TMP.dissim
@@ -39,9 +38,7 @@ if [ -e $INC/threads ]; then
   N=`cat $INC/threads`
 fi
 THREADS="-threads $N"
-
 VARIANCE=`cat $INC/variance`
-
 $THIS/makeDistTree  $THREADS  -data $F  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 5  -noqual  -output_tree $F.tree
 
 
@@ -50,5 +47,5 @@ LARGE=0
 if [ -e $INC/large ]; then
   LARGE=1
 fi
-$THIS/tree_quality_phen.sh $F.tree "" $INC/phen $LARGE 1 ""
+$THIS/tree_quality_phen.sh $F.tree "" $INC/phen $LARGE 1 $F.qual
 
