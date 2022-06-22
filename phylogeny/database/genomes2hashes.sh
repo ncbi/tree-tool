@@ -24,7 +24,7 @@ F2=$DIR/$H2/$G2/$G2.hash-$TYPE
 N1=`cat $F1 | wc -l`
 N2=`cat $F2 | wc -l`
 COMMON=`$THIS/../../setIntersect.sh $F1 $F2 1 | wc -l`
-echo "$G1 $G2 $N1 $N2 $COMMON"
+echo -e "$G1\t$G2\t$N1\t$N2\t$COMMON"
 
 if [ $OUT ]; then
   $THIS/../../setIntersect.sh $F1 $F2 1 > $OUT
