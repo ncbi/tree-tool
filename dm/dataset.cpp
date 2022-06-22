@@ -292,7 +292,8 @@ void NumAttr1::getAverageScatter (const Sample &sample,
   
   average = s / n;
   scatter = s2 / n - sqr (average);
-  IMPLY (! isNan (scatter), scatter >= 0.0);
+  if (! isNan (scatter))
+    maximize (scatter, 0.0);
 }
 
 
