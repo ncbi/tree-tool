@@ -2796,12 +2796,17 @@ Eigens::Eigens (const Matrix &matr,
 
     if (psd)
     { 
-      if (! nullReal (eigen->value) && negative (eigen->value / totalExplained_max, 1e-2))  // PAR
+      const bool bad = ! nullReal (eigen->value) && negative (eigen->value / totalExplained_max, 1e-2);  // PAR
+      maximize (eigen->value, 0.0);
+      if (bad)  
       {
+      #if 1
+        break;
+      #else
         cout << eigen->value << ' ' << totalExplained_max << endl;
         ERROR;
+      #endif
       }
-      maximize (eigen->value, 0.0);
     }
     
     eigen->qc ();
