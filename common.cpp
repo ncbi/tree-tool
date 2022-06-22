@@ -269,7 +269,7 @@ namespace
 
 
 string getStack ()
-// Print function names: addr2line -f -C -e <progname>  -a <address>  // --> exec() ??
+// Print function names:   // --> exec() ??
 {
 #ifdef _MSC_VER
   return "Stack trace is not implemented";
@@ -282,8 +282,11 @@ string getStack ()
     errorExit (("backtrace size is " + to_string (nptrs)). c_str ());
   char** strings = backtrace_symbols (buffer, nptrs);
   if (strings /*&& ! which ("addr2line"). empty ()*/) 
+  {
     FOR_START (int, i, 1, nptrs)
       s += string (strings [i]) + "\n";  
+    s += "Use: addr2line -f -C -e " + programArgs [0] + "  -a <address>";
+  }
   else
     s = "Cannot get stack trace";
 //free (strings);
