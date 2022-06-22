@@ -658,7 +658,7 @@ void Data::qc () const
   try 
   {
   //QC_IMPLY (colonInName, attribute);
-    QC_IMPLY (! colonInName, name == "!--" || isIdentifier (name, true));
+    QC_IMPLY (! colonInName, isLeft (name, "!")  /*!--"*/ || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
   #if 0
