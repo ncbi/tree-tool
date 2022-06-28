@@ -28,6 +28,7 @@ all:	\
   count \
   dataset_test \
   distTriangle \
+  dm2dist \
   dm2objs \
   dm2space \
   dm2subset \
@@ -165,6 +166,12 @@ distTriangle.o:  $(DM_HPP)
 distTriangleOBJS=distTriangle.o $(DM_OBJ) 
 distTriangle:	$(distTriangleOBJS)
 	$(CXX) -o $@ $(distTriangleOBJS) $(LIBS)
+	$(ECHO)
+
+dm2dist.o:  $(DM_HPP) 
+dm2distOBJS=dm2dist.o $(DM_OBJ) 
+dm2dist:	$(dm2distOBJS)
+	$(CXX) -o $@ $(dm2distOBJS) $(LIBS)
 	$(ECHO)
 
 dm2objs.o:  $(DM_HPP) 
