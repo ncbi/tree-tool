@@ -6,7 +6,8 @@ if [ $# -ne 1 ]; then
   echo "#1: Distance tree"
   exit 1
 fi
+TREE=$1
 
-grep -v '^ *0x' $1 | sed 's/^ *//1' | sed 's/: .*$//1' | sort
 
+$THIS/tree2obj_raw.sh $TREE | sort
 
