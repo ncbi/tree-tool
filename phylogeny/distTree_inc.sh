@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
   echo "Build a distance tree incrementally"
   echo "Update: #1/"
   echo "Output: leaf_errors.dm.gz, arc_existence.dm.gz"
@@ -9,13 +9,15 @@ if [ $# -ne 3 ]; then
   echo "Requires: large RAM, large running time"
   echo "#1: incremental distance tree directory"
   echo "#2: add new objects from #1/new/ (0/1)"
-  echo "#3: release directory where subdirectories are numbers, or ''. Valid if #1/phen exists"
+  echo "#3: list of good quality objects or ''"
+  echo "#4: release directory where subdirectories are numbers, or ''. Valid if #1/phen exists"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
 INC=$1
 NEW_PAR=$2
-RELDIR="$3"
+GOOD="$3"
+RELDIR="$4"
 
 
 $THIS/../check_tmp.sh
@@ -128,7 +130,7 @@ if [ -e $INC/phen ]; then
 	  LARGE=1
 	fi
 
-	super_section "Root and quality"
+	super_section "Root and quality of whole tree"
 	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
 	cat $INC/hist/tree_quality_phen.$VER 
 	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
@@ -143,6 +145,12 @@ if [ -e $INC/phen ]; then
 	
 	super_section "Names"
 	$THIS/tree2names.sh tree.$DATE $INC/phen $LARGE > $INC/hist/tree2names.$VER
+
+  if [ "$GOOD" ]; then
+  	super_section "Quality of good quality tree"
+  	$THIS/tree_quality_phen.sh $INC/tree $GOOD $INC/phen $LARGE 1 "" > $INC/hist/tree_quality_phen-good.$VER 
+  	cat $INC/hist/tree_quality_phen-good.$VER 
+  fi
 
 
   if [ -n "$RELDIR" ]; then
