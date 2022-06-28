@@ -239,7 +239,7 @@ struct ThisApplication : Application
     sp1 << outlierScore;
     {
       const VectorPtr<Attr> sm_all (sp1);
-      sm_orig. save (sm_all, osDat);
+      sm_orig. save (nullptr, sm_all, osDat);
     }
 
 

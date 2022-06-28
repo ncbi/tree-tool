@@ -155,7 +155,7 @@ struct ThisApplication : Application
 	 	if (! output_dissimFName. empty ())
 	 	{
 	 		OFStream f (output_dissimFName + dmSuff);
-	 	  sm. save (VectorPtr<Attr> {pa. averageAttr}, f);
+	 	  sm. save (nullptr, VectorPtr<Attr> {pa. averageAttr}, f);
 	 	}
 	}
 };

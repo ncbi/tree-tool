@@ -96,7 +96,7 @@ struct ThisApplication : Application
     }
     
     const Sample sm (ds);
-    sm. save (attrs, cout);  
+    sm. save (nullptr, attrs, cout);  
 	}
 };
 

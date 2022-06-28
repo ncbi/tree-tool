@@ -2272,7 +2272,7 @@ void Dataset::saveText (ostream &os) const
   VectorPtr<Attr> vec;  vec. reserve (attrs. size ());
   insertAll (vec, attrs);
   const Sample sample (*this);
-  sample. save (vec, os);
+  sample. save (nullptr, vec, os);
 }
 
 
@@ -2513,7 +2513,8 @@ void Sample::missing2mult (const Attr1* attr1)
 
 
 
-void Sample::save (const VectorPtr<Attr> &attrs,
+void Sample::save (const Vector<size_t>* objNums,
+                   const VectorPtr<Attr> &attrs,
                    ostream &os) const
 {
   ASSERT (os. good ());
@@ -2521,7 +2522,7 @@ void Sample::save (const VectorPtr<Attr> &attrs,
   const bool unitMult = ds->getUnitMult ();
 
   size_t activeObjs = 0;    
-  for (Iterator it (*this); it ();)  
+  for (Iterator it (*this, objNums); it ();)  
     activeObjs++;
 
   os << "OBJNUM " << activeObjs << " name ";
@@ -2545,7 +2546,7 @@ void Sample::save (const VectorPtr<Attr> &attrs,
   
   const size_t objWidth = getObjNameLen_max ();
   const size_t multWidth = toString (getMaxMult ()). size ();  // integer ??
-  for (Iterator it (*this); it ();)  
+  for (Iterator it (*this, objNums); it ();)  
   {
   	os. width ((streamsize) objWidth);
     os << std::left << ds->objs [*it] -> name << " ";
@@ -2579,7 +2580,7 @@ void Sample::save (const VectorPtr<Attr> &attrs,
   if (ds->objCommented ())
   {
     os << "COMMENT" << endl;
-    for (Iterator it (*this); it ();)  
+    for (Iterator it (*this, objNums); it ();)  
       os << nvl (ds->objs [*it] -> comment, missingStr) << endl;
   }
 }
@@ -5868,7 +5869,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
         if ((*clustNominAttr) [row] != i)
           subset. mult [row] = 0.0;
       subset. finish ();    
-      subset. save (attrs_orig, oss);
+      subset. save (nullptr, attrs_orig, oss);
     }
 
     JsonMap* jClust = nullptr;

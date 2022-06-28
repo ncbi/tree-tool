@@ -1255,7 +1255,8 @@ struct Sample : Root
   Real getMaxMult () const;
   size_t getObjNameLen_max () const;  
   void missing2mult (const Attr1* attr1);
-  void save (const VectorPtr<Attr> &attrs,
+  void save (const Vector<size_t>* objs,                   
+             const VectorPtr<Attr> &attrs,
              ostream &os) const;
     // <dmSuff>-format
 };
@@ -1274,6 +1275,7 @@ struct SaveSample : Sample
 protected:
   Sample& sample; 
 
+
   explicit SaveSample (Sample &sample_arg)
     : Sample (sample_arg)
     , sample (sample_arg)
@@ -1288,33 +1290,52 @@ public:
 struct Iterator : Nocopy  // --> FOR ??
 {
 private:
-  const Vector<Real>& mult_;
+  const Vector<Real> &mults;
+  const Vector<size_t>* objNums {nullptr};
   // Output
   size_t objNum {no_index};
 public:
   Real mult {NaN};
 
-  explicit Iterator (const Sample &sample)
-    : mult_ (sample. mult)
+
+  explicit Iterator (const Sample &sample,
+                     const Vector<size_t>* objNums_arg = nullptr)
+    : mults (sample. mult)
+    , objNums (objNums_arg)
     {}
+
 
   bool operator() ()
     // Update: objNum, mult
     // Return: true => mult
-		{ if (objNum == mult_. size ())
-		    return false;
-		  for (objNum = objNum == no_index ? 0 : (objNum + 1); 
-		       objNum < mult_. size (); 
-		       objNum++
-		      )
-		  { mult = mult_ [objNum];
-		    if (mult)
-		      return true;
-		  }
+		{ if (objNums)
+		  { if (objNum == objNums->size ())
+  		    return false;
+  		  for (objNum = objNum == no_index ? 0 : (objNum + 1); 
+  		       objNum < objNums->size (); 
+  		       objNum++
+  		      )
+  		  { mult = mults [(*objNums) [objNum]];
+  		    if (mult)
+  		      return true;
+  		  }
+  		}
+  		else
+		  { if (objNum == mults. size ())
+  		    return false;
+  		  for (objNum = objNum == no_index ? 0 : (objNum + 1); 
+  		       objNum < mults. size (); 
+  		       objNum++
+  		      )
+  		  { mult = mults [objNum];
+  		    if (mult)
+  		      return true;
+  		  }
+  		}
 		  return false;
 		}
   size_t operator* () const 
-    { return objNum; }
+    { return objNums ? (*objNums) [objNum] : objNum; }
     // Valid if operator()
 };
 
@@ -1537,7 +1558,7 @@ template <typename T/*:Attr1*/>
 PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
                          const string &attrName,
                          Dataset &ds);
-  // Return: distance in L_2
+  // Return: squared distance in L_2
   
 PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
                                const string &attrName,
@@ -1673,7 +1694,7 @@ template <typename T/*:Attr1*/>
 
     void saveData (ostream &os) const
       { const VectorPtr<Attr> attrs (space);
-        sample. save (attrs, os);
+        sample. save (nullptr, attrs, os);
       }
 
 

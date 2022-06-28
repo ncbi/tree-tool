@@ -444,7 +444,7 @@ Save clusters in " + dmSuff + "-files\
           if (! objSet. contains (row))
             sm. mult [row] = 0.0;
         sm. finish ();    
-        sm. save (attrs, f);
+        sm. save (nullptr, attrs, f);
       }
     }
 	}

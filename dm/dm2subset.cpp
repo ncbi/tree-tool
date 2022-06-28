@@ -82,7 +82,7 @@ struct ThisApplication : Application
         sm. mult [row] = 0.0;
     sm. finish ();    
 
-    sm. save (VectorPtr<Attr> (ds. attrs), cout);  
+    sm. save (nullptr, VectorPtr<Attr> (ds. attrs), cout);  
 	}
 };
 

@@ -297,7 +297,7 @@ struct ThisApplication : Application
       VectorPtr<Attr> attrs;
       attrs << clusterAttr << scoreAttr << classAttr;
       cout << endl;
-      sm. save (attrs, cout);      
+      sm. save (nullptr, attrs, cout);      
 
       cout << endl;
       Real score_min, score_max;

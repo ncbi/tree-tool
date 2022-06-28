@@ -114,7 +114,7 @@ struct ThisApplication : Application
       attrs << cl. createSpace (ds);
       if (prob_min)
         attrs << cl. createNominAttr ("Cluster", prob_min, ds);
-      sm. save (attrs, f);
+      sm. save (nullptr, attrs, f);
     }
 	}
 };
