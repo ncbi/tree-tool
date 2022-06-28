@@ -53,19 +53,54 @@ struct ThisApplication : Application
   	{
   	  version = VERSION;
   	  addPositional ("file", dmSuff + "-file with Number attributes");
+  	  addKey ("objs", "List of objects to print");
+  	  addKey ("attrs", "List of attributes to print");
   	}
 	
 	
 	
 	void body () const final
 	{
-		const string inFName = getArg ("file");
+		const string inFName   = getArg ("file");
+		const string objFName  = getArg ("objs");
+		const string attrFName = getArg ("attrs");
 
     
     Dataset ds (inFName);
     ds. qc ();
     
-    ds. saveText (cout);
+    unique_ptr<Vector<size_t>> objNums;  
+    if (! objFName. empty ())
+    {
+      objNums. reset (new Vector<size_t> ());
+      objNums->reserve (ds. objs. size ());
+      const StringVector objNames (objFName, ds. objs. size (), true);
+      for (const string& s : objNames)
+      {
+        const size_t objNum = ds. getName2objNum (s);
+        if (objNum == no_index)
+          cerr << "object not found: " << s << endl;
+        else
+          *objNums << objNum;
+      }
+    }
+
+    VectorPtr<Attr> attrs;  attrs. reserve (ds. attrs. size ());
+    if (attrFName. empty ())
+      insertAll (attrs, ds. attrs);
+    else
+    {
+      const StringVector attrNames (attrFName, ds. attrs. size (), true);
+      for (const string& s : attrNames)
+        if (const Attr* attr = ds. name2attr (s))
+          attrs << attr;
+        else
+          cerr << "attribute not found: " << s << endl;
+    }
+    
+    const Sample sample (ds);
+    sample. qc ();
+    sample. save (objNums. get (), attrs, cout);
 	}
 };
 
