@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Convert object-attribute pairs to a Data Master file with Boolean attributes
+*   Convert object-attribute pairs to a Data Master file 
 *
 */
 
@@ -47,9 +47,9 @@ namespace
 {
 
 
-void parseLine (string line,
-                string &objName,
-                string &attrName)
+string parseLine (string line,
+                  string &objName,
+                  string &attrName)
 {
 //cout << line << endl;  
   const string line_orig (line);
@@ -60,6 +60,7 @@ void parseLine (string line,
 	  trim (line);
 	  objName  = findSplit (line);
 	  attrName = findSplit (line);
+	  return line;
 	}
 	catch (const exception &e)
 	{
@@ -73,17 +74,23 @@ void parseLine (string line,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Convert object-attribute pairs to a " + dmSuff + "-file with Boolean attributes")
+    : Application ("Convert object-attribute pairs to a " + dmSuff + "-file with")
     {
       version = VERSION;
   	  addPositional ("pairs", "File with lines: <obj> <attr>");
+  	  addPositional ("type", "Boolean|Real|Positive");
+  	  addKey ("decimals", "Decimals", "0");
   	}
 
 
 
 	void body () const
 	{
-		const string pairsFName = getArg ("pairs");
+		const string pairsFName   =                   getArg ("pairs");
+		const string type         =                   getArg ("type");
+		const streamsize decimals = str2<streamsize> (getArg ("decimals"));
+		
+		QC_IMPLY (decimals, type == "Real" || type == "Positive");
 
 		
     Set<string> objNames;
@@ -100,7 +107,7 @@ struct ThisApplication : Application
       }
     }
     cerr << "# Objects: " << objNames. size () << endl;
-    cerr << "# Boolean attributes: " << attrNames. size () << endl;
+    cerr << "# Attributes: " << attrNames. size () << endl;
     ASSERT (! objNames. empty ());
     ASSERT (! attrNames. empty ());
     
@@ -109,10 +116,27 @@ struct ThisApplication : Application
       ds. appendObj (name);
     ds. setName2objNum ();
 
-    map<string,CompactBoolAttr1*> name2attr;
+    map<string,Attr1*> name2attr;
     for (const string& name : attrNames)
     {
-      auto attr = new CompactBoolAttr1 (name, ds);
+      Attr1* attr = nullptr;
+      if (type == "Boolean")
+        attr = new CompactBoolAttr1 (name, ds);
+      else if (type == "Real")
+      {
+        auto attr_ = new RealAttr1 (name, ds, decimals);
+        attr_->setAll (0.0);
+        attr = attr_;
+      }
+      else if (type == "Positive")
+      {
+        auto attr_ = new PositiveAttr1 (name, ds, decimals);
+        attr_->setAll (0.0);
+        attr = attr_;
+      }
+      else
+        throw runtime_error ("Unknown type " + strQuote (type));
+      ASSERT (attr);
       name2attr [name] = attr;
     //attr->setAll (false);
     }
@@ -123,11 +147,18 @@ struct ThisApplication : Application
       while (f. nextLine ())
       {
         string objName, attrName;
-        parseLine (f. line, objName, attrName);
+        const string value (parseLine (f. line, objName, attrName));
         const size_t row = ds. getName2objNum (objName);
-        CompactBoolAttr1* attr = name2attr [attrName];
+        Attr1* attr = name2attr [attrName];
         ASSERT (attr);
-        attr->setCompactBool (row, true);
+        if (type == "Boolean")
+          var_cast (attr->asCompactBoolAttr1 ()) -> setCompactBool (row, true);
+        else if (type == "Real")
+          var_cast (attr->asRealAttr1 ()) -> str2value (row, value);
+        else if (type == "Positive")
+          var_cast (attr->asPositiveAttr1 ()) -> str2value (row, value);
+        else
+          ERROR;
       }
     }
         
