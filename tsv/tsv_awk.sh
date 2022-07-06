@@ -8,7 +8,6 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 F=$1
-Q=\'
 P="$2"
 
 
