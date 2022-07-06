@@ -136,7 +136,7 @@ struct ThisApplication : Application
     {
       version = VERSION;
       // Input
-      addPositional ("annot", "Annotation tsv-file with columns: plasmid\tcontig_len\tstart\tstop (1-based), sorted by plasmid (accession), start, stop desc"); 
+      addPositional ("annot", "Annotation tsv-file with columns: plasmid\tcontig_len\tstart\tstop (1-based), sorted by plasmid (accession), start, stop desc; column names are arbitrary"); 
       addPositional ("gap_max", "Max. gap to merge annotations into an island");
       addKey ("non_island_coor", "Coordinates of non-islands");
     }
