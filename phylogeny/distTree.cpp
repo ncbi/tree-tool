@@ -3142,7 +3142,8 @@ DistTree::DistTree (const string &treeFName,
   
   if (! getConnected ())
     throw runtime_error (FUNC "Disconnected objects");
-  setDiscernibles_ds ();  
+  if (! setDiscernibles_ds ())
+    return;
 
   if (isDirName (treeFName))
     setGlobalLen ();  // --> after dissim2Ds(), use dissims ??
@@ -3173,7 +3174,8 @@ DistTree::DistTree (const string &dissimFName,
         
   if (! getConnected ())
     throw runtime_error (FUNC "Disconnected objects");
-  setDiscernibles_ds ();
+  if (! setDiscernibles_ds ())
+    return;
 
   neighborJoin ();
   
@@ -3972,8 +3974,6 @@ DistTree::DistTree (Subgraph &subgraph,
   setPaths (false);
 
 
-//ASSERT (setDiscernibles_ds () == 0);
-
   qcPaths ();
 }
 
@@ -4511,7 +4511,7 @@ Cluster2Leaves DistTree::getIndiscernibles ()
 
 
 
-size_t DistTree::leafCluster2discernibles (const Cluster2Leaves &cluster2leaves)
+void DistTree::leafCluster2discernibles (const Cluster2Leaves &cluster2leaves)
 {
   ASSERT (! subDepth);
 
@@ -4574,13 +4574,11 @@ size_t DistTree::leafCluster2discernibles (const Cluster2Leaves &cluster2leaves)
   
   if (n)
     cleanTopology ();
-    
-  return n;
 }
 
 
 
-size_t DistTree::setDiscernibles_ds ()
+bool DistTree::setDiscernibles_ds ()
 {
   ASSERT (! subDepth);
   ASSERT (dissimDs. get ());
@@ -4599,9 +4597,6 @@ size_t DistTree::setDiscernibles_ds ()
     }
   }
   
-//if (DistTree_sp::variance_min)
-  //return 0;
-  
   FFOR (size_t, row, dissimDs->objs. size ())
     if (const Leaf* leaf1 = findPtr (name2leaf, dissimDs->objs [row] -> name))
       FOR (size_t, col, row)  // dissimAttr is symmetric
@@ -4616,16 +4611,16 @@ size_t DistTree::setDiscernibles_ds ()
     if (const Leaf* leaf = dtNode->asLeaf ())
       cluster2leaves [var_cast (leaf) -> getDisjointCluster ()] << leaf;
   }
+  ASSERT (! cluster2leaves. empty ());
   
-  if (cluster2leaves. size () == 1)
-    throw runtime_error (FUNC "No discernible objects");
- 
-  return leafCluster2discernibles (cluster2leaves);
+  leafCluster2discernibles (cluster2leaves);
+  
+  return cluster2leaves. size () > 1;
 }
 
 
 
-size_t DistTree::setDiscernibles ()
+void DistTree::setDiscernibles ()
 { 
   ASSERT (! subDepth);
   ASSERT (optimizable ());
@@ -4641,11 +4636,9 @@ size_t DistTree::setDiscernibles ()
   //return 0;
   
   const Cluster2Leaves cluster2leaves (getIndiscernibles ());
-  const size_t n = leafCluster2discernibles (cluster2leaves);
+  leafCluster2discernibles (cluster2leaves);
 
   qcPaths ();
-  
-  return n;
 }
 
 

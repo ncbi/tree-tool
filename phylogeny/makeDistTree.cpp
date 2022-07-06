@@ -401,6 +401,12 @@ struct ThisApplication : Application
                   );
     }
     ASSERT (tree. get ());
+    if (tree->getDiscernibles (). size () == 1)
+    {
+      cout << "One discernible object" << endl;
+      return;
+    }
+    
     ASSERT (optimizable == tree->optimizable ());
     
     if (variance_dissim)

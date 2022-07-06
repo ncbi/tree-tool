@@ -1,6 +1,7 @@
-#define VERSION "1.9.6"
+#define VERSION "1.9.7"
 
 
+// 1.9.7  07/06/2022  there may be 1 indiscernible object
 // 1.9.6  10/18/2021  distTree_inc_refresh_dissim.sh
 // 1.9.5  07/23/2021  -prefer_gain is restored in tree2names.sh
 // 1.9.4  06/09/2021  combine_dissims.cpp: -barrier

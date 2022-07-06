@@ -1262,12 +1262,13 @@ private:
     // Return: VectorPtr::size() >= 2
     // Invokes: Leaf->DisjointCluster
     // Time: ~ O(p)
-  size_t leafCluster2discernibles (const Cluster2Leaves &cluster2leaves);
+  void leafCluster2discernibles (const Cluster2Leaves &cluster2leaves);
     // Return: Number of indiscernible leaves
     // Output: Leaf::len = 0, Leaf::discernible = false, topology
     // Invokes: cleanTopology()
     // Time: O(n)
-  size_t setDiscernibles_ds ();
+  bool setDiscernibles_ds ();
+    // Return: success
     // Invokes: leafCluster2discernibles()
   void cleanTopology ();
     // Time: O(n)
@@ -1404,7 +1405,7 @@ private:
     // Time: O(p log(n) / threads_max)
   void qcPredictionAbsCriterion () const;
 public:
-  size_t setDiscernibles ();
+  void setDiscernibles ();
     // Invokes: getIndiscernibles(), leafCluster2discernibles()
   size_t fixTransients ();
     // Return: number of transient nodes deleted
