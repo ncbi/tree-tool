@@ -59,6 +59,7 @@ struct ThisApplication : Application
   	  addKey ("flank", "length of flanking sequence", "0");
   	  addFlag ("excise", "Excise the segment, otherwise leave the segment");
   	  addKey ("strand", "Strand (0 or - / 1 or +)", "1");
+  	  addKey ("name", "Name of the resulting sequence", "");
     }
 
 
@@ -69,8 +70,10 @@ struct ThisApplication : Application
 	  const size_t start_  = str2<size_t> (getArg ("start"));
 	  const size_t stop_   = str2<size_t> (getArg ("stop"));
 	  const size_t flank   = str2<size_t> (getArg ("flank"));
-	  const bool excise    = getFlag ("excise");
+	  const bool excise    = getFlag ("excise");	  
 	  const string strandS = getArg ("strand");
+	  const string name    = getArg ("name");
+	  
 	  
 	  size_t start = min (start_, stop_);
 	  size_t stop  = max (start_, stop_);
@@ -122,6 +125,8 @@ struct ThisApplication : Application
       if (! strand)
         swap (start_human, stop_human);
       dna->name = dna->getId () + ":" + to_string (start_human) + "-" + to_string (stop_human) + " " + dna->getDescription (false);
+      if (! name. empty ())
+        dna->name = name + " " + dna->name;
     }
     dna->saveText (cout);
   }
