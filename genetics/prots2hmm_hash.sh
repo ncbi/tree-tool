@@ -19,20 +19,26 @@ HASH=$5
 LOG=$6
 
 
-TMP=`mktemp`
-#echo $TMP
 
+if [ -s $PROT ]; then
+  TMP=`mktemp`
+  #echo $TMP
 
-CUT_GA=""
-if [ $CUTOFF == 1 ]; then
-  CUT_GA="--cut_ga"
+  CUT_GA=""
+  if [ $CUTOFF == 1 ]; then
+    CUT_GA="--cut_ga"
+  fi
+  hmmsearch  --tblout $TMP.hmmsearch  --noali  -Z 10000  $CUT_GA  --cpu 4  $HMM $PROT &>> $LOG
+  $THIS/prots2hmm_signature $TMP.hmmsearch  -log $LOG > $SIG
+  cut -f 2 $SIG | $THIS/../str2hash -log $LOG > $HASH
+
+  rm -f $TMP*
+else
+  cp /dev/null $SIG
+  cp /dev/null $HASH
 fi
-hmmsearch  --tblout $TMP.hmmsearch  --noali  -Z 10000  $CUT_GA  --cpu 4  $HMM $PROT &>> $LOG
-$THIS/prots2hmm_signature $TMP.hmmsearch  -log $LOG > $SIG
-cut -f 2 $SIG | $THIS/../str2hash -log $LOG > $HASH
 
-
-rm -f $TMP*
-rm $LOG
+  
+rm -f $LOG
 
 

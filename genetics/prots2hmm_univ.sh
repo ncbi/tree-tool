@@ -22,32 +22,39 @@ if [ ! -e $IN ]; then
   IN=$PREFIX.prot
 fi
 
+
 ANNOT=$PREFIX.univ
 PROT_CUT=$PREFIX.prot-univ
 
 
-TMP=`mktemp`
+if [ -s $IN ]; then
+  TMP=`mktemp`
+  #echo $TMP
 
+  CUTOFF_PAR=""
+  if [ $CUTOFF == 1 ]; then
+    CUTOFF_PAR="--cut_ga"
+  fi
+  hmmsearch  --tblout $TMP.hmmsearch  --domtblout $TMP.dom  --noali  -Z 10000  $CUTOFF_PAR  --cpu 4  $HMM_LIB $IN &>> $LOG 
 
-CUTOFF_PAR=""
-if [ $CUTOFF == 1 ]; then
-  CUTOFF_PAR="--cut_ga"
+  $THIS/hmmsearch2besthits $TMP.hmmsearch  -domtblout $TMP.dom  -log $LOG  > $ANNOT 
+  cut -f 1,2,4,5 $ANNOT > $TMP.univ
+
+  $THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
+
+  if false; then
+    mkdir $TMP.seq
+    $THIS/splitFasta -aa $PROT_CUT 25 $TMP.seq  -log $LOG
+    $THIS/../trav $TMP.seq  -log $LOG  "hmmalign --amino --informat FASTA --outformat A2M $HMM_DIR/%f.HMM %d/%f" | sed '/^[^>]/ s/[a-z]//g' | sed '/^[[:space:]]*$/d' > $PREFIX.hmm-align
+  fi
+
+  rm -fr $TMP*
+else
+  cp /dev/null $ANNOT
+  cp /dev/null $PROT_CUT
 fi
-hmmsearch  --tblout $TMP.hmmsearch  --domtblout $TMP.dom  --noali  -Z 10000  $CUTOFF_PAR  --cpu 4  $HMM_LIB $IN &>> $LOG 
-
-$THIS/hmmsearch2besthits $TMP.hmmsearch  -domtblout $TMP.dom  -log $LOG  > $ANNOT 
-cut -f 1,2,4,5 $ANNOT > $TMP.univ
-
-$THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
-
-if false; then
-  mkdir $TMP.seq
-  $THIS/splitFasta -aa $PROT_CUT 25 $TMP.seq  -log $LOG
-  $THIS/../trav $TMP.seq  -log $LOG  "hmmalign --amino --informat FASTA --outformat A2M $HMM_DIR/%f.HMM %d/%f" | sed '/^[^>]/ s/[a-z]//g' | sed '/^[[:space:]]*$/d' > $PREFIX.hmm-align
-fi
 
 
-rm -fr $TMP*
 rm -f $LOG
 
 
