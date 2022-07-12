@@ -20,10 +20,11 @@ LOG=$4
 INC=`dirname $0`
 GENOME=$INC/../genome
 # PAR
-CPP_DIR/phylogeny/database/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0 0.56 1  $LOG
+CPP_DIR/phylogeny/database/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0 0.59 1  $LOG
 #                                                     1    2       3           4    5  6   7                 8                  9 10   11 12 
 # was: #5 = 10
 #      #9 = 1
+#      #10 = 0.56
 
 #CPP_DIR/trav  -step 1  $REQ "CPP_DIR/phylogeny/database/symbet.sh $GENOME %f 20 2> /dev/null | sed 's/^/%f\t/1'"  -log $LOG > $OUT
 
