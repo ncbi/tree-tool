@@ -119,9 +119,9 @@ struct ThisApplication : Application
       map<string/*Mutation::geneName*/,unordered_set<Mutation,Mutation::Hash>> gene2muts;  
         // !Mutation::ambig
       {
-        FileItemGenerator fig (1000, true, large, inDirName, false);  // PAR
+        DirItemGenerator dig (1000, inDirName, large);  // PAR
         string fName;
-    	  while (fig. next (fName))
+    	  while (dig. next (fName))
         {
           Vector<Mutation> muts;  muts. reserve (16);  // PAR
           {
