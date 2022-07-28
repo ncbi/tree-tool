@@ -3986,10 +3986,8 @@ void DistTree::loadTreeDir (const string &dir)
   ASSERT (isDirName (dir));
 
 #ifndef _MSC_VER
-  const string outFName (dir + ".list");  // Use "tmp" ??
-  EXEC_ASSERT (system (("ls " + dir + " > " + outFName). c_str ()) == 0);
-  const StringVector fileNames (outFName, (size_t) 100, true);  // PAR
-  removeFile (outFName);
+  DirItemGenerator dig (0, dir, false);
+  const StringVector fileNames (dig. toVector ());  
   QC_ASSERT (! fileNames. empty ());
 
   Name2steiner name2steiner;
