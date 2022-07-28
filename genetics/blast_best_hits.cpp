@@ -47,6 +47,7 @@ namespace
   
 struct Blast : Root
 {
+  string name;
   string targetName;
   string refName; 
   size_t length {0}, nident {0}  // aa
@@ -63,10 +64,16 @@ struct Blast : Root
   Blast (const Blast&) = default;
   Blast (Blast&&) = default;
   Blast& operator= (Blast &&) = default;
-  explicit Blast (const string &line)
+  Blast (const string &line,
+         bool nameP)
     {
       static Istringstream iss;
 	    iss. reset (line);
+	    if (nameP)
+	    {
+	      iss >> name;
+	      QC_ASSERT (! name. empty ());
+	    }
 	    iss >> targetName >> refName >> length >> nident >> targetStart >> targetStop >> refStart >> refStop >> refLen; 
 	  // format:  qseqid      sseqid    length    nident         qstart         qend     sstart      send       slen
 
@@ -102,7 +109,9 @@ public:
       QC_ASSERT (targetStart < targetStop);
     }
   void saveText (ostream &os) const final
-    { os         << targetName 
+    { if (! name. empty ())
+        os << name << '\t';
+      os         << targetName 
          << '\t' << refName 
          << '\t' << length 
          << '\t' << nident 
@@ -126,6 +135,8 @@ public:
     { return (double) refcoverage () / (double) refLen; }
   void saveSummary (ostream &os) const
     { const ONumber on (os, 2, false);
+      if (! name. empty ())
+        os << name << '\t';
       os         << targetName 
          << '\t' << refName 
          << '\t' << ident_frac () * 100.0      
@@ -158,6 +169,11 @@ void process (Vector<Blast> &als)
   {
     if (! prev || prev->targetStop < al. targetStop)
 	    al. saveSummary (cout);
+	  if (prev)
+	  {
+	    ASSERT (prev->name       == al. name);
+	    ASSERT (prev->targetName == al. targetName);
+	  }
 	  prev = & al;
 	}
 
@@ -185,10 +201,11 @@ struct ThisApplication : Application
       version = VERSION;
       // Input
       const string blastFormat ("qseqid sseqid length nident qstart qend sstart send slen stitle");
-      addPositional ("blast", "BLAST output in the format: " + blastFormat + "\nSorted by qseqid"); 
+      addPositional ("blast", "BLAST output in the format: " + blastFormat + "\nGrouped by name, qseqid"); 
       addPositional ("pident_min", "Min. identity percent of HSPs");
       addPositional ("coverage_min", "Min. coverage of HSP reference to report");
       addPositional ("pcoverage_min", "Min. coverage percent of HSP reference to report");
+      addFlag ("name", "First column of <blast> is the query name");
     }
 
 
@@ -198,7 +215,8 @@ struct ThisApplication : Application
     const string blastFName        =               getArg ("blast");
     const double ident_frac_min    = str2<double> (getArg ("pident_min")) / 100.0;
     const size_t coverage_min      = str2<size_t> (getArg ("coverage_min"));    
-    const double coverage_frac_min = str2<double> (getArg ("pcoverage_min")) / 100.0;    
+    const double coverage_frac_min = str2<double> (getArg ("pcoverage_min")) / 100.0;  
+    const bool nameP               =               getFlag ("name");  
     
     QC_ASSERT (ident_frac_min >= 0.0);
     QC_ASSERT (ident_frac_min <= 1.0);
@@ -210,20 +228,26 @@ struct ThisApplication : Application
     LineInput f (blastFName);
     try
     {
-      cout << '#' << header << endl;
+      cout << '#';
+      if (nameP)
+        cout << "name\t";
+      cout << header << endl;
       Vector<Blast> als;
   	  while (f. nextLine ())
   	  {
-  	    Blast al (f. line);
+  	    Blast al (f. line, nameP);
   	    al. qc ();
-	      QC_IMPLY (! als. empty (), als. back (). targetName <= al. targetName);
+	    //QC_IMPLY (! als. empty (), als. back (). targetName <= al. targetName);
   	    if (al. ident_frac () <= ident_frac_min)
   	      continue;
   	    if (al. refcoverage () < coverage_min)
   	      continue;
   	    if (al. refcoverage_frac () < coverage_frac_min)
   	      continue;
-  	    if (! als. empty () && als. back (). targetName != al. targetName)
+  	    if (   ! als. empty () 
+  	        && (   als. back (). name != al. name 
+  	            || als. back (). targetName != al. targetName)
+  	       )
   	      process (als);
 	      als << move (al);
   	    ASSERT (al. empty ());
