@@ -72,8 +72,12 @@ struct ThisApplication : Application
     Set<string> objNames;
     {
       LineInput li (objNameFName);
+      string s;
       while (li. nextLine ())
-        objNames << li. line;
+      {
+        trim (li. line);
+        objNames << move (li. line);
+      }
     }
     
     Sample sm (ds);
