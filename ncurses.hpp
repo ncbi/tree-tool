@@ -32,6 +32,10 @@
 */
 
 
+#ifdef _MSC_VER
+  #error "UNIX is required"
+#endif
+
 #include "common.hpp"
 using namespace Common_sp;
 
