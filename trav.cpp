@@ -112,7 +112,7 @@ struct ThisApplication : Application
     : Application ("Apply <command> to all <items>")
   	{
       version = VERSION;
-  	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory), or a natural number");
+  	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory in raw order), or a natural number");
   	  addPositional ("command", "Text with special symbols: \
 \"%d\" = <items>, \
 \"%f\" - item, \
@@ -168,11 +168,19 @@ struct ThisApplication : Application
   	  {
   	    const uint stepItemGen = threads_max > 1 ? 1000 : step;  // PAR
     	  const bool isFile = fileExists (itemsName);
-    	  const bool isDir = directoryExists (itemsName);
+    	  const bool isDir = 
+    	    #ifdef _MSC_VER
+    	      false
+    	    #else
+    	      getFiletype (itemsName, true) == Filetype::dir
+    	    #endif
+    	    ;
     	  if (isDir && tsv)
     	    throw runtime_error ("-tsv cannot be used if <items> is a directory");
-    	  if (isFile || isDir)
-    	    gen. reset (new FileItemGenerator (stepItemGen, isDir, large, itemsName, tsv));
+    	  if (isFile)
+    	    gen. reset (new FileItemGenerator (stepItemGen, itemsName, tsv));
+    	  else if (isDir)
+    	    gen. reset (new DirItemGenerator (stepItemGen, itemsName, large));
         else 
           if (isDigit (itemsName [0]))
           {
