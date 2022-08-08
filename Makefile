@@ -59,6 +59,12 @@ file2hash:	$(file2hashOBJS)
 	$(CXX) -o $@ $(file2hashOBJS) $(LIBS)
 	$(ECHO)
 
+fstream_test.o: $(COMMON_HPP)  
+fstream_testOBJS=fstream_test.o $(CPP_DIR)/common.o
+fstream_test: $(fstream_testOBJS)
+	$(CXX) -o $@ $(fstream_testOBJS) $(LIBS)
+	$(ECHO)
+
 graph_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 graph_testOBJS=graph_test.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 graph_test:	$(graph_testOBJS)
