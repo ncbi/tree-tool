@@ -451,7 +451,7 @@ struct ThisApplication : Application
       cerr << "Deleting ..." << endl;
       size_t deleted = 0;
       {
-        LineInput f (deleteFName, 10000, 0);  // PAR
+        LineInput f (deleteFName);  
         Progress prog (0, 1000);  // PAR
         while (f. nextLine ())
         {
@@ -486,7 +486,7 @@ struct ThisApplication : Application
       ASSERT (toDelete. isUniq ());
       VectorPtr<Leaf> toKeep;  toKeep. reserve (tree->name2leaf. size ());
       {
-        LineInput f (keepFName, 10000, 1000);  // PAR
+        LineInput f (keepFName, 1000);  // PAR
         while (f. nextLine ())
         {
           trim (f. line);

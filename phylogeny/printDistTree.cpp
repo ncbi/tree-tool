@@ -117,7 +117,7 @@ struct ThisApplication : Application
     
     if (! name_match. empty ())
     {
-      LineInput f (name_match, 10 * 1024, 1000);  // PAR
+      LineInput f (name_match, 1000);  // PAR
       string name_old, name_new;
       while (f. nextLine ())
       {
@@ -133,7 +133,7 @@ struct ThisApplication : Application
     
     if (! name_extend. empty ())
     {
-      LineInput f (name_extend, 10 * 1024, 1000);  // PAR
+      LineInput f (name_extend, 1000);  // PAR
       string name, name_ext;
       while (f. nextLine ())
       {
@@ -149,7 +149,7 @@ struct ThisApplication : Application
     
     if (! clade_name. empty ())
     {
-      LineInput f (clade_name, 10 * 1024, 1000);  // PAR
+      LineInput f (clade_name, 1000);  // PAR
       string lcaName, cladeName;
       Tree::LcaBuffer buf;
       while (f. nextLine ())
