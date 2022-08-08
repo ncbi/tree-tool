@@ -53,6 +53,7 @@ struct Locus
     // >= 1
     // 0 - unknown
   string contig;
+    // DNA FASTA id
   size_t start {0};
   size_t stop {0};
     // start <= stop
@@ -104,29 +105,64 @@ struct Locus
 
 
 
+struct Gff
+{
+  enum Type  {bakta, genbank, microscope, patric, pgap, prokka, pseudomonasdb, rast};
+    // Alphabetic order
+  static const StringVector names;
+  static Type name2type (const string &name);
+};
+
+
+
 struct Annot : Root
 {	
-  map<string/*protein accession*/, Set<Locus>> prot2cdss; 
-  map<string/*seqid*/,string/*locusTag*/> fasta2gff_prot;  
+  // Protein GFF id is a function of attributes (column in GFF)
+  map<string/*protein GFF id*/,Set<Locus>> prot2loci; 
+  map<string/*protein FASTA id*/,string/*protein GFF id*/> fasta2gff_prot;  
+    // empty() => protein FASTA id = protein GFF id
 
 
-  class Gff {};
-  Annot (Gff,
-         const string &fName,
-       //bool trimProject,
-         bool locus_tag,
-         bool pgap,
+  Annot (const string &fName,
+         Gff::Type gffType,
+         bool protMatch,
          bool lcl);
+    // GFF
 		// https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
-  class Bed {};
-  Annot (Bed,
-         const string &fName);
+		// https://github.com/ncbi/amr/issues/91
+		// Input: protMatch: property of protein FASTA:  
+		//                     genbank: "[locus_tag=...]" in comment
+		//                     microscope: "><acc>|ID:<num>|<gene>|
+		//        lcl: property of DNA FASTA: >lcl|...
+    /*
+      gffType        protein GFF id
+      -------        --------------
+      bakta          ID=       
+      genbank        locus_tag=[project:]acc  // if pseudo or protMatch
+                     Name=[project:]acc       // else                    
+      microscope     ID=
+      patric         ID=...;locus_tag=...
+      pgap           Name=                
+      prokka         ID=      
+      pseudomonasdb  Alias= (or locus=)
+      rast           ID=       
+      standard       Name=         
+        
+                     ["]acc["]
+    */
+  explicit Annot (const string &fName);
+    // Bed
 		// https://genome.ucsc.edu/FAQ/FAQformat.html#format1
 		
 		
   void load_fasta2gff_prot (const string &fName);
+    // Input: fName: file is created by gff_check.cpp -gff_prot_match
     // Output: fasta2gff_prot
+  void load_fasta2gff_dna (const string &fName);
+    // Input: fName: file is created by gff_check.cpp -gff_dna_match
+    // Output: Locus:;contig
   const Set<Locus>& findLoci (const string &fasta_prot) const;
+    // Return: !empty()
     // throw if not found
 };
 
