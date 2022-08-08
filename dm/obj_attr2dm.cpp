@@ -97,7 +97,7 @@ struct ThisApplication : Application
     Set<string> attrNames;
     { 
       cerr << "Pass 1 ..." << endl;
-      LineInput f (pairsFName, 10000000, 1000000);  // PAR
+      LineInput f (pairsFName, 1000000);  // PAR
       while (f. nextLine ())
       {
         string objName, attrName;
@@ -143,7 +143,7 @@ struct ThisApplication : Application
     
     {
       cerr << "Pass 2 ..." << endl;
-      LineInput f (pairsFName, 10000000, 1000000);  // PAR
+      LineInput f (pairsFName, 1000000);  // PAR
       while (f. nextLine ())
       {
         string objName, attrName;
