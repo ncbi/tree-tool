@@ -91,7 +91,7 @@ struct ThisApplication : Application
     unordered_map<string/*Item::name*/,Item*> items;  items. rehash (100000);  // PAR
       // Not delete'd
     {
-      LineInput fIn (inFName, 1024 * 1024);  // PAR
+      LineInput fIn (inFName);  
       string s1, s2;
       Istringstream iss;
       while (fIn. nextLine ())

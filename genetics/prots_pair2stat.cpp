@@ -120,7 +120,7 @@ struct ThisApplication : Application
     MeanVar meanVars [alphabetSize] [alphabetSize];
     {
       map<string/*fName*/,Obj> name2obj;    
-      LineInput in (pairs_dist, 10 * 1024 * 1024, 1000);  // PAR
+      LineInput in (pairs_dist, 1000);  // PAR
       Istringstream iss;
       string fName1, fName2;    
       while (in. nextLine ())

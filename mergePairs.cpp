@@ -60,7 +60,7 @@ struct ThisApplication : Application
 	{
 		const string fName = getArg ("in");
 
-    LineInput f (fName, 100 * 1024, 1000);
+    LineInput f (fName, 1000);  // PAR
     string lhs, lhs_prev;
   	while (f. nextLine ())
   	{ 

@@ -109,7 +109,7 @@ struct ThisApplication : Application
 	  Peptide best;
 	  size_t n_max = 0;
     {
-  	  Multifasta fa (inFName, true, 1024 * 1024);  // PAR ??
+  	  Multifasta fa (inFName, true);  
       Vector<char/*bool*/> found (len, 0);
   	  while (fa. next ())
   	  {

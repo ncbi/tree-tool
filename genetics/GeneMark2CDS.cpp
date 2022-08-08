@@ -265,8 +265,7 @@ struct ThisApplication : Application
     if (gtf)
     {
     	uint gene_prev = 0;
-    	LineInput f (annotFName, 1000 * 1024, 1000);  // PAR
- 	  //Istringstream iss;
+    	LineInput f (annotFName, 1000);  // PAR
  	    EuCds* cds = nullptr;
     	while (f. nextLine ())
     	  try
@@ -362,7 +361,7 @@ struct ThisApplication : Application
     }
     else
     {
-    	LineInput f (annotFName, 1000 * 1024, 1000);  // PAR
+    	LineInput f (annotFName, 1000);  // PAR
     	while (f. nextLine () && ! f. line. empty ())
     	  ;
     	uint n = 0;
@@ -437,7 +436,7 @@ struct ThisApplication : Application
     	if (! protFName. empty ())
     		protF. reset (new OFStream (protFName));
     		
-		  Multifasta f (fastaFName, false, 1024 * 1024, 100);  // PAR
+		  Multifasta f (fastaFName, false, 100);  // PAR
 		  while (f. next ())
 		  {
 		    const Dna contigDna (f, 10000, false);  // PAR

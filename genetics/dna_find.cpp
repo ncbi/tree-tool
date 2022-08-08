@@ -91,7 +91,7 @@ struct ThisApplication : Application
     targetRev. qc();
     
 
-	  Multifasta fa (inFName, false, 128 * 1024 * 1024, 0);  // PAR 
+	  Multifasta fa (inFName, false, 0);  // PAR 
 	  while (fa. next ())
 	  {
 	    const Dna dna (fa, 1000/*PAR*/, false);

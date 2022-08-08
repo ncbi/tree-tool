@@ -61,7 +61,7 @@ struct ThisApplication : Application
 		const bool   tsv = getFlag ("tsv");
 
 
-    LineInput f (in, 1024 * 1024);  // PAR
+    LineInput f (in);  
     while (f. nextLine ())
     {
       if (contains (f. line, '\t'))

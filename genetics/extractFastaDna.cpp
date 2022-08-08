@@ -71,7 +71,7 @@ struct ThisApplication : Application
   
     Set<string> names;
     {
-      LineInput in (targetFName, 10000);  // PAR
+      LineInput in (targetFName); 
 	  	while (in. nextLine ())
 	  	{ 
 	  	  trim (in. line);

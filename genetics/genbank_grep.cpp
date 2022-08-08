@@ -64,7 +64,7 @@ struct ThisApplication : Application
 	  const string field   = getArg ("field");
 	        
 	  
-	  LineInput f (inFName, 100000);  // PAR
+	  LineInput f (inFName);  
 	  Progress prog;
 	  while (! f. eof)
 	  {

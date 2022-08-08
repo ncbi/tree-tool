@@ -75,7 +75,7 @@ Time: O(n), where n is the number of sequences, assuming constant average length
 	  size_t kmers_total = 0;
 	  size_t kmersRejected_total = 0;
     {
-		  Multifasta faIn (inFName, false, 1024 * 1024, 100);  // PAR
+		  Multifasta faIn (inFName, false, 100);  // PAR
 		  while (faIn. next ())
 		  {
 		    const Dna dna (faIn, 10000, false);  // PAR

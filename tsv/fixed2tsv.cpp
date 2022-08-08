@@ -93,7 +93,7 @@ struct ThisApplication : Application
 		
 		
 		{
-  		LineInput f (fName, 1024, 1);  // PAR
+  		LineInput f (fName, 1);  // PAR
   		while (f. nextLine ())
   		{
   		  if (skipComment && ! f. line. empty () && f. line [0] == '#')

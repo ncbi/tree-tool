@@ -74,7 +74,7 @@ struct ThisApplication : Application
 		const string delim = getArg ("delim");
 		ASSERT (! delim. empty ());
 
-    LineInput f (fName, 100 * 1024, 1000);
+    LineInput f (fName, 1000);  // PAR
   	while (f. nextLine ())
   	{ 
   	  trim (f. line);

@@ -69,7 +69,7 @@ struct ThisApplication : Application
     MeanVar totalMv;    
     map<string/*contig*/,MeanVar> mvs;
     {
-      LineInput f (inFName, 10 * 1024 * 1024);
+      LineInput f (inFName);
       Istringstream iss;
       string contig;
       while (f. nextLine ())

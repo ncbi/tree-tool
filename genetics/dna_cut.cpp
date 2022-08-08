@@ -94,7 +94,7 @@ struct ThisApplication : Application
 	  Dna* dna = nullptr;  // Not delete'd
 	  {
   	  constexpr size_t size = 1024 * 1024;  // PAR
-  	  LineInput li (inFName, size);
+  	  LineInput li (inFName);
   	  QC_ASSERT (li. nextLine ());
       dna = new Dna (li, size, false);  
     }

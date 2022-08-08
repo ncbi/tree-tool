@@ -3580,7 +3580,7 @@ void FeatureTree::loadSuperRootCoreFile (const string &coreFeaturesFName)
   ASSERT (feature2index. size () == features. size ());
 
   {
-  	LineInput f (coreFeaturesFName, 10 * 1024);  // PAR
+  	LineInput f (coreFeaturesFName);  
   	size_t miss = 0;
   	while (f. nextLine ())
   	{

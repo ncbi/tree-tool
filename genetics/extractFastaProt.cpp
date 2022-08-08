@@ -105,7 +105,7 @@ struct ThisApplication : Application
   
     map<string/*id*/, Vector<Replacement>> name2replacement;
     {
-      LineInput in (targetFName, 10000);  // PAR
+      LineInput in (targetFName);  
     	Istringstream iss;
     	string name, replacement;
 	  	while (in. nextLine ())

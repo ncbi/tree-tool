@@ -3271,7 +3271,7 @@ DistTree::DistTree (const string &dataDirName,
   if (loadNewLeaves)
   {
     couterr << "Loading new leaves ..." << endl;
-    LineInput f (dataDirName + "leaf", 10 * 1024, 1);  // PAR
+    LineInput f (dataDirName + "leaf", 1);  // PAR
     string leafName, anchorName;
     Real leafLen, arcLen;
     Tree::LcaBuffer buf;
@@ -5135,7 +5135,7 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
   {
     couterr << "Loading " << fName << " ..." << endl;
     {
-      LineInput f (fName, 10 * 1024 * 1024, dissim_progress);  
+      LineInput f (fName, dissim_progress);  
       while (f. nextLine ())
       {
         DissimLine dl (f. line, f. lineNum);

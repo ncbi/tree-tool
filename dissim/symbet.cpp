@@ -56,7 +56,7 @@ unordered_set<string> readSeqs (const string &fName,
                                 size_t len_min)
 {
   unordered_set<string> seqs;  seqs. rehash (100000);  // PAR
-  Multifasta fa (fName, true, 16 * 1024 * 1024);  // PAR
+  Multifasta fa (fName, true);  
   while (fa. next ())
   {
     Peptide pep (fa, Peptide::stdAveLen, false);  

@@ -67,7 +67,7 @@ Parts are named <out_dir>/<i>")
 		ASSERT (size > 0);
 		ASSERT (start_part >= 1);
 
-    LineInput inF (in, 1024 * 1024);  // PAR
+    LineInput inF (in);  
     OFStream outF;
     uint part = 0;
     streamsize n = size;  // # lines in outF

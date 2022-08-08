@@ -260,7 +260,7 @@ struct ThisApplication : Application
     
 	  Vector<BlastAlignment> blastAls;
     {
-      LineInput f (blastpFName, 100 * 1024, 1);  // PAR
+      LineInput f (blastpFName, 1);  // PAR
   	  while (f. nextLine ())
   	    try { blastAls << BlastAlignment (f. line); }
   	      catch (...)

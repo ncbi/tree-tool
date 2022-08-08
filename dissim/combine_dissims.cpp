@@ -168,7 +168,7 @@ Line format: <unit> <raw_max>");
 		QC_IMPLY (barrier != no_index, barrier < scales. size ());
 
       
-  	LineInput f (dissimFName, 1024 * 100, 1);  // PAE
+  	LineInput f (dissimFName, 1);  // PAR
   	while (f. nextLine ())
     {
      	stringstream iss (f. line);

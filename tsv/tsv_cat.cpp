@@ -65,7 +65,7 @@ struct ThisApplication : Application
 		TextTable total;
 		total. pound = true;
 		{
-  		LineInput li (listFName, 1024, 1);  // PAR
+  		LineInput li (listFName, 1);  // PAR
   		while (li. nextLine ())
   		{
         TextTable tab (li. line);

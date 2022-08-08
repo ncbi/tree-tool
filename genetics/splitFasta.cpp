@@ -82,7 +82,7 @@ struct ThisApplication : Application
 
     {
       // For ~Progress()
-  	  Multifasta fa (in, aa, 16 * 1024 * 1024);  // PAR
+  	  Multifasta fa (in, aa); 
   	  while (fa. next ())
   	  {
   	    unique_ptr<const Seq> seq;
