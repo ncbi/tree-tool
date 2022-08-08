@@ -58,7 +58,6 @@
   #pragma warning (default : 4005)  
 #endif
 
-#include <ctime>
 #include <cstring>
 #include <cmath>
 #include <string>
@@ -258,6 +257,7 @@ public:
 
 
 struct Chronometer : Nocopy
+// CPU (not astronomical) time
 // Requires: no thread is used
 {
   static constexpr clock_t noclock {(clock_t) -1};
@@ -304,36 +304,25 @@ public:
 
 
 struct Chronometer_OnePass : Nocopy
+// Astronomical time
 {
+private:
 	const string name;
   ostream &os;
   const bool addNewLine;
   const bool active;
 	const time_t start;
+public:
+  
 	
   explicit Chronometer_OnePass (const string &name_arg,
                                 ostream &os_arg = cout,
                                 bool addNewLine_arg = true,
-                                bool active_arg = true)
-    : name (name_arg)
-    , os (os_arg)
-    , addNewLine (addNewLine_arg)
-    , active (active_arg)
-    , start (active_arg ? time (nullptr) : 0)
-    {}
- ~Chronometer_OnePass ()
-    { if (! active)
-        return;
-      if (uncaught_exception ())
-        return;
-      const time_t stop = time (nullptr);
-      os << "CHRON: " << name << ": ";
-      const ONumber on (os, 0, false);
-      os << difftime (stop, start) << " sec." << endl;
-      if (addNewLine)
-        os << endl;
-    }
+                                bool active_arg = true);
+ ~Chronometer_OnePass ();
+    // Print to os
 };
+	
 	
 	
 
@@ -937,7 +926,7 @@ extern const string noString;
 
 inline string ifS (bool cond,
                    const string &s)
-  { return cond ? s : string (); }
+  { return cond ? s : noString; }
 
 inline string nvl (const string& s,
                    const string& nullS = "-")
@@ -945,11 +934,11 @@ inline string nvl (const string& s,
   	
 inline string appendS (const string &s,
                        const string &suffix)
-  { return s. empty () ? string () : (s + suffix); }
+  { return s. empty () ? noString : (s + suffix); }
   	
 inline string prependS (const string &s,
                         const string &prefix)
-  { return s. empty () ? string () : (prefix + s); }
+  { return s. empty () ? noString : (prefix + s); }
   	
 inline bool isQuoted (const string &s,
                       char quote = '\"')
@@ -964,7 +953,7 @@ inline string unQuote (const string &s)
 inline string prepend (const string &prefix,
                     	 const string &s)
   { if (s. empty ())
-  	  return string ();
+  	  return noString;
   	return prefix + s;
   }
 
@@ -1176,7 +1165,7 @@ inline string getFileName (const string &path)
 inline string getDirName (const string &path)  
   { const size_t pos = path. rfind ('/');
   	if (pos == string::npos)
-  		return string ();
+  		return noString;
   	return path. substr (0, pos + 1);
   }
 
@@ -1299,7 +1288,7 @@ struct Dir
 bool getChar (istream &is,
               char &c);
   // Output: c if (bool)Return
-
+              
 void skipLine (istream &is);
 
 void readLine (istream &is,
@@ -1434,7 +1423,7 @@ public:
 	bool exec (const string cmd,
 	           size_t cmdThreads = 1)
 	  { if (cmdThreads && getAvailable () >= cmdThreads)
-	    { *this << thread (Common_sp::exec, cmd, string ());
+	    { *this << thread (Common_sp::exec, cmd, noString);
 	      threadsToStart -= cmdThreads - 1;
 	      return true;
 	    }
@@ -2278,7 +2267,7 @@ public:
                 char sep,
                 bool trimP);
   explicit StringVector (size_t n)
-    : P (n, string ())
+    : P (n, noString)
     {}
 
 
@@ -2819,6 +2808,7 @@ public:
 	const size_t displayPeriod;
 	size_t n {0};
 	string step;
+	  // To report in case of throw
 	
 
 	explicit Progress (size_t n_max_arg = 0,
@@ -2840,7 +2830,7 @@ public:
     }
     
 
-  bool operator() (const string& step_arg = string ())
+  bool operator() (const string& step_arg = noString)
     { n++;
     	step = step_arg;
     	if (   active 
@@ -2856,7 +2846,7 @@ private:
 	  // Output: cerr
 public:
   void reset ()
-    { n = 0;
+    { n = 0; 
       step. clear ();
     }
 	static void disable ()
@@ -2875,10 +2865,9 @@ public:
 struct Input : Root, Nocopy
 {
 protected:
-	unique_ptr<char> buf;
-	ifstream ifs;
+  ifstream ifs;
   istream* is {nullptr};
-    // !nullptr
+    // ifs.is_open() => is = &ifs
 public:
 	bool eof {false};
 	uint lineNum {0};
@@ -2890,7 +2879,6 @@ public:
 
 protected:	
   Input (const string &fName,
-         size_t bufSize,
          uint displayPeriod);
   Input (istream &is_arg,
 	       uint displayPeriod);
@@ -2898,7 +2886,6 @@ public:
 
 
   void reset ();
-    // Update: ifs
 };
 	
 
@@ -2911,9 +2898,8 @@ struct LineInput : Input
 
 	
 	explicit LineInput (const string &fName,
-          	          size_t bufSize = 100 * 1024,
           	          uint displayPeriod = 0)
-    : Input (fName, bufSize, displayPeriod)
+    : Input (fName, displayPeriod)
     {}
   explicit LineInput (istream &is_arg,
 	                    uint displayPeriod = 0)
@@ -2940,9 +2926,8 @@ struct LineInput : Input
 struct ObjectInput : Input
 {
 	explicit ObjectInput (const string &fName,
-          	            size_t bufSize = 100 * 1024,
           	            uint displayPeriod = 0)
-    : Input (fName, bufSize, displayPeriod)
+    : Input (fName, displayPeriod)
     {}
   explicit ObjectInput (istream &is_arg,
 	                      uint displayPeriod = 0)
@@ -2969,9 +2954,8 @@ public:
 
 	
 	explicit CharInput (const string &fName,
-              	      size_t bufSize = 100 * 1024,
               	      uint displayPeriod = 0)
-    : Input (fName, bufSize, displayPeriod)
+    : Input (fName, displayPeriod)
     {}
   explicit CharInput (istream &is_arg,
 	                    uint displayPeriod = 0)
@@ -2997,7 +2981,7 @@ public:
   string errorText (const string &what,
 		                bool expected = true) const
 		{ return "Error at line " + to_string (lineNum + 1) + ", pos. " + to_string (charNum + 1)
-                + (what. empty () ? string () : (": " + what + ifS (expected, " is expected"))); 
+                + (what. empty () ? noString : (": " + what + ifS (expected, " is expected"))); 
     }
   [[noreturn]] void error (const string &what,
 		                       bool expected = true) const
@@ -3155,9 +3139,8 @@ public:
                        char commentStart_arg = '\0',
                        bool dashInName_arg = false,
                        bool consecutiveQuotesInText_arg = false,
-                	     size_t bufSize = 100 * 1024,
                        uint displayPeriod = 0)
-    : ci (fName, bufSize, displayPeriod)
+    : ci (fName, displayPeriod)
     , commentStart (commentStart_arg)
     , dashInName (dashInName_arg)
     , consecutiveQuotesInText (consecutiveQuotesInText_arg)
@@ -3236,7 +3219,7 @@ public:
 	          bool sameAllowed_arg,
 	          bool orderNames_arg,
 	          uint displayPeriod = 1000)
-	  : f (fName, 100 * 1024, displayPeriod) 
+	  : f (fName, displayPeriod) 
 	  , sameAllowed (sameAllowed_arg)
 	  , orderNames (orderNames_arg)
 	  {}
@@ -4094,9 +4077,9 @@ protected:
   // acronym = '\0' <=> no acronym
   void addKey (const string &name, 
                const string &argDescription,
-               const string &defaultValue = string (),
+               const string &defaultValue = noString,
                char acronym = '\0',
-               const string &var = string ());
+               const string &var = noString);
     // [-<name> <defaultValue>]
     // gnu: [--<name> <var>]
   void addFlag (const string &name,
