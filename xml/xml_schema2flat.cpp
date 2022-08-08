@@ -76,7 +76,7 @@ struct ThisApplication : Application
 	  
 	  unique_ptr<const Xml_sp::Data> xml;
 	  {
-  	  TokenInput ti (xmlFName, '\0', false, false, 100 * 1024, 1000);  // PAR 
+  	  TokenInput ti (xmlFName, '\0', false, false, 1000);  // PAR 
       try
       {	  
     	  VectorOwn<Xml_sp::Data> markupDeclarations;

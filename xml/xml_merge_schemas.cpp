@@ -64,7 +64,7 @@ struct ThisApplication : Application
     string name;
     unique_ptr<Xml_sp::Schema> sch;
     {
-      LineInput f (xmlListFName, 100 * 1024, 1);  // PAR
+      LineInput f (xmlListFName, 1);  // PAR
       while (f. nextLine ())
       {
         string name1;	

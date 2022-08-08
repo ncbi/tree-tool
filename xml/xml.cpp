@@ -633,7 +633,7 @@ Data* Data::load (const string &fName,
   Unverbose unv;
   unique_ptr<Xml_sp::Data> f;
   { 
-    TokenInput ti (fName, '\0', true, false, 100 * 1024, 1000);  // PAR 
+    TokenInput ti (fName, '\0', true, false, 1000);  // PAR 
     try 
       { f. reset (new Xml_sp::Data (ti, markupDeclarations));	}
     catch (const CharInput::Error &e)

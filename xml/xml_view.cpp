@@ -96,7 +96,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	  unique_ptr<const Xml_sp::Data> xml;
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
 	  {
-  	  TokenInput ti (xmlFName, '\0', true, false, 100 * 1024, 1000);  // PAR
+  	  TokenInput ti (xmlFName, '\0', true, false, 1000);  // PAR
       try
       {
         Unverbose unv;
