@@ -235,10 +235,9 @@ protected:
 	void qcName () const;
 	void qcAlphabet () const;
 	  // Invokes: getSeqAlphabet()
-  static LineInput* getLineInput (const string &fName,
-                                  size_t reserveLen)
-    { LineInput* in = new LineInput (fName, reserveLen);
-      EXEC_ASSERT (in->nextLine ());
+  static LineInput* getLineInput (const string &fName)
+    { LineInput* in = new LineInput (fName);
+      in->nextLine ();
       return in;
     }
 public:
@@ -316,9 +315,8 @@ struct Multifasta : Root
 
 	Multifasta (const string &fName,
 	            bool aa_arg,
-	            size_t bufSize = 512 * 1024,  
 	            size_t displayPeriod = 1000)  
-		: in (fName, bufSize) 
+		: in (fName) 
 		, aa (aa_arg)
 		, prog (0, displayPeriod)  
 		{ in. nextLine (); 
@@ -750,7 +748,7 @@ struct FastaDna : Dna
   FastaDna (const string &fName,
             size_t reserveLen,
             bool sparse_arg)
-    : Dna (* unique_ptr<LineInput> (getLineInput (fName, reserveLen)), reserveLen, sparse_arg)
+    : Dna (* unique_ptr<LineInput> (getLineInput (fName)), reserveLen, sparse_arg)
     {}
 };
 
@@ -1008,7 +1006,7 @@ struct FastaPeptide : Peptide
   FastaPeptide (const string &fName,
                 size_t reserveLen,
                 bool sparse_arg)
-    : Peptide (* unique_ptr<LineInput> (getLineInput (fName, reserveLen)), reserveLen, sparse_arg)
+    : Peptide (* unique_ptr<LineInput> (getLineInput (fName)), reserveLen, sparse_arg)
     {}
 };
 
