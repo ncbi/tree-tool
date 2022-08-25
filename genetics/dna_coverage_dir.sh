@@ -3,8 +3,8 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# != 6 ]; then
   echo "Contig coverage report for a directory of queries"
-  echo "#1: diretory with query FASTA files"
-  echo "#2: subject FASTA file (can be gzip'ped or converted into a BLAST database)"
+  echo "#1: directory with query DNA FASTA files"
+  echo "#2: subject DNA FASTA file (can be gzip'ped or converted into a BLAST database)"
   echo "#3: dna_coverage mode: all, combine"
   echo "#4: min. identity percent"
   echo "#5: min. alignment length"
@@ -21,9 +21,11 @@ OUT=$6
 
 
 TMP=`mktemp`
+#echo $TMP > /dev/stderr
 
 
-$THIS/../trav $QUERY_DIR  -step 1  "dna_coverage.sh %d/%f $SUBJ $MODE $PIDENT_MIN $ALIGN_MIN '' 0" > $TMP
+makeblastdb  -in $SUBJ  -dbtype nucl  -blastdb_version 4  -out $TMP.db  -logfile $TMP.log
+$THIS/../trav $QUERY_DIR  -step 1  "dna_coverage.sh %d/%f $TMP.db $MODE $PIDENT_MIN $ALIGN_MIN '' 0" > $TMP
 $THIS/../tsv/tsv_clean.sh $TMP > $OUT
 
 
