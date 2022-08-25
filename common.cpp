@@ -3259,6 +3259,8 @@ FileItemGenerator::FileItemGenerator (size_t progress_displayPeriod,
   {
     string item;
     next (item);
+    ASSERT (prog. n == 1);
+    prog. n = 0;
   }
 }
 
