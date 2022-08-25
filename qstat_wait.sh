@@ -49,8 +49,8 @@ while true; do
       date
       if [ $QRESUB == 1 ]; then
         echo "Re-submitting $M grid jobs ..."
-        i=1
-        while [ $i -le $M ]; do
+        i=0
+        while [ $i -lt $M ]; do
           $THIS/grid_wait.sh 1
   	      qresub ${L[$i]} -h u || true
   	      i=$(($i + 1))
