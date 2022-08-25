@@ -31,6 +31,7 @@ fi
 
 TMP=`mktemp`  
 #echo $TMP > /dev/stderr
+#set -x
 
 
 QUERY_NAME=`basename $QUERY`  
@@ -38,7 +39,11 @@ SUBJ_NAME=`basename $SUBJ`
 
 
 DB=$SUBJ
-if [ ! -e $DB.nhr ]; then
+DB_EXISTS=0
+if [ -e $DB.nhr -o -e $DB.00.nhr ]; then
+  DB_EXISTS=1
+fi
+if [ $DB_EXISTS == 0 ]; then
   if [ ! -e $SUBJ -o -d $SUBJ ]; then
     rm $TMP*
     error "Subject file $SUBJ does not exist"
@@ -58,14 +63,14 @@ fi
 
 # $TMP.blastn
 N=`grep -c ">" $QUERY || true`
-if [ $N -gt 0 -a -e $DB.nhr ]; then
+if [ $N -gt 0 -a $DB_EXISTS == 1 ]; then
   MT_MODE=""
   if [ $N -gt 1 ]; then
     MT_MODE="-mt_mode 1"
   fi
   HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
   #       1      2      3      4      5      6    7    8      9    10   11
-  blastn  -query $QUERY  -db $DB  -dust no  -evalue 1e-10  -dbsize 10000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE 2> /dev/null | sort -k1,1 -k4,4nr > $TMP.blastn
+  blastn  -query $QUERY  -db $DB  -dust no  -max_target_seqs 1000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE 2> /dev/null | sort -k1,1 -k4,4nr > $TMP.blastn
     # PAR
   if [ $TO_REMOVE ]; then
     awk '$2 != "'$TO_REMOVE'"' $TMP.blastn > $TMP.blastn1
