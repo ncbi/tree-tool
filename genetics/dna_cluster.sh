@@ -3,16 +3,18 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Cluster DNA sequences, if #1 = #2 then print representatives else print #1-#2 pairs"
-  echo "#1; query   directory with DNA sequence"
-  echo "#2; subject directory with DNA sequence"
+  echo "Output: BLAST database of #2"
+  echo "Temporary: #1.dir, #1.pairs"
+  echo "#1; query   DNA FASTA"
+  echo "#2; subject DNA FASTA"
   echo "#3: min. fraction of identity"
   echo "#4: min. fraction of coverage"
   echo "#5: output file with all pairs of sequences of the same clusters"
   echo "#6: output file with clusters: <item> <cluster representative>"
   exit 1
 fi
-QDIR=$1
-SDIR=$2
+QUERY=$1
+SUBJ=$2
 IDENT=$3
 COV=$4
 PAIR=$5
@@ -20,23 +22,32 @@ CLUST=$6
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr 
+echo $TMP > /dev/stderr 
 #set -x
 
 
-$THIS/../trav $SDIR "cat %d/%f" > $TMP
-makeblastdb  -in $TMP   -dbtype nucl  -blastdb_version 4  -logfile /dev/null
+makeblastdb  -in $SUBJ   -dbtype nucl  -blastdb_version 4  -logfile /dev/null
+
+mkdir $QUERY.dir
+$THIS/splitFasta $QUERY $QUERY.dir  -group 100 
+
+mkdir $QUERY.pairs
+$THIS/../grid_wait.sh 1
+$THIS/../trav $QUERY.dir "$QSUB_5 -N j%f %Q$THIS/dna_similar.sh %d/%f $SUBJ $IDENT $COV 4 > $QUERY.pairs/%f%Q > /dev/null"
+$THIS/../qstat_wait.sh 3600 1
+
+rm -r $QUERY.dir/ &
 
 # $PAIR
-if [ $QDIR == $SDIR ]; then
-  $THIS/../trav $QDIR "echo -e '%f\t%f'" > $PAIR
+if [ $QUERY == $SUBJ ]; then
+  $THIS/fa2list.sh $QUERY | sed 's/^\(.*\)$/\1\t\1/1' > $PAIR
 fi
-$THIS/../trav -step 1 $QDIR "blastn  -query %d/%f  -db $TMP  -dust no  -evalue 1e-10  -dbsize 10000000  -max_target_seqs 100000 -outfmt '6 qseqid sseqid qlen slen nident length qstart qend sstart send'  -num_threads 16" > $TMP.blastn
-#                                                                                                                                          1      2      3    4    5      6      7      8    9      10
-awk '$5 >= $6 * '$IDENT' && ($8 - $7 + 1) >= $3 * '$COV' && ($10 > $9 && ($10 - $9 + 1) >= $4 * '$COV' || $10 < $9 && ($9 - $10 + 1) >= $4 * '$COV')' $TMP.blastn | cut -f 1,2 >> $PAIR
+$THIS/../trav $QUERY.pairs "cat %d/%f" >> $PAIR
+
+rm -r $QUERY.pairs/ &
 
 $THIS/../connectPairs $PAIR $CLUST  -pairs 
-#cut -f 2 $TMP.out | sort -u > $CLUST
 
 
 rm $TMP*
+wait
