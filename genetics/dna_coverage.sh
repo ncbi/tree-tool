@@ -52,14 +52,13 @@ if [ $DB_EXISTS == 0 ]; then
   if grep ": gzip compressed data" $TMP.file &> /dev/null; then
     gunzip -c $SUBJ > $TMP.subj
     SUBJ=$TMP.subj
-    DB=$SUBJ
   fi
   if [ -s $SUBJ ]; then
     makeblastdb  -in $SUBJ  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
     DB=$TMP
+    DB_EXISTS=1
   fi
 fi
-
 
 # $TMP.blastn
 N=`grep -c ">" $QUERY || true`
