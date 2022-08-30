@@ -48,6 +48,46 @@ namespace
 {
   
   
+struct Group
+{
+  const size_t size_max;
+  const string dir;
+  VectorOwn<const Seq> seqs;
+  size_t group {0};
+  
+  
+  Group (size_t size_max_arg,
+         const string &dir_arg)
+    : size_max (size_max_arg)
+    , dir (dir_arg)
+    { ASSERT (size_max >= 1); 
+      ASSERT (! dir. empty ());
+    }
+ ~Group ()
+    { save (); }
+  
+  
+  void add (const Seq* seq)
+    { ASSERT (size_max > 1);
+      ASSERT (seq);
+      seqs << seq;
+      ASSERT (seqs. size () <= size_max);
+      if (seqs. size () == size_max)
+        save ();
+    }
+  void save ()
+    { if (seqs. empty ())
+        return;
+      group++;
+      OFStream f (dir + "/" + to_string (group));
+      for (const Seq* seq : seqs)
+        seq->saveText (f);
+      seqs. deleteData ();
+    }
+};
+  
+  
+  
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -63,26 +103,34 @@ struct ThisApplication : Application
     #ifndef _MSC_VER
   	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	#endif
+  	  addKey ("group", "Group by <group> number of sequences. Group names are sequential numbers. 1 - no grouping.", "1");
   	}
 
 
 
 	void body () const final
   {
-		const string in      = getArg ("in");
-		const string out_dir = getArg ("out_dir");
-		const bool   aa      = getFlag ("aa");
-		const bool   sparse  = getFlag ("sparse");
-		const size_t len_min = (size_t) arg2uint ("len_min");
-	  const bool   whole   = getFlag ("whole");
+		const string in          = getArg ("in");
+		const string out_dir     = getArg ("out_dir");
+		const bool   aa          = getFlag ("aa");
+		const bool   sparse      = getFlag ("sparse");
+		const size_t len_min     = (size_t) arg2uint ("len_min");
+	  const bool   whole       = getFlag ("whole");
   #ifndef _MSC_VER
-		const bool   large   = getFlag ("large");
+		const bool   large       = getFlag ("large");
+  #endif
+    const size_t group_size = (size_t) arg2uint ("group");
+
+    QC_ASSERT (! out_dir. empty ());    
+    QC_ASSERT (group_size >= 1);
+  #ifndef _MSC_VER
+    QC_IMPLY (large, group_size == 1);
   #endif
 
 
-    {
-      // For ~Progress()
+    { // For ~Progress()      
   	  Multifasta fa (in, aa); 
+      Group group (group_size, out_dir);
   	  while (fa. next ())
   	  {
   	    unique_ptr<const Seq> seq;
@@ -106,7 +154,10 @@ struct ThisApplication : Application
           Dir (dir). create ();
         }
       #endif
-        seq->saveFile (dir + "/" + s);
+        if (group_size == 1)
+          seq->saveFile (dir + "/" + s);
+        else
+          group. add (seq. release ());
   	  }
   	}
 	}
