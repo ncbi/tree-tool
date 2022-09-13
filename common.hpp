@@ -493,6 +493,9 @@ inline bool isDelimiter (char c)
            && ! isLetter (c);
   }
   
+inline bool isSpace (char c)
+  { return c > '\0' && c <= ' ' && isspace (c); }
+
 inline string uchar2hex (uchar c)
   { constexpr char hex [16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     string res ("  ");
@@ -956,9 +959,6 @@ inline string prepend (const string &prefix,
   	  return noString;
   	return prefix + s;
   }
-
-inline bool isSpace (char c)
-  { return c > '\0' && c <= ' ' && isspace (c); }
 
 bool strBlank (const string &s);
 

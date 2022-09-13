@@ -81,7 +81,6 @@ PHYL_DIR = $(CPP_DIR)/phylogeny
 $(PHYL_DIR)/distTree.o:	$(PHYL_DIR)/distTree.hpp $(PREDICT_HPP) $(CPP_DIR)/graph.hpp
 DISTTREE_OBJ = $(PHYL_DIR)/distTree.o $(PREDICT_OBJ) $(CPP_DIR)/graph.o
 DISTTREE = $(PHYL_DIR)/distTree $(PREDICT) $(CPP_DIR)/graph
-$(PHYL_DIR)/asn.o:	$(PHYL_DIR)/asn.hpp $(COMMON_RAW_HPP)
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP) $(CPP_DIR)/graph.hpp
 FEATURE_TREE_OBJ = $(PHYL_DIR)/featureTree.o $(DM_OBJ) $(CPP_DIR)/graph.o
 FEATURE_TREE = $(PHYL_DIR)/featureTree $(DM) $(CPP_DIR)/graph
