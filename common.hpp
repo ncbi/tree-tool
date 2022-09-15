@@ -607,6 +607,11 @@ public:
 // STL algorithms
 
 template <typename T>
+  inline bool lessPtr (const T* x,
+                       const T* y)
+    { return *x < *y; }
+
+template <typename T>
   inline void sort (T &t)
     { std::sort (t. begin (), t. end ()); }
 
@@ -2194,6 +2199,8 @@ public:
     { delete (*this) [index];
       P::eraseAt (index);
     }
+  void sortPtr ()
+    { P::sort (lessPtr<T>); }
   void sortBubblePtr ()
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
