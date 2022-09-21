@@ -35,6 +35,7 @@
 #include "../common.inc"
 
 #include "../common.hpp"
+#include "tsv.hpp"
 using namespace Common_sp;
 #include "../version.inc"
 
@@ -54,6 +55,8 @@ struct ThisApplication : Application
   	  addKey ("by", "Comma-separated list of columns to group by"); 
   	  addKey ("count", "name of the added \"count\" column");
   	  addKey ("sum", "Comma-separated list of columns to sum"); 
+  	  addKey ("min", "Comma-separated list of columns to find minimum"); 
+  	  addKey ("max", "Comma-separated list of columns to find maximum"); 
   	  addKey ("aggr", "Comma-separated list of columns to aggregate: make unique and sort"); 
   	}
   	
@@ -65,6 +68,8 @@ struct ThisApplication : Application
 		const string byS    = getArg ("by");
 		const string countS = getArg ("count");
 		const string sumS   = getArg ("sum");
+		const string minS   = getArg ("min");
+		const string maxS   = getArg ("max");
 		const string aggrS  = getArg ("aggr");
 
 
@@ -75,45 +80,29 @@ struct ThisApplication : Application
     
     const StringVector by   (byS,   ',', true);
           StringVector sum  (sumS,  ',', true);    
+          StringVector minV (minS, ',', true);    
+          StringVector maxV (maxS, ',', true);    
     const StringVector aggr (aggrS, ',', true);    
 
+    for (string& s : sum)
+      tt. substitueColumn (s, s + "_sum");
+    for (string& s : minV)
+      tt. substitueColumn (s, s + "_min");
+    for (string& s : maxV)
+      tt. substitueColumn (s, s + "_max");
 
-    // QC
-    for (const string& s : by)
-      if (! tt. hasColumn (s))
-        throw runtime_error ("Table has no by-column " + strQuote (s));
-        
     if (! countS. empty ())
     { 
       if ( tt. hasColumn (countS))
-        throw runtime_error ("Table already has the column " + strQuote (countS));
-      tt. header << TextTable::Header (countS);
+        throw runtime_error ("Table already has column " + strQuote (countS));
+      tt. header << TextTable::Header (countS);  // numeric
       for (StringVector& row : tt. rows)
         row << "1";
       tt. qc ();
       sum << countS;
     }
     
-    for (const string& s : sum)
-    {
-      if (! tt. hasColumn (s))
-        throw runtime_error ("Table has no sum-column " + strQuote (s));
-      if (by. contains (s))
-        throw runtime_error ("Same by-column and sum-column: " + strQuote (s));
-      if (! tt. header [tt. col2num (s)]. numeric)
-        throw runtime_error ("Column " + strQuote (s) + " is not numeric");
-    }
-        
-    for (const string& s : aggr)
-    {
-      if (! tt. hasColumn (s))
-        throw runtime_error ("Table has no aggregation column " + strQuote (s));
-      if (by. contains (s))
-        throw runtime_error ("Same by-column and aggregation column: " + strQuote (s));
-    }
-        
-
-    tt. group (by, sum, aggr);
+    tt. group (by, sum, minV, maxV, aggr);
     tt. qc ();
     
     tt. saveText (cout);

@@ -50,8 +50,13 @@ $(CPP_DIR)/common.o:	$(COMMON_RAW_HPP)
 $(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_RAW_HPP) 
 
 
+TSV_DIR=$(CPP_DIR)/tsv
+$(TSV_DIR)/tsv.o: $(TSV_DIR)/tsv.hpp $(COMMON_RAW_HPP)
+
+
 XML_DIR=$(CPP_DIR)/xml
-$(XML_DIR)/xml.o: $(XML_DIR)/xml.hpp $(COMMON_RAW_HPP)
+$(XML_DIR)/xml.o: $(XML_DIR)/xml.hpp $(COMMON_RAW_HPP) $(TSV_DIR)/tsv.hpp
+XML_OBJ = $(XML_DIR)/xml.o $(TSV_DIR)/tsv.o
 
 
 DM_DIR = $(CPP_DIR)/dm

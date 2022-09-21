@@ -98,8 +98,8 @@ blastp_merge:	$(blastp_mergeOBJS)
 	$(CXX) -o $@ $(blastp_mergeOBJS) $(LIBS) 
 	$(ECHO)
 
-contig2read_coverage.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp 
-contig2read_coverageOBJS=contig2read_coverage.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o 
+contig2read_coverage.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(TSV_DIR)/tsv.hpp
+contig2read_coverageOBJS=contig2read_coverage.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o $(TSV_DIR)/tsv.o
 contig2read_coverage:	$(contig2read_coverageOBJS)
 	$(CXX) -o $@ $(contig2read_coverageOBJS) $(LIBS) 
 	$(ECHO)
@@ -260,8 +260,8 @@ interSeq:	$(interSeqOBJS)
 	$(CXX) -o $@ $(interSeqOBJS) $(LIBS) 
 	$(ECHO)
 
-islander.o:  $(COMMON_HPP) 
-islanderOBJS=islander.o $(CPP_DIR)/common.o
+islander.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+islanderOBJS=islander.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 islander:	$(islanderOBJS)
 	$(CXX) -o $@ $(islanderOBJS) $(LIBS) 
 	$(ECHO)
