@@ -137,7 +137,7 @@ struct ThisApplication : Application
     {
       version = VERSION;
       // Input
-      addPositional ("annot", "Annotation tsv-file with columns: plasmid\tcontig_len\tstart\tstop (1-based), sorted by plasmid (accession), start, stop desc; column names are arbitrary"); 
+      addPositional ("annot", "Annotation tsv-file with columns: plasmid\tcontig_len\tstart\tstop (1-based), sorted by plasmid (accession), start, stop desc; column names are arbitrary; start and stop are optional"); 
       addPositional ("gap_max", "Max. gap to merge annotations into an island");
       addKey ("non_island_coor", "Coordinates of non-islands");
     }
@@ -199,9 +199,9 @@ struct ThisApplication : Application
           QC_ASSERT (start >= 1);      
           QC_ASSERT (start <= stop);
           QC_ASSERT (stop <= len);
-          start--;
           QC_IMPLY (accession_prev == accession, start_prev <= start);
           QC_IMPLY (accession_prev == accession && start_prev == start, stop_prev >= stop);
+          start--;
           bool newIsland = true;
           if (accession_prev == accession)
           {
