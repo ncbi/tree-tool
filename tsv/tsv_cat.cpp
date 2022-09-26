@@ -48,7 +48,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Concatenate tsv-tables. File names are adeed as the new last column")
+    : Application ("Concatenate tsv-tables. File names are added as the new last column")
   	{
       version = VERSION;
   	  addPositional ("list", "List of tsv-tables with the same headers");
