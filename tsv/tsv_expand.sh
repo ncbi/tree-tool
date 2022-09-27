@@ -24,5 +24,8 @@ fi
 
 $THIS/tsv_join $F1.bak $F2  -qc  $SYN  $OPT > $F1
 
+wc -l $F1 
+wc -l $F1.bak
+
 
 
