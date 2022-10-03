@@ -104,6 +104,7 @@ struct ThisApplication : Application
   	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
   	#endif
   	  addKey ("group", "Group by <group> number of sequences. Group names are sequential numbers. 1 - no grouping.", "1");
+  	  addKey ("extension", "Add file extension (not compatible with -group)", "");
   	}
 
 
@@ -120,12 +121,14 @@ struct ThisApplication : Application
 		const bool   large       = getFlag ("large");
   #endif
     const size_t group_size = (size_t) arg2uint ("group");
+    const string ext        = getArg ("extension");
 
     QC_ASSERT (! out_dir. empty ());    
     QC_ASSERT (group_size >= 1);
   #ifndef _MSC_VER
     QC_IMPLY (large, group_size == 1);
   #endif
+    QC_IMPLY (group_size > 1, ext. empty ());
 
 
     { // For ~Progress()      
@@ -155,7 +158,7 @@ struct ThisApplication : Application
         }
       #endif
         if (group_size == 1)
-          seq->saveFile (dir + "/" + s);
+          seq->saveFile (dir + "/" + s + (ext. empty () ? "" : ("." + ext)));
         else
           group. add (seq. release ());
   	  }
