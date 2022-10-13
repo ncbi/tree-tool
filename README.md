@@ -9,6 +9,8 @@ General data analysis tools.
 ## [Documentation at Wiki](https://github.com/ncbi/tree-tool/wiki)
 
 ## Publications
+Kennedy AH, Schoch CL, Marrero G, Brover V, Robbertse B. 
+Publicly Available and Validated DNA Reference Sequences Are Critical to Fungal Identification and Global Plant Protection Efforts: A Use-Case in _Colletotrichum_. Plant Dis. 2022 Jun;106(6):1573-1596. doi: 10.1094/PDIS-09-21-2083-SR. Epub 2022 May 10. PMID: [35538602](https://pubmed.ncbi.nlm.nih.gov/35538602/); PMCID: PMC9196201.
 
 Novel tool to build large phylogenetic trees with applications to NCBI genomes and rRNA sequences,
 November 2021,
