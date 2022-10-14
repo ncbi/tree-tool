@@ -3370,11 +3370,13 @@ bool moreGeneralAminoacid (char wildAminoacid1,
 
   switch (wildAminoacid1)
   {
+    case 'x': return true;
     case 'b': return charInSet (wildAminoacid2, "dn");
     case 'z': return charInSet (wildAminoacid2, "eq");
+    case 'j': return charInSet (wildAminoacid2, "il");
     case 'u': return wildAminoacid2 == '*'; 
-    case '*': return wildAminoacid2 == 'u'; 
-    case 'x': return true;
+    case 'o': return wildAminoacid2 == '*'; 
+    case '*': return charInSet (wildAminoacid2, "uo");
   }
 
   return false;

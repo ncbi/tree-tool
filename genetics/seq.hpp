@@ -404,9 +404,7 @@ char getIntersectNucleotide (const char* charSet);
 
 bool nucleotideMatch (char wildNucleotide1,
                       char wildNucleotide2);
-  // Return: true if the nucleotides of WildNucleotide1 and
-  //           WildNucleotide2 intersect
-  // = NucleotideMatch (WildNucleotide2, WildNucleotide1)
+  // Return: true if the nucleotides of wildNucleotide1 and wildNucleotide2 intersect
 
 #if 0
 bool NucleotideSeqMatch (const char* Seq1,
@@ -788,11 +786,15 @@ size_t aa2num (char wildAminoacid);
 
 bool moreGeneralAminoacid (char wildAminoacid1,
                            char wildAminoacid2);
-  // Return: true if the aminoacids of wildAminoacid1 is a superset
-  //           of those of wildAminoacid2 (i.e., wildAminoacid1 is
-  //           more general than or equal to wildAminoacid2)
+  // Return: true if the aminoacids of wildAminoacid1 is a superset of those of wildAminoacid2 
+  //           (i.e., wildAminoacid1 is more general than or equal to wildAminoacid2)
   // Requires: wildAminoacid1|2 in extTermPeptideAlphabet
 
+inline bool aaMatch (char aa1,
+                     char aa2)
+  { return    moreGeneralAminoacid (aa1, aa2)
+           || moreGeneralAminoacid (aa2, aa1);
+  }
 
 typedef  double  AlignScore;
 
