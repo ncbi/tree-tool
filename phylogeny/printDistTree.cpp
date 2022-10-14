@@ -185,6 +185,9 @@ struct ThisApplication : Application
       tree. printAsn (cout);
     else
       throw runtime_error ("Unknown format " + format);
+      
+    if (jRoot)
+      tree. toJson (jRoot, "nodes");
 	}
 };
 
