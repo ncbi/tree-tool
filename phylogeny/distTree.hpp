@@ -427,6 +427,12 @@ protected:
 public:
   void qc () const override;
   void saveContent (ostream& os) const override;
+  Json* toJson (JsonContainer* parent_arg,
+                const string& /*name_arg*/) const override
+    { new JsonDouble (len,          dissimDecimals, parent_arg, "time");
+      new JsonDouble (errorDensity, dissimDecimals, parent_arg, "error_density");
+      return nullptr;
+    }
 
 
   virtual const Steiner* asSteiner () const
@@ -614,6 +620,13 @@ public:
 	      const string &name_arg);
 	void qc () const final;
   void saveContent (ostream& os) const final;
+  Json* toJson (JsonContainer* parent_arg,
+                const string& /*name_arg*/) const override
+    { DTNode::toJson (parent_arg, noString);
+      new JsonString (getName (), parent_arg, "phylName");
+      new JsonDouble (normCriterion, dissimDecimals, parent_arg, "norm_criterion");
+      return nullptr;
+    }
 
 
   const Leaf* asLeaf () const final
@@ -1315,6 +1328,9 @@ private:
     // Invokes: setLca(), setDissimMult()
     // Time: O(p log(n))
 public:
+  Json* toJson (JsonContainer* parent_arg,
+                const string& name_arg) const override;
+    // name_arg: {1:{parent,time}, 2:{parent,time,phylName}, 3:...}
 	void qc () const override;
 	  // Invokes: getIndiscernibles()
 

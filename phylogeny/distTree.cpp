@@ -5378,6 +5378,41 @@ void DistTree::setPaths (bool setDissimMultP)
 
 
 
+Json* DistTree::toJson (JsonContainer* parent_arg,
+                        const string& name_arg) const
+{
+  ASSERT (parent_arg);
+
+  map<const DTNode*, size_t> node2index;  
+  {
+    size_t index = 1;
+    for (const DiGraph::Node* node : nodes)
+    {
+      const DTNode* dtNode = static_cast <const DTNode*> (node);
+      node2index [dtNode] = index;
+      index++;
+    }
+  }
+
+  auto arr = new JsonMap (parent_arg, name_arg);
+  size_t index = 1;
+  for (const DiGraph::Node* node : nodes)
+  {
+    const DTNode* dtNode = static_cast <const DTNode*> (node);
+    auto j = new JsonMap (arr, to_string (index));
+    if (const DTNode* parent = static_cast <const DTNode*> (dtNode->getParent ()))
+      new JsonInt ((long long) node2index [parent], j, "parent");
+    else
+      new JsonNull (j, "parent");
+    dtNode->toJson (j, noString);
+    index++;
+  }
+  
+  return arr;
+}
+
+
+
 void DistTree::qc () const
 { 
   if (! qc_on)
