@@ -153,7 +153,8 @@ Align::Align (const Peptide &pep1,
 	            bool semiglobal_arg,
 	            size_t match_len_min,
 	            bool blosum62)
-: semiglobal (semiglobal_arg)
+: prot (true)
+, semiglobal (semiglobal_arg)
 {
   ASSERT (! pep1. sparse);
   ASSERT (! pep2. sparse);
@@ -218,7 +219,8 @@ Align::Align (const Dna &dna1,
 	            size_t match_len_min,
 	          //bool fast,
 	            size_t band)
-: semiglobal (semiglobal_arg)
+: prot (false)
+, semiglobal (semiglobal_arg)
 {
   ASSERT (! dna1. sparse);
   ASSERT (! dna2. sparse);
@@ -477,15 +479,30 @@ size_t Align::getDiff () const
   
   size_t n = 0;
   FOR_START (size_t, i, start, stop)
-    if (! nucleotideMatch ( sparse1 [i]
-                          , sparse2 [i]
-                          )
-       )
-      n++;
+    if (prot)
+    {
+      if (! aaMatch ( sparse1 [i]
+                    , sparse2 [i]
+                    )
+         )
+        n++;
+    }
+    else
+    {
+      if (! nucleotideMatch ( sparse1 [i]
+                            , sparse2 [i]
+                            )
+         )
+        n++;
+    }
   
   return n;
 }
 
+
+
+const StringVector Align::distanceNames {"dissim", "min_edit", "mismatch_frac", "diff"};
+  
 
 
 }

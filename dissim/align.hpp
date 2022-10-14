@@ -54,6 +54,7 @@ struct Align : Root
 // Global alignment
 // Needleman-Wunsch algorithm 
 {
+  const bool prot;
   const bool semiglobal;
   
 	// Output:
@@ -142,6 +143,24 @@ public:
   // Input: Alignment
   void printAlignment (size_t line_len) const;
 	size_t getDiff () const;
+	
+	enum Distance {dist_dissim, dist_min_edit, dist_mismatch_frac, dist_diff};
+	static const StringVector distanceNames;
+	Real getDistance (Distance dist) const
+	  { switch (dist)
+	    { case dist_dissim:        return getDissim ();
+	      case dist_min_edit:      return getMinEditDistance ();
+	      case dist_mismatch_frac: return getMismatchFrac ();
+	      case dist_diff:          return (Real) getDiff ();	      
+	    }
+	    throw logic_error ("Undefined distance: " + to_string (dist));
+	  }
+	static Distance name2distance (const string &name) 
+	  { for (size_t i = 0; i < distanceNames. size (); i++)
+	      if (distanceNames [i] == name)
+	        return (Distance) i;
+	    throw runtime_error ("Unknown distance: " + name);
+	  }
 };
 	
 
