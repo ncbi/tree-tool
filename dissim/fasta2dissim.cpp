@@ -56,7 +56,7 @@ bool unknown_strand = false;
 bool global = false;
 size_t match_len_min = 0;
 bool blosum62 = false;
-bool mismatch_frac = false;
+Align_sp::Align::Distance distance = Align_sp::Align::dist_min_edit;
 Real power = 0.0;
 Real coeff = 0.0;
 
@@ -116,11 +116,8 @@ struct Match
 			else
 				ERROR;
 			ASSERT (align. get ());
-			const Real dissim_raw = mismatch_frac
-			                          ? align->getMismatchFrac ()
-			                          : /*aa 
-			                             ? align->getDissim ()   // Can be NaN
-			                             :*/ align->getMinEditDistance ();
+			var_cast (align. get ()) -> setAlignment (seq1->seq, seq2->seq);  // For getDiff()
+		  const Real dissim_raw = align->getDistance (distance);
 			dissim = coeff * pow (dissim_raw, power);
 			score = align->score;
 			self_score1 = align->self_score1;
@@ -159,7 +156,7 @@ struct ThisApplication : Application
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addFlag ("blosum62", "Use BLOSUM62, otherwise PAM30");
-  	  addFlag ("mismatch_frac", "Distance is mismatch fraction");
+  	  addKey ("distance", "Alignment distance: " + Align_sp::Align::distanceNames.toString (" | "), "min_edit");
   	  addKey ("power", "Raise raw dissimilarity to this power", "1");
   	  addKey ("coeff", "Multiply raw dissimilarity by this coefficient", "1");
   	  addKey ("class", "File with classes of the sequencess (in the same order as Multi_FASTA)");
@@ -178,7 +175,7 @@ struct ThisApplication : Application
 	             global          =               getFlag ("global");
 	             match_len_min   = str2<size_t> (getArg ("match_len_min"));
 	             blosum62        =               getFlag ("blosum62");
-	             mismatch_frac   =               getFlag ("mismatch_frac");
+	             distance        = Align_sp::Align::name2distance (getArg ("distance"));
 	             power           = str2real     (getArg ("power"));
 	             coeff           = str2real     (getArg ("coeff"));
 	  const string classF        =               getArg ("class");
@@ -191,7 +188,7 @@ struct ThisApplication : Application
     	if (match_len_min == 0)
     		throw runtime_error ("match_len_min cannot be 0 for a semiglobal alignment");    		
 
-    QC_ASSERT (! (blosum62 && mismatch_frac));
+    QC_IMPLY (blosum62, aa);
     QC_IMPLY (unknown_strand, ! aa);
 
 
