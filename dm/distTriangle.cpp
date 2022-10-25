@@ -434,7 +434,8 @@ Save clusters in " + dmSuff + "-files\
       if (! clustering_dir. empty ())
       {
         const string dir (clustering_dir + "/" + toString (nClust));
-        exec ("mkdir " + dir);
+        createDirectory (dir);
+      //exec ("mkdir " + dir);
         OFStream f (dir, getFileName (fName), dmExt);
 
         const VectorPtr<Attr> attrs (ds. attrs);
