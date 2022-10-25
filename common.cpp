@@ -1112,14 +1112,28 @@ size_t Dir::create ()
 
 
 
-
 //
 
-void setSymlink (const string &path,
-                 const string &fName)
+void setSymlink (string path,
+                 const string &fName,
+                 bool pathIsAbsolute)
 { 
+  ASSERT (! path. empty ());
+  ASSERT (! fName. empty ());
+  const string err (string ("Cannot make ") + (pathIsAbsolute ? "an absolute" : "a relative") + " symlink for " + strQuote (path) + " as " + strQuote (fName));
+  if (pathIsAbsolute)
+    path = path2canonical (path);
+  else
+  { 
+    if (path [0] == '/')
+      throw runtime_error (err + " because " + strQuote (path) + " is absolute");
+    const Dir dir (fName);
+    const string absPath (dir. getParent () + "/" + path);
+    if (getFiletype (absPath, false) == Filetype::none)
+      throw runtime_error (err + " because " + strQuote (absPath) + " does not exist");
+  }
   if (symlink (path. c_str (), fName. c_str ()))
-    throw runtime_error ("Cannot make a symlink for " + strQuote (path) + " as " + strQuote (fName));
+    throw runtime_error (err);
 }
 
 
@@ -1388,12 +1402,13 @@ void exec (const string &cmd,
 	  *logPtr << "status = " << status << endl;	
 	if (status)
 	{
+	  string err (cmd + "\nstatus = " + to_string (status));
 	  if (! logFName. empty ())
 	  {
 	    const StringVector vec (logFName, (size_t) 10, false);  // PAR
-	    throw runtime_error (vec. toString ("\n"));
+	    err += "\n" + vec. toString ("\n");
 	  }
-		throw runtime_error ("Command failed:\n" + cmd + "\nstatus = " + to_string (status));		
+		throw runtime_error (err);		
 	}
 }
 

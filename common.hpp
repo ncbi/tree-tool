@@ -1295,8 +1295,9 @@ struct Dir
 
 
 
-void setSymlink (const string &path,
-                 const string &fName);
+void setSymlink (string path,
+                 const string &fName,
+                 bool pathIsAbsolute);
 
 
 
