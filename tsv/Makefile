@@ -14,6 +14,7 @@ endif
 ALL=	\
   csv2tab \
   fixed2tsv \
+  pairs2tsv \
   tsv2insert \
   tsv_cat \
   tsv_comp \
@@ -41,6 +42,12 @@ fixed2tsv.o:  $(COMMON_HPP)
 fixed2tsvOBJS=fixed2tsv.o $(CPP_DIR)/common.o 
 fixed2tsv:	$(fixed2tsvOBJS)
 	$(CXX) -o $@ $(fixed2tsvOBJS) $(LIBS)
+	$(ECHO)
+
+pairs2tsv.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+pairs2tsvOBJS=pairs2tsv.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+pairs2tsv:	$(pairs2tsvOBJS)
+	$(CXX) -o $@ $(pairs2tsvOBJS) $(LIBS)
 	$(ECHO)
 
 tsv2insert.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
