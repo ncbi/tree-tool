@@ -424,7 +424,7 @@ template <typename T/*:number*/>
   
 template <typename T/*:integer*/> 
   inline bool even (T x)
-    { static_assert (numeric_limits<T>::is_integer, "Must be integer");
+    { static_assert (numeric_limits<T>::is_integer);
       return x % 2 == 0; 
     }
 
@@ -457,7 +457,7 @@ size_t powInt (size_t a,
 
 
 constexpr size_t no_index = numeric_limits<size_t>::max ();
-static_assert ((size_t) 0 - 1 == no_index, "0 - 1 != no_index");
+static_assert ((size_t) 0 - 1 == no_index);
 
 
 

@@ -13,7 +13,8 @@ ifdef AT_NCBI
     -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion -Wuseless-cast
 endif
 
-SimpleCPPFLAGS = -std=gnu++14 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
+SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
+  # was: -std=gnu++14
   # -Werror   # Will break NCBI Makefiles
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
@@ -121,14 +122,14 @@ ifdef AT_NCBI
   $(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_RAW_HPP)
 
   DATABASE_DIR = $(CODE_DIR)/database
-  COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application
+  COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application 
   $(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/dbPhyl.o:	$(DATABASE_DIR)/dbPhyl.hpp $(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
 
   $(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
-  GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq $(DATABASE_DIR)/db
+  GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq
 
   GenBank_LIB =  xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache  bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect  
   # $(SRAREAD_LIBS) $(XFORMAT_LIBS) 

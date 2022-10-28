@@ -198,14 +198,14 @@ bool initCommon ()
   #pragma warning (disable : 4127)
 #endif
   static_assert (numeric_limits<char>::is_signed, "char is signed");
-  static_assert (sizeof (long) >= 4, "long size >= 4");
+  static_assert (sizeof (long) >= 4);
 #ifdef _MSC_VER
   #pragma warning (default : 4127)
 #endif
 
-  static_assert (SIZE_MAX == std::numeric_limits<size_t>::max (), "SIZE_MAX is correct");
+  static_assert (SIZE_MAX == std::numeric_limits<size_t>::max ());
 
-  static_assert (sizeof (size_t) == 8, "Size of size_t must be 8 bytes");
+  static_assert (sizeof (size_t) == 8);
     
   return true;
 }
@@ -319,7 +319,7 @@ Chronometer_OnePass::~Chronometer_OnePass ()
 { 
   if (! active)
     return;
-  if (uncaught_exception ())
+  if (uncaught_exceptions ())
     return;
     
   const time_t stop = time (nullptr);
