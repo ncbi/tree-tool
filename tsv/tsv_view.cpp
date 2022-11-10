@@ -100,7 +100,14 @@ size_t printRow (bool is_header,
       value += string ((size_t) (h. decimals - decimals), '0');  
     }
     ASSERT (value. size () <= h. len_max);
-    if (! printString (pad (value, h. len_max, ! (h. numeric && ! h. scientific)), screen_col_max, x))
+    const ebool right = h. numeric && ! h. scientific
+                          ? h. choices. size () <= 3  // PAR
+                            ? enull
+                            : efalse
+                          : h. choices. size () <= TextTable::Header::choices_max 
+                            ? enull
+                            : etrue;
+    if (! printString (pad (value, h. len_max, right), screen_col_max, x))
       break;
     lastCol = col;
     if (col + 1 < header. size ())
@@ -222,7 +229,7 @@ struct ThisApplication : Application
           const string posS ("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]");
         #endif
           if (nc. col_max > posS. size ())
-            addstr ((pad (keyS, nc. col_max - posS. size (), true) + posS). c_str ());
+            addstr ((pad (keyS, nc. col_max - posS. size (), etrue) + posS). c_str ());
           else
             addstr (posS. c_str ());
         }
