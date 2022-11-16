@@ -53,7 +53,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Compute the distribution of gaps in a DNA multi-FASTA file; print: # contigs, N50; save contigs split by gaps")
+    : Application ("Compute the distribution of gaps in a DNA multi-FASTA file; print: # contigs, Total length, L50, N50; save contigs split by gaps")
 	  {
       version = VERSION;
 	  	addPositional ("in", "Input DNA multi-FASTA file");
@@ -142,8 +142,28 @@ struct ThisApplication : Application
 		
 		
 		ASSERT (! contigs. empty ());
-		cout << contigs. size () << endl;
-		cout << contigs [contigs. size () / 2] << endl;
+		cout << "Contigs: " << contigs. size () << endl;
+		
+		contigs. sort ();
+
+		size_t total = 0;
+		for (const size_t len : contigs)
+		  total += len;
+		const size_t half = total / 2;
+		cout << "Total: " << total << endl;
+
+    total = 0;
+		FOR_REV (size_t, i, contigs. size ())
+		{
+		  const size_t len = contigs [i];
+		  total += len;
+		  if (total >= half)
+		  {
+		    cout << "L50: " << i + 1 << endl;
+		    cout << "N50: " << len << endl;
+		    break;
+		  }
+		}
 		
 		
 		if (! distrFName. empty ())
