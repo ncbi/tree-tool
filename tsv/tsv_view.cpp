@@ -72,7 +72,8 @@ size_t printRow (bool is_header,
                  const StringVector &values,
                  size_t col_start,
                  const Vector<TextTable::Header> &header,
-                 size_t screen_col_max)
+                 size_t screen_col_max,
+                 size_t rows_max)
 // Return: Last printed column
 {
   ASSERT (col_start + values. size () == header. size ());
@@ -101,10 +102,10 @@ size_t printRow (bool is_header,
     }
     ASSERT (value. size () <= h. len_max);
     const ebool right = h. numeric && ! h. scientific
-                          ? h. choices. size () <= 3  // PAR
+                          ? h. choices. size () <= 3 && h. choices. size () < rows_max  // PAR
                             ? enull
                             : efalse
-                          : h. choices. size () <= TextTable::Header::choices_max 
+                          : h. choices. size () <= TextTable::Header::choices_max && h. choices. size () < rows_max
                             ? enull
                             : etrue;
     if (! printString (pad (value, h. len_max, right), screen_col_max, x))
@@ -197,7 +198,7 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. header [j]. name;
-          curLastCol = printRow (true, values, curCol, tt. header, nc. col_max);
+          curLastCol = printRow (true, values, curCol, tt. header, nc. col_max, tt. rows. size ());
         }        
         if (numP)
         {
@@ -206,7 +207,7 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << to_string (j + 1);
-          printRow (true, values, curCol, tt. header, nc. col_max);          
+          printRow (true, values, curCol, tt. header, nc. col_max, tt. rows. size ()); 
         }
         move ((int) (fieldSize + headerSize), 0);
       #if 0
@@ -242,7 +243,7 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. rows [i] [j];
-          printRow (false, values, curCol, tt. header, nc. col_max);
+          printRow (false, values, curCol, tt. header, nc. col_max, tt. rows. size ());
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
