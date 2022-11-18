@@ -141,6 +141,7 @@ struct ThisApplication : Application
 		}
 		
 		
+    // Statistics
 		ASSERT (! contigs. empty ());
 		cout << "Contigs: " << contigs. size () << endl;
 		
@@ -159,7 +160,7 @@ struct ThisApplication : Application
 		  total += len;
 		  if (total >= half)
 		  {
-		    cout << "L50: " << i + 1 << endl;
+		    cout << "L50: " << (contigs. size () - i) << endl;
 		    cout << "N50: " << len << endl;
 		    break;
 		  }
