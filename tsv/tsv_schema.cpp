@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Read a tsv-table
+*   Print the schema of a tsv-table: # name length type(decimals)
 *
 */
 
@@ -51,7 +51,7 @@ struct ThisApplication : Application
     : Application ("Print the schema of a tsv-table: # name length type(decimals)")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table file with a header");
+  	  addPositional ("table", "tsv-table");
   	}
   	
   	

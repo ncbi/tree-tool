@@ -51,7 +51,7 @@ struct ThisApplication : Application
     : Application ("Group columns of a tsv-table")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table file with a header");
+  	  addPositional ("table", "tsv-table");
   	  addKey ("by", "Comma-separated list of columns to group by"); 
   	  addKey ("count", "name of the added \"count\" column");
   	  addKey ("sum", "Comma-separated list of columns to sum"); 

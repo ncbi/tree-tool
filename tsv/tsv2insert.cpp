@@ -51,7 +51,7 @@ struct ThisApplication : Application
     : Application ("Convert a tsv-table into SQL insert statements")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table file with a header");
+  	  addPositional ("table", "tsv-table");
   	  addFlag ("add_go", "Add 'go' at the end of the SQL statements");
   	}
   	
