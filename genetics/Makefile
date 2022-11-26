@@ -63,6 +63,7 @@ all:	\
 	replaceFastaHeader \
 	replaceFastaNames \
 	splitFasta \
+	tblastn2frameshift \
 	tblastn2orfs \
 	uniqSeq \
 	uniqProtRef
@@ -378,6 +379,12 @@ splitFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 splitFastaOBJS=splitFasta.o $(SEQ_OBJ)
 splitFasta:	$(splitFastaOBJS)
 	$(CXX) -o $@ $(splitFastaOBJS) $(LIBS) 
+	$(ECHO)
+
+tblastn2frameshift.o:  $(COMMON_HPP) 
+tblastn2frameshiftOBJS=tblastn2frameshift.o $(CPP_DIR)/common.o
+tblastn2frameshift:	$(tblastn2frameshiftOBJS)
+	$(CXX) -o $@ $(tblastn2frameshiftOBJS) $(LIBS) 
 	$(ECHO)
 
 tblastn2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
