@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# != 7 ]; then
+if [ $# != 8 ]; then
   echo "Contig coverage report"
   echo "#1: query FASTA file"
   echo "#2: subject FASTA file (can be gzip'ped or converted into a BLAST database)"
@@ -10,6 +10,7 @@ if [ $# != 7 ]; then
   echo "#5: min. alignment length"
   echo "#6: sequence identifier to be removed from #2 or ''"
   echo "#7: force 1 line after header: 0/1"
+  echo "#8: include all query sequences: 0/1"
   exit 1
 fi
 QUERY=$1
@@ -19,6 +20,7 @@ PIDENT_MIN=$4
 ALIGN_MIN=$5
 TO_REMOVE="$6"
 ONE_LINE=$7
+ALL_QUERY=$8
 
 
 #set -x
@@ -83,7 +85,16 @@ FORCE=""
 if [ $ONE_LINE -eq 1 ]; then
   FORCE="-force"
 fi
-$THIS/dna_coverage $TMP.blastn  -mode $MODE  -query "$QUERY_NAME"  -subject "$SUBJ_NAME"  -pident_min $PIDENT_MIN  -align_min $ALIGN_MIN  $FORCE 
+$THIS/dna_coverage $TMP.blastn  -mode $MODE  -query "$QUERY_NAME"  -subject "$SUBJ_NAME"  -pident_min $PIDENT_MIN  -align_min $ALIGN_MIN  $FORCE > $TMP.cov
+
+if [ $ALL_QUERY == 1 ]; then
+  echo -e "#query\tqseqid\tqlen" > $TMP.len
+  $THIS/fasta2len $QUERY -noprogress | sed 's/^/'$QUERY_NAME'\t/1' >> $TMP.len
+  $THIS/../tsv/tsv_expand.sh $TMP.len $TMP.cov '-left' &> /dev/null
+  cat $TMP.len
+else
+  cat $TMP.cov
+fi
 
 
 rm $TMP*  
