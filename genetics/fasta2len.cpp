@@ -55,7 +55,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("in", "FASTA file");
   	  addFlag ("aa", "Protein sequence, otherwise DNA");
-  	  addKey ("min_len", "Min. length", "0");
+  	  addKey ("min_len", "Min. length for output sequences in the file <out>", "0");
   	  addKey ("out", "Output FASTA file with sequences longer than <min_len>");
     }
 
