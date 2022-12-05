@@ -206,12 +206,14 @@ void reportSubjects (const string &qseqid,
   for (auto& it : sseqid2subject)
     it. second. finish ();
 
+#if 0
   // blast has no qtitle
   string qtitle (qseqid);
   const string qseqid_ (findSplit (qtitle, '|'));
   IMPLY (qseqid_. empty (), force && mode == Mode::combine);
   replace (qtitle, '_', ' ');
   trim (qtitle);
+#endif
   
 
   // cout
@@ -241,7 +243,7 @@ void reportSubjects (const string &qseqid,
 
         if (! queryName. empty ())
           /* 0 */ cout << queryName << '\t';
-        cout << nvl (qseqid_, na) << '\t' << nvl (qtitle, na);
+        cout << nvl (qseqid, na) /*<< '\t' << nvl (qtitle, na)*/;
           //    1                  2
         const ONumber on (cout, 2, false);  // PAR
         cout         
@@ -262,7 +264,8 @@ void reportSubjects (const string &qseqid,
             /*11*/ << '\t' << scoverage_sum;
         cout
           /*12*/ << '\t' << double (scoverage_sum) / double (slen_sum) * 100.0
-          /*13*/ << '\t' << sseqids. toString (" ");        
+          /*13*/ << '\t' << sseqids. size ()        
+          /*14*/ << '\t' << sseqids. toString (" ");        
         cout << endl;
       }
       break;
@@ -279,8 +282,8 @@ void reportSubjects (const string &qseqid,
             if (! queryName. empty ())
               /* 0 */ cout << queryName << '\t';
             cout 
-              /* 1 */         << qseqid_ 
-              /* 2 */ << '\t' << nvl (qtitle, na)
+              /* 1 */         << qseqid 
+            ///* 2 */ << '\t' << nvl (qtitle, na)
               /* 3 */ << '\t' << qlen;
             if (! subjectName. empty ())
               cout /* 4 */ << '\t' << subjectName;
@@ -305,44 +308,6 @@ void reportSubjects (const string &qseqid,
 
 
 
-#if 0
-void reportMissed (const string &qseqid,
-                   const Vector<uint> &qchars)
-{
-  if (qseqid. empty ())
-    return;
-    
-  ASSERT (! qchars. empty ());
-
-  string qtitle (qseqid);
-  const string qseqid_ (findSplit (qtitle, '|'));
-  replace (qtitle, '_', ' ');
-  trim (qtitle);
-
-  size_t start = 0;    
-  FFOR (size_t, i, qchars. size () + 1)
-    if (i == qchars. size () || qchars [i])
-    {
-      if (start < i)
-      {
-        if (! queryName. empty ())
-          /* 0 */ cout << queryName << '\t';
-        cout         << qseqid_ 
-             << '\t' << nvl (qtitle, na) 
-             << '\t' << qchars. size ()
-             << '\t' << start + 1
-             << '\t' << i
-             << '\t' << i - start
-             << '\t' << double (i - start) / double (qchars. size ()) * 100.0
-             << endl;
-      }
-      start = i + 1;
-    }
-}
-#endif
-
-
-
 
 // ThisApplication
 
@@ -355,7 +320,7 @@ struct ThisApplication : Application
       string format (XSTR(FORMAT));
       replaceStr (format, " >>", "");
       addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid and nident descending.\n\
-qseqid can have a suffix \"|qtitle\". If '' then print only the table header");
+If '' then print only the table header");
       addFlag ("prot", "Subject is proteins");  // ??
       addKey ("mode", "\
 combine: combine the coverages by subject DNAs\n\
@@ -409,7 +374,7 @@ all: report all covered segments", "all");
     {
       case Mode::combine:
         {    
-          cout << "qseqid\tqtitle\tqlen\tqcoverage\tpqcoverage";
+          cout << "qseqid\tqlen\tqcoverage\tpqcoverage";
             //     1       2       3     4          5        
         //if (verbose ())
             cout << "\talign_length\tnident";
@@ -421,13 +386,13 @@ all: report all covered segments", "all");
         //if (verbose ())
             cout << "\tslen\tscoverage";
               //       10     11
-          cout << "\tpscoverage\tscontigs";  
-              //     12          13
+          cout << "\tpscoverage\tscontigs_num\tscontigs";  
+              //     12          13            14
         }
         break;
       case Mode::all:
         {    
-          cout << "qseqid\tqtitle\tqlen";
+          cout << "qseqid\tqlen";
             //     1       2       3    
           if (! subjectName. empty ())
             cout << "\tsubject";
@@ -457,7 +422,7 @@ all: report all covered segments", "all");
     while (f. nextLine ())
       try
       {
-        replace (f. line, ' ', '_');  // For qtitle, stitle processing
+        replace (f. line, ' ', '_');  // For stitle processing
         if (verbose (-1))
           cerr << f. line << endl;
         istringstream iss (f. line);
