@@ -28,6 +28,7 @@ all:	\
 	dna_trim \
 	extractFastaDna \
 	extractFastaProt \
+	fasta_prefix \
 	fasta2GC \
 	fasta2hash \
 	fasta2len \
@@ -169,6 +170,12 @@ extractFastaProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 extractFastaProtOBJS=extractFastaProt.o $(SEQ_OBJ)
 extractFastaProt:	$(extractFastaProtOBJS)
 	$(CXX) -o $@ $(extractFastaProtOBJS) $(LIBS) 
+	$(ECHO)
+
+fasta_prefix.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+fasta_prefixOBJS=fasta_prefix.o $(SEQ_OBJ)
+fasta_prefix:	$(fasta_prefixOBJS)
+	$(CXX) -o $@ $(fasta_prefixOBJS) $(LIBS) 
 	$(ECHO)
 
 fasta2GC.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
