@@ -134,7 +134,7 @@ struct ThisApplication : Application
     const string blastFName = getArg ("tblastn");
 
 
-    constexpr size_t diff_max_aa = 10;  // PAR
+    constexpr size_t diff_max_aa = 30;  // PAR
 
     LineInput f (blastFName);
     Istringstream iss;
@@ -155,7 +155,7 @@ struct ThisApplication : Application
   	     )
       {
         const long diff = hsp. global_start () - hsp_prev. global_start ();
-        QC_ASSERT (diff);
+        QC_ASSERT (diff % 3);  // Otherwise no frame shift
         cout         << hsp. sseqid 
              << '\t' << hsp. qseqid
              << '\t' << (hsp. sstrand ? hsp_prev. qend : hsp. qend) + 1 << (diff > 0 ? "ins" : "del") << abs (diff) << "bp" 
