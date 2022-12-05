@@ -591,6 +591,7 @@ public:
     {}
   Pair (const Pair<T> &other) = default;
   Pair& operator= (const Pair<T> &other) = default;
+
     
   bool same () const
     { return P::first == P::second; }
