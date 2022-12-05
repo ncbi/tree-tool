@@ -51,6 +51,10 @@ namespace
 {
   
   
+bool consistent = false;
+  
+  
+  
 bool printString (string s,
                   size_t screen_col_max,
                   size_t &x)
@@ -85,7 +89,9 @@ size_t printRow (bool is_header,
     ASSERT (x <= screen_col_max);
     const TextTable::Header& h = header [col];
     string value (values [col - col_start]);
-    if (   ! is_header 
+    if (   consistent
+        && ! value. empty ()
+        && ! is_header 
         && h. numeric 
         && ! h. scientific
         && h. decimals
@@ -101,12 +107,12 @@ size_t printRow (bool is_header,
       value += string ((size_t) (h. decimals - decimals), '0');  
     }
     ASSERT (value. size () <= h. len_max);
-    const ebool right = h. numeric && ! h. scientific
-                          ? h. choices. size () <= 3 && h. choices. size () < rows_max  // PAR
-                            ? enull
-                            : efalse
-                          : h. choices. size () <= TextTable::Header::choices_max && h. choices. size () < rows_max
-                            ? enull
+    const ebool right = (   rows_max > TextTable::Header::choices_max * 2  // PAR
+                         && h. choices. size () < (h. numeric && ! h. scientific ? 3 : TextTable::Header::choices_max)  // PAR
+                        )
+                          ? enull
+                          : h. numeric && ! h. scientific
+                            ? efalse
                             : etrue;
     if (! printString (pad (value, h. len_max, right), screen_col_max, x))
       break;
@@ -132,13 +138,15 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table");
+  	  addFlag ("consistent", "Reformat numbers to make them consistent, e.g., to have the same number of decimals");
   	}
 
 
 
 	void body () const final
 	{
-		const string tableFName  = getArg ("table");
+		const string tableFName = getArg ("table");
+		             consistent = getFlag ("consistent");
 
 
     TextTable tt (tableFName);
