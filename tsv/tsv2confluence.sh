@@ -12,7 +12,7 @@ TMP=`mktemp`
 
 
 cat $F | sed 's/|/\\|/g' | tr '\t' '|' | sed 's/^/|/1' | sed 's/$/|/1' | sed 's/||/| |/g' | sed 's/||/| |/g' > $TMP
-head -1 $TMP | sed 's/|/||/g'
+head -1 $TMP | sed 's/^|#/|/1' | sed 's/|/||/g'
 tail -n +2 $TMP
 
 
