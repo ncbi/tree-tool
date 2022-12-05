@@ -19,7 +19,7 @@ all:	\
   index_find \
   list2pairs \
   mergePairs \
-  selColumn \
+  replace_dict \
   setMinus \
   setRandOrd \
   splitList \
@@ -89,10 +89,10 @@ mergePairs:	$(mergePairsOBJS)
 	$(CXX) -o $@ $(mergePairsOBJS) $(LIBS)
 	$(ECHO)
 
-selColumn.o:  $(COMMON_HPP)  
-selColumnOBJS=selColumn.o $(CPP_DIR)/common.o
-selColumn:	$(selColumnOBJS)
-	$(CXX) -o $@ $(selColumnOBJS) $(LIBS)
+replace_dict.o: $(COMMON_HPP)  
+replace_dictOBJS=replace_dict.o $(CPP_DIR)/common.o
+replace_dict: $(replace_dictOBJS)
+	$(CXX) -o $@ $(replace_dictOBJS) $(LIBS)
 	$(ECHO)
 
 setMinus.o:  $(COMMON_HPP)  
