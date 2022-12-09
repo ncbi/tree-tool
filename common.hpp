@@ -692,6 +692,18 @@ template <typename Key, typename KeyParent>
                         const KeyParent& key)
     { return m. find (key) != m. end (); }
 
+template <typename T, size_t N>
+  size_t indexOf (const array<T,N> &arr, const T item)
+    { for (size_t i = 0; i < N; i++)
+        if (arr [i] == item)
+          return i;
+      return no_index;
+    }
+
+template <typename T, size_t N>
+  bool contains (const array<T,N> &arr, const T item)
+    { return indexOf (arr, item) != no_index; }
+
 template <typename Key, typename Value, typename KeyParent>
   bool find (const map <Key, Value> &m,
              const KeyParent& key,
