@@ -155,11 +155,11 @@ struct ThisApplication : Application
   	     )
       {
         const long diff = hsp. global_start () - hsp_prev. global_start ();
-        QC_ASSERT (diff % 3);  // Otherwise no frame shift
-        cout         << hsp. sseqid 
-             << '\t' << hsp. qseqid
-             << '\t' << (hsp. sstrand ? hsp_prev. qend : hsp. qend) + 1 << (diff > 0 ? "ins" : "del") << abs (diff) << "bp" 
-              << endl;
+        if (diff % 3)
+          cout         << hsp. sseqid 
+               << '\t' << hsp. qseqid
+               << '\t' << (hsp. sstrand ? hsp_prev. qend : hsp. qend) + 1 << (diff > 0 ? "ins" : "del") << abs (diff) << "bp" 
+                << endl;
       }
 	    hsp_prev = move (hsp);
 	  }
