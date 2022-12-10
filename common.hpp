@@ -2115,6 +2115,11 @@ public:
 	    }
 	void uniq ()
 	  { uniq ([] (const T& a, const T& b) { return a == b; }); }
+	bool checkUniq () const
+	  { Vector<T> other (*this);
+	    other. sort ();
+	    return other. isUniq ();
+	  }
   size_t getIntersectionSize (const Vector<T> &other) const
     // Input: *this, vec: unique
     { if (other. empty ())
@@ -2279,6 +2284,24 @@ public:
       { P::operator<< (other); 
         return *this;
       }
+
+
+  class Stack
+  {
+    VectorOwn<T> &vec;
+    const size_t size;
+  public:
+    explicit Stack (VectorOwn<T> &vec_arg)
+      : vec (vec_arg)
+      , size (vec_arg. size ())
+      {}
+   ~Stack ()
+      { while (vec. size () > size)
+        { const T* t = vec. pop ();
+          delete t;
+        }
+      }
+  };
 };
 
 
