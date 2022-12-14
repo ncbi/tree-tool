@@ -2203,16 +2203,15 @@ public:
   explicit VectorPtr (initializer_list<const T*> init)
     : P (init)
     {}
-  VectorPtr (VectorPtr<T> &&other) = default;
 	template <typename U>
   	explicit VectorPtr (const vector<const U*> &other)
-  	//: P ()
+  	  : P ()
   	  { P::reserve (other. size ());
   	    insertAll (*this, other);
   	  }	  
 	template <typename U>
   	explicit VectorPtr (const list<const U*> &other)
-  	//: P ()
+  	  : P ()
   	  { P::reserve (other. size ());
   	    insertAll (*this, other);
   	  }	  
