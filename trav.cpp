@@ -112,7 +112,7 @@ struct ThisApplication : Application
     : Application ("Apply <command> to all <items>")
   	{
       version = VERSION;
-  	  addPositional ("items", "File with items (end-of-line separated), a directory (in this case items are files in this directory in raw order), or a natural number");
+  	  addPositional ("items", "Items container: file with items (end-of-line separated), a directory (in this case items are files in this directory in raw order), or a natural number");
   	  addPositional ("command", "Text with special symbols: \
 \"%d\" = <items>, \
 \"%f\" - item, \
@@ -142,10 +142,10 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string itemsName   = getArg ("items");
-		const string cmd_        = getArg ("command");
+		const string cmd_orig    = getArg ("command");
 		const bool   large       = getFlag ("large");
 		const string errorsFName = getArg ("errors");
-//const uint blank_lines   = str2<uint> (getArg ("blank_lines"));
+//const uint blank_lines     = str2<uint> (getArg ("blank_lines"));
 		const uint step          = str2<uint> (getArg ("step"));
 		const uint start         = str2<uint> (getArg ("start"));
 		const bool zero          = getFlag ("zero");
@@ -154,7 +154,7 @@ struct ThisApplication : Application
 
     if (itemsName. empty ())
       throw runtime_error ("Empty items list name");
-    if (cmd_. empty ())
+    if (cmd_orig. empty ())
       throw runtime_error ("Empty command");    
     if (! step)
       throw runtime_error ("-step must be >= 1");
@@ -194,17 +194,30 @@ struct ThisApplication : Application
       ASSERT (gen. get ());
   	
   	
-  	  string cmd (cmd_);
-  	  replaceStr (cmd, "%d", itemsName);
+      ASSERT (! errors. get ());
+      if (! errorsFName. empty ())
+      	errors. reset (new OFStream (errorsFName));
+  	
+
+ 	    constexpr char delChar = '\177';
+
+	    if (contains (cmd_orig, delChar))
+	      throw runtime_error ("Command has an ASCII 127 (DEL) character");
+
+	    if (contains (itemsName, delChar))
+	      throw runtime_error ("Items container has an ASCII 127 (DEL) character");
+	    string itemsName_cleaned (itemsName);  // Can contain '%'
+	    replace (itemsName_cleaned, '%', delChar);
+
+
+  	  string cmd (cmd_orig);
+  	  // Constant replacements of '%'
+  	  replaceStr (cmd, "%d", itemsName_cleaned);  
       replaceStr (cmd, "%q", "'");  
       replaceStr (cmd, "%Q", "\"");  
       replaceStr (cmd, "%D", "$");  
       replaceStr (cmd, "%g", "`");
-  	
-
-      ASSERT (! errors. get ());
-      if (! errorsFName. empty ())
-      	errors. reset (new OFStream (errorsFName));
+      replaceStr (cmd, "%b", "\\");
   	
       bool subitemsP = false;
       FFOR (size_t, i, cmd. size () - 1)
@@ -230,15 +243,17 @@ struct ThisApplication : Application
         const size_t n = gen->prog. n - (zero ? 1 : 0);
         if (n < start)
           continue;
+          
+        const string item_orig (item);
+        const size_t hash_class = str2hash_class (item_orig);
   	      
-  	    constexpr char delChar = '\177';
   	    if (contains (item, delChar))
-  	      throw runtime_error ("Item contains an ASCII 127 (DEL) character");
+  	      throw runtime_error ("Item has an ASCII 127 (DEL) character");
   	    replace (item, '%', delChar);
   	      
         string thisCmd (cmd);
         replaceStr (thisCmd, "%f", item);
-        replaceStr (thisCmd, "%h", to_string (str2hash_class (item)));
+        replaceStr (thisCmd, "%h", to_string (hash_class));
         replaceStr (thisCmd, "%n", to_string (n));
 
         if (subitemsP)
@@ -278,19 +293,18 @@ struct ThisApplication : Application
           }
         }        
 
+        // Last replacement of '%'
         FFOR (size_t, i, thisCmd. size ())
           if (   thisCmd [i] == '%' 
               && (   i == thisCmd. size () - 1 
-                  || ! (   thisCmd [i + 1] == 'p'
-                        || thisCmd [i + 1] == 'b'
-                       )
+                  || thisCmd [i + 1] != 'p'
                  )
              )
-            throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (i, 2)) + " in item: " + item + "\n" + thisCmd);
+            throw runtime_error ("Unprocessed " + strQuote (thisCmd. substr (i, 2)) + " in item: " + item_orig + "\n" + thisCmd);
         replaceStr (thisCmd, "%p", "%");
-        replaceStr (thisCmd, "%b", "\\");
-
-  	    replace (item, delChar, '%');
+        
+        // Restore original '%'
+  	    replace (thisCmd, delChar, '%');
 
         if (verbose ())
        	  cerr << thisCmd << endl;
@@ -299,9 +313,9 @@ struct ThisApplication : Application
           cout << thisCmd << endl;
         else
           if (threads_max == 1)
-            executeCommand (thisCmd, item/*, blank_lines*/);
+            executeCommand (thisCmd, item_orig/*, blank_lines*/);
       	  else
-      	    commands << move (Command {move (thisCmd), move (item)});
+      	    commands << move (Command {move (thisCmd), move (item_orig)});
       }
     }
 
