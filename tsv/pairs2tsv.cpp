@@ -68,6 +68,7 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("dir", "directory with attribute-value files; separators are ':' or '='");
+  	  addKey ("file_col", "Column name for the file name");
   	}
   	
   	
@@ -75,6 +76,7 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string dirName = getArg ("dir");
+		const string fileCol = getArg ("file_col");
 		
 		
     map<string,size_t> attr2num;
@@ -104,7 +106,13 @@ struct ThisApplication : Application
       throw runtime_error ("No attributes");
     
     TextTable tt;
+    tt. pound = true;
     map<string,TextTable::ColNum> attr2col;
+    if (! fileCol. empty ())
+    {
+      attr2col [fileCol] = 0;
+      tt. header << TextTable::Header (fileCol);
+    }
     {
       Vector<Attr> attrs;  attrs. reserve (attr2num. size ());
       for (const auto& it : attr2num)
@@ -112,7 +120,9 @@ struct ThisApplication : Application
       attrs. sort ();
       for (const Attr& attr: attrs)
       {
-        attr2col [attr.name] = tt. header. size ();
+        if (contains (attr2col, attr.name))
+          throw runtime_error ("Duplicate column name " + attr. name);
+        attr2col [attr. name] = tt. header. size ();
         tt. header << TextTable::Header (attr. name);
       }
     }
@@ -127,6 +137,8 @@ struct ThisApplication : Application
         LineInput f (dirName + "/" + fName);
         while (f. nextLine ())
         {
+          if (! fileCol. empty ())
+            row [0] = fName;
           trim (f. line);
           constexpr const char* sep (":=");
           const size_t pos = f. line. find_first_of (sep);
