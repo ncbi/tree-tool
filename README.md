@@ -20,3 +20,5 @@ Novel tool to build large phylogenetic trees with applications to NCBI genomes a
 November 2021,
 [DOI: 10.13140/RG.2.2.16339.71204](https://www.researchgate.net/publication/355982339_Novel_tool_to_build_large_phylogenetic_trees_with_applications_to_NCBI_genomes_and_rRNA_sequences?channel=doi&linkId=6188627bd7d1af224bc54e3a&showFulltext=true)
 Conference: CSHL GENOME INFORMATICS 2021
+
+[embed]https://github.com/ncbi/tree-tool/inc_ls_dist_tree.pdf[/embed] 
