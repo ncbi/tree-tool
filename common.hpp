@@ -2294,6 +2294,7 @@ public:
   {
     VectorOwn<T> &vec;
     const size_t size;
+    
   public:
     explicit Stack (VectorOwn<T> &vec_arg)
       : vec (vec_arg)
@@ -2304,6 +2305,11 @@ public:
         { const T* t = vec. pop ();
           delete t;
         }
+      }
+      
+    void release (VectorPtr<T> &out)
+      { while (vec. size () > size)
+          out << vec. pop ();
       }
   };
 };
