@@ -1645,8 +1645,10 @@ bool StringVector::same (const StringVector &vec,
 
 
 
+///////////////////////////////////////////// Search ///////////////////////////////////////////
 
-bool inc (vector<bool> &v)
+
+bool next (vector<bool> &v)
 {
   const size_t s = v. size ();
 
@@ -1666,8 +1668,8 @@ bool inc (vector<bool> &v)
 
 
 
-bool inc (vector<size_t> &indexes,
-          const vector<size_t> &indexes_max)
+bool next (vector<size_t> &indexes,
+           const vector<size_t> &indexes_max)
 {
   ASSERT (indexes. size () == indexes_max. size ());
 
@@ -1686,6 +1688,39 @@ bool inc (vector<size_t> &indexes,
 }
 
 
+
+
+// SubsetSearch
+
+SubsetSearch::SubsetSearch (size_t whole_size,
+                            size_t subset_size)
+: subset (subset_size + 1)
+{ 
+  ASSERT (subset_size <= whole_size);
+  FOR (size_t, i, subset_size)
+    subset [i] = i;
+  subset [subset_size] = whole_size;
+}
+
+
+
+bool SubsetSearch::next ()
+{ 
+  FFOR (size_t, i, subset. size () - 1)
+    if (subset [i] + 1 == subset [i + 1])
+      subset [i] = i;
+    else
+    { 
+      subset [i] ++;
+      return true;
+    }
+  return false;
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 
 // DisjointCluster
