@@ -1719,6 +1719,23 @@ bool SubsetSearch::next ()
 
 
 
+void SubsetSearch::complement (Vector<size_t> &disjoint) const
+{
+  const size_t size = subset. back () - (subset. size () - 1);
+  disjoint. reserve (size);
+  disjoint. clear ();
+  size_t j = 0;
+  for (size_t i : subset)
+  {
+    for (; j < i; j++)
+      disjoint << j;
+    j++;
+  }
+  ASSERT (disjoint. size () == size);
+}
+
+
+
 
 // Permute
 

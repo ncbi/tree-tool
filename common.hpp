@@ -2388,6 +2388,7 @@ struct SubsetSearch
   bool next ();
     // Update: subset
     // Return: false <=> search is finished
+  void complement (Vector<size_t> &disjoint) const;
 };
 
 
