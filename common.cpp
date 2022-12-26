@@ -1720,6 +1720,19 @@ bool SubsetSearch::next ()
 
 
 
+// Permute
+
+Permute::Permute (size_t size)
+: vec (size)
+{
+  FOR (size_t, i, size)
+    vec [i] = i;
+}
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 

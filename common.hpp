@@ -2392,6 +2392,21 @@ struct SubsetSearch
 
 
 
+struct Permute
+{
+  Vector<size_t> vec;
+    // Init: 1, 2, 3, ...
+  
+  explicit Permute (size_t size);
+  
+  bool next ()
+    { return next_permutation (vec. begin (), vec. end ()); }
+    // Update: vec
+    // Return: false <=> search is finished
+};
+
+
+
 
 //
 
