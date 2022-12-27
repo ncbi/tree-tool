@@ -1739,10 +1739,10 @@ void SubsetSearch::complement (Vector<size_t> &disjoint) const
 
 // Permute
 
-Permute::Permute (size_t size)
-: vec (size)
+Permute::Permute (size_t n)
+: vec (n)
 {
-  FOR (size_t, i, size)
+  FOR (size_t, i, n)
     vec [i] = i;
 }
 
