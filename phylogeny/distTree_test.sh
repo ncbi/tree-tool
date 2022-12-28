@@ -19,15 +19,17 @@ DATA=$THIS/data
 
 #if false; then  
 section "mdsTree: Enterobacteriaceae"
-rm -rf $DATA/Enterobacteriaceae.dir/
-$THIS/../dm/mdsTree.sh $DATA/Enterobacteriaceae Conservation 2  &> $TMP.out
-$THIS/makeDistTree  -qc -input_tree $DATA/Enterobacteriaceae.dir/  -data $DATA/Enterobacteriaceae  -dissim_attr "Conservation"  -variance linExp  -optimize  -output_tree Enterobacteriaceae.tree > Enterobacteriaceae.distTree
+#rm -rf $DATA/Enterobacteriaceae.dir/
+gunzip -c $DATA/Enterobacteriaceae.dm.gz > $TMP.dm
+$THIS/../dm/mdsTree.sh $TMP Conservation 2  &> $TMP.out
+$THIS/makeDistTree  -qc -input_tree $TMP.dir/  -data $TMP  -dissim_attr "Conservation"  -variance linExp  -optimize  -output_tree Enterobacteriaceae.tree > Enterobacteriaceae.distTree
 $THIS/distTree_compare_criteria.sh Enterobacteriaceae.distTree $DATA/Enterobacteriaceae.distTree
 rm Enterobacteriaceae.distTree
-rm -r $DATA/Enterobacteriaceae.dir/
+#rm -r $DATA/Enterobacteriaceae.dir/
 
 section "To Newick"
-$THIS/printDistTree  -qc  -data $DATA/Enterobacteriaceae  -dissim_attr "Conservation"  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4  -ext_name > Enterobacteriaceae.nw
+gunzip -c $DATA/Enterobacteriaceae.dm.gz > $TMP.dm
+$THIS/printDistTree  -qc  -data $TMP  -dissim_attr "Conservation"  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4  -ext_name > Enterobacteriaceae.nw
 diff Enterobacteriaceae.nw $DATA/Enterobacteriaceae.nw
 rm Enterobacteriaceae.nw
 
@@ -52,17 +54,19 @@ echo "Verbose ..."
 $THIS/makeDistTree -qc  -data $DATA/tree4  -variance linExp  -optimize  -verbose 2 &> $TMP.out
 
 section "Random tree"
-$THIS/makeDistTree  -qc  -data $DATA/randomTree  -variance lin  -output_tree random-output.tree > $TMP.out
-$THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $DATA/randomTree  -variance lin  -optimize | grep -v '^CHRON: ' > randomTree.makeDistTree
+gunzip -c $DATA/randomTree.dm.gz > $TMP.dm
+$THIS/makeDistTree  -qc  -data $TMP  -variance lin  -output_tree random-output.tree > $TMP.out
+$THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $TMP  -variance lin  -optimize | grep -v '^CHRON: ' > randomTree.makeDistTree
 $THIS/distTree_compare_criteria.sh randomTree.makeDistTree $DATA/randomTree.makeDistTree
 echo "Verbose ..."
-$THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $DATA/randomTree  -variance lin  -verbose 2 &> $TMP.out
+$THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $TMP  -variance lin  -verbose 2 &> $TMP.out
 rm randomTree.makeDistTree
 rm random-output.tree
 
 section "Salmonella"
 # Check time ??
-$THIS/makeDistTree  -qc  -data $DATA/Salmonella  -variance linExp  -optimize  -subgraph_iter_max 10 \
+gunzip -c $DATA/Salmonella.dm.gz > $TMP.dm
+$THIS/makeDistTree  -qc  -data $TMP  -variance linExp  -optimize  -subgraph_iter_max 10 \
   -delete_criterion_outliers Salmonella.criterion_outliers \
   -delete_deformation_outliers Salmonella.deformation_outliers \
   -delete_hybrids Salmonella.hybrids \
@@ -80,11 +84,13 @@ $THIS/distTree_compare_criteria.sh Salmonella.distTree $DATA/Salmonella.distTree
 rm Salmonella.distTree
 
 section "testDistTree"
-$THIS/makeDistTree  -data $DATA/Salmonella  -variance linExp  -optimize  -output_tree $TMP.tree > $TMP.out
-$THIS/testDistTree -qc  $DATA/Salmonella  -input_tree  $TMP.tree  -variance linExp 
+gunzip -c $DATA/Salmonella.dm.gz > $TMP.dm
+$THIS/makeDistTree  -data $TMP  -variance linExp  -optimize  -output_tree $TMP.tree > $TMP.out
+$THIS/testDistTree -qc  $TMP  -input_tree  $TMP.tree  -variance linExp 
 
 section "Salmonella: delete"
-$THIS/makeDistTree  -qc  -data $DATA/Salmonella  -variance linExp  -delete $DATA/delete.list  -check_delete > $TMP.out
+gunzip -c $DATA/Salmonella.dm.gz > $TMP.dm
+$THIS/makeDistTree  -qc  -data $TMP  -variance linExp  -delete $DATA/delete.list  -check_delete > $TMP.out
 
 if [ -d $DATA/inc.ITS ]; then
   section "ITS threads"
@@ -94,7 +100,8 @@ if [ -d $DATA/inc.ITS ]; then
 fi
 
 section "Saccharomyces hybrids"
-$THIS/makeDistTree -qc  -threads 10  -data $DATA/Saccharomyces  -variance linExp  -optimize  -subgraph_iter_max 2  \
+gunzip -c $DATA/Saccharomyces.dm.gz > $TMP.dm
+$THIS/makeDistTree -qc  -threads 10  -data $TMP  -variance linExp  -optimize  -subgraph_iter_max 2  \
   -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces.hybrid_parent_pairs  -delete_hybrids Saccharomyces.hybrid  -dissim_boundary 0.675 \
   -delete_criterion_outliers Saccharomyces.criterion_outliers  -criterion_outlier_num_max 1 \
   -delete_deformation_outliers Saccharomyces.deformation_outliers  -deformation_outlier_num_max 1 \
@@ -112,14 +119,15 @@ diff $TMP.Saccharomyces.deformation_outliers $TMP.data.Saccharomyces.deformation
 rm Saccharomyces.deformation_outliers
 # Saccharomyces.distTree
 $THIS/tree2obj.sh $TMP.tree > $TMP.list
-$THIS/../dm/dm2subset $DATA/Saccharomyces $TMP.list > $TMP.dm
-$THIS/makeDistTree  -threads 10  -data $TMP  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces.distTree
+$THIS/../dm/dm2subset $TMP $TMP.list > $TMP.subset.dm
+$THIS/makeDistTree  -threads 10  -data $TMP.subset  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces.distTree
 $THIS/distTree_compare_criteria.sh Saccharomyces.distTree $DATA/Saccharomyces.distTree
 rm Saccharomyces.distTree
 
 section "-variance_min"
 # 0.0005 = average arc length / 100
-$THIS/makeDistTree  -qc  -data $DATA/Salmonella  -variance linExp  -variance_min 0.0005  -optimize  -subgraph_iter_max 10 \
+gunzip -c $DATA/Salmonella.dm.gz > $TMP.dm
+$THIS/makeDistTree  -qc  -data $TMP  -variance linExp  -variance_min 0.0005  -optimize  -subgraph_iter_max 10 \
   -delete_criterion_outliers Salmonella-var_min.criterion_outliers \
   -delete_deformation_outliers Salmonella-var_min.deformation_outliers \
   -delete_hybrids Salmonella-var_min.hybrids \
@@ -144,7 +152,8 @@ else
   super_section "Two dissimilarity types"
 
   section "Salmonella2"
-  $THIS/makeDistTree  -qc  -data $DATA/Salmonella2  -variance linExp  -optimize  -subgraph_iter_max 10  \
+  gunzip -c $DATA/Salmonella2.dm.gz > $TMP.dm
+  $THIS/makeDistTree  -qc  -data $TMP  -variance linExp  -optimize  -subgraph_iter_max 10  \
     -output_dissim_coeff Salmonella2.dissim_coeff \
     -delete_criterion_outliers Salmonella2.criterion_outliers \
     -delete_deformation_outliers Salmonella2.deformation_outliers \
@@ -165,7 +174,8 @@ else
   rm Salmonella2.distTree
 
   section "Saccharomyces hybrids"
-  $THIS/makeDistTree -qc  -threads 10  -data $DATA/Saccharomyces2  -variance linExp  -optimize  -subgraph_iter_max 2  \
+  gunzip -c $DATA/Saccharomyces2.dm.gz > $TMP.dm
+  $THIS/makeDistTree -qc  -threads 10  -data $TMP  -variance linExp  -optimize  -subgraph_iter_max 2  \
     -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
     -delete_criterion_outliers Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
     -delete_deformation_outliers Saccharomyces2.deformation_outliers  -deformation_outlier_num_max 1 \
@@ -187,8 +197,8 @@ else
   rm Saccharomyces2.deformation_outliers 
   # Saccharomyces2.distTree
   $THIS/tree2obj.sh $TMP.tree > $TMP.list
-  $THIS/../dm/dm2subset $DATA/Saccharomyces2 $TMP.list > $TMP.dm
-  $THIS/makeDistTree  -threads 10  -data $TMP  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces2.distTree
+  $THIS/../dm/dm2subset $TMP $TMP.list > $TMP.subset.dm
+  $THIS/makeDistTree  -threads 10  -data $TMP.subset  -input_tree $TMP.tree  -variance linExp  -optimize  -reinsert  -subgraph_iter_max 10  > Saccharomyces2.distTree
   $THIS/distTree_compare_criteria.sh Saccharomyces2.distTree $DATA/Saccharomyces2.distTree
   rm Saccharomyces2.distTree
 
@@ -208,7 +218,8 @@ else
   super_section "Many dissimilarity types"
 
   section "Virus9"
-  $THIS/makeDistTree  -qc  -data $DATA/Virus9  -optimize  -subgraph_iter_max 100  -variance linExp  -variance_dissim  -output_dissim_coeff Virus9.coeff  -output_data Virus9-out  -output_tree Virus9.tree  1> $TMP.1 2> $TMP.out
+  gunzip -c $DATA/Virus9.dm.gz > $TMP.dm
+  $THIS/makeDistTree  -qc  -data $TMP  -optimize  -subgraph_iter_max 100  -variance linExp  -variance_dissim  -output_dissim_coeff Virus9.coeff  -output_data Virus9-out  -output_tree Virus9.tree  1> $TMP.1 2> $TMP.out
   diff Virus9.coeff $DATA/Virus9.coeff
   rm Virus9.coeff
   A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
@@ -227,7 +238,8 @@ else
 
 
   section "Virus110"
-  $THIS/makeDistTree  -data $DATA/Virus110  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Virus110-out  -output_tree Virus110.tree 1> $TMP.1 
+  gunzip -c $DATA/Virus110.dm.gz > $TMP.dm
+  $THIS/makeDistTree  -data $TMP  -variance_min 0.005  -variance linExp  -variance_dissim  -optimize  -subgraph_iter_max 100  -output_data Virus110-out  -output_tree Virus110.tree 1> $TMP.1 
   A=`grep -w '^Error between dissimilarities' -A 1 $TMP.1 | tail -1`
   #
   $THIS/makeDistTree  -qc  -input_tree Virus110.tree  -data Virus110-out  -dissim_attr dissim  -weight_attr weight  -optimize  -output_tree Virus110-out1.tree 1> $TMP.2 2> $TMP.out
