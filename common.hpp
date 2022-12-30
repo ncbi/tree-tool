@@ -2357,64 +2357,6 @@ public:
 
 
 
-//////////////////////////////////////////// Search ////////////////////////////////
-// Usage:  Obj obj; do <use obj>; while (obj. next ());
-
-
-bool next (vector<bool> &v);
-  // Return: false <=> search is finished
-  // Update: v
-  // Search size = 2^|v|
-
-bool next (vector<size_t> &indexes,
-           const vector<size_t> &indexes_max);
-  // Return: false <=> search is finished
-  // Update: indexes
-  // Search size = \prod_i (indexes_max [i] + 1)
-
-  
-
-struct SubsetSearch
-// Search size = choice(whole_size,subset_size)
-{
-  Vector<size_t> subset;
-    // Indexes of elements
-    // size() = subset_size + 1
-    // i <= subset[i] < subset[i+1]
-    // subset.last() = whole_size: fictitios element
-
-  SubsetSearch (size_t whole_size,
-                size_t subset_size);
-
-  bool next ();
-    // Update: subset
-    // Return: false <=> search is finished
-  void complement (Vector<size_t> &disjoint) const;
-    // Output: disjoint
-};
-
-
-
-struct Permute
-// Search size = n!
-{
-  Vector<size_t> vec;
-    // Indexes of elements
-    // Init: 1, 2, 3, ...
-  
-  explicit Permute (size_t n);
-  
-  bool next ()
-    { return next_permutation (vec. begin (), vec. end ()); }
-    // Update: vec (in lexicographic order)
-    // Return: false <=> search is finished
-};
-
-
-
-
-//
-
 struct DisjointCluster
 // Cormen, Leiserson, Rivest, Introduction to Algorithms, p. 449
 {
