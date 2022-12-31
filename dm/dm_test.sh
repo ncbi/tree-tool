@@ -9,6 +9,10 @@ fi
 SEED=$1
 
 
+
+TMP=`mktemp`
+
+
 cd $THIS
 
 
@@ -51,7 +55,8 @@ diff blaLUT.mds $THIS/data/blaLUT.mds
 rm blaLUT.mds
 
 section "Enterobacteriaceae"
-$THIS/mds  -qc  -attrType 2  -maxClusters 5  -attr Conservation  $THIS/../phylogeny/data/Enterobacteriaceae  > Enterobacteriaceae.mds
+gunzip -c $THIS/../phylogeny/data/Enterobacteriaceae.dm.gz > $TMP.dm
+$THIS/mds  -qc  -attrType 2  -maxClusters 5  -attr Conservation  $TMP  > Enterobacteriaceae.mds
 diff Enterobacteriaceae.mds $THIS/data/Enterobacteriaceae.mds
 rm Enterobacteriaceae.mds
 
@@ -123,3 +128,6 @@ rm 363068-2319168-diff.uniKernel
 
 echo ""
 success
+
+
+rm $TMP*

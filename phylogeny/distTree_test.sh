@@ -268,7 +268,7 @@ else
 fi
 
 
-rm $TMP*
+rm -r $TMP*
 
 
 success
