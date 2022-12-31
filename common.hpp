@@ -1746,7 +1746,7 @@ public:
 	explicit Vector (size_t n, 
 	                 const T &value = T ())
 	  : P (n, value)
-	  {}
+	  { searchSorted = true; }
   explicit Vector (initializer_list<T> init)
     : P (init)
     {}
@@ -1818,6 +1818,10 @@ public:
         if (value == t)
           n++;
       return n;
+    }
+  void checkSorted () const
+    { if (! searchSorted)
+    	  throw logic_error ("Vector is not sorted for search");
     }
 protected:
   void unsetSearchSorted ()
@@ -1979,10 +1983,6 @@ public:
 		      else
 		      	break;
     	searchSorted = true;
-    }
-  void checkSorted () const
-    { if (! searchSorted)
-    	  throw logic_error ("Vector is not sorted for search");
     }
 
   size_t binSearch (const T &value,
@@ -2236,13 +2236,28 @@ public:
   	explicit VectorPtr (const vector<const U*> &other)
   	  : P ()
   	  { P::reserve (other. size ());
+  	    insertAll (*this, other);  	    
+  	  }	  
+	template <typename U>
+  	explicit VectorPtr (const Vector<const U*> &other)
+  	  : P ()
+  	  { P::reserve (other. size ());
   	    insertAll (*this, other);
+  	    P::searchSorted = other. searchSorted;
   	  }	  
 	template <typename U>
   	explicit VectorPtr (const list<const U*> &other)
   	  : P ()
   	  { P::reserve (other. size ());
   	    insertAll (*this, other);
+  	  }	  
+  template <typename U>
+  	VectorPtr<T>& operator= (const Vector<const U*> &other)
+  	  { P::clear ();
+  	    P::reserve (other. size ());
+  	    insertAll (*this, other);
+  	    P::searchSorted = other. searchSorted;
+  	    return *this;
   	  }	  
 
 
@@ -2258,7 +2273,8 @@ public:
 	void deleteData ()
 	  {	for (const T* t : *this)
 			  delete t;
-			P::clear ();  
+			P::clear ();
+			P::searchSorted = true;
 	  }
   void erasePtr (size_t index)
     { delete (*this) [index];
