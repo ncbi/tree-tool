@@ -1819,10 +1819,12 @@ public:
           n++;
       return n;
     }
+protected:
   void unsetSearchSorted ()
     { if (P::size () > 1)
         searchSorted = false;
     }
+public:
   Vector<T>& operator<< (const T &value)
     { P::push_back (value);
       unsetSearchSorted ();
@@ -2160,6 +2162,33 @@ public:
         if (other [j] == x)
           res << x;
       }
+      res. searchSorted = true;
+      return res;
+    }
+  Vector<T> getUnion (const Vector<T> &other) const
+    // Input: *this, vec: unique
+    { Vector<T> res;  res. reserve (P::size () + other. size ());      
+      if (other. empty ())
+        return *this;
+      if (P::empty ())
+        return other;
+      checkSorted ();
+      other. checkSorted ();      
+      size_t j = 0;
+      for (const T& x : *this)
+      { while (j < other. size () && other [j] < x)
+        { res << other [j];
+          j++;
+        }
+        if (j < other. size () && other [j] == x)
+          j++;
+        res << x;
+      }
+      while (j < other. size ())
+      { res << other [j];
+        j++;
+      }
+      res. searchSorted = true;
       return res;
     }
 
