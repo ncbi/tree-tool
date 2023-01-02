@@ -1746,13 +1746,13 @@ public:
 	explicit Vector (size_t n, 
 	                 const T &value = T ())
 	  : P (n, value)
-	  { searchSorted = true; }
+	  {}
   explicit Vector (initializer_list<T> init)
     : P (init)
     {}
 	explicit Vector (const vector<T> &other) 
     : P (other)
-	  {}
+    {}
 	
 	
 private:
@@ -1765,6 +1765,10 @@ private:
 	  #endif
 	  }
 public:
+  void unsetSearchSorted ()
+    { if (P::size () > 1)
+        searchSorted = false;
+    }
 	typename P::reference operator[] (size_t index)
 	  { checkIndex ("assignment", index);
 	    return P::operator[] (index);
@@ -1823,12 +1827,6 @@ public:
     { if (! searchSorted)
     	  throw logic_error ("Vector is not sorted for search");
     }
-protected:
-  void unsetSearchSorted ()
-    { if (P::size () > 1)
-        searchSorted = false;
-    }
-public:
   Vector<T>& operator<< (const T &value)
     { P::push_back (value);
       unsetSearchSorted ();
@@ -1865,7 +1863,6 @@ public:
   void setAll (const T &value)
     { for (T &t : *this)
     	  t = value;
-      searchSorted = true;
     }
   void eraseAt (size_t index)
     { eraseMany (index, index + 1); }
@@ -2191,6 +2188,10 @@ public:
       res. searchSorted = true;
       return res;
     }
+  void setUnion (const Vector<T> &other)
+    { Vector<T> vec (getUnion (other));
+      *this = std::move (vec);
+    }
 
   bool operator< (const Vector<T> &other) const
     // Lexicographic comparison
@@ -2274,14 +2275,15 @@ public:
 	  {	for (const T* t : *this)
 			  delete t;
 			P::clear ();
-			P::searchSorted = true;
 	  }
   void erasePtr (size_t index)
     { delete (*this) [index];
       P::eraseAt (index);
     }
   void sortPtr ()
-    { P::sort (lessPtr<T>); }
+    { P::sort (lessPtr<T>); 
+		  P::unsetSearchSorted ();
+    }
   void sortBubblePtr ()
     { FOR_START (size_t, i, 1, P::size ())
 		    FOR_REV (size_t, j, i)
