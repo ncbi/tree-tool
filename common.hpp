@@ -2162,6 +2162,10 @@ public:
       res. searchSorted = true;
       return res;
     }
+  void setIntersection (const Vector<T> &other)
+    { Vector<T> vec (getIntersection (other));
+      *this = std::move (vec);
+    }
   Vector<T> getUnion (const Vector<T> &other) const
     // Input: *this, vec: unique
     { Vector<T> res;  res. reserve (P::size () + other. size ());      
