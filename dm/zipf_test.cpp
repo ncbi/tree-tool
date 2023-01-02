@@ -153,8 +153,8 @@ struct ThisApplication : Application
     	uint s = 0;
     	FOR_REV (size_t, i, freqCum. size ())
     	{
-    		s += freqVec. at (i);
-    		freqCum. at (i) = s;
+    		s += freqVec [i];
+    		freqCum [i] = s;
     	}
 	    Dataset ds;
 	    RealAttr1* catAttr = new RealAttr1 ("Category", ds);
