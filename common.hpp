@@ -2162,9 +2162,14 @@ public:
       res. searchSorted = true;
       return res;
     }
-  void setIntersection (const Vector<T> &other)
-    { Vector<T> vec (getIntersection (other));
-      *this = std::move (vec);
+  bool setIntersection (const Vector<T> &other)
+    { if (P::empty ())
+        *this = other;
+      else
+      { Vector<T> vec (getIntersection (other));
+        *this = std::move (vec);
+      }
+      return ! P::empty ();
     }
   Vector<T> getUnion (const Vector<T> &other) const
     // Input: *this, vec: unique
@@ -2193,8 +2198,12 @@ public:
       return res;
     }
   void setUnion (const Vector<T> &other)
-    { Vector<T> vec (getUnion (other));
-      *this = std::move (vec);
+    { if (P::empty ())
+        *this = other;
+      else
+      { Vector<T> vec (getUnion (other));
+        *this = std::move (vec);
+      }
     }
 
   bool operator< (const Vector<T> &other) const
