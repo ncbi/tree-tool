@@ -11,6 +11,7 @@ endif
 ############################### Programs ################################
 
 all:	\
+  alignment2seq \
   asm_gap \
   asnt \
 	blastmat \
@@ -63,12 +64,19 @@ all:	\
 	prots_pair2stat \
 	replaceFastaHeader \
 	replaceFastaNames \
+	seq_print \
 	splitFasta \
 	tblastn2frameshift \
 	tblastn2orfs \
 	uniqSeq \
 	uniqProtRef
 
+
+alignment2seq.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+alignment2seqOBJS=alignment2seq.o $(SEQ_OBJ)
+alignment2seq:	$(alignment2seqOBJS)
+	$(CXX) -o $@ $(alignment2seqOBJS) $(LIBS) 
+	$(ECHO)
 
 asm_gap.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
 asm_gapOBJS=asm_gap.o $(GEN_DIR)/seq.o $(DM_OBJ)
@@ -380,6 +388,12 @@ replaceFastaNames.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 replaceFastaNamesOBJS=replaceFastaNames.o $(SEQ_OBJ)
 replaceFastaNames:	$(replaceFastaNamesOBJS)
 	$(CXX) -o $@ $(replaceFastaNamesOBJS) $(LIBS) 
+	$(ECHO)
+
+seq_print.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+seq_printOBJS=seq_print.o $(SEQ_OBJ)
+seq_print:	$(seq_printOBJS)
+	$(CXX) -o $@ $(seq_printOBJS) $(LIBS) 
 	$(ECHO)
 
 splitFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
