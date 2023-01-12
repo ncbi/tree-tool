@@ -230,7 +230,7 @@ protected:
        bool sparse_arg,
      	 bool makeUpper);
     // Reads 1 sequence and skips blank lines
-    // Requires: fasta.Line is the first line of the sequence
+    // Requires: fasta.line is the first line of the sequence
     // If !makeUpper then make lowercase
 	void qcName () const;
 	void qcAlphabet () const;
@@ -372,7 +372,7 @@ void UncompressDna (size_t        SeqLen,
 #endif
 
 uchar wild2nucleotides (char wildNucleotide,
-		                   bool acgtb [5]);
+ 		                    bool acgtb [5]);
   // Output: acgtb []
   // Return: Number of 1's in acgtb []; 0..5
   //         |WildNucleotide|, "Degree of ambiguity"
