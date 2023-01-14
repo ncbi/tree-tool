@@ -2335,6 +2335,10 @@ public:
 	explicit VectorOwn (const VectorPtr<T> &other)
 	  : P ()
 	  { P::operator= (other); }
+	VectorOwn<T>& operator= (const VectorPtr<T> &other) 
+	  { P::operator= (other); 
+	    return *this;
+	  }
  ~VectorOwn ()
     { P::deleteData (); }
 
