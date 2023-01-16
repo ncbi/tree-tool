@@ -2163,12 +2163,14 @@ public:
       return res;
     }
   bool setIntersection (const Vector<T> &other)
-    { if (P::empty ())
+    { other. checkSorted ();      
+      if (P::empty ())
         *this = other;
       else
       { Vector<T> vec (getIntersection (other));
         *this = std::move (vec);
       }
+      P::searchSorted = true;
       return ! P::empty ();
     }
   Vector<T> getUnion (const Vector<T> &other) const
@@ -2330,13 +2332,31 @@ public:
 	  	P::searchSorted = other. searchSorted;
 	  	return *this;
 	  }
-	VectorOwn (VectorOwn<T>&&) = default;
-	VectorOwn<T>& operator= (VectorOwn<T>&&) = default;
+	VectorOwn (VectorOwn<T> &&other)
+	  : P ()
+	  { *this = move (other); }
+	VectorOwn<T>& operator= (VectorOwn<T> &&other)
+	  { P::deleteData ();
+	    P::operator= (move (other)); 
+	  	P::searchSorted = other. searchSorted;
+	    return *this;
+	  }
 	explicit VectorOwn (const VectorPtr<T> &other)
 	  : P ()
-	  { P::operator= (other); }
+	  { *this = other; }
 	VectorOwn<T>& operator= (const VectorPtr<T> &other) 
-	  { P::operator= (other); 
+	  { P::deleteData ();
+	    P::operator= (other); 
+	    P::searchSorted = other. searchSorted;
+	    return *this;
+	  }
+	explicit VectorOwn (VectorPtr<T> &&other)
+	  : P ()
+	  { *this = move (other); }
+	VectorOwn<T>& operator= (VectorPtr<T> &&other) 
+	  { P::deleteData ();
+	    P::operator= (move (other)); 
+	  	P::searchSorted = other. searchSorted;
 	    return *this;
 	  }
  ~VectorOwn ()
