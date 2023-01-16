@@ -2170,7 +2170,7 @@ public:
       { Vector<T> vec (getIntersection (other));
         *this = std::move (vec);
       }
-      P::searchSorted = true;
+      searchSorted = true;
       return ! P::empty ();
     }
   Vector<T> getUnion (const Vector<T> &other) const
