@@ -1551,6 +1551,19 @@ void Root::saveFile (const string &fName) const
 
 
 
+void Root::trace (ostream& os,
+                  const string& title) const
+{ 
+  if (! verbose ())
+    return;
+  Offset::newLn (os);
+  os << title << ": ";
+  saveText (os);
+}
+
+
+
+
 // Named
 
 void Named::qc () const

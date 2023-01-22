@@ -1633,6 +1633,8 @@ public:
       saveText (oss);
       return oss. str ();
     }
+  void trace (ostream& os,
+              const string& title) const;
   virtual void saveXml (Xml::File& /*f*/) const 
     { throw logic_error ("Root::saveXml() is not implemented"); }
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
