@@ -50,7 +50,7 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	  : Application ("Reverse-complement a DNA")
+	  : Application ("Reverse-complement DNA")
 		{
       version = VERSION;
 		  addPositional ("in", "Input FASTA file with a DNA sequence");
@@ -62,12 +62,15 @@ struct ThisApplication : Application
   {
 		const string inFName = getArg ("in");
 
-    LineInput in (inFName);
-    EXEC_ASSERT (in. nextLine ());
-    Dna dna (in, 1024 * 1024, false);  // PAR
-    ASSERT (! dna. name. empty ());
-    dna. reverse ();
-    dna. saveText (cout);
+
+	  Multifasta fa (inFName, false);
+	  while (fa. next ())
+	  {
+	    Dna dna (fa, 100000/*PAR*/, true);
+      QC_ASSERT (! dna. name. empty ());
+      dna. reverse ();
+      dna. saveText (cout);
+	  }
 	}
 };
 
