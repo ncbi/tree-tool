@@ -1,4 +1,4 @@
-// alignment2seq.cpp
+// dna_consensus.cpp
 
 /*===========================================================================
 *
@@ -53,7 +53,7 @@ struct ThisApplication : Application
     : Application ("Print a DNA alignment consensus")
     {
       version = VERSION;
-  	  addPositional ("Multi_FASTA", "Multi-FASTA file with aligned DNA sequences");
+  	  addPositional ("Multi_FASTA", "Multi-FASTA DNA file with aligned sequences");
     }
 
 
@@ -99,6 +99,7 @@ struct ThisApplication : Application
   	  }
   	  consensus. seq [i] = nucleotides2wild (acgtb_sum);
   	}
+  	consensus. qc ();
 
     consensus. saveText (cout);    
   }
