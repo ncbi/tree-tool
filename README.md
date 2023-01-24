@@ -18,8 +18,13 @@ General data analysis tools.
 [Building Large Phylogenetic Trees in Log-Linear Time](https://github.com/ncbi/tree-tool/blob/master/inc_ls_dist_tree.pdf)
 
 ## Publications
+Rogozin IB, Saura A, Bykova A, Brover V, Yurchenko V. 
+Deletions across the SARS-CoV-2 Genome: Molecular Mechanisms and Putative Functional Consequences of Deletions in Accessory Genes. Microorganisms. 2023 Jan 16;11(1):229. 
+doi: 10.3390/microorganisms11010229. PMID: [36677521](https://pubmed.ncbi.nlm.nih.gov/36677521/); PMCID: PMC9862619.
+
 Kennedy AH, Schoch CL, Marrero G, Brover V, Robbertse B. 
-Publicly Available and Validated DNA Reference Sequences Are Critical to Fungal Identification and Global Plant Protection Efforts: A Use-Case in _Colletotrichum_. Plant Dis. 2022 Jun;106(6):1573-1596. doi: 10.1094/PDIS-09-21-2083-SR. Epub 2022 May 10. PMID: [35538602](https://pubmed.ncbi.nlm.nih.gov/35538602/); PMCID: PMC9196201.
+Publicly Available and Validated DNA Reference Sequences Are Critical to Fungal Identification and Global Plant Protection Efforts: A Use-Case in _Colletotrichum_. Plant Dis. 2022 Jun;106(6):1573-1596. 
+doi: 10.1094/PDIS-09-21-2083-SR. Epub 2022 May 10. PMID: [35538602](https://pubmed.ncbi.nlm.nih.gov/35538602/); PMCID: PMC9196201.
 
 [Interactive tree of _Colletotrichum_](https://apsjournals.apsnet.org/doi/suppl/10.1094/PDIS-09-21-2083-SR/suppl_file/PDIS-09-21-2083-SR_SF3.html)
 
