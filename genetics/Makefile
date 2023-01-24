@@ -11,7 +11,6 @@ endif
 ############################### Programs ################################
 
 all:	\
-  alignment2seq \
   asm_gap \
   asnt \
 	blastmat \
@@ -21,6 +20,7 @@ all:	\
 	dna2orfs \
 	dna2stat \
 	dna_complexity \
+  dna_consensus \
 	dna_coverage \
 	dna_cut \
 	dna_find \
@@ -57,6 +57,7 @@ all:	\
 	prot2fingerprints \
 	prot2triplets \
 	prot_check \
+	prot_consensus \
 	prot_find \
 	prot_fingerprint_grep \
 	prot_grep_short \
@@ -71,12 +72,6 @@ all:	\
 	uniqSeq \
 	uniqProtRef
 
-
-alignment2seq.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-alignment2seqOBJS=alignment2seq.o $(SEQ_OBJ)
-alignment2seq:	$(alignment2seqOBJS)
-	$(CXX) -o $@ $(alignment2seqOBJS) $(LIBS) 
-	$(ECHO)
 
 asm_gap.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
 asm_gapOBJS=asm_gap.o $(GEN_DIR)/seq.o $(DM_OBJ)
@@ -130,6 +125,12 @@ dna_complexity.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 dna_complexityOBJS=dna_complexity.o $(SEQ_OBJ)
 dna_complexity:	$(dna_complexityOBJS)
 	$(CXX) -o $@ $(dna_complexityOBJS) $(LIBS) 
+	$(ECHO)
+
+dna_consensus.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_consensusOBJS=dna_consensus.o $(SEQ_OBJ)
+dna_consensus:	$(dna_consensusOBJS)
+	$(CXX) -o $@ $(dna_consensusOBJS) $(LIBS) 
 	$(ECHO)
 
 dna_coverage.o:  $(COMMON_HPP) 
@@ -334,6 +335,12 @@ prot_check.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 prot_checkOBJS=prot_check.o $(SEQ_OBJ)
 prot_check:	$(prot_checkOBJS)
 	$(CXX) -o $@ $(prot_checkOBJS) $(LIBS) 
+	$(ECHO)
+
+prot_consensus.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+prot_consensusOBJS=prot_consensus.o $(SEQ_OBJ)
+prot_consensus:	$(prot_consensusOBJS)
+	$(CXX) -o $@ $(prot_consensusOBJS) $(LIBS) 
 	$(ECHO)
 
 prot_find.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
