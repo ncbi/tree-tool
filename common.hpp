@@ -2314,6 +2314,37 @@ public:
 
 
 
+template <typename T>
+  bool equalPtr (const VectorPtr<T> &a,
+                 const VectorPtr<T> &b)
+    { if (a. size () != b. size ())
+        return false;
+      for (size_t i = 0; i < a. size (); i++)
+        if (! (* a [i] == * b [i]))
+          return false;
+      return true;
+    }
+
+template <typename T>
+  ebool compPtr (const VectorPtr<T> &a,
+                 const VectorPtr<T> &b)
+    { if (a. size () < b. size ())
+        return etrue;
+      if (a. size () > b. size ())
+        return efalse;
+      for (size_t i = 0; i < a. size (); i++)
+      {
+        if (* a [i] < * b [i])
+          return etrue;
+        if (* b [i] < * a [i])
+          return efalse;
+      }
+      return enull;
+    }
+
+
+
+
 template <typename T /* : Root */>
 struct VectorOwn : VectorPtr<T>
 {
