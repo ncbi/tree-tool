@@ -3811,7 +3811,7 @@ struct Offset
 private:
 	static size_t size;
 public:
-	static constexpr size_t delta = 2;
+	static constexpr size_t delta {2};
 
 
 	Offset ()

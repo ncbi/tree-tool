@@ -138,7 +138,7 @@ namespace Common_sp
 
 
 
-#define PRINT(x)  cout << #x << " = " << (x) << endl;
+#define PRINT(x)  { Offset::newLn (cout); cout << #x << " = " << (x); }
 
 
 #define XSTR(s) STR(s)
