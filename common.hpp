@@ -140,6 +140,9 @@ constexpr const char* error_caption ("*** ERROR ***");
 [[noreturn]] inline void errorExitStr (const string &msg)
   { errorExit (msg. c_str ()); }
 
+inline void throw_error (const string &s)  
+  { throw logic_error (s); }
+  // For debugger
 
 
 class Notype {};

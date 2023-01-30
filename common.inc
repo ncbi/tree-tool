@@ -83,6 +83,8 @@
 namespace Common_sp
 {
   std::string getStack ();
+
+  void throw_error (const std::string &s);
 }
 
 #define ERROR_MSG(msg)                       \
@@ -91,7 +93,7 @@ namespace Common_sp
       oss_ << WHERE << ": " << (msg);        \
       oss_ << endl << "Stack:" << endl <<    \
         Common_sp::getStack ();              \
-      throw std::logic_error (oss_. str ()); \
+      Common_sp::throw_error (oss_. str ()); \
     } else {}                                \
     exit (1);                                \
   }
@@ -100,7 +102,7 @@ namespace Common_sp
 #define NEVER_CALL       ERROR_MSG ("Never call: ")
 
 
-#define QC_ASSERT(cond)  if (! (cond)) ERROR_MSG (#cond) else {}   // Must be the last statement in a function body
+#define QC_ASSERT(cond)  if (! (cond)) ERROR_MSG (#cond) else {}   
 
 
 // Logic errors
