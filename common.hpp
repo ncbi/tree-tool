@@ -140,9 +140,9 @@ constexpr const char* error_caption ("*** ERROR ***");
 [[noreturn]] inline void errorExitStr (const string &msg)
   { errorExit (msg. c_str ()); }
 
-inline void throw_error (const string &s)  
-  { throw logic_error (s); }
-  // For debugger
+// For debugger
+inline void throwf (const exception &e)  
+  { throw e; }
 
 
 class Notype {};
@@ -168,7 +168,7 @@ template <typename T>
   protected:
   	Singleton ()
   	  { if (beingRun)
-  	  	  throw runtime_error ("Singleton");
+  	  	  throwf (runtime_error ("Singleton"));
   	  	beingRun = true;
   	  }
    ~Singleton () 
@@ -288,14 +288,14 @@ public:
     { if (! on ())
         return;
       if (startTime != noclock)
-        throw logic_error ("Chronometer \""  + name + "\" is not stopped");
+        throwf (logic_error ("Chronometer \""  + name + "\" is not stopped"));
       startTime = clock (); 
     }  
   void stop () 
     { if (! on ())
         return;
       if (startTime == noclock)
-        throw logic_error ("Chronometer \"" + name + "\" is not started");
+        throwf (logic_error ("Chronometer \"" + name + "\" is not started"));
       time += clock () - startTime; 
       startTime = noclock;
     }
@@ -352,7 +352,8 @@ template <typename T>
   inline T* checkPtr (T* t)
     { if (t)
         return t;
-      throw runtime_error ("Dereferencing nullptr");
+      throwf (runtime_error ("Dereferencing nullptr"));
+      return nullptr;
     }
 
 
@@ -879,7 +880,8 @@ public:
 	  	  	return t;
 	  	  else
 	  	  	i++;
-	  	throw runtime_error ("List index is out of range");
+	  	throwf (runtime_error ("List index is out of range"));
+	  	return T ();  // dummy
 	  }
 	size_t find (const T &t) const
 	  { size_t i = 0;
@@ -933,14 +935,14 @@ public:
       }
   T popFront ()
     { if (P::empty ())
-        throw range_error ("popFront() empty list");
+        throwf (range_error ("popFront() empty list"));
       const T t = P::front ();
       P::pop_front ();
       return t;
     }
   T popBack ()
     { if (P::empty ())
-        throw range_error ("popBack() empty list");
+        throwf (range_error ("popBack() empty list"));
       const T t = P::back ();
       P::pop_back ();
       return t;
@@ -1005,7 +1007,7 @@ template <typename T>
           || ! iss. eof ()
           || iss. fail ()
          )
-        throw runtime_error ("Cannot convert " + strQuote (s) + " to number");
+        throwf (runtime_error ("Cannot convert " + strQuote (s) + " to number"));
       return i;
     }
 
@@ -1218,7 +1220,7 @@ bool fileExists (const string &fName);
 
 inline void checkFile (const string &fName)
   { if (! fileExists (fName))
-      throw runtime_error ("File " + strQuote (fName) + " does not exist");
+      throwf (runtime_error ("File " + strQuote (fName) + " does not exist"));
   }
 
 streamsize getFileSize (const string &fName);
@@ -1232,12 +1234,12 @@ void copyText (const string &inFName,
   inline void moveFile (const string &from,
                         const string &to)
     { if (::rename (from. c_str (), to. c_str ()))
-        throw runtime_error ("Cannot move file + " + shellQuote (from) + " to " + shellQuote (to));
+        throwf (runtime_error ("Cannot move file + " + shellQuote (from) + " to " + shellQuote (to)));
     }
 
   inline void removeFile (const string &fName)
     { if (::remove (fName. c_str ()))
-        throw runtime_error ("Cannot remove file + " + shellQuote (fName));
+        throwf (runtime_error ("Cannot remove file + " + shellQuote (fName)));
     }
 
       
@@ -1248,7 +1250,8 @@ void copyText (const string &inFName,
         return s;
       }
       else
-        throw runtime_error ("path2canonical " + shellQuote (path));
+        throwf (runtime_error ("path2canonical " + shellQuote (path)));
+      return noString;  // dummy
     }
   
   
@@ -1299,7 +1302,7 @@ struct Dir
     { if (items. empty ())
         return "..";
       if (items. size () == 1 && items. front (). empty ())
-        throw runtime_error ("Cannot get the parent directory of the root");
+        throwf (runtime_error ("Cannot get the parent directory of the root"));
       const Dir parent (get () + "/..");
       return parent. get ();
     }
@@ -1443,10 +1446,10 @@ public:
 	  { return threadsToStart < threads. size () ? 0 : (threadsToStart - threads. size ()); }
 	Threads& operator<< (thread &&t)
 	  { if (! getAvailable ())
-	  	  throw logic_error ("Too many threads created");
+	  	  throwf (logic_error ("Too many threads created"));
 	  	try { threads. push_back (move (t)); }
 	  	  catch (const exception &e) 
-	  	    { throw runtime_error (string ("Cannot start thread\n") + e. what ()); }
+	  	    { throwf (runtime_error (string ("Cannot start thread\n") + e. what ())); }
 	  	return *this;
 	  }
 	bool exec (const string cmd,
@@ -1472,7 +1475,8 @@ template <typename Func, typename Res, typename... Args>
   // Input: void func (size_t from, size_t to, Res& res, Args...)
   // Optimial thread_num minimizes (Time_SingleCPU/thread_num + Time_openCloseThread * (thread_num - 1)), which is sqrt(Time_SingleCPU/Time_openCloseThread)
   {
-  	ASSERT (threads_max >= 1);
+  	if (threads_max < 1)
+  	  throwf (runtime_error ("threads_max < 1"));
 		results. clear ();
 		results. reserve (threads_max);
   	if (threads_max == 1 || i_max <= 1 || ! Threads::empty ())
@@ -1484,7 +1488,8 @@ template <typename Func, typename Res, typename... Args>
 		size_t chunk = max<size_t> (1, i_max / threads_max);
 		if (chunk * threads_max < i_max)
 			chunk++;
-		ASSERT (chunk * threads_max >= i_max);
+		if (chunk * threads_max < i_max)
+		  throwf (runtime_error ("chunk * threads_max < i_max"));
 		Threads th (threads_max - 1, quiet);
 		FFOR (size_t, tn, threads_max)
 	  {
@@ -1621,13 +1626,13 @@ public:
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendant class destructor
   virtual Root* copy () const
-    { throw logic_error ("Root::copy() is not implemented"); }
+    { throwf (logic_error ("Root::copy() is not implemented")); return nullptr; }
     // Return: the same type    
   virtual void qc () const
     {}
     // Input: qc_on
   virtual void saveText (ostream& /*os*/) const 
-    { throw logic_error ("Root::saveText() is not implemented"); }
+    { throwf (logic_error ("Root::saveText() is not implemented")); }
   void saveFile (const string &fName) const;
     // if fName.empty() then do nothing
     // Invokes: saveText()
@@ -1639,17 +1644,17 @@ public:
   void trace (ostream& os,
               const string& title) const;
   virtual void saveXml (Xml::File& /*f*/) const 
-    { throw logic_error ("Root::saveXml() is not implemented"); }
+    { throwf (logic_error ("Root::saveXml() is not implemented")); }
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
                         const string& /*name_arg*/) const
-    { throw logic_error ("Root::toJson() is not implemented"); }
+    { throwf (logic_error ("Root::toJson() is not implemented")); return nullptr; }
 	virtual bool empty () const
 	  { return true; }
   virtual void clear ()
-    { throw logic_error ("Root::clear() is not implemented"); }
+    { throwf (logic_error ("Root::clear() is not implemented")); }
     // Postcondition: empty()
   virtual void read (istream &/*is*/)
-    { throw logic_error ("Root::read() is not implemented"); }
+    { throwf (logic_error ("Root::read() is not implemented")); }
 	  // Input: a line of is
 };
 
@@ -1766,7 +1771,7 @@ private:
 	  {
 	  #ifndef NDEBUG
 	    if (index >= P::size ())
-	      throw range_error ("Vector " + operation + " operation: index = " + to_string (index) + ", but size = " + to_string (P::size ()));
+	      throwf (range_error ("Vector " + operation + " operation: index = " + to_string (index) + ", but size = " + to_string (P::size ())));
 	  #endif
 	  }
 public:
@@ -1830,7 +1835,7 @@ public:
     }
   void checkSorted () const
     { if (! searchSorted)
-    	  throw logic_error ("Vector is not sorted for search");
+    	  throwf (logic_error ("Vector is not sorted for search"));
     }
   Vector<T>& operator<< (const T &value)
     { P::push_back (value);
@@ -1874,7 +1879,7 @@ public:
   void eraseMany (size_t from,
                   size_t to)
     { if (to < from)
-        throw logic_error ("Vector::eraseMany(): to < from");
+        throwf (logic_error ("Vector::eraseMany(): to < from"));
       if (to == from)
         return;
       checkIndex ("eraseMany", to - 1);
@@ -1909,7 +1914,7 @@ public:
     { 
     #ifndef NDEBUG
       if (P::empty ())
-        throw range_error ("Empty vector pop_back");
+        throwf (range_error ("Empty vector pop_back"));
     #endif
       P::pop_back ();
     }
@@ -1917,7 +1922,7 @@ public:
     { T t = T ();
       while (n)
       { if (P::empty ())
-          throw runtime_error ("Cannot pop an empty vector");
+          throwf (runtime_error ("Cannot pop an empty vector"));
         t = (*this) [P::size () - 1];
     	  P::pop_back ();
         n--;
@@ -2541,7 +2546,7 @@ public:
     { return arr. size (); }
   Heap& operator<< (T* item)
     { if (! item)
-        throw Error ("null item");
+        throwf (Error ("null item"));
       arr << item;
       increaseKey (arr. size () - 1);
       return *this;
@@ -2559,13 +2564,13 @@ public:
     { heapify (index, arr. size ()); }
   T* getMaximum () const
     { if (arr. empty ()) 
-    	  throw Error ("getMaximum");
+    	  throwf (Error ("getMaximum"));
       return arr [0];
     }
   void deleteMaximum ()
     // Time: O(1) amortized
     { if (arr. empty ()) 
-    	  throw Error ("deleteMaximum");
+    	  throwf (Error ("deleteMaximum"));
       T* item = arr. back ();
       arr. pop_back ();
       if (arr. empty ())
@@ -2586,7 +2591,7 @@ public:
     }
 private:
   static size_t parent (size_t index) 
-    { if (! index)  throw Error ("parent");
+    { if (! index)  throwf (Error ("parent"));
       return (index + 1) / 2 - 1;
     }
   static size_t left (size_t index) 
@@ -2610,8 +2615,8 @@ private:
   void heapify (size_t index,
                 size_t maxIndex)
     // Requires: Heap property holds for all index1 < maxIndex except parent(index1) == index
-    { if (maxIndex > arr. size ())  throw Error ("heapify: maxIndex");
-      if (index >= maxIndex)        throw Error ("heapify: index");
+    { if (maxIndex > arr. size ())  throwf (Error ("heapify: maxIndex"));
+      if (index >= maxIndex)        throwf (Error ("heapify: index"));
       for (;;)
       { size_t extr = index;
         const size_t l = left (index);
@@ -2840,7 +2845,8 @@ public:
 			return n;
 		}
   size_t setMinus (const Set<T> &other)
-    { ASSERT (! universal);
+    { if (universal)
+        throwf (runtime_error ("setMinus:universal"));
     	size_t n = 0;
     	if (other. universal)
     	{ n = P::size ();
@@ -2905,7 +2911,7 @@ public:
     { if (! qc_on)
         return;
       if (vec. size () != um. size ())
-        throw logic_error ("RandomSet: qc");
+        throwf (logic_error ("RandomSet: qc"));
     }
 
     
@@ -3095,7 +3101,8 @@ struct LineInput : Input
 		  	return true;  
 			if (eof && eofAllowed)
 				return false;
-		  throw runtime_error ("No " + strQuote (prefix));
+		  throwf (runtime_error ("No " + strQuote (prefix)));
+		  return false;  // dummy
 		}
 };
 	
@@ -3161,9 +3168,9 @@ public:
 		{ return "Error at line " + to_string (lineNum + 1) + ", pos. " + to_string (charNum + 1)
                 + (what. empty () ? noString : (": " + what + ifS (expected, " is expected"))); 
     }
-  [[noreturn]] void error (const string &what,
-		                       bool expected = true) const
-		{ throw Error (errorText (what, expected)); }
+  void error (const string &what,
+	            bool expected = true) const
+		{ throwf (Error (errorText (what, expected))); }
 };
 	
 
@@ -3258,7 +3265,8 @@ public:
 	  		case eDelimiter: return "delimiter";
 	  		case eDateTime:  return "datetime";
 	  	}
-	  	throw logic_error ("Token::type2str()");
+	  	throwf (logic_error ("Token::type2str()"));
+	  	return noString;
 	  }
 	static Type str2type (const string &s)
 	  { if (s == "name")      return eName;
@@ -3267,7 +3275,8 @@ public:
 	    if (s == "double")    return eDouble;
 	    if (s == "delimiter") return eDelimiter;
 	    if (s == "datetime")  return eDateTime;
-	    throw runtime_error ("Token::str2type()");
+	    throwf (runtime_error ("Token::str2type()"));
+	    return eName;  // dummy
 	  }      
 	bool isName (const string &s) const
 	  { return ! empty () && type == eName && name == s; }
@@ -3335,8 +3344,8 @@ public:
     {}
 
 
-  [[noreturn]] void error (const string &what,
-		                       bool expected = true) const
+  void error (const string &what,
+	            bool expected = true) const
 		{ ci. error (what, expected); }  // CharInput::Error
   Token get ();
     // Return: empty() <=> EOF
@@ -3373,7 +3382,7 @@ public:
     }
   void setLast (Token &&t)
     { if (t. empty ())
-        throw logic_error ("TokenInput::setLast()");
+        throwf (logic_error ("TokenInput::setLast()"));
       last = move (t);
     }
 };

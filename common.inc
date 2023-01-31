@@ -84,7 +84,7 @@ namespace Common_sp
 {
   std::string getStack ();
 
-  void throw_error (const std::string &s);
+  void throwf (const std::exception &e);
 }
 
 #define ERROR_MSG(msg)                       \
@@ -93,7 +93,7 @@ namespace Common_sp
       oss_ << WHERE << ": " << (msg);        \
       oss_ << endl << "Stack:" << endl <<    \
         Common_sp::getStack ();              \
-      Common_sp::throw_error (oss_. str ()); \
+      Common_sp::throwf (logic_error (oss_. str ())); \
     } else {}                                \
     exit (1);                                \
   }
