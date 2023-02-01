@@ -137,12 +137,11 @@ constexpr const char* error_caption ("*** ERROR ***");
 	// Update: *logPtr
 	// Invokes: if segmFault then abort() else exit(1)
 
-[[noreturn]] inline void errorExitStr (const string &msg)
-  { errorExit (msg. c_str ()); }
-
 // For debugger
-inline void throwf (const exception &e)  
-  { throw e; }
+[[noreturn]] void errorExitStr (const string &msg);
+
+void throwf (const exception &e);
+
 
 
 class Notype {};
