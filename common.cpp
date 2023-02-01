@@ -264,6 +264,20 @@ namespace
 
 
 
+[[noreturn]] void errorExitStr (const string &msg)
+{ 
+  errorExit (msg. c_str ()); 
+}
+
+
+
+void throwf (const exception &e)  
+{ 
+  throw e; 
+}
+
+
+
 string getStack ()
 // Print function names:   // --> exec() ??
 {
