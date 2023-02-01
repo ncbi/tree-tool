@@ -22,8 +22,8 @@ SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fdiagnost
 	# -ffloat-store  # slows down two-fold
 	# -ffinite-math-only  # NAN problem
 
-OptCPPFLAGS = $(SimpleCPPFLAGS) -O3 
-DebugCPPFLAGS = $(SimpleCPPFLAGS) -O3 -g
+OptCPPFLAGS   = $(SimpleCPPFLAGS) -O3 
+DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
 
 
 CXX=g++
