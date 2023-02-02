@@ -87,15 +87,15 @@ namespace Common_sp
   void throwf (const std::exception &e);
 }
 
-#define ERROR_MSG(msg)                       \
-  { if (! std::uncaught_exceptions ())       \
-    { std::ostringstream oss_;               \
-      oss_ << WHERE << ": " << (msg);        \
-      oss_ << endl << "Stack:" << endl <<    \
-        Common_sp::getStack ();              \
-      Common_sp::throwf (logic_error (oss_. str ())); \
-    } else {}                                \
-    exit (1);                                \
+#define ERROR_MSG(msg)                     \
+  { if (! std::uncaught_exceptions ())     \
+    { std::ostringstream oss_;             \
+      oss_ << WHERE << ": " << (msg);      \
+      oss_ << endl << "Stack:" << endl <<  \
+        Common_sp::getStack ();            \
+      Common_sp::throwf (oss_. str ());    \
+    } else {}                              \
+    exit (1);                              \
   }
 #define ERROR            ERROR_MSG ("")
 #define NOT_IMPLEMENTED  ERROR_MSG ("Not implemented: ")

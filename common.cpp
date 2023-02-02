@@ -271,9 +271,9 @@ namespace
 
 
 
-void throwf (const exception &e)  
+void throwf (const string &s)  
 { 
-  throw e; 
+  throw runtime_error (s); 
 }
 
 

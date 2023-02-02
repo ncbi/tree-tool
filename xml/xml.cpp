@@ -636,8 +636,8 @@ Data* Data::load (const string &fName,
     TokenInput ti (fName, '\0', true, false, 1000);  // PAR 
     try 
       { f. reset (new Xml_sp::Data (ti, markupDeclarations));	}
-    catch (const CharInput::Error &e)
-      { throw e; }
+  //catch (const CharInput::Error &e)
+    //{ throw e; }
     catch (const exception &e)
       { ti. error (e. what (), false); }
     const Token t (ti. get ());
