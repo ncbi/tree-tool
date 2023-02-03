@@ -681,7 +681,7 @@ void Data::qc () const
   }
   catch (const exception &e)
   {
-    Xml::File f (cout, false, false, "XML");
+    Xml::File f ("Data_qc.xml", false, false, "XML");  // PAR
     saveXml (f);
     PRINT (name);
     PRINT (Token::type2str (token. type));

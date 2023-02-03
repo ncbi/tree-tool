@@ -76,7 +76,7 @@ struct ThisApplication : Application
     query->qc ();
     if (verbose ())
     {
-      Xml::File f (cout, true, true, "XML");  // PAR
+      Xml::File f ("xml_find.xml", true, true, "XML");  // PAR
       query->saveXml (f);
       cout << endl << endl;
     }

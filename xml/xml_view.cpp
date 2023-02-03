@@ -111,7 +111,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     xml->qc ();
     if (verbose ())
     {
-      Xml::File f (cout, false, false, "XML");
+      Xml::File f ("xml_view.xml", false, false, "XML");
       xml->saveXml (f);
     }
 

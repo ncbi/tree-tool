@@ -1551,6 +1551,27 @@ struct JsonContainer;
 
 
 
+struct OFStream : ofstream
+{
+	OFStream () = default;
+	OFStream (const string &dirName,
+	          const string &fileName,
+	          const string &extension)
+	  { open (dirName, fileName, extension); }
+	explicit OFStream (const string &pathName)
+	  { open ("", pathName, ""); }
+	static void create (const string &pathName)
+	  { OFStream f (pathName); }
+
+
+	void open (const string &dirName,
+	           const string &fileName,
+	           const string &extension);
+	  // Input: !fileName.empty()
+};
+
+
+
 struct Xml
 {
   struct File;
@@ -1572,7 +1593,13 @@ struct Xml
   struct File
   {
   private:
-    ostream& os;
+    struct XmlStream : OFStream
+    { 
+      explicit XmlStream (const string &pathName)
+        : OFStream (pathName)
+        { *this << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>" << endl; }  // PAR
+    };
+    XmlStream os;
     size_t offset {0};
     friend Tag;
   public:
@@ -1582,21 +1609,15 @@ struct Xml
     const Tag tag;
 
 
-    File (ostream &os_arg,
+    File (const string &pathName,
           bool printOffset_arg,
           bool printBrief_arg,
           const string &tagName)
-      : os (init (os_arg))
+      : os (pathName)
       , printOffset (printOffset_arg)
       , printBrief (printBrief_arg)
       , tag (*this, tagName)
       {}
-  private:
-    static ostream& init (ostream &os_arg)
-      { os_arg << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>" << endl;  // PAR
-        return os_arg;
-      }
-  public:
 
 
     void print (const string &s)
@@ -1611,7 +1632,7 @@ struct Xml
 
 
 
-//extern unique_ptr<Xml::File> cxml;
+extern unique_ptr<Xml::File> cxml;
   
 
 
@@ -3409,27 +3430,6 @@ public:
 	bool next ();
 	uint getLineNum () const
 	  { return f. lineNum; }
-};
-
-
-
-struct OFStream : ofstream
-{
-	OFStream () = default;
-	OFStream (const string &dirName,
-	          const string &fileName,
-	          const string &extension)
-	  { open (dirName, fileName, extension); }
-	explicit OFStream (const string &pathName)
-	  { open ("", pathName, ""); }
-	static void create (const string &pathName)
-	  { OFStream f (pathName); }
-
-
-	void open (const string &dirName,
-	           const string &fileName,
-	           const string &extension);
-	  // Input: !fileName.empty()
 };
 
 

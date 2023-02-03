@@ -52,7 +52,7 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("xml", "XML file");
-  	  addFlag ("print", "Print the XML file");
+  	  addKey ("print", "Output XML file");
   	  addFlag ("store_values", "Store all field values in schema");
   	}
   	
@@ -60,18 +60,18 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string xmlFName  = getArg ("xml");
-		const bool printP      = getFlag ("print");
-		const bool storeValues = getFlag ("store_values");
+		const string xmlFName   = getArg ("xml");
+		const string printFName = getArg ("print");
+		const bool storeValues  = getFlag ("store_values");
 	
 	
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
 	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (xmlFName, markupDeclarations));
     xml->qc ();
     
-    if (printP)
+    if (! printFName. empty ())
     {
-      Xml::File f (cout, true, true, "XML");  // PAR
+      Xml::File f (printFName, true, true, "XML");  // PAR
       xml->saveXml (f);
       cout << endl << endl;
     }

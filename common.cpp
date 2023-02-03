@@ -1548,7 +1548,7 @@ Xml::Tag::~Tag ()
 
 
 
-//unique_ptr<Xml::File> cxml;
+unique_ptr<Xml::File> cxml;
   
 
 
