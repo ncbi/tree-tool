@@ -1611,7 +1611,7 @@ struct Xml
 
 
 
-extern unique_ptr<Xml::File> cxml;
+//extern unique_ptr<Xml::File> cxml;
   
 
 
