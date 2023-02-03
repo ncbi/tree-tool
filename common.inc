@@ -91,8 +91,6 @@ namespace Common_sp
   { if (! std::uncaught_exceptions ())     \
     { std::ostringstream oss_;             \
       oss_ << WHERE << ": " << (msg);      \
-      oss_ << endl << "Stack:" << endl <<  \
-        Common_sp::getStack ();            \
       Common_sp::throwf (oss_. str ());    \
     } else {}                              \
     exit (1);                              \

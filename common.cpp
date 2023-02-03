@@ -273,7 +273,7 @@ namespace
 
 void throwf (const string &s)  
 { 
-  throw runtime_error (s); 
+  throw runtime_error (s + "\nStack:\n" + getStack ()); 
 }
 
 
