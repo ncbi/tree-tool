@@ -1490,7 +1490,7 @@ template <typename Func, typename Res, typename... Args>
 		if (chunk * threads_max < i_max)
 		  throwf ("chunk * threads_max < i_max");
 		Threads th (threads_max - 1, quiet);
-		FFOR (size_t, tn, threads_max)
+		for (size_t tn = 0; tn < threads_max; tn++)
 	  {
 	    const size_t from = tn * chunk;
 	  	if (from >= i_max)
@@ -2003,8 +2003,8 @@ public:
     // Fast if *this is almost sort()'ed
     { if (searchSorted)
         return;
-      FOR_START (size_t, i, 1, P::size ())
-		    FOR_REV (size_t, j, i)
+      for (size_t i = 1; i < P::size (); i++)
+		    for (size_t j = i; j-- > 0;)
 		      if ((*this) [j + 1] < (*this) [j])
         	  std::swap ((*this) [j], (*this) [j + 1]);
 		      else
@@ -2126,7 +2126,7 @@ public:
     { if (P::size () <= 1)
         return no_index;
       checkSorted ();
-      FOR_START (size_t, i, 1, P::size ())
+      for (size_t i = 1; i < P::size (); i++)
         if ((*this) [i] == (*this) [i - 1])
           return i;
       return no_index;
@@ -2138,7 +2138,7 @@ public:
 	    { if (P::size () <= 1)
 	        return;
 	      size_t j = 1;  
-	      FOR_START (size_t, i, 1, P::size ())
+	      for (size_t i = 1; i < P::size (); i++)
 	        if (! equal ((*this) [i], (*this) [i - 1]))
 	        { if (j != i)
 	            (*this) [j] = (*this) [i];
@@ -2240,7 +2240,8 @@ public:
 
   bool operator< (const Vector<T> &other) const
     // Lexicographic comparison
-    { FFOR (size_t, i, std::min (P::size (), other. size ()))
+    { const size_t n = std::min (P::size (), other. size ());
+      for (size_t i = 0; i < n; i++)
     	{ if ((*this) [i] < other [i]) return true;
     		if (other [i] < (*this) [i]) return false;
       }
@@ -2330,8 +2331,8 @@ public:
 		  P::unsetSearchSorted ();
     }
   void sortBubblePtr ()
-    { FOR_START (size_t, i, 1, P::size ())
-		    FOR_REV (size_t, j, i)
+    { for (size_t i = 1; i < P::size (); i++)
+		    for (size_t j = i; j-- > 0;)
 		      if (* (*this) [j + 1] < * (*this) [j])
         	  std::swap ((*this) [j], (*this) [j + 1]);
 		      else

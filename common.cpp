@@ -308,7 +308,10 @@ string getStack ()
 void throwf (const string &s)  
 { 
   if (cxml)
+  {
+    const Xml::Tag xml (*cxml, "ERROR");
     *cxml << s;
+  }
   throw runtime_error (s + "\nStack:\n" + getStack ()); 
 }
 
