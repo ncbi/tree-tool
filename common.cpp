@@ -271,12 +271,8 @@ namespace
 
 
 
-void throwf (const string &s)  
-{ 
-  throw runtime_error (s + "\nStack:\n" + getStack ()); 
-}
-
-
+namespace
+{
 
 string getStack ()
 // Print function names:   // --> exec() ??
@@ -304,6 +300,18 @@ string getStack ()
   return s;
 #endif
 }
+
+}
+
+
+
+void throwf (const string &s)  
+{ 
+  if (cxml)
+    *cxml << s;
+  throw runtime_error (s + "\nStack:\n" + getStack ()); 
+}
+
 
 
 

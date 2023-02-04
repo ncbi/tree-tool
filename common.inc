@@ -82,8 +82,6 @@
 
 namespace Common_sp
 {
-  std::string getStack ();
-
   void throwf (const std::exception &e);
 }
 
