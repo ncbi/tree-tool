@@ -75,6 +75,20 @@ struct Row
 
 
 
+void drawMenu (NCurses &nc,
+               size_t fieldSize, 
+               const string &s)
+{
+  move ((int) fieldSize, 0);
+  const NCAttr attr (A_REVERSE);
+  const NCBackground bkgr (nc. background | A_REVERSE);
+  addstr (s. c_str ());
+  clrtoeol ();
+}
+
+
+
+
 struct ThisApplication : Application
 {
   ThisApplication ()
@@ -144,19 +158,9 @@ At line ends: [<# children>|<# nodes in subtree>]\
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
-        move ((int) fieldSize, 0);
-        {
-          const NCAttr attr (A_REVERSE);
-          const NCBackground bkgr (nc. background | A_REVERSE);
-          addstr (("[" + getFileName (xmlFName) + "] "). c_str ());
-          // Most of keys are intercepted by the terminal
-          addstr ("Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor");
-          if (nc. hasColors)
-            addstr ("   c:color");
-          addstr ("   F10,q:Quit");
-          clrtoeol ();
-            // "F1,h": explain "[%d/%d]" at the end of lines
-        }
+        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "   F10,q:Quit");
+          // Most of the other keys are intercepted by the terminal
+          // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
           const Row& row = rows [i];
@@ -175,7 +179,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
           if (! row. data->token. empty ())
           {
             addch (' ');
-            const NCAttr attrFound (A_BOLD, row. found);
+            const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
             printw ("%s", row. data->token. str (). c_str ());
           }
           if (const size_t n = row. data->children. size ())
@@ -294,6 +298,10 @@ At line ends: [<# children>|<# nodes in subtree>]\
                 FFOR (size_t, i, children. size ())
                   newRows << Row (children [i], i);
                 rows. insert (itStart, newRows. begin (), newRows. end ());
+                if (curIndex + newRows. size () >= topIndex + fieldSize)
+                  topIndex = curIndex + newRows. size () - fieldSize + 1;
+                if (topIndex > curIndex)
+                  topIndex = curIndex;
               }
               else
               {
@@ -391,7 +399,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             break;
           case 'c':  // Row::color
             {
-              // draw a menu ??
+              drawMenu (nc, fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan)");
               Row& row = rows [curIndex];
               switch (getch ())
               {
