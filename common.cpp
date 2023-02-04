@@ -1516,7 +1516,8 @@ Xml::Tag::Tag (Xml::File &f_arg,
 : name (name_arg)
 , f (f_arg)
 { 
-  ASSERT (! contains (name, ' '));
+  if (contains (name, ' '))
+    throwf ("tag name contains a space: " + strQuote (name_arg));
   if (f. printOffset)
   {
     f. print ("\n");
