@@ -43,6 +43,10 @@ using namespace Common_sp;
 
 
 
+#define ctrl(x)     ((x) & 0x1f)
+
+
+
 
 namespace
 {
@@ -84,6 +88,22 @@ void drawMenu (NCurses &nc,
   const NCBackground bkgr (nc. background | A_REVERSE);
   addstr (s. c_str ());
   clrtoeol ();
+}
+
+
+
+size_t open (Vector<Row> &rows,
+             size_t curIndex)
+{
+  auto itStart = rows. begin ();
+  advance (itStart, curIndex + 1);
+  Vector<Row> newRows;
+  const VectorOwn<Xml_sp::Data>& children = rows [curIndex]. data->children;
+  newRows. reserve (children. size ());
+  FFOR (size_t, i, children. size ())
+    newRows << Row (children [i], i);
+  rows. insert (itStart, newRows. begin (), newRows. end ());
+  return newRows. size ();
 }
 
 
@@ -158,7 +178,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "   F10,q:Quit");
+        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "   F9:very end  F10,q:Quit");
           // Most of the other keys are intercepted by the terminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -173,13 +193,14 @@ At line ends: [<# children>|<# nodes in subtree>]\
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone);
+          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone && row. color != NCurses::colorWhite);
           const NCAttr attrCurrent (A_REVERSE, i == curIndex);
+          const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
           printw ("%lu <%s>", row. childNum + 1, row. data->name. c_str ());
           if (! row. data->token. empty ())
           {
             addch (' ');
-            const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
+          //const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
             printw ("%s", row. data->token. str (). c_str ());
           }
           if (const size_t n = row. data->children. size ())
@@ -281,30 +302,34 @@ At line ends: [<# children>|<# nodes in subtree>]\
               topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             }
             break;
+          case KEY_F(9):  
+            do
+            {
+              curIndex = rows. size () - 1;
+              rows [curIndex]. open = true;
+            }
+            while (open (rows, curIndex));
+            topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
+            break;
           case 10:
           case KEY_ENTER:
             if (rows [curIndex]. data->children. empty ())
               beep ();
             else
             {
-              toggle (rows [curIndex]. open);
-              auto itStart = rows. begin ();
-              advance (itStart, curIndex + 1);
+              toggle (rows [curIndex]. open);              
               if (rows [curIndex]. open)
               {
-                Vector<Row> newRows;
-                const VectorOwn<Xml_sp::Data>& children = rows [curIndex]. data->children;
-                newRows. reserve (children. size ());
-                FFOR (size_t, i, children. size ())
-                  newRows << Row (children [i], i);
-                rows. insert (itStart, newRows. begin (), newRows. end ());
-                if (curIndex + newRows. size () >= topIndex + fieldSize)
-                  topIndex = curIndex + newRows. size () - fieldSize + 1;
+                const size_t n = open (rows, curIndex);
+                if (curIndex + n >= topIndex + fieldSize)
+                  topIndex = curIndex + n - fieldSize + 1;
                 if (topIndex > curIndex)
                   topIndex = curIndex;
               }
               else
               {
+                auto itStart = rows. begin ();
+                advance (itStart, curIndex + 1);
                 size_t i = curIndex + 1;
                 const size_t depth = rows [curIndex]. getDepth ();
                 for (; i < rows. size (); i++)
@@ -399,7 +424,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             break;
           case 'c':  // Row::color
             {
-              drawMenu (nc, fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan)");
+              drawMenu (nc, fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan) w(hite)");
               Row& row = rows [curIndex];
               switch (getch ())
               {
@@ -410,6 +435,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
                 case 'b': row. color = NCurses::colorBlue; break;
                 case 'm': row. color = NCurses::colorMagenta; break;
                 case 'c': row. color = NCurses::colorCyan; break;
+                case 'w': row. color = NCurses::colorWhite; break;  // ??
               }
             }
             break;
