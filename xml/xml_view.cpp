@@ -193,16 +193,12 @@ At line ends: [<# children>|<# nodes in subtree>]\
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone && row. color != NCurses::colorWhite);
+          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
           const NCAttr attrCurrent (A_REVERSE, i == curIndex);
           const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
           printw ("%lu <%s>", row. childNum + 1, row. data->name. c_str ());
           if (! row. data->token. empty ())
-          {
-            addch (' ');
-          //const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
-            printw ("%s", row. data->token. str (). c_str ());
-          }
+            printw (" %s", row. data->token. str (). c_str ());
           if (const size_t n = row. data->children. size ())
             printw (" [%lu/%lu]", n, row. nodes);
         #if 0
@@ -302,7 +298,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
               topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             }
             break;
-          case KEY_F(9):  
+          case KEY_F(9):  // ^End ??
             do
             {
               curIndex = rows. size () - 1;
@@ -435,7 +431,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
                 case 'b': row. color = NCurses::colorBlue; break;
                 case 'm': row. color = NCurses::colorMagenta; break;
                 case 'c': row. color = NCurses::colorCyan; break;
-                case 'w': row. color = NCurses::colorWhite; break;  // ??
+                case 'w': row. color = NCurses::colorWhite; break;  
               }
             }
             break;

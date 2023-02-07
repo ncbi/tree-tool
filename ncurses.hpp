@@ -58,6 +58,7 @@ struct NCurses : Singleton<NCurses>
 {
   bool hasColors {false};
   enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan, colorWhite};
+    // To match NCurses::NCurses()!
   chtype background {0};
   // Change after screen resizing
   size_t row_max {0};

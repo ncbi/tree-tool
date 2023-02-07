@@ -66,6 +66,7 @@ NCurses::NCurses (bool hideCursor)
   init_pair (5, COLOR_BLUE,    bkgdColor);
   init_pair (6, COLOR_MAGENTA, bkgdColor);
   init_pair (7, COLOR_CYAN,    bkgdColor);
+  init_pair (8, COLOR_WHITE,   bkgdColor);  
   background = COLOR_PAIR (1);
   bkgdset (background);
   attron (COLOR_PAIR (1)); 
