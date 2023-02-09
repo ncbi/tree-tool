@@ -298,7 +298,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             }
             break;
           case ctrl('f'):
-          case ctrl(KEY_END):
+          case 531 /*ctrl(KEY_END)*/:
             do
             {
               curIndex = rows. size () - 1;
