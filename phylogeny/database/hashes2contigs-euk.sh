@@ -4,10 +4,10 @@ source $THIS/../../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Find contigs with identical protein hash codes in two GenBank eukaryotic assemblies"
   echo "#1: genome/ (large directory)"
-  echo "#2: Assembly 1 multi-FASTA"
-  echo "#3: Assembly 2 multi-FASTA"
-  echo "#4: Output list of contigs in #1 common with #2"
-  echo "#5: Output list of contigs in #2 common with #1"
+  echo "#2: assembly 1 FASTA (named as fullasm_id)"
+  echo "#3: assembly 2 FASTA (named as fullasm_id)"
+  echo "#4: output list of contigs in #1 common with #2"
+  echo "#5: output list of contigs in #2 common with #1"
   exit 1
 fi
 GENOME_DIR=$1
