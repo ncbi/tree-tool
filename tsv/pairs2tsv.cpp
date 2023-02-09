@@ -67,7 +67,7 @@ struct ThisApplication : Application
     : Application ("Convert a directory with attribute-value files to a tsv-table")
   	{
       version = VERSION;
-  	  addPositional ("dir", "directory with attribute-value files; separators are ':' or '='");
+  	  addPositional ("dir", "directory with attribute-value files; separators are ':', '=' or tab");
   	  addKey ("file_col", "Column name for the file name");
   	}
   	
@@ -79,6 +79,8 @@ struct ThisApplication : Application
 		const string fileCol = getArg ("file_col");
 		
 		
+    constexpr const char* sep (":=\t");
+
     map<string,size_t> attr2num;
     {
       DirItemGenerator dir (100, dirName, false);  // PAR
@@ -90,7 +92,6 @@ struct ThisApplication : Application
         {
           const string err ("Error at line " + to_string (f. lineNum + 1));
           trim (f. line);
-          constexpr const char* sep (":=");
           const size_t pos = f. line. find_first_of (sep);
           if (pos == string::npos)
             throw runtime_error (err + ": no attribute-value separator " + strQuote (sep));
@@ -140,7 +141,6 @@ struct ThisApplication : Application
           if (! fileCol. empty ())
             row [0] = fName;
           trim (f. line);
-          constexpr const char* sep (":=");
           const size_t pos = f. line. find_first_of (sep);
           ASSERT (pos != string::npos);
           string attr (f. line. substr (0, pos));
