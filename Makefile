@@ -38,7 +38,7 @@ connectPairs: $(connectPairsOBJS)
 cpp_test.o: $(COMMON_HPP)  
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
 cpp_test: $(cpp_testOBJS)
-	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS)
+	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncurses
 	$(ECHO)
 
 effectiveSize.o:  $(COMMON_HPP)  

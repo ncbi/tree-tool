@@ -178,8 +178,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up   Down   PgUp,b   PgDn,f   Home,B   End,F   Enter:Open/Close   F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "   F9:very end  F10,q:Quit");
-          // Most of the other keys are intercepted by the terminal
+        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up   Down   PgUp,b   PgDn,f   Home,B   End,F   ^End,^F   Enter:Open/Close   F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "  F10,q:Quit");
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
@@ -298,7 +297,8 @@ At line ends: [<# children>|<# nodes in subtree>]\
               topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             }
             break;
-          case KEY_F(9):  // ^End ??
+          case ctrl('f'):
+          case ctrl(KEY_END):
             do
             {
               curIndex = rows. size () - 1;
