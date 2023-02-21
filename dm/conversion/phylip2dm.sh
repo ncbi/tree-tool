@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Print a .dm-file with a two-way attribute 'dist'"
-  echo "#1: File with distances in a Phylip format"
+  echo "#1: file with distances in a Phylip format - square matrix"
   echo "#2: max. number of decimals in distances"
   exit 1
 fi
