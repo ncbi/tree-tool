@@ -1632,7 +1632,8 @@ public:
   // Return: not in dissims; sort()'ed, uniq()'ed
   Vector<LeafPair> getMissingLeafPairs_ancestors (size_t depth_max,
                                                   bool refreshDissims) const;
-    // Return: almost a superset of getMissingLeafPairs_subgraphs(); sort()'ed; first->name < second->name
+    // Return: refreshDissims => "representative" subset of pairs
+    //         !refreshDissims => almost a superset of getMissingLeafPairs_subgraphs(); sort()'ed; first->name < second->name
     // Invokes: DTNode::getSparseLeafMatches()
     // Time: ~ O(n log^2(n))
   Vector<LeafPair> getMissingLeafPairs_subgraphs () const;
