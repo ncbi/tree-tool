@@ -41,8 +41,6 @@ all:	\
 	mds \
 	normalCdf \
 	numeric_test \
-	obj_attr2dm \
-	pairs2dm \
 	pca \
 	pca2clusters \
 	positiveAverage \
@@ -250,18 +248,6 @@ numeric_test.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
 numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
 numeric_test:	$(numeric_testOBJS)
 	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
-	$(ECHO)
-
-obj_attr2dm.o:  $(DM_HPP) 
-obj_attr2dmOBJS=obj_attr2dm.o $(DM_OBJ) 
-obj_attr2dm:	$(obj_attr2dmOBJS)
-	$(CXX) -o $@ $(obj_attr2dmOBJS) $(LIBS)
-	$(ECHO)
-
-pairs2dm.o:  $(DM_HPP) 
-pairs2dmOBJS=pairs2dm.o $(DM_OBJ) 
-pairs2dm:	$(pairs2dmOBJS)
-	$(CXX) -o $@ $(pairs2dmOBJS) $(LIBS)
 	$(ECHO)
 
 pca.o:  $(PREDICT_HPP) 

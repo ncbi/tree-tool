@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
-  echo "Print a .dm-file out of a list square matrices each containing a subset of objects"
+  echo "Print a .dm-file out of a list of square matrices each containing a subset of objects"
   echo "Format of a matrix: <number of objects in subset> \n {<object name> <number>+ \n}+"
   echo "File names become attribute names"
   echo "#1: List of matrix files"

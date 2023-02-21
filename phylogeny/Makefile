@@ -12,8 +12,6 @@ endif
 
 all:	\
 	asnt2tree \
-  attr2_2paup \
-  attr2_2phylip \
   compareTrees \
   distTree_new \
   distTree_refresh_dissim \
@@ -37,18 +35,6 @@ asnt2tree.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(PHYL_DIR)/distTree.hpp
 asnt2treeOBJS=asnt2tree.o $(DISTTREE_OBJ) 
 asnt2tree:	$(asnt2treeOBJS)
 	$(CXX) -o $@ $(asnt2treeOBJS) $(LIBS) 
-	$(ECHO)
-
-attr2_2paup.o:  $(DM_HPP) 
-attr2_2paupOBJS=attr2_2paup.o $(DM_OBJ) 
-attr2_2paup:	$(attr2_2paupOBJS)
-	$(CXX) -o $@ $(attr2_2paupOBJS) $(LIBS)
-	$(ECHO)
-
-attr2_2phylip.o:  $(DM_HPP) 
-attr2_2phylipOBJS=attr2_2phylip.o $(DM_OBJ) 
-attr2_2phylip:	$(attr2_2phylipOBJS)
-	$(CXX) -o $@ $(attr2_2phylipOBJS) $(LIBS)
 	$(ECHO)
 
 dm2feature.o:  $(DM_HPP) 

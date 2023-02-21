@@ -1,4 +1,4 @@
-// attr2_2phylip.cpp
+// attr2_2paup.cpp
 
 /*===========================================================================
 *
@@ -27,20 +27,20 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Convert a two-way atrtribute to the Phylip format
+*   Convert a two-way attribute to the PAUP* format
 *
 */
 
 
 #undef NDEBUG
-#include "../common.inc"
+#include "../../common.inc"
 
-#include "../common.hpp"
+#include "../../common.hpp"
 using namespace Common_sp;
-#include "../dm/matrix.hpp"
-#include "../dm/dataset.hpp"
+#include "../matrix.hpp"
+#include "../dataset.hpp"
 using namespace DM_sp;
-#include "../version.inc"
+#include "../../version.inc"
 
 
 
@@ -51,9 +51,10 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print an Attr2 in Phylip format")
+    : Application ("Print an Attr2 in PAUP* format")
     {
       version = VERSION;
+      
   	  addPositional ("file", dmSuff + "-file");
   	  addPositional ("attr2Name", "Attribute name of an object-object table in the " + dmSuff + "-file");
   	  addPositional ("map", "Output map file for nw_rename");
@@ -82,18 +83,22 @@ struct ThisApplication : Application
     Matrix& matr = const_cast <RealAttr2*> (dist) -> matr;
     
     OFStream f (mapFName);
-
-    cout << ds. objs. size () << endl;
+    
+    cout << "#NEXUS" << endl;
+    cout << "begin distances;" << endl;
+    cout << "dimensions ntax = " << ds. objs. size () << ";" << endl;
+    cout << "format triangle = both;" << endl;
+    cout << "matrix";
     ONumber on (cout, 5, false);
     FOR (size_t, row, ds. objs. size ())
     {
       const string name (("X" + toString (row + 1) + "          "). substr (0, 10));
-      cout << name;
+      cout << endl << name;
       f << name << ' ' << ds. objs [row] -> name << endl;
       FOR (size_t, col, ds. objs. size ())
         cout << ' ' << matr. get (false, row, col);
-      cout << endl;
     }
+    cout << ';' << endl << "end;" << endl;
 	}
 };
 
