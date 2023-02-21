@@ -55,6 +55,7 @@ struct ThisApplication : Application
   	  addPositional ("loc",   "Location parameter");	
   	  addPositional ("scale", "Scale parameter");	  
   	  addPositional ("x",     "Value");
+  	  addFlag ("complement", " Print 1 - CDF");
   	}
 
 
@@ -64,10 +65,15 @@ struct ThisApplication : Application
 		const Real loc   = str2real (getArg ("loc"));
 		const Real scale = str2real (getArg ("scale"));
 		const Real x     = str2real (getArg ("x"));
+		const bool complement = getFlag ("complement");
 
     Normal norm;
     norm. setParam (loc, scale);
-    cout << norm. cdf (x) << endl;
+    Real p = norm. cdf (x);
+    if (complement)
+      p = 1.0 - p;
+    const ONumber on (cout, 10, true);  // PAR
+    cout << p << endl;
 	}
 };
 
