@@ -1,7 +1,7 @@
 \newcommand {\subsubsubsection} [1] {\vskip 0.5em {\bf \em #1}}
 
 %\newcommand {\comm} [1] {}
-\newcommand {\comm} [1] 
+\newcommand {\comm} [1]
 {
 \par
 \setlength{\leftskip}{-0.8in}
@@ -19,21 +19,24 @@
 \renewcommand {\implies} {\Rightarrow}
 \renewcommand {\impliedby} {\Leftarrow}
 \renewcommand {\And}  {\ \& \ }
-\newcommand {\Or}  {\vee}
-\newcommand {\QED} {$\blacksquare$\ \par }
-\newcommand {\proof} [1] {\par {\sf Proof:\ } #1 \QED \par}
+\newcommand {\Or}  {\ \vee \ }
+\newcommand {\QED} {$\blacksquare$ \ \par }
+\newcommand {\proofword}  {{\par \sf Proof:\ }}
+\newcommand {\proof} [1] {\proofword #1 \QED \par}
 \newcommand {\definition} [2] {\bigskip {\bf Definition} {\rm \sc #1} \par #2 \QED \bigskip}
 \newcommand {\example} [2] {\bigskip {\bf Example.} {#1} \par #2 \QED}
 \newcommand {\theorem} [2] {\bigskip {\bf Theorem} {\rm \sc #1} \par #2 \QED \bigskip}
 \newcommand {\ve} {\mathbf}
+\newcommand {\vecc} {\boldsymbol}
 \newcommand {\Questions} {\vspace{5mm} {\bf Unresolved Questions:}}
+\newcommand {\assert} {\square \ }
 
 \renewcommand {\P} {\mathrm P}
 \newcommand {\E} {\mathrm E \ }
 \newcommand {\var} {\mathrm {var} \ }
 \newcommand {\cov} {\mathrm {cov} }
 \newcommand {\cor} {\mathrm {cor} }
-\newcommand {\N} {\mathrm N}
+\newcommand {\N} {\mathbb N}
 \newcommand {\Z} {\mathrm Z}
 \newcommand {\R} {\mathbb R}
 \newcommand {\C} {\mathbb C}
@@ -43,6 +46,10 @@
 \newcommand {\trc} {\mathrm {tr} \ }
 \newcommand {\VC} {\mathrm {VC} }
 \newcommand {\const} {\mathrm {const} }
+\newcommand {\sgn} {\mathrm {sgn} }
+\newcommand {\dom} {\mathrm {dom} }
+\newcommand {\range} {\mathrm {range} }
+\newcommand {\Arg} {\mathrm {Arg} \ }
 
 \newcommand {\LCA} {\mathrm {LCA} }  % least common ancestor (in a tree)
 
@@ -68,6 +75,7 @@
 
 \providecommand{\keywords}[1]
 {
-  \small	
+  \small
   \textbf{\textit{Keywords---}} #1
 }
+
