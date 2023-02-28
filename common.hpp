@@ -177,25 +177,26 @@ template <typename T> bool Singleton<T>::beingRun = false;
 
 
 
+struct Color
+{
+  enum Type { none    =  0
+              // UNIX
+            , black   = 30  
+            , red     = 31 	
+            , green   = 32
+            , yellow  = 33
+            , blue    = 34 	
+            , magenta = 35 	
+            , cyan    = 36 	
+            , white   = 37
+            };
+            
 #ifndef _MSC_VER
-  struct Color
-  {
-    enum Type { none    =  0
-              , black   = 30
-              , red     = 31 	
-              , green   = 32
-              , yellow  = 33
-              , blue    = 34 	
-              , magenta = 35 	
-              , cyan    = 36 	
-              , white   = 37
-              };
-              
-    static string code (Type color = none, 
-                        bool bright = false)
-      { return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; }
-  };
+  static string code (Type color = none, 
+                      bool bright = false)
+    { return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; }
 #endif
+};
   
   
 
@@ -237,7 +238,9 @@ extern const COutErr couterr;
 
 
 
+
 class ONumber
+// Output number format
 {
 	ostream &o;
   const streamsize prec_old;
@@ -260,6 +263,60 @@ public:
       o. precision (prec_old); 
     }
 };
+
+
+
+
+class OColor
+// Output color
+{
+	ostream &o;
+	const bool active;
+public:
+  OColor (ostream &o_arg,
+          Color::Type color, 
+          bool bright,
+          bool active_arg)
+	  : o (o_arg)
+	  , active (active_arg)
+    {
+    #ifndef _MSC_VER
+      if (active) 
+        o << Color::code (color, bright);
+    #endif
+    }
+ ~OColor ()    
+    {
+    #ifndef _MSC_VER
+      if (active) 
+        o << Color::code ();
+    #endif
+    }
+};
+
+
+
+inline void section (const string &title,
+                     bool useAlsoCout)
+  { const Color::Type color = Color::cyan;
+    const bool bright = false;
+    if (useAlsoCout)
+    {
+      { const OColor oc1 (cout, color, bright, true);
+        const OColor oc2 (cerr, color, bright, true);
+        couterr << title << " ...";
+      }
+      couterr << endl;
+    }
+    else
+    {
+      { const OColor oc (cerr, color, bright, true);
+        cerr << title << " ...";
+      }
+      cerr << endl;
+    }
+  }
+
 
 
 
@@ -3452,24 +3509,29 @@ struct Stderr : Singleton<Stderr>
         cerr << t;
         return *this;
       }
+  void section (const string &title) const
+    { if (quiet)
+        return;
+      Common_sp::section (title, false);
+    }
 };
 
 
 
-#ifndef _MSC_VER
-  struct Warning : Singleton<Warning>
-  {
-  private:
-    Stderr& stderr;
-  public:  
-    
-    explicit Warning (Stderr &stderr_arg)
-      : stderr (stderr_arg)
-      { stderr << Color::code (Color::yellow, true) << "WARNING: "; }
-   ~Warning ()
-      { stderr << Color::code () << "\n"; }
-  };
-#endif
+struct Warning : Singleton<Warning>
+{
+private:
+  Stderr& stderr;
+  const OColor oc;
+public:  
+  
+  explicit Warning (Stderr &stderr_arg)
+    : stderr (stderr_arg)
+    , oc (cerr, Color::yellow, true, ! stderr. quiet)
+    { stderr << "WARNING: "; }
+ ~Warning ()
+    { stderr << "\n"; }
+};
 
 
 
