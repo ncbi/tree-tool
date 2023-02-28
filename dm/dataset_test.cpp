@@ -239,7 +239,7 @@ struct ThisApplication : Application
 		              ;
 		
 		
-    cerr << "Binomial ..." << endl;
+    section ("Binomial", false);
     {
 	    Binomial bin;
 	    bin. setParam (20, 0.3);
@@ -275,7 +275,7 @@ struct ThisApplication : Application
 	      cout << endl;
 	  }
     
-    cerr << "Normal ..." << endl;
+    section ("Normal", false);
     {
     	Normal normal;
     	normal. setParam (0.0, 1.0);
@@ -310,7 +310,7 @@ struct ThisApplication : Application
 	      cout << endl;
     }
 
-    cerr << "Chi2 ..." << endl;
+    section ("Chi2", false);
     {
     	Chi2 chi2;
     	chi2. setParam (1.0);
@@ -348,7 +348,7 @@ struct ThisApplication : Application
 	      cout << endl;
     }
 
-    cerr << "Zipf ..." << endl;
+    section ("Zipf", false);
     {
 	    Zipf zipf;
 	    const Real delta = 0.03;
@@ -359,7 +359,7 @@ struct ThisApplication : Application
 	      cout << endl;
 	  }
 	  
-    cerr << "Cauchy ..." << endl;
+    section ("Cauchy", false);
 	  {
 	  	Cauchy c;
 	    const Real delta = 0.05;
@@ -371,7 +371,7 @@ struct ThisApplication : Application
 	  }
 	  
 	#if 0
-    cerr << "Logistic ..." << endl;
+    section ("Logistic", false);
 	  // ??
 	  {
 	  	Logistic lg;
@@ -385,7 +385,7 @@ struct ThisApplication : Application
 	#endif
 	
 	  // MinDistribution
-	  cerr << "MaxDistribution ..." << endl;
+	  section ("MaxDistribution", false);
 	  {
 	    Chi2 chi2;
     	chi2. setParam (1.0);
@@ -402,7 +402,7 @@ struct ThisApplication : Application
 	
 	  // Beta1 vs. Uniform ??
 	
-    cerr << "MultiNormal ..." << endl;
+    section ("MultiNormal", false);
 	  {
 		  if (verbose ())
 	      cout << "MultiNormal" << endl;
@@ -426,7 +426,7 @@ struct ThisApplication : Application
 	  	// MultiNormal(1) vs. Normal: same parameters, getInfoMean() etc. ??
 	  }
 	  
-    cerr << "Clustering ..." << endl;
+    section ("Clustering", false);
 	  {
 		  if (verbose ())
 	      cout << "Clustering" << endl;

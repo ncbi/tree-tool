@@ -153,7 +153,7 @@ struct ThisApplication : Application
       	mn. saveText (osPar);    	
     }
     	
-    cerr << "PC ..." << endl;
+    section ("PC", false);
     const PrinComp pc (sm, an. space, mn, maxAttr, maxTotalExpl, minExpl, 1e-4/*PAR*/);
     pc. qc ();
     pc. saveText (osPar);
@@ -162,7 +162,7 @@ struct ThisApplication : Application
     
     const size_t eValueDecimals = 5; // PAR
 
-    cerr << "Outliers ..." << endl;
+    section ("Outliers", false);
     RealAttr1* outlierScore = new RealAttr1 ("Outlier_E-Value", ds, eValueDecimals); 
     {
       ExtBoolAttr1* outlier = new ExtBoolAttr1 ("Outlier", ds);  
@@ -221,7 +221,7 @@ struct ThisApplication : Application
 
 	  if (maxClusters > 1 && pc. getOutDim ())
 	  {
-      cerr << "Clustering ..." << endl;
+      section ("Clustering", false);
       Space1<NumAttr1> spPC (spOut);
       spPC. removeConstants ();
       const Real globalSD = sqrt ((Real) spStnd. size ());
@@ -245,7 +245,7 @@ struct ThisApplication : Application
 
     if (mds)
     {
-      cerr << "MDS of attributes ..." << endl;
+      section ("MDS of attributes", false);
       Vector<Real> quality;
     	const Dataset dsMds (pc. createAttrMds ("PC_", quality));    	
     	ASSERT (quality. size () == dsMds. attrs. size ());

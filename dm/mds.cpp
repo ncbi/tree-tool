@@ -134,7 +134,7 @@ struct ThisApplication : Application
     RealAttr2* sim = nullptr;
     if (attrName. empty ())
     {
-      cerr << "PCA via MDS ..." << endl;
+      section ("PCA via MDS", false);
       Space1<Attr1> spRaw (ds, true);
       if (classAttr)
       {
@@ -269,7 +269,7 @@ struct ThisApplication : Application
     }
     
 
-    cerr << "MDS ..." << endl;
+    section ("MDS", false);
     const Mds mds (sm, *sim, maxAttr, maxTotalExpl, minExpl); 
     mds. qc ();
     mds. saveText (cout);
@@ -291,7 +291,7 @@ struct ThisApplication : Application
         && globalSD > 0.0
        )
 	  {
-      cerr << "Clustering ..." << endl;
+      section ("Clustering", false);
       Space1<NumAttr1> spMds (spMds_);
       spMds. removeConstants ();
   	  const Clustering cl (sm, spMds, maxClusters, globalSD * minClusteringSDRel, /*true*/ false);

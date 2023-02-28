@@ -5850,7 +5850,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
 
   if (! merge_close)
   {
-    cerr << "Canonical ..." << endl;  
+    section ("Canonical", false);  
     Unverbose unv;
     const Canonical can (*this);
     can. qc ();
@@ -5905,7 +5905,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
        )
     {
       if (verbose ())
-        cerr << "Canonical for cluster " << i + 1 << " ..." << endl;  
+        section ("Canonical for cluster " + to_string (i + 1), false);  
 
       Vector<bool> toMerge; 
       FFOR (size_t, j, getOutDim ())

@@ -145,7 +145,7 @@ struct ThisApplication : Application
     {
       if (optim_iter_max > 0)  
       {
-  	  	cerr << "Optimizing ..." << endl;
+  	  	section ("Optimizing", true);
         int iter = 0; 
         for (;;)
         {
@@ -165,7 +165,7 @@ struct ThisApplication : Application
       else
       {
    	    cout << endl;
-  	  	cout << "Optimizing time ..." << endl;
+  	  	section ("Optimizing time", true);
         tree. optimizeTime ();
       }
     }
@@ -197,7 +197,7 @@ struct ThisApplication : Application
       else
       {
         ASSERT (! save_mem);
-        cout << "Adjusting root core ..." << endl;
+        section ("Adjusting root core", true);
         tree. setCore ();
         size_t coreChange [2/*core2nonCore*/];
         tree. resetSuperRootCore (coreChange);

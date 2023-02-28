@@ -2112,7 +2112,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   size_t genomes = 0; 
   {
     // Genome::coreSet: incomplete
-    cerr << "Genomes ..." << endl;
+    section ("Genomes", false);
     const size_t genomes_ = root->getLeavesSize ();
     VectorPtr<Genome> genomeVec;  genomeVec. reserve (genomes_);
 	 	for (const DiGraph::Node* node : nodes)
@@ -2261,7 +2261,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   // allTimeZero, Phyl::init()   
   {   
     // !oneFeatureInTree => 288 sec./50K genomes
-    cerr << "Memory ..." << endl;
+    section ("Memory", false);
   //const Chronometer_OnePass cop ("Node initialization");  
     size_t timeNan = 0;
     size_t timeNonNan = 0;
@@ -2303,7 +2303,7 @@ FeatureTree::FeatureTree (const string &treeFName,
  	for (DiGraph::Node* node : nodes)  
  		static_cast <Phyl*> (node) -> setWeight (); 		
 
-  cerr << "Assigning features ..." << endl;
+  section ("Assigning features", false);
   const Chronometer_OnePass copFeat ("Assigning features");  
   if (oneFeatureInTree)
   {

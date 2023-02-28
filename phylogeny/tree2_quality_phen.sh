@@ -75,10 +75,10 @@ if [ $LARGE == 1 ]; then
   LARGE_PAR="-large"
 fi
 
-echo ""
+section "$T1"
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core1  -qual $TMP.qual1  -gain_nodes gain1  -loss_nodes loss1  -disagreement_nodes $TMP.disagreement_nodes1
   # -prefer_gain  
-echo ""
+section "$T2"
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes gain2  -loss_nodes loss2  -disagreement_nodes $TMP.disagreement_nodes2
   # -prefer_gain  
 

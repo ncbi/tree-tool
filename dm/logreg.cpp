@@ -83,7 +83,7 @@ struct ThisApplication : Application
    
     LogisticRegression lr (sm, sp, *targetAttr);
     lr. qc ();
-    cerr << "Solving ..." << endl;
+    section ("Solving", false);
     lr. solve ();
     lr. qc ();
     lr. saveText (cout);
@@ -93,7 +93,7 @@ struct ThisApplication : Application
     Space1<NumAttr1> spSel (sp);  // Is used by lrSel
     if (importance_min)
     {
-      cerr << "Removing attributes ..." << endl;
+      section ("Removing attributes", false);
       lrSel. reset (selectAttrs<LogisticRegression> (sm, spSel, *targetAttr, importance_min));
       if (lrSel. get ())
       { 

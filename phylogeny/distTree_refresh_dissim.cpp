@@ -83,7 +83,7 @@ struct ThisApplication : Application
     OFStream fDissim (output_dissim);
     const ONumber on (fDissim, dissimDecimals, true);
     {
-      cerr << "Saving indiscernibles ..." << endl;
+      section ("Saving indiscernibles", false);
       Progress prog (dissimLines. size (), dissim_progress);
       for (const DissimLine &dl : dissimLines)
       {
@@ -93,7 +93,7 @@ struct ThisApplication : Application
       }
     }
     {
-      cerr << "Saving requests ..." << endl;
+      section ("Saving requests", false);
       Progress prog (leafPairs. size (), dissim_progress);
       for (const LeafPair& lp : leafPairs)
       {

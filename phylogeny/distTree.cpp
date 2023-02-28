@@ -2928,7 +2928,7 @@ bool Image::apply ()
     const Leaf* leaf = dtNode->asLeaf ();
     ASSERT (leaf);
     if (verbose ())
-      cout << "Re-rooting subgraph ..." << endl;
+      section ("Re-rooting subgraph", true);
     // Replace leaf by st
     auto st = new Steiner (*tree, const_static_cast <Steiner*> (leaf->getParent ()), leaf->len);
     EXEC_ASSERT (new2old. erase (leaf) == 1);
@@ -3270,7 +3270,7 @@ DistTree::DistTree (const string &dataDirName,
   VectorPtr<Leaf> newLeaves;  newLeaves. reserve (name2leaf. size () / 10 + 1);  // PAR
   if (loadNewLeaves)
   {
-    couterr << "Loading new leaves ..." << endl;
+    section ("Loading new leaves", true);
     LineInput f (dataDirName + "leaf", 1);  // PAR
     string leafName, anchorName;
     Real leafLen, arcLen;
@@ -3383,7 +3383,7 @@ DistTree::DistTree (const string &dataDirName,
     if (optimizeP)
     {  
       const Chronometer_OnePass cop ("Optimizing new leaves");  
-      cout << "Optimizing new leaves ..." << endl;
+      section ("Optimizing new leaves", true);
       constexpr uint radius = 2 * areaRadius_std;  // PAR
       if (threads_max > 1)
       {
@@ -4873,7 +4873,7 @@ void DistTree::neighborJoin ()
   }
   else
   {
-    cout << "Neighbor joining ..." << endl;  
+    section ("Neighbor joining", true);  
     ASSERT (dissimDs. get ());
     ASSERT (dissimAttr);
     FFOR (size_t, row, dissimDs->objs. size ())
@@ -5113,7 +5113,7 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
   ASSERT (dissims. empty ());
   
   if (verbose ())
-    cout << "Leaf pairs -> data objects ..." << endl;
+    section ("Leaf pairs -> data objects", true);
 
   dissims. reserve (pairs_max);
 
@@ -5133,8 +5133,8 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
 {
   Vector<DissimLine> dissimLines;  dissimLines. reserve (reserveSize);
   {
-    couterr << "Loading " << fName << " ..." << endl;
     {
+      section ("Loading " + fName, true);
       LineInput f (fName, dissim_progress);  
       while (f. nextLine ())
       {
@@ -5148,6 +5148,7 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
       if (! f. lineNum)
         throw runtime_error (FUNC "Empty " + fName);
     }
+    section ("Sorting dissimilarities", true);
     dissimLines. sort ();
     dissimLines. uniq ();
   }
@@ -5221,7 +5222,7 @@ void setPaths_ (const Vector<size_t> &subTree,
     return;
   Progress prog (subTree. size (), dissim_progress); 
   if (prog. active)
-    cerr << "One thread ..." << endl;
+    section ("One thread", false);
   Tree::LcaBuffer buf;
   for (const size_t dissimNum : subTree) 
   {
@@ -5764,7 +5765,7 @@ void DistTree::qcPaths ()
     const size_t displayNodes = 1000;  // PAR
     Progress prog (nodes. size (), displayNodes);  
     if (prog. active && nodes. size () >= displayNodes)
-      cerr << "QC paths ..." << endl;
+      section ("QC paths", false);
     for (DiGraph::Node* node : nodes)
     {
       prog ();
@@ -6054,7 +6055,7 @@ bool DistTree::optimizeLenAll ()
   ASSERT (optimizable ());
 
   if (verbose (1))
-    cout << "Optimizing arc lengths ..." << endl;
+    section ("Optimizing arc lengths", true);
 
   DTNode* toSkip = nullptr;  
   DTNode* toRetain = nullptr; 
@@ -6168,7 +6169,7 @@ void DistTree::quartet2arcLen ()
 
 
   if (verbose (1))
-    cout << "Optimizing arc lengths by quartets ..." << endl;
+    section ("Optimizing arc lengths by quartets", true);
 
 
   setLeaves ();
@@ -7351,7 +7352,7 @@ void DistTree::optimizeLargeSubgraphs (const VectorOwn<Change>* changes)
   qcPaths ();
   
   if (! subDepth)
-    cerr << "Optimizing cut nodes ..." << endl;
+    section ("Optimizing cut nodes", false);
   optimizeSmallSubgraphsUnstable (areaRadius_std);  // PAR
   qc ();
   qcPredictionAbsCriterion ();

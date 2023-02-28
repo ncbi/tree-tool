@@ -430,7 +430,7 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
   if (beta. size () /*p*/ <= 2 * maxIter)  // PAR
   {
     if (verbose ())
-      cout << "Direct solution ..." << endl;
+      section ("Direct solution", true);
     solveUnconstrained ();   // Time = O(p^2 n)
     if (! isNan (absCriterion))
     {
@@ -446,7 +446,7 @@ bool LinearNumPrediction::solveUnconstrainedFast (const RealAttr1* predictionAtt
   if (! solved  || absCriterion > absCriterion_old)
   {
     if (verbose ())
-      cout << "Alternate optimization ..." << endl;
+      section ("Alternate optimization", true);
     beta = beta_init;
     solved = solveUnconstrainedAlternate (predictionAttr, betaNonNegative, maxIter, errorRelDiff);  // Time = O(maxIter * p * n)
   }

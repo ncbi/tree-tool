@@ -197,7 +197,7 @@ struct ThisApplication : Application
     			  	      
     couterr << "# Hybrids: " << hybrids. size () << endl;        
 
-    cerr << "Deleting hybrids ..." << endl;
+    section ("Deleting hybrids", false);
     {
       Progress prog (hybrids. size ());
       for (const Leaf* leaf : hybrids)
@@ -422,7 +422,7 @@ struct ThisApplication : Application
     
     if (fix_discernible)
     {
-      cerr << "Fixing discernible ..." << endl;
+      section ("Fixing discernible", false);
       tree->setDiscernibles ();
       const Keep<bool> multFixed_old (tree->multFixed);
       tree->multFixed = false;
@@ -437,7 +437,7 @@ struct ThisApplication : Application
       
     if (qc_on)
     {
-      cerr << "QC ..." << endl;
+      section ("QC", false);
       tree->qc (); 
     }
 
@@ -448,7 +448,7 @@ struct ThisApplication : Application
     
     if (! deleteFName. empty ())
     {
-      cerr << "Deleting ..." << endl;
+      section ("Deleting", false);
       size_t deleted = 0;
       {
         LineInput f (deleteFName);  
@@ -478,7 +478,7 @@ struct ThisApplication : Application
 
     if (! keepFName. empty ())
     {
-      cerr << "Keeping ..." << endl;
+      section ("Keeping", false);
       VectorPtr<Leaf> toDelete;  toDelete. reserve (tree->name2leaf. size ());
       for (const auto& it : tree->name2leaf)
         toDelete << it. second;
@@ -544,19 +544,22 @@ struct ThisApplication : Application
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
 
-            couterr << "Optimizing topology: arc lengths for the whole tree ..." << endl;    
+            section ("Optimizing topology: arc lengths for the whole tree", true);
             tree->optimizeLenWhole ();
             cout << tree->absCriterion2str () << endl;
+            tree->saveFile (output_tree_tmp); 
 
-            couterr << "Optimizing topology: arc lengths at each arc ..." << endl;
+            section ("Optimizing topology: arc lengths at each arc", true);
             const size_t lenArc_deleted = tree->optimizeLenArc ();
             cout << "# Nodes deleted = " << lenArc_deleted << endl;
             cout << tree->absCriterion2str () << endl;
+            tree->saveFile (output_tree_tmp); 
 
-            couterr << "Optimizing topology: arc lengths at each node ..." << endl;
+            section ("Optimizing topology: arc lengths at each node", true);
             const size_t lenNode_deleted = tree->optimizeLenNode ();
             cout << "# Nodes deleted = " << lenNode_deleted << endl;
             cout << tree->absCriterion2str () << endl;
+            tree->saveFile (output_tree_tmp); 
             
             tree->qc ();
             if (verbose ())
@@ -570,7 +573,7 @@ struct ThisApplication : Application
 
           if (reinsert)
           {
-            couterr << "Optimizing topology: reinsert ..." << endl;
+            section ("Optimizing topology: reinsert", true);
             const Chronometer_OnePass cop ("Topology optimization: reinsert");
             if (! tree->multFixed && ! reinsert_variance_dist)
             {
@@ -590,7 +593,7 @@ struct ThisApplication : Application
           
           if (! skip_topology)
           {
-            couterr << "Optimizing topology: subgraphs ..." << endl;
+            section ("Optimizing topology: subgraphs", true);
             const Chronometer_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();
             if (subgraph_iter_max)
@@ -599,10 +602,7 @@ struct ThisApplication : Application
             size_t iter = 0;
             while (iter < iter_max)
           	{
-              couterr << "Iteration " << iter + 1;
-          		if (iter_max < numeric_limits<size_t>::max ())
-          	    couterr << " / " << iter_max; 
-          	  couterr << " ..." << endl;
+              section ("Iteration " + to_string (iter + 1) + ifS (iter_max < numeric_limits<size_t>::max (), " / " + to_string (iter_max)), true);
           		const Real absCriterion_old = tree->absCriterion;
           		ASSERT (absCriterion_old < inf);
               tree->optimizeDissimCoeffs ();  
@@ -631,7 +631,7 @@ struct ThisApplication : Application
             tree->reportErrors (cout);
           }
           
-          cerr << "Re-rooting ..." << endl;
+          section ("Re-rooting", false);
           const Real radius_ave = tree->reroot (root_topological);
 				  const ONumber on (cout, dissimDecimals / 2, false);  // PAR
           cout << "Ave. radius: " << radius_ave << endl;
@@ -654,7 +654,7 @@ struct ThisApplication : Application
 
       if (! delete_criterion_outliers. empty ())
       {
-        cerr << "Finding criterion outliers ..." << endl;
+        section ("Finding criterion outliers", false);
 	      tree->setLeafNormCriterion (); 
         const Dataset leafErrorDs (tree->getLeafErrorDataset (true, NaN));
 	      Real outlier_min_excl = NaN;
@@ -665,7 +665,7 @@ struct ThisApplication : Application
         OFStream f (delete_criterion_outliers);
 	      if (! outliers. empty ())
 	      {
-          cerr << "Deleting criterion outliers ..." << endl;
+          section ("Deleting criterion outliers", false);
           {
             Progress prog (outliers. size ());
             size_t removed = 0;
@@ -690,7 +690,7 @@ struct ThisApplication : Application
       
       if (! delete_deformation_outliers. empty ())
       {
-        cerr << "Finding deformation outliers ..." << endl;
+        section ("Finding deformation outliers", false);
 	      tree->setNodeMaxDeformationDissimNum (); 
 	      Real outlier_min_excl = NaN;
 	      const VectorPtr<Leaf> outliers (tree->findDeformationOutliers (tree->getDeformation_mean (), 1e-10, outlier_min_excl));  // PAR  
@@ -700,7 +700,7 @@ struct ThisApplication : Application
         OFStream f (delete_deformation_outliers);
 	      if (! outliers. empty ())
 	      {
-          cerr << "Deleting deformation outliers ..." << endl;
+          section ("Deleting deformation outliers", false);
           {
             Progress prog (outliers. size ());
             size_t removed = 0;
@@ -727,7 +727,7 @@ struct ThisApplication : Application
 
       if (! noqual)
       {
-        cerr << "Node/arc criteria ..." << endl << endl;
+        section ("Node/arc criteria", true);
         tree->setLeafNormCriterion ();  
         tree->setNodeMaxDeformationDissimNum ();
         tree->setErrorDensities ();  
@@ -752,7 +752,7 @@ struct ThisApplication : Application
 
     if (reroot)
     {
-      cerr << "Re-rooting ..." << endl;
+      section ("Re-rooting", false);
       cout << "Ave. radius: " << tree->reroot (root_topological) << endl;
       cout << endl;
       tree->qc ();
@@ -824,7 +824,7 @@ struct ThisApplication : Application
 
     if (! arc_existence. empty ())
     {
-      cerr << "Arc existence ..." << endl;
+      section ("Arc existence", false);
       Dataset ds;
       auto len = new PositiveAttr1 ("len", ds, dissimDecimals);
       auto prob = new ProbAttr1 ("prob", ds, 3);  // PAR
@@ -866,7 +866,7 @@ struct ThisApplication : Application
     
     if (! dissim_request. empty ())
     {
-      cerr << "Finding missing leaf pairs ..." << endl;      
+      section ("Finding missing leaf pairs", false);
       Vector<Pair<const Leaf*>> pairs (tree->getMissingLeafPairs_ancestors (sparsingDepth, false));
       cout << endl;
       cout << "# Ancestor-based dissimilarity requests: " << pairs. size () << endl;
