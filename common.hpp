@@ -4181,6 +4181,7 @@ protected:
     // [-<name>]
   void addPositional (const string &name,
                       const string &argDescription);
+    // Requires: gnu => name is uppercased
   void setRequiredGroup (const string &keyName,
                          const string &requiredGroup);
 private:
