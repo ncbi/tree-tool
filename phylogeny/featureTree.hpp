@@ -83,10 +83,14 @@ struct Feature : Named
   Feature () = default;
 	void qc () const override;
 	void saveText (ostream& os) const override
-	  { os << name << " +" << gains. size () << " -" << losses. size () << " / " << genomes << " (" << optionalGenomes << ")";
+	  { os         << name 
+	       << "\t" << gains. size () 
+	       << "\t" << losses. size () 
+	       << "\t" << genomes 
+	       << "\t" << optionalGenomes;
 	    if (! isNan (getLambda (false)))
-	    { os << " lambda_0=" << getLambda (false)
-	         << " lambda_1=" << getLambda (true);
+	    { os << "\t" << getLambda (false)
+	         << "\t" << getLambda (true);
 	    }
 	    os << endl; 
 	  }
