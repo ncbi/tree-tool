@@ -12,7 +12,10 @@ make all
 cd dm
 make all
 
-cd ../phylogeny
+cd conversion
+make all
+
+cd ../../phylogeny
 make all
 
 cd ../genetics
@@ -22,6 +25,9 @@ cd ../dissim
 make all
 
 cd ../tsv
+make all
+
+cd ../xml
 make all
 
 cd ..
