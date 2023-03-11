@@ -94,7 +94,7 @@ Update: <incremental distance tree directory>/search/")
 	  const string leafFName     = getArg ("leaf");
 	   
 	   
-    if (name. empty () && ! isRight (dataDir, "/"))
+    if (name. empty () && ! isDirName (dataDir))
       throw runtime_error (strQuote (dataDir) + " must end with '/'");
 
 		if (! isNan (variancePower) && varianceType != varianceType_pow)
@@ -115,7 +115,7 @@ Update: <incremental distance tree directory>/search/")
       cout << endl;
     }
 
-    unique_ptr<const DistTree> tree (isRight (dataDir, "/")
+    unique_ptr<const DistTree> tree (isDirName (dataDir)
                                        ? new DistTree (dataDir, string (), false, false, false)
                                        : new DistTree (dataDir, string (), string (), string ())
                                     );
