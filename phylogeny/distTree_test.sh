@@ -10,7 +10,7 @@ fi
 
 TMP=`mktemp`
 if [ ${AT_NCBI:-0} == 1 ]; then
-  echo $TMP
+  comment $TMP
 fi
 
 
