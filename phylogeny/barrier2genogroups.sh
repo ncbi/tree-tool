@@ -25,7 +25,6 @@ while [ $i -le $MAX ]; do
   $QSUB_5 -N j$i "$THIS/tree2genogroup $TREE $T  -genogroup_table $OUT/$T" > /dev/null
   i=$(( $i + $STEP ))
 done
-echo "Waiting for results ..." > /dev/stderr
 $THIS/../qstat_wait.sh 2000 1
 
 $THIS/../trav -noprogress $OUT 'echo "%f `cut -f 2 %d/%f | sort -u | wc -l`"'
