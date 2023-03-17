@@ -10,6 +10,9 @@ SECS=$1  # SECONDS is a system variable
 QRESUB=$2
 
 
+comment "Waiting for UGE results"
+
+
 SLEEP_SEC=10  # PAR
 PERIODS=$(( $SECS / $SLEEP_SEC ))
 
