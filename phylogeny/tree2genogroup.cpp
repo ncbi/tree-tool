@@ -102,8 +102,8 @@ struct ThisApplication : Application
 	  const string genogroup_table           = getArg ("genogroup_table");
 	  const string genogroupsFName           = getArg ("genogroups");
 	  const string genogroup_under_genogroup = getArg ("genogroup_under_genogroup");
-    ASSERT (! input_tree. empty ());
-    ASSERT (genogroup_dist > 0);
+    QC_ASSERT (! input_tree. empty ());
+    QC_ASSERT (genogroup_dist > 0.0);
 
     
     DistTree tree (input_tree, string (), string (), string());
@@ -129,10 +129,10 @@ struct ThisApplication : Application
             one of d_{ac}, d_{ad}, d_{bc} and d_{bd} \le \beta, otherwise
             4 \beta < d_{ac} + d_{ad} + d_{bc} + d_{bd} = 2 d_{ab} + 2 d_{cd} \le 4 \beta #.
          => interior nodes of different genogroups do not intersect.
-         A genogroups with its interior nodes is a connected subgraph. It has a unique root.
+         A genogroup with its interior nodes is a connected subgraph. It has a unique root.
     */
     VectorPtr<Tree::TreeNode> lcas;  lcas. reserve (genogroups. size ());
-        // !nullptr
+      // !nullptr
     for (const auto& it : genogroups)
       if (const Steiner* lca = it. second. lca)
         lcas << lca;
@@ -168,7 +168,7 @@ struct ThisApplication : Application
 	  	  {
 	  	    if (lcas. contains (parent))
 	  	    {
-	  	      f << static_cast <const DTNode*> (lca)    -> getLcaName () << " - " 
+	  	      f << static_cast <const DTNode*> (lca)    -> getLcaName () << "\t" 
 	  	        << static_cast <const DTNode*> (parent) -> getLcaName () 
 	  	        << endl;
 	  	      break;
