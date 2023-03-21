@@ -176,22 +176,17 @@ else
   section "Saccharomyces hybrids"
   gunzip -c $DATA/Saccharomyces2.dm.gz > $TMP.dm
   $THIS/makeDistTree -qc  -threads 10  -data $TMP  -variance linExp  -optimize  -subgraph_iter_max 2  \
-    -hybridness_min 1.2  -hybrid_parent_pairs Saccharomyces2.hybrid_parent_pairs  -delete_hybrids Saccharomyces2.hybrid  -dissim_boundary 0.675 \
-    -delete_criterion_outliers Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
+    -hybridness_min 1.2  -hybrid_parent_pairs $TMP.Saccharomyces2.hybrid_parent_pairs  -delete_hybrids $TMP.Saccharomyces2.hybrid  -dissim_boundary 0.675 \
+    -delete_criterion_outliers $TMP.Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
     -delete_deformation_outliers Saccharomyces2.deformation_outliers  -deformation_outlier_num_max 1 \
     -output_tree $TMP.tree > $TMP.out
-  $THIS/../rm_col.sh Saccharomyces2.hybrid 10
-  $THIS/../sort.sh Saccharomyces2.hybrid
-  diff Saccharomyces2.hybrid $DATA/Saccharomyces2.hybrid
-  $THIS/hybrid2list.sh Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
-  rm Saccharomyces2.hybrid
-  $THIS/../rm_col.sh Saccharomyces2.hybrid_parent_pairs 13
-  $THIS/../sort.sh Saccharomyces2.hybrid_parent_pairs
-  diff Saccharomyces2.hybrid_parent_pairs $DATA/Saccharomyces2.hybrid_parent_pairs
-  rm Saccharomyces2.hybrid_parent_pairs
-  diff Saccharomyces2.criterion_outliers $DATA/Saccharomyces2.criterion_outliers
-  rm Saccharomyces2.criterion_outliers
-  cut -f 1      Saccharomyces2.deformation_outliers > $TMP.Saccharomyces2.deformation_outliers
+  $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid "10 --complement" 0 | sort > $TMP.Saccharomyces2.hybrid.cut
+  diff $TMP.Saccharomyces2.hybrid.cut $DATA/Saccharomyces2.hybrid
+  $THIS/hybrid2list.sh $TMP.Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
+  $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid_parent_pairs "13 --complement" 0 | sort > $TMP.Saccharomyces2.hybrid_parent_pairs.cut
+  diff $TMP.Saccharomyces2.hybrid_parent_pairs.cut $DATA/Saccharomyces2.hybrid_parent_pairs
+  diff $TMP.Saccharomyces2.criterion_outliers $DATA/Saccharomyces2.criterion_outliers
+  cut -f 1       Saccharomyces2.deformation_outliers > $TMP.Saccharomyces2.deformation_outliers
   cut -f 1 $DATA/Saccharomyces2.deformation_outliers > $TMP.data.Saccharomyces2.deformation_outliers
   diff $TMP.Saccharomyces2.deformation_outliers $TMP.data.Saccharomyces2.deformation_outliers
   rm Saccharomyces2.deformation_outliers 

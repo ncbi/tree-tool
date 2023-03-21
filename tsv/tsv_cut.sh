@@ -16,7 +16,7 @@ UNIQ=$3
 TMP=`mktemp`
 
 
-head -1 $F | cut -f $C 
+head -1 $F    | cut -f $C 
 tail -n +2 $F | cut -f $C > $TMP
 if [ $UNIQ == 1 ]; then
   sort -u $TMP
