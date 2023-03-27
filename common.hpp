@@ -1899,6 +1899,12 @@ public:
 	  }
   bool contains (const T &value) const
     { return constFind (value) != P::end (); }
+  bool containsAll (const vector<T> &other) const
+    { for (const T& t : other)
+        if (! contains (t))
+          return false;
+      return true; 
+    }
   size_t indexOf (const T &value) const
     { size_t n = 0;
       for (const T& t : *this)
@@ -1955,6 +1961,15 @@ public:
   void setAll (const T &value)
     { for (T &t : *this)
     	  t = value;
+    }
+  void setAt (size_t index,
+              T value)
+    { if (index >= P::size ())
+        P::resize (index + 1);
+      if ((*this) [index] == T ())
+        (*this) [index] = value;
+      else
+        throwf ("vector [" + to_string (index) +"] is not empty");
     }
   void eraseAt (size_t index)
     { eraseMany (index, index + 1); }
