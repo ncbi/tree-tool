@@ -186,13 +186,12 @@ struct ThisApplication : Application
       const size_t pageScroll = fieldSize - 1;
       const size_t bottomIndex_max = topIndex + fieldSize;
       const size_t bottomIndex = min (tt. rows. size (), bottomIndex_max);
+      ASSERT (topIndex <= curIndex);
+      ASSERT (curIndex < bottomIndex);
       if (   nc. row_max > headerSize + 2
           && nc. col_max > 10  // PAR
          )
       {
-        ASSERT (topIndex <= curIndex);
-        ASSERT (topIndex < bottomIndex);
-        minimize (curIndex, bottomIndex - 1);
         {
           move (0, 0);
           const NCAttr attr (A_BOLD);
@@ -419,7 +418,9 @@ struct ThisApplication : Application
                 beep ();
                 continue;
               }
-              if (curIndex >= bottomIndex_max)
+              if (curIndex < topIndex)
+                topIndex = curIndex;
+              else if (curIndex >= bottomIndex/*_max*/)
                 topIndex = curIndex - pageScroll;
             }
             break;
