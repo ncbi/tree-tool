@@ -19,6 +19,7 @@ all:	\
   index_find \
   list2pairs \
   mergePairs \
+  random_words \
   replace_dict \
   setMinus \
   setRandOrd \
@@ -87,6 +88,12 @@ mergePairs.o:  $(COMMON_HPP)
 mergePairsOBJS=mergePairs.o $(CPP_DIR)/common.o
 mergePairs:	$(mergePairsOBJS)
 	$(CXX) -o $@ $(mergePairsOBJS) $(LIBS)
+	$(ECHO)
+
+random_words.o: $(COMMON_HPP)  
+random_wordsOBJS=random_words.o $(CPP_DIR)/common.o
+random_words: $(random_wordsOBJS)
+	$(CXX) -o $@ $(random_wordsOBJS) $(LIBS)
 	$(ECHO)
 
 replace_dict.o: $(COMMON_HPP)  

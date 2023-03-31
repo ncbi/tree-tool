@@ -53,15 +53,17 @@ struct ThisApplication : Application
   	  addPositional ("file", "Text file");
   	  addPositional ("dictionary", "Pairs of words: <word1> <word2>");
   	  addFlag ("reverse", "Replace <word2> by <word1>, otherwise <word1> by <word2>");
+  	  addKey ("prefix", "Replace only in line starting with the prefix");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string fName = getArg ("file");
-		const string dict  = getArg ("dictionary");
-		const bool   rev   = getFlag ("reverse");
+		const string fName  = getArg ("file");
+		const string dict   = getArg ("dictionary");
+		const bool   rev    = getFlag ("reverse");
+		const string prefix = getArg ("prefix"); 
 
     
     Vector<Pair<string>> pairs;
@@ -84,8 +86,9 @@ struct ThisApplication : Application
     LineInput f (fName);
     while (f. nextLine ())
     {
-      for (const Pair<string>& p : pairs)
-        replaceStr (f. line, p. first, p. second);
+      if (isLeft (f. line, prefix))
+        for (const Pair<string>& p : pairs)
+          replaceStr (f. line, p. first, p. second);
       cout << f. line << endl;
     }
 	}
