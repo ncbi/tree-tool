@@ -182,14 +182,17 @@ struct ThisApplication : Application
     	  else if (isDir)
     	    gen. reset (new DirItemGenerator (stepItemGen, itemsName, large));
         else 
-          if (isDigit (itemsName [0]))
+        {
+          size_t n = 0; 
+          if (str2<size_t> (itemsName, n))
           {
         	  if (tsv)
         	    throw runtime_error ("-tsv cannot be used if <items> is a number");
-            gen. reset (new NumberItemGenerator (stepItemGen, itemsName));	  
+            gen. reset (new NumberItemGenerator (stepItemGen, n));	  
           }
           else
             throw runtime_error ("File " + strQuote (itemsName) + " does not exist");
+        }
       }
       ASSERT (gen. get ());
   	
