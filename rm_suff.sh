@@ -13,4 +13,7 @@ SUF=$2
 
 DIR=`dirname $FILE`
 OUT=`basename $FILE $SUF`
-mv $FILE $DIR/$OUT
+if [ "$FILE" != "$DIR/$OUT" ]; then
+  mv $FILE $DIR/$OUT
+fi
+
