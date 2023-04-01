@@ -52,16 +52,18 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("num", "Number of random words");
   	  addPositional ("len_max", "Max. word length");
-  	  addKey ("exclude", "characters to exclude");
+  	  addKey ("exclude", "Characters to exclude");
+  	  addKey ("exclude_first", "Characters in the beginning of a word to exclude");
   	}
   	
   	
  
 	void body () const final
 	{
-		const size_t num     = str2<size_t> (getArg ("num"));
-		const size_t len_max = str2<size_t> (getArg ("len_max"));
-		const string exclude =               getArg ("exclude");
+		const size_t num      = str2<size_t> (getArg ("num"));
+		const size_t len_max  = str2<size_t> (getArg ("len_max"));
+		const string exclude  =               getArg ("exclude");
+		const string exclude1 =               getArg ("exclude_first");
 		
 
     Rand rand (seed_global);
@@ -69,14 +71,20 @@ struct ThisApplication : Application
     string alphabet;
     for (char c = ' ' + 1; c < 127; c++)
       if (! contains (exclude, c))
-        alphabet += c;      
-    
+        alphabet += c;    
+      
+    string alphabet1;
+    for (const char c : alphabet)
+      if (! contains (exclude1, c))
+        alphabet1 += c;    
+        
     Set<string> words;
     while (words. size () < num)
     {
       string s;
       FFOR (size_t, i, rand. get (len_max) + 1)
-        s += alphabet [rand. get (alphabet. size ())];
+        s += i ? alphabet  [rand. get (alphabet.  size ())]
+               : alphabet1 [rand. get (alphabet1. size ())];
       words << s;
     }
     
