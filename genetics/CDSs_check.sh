@@ -12,7 +12,7 @@ OUT=$2
 
 
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 mkdir $TMP.seq

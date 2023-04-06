@@ -28,7 +28,7 @@ gzip $INC/dissim.$VER &
 
 
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 section "Computing dissimilarity requests"

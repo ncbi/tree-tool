@@ -23,7 +23,7 @@ fi
 
 section "Dissimilarities"
 TMP=`mktemp`
-echo $TMP > /dev/stderr
+comment $TMP 
 
 $THIS/../list2pairs $LIST > $TMP.req
 $THIS/distTree_inc_request2dissim.sh $INC $TMP.req $TMP.dissim

@@ -22,7 +22,7 @@ QUAL="$6"
 
 $THIS/../check_tmp.sh
 TMP=`mktemp`
-echo $TMP > /dev/stderr
+comment $TMP
 
 
 DELETE=""

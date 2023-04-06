@@ -31,7 +31,7 @@ LARGE=${10}
 
 section "Estimating hmm-univ.stat"
 TMP=`mktemp`
-echo $TMP 
+comment $TMP 
 
 # $TMP.pairs
 IGNORE_ZERO_PAR=""

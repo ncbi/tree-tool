@@ -20,7 +20,7 @@ LARGE=$6
 
 
 TMP=`mktemp`
-echo $TMP 
+comment $TMP 
 
 
 section "Bulding tree"

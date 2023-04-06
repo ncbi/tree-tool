@@ -20,7 +20,7 @@ if ($5 <= 0)  exit 1
 
 
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 $THIS/tree2obj.sh $1/hist/tree.$2 > $TMP.start

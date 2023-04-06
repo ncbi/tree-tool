@@ -9,7 +9,7 @@ fi
 
 
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 section "make"

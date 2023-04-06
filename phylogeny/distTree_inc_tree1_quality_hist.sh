@@ -15,7 +15,8 @@ fi
 
 
 TMP=`mktemp`
-echo $TMP > /dev/stderr
+comment $TMP
+
 
 VER=`cat $INC/version`
 echo $VER > /dev/stderr

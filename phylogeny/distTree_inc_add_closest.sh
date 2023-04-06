@@ -18,7 +18,7 @@ fi
 
 
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 section "Old dissimilarities"
