@@ -12,6 +12,7 @@ endif
 ############################### Programs ################################
 
 all:	\
+  colors \
   connectPairs \
   effectiveSize \
   extractPairs \
@@ -29,6 +30,12 @@ all:	\
   unCgi
 
 
+
+colors.o: $(COMMON_HPP)  
+colorsOBJS=colors.o $(CPP_DIR)/common.o
+colors: $(colorsOBJS)
+	$(CXX) -o $@ $(colorsOBJS) $(LIBS)
+	$(ECHO)
 
 connectPairs.o: $(COMMON_HPP)  
 connectPairsOBJS=connectPairs.o $(CPP_DIR)/common.o
