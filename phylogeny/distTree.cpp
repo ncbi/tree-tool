@@ -6445,62 +6445,72 @@ size_t DistTree::optimizeLenArc ()
   dtNodes. sort (DTNode_len_strictlyLess);
   
 
-  const uint iters = 10;  // PAR
-  FOR (uint, iter, iters)
   {
-    Real absCriterion_prev = absCriterion;
+    const uint iters = 10;  // PAR
+    Progress progIter (iters);
+    FOR (uint, iter, iters)
     {
-      Progress prog (dtNodes. size (), (dtNodes. size () >= 10000) * 100);  // PAR
-      for (const DTNode* node : dtNodes)
+      Real absCriterion_prev = absCriterion;
       {
-        prog (absCriterion2str ());
-      #ifndef NDEBUG    
-        const Real absCriterion_old = absCriterion;  
-      #endif
-      
-        Real arcAbsCriterion_old = 0.0;
-        WeightedMeanVar mv;
-        for (const uint dissimNum : node->pathDissimNums)
+        Progress prog (dtNodes. size (), (dtNodes. size () >= 10000) * 100);  // PAR
+      //ASSERT (! prog. active);  ??
+        for (const DTNode* node : dtNodes)
         {
-          const Dissim& dissim = dissims [dissimNum];
-          if (dissim. validMult ())
-          {
-            const Real dist_hat_tails = max (0.0, dissim. prediction - node->len);
-            const Real arcTarget = dissim. target - dist_hat_tails;
-            mv. add (arcTarget, dissim. mult);
-            arcAbsCriterion_old += dissim. getAbsCriterion ();
-          }
-        }
-        const Real len_new = max (0.0, mv. getMean ());
+          prog (absCriterion2str ());
+        #ifndef NDEBUG    
+          const Real absCriterion_old = absCriterion;  
+        #endif
         
-        Real arcAbsCriterion_new = 0.0;
-        for (const uint dissimNum : node->pathDissimNums)
-        {
-          Dissim& dissim = dissims [dissimNum];
-          if (dissim. validMult ())
+          Real arcAbsCriterion_old = 0.0;
+          WeightedMeanVar mv;
+          for (const uint dissimNum : node->pathDissimNums)
           {
-            dissim. prediction = max (0.0, dissim. prediction - node->len + len_new);
-            arcAbsCriterion_new += dissim. getAbsCriterion ();
+            const Dissim& dissim = dissims [dissimNum];
+            if (dissim. validMult ())
+            {
+              const Real dist_hat_tails = max (0.0, dissim. prediction - node->len);
+              const Real arcTarget = dissim. target - dist_hat_tails;
+              mv. add (arcTarget, dissim. mult);
+              arcAbsCriterion_old += dissim. getAbsCriterion ();
+            }
           }
+          const Real len_new = max (0.0, mv. getMean ());
+          
+          Real arcAbsCriterion_new = 0.0;
+          for (const uint dissimNum : node->pathDissimNums)
+          {
+            Dissim& dissim = dissims [dissimNum];
+            if (dissim. validMult ())
+            {
+              dissim. prediction = max (0.0, dissim. prediction - node->len + len_new);
+              arcAbsCriterion_new += dissim. getAbsCriterion ();
+            }
+          }
+          minimize (arcAbsCriterion_new, arcAbsCriterion_old);
+          
+          var_cast (node) -> len = len_new;
+          absCriterion -= arcAbsCriterion_old;
+          absCriterion += arcAbsCriterion_new;
+          ASSERT (leReal (absCriterion, absCriterion_old));
+          maximize (absCriterion, 0.0);
         }
-        minimize (arcAbsCriterion_new, arcAbsCriterion_old);
-        
-        var_cast (node) -> len = len_new;
-        absCriterion -= arcAbsCriterion_old;
-        absCriterion += arcAbsCriterion_new;
-        ASSERT (leReal (absCriterion, absCriterion_old));
-        maximize (absCriterion, 0.0);
       }
+    
+    #if 1
+      progIter (absCriterion2str ());
+    #else
+      if (Progress::enabled ())
+        cerr << '\r' << iter + 1 << " / " << (uint) iters << " " << absCriterion2str ();
+    #endif
+      if (absCriterion_prev / absCriterion - 1.0 <= 0.01)   // PAR
+        break;
+      absCriterion_prev = absCriterion;  
     }
-  
+  #if 0
     if (Progress::enabled ())
-      cerr << '\r' << iter + 1 << " / " << (uint) iters << " " << absCriterion2str ();
-    if (absCriterion_prev / absCriterion - 1.0 <= 0.01)   // PAR
-      break;
-    absCriterion_prev = absCriterion;  
+      cerr << endl;
+  #endif
   }
-  if (Progress::enabled ())
-    cerr << endl;
 
 
   return finishChanges ();
