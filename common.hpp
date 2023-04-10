@@ -1404,13 +1404,6 @@ void readLine (istream &is,
                string &s);
   // Output: s
 
-#if 0
-string getColumn (istream &is,
-                  const string &skip,
-                  const string &delimeters);
-  // Return: empty() <=> eof
-#endif
-
 
 
 inline streamsize double2decimals (double r)

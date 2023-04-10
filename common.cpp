@@ -1286,51 +1286,6 @@ void readLine (istream &is,
 
 
 
-#if 0
-string getColumn (istream &is,
-                  const string &skip,
-                  const string &delimeters)
-{
-  // Skipping skip
-  for (;;)
-  {
-    IMPLY (! is. eof (), is. good ());
-    const char c = (char) is. get ();
-    if (is. eof ())
-      return noString;
-    ASSERT (c);
-    if (charInSet (c, skip))
-      continue;
-    if (charInSet (c, delimeters))
-      return string (1, c);
-    is. unget ();
-    break;
-  }  
-  
-  string token;
-  for (;;)
-  {
-    IMPLY (! is. eof (), is. good ());
-    const char c = (char) is. get ();
-    if (   is. eof () 
-        || charInSet (c, skip)
-        || charInSet (c, delimeters)
-       )
-    {
-      is. unget ();
-      break;
-    }
-    ASSERT (c);
-    token += c;
-  }
-  ASSERT (! token. empty ());
-
-  return token;
-}
-#endif
-
- 
-
 
 hash<string> str_hash;
 hash<size_t> size_hash;
