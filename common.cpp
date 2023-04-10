@@ -1286,6 +1286,7 @@ void readLine (istream &is,
 
 
 
+#if 0
 string getColumn (istream &is,
                   const string &skip,
                   const string &delimeters)
@@ -1326,6 +1327,7 @@ string getColumn (istream &is,
 
   return token;
 }
+#endif
 
  
 
@@ -1519,7 +1521,10 @@ Threads::Threads (size_t threadsToStart_arg,
 	threads. reserve (threadsToStart);
 	
 	if (! quiet && verbose (1) && threadsToStart)
+	{
+    const OColor c (cerr, Color::green, false, true);  // Cf. Progress::report() 
     cerr << "# Threads started: " << threadsToStart + 1/*main thread*/ << endl;
+  }
 }	
 
 
@@ -1762,9 +1767,12 @@ size_t Progress::beingUsed = 0;
 
 void Progress::report () const
 { 
+  if (! n)
+    return;
   cerr << '\r';
 #ifndef _MSC_VER
   cerr << "\033[2K";
+  const OColor c (cerr, Color::green, false, true);  // PAR
 #endif
   cerr << n; 
 	if (n_max)

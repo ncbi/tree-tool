@@ -304,14 +304,14 @@ inline void section (const string &title,
     {
       { const OColor oc1 (cout, color, bright, true);
         const OColor oc2 (cerr, color, bright, true);
-        couterr << title << " ...";
+        couterr << title /*<< " ..."*/;
       }
       couterr << endl;
     }
     else
     {
       { const OColor oc (cerr, color, bright, true);
-        cerr << title << " ...";
+        cerr << title /*<< " ..."*/;
       }
       cerr << endl;
     }
@@ -1404,13 +1404,12 @@ void readLine (istream &is,
                string &s);
   // Output: s
 
+#if 0
 string getColumn (istream &is,
                   const string &skip,
                   const string &delimeters);
   // Return: empty() <=> eof
-
-inline void pressAnyKey ()
-  { cout << "Press any key..."; char c; cin >> c; }
+#endif
 
 
 
