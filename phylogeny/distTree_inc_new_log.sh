@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Undo search for failed objects in #1/log/, remove #1/log"
   echo "#1: incremental distance tree directory"
-  echo "#2: grid is used (0/1)"
+  echo "#2: UGE is used (0/1)"
   exit 1
 fi
 INC=$1
@@ -22,9 +22,9 @@ L=`cat $INC/log.list | wc -l`
 if [ $L -gt 0 ]; then
   warning "# Failed tasks: $L"
   if [ $GRID == 0 ]; then
-    error "No GRID"
+    error "No UGE"
   fi
-  # Trying to fix grid problems
+  # Trying to fix UGE problems
   $THIS/../trav $INC/log.list -step 1 "$THIS/distTree_inc_unsearch.sh $INC %f"
   $THIS/../trav $INC/log "echo ''; echo %d/%f; tail -20 %d/%f" > $INC/log.out  # PAR
   head -21 $INC/log.out  # PAR

@@ -9,7 +9,7 @@ if [ $# -ne 4 ]; then
   echo "#1: Directory containing search/"
   echo "#2: New object"
   echo "#3: Job number"
-  echo "#4: Use grid (0/1)"
+  echo "#4: Use UGE (0/1)"
   exit 1
 fi
 INC=$1

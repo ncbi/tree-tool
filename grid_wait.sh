@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Wait until grid is available"
+  echo "Wait until UGE is available"
   echo "#1: print message (0/1)"
   exit 1
 fi
@@ -10,7 +10,7 @@ MSG=$1
 
 
 if [ $MSG == 1 ]; then
-  echo "Waiting for GRID ..."
+  comment "Waiting for UGE"
 fi
 
 N=0
@@ -27,7 +27,7 @@ while true; do
 done
 
 if [ $N -gt 0 ]; then
-  echo "GRID was waited for for $N min."
+  echo "UGE was waited for for $N min."
 fi
 
 

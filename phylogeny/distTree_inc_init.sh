@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 13 ]; then
   echo "Initialize an incremental distance tree directory"
   echo "#1: output directory"
-  echo "#2: min. number of dissimilarity requests to use GRID (> 0)"
+  echo "#2: min. number of dissimilarity requests to use UGE (> 0)"
   echo "#3: variance: lin|linExp|..."
   echo "#4: hybridness_min (> 1); 0 - no hybrids"
   echo "#5: dissim_boundary (> 0 or NAN)"

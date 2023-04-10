@@ -51,7 +51,7 @@ while true; do
     if [ $M -ne 0 ]; then 
       date
       if [ $QRESUB == 1 ]; then
-        echo "Re-submitting $M grid jobs ..."
+        warning "Resubmitting $M UGE jobs"
         i=0
         while [ $i -lt $M ]; do
           $THIS/grid_wait.sh 1
@@ -59,7 +59,7 @@ while true; do
   	      i=$(($i + 1))
         done
       else
-        echo "Deleting $M grid jobs ..."
+        warning "Deleting $M UGE jobs"
       fi
       $THIS/grid_wait.sh 1
       qdel -f ${L[@]} || true
