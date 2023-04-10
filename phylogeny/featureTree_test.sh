@@ -26,7 +26,7 @@ tar  -xf $TMP.dir/gene.tar  -C $TMP.dir
 $THIS/featureTree.sh $TMP.dir/obj $TMP.dir/gene
 
 echo ""
-$THIS/makeFeatureTree  -qc  -threads 10  -input_tree $TMP.dir/obj.tree  -features $TMP.dir/gene  -input_core $TMP.dir/obj.core  -use_time | grep -vw "CHRON" | grep -v "^Tree from file:" > $TMP.dir/obj.featureTree
+$THIS/makeFeatureTree  -qc  -threads 10  -input_tree $TMP.dir/obj.tree  -features $TMP.dir/gene  -input_core $TMP.dir/obj.core  -use_time | grep -v "CHRON" | grep -v "^Tree from file:" > $TMP.dir/obj.featureTree
  
 diff $TMP.dir/obj.core        $DIR/obj.core
 diff $TMP.dir/obj.featureTree $DIR/obj.featureTree
