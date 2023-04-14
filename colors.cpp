@@ -38,7 +38,7 @@ struct ThisApplication : Application
 	    for (const bool bright : {false, true})
 	    {
 	      const OColor c (cout, t, bright, true);
-	      cout << "Text " << t << endl;
+	      cout << "Color " << t << ' ' << (bright ? "bright" : "dark") << endl;
 	    }
 	  
 	}
