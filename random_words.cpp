@@ -54,17 +54,24 @@ struct ThisApplication : Application
   	  addPositional ("len_max", "Max. word length");
   	  addKey ("exclude", "Characters to exclude");
   	  addKey ("exclude_first", "Characters in the beginning of a word to exclude");
+  	  addKey ("exclude_last", "Characters at the end of a word to exclude");
+  	  addKey ("exclude_double", "Double characters to exclude");
   	}
   	
   	
  
 	void body () const final
 	{
-		const size_t num      = str2<size_t> (getArg ("num"));
-		const size_t len_max  = str2<size_t> (getArg ("len_max"));
-		const string exclude  =               getArg ("exclude");
-		const string exclude1 =               getArg ("exclude_first");
+		const size_t num            = str2<size_t> (getArg ("num"));
+		const size_t len_max        = str2<size_t> (getArg ("len_max"));
+		const string exclude        =               getArg ("exclude");
+		const string exclude_first  =               getArg ("exclude_first");
+		const string exclude_last   =               getArg ("exclude_last");
+		const string exclude_double =               getArg ("exclude_double");
 		
+
+    QC_ASSERT (len_max);
+    
 
     Rand rand (seed_global);
     
@@ -75,7 +82,7 @@ struct ThisApplication : Application
       
     string alphabet1;
     for (const char c : alphabet)
-      if (! contains (exclude1, c))
+      if (! contains (exclude_first, c))
         alphabet1 += c;    
         
     Set<string> words;
@@ -85,6 +92,26 @@ struct ThisApplication : Application
       FFOR (size_t, i, rand. get (len_max) + 1)
         s += i ? alphabet  [rand. get (alphabet.  size ())]
                : alphabet1 [rand. get (alphabet1. size ())];
+        
+      if (contains (exclude_last, s. back ()))
+        continue;
+                
+      bool bad = false;
+      string dup ("  ");
+      ASSERT (dup. size () == 2);
+      for (const char c : exclude_double)
+      {
+        dup [0] = c;
+        dup [1] = c;
+        if (contains (s, dup))
+        {
+          bad = true;
+          break;
+        }
+      }
+      if (bad)
+        continue;
+        
       words << s;
     }
     
