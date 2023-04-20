@@ -129,6 +129,6 @@ if [ "$PHEN" ]; then
 fi
 
 if [ $LARGE == 1 ]; then
-  $THIS/../dir_hash_init $INC/new
+  $THIS/../dir_hash_init.sh $INC/new
 fi
 
