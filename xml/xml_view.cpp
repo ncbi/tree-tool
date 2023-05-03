@@ -95,10 +95,14 @@ void drawMenu (NCurses &nc,
 size_t open (Vector<Row> &rows,
              size_t curIndex)
 {
+  ASSERT (! rows [curIndex]. open);
+  const VectorOwn<Xml_sp::Data>& children = rows [curIndex]. data->children;
+  if (children. empty ())
+    return 0;
+  rows [curIndex]. open = true;
   auto itStart = rows. begin ();
   advance (itStart, curIndex + 1);
   Vector<Row> newRows;
-  const VectorOwn<Xml_sp::Data>& children = rows [curIndex]. data->children;
   newRows. reserve (children. size ());
   FFOR (size_t, i, children. size ())
     newRows << Row (children [i], i);
@@ -106,6 +110,17 @@ size_t open (Vector<Row> &rows,
   return newRows. size ();
 }
 
+
+
+
+size_t openAll (Vector<Row> &rows,
+                size_t curIndex)
+{
+  size_t opened = 0;
+  FOR_START (size_t, i, curIndex, curIndex + 1 + opened )
+    opened += open (rows, i);
+  return opened;
+}
 
 
 
@@ -178,7 +193,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up   Down   PgUp,b   PgDn,f   Home,B   End,F   ^End,^F   Enter:Open/Close   F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "  F10,q:Quit");
+        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "   c:color") + "  F10,q:Quit");
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -301,10 +316,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
           case ctrl('f'):
           case 531 /*ctrl(KEY_END)*/:
             do
-            {
               curIndex = rows. size () - 1;
-              rows [curIndex]. open = true;
-            }
             while (open (rows, curIndex));
             topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             break;
@@ -312,30 +324,41 @@ At line ends: [<# children>|<# nodes in subtree>]\
           case KEY_ENTER:
             if (rows [curIndex]. data->children. empty ())
               beep ();
+            else if (! rows [curIndex]. open)
+            {
+              const size_t n = open (rows, curIndex);
+              if (curIndex + n >= topIndex + fieldSize)
+                topIndex = curIndex + n - fieldSize + 1;
+              if (topIndex > curIndex)
+                topIndex = curIndex;
+            }
             else
             {
-              toggle (rows [curIndex]. open);              
-              if (rows [curIndex]. open)
-              {
-                const size_t n = open (rows, curIndex);
-                if (curIndex + n >= topIndex + fieldSize)
-                  topIndex = curIndex + n - fieldSize + 1;
-                if (topIndex > curIndex)
-                  topIndex = curIndex;
-              }
-              else
-              {
-                auto itStart = rows. begin ();
-                advance (itStart, curIndex + 1);
-                size_t i = curIndex + 1;
-                const size_t depth = rows [curIndex]. getDepth ();
-                for (; i < rows. size (); i++)
-                  if (rows [i]. getDepth () <= depth)
-                    break;
-                auto itEnd = rows. begin ();
-                advance (itEnd, i);
-                rows. erase (itStart, itEnd);
-              }
+              rows [curIndex]. open = false;
+              auto itStart = rows. begin ();
+              advance (itStart, curIndex + 1);
+              size_t i = curIndex + 1;
+              const size_t depth = rows [curIndex]. getDepth ();
+              for (; i < rows. size (); i++)
+                if (rows [i]. getDepth () <= depth)
+                  break;
+              auto itEnd = rows. begin ();
+              advance (itEnd, i);
+              rows. erase (itStart, itEnd);
+            }
+            break;
+          case 'a':  // Open _a_ll
+            if (   rows [curIndex]. data->children. empty ()
+                || rows [curIndex]. open
+               )
+              beep ();
+            else
+            {
+              const size_t n = openAll (rows, curIndex);
+              if (curIndex + n >= topIndex + fieldSize)
+                topIndex = curIndex + n - fieldSize + 1;
+              if (topIndex > curIndex)
+                topIndex = curIndex;
             }
             break;
           case 's':
