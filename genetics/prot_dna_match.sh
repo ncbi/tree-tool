@@ -16,7 +16,7 @@ DNA=$4
 
 
 TMP=`mktemp`
-#echo $TMP
+#comment $TMP
 
 
 # $TMP.prot
@@ -32,6 +32,7 @@ cp $DNA $TMP.dna
 makeblastdb  -in $TMP.dna  -dbtype nucl  -logfile /dev/null  -blastdb_version 4
 
 tblastn  -query $TMP.prot   -db $TMP.dna  -word_size 3  -seg no  -db_gencode 11  -outfmt '6 qstart qend qlen sstart send length nident sseq' 2> /dev/null | sort -k 4,4 -n | sort -k 7,7 -n -r | head -1 > $TMP.tblastn 
+#exit 2
 RES=(`cat $TMP.tblastn`)
 QSTART=${RES[0]}
 QEND=${RES[1]}
