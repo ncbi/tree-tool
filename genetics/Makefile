@@ -11,6 +11,7 @@ endif
 ############################### Programs ################################
 
 all:	\
+  align2html \
   asm_gap \
   asnt \
 	blastmat \
@@ -72,6 +73,12 @@ all:	\
 	uniqSeq \
 	uniqProtRef
 
+
+align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
+align2htmlOBJS=align2html.o $(GEN_DIR)/seq.o $(DM_OBJ)
+align2html:	$(align2htmlOBJS)
+	$(CXX) -o $@ $(align2htmlOBJS) $(LIBS) 
+	$(ECHO)
 
 asm_gap.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
 asm_gapOBJS=asm_gap.o $(GEN_DIR)/seq.o $(DM_OBJ)
