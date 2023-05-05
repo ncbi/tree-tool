@@ -112,8 +112,8 @@ size_t printRow (bool is_header,
                         )
                           ? enull
                           : h. numeric && ! h. scientific
-                            ? efalse
-                            : etrue;
+                            ? etrue
+                            : efalse;
     if (! printString (pad (value, h. len_max, right), screen_col_max, x))
       break;
     lastCol = col;
@@ -237,7 +237,7 @@ struct ThisApplication : Application
           const string posS ("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]");
         #endif
           if (nc. col_max > posS. size ())
-            addstr ((pad (keyS, nc. col_max - posS. size (), etrue) + posS). c_str ());
+            addstr ((pad (keyS, nc. col_max - posS. size (), efalse) + posS). c_str ());
           else
             addstr (posS. c_str ());
         }
