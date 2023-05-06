@@ -244,10 +244,10 @@ namespace
     *os << endl
         << msg << endl << endl
       #ifndef _MSC_VER
-  	    << "HOSTNAME: " << (hostname ? hostname : "?") << endl
-  	    << "SHELL: " << (shell ? shell : "?") << endl
-  	    << "PWD: " << (pwd ? pwd : "?") << endl
-  	    << "PATH: " << (path ? path : "?") << endl
+  	    << "HOSTNAME: " << nvl (hostname, "?") << endl
+  	    << "SHELL: "    << nvl (shell,    "?") << endl
+  	    << "PWD: "      << nvl (pwd,      "?") << endl
+  	    << "PATH: "     << nvl (path,     "?") << endl
       #endif
   	    << "Progam name:  " << programName << endl
   	    << "Command line: " << getCommandLine () << endl;
