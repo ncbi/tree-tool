@@ -87,6 +87,7 @@ struct ThisApplication : Application
         }
         else
           len = seq->seq. size ();
+        seq->seq. reserve (len * 2);  // PAR
         maximize (name_max, seq->name. size ());
       }
     }
