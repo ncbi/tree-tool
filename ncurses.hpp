@@ -45,6 +45,7 @@ using namespace Common_sp;
 extern "C"
 {
   #include <ncurses.h>
+    // Linking requires: -lncurses
 }
 
 
