@@ -13,6 +13,7 @@ endif
 
 all:	\
   colors \
+  curl_easy_test \
   connectPairs \
   effectiveSize \
   extractPairs \
@@ -46,7 +47,13 @@ connectPairs: $(connectPairsOBJS)
 cpp_test.o: $(COMMON_HPP)  
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
 cpp_test: $(cpp_testOBJS)
-	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncurses
+	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) 
+	$(ECHO)
+
+curl_easy_test.o: $(COMMON_HPP) $(CPP_DIR)/curl_easy.hpp
+curl_easy_testOBJS=curl_easy_test.o $(CPP_DIR)/common.o $(CPP_DIR)/curl_easy.o
+curl_easy_test: $(curl_easy_testOBJS)
+	$(CXX) -o $@ $(curl_easy_testOBJS) $(LIBS) -lcurl
 	$(ECHO)
 
 effectiveSize.o:  $(COMMON_HPP)  
