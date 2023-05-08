@@ -272,6 +272,7 @@ public:
   void writeFiles (size_t xmlNum,
                    const Schema* sch,
                    FlatTable* flatTable) const;
+  void tag2token (const string &tagName);
 };
 
 

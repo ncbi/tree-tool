@@ -968,4 +968,30 @@ void Data::writeFiles (size_t xmlNum,
 }
 
 
+
+void Data::tag2token (const string &tagName)
+{
+	bool found = false;
+	FOR_REV (size_t, i, children. size ())
+	{
+	  const Data* child = children [i];
+	  ASSERT (child);
+		if (   ! found
+			  && token. empty ()
+			  && child->name == tagName
+			  && child->children. empty ()
+			  && ! child->token. empty ()
+			 )
+		{
+			token = move (var_cast (child) -> token);
+			children. erasePtr (i);
+			found = true;
+		}
+		else
+		  var_cast (child) -> tag2token (tagName);
+	}
+}
+
+
+
 }
