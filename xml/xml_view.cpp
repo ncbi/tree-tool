@@ -156,7 +156,8 @@ At line ends: [<# children>|<# nodes in subtree>]\
       catch (const exception &e)
         { ti. error (e. what (), false); }
     }
-    ASSERT (xml. get ());
+    ASSERT (xml);
+    var_cast (xml. get ()) -> tag2token ("text");  // PAR
     xml->qc ();
     if (verbose ())
     {
@@ -215,7 +216,11 @@ At line ends: [<# children>|<# nodes in subtree>]\
           if (! row. data->token. empty ())
             printw (" %s", row. data->token. str (). c_str ());
           if (const size_t n = row. data->children. size ())
-            printw (" [%lu/%lu]", n, row. nodes);
+          {
+            printw (" ");
+	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
+            printw ("[%lu/%lu]", n, row. nodes);
+          }
         #if 0
           printw (" %s %s %s %s"
                  , to_string (rows. size ()). c_str ()
