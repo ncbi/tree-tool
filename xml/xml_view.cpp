@@ -217,9 +217,9 @@ At line ends: [<# children>|<# nodes in subtree>]\
             printw (" %s", row. data->token. str (). c_str ());
           if (const size_t n = row. data->children. size ())
           {
-            printw (" ");
+            printw ("  ");
 	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
-            printw ("[%lu/%lu]", n, row. nodes);
+            printw ("%lu/%lu", n, row. nodes);
           }
         #if 0
           printw (" %s %s %s %s"
