@@ -212,14 +212,18 @@ At line ends: [<# children>|<# nodes in subtree>]\
           const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
           const NCAttr attrCurrent (A_REVERSE, i == curIndex);
           const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
-          printw ("%lu <%s>", row. childNum + 1, row. data->name. c_str ());
+          {
+	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
+            printw ("%lu", row. childNum + 1);
+          }
+          printw (" <%s>", row. data->name. c_str ());
           if (! row. data->token. empty ())
             printw (" %s", row. data->token. str (). c_str ());
           if (const size_t n = row. data->children. size ())
           {
-            printw ("  ");
+            printw (" ");
 	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
-            printw ("%lu/%lu", n, row. nodes);
+            printw (" %lu/%lu", n, row. nodes);
           }
         #if 0
           printw (" %s %s %s %s"
