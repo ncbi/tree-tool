@@ -1223,7 +1223,7 @@ string str2streamWord (const string &s,
 string str2sql (const string &s);
   // Return: ' s ' (replacing ' by '')
 
-string sql2escaped (const string &s);
+//string sql2escaped (const string &s);
 
 
 string findSplit (string &s,

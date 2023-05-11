@@ -814,6 +814,7 @@ string str2sql (const string &s)
 
 
 
+#if 0
 string sql2escaped (const string &s)
 {
   string s1;
@@ -826,6 +827,7 @@ string sql2escaped (const string &s)
   
   return s1;
 }
+#endif
 
 
 
