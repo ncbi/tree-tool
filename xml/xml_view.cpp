@@ -218,7 +218,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
           }
           printw (" <%s>", row. data->name. c_str ());
           if (! row. data->token. empty ())
-            printw (" %s", row. data->token. str (). c_str ());
+            printw (" %s", row. data->token. name /*str ()*/. c_str ());
           if (const size_t n = row. data->children. size ())
           {
             printw (" ");
