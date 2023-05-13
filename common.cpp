@@ -2235,14 +2235,50 @@ Token TokenInput::getXmlText ()
 	      htmlTags++;
 	  }
 	  else if (c == '>')
+	  #if 0
 	    if (prevSlash)
 	    {
 	      QC_ASSERT (htmlTags);
 	      htmlTags--;
 	    }
-	  if (isSpace (c))
-	    c = ' ';
-		t. name += c;
+  	#else
+	    if (prevSlash && htmlTags)
+	      htmlTags--;
+  	#endif
+  	if (c == '&')
+  	{
+  		static const string err (" of an escaped hexadecimal of XML text");
+  		get ('#');
+  		if (ci. get () != 'x')
+		    ci. error ("'x'" + err);
+		  c = ci. get ();
+			if (ci. eof)
+		    ci. error ("First digit" + err + ": end of file", false);
+  		if (! isHex (c))
+		    ci. error ("Digit" + err);
+  		uchar uc = hex2uchar (c) * 16;
+  		c = ci. get ();
+			if (ci. eof)
+		    ci. error ("Second digit" + err + ": end of file", false);
+  		if (! isHex (c))
+		    ci. error ("Second digit" + err);
+  		uc += hex2uchar (c);
+  		get (';');
+		  c = (char) uc;
+  	}
+  	string s;
+	  if (c < ' ')
+	  	switch (c)
+	  	{
+	  		case  9: s = "TAB"; break;
+	  		case 10: s = "LF"; break;
+	  		case 13: s = "CR"; break;
+	  		default: s = "x" + uchar2hex ((uchar) c);
+	  	}	  	
+	  if (s. empty ())
+		  t. name += c;
+		else
+			t. name += "<" + s + ">";
 		prevSlash = (c == '/');		  
 	}
 	
