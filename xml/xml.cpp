@@ -980,7 +980,7 @@ void Data::tag2token (const string &tagName)
   	if (   token. empty ()
   		  && child->name == tagName
   		  && child->children. empty ()
-  		  && ! child->token. empty ()
+  		//&& ! child->token. empty ()
   		 )
   	{
   		token = move (var_cast (child) -> token);
