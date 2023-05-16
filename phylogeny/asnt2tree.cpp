@@ -109,7 +109,7 @@ public:
 	  { asn. expect ("{"); }
  ~Brace ()
 	  { if (! asn. expectTry ("}"))
-      	errorExit (asn. in. errorText (strQuote ("}")). c_str ());
+      	asn. in. error (strQuote ("}"));
 	  }
 };
 
