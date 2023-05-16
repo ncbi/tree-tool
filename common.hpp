@@ -523,6 +523,9 @@ static_assert ((size_t) 0 - 1 == no_index);
 
 // char
 
+inline bool isChar (long long n)
+  { return between<long long> (n, -127, 128); }
+
 inline bool isAlpha (char c)
   { return strchr ("abcdefghijklmnopqrstuvwxyz", tolower (c)); }
   // isalpha() is locale-specific
@@ -3266,14 +3269,18 @@ public:
     // Postcondition: eol
 	  
 
-  string errorText (const string &what,
-		                bool expected = true) const
-		{ return "Error at line " + to_string (lineNum + 1) + ", pos. " + to_string (charNum + 1)
-                + (what. empty () ? noString : (": " + what + ifS (expected, " is expected"))); 
-    }
+  struct Error : runtime_error
+  {
+    Error (const CharInput &ci,
+           const string &what,
+		       bool expected = true) 
+      : runtime_error (("Error at line " + to_string (ci. lineNum + 1) + ", pos. " + to_string (ci. charNum + 1) 
+                      + (what. empty () ? noString : (": " + what + ifS (expected, " is expected")))). c_str ())
+      {}
+  };
   void error (const string &what,
 	            bool expected = true) const
-		{ throwf (errorText (what, expected)); }
+		{ throw Error (*this, what, expected); }
 };
 	
 

@@ -2058,8 +2058,9 @@ void Token::qc () const
   		                   throw runtime_error ("Not an identifier: " + strQuote (name));
   		                 break;
   	  case eText:      break;
-  		case eInteger:   
-  		case eDouble:    QC_ASSERT (name [0] == '-' || isDigit (name [0])); 
+  		case eInteger:   QC_ASSERT (name [0] == '-' || name [0] == '+' || isDigit (name [0])); 
+                       break;
+  		case eDouble:    QC_ASSERT (name [0] == '-' || name [0] == '+' || isDigit (name [0]) || name [0] == '.'); 
   		                 break;
   		case eDelimiter: QC_ASSERT (name. size () == 1); 
   		                 QC_ASSERT (Common_sp::isDelimiter (name [0]));
@@ -2210,12 +2211,14 @@ Token TokenInput::getXmlText ()
 { 
   QC_ASSERT (last. empty ());
 
+
   Token t;
   t. charNum = ci. charNum;
   size_t htmlTags = 0;
   bool prevSlash = false;
 	for (;;)
 	{ 
+    // break
 	  char c = ci. get (); 
 		if (ci. eof)
 	    ci. error ("XML text is not finished: end of file\n" + t. name, false);
@@ -2235,39 +2238,62 @@ Token TokenInput::getXmlText ()
 	      htmlTags++;
 	  }
 	  else if (c == '>')
-	  #if 0
-	    if (prevSlash)
-	    {
-	      QC_ASSERT (htmlTags);
-	      htmlTags--;
-	    }
-  	#else
 	    if (prevSlash && htmlTags)
 	      htmlTags--;
-  	#endif
+
+    // Escaped character
+    int n = c;
   	if (c == '&')
   	{
-  		static const string err (" of an escaped hexadecimal of XML text");
-  		get ('#');
-  		if (ci. get () != 'x')
-		    ci. error ("'x'" + err);
-		  c = ci. get ();
-			if (ci. eof)
-		    ci. error ("First digit" + err + ": end of file", false);
-  		if (! isHex (c))
-		    ci. error ("Digit" + err);
-  		uchar uc = hex2uchar (c) * 16;
-  		c = ci. get ();
-			if (ci. eof)
-		    ci. error ("Second digit" + err + ": end of file", false);
-  		if (! isHex (c))
-		    ci. error ("Second digit" + err);
-  		uc += hex2uchar (c);
-  		get (';');
-		  c = (char) uc;
+      if (ci. get () == '#')  // Number
+      {
+        if (ci. get () == 'x')
+        {
+          static const string err (" of an escaped hexadecimal of XML text"); 
+          c = ci. get ();
+          if (ci. eof)
+            ci. error ("First digit" + err + ": end of file", false);
+          if (! isHex (c))
+            ci. error ("Digit" + err);
+          const uchar uc = uchar (hex2uchar (c) * 16);
+          c = ci. get ();
+          if (ci. eof)
+            ci. error ("Second digit" + err + ": end of file", false);
+          if (! isHex (c))
+            ci. error ("Second digit" + err);
+          n = uc + hex2uchar (c);
+        }
+        else
+        {
+          ci. unget ();
+          const Token ampToken (get ());
+          if (ampToken. type != Token::eInteger)
+            ci. error ("Number after XML &");
+          if (ampToken. n < 0)
+            ci. error ("Character number after XML &");
+          n = (int) ampToken. n;
+        }
+      }
+      else
+      {
+        ci. unget ();
+        const Token ampToken (get ());
+        if (ampToken. isName ("amp"))
+          n = '&';
+        else if (ampToken. isName ("lt"))
+          n = '<';
+        else if (ampToken. isName ("gt"))
+          n = '>';
+        else
+          ci. error ("Unknown XML &-symbol: " + strQuote (ampToken. name));
+      }
+      get (';');
   	}
-  	string s;
-	  if (c < ' ')
+
+    // t.name
+	  if (n >= 0 && n < ' ')
+    {
+    	string s;
 	  	switch (c)
 	  	{
 	  		case  9: s = "TAB"; break;
@@ -2275,19 +2301,27 @@ Token TokenInput::getXmlText ()
 	  		case 13: s = "CR"; break;
 	  		default: s = "x" + uchar2hex ((uchar) c);
 	  	}	  	
-	  if (s. empty ())
-		  t. name += c;
-		else
 			t. name += "<" + s + ">";
+    }
+    else
+    {
+      if (isChar (n))
+		    t. name += char (n);
+      else
+        t. name += "&#" + to_string (n) + ";";
+    }
+
 		prevSlash = (c == '/');		  
 	}
 	
+
 	trim (t. name);
 	if (! t. name. empty ())
     t. type = Token::eText;  
   else
     { ASSERT (t. empty ()); }
 	
+
   return t;
 }
 
