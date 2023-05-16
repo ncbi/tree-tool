@@ -77,8 +77,8 @@ void FlatTable::write (size_t xmlNum)
     if (const Token* token = row [i])
       if (! token->name. empty ())
       {
-        if (! goodName (token->name))
-          throw runtime_error ("Bad value: " + strQuote (token->name));
+      //if (! goodName (token->name))
+        //throw runtime_error ("Bad value: " + strQuote (token->name));
         f << token->name;
       }
     if (i >= keys)
@@ -125,7 +125,7 @@ Schema::Schema (const Schema* parent_arg,
   // multiple
   Token tableT (ti. get ());
   QC_ASSERT (tableT. type == Token::eName);
-  if (tableT. name == "TABLE")
+  if (tableT. name  == "TABLE")
     multiple = true;
   else
     ti. setLast (move (tableT));
@@ -904,21 +904,24 @@ bool Data::unify_ (const Data& query,
 
 Schema* Data::createSchema (bool storeTokens) const
 {
+  QC_ASSERT (! colonInName);
+
   auto sch = new Schema (nullptr, storeTokens);
   
   for (const Data* child : children)
-  {
-    Schema* other = child->createSchema (storeTokens);
-    other->parent = sch;
-    if (const Schema* childSch = findPtr (sch->name2schema, child->name))
-    {
-      var_cast (childSch) -> multiple = true;
-      var_cast (childSch) -> merge (*other);
-      delete other;
-    }
-    else
-      sch->name2schema [child->name] = other;
-  }
+    if (! child->colonInName)
+	  {
+	    Schema* other = child->createSchema (storeTokens);
+	    other->parent = sch;
+	    if (const Schema* childSch = findPtr (sch->name2schema, child->name))
+	    {
+	      var_cast (childSch) -> multiple = true;
+	      var_cast (childSch) -> merge (*other);
+	      delete other;
+	    }
+	    else
+	      sch->name2schema [child->name] = other;
+	  }
 
   if (! token. empty ())
   {
@@ -959,10 +962,13 @@ void Data::writeFiles (size_t xmlNum,
   }
   
   for (const Data* child : children)
-    if (const Schema* childSch = findPtr (sch->name2schema, child->name))
-      child->writeFiles (xmlNum, childSch, flatTable);
-    else
-      throw runtime_error ("Schema-XML mismatch: " + child->name);
+    if (! child->colonInName)
+    {
+      if (const Schema* childSch = findPtr (sch->name2schema, child->name))
+        child->writeFiles (xmlNum, childSch, flatTable);
+      else
+        throw runtime_error ("Schema-XML mismatch: " + child->name);
+    }
     
   if (newFlatTable)
     flatTable->write (xmlNum);

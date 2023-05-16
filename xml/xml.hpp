@@ -268,7 +268,8 @@ private:
     // Update: tag2values, tt (append)
 public:
   Schema* createSchema (bool storeTokens) const;
-    // Return: new
+    // Return: new, !nullptr
+    //   Data where colonInName are skipped
   void writeFiles (size_t xmlNum,
                    const Schema* sch,
                    FlatTable* flatTable) const;
