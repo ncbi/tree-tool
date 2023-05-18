@@ -942,6 +942,8 @@ void Data::writeFiles (size_t xmlNum,
 {
   QC_ASSERT (sch);
   ASSERT (sch->multiple == (bool) sch->flatTable. get ());
+  QC_ASSERT (! colonInName);
+
 
   bool newFlatTable = false;  
   if (const FlatTable* flatTable_ = sch->flatTable. get ())

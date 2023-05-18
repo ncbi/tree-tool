@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   XML analysis utilities
+*   ASCII XML analysis utilities
 *
 */
 
