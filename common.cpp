@@ -2294,12 +2294,12 @@ Token TokenInput::getXmlText ()
 	  if (n >= 0 && n < ' ')
     {
     	string s;
-	  	switch (c)
+	  	switch (n)
 	  	{
 	  		case  9: s = "TAB"; break;
 	  		case 10: s = "LF"; break;
 	  		case 13: s = "CR"; break;
-	  		default: s = "x" + uchar2hex ((uchar) c);
+	  		default: s = "x" + uchar2hex ((uchar) n);
 	  	}	  	
 			t. name += "<" + s + ">";
     }
