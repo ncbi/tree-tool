@@ -545,7 +545,7 @@ void Data::readInput (TokenInput &ti)
       if (xml->isEnd)
       {
         if (xml->name != name)
-          ti. error ("Tag " + strQuote (name) + "is closed by tag " + strQuote (xml->name));
+          ti. error ("Tag " + strQuote (name) + " is closed by tag " + strQuote (xml->name), false);
         ASSERT (! xml->xmlText);
         delete xml;
         break;
