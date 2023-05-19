@@ -544,7 +544,8 @@ void Data::readInput (TokenInput &ti)
       auto xml = new Data (this, ti);
       if (xml->isEnd)
       {
-        QC_ASSERT (xml->name == name);
+        if (xml->name != name)
+          ti. error ("Tag " + strQuote (name) + "is closed by tag " + strQuote (xml->name));
         ASSERT (! xml->xmlText);
         delete xml;
         break;
