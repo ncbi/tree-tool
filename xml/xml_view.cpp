@@ -210,13 +210,16 @@ At line ends: [<# children>|<# nodes in subtree>]\
             addch (row. open ? '-' : '+');
           addch (' ');
           const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
-          const NCAttr attrCurrent (A_REVERSE, i == curIndex);
+          const NCAttr attrCurrent (A_UNDERLINE /*A_REVERSE*/, i == curIndex);
           const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
           {
 	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
             printw ("%lu", row. childNum + 1);
           }
-          printw (" <%s>", row. data->name. c_str ());
+          {
+	          const NCAttrColor attrColor_suf (NCurses::colorGreen); 
+	          printw (" <%s>", row. data->name. c_str ());
+	        }
           if (! row. data->token. empty ())
             printw (" %s", row. data->token. name /*str ()*/. c_str ());
           if (const size_t n = row. data->children. size ())
