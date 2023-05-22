@@ -3473,7 +3473,7 @@ public:
   void error (const Token &wrongToken,
               const string &expected)
     { throw Error (*this, wrongToken, expected); }
-  void error (const string &what,
+  void error1 (const string &what,
 	            bool expected = true) const
 		{ ci. error (what, expected); }  
 
