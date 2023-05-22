@@ -95,10 +95,10 @@ struct ThisApplication : Application
 	  addKey ("gene_finder", "Gene finder used to find CDSs: " + gene_finders. toString (", "));
 	  addFlag ("cds", "Are input sequences CDSs? If not then proteins");
 	  addFlag ("segment", "Sequences are not full-length");  
-	  addFlag ("ambig", "Ambiguous characters in sequences are allowed");  
 	  addFlag ("translate", "Translate CDSs to proteins");
 	  addFlag ("reduce", "Reduce 20 amino acids to 13 characters");
-	  addKey ("kmer", "Cut the sequences into k-mers of this size. 0 - do not cut", "0");
+	  addKey ("ambig", "Max. numbre of allowed ambiguous characters in sequences", "0");
+    addKey ("kmer", "Cut the sequences into k-mers of this size. 0 - do not cut", "0");
 	  addKey ("min_prot_len", "Min. protein length of input sequences", "0");
 	  addKey ("max_hashes", "Max. number of hashes to print. 0 - print all", "0");
 	  addKey ("target_hashes", "Target hashes");
@@ -117,9 +117,9 @@ struct ThisApplication : Application
     const string gene_finder   =               getArg ("gene_finder");
     const bool cds             =               getFlag ("cds");
     const bool segment         =               getFlag ("segment");
-    const bool ambig           =               getFlag ("ambig");
     const bool translate       =               getFlag ("translate");
     const bool reduce          =               getFlag ("reduce");
+    const size_t ambig         = str2<size_t> (getArg ("ambig"));
     const size_t kmer          = str2<size_t> (getArg ("kmer"));
     const size_t prot_len_min  = str2<size_t> (getArg ("min_prot_len"));
     const size_t max_hashes    = str2<size_t> (getArg ("max_hashes"));
@@ -181,7 +181,7 @@ struct ThisApplication : Application
   		      continue;
   		    if (gene_finder == "prodigal" && ! contains (dna. name, ";partial=00"))  
   		      continue;
-  		    if (! ambig && dna. getXs ())
+  		    if (dna. getXs () > ambig)
   		      continue;
   		    if (translate)
   		    {
@@ -216,7 +216,7 @@ struct ThisApplication : Application
    	      strUpper (pep. seq);  // Start codons are lowercased
   		    QC_ASSERT (! pep. seq. empty ());
   		    QC_IMPLY (! segment, pep. seq. front () == 'M');
-  		    if (! ambig && pep. getXs ())
+  		    if (pep. getXs () > ambig)
   		      continue;
   		    if (contains (pep. seq, '*'))
   		      throw runtime_error ("Protein " + pep. name + " contains a stop codon");
