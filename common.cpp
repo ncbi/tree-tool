@@ -304,7 +304,7 @@ string getStack ()
 
 
 
-void throwf (const string &s)  
+[[noreturn]] void throwf (const string &s)  
 { 
   if (cxml)
   {
