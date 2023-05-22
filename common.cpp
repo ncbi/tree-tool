@@ -1871,14 +1871,7 @@ char CharInput::get ()
   const char c = (char) is->get ();
   
 	eof = is->eof ();	
-  if (eof != (c == (char) EOF))
-  {
-    PRINT (eof);
-    PRINT (c);
-    PRINT (EOF);
-    PRINT ((char) EOF);
-    ERROR;
-  }
+  QC_ASSERT (eof == (c == (char) EOF));
 
   if (eol)  // previous char
   { 

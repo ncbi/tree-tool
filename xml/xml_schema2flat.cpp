@@ -82,8 +82,8 @@ struct ThisApplication : Application
     	  VectorOwn<Xml_sp::Data> markupDeclarations;
         xml. reset (new Xml_sp::Data (ti, markupDeclarations));	
       }
-    //catch (const CharInput::Error &e)
-      //{ throw e; }
+      catch (const CharInput::Error &e)
+        { throw e; }
       catch (const exception &e)
         { ti. error (e. what (), false); }
     }    

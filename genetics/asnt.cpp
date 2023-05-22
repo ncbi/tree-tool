@@ -192,7 +192,7 @@ Item::Item (TokenInput &in,
               {
                 const Token delimiter (in. get ());
                 if (delimiter. type != Token::eDelimiter)
-                  in. error ("delimiter");
+                  in. error (delimiter, "delimiter");
                 delimiterChar = delimiter. name [0];
               }
               if (delimiterChar == ',')
