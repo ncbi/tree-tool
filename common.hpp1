@@ -3276,7 +3276,7 @@ public:
     Error (const uint lineNum_arg,
            const uint charNum_arg,
            const string &what)
-      : runtime_error (("Error in line " + to_string (lineNum_arg + 1) + ", pos. " + to_string (charNum_arg + 1) + what). c_str ())
+      : runtime_error (("Error in line " + to_string (lineNum_arg + 1) + ", pos. " + to_string (charNum_arg + 1) + ": " + what). c_str ())
       , lineNum (lineNum_arg)
       , charNum (charNum_arg)
     {}
