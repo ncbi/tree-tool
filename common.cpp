@@ -1864,10 +1864,11 @@ bool ObjectInput::next (Root &row)
 char CharInput::get ()
 { 
   ASSERT (is);
+  QC_ASSERT (! eof);
   
   const char c = (char) is->get ();
-	eof = is->eof ();
-	
+  
+	eof = is->eof ();	
 	ASSERT (eof == (c == (char) EOF));
 
   if (ungot)
@@ -1885,7 +1886,7 @@ char CharInput::get ()
     else
   	  charNum++;
 
-	eol = (eof || c == '\n');
+	eol = (eof || c == '\n');  // UNIX
 	
 #if 0
 	PRINT (c);
@@ -1893,7 +1894,7 @@ char CharInput::get ()
 	PRINT (charNum);
 #endif
 	
-	return /*eof ? (char) EOF :*/ c;
+	return c;
 }
 
 
@@ -1906,6 +1907,7 @@ void CharInput::unget ()
   is->unget (); 
 	charNum--;  // May be (uint) (-1)
 	ungot = true;
+	eof = false;
 }
 
 
