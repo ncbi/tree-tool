@@ -1866,27 +1866,32 @@ char CharInput::get ()
   ASSERT (is);
   QC_ASSERT (! eof);
   
+  ungot = false;
+  
   const char c = (char) is->get ();
   
 	eof = is->eof ();	
-	ASSERT (eof == (c == (char) EOF));
-
-  if (ungot)
+  if (eof != (c == (char) EOF))
   {
-    ungot = false;
-	  charNum++;
+    PRINT (eof);
+    PRINT (c);
+    PRINT (EOF);
+    PRINT ((char) EOF);
+    ERROR;
+  }
+
+  if (eol)  // previous char
+  { 
+    lineNum++;
+    charNum = 0;
   }
   else
-  	if (eol)
-  	{ 
-  	  lineNum++;
-  		charNum = 0;
-  		prog ();
-    }
-    else
-  	  charNum++;
+    charNum++;
 
+  eol_prev = eol;
 	eol = (eof || c == '\n');  // UNIX
+  if (eol)
+    prog ();
 	
 #if 0
 	PRINT (c);
@@ -1903,11 +1908,16 @@ void CharInput::unget ()
 { 
   ASSERT (is);
 	QC_ASSERT (! ungot);
+  QC_ASSERT (! eof);
 	
+	ungot = true;
+  
   is->unget (); 
 	charNum--;  // May be (uint) (-1)
-	ungot = true;
 	eof = false;
+  eol = eol_prev;
+  if (eol)
+    lineNum--;
 }
 
 

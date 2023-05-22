@@ -3247,6 +3247,7 @@ struct CharInput : Input
     // eof => eol
 private:
   bool ungot {false};
+  bool eol_prev {false};
 public:
 
 	
