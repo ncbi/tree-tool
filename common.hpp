@@ -3274,7 +3274,7 @@ public:
     Error (const CharInput &ci,
            const string &what,
 		       bool expected = true) 
-      : runtime_error (("Error at line " + to_string (ci. lineNum + 1) + ", pos. " + to_string (ci. charNum + 1) 
+      : runtime_error (("Error in line " + to_string (ci. lineNum + 1) + ", pos. " + to_string (ci. charNum + 1) 
                       + (what. empty () ? noString : (": " + what + ifS (expected, " is expected")))). c_str ())
       {}
   };
