@@ -140,7 +140,7 @@ constexpr const char* error_caption ("*** ERROR ***");
 // For debugger
 [[noreturn]] void errorExitStr (const string &msg);
 
-void throwf (const string &s);
+[[noreturn]] void throwf (const string &s);  // ??
 
 
 
@@ -3283,11 +3283,11 @@ public:
     Error (const CharInput &ci,
            const string &what,
 		       bool expected = true) 
-      : Error (ci. lineNum, ci. charNum, what. empty () ? noString : (": " + what + ifS (expected, " is expected")))
+      : Error (ci. lineNum, ci. charNum, what + ifS (expected, " is expected"))
       {}
   };
-  void error (const string &what,
-	            bool expected = true) const
+  [[noreturn]] void error (const string &what,
+	                         bool expected = true) const
 		{ throw Error (*this, what, expected); }
 };
 	
@@ -3470,11 +3470,11 @@ public:
       : CharInput::Error (ti. ci. lineNum, wrongToken. charNum, expected + " is expected")
       {}
   };
-  void error (const Token &wrongToken,
-              const string &expected)
+  [[noreturn]] void error (const Token &wrongToken,
+                           const string &expected)
     { throw Error (*this, wrongToken, expected); }
-  void error (const string &what,
-	            bool expected = true) const
+  [[noreturn]] void error (const string &what,
+	                         bool expected = true) const
 		{ ci. error (what, expected); }  
 
   Token get ();
