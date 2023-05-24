@@ -1161,7 +1161,7 @@ Dir::Dir (const string &dirName)
 size_t Dir::create ()
 {
   if (items. empty ())
-    throw runtime_error ("Cannot create the root directory");
+    return 0;
 
   const string path (get ());
 
@@ -1169,6 +1169,11 @@ size_t Dir::create ()
     return 0;
 
   const string item (items. popBack ());
+  if (item. empty ())
+  {
+    ASSERT (items. empty ());
+    throw runtime_error ("Cannot create the root directory");
+  }
   const size_t n = create ();
   items << item;
   if (mkdir (path. c_str (), 0777) != 0)  // PAR
