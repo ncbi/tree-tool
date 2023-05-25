@@ -202,16 +202,25 @@ At line ends: [<# children>|<# nodes in subtree>]\
           const Row& row = rows [i];
           move ((int) (i - topIndex), 0);
           const size_t x = row. getDepth () * 2;  // PAR
-          FFOR (size_t, j, x)
-            addch (' ');
+          if (x)
+          {
+            if (i == curIndex)
+            {
+              const NCAttr attr (A_BOLD);
+              addch ('>');
+            } 
+            else
+              addch (' ');
+            FFOR (size_t, j, x - 1)
+              addch (' ');
+          }
           if (row. data->children. empty ())
             addch (' ');
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
-          const NCAttr attrCurrent (A_UNDERLINE /*A_REVERSE*/, i == curIndex);
           const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
+          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
           {
 	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
             printw ("%lu", row. childNum + 1);

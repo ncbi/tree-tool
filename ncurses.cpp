@@ -98,7 +98,7 @@ void NCurses::resize ()
 // NCAttr
 
 
-NCAttr::NCAttr (int attr_arg,
+NCAttr::NCAttr (attr_t attr_arg,
                 bool active_arg)
 : attr (attr_arg)
 , active (active_arg)
@@ -122,7 +122,7 @@ NCAttr::~NCAttr ()
 
 NCAttrColor::NCAttrColor (NCurses::Color color,
                           bool active_arg)
-: NCAttr (COLOR_PAIR (color + 1), active_arg)
+: NCAttr ((attr_t) COLOR_PAIR (color + 1), active_arg)
 {}
 
 

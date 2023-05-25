@@ -46,6 +46,9 @@ extern "C"
 {
   #include <ncurses.h>
     // Linking requires: -lncurses
+    // Test: test/ncurses
+    // $TERM info: infocmp
+    // man {3|5} terminfo
 }
 
 
@@ -75,12 +78,13 @@ struct NCurses : Singleton<NCurses>
 
 struct NCAttr : Root
 {
-  const int attr;
+  const attr_t attr;
   const bool active;
 
-  explicit NCAttr (int attr_arg,
+  explicit NCAttr (attr_t attr_arg,
                    bool active_arg = true);
- ~NCAttr ();
+    // A_UNDERLINE can conflict with colors, see infocmp ncv
+  ~NCAttr ();
 };
 
 

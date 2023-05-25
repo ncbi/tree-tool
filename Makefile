@@ -45,9 +45,9 @@ connectPairs: $(connectPairsOBJS)
 	$(ECHO)
 
 cpp_test.o: $(COMMON_HPP)  
-cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o
+cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o
 cpp_test: $(cpp_testOBJS)
-	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) 
+	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncurses  
 	$(ECHO)
 
 curl_easy_test.o: $(COMMON_HPP) $(CPP_DIR)/curl_easy.hpp
