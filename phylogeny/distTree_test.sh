@@ -50,7 +50,7 @@ $THIS/statDistTree tree4 > tree4.stat
 rm tree4
 diff tree4.stat $DATA/tree4.stat
 rm tree4.stat
-echo "Verbose ..."
+comment "Verbose"
 $THIS/makeDistTree -qc  -data $DATA/tree4  -variance linExp  -optimize  -verbose 2 &> $TMP.out
 
 section "Random tree"
@@ -58,7 +58,7 @@ gunzip -c $DATA/randomTree.dm.gz > $TMP.dm
 $THIS/makeDistTree  -qc  -data $TMP  -variance lin  -output_tree random-output.tree > $TMP.out
 $THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $TMP  -variance lin  -optimize | grep -v '^CHRON: ' > randomTree.makeDistTree
 $THIS/distTree_compare_criteria.sh randomTree.makeDistTree $DATA/randomTree.makeDistTree
-echo "Verbose ..."
+comment "Verbose"
 $THIS/makeDistTree  -qc  -input_tree random-output.tree    -data $TMP  -variance lin  -verbose 2 &> $TMP.out
 rm randomTree.makeDistTree
 rm random-output.tree
