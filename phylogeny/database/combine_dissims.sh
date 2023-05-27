@@ -92,12 +92,12 @@ function req2file
 
 awk '{printf "%s\t%s\n", $1, $2};' $REQ > $TMP.req
 
-echo "$TMP.req-PRT ..."
+section "$TMP.req-PRT"
 req2file $TMP.req 1 "hash-PRT" > $TMP.f1
 req2file $TMP.req 2 "hash-PRT" > $TMP.f2
 paste $TMP.f1 $TMP.f2 > $TMP.req-PRT
 
-echo "$TMP.dissim-PRT ..."
+section "$TMP.dissim-PRT"
 $THIS/../../dissim/hash_request2dissim $TMP.req-PRT $TMP.PRT  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
 cut -f 3 $TMP.PRT > $TMP.dissim-PRT
 
@@ -115,7 +115,7 @@ fi
 paste $TMP.req $TMP.dissim-CDS $TMP.dissim-PRT > $TMP.req-dissim-PRT
 #     1,2      3               4
 
-echo "$TMP.req-dissim-univ ..."
+section "$TMP.req-dissim-univ"
 awk '! ($4 == "nan" || $4 > '$PRT_RAW_MAX')' $TMP.req-dissim-PRT | sed 's/$/\tnan/1' > $TMP.req-dissim-univ_0
 awk    '$4 == "nan" || $4 > '$PRT_RAW_MAX    $TMP.req-dissim-PRT > $TMP.req-dissim-PRT_1
 req2file $TMP.req-dissim-PRT_1 1 "prot-univ" > $TMP.f1
