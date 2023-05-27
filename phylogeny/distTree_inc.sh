@@ -119,7 +119,7 @@ else
 fi 
 
 
-$THIS/distTree_inc_tree1_quality.sh $INC
+$THIS/distTree_inc_tree1_quality.sh $INC  
 
 
 if [ -e $INC/phen ]; then
