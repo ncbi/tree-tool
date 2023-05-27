@@ -3120,7 +3120,8 @@ public:
  ~Progress () 
     { if (active)
     	{ report ();
-    	  cerr << endl;
+        if (n)
+     	    cerr << endl;
     	  beingUsed--;
     	}
     }
