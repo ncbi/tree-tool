@@ -2578,6 +2578,10 @@ public:
   string toString (const string& sep) const;
   bool same (const StringVector &vec,
              const Vector<size_t> &indexes) const;
+  void to_xml (Xml::File &f,
+               const string &tag);
+    // XML: <tag> <item>at(0)</item> <item>at(1)</item> ... </tag>
+    // Invokes: clear()
 
 
   struct Hasher 
@@ -3108,36 +3112,11 @@ public:
 	
 
 	explicit Progress (size_t n_max_arg = 0,
-	                   size_t displayPeriod_arg = 1)
-	  : n_max (n_max_arg)
-	  , active (enabled () && displayPeriod_arg && (! n_max_arg || displayPeriod_arg <= n_max_arg))
-	  , displayPeriod (displayPeriod_arg)
-	  { if (active) 
-	  	  beingUsed++; 
-	  	if (active)
-	  	  report ();
-	  }
- ~Progress () 
-    { if (active)
-    	{ report ();
-        if (n)
-     	    cerr << endl;
-    	  beingUsed--;
-    	}
-    }
+	                   size_t displayPeriod_arg = 1);
+ ~Progress ();
     
 
-  bool operator() (const string& step_arg = noString)
-    { n++;
-    	step = step_arg;
-    	if (   active 
-    		  && n % displayPeriod == 0
-    		 )
-    	{ report ();
-    	  return true;
-    	}
-    	return false;
-    }
+  bool operator() (const string& step_arg = noString);
 private:
 	void report () const;
 	  // Output: cerr

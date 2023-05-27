@@ -1689,6 +1689,21 @@ bool StringVector::same (const StringVector &vec,
 
 
 
+void StringVector::to_xml (Xml::File &f,
+                           const string &tag)
+{
+  const Xml::Tag xml (f, tag);
+  for (const string& s : *this)
+  {
+	  const Xml::Tag xml_item (f, "item");
+    f << s;
+  }
+    
+  clear ();
+}
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1729,6 +1744,49 @@ DisjointCluster* DisjointCluster::getDisjointCluster ()
 // Progress
 
 size_t Progress::beingUsed = 0;
+
+
+
+Progress::Progress (size_t n_max_arg,
+	                  size_t displayPeriod_arg)
+: n_max (n_max_arg)
+, active (enabled () && displayPeriod_arg && (! n_max_arg || displayPeriod_arg <= n_max_arg))
+, displayPeriod (displayPeriod_arg)
+{ 
+	if (active) 
+	  beingUsed++; 
+	if (active)
+	  report ();
+}
+
+
+
+Progress::~Progress () 
+{ 
+	if (! active)
+		return;
+
+	report ();
+  if (n)
+    cerr << endl;
+  beingUsed--;
+}
+    
+
+
+bool Progress::operator() (const string& step_arg)
+{ 
+	n++;
+	step = step_arg;
+	if (   active 
+		  && n % displayPeriod == 0
+		 )
+	{ 
+		report ();
+	  return true;
+	}
+	return false;
+}
 
 
 
