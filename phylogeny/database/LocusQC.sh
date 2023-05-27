@@ -47,7 +47,7 @@ fi
 
 echo ">aa" > $TMP.seq
 echo "tttttttttttttttttttttttttt" >> $TMP.seq
-blastn -query $TMP.seq  -db $INC/seq.fa | grep "Number of sequences in database:" | sed 's/,//1' | sed 's/^ *//1' > $TMP.blastn
+blastn -query $TMP.seq  -db $INC/seq.fa | grep "Number of sequences in database:" | sed 's/,//g' | sed 's/^ *//1' > $TMP.blastn
 N=`cat $TMP.seq-fa | wc -l`
 M=(`cat $TMP.blastn`)
 if [ $N -ne ${M[5]} ]; then
