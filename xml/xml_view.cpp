@@ -204,15 +204,12 @@ At line ends: [<# children>|<# nodes in subtree>]\
           const size_t x = row. getDepth () * 2;  // PAR
           if (x)
           {
-            if (i == curIndex)
-            {
-              const NCAttr attr (A_BOLD);
-              addch ('>');
-            } 
-            else
-              addch (' ');
+          	ASSERT (x >= 2);
+            const bool current = (i == curIndex);
+            const NCAttr attr (A_BOLD, current);
             FFOR (size_t, j, x - 1)
-              addch (' ');
+              addch (current ? '>' : ' ');
+            addch (' ');
           }
           if (row. data->children. empty ())
             addch (' ');
