@@ -54,7 +54,7 @@ namespace
 	
 struct Fasta
 {
-  typedef  unordered_map<string/*Peptede::getId()*/,Peptide>  Peptides; 
+  typedef  unordered_map<string/*Peptide::getId()*/,Peptide>  Peptides; 
   Peptides peptides;
   
 
@@ -130,7 +130,8 @@ struct ThisApplication : Application
 
     PositiveAverageModel pam (prot_infoFName, ! separate);  
     cout << "# Targets: " << pam. components. size () << endl;
-    pam. qc ();
+    if (! separate)
+      pam. qc ();
     
     StringVector pamNames;
     for (PositiveAverageModel::Component& comp : pam. components)
@@ -212,6 +213,7 @@ struct ThisApplication : Application
   	    	if (separate)
      	  		td << "nan";
       	}
+    if (! separate)
       pam. qc ();
 
 
