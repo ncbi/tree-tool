@@ -9,6 +9,8 @@ fi
 TREE=$1
 
 
-grep -v '^ *0x' $TREE | sed 's/^ *//1' | sed 's/: .*$//1' 
+if [ -s $TREE ]; then
+  grep -v '^ *0x' $TREE | sed 's/^ *//1' | sed 's/: .*$//1' 
+fi
 
 
