@@ -101,7 +101,7 @@ section "$TMP.dissim-PRT"
 $THIS/../../dissim/hash_request2dissim $TMP.req-PRT $TMP.PRT  -intersection_min $HASH_INTERSECTION_MIN  -ratio_min $HASH_RATIO_MIN   -log $LOG 
 cut -f 3 $TMP.PRT > $TMP.dissim-PRT
 
-echo "$TMP.dissim-CDS ..."
+section "$TMP.dissim-CDS"
 if [ $CDS == 1 ]; then
   req2file $TMP.req 1 "hash-CDS" > $TMP.f1
   req2file $TMP.req 2 "hash-CDS" > $TMP.f2
@@ -127,7 +127,7 @@ paste $TMP.req-dissim-PRT_1 $TMP.dissim-univ_1 > $TMP.req-dissim-univ_1
 cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
   # column 5: d_univ
 
-echo "$TMP.combo ..."
+section "$TMP.combo"
 if [ $CDS == 1 ]; then
   mv $TMP.req-dissim-univ $TMP.combo
 else
