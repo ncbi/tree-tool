@@ -45,7 +45,7 @@ if [ -e log ]; then
 fi
 rm dissim_request
 $THIS/distTree_inc_dissim2indiscern.sh inc inc/dissim
-$THIS/../dm/pairs2dm inc/dissim 1 "dissim" 6 -distance > data.dm
+$THIS/../dm/conversion/pairs2dm inc/dissim 1 "dissim" 6 -distance > data.dm
 
 section "Initial tree (version: 1)"
 VARIANCE=`cat inc/variance`
