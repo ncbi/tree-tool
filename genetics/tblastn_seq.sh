@@ -26,4 +26,4 @@ tblastn  -db $TMP.fa  -query $PROT  -show_gis  -word_size 6  -evalue 1e-10  -db_
 #                                                                                                                                                             1      2      3      4       5    6    7     8     9    10
 
 
-rm $TMP*
+rm -f $TMP*
