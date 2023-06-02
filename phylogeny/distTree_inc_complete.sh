@@ -15,6 +15,14 @@ OBJS=$2
 #set -x
 
 
+VER=`cat $INC/version`
+if [ $VER -ne 1 ]; then
+  error "version must be 1"
+fi
+
+SERVER=`cat $INC/server`
+
+
 #if false; then  
 section "QC $INC/"
 if [ -s $INC/tree ]; then
@@ -42,16 +50,7 @@ if [ -s $INC/runlog ]; then
   error "$INC/runlog must be empty"
 fi
 
-VER=`cat $INC/version`
-if [ $VER -ne 1 ]; then
-  error "version must be 1"
-fi
-
 sort -cu $OBJS
-
-
-SERVER=`cat $INC/server`
-
 
 section "Computing dissimilarities"
 $THIS/../list2pairs $OBJS > $INC/dissim_request
@@ -60,7 +59,7 @@ rm $INC/dissim_request
 $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 
 section "data.dm"
-$THIS/../dm/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
+$THIS/../dm/conversion/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
 grep -wic 'nan$' $INC/../data.dm || true
 
