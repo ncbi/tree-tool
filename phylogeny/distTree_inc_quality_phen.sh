@@ -49,7 +49,7 @@ else
 	sort.sh $TMP.test
 	$THIS/../list2pairs $TMP.test > $TMP.pairs
 	$THIS/distTree_inc_request2dissim.sh $1 $TMP.pairs $TMP.dissim
-	$THIS/../dm/pairs2dm $TMP.dissim 1 cons 6 -distance > $TMP.dm
+	$THIS/../dm/conversion/pairs2dm $TMP.dissim 1 cons 6 -distance > $TMP.dm
 	$THIS/makeDistTree  -data $TMP  -dissim_attr cons  -optimize  -output_tree $TMP.tree  -output_feature_tree $TMP.feature_tree1 | grep "# Discernible leaves:"
 fi
 
