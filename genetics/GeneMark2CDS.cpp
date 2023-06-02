@@ -292,12 +292,18 @@ struct ThisApplication : Application
 	  	    if (spacePos != string::npos)
 	  	      contig. erase (spacePos);
 
-	  	    QC_ASSERT (method == "GeneMark.hmm");  // PAR
+	  	    QC_ASSERT (isLeft (method, "GeneMark.hmm"));  // PAR
 	  	    QC_ASSERT (start <= stop);
 	  	    QC_ASSERT (start >= 1);
 	  	    QC_ASSERT (gene_id_txt == "gene_id");
 	  	    if (type == "exon" /*"CDS"*/)
 	  	    	continue;	
+          if (type == "gene")
+            continue;
+          if (type == "mRNA")
+            continue;
+          if (type == "intron")
+            continue;
 	
 	  	    start--;
 	  	    EXEC_ASSERT (trimPrefix (gene_idS, "\""));
@@ -325,10 +331,6 @@ struct ThisApplication : Application
 	  	      const size_t codonStart = str2<size_t> (frame);
 	  	      QC_ASSERT (codonStart < 3);
 	  	    	cds->exons << Exon (start, stop, codonStart);
-	  	    }
-	  	    else if (type == "intron")
-	  	    {
-	  	    	QC_ASSERT (dot == "0");
 	  	    }
 	  	    else if (   type == "start_codon"
 	  	    	       || type == "stop_codon"
