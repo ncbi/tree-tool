@@ -27,7 +27,7 @@ comment $TMP
 
 $THIS/../list2pairs $LIST > $TMP.req
 $THIS/distTree_inc_request2dissim.sh $INC $TMP.req $TMP.dissim
-$THIS/../dm/pairs2dm $TMP.dissim 1 "cons" 6  -distance > $F.dm
+$THIS/../dm/conversion/pairs2dm $TMP.dissim 1 "cons" 6  -distance > $F.dm
 
 rm $TMP*
 
