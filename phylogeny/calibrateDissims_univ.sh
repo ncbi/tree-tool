@@ -46,7 +46,7 @@ fi
 rm positiveAverage.out
 
 tail -n +5 $TMP.pairs.dm | sed 's/-/ /1' > $TMP.pairs
-$THIS/../dm/pairs2dm $TMP.pairs 1 "cons" 6  -distance > data.dm
+$THIS/../dm/conversion/pairs2dm $TMP.pairs 1 "cons" 6  -distance > data.dm
 
 rm $TMP*  
 
