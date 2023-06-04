@@ -1702,6 +1702,10 @@ struct Xml
         { os << t;
           return *this;
         }
+		void text (const string &s) 
+		  { const Xml::Tag xml (*this, "text");
+		    *this << s;
+		 	}
   };
 };
 
@@ -2581,7 +2585,7 @@ public:
   void to_xml (Xml::File &f,
                const string &tag);
     // XML: <tag> <item>at(0)</item> <item>at(1)</item> ... </tag>
-    // Invokes: clear()
+    // Invokes: sort(), clear()
 
 
   struct Hasher 

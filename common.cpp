@@ -1692,6 +1692,8 @@ bool StringVector::same (const StringVector &vec,
 void StringVector::to_xml (Xml::File &f,
                            const string &tag)
 {
+  sort ();
+
   const Xml::Tag xml (f, tag);
   for (const string& s : *this)
   {
