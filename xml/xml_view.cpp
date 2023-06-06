@@ -32,6 +32,9 @@
 */
 
 
+//#include <locale>
+#include <codecvt>
+
 #undef NDEBUG
 #include "../common.inc"
 
@@ -142,6 +145,10 @@ At line ends: [<# children>|<# nodes in subtree>]\
 		const string xmlFName  = getArg ("xml");
 
 
+    setlocale (LC_ALL, "en_US.UTF-8");  
+    std::wstring_convert <std::codecvt_utf8_utf16<wchar_t>> converter;
+
+
 	  unique_ptr<const Xml_sp::Data> xml;
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
 	  {
@@ -227,7 +234,24 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	          printw (" <%s>", row. data->name. c_str ());
 	        }
           if (! row. data->token. empty ())
-            printw (" %s", row. data->token. name /*str ()*/. c_str ());
+          {
+          	try
+          	{
+          		// wchar_t stores character in UTF-16
+          		static_assert (sizeof (wchar_t) >= 2);
+              std::wstring wstr (converter.from_bytes (row. data->token. name));
+            //wstr.assign(str.begin(), str.end());  ??
+	            printw (" %ls", wstr. c_str ());  
+            }
+            catch (const exception &e)
+            {
+	            printw (" %s", (row. data->token. name + "  (ERROR: " + string (e. what ()) + ")"). c_str ());
+	          #if 0
+	            for (const char c : row. data->token. name)
+	              printw ("  %x", c & 0xFF);
+	          #endif
+            }
+          }
           if (const size_t n = row. data->children. size ())
           {
             printw (" ");
