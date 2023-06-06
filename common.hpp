@@ -524,7 +524,7 @@ static_assert ((size_t) 0 - 1 == no_index);
 // char
 
 inline bool isChar (long long n)
-  { return between<long long> (n, -127, 128); }
+  { return between<long long> (n, -128, 128); }
 
 inline bool isAlpha (char c)
   { return strchr ("abcdefghijklmnopqrstuvwxyz", tolower (c)); }
