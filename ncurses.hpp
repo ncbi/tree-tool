@@ -44,7 +44,7 @@ using namespace Common_sp;
 // Old: ftp://ftp.gnu.org/pub/gnu/ncurses/ncurses.tar.gz
 extern "C"
 {
-  #include <ncurses.h>
+  #include <ncursesw/curses.h>
     // Linking requires: -lncurses
     // Test: test/ncurses
     // $TERM info: infocmp
