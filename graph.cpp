@@ -96,9 +96,7 @@ void DiGraph::Node::saveText (ostream &os) const
   if (orderDfs)
     os << "  DFS_order = " << orderDfs;
   if (scc)
-  {
     os << "  SCC: " << scc->getName ();
-  }
 
   os << endl;  
 	for (const bool b : {false, true})
@@ -496,7 +494,6 @@ void DiGraph::scc ()
 
 void DiGraph::contractScc ()
 {
-#if 1
   for (Iter <List<Node*> > iter (nodes); iter. next (); )
   {
     Node* n = *iter;
@@ -504,21 +501,6 @@ void DiGraph::contractScc ()
     if (n->scc != n)
       n->scc->contract (n);
   }
-#else
-  List<Node*>::iterator it = nodes. begin ();
-  while (it != nodes. end ())
-  {
-    List<Node*>::iterator next = it;
-    next++;
-    
-    Node* n = *it;
-    ASSERT (n->scc);
-    if (n->scc != n)
-      n->scc->contract (n);
-      
-    it = next;
-  }
-#endif
 }
 
 
