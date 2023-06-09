@@ -32,8 +32,11 @@
 */
 
 
-//#include <locale>
-#include <codecvt>
+#define USE_WCHAR 0  
+#if USE_WCHAR
+  #include <codecvt>
+#endif
+
 
 #undef NDEBUG
 #include "../common.inc"
@@ -145,8 +148,10 @@ At line ends: [<# children>|<# nodes in subtree>]\
 		const string xmlFName  = getArg ("xml");
 
 
-    setlocale (LC_ALL, "en_US.UTF-8");  
+    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
+  #if USE_WCHAR
     std::wstring_convert <std::codecvt_utf8_utf16<wchar_t>> converter;
+  #endif
 
 
 	  unique_ptr<const Xml_sp::Data> xml;
@@ -235,12 +240,11 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	        }
           if (! row. data->token. empty ())
           {
+          #if USE_WCHAR
           	try
           	{
           		// wchar_t stores character in UTF-16
-          		static_assert (sizeof (wchar_t) >= 2);
               std::wstring wstr (converter.from_bytes (row. data->token. name));
-            //wstr.assign(str.begin(), str.end());  ??
 	            printw (" %ls", wstr. c_str ());  
             }
             catch (const exception &e)
@@ -251,6 +255,9 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	              printw ("  %x", c & 0xFF);
 	          #endif
             }
+          #else
+            printw (" %s", row. data->token. name. c_str ());  
+          #endif
           }
           if (const size_t n = row. data->children. size ())
           {
