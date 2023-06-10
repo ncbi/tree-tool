@@ -169,7 +169,11 @@ At line ends: [<# children>|<# nodes in subtree>]\
         { ti. error (e. what (), false); }
     }
     ASSERT (xml);
-    var_cast (xml. get ()) -> tag2token ("text");  // PAR
+    
+    // PAR
+    var_cast (xml. get ()) -> tag2token ("text");  
+    var_cast (xml. get ()) -> mergeSingleChildren ();  
+    
     xml->qc ();
     if (verbose ())
     {

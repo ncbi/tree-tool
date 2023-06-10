@@ -659,7 +659,7 @@ void Data::qc () const
   try 
   {
   //QC_IMPLY (colonInName, attribute);
-    QC_IMPLY (! colonInName, isLeft (name, "!")  /*!--"*/ || isIdentifier (name, true));
+    QC_IMPLY (! colonInName && ! merged, isLeft (name, "!")  /*!--"*/ || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
   #if 0
@@ -1005,6 +1005,45 @@ void Data::tag2token (const string &tagName)
 	}
 }
 
+
+
+void Data::mergeSingleChildren ()
+{
+	ASSERT (! merged);
+		
+  while (children. size () == 1)
+  {
+  	ASSERT (! xmlText);
+  	const Data* child = children. front ();  
+  	ASSERT (child);
+  	if (   ! token. empty () 
+  		  && ! child->token. empty ()
+  		  && ! (child->token == token)
+  		 )
+  		break;
+  	name += "/" + child->name;
+  	if (child->colonInName)
+  		colonInName = true;
+  	if (token. empty ())
+	    token = move (var_cast (child) -> token);
+		children. clear ();
+		children = move (var_cast (child) -> children);
+		ASSERT (child->children. empty ());
+		delete child;
+		merged = true;
+		for (const Data* child_ : children)
+		{
+		  ASSERT (child_);
+	    var_cast (child_) -> parent = this;
+		}
+  }
+  
+	for (const Data* child : children)
+	{
+	  ASSERT (child);
+    var_cast (child) -> mergeSingleChildren ();
+	}
+}
 
 
 

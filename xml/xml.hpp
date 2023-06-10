@@ -176,6 +176,7 @@ private:
   bool isEnd {false};
   bool xmlText {false};
   mutable size_t columnTags {0};
+  bool merged {false};
 public:
   
 
@@ -276,6 +277,7 @@ public:
                    const Schema* sch,
                    FlatTable* flatTable) const;
   void tag2token (const string &tagName);
+  void mergeSingleChildren ();
 };
 
 
