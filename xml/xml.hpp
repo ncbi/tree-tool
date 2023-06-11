@@ -178,6 +178,11 @@ private:
   mutable size_t columnTags {0};
   bool merged {false};
 public:
+	
+	bool searchFound {false};
+	bool searchFoundAll {false};
+	  // searchFound => searchFoundAll
+	  // searchFoundAll => parent->searchFoundAll
   
 
   Data (TokenInput &tin,
@@ -252,6 +257,19 @@ public:
     // Update: path: reverse path to *Data containing <what>
     //               valid if Return
     // Invokes: contains()
+  size_t setSearchFound (const string &what,
+				                 bool equalName,
+				                 bool tokenSubstr,
+				                 bool tokenWord);
+    // Return: # Data's
+    // Output: searchFound, searchFoundAll
+    // Invokes: contains()
+  void unsetSearchFound ()
+		{ searchFound    = false;
+			searchFoundAll = false;
+			for (const Data* child : children)
+		    var_cast (child) -> unsetSearchFound ();
+		}
   const Data* name2child (const string &name_arg) const
     { for (const Data* child : children)
         if (child->name == name_arg)

@@ -674,6 +674,8 @@ void Data::qc () const
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));
       // Other characters prohibited in XML ??
+    QC_IMPLY (searchFound, searchFoundAll);
+    QC_IMPLY (parent && searchFoundAll, parent->searchFoundAll);
     for (const Data* child : children)
     {
       QC_ASSERT (child);
@@ -733,24 +735,13 @@ bool Data::contains (const string &what,
                      bool equalName,
                      bool tokenSubstr,
                      bool tokenWord) const
-{
-  if (   ! equalName
-      && ! tokenSubstr
-      && ! tokenWord
-     )
-    return false;
-    
-  if (equalName && name == what)
+{    
+  if (equalName && containsWord (name, what) != string::npos)
     return true;
-
-  if (tokenSubstr || tokenWord)
-  {
-    const string s (token. str ());
-    if (tokenSubstr && Common_sp::contains (s, what))
-      return true;
-    if (tokenWord && containsWord (s, what) != string::npos)
-      return true;
-  }
+  if (tokenSubstr && Common_sp::contains (token. name /*s*/, what))
+    return true;
+  if (tokenWord && containsWord (token. name /*s*/, what) != string::npos)
+    return true;
     
   return false;
 }
@@ -780,6 +771,43 @@ bool Data::find (VectorPtr<Data> &path,
     }
     
   return false;
+}
+
+
+
+size_t Data::setSearchFound (const string &what,
+			  		                 bool equalName,
+				  	                 bool tokenSubstr,
+					                   bool tokenWord)
+{
+  ASSERT (! searchFound);
+  ASSERT (! searchFoundAll);
+
+  size_t n = 0;
+
+  if (   ! equalName
+      && ! tokenSubstr
+      && ! tokenWord
+     )
+    return n;    
+  
+  if (contains (what, equalName, tokenSubstr, tokenWord))
+  {
+    searchFound    = true;
+    searchFoundAll = true;
+    n++;
+    const Data* parent_ = parent;
+    while (parent_ && ! parent_->searchFoundAll)
+    {
+    	var_cast (parent_) -> searchFoundAll = true;
+    	parent_ = parent_->parent;
+    }
+  }
+    
+  for (const Data* child : children)
+    n += var_cast (child) -> setSearchFound (what, equalName, tokenSubstr, tokenWord);
+    
+  return n;
 }
 
 

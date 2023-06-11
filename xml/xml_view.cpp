@@ -66,7 +66,6 @@ struct Row
   size_t nodes {0};
   // Variable
   bool open {false};
-  bool found {false};
   NCurses::Color color {NCurses::colorNone};
 
 
@@ -232,14 +231,14 @@ At line ends: [<# children>|<# nodes in subtree>]\
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
-          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
           {
 	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
             printw ("%lu", row. childNum + 1);
           }
           {
-	          const NCAttrColor attrColor_suf (NCurses::colorGreen); 
+	          const NCAttrColor attrColor_tag (NCurses::colorGreen); 
+	          const NCAttrColor attrFound (NCurses::colorRed, row. data->searchFound || (! row. open && row. data->searchFoundAll));  
+	          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
 	          printw (" <%s>", row. data->name. c_str ());
 	        }
           if (! row. data->token. empty ())
@@ -415,7 +414,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             }
             break;
           case 's':
-          case KEY_F(3):
+          case KEY_F(3):  // Use form ??
             {
               constexpr size_t size = 128;  // PAR
               ASSERT (what. size () <= size);
@@ -437,17 +436,24 @@ At line ends: [<# children>|<# nodes in subtree>]\
               if (*search && what != string (search))
               {
                 what = search;
+              #if 0
                 for (Row& row : rows)
                   row. found = false;
+              #endif
               }
               if (what. empty ())
               {
                 beep ();
                 continue;
               }
-              bool equalName = false;  // PAR ??
+              bool equalName = true;  // PAR ??
               bool tokenSubstr = false; // PAR ??
-              bool tokenWord = true;  // PAR ??
+              bool tokenWord = false;  // PAR ??
+            #if 1
+              var_cast (xml. get ()) -> unsetSearchFound ();
+              if (! var_cast (xml. get ()) -> setSearchFound (what, equalName, tokenSubstr, tokenWord))
+              	beep ();
+            #else
               size_t i = curIndex + rows [curIndex]. found;
               VectorPtr<Xml_sp::Data> path;
               for (; i < rows. size (); i++)
@@ -493,6 +499,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
               rows [curIndex]. found = true;
               if (curIndex >= bottomIndex_max)
                 topIndex = curIndex - pageScroll;
+          #endif
             }
             break;
           case 'c':  // Row::color
