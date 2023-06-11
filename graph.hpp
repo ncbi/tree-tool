@@ -60,7 +60,7 @@ struct DiGraph : Root
     // !nullptr
 
 
-  struct Node : Root, DisjointCluster
+  struct Node : VirtNamed, DisjointCluster
   {
     friend struct DiGraph;
     
@@ -89,7 +89,7 @@ struct DiGraph : Root
     explicit Node (DiGraph &graph_arg)
 			{ attach (graph_arg); }
     Node (const Node &other)
-      : Root (other)
+      : VirtNamed (other)
       , DisjointCluster (other)
       , scc      (other. scc)
       , orderDfs (other. orderDfs)
@@ -108,6 +108,12 @@ struct DiGraph : Root
     virtual void saveContent (ostream &/*os*/) const 
       {}
   public:
+    string getName () const override
+      // Return: !empty()
+	    { ostringstream oss;
+		  	oss << this;
+			  return oss. str ();
+		  }
 
     Node* getDisjointCluster ()
       { return static_cast <Node*> (DisjointCluster::getDisjointCluster ()); }
@@ -115,12 +121,6 @@ struct DiGraph : Root
       // Requires: !graph; no Arc's
       // Invokes: graph_arg.nodes.push_back(this)
       // Time: O(1)
-    virtual string getName () const
-      // Return: !empty()
-	    { ostringstream oss;
-		  	oss << this;
-			  return oss. str ();
-		  }
 		virtual string getHumanName () const
 		  { return getName (); }
 		virtual string getLeafName () const

@@ -58,6 +58,7 @@
   #pragma warning (default : 4005)  
 #endif
 
+#include <cassert>
 #include <cstring>
 #include <cmath>
 #include <string>
@@ -1803,7 +1804,14 @@ template <typename T /*Root*/>
 
 
 
-struct Named : Root
+struct VirtNamed : Root
+{
+	virtual string getName () const = 0;
+};
+
+
+
+struct Named : VirtNamed
 {
   string name;
     // !empty(), no spaces at the ends, printable ASCII characeters
@@ -1818,6 +1826,10 @@ struct Named : Root
     {}
   Named* copy () const override
     { return new Named (*this); } 
+	string getName () const override
+	  { return name; }
+
+
   void qc () const override;
   void saveText (ostream& os) const override
     { os << name; }
@@ -2356,6 +2368,19 @@ template <typename T>
   }  
 
 
+template <typename Key /*VirtNamed*/, typename Value>
+  Vector<pair<string,const Value*>> map2sortedVec (const map <const Key*, Value> &m)
+    { Vector<pair<string,const Value*>> vec;  vec. reserve (m. size ());
+	    for (const auto& it : m)
+	    { assert (it. first);
+	    	assert (& it. second);
+	    	vec << pair<string,const Value*> (it. first->getName (), & it. second);
+	    }
+	    vec. sort ();    	
+	    return vec;
+    }
+    
+
 
 template <typename T /* : Root */>
 struct VectorPtr : Vector <const T*>
@@ -2465,6 +2490,17 @@ template <typename T>
       return enull;
     }
 
+
+template <typename Key /*VirtNamed*/>
+  Vector<pair<string,const Key*>> vec2sorted (const VectorPtr<Key> &in)
+    { Vector<pair<string,const Key*>> vec;  vec. reserve (in. size ());
+	    for (const Key* key : in)
+	    { assert (key);
+	    	vec << pair<string,const Key*> (key->getName (), key);
+	    }
+	    vec. sort ();    	
+	    return vec;
+    }
 
 
 
@@ -2598,6 +2634,18 @@ public:
     }
   };
 };
+
+
+
+template <typename Key /*VirtNamed*/>
+  StringVector set2vec (const set<const Key*> &s)
+    { StringVector vec;  vec. reserve (s. size ());
+	    for (const Key* key : s)
+	    { assert (key);
+	    	vec << key->getName ();
+	    }
+	    return vec;
+    }
 
 
 
@@ -3498,6 +3546,12 @@ public:
     { if (t. empty ())
         throwf ("TokenInput::setLast()");
       last = move (t);
+    }
+  bool getNext (char expected)
+    { Token token (get ());
+      const bool found = token. isDelimiter (expected);
+      setLast (move (token));
+      return found;
     }
 };
 
