@@ -179,8 +179,8 @@ private:
   bool merged {false};
 public:
 	
-	bool searchFound {false};
-	bool searchFoundAll {false};
+	uchar searchFound {0};
+	uchar searchFoundAll {0};
 	  // searchFound => searchFoundAll
 	  // searchFoundAll => parent->searchFoundAll
   
@@ -260,15 +260,16 @@ public:
   size_t setSearchFound (const string &what,
 				                 bool equalName,
 				                 bool tokenSubstr,
-				                 bool tokenWord);
+				                 bool tokenWord,
+					               uchar mask);
     // Return: # Data's
     // Output: searchFound, searchFoundAll
     // Invokes: contains()
-  void unsetSearchFound ()
-		{ searchFound    = false;
-			searchFoundAll = false;
+  void unsetSearchFound (uchar mask)
+		{ searchFound    &= ~mask;
+			searchFoundAll &= ~mask;
 			for (const Data* child : children)
-		    var_cast (child) -> unsetSearchFound ();
+		    var_cast (child) -> unsetSearchFound (mask);
 		}
   const Data* name2child (const string &name_arg) const
     { for (const Data* child : children)

@@ -674,8 +674,8 @@ void Data::qc () const
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));
       // Other characters prohibited in XML ??
-    QC_IMPLY (searchFound, searchFoundAll);
-    QC_IMPLY (parent && searchFoundAll, parent->searchFoundAll);
+    QC_ASSERT (Common_sp::contains (searchFoundAll, searchFound));
+    QC_IMPLY (parent, Common_sp::contains (parent->searchFoundAll, searchFoundAll));
     for (const Data* child : children)
     {
       QC_ASSERT (child);
@@ -778,10 +778,10 @@ bool Data::find (VectorPtr<Data> &path,
 size_t Data::setSearchFound (const string &what,
 			  		                 bool equalName,
 				  	                 bool tokenSubstr,
-					                   bool tokenWord)
+					                   bool tokenWord,
+					                   uchar mask)
 {
-  ASSERT (! searchFound);
-  ASSERT (! searchFoundAll);
+	ASSERT (mask);
 
   size_t n = 0;
 
@@ -793,19 +793,21 @@ size_t Data::setSearchFound (const string &what,
   
   if (contains (what, equalName, tokenSubstr, tokenWord))
   {
-    searchFound    = true;
-    searchFoundAll = true;
+    searchFound    |= mask;
+    searchFoundAll |= mask;
     n++;
     const Data* parent_ = parent;
-    while (parent_ && ! parent_->searchFoundAll)
+    while (   parent_ 
+           && ! Common_sp::contains (parent_->searchFoundAll, mask)
+          )
     {
-    	var_cast (parent_) -> searchFoundAll = true;
+    	var_cast (parent_) -> searchFoundAll |= mask;
     	parent_ = parent_->parent;
     }
   }
     
   for (const Data* child : children)
-    n += var_cast (child) -> setSearchFound (what, equalName, tokenSubstr, tokenWord);
+    n += var_cast (child) -> setSearchFound (what, equalName, tokenSubstr, tokenWord, mask);
     
   return n;
 }
