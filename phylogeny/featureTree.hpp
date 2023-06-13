@@ -348,6 +348,8 @@ protected:
 	         Real time_arg);
 	  // To be followed by: init()
 public:
+  string getName () const override
+    { return id. empty () ? Phyl::getName () : id; }
   void qc () const override;
   void saveContent (ostream& os) const override;
 
@@ -356,8 +358,6 @@ public:
     { return this; }
 
 
-  string getName () const override
-    { return id. empty () ? Phyl::getName () : id; }
 	double getParentDistance () const final;
   void setWeight () final;
     // Input: time, getFeatureTree().lambda0
@@ -466,6 +466,8 @@ public:
 	        Real time_arg)
 		: Species (tree, parent_arg, id_arg, time_arg)
 		{}
+  string getName () const final
+    { return "s" + id; }
   void qc () const override;
   void saveContent (ostream& os) const override;
 
@@ -473,9 +475,6 @@ public:
   const Strain* asStrain () const final
     { return this; }
 
-
-  string getName () const final
-    { return "s" + id; }
   string getNewickName (bool /*minimal*/) const final
     { return string (); }
 	void assignFeatures () final;
@@ -579,6 +578,8 @@ private:
 	  // Output: CoreEval::core, core
 	void init (const Vector<size_t> &featureBatch);
 public:
+  string getName () const final
+    { return "g" + id; }
 	void qc () const override;
 	void saveContent (ostream& os) const override;
 
@@ -586,8 +587,6 @@ public:
   const Genome* asGenome () const final
     { return this; }
 
-  string getName () const final
-    { return "g" + id; }
   string getLeafName () const final
     { return id; }
 	double getParentDistance () const final

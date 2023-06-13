@@ -618,6 +618,8 @@ public:
 	      Steiner* parent_arg,
 	      Real len_arg,
 	      const string &name_arg);
+  string getName () const final
+    { return name; }
 	void qc () const final;
   void saveContent (ostream& os) const final;
   Json* toJson (JsonContainer* parent_arg,
@@ -633,8 +635,6 @@ public:
     { return this; }
 
 
-  string getName () const final
-    { return name; }
   string getNewickName (bool minimal) const final
     { if (minimal)
         return name;

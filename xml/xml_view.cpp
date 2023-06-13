@@ -66,7 +66,6 @@ struct Row
   size_t nodes {0};
   // Variable
   bool open {false};
-  bool found {false};
   NCurses::Color color {NCurses::colorNone};
 
 
@@ -118,7 +117,6 @@ size_t open (Vector<Row> &rows,
 
 
 
-
 size_t openAll (Vector<Row> &rows,
                 size_t curIndex)
 {
@@ -127,6 +125,23 @@ size_t openAll (Vector<Row> &rows,
     opened += open (rows, i);
   return opened;
 }
+
+
+
+NCurses::Color mask2color (uchar mask)
+{
+  if (! mask)
+  	return NCurses::colorNone;
+	switch (uchar2first (mask) % 5)
+	{
+		case 0: return NCurses::colorRed;
+		case 1: return NCurses::colorYellow;
+		case 2: return NCurses::colorMagenta;
+		case 3: return NCurses::colorCyan;
+		case 4: return NCurses::colorWhite;
+	}
+	NEVER_CALL;
+}	
 
 
 
@@ -139,6 +154,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
   	{
       version = VERSION;
   	  addPositional ("xml", "XML file");
+  	  addKey ("search_tags", "Tag names to be searched, comma-delimited");
   	}
 
 
@@ -146,6 +162,9 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	void body () const final
 	{
 		const string xmlFName  = getArg ("xml");
+		const StringVector searchTags (getArg ("search_tags"), ',', true);
+
+    QC_ASSERT (searchTags. size () < 8);  // instruction ??
 
 
     EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
@@ -169,7 +188,22 @@ At line ends: [<# children>|<# nodes in subtree>]\
         { ti. error (e. what (), false); }
     }
     ASSERT (xml);
-    var_cast (xml. get ()) -> tag2token ("text");  // PAR
+    
+    // PAR
+    var_cast (xml. get ()) -> tag2token ("text");  
+    var_cast (xml. get ()) -> mergeSingleChildren ();  
+    
+    if (! searchTags. empty ())
+    {
+    	uchar mask = 1;  // NCurses::Color bits
+    	for (const string& s : searchTags)
+    	{
+    		// Display s/color in search form window ??
+        var_cast (xml. get ()) -> setSearchFound (s, true, false, false, mask);
+    		mask <<= 1;
+      }
+    }
+    
     xml->qc ();
     if (verbose ())
     {
@@ -228,14 +262,19 @@ At line ends: [<# children>|<# nodes in subtree>]\
           else
             addch (row. open ? '-' : '+');
           addch (' ');
-          const NCAttr attrFound (A_BOLD, row. found || row. color != NCurses::colorNone);
-          const NCAttrColor attrColor (row. color, row. color != NCurses::colorNone); 
           {
 	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
             printw ("%lu", row. childNum + 1);
           }
           {
-	          const NCAttrColor attrColor_suf (NCurses::colorGreen); 
+	          const NCAttrColor attrColor_tag (NCurses::colorGreen); 
+	          const uchar mask = row. data->searchFound 
+                                 ? row. data->searchFound 
+                                 : row. open 
+                                 	 ? 0
+                                 	 : row. data->searchFoundAll;
+	          const NCAttrColor attrColor_found (mask2color (mask), mask);  
+	          const NCAttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
 	          printw (" <%s>", row. data->name. c_str ());
 	        }
           if (! row. data->token. empty ())
@@ -411,7 +450,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             }
             break;
           case 's':
-          case KEY_F(3):
+          case KEY_F(3):  // Use form window ??
             {
               constexpr size_t size = 128;  // PAR
               ASSERT (what. size () <= size);
@@ -433,17 +472,25 @@ At line ends: [<# children>|<# nodes in subtree>]\
               if (*search && what != string (search))
               {
                 what = search;
+              #if 0
                 for (Row& row : rows)
                   row. found = false;
+              #endif
               }
               if (what. empty ())
               {
                 beep ();
                 continue;
               }
-              bool equalName = false;  // PAR ??
-              bool tokenSubstr = false; // PAR ??
-              bool tokenWord = true;  // PAR ??
+              bool equalName = true;  
+              bool tokenSubstr = false; 
+              bool tokenWord = false;  
+            #if 1
+              const uchar mask = 2;  // PAR
+              var_cast (xml. get ()) -> unsetSearchFound (mask);
+              if (! var_cast (xml. get ()) -> setSearchFound (what, equalName, tokenSubstr, tokenWord, mask))
+              	beep ();
+            #else
               size_t i = curIndex + rows [curIndex]. found;
               VectorPtr<Xml_sp::Data> path;
               for (; i < rows. size (); i++)
@@ -489,6 +536,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
               rows [curIndex]. found = true;
               if (curIndex >= bottomIndex_max)
                 topIndex = curIndex - pageScroll;
+          #endif
             }
             break;
           case 'c':  // Row::color

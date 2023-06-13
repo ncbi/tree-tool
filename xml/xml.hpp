@@ -176,7 +176,13 @@ private:
   bool isEnd {false};
   bool xmlText {false};
   mutable size_t columnTags {0};
+  bool merged {false};
 public:
+	
+	uchar searchFound {0};
+	uchar searchFoundAll {0};
+	  // searchFound => searchFoundAll
+	  // searchFoundAll => parent->searchFoundAll
   
 
   Data (TokenInput &tin,
@@ -251,6 +257,20 @@ public:
     // Update: path: reverse path to *Data containing <what>
     //               valid if Return
     // Invokes: contains()
+  size_t setSearchFound (const string &what,
+				                 bool equalName,
+				                 bool tokenSubstr,
+				                 bool tokenWord,
+					               uchar mask);
+    // Return: # Data's
+    // Output: searchFound, searchFoundAll
+    // Invokes: contains()
+  void unsetSearchFound (uchar mask)
+		{ searchFound    &= ~mask;
+			searchFoundAll &= ~mask;
+			for (const Data* child : children)
+		    var_cast (child) -> unsetSearchFound (mask);
+		}
   const Data* name2child (const string &name_arg) const
     { for (const Data* child : children)
         if (child->name == name_arg)
@@ -276,6 +296,7 @@ public:
                    const Schema* sch,
                    FlatTable* flatTable) const;
   void tag2token (const string &tagName);
+  void mergeSingleChildren ();
 };
 
 

@@ -659,7 +659,7 @@ void Data::qc () const
   try 
   {
   //QC_IMPLY (colonInName, attribute);
-    QC_IMPLY (! colonInName, isLeft (name, "!")  /*!--"*/ || isIdentifier (name, true));
+    QC_IMPLY (! colonInName && ! merged, isLeft (name, "!")  /*!--"*/ || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
   //QC_ASSERT (! children. empty () || ! text. empty ());
   #if 0
@@ -674,6 +674,8 @@ void Data::qc () const
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));
       // Other characters prohibited in XML ??
+    QC_ASSERT (Common_sp::contains (searchFoundAll, searchFound));
+    QC_IMPLY (parent, Common_sp::contains (parent->searchFoundAll, searchFoundAll));
     for (const Data* child : children)
     {
       QC_ASSERT (child);
@@ -733,24 +735,13 @@ bool Data::contains (const string &what,
                      bool equalName,
                      bool tokenSubstr,
                      bool tokenWord) const
-{
-  if (   ! equalName
-      && ! tokenSubstr
-      && ! tokenWord
-     )
-    return false;
-    
-  if (equalName && name == what)
+{    
+  if (equalName && containsWord (name, what) != string::npos)
     return true;
-
-  if (tokenSubstr || tokenWord)
-  {
-    const string s (token. str ());
-    if (tokenSubstr && Common_sp::contains (s, what))
-      return true;
-    if (tokenWord && containsWord (s, what) != string::npos)
-      return true;
-  }
+  if (tokenSubstr && Common_sp::contains (token. name /*s*/, what))
+    return true;
+  if (tokenWord && containsWord (token. name /*s*/, what) != string::npos)
+    return true;
     
   return false;
 }
@@ -780,6 +771,45 @@ bool Data::find (VectorPtr<Data> &path,
     }
     
   return false;
+}
+
+
+
+size_t Data::setSearchFound (const string &what,
+			  		                 bool equalName,
+				  	                 bool tokenSubstr,
+					                   bool tokenWord,
+					                   uchar mask)
+{
+	ASSERT (mask);
+
+  size_t n = 0;
+
+  if (   ! equalName
+      && ! tokenSubstr
+      && ! tokenWord
+     )
+    return n;    
+  
+  if (contains (what, equalName, tokenSubstr, tokenWord))
+  {
+    searchFound    |= mask;
+    searchFoundAll |= mask;
+    n++;
+    const Data* parent_ = parent;
+    while (   parent_ 
+           && ! Common_sp::contains (parent_->searchFoundAll, mask)
+          )
+    {
+    	var_cast (parent_) -> searchFoundAll |= mask;
+    	parent_ = parent_->parent;
+    }
+  }
+    
+  for (const Data* child : children)
+    n += var_cast (child) -> setSearchFound (what, equalName, tokenSubstr, tokenWord, mask);
+    
+  return n;
 }
 
 
@@ -1005,6 +1035,45 @@ void Data::tag2token (const string &tagName)
 	}
 }
 
+
+
+void Data::mergeSingleChildren ()
+{
+	ASSERT (! merged);
+		
+  while (children. size () == 1)
+  {
+  	ASSERT (! xmlText);
+  	const Data* child = children. front ();  
+  	ASSERT (child);
+  	if (   ! token. empty () 
+  		  && ! child->token. empty ()
+  		  && ! (child->token == token)
+  		 )
+  		break;
+  	name += "/" + child->name;
+  	if (child->colonInName)
+  		colonInName = true;
+  	if (token. empty ())
+	    token = move (var_cast (child) -> token);
+		children. clear ();
+		children = move (var_cast (child) -> children);
+		ASSERT (child->children. empty ());
+		delete child;
+		merged = true;
+		for (const Data* child_ : children)
+		{
+		  ASSERT (child_);
+	    var_cast (child_) -> parent = this;
+		}
+  }
+  
+	for (const Data* child : children)
+	{
+	  ASSERT (child);
+    var_cast (child) -> mergeSingleChildren ();
+	}
+}
 
 
 
