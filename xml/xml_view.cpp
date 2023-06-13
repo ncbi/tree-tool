@@ -128,11 +128,11 @@ size_t openAll (Vector<Row> &rows,
 
 
 
-NCurses::Color mask2color (uchar mask)
+NCurses::Color mask2color (Byte mask)
 {
-  if (! mask)
+  if (mask. none ())
   	return NCurses::colorNone;
-	switch (uchar2first (mask) % 5)
+	switch (byte2first (mask) % 5)
 	{
 		case 0: return NCurses::colorRed;
 		case 1: return NCurses::colorYellow;
@@ -195,7 +195,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     
     if (! searchTags. empty ())
     {
-    	uchar mask = 1;  // NCurses::Color bits
+    	Byte mask = 1;  // NCurses::Color bits
     	for (const string& s : searchTags)
     	{
     		// Display s/color in search form window ??
@@ -268,12 +268,12 @@ At line ends: [<# children>|<# nodes in subtree>]\
           }
           {
 	          const NCAttrColor attrColor_tag (NCurses::colorGreen); 
-	          const uchar mask = row. data->searchFound 
-                                 ? row. data->searchFound 
-                                 : row. open 
-                                 	 ? 0
-                                 	 : row. data->searchFoundAll;
-	          const NCAttrColor attrColor_found (mask2color (mask), mask);  
+	          const Byte mask = row. data->searchFound. any () 
+                                ? row. data->searchFound 
+                                : row. open 
+                               	  ? 0
+                                	: row. data->searchFoundAll;
+	          const NCAttrColor attrColor_found (mask2color (mask), mask. any ());  
 	          const NCAttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
 	          printw (" <%s>", row. data->name. c_str ());
 	        }

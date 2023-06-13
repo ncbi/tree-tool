@@ -362,12 +362,12 @@ Chronometer_OnePass::~Chronometer_OnePass ()
 
 
 
-//
+// Byte
 
-uchar uchar2first (uchar c)
+size_t byte2first (Byte c)
 { 
-	uchar i = 0;
-	uchar mask = 1;
+	size_t i = 0;
+	Byte mask = 1;
 	while (! contains (c, mask))
 	{
 		i++;

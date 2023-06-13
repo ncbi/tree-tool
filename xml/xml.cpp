@@ -779,9 +779,9 @@ size_t Data::setSearchFound (const string &what,
 			  		                 bool equalName,
 				  	                 bool tokenSubstr,
 					                   bool tokenWord,
-					                   uchar mask)
+					                   Byte mask)
 {
-	ASSERT (mask);
+	ASSERT (mask. any ());
 
   size_t n = 0;
 

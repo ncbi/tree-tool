@@ -179,8 +179,8 @@ private:
   bool merged {false};
 public:
 	
-	uchar searchFound {0};
-	uchar searchFoundAll {0};
+	Byte searchFound {0};
+	Byte searchFoundAll {0};
 	  // searchFound => searchFoundAll
 	  // searchFoundAll => parent->searchFoundAll
   
@@ -261,11 +261,11 @@ public:
 				                 bool equalName,
 				                 bool tokenSubstr,
 				                 bool tokenWord,
-					               uchar mask);
+					               Byte mask);
     // Return: # Data's
     // Output: searchFound, searchFoundAll
     // Invokes: contains()
-  void unsetSearchFound (uchar mask)
+  void unsetSearchFound (Byte mask)
 		{ searchFound    &= ~mask;
 			searchFoundAll &= ~mask;
 			for (const Data* child : children)

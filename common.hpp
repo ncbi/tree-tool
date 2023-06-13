@@ -72,6 +72,7 @@
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
+#include <bitset>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -452,13 +453,13 @@ inline void toggle (ebool &b)
 
 
 
-// uchar
+typedef  bitset<8>  Byte;
 
-inline bool contains (uchar who,
-                      uchar what)
+inline bool contains (Byte who,
+                      Byte what)
   { return (who & what) == what; }
 
-uchar uchar2first (uchar c);
+size_t byte2first (Byte c);
   // Return: First 1-bit, 0-based
 
 
