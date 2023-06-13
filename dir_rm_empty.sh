@@ -9,4 +9,4 @@ fi
 DIR=$1
 
 
-trav $DIR "if [ ! -s %d/%f ]; then rm %d/%f; fi" -noprogress
+trav $DIR "if [ ! -s %d/%f ]; then rm %d/%f; fi" 
