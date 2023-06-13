@@ -236,9 +236,11 @@ struct ThisApplication : Application
 	  addFlag ("gtf", "<annot> is a GeneMark .gtf-file, otherwise a GeneMark .lst-file");
 	  addKey ("cds", "Output FASTA DNA file of CDSs");
 	  addKey ("prot", "Output FASTA DNA file of proteins");
-	  addKey ("min_prot_len", "Min. protein length", "20");
+	  addKey ("prot_len_min", "Min. protein length", "20");
+	  addKey ("prot_len_max", "Min. protein length", "50000");
 	  addKey ("gencode", "NCBI genetic code", "0");
-	  addFlag ("complete", "Save only non-truncated, non-ambiguous proteins");
+	  addFlag ("complete", "Save only non-truncated");
+	  addKey ("ambig", "Min. number of ambiguities to discard", "1");
 	//addFlag ("noerror", "Do not abort on errors");
 	}
 
@@ -246,15 +248,17 @@ struct ThisApplication : Application
 
 	void body () const final
 	{
-    const string fastaFName = getArg ("fasta");  
-    const string annotFName = getArg ("annot"); 
-    const bool gtf          = getFlag ("gtf"); 
-    const string cdsFName   = getArg ("cds"); 
-    const string protFName  = getArg ("prot"); 
-    const size_t min_prot_len = str2<size_t> (getArg ("min_prot_len"));
-    const Gencode gencode   = (Gencode) str2<int> (getArg ("gencode"));
-    const bool complete     = getFlag ("complete");
-  //const bool noerror      = getFlag ("noerror");
+    const string fastaFName   = getArg ("fasta");  
+    const string annotFName   = getArg ("annot"); 
+    const bool gtf            = getFlag ("gtf"); 
+    const string cdsFName     = getArg ("cds"); 
+    const string protFName    = getArg ("prot"); 
+    const size_t prot_len_min = str2<size_t> (getArg ("prot_len_min"));
+    const size_t prot_len_max = str2<size_t> (getArg ("prot_len_max"));
+    const Gencode gencode     = (Gencode) str2<int> (getArg ("gencode"));
+    const bool complete       = getFlag ("complete");
+    const size_t ambig        = str2<size_t> (getArg ("ambig"));
+  //const bool noerror        = getFlag ("noerror");
     
     
     if (! gencode)
@@ -454,9 +458,11 @@ struct ThisApplication : Application
 	        	Peptide pep (cdsDna. cds2prot (gencode, cds->trunc5 (), cds->trunc3 (), true, true /*'tar' etc.*/));
 	        	pep. name += " " + cdsDna. getDescription (false);
 	        	pep. qc ();
-	        	if (pep. seq. size () < min_prot_len)
+	        	if (pep. seq. size () < prot_len_min)
 	        		continue;
-	        	if (complete && pep. getXs ())
+	        	if (pep. seq. size () > prot_len_max)
+	        		continue;
+	        	if (pep. getXs () >= ambig)
 	        		continue;
 	        	if (cdsF)
 	        	  cdsDna. saveText (*cdsF);
