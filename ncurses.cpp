@@ -92,9 +92,9 @@ void NCurses::resize ()
   col_max = (size_t) col_max_;
 }
 
-
-
-
+	
+	
+	
 // NCAttr
 
 

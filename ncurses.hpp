@@ -68,8 +68,10 @@ struct NCurses : Singleton<NCurses>
   size_t row_max {0};
   size_t col_max {0};
   
+  
   explicit NCurses (bool hideCursor);
  ~NCurses ();
+
 
   void resize ();
 };
@@ -80,6 +82,7 @@ struct NCAttr : Root
 {
   const attr_t attr;
   const bool active;
+
 
   explicit NCAttr (attr_t attr_arg,
                    bool active_arg = true);
@@ -100,6 +103,7 @@ struct NCAttrColor : NCAttr
 struct NCBackground 
 {
   const chtype background_old;
+
   
   explicit NCBackground (chtype background);
  ~NCBackground ();
