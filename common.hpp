@@ -452,6 +452,18 @@ inline void toggle (ebool &b)
 
 
 
+// uchar
+
+inline bool contains (uchar who,
+                      uchar what)
+  { return (who & what) == what; }
+
+uchar uchar2first (uchar c);
+  // Return: First 1-bit, 0-based
+
+
+//
+
 inline void advance (size_t &index, 
                      size_t size)
   // Update: index: < size

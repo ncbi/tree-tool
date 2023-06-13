@@ -364,6 +364,23 @@ Chronometer_OnePass::~Chronometer_OnePass ()
 
 //
 
+uchar uchar2first (uchar c)
+{ 
+	uchar i = 0;
+	uchar mask = 1;
+	while (! contains (c, mask))
+	{
+		i++;
+		mask <<= 1;
+	}
+	return i;
+}
+
+
+
+
+//
+
 namespace
 {
 	
