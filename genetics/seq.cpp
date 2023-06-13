@@ -150,9 +150,9 @@ Seq::Seq (LineInput &fasta,
      	    bool makeUpper)
 : sparse (sparse_arg)
 {
-	ASSERT (! fasta. eof);
-	ASSERT (! fasta. line. empty ());
-  ASSERT (fasta. line [0] == '>');
+	QC_ASSERT (! fasta. eof);
+	QC_ASSERT (! fasta. line. empty ());
+  QC_ASSERT (fasta. line [0] == '>');
   name = fasta. line. substr (1);
   replace (name, '\t', ' ');
   qcName ();
@@ -476,7 +476,12 @@ byte* String2Qual (char* S,
 
 void Multifasta::qcNewSeq () const
 {
-	QC_IMPLY (! in. eof, ! in. line. empty () && in. line [0] == '>'); 
+	if (   ! in. eof 
+	    && ! (   ! in. line. empty () 
+	          && in. line [0] == '>'
+	         )
+	   )
+	  throw runtime_error ("Error in Multifasta, line: " + to_string (in. lineNum));   
 }
 
 	  
