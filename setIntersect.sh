@@ -20,6 +20,7 @@ fi
 
 TMP=`mktemp` 
 #echo $TMP
+#set -x
 
 $THIS/setMinus $NUM $L1 $L2 > $TMP
 $THIS/setMinus $NUM $L1 $TMP
