@@ -17,11 +17,11 @@ TMP=`mktemp`
 prodigal  -o /dev/null  -i $1  -d $TMP.cds1 &> /dev/null 
 prodigal  -o /dev/null  -i $2  -d $TMP.cds2 &> /dev/null
 
-$THIS/fasta2hash $TMP.cds1 $TMP.hash-CDS1  -cds  -gene_finder prodigal              -min_prot_len 150 &> /dev/null
-$THIS/fasta2hash $TMP.cds1 $TMP.hash-PRT1  -cds  -gene_finder prodigal  -translate  -min_prot_len 150 &> /dev/null 
+$THIS/fasta2hash $TMP.cds1 $TMP.hash-CDS1  -cds  -gene_finder prodigal              -prot_len_min 150 &> /dev/null
+$THIS/fasta2hash $TMP.cds1 $TMP.hash-PRT1  -cds  -gene_finder prodigal  -translate  -prot_len_min 150 &> /dev/null 
 
-$THIS/fasta2hash $TMP.cds2 $TMP.hash-CDS2  -cds  -gene_finder prodigal              -min_prot_len 150 &> /dev/null
-$THIS/fasta2hash $TMP.cds2 $TMP.hash-PRT2  -cds  -gene_finder prodigal  -translate  -min_prot_len 150 &> /dev/null
+$THIS/fasta2hash $TMP.cds2 $TMP.hash-CDS2  -cds  -gene_finder prodigal              -prot_len_min 150 &> /dev/null
+$THIS/fasta2hash $TMP.cds2 $TMP.hash-PRT2  -cds  -gene_finder prodigal  -translate  -prot_len_min 150 &> /dev/null
 
 CDS1=`cat $TMP.hash-CDS1 | wc -l`
 CDS2=`cat $TMP.hash-CDS2 | wc -l`
