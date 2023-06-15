@@ -38,10 +38,10 @@ else
 fi
 
 MIN_PROT_LEN=150
-$THIS/fasta2hash $NAME.cds $NAME.hash-CDS  -log $LOG  -cds  -gene_finder $GENE_FINDER              -min_prot_len $MIN_PROT_LEN  
-$THIS/fasta2hash $NAME.cds $NAME.hash-PRT  -log $LOG  -cds  -gene_finder $GENE_FINDER  -translate  -min_prot_len $MIN_PROT_LEN  
+$THIS/fasta2hash $NAME.cds $NAME.hash-CDS  -log $LOG  -cds  -gene_finder $GENE_FINDER              -prot_len_min $MIN_PROT_LEN  
+$THIS/fasta2hash $NAME.cds $NAME.hash-PRT  -log $LOG  -cds  -gene_finder $GENE_FINDER  -translate  -prot_len_min $MIN_PROT_LEN  
 
-$THIS/fasta2hash $NAME.cds $NAME.hash-PRT1 -log $LOG  -cds  -gene_finder $GENE_FINDER  -translate  -min_prot_len 0  -ambig 10  -out_prot $NAME.prot
+$THIS/fasta2hash $NAME.cds $NAME.hash-PRT1 -log $LOG  -cds  -gene_finder $GENE_FINDER  -translate  -prot_len_min 0  -ambig 10  -out_prot $NAME.prot
 rm $NAME.hash-PRT1
 
 rm $NAME.cds
