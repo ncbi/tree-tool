@@ -99,8 +99,8 @@ struct ThisApplication : Application
 	  addFlag ("reduce", "Reduce 20 amino acids to 13 characters");
 	  addKey ("ambig", "Max. numbre of allowed ambiguous characters in sequences", "0");
     addKey ("kmer", "Cut the sequences into k-mers of this size. 0 - do not cut", "0");
-	  addKey ("min_prot_len", "Min. protein length of input sequences", "0");
-	  addKey ("max_hashes", "Max. number of hashes to print. 0 - print all", "0");
+	  addKey ("prot_len_min", "Min. protein length of input sequences", "0");
+	  addKey ("hashes_max", "Max. number of hashes to print. 0 - print all", "0");
 	  addKey ("target_hashes", "Target hashes");
 	  addFlag ("named", "Save hashes with sequence names");
 	  // Output
@@ -121,8 +121,8 @@ struct ThisApplication : Application
     const bool reduce          =               getFlag ("reduce");
     const size_t ambig         = str2<size_t> (getArg ("ambig"));
     const size_t kmer          = str2<size_t> (getArg ("kmer"));
-    const size_t prot_len_min  = str2<size_t> (getArg ("min_prot_len"));
-    const size_t max_hashes    = str2<size_t> (getArg ("max_hashes"));
+    const size_t prot_len_min  = str2<size_t> (getArg ("prot_len_min"));
+    const size_t hashes_max    = str2<size_t> (getArg ("hashes_max"));
     const string target_hashes =               getArg ("target_hashes");
     const bool   named         =               getFlag ("named");
     const string out           =               getArg ("out"); 
@@ -253,9 +253,9 @@ struct ThisApplication : Application
       hashes. uniq ();
       cout << "Unique hashes: " << hashes. size () << endl;    
       {
-        if (max_hashes)
+        if (hashes_max)
         {
-          const size_t size = min (hashes. size (), max_hashes);
+          const size_t size = min (hashes. size (), hashes_max);
           FOR (size_t, i, size)
             fOut << hashes [i] << endl;
         }
