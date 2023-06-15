@@ -1,24 +1,24 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
-if [ $# -ne 5 ]; then
+if [ $# -ne 3 ]; then
   echo "Find contigs with identical protein hash codes in two GenBank eukaryotic assemblies"
+  echo "Output: #2-#3 (list of contigs in #1 common with #2), #3-#2 (list of contigs in #2 common with #1)"
   echo "#1: genome/ (large directory)"
   echo "#2: assembly 1 FASTA (named as fullasm_id)"
   echo "#3: assembly 2 FASTA (named as fullasm_id)"
-  echo "#4: output list of contigs in #1 common with #2"
-  echo "#5: output list of contigs in #2 common with #1"
   exit 1
 fi
 GENOME_DIR=$1
 ASM=($2 $3)
-OUT=($4 $5)
 
 
 TMP=`mktemp`
-#echo $TMP 
+comment $TMP 
 #set -x
 
+
+OUT=(${ASM[0]}-${ASM[1]} ${ASM[1]}-${ASM[0]})
 
 NAME=()
 HASH=()
@@ -34,9 +34,10 @@ wc -l $TMP.hash_common
 function run 
 {
   local i=$1
-  echo "Process ${ASM[$i]} ..."
+  section "Making ${OUT[$i]}"
+  $THIS/../../check_file.sh $GENOME_DIR/${HASH[$i]}/${NAME[$i]}/genemark.gtf.gz
   zcat $GENOME_DIR/${HASH[$i]}/${NAME[$i]}/genemark.gtf.gz > $TMP.genemark.gtf.$i
-  $THIS/../../genetics/GeneMark2CDS ${ASM[$i]} $TMP.genemark.gtf.$i  -gtf  -gencode 1  -cds $TMP.cds.$i  -min_prot_len 150  -complete  -qc &> /dev/null
+  $THIS/../../genetics/GeneMark2CDS ${ASM[$i]} $TMP.genemark.gtf.$i  -gtf  -gencode 1  -cds $TMP.cds.$i  -prot_len_min 150  -complete  -qc &> /dev/null
   $THIS/../../genetics/fasta2hash  $TMP.cds.$i  $TMP.out  -gene_finder "GeneMark"  -cds  -translate  -target_hashes $TMP.hash_common  -target_seq $TMP.contig.$i  &> /dev/null
   echo -e "#CDSs\tContig" > $TMP.contig.tsv
   cut -f 1 -d ' ' $TMP.contig.$i | sed 's/\.[0-9]\+$//1' | sort | uniq -c | sed 's/^ *//1' | tr ' ' '\t' >> $TMP.contig.tsv
