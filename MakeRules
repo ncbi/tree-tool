@@ -105,7 +105,7 @@ $(GEN_DIR)/gff.o: $(GEN_DIR)/gff.hpp $(COMMON_RAW_HPP)
 
 
 DISSIM_DIR = $(CPP_DIR)/dissim
-$(DISSIM_DIR)/evolution.o: $(NUMERIC_OBJ) $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
+$(DISSIM_DIR)/evolution.o:	$(DISSIM_DIR)/evolution.hpp $(NUMERIC_HPP)
 EVOLUTION_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/optim.o $(DM_DIR)/matrix.o $(DISSIM_DIR)/evolution.o
 
 NW_DIR = $(DISSIM_DIR)/nw
@@ -114,7 +114,6 @@ $(NW_DIR)/nw_band_aligner.o: $(NW_DIR)/nw_band_aligner.hpp
 $(NW_DIR)/raw_scoremat.o:
 	cc  -malign-double -fno-math-errno -fdiagnostics-color=always  -O3 -c -o $(NW_DIR)/raw_scoremat.o $(NW_DIR)/raw_scoremat.c
 
-$(DISSIM_DIR)/evolution.o:	$(DISSIM_DIR)/evolution.hpp $(NUMERIC_HPP)
 $(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(DISSIM_DIR)/evolution.hpp $(COMMON_RAW_HPP)
 ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
 
