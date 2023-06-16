@@ -247,23 +247,20 @@ At line ends: [<# children>|<# nodes in subtree>]\
         {
           const Row& row = rows [i];
           move ((int) (i - topIndex), 0);
-          const size_t x = row. getDepth () * 2;  // PAR
-          if (x)
           {
-          	ASSERT (x >= 2);
             const bool current = (i == curIndex);
-            const NCAttr attr (A_BOLD, current);
-            FFOR (size_t, j, x - 1)
-              addch (current ? '>' : ' ');
-            addch (' ');
-          }
-          if (row. data->children. empty ())
-            addch (' ');
-          else
-            addch (row. open ? '-' : '+');
+	          const NCAttr attr (A_REVERSE, current);
+	          const size_t x = row. getDepth () * 2;  // PAR
+	          FFOR (size_t, j, x)
+	            addch (' ');
+	          if (row. data->children. empty ())
+	            addch (' ');
+	          else
+	            addch (row. open ? '-' : '+');
+	        }
           addch (' ');
           {
-	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
+	          const NCAttrColor attrColor (NCurses::colorBlue); 
             printw ("%lu", row. childNum + 1);
           }
           {
@@ -486,7 +483,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
               bool tokenSubstr = false; 
               bool tokenWord = false;  
             #if 1
-              const uchar mask = 2;  // PAR
+              const uchar mask = 1;  // PAR
               var_cast (xml. get ()) -> unsetSearchFound (mask);
               if (! var_cast (xml. get ()) -> setSearchFound (what, equalName, tokenSubstr, tokenWord, mask))
               	beep ();
