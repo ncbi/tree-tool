@@ -161,7 +161,7 @@ public:
 
 
 
-struct Data : Named
+struct Data : Named  // --> VirtNamed with Enumerate<string> names ??
 {
   // Tree
   const Data* parent {nullptr};

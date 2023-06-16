@@ -1709,6 +1709,9 @@ bool StringVector::same (const StringVector &vec,
 void StringVector::to_xml (Xml::File &f,
                            const string &tag)
 {
+  if (empty ())
+  	return;
+
   sort ();
 
   const Xml::Tag xml (f, tag);
