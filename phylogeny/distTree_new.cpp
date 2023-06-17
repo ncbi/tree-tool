@@ -72,6 +72,7 @@ Update: <incremental distance tree directory>/search/")
 		  // Output
 		  addKey ("request", "Output file of the format: <obj1> <obj2>");
 		  addKey ("leaf", "Output file of the format: <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>");
+		  addKey ("result", "Output file with dissimllarity-distance pairs");
 		}
 	
 	
@@ -92,6 +93,7 @@ Update: <incremental distance tree directory>/search/")
 	  const string dissimFName   = getArg ("dissim");
 	  const string requestFName  = getArg ("request");
 	  const string leafFName     = getArg ("leaf");
+	  const string resultFName   = getArg ("result");
 	   
 	   
     if (name. empty () && ! isDirName (dataDir))
@@ -142,6 +144,7 @@ Update: <incremental distance tree directory>/search/")
     {
       const NewLeaf nl (*tree, name, dissimFName, leafFName, requestFName, init);
       nl. qc ();
+      nl. saveResult (resultFName);
     }
 	}
 };

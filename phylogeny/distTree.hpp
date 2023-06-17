@@ -1727,10 +1727,10 @@ public:
   
 
   struct Location : Root
+  // Currently best for NewLeaf
   {
     const DTNode* anchor {nullptr};
-      // Current best position of NewLeaf
-      // = LCA of Leaf2dissim::leaf's or NewLeaf::tree.root
+      // "Base"
     Real anchorLen {NaN};
       // >= anchor->len
       // Distance to the previous anchor
@@ -1747,7 +1747,7 @@ public:
         os         << anchor->getLcaName ()
            << '\t' << leafLen 
            << '\t' << arcLen  
-           // Not used 
+           // Not used in distTree_inc.sh
            << '\t' << anchorLen
            << '\t' << anchor->len
            << '\t' << absCriterion_leaf;
@@ -1788,10 +1788,10 @@ public:
       { return dissim - dist_hat; }
     Real getU () const
       { return leafIsBelow ? 1.0 : -1.0; }
+    Real getDistance (const Location& loc) const
+      { return dist_hat + loc. arcLen * getU () + loc. leafLen; }
     Real getEpsilon (const Location& loc) const
-      { const Real leaf_dist_hat = dist_hat + loc. arcLen * getU () + loc. leafLen;
-        return dissim - leaf_dist_hat;
-      }
+      { return dissim - getDistance (loc); }
       
     bool operator< (const Leaf2dissim &other) const
       { return leaf < other. leaf; }
@@ -1867,6 +1867,15 @@ private:
     // Time: O(q log(n))
 public:
   void qc () const override;
+
+
+  void saveResult (const string &fName) const
+    { if (fName. empty ())
+        return;
+      OFStream f (fName);
+      for (const Leaf2dissim& ld : leaf2dissims)
+        f << ld. leaf->name << '\t' << ld. dissim << '\t' << ld. getDistance (location) << endl;
+    }
 };
 
 

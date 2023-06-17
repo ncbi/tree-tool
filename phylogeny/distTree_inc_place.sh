@@ -1,30 +1,34 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Find the place of a sequence in a sequence incremental tree"
   echo "Print: <new sequence name> <tree node> <new leaf arc length> <tree node arc length>"
   echo "#1: incremental tree directory"
-  echo "#2: new object file or directory"
+  echo "#2: new object file"
+  echo "#3: output of dissimilarity-distances pairs for 100 closest objects"
   exit 1
 fi
 INC=$1  
 QUERY=$2
+RES=$3
 
 
 $INC/qc_object.sh $QUERY
 
 
 TMP=`mktemp`  
-#echo $TMP  
+comment $TMP  
 #set -x
 
-NAME=`basename $QUERY`
 
-grep '^ *'$NAME':' $INC/tree > $TMP.grep || true
+NAME=`basename $QUERY`
+TREE=$INC/tree.released
+
+grep '^ *'$NAME':' $TREE > $TMP.grep || true
 if [ -s $TMP.grep ]; then
   rm $TMP*
-  error "$NAME is already in $INC/tree"
+  error "$NAME is already in $TREE"
 fi
 
 section "Finding closest objects"
@@ -35,7 +39,8 @@ cp /dev/null $TMP.dissim
 echo "FAIL" > $TMP.leaf
 VARIANCE=`cat $INC/variance`
 while [ -s $TMP.request ]; do
-  printf "."
+ #printf "."
+  wc -l $TMP.request
   $INC/pairs2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log  &> /dev/null
   rm $TMP.request
   grep -vwi "nan$" $TMP.dissim-add | grep -vwi "inf$" > $TMP.dissim-add1 || true
@@ -45,12 +50,14 @@ while [ -s $TMP.request ]; do
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
-  $THIS/distTree_new  $INC/tree  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf
+  $THIS/distTree_new  $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -result $TMP.res
 done
-echo ""
-echo ""
 
-cat $TMP.leaf | cut -f 1,2,3,4
+section "Placement"
+cut -f 1,2,3,4 $TMP.leaf
+
+sort -k3,3g $TMP.res > $TMP.sort
+head -100 $TMP.sort > $RES
 
 
 rm -fr $TMP*
