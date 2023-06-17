@@ -29,7 +29,7 @@ PROT_CUT=$PREFIX.prot-univ
 
 if [ -s $IN ]; then
   TMP=`mktemp`
-  #echo $TMP
+  #comment $TMP
 
   CUTOFF_PAR=""
   if [ $CUTOFF == 1 ]; then
