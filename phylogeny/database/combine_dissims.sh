@@ -5,7 +5,7 @@ if [ $# -ne 12 ]; then
   echo "Compute dissimilarities"
   echo " #1: file with pairs <object1> <object2>"
   echo " #2: directory with: <object hash>/<object>/<object>.hash-{CDS|PRT}"
-  echo " #3: directory with a new object data or ''"
+  echo " #3: new object path or ''"
   echo " #4: output file: <object1> <object2> <dissimilarity>"
   echo " #5: hashes intersection_min"
   echo " #6: hashes ratio_min"
@@ -19,7 +19,7 @@ if [ $# -ne 12 ]; then
 fi
 REQ=$1
 GENOME_DIR=$2
-NEW_DIR="$3"
+NEW_OBJ="$3"
 OUT=$4
 HASH_INTERSECTION_MIN=$5
 HASH_RATIO_MIN=$6
@@ -75,15 +75,15 @@ TMP=`mktemp`
 
 function req2file
 {
-  REQ_=$1
-  COL=$2  # 1|2
-  SUF=$3
+  local REQ_=$1
+  local COL=$2  # 1|2
+  local SUF=$3
   #
   cut -f $COL $REQ_ > $TMP.req2file_req
   $THIS/../../file2hash $TMP.req2file_req -file -append  -log $LOG  -noprogress | awk '{printf "'$GENOME_DIR'/%s/%s/%s.'$SUF'\n", $1, $2, $2};' > $TMP.req2file_col
-  if [ $NEW_DIR ]; then
-    NAME=`basename $NEW_DIR`
-    sed 's|^\(.*/'$NAME'\.'$SUF'\)$|'$NEW_DIR/$NAME'.'$SUF'|1' $TMP.req2file_col
+  if [ $NEW_OBJ ]; then
+    local NAME=`basename $NEW_OBJ`
+    sed 's|^\(.*/'$NAME'\.'$SUF'\)$|'$NEW_OBJ'.'$SUF'|1' $TMP.req2file_col
   else
     cat $TMP.req2file_col
   fi
