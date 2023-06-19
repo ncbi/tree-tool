@@ -250,11 +250,14 @@ At line ends: [<# children>|<# nodes in subtree>]\
           {
             const bool current = (i == curIndex);
 	          const NCAttr attr (A_REVERSE, current);
-	          const size_t x = row. getDepth () * 2;  // PAR
+	          const size_t x = row. getDepth ();  
 	          FFOR (size_t, j, x)
+	          {
+	            addch ('|');
 	            addch (' ');
+	          }
 	          if (row. data->children. empty ())
-	            addch (' ');
+	            addch ('|');
 	          else
 	            addch (row. open ? '-' : '+');
 	        }
