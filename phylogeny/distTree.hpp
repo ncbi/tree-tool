@@ -638,7 +638,7 @@ public:
   string getNewickName (bool minimal) const final
     { if (minimal)
         return name;
-      string s = name + prepend (" ", comment); 
+      string s = name + prependS (comment, " "); 
       if (! isNan (normCriterion))
         s += " " + real2str (normCriterion, 1, false);  // PAR
       return s;

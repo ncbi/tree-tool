@@ -1062,6 +1062,14 @@ inline string prependS (const string &s,
                         const string &prefix)
   { return s. empty () ? noString : (prefix + s); }
   	
+inline void add (string &to,
+                 char delimiter,
+		             const string &what)
+  { if (! to. empty ())
+  	  to += delimiter;
+  	to += what;
+  }
+
 inline bool isQuoted (const string &s,
                       char quote = '\"')
   { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
@@ -1071,13 +1079,6 @@ string strQuote (const string &s,
 
 inline string unQuote (const string &s)
   { return s. substr (1, s. size () - 2); }
-
-inline string prepend (const string &prefix,
-                    	 const string &s)
-  { if (s. empty ())
-  	  return noString;
-  	return prefix + s;
-  }
 
 bool strBlank (const string &s);
 
@@ -1239,9 +1240,6 @@ string str2streamWord (const string &s,
 
 string str2sql (const string &s);
   // Return: ' s ' (replacing ' by '')
-
-//string sql2escaped (const string &s);
-
 
 string findSplit (string &s,
                   char c = ' ');
