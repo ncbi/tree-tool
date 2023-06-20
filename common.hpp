@@ -1667,12 +1667,14 @@ struct Xml
   struct Tag
   {
   private:
-    const string name;
     File &f;
   public:
+    const string name;
+    const bool active;
 
     Tag (File &f_arg,
-         const string &name_arg);
+         const string &name_arg,
+         bool active_arg = true);
    ~Tag ();
   };
   
