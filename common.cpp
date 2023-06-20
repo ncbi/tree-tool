@@ -1538,10 +1538,14 @@ Threads::~Threads ()
 // Xml::Tag
 
 Xml::Tag::Tag (Xml::File &f_arg,
-               const string &name_arg)
-: name (name_arg)
-, f (f_arg)
+               const string &name_arg,
+               bool active_arg)
+: f (f_arg)
+, name (name_arg)
+, active (active_arg)
 { 
+	if (name. empty ())
+		throw runtime_error (FUNC "Empty XML tag name");
   if (contains (name, ' '))
     throwf ("tag name contains a space: " + strQuote (name_arg));
   if (f. printOffset)
@@ -1551,7 +1555,8 @@ Xml::Tag::Tag (Xml::File &f_arg,
     FOR (size_t, i, f. offset * File::offset_spaces)
       f. print (" ");
   }
-  if (! name. empty ())
+//if (! name. empty ())
+  if (active)
     f. print ("<" + name + ">");
 }
 
@@ -1574,7 +1579,8 @@ Xml::Tag::~Tag ()
       f. offset--;
     }    
   }
-  if (! name. empty ())
+//if (! name. empty ())
+  if (active)
     f. print ("</" + name + ">");
   if (! f. printOffset)
     f. print ("\n");
