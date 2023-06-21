@@ -42,15 +42,14 @@
 #include "../common.inc"
 
 #include "../common.hpp"
-using namespace Common_sp;
-#include "xml.hpp"
 #include "../ncurses.hpp"
+using namespace Common_sp;
 #include "../version.inc"
+#include "xml.hpp"
 
 
 
 #define ctrl(x)     ((x) & 0x1f)
-
 
 
 
@@ -84,50 +83,6 @@ struct Row
 
 
 
-void drawMenu (NCurses &nc,
-               size_t fieldSize, 
-               const string &s)
-{
-  move ((int) fieldSize, 0);
-  const NCAttr attr (A_REVERSE);
-  const NCBackground bkgr (nc. background | A_REVERSE);
-  addstr (s. c_str ());
-  clrtoeol ();
-}
-
-
-
-size_t open (Vector<Row> &rows,
-             size_t curIndex)
-{
-  ASSERT (! rows [curIndex]. open);
-  const VectorOwn<Xml_sp::Data>& children = rows [curIndex]. data->children;
-  if (children. empty ())
-    return 0;
-  rows [curIndex]. open = true;
-  auto itStart = rows. begin ();
-  advance (itStart, curIndex + 1);
-  Vector<Row> newRows;
-  newRows. reserve (children. size ());
-  FFOR (size_t, i, children. size ())
-    newRows << Row (children [i], i);
-  rows. insert (itStart, newRows. begin (), newRows. end ());
-  return newRows. size ();
-}
-
-
-
-size_t openAll (Vector<Row> &rows,
-                size_t curIndex)
-{
-  size_t opened = 0;
-  FOR_START (size_t, i, curIndex, curIndex + 1 + opened )
-    opened += open (rows, i);
-  return opened;
-}
-
-
-
 NCurses::Color mask2color (Byte mask)
 {
   if (mask. none ())
@@ -145,80 +100,33 @@ NCurses::Color mask2color (Byte mask)
 
 
 
-struct ThisApplication : Application
+struct Viewer
 {
-  ThisApplication ()
-    : Application ("View an XML file.\n\
-At line ends: [<# children>|<# nodes in subtree>]\
-")
-  	{
-      version = VERSION;
-  	  addPositional ("xml", "XML file");
-  	  addKey ("search_tags", "Tag names to be searched, comma-delimited");
+	const string xmlFName;
+	const Xml_sp::Data& xml;
+  Vector<Row> rows;  
+  size_t topIndex {0};
+  size_t curIndex {0};
+  string what;  // For search
+  NCurses nc;
+
+
+  Viewer (const string& xmlFName_arg,
+          const Xml_sp::Data* xml_arg)
+  	: xmlFName (xmlFName_arg)
+  	, xml (*xml_arg)
+  	, nc (true)
+  	{ 
+  		ASSERT (xml_arg);
+  		rows. reserve (10000);  // PAR
+		  rows << Row (xml_arg, 0);
   	}
-
-
-
-	void body () const final
-	{
-		const string xmlFName  = getArg ("xml");
-		const StringVector searchTags (getArg ("search_tags"), ',', true);
-
-    QC_ASSERT (searchTags. size () < 8);  // instruction ??
-
-
-    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
-  #if USE_WCHAR
-    std::wstring_convert <std::codecvt_utf8_utf16<wchar_t>> converter;
-  #endif
-
-
-	  unique_ptr<const Xml_sp::Data> xml;
-	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  {
-  	  TokenInput ti (xmlFName, '\0', true, false, 10000);  // PAR
-      try
-      {
-        Unverbose unv;
-        xml. reset (new Xml_sp::Data (ti, markupDeclarations));
-      }
-      catch (const CharInput::Error &e)
-        { throw e; }
-      catch (const exception &e)
-        { ti. error (e. what (), false); }
-    }
-    ASSERT (xml);
-    
-    // PAR
-    var_cast (xml. get ()) -> tag2token ("text");  
-    var_cast (xml. get ()) -> mergeSingleChildren ();  
-    
-    if (! searchTags. empty ())
-    {
-    	Byte mask = 1;  // NCurses::Color bits
-    	for (const string& s : searchTags)
-    	{
-    		// Display s/color in search form window ??
-        var_cast (xml. get ()) -> setSearchFound (s, true, false, false, mask);
-    		mask <<= 1;
-      }
-    }
-    
-    xml->qc ();
-    if (verbose ())
-    {
-      Xml::File f ("xml_view.xml", false, false, "XML");
-      xml->saveXml (f);
-    }
-
-
-    Vector<Row> rows;  rows. reserve (10000);  // PAR
-    rows << Row (xml. get (), 0);
-    size_t topIndex = 0;
-    size_t curIndex = topIndex;
-    string what;  // For search
-    NCurses nc (true);
-    bool quit = false;
+  	
+  	
+  void run ()
+  {
+    setTopIndex (nc. row_max - 1, open (curIndex));
+	  bool quit = false;
     while (! quit)
     {
       ASSERT (! rows. empty ());
@@ -240,7 +148,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
         ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (nc, fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  F10,q:Quit");
+        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  F10,q:Quit");
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -405,7 +313,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
           case 531 /*ctrl(KEY_END)*/:
             do
               curIndex = rows. size () - 1;
-            while (open (rows, curIndex));
+            while (open (curIndex));
             topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             break;
           case 10:
@@ -413,13 +321,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             if (rows [curIndex]. data->children. empty ())
               beep ();
             else if (! rows [curIndex]. open)
-            {
-              const size_t n = open (rows, curIndex);
-              if (curIndex + n >= topIndex + fieldSize)
-                topIndex = curIndex + n - fieldSize + 1;
-              if (topIndex > curIndex)
-                topIndex = curIndex;
-            }
+              setTopIndex (fieldSize, open (curIndex));
             else
             {
               rows [curIndex]. open = false;
@@ -441,13 +343,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
                )
               beep ();
             else
-            {
-              const size_t n = openAll (rows, curIndex);
-              if (curIndex + n >= topIndex + fieldSize)
-                topIndex = curIndex + n - fieldSize + 1;
-              if (topIndex > curIndex)
-                topIndex = curIndex;
-            }
+              setTopIndex (fieldSize, openAll ());
             break;
           case 's':
           case KEY_F(3):  // Use form window ??
@@ -487,8 +383,8 @@ At line ends: [<# children>|<# nodes in subtree>]\
               bool tokenWord = false;  
             #if 1
               const uchar mask = 1;  // PAR
-              var_cast (xml. get ()) -> unsetSearchFound (mask);
-              if (! var_cast (xml. get ()) -> setSearchFound (what, equalName, tokenSubstr, tokenWord, mask))
+              var_cast (xml). unsetSearchFound (mask);
+              if (! var_cast (xml). setSearchFound (what, equalName, tokenSubstr, tokenWord, mask))
               	beep ();
             #else
               size_t i = curIndex + rows [curIndex]. found;
@@ -541,7 +437,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
             break;
           case 'c':  // Row::color
             {
-              drawMenu (nc, fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan) w(hite)");
+              drawMenu (fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan) w(hite)");
               Row& row = rows [curIndex];
               switch (getch ())
               {
@@ -562,6 +458,128 @@ At line ends: [<# children>|<# nodes in subtree>]\
         }
       }
     }
+  }
+
+
+  void setTopIndex (size_t fieldSize,
+                    size_t opened)
+  {
+    if (curIndex + opened >= topIndex + fieldSize)
+      topIndex = curIndex + opened - fieldSize + 1;
+    if (topIndex > curIndex)
+      topIndex = curIndex;
+  }
+
+
+	void drawMenu (size_t fieldSize, 
+	               const string &s)
+	{
+	  move ((int) fieldSize, 0);
+	  const NCAttr attr (A_REVERSE);
+	  const NCBackground bkgr (nc. background | A_REVERSE);
+	  addstr (s. c_str ());
+	  clrtoeol ();
+	}
+
+
+	size_t open (size_t index)
+	{
+	  ASSERT (! rows [index]. open);
+	  const VectorOwn<Xml_sp::Data>& children = rows [index]. data->children;
+	  if (children. empty ())
+	    return 0;
+	  rows [index]. open = true;
+	  auto itStart = rows. begin ();
+	  advance (itStart, index + 1);
+	  Vector<Row> newRows;
+	  newRows. reserve (children. size ());
+	  FFOR (size_t, i, children. size ())
+	    newRows << Row (children [i], i);
+	  rows. insert (itStart, newRows. begin (), newRows. end ());
+	  return newRows. size ();
+	}
+	
+		
+	size_t openAll ()
+	{
+	  size_t opened = 0;
+	  FOR_START (size_t, i, curIndex, curIndex + 1 + opened )
+	    opened += open (i);
+	  return opened;
+	}
+};
+
+
+
+
+struct ThisApplication : Application
+{
+  ThisApplication ()
+    : Application ("View an XML file.\n\
+At line ends: [<# children>|<# nodes in subtree>]\
+")
+  	{
+      version = VERSION;
+  	  addPositional ("xml", "XML file");
+  	  addKey ("search_tags", "Tag names to be searched, comma-delimited");
+  	}
+
+
+
+	void body () const final
+	{
+		const string xmlFName  = getArg ("xml");
+		const StringVector searchTags (getArg ("search_tags"), ',', true);
+
+    QC_ASSERT (searchTags. size () < 8);  // instruction ??
+
+
+    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
+  #if USE_WCHAR
+    std::wstring_convert <std::codecvt_utf8_utf16<wchar_t>> converter;
+  #endif
+
+
+	  unique_ptr<const Xml_sp::Data> xml;
+	  VectorOwn<Xml_sp::Data> markupDeclarations;
+	  {
+  	  TokenInput ti (xmlFName, '\0', true, false, 10000);  // PAR
+      try
+      {
+        Unverbose unv;
+        xml. reset (new Xml_sp::Data (ti, markupDeclarations));
+      }
+      catch (const CharInput::Error &e)
+        { throw e; }
+      catch (const exception &e)
+        { ti. error (e. what (), false); }
+    }
+    ASSERT (xml);
+    
+    // PAR
+    var_cast (xml. get ()) -> tag2token ("text");  
+    var_cast (xml. get ()) -> mergeSingleChildren ();  
+    
+    if (! searchTags. empty ())
+    {
+    	Byte mask = 1;  // NCurses::Color bits
+    	for (const string& s : searchTags)
+    	{
+    		// Display s/color in search form window ??
+        var_cast (xml. get ()) -> setSearchFound (s, true, false, false, mask);
+    		mask <<= 1;
+      }
+    }
+    
+    xml->qc ();
+    if (verbose ())
+    {
+      Xml::File f ("xml_view.xml", false, false, "XML");
+      xml->saveXml (f);
+    }
+
+    Viewer vw (xmlFName, xml. get ());
+    vw. run ();
 	}
 };
 
