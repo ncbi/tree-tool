@@ -3562,9 +3562,11 @@ public:
     }
   bool getNext (char expected)
     { Token token (get ());
-      const bool found = token. isDelimiter (expected);
-      setLast (move (token));
-      return found;
+      if (! token. isDelimiter (expected))
+      { setLast (move (token));
+      	return false;
+      }
+      return true;
     }
 };
 
