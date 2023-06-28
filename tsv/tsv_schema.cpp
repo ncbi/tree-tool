@@ -52,6 +52,7 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table");
+  	  addFlag ("sql", "SQL DDL format");
   	}
   	
   	
@@ -59,10 +60,26 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string fName = getArg ("table");
+		const bool   sql   = getFlag ("sql");
 
     const TextTable tt (fName);
     tt. qc ();
-    tt. printHeader (cout);      
+    if (sql)
+    {
+      cout << "create table " << trimExtension (getFileName (fName)) << endl;
+      cout << "( ";
+      bool first = true;
+      for (const TextTable::Header& h : tt. header)
+      {
+        if (! first)
+          cout << ", ";
+        h. saveSql (cout);
+        first = false;
+      }
+      cout << ")" << endl;
+    }
+    else
+      tt. printHeader (cout);      
 	}
 };
 
