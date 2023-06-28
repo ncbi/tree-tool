@@ -137,11 +137,9 @@ struct ThisApplication : Application
 			if (printP)
 			{
 			  cout << in. name1 << ' ' << in. name2 << endl;
-				cout << "Identity = " << align->matches << '/' << align->tr. size () 
-				     << " (" << ((double) align->matches / (double) align->tr. size () * 100) << "%)" << endl;
-				cout << "Min. edit distance = " << align->getMinEditDistance () << endl;
+				align->printDistances (cout);
 				cout << endl;
-				align->printAlignment (60);  // PAR
+				align->printAlignment (cout, 60);  // PAR
 			}
 			
 					
