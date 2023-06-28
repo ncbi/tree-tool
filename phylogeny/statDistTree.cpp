@@ -36,6 +36,7 @@
 #include "../common.inc"
 
 #include "../common.hpp"
+#include "../graph.hpp"
 using namespace Common_sp;
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
@@ -70,6 +71,8 @@ struct ThisApplication : Application
 	  addKey ("arc_length", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("dist_pairs", "Output file with all or <dist_request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
 	  addKey ("height", "Output file with interior node average heights");
+	  addKey ("closest_num", "Number of closest leaves to print", "1");
+	  addKey ("closest_out", "Output file with closest leaves: <leaf> <neighbor1> <dist1> <neighbor2> <dist2> <neighbor3> <dist3> ...");
 	}
 
 
@@ -85,11 +88,15 @@ struct ThisApplication : Application
 		const string arc_length      = getArg ("arc_length");
 		const string dist_pairs      = getArg ("dist_pairs");
 		const string heightFName     = getArg ("height");
-		ASSERT (noise >= 0.0); 
-		IMPLY (noise, ! distDmFName. empty ());
-		IMPLY (sqrtP, ! distDmFName. empty ());
+		const size_t closest_num     = str2<size_t> (getArg ("closest_num"));
+		const string closestFName    = getArg ("closest_out");
+		QC_ASSERT (noise >= 0.0); 
+		QC_IMPLY (noise, ! distDmFName. empty ());
+		QC_IMPLY (sqrtP, ! distDmFName. empty ());
     if (! dist_request. empty () && dist_pairs. empty ())
     	throw runtime_error ("-dist_request exists, but no -dist_pairs");
+    QC_ASSERT (closest_num > 0);
+    QC_IMPLY (closest_num != 1, ! closestFName. empty ());
     
 
     DistTree tree (input_tree, string (), string (), string()); 
@@ -259,7 +266,7 @@ struct ThisApplication : Application
 
     	OFStream f (dist_pairs);
     	Tree::LcaBuffer buf;
-    	for (const auto p : distRequestPairs)
+    	for (const auto& p : distRequestPairs)
     	{
     		const Leaf* leaf1 = p. first;
     		const Leaf* leaf2 = p. second;
@@ -281,6 +288,26 @@ struct ThisApplication : Application
  	    for (const DiGraph::Node* node : tree. nodes)
         if (const Steiner* st = static_cast <const DTNode*> (node) -> asSteiner ())
       	  f << st->getLcaName () << '\t' << st->getHeight_ave () << endl;
+    }
+    
+    
+    if (! closestFName. empty ())
+    {
+      if (closest_num > tree. name2leaf. size ())
+        throw runtime_error ("-closest_num " + to_string (closest_num) + " is greater than tree size " + to_string (tree. name2leaf. size ()));
+      OFStream f (closestFName);
+      const ONumber on (f, dissimDecimals, true);
+ 	    for (const DiGraph::Node* node : tree. nodes)
+        if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
+        {
+          Vector<Tree::TreeNode::NodeDist> neighbors;  neighbors. reserve (closest_num + 1);
+          var_cast (leaf) -> getClosestLeaves (closest_num, neighbors);
+          ASSERT (neighbors. size () == closest_num);
+          f << leaf->name;
+          for (const Tree::TreeNode::NodeDist& nd : neighbors)
+            f << '\t' << nd. node->getName () << '\t' << nd. dist;
+          f << endl;
+        }
     }
     
     
