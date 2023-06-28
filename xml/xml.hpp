@@ -175,7 +175,6 @@ struct Data : Named  // --> VirtNamed with Enumerate<string> names ??
 private:
   bool isEnd {false};
   bool xmlText {false};
-  mutable size_t columnTags {0};
   bool merged {false};
 public:
 	
@@ -207,12 +206,10 @@ private:
   Data (const Data &) = default;
   void clear () override;
   void readInput (TokenInput &ti);
-    // <tag attribute1="value1" attribute2="value2" ... />
-    // <tag attribute1="value1" attribute2="value2" ... > Data1 Data2 ... </tag>
-    // <tag attribute1="value1" attribute2="value2" ... > XmlText </tag>
-    // </tag>
-    // <!-- comment -->
-    // <? ProcessingInstruction ?>
+    // Data ::=   <tag attribute1="value1" attribute2="value2" ... />
+    //          | <tag attribute1="value1" attribute2="value2" ... > Data* XmlText </tag>
+    //          | <!-- comment -->
+    //          | <? ProcessingInstruction ?>
   static bool readColonName (TokenInput &ti,
                              string &name);
     // Update: name
@@ -279,12 +276,12 @@ public:
     }
   TextTable unify (const Data& query,
                    const string &variableTagName) const;
+    // Text of *this unifying with "<" variableTagName ">" column_name "</" variableTagName ">" in query --> column column_name in TextTable
+    // Requires: !query.parent
 private:
   StringVector tagName2texts (const string &tagName) const;
-    // Output: columnTags
-  bool unify_ (const Data& query,
+  void unify_ (const Data& query,
                const string &variableTagName,
-               size_t columnTags_root,
                map<string,StringVector> &tag2values,
                TextTable &tt) const;
     // Update: tag2values, tt (append)

@@ -434,7 +434,7 @@ void Data::clear ()
   token. clear ();
   isEnd = false;
   xmlText = false;
-  columnTags = 0;
+//columnTags = 0;
 }
 
 
@@ -553,19 +553,9 @@ void Data::readInput (TokenInput &ti)
       if (xml->xmlText)
       {
         ASSERT (token. empty ());
-        token. type = Token::eText;
-        for (const Data* child : children)
-        {
-          if (! token. name. empty ())
-            token. name += ' ';
-          token. name += child->str ();
-        }
-        if (! token. name. empty ())
-          token. name += ' ';
-        token. name += xml->str ();
-        trim (token. name);
-        children. deleteData ();
+        token = move (xml->token);
         delete xml;
+        trim (token. name);
         ti. get ('/');
         Token end = move (ti. get ());
         if (end. type != Token::eName)
@@ -582,17 +572,6 @@ void Data::readInput (TokenInput &ti)
   {
     token = move (ti. getXmlText ());
     token. toNumberDate ();
-  #if 0
-    string& s = token. name;
-    FOR_REV (size_t, i, s. size ())
-    {
-      const char c = s [i];
-      if (   ! printable (c)
-          || c == '|'  // Delimiter in bulk-insert
-         )
-        s = s. substr (0, i) + "%" + uchar2hex ((uchar) c) + s. substr (i + 1);
-    }
-  #endif
     ti. get ('/');
     Token end (ti. get ());
     if (end. type != Token::eName)
@@ -699,19 +678,12 @@ void Data::qc () const
 void Data::saveXml (Xml::File &f) const
 {
   const Xml::Tag tag (f, name);
+
+  if (! token. empty ())
+    f. text (token. str ());
+
   for (const Data* child : children)
     child->saveXml (f);
-    
-  const string value (token. str ());
-  if (! value. empty ())
-  {
-    unique_ptr<const Xml::Tag> valueTag;
-    if (children. empty ())
-      f << ' ';
-    else
-      valueTag. reset (new Xml::Tag (f, string ()));
-    f << value;
-  }
 }
 
 
@@ -724,9 +696,8 @@ void Data::saveText (ostream &os) const
   for (const Data* child : children)
     child->saveText (os);
     
-  const string value (token. str ());
-  if (! value. empty ())
-    os << value << "; ";
+  if (! token. empty ())
+    os << token. str () << "; ";
 }
 
 
@@ -817,13 +788,12 @@ size_t Data::setSearchFound (const string &what,
 TextTable Data::unify (const Data& query,
                        const string &variableTagName) const
 {
+  ASSERT (! query. parent);
+  
   StringVector header (query. tagName2texts (variableTagName));
-  ASSERT (header. size () == query. columnTags);
   if (header. empty ())  
     throw runtime_error ("No variable tags");
     
-  const size_t columnTags_root = header. size ();
-  
   header. sort ();
   header. uniq ();
 
@@ -834,7 +804,7 @@ TextTable Data::unify (const Data& query,
   tt. qc ();
   
   map<string,StringVector> tag2values;
-  unify_ (query, variableTagName, columnTags_root, tag2values, tt);
+  unify_ (query, variableTagName, tag2values, tt);
   
   return tt;
 }
@@ -850,73 +820,45 @@ StringVector Data::tagName2texts (const string &tagName) const
   {
     QC_ASSERT (parent);
     QC_ASSERT (children. empty ());
-    vec << token. str ();
+    QC_ASSERT (token. type == Token::eText);
+    vec << token. name;
   }
   else
     for (const Data* child : children)
       vec << move (child->tagName2texts (tagName));
-
-  columnTags = vec. size ();
 
   return vec;
 }
 
 
 
-bool Data::unify_ (const Data& query,
+void Data::unify_ (const Data& query,
                    const string &variableTagName,
-                   size_t columnTags_root,
                    map<string,StringVector> &tag2values,
                    TextTable &tt) const
 {
   ASSERT (! variableTagName. empty ());
   
   if (name != query. name)
-    return false;
+    return;
   if (   ! query. token. empty () 
       && ! (query. token == token)
      )
-    return false;
+    return;
     
-  {
-    map<string,StringVector> child_tag2values;
-    bool allFound = true;
-    for (const Data* queryChild : query. children)
-      if (queryChild->name != variableTagName)
-      {
-        bool found = false;
-        for (const Data* dataChild : children)
-          if (dataChild->unify_ (*queryChild, variableTagName, columnTags_root, child_tag2values, tt))
-            found = true;
-        if (! found && ! queryChild->columnTags)
-          allFound = false;
-      //PRINT (queryChild->name);
-      //PRINT (found);
-      //PRINT (allFound);
-      }
-  //cout << allFound << ' ' << child_tag2values. size () << ' ' << tag2values. size () << endl;
-    if (! allFound)
-      return false; // (bool) query. columnTags;
-    for (const auto& it : child_tag2values)
-      tag2values [it. first] << it. second;  // move() ??
-  }
+  for (const Data* queryChild : query. children)
+    if (queryChild->name != variableTagName)
+    {
+      ASSERT (queryChild->parent);
+      for (const Data* dataChild : children)
+        dataChild->unify_ (*queryChild, variableTagName, tag2values, tt);
+    }
   
   if (const Data* columnData = query. name2child (variableTagName))
-  {    
-    Token t (token);
-    t. quote = '\0';
-    tag2values [columnData->token. str ()] << (t. empty () ? str () : t. str ());
-    if (verbose ())
-    {
-      PRINT (columnData->token. str ());
-      PRINT (t. empty () ? str () : t. str ());
-    }
-  }
+    if (! token. empty ())
+      tag2values [columnData->token. name] << token. name;
     
-//PRINT (query. columnTags);
-//PRINT (columnTags_root);
-//PRINT (tag2values. size ());
-  if (   query. columnTags == columnTags_root
+  if (   ! query. parent  
       && ! tag2values. empty ()
      )
   {
@@ -925,10 +867,7 @@ bool Data::unify_ (const Data& query,
       row [tt. col2num (it. first)] = it. second. toString ("; ");
     tt. rows << move (row);
     tag2values. clear ();
-  //PRINT (tt. rows. size ());
   }
-  
-  return true;
 }
 
 
