@@ -6,7 +6,7 @@ if [ $# -ne 3 ]; then
   echo "Print: <new sequence name> <tree node> <new leaf arc length> <tree node arc length>"
   echo "#1: incremental tree directory"
   echo "#2: new object file"
-  echo "#3: output of dissimilarity-distances pairs for 100 closest objects"
+  echo "#3: output of statistical report for 100 closest objects"
   exit 1
 fi
 INC=$1  
@@ -56,8 +56,14 @@ done
 section "Placement"
 cut -f 1,2,3,4 $TMP.leaf
 
+section "Statistical report"
 sort -k3,3g $TMP.res > $TMP.sort
-head -100 $TMP.sort > $RES
+head -100 $TMP.sort > $TMP.res  
+mkdir $TMP.report.dir
+$THIS/../trav $TMP.res "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%n"  -threads 15  
+$THIS/../trav $TMP.res "cat $TMP.report.dir/%n" -noprogress > $TMP.report
+echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $RES
+paste $TMP.res $TMP.report >> $RES
 
 
 rm -fr $TMP*
