@@ -293,6 +293,7 @@ void Align::finish (const Seq &seq1,
 	                  double stdMinComplexity)
 {
   ASSERT ((bool) match_len_min == semiglobal);
+  ASSERT (! semiglobal_ends);
 
   const string& s1 = seq1. seq;
   const string& s2 = seq2. seq;
@@ -314,14 +315,10 @@ void Align::finish (const Seq &seq1,
 	stop2 = s2. size ();
   if (semiglobal)
   {
-  	for (const char* c = & tr [0]; *c == 'I'; c++)
-  	  start2++;
-  	for (const char* c = & tr [0]; *c == 'D'; c++)
-  	  start1++;
-  	for (const char* c = & tr [tr. size () - 1]; stop2 && *c == 'I'; c--)
-  	  stop2--;
-  	for (const char* c = & tr [tr. size () - 1]; stop1 && *c == 'D'; c--)
-  	  stop1--;
+  	for (const char* c = & tr [0];                        *c == 'I'; c++)  { semiglobal_ends++; start2++; }
+  	for (const char* c = & tr [0];                        *c == 'D'; c++)  { semiglobal_ends++; start1++; }
+  	for (const char* c = & tr [tr. size () - 1]; stop2 && *c == 'I'; c--)  { semiglobal_ends++; stop2--; }
+  	for (const char* c = & tr [tr. size () - 1]; stop1 && *c == 'D'; c--)  { semiglobal_ends++; stop1--; }
   }
 	ASSERT (start1 <= stop1);
 	ASSERT (start2 <= stop2);
@@ -340,40 +337,28 @@ void Align::finish (const Seq &seq1,
 
 
 
-Real Align::getDissim () const
-{	
-  if (self_score1 <= 0)
-    return NaN;
-  if (self_score2 <= 0)
-    return NaN;
+void Align::printStats (ostream &os) const
+{ 
+  os << "alignment_length:\t" << getAlignmentSize () << endl;
   
-  if (badMatch)
-  	return NaN;
-	if (score <= 0)
-		return inf;
-		
-  // Heuristic
-#if 1
-	return intersection2dissim (self_score1, self_score2, score, 0, 0.5, true);  // PAR
-#else
-  // "Average" min. edit distance
-//return getMinEditDistance () / (self_score1 + self_score2);    
-	return getMinEditDistance () / (Real) (size1 () + size2 ());  
-#endif
-}
-
-
-
-Real Align::getMinEditDistance () const
-{	
-  ASSERT (self_score1 >= 0);
-  ASSERT (self_score2 >= 0);
+  #define P(x)  { os << #x << ":\t" << (x) << endl; }   
+  P (score);
+	P (matches);
+  P (substitutions);
+  P (insertions);
+  P (deletions);
+  os << "start1:\t" << start1 + 1 << endl;
+  P (stop1);
+  os << "start2:\t" << start2 + 1 << endl;
+  P (stop2);
+  P (self_score1);
+  P (self_score2);
+  P (lowComplexity1);
+  P (lowComplexity2);
+  P (badMatch);
+  #undef P
   
-  if (badMatch)
-  	return inf;
-  const Real dist = self_score1 + self_score2 - 2 * score;
-  ASSERT (dist >= 0.0);
-	return dist;
+  os << endl;
 }
 
 
@@ -425,18 +410,11 @@ void Align::setAlignment (const string &seq1,
 
 
 
-void Align::printAlignment (size_t line_len) const
+void Align::printAlignment (ostream &os,
+                            size_t line_len) const
 {
   ASSERT (line_len);
   
-  cout << "score = " << score << endl;
-  cout << "self_score1 = " << self_score1 << endl;
-  cout << "self_score2 = " << self_score2 << endl;
-  cout << "length = " << tr. size () << endl;
-  cout << "matches = " << matches << endl;
-  cout << "substitutions = " << substitutions << endl;
-  cout << "insertions = " << insertions << endl;
-  cout << "deletions = " << deletions << endl;
   size_t qEnd = 0;
   size_t sEnd = 0;
   for (size_t i = 0; i < tr. size (); i += line_len)
@@ -445,11 +423,43 @@ void Align::printAlignment (size_t line_len) const
     const string sStr (sparse2.substr (i, line_len));
     qEnd += (qStr. size () - strCountSet (qStr, "-"));
     sEnd += (sStr. size () - strCountSet (sStr, "-"));
-    cout << qStr << ' ' << qEnd << endl;
-    cout << consensus. substr (i, line_len) << endl;
-    cout << sStr << ' ' << sEnd << endl;
-    cout << endl;
+    os << qStr << ' ' << qEnd << endl;
+    os << consensus. substr (i, line_len) << endl;
+    os << sStr << ' ' << sEnd << endl;
+    os << endl;
   }
+}
+
+
+
+Real Align::getDissim () const
+{	
+  if (self_score1 <= 0)
+    return NaN;
+  if (self_score2 <= 0)
+    return NaN;
+  
+  if (badMatch)
+  	return NaN;
+	if (score <= 0)
+		return inf;
+		
+  // Heuristic
+	return intersection2dissim (self_score1, self_score2, score, 0, 0.5, true);  // PAR
+}
+
+
+
+Real Align::getMinEditDistance () const
+{	
+  ASSERT (self_score1 >= 0);
+  ASSERT (self_score2 >= 0);
+  
+  if (badMatch)
+  	return inf;
+  const Real dist = self_score1 + self_score2 - 2 * score;
+  ASSERT (dist >= 0.0);
+	return dist;
 }
 
 
@@ -500,9 +510,19 @@ size_t Align::getDiff () const
 }
 
 
-
-const StringVector Align::distanceNames {"dissim", "min_edit", "mismatch_frac", "diff"};
+const StringVector Align::distanceNames {"dissim", "min_edit", "diff", "mismatch_frac"};
   
+
+
+void Align::printDistances (ostream &os) const
+{ 
+  for (const Distance d : {dist_dissim, dist_min_edit, dist_diff, dist_mismatch_frac})  // PAR
+    os << distanceNames [d] << ":\t" << getDistance (d) << endl;
+	os << "identity:\t" << getIdentity () << endl;
+
+  os << endl;
+}
+
 
 
 }

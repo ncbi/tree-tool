@@ -68,6 +68,8 @@ struct Align : Root
 		// In seq1
 	size_t deletions {0};
 		// = insertions in seq2
+	size_t semiglobal_ends {0};
+	  // Part of tr to be ignored if semiglobal
 	
 	// Positions in seq1/seq2
 	size_t start1 {0};
@@ -109,6 +111,7 @@ struct Align : Root
 	  	   << ' ' << substitutions 
 	  	   << ' ' << insertions 
 	  	   << ' ' << deletions 
+	  	   << ' ' << semiglobal_ends 
 	  	   << ' ' << start1 << '-' << stop1 
 	  	   << ' ' << start2 << '-' << stop2
 	  	   << ' ' << self_score1
@@ -123,35 +126,42 @@ private:
 	             const Seq &seq2,
 	             size_t match_len_min,
 	             double stdMinComplexity);
-public:
-	
-	
-	// Sizes of the input sequences
   size_t size1 () const
     { return tr. size () - insertions; }
   size_t size2 () const
     { return tr. size () - deletions; }
-  // Return: !isNan() => >= 0
-	Real getDissim () const;
-	Real getMinEditDistance () const;
-	Real getMismatchFrac () const
-	  { return (Real) (tr. size () - matches) / (Real) tr. size (); }
-  //
+public:
+	
+	
+	size_t getAlignmentSize () const 
+	  { return tr. size () - semiglobal_ends; }
+	void printStats (ostream &os) const;
+
   void setAlignment (const string &seq1,
 	                   const string &seq2);
     // Output: Alignment
   // Input: Alignment
-  void printAlignment (size_t line_len) const;
+  void printAlignment (ostream &os,
+                       size_t line_len) const;
+
+  // Return: !isNan() => >= 0
+	Real getDissim () const;
+	Real getMinEditDistance () const;
+  // Requires: setAlignment()
 	size_t getDiff () const;
+	Real getMismatchFrac () const
+	  { return (Real) getDiff () / (Real) getAlignmentSize (); }
+	Real getIdentity () const
+	  { return 1.0 - getMismatchFrac (); } 
 	
-	enum Distance {dist_dissim, dist_min_edit, dist_mismatch_frac, dist_diff};
+	enum Distance {dist_dissim, dist_min_edit, dist_diff, dist_mismatch_frac};
 	static const StringVector distanceNames;
 	Real getDistance (Distance dist) const
 	  { switch (dist)
 	    { case dist_dissim:        return getDissim ();
 	      case dist_min_edit:      return getMinEditDistance ();
-	      case dist_mismatch_frac: return getMismatchFrac ();
 	      case dist_diff:          return (Real) getDiff ();	      
+	      case dist_mismatch_frac: return getMismatchFrac ();
 	    }
 	    throw logic_error ("Undefined distance: " + to_string (dist));
 	  }
@@ -161,6 +171,7 @@ public:
 	        return (Distance) i;
 	    throw runtime_error ("Unknown distance: " + name);
 	  }
+	void printDistances (ostream &os) const;
 };
 	
 
