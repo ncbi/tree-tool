@@ -1,24 +1,24 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 5 ]; then
   echo "Find contigs with identical protein hash codes in two GenBank eukaryotic assemblies"
-  echo "Output: #2-#3 (list of contigs in #1 common with #2), #3-#2 (list of contigs in #2 common with #1)"
   echo "#1: genome/ (large directory)"
   echo "#2: assembly 1 FASTA (named as fullasm_id)"
   echo "#3: assembly 2 FASTA (named as fullasm_id)"
+  echo "#4: output #2-#3.ctg"
+  echo "#5: output #3-#2.ctg"
   exit 1
 fi
 GENOME_DIR=$1
 ASM=($2 $3)
+OUT=($4 $5)
 
 
 TMP=`mktemp`
 comment $TMP 
 #set -x
 
-
-OUT=(${ASM[0]}-${ASM[1]} ${ASM[1]}-${ASM[0]})
 
 NAME=()
 HASH=()
