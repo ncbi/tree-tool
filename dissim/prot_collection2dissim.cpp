@@ -193,7 +193,7 @@ struct ThisApplication : Application
     	      if (verbose ())
     	      {
     	        al. setAlignment (pep1->seq, pep2->seq); 
-    	        al. printAlignment (60);  // PAR
+    	        al. printAlignment (cout, 60);  // PAR
     	        cout << "dissim = " << dissim << endl;
     	      }
     	    }
