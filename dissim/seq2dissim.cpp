@@ -82,20 +82,22 @@ struct ThisApplication : Application
 	  	addFlag ("ambig_start", "Replace deletions at the start of <FASTA1> by the ambiguity character");
            	  //ambig_end ??
       addFlag ("blosum62", "Use substitution matrix BLASUM62, otehrwise PAM30. valid for protein sequences");
+      addFlag ("alignment", "Print alignment");
     }
 
 
 	
 	void body () const final
   {
-	  const string targetFName = getArg ("target");
-	  const string refFName    = getArg ("reference");
-	  const string protName    = getArg ("prot_name");
-	  const bool global        = getFlag ("global");
-	        size_t match_len_min = str2<size_t> (getArg ("match_len_min"));
-	  const string mutFName    = getArg ("mutation");
-    const bool   ambig_start = getFlag ("ambig_start");
-    const bool   blosum62    = getFlag ("blosum62");
+	  const string targetFName    = getArg ("target");
+	  const string refFName       = getArg ("reference");
+	  const string protName       = getArg ("prot_name");
+	  const bool global           = getFlag ("global");
+	        size_t match_len_min  = str2<size_t> (getArg ("match_len_min"));
+	  const string mutFName       = getArg ("mutation");
+    const bool   ambig_start    = getFlag ("ambig_start");
+    const bool   blosum62       = getFlag ("blosum62");
+    const bool   printAlignment = getFlag ("alignment");
     
 
     if (global)
@@ -124,12 +126,7 @@ struct ThisApplication : Application
 		
 		if (verbose ())
 		  align->saveText (cout);
-		
-		cout << "Identity = " << align->matches << '/' << align->tr. size () 
-		     << " (" << ((double) align->matches / (double) align->tr. size () * 100) << "%)" << endl;
-		cout << "Min. edit distance = " << align->getMinEditDistance () << endl;
-		cout << endl;
-		
+				
 		align->setAlignment (targetSeq->seq, refSeq->seq);
 
  		size_t targetStart = 0;
@@ -208,7 +205,11 @@ struct ThisApplication : Application
     }
 
 
-		align->printAlignment (60);  // PAR
+    cout << endl;
+    align->printStats (cout);
+    align->printDistances (cout);
+    if (printAlignment)
+		  align->printAlignment (cout, 60);  // PAR
   }
 };
 
