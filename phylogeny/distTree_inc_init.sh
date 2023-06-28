@@ -105,6 +105,7 @@ if [ $SERVER ]; then
   create_script outlier2db
 fi
 create_script pairs2dissim
+create_script pair2report
 create_script object2closest
 create_script qc
 create_script qc_object
