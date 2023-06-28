@@ -116,7 +116,7 @@ struct Match
 			else
 				ERROR;
 			ASSERT (align. get ());
-			var_cast (align. get ()) -> setAlignment (seq1->seq, seq2->seq);  // For getDiff()
+			var_cast (align. get ()) -> setAlignment (seq1->seq, seq2->seq); 
 		  const Real dissim_raw = align->getDistance (distance);
 			dissim = coeff * pow (dissim_raw, power);
 			score = align->score;
