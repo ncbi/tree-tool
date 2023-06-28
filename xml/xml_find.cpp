@@ -48,12 +48,13 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Find an XML context and print values as a tsv-file")
+    : Application ("Find an XML context matching query and print values as a .tsv-file")
   	{
       version = VERSION;
   	  addPositional ("target", "Target XML file");
   	  addPositional ("query", "Query XML file");
-  	  addKey ("variable_tag", "Tag name in query indicating tsv-columns", "q");
+  	  addKey ("variable_tag", "Tag name in query indicating .tsv-columns.\n\
+Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable_tag \">\" goes to the column named column_name in the output .tsv-file", "q");
   	}
   	
   	
@@ -76,9 +77,10 @@ struct ThisApplication : Application
     query->qc ();
     if (verbose ())
     {
-      Xml::File f ("xml_find.xml", true, true, "XML");  // PAR
+      const string fName ("xml_find.xml");
+      Xml::File f (fName, false, false, "XML");  // PAR
       query->saveXml (f);
-      cout << endl << endl;
+      cerr << "XML file " << strQuote (fName) << " is saved" << endl;
     }
           
     const TextTable tt (target->unify (*query, variableTag));
