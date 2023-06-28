@@ -112,7 +112,7 @@ randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-statDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp 
+statDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp $(CPP_DIR)/graph.hpp
 statDistTreeOBJS=statDistTree.o $(DISTTREE_OBJ)
 statDistTree:	$(statDistTreeOBJS)
 	$(CXX) -o $@ $(statDistTreeOBJS) $(LIBS)
