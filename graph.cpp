@@ -1243,6 +1243,40 @@ void Tree::TreeNode::getDistanceArea_ (double radius,
 
 
 
+void Tree::TreeNode::getClosestLeaves_ (const Tree::TreeNode* prev,
+                                        double distance,
+                                        size_t neighbors_max,
+                                        Vector<NodeDist> &neighbors) const
+{
+  ASSERT (neighbors_max);
+  
+  if (   neighbors. size () == neighbors_max
+      && neighbors. back (). dist <= distance
+     )
+    return;
+
+  if (prev && isLeaf ())
+  {
+    neighbors << NodeDist {this, distance};
+    neighbors. sort (NodeDist::distLess);
+    if (neighbors. size () > neighbors_max)
+      neighbors. pop ();
+  }
+  ASSERT (neighbors. size () <= neighbors_max);
+      
+  const TreeNode* parent_ = getParent ();
+  if (parent_ && parent_ != prev)
+    parent_->getClosestLeaves_ (this, distance + getParentDistance (), neighbors_max, neighbors);
+  for (const Arc* arc : arcs [false])
+  {
+    const TreeNode* child = static_cast <const TreeNode*> (arc->node [false]);
+    if (child != prev)
+      child->getClosestLeaves_ (this, distance + child->getParentDistance (), neighbors_max, neighbors);
+  }
+}
+
+
+
 void Tree::TreeNode::getSubtreeArea (const VectorPtr<Tree::TreeNode> &possibleBoundary,
 	                                   VectorPtr<Tree::TreeNode> &area,
                                      VectorPtr<Tree::TreeNode> &boundary) const

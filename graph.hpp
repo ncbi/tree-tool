@@ -62,7 +62,7 @@ struct DiGraph : Root
 
   struct Node : VirtNamed, DisjointCluster
   {
-    friend struct DiGraph;
+    friend DiGraph;
     
     const DiGraph* graph {nullptr};
       // nullptr <=> *this is detach()'ed
@@ -178,8 +178,8 @@ struct DiGraph : Root
 
   struct Arc : Root
   {
-    friend struct DiGraph;
-    friend struct Node;
+    friend DiGraph;
+    friend Node;
    
     array <Node*, 2 /*bool: out*/> node;
       // !nullptr
@@ -296,7 +296,7 @@ struct Tree : DiGraph
 {
 	struct TreeNode : DiGraph::Node
 	{
-	  friend struct Tree;
+	  friend Tree;
 	  bool frequentChild {false};
 	    // For a directed tree
 	  size_t frequentDegree {0};
@@ -517,6 +517,17 @@ struct Tree : DiGraph
                            const TreeNode* prev,
                            VectorPtr<TreeNode> &area,
                            VectorPtr<TreeNode> &boundary) const;
+  public:
+    void getClosestLeaves (size_t neighbors_max,
+                           Vector<NodeDist> &neighbors) const
+      { getClosestLeaves_ (nullptr, 0.0, neighbors_max, neighbors); }
+      // Output: neighbors: sorted by distLess
+  private:
+    void getClosestLeaves_ (const Tree::TreeNode* prev,
+                            double distance,
+                            size_t neighbors_max,
+                            Vector<NodeDist> &neighbors) const;
+      // Update: neighbors: sorted by distLess
   public:
     void getSubtreeArea (const VectorPtr<Tree::TreeNode> &possibleBoundary,
 	                       VectorPtr<Tree::TreeNode> &area,
