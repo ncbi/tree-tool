@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source CPP_DIR/bash_common.sh
+source $PANFS/code/cpp/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Find 100 closest sequences in the tree"
   echo "#1: new sequence"
@@ -14,7 +14,7 @@ INC=`dirname $0`
 if [ -z $DIR ]; then
   DIR=$INC/../seq-long
 fi
-CPP_DIR/genetics/dna_closest.sh $DIR/$NEW_OBJ $INC/seq.fa
+$PANFS/code/cpp/genetics/dna_closest.sh $DIR/$NEW_OBJ $INC/seq.fa
 
 
 

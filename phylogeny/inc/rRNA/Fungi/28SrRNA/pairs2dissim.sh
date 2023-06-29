@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source CPP_DIR/bash_common.sh
+source $PANFS/code/cpp/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Compute dissimilarities for pairs of objects"
   echo "#1: input dissimilarity requests (pairs of objects)"
@@ -21,7 +21,7 @@ if [ -n "$FILE_NEW" ]; then
 fi
 
 INC=`dirname $0`
-CPP_DIR/dissim/dna_pair2dissim  -log $LOG  -coeff 0.0066887  $NEW  $REQUEST $INC/../seq 300 $DISSIM
+$PANFS/code/cpp/dissim/dna_pair2dissim  -log $LOG  -coeff 0.0066887  $NEW  $REQUEST $INC/../seq 300 $DISSIM
   # was: 0.00634 
   
 rm -f $LOG
