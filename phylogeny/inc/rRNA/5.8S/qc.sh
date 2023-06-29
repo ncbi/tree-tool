@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source CPP_DIR/bash_common.sh
+source $PANFS/code/cpp/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
   echo "#1: verbose (0/1)"
@@ -21,17 +21,17 @@ SERVER=`cat $INC/server`
 DB=`cat $INC/database`
 
 
-CPP_DIR/genetics/kmerIndex_stat $INC/seq.kmi -qc > $TMP.stat
+$PANFS/code/cpp/genetics/kmerIndex_stat $INC/seq.kmi -qc > $TMP.stat
 N_KMI=`grep '# DNA sequences:' $TMP.stat | tail -1 | sed 's/^.*: //1'`
 
-CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
+$PANFS/code/cpp/phylogeny/tree2obj.sh $INC/tree > $TMP.tree
 N_TREE=`cat $TMP.tree | wc -l`
 if [ $N_KMI != $N_TREE ]; then
   error "K-mer index size ($N_KMI) != tree size ($N_TREE)"
 fi
 
-CPP_DIR/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
-CPP_DIR/setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.intersect
+$PANFS/code/cpp/phylogeny/distTree_inc_new_list.sh $INC > $TMP.new
+$PANFS/code/cpp/setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.intersect
 if [ -s $TMP.intersect ]; then
   wc -l $TMP.intersect
   exit 1

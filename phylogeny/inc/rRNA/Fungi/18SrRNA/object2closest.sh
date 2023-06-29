@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source CPP_DIR/bash_common.sh
+source $PANFS/code/cpp/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "$0"
   exit 1
