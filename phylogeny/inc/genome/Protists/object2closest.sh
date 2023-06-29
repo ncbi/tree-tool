@@ -19,11 +19,11 @@ if [ -z $DIR ]; then
   DIR=$INC/../genome
   if [ -e $INC/large ]; then
     H=`CPP_DIR/file2hash $GENOME`
-    DIR=$DIR/$H
+    DIR=$DIR/$H/$GENOME
   fi
 fi
 
-CPP_DIR/phylogeny/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME $DIR PRT
+CPP_DIR/phylogeny/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME 2759 $DIR PRT
 
 
 
