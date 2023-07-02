@@ -183,7 +183,7 @@ struct Viewer
                                 	: row. data->searchFoundAll;
 	          const NCAttrColor attrColor_found (mask2color (mask), mask. any ());  
 	          const NCAttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
-	          printw (" <%s>", row. data->name. c_str ());
+	          printw (" <%s>", row. data->getName (). c_str ());
 	        }
           if (! row. data->token. empty ())
           {
@@ -540,20 +540,9 @@ At line ends: [<# children>|<# nodes in subtree>]\
   #endif
 
 
-	  unique_ptr<const Xml_sp::Data> xml;
+    Names names (1000);   // PAR
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  {
-  	  TokenInput ti (xmlFName, '\0', true, false, 10000);  // PAR
-      try
-      {
-        Unverbose unv;
-        xml. reset (new Xml_sp::Data (ti, markupDeclarations));
-      }
-      catch (const CharInput::Error &e)
-        { throw e; }
-      catch (const exception &e)
-        { ti. error (e. what (), false); }
-    }
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
     ASSERT (xml);
     
     // PAR

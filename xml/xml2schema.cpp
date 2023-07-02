@@ -65,8 +65,9 @@ struct ThisApplication : Application
 		const bool storeValues  = getFlag ("store_values");
 	
 	
+	  Names names (10000);  // PAR
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (xmlFName, markupDeclarations));
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
     xml->qc ();
     
     if (! printFName. empty ())
@@ -78,7 +79,7 @@ struct ThisApplication : Application
 
     unique_ptr<Xml_sp::Schema> sch (xml->createSchema (storeValues));
     sch->qc ();
-    cout << xml->name;
+    cout << xml->getName ();
     sch->saveText (cout);
     cout << endl;
 	}

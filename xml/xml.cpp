@@ -396,9 +396,11 @@ void Schema::setFlatColumns (const Schema* curTable,
 
 // Data
 
-Data::Data (TokenInput &ti,
+Data::Data (Names &names_arg,
+	          TokenInput &ti,
             VectorOwn<Data> &markupDeclarations)
-: attribute (false)
+: names (names_arg)
+, attribute (false)
 {
   ti. get ('<');
   ti. get ('?');
@@ -415,7 +417,8 @@ Data::Data (TokenInput &ti,
   for (;;)
   {
     readInput (ti);
-    if (name. empty () || name [0] != '!')
+    if (   getName (). empty () 
+    	  || getName () [0] != '!')
       break;
     markupDeclarations << new Data (*this);
     clear ();
@@ -452,7 +455,7 @@ void Data::readInput (TokenInput &ti)
     ti. get ('<');
   else
   {
-    name = "XmlText";   // *this will be deleted
+    nameIndex = var_cast (names). add ("XmlText");   // *this will be deleted
     xmlText = true; 
     token = move (ti. getXmlText ());
     token. toNumberDate ();
@@ -471,28 +474,32 @@ void Data::readInput (TokenInput &ti)
     {
       if (ti. getNextChar () == '-')
       {
-        name = "!--";
+        nameIndex = var_cast (names). add ("!--");
         token = move (ti. getXmlComment ());
       }
       else
       {
         nameT = ti. get ();
-        name = "!" + nameT. name;
+        nameIndex = var_cast (names). add ("!" + nameT. name);
         token = move (ti. getXmlMarkupDeclaration ());        
       }
       return;
     }
     else if (nameT. isDelimiter ('?'))  
     {
-      name = "ProcessingInstruction";
+      nameIndex = var_cast (names). add ("ProcessingInstruction");
       token = move (ti. getXmlProcessingInstruction ());
       return;
     }
     if (nameT. type != Token::eName)
       ti. error (nameT, "Name");
-    name = move (nameT. name);
+    nameIndex = var_cast (names). add (nameT. name);
+    string name = getName ();
     if (readColonName (ti, name))
+    {
+    	nameIndex = var_cast (names). add (name);
       colonInName = true;
+    }
   }
   
   // children
@@ -522,7 +529,7 @@ void Data::readInput (TokenInput &ti)
       if ((uchar) c >= 127)
         c = '?';
     value. toNumberDate ();
-    children << new Data (this, true, colonInName_arg, move (attr. name), move (value));
+    children << new Data (var_cast (names), this, true, colonInName_arg, attr. name, move (value));
   }
 
   if (isEnd)
@@ -541,11 +548,11 @@ void Data::readInput (TokenInput &ti)
   if (ti. getNextChar () == '<')
     for (;;)
     {
-      auto xml = new Data (this, ti);
+      auto xml = new Data (var_cast (names), this, ti);
       if (xml->isEnd)
       {
-        if (xml->name != name)
-          ti. error ("Tag " + strQuote (name) + " is closed by tag " + strQuote (xml->name), false);
+        if (xml->nameIndex != nameIndex)
+          ti. error ("Tag " + strQuote (getName ()) + " is closed by tag " + strQuote (xml->getName ()), false);
         ASSERT (! xml->xmlText);
         delete xml;
         break;
@@ -561,8 +568,8 @@ void Data::readInput (TokenInput &ti)
         if (end. type != Token::eName)
           ti. error (end, "Name");
         readColonName (ti, end. name);
-        if (end. name != name)
-          ti. error (end, "Name " + strQuote (name));
+        if (end. name != getName ())
+          ti. error (end, "Name " + strQuote (getName ()));
         ti. get ('>');
         break;
       }
@@ -577,8 +584,8 @@ void Data::readInput (TokenInput &ti)
     if (end. type != Token::eName)
       ti. error (end, "Name");
     readColonName (ti, end. name);
-    if (end. name != name)
-      ti. error (end, "Name " + strQuote (name));
+    if (end. name != getName ())
+      ti. error (end, "Name " + strQuote (getName ()));
     ti. get ('>');
   }
 }
@@ -607,15 +614,16 @@ bool Data::readColonName (TokenInput &ti,
 
 
 
-Data* Data::load (const string &fName,
+Data* Data::load (Names &names,
+	                const string &fName,
                   VectorOwn<Data> &markupDeclarations)
 { 
   Unverbose unv;
   unique_ptr<Xml_sp::Data> f;
   { 
-    TokenInput ti (fName, '\0', true, false, 1000);  // PAR 
+    TokenInput ti (fName, '\0', true, false, 10000);  // PAR 
     try 
-      { f. reset (new Xml_sp::Data (ti, markupDeclarations));	}
+      { f. reset (new Xml_sp::Data (names, ti, markupDeclarations));	}
     catch (const CharInput::Error &e)
       { throw e; }
     catch (const exception &e)
@@ -633,22 +641,14 @@ void Data::qc () const
 {
   if (! qc_on)
     return;
-  Named::qc ();
+  VirtNamed::qc ();
    
   try 
   {
   //QC_IMPLY (colonInName, attribute);
-    QC_IMPLY (! colonInName && ! merged, isLeft (name, "!")  /*!--"*/ || isIdentifier (name, true));
+    const string name (getName ());
+    QC_IMPLY (! colonInName && ! merged, isLeft (name, "!") /*!--"*/ || isIdentifier (name, true));
     QC_ASSERT (! isEnd);
-  //QC_ASSERT (! children. empty () || ! text. empty ());
-  #if 0
-    if (! token. name. empty () && token. name [0] != '!' && ! goodName (token. name))  // Unicode ??
-    {
-      PRINT (token. name);
-      PRINT (token);
-      ERROR;
-    }
-  #endif
     token. qc ();
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
     QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));
@@ -665,7 +665,7 @@ void Data::qc () const
   {
     Xml::File f ("Data_qc.xml", false, false, "XML");  // PAR
     saveXml (f);
-    PRINT (name);
+    PRINT (getName ());
     PRINT (Token::type2str (token. type));
     PRINT (token);
     PRINT (token. name);
@@ -677,7 +677,7 @@ void Data::qc () const
 
 void Data::saveXml (Xml::File &f) const
 {
-  const Xml::Tag tag (f, name);
+  const Xml::Tag tag (f, getName ());
 
   if (! token. empty ())
     f. text (token. str ());
@@ -707,7 +707,7 @@ bool Data::contains (const string &what,
                      bool tokenSubstr,
                      bool tokenWord) const
 {    
-  if (equalName && containsWord (name, what) != string::npos)
+  if (equalName && containsWord (getName (), what) != string::npos)
     return true;
   if (tokenSubstr && Common_sp::contains (token. name /*s*/, what))
     return true;
@@ -816,7 +816,7 @@ StringVector Data::tagName2texts (const string &tagName) const
   ASSERT (! tagName. empty ());
   
   StringVector vec;
-  if (name == tagName)
+  if (getName () == tagName)
   {
     QC_ASSERT (parent);
     QC_ASSERT (children. empty ());
@@ -838,8 +838,9 @@ void Data::unify_ (const Data& query,
                    TextTable &tt) const
 {
   ASSERT (! variableTagName. empty ());
+  ASSERT (& names == & query. names);
   
-  if (name != query. name)
+  if (nameIndex != query. nameIndex)
     return;
   if (   ! query. token. empty () 
       && ! (query. token == token)
@@ -847,7 +848,7 @@ void Data::unify_ (const Data& query,
     return;
     
   for (const Data* queryChild : query. children)
-    if (queryChild->name != variableTagName)
+    if (queryChild->getName () != variableTagName)
     {
       ASSERT (queryChild->parent);
       for (const Data* dataChild : children)
@@ -883,14 +884,14 @@ Schema* Data::createSchema (bool storeTokens) const
 	  {
 	    Schema* other = child->createSchema (storeTokens);
 	    other->parent = sch;
-	    if (const Schema* childSch = findPtr (sch->name2schema, child->name))
+	    if (const Schema* childSch = findPtr (sch->name2schema, child->getName ()))
 	    {
 	      var_cast (childSch) -> multiple = true;
 	      var_cast (childSch) -> merge (*other);
 	      delete other;
 	    }
 	    else
-	      sch->name2schema [child->name] = other;
+	      sch->name2schema [child->getName ()] = other;
 	  }
 
   if (! token. empty ())
@@ -936,10 +937,10 @@ void Data::writeFiles (size_t xmlNum,
   for (const Data* child : children)
     if (! child->colonInName)
     {
-      if (const Schema* childSch = findPtr (sch->name2schema, child->name))
+      if (const Schema* childSch = findPtr (sch->name2schema, child->getName ()))
         child->writeFiles (xmlNum, childSch, flatTable);
       else
-        throw runtime_error ("Schema-XML mismatch: " + child->name);
+        throw runtime_error ("Schema-XML mismatch: " + child->getName ());
     }
     
   if (newFlatTable)
@@ -957,7 +958,7 @@ void Data::tag2token (const string &tagName)
   	const Data* child = children. front ();  
   	ASSERT (child);
   	if (   token. empty ()
-  		  && child->name == tagName
+  		  && child->getName () == tagName
   		  && child->children. empty ()
   		//&& ! child->token. empty ()
   		 )
@@ -990,7 +991,7 @@ void Data::mergeSingleChildren ()
   		  && ! (child->token == token)
   		 )
   		break;
-  	name += "/" + child->name;
+  	nameIndex = var_cast (names). add (getName () + "/" + child->getName ());
   	if (child->colonInName)
   		colonInName = true;
   	if (token. empty ())

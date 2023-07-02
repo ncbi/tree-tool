@@ -74,6 +74,11 @@ struct ThisApplication : Application
 	  unique_ptr<Xml_sp::Schema> sch (Xml_sp::Schema::readSchema (schemaFName, schemaName));
 	  sch->qc ();
 	  
+    Names names (10000);   // PAR
+	  VectorOwn<Xml_sp::Data> markupDeclarations;
+	#if 1
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
+	#else
 	  unique_ptr<const Xml_sp::Data> xml;
 	  {
   	  TokenInput ti (xmlFName, '\0', false, false, 1000);  // PAR 
@@ -86,7 +91,8 @@ struct ThisApplication : Application
         { throw e; }
       catch (const exception &e)
         { ti. error (e. what (), false); }
-    }    
+    }  
+  #endif  
     xml->qc ();
     
     sch->setFlatTables (dirName, nullptr);

@@ -3161,6 +3161,10 @@ public:
 
 
 
+typedef  Enumerate<string>  Names;
+
+
+
 struct Progress : Nocopy
 {
 private:

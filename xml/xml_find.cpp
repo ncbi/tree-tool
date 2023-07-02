@@ -68,12 +68,14 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
 		QC_ASSERT (! variableTag. empty ());
 	
 	
+	  Names names (10000);   // PAR
+	  
 	  VectorOwn<Xml_sp::Data> targetMarkupDeclarations;
-	  unique_ptr<const Xml_sp::Data> target (Xml_sp::Data::load (targetFName, targetMarkupDeclarations));
+	  unique_ptr<const Xml_sp::Data> target (Xml_sp::Data::load (names, targetFName, targetMarkupDeclarations));
     target->qc ();
 
 	  VectorOwn<Xml_sp::Data> queryMarkupDeclarations;
-	  unique_ptr<const Xml_sp::Data> query (Xml_sp::Data::load (queryFName, queryMarkupDeclarations));
+	  unique_ptr<const Xml_sp::Data> query (Xml_sp::Data::load (names, queryFName, queryMarkupDeclarations));
     query->qc ();
     if (verbose ())
     {

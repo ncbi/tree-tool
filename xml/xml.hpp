@@ -161,8 +161,11 @@ public:
 
 
 
-struct Data : Named  // --> VirtNamed with Enumerate<string> names ??
+struct Data : VirtNamed  
 {
+	const Names &names;  
+	size_t nameIndex {no_index};
+	
   // Tree
   const Data* parent {nullptr};
   VectorOwn<Data> children;
@@ -184,20 +187,25 @@ public:
 	  // searchFoundAll => parent->searchFoundAll
   
 
-  Data (TokenInput &tin,
+  Data (Names &names_arg,
+        TokenInput &tin,
         VectorOwn<Data> &markupDeclarations);
 private:
-  Data (Data* parent_arg,
+  Data (Names &names_arg,
+        Data* parent_arg,
         TokenInput &ti)
-    : parent (parent_arg)
+    : names (names_arg)
+    , parent (parent_arg)
     , attribute (false)
     { readInput (ti); }
-  Data (Data* parent_arg,
+  Data (Names &names_arg,
+        Data* parent_arg,
         bool attribute_arg,
         bool colonInName_arg,
-        string &&attr,
+        const string &attr,
         Token &&value)
-    : Named (move (attr))
+    : names (names_arg)
+    , nameIndex (names_arg. add (attr))
     , parent (parent_arg)
     , attribute (attribute_arg)
     , colonInName (colonInName_arg)
@@ -214,12 +222,15 @@ private:
                              string &name);
     // Update: name
 public:
-  static Data* load (const string &fName,
+  static Data* load (Names &names,
+                     const string &fName,
                      VectorOwn<Data> &markupDeclarations);
   void qc () const override;
   void saveXml (Xml::File &f) const override;
   void saveText (ostream &os) const override;
     // attribute => skip
+  string getName () const final
+    { return nameIndex == no_index ? noString : names. num2elem [nameIndex]; }
   
   
   size_t getDepth () const
@@ -270,7 +281,7 @@ public:
 		}
   const Data* name2child (const string &name_arg) const
     { for (const Data* child : children)
-        if (child->name == name_arg)
+        if (child->getName () == name_arg)
           return child;
       return nullptr;
     }
