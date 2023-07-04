@@ -145,8 +145,8 @@ struct Viewer
           && nc. col_max > 10  // PAR
          )
       {
-        ASSERT (topIndex <= curIndex);
         ASSERT (topIndex < bottomIndex);
+        maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
         drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  F10,q:Quit");
           // Complex keys are trapped by the treminal
@@ -262,6 +262,18 @@ struct Viewer
             else
               beep ();
             break;
+          case 01016:  // ^KEY_DOWN
+          	if (topIndex + 1 < rows. size ())
+          		topIndex++;
+          	else 
+          		beep ();
+          	break;
+          case 01067:  // ^KEY_UP
+          	if (topIndex)
+          		topIndex--;
+          	else
+          		beep ();
+          	break;
           case 'f':  
           case KEY_NPAGE:
             if (curIndex + 1 == rows. size ())

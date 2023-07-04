@@ -618,12 +618,14 @@ Data* Data::load (Names &names,
 	                const string &fName,
                   VectorOwn<Data> &markupDeclarations)
 { 
-  Unverbose unv;
   unique_ptr<Xml_sp::Data> f;
   { 
     TokenInput ti (fName, '\0', true, false, 10000);  // PAR 
     try 
-      { f. reset (new Xml_sp::Data (names, ti, markupDeclarations));	}
+    { 
+		  Unverbose unv;
+    	f. reset (new Xml_sp::Data (names, ti, markupDeclarations));	
+    }
     catch (const CharInput::Error &e)
       { throw e; }
     catch (const exception &e)
