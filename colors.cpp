@@ -40,7 +40,6 @@ struct ThisApplication : Application
 	      const OColor c (cout, t, bright, true);
 	      cout << "Color " << t << ' ' << (bright ? "bright" : "dark") << endl;
 	    }
-	  
 	}
 };
 
