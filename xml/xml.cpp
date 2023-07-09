@@ -709,14 +709,13 @@ bool Data::contains (const string &what,
                      bool tokenSubstr,
                      bool tokenWord) const
 {    
-  if (equalName && containsWord (getName (), what) != string::npos)
-    return true;
-  if (tokenSubstr && Common_sp::contains (token. name /*s*/, what))
-    return true;
-  if (tokenWord && containsWord (token. name /*s*/, what) != string::npos)
-    return true;
-    
-  return false;
+  if (equalName)
+  	return containsWord (getName (), what) != string::npos;
+  if (tokenWord)
+  	return containsWord (token. name, what) != string::npos;
+  if (tokenSubstr)
+  	return Common_sp::contains (token. name, what);    
+  return token. name == what;
 }
 
 
@@ -727,12 +726,6 @@ bool Data::find (VectorPtr<Data> &path,
                  bool tokenSubstr,
                  bool tokenWord) const
 {
-  if (   ! equalName
-      && ! tokenSubstr
-      && ! tokenWord
-     )
-    return false;
-    
   if (contains (what, equalName, tokenSubstr, tokenWord))
     return true;
     
@@ -754,16 +747,10 @@ size_t Data::setSearchFound (const string &what,
 					                   bool tokenWord,
 					                   Byte mask)
 {
-	ASSERT (mask. any ());
+	ASSERT (mask);
 
   size_t n = 0;
 
-  if (   ! equalName
-      && ! tokenSubstr
-      && ! tokenWord
-     )
-    return n;    
-  
   if (contains (what, equalName, tokenSubstr, tokenWord))
   {
     searchFound    |= mask;

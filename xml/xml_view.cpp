@@ -42,14 +42,15 @@
 #include "../common.inc"
 
 #include "../common.hpp"
-#include "../ncurses.hpp"
 using namespace Common_sp;
+#include "../ncurses.hpp"
+using namespace NCurses_sp;
 #include "../version.inc"
 #include "xml.hpp"
 
 
 
-#define ctrl(x)     ((x) & 0x1f)
+#define CTRL(x)     ((x) & 0x1f)
 
 
 
@@ -85,7 +86,7 @@ struct Row
 
 NCurses::Color mask2color (Byte mask)
 {
-  if (mask. none ())
+  if (! mask/*. none ()*/)
   	return NCurses::colorNone;
 	switch (byte2first (mask) % 5)
 	{
@@ -107,7 +108,12 @@ struct Viewer
   Vector<Row> rows;  
   size_t topIndex {0};
   size_t curIndex {0};
-  string what;  // For search
+  // Search
+  StringVector what;  
+  bool equalName {true};  
+  bool tokenSubstr {false}; 
+  bool tokenWord {false};  
+  //
   NCurses nc;
 
 
@@ -148,7 +154,7 @@ struct Viewer
         ASSERT (topIndex < bottomIndex);
         maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  F10,q:Quit");
+        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  F10,q:Quit");  // Esc:Quit ??
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -157,7 +163,7 @@ struct Viewer
           move ((int) (i - topIndex), 0);
           {
             const bool current = (i == curIndex);
-	          const NCAttr attr (A_REVERSE, current);
+	          const Attr attr (A_REVERSE, current);
 	          const size_t x = row. getDepth ();  
 	          FFOR (size_t, j, x)
 	          {
@@ -171,18 +177,18 @@ struct Viewer
 	        }
           addch (' ');
           {
-	          const NCAttrColor attrColor (NCurses::colorBlue); 
+	          const AttrColor attrColor (NCurses::colorBlue); 
             printw ("%lu", row. childNum + 1);
           }
           {
-	          const NCAttrColor attrColor_tag (NCurses::colorGreen); 
-	          const Byte mask = row. data->searchFound. any () 
+	          const AttrColor attrColor_tag (NCurses::colorGreen); 
+	          const Byte mask = row. data->searchFound /*. any ()*/ 
                                 ? row. data->searchFound 
                                 : row. open 
                                	  ? 0
                                 	: row. data->searchFoundAll;
-	          const NCAttrColor attrColor_found (mask2color (mask), mask. any ());  
-	          const NCAttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
+	          const AttrColor attrColor_found (mask2color (mask), mask/*. any ()*/);  
+	          const AttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
 	          printw (" <%s>", row. data->getName (). c_str ());
 	        }
           if (! row. data->token. empty ())
@@ -209,7 +215,7 @@ struct Viewer
           if (const size_t n = row. data->children. size ())
           {
             printw (" ");
-	          const NCAttrColor attrColor_suf (NCurses::colorBlue); 
+	          const AttrColor attrColor_suf (NCurses::colorBlue); 
             printw (" %lu/%lu", n, row. nodes);
           }
         #if 0
@@ -234,12 +240,13 @@ struct Viewer
       bool keyAccepted = false;
       while (! keyAccepted)
       {
-        const int key = getch ();  // Invokes refresh()
+        const int key = getKey ();  // Invokes refresh()
         keyAccepted = true;
         switch (key)
         {
-          case 'q':   // ESC
-          case KEY_F(10):
+        //case 'q':   
+        //case KEY_F(10):
+          case 27:  // ESC
             quit = true;
             break;
           case KEY_DOWN:
@@ -321,15 +328,15 @@ struct Viewer
               topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             }
             break;
-          case ctrl('f'):
-          case 531 /*ctrl(KEY_END)*/:
+          case CTRL('f'):
+          case 531 /*CTRL(KEY_END)*/:
             do
               curIndex = rows. size () - 1;
             while (open (curIndex));
             topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             break;
-          case 10:
-          case KEY_ENTER:
+          case 10:         // Above "Shift" key
+          case KEY_ENTER:  // Bottom-right key
             if (rows [curIndex]. data->children. empty ())
               beep ();
             else if (! rows [curIndex]. open)
@@ -358,100 +365,22 @@ struct Viewer
               setTopIndex (fieldSize, openAll ());
             break;
           case 's':
-          case KEY_F(3):  // Use form window ??
+          case KEY_F(3):  
+            if (   searchForm ()
+            	  && ! what. empty ()
+            	 )
             {
-              constexpr size_t size = 128;  // PAR
-              ASSERT (what. size () <= size);
-              char search [size] = "";
-              echo ();
-              curs_set (1);
-              move ((int) fieldSize, 0);
-              clrtoeol ();
-            #if 0
-              char format [32];
-              sprintf (format, "%c%lu%s", '%', size, "%s");
-            //strcat (format, "%s");
-              scanw (format, search);  // does not work
-            #else
-              getstr (search);
-            #endif
-              curs_set (0);
-              noecho ();
-              if (*search && what != string (search))
-              {
-                what = search;
-              #if 0
-                for (Row& row : rows)
-                  row. found = false;
-              #endif
-              }
-              if (what. empty ())
-              {
-                beep ();
-                continue;
-              }
-              bool equalName = true;  
-              bool tokenSubstr = false; 
-              bool tokenWord = false;  
-            #if 1
               const uchar mask = 1;  // PAR
               var_cast (xml). unsetSearchFound (mask);
-              if (! var_cast (xml). setSearchFound (what, equalName, tokenSubstr, tokenWord, mask))
+              if (! var_cast (xml). setSearchFound (what. toString (), equalName, tokenSubstr, tokenWord, mask))
               	beep ();
-            #else
-              size_t i = curIndex + rows [curIndex]. found;
-              VectorPtr<Xml_sp::Data> path;
-              for (; i < rows. size (); i++)
-              {
-                const Row& row = rows [i];
-                if (row. open)
-                {
-                  if (row. data->contains (what, equalName, tokenSubstr, tokenWord))
-                    break;
-                }
-                else
-                {
-                  if (row. data->find (path, what, equalName, tokenSubstr, tokenWord))
-                    break;
-                }
-              }
-              if (i == rows. size ())
-              {
-                beep ();
-                continue;
-              }
-              while (! path. empty ())
-              {
-                ASSERT (! rows [i]. open);
-                rows [i]. open = true;
-                // Cf. "Open"
-                auto itStart = rows. begin ();
-                advance (itStart, i + 1);
-                Vector<Row> newRows;
-                const VectorOwn<Xml_sp::Data>& children = rows [i]. data->children;
-                newRows. reserve (children. size ());
-                FFOR (size_t, k, children. size ())
-                  newRows << Row (children [k], k);
-                rows. insert (itStart, newRows. begin (), newRows. end ());
-                const size_t j = children. indexOf (path. back ());
-                ASSERT (j != no_index);
-                i += 1 + j;
-                path. pop ();
-              }
-              ASSERT (i >= curIndex);
-              ASSERT (i < rows. size ());
-              curIndex = i;
-              rows [curIndex]. found = true;
-              if (curIndex >= bottomIndex_max)
-                topIndex = curIndex - pageScroll;
-          #endif
             }
             break;
           case 'c':  // Row::color
             {
               drawMenu (fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan) w(hite)");
               Row& row = rows [curIndex];
-              switch (getch ())
+              switch (getKey ())
               {
                 case 'n': row. color = NCurses::colorNone; break;
                 case 'r': row. color = NCurses::colorRed; break;
@@ -487,8 +416,8 @@ struct Viewer
 	               const string &s)
 	{
 	  move ((int) fieldSize, 0);
-	  const NCAttr attr (A_REVERSE);
-	  const NCBackground bkgr (nc. background | A_REVERSE);
+	  const Attr attr (A_REVERSE);
+	  const Background bkgr (nc. background | A_REVERSE);
 	  addstr (s. c_str ());
 	  clrtoeol ();
 	}
@@ -519,10 +448,46 @@ struct Viewer
 	    opened += open (i);
 	  return opened;
 	}
+	
+	
+	bool searchForm () 
+	{
+		constexpr size_t w0 = 20;
+		constexpr size_t w1 = 6;
+		constexpr size_t w2 = 6;
+		constexpr size_t w3 = 6;
+		constexpr size_t c0 = 2;
+		constexpr size_t c1 = c0 + w0;
+		constexpr size_t c2 = c1 + w1;
+		constexpr size_t c3 = c2 + w2;
+		constexpr size_t c4 = c3 + w3;
+		Form form (nc, c4, 4);
+		form. print (c4 / 2 - 3, 0, " Find ");
+		form. print (c0, 1, "What");
+		form. print (c1, 1, "Tag");
+		form. print (c2, 1, "Whole");
+		form. print (c3, 1, "Word");
+		form. add (c0, 2, w0, false, what);
+		form. add (c1, 2, 2, true, yesNo (equalName));
+		form. add (c2, 2, 2, true, equalName ? "" : yesNo (! tokenSubstr));
+		form. add (c3, 2, 2, true, equalName ? "" : yesNo (tokenWord));
+		if (! form. run ())
+			return false;
+		
+		// validation ??
+			
+		what        = form. getVal (0);
+		equalName   = form. getS (1) == "Y";
+		tokenSubstr = form. getS (2) == "N";
+		tokenWord   = form. getS (3) == "Y";
+		
+	//nc. message (what + " " + to_string (equalName) + to_string (tokenSubstr) + to_string (tokenWord));
+	
+	  return true;	
+	}
 };
 
-
-
+	
 
 struct ThisApplication : Application
 {
