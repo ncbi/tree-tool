@@ -86,7 +86,7 @@ struct Row
 
 NCurses::Color mask2color (Byte mask)
 {
-  if (! mask/*. none ()*/)
+  if (! mask)
   	return NCurses::colorNone;
 	switch (byte2first (mask) % 5)
 	{
@@ -182,12 +182,12 @@ struct Viewer
           }
           {
 	          const AttrColor attrColor_tag (NCurses::colorGreen); 
-	          const Byte mask = row. data->searchFound /*. any ()*/ 
+	          const Byte mask = row. data->searchFound 
                                 ? row. data->searchFound 
                                 : row. open 
                                	  ? 0
                                 	: row. data->searchFoundAll;
-	          const AttrColor attrColor_found (mask2color (mask), mask/*. any ()*/);  
+	          const AttrColor attrColor_found (mask2color (mask), mask);  
 	          const AttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
 	          printw (" <%s>", row. data->getName (). c_str ());
 	        }
@@ -240,7 +240,7 @@ struct Viewer
       bool keyAccepted = false;
       while (! keyAccepted)
       {
-        const int key = getKey ();  // Invokes refresh()
+        const int key = getKey ();
         keyAccepted = true;
         switch (key)
         {
@@ -335,7 +335,7 @@ struct Viewer
             while (open (curIndex));
             topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             break;
-          case 10:         // Above "Shift" key
+          case 10:         // Key above "shift" key
           case KEY_ENTER:  // Bottom-right key
             if (rows [curIndex]. data->children. empty ())
               beep ();
@@ -370,7 +370,7 @@ struct Viewer
             	  && ! what. empty ()
             	 )
             {
-              const uchar mask = 1;  // PAR
+              const uchar mask = 1;  // ??
               var_cast (xml). unsetSearchFound (mask);
               if (! var_cast (xml). setSearchFound (what. toString (), equalName, tokenSubstr, tokenWord, mask))
               	beep ();
@@ -453,14 +453,14 @@ struct Viewer
 	bool searchForm () 
 	{
 		constexpr size_t w0 = 20;
-		constexpr size_t w1 = 6;
-		constexpr size_t w2 = 6;
-		constexpr size_t w3 = 6;
+		constexpr size_t w1 = 5;
+		constexpr size_t w2 = 5;
+		constexpr size_t w3 = 5;
 		constexpr size_t c0 = 2;
-		constexpr size_t c1 = c0 + w0;
-		constexpr size_t c2 = c1 + w1;
-		constexpr size_t c3 = c2 + w2;
-		constexpr size_t c4 = c3 + w3;
+		constexpr size_t c1 = c0 + w0 + 1;
+		constexpr size_t c2 = c1 + w1 + 1;
+		constexpr size_t c3 = c2 + w2 + 1;
+		constexpr size_t c4 = c3 + w3 + 1;
 		Form form (nc, c4, 4);
 		form. print (c4 / 2 - 3, 0, " Find ");
 		form. print (c0, 1, "What");
@@ -481,8 +481,6 @@ struct Viewer
 		tokenSubstr = form. getS (2) == "N";
 		tokenWord   = form. getS (3) == "Y";
 		
-	//nc. message (what + " " + to_string (equalName) + to_string (tokenSubstr) + to_string (tokenWord));
-	
 	  return true;	
 	}
 };

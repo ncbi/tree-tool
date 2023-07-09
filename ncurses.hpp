@@ -58,7 +58,7 @@ namespace NCurses_sp
  
 inline int getKey () 
   { const int escdelay_old = set_escdelay (0);
-		const int key = getch ();  // Invokes refresh()
+		const int key = getch ();  // Invokes refresh()  // wgetch() ?? 
 		set_escdelay (escdelay_old);
 		return key;
   }
@@ -132,6 +132,7 @@ struct Background
 
 struct Window
 {
+//NCurses &nc;  ??
 	// Global
 	const size_t global_x;
   const size_t global_y;
@@ -180,7 +181,7 @@ struct Window
 
 
 inline void message (const string &text)
-	{	Window w (5, 5, text. size () + 4, 3);
+	{	Window w (5, 5, text. size () + 4, 3);  // PAR
 	  w. print (2, 1, text);
 	  getKey ();
 	}
@@ -197,6 +198,7 @@ private:
 	const size_t width;
 	  // > 1
 	const bool upper;
+	  // For ASCII
 	size_t val_start {0};
 	  // < val.size()
 	size_t pos {0};
@@ -264,6 +266,7 @@ struct Form : Window
 	string getS (size_t i) const
 	  { return fields [i] -> getS (); }
 };
+
 
 
 

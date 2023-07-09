@@ -40,6 +40,10 @@ using namespace Common_sp;
 
 
 
+#define CTRL(x)     ((x) & 0x1f)
+
+
+
 namespace NCurses_sp
 {
   
@@ -164,7 +168,7 @@ Field::Exit Field::run ()
 	Exit ex = fieldCancel;
  	const int prev_visibility = curs_set (1);
  	bool done = false;
-  string utf8;
+  string utf8;  // One character
   while (! done)
   {
   	if (val. empty ())
@@ -188,103 +192,122 @@ Field::Exit Field::run ()
 		
 		const size_t real_pos = val_start + pos;
 
-    int key = getch ();  
-    if (between (key, 128, 256))  // UTF-8
+    const int key = getKey ();  
+    if (between<int> (key, ' ', 256) && key != 127)
     {
-    	utf8 += char (key);    
+	    if (key >= 128)  // Non-ASCII UTF-8
+	    	utf8 += char (key);    
+	    else
+	    {
+	    	ASSERT (utf8. empty ());
+	    	char c = (char) key;
+	    	if (upper)
+	    	  c = toUpper (c);
+	    	utf8 += c;	    		
+	    }	    
+	    ASSERT (! utf8. empty ());
   		const size_t len = utf8_len (utf8 [0]);
-  		ASSERT (len >= 2);
-  		if (utf8. size () == len)
+  		ASSERT (len != 1);
+  		if (! len || utf8. size () == len)
   		{
-  		//val = val. substr (0, real_pos) + utf8 + val. substr (real_pos);
   		  auto it = val. begin ();
   		  advance (it, real_pos);
   			val. insert (it, utf8);
   			utf8. clear ();    			
-  		}
-    }
-    else 
-    {
-    	ASSERT (utf8. empty ());
-    	if (between<int> (key, ' ', 127))  
-	    {
-	    	if (upper)
-	    		key = toUpper ((char) key);
-  		  auto it = val. begin ();
-  		  advance (it, real_pos);
-	    //val = val. substr (0, real_pos) + (char) key + val. substr (real_pos);
-	    	val. insert (it, string (1, (char) key));
 	    	if (pos + 1 < width)
 	    	  pos++;
 	    	else
 	    		val_start++;
 	    }
-	    else
-		    switch (key)
-		    {
-		    	case 27:  // ESC
-		    		done = true;
-			    	break;
-		    	case 10:
-		    	case KEY_ENTER:	
-		    		done = true;
-		    		ex = fieldDone;
-		    		break;
-		    	case KEY_UP:   
-		    	case KEY_BTAB:
-		    		done = true;
-		    		ex = fieldPrev;
-		    		break;
-		    	case KEY_DOWN:  
-		    	case '\t':
-		    		done = true;
-		    		ex = fieldNext;
-		    		break;
-		    	case KEY_LEFT:
-		    		if (pos)
-		    			pos--;
-		    		else if (val_start)
-		    			val_start--;
-		    		else
-		    			beep ();
-		    		break;
-		    	case KEY_RIGHT:
-		    		if (real_pos < val. size ())
-		    		{
-		    			if (pos + 1 < width)
-		    			  pos++;
-		    			else
-		    				val_start++;
-		    		}
-		    		else
-		    			beep ();
-		    		break;
-		    	case KEY_DC:
-		    		if (real_pos < val. size ())
-		    			val. eraseAt (real_pos);
-		    		else
-		    			beep ();
-		    		break;
-		    	case 127:
-		    	case KEY_BACKSPACE:
-		    		if (real_pos)
-		    		{
-		    			val. eraseAt (real_pos - 1);
-		    			if (pos)
-		    			  pos--;
-		    			else
-		    			{
-		    				ASSERT (val_start);
-		    				val_start--;
-		    			}
-		    		}
-		    		else
-		    			beep ();
-		    		break;	    		
-		    	default: 
-		    		beep ();
-		    }
-		}
+	  }
+    else
+    {
+      ASSERT (utf8. empty ());
+	    switch (key)
+	    {
+	    	case 27:  // ESC
+	    		done = true;
+		    	break;
+	    	case 10:
+	    	case KEY_ENTER:	
+	    		done = true;
+	    		ex = fieldDone;
+	    		break;
+	    	case KEY_UP:   
+	    	case KEY_BTAB:
+	    		done = true;
+	    		ex = fieldPrev;
+	    		break;
+	    	case KEY_DOWN:  
+	    	case '\t':
+	    		done = true;
+	    		ex = fieldNext;
+	    		break;
+	    	case KEY_LEFT:
+	    		if (pos)
+	    			pos--;
+	    		else if (val_start)
+	    			val_start--;
+	    		else
+	    			beep ();
+	    		break;
+	    	case KEY_RIGHT:
+	    		if (real_pos < val. size ())
+	    		{
+	    			if (pos + 1 < width)
+	    			  pos++;
+	    			else
+	    				val_start++;
+	    		}
+	    		else
+	    			beep ();
+	    		break;
+	    	// ^left, ^right, clipboard ??
+	    	case KEY_HOME:
+	    		val_start = 0;
+	    		pos = 0;
+	    		break;
+	    	case KEY_END:
+	    		if (val. size () < width)
+	    		{
+	    			val_start = 0;
+	    			pos = val. size ();
+	    		}
+	    		else
+	    		{
+	    			val_start = val. size () - width + 1;
+	    		  pos = width - 1;
+	    		}
+	    		break;
+	    	case CTRL('k'):
+	    		val. eraseMany (real_pos, val. size ());
+	    		break;
+	    	case KEY_DC:
+	    		if (real_pos < val. size ())
+	    			val. eraseAt (real_pos);
+	    		else
+	    			beep ();
+	    		break;
+	    	case 127:
+	    	case KEY_BACKSPACE:
+	    		if (real_pos)
+	    		{
+	    			val. eraseAt (real_pos - 1);
+	    			if (pos)
+	    			  pos--;
+	    			else
+	    			{
+	    				ASSERT (val_start);
+	    				val_start--;
+	    			}
+	    		}
+	    		else
+	    			beep ();
+	    		break;	    		
+	    	default: 
+	    		beep ();
+	    }
+	  }
   }
  	curs_set (prev_visibility);
 
