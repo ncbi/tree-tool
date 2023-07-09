@@ -317,7 +317,6 @@ string getStack ()
 
 
 
-
 // Chronometer
 
 bool Chronometer::enabled = false;
@@ -364,16 +363,31 @@ Chronometer_OnePass::~Chronometer_OnePass ()
 
 // Byte
 
-size_t byte2first (Byte c)
+size_t byte2first (Byte b)
 { 
 	size_t i = 0;
 	Byte mask = 1;
-	while (! contains (c, mask))
+	while (! contains (b, mask))
 	{
 		i++;
 		mask <<= 1;
 	}
 	return i;
+}
+
+
+
+size_t utf8_len (char first)
+{
+	const Byte b = ~ (Byte) first;
+	size_t len = 0;
+	Byte mask = 0x80;
+	while (! contains (b, mask))
+	{
+		len++;
+		mask >>= 1;
+	}
+	return len;
 }
 
 
@@ -1685,7 +1699,7 @@ StringVector::StringVector (const string &s,
 
 string StringVector::toString (const string& sep) const
 { 
-  ASSERT (! sep. empty ());
+//ASSERT (! sep. empty ());
   
   string res;
   for (const string& s : *this)
