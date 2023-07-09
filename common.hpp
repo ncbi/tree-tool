@@ -468,6 +468,9 @@ size_t byte2first (Byte c);
   // Return: First 1-bit, 0-based
 
 size_t utf8_len (char first);
+  // Return: 0 - first is ASCII
+  //         1 - first is UTF-8 not first byte
+  //         else - first is UTF-8 first byte and value is the number of UTF-8 bytes
 
 
 
