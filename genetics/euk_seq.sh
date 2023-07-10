@@ -48,19 +48,19 @@ if [ ! -e $ASM.prot ]; then
   if [ $FUNGUS == 1 ]; then
     FUNGUS_PAR="--fungus"
   fi
-  rm -rf data/
-  rm -rf info/
-  rm -rf output/
-  rm -rf run/
+  $THIS/../rm_all.sh data
+  $THIS/../rm_all.sh info
+  $THIS/../rm_all.sh output
+  $THIS/../rm_all.sh run
   rm -f gmes.log
   rm -f run.cfg
   # Approximate
   /usr/local/gmes/4.69/bin/gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $ASM  --soft_mask 0  --cores 4  &>> $LOG
   echo -e "\nAnnotation finihsed!\n" >> $LOG
   $THIS/../rm_all.sh data
-  rm -r info/
-  rm -r output/
-  rm -r run/
+  $THIS/../rm_all.sh info
+  $THIS/../rm_all.sh output
+  $THIS/../rm_all.sh run
   rm gmes.log
   rm run.cfg
   rm gmhmm.mod
