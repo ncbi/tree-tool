@@ -225,7 +225,7 @@ struct ThisApplication : Application
                            #ifndef NUM_P
                              "  #:numbers"
                            #endif
-                             "  F10,q:Quit"
+                             "  Esc:Quit"
                             );
             // Non-character keys may be intercepted by the terminal
         #ifdef NUM_P
@@ -259,12 +259,11 @@ struct ThisApplication : Application
       bool keyAccepted = false;
       while (! keyAccepted)
       {
-        const int key = getch ();  // Invokes refresh()
+        const int key = NCurses_sp::getKey ();  
         keyAccepted = true;
-        switch (key)  //  case 27: quit ??!
+        switch (key)  
         {
-          case 'q':   // ESC
-          case KEY_F(10):
+          case 27:  // ESC
             quit = true;
             break;
           case KEY_DOWN:
