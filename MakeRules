@@ -7,10 +7,10 @@ ifdef AT_NCBI
     -Wsequence-point -Wsign-compare -Wsizeof-pointer-memaccess -Wstrict-aliasing -Wstrict-overflow=1 -Wswitch -Wtautological-compare \
     -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunused-function -Wunused-label -Wunused-value -Wunused-variable -Wvolatile-register-var \
     -Wextra \
-    -Wcast-align -Wconversion -Wdeprecated-declarations -Wformat -Winit-self -Wlogical-op \
+    -Wcast-align -Wconversion -Wdeprecated-declarations -Wlogical-op \
     -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
-    -Woverloaded-virtual -pedantic -Wparentheses -Wpointer-arith -Wsequence-point -Wshadow -Wunused \
-    -Wsuggest-attribute=format -Wswitch -Wuninitialized -Wsign-conversion 
+    -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wsuggest-attribute=format -Wunused \
+    -pedantic
   # -Wuseless-cast
 endif
 
