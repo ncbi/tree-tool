@@ -9,8 +9,8 @@ fi
 DIR="$1"
 
 
-if [ ! -d "$DIR" ]; then
-  error "Directory '$DIR' does not exist"
+if [ ! -e "$DIR" ]; then
+  exit
 fi
 
 
