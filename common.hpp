@@ -464,7 +464,10 @@ inline bool contains (uint who,
                       uint what)
   { return (who & what) == what; }
 
-size_t byte2first (Byte c);
+inline Byte reverse (Byte b)
+  { return Byte (numeric_limits<Byte>::max () - b); }
+
+size_t byte2first (Byte b);
   // Return: First 1-bit, 0-based
 
 size_t utf8_len (char first);

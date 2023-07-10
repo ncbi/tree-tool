@@ -274,8 +274,9 @@ public:
     // Output: searchFound, searchFoundAll
     // Invokes: contains()
   void unsetSearchFound (Byte mask)
-		{ searchFound    &= ~mask;
-			searchFoundAll &= ~mask;
+		{ const Byte b = reverse (mask); 
+		  searchFound    &= b; 
+			searchFoundAll &= b;
 			for (const Data* child : children)
 		    var_cast (child) -> unsetSearchFound (mask);
 		}

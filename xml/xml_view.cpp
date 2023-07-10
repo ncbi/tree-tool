@@ -531,7 +531,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     	{
     		// Display s/color in search form window ??
         var_cast (xml. get ()) -> setSearchFound (s, true, false, false, mask);
-    		mask <<= 1;
+    		mask = Byte (mask * 2);
       }
     }
     
