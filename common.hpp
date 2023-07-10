@@ -460,8 +460,8 @@ inline void toggle (ebool &b)
 
 typedef  unsigned char  Byte;
 
-inline bool contains (Byte who,
-                      Byte what)
+inline bool contains (uint who,
+                      uint what)
   { return (who & what) == what; }
 
 size_t byte2first (Byte c);

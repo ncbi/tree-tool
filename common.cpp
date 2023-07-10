@@ -365,9 +365,12 @@ Chronometer_OnePass::~Chronometer_OnePass ()
 
 size_t byte2first (Byte b)
 { 
+  if (! b)
+    return sizeof (Byte);
 	size_t i = 0;
-	Byte mask = 1;
-	while (! contains (b, mask))
+	uint u = b;
+	uint mask = 1;
+	while (! contains (u, mask))
 	{
 		i++;
 		mask <<= 1;
@@ -379,13 +382,13 @@ size_t byte2first (Byte b)
 
 size_t utf8_len (char first)
 {
-	const Byte b = ~ (Byte) first;
 	size_t len = 0;
-	Byte mask = 0x80;
-	while (! contains (b, mask))
+	const uint u = numeric_limits<uint>::max () - (Byte) first;
+	uint mask = 0x80;
+	while (! contains (u, mask))
 	{
 		len++;
-		mask >>= 1;
+	  mask >>= 1;
 	}
 	return len;
 }
