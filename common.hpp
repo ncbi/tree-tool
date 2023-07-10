@@ -72,7 +72,6 @@
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
-#include <bitset>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -142,7 +141,10 @@ constexpr const char* error_caption ("*** ERROR ***");
 // For debugger
 [[noreturn]] void errorExitStr (const string &msg);
 
-[[noreturn]] void throwf (const string &s);  // ??
+[[noreturn]] void throwf (const string &s); 
+
+inline void never_call ()
+  { throwf ("NEVER_CALL"); }
 
 
 
@@ -426,6 +428,9 @@ inline int getSign (bool b)
 
 inline bool boolPow (bool x, bool power)
   { return power ? x : ! x; }
+  	
+inline string yesNo (bool x)
+  { return x ? "Y" : "N"; }
 
 
 
@@ -453,7 +458,7 @@ inline void toggle (ebool &b)
 
 
 
-typedef  bitset<8>  Byte;
+typedef  unsigned char  Byte;
 
 inline bool contains (Byte who,
                       Byte what)
@@ -461,6 +466,12 @@ inline bool contains (Byte who,
 
 size_t byte2first (Byte c);
   // Return: First 1-bit, 0-based
+
+size_t utf8_len (char first);
+  // Return: 0 - first is ASCII
+  //         1 - first is UTF-8 not first byte
+  //         else - first is UTF-8 first byte and value is the number of UTF-8 bytes
+
 
 
 //
@@ -2629,6 +2640,8 @@ public:
 
 
   string toString (const string& sep) const;
+  string toString () const
+    { return toString (noString); }
   bool same (const StringVector &vec,
              const Vector<size_t> &indexes) const;
   void to_xml (Xml::File &f,
@@ -3158,6 +3171,10 @@ public:
       return num;
     }
 };
+
+
+
+typedef  Enumerate<string>  Names;
 
 
 

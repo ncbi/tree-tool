@@ -39,6 +39,7 @@
 #include "tsv.hpp"
 using namespace Common_sp;
 #include "../ncurses.hpp"
+using namespace NCurses_sp;
 #include "../version.inc"
 
 
@@ -194,14 +195,14 @@ struct ThisApplication : Application
       {
         {
           move (0, 0);
-          const NCAttr attr (A_BOLD);
+          const Attr attr (A_BOLD);
           addstr (tableFName. c_str ());
           clrtoeol ();
         }
         {
           move (1, 0);
-          const NCAttr attr (A_BOLD);
-          const NCBackground bkgr (COLOR_PAIR (7) /*nc. background*/ | A_BOLD);
+          const Attr attr (A_BOLD);
+          const Background bkgr (COLOR_PAIR (7) /*nc. background*/ | A_BOLD);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. header [j]. name;
@@ -210,20 +211,16 @@ struct ThisApplication : Application
         if (numP)
         {
           move (2, 0);
-          const NCAttr attr (COLOR_PAIR (4) /*| A_BOLD*/);
+          const Attr attr (COLOR_PAIR (4) /*| A_BOLD*/);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << to_string (j + 1);
           printRow (true, values, curCol, tt. header, nc. col_max, tt. rows. size ()); 
         }
         move ((int) (fieldSize + headerSize), 0);
-      #if 0
-        // For testing
-        addstr (to_string (curLastCol). c_str ());  
-      #else
         {
-          const NCAttr attr (A_BOLD);
-          const NCBackground bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
+          const Attr attr (A_BOLD);
+          const Background bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
           const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor  m:(un)mark row  a:(un)mark all rows"
                            #ifndef NUM_P
                              "  #:numbers"
@@ -241,12 +238,11 @@ struct ThisApplication : Application
           else
             addstr (posS. c_str ());
         }
-      #endif
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
           move ((int) (i - topIndex + headerSize), 0);
-          const NCAttr attrCurrent (A_REVERSE, i == curIndex);
-          const NCAttr attrFound (A_BOLD, rowFound [i]);
+          const Attr attrCurrent (A_REVERSE, i == curIndex);
+          const Attr attrFound (A_BOLD, rowFound [i]);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. rows [i] [j];
@@ -264,13 +260,8 @@ struct ThisApplication : Application
       while (! keyAccepted)
       {
         const int key = getch ();  // Invokes refresh()
-      #if 0
-        endwin(); 
-        cout << "KEY NAME: " << keyname (key) << " - " << key << endl;
-        exit (0);
-      #endif
         keyAccepted = true;
-        switch (key)
+        switch (key)  //  case 27: quit ??!
         {
           case 'q':   // ESC
           case KEY_F(10):
@@ -356,7 +347,7 @@ struct ThisApplication : Application
               beep ();            
             break;
           case 's':
-          case KEY_F(3):
+          case KEY_F(3):  // search Form ??!s
             {
               constexpr size_t size = 128;  // PAR
               ASSERT (what. size () <= size);
@@ -365,14 +356,7 @@ struct ThisApplication : Application
               curs_set (1);
               move ((int) (fieldSize + headerSize), 0);
               clrtoeol ();
-            #if 0
-              char format [32];
-              sprintf (format, "%c%lu%s", '%', size, "%s");
-            //strcat (format, "%s");
-              scanw (format, search);  // does not work
-            #else
               getstr (search);
-            #endif
               curs_set (0);
               noecho ();
               bool newSearch = false;

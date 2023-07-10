@@ -41,11 +41,10 @@ using namespace Common_sp;
 
 
 // ftp://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
-// Old: ftp://ftp.gnu.org/pub/gnu/ncurses/ncurses.tar.gz
 extern "C"
 {
   #include <ncursesw/curses.h>
-    // Linking requires: -lncurses
+    // Linking requires: -lncursesw -lform
     // Test: test/ncurses
     // $TERM info: infocmp
     // man {3|5} terminfo
@@ -53,10 +52,18 @@ extern "C"
 
 
 
-namespace Common_sp
+namespace NCurses_sp
 {
   
-  
+ 
+inline int getKey () 
+  { const int escdelay_old = set_escdelay (0);
+		const int key = getch ();  // Invokes refresh()  // wgetch() ?? 
+		set_escdelay (escdelay_old);
+		return key;
+  }
+
+
 
 struct NCurses : Singleton<NCurses>
 {
@@ -70,7 +77,8 @@ struct NCurses : Singleton<NCurses>
   
   
   explicit NCurses (bool hideCursor);
- ~NCurses ();
+ ~NCurses ()
+    { endwin (); }
 
 
   void resize ();
@@ -78,35 +86,185 @@ struct NCurses : Singleton<NCurses>
 
 
 
-struct NCAttr : Root
+struct Attr : Root
 {
   const attr_t attr;
   const bool active;
 
 
-  explicit NCAttr (attr_t attr_arg,
-                   bool active_arg = true);
+  explicit Attr (attr_t attr_arg,
+                 bool active_arg = true)
+		: attr (attr_arg)
+		, active (active_arg)
+    { if (active)
+        attron (attr); 
+    }
     // A_UNDERLINE can conflict with colors, see infocmp ncv
-  ~NCAttr ();
+  ~Attr ()
+    { if (active)
+        attroff (attr); 
+    }
 };
 
 
 
-struct NCAttrColor : NCAttr
+struct AttrColor : Attr
 {
-  explicit NCAttrColor (NCurses::Color color,
-                        bool active_arg = true);
+  explicit AttrColor (NCurses::Color color,
+                      bool active_arg = true);
 };
 
 
 
-struct NCBackground 
+struct Background 
 {
   const chtype background_old;
 
   
-  explicit NCBackground (chtype background);
- ~NCBackground ();
+  explicit Background (chtype background)
+		: background_old (getbkgd (stdscr))
+		{ bkgdset (background); }
+ ~Background ()
+    { bkgdset (background_old); }
+};
+
+
+
+struct Window
+{
+//NCurses &nc;  ??
+	// Global
+	const size_t global_x;
+  const size_t global_y;
+  //
+  const size_t width;
+  const size_t height;
+	WINDOW* win;
+	
+	
+	Window (size_t global_x_arg,
+	        size_t global_y_arg,
+	        size_t width_arg,
+	        size_t height_arg);
+	Window (const NCurses &nc,
+	        size_t width_arg,
+	        size_t height_arg)
+	  : Window ( nc. col_max - width_arg  - 1
+	  	       , 0 
+	  	       , width_arg
+	  	       , height_arg
+	  	       )
+	  {}    
+ ~Window ()
+    {	//wborder (win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+    	werase (win);
+    	wrefresh (win);
+			delwin (win);
+    }
+    
+    
+  void print (size_t x,
+              size_t y,
+              const string &s) 
+    { if (s. empty ())
+    	  return;
+    	mvwprintw (win, (int) y, (int) x, "%s", s. c_str ());
+      wrefresh (win);
+    }
+  void cursor (size_t x,
+               size_t y)
+    { wmove (win, (int) y, int (x));
+    	wrefresh (win);
+    }
+};
+
+
+
+inline void message (const string &text)
+	{	Window w (5, 5, text. size () + 4, 3);  // PAR
+	  w. print (2, 1, text);
+	  getKey ();
+	}
+
+
+
+
+struct Field
+{
+private:
+	Window &win;
+  const size_t x;
+  const size_t y;
+	const size_t width;
+	  // > 1
+	const bool upper;
+	  // For ASCII
+	size_t val_start {0};
+	  // < val.size()
+	size_t pos {0};
+	  // < width
+public:
+	StringVector val;  
+	  // UTF-8
+	
+	
+	Field (Window &win_arg,
+	       size_t x_arg,
+         size_t y_arg,
+	       size_t width_arg,
+	       bool upper_arg,
+	       const StringVector &val_arg);
+	Field (Window &win_arg,
+	       size_t x_arg,
+         size_t y_arg,
+	       size_t width_arg,
+	       bool upper_arg,
+	       const string &val_arg)
+	  : Field (win_arg, x_arg, y_arg, width_arg, upper_arg, StringVector {{val_arg}})
+	  {}
+	  
+	  
+	void print () const;
+	enum Exit {fieldDone, fieldCancel, fieldNext, fieldPrev};
+	Exit run ();
+	  // Update: val, val_start, pos
+	string getS () const
+	  { return val. toString (); }
+};
+
+
+
+struct Form : Window
+{
+  VectorOwn<Field> fields;
+    // !empty()
+	
+	
+	Form (const NCurses &nc,
+	      size_t width_arg,
+	      size_t height_arg)
+	  : Window (nc, width_arg, height_arg)
+	  {}
+	void add (size_t x,
+		        size_t y,
+			      size_t width_arg,
+			      bool upper,
+			      const StringVector &val)
+	  { fields << new Field (*this, x, y, width_arg, upper, val); }
+	void add (size_t x,
+		        size_t y,
+			      size_t width_arg,
+			      bool upper,
+			      const string &val)
+	  { fields << new Field (*this, x, y, width_arg, upper, val); }
+
+
+	bool run ();
+	  // Return: false <=> cancelled
+	StringVector getVal (size_t i) const
+	  { return fields [i] -> val; }
+	string getS (size_t i) const
+	  { return fields [i] -> getS (); }
 };
 
 
