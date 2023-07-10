@@ -367,8 +367,8 @@ size_t byte2first (Byte b)
 { 
   if (! b)
     return sizeof (Byte);
+	const uint u = b;
 	size_t i = 0;
-	uint u = b;
 	uint mask = 1;
 	while (! contains (u, mask))
 	{
@@ -382,8 +382,8 @@ size_t byte2first (Byte b)
 
 size_t utf8_len (char first)
 {
-	size_t len = 0;
 	const uint u = numeric_limits<uint>::max () - (Byte) first;
+	size_t len = 0;
 	uint mask = 0x80;
 	while (! contains (u, mask))
 	{
