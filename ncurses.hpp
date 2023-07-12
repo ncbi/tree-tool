@@ -44,7 +44,7 @@ using namespace Common_sp;
 extern "C"
 {
   #include <ncursesw/curses.h>
-    // Linking requires: -lncursesw -lform
+    // Linking requires: -lncursesw 
     // Test: test/ncurses
     // $TERM info: infocmp
     // man {3|5} terminfo
