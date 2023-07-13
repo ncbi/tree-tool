@@ -2,10 +2,10 @@
 # For github distribution
 
 unset AT_NCBI
-export CPP_DIR=$PWD
 
 cd `dirname $0`
 source ./bash_common.sh
+export CPP_DIR=$PWD
 
 
 make all
