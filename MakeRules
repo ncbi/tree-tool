@@ -1,18 +1,25 @@
+OS := $(shell uname -s)
+
 WarningCPPFLAGS =
-ifdef AT_NCBI
+#ifdef AT_NCBI
   WarningCPPFLAGS = \
-  	-Waddress -Wbool-compare -Wbool-operation -Wc++11-compat  -Wc++14-compat -Wchar-subscripts -Wcomment \
-    -Wformat -Wint-in-bool-context -Winit-self -Wlogical-not-parentheses -Wmaybe-uninitialized -Wmemset-elt-size -Wmemset-transposed-args \
-    -Wnarrowing -Wnonnull -Wnonnull-compare -Wopenmp-simd -Wparentheses  -Wreorder -Wreturn-type \
+  	-Waddress -Wbool-operation -Wchar-subscripts -Wcomment \
+    -Wformat -Wint-in-bool-context -Winit-self -Wlogical-not-parentheses -Wmemset-transposed-args \
+    -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type \
     -Wsequence-point -Wsign-compare -Wsizeof-pointer-memaccess -Wstrict-aliasing -Wstrict-overflow=1 -Wswitch -Wtautological-compare \
     -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunused-function -Wunused-label -Wunused-value -Wunused-variable -Wvolatile-register-var \
     -Wextra \
-    -Wcast-align -Wconversion -Wdeprecated-declarations -Wlogical-op \
+    -Wcast-align -Wdeprecated-declarations \
     -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
-    -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wsuggest-attribute=format -Wunused \
+    -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wunused \
     -pedantic
   # -Wuseless-cast
+
+ifeq ($(OS),Linux)
+  WarningCPPFLAGS += -Wbool-compare -Wc++11-compat -Wc++14-compat -Wconversion -Wmaybe-uninitialized -Wmemset-elt-size -Wnonnull-compare -Wopenmp-simd -Wlogical-op -Wsuggest-attribute=format
 endif
+
+#endif
 
 SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
   # was: -std=gnu++14
