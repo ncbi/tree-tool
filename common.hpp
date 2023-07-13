@@ -3879,7 +3879,7 @@ struct JsonDouble : Json
     // decimals_arg = -1: default
   void saveText (ostream& os) const final
     { const ONumber on (os, (streamsize) decimals, scientific);
-    	if (finite (n))
+    	if (isfinite (n))
         os << n; 
       else
         os << "null";  // NaN
