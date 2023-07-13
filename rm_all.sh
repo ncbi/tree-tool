@@ -16,7 +16,6 @@ fi
 
 TMP=`mktemp -d`
 
-# https://yonglhuang.com/rm-file/
 rsync -a --delete $TMP/ "$DIR"
 rmdir "$DIR"
 
