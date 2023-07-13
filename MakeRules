@@ -1,7 +1,7 @@
 OS := $(shell uname -s)
 
 WarningCPPFLAGS =
-#ifdef AT_NCBI
+ifdef AT_NCBI
   WarningCPPFLAGS = \
   	-Waddress -Wbool-operation -Wchar-subscripts -Wcomment \
     -Wformat -Wint-in-bool-context -Winit-self -Wlogical-not-parentheses -Wmemset-transposed-args \
@@ -14,15 +14,14 @@ WarningCPPFLAGS =
     -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wunused \
     -pedantic
   # -Wuseless-cast
-
-ifeq ($(OS),Linux)
-  WarningCPPFLAGS += -Wbool-compare -Wc++11-compat -Wc++14-compat -Wconversion -Wmaybe-uninitialized -Wmemset-elt-size -Wnonnull-compare -Wopenmp-simd -Wlogical-op -Wsuggest-attribute=format
+  ifeq ($(OS),Linux)  
+    # Do not work on Darwin
+    WarningCPPFLAGS += -Wbool-compare -Wc++11-compat -Wc++14-compat -Wconversion -Wmaybe-uninitialized -Wmemset-elt-size -Wnonnull-compare \
+      -Wopenmp-simd -Wlogical-op -Wsuggest-attribute=format
+  endif
 endif
 
-#endif
-
 SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
-  # was: -std=gnu++14
   # -Werror   # Will break NCBI Makefiles
   # -Wunreachable-code  # Wrongly reports virtual functions
   # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  

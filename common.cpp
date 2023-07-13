@@ -146,7 +146,7 @@ size_t get_threads_max_max ()
   size_t count_len = sizeof(count);
   sysctlbyname ("hw.logicalcpu", &count, &count_len, NULL, 0);
   // fprintf(stderr,"you have %i cpu cores", count);
-  return count;
+  return (size_t) count;
 #else
   LineInput f ("/proc/cpuinfo");
   size_t n = 0;

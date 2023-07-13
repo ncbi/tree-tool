@@ -48,7 +48,7 @@ namespace
 {
 
 
-const size_t len = 20;  // PAR
+//const size_t len = 20;  // PAR
 
 
 
