@@ -1,0 +1,1848 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[]{theorem}
+\usepackage[nottoc]{tocbibind}
+\usepackage{hyperref}
+
+
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+
+\theoremstyle{plain} \newtheorem{Lem}{Lemma}
+
+
+\input{c:/Users/brovervv/work/Maths/common.tex}
+
+
+\title{Data Analysis}
+\author{Vyacheslav Brover}
+
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+
+\section{General notation}
+Let the "prime" sign mean transpose.
+
+Let capital letters denote random variables.
+
+Let~$\R$ be the set of real numbers.
+$$ \R_+ \eqdef \{x \in \R: x \ge 0 \}. $$
+$$ \R_{++} \eqdef \{x \in \R: x > 0 \}. $$
+
+Let~$\I$ be the set of imaginary numbers.
+
+Let~$\C$ be the set of complex numbers.
+
+$$ [n] \eqdef \{i \in \N \mid 1 \le i \le n\}. $$
+
+
+
+\section{Distance and similarity}
+
+\subsection{Distance}
+A {\em dissimilarity} on a set~$X$ is a function $d:X,X \mapsto \C$ such that
+$$ d^2(x,y) \in \R, $$
+$$ d(x,y) = d(y,x) $$
+and
+$$ d(x,x) = 0. $$
+
+The elements~$x$ and~$y$ are {\em indiscernible} iff $d(x,y) \le 0$.
+
+A dissimilarity is a {\em semidistance} iff
+\begin{equation} \tag{semidistance non-negativity}
+  d^2(x,y) \ge 0.
+\end{equation}
+
+A semidistance is a {\em distance} iff
+$$ d(x,y) \ge 0 $$
+and
+\begin{equation} \tag{triangle inequality}
+  d(x,y) \le d(x,z) + d(z,y).
+\end{equation}
+
+If~$d$ is a distance then the indiscernible elements make up an equivalence relation on~$X$.
+
+If $d(x,y)$ is a distance then $d^p(x,y)$, where $0 < p \le 1$ is a distance.
+
+If~$d$ is a semidistance and
+$$ \delta \eqdef \max [d(x,y) - (d(x,z) + d(z,y))], $$
+then
+$$ d(x,y) - (d(x,z) + d(z,y)) \le \delta $$
+and
+\begin{equation*}
+  d_\delta(x,y) \eqdef
+    \begin{cases}
+      0, &\text{ if } x = y\\
+      d(x,y) + \delta,   &\text{ else}
+    \end{cases}
+\end{equation*}
+is a distance.
+
+The {\em between-set}
+$$ Inter(x,y) \eqdef \{z \in X: d(x,z) = d(z,y)\}. $$
+The between-set $Inter(x,y)$ is {\em unidimensional} iff 
+$$ \forall r \in \R_+ : |\{z \in Inter(x,y): d(x,z) = r\}| \le 1. $$
+
+For $a,b,c,d \in X$ let a {\em split} be a partitioning of $\{a,b,c,d\}$.
+There are 3~possible partitionings.
+For a partitioning $\{\{a,b\},\{c,d\}\}$
+$$ d(ab|cd) \eqdef d(a,b) + d(cd). $$
+
+A distance is {\em additive}, see \cite{Buneman}, iff
+\begin{equation} \tag{additivity}
+\forall a,b,c,d \in X : d(ab|cd) \le \max \{d(ac|bd), d(ad|bc)\}. 
+\end{equation}
+
+The triangle inequality follows form the additivity property.
+
+
+\subsection{Similarity}
+
+A {\em comparison} on a set~$X$ is a function $s:X,X \mapsto \R$ such that
+
+$$ s(x,y) = s(y,x). $$
+
+$$ s(x) \eqdef s(x,x). $$
+
+The {\em center} of a comparison~$s$
+$$ C(s) \eqdef \{x \in X \mid s(x) = 0\}. $$
+
+A comparison is a {\em semisimilarity} iff
+$$ s(x) \ge 0. $$
+
+A semisimilarity is a {\em similarity} iff 
+\begin{equation} \tag{H\"older's inequality} 
+  s^2(x,y) \le s(x) \ s(y) .
+\end{equation}
+
+$$ - \sqrt {s(x) \ s(y)} \le s(x,y) \le \sqrt {s(x) \ s(y)}. $$
+
+If $x, y \not \in C(s)$ then {\em cosine} 
+$$ \cos(x,y) \eqdef \frac {s(x,y)} {\sqrt{s(x) \ s(y)}} $$
+is in $[-1,1]$.
+
+$$ c \in C(s) \implies s(x,c) = 0. $$
+
+
+\subsection{Induced distance and similarity}
+
+The {\em $c$-centered comparison~$s_{d,c}$ induced} by a squared dissimilarity~$d^2$, where $c \in X$, is
+$$ s_{d,c}(x,y) \eqdef \frac 1 2 \left(d^2(x,c) + d^2(y,c) - d^2(x,y) \right). $$
+$$ s_{d,c}(x) = d^2(x,c). $$
+$$ c \in C(s_{d,c}). $$
+
+If~$d$ is a semidistance then~$s_{d,c}$ is a semisimilarity.
+
+If~$d$ is a distance then~$s_{d,c}$ is a similarity.
+\proof 
+{
+    For any $x,y \in X$
+    $$ d(x,c) \le d(x,y) + d(y,c). $$
+    $$ d(x,c) - d(y,c) \le d(x,y). $$
+    $$ \left(d(x,c) - d(y,c) \right)^2 \le d^2(x,y). $$
+    $$ d^2(x,c) + d^2(y,c) - 2 \ d(x,c) \ d(y,c) \le d^2(x,y). $$
+    $$ d^2(x,c) + d^2(y,c) - d^2(x,y) \le 2 \ d(x,c) \ d(y,c) . $$
+    $$ 2 \ s_{d,c}(x,y) \le 2 \ \sqrt{s_{d,c}(x)} \ \sqrt{s_{d,c}(y)}. $$
+    $$ s_{d,c}^2(x,y) \le s_{d,c}(x) \ s_{d,c}(y). $$
+}
+
+The squared dissimilarity~$d_s^2$ {\em induced} by a comparison~$s$ is
+\begin{equation}\label{s2d}
+  d_s^2(x,y) \eqdef s(x) + s(y) - 2 s(x,y). 
+\end{equation}
+$$ d_s^2(x,x) = 0. $$
+$$ c \in C(s) \implies d_s^2(x,c) = s(x). $$
+
+If~$s$ is a similarity then~$d_s$ is a semidistance,
+because 
+$$ 0 \le \left(\sqrt{s(x)} - \sqrt{s(y)} \right)^2 = s(x) + s(y) - 2 \sqrt{s(x) s(y)} \le s(x) + s(y) - 2 s(x,y) = d_s^2(x,y). $$
+
+The {\em $c$-centered comparison~$s_c$ induced} by a comparison~$s$, where $c \in X$, is
+\comm { comparison {\em translation}}
+$$ s_c(x,y) \eqdef s(x,y) - s(x,c) - s(y,c) + s(c). $$
+$$ s_c(x) = s(x) - 2 s(x,c) + s(c) = d_s^2(x,c). $$
+$$ c \in C(s_c). $$
+$$ c \in C(s) \implies s_c = s. $$
+
+If~$s$ is a similarity then~$s_c$ is a semisimilarity.
+
+If
+$$\forall c \in X : s_c \text{ is a similarity}, $$
+then~$d_s$ is a distance.
+\proof 
+{
+  For any $x,y,c \in X$
+  $$ s_c^2(x,y) \le s_c(x) \ s_c(y). $$
+  $$ 2 \ s_c(x,y) \le 2 \ \sqrt{s_c(x)} \ \sqrt{s_c(y)}. $$
+  $$ d_s^2(x,c) + d_s^2(y,c) - d_s^2(x,y) \le 2 \ d_s(x,c) \ d_s(y,c) . $$
+  $$ d_s^2(x,c) + d_s^2(y,c) - 2 \ d_s(x,c) \ d_s(y,c) \le d_s^2(x,y). $$
+  $$ \left(d_s(x,c) - d_s(y,c) \right)^2 \le d_s^2(x,y). $$
+  $$ d_s(x,c) - d_s(y,c) \le d_s(x,y). $$
+  $$ d_s(x,c) \le d_s(x,y) + d_s(y,c). $$
+}
+
+\comm {group}
+
+$$ \forall s, c : d_s = d_{s_c}. $$
+$$ \forall d, c, z : s = s_{d,c} \implies s_z = s_{d,z} . $$
+
+Example: $Y$ is a set, $X \eqdef 2^Y$, $d^2(A,B) \eqdef |(A \setminus B) \cup (B \setminus A)|$ is a squared distance, 
+and $s(A,B) \eqdef |A \cap B|$ is a similarity induced by~$d$ centered at~$\emptyset$.
+
+
+\subsection{Finite set}
+
+\comm{ $\to$ after "Square matrix" section}
+
+Let $Y \subseteq X$ be a finite set.
+$$ n \eqdef |Y|. $$
+
+If~$s$ is a similarity, then
+$$ \sum_{x,y \in Y} s(x,y) \le n \sum_{x \in Y} s(x), $$
+because
+$$ 0 \le \sum_{x,y \in Y} d_s^2(x,y) = \sum_{x,y \in Y} (s(x) + s(y) - 2 s(x,y)) = 2 n \sum_{x \in Y} s(x) - 2 \sum_{x,y \in Y} s(x,y). $$
+
+Let~$s(Y)$ be the matrix of comparisons~$s$ on~$Y$.
+
+The comparison~$s$ is a semisimilarity iff the determinants of all principal $k \times k$ submatrices of~$s(Y)$, where $k = 1$, are non-negative.
+The comparison~$s$ is a similarity     iff the determinants of all principal $k \times k$ submatrices of~$s(Y)$, where $k \le 2$, are non-negative.
+
+$$ s \succeq 0 \equiv \forall Y \subseteq X : |Y| \le \infty \implies s(Y) \succeq 0. $$
+
+if $s \succeq 0$ then~$s$ is a similarity.
+\comm {$s \succeq 0 \equivalent d_s \text{ is Euclidean}$ }
+
+Let {\em center of~$Y$} 
+$$ C(Y) \eqdef \arg \min_{c \in X} \sum_{x \in Y} d^2(x,c). $$
+$$ C(Y) = \arg \min_{c \in X} \sum_{x,y \in Y}s_{d,c} (x,y) = \arg \min_{c \in X} \sum_{x \in Y}s_{d,c} (x). $$
+
+If there is $c \in X$, s.t. 
+$$ \forall x \in Y : s(x,c) = \frac 1 n \sum_{y \in Y} s(x,y) $$
+and
+$$ s(c) = \frac 1 n \sum_{x \in Y} s(c,x) = \frac 1 {n^2} \sum_{x,y \in Y} s(x,y), $$
+then
+$$ \sum_{x,y \in Y} s_c(x,y) = 0 $$
+and 
+$$ \sum_{x \in Y} s_c(x) = \sum_{x \in Y} s(x) - \frac 1 n \sum_{x,y \in Y} s(x,y). $$
+
+$$ s_c(Y) \succeq 0 \implies c \in C(Y). $$
+
+$$ s_c(Y) = s(Y) - \mat A_n s(Y) - s(Y) \mat A_n + \mat A_n s(Y) \mat A_n = \mat C_n s(Y) \mat C_n. $$
+
+\comm{matrix operations}
+
+
+
+\section{Matrices}
+
+\subsection{Vectors}
+
+A {\em vector} is an element of~$\C^n$, which is a column with $n$ rows.
+
+A vector has 2 interpretations: 
+\begin{enumerate} 
+  \item a sequence of~$n$ numbers; 
+  \item a {\em point} in an $n$-dimensional space.
+\end{enumerate}
+
+
+Let vectors be denoted by small bold non-slanted letters.
+
+Let~$x_i$ be the $i$th element of the vector~$\ve x$.
+
+Let~$\ve 1$ be a vector where each element is~$1$.
+Let~$\ve 1_k$ be a vector where the first $k$ elements are~$1$ and the rest are~$0$.
+
+Let~$\ve u_k$ be a vector where each element is~0, except for the~$k$th element which is~1.
+
+$$ \ve x' \ve y \eqdef \sum_i x_i^* y_i. $$
+
+The {\em average} of~$\ve x$ is $\bar {\ve x} \eqdef \frac 1 n \ve 1' \ve x$.
+
+A vector $\ve x$ is {\em centered} iff $\bar{\ve x} = 0$.
+
+$$ \bar {\ve x} + \bar {\ve y} = \overline {\ve x + \ve y}. $$
+
+$$ \tilde {\ve x} \eqdef \ve x - \bar {\ve x} {\ve 1}. $$
+
+$$\bar {\tilde {\ve x}} = 0. $$
+
+$$ \tilde {\ve x} + \tilde {\ve y} = \widetilde {\ve x + \ve y}. $$
+
+The {\em scatter} of~$\ve x$ is $|\ve x|^2 \eqdef \ve x' \ve x$.
+
+$$ \var \ve x \eqdef \frac 1 n |\tilde {\ve x}|^2 = \frac 1 n |\ve x|^2 - \bar{\ve x}^2 $$ 
+is the {\em variance} of~$\ve x$.
+
+A vector $\ve x$ is {\em normalized} iff $|\ve x|^2 = 1$.
+
+The {\em norm} of~$\ve x$ is $|\ve x| \eqdef \sqrt{|\ve x|^2}$.
+
+The {\em length of the projection} of~$\ve y$ on~$\ve x$ is $\ve x' \ve y / |\ve x|$.
+
+The {\em projection} of~$\ve y$ on~$\ve x$ is 
+\begin{equation} \label{vecProjection}
+  \frac {\ve x'} {|\ve x|}  \ve y \ \frac {\ve x} {|\ve x|} = \frac {\ve x \ve x'} {|\ve x|^2} \ve y.
+\end{equation}
+
+$$ \cov (\ve x, \ve y) \eqdef \frac 1 n \tilde {\ve x}' \tilde {\ve y} = \frac 1 n \ve x' \ve y - \bar{\ve x} \bar{\ve y} $$
+is the {\em covariance} between~$\ve x$ and~$\ve y$.
+$$ \var (\ve x) = \cov(\ve x,\ve x). $$
+
+$$ \cor (\ve x, \ve y) \eqdef \frac {\cov (\ve x, \ve y)} {\sqrt{\var \ve x} \ \sqrt{\var \ve y}} $$ 
+is the {\em correlation} between~$\ve x$ and~$\ve y$.
+
+The {\em Euclidean distance} $$d(\ve x, \ve y) \eqdef |\ve x - \ve y|.$$
+If $x,y \in \{\R,\I\}^n$ then the Euclidean distance is a dissimilarity.
+If $x,y \in \R^n$ then the Euclidean distance is a distance and has unidimensional between-sets.
+
+The {\em Euclidean similarity} $$s(\ve x, \ve y) \eqdef \ve x' \ve y.$$
+If $x,y \in \{\R,\I\}^n$ then the Euclidean similarity is a comparison.
+If $x,y \in \R^n$ then the Euclidean similarity is a similarity centered at~$\ve 0$.
+
+The sum of the squared differences of the elements of~$\ve x$ from~$a$
+\begin{equation} \label{sqDiff}
+|a \ve 1 - \ve x|^2 = a^2 \ve 1' \ve 1 + |\ve x|^2 - 2a\ve 1' \ve x = n (a - \bar {\ve x})^2 + n \ \var \ve x.
+\end{equation}
+If $\ve x \in \R^n$ and~$a \in \R$ then
+\begin{equation} \label{centerL2}
+  \arg \min_a |a \ve 1 - \ve x|^2 = \{\bar {\ve x} \}.
+\end{equation}
+
+
+
+\comm { Metrics $L_k$}
+
+\comm { Are they distances ?}
+
+
+\subsection{Rectangular matrices}
+
+A {\em matrix} is an element of $\C^{n \times m}$, which is a table with $n$ rows and $m$ columns.
+
+Let matrices be denoted by large non-slanted letters.
+
+A vector $\ve x \in \C^n$ is equivalent to a matrix $\mat X \in \C^{n \times 1}$.
+
+A matrix $\mat X$ is {\em square} iff $\mat X \in \C^{n \times n}$.
+
+Let $\ve x_{i \cdot }$ be the $i$th row of matrix~$\mat X$,
+$\ve x_{\cdot j}$ be the $j$th column of matrix~$\mat X$,
+and $x_{ij}$ be the element of~$\mat X$ in row~$i$ and column~$j$.
+
+If $\mat A \in \C^{n \times m_1}$ and $\mat B \in \C^{n \times m_2}$, then $[\mat B \ \mat C] \in \C^{n \times (m_1 + m_2)}$.
+Similarly, 
+if $\mat A \in \C^{n_1 \times m}$ and $\mat B \in \C^{n_2 \times m}$, then $\left[ \begin{array}{c} \mat B \\ \mat C \end{array} \right] \in \C^{(n_1 + n_2) \times m}$.
+
+For $\mat X \in \C^{n \times m}$, the matrix $\mat X' \in \C^{m \times n}$, where $x'_{ij} = x_{ji}$, is the {\em transpose of~$\mat X$}.
+
+$$ \E \mat X \eqdef \bar {\mat X} \eqdef \frac 1 n \mat X' \ve 1. $$
+
+$$ |\mat X|^2 \eqdef \mat X' \mat X. $$
+
+Let $rank(\mat X)$ be the maximum number of linearly independent rows of~$\mat X$.
+$$ rank(\mat X') = rank(\mat X). $$
+\comm { \proof {}}
+$$ rank(\mat X) \le \min \{n, m\}. $$
+$$ rank(\mat A \mat B) \le \min \{rank (\mat A), rank (\mat B)\}. $$
+$$ rank(\mat X \mat X') = rank (\mat X). $$
+\begin{equation} \label{rank_nonempty_cells}
+  |\{\langle i, j \rangle \mid x_{ij} \ne 0\}| \ge rank(\mat X). 
+\end{equation}
+\comm{procedure to find all linear dependencies}
+
+$\mat X \ve y$ has two interpretations:
+\begin{enumerate} 
+  \item the lengths of the projections of~$\ve y$ on the rows of~$\mat X$ times the norms of the rows;
+  \item the sum of the columns of~$\mat X$ weighted by~$\ve y$.
+\end{enumerate}
+
+\begin{equation}\label{sim2dataCentered}
+\mat X \ve z = \ve 0 \equivalent \mat X' \mat X \ve z = \ve 0. 
+\end{equation}
+\proof {
+Sufficiency: 
+If $\mat X \ve z \ne \ve 0$ and $\mat X' \mat X \ve z = \ve 0$ then $0 \ne (\ve z' \mat X') (\mat X \ve z) = \ve z' (\mat X' \mat X \ve z) = \ve z' \ve 0 \ \#$. 
+}
+
+$$\mat X \mat Y = \sum_i \ve x_{\cdot i} \ve y_{i \cdot}'. $$
+
+The {\em generalized inverse} of~$\mat X \in \C^{n \times m}$ is the set of matrices
+$$\mat X^- \eqdef \{\mat Y \in \C^{m \times n} : \mat X \mat Y \mat X = \mat X\}. $$
+The symbol~$\mat X^-$ will be used in an expression~$f(\mat X^-)$ meaning any $\mat Y \in \mat X^-$, 
+presupposing $$\forall \mat Y \in \mat X^- : f(\mat Y) = const. $$
+
+
+
+\subsection{Square matrices}
+
+Let~$\mat X \in \C^{n \times n}$ .
+
+A {\em principal} submatrix of~$\mat X$ is a matrix obtained by the removal of the rows and columns with the same indices from~$\mat X$.
+
+$\mat X$ is {\em symmetric} iff $\mat X = \mat X'$.
+
+$\mat X$ is {\em full rank} iff $rank(\mat X) = n$.
+
+Full-rank matrices make up a group w.r.t.~multiplication.
+
+If~$\mat B$ is full rank and $\ve x = \mat B \ve y$ then~$\ve y$ {\em represents~$\ve x$ in the space of~$\mat B$}.
+
+If~$\mat X$ is full rank then $\mat X^{-1}$ is the {\em inverse} of~$\mat X$:
+$$ \mat X \mat X^{-1} = \mat X^{-1} \mat X = \mat I, $$
+$$ \mat X^- = \{\mat X^{-1}\} . $$
+
+The {\em determinant} of matrix~$\mat X$, denoted by $\det \mat X$, is the {\em oriented volume} of~$\mat X$.
+\comm { explain}
+$$ rank (\mat X) < n \equivalent \det \mat X = 0. $$
+
+$$ \mat X, \mat Y, \mat Z \in \C^{n \times n} \And \mat X = \mat Y \mat Z \implies \det \mat X = \det \mat Y \det \mat Z. $$
+
+$\mat X$ is {\em skew-symmetric} iff $\mat X = - \mat X'$.
+
+For any square~$\mat X$,
+$\mat X_{sym} \eqdef (\mat X + \mat X') / 2$ is a symmetric matrix,
+$\mat X_{skew} \eqdef (\mat X - \mat X') / 2$ is a skew-symmetric matrix,
+$\mat X = \mat X_{sym} + \mat X_{skew}$
+and $\forall \ve x : \ve x' \mat X \ve x = \ve x' \mat X_{sym} \ve x$.
+
+$$ \mat X = - \mat X' \implies \forall i : x_{ii} = 0. $$
+
+The {\em trace} of~$\mat X$ 
+$$\trc \mat X \eqdef \sum_i x_{ii}.$$
+If $\mat Y \in \C^{n \times m}$ and $\mat Z \in \C^{m \times n}$ then $\trc \mat Y \mat Z = \trc \mat Z \mat Y$.
+In particular, 
+$$ \trc |\mat Y|^2 = \trc |\mat Y'|^2 = \sum_{ij} y^2_{ij}. $$
+
+Let~$\ve x^d$ be the square matrix~$\mat X$ whose diagonal is vector~$\ve x$: 
+\begin{equation*}
+x_{ij} \eqdef 
+  \begin{cases}
+    x_i, &\text{ if } i = j\\
+    0,   &\text{ else.}
+  \end{cases}
+\end{equation*}
+
+$$ (\ve x^d)' = \ve x^d. $$
+
+$$ \mat I \eqdef \ve 1^d. $$
+
+$$ \ve x^{-d} \eqdef \left(\ve x^d \right)^{-1}. $$
+
+$$ \ve x^{\sim d} \eqdef \ve y^d, $$
+where 
+\begin{equation*}
+  y_i \eqdef 
+  \begin{cases}
+     0, &\text{ if } x_i = 0\\
+     1/x_i,   &\text{ else.}
+  \end{cases}
+\end{equation*}
+
+Let the matrix $\mat I_n^m \in \{0,1\}^{n \times m}$ be the first~$m$ columns of~$\mat I$.
+And let the matrix $\mat I_n^{-m} \in \{0,1\}^{n \times m}$ be the last~$n-m$ columns of~$\mat I$.
+$$ [\mat I_n^m \ \mat I_n^{-m}] = \mat I_n. $$
+
+For a matrix~$\mat Y \in \C^{n \times m}$, 
+$\mat Y \mat I^k_m$ is the first $k$ columns of~$\mat Y$, 
+and
+$(\mat I^k_n)' \mat Y$ is the first $k$ rows of~$\mat Y$.
+
+$$\mat A \ve x^d \mat B = \sum_i x_i \ve a_{\cdot i} \ve b_{i \cdot}'. $$
+
+A matrix~$\mat H \in \C^{n \times n}$ is {\em idempotent} iff
+$$ \mat H^2 = \mat H. $$
+The matrix $\mat I - \mat H$ is also idempotent.
+$$ \mat H (\mat I - \mat H) = \mat 0. $$
+$$ rank(\mat H) + rank(\mat I - \mat H) = n. $$
+\comm{prove}
+$$ \mat H = \mat I \equivalent rank(\mat H) = n. $$
+
+\definition {Orthonormal matrix}
+{If matrix~$\mat B \in \C^{n \times n}$, then $\mat B$ is {\em orthonormal} with column {\em basic vectors} iff $|\mat B|^2 = \mat I$.
+}
+
+If $\mat B$ is orthonormal then $\mat B$ is full rank, $\mat B^{-1} = \mat B'$ and $\mat B'$ is orthonormal.
+
+Orthonormal matrices of the same size make up a group w.r.t.~multiplication.
+
+A matrix~$\mat P$ is a {\em permutation matrix} 
+iff $\mat P \in \{0,1\}^{n \times n}$, $\ve 1' \mat P = \ve 1'$ and $\mat P \ve 1 = \ve 1$.
+The matrix $\mat P \mat A$ is the permutation of the rows of the matrix~$\mat A$.
+The matrix $\mat B \mat P$ is the permutation of the columns of the matrix~$\mat B$.
+A permutation matrix is orthonormal.
+
+
+
+\subsection{Semidefiniteness}
+
+A symmetric matrix~$\mat X \in \R^{n \times n}$ is {\em positive semidefinite}, denoted by $\mat X \succeq 0$, iff 
+$$\forall \ve x \in \R^n: \ve x' \mat X \ve x \ge 0. $$
+\comm {$\mat X \in \C^{n \times n}$}
+
+A symmetric matrix~$\mat X \in \R^{n \times n}$ is {\em positive     definite}, denoted by $\mat X \succ   0$, iff 
+$$\forall \ve x \in \R^n: \ve x \ne \ve 0 \implies \ve x' \mat X \ve x > 0. $$
+There are similar definitions for {\em negative semidefinite} and {\em negative definite} matrices.
+
+$$ \mat X \succeq 0 \implies (\mat X \succ 0 \equivalent rank(\mat X) = n). $$
+
+$$ \mat X \succeq 0 \implies \forall i : x_{ii} \ge 0. $$
+$$ \mat X \succ 0 \implies \forall i : x_{ii} > 0. $$
+
+$$ \forall \mat A \in \R^{n \times m}: |\mat A|^2 \succeq 0 \And |\mat A'|^2 \succeq 0 $$
+
+\begin{equation} \tag{Cholesky decomposition}
+\mat X \succeq 0 \equivalent \exists \mat U \in \R^{n \times n} : \mat U \text{ is upper-triangular} \And \mat X = |\mat U|^2.
+\end{equation}
+If $\mat X \succ 0$ then there is a unique Cholesky decomposition such that $\forall i : u_{ii} > 0$.
+$$ \mat X \succ 0 \implies \mat X^{-1} = \mat U^{-1} (\mat U^{-1})'. $$
+\begin{equation} \label{cholesky_rank}
+rank(\mat X) = rank(\mat U).
+\end{equation}
+\begin{equation} \label{rank_nonempty_diagonal}
+\mat X \succeq 0 \implies |\{i \mid x_{ii} > 0\}| \ge rank(\mat X), 
+\end{equation}
+because~(\ref{cholesky_rank}), cf.~(\ref{rank_nonempty_cells}).
+
+$$ \mat X \succeq 0 \implies \det \mat X \ge 0. $$
+$$ \mat X \succeq 0 \equivalent (\forall \mat Y : \text{$\mat Y$ is a principal submatrix of $\mat X$} \implies \det \mat Y \ge 0). $$
+\proof
+{
+    Sufficiency: If $\exists \mat Y$, s.t.~$\mat Y$ is a principal submatrix of $\mat X$ and $\det \mat Y < 0$, 
+    then $\mat Y = \mat B \ve \lambda^d \mat B'$ for some $\mat B$ and vector~$\ve \lambda$ containing $\lambda_i < 0$, see Section~\ref{eigen},
+    and for $\ve y \eqdef \mat B \ve u_i$, $\ve y' \mat Y \ve y < 0$.
+    
+}
+
+
+
+\subsection{Eigenvectors and eigenvalues} \label{eigen}
+
+Let~$\mat X \in \C^{n \times n}$.
+
+\definition {Eigenvectors and Eigenvalues}
+{
+For $\mat B \in \C^{n \times n}$ and $\ve \lambda \in \C^n$
+such that 
+$$\mat X \mat B = \mat B \ve \lambda^d,$$
+$$ rank(\mat B) = n, $$
+$$ \forall i: |\ve b_{\cdot i}|^2 = 1 $$
+and the elements of $\ve \lambda$ are ordered so that $\forall i : |\lambda_i| \ge |\lambda_{i+1}| \And (|\lambda_i| > |\lambda_{i+1}| \Or \phi_i > \phi_j)$, where $\lambda_i = |\lambda_i| e^{i \phi_i}$,
+the columns of~$\mat B$ are the {\em eigenvectors} of~$\mat X$,
+and the elements of~$\ve \lambda$ are the {\em eigenvalues} of~$\mat X$.
+
+This is denoted by $\mat B \in \mathfrak B(\mat X)$ and $\ve \lambda = \ve \lambda(\mat X)$.
+}
+
+$$ \ve b \text{ is an eigenvector of } \mat X \implies \forall y \in \R : e^{i y} \ve b \text{ is an eigenvector of } \mat X. $$
+\comm {$\ve b$ or $- \ve b$, normalization of $\ve b$ ??}
+
+The elements of $\ve \lambda(\mat X)$ are the roots of the equation
+$$ \det(\mat X - \lambda \mat I) = 0. $$
+
+The vector~$\ve \lambda(\mat X)$ is unique for~$\mat X$.
+
+$$ \ve \lambda(\mat X) = \ve \lambda(\mat X'). $$
+
+The set~$\mathfrak B(\mat X)$ may contain more than one element.
+For example, if for $a \le i \le b$ the values $\lambda_i$ are the same 
+then the eigenvectors $\ve b_{\cdot i}$ can be replaced by any basis of the subspace spanned by these eigenvectors.
+
+$$ \forall i: i > rank(\mat X) \equivalent \lambda_i = 0. $$
+$$ rank(\mat X) = |\{i \mid \lambda_i \ne 0\}|. $$
+
+\begin{equation} \label{mat2eigen} \tag{eigenvalue decomposition}
+  \mat X = \mat B \ve \lambda^d \mat B^{-1}. 
+\end{equation}
+
+$$ \mat B^{-1} \mat X \mat B = \ve \lambda^d. $$
+$$ \trc \mat X = \trc \mat B \ve \lambda^d \mat B^{-1} = \trc \mat B^{-1} \mat B \ve \lambda^d = \trc \ve \lambda^d = \ve 1' \ve \lambda. $$
+$$ \det(\mat X) = \det(\ve \lambda^d) = \prod_i \lambda_i. $$
+
+
+\subsubsection {Matrix transformations}
+If~$\mat X$ is full rank or $n \ge 0$ then
+$$ \mathfrak B(\mat X^n)  = \mathfrak B(\mat X) \text{ and } \ve \lambda^d(\mat X^n) = \left(\ve \lambda^d(\mat X) \right)^n, $$
+because
+$$ \mat X^n = \mat B (\ve \lambda^d)^n \mat B^{-1}. $$
+
+\bigskip
+In particular, if $\mat X$ is full rank then
+$$\mathfrak B(\mat X^{-1}) = \mathfrak B(\mat X) \text{ and } \ve \lambda^d(\mat X^{-1}) = \ve \lambda^{-d} (\mat X) $$
+and
+$$ \mat X^{-1} = \mat B \ve \lambda^{-d} \mat B^{-1}. $$
+
+\bigskip
+$$ \mathfrak B(\mat X') = \{(\mat B^{-1})' \mid \mat B \in \mathfrak B(\mat X)\} \text{ and } \ve \lambda(\mat X') = \ve \lambda(\mat X), $$
+because
+$\mat X = \mat B \ve \lambda^d \mat B^{-1}$, 
+$\mat B^{-1} \mat X = \ve \lambda^d \mat B^{-1}$
+and
+$\mat X' (\mat B^{-1})' = (\mat B^{-1})' \ve \lambda^d$.
+
+\bigskip
+If~$\mat P$ is full rank then
+$$ \mathfrak B(\mat P \mat X \mat P^{-1}) = \{\mat P \mat B \mid \mat B \in \mathfrak B(\mat X)\} \text{ and } \ve \lambda(\mat P \mat X \mat P^{-1}) = \ve \lambda(\mat X), $$
+because $\mat P \mat X \mat P^{-1} \mat P \mat B = \mat P \mat B \ve \lambda^d$.
+
+\bigskip
+If $\mat X \succ 0$ with a Choleski decomposition $\mat X = \mat U' \mat U$,
+then
+\begin{equation} \label{eigenPdY}
+  \forall \mat Y \in \C^{n \times n} : 
+    \mathfrak B \left((\mat U')^{-1} \mat Y \mat U^{-1} \right) \subset \{\mat U \mat B \ve \mu^d: \mat B \in \mathfrak B(\mat X^{-1} \mat Y), \ve \mu \in \R_{++}^n\} 
+    \And \ve \lambda(\mat X^{-1} \mat Y) = \ve \lambda \left( (\mat U')^{-1} \mat Y \mat U^{-1} \right).
+\end{equation}
+\proof
+{
+Let $\mat B \in \mathfrak B(\mat X^{-1} \mat Y)$ and $\ve \lambda \eqdef \ve \lambda(\mat X^{-1} \mat Y)$,
+then
+$$ \mat X^{-1} \mat Y \mat B = \mat B \ve \lambda^d. $$
+$$ \mat Y \mat B = \mat X \mat B \ve \lambda^d = \mat U' \mat U \mat B \ve \lambda^d. $$
+The matrix~$\mat U$ is full rank.
+$$ (\mat U')^{-1} \mat Y \mat U^{-1} \ \mat U \mat B = \mat U \mat B \ \ve \lambda^d. $$
+}
+
+\subsubsection {Spectral decomposition}
+For $\mat C \eqdef \mat B^{-1}$,
+\begin{equation*} \tag{spectral decomposition}
+\mat X = \sum_i \lambda_i \ve b_{\cdot i} \ve c_{i \cdot}'.
+\end{equation*}
+
+If  
+$$\mat Y \eqdef \mat X - \lambda_i \ve b_{\cdot i} \ve c_{i \cdot}'$$ 
+then 
+$$ \mathfrak B(\mat Y) = \mathfrak B(\mat X) \text{ and } \ve \lambda'(\mat Y) = [\lambda_1 \dots \lambda_{i-1} \ 0 \ \lambda_{i+1} \dots \lambda_n]. $$
+
+$$ \sum_{i:\lambda_i > 0} \lambda_i^{-1} \ve b_{\cdot i} \ve c_{i \cdot}' \in \mat X^-. $$
+
+$$ \trc \mat X^n = \trc (\ve \lambda^d)^n. $$
+
+If $\ve y \in \C^n$ is a random vector and $\ve z \eqdef \mat B^{-1} \ve y$, then $\mat X^n \ve y = \mat B (\ve \lambda^d)^n \ve z$ and
+$$ \exists k \ne 0 \text{ with probability 1, s.t. } \lim_{n \to \infty} \mat X^n \ve y = k \ve b, $$
+where $\ve b$ is a linear combination of the columns of~$\mat B$ having the maximum eigenvalues by absolute value.
+
+
+\subsection{Linear space}
+
+The {\em linear space spanned by the columns of~$\mat A \in \C^{n \times m}$}
+$$ Sp(\mat A) \eqdef \{\mat A \ve x \mid \ve x \in \C^m\}. $$
+$$ Sp(\mat A \mat B) \subseteq Sp(\mat A). $$
+$$ rank(\mat A) = \min \{r \mid Sp(\mat A) = Sp(\mat B) \And \mat B \in \C^{n \times r} \}. $$
+
+A matrix~$\mat P$ is an {\em orthogonal projector} iff 
+$$ \forall \ve x : (\mat P \ve x)' (\mat I - \mat P) \ve x = 0. $$
+
+A matrix~$\mat P$ is an orthogonal projector iff $\mat P$~is symmetric and $\mat P^2 = \mat P$.
+
+A matrix~$\mat P$ is an orthogonal projector iff $\mat I - \mat P$ is an orthogonal projector.
+
+If a matrix~$\mat P$ is an orthogonal projector 
+then 
+$$ \mat P \succeq 0 $$
+and
+$$ \ve \lambda(\mat P) = [\ve 1_r' \ \ve 0']', $$
+where $r \eqdef rank(\mat P)$.
+
+If~$\mat B \in \C^{m \times m}$ is orthonormal,
+then the orthogonal projector onto $\mat B \mat I^r_m$ is $\mat B \mat I^r_m \mat B'$.
+
+Suppose $\mat A \in \R^{n \times m}$ and $\ve x \in \R^m$.
+Then
+$$ \min_{y \in Sp(\mat A)} |\ve x - \ve y| = \min_{\ve u} |\ve x - \mat A \ve u|^2. $$
+$$ \frac d {d \ve u} |\ve x - \mat A \ve u|^2 = 0. $$
+$$ \mat A' \mat A \ve u = \mat A' \ve x. $$
+$$ \ve y = \mat A (\mat A' \mat A)^{-1} \mat A' \ve x. $$
+$$ \mat P = \mat A (\mat A' \mat A)^{-1} \mat A'. $$
+The matrix~$\mat P$ is an orthogonal projector onto $Sp(\mat A)$.
+
+
+\subsection {Linear model of data reduction}
+\comm { position in text}
+$$ \mat Y = \mat F \mat A + \mat \varepsilon, $$
+where $\mat F$ is the {\em factor} matrix,
+$\mat A$ is the {\em loading} matrix,
+and $\mat \varepsilon$ is the {\em residual} matrix.
+
+$$ \mat F \mat A = \sum_k \ve f_{\cdot k} \ve a_{k \cdot}'. $$
+
+If the value $\trc \mat \varepsilon' \mat \varepsilon$ is minimum then for all~$k$
+$$\mat Y \ve a_{k \cdot} = |\ve a_{k \cdot}|^2 \ve f_{\cdot k}, $$
+$$\mat Y' \ve f_{\cdot k} = |\ve f_{\cdot k}|^2 \ve a_{k \cdot}.$$
+\comm {\proof {The derivative = 0 for fixed $\ve f$ or $\ve a$}}
+
+The vectors~$\ve a_{k \cdot}$ and~$\ve f_{\cdot k}$ can be found by alternating optimization:
+$$ \mat Y' \mat Y \ve a_{k \cdot} = \lambda_k \ve a_{k \cdot}, $$
+$$ \mat Y \mat Y' \ve f_{\cdot k} = \lambda_k \ve f_{\cdot k}, $$
+where
+$$ \lambda_k \eqdef |\ve a_{k \cdot}|^2 |\ve f_{\cdot k}|^2. $$
+
+For all~$k$
+the vectors $\ve a_{k \cdot}/|\ve a_{k \cdot}|$ are the eigenvectors of $\mat Y' \mat Y$ 
+and 
+the vectors $\ve f_{\cdot k}/|\ve f_{\cdot k}|$ are the eigenvectors of $\mat Y \mat Y'$ 
+with the same eigenvalues~$\lambda_k$.
+\comm { Consequence for MDS vs. PC}
+
+
+\subsection{Symmetric matrices}
+
+Let $\mat X \in \C^{n \times n}$.
+
+\begin{align*}
+  \mat X \text{ is symmetric} \implies  & \ \exists \mat B \in \mathfrak B(\mat X) : |\mat B|^2 = \mat I \And \mat B \in \R^{n \times n}, \\
+  \mat X \text{ is symmetric} \impliedby& \ \exists \mat B \in \mathfrak B(\mat X) : |\mat B|^2 = \mat I.
+\end{align*} 
+\begin{align*}
+ \mat X \text{ is symmetric} \implies& \ \lambda(\mat X) \in \R^n, \\
+ \mat X \succeq 0 \implies& \ \lambda(\mat X) \in \R_+^n, \\
+ \mat X \succ   0 \implies& \ \lambda(\mat X) \in \R_{++}^n. 
+\end{align*} 
+
+\proof
+{ 
+  If~$\mat X$ is symmetric and $\ve x$ and $\ve y$ are different eigenvectors of~$\mat X$ with eigenvalues~$\lambda$ and~$\mu$ respectfully 
+  then
+  $$ \ve y' \mat X \ve x = \ve y' \lambda \ve x = \mu \ve y' \ve x, $$
+  $$ \ve y' \ve x \ (\lambda - \mu) = 0. $$ 
+  If $\ve y' \ve x \ne 0$ then $\lambda = \mu$ and all eigenvectors with eigenvalue~$\lambda$ make up a linear space, and these eigenvectors can be replaced by any orthonormal basis of this space.
+  Therefore, $|\mat B|^2 = \mat I$.
+
+  If~$\mat X$ is symmetric and
+  $$ \mat X (\ve x + i \ve y) = (\lambda + i \mu) (\ve x + i \ve y), $$
+  where $\ve x, \ve y \in \R^n$, 
+  $\neg (\ve x = \ve 0 \And \ve y = \ve 0)$ and $\lambda, \mu \in \R$,
+  then
+  $$ \mat X \ve x = \lambda \ve x - \mu \ve y, $$
+  $$ \mat X \ve y = \lambda \ve y + \mu \ve x, $$
+  $$ \ve y' \mat X \ve x = \lambda \ve y' \ve x - \mu \ve y' \ve y = (\ve x' \mat X \ve y)' = \lambda \ve y' \ve x + \mu \ve x' \ve x, $$
+  $$ \mu (|\ve x|^2 + |\ve y|^2) = 0 $$
+  and
+  $$ \mu = 0, $$
+  therefore, $\mat B \in \R^{n \times n}$.  
+}
+
+Let an eigenvector matrix $\mat B \in \mathfrak B (\mat X)$ be orthonormal and $\ve \lambda \eqdef \ve \lambda (\mat X)$.
+
+$$  \mat X = \mat B \ve \lambda^d \mat B'. $$
+
+$$ \mat X' \mat B = \mat B \ve \lambda^d. $$
+
+$$ \mat X \succeq 0 \equivalent \forall i : \lambda_i \ge 0. $$
+$$ \mat X \preceq 0 \equivalent \forall i : \lambda_i \le 0. $$
+
+$$ \mat X \succeq 0 \equivalent \mat X^{-1} \succeq 0. $$
+$$ \mat X \preceq 0 \equivalent \mat X^{-1} \preceq 0. $$
+
+Let $\mat C \eqdef \mat B \sqrt{\ve \lambda^d}$,
+then $\mat X = \mat C \mat C'$
+and
+\begin{equation*}
+\mat X \ve y = \ve 0 \equivalent \mat C' \ve y = \ve 0.
+\end{equation*}
+
+$$ \mat A \text{ is symmetric } \implies \frac d {d \ve x} \ve x' \mat A \ve x = 2 \mat A \ve x. $$
+
+
+\subsubsection{Canonical analysis}  \label{CanonicalAnalysis}
+\comm{name}
+A {\em quadric} is
+$$ \{\ve x \mid \ve x' \mat X \ve x = c\}. $$
+If~$\mat X$ is full rank then a quadric is an {\em ellipsoid}.
+
+If~$\mat X \succ 0$ and $\mat Y \in \C^{n \times n}$, 
+then the local extrema of $\{\ve x' \mat Y \ve x \mid \ve x' \mat X \ve x = 1\}$
+are the columns of $\mathfrak B(\mat X^{-1} \mat Y)$.
+\proof{
+$$ \ve 0 = \frac d {d \ve x} (\ve x' \mat Y \ve x - \lambda (\ve x' \mat X \ve x - 1)) = 2 \mat Y \ve x - 2 \lambda \mat X \ve x, $$
+where $\lambda$ is a Lagrange multiplier.
+$$ \mat Y \ve x = \lambda \mat X \ve x. $$
+}
+\comm {extrema = maxima}
+
+Let $\mat X = \mat U' \mat U$ be a Cholesky decomposition,
+then
+$$\ve \lambda(\mat X^{-1} \mat Y) = \ve \lambda \left((\mat U')^{-1} \mat Y \mat U^{-1} \right)$$
+by~(\ref{eigenPdY}).
+
+\bigskip
+If~$\mat Y$ is symmetric then $(\mat U')^{-1} \mat Y \mat U^{-1}$ is symmetric
+and
+$$\ve \lambda(\mat X^{-1} \mat Y) \in \R^n,$$ 
+$$\mat Y \succeq 0 \implies \ve \lambda(\mat X^{-1} \mat Y) \in \R_+^n.$$ 
+
+Let  $\mat B \in \mathfrak B(\mat X^{-1} \mat Y)$ and $\mat C \in \mathfrak B \left((\mat U')^{-1} \mat Y \mat U^{-1} \right)$,
+then $\mat C = \mat U \mat B \ve \mu^d$, for some $\ve \mu \in \R_{++}^n$, by~(\ref{eigenPdY}) and
+for $$ \mat R \eqdef \mat U^{-1} \mat C = \mat B \ve \mu^d$$
+\begin{equation} \label{canonicalWithin}
+  \mat I = \mat C' \mat C = \ve \mu^d \mat B' \mat U' \mat U \mat B \ve \mu^d = \mat R' \mat X \mat R, 
+\end{equation}
+\begin{equation} \label{canonicalBetween}
+ \ve \lambda^d(\mat X^{-1} \mat Y) = \ve \lambda^d((\mat U')^{-1} \mat Y \mat U^{-1}) = \mat C' (\mat U')^{-1} \mat Y \mat U^{-1} \mat C 
+  = \mat R' \mat Y \mat R. 
+\end{equation}
+
+
+
+\subsection{Singular value decomposition}
+
+For~$\mat X \in \C^{n \times m}$, where $n \ge m$,
+let
+$r \eqdef rank(\mat X)$,
+$\mat B \in \mathfrak B\left(|\mat X|^2\right) \cap \R^{m \times m}$,    $\ve \mu \eqdef \lambda\left(|\mat X|^2\right)$, 
+$\mat C \in \mathfrak B\left(|\mat X'|^2\right) \cap \R^{n \times n}$ and $\ve \nu \eqdef \lambda\left(|\mat X'|^2\right)$, 
+then
+$\ve \mu \in \R^m$,
+$\ve \nu \in \R^n$
+and
+$$ \mat X \mat X' (\mat X \mat B) = (\mat X \mat B) \ve \mu^d, $$ 
+therefore, $\ve \mu' = [\ve \lambda' \ \ve 0']$ and $\ve \nu' = [\ve \lambda' \ \ve 0']$, where $\ve \lambda \in \R^r$ and $\forall i : \lambda_i \ne 0$,
+and
+\begin{equation} \label{rectangular_eigenvectors}
+\exists \mat C \in \mathfrak B(\mat X \mat X') : \mat C \ \mat I^r_n = \mat X \mat B \ \mat I^r_n \sqrt{\ve \lambda^{-d}}, 
+\end{equation}
+because $\mat B' \mat X' \mat X \mat B = \mat B' \mat B \ve \mu^d = \ve \mu^d$ and $(\mat I^r_n)' \mat C' \mat C \ \mat I^r_n = \mat I_r$.
+
+Similarly,
+$$ \exists \mat B \in \mathfrak B(\mat X' \mat X) : \mat B \ \mat I^r_n = \mat X' \mat C \ \mat I^r_n \sqrt{\ve \lambda^{-d}}. $$
+
+The elements of the vector~$\ve \lambda$ are {\em singular values}.
+
+$$ (\mat C \ \mat I^r_n)' \ \mat X \ (\mat B \ \mat I^r_n) = (\mat I^r_n)' \mat C ' \mat C \ \mat I^r_n \sqrt{\ve \lambda^d} = \sqrt{\ve \lambda^d}. $$
+$$ \mat C' \mat X \mat B = \mat M, $$
+where 
+$$ \mat M \eqdef \left[\sqrt{\ve \mu^d} \ \mat 0 \right]'. $$
+
+\begin{equation*} \tag{singular-value decomposition}
+  \mat X = \mat C \mat M \mat B',
+\end{equation*}
+cf.~eigenvalue decomposition.
+$$ \mat X = \mat C \ \mat I^r_n \ \sqrt{\ve \lambda^d} \ (\mat B \ \mat I^r_n)'. $$
+\comm{cf. canonical form, Gram-Schmidt orthogonalization}
+
+$$ \mat C \ \mat I^r_n \ \sqrt{\ve \lambda^{\sim d}} \ (\mat B \ \mat I^r_n)' \in \mat X^-. $$
+
+$$ \mat X \in \R^{n \times m} \equivalent \ve \lambda \in \R_{++}^m. $$
+
+
+
+\subsection{Strain}
+
+Let the {\em strain} between matrices~$\mat X, \mat Y \in \C^{n \times m}$ be
+$$ d^2(\mat X,\mat Y) \eqdef \sum_i d^2(\ve y_{i \cdot}, \ve z_{i \cdot}), $$
+which is the squared Euclidean distance between vectorized matrices.
+
+$$ d^2(\mat X,\mat Y) = \sum_j d^2(\ve y_{\cdot j}, \ve z_{\cdot j}) = \sum_{ij} |y_{ij} - z_{ij}|^2 = \trc |\mat X - \mat Y|^2. $$
+
+The strain minimization formulas in this section are referred to as the {\em Eckart-Young theorem}.
+
+
+\subsubsection{Strain minimization for rectangular matrices}
+
+Let $\mat X, \mat Y \in \C^{n \times m}$ and the singular value decomposition of~$\mat X$ be $\mat C \mat M \mat B'$,
+then 
+$$ \mat X - \mat Y = \mat C \mat C' (\mat X - \mat Y) \mat B \mat B' = \mat C (\mat M - \mat C' \mat Y \mat B) \mat B' = \mat C (\mat M - \mat W) \mat B', $$
+where 
+$$ \mat W \eqdef \mat C' \mat Y \mat B. $$
+$$ d^2(\mat X,\mat Y) = \trc \mat B (\mat M - \mat W)' \mat C' \mat C (\mat M - \mat W) \mat B' = \trc |\mat M -\mat W|^2 . $$
+$$ rank(\mat W) = rank(\mat Y). $$
+
+Suppose $\mat X, \mat Y \in \R^{n \times m}$.
+Then
+$$ d^2(\mat X,\mat Y) \ge 0, $$
+$$ \min_{rank(\mat Y) \le k} d^2 (\mat X, \mat Y) = \min_{rank(\mat W) \le k} \trc |\mat M -\mat W|^2. $$
+
+$$ \arg \min_{rank(\mat W) \le k} \trc |\mat M -\mat W|^2 = \{[\mat M \mat I_m^k \ \mat 0]' \} . $$
+\proof
+{ Suppose the minimzation criterion is attained at $\mat W = \mat W^*$ and $\mat W^* \ne [\mat M \mat I_m^k \ \mat 0]'$,
+then~$\mat W^*$ can be transformed to $[\mat M \mat I_m^k \ \mat 0]'$ 
+by combinations of elementary row or column rank-preserving transformations 
+decreasing the minimization criterion.
+}
+$$ \min_{rank(\mat Y) \le k} d^2 (\mat X, \mat Y) = \sum_{i > k} \lambda_i. $$
+
+
+\subsubsection{Strain minimization for square matrices}
+Suppose $\mat X, \mat Y \in \C^{n \times n}$ and the eigenvalue decomposition of~$\mat X$ is $\mat B \ve \lambda^d \mat B^{-1}$ 
+then, 
+by the reasoning analogous to the previous section,
+$$ \mat W \eqdef \mat B^{-1} \mat Y \mat B, $$
+$$ d^2(\mat X,\mat Y) = \trc |\ve \lambda^d -\mat W|^2. $$
+
+Suppose $\mat X, \mat Y \in \R^{n \times n}$.
+Then
+$$ d^2(\mat X,\mat Y) \ge 0, $$
+$$ \arg \min_{rank(\mat W) \le k} \trc |\ve \lambda^d -\mat W|^2 = \{[\ve \lambda^d \mat I_m^k \ \mat 0]' \}, $$
+$$ \min_{rank(\mat Y) \le k} d^2 (\mat X, \mat Y) = \sum_{i > k} \lambda_i^2. $$
+
+Suppose~$\mat X, \mat Y$ are symmetric.
+Then 
+$$ \mat Y \succeq 0 \equivalent \mat W \succeq 0, $$
+$$ \min_{\mat Y \succeq 0} d^2 (\mat X, \mat Y) = \min_{\mat W \succeq 0} \trc |\ve \lambda^d -\mat W|^2, $$
+$$ \arg \min_{\mat W \succeq 0} \trc |\ve \lambda^d -\mat W|^2 = \{\max (\ve \lambda^d, \mat 0) \} $$
+and
+$$ \min_{\mat Y \succeq 0} d^2 (\mat X, \mat Y) = \sum_{\lambda_i < 0} \lambda_i^2. $$
+
+The constraints $rank(\mat Y) \le k$ and $\mat Y \succeq 0$ can be combined.
+
+
+
+\subsection{Matrix transformations}
+Linear transformations of a matrix~$\mat X \in \C^{n \times p}$:
+\begin{itemize}
+\item If~$\ve x$ is a row of~$\mat X$ then $\ve x + \ve y$ is a {\em translation} of row~$\ve x$ by vector~$\ve y$.
+\item $\mat X \mat A$ is a {\em projection} of~$\mat X$ onto the rows of~$\mat A$.
+\item If~$\mat B$ is orthonormal then $\mat X \mat B$ is a {\em rotation} of~$\mat X$ by changing the basis to the columns of~$\mat B$.
+\comm {a.k.a. orthogonal transformation}
+\item If $\ve \lambda \ge \ve 0$ then $\mat X \ve \lambda^d$ is a {\em stretching} of~$\mat X$.
+\item If~$\ve x$ is a row of~$\mat X$ then $- \ve x$ is a {\em reflexion} of row~$\ve x$.
+\end{itemize}
+
+If $\mat Y \succeq 0$ then 
+$$ \ve x' \mat Y =  \ve x' \ \mat B \ \ve \lambda^d(\mat Y) \ \mat B^{-1}, $$
+where $\mat B \in \mathfrak B(\mat Y)$,
+by~(\ref{mat2eigen}),
+i.e., $\ve x' \mat Y$ is the stretching of~$\ve x$ in the changed basis~$\mat B$.
+Due to the ordering of the elements of~$\ve \lambda(\mat Y)$, the vector~$\ve x$ is stretched more along the first basic vectors of~$\mat B$.
+
+Let $\mat A_n \eqdef \frac 1 n \ve 1 \ve 1'$ be an {\em averaging matrix}.
+$\mat A^2_n = \mat A_n$.
+$ \ve 1' \mat A_n = \ve 1'$.
+
+$\mat X$ is {\em centered} iff $\ve 1' \mat X = \ve 0$.
+
+Let $\mat C_n \eqdef \mat I_n - \mat A_n$ be a {\em centering matrix}, then the {\em centering} operation
+$$ \bar {\mat X} \eqdef \mat C_n \mat X. $$
+The matrix $\mat C_n$ has $n-1$ eigenvalues~1 and one eigenvalue~0.
+
+$$ \ve 1' \bar {\mat X} = \ve 0. $$
+$$ \bar {\bar {\mat X}} = \bar {\mat X}. $$
+
+$$ \ve 1 \ve 1' \mat C_n = \mat 0. $$
+$$ (\mat X + k \ve 1 \ve 1') \ \mat C_n = \mat X \mat C_n. $$
+
+If~$\mat X$ is a square matrix with~$n$ rows then the {\em double centering} operation 
+$$ \mat C_n \mat X \mat C_n. $$
+
+$$ \cov(\mat X, \mat Y) \eqdef \frac 1 n \mat X' \mat Y. $$
+If matrices~$\bar {\mat X} = \bar {\mat Y} = \ve 0$ then $\cov(\mat X, \mat Y)$
+is the MLE of the covariance matrix between the columns of~$\mat X$ and~$\mat Y$.
+
+$$ \VC (\mat X) \eqdef \cov(\mat X, \mat X). $$
+$$ \VC(\mat X) \succeq 0. $$
+
+If $\bar {\mat X} = \ve 0$ then $\VC(\mat X)$ is the MLE of the variance-covariance matrix of the columns of~$\mat X$.
+
+$$ \VC(\mat X \mat A) = \mat A' \VC (\mat X) \mat A. $$
+
+$$ \mathfrak B (\mat X' \mat X) = \mathfrak B (\VC (\mat X)). $$
+
+
+\section{Data}
+Let {\em data} be a pair $(\mat X, \ve w)$,
+where $\mat X \in \{\R \cup \nul\}^{n \times p}$ is the {\em data matrix} and $\ve w \in \R_+^n$ is the {\em multiplicity vector}.
+Each row of~$\mat X$ is an {\em object} and each column of~$\mat X$ is an {\em attribute}.
+The attribute~$\ve 1$ is an {\em intercept}.
+
+The value $\nul \not \in \C$ is the {\em missing value}.
+
+The objects of~$\mat X$ are points in the $p$-dimensional Euclidean space, which is the {\em space of objects}.
+The attributes of~$\mat X$ are points in the $n$-dimensional Euclidean space, which is the {\em space of attributes}.
+
+\subsection{Multiplicity}
+The element~$w_i$ is the {\em multiplicity} of object~$\ve x_{i\cdot}$.
+The data where $\ve w = \ve 1$ is {\em non-multiplied}.
+If~$\ve w$ is omitted it is assumed that $\ve w = \ve 1$.
+
+$$ w \eqdef \sum_i^n w_i. $$
+
+For binary attributes, the multiplicity of a pair of objects~$(i,j)$ is $w_i w_j$.
+\comm{}
+
+The following are {\em multiplicity transformations} of data:
+\begin{itemize}
+\item $(\mat X, \ve w) \leftrightarrow (\mat P \mat X, \mat P \ve w)$, where $\mat P$ is a permutation matrix.
+\item $\left(\left[ \begin{array}{c} \mat X \\ \mat X \end{array} \right], \left[ \begin{array}{c} \ve w_1 \\ \ve w_2 \end{array} \right] \right) 
+        \leftrightarrow (\mat X, \ve w_1 + \ve w_2)$,
+  where $w_1, w_2 \in \R_+^n$.
+\item $\ve w_0 = \ve 0 \implies 
+        \left(\left[ \begin{array}{c} \mat X_1 \\ \mat X_0 \\ \mat X_2 \end{array} \right], \left[ \begin{array}{l} \ve w_1 \\ \ve w_0 \\ \ve w_2 \end{array} \right] \right) 
+          \leftrightarrow \left(\left[ \begin{array}{c} \mat X_1 \\ \mat X_2 \end{array} \right], \left[ \begin{array}{c} \ve w_1 \\ \ve w_2 \end{array} \right] \right)$,
+  where $X_i \in \R^{n_i \times p}$ and $w_i \in \R_+^{n_i}$.
+\item $(\mat X, \ve w) \leftrightarrow (\mat X, k \ve w)$, where $k \in \R_{++}$.  
+\end{itemize}
+
+The multiplicity transformations of data make up an equivalence relation on data.
+
+Any equivalence class of data w.r.t.~the multiplicity transformations contains non-multiplied data,
+because any data can be transformed by the multiplicity transformations into non-multiplied data.
+
+A {\em data analysis procedure} is a function of data.
+
+\comm{consistent analysis}
+A data analysis procedure is {\em consistent} iff it is a function of the {\em averaging statistics}
+$$ \frac {\sum_i^n f(\ve x_{i\cdot}) w_i} {\sum_i^n w_i}, $$
+where~$f$ is an arbitrary function $\R^p \mapsto \R$.
+
+A consistent data analysis procedure is invariant w.r.t.~the multiplicity transformations.
+
+If each row~$i$ of the data matrix represents an i.i.d.~multivariate random variable with the same distribution as~$\ve X$
+and has missing values distributed independently of~$\ve x_{i\cdot}$ and~$w_i$
+then averaging statistics are consistent estimates of~$f(\ve X)$.
+
+\comm { Is Fisher exact test a data analysis procedure }
+
+A data analysis procedure has {\em quality criteria}.
+\comm { To be minimized}
+
+\comm { {\em relative} quality criteria increase with~$n$, converges. For small~$n$ they are biased.}
+
+An algebraic expression on attributes has two interpretations: a {\em multiplied interpretation} and a {\em non-multiplied interpretation}.
+Below the expressions on the  left-hand part of the page have the multiplied interpretation 
+and   the expressions on the right-hand part of the page have the non-multiplied interpretation:
+\begin{align*}
+\ve x' \ve y &= \ve x' \ve w^d \ve y, \\
+n = \ve 1' \ve 1 &= \ve 1' \ve w^d \ve 1 = w, \\
+\bar {\ve x} = \frac {\ve 1' \ve x} {\ve 1' \ve 1},& \\
+\var \ve x = \frac {\ve x' \ve x} {\ve 1' \ve 1} - {\bar {\ve x}}^2,& \\
+\mat X' \mat X &= \mat X' \ve w^d \mat X, 
+\end{align*}
+etc.
+
+In the sequel all expressions on attributes with no~$\ve w$ in them have the multiplied interpretation.
+
+$$ n_w \eqdef |\{i : w_i > 0\}|. $$
+
+\comm { Algebra: $model : data, parameters \to data, quality$}
+
+\comm {$size \in parameters$. Model is consistent $\implies$ $\lim_{size \to \infty} model(size)$ converges.}
+
+\comm { model can generate data}
+
+
+
+
+\subsection {Euclidean distance and Euclidean similarity between objects}
+Let $\mat X \in \R^{n \times p}$ a data matrix.
+
+The functions $s(\ve x_{i \cdot}, \ve x_{j \cdot})$ and $d^2(\ve x_{i \cdot}, \ve x_{j \cdot})$ are invariant w.r.t.~basis change.
+The function $d^2(\ve x_{i\cdot}, \ve x_{j\cdot})$ is invariant w.r.t.~translation.
+
+If~$\ve x_{\cdot i}$ and~$\ve x_{\cdot j}$ are attributes which are centered and normalized 
+then 
+\begin{equation}\label{d2rho}
+d^2(\ve x_{\cdot i}, \ve x_{\cdot j}) = 2 (1 - \cor(\ve x_{\cdot i}, \ve x_{\cdot j})).
+\end{equation}
+
+Let 
+$$ d_{ij} \eqdef d(\ve x_{\cdot i}, \ve x_{\cdot j}), $$
+$$ s_{ij} \eqdef s(\ve x_{\cdot i}, \ve x_{\cdot j}). $$
+
+Let $\mat D^2(\mat X)$ be the squared Euclidean distance matrix of~$\mat X$.
+$$ \sum_{i,j} d^2_{ij} = \ve 1' \mat D^2(\mat X) \ve 1. $$
+$$ \forall \ve x : \ve x' \ve 1 = 0 \implies \ve x' \mat D^2 \ve x \le 0. $$
+
+If~$\bar {\mat X} = \ve 0$ then
+\begin{equation}\label{sumD2}
+\ve 1' \mat D^2(\mat X) \ve 1 = 2n \ \trc \mat X' \mat X  = 2n^2 \ \trc \VC (\mat X). 
+\end{equation}
+
+Let $\mat S(\mat X) \eqdef \mat X \mat X'$ be the Euclidean similarity matrix of~$\mat X$.
+$$\mat S(\mat X) \succeq 0. $$
+\begin{equation}\label{trc_S_VC}
+  \trc \mat S(\mat X) = n \ \trc \VC(\mat X). 
+\end{equation}
+
+If~$\bar {\mat X} = \ve 0$ then 
+$$ \mat S(\mat X) \ve 1 = \ve 0. $$
+
+Let~$\mat S \eqdef \mat S(\mat X)$ and $\mat D^2 \eqdef \mat D^2 (\mat X)$ for an unknown~$\mat X$.
+
+$$ \mat S(\bar {\mat X}) =  \mat C_n {\mat S} (\mat X)  \mat C_n. $$
+
+The matrix $\mat D^2 \eqdef \mat D^2(\mat X)$ can be derived from $\mat S \eqdef \mat S (\mat X)$ by~(\ref{s2d}).
+This procedure will be referred to as~$\mat D_{\mat S}(\mat S)$.
+$$ \frac {\ve 1' \mat D_{\mat S}^2(\mat S) \ve 1} {2n} = \trc \mat S - \frac {\ve 1' \mat S \ve 1} n = \trc \mat C_n \mat S \mat C_n. $$
+
+Conversely, the matrix $\mat S \eqdef \mat S (\mat X)$ can be derived from $\mat D^2 \eqdef \mat D^2(\mat X)$,
+but only if $\bar {\mat X} = \ve 0$.
+This procedure will be referred to as~$\mat S_{\mat D^2}(\mat D^2)$.
+Since
+$$ \forall i : \sum_j s_{ij} = 0, $$
+$$ \forall i : \sum_j d^2_{ij} = n s_i + \sum_j s_j, $$
+$$ \sum_{i,j} d^2_{ij} = 2 n \sum_i s_i, $$
+let
+$$ a \eqdef \frac {\sum_{i,j} d^2_{ij}} {2n}, $$
+then
+$$ s_i = \frac {\sum_j d^2_{ij} - a} n, $$
+$$ s_{ij} = \frac {s_i + s_j - d^2_{ij}} 2. $$
+The above two equations are equivalent to
+$$ \mat S = - \frac 1 2 \mat C_n \mat D^2 \mat C_n. $$
+\comm {If $\mat D^2$ is an arbitrary symmetric matrix then the $\mat S$ obtained by $\mat C_n$ is double-centered, but obtained via $a$ is not.}
+
+$$ a = \sum_i s_i, $$
+$$ \left(\forall i : s_i = \frac a n \right) \implies s_{ij} = \frac a n - \frac {d^2_{ij}} 2. $$
+
+
+\subsection{Mahalanobis distance}
+If a data matrix~$\mat X$ is full rank and $\bar {\mat X} = \ve 0$, 
+then the $i$th diagonal element of 
+\begin{equation} \label{mahalanobis}
+\mat X \ \VC^{-1}(\mat X) \ \mat X'
+\end{equation}
+is the squared {\em Mahalanobis distance} of object~$i$.
+
+If the objects of~$\mat X \in \R^{n \times p}$ have a multivariate normal distribution, then their squared Mahalanobis distance has the $\chi^2(p)$ distribution.
+
+
+\subsection{Boolean data}
+Let~$\mat X$ be a data matrix with Boolean attributes.
+
+The {\em Hamming distance} 
+$$ d_h(\ve x_{i\cdot}, \ve x_{j\cdot}) \eqdef \sum_k |x_{ik} - x_{jk}|. $$
+$$ d_h(\ve x_{i\cdot}, \ve x_{j\cdot}) = d^2 (\ve x_{i\cdot}, \ve x_{j\cdot}). $$
+\comm { = distance in $L_1$, }
+\comm { = squared distance in $L_2$}
+
+If~$\mat X$ is random, then let the data matrix~$\mat Y$ be defined as
+$$ y_{ik} \eqdef \P (X_{ik} = 1), $$
+then
+$$ \E |X_{ik} - X_{jk}|
+    =   y_{ik} (1 - y_{jk}) 
+      + y_{jk} (1 - y_{ik}) 
+    =   y_{ik}  + y_{jk} - 2 y_{ik} y_{jk}.
+$$
+
+Compare with
+$$ (y_{ik} - y_{jk})^2 = y^2_{ik} + y^2_{jk} - 2 y_{ik} y_{jk}. $$
+
+Since $0 \le y_{ik} \le 1$, 
+then $y_{ik} \ge y^2_{ik}$
+and 
+$$ \E d_h (\ve X_i, \ve X_j) \ge d^2 (\ve y_i, \ve y_j). $$
+
+\comm{
+Assume that~$\mat X[i,k]$ are independent for different~$i$.
+
+Let~$Z_k \sim Bernoulli(\mat X[I,k])$, where $I \sim Uniform(1,n)$,
+then 
+$$ \E Z_k = \frac 1 n \sum_{i=1}^n \mat Y[i,k], $$
+\begin{equation} 
+\begin{split}
+\var Z_k &= \frac 1 n \sum_{i=1}^n ((1-\E Z_k)^2 \mat Y[i,k] + (E Z_k)^2 (1 - \mat Y[i,k])) \\
+         &= \frac 1 n \sum_{i=1}^n ( \mat Y[i,k] - 2 (\E Z_k) \mat Y[i,k] + (E Z_k)^2) \\
+         &= \E Z_k - (\E Z_k)^2.
+\end{split}
+\end{equation}
+
+Let data matrix~$\mat Z$ be defined as
+$$ \mat Z[i,k] \eqdef \frac {\mat X[i,k] - \E Z_k} {\sqrt {\var Z_k}} $$
+be the {\em normalized random Boolean data matrix}~$\mat X$,
+then
+$$ \E d_h (\ve z_{ik}, \ve z_{jk}) = \frac {\E d_h (\ve x_{ik}, \ve x_{jk})} {\var Z_k}. $$
+}
+
+
+\section{Construction of attributes}
+
+\subsection{Principal component analysis}
+Let~$\mat X \in \R^{n \times p}$ be a data matrix, such that $\bar {\mat X} = \ve 0$.
+
+Let $q \le p$.
+
+$$ \mathcal B_q \eqdef \{\mat B_q \in \R^{p \times q} : \mat B_q' \mat B_q = \mat I \}, $$
+$$ \mat I^q_p \in \mathcal B_q. $$
+
+Let $\mat B_p \in \mathcal B_p$ and $\mat B_q \in \mathcal B_q$, such that $\mat B_q = \mat B_p \mat I^q_p$.
+Then in the data matrix $\mat X \mat B_q$ the dimensionality is reduced from~$p$ to~$q$.
+\comm {{\em best} dimensionality reduction, also MDS, see Eckart-Young theorem}
+
+For any $i,j \le n$:
+$$ d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) = d^2(\ve x_{i\cdot}' \mat B_p, \ve x_{j\cdot}' \mat B_p) \ge d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q). $$
+The {\em lost squared distance} between objects $\ve x_{i\cdot}$ and~$\ve x_{j\cdot}$ 
+$$ \epsilon^2_{ij} \eqdef d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) - d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q) \ge 0. $$
+The {\em total lost squared distance} 
+$$ \epsilon^2(\mat X, \mat B_q) \eqdef \sum_{i,j} \epsilon^2_{ij}. $$
+$$ \epsilon^2(\mat X, \mat B_q) = \sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) - \sum_{i,j} d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q). $$
+
+An element of the set 
+$$ \mathfrak R_q(\mat X) \eqdef \arg \min_{\mat B_q \in \mathcal B_q} \epsilon^2(\mat X, \mat B_q) $$
+is a {\em basis of the first $q$~rotated principal components} of~$\mat X$.
+
+It can be rotated:
+$$ \forall \mat B_q \in \mathfrak R_q(\mat X) \ \forall \mat C \in \R^{q \times q}: 
+  (\mat C' \mat C = \mat I \implies \mat B_q \mat C \in \mathfrak R_q(\mat X)). 
+$$
+
+An element of the set 
+$$ \mathfrak B_q(\mat X) \eqdef \{\mat B \mat I^q_p : \mat B \in \mathfrak B(\VC(\mat X)) \} $$
+is a {\em basis of the first $q$~principal components} of~$\mat X$.
+
+$$ \ve \lambda \eqdef \lambda(\VC(\mat X)). $$
+
+$$ \mathfrak B_q(\mat X) \subseteq \mathfrak R_q(\mat X). $$
+\proof
+{
+By~(\ref{sumD2}),
+$$ \mathfrak R_q(\mat X) = \arg \max_{\mat B_q \in \mathcal B_q} \trc \mat B_q' \VC (\mat X) \mat B_q. $$
+$$ \mathfrak R_q(\mat X) = 
+  \{ \mat B \mat A_q : \mat B \in \mathfrak B(\VC(\mat X)), 
+                       \mat A_q \in \arg \max_{\mat A_q \in \mathcal B_q} \trc \mat A_q' \ve \lambda^d \mat A_q 
+  \}.
+$$
+
+\comm {Prove that $\mat I^q_p \in \arg \max_{\mat A_q \in \mathcal B_q} \trc \mat A_q' \ve \lambda^d \mat A_q$ }
+
+True for $q = 1$.
+}
+
+If $\mat B_q \in \mathfrak B_q(\mat X)$ then the data matrix
+$$\PC_q(\mat X) \eqdef \mat X \mat B_q$$
+is the {\em first $q$ principal components} of~$\mat X$.
+
+If the columns of~$\mat B_q$ are interpreted as unit-length orthogonal objects of~$\mat X$,
+then the data matrix $\PC_q(\mat X)$ is the matrix of similarities between~$\mat X$ and~$\mat B_q$.
+
+The matrix $\mat B_q$ depends on a linear transformation of~$\mat X$. 
+The first principal components tend to correlate with the attributes having largest scatter.
+The matrix~$\PC_q(\mat X)$ does not depend on measurement scales of attributes of~$\mat X$ if the attributes are normalized.
+
+$$ \E \PC_q(\mat X) = \ve 0. $$
+
+$$ \ve \lambda_q(\mat X) \eqdef (\mat I^q_p)' \ve \lambda. $$
+
+$$ \VC (\PC_q(\mat X)) = \VC (\mat X \mat B_q)
+                = \mat B_q' \VC (\mat X) \mat B_q
+                = \mat B_q' \mat B_q \ve \lambda_q^d(\mat X) 
+                = \ve \lambda_q^d(\mat X),
+$$
+the attributes of $\PC_q(\mat X)$ are not correlated.
+
+$$ \cov(\mat X, \PC_q(\mat X)) = \frac 1 n \mat X' \PC_q(\mat X) = \frac 1 n \mat X' \mat X \mat B_q = \mat B_q \ve \lambda_q^d(\mat X). $$
+
+$$ \PC_q(\mat X) \sqrt{\ve \lambda_q^{-d}(\mat X)} $$
+is the normalized first~$q$ principal components, cf.~(\ref{rectangular_eigenvectors}),
+because
+$$ \VC \left(\PC_q(\mat X) \sqrt{\ve \lambda_q^{-d}(\mat X)} \right) = \mat I^q_p. $$
+
+$$ \cov \left(\mat X, \ \PC_q(\mat X) \sqrt{\ve \lambda_q^{-d}(\mat X)} \right) = \mat B_q \sqrt{\ve \lambda_q^d(\mat X)}, $$
+which is the correlation matrix between~$\mat X$ and the normalized first~$q$ principal components if~$\mat X$ is normalized.
+
+If $\VC(\mat X)$ is full rank, then
+\begin{multline*}
+$$ \PC_p(\mat X) \sqrt{\ve \lambda_p^{-d}(\mat X)} \ \left(\PC_p(\mat X) \sqrt{\ve \lambda_p^{-d}(\mat X)} \right)' 
+     = \PC_p(\mat X) \left(\ve \lambda_p^d(\mat X) \right)^{-1} \PC'_p(\mat X) \\
+     = \mat X \mat B_p \left(\ve \lambda_p^d(\mat X) \right)^{-1} \mat B'_p \mat X 
+     = \mat X \ \VC^{-1}(\mat X) \ \mat X,
+\end{multline*}
+which is~(\ref{mahalanobis}).
+
+
+Since $\sum_i b^2_{ij} = 1$, $b^2_{ij}$ is the {\em contribution} of attribute~$i$ to principal component~$j$.
+
+An attribute~$\ve x_{\cdot j}$ is {\em noise} iff its covariation with any other attribute is~0.
+Let~$\mat X$ be normalized,
+then
+$ \ve u_j \in \mathfrak B (\VC(\mat X)) $
+with eigenvalue~1.
+If $\ve \lambda_q(\mat X) > \ve 1$ then no attribute of $\PC_q(\mat X)$ correlates with~$\ve x_{\cdot j}$,
+in other words, $\PC_q(\mat X)$ represents~$\mat X$ without noise attributes.
+
+\begin{equation*}  \label{dataReduction}
+\mat X = \PC_q(\mat X) \mat B_q' + \mat \varepsilon, 
+\end{equation*}
+where 
+$$ \mat \varepsilon \eqdef \PC_{-q}(\mat X) \mat B_{-q}' $$
+is the {\em residual matrix}.
+
+\proof{
+$$ \PC_p(\mat X) = \mat X \mat B_p = \mat X ([\mat B_q \ \mat 0] + [\mat 0 \ \mat B_{-q}]), $$
+$$ \mat X = \PC_p(\mat X) \mat B_p' 
+  = ([\PC_q(\mat X) \ \mat 0] + [\mat 0 \ \PC_{-q}(\mat X)]) 
+      \times \left( \left[ \begin{array}{c} \mat B_q' \\ \mat 0 \end{array} \right] + \left[ \begin{array}{c} \mat 0 \\ \mat B_{-q}' \end{array} \right] \right)
+  = \PC_q(\mat X) \mat B_q' + \PC_{-q}(\mat X) \mat B_{-q}'.
+$$
+}
+
+$$ \trc \VC (\mat \varepsilon) = \trc \mat B_{-q} \ \VC(\PC_{-q}(\mat X)) \ \mat B_{-q}' = \trc \VC(\PC_{-q}(\mat X)) = \ve 1' \ve \lambda_{-q}(\mat X). $$
+
+$$ \epsilon^2(\mat X, \mat B_q) = 2n^2 \ \trc \VC (\mat X) - 2n^2 \ \trc \VC (\PC_q(\mat X)) 
+  = 2n^2 \left(\ve 1' \ve \lambda - \ve 1' \ve \lambda_q(\mat X) \right) 
+  = 2n^2 \ve 1' \ve \lambda_{-q}(\mat X) 
+  = 2n^2 \ \trc \VC (\mat \varepsilon)
+$$
+by~(\ref{sumD2}).
+
+The average lost squared distance 
+$$ \frac {\epsilon^2(\mat X, \mat B_q)} {n^2} = 2 \ \trc \VC (\mat X) (1 - r_q), $$
+where the {\em explained fraction of variance}, a quality criterion,
+\begin{equation}\label{explFracVar}
+r_q \eqdef \frac {\ve 1' \ve \lambda_q(\mat X)} {\trc \VC (\mat X)} 
+  = \frac {\trc \VC (\PC_q(\mat X))} {\trc \VC (\mat X)}
+  = \frac {\sum_{i,j} y^2_{ij}} {\sum_{i,j} x^2_{ij}}
+  = \frac {\sum_{i,j} d^2(\ve y_i, \ve y_j)} {\sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot})},
+\end{equation}
+where $\mat Y \eqdef \PC_q(\mat X)$.
+$$ 0 \le r_q \le 1. $$
+
+\comm {
+The data matrix~$\mat Y$ can be corrected $\PC_q(\mat X)$ so that
+$$ \sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) = \sum_{i,j} d^2(\ve y_i, \ve y_j) $$
+by these methods:
+\begin{enumerate}
+\item \begin{equation}\label{PCDataInflated} \mat Y \eqdef (1 / \sqrt {r_q}) \times \PC_q(\mat X). \end{equation}
+\item $\mat Y \eqdef [\PC_q(\mat X) \ \delta \mat I_n]$, where 
+$$ \delta \eqdef \sqrt{\frac {\epsilon^2(\mat X, \mat B_q)} {2n(n-1)}}. $$
+$$ \delta = \sqrt {\frac n  {n-1} \left(\trc \VC(\mat X) - \ve 1' \ve \lambda_q(\mat X) \right)}. $$
+\proof{
+$$ \sum_{i,j} d^2(\ve y_i, \ve y_j) = \sum_{i,j} d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q) + n(n-1) \times 2 \delta^2
+  = \sum_{i,j} d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q) + \epsilon^2(\mat X, \mat B_q) = \sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot}).
+$$
+}
+\end{enumerate}
+}
+
+The operation $\PC_q(\mat X)$ is idempotent:
+$$ \PC_q(\PC_q(\mat X)) = \PC_q (\mat X) \ \mat I_q \ \mat I^q_q = \PC_q(\mat X), $$
+$$ \ve \lambda_q (\PC_q(\mat X)) = (\mat I^q_q)' \ \ve \lambda(\VC(\PC(\mat X))) = \ve \lambda_q(\mat X), $$
+because
+$$ \mathfrak B(\VC(\PC_q(\mat X))) = \mathfrak B(\ve \lambda_q^d(\mat X)) = \{\mat I_q \}, $$
+$$ \ve \lambda(\VC(\PC_q(\mat X))) =  \ve \lambda(\ve \lambda_q^d(\mat X)) = \ve \lambda_q(\mat X). $$
+
+
+
+\subsection{Affine component analysis}
+
+Let~$\mat X \in \R^{n \times p}$ be a data matrix, 
+s.t.~$\E \mat X = \ve 0$.
+
+The attributes of~$\mat X$ are merged by an affine combination~$\ve \beta$ with a minimum variance iff
+$$ \ve \beta = \frac {\VC^{-1}(\mat X) \ve 1} {\ve 1' \VC^{-1}(\mat X) \ve 1}, $$
+cf.~(\ref{betaL2_stat}).
+$$ \ve 1' \ve \beta = 1. $$
+\proof
+{
+$$ 0 = \frac d {d \ve \beta} \left[ \var \mat X \ve \beta - \lambda (\ve 1' \beta - 1) \right]
+     = \frac d {d \ve \beta} \left[ \ve \beta' \VC(\mat X) \ve \beta - \lambda (\ve 1' \beta - 1) \right]
+     = 2 \VC(\mat X) \ve \beta - \lambda \ve 1, $$
+where $\lambda$ is a Lagrange multiplier.
+}
+
+$$ \var \mat X \ve \beta = \ve \beta' \VC(\mat X) \ve \beta = \frac 1 {\ve 1' \VC^{-1}(\mat X) \ve 1}. $$
+\comm {$< 0$}
+\comm 
+{Select a subset of attributes $\mat S \subseteq \mat X$, s.t.~$\var \mat S \ve \beta$ is minimum,
+    i.e.~$\ve 1' \VC^{-1}(\mat S) \ve 1$ is maximum. 
+}
+
+$$ \forall \mu \in \R, \ve \beta \in \R^p \
+  (\E \mat Y = \mu \ve 1, \ \ve y \eqdef \mat Y \ve \beta, \ \mat X \eqdef \mat Y - \ve y \ve 1' \implies \E {\mat X} = \ve 0). 
+$$
+\proof
+{
+    $$ \ve 1' \mat X = \ve 1' (\mat Y - \ve y \ve 1') 
+    = \ve 1' \mat Y - \ve 1' \mat Y \ve \beta \ve 1'
+    = \ve 1' \mat Y \ (\mat I - \ve \beta \ve 1')
+    = n \mu \ve 1' \ (\mat I - \ve \beta \ve 1')
+    = n \mu \ (\ve 1' - \ve 1')
+    = \ve 0.
+    $$
+}
+
+\comm {
+Let~$\mat Y \in \R^{n \times p}$ be a data matrix, 
+s.t.
+$$ \mat Y = \ve y \ve 1' + \mat X, $$
+then the new attribute
+$$ \mat Y \ve \beta = \ve y + \mat X \ve \beta $$
+is the {\em combining attribute of~$\mat Y$}.
+$$ \E \mat Y \ve \beta = \ve y. $$
+$$ \var \mat Y \ve \beta = \var \mat X \ve \beta. $$
+}
+
+\comm{Other affine components}
+
+
+
+\subsection {Factor analysis}
+\comm{}
+
+
+\subsection {Classical multidimensional scaling}
+\comm {of a distances or similarities}
+
+Let~$\mat S \in \R^{n \times n}$ be a double-centered symmetric matrix.
+$$ rank(\mat S) \le n - 1. $$
+
+{\em Classical multidimensional scaling} (cMDS) is a procedure of the construction of a data matrix~$\mat Y \in \R^{n \times q}$, where $q \le n$, 
+such that $\mat S(\mat Y)$ approximates~$\mat S$.
+
+Let
+$$ \mat B \in \mathfrak B (\mat S), $$
+$$ \ve \lambda \eqdef \lambda(\mat S), $$
+and let data matrix $\mat X \in \C^{n \times n}$ be defined as
+$$ \mat X \eqdef \mat B \sqrt{\ve \lambda^d}, $$
+then 
+$$ \mat S = \mat S(\mat X). $$
+
+By~(\ref{sim2dataCentered}), $\bar {\mat X} = \ve 0$.
+
+$$ \mathfrak B (\mat X' \mat X) = \{\mat I\}. $$
+
+$$ \mat X_q \eqdef \mat X \mat I^q_n. $$
+
+The {\em multidimensional scaling} of~$\mat S$ with $q$ attributes is
+$$ \MDS_q(\mat S) \eqdef \mat X_q. $$
+$$ \MDS_q(\mat S) \in \R^{n \times q}. $$
+
+By the Eckart-Young theorem for squared matrices,
+$$ \mat X_q \in \arg \min_{\mat Y \in \R^{n \times q}} d^2(\mat S, \mat Y \mat Y'), $$
+\comm {relation to $d^2(\mat D^2, \mat D_{\mat S}(\mat Y \mat Y'))$}
+$$ \min_{\mat Y \in \R^{n \times q}} d^2(\mat S, \mat Y \mat Y') = \sum_{i = q+1}^n \lambda_i^2. $$
+
+If $i \le q$ and $\lambda_i < 0$ then the column~$\ve x_{\cdot i}$ of~$\mat X_q$ is imaginary and the procedure {\em fails}.
+
+Suppose $\forall i \le q : \lambda_i > 0$.
+\comm{negative $\lambda_i$}
+
+By the Eckart-Young theorem for rectangular matrices,
+$$ \mat X_q \in \arg \min_{\mat Y \in \R^{n \times q}} d^2(\mat X, \mat Y), $$
+$$ \min_{\mat Y \in \R^{n \times q}} d^2(\mat X, \mat Y) = \sum_{i = q+1}^n \lambda_i. $$
+
+Since
+$$ \VC (\mat X_q)  = \frac 1 n \mat X_q' \mat X_q = \frac 1 n \mat I^q_n \ve \lambda^d \mat I^q_n = \frac 1 n \ve \lambda_q^d, $$
+the explained fraction of variance is
+$$ r_q = \frac {\trc \VC (\mat X_q)} {\trc \VC (\mat X_n)} = \frac {\trc \ve \lambda^d_q} {\trc \mat S} $$
+by~(\ref{explFracVar}) and~(\ref{trc_S_VC}). 
+
+$$ r_q = 1 - \min_{\mat Y \in \R^{n \times q}} d^2(\mat X, \mat Y) / \trc \mat S. $$
+It can be that $r_q \not \in [0,1]$.
+
+$$ \trc \MDS_q(\mat S) \ \MDS_q'(\mat S) = \trc \mat X_q \mat X_q' = \trc \ve \lambda^d_q = r_q \ \trc \mat S. $$
+
+Converting a similarity vector~$\ve s$ into an object~$\ve x$:
+$$ \ve s = \mat X \ve x \implies \ve x = \sqrt{\ve \lambda^{-d}} \mat B' \ve s. $$
+\proof 
+{
+$\mat B' \ve s = \mat B' \mat B \sqrt{\ve \lambda^d} \ve x = \sqrt{\ve \lambda^d} \ve x.$
+}
+
+\comm { distance $\to$ distance$^p$, criterion for the best p}
+
+Since
+$$ \trc \mat S^2 = \trc \left(\ve \lambda^d \right)^2, $$
+the {\em explained fraction of squared similarity}
+$$ s_q \eqdef \frac {\trc \left(\ve \lambda^d_q \right)^2} {\trc \mat S^2} $$
+is between~0 and~1.
+
+$$ s_q = 1 - \min_{\mat Y \in \R^{n \times q}} d^2(\mat S, \mat Y \mat Y') / \trc \mat S^2. $$
+
+\comm
+{model: $\mat S = \mat Y \mat Y' + \mat {Noise}$, where $\mat{Noise} = \mat N \mat N'$, s.t.~$\mat N \in \C^{n \times p}$ and $\VC(\mat N) = 1 / (\trc \mat S) \ \mat I$.
+    
+The distribution of $\{\lambda_i : i\}$ should be a mixture of Zipf distributions with consecutive~$i$s: practical examples.
+The component with largest $\lambda$s is not noise.
+Hence the $q$ selection.
+
+If distance is geographical then there should be no noise.
+}
+
+
+\subsubsection{Relation to principal component analysis}
+
+If a data matrix $\mat Y \in \R^{n \times p}$, $\mat M \eqdef \MDS_q(\mat S(\mat Y))$ and $\mat P \eqdef \PC_q(\mat Y)$,
+then their~$r_q$ is the same,
+$$ \lambda_M = n \ \lambda_P, $$
+$$ \mat Y' \mat B_M \sqrt{\lambda_M^{-d}} \in \mathfrak B_P, $$
+$$ \mat Y  \mat B_P \sqrt{\lambda_P^{-d}} \in \mathfrak B_M. $$
+If 
+\begin{equation} \label{M2P_match}
+  \mat B_P = \mat Y' \mat B_M \sqrt{\lambda_M^{-d}}, 
+\end{equation}
+\begin{equation} \label{P2M_match}
+  \mat B_M = \mat Y  \mat B_P \sqrt{\lambda_P^{-d}} 
+\end{equation}
+then
+$$ \mat M \mat M' = \mat B_M \sqrt {\lambda_M^d} \sqrt {\lambda_M^d} \mat B_M'  = \mat Y \mat B_P \mat B_P' \mat Y' = \mat P \mat P', $$
+which means that the distances between the objects of~$\mat P$ and~$\mat M$ are the same.
+
+If all elements of~$\lambda_P$ are different, then~(\ref{M2P_match}) and~({\ref{P2M_match}}), and $\mat P = \mat M$.
+Therefore, the attributes constructed by MDS are also referred to as principal components.
+
+
+
+\subsubsection{Multidimensional scaling of attributes}
+
+If~$\mat Y \in \R^{m \times n}$ is a data matrix, $\bar {\mat Y} = \ve 0$ and $\mat S = \VC (\mat Y)$ 
+then the objects of $\MDS(\mat S)$ are the attributes of~$\mat Y$.
+$$ \mat S \succeq 0. $$
+$$ \mat X_n = \cov \left(\mat Y, \ \PC_m(\mat Y) \sqrt{\ve \lambda^{-d}} \right), $$
+where $\ve \lambda \eqdef \ve \lambda(\VC(\mat Y))$.
+
+If the attributes of~$\mat Y$ are normalized 
+then for $\mat Z \eqdef (1/\sqrt 2) \mat X_q$
+$$ \cor(\ve y^i, \ve y^j) \le 1 - d^2(\ve z_i, \ve z_j) $$
+by~(\ref{d2rho}), 
+and this inequality is tight if $q = n$.
+
+
+\subsection {Canonical correlations}
+\comm{}
+
+
+
+\subsection{Clustering}
+
+Let a {\em clustered data} be
+$$ (\mat Y, \ve w_T) \eqdef
+\left (
+\left[ 
+\begin{array}{c} 
+\mat Y_1 \\ 
+\mat Y_2 \\ 
+\dots \\ 
+\mat Y_q 
+\end{array} 
+\right],
+\left[ 
+\begin{array}{c} 
+\ve w_1 \\ 
+\ve w_2 \\ 
+\dots \\ 
+\ve w_q 
+\end{array} 
+\right]
+\right)
+$$
+where $\mat Y_k \in \R^{n \times p}$ and $q$ is the number of clusters.
+
+The part $(\mat Y_k,\ve w_k)$ of $(\mat Y, \ve w_T)$ will be referred to as {\em cluster~$k$}.
+
+The {\em probability of cluster~$k$}
+$$ p_k \eqdef \frac {\ve 1' \ve w_k} {\ve 1' \ve w_T}. $$
+
+The {\em probability of object~$i$ to be in cluster~$k$}
+$$ p_{ik} \eqdef \frac {w_k[i]} {\sum_{l=1}^q w_l[i]}. $$
+
+Then
+\begin{equation*} 
+  \VC(\mat Y) = \sum_{k=1}^q p_k \VC(\mat Y_k). 
+\end{equation*}
+
+\bigskip
+Let $(\mat X, \ve w)$, where $\mat X \in \R^{n \times p}$, be a data, then a {\em clustering} of $(\mat X, \ve w)$ is a clustered data 
+$$ (\mat T, \ve w_T) \eqdef
+   \left (
+     \left[ 
+       \begin{array}{c} 
+         \mat X_1 \\ 
+         \mat X_2 \\ 
+         \dots \\ 
+         \mat X_q 
+       \end{array} 
+     \right],
+     \left[ 
+       \begin{array}{c} 
+          \ve w_1 \\ 
+          \ve w_2 \\ 
+          \dots \\ 
+          \ve w_q 
+       \end{array} 
+     \right]
+   \right)
+$$
+where 
+$$ \mat X_1 = \mat X_2 = \dots = \mat X_q = \mat X $$
+and
+$$ \sum_{i=1}^q \ve w_k = \ve w. $$
+The data matrix~$\mat T$ is the {\em total clustering} data matrix.
+
+
+\subsubsection{Ellipsoid clustering}
+
+\bigskip
+$$ \VC(\mat X) = \VC (\mat T). $$
+
+\bigskip
+Let~$\mat B_k \in \R^{n \times p}$ be a matrix where each row is~$\bar {\mat X}_k$,
+then the {\em between-clusters} clustered data matrix
+$$ \mat B(\mat T) \eqdef 
+     \left[ 
+       \begin{array}{c} 
+         \mat B_1 \\ 
+         \mat B_2 \\ 
+         \dots \\ 
+         \mat B_q 
+       \end{array} 
+     \right].
+$$
+$$ rank(\mat B(\mat T)) \le q. $$
+$$ \bar {\mat X} = \ve 0 \implies rank(\mat B(\mat T)) \le q - 1. $$
+The {\em within-clusters} clustered data matrix
+$$ \mat W(\mat T) \eqdef \mat T - \mat B(\mat T). $$
+$$ \mat T = \mat B(\mat T) + \mat W(\mat T). $$
+
+\bigskip
+$$ \forall \mat A : \mat B(\mat T \mat A) = \mat B(\mat T) \mat A. $$
+$$ \forall \mat A : \mat W(\mat T \mat A) = \mat W(\mat T) \mat A, $$
+because
+$$ \mat W(\mat T \mat A) = \mat T \mat A - \mat B(\mat T \mat A) = \mat T \mat A - \mat B(\mat T) \mat A = (\mat T - \mat B(\mat T)) \mat A. $$
+
+\bigskip
+$$ \VC(\mat W_k) = \frac 1 n (\mat X_k - \mat B_k)' (\mat X_k - \mat B_k) = \frac 1 n \mat X_k \mat X_k - \bar {\mat X}_k \bar {\mat X}_k' = \VC(\mat X_k) - \VC(\mat B_k). $$
+$$ \VC(\mat X) = \VC(\mat T) = \sum_{k=1}^q p_k \VC(\mat X_k) = \sum_{k=1}^q p_k \VC(\mat B_k) + \sum_{k=1}^q p_k \VC(\mat W_k) = \VC(\mat B(\mat T)) + \VC(\mat W(\mat T)). $$
+$$ \trc \VC(\mat X) = \trc \VC(\mat B(\mat T)) + \trc \VC(\mat W(\mat T)). $$
+A quality criterion, the explained fraction of variance of the clustering $(\mat T, \ve w_T)$ is
+$$ r_q = \frac {\trc \VC(\mat B(\mat T))} {\trc \VC(\mat X)} = \frac {\ve 1' \mat D^2_{\mat B} \ve 1} {\ve 1' \mat D^2 \ve 1} 
+$$
+by~(\ref{sumD2}),
+which defines a {\em clustering for a distance matrix}.
+\comm {compute $\mat D^2_{\mat B}$}
+\comm {This is the K-means criterion}
+\comm {Multi-normal mixture criterion}
+
+
+\subsubsection {Distinct clusters}
+The clusters of a clustering are {\em distinct} iff there is a function $c : [n] \mapsto [q]$, s.t.
+\begin{equation*}
+  w_k[i] =
+    \begin{cases}
+      w[i], &\text{ if } c(i) = k\\
+      0,   &\text{ else}.
+    \end{cases}
+\end{equation*}
+
+Cluster~$k$
+$$ C_k \eqdef \{i \in [n] \mid w_k[i] > 0\}. $$
+
+The {\em size} of cluster~$k$
+$$ n_k \eqdef |C_k|. $$
+
+For ellipsoid clustering
+$$ rank(\mat W_k) \le n_k - 1. $$
+$$ rank(\mat W(\mat T)) \le \sum_k rank(\mat W_k) \le n - q. $$
+
+
+\subsubsection{Canonical component analysis}
+By the canonical analysis (Section \ref{CanonicalAnalysis}), 
+the local extrema of $\{\ve x' \VC(\mat B(\mat T)) \ve x \mid \ve x' \VC (\mat W(\mat T)) \ve x = 1\}$
+are the linear combinations of the attributes of~$\mat X$.
+The constructed attributes are referred to as {\em canonical components}
+\comm {extrema = maxima}
+$$ \CC_q \eqdef \mat X \mat R, $$
+where 
+$$ \mat R \eqdef \mat U^{-1} \mat C, $$
+$$ \mat C \in \mathfrak B \left((\mat U')^{-1} \VC(\mat B(\mat T)) \mat U^{-1} \right) $$
+and $\VC(\mat W(\mat T)) = \mat U' \mat U$ is a Cholesky decomposition.
+
+$$ \ve \lambda \eqdef \ve \lambda \left((\mat U')^{-1} \VC(\mat B(\mat T)) \mat U^{-1} \right). $$
+
+$$ rank (\ve \lambda^d) \le rank(\mat B(\mat T)). $$
+If the clusters are distinct then
+$$ rank (\ve \lambda^d) \le rank(\mat W(\mat T)). $$
+
+$$ \mat R' \ \VC(\mat X) \ \mat R = \mat R' \ \VC(\mat B(\mat T)) \ \mat R + \mat R' \ \VC(\mat W(\mat T)) \ \mat R. $$
+$$ \VC (\CC_q) = \ve \lambda^d + \mat I $$
+by~(\ref{canonicalBetween}) and~(\ref{canonicalWithin}).
+
+A quality criterion is $\ve 1' \ve \lambda$.
+
+\bigskip
+$$ \mat Y \eqdef \mat T \mat R $$
+is a clustered data.
+$$ \mat R' \ \VC(\mat B(\mat T)) \ \mat R = \VC(\mat B(\mat Y)). $$
+$$ \mat R' \ \VC(\mat W(\mat T)) \ \mat R = \VC(\mat W(\mat Y)). $$
+$$ \VC(\mat Y) = \VC(\mat B(\mat Y)) + \VC(\mat W(\mat Y)). $$
+\comm{relation to discriminant analysis}
+
+\bigskip
+If $\bar {\mat X} = \ve 0$, $q = 2$ and $\mat X \ne \mat 0$ 
+then $rank (\mat B(\mat T)) = 1$
+and, removing zero eigenvalues, 
+$$\VC(\mat B(\mat Y)) = \var \ve b(\ve y) = \lambda, $$
+$$ \var \ve b(\ve y) = - \ {\bar {\ve y}}_1 \ {\bar {\ve y}}_2. $$
+$$ \bar {\ve y} = 0. $$
+$$ \var \ve y = \lambda + 1. $$
+
+
+
+\section{Prediction}
+Let~$\mat X \in \R^{n \times p}$ be a data matrix and $\ve y \in \R^n$ be a {\em target} attribute.
+Attribute~$\hat {\ve y}=f(\mat X)$ is a {\em prediction} of~$\ve y$ given data matrix~$\mat X$.
+The function~$f$ will be referred to as the {\em predictor}.
+\comm { Given $F$, an {\em $F$-predictor} is the set of parameters defining $f \in F$. {\em parametric predictor}.}
+
+The {\em residual} attribute
+$$ \ve \epsilon \eqdef \ve y - \hat {\ve y}. $$
+
+The {\em absolute criterion} in metric $L_k$ is
+$$ \sum_{i=1}^n |\epsilon_i|^k. $$
+
+The {\em prediction error} is the distance between $\ve y$ and $\hat {\ve y}$ in metric $L_k$ normalized by the number of objects
+$$ E \eqdef \left(\frac 1 n \sum_{i=1}^n |\epsilon_i|^k \right)^{1/k}. $$
+The prediction error is a quality criterion.
+$$ E \ge 0. $$
+
+A {\em best predictor}
+\begin{equation} \label{bestPredictor}
+f^* \eqdef \arg \min_{f \in F} E, 
+\end{equation}
+where $F$ is a set of predictors.
+
+The metric $L_k$ will be referred to as the {\em prediction metric}.
+
+
+\subsection{Statistical models for prediction in metric $L_2$}
+If~$y_i$ are random variables and~$\hat y_i$ are constants then
+$$ \var \epsilon_i = \var y_i. $$
+If $\E \epsilon_i = 0$ then 
+$$ \var \epsilon_i = \E \epsilon^2_i - (\E \epsilon_i)^2 = \E \epsilon^2_i. $$
+If 
+\begin{equation} \label{lrContrib}
+w_i \eqdef \frac 1 {\var y_i}
+\end{equation}
+then all objects have the same contribution to~$E$.
+
+Alternatively, 
+if $\epsilon_i \sim N(0,\var \epsilon_i)$ and all $y_i$ are independent of each other
+then the negative logarithm of the likelihood of~$\ve y$ is
+$$ \sum_i \frac {\epsilon^2_i} {\var \epsilon_i} + const $$
+and the maximum likelihood estimate of the predictor is the best predictor~(\ref{bestPredictor}) with multiplicities~(\ref{lrContrib}).
+
+Since 
+$$ \sqrt{w_i} \ \epsilon_i = \frac {\epsilon_i} {\sqrt {\var \epsilon_i}}  \sim N(0,1), $$
+which can be used to find outlier~$y_i$.
+
+\comm { consistent estimate of the regression function}
+
+
+
+\subsection {Linear prediction} \label{linearPrediction}
+A {\em linear} predictor
+$$ f(\mat X) \eqdef \mat X \ve \beta, $$
+where {\em predictor vector} $\ve \beta \in \R^p$.
+\comm { Prove that there is one local optimum ?}
+
+
+\subsubsection {Linear prediction in metric $L_2$} \label{linearPredictionL2}
+$$ E = \frac {|\ve \epsilon|} {\sqrt{n}}. $$
+The prediction error~$E$ is minimum if $|\ve \epsilon|$, i.e., the Euclidean distance between $\ve y$ and $\hat {\ve y}$, is minimum.
+Therefore, $\hat {\ve y}$ is the projection of~$\ve y$ on the space spanned by the attributes of~$\mat X$.
+
+By Pythagorean theorem,
+$$ |\ve y|^2 = |\hat {\ve y}|^2 + |\ve \epsilon|^2. $$
+$$ \hat {\ve y}' \ve \epsilon = 0. $$
+If there is a dependence between~$\hat {\ve y}$ and~$\ve \epsilon$ then prediction can be improved.
+The dependence can be found by plottig objects in the space $\{\hat {\ve y}, \ve \epsilon\}$.
+$$ \hat {\ve y}' \ve y = |\hat {\ve y}|^2. $$
+$$ |\ve \epsilon|^2 = \ve y' \ve \epsilon. $$
+The prediction error is the {\em root mean squared error, RMSE}. 
+
+The {\em explained fraction of variance} 
+$$ r \eqdef \frac {|\hat {\ve y}|^2} {|\ve y|^2} = 1 - \frac {|\ve \epsilon|^2} {|\ve y|^2} = 1 - \frac {E^2} {|\ve y|^2 / n}, $$ 
+which is between~0 and~1, cf.~(\ref{explFracVar}).
+The explained fraction of variance is a quality criterion.
+
+The best linear predictor
+\begin{equation} \label{betaOpt}
+  \ve \beta^* = \arg \min_{\ve \beta \in \R^p} |\ve \epsilon|^2.
+\end{equation}
+
+In the sequel $\ve \beta \eqdef \ve \beta^*$.
+$$ \frac d {d \ve \beta} |\ve \epsilon|^2 = \frac d {d \ve \beta} |\ve y - \mat X \ve \beta|^2 = - 2 \mat X' (\ve y - \mat X \ve \beta) = 0. $$
+$$ \mat X' \ve y = \mat X' \mat X \ve \beta = \mat X' \hat {\ve y}. $$
+$$ \mat X' \ve \epsilon = \mat X' \ve y - \mat X' \hat {\ve y} = \ve 0. $$
+$$ \exists i : \ve x_{. i} = \ve 1 \times const \implies \bar{\ve y} = \bar{\hat {\ve y}} \text{ and } \bar{\ve \epsilon} = 0, $$
+because $\ve 1' \ve y = \ve 1' \hat {\ve y}$.
+
+Assuming $(\mat X' \mat X)^{-1}$ exists,
+\begin{equation} \label{betaL2}
+  \ve \beta = (\mat X' \mat X)^{-1} \mat X' \ve y
+\end{equation}
+with the running time $O(p^2 n)$.
+
+\begin{equation} \label{betaL2_stat}
+   \ve \beta = \VC^{-1} (\mat X) \ \cov(\mat X,[\ve y]). 
+\end{equation}
+$$ \ve \beta = \mat X^- \ve y. $$
+\comm{Which of generalized inverses}
+
+$$ \hat {\ve y} = \mat X (\mat X' \mat X)^{-1} \mat X' \ve y. $$
+$$ |\hat {\ve y}|^2 = \ve \beta' \mat X' \ve y. $$
+
+The {\em coefficient of determination}
+$$ R^2 \eqdef 1 - \frac {|\ve \epsilon|^2 / n} {\var \ve y}. $$
+$$ \bar {\ve y} = 0 \implies r = R^2 = \cor^2 (\ve y, \hat {\ve y}). $$
+
+If $\bar {\mat X} = \ve 0$, $\bar {\ve y} = 0$ and $\forall i, j: i \ne j \implies \cov(\ve x_i, \ve x_j) = 0$ then 
+\begin{equation} \label{betaIndep}
+\beta_i = \frac {\cov (\ve x_i, \ve y)} {\var \ve x_i} = \rho(\ve x_i, \ve y) \sqrt{\frac {\var \ve y} {\var \ve x_i}}
+\end{equation}
+and
+$$ \var \hat {\ve y} = \sum_i \beta_i^2 \ \var \ve x_i = \sum_{i : \var \ve x_i \ne 0} \frac {\cov^2 (\ve x_i, \ve y)} {\var \ve x_i}. $$
+Let
+$$ a_i \eqdef \frac {\cov^2 (\ve x_i, \ve y)} {\var \ve x_i} $$
+be the {\em contribution} of~$\ve x_i$ to the prediction.
+\comm { Relation of contribution to the quality criterion ?}
+
+If $\mat X = [\ve 1 \ \ve x]$ then
+$$ \beta_2 = \frac {\cov (\ve x, \ve y)} {\var (\ve x)}, $$
+$$ \beta_1 = \bar {\ve y} - \beta_2 \bar {\ve x}. $$
+
+
+\subsubsection {Finding a linear predictor by alternating optimization}
+
+Let $A \eqdef \{i,j,\dots,q\} \subseteq [p]$,
+and $L_k$ be a prediction metric.
+
+If 
+$$ \mat X_A \eqdef [\ve x^i, \ve x^j, ..., \ve x^q], $$
+$$ \ve \beta_A \eqdef [\ve \beta_i, \ve \beta_j, ..., \ve \beta_q], $$
+$$ \hat {\ve y}_A \eqdef \mat X_A \ve \beta_A, $$
+$$ \ve y_A \eqdef \ve y - (\hat {\ve y} - \hat {\ve y}_A), $$
+$$ \ve \epsilon_A \eqdef \ve y_A - \hat {\ve y}_A $$
+then
+$$ \ve \epsilon_A = \ve \epsilon $$
+and the best linear predictor~$\ve \beta^*_A$ of~$\ve y_A$ by~$\mat X_A$ optimizes~$\ve \beta$.
+
+Alternating optimization approximation algorithm to find~$\ve \beta^*_A$:
+\begin{enumerate}
+  \item $\ve \beta := $ arbitrary values;
+  \item while~$|\ve \epsilon^2|$ decreases significantly:
+    \label{alg:altOptLinPredLoop}
+    \begin{enumerate}
+        \item $A := \textrm {arbitrary subset of } [p]$;
+        \item $\ve \beta^*_A :=$ best linear predictor of~$\ve y_A$ by~$\mat X_A$;
+        \item $[\ve \beta_i, \ve \beta_j, ..., \ve \beta_q] := [\ve \beta^*_i, \ve \beta^*_j, ..., \ve \beta^*_q]$.
+    \end{enumerate}
+\end{enumerate}
+
+If $k = 2$ and the loop of step~\ref{alg:altOptLinPredLoop} is repeated $p/a$ times, then the running time is $p/a \times O(a^2 n) = O(pan)$,
+where $a \eqdef |A|$.
+
+\comm { Prove that a global optimum is reached }
+
+\comm { Global optimum can be reached even if linear constraints on $\ve \beta$ are applied }
+\vspace {5mm}
+
+\comm { One attribute: $|\ve \epsilon|^2$ is the same whether y is predicted based on x, or x is predicted based on y}
+
+\comm{partial least squares}
+
+
+
+
+
+
+\end{document}
+
+

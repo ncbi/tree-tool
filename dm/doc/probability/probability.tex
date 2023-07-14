@@ -1,0 +1,792 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[]{theorem}
+
+
+
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+
+\theoremstyle{plain} \newtheorem{Lem}{Lemma}
+
+
+\input{c:/Users/brovervv/work/maths/common.tex}
+
+
+\title{Probability}
+\author{Vyacheslav Brover}
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+
+\section{Notation}
+
+$$ Prob \eqdef [0,1]. $$
+
+\begin{tabular}{|c|c|c|}
+\hline & Random & Sample \\
+\hline 
+\hline Variable & $X$ & $x$ \\
+\hline Vector   & $\ve X$ & $\ve x$ \\
+\hline Matrix   & $\mathcal X$ & $\mat X$ \\
+\hline
+\end{tabular}
+
+
+\section{Discrete random variable}
+Let~$X$ be a discrete random variable, $\supp(X) = [a,b]\cap \N$ and $p_i \eqdef \P(X=i)$.
+
+Let 
+$$\bar F_i \eqdef 1 - \P(X \le i) = \sum_{j=i+1}^b p_j$$
+be the {\em reverse probability function} of~$X$.
+
+Then
+\begin{equation}
+ \sum_{i=a}^b \bar F_i = \sum_{i=a}^b p_i (i-a) = \E X - a (b-a+1).  \label{sum_rev_pf}
+\end{equation}
+
+
+
+\section {Power law distribution}
+
+Let~$X \in \R$ be a random variable, s.t.~$0 \le x_{\mathrm {min}} \le X \le x_{\mathrm {max}} \le \infty $.
+
+Then $X \sim Power(x_{\mathrm {min}},x_{\mathrm {max}},\gamma)$ if the p.d.f.~of~$X$ is
+$$ \phi(x) \eqdef c \gamma \ x^{- (\gamma + 1)}. $$
+$$ \P(X > x) = c \ \left(x^{-\gamma} - x_{\mathrm {max}}^{-\gamma} \right). $$
+$$ c = \frac 1 {x_{\mathrm {min}}^{-\gamma} - x_{\mathrm {max}}^{-\gamma}}. $$
+
+$$ x_{\mathrm {max}} = \infty \implies \gamma > 0, \ x_{\mathrm {min}} > 0. $$
+$$ x_{\mathrm {min}} = 0 \implies \gamma < 0, \ x_{\mathrm {max}} < \infty. $$
+It follows that
+$$ \supp(X) \ne \R_+. $$
+
+$$ \E \log X 
+= c \left(  x_{\mathrm {min}}^{-\gamma} \ \log x_{\mathrm {min}} 
+- x_{\mathrm {max}}^{-\gamma} \ \log x_{\mathrm {max}} 
+\right)
++ \frac 1 \gamma.
+$$
+$$ x_{\mathrm {max}} = \infty \implies \E \log X = \log x_{\mathrm {min}} + \frac 1 \gamma. $$
+$$ x_{\mathrm {min}} = 0      \implies \E \log X = \log x_{\mathrm {max}} + \frac 1 \gamma. $$
+
+Let $x_1 \ge x_2 \ge \dots \ge x_n$ be a random sample of~$X$,
+then
+$$ \hat \P(X \ge x_i) = \frac i n $$
+and
+$$ x_i \approx  k \ i^{- \alpha}, $$
+where $k = (nc)^{\frac 1 \gamma}$ and $\alpha = \frac 1 \gamma$.
+This is a {\em Zipf law}.
+
+A power law distribution can be visualized as a straight line 
+if~$i$ and~$x_i$ are drawn in logarithmic scales.
+
+\comm{Beta1 distribution}
+
+
+\subsection{Principle of maximum entropy}
+
+Let~$X \in (0,1]$ be a random variable, and $Y \eqdef - \log X$, so that $Y \in [0,\infty)$.
+By the principle of maximum entropy, it may be that $Y \sim Exponential(\lambda)$, where $\lambda > 0$ and $\E Y = 1/\lambda$.
+Then $X \sim Beta(\lambda,1)$ with p.d.f.
+$$ \phi(x) = \lambda x^{\lambda - 1}. $$
+
+\comm {Beta}
+
+For example, $X$ is the probability of a message, and $Y$ is the length of the message, 
+and $X$ and~$Y$ are mutually optimized so that the mean message length is minimum.
+
+
+\subsection{$Beta(\alpha,1)$ distribution}
+
+Consider a nominal variable~$X$ with an infinite number of values~$i \in \N \setminus \{0\}$.
+Let~$p_i$ be the probability of value~$i$ and $p_i \ge p_{i+1}$.
+Let~$p_i=f(i)$ be a continuous function.
+Then $\phi(p) \eqdef p [- f^{-1}(p)]'$ is the p.d.f.~of $p_X$.
+By the principle of maximum entropy, $p_X \sim Beta(\alpha,1)$:
+$$ p [- f^{-1}(p)]' = \alpha p^{\alpha - 1}, $$
+$$ f^{-1}(p) = \frac \alpha {1 - \alpha} \ p^{-(1-\alpha)} = i, $$
+$$ f(i) = \left(\frac {1-\alpha} \alpha \ i \right)^{-\frac 1 {1-\alpha}}. $$
+
+
+
+
+\section{MLE of a bounded distribution}
+
+Let $X$ be a random variable with p.d.f.~$\phi(x)$ with parameter(s)~$\theta$.
+
+Let $Y_i \sim X$, $1 \le i \le n$, under the {\em bound condition} that $a \le Y_i \le b$.
+
+P.d.f.~of $Y_i$ is $\phi_b(y) = 1/c \times \phi(x)$, where $c \eqdef \P (a \le X \le b)$.
+
+Let $m_i$ be the multiplicity of $Y_i$.
+
+$L = \prod_i \phi_b^{m_i}(x_i).$
+
+$l = \sum_i m_i \log \phi_b(x_i) = \sum_i m_i (\log \phi(x_i) - \log c).$
+
+$$0 = \frac d {d \theta} l = \sum_i m_i \frac d {d \theta} \log \phi(x_i) - \sum_i m_i \frac {\frac d {d \theta} c} c.$$
+
+$$\mu_i \eqdef \frac {m_i} {\sum_j m_j}.$$
+
+$$\sum_i \mu_i \frac d {d \theta} \log \phi(x_i) = \frac {\frac d {d \theta} c} c.$$
+
+
+
+\section{Entropy}
+
+\subsection{Preliminary definitions}
+Let $X$ be a random variable with p.d.f.~$\phi(x)$.
+
+The {\em support} of~$X$ is
+$$\supp(X) \eqdef \supp(\phi) \eqdef \text{minimal event~$A$ of the $\sigma$-algebra of~$X$ s.t.}~\{x:\phi(x) > 0\} \subseteq A. $$
+
+Let $Y \eqdef k X + a$, where $k > 0$.
+
+Then the p.d.f.~of~$Y$ is $$\frac 1 k \ \phi \left(\frac {y - a} k \right). $$
+
+
+\subsection{Location and scale parameters}
+Let $X$ be a random variable with p.d.f.~$\phi(x|\mu,\sigma)$, where $\mu \in S_\mu$ and $\sigma \in S_\sigma \subseteq (0,\infty)$.
+
+Let $\phi_{\mathrm {std}}(x) \eqdef \phi(x|0,1) $.
+
+If
+\begin{equation}
+\phi(x|\mu,\sigma) = \frac 1 \sigma \phi_{\mathrm {std}}\left(\frac {x - \mu} \sigma \right)  \label{loc_scale}
+\end{equation}
+then $\mu$ is the {\em location} parameter of~$\phi$ and~$\sigma$ is the {\em scale} parameter of~$\phi$.
+
+A p.d.f.~has location and scale parameters if $S_\mu \eqdef \{0\}$ and $S_\sigma \eqdef \{1\}$.
+
+Let~$X_{\mathrm {std}}$ have the p.d.f.~$\phi_{\mathrm {std}}$,
+then $X \eqdef \sigma X_{\mathrm {std}} + \mu$ has p.d.f.~with location parameter~$\mu$ and scale parameter~$\sigma$.
+
+
+\subsection{Information and entropy}
+Let~$X$ be a random variable with p.d.f.~$\phi(x)$.
+
+Let {\em information of~$X$} be the random variable $I(X) \eqdef -\log \phi(X)$.
+{\em Shannon information} uses $\log_2$.
+
+The {\em entropy of~$X$} is $h(X) \eqdef \E I (X)$.
+
+Let $\mathfrak X \eqdef \supp(X)$.
+
+$$\E I(X) = - \int_{\mathfrak X} \phi(x) \log \phi(x) \ dx. $$
+$$\var I(X) = \int_{\mathfrak X} \phi(x) \log^2 \phi(x) \ dx - (\E I(X))^2.$$
+
+Since $I(X + a) \sim I(X)$,
+$\E I(X + a) = \E I(X)$ and $\var I(X + a) = \var I(X)$.
+
+Let $Y \eqdef k X$, where $k > 0$.
+Let $\mathfrak Y \eqdef \supp(Y)$.
+Then
+\begin{equation}
+\begin{split}
+\E I(kX) &= - \int_{\mathfrak Y} \frac 1 k \phi\left(\frac y k\right) \log \left(\frac 1 k \phi\left(\frac y k\right)\right) dy  \\
+      &= \log k - \frac 1 k \int_{\mathfrak Y} \phi\left(\frac y k\right) \log \phi\left(\frac y k\right) dy \\
+      &= \log k - \frac 1 k \int_{\mathfrak X} \phi (x) \log \phi (x) \ k \ dx  \qquad (y = kx) \\
+      &= \E I(X) + \log k 
+\end{split}
+\end{equation}
+and
+\begin{equation}
+\begin{split}
+\var I(kX) &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log^2 \left({\frac 1 k} \phi\left({\frac y k}\right)\right) dy 
+              - (\E I(kX))^2 \\
+  &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \left( \log^2 \phi\left({\frac y k}\right) - 2 \log k \log \phi \left({\frac y k}\right) + \log^2 k \right) dy 
+    - (\E I(kX))^2 \\
+  &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log^2 \phi\left({\frac y k}\right) dy 
+     - 2 \log k \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log \phi \left({\frac y k}\right) dy
+     + \log^2 k 
+     - (\E I(kX))^2  \\
+  &= \int_{\mathfrak X} {\frac 1 k} \phi (x) \log^2 \phi(x) \ k \ dx 
+     - 2 \log k \int_{\mathfrak X} {\frac 1 k} \phi(x) \log \phi (x) \ k \ dx
+     + \log^2 k 
+     - (\E I(kX))^2  \qquad (y = kx) \\
+  &= \var I(X) + (\E I(X))^2
+     + 2 \log k \ \E I(X)
+     + \log^2 k 
+     - ((\E I(X))^2 + 2 \log k \ \E I(X) + \log^2 k)  \\
+  &= \var I(X).
+\end{split}
+\end{equation}
+
+If $X = k X_{\mathrm {std}} + a$, where $k > 0$,
+then
+$$\E I(X) = \E I(X_{\mathrm {std}}) + \log k, $$
+$$\var I(X) = \var I(X_{\mathrm {std}}).$$ 
+
+Let~$\ve X$ and~$\ve Y$ be multivariate random variables and $\ve Y = \mat K \ve X$,
+then $$ \phi_Y = \frac 1 {|\det \mat K|} \phi_X (\mat K^{-1} \ve Y), $$
+$$ \E I(\mat K \ve X) = \E I(\ve X) + \log |\det \mat K|, $$
+$$ \var I(\mat K \ve X) = \var I(\ve X). $$
+
+If the components of~$\ve X$, denoted by $X_i$, where $1 \le i \le n$, are independent of each other,
+then
+$$ I(\ve X) = \sum_{i=1}^n I(X_i). $$
+
+
+\subsection{Principle of maximum entropy}
+For p.d.f.~$\phi$ and~$\psi$,
+the {\em cross-entropy} of p.d.f.~$\psi$ w.r.t.~p.d.f.~$\phi$ is
+$$ h(\phi,\psi) \eqdef - \int_{\supp(\phi)} \phi(x) \log \psi(x) \ dx, $$
+\begin{equation} \label{min_entropy}
+ \forall \phi, \psi : h(\phi, \phi) \le h(\phi,\psi),  
+\end{equation}
+If $h(\phi, \phi) = h(\phi,\psi)$
+then the set $\{x: \phi(x)= \psi(x)\}$ has measure~1.
+$$ \forall \phi, \psi : \supp(\phi) \supset \supp(\psi) \implies h(\phi,\psi) = \infty. $$
+$$ h (\phi) \eqdef h(\phi,\phi). $$
+
+If~$X$ is a random variable with p.d.f.~$\phi(x)$ then $h(X) = h(\phi)$.
+
+Let~$\Phi(\theta)$ be a set of p.d.f.~with constraint parameters~$\ve \theta$.
+
+Then the {\em maximum entropy p.d.f.~$\psi$ of constraint parameters~$\theta$}
+$$ \psi(\theta) \eqdef \arg \max_{\phi \in \Phi(\theta)} h(\phi). $$ 
+$$ \forall \psi \in \Phi(\theta) \
+  [\exists f : \forall \phi \in \Phi(\theta): h(\phi,\psi) = f(\ve \theta)] \implies \psi = \psi(\theta).
+$$
+\proof{
+$$ h(\psi) = f(\ve \theta) $$
+and by~(\ref{min_entropy}).
+}
+
+\comm {\em principle of maximum entropy}
+\comm {$\psi(\theta)$ vs. entropy test}
+
+Examples of~$\Phi(\theta)$ and~$\psi(\theta)$:
+
+\begin{enumerate}
+
+\item
+$ \Phi(\theta) = \{\phi: \supp(\phi)= \R, \E X(\phi)=\mu, \var X(\phi)=\sigma^2\}$, $\psi(\theta) = N(\mu,\sigma^2)$:
+\begin{equation*}
+\begin{split}
+ h(\phi,\psi(\theta)) &= \int_\R \phi(x) \left(\log \sqrt {2 \pi} \sigma + \frac 1 2 \left(\frac {x - \mu} \sigma \right)^2 \right) \ dx \\
+  &= \log \sqrt {2 \pi} \sigma + \frac 1 {2 \sigma^2} \int_\R \phi(x) (x - \mu)^2 \ dx \\
+  &= \log \sqrt {2 \pi} \sigma + \frac 1 {2 \sigma^2} \sigma^2 \\
+  &= \log \sqrt {2 \pi} + \log \sigma + \frac 1 2 \\
+  &= \frac 1 2 (1 + \log 2 \pi) + \log \sigma.
+\end{split}
+\end{equation*}
+$$ \frac 1 2 (1 + \log 2 \pi) \approx 1.42. $$
+
+\item
+$ \Phi(\theta) = \{\phi: \supp(\phi)= \R_+, \E X(\phi)=\mu\}$, $\psi(\theta) = \mathit {Exponential}(1 / \mu)$:
+\begin{equation*}
+\begin{split}
+ h(\phi,\psi(\theta)) &= \int_{\R_+} \phi(x) \left (\log \mu + \frac x \mu \right) \ dx \\
+  &= \log \mu + \frac 1 \mu \int_{\R_+} \phi(x) x \ dx \\
+  &= \log \mu + \frac 1 \mu \mu \\
+  &= 1 + \log \mu.
+\end{split}
+\end{equation*}
+
+\item 
+$ \Phi(\theta) = \{\phi: \supp(\phi)= [x_{\mathrm {min}}, x_{\mathrm{max}}], x_{\mathrm {min}} \ge 0, \E (\log X(\phi))=\lambda\}$, 
+$\psi(\theta) = Power(x_{\mathrm {min}}, x_{\mathrm{max}},\gamma(\lambda))$:
+\begin{equation*}
+\begin{split}
+ h(\phi,\psi(\theta)) &= 
+     - \int_{x_{\mathrm {min}}}^{x_{\mathrm {max}}} \phi(x) \left(\log c \gamma - (\gamma + 1) \log x \right) \ dx \\
+  &= - \log c \gamma + (\gamma + 1) \lambda.
+\end{split}
+\end{equation*}
+
+\end{enumerate}
+
+
+\subsection{Mixture of distributions}
+Let~$X$ be a mixture of distributions with the p.d.f.
+$$ \phi_x (x) = \sum_y \phi_y (y) \phi_{x|y}(x|y), $$
+then
+\begin{equation}
+\begin{split}
+  \E I(X) &= - \int_{\mathfrak X} \phi_x(x) \ \log \phi_x(x) \ d x \\
+          &= - \int_{\mathfrak X} \left(\sum_y \phi_y (y) \phi_{x|y}(x|y) \right) \ \log \left(\sum_y \phi_y (y) \phi_{x|y}(x|y) \right) \ d x \\
+          &= - \sum_y \phi_y (y) \int_{\mathfrak X} \phi_{x|y}(x|y) \ \log \left(\sum_z \phi_y (z) \phi_{x|y}(x|z) \right) \ d x \\
+          &\ge - \sum_y \phi_y (y) \int_{\mathfrak X} \phi_{x|y}(x|y) \ \log \left(\phi_y (y) \phi_{x|y}(x|y) \right) \ d x \\
+          &= h(\phi_y) + \E h(\phi_{x|y}|Y),
+\end{split}
+\end{equation}
+and the inequality is tight.
+
+
+\subsection{Conditional distribution}
+Let~$\phi(x,y)$ be a p.d.f.,
+then
+$$ \phi(x,y) = \phi_x(x) \phi_{y|x}(y|x), $$
+\begin{equation}
+\begin{split}
+h(\phi) &= -\int_{\mathfrak X} \int_{\mathfrak Y} \phi(x,y) \ \log \phi(x,y) \ dx \ dy \\
+        &= -\int_{\mathfrak X} \int_{\mathfrak Y} \phi_x(x) \ \phi_{y|x}(y|x) \ (\log \phi_x(x) + \log \phi_{y|x}(y|x)) \ dx \ dy \\
+        &= h(\phi_x) + \int_{\mathfrak X} \phi_x(x) \ h(\phi_{y|x}|x) \ dx \\
+        &= h(\phi_x) + \E h(\phi_{y|x}|X).
+\end{split}
+\end{equation}
+
+\begin{equation}
+\phi(x,y) = \phi_x(x) \ \phi_y(y) \equivalent h(\phi) = h(\phi_x) + h(\phi_y),  \label{dep_h}
+\end{equation}
+where the RHS is equivalent to
+$$ h(\phi_y) = \E h(\phi_{y|x}|X). $$
+
+Proof of the necessity of~(\ref{dep_h}): \par
+since
+\begin{equation}
+\begin{split}
+ h(\phi_y) &= - \int_{\mathfrak Y} \left(\int_{\mathfrak X} \phi_x(x) \ \phi_{y|x}(y|x) \ dx \right) \log \phi_y(y) \ dy \\
+           &= \int_{\mathfrak X} \phi_x(x) \left( - \int_{\mathfrak Y} \phi_{y|x}(y|x) \log \phi_y(y) \ dy \right) dx \\
+           &= \int_{\mathfrak X} \phi_x(x) \ h(\phi_{y|x}, \phi_y|x) \ dx,
+\end{split}
+\end{equation}
+$$ \forall x :  h(\phi_{y|x}, \phi_y|x) \ge h(\phi_{y|x}|x) $$
+and we assume that
+$$ \int_{\mathfrak X} \phi_x(x) \ h(\phi_{y|x}, \phi_y|x) \ dx = \int_{\mathfrak X} \phi_x(x) \ h(\phi_{y|x}|x) \ dx, $$
+the set $\{x: h(\phi_{y|x}, \phi_y|x) = h(\phi_{y|x}|x) \}$
+has measure~1 and for these~$x$ the set $\{y: \phi_y(y) = \phi_{y|x}(y|x)\}$ has measure~1,
+so $\phi(x,y) = \phi_x(x) \ \phi_y(y)$ on the set of $(x,y)$ of measure~1.
+\QED
+
+
+\subsection{Likelihood}
+Let $X_1, X_2, ..., X_n \sim X$ be independent random variables with p.d.f.~$\phi$.
+
+For a p.d.f.~$\psi$ 
+$$ \hat h(\psi) \eqdef - \frac 1 n \sum_{i=1}^n \log \psi(X_i) $$
+is the negative average loglikelihood of~$\psi$.
+
+$$ \E \hat h(\psi) = h(\phi,\psi). $$
+$$ \lim_{n \to \infty} \var \hat h(\psi) = 0. $$
+
+$$ \hat h (\phi) = \frac 1 n \ \sum_{i=1}^n I(X_i). $$
+
+
+\begin{enumerate}
+\item
+Let~$\Psi$ be a set of distributions.
+
+$$ \hat \phi(\Psi) \eqdef \arg \min_{\psi \in \Psi} \hat h(\psi) $$
+is the MLE of~$\phi$ in~$\Psi$.
+
+If~$\phi \in \Psi$ then $\hat \phi(\Psi)$ is a consistent estimate of~$\phi$:
+$$ \lim_{n \to \infty} \hat \phi(\Psi) = \arg \min_{\psi \in \Psi} \lim_{n \to \infty} \hat h(\psi) = \arg \min_{\psi \in \Psi} h(\phi,\psi) = \phi $$
+by~(\ref{min_entropy}).
+
+\item
+The {\em fitness} hypothesis 
+$$ H_0: \phi = \psi. $$
+
+If~$H_0$ is true then 
+$$ \E \hat h(\psi) = \E I (X), $$
+$$ \var \hat h(\psi) = \frac 1 n \ \var I(X), $$
+and by the central limit theorem
+$$\lim_{n \to \infty} \hat h(\psi) \sim \mathit{Normal} \left(\E I (X), \frac 1 n \ \var I(X) \right).$$
+For small~$n$ the bounds on the tails of the p.d.f.~of $\hat h(\psi)$ may be defined by the Chebyshev inequality.
+
+\item
+If $\psi \eqdef \hat \phi(\Psi)$ then 
+the fitness hypothesis is rejected if $\hat h(\psi)$ is too large or too small w.r.t.~$\hat h(\psi)$.
+
+This is the {\em entropy MLE fitness test}.
+
+\item 
+Let $\psi$~be the p.d.f.~of $$\mathit{Normal} \left(\bar X, \frac 1 n \sum_{i=1}^n (X_i - \bar X)^2 \right), $$
+then $h(\psi) = \hat h(\psi)$.
+
+If $\psi = \hat \phi(\Psi)$ then the p-value of the entropy MLE fitness test is~1.
+
+\item
+Let $\psi \in \Psi$.
+For this pair of hypotheses
+\begin{equation*}
+\begin{split}
+H_0: \phi &= \psi \\
+H_1: \phi &= \hat \phi(\Psi) 
+\end{split}
+\end{equation*}
+the p-value is $\P \left(\hat h(\psi) \le \hat h \left(\hat \phi(\Psi) \right) \Big| H_0 \right)$,
+which defines an {\em entropy confidence set} of~$\psi$ for which~$H_0$ is not rejected.
+
+
+\end{enumerate}
+
+
+
+
+\Questions
+\begin{itemize}
+  \item Existence of $\supp(X)$.
+  \item Existence of $\E I(X)$ and $\var I(X)$ 
+  \item Kullback-Leibler divergence
+  \item Principle of maximum entropy
+\end{itemize}
+
+
+\section{Outliers}
+
+A numeric variable is assumed to have the p.d.f.
+\begin{equation*}
+  \phi(x) \eqdef 
+    \begin{cases}
+       \phi_N(x), &\text{ if } x \le t\\
+       (1 - \Phi_N(t)) \ \phi_U(x),   &\text{ else,}
+     \end{cases}
+\end{equation*}
+where $\phi_N$ is a p.d.f.~of a normal distribution,
+and $\phi_U$ is a p.d.f.~of a uniform distribution whose domain belongs to $[t,\infty]$.
+
+Then for data $\{x_i \mid 1 \le i \le n\}$ 
+the likelihood
+$$ L(t,N,U) = \prod_{x_i \le t} \phi_N(x_i) \ \prod_{x_i > t} (1 - \Phi_N(t)) \ \phi_U(x_i) $$
+and 
+$$ l(t,N,U) = - \log L(t,N,U) = -\sum_{x_i \le t} \log \phi_N(x_i) - \sum_{x_i > t} \log [(1 - \Phi_N(t)) \ \phi_U(x_i)]. $$
+
+The outliers are $\{x_i \mid x_i > \arg_t \min l(t,N,U)\}$.
+
+$$ m \eqdef |\{x_i \mid x_i \le t\}|. $$
+
+$$ \min_N \frac 1 m \left(- \sum_{x_i \le t} \log \phi_N(x_i) \right) = \frac 1 2 \left(1 + \log 2 \pi + \log \sigma^2 \right), $$
+where
+$$ \sigma^2 \eqdef \var \{x_i \mid x_i \le t\}. $$
+
+$$ \min_U \left(- \sum_{x_i > t} \log \phi_U(x_i) \right) = (n - m) \log \ (\max_i x_i - t). $$
+
+Therefore,
+$$ \min_{N,U} l(t,N,U) = \frac m 2 \left(1 + \log 2 \pi + \log \sigma^2 \right) + (n - m) \ \log \frac {\max_i x_i - t} {1 - \Phi_N(t)}. $$
+
+The value $\arg_t \min l(t,N,U)$ can be found in time~$O(n \log n)$ by sorting the data and scanning it once.
+
+This procedure is not idempotent.
+
+
+\section {Prediction of a nominal variable}
+Let $A \eqdef \{a_0, a_1, \dots, a_{n-1}\}$ be a set of {\em actions}.
+
+Let~$X$ be a nominal variable taking on values $\{x_0, x_1, \dots, x_{m-1}\}$.
+
+Let $l: A, X \mapsto R$ be a {\em loss} function.
+
+Let~$D$ be data.
+
+The goal is to select such an action~$a_i$ given~$D$ that $\E l(a_i, X|D)$ is minimized, 
+which will be referred to as {\em the best} action.
+(There may be $>1$ best actions.)
+
+$$ l(a_i|D) \eqdef \E l(a_i, X|D) = \sum_j l(a_i,x_j) \P (X=x_j|D). $$
+The best action 
+$$ a(D) \eqdef \arg\min_i l(a_i|D). $$
+$$ a(x_j) \eqdef \arg \min_i l(a_i,x_j). $$
+
+Let the {\em risk} of action~$a_i$ given $X=x_j$ be defined as
+$$ r(a_i,x_j) \eqdef l(a_i,x_j) - l(a(x_j),x_j). $$
+$$ \forall a_i, x_j : r(a_i,x_j) \ge 0. $$
+The {\em expected risk} 
+$$ r(a_i|D) \eqdef  \E r(a_i, X|D) = \sum_j r(a_i,x_j) \P (X=x_j|D). $$
+$$ l_{min}(D) \eqdef \sum_j l(a(x_j),x_j) \P (X=x_j|D). $$
+Then
+$$ l(a_i|D) = \sum_j (r(a_i,x_j) + l(a(x_j),x_j)) \P (X=x_j|D) = r(a_i|D) + l_{min}(D), $$
+and
+$$ a(D) = \arg \min_i r(a_i|D). $$
+
+If $n = m = 2$, $r(a_0,x_0) = r(a_1,x_1) = 0$, $r_0 \eqdef r(a_1,x_0)$ and $r_1 \eqdef r(a_0,x_1)$ then
+$$ r(a_i|D) = r_{1-i} \ \P (X = x_{1-i}|D), \text{ for } i \in \{0,1\}. $$
+Both $r(a_0|D)$ and $r(a_1|D)$ are functions of $\P(X=x_0|D)$ 
+and have graphics in the form of line segments $[(0,r_1),(1,0)]$ and $[(0,0),(1,r_0)]$ respectfully.
+Then $a(D)$ is the action whose line segment is lower given $\P(X=x_0|D)$.
+
+
+\subsection {Communication system}
+The random variables~$X$ and~$D$ are a {\em communication system} iff 
+$$ \P(\max_i \P(X=x_i|D) \approx 1) \approx 1 $$
+and the computation of $\arg \max_i \P(X=x_i|D)$ is fast.
+
+By Bayes' theorem,
+$$ \P(X=x_i|d) = \frac {\P(d|X=x_i) \P(X=x_i)} {\sum_j \P(d|X=x_j) \P(X=x_j)}. $$
+
+The computation of $\arg \max_i \P(X=x_i|D)$ is fast if
+$$ \forall i \ \exists p_i \in Prob : \P\left[\arg \max_i \P(X=x_i|D) = \{i: \P(d|X=x_i) \ge p_i\} \right] \approx 1. $$
+
+Examples of communication systems:
+\begin{itemize}
+\item Natural language: $D$ is text.
+\item Biology: $D$ is a protein, $X$ is a protein function.
+\end{itemize}
+
+\begin{equation*}
+\begin{split}
+ \alpha \le \P(X=x_i|d) = \frac {\P(d|X=x_i) \P(X=x_i)} {\P(d)} &\equivalent \frac {\P(d|X=x_i)} {\P(d)} \ge  \frac \alpha {\P(X=x_i)} \\
+   &\equivalent I(d) - I(d|X=x_i) \ge \log \alpha + I(X=x_i).
+\end{split}
+\end{equation*}
+
+
+\section{Prediction of a boolean variable}
+
+Let~$X \sim \mathit{Bernoulli}(p)$.
+
+Let~$\hat X(\theta) \in \{0,1\}$ be the prediction of~$X$ made by method~$\theta \in \Theta$.
+
+If $X=1$ is interpreted as a {\em dangerous signal} 
+then the prediction situations can be classified into 4~groups:
+\begin{center}
+\begin{tabular}{|c||c|c|}
+\hline       & noise       & signal \\
+\hline 
+\hline Ok    & correct (True Negatives)     & miss  (False Negatives)\\
+\hline alarm & false alarm (False Positives)& correct (True Positives) \\
+\hline
+\end{tabular}
+\end{center}
+
+Let~$r : \{0,1\}, \{0,1\} \mapsto R_+$ be the risk function, 
+where the first  argument is the value of~$\hat X$
+and   the second argument is the value of~$X$,
+defined by the table:
+\comm{
+\begin{equation*}
+r(x,y) \eqdef 
+  \begin{cases}
+    r_0, \text{ if } x = 1, y = 0\\
+    r_1, \text{ if } x = 0, y = 1\\
+    0, \text{ else.}
+  \end{cases}
+\end{equation*}
+}
+
+\begin{center}
+\begin{tabular}{|c||c|c|}
+\hline              & $X=0$ & $X=1$ \\
+\hline 
+\hline $\hat X = 0$ & 0     & $r_1$ \\
+\hline $\hat X = 1$ & $r_0$ & 0 \\
+\hline
+\end{tabular}
+\comm {Higher rows}
+\end{center}
+
+Let 
+$$e_0(\theta) \eqdef \P(\hat X(\theta) = 1 | X = 0),$$
+$$e_1(\theta) \eqdef \P(\hat X(\theta) = 0 | X = 1)$$
+be the probabilities of {\em type~I} and {\em type~II} errors respectfully. 
+
+Then the expected risk 
+\begin{equation} \label{expectedRisk}
+\E r(\hat X(\theta), X) = r_0 (1-p) \ e_0(\theta) + r_1 p \ e_1(\theta). 
+\end{equation}
+Let $\theta_1 \preceq_{p,r} \theta_2$ iff method~$\theta_1$ is {\em better} than method~$\theta_2$ given~$p$ and the risk function~$r$:
+$$ \theta_1 \preceq_{p,r} \theta_2 \equiv \E r(\hat X(\theta_1), X) \le \E r(\hat X(\theta_2), X). $$
+
+For $i \in \{0,1\}$ let~$\vartheta_i$ be the two trivial prediction methods such that $\hat X(\vartheta_i) = i$ always,
+then
+$$ e_i(\vartheta_{1-i}) = 1, $$
+$$ e_{1-i}(\vartheta_i) = 0. $$
+
+Suppose $\{\vartheta_0, \vartheta_1\} \subseteq \Theta$.
+
+Let
+$$ROC(\Theta) \eqdef \{(e_0(\theta), e_1(\theta)) : \theta \in \Theta\}$$
+be the {\em receiver operating characteristic} of~$\Theta$.
+
+Let
+$$ ROC^*(\Theta) \eqdef \{(x, y) : (x,y) \in \mathrm {ConvexHull}(ROC(\Theta) \cup \{(1,1)\}) \And x + y \le 1 \}. $$
+$$ \Theta^* \eqdef \{\theta \in \Theta : (e_1(\theta),e_2(\theta)) \in ROC^*(\Theta)\}.
+$$
+
+Then 
+$$ \forall p \ \forall \ r \ \forall \ \theta \in \Theta \ \exists \theta^* \in \Theta^* : \theta^* \preceq_{p,r} \theta. $$
+In other words, to find the best~$\theta \in \Theta$ it is enough to consider~$\Theta^*$.
+
+$\Theta^*$ defines a 1-1 relationship between $e_0(\theta)$ and $e_1(\theta)$, where $\theta \in \Theta^*$,
+so that~$\theta$ is identified by~$e_0(\theta)$.
+
+$\Theta$ may be optimized so that $\Theta = \Theta^*$.
+This may occur in biological systems due to evolution or in technical systems due to improvement.
+If all systems share the same~$\Theta$, then $\theta \in \Theta$ is identified by~$e_0(\theta)$.
+
+Let $e_1: Prob \mapsto Prob$ such that
+$$ e_1(x) \eqdef \text{the unique element of } \{ y : (x,y) \in ROC^*(\Theta) \}. $$
+The function $e_1(x)$ is decreasing in~$x$.
+$$ \forall x \in Prob : x + e_1(x) \le 1. $$
+
+
+\subsection {p-Value}
+Let~$X$ and data~$D$ have a joint distribution.
+Let~$\phi(D)$ be the p.d.f.~of~$D$.
+
+The {\em p-value} of~$d$
+$$ p(d) \eqdef \P\left[\phi(D|X=0) \le \phi(d|X=0) \ | \ X=0 \right]. $$
+$$ p(d) \in Prob. $$
+$$ p(D) \sim U(0,1). $$
+
+If $\theta = p$ and $\hat X(p) = 1 \equiv p(D) \le p$ then $e_0(p) = p$.
+
+If, in addition, $r_1=0$ and $r_0=1$ then $\E r(\hat X(p), X) \le p$ by~(\ref{expectedRisk}).
+
+
+\subsection {Upper bound on expected risk}
+$$ r_{max} \eqdef \max_{\theta \in \Theta^*} \{r_0 \ e_0(\theta), r_1 \ e_1(\theta) \}. $$
+$$ \forall \theta \in \Theta^* : \E r(\hat X(\theta), X) \le r_{max}, $$
+which is a tight bound.
+
+$$r_{max} \le \max_{x \in Prob} \{ r_0 x, \ r_1 e_1(x) \}. $$
+
+Let~$e_0^* \in Prob$ be such that $r_0 e_0^* = r_1 e_1(e_0^*)$, then
+$$ \max_{x \in Prob} \{ r_0 x, r_1 e_1(x) \} = r_0 e_0^*. $$
+$$ e_0^* + e_1(e_0^*) \le 1. $$
+$$ \frac {e_0^* + e_1(e_0^*)} {e_0^*} \le \frac 1 {e_0^*}. $$
+$$ 1 + \frac {r_0} {r_1} \le  \frac 1 {e_0^*}. $$
+$$ e_0^* \le \frac {r_1} {r_0 + r_1}. $$
+Similarly,
+$$ e_1^* \le \frac {r_0} {r_0 + r_1}. $$
+Then
+$$ \forall \theta \in \Theta^* : \E r(\hat X(\theta), X) \le r_0 e_0^* \le \frac {r_0 r_1} {r_0 + r_1}. $$
+
+
+\section{Bonferroni correction}
+
+Let~$X_i$, where $1 \le i \le n$, be the p-value of test~$i$ of the same~$H_0$.
+Suppose all tests are independent, and $H_0$ holds.
+Then $X_i \sim U(0,1)$.
+
+Let~$X_{\min} \eqdef \min_i X_i$.
+
+If $x \approx 0$ then
+$$ \P(X_{\min} \le x) = 1 - \prod_{i=1}^n \P(X_i \ge x) = 1 - (1 - x)^n \approx 1 - e^{-xn} \approx 1 - (1 - xn) = xn, $$
+which is the {\em E-value}.
+
+
+
+\section{Prediction}
+
+Let~$\ve X \in \R^p$ be a random vector of {\em predictor} variables and $Y \in \R$ be a {\em target} variable.
+The goal is to identify the conditional probability $\P(Y=y|\ve X = \ve x) = \phi_Y(y|\ve x) \ dy$.
+A {\em prediction} of~$Y$ given~$\ve x$ is a function~$\hat y(\ve x)$.
+A prediction~$\hat y(\ve x)$ is a {\em regression} iff $\hat y(\ve x) = \E (Y|\ve X = \ve x)$.
+
+Let i.i.d.~$(\ve X_i, Y_i)$, where $1 \le i \le n$, be random {\em data} with the p.d.f.~$\phi(\ve x,y) = \phi_Y(y|\ve x) \phi_X(\ve x)$.
+The negative average loglikelihood of a conditional p.d.f.~$\psi(y|\ve x)$ is
+$$ \hat h(\psi) \eqdef - \frac 1 n \sum_{i=1}^n \log \psi(Y_i|\ve X_i). $$
+$$ \E \hat h(\psi) = - \int \phi(\ve x,y) \log \psi(y_i|\ve x_i) \ d \ve x \ d y 
+     =   \int h(\phi_Y, \psi | \ve x) \ \phi_X(\ve x) \ d \ve x
+     \ge \int h(\phi_Y, \phi_Y | \ve x) \ \phi_X(\ve x) \ d \ve x.
+$$
+$$ \lim_{n \to \infty} \var \hat h(\psi) = 0. $$
+
+The function~$\hat h(\psi)$ is the minimization criterion.
+
+
+\subsection{Boolean target}
+
+Let~$Y \in \{0,1\}$.
+
+The prediction 
+$$ \hat y(\ve x) \eqdef \P(Y|\ve X = \ve x) $$
+is a regression.
+ 
+\begin{equation*}
+\begin{split}
+\P(Y|\ve X = \ve x) 
+  = \frac {\P(\ve X = \ve x|Y) \P(Y)} {\P(\ve X = \ve x|Y) \P(Y) + \P(\ve X = \ve x|\neg Y) \P(\neg Y)} 
+  = \frac {\frac {\P(\ve X = \ve x|Y) \P(Y)} 
+                  {\P(\ve X = \ve x|\neg Y) \P(\neg Y)}
+           }
+           {\frac {\P(\ve X = \ve x|Y) \P(Y)} 
+                  {\P(\ve X = \ve x|\neg Y) \P(\neg Y)}
+            + 1
+           }.
+\end{split}
+\end{equation*}
+$$ z(\ve x) \eqdef   \log \frac {\P(\ve X = \ve x|Y)} 
+                                {\P(\ve X = \ve x|\neg Y)}
+                   + \log \frac {\P(Y)} {\P(\neg Y)}. 
+$$
+
+Let
+$$ F(x) \eqdef \frac {e^x} {e^x + 1} $$
+be the c.d.f.~of $Logistic(0,1)$. 
+Then
+$$ \P(Y|\ve X = \ve x) = F(z(\ve x)). $$
+
+If $X \sim Logistic(0,1)$ then 
+$$ Y = (X \le z(\ve x)).$$
+
+$$ \P(\neg Y|\ve X = \ve x) = F(- z(\ve x)). $$
+
+The likelihood
+$$ L = \prod_i \P(Y|\ve x_i)^{y_i} \left(1 - \P(Y|\ve x_i) \right)^{1-y_i}. $$
+$$ \hat h (\psi) = - \frac 1 n \log L = \frac 1 n \sum_i \left[ \log \left(e^{z(\ve x_i)} + 1\right) - y_i z(\ve x_i) \right]. $$
+
+The geometric mean of the correct prediction is $\sqrt[n]L = e^{- \hat h(\psi)}$.
+
+Let~$\theta$ be a parameter of~$z(\ve x)$ then the MLE of~$\theta$ is the solution to
+\begin{equation}\label{boolPredictMLE}
+0 = \frac d {d \theta} \hat h (\psi) = \frac 1 n \sum_i (\hat y(\ve x_i) - y_i) \frac d {d \theta} z(\ve x_i). 
+\end{equation}
+
+\comm{
+    If $z(\ve x)$ is monotone w.r.t.~$\theta$ then $\hat y(\ve x) = F(z(\ve x))$ is monotone w.r.t.~$\theta$ and~(\ref{boolPredictMLE}) can be solved by binary search. 
+}
+
+If $Y = (z_0(\ve x) > 0)$, i.e., $z_0(\ve x) = 0$ defines a surface in the space of~$\ve X$ separating $\{\ve x \mid y = 0\}$ from $\{\ve x \mid y = 1\}$,
+then any $z(\ve x) \eqdef k \ z_0(\ve x)$, where $k > 1$, increases~$L$ in comparison with $z(\ve x) \eqdef z_0(\ve x)$,
+and the optimization of~$\theta$ does not end.
+
+
+
+\subsubsection{Linear $z(\ve x)$}
+
+If
+\begin{equation}\label{linZ}
+z(\ve x) = \ve \beta' \ve x
+\end{equation}
+then by~(\ref{boolPredictMLE})
+$$ \frac d {d \beta_j} \hat h (\psi) = \frac 1 n \sum_i (\hat y(\ve x_i) - y_i) x_{ij}. $$
+
+The Hessian of~$\hat h (\psi)$
+$$ \mat H \eqdef \frac {d^2} {d \beta_j d \beta_k} \hat h (\psi) = \frac 1 n \sum_i \hat y (\ve x_i) (1 - \hat y (\ve x_i)) \ x_{ij} \ x_{ik}. $$
+$$ \mat H \succeq 0. $$
+\proof {
+$\mat H = \frac 1 n \mat X' \ve \lambda^d \mat X$,
+where $\mat X$ is the data with the elements~$x_{ij}$, 
+and $\ve \lambda$ is the vector with the elements $\lambda_i = \hat y (\ve x_i) (1 - \hat y (\ve x_i))$.
+}
+
+Therefore, the function $\hat h (\psi)$ is convex.
+
+If $X_j$, where $1 \le j < p$, are independent Boolean variables and $X_p = 1$,
+then equation~(\ref{linZ}) is true, where
+$$ \beta_j \eqdef w_j(1) - w_j(0), $$
+\begin{equation}
+w_j(x) \eqdef
+\begin{cases}
+\log \frac {\P(X_j = x|Y)} {\P(X_j = x|\neg Y)} &\text{ if } j < p, \\
+\sum_{j < p} w_j(0) + \log \frac {\P(Y)} {\P(\neg Y)}, &\text{ if } j = p.
+\end{cases}
+\end{equation}
+Equation~(\ref{linZ}) is also true if some $X_j$ are equal or opposite to each other.
+
+% instability of solution if $\max {x_{.j} | y = \neg a} < \min {x_{.j} | y = a}$
+
+If 
+$\ve X|Y      \sim N(\ve \mu_1, \mat \Sigma)$ and 
+$\ve X|\neg Y \sim N(\ve \mu_2, \mat \Sigma)$
+then
+$$ z(\ve x) = (\ve \mu_2 - \ve \mu_1)' \mat \Sigma^{-1} (\ve \mu_1 + \ve \mu_2 - 2 \ve x) + \log \frac {\P(Y)} {\P(\neg Y)}. $$
+
+
+
+\end{document}
+
+

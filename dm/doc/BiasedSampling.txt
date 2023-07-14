@@ -1,0 +1,28 @@
+Biased Sampling
+---------------
+
+Let
+w_i >= 0       be the weight of object i
+Y_i \in [0, 1] be the target attribute
+
+The numbers of the observations belonging to classes 0 and 1 may be chosen arbitrarily. 
+In this case the estimation of the probability of class 1 will be biased w.r.t. the general population. 
+To fix this, p, the prior probability of class 1, must be set. 
+Then w_i and Y_i are changed to w'_i and Y'_i as follows:
+
+YPos_i := k_1 Y_i
+YNeg_i := k_0 (1 - Y_i)
+w'_i := w_i (YPos_i + YNeg_i)
+Y'_i := YPos_i / (YPos_i + YNeg_i)
+
+where 
+W := sum_i w_i
+k_1 = W p       / \sum_i w_i Y_i         - Multiplicity factor of class 1
+k_0 = W (1 - p) / \sum_i w_i (1 - Y_i)   - Multiplicity factor of class 0
+
+which ensures that
+\sum_i w'_i = W
+\sum_i w'_i Y'_i       / W = p
+\sum_i w'_i (1 - Y'_i) / W = 1 - p
+
+NB: make sure p != 0 or 1
