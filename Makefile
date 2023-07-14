@@ -18,6 +18,7 @@ all:	\
   effectiveSize \
   extractPairs \
   file2hash \
+  graph_test \
   index_find \
   list2pairs \
   mergePairs \
