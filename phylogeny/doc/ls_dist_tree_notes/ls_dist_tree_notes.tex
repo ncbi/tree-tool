@@ -1,0 +1,388 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[]{theorem}
+\usepackage[nottoc]{tocbibind}
+\usepackage{hyperref}
+
+
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+
+\theoremstyle{plain} \newtheorem{Lem}{Lemma}
+
+
+\input{c:/Users/brovervv/work/Maths/common.tex}
+
+
+\title{LS Distance Tree: Notes}
+\author{Slava Brover}
+
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+
+\section{Tree model of a tree distance matrix} \label{treeDist2treeModel}
+
+Suppose the dissimilarity matrix~$\mat D$ is a tree distance matrix, 
+meaning that there is an unknown tree exactly fitting~$\mat D$.  % ??
+
+Let $\{a,b,c\} \subseteq S$ be different objects, 
+and $x$~be the interior node joining these 3~objects, 
+then the distance between~$a$ and~$x$ based on~$b$ and~$c$ is
+$$ d_{ax}(b,c) = \frac {d_{ab} + d_{ac} - d_{bc}} 2. $$
+
+Objects $\{a,b\}$ are {\em neighbors} iff $\exists \ x : path(a,b) = \{(a,x),(x,b)\}$.
+A tree with at least 3 leaves has at least 2 pairs of neighbors.
+An interior arc of a tree cuts all objects into two subsets each of which contains at least 1 pair of neighbors.
+ 
+Let
+$$ u_a \eqdef \frac 1 {|S| - 2} \sum_{b \in S} d_{ab}. $$
+
+The {\em sum of distances from $path(a,b)$ to all objects $S \setminus \{a,b\}$ plus $d_{ab}$}
+$$ S_{ab} = \frac {u_a + u_b - d_{ab}} 2. $$
+
+The set $\arg \max_{a \ne b} S_{ab}$ are pairs of neighbors
+\cite{Keppler}.
+\comm {
+\proof
+{
+  Let $(a,b) \in \arg \max_{a \ne b} S_{ab}$, s.t.~$(a,b)$ is not a pair of neighbors.
+  Then there is an arc $(x,y) \in path(a,b)$, s.t.~$\{x,y\} \cap \{a,b\} = \emptyset$.
+  And        there are neighbors $\{c,d\}$ joined at~$X$, s.t.~$path(x,X) \cap path(a,b) = \emptyset$.
+  Similarly, there are neighbors $\{e,f\}$ joined at~$Y$, s.t.~$path(y,Y) \cap path(a,b) = \emptyset$.
+  $$ l(a,b) \eqdef \sum_{\alpha \in path(a,b)} l_\alpha. $$
+  Let $n_x$ be the number of objects projected on $path(a,b)$ at~$x$,
+      $n_y$ be the number of objects projected on $path(a,b)$ at~$y$,
+  and $r$ be the number of the rest objects.
+  Then
+  $$ 0 \le S_{ab} - S_{cd} < n_x \ l(x,X) - (r + n_y) \ l(x,X), $$
+  $$ 0 \le S_{ab} - S_{ef} < n_y \ l(y,Y) - (r + n_x) \ l(y,Y). $$
+  $$ n_x > r + n_y, $$
+  $$ n_y > r + n_x. $$
+  $$ 0 > r. \# $$
+}
+}
+
+\comm{Minimum variance of $d_{ax}(b)$ as a criterion of neighbors}
+
+The greedy {\em neighbor-joining} algorithm building a tree from random dissimilarities
+with running time $O\left(n^3\right)$:
+\begin{enumerate}
+  \item create a tree with a star topology;
+  \item if $|S| \le 2$ then delete all arcs with non-positive lengths and stop;
+  \item compute $d_{ab}$ and $u_a$ for all $a,b \in S$;
+  \item find $(a,b) \in \arg \max_{a \ne b} \ S_{ab}$;
+  \item add arcs $(a,x)$ and $(b,x)$ to the tree;
+  \item replace $a$ and~$b$ by~$x$ in~$S$;
+  \item go to 2.
+\end{enumerate}
+
+
+\section{Tree model in a Euclidean space}
+For a tree model of a dissimilarity matrix~$\mat D$, the leaves can be represented as points in a Euclidean space, 
+such that $d^2(a,b) = d_{ab}$,
+where~$a$ and~$b$ are leaves,
+and $d(a,b)$ is the distance in the Euclidean space.
+The dimensions of the Euclidean space are in 1-1 relation with the arcs of the tree.
+Let $root$ be any node of the tree,
+and let~$\alpha(i)$ be the arc of the tree for dimension~$i$,
+then the coordinate of node~$a$ in dimension~$i$,
+\begin{equation*}
+x_i(a) \eqdef 
+\begin{cases}
+\sqrt{l(\alpha(i))}, &\text{ if } \alpha(i) \in path(a,root),\\
+0,   &\text{ else.}
+\end{cases}
+\end{equation*}
+The variables~$x_i$ are weighted Boolean variables,
+and $d^2(a,b)$ is a weighted Hamming distance.
+\comm {$\rho(\ve x_i, \ve x_j) \ne 0$}
+
+By~(\ref{sumD2}),
+$$ 2 n^2 \ \var \ve x_i = \sum_{a,b} (x_i(a) - x_i(b))^2 = l(\alpha(i)) \ m (n - m), $$
+where $m \eqdef |\{a \in S \mid \alpha(i) \in path(a,root)\}|$.
+
+Let $\LCA(a,b)$ be the least common ancestor of nodes~$a$ and~$b$, then
+$$ \ve x(a)' \ve x(b) = \sum_{\alpha \in path(\LCA(a,b),root)} l(\alpha) \ \ge 0. $$
+
+$$ \mat S \eqdef \mat S_{\mat D^2}(\mat D). $$
+If a dissimilarity matrix~$\mat D$ has a tree model, then $\mat S \succeq 0$ and a multidimensional scaling of~$\mat S$ can be done.
+
+If almost all objects are partitioned into subsets $\mathfrak S \subset 2^S$, such that
+$$ \forall S_a, S_b \in \mathfrak S : S_a \ne S_b 
+  \implies (\forall a \in S_a \ \forall b \in S_b \implies \ve x(a)' \ve x(b) = 0), 
+$$
+which occurs if the sets of~$\mathfrak S$ are different subtrees,
+then the sets of~$\mathfrak S$ appear as $k$ orthogonal rays in the space of the first $k$ MDS attributes,
+where $k = |\mathfrak S|$.
+\comm{Ray~$S_a$ coordinates are $x(a)'y$, where $a, y \in S_a$ and $a$ is an {\em extreme} object}
+Applying MDS to these rays recursively produces an approximate tree model.
+
+
+
+\section{Evolution interpretation}
+Let~$\mathfrak S$ be the set of points on the arcs of the tree.
+$$ S \subset \mathfrak S. $$
+The set~$\mathfrak S$ can be interpreted as the result of an {\em evolution} of the object $root \in \mathfrak S$.
+The arc lengths can be interpreted as the number of {\em elementary evolutionary changes}.
+\comm { Markovian branching process}
+
+A {\em minimum Steiner tree of~$S$} is a spanning tree~$T$ on $S \cup Q$, where $Q \eqdef \mathfrak S \setminus S$, 
+such that $\sum_{j \in T} l(j)$ is minimum.
+The elements of~$Q$ are referred to as {\em Steiner nodes}.
+Let $MST(S)$ be the set of such trees.
+
+If all elementary evolutionary changes have the same probability~$p$,
+then the probability of the tree is $p^{\sum l(j)}$,
+and the maximum likelihood estimation tree of~$S$ is a minimum Steiner tree of~$S$.
+
+\theorem {Minimum Steiner tree decomposition}
+{ $$ \forall A \subset S : \max_{a,b \in A} d_{ab} \le \min_{a \in A, b \in S \setminus A} d_{ab} \implies 
+    \exists T \in MST(S) \ \forall a,b \in A : path_T(a,b) \cap S \subseteq A. 
+  $$
+}
+\proof
+{ Suppose $T \in MST(S)$ and there is no $j \in T$, s.t.~$j$ disconnects~$A$ from~$S \setminus A$.
+  Select $a \in A, b \in S \setminus A$, s.t.~$path(a,b) \cap S = \{a,b\}$, and let $k \in path(a,b)$.
+  Then remove the arc~$k$ from~$T$ and select $a' \in A$, s.t.~$a'$ and~$a$ are not connected in~$T$.
+  See [Zharkikh]
+}
+\comm {true for minimum spanning tree, wrong for MST}
+
+\comm{Combine tree length and LSE models}
+
+
+\section{Variance of dissimilarities}
+
+\subsection{Linear variance of dissimilarities}
+
+Let $D_{ab}$ be the random variable measuring the dissimilarity~$d_{ab}$ and
+\begin{equation} \label{distVar}
+\var D_{a,b} \eqdef const \times \max \{d_{ab}, 0 \}.
+\end{equation}
+Then in the linear prediction model 
+$$w_{ab} = 1/d_{ab} \text {, if } d_{ab} > 0$$ 
+by~(\ref{lrContrib}).
+
+$$ \forall I \in \mathfrak I \ \forall a,b \in I: \lim_{d_{ab} \to +0} w_{ab} \epsilon^2_{ab} = \lim_{d_{ab} \to +0} d_{ab} = 0. $$
+
+If all $d_{ab} \le 0$ are replaced by $d_{ab} = \Delta > 0$, where $\Delta \to +0$, 
+then
+$$ |\ve \epsilon|^2_0 = \sum_{a,b \ : \ \hat d_{ab}=0} \max\{d_{ab}, 0\}, $$
+which is equivalent to 
+\begin{equation} \label{distWeight}
+w_{ab} \eqdef
+\begin{cases} 
+1/d_{ab}, &\text{ if } d_{ab} > 0, \\
+0, &\text{ else}.
+\end{cases}
+\end{equation}
+
+\begin{equation} \label{zeroWeight}
+d_{ab} \ne \nul \implies (w_{ab} = 0 \equivalent d_{ab} \le 0). 
+\end{equation}
+
+The unoptimizable part of~$|\ve \epsilon|^2_0$ is
+$$ \sum_{a,b \ : \ a,b \in I \And I \in \mathfrak I \And d_{ab} > 0} d_{ab}. $$ 
+
+$$ |\ve y|^2 = \sum_{a,b} d_{ab}. $$
+
+The harmonic mean $n_w/w$ is the weighted mean of $(d_{ab} : a,b \in S, d_{ab} > 0)$.
+
+$$ \ve y' \ve {\hat y} = \sum_{a,b} w_{ab} d_{ab} \hat d_{ab} = \sum_{a,b} \hat d_{ab}. $$ 
+
+$$ \frac 1 r \left( (1-r) - \frac {|\ve \epsilon|^2_0} {|\ve y|^2} \right) 
+= \frac {|\ve \epsilon|^2 - |\ve \epsilon|^2_0} {r |\ve y|^2} 
+= \frac {\sum_j \epsilon^2_j} {\ve y' \ve {\hat y}}
+= \frac {\sum_j \Delta_j l(j)} {\sum_{a,b} \hat d_{ab}} 
+= \frac {\sum_j |P(j)| l(j) \times \delta^2_j} {\sum_j |P(j)| l(j)}, 
+$$
+which is a weighted average of~$\delta^2_j$ over arcs~$j$.
+
+Since in an optimized tree
+$$ \frac {|\ve \epsilon|^2_0} {|\ve y|^2} = \frac {\sum_{a,b:\hat d_{ab}=0} d_{ab}} {\sum_{a,b} d_{ab}} \approx 0, $$
+the value
+$$ \rho \eqdef \sqrt{\frac {1-r} r} = \sqrt {\frac {|\ve \epsilon|^2} {|\hat {\ve y}|^2}} $$ 
+will be referred to as the {\em error density} of the tree.
+$$ r = \frac 1 {1 + \rho^2}. $$
+
+
+\subsection{Exponential variance of dissimilarities}
+\comm{}
+
+Suppose the dissimilarity of a pair of objects
+$$ d = d(p) \eqdef - \log \frac {p - a} b. $$
+$$ p = b \ e^{-d} + a. $$
+$$ \frac \partial {\partial p} d = - \frac 1 b \ e^d. $$
+Let~$P$ be a random variable, s.t.~$\E P = p$ and $\var P \approx 0$,
+and
+$$D \eqdef d(P), $$
+then
+$$ D = d - \frac 1 b \ e^{d} (P - p), $$
+$$ \var D = \frac 1 {b^2} \ e^{2 d} \ \var P. $$
+
+Let~$S$ be a set of Boolean attributes,
+$A \subseteq S$ be the subset of attributes in which a pair objects agrees,
+and
+$$ P \eqdef \frac {\sum_{i \in S} I_i} {|S|}, $$
+where
+$$ I_i \sim 
+    \begin{cases}
+        Bernoulli(\pi),  &\text{ if } i \in A\\
+        Bernoulli(1-\pi),  &\text{ else},
+    \end{cases}
+$$
+then
+$$ \var P = \frac {\pi (1 - \pi)} {|S|} $$
+and
+$$ \var D = const \times e^{2 d}. $$
+
+The value~$\pi$ is the probability to identify the membership in~$A$ correctly.
+
+$$ \E P = \frac {|A| \ \pi + |S \setminus A| \ (1 - \pi)} {|S|}. $$
+
+\comm{
+$$ I_i \sim 
+  \begin{cases}
+    1,  &\text{ if } i \in A\\
+    Bernoulli(1-\pi),  &\text{ else},
+  \end{cases}
+$$
+}
+
+
+\section{K Dissimilarities}
+
+  
+  Let~$S$ be a set of {\em objects}.
+  
+  For {\em dissimilarities} $d_{ab,i} \ge 0$, 
+  where $a, b \in S$ and~$i$~is the {\em dissimilarity type}, $1 \le i \le K$,
+  and {\em dissimilarity weights} $w_{ab,i} \ge 0$,
+  let the {\em tree model} parameters be distances~$t_{ab} \ge 0$ and {\em scale coefficients}~$s_i > 0$,
+  s.t.~the following {\em criterion} is minimized:
+  \begin{equation} \label{tree_model_criterion}
+  \sum_{a,b,i \in I(a,b)} \left(d_{ab,i} - \frac 1 {s_i} t_{ab}\right)^2 v_{ab,i}
+  = \sum_{a,b,i \in I(a,b)} \left(s_i d_{ab,i} - t_{ab}\right)^2 w_{ab,i}
+  \end{equation}
+  under the constraint
+  \begin{equation} \label{scale_constraint}
+  \prod_i s_i = 1. 
+  \end{equation}
+  
+  In~\ref{tree_model_criterion}
+  $$ v_{ab,i} \eqdef s_i^2 \ w_{ab,i}. $$
+  
+  The dissimilarities~$\{d_{ab,i}\}$  may be defined partially.
+  $$ I(a,b) \eqdef \{i:d_{ab,i} \textrm{ is defined}\}. $$
+  
+  If $\{d_{ab,i}\}$ are realizations of the random variables
+  $$ D_{ab,i} \sim Normal (t_{ab,i}, f(t_{ab,i})), $$
+  where 
+  $$ t_{ab,i} \eqdef \frac 1 {s_i} t_{ab} $$
+  are {\em scaled tree distances}
+  and $f(t) > 0$  is a {\em variance function} monotone in~$t$,
+  and
+  $$ w_{ab,i} \eqdef \frac 1 {s_i^2 f\left(\frac 1 {s_i} t_{ab}\right)}, $$
+  then assuming the independence of $D_{ab,i}$ from each other,
+  the likelihood maximization is equivalent to the minimization of criterion~\ref{tree_model_criterion}.
+  
+  Given initial~$\{s_i\}$, a locally optimal tree model can be found by alternating optimization of~$\{t_{ab}\}$ and~$\{s_i\}$.
+  
+  For fixed~$\{t_{ab}\}$ and~$\{v_{ab,i}\}$, the scale coefficients~$\{s_i\}$ are found by minimizing 
+  $$ \sum_{a,b,i \in I(a,b)} \left(d_{ab,i} - \frac 1 {s_i} t_{ab}\right)^2 v_{ab,i} - \lambda \sum_i \log s_i, $$
+  where $\lambda$ is a Lagrange multiplier.
+  The solution is
+  $$ s_i = \frac {\sum_{ab} t_{ab}^2 \ v_{ab,i} + \lambda} {\sum_{ab} d_{ab,i} t_{ab} \ v_{ab,i}} . $$
+  
+  Since~$\{s_i\}$ increase with~$\lambda$, 
+  the latter can be found by binary search to satisfy the constraint~\ref{scale_constraint}.
+  
+  The components of~\ref{tree_model_criterion} involving~$a$ and~$b$ can be decomposed as
+  $$ \sum_{i \in I(a,b)} \left(s_i d_i - t\right)^2 w_i 
+  = \sum_{i \in I(a,b)} \left(s_i d_i - \bar d \right)^2 w_i + (\bar d - t)^2 \sum_{i \in I(a,b)} w_i, 
+  $$
+  where 
+  $$ \bar d \eqdef \frac {\sum_{i \in I(a,b)} s_i d_i \ w_i} {\sum_{i \in I(a,b)} w_i}. $$
+  
+  For fixed~$\{s_i\}$, locally optimal tree distances~$\{t_{ab}\}$ for dissimilarities of~$K$ types
+  are also locally optimal tree distances for a different tree model with $K=1$, dissimilarities~$\{\bar d_{ab}\}$
+  and dissimilarity weights
+  $$ w_{ab} \eqdef \sum_{i \in I(a,b)} w_{ab,i}. $$
+  
+  Since
+  $$ w_{ab,i} \approx \frac 1 {s_i^2 f(d_{ab,i})}, $$
+  the~$K$ dissimilarities can be merged into one.
+
+
+\section{Probability of a zero arc length}
+
+Consider $x, y \in S$ and $j \in Path(x,y)$.
+Suppose $d_{xy}$ is measured correctly on all arcs in $Path(x,y)$ except~$j$.
+Define the dissimilarity of arc~$j$ in the path from~$x$ to~$y$ as
+$$ d_{xy}(j) = d_{xy} - (t_{xy} - l(j)). $$
+Then
+$$ \widehat \Pr (d_{XY}(j) \le 0) = \frac {\sum \{w_{xy}: j \in Path (x,y), d_{xy}(j) \le 0 \}} {\sum \{w_{xy}: j \in Path (x,y)\}}. $$
+
+
+\section{Molecular clock tree height}
+
+Let $C(z)$ be the set of children of node~$z$.
+Let $l_z$ be the arc length between node~$z$ and its parent.
+
+For a node~$x$ define 
+the {\em node weight} as a subtree length
+$$ w(x) =  l_x +
+  \begin{cases}
+    0, & \textrm { if } C(x) = \emptyset, \\
+    \sum_{y \in C(x)} w(y), & \textrm { else}.
+   \end{cases}
+$$
+
+And define the {\em average tree height} 
+$$ h(x) = l_x +
+  \begin{cases}
+    0, & \textrm { if } C(x) = \emptyset, \\   
+    \frac {\sum_{y \in C(x)} h(y) \ w(y)} {\sum_{y \in C(x)} w(y)}, & \textrm { else}.
+   \end{cases}
+$$
+
+The {\em root}
+$$r = \arg \min h(x),$$ 
+where $x$ is a node or an arc point.
+
+{\em Relative tree height}
+$$ \frac {h(r)} {w(r)}. $$
+The smaller the better molecular clock.
+
+\comm{derivation of formulas}
+
+
+\begin{thebibliography}{9}
+\bibitem {Buneman}
+  Buneman, Peter,
+  The Recovery of Trees from Measures of Dissimilarity. 
+  In: Mathematics the the Archeological and Historical Sciences: Proceedings of the Anglo-Romanian Conference, 
+  Mamaia, 1970. Edinburgh University Press, 1971. p. 387-395.
+
+\bibitem {Keppler}
+      James A. Studier, Karl J. Keppler, A Note on the Neighbor-Joining Algorithm of Saitou and Nei,
+      Mo. Bio. Evol. 5(6):729-731. 1988
+\end{thebibliography}
+
+
+\bibliographystyle{unsrt}
+
+
+
+\end{document}
+
+

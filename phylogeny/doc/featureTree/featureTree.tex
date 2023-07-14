@@ -1,0 +1,888 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[]{theorem}
+\usepackage{hyperref}
+%\usepackage{graphics,graphicx}
+%\usepackage{pstricks,pst-node,pst-tree}
+\usepackage[nottoc]{tocbibind}
+
+
+% Default margins are too wide all the way around. I reset them here
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+
+\theoremstyle{plain} \newtheorem{Lem}{Lemma}
+
+
+\input{c:/Users/brovervv/work/maths/common.tex}
+
+
+
+\title{Phylogeny of Pan-Genome}
+\author{Vyacheslav Brover}
+
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+
+\section{Notation}
+The names of sets and the names of functions returning sets start with a capital letter, otherwise names start with a small letter.
+
+The same name can be used as the name of a set and a name of different functions. 
+In the latter case the functions are distinguished by the types of their arguments.
+
+A pair of names where one name is with a star and the other name is without a star, e.g. $Name^*$ and $Name$, means that $Name^*$ is not observed, but $Name$ is observed.
+
+The sign $\eqdef$ means "equal by definition".
+
+$ Prob \eqdef [0,1] $ --- probability.
+
+\begin{equation*}
+\neg^a p \eqdef
+  \begin{cases}
+    p,          &\text{ if } a = 0 \mod 2,\\
+    1-p,        &\text{ if } a = 1 \mod 2.\\
+  \end{cases}   
+\end{equation*}
+$$ \bar p \eqdef \neg p \eqdef \neg^1 p. $$
+$$ \neg^b (\neg^a p) = \neg^{(a+b\mod 2)} p. $$
+$$ (\neg^a p)' = (-1)^a p'. $$
+
+If~$S$ is a set then $\iota S$ is any element of~$S$.
+
+$$ A \bot B \equiv A \cap B \ne \emptyset. $$
+
+
+\section {Genome model}
+
+\begin{enumerate}
+
+\item
+Sets: $Locus$, $Gene$, $Genome$ ("isolates"), $Species$.
+
+Genome is a set of chromosomes.
+
+$ gene: Locus \mapsto Gene. $
+
+$ species: Genome \mapsto Species. $
+
+
+\item
+$ Locus^*: Genome \mapsto \{0,1\}^{Locus}$ --- genome loci.
+This is a random variable.
+
+$ Locus: Genome \mapsto \{0,1\}^{Locus}$ --- genome loci obtained by a {\em genome annotation} procedure.
+This is a random variable.
+
+$$ \forall i_1, i_2 \in Genome : i_1 \ne i_2 \implies Locus^*(i_1) \cap Locus^*(i_2) = Locus(i_1) \cap Locus(i_2) = \emptyset. $$
+
+
+\item
+$p_{annot\_error}: Genome \mapsto Prob$ --- the type~I error of annotation, {\em annotation error}:
+
+$$ p_{annot\_error}(i) \eqdef \frac{|Locus^*(i) \setminus Locus(i)|} {|Locus^*(i)|}. $$
+
+Concerning type~II errors, assume
+$$   \Forall l \in Locus(i) \setminus Locus^*(i) 
+   \ \Forall l^* \in Locus^*(i)
+   : gene(l) \ne gene(l^*)
+   .
+$$
+
+$p_{annot\_error}: Species \mapsto Prob$ --- annotation error for a species, assuming
+$$ \Forall i \in Genome: species(i) = s \implies p_{annot\_error}(i) = p_{annot\_error}(s). $$
+
+\item
+$\pi^*: Genome, Gene \mapsto \N$ --- true number of {\em paralogs}, true {\em pan-genome} matrix:
+$$\pi^* (i,g) \eqdef |\{l \in Locus: l \in Locus^*(i) \And gene(l) = g\}|. $$
+
+Assume that in a genome all loci of the same gene have the same origin: by mutation of a single locus or by horizontal gene transfer.
+
+All genomes of a species have a common phenotype.
+
+
+$\pi: Genome, Gene \mapsto \N$ --- number of annotated {\em paralogs}, annotated {\em pan-genome} matrix:
+$$\pi (i,g) \eqdef |\{l \in Locus: l \in Locus(i) \And gene(l) = g\}|. $$
+
+
+For a genome~$i$ and for different loci~$l_1$ and~$l_2$ assume 
+that the evens $l_1 \in Locus(i)$ and $l_2 \in Locus(i)$ are independent,
+\comm {and that the annotation error is equal for all loci}
+then
+$$ \forall g \in Locus^*(i) \implies [\pi(i,g) \sim Binomial(\pi^*(i,g), 1 - p_{annot\_error})]. $$
+
+
+\item
+$Core : Species \mapsto \{0,1\}^{Gene}$ --- {\em core} set of genes, a minimal set of genes necessary for a genome to have the phenotype of the species.
+This is a random variable.
+Our goal is to estimate the core genes of a species.
+
+$$   \Forall s \in Species 
+   \ \Forall i \in Genome
+   \ \Forall g \in Gene
+   : species(i) = s \And g \in Core(s)
+     \implies \pi^*(i,g) \ge 1. 
+$$
+$$ \Forall s_1, s_2 \in Species: s_1 \ne s_2 \implies Core(s_1) \not \subseteq Core(s_2). $$
+
+
+
+\item
+$\pi^*: Species, Gene \mapsto \N$ --- true number of paralogs of a gene in the core set of a species, assuming
+$$   \Forall s \in Species 
+   \ \Forall i \in Genome
+   \ \Forall g \in Gene
+   : species(i) = s \And g \in Core(s)
+     \implies \pi^*(s,g) = \pi^*(i,g). 
+$$
+$$ \forall \ s : \pi^*(G) \sim \mathit{Zipf}(\alpha_{par}(s)). $$
+
+
+\item
+$core : Species, Gene \mapsto Prob$, defined as
+$$ core (s,g) \eqdef \P(g \in Core(s)). $$
+Consider a species~$s$.
+$$ \E |Core(s)| = \sum_{g \in Gene} core(s,g), $$
+Assume that for different genes~$g_1$ and $g_2$ the events $g_1 \in Core(s)$ and $g_2 \in Core(s)$ are independent, then
+$$ \var |Core(s)| = \sum_{g \in Gene} core(s,g) (1 - core(s,g)). $$
+
+\item
+$Core: Genome \mapsto \{0,1\}^{Gene}$ --- observed core set of genes of a genome:
+$$ Core(i) \eqdef \{gene(l): l \in Locus(i)\} \cap Core(species(i)). $$
+$$ \E |Core(i)| = \sum_{g \in Gene: \pi(i,g) \ge 1} core(s,g), $$
+$$ \var |Core(i)| = \sum_{g \in Gene: \pi(i,g) \ge 1} core(s,g) (1 - core(s,g)). $$
+
+\item
+$Accessory: Genome \mapsto \{0,1\}^{Gene}$ --- {\em accessory} set of genes of a genome:
+$$Accessory(i) \eqdef \{gene(l): l \in Locus(i)\} \setminus Core(species(i)). $$
+$$ \E |Accessory(i)| = \sum_{g \in Gene: \pi(i,g) \ge 1} (1-core(s,g)) = |Locus(i)| - \E |Core(i)|, $$
+$$ \var |Accessory(i)| = \var |Core(i)|. $$
+
+
+$p_{accessory}: Gene, Species \mapsto Prob$ defined as
+$$ p_{accessory} (g,s) \eqdef \P(G = g | I \in Genome \And species(I) = s \And G \in Accessory(I)). $$
+$$ \forall s \in Species: \sum_{g \in Gene} p_{accessory}(g,s)= 1. $$
+
+
+\item
+Let $S \subseteq Genome$.
+
+$freq: Gene \mapsto \N$ --- absolute {\em gene frequency} in the set~$S$:
+$$ freq(g) \eqdef \sum_{i \in S} \pi(i,g). $$
+
+Suppose there is a species~$s$ such that $\Forall i \in S: species(i) = s$ and~$S$ is a random sample.
+
+$$ \Forall g \in Gene: g \in Core(s) \implies freq(g) \sim Binomial(|S|\times  \pi^*(s,g), 1 - p_{annot\_error}(s)). $$
+
+$$ \forall g \in Gene: g \not\in Core(s) \implies \hat p_{accessory}(g,s) = \frac {freq(g)} {\sum_{i \in S} |Accessory(i)|}, $$
+where $\hat p_{accessory}(g,s)$ is the MLE estimate of $p_{accessory}(g,s)$.
+
+$\alpha: Species \mapsto \R_{++}$.
+$$ \Forall g \in Gene: g \not\in Core(s) \implies p_{accessory}(g,s) \sim Pareto(\alpha(s)). $$
+
+\end{enumerate}
+
+
+Core genes are unlikely to be predicted.
+
+
+\Questions
+\begin{itemize}
+  \item $\alpha(s)$:
+    \begin{itemize}
+      \item Dependence of~$\hat \alpha(s)$ on sample size. $\hat \alpha(\texttt{E.~coli}) \ne \hat \alpha(\texttt{Prokaryotes})$.
+      \item Make more accurate: use {\tt GENE.genomes = 1}; $\le 1$ and $> 5$ should go away.
+      \item Fitness hypothesis is not rejected
+      \item Estimate SD of MLE
+      \item Explain the Zipf distribution of the subaccessory genes.
+        \begin{itemize}
+          \item Show that $\forall s: \alpha(s) = \alpha(s_0)$, where~$s_0$ is all prokaryotes.
+          \item Biological mechanisms; explain the value of~$\alpha$.
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+
+
+\section{Phylogenetic tree data structure}
+
+Let $Genes$ be a set of Boolean attributes.
+$$ Species \eqdef 2^{Genes}. $$
+Let $Genomes$ be a set of {\em genomes}.
+$$ Genomes \subset Species. $$
+$$ n \eqdef |Genomes|. $$
+Let the {\em pan-genome} of $Genomes$ be their union.
+
+A {\em pan-genome phylogenetic tree} of $Genomes$ is a directed tree $(Nodes,Arcs)$, where $$Genomes \subset Nodes \subset Species$$ and $Genomes$ are leaves.
+
+Let the arcs in~$Arcs$ be directed towards the root.
+
+
+\subsection{Construction of the tree}
+
+Steps:
+\begin{enumerate}
+\item Construct an unrooted tree by the maximum parsimony criterion:
+  \begin{itemize}
+    \item Hierarchical clustering of genomes:
+	  \begin{itemize}
+	    \item Decompose the gene frequency distribution into {\em subaccessory}, {\em subcore} and {\em intersection core} distributions.
+	          Subaccessory genes have a Zipf distribution and the other genes have Binomial distributions, 
+	          where the intersection core has the distribution $Binomial(n,1-p)$ with $p$ being the {\em annotation error}.
+	    \item MDS based on distances defined by subcore genes.
+	    \item Decompose genomes into clusters by the decomposition of multidimensional normal distributions.
+	    \item Repeat the above steps for each the obtained cluster of genomes.
+	  \end{itemize}
+   \item Locally optimize the tree by the maximum parsimony criterion.
+   \end{itemize}
+\item Find the root and its core set.
+\item Locally optimize the rooted tree by the MLE criterion.
+\end{enumerate}
+
+
+\Questions
+\begin{itemize}
+  \item MDS dimensions: 
+     \begin{itemize}
+        \item Associate with genes.
+        \item Interpret as a quantitative property of genomes.
+     \end{itemize}
+   \item Identification of the subcore genes to compute the distances for MDS: use only subcore genes with high peaks. 
+         That will increase the ratio of between vs. within clusters scatter.
+\end{itemize}
+
+
+
+\subsection {Steiner tree problem}
+
+Let $G = (V,E)$ be an undirected graph, where $V = \{0,1\}^{Gene}$ and $E = V^2$.
+
+Let $S \eqdef \{Core(i): i \in Genome \}$. $S \subseteq V$.
+
+For $(a,b) \in E$ let $len(a,b) \eqdef |Core(a) \setminus Core(b)| + |Core(b) \setminus Core(a)|$.
+
+Then finding the maximum parsimony tree is the Steiner tree problem for $G$, $S$ and~$len$.
+A solution to this problem is $(V^*, E^*)$, where $S \subseteq V^* \subseteq V$, $E^* \subseteq E$ and $V^* = V(E^*)$.
+Let~$\mathfrak G$ be the set of all solutions. $\mathfrak G \ne \emptyset$.
+$$ \forall (V^*,E^*) \in \mathfrak G : len(E^*) = const. $$
+
+The function~$len$ is a distance.
+
+The {\em Steiner vertices}
+$$ Q \eqdef V^* \setminus S. $$
+
+$$ \forall \ a \in Q : deg(a) \ge 3. $$
+$$ |Q| \le |S| - 2. $$
+
+For a given topology~$\mathfrak E$, the Sankoff algorithm finds a set~$Q$.
+Therefore, the Steiner Tree problem can be solved for small~$|S|$ by examining all topologies.
+
+For a solution $(V^*, E^*)$, let a {\em hyperedge} be the intersection of a maximal connected component of $(V^*, E^*)$, where each path traverses only the vertices in~$Q$, with~$S$.
+Let $H(E^*) \subseteq \{0,1\}^S$ be the set of the hyperedges for the solution $(V^*, E^*)$.
+Then
+$$ \forall A \in H(E^*) : |A| \ge 2, $$
+$$ \forall A,B \in H(E^*) : |A \cap B| \le 1. $$
+
+For $(V^*, E^*) \in \mathfrak G$ 
+$$ E_H(E^*) \eqdef \{(x,y) \in S^2 : x \ne y \And \exists A \in H(E^*) \ \{x,y\} \subseteq A\}. $$
+$$ \forall A \in H(E^*) : A \text{ is a clique in } (S, E_H(E^*)). $$
+
+A set $A \subseteq S$, where $A \ne \emptyset$, is a {\em Steiner component} iff
+$$ \forall (V^*, E^*) \in \mathfrak G : A \text{ is connected in } (S, E_H(E^*)). $$
+The trivial Steiner components are $\{\{x\}: x \in S\}$ and~$S$.
+The set~$S$ can be partitioned into Steiner components.
+
+For $A, B \subseteq V$ let
+$$ len(A,B) \eqdef \min_{a \in A, b \in B} len(a,b). $$
+
+Let the {\em diameter} of $A \subseteq V$ 
+$$ diam(A) \eqdef \max_{x,y \in A} len(x,y). $$
+
+Let the {\em sparseness} of $A \subseteq V$ 
+$$ spar(A) \eqdef \max_{x \in A} \ len(\{x\}, A \setminus \{x\}). $$
+
+Let $C \subseteq V$ be a {\em Steiner cluster} iff
+$$ diam(C) < len(C, V \setminus C). $$
+
+A set~$A$ is a Steiner component iff $A$ is a Steiner cluster.
+
+
+\subsection{MLE criterion} \label{MLECriterion}
+
+Let $g \in Genes$,  $(a, b) \in Arcs$.
+
+For $s \in Species$ let 
+\begin{equation*}
+ c_g(s) \eqdef 
+  \begin{cases}
+    1, &\text{ if } g \in s,\\
+    0, &\text{ else},
+  \end{cases}
+\end{equation*}
+and let~$C_g(s)$ be the corresponding Boolean random variable.
+
+Let the evolution model be
+\begin{equation} \label{pq}
+\begin{split}
+p_g(a) &\eqdef \P (c_g(a) \mid c_g(b)), \\
+q_g(a) &\eqdef \P (c_g(a) \mid \neg c_g(b)), 
+\end{split}
+\end{equation}
+then
+\begin{equation*} 
+\P(C_g(a)=y|C_g(b)=x) =  p_g(a)^{x y} (1-p_g(a))^{x (1-y)} q_g(a)^{(1-x) y}(1-q_g(a))^{(1-x)(1-y)}, 
+\end{equation*}
+where $x, y \in \{0, 1\}$,
+and the likelihood of~$c_g(a)$ given~$c_g(b)$
+$$ L(c_g(a)|c_g(b)) = \P(C_g(a)=c_g(a)|C_g(b)=c_g(b)). $$
+
+Assuming the independence of $L(c_g(a)|c_g(b))$ for different~$g$,
+$$ L(a|b) = \prod_{g \in Genes} L(c_g(a)|c_g(b)). $$
+
+Assuming the independence of $L(a|b)$ for different arcs~$(a,b)$,
+the likelihood of the pan-genome phylogenetic tree 
+$$ L = \prod_{(a,b) \in A} L(a|b). $$
+
+For $(a,b) \in Arcs$ let
+$$ len(a,b) \eqdef \sum_{g \in Genes} w (g,a,b,c_g(a),c_g(b)), $$
+where 
+$$ w (g,a,b,x,y) \eqdef - \log \P(C_g(a)=x|C_g(b)=y) $$
+is the {\em arc length for one gene}.
+
+Then
+$$ len \eqdef - \log L = \sum_{(a,b) \in A} len(a,b). $$
+
+The MLE of a pan-genome phylogenetic tree $(Nodes,Arcs)$ of $Genomes$ consists in
+the selection of $Nodes$ and $Arcs$ 
+such that $len$ is minimized.
+
+Finding a MLE of a pan-genome phylogenetic tree is equivalent to solving a directed Steiner tree problem.
+
+Since the Steiner tree problem is NP-hard, local optimization is used.
+
+\comm {Rare genes have larger contribution to the arc lengths,
+so a solution to the Steiner tree problem will tend to group the species, where these genes are core, into small subtrees.}
+
+
+
+\subsection {Estimation of the gene content of nodes given a topology of the tree}
+
+
+\subsubsection{Local optimization of~$\hat c_g(s)$}
+
+Assume $p_g(s) \approx 1$, $q_g(s) = 1 - p_g(s)$ for all~$s$ and~$g$.
+
+For a species~$s$ let~$N(s)$ be the {\em neighborhood} of~$s$:
+$$ N(s) \eqdef \{t: s \to t \Or t \to s\}, $$
+then 
+the MLE of~$c_g(s)$ given $N(s)$
+\begin{equation*}
+\begin{split}
+\hat c_g(s|N(s)) &= \arg \max_{c_g(s)} L(c_g(s)|N(s)) \\
+   &= \arg \min_{c_g(s)} \sum_{t \in N(s)} (c_g(s) (1-c_g(t)) + (1-c_g(s)) c_g(t)) \\
+   &= \arg \min_{c_g(s)} c_g(s) \left(|N(s)| - 2 \sum_{t \in N(s)} c_g(t) \right) \\
+   &= 
+  \begin{cases}
+    \{0\},   &\text{ if } \sum_{t \in N(s)} c_g(t) < |N(s)|/2,\\
+    \{1\},   &\text{ if } \sum_{t \in N(s)} c_g(t) > |N(s)|/2,\\
+    \{0,1\}, &\text{ if } \sum_{t \in N(s)} c_g(t) = |N(s)|/2.
+  \end{cases}   
+\end{split}
+\end{equation*}
+
+
+
+\subsubsection{Global optimization of~$\hat c_g(s)$ and $len$}
+
+Let $x, y \in \{0,1\}$.
+
+Let $len_g(s)$ be the minimum tree length for gene~$g$ in the subgraph which consists of the subtree rooted at species~$s$ and the arc $(s,parent(s))$.
+\begin{equation*}
+  \begin{split}
+    len_g(s,x)   &\eqdef len_g(s|c_g(parent(s)) = x). \\
+    len_g(s,y,x) &\eqdef len_g(s|c_g(s) = y, c_g(parent(s)) = x). 
+  \end{split}
+\end{equation*}
+
+\begin{equation*}
+\hat c_g(s,x) \eqdef 
+  \begin{cases}
+    \{c_g(s)\}, &\text{ if $s$ is a genome},\\
+    \arg \min_{y \in \{0,1\}} len_g(s,y,x), &\text{ else}.
+  \end{cases}   
+\end{equation*}
+$$ \hat c_g(s,x) \in \{\{0\}, \{1\}, \{0,1\} \}. $$
+$$ \forall s: \neg [\hat c_g(s,0) = \{0,1\} \And \hat c_g(s,1) = \{0,1\}]. $$  
+\comm { prove }
+
+\comm {
+If~$s$ is an interior node then 
+\begin{equation*}
+\hat c_g(s,x) \eqdef 
+  \begin{cases}
+    y_1, &\text{ if } \hat C_g(s,x) = \{y_1\},\\
+    y_2, &\text{ if } \hat C_g(s,x) = \{0,1\} \And \hat C_g(s, \bar x) = \{y_2\}.
+  \end{cases}   
+\end{equation*}
+$$ \hat c_g(s,x) \in \{0, 1\}. $$
+}
+
+$$ len_g(s,x) = len_g(s, \iota \hat c_g(s,x), x). $$
+$$ len_g(s,y,x) = w(g,s,parent(s),y,x) + \sum_{t \to s} len_g(t,y). $$
+The values $len_g(s,x)$ and $\hat c_g(s,x)$ are stored at each node~$s$ for $x \in \{0,1\}$ and computed from leaves to the root.
+After that $\hat c_g(s)$ are computed from the root to leaves:
+\begin{equation*}
+ \hat c_g(s) \eqdef 
+  \begin{cases}
+    c_g(s), &\text{ if $s$ is a genome},\\
+    \iota \arg \min_{x \in \{0,1\}} len_g(s,x), &\text{ if } s = root,\\
+    \iota \hat c_g(s, \hat c_g(parent(s))), &\text{ else},
+  \end{cases}   
+\end{equation*}
+which may be ambiguous.
+\comm {There are actually non-ambigous rules}
+
+$$ len = \sum_g \min_{x \in \{0,1\}} len_g(root,x). $$
+
+This is a Sankoff algorithm.  
+\comm {ref}
+
+If the root of the tree is changed to a different node of the tree, the resulting $len$ and $\hat c_g(s)$ will not change.
+In this aspect it is an optimization on an unrooted tree.
+
+The values $len_g(s,x)$ and $\hat c_g(s,x)$ can be quickly recomputed if the parent of node~$b$ is changed from~$a_1$ to~$a_2$, 
+because it is enough to recompute these values for~$a_1$, $a_2$ and all their ancestors.
+
+$$ \forall g,s,x : len_g (s,x) \le len_g(s,\bar x) + \max_{y \in \{0,1\}} (w(g,s,y,x) - w(g,s,y,\bar x)). $$
+See~\cite{Mirkin03}.
+
+\proof{
+Use $\hat c_g$ corresponding to $len_g(s,\bar x)$ and change $\bar c_g(parent(s))$ from~$\bar x$ to~$x$.
+That will increase $len_g(s,\bar x)$ by at most $\max_{y \in \{0,1\}} (w(g,s,y,x) - w(g,s,y,\bar x))$.
+}
+
+\comm
+{
+It is possible to compute $\hat c_g(s)$ replacing $len_g(s,x)$ and $\hat C_g(s,x)$, where $x\in \{0,1\}$, by $d_g(s) \in \{0,1,\nul\}$ at each node~$s$ as follows.
+
+Assuming $\{0\} < \{0,1\} < \{1\}$, 
+$$ \hat C_g(s,0) \le \hat C_g(s,1). $$  
+\comm {prove}
+$$ \hat c_g(s,0) \le \hat c_g(s,1). $$
+\begin{equation*}
+d_g(s) \eqdef 
+  \begin{cases}
+    \hat c_g(s,0), &\text{ if } \hat c_g(s,0) = \hat c_g(s,1),\\
+    \nul, &\text{ else.}
+  \end{cases}   
+\end{equation*}
+$$ d_g(s) \in \{0, 1, \nul \}. $$
+$$ d_g(s) = \nul \equivalent \hat C_g(s,0) = \{0\} \And \hat C_g(s,1) = \{1\}. $$
+$$ d_g(s) = \nul \implies len_g(s,x) = \sum_{t \to s} len_g(t,x). $$
+$$ d_g(s) = \nul \implies len_g(s,0) = len_g(s,1), $$
+which is proved by induction over~$s$ from leaves to the root.  
+\comm {prove}
+$$ len'_g(s,y,x) \eqdef |y - x| + \sum_{t \to s, d_g(t) \not= \nul} |d_g(t) - y|. $$
+Then
+$$ \hat C_g(s,x) = \arg \min_{y \in \{0,1\}} len'_g(s,y,x). $$
+
+The values $d_g(s)$ are computed iterating over nodes~$s$ from leaves to the root.
+
+After that
+\begin{equation*}
+\hat c_g(s,x) =   \begin{cases}
+    x, &\text{ if } d_g(s) = \nul,\\
+    d_g(s), &\text{ else.}
+  \end{cases}   
+\end{equation*}
+}
+
+
+\subsection {Time}
+
+Let~$X \in \{0,1\}$ be a random Boolean attribute, which changes over time.
+Let $\P_t(x_1|x_0)$ be the probability that $X = x_1$ after time~$t \ge 0$ given $X = x_0$ at $t=0$.
+
+Let $\Delta t \approx 0$ and
+$$ \pi_x \eqdef \P_{\Delta t}(\bar x|x), $$
+then for a Markov chain
+$$ \P_t(\bar x|x) = \frac {\pi_x} {\pi_x + \pi_{\bar x}} \left(1 - (1 - (\pi_x + \pi_{\bar x}))^{t / \Delta t} \right). $$
+
+Assume the time needed to change from state~$x$ to~$\bar x$ is distributed as $Exponential(\lambda_x)$, where $\lambda_x > 0$,
+the mean being $1 / \lambda_x$,
+then
+$$ \pi_x = 1 - e^{- \lambda_x \Delta t}. $$
+
+$$ \lambda \eqdef \lambda_0 + \lambda_1. $$
+
+Since
+$$ \lim_{\alpha \to 0} \frac {e^\alpha} {1 + \alpha} = 1, $$
+
+$$ \pi_x = \lambda_x \Delta t, $$
+$$ \frac {\pi_x} {\pi_x + \pi_{\bar x}} = \frac {\lambda_x} \lambda. $$
+
+$$ (1 - (\pi_x + \pi_{\bar x}))^{t / \Delta t} = e^{-(\pi_x + \pi_{\bar x}) \ t / \Delta t}= e^{-\lambda t}.$$
+
+Thus,
+$$ \P_t(\bar x|x) = \frac {\lambda_x} \lambda \left(1 -  e^{-\lambda t} \right). $$
+
+$$ \lim_{t \to 0} \frac {\P_t(\bar x|x)} {1 - e^{- \lambda_x t}} = \lim_{t \to 0} \frac {\P_t(\bar x|x)} {\lambda_x t} = 1. $$
+
+$$ \lim_{t \to \infty} \P_t(\bar x|x) = \frac {\lambda_x} \lambda. $$
+
+$$ \P_{t_1 + t_2}(\bar x|x) = \P_{t_1}(\bar x|x) \P_{t_2}(\bar x|\bar x) + \P_{t_1}(x|x) \P_{t_2}(\bar x|x) 
+  = \frac {\lambda_x} \lambda \left(1 -  e^{-\lambda (t_1 + t_2)} \right). 
+$$
+
+$$ \forall t: \frac {\P_t(\bar x|x)} {\P_t(x|\bar x)} = \frac {\lambda_x} {\lambda_{\bar x}}. $$
+
+Since time units are arbitrary we can set $\lambda = 1$.
+
+$$ \P(1) = \P_\infty(1|0) \times \P(0) + (1 - \P_\infty(0|1)) \times \P(1) = \lambda_0 \P(0) + (1 - \lambda_1) \P(1) = \lambda_0. $$
+
+Let $t(s)$ be the time between nodes~$s$ and $parent(s)$,
+$x$~be $c_g(s)$, 
+and $\lambda_x(g)$ be~$\lambda_x$ for gene~$g$,
+then
+\begin{equation*} 
+\begin{split}
+\P (g \in Core(b) | g \in Core(a)) &= 1 - \P_t(0|1) = 1 - \lambda_1(g) \left(1-e^{-t(b)} \right), \\
+\P (g \in Core(b) | g \not \in Core(a)) &= \P_t(1|0)     = \lambda_0(g) \left(1-e^{-t(b)} \right). 
+\end{split}
+\end{equation*}
+
+It will be assumed in the sequel that $\lambda_x(g)$ do not depend on~$g$.
+
+
+\subsection {Maximum parsimony method}
+
+If $t(s) = t \approx 0$ at each node~$s$,
+then $ \P_t(\bar x|x) = \lambda_x t$, $ \P_t(x|x) = 1$
+and the equations of Section~\ref{MLECriterion} get simplified as
+$$ \P(C_g(b)=y|C_g(a)=x) = (\lambda_1 t)^{x (1-y)} (\lambda_0 t)^{(1-x) y} $$
+and
+$$ w(g,s,y,x) = (- \log (\lambda_1 t)) x (1-y) + (- \log (\lambda_0 t)) (1-x) y, $$
+which does not depend on~$g$ and~$s $.
+
+Let
+$$ n_{yx} \eqdef \sum_{g, \ b \to a}  \neg^{\bar y} c_g(b) \times \neg^{\bar x} c_g(a), $$
+then 
+\begin{equation*} 
+\begin{split}
+ len &= \sum_{y,x} w(g,s,y,x) \ n_{yx} \\
+     &= (- \log (\lambda_1 t)) \ n_{01} + (- \log (\lambda_0 t)) \ n_{10}  \\
+     &= (-\log \lambda_1) \ n_{01} + (- \log \lambda_0) \ n_{10} + (- \log t) (n_{01} + n_{10}) \\
+     &= const \times (n_{01} + n_{10}).
+\end{split}
+\end{equation*}
+
+The value $n_{01} + n_{10}$ will be referred to as {\em amount of evolution},
+which can be computed as $len$, where $w(g,s,y,x)$ is replaced by $|x - y|$.
+
+Minimizing the amount of evolution is the {\em maximum parsimony method}.
+
+If the number of genomes tends to $\infty$ then $t(s) \to 0$ for all~$s$ and MLE becomes equivalent to the maximum parsimony method.
+
+$$ \forall g,s,x : |len_g (s,x) - len_g(s,\bar x)| \le 1. $$
+
+\comm {  
+Let a {\em singleton} be a gene which belongs to only one genome.
+Removing singletons does not change the solution to the Steiner tree problem.
+Removing the intersection core also does not change the solution to the Steiner tree problem.
+}
+
+
+\subsection {MLE of parameters}
+Let $n_{xy}$ be the number of Boolean attributes which change their state from~$y$ to~$x$ over time~$t > 0$, where $x,y \in \{0,1\}$.
+Then the likelihood
+$$ L = \prod_{x,y} \P_t^{n_{xy}}(x|y). $$
+$$ l = - \log L = - \sum_c \left(   n_{\bar c c} \log      \P_t(\bar c|c) 
+                                  + n_{     c c} \log (1 - \P_t(\bar c|c)) \right). $$
+$$ \frac {d l} {d t} = 0. $$
+\begin{equation} \label{t_mle}
+\sum_c n_{\bar c c} \frac {\P'_t(\bar c|c)} {\P_t(\bar c|c)} = \sum_c n_{c c} \frac {\P'_t(\bar c|c)} {1 - \P_t(\bar c|c)}. 
+\end{equation}
+
+The MLE of~$t$ is the solution to
+$$ \frac 1 {1 - e^{-t}} \sum_c n_{\bar c c} = \sum_c \frac {n_{cc}}  {\frac 1 {\lambda_c} - (1 - e^{-t})}. $$
+The LHS decreases in~$t$, the RHS increases in~$t$, therefore, $\hat t$ can be found by binary search.
+If the time is reversed, i.~e., the child and parent species are swapped, $\hat t$ will be the same.
+
+The MLE of~$\lambda_0$ is the solution to
+$$   n_{10} \frac 1 {\lambda_0} + n_{11} \frac {1 - e^{-t}} {1 - \lambda_1 (1 - e^{-t})} 
+   = n_{01} \frac 1 {\lambda_1} + n_{00} \frac {1 - e^{-t}} {1 - \lambda_0 (1 - e^{-t})}.
+$$
+The LHS decreases in~$\lambda_0$, the RHS increases in~$\lambda_0$, therefore, $\lambda_0$ can be found by binary search.
+If $t=0$ then $\hat \lambda_0 = n_{10} / (n_{10} + n_{01})$.
+If $t=\infty$ then $\hat \lambda_0 = (n_{10} + n_{11}) / (n_{10} + n_{11} + n_{01} + n_{00})$.
+
+
+
+\subsection {Annotation probability}
+
+\comm {To be corrected}
+Let $\pi_a(i)$ be the probability that a gene in genome~$i$ is annotated if it exists in $Core(i)$. 
+Usually $\pi_a(i) \approx 1$.
+Let $\pi_a(i) \eqdef 1$, if $i$ is not a genome.
+
+Then equations~(\ref{pq}) are changed to:
+\begin{equation*}
+\begin{split}
+p_g(b) &\eqdef \pi_a(b) \ \P (g \in Core(b) | g \in Core(a)), \\
+q_g(b) &\eqdef \pi_a(b) \ \P (g \in Core(b) | g \not \in Core(a)). 
+\end{split}
+\end{equation*}
+
+\comm {
+In the maximum parsimony method, 
+assuming $\pi_a(s) = \pi_a$ for all~$s$, 
+$len$ is changed to
+$$ len = (-\log \pi_a) \ n_{11} + (- \log (\lambda_1 t)) \ n_{01} + (- \log (\pi_a \lambda_0 t)) \ n_{10},  $$
+which remains proportional to the amount of evolution.
+}
+
+Let
+$$ Q_t(\bar c|c) \eqdef \lambda_c \left(1 -  e^{-t} \right), $$
+then
+$$ \P_t(x|y) = \neg^{\bar x} (\neg^y Q_t(\bar y|y) \pi_a), $$
+\comm { $$ \frac d {dt} Q_t(\bar y|y) = \lambda_y e^{-t}, $$}
+$$ \frac d {dt} \P_t(x|y) = (-1)^{\bar x + y} \pi_a \lambda_y e^{-t}, $$
+and, according to~(\ref{t_mle}), the MLE of~$t$ is the solution to
+$$   \sum_c n_{\bar c c} \frac {\lambda_c} {\neg^c (\pi_a \neg^c (\lambda_c (1 - e^{-t}))) }
+   = \sum_c n_{c c} \frac {\lambda_c} {\neg^{c+1} (\pi_a \neg^c (\lambda_c (1 - e^{-t}))) }. $$
+
+
+\subsection {Root}
+Since MLE results equal the true parameters asymptotically, 
+the tree root cannot be estimated well by MLE, if its neighborhood in the tree is small.
+
+If a gene is present in a node, but absent in a cut of the subtree rooted at this node, then this gene cannot be estimated in that node by the Sankoff algorithm.
+\comm { because unchange weight is less than change weight.}
+The farther from leaves a node is, 
+the higher the probability that this event occurs
+and the more the number of the genes assigned to this node is biased towards a smaller number.
+This bias is biggest at the root.
+For an arc which is near the root, the time is biased towards a smaller value.
+
+A node created in the middle of an arc which has the smallest number of genes is a candidate for the root.
+
+
+\section{Maximum parsimony tree}
+
+Consider a maximum parsimony tree.
+
+If $c_g(s)$ then there is a genome~$i$, s.t.~$i$ is a descendant of~$s$ and $\forall j \in path(i,s) : c_g(j)$.
+
+\comm{
+$$ (\forall i \in \text{Genomes} : \neg (c_g(i) \And c_h(i))) \implies (\forall i :  \neg (c_g(i) \And c_h(i))). $$
+\proof
+{Let $c_g(i) \And c_h(i)$ and~$i$ have the maximum depth.
+}
+}
+
+
+
+\section{Phenotypes}
+Let~$p$ be a {\em phenotype} which is a Boolean feature of genomes.
+For all genomes a phenotype must be either identified or flagged as unknown.
+Let~$g(p)$ be an abstract gene which is in a genome whenever the genome has phenotype~$p$.
+
+Inter-species phenotypes:
+\begin{itemize}
+	\item Genetic code
+	\item Number of chromosomes
+	\item Topology of chromosomes: circular, linear
+	\item Chromosome size
+	\item GC \% (depends on temperature?)
+	\item Number and size of plasmids
+	\item Variant and operon location of ribosomal proteins
+	\item Number of genes
+	\item Symbiont
+	\item Anatomy:
+	\begin{itemize}
+		\item Cell wall
+		\item Shape
+		\item Motility
+	\end{itemize}
+	\item \{Chemo$|$photo\}\{auto$|$hetero\}trophness.
+    \item Environment:
+	\begin{itemize}
+		\item Oxygen requirement
+		\item Temperature 
+		\item pH 
+		\item Halophilicity
+		\item Habitat
+	\end{itemize}
+\end{itemize}
+
+
+Intra-species phenotypes:
+\begin{itemize}
+  \item Plasmids
+  \item Pathogenicity
+\end{itemize}
+
+
+\Questions
+\begin{itemize}
+\item Missing characterizing genes due to location in a small island and incompleteness of a genome. 
+      Genome will tend to move to the root of its subtree (example: 2 genomes of Montevideo)?
+\item Divergence of core in outbreaks, e.g., in Salmonella. Odd genes?
+\item Pseudogenization. Shows the direction of arcs. Mutation $g \to a$ preserves stop codons.
+\item Possibility of convergence of species: $a \ne b$, but $Core(a) = Core(b)$.
+\item Order (maybe circularly) the ORFs of $Core(s)$.
+\item Dependence of $\lambda_c$ on a species.
+\item Dependence of $\lambda_c$ on a gene.
+\item Dependence of $len_{g_1}(s,x)$ on $len_{g_2}(s,x)$.
+\item Total time on each path from a node to a leaf should be the same.
+\end{itemize}
+
+
+\section {Comparison of the topologies of phylogenetic trees}
+Let~$T$ be a phylogenetic tree over a set of genomes.
+Let~$P$ be a set of phenotypes.
+
+For $p \in P$, let $n(p)$ be the number of nodes~$s$ in tree~$T$ where $C_{g(p)}(s) \ne C_{g(p)}(parent(s))$.
+$$ n(p) \ge len_{g(p)}(root), $$
+where $len$ is computed for this tree by the maximum parsimony method.
+
+Then define the {\em inconsistency} of tree~$T$ as 
+$$ inc(T) \eqdef \sum_{p \in P} n(p). $$
+
+Tree~$T_1$ is better than tree~$T_2$ if $inc(T_1) < inc(T_2)$.
+
+If $C_{g(p)}$ is not available for $T_2$, $n(p)$ can be replaced by its lower bound in $inc(T_2)$.
+
+
+\section {Phenotype-gene association}
+
+Let $s \in Species$, 
+$G(s)$ be the genes of~$s$,
+$P(s)$ be the phenotypes of~$s$,
+$$ X^+(s) \eqdef X(s) \setminus X(parent(s)), $$
+$$ X^-(s) \eqdef X(parent(s)) \setminus X(s), $$
+where $X$ is $G$ or $P$.
+
+Suppose the gene function of a phenotype~$p$ is a conjunction of literals of genes.
+Let $G^+(p)$ and $G^-(p)$ be the sets of genes in the positive and negative literals respectfully.
+\comm { $\neg G^+(p) \bot G^-(p)$.}
+Then
+$$ \forall s: \ p \in P^+(s) \implies G^+(s) \bot G^+(p) \Or G^-(s) \bot G^-(p), $$
+$$ \forall s: \ p \in P^-(s) \implies G^+(s) \bot G^-(p) \Or G^-(s) \bot G^+(p). $$
+
+The smaller $|G^{+/-}(s)|$, the smaller $|G^{+/-}(p)|$ .
+
+How to reduce $|G^{+/-}(s)|$:
+\begin{itemize}
+  \item Sample more genomes in the neighborhood of~$s$.
+  \item Remove the genes, which are not in the pathway of~$p$, from $G^{+/-}(s)$.
+\end{itemize}
+
+\comm {}
+An evolution tree tends to form subtrees with different phenotypes.
+This facilitates the gene-phenotype association by an evolution tree.
+
+
+\section {Gene-node association}
+
+A gene in phylogenetically connected nodes $\equivalent$ very similar sequence, same genome context and same locus.
+
+
+
+\section{Mobilome}
+{\em Mobilome} are mobile genetic elements in a bacterial genome.
+
+{\em Bacterial genome} is chromosomes and plasmids.
+
+{\em Phage} is a virus that replicates within bacteria.
+
+{\em Insertion sequence} element, or an {\em IS} \ element is a minimal transposon.
+
+Types of mobilome:
+\begin{itemize}
+  \item Plasmid. Conjugation by {\em tra} genes.
+  \item Prophage: phage genome in bacterial genome. 
+        \\
+        Genomic islands:
+        \begin{itemize}
+          \item Higher G+C content.
+          \item Atypical nucleotide frequencies.
+        \end{itemize}
+        Insertion elements.
+  \item Transposon
+\end{itemize}
+
+\begin{tabular}{|c|c|}
+\hline Mobilome & HGT \\
+\hline 
+\hline Plasmid & Conjugation \\
+\hline Bacteriophage & Transduction \\
+\hline Insertion elements & Transformation \\
+\hline
+\end{tabular}
+\\
+
+
+Prophage and transposon genes are {\em odd}.
+
+
+\Questions
+\begin{itemize}
+  \item Specific pathways for HGT (?)
+  \item \# Odd genes in a species:
+    \begin{itemize}
+  	  \item Distribution of \# odd genes in a genome of a species.
+    \end{itemize}
+\end{itemize}
+
+
+
+\section{TODO}
+
+\begin{itemize}
+  \item Difference between core and accessory genes:
+    \begin{itemize}
+   	  \item GC \%
+	  \item Distribution of E. coli proteins per COG function:
+	  \begin{itemize}
+    	  \item Proteobacteria and prokaryotes are similar.
+    	  \item Core is similar to proteobacteria, especially in the classes ``information" and ``cellular".
+    	  \item Core is more similar to proteobacteria than to prokaryotes.
+    	  \item Accessory is not similar to proteobacteria or prokaryotes.
+    	  \item Functions ``Transposase", ``Integrase", ``Recombinase", ``Chromatin structure and dynamics", ``Type II secretory pathway" almost do not occur in core relative to accessory.
+    	  \item Accessory is enriched relative to core in functions ``Replication, recombination and repair", ``Cell motility", ``Secretory pathway", ``Intracellular trafficking, secretion, and vesicular transport", ``Extracellular structures".
+	  \end{itemize}
+    \end{itemize}
+ 	\item The distribution of odd genes vs. the distribution of all genes in prokaryotes.
+ 	\item The distribution of accessory genes should be the same as the distribution of odd genes.
+ 	\item Independence of $p_{accessory}(g)$ from species. Dependence of $p_{accessory}(g)$ on gene length, etc.
+	\item Method to find the species for a genome by comparing with core genes of different species (decision tree, similar to taxonomy).
+    \item Zipf distribution of subspecies size for a species.
+    \item Node-parent stability measured by difference of $len$ due to changing the parent (cf. ``bootstrap"). 
+          \par Aggregation of stabilities --- tree quality.
+\end{itemize}
+
+
+\begin{thebibliography}{9}
+
+\bibitem{Mirkin03}
+Boris G.~Mirkin, Trevor I.~Fenner, Michael Y.~Galperin, and Eugene V.~Koonin, 
+\emph{Algorithms for computing parsimonious evolutionary scenarios for genome evolution, the last universal common ancestor and dominance of horizontal gene transfer in the evolution of prokaryotes,}
+BMC Evol Biol. 2003; 3: 2.
+Published online Jan 6, 2003. doi:  10.1186/1471-2148-3-2
+PMCID: PMC149225
+
+\end{thebibliography}
+
+
+\end{document}
+
+
