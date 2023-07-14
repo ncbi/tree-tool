@@ -141,11 +141,12 @@ bool isMainThread ()
 size_t get_threads_max_max () 
 {
 #if __APPLE__
-  // stderr << "Compiled for MacOS" << "\n";
-  int count;
-  size_t count_len = sizeof(count);
+//stderr << "Compiled for MacOS" << "\n";
+  int count = 0;
+  const size_t count_len = sizeof(count);
   sysctlbyname ("hw.logicalcpu", &count, &count_len, NULL, 0);
-  // fprintf(stderr,"you have %i cpu cores", count);
+//fprintf(stderr,"you have %i cpu cores", count);
+  ASSERT (count >= 0);
   return (size_t) count;
 #else
   LineInput f ("/proc/cpuinfo");
