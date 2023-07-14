@@ -15,7 +15,7 @@
 \theoremstyle{plain} \newtheorem{Lem}{Lemma}
 
 
-\input{c:/Users/brovervv/work/maths/common.tex}
+\input{../../../common.tex}
 
 
 \title{Probability}
@@ -33,7 +33,7 @@ $$ Prob \eqdef [0,1]. $$
 
 \begin{tabular}{|c|c|c|}
 \hline & Random & Sample \\
-\hline 
+\hline
 \hline Variable & $X$ & $x$ \\
 \hline Vector   & $\ve X$ & $\ve x$ \\
 \hline Matrix   & $\mathcal X$ & $\mat X$ \\
@@ -44,7 +44,7 @@ $$ Prob \eqdef [0,1]. $$
 \section{Discrete random variable}
 Let~$X$ be a discrete random variable, $\supp(X) = [a,b]\cap \N$ and $p_i \eqdef \P(X=i)$.
 
-Let 
+Let
 $$\bar F_i \eqdef 1 - \P(X \le i) = \sum_{j=i+1}^b p_j$$
 be the {\em reverse probability function} of~$X$.
 
@@ -69,9 +69,9 @@ $$ x_{\mathrm {min}} = 0 \implies \gamma < 0, \ x_{\mathrm {max}} < \infty. $$
 It follows that
 $$ \supp(X) \ne \R_+. $$
 
-$$ \E \log X 
-= c \left(  x_{\mathrm {min}}^{-\gamma} \ \log x_{\mathrm {min}} 
-- x_{\mathrm {max}}^{-\gamma} \ \log x_{\mathrm {max}} 
+$$ \E \log X
+= c \left(  x_{\mathrm {min}}^{-\gamma} \ \log x_{\mathrm {min}}
+- x_{\mathrm {max}}^{-\gamma} \ \log x_{\mathrm {max}}
 \right)
 + \frac 1 \gamma.
 $$
@@ -86,7 +86,7 @@ $$ x_i \approx  k \ i^{- \alpha}, $$
 where $k = (nc)^{\frac 1 \gamma}$ and $\alpha = \frac 1 \gamma$.
 This is a {\em Zipf law}.
 
-A power law distribution can be visualized as a straight line 
+A power law distribution can be visualized as a straight line
 if~$i$ and~$x_i$ are drawn in logarithmic scales.
 
 \comm{Beta1 distribution}
@@ -101,7 +101,7 @@ $$ \phi(x) = \lambda x^{\lambda - 1}. $$
 
 \comm {Beta}
 
-For example, $X$ is the probability of a message, and $Y$ is the length of the message, 
+For example, $X$ is the probability of a message, and $Y$ is the length of the message,
 and $X$ and~$Y$ are mutually optimized so that the mean message length is minimum.
 
 
@@ -195,27 +195,27 @@ Then
 \E I(kX) &= - \int_{\mathfrak Y} \frac 1 k \phi\left(\frac y k\right) \log \left(\frac 1 k \phi\left(\frac y k\right)\right) dy  \\
       &= \log k - \frac 1 k \int_{\mathfrak Y} \phi\left(\frac y k\right) \log \phi\left(\frac y k\right) dy \\
       &= \log k - \frac 1 k \int_{\mathfrak X} \phi (x) \log \phi (x) \ k \ dx  \qquad (y = kx) \\
-      &= \E I(X) + \log k 
+      &= \E I(X) + \log k
 \end{split}
 \end{equation}
 and
 \begin{equation}
 \begin{split}
-\var I(kX) &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log^2 \left({\frac 1 k} \phi\left({\frac y k}\right)\right) dy 
+\var I(kX) &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log^2 \left({\frac 1 k} \phi\left({\frac y k}\right)\right) dy
               - (\E I(kX))^2 \\
-  &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \left( \log^2 \phi\left({\frac y k}\right) - 2 \log k \log \phi \left({\frac y k}\right) + \log^2 k \right) dy 
+  &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \left( \log^2 \phi\left({\frac y k}\right) - 2 \log k \log \phi \left({\frac y k}\right) + \log^2 k \right) dy
     - (\E I(kX))^2 \\
-  &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log^2 \phi\left({\frac y k}\right) dy 
+  &= \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log^2 \phi\left({\frac y k}\right) dy
      - 2 \log k \int_{\mathfrak Y} {\frac 1 k} \phi\left({\frac y k}\right) \log \phi \left({\frac y k}\right) dy
-     + \log^2 k 
+     + \log^2 k
      - (\E I(kX))^2  \\
-  &= \int_{\mathfrak X} {\frac 1 k} \phi (x) \log^2 \phi(x) \ k \ dx 
+  &= \int_{\mathfrak X} {\frac 1 k} \phi (x) \log^2 \phi(x) \ k \ dx
      - 2 \log k \int_{\mathfrak X} {\frac 1 k} \phi(x) \log \phi (x) \ k \ dx
-     + \log^2 k 
+     + \log^2 k
      - (\E I(kX))^2  \qquad (y = kx) \\
   &= \var I(X) + (\E I(X))^2
      + 2 \log k \ \E I(X)
-     + \log^2 k 
+     + \log^2 k
      - ((\E I(X))^2 + 2 \log k \ \E I(X) + \log^2 k)  \\
   &= \var I(X).
 \end{split}
@@ -224,7 +224,7 @@ and
 If $X = k X_{\mathrm {std}} + a$, where $k > 0$,
 then
 $$\E I(X) = \E I(X_{\mathrm {std}}) + \log k, $$
-$$\var I(X) = \var I(X_{\mathrm {std}}).$$ 
+$$\var I(X) = \var I(X_{\mathrm {std}}).$$
 
 Let~$\ve X$ and~$\ve Y$ be multivariate random variables and $\ve Y = \mat K \ve X$,
 then $$ \phi_Y = \frac 1 {|\det \mat K|} \phi_X (\mat K^{-1} \ve Y), $$
@@ -241,7 +241,7 @@ For p.d.f.~$\phi$ and~$\psi$,
 the {\em cross-entropy} of p.d.f.~$\psi$ w.r.t.~p.d.f.~$\phi$ is
 $$ h(\phi,\psi) \eqdef - \int_{\supp(\phi)} \phi(x) \log \psi(x) \ dx, $$
 \begin{equation} \label{min_entropy}
- \forall \phi, \psi : h(\phi, \phi) \le h(\phi,\psi),  
+ \forall \phi, \psi : h(\phi, \phi) \le h(\phi,\psi),
 \end{equation}
 If $h(\phi, \phi) = h(\phi,\psi)$
 then the set $\{x: \phi(x)= \psi(x)\}$ has measure~1.
@@ -253,7 +253,7 @@ If~$X$ is a random variable with p.d.f.~$\phi(x)$ then $h(X) = h(\phi)$.
 Let~$\Phi(\theta)$ be a set of p.d.f.~with constraint parameters~$\ve \theta$.
 
 Then the {\em maximum entropy p.d.f.~$\psi$ of constraint parameters~$\theta$}
-$$ \psi(\theta) \eqdef \arg \max_{\phi \in \Phi(\theta)} h(\phi). $$ 
+$$ \psi(\theta) \eqdef \arg \max_{\phi \in \Phi(\theta)} h(\phi). $$
 $$ \forall \psi \in \Phi(\theta) \
   [\exists f : \forall \phi \in \Phi(\theta): h(\phi,\psi) = f(\ve \theta)] \implies \psi = \psi(\theta).
 $$
@@ -293,12 +293,12 @@ $ \Phi(\theta) = \{\phi: \supp(\phi)= \R_+, \E X(\phi)=\mu\}$, $\psi(\theta) = \
 \end{split}
 \end{equation*}
 
-\item 
-$ \Phi(\theta) = \{\phi: \supp(\phi)= [x_{\mathrm {min}}, x_{\mathrm{max}}], x_{\mathrm {min}} \ge 0, \E (\log X(\phi))=\lambda\}$, 
+\item
+$ \Phi(\theta) = \{\phi: \supp(\phi)= [x_{\mathrm {min}}, x_{\mathrm{max}}], x_{\mathrm {min}} \ge 0, \E (\log X(\phi))=\lambda\}$,
 $\psi(\theta) = Power(x_{\mathrm {min}}, x_{\mathrm{max}},\gamma(\lambda))$:
 \begin{equation*}
 \begin{split}
- h(\phi,\psi(\theta)) &= 
+ h(\phi,\psi(\theta)) &=
      - \int_{x_{\mathrm {min}}}^{x_{\mathrm {max}}} \phi(x) \left(\log c \gamma - (\gamma + 1) \log x \right) \ dx \\
   &= - \log c \gamma + (\gamma + 1) \lambda.
 \end{split}
@@ -363,7 +363,7 @@ so $\phi(x,y) = \phi_x(x) \ \phi_y(y)$ on the set of $(x,y)$ of measure~1.
 \subsection{Likelihood}
 Let $X_1, X_2, ..., X_n \sim X$ be independent random variables with p.d.f.~$\phi$.
 
-For a p.d.f.~$\psi$ 
+For a p.d.f.~$\psi$
 $$ \hat h(\psi) \eqdef - \frac 1 n \sum_{i=1}^n \log \psi(X_i) $$
 is the negative average loglikelihood of~$\psi$.
 
@@ -385,10 +385,10 @@ $$ \lim_{n \to \infty} \hat \phi(\Psi) = \arg \min_{\psi \in \Psi} \lim_{n \to \
 by~(\ref{min_entropy}).
 
 \item
-The {\em fitness} hypothesis 
+The {\em fitness} hypothesis
 $$ H_0: \phi = \psi. $$
 
-If~$H_0$ is true then 
+If~$H_0$ is true then
 $$ \E \hat h(\psi) = \E I (X), $$
 $$ \var \hat h(\psi) = \frac 1 n \ \var I(X), $$
 and by the central limit theorem
@@ -396,12 +396,12 @@ $$\lim_{n \to \infty} \hat h(\psi) \sim \mathit{Normal} \left(\E I (X), \frac 1 
 For small~$n$ the bounds on the tails of the p.d.f.~of $\hat h(\psi)$ may be defined by the Chebyshev inequality.
 
 \item
-If $\psi \eqdef \hat \phi(\Psi)$ then 
+If $\psi \eqdef \hat \phi(\Psi)$ then
 the fitness hypothesis is rejected if $\hat h(\psi)$ is too large or too small w.r.t.~$\hat h(\psi)$.
 
 This is the {\em entropy MLE fitness test}.
 
-\item 
+\item
 Let $\psi$~be the p.d.f.~of $$\mathit{Normal} \left(\bar X, \frac 1 n \sum_{i=1}^n (X_i - \bar X)^2 \right), $$
 then $h(\psi) = \hat h(\psi)$.
 
@@ -413,7 +413,7 @@ For this pair of hypotheses
 \begin{equation*}
 \begin{split}
 H_0: \phi &= \psi \\
-H_1: \phi &= \hat \phi(\Psi) 
+H_1: \phi &= \hat \phi(\Psi)
 \end{split}
 \end{equation*}
 the p-value is $\P \left(\hat h(\psi) \le \hat h \left(\hat \phi(\Psi) \right) \Big| H_0 \right)$,
@@ -428,7 +428,7 @@ which defines an {\em entropy confidence set} of~$\psi$ for which~$H_0$ is not r
 \Questions
 \begin{itemize}
   \item Existence of $\supp(X)$.
-  \item Existence of $\E I(X)$ and $\var I(X)$ 
+  \item Existence of $\E I(X)$ and $\var I(X)$
   \item Kullback-Leibler divergence
   \item Principle of maximum entropy
 \end{itemize}
@@ -438,7 +438,7 @@ which defines an {\em entropy confidence set} of~$\psi$ for which~$H_0$ is not r
 
 A numeric variable is assumed to have the p.d.f.
 \begin{equation*}
-  \phi(x) \eqdef 
+  \phi(x) \eqdef
     \begin{cases}
        \phi_N(x), &\text{ if } x \le t\\
        (1 - \Phi_N(t)) \ \phi_U(x),   &\text{ else,}
@@ -447,10 +447,10 @@ A numeric variable is assumed to have the p.d.f.
 where $\phi_N$ is a p.d.f.~of a normal distribution,
 and $\phi_U$ is a p.d.f.~of a uniform distribution whose domain belongs to $[t,\infty]$.
 
-Then for data $\{x_i \mid 1 \le i \le n\}$ 
+Then for data $\{x_i \mid 1 \le i \le n\}$
 the likelihood
 $$ L(t,N,U) = \prod_{x_i \le t} \phi_N(x_i) \ \prod_{x_i > t} (1 - \Phi_N(t)) \ \phi_U(x_i) $$
-and 
+and
 $$ l(t,N,U) = - \log L(t,N,U) = -\sum_{x_i \le t} \log \phi_N(x_i) - \sum_{x_i > t} \log [(1 - \Phi_N(t)) \ \phi_U(x_i)]. $$
 
 The outliers are $\{x_i \mid x_i > \arg_t \min l(t,N,U)\}$.
@@ -480,19 +480,19 @@ Let $l: A, X \mapsto R$ be a {\em loss} function.
 
 Let~$D$ be data.
 
-The goal is to select such an action~$a_i$ given~$D$ that $\E l(a_i, X|D)$ is minimized, 
+The goal is to select such an action~$a_i$ given~$D$ that $\E l(a_i, X|D)$ is minimized,
 which will be referred to as {\em the best} action.
 (There may be $>1$ best actions.)
 
 $$ l(a_i|D) \eqdef \E l(a_i, X|D) = \sum_j l(a_i,x_j) \P (X=x_j|D). $$
-The best action 
+The best action
 $$ a(D) \eqdef \arg\min_i l(a_i|D). $$
 $$ a(x_j) \eqdef \arg \min_i l(a_i,x_j). $$
 
 Let the {\em risk} of action~$a_i$ given $X=x_j$ be defined as
 $$ r(a_i,x_j) \eqdef l(a_i,x_j) - l(a(x_j),x_j). $$
 $$ \forall a_i, x_j : r(a_i,x_j) \ge 0. $$
-The {\em expected risk} 
+The {\em expected risk}
 $$ r(a_i|D) \eqdef  \E r(a_i, X|D) = \sum_j r(a_i,x_j) \P (X=x_j|D). $$
 $$ l_{min}(D) \eqdef \sum_j l(a(x_j),x_j) \P (X=x_j|D). $$
 Then
@@ -502,13 +502,13 @@ $$ a(D) = \arg \min_i r(a_i|D). $$
 
 If $n = m = 2$, $r(a_0,x_0) = r(a_1,x_1) = 0$, $r_0 \eqdef r(a_1,x_0)$ and $r_1 \eqdef r(a_0,x_1)$ then
 $$ r(a_i|D) = r_{1-i} \ \P (X = x_{1-i}|D), \text{ for } i \in \{0,1\}. $$
-Both $r(a_0|D)$ and $r(a_1|D)$ are functions of $\P(X=x_0|D)$ 
+Both $r(a_0|D)$ and $r(a_1|D)$ are functions of $\P(X=x_0|D)$
 and have graphics in the form of line segments $[(0,r_1),(1,0)]$ and $[(0,0),(1,r_0)]$ respectfully.
 Then $a(D)$ is the action whose line segment is lower given $\P(X=x_0|D)$.
 
 
 \subsection {Communication system}
-The random variables~$X$ and~$D$ are a {\em communication system} iff 
+The random variables~$X$ and~$D$ are a {\em communication system} iff
 $$ \P(\max_i \P(X=x_i|D) \approx 1) \approx 1 $$
 and the computation of $\arg \max_i \P(X=x_i|D)$ is fast.
 
@@ -538,25 +538,25 @@ Let~$X \sim \mathit{Bernoulli}(p)$.
 
 Let~$\hat X(\theta) \in \{0,1\}$ be the prediction of~$X$ made by method~$\theta \in \Theta$.
 
-If $X=1$ is interpreted as a {\em dangerous signal} 
+If $X=1$ is interpreted as a {\em dangerous signal}
 then the prediction situations can be classified into 4~groups:
 \begin{center}
 \begin{tabular}{|c||c|c|}
 \hline       & noise       & signal \\
-\hline 
+\hline
 \hline Ok    & correct (True Negatives)     & miss  (False Negatives)\\
 \hline alarm & false alarm (False Positives)& correct (True Positives) \\
 \hline
 \end{tabular}
 \end{center}
 
-Let~$r : \{0,1\}, \{0,1\} \mapsto R_+$ be the risk function, 
+Let~$r : \{0,1\}, \{0,1\} \mapsto R_+$ be the risk function,
 where the first  argument is the value of~$\hat X$
 and   the second argument is the value of~$X$,
 defined by the table:
 \comm{
 \begin{equation*}
-r(x,y) \eqdef 
+r(x,y) \eqdef
   \begin{cases}
     r_0, \text{ if } x = 1, y = 0\\
     r_1, \text{ if } x = 0, y = 1\\
@@ -568,7 +568,7 @@ r(x,y) \eqdef
 \begin{center}
 \begin{tabular}{|c||c|c|}
 \hline              & $X=0$ & $X=1$ \\
-\hline 
+\hline
 \hline $\hat X = 0$ & 0     & $r_1$ \\
 \hline $\hat X = 1$ & $r_0$ & 0 \\
 \hline
@@ -576,14 +576,14 @@ r(x,y) \eqdef
 \comm {Higher rows}
 \end{center}
 
-Let 
+Let
 $$e_0(\theta) \eqdef \P(\hat X(\theta) = 1 | X = 0),$$
 $$e_1(\theta) \eqdef \P(\hat X(\theta) = 0 | X = 1)$$
-be the probabilities of {\em type~I} and {\em type~II} errors respectfully. 
+be the probabilities of {\em type~I} and {\em type~II} errors respectfully.
 
-Then the expected risk 
+Then the expected risk
 \begin{equation} \label{expectedRisk}
-\E r(\hat X(\theta), X) = r_0 (1-p) \ e_0(\theta) + r_1 p \ e_1(\theta). 
+\E r(\hat X(\theta), X) = r_0 (1-p) \ e_0(\theta) + r_1 p \ e_1(\theta).
 \end{equation}
 Let $\theta_1 \preceq_{p,r} \theta_2$ iff method~$\theta_1$ is {\em better} than method~$\theta_2$ given~$p$ and the risk function~$r$:
 $$ \theta_1 \preceq_{p,r} \theta_2 \equiv \E r(\hat X(\theta_1), X) \le \E r(\hat X(\theta_2), X). $$
@@ -604,7 +604,7 @@ $$ ROC^*(\Theta) \eqdef \{(x, y) : (x,y) \in \mathrm {ConvexHull}(ROC(\Theta) \c
 $$ \Theta^* \eqdef \{\theta \in \Theta : (e_1(\theta),e_2(\theta)) \in ROC^*(\Theta)\}.
 $$
 
-Then 
+Then
 $$ \forall p \ \forall \ r \ \forall \ \theta \in \Theta \ \exists \theta^* \in \Theta^* : \theta^* \preceq_{p,r} \theta. $$
 In other words, to find the best~$\theta \in \Theta$ it is enough to consider~$\Theta^*$.
 
@@ -678,7 +678,7 @@ A prediction~$\hat y(\ve x)$ is a {\em regression} iff $\hat y(\ve x) = \E (Y|\v
 Let i.i.d.~$(\ve X_i, Y_i)$, where $1 \le i \le n$, be random {\em data} with the p.d.f.~$\phi(\ve x,y) = \phi_Y(y|\ve x) \phi_X(\ve x)$.
 The negative average loglikelihood of a conditional p.d.f.~$\psi(y|\ve x)$ is
 $$ \hat h(\psi) \eqdef - \frac 1 n \sum_{i=1}^n \log \psi(Y_i|\ve X_i). $$
-$$ \E \hat h(\psi) = - \int \phi(\ve x,y) \log \psi(y_i|\ve x_i) \ d \ve x \ d y 
+$$ \E \hat h(\psi) = - \int \phi(\ve x,y) \log \psi(y_i|\ve x_i) \ d \ve x \ d y
      =   \int h(\phi_Y, \psi | \ve x) \ \phi_X(\ve x) \ d \ve x
      \ge \int h(\phi_Y, \phi_Y | \ve x) \ \phi_X(\ve x) \ d \ve x.
 $$
@@ -691,35 +691,35 @@ The function~$\hat h(\psi)$ is the minimization criterion.
 
 Let~$Y \in \{0,1\}$.
 
-The prediction 
+The prediction
 $$ \hat y(\ve x) \eqdef \P(Y|\ve X = \ve x) $$
 is a regression.
- 
+
 \begin{equation*}
 \begin{split}
-\P(Y|\ve X = \ve x) 
-  = \frac {\P(\ve X = \ve x|Y) \P(Y)} {\P(\ve X = \ve x|Y) \P(Y) + \P(\ve X = \ve x|\neg Y) \P(\neg Y)} 
-  = \frac {\frac {\P(\ve X = \ve x|Y) \P(Y)} 
+\P(Y|\ve X = \ve x)
+  = \frac {\P(\ve X = \ve x|Y) \P(Y)} {\P(\ve X = \ve x|Y) \P(Y) + \P(\ve X = \ve x|\neg Y) \P(\neg Y)}
+  = \frac {\frac {\P(\ve X = \ve x|Y) \P(Y)}
                   {\P(\ve X = \ve x|\neg Y) \P(\neg Y)}
            }
-           {\frac {\P(\ve X = \ve x|Y) \P(Y)} 
+           {\frac {\P(\ve X = \ve x|Y) \P(Y)}
                   {\P(\ve X = \ve x|\neg Y) \P(\neg Y)}
             + 1
            }.
 \end{split}
 \end{equation*}
-$$ z(\ve x) \eqdef   \log \frac {\P(\ve X = \ve x|Y)} 
+$$ z(\ve x) \eqdef   \log \frac {\P(\ve X = \ve x|Y)}
                                 {\P(\ve X = \ve x|\neg Y)}
-                   + \log \frac {\P(Y)} {\P(\neg Y)}. 
+                   + \log \frac {\P(Y)} {\P(\neg Y)}.
 $$
 
 Let
 $$ F(x) \eqdef \frac {e^x} {e^x + 1} $$
-be the c.d.f.~of $Logistic(0,1)$. 
+be the c.d.f.~of $Logistic(0,1)$.
 Then
 $$ \P(Y|\ve X = \ve x) = F(z(\ve x)). $$
 
-If $X \sim Logistic(0,1)$ then 
+If $X \sim Logistic(0,1)$ then
 $$ Y = (X \le z(\ve x)).$$
 
 $$ \P(\neg Y|\ve X = \ve x) = F(- z(\ve x)). $$
@@ -732,11 +732,11 @@ The geometric mean of the correct prediction is $\sqrt[n]L = e^{- \hat h(\psi)}$
 
 Let~$\theta$ be a parameter of~$z(\ve x)$ then the MLE of~$\theta$ is the solution to
 \begin{equation}\label{boolPredictMLE}
-0 = \frac d {d \theta} \hat h (\psi) = \frac 1 n \sum_i (\hat y(\ve x_i) - y_i) \frac d {d \theta} z(\ve x_i). 
+0 = \frac d {d \theta} \hat h (\psi) = \frac 1 n \sum_i (\hat y(\ve x_i) - y_i) \frac d {d \theta} z(\ve x_i).
 \end{equation}
 
 \comm{
-    If $z(\ve x)$ is monotone w.r.t.~$\theta$ then $\hat y(\ve x) = F(z(\ve x))$ is monotone w.r.t.~$\theta$ and~(\ref{boolPredictMLE}) can be solved by binary search. 
+    If $z(\ve x)$ is monotone w.r.t.~$\theta$ then $\hat y(\ve x) = F(z(\ve x))$ is monotone w.r.t.~$\theta$ and~(\ref{boolPredictMLE}) can be solved by binary search.
 }
 
 If $Y = (z_0(\ve x) > 0)$, i.e., $z_0(\ve x) = 0$ defines a surface in the space of~$\ve X$ separating $\{\ve x \mid y = 0\}$ from $\{\ve x \mid y = 1\}$,
@@ -759,7 +759,7 @@ $$ \mat H \eqdef \frac {d^2} {d \beta_j d \beta_k} \hat h (\psi) = \frac 1 n \su
 $$ \mat H \succeq 0. $$
 \proof {
 $\mat H = \frac 1 n \mat X' \ve \lambda^d \mat X$,
-where $\mat X$ is the data with the elements~$x_{ij}$, 
+where $\mat X$ is the data with the elements~$x_{ij}$,
 and $\ve \lambda$ is the vector with the elements $\lambda_i = \hat y (\ve x_i) (1 - \hat y (\ve x_i))$.
 }
 
@@ -779,8 +779,8 @@ Equation~(\ref{linZ}) is also true if some $X_j$ are equal or opposite to each o
 
 % instability of solution if $\max {x_{.j} | y = \neg a} < \min {x_{.j} | y = a}$
 
-If 
-$\ve X|Y      \sim N(\ve \mu_1, \mat \Sigma)$ and 
+If
+$\ve X|Y      \sim N(\ve \mu_1, \mat \Sigma)$ and
 $\ve X|\neg Y \sim N(\ve \mu_2, \mat \Sigma)$
 then
 $$ z(\ve x) = (\ve \mu_2 - \ve \mu_1)' \mat \Sigma^{-1} (\ve \mu_1 + \ve \mu_2 - 2 \ve x) + \log \frac {\P(Y)} {\P(\neg Y)}. $$

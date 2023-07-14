@@ -23,7 +23,7 @@
 \setlength{\oddsidemargin}{.125in}
 \setlength{\textwidth}{6.25in}
 
-\input{c:/Users/brovervv/work/Maths/common.tex}
+\input{../../../common.tex}
 
 
 \newcommand {\diff} {\Delta}
@@ -43,12 +43,12 @@
 
 \begin{abstract}
 A miscongruence of a phylogenetic tree to external classifications is proposed as a criterion of the quality of a phylogenetic tree.
-Since an established classification of biological objects is taxonomy, 
+Since an established classification of biological objects is taxonomy,
 the computation of taxonomy miscongruence between a phylogenetic tree and a given taxonomy is described.
 The miscongruence with the NCBI taxonomy can be used as one number evaluating the quality of a phylogenetic tree.
 The computation of taxonomy miscongruence also can be used to assign taxonomy names to interior nodes of a tree.
-Taxonomy miscongruence is applied to 
-comparing different phylogenetic trees, 
+Taxonomy miscongruence is applied to
+comparing different phylogenetic trees,
 optimization of the parameters of a tree building,
 finding taxonomically misassigned type strains,
 and the analysis of the MLST clades of {\it Escherichia coli}.
@@ -69,12 +69,12 @@ and yet there is a desire to reconstruct a most probable phylogenetic tree.
 As a possible solution the principle of maximum congruence estimation is proposed.
 
 This principle needs an external tree or classification and a function of miscongruence.
-If a phylogenetic tree spans a large number of taxa, 
+If a phylogenetic tree spans a large number of taxa,
 the taxonomy can be used as the reference tree
 and a taxonomy miscongruence function is described.
 
 This way a single number, miscongruence, is assigned to a phylogenetic tree,
-which allows 
+which allows
 optimizing tree building parameters,
 comparing phylogenetic trees by quality
 or finding outlier objects.
@@ -87,31 +87,31 @@ or finding outlier objects.
 
 This section describes the concept and properties of miscongruence in an informal way.
 
-Consider a set of objects 
+Consider a set of objects
 for which it is desired to build a phylogenetic tree
 and for which there exist external classifications.
 For example, an external tree is a set of external classifications.
 
-Let phylogenetic trees on these objects 
-and classifications of these objects 
+Let phylogenetic trees on these objects
+and classifications of these objects
 be represented as vectors.
 Let vector~$\ve t$ be the vector representing an unknown true tree~$T$,
 $\ve r$ be the vector representing external classifications~$R$,
 and $\ve x$ be the vector representing an arbitrary tree~$X$,
 then
 \begin{equation} \label{eq:congrDeriv}
- |\ve x - \ve r|^2 = |(\ve x - \ve t) - (\ve r - \ve t)|^2 
+ |\ve x - \ve r|^2 = |(\ve x - \ve t) - (\ve r - \ve t)|^2
    = |\ve x - \ve t|^2 + |\ve r - \ve t|^2 - 2 (\ve x - \ve t)^t (\ve r - \ve t).
 \end{equation}
 If the deviations of~$\ve x$ and~$\ve r$ from~$\ve t$ are independent,
 then on the average $(\ve x - \ve t)^t (\ve r - \ve t) = 0$,
-and 
+and
 $$ \arg \min_{\ve x} |\ve x - \ve r|^2 = \arg \min_{\ve x} |\ve x - \ve t|^2 $$
 which is generalized as
 \begin{equation*}
  \arg \min_{\theta \in \Theta} \diff (X(\theta),R) = \arg \min_{\theta \in \Theta} \diff(X(\theta),T),
 \end{equation*}
-where 
+where
 $X(\theta)$ is the tree built with parameters $\theta \in \Theta$,
 and $\diff(T_1,T_2)$ is a {\em miscongruence} between trees or classifications~$T_1$ and~$T_2$.
 
@@ -119,14 +119,14 @@ Minimizing the miscongruence of the tree~$X(\theta)$ from external classificatio
 in other words, maximizing the congruence between~$X(\theta)$ and~$R$,
 on the average minimizes the miscongruence of~$X(\theta)$ from the true tree~$T$.
 
-Therefore, building a phylogenetic tree of high quality consists in 
+Therefore, building a phylogenetic tree of high quality consists in
 selecting~$\Theta$ and~$R$
-and computing 
+and computing
 $$ \arg \min_{\theta \in \Theta} \diff (X(\theta),R). $$
 
 The miscongruence consists of the two parts:
 $$ \diff (X(\theta),R) = \diff_0 + \diff_1, $$
-where 
+where
 \begin{itemize}
   \item $\diff_0$ matches $|\ve x - \ve t|^2$ in~(\ref{eq:congrDeriv}), which is minimized with the minimization of the miscongruence;
   \item $\diff_1$ matches $ |\ve r - \ve t|^2 - 2 (\ve x - \ve t)^t (\ve r - \ve t)$ in~(\ref{eq:congrDeriv}),
@@ -136,7 +136,7 @@ where
 The maximum congruence estimation is similar to the statistical maximum likelihood estimation,
 where the parameters are adjusted to minimize the discrepancy of model from data
 and the formula measuring the discrepancy follows from a probabilistic model.
-In the maximum congruence estimation 
+In the maximum congruence estimation
 external classifications~$R$ act as data.
 
 Since it is required that the deviations of~$X$ and~$R$ from~$T$ should be independent,
@@ -146,7 +146,7 @@ the tree~$X$ and the classifications~$R$ should be created by different methods 
 
 %For multiple external trees
 %the maximum congruence estimator of parameters~$\theta \in \Theta$ is
-% $$\arg \min_{\theta \in \Theta} \sum_i \diff (X(\theta),R_i),$$ 
+% $$\arg \min_{\theta \in \Theta} \sum_i \diff (X(\theta),R_i),$$
 %where $R_i$ is external tree~$i$.
 %% R_i can be a subset of objects defined by a {\em signature} property $i$.
 
@@ -193,9 +193,9 @@ It is based mostly on phenotypic and rDNA characters.
 For prokaryotes the taxonomy tree can be extended below species by including phylogroups, serovars and MLST numbers.
 
 Let $\mathfrak T$ be the extended NCBI taxonomy tree~\cite{Taxonomy}.
-Then define the {\em taxonomy miscongruence of a tree~$T$} as 
+Then define the {\em taxonomy miscongruence of a tree~$T$} as
   $$\tau(T) = \diff_{\textrm {mp}} (\mathfrak T, T), $$
-and the {\em taxonomy miscongruence of a node $y \in T$} as 
+and the {\em taxonomy miscongruence of a node $y \in T$} as
   $$\tau(y) = \diff_{\textrm {mp}} (\mathfrak T, T, y), $$
 see Section~\ref{sec:miscong}.
 
@@ -212,7 +212,7 @@ To simplify the input data,
 for each biological object only its taxonomic lineage is stored as a sequence of nominal attribute-value pairs {\it TaxonLevel:TaxonName},
 for the detailed description see Appendix~\ref{app:lineage}.
 The set of nominal attributes is the same for each biological object.
-The nominal attributes are taxonomic ranks, e.g., kingdom, phylum, class, order, family, genus, species, 
+The nominal attributes are taxonomic ranks, e.g., kingdom, phylum, class, order, family, genus, species,
 together with {\em subranks}, which are the taxonomy levels between the ranks.
 The nominal attribute-value pairs are converted into 3-valued Boolean attributes, see Table~\ref{tab:nomin2Bool}.
 Since there is a limited number of taxonomy rank-subrank combinations,
@@ -241,7 +241,7 @@ the input data size for the computation of taxonomy miscongruence is~$O(n)$.
 \subsubsection{Assigning taxonomy names to interior nodes of a tree}
 \label{sec:assignName}
 
-The procedure for the computation of the taxonomy miscongruence described in Section~\ref{sec:tax_misc} 
+The procedure for the computation of the taxonomy miscongruence described in Section~\ref{sec:tax_misc}
 can be also used for an automatic assignment of taxonomy names to the interior tree nodes.
 
 After the maximum parsimony problem is solved for each Boolean attribute,
@@ -250,7 +250,7 @@ A Boolean attribute is {\em gained} at a node, if it is $true$ at the node, but 
 Then the {\em gained taxonomic names} of a node are the taxonomic names of the Boolean attributes which are gained in this node.
 These taxonomic names belong to different rank-subrank combinations, see the Lemma below,
 and therefore, can be ordered from the lowest to highest rank-subrank.
-The first and last taxonomic names in this ordering can be used as the name of the interior node 
+The first and last taxonomic names in this ordering can be used as the name of the interior node
 in the format {\it name1/name2}, or just {\it name1} if the both names are the same.
 
 To make the names more informative, the unknown taxons in a taxonomic lineage of an object are considered as novel taxonomic names unique to the object
@@ -275,7 +275,7 @@ If~$B_2$ is also gained at the node~$v$, then similarly $n_2 > n_1$, which is a 
 
 \subsubsection{Selection of the root of a phylogenetic tree}
 
-The procedure for the computation of the taxonomy miscongruence described in Section~\ref{sec:tax_misc} 
+The procedure for the computation of the taxonomy miscongruence described in Section~\ref{sec:tax_misc}
 can be also used for an automatic root selection of the phylogenetic tree.
 
 After the maximum parsimony problem is solved for each Boolean attribute,
@@ -324,13 +324,13 @@ the taxonomy miscongruence will be artificially lowered.
 
 Different phylogenetic trees can be compared by quality using the taxonomy miscongruence.
 But these trees should contain the same objects.
-For a pair of trees the objects present only in one tree are removed, 
+For a pair of trees the objects present only in one tree are removed,
 so that each reduced tree should contain only the objects common to the both trees,
 and then for these reduced trees the taxonomy miscongruences~$\tau_1$ and~$\tau_2$ are computed respectfully
 according to Section~\ref{sec:tax_misc}.
 
-If a tree~$T_1$ is better than a tree~$T_2$, in other words, $\tau_1 \le \tau_2$, 
-then the {\em quality difference} is 
+If a tree~$T_1$ is better than a tree~$T_2$, in other words, $\tau_1 \le \tau_2$,
+then the {\em quality difference} is
 $$1 - \tau_1 / \tau_2. $$
 
 The phylogenetic trees of Table~\ref{tab:trees} have been compared by quality in Table~\ref{tab:maxCongr}.
@@ -340,7 +340,7 @@ The phylogenetic trees of Table~\ref{tab:trees} have been compared by quality in
   \centering
   \begin{tabular}{|l|l|l|l|r|c|}
     \hline
-    Tree name& Tree file & Taxon & Tree object & Objects & Reference \\ 
+    Tree name& Tree file & Taxon & Tree object & Objects & Reference \\
     \hline
     ASTRAL & ASTRAL & prokaryota & assembly & 10,575&\cite{ASTRAL}  \\
     GTDB-86   & {\tt bac120\_r86.1.tree} & bacteria & assembly & 27,372&\cite{GTDB}\\
@@ -351,7 +351,7 @@ The phylogenetic trees of Table~\ref{tab:trees} have been compared by quality in
     NCBI fungi & {\tt fungi-R15} & fungi & assembly &  4,413 &\cite{inc_ls_dist_tree} \\
     Silva & {\tt LTPs132\_SSU} & prokaryota & 16S rRNA & 13,867&\cite{Silva} \\
     NCBI 16S & {\tt prok-16S-R4} & prokaryota & 16S rRNA & 20,975&\cite{inc_ls_dist_tree}\\
-    \hline    
+    \hline
   \end{tabular}
   \caption{Phylogenetic trees whose quality is evaluated in Table~\ref{tab:maxCongr}.}
   \label{tab:trees}
@@ -366,20 +366,20 @@ The phylogenetic trees of Table~\ref{tab:trees} have been compared by quality in
     Tree $T_1$ (better)& Tree $T_2$  & \makecell{Common \\ objects} & $\tau_1$ & $\tau_2$ & \makecell{Quality \\ difference} \\
     \hline
     GTDB-86    &NCBI bacteria      & 22,479           & 37,420           & 41,158           & 9.1\% \\
-    GTDB-86    &NCBI bacteria-type & 6,885            & 11,239           & 11,584           & 3.0\% \\    
-    GTDB-89    &NCBI bacteria      & 20,759           & 41,592           & 45,515           & 8.6\% \\  
+    GTDB-86    &NCBI bacteria-type & 6,885            & 11,239           & 11,584           & 3.0\% \\
+    GTDB-89    &NCBI bacteria      & 20,759           & 41,592           & 45,515           & 8.6\% \\
     GTDB-89    &NCBI bacteria-type & 7,170            & 13,394           & 13,694           & 2.2\% \\
     GTDB-86    &GTDB-89            & 13,248           & 27,012           & 27,134           & 0.4\% \\
     ASTRAL     &NCBI bacteria      & 8,422            & 17,686           & 20,264           & 12.7\% \\
-    ASTRAL     &NCBI bacteria-type & 3,411            & 7,416            & 7,726            & 4.0\% \\    
-   %ASTRAL     &NCBI bacteria-type12 & 3,411          & 7,290            & 7,621            & 4.3\% \\    
+    ASTRAL     &NCBI bacteria-type & 3,411            & 7,416            & 7,726            & 4.0\% \\
+   %ASTRAL     &NCBI bacteria-type12 & 3,411          & 7,290            & 7,621            & 4.3\% \\
    %bacteria-t12& bacteria-t11     & 11,963           & 17,686           & 17,919           & 1.3\%\\
    %GTDB-86    &bacteria-t12&      & 6,890            & 11,124           & 11,386           & 2.3\%\
    %GTDB-89    &bacteria-t12&      & 7,179            & 13,279           & 13,460           & 1.4\%\
-    ASTRAL     &GTDB-86            & 6,685            & 15,083           & 15,387           & 2.0\% \\    
+    ASTRAL     &GTDB-86            & 6,685            & 15,083           & 15,387           & 2.0\% \\
     NCBI fungi &Budding Yeast      & 319       &520&528&1.5\%\\
     NCBI 16S   &Silva              & 12,501 &16,494 &19,110     & 13.7\%\\
-    \hline    
+    \hline
   \end{tabular}
   \caption{Comparison of the quality of phylogenetic trees~$T_1$ and~$T_2$ by taxonomy miscongruences~$\tau_1$ and~$\tau_2$ of the common object trees.}
   \label{tab:maxCongr}
@@ -409,7 +409,7 @@ The topology and, therefore, the taxonomy miscongruence of a phylogenetic tree d
 \end{itemize}
 
 
-The tree building parameters of least squares distance trees of~\cite{inc_ls_dist_tree} have been optimized to achieve the minimum of taxonomy miscongruence 
+The tree building parameters of least squares distance trees of~\cite{inc_ls_dist_tree} have been optimized to achieve the minimum of taxonomy miscongruence
 for a random subset of 1000 objects.
 That is how the parameters in Appendix~C of~\cite{inc_ls_dist_tree} have been chosen.
 The obtained parameters have been used to build the whole trees, see Table~\ref{tab:res}.
@@ -437,7 +437,7 @@ The obtained parameters have been used to build the whole trees, see Table~\ref{
   \label{tab:res}
 \end{table}
 
-The improvement of the taxonomy miscongruence with the number of optimization iterations for the initial~3,000 objects 
+The improvement of the taxonomy miscongruence with the number of optimization iterations for the initial~3,000 objects
 of the Fungal ITS tree tree {\tt fungi-ITS-R8}~\cite{inc_ls_dist_tree}
 is in Table~\ref{tab:optim}.
 Given the variance of~$\tau$ there is no improvement after~5 optimization iterations.
@@ -471,9 +471,9 @@ Given the variance of~$\tau$ there is no improvement after~5 optimization iterat
 \end{table}
 
 When a tree is built incrementally
-the taxonomy miscongruence of the initial set of objects improves 
+the taxonomy miscongruence of the initial set of objects improves
 with the total number of objects.
-This is shown for the Fungal ITS tree~\cite{inc_ls_dist_tree} in Fig.~\ref{fig:Incr_TaxMisc}. 
+This is shown for the Fungal ITS tree~\cite{inc_ls_dist_tree} in Fig.~\ref{fig:Incr_TaxMisc}.
 \begin{figure}[H]
   \centering
   \includegraphics[scale=0.7]{ITS_Iter_TaxMisc.jpg}
@@ -514,7 +514,7 @@ are in Table~\ref{tab:typeStrain16S}.
 \begin{table}
   \small
   \centering
-  \scalebox{0.8} 
+  \scalebox{0.8}
   {
   \begin{tabular}{|c|c|c|l|l|}
     \hline
@@ -567,7 +567,7 @@ GCA\_004362405.1	&	DSM 25082	&	33	&	Kinneretia asaccharophila; Kinneretia; C...	
 GCA\_004362975.1	&	DSM 28287	&	33	&	Aminicella lysinilytica; Aminicella; Eub...	&	Clostridiales; Clostridia; Terrabacteria...	\\
 GCA\_007004765.1	&	GYP-15	&	33	&	Aliikangiella marina; Aliikangiella; Kan...	&	Oceanospirillales; Thiotrichales; ; Gamm...	\\
 GCA\_900167975.1	&	DSM 25262	&	33	&	Ohtaekwangia koreensis; Ohtaekwangia; Cy...	&	Cytophagia/Cytophagales; Bacteroidetes \textless ...	\\
-    \hline    
+    \hline
 \end{tabular}
 }
 \caption{Bacterial type strain genomes which probably have been assigned to a type strain in error or where the taxonomic lineage of the type strain is incorrect. The data are as of January 2020.}
@@ -579,7 +579,7 @@ GCA\_900167975.1	&	DSM 25262	&	33	&	Ohtaekwangia koreensis; Ohtaekwangia; Cy...	
 \begin{table}
   \small
   \centering
-  \scalebox{0.8} 
+  \scalebox{0.8}
   {
     \begin{tabular}{|c|c|c|l|l|}
       \hline
@@ -653,7 +653,7 @@ NR\_118676.1	&	L34628	&	37	&	Eubacterium xylanophilum; Eubacterium; E...	&	Lachn
 NR\_134741.1	&	KJ023821	&	37	&	Hafnia psychrotolerans; Hafnia; Hafniace...	&	Yersiniaceae; Enterobacterales; Gammapro...	\\
 NR\_135890.1	&	KF982858	&	35	&	Aestuariicella hydrocarbonica; Aestuarii...	&	Cellvibrionaceae; Cellvibrionales; Gamma...	\\
 NR\_159172.1	&	LN651200.1	&	35	&	Gellertiella hungarica; Gellertiella; Rh...	&	Rhizobium/Agrobacterium group/Rhizobium;...	\\
-    \hline    
+    \hline
 \end{tabular}
 }
 \caption{Bacterial type strain 16S rRNA sequences which probably have been assigned to a type strain in error or where the taxonomic lineage of the type strain is incorrect.
@@ -769,7 +769,7 @@ This research was supported by the National Center for Biotechnology Information
 
 
 \section*{Availability of data and materials}
-The source code for the algorithms described in this paper 
+The source code for the algorithms described in this paper
 is written in C++ and {\tt bash} scripts for UNIX
 and is available at \url{https://github.com/ncbi/tree-tool}.
 
@@ -886,10 +886,10 @@ A taxonomical lineage is encoded as a sequence of lines of the format:
 
 If some ranks or subranks are missing in the lineage, they are represented in the encoding by borrowing the {\tt tax\_name} from the previous line.
 
-The unknown taxons are recognized by the following keywords in their taxonomic names: 
-unclassified, 
-unassigned, 
-unidentified, 
+The unknown taxons are recognized by the following keywords in their taxonomic names:
+unclassified,
+unassigned,
+unidentified,
 candidate phyla,
 incertae sedis,
 symbionts,
@@ -1034,31 +1034,31 @@ The lineage encoding is in Listing~\ref{lst:lineage}.
 Brover~S.,
 Building Large Phylogenetic Trees in Log-Linear Time.
 {\it In print.}
- 
+
 \bibitem{Taxonomy}
-Federhen S. 
-The NCBI Taxonomy database. 
-Nucleic Acids Res. 2012 Jan;40(Database issue):D136-43. doi: 10.1093/nar/gkr1178. Epub 2011 Dec 1. 
+Federhen S.
+The NCBI Taxonomy database.
+Nucleic Acids Res. 2012 Jan;40(Database issue):D136-43. doi: 10.1093/nar/gkr1178. Epub 2011 Dec 1.
 PMID: 22139910; PMCID: PMC3245000.
- 
+
 \bibitem{Felsenstein}
-Joseph Felsenstein. Inferring Phylogenies. Sunderland, MA: Sinauer Associates, 2003. 
+Joseph Felsenstein. Inferring Phylogenies. Sunderland, MA: Sinauer Associates, 2003.
 
 \bibitem{GTDB}
-Parks, D., Chuvochina, M., Waite, D. et al. 
-A standardized bacterial taxonomy based on genome phylogeny substantially revises the tree of life. 
+Parks, D., Chuvochina, M., Waite, D. et al.
+A standardized bacterial taxonomy based on genome phylogeny substantially revises the tree of life.
 Nat Biotechnol 36, 996-1004 (2018) doi:10.1038/nbt.4229
 
 \bibitem{CheckM}
-Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 
-CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes. 
-Genome Res. 2015 Jul;25(7):1043-55. doi: 10.1101/gr.186072.114. 
+Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW.
+CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes.
+Genome Res. 2015 Jul;25(7):1043-55. doi: 10.1101/gr.186072.114.
 Epub 2015 May 14. PMID: 25977477; PMCID: PMC4484387.
 
 \bibitem{Silva}
-Quast C, Pruesse E, Yilmaz P, Gerken J, Schweer T, Yarza P, Peplies J, Glöckner FO (2013) 
-The SILVA ribosomal RNA gene database project: improved data processing and web-based tools. 
-Nucl. Acids Res. 41 (D1): D590-D596. 
+Quast C, Pruesse E, Yilmaz P, Gerken J, Schweer T, Yarza P, Peplies J, Glöckner FO (2013)
+The SILVA ribosomal RNA gene database project: improved data processing and web-based tools.
+Nucl. Acids Res. 41 (D1): D590-D596.
 
 \bibitem{Rokas}
 Shen XX et al.,
@@ -1066,9 +1066,9 @@ Tempo and Mode of Genome Evolution in the Budding Yeast Subphylum.
 Cell. 2018 Nov 29;175(6):1533-1545.e20. doi: 10.1016/j.cell.2018.10.023. Epub 2018 Nov 8.
 
 \bibitem{ASTRAL}
-Zhu, Q., Mai, U., Pfeiffer, W. et al. 
-Phylogenomics of 10,575 genomes reveals evolutionary proximity between domains Bacteria and Archaea. 
-Nat Commun 10, 5477 (2019). 
+Zhu, Q., Mai, U., Pfeiffer, W. et al.
+Phylogenomics of 10,575 genomes reveals evolutionary proximity between domains Bacteria and Archaea.
+Nat Commun 10, 5477 (2019).
 https://doi.org/10.1038/s41467-019-13443-4
 
 \end{thebibliography}
