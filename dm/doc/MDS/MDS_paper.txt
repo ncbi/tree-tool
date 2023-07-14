@@ -1,0 +1,128 @@
+MDS paper
+=========
+
+
+To do:
+  beta-lactamases: 3 rays plus clouds in the middle
+  build a NJ for M.tb., compare with the MDS plot
+  re-do all images
+    .dm-files: use correct distance scale
+    mds
+    TIFF
+    JPG
+
+Journal: Bioinformatics
+  Scope: Phylogenetics
+  Type: Original paper (<= 7 pages)
+  Supplementary data (1 file)
+    Supporting material
+    Appendices
+  Data
+  Software ??
+  Reviewers: recommend 4
+
+
+
+MYG:
+  attach data
+  provide software
+  script to reproduce the results
+
+random tree:
+  ~/work/mds_paper/tree32/random.json
+  clusters, rays 
+  MDS, canonical projection
+
+Ideas: 
+  NJ tree is better than an MDS tree ??
+  distances which do not requires multiple sequence alignment
+  "MLE tree" -> "globally optimal LS tree"
+  methods on MDS space vs. on D^2
+    size: n*q vs. n^2
+      e.g., K-means
+  noise removal by selecting a small q ??!
+  
+
+MDS of a tree: clustering: K-means with a cluster radius as a parameter: clade identification ??
+  
+        
+X = [X1 X2 ...] => S(X) = \sum_i S(X_i)
+  Normalize S(X_i) to have the same variance
+
+
+Show novelty
+
+Discussion
+  Direct MDS (approximate D^2): needs to know q    
+  d' = d + c is a distance [Gower, Legendre 1986] 
+    Drawbacks:
+      non-continuity of function
+      d = d'_mds - c  may be negative
+      implies that all principal submatrices of size 2 x 2 are p.s.d.  
+  Literature
+    Aivazian
+    Cox: 
+      Chapter 4.7 "Statistical inference for MDS"
+        distribution of lambda_i 
+    Muchnik's work
+    Numerical recipes
+    Borg, Groenen, Modern multidimensional scaling (2005)
+    SNP trees:
+      cf. pathogen pipeline, Arjun
+    Jukes-Cantor distance:
+      Felsenstein
+      ANI papers
+    Conservation distance
+      GBDP
+      TBLASTX-based
+        try distant Spirochaetae
+  
+
+
+Problems:
+  Compute the MDS of a tree using the tree
+  MDS of a tree structure: clustering into co-originating rays ??
+  lambda_1 vs. k in d^k ??
+
+
+MDS properties ??
+  horizontal transfer => 
+    negative eigenvalue 
+  proteins: PCs match different domains (ex.: blaSHV) 
+    
+
+MDS-inferred tree arcs !??
+  projection on the vector: clade center - others' center
+    inter-center distance^2 <= arc (path ?) length
+                                                                                                                                                                  
+
+
+ 
+"horse shoe" effect
+
+"robust" ??
+
+NNJ trees:
+  non-robust
+    proof ??
+
+                          
+canonical analysis:
+  see: Aivazian
+  find tree structure:
+    make small clusters (max. number of clusters n = 10 ?)
+    find halves with large canonical analysis eigenvalues (threshold = 50 ?) with possible eliminating "incertae sedis" objects
+      time = O(2^(n-1))
+    check that halves are either contained in other halves or non-overlapping
+    build a tree
+    do the above recursively to the leaves of this tree
+  show that for random halves lamda ~ 0
+    
+eigenvalues of a real non-symmetric matrix ?
+  see Markov chains in F. Roberts' book
+  permutation matrix in Healy
+
+
+
+
+  
