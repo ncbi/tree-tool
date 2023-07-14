@@ -16,7 +16,7 @@
 \theoremstyle{plain} \newtheorem{Lem}{Lemma}
 
 
-\input{c:/Users/brovervv/work/Maths/common.tex}
+\input{../../../common.tex}
 
 
 \title{Data Analysis}
@@ -89,7 +89,7 @@ is a distance.
 
 The {\em between-set}
 $$ Inter(x,y) \eqdef \{z \in X: d(x,z) = d(z,y)\}. $$
-The between-set $Inter(x,y)$ is {\em unidimensional} iff 
+The between-set $Inter(x,y)$ is {\em unidimensional} iff
 $$ \forall r \in \R_+ : |\{z \in Inter(x,y): d(x,z) = r\}| \le 1. $$
 
 For $a,b,c,d \in X$ let a {\em split} be a partitioning of $\{a,b,c,d\}$.
@@ -99,7 +99,7 @@ $$ d(ab|cd) \eqdef d(a,b) + d(cd). $$
 
 A distance is {\em additive}, see \cite{Buneman}, iff
 \begin{equation} \tag{additivity}
-\forall a,b,c,d \in X : d(ab|cd) \le \max \{d(ac|bd), d(ad|bc)\}. 
+\forall a,b,c,d \in X : d(ab|cd) \le \max \{d(ac|bd), d(ad|bc)\}.
 \end{equation}
 
 The triangle inequality follows form the additivity property.
@@ -119,14 +119,14 @@ $$ C(s) \eqdef \{x \in X \mid s(x) = 0\}. $$
 A comparison is a {\em semisimilarity} iff
 $$ s(x) \ge 0. $$
 
-A semisimilarity is a {\em similarity} iff 
-\begin{equation} \tag{H\"older's inequality} 
+A semisimilarity is a {\em similarity} iff
+\begin{equation} \tag{H\"older's inequality}
   s^2(x,y) \le s(x) \ s(y) .
 \end{equation}
 
 $$ - \sqrt {s(x) \ s(y)} \le s(x,y) \le \sqrt {s(x) \ s(y)}. $$
 
-If $x, y \not \in C(s)$ then {\em cosine} 
+If $x, y \not \in C(s)$ then {\em cosine}
 $$ \cos(x,y) \eqdef \frac {s(x,y)} {\sqrt{s(x) \ s(y)}} $$
 is in $[-1,1]$.
 
@@ -143,7 +143,7 @@ $$ c \in C(s_{d,c}). $$
 If~$d$ is a semidistance then~$s_{d,c}$ is a semisimilarity.
 
 If~$d$ is a distance then~$s_{d,c}$ is a similarity.
-\proof 
+\proof
 {
     For any $x,y \in X$
     $$ d(x,c) \le d(x,y) + d(y,c). $$
@@ -157,13 +157,13 @@ If~$d$ is a distance then~$s_{d,c}$ is a similarity.
 
 The squared dissimilarity~$d_s^2$ {\em induced} by a comparison~$s$ is
 \begin{equation}\label{s2d}
-  d_s^2(x,y) \eqdef s(x) + s(y) - 2 s(x,y). 
+  d_s^2(x,y) \eqdef s(x) + s(y) - 2 s(x,y).
 \end{equation}
 $$ d_s^2(x,x) = 0. $$
 $$ c \in C(s) \implies d_s^2(x,c) = s(x). $$
 
 If~$s$ is a similarity then~$d_s$ is a semidistance,
-because 
+because
 $$ 0 \le \left(\sqrt{s(x)} - \sqrt{s(y)} \right)^2 = s(x) + s(y) - 2 \sqrt{s(x) s(y)} \le s(x) + s(y) - 2 s(x,y) = d_s^2(x,y). $$
 
 The {\em $c$-centered comparison~$s_c$ induced} by a comparison~$s$, where $c \in X$, is
@@ -178,7 +178,7 @@ If~$s$ is a similarity then~$s_c$ is a semisimilarity.
 If
 $$\forall c \in X : s_c \text{ is a similarity}, $$
 then~$d_s$ is a distance.
-\proof 
+\proof
 {
   For any $x,y,c \in X$
   $$ s_c^2(x,y) \le s_c(x) \ s_c(y). $$
@@ -195,7 +195,7 @@ then~$d_s$ is a distance.
 $$ \forall s, c : d_s = d_{s_c}. $$
 $$ \forall d, c, z : s = s_{d,c} \implies s_z = s_{d,z} . $$
 
-Example: $Y$ is a set, $X \eqdef 2^Y$, $d^2(A,B) \eqdef |(A \setminus B) \cup (B \setminus A)|$ is a squared distance, 
+Example: $Y$ is a set, $X \eqdef 2^Y$, $d^2(A,B) \eqdef |(A \setminus B) \cup (B \setminus A)|$ is a squared distance,
 and $s(A,B) \eqdef |A \cap B|$ is a similarity induced by~$d$ centered at~$\emptyset$.
 
 
@@ -221,17 +221,17 @@ $$ s \succeq 0 \equiv \forall Y \subseteq X : |Y| \le \infty \implies s(Y) \succ
 if $s \succeq 0$ then~$s$ is a similarity.
 \comm {$s \succeq 0 \equivalent d_s \text{ is Euclidean}$ }
 
-Let {\em center of~$Y$} 
+Let {\em center of~$Y$}
 $$ C(Y) \eqdef \arg \min_{c \in X} \sum_{x \in Y} d^2(x,c). $$
 $$ C(Y) = \arg \min_{c \in X} \sum_{x,y \in Y}s_{d,c} (x,y) = \arg \min_{c \in X} \sum_{x \in Y}s_{d,c} (x). $$
 
-If there is $c \in X$, s.t. 
+If there is $c \in X$, s.t.
 $$ \forall x \in Y : s(x,c) = \frac 1 n \sum_{y \in Y} s(x,y) $$
 and
 $$ s(c) = \frac 1 n \sum_{x \in Y} s(c,x) = \frac 1 {n^2} \sum_{x,y \in Y} s(x,y), $$
 then
 $$ \sum_{x,y \in Y} s_c(x,y) = 0 $$
-and 
+and
 $$ \sum_{x \in Y} s_c(x) = \sum_{x \in Y} s(x) - \frac 1 n \sum_{x,y \in Y} s(x,y). $$
 
 $$ s_c(Y) \succeq 0 \implies c \in C(Y). $$
@@ -248,9 +248,9 @@ $$ s_c(Y) = s(Y) - \mat A_n s(Y) - s(Y) \mat A_n + \mat A_n s(Y) \mat A_n = \mat
 
 A {\em vector} is an element of~$\C^n$, which is a column with $n$ rows.
 
-A vector has 2 interpretations: 
-\begin{enumerate} 
-  \item a sequence of~$n$ numbers; 
+A vector has 2 interpretations:
+\begin{enumerate}
+  \item a sequence of~$n$ numbers;
   \item a {\em point} in an $n$-dimensional space.
 \end{enumerate}
 
@@ -280,7 +280,7 @@ $$ \tilde {\ve x} + \tilde {\ve y} = \widetilde {\ve x + \ve y}. $$
 
 The {\em scatter} of~$\ve x$ is $|\ve x|^2 \eqdef \ve x' \ve x$.
 
-$$ \var \ve x \eqdef \frac 1 n |\tilde {\ve x}|^2 = \frac 1 n |\ve x|^2 - \bar{\ve x}^2 $$ 
+$$ \var \ve x \eqdef \frac 1 n |\tilde {\ve x}|^2 = \frac 1 n |\ve x|^2 - \bar{\ve x}^2 $$
 is the {\em variance} of~$\ve x$.
 
 A vector $\ve x$ is {\em normalized} iff $|\ve x|^2 = 1$.
@@ -289,7 +289,7 @@ The {\em norm} of~$\ve x$ is $|\ve x| \eqdef \sqrt{|\ve x|^2}$.
 
 The {\em length of the projection} of~$\ve y$ on~$\ve x$ is $\ve x' \ve y / |\ve x|$.
 
-The {\em projection} of~$\ve y$ on~$\ve x$ is 
+The {\em projection} of~$\ve y$ on~$\ve x$ is
 \begin{equation} \label{vecProjection}
   \frac {\ve x'} {|\ve x|}  \ve y \ \frac {\ve x} {|\ve x|} = \frac {\ve x \ve x'} {|\ve x|^2} \ve y.
 \end{equation}
@@ -298,7 +298,7 @@ $$ \cov (\ve x, \ve y) \eqdef \frac 1 n \tilde {\ve x}' \tilde {\ve y} = \frac 1
 is the {\em covariance} between~$\ve x$ and~$\ve y$.
 $$ \var (\ve x) = \cov(\ve x,\ve x). $$
 
-$$ \cor (\ve x, \ve y) \eqdef \frac {\cov (\ve x, \ve y)} {\sqrt{\var \ve x} \ \sqrt{\var \ve y}} $$ 
+$$ \cor (\ve x, \ve y) \eqdef \frac {\cov (\ve x, \ve y)} {\sqrt{\var \ve x} \ \sqrt{\var \ve y}} $$
 is the {\em correlation} between~$\ve x$ and~$\ve y$.
 
 The {\em Euclidean distance} $$d(\ve x, \ve y) \eqdef |\ve x - \ve y|.$$
@@ -340,7 +340,7 @@ $\ve x_{\cdot j}$ be the $j$th column of matrix~$\mat X$,
 and $x_{ij}$ be the element of~$\mat X$ in row~$i$ and column~$j$.
 
 If $\mat A \in \C^{n \times m_1}$ and $\mat B \in \C^{n \times m_2}$, then $[\mat B \ \mat C] \in \C^{n \times (m_1 + m_2)}$.
-Similarly, 
+Similarly,
 if $\mat A \in \C^{n_1 \times m}$ and $\mat B \in \C^{n_2 \times m}$, then $\left[ \begin{array}{c} \mat B \\ \mat C \end{array} \right] \in \C^{(n_1 + n_2) \times m}$.
 
 For $\mat X \in \C^{n \times m}$, the matrix $\mat X' \in \C^{m \times n}$, where $x'_{ij} = x_{ji}$, is the {\em transpose of~$\mat X$}.
@@ -356,29 +356,29 @@ $$ rank(\mat X) \le \min \{n, m\}. $$
 $$ rank(\mat A \mat B) \le \min \{rank (\mat A), rank (\mat B)\}. $$
 $$ rank(\mat X \mat X') = rank (\mat X). $$
 \begin{equation} \label{rank_nonempty_cells}
-  |\{\langle i, j \rangle \mid x_{ij} \ne 0\}| \ge rank(\mat X). 
+  |\{\langle i, j \rangle \mid x_{ij} \ne 0\}| \ge rank(\mat X).
 \end{equation}
 \comm{procedure to find all linear dependencies}
 
 $\mat X \ve y$ has two interpretations:
-\begin{enumerate} 
+\begin{enumerate}
   \item the lengths of the projections of~$\ve y$ on the rows of~$\mat X$ times the norms of the rows;
   \item the sum of the columns of~$\mat X$ weighted by~$\ve y$.
 \end{enumerate}
 
 \begin{equation}\label{sim2dataCentered}
-\mat X \ve z = \ve 0 \equivalent \mat X' \mat X \ve z = \ve 0. 
+\mat X \ve z = \ve 0 \equivalent \mat X' \mat X \ve z = \ve 0.
 \end{equation}
 \proof {
-Sufficiency: 
-If $\mat X \ve z \ne \ve 0$ and $\mat X' \mat X \ve z = \ve 0$ then $0 \ne (\ve z' \mat X') (\mat X \ve z) = \ve z' (\mat X' \mat X \ve z) = \ve z' \ve 0 \ \#$. 
+Sufficiency:
+If $\mat X \ve z \ne \ve 0$ and $\mat X' \mat X \ve z = \ve 0$ then $0 \ne (\ve z' \mat X') (\mat X \ve z) = \ve z' (\mat X' \mat X \ve z) = \ve z' \ve 0 \ \#$.
 }
 
 $$\mat X \mat Y = \sum_i \ve x_{\cdot i} \ve y_{i \cdot}'. $$
 
 The {\em generalized inverse} of~$\mat X \in \C^{n \times m}$ is the set of matrices
 $$\mat X^- \eqdef \{\mat Y \in \C^{m \times n} : \mat X \mat Y \mat X = \mat X\}. $$
-The symbol~$\mat X^-$ will be used in an expression~$f(\mat X^-)$ meaning any $\mat Y \in \mat X^-$, 
+The symbol~$\mat X^-$ will be used in an expression~$f(\mat X^-)$ meaning any $\mat Y \in \mat X^-$,
 presupposing $$\forall \mat Y \in \mat X^- : f(\mat Y) = const. $$
 
 
@@ -417,15 +417,15 @@ and $\forall \ve x : \ve x' \mat X \ve x = \ve x' \mat X_{sym} \ve x$.
 
 $$ \mat X = - \mat X' \implies \forall i : x_{ii} = 0. $$
 
-The {\em trace} of~$\mat X$ 
+The {\em trace} of~$\mat X$
 $$\trc \mat X \eqdef \sum_i x_{ii}.$$
 If $\mat Y \in \C^{n \times m}$ and $\mat Z \in \C^{m \times n}$ then $\trc \mat Y \mat Z = \trc \mat Z \mat Y$.
-In particular, 
+In particular,
 $$ \trc |\mat Y|^2 = \trc |\mat Y'|^2 = \sum_{ij} y^2_{ij}. $$
 
-Let~$\ve x^d$ be the square matrix~$\mat X$ whose diagonal is vector~$\ve x$: 
+Let~$\ve x^d$ be the square matrix~$\mat X$ whose diagonal is vector~$\ve x$:
 \begin{equation*}
-x_{ij} \eqdef 
+x_{ij} \eqdef
   \begin{cases}
     x_i, &\text{ if } i = j\\
     0,   &\text{ else.}
@@ -439,9 +439,9 @@ $$ \mat I \eqdef \ve 1^d. $$
 $$ \ve x^{-d} \eqdef \left(\ve x^d \right)^{-1}. $$
 
 $$ \ve x^{\sim d} \eqdef \ve y^d, $$
-where 
+where
 \begin{equation*}
-  y_i \eqdef 
+  y_i \eqdef
   \begin{cases}
      0, &\text{ if } x_i = 0\\
      1/x_i,   &\text{ else.}
@@ -452,8 +452,8 @@ Let the matrix $\mat I_n^m \in \{0,1\}^{n \times m}$ be the first~$m$ columns of
 And let the matrix $\mat I_n^{-m} \in \{0,1\}^{n \times m}$ be the last~$n-m$ columns of~$\mat I$.
 $$ [\mat I_n^m \ \mat I_n^{-m}] = \mat I_n. $$
 
-For a matrix~$\mat Y \in \C^{n \times m}$, 
-$\mat Y \mat I^k_m$ is the first $k$ columns of~$\mat Y$, 
+For a matrix~$\mat Y \in \C^{n \times m}$,
+$\mat Y \mat I^k_m$ is the first $k$ columns of~$\mat Y$,
 and
 $(\mat I^k_n)' \mat Y$ is the first $k$ rows of~$\mat Y$.
 
@@ -475,7 +475,7 @@ If $\mat B$ is orthonormal then $\mat B$ is full rank, $\mat B^{-1} = \mat B'$ a
 
 Orthonormal matrices of the same size make up a group w.r.t.~multiplication.
 
-A matrix~$\mat P$ is a {\em permutation matrix} 
+A matrix~$\mat P$ is a {\em permutation matrix}
 iff $\mat P \in \{0,1\}^{n \times n}$, $\ve 1' \mat P = \ve 1'$ and $\mat P \ve 1 = \ve 1$.
 The matrix $\mat P \mat A$ is the permutation of the rows of the matrix~$\mat A$.
 The matrix $\mat B \mat P$ is the permutation of the columns of the matrix~$\mat B$.
@@ -485,11 +485,11 @@ A permutation matrix is orthonormal.
 
 \subsection{Semidefiniteness}
 
-A symmetric matrix~$\mat X \in \R^{n \times n}$ is {\em positive semidefinite}, denoted by $\mat X \succeq 0$, iff 
+A symmetric matrix~$\mat X \in \R^{n \times n}$ is {\em positive semidefinite}, denoted by $\mat X \succeq 0$, iff
 $$\forall \ve x \in \R^n: \ve x' \mat X \ve x \ge 0. $$
 \comm {$\mat X \in \C^{n \times n}$}
 
-A symmetric matrix~$\mat X \in \R^{n \times n}$ is {\em positive     definite}, denoted by $\mat X \succ   0$, iff 
+A symmetric matrix~$\mat X \in \R^{n \times n}$ is {\em positive     definite}, denoted by $\mat X \succ   0$, iff
 $$\forall \ve x \in \R^n: \ve x \ne \ve 0 \implies \ve x' \mat X \ve x > 0. $$
 There are similar definitions for {\em negative semidefinite} and {\em negative definite} matrices.
 
@@ -509,7 +509,7 @@ $$ \mat X \succ 0 \implies \mat X^{-1} = \mat U^{-1} (\mat U^{-1})'. $$
 rank(\mat X) = rank(\mat U).
 \end{equation}
 \begin{equation} \label{rank_nonempty_diagonal}
-\mat X \succeq 0 \implies |\{i \mid x_{ii} > 0\}| \ge rank(\mat X), 
+\mat X \succeq 0 \implies |\{i \mid x_{ii} > 0\}| \ge rank(\mat X),
 \end{equation}
 because~(\ref{cholesky_rank}), cf.~(\ref{rank_nonempty_cells}).
 
@@ -517,10 +517,10 @@ $$ \mat X \succeq 0 \implies \det \mat X \ge 0. $$
 $$ \mat X \succeq 0 \equivalent (\forall \mat Y : \text{$\mat Y$ is a principal submatrix of $\mat X$} \implies \det \mat Y \ge 0). $$
 \proof
 {
-    Sufficiency: If $\exists \mat Y$, s.t.~$\mat Y$ is a principal submatrix of $\mat X$ and $\det \mat Y < 0$, 
+    Sufficiency: If $\exists \mat Y$, s.t.~$\mat Y$ is a principal submatrix of $\mat X$ and $\det \mat Y < 0$,
     then $\mat Y = \mat B \ve \lambda^d \mat B'$ for some $\mat B$ and vector~$\ve \lambda$ containing $\lambda_i < 0$, see Section~\ref{eigen},
     and for $\ve y \eqdef \mat B \ve u_i$, $\ve y' \mat Y \ve y < 0$.
-    
+
 }
 
 
@@ -532,7 +532,7 @@ Let~$\mat X \in \C^{n \times n}$.
 \definition {Eigenvectors and Eigenvalues}
 {
 For $\mat B \in \C^{n \times n}$ and $\ve \lambda \in \C^n$
-such that 
+such that
 $$\mat X \mat B = \mat B \ve \lambda^d,$$
 $$ rank(\mat B) = n, $$
 $$ \forall i: |\ve b_{\cdot i}|^2 = 1 $$
@@ -554,14 +554,14 @@ The vector~$\ve \lambda(\mat X)$ is unique for~$\mat X$.
 $$ \ve \lambda(\mat X) = \ve \lambda(\mat X'). $$
 
 The set~$\mathfrak B(\mat X)$ may contain more than one element.
-For example, if for $a \le i \le b$ the values $\lambda_i$ are the same 
+For example, if for $a \le i \le b$ the values $\lambda_i$ are the same
 then the eigenvectors $\ve b_{\cdot i}$ can be replaced by any basis of the subspace spanned by these eigenvectors.
 
 $$ \forall i: i > rank(\mat X) \equivalent \lambda_i = 0. $$
 $$ rank(\mat X) = |\{i \mid \lambda_i \ne 0\}|. $$
 
 \begin{equation} \label{mat2eigen} \tag{eigenvalue decomposition}
-  \mat X = \mat B \ve \lambda^d \mat B^{-1}. 
+  \mat X = \mat B \ve \lambda^d \mat B^{-1}.
 \end{equation}
 
 $$ \mat B^{-1} \mat X \mat B = \ve \lambda^d. $$
@@ -584,7 +584,7 @@ $$ \mat X^{-1} = \mat B \ve \lambda^{-d} \mat B^{-1}. $$
 \bigskip
 $$ \mathfrak B(\mat X') = \{(\mat B^{-1})' \mid \mat B \in \mathfrak B(\mat X)\} \text{ and } \ve \lambda(\mat X') = \ve \lambda(\mat X), $$
 because
-$\mat X = \mat B \ve \lambda^d \mat B^{-1}$, 
+$\mat X = \mat B \ve \lambda^d \mat B^{-1}$,
 $\mat B^{-1} \mat X = \ve \lambda^d \mat B^{-1}$
 and
 $\mat X' (\mat B^{-1})' = (\mat B^{-1})' \ve \lambda^d$.
@@ -598,8 +598,8 @@ because $\mat P \mat X \mat P^{-1} \mat P \mat B = \mat P \mat B \ve \lambda^d$.
 If $\mat X \succ 0$ with a Choleski decomposition $\mat X = \mat U' \mat U$,
 then
 \begin{equation} \label{eigenPdY}
-  \forall \mat Y \in \C^{n \times n} : 
-    \mathfrak B \left((\mat U')^{-1} \mat Y \mat U^{-1} \right) \subset \{\mat U \mat B \ve \mu^d: \mat B \in \mathfrak B(\mat X^{-1} \mat Y), \ve \mu \in \R_{++}^n\} 
+  \forall \mat Y \in \C^{n \times n} :
+    \mathfrak B \left((\mat U')^{-1} \mat Y \mat U^{-1} \right) \subset \{\mat U \mat B \ve \mu^d: \mat B \in \mathfrak B(\mat X^{-1} \mat Y), \ve \mu \in \R_{++}^n\}
     \And \ve \lambda(\mat X^{-1} \mat Y) = \ve \lambda \left( (\mat U')^{-1} \mat Y \mat U^{-1} \right).
 \end{equation}
 \proof
@@ -618,9 +618,9 @@ For $\mat C \eqdef \mat B^{-1}$,
 \mat X = \sum_i \lambda_i \ve b_{\cdot i} \ve c_{i \cdot}'.
 \end{equation*}
 
-If  
-$$\mat Y \eqdef \mat X - \lambda_i \ve b_{\cdot i} \ve c_{i \cdot}'$$ 
-then 
+If
+$$\mat Y \eqdef \mat X - \lambda_i \ve b_{\cdot i} \ve c_{i \cdot}'$$
+then
 $$ \mathfrak B(\mat Y) = \mathfrak B(\mat X) \text{ and } \ve \lambda'(\mat Y) = [\lambda_1 \dots \lambda_{i-1} \ 0 \ \lambda_{i+1} \dots \lambda_n]. $$
 
 $$ \sum_{i:\lambda_i > 0} \lambda_i^{-1} \ve b_{\cdot i} \ve c_{i \cdot}' \in \mat X^-. $$
@@ -639,15 +639,15 @@ $$ Sp(\mat A) \eqdef \{\mat A \ve x \mid \ve x \in \C^m\}. $$
 $$ Sp(\mat A \mat B) \subseteq Sp(\mat A). $$
 $$ rank(\mat A) = \min \{r \mid Sp(\mat A) = Sp(\mat B) \And \mat B \in \C^{n \times r} \}. $$
 
-A matrix~$\mat P$ is an {\em orthogonal projector} iff 
+A matrix~$\mat P$ is an {\em orthogonal projector} iff
 $$ \forall \ve x : (\mat P \ve x)' (\mat I - \mat P) \ve x = 0. $$
 
 A matrix~$\mat P$ is an orthogonal projector iff $\mat P$~is symmetric and $\mat P^2 = \mat P$.
 
 A matrix~$\mat P$ is an orthogonal projector iff $\mat I - \mat P$ is an orthogonal projector.
 
-If a matrix~$\mat P$ is an orthogonal projector 
-then 
+If a matrix~$\mat P$ is an orthogonal projector
+then
 $$ \mat P \succeq 0 $$
 and
 $$ \ve \lambda(\mat P) = [\ve 1_r' \ \ve 0']', $$
@@ -687,9 +687,9 @@ where
 $$ \lambda_k \eqdef |\ve a_{k \cdot}|^2 |\ve f_{\cdot k}|^2. $$
 
 For all~$k$
-the vectors $\ve a_{k \cdot}/|\ve a_{k \cdot}|$ are the eigenvectors of $\mat Y' \mat Y$ 
-and 
-the vectors $\ve f_{\cdot k}/|\ve f_{\cdot k}|$ are the eigenvectors of $\mat Y \mat Y'$ 
+the vectors $\ve a_{k \cdot}/|\ve a_{k \cdot}|$ are the eigenvectors of $\mat Y' \mat Y$
+and
+the vectors $\ve f_{\cdot k}/|\ve f_{\cdot k}|$ are the eigenvectors of $\mat Y \mat Y'$
 with the same eigenvalues~$\lambda_k$.
 \comm { Consequence for MDS vs. PC}
 
@@ -701,25 +701,25 @@ Let $\mat X \in \C^{n \times n}$.
 \begin{align*}
   \mat X \text{ is symmetric} \implies  & \ \exists \mat B \in \mathfrak B(\mat X) : |\mat B|^2 = \mat I \And \mat B \in \R^{n \times n}, \\
   \mat X \text{ is symmetric} \impliedby& \ \exists \mat B \in \mathfrak B(\mat X) : |\mat B|^2 = \mat I.
-\end{align*} 
+\end{align*}
 \begin{align*}
  \mat X \text{ is symmetric} \implies& \ \lambda(\mat X) \in \R^n, \\
  \mat X \succeq 0 \implies& \ \lambda(\mat X) \in \R_+^n, \\
- \mat X \succ   0 \implies& \ \lambda(\mat X) \in \R_{++}^n. 
-\end{align*} 
+ \mat X \succ   0 \implies& \ \lambda(\mat X) \in \R_{++}^n.
+\end{align*}
 
 \proof
-{ 
-  If~$\mat X$ is symmetric and $\ve x$ and $\ve y$ are different eigenvectors of~$\mat X$ with eigenvalues~$\lambda$ and~$\mu$ respectfully 
+{
+  If~$\mat X$ is symmetric and $\ve x$ and $\ve y$ are different eigenvectors of~$\mat X$ with eigenvalues~$\lambda$ and~$\mu$ respectfully
   then
   $$ \ve y' \mat X \ve x = \ve y' \lambda \ve x = \mu \ve y' \ve x, $$
-  $$ \ve y' \ve x \ (\lambda - \mu) = 0. $$ 
+  $$ \ve y' \ve x \ (\lambda - \mu) = 0. $$
   If $\ve y' \ve x \ne 0$ then $\lambda = \mu$ and all eigenvectors with eigenvalue~$\lambda$ make up a linear space, and these eigenvectors can be replaced by any orthonormal basis of this space.
   Therefore, $|\mat B|^2 = \mat I$.
 
   If~$\mat X$ is symmetric and
   $$ \mat X (\ve x + i \ve y) = (\lambda + i \mu) (\ve x + i \ve y), $$
-  where $\ve x, \ve y \in \R^n$, 
+  where $\ve x, \ve y \in \R^n$,
   $\neg (\ve x = \ve 0 \And \ve y = \ve 0)$ and $\lambda, \mu \in \R$,
   then
   $$ \mat X \ve x = \lambda \ve x - \mu \ve y, $$
@@ -728,7 +728,7 @@ Let $\mat X \in \C^{n \times n}$.
   $$ \mu (|\ve x|^2 + |\ve y|^2) = 0 $$
   and
   $$ \mu = 0, $$
-  therefore, $\mat B \in \R^{n \times n}$.  
+  therefore, $\mat B \in \R^{n \times n}$.
 }
 
 Let an eigenvector matrix $\mat B \in \mathfrak B (\mat X)$ be orthonormal and $\ve \lambda \eqdef \ve \lambda (\mat X)$.
@@ -759,7 +759,7 @@ A {\em quadric} is
 $$ \{\ve x \mid \ve x' \mat X \ve x = c\}. $$
 If~$\mat X$ is full rank then a quadric is an {\em ellipsoid}.
 
-If~$\mat X \succ 0$ and $\mat Y \in \C^{n \times n}$, 
+If~$\mat X \succ 0$ and $\mat Y \in \C^{n \times n}$,
 then the local extrema of $\{\ve x' \mat Y \ve x \mid \ve x' \mat X \ve x = 1\}$
 are the columns of $\mathfrak B(\mat X^{-1} \mat Y)$.
 \proof{
@@ -777,18 +777,18 @@ by~(\ref{eigenPdY}).
 \bigskip
 If~$\mat Y$ is symmetric then $(\mat U')^{-1} \mat Y \mat U^{-1}$ is symmetric
 and
-$$\ve \lambda(\mat X^{-1} \mat Y) \in \R^n,$$ 
-$$\mat Y \succeq 0 \implies \ve \lambda(\mat X^{-1} \mat Y) \in \R_+^n.$$ 
+$$\ve \lambda(\mat X^{-1} \mat Y) \in \R^n,$$
+$$\mat Y \succeq 0 \implies \ve \lambda(\mat X^{-1} \mat Y) \in \R_+^n.$$
 
 Let  $\mat B \in \mathfrak B(\mat X^{-1} \mat Y)$ and $\mat C \in \mathfrak B \left((\mat U')^{-1} \mat Y \mat U^{-1} \right)$,
 then $\mat C = \mat U \mat B \ve \mu^d$, for some $\ve \mu \in \R_{++}^n$, by~(\ref{eigenPdY}) and
 for $$ \mat R \eqdef \mat U^{-1} \mat C = \mat B \ve \mu^d$$
 \begin{equation} \label{canonicalWithin}
-  \mat I = \mat C' \mat C = \ve \mu^d \mat B' \mat U' \mat U \mat B \ve \mu^d = \mat R' \mat X \mat R, 
+  \mat I = \mat C' \mat C = \ve \mu^d \mat B' \mat U' \mat U \mat B \ve \mu^d = \mat R' \mat X \mat R,
 \end{equation}
 \begin{equation} \label{canonicalBetween}
- \ve \lambda^d(\mat X^{-1} \mat Y) = \ve \lambda^d((\mat U')^{-1} \mat Y \mat U^{-1}) = \mat C' (\mat U')^{-1} \mat Y \mat U^{-1} \mat C 
-  = \mat R' \mat Y \mat R. 
+ \ve \lambda^d(\mat X^{-1} \mat Y) = \ve \lambda^d((\mat U')^{-1} \mat Y \mat U^{-1}) = \mat C' (\mat U')^{-1} \mat Y \mat U^{-1} \mat C
+  = \mat R' \mat Y \mat R.
 \end{equation}
 
 
@@ -798,17 +798,17 @@ for $$ \mat R \eqdef \mat U^{-1} \mat C = \mat B \ve \mu^d$$
 For~$\mat X \in \C^{n \times m}$, where $n \ge m$,
 let
 $r \eqdef rank(\mat X)$,
-$\mat B \in \mathfrak B\left(|\mat X|^2\right) \cap \R^{m \times m}$,    $\ve \mu \eqdef \lambda\left(|\mat X|^2\right)$, 
-$\mat C \in \mathfrak B\left(|\mat X'|^2\right) \cap \R^{n \times n}$ and $\ve \nu \eqdef \lambda\left(|\mat X'|^2\right)$, 
+$\mat B \in \mathfrak B\left(|\mat X|^2\right) \cap \R^{m \times m}$,    $\ve \mu \eqdef \lambda\left(|\mat X|^2\right)$,
+$\mat C \in \mathfrak B\left(|\mat X'|^2\right) \cap \R^{n \times n}$ and $\ve \nu \eqdef \lambda\left(|\mat X'|^2\right)$,
 then
 $\ve \mu \in \R^m$,
 $\ve \nu \in \R^n$
 and
-$$ \mat X \mat X' (\mat X \mat B) = (\mat X \mat B) \ve \mu^d, $$ 
+$$ \mat X \mat X' (\mat X \mat B) = (\mat X \mat B) \ve \mu^d, $$
 therefore, $\ve \mu' = [\ve \lambda' \ \ve 0']$ and $\ve \nu' = [\ve \lambda' \ \ve 0']$, where $\ve \lambda \in \R^r$ and $\forall i : \lambda_i \ne 0$,
 and
 \begin{equation} \label{rectangular_eigenvectors}
-\exists \mat C \in \mathfrak B(\mat X \mat X') : \mat C \ \mat I^r_n = \mat X \mat B \ \mat I^r_n \sqrt{\ve \lambda^{-d}}, 
+\exists \mat C \in \mathfrak B(\mat X \mat X') : \mat C \ \mat I^r_n = \mat X \mat B \ \mat I^r_n \sqrt{\ve \lambda^{-d}},
 \end{equation}
 because $\mat B' \mat X' \mat X \mat B = \mat B' \mat B \ve \mu^d = \ve \mu^d$ and $(\mat I^r_n)' \mat C' \mat C \ \mat I^r_n = \mat I_r$.
 
@@ -819,7 +819,7 @@ The elements of the vector~$\ve \lambda$ are {\em singular values}.
 
 $$ (\mat C \ \mat I^r_n)' \ \mat X \ (\mat B \ \mat I^r_n) = (\mat I^r_n)' \mat C ' \mat C \ \mat I^r_n \sqrt{\ve \lambda^d} = \sqrt{\ve \lambda^d}. $$
 $$ \mat C' \mat X \mat B = \mat M, $$
-where 
+where
 $$ \mat M \eqdef \left[\sqrt{\ve \mu^d} \ \mat 0 \right]'. $$
 
 \begin{equation*} \tag{singular-value decomposition}
@@ -849,9 +849,9 @@ The strain minimization formulas in this section are referred to as the {\em Eck
 \subsubsection{Strain minimization for rectangular matrices}
 
 Let $\mat X, \mat Y \in \C^{n \times m}$ and the singular value decomposition of~$\mat X$ be $\mat C \mat M \mat B'$,
-then 
+then
 $$ \mat X - \mat Y = \mat C \mat C' (\mat X - \mat Y) \mat B \mat B' = \mat C (\mat M - \mat C' \mat Y \mat B) \mat B' = \mat C (\mat M - \mat W) \mat B', $$
-where 
+where
 $$ \mat W \eqdef \mat C' \mat Y \mat B. $$
 $$ d^2(\mat X,\mat Y) = \trc \mat B (\mat M - \mat W)' \mat C' \mat C (\mat M - \mat W) \mat B' = \trc |\mat M -\mat W|^2 . $$
 $$ rank(\mat W) = rank(\mat Y). $$
@@ -864,16 +864,16 @@ $$ \min_{rank(\mat Y) \le k} d^2 (\mat X, \mat Y) = \min_{rank(\mat W) \le k} \t
 $$ \arg \min_{rank(\mat W) \le k} \trc |\mat M -\mat W|^2 = \{[\mat M \mat I_m^k \ \mat 0]' \} . $$
 \proof
 { Suppose the minimzation criterion is attained at $\mat W = \mat W^*$ and $\mat W^* \ne [\mat M \mat I_m^k \ \mat 0]'$,
-then~$\mat W^*$ can be transformed to $[\mat M \mat I_m^k \ \mat 0]'$ 
-by combinations of elementary row or column rank-preserving transformations 
+then~$\mat W^*$ can be transformed to $[\mat M \mat I_m^k \ \mat 0]'$
+by combinations of elementary row or column rank-preserving transformations
 decreasing the minimization criterion.
 }
 $$ \min_{rank(\mat Y) \le k} d^2 (\mat X, \mat Y) = \sum_{i > k} \lambda_i. $$
 
 
 \subsubsection{Strain minimization for square matrices}
-Suppose $\mat X, \mat Y \in \C^{n \times n}$ and the eigenvalue decomposition of~$\mat X$ is $\mat B \ve \lambda^d \mat B^{-1}$ 
-then, 
+Suppose $\mat X, \mat Y \in \C^{n \times n}$ and the eigenvalue decomposition of~$\mat X$ is $\mat B \ve \lambda^d \mat B^{-1}$
+then,
 by the reasoning analogous to the previous section,
 $$ \mat W \eqdef \mat B^{-1} \mat Y \mat B, $$
 $$ d^2(\mat X,\mat Y) = \trc |\ve \lambda^d -\mat W|^2. $$
@@ -885,7 +885,7 @@ $$ \arg \min_{rank(\mat W) \le k} \trc |\ve \lambda^d -\mat W|^2 = \{[\ve \lambd
 $$ \min_{rank(\mat Y) \le k} d^2 (\mat X, \mat Y) = \sum_{i > k} \lambda_i^2. $$
 
 Suppose~$\mat X, \mat Y$ are symmetric.
-Then 
+Then
 $$ \mat Y \succeq 0 \equivalent \mat W \succeq 0, $$
 $$ \min_{\mat Y \succeq 0} d^2 (\mat X, \mat Y) = \min_{\mat W \succeq 0} \trc |\ve \lambda^d -\mat W|^2, $$
 $$ \arg \min_{\mat W \succeq 0} \trc |\ve \lambda^d -\mat W|^2 = \{\max (\ve \lambda^d, \mat 0) \} $$
@@ -907,7 +907,7 @@ Linear transformations of a matrix~$\mat X \in \C^{n \times p}$:
 \item If~$\ve x$ is a row of~$\mat X$ then $- \ve x$ is a {\em reflexion} of row~$\ve x$.
 \end{itemize}
 
-If $\mat Y \succeq 0$ then 
+If $\mat Y \succeq 0$ then
 $$ \ve x' \mat Y =  \ve x' \ \mat B \ \ve \lambda^d(\mat Y) \ \mat B^{-1}, $$
 where $\mat B \in \mathfrak B(\mat Y)$,
 by~(\ref{mat2eigen}),
@@ -930,7 +930,7 @@ $$ \bar {\bar {\mat X}} = \bar {\mat X}. $$
 $$ \ve 1 \ve 1' \mat C_n = \mat 0. $$
 $$ (\mat X + k \ve 1 \ve 1') \ \mat C_n = \mat X \mat C_n. $$
 
-If~$\mat X$ is a square matrix with~$n$ rows then the {\em double centering} operation 
+If~$\mat X$ is a square matrix with~$n$ rows then the {\em double centering} operation
 $$ \mat C_n \mat X \mat C_n. $$
 
 $$ \cov(\mat X, \mat Y) \eqdef \frac 1 n \mat X' \mat Y. $$
@@ -971,14 +971,14 @@ For binary attributes, the multiplicity of a pair of objects~$(i,j)$ is $w_i w_j
 The following are {\em multiplicity transformations} of data:
 \begin{itemize}
 \item $(\mat X, \ve w) \leftrightarrow (\mat P \mat X, \mat P \ve w)$, where $\mat P$ is a permutation matrix.
-\item $\left(\left[ \begin{array}{c} \mat X \\ \mat X \end{array} \right], \left[ \begin{array}{c} \ve w_1 \\ \ve w_2 \end{array} \right] \right) 
+\item $\left(\left[ \begin{array}{c} \mat X \\ \mat X \end{array} \right], \left[ \begin{array}{c} \ve w_1 \\ \ve w_2 \end{array} \right] \right)
         \leftrightarrow (\mat X, \ve w_1 + \ve w_2)$,
   where $w_1, w_2 \in \R_+^n$.
-\item $\ve w_0 = \ve 0 \implies 
-        \left(\left[ \begin{array}{c} \mat X_1 \\ \mat X_0 \\ \mat X_2 \end{array} \right], \left[ \begin{array}{l} \ve w_1 \\ \ve w_0 \\ \ve w_2 \end{array} \right] \right) 
+\item $\ve w_0 = \ve 0 \implies
+        \left(\left[ \begin{array}{c} \mat X_1 \\ \mat X_0 \\ \mat X_2 \end{array} \right], \left[ \begin{array}{l} \ve w_1 \\ \ve w_0 \\ \ve w_2 \end{array} \right] \right)
           \leftrightarrow \left(\left[ \begin{array}{c} \mat X_1 \\ \mat X_2 \end{array} \right], \left[ \begin{array}{c} \ve w_1 \\ \ve w_2 \end{array} \right] \right)$,
   where $X_i \in \R^{n_i \times p}$ and $w_i \in \R_+^{n_i}$.
-\item $(\mat X, \ve w) \leftrightarrow (\mat X, k \ve w)$, where $k \in \R_{++}$.  
+\item $(\mat X, \ve w) \leftrightarrow (\mat X, k \ve w)$, where $k \in \R_{++}$.
 \end{itemize}
 
 The multiplicity transformations of data make up an equivalence relation on data.
@@ -1007,14 +1007,14 @@ A data analysis procedure has {\em quality criteria}.
 \comm { {\em relative} quality criteria increase with~$n$, converges. For small~$n$ they are biased.}
 
 An algebraic expression on attributes has two interpretations: a {\em multiplied interpretation} and a {\em non-multiplied interpretation}.
-Below the expressions on the  left-hand part of the page have the multiplied interpretation 
+Below the expressions on the  left-hand part of the page have the multiplied interpretation
 and   the expressions on the right-hand part of the page have the non-multiplied interpretation:
 \begin{align*}
 \ve x' \ve y &= \ve x' \ve w^d \ve y, \\
 n = \ve 1' \ve 1 &= \ve 1' \ve w^d \ve 1 = w, \\
 \bar {\ve x} = \frac {\ve 1' \ve x} {\ve 1' \ve 1},& \\
 \var \ve x = \frac {\ve x' \ve x} {\ve 1' \ve 1} - {\bar {\ve x}}^2,& \\
-\mat X' \mat X &= \mat X' \ve w^d \mat X, 
+\mat X' \mat X &= \mat X' \ve w^d \mat X,
 \end{align*}
 etc.
 
@@ -1037,13 +1037,13 @@ Let $\mat X \in \R^{n \times p}$ a data matrix.
 The functions $s(\ve x_{i \cdot}, \ve x_{j \cdot})$ and $d^2(\ve x_{i \cdot}, \ve x_{j \cdot})$ are invariant w.r.t.~basis change.
 The function $d^2(\ve x_{i\cdot}, \ve x_{j\cdot})$ is invariant w.r.t.~translation.
 
-If~$\ve x_{\cdot i}$ and~$\ve x_{\cdot j}$ are attributes which are centered and normalized 
-then 
+If~$\ve x_{\cdot i}$ and~$\ve x_{\cdot j}$ are attributes which are centered and normalized
+then
 \begin{equation}\label{d2rho}
 d^2(\ve x_{\cdot i}, \ve x_{\cdot j}) = 2 (1 - \cor(\ve x_{\cdot i}, \ve x_{\cdot j})).
 \end{equation}
 
-Let 
+Let
 $$ d_{ij} \eqdef d(\ve x_{\cdot i}, \ve x_{\cdot j}), $$
 $$ s_{ij} \eqdef s(\ve x_{\cdot i}, \ve x_{\cdot j}). $$
 
@@ -1053,16 +1053,16 @@ $$ \forall \ve x : \ve x' \ve 1 = 0 \implies \ve x' \mat D^2 \ve x \le 0. $$
 
 If~$\bar {\mat X} = \ve 0$ then
 \begin{equation}\label{sumD2}
-\ve 1' \mat D^2(\mat X) \ve 1 = 2n \ \trc \mat X' \mat X  = 2n^2 \ \trc \VC (\mat X). 
+\ve 1' \mat D^2(\mat X) \ve 1 = 2n \ \trc \mat X' \mat X  = 2n^2 \ \trc \VC (\mat X).
 \end{equation}
 
 Let $\mat S(\mat X) \eqdef \mat X \mat X'$ be the Euclidean similarity matrix of~$\mat X$.
 $$\mat S(\mat X) \succeq 0. $$
 \begin{equation}\label{trc_S_VC}
-  \trc \mat S(\mat X) = n \ \trc \VC(\mat X). 
+  \trc \mat S(\mat X) = n \ \trc \VC(\mat X).
 \end{equation}
 
-If~$\bar {\mat X} = \ve 0$ then 
+If~$\bar {\mat X} = \ve 0$ then
 $$ \mat S(\mat X) \ve 1 = \ve 0. $$
 
 Let~$\mat S \eqdef \mat S(\mat X)$ and $\mat D^2 \eqdef \mat D^2 (\mat X)$ for an unknown~$\mat X$.
@@ -1094,8 +1094,8 @@ $$ \left(\forall i : s_i = \frac a n \right) \implies s_{ij} = \frac a n - \frac
 
 
 \subsection{Mahalanobis distance}
-If a data matrix~$\mat X$ is full rank and $\bar {\mat X} = \ve 0$, 
-then the $i$th diagonal element of 
+If a data matrix~$\mat X$ is full rank and $\bar {\mat X} = \ve 0$,
+then the $i$th diagonal element of
 \begin{equation} \label{mahalanobis}
 \mat X \ \VC^{-1}(\mat X) \ \mat X'
 \end{equation}
@@ -1107,7 +1107,7 @@ If the objects of~$\mat X \in \R^{n \times p}$ have a multivariate normal distri
 \subsection{Boolean data}
 Let~$\mat X$ be a data matrix with Boolean attributes.
 
-The {\em Hamming distance} 
+The {\em Hamming distance}
 $$ d_h(\ve x_{i\cdot}, \ve x_{j\cdot}) \eqdef \sum_k |x_{ik} - x_{jk}|. $$
 $$ d_h(\ve x_{i\cdot}, \ve x_{j\cdot}) = d^2 (\ve x_{i\cdot}, \ve x_{j\cdot}). $$
 \comm { = distance in $L_1$, }
@@ -1117,26 +1117,26 @@ If~$\mat X$ is random, then let the data matrix~$\mat Y$ be defined as
 $$ y_{ik} \eqdef \P (X_{ik} = 1), $$
 then
 $$ \E |X_{ik} - X_{jk}|
-    =   y_{ik} (1 - y_{jk}) 
-      + y_{jk} (1 - y_{ik}) 
+    =   y_{ik} (1 - y_{jk})
+      + y_{jk} (1 - y_{ik})
     =   y_{ik}  + y_{jk} - 2 y_{ik} y_{jk}.
 $$
 
 Compare with
 $$ (y_{ik} - y_{jk})^2 = y^2_{ik} + y^2_{jk} - 2 y_{ik} y_{jk}. $$
 
-Since $0 \le y_{ik} \le 1$, 
+Since $0 \le y_{ik} \le 1$,
 then $y_{ik} \ge y^2_{ik}$
-and 
+and
 $$ \E d_h (\ve X_i, \ve X_j) \ge d^2 (\ve y_i, \ve y_j). $$
 
 \comm{
 Assume that~$\mat X[i,k]$ are independent for different~$i$.
 
 Let~$Z_k \sim Bernoulli(\mat X[I,k])$, where $I \sim Uniform(1,n)$,
-then 
+then
 $$ \E Z_k = \frac 1 n \sum_{i=1}^n \mat Y[i,k], $$
-\begin{equation} 
+\begin{equation}
 \begin{split}
 \var Z_k &= \frac 1 n \sum_{i=1}^n ((1-\E Z_k)^2 \mat Y[i,k] + (E Z_k)^2 (1 - \mat Y[i,k])) \\
          &= \frac 1 n \sum_{i=1}^n ( \mat Y[i,k] - 2 (\E Z_k) \mat Y[i,k] + (E Z_k)^2) \\
@@ -1168,22 +1168,22 @@ Then in the data matrix $\mat X \mat B_q$ the dimensionality is reduced from~$p$
 
 For any $i,j \le n$:
 $$ d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) = d^2(\ve x_{i\cdot}' \mat B_p, \ve x_{j\cdot}' \mat B_p) \ge d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q). $$
-The {\em lost squared distance} between objects $\ve x_{i\cdot}$ and~$\ve x_{j\cdot}$ 
+The {\em lost squared distance} between objects $\ve x_{i\cdot}$ and~$\ve x_{j\cdot}$
 $$ \epsilon^2_{ij} \eqdef d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) - d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q) \ge 0. $$
-The {\em total lost squared distance} 
+The {\em total lost squared distance}
 $$ \epsilon^2(\mat X, \mat B_q) \eqdef \sum_{i,j} \epsilon^2_{ij}. $$
 $$ \epsilon^2(\mat X, \mat B_q) = \sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) - \sum_{i,j} d^2(\ve x_{i\cdot}' \mat B_q, \ve x_{j\cdot}' \mat B_q). $$
 
-An element of the set 
+An element of the set
 $$ \mathfrak R_q(\mat X) \eqdef \arg \min_{\mat B_q \in \mathcal B_q} \epsilon^2(\mat X, \mat B_q) $$
 is a {\em basis of the first $q$~rotated principal components} of~$\mat X$.
 
 It can be rotated:
-$$ \forall \mat B_q \in \mathfrak R_q(\mat X) \ \forall \mat C \in \R^{q \times q}: 
-  (\mat C' \mat C = \mat I \implies \mat B_q \mat C \in \mathfrak R_q(\mat X)). 
+$$ \forall \mat B_q \in \mathfrak R_q(\mat X) \ \forall \mat C \in \R^{q \times q}:
+  (\mat C' \mat C = \mat I \implies \mat B_q \mat C \in \mathfrak R_q(\mat X)).
 $$
 
-An element of the set 
+An element of the set
 $$ \mathfrak B_q(\mat X) \eqdef \{\mat B \mat I^q_p : \mat B \in \mathfrak B(\VC(\mat X)) \} $$
 is a {\em basis of the first $q$~principal components} of~$\mat X$.
 
@@ -1194,9 +1194,9 @@ $$ \mathfrak B_q(\mat X) \subseteq \mathfrak R_q(\mat X). $$
 {
 By~(\ref{sumD2}),
 $$ \mathfrak R_q(\mat X) = \arg \max_{\mat B_q \in \mathcal B_q} \trc \mat B_q' \VC (\mat X) \mat B_q. $$
-$$ \mathfrak R_q(\mat X) = 
-  \{ \mat B \mat A_q : \mat B \in \mathfrak B(\VC(\mat X)), 
-                       \mat A_q \in \arg \max_{\mat A_q \in \mathcal B_q} \trc \mat A_q' \ve \lambda^d \mat A_q 
+$$ \mathfrak R_q(\mat X) =
+  \{ \mat B \mat A_q : \mat B \in \mathfrak B(\VC(\mat X)),
+                       \mat A_q \in \arg \max_{\mat A_q \in \mathcal B_q} \trc \mat A_q' \ve \lambda^d \mat A_q
   \}.
 $$
 
@@ -1212,7 +1212,7 @@ is the {\em first $q$ principal components} of~$\mat X$.
 If the columns of~$\mat B_q$ are interpreted as unit-length orthogonal objects of~$\mat X$,
 then the data matrix $\PC_q(\mat X)$ is the matrix of similarities between~$\mat X$ and~$\mat B_q$.
 
-The matrix $\mat B_q$ depends on a linear transformation of~$\mat X$. 
+The matrix $\mat B_q$ depends on a linear transformation of~$\mat X$.
 The first principal components tend to correlate with the attributes having largest scatter.
 The matrix~$\PC_q(\mat X)$ does not depend on measurement scales of attributes of~$\mat X$ if the attributes are normalized.
 
@@ -1222,7 +1222,7 @@ $$ \ve \lambda_q(\mat X) \eqdef (\mat I^q_p)' \ve \lambda. $$
 
 $$ \VC (\PC_q(\mat X)) = \VC (\mat X \mat B_q)
                 = \mat B_q' \VC (\mat X) \mat B_q
-                = \mat B_q' \mat B_q \ve \lambda_q^d(\mat X) 
+                = \mat B_q' \mat B_q \ve \lambda_q^d(\mat X)
                 = \ve \lambda_q^d(\mat X),
 $$
 the attributes of $\PC_q(\mat X)$ are not correlated.
@@ -1239,9 +1239,9 @@ which is the correlation matrix between~$\mat X$ and the normalized first~$q$ pr
 
 If $\VC(\mat X)$ is full rank, then
 \begin{multline*}
-$$ \PC_p(\mat X) \sqrt{\ve \lambda_p^{-d}(\mat X)} \ \left(\PC_p(\mat X) \sqrt{\ve \lambda_p^{-d}(\mat X)} \right)' 
+$$ \PC_p(\mat X) \sqrt{\ve \lambda_p^{-d}(\mat X)} \ \left(\PC_p(\mat X) \sqrt{\ve \lambda_p^{-d}(\mat X)} \right)'
      = \PC_p(\mat X) \left(\ve \lambda_p^d(\mat X) \right)^{-1} \PC'_p(\mat X) \\
-     = \mat X \mat B_p \left(\ve \lambda_p^d(\mat X) \right)^{-1} \mat B'_p \mat X 
+     = \mat X \mat B_p \left(\ve \lambda_p^d(\mat X) \right)^{-1} \mat B'_p \mat X
      = \mat X \ \VC^{-1}(\mat X) \ \mat X,
 \end{multline*}
 which is~(\ref{mahalanobis}).
@@ -1258,16 +1258,16 @@ If $\ve \lambda_q(\mat X) > \ve 1$ then no attribute of $\PC_q(\mat X)$ correlat
 in other words, $\PC_q(\mat X)$ represents~$\mat X$ without noise attributes.
 
 \begin{equation*}  \label{dataReduction}
-\mat X = \PC_q(\mat X) \mat B_q' + \mat \varepsilon, 
+\mat X = \PC_q(\mat X) \mat B_q' + \mat \varepsilon,
 \end{equation*}
-where 
+where
 $$ \mat \varepsilon \eqdef \PC_{-q}(\mat X) \mat B_{-q}' $$
 is the {\em residual matrix}.
 
 \proof{
 $$ \PC_p(\mat X) = \mat X \mat B_p = \mat X ([\mat B_q \ \mat 0] + [\mat 0 \ \mat B_{-q}]), $$
-$$ \mat X = \PC_p(\mat X) \mat B_p' 
-  = ([\PC_q(\mat X) \ \mat 0] + [\mat 0 \ \PC_{-q}(\mat X)]) 
+$$ \mat X = \PC_p(\mat X) \mat B_p'
+  = ([\PC_q(\mat X) \ \mat 0] + [\mat 0 \ \PC_{-q}(\mat X)])
       \times \left( \left[ \begin{array}{c} \mat B_q' \\ \mat 0 \end{array} \right] + \left[ \begin{array}{c} \mat 0 \\ \mat B_{-q}' \end{array} \right] \right)
   = \PC_q(\mat X) \mat B_q' + \PC_{-q}(\mat X) \mat B_{-q}'.
 $$
@@ -1275,18 +1275,18 @@ $$
 
 $$ \trc \VC (\mat \varepsilon) = \trc \mat B_{-q} \ \VC(\PC_{-q}(\mat X)) \ \mat B_{-q}' = \trc \VC(\PC_{-q}(\mat X)) = \ve 1' \ve \lambda_{-q}(\mat X). $$
 
-$$ \epsilon^2(\mat X, \mat B_q) = 2n^2 \ \trc \VC (\mat X) - 2n^2 \ \trc \VC (\PC_q(\mat X)) 
-  = 2n^2 \left(\ve 1' \ve \lambda - \ve 1' \ve \lambda_q(\mat X) \right) 
-  = 2n^2 \ve 1' \ve \lambda_{-q}(\mat X) 
+$$ \epsilon^2(\mat X, \mat B_q) = 2n^2 \ \trc \VC (\mat X) - 2n^2 \ \trc \VC (\PC_q(\mat X))
+  = 2n^2 \left(\ve 1' \ve \lambda - \ve 1' \ve \lambda_q(\mat X) \right)
+  = 2n^2 \ve 1' \ve \lambda_{-q}(\mat X)
   = 2n^2 \ \trc \VC (\mat \varepsilon)
 $$
 by~(\ref{sumD2}).
 
-The average lost squared distance 
+The average lost squared distance
 $$ \frac {\epsilon^2(\mat X, \mat B_q)} {n^2} = 2 \ \trc \VC (\mat X) (1 - r_q), $$
 where the {\em explained fraction of variance}, a quality criterion,
 \begin{equation}\label{explFracVar}
-r_q \eqdef \frac {\ve 1' \ve \lambda_q(\mat X)} {\trc \VC (\mat X)} 
+r_q \eqdef \frac {\ve 1' \ve \lambda_q(\mat X)} {\trc \VC (\mat X)}
   = \frac {\trc \VC (\PC_q(\mat X))} {\trc \VC (\mat X)}
   = \frac {\sum_{i,j} y^2_{ij}} {\sum_{i,j} x^2_{ij}}
   = \frac {\sum_{i,j} d^2(\ve y_i, \ve y_j)} {\sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot})},
@@ -1300,7 +1300,7 @@ $$ \sum_{i,j} d^2(\ve x_{i\cdot}, \ve x_{j\cdot}) = \sum_{i,j} d^2(\ve y_i, \ve 
 by these methods:
 \begin{enumerate}
 \item \begin{equation}\label{PCDataInflated} \mat Y \eqdef (1 / \sqrt {r_q}) \times \PC_q(\mat X). \end{equation}
-\item $\mat Y \eqdef [\PC_q(\mat X) \ \delta \mat I_n]$, where 
+\item $\mat Y \eqdef [\PC_q(\mat X) \ \delta \mat I_n]$, where
 $$ \delta \eqdef \sqrt{\frac {\epsilon^2(\mat X, \mat B_q)} {2n(n-1)}}. $$
 $$ \delta = \sqrt {\frac n  {n-1} \left(\trc \VC(\mat X) - \ve 1' \ve \lambda_q(\mat X) \right)}. $$
 \proof{
@@ -1322,7 +1322,7 @@ $$ \ve \lambda(\VC(\PC_q(\mat X))) =  \ve \lambda(\ve \lambda_q^d(\mat X)) = \ve
 
 \subsection{Affine component analysis}
 
-Let~$\mat X \in \R^{n \times p}$ be a data matrix, 
+Let~$\mat X \in \R^{n \times p}$ be a data matrix,
 s.t.~$\E \mat X = \ve 0$.
 
 The attributes of~$\mat X$ are merged by an affine combination~$\ve \beta$ with a minimum variance iff
@@ -1339,17 +1339,17 @@ where $\lambda$ is a Lagrange multiplier.
 
 $$ \var \mat X \ve \beta = \ve \beta' \VC(\mat X) \ve \beta = \frac 1 {\ve 1' \VC^{-1}(\mat X) \ve 1}. $$
 \comm {$< 0$}
-\comm 
+\comm
 {Select a subset of attributes $\mat S \subseteq \mat X$, s.t.~$\var \mat S \ve \beta$ is minimum,
-    i.e.~$\ve 1' \VC^{-1}(\mat S) \ve 1$ is maximum. 
+    i.e.~$\ve 1' \VC^{-1}(\mat S) \ve 1$ is maximum.
 }
 
 $$ \forall \mu \in \R, \ve \beta \in \R^p \
-  (\E \mat Y = \mu \ve 1, \ \ve y \eqdef \mat Y \ve \beta, \ \mat X \eqdef \mat Y - \ve y \ve 1' \implies \E {\mat X} = \ve 0). 
+  (\E \mat Y = \mu \ve 1, \ \ve y \eqdef \mat Y \ve \beta, \ \mat X \eqdef \mat Y - \ve y \ve 1' \implies \E {\mat X} = \ve 0).
 $$
 \proof
 {
-    $$ \ve 1' \mat X = \ve 1' (\mat Y - \ve y \ve 1') 
+    $$ \ve 1' \mat X = \ve 1' (\mat Y - \ve y \ve 1')
     = \ve 1' \mat Y - \ve 1' \mat Y \ve \beta \ve 1'
     = \ve 1' \mat Y \ (\mat I - \ve \beta \ve 1')
     = n \mu \ve 1' \ (\mat I - \ve \beta \ve 1')
@@ -1359,7 +1359,7 @@ $$
 }
 
 \comm {
-Let~$\mat Y \in \R^{n \times p}$ be a data matrix, 
+Let~$\mat Y \in \R^{n \times p}$ be a data matrix,
 s.t.
 $$ \mat Y = \ve y \ve 1' + \mat X, $$
 then the new attribute
@@ -1383,7 +1383,7 @@ $$ \var \mat Y \ve \beta = \var \mat X \ve \beta. $$
 Let~$\mat S \in \R^{n \times n}$ be a double-centered symmetric matrix.
 $$ rank(\mat S) \le n - 1. $$
 
-{\em Classical multidimensional scaling} (cMDS) is a procedure of the construction of a data matrix~$\mat Y \in \R^{n \times q}$, where $q \le n$, 
+{\em Classical multidimensional scaling} (cMDS) is a procedure of the construction of a data matrix~$\mat Y \in \R^{n \times q}$, where $q \le n$,
 such that $\mat S(\mat Y)$ approximates~$\mat S$.
 
 Let
@@ -1391,7 +1391,7 @@ $$ \mat B \in \mathfrak B (\mat S), $$
 $$ \ve \lambda \eqdef \lambda(\mat S), $$
 and let data matrix $\mat X \in \C^{n \times n}$ be defined as
 $$ \mat X \eqdef \mat B \sqrt{\ve \lambda^d}, $$
-then 
+then
 $$ \mat S = \mat S(\mat X). $$
 
 By~(\ref{sim2dataCentered}), $\bar {\mat X} = \ve 0$.
@@ -1422,7 +1422,7 @@ Since
 $$ \VC (\mat X_q)  = \frac 1 n \mat X_q' \mat X_q = \frac 1 n \mat I^q_n \ve \lambda^d \mat I^q_n = \frac 1 n \ve \lambda_q^d, $$
 the explained fraction of variance is
 $$ r_q = \frac {\trc \VC (\mat X_q)} {\trc \VC (\mat X_n)} = \frac {\trc \ve \lambda^d_q} {\trc \mat S} $$
-by~(\ref{explFracVar}) and~(\ref{trc_S_VC}). 
+by~(\ref{explFracVar}) and~(\ref{trc_S_VC}).
 
 $$ r_q = 1 - \min_{\mat Y \in \R^{n \times q}} d^2(\mat X, \mat Y) / \trc \mat S. $$
 It can be that $r_q \not \in [0,1]$.
@@ -1431,7 +1431,7 @@ $$ \trc \MDS_q(\mat S) \ \MDS_q'(\mat S) = \trc \mat X_q \mat X_q' = \trc \ve \l
 
 Converting a similarity vector~$\ve s$ into an object~$\ve x$:
 $$ \ve s = \mat X \ve x \implies \ve x = \sqrt{\ve \lambda^{-d}} \mat B' \ve s. $$
-\proof 
+\proof
 {
 $\mat B' \ve s = \mat B' \mat B \sqrt{\ve \lambda^d} \ve x = \sqrt{\ve \lambda^d} \ve x.$
 }
@@ -1448,7 +1448,7 @@ $$ s_q = 1 - \min_{\mat Y \in \R^{n \times q}} d^2(\mat S, \mat Y \mat Y') / \tr
 
 \comm
 {model: $\mat S = \mat Y \mat Y' + \mat {Noise}$, where $\mat{Noise} = \mat N \mat N'$, s.t.~$\mat N \in \C^{n \times p}$ and $\VC(\mat N) = 1 / (\trc \mat S) \ \mat I$.
-    
+
 The distribution of $\{\lambda_i : i\}$ should be a mixture of Zipf distributions with consecutive~$i$s: practical examples.
 The component with largest $\lambda$s is not noise.
 Hence the $q$ selection.
@@ -1464,12 +1464,12 @@ then their~$r_q$ is the same,
 $$ \lambda_M = n \ \lambda_P, $$
 $$ \mat Y' \mat B_M \sqrt{\lambda_M^{-d}} \in \mathfrak B_P, $$
 $$ \mat Y  \mat B_P \sqrt{\lambda_P^{-d}} \in \mathfrak B_M. $$
-If 
+If
 \begin{equation} \label{M2P_match}
-  \mat B_P = \mat Y' \mat B_M \sqrt{\lambda_M^{-d}}, 
+  \mat B_P = \mat Y' \mat B_M \sqrt{\lambda_M^{-d}},
 \end{equation}
 \begin{equation} \label{P2M_match}
-  \mat B_M = \mat Y  \mat B_P \sqrt{\lambda_P^{-d}} 
+  \mat B_M = \mat Y  \mat B_P \sqrt{\lambda_P^{-d}}
 \end{equation}
 then
 $$ \mat M \mat M' = \mat B_M \sqrt {\lambda_M^d} \sqrt {\lambda_M^d} \mat B_M'  = \mat Y \mat B_P \mat B_P' \mat Y' = \mat P \mat P', $$
@@ -1482,16 +1482,16 @@ Therefore, the attributes constructed by MDS are also referred to as principal c
 
 \subsubsection{Multidimensional scaling of attributes}
 
-If~$\mat Y \in \R^{m \times n}$ is a data matrix, $\bar {\mat Y} = \ve 0$ and $\mat S = \VC (\mat Y)$ 
+If~$\mat Y \in \R^{m \times n}$ is a data matrix, $\bar {\mat Y} = \ve 0$ and $\mat S = \VC (\mat Y)$
 then the objects of $\MDS(\mat S)$ are the attributes of~$\mat Y$.
 $$ \mat S \succeq 0. $$
 $$ \mat X_n = \cov \left(\mat Y, \ \PC_m(\mat Y) \sqrt{\ve \lambda^{-d}} \right), $$
 where $\ve \lambda \eqdef \ve \lambda(\VC(\mat Y))$.
 
-If the attributes of~$\mat Y$ are normalized 
+If the attributes of~$\mat Y$ are normalized
 then for $\mat Z \eqdef (1/\sqrt 2) \mat X_q$
 $$ \cor(\ve y^i, \ve y^j) \le 1 - d^2(\ve z_i, \ve z_j) $$
-by~(\ref{d2rho}), 
+by~(\ref{d2rho}),
 and this inequality is tight if $q = n$.
 
 
@@ -1505,21 +1505,21 @@ and this inequality is tight if $q = n$.
 Let a {\em clustered data} be
 $$ (\mat Y, \ve w_T) \eqdef
 \left (
-\left[ 
-\begin{array}{c} 
-\mat Y_1 \\ 
-\mat Y_2 \\ 
-\dots \\ 
-\mat Y_q 
-\end{array} 
+\left[
+\begin{array}{c}
+\mat Y_1 \\
+\mat Y_2 \\
+\dots \\
+\mat Y_q
+\end{array}
 \right],
-\left[ 
-\begin{array}{c} 
-\ve w_1 \\ 
-\ve w_2 \\ 
-\dots \\ 
-\ve w_q 
-\end{array} 
+\left[
+\begin{array}{c}
+\ve w_1 \\
+\ve w_2 \\
+\dots \\
+\ve w_q
+\end{array}
 \right]
 \right)
 $$
@@ -1534,33 +1534,33 @@ The {\em probability of object~$i$ to be in cluster~$k$}
 $$ p_{ik} \eqdef \frac {w_k[i]} {\sum_{l=1}^q w_l[i]}. $$
 
 Then
-\begin{equation*} 
-  \VC(\mat Y) = \sum_{k=1}^q p_k \VC(\mat Y_k). 
+\begin{equation*}
+  \VC(\mat Y) = \sum_{k=1}^q p_k \VC(\mat Y_k).
 \end{equation*}
 
 \bigskip
-Let $(\mat X, \ve w)$, where $\mat X \in \R^{n \times p}$, be a data, then a {\em clustering} of $(\mat X, \ve w)$ is a clustered data 
+Let $(\mat X, \ve w)$, where $\mat X \in \R^{n \times p}$, be a data, then a {\em clustering} of $(\mat X, \ve w)$ is a clustered data
 $$ (\mat T, \ve w_T) \eqdef
    \left (
-     \left[ 
-       \begin{array}{c} 
-         \mat X_1 \\ 
-         \mat X_2 \\ 
-         \dots \\ 
-         \mat X_q 
-       \end{array} 
+     \left[
+       \begin{array}{c}
+         \mat X_1 \\
+         \mat X_2 \\
+         \dots \\
+         \mat X_q
+       \end{array}
      \right],
-     \left[ 
-       \begin{array}{c} 
-          \ve w_1 \\ 
-          \ve w_2 \\ 
-          \dots \\ 
-          \ve w_q 
-       \end{array} 
+     \left[
+       \begin{array}{c}
+          \ve w_1 \\
+          \ve w_2 \\
+          \dots \\
+          \ve w_q
+       \end{array}
      \right]
    \right)
 $$
-where 
+where
 $$ \mat X_1 = \mat X_2 = \dots = \mat X_q = \mat X $$
 and
 $$ \sum_{i=1}^q \ve w_k = \ve w. $$
@@ -1575,14 +1575,14 @@ $$ \VC(\mat X) = \VC (\mat T). $$
 \bigskip
 Let~$\mat B_k \in \R^{n \times p}$ be a matrix where each row is~$\bar {\mat X}_k$,
 then the {\em between-clusters} clustered data matrix
-$$ \mat B(\mat T) \eqdef 
-     \left[ 
-       \begin{array}{c} 
-         \mat B_1 \\ 
-         \mat B_2 \\ 
-         \dots \\ 
-         \mat B_q 
-       \end{array} 
+$$ \mat B(\mat T) \eqdef
+     \left[
+       \begin{array}{c}
+         \mat B_1 \\
+         \mat B_2 \\
+         \dots \\
+         \mat B_q
+       \end{array}
      \right].
 $$
 $$ rank(\mat B(\mat T)) \le q. $$
@@ -1602,7 +1602,7 @@ $$ \VC(\mat W_k) = \frac 1 n (\mat X_k - \mat B_k)' (\mat X_k - \mat B_k) = \fra
 $$ \VC(\mat X) = \VC(\mat T) = \sum_{k=1}^q p_k \VC(\mat X_k) = \sum_{k=1}^q p_k \VC(\mat B_k) + \sum_{k=1}^q p_k \VC(\mat W_k) = \VC(\mat B(\mat T)) + \VC(\mat W(\mat T)). $$
 $$ \trc \VC(\mat X) = \trc \VC(\mat B(\mat T)) + \trc \VC(\mat W(\mat T)). $$
 A quality criterion, the explained fraction of variance of the clustering $(\mat T, \ve w_T)$ is
-$$ r_q = \frac {\trc \VC(\mat B(\mat T))} {\trc \VC(\mat X)} = \frac {\ve 1' \mat D^2_{\mat B} \ve 1} {\ve 1' \mat D^2 \ve 1} 
+$$ r_q = \frac {\trc \VC(\mat B(\mat T))} {\trc \VC(\mat X)} = \frac {\ve 1' \mat D^2_{\mat B} \ve 1} {\ve 1' \mat D^2 \ve 1}
 $$
 by~(\ref{sumD2}),
 which defines a {\em clustering for a distance matrix}.
@@ -1633,13 +1633,13 @@ $$ rank(\mat W(\mat T)) \le \sum_k rank(\mat W_k) \le n - q. $$
 
 
 \subsubsection{Canonical component analysis}
-By the canonical analysis (Section \ref{CanonicalAnalysis}), 
+By the canonical analysis (Section \ref{CanonicalAnalysis}),
 the local extrema of $\{\ve x' \VC(\mat B(\mat T)) \ve x \mid \ve x' \VC (\mat W(\mat T)) \ve x = 1\}$
 are the linear combinations of the attributes of~$\mat X$.
 The constructed attributes are referred to as {\em canonical components}
 \comm {extrema = maxima}
 $$ \CC_q \eqdef \mat X \mat R, $$
-where 
+where
 $$ \mat R \eqdef \mat U^{-1} \mat C, $$
 $$ \mat C \in \mathfrak B \left((\mat U')^{-1} \VC(\mat B(\mat T)) \mat U^{-1} \right) $$
 and $\VC(\mat W(\mat T)) = \mat U' \mat U$ is a Cholesky decomposition.
@@ -1665,9 +1665,9 @@ $$ \VC(\mat Y) = \VC(\mat B(\mat Y)) + \VC(\mat W(\mat Y)). $$
 \comm{relation to discriminant analysis}
 
 \bigskip
-If $\bar {\mat X} = \ve 0$, $q = 2$ and $\mat X \ne \mat 0$ 
+If $\bar {\mat X} = \ve 0$, $q = 2$ and $\mat X \ne \mat 0$
 then $rank (\mat B(\mat T)) = 1$
-and, removing zero eigenvalues, 
+and, removing zero eigenvalues,
 $$\VC(\mat B(\mat Y)) = \var \ve b(\ve y) = \lambda, $$
 $$ \var \ve b(\ve y) = - \ {\bar {\ve y}}_1 \ {\bar {\ve y}}_2. $$
 $$ \bar {\ve y} = 0. $$
@@ -1694,7 +1694,7 @@ $$ E \ge 0. $$
 
 A {\em best predictor}
 \begin{equation} \label{bestPredictor}
-f^* \eqdef \arg \min_{f \in F} E, 
+f^* \eqdef \arg \min_{f \in F} E,
 \end{equation}
 where $F$ is a set of predictors.
 
@@ -1704,21 +1704,21 @@ The metric $L_k$ will be referred to as the {\em prediction metric}.
 \subsection{Statistical models for prediction in metric $L_2$}
 If~$y_i$ are random variables and~$\hat y_i$ are constants then
 $$ \var \epsilon_i = \var y_i. $$
-If $\E \epsilon_i = 0$ then 
+If $\E \epsilon_i = 0$ then
 $$ \var \epsilon_i = \E \epsilon^2_i - (\E \epsilon_i)^2 = \E \epsilon^2_i. $$
-If 
+If
 \begin{equation} \label{lrContrib}
 w_i \eqdef \frac 1 {\var y_i}
 \end{equation}
 then all objects have the same contribution to~$E$.
 
-Alternatively, 
+Alternatively,
 if $\epsilon_i \sim N(0,\var \epsilon_i)$ and all $y_i$ are independent of each other
 then the negative logarithm of the likelihood of~$\ve y$ is
 $$ \sum_i \frac {\epsilon^2_i} {\var \epsilon_i} + const $$
 and the maximum likelihood estimate of the predictor is the best predictor~(\ref{bestPredictor}) with multiplicities~(\ref{lrContrib}).
 
-Since 
+Since
 $$ \sqrt{w_i} \ \epsilon_i = \frac {\epsilon_i} {\sqrt {\var \epsilon_i}}  \sim N(0,1), $$
 which can be used to find outlier~$y_i$.
 
@@ -1745,10 +1745,10 @@ If there is a dependence between~$\hat {\ve y}$ and~$\ve \epsilon$ then predicti
 The dependence can be found by plottig objects in the space $\{\hat {\ve y}, \ve \epsilon\}$.
 $$ \hat {\ve y}' \ve y = |\hat {\ve y}|^2. $$
 $$ |\ve \epsilon|^2 = \ve y' \ve \epsilon. $$
-The prediction error is the {\em root mean squared error, RMSE}. 
+The prediction error is the {\em root mean squared error, RMSE}.
 
-The {\em explained fraction of variance} 
-$$ r \eqdef \frac {|\hat {\ve y}|^2} {|\ve y|^2} = 1 - \frac {|\ve \epsilon|^2} {|\ve y|^2} = 1 - \frac {E^2} {|\ve y|^2 / n}, $$ 
+The {\em explained fraction of variance}
+$$ r \eqdef \frac {|\hat {\ve y}|^2} {|\ve y|^2} = 1 - \frac {|\ve \epsilon|^2} {|\ve y|^2} = 1 - \frac {E^2} {|\ve y|^2 / n}, $$
 which is between~0 and~1, cf.~(\ref{explFracVar}).
 The explained fraction of variance is a quality criterion.
 
@@ -1771,7 +1771,7 @@ Assuming $(\mat X' \mat X)^{-1}$ exists,
 with the running time $O(p^2 n)$.
 
 \begin{equation} \label{betaL2_stat}
-   \ve \beta = \VC^{-1} (\mat X) \ \cov(\mat X,[\ve y]). 
+   \ve \beta = \VC^{-1} (\mat X) \ \cov(\mat X,[\ve y]).
 \end{equation}
 $$ \ve \beta = \mat X^- \ve y. $$
 \comm{Which of generalized inverses}
@@ -1783,7 +1783,7 @@ The {\em coefficient of determination}
 $$ R^2 \eqdef 1 - \frac {|\ve \epsilon|^2 / n} {\var \ve y}. $$
 $$ \bar {\ve y} = 0 \implies r = R^2 = \cor^2 (\ve y, \hat {\ve y}). $$
 
-If $\bar {\mat X} = \ve 0$, $\bar {\ve y} = 0$ and $\forall i, j: i \ne j \implies \cov(\ve x_i, \ve x_j) = 0$ then 
+If $\bar {\mat X} = \ve 0$, $\bar {\ve y} = 0$ and $\forall i, j: i \ne j \implies \cov(\ve x_i, \ve x_j) = 0$ then
 \begin{equation} \label{betaIndep}
 \beta_i = \frac {\cov (\ve x_i, \ve y)} {\var \ve x_i} = \rho(\ve x_i, \ve y) \sqrt{\frac {\var \ve y} {\var \ve x_i}}
 \end{equation}
@@ -1804,7 +1804,7 @@ $$ \beta_1 = \bar {\ve y} - \beta_2 \bar {\ve x}. $$
 Let $A \eqdef \{i,j,\dots,q\} \subseteq [p]$,
 and $L_k$ be a prediction metric.
 
-If 
+If
 $$ \mat X_A \eqdef [\ve x^i, \ve x^j, ..., \ve x^q], $$
 $$ \ve \beta_A \eqdef [\ve \beta_i, \ve \beta_j, ..., \ve \beta_q], $$
 $$ \hat {\ve y}_A \eqdef \mat X_A \ve \beta_A, $$

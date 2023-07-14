@@ -20,11 +20,11 @@
 \setlength{\oddsidemargin}{.125in}
 \setlength{\textwidth}{6.25in}
 
-\input{c:/Users/brovervv/work/Maths/common.tex}
+\input{../../../common.tex}
 
 \providecommand{\keywords}[1]
 {
-  \small	
+  \small
   \textbf{\textit{Keywords---}} #1
 }
 
@@ -59,7 +59,7 @@ from \url {https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?SeqType\_s=Nucle
 and if the new sequences make up at least~1~\% of the old sequences
 they are added to the phylogenetic tree.
 
-Each sequence is identified by an NCBI accession 
+Each sequence is identified by an NCBI accession
 and has the following metadata fields:
 \begin{itemize}
   \item Host;
@@ -95,13 +95,13 @@ It is assumed that polyAs are trimmed correctly and, therefore, the sequences ha
 
 For each sequence raw mutations are replaced by {\em clean} mutations using the following rules:
 \begin{itemize}
-  \item For non-ambiguous raw mutations the clean mutations are the same. 
+  \item For non-ambiguous raw mutations the clean mutations are the same.
         These clean mutations are {\em present} in the sequence;
   \item Each ambiguous raw mutation is replaced by all non-ambiguous raw mutations of other sequences within the same segment.
         These clean mutations are {\em optional} in the sequence.
         In other words, these clean mutations may or may not be present in the sequence
         because they are located in low-quality regions of the sequence.
-  For example, the mutation ``atta1DEL'', 
+  For example, the mutation ``atta1DEL'',
   which means that the segment 1-4 of the reference sequence is missing,
   is replaced by the following clean optional mutations which are present in other sequences:
 $$\{\mathrm {tt2aa, tta2gct, t2g, t3a, t3g, INS3g, t3c, ta3gg, a4c, a4t, a4g}\}. $$
@@ -110,7 +110,7 @@ $$\{\mathrm {tt2aa, tta2gct, t2g, t3a, t3g, INS3g, t3c, ta3gg, a4c, a4t, a4g}\}.
 Clean mutations contain only non-ambiguous nucleotides.
 
 Let~$M$ be the set of all clean mutations in the available set~$S$ of sequences.
-Then the assignment of clean mutations to sequences defines a function 
+Then the assignment of clean mutations to sequences defines a function
 $$\chi : S, M \mapsto B_3,$$
 where $B_3 = \{present, optional, absent\}$.
 This means that each sequence has a 3-valued Boolean vector of clean mutations in~$M$.
@@ -146,7 +146,7 @@ and
 $v_{xy}$ is the dissimilarity variance of the pair $(x,y)$.
 This criterion is minimized.
 
-The expressions for~$d$ and~$v$ are chosen so that the miscongruence with reference classifications should be minimized, see~\cite{maxCongr}. 
+The expressions for~$d$ and~$v$ are chosen so that the miscongruence with reference classifications should be minimized, see~\cite{maxCongr}.
 The metadata fields were used as reference classifications.
 The results of the parameter optimization for the initial 2,849 sequences are in Table~\ref{tab:param}.
 
@@ -184,8 +184,8 @@ Only those trimmed sequences are used in the tree building which satisfy the fol
 
 After the tree has been optimized,
 it is rooted so that Collection Dates must be most consistent with the tree.
-This is achieved by solving a maximum parsimony problem 
-with Collection Dates rounded to 1st, 10th and 20th days 
+This is achieved by solving a maximum parsimony problem
+with Collection Dates rounded to 1st, 10th and 20th days
 and converted to 3-valued Boolean attributes.
 
 
@@ -214,8 +214,8 @@ see Fig.~\ref{fig:Tree}.
 
 
 Distribution of gained mononucleotide mutations of the tree of January 23, 2021 is in Table~\ref{tab:SNP}.
-This table shows a tendency for ``c'' and ``g'' to mutate into ``t'' 
-so that GC\% decreases with the rate of~0.04\% per year, 
+This table shows a tendency for ``c'' and ``g'' to mutate into ``t''
+so that GC\% decreases with the rate of~0.04\% per year,
 see Fig.~\ref{fig:CG}.
 
 \begin{table}[H]
@@ -241,7 +241,7 @@ t        & 703 &3855 &  527 & - \\
   \caption{Dependence of GC\% on Collection Date.}
   \label{fig:CG}
 \end{figure}
- 
+
 
 
 
@@ -278,7 +278,7 @@ Not applicable.
 \bibitem{Virus}
 Virus Variation Resource - improved response to emergent viral outbreaks.
 Hatcher EL, Zhdanov SA, Bao Y, Blinkova O, Nawrocki EP, Ostapchuck Y, Schäffer AA, Brister JR.
-Nucleic Acids Res. 2017 Jan 4;45(D1):D482-D490. doi: 10.1093/nar/gkw1065. Epub 2016 Nov 28. 
+Nucleic Acids Res. 2017 Jan 4;45(D1):D482-D490. doi: 10.1093/nar/gkw1065. Epub 2016 Nov 28.
 
 \bibitem{inc_ls_dist_tree}
 Brover~S.,
@@ -290,7 +290,7 @@ Building Large Phylogenetic Trees in Log-Linear Time,
 Brover~S.,
 Principle of a Congruence Maximization of a Phylogenetic Tree to Reference Classifications,
 {\it in print}
- 
+
 
 
 \end{thebibliography}

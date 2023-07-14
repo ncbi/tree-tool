@@ -21,11 +21,11 @@
 \setlength{\oddsidemargin}{.125in}
 \setlength{\textwidth}{6.25in}
 
-\input{c:/Users/brovervv/work/Maths/common.tex}
+\input{../../../common.tex}
 
 \providecommand{\keywords}[1]
 {
-  \small	
+  \small
   \textbf{\textit{Keywords---}} #1
 }
 
@@ -40,7 +40,7 @@
 
 \begin{abstract}
 A practical scalable algorithm to build large phylogenetic trees is described.
-The trees are based on dissimilarities between objects 
+The trees are based on dissimilarities between objects
 and use the least squares optimization criterion.
 Tree leaves and arcs have fitting criteria as the measures of correctness.
 The main idea of fast tree optimization is to extract subgraphs out of the whole tree, optimize them as separate small trees and then embed them back into the whole tree.
@@ -76,7 +76,7 @@ A global phylogenetic tree can be used:
   \item to quickly find genomes close to a specific genome.
 \end{itemize}
 
-Since there is no publicly available tool to build a global phylogenetic tree for, say, all GenBank bacterial genomes, 
+Since there is no publicly available tool to build a global phylogenetic tree for, say, all GenBank bacterial genomes,
 it was undertaken to create such a tool.
 
 The optimization criterion of a global tree was chosen to be the least squares distance criterion because
@@ -86,11 +86,11 @@ The optimization criterion of a global tree was chosen to be the least squares d
 \end{itemize}
 
 The currently available least squares distance tools PHYLIP~\cite{Phylip} and PAUP~\cite{PAUP} are too slow even for small trees.
-Therefore, a new tool, {\tt makeDistTree}, was created for fast building of small phylogenetic trees, 
+Therefore, a new tool, {\tt makeDistTree}, was created for fast building of small phylogenetic trees,
 and a system of tools with the main script {\tt distTree\_inc.sh} was created to build a phylogenetic tree
 for a large set of genomes or rRNA sequences using the dissimilarities between them.
 
-By the least squares optimization criterion, 
+By the least squares optimization criterion,
 the tree topology and arc lengths of the tree are optimized so that the tree distances should fit the dissimilarities.
 A weighted least squares criterion is used as the fitness measure.
 
@@ -122,7 +122,7 @@ Examples of large distance trees which have been built for major microbial appli
 The constants defined in this Section will used in the whole paper.
 The constants introduced in the next Sections will be used only in those Sections.
 
-Let~$S$ be a set of {\em objects}. 
+Let~$S$ be a set of {\em objects}.
 Each object has a unique name.
 
 $$ n = |S|.$$
@@ -132,7 +132,7 @@ $$ n = |S|.$$
 \label{sec:Dissim}
 
 Let $d:S,S \to \R$ be a {\em dissimilarity} function,
-which may not be defined for all pairs of objects. 
+which may not be defined for all pairs of objects.
 It is required that $d_{xy} = d_{yx}$ and $d_{xx} = 0$.
 
 $$ P = \{\{x,y\} : x \in S \And y \ \in S \And x \ne y \And d_{xy} \textrm{ is defined}\}. $$
@@ -146,12 +146,12 @@ Its transitive closure is an equivalence relation.
 Let~$\mathfrak I$ be the set of equivalence classes of this equivalence relation.
 
 The {\em neighbors} of an object $x \in S$ are the objects of~$S$ having a dissimilarity with~$x$:
-$$ N(x) = \{y \in S : \{x,y\} \in P \}.$$ 
+$$ N(x) = \{y \in S : \{x,y\} \in P \}.$$
 
 $$ \sum_{x \in S} |N(x)| = 2 p. $$
 $$ \textrm{mean } \{|N(x)| : x \in S \} = 2 \ p / n. $$
 
-A {\em hybrid triangle} is a triple of objects~$c$, $p_1$ and~$p_2$ for which the triangle inequality is violated: 
+A {\em hybrid triangle} is a triple of objects~$c$, $p_1$ and~$p_2$ for which the triangle inequality is violated:
 $$ h = \frac {d_{p_1 p_2}} {d_{p_1 c} + d_{p_2 c}} > 1. $$
 The object~$c$ is the hybrid triangle {\em child},
 and the objects~$p_1$ and~$p_2$ are the hybrid triangle {\em parents}.
@@ -165,7 +165,7 @@ For $tr \in \mathfrak T$
 \begin{align*}
 Tr_c(tr)     &= \{x \in \mathfrak T : x.p_1 = tr.p_1, x.p_2 = tr.p_2 \}, \\
 Tr_{p_1}(tr) &= \{x \in \mathfrak T : x.c = tr.c, x.p_2 = tr.p_2 \}, \\
-Tr_{p_2}(tr) &= \{x \in \mathfrak T : x.c = tr.c, x.p_1 = tr.p_1 \}. 
+Tr_{p_2}(tr) &= \{x \in \mathfrak T : x.c = tr.c, x.p_1 = tr.p_1 \}.
 \end{align*}
 %$$ H(\mathfrak T) = \bigcup_{tr \in \mathfrak T} H(tr). $$
 
@@ -198,7 +198,7 @@ $Path(x,y)$ is the set of arcs on the unique undirected path from node~$x$ to no
 
 Arcs~$j$ are assigned the {\em length}~$l_j > 0$.
 
-The {\em tree distance} between nodes~$x$ and~$y$ 
+The {\em tree distance} between nodes~$x$ and~$y$
 $$ l_{xy} = \sum_{j \in Path(x,y)} l_j. $$
 The tree distance satisfies the distance axioms.
 
@@ -206,10 +206,10 @@ The {\em topology} of a tree is the interior nodes and the arcs of the tree, dis
 
 A connected subgraph of a tree is a tree.
 
-The {\em boundary} of a connected tree subgraph~$A$, denoted by $Boundary(A)$, 
+The {\em boundary} of a connected tree subgraph~$A$, denoted by $Boundary(A)$,
 is a subset $B \subseteq A$ such that all nodes in~$B$ have degree~1 in~$A$.
 
-The nodes of the tree centered at node~$x$ with radius~$k$ 
+The nodes of the tree centered at node~$x$ with radius~$k$
 $$ Area(x,k) = \{y : |Path(x,y)| \le k\}. $$
 The nodes of~$Area(x,k)$ make up a connected subgraph.
 $$ Boundary(x,k) = Boundary(Area(x,k)). $$
@@ -237,22 +237,22 @@ All genogroups of the same barrier make up a partition of~$S$.
 \begin{enumerate}
   \item All nodes of a tree have degree~1 or at least~$3$, except the root.
   The root can have degree~2.
-  
+
   \item The degree of an interior node is at most~500.
         Practically it is close to~3, but can be higher if interior arcs are deleted in the middle of optimization.
-  
+
   \item $height(root)$ is $O(\log n)$.
    In other words, the tree should be balanced.
    This holds for evolutionary data with molecular clock.
-  
+
  %\item $\forall x \in S : l_{root,x} = \Theta(1)$ which is true for evolutionary data with molecular clock.
-  
+
   \item The computation of dissimilarities is an external process relative to the provided tools.
         It is required that the computation of~$d_{xy}$ should have time~$O(1)$.
         The dissimilarities used in this paper satisfy this requirement, see Appendix~\ref{app:data}.
-          
+
   \item The number of objects~$n$ is bounded by a very large number: $\log \log n = O(1)$.
-  
+
   \item Allocating memory of~$p$ bits and setting all bits to~0 takes time~$O(1)$.
     \label{asmp_alloc}
 \end{enumerate}
@@ -261,12 +261,12 @@ Consequences from the assumptions:
 \begin{itemize}
   \item The number of the nodes of the tree is~$O(n)$
         and the number of the arcs is~$O(n)$.
-  
+
   \item For a constant~$k$, $|Area(x,k)| = O(1)$.
   \item The time to compute $Path(x,y)$ is $O(\log n)$ and $|Path(x,y)| = O(\log n)$.
   \item The cumulative time to compute $Pairs(j)$ is~$O(p \log n)$.
   \begin{equation} \label{eq:Pairs}
-     \sum_{j \textrm{ is not a leaf arc}} |Pairs(j)| = O(p \log n). 
+     \sum_{j \textrm{ is not a leaf arc}} |Pairs(j)| = O(p \log n).
   \end{equation}
   Average $|Pairs(j)|$ is~$O(p/n \log n)$.
 \end{itemize}
@@ -296,16 +296,16 @@ The relative criterion is between~0 and~1:
 
 If the dissimilarities~$d_{xy}$ are the realizations of independent random variables
 \begin{equation} \label{eq:model}
-  D_{xy} \sim Normal \ (l_{xy}, \alpha \ v(l_{xy})) 
+  D_{xy} \sim Normal \ (l_{xy}, \alpha \ v(l_{xy}))
 \end{equation}
 for $\alpha > 0$,
 then the likelihood maximization is equivalent to the minimization of
   $$  \frac {|\ve \epsilon|^2} \alpha + \sum_{\{x,y\} \in P} \ln v(l_{xy}) + p \ln \alpha, $$
-which is minimized at 
+which is minimized at
 $$ \alpha = \frac {|\ve \epsilon|^2} p, $$
 and, therefore, is equivalent to the minimization of
 \begin{equation} \label{eq:MLE_crit}
-  \ln \frac {|\ve \epsilon|^2} p + \frac 1 p \sum_{\{x,y\} \in P} \ln v(l_{xy}). 
+  \ln \frac {|\ve \epsilon|^2} p + \frac 1 p \sum_{\{x,y\} \in P} \ln v(l_{xy}).
 \end{equation}
 
 Criterion~(\ref{eq:MLE_crit}) is minimized approximately
@@ -323,10 +323,10 @@ $$ \forall \ \{x,y\} \in P : w_{xy} \ (d_{xy} - l_{xy})^2 \sim \alpha \ \chi^2(1
 
 \subsection{Object and arc criteria}
 
-The absolute criterion can be split per object or arc, 
+The absolute criterion can be split per object or arc,
 and normalized object or arc criteria can be defined based on their distributions.
-This allows computing the outlier $p$-values 
-and the degrees of certainty 
+This allows computing the outlier $p$-values
+and the degrees of certainty
 of leaves and arcs in the tree.
 
 The {\em absolute object criterion} of object~$x$ are the components of $|\ve \epsilon|^2$ involving only the object~$x$:
@@ -334,7 +334,7 @@ $$ |\ve \epsilon_x|^2 = \sum_{y \in N(x)} w_{xy} \ (d_{xy} - l_{xy})^2. $$
 $$ \sum_{x \in S} |\ve \epsilon_x|^2 = 2 |\ve \epsilon|^2. $$
 
 Since $\var \chi^2(1) = 2$,
-the {\em normalized object criterion} of object~$x$ 
+the {\em normalized object criterion} of object~$x$
 %$$ \frac {|\ve \epsilon_x|^2 \ / \ |N(x)|} {|\ve \epsilon|^2 / p} $$
 $$ \frac {|\ve \epsilon_x|^2 / \alpha - |N(x)|} {\sqrt {2 \ |N(x)|}} \sim Normal(0,1) $$
 for $|N(x)| \ll p$ and large~$p$,
@@ -349,23 +349,23 @@ $$ def(x) = \max_{y \in N(x)} def(x,y). $$
 
 The {\em relative object deformation} of object~$x$ is defined as
 \begin{equation} \label{max_chi2}
- \frac {def(x)} {\textrm{mean } \{def(y,z) : \{y,z\} \in P\}} \sim \max \{Y_i : 1 \le i \le \textrm{mean } \{|N(y)| : y \in S \} \}, 
+ \frac {def(x)} {\textrm{mean } \{def(y,z) : \{y,z\} \in P\}} \sim \max \{Y_i : 1 \le i \le \textrm{mean } \{|N(y)| : y \in S \} \},
 \end{equation}
 where~$Y_i$ are i.i.d.~random variables distributed as~$\chi^2(1)$.
 
-The {\em absolute arc criterion} of arc~$j$ are the components of $|\ve \epsilon|^2$ involving only the arc~$j$ 
+The {\em absolute arc criterion} of arc~$j$ are the components of $|\ve \epsilon|^2$ involving only the arc~$j$
 multiplied by the proportion of $l_j$ in the distances:
 $$ |\ve \epsilon_j|^2 = \sum_{\{x,y\} \in Pairs(j)} w_{xy} (d_{xy} - l_{xy})^2 \ \frac {l_j} {l_{xy}}. $$
 $$ \sum_{j \in T} |\ve \epsilon_j|^2 = |\epsilon|^2. $$
 
 The {\em absolute arc error density} of arc~$j$ is absolute arc criterion divided by the arc length: $|\ve \epsilon_j|^2 / l_j$.
 
-The {\em normalized arc error density} of arc~$j$ is defined as 
-$$   \frac {|\ve \epsilon_j|^2 / (\alpha \ l_j) - \sum_{\{x,y\} \in Pairs(j)} 1 / l_{xy}} 
-           {\sqrt {2 \sum_{\{x,y\} \in Pairs(j)} 1 / l^2_{xy}}} 
-   = \frac {\sum_{\{x,y\} \in Pairs(j)} (w_{xy} (d_{xy} - l_{xy})^2 / \alpha - 1) / l_{xy}} 
-           {\sqrt {2 \sum_{\{x,y\} \in Pairs(j)} 1 / l^2_{xy}}} 
-   \sim Normal(0,1) 
+The {\em normalized arc error density} of arc~$j$ is defined as
+$$   \frac {|\ve \epsilon_j|^2 / (\alpha \ l_j) - \sum_{\{x,y\} \in Pairs(j)} 1 / l_{xy}}
+           {\sqrt {2 \sum_{\{x,y\} \in Pairs(j)} 1 / l^2_{xy}}}
+   = \frac {\sum_{\{x,y\} \in Pairs(j)} (w_{xy} (d_{xy} - l_{xy})^2 / \alpha - 1) / l_{xy}}
+           {\sqrt {2 \sum_{\{x,y\} \in Pairs(j)} 1 / l^2_{xy}}}
+   \sim Normal(0,1)
 $$
 for $|Pairs(j)| \ll p$ and large~$p$.
 
@@ -383,7 +383,7 @@ The dissimilarity variance functions used in the provided tools are in Table~\re
     Function name & $v(l)$  \\
     \hline
     Exponential & $e^l$ \\
-    Linear-exponential & $e^l-1$ \\  
+    Linear-exponential & $e^l-1$ \\
     Power (with parameter~$x$) & $l^x$ \\
     \hline
   \end{tabular}
@@ -394,10 +394,10 @@ The dissimilarity variance functions used in the provided tools are in Table~\re
 The linear-exponential function is approximately linear if $l \approx 0$.
 Its model is in Appendix~\ref{app:dissimVarLinExp}.
 
-For power dissimilarity variance function 
-multiplying~$l$ by a positive constant multiplies~$|\ve \epsilon|^2$ by a positive constant, 
+For power dissimilarity variance function
+multiplying~$l$ by a positive constant multiplies~$|\ve \epsilon|^2$ by a positive constant,
 which preserves the tree topology.
-However, for the exponential and linear-exponential dissimilarity variance functions 
+However, for the exponential and linear-exponential dissimilarity variance functions
 multiplying~$l$ by a positive constant can change the tree topology.
 
 
@@ -406,22 +406,22 @@ multiplying~$l$ by a positive constant can change the tree topology.
 For some pairs of objects their dissimilarity variances can be~0, which makes their weights infinite,
 and, therefore, $|\ve \epsilon|^2$ infinite.
 
-For indiscernible objects 
+For indiscernible objects
 this occurs always if the dissimilarity variance is $v(d_{xy})$,
 and may happen if the dissimilarity variance is $v(l_{xy})$.
-Therefore, in this work 
+Therefore, in this work
 the pairs of indiscernible objects are removed from~$P$, and therefore, from~$|\ve \epsilon|^2$,
 and for indiscernible objects a fixed topology is created:
 for each non-singleton indiscernibility class~$I \in \mathfrak I$ a subtree of depth~1 is created whose set of leaves is~$I$ and whose arcs have length~0.
 Then the tree model is optimized only for discernible objects
-and 
-$$ |\ve \epsilon|^2 \ge \sum_{\{x,y\} \in P \ : \ x,y \in I, I \in \mathfrak I} w_{xy} \ d^2_{xy}. $$ 
+and
+$$ |\ve \epsilon|^2 \ge \sum_{\{x,y\} \in P \ : \ x,y \in I, I \in \mathfrak I} w_{xy} \ d^2_{xy}. $$
 
 If the dissimilarity variance is $v(l_{xy})$,
 then each time before the weights~$w_{xy}$ are computed,
 the arc of each leaf~$x$ is extended by~$\lambda_x$,
-where 
-$$ \lambda_x = 
+where
+$$ \lambda_x =
   \begin{cases}
     0, & \textrm {if } Z_x = \emptyset, \\
     \frac 1 2 \min Z_x, & \textrm {else},
@@ -448,14 +448,14 @@ Let~$A$ be a connected subgraph of a tree model~$T$.
 
 Let~$q, r \in Boundary(A)$, such that $q \ne r$.
 Let~$T_q$ be the maximal subgraph of~$T$ intersecting with~$A$ in~$\{q\}$,
-and  
+and
 let~$T_r$ be the maximal subgraph of~$T$ intersecting with~$A$ in~$\{r\}$.
 The graphs~$T_q$ and~$T_r$ are trees.
 Let $Q = Leaves(T_q) \setminus \{q\}$,
 and $R = Leaves(T_r) \setminus \{r\}$.
 $Q \subseteq S$ and $R \subseteq S$.
 
-Consider the components of the absolute criterion~$|\ve \epsilon|^2$, 
+Consider the components of the absolute criterion~$|\ve \epsilon|^2$,
 where $x \in Q$ and~$y \in R$,
 then
 $$ d_{xy} - l_{xy} = d_{xy} - (l_{xq} + l_{qr} + l_{ry}) = (d_{xy} - l_{xq} - l_{ry}) - l_{qr}. $$
@@ -463,9 +463,9 @@ $$ d_{xy} - l_{xy} = d_{xy} - (l_{xq} + l_{qr} + l_{ry}) = (d_{xy} - l_{xq} - l_
 Let vector $\ve d_{qr}$ indexed by~$x$ and~$y$ be defined as
 $$\ve d_{qr}[x,y] = d_{xy} - l_{xq} - l_{ry},$$
 then
-$$ \sum_{x \in Q, y \in R} w_{xy} \ (d_{xy} - l_{xy})^2 
+$$ \sum_{x \in Q, y \in R} w_{xy} \ (d_{xy} - l_{xy})^2
      = \sum_{x \in Q, y \in R} w_{xy} \ (\ve d_{qr}[x,y] - l_{qr})^2
-     = w_{qr} \left(\bar {\ve d}_{qr} - l_{qr} \right)^2 + \sum_{x \in Q, y \in R} w_{xy} \ (\ve d_{qr}[x,y] - \bar {\ve d}_{qr})^2, 
+     = w_{qr} \left(\bar {\ve d}_{qr} - l_{qr} \right)^2 + \sum_{x \in Q, y \in R} w_{xy} \ (\ve d_{qr}[x,y] - \bar {\ve d}_{qr})^2,
 $$
 where
 $$ \bar {\ve d}_{qr} = \frac {\sum_{x \in Q, y \in R} w_{xy} \ \ve d_{qr}[x,y]} {\sum_{x \in Q, y \in R} w_{xy}} $$
@@ -479,14 +479,14 @@ Thus the optimization of subgraph~$A$ consists of the following steps:
 \begin{enumerate}
   \item Compute~$\bar {\ve d}_{qr}$ and $w_{qr}$ for all $q,r \in Boundary(A)$;
     \label{alg:subgrDissim}
-  \item Create a new tree~$T_A$ isomorphic to~$A$, mapping $Leaves(T_A)$ to $Boundary(A)$;  
-    \label{alg:subgrCreate} 
+  \item Create a new tree~$T_A$ isomorphic to~$A$, mapping $Leaves(T_A)$ to $Boundary(A)$;
+    \label{alg:subgrCreate}
   \item Optimize~$T_A$ with dissimilarities~$\bar {\ve d}_{qr}$ and weights~$w_{qr}$;
-    \label{alg:subgrOptim} 
+    \label{alg:subgrOptim}
   \item Make~$A$ to be isomorphic to~$T_A$;
-    \label{alg:subgrReverse} 
+    \label{alg:subgrReverse}
   \item Update $Pairs(j)$ for $j \in A$.
-    \label{alg:subgrPairs} 
+    \label{alg:subgrPairs}
 \end{enumerate}
 
 At step~\ref{alg:subgrOptim}, if the number of interior nodes of~$T_A$ is more than~3 then local topology rearrangements are used to optimize the topology of~$T_A$.
@@ -500,7 +500,7 @@ Therefore, the average time to do this is~$O(|A| \ p/n \ \log n \ \log |A|)$.
 Step~\ref{alg:subgrPairs} requires the allocation of~$p$ bits and setting them to~0.
 Using Assumption~\ref{asmp_alloc}, the average time of this step is~$O(|A| \ p/n \ \log n)$.
 
-If $|A| = O(1)$, 
+If $|A| = O(1)$,
 then steps~\ref{alg:subgrCreate}-\ref{alg:subgrReverse} have time~$O(1)$
 and optimizing~$A$ has time~$O(p / n \ \log n)$.
 
@@ -508,8 +508,8 @@ and optimizing~$A$ has time~$O(p / n \ \log n)$.
 \subsection{Optimization by covering subgraphs}
 \label{sec:optimizeSubgraphs}
 
-Cover a tree by connected subgraphs $Area(x,k)$, where 
-$$ k = \max \ \{k' : 1 \le k' \le 5, \ |Area(x,k')| \le 500 \}, $$ 
+Cover a tree by connected subgraphs $Area(x,k)$, where
+$$ k = \max \ \{k' : 1 \le k' \le 5, \ |Area(x,k')| \le 500 \}, $$
 and optimize all subgraphs by the algorithm of Section~\ref{sec:optimizeSubgraph}.
 
 Since each subgraph has size~$O(1)$,
@@ -536,7 +536,7 @@ The node~$b$ of this arc will be referred to as the {\em base}.
 Let point~$x \in [b,c]$, meaning that arc~$(b,c)$ is replaced by two consecutive arcs~$(b,x)$ and~$(x,c)$.
 The object~$a$ is attached by the arc~$(a,x)$.
 
-$$ S_{(b,x)} \cup S_{(x,c)} = N(a), $$ 
+$$ S_{(b,x)} \cup S_{(x,c)} = N(a), $$
 $$ S_{(b,x)} \cap S_{(x,c)} = \emptyset. $$
 
 Assume $S_{(b,x)} \ne \emptyset$, which is equivalent to $N(a) \cap Descendants(b) \ne \emptyset$.
@@ -549,17 +549,17 @@ u_i =
   -1, & \text{ if } i \in S_{(x,c)}.
 \end{cases}
 \end{equation*}
-The computation of~$\ve u$ has time~$O(|N(a)| \ \log n)$. 
+The computation of~$\ve u$ has time~$O(|N(a)| \ \log n)$.
 This is the slowest step of this procedure.
 
-For $y \in S$ let 
+For $y \in S$ let
 $$ {\ve l}(y) = \left(l_{yi}: i \in N(a) \right) $$
 and let
 $$ \ve \delta(y) = \ve d - {\ve l}(y),$$
-then attaching leaf~$a$ at the point~$x \in [b,c]$ increases the absolute criterion by 
+then attaching leaf~$a$ at the point~$x \in [b,c]$ increases the absolute criterion by
 $$
 |\ve \epsilon_a|^2(b) = \sum_{i \in N(a)} w_{ai} \left(d_{ai} - \left[l_{bi} + l_{bx} u_i + l_{ax}\right] \right)^2
-= \sum_{i \in N(a)} w_{ai} \left(\delta_i(b) - l_{bx} u_i - l_{ax} \right)^2. 
+= \sum_{i \in N(a)} w_{ai} \left(\delta_i(b) - l_{bx} u_i - l_{ax} \right)^2.
 $$
 This is a convex function of $l_{bx}$ and $l_{ax}$.
 
@@ -568,12 +568,12 @@ $$ \bar {\ve \delta}(y) = \frac {\sum_{i \in N(a)} w_{ai} \ \delta_i(y)} {\sum_{
 $$ \bar {\ve u} = \frac {\sum_{i \in N(a)} w_{ai} \ u_i} {\sum_{i \in N(a)} w_{ai}}. $$
 
 If $S_{(x,c)} \ne \emptyset$ then $\var \ve u > 0$ and~$|\ve \epsilon_a|^2(b)$ attains minimum for unconstrained $l_{bx}$ and $l_{ax}$ at
-$$ l_{bx} = \frac {\cov (\ve \delta(b), {\ve u})} {\var \ve u} 
-= \frac {\sum_{i \in N(a)} w_{ai} \ (\delta_i(b) - \bar {\ve \delta}(b)) \ (u_i - \bar {\ve u})} {\sum_{i \in N(a)} w_{ai} \ (u_i - \bar {\ve u})^2}, 
+$$ l_{bx} = \frac {\cov (\ve \delta(b), {\ve u})} {\var \ve u}
+= \frac {\sum_{i \in N(a)} w_{ai} \ (\delta_i(b) - \bar {\ve \delta}(b)) \ (u_i - \bar {\ve u})} {\sum_{i \in N(a)} w_{ai} \ (u_i - \bar {\ve u})^2},
 $$
 $$ l_{ax} = \bar {\ve \delta}(b) - l_{bx} \ \bar {\ve u}. $$
 
-If the constraints $0 \le l_{bx} \le l_{bc}$ and $l_{ax} \ge 0$ are not satisfied, 
+If the constraints $0 \le l_{bx} \le l_{bc}$ and $l_{ax} \ge 0$ are not satisfied,
 then~$|\ve \epsilon_a|^2(b)$ attains a global minimum for $x \in [b,c]$ in one of the cases:
 \begin{itemize}
   \item $x = a$: $l_{ax} = 0$, $l_{bx} = \min \left\{\max \left\{\frac {\sum_{i \in N(a)} w_{ai} \ \delta_i(b) \ u_i} {\sum_{i \in N(a)} w_{ai}}, 0\right\}, l_{bc}\right\}$;
@@ -581,12 +581,12 @@ then~$|\ve \epsilon_a|^2(b)$ attains a global minimum for $x \in [b,c]$ in one o
   \item $x = c$: $l_{ax} = \max \left\{\bar {\ve \delta}(c), 0\right\}$, $l_{bx} = l_{bc}$.
 \end{itemize}
 
-If $S_{(x,c)} = \emptyset$ then a global minimum for $x \in [b,c]$ is attained at 
+If $S_{(x,c)} = \emptyset$ then a global minimum for $x \in [b,c]$ is attained at
 $x = b$, $l_{ax} = \max \left\{\bar {\ve \delta}(b), 0\right\}$ and $l_{bx} = 0$.
 
-Now the algorithm of a best placement of an object in the tree 
+Now the algorithm of a best placement of an object in the tree
 consists in finding $$\arg \min_{b \in B} |\ve \epsilon_a|^2(b)$$ by examining all arcs of the tree restricted to~$B$,
-where 
+where
 $$ B = \{b : N(a) \cap Descendants(b) \ne \emptyset \} $$
 is the set of possible base nodes.
 $$ |B| = O(|N(a)|). $$
@@ -601,7 +601,7 @@ $$ \ve \delta(c) = \ve \delta(b) - l_{bc} \ \ve u. $$
 \label{sec:optReinsert}
 
 Let~$a$ be an interior node of~$T$.
-Consider a subgraph~$A$ of~$T$ such that 
+Consider a subgraph~$A$ of~$T$ such that
 $$ Leaves(A) = \{a\} \cup Leaves(T) \setminus Descendants(a). $$
 Delete the leaf~$a$ from~$A$ and find a best placement of~$a$ in~$A$.
 That will find a best position of the subtree rooted at~$a$ in~$T$.
@@ -623,7 +623,7 @@ The algorithm:
     \label{alg:reinsertApply}
 \end{enumerate}
 
-Step~\ref{alg:reinsertInit} finds $Leaves(A)$ and traverses $Pairs(a)$ which has time $O(n + p \log(n) / n)$ 
+Step~\ref{alg:reinsertInit} finds $Leaves(A)$ and traverses $Pairs(a)$ which has time $O(n + p \log(n) / n)$
 and cumulative time $O(n \log n + (p \log(n) / n) \times n) = O(p \ \log n)$.
 
 Step~\ref{alg:reinsertFind} has time~$O(\log^3 n)$.
@@ -656,7 +656,7 @@ Such objects are identified before the tree building and they are not included i
 
 \subsection{Dissimilarity outliers}
 
-The {\em dissimilarity outliers}, consisting of {\em alien outliers} and {\em incomparable outliers}, are the objects which cannot be added to the tree because their dissimilarities cannot be computed, 
+The {\em dissimilarity outliers}, consisting of {\em alien outliers} and {\em incomparable outliers}, are the objects which cannot be added to the tree because their dissimilarities cannot be computed,
 see Section~\ref{sec:addNew}.
 
 
@@ -690,7 +690,7 @@ The genomes where one of the attributes has e-value below $0.01$ are {\em genogr
 \label{sec:hybrid}
 
 The {\em hybrid outliers} are the objects which cause the violation of the triangle inequality.
-The hybrid triangles~$tr$ with hybridness above a {\em minimum hybridness} threshold are found, 
+The hybrid triangles~$tr$ with hybridness above a {\em minimum hybridness} threshold are found,
 and their members~$H(tr)$ are identified as hybrid outliers.
 %The hybrid triangles must be consistent with each other:
 %$$ \forall tr_1, tr_2 \in \mathfrak T : H(tr_1) \cap \overline H(tr_2) = \emptyset. $$
@@ -699,7 +699,7 @@ and their members~$H(tr)$ are identified as hybrid outliers.
 Hybrid outliers may be the product of biological hybridization, phylogenetically distant genomes containing the same mobilome, or sequencing contamination artifacts.
 
 It is impossible to determine exactly which objects of a hybrid triangle~$tr$ are hybrid outliers using only dissimilarity data.
-Therefore, the set~$H(tr)$ is a heuristic, 
+Therefore, the set~$H(tr)$ is a heuristic,
 and hybrid outliers require a review outside of the tree building process and a reclassification into quality outliers and non-outliers.
 
 Some examples of the structure of the members of hybrid triangles are in Table~\ref{tab:HybTr}.
@@ -722,7 +722,7 @@ $|Tr_c(tr)|$, $|Tr_{p_1}(tr)|$, $|Tr_{p_2}(tr)|$, $|e_c|^2$, $|e_{p_1}|^2$, $|e_
   \label{tab:HybTr}
 \end{table}
 
-Since examining all triangles takes time~$O(n^3)$, 
+Since examining all triangles takes time~$O(n^3)$,
 only a subset of hybrid triangles is found with running time artificially limited to~$O(p^2/n)$.
 
 Though the existence of the hybrid triangles is independent of the tree,
@@ -737,7 +737,7 @@ and therefore, requires a tree to be performed.
 Given a dissimilarity matrix for a set of objects~$S$ with possibly missing dissimilarities,
 a tree is built by these steps:
 \begin{enumerate}
-  \item Build a tree model for~$S$ by the nearest neighbor-joining algorithm, \cite{Keppler}. 
+  \item Build a tree model for~$S$ by the nearest neighbor-joining algorithm, \cite{Keppler}.
     \label{alg:NJ}
   \item Set $w_{xy} = 1/v(d_{xy})$ as an approximation.
   \item Arc length optimization:
@@ -784,7 +784,7 @@ As a small tree is built for this data with {\tt iter\_max = 20}, the decrease o
   \label{tab:crit}
 \end{table}
 
-Since step~\ref{alg:NJ} is slowest, the running time is $O\left(n^3\right)$. 
+Since step~\ref{alg:NJ} is slowest, the running time is $O\left(n^3\right)$.
 Space is $O\left(n^2\right)$.
 
 %The data flow depicted in Fig.~\ref{fig:dataflow} triages the reservoir objects into those landing in the tree and outliers:
@@ -797,9 +797,9 @@ Space is $O\left(n^2\right)$.
 
 \section {Building a large tree}
 
-Let~$\mathfrak S$ be a {\em reservoir} of objects, 
+Let~$\mathfrak S$ be a {\em reservoir} of objects,
 and~$S$ be a set of objects for which an initial tree has been built.
-After that a large tree is built incrementally by moving objects from~$\mathfrak S$ to~$S$, 
+After that a large tree is built incrementally by moving objects from~$\mathfrak S$ to~$S$,
 computing dissimilarities for the added objects, optimizing the tree for~$S$
 and removing outlier objects from~$S$.
 
@@ -821,14 +821,14 @@ The initial tree is computed by these steps:
 \subsection{Necessary neighbors}
 \label{sec:necessaryObjects}
 
-Let a {\em representative object} for a tree node~$x$ and seed $s \ge 0$ be a function 
+Let a {\em representative object} for a tree node~$x$ and seed $s \ge 0$ be a function
 $$ repr(x,s) \in Descendants(x) \cap Leaves(T). $$
 If $s > 0$ then this function is deterministic, if $s = 0$ then this function is random.
 Computing this function has time~$O(\log n)$.
 
 Let the set of {\em necessary neighbors} of an object~$a$ be defined as
 $$ N_n(a) = \{repr(x,s) : y \in Ancestors(a), x \in Boundary(y,k_1)\} \cup \{repr(x,s) : x \in Boundary(a,k_2)\}, $$
-where 
+where
 $n$~is the number of objects in the tree,
 $s$~is a function of the name of~$a$ (e.g., a hash code) and $k_2 \ge k_1 \ge 1$.
 In this work $k_1=3$ and $k_2=10$.
@@ -852,12 +852,12 @@ The computation of~$N_0(a)$ for genomes and rRNA sequences is described in Appen
 
 The algorithm of adding a new object~$a$ to the tree:
 \begin{enumerate}
-  \item $N = N_0(a)$; 
+  \item $N = N_0(a)$;
   \item Iterate $\lfloor \ln n + 3 \rfloor$  times:
   \begin{enumerate}
-    \item Compute dissimilarities $d_{ax}$, where $x \in N$; 
+    \item Compute dissimilarities $d_{ax}$, where $x \in N$;
     \item Set $w_{ax} = 1/v(d_{ax})$ as approximation.
-    \item For $B = \{b : N \cap Descendants(b) \ne \emptyset \}$ find a best placement of~$a$ in the tree, see Section~\ref{sec:bestInsertion}: 
+    \item For $B = \{b : N \cap Descendants(b) \ne \emptyset \}$ find a best placement of~$a$ in the tree, see Section~\ref{sec:bestInsertion}:
           $$b^* = \arg \min_{b \in B} |\ve \epsilon_a|^2(b). $$
     \item Compute~$N_n(a)$, which equals~$N_n(b^*)$;
     \item If~$N_n(a) \subseteq N$ then stop;
@@ -888,7 +888,7 @@ Let $r > 1$ be the {\em incrementation rate}.
 In this work $r = 1.015$.
 
 \begin{enumerate}
-  \item %$\mathfrak T = \emptyset$; 
+  \item %$\mathfrak T = \emptyset$;
         $G = \emptyset;  /* \textrm {genogroup outliers} */$
   \item while $\mathfrak S \ne \emptyset$ do:
     \label{alg:iter}
@@ -906,9 +906,9 @@ In this work $r = 1.015$.
           \item Set $w_{xy}$.
           \item Optimize by covering subgraphs, see Section~\ref{sec:optimizeSubgraphs}.
              \label{alg:stnd}
-          \item 
+          \item
             \label{alg:hybrid}
-            Find hybrid outliers, see Section~\ref{sec:hybrid}.\par 
+            Find hybrid outliers, see Section~\ref{sec:hybrid}.\par
             %store them in~$\mathfrak T'$; $\mathfrak T = \mathfrak T \cup \mathfrak T'$; \par
             For each outlier~$x$: %$x \in H(\mathfrak T')$
             \begin{enumerate}
@@ -918,21 +918,21 @@ In this work $r = 1.015$.
         \end{enumerate}
       \item Find criterion outliers, see Section~\ref{sec:fitnessOutliers}; delete one worst criterion outlier from~$S$ and~$T$;
         \label{alg:criterionOutlier}
-      \item 
+      \item
         \label{alg:deformationOutlier}
         Find deformation outliers, see Section~\ref{sec:fitnessOutliers}; delete one worst deformation outlier from~$S$ and~$T$;
       \item Find root;
         \label{alg:root}
       \item Find genogroup outliers, see Section~\ref{sec:genogroupOutliers}, and store them in~$G$;
         \label{alg:genogr}
-     %\item ``Unhybrid'': for each $tr \in \mathfrak T$, if $\exists \ tr' \in \mathfrak T : \overline H(tr) \cap H(tr') \ne \emptyset$ then 
+     %\item ``Unhybrid'': for each $tr \in \mathfrak T$, if $\exists \ tr' \in \mathfrak T : \overline H(tr) \cap H(tr') \ne \emptyset$ then
            %remove~$tr$ from~$\mathfrak T$ and move $H(tr)$ from hybrid outliers to~$\mathfrak S$;
        %\label{alg:unhybrid}
       \item \label{alg:addNecessary}
-         For each $x \in Leaves(T):$ 
+         For each $x \in Leaves(T):$
          \begin{enumerate}
-           \item compute missing dissimilarities $d_{xy}$ for $y \in N_n(x)$; 
-           \item $N(x) = N(x) \cup N_n(x)$;  
+           \item compute missing dissimilarities $d_{xy}$ for $y \in N_n(x)$;
+           \item $N(x) = N(x) \cup N_n(x)$;
          \end{enumerate}
     \end{enumerate}
   \item Delete the objects in~$G$ from~$S$ and~$T$, add them to genogroup outliers;
@@ -942,14 +942,14 @@ In this work $r = 1.015$.
 
 Steps~\ref{alg:load}, \ref{alg:reinsert}, \ref{alg:stnd} and~\ref{alg:subgrFinal} use~15 threads.
 
-Let~$n_i$ and~$p_i$ be the tree size and the number of dissimilarities respectfully at iteration~$i$ of step~\ref{alg:iter}, 
+Let~$n_i$ and~$p_i$ be the tree size and the number of dissimilarities respectfully at iteration~$i$ of step~\ref{alg:iter},
 and let $n = |\mathfrak S|$ be reservoir size.
 
 Step~\ref{alg:addNew} has time~$O(n_i \log^4 n_i)$.
 
 Steps~\ref{alg:load} has time~$O(p_i \log n_i)$, see Section~\ref{sec:assum}.
 
-Step~\ref{alg:reinsert} has time 
+Step~\ref{alg:reinsert} has time
 $ O((p_i + n_i \log^2 n_i + |B| \ p_i/n_i \log n_i) \log n_i) = O((n_i \log n_i + p_i) \log^2 n_i)$ because $|B| = O(n_i)$.
 
 Steps~\ref{alg:stnd} has time~$O(p_i \log n_i)$.
@@ -968,7 +968,7 @@ where the slowest steps are~\ref{alg:addNew}, \ref{alg:reinsert} and~\ref{alg:hy
 
 Step~\ref{alg:subgrFinal} has time $O(p \log n)$.
 
-When the algorithm stops, 
+When the algorithm stops,
 the number of iterations made by step~\ref{alg:iter} will have been $a = O(\log n)$.
 Since
 $n_i = O(n_1 r^i)$,
@@ -1008,7 +1008,7 @@ By~(\ref{eq:Pairs}) the space size of the algorithm is~$O(p \log n) = O(n \log^3
 
 \section{Results: GenBank global phylogenetic trees}
 
-The global phylogenetic trees have been built for GenBank bacterial, fungal and protist genomes, and universal rRNA sequences, 
+The global phylogenetic trees have been built for GenBank bacterial, fungal and protist genomes, and universal rRNA sequences,
 see Table~\ref{tab:res}.
 The data used are described in Appendix~\ref{app:data}.
 
@@ -1029,7 +1029,7 @@ The data used are described in Appendix~\ref{app:data}.
     Dissimilarity outliers & 534      & 0         & 0         & 1        & 2           \\
     Fitness outliers       & 292      & 54        & 11        & -        & -           \\
     Genogroup outliers     & 12,187   & 60        & -         & -        & -           \\
-    Hybrid outliers        & 39,863   & 27        & 31        & -        & -           \\    
+    Hybrid outliers        & 39,863   & 27        & 31        & -        & -           \\
     All outliers, \%       & 12.1\%   & 6.3\%     & 8.5\%     & 0.8\%    &  5.4\%      \\
     Objects in the tree    & 415,761  & 4,758     & 581       & 20,975   & 10,428      \\
     Dissimilarities        & $4.4 \times 10^8$ &$3.1 \times 10^6$&$1.7 \times 10^5$&$9.6 \times 10^6$&$7.0 \times 10^6$\\
@@ -1066,7 +1066,7 @@ The surveillance, metagenome and single cell genomes are enriched in outliers wh
     Dissimilarity outliers & 0\%           & 1\%        & 1\%         & 0\%           \\
     Fitness outliers       & 0\%           & 0\%        & 0\%         & 0\%          \\
     Genogroup outliers     & 2\%           & 0\%        & 0\%         & 0\%           \\
-    Hybrid outliers        & 11\%          & 11\%       & 10\%        & 2\%          \\    
+    Hybrid outliers        & 11\%          & 11\%       & 10\%        & 2\%          \\
     Objects in the tree    & 87\%          & 76\%       & 47\%        & 97\%      \\
     \hline
   \end{tabular}
@@ -1075,9 +1075,9 @@ The surveillance, metagenome and single cell genomes are enriched in outliers wh
 \end{table}
 % the rest genomes ??
 
-The comparison of the obtained trees 
-with other publicly available trees 
-by quality 
+The comparison of the obtained trees
+with other publicly available trees
+by quality
 is done by taxonomy miscongruence~\cite{maxCongr} using the NCBI taxonomy as of January 13, 2020,
 see Table~\ref{tab:maxCongr}.
 
@@ -1089,13 +1089,13 @@ see Table~\ref{tab:maxCongr}.
     Tree $T_1$ (better) & \makecell{Objects \\ in $T_1$} & Tree $T_2$ &\makecell {Objects \\ in $T_2$} & \makecell{Common \\ objects} & $\tau_1$ & $\tau_2$ & \makecell{Quality \\ difference} \\
     \hline
     {\tt bac120\_r86.1.tree}~\cite{GTDB} & 27,372 &{\tt bacteria-R11 }& 415,761     & 22,479    & 37,420    & 41,158    & 9.1\% \\
-    {\tt bac120\_r86.1.tree}~\cite{GTDB} & 27,372 &{\tt bacteria-R11t}& 11,970      & 6,885     & 11,239    & 11,584    & 3.0\% \\    
+    {\tt bac120\_r86.1.tree}~\cite{GTDB} & 27,372 &{\tt bacteria-R11t}& 11,970      & 6,885     & 11,239    & 11,584    & 3.0\% \\
     ASTRAL~\cite{ASTRAL}                 & 10,575 &{\tt bacteria-R11 }& 415,761     & 8,422     & 17,686    & 20,264    & 12.7\% \\
-    ASTRAL~\cite{ASTRAL}                 & 10.575 &{\tt bacteria-R11t}& 11,970      & 3,411     & 7,416     & 7,726     & 4.0\% \\    
+    ASTRAL~\cite{ASTRAL}                 & 10.575 &{\tt bacteria-R11t}& 11,970      & 3,411     & 7,416     & 7,726     & 4.0\% \\
     {\tt bacteria-R11}                   & 415,761&\makecell{\tt microreact-project \\ {\tt -10667ecoli-tree.nwk} \cite{Ecoli1K}}&10667&9734&3791&4637&18.2\%\\
     {\tt fungi-R15}                      & 4,413  &\makecell{\tt 332\_2408OGs\_ \\ \tt time-calibrated\_ \\ {\tt phylogeny...} \cite{Rokas}} & 332 & 319&520&528&1.5\%\\
     {\tt prok-16S-R4}                    & 20,975 &{\tt LTPs132\_SSU}~\cite{Silva}  &13,867& 12,501 &16,494 &19,110     & 13.7\%\\
-    \hline    
+    \hline
   \end{tabular}
   \caption{Comparison of the quality of phylogenetic trees~$T_1$ and~$T_2$ by taxonomy miscongruences~$\tau_1$ and~$\tau_2$ on common objects. Quality difference is $1 - \tau_1/\tau_2$.}
   \label{tab:maxCongr}
@@ -1107,12 +1107,12 @@ Each tree is represented:
   \item as an interactive HTML file: file extension {\tt .html}, see Appendix~\ref{app:html}.
 The problem of studying large trees is that they are difficult to visualize.
 This problem is solved by assigning taxonomic names to some interior nodes.
-Then setting any interior node as a root by removing all ancestor nodes and 
-expanding the tree until the named nodes are reached 
+Then setting any interior node as a root by removing all ancestor nodes and
+expanding the tree until the named nodes are reached
 will define a small subtree which is easy to visualize.
 \end{itemize}
 
-    
+
 %\comm{Empiric dependence of $p$, running tome on $n$}
 
 
@@ -1135,7 +1135,7 @@ This removal of contaminated genomes can artificially reduce the taxonomy miscon
 therefore, the comparison by type strains is more reliable because type strains are less likely to be affected by the contamination removal.
 By type strain comparison the ASTRAL tree is only 4\% better than the {{\tt bacteria-R11t}} tree.
 
-The QTree program~\cite{QTree} is very fast, but it does not implement subgraph optimization 
+The QTree program~\cite{QTree} is very fast, but it does not implement subgraph optimization
 and implements only step~\ref{alg:addNew} of the algorithm of Section~\ref{sec:inc}.
 
 %The paper on 100,000 {\it Escherichia coli} genomes~\cite{Ecoli1K} contains a tree of 10,667 genomes,
@@ -1155,7 +1155,7 @@ This research was supported by the National Center for Biotechnology Information
 
 
 \section*{Availability of data and materials}
-The source code for the algorithms described in this paper 
+The source code for the algorithms described in this paper
 is written in C++ and {\tt bash} scripts for UNIX and
 is available at \url{https://github.com/ncbi/tree-tool}.
 
@@ -1220,10 +1220,10 @@ Let~$C$ be a multiset of real numbers, representing a sample of i.i.d.~random va
 and let the multiset
 $$ C_x = \{\!\{y \in C : y \le x \}\!\}. $$
 
-If $X \sim Normal$ then the right-tail normal distribution outlier threshold for e-value~$v$ is 
+If $X \sim Normal$ then the right-tail normal distribution outlier threshold for e-value~$v$ is
 $$ \arg \max \ \{x : |C_x| \ge 0.5 |C|, \P(Normal(\textrm{mean } C_x, \textrm{var } C_x) > x) \times |C_x| > v \}. $$
 
-%If $X \sim a \ \chi^2(1)$ then the  right-tail $\chi^2(1)$ distribution outlier threshold for e-value~$v$ is 
+%If $X \sim a \ \chi^2(1)$ then the  right-tail $\chi^2(1)$ distribution outlier threshold for e-value~$v$ is
 %$$ \arg \max \ \{x : |C_x| \ge 0.5 |C|, \P\left(\chi^2(1) > x / \textrm {mean } C_x \right) \times |C_x| > v \}. $$
 
 The outliers are the numbers larger than the outlier threshold.
@@ -1241,7 +1241,7 @@ The tree objects in this paper are genomes and rRNA sequences,
 \cite{Agarwala},
 \cite{GenBank}.
 
-The formulae and parameters of dissimilarities as well as the variance functions 
+The formulae and parameters of dissimilarities as well as the variance functions
 have been chosen by the principle of maximum congruence estimation, see~\cite{maxCongr}.
 
 
@@ -1249,7 +1249,7 @@ have been chosen by the principle of maximum congruence estimation, see~\cite{ma
 \label{app:genomes}
 
 The genomes used for tree building are GenBank bacterial, fungal and protist assemblies
-with N50~$\ge 4000$ which have not been excluded from RefSeq with the reason: 
+with N50~$\ge 4000$ which have not been excluded from RefSeq with the reason:
 `chimeric', `contaminated', `hybrid', `misassembled', `mixed', or `low quality'.
 
 The names of the genome objects are the NCBI GenBank assembly identifiers.
@@ -1271,7 +1271,7 @@ The CDSs and their protein translations longer than 150~aa are converted to 64-b
 The CDS, protein and Pfam HMM hash codes are loaded into an SQL table {\tt GenomeHash}, see Appendix~\ref{app:N0:gen}.
 
 The quality outliers are identified by the thresholds indicated in Table~\ref{tab:Taxa}.
-In addition, quality outliers are the genomes assigned to hybrid taxa in GenBank, 
+In addition, quality outliers are the genomes assigned to hybrid taxa in GenBank,
 and the genomes with the ratio of distinct CDS hash codes to distinct protein hash codes above~1.1.
 
 \begin{table}[H]
@@ -1305,33 +1305,33 @@ and the genomes with the ratio of distinct CDS hash codes to distinct protein ha
   \label{tab:Taxa}
 \end{table}
 
-The genogroup barrier for bacteria was selected at approximately subspecies level, 
+The genogroup barrier for bacteria was selected at approximately subspecies level,
 and the genogroup barrier for fungi was selected at approximately species level.
 The barriers were selected in the genetic discontinuity regions of the dissimilarities~\cite{GenDiscontinuity}.
 
 The assembly attributes used to identify genogroup outliers are:
 \begin{itemize}
   \item average CDS length.
-  \item octamer mononucleotide frequency; 
+  \item octamer mononucleotide frequency;
   \item total DNA length;
   \item GC\%;
 \end{itemize}
 The deviant octamer mononucleotide frequencies may be due to sequencing errors which may result in frame shifts.
 The attributes ``total DNA length" and ``GC\%" were used only for bacterial genomes.
 
-The dissimilarity~$d_{xy}$ between genomes~$x$ and~$y$ is a combination of~3 dissimilarities: 
+The dissimilarity~$d_{xy}$ between genomes~$x$ and~$y$ is a combination of~3 dissimilarities:
 $d_{\textrm {CDS}}(x,y)$, $d_{\textrm {PROT}}(x,y)$ and~$d_{\textrm {univ}}(x,y)$.
-The dissimilarity $d_{\textrm {CDS}}(x,y)$ is used only for bacteria. 
+The dissimilarity $d_{\textrm {CDS}}(x,y)$ is used only for bacteria.
 
 Let $H_{\textrm T}(x)$ be the set of type~{\rm T} hash codes of genome~$x$,
 where {\rm T} is {\rm CDS} or {\rm PRT}.
 Then
-if $$|H_{\textrm T}(x) \cap H_{\textrm T}(y)| < \text{hash\_common}_{min}$$ or 
+if $$|H_{\textrm T}(x) \cap H_{\textrm T}(y)| < \text{hash\_common}_{min}$$ or
 $$ \frac {\min \{|H_{\textrm T}(x)|, |H_{\textrm T}(y)|\}} {\max \{|H_{\textrm T}(x)|, |H_{\textrm T}(y)|\}} < \text{hash\_ratio}_{min} $$
 then $d_{\textrm T}(x,y) = \infty$, otherwise
-$$ d_{\textrm T}(x,y) = 
-  \frac 1 2 \left(  \ln \frac {|H_{\textrm T}(x)|} {|H_{\textrm T}(x) \cap H_{\textrm T}(y)|}  
-                  + \ln \frac {|H_{\textrm T}(y)|} {|H_{\textrm T}(x) \cap H_{\textrm T}(y)|}  
+$$ d_{\textrm T}(x,y) =
+  \frac 1 2 \left(  \ln \frac {|H_{\textrm T}(x)|} {|H_{\textrm T}(x) \cap H_{\textrm T}(y)|}
+                  + \ln \frac {|H_{\textrm T}(y)|} {|H_{\textrm T}(x) \cap H_{\textrm T}(y)|}
             \right),
 $$
 where $\text{hash\_common}_{min}$ and $\text{hash\_ratio}_{min}$ are defined in Table~\ref{tab:Taxa}.
@@ -1340,23 +1340,23 @@ For two genomes~$x$ and~$y$ the protein segments of the same universal HMM marke
 are aligned globally with the NCBI BLASTP parameters {\tt gap\_open = -8}, {\tt gap\_extent = -2} and matrix PAM30 for bacteria,
 and {\tt gap\_open = -11}, {\tt gap\_extent = -2} and matrix BLOSUM62 for eukaryotes.
 
-Let~$A$ be the protein segment of universal HMM marker~$i$ in genome~$x$, 
+Let~$A$ be the protein segment of universal HMM marker~$i$ in genome~$x$,
 and~$B$ be the protein segment of universal HMM marker~$i$ in genome~$y$.
 Let $s(S,T)$ be the score of the global alignment of sequences~$S$ and~$T$.
 
 Define the dissimilarity~$d(HMM_i)$ similarly to~$d_{CDS}$ and~$d_{PRT}$:
-if 
+if
 $$ \frac {\min \{s(A,A), s(B,B)\}} {\max \{s(A,A), s(B,B)\}} < 0.5 $$
 then $d(HMM_i) = \infty$, otherwise
-$$ d(HMM_i) = 
-  \left[\frac 1 2 \left(  \ln \frac {s(A,A)} {s(A,B)}  
-                        + \ln \frac {s(B,B)} {s(A,B)}  
+$$ d(HMM_i) =
+  \left[\frac 1 2 \left(  \ln \frac {s(A,A)} {s(A,B)}
+                        + \ln \frac {s(B,B)} {s(A,B)}
                   \right)
   \right]^{p_{univ}},
 $$
 where $p_{univ}$ is defined in Table~\ref{tab:Taxa}.
 
-Let $m_i$ be the median value of $d(HMM_i)$ measured on the half million dissimilarities of 1000 random genomes, 
+Let $m_i$ be the median value of $d(HMM_i)$ measured on the half million dissimilarities of 1000 random genomes,
 and let $r_i = 1/m_i$.
 Then $r_i \ d(HMM_i)$ converts the dissimilarity measured by each $HMM_i$ to the same scale.
 
@@ -1364,7 +1364,7 @@ Let $var_i = \var (r_i \ d(HMM_i))$ measured on the same half million dissimilar
 
 Then the universal HMM dissimilarity between genomes~$x$ and~$y$ is defined as
 $$ d_{\textrm {univ}}(x,y) = \frac {\sum_{i \in I} (1/var_i) \ r_i \ d(HMM_i)} {\sum_{i \in I} 1/var_i}, $$
-where 
+where
 $$ I = \left\{ i : r_i \ d(HMM_i) - d_{\textrm {univ}}(x,y) \le k_{SD} \ \sqrt{var_i} \right\}. $$
 The set~$I$ excludes erroneously called or horizontally transferred universal markers.
 The formula of~$d_{\textrm {univ}}(x,y)$ allows for missing marker HMMs.
@@ -1376,7 +1376,7 @@ Since the computation of $d_{\textrm {univ}}(x,y)$ and the set~$I$ depends on ea
 the computation is done iteratively until convergence, initially setting~$I$ to all markers found in the genomes~$x$ and~$y$.
 
 The combined dissimilarity is defined as
-$$ d_{xy} = 
+$$ d_{xy} =
   \begin{cases}
      r_{\textrm {CDS}} \ d_{\textrm {CDS}}(x,y), &\text{ if } d_{\textrm {CDS}}(x,y) < \beta_{\textrm {CDS}},\\
      r_{\textrm {PRT}} \ d_{\textrm {PRT}}(x,y), &\text{ if } d_{\textrm {PRT}}(x,y) < \beta_{\textrm {PRT}},\\
@@ -1384,8 +1384,8 @@ $$ d_{xy} =
    \end{cases}
 $$
 
-The scale factors~$r_{\textrm {CDS}}$, $r_{\textrm {PRT}}$, $r_{\textrm {univ}}$ 
-and the barriers $\beta_{\textrm {CDS}}$, $\beta_{\textrm {PRT}}$ 
+The scale factors~$r_{\textrm {CDS}}$, $r_{\textrm {PRT}}$, $r_{\textrm {univ}}$
+and the barriers $\beta_{\textrm {CDS}}$, $\beta_{\textrm {PRT}}$
 are in Table~\ref{tab:Taxa}.
 
 The scale factors~$r_{\textrm {CDS}}$, $r_{\textrm {PRT}}$ and~$r_{\textrm {univ}}$ are chosen to convert the dissimilarity to the same scale,
@@ -1406,24 +1406,24 @@ The names of the sequence objects are the NCBI RefSeq nucleotide accessions.
 The 16S rRNA sequences have been downloaded from \url{https://www.ncbi.nlm.nih.gov/nuccore?term=33175%5BBioProject%5D+OR+33317%5BBioProject%5D}
 and the ITS rRNA sequwences have been downloaded from \url{https://www.ncbi.nlm.nih.gov/nuccore?term=177353%5BBioProject%5D}.
 
-The ITS rRNA sequences are 5.8S ribosomal RNAs of length between~140 and~165 bp 
-with upstream   flanking sequences of length~100 bp 
+The ITS rRNA sequences are 5.8S ribosomal RNAs of length between~140 and~165 bp
+with upstream   flanking sequences of length~100 bp
 and  downstream flanking sequences of length~150 bp.
 
 The 16S rRNA sequences have length at least~1200 bp.
 
 The dissimilarity between two sequences is computed by making a semiglobal alignment and computing the minimum edit distance~\cite{Setubal},
-which is equal to the number of elementary operations (substitutions of one symbol, deletions of one symbol, and insertions of one symbol) 
-needed to change one sequence into the other, 
+which is equal to the number of elementary operations (substitutions of one symbol, deletions of one symbol, and insertions of one symbol)
+needed to change one sequence into the other,
 weighted by the penalties of specific elementary operations:
 match score~5,
 mismatch score~$-4$,
 gap open~0, and
 gap extension~$-10$.
-The minimum allowed alignment length is~140 bps for ITS rRNA sequences, 
+The minimum allowed alignment length is~140 bps for ITS rRNA sequences,
 and~600 bps for 16S rRNA sequences.
 The minimum edit distance was multiplied by~0.0082 for ITS rRNA sequences,
-and by~0.00155 for 16S rRNA sequences 
+and by~0.00155 for 16S rRNA sequences
 because this multiplication affects non-linearly the linear-exponential dissimilarity variance.
 
 
@@ -1439,10 +1439,10 @@ used in Section~\ref{sec:addNew}.
 
 An SQL table {\tt GenomeHash} with genome annotations encoded as 64-bit hash codes is maintained:
 % language=SQL,
-\begin{lstlisting}[basicstyle=\small]  
+\begin{lstlisting}[basicstyle=\small]
 create table GenomeHash
 (
-  genome int  not null  
+  genome int  not null
 , type char(3)  not null  -- 'CDS', 'PRT' or 'HMM'
 , hash numeric(20)  not null
 );
@@ -1461,17 +1461,17 @@ The size of {\tt GenomeHash} is~$O(n)$,
 and finding~$N_0(a)$ has time~$O(\log n)$.
 
 The hash type 'CDS' is used first.
-If~$|N_0(a)| < 100$ then the hash type 'PRT' is used, and 
+If~$|N_0(a)| < 100$ then the hash type 'PRT' is used, and
 if~$|N_0(a)| < 100$ then the hash type 'HMM' is used.
 
-This data structure allows a fast identification of similar GenBank genomes for new genomes 
+This data structure allows a fast identification of similar GenBank genomes for new genomes
 which have not been submitted to GenBank.
 
 
 \subsection{rRNA sequences}
 
 A BLASTN search database is maintained for the sequences which are in the current tree.
-For a new sequence~$a$ the set~$N_0(a)$ are the top 100 sequences found by BLASTN with parameters {\tt -strand plus  -evalue 1e-20} 
+For a new sequence~$a$ the set~$N_0(a)$ are the top 100 sequences found by BLASTN with parameters {\tt -strand plus  -evalue 1e-20}
 ordered by the number of identities descending, \cite{BLAST}.
 
 Updating a BLASTN search database takes time~$O(n)$.
@@ -1527,7 +1527,7 @@ For rRNA sequences the names are composed of these items:
   \item semicolon-delimited taxonomic lineage ordered from most specific to most general taxa.
 \end{itemize}
 
-The root is on the left-hand side, 
+The root is on the left-hand side,
 and the displayed leaves are on the right-hand side.
 Each displayed leaf should have a name.
 
@@ -1536,7 +1536,7 @@ and this subtree is shown as a gray triangle where the amount of black color ref
 followed by the node name and the number of hidden final leaves in parentheses.
 The length of the triangle is the average distance to the final leaves weighted by the length of the subtrees.
 
-For each interior node the child subtrees are sorted by the number of final leaves descending, 
+For each interior node the child subtrees are sorted by the number of final leaves descending,
 so that largest subtrees are displayed at the top.
 This makes the displayed topology of the trees to be stable among incrementations.
 
@@ -1547,7 +1547,7 @@ Arc color reflects the normalized arc error density.
 Each interior node is identified by the pair {\tt <top final leaf name>:<bottom final leaf name>},
 so that the interior node is the least common ancestor (LCA) of these two final leaves.
 
-Left-clicking on a node opens a Node Information window 
+Left-clicking on a node opens a Node Information window
 containing information on the node and buttons allowing to hide or show ancestors or descendants.
 To close the information window, click on any point on the tree.
 A single node cannot be displayed, therefore,
@@ -1557,9 +1557,9 @@ Double left-clicking on a leaf or any point to the right of a leaf is the same a
 and double left-clicking on a root or any point on the left margin of the tree is the same as hiding descendants of the root.
 Descendants are expanded until named nodes are reached.
 
-The names of final leaves are truncated to~100 characters on the canvas, 
+The names of final leaves are truncated to~100 characters on the canvas,
 but are displayed in full in the Node Information Window.
-  
+
 Objects can be searched by entering the object names (assembly ID or accession for genomes, or RefSeq accessions for rRNA)
 or any part of the names of the final leaves.
 A colon-delimited list of object identifiers can be entered in the ``Assembly ID'' or ``Nucl. accession'' field.
@@ -1569,7 +1569,7 @@ In the pair of numbers $(M/N)$ to the right of a displayed leaf,
 $M$~is the number of highlighted objects,
 and~$N$ is the total number of objects on the subtree.
 
-If the displayed tree is too large, the ``Make Clusters'' button runs a simple clustering algorithm 
+If the displayed tree is too large, the ``Make Clusters'' button runs a simple clustering algorithm
 which assigns names like ``Cluster N'' to the root nodes of clusters and collapses the clusters,
 thus making the displayed tree smaller.
 
@@ -1577,61 +1577,61 @@ thus making the displayed tree smaller.
 
 \clearpage
 \begin{thebibliography}{9}
- 
+
 \bibitem{Ecoli1K}
 Kaleb Abram, Zulema Udaondo, Carissa Bleker, Visanu Wanchai, Trudy M. Wassenaar, Dave W. Ussery,
 What can we learn from over 100,000 Escherichia coli genomes?
 Jul 19, 2019,
-bioRxiv 708131; doi: https://doi.org/10.1101/708131 
+bioRxiv 708131; doi: https://doi.org/10.1101/708131
 
 \bibitem{Agarwala}
 Agarwala R. et al.
 Database resources of the National Center for Biotechnology Information.
 Nucleic Acids Res. 2018 Jan 4;46(D1):D8-D13. doi: 10.1093/nar/gkx1095.
-  
+
 \bibitem{BLAST}
-Stephen F. Altschul, Thomas L. Madden, Alejandro A. Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), 
-Gapped BLAST and PSI-BLAST: a new generation of protein database search programs, 
-Nucleic Acids Res. 25:3389-3402. 
- 
+Stephen F. Altschul, Thomas L. Madden, Alejandro A. Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997),
+Gapped BLAST and PSI-BLAST: a new generation of protein database search programs,
+Nucleic Acids Res. 25:3389-3402.
+
 \bibitem{maxCongr}
 Brover S.,
 Principle of a Congruence Maximization of a Phylogenetic Tree to Reference Classifications,
 {\it in print}
- 
+
 \bibitem{BUSCO}
 Robert M.~Waterhouse, Mathieu Seppey, Felipe A.~Simão, Mose Manni, Panagiotis Ioannidis, Guennadi Klioutchnikov, Evgenia V.~Kriventseva, and Evgeny M.~Zdobnov,
 BUSCO applications from quality assessments to gene prediction and phylogenomics.
-Mol Biol Evol, published online Dec 6, 2017, doi: 10.1093/molbev/msx319 
+Mol Biol Evol, published online Dec 6, 2017, doi: 10.1093/molbev/msx319
 
 \bibitem{NPHard}
-W.H.E.~Day. 
+W.H.E.~Day.
 Computational complexity of inferring phylogenies from dissimilarity matrices.
 Bulletin of Mathematical Biology, 49(4):461-467, 1987.
-  
+
 \bibitem{Felsenstein}
-Felsenstein J. 
-Inferring Phylogenies. 
-Sunderland, MA: Sinauer Associates, 2003. 
-  
+Felsenstein J.
+Inferring Phylogenies.
+Sunderland, MA: Sinauer Associates, 2003.
+
 \bibitem{Phylip}
 Felsenstein J.
 1989,
 PHYLIP-Phylogeny inference package (version 3.2),
 {\it Cladistics} 5:164-166.
-  
+
 \bibitem{HMMer} HMMer. http://hmmer.org/
 
 \bibitem{Prodigal}
-Hyatt D, Chen GL, Locascio PF, Land ML, Larimer FW, Hauser LJ. 
-Prodigal: prokaryotic gene recognition and translation initiation site identification. 
-BMC Bioinformatics. 
-2010 Mar 8;11:119. doi: 10.1186/1471-2105-11-119. 
+Hyatt D, Chen GL, Locascio PF, Land ML, Larimer FW, Hauser LJ.
+Prodigal: prokaryotic gene recognition and translation initiation site identification.
+BMC Bioinformatics.
+2010 Mar 8;11:119. doi: 10.1186/1471-2105-11-119.
 PubMed PMID: 20211023; PubMed Central PMCID: PMC2848648.
 
 \bibitem{GenDiscontinuity}
-Jain, C., Rodriguez-R, L.M., Phillippy, A.M. et al. 
-High throughput ANI analysis of 90K prokaryotic genomes reveals clear species boundaries. 
+Jain, C., Rodriguez-R, L.M., Phillippy, A.M. et al.
+High throughput ANI analysis of 90K prokaryotic genomes reveals clear species boundaries.
 Nat Commun 9, 5114 (2018) doi:10.1038/s41467-018-07641-9
 
 \bibitem{GeneMark-ES1}
@@ -1639,48 +1639,48 @@ Lomsadze A., Ter-Hovhannisyan V., Chernoff Y. and Borodovsky M.
 "Gene identification in novel eukaryotic genomes by self-training algorithm."
 Nucleic Acids Research, 2005, 33: 6494-6506
 
-\bibitem{Spastorianus} 
-Monerawela C, Bond U. 
-The hybrid genomes of {\it Saccharomyces pastorianus}: A current perspective. 
+\bibitem{Spastorianus}
+Monerawela C, Bond U.
+The hybrid genomes of {\it Saccharomyces pastorianus}: A current perspective.
 Yeast. 2018 Jan;35(1):39-50. doi: 10.1002/yea.3250. Epub 2017 Sep 26.
 PMID:28787090
 
 \bibitem{GenBank}
-Sayers EW, Cavanaugh M, Clark K, Ostell J, Pruitt KD, Karsch-Mizrachi I. 
-GenBank. 
+Sayers EW, Cavanaugh M, Clark K, Ostell J, Pruitt KD, Karsch-Mizrachi I.
+GenBank.
 Nucleic Acids Res. 2019 Jan 8;47(D1):D94-D99. doi: 10.1093/nar/gky989. PMID: 30365038; PMCID: PMC6323954.
 
 \bibitem{GTDB}
-Parks, D., Chuvochina, M., Waite, D. et al. 
-A standardized bacterial taxonomy based on genome phylogeny substantially revises the tree of life. 
+Parks, D., Chuvochina, M., Waite, D. et al.
+A standardized bacterial taxonomy based on genome phylogeny substantially revises the tree of life.
 Nat Biotechnol 36, 996-1004 (2018) doi:10.1038/nbt.4229
 
 \bibitem{CheckM}
-Parks, D. H., Imelfort, M., Skennerton, C. T., Hugenholtz, P. \& Tyson, G. W. 
-CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes. 
-Genome Res. 25, 1043?1055 
+Parks, D. H., Imelfort, M., Skennerton, C. T., Hugenholtz, P. \& Tyson, G. W.
+CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes.
+Genome Res. 25, 1043?1055
 (2015).
 
 \bibitem{FastTree}
-Price MN, Dehal PS, Arkin AP (2010) 
-FastTree 2 -- Approximately Maximum-Likelihood Trees for Large Alignments. 
-PLoS ONE 5(3): e9490. 
+Price MN, Dehal PS, Arkin AP (2010)
+FastTree 2 -- Approximately Maximum-Likelihood Trees for Large Alignments.
+PLoS ONE 5(3): e9490.
 https://doi.org/10.1371/journal.pone.0009490
 
 \bibitem{Silva}
-Quast C, Pruesse E, Yilmaz P, Gerken J, Schweer T, Yarza P, Peplies J, Glöckner FO (2013) 
-The SILVA ribosomal RNA gene database project: improved data processing and web-based tools. 
-Nucl. Acids Res. 41 (D1): D590-D596. 
+Quast C, Pruesse E, Yilmaz P, Gerken J, Schweer T, Yarza P, Peplies J, Glöckner FO (2013)
+The SILVA ribosomal RNA gene database project: improved data processing and web-based tools.
+Nucl. Acids Res. 41 (D1): D590-D596.
 
 \bibitem{Setubal}
 Setubal J., Meidanis J., Introduction to Computational Molecular Biology.
 1997.
 PWS Publishing Company.
-  
+
 \bibitem{Pfam}
-Schaeffer RD, Liao Y, Cheng H, Grishin NV. 
-ECOD: new developments in the evolutionary classification of domains. 
-Nucleic Acid Research. 2017; 45(D1):D296-D302. 
+Schaeffer RD, Liao Y, Cheng H, Grishin NV.
+ECOD: new developments in the evolutionary classification of domains.
+Nucleic Acid Research. 2017; 45(D1):D296-D302.
 
 \bibitem{Rokas}
 Shen XX et al.,
@@ -1702,21 +1702,21 @@ Ter-Hovhannisyan V., Lomsadze A., Chernoff Y. and Borodovsky M.
 Genome Research, 2008, 18:1979-90
 
 \bibitem{QTree}
-Truszkowski, J., Hao, Y. \& Brown, D.G. 
-Towards a practical O(n logn) phylogeny algorithm. 
+Truszkowski, J., Hao, Y. \& Brown, D.G.
+Towards a practical O(n logn) phylogeny algorithm.
 Algorithms Mol Biol 7, 32 (2012) doi:10.1186/1748-7188-7-32
 
 \bibitem{ASTRAL-MP}
-Yin, J., Zhang, C. \& Mirarab, S. 
-ASTRAL-MP: scaling ASTRAL to very large datasets using randomization and parallelization. 
-Bioinformatics. 
-https://doi.org/10.1093/bioinformatics/btz211 
+Yin, J., Zhang, C. \& Mirarab, S.
+ASTRAL-MP: scaling ASTRAL to very large datasets using randomization and parallelization.
+Bioinformatics.
+https://doi.org/10.1093/bioinformatics/btz211
 (2019).
 
 \bibitem{ASTRAL}
-Zhu, Q., Mai, U., Pfeiffer, W. et al. 
-Phylogenomics of 10,575 genomes reveals evolutionary proximity between domains Bacteria and Archaea. 
-Nat Commun 10, 5477 (2019). 
+Zhu, Q., Mai, U., Pfeiffer, W. et al.
+Phylogenomics of 10,575 genomes reveals evolutionary proximity between domains Bacteria and Archaea.
+Nat Commun 10, 5477 (2019).
 https://doi.org/10.1038/s41467-019-13443-4
 
 
