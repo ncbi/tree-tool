@@ -90,6 +90,7 @@ struct Match
     
   void process ()
     {
+      ASSERT (seqs);
 	    const Seq* seq1 = (*seqs) [row];
 	    const Seq* seq2 = (*seqs) [col];
 	    ASSERT (seq1);
@@ -104,6 +105,7 @@ struct Match
 				align. reset (new Align_sp::Align (*dna1, * seq2->asDna (), ! global, match_len_min, 0));
 				if (unknown_strand)
 				{
+				  ASSERT (seq2->asDna ());
 				  unique_ptr<Dna> dna2 (seq2->asDna () -> copy ());
 				  dna2->reverse ();
 				  unique_ptr<Align_sp::Align> align1 (new Align_sp::Align (*dna1, *dna2, ! global, match_len_min, 0));
@@ -115,7 +117,7 @@ struct Match
 				align. reset (new Align_sp::Align (*pep1, * seq2->asPeptide (), ! global, match_len_min, blosum62));
 			else
 				ERROR;
-			ASSERT (align. get ());
+			ASSERT (align);
 			var_cast (align. get ()) -> setAlignment (seq1->seq, seq2->seq); 
 		  const Real dissim_raw = align->getDistance (distance);
 			dissim = coeff * pow (dissim_raw, power);
