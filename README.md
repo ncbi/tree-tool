@@ -13,9 +13,9 @@ General data analysis tools.
 
 ## Theoretic papers
 
-[Epistemic Principle of a Congruence Maximization of a Phylogenetic Tree to External Classifications](https://github.com/ncbi/tree-tool/blob/master/phylogeny/doc/tax_miscongruence/tax_miscongruence.pdf)
-
 [Building Large Phylogenetic Trees in Log-Linear Time](https://github.com/ncbi/tree-tool/blob/master/phylogeny/doc/inc_ls_dist_tree/inc_ls_dist_tree.pdf)
+
+[Epistemic Principle of a Congruence Maximization of a Phylogenetic Tree to External Classifications](https://github.com/ncbi/tree-tool/blob/master/phylogeny/doc/tax_miscongruence/tax_miscongruence.pdf)
 
 ## Publications
 Shmakov SA, Barth ZK, Makarova KS, Wolf YI, Brover V, Peters JE, Koonin EV. 
