@@ -304,6 +304,10 @@ Since the construction of the Euclidean space depends on the arbitrarily chosen 
 but its PCA is unique.
 The cMDS of the square-rooted tree distances is the PCA of the (non-constructed) distance tree.
 
+If a dissimilarity fits a tree distance,
+and the matrix of these dissimilarities is submitted to cMDS as a squared distance matrix,
+then cMDS will succeed.
+
 
 
 \subsubsection {Some simple generalized distances}
@@ -444,10 +448,6 @@ BLOSUM45, BLOSUM45.50, BLOSUM50, BLOSUM50.50, BLOSUM60, BLOSUM60.50, BLOSUM62, B
 BLOSUM90, BLOSUM90.50, BLOSUM100, BLOSUM100.50, BLOSUMN, BLOSUMN.50, IDENTITY and MATCH.
 \comm {re-check}
 In this paper the default BLASTP matrix BLSUM62 is used.
-
-Though this distance is not based on an evolution model, it fits a tree distance.
-Therefore, the matrix of $d_{min}(x,y)$ should be submitted to cMDS as a squared distance matrix,
-which is equivalent to submitting the matrix of $s_{max}(x,y)$ as a similarity matrix to cMDS.
 
 \comm
 {
