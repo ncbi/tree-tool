@@ -79,3 +79,19 @@
   \textbf{\textit{Keywords---}} #1
 }
 
+\makeatletter
+\DeclareRobustCommand{\cev}[1]{%
+  {\mathpalette\do@cev{#1}}%
+}
+\newcommand{\do@cev}[2]{%
+  \vbox{\offinterlineskip
+    \sbox\z@{$\m@th#1 x$}%
+    \ialign{##\cr
+      \hidewidth\reflectbox{$\m@th#1\vec{}\mkern4mu$}\hidewidth\cr
+      \noalign{\kern-\ht\z@}
+      $\m@th#1#2$\cr
+    }%
+  }%
+}
+\makeatother
+
