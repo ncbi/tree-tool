@@ -16,3 +16,6 @@
 !*.JPG
 !*.pdf
 
+cpp_test.cpp
+fstream_test.cpp
+missed_version.sh
