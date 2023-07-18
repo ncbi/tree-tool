@@ -22,9 +22,10 @@ FILE=$7
 
 
 #set -x
+TMP=`mktemp`
 
 
-sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | grep -vx $GENOME
+sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' > $TMP
   -- Time: O(h log (h n) + sort(h k)), where h - # hashes per genome, k - # genomes per hash
   --       k = O(1) artificially
   -- Time to populate GenomeHash: O(sort(h n))+
@@ -66,3 +67,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' | grep -vx $GENOME
 EOT
 
 
+grep -vx $GENOME $TMP
+
+
+rm $TMP
