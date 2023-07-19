@@ -738,9 +738,16 @@ void Data::qc () const
 
   try 
   {
+    QC_ASSERT (nameIndex < names. size ());
     string name (getName ());
     QC_ASSERT (! name. empty ());
-    if (! binary && ! isLeft (name, "!"))
+    if (binary)
+    {
+      QC_ASSERT (names. size () < 256 * 256);
+      QC_ASSERT (! Common_sp::contains (name, '\0'));
+      QC_ASSERT (! Common_sp::contains (name, '\n'));
+    }
+    else if (! isLeft (name, "!"))
     {
 	  //QC_IMPLY (colonInName, attribute);
 	    if (colonInName)
