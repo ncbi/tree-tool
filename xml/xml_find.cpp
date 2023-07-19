@@ -80,7 +80,7 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
     if (verbose ())
     {
       const string fName ("xml_find.xml");
-      Xml::File f (fName, false, false, "XML");  // PAR
+      Xml::TextFile f (fName, /*false, false,*/ "XML");  // PAR
       query->saveXml (f);
       cerr << "XML file " << strQuote (fName) << " is saved" << endl;
     }

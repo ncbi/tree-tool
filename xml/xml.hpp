@@ -171,10 +171,12 @@ struct Data : VirtNamed
   VectorOwn<Data> children;
     // May be empty()
 
+  const bool binary;
   const bool attribute;
   bool colonInName {false};
   Token token;
     // May be empty()
+    // UTF-8
 private:
   bool isEnd {false};
   bool xmlText {false};
@@ -187,15 +189,17 @@ public:
 	  // searchFoundAll => parent->searchFoundAll
   
 
+private:
   Data (Names &names_arg,
         TokenInput &tin,
         VectorOwn<Data> &markupDeclarations);
-private:
+    // Text
   Data (Names &names_arg,
         Data* parent_arg,
         TokenInput &ti)
     : names (names_arg)
     , parent (parent_arg)
+    , binary (false)
     , attribute (false)
     { readInput (ti); }
   Data (Names &names_arg,
@@ -207,17 +211,17 @@ private:
     : names (names_arg)
     , nameIndex (names_arg. add (attr))
     , parent (parent_arg)
+    , binary (false)
     , attribute (attribute_arg)
     , colonInName (colonInName_arg)
     , token (move (value))
     {}
+  Data (const Names &names_arg,
+        ifstream &f,
+        bool first);
+    // Binary
   Data (const Data &) = default;
-  void clear () override;
   void readInput (TokenInput &ti);
-    // Data ::=   <tag attribute1="value1" attribute2="value2" ... />
-    //          | <tag attribute1="value1" attribute2="value2" ... > Data* XmlText </tag>
-    //          | <!-- comment -->
-    //          | <? ProcessingInstruction ?>
   static bool readColonName (TokenInput &ti,
                              string &name);
     // Update: name
@@ -225,6 +229,16 @@ public:
   static Data* load (Names &names,
                      const string &fName,
                      VectorOwn<Data> &markupDeclarations);
+    // Text
+    // Data ::=   <tag attribute1="value1" attribute2="value2" ... />
+    //          | <tag attribute1="value1" attribute2="value2" ... > Data* XmlText </tag>
+    //          | <!-- comment -->
+    //          | <? ProcessingInstruction ?>
+  static Data* load (Names &names,
+                     const string &fName);
+    // Binary
+    // <Data> ::= <nameIndex> <Data>* 0 0 <text> 0
+  void clear () override;
   void qc () const override;
   void saveXml (Xml::File &f) const override;
   void saveText (ostream &os) const override;

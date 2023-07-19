@@ -400,6 +400,7 @@ Data::Data (Names &names_arg,
 	          TokenInput &ti,
             VectorOwn<Data> &markupDeclarations)
 : names (names_arg)
+, binary (false)
 , attribute (false)
 {
   ti. get ('<');
@@ -423,21 +424,6 @@ Data::Data (Names &names_arg,
     markupDeclarations << new Data (*this);
     clear ();
   }
-}
-
-
-
-void Data::clear ()
-{
-  ASSERT (! parent);
-  ASSERT (children. empty ());
-  ASSERT (! attribute);
-  
-  colonInName = false;
-  token. clear ();
-  isEnd = false;
-  xmlText = false;
-//columnTags = 0;
 }
 
 
@@ -614,6 +600,62 @@ bool Data::readColonName (TokenInput &ti,
 
 
 
+Data::Data (const Names &names_arg,
+            ifstream &f,
+            bool first)
+: names (names_arg)
+, binary (true)
+, attribute (false)
+{
+	ASSERT (f. good ());
+	ASSERT (! names. size ());
+	
+	char c = '\0';
+
+	// nameIndex
+	{
+		EXEC_ASSERT (getChar (f, c));
+		const Byte b1 = (Byte) c;
+		EXEC_ASSERT (getChar (f, c));
+		const Byte b2 = (Byte) c;
+		nameIndex = (size_t) b1 * 256 + (size_t) b2;
+		ASSERT (nameIndex != no_index);
+  }
+  if (first)
+  {
+  	ASSERT (! nameIndex);
+  }
+  else
+		if (! nameIndex)
+		{
+			isEnd = true;
+			return;
+		}
+	
+	// children
+	for (;;)
+	{
+		unique_ptr<Data> child (new Data (names, f, false));
+		if (child->isEnd)
+			break;
+		child->parent = this;
+	  children << child. release ();
+	}
+	
+	// token
+	for (;;)
+	{
+		EXEC_ASSERT (getChar (f, c));
+		if (! c)
+			break;
+		token. type = Token::eText;
+		token. name += c;
+		xmlText = true;
+	}
+}
+
+
+
 Data* Data::load (Names &names,
 	                const string &fName,
                   VectorOwn<Data> &markupDeclarations)
@@ -639,22 +681,82 @@ Data* Data::load (Names &names,
 
 
 
+Data* Data::load (Names &names,
+	                const string &fName)
+{
+	checkFile (fName);
+	ifstream f (fName, ios_base::binary | ios_base::in);
+	QC_ASSERT (f. good ());
+	
+  unique_ptr<Xml_sp::Data> d;
+  { 
+	  Unverbose unv;
+  	d. reset (new Xml_sp::Data (names, f, true));	
+  }
+  ASSERT (! names. size ())
+  
+  char c = '\0';
+  string s;
+  while (getChar (f, c))
+  {
+    QC_ASSERT (c);
+    if (c == '\n')
+    {
+      QC_ASSERT (! s. empty ());
+    	names. add (s);
+    	s. clear ();
+    }
+    else
+      s += c;
+  }
+  
+  return d. release ();
+}
+
+
+
+void Data::clear ()
+{
+  ASSERT (! parent);
+  ASSERT (children. empty ());
+  ASSERT (! attribute);
+  
+  colonInName = false;
+  token. clear ();
+  isEnd = false;
+  xmlText = false;
+//columnTags = 0;
+}
+
+
+
 void Data::qc () const
 {
   if (! qc_on)
     return;
   VirtNamed::qc ();
-   
+
   try 
   {
-  //QC_IMPLY (colonInName, attribute);
-    const string name (getName ());
-    QC_IMPLY (! colonInName && ! merged, isLeft (name, "!") /*!--"*/ || isIdentifier (name, true));
+    string name (getName ());
+    QC_ASSERT (! name. empty ());
+    if (! binary && ! isLeft (name, "!"))
+    {
+	  //QC_IMPLY (colonInName, attribute);
+	    if (colonInName)
+	  	  replace (name, ':', '_');
+	  	if (merged)
+	  	  replace (name, '/', '_');
+	    QC_ASSERT (isIdentifier (name, true));
+	  }
     QC_ASSERT (! isEnd);
     token. qc ();
-    QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '<'))
-    QC_IMPLY (token. type != Token::eText, ! Common_sp::contains (token. name, '>'));
+    if (token. type != Token::eText)
+    {
+    	QC_ASSERT (! Common_sp::contains (token. name, '<'));
+      QC_ASSERT (! Common_sp::contains (token. name, '>'));
       // Other characters prohibited in XML ??
+    }
     QC_ASSERT (Common_sp::contains (searchFoundAll, searchFound));
     QC_IMPLY (parent, Common_sp::contains (parent->searchFoundAll, searchFoundAll));
     for (const Data* child : children)
@@ -665,8 +767,6 @@ void Data::qc () const
   }
   catch (const exception &e)
   {
-    Xml::File f ("Data_qc.xml", false, false, "XML");  // PAR
-    saveXml (f);
     PRINT (getName ());
     PRINT (Token::type2str (token. type));
     PRINT (token);

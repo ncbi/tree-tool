@@ -494,6 +494,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
   	{
       version = VERSION;
   	  addPositional ("xml", "XML file");
+  	  addFlag ("bin", "Binary XML");
   	  addKey ("search_tags", "Tag names to be searched, comma-delimited");
   	}
 
@@ -501,7 +502,8 @@ At line ends: [<# children>|<# nodes in subtree>]\
 
 	void body () const final
 	{
-		const string xmlFName  = getArg ("xml");
+		const string xmlFName = getArg ("xml");
+		const bool   bin      = getFlag ("bin"); 
 		const StringVector searchTags (getArg ("search_tags"), ',', true);
 
     QC_ASSERT (searchTags. size () < 8);  // instruction ??
@@ -513,9 +515,15 @@ At line ends: [<# children>|<# nodes in subtree>]\
   #endif
 
 
-    Names names (1000);   // PAR
-	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
+    Names names (10000);   // PAR
+	  unique_ptr<const Xml_sp::Data> xml;
+	  if (bin)
+	  	xml. reset (Xml_sp::Data::load (names, xmlFName));
+	  else
+	  {
+		  VectorOwn<Xml_sp::Data> markupDeclarations;
+	  	xml. reset (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
+	  }
     ASSERT (xml);
     
     // PAR
@@ -536,7 +544,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     xml->qc ();
     if (verbose ())
     {
-      Xml::File f ("xml_view.xml", false, false, "XML");
+      Xml::TextFile f ("xml_view.xml", /*false, false,*/ "XML");
       xml->saveXml (f);
     }
 
