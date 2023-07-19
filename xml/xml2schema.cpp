@@ -72,7 +72,7 @@ struct ThisApplication : Application
     
     if (! printFName. empty ())
     {
-      Xml::File f (printFName, true, true, "XML");  // PAR
+      Xml::TextFile f (printFName, /*true, true,*/ "XML");  // PAR
       xml->saveXml (f);
       cout << endl << endl;
     }
