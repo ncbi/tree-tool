@@ -165,6 +165,7 @@ struct Data : VirtNamed
 {
 	const Names &names;  
 	size_t nameIndex {no_index};
+	  // < names.size()
 	
   // Tree
   const Data* parent {nullptr};
@@ -229,15 +230,14 @@ public:
   static Data* load (Names &names,
                      const string &fName,
                      VectorOwn<Data> &markupDeclarations);
-    // Text
+    // Text XML
     // Data ::=   <tag attribute1="value1" attribute2="value2" ... />
     //          | <tag attribute1="value1" attribute2="value2" ... > Data* XmlText </tag>
     //          | <!-- comment -->
     //          | <? ProcessingInstruction ?>
   static Data* load (Names &names,
                      const string &fName);
-    // Binary
-    // <Data> ::= <nameIndex> <Data>* 0 0 <text> 0
+    // Binary XML, see common.hpp
   void clear () override;
   void qc () const override;
   void saveXml (Xml::File &f) const override;
