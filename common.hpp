@@ -1733,7 +1733,6 @@ struct Xml
   
   
   struct File 
-  // Number of different Tag::name's <= 2^16 - 1
   {
     friend Tag;
   protected:
@@ -1798,6 +1797,11 @@ struct Xml
   
   
   struct BinFile : File
+  // Binary XML
+  //   <Data> ::= <nameIndex> <Data>* 0 0 <text> 0
+  //     <nameIndex> ::= <byte> <byte>
+  //   Number of different Tag::name's <= 2^16
+  //   Tag::name has no: '\0', '\n'
   {
   private:
   	ofstream os;
