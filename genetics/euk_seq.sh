@@ -9,7 +9,7 @@ if [ $# -ne 6 ]; then
   echo "#4: Pfam HMM library (absolute path) or ''"
   echo "#5: use Pfam HMM cutoff (0/1)"
   echo "#6: log file (absolute path)"
-  echo "Average time: <= 5 hours"
+  echo "Time: #1 size: 10M -1 hour; 4G - 6 days"
   exit 1
 fi
 FASTA=$1
