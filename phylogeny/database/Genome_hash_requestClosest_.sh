@@ -22,6 +22,8 @@ FILE=$7
 
 
 #set -x
+#echo "$BULK_REMOTE"
+#echo "$FILE"
 TMP=`mktemp`
 
 
@@ -37,7 +39,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' > $TMP
         BATCHSIZE = 100000
       , CHECK_CONSTRAINTS
       , FIRE_TRIGGERS 
-      , fieldterminator = '|'
+    --, fieldterminator = '|'
       )
 
     select #H.[hash]  
@@ -67,7 +69,7 @@ sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' > $TMP
 EOT
 
 
-grep -vx $GENOME $TMP
+grep -vx $GENOME $TMP || true
 
 
 rm $TMP
