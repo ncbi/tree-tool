@@ -649,7 +649,10 @@ Data::Data (const Names &names_arg,
 		if (! c)
 			break;
 		token. type = Token::eText;
-		token. name += c;
+		if (nonPrintable (c))
+			token. name += nonPrintable2str (c);
+		else
+		  token. name += c;
 		xmlText = true;
 	}
 }
