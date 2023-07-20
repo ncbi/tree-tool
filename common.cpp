@@ -439,6 +439,21 @@ const string noString;
 
 
 
+string nonPrintable2str (char c)
+{
+	string s;
+	switch (c)
+	{
+		case  9: s = "TAB"; break;
+		case 10: s = "LF"; break;
+		case 13: s = "CR"; break;
+		default: s = "x" + uchar2hex ((uchar) c);
+	}	  	
+	return "<" + s + ">";
+}
+
+
+
 bool isRight (const string &s,
               const string &right)
 {
@@ -2458,18 +2473,9 @@ Token TokenInput::getXmlText ()
   	}
 
     // t.name
-	  if (n >= 0 && n < ' ')
-    {
-    	string s;
-	  	switch (n)
-	  	{
-	  		case  9: s = "TAB"; break;
-	  		case 10: s = "LF"; break;
-	  		case 13: s = "CR"; break;
-	  		default: s = "x" + uchar2hex ((uchar) n);
-	  	}	  	
-			t. name += "<" + s + ">";
-    }
+    QC_ASSERT (n > 0);
+	  if (nonPrintable (n))
+			t. name += nonPrintable2str ((char) n);
     else
     {
       if (isChar (n))

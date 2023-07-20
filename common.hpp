@@ -580,6 +580,11 @@ inline bool isLower (char c)
 inline bool printable (char c)
   { return between (c, ' ', (char) 127); }
   
+inline bool nonPrintable (long c)
+  { return between<long> (c, '\x001', ' '); }
+  
+string nonPrintable2str (char c);
+
 inline bool isDelimiter (char c)
   { return    c != ' '
            && printable (c)
