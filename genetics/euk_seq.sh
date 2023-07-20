@@ -1,14 +1,15 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 6 ]; then
+if [ $# -ne 7 ]; then
   echo "Create annotation files for #1 in the directory of #1"
   echo "#1: eukaryotic DNA FASTA"
   echo "#2: fungus (0/1)"
   echo "#3: universal HMM library (absolute path) or ''"
   echo "#4: Pfam HMM library (absolute path) or ''"
   echo "#5: use Pfam HMM cutoff (0/1)"
-  echo "#6: log file (absolute path)"
+  echo "#6: number of cores"
+  echo "#7: log file (absolute path)"
   echo "Time: #1 size: 10M -1 hour; 4G - 6 days"
   exit 1
 fi
@@ -17,7 +18,8 @@ FUNGUS=$2
 UNIV=$3
 PFAM=$4
 PFAM_CUTOFF=$5
-LOG=$6
+CORES=$6
+LOG=$7
 
 
 #set -x
@@ -55,7 +57,7 @@ if [ ! -e $ASM.prot ]; then
   rm -f gmes.log
   rm -f run.cfg
   # Approximate
-  /usr/local/gmes/4.69/bin/gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $ASM  --soft_mask 0  --cores 4  &>> $LOG
+  /usr/local/gmes/4.69/bin/gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $ASM  --soft_mask 0  --cores $CORES  &>> $LOG
   echo -e "\nAnnotation finihsed!\n" >> $LOG
   $THIS/../rm_all.sh data
   $THIS/../rm_all.sh info
@@ -87,13 +89,13 @@ fi
 
 if [ $PFAM ]; then
   section "Pfam"
-  $THIS/prots2hmm_hash.sh $ASM.prot $PFAM $PFAM_CUTOFF $ASM.HMM $ASM.hash-HMM $LOG >> $LOG
+  $THIS/prots2hmm_hash.sh $ASM.prot $PFAM $PFAM_CUTOFF $ASM.HMM $ASM.hash-HMM $CORES $LOG >> $LOG
   gzip $ASM.HMM
 fi
 
 if [ $UNIV ]; then
   section "prots2hmm_univ.sh"
-  $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $LOG >> $LOG
+  $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
 fi
 
 

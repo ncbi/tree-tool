@@ -46,14 +46,17 @@ rm $NAME.hash-PRT1
 
 rm $NAME.cds
 
+# PAR
+CORES=4
+
 if [ $UNIV ]; then
   section "univ"
-  $THIS/prots2hmm_univ.sh $NAME $UNIV 1 $LOG
+  $THIS/prots2hmm_univ.sh $NAME $UNIV 1 $CORES $LOG
 fi
 
 if [ $PFAM ]; then
   section "Pfam"
-  $THIS/prots2hmm_hash.sh $NAME.prot $PFAM $PFAM_CUTOFF $NAME.HMM $NAME.hash-HMM $LOG
+  $THIS/prots2hmm_hash.sh $NAME.prot $PFAM $PFAM_CUTOFF $NAME.HMM $NAME.hash-HMM $CORES $LOG
   gzip $NAME.HMM
 fi
 

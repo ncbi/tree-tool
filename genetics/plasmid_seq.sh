@@ -39,10 +39,10 @@ if [ -s $PL.cds ]; then
   $THIS/orf2prot $PL.cds  -log $LOG > $PL.prot
   # Find mobilome (transposases) ??
   
-  $THIS/prots2hmm_univ.sh $PL $UNIV 1 $LOG
+  $THIS/prots2hmm_univ.sh $PL $UNIV 1 4 $LOG
   grep -w -f $RIB $PL.univ > $PL.ribosomal || true
   
- #$THIS/prots2hmm_hash.sh $PL.prot $PFAM 0 $PL.HMM $PL.hash-HMM $LOG
+ #$THIS/prots2hmm_hash.sh $PL.prot $PFAM 0 $PL.HMM $PL.hash-HMM 4 $LOG
  #cut -f 2 $PL.HMM | tr ',' '\n' | sort -u > $PL.pfam
  #gzip $PL.HMM
   

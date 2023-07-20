@@ -1,20 +1,22 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 4 ]; then
+if [ $# -ne 5 ]; then
   echo "Input: #1.prot or #1.prot-genbank"
   echo "Output: #1.{univ,prot-univ}"
   echo "#1: assembly file prefix"
   echo "#2: HMM library"
   echo "#3: use cut_ga (0/1)"
-  echo "#4: log file"
+  echo "#4: number of cores"
+  echo "#5: log file"
   exit 1
 fi
 PREFIX=$1
 HMM_LIB=$2
 #HMM_DIR=$3
 CUTOFF=$3
-LOG=$4
+CORES=$4
+LOG=$5
 
 
 IN=$PREFIX.prot_genbank
@@ -35,7 +37,7 @@ if [ -s $IN ]; then
   if [ $CUTOFF == 1 ]; then
     CUTOFF_PAR="--cut_ga"
   fi
-  hmmsearch  --tblout $TMP.hmmsearch  --domtblout $TMP.dom  --noali  -Z 10000  $CUTOFF_PAR  --cpu 4  $HMM_LIB $IN &>> $LOG 
+  hmmsearch  --tblout $TMP.hmmsearch  --domtblout $TMP.dom  --noali  -Z 10000  $CUTOFF_PAR  --cpu $CORES  $HMM_LIB $IN &>> $LOG 
 
   $THIS/hmmsearch2besthits $TMP.hmmsearch  -domtblout $TMP.dom  -log $LOG  > $ANNOT 
   cut -f 1,2,4,5 $ANNOT > $TMP.univ
