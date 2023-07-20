@@ -1,4 +1,9 @@
 *
+!.gitignore
+# github root
+!*.md
+!LISENCE
+
 
 # Code
 !*.hpp
@@ -15,59 +20,55 @@
 
 
 # Directories
-!dissim
-!dissim/nw
-!dm
-!dm/conversion
-!dm/data
-!dm/doc.draft
-!dm/doc.draft/MDS
-!dm/doc.draft/multivariate_data_analysis
-!dm/doc.draft/probability
-!genetics
-!genetics/data
-!ncbitax
-!phylogeny
-!phylogeny/Trees
-!phylogeny/data
-!phylogeny/data/featureTree
-#!phylogeny/data/inc.ITS
-!phylogeny/database
-!phylogeny/distTree_inc
-!phylogeny/doc
-!phylogeny/doc/Covid
-!phylogeny/doc/featureTree.draft
-!phylogeny/doc/inc_ls_dist_tree
-!phylogeny/doc/ls_dist_tree_notes.draft
-!phylogeny/doc/tax_miscongruence
-!phylogeny/inc
-!phylogeny/inc/dissim_full
-!phylogeny/inc/genome
-!phylogeny/inc/genome/Chlorophyta
-!phylogeny/inc/genome/Fungi
-!phylogeny/inc/genome/Metazoa
-!phylogeny/inc/genome/Protists
-!phylogeny/inc/genome/Viridiplantae
-!phylogeny/inc/genome/bacteria
-!phylogeny/inc/genome/bacteria_type
-!phylogeny/inc/genome/prokaryota
-!phylogeny/inc/rRNA
-!phylogeny/inc/rRNA/5.8S
-!phylogeny/inc/rRNA/Fungi
-!phylogeny/inc/rRNA/Fungi/18SrRNA
-!phylogeny/inc/rRNA/Fungi/28SrRNA
-!phylogeny/inc/rRNA/Fungi/ITS
-!phylogeny/inc/rRNA/SSU
-!phylogeny/inc/rRNA/bacteria
-!phylogeny/inc/virus
-!phylogeny/inc/virus/SARS-CoV-2
-!tsv
-!xml
+!dissim/
+!dissim/nw/
+!dm/
+!dm/conversion/
+!dm/data/
+!dm/doc.draft/
+!dm/doc.draft/MDS/
+!dm/doc.draft/multivariate_data_analysis/
+!dm/doc.draft/probability/
+!genetics/
+!genetics/data/
+!ncbitax/
+!phylogeny/
+!phylogeny/Trees/
+!phylogeny/data/
+!phylogeny/data/featureTree/
+#!phylogeny/data/inc.ITS/
+!phylogeny/database/
+!phylogeny/distTree_inc/
+!phylogeny/doc/
+!phylogeny/doc/Covid/
+!phylogeny/doc/featureTree.draft/
+!phylogeny/doc/inc_ls_dist_tree/
+!phylogeny/doc/ls_dist_tree_notes.draft/
+!phylogeny/doc/tax_miscongruence/
+!phylogeny/inc/
+!phylogeny/inc/dissim_full/
+!phylogeny/inc/genome/
+!phylogeny/inc/genome/Chlorophyta/
+!phylogeny/inc/genome/Fungi/
+!phylogeny/inc/genome/Metazoa/
+!phylogeny/inc/genome/Protists/
+!phylogeny/inc/genome/Viridiplantae/
+!phylogeny/inc/genome/bacteria/
+!phylogeny/inc/genome/bacteria_type/
+!phylogeny/inc/genome/prokaryota/
+!phylogeny/inc/rRNA/
+!phylogeny/inc/rRNA/5.8S/
+!phylogeny/inc/rRNA/Fungi/
+!phylogeny/inc/rRNA/Fungi/18SrRNA/
+!phylogeny/inc/rRNA/Fungi/28SrRNA/
+!phylogeny/inc/rRNA/Fungi/ITS/
+!phylogeny/inc/rRNA/SSU/
+!phylogeny/inc/rRNA/bacteria/
+!phylogeny/inc/virus/
+!phylogeny/inc/virus/SARS-CoV-2/
+!tsv/
+!xml/
 
-
-# github root
-!*.md
-!LISENCE
 
 cpp_test.cpp
 fstream_test.cpp
