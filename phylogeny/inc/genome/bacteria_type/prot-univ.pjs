@@ -1,0 +1,18 @@
+{
+  "version": "1.2",
+  "dbname": "prot-univ",
+  "dbtype": "Protein",
+  "db-version": 4,
+  "description": "inc/prot-univ",
+  "number-of-letters": 647618232,
+  "number-of-sequences": 2502479,
+  "last-updated": "2023-05-26T19:34:00",
+  "number-of-volumes": 1,
+  "bytes-total": 933246331,
+  "bytes-to-cache": 670140624,
+  "files": [
+    "prot-univ.phr",
+    "prot-univ.pin",
+    "prot-univ.psq"
+  ]
+}
