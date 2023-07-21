@@ -444,9 +444,13 @@ string nonPrintable2str (char c)
 	string s;
 	switch (c)
 	{
+		case  7: s = "BEL"; break;
 		case  9: s = "TAB"; break;
 		case 10: s = "LF"; break;
+		case 12: s = "FF"; break;
 		case 13: s = "CR"; break;
+		case 27: s = "ESC"; break;
+		case 32: s = "SPACE"; break;
 		default: s = "x" + uchar2hex ((uchar) c);
 	}	  	
 	return "<" + s + ">";
