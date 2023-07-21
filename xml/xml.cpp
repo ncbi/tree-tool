@@ -667,7 +667,7 @@ Data::Data (const Names &names_arg,
 			spaces++;
 		}
 		FFOR (size_t, i, spaces)
-		  token. name += "<SPACE>";  // PAR
+		  token. name += nonPrintable2str (' ');
   }
 }
 
