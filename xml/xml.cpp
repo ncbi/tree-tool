@@ -655,6 +655,20 @@ Data::Data (const Names &names_arg,
 		  token. name += c;
 		xmlText = true;
 	}
+	
+	if (xmlText)
+	{
+		size_t spaces = 0;
+		while (   ! token. name. empty ()
+		       && token. name. back () == ' '
+		      )
+		{
+			token. name. erase (token. name. size () - 1);
+			spaces++;
+		}
+		FFOR (size_t, i, spaces)
+		  token. name += "<SPACE>";  // PAR
+  }
 }
 
 
