@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 6 ]; then
+if [ $# -ne 7 ]; then
   echo "Create files for #1 in the current directory"
   echo "Invokes: prodigal"
   echo "#1: prokaryotic genome name"
@@ -9,7 +9,8 @@ if [ $# -ne 6 ]; then
   echo "#3: universal HMM library or ''"
   echo "#4: Pfam HMM library  or ''"
   echo "#5: use Pfam HMM cutoff (0/1)"
-  echo "#6: log file"
+  echo "#6: number of cores"
+  echo "#7: log file"
   echo "Time: 6 min."
   exit 1
 fi
@@ -18,7 +19,8 @@ FASTA=$2
 UNIV=$3
 PFAM=$4
 PFAM_CUTOFF=$5
-LOG=$6
+CORES=$6
+LOG=$7
 
 
 $THIS/dna2stat $FASTA  -log $LOG > $NAME.stat
@@ -45,9 +47,6 @@ $THIS/fasta2hash $NAME.cds $NAME.hash-PRT1 -log $LOG  -cds  -gene_finder $GENE_F
 rm $NAME.hash-PRT1
 
 rm $NAME.cds
-
-# PAR
-CORES=4
 
 if [ $UNIV ]; then
   section "univ"
