@@ -12,7 +12,7 @@ endif
 ############################### Programs ################################
 
 all:	\
-  colors \
+  colors_test \
   curl_easy_test \
   connectPairs \
   effectiveSize \
@@ -20,6 +20,7 @@ all:	\
   file2hash \
   graph_test \
   index_find \
+  key_test \
   list2pairs \
   mergePairs \
   random_words \
@@ -33,10 +34,10 @@ all:	\
 
 
 
-colors.o: $(COMMON_HPP)  
-colorsOBJS=colors.o $(CPP_DIR)/common.o
-colors: $(colorsOBJS)
-	$(CXX) -o $@ $(colorsOBJS) $(LIBS)
+colors_test.o: $(COMMON_HPP)  
+colors_testOBJS=colors_test.o $(CPP_DIR)/common.o
+colors_test: $(colors_testOBJS)
+	$(CXX) -o $@ $(colors_testOBJS) $(LIBS)
 	$(ECHO)
 
 connectPairs.o: $(COMMON_HPP)  
@@ -91,6 +92,12 @@ index_find.o:  $(COMMON_HPP)
 index_findOBJS=index_find.o $(CPP_DIR)/common.o
 index_find:	$(index_findOBJS)
 	$(CXX) -o $@ $(index_findOBJS) $(LIBS)
+	$(ECHO)
+
+key_test.o: $(COMMON_HPP)  
+key_testOBJS=key_test.o $(CPP_DIR)/common.o
+key_test: $(key_testOBJS)
+	$(CXX) -o $@ $(key_testOBJS) $(LIBS)
 	$(ECHO)
 
 list2pairs.o:  $(COMMON_HPP)  
