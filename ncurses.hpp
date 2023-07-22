@@ -56,12 +56,7 @@ namespace NCurses_sp
 {
   
  
-inline int getKey () 
-  { const int escdelay_old = set_escdelay (0);
-		const int key = getch ();  // Invokes refresh()  // wgetch() ?? 
-		set_escdelay (escdelay_old);
-		return key;
-  }
+int getKey ();
 
 
 

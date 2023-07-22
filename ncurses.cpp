@@ -47,6 +47,18 @@ using namespace Common_sp;
 namespace NCurses_sp
 {
   
+  
+int getKey ()
+{ 
+  // Use wgetch(win) ?? 
+  const int escdelay_old = set_escdelay (0);  // PAR
+	const int key = getch ();  
+	set_escdelay (escdelay_old);
+	return key;
+}
+
+
+
 
 // NCurses
 
