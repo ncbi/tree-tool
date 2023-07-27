@@ -19,7 +19,7 @@ if [ $NUMP == 1 ]; then
 fi
 
 TMP=`mktemp` 
-#echo $TMP
+#comment $TMP
 #set -x
 
 $THIS/setMinus $NUM $L1 $L2 > $TMP
