@@ -18,7 +18,7 @@ fi
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr
+#comment $TMP 
 
 
 tail -n +2 $META | cut -f 1,2 > $TMP.dict
@@ -42,7 +42,8 @@ if [ ! -s $TMP.grep ]; then
 fi
 
 echo -e "#iteration\tchild\thybridness\tparent1\tparent2\tdist_parent1\tdist_parent2" >  $TMP.tsv
-sed 's/^[^.]*\.\([^:]\+\):/\1\t/1' $TMP.grep | cut -f 1-7                             >> $TMP.tsv
+sed 's/^[^.]*\.\([^:]\+\):/\1\t/1' $TMP.grep | sed 's/$/\t/1' | cut -f 1-7            >> $TMP.tsv
+  #                                            ^ for an old format
 
 echo -e "#child\tchild_acc" >  $TMP.child
 cat $TMP.dict               >> $TMP.child
