@@ -9,4 +9,6 @@ fi
 DIR=$1
 
 
-trav $DIR "if [ ! -s %d/%f ]; then echo %f; fi" -noprogress
+#trav $DIR "if [ ! -s %d/%f ]; then echo %f; fi" -noprogress
+ls -l $DIR/ | grep '  0 ' | awk '{print $9;}'
+
