@@ -23,6 +23,7 @@ all:	\
   key_test \
   list2pairs \
   mergePairs \
+  ncurses_key_test \
   random_words \
   replace_dict \
   setMinus \
@@ -49,7 +50,7 @@ connectPairs: $(connectPairsOBJS)
 cpp_test.o: $(COMMON_HPP)  
 cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o
 cpp_test: $(cpp_testOBJS)
-	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncurses  
+	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncursesw
 	$(ECHO)
 
 curl_easy_test.o: $(COMMON_HPP) $(CPP_DIR)/curl_easy.hpp
@@ -110,6 +111,12 @@ mergePairs.o:  $(COMMON_HPP)
 mergePairsOBJS=mergePairs.o $(CPP_DIR)/common.o
 mergePairs:	$(mergePairsOBJS)
 	$(CXX) -o $@ $(mergePairsOBJS) $(LIBS)
+	$(ECHO)
+
+ncurses_key_test.o: $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp
+ncurses_key_testOBJS=ncurses_key_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o
+ncurses_key_test: $(ncurses_key_testOBJS)
+	$(CXX) -o $@ $(ncurses_key_testOBJS) $(LIBS) -lncursesw
 	$(ECHO)
 
 random_words.o: $(COMMON_HPP)  
