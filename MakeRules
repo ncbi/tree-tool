@@ -51,6 +51,7 @@ COMMON_HPP = $(COMMON_RAW_HPP) $(CPP_DIR)/version.inc
 COMMON = $(CPP_DIR)/common
 $(CPP_DIR)/common.o:	$(COMMON_RAW_HPP)
 $(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_RAW_HPP) 
+$(CPP_DIR)/search.o:	$(CPP_DIR)/search.hpp $(COMMON_RAW_HPP) 
 $(CPP_DIR)/ncurses.o: $(CPP_DIR)/ncurses.hpp $(COMMON_RAW_HPP)
 $(CPP_DIR)/curl_easy.o: $(CPP_DIR)/curl_easy.hpp $(COMMON_RAW_HPP)
 
