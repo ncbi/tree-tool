@@ -48,6 +48,7 @@ extern "C"
     // Test: test/ncurses
     // $TERM info: infocmp
     // man {3|5} terminfo
+    // vi does not use $TERM ??
 }
 
 
