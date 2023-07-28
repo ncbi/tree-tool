@@ -154,7 +154,7 @@ struct Viewer
         ASSERT (topIndex < bottomIndex);
         maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
+        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -394,6 +394,7 @@ struct Viewer
             break;
           default:
             keyAccepted = false;
+            beep ();
             break;
         }
       }
