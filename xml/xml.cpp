@@ -805,11 +805,11 @@ void Data::saveXml (Xml::File &f) const
 {
   const Xml::Tag tag (f, getName ());
 
-  if (! token. empty ())
-    f. text (token. str ());
-
   for (const Data* child : children)
     child->saveXml (f);
+    
+  if (! token. empty ())
+    f. print (token. name);
 }
 
 

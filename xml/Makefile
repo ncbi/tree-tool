@@ -17,7 +17,9 @@ ALL=	\
   xml_find \
   xml_merge_schemas \
   xml_schema2ddl \
-  xml_schema2flat
+  xml_schema2flat \
+  xml_bin2txt \
+  xml_txt2bin
 
 ifdef AT_NCBI
   all:  $(ALL) \
@@ -32,6 +34,12 @@ xml2schema.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
 xml2schemaOBJS=xml2schema.o $(CPP_DIR)/common.o $(XML_OBJ)
 xml2schema:	$(xml2schemaOBJS)
 	$(CXX) -o $@ $(xml2schemaOBJS) $(LIBS)
+	$(ECHO)
+
+xml_bin2txt.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
+xml_bin2txtOBJS=xml_bin2txt.o $(CPP_DIR)/common.o $(XML_OBJ)
+xml_bin2txt:	$(xml_bin2txtOBJS)
+	$(CXX) -o $@ $(xml_bin2txtOBJS) $(LIBS)
 	$(ECHO)
 
 xml_find.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
@@ -56,6 +64,12 @@ xml_schema2flat.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
 xml_schema2flatOBJS=xml_schema2flat.o $(CPP_DIR)/common.o $(XML_OBJ)
 xml_schema2flat:	$(xml_schema2flatOBJS)
 	$(CXX) -o $@ $(xml_schema2flatOBJS) $(LIBS)
+	$(ECHO)
+
+xml_txt2bin.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
+xml_txt2binOBJS=xml_txt2bin.o $(CPP_DIR)/common.o $(XML_OBJ)
+xml_txt2bin:	$(xml_txt2binOBJS)
+	$(CXX) -o $@ $(xml_txt2binOBJS) $(LIBS)
 	$(ECHO)
 
 xml_view.o:  $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp $(XML_DIR)/xml.hpp
