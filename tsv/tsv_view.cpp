@@ -426,6 +426,7 @@ struct ThisApplication : Application
         #endif
           default:
             keyAccepted = false;
+            beep ();
             break;
         }
       }
