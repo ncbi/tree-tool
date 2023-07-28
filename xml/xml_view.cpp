@@ -154,7 +154,7 @@ struct Viewer
         ASSERT (topIndex < bottomIndex);
         maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp,b  PgDn,f  Home,B  End,F  ^End,^F  Enter:Open/Close  a:Open all  F3,s:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  Esc:Quit");
+        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search word from cursor" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -244,8 +244,10 @@ struct Viewer
         keyAccepted = true;
         switch (key)
         {
-          case 27:  // ESC
+          case 'q':  
             quit = true;
+            break;
+          case KEY_RESIZE:
             break;
           case KEY_DOWN:
             if (curIndex + 1 < rows. size ())
@@ -279,7 +281,7 @@ struct Viewer
           	else
           		beep ();
           	break;
-          case 'f':  
+        //case 'f':  
           case KEY_NPAGE:
             if (curIndex + 1 == rows. size ())
               beep ();
@@ -291,7 +293,7 @@ struct Viewer
               topIndex = curIndex - pageScroll;
             }
             break;
-          case 'b':  
+        //case 'b':  
           case KEY_PPAGE:
             if (! curIndex)
               beep ();
@@ -306,7 +308,7 @@ struct Viewer
               curIndex = topIndex;
             }
             break;
-          case 'B':
+        //case 'B':
           case KEY_HOME:
             if (! curIndex)
               beep ();
@@ -316,7 +318,7 @@ struct Viewer
               topIndex = 0;
             }
             break;
-          case 'F':
+        //case 'F':
           case KEY_END:
             if (curIndex == rows. size () - 1)
               beep ();
@@ -327,7 +329,6 @@ struct Viewer
             }
             break;
           case CTRL('f'):
-          case 531 /*CTRL(KEY_END)*/:
             do
               curIndex = rows. size () - 1;
             while (open (curIndex));
@@ -362,7 +363,7 @@ struct Viewer
             else
               setTopIndex (fieldSize, openAll ());
             break;
-          case 's':
+        //case 's':
           case KEY_F(3):  
             if (   searchForm ()
             	  && ! what. empty ()

@@ -221,11 +221,11 @@ struct ThisApplication : Application
         {
           const Attr attr (A_BOLD);
           const Background bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          const string keyS ("Up  Down  Left  Right  PgUp,b  PgDn,f  Home,B  End,F  F3,s:Search from cursor  m:(un)mark row  a:(un)mark all rows"
+          const string keyS ("Up  Down  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows"
                            #ifndef NUM_P
                              "  #:numbers"
                            #endif
-                             "  Esc:Quit"
+                             "  q:Quit"
                             );
             // Non-character keys may be intercepted by the terminal
         #ifdef NUM_P
@@ -263,8 +263,10 @@ struct ThisApplication : Application
         keyAccepted = true;
         switch (key)  
         {
-          case 27:  // ESC
+          case 'q':  
             quit = true;
+            break;
+          case KEY_RESIZE:
             break;
           case KEY_DOWN:
             if (curIndex + 1 < tt. rows. size ())
@@ -286,7 +288,7 @@ struct ThisApplication : Application
             else
               beep ();
             break;
-          case 'f':  
+        //case 'f':  
           case KEY_NPAGE:
             if (curIndex + 1 == tt. rows. size ())
               beep ();
@@ -298,7 +300,7 @@ struct ThisApplication : Application
               topIndex = curIndex - pageScroll;
             }
             break;
-          case 'b':  
+        //case 'b':  
           case KEY_PPAGE:
             if (! curIndex)
               beep ();
@@ -313,7 +315,7 @@ struct ThisApplication : Application
               curIndex = topIndex;
             }
             break;
-          case 'B':
+        //case 'B':
           case KEY_HOME:
             if (! curIndex)
               beep ();
@@ -323,7 +325,7 @@ struct ThisApplication : Application
               topIndex = 0;
             }
             break;
-          case 'F':
+        //case 'F':
           case KEY_END:
             if (curIndex == tt. rows. size () - 1)
               beep ();
@@ -345,7 +347,7 @@ struct ThisApplication : Application
             else
               beep ();            
             break;
-          case 's':
+        //case 's':
           case KEY_F(3):  // search Form ??!s
             {
               constexpr size_t size = 128;  // PAR
