@@ -31,7 +31,7 @@ if [ -s $TMP.grep ]; then
   error "$NAME is already in $TREE"
 fi
 
-section "Finding closest objects"
+section "Finding approximately closest objects"
 $INC/object2closest.sh $NAME `dirname $QUERY` | grep -vw "^${NAME}$" | sed 's/$/\t'$NAME'/1' > $TMP.request
 
 section "Fitting to the tree"
