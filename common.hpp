@@ -300,6 +300,14 @@ public:
 
 
 
+template <typename T>
+  inline void report (ostream &os,
+			                const string &name,
+			                T value)
+    {	os << name << '\t' << value << endl; }
+  
+
+
 inline void section (const string &title,
                      bool useAlsoCout)
   { const Color::Type color = Color::cyan;
