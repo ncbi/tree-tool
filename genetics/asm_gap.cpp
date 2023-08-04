@@ -143,7 +143,7 @@ struct ThisApplication : Application
 		
     // Statistics
 		ASSERT (! contigs. empty ());
-		cout << "Contigs" << '\t' << contigs. size () << endl;
+		report (cout, "Contigs", contigs. size ());
 		
 		contigs. sort ();
 
@@ -151,7 +151,7 @@ struct ThisApplication : Application
 		for (const size_t len : contigs)
 		  total += len;
 		const size_t half = total / 2;
-		cout << "Total" << '\t' << total << endl;
+		report (cout, "Total", total);
 
     total = 0;
 		FOR_REV (size_t, i, contigs. size ())
@@ -160,8 +160,8 @@ struct ThisApplication : Application
 		  total += len;
 		  if (total >= half)
 		  {
-		    cout << "L50" << '\t' <<  (contigs. size () - i) << endl;
-		    cout << "N50" << '\t' <<  len << endl;
+		    report (cout, "L50", contigs. size () - i);
+		    report (cout, "N50", len);
 		    break;
 		  }
 		}
