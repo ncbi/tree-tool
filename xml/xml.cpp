@@ -834,7 +834,8 @@ bool Data::contains (const string &what,
                      bool tokenWord) const
 {    
   if (equalName)
-  	return containsWord (getName (), what) != string::npos;
+  	return getName () == what;
+  	  // containsWord (getName (), what) != string::npos;
   if (tokenWord)
   	return containsWord (token. name, what) != string::npos;
   if (tokenSubstr)

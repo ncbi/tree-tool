@@ -539,7 +539,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     	{
     		// Display s/color in search form window ??
         var_cast (xml. get ()) -> setSearchFound (s, true, false, false, mask);
-    		mask = Byte (mask * 2);
+    	//mask = Byte (mask * 2);  // White color is bad
       }
     }
     
