@@ -38,7 +38,7 @@
 #endif
 
 
-#undef NDEBUG
+#undef NDEBUG  
 #include "../common.inc"
 
 #include "../common.hpp"
@@ -381,8 +381,12 @@ struct Viewer
           		if (openSearchFound (curIndex_new))
           		{
           			curIndex = curIndex_new;
+          		#if 1
+          			setTopIndex (fieldSize, 0);
+          		#else
        			    if (curIndex >= topIndex + fieldSize)
                    topIndex = curIndex - fieldSize + 1;
+              #endif
           		}
           		else
           			beep ();
