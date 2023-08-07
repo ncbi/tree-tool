@@ -828,34 +828,16 @@ void Data::saveText (ostream &os) const
 
 
 
-bool Data::contains (const string &what,
-                     bool equalName,
-                     bool tokenSubstr,
-                     bool tokenWord) const
-{    
-  if (equalName)
-  	return getName () == what;
-  	  // containsWord (getName (), what) != string::npos;
-  if (tokenWord)
-  	return containsWord (token. name, what) != string::npos;
-  if (tokenSubstr)
-  	return Common_sp::contains (token. name, what);    
-  return token. name == what;
-}
-
-
-
 bool Data::find (VectorPtr<Data> &path,
-                 const string &what,
-                 bool equalName,
-                 bool tokenSubstr,
-                 bool tokenWord) const
+                 const string &needle,
+                 bool targetNameP,
+		             StringMatch::Type matchType) const
 {
-  if (contains (what, equalName, tokenSubstr, tokenWord))
+  if (contains (needle, targetNameP, matchType))
     return true;
     
   for (const Data* child : children)
-    if (child->find (path, what, equalName, tokenSubstr, tokenWord))
+    if (child->find (path, needle, targetNameP, matchType))
     {
       path << child;
       return true;
@@ -866,17 +848,16 @@ bool Data::find (VectorPtr<Data> &path,
 
 
 
-size_t Data::setSearchFound (const string &what,
-			  		                 bool equalName,
-				  	                 bool tokenSubstr,
-					                   bool tokenWord,
+size_t Data::setSearchFound (const string &needle,
+			  		                 bool targetNameP,
+								             StringMatch::Type matchType,
 					                   Byte mask)
 {
 	ASSERT (mask);
 
   size_t n = 0;
 
-  if (contains (what, equalName, tokenSubstr, tokenWord))
+  if (contains (needle, targetNameP, matchType))
   {
     searchFound    |= mask;
     searchFoundAll |= mask;
@@ -892,7 +873,7 @@ size_t Data::setSearchFound (const string &what,
   }
     
   for (const Data* child : children)
-    n += var_cast (child) -> setSearchFound (what, equalName, tokenSubstr, tokenWord, mask);
+    n += var_cast (child) -> setSearchFound (needle, targetNameP, matchType, mask);
     
   return n;
 }

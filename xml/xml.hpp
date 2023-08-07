@@ -266,25 +266,26 @@ public:
         n += child->getLeaves ();
       return n;
     }
-  bool contains (const string &what,
-                 bool equalName,
-                 bool tokenSubstr,
-                 bool tokenWord) const;
+  bool contains (const string &needle,
+                 bool targetNameP,
+                 StringMatch::Type matchType) const
+    { const string s (targetNameP ? getName () : token. name);
+    	return matches (s, needle, matchType); 
+    }
   bool find (VectorPtr<Data> &path,
-             const string &what,
-             bool equalName,
-             bool tokenSubstr,
-             bool tokenWord) const;
+             const string &needle,
+             bool targetNameP,
+             StringMatch::Type matchType) const;
     // DFS
-    // Update: path: reverse path to *Data containing <what>
+    // Input; !targetNameP <=> target is token
+    // Update: path: reverse path to *Data containing <needle>
     //               valid if Return
     // Invokes: contains()
-  size_t setSearchFound (const string &what,
-				                 bool equalName,
-				                 bool tokenSubstr,
-				                 bool tokenWord,
+  size_t setSearchFound (const string &needle,
+				                 bool targetNameP,
+						             StringMatch::Type matchType,
 					               Byte mask);
-    // Return: # Data's
+    // Return: number of Data's
     // Output: searchFound, searchFoundAll
     // Invokes: contains()
   void unsetSearchFound (Byte mask)
