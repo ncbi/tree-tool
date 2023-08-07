@@ -108,6 +108,7 @@ struct Viewer
   Vector<Row> rows;  
   size_t topIndex {0};
   size_t curIndex {0};
+    // rows.size() < curIndex <= topIndex 
   // Search
   StringVector what;  
   bool equalName {true};  
@@ -135,6 +136,7 @@ struct Viewer
 	  bool quit = false;
     while (! quit)
     {
+      // Input: topIndex, curIndex
       ASSERT (! rows. empty ());
       if (qc_on)
         FFOR (size_t, i, rows. size () - 1)
@@ -154,7 +156,7 @@ struct Viewer
         ASSERT (topIndex < bottomIndex);
         maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
+        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search  n:Next found" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -281,7 +283,6 @@ struct Viewer
           	else
           		beep ();
           	break;
-        //case 'f':  
           case KEY_NPAGE:
             if (curIndex + 1 == rows. size ())
               beep ();
@@ -293,7 +294,6 @@ struct Viewer
               topIndex = curIndex - pageScroll;
             }
             break;
-        //case 'b':  
           case KEY_PPAGE:
             if (! curIndex)
               beep ();
@@ -308,7 +308,6 @@ struct Viewer
               curIndex = topIndex;
             }
             break;
-        //case 'B':
           case KEY_HOME:
             if (! curIndex)
               beep ();
@@ -318,7 +317,6 @@ struct Viewer
               topIndex = 0;
             }
             break;
-        //case 'F':
           case KEY_END:
             if (curIndex == rows. size () - 1)
               beep ();
@@ -363,7 +361,6 @@ struct Viewer
             else
               setTopIndex (fieldSize, openAll ());
             break;
-        //case 's':
           case KEY_F(3):  
             if (   searchForm ()
             	  && ! what. empty ()
@@ -371,10 +368,26 @@ struct Viewer
             {
               const uchar mask = 1;  // ??
               var_cast (xml). unsetSearchFound (mask);
-              if (! var_cast (xml). setSearchFound (what. toString (), equalName, tokenSubstr, tokenWord, mask))
+              // StringMatch::Type ??
+              if (! var_cast (xml). setSearchFound (what. toString (), equalName, tokenSubstr ? StringMatch::part : (tokenWord ? StringMatch::word : StringMatch::whole), mask))
               	beep ();
             }
             break;
+          case 'n':  // Next found row 
+          	{
+          		size_t curIndex_new = curIndex;
+          		if (rows [curIndex_new]. data->searchFound)
+          			curIndex_new++;
+          		if (openSearchFound (curIndex_new))
+          		{
+          			curIndex = curIndex_new;
+       			    if (curIndex >= topIndex + fieldSize)
+                   topIndex = curIndex - fieldSize + 1;
+          		}
+          		else
+          			beep ();
+          	}
+          	break;
           case 'c':  // Row::color
             {
               drawMenu (fieldSize, "n(one) r(ed) g(reen) y(ellow) b(lue) m(agenta) c(yan) w(hite)");
@@ -444,9 +457,24 @@ struct Viewer
 	size_t openAll ()
 	{
 	  size_t opened = 0;
-	  FOR_START (size_t, i, curIndex, curIndex + 1 + opened )
+	  FOR_START (size_t, i, curIndex, curIndex + 1 + opened)
 	    opened += open (i);
 	  return opened;
+	}
+	
+	
+	bool openSearchFound (size_t &curIndex_new)
+	{
+		while (curIndex_new < rows. size ())
+		{
+			const Row& row = rows [curIndex_new];
+			if (row. data->searchFound)
+				return true;
+			if (row. data->searchFoundAll && ! row. open)
+				open (curIndex_new);
+			curIndex_new++;
+	  }
+		return false;
 	}
 	
 	
@@ -478,6 +506,7 @@ struct Viewer
 			
 		what        = form. getVal (0);
 		equalName   = form. getS (1) == "Y";
+		// --> StringMatch::Type drop-down list ??
 		tokenSubstr = form. getS (2) == "N";
 		tokenWord   = form. getS (3) == "Y";
 		
@@ -538,8 +567,8 @@ At line ends: [<# children>|<# nodes in subtree>]\
     	for (const string& s : searchTags)
     	{
     		// Display s/color in search form window ??
-        var_cast (xml. get ()) -> setSearchFound (s, true, false, false, mask);
-    		mask = Byte (mask * 2);
+        var_cast (xml. get ()) -> setSearchFound (s, true, StringMatch::whole, mask);
+    	//mask = Byte (mask * 2);  // White color is bad
       }
     }
     
