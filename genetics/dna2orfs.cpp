@@ -56,7 +56,7 @@ struct ThisApplication : Application
       version = VERSION;
 	  	addPositional ("in", "Input DNA multi-FASTA file");
 	  	addPositional ("gencode", "NCBI genetic code");
-	  	addPositional ("len_min", "Min. ORF length without 'X'");
+	  	addPositional ("len_min", "Min. ORF length in aa without 'X'");
 	  }
 
 
