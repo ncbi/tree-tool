@@ -111,9 +111,9 @@ struct Viewer
     // rows.size() < curIndex <= topIndex 
   // Search
   StringVector what;  
-  bool equalName {true};  
-  bool tokenSubstr {false}; 
-  bool tokenWord {false};  
+  bool targetNameP {true};  
+  bool substrP {false}; 
+  bool wordP {false};  
   //
   NCurses nc;
 
@@ -369,7 +369,13 @@ struct Viewer
               const uchar mask = 1;  // ??
               var_cast (xml). unsetSearchFound (mask);
               // StringMatch::Type ??
-              if (! var_cast (xml). setSearchFound (what. toString (), equalName, tokenSubstr ? StringMatch::part : (tokenWord ? StringMatch::word : StringMatch::whole), mask))
+              const StringMatch::Type t = wordP 
+              	                            ? StringMatch::word 
+              	                            : substrP 
+              	                            	 ? StringMatch::part 
+              	                            	 : StringMatch::whole;
+            //message (to_string ((int) t));  
+              if (! var_cast (xml). setSearchFound (what. toString (), targetNameP, t, mask))
               	beep ();
             }
             break;
@@ -500,19 +506,19 @@ struct Viewer
 		form. print (c2, 1, "Whole");
 		form. print (c3, 1, "Word");
 		form. add (c0, 2, w0, false, what);
-		form. add (c1, 2, 2, true, yesNo (equalName));
-		form. add (c2, 2, 2, true, equalName ? "" : yesNo (! tokenSubstr));
-		form. add (c3, 2, 2, true, equalName ? "" : yesNo (tokenWord));
+		form. add (c1, 2, 2, true, yesNo (targetNameP));
+		form. add (c2, 2, 2, true, yesNo (! substrP));
+		form. add (c3, 2, 2, true, yesNo (wordP));
 		if (! form. run ())
 			return false;
 		
 		// validation ??
 			
 		what        = form. getVal (0);
-		equalName   = form. getS (1) == "Y";
+		targetNameP = form. getS (1) == "Y";
 		// --> StringMatch::Type drop-down list ??
-		tokenSubstr = form. getS (2) == "N";
-		tokenWord   = form. getS (3) == "Y";
+		substrP = form. getS (2) == "N";
+		wordP   = form. getS (3) == "Y";
 		
 	  return true;	
 	}
@@ -571,7 +577,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     	for (const string& s : searchTags)
     	{
     		// Display s/color in search form window ??
-        var_cast (xml. get ()) -> setSearchFound (s, true, StringMatch::whole, mask);
+        var_cast (xml. get ()) -> setSearchFound (s, true, StringMatch::word, mask);
     	//mask = Byte (mask * 2);  // White color is bad
       }
     }
