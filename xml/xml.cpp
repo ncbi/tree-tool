@@ -326,7 +326,7 @@ void Schema::printColumnDdl (ostream &os,
       case Token::eInteger:  sqlType = "bigint"; break;
       case Token::eDouble:   sqlType = "float"; break;
       case Token::eDateTime: sqlType = "datetime"; break;
-      default: throw runtime_error ("UNknown SQL type");
+      default: throw runtime_error ("Unknown SQL type");
     }
     ASSERT (! sqlType. empty ());
     string colName (getColumnName (curTable));
@@ -655,20 +655,6 @@ Data::Data (const Names &names_arg,
 		  token. name += c;
 		xmlText = true;
 	}
-	
-	if (xmlText)
-	{
-		size_t spaces = 0;
-		while (   ! token. name. empty ()
-		       && token. name. back () == ' '
-		      )
-		{
-			token. name. erase (token. name. size () - 1);
-			spaces++;
-		}
-		FFOR (size_t, i, spaces)
-		  token. name += nonPrintable2str (' ');
-  }
 }
 
 
@@ -1044,7 +1030,33 @@ void Data::writeFiles (size_t xmlNum,
 
 
 
-void Data::tag2token (const string &tagName)
+bool Data::chars2token (const string &tagName,
+	                      size_t len_max)
+{
+  if (children. empty ())
+    return getName () == tagName;
+
+  bool done = false;
+  const bool tokenEmpty = token. empty ();
+	for (const Data* child : children)
+	{
+	  ASSERT (child);
+    if (var_cast (child) -> chars2token (tagName, len_max))
+    	if (tokenEmpty)
+    	{
+	    	if (token. name. size () < len_max)
+	 		    token. name += child->token. name;
+	 		  token. type = Token::eText;
+	  		done = true;
+	    }
+	}
+	
+  return done;
+}
+
+
+
+void Data::text2token (const string &tagName)
 {
   if (children. empty ())
     return;
@@ -1066,7 +1078,7 @@ void Data::tag2token (const string &tagName)
 	for (const Data* child : children)
 	{
 	  ASSERT (child);
-    var_cast (child) -> tag2token (tagName);
+    var_cast (child) -> text2token (tagName);
 	}
 }
 
@@ -1107,6 +1119,18 @@ void Data::mergeSingleChildren ()
 	{
 	  ASSERT (child);
     var_cast (child) -> mergeSingleChildren ();
+	}
+}
+
+
+
+void Data::visualizeTokenTrailingSpaces ()
+{
+  visualizeTrailingSpaces (token. name);
+	for (const Data* child : children)
+	{
+	  ASSERT (child);
+    var_cast (child) -> visualizeTokenTrailingSpaces ();
 	}
 }
 

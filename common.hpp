@@ -1258,6 +1258,10 @@ string to_c (const string &s);
   // " --> \", etc.
 
 void collapseSpace (string &s);
+  // "  " --> " "
+  
+void visualizeTrailingSpaces (string &s);
+  // Invokes: nonPrintable2str(' ')
   
 string str2streamWord (const string &s,
                        size_t wordNum);

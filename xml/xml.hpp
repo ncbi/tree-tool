@@ -319,8 +319,11 @@ public:
   void writeFiles (size_t xmlNum,
                    const Schema* sch,
                    FlatTable* flatTable) const;
-  void tag2token (const string &tagName);
+  bool chars2token (const string &tagName,
+                    size_t len_max);
+  void text2token (const string &tagName);
   void mergeSingleChildren ();
+  void visualizeTokenTrailingSpaces ();
 };
 
 
