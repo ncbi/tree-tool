@@ -557,19 +557,23 @@ At line ends: [<# children>|<# nodes in subtree>]\
 
 
     Names names (10000);   // PAR
-	  unique_ptr<const Xml_sp::Data> xml;
+    Xml_sp::Data* xml = nullptr;
+	  unique_ptr<const Xml_sp::Data> xml_;
 	  if (bin)
-	  	xml. reset (Xml_sp::Data::load (names, xmlFName));
+	  	xml = Xml_sp::Data::load (names, xmlFName);
 	  else
 	  {
 		  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  	xml. reset (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
+	  	xml = Xml_sp::Data::load (names, xmlFName, markupDeclarations);
 	  }
     ASSERT (xml);
+    xml_. reset (xml);
     
     // PAR
-    var_cast (xml. get ()) -> tag2token ("text");  
-    var_cast (xml. get ()) -> mergeSingleChildren ();  
+    xml->text2token ("text");  
+    xml->chars2token ("char", 100);
+    xml->mergeSingleChildren ();  
+    xml->visualizeTokenTrailingSpaces ();
     
     if (! searchTags. empty ())
     {
@@ -577,7 +581,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     	for (const string& s : searchTags)
     	{
     		// Display s/color in search form window ??
-        var_cast (xml. get ()) -> setSearchFound (s, true, StringMatch::word, mask);
+        xml->setSearchFound (s, true, StringMatch::word, mask);
     	//mask = Byte (mask * 2);  // White color is bad
       }
     }
@@ -585,11 +589,11 @@ At line ends: [<# children>|<# nodes in subtree>]\
     xml->qc ();
     if (verbose ())
     {
-      Xml::TextFile f ("xml_view.xml", /*false, false,*/ "XML");
+      Xml::TextFile f ("xml_view.xml", "XML");
       xml->saveXml (f);
     }
 
-    Viewer vw (xmlFName, xml. get ());
+    Viewer vw (xmlFName, xml);
     vw. run ();
 	}
 };
