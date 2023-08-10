@@ -883,6 +883,21 @@ void collapseSpace (string &s)
                
 
 
+void visualizeTrailingSpaces (string &s)
+{
+	size_t spaces = 0;
+	while (   ! s. empty ()
+	       && s. back () == ' '
+	      )
+	{
+		s. erase (s. size () - 1);
+		spaces++;
+	}
+	FFOR (size_t, i, spaces)
+	  s += nonPrintable2str (' ');
+}
+
+
   
 string str2streamWord (const string &s,
                        size_t wordNum)
