@@ -15,6 +15,8 @@ F2=$2
 OPT="$3"
 
 
+$THIS/../check_file.sh $F2
+
 mv $F1 $F1.bak
 
 SYN=""
