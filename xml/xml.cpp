@@ -1044,8 +1044,8 @@ bool Data::chars2token (const string &tagName,
     if (var_cast (child) -> chars2token (tagName, len_max))
     	if (tokenEmpty)
     	{
-	    	if (token. name. size () < len_max)
-	 		    token. name += child->token. name;
+	    	if (len_max > token. name. size ())
+	 		    token. name += child->token. name. substr (0, len_max - token. name. size ());
 	 		  token. type = Token::eText;
 	  		done = true;
 	    }

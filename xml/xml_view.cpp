@@ -56,6 +56,10 @@ using namespace NCurses_sp;
 
 namespace
 {
+	
+	
+constexpr size_t token_name_len = 100;   // PAR
+
   
   
 struct Row
@@ -211,7 +215,13 @@ struct Viewer
 	          #endif
             }
           #else
-            printw (" %s", row. data->token. name. c_str ());  
+            string s (row. data->token. name);
+            if (s. size () >= token_name_len)  // PAR
+            {
+            	s. erase (token_name_len);
+            	s += " ...";
+            }
+            printw (" %s", s. c_str ());  
           #endif
           }
           if (const size_t n = row. data->children. size ())
@@ -571,7 +581,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
     
     // PAR
     xml->text2token ("text");  
-    xml->chars2token ("char", 100);
+    xml->chars2token ("char", token_name_len);
     xml->mergeSingleChildren ();  
     xml->visualizeTokenTrailingSpaces ();
     
