@@ -107,6 +107,7 @@ bool sigpipe = false;
 
 
 
+
 // COutErr
 
 #ifndef _MSC_VER
@@ -223,6 +224,8 @@ namespace
                              bool segmFault)
 // alloc() may not work
 { 
+	beep ();
+	
 	ostream* os = logPtr ? logPtr : & cout; 
 	
 	// time ??
@@ -1636,6 +1639,22 @@ Threads::~Threads ()
 // Xml
 
 // Xml::TextFile
+
+void Xml::TextFile::printRawText (const string &s) 
+{ 
+	string res;  res. reserve (s. size ());
+	for (const char c : s)
+		switch (c)
+		{
+			case '<': res += "&lt;"; break;
+			case '>': res += "&gt;"; break;
+			case '&': res += "&amp;"; break;
+			default:  res += c;
+		}
+	printRaw (res);
+}
+
+
 
 void Xml::TextFile::tagStart (const string &tag) 
 { 

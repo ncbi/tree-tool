@@ -39,7 +39,6 @@
 #include "common.hpp"
 using namespace Common_sp;
 
-
 // ftp://ftp.gnu.org/gnu/ncurses/ncurses-6.2.tar.gz
 extern "C"
 {
@@ -55,6 +54,7 @@ extern "C"
 
 namespace NCurses_sp
 {
+
   
  
 int getKey ();

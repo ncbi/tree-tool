@@ -216,6 +216,12 @@ struct Viewer
             }
           #else
             string s (row. data->token. name);
+            size_t j = 0;
+            while (j < s. size () && s [j] == ' ')
+              j++;
+            const string sp ("<SPACES:" + to_string (j) + ">");
+            if (j > sp. size ())
+              s = sp + s. substr (j);
             if (s. size () >= token_name_len)  // PAR
             {
             	s. erase (token_name_len);
@@ -269,7 +275,7 @@ struct Viewer
                 topIndex++;
             }
             else
-              beep ();
+              Common_sp::beep ();
             break;
           case KEY_UP:
             if (curIndex)
@@ -279,23 +285,23 @@ struct Viewer
               curIndex--;
             }
             else
-              beep ();
+              Common_sp::beep ();
             break;
           case 01016:  // ^KEY_DOWN
           	if (topIndex + 1 < rows. size ())
           		topIndex++;
           	else 
-          		beep ();
+          		Common_sp::beep ();
           	break;
           case 01067:  // ^KEY_UP
           	if (topIndex)
           		topIndex--;
           	else
-          		beep ();
+          		Common_sp::beep ();
           	break;
           case KEY_NPAGE:
             if (curIndex + 1 == rows. size ())
-              beep ();
+              Common_sp::beep ();
             else if (curIndex + 1 < bottomIndex)
               curIndex = bottomIndex - 1;
             else
@@ -306,7 +312,7 @@ struct Viewer
             break;
           case KEY_PPAGE:
             if (! curIndex)
-              beep ();
+              Common_sp::beep ();
             else if (curIndex > topIndex)
               curIndex = topIndex;
             else
@@ -320,7 +326,7 @@ struct Viewer
             break;
           case KEY_HOME:
             if (! curIndex)
-              beep ();
+              Common_sp::beep ();
             else
             {
               curIndex = 0;
@@ -329,7 +335,7 @@ struct Viewer
             break;
           case KEY_END:
             if (curIndex == rows. size () - 1)
-              beep ();
+              Common_sp::beep ();
             else
             {
               curIndex = rows. size () - 1;
@@ -345,7 +351,7 @@ struct Viewer
           case 10:         // Key above "shift" key
           case KEY_ENTER:  // Bottom-right key
             if (rows [curIndex]. data->children. empty ())
-              beep ();
+              Common_sp::beep ();
             else if (! rows [curIndex]. open)
               setTopIndex (fieldSize, open (curIndex));
             else
@@ -367,7 +373,7 @@ struct Viewer
             if (   rows [curIndex]. data->children. empty ()
                 || rows [curIndex]. open
                )
-              beep ();
+              Common_sp::beep ();
             else
               setTopIndex (fieldSize, openAll ());
             break;
@@ -386,7 +392,7 @@ struct Viewer
               	                            	 : StringMatch::whole;
             //message (to_string ((int) t));  
               if (! var_cast (xml). setSearchFound (what. toString (), targetNameP, t, mask))
-              	beep ();
+              	Common_sp::beep ();
             }
             break;
           case 'n':  // Next found row 
@@ -405,7 +411,7 @@ struct Viewer
               #endif
           		}
           		else
-          			beep ();
+          			Common_sp::beep ();
           	}
           	break;
           case 'c':  // Row::color
@@ -427,7 +433,7 @@ struct Viewer
             break;
           default:
             keyAccepted = false;
-            beep ();
+            Common_sp::beep ();
             break;
         }
       }

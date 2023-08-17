@@ -148,6 +148,11 @@ inline void never_call ()
 
 
 
+inline void beep ()
+  { cout << '\x07'; }
+  
+
+
 class Notype {};
 
 
@@ -600,7 +605,7 @@ inline bool isHex (char c)
   { return isDigit (c) || strchr ("ABCDEF", toUpper (c)); }
 
 inline uchar hex2uchar (char c)
-  { return uchar (isDigit (c) ? (c - '0') : (c - 'A' + 10)); }
+  { return uchar (isDigit (c) ? (c - '0') : (toUpper (c) - 'A' + 10)); }
 
 inline string uchar2hex (uchar c)
   { constexpr char hex [16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -1770,11 +1775,12 @@ struct Xml
 
   private:
     virtual void printRaw (const string &s) = 0;
+    virtual void printRawText (const string &s) = 0;
     virtual void tagStart (const string &tag) = 0;
     virtual void tagEnd   (const string &tag) = 0;
   public:
   	void print (const string &s)
-  	  { printRaw (s);
+  	  { printRawText (s);
   	  	isText = true;
   	  }
 		void text (const string &s) 
@@ -1813,6 +1819,7 @@ struct Xml
   private:
     void printRaw (const string &s) final
       { os << s; }
+    void printRawText (const string &s) final;
     void tagStart (const string &tag) final;
     void tagEnd (const string &tag) final;
   };
@@ -1839,6 +1846,8 @@ struct Xml
 
   private:
     void printRaw (const string &s) final;
+    void printRawText (const string &s) final
+      { printRaw (s); }
     void tagStart (const string &tag) final;
     void tagEnd (const string &tag) final;
   };
