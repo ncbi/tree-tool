@@ -276,7 +276,7 @@ struct ThisApplication : Application
                 topIndex++;
             }
             else
-              Common_sp::beep ();
+              ::beep ();
             break;
           case KEY_UP:
             if (curIndex)
@@ -286,12 +286,11 @@ struct ThisApplication : Application
               curIndex--;
             }
             else
-              Common_sp::beep ();
+              ::beep ();
             break;
-        //case 'f':  
           case KEY_NPAGE:
             if (curIndex + 1 == tt. rows. size ())
-              Common_sp::beep ();
+              ::beep ();
             else if (curIndex + 1 < bottomIndex)
               curIndex = bottomIndex - 1;
             else
@@ -300,10 +299,9 @@ struct ThisApplication : Application
               topIndex = curIndex - pageScroll;
             }
             break;
-        //case 'b':  
           case KEY_PPAGE:
             if (! curIndex)
-              Common_sp::beep ();
+              ::beep ();
             else if (curIndex > topIndex)
               curIndex = topIndex;
             else
@@ -315,20 +313,18 @@ struct ThisApplication : Application
               curIndex = topIndex;
             }
             break;
-        //case 'B':
           case KEY_HOME:
             if (! curIndex)
-              Common_sp::beep ();
+              ::beep ();
             else
             {
               curIndex = 0;
               topIndex = 0;
             }
             break;
-        //case 'F':
           case KEY_END:
             if (curIndex == tt. rows. size () - 1)
-              Common_sp::beep ();
+              ::beep ();
             else
             {
               curIndex = tt. rows. size () - 1;
@@ -339,15 +335,14 @@ struct ThisApplication : Application
             if (curCol)
               curCol--;
             else
-              Common_sp::beep ();            
+              ::beep ();            
             break;
           case KEY_RIGHT:
             if (curLastCol + 1 < tt. header. size ())
               curCol++;
             else
-              Common_sp::beep ();            
+              ::beep ();            
             break;
-        //case 's':
           case KEY_F(3):  // search Form ??!s
             {
               constexpr size_t size = 128;  // PAR
@@ -370,7 +365,7 @@ struct ThisApplication : Application
               }
               if (what. empty ())
               {
-                Common_sp::beep ();
+                ::beep ();
                 continue;
               }
               bool globalFound = false;
@@ -400,7 +395,7 @@ struct ThisApplication : Application
               }
               if (! globalFound)
               {
-                Common_sp::beep ();
+                ::beep ();
                 continue;
               }
               if (curIndex < topIndex)
@@ -426,7 +421,7 @@ struct ThisApplication : Application
         #endif
           default:
             keyAccepted = false;
-            Common_sp::beep ();
+            ::beep ();
             break;
         }
       }
