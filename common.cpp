@@ -386,8 +386,9 @@ Chronometer_OnePass::~Chronometer_OnePass ()
     const OColor oc (os, Color::magenta, false, true /*& os == & cerr*/);  
     os << "CHRON: " << name << ": ";
     const ONumber on (os, 0, false);
-    os << difftime (stop, start) << " sec." << endl;  
+    os << difftime (stop, start) << " sec.";
   }
+  os << endl;  
 
   if (addNewLine)
     os << endl;
