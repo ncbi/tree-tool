@@ -184,7 +184,7 @@ else
   diff $TMP.Saccharomyces2.hybrid.cut $DATA/Saccharomyces2.hybrid
   $THIS/hybrid2list.sh $TMP.Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
   $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid_parent_pairs "1,2,3,4,5,6,7,8,9,10,11,12" 0 | sort > $TMP.Saccharomyces2.hybrid_parent_pairs.cut
-  diff $TMP.Saccharomyces2.hybrid_parent_pairs.cut $DATA/Saccharomyces2.hybrid_parent_pairs
+  diff -b $TMP.Saccharomyces2.hybrid_parent_pairs.cut $DATA/Saccharomyces2.hybrid_parent_pairs
   diff $TMP.Saccharomyces2.criterion_outliers $DATA/Saccharomyces2.criterion_outliers
   cut -f 1       Saccharomyces2.deformation_outliers > $TMP.Saccharomyces2.deformation_outliers
   cut -f 1 $DATA/Saccharomyces2.deformation_outliers > $TMP.data.Saccharomyces2.deformation_outliers
