@@ -180,10 +180,10 @@ else
     -delete_criterion_outliers $TMP.Saccharomyces2.criterion_outliers  -criterion_outlier_num_max 1 \
     -delete_deformation_outliers Saccharomyces2.deformation_outliers  -deformation_outlier_num_max 1 \
     -output_tree $TMP.tree > $TMP.out
-  $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid "10 --complement" 0 | sort > $TMP.Saccharomyces2.hybrid.cut
+  $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid "1,2,3,4,5,6,7,8,9" 0 | sort > $TMP.Saccharomyces2.hybrid.cut
   diff $TMP.Saccharomyces2.hybrid.cut $DATA/Saccharomyces2.hybrid
   $THIS/hybrid2list.sh $TMP.Saccharomyces2.hybrid > Saccharomyces2.hybrid.list
-  $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid_parent_pairs "13 --complement" 0 | sort > $TMP.Saccharomyces2.hybrid_parent_pairs.cut
+  $THIS/../tsv/tsv_cut.sh $TMP.Saccharomyces2.hybrid_parent_pairs "1,2,3,4,5,6,7,8,9,10,11,12" 0 | sort > $TMP.Saccharomyces2.hybrid_parent_pairs.cut
   diff $TMP.Saccharomyces2.hybrid_parent_pairs.cut $DATA/Saccharomyces2.hybrid_parent_pairs
   diff $TMP.Saccharomyces2.criterion_outliers $DATA/Saccharomyces2.criterion_outliers
   cut -f 1       Saccharomyces2.deformation_outliers > $TMP.Saccharomyces2.deformation_outliers
