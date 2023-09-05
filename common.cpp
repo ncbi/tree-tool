@@ -43,14 +43,17 @@
 #include <csignal>  
 
 #ifndef _MSC_VER
-  #include <execinfo.h>
-  #include <sys/types.h>
-  #include <sys/stat.h>
-  #include <unistd.h>
-  #include <dirent.h>
-  #ifdef __APPLE__
-    #include <sys/sysctl.h>
-  #endif
+  extern "C"
+  {
+	  #include <execinfo.h>
+	  #include <sys/types.h>
+	  #include <sys/stat.h>
+	  #include <unistd.h>
+	  #include <dirent.h>
+	  #ifdef __APPLE__
+	    #include <sys/sysctl.h>
+	  #endif
+  }
 #endif
 
 
@@ -313,6 +316,39 @@ string getStack ()
   if (cxml)
     cxml->print (string (error_caption) + ": " + s);
   throw logic_error (s + "\nStack:\n" + getStack ()); 
+}
+
+
+
+
+//
+
+bool isRedirected (const ostream &os)
+{ 
+#ifdef _MSC_VER
+  return false;
+#else
+	if (& os == & cout)
+	  return ! isatty (fileno (stdout));
+	if (& os == & cerr)
+	  return ! isatty (fileno (stderr));
+#if 0
+	if (& os == & clog)
+	  return ! isatty (fileno (stdlog));
+#endif
+	return false;
+#endif
+}
+
+
+
+void beep ()
+{ 
+	constexpr char c = '\x07';
+	if (! isRedirected (cerr))
+	  cerr << c;
+	if (! isRedirected (cout))
+	  cout << c;
 }
 
 
