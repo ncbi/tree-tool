@@ -119,16 +119,24 @@ extern bool qc_on;
 extern ulong seed_global;
   // >= 1
 
+
+
 // thread
+
 extern size_t threads_max;
   // >= 1
+  
 extern thread::id main_thread_id;
+	
 bool isMainThread ();
+
 #ifndef _MSC_VER
   size_t get_threads_max_max ();
 #endif
 
 
+
+// Errors
 
 constexpr const char* error_caption ("*** ERROR ***");
 
@@ -148,10 +156,379 @@ inline void never_call ()
 
 
 
-inline void beep ()
-  { cout << '\x07'; }
+// Simple templates
+
+template <typename T> 
+  inline void swapGreater (T &a, T &b)
+    { if (a > b)
+        swap (a, b);
+    }
+
+template <typename T> 
+  inline bool maximize (T &a, T b)
+    { if (a < b) { a = b; return true; } return false; }
+
+template <typename T> 
+  inline bool minimize (T &a, T b)
+    { if (a > b) { a = b; return true; } return false; }
+    	
+template <typename T>
+  inline T difference (T a, T b)
+    { if (a > b) return a - b; return b - a; }
+
+template <typename T /*:number*/> 
+  inline bool between (T x, T low, T high)
+    { return x >= low && x < high; }
+
+template <typename T/*:number*/> 
+  inline bool betweenEqual (T x, T low, T high)
+    { return x >= low && x <= high; }
+
   
 
+// bool
+
+inline void toggle (bool &b)
+  { b = ! b; }
+
+inline int getSign (bool b)
+  { return b ? 1 : -1; }
+
+inline bool boolPow (bool x, bool power)
+  { return power ? x : ! x; }
+  	
+inline string yesNo (bool x)
+  { return x ? "Y" : "N"; }
+
+
+
+// ebool - extended bool
+
+enum ebool {efalse = false, 
+            etrue = true, 
+            enull = true + 1};
+
+inline ebool toEbool (bool b)
+  { return b ? etrue : efalse; }
+
+
+inline bool operator<= (ebool a, ebool b)
+  { static constexpr char rank [3/*ebool*/] = {0, 2, 1};
+  	return rank [a] <= rank [b];
+  }
+
+inline void toggle (ebool &b)
+  { if (b == etrue)
+      b = efalse;
+    else if (b == efalse)
+      b = etrue;
+  }
+  
+inline string ebool2txt (ebool choice,
+                         const string &yes,
+                         const string &no,
+                         const string &ambig)
+  { switch (choice)
+  	{ case etrue:  return yes;
+  		case efalse: return no;
+  		default:     return ambig;
+    }
+  }
+
+
+
+// char
+
+inline bool isChar (long long n)
+  { return between<long long> (n, -128, 128); }
+
+inline bool isAlpha (char c)
+  { return strchr ("abcdefghijklmnopqrstuvwxyz", tolower (c)); }
+  // isalpha() is locale-specific
+
+inline bool isDigit (char c)
+  { return strchr ("0123456789", c); }
+  // isdigit() is locale-specific
+  
+inline bool isLetter (char c)
+  { return isAlpha (c) || isDigit (c) || c == '_'; }
+
+inline char toUpper (char c)
+  { return (char) toupper (c); }
+
+inline char toLower (char c)
+  { return (char) tolower (c); }
+
+inline bool isUpper (char c)
+  { return toUpper (c) == c; }
+
+inline bool isLower (char c)
+  { return toLower (c) == c; }
+
+inline bool printable (char c)
+  { return between (c, ' ', (char) 127); }
+  
+inline bool nonPrintable (long c)
+  { return between<long> (c, '\x001', ' '); }
+  
+string nonPrintable2str (char c);
+
+inline bool isDelimiter (char c)
+  { return    c != ' '
+           && printable (c)
+           && ! isLetter (c);
+  }
+  
+inline bool isSpace (char c)
+  { return c > '\0' && c <= ' ' && isspace (c); }
+
+
+
+// char*
+
+inline const char* nvl (const char* s,
+                        const char* nullS = "-")
+  { return s ? s : nullS; }
+  	
+  	  	
+
+// string
+
+extern const string noString;
+
+inline string ifS (bool cond,
+                   const string &s)
+  { return cond ? s : noString; }
+
+inline string nvl (const string& s,
+                   const string& nullS = "-")
+  { return s. empty () ? nullS : s; }
+  	
+inline string appendS (const string &s,
+                       const string &suffix)
+  { return s. empty () ? noString : (s + suffix); }
+  	
+inline string prependS (const string &s,
+                        const string &prefix)
+  { return s. empty () ? noString : (prefix + s); }
+  	
+inline void add (string &to,
+                 char delimiter,
+		             const string &what)
+  { if (! to. empty ())
+  	  to += delimiter;
+  	to += what;
+  }
+
+inline bool isQuoted (const string &s,
+                      char quote = '\"')
+  { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
+
+string strQuote (const string &s,
+                 char quote = '\"');
+
+inline string unQuote (const string &s)
+  { return s. substr (1, s. size () - 2); }
+
+bool strBlank (const string &s);
+
+template <typename T>
+  string toString (const T &t)
+    { ostringstream oss;
+      oss << t;
+      return oss. str ();
+    }
+
+template <typename T>
+  T str2 (const string &s)
+    { static_assert (numeric_limits<T>::max() > 256, "str2 does not work on chars");
+    	T i;
+    	istringstream iss (s);
+      iss >> i;
+      if (   Common_sp::strBlank (s)
+          || ! iss. eof ()
+          || iss. fail ()
+         )
+        throwf ("Cannot convert " + strQuote (s) + " to number");
+      return i;
+    }
+
+template <typename T>
+  bool str2 (const string &s,
+             T &t)
+    { try { t = str2<T> (s); return true; } 
+        catch (...) { return false; } 
+    }
+
+inline bool isLeft (const string &s,
+                    const string &left)
+  { return s. substr (0, left. size ()) == left; }
+
+bool isRight (const string &s,
+              const string &right);
+
+bool trimPrefix (string &s,
+                 const string &prefix);
+  // Return: success
+
+bool trimSuffix (string &s,
+                 const string &suffix);
+  // Return: success
+
+void trimSuffixNonAlphaNum (string &s);
+
+bool trimTailAt (string &s,
+                 const string &tailStart);
+  // Return: trimmed
+  // Update: s
+
+inline bool isLeftBlank (const string &s,
+                         size_t spaces)
+  { size_t i = 0;
+    while (i < s. size () && i < spaces && s [i] == ' ')
+      i++;
+    return i == spaces;
+  }
+
+string pad (const string &s,
+            size_t size,
+            ebool right);
+  // right: enull - center
+
+bool goodName (const string &name);
+
+bool isIdentifier (const string& name,
+                   bool dashInName);
+
+bool isNatural (const string& name);
+
+void strUpper (string &s);
+
+void strLower (string &s);
+
+bool isUpper (const string &s);
+
+bool isLower (const string &s);
+
+inline string strUpper1 (const string &s)
+  { if (s. empty ())
+      return s;
+    return toUpper (s [0]) + s. substr (1);
+  }
+
+inline bool charInSet (char c,
+		                   const string &charSet)
+  { return charSet. find (c) != string::npos; }
+
+string::const_iterator stringInSet (const string &s,
+                    	           	  const string &charSet);
+  // Return: != s.end() => *Return is not in charSet
+
+size_t strCountSet (const string &s,
+		                const string &charSet);
+
+void strDeleteSet (string &s,
+		               const string &charSet);
+
+void trimLeading (string &s);
+
+void trimTrailing (string &s);
+
+inline void trim (string &s)
+  { trimTrailing (s);
+    trimLeading (s); 
+  }
+
+void trimLeading (string &s,
+                  char c);
+
+void trimTrailing (string &s,
+                   char c);
+
+inline void trim (string &s,
+                  char c)
+  { trimTrailing (s, c);
+    trimLeading  (s, c); 
+  }
+
+inline bool contains (const string &hay,
+                      const string &needle)
+  { return hay. find (needle) != string::npos; }
+
+inline bool contains (const string &hay,
+                      char needle)
+  { return hay. find (needle) != string::npos; }
+
+size_t containsWord (const string& hay,
+                     const string& needle);
+  // Return: position of needle in hay; string::npos if needle does not exist
+  
+struct StringMatch
+{
+  enum Type {part, word, whole};
+};
+
+bool matches (const string &hay,
+              const string &needle,
+				      StringMatch::Type type);
+
+void replace (string &s,
+              char from,
+              char to);
+  
+void replace (string &s,
+              const string &fromChars,
+              char to);
+  
+void replaceStr (string &s,
+                 const string &from,
+                 const string &to);
+  // Replaces "from" by "to" in s from left to right
+  // The replacing "to" is skipped if it contains "from"
+  // Requires: !from.empty()
+
+string to_c (const string &s);
+  // " --> \", etc.
+
+void collapseSpace (string &s);
+  // "  " --> " "
+  
+void visualizeTrailingSpaces (string &s);
+  // Invokes: nonPrintable2str(' ')
+  
+string str2streamWord (const string &s,
+                       size_t wordNum);
+  // Return: May be string()
+  // Input: wordNum: 0-based  
+
+string str2sql (const string &s);
+  // Return: ' s ' (replacing ' by '')
+
+string findSplit (string &s,
+                  char c = ' ');
+	// Return: prefix of s+c before c
+	// Update: s
+
+string rfindSplit (string &s,
+                   char c = ' ');
+	// Return: suffix of c+s after c
+	// Update: s
+
+void reverse (string &s);
+
+size_t strMonth2num (const string& month);
+// Input: month: "Jan", "Feb", ... (3 characters)
+
+
+
+bool isRedirected (const ostream &os);
+
+void beep ();
+  // RRequires: isRedirected()
+    
+
+
+// Classes
 
 class Notype {};
 
@@ -200,11 +577,15 @@ struct Color
             , white   = 37
             };
             
-#ifndef _MSC_VER
   static string code (Type color = none, 
                       bool bright = false)
-    { return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; }
-#endif
+    { 
+		#ifdef _MSC_VER
+		  return noString
+		#else
+    	return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; 
+		#endif
+    }
 };
   
   
@@ -287,19 +668,13 @@ public:
           bool bright,
           bool active_arg)
 	  : o (o_arg)
-	  , active (active_arg)
-    {
-    #ifndef _MSC_VER
-      if (active) 
+	  , active (active_arg && ! isRedirected (o_arg))
+    { if (active) 
         o << Color::code (color, bright);
-    #endif
     }
  ~OColor ()    
-    {
-    #ifndef _MSC_VER
-      if (active) 
+    { if (active) 
         o << Color::code ();
-    #endif
     }
 };
 
@@ -411,56 +786,6 @@ template <typename T>
 
 
 
-// bool
-
-inline void toggle (bool &b)
-  { b = ! b; }
-
-inline int getSign (bool b)
-  { return b ? 1 : -1; }
-
-inline bool boolPow (bool x, bool power)
-  { return power ? x : ! x; }
-  	
-inline string yesNo (bool x)
-  { return x ? "Y" : "N"; }
-
-
-
-// ebool - extended bool
-
-enum ebool {efalse = false, 
-            etrue = true, 
-            enull = true + 1};
-
-inline ebool toEbool (bool b)
-  { return b ? etrue : efalse; }
-
-
-inline bool operator<= (ebool a, ebool b)
-  { static constexpr char rank [3/*ebool*/] = {0, 2, 1};
-  	return rank [a] <= rank [b];
-  }
-
-inline void toggle (ebool &b)
-  { if (b == etrue)
-      b = efalse;
-    else if (b == efalse)
-      b = etrue;
-  }
-  
-inline string ebool2txt (ebool choice,
-                         const string &yes,
-                         const string &no,
-                         const string &ambig)
-  { switch (choice)
-  	{ case etrue:  return yes;
-  		case efalse: return no;
-  		default:     return ambig;
-    }
-  }
-
-
 typedef  unsigned char  Byte;
 
 inline bool contains (uint who,
@@ -486,32 +811,6 @@ inline void advance (size_t &index,
                      size_t size)
   // Update: index: < size
   { index++; if (index == size) index = 0; }
-  
-template <typename T> 
-  inline void swapGreater (T &a, T &b)
-    { if (a > b)
-        swap (a, b);
-    }
-
-template <typename T> 
-  inline bool maximize (T &a, T b)
-    { if (a < b) { a = b; return true; } return false; }
-
-template <typename T> 
-  inline bool minimize (T &a, T b)
-    { if (a > b) { a = b; return true; } return false; }
-    	
-template <typename T>
-  inline T difference (T a, T b)
-    { if (a > b) return a - b; return b - a; }
-
-template <typename T /*:number*/> 
-  inline bool between (T x, T low, T high)
-    { return x >= low && x < high; }
-
-template <typename T/*:number*/> 
-  inline bool betweenEqual (T x, T low, T high)
-    { return x >= low && x <= high; }
   
 template <typename T/*:integer*/> 
   inline bool even (T x)
@@ -549,53 +848,6 @@ size_t powInt (size_t a,
 
 constexpr size_t no_index = numeric_limits<size_t>::max ();
 static_assert ((size_t) 0 - 1 == no_index);
-
-
-
-// char
-
-inline bool isChar (long long n)
-  { return between<long long> (n, -128, 128); }
-
-inline bool isAlpha (char c)
-  { return strchr ("abcdefghijklmnopqrstuvwxyz", tolower (c)); }
-  // isalpha() is locale-specific
-
-inline bool isDigit (char c)
-  { return strchr ("0123456789", c); }
-  // isdigit() is locale-specific
-  
-inline bool isLetter (char c)
-  { return isAlpha (c) || isDigit (c) || c == '_'; }
-
-inline char toUpper (char c)
-  { return (char) toupper (c); }
-
-inline char toLower (char c)
-  { return (char) tolower (c); }
-
-inline bool isUpper (char c)
-  { return toUpper (c) == c; }
-
-inline bool isLower (char c)
-  { return toLower (c) == c; }
-
-inline bool printable (char c)
-  { return between (c, ' ', (char) 127); }
-  
-inline bool nonPrintable (long c)
-  { return between<long> (c, '\x001', ' '); }
-  
-string nonPrintable2str (char c);
-
-inline bool isDelimiter (char c)
-  { return    c != ' '
-           && printable (c)
-           && ! isLetter (c);
-  }
-  
-inline bool isSpace (char c)
-  { return c > '\0' && c <= ' ' && isspace (c); }
 
 
 
@@ -1056,247 +1308,12 @@ public:
 
 
 
-// char*
-
-inline const char* nvl (const char* s,
-                        const char* nullS = "-")
-  { return s ? s : nullS; }
-  	
-  	  	
-
-// string
-
-extern const string noString;
-
-inline string ifS (bool cond,
-                   const string &s)
-  { return cond ? s : noString; }
-
-inline string nvl (const string& s,
-                   const string& nullS = "-")
-  { return s. empty () ? nullS : s; }
-  	
-inline string appendS (const string &s,
-                       const string &suffix)
-  { return s. empty () ? noString : (s + suffix); }
-  	
-inline string prependS (const string &s,
-                        const string &prefix)
-  { return s. empty () ? noString : (prefix + s); }
-  	
-inline void add (string &to,
-                 char delimiter,
-		             const string &what)
-  { if (! to. empty ())
-  	  to += delimiter;
-  	to += what;
-  }
-
-inline bool isQuoted (const string &s,
-                      char quote = '\"')
-  { return ! s. empty () && s [0] == quote && s [s. size () - 1] == quote; }
-
-string strQuote (const string &s,
-                 char quote = '\"');
-
-inline string unQuote (const string &s)
-  { return s. substr (1, s. size () - 2); }
-
-bool strBlank (const string &s);
-
-template <typename T>
-  string toString (const T &t)
-    { ostringstream oss;
-      oss << t;
-      return oss. str ();
-    }
-
-template <typename T>
-  T str2 (const string &s)
-    { static_assert (numeric_limits<T>::max() > 256, "str2 does not work on chars");
-    	T i;
-    	istringstream iss (s);
-      iss >> i;
-      if (   Common_sp::strBlank (s)
-          || ! iss. eof ()
-          || iss. fail ()
-         )
-        throwf ("Cannot convert " + strQuote (s) + " to number");
-      return i;
-    }
-
-template <typename T>
-  bool str2 (const string &s,
-             T &t)
-    { try { t = str2<T> (s); return true; } 
-        catch (...) { return false; } 
-    }
-
-inline bool isLeft (const string &s,
-                    const string &left)
-  { return s. substr (0, left. size ()) == left; }
-
-bool isRight (const string &s,
-              const string &right);
-
-bool trimPrefix (string &s,
-                 const string &prefix);
-  // Return: success
-
-bool trimSuffix (string &s,
-                 const string &suffix);
-  // Return: success
-
-void trimSuffixNonAlphaNum (string &s);
-
-bool trimTailAt (string &s,
-                 const string &tailStart);
-  // Return: trimmed
-  // Update: s
-
-inline bool isLeftBlank (const string &s,
-                         size_t spaces)
-  { size_t i = 0;
-    while (i < s. size () && i < spaces && s [i] == ' ')
-      i++;
-    return i == spaces;
-  }
-
-string pad (const string &s,
-            size_t size,
-            ebool right);
-  // right: enull - center
-
-bool goodName (const string &name);
-
-bool isIdentifier (const string& name,
-                   bool dashInName);
-
-bool isNatural (const string& name);
-
-void strUpper (string &s);
-
-void strLower (string &s);
-
-bool isUpper (const string &s);
-
-bool isLower (const string &s);
-
-inline string strUpper1 (const string &s)
-  { if (s. empty ())
-      return s;
-    return toUpper (s [0]) + s. substr (1);
-  }
-
-inline bool charInSet (char c,
-		                   const string &charSet)
-  { return charSet. find (c) != string::npos; }
-
-string::const_iterator stringInSet (const string &s,
-                    	           	  const string &charSet);
-  // Return: != s.end() => *Return is not in charSet
-
-size_t strCountSet (const string &s,
-		                const string &charSet);
-
-void strDeleteSet (string &s,
-		               const string &charSet);
-
-void trimLeading (string &s);
-
-void trimTrailing (string &s);
-
-inline void trim (string &s)
-  { trimTrailing (s);
-    trimLeading (s); 
-  }
-
-void trimLeading (string &s,
-                  char c);
-
-void trimTrailing (string &s,
-                   char c);
-
-inline void trim (string &s,
-                  char c)
-  { trimTrailing (s, c);
-    trimLeading  (s, c); 
-  }
-
-inline bool contains (const string &hay,
-                      const string &needle)
-  { return hay. find (needle) != string::npos; }
-
-inline bool contains (const string &hay,
-                      char needle)
-  { return hay. find (needle) != string::npos; }
-
-size_t containsWord (const string& hay,
-                     const string& needle);
-  // Return: position of needle in hay; string::npos if needle does not exist
-  
-struct StringMatch
-{
-  enum Type {part, word, whole};
-};
-
-bool matches (const string &hay,
-              const string &needle,
-				      StringMatch::Type type);
-
-void replace (string &s,
-              char from,
-              char to);
-  
-void replace (string &s,
-              const string &fromChars,
-              char to);
-  
-void replaceStr (string &s,
-                 const string &from,
-                 const string &to);
-  // Replaces "from" by "to" in s from left to right
-  // The replacing "to" is skipped if it contains "from"
-  // Requires: !from.empty()
-
-string to_c (const string &s);
-  // " --> \", etc.
-
-void collapseSpace (string &s);
-  // "  " --> " "
-  
-void visualizeTrailingSpaces (string &s);
-  // Invokes: nonPrintable2str(' ')
-  
-string str2streamWord (const string &s,
-                       size_t wordNum);
-  // Return: May be string()
-  // Input: wordNum: 0-based  
-
-string str2sql (const string &s);
-  // Return: ' s ' (replacing ' by '')
-
-string findSplit (string &s,
-                  char c = ' ');
-	// Return: prefix of s+c before c
-	// Update: s
-
-string rfindSplit (string &s,
-                   char c = ' ');
-	// Return: suffix of c+s after c
-	// Update: s
-
-void reverse (string &s);
-
 List<string> str2list (const string &s,
                        char c = ' ');
   // Invokes: findSplit(s,c)
 
 string list2str (const List<string> &strList,
                  const string &sep = " ");
-
-size_t strMonth2num (const string& month);
-// Input: month: "Jan", "Feb", ... (3 characters)
 
 
 

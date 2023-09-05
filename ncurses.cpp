@@ -261,7 +261,7 @@ Field::Exit Field::run ()
 	    		else if (val_start)
 	    			val_start--;
 	    		else
-	    			Common_sp::beep ();
+	    			::beep ();
 	    		break;
 	    	case KEY_RIGHT:
 	    		if (real_pos < val. size ())
@@ -272,7 +272,7 @@ Field::Exit Field::run ()
 	    				val_start++;
 	    		}
 	    		else
-	    			Common_sp::beep ();
+	    			::beep ();
 	    		break;
 	    	// ^left, ^right, clipboard ??
 	    	case KEY_HOME:
@@ -298,7 +298,7 @@ Field::Exit Field::run ()
 	    		if (real_pos < val. size ())
 	    			val. eraseAt (real_pos);
 	    		else
-	    			Common_sp::beep ();
+	    			::beep ();
 	    		break;
 	    	case 127:
 	    	case KEY_BACKSPACE:
@@ -314,10 +314,10 @@ Field::Exit Field::run ()
 	    			}
 	    		}
 	    		else
-	    			Common_sp::beep ();
+	    			::beep ();
 	    		break;	    		
 	    	default: 
-	    		Common_sp::beep ();
+	    		::beep ();
 	    }
 	  }
   }
