@@ -332,10 +332,8 @@ bool isRedirected (const ostream &os)
 	  return ! isatty (fileno (stdout));
 	if (& os == & cerr)
 	  return ! isatty (fileno (stderr));
-#if 0
 	if (& os == & clog)
-	  return ! isatty (fileno (stdlog));
-#endif
+	  return ! isatty (fileno (stderr));
 	return false;
 #endif
 }
@@ -347,7 +345,7 @@ void beep ()
 	constexpr char c = '\x07';
 	if (! isRedirected (cerr))
 	  cerr << c;
-	if (! isRedirected (cout))
+	else if (! isRedirected (cout))
 	  cout << c;
 }
 
