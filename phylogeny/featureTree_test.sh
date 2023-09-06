@@ -28,8 +28,10 @@ $THIS/featureTree.sh $TMP.dir/obj $TMP.dir/gene
 echo ""
 $THIS/makeFeatureTree  -qc  -threads 10  -input_tree $TMP.dir/obj.tree  -features $TMP.dir/gene  -input_core $TMP.dir/obj.core  -use_time | grep -v "CHRON" | grep -v "^Tree from file:" > $TMP.dir/obj.featureTree
  
+set -x
 diff $TMP.dir/obj.core        $DIR/obj.core
 diff $TMP.dir/obj.featureTree $DIR/obj.featureTree
+set +x
 
 
 rm -r $TMP*
