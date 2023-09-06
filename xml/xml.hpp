@@ -184,8 +184,8 @@ private:
   bool merged {false};
 public:
 	
-	Byte searchFound {0};
-	Byte searchFoundAll {0};
+	uchar searchFound {0};
+	uchar searchFoundAll {0};
 	  // searchFound => searchFoundAll
 	  // searchFoundAll => parent->searchFoundAll
   
@@ -284,12 +284,12 @@ public:
   size_t setSearchFound (const string &needle,
 				                 bool targetNameP,
 						             StringMatch::Type matchType,
-					               Byte mask);
+					               uchar mask);
     // Return: number of Data's
     // Output: searchFound, searchFoundAll
     // Invokes: contains()
-  void unsetSearchFound (Byte mask)
-		{ const Byte b = reverse (mask); 
+  void unsetSearchFound (uchar mask)
+		{ const uchar b = reverse (mask); 
 		  searchFound    &= b; 
 			searchFoundAll &= b;
 			for (const Data* child : children)

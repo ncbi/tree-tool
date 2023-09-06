@@ -88,7 +88,7 @@ struct Row
 
 
 
-NCurses::Color mask2color (Byte mask)
+NCurses::Color mask2color (uchar mask)
 {
   if (! mask)
   	return NCurses::colorNone;
@@ -188,7 +188,7 @@ struct Viewer
           }
           {
 	          const AttrColor attrColor_tag (NCurses::colorGreen); 
-	          const Byte mask = row. data->searchFound 
+	          const uchar mask = row. data->searchFound 
                                 ? row. data->searchFound 
                                 : row. open 
                                	  ? 0
@@ -593,12 +593,12 @@ At line ends: [<# children>|<# nodes in subtree>]\
     
     if (! searchTags. empty ())
     {
-    	Byte mask = 1;  // NCurses::Color bits
+    	uchar mask = 1;  // NCurses::Color bits
     	for (const string& s : searchTags)
     	{
     		// Display s/color in search form window ??
         xml->setSearchFound (s, true, StringMatch::word, mask);
-    	//mask = Byte (mask * 2);  // White color is bad
+    	//mask = uchar (mask * 2);  // White color is bad
       }
     }
     

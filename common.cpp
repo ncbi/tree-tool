@@ -431,12 +431,12 @@ Chronometer_OnePass::~Chronometer_OnePass ()
 
 
 
-// Byte
+// uchar
 
-size_t byte2first (Byte b)
+size_t byte2first (uchar b)
 { 
   if (! b)
-    return sizeof (Byte);
+    return sizeof (uchar);
 	const uint u = b;
 	size_t i = 0;
 	uint mask = 1;
@@ -452,7 +452,7 @@ size_t byte2first (Byte b)
 
 size_t utf8_len (char first)
 {
-	const uint u = numeric_limits<uint>::max () - (Byte) first;
+	const uint u = numeric_limits<uint>::max () - (uchar) first;
 	size_t len = 0;
 	uint mask = 0x80;
 	while (! contains (u, mask))
@@ -1744,11 +1744,11 @@ void Xml::BinFile::tagStart (const string &tag)
   QC_ASSERT (! contains (tag, '\n'));
 	size_t i = names. add (tag);
 //ASSERT (i);
-	const Byte b = i % 256;
+	const uchar b = i % 256;
 	i /= 256;
 	if (i > 256)
 		throw runtime_error (FUNC "Too many different tag names");
-	os << (Byte) i << b;
+	os << (uchar) i << b;
 }
 
 

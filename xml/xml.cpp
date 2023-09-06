@@ -615,9 +615,9 @@ Data::Data (const Names &names_arg,
 	// nameIndex
 	{
 		EXEC_ASSERT (getChar (f, c));
-		const Byte b1 = (Byte) c;
+		const uchar b1 = (uchar) c;
 		EXEC_ASSERT (getChar (f, c));
-		const Byte b2 = (Byte) c;
+		const uchar b2 = (uchar) c;
 		nameIndex = (size_t) b1 * 256 + (size_t) b2;
 		ASSERT (nameIndex != no_index);
   }
@@ -837,7 +837,7 @@ bool Data::find (VectorPtr<Data> &path,
 size_t Data::setSearchFound (const string &needle,
 			  		                 bool targetNameP,
 								             StringMatch::Type matchType,
-					                   Byte mask)
+					                   uchar mask)
 {
 	ASSERT (mask);
 

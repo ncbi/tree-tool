@@ -97,17 +97,33 @@ namespace Common_sp
 {
 
 
+bool initCommon ();
+  // Module initialization
+  // Invoked automaticallly
+
+
+
+// Numeric types
+
 typedef  unsigned char  uchar; 
 typedef  unsigned int   uint; 
 typedef  unsigned long  ulong; 
 
 
 
-bool initCommon ();
-  // Module initialization
-  // Invoked automaticallly
+// Numeric constants
+
+constexpr size_t no_index = numeric_limits<size_t>::max ();
+static_assert ((size_t) 0 - 1 == no_index);
+
+constexpr double NaN = numeric_limits<double>::quiet_NaN ();  
+
+
+
+// Global variables
 
 extern vector<string> programArgs;
+
 extern string programName;
 
 string getCommandLine ();
@@ -121,21 +137,6 @@ extern ulong seed_global;
 
 
 
-// thread
-
-extern size_t threads_max;
-  // >= 1
-  
-extern thread::id main_thread_id;
-	
-bool isMainThread ();
-
-#ifndef _MSC_VER
-  size_t get_threads_max_max ();
-#endif
-
-
-
 // Errors
 
 constexpr const char* error_caption ("*** ERROR ***");
@@ -146,17 +147,21 @@ constexpr const char* error_caption ("*** ERROR ***");
 	// Update: *logPtr
 	// Invokes: if segmFault then abort() else exit(1)
 
-// For debugger
 [[noreturn]] void errorExitStr (const string &msg);
+  // For debugger
 
 [[noreturn]] void throwf (const string &s); 
+  // For debugger
 
 inline void never_call ()
   { throwf ("NEVER_CALL"); }
 
+void beep ();
+  // Requires: !isRedirected()
+    
 
 
-// Simple templates
+// Comparison templates
 
 template <typename T> 
   inline void swapGreater (T &a, T &b)
@@ -184,7 +189,281 @@ template <typename T/*:number*/>
   inline bool betweenEqual (T x, T low, T high)
     { return x >= low && x <= high; }
 
+template <typename T>
+  inline bool lessPtr (const T* x,
+                       const T* y)
+    { return *x < *y; }
+
+
+
+typedef int (*CompareInt) (const void*, const void*);
+
+
+
+// Pointer templates
+
+template <typename T>
+  inline T* var_cast (const T* t)
+    { return const_cast <T*> (t); }
+template <typename T>
+  inline T& var_cast (const T &t)
+    { return const_cast <T&> (t); }
+
+template <typename T, typename S>
+  inline T const_static_cast (const S* s)
+    { return static_cast <T> (const_cast <S*> (s)); }
+template <typename T, typename S>
+  inline T const_static_cast (const S &s)
+    { return static_cast <T> (const_cast <S&> (s)); }
+
+template <typename T>
+  inline T* checkPtr (T* t)
+    { if (t)
+        return t;
+      throwf ("Dereferencing nullptr");
+      return nullptr;
+    }
+
   
+
+// Container templates
+
+template <typename T>
+  inline void sort (T &t)
+    { std::sort (t. begin (), t. end ()); }
+
+template <typename T, typename StrictlyLess>
+  inline void sort (T &t,
+                    const StrictlyLess &strictlyLess)
+    { std::sort (t. begin (), t. end (), strictlyLess); }
+
+template <typename T, typename U>
+  bool intersects (const T &t,
+                   const U &u)
+    { if (u. empty ())
+        return false;
+      for (const auto& x : t)
+        if (u. find (static_cast <typename U::value_type> (x)) != u. end ())
+          return true;
+      return false;
+    }
+
+template <typename T>
+  unordered_set<T> setIntersect (const unordered_set<T> &s1,
+                                 const unordered_set<T> &s2)
+    { const unordered_set<T>* s1_ = & s1;
+      const unordered_set<T>* s2_ = & s2;
+      if (s1. size () > s2. size ())
+        swap (s1_, s2_);
+      unordered_set<T> res;  res. rehash (s1_->size ());
+      for (const T& t : *s1_)
+        if (contains (*s2_, t))
+          res. insert (t);
+      return res;
+    }
+    
+template <typename T, typename U>
+  bool containsSubset (const T &t,
+                       const U &u)
+    { for (const auto& x : u)
+        if (t. find (static_cast <typename U::value_type> (x)) == t. end ())
+          return false;
+      return true;
+    }
+
+template <typename T>
+  unordered_set<T> getSetMinus (const unordered_set<T> &s1,
+                                const unordered_set<T> &s2)
+    { unordered_set<T> res;  res. rehash (s1. size ());
+      for (const T& t : s1)
+        if (! contains (s2, t))
+          res. insert (t);
+      return res;
+    }
+
+template <typename T, typename U>
+  void setMinus (T &t,
+                 const U &u)
+    { for (const auto& x : u)
+        t. erase (x);
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  inline bool contains (const map <Key, Value> &m,
+                        const KeyParent& key)
+    { return m. find (key) != m. end (); }
+
+template <typename Key, typename Value, typename KeyParent>
+  inline bool contains (const unordered_map <Key, Value> &m,
+                        const KeyParent& key)
+    { return m. find (key) != m. end (); }
+
+template <typename Key, typename KeyParent>
+  inline bool contains (const unordered_set <Key> &m,
+                        const KeyParent& key)
+    { return m. find (key) != m. end (); }
+
+template <typename T, size_t N>
+  size_t indexOf (const array<T,N> &arr, const T item)
+    { for (size_t i = 0; i < N; i++)
+        if (arr [i] == item)
+          return i;
+      return no_index;
+    }
+
+template <typename T, size_t N>
+  bool contains (const array<T,N> &arr, const T item)
+    { return indexOf (arr, item) != no_index; }
+
+template <typename Key, typename Value, typename KeyParent>
+  bool find (const map <Key, Value> &m,
+             const KeyParent& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto& it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  bool find (const unordered_map <Key, Value> &m,
+             const KeyParent& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto& it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
+template <typename Key, typename Value, typename Hash, typename KeyParent>
+  bool find (const unordered_map <Key, Value, Hash> &m,
+             const KeyParent& key,
+             Value &value)
+    // Return: success
+    // Output: value, if Return
+    { const auto& it = m. find (key);
+    	if (it == m. end ())
+    		return false;
+    	value = it->second; 
+    	return true;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const map <Key, Value> &m,
+                        const KeyParent& key)
+    { const auto& it = m. find (key);
+    	if (it == m. end ())
+    		return nullptr;
+    	return & it->second; 
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const unordered_map <Key, Value> &m,
+                        const KeyParent& key)
+    { const auto& it = m. find (key);
+    	if (it == m. end ())
+    		return nullptr;
+    	return & it->second; 
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
+                        const KeyParent& key)
+    { const Value* value;
+      if (find (m, key, value))
+        return value;
+      return nullptr;
+    }
+
+template <typename Key, typename Value, typename KeyParent>
+  const Value* findPtr (const unordered_map <Key, const Value* /*!nullptr*/> &m,
+                        const KeyParent& key)
+    { const Value* value;
+      if (find (m, key, value))
+        return value;
+      return nullptr;
+    }
+
+template <typename Key, typename Value>
+  const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
+                         const Key& key)
+    { if (! contains (m, key))
+        m [key] = new Value ();
+      return * m [key];
+    }
+
+template <typename Key, typename Value>
+  const Value& findMake (unordered_map <Key, const Value* /*!nullptr*/> &m,
+                         const Key& key)
+    { if (! contains (m, key))
+        m [key] = new Value ();
+      return * m [key];
+    }
+
+template <typename T, typename UnaryPredicate>
+  inline size_t count_if (T &t, UnaryPredicate pred)
+    { return (size_t) std::count_if (t. begin (), t. end (), pred); }
+
+template <typename To, typename From>
+  inline void insertAll (To &to,
+                         const From &from)
+    { to. insert (to. begin (), from. begin (), from. end ()); }
+
+template <typename To, typename From>
+  inline void insertIter (To &to,
+                          From &&from)
+    { for (auto&& x : from)
+        to. insert (move (x));
+    }
+
+template <typename To, typename From>
+  inline void insertIter (To &to,
+                          const From &from)
+    { for (const auto& x : from)
+        to. insert (x);
+    }
+
+template <typename From, typename What>
+  inline void eraseIter (From &from,
+                         const What &what)
+    { for (const auto& x : what)
+        if (contains (from, x))
+          from. erase (x);
+    }
+
+template <typename T /*container*/>
+  void save (ostream &os,
+             const T &container,
+             char sep)
+    { bool first = true;
+      for (const auto& t : container)
+      { if (! first)
+          os << sep;
+        os << t;
+        first = false;
+      }
+    }
+
+
+
+// hash
+
+extern hash<string> str_hash;
+
+extern hash<size_t> size_hash;
+
+constexpr size_t hash_class_max = 1000;  // PAR
+
+inline size_t str2hash_class (const string &s)
+  { return str_hash (s) % hash_class_max; }
+ 
+
 
 // bool
 
@@ -202,7 +481,7 @@ inline string yesNo (bool x)
 
 
 
-// ebool - extended bool
+// ebool: extended bool
 
 enum ebool {efalse = false, 
             etrue = true, 
@@ -517,285 +796,20 @@ string rfindSplit (string &s,
 void reverse (string &s);
 
 size_t strMonth2num (const string& month);
-// Input: month: "Jan", "Feb", ... (3 characters)
+  // Input: month: "Jan", "Feb", ... (3 characters)
 
 
 
-bool isRedirected (const ostream &os);
-
-void beep ();
-  // RRequires: isRedirected()
-    
-
-
-// Classes
-
-class Notype {};
-
-
-
-struct Nocopy
-{
-protected:
-	Nocopy () = default;
-  Nocopy (const Nocopy &) = delete;
-  Nocopy (Nocopy &&) = delete;
-  Nocopy& operator= (const Nocopy &) = delete;
-};
-
-
-
-template <typename T>
-  struct Singleton : Nocopy
-  {
-  private:
-  	static bool beingRun;
-  protected:
-  	Singleton ()
-  	  { if (beingRun)
-  	  	  throwf ("Singleton");
-  	  	beingRun = true;
-  	  }
-   ~Singleton () 
-      { beingRun = false; }
-  };
-template <typename T> bool Singleton<T>::beingRun = false;
-
-
-
-struct Color
-{
-  enum Type { none    =  0
-              // UNIX
-            , black   = 30  
-            , red     = 31 	
-            , green   = 32
-            , yellow  = 33
-            , blue    = 34 	
-            , magenta = 35 	
-            , cyan    = 36 	
-            , white   = 37
-            };
-            
-  static string code (Type color = none, 
-                      bool bright = false)
-    { 
-		#ifdef _MSC_VER
-		  return noString
-		#else
-    	return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; 
-		#endif
-    }
-};
-  
-  
-
-struct COutErr : Singleton<COutErr>
-{
-  const bool both;
-  
-  COutErr ()
-    : both (
-           #ifdef _MSC_VER
-             true
-           #else
-             sameFiles (fileno (stdout), fileno (stderr))
-           #endif
-           )
-    {}
-#ifndef _MSC_VER
-private:
-  static bool sameFiles (int fd1, 
-                         int fd2);
-public:
-#endif
-template <class T>
-  const COutErr& operator<< (const T &val) const
-    { cout << val;
-      if (! both)
-        cerr << val;
-      return *this;
-    }
-  const COutErr& operator<< (ostream& (*pfun) (ostream&)) const
-    { pfun (cout);
-      if (! both)
-        pfun (cerr);
-      return *this;
-    }
-};
-
-extern const COutErr couterr;
-
-
-
-
-class ONumber
-// Output number format
-{
-	ostream &o;
-  const streamsize prec_old;
-	const ios_base::fmtflags flags_old;
-public:
-	ONumber (ostream &o_arg,
-	         streamsize precision,
-	         bool scientific_arg)
-	  : o (o_arg)
-	  , prec_old (o. precision ())
-	  , flags_old (o. flags ())
-	  { if (scientific_arg)
-	  	  o << scientific;
-	  	else
-	  		o << fixed;
-      o. precision (precision);
-	  }
- ~ONumber () 
-    { o. flags (flags_old); 
-      o. precision (prec_old); 
-    }
-};
-
-
-
-
-class OColor
-// Output color
-{
-	ostream &o;
-	const bool active;
-public:
-  OColor (ostream &o_arg,
-          Color::Type color, 
-          bool bright,
-          bool active_arg)
-	  : o (o_arg)
-	  , active (active_arg && ! isRedirected (o_arg))
-    { if (active) 
-        o << Color::code (color, bright);
-    }
- ~OColor ()    
-    { if (active) 
-        o << Color::code ();
-    }
-};
-
-
-
-template <typename T>
-  inline void report (ostream &os,
-			                const string &name,
-			                T value)
-    {	os << name << '\t' << value << endl; }
-  
-
-
-inline void section (const string &title,
-                     bool useAlsoCout)
-  { const Color::Type color = Color::cyan;
-    const bool bright = false;
-    if (useAlsoCout)
-    {
-      { const OColor oc1 (cout, color, bright, true);
-        const OColor oc2 (cerr, color, bright, true);
-        couterr << title /*<< " ..."*/;
-      }
-      couterr << endl;
-    }
-    else
-    {
-      { const OColor oc (cerr, color, bright, true);
-        cerr << title /*<< " ..."*/;
-      }
-      cerr << endl;
-    }
-  }
-
-
-
-
-struct Chronometer : Nocopy
-// CPU (not astronomical) time
-// Requires: no thread is used
-{
-  static constexpr clock_t noclock {(clock_t) -1};
-  static bool enabled;
-  const string name;
-  clock_t time {0};
-protected:
-  clock_t startTime {noclock};
-public:
-
-
-  explicit Chronometer (const string &name_arg)
-    : name (name_arg)
-    {}
-
-
-  bool on () const
-    { return enabled && threads_max == 1; }
-  void start ();
-  void stop ();
-  void print (ostream &os) const;
-};
-
-
-
-struct Chronometer_OnePass : Nocopy
-// Astronomical time
-{
-private:
-	const string name;
-  ostream &os;
-  const bool addNewLine;
-  const bool active;
-	const time_t start;
-public:
-  
-	
-  explicit Chronometer_OnePass (const string &name_arg,
-                                ostream &os_arg = cout,
-                                bool addNewLine_arg = true,
-                                bool active_arg = true);
- ~Chronometer_OnePass ();
-    // Print to os
-};
-	
-	
-	
-
-template <typename T>
-  inline T* var_cast (const T* t)
-    { return const_cast <T*> (t); }
-template <typename T>
-  inline T& var_cast (const T &t)
-    { return const_cast <T&> (t); }
-
-template <typename T, typename S>
-  inline T const_static_cast (const S* s)
-    { return static_cast <T> (const_cast <S*> (s)); }
-template <typename T, typename S>
-  inline T const_static_cast (const S &s)
-    { return static_cast <T> (const_cast <S&> (s)); }
-
-template <typename T>
-  inline T* checkPtr (T* t)
-    { if (t)
-        return t;
-      throwf ("Dereferencing nullptr");
-      return nullptr;
-    }
-
-
-
-typedef  unsigned char  Byte;
+// Bit operations
 
 inline bool contains (uint who,
                       uint what)
   { return (who & what) == what; }
 
-inline Byte reverse (Byte b)
-  { return Byte (numeric_limits<Byte>::max () - b); }
+inline uchar reverse (uchar b)
+  { return uchar (numeric_limits<uchar>::max () - b); }
 
-size_t byte2first (Byte b);
+size_t byte2first (uchar b);
   // Return: First 1-bit, 0-based
 
 size_t utf8_len (char first);
@@ -805,7 +819,7 @@ size_t utf8_len (char first);
 
 
 
-//
+// Integer operations
 
 inline void advance (size_t &index, 
                      size_t size)
@@ -846,8 +860,37 @@ size_t powInt (size_t a,
 
 
 
-constexpr size_t no_index = numeric_limits<size_t>::max ();
-static_assert ((size_t) 0 - 1 == no_index);
+struct Rand
+// Numerical Recipes in C, p. 279
+{
+	static const long /*actually ulong*/ max_;
+private:
+	long seed;
+	  // 0 < seed < max_
+public:
+	
+
+	explicit Rand (ulong seed_arg = 1)
+  	{ setSeed (seed_arg); }
+	void setSeed (ulong seed_arg)
+    {	seed = (long) (seed_arg % (ulong) max_);
+	    qc ();
+    }
+    // Input: seed_arg > 0
+
+	  
+	ulong get (ulong max);
+    // Return: in 0 .. max - 1
+    // Input: 0 < max <= max_
+	ulong get ()
+	  { return get ((ulong) max_); }
+  double getProb ()
+    { return (double) get ((ulong) max_) / ((double) max_ - 1); }
+    // Return: [0,1]
+private:
+	void qc () const;
+	void run ();	
+};
 
 
 
@@ -872,53 +915,130 @@ string unpercent (const string &s);
 
 
 
-constexpr double NaN = numeric_limits<double>::quiet_NaN ();  
-
-
-
-/* Usage:
-  for (Iter<T> iter (t); iter. next (); )
-    ...
-*/
-template <typename T>
-struct Iter : Nocopy
+struct DisjointCluster
+// Cormen, Leiserson, Rivest, Introduction to Algorithms, p. 449
 {
-private:
-  T& t;
-  typename T::iterator itNext;
-  typename T::iterator it;
+protected:
+  DisjointCluster* parentDC;
+    // !nullptr
+    // Tree
+    // = this <=> root
+  size_t rankDC;
+    // Upper bound on the height of *this
+    // (Height = max. # arcs between *this and a leaf)
 public:
-    
 
-  explicit Iter (T &t_arg)
-    : t (t_arg)
-    , itNext (t_arg. begin ())
-    {}
-
-    
-  bool next () 
-    { it = itNext;
-      if (it == t. end ())
-        return false;
-      itNext = it;
-      itNext++;
-      return true;
-    }
-  size_t getIndex () const
-    { return (size_t) (it - t. begin ()); }
-  typename T::value_type& operator* () const
-    { return const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
-  typename T::value_type* operator-> () const
-    { return & const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
-  typename T::value_type erase ()
-    { typename T::value_type val = move (*it);
-      itNext = t. erase (it); 
-      return val;
-    }
-  void insert (const typename T::value_type &val)
-    { itNext = t. insert (itNext, val) + 1; }
-    // Opposite to erase()
+protected:
+	DisjointCluster ()
+	  { init (); }
+public:
+	
+	void init ()
+    { rankDC = 0;
+			parentDC = this;
+		}
+	void merge (DisjointCluster &other);
+  DisjointCluster* getDisjointCluster ();
 };
+
+
+
+// Simple classes
+
+class Notype {};
+
+
+
+struct Nocopy
+{
+protected:
+	Nocopy () = default;
+  Nocopy (const Nocopy &) = delete;
+  Nocopy (Nocopy &&) = delete;
+  Nocopy& operator= (const Nocopy &) = delete;
+};
+
+
+
+template <typename T>
+  struct Singleton : Nocopy
+  {
+  private:
+  	static bool beingRun;
+  protected:
+  	Singleton ()
+  	  { if (beingRun)
+  	  	  throwf ("Singleton");
+  	  	beingRun = true;
+  	  }
+   ~Singleton () 
+      { beingRun = false; }
+  };
+template <typename T> bool Singleton<T>::beingRun = false;
+
+
+
+template <typename T>
+  class Keep : Nocopy
+  {
+    T* ptr;
+    const T t;
+    
+  public:
+    explicit Keep (T &t_arg)
+      : ptr (& t_arg)
+      , t (t_arg)
+      {}
+   ~Keep () 
+      { if (ptr)
+      	  *ptr = t; 
+      }
+      
+    const T& get () const
+      { return t; }
+    void reject ()
+      { ptr = nullptr; }
+  };
+
+
+
+template <typename T>
+  struct Pair : pair <T, T>
+  {
+  private:
+  	typedef  pair <T, T>  P;
+  public:
+    
+    Pair (const T &a,
+          const T &b)
+      : P (a, b)
+      {}
+    Pair (T &&a,
+          T &&b)
+      : P (move (a), move (b))
+      {}
+    Pair () = default;
+    Pair (Pair<T> &&other)
+      : P (move (other. first), move (other. second))
+      {}
+    Pair (const Pair<T> &other) = default;
+    Pair& operator= (const Pair<T> &other) = default;
+
+      
+    bool same () const
+      { return P::first == P::second; }
+    bool has (const T &t) const
+      { return    P::first  == t 
+               || P::second == t;
+      }
+    T& findOther (const T &t) const
+      { if (P::first == t)
+          return P::second;
+        return P::first;
+      }
+    void swap ()
+      { std::swap (P::first, P::second); }
+  };
 
 
 
@@ -932,379 +1052,97 @@ template <typename T, typename U>
 
 
 template <typename T>
-struct Pair : pair <T, T>
-{
-private:
-	typedef  pair <T, T>  P;
-public:
-  
-  Pair (const T &a,
-        const T &b)
-    : P (a, b)
-    {}
-  Pair (T &&a,
-        T &&b)
-    : P (move (a), move (b))
-    {}
-  Pair () = default;
-  Pair (Pair<T> &&other)
-    : P (move (other. first), move (other. second))
-    {}
-  Pair (const Pair<T> &other) = default;
-  Pair& operator= (const Pair<T> &other) = default;
-
-    
-  bool same () const
-    { return P::first == P::second; }
-  bool has (const T &t) const
-    { return    P::first  == t 
-             || P::second == t;
-    }
-  T& findOther (const T &t) const
-    { if (P::first == t)
-        return P::second;
-      return P::first;
-    }
-  void swap ()
-    { std::swap (P::first, P::second); }
-};
+  struct List : list<T>
+  {
+  private:
+  	typedef  list<T>  P;
+  public:
 
 
+  	List () = default;
+    template <typename U/*:<T>*/>
+      List (const list<U> &other)
+        { *this << other; }
+    template <typename U/*:<T>*/>
+      explicit List (const vector<U> &other)
+        { *this << other; }
 
-// STL algorithms
-
-template <typename T>
-  inline bool lessPtr (const T* x,
-                       const T* y)
-    { return *x < *y; }
-
-template <typename T>
-  inline void sort (T &t)
-    { std::sort (t. begin (), t. end ()); }
-
-template <typename T, typename StrictlyLess>
-  inline void sort (T &t,
-                    const StrictlyLess &strictlyLess)
-    { std::sort (t. begin (), t. end (), strictlyLess); }
-
-template <typename T, typename U>
-  bool intersects (const T &t,
-                   const U &u)
-    { if (u. empty ())
-        return false;
-      for (const auto& x : t)
-        if (u. find (static_cast <typename U::value_type> (x)) != u. end ())
-          return true;
-      return false;
-    }
-
-template <typename T>
-  unordered_set<T> setIntersect (const unordered_set<T> &s1,
-                                 const unordered_set<T> &s2)
-    { const unordered_set<T>* s1_ = & s1;
-      const unordered_set<T>* s2_ = & s2;
-      if (s1. size () > s2. size ())
-        swap (s1_, s2_);
-      unordered_set<T> res;  res. rehash (s1_->size ());
-      for (const T& t : *s1_)
-        if (contains (*s2_, t))
-          res. insert (t);
-      return res;
-    }
-    
-template <typename T, typename U>
-  bool containsSubset (const T &t,
-                       const U &u)
-    { for (const auto& x : u)
-        if (t. find (static_cast <typename U::value_type> (x)) == t. end ())
-          return false;
-      return true;
-    }
-
-template <typename T>
-  unordered_set<T> getSetMinus (const unordered_set<T> &s1,
-                                const unordered_set<T> &s2)
-    { unordered_set<T> res;  res. rehash (s1. size ());
-      for (const T& t : s1)
-        if (! contains (s2, t))
-          res. insert (t);
-      return res;
-    }
-
-template <typename T, typename U>
-  void setMinus (T &t,
-                 const U &u)
-    { for (const auto& x : u)
-        t. erase (x);
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  inline bool contains (const map <Key, Value> &m,
-                        const KeyParent& key)
-    { return m. find (key) != m. end (); }
-
-template <typename Key, typename Value, typename KeyParent>
-  inline bool contains (const unordered_map <Key, Value> &m,
-                        const KeyParent& key)
-    { return m. find (key) != m. end (); }
-
-template <typename Key, typename KeyParent>
-  inline bool contains (const unordered_set <Key> &m,
-                        const KeyParent& key)
-    { return m. find (key) != m. end (); }
-
-template <typename T, size_t N>
-  size_t indexOf (const array<T,N> &arr, const T item)
-    { for (size_t i = 0; i < N; i++)
-        if (arr [i] == item)
-          return i;
-      return no_index;
-    }
-
-template <typename T, size_t N>
-  bool contains (const array<T,N> &arr, const T item)
-    { return indexOf (arr, item) != no_index; }
-
-template <typename Key, typename Value, typename KeyParent>
-  bool find (const map <Key, Value> &m,
-             const KeyParent& key,
-             Value &value)
-    // Return: success
-    // Output: value, if Return
-    { const auto& it = m. find (key);
-    	if (it == m. end ())
-    		return false;
-    	value = it->second; 
-    	return true;
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  bool find (const unordered_map <Key, Value> &m,
-             const KeyParent& key,
-             Value &value)
-    // Return: success
-    // Output: value, if Return
-    { const auto& it = m. find (key);
-    	if (it == m. end ())
-    		return false;
-    	value = it->second; 
-    	return true;
-    }
-
-template <typename Key, typename Value, typename Hash, typename KeyParent>
-  bool find (const unordered_map <Key, Value, Hash> &m,
-             const KeyParent& key,
-             Value &value)
-    // Return: success
-    // Output: value, if Return
-    { const auto& it = m. find (key);
-    	if (it == m. end ())
-    		return false;
-    	value = it->second; 
-    	return true;
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  const Value* findPtr (const map <Key, Value> &m,
-                        const KeyParent& key)
-    { const auto& it = m. find (key);
-    	if (it == m. end ())
-    		return nullptr;
-    	return & it->second; 
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  const Value* findPtr (const unordered_map <Key, Value> &m,
-                        const KeyParent& key)
-    { const auto& it = m. find (key);
-    	if (it == m. end ())
-    		return nullptr;
-    	return & it->second; 
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  const Value* findPtr (const map <Key, const Value* /*!nullptr*/> &m,
-                        const KeyParent& key)
-    { const Value* value;
-      if (find (m, key, value))
-        return value;
-      return nullptr;
-    }
-
-template <typename Key, typename Value, typename KeyParent>
-  const Value* findPtr (const unordered_map <Key, const Value* /*!nullptr*/> &m,
-                        const KeyParent& key)
-    { const Value* value;
-      if (find (m, key, value))
-        return value;
-      return nullptr;
-    }
-
-template <typename Key, typename Value>
-  const Value& findMake (map <Key, const Value* /*!nullptr*/> &m,
-                         const Key& key)
-    { if (! contains (m, key))
-        m [key] = new Value ();
-      return * m [key];
-    }
-
-template <typename Key, typename Value>
-  const Value& findMake (unordered_map <Key, const Value* /*!nullptr*/> &m,
-                         const Key& key)
-    { if (! contains (m, key))
-        m [key] = new Value ();
-      return * m [key];
-    }
-
-template <typename T, typename UnaryPredicate>
-  inline size_t count_if (T &t, UnaryPredicate pred)
-    { return (size_t) std::count_if (t. begin (), t. end (), pred); }
-
-template <typename To, typename From>
-  inline void insertAll (To &to,
-                         const From &from)
-    { to. insert (to. begin (), from. begin (), from. end ()); }
-
-template <typename To, typename From>
-  inline void insertIter (To &to,
-                          From &&from)
-    { for (auto&& x : from)
-        to. insert (move (x));
-    }
-
-template <typename To, typename From>
-  inline void insertIter (To &to,
-                          const From &from)
-    { for (const auto& x : from)
-        to. insert (x);
-    }
-
-template <typename From, typename What>
-  inline void eraseIter (From &from,
-                         const What &what)
-    { for (const auto& x : what)
-        if (contains (from, x))
-          from. erase (x);
-    }
-
-template <typename T /*container*/>
-  void save (ostream &os,
-             const T &container,
-             char sep)
-    { bool first = true;
-      for (const auto& t : container)
-      { if (! first)
-          os << sep;
-        os << t;
-        first = false;
+  	  
+  	T at (size_t index) const
+  	  { size_t i = 0;
+  	  	for (const T& t : *this)
+  	  	  if (i == index)
+  	  	  	return t;
+  	  	  else
+  	  	  	i++;
+  	  	throwf ("List index is out of range");
+  	  	return T ();  // dummy
+  	  }
+  	size_t find (const T &t) const
+  	  { size_t i = 0;
+  	  	for (const T& item : *this)
+  	  	  if (item == t)
+  	  	  	return i;
+  	  	  else
+  	  	  	i++;
+  	  	return no_index;
+  	  }
+  	size_t find (const T* t) const
+  	  { size_t i = 0;
+  	  	for (const T& item : *this)
+  	  	  if (& item == t)
+  	  	  	return i;
+  	  	  else
+  	  	  	i++;
+  	  	return no_index;
+  	  }
+    bool isPrefix (const List<T> &prefix) const
+      { typename List<T>::const_iterator wholeIt  =      P::begin ();
+      	typename List<T>::const_iterator prefixIt = prefix. begin ();
+      	for (;;)
+      	{ if (prefixIt == prefix. end ())
+  	    		return true;
+  	    	if (wholeIt == P::end ())
+  	    		return false;
+  	      if (*prefixIt != *wholeIt)
+  	      	return false;
+  	      wholeIt ++;
+  	      prefixIt++;
+  	    }
       }
-    }
-
-
-
-struct Istringstream : istringstream
-{
-  Istringstream () = default;
-  void reset (const string &s)
-    { clear ();
-      str (s);
-    }
-};
-
-
-
-template <typename T>
-struct List : list<T>
-{
-private:
-	typedef  list<T>  P;
-public:
-
-
-	List () = default;
-  template <typename U/*:<T>*/>
-    List (const list<U> &other)
-      { *this << other; }
-  template <typename U/*:<T>*/>
-    explicit List (const vector<U> &other)
-      { *this << other; }
-
-	  
-	T at (size_t index) const
-	  { size_t i = 0;
-	  	for (const T& t : *this)
-	  	  if (i == index)
-	  	  	return t;
-	  	  else
-	  	  	i++;
-	  	throwf ("List index is out of range");
-	  	return T ();  // dummy
-	  }
-	size_t find (const T &t) const
-	  { size_t i = 0;
-	  	for (const T& item : *this)
-	  	  if (item == t)
-	  	  	return i;
-	  	  else
-	  	  	i++;
-	  	return no_index;
-	  }
-	size_t find (const T* t) const
-	  { size_t i = 0;
-	  	for (const T& item : *this)
-	  	  if (& item == t)
-	  	  	return i;
-	  	  else
-	  	  	i++;
-	  	return no_index;
-	  }
-  bool isPrefix (const List<T> &prefix) const
-    { typename List<T>::const_iterator wholeIt  =      P::begin ();
-    	typename List<T>::const_iterator prefixIt = prefix. begin ();
-    	for (;;)
-    	{ if (prefixIt == prefix. end ())
-	    		return true;
-	    	if (wholeIt == P::end ())
-	    		return false;
-	      if (*prefixIt != *wholeIt)
-	      	return false;
-	      wholeIt ++;
-	      prefixIt++;
-	    }
-    }
-  List<T>& operator<< (const T &t) 
-    { P::push_back (t); 
-    	return *this;
-    }    
-  List<T>& operator<< (T &&t) 
-    { P::push_back (move (t)); 
-    	return *this;
-    }    
-  template <typename U/*:<T>*/>
-    List<T>& operator<< (const list<U> &other)
-      { P::insert (P::end (), other. begin (), other. end ());
+    List<T>& operator<< (const T &t) 
+      { P::push_back (t); 
       	return *this;
-      }
-  template <typename U/*:<T>*/>
-    List<T>& operator<< (const vector<U> &other)
-      { P::insert (P::end (), other. begin (), other. end ());
+      }    
+    List<T>& operator<< (T &&t) 
+      { P::push_back (move (t)); 
       	return *this;
+      }    
+    template <typename U/*:<T>*/>
+      List<T>& operator<< (const list<U> &other)
+        { P::insert (P::end (), other. begin (), other. end ());
+        	return *this;
+        }
+    template <typename U/*:<T>*/>
+      List<T>& operator<< (const vector<U> &other)
+        { P::insert (P::end (), other. begin (), other. end ());
+        	return *this;
+        }
+    T popFront ()
+      { if (P::empty ())
+          throwf ("popFront() empty list");
+        const T t = P::front ();
+        P::pop_front ();
+        return t;
       }
-  T popFront ()
-    { if (P::empty ())
-        throwf ("popFront() empty list");
-      const T t = P::front ();
-      P::pop_front ();
-      return t;
-    }
-  T popBack ()
-    { if (P::empty ())
-        throwf ("popBack() empty list");
-      const T t = P::back ();
-      P::pop_back ();
-      return t;
-    }
-};
+    T popBack ()
+      { if (P::empty ())
+          throwf ("popBack() empty list");
+        const T t = P::back ();
+        P::pop_back ();
+        return t;
+      }
+  };
 
 
 
@@ -1314,6 +1152,52 @@ List<string> str2list (const string &s,
 
 string list2str (const List<string> &strList,
                  const string &sep = " ");
+
+
+
+/* Usage:
+  for (Iter<T> iter (t); iter. next (); )
+    ...
+*/
+template <typename T>
+  struct Iter : Nocopy
+  {
+  private:
+    T& t;
+    typename T::iterator itNext;
+    typename T::iterator it;
+  public:
+      
+
+    explicit Iter (T &t_arg)
+      : t (t_arg)
+      , itNext (t_arg. begin ())
+      {}
+
+      
+    bool next () 
+      { it = itNext;
+        if (it == t. end ())
+          return false;
+        itNext = it;
+        itNext++;
+        return true;
+      }
+    size_t getIndex () const
+      { return (size_t) (it - t. begin ()); }
+    typename T::value_type& operator* () const
+      { return const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
+    typename T::value_type* operator-> () const
+      { return & const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
+    typename T::value_type erase ()
+      { typename T::value_type val = move (*it);
+        itNext = t. erase (it); 
+        return val;
+      }
+    void insert (const typename T::value_type &val)
+      { itNext = t. insert (itNext, val) + 1; }
+      // Opposite to erase()
+  };
 
 
 
@@ -1428,6 +1312,7 @@ void copyText (const string &inFName,
 #endif
 
 
+
 struct Dir
 {
   List<string> items;
@@ -1467,6 +1352,24 @@ void setSymlink (string path,
 
 
 
+
+/////////////////////////////////////// streams //////////////////////////////////////////
+
+// Binary streams
+// File content is platform-dependent
+
+template <typename T>
+  inline void writeBin (ostream &f,
+                        const T &t)
+    { f. write (reinterpret_cast <const char*> (& t), sizeof (t)); }
+
+template <typename T>
+  inline void readBin (istream &f,
+                       T &t)
+    { f. read (reinterpret_cast <char*> (& t), sizeof (t)); }
+
+  
+
 // istream
 
 bool getChar (istream &is,
@@ -1481,79 +1384,248 @@ void readLine (istream &is,
 
 
 
+struct Istringstream : istringstream
+{
+  Istringstream () = default;
+  void reset (const string &s)
+    { clear ();
+      str (s);
+    }
+};
+
+
+
+// ostream
+
+bool isRedirected (const ostream &os);
+
+
+
+struct Offset 
+// Linked to the ostream os
+// Not thread-safe
+{
+private:
+	static size_t size;
+public:
+	static constexpr size_t delta {2};
+
+
+	Offset ()
+  	{ size += delta; }
+ ~Offset () 
+  	{ size -= delta; }
+
+
+  static void newLn (ostream &os) 
+    { os << endl << string (size, ' '); }
+};
+
+
+
+struct Color
+{
+  enum Type { none    =  0
+              // UNIX
+            , black   = 30  
+            , red     = 31 	
+            , green   = 32
+            , yellow  = 33
+            , blue    = 34 	
+            , magenta = 35 	
+            , cyan    = 36 	
+            , white   = 37
+            };
+            
+  static string code (Type color = none, 
+                      bool bright = false)
+    { 
+		#ifdef _MSC_VER
+		  return noString
+		#else
+    	return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; 
+		#endif
+    }
+};
+  
+  
+
+class OColor
+// Output color
+{
+	ostream &o;
+	const bool active;
+public:
+  OColor (ostream &o_arg,
+          Color::Type color, 
+          bool bright,
+          bool active_arg)
+	  : o (o_arg)
+	  , active (active_arg && ! isRedirected (o_arg))
+    { if (active) 
+        o << Color::code (color, bright);
+    }
+ ~OColor ()    
+    { if (active) 
+        o << Color::code ();
+    }
+};
+
+
+
+class ONumber
+// Output number format
+{
+	ostream &o;
+  const streamsize prec_old;
+	const ios_base::fmtflags flags_old;
+public:
+	ONumber (ostream &o_arg,
+	         streamsize precision,
+	         bool scientific_arg)
+	  : o (o_arg)
+	  , prec_old (o. precision ())
+	  , flags_old (o. flags ())
+	  { if (scientific_arg)
+	  	  o << scientific;
+	  	else
+	  		o << fixed;
+      o. precision (precision);
+	  }
+ ~ONumber () 
+    { o. flags (flags_old); 
+      o. precision (prec_old); 
+    }
+};
+
+
+
+struct COutErr : Singleton<COutErr>
+{
+  const bool both;
+  
+  COutErr ()
+    : both (
+           #ifdef _MSC_VER
+             true
+           #else
+             sameFiles (fileno (stdout), fileno (stderr))
+           #endif
+           )
+    {}
+#ifndef _MSC_VER
+private:
+  static bool sameFiles (int fd1, 
+                         int fd2);
+public:
+#endif
+template <class T>
+  const COutErr& operator<< (const T &val) const
+    { cout << val;
+      if (! both)
+        cerr << val;
+      return *this;
+    }
+  const COutErr& operator<< (ostream& (*pfun) (ostream&)) const
+    { pfun (cout);
+      if (! both)
+        pfun (cerr);
+      return *this;
+    }
+};
+
+
+
+extern const COutErr couterr;
+
+
+
+inline void section (const string &title,
+                     bool useAlsoCout)
+  { const Color::Type color = Color::cyan;
+    const bool bright = false;
+    if (useAlsoCout)
+    {
+      { const OColor oc1 (cout, color, bright, true);
+        const OColor oc2 (cerr, color, bright, true);
+        couterr << title /*<< " ..."*/;
+      }
+      couterr << endl;
+    }
+    else
+    {
+      { const OColor oc (cerr, color, bright, true);
+        cerr << title /*<< " ..."*/;
+      }
+      cerr << endl;
+    }
+  }
+
+
+
+template <typename T>
+  inline void report (ostream &os,
+			                const string &name,
+			                T value)
+    {	os << name << '\t' << value << endl; }
+  
+
+
+struct TabDel
+// Usage: {<<field;}* str();
+{
+private:
+  ostringstream tabDel;
+  const ONumber on;
+public:
+  
+  explicit TabDel (streamsize precision = 6,
+	                 bool scientific = false)
+	  : on (tabDel, precision, scientific)
+	  {}
+    
+  template <typename T>
+    TabDel& operator<< (const T &field)
+      { if (tabDel. tellp ())  
+          tabDel << '\t'; 
+        tabDel << field; 
+        return *this; 
+      }    
+  string str () const
+    { return tabDel. str (); }
+};
+
+
+
+
+struct OFStream : ofstream
+{
+	OFStream () = default;
+	OFStream (const string &dirName,
+	          const string &fileName,
+	          const string &extension)
+	  { open (dirName, fileName, extension); }
+	explicit OFStream (const string &pathName)
+	  { open ("", pathName, ""); }
+	static void create (const string &pathName)
+	  { OFStream f (pathName); }
+
+
+	void open (const string &dirName,
+	           const string &fileName,
+	           const string &extension);
+	  // Input: !fileName.empty()
+};
+
+
+
 inline streamsize double2decimals (double r)
   { return r ? (streamsize) max<long> (0, (long) (ceil (- log10 (fabs (r)) + 1))) : 0; }
 
 
 
-// hash
-extern hash<string> str_hash;
-extern hash<size_t> size_hash;
-constexpr size_t hash_class_max = 1000;  // PAR
-inline size_t str2hash_class (const string &s)
-  { return str_hash (s) % hash_class_max; }
- 
 
-
-struct Rand
-// Numerical Recipes in C, p. 279
-{
-	static const long /*actually ulong*/ max_;
-private:
-	long seed;
-	  // 0 < seed < max_
-public:
-	
-
-	explicit Rand (ulong seed_arg = 1)
-  	{ setSeed (seed_arg); }
-	void setSeed (ulong seed_arg)
-    {	seed = (long) (seed_arg % (ulong) max_);
-	    qc ();
-    }
-    // Input: seed_arg > 0
-
-	  
-	ulong get (ulong max);
-    // Return: in 0 .. max - 1
-    // Input: 0 < max <= max_
-	ulong get ()
-	  { return get ((ulong) max_); }
-  double getProb ()
-    { return (double) get ((ulong) max_) / ((double) max_ - 1); }
-    // Return: [0,1]
-private:
-	void qc () const;
-	void run ();	
-};
-
-
-
-template <typename T>
-  class Keep : Nocopy
-  {
-    T* ptr;
-    const T t;
-    
-  public:
-    explicit Keep (T &t_arg)
-      : ptr (& t_arg)
-      , t (t_arg)
-      {}
-   ~Keep () 
-      { if (ptr)
-      	  *ptr = t; 
-      }
-      
-    const T& get () const
-      { return t; }
-    void reject ()
-      { ptr = nullptr; }
-  };
-
-
-
-//
+//////////////////////////////////////////////////////////////////////////////////////
 
 void exec (const string &cmd,
            const string &logFName = string());
@@ -1566,6 +1638,19 @@ void exec (const string &cmd,
 
 
 // Threads
+
+extern size_t threads_max;
+  // >= 1
+  
+extern thread::id main_thread_id;
+	
+bool isMainThread ();
+
+#ifndef _MSC_VER
+  size_t get_threads_max_max ();
+#endif
+
+
 
 struct Threads : Singleton<Threads>
 // Usage: { Threads th; th << ...; main_thread_process(); }
@@ -1654,107 +1739,50 @@ template <typename Func, typename Res, typename... Args>
 
 
 
-// Verbosity
 
-bool verbose (int inc = 0);
-
-int getVerbosity ();
-
-
-
-class Verbose
-{
-	const int verbose_old;
-public:
-
-	
-	explicit Verbose (int verbose_arg);
-	Verbose ();
-	  // Increase verbosity
- ~Verbose ();
-
- 
-  static bool enabled ()
-    { return isMainThread () /*Threads::empty ()*/; }
-};
-
-
-
-struct Unverbose 
-{
-	Unverbose ();
- ~Unverbose ();
-};
-  
-
-
-
-//
-
-struct Json;
-struct JsonContainer;
-
-
-
-struct OFStream : ofstream
-{
-	OFStream () = default;
-	OFStream (const string &dirName,
-	          const string &fileName,
-	          const string &extension)
-	  { open (dirName, fileName, extension); }
-	explicit OFStream (const string &pathName)
-	  { open ("", pathName, ""); }
-	static void create (const string &pathName)
-	  { OFStream f (pathName); }
-
-
-	void open (const string &dirName,
-	           const string &fileName,
-	           const string &extension);
-	  // Input: !fileName.empty()
-};
-
-
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename T>
-struct Enumerate
-{
-  vector<T> num2elem;
-private:
-  unordered_map<T,size_t> elem2num;
-public:
-  
-
-  explicit Enumerate (size_t n)
-    { num2elem. reserve (n);
-      elem2num. rehash (n);
-    }
-
+  struct Enumerate
+  {
+    vector<T> num2elem;
+  private:
+    unordered_map<T,size_t> elem2num;
+  public:
     
-  size_t size () const
-    { return num2elem. size (); }
-  size_t find (const T &t) const
-    { if (const size_t* num = Common_sp::findPtr (elem2num, t))
-        return *num;
-      return no_index;
-    }
-  size_t add (const T &t)
-    { size_t num = find (t);
-      if (num == no_index)
-      { num2elem. push_back (t);
-        num = num2elem. size () - 1;
-        elem2num [t] = num;
+
+    explicit Enumerate (size_t n)
+      { num2elem. reserve (n);
+        elem2num. rehash (n);
       }
-      return num;
-    }
-};
+
+      
+    size_t size () const
+      { return num2elem. size (); }
+    size_t find (const T &t) const
+      { if (const size_t* num = Common_sp::findPtr (elem2num, t))
+          return *num;
+        return no_index;
+      }
+    size_t add (const T &t)
+      { size_t num = find (t);
+        if (num == no_index)
+        { num2elem. push_back (t);
+          num = num2elem. size () - 1;
+          elem2num [t] = num;
+        }
+        return num;
+      }
+  };
 
 
 
 typedef  Enumerate<string>  Names;
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////
 
 struct Xml
 {
@@ -1813,6 +1841,7 @@ struct Xml
         }
   };
   
+
   
   struct TextFile : File
   {
@@ -1840,6 +1869,7 @@ struct Xml
     void tagStart (const string &tag) final;
     void tagEnd (const string &tag) final;
   };
+  
   
   
   struct BinFile : File
@@ -1874,6 +1904,13 @@ struct Xml
 
 extern unique_ptr<Xml::File> cxml;
   
+
+
+
+//////////////////////////////////////// Root ///////////////////////////////////////////
+
+struct Json;
+struct JsonContainer;
 
 
 
@@ -1925,7 +1962,6 @@ inline ostream& operator<< (ostream &os,
   { r. saveText (os);
     return os;
   }  
-
 
 
 
@@ -2010,510 +2046,509 @@ inline string named2name (const Named* n)
 
 
 
-typedef int (*CompareInt) (const void*, const void*);
 
-
+///////////////////////////// Container extensions ////////////////////////////////////////////
 
 template <typename T>
-struct Vector : vector<T>
-{
-private:
-	typedef  vector<T>  P;
-public:
-  bool searchSorted {false};
-	
+  struct Vector : vector<T>
+  {
+  private:
+  	typedef  vector<T>  P;
+  public:
+    bool searchSorted {false};
+  	
 
-	Vector () = default;
-	explicit Vector (size_t n, 
-	                 const T &value = T ())
-	  : P (n, value)
-	  {}
-  explicit Vector (initializer_list<T> init)
-    : P (init)
-    {}
-	explicit Vector (const vector<T> &other) 
-    : P (other)
-    {}
-	
-	
-private:
-	void checkIndex (const string &operation,
-	                 size_t index) const
-	  {
-	  #ifndef NDEBUG
-	    if (index >= P::size ())
-	      throwf ("Vector " + operation + " operation: index = " + to_string (index) + ", but size = " + to_string (P::size ()));
-	  #endif
-	  }
-public:
-  void unsetSearchSorted ()
-    { if (P::size () > 1)
-        searchSorted = false;
-    }
-	typename P::reference operator[] (size_t index)
-	  { checkIndex ("assignment", index);
-	    return P::operator[] (index);
-	  }
-	typename P::const_reference operator[] (size_t index) const
-	  { checkIndex ("get", index);
-	    return P::operator[] (index);
-	  }
-  void reserveInc (size_t inc)
-    { P::reserve (P::size () + inc); }
-  bool find (const T &value,
-             size_t &index) const
-	  // Output: index: valid if (bool)Return
-	  { for (index = 0; index < P::size (); index++)
-	      if ((*this) [index] == value)
-	        return true;
-	    return false;
-	  }
-  typename Vector<T>::const_iterator constFind (const T &value) const
-	  { typename Vector<T>::const_iterator it = P::begin (); 
-	    while (it != P::end ()) 
-	      if (*it == value)
-	        break;
-	      else
-	        it++;
-	    return it;
-	  }
-  typename Vector<T>::iterator find (const T &value)
-	  { typename Vector<T>::iterator it = P::begin (); 
-	    while (it != P::end ()) 
-	      if (*it == value)
-	        break;
-	      else
-	        it++;
-	    return it;
-	  }
-  bool contains (const T &value) const
-    { return constFind (value) != P::end (); }
-  bool containsAll (const vector<T> &other) const
-    { for (const T& t : other)
-        if (! contains (t))
-          return false;
-      return true; 
-    }
-  size_t indexOf (const T &value) const
-    { size_t n = 0;
-      for (const T& t : *this)
-        if (value == t)
-          return n;
-        else
-          n++;
-      return no_index;
-    }
-  size_t countValue (const T &value) const
-    { size_t n = 0;
-      for (const T& t : *this)
-        if (value == t)
-          n++;
-      return n;
-    }
-  void checkSorted () const
-    { if (! searchSorted)
-    	  throwf ("Vector is not sorted for search");
-    }
-  Vector<T>& operator<< (const T &value)
-    { P::push_back (value);
-      unsetSearchSorted ();
-    	return *this;
-    }
-  Vector<T>& operator<< (T &&value)
-    { P::push_back (move (value));
-      unsetSearchSorted ();
-    	return *this;
-    }
-  template <typename U/*:<T>*/>
-    Vector<T>& operator<< (const vector<U> &other)
-      { reserveInc (other. size ());
-        P::insert (P::end (), other. begin (), other. end ());
-        unsetSearchSorted ();
-      	return *this;
+  	Vector () = default;
+  	explicit Vector (size_t n, 
+  	                 const T &value = T ())
+  	  : P (n, value)
+  	  {}
+    explicit Vector (initializer_list<T> init)
+      : P (init)
+      {}
+  	explicit Vector (const vector<T> &other) 
+      : P (other)
+      {}
+  	
+  	
+  private:
+  	void checkIndex (const string &operation,
+  	                 size_t index) const
+  	  {
+  	  #ifndef NDEBUG
+  	    if (index >= P::size ())
+  	      throwf ("Vector " + operation + " operation: index = " + to_string (index) + ", but size = " + to_string (P::size ()));
+  	  #endif
+  	  }
+  public:
+    void unsetSearchSorted ()
+      { if (P::size () > 1)
+          searchSorted = false;
       }
-  template <typename U/*:<T>*/>
-    Vector<T>& operator<< (vector<U> &&other)
-      { reserveInc (other. size ());
-        for (U& t : other)
-          P::push_back (move (t));
-        unsetSearchSorted ();
-        other. clear ();
-      	return *this;
+  	typename P::reference operator[] (size_t index)
+  	  { checkIndex ("assignment", index);
+  	    return P::operator[] (index);
+  	  }
+  	typename P::const_reference operator[] (size_t index) const
+  	  { checkIndex ("get", index);
+  	    return P::operator[] (index);
+  	  }
+    void reserveInc (size_t inc)
+      { P::reserve (P::size () + inc); }
+    bool find (const T &value,
+               size_t &index) const
+  	  // Output: index: valid if (bool)Return
+  	  { for (index = 0; index < P::size (); index++)
+  	      if ((*this) [index] == value)
+  	        return true;
+  	    return false;
+  	  }
+    typename Vector<T>::const_iterator constFind (const T &value) const
+  	  { typename Vector<T>::const_iterator it = P::begin (); 
+  	    while (it != P::end ()) 
+  	      if (*it == value)
+  	        break;
+  	      else
+  	        it++;
+  	    return it;
+  	  }
+    typename Vector<T>::iterator find (const T &value)
+  	  { typename Vector<T>::iterator it = P::begin (); 
+  	    while (it != P::end ()) 
+  	      if (*it == value)
+  	        break;
+  	      else
+  	        it++;
+  	    return it;
+  	  }
+    bool contains (const T &value) const
+      { return constFind (value) != P::end (); }
+    bool containsAll (const vector<T> &other) const
+      { for (const T& t : other)
+          if (! contains (t))
+            return false;
+        return true; 
       }
-  template <typename U/*:<T>*/>
-    Vector<T>& operator<< (const list<U> &other)
-      { reserveInc (other. size ());
-        P::insert (P::end (), other. begin (), other. end ());
-        unsetSearchSorted ();
-      	return *this;
-      }
-  void setAll (const T &value)
-    { for (T &t : *this)
-    	  t = value;
-    }
-  void setAt (size_t index,
-              T value)
-    { if (index >= P::size ())
-        P::resize (index + 1);
-      if ((*this) [index] == T ())
-        (*this) [index] = value;
-      else
-        throwf ("vector [" + to_string (index) +"] is not empty");
-    }
-  void eraseAt (size_t index)
-    { eraseMany (index, index + 1); }
-  void eraseMany (size_t from,
-                  size_t to)
-    { if (to < from)
-        throwf ("Vector::eraseMany(): to < from");
-      if (to == from)
-        return;
-      checkIndex ("eraseMany", to - 1);
-      auto it1 = P::begin ();
-      std::advance (it1, from);
-      auto it2 = it1;
-      std::advance (it2, to - from);
-      P::erase (it1, it2);
-    }
-  void wipe ()
-    { P::clear ();
-    	P::shrink_to_fit ();
-    }
-  void reverse ()
-    { for (size_t i = 0; i < P::size (); i++)
-    	{ const size_t j = P::size () - 1 - i;
-    		if (i >= j)
-    			break;
-    	  std::swap ((*this) [i], (*this) [j]);
-    	}
-     unsetSearchSorted ();
-    }
-  const T& getRandom (Rand &rand) const
-    { return (*this) [rand. get (P::size ())]; }
-  void randomOrder ()
-		{ Rand rand (seed_global);
-			for (T &t : *this)
-	      std::swap (t, (*this) [(size_t) rand. get ((ulong) P::size ())]);
-    	unsetSearchSorted ();
-		}
-  void pop_back ()
-    { 
-    #ifndef NDEBUG
-      if (P::empty ())
-        throwf ("Empty vector pop_back");
-    #endif
-      P::pop_back ();
-    }
-  T pop (size_t n = 1)
-    { T t = T ();
-      while (n)
-      { if (P::empty ())
-          throwf ("Cannot pop an empty vector");
-        t = (*this) [P::size () - 1];
-    	  P::pop_back ();
-        n--;
-      }
-    	return t;
-    }
-  template <typename Condition /*on T*/>
-    size_t count (Condition cond) const
+    size_t indexOf (const T &value) const
       { size_t n = 0;
         for (const T& t : *this)
-          if (cond (t))
+          if (value == t)
+            return n;
+          else
+            n++;
+        return no_index;
+      }
+    size_t countValue (const T &value) const
+      { size_t n = 0;
+        for (const T& t : *this)
+          if (value == t)
             n++;
         return n;
       }
-  template <typename Condition /*on index*/>
-    void filterIndex (const Condition cond)
-      { size_t toDelete = 0;
-        for (size_t i = 0, end_ = P::size (); i < end_; i++)
-        { const size_t j = i - toDelete;
-          if (j != i)
-            (*this) [j] = move ((*this) [i]);
-          if (cond (j))
-            toDelete++;
-        }
-        while (toDelete)
-        { P::pop_back ();
-          toDelete--;
-        }
+    void checkSorted () const
+      { if (! searchSorted)
+      	  throwf ("Vector is not sorted for search");
       }
-  template <typename Condition /*on index*/>
-    void filterValue (const Condition cond)
-      { size_t toDelete = 0;
-        for (size_t i = 0, end_ = P::size (); i < end_; i++)
-        { const size_t j = i - toDelete;
-          if (j != i)
-            (*this) [j] = move ((*this) [i]);
-          if (cond ((*this) [j]))
-            toDelete++;
-        }
-        while (toDelete)
-        { P::pop_back ();
-          toDelete--;
-        }
-      }
-
-  void sort ()
-    { if (searchSorted)
-        return;
-      Common_sp::sort (*this); 
-      searchSorted = true;
-    }
-  template <typename StrictlyLess>
-    void sort (const StrictlyLess &strictlyLess)
-      { Common_sp::sort (*this, strictlyLess); 
+    Vector<T>& operator<< (const T &value)
+      { P::push_back (value);
         unsetSearchSorted ();
-      }    
-  void sortBubble ()  
-    // Fast if *this is almost sort()'ed
-    { if (searchSorted)
-        return;
-      for (size_t i = 1; i < P::size (); i++)
-		    for (size_t j = i; j-- > 0;)
-		      if ((*this) [j + 1] < (*this) [j])
-        	  std::swap ((*this) [j], (*this) [j + 1]);
-		      else
-		      	break;
-    	searchSorted = true;
-    }
+      	return *this;
+      }
+    Vector<T>& operator<< (T &&value)
+      { P::push_back (move (value));
+        unsetSearchSorted ();
+      	return *this;
+      }
+    template <typename U/*:<T>*/>
+      Vector<T>& operator<< (const vector<U> &other)
+        { reserveInc (other. size ());
+          P::insert (P::end (), other. begin (), other. end ());
+          unsetSearchSorted ();
+        	return *this;
+        }
+    template <typename U/*:<T>*/>
+      Vector<T>& operator<< (vector<U> &&other)
+        { reserveInc (other. size ());
+          for (U& t : other)
+            P::push_back (move (t));
+          unsetSearchSorted ();
+          other. clear ();
+        	return *this;
+        }
+    template <typename U/*:<T>*/>
+      Vector<T>& operator<< (const list<U> &other)
+        { reserveInc (other. size ());
+          P::insert (P::end (), other. begin (), other. end ());
+          unsetSearchSorted ();
+        	return *this;
+        }
+    void setAll (const T &value)
+      { for (T &t : *this)
+      	  t = value;
+      }
+    void setAt (size_t index,
+                T value)
+      { if (index >= P::size ())
+          P::resize (index + 1);
+        if ((*this) [index] == T ())
+          (*this) [index] = value;
+        else
+          throwf ("vector [" + to_string (index) +"] is not empty");
+      }
+    void eraseAt (size_t index)
+      { eraseMany (index, index + 1); }
+    void eraseMany (size_t from,
+                    size_t to)
+      { if (to < from)
+          throwf ("Vector::eraseMany(): to < from");
+        if (to == from)
+          return;
+        checkIndex ("eraseMany", to - 1);
+        auto it1 = P::begin ();
+        std::advance (it1, from);
+        auto it2 = it1;
+        std::advance (it2, to - from);
+        P::erase (it1, it2);
+      }
+    void wipe ()
+      { P::clear ();
+      	P::shrink_to_fit ();
+      }
+    void reverse ()
+      { for (size_t i = 0; i < P::size (); i++)
+      	{ const size_t j = P::size () - 1 - i;
+      		if (i >= j)
+      			break;
+      	  std::swap ((*this) [i], (*this) [j]);
+      	}
+       unsetSearchSorted ();
+      }
+    const T& getRandom (Rand &rand) const
+      { return (*this) [rand. get (P::size ())]; }
+    void randomOrder ()
+  		{ Rand rand (seed_global);
+  			for (T &t : *this)
+  	      std::swap (t, (*this) [(size_t) rand. get ((ulong) P::size ())]);
+      	unsetSearchSorted ();
+  		}
+    void pop_back ()
+      { 
+      #ifndef NDEBUG
+        if (P::empty ())
+          throwf ("Empty vector pop_back");
+      #endif
+        P::pop_back ();
+      }
+    T pop (size_t n = 1)
+      { T t = T ();
+        while (n)
+        { if (P::empty ())
+            throwf ("Cannot pop an empty vector");
+          t = (*this) [P::size () - 1];
+      	  P::pop_back ();
+          n--;
+        }
+      	return t;
+      }
+    template <typename Condition /*on T*/>
+      size_t count (Condition cond) const
+        { size_t n = 0;
+          for (const T& t : *this)
+            if (cond (t))
+              n++;
+          return n;
+        }
+    template <typename Condition /*on index*/>
+      void filterIndex (const Condition cond)
+        { size_t toDelete = 0;
+          for (size_t i = 0, end_ = P::size (); i < end_; i++)
+          { const size_t j = i - toDelete;
+            if (j != i)
+              (*this) [j] = move ((*this) [i]);
+            if (cond (j))
+              toDelete++;
+          }
+          while (toDelete)
+          { P::pop_back ();
+            toDelete--;
+          }
+        }
+    template <typename Condition /*on index*/>
+      void filterValue (const Condition cond)
+        { size_t toDelete = 0;
+          for (size_t i = 0, end_ = P::size (); i < end_; i++)
+          { const size_t j = i - toDelete;
+            if (j != i)
+              (*this) [j] = move ((*this) [i]);
+            if (cond ((*this) [j]))
+              toDelete++;
+          }
+          while (toDelete)
+          { P::pop_back ();
+            toDelete--;
+          }
+        }
 
-  size_t binSearch (const T &value,
-                    bool exact = true) const
-    // Return: if exact then no_index or vec[Return] = value else min {i : vec[i] >= value}
-    { if (P::empty ())
-    	  return no_index;
-    	checkSorted ();
-    	size_t lo = 0;  // vec.at(lo) <= value
-    	size_t hi = P::size () - 1;  
-    	// lo <= hi
-    	if (value < (*this) [lo])
-    	  return exact ? no_index : lo;
-    	if ((*this) [hi] < value)
-    	  return no_index;
-    	// at(lo) <= value <= at(hi)
-    	for (;;)
-    	{
-	    	const size_t m = (lo + hi) / 2;
-	    	if (   (*this) [m] == value
-	    		  || (*this) [m] <  value
-	    		 )
-	    		if (lo == m)  // hi in {lo, lo + 1}
-	    			break;
-	    		else
-	    		  lo = m;
-	      else
-	      	hi = m;
-	    }
-	    if ((*this) [lo] == value)
-	    	return lo;
-	    if (! exact || (*this) [hi] == value)
-	    	return hi;
-	    return no_index;
-    }
-  template <typename U /* : T */>
-    bool containsFast (const U &value) const
-      { return binSearch (value) != no_index; }
-  template <typename U /* : T */>
-    bool containsFastAll (const Vector<U> &other) const
-      { if (other. size () > P::size ())
-    	    return false;
-        for (const U& u : other)
-          if (! containsFast (u))
-            return false;
-        return true;
+    void sort ()
+      { if (searchSorted)
+          return;
+        Common_sp::sort (*this); 
+        searchSorted = true;
       }
-  template <typename U /* : T */>
-    bool containsFastAll (const set<U> &other) const
-      { if (other. size () > P::size ())
-    	    return false;
-        for (const U& u : other)
-          if (! containsFast (u))
-            return false;
-        return true;
+    template <typename StrictlyLess>
+      void sort (const StrictlyLess &strictlyLess)
+        { Common_sp::sort (*this, strictlyLess); 
+          unsetSearchSorted ();
+        }    
+    void sortBubble ()  
+      // Fast if *this is almost sort()'ed
+      { if (searchSorted)
+          return;
+        for (size_t i = 1; i < P::size (); i++)
+  		    for (size_t j = i; j-- > 0;)
+  		      if ((*this) [j + 1] < (*this) [j])
+          	  std::swap ((*this) [j], (*this) [j + 1]);
+  		      else
+  		      	break;
+      	searchSorted = true;
       }
-  template <typename U /* : T */>
-    bool containsFastAll (const unordered_set<U> &other) const
-      { if (other. size () > P::size ())
-    	    return false;
-        for (const U& u : other)
-          if (! containsFast (u))
-            return false;
-        return true;
-      }
-  template <typename U /* : T */, typename V>
-    bool containsFastAll (const unordered_map<U,V> &other) const
-      { if (other. size () > P::size ())
-    	    return false;
-        for (const auto& it : other)
-          if (! containsFast (it. first))
-            return false;
-        return true;
-      }
-  template <typename U /* : T */>
-    bool intersectsFast (const Vector<U> &other) const
+
+    size_t binSearch (const T &value,
+                      bool exact = true) const
+      // Return: if exact then no_index or vec[Return] = value else min {i : vec[i] >= value}
       { if (P::empty ())
-          return false;
-        for (const U& u : other)
-          if (containsFast (u))
-            return true;
-        return false;
+      	  return no_index;
+      	checkSorted ();
+      	size_t lo = 0;  // vec.at(lo) <= value
+      	size_t hi = P::size () - 1;  
+      	// lo <= hi
+      	if (value < (*this) [lo])
+      	  return exact ? no_index : lo;
+      	if ((*this) [hi] < value)
+      	  return no_index;
+      	// at(lo) <= value <= at(hi)
+      	for (;;)
+      	{
+  	    	const size_t m = (lo + hi) / 2;
+  	    	if (   (*this) [m] == value
+  	    		  || (*this) [m] <  value
+  	    		 )
+  	    		if (lo == m)  // hi in {lo, lo + 1}
+  	    			break;
+  	    		else
+  	    		  lo = m;
+  	      else
+  	      	hi = m;
+  	    }
+  	    if ((*this) [lo] == value)
+  	    	return lo;
+  	    if (! exact || (*this) [hi] == value)
+  	    	return hi;
+  	    return no_index;
       }
-  template <typename U>
-    bool intersectsFast_merge (const Vector<U> &other) const
-      { checkSorted ();
-      	other. checkSorted ();
-      	size_t i = 0;
-      	const size_t otherSize = other. size ();
-        for (const T& t : *this)
-        { while (i < otherSize && other [i] < t)
-            i++;
-          if (i == otherSize)
+    template <typename U /* : T */>
+      bool containsFast (const U &value) const
+        { return binSearch (value) != no_index; }
+    template <typename U /* : T */>
+      bool containsFastAll (const Vector<U> &other) const
+        { if (other. size () > P::size ())
+      	    return false;
+          for (const U& u : other)
+            if (! containsFast (u))
+              return false;
+          return true;
+        }
+    template <typename U /* : T */>
+      bool containsFastAll (const set<U> &other) const
+        { if (other. size () > P::size ())
+      	    return false;
+          for (const U& u : other)
+            if (! containsFast (u))
+              return false;
+          return true;
+        }
+    template <typename U /* : T */>
+      bool containsFastAll (const unordered_set<U> &other) const
+        { if (other. size () > P::size ())
+      	    return false;
+          for (const U& u : other)
+            if (! containsFast (u))
+              return false;
+          return true;
+        }
+    template <typename U /* : T */, typename V>
+      bool containsFastAll (const unordered_map<U,V> &other) const
+        { if (other. size () > P::size ())
+      	    return false;
+          for (const auto& it : other)
+            if (! containsFast (it. first))
+              return false;
+          return true;
+        }
+    template <typename U /* : T */>
+      bool intersectsFast (const Vector<U> &other) const
+        { if (P::empty ())
             return false;
-          if (other [i] == t)
-            return true;
-        }
-        return false;
-      }
-  template <typename U /* : T */>
-    bool intersects (const set<U> &other) const
-      { if (other. empty ())
+          for (const U& u : other)
+            if (containsFast (u))
+              return true;
           return false;
-        for (const T& t : *this)
-          if (other. find (t) != other. end ())
-            return true;
-        return false;
-      }
-  template <typename U /* : T */>
-    void setMinus (const Vector<U> &other)
-      { filterIndex ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
-      
-  size_t findDuplicate () const
-    { if (P::size () <= 1)
+        }
+    template <typename U>
+      bool intersectsFast_merge (const Vector<U> &other) const
+        { checkSorted ();
+        	other. checkSorted ();
+        	size_t i = 0;
+        	const size_t otherSize = other. size ();
+          for (const T& t : *this)
+          { while (i < otherSize && other [i] < t)
+              i++;
+            if (i == otherSize)
+              return false;
+            if (other [i] == t)
+              return true;
+          }
+          return false;
+        }
+    template <typename U /* : T */>
+      bool intersects (const set<U> &other) const
+        { if (other. empty ())
+            return false;
+          for (const T& t : *this)
+            if (other. find (t) != other. end ())
+              return true;
+          return false;
+        }
+    template <typename U /* : T */>
+      void setMinus (const Vector<U> &other)
+        { filterIndex ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
+        
+    size_t findDuplicate () const
+      { if (P::size () <= 1)
+          return no_index;
+        checkSorted ();
+        for (size_t i = 1; i < P::size (); i++)
+          if ((*this) [i] == (*this) [i - 1])
+            return i;
         return no_index;
-      checkSorted ();
-      for (size_t i = 1; i < P::size (); i++)
-        if ((*this) [i] == (*this) [i - 1])
-          return i;
-      return no_index;
-    }
-  bool isUniq () const
-    { return findDuplicate () == no_index; }
-  template <typename Equal /*bool equal (const T &a, const T &b)*/>
-	  void uniq (const Equal &equal)
-	    { if (P::size () <= 1)
-	        return;
-	      size_t j = 1;  
-	      for (size_t i = 1; i < P::size (); i++)
-	        if (! equal ((*this) [i], (*this) [i - 1]))
-	        { if (j != i)
-	            (*this) [j] = (*this) [i];
-	          j++;
-	        }
-	      P::resize (j);
-	    }
-	void uniq ()
-	  { uniq ([] (const T& a, const T& b) { return a == b; }); }
-	bool checkUniq () const
-	  { Vector<T> other (*this);
-	    other. sort ();
-	    return other. isUniq ();
-	  }
-  size_t getIntersectionSize (const Vector<T> &other) const
-    // Input: *this, vec: unique
-    { if (other. empty ())
-        return 0;
-      checkSorted ();
-      other. checkSorted ();      
-      size_t n = 0;
-      size_t j = 0;
-      for (const T& x : *this)
-      { while (other [j] < x)
-        { j++;
-          if (j == other. size ())
-            return n;
-        }
-        if (other [j] == x)
-          n++;
       }
-      return n;
-    }
-  Vector<T> getIntersection (const Vector<T> &other) const
-    // Input: *this, vec: unique
-    { Vector<T> res;
-      if (other. empty ())
+    bool isUniq () const
+      { return findDuplicate () == no_index; }
+    template <typename Equal /*bool equal (const T &a, const T &b)*/>
+  	  void uniq (const Equal &equal)
+  	    { if (P::size () <= 1)
+  	        return;
+  	      size_t j = 1;  
+  	      for (size_t i = 1; i < P::size (); i++)
+  	        if (! equal ((*this) [i], (*this) [i - 1]))
+  	        { if (j != i)
+  	            (*this) [j] = (*this) [i];
+  	          j++;
+  	        }
+  	      P::resize (j);
+  	    }
+  	void uniq ()
+  	  { uniq ([] (const T& a, const T& b) { return a == b; }); }
+  	bool checkUniq () const
+  	  { Vector<T> other (*this);
+  	    other. sort ();
+  	    return other. isUniq ();
+  	  }
+    size_t getIntersectionSize (const Vector<T> &other) const
+      // Input: *this, vec: unique
+      { if (other. empty ())
+          return 0;
+        checkSorted ();
+        other. checkSorted ();      
+        size_t n = 0;
+        size_t j = 0;
+        for (const T& x : *this)
+        { while (other [j] < x)
+          { j++;
+            if (j == other. size ())
+              return n;
+          }
+          if (other [j] == x)
+            n++;
+        }
+        return n;
+      }
+    Vector<T> getIntersection (const Vector<T> &other) const
+      // Input: *this, vec: unique
+      { Vector<T> res;
+        if (other. empty ())
+          return res;
+        checkSorted ();
+        other. checkSorted ();      
+        size_t j = 0;
+        for (const T& x : *this)
+        { while (other [j] < x)
+          { j++;
+            if (j == other. size ())
+              return res;
+          }
+          if (other [j] == x)
+            res << x;
+        }
+        res. searchSorted = true;
         return res;
-      checkSorted ();
-      other. checkSorted ();      
-      size_t j = 0;
-      for (const T& x : *this)
-      { while (other [j] < x)
-        { j++;
-          if (j == other. size ())
-            return res;
+      }
+    bool setIntersection (const Vector<T> &other)
+      { other. checkSorted ();      
+        if (P::empty ())
+          *this = other;
+        else
+        { Vector<T> vec (getIntersection (other));
+          *this = std::move (vec);
         }
-        if (other [j] == x)
+        searchSorted = true;
+        return ! P::empty ();
+      }
+    Vector<T> getUnion (const Vector<T> &other) const
+      // Input: *this, vec: unique
+      { Vector<T> res;  res. reserve (P::size () + other. size ());      
+        if (other. empty ())
+          return *this;
+        if (P::empty ())
+          return other;
+        checkSorted ();
+        other. checkSorted ();      
+        size_t j = 0;
+        for (const T& x : *this)
+        { while (j < other. size () && other [j] < x)
+          { res << other [j];
+            j++;
+          }
+          if (j < other. size () && other [j] == x)
+            j++;
           res << x;
-      }
-      res. searchSorted = true;
-      return res;
-    }
-  bool setIntersection (const Vector<T> &other)
-    { other. checkSorted ();      
-      if (P::empty ())
-        *this = other;
-      else
-      { Vector<T> vec (getIntersection (other));
-        *this = std::move (vec);
-      }
-      searchSorted = true;
-      return ! P::empty ();
-    }
-  Vector<T> getUnion (const Vector<T> &other) const
-    // Input: *this, vec: unique
-    { Vector<T> res;  res. reserve (P::size () + other. size ());      
-      if (other. empty ())
-        return *this;
-      if (P::empty ())
-        return other;
-      checkSorted ();
-      other. checkSorted ();      
-      size_t j = 0;
-      for (const T& x : *this)
-      { while (j < other. size () && other [j] < x)
+        }
+        while (j < other. size ())
         { res << other [j];
           j++;
         }
-        if (j < other. size () && other [j] == x)
-          j++;
-        res << x;
+        res. searchSorted = true;
+        return res;
       }
-      while (j < other. size ())
-      { res << other [j];
-        j++;
+    void setUnion (const Vector<T> &other)
+      { if (P::empty ())
+          *this = other;
+        else
+        { Vector<T> vec (getUnion (other));
+          *this = std::move (vec);
+        }
       }
-      res. searchSorted = true;
-      return res;
-    }
-  void setUnion (const Vector<T> &other)
-    { if (P::empty ())
-        *this = other;
-      else
-      { Vector<T> vec (getUnion (other));
-        *this = std::move (vec);
-      }
-    }
 
-  bool operator< (const Vector<T> &other) const
-    // Lexicographic comparison
-    { const size_t n = std::min (P::size (), other. size ());
-      for (size_t i = 0; i < n; i++)
-    	{ if ((*this) [i] < other [i]) return true;
-    		if (other [i] < (*this) [i]) return false;
+    bool operator< (const Vector<T> &other) const
+      // Lexicographic comparison
+      { const size_t n = std::min (P::size (), other. size ());
+        for (size_t i = 0; i < n; i++)
+      	{ if ((*this) [i] < other [i]) return true;
+      		if (other [i] < (*this) [i]) return false;
+        }
+        return P::size () < other. size ();
       }
-      return P::size () < other. size ();
-    }
-};
+  };
 
 
 
@@ -2543,82 +2578,82 @@ template <typename Key /*VirtNamed*/, typename Value>
 
 
 template <typename T /* : Root */>
-struct VectorPtr : Vector <const T*>
-{
-private:
-	typedef  Vector <const T*>  P;
-public:
+  struct VectorPtr : Vector <const T*>
+  {
+  private:
+  	typedef  Vector <const T*>  P;
+  public:
 
 
-  VectorPtr () = default;
-	explicit VectorPtr (size_t n, 
-	                    const T* value = nullptr)
-	  : P (n, value)
-	  {}
-  explicit VectorPtr (initializer_list<const T*> init)
-    : P (init)
-    {}
-	template <typename U>
-  	explicit VectorPtr (const vector<const U*> &other)
-  	  : P ()
-  	  { P::reserve (other. size ());
-  	    insertAll (*this, other);  	    
-  	  }	  
-	template <typename U>
-  	explicit VectorPtr (const Vector<const U*> &other)
-  	  : P ()
-  	  { P::reserve (other. size ());
-  	    insertAll (*this, other);
-  	    P::searchSorted = other. searchSorted;
-  	  }	  
-	template <typename U>
-  	explicit VectorPtr (const list<const U*> &other)
-  	  : P ()
-  	  { P::reserve (other. size ());
-  	    insertAll (*this, other);
-  	  }	  
-  template <typename U>
-  	VectorPtr<T>& operator= (const Vector<const U*> &other)
-  	  { P::clear ();
-  	    P::reserve (other. size ());
-  	    insertAll (*this, other);
-  	    P::searchSorted = other. searchSorted;
-  	    return *this;
-  	  }	  
+    VectorPtr () = default;
+  	explicit VectorPtr (size_t n, 
+  	                    const T* value = nullptr)
+  	  : P (n, value)
+  	  {}
+    explicit VectorPtr (initializer_list<const T*> init)
+      : P (init)
+      {}
+  	template <typename U>
+    	explicit VectorPtr (const vector<const U*> &other)
+    	  : P ()
+    	  { P::reserve (other. size ());
+    	    insertAll (*this, other);  	    
+    	  }	  
+  	template <typename U>
+    	explicit VectorPtr (const Vector<const U*> &other)
+    	  : P ()
+    	  { P::reserve (other. size ());
+    	    insertAll (*this, other);
+    	    P::searchSorted = other. searchSorted;
+    	  }	  
+  	template <typename U>
+    	explicit VectorPtr (const list<const U*> &other)
+    	  : P ()
+    	  { P::reserve (other. size ());
+    	    insertAll (*this, other);
+    	  }	  
+    template <typename U>
+    	VectorPtr<T>& operator= (const Vector<const U*> &other)
+    	  { P::clear ();
+    	    P::reserve (other. size ());
+    	    insertAll (*this, other);
+    	    P::searchSorted = other. searchSorted;
+    	    return *this;
+    	  }	  
 
 
-  VectorPtr<T>& operator<< (const T* value)
-    { P::operator<< (value); 
-    	return *this;
-    }
-  template <typename U/*:<T>*/>
-    VectorPtr<T>& operator<< (const VectorPtr<U> &other)
-      { P::operator<< (other); 
-        return *this;
+    VectorPtr<T>& operator<< (const T* value)
+      { P::operator<< (value); 
+      	return *this;
       }
-	void deleteData ()
-	  {	for (const T* t : *this)
-			  delete t;
-			P::clear ();
-	  }
-  void erasePtr (size_t index)
-    { delete (*this) [index];
-      P::eraseAt (index);
-    }
-  void sortPtr ()
-    { P::sort (lessPtr<T>); 
-		  P::unsetSearchSorted ();
-    }
-  void sortBubblePtr ()
-    { for (size_t i = 1; i < P::size (); i++)
-		    for (size_t j = i; j-- > 0;)
-		      if (* (*this) [j + 1] < * (*this) [j])
-        	  std::swap ((*this) [j], (*this) [j + 1]);
-		      else
-		      	break;
-		  P::unsetSearchSorted ();
-    }
-};
+    template <typename U/*:<T>*/>
+      VectorPtr<T>& operator<< (const VectorPtr<U> &other)
+        { P::operator<< (other); 
+          return *this;
+        }
+  	void deleteData ()
+  	  {	for (const T* t : *this)
+  			  delete t;
+  			P::clear ();
+  	  }
+    void erasePtr (size_t index)
+      { delete (*this) [index];
+        P::eraseAt (index);
+      }
+    void sortPtr ()
+      { P::sort (lessPtr<T>); 
+  		  P::unsetSearchSorted ();
+      }
+    void sortBubblePtr ()
+      { for (size_t i = 1; i < P::size (); i++)
+  		    for (size_t j = i; j-- > 0;)
+  		      if (* (*this) [j + 1] < * (*this) [j])
+          	  std::swap ((*this) [j], (*this) [j + 1]);
+  		      else
+  		      	break;
+  		  P::unsetSearchSorted ();
+      }
+  };
 
 
 
@@ -2665,91 +2700,91 @@ template <typename Key /*VirtNamed*/>
 
 
 template <typename T /* : Root */>
-struct VectorOwn : VectorPtr<T>
-{
-private:
-	typedef  VectorPtr<T>  P;
-public:
-
-
-  VectorOwn () = default;
-	VectorOwn (const VectorOwn<T> &other) 
-	  : P ()
-	  { *this = other; } 
-	VectorOwn<T>& operator= (const VectorOwn<T> &other) 
-	  { P::deleteData ();
-	  	P::reserve (other. size ());
-	  	for (const T* t : other)
-	  	  P::push_back (static_cast <const T*> (t->copy ()));
-	  	P::searchSorted = other. searchSorted;
-	  	return *this;
-	  }
-	VectorOwn (VectorOwn<T> &&other)
-	  : P ()
-	  { *this = move (other); }
-	VectorOwn<T>& operator= (VectorOwn<T> &&other)
-	  { P::deleteData ();
-	    P::operator= (move (other)); 
-	  	P::searchSorted = other. searchSorted;
-	    return *this;
-	  }
-	explicit VectorOwn (const VectorPtr<T> &other)
-	  : P ()
-	  { *this = other; }
-	VectorOwn<T>& operator= (const VectorPtr<T> &other) 
-	  { P::deleteData ();
-	    P::operator= (other); 
-	    P::searchSorted = other. searchSorted;
-	    return *this;
-	  }
-	explicit VectorOwn (VectorPtr<T> &&other)
-	  : P ()
-	  { *this = move (other); }
-	VectorOwn<T>& operator= (VectorPtr<T> &&other) 
-	  { P::deleteData ();
-	    P::operator= (move (other)); 
-	  	P::searchSorted = other. searchSorted;
-	    return *this;
-	  }
- ~VectorOwn ()
-    { P::deleteData (); }
-
-
-  VectorOwn<T>& operator<< (const T* value)
-    { P::operator<< (value); 
-    	return *this;
-    }
-  template <typename U/*:<T>*/>
-    VectorOwn<T>& operator<< (const VectorPtr<U> &other)
-      { P::operator<< (other); 
-        return *this;
-      }
-
-
-  class Stack
+  struct VectorOwn : VectorPtr<T>
   {
-    VectorOwn<T> &vec;
-    const size_t size;
-    
+  private:
+  	typedef  VectorPtr<T>  P;
   public:
-    explicit Stack (VectorOwn<T> &vec_arg)
-      : vec (vec_arg)
-      , size (vec_arg. size ())
-      {}
-   ~Stack ()
-      { while (vec. size () > size)
-        { const T* t = vec. pop ();
-          delete t;
+
+
+    VectorOwn () = default;
+  	VectorOwn (const VectorOwn<T> &other) 
+  	  : P ()
+  	  { *this = other; } 
+  	VectorOwn<T>& operator= (const VectorOwn<T> &other) 
+  	  { P::deleteData ();
+  	  	P::reserve (other. size ());
+  	  	for (const T* t : other)
+  	  	  P::push_back (static_cast <const T*> (t->copy ()));
+  	  	P::searchSorted = other. searchSorted;
+  	  	return *this;
+  	  }
+  	VectorOwn (VectorOwn<T> &&other)
+  	  : P ()
+  	  { *this = move (other); }
+  	VectorOwn<T>& operator= (VectorOwn<T> &&other)
+  	  { P::deleteData ();
+  	    P::operator= (move (other)); 
+  	  	P::searchSorted = other. searchSorted;
+  	    return *this;
+  	  }
+  	explicit VectorOwn (const VectorPtr<T> &other)
+  	  : P ()
+  	  { *this = other; }
+  	VectorOwn<T>& operator= (const VectorPtr<T> &other) 
+  	  { P::deleteData ();
+  	    P::operator= (other); 
+  	    P::searchSorted = other. searchSorted;
+  	    return *this;
+  	  }
+  	explicit VectorOwn (VectorPtr<T> &&other)
+  	  : P ()
+  	  { *this = move (other); }
+  	VectorOwn<T>& operator= (VectorPtr<T> &&other) 
+  	  { P::deleteData ();
+  	    P::operator= (move (other)); 
+  	  	P::searchSorted = other. searchSorted;
+  	    return *this;
+  	  }
+   ~VectorOwn ()
+      { P::deleteData (); }
+
+
+    VectorOwn<T>& operator<< (const T* value)
+      { P::operator<< (value); 
+      	return *this;
+      }
+    template <typename U/*:<T>*/>
+      VectorOwn<T>& operator<< (const VectorPtr<U> &other)
+        { P::operator<< (other); 
+          return *this;
         }
-      }
+
+
+    class Stack
+    {
+      VectorOwn<T> &vec;
+      const size_t size;
       
-    void release (VectorPtr<T> &out)
-      { out. reserve (vec. size () - size);
-        while (vec. size () > size)
-          out << vec. pop ();
-      }
+    public:
+      explicit Stack (VectorOwn<T> &vec_arg)
+        : vec (vec_arg)
+        , size (vec_arg. size ())
+        {}
+     ~Stack ()
+        { while (vec. size () > size)
+          { const T* t = vec. pop ();
+            delete t;
+          }
+        }
+        
+      void release (VectorPtr<T> &out)
+        { out. reserve (vec. size () - size);
+          while (vec. size () > size)
+            out << vec. pop ();
+        }
+    };
   };
-};
 
 
 
@@ -2811,383 +2846,237 @@ template <typename Key /*VirtNamed*/>
 
 
 
-struct DisjointCluster
-// Cormen, Leiserson, Rivest, Introduction to Algorithms, p. 449
+struct Csv 
+// Line of Excel .csv-file
 {
-protected:
-  DisjointCluster* parentDC;
-    // !nullptr
-    // Tree
-    // = this <=> root
-  size_t rankDC;
-    // Upper bound on the height of *this
-    // (Height = max. # arcs between *this and a leaf)
+private:
+  const string &s;
+  size_t pos {0};
 public:
 
-protected:
-	DisjointCluster ()
-	  { init (); }
-public:
-	
-	void init ()
-    { rankDC = 0;
-			parentDC = this;
-		}
-	void merge (DisjointCluster &other);
-  DisjointCluster* getDisjointCluster ();
+  
+  explicit Csv (const string &s_arg)
+    : s (s_arg)
+    {}
+  
+  
+  bool goodPos () const
+    { return pos < s. size (); }
+  string getWord ();
+    // Return: Next word
+    // Requires: goodPos()
+private:
+  void findChar (char c)
+    { while (goodPos () && s [pos] != c)
+        pos++;
+    }
 };
+
+  
+  
+StringVector csvLine2vec (const string &line);
+  // Invokes: Csv
 
 
 
 template <typename T>
-struct Heap : Root
-// Priority queue
-// Heap property: comp(arr[parent(index)],arr[index]) >= 0
-// More operations than in std::priority_queue
-{
-private:
-  Vector<T*> arr;
-    // Elements are not owned by arr
-  CompareInt comp {nullptr};
-    // !nullptr
-  typedef void (*SetHeapIndex) (T &item, size_t index);
-    // Example: item.heapIndex = index
-  SetHeapIndex setHeapIndex {nullptr};
-    // Needed to invoke increaseKey()
-public:
+  struct Set : set<T>
+  {
+  private:
+  	typedef  set<T>  P;
+  public:
+  	bool universal {false};
+  	  // true => empty()
+  	
 
-
-
-  explicit Heap (const CompareInt &comp_arg,
-					       const SetHeapIndex &setHeapIndex_arg = nullptr,
-					       size_t toReserve = 0)
-    : comp (comp_arg)
-    , setHeapIndex (setHeapIndex_arg)
-    { arr. reserve (toReserve); }
-private:
-  static void throwError (const string &str) 
-    { throwf ("Heap: " + str); }
-public:
-
-
-  bool empty () const final
-    { return arr. empty (); }
-  size_t size () const
-    { return arr. size (); }
-  Heap& operator<< (T* item)
-    { if (! item)
-        throwError ("null item");
-      arr << item;
-      increaseKey (arr. size () - 1);
-      return *this;
-    }
-  void increaseKey (size_t index)
-    { T* item = arr [index];
-      size_t p = no_index;
-      while (index && comp (arr [p = parent (index)], item) < 0)
-      { assign (arr [p], index);
-        index = p;
+  	Set () = default;
+  	explicit Set (bool universal_arg)
+  	  : universal (universal_arg)
+  	  {}
+  	template <typename U, typename V>
+  	  explicit Set (const map<U,V> &other)
+  	    { operator= (other); }
+  	template <typename U, typename V>
+  	  explicit Set (const unordered_map<U,V> &other)
+  	    { operator= (other); }
+  	template <typename U>
+  	  explicit Set (const vector<U> &other)
+  	    { operator= (other); }
+  	template <typename U, typename V>
+    	Set<T>& operator= (const map<U,V> &other)
+    	  { universal = false;
+    	    for (const auto& it : other)
+  	        P::insert (it. first);
+  	      return *this;
+    	  }
+  	template <typename U, typename V>
+    	Set<T>& operator= (const unordered_map<U,V> &other)
+    	  { universal = false;
+    	    for (const auto& it : other)
+  	        P::insert (it. first);
+  	      return *this;
+    	  }
+  	template <typename U>
+    	Set<T>& operator= (const vector<U> &other)
+    	  { universal = false;
+    	    for (const U& u : other)
+  	        P::insert (u);
+  	      return *this;
+    	  }
+    bool operator== (const Set<T> &other) const
+      { return universal
+                 ? other. universal ? true : false
+                 : other. universal
+                   ? false
+                   :    P::size () == other. size ()
+                     && containsAll (other);
       }
-      assign (item, index);
-    }
-  void decreaseKey (size_t index)
-    { heapify (index, arr. size ()); }
-  T* getMaximum () const
-    { if (arr. empty ()) 
-    	  throwError ("getMaximum");
-      return arr [0];
-    }
-  void deleteMaximum ()
-    // Time: O(1) amortized
-    { if (arr. empty ()) 
-    	  throwError ("deleteMaximum");
-      T* item = arr. back ();
-      arr. pop_back ();
-      if (arr. empty ())
-        return;
-      assign (item, 0);
-      reinsertMaximum ();
-    }
-  void reinsertMaximum ()
-    // Do this if the key of getMaximum() is changed
-    { heapify (0, arr. size ()); }
-  void sort ()
-    { if (arr. empty ())
-        return;
-      for (size_t i = arr. size () - 1; i > 0; i--)
-      { swap (0, i);
-        heapify (0, i);
+
+
+    bool contains (const T& el) const
+      { return universal || P::find (el) != P::end (); }
+    T front () const
+      { return * P::begin (); }
+    T back () const
+      { return * std::prev (P::end ()); }
+    template <typename U /* : T */>
+      bool containsAll (const Set<U> &other) const
+        { if (universal)
+      	    return true;
+      	  if (other. universal)
+      		  return false;
+      	  if (other. size () > P::size ())
+      	    return false;
+          for (const U& u : other)
+            if (! contains (u))
+              return false;
+          return true;
+        }
+    bool intersects (const Set<T> &other) const
+       { if (universal && other. universal)
+       	   return true;
+       	 if (universal)
+       	   return ! other. empty ();
+       	 if (other. universal)
+       	   return ! P::empty ();
+       	 if (P::size () < other. size ())
+           return intersects_ (other);
+         return other. intersects_ (*this);
+       }
+  private:
+    bool intersects_ (const Set<T> &other) const
+      { if (other. empty ())
+          return false;
+        for (const T& t : *this)
+          if (other. contains (t))
+            return true;
+        return false;
       }
-    }
-private:
-  static size_t parent (size_t index) 
-    { if (! index)  throwError ("parent");
-      return (index + 1) / 2 - 1;
-    }
-  static size_t left (size_t index) 
-    { return 2 * (index + 1) - 1; }
-  static size_t right (size_t index) 
-    { return left (index) + 1; }
-  void assign (T* item,
-               size_t index)
-    { arr [index] = item;
-      if (setHeapIndex)
-        setHeapIndex (*item, index);
-    }
-  void swap (size_t i,
-             size_t j)
-    { if (i == j)
-        return;
-      T* item = arr [i];
-      assign (arr [j], i);
-      assign (item, j);
-    }
-  void heapify (size_t index,
-                size_t maxIndex)
-    // Requires: Heap property holds for all index1 < maxIndex except parent(index1) == index
-    { if (maxIndex > arr. size ())  throwError ("heapify: maxIndex");
-      if (index >= maxIndex)        throwError ("heapify: index");
-      for (;;)
-      { size_t extr = index;
-        const size_t l = left (index);
-        if (   l < maxIndex
-            && comp (arr [extr], arr [l]) < 0
-           )
-          extr = l;
-        const size_t r = right (index);
-        if (   r < maxIndex
-            && comp (arr [extr], arr [r]) < 0
-           )
-          extr = r;
-        if (extr == index)
-          break;
-        swap (index, extr);
-        index = extr;
+  public:
+    bool intersects (const unordered_set<T> &other) const
+       { if (universal)
+       	   return ! other. empty ();
+         if (other. empty ())
+           return false;
+         for (const T& t : *this)
+           if (contains (other, t))
+             return true;
+         return false;     
+       }
+
+    Set<T>& operator<< (const T &el)
+      { if (! universal)
+      	  P::insert (el);  // Slow
+      	return *this;
       }
-    }
-public:
-
-  // Test
-  static void testStr ()    
-    { StringVector vec {"Moscow", "San Diego", "Los Angeles", "Paris"};
-      Heap<string> heap (strComp);
-      for (string& s : vec)
-        heap << & s;
-      while (! heap. empty ())  
-      { cout << * heap. getMaximum () << endl;
-        heap. deleteMaximum ();
+    Set<T>& operator<< (const Set<T> &other)
+      { if (! universal)
+      	{ if (other. universal)
+      	  { P::clear ();
+      	  	universal = true;
+      	  }
+      	  else
+      	    P::insert (other. begin (), other. end ());
+      	}
+      	return *this;
       }
-    }
-private:
-  static int strComp (const void* s1,
-                      const void* s2)
-    { const string& s1_ = * static_cast <const string*> (s1);
-      const string& s2_ = * static_cast <const string*> (s2);
-      if (s1_ > s2_)  return -1;
-      if (s1_ < s2_)  return  1;
-      return 0;
-    }
-};
-
-
-
-template <typename T>
-struct Set : set<T>
-{
-private:
-	typedef  set<T>  P;
-public:
-	bool universal {false};
-	  // true => empty()
-	
-
-	Set () = default;
-	explicit Set (bool universal_arg)
-	  : universal (universal_arg)
-	  {}
-	template <typename U, typename V>
-	  explicit Set (const map<U,V> &other)
-	    { operator= (other); }
-	template <typename U, typename V>
-	  explicit Set (const unordered_map<U,V> &other)
-	    { operator= (other); }
-	template <typename U>
-	  explicit Set (const vector<U> &other)
-	    { operator= (other); }
-	template <typename U, typename V>
-  	Set<T>& operator= (const map<U,V> &other)
-  	  { universal = false;
-  	    for (const auto& it : other)
-	        P::insert (it. first);
-	      return *this;
-  	  }
-	template <typename U, typename V>
-  	Set<T>& operator= (const unordered_map<U,V> &other)
-  	  { universal = false;
-  	    for (const auto& it : other)
-	        P::insert (it. first);
-	      return *this;
-  	  }
-	template <typename U>
-  	Set<T>& operator= (const vector<U> &other)
-  	  { universal = false;
-  	    for (const U& u : other)
-	        P::insert (u);
-	      return *this;
-  	  }
-  bool operator== (const Set<T> &other) const
-    { return universal
-               ? other. universal ? true : false
-               : other. universal
-                 ? false
-                 :    P::size () == other. size ()
-                   && containsAll (other);
-    }
-
-
-  bool contains (const T& el) const
-    { return universal || P::find (el) != P::end (); }
-  T front () const
-    { return * P::begin (); }
-  T back () const
-    { return * std::prev (P::end ()); }
-  template <typename U /* : T */>
-    bool containsAll (const Set<U> &other) const
-      { if (universal)
-    	    return true;
-    	  if (other. universal)
-    		  return false;
-    	  if (other. size () > P::size ())
-    	    return false;
-        for (const U& u : other)
-          if (! contains (u))
-            return false;
+    template <typename From>
+      void insertAll (const From &from)
+        { P::insert (from. begin (), from. end ()); }
+    bool addUnique (const T& el)
+      { if (contains (el))
+          return false;
+        operator<< (el);
         return true;
       }
-  bool intersects (const Set<T> &other) const
-     { if (universal && other. universal)
-     	   return true;
-     	 if (universal)
-     	   return ! other. empty ();
-     	 if (other. universal)
-     	   return ! P::empty ();
-     	 if (P::size () < other. size ())
-         return intersects_ (other);
-       return other. intersects_ (*this);
-     }
-private:
-  bool intersects_ (const Set<T> &other) const
-    { if (other. empty ())
-        return false;
-      for (const T& t : *this)
-        if (other. contains (t))
-          return true;
-      return false;
-    }
-public:
-  bool intersects (const unordered_set<T> &other) const
-     { if (universal)
-     	   return ! other. empty ();
-       if (other. empty ())
-         return false;
-       for (const T& t : *this)
-         if (contains (other, t))
-           return true;
-       return false;     
-     }
+  	void intersect (const Set<T> &other) 
+  		{ if (other. universal)
+  			  return;
+  			if (universal)
+  			{ operator= (other);
+  				return;
+  			}
+        for (Iter<Set<T>> iter (*this); iter. next (); )
+  				if (! other. contains (*iter))
+  					iter. erase ();
+  		}
+  	void intersect (const Vector<T> &other) 
+  		{ if (universal)
+  			{ operator= (other);
+  				return;
+  			}
+        for (Iter<Set<T>> iter (*this); iter. next (); )
+  				if (! other. containsFast (*iter))
+  					iter. erase ();
+  		}
+  	template <typename U, typename V>
+    	void intersect (const map<U,V> &other) 
+    		{ if (universal)
+    			{ operator= (other);
+    				return;
+    			}
+          for (Iter<Set<T>> iter (*this); iter. next (); )
+    				if (! Common_sp::contains (other, *iter))
+    					iter. erase ();
+    		}
+  	template <typename U, typename V>
+    	void intersect (const unordered_map<U,V> &other) 
+    		{ if (universal)
+    			{ operator= (other);
+    				return;
+    			}
+          for (Iter<Set<T>> iter (*this); iter. next (); )
+    				if (! Common_sp::contains (other, *iter))
+    					iter. erase ();
+    		}
+  	size_t intersectSize (const Set<T> &other) const
+  	  // Return: universal <=> SIZE_MAX
+  		{ if (other. universal)
+  			  return universal ? SIZE_MAX : P::size ();
+  			if (universal)
+  				return other. size ();
+  		  size_t n = 0;
+  		  if (! other. empty ())
+    		  for (const T& t : *this)
+    				if (other. contains (t))
+    					n++;
+  			return n;
+  		}
+    size_t setMinus (const Set<T> &other)
+      { if (universal)
+          throwf ("setMinus:universal");
+      	size_t n = 0;
+      	if (other. universal)
+      	{ n = P::size ();
+      		P::clear ();
+      	}
+      	else
+  	    	for (const T& t : other)
+  	        n += P::erase (t);
+        return n;
+      }
+  };
 
-  Set<T>& operator<< (const T &el)
-    { if (! universal)
-    	  P::insert (el);  // Slow
-    	return *this;
-    }
-  Set<T>& operator<< (const Set<T> &other)
-    { if (! universal)
-    	{ if (other. universal)
-    	  { P::clear ();
-    	  	universal = true;
-    	  }
-    	  else
-    	    P::insert (other. begin (), other. end ());
-    	}
-    	return *this;
-    }
-  template <typename From>
-    void insertAll (const From &from)
-      { P::insert (from. begin (), from. end ()); }
-  bool addUnique (const T& el)
-    { if (contains (el))
-        return false;
-      operator<< (el);
-      return true;
-    }
-	void intersect (const Set<T> &other) 
-		{ if (other. universal)
-			  return;
-			if (universal)
-			{ operator= (other);
-				return;
-			}
-      for (Iter<Set<T>> iter (*this); iter. next (); )
-				if (! other. contains (*iter))
-					iter. erase ();
-		}
-	void intersect (const Vector<T> &other) 
-		{ if (universal)
-			{ operator= (other);
-				return;
-			}
-      for (Iter<Set<T>> iter (*this); iter. next (); )
-				if (! other. containsFast (*iter))
-					iter. erase ();
-		}
-	template <typename U, typename V>
-  	void intersect (const map<U,V> &other) 
-  		{ if (universal)
-  			{ operator= (other);
-  				return;
-  			}
-        for (Iter<Set<T>> iter (*this); iter. next (); )
-  				if (! Common_sp::contains (other, *iter))
-  					iter. erase ();
-  		}
-	template <typename U, typename V>
-  	void intersect (const unordered_map<U,V> &other) 
-  		{ if (universal)
-  			{ operator= (other);
-  				return;
-  			}
-        for (Iter<Set<T>> iter (*this); iter. next (); )
-  				if (! Common_sp::contains (other, *iter))
-  					iter. erase ();
-  		}
-	size_t intersectSize (const Set<T> &other) const
-	  // Return: universal <=> SIZE_MAX
-		{ if (other. universal)
-			  return universal ? SIZE_MAX : P::size ();
-			if (universal)
-				return other. size ();
-		  size_t n = 0;
-		  if (! other. empty ())
-  		  for (const T& t : *this)
-  				if (other. contains (t))
-  					n++;
-			return n;
-		}
-  size_t setMinus (const Set<T> &other)
-    { if (universal)
-        throwf ("setMinus:universal");
-    	size_t n = 0;
-    	if (other. universal)
-    	{ n = P::size ();
-    		P::clear ();
-    	}
-    	else
-	    	for (const T& t : other)
-	        n += P::erase (t);
-      return n;
-    }
-};
 
 
 template <typename T>
@@ -3222,58 +3111,298 @@ template <typename T, typename U /* : T */>
 
 
 template <typename T>  
-struct RandomSet
-// Set stored in a vector for a random access
-{
-private:
-  Vector<T> vec;
-  unordered_map<T,size_t/*index in vec*/> um;
-  // Same elements
-public:
+  struct RandomSet
+  // Set stored in a vector for a random access
+  {
+  private:
+    Vector<T> vec;
+    unordered_map<T,size_t/*index in vec*/> um;
+    // Same elements
+  public:
+    
+
+    RandomSet () = default;
+    void reset (size_t num)
+      { vec. clear ();  vec. reserve (num);
+        um.  clear ();  um. rehash (num);
+      }
+    void qc () const
+      { if (! qc_on)
+          return;
+        if (vec. size () != um. size ())
+          throwf ("RandomSet: qc");
+      }
+
+      
+    // Time: O(1)
+    bool empty () const
+      { return vec. empty (); }
+    size_t size () const
+      { return vec. size (); }
+    bool insert (const T &t)
+      { if (contains (um, t))
+          return false;
+        um [t] = vec. size ();;
+        vec << t;
+        return true;
+      }
+    bool erase (const T &t)
+      { if (vec. empty ())
+          return false;
+        const auto it = um. find (t);
+        if (it == um. end ())
+          return false;
+        um [vec. back ()] = it->second;
+        vec [it->second] = vec. back ();
+        vec. pop_back ();
+        um. erase (t);
+        return true;
+      }
+    const Vector<T>& getVec () const
+      { return vec; }
+  };
   
 
-  RandomSet () = default;
-  void reset (size_t num)
-    { vec. clear ();  vec. reserve (num);
-      um.  clear ();  um. rehash (num);
-    }
-  void qc () const
-    { if (! qc_on)
-        return;
-      if (vec. size () != um. size ())
-        throwf ("RandomSet: qc");
-    }
 
-    
-  // Time: O(1)
-  bool empty () const
-    { return vec. empty (); }
-  size_t size () const
-    { return vec. size (); }
-  bool insert (const T &t)
-    { if (contains (um, t))
-        return false;
-      um [t] = vec. size ();;
-      vec << t;
-      return true;
-    }
-  bool erase (const T &t)
-    { if (vec. empty ())
-        return false;
-      const auto it = um. find (t);
-      if (it == um. end ())
-        return false;
-      um [vec. back ()] = it->second;
-      vec [it->second] = vec. back ();
-      vec. pop_back ();
-      um. erase (t);
-      return true;
-    }
-  const Vector<T>& getVec () const
-    { return vec; }
+template <typename T>
+  struct Heap 
+  // Priority queue
+  // Heap property: comp(arr[parent(index)],arr[index]) >= 0
+  // More operations than in std::priority_queue
+  {
+  private:
+    Vector<T*> arr;
+      // Elements are not owned by arr
+    CompareInt comp {nullptr};
+      // !nullptr
+    typedef void (*SetHeapIndex) (T &item, size_t index);
+      // Example: item.heapIndex = index
+    SetHeapIndex setHeapIndex {nullptr};
+      // Needed to invoke increaseKey()
+  public:
+
+
+
+    explicit Heap (const CompareInt &comp_arg,
+  					       const SetHeapIndex &setHeapIndex_arg = nullptr,
+  					       size_t toReserve = 0)
+      : comp (comp_arg)
+      , setHeapIndex (setHeapIndex_arg)
+      { arr. reserve (toReserve); }
+  private:
+    static void throwError (const string &str) 
+      { throwf ("Heap: " + str); }
+  public:
+
+
+    bool empty () const 
+      { return arr. empty (); }
+    size_t size () const
+      { return arr. size (); }
+    Heap& operator<< (T* item)
+      { if (! item)
+          throwError ("null item");
+        arr << item;
+        increaseKey (arr. size () - 1);
+        return *this;
+      }
+    void increaseKey (size_t index)
+      { T* item = arr [index];
+        size_t p = no_index;
+        while (index && comp (arr [p = parent (index)], item) < 0)
+        { assign (arr [p], index);
+          index = p;
+        }
+        assign (item, index);
+      }
+    void decreaseKey (size_t index)
+      { heapify (index, arr. size ()); }
+    T* getMaximum () const
+      { if (arr. empty ()) 
+      	  throwError ("getMaximum");
+        return arr [0];
+      }
+    void deleteMaximum ()
+      // Time: O(1) amortized
+      { if (arr. empty ()) 
+      	  throwError ("deleteMaximum");
+        T* item = arr. back ();
+        arr. pop_back ();
+        if (arr. empty ())
+          return;
+        assign (item, 0);
+        reinsertMaximum ();
+      }
+    void reinsertMaximum ()
+      // Do this if the key of getMaximum() is changed
+      { heapify (0, arr. size ()); }
+    void sort ()
+      { if (arr. empty ())
+          return;
+        for (size_t i = arr. size () - 1; i > 0; i--)
+        { swap (0, i);
+          heapify (0, i);
+        }
+      }
+  private:
+    static size_t parent (size_t index) 
+      { if (! index)  throwError ("parent");
+        return (index + 1) / 2 - 1;
+      }
+    static size_t left (size_t index) 
+      { return 2 * (index + 1) - 1; }
+    static size_t right (size_t index) 
+      { return left (index) + 1; }
+    void assign (T* item,
+                 size_t index)
+      { arr [index] = item;
+        if (setHeapIndex)
+          setHeapIndex (*item, index);
+      }
+    void swap (size_t i,
+               size_t j)
+      { if (i == j)
+          return;
+        T* item = arr [i];
+        assign (arr [j], i);
+        assign (item, j);
+      }
+    void heapify (size_t index,
+                  size_t maxIndex)
+      // Requires: Heap property holds for all index1 < maxIndex except parent(index1) == index
+      { if (maxIndex > arr. size ())  throwError ("heapify: maxIndex");
+        if (index >= maxIndex)        throwError ("heapify: index");
+        for (;;)
+        { size_t extr = index;
+          const size_t l = left (index);
+          if (   l < maxIndex
+              && comp (arr [extr], arr [l]) < 0
+             )
+            extr = l;
+          const size_t r = right (index);
+          if (   r < maxIndex
+              && comp (arr [extr], arr [r]) < 0
+             )
+            extr = r;
+          if (extr == index)
+            break;
+          swap (index, extr);
+          index = extr;
+        }
+      }
+  public:
+
+    // Test
+    static void testStr ()    
+      { StringVector vec {"Moscow", "San Diego", "Los Angeles", "Paris"};
+        Heap<string> heap (strComp);
+        for (string& s : vec)
+          heap << & s;
+        while (! heap. empty ())  
+        { cout << * heap. getMaximum () << endl;
+          heap. deleteMaximum ();
+        }
+      }
+  private:
+    static int strComp (const void* s1,
+                        const void* s2)
+      { const string& s1_ = * static_cast <const string*> (s1);
+        const string& s2_ = * static_cast <const string*> (s2);
+        if (s1_ > s2_)  return -1;
+        if (s1_ < s2_)  return  1;
+        return 0;
+      }
+  };
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+// Verbosity
+
+bool verbose (int inc = 0);
+
+int getVerbosity ();
+
+
+class Verbose
+{
+	const int verbose_old;
+public:
+
+	
+	explicit Verbose (int verbose_arg);
+	Verbose ();
+	  // Increase verbosity
+ ~Verbose ();
+
+ 
+  static bool enabled ()
+    { return isMainThread () /*Threads::empty ()*/; }
+};
+
+
+
+struct Unverbose 
+{
+	Unverbose ();
+ ~Unverbose ();
 };
   
 
+
+struct Chronometer : Nocopy
+// CPU (not astronomical) time
+// Requires: no thread is used
+{
+  static constexpr clock_t noclock {(clock_t) -1};
+  static bool enabled;
+  const string name;
+  clock_t time {0};
+protected:
+  clock_t startTime {noclock};
+public:
+
+
+  explicit Chronometer (const string &name_arg)
+    : name (name_arg)
+    {}
+
+
+  bool on () const
+    { return enabled && threads_max == 1; }
+  void start ();
+  void stop ();
+  void print (ostream &os) const;
+};
+
+
+
+struct Chronometer_OnePass : Nocopy
+// Astronomical time
+{
+private:
+	const string name;
+  ostream &os;
+  const bool addNewLine;
+  const bool active;
+	const time_t start;
+public:
+  
+	
+  explicit Chronometer_OnePass (const string &name_arg,
+                                ostream &os_arg = cout,
+                                bool addNewLine_arg = true,
+                                bool active_arg = true);
+ ~Chronometer_OnePass ();
+    // Print to os
+};
+	
+	
+	
+
+/////////////////////////////////////// cerr //////////////////////////////////////////
 
 struct Progress : Nocopy
 {
@@ -3315,7 +3444,51 @@ public:
 
 
 
-// Input
+struct Stderr : Singleton<Stderr>
+{
+  const bool quiet;
+
+  
+  explicit Stderr (bool quiet_arg)
+    : quiet (quiet_arg)
+    {}
+
+    
+  template <typename T>
+    Stderr& operator<< (const T& t) 
+      { if (quiet)
+          return *this;
+        cerr << t;
+        return *this;
+      }
+  void section (const string &title) const
+    { if (quiet)
+        return;
+      Common_sp::section (title, false);
+    }
+};
+
+
+
+struct Warning : Singleton<Warning>
+{
+private:
+  Stderr& stderr;
+  const OColor oc;
+public:  
+  
+  explicit Warning (Stderr &stderr_arg)
+    : stderr (stderr_arg)
+    , oc (cerr, Color::yellow, true, ! stderr. quiet)
+    { stderr << "WARNING: "; }
+ ~Warning ()
+    { stderr << "\n"; }
+};
+
+
+
+
+////////////////////////////////////// Input ///////////////////////////////////////////
 
 struct Input : Root, Nocopy
 {
@@ -3450,6 +3623,36 @@ public:
 		{ throw Error (*this, what, expected); }
 };
 	
+
+
+struct PairFile : Root
+{
+private:
+	LineInput f;
+	Istringstream iss;
+public:
+  const bool sameAllowed;
+	const bool orderNames;
+  	// true => name1 < name2
+	string name1;
+	string name2;
+	
+
+	PairFile (const string &fName,
+	          bool sameAllowed_arg,
+	          bool orderNames_arg,
+	          uint displayPeriod = 1000)
+	  : f (fName, displayPeriod) 
+	  , sameAllowed (sameAllowed_arg)
+	  , orderNames (orderNames_arg)
+	  {}
+
+	  
+	bool next ();
+	uint getLineNum () const
+	  { return f. lineNum; }
+};
+
 
 
 struct Token : Root
@@ -3686,157 +3889,9 @@ public:
 
 
 
-struct PairFile : Root
-{
-private:
-	LineInput f;
-	Istringstream iss;
-public:
-  const bool sameAllowed;
-	const bool orderNames;
-  	// true => name1 < name2
-	string name1;
-	string name2;
-	
 
-	PairFile (const string &fName,
-	          bool sameAllowed_arg,
-	          bool orderNames_arg,
-	          uint displayPeriod = 1000)
-	  : f (fName, displayPeriod) 
-	  , sameAllowed (sameAllowed_arg)
-	  , orderNames (orderNames_arg)
-	  {}
-
-	  
-	bool next ();
-	uint getLineNum () const
-	  { return f. lineNum; }
-};
-
-
-
-struct Stderr : Singleton<Stderr>
-{
-  const bool quiet;
-
-  
-  explicit Stderr (bool quiet_arg)
-    : quiet (quiet_arg)
-    {}
-
-    
-  template <typename T>
-    Stderr& operator<< (const T& t) 
-      { if (quiet)
-          return *this;
-        cerr << t;
-        return *this;
-      }
-  void section (const string &title) const
-    { if (quiet)
-        return;
-      Common_sp::section (title, false);
-    }
-};
-
-
-
-struct Warning : Singleton<Warning>
-{
-private:
-  Stderr& stderr;
-  const OColor oc;
-public:  
-  
-  explicit Warning (Stderr &stderr_arg)
-    : stderr (stderr_arg)
-    , oc (cerr, Color::yellow, true, ! stderr. quiet)
-    { stderr << "WARNING: "; }
- ~Warning ()
-    { stderr << "\n"; }
-};
-
-
-
-// Binary streams
-// File content is platform-dependent
-
-template <typename T>
-  inline void writeBin (ostream &f,
-                        const T &t)
-    { f. write (reinterpret_cast <const char*> (& t), sizeof (t)); }
-
-template <typename T>
-  inline void readBin (istream &f,
-                       T &t)
-    { f. read (reinterpret_cast <char*> (& t), sizeof (t)); }
-
-  
-
-struct Csv : Root
-// Line of Excel .csv-file
-{
-private:
-  const string &s;
-  size_t pos {0};
-public:
-
-  
-  explicit Csv (const string &s_arg)
-    : s (s_arg)
-    {}
-  
-  
-  bool goodPos () const
-    { return pos < s. size (); }
-  string getWord ();
-    // Return: Next word
-    // Requires: goodPos()
-private:
-  void findChar (char c)
-    { while (goodPos () && s [pos] != c)
-        pos++;
-    }
-};
-
-  
-  
-StringVector csvLine2vec (const string &line);
-  // Invokes: Csv
-
-
-
-
-struct TabDel
-// Usage: {<<field;}* str();
-{
-private:
-  ostringstream tabDel;
-  const ONumber on;
-public:
-  
-  explicit TabDel (streamsize precision = 6,
-	                 bool scientific = false)
-	  : on (tabDel, precision, scientific)
-	  {}
-    
-  template <typename T>
-    TabDel& operator<< (const T &field)
-      { if (tabDel. tellp ())  
-          tabDel << '\t'; 
-        tabDel << field; 
-        return *this; 
-      }    
-  string str () const
-    { return tabDel. str (); }
-};
-
-
-
+///////////////////////////////////// Json //////////////////////////////////////////
 		
-// Json
-
 struct JsonNull;
 struct JsonInt;
 struct JsonDouble;
@@ -4089,33 +4144,7 @@ public:
 };
 
 
-
 extern JsonMap* jRoot;
-
-
-
-
-//
-
-struct Offset 
-// Linked to the ostream os
-// Not thread-safe
-{
-private:
-	static size_t size;
-public:
-	static constexpr size_t delta {2};
-
-
-	Offset ()
-  	{ size += delta; }
- ~Offset () 
-  	{ size -= delta; }
-
-
-  static void newLn (ostream &os) 
-    { os << endl << string (size, ' '); }
-};
 
 
 
@@ -4220,7 +4249,7 @@ public:
   
 
 
-///////////////////////////////////////////////////////////////////////////
+////////////////////////////////// Application //////////////////////////////////////////
 
 struct SoftwareVersion : Root
 {
