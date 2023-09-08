@@ -153,9 +153,6 @@ constexpr const char* error_caption ("*** ERROR ***");
 [[noreturn]] void throwf (const string &s); 
   // For debugger
 
-inline void never_call ()
-  { throwf ("NEVER_CALL"); }
-
 void beep ();
   // Requires: !isRedirected()
     
