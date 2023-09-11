@@ -128,6 +128,8 @@ struct DiGraph : Root
     bool isIncident (const Node* n,
                      bool out) const;
       // Return: n is among arcs[out]->node[out]
+    bool isIncidentExcept (const Node* n,
+                           bool out) const;
     size_t getDegree () const
       { return   arcs [false]. size () 
       	       + arcs [true].  size (); 
@@ -225,6 +227,8 @@ struct DiGraph : Root
                   bool out);
       // Update: node[out] = newNode
       // Preserves the ordering of node[!out]->arcs[out]
+    bool selfLoop () const
+      { return node [false] == node [true]; }
   };
 
 
@@ -690,6 +694,31 @@ public:
     { setLeaves ();
       sort (strictlyLess_std); 
     }
+};
+
+
+
+struct TopologicalSort : Root
+// Usage: 
+//   while (Node* n = ts.getFront ())  ...
+// Time: O(graph.n + graph.m)
+{
+	DiGraph &graph;
+	const bool out;
+private:
+	VectorPtr<DiGraph::Node> order;
+	size_t index {0};
+	  // <= order.size()
+public:
+	
+	
+	TopologicalSort (DiGraph &graph_arg,
+	                 bool out_arg);
+	  
+	  
+	const DiGraph::Node* getFront ();
+		// delete Arc's of graph
+		// graph is DAG <=> all Arc's are delete'd, all Node's are returned
 };
 
 
