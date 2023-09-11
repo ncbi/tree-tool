@@ -94,33 +94,71 @@ struct ThisApplication : Application
 	
 	void body () const final
   {
-    DiGraph g;
-  
-    // Node's
-    auto london = new City (g, "London");
-    auto paris  = new City (g, "Paris");
-    auto berlin = new City (g, "Berlin");
-    auto madrid = new City (g, "Madrid");
-    // Arc's
-    auto london_paris  =   new Distance (london, paris, 100);
-  /*auto london_berlin =*/ new Distance (london, berlin, 200);
-  /*auto london_madrid =*/ new Distance (london, madrid, 50);
-    auto berlin_paris  =   new Distance (berlin, paris, 30);
-    auto berlin_paris2 =   new Distance (berlin, paris, 35);
-    auto berlin_berlin =   new Distance (berlin, berlin, 0);
-  /*auto berlin_madrid =*/ new Distance (berlin, madrid, 200);  
-    g. saveText (cout);  
-    cout << endl;
+  	{
+	    DiGraph g;
+	    g. qc ();
+	  
+		  // Node's
+		  auto london = new City (g, "London");
+		  auto paris  = new City (g, "Paris");
+		  auto berlin = new City (g, "Berlin");
+		  auto madrid = new City (g, "Madrid");
+		  // Arc's
+		  auto london_paris  =   new Distance (london, paris, 100);
+		/*auto london_berlin =*/ new Distance (london, berlin, 200);
+		/*auto london_madrid =*/ new Distance (london, madrid, 50);
+		  auto berlin_paris  =   new Distance (berlin, paris, 30);
+		  auto berlin_paris2 =   new Distance (berlin, paris, 35);
+		  auto berlin_berlin =   new Distance (berlin, berlin, 0);
+		/*auto berlin_madrid =*/ new Distance (berlin, madrid, 200);  
+	  
+	    g. qc ();
+	    g. saveText (cout);  
+	    cout << endl;
+	    
+	    delete berlin_paris;
+	    delete berlin_paris2;
+	    delete london_paris;
+	    delete berlin_berlin;  
+	    g. qc ();
+	    g. saveText (cout);
+	    cout << endl;
+	    
+	    delete paris;
+	    g. qc ();
+	    g. saveText (cout);
+	  }
+	  
     
-    delete berlin_paris;
-    delete berlin_paris2;
-    delete london_paris;
-    delete berlin_berlin;  
-    g. saveText (cout);
-    cout << endl;
-    
-    delete paris;
-    g. saveText (cout);
+    // TopologicalSort
+  	{
+	    DiGraph g;
+		  // Node's
+		  auto london = new City (g, "London");
+		  auto paris  = new City (g, "Paris");
+		  auto berlin = new City (g, "Berlin");
+		  auto madrid = new City (g, "Madrid");
+		  // Arc's
+      new Distance (london, paris, 100);
+      new Distance (london, berlin, 200);
+      new Distance (london, madrid, 50);
+      new Distance (berlin, paris, 30);
+      new Distance (berlin, paris, 35);
+      new Distance (berlin, berlin, 0);
+	    g. qc ();
+
+      const size_t s = g. nodes. size ();
+	    TopologicalSort ts (g, true);
+	    VectorPtr<DiGraph::Node> nodes;
+	    while (const DiGraph::Node* n = ts.  getFront ()) 
+	    	nodes << n;
+	    g. qc ();
+	    QC_ASSERT (s == g. nodes. size ());
+	    QC_ASSERT (nodes. size () == s);
+	    nodes. sort ();
+	    nodes. uniq ();
+	    QC_ASSERT (nodes. size () == s);
+	  }
   }
 };
 
