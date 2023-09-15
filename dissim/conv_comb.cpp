@@ -107,8 +107,8 @@ struct ThisApplication : Application
       }
       catch (const exception &e)
       {
-        throw runtime_error ("File " + fName1 + ": line " + to_string (in1. lineNum) + "\n" 
-                             "File " + fName2 + ": line " + to_string (in2. lineNum) + "\n" 
+        throw runtime_error ("File " + fName1 + ": line " + to_string (in1. tp. lineNum) + "\n" 
+                             "File " + fName2 + ": line " + to_string (in2. tp. lineNum) + "\n" 
                              + e. what ()
                             );
       }

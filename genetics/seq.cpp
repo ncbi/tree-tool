@@ -481,7 +481,7 @@ void Multifasta::qcNewSeq () const
 	          && in. line [0] == '>'
 	         )
 	   )
-	  throw runtime_error ("Error in Multifasta, line: " + to_string (in. lineNum));   
+	  throw runtime_error ("Error in Multifasta, line: " + to_string (in. tp. lineNum));   
 }
 
 	  
