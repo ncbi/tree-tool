@@ -1150,7 +1150,7 @@ void copyText (const string &inFName,
   QC_ASSERT (os. good ());
   LineInput li (inFName);
   while (li. nextLine ())
-    if (li. lineNum > skipLines)
+    if ((size_t) li. tp. lineNum > skipLines)
       os << li. line << endl;
 }
 
@@ -2044,6 +2044,45 @@ void Progress::report () const
 
 
 
+// TextPos
+
+void TextPos::inc (bool eol_arg)
+{ 
+#if 1
+ 	if (eol ())
+ 		lineNum++;
+  if (eol_arg)
+  	charNum = eol_pos;
+  else
+  	charNum++;
+  ASSERT (eol_arg == eol ());
+#else
+  eol_prev = eol;
+	if (eol_prev)  
+  { 
+  	lineNum++;
+    charNum = 0;
+  }
+  else
+    charNum++;		
+	eol = eol_arg;
+	
+	ungot = false;	  
+#endif
+}
+
+
+
+void TextPos::dec ()
+{ 
+	if (! charNum)
+		lineNum--;
+	charNum--;  
+}
+
+
+
+
 // Input
 
 Input::Input (const string &fName,
@@ -2099,7 +2138,11 @@ bool LineInput::nextLine ()
   try 
 	{
     getline (*is, line);  // faster than readLine(*is,line)
-  	eof = is->eof ();
+
+		eof = is->eof ();
+		if (! eof)
+			tp. lineNum++;
+        
   	const bool end = line. empty () && eof;
 
     if (! commentStart. empty ())
@@ -2110,8 +2153,6 @@ bool LineInput::nextLine ()
     }
   //trimTrailing (line); 
 
-  	lineNum++;
-  
   	if (! end)
   		prog ();
   		
@@ -2119,13 +2160,14 @@ bool LineInput::nextLine ()
   }
   catch (const exception &e)
   {
-    throw runtime_error ("Reading line " + to_string (lineNum + 1) + ":\n" + line + "\n" + e. what ());
+    throw runtime_error ("Reading line " + to_string (tp. lineNum + 1) + ":\n" + line + "\n" + e. what ());
   }
 }
 
 
 
 
+#if 0
 // ObjectInput
 
 bool ObjectInput::next (Root &row)
@@ -2139,7 +2181,7 @@ bool ObjectInput::next (Root &row)
 
 	row. read (*is);
 	row. qc ();
-	lineNum++;
+	tp. lineNum++;
 
  	eof = is->eof ();
   if (eof)
@@ -2156,6 +2198,8 @@ bool ObjectInput::next (Root &row)
 
 	return true;
 }
+#endif
+
 
 
 
@@ -2163,34 +2207,18 @@ bool ObjectInput::next (Root &row)
 
 char CharInput::get ()
 { 
-  ASSERT (is);
-  QC_ASSERT (! eof);
+  ASSERT (is);  
   
-  ungot = false;
-  
-  const char c = (char) is->get ();
+  const char c = (char) is->get ();    
   
 	eof = is->eof ();	
   QC_ASSERT (eof == (c == (char) EOF));
+	if (! eof)
+	  tp. inc (c == '\n');  // UNIX
+	ungot = false;	  
 
-  if (eol)  // previous char
-  { 
-    lineNum++;
-    charNum = 0;
-  }
-  else
-    charNum++;
-
-  eol_prev = eol;
-	eol = (eof || c == '\n');  // UNIX
-  if (eol)
+  if (tp. eol ())
     prog ();
-	
-#if 0
-	PRINT (c);
-	PRINT (lineNum);
-	PRINT (charNum);
-#endif
 	
 	return c;
 }
@@ -2199,18 +2227,14 @@ char CharInput::get ()
 
 void CharInput::unget ()
 { 
-  ASSERT (is);
 	QC_ASSERT (! ungot);
-  QC_ASSERT (! eof);
-	
-	ungot = true;
-  
-  is->unget (); 
-	charNum--;  // May be (uint) (-1)
-	eof = false;
-  eol = eol_prev;
-  if (eol)
-    lineNum--;
+  QC_ASSERT (! eof);  
+
+  ASSERT (is);
+  is->unget ();   
+  tp. dec ();
+
+  ungot = true;
 }
 
 
@@ -2221,7 +2245,7 @@ string CharInput::getLine ()
   while (! eof)
   {
     const char c = get ();
-    if (eol)
+    if (tp. eol ())
       break;
     s += c;
   }
@@ -2247,7 +2271,7 @@ void Token::readInput (CharInput &in,
 	if (in. eof)
 		return;  
 		
-	charNum = in. charNum;
+	tp = in. tp;
 
 	if (   c == '\'' 
 	    || c == '\"'
@@ -2261,7 +2285,7 @@ void Token::readInput (CharInput &in,
 			c = in. get (); 
 			if (in. eof && (! consecutiveQuotesInText || ! prevQuote))
 		    in. error ("Text is not finished: end of file", false);
-			if (in. eol)
+			if (in. tp. eol ())
 		    continue;
 			if (c == quote)
 			{
@@ -2340,7 +2364,7 @@ void Token::readInput (CharInput &in,
   qc ();
 
   if (verbose ())
-  	cout << type2str (type) << ' ' << *this << ' ' << charNum + 1 << endl;
+  	cout << type2str (type) << ' ' << *this << ' ' << tp. str () << endl;
 }
 
 
@@ -2518,7 +2542,7 @@ Token TokenInput::getXmlText ()
 
 
   Token t;
-  t. charNum = ci. charNum;
+  t. tp = ci. tp;
   size_t htmlTags = 0;
   bool prevSlash = false;
 	for (;;)
@@ -2633,7 +2657,7 @@ Token TokenInput::getXmlComment ()
   QC_ASSERT (ci. get () == '-');
 
   Token t;
-  t. charNum = ci. charNum;
+  t. tp = ci. tp;
   array<char,4> lastChars {{'-', '-', '\0', '\0'}};
   size_t i = 2; 
 	for (;;)
@@ -2676,7 +2700,7 @@ Token TokenInput::getXmlProcessingInstruction ()
   // Embedded processing instructions ??
 
   Token t;
-  t. charNum = ci. charNum;
+  t. tp = ci. tp;
 	for (;;)
 	{ 
 	  char c = ci. get (); 
@@ -2707,7 +2731,7 @@ Token TokenInput::getXmlMarkupDeclaration ()
   QC_ASSERT (last. empty ());
   
   Token t;
-  t. charNum = ci. charNum;
+  t. tp = ci. tp;
 	for (;;)
 	{ 
 	  char c = ci. get (); 

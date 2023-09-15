@@ -256,7 +256,7 @@ struct ThisApplication : Application
   	}
 	  catch (...)
 	  {
-	    cout << "Line # " << f. lineNum << endl;
+	    cout << "Line # " << f. tp. lineNum << endl;
 	  	cout << f. line << endl;
 	  	throw;
 	  }

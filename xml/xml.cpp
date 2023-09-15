@@ -1030,32 +1030,6 @@ void Data::writeFiles (size_t xmlNum,
 
 
 
-bool Data::chars2token (const string &tagName,
-	                      size_t len_max)
-{
-  if (children. empty ())
-    return getName () == tagName;
-
-  bool done = false;
-  const bool tokenEmpty = token. empty ();
-	for (const Data* child : children)
-	{
-	  ASSERT (child);
-    if (var_cast (child) -> chars2token (tagName, len_max))
-    	if (tokenEmpty)
-    	{
-	    	if (len_max > token. name. size ())
-	 		    token. name += child->token. name. substr (0, len_max - token. name. size ());
-	 		  token. type = Token::eText;
-	  		done = true;
-	    }
-	}
-	
-  return done;
-}
-
-
-
 void Data::text2token (const string &tagName)
 {
   if (children. empty ())
@@ -1071,6 +1045,8 @@ void Data::text2token (const string &tagName)
   		 )
   	{
   		token = move (var_cast (child) -> token);
+ 		  token. type = Token::eText;
+ 		  ASSERT (! token. empty ());
   		children. erasePtr (0);
   	}
   }
@@ -1080,6 +1056,42 @@ void Data::text2token (const string &tagName)
 	  ASSERT (child);
     var_cast (child) -> text2token (tagName);
 	}
+}
+
+
+
+bool Data::chars2token (const string &tagName,
+	                      size_t len_max)
+{
+  if (children. empty ())
+    return getName () == tagName;
+
+  bool done = false;
+  Vector<size_t> toDelete;
+  const bool tokenEmpty = token. empty ();
+	FFOR (size_t, i, children. size ())
+	{
+		const Data* child = children [i];
+	  ASSERT (child);
+    if (var_cast (child) -> chars2token (tagName, len_max))
+    	if (tokenEmpty)
+    	{
+	    	if (len_max > token. name. size ())
+	 		    token. name += child->token. name. substr (0, len_max - token. name. size ());
+	 		  token. type = Token::eText;
+	  		done = true;
+	  		if (   child->children. empty ()
+	  			  && child->getName () == tagName 
+	  			 )
+	  			toDelete << i;
+	    }
+	}
+	
+	IMPLY (! toDelete. empty (), done);
+	FOR_REV (size_t, i, toDelete. size ())
+		children. erasePtr (toDelete [i]);
+	
+  return done;
 }
 
 

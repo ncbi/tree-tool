@@ -3487,6 +3487,44 @@ public:
 
 ////////////////////////////////////// Input ///////////////////////////////////////////
 
+struct TextPos
+// A line ends with an end-of-line (EOL)
+{
+  // 0-based
+	int lineNum {-1};
+	  // = number of lines read
+private:
+	static constexpr uint eol_pos {(uint) -1};
+public:
+  uint charNum {eol_pos};
+    // In line lineNum
+	
+	
+	string lineStr () const
+	  { return "line " + to_string (lineNum + 1); }
+  string str () const
+	  { return lineStr () + ", " +
+	  	          (eol () 
+	  	             ? "end of line" 
+	  	             : last ()
+	  	                 ?	"last position"
+	  	                 : "pos. " + to_string (charNum + 1)
+	  	          ); 
+	  }
+
+	
+	void inc (bool eol_arg);
+	void dec ();
+	  // Requires: after inc()
+	
+	bool eol () const
+	  { return charNum == eol_pos; }
+	bool last () const
+	  { return charNum + 1 == eol_pos; }
+};
+
+
+
 struct Input : Root, Nocopy
 {
 protected:
@@ -3494,9 +3532,9 @@ protected:
   istream* is {nullptr};
     // ifs.is_open() => is = &ifs
 public:
-	bool eof {false};
-	uint lineNum {0};
-	  // # lines read
+	TextPos tp;
+  bool eof {false};
+    // End of file
 protected:
 	Progress prog;
 public:
@@ -3533,8 +3571,8 @@ struct LineInput : Input
 
 
 	bool nextLine ();
-  	// Output: eof, line
-  	// Update: lineNum
+  	// Output: line
+  	// Update: tp
     // Invokes: trimTrailing()
 	bool expectPrefix (const string &prefix,
 	                   bool eofAllowed)
@@ -3549,6 +3587,7 @@ struct LineInput : Input
 	
 
 
+#if 0
 struct ObjectInput : Input
 {
 	explicit ObjectInput (const string &fName,
@@ -3563,23 +3602,19 @@ struct ObjectInput : Input
 
 	bool next (Root &row);
 	  // Output: row
-  	// Update: lineNum
+  	// Update: tp
 };
+#endif
 	
 
 
 struct CharInput : Input
 {
-  uint charNum {(uint) -1};
-    // In the current line
-  bool eol {false};
-    // eof => eol
 private:
   bool ungot {false};
-  bool eol_prev {false};
 public:
 
-	
+
 	explicit CharInput (const string &fName,
               	      uint displayPeriod = 0)
     : Input (fName, displayPeriod)
@@ -3591,28 +3626,24 @@ public:
 
 
 	char get ();
-	  // Output: eof
-	  // Update: lineNum, charNum
+	  // Update: tp
 	void unget ();
 	  // Requires: To be followed by get()
   string getLine ();
-    // Postcondition: eol
+    // Postcondition: tp.eol()
 	  
 
   struct Error : runtime_error
-  { const uint lineNum;
-    const uint charNum;    
-    Error (const uint lineNum_arg,
-           const uint charNum_arg,
+  { const TextPos tp;
+    Error (const TextPos tp_arg,
            const string &what)
-      : runtime_error (("Error in line " + to_string (lineNum_arg + 1) + ", pos. " + to_string (charNum_arg + 1) + ": " + what). c_str ())
-      , lineNum (lineNum_arg)
-      , charNum (charNum_arg)
+      : runtime_error (("Error in " + tp_arg. str () + ": " + what). c_str ())
+      , tp (tp_arg)
     {}
     Error (const CharInput &ci,
            const string &what,
 		       bool expected = true) 
-      : Error (ci. lineNum, ci. charNum, what + ifS (expected, " is expected"))
+      : Error (ci. tp, what + ifS (expected, " is expected"))
       {}
   };
   [[noreturn]] void error (const string &what,
@@ -3647,7 +3678,8 @@ public:
 	  
 	bool next ();
 	uint getLineNum () const
-	  { return f. lineNum; }
+	  { return (uint) f. tp. lineNum; }
+	  // Requires: after next()
 };
 
 
@@ -3674,10 +3706,9 @@ struct Token : Root
 	double d {0.0};
   // Valid if eDouble
 	streamsize decimals {0};
-	bool scientific {false};
-	  
-  uint charNum {(uint) -1};
-    // = CharInput::charNum
+	bool scientific {false};	  
+	TextPos tp;
+    // = CharInput::tp
 
 	  
 	Token () = default;
@@ -3823,15 +3854,14 @@ public:
 
 
   struct Error : CharInput::Error
-  { Error (const TokenInput &ti,
-           const Token &wrongToken,
+  { Error (const Token &wrongToken,
            const string &expected)
-      : CharInput::Error (ti. ci. lineNum, wrongToken. charNum, expected + " is expected")
+      : CharInput::Error (wrongToken. tp, expected + " is expected")
       {}
   };
   [[noreturn]] void error (const Token &wrongToken,
                            const string &expected)
-    { throw Error (*this, wrongToken, expected); }
+    { throw Error (wrongToken, expected); }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
 		{ ci. error (what, expected); }  

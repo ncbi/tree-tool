@@ -496,7 +496,7 @@ all: report all covered segments", "all");
       }
       catch (const exception &e)
       {
-        throw runtime_error (string (e. what ()) + "\nat line " + to_string (f. lineNum));
+        throw runtime_error (string (e. what ()) + "\nat line " + to_string (f. tp. lineNum));
       }
   #if 0
     if (mode == Mode::missed)

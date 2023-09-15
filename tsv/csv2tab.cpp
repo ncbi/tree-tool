@@ -66,7 +66,7 @@ struct ThisApplication : Application
     {
       if (contains (f. line, '\t'))
         throw runtime_error ("File contains tabs");
-      if (tsv && f. lineNum == 1)
+      if (tsv && f. tp. lineNum == 1)
         cout << '#';
       bool quote = false;
       for (const char c : f. line)

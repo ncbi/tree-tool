@@ -5138,14 +5138,14 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
       LineInput f (fName, dissim_progress);  
       while (f. nextLine ())
       {
-        DissimLine dl (f. line, f. lineNum);
+        DissimLine dl (f. line, (uint) f. tp. lineNum);
         if (DM_sp::finite (dl. dissim))
         {
           dissimLines << move (dl);
           ASSERT (dl. name1. empty ());
         }
       }
-      if (! f. lineNum)
+      if (! f. tp. lineNum)
         throw runtime_error (FUNC "Empty " + fName);
     }
     section ("Sorting dissimilarities", true);
@@ -9690,7 +9690,7 @@ void NewLeaf::process (bool init,
         }          
         catch (const exception &e)
         {          
-          throw runtime_error (FUNC "Line " + to_string (f. lineNum) + " of " + dissimFName + "\n" + f. line + "\n" + e. what ());
+          throw runtime_error (FUNC "Line " + to_string (f. tp. lineNum) + " of " + dissimFName + "\n" + f. line + "\n" + e. what ());
         }
     }
     leaf2dissims. sort ();
