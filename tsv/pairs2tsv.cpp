@@ -90,7 +90,7 @@ struct ThisApplication : Application
         LineInput f (dirName + "/" + fName);
         while (f. nextLine ())
         {
-          const string err ("Error at line " + to_string (f. tp. lineNum + 1));
+          const string err ("Error at " + f. lineStr ());
           trim (f. line);
           const size_t pos = f. line. find_first_of (sep);
           if (pos == string::npos)

@@ -104,7 +104,7 @@ struct Tsv : Root
       }
       catch (const exception &e)
       {
-        throw runtime_error (".tsv-file " + strQuote (fName) + ", row " + to_string (f. tp. lineNum + 1) + ":\n" + e. what ());
+        throw runtime_error (".tsv-file " + strQuote (fName) + ", " + f. lineStr () + ":\n" + e. what ());
       }
     }
     

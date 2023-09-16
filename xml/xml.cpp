@@ -671,7 +671,7 @@ Data* Data::load (Names &names,
 		  Unverbose unv;
     	f. reset (new Xml_sp::Data (names, ti, markupDeclarations));	
     }
-    catch (const CharInput::Error &e)
+    catch (const TextPos::Error &e)
       { throw e; }
     catch (const exception &e)
       { ti. error (e. what (), false); }

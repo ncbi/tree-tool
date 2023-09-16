@@ -355,7 +355,7 @@ struct ThisApplication : Application
 	      }
 	      catch (const exception &e)
 	      {
-	      	throw runtime_error (  "Line # " + to_string (f. tp. lineNum) + "\n" 
+	      	throw runtime_error (  f. lineStr () + "\n" 
 	      	                     + (cds ? cds->contig + "." + to_string (cds->gene) + "\n" : "")
 	      	                     + e. what ());
 	      }
@@ -406,7 +406,7 @@ struct ThisApplication : Application
 	    	}
 	      catch (const exception &e)
 	      {
-	      	throw runtime_error (  "Line # " + to_string (f. tp. lineNum) + "\n" 
+	      	throw runtime_error (  f. lineStr () + "\n" 
 	      	                     + (cds ? cds->contig + "." + to_string (cds->gene) + "\n" : "")
 	      	                     + e. what ());
 	      }

@@ -1947,9 +1947,6 @@ public:
   virtual void clear ()
     { throwf ("Root::clear() is not implemented"); }
     // Postcondition: empty()
-  virtual void read (istream &/*is*/)
-    { throwf ("Root::read() is not implemented"); }
-	  // Input: a line of is
 };
 
  
@@ -2030,8 +2027,6 @@ struct Named : VirtNamed
 	  { return name. empty (); }
   void clear () override
     { name. clear (); }
-  void read (istream &is) override
-	  { is >> name; }
 	static bool lessPtr (const Named* x,
 	                     const Named* y)
 	  { return x->name < y->name; }
@@ -3500,10 +3495,8 @@ public:
     // In line lineNum
 	
 	
-	string lineStr () const
-	  { return "line " + to_string (lineNum + 1); }
   string str () const
-	  { return lineStr () + ", " +
+	  { return "line " + to_string (lineNum + 1) + ", " +
 	  	          (eol () 
 	  	             ? "end of line" 
 	  	             : last ()
@@ -3521,6 +3514,22 @@ public:
 	  { return charNum == eol_pos; }
 	bool last () const
 	  { return charNum + 1 == eol_pos; }
+
+
+  struct Error : runtime_error
+  { Error (const TextPos tp,
+           const string &what,
+		       bool expected = true)
+      : runtime_error ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
+    {}
+  #if 0
+    Error (const CharInput &ci,
+           const string &what,
+		       bool expected = true) 
+      : Error (ci. tp, what + ifS (expected, " is expected"))
+      {}
+  #endif
+  };
 };
 
 
@@ -3532,7 +3541,6 @@ protected:
   istream* is {nullptr};
     // ifs.is_open() => is = &ifs
 public:
-	TextPos tp;
   bool eof {false};
     // End of file
 protected:
@@ -3555,6 +3563,8 @@ public:
 
 struct LineInput : Input
 {
+  uint lineNum {0};
+	  // Number of lines read
 	string line;
 	  // Current line
   string commentStart;
@@ -3583,72 +3593,8 @@ struct LineInput : Input
 		  throwf ("No " + strQuote (prefix));
 		  return false;  // dummy
 		}
-};
-	
-
-
-#if 0
-struct ObjectInput : Input
-{
-	explicit ObjectInput (const string &fName,
-          	            uint displayPeriod = 0)
-    : Input (fName, displayPeriod)
-    {}
-  explicit ObjectInput (istream &is_arg,
-	                      uint displayPeriod = 0)
-    : Input (is_arg, displayPeriod)
-    {}
-
-
-	bool next (Root &row);
-	  // Output: row
-  	// Update: tp
-};
-#endif
-	
-
-
-struct CharInput : Input
-{
-private:
-  bool ungot {false};
-public:
-
-
-	explicit CharInput (const string &fName,
-              	      uint displayPeriod = 0)
-    : Input (fName, displayPeriod)
-    {}
-  explicit CharInput (istream &is_arg,
-	                    uint displayPeriod = 0)
-    : Input (is_arg, displayPeriod)
-    {}
-
-
-	char get ();
-	  // Update: tp
-	void unget ();
-	  // Requires: To be followed by get()
-  string getLine ();
-    // Postcondition: tp.eol()
-	  
-
-  struct Error : runtime_error
-  { const TextPos tp;
-    Error (const TextPos tp_arg,
-           const string &what)
-      : runtime_error (("Error in " + tp_arg. str () + ": " + what). c_str ())
-      , tp (tp_arg)
-    {}
-    Error (const CharInput &ci,
-           const string &what,
-		       bool expected = true) 
-      : Error (ci. tp, what + ifS (expected, " is expected"))
-      {}
-  };
-  [[noreturn]] void error (const string &what,
-	                         bool expected = true) const
-		{ throw Error (*this, what, expected); }
+	string lineStr () const
+	  { return "line " + to_string (lineNum + 1); }
 };
 	
 
@@ -3678,10 +3624,43 @@ public:
 	  
 	bool next ();
 	uint getLineNum () const
-	  { return (uint) f. tp. lineNum; }
+	  { return f. lineNum; }
 	  // Requires: after next()
 };
 
+
+
+struct CharInput : Input
+{
+	TextPos tp;
+private:
+  bool ungot {false};
+public:
+
+
+	explicit CharInput (const string &fName,
+              	      uint displayPeriod = 0)
+    : Input (fName, displayPeriod)
+    {}
+  explicit CharInput (istream &is_arg,
+	                    uint displayPeriod = 0)
+    : Input (is_arg, displayPeriod)
+    {}
+
+
+	char get ();
+	  // Update: tp
+	void unget ();
+	  // Requires: To be followed by get()
+  string getLine ();
+    // Postcondition: tp.eol()
+	  
+
+  [[noreturn]] void error (const string &what,
+	                         bool expected = true) const
+		{ throw TextPos::Error (tp, what, expected); }
+};
+	
 
 
 struct Token : Root
@@ -3853,15 +3832,23 @@ public:
     {}
 
 
+#if 0
   struct Error : CharInput::Error
   { Error (const Token &wrongToken,
            const string &expected)
       : CharInput::Error (wrongToken. tp, expected + " is expected")
       {}
   };
+#endif
   [[noreturn]] void error (const Token &wrongToken,
                            const string &expected)
-    { throw Error (wrongToken, expected); }
+    { 
+    #if 0
+      throw Error (wrongToken, expected); 
+    #else
+		  throw TextPos::Error (wrongToken. tp, expected, true); 
+    #endif
+    }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
 		{ ci. error (what, expected); }  

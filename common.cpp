@@ -1150,7 +1150,7 @@ void copyText (const string &inFName,
   QC_ASSERT (os. good ());
   LineInput li (inFName);
   while (li. nextLine ())
-    if ((size_t) li. tp. lineNum > skipLines)
+    if ((size_t) li. lineNum > skipLines)
       os << li. line << endl;
 }
 
@@ -2048,7 +2048,6 @@ void Progress::report () const
 
 void TextPos::inc (bool eol_arg)
 { 
-#if 1
  	if (eol ())
  		lineNum++;
   if (eol_arg)
@@ -2056,19 +2055,6 @@ void TextPos::inc (bool eol_arg)
   else
   	charNum++;
   ASSERT (eol_arg == eol ());
-#else
-  eol_prev = eol;
-	if (eol_prev)  
-  { 
-  	lineNum++;
-    charNum = 0;
-  }
-  else
-    charNum++;		
-	eol = eol_arg;
-	
-	ungot = false;	  
-#endif
 }
 
 
@@ -2141,7 +2127,7 @@ bool LineInput::nextLine ()
 
 		eof = is->eof ();
 		if (! eof)
-			tp. lineNum++;
+			lineNum++;
         
   	const bool end = line. empty () && eof;
 
@@ -2160,45 +2146,9 @@ bool LineInput::nextLine ()
   }
   catch (const exception &e)
   {
-    throw runtime_error ("Reading line " + to_string (tp. lineNum + 1) + ":\n" + line + "\n" + e. what ());
+    throw runtime_error ("Reading line " + to_string (lineNum + 1) + ":\n" + line + "\n" + e. what ());
   }
 }
-
-
-
-
-#if 0
-// ObjectInput
-
-bool ObjectInput::next (Root &row)
-{ 
-  QC_ASSERT (is);
-
-	row. clear ();
-
-	if (eof)
-	  return false;
-
-	row. read (*is);
-	row. qc ();
-	tp. lineNum++;
-
- 	eof = is->eof ();
-  if (eof)
-  {
-  	ASSERT (row. empty ());
-  	return false;
-  }
-
-	prog ();
-	
-  ASSERT (is->peek () == '\n');
-
-  skipLine (*is);
-
-	return true;
-}
-#endif
 
 
 
