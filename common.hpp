@@ -3495,6 +3495,10 @@ public:
     // In line lineNum
 	
 	
+  bool operator== (const TextPos &other) const
+    { return    lineNum == other. lineNum
+    	       && charNum == other. charNum;
+    }
   string str () const
 	  { return "line " + to_string (lineNum + 1) + ", " +
 	  	          (eol () 
@@ -3522,13 +3526,6 @@ public:
 		       bool expected = true)
       : runtime_error ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
     {}
-  #if 0
-    Error (const CharInput &ci,
-           const string &what,
-		       bool expected = true) 
-      : Error (ci. tp, what + ifS (expected, " is expected"))
-      {}
-  #endif
   };
 };
 
@@ -3832,23 +3829,9 @@ public:
     {}
 
 
-#if 0
-  struct Error : CharInput::Error
-  { Error (const Token &wrongToken,
-           const string &expected)
-      : CharInput::Error (wrongToken. tp, expected + " is expected")
-      {}
-  };
-#endif
   [[noreturn]] void error (const Token &wrongToken,
                            const string &expected)
-    { 
-    #if 0
-      throw Error (wrongToken, expected); 
-    #else
-		  throw TextPos::Error (wrongToken. tp, expected, true); 
-    #endif
-    }
+    { throw TextPos::Error (wrongToken. tp, expected, true); }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
 		{ ci. error (what, expected); }  
