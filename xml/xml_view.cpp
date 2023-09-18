@@ -114,10 +114,10 @@ struct Viewer
   size_t curIndex {0};
     // rows.size() < curIndex <= topIndex 
   // Search
-  StringVector what;  
+  StringVector what;  // Of UTF8 characters    
   bool targetNameP {true};  
-  bool substrP {false}; 
-  bool wordP {false};  
+  bool substrP {true}; 
+  bool wordP {true};  
   //
   NCurses nc;
 
@@ -591,15 +591,22 @@ At line ends: [<# children>|<# nodes in subtree>]\
     xml->mergeSingleChildren ();  
     xml->visualizeTokenTrailingSpaces ();
     
+    Viewer vw (xmlFName, xml);
+
     if (! searchTags. empty ())
     {
     	uchar mask = 1;  // NCurses::Color bits
     	for (const string& s : searchTags)
-    	{
-    		// Display s/color in search form window ??
-        xml->setSearchFound (s, true, StringMatch::word, mask);
-    	//mask = uchar (mask * 2);  // White color is bad
-      }
+    		if (! s. empty ())
+	    	{
+	    		// Display s/color in search form window ??
+	    		// Use search fields of vw ??
+	        xml->setSearchFound (s, true, StringMatch::word, mask);
+	        if (vw. what. empty ())
+	        	for (const char c : s)
+	        	  vw. what << string (1, c);
+	    	//mask = uchar (mask * 2);  // White color is bad
+	      }
     }
     
     xml->qc ();
@@ -609,7 +616,6 @@ At line ends: [<# children>|<# nodes in subtree>]\
       xml->saveXml (f);
     }
 
-    Viewer vw (xmlFName, xml);
     vw. run ();
 	}
 };
