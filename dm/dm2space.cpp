@@ -66,10 +66,8 @@ struct ThisApplication : Application
 		const string attrNameFName = getArg ("attrNameFName");
 		const bool   exclude       = getFlag ("exclude");
 		
-		
-    const Dataset ds (fName);
-    
-    Set<string> attrNames;
+				
+    Set<string> attrNames;  // This is faster than Dataset()
     {
       LineInput li (attrNameFName);
       while (li. nextLine ())
@@ -79,6 +77,8 @@ struct ThisApplication : Application
           attrNames << li. line;
       }
     }
+    
+    const Dataset ds (fName);
     
     VectorPtr<Attr> attrs;  attrs. reserve (ds. attrs. size ());
     for (const string& name : attrNames)

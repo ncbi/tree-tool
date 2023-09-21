@@ -1631,7 +1631,7 @@ void Attr2::save (ostream &os,
     for (Iterator col (sample); col ();)  
 	  {
 	  	if (*col)
-	  		os << ' ';
+	  		os << '\t';
 	    os << value2str (*row, *col);
 	  }
 	  os << endl;
@@ -2539,6 +2539,7 @@ void Sample::save (const Vector<size_t>* objNums,
   // Data
   os << "DATA" << endl;
   
+#if 0
   Vector<size_t> widths;
   for (const Attr* attr : attrs)
     if (const Attr1* attr1 = attr->asAttr1 ())
@@ -2546,26 +2547,27 @@ void Sample::save (const Vector<size_t>* objNums,
   
   const size_t objWidth = getObjNameLen_max ();
   const size_t multWidth = toString (getMaxMult ()). size ();  // integer ??
+#endif
   for (Iterator it (*this, objNums); it ();)  
   {
-  	os. width ((streamsize) objWidth);
-    os << std::left << ds->objs [*it] -> name << " ";
-  	os. width ((streamsize) multWidth);
+  //os. width ((streamsize) objWidth);
+    os << std::left << ds->objs [*it] -> name << "\t";
+  //os. width ((streamsize) multWidth);
   	if (! unitMult)
   	{
-	    os << std::right << scientific; os. precision (6); os << it. mult << " ";   // PAR
+	    os << std::right << scientific; os. precision (6); os << it. mult;   // PAR
 	  }
     size_t col = 0;
     for (const Attr* attr : attrs)
 	    if (const Attr1* attr1 = attr->asAttr1 ())
 	    {
-	      os << " ";
-	      os. width ((streamsize) widths [col]);
+	      os << "\t";
+	    //os. width ((streamsize) widths [col]);
 	      os << (attr1->rightAlign ? std::right : std::left) 
 	      	 << (attr1->isMissing (*it) ? missingStr : attr1->value2str (*it));
 	      col++;
 	    }
-	  ASSERT (col == widths. size ());
+	//ASSERT (col == widths. size ());
     os << endl;
   }
 

@@ -73,7 +73,7 @@ struct ThisApplication : Application
     const Sample sample (ds);
   //cout << "mult_sum: " << sample. mult_sum << endl << endl;
     
-    cout << "AttrName\tDefinition\tMissings";
+    cout << "#AttrName\tDefinition\tMissings";
     if (stat)
       cout << "\tStatistics\tMain_interval";
     cout << endl;
