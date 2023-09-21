@@ -40,6 +40,7 @@ all:	\
 	mds \
 	normalCdf \
 	numeric_test \
+	objs \
 	pca \
 	pca2clusters \
 	positiveAverage \
@@ -241,6 +242,12 @@ numeric_test.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
 numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
 numeric_test:	$(numeric_testOBJS)
 	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
+	$(ECHO)
+
+objs.o:  $(DM_HPP) 
+objsOBJS=objs.o $(DM_OBJ) 
+objs:	$(objsOBJS)
+	$(CXX) -o $@ $(objsOBJS) $(LIBS)
 	$(ECHO)
 
 pca.o:  $(PREDICT_HPP) 
