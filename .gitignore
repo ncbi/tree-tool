@@ -77,3 +77,4 @@ dm/circuit.cpp
 dm/dnf.cpp
 genetics/virus2host.cpp
 phylogeny/inc_upgrade-1.6.1.sh
+genetics/euk_seq1.sh
