@@ -41,16 +41,20 @@ if [ -s $INC/indiscern ]; then
   error "$INC/indiscern must be empty"
 fi
 
-N=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
+TMP=`mktemp`
+$THIS/distTree_inc_new_list.sh $INC > $TMP || (cat $TMP && exit 1)
+N=`cat $TMP | wc -l`
 if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
 fi
+rm $TMP
 
 if [ -s $INC/runlog ]; then
   error "$INC/runlog must be empty"
 fi
 
 sort -cu $OBJS
+
 
 section "Computing dissimilarities"
 $THIS/../list2pairs $OBJS > $INC/dissim_request
@@ -61,7 +65,7 @@ $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 section "data.dm"
 $THIS/../dm/conversion/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
-grep -wic 'nan$' $INC/../data.dm || true
+grep -wic 'nan' $INC/../data.dm || true
 
 $THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
 
