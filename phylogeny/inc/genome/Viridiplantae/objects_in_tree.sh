@@ -1,13 +1,28 @@
 #!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "Record a list of objects in a database"
-  echo "#1: list of objects"
-  echo "#2: in_tree (0/null)"
+  echo "Set Genome.in_tree"
+  echo "#1: List of Genome.id"
+  echo "#2: Genome.in_tree (1/null)"
   exit 1
 fi
-IN=$1
+OBJ_LIST=$1
 IN_TREE=$2
 
 
-error "$0 is not implemented"
+INC=`dirname $0`
+SERVER=`cat $INC/server`
+DATABASE=`cat $INC/database`
+BULK_REMOTE=`cat $INC/bulk_remote`
+
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..List
+
+sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
+  update Genome
+    set in_tree = $IN_TREE
+    from      List
+         join Genome on Genome.id = List.id
+  print @@rowcount
+  go -m bcp
+EOT
+
