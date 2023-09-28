@@ -3,7 +3,7 @@ THIS=`dirname $0`
 source $THIS/../../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print assemblies with too few univesal proteins"
-  echo "#1: assembly id. Input: genome/#1/#1.{prot-univ,hash}"
+  echo "#1: assembly id. Input: genome/#1/#1.hash-#2"
   echo "#2: Hashtype.id"
   echo "#3: Min. number of hashes"
   echo "#4: Max. number of hashes"

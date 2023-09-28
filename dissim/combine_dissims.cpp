@@ -123,7 +123,9 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("dissims", "File with lines: <obj1> <obj2> <dissimilarity 1> <dissimilarity 2> ...");
   	  addPositional ("scales", "File with equalizing scales and max. values for each dissimilarity, ordered by <unit> * <raw_max>.\n\
-Line format: <unit> <raw_max>");
+Line format: <unit> <raw_max>\n\
+unit = 1 / (species_barrier for dissimilarity)\n\
+<raw_max> can be inf");
   	  addKey ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");
   	//addKey ("power", "Power to raise the dissimilarity in",  "1.0");
   	  addKey ("barrier", "Scale sequential number, 1-based, 0 - no barrier. If i > barrier then dissim[i] >= dissim[barrier]");
