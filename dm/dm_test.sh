@@ -37,8 +37,8 @@ cp $THIS/data/Listeria_monocytogenes-qc.dm .
 # -attr_pvalue 1e-5  5 1 0.07
 $THIS/pca  -qc  -maxClusters 4  -mds  Listeria_monocytogenes-qc pc 
 diff Listeria_monocytogenes-qc-pc.txt $THIS/data/Listeria_monocytogenes-qc-pc.txt
-diff Listeria_monocytogenes-qc-pc.dm $THIS/data/Listeria_monocytogenes-qc-pc.dm
-diff Listeria_monocytogenes-qc-pc.mds $THIS/data/Listeria_monocytogenes-qc-pc.mds
+diff -b Listeria_monocytogenes-qc-pc.dm $THIS/data/Listeria_monocytogenes-qc-pc.dm
+diff -b Listeria_monocytogenes-qc-pc.mds $THIS/data/Listeria_monocytogenes-qc-pc.mds
 rm Listeria_monocytogenes-qc.dm
 rm Listeria_monocytogenes-qc-pc.*
 
