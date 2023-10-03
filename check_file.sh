@@ -9,5 +9,5 @@ F=$1
 
 
 if [ ! -e $F ]; then  
-  error "File or directory \"$F\" does not exist"
+  error "File \"$F\" does not exist"
 fi
