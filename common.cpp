@@ -342,6 +342,8 @@ bool isRedirected (const ostream &os)
 
 void beep ()
 { 
+  if (string (getenv ("SHLVL")) != "1")
+    return;
 	constexpr char c = '\x07';
 	if (! isRedirected (cerr))
 	  cerr << c;
@@ -3874,11 +3876,12 @@ int Application::run (int argc,
 	  }
   
   
-    string logFName;
-    logFName = getArg ("log");
-  	ASSERT (! logPtr);
-    if (! logFName. empty ())
-  		logPtr = new ofstream (logFName, ios_base::app);
+    {
+      string logFName (getArg ("log"));
+    	ASSERT (! logPtr);
+      if (! logFName. empty ())
+    		logPtr = new ofstream (logFName, ios_base::app);
+    }
 
     string jsonFName;
     if (gnu)
