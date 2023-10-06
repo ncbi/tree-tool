@@ -97,7 +97,7 @@ struct ThisApplication : Application
 	  addFlag ("segment", "Sequences are not full-length");  
 	  addFlag ("translate", "Translate CDSs to proteins");
 	  addFlag ("reduce", "Reduce 20 amino acids to 13 characters");
-	  addKey ("ambig", "Max. numbre of allowed ambiguous characters in sequences", "0");
+	  addKey ("ambig", "Max. number of ambiguous characters in sequences", "0");
     addKey ("kmer", "Cut the sequences into k-mers of this size. 0 - do not cut", "0");
 	  addKey ("prot_len_min", "Min. protein length of input sequences", "0");
 	  addKey ("hashes_max", "Max. number of hashes to print. 0 - print all", "0");
