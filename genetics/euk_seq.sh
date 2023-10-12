@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "Create annotation files for #1 in the directory of #1"
   echo "#1: eukaryotic DNA FASTA"
-  echo "#2: fungus (0/1)"
+  echo "#2: kingdom: fungi|viridiplantae|''"
   echo "#3: universal HMM library (absolute path) or ''"
   echo "#4: Pfam HMM library (absolute path) or ''"
   echo "#5: use Pfam HMM cutoff (0/1)"
@@ -14,7 +14,7 @@ if [ $# -ne 7 ]; then
   exit 1
 fi
 FASTA=$1
-FUNGUS=$2
+KINGDOM="$2"
 UNIV=$3
 PFAM=$4
 PFAM_CUTOFF=$5
@@ -23,6 +23,10 @@ LOG=$7
 
 
 #set -x
+
+if [ $KINGDOM -a $KINDOM != "fungi" -a $KINGDOM != "viridiplantae" ]; then
+  error "Unknown kingdom $KINGDOM"
+fi
 
 
 if [ ! -e $FASTA ]; then
@@ -47,7 +51,7 @@ if [ ! -e $ASM.prot ]; then
 
   # genemark.gtf
   FUNGUS_PAR=""
-  if [ $FUNGUS == 1 ]; then
+  if [ $KINGDOM == "fungi" ]; then
     FUNGUS_PAR="--fungus"
   fi
   $THIS/../rm_all.sh data
@@ -93,7 +97,7 @@ if [ $PFAM ]; then
   gzip $ASM.HMM
 fi
 
-if [ $UNIV ]; then
+if [ $UNIV -a $KINGDOM != "viridiplantae" ]; then
   section "prots2hmm_univ.sh"
   $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
 fi
