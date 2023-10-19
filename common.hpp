@@ -416,7 +416,7 @@ template <typename To, typename From>
   inline void insertIter (To &to,
                           From &&from)
     { for (auto&& x : from)
-        to. insert (move (x));
+        to. insert (std::move (x));
     }
 
 template <typename To, typename From>
@@ -1012,11 +1012,11 @@ template <typename T>
       {}
     Pair (T &&a,
           T &&b)
-      : P (move (a), move (b))
+      : P (std::move (a), std::move (b))
       {}
     Pair () = default;
     Pair (Pair<T> &&other)
-      : P (move (other. first), move (other. second))
+      : P (std::move (other. first), std::move (other. second))
       {}
     Pair (const Pair<T> &other) = default;
     Pair& operator= (const Pair<T> &other) = default;
@@ -1112,7 +1112,7 @@ template <typename T>
       	return *this;
       }    
     List<T>& operator<< (T &&t) 
-      { P::push_back (move (t)); 
+      { P::push_back (std::move (t)); 
       	return *this;
       }    
     template <typename U/*:<T>*/>
@@ -1187,7 +1187,7 @@ template <typename T>
     typename T::value_type* operator-> () const
       { return & const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
     typename T::value_type erase ()
-      { typename T::value_type val = move (*it);
+      { typename T::value_type val = std::move (*it);
         itNext = t. erase (it); 
         return val;
       }
@@ -2147,7 +2147,7 @@ template <typename T>
       	return *this;
       }
     Vector<T>& operator<< (T &&value)
-      { P::push_back (move (value));
+      { P::push_back (std::move (value));
         unsetSearchSorted ();
       	return *this;
       }
@@ -2162,7 +2162,7 @@ template <typename T>
       Vector<T>& operator<< (vector<U> &&other)
         { reserveInc (other. size ());
           for (U& t : other)
-            P::push_back (move (t));
+            P::push_back (std::move (t));
           unsetSearchSorted ();
           other. clear ();
         	return *this;
@@ -2256,7 +2256,7 @@ template <typename T>
           for (size_t i = 0, end_ = P::size (); i < end_; i++)
           { const size_t j = i - toDelete;
             if (j != i)
-              (*this) [j] = move ((*this) [i]);
+              (*this) [j] = std::move ((*this) [i]);
             if (cond (j))
               toDelete++;
           }
@@ -2271,7 +2271,7 @@ template <typename T>
           for (size_t i = 0, end_ = P::size (); i < end_; i++)
           { const size_t j = i - toDelete;
             if (j != i)
-              (*this) [j] = move ((*this) [i]);
+              (*this) [j] = std::move ((*this) [i]);
             if (cond ((*this) [j]))
               toDelete++;
           }
@@ -2713,10 +2713,10 @@ template <typename T /* : Root */>
   	  }
   	VectorOwn (VectorOwn<T> &&other)
   	  : P ()
-  	  { *this = move (other); }
+  	  { *this = std::move (other); }
   	VectorOwn<T>& operator= (VectorOwn<T> &&other)
   	  { P::deleteData ();
-  	    P::operator= (move (other)); 
+  	    P::operator= (std::move (other)); 
   	  	P::searchSorted = other. searchSorted;
   	    return *this;
   	  }
@@ -2731,10 +2731,10 @@ template <typename T /* : Root */>
   	  }
   	explicit VectorOwn (VectorPtr<T> &&other)
   	  : P ()
-  	  { *this = move (other); }
+  	  { *this = std::move (other); }
   	VectorOwn<T>& operator= (VectorPtr<T> &&other) 
   	  { P::deleteData ();
-  	    P::operator= (move (other)); 
+  	    P::operator= (std::move (other)); 
   	  	P::searchSorted = other. searchSorted;
   	    return *this;
   	  }
