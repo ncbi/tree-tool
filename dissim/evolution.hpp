@@ -99,7 +99,7 @@ struct ObjFeature : Named
   
 
   explicit ObjFeature (string &&line)
-    : Named (move (line))
+    : Named (std::move (line))
     { replace (name, '\t', ' ');
       trim (name);
       if (trimSuffix (name, " 0"))

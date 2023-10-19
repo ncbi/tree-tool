@@ -63,7 +63,7 @@ unordered_set<string> readSeqs (const string &fName,
     pep. qc ();
       // Convert pep.seq to "positives" ??
     if (pep. seq. size () >= len_min)
-      seqs. insert (move (pep. seq));
+      seqs. insert (std::move (pep. seq));
   }
   return seqs;
 }

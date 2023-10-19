@@ -82,8 +82,8 @@ struct ThisApplication : Application
     {
       const string fName1 (input. name1);
       const string fName2 (input. name2);
-      if (! contains (name2hashes, fName1))  name2hashes [fName1] = move (Hashes (fName1));
-      if (! contains (name2hashes, fName2))  name2hashes [fName2] = move (Hashes (fName2));
+      if (! contains (name2hashes, fName1))  name2hashes [fName1] = std::move (Hashes (fName1));
+      if (! contains (name2hashes, fName2))  name2hashes [fName2] = std::move (Hashes (fName2));
       const Hashes& h1 = name2hashes [fName1];
       const Hashes& h2 = name2hashes [fName2];
       const double dissim = h1. getDissim (h2, intersection_min, hashes_ratio_min);

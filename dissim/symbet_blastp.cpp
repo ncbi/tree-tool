@@ -99,7 +99,7 @@ void read_blastp (const string &fName,
     Hit hit (sseqid, positive, nident);
     Hit& old = name2hit [qseqid];
     if (old < hit)
-      old = move (hit);
+      old = std::move (hit);
   }
 }
 

@@ -92,7 +92,7 @@ struct ThisApplication : Application
         ObjFeatureVector features (objects_dir + "/" + objF. line);
         minimize (features_min, features. size ());
         maximize (features_max, features. size ());
-        obj2features << move (features);
+        obj2features << std::move (features);
       }
     }
     ASSERT (ds. objs. size () == obj2features. size ());

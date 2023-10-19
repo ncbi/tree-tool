@@ -81,7 +81,7 @@ struct Fasta
         if (! pamNames. contains (id))
           throw runtime_error ("Unknown component name: " + strQuote (id));
       #endif
-        peptides [id] = move (pep);
+        peptides [id] = std::move (pep);
       }
     }
 };
@@ -147,10 +147,10 @@ struct ThisApplication : Application
       while (pf. next ())
       {
         if (! contains (file2fasta, pf. name1))
-          file2fasta [pf. name1] = move (Fasta ());
+          file2fasta [pf. name1] = std::move (Fasta ());
         if (! contains (file2fasta, pf. name2))
-          file2fasta [pf. name2] = move (Fasta ());
-        pairs << move (Pair<string> (move (pf. name1), move (pf. name2)));
+          file2fasta [pf. name2] = std::move (Fasta ());
+        pairs << std::move (Pair<string> (std::move (pf. name1), std::move (pf. name2)));
       }
     }
 
