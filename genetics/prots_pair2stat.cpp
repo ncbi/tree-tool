@@ -65,7 +65,7 @@ struct Obj
           pep. ambig2X ();
           pep. name = pep. getId ();
           pep. qc ();
-          peptides << move (pep);
+          peptides << std::move (pep);
         }   
       }   
       peptides. sort (comp);
@@ -129,8 +129,8 @@ struct ThisApplication : Application
         double dist = NaN; 
         iss >> fName1 >> fName2 >> dist;
         ASSERT (dist >=  0);
-        if (! contains (name2obj, fName1))  name2obj [fName1] = move (Obj (fName1));
-        if (! contains (name2obj, fName2))  name2obj [fName2] = move (Obj (fName2));
+        if (! contains (name2obj, fName1))  name2obj [fName1] = std::move (Obj (fName1));
+        if (! contains (name2obj, fName2))  name2obj [fName2] = std::move (Obj (fName2));
         const Obj& obj1 = name2obj [fName1];
         const Obj& obj2 = name2obj [fName2];
         size_t i = 0;

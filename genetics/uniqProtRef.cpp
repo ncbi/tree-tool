@@ -91,7 +91,7 @@ struct ThisApplication : Application
 		    if (   ! contains (refSet, h)
 		        && ! contains (hash2pep, h)
 		       )
-		      hash2pep [h] = move (pep);
+		      hash2pep [h] = std::move (pep);
 		  }
 		}
 

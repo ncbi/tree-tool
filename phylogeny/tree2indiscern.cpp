@@ -86,7 +86,7 @@ struct ThisApplication : Application
           if (! repr. contains (s))
           {
             cout << s << endl;
-            repr << move (s);
+            repr << std::move (s);
           }
         }
       }

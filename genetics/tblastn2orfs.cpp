@@ -137,7 +137,7 @@ struct ThisApplication : Application
   		  if (bestOrf. empty ())
   		    continue;
   	  		  		  
-  		  contig2cdss [sseqid] << move (Cds (bestOrf. cdsStart (), bestOrf. cdsStop (), qseqid, positivesFrac));
+  		  contig2cdss [sseqid] << std::move (Cds (bestOrf. cdsStart (), bestOrf. cdsStop (), qseqid, positivesFrac));
   		  // add all ORFs of size >= 150 aa ??
   	  }
   	}

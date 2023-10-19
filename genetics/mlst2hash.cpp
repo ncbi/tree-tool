@@ -52,7 +52,7 @@ struct Blastn
   
   Blastn () = default;
   explicit Blastn (string &&seq_arg)
-    : seq (move (seq_arg))
+    : seq (std::move (seq_arg))
     , len (seq. size ())
     {}
 };
@@ -105,7 +105,7 @@ struct ThisApplication : Application
         if (stringInSet (seq, dnaAlphabet) != seq. end ())
           continue;
         if (locus2blastn [locus]. len < seq. size ())
-          locus2blastn [locus] = move (Blastn (move (seq)));
+          locus2blastn [locus] = std::move (Blastn (std::move (seq)));
       }
     }
     if (locus2blastn. size () > loci)

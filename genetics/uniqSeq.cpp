@@ -100,7 +100,7 @@ struct ThisApplication : Application
 		      var_cast (useq) -> ids << seq->getId ();
 		    else
 		    {
-		      hash2useq [h] = move (UniqSeq {seq. get (), StringVector {seq->getId ()}});
+		      hash2useq [h] = std::move (UniqSeq {seq. get (), StringVector {seq->getId ()}});
 		      seq. release ();
 		    }
 		  }

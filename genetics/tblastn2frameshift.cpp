@@ -161,7 +161,7 @@ struct ThisApplication : Application
                << '\t' << (hsp. sstrand ? hsp_prev. qend : hsp. qend) + 1 << (diff > 0 ? "ins" : "del") << abs (diff) << "bp" 
                 << endl;
       }
-	    hsp_prev = move (hsp);
+	    hsp_prev = std::move (hsp);
 	  }
   }
 };

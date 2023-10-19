@@ -315,7 +315,7 @@ HmmLib loadHmmLib (const string &fName)
   {
     Hmm hmm (li);
     prog (hmm. name);
-    hmms [hmm. name] = move (hmm);
+    hmms [hmm. name] = std::move (hmm);
   }
   
   return hmms;

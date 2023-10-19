@@ -79,7 +79,7 @@ struct ThisApplication : Application
   	    }
   	    else 
   	      len = prot. seq. size ();
-  	    prots << move (prot);
+  	    prots << std::move (prot);
   	  }
   	}
   	

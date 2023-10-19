@@ -198,7 +198,7 @@ struct ThisApplication : Application
         annot. qc ();
         QC_ASSERT (annot. getLen ());
         QC_ASSERT (annot. stop <= ref->seq. size ());
-        annots << move (annot);
+        annots << std::move (annot);
       }
     }
 
