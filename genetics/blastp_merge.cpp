@@ -381,7 +381,7 @@ struct ThisApplication : Application
   	      process (als, ident_max, coverage_min);
   	      als. clear ();
   	    }
-  	    als << move (al);
+  	    als << std::move (al);
   	  }
 		  catch (...)
 		  {

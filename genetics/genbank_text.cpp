@@ -133,7 +133,7 @@ GenbankText::GenbankText (LineInput &f)
 	  				name = value. substr (1, pos - 1);
 	  				value = value. substr (pos + 1);
 	  			}
-  				records << move (Record (name, true));
+  				records << std::move (Record (name, true));
   				record = & records. back ();
   			}
   		}
@@ -151,7 +151,7 @@ GenbankText::GenbankText (LineInput &f)
   		}
 	    else if (! name. empty ())
 	    {
-  			records << move (Record (name, false));
+  			records << std::move (Record (name, false));
  				record = & records. back ();
  		  }
   	}

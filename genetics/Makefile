@@ -70,8 +70,8 @@ all:	\
 	splitFasta \
 	tblastn2frameshift \
 	tblastn2orfs \
-	uniqSeq \
-	uniqProtRef
+	uniqProtRef \
+	uniqSeq
 
 
 align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 

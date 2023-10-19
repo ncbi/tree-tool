@@ -249,7 +249,7 @@ struct ThisApplication : Application
   	            || als. back (). targetName != al. targetName)
   	       )
   	      process (als);
-	      als << move (al);
+	      als << std::move (al);
   	    ASSERT (al. empty ());
   	  }
       process (als);

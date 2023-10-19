@@ -83,7 +83,7 @@ struct Value : Root
     : t (Token (s, true))
     {}
   explicit Value (Token &&t_arg)
-    : t (move (t_arg))
+    : t (std::move (t_arg))
     {}
   Value () = default;
   void qc () const final
@@ -163,7 +163,7 @@ Item::Item (TokenInput &in,
   {
     Token t (in. get ());
     if (t. type == Token::eName)
-      names << move (t. name);
+      names << std::move (t. name);
     else
     {
       if (t. type == Token::eDelimiter)
@@ -187,7 +187,7 @@ Item::Item (TokenInput &in,
             { 
               char delimiterChar = '\0';
               Item item (in, delimiterChar);
-              value->items << move (item);
+              value->items << std::move (item);
               if (delimiterChar == '\0')
               {
                 const Token delimiter (in. get ());
@@ -210,7 +210,7 @@ Item::Item (TokenInput &in,
       else
       {
         QC_ASSERT (! value. get ());
-        value. reset (new Value (move (t)));
+        value. reset (new Value (std::move (t)));
         if (value->t. type == Token::eText && value->t. quote == '\'')
           in. get ("H");
         stop = true;

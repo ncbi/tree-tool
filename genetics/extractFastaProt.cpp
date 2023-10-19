@@ -128,7 +128,7 @@ struct ThisApplication : Application
 	  	    		QC_ASSERT (from);
 	  	    		from--;
 	  	    	}
-	  	    	name2replacement [name] << move (Replacement (replacement, from, to));
+	  	    	name2replacement [name] << std::move (Replacement (replacement, from, to));
 	  	    }
 	  	  	else
             name2replacement [in. line];  // = Vector<Replacement> ();

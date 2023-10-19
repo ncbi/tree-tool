@@ -92,14 +92,14 @@ struct ThisApplication : Application
       const Real totalMean = totalMv. getMean ();
       StringVector row;
       row << string () << to_string (totalMv. n) << to_string (totalMean) << "0";
-      tt. rows << move (row);
+      tt. rows << std::move (row);
       for (const auto& it : mvs)
       {
         const MeanVar& mv = it. second;
         const Real mean = mv. getMean ();
         row. clear ();
         row << it. first << to_string (mv. n) << to_string (mean) << (mean < noiseThreshold * totalMean ? "1" : "0");
-        tt. rows << move (row);
+        tt. rows << std::move (row);
       }
     }
     tt. qc ();

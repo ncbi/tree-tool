@@ -140,7 +140,7 @@ struct Subject
   
   Subject (string &&stitle_arg,
            size_t slen)
-    : stitle (move (stitle_arg))
+    : stitle (std::move (stitle_arg))
     , schars (slen)
     { QC_ASSERT (! schars. empty ()); }
   Subject () = default;
@@ -486,7 +486,7 @@ all: report all covered segments", "all");
           trimPrefix (stitle, sseqid + "_");  // stitle has sseqid as a prefix
           replace (stitle, '_', ' ');
           trim (stitle);
-          sseqid2subject [sseqid] = move (Subject (move (stitle), slen));
+          sseqid2subject [sseqid] = std::move (Subject (std::move (stitle), slen));
           ASSERT (stitle. empty ());
           subj = & sseqid2subject [sseqid];
         }

@@ -79,7 +79,7 @@ struct ThisApplication : Application
   	    }
   	    else 
   	      len = dna. seq. size ();
-  	    dnas << move (dna);
+  	    dnas << std::move (dna);
   	  }
   	}
   	

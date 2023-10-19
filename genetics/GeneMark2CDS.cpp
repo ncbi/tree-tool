@@ -284,7 +284,7 @@ struct ThisApplication : Application
 	    	  const string strand      = findSplit (f. line, '\t');
 	    	  const string frame       = findSplit (f. line, '\t');
 	    	  const string gene_id_txt = findSplit (f. line, ' ');
-	    	        string gene_idS    = move (f. line);
+	    	        string gene_idS    = std::move (f. line);
 	    	#else
 	  	    iss. reset (f. line);
 	        string contig, method, type, dot, strand, frame, gene_id_txt, gene_idS;	        
