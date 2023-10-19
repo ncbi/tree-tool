@@ -76,7 +76,7 @@ struct ThisApplication : Application
       while (li. nextLine ())
       {
         trim (li. line);
-        objNames << move (li. line);
+        objNames << std::move (li. line);
       }
     }
     

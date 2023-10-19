@@ -1037,7 +1037,7 @@ void Genome::initDir (const string &featureDir,
         gf. id = f. line;
       trim (gf. id);
       QC_ASSERT (! gf. id. empty ());
-      coreSet << move (gf);
+      coreSet << std::move (gf);
       if (! gf. optional)
         coreNonSingletons++;
     }
@@ -1069,8 +1069,8 @@ void Genome::coreSet2nominals ()
 	  if (value. empty ())
 	    throw runtime_error ("Empty nominal attribute value: " + gf. id);
 	  if (! Feature::nominalSingleton (gf. id))
-	    var_cast (getFeatureTree ()). nominal2values [attrName] << move (value);
-	  nominals << move (attrName);
+	    var_cast (getFeatureTree ()). nominal2values [attrName] << std::move (value);
+	  nominals << std::move (attrName);
 	}
 	
 	nominals. sort ();	
@@ -1090,7 +1090,7 @@ void Genome::nominals2coreSet ()
       for (const string& value : it. second)
       {
         ASSERT (value != NOMINAL_OTHER);
-        coreSet << move (GenomeFeature (it. first + ":" + value, true));
+        coreSet << std::move (GenomeFeature (it. first + ":" + value, true));
       //coreNonSingletons++;
       }
 
@@ -2245,7 +2245,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     	ASSERT (prevFeature < fId);
       if (! oneFeatureInTree)
       	feature2index [fId] = features. size ();
-    	features << move (Feature (fId));
+    	features << std::move (Feature (fId));
     #ifndef NDEBUG
     	prevFeature = fId;
     #endif
@@ -2416,7 +2416,7 @@ FeatureTree::FeatureTree (const string &treeFName,
    		{
    			if (genomeVec. containsFast (g->id))
    			{
-   			  g->coreSet << move (Genome::GenomeFeature (fId, false));
+   			  g->coreSet << std::move (Genome::GenomeFeature (fId, false));
    			  g->coreNonSingletons = 1;
    			  found++;
    			}
@@ -2436,7 +2436,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     throw runtime_error ("The feature occurs in only one genome");
 
   ASSERT (features. empty ());
- 	features << move (Feature (fId));
+ 	features << std::move (Feature (fId));
   features. searchSorted = true;
   Feature& feature = features [0];
 
@@ -2713,7 +2713,7 @@ void FeatureTree::qc () const
 		  if (nominVar. empty ())
 		    continue;
 		  QC_ASSERT (! nominVars. contains (nominVar));
-		  nominVars << move (nominVar);
+		  nominVars << std::move (nominVar);
 		}
 		prevFeature = f;
 	}

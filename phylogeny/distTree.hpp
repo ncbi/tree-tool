@@ -344,7 +344,7 @@ public:
     { VectorPtr<Leaf> vec;  vec. reserve (triangles. size ());
     	for (const Triangle& tr : triangles)
     		if (tr. hasHybrid ())
-    			vec << move (tr. getHybrids (hybrid));
+    			vec << std::move (tr. getHybrids (hybrid));
     	return vec;
     }
   void qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const

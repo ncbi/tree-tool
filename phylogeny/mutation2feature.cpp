@@ -139,12 +139,12 @@ struct ThisApplication : Application
                   gene_muts. rehash (10000);  // PAR
                 gene_muts. insert (mut);
               }
-              muts << move (mut);
+              muts << std::move (mut);
             }
           }
           muts. sort ();
           muts. uniq ();
-          obj2muts [fName] = move (muts);        
+          obj2muts [fName] = std::move (muts);        
         }
       }
       cout << "Objects: " << obj2muts. size () << endl;

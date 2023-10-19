@@ -2078,7 +2078,7 @@ Vector<Peptide> Dna::getOrfs (Frame frame,
           start = seq. size () - stop;
           stop  = seq. size () - start_;
         }
-        peps << move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop + 1), pepSeq, false));
+        peps << std::move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop + 1), pepSeq, false));
       }
       start = i + 3;
       pepSeq. clear ();
@@ -2099,7 +2099,7 @@ Vector<Peptide> Dna::getOrfs (Frame frame,
       start = seq. size () - stop;
       stop  = seq. size () - start_;
     }
-    peps << move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop + 1), pepSeq, false));
+    peps << std::move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop + 1), pepSeq, false));
   }
   
   return peps;
@@ -4908,7 +4908,7 @@ Vector<KmerIndex::NumId> KmerIndex::find (const Dna &dna)
     
   Vector<NumId> num2id;  num2id. reserve (id2num. size ());
   for (const auto& it : id2num)
-    num2id << move (NumId (it. second, it. first));
+    num2id << std::move (NumId (it. second, it. first));
   num2id. sort ();
   
   return num2id; 

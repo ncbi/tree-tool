@@ -2280,7 +2280,7 @@ bool Change::apply ()
     const Tree::TreeNode* lca_ = nullptr;
     {
       Tree::LcaBuffer buf;
-      area = move (Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf)); 
+      area = std::move (Tree::getPath (from, to, tried ? nullptr : from->getAncestor (areaRadius_std), lca_, buf)); 
     }
     ASSERT (area. size () >= 1);
     ASSERT (lca_);
@@ -3317,7 +3317,7 @@ DistTree::DistTree (const string &dataDirName,
           st->errorDensity = anchor->errorDensity;
           ASSERT (anchor->maxDeformationDissimNum == dissims_max);
           if (const DeformationPair* dp = findPtr (node2deformationPair, anchor))
-            node2deformationPair [st] = move (DeformationPair {dp->leafName1, dp->leafName2, dp->deformation});
+            node2deformationPair [st] = std::move (DeformationPair {dp->leafName1, dp->leafName2, dp->deformation});
         }
       }
       ASSERT (leaf);
@@ -3866,7 +3866,7 @@ DistTree::DistTree (Subgraph &subgraph,
             const Leaf* leaf2 = it2. second;
             if (leaf1 == leaf2)
               break;
-            dissims [dissimNum] = move (Dissim (leaf1, leaf2, 0.0, 0.0, no_index));
+            dissims [dissimNum] = std::move (Dissim (leaf1, leaf2, 0.0, 0.0, no_index));
             ASSERT (leaf1->index != leaf2->index);
             ASSERT (leaf1->index < no_index);
             ASSERT (leaf2->index < no_index);
@@ -3919,7 +3919,7 @@ DistTree::DistTree (Subgraph &subgraph,
       {
         dissim = & dissimMap [index];
         if (! dissim->leaf1)
-          *dissim = move (Dissim (leaf1, leaf2, 0.0, 0.0, no_index));
+          *dissim = std::move (Dissim (leaf1, leaf2, 0.0, 0.0, no_index));
       }
       else
       {
@@ -3938,7 +3938,7 @@ DistTree::DistTree (Subgraph &subgraph,
     {
       dissims. reserve (dissimMap. size ());
       for (auto& it : dissimMap) 
-        dissims << move (it. second);
+        dissims << std::move (it. second);
     }
   }
   
@@ -4176,7 +4176,7 @@ bool DistTree::loadLines (const StringVector &lines,
     QC_ASSERT (! deformationObj. empty ());
     QC_ASSERT (deformation >= 0.0);
     ASSERT (! contains (node2deformationPair, dtNode));
-    node2deformationPair [dtNode] = move (DeformationPair {leafName1, deformationObj, deformation});
+    node2deformationPair [dtNode] = std::move (DeformationPair {leafName1, deformationObj, deformation});
   }
   
   return true;
@@ -4246,7 +4246,7 @@ void DistTree::loadDissimDs (const string &dissimFName,
       if (const PositiveAttr2* attr = attr_->asPositiveAttr2 ())
       {
         checkPositiveAttr2 (* var_cast (attr));
-        dissimTypes << move (DissimType (attr));
+        dissimTypes << std::move (DissimType (attr));
       }
     if (dissimTypes. empty ())
       throw runtime_error (FUNC "No dissimilarities in " + strQuote (dissimFName));
@@ -5141,7 +5141,7 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
         DissimLine dl (f. line, f. lineNum);
         if (DM_sp::finite (dl. dissim))
         {
-          dissimLines << move (dl);
+          dissimLines << std::move (dl);
           ASSERT (dl. name1. empty ());
         }
       }
@@ -5199,7 +5199,7 @@ bool DistTree::addDissim (Leaf* leaf1,
   const size_t dissimNum_ = dissims. size ();
   if (dissimNum_ > (size_t) dissims_max)
     throw runtime_error (FUNC "Too large dissimNum");
-  dissims << move (d);
+  dissims << std::move (d);
   const uint dissimNum = (uint) dissimNum_;
   leaf1->pathDissimNums << dissimNum;
   leaf2->pathDissimNums << dissimNum;      
@@ -6576,7 +6576,7 @@ size_t DistTree::optimizeLenNode ()
         || ! center->childrenDiscernible ()
        )
       continue;
-    stars << move (Star (center->asSteiner ()));
+    stars << std::move (Star (center->asSteiner ()));
   }
   stars. sort (Star::strictlyLess); 
 
