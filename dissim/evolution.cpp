@@ -136,7 +136,7 @@ ObjFeatureVector::ObjFeatureVector (const string &fName)
 
   LineInput f (fName);
   while (f. nextLine ())
-    (*this) << ObjFeature (move (f. line));
+    (*this) << ObjFeature (std::move (f. line));
     
   sort ();
   QC_ASSERT (isUniq ());
@@ -155,7 +155,7 @@ const ObjFeatureVector& ObjFeatureVector::getCache  (const string &fName)
     return *fv;
 
   ObjFeatureVector fv (fName);
-  return (cache [fName] = move (fv));
+  return (cache [fName] = std::move (fv));
 }
 
 
@@ -246,7 +246,7 @@ FeatureVector::FeatureVector (const string &fName)
     Feature feature (f. line);
     if (! feature. redundant ())
     {
-      (*this) << move (feature);
+      (*this) << std::move (feature);
       ASSERT (feature. name. empty ());
     }
   }
