@@ -284,7 +284,7 @@ struct ThisApplication : Application
               ASSERT (s. empty ());
               iss >> s;
               ASSERT (! s. empty ());
-              subitems << move (s);
+              subitems << std::move (s);
             }
           }
           ASSERT (! subitems. empty ());
@@ -318,7 +318,7 @@ struct ThisApplication : Application
           if (threads_max == 1)
             executeCommand (thisCmd, item_orig/*, blank_lines*/);
       	  else
-      	    commands << move (Command {move (thisCmd), move (item_orig)});
+      	    commands << std::move (Command {std::move (thisCmd), std::move (item_orig)});
       }
     }
 

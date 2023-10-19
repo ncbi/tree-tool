@@ -405,7 +405,7 @@ public:
       values [objNum] = str2real (s1); 
     }
   string getAverageStrValue (StringVector &&valuesStr) const final
-    { return RealScale::getAverageStrValue (move (valuesStr)); }
+    { return RealScale::getAverageStrValue (std::move (valuesStr)); }
   JsonDouble* value2json (JsonContainer* parent,
                           size_t objNum) const final
     { return new JsonDouble ((*this) [objNum], decimals, parent, name); }
@@ -1007,7 +1007,7 @@ struct RealAttr2 : Attr2, RealScale
       put (row, col, str2real (s1)); 
     }
   string getAverageStrValue (StringVector &&valuesStr) const final
-    { return RealScale::getAverageStrValue (move (valuesStr)); }
+    { return RealScale::getAverageStrValue (std::move (valuesStr)); }
   RealAttr1* createAttr1 (Dataset &ds_arg) const override
     { return new RealAttr1 (name, ds_arg, decimals); }
   void symmetrize () override

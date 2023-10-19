@@ -75,7 +75,7 @@ string RealScale::getAverageStrValue (StringVector &&valuesStr)
     return "nan";
     
   if (valuesStr. size () == 1)
-    return move (valuesStr [0]);
+    return std::move (valuesStr [0]);
    
   MeanVar mv;
   for (string s : valuesStr)
@@ -1829,7 +1829,7 @@ void loadObjPair (const string &objName1,
   if (objNum2 == no_index)
     throw runtime_error (FUNC "Unknown object " + strQuote (objName2) + " while reading two-way attribute " + strQuote (attr. name));
 
-  const string averageS (attr. getAverageStrValue (move (values)));
+  const string averageS (attr. getAverageStrValue (std::move (values)));
 //ASSERT (values. empty ());
   
   attr. str2value (objNum1, objNum2, averageS); 
@@ -2149,7 +2149,7 @@ void Dataset::load (istream &is)
             is >> value;
             if (value. empty ())
               throw runtime_error (FUNC "end-of-file in " + twoWayAttrName);
-            matr [i] [j] = move (value);
+            matr [i] [j] = std::move (value);
           }
         }
         FOR (size_t, i, matrixObjNum)
@@ -2204,14 +2204,14 @@ void Dataset::load (istream &is)
               cerr << endl;  
             }
           #endif
-            loadObjPair (objName1_old, objName2_old, move (values), *attr2);
+            loadObjPair (objName1_old, objName2_old, std::move (values), *attr2);
             objName1_old = objName1;
             objName2_old = objName2;
             values. clear ();
           }
-          values << move (value);
+          values << std::move (value);
         }
-        loadObjPair (objName1_old, objName2_old, move (values), *attr2);
+        loadObjPair (objName1_old, objName2_old, std::move (values), *attr2);
       }
       else throw runtime_error (FUNC "Unknown representation " + strQuote (s) + " for " + twoWayAttrName);
     }
@@ -5443,7 +5443,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	  if (   work. mixt. getParamSet ()
   	  	      && work. mixt. minimizeEntropy (entropy_best, entropyDimensionPrecision) 
   	  	     )
-  	  	  	workBest = move (work. mixt);
+  	  	  	workBest = std::move (work. mixt);
   	  	}
   	  	if (verbose ())
   	      workBest. qc ();
@@ -5475,7 +5475,7 @@ Clustering::Clustering (const Sample &sample_arg,
   	  	  if (   work. mixt. getParamSet ()
   	  	      && work. mixt. minimizeEntropy (entropy_best, entropyDimensionPrecision) 
   	  	     )
-  	  	  	workBest = /*move*/ (work. mixt);
+  	  	  	workBest = /*std::move*/ (work. mixt);
   	  	}
   	  	if (verbose ())
 	        workBest. qc ();
@@ -5484,7 +5484,7 @@ Clustering::Clustering (const Sample &sample_arg,
 
 	    if (! workBest. getParamSet ()) 
 	      break;
-	    mixt = /*move*/ (workBest);
+	    mixt = /*std::move*/ (workBest);
 	    setAnalysis ();
 	  }
 	}
@@ -6465,7 +6465,7 @@ PositiveAverageModel::PositiveAverageModel (const string &fName,
     else
 		{ 
 			Component comp (*this, f. line, loadStat);
-		  components << move (comp);
+		  components << std::move (comp);
 		}
   }
 }    
@@ -6564,7 +6564,7 @@ PositiveAverage::PositiveAverage (const Sample &sample_arg,
   for (const PositiveAttr1* attr : space)
   {
   //const bool universal = ! univAttrs || univAttrs->containsFast (attr);
-   	model. components << move (PositiveAverageModel::Component (attr->name, model/*, universal*/));
+   	model. components << std::move (PositiveAverageModel::Component (attr->name, model/*, universal*/));
     maximize (decimals_max, attr->decimals);
   }
   if (model. components. empty ())

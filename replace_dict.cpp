@@ -76,10 +76,10 @@ struct ThisApplication : Application
         string a, b;
         iss >> a >> b;
         QC_ASSERT (! b. empty ());
-        Pair<string> p (move (a), move (b));
+        Pair<string> p (std::move (a), std::move (b));
         if (rev)
           p. swap ();
-        pairs << move (p);;
+        pairs << std::move (p);;
       }
     }
 
