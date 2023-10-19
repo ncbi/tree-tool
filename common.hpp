@@ -1708,7 +1708,7 @@ template <typename Func, typename Res, typename... Args>
   	if (threads_max == 1 || i_max <= 1 || ! Threads::empty ())
   	{
   		results. push_back (Res ());
-    	func (0, i_max, results. front (), forward<Args>(args)...);
+    	func (0, i_max, results. front (), std::forward<Args>(args)...);
   		return;
   	}
 		size_t chunk = max<size_t> (1, i_max / threads_max);
@@ -1727,10 +1727,10 @@ template <typename Func, typename Res, typename... Args>
 	    Res& res = results. back ();
 	    if (to >= i_max)
 	    {
-	    	func (from, i_max, res, forward<Args>(args)...);
+	    	func (from, i_max, res, std::forward<Args>(args)...);
 	    	break;
 	    }
-		  th << thread (func, from, to, ref (res), forward<Args>(args)...);
+		  th << thread (func, from, to, ref (res), std::forward<Args>(args)...);
 		}
   }
 
