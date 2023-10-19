@@ -182,7 +182,7 @@ struct ThisApplication : Application
               IsFName = false;
               FName [FNamePos] = '\0';
               char PathName [1024];
-              sprintf (PathName, "%s_%s", prefix. c_str (), FName);
+              snprintf (PathName, 1024, "%s_%s", prefix. c_str (), FName);
               F = fopen (PathName, "w");
             //cout << PathName << endl;  
               ASSERT (F);
