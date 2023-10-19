@@ -11,7 +11,7 @@ endif
 
 ############################### Programs ################################
 
-all:	\
+ALL=	\
   colors_test \
   curl_easy_test \
   connectPairs \
@@ -23,7 +23,6 @@ all:	\
   key_test \
   list2pairs \
   mergePairs \
-  ncurses_key_test \
   random_words \
   replace_dict \
   setMinus \
@@ -33,7 +32,12 @@ all:	\
   trav \
   unCgi
 
-
+ifdef AT_NCBI
+  all:	$(ALL) \
+    ncurses_key_test
+else
+  all:	$(ALL)
+endif
 
 colors_test.o: $(COMMON_HPP)  
 colors_testOBJS=colors_test.o $(CPP_DIR)/common.o
