@@ -153,14 +153,14 @@ struct ThisApplication : Application
               t2. colNumsRow2values (addedColNums, rowNum2, values2);
               outValues. clear ();
               outValues << t1. rows [rowNum1] << values2;
-              tOut. rows << move (outValues);
+              tOut. rows << std::move (outValues);
             }
         }
         else 
         {
           if (remove || leftjoin)
           {
-            tOut. rows << move (t1. rows [rowNum1]);
+            tOut. rows << std::move (t1. rows [rowNum1]);
             if (leftjoin)
               tOut. rows. back (). resize (t1. header. size () + t2. header. size () - commonCols. size ());
           }

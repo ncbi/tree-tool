@@ -126,7 +126,7 @@ struct ThisApplication : Application
       {
         StringVector newRow (attrs. size () + 1);
         newRow [0] = row [objCol];
-        out. rows << move (newRow);
+        out. rows << std::move (newRow);
       }
 
       const size_t attrNum = attr2num [row [attrCol]];

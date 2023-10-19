@@ -216,7 +216,7 @@ private:
     , binary (false)
     , attribute (attribute_arg)
     , colonInName (colonInName_arg)
-    , token (move (value))
+    , token (std::move (value))
     {}
   Data (const Names &names_arg,
         ifstream &f,

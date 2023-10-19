@@ -120,7 +120,7 @@ Schema::Schema (const Schema* parent_arg,
   // name
   Token nameT (ti. get ());
   QC_ASSERT (nameT. type == Token::eName);
-  name = move (nameT. name);
+  name = std::move (nameT. name);
   
   // multiple
   Token tableT (ti. get ());
@@ -128,13 +128,13 @@ Schema::Schema (const Schema* parent_arg,
   if (tableT. name  == "TABLE")
     multiple = true;
   else
-    ti. setLast (move (tableT));
+    ti. setLast (std::move (tableT));
   
   // types
   Token typeT (ti. get ());
   QC_ASSERT (typeT. type == Token::eName);
   if (typeT. name == "rows")
-    ti. setLast (move (typeT));
+    ti. setLast (std::move (typeT));
   else
   {
     const Token::Type type = Token::str2type (typeT. name);
@@ -443,7 +443,7 @@ void Data::readInput (TokenInput &ti)
   {
     nameIndex = var_cast (names). add ("XmlText");   // *this will be deleted
     xmlText = true; 
-    token = move (ti. getXmlText ());
+    token = std::move (ti. getXmlText ());
     token. toNumberDate ();
     return;
   }
@@ -454,27 +454,27 @@ void Data::readInput (TokenInput &ti)
     if (nameT. isDelimiter ('/'))
     {
       isEnd = true;
-      nameT = move (ti. get ());
+      nameT = std::move (ti. get ());
     }
     else if (nameT. isDelimiter ('!'))        
     {
       if (ti. getNextChar () == '-')
       {
         nameIndex = var_cast (names). add ("!--");
-        token = move (ti. getXmlComment ());
+        token = std::move (ti. getXmlComment ());
       }
       else
       {
         nameT = ti. get ();
         nameIndex = var_cast (names). add ("!" + nameT. name);
-        token = move (ti. getXmlMarkupDeclaration ());        
+        token = std::move (ti. getXmlMarkupDeclaration ());        
       }
       return;
     }
     else if (nameT. isDelimiter ('?'))  
     {
       nameIndex = var_cast (names). add ("ProcessingInstruction");
-      token = move (ti. getXmlProcessingInstruction ());
+      token = std::move (ti. getXmlProcessingInstruction ());
       return;
     }
     if (nameT. type != Token::eName)
@@ -515,7 +515,7 @@ void Data::readInput (TokenInput &ti)
       if ((uchar) c >= 127)
         c = '?';
     value. toNumberDate ();
-    children << new Data (var_cast (names), this, true, colonInName_arg, attr. name, move (value));
+    children << new Data (var_cast (names), this, true, colonInName_arg, attr. name, std::move (value));
   }
 
   if (isEnd)
@@ -546,11 +546,11 @@ void Data::readInput (TokenInput &ti)
       if (xml->xmlText)
       {
         ASSERT (token. empty ());
-        token = move (xml->token);
+        token = std::move (xml->token);
         delete xml;
         trim (token. name);
         ti. get ('/');
-        Token end = move (ti. get ());
+        Token end = std::move (ti. get ());
         if (end. type != Token::eName)
           ti. error (end, "Name");
         readColonName (ti, end. name);
@@ -563,7 +563,7 @@ void Data::readInput (TokenInput &ti)
     }
   else
   {
-    token = move (ti. getXmlText ());
+    token = std::move (ti. getXmlText ());
     token. toNumberDate ();
     ti. get ('/');
     Token end (ti. get ());
@@ -906,7 +906,7 @@ StringVector Data::tagName2texts (const string &tagName) const
   }
   else
     for (const Data* child : children)
-      vec << move (child->tagName2texts (tagName));
+      vec << std::move (child->tagName2texts (tagName));
 
   return vec;
 }
@@ -947,7 +947,7 @@ void Data::unify_ (const Data& query,
     StringVector row (tt. header. size ());
     for (const auto& it : tag2values)
       row [tt. col2num (it. first)] = it. second. toString ("; ");
-    tt. rows << move (row);
+    tt. rows << std::move (row);
     tag2values. clear ();
   }
 }
@@ -1044,7 +1044,7 @@ void Data::text2token (const string &tagName)
   		//&& ! child->token. empty ()
   		 )
   	{
-  		token = move (var_cast (child) -> token);
+  		token = std::move (var_cast (child) -> token);
  		  token. type = Token::eText;
  		  ASSERT (! token. empty ());
   		children. erasePtr (0);
@@ -1114,9 +1114,9 @@ void Data::mergeSingleChildren ()
   	if (child->colonInName)
   		colonInName = true;
   	if (token. empty ())
-	    token = move (var_cast (child) -> token);
+	    token = std::move (var_cast (child) -> token);
 		children. clear ();
-		children = move (var_cast (child) -> children);
+		children = std::move (var_cast (child) -> children);
 		ASSERT (child->children. empty ());
 		delete child;
 		merged = true;

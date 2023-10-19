@@ -65,7 +65,7 @@ struct Tsv : Root
       try 
       {
         // header
-        header = move (StringVector (f. line, '\t', true));
+        header = std::move (StringVector (f. line, '\t', true));
         if (header. empty ())
           return;
         FFOR (size_t, i, header. size ())
@@ -98,7 +98,7 @@ struct Tsv : Root
           StringVector row (f. line, '\t', true);
           if (row. size () != header. size ())
             throw runtime_error ("Row has " + to_string (row. size ()) + " columns whereas header has " + to_string (header. size ()) + " columns");
-          rows << move (row);
+          rows << std::move (row);
           ASSERT (row. empty ());
         }
       }

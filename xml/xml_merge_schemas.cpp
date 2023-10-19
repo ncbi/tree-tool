@@ -72,7 +72,7 @@ struct ThisApplication : Application
         sch1->qc ();
         if (name. empty ())
         {
-          name = move (name1);
+          name = std::move (name1);
           sch. reset (sch1. release ());
         }
         else

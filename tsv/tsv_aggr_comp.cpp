@@ -93,7 +93,7 @@ struct ThisApplication : Application
 		h1. numeric = false;
 		TextTable::Header h2 (diff2);
 		h2. numeric = false;
-    tt. header << move (h1) << move (h2);
+    tt. header << std::move (h1) << std::move (h2);
 		
 		const string sep (1, TextTable::aggr_sep);
     for (StringVector& row : tt. rows)
