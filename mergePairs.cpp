@@ -78,7 +78,7 @@ struct ThisApplication : Application
   	    cout << lhs;  	    
   	  }
   	  cout << '\t' << rhs;
-  	  lhs_prev = move (lhs);
+  	  lhs_prev = std::move (lhs);
   	}
     if (! lhs_prev. empty ())
     	cout << endl;

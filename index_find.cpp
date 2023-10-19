@@ -153,7 +153,7 @@ Average time: O(A S (A (log A + log S) + log N)), where N is the number of objec
     // Time: O(A^2 S (log A + log S))
     Vector<ObjNum> objNums;  objNums. reserve (obj2num. size ());
     for (const auto& it : obj2num)
-      objNums << move (ObjNum {it. first, it. second});
+      objNums << std::move (ObjNum {it. first, it. second});
     objNums. sort ();
     // size(objNums) = O(A^2 S)
     

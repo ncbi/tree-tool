@@ -1535,7 +1535,7 @@ Vector<Tree::Patristic> node2leafDistances (const Tree::TreeNode* node,
 		{
 			const Tree::TreeNode* n = static_cast <Tree::TreeNode*> (arc->node [false]);
 			Leaf2dist nodeLeaf2dist;
-			res << move (node2leafDistances (n, nodeLeaf2dist));
+			res << std::move (node2leafDistances (n, nodeLeaf2dist));
 			ASSERT (! nodeLeaf2dist. empty ());
 			const double dist = n->getParentDistance ();
 			ASSERT (dist == dist);  // != NaN
