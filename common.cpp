@@ -1078,7 +1078,7 @@ List<string> str2list (const string &s,
 	List<string> res;
 	string s1 (s);
 	while (! s1. empty ())
-	  res << move (findSplit (s1, c));
+	  res << std::move (findSplit (s1, c));
 	return res;
 }
 
@@ -1860,7 +1860,7 @@ StringVector::StringVector (const string &fName,
       *this << f. line;
   	  if (f. line < prev)
   	  	searchSorted = false;
-      prev = move (f. line);
+      prev = std::move (f. line);
     }
   }
   catch (const exception &e)
@@ -1877,7 +1877,7 @@ StringVector::StringVector (const string &s,
 {
 	string s1 (s);
 	while (! s1. empty ())
-	  *this << move (findSplit (s1, sep));
+	  *this << std::move (findSplit (s1, sep));
 	if (! s. empty () && s. back () == sep)
 	  *this << noString;
 	  
@@ -2813,7 +2813,7 @@ StringVector csvLine2vec (const string &line)
   {
     s = csv. getWord ();
     trim (s);
-    words << move (s);
+    words << std::move (s);
   }
   return words;
 }
@@ -3233,7 +3233,7 @@ bool DirItemGenerator::next_ (string &item,
   for (;;)
   {
     if (const dirent* f = readdir (imp->dir))    
-      item = move (string (f->d_name));
+      item = std::move (string (f->d_name));
     else
       return false;
     if (item == ".")
@@ -3257,7 +3257,7 @@ StringVector DirItemGenerator::toVector ()
   StringVector vec;
   string s;
   while (next (s))
-    vec << move (s);
+    vec << std::move (s);
     
   return vec;
 }
@@ -3273,7 +3273,7 @@ SoftwareVersion::SoftwareVersion (const string &fName)
   StringVector vec (fName, (size_t) 1, true);
   if (vec. size () != 1)
     throw runtime_error ("Cannot read software version. One line is expected in the file: " + shellQuote (fName));
-  init (move (vec [0]), false);
+  init (std::move (vec [0]), false);
 }
 
 
@@ -3283,7 +3283,7 @@ SoftwareVersion::SoftwareVersion (istream &is,
 { 
   string s;
   is >> s;
-  init (move (s), minorOnly);
+  init (std::move (s), minorOnly);
 }
 
 
@@ -3328,7 +3328,7 @@ DataVersion::DataVersion (const string &fName)
   StringVector vec (fName, (size_t) 1, true);
   if (vec. size () != 1)
     throw runtime_error ("Cannot read data version. One line is expected in the file: " + shellQuote (fName));
-  init (move (vec [0]));
+  init (std::move (vec [0]));
 }
 
 
@@ -3337,7 +3337,7 @@ DataVersion::DataVersion (istream &is)
 { 
   string s;
   is >> s;
-  init (move (s));
+  init (std::move (s));
 }
 
 
@@ -3972,7 +3972,7 @@ void ShellApplication::initEnvironment ()
   if (useTmp)
   {
     if (const char* s = getenv ("TMPDIR"))
-      tmp = move (string (s));
+      tmp = std::move (string (s));
     else
       tmp = "/tmp";
   }

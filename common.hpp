@@ -1673,7 +1673,7 @@ public:
 	Threads& operator<< (thread &&t)
 	  { if (! getAvailable ())
 	  	  throwf ("Too many threads created");
-	  	try { threads. push_back (move (t)); }
+	  	try { threads. push_back (std::move (t)); }
 	  	  catch (const exception &e) 
 	  	    { throwf (string ("Cannot start thread\n") + e. what ()); }
 	  	return *this;
@@ -2012,7 +2012,7 @@ struct Named : VirtNamed
     : name (name_arg) 
     {}
   explicit Named (string &&name_arg)
-    : name (move (name_arg))
+    : name (std::move (name_arg))
     {}
   Named* copy () const override
     { return new Named (*this); } 
@@ -3872,12 +3872,12 @@ public:
   void setLast (Token &&t)
     { if (t. empty ())
         throwf ("TokenInput::setLast()");
-      last = move (t);
+      last = std::move (t);
     }
   bool getNext (char expected)
     { Token token (get ());
       if (! token. isDelimiter (expected))
-      { setLast (move (token));
+      { setLast (std::move (token));
       	return false;
       }
       return true;
