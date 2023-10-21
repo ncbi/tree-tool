@@ -1,30 +1,30 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 7 ]; then
-  echo "Create annotation files for #1 in the directory of #1"
-  echo "#1: eukaryotic DNA FASTA"
-  echo "#2: kingdom: fungi|viridiplantae|''"
-  echo "#3: universal HMM library (absolute path) or ''"
-  echo "#4: Pfam HMM library (absolute path) or ''"
-  echo "#5: use Pfam HMM cutoff (0/1)"
-  echo "#6: number of cores"
-  echo "#7: log file (absolute path)"
+if [ $# -ne 8 ]; then
+  echo "Create annotation files for #1 in the current directory"
+  echo "#1: eukaryotic genome name"
+  echo "#2: eukaryotic DNA FASTA"
+  echo "#3: kingdom: fungi|viridiplantae|''"
+  echo "#4: universal HMM library (absolute path) or ''"
+  echo "#5: Pfam HMM library (absolute path) or ''"
+  echo "#6: use Pfam HMM cutoff (0/1)"
+  echo "#7: number of cores"
+  echo "#8: log file (absolute path)"
   echo "Time: #1 size: 10M -1 hour; 4G - 6 days"
   exit 1
 fi
-FASTA=$1
-KINGDOM="$2"
-UNIV=$3
-PFAM=$4
-PFAM_CUTOFF=$5
-CORES=$6
-LOG=$7
+ASM=$1
+FASTA=$2
+KINGDOM="$3"
+UNIV=$4
+PFAM=$5
+PFAM_CUTOFF=$6
+CORES=$7
+LOG=$8
 
 
-#set -x
-
-if [ $KINGDOM -a $KINDOM != "fungi" -a $KINGDOM != "viridiplantae" ]; then
+if [ $KINGDOM -a $KINGDOM != "fungi" -a $KINGDOM != "viridiplantae" ]; then
   error "Unknown kingdom $KINGDOM"
 fi
 
@@ -37,13 +37,12 @@ if [ ! -s $FASTA ]; then
 fi
 
 DIR=`dirname $FASTA`
-ASM=`basename $FASTA`
 
 cd $DIR
 
 
-ls -laF $ASM
-$THIS/dna2stat $ASM  -log $LOG > $ASM.stat
+ls -laF $FASTA
+$THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
@@ -61,7 +60,7 @@ if [ ! -e $ASM.prot ]; then
   rm -f gmes.log
   rm -f run.cfg
   # Approximate
-  /usr/local/gmes/4.69/bin/gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $ASM  --soft_mask 0  --cores $CORES  &>> $LOG
+  /usr/local/gmes/4.69/bin/gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
   echo -e "\nAnnotation finihsed!\n" >> $LOG
   $THIS/../rm_all.sh data
   $THIS/../rm_all.sh info
@@ -75,11 +74,11 @@ if [ ! -e $ASM.prot ]; then
   PROT_LEN=150
 
   section "$ASM.prot"
-  $THIS/GeneMark2CDS $ASM genemark.gtf  -gtf  -gencode 1  -prot $ASM.prot  -prot_len_min 20  -ambig 10  -log $LOG  -qc
+  $THIS/GeneMark2CDS $FASTA genemark.gtf  -gtf  -gencode 1  -prot $ASM.prot  -prot_len_min 20  -ambig 10  -log $LOG  -qc
     # was: -prot_len_min 60
 
   section "$ASM.cds"
-  $THIS/GeneMark2CDS $ASM genemark.gtf  -gtf  -gencode 1  -cds $ASM.cds  -prot_len_min $PROT_LEN  -complete  -log $LOG  -qc
+  $THIS/GeneMark2CDS $FASTA genemark.gtf  -gtf  -gencode 1  -cds $ASM.cds  -prot_len_min $PROT_LEN  -complete  -log $LOG  -qc
   gzip genemark.gtf
 
   section "$ASM.hash-CDS"
