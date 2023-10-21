@@ -2,10 +2,10 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
-  echo "Find the place of a sequence in a sequence incremental tree"
-  echo "Print: <new sequence name> <tree node> <new leaf arc length> <tree node arc length>"
+  echo "Find the place of an object in an incremental tree"
+  echo "Print: <object name> <tree node> <new leaf arc length> <tree node arc length>"
   echo "#1: incremental tree directory"
-  echo "#2: new object file"
+  echo "#2: directory with object data"
   echo "#3: output of statistical report for 100 closest objects"
   exit 1
 fi
@@ -32,7 +32,8 @@ if [ -s $TMP.grep ]; then
 fi
 
 section "Finding approximately closest objects"
-$INC/object2closest.sh $NAME `dirname $QUERY` | grep -vw "^${NAME}$" | sed 's/$/\t'$NAME'/1' > $TMP.request
+$INC/object2closest.sh $NAME $QUERY | grep -vw "^${NAME}$" > $TMP.closest || true
+sed 's/$/\t'$NAME'/1' $TMP.closest > $TMP.request
 
 section "Fitting to the tree"
 cp /dev/null $TMP.dissim
@@ -41,7 +42,7 @@ VARIANCE=`cat $INC/variance`
 while [ -s $TMP.request ]; do
  #printf "."
   wc -l $TMP.request
-  $INC/pairs2dissim.sh $TMP.request $QUERY $TMP.dissim-add $TMP.log  &> /dev/null
+  $INC/pairs2dissim.sh $TMP.request $QUERY/$NAME $TMP.dissim-add $TMP.log  &> /dev/null
   rm $TMP.request
   grep -vwi "nan$" $TMP.dissim-add | grep -vwi "inf$" > $TMP.dissim-add1 || true
   if [ ! -s $TMP.dissim-add1 ]; then
@@ -56,14 +57,16 @@ done
 section "Placement"
 cut -f 1,2,3,4 $TMP.leaf
 
-section "Statistical report"
-sort -k3,3g $TMP.res > $TMP.sort
-head -100 $TMP.sort > $TMP.res  
-mkdir $TMP.report.dir
-$THIS/../trav $TMP.res "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%n"  -threads 15  
-$THIS/../trav $TMP.res "cat $TMP.report.dir/%n" -noprogress > $TMP.report
-echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $RES
-paste $TMP.res $TMP.report >> $RES
+if [ -s $TMP.res ]; then
+  section "Statistical report"
+  sort -k3,3g $TMP.res > $TMP.sort
+  head -100 $TMP.sort > $TMP.res  
+  mkdir $TMP.report.dir
+  $THIS/../trav $TMP.res "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%n"  -threads 15  
+  $THIS/../trav $TMP.res "cat $TMP.report.dir/%n" -noprogress > $TMP.report
+  echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $RES
+  paste $TMP.res $TMP.report >> $RES
+fi
 
 
 rm -fr $TMP*
