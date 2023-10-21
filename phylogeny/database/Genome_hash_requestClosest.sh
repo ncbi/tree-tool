@@ -24,7 +24,7 @@ TYPE=$8
 
 
 TMP=`mktemp`  
-#echo $TMP
+#comment $TMP
 #set -x
 
 
