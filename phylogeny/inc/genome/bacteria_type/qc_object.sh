@@ -14,14 +14,13 @@ PREF=$FD/$NAME
 
 function check 
 {
-  SUF=$1
-  #
+  local SUF=$1
   if [ ! -e $PREF.$SUF ]; then
     error "File $PREF.$SUF does not exist"
   fi
 }
 
-check "HMM.gz"
+#check "HMM.gz"
 check "hash-CDS"
 check "hash-HMM"
 check "hash-PRT"

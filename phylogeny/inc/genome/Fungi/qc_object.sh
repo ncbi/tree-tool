@@ -6,14 +6,17 @@ if [ $# -ne 1 ]; then
   echo "#1: object path"
   exit 1
 fi
-F=$1
+FD=$1
 
+
+NAME=`basename $FD`
+PREF=$FD/$NAME
 
 function check 
 {
   local SUF=$1
-  if [ ! -e $F.$SUF ]; then
-    error "File $F.$SUF does not exist"
+  if [ ! -e $PREF.$SUF ]; then
+    error "File $PREF.$SUF does not exist"
   fi
 }
 
