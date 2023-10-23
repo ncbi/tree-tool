@@ -3,10 +3,11 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Find the place of an object in an incremental tree"
-  echo "Print: <object name> <tree node> <new leaf arc length> <tree node arc length>"
+  echo "Output: #3.placement: <object name> <tree node> <new leaf arc length> <tree node arc length>"
+  echo "        #3.neighbors.tsv: statistical report for 100 closest objects"
   echo "#1: incremental tree directory"
   echo "#2: directory with object data"
-  echo "#3: output of statistical report for 100 closest objects"
+  echo "#3: output file prefix"
   exit 1
 fi
 INC=$1  
@@ -55,7 +56,8 @@ while [ -s $TMP.request ]; do
 done
 
 section "Placement"
-cut -f 1,2,3,4 $TMP.leaf
+cut -f 1,2,3,4 $TMP.leaf > $RES.placement
+cat $RES.placement
 
 if [ -s $TMP.res ]; then
   section "Statistical report"
@@ -64,8 +66,8 @@ if [ -s $TMP.res ]; then
   mkdir $TMP.report.dir
   $THIS/../trav $TMP.res "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%n"  -threads 15  
   $THIS/../trav $TMP.res "cat $TMP.report.dir/%n" -noprogress > $TMP.report
-  echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $RES
-  paste $TMP.res $TMP.report >> $RES
+  echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $RES.neighbors.tsv
+  paste $TMP.res $TMP.report >> $RES.neighbors.tsv
 fi
 
 
