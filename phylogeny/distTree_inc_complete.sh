@@ -62,6 +62,13 @@ $THIS/distTree_inc_request2dissim.sh $INC $INC/dissim_request $INC/dissim
 rm $INC/dissim_request
 $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 
+sort -k3,3g $INC/dissim > $TMP.dissim.sort
+LONGEST=`tail -1 $TMP.dissim.sort | cut -f 3`
+echo "Longest dissimilarity: $LONGEST"
+wc -l $INC/dissim
+echo "# Pairs with longest dissimilarity: "
+cut -f 3 $INC/dissim | grep -cx $LONGEST
+
 section "data.dm"
 $THIS/../dm/conversion/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
 echo "nan:"
@@ -97,14 +104,15 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   fi
 fi
 
-section "Tree"
+super_section "Tree"
 HYBRID=""
 if [ $HYBRIDNESS_MIN != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
 VARIANCE=`cat $INC/variance`
-$THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  > $INC/hist/makeDistTree-complete.1
+$THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  -output_tree_tmp $INC/tree.tmp > $INC/hist/makeDistTree-complete.1
+rm $INC/tree.tmp
 
 if [ $SERVER ]; then
   section "Database"
