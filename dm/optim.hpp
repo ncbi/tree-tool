@@ -68,7 +68,7 @@ struct Func1 : Root
 	               Real precision);
 	  // Return: x s.t. f(x)=0, x in [x_min, x_max] or x_min or x_max
 	  // Requires: f is increasing
-	  //           f(x_min) < 0, f(x_max) > 0
+	  //           x_min < x_max, f(x_min) <= 0, f(x_max) >= 0
 	  // Binary search
   Real findZeroPositive (Real x_init,
                          Real precision,
