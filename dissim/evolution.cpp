@@ -343,9 +343,15 @@ struct Func_snps2time : Func1
     
   Real f_approx () const
     // Equivalent to Jukes-Cantor model
-    { return num [true] <= num [false]
+    { 
+    #if 0  // ??
+      const size_t diff = num [true] <= num [false] ? 1 : (num [true] - num [false]);
+      return - 1.0 / lambdaSum_ave * log ((Real) diff / (Real) (num [true] + num [false]));
+    #else
+      return num [true] <= num [false]
                ? inf
                : - 1.0 / lambdaSum_ave * log ((Real) (num [true] - num [false]) / (Real) (num [true] + num [false]));
+    #endif
     }
 };
 
@@ -368,7 +374,7 @@ Real snps2time (const ObjFeatureVector &vec1,
   const Real delta = dissim_init * 1e-7;  // PAR
   const Real dissim = f. findZeroPositive (dissim_init, delta, 1.1);   // PAR
   IMPLY (! isNan (dissim), dissim >= 0.0);
-
+  
   return dissim;
 }
 
