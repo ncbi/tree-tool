@@ -123,6 +123,19 @@ struct ThisApplication : Application
 		  throw runtime_error ("if -qual_nonredundant then -qual cannot be empty");
 		if (gain_loss_leaves && (gain_nodes. empty () || loss_nodes. empty ()))
 		  throw runtime_error ("-gain_loss_leaves requires -gain_nodes or -loss_nodes");
+		if (min_newick_name && newick. empty ())
+		  throw runtime_error ("-min_newick_name requires -newick");
+		  
+		  
+		const bool statsNeeded = ! (   output_core.        empty ()
+		                            && output_tree.        empty ()
+		                            && qual.               empty ()
+		                            && gain_nodes.         empty ()
+		                            && loss_nodes.         empty ()
+		                            && disagreement_nodes. empty ()
+		                            && arc_length_stat.    empty ()
+		                            && patrDistFName.      empty ()
+		                           );
 		
 		
     const Chronometer_OnePass cop ("Total");  
@@ -212,8 +225,12 @@ struct ThisApplication : Application
     }
 
 
-    if (! save_mem)
+    if (! save_mem && statsNeeded)
+    {
+      if (! tree. coreSynced)
+        tree. setCore ();
       tree. setStats ();
+    }
     tree. qc ();
 
 
