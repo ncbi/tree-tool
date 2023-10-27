@@ -144,7 +144,8 @@ Real features2hamming (const ObjFeatureVector &vec1,
 
 Real features2jaccard (const ObjFeatureVector &vec1,
                        const ObjFeatureVector &vec2);
-  // ObjFeature::optional is trated as false
+  // Conservation model
+  // ObjFeature::optional is treated as false
 
 
 struct Feature : Named
@@ -187,6 +188,7 @@ struct FeatureVector : Vector<Feature>
 Real snps2time (const ObjFeatureVector &vec1,
                 const ObjFeatureVector &vec2,
                 const FeatureVector &feature2lambda);
+  // All lambda's are equal => Jukes-Cantor model
 
 inline Real features2dissim (const ObjFeatureVector &vec1,
                              const ObjFeatureVector &vec2,
