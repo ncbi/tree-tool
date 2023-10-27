@@ -64,7 +64,7 @@ struct ThisApplication : Application
 	{
 		const string fName    = getArg ("file");  
 		const string attrName = getArg ("attrName");
-		const Real window     = str2real (getArg ("window"));
+		const Real   window   = str2real (getArg ("window"));
 		
 		
     Dataset ds (fName);
