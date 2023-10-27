@@ -2938,11 +2938,13 @@ void FeatureTree::optimizeTime ()
 	  	cout << "len (time optimized) = " << len << endl;
 			qc ();
 		}
+	#if 0
 		if (timeOptimWhole () && ! leReal (len, len_old + len_delta)) 
 		{
 			cout << len << " " << len_old << endl;
 			ERROR;
 		}
+	#endif
 	}
 }
 
@@ -3373,11 +3375,13 @@ bool FeatureTree::applyChanges (VectorOwn<Change> &changes)
   //if (! leReal (len, len_old + len_delta)) 
     if (len > len_old + len_delta)
     {
+    #if 0
     	if (timeOptimWhole ())
     	{
 	    	cout << len << " " << len_old << endl;
 	    	ERROR;
 	    }
+	  #endif
 	    break;
     }
 	}
@@ -3626,14 +3630,18 @@ void FeatureTree::setStats ()
   Dataset ds;
   auto dist  = new RealAttr1 ("Distance", ds);  
   auto depth = new RealAttr1 ("Depth",    ds);  
- 	for (const DiGraph::Node* node : nodes)
- 	{
- 		const Phyl* phyl = static_cast <const Phyl*> (node);
-  	const size_t n = ds. appendObj (phyl->getName ());
-    (*dist)  [n] = phyl->getNeighborDistance ();
-    (*depth) [n] = (Real) phyl->getTopologicalDepth ();
-    FFOR (size_t, i, features. size ())
-      setFeatureStats (features [i], i, phyl);
+  {
+    Progress prog (nodes. size (), featureBatchSize);  // PAR
+   	for (const DiGraph::Node* node : nodes)
+   	{
+   	  prog ();
+   		const Phyl* phyl = static_cast <const Phyl*> (node);
+    	const size_t n = ds. appendObj (phyl->getName ());
+      (*dist)  [n] = phyl->getNeighborDistance ();
+      (*depth) [n] = (Real) phyl->getTopologicalDepth ();
+      FFOR (size_t, i, features. size ())
+        setFeatureStats (features [i], i, phyl);
+    }
   }
   
   for (Feature& f : features)
