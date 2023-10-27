@@ -157,7 +157,7 @@ struct ThisApplication : Application
           dissim = dnaWeight * dnaDissim + protDissim;  
         }
       }
-      ASSERT (dissim >= 0.0);
+      QC_ASSERT (dissim >= 0.0);
       cout << obj1 << '\t' << obj2 << '\t' << dissim << endl;
     }
 	}
