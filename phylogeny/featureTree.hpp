@@ -357,6 +357,8 @@ public:
   const Species* asSpecies () const final
     { return this; }
 
+  string getNewickName (bool /*minimal*/) const final
+    { return string (); }
 
 	double getParentDistance () const final;
   void setWeight () final;
@@ -475,8 +477,6 @@ public:
   const Strain* asStrain () const final
     { return this; }
 
-  string getNewickName (bool /*minimal*/) const final
-    { return string (); }
 	void assignFeatures () final;
   void getParent2corePooled (size_t parent2corePooled [2/*thisCore*/] [2/*parentCore*/]) const final;
 	float getPooledSubtreeDistance () const final;
