@@ -112,7 +112,7 @@ struct ThisApplication : Application
         FOR_START (size_t, j, i + 1, ds. objs. size ())
         {
           const ObjFeatureVector& f2 = obj2features [j];
-          attr->putSymm (i, j, features2dissim (f1, f2, optional_weight, /*false,*/ FeatureVector ()));
+          attr->putSymm (i, j, features2dissim (f1, f2, optional_weight, FeatureVector ()));
         }
       }
     }
