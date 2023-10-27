@@ -111,7 +111,9 @@ struct Violator : Named
 {
   // # Violation's
   size_t end {0};
+    // Number of being at an end of a violation trinagle
   size_t middle {0};
+    // Number of being in the middle of a violation trinagle
   
   Violator (const string &name_arg,
             size_t end_arg,
