@@ -3494,7 +3494,7 @@ public:
   {
     Error (const string &what_arg,
            const Newick &newick)
-      : runtime_error (what_arg + " at position " + toString (newick. pos))
+      : runtime_error (what_arg + " at position " + toString (newick. pos + 1))
       {}
   };
 
@@ -3535,6 +3535,8 @@ private:
     {
       f. get (c);
       pos++;
+      if (verbose ())
+        cout << pos << ' ' << c << endl;
       if (   c != '\n'
           && c != '\r'
          )
@@ -3550,7 +3552,7 @@ private:
       throw Error ("Unexpected end of file", *this);
   }
   
-  string parseName ()
+  string parseWord (bool isName)
   {
     skipSpaces ();
     string name;
@@ -3571,12 +3573,12 @@ private:
         if (contains (delimiters, c))
           break;
         if (! printable (c))
-          throw Error ("Non-printable character in name: " + toString ((int) c), *this);
+          throw Error (string ("Non-printable character in ") + (isName ? "name" : "number") + ": " + to_string ((int) c), *this);
         name += c;
         readChar ();
       }
     if (name. empty ())
-      throw Error ("Empty name", *this);
+      throw Error (string ("Empty ") + (isName ? "name" : "number"), *this);
     return name;
   }
 
@@ -3587,12 +3589,19 @@ private:
     Real len = 0.0;
     if (c == ':')
     {
-      const streamsize start = f. tellg ();
-      len = NaN;
-      f >> len;
-      pos += (streamsize) f. tellg () - start;
-      QC_ASSERT (! isNan (len));
       readChar ();
+      string number (parseWord (false));
+      strLower (number);
+      try 
+      {
+        len = str2real (number);
+      }
+      catch (const exception &e)
+      {
+        throw Error (e. what (), *this);
+      }
+      if (isNan (len))
+        len = inf;
     }
     node->len = max (0.0, len);
   }
@@ -3608,7 +3617,7 @@ private:
       node = st;
     }
     else
-      node = new Leaf (tree, parent, NaN, parseName ());
+      node = new Leaf (tree, parent, NaN, parseWord (true));
     ASSERT (node);
     return node;
   }
@@ -3635,7 +3644,7 @@ private:
     // Name
     if (! contains (delimiters, c))
     {
-      const string s (parseName ());
+      const string s (parseWord (true));
       // bootstrap is lost ??
       const size_t colonPos = s. find (':');      
       if (colonPos != string::npos)
