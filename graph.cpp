@@ -638,20 +638,41 @@ void Tree::TreeNode::printNewick_ (ostream &os,
 		os << name2newick (getNewickName (minimalLeafName));
 	else
 	{
-		os << "(";
-		bool first = true;
-		for (const Arc* arc : arcs [false])
-		{
-			const TreeNode* n = static_cast <TreeNode*> (arc->node [false]);
-			if (! first)
-			  os << ",";
-			n->printNewick_ (os, internalNames, minimalLeafName);
-			first = false;
-		}
-	  
-		os << ")";
+	  string internalName;
 		if (internalNames)
-			os << name2newick (getNewickName (minimalLeafName));
+			internalName = name2newick (getNewickName (minimalLeafName));
+	  ASSERT (! arcs [false]. empty ());
+	  
+	#if 0
+	  bool done = false;
+	  if (   internalName. empty () 
+	      && arcs [false]. size () == 1
+	     )
+		{
+		  const TreeNode* n = static_cast <TreeNode*> (arcs [false]. front () -> node [false]);
+		  ASSERT (n);
+    	const double dist = n->getParentDistance ();
+    	if (dist == dist && ! dist)
+    	{
+    	  n->printNewick_ (os, internalNames, minimalLeafName);
+    	  done = true;
+    	}
+		}			
+		if (! done)
+  #endif
+		{	  
+  		os << "(";
+  		bool first = true;
+  		for (const Arc* arc : arcs [false])
+  		{
+  			const TreeNode* n = static_cast <TreeNode*> (arc->node [false]);
+  			if (! first)
+  			  os << ",";
+  			n->printNewick_ (os, internalNames, minimalLeafName);
+  			first = false;
+  		}	  
+  		os << ")" << internalName;
+    }
 	}
 	
 	const double dist = getParentDistance ();
