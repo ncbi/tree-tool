@@ -1215,6 +1215,7 @@ public:
 	  //       if !loadDissim then O(n log(n) + new_leaves)
   //  
   explicit DistTree (const string &newickFName);
+    // Distances: NaN --> inf
   DistTree (Prob branchProb,
             size_t leafNum_max);
     // Random tree: DTNode::len = 1
