@@ -165,15 +165,13 @@ struct ThisApplication : Application
     {
       prog ();
       out         << it. first 
-          << '\t' << it. second 
-          << '\t';
+          << '\t' << it. second;
       ASSERT (contains (file2fasta, it. first));
       ASSERT (contains (file2fasta, it. second));
       const Fasta::Peptides& peptides1 = file2fasta [it. first].  peptides; 
       const Fasta::Peptides& peptides2 = file2fasta [it. second]. peptides; 
       ASSERT (peptides1. bucket_count () >= pam. components. size ());
       ASSERT (peptides2. bucket_count () >= pam. components. size ());
-     	TabDel td (6, false);  // PAR
      	pam. clearValues ();
       for (PositiveAverageModel::Component& comp : pam. components)
       	if (   contains (peptides1, comp. name)
@@ -204,24 +202,22 @@ struct ThisApplication : Application
   	      IMPLY (! isNan (dissim), dissim >= 0.0);
   	      
   	    	if (separate)
-     	  		td << dissim;
+     	  		out << '\t' << dissim;
      	  	else
   	    	  comp. setValue (pow (dissim, raw_power));
       	}
       	else
       	{
   	    	if (separate)
-     	  		td << "nan";
+     	  		out << '\t' << "nan";
       	}
     if (! separate)
       pam. qc ();
 
 
-    	if (separate)
-      	out << td. str ();
-      else
+    	if (! separate)
       {
-    		out << coeff * pam. get ();
+    		out << '\t' << coeff * pam. get ();
     		if (verbose ())
     		  pam. saveText (cout);
       }
