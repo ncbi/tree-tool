@@ -17,6 +17,7 @@ ALL=	\
   pairs2tsv \
   triple2tsv \
   tsv2insert \
+  tsv2triple \
   tsv_aggr_comp \
   tsv_cat \
   tsv_comp \
@@ -62,6 +63,12 @@ tsv2insert.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
 tsv2insertOBJS=tsv2insert.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 tsv2insert:	$(tsv2insertOBJS)
 	$(CXX) -o $@ $(tsv2insertOBJS) $(LIBS)
+	$(ECHO)
+
+tsv2triple.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+tsv2tripleOBJS=tsv2triple.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+tsv2triple:	$(tsv2tripleOBJS)
+	$(CXX) -o $@ $(tsv2tripleOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_aggr_comp.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp

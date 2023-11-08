@@ -194,15 +194,21 @@ void Triangle::qc () const
 
 void Triangle::print (ostream &os) const
 { 
-  TabDel td (3, false);  // PAR  
+  const ONumber on (os, 3, false);  // PAR
   const Parent& p1 = parents [0];
   const Parent& p2 = parents [1];
-  td << child->name << hybridness 
-     << p1. leaf->name << p2. leaf->name << p1. dissim << p2. dissim 
-     << child_hybrid << p1. hybrid << p2. hybrid;
+  os         << child->name 
+     << '\t' << hybridness 
+     << '\t' << p1. leaf->name 
+     << '\t' << p2. leaf->name 
+     << '\t' << p1. dissim 
+     << '\t' << p2. dissim 
+     << '\t' << child_hybrid 
+     << '\t' << p1. hybrid 
+     << '\t' << p2. hybrid;
   if (dissimType != no_index)
-    td << dissimType;
-  os << td. str () << endl; 
+    os << '\t' << dissimType;
+  os << endl; 
 }
 
 
@@ -527,17 +533,23 @@ void TriangleParentPair::qc () const
 
 void TriangleParentPair::print (ostream &os) const
 { 
-  TabDel td (2, false);  // PAR
+  const ONumber on (os, 2, false);  // PAR
   const Parent& p1 = parents [0];
   const Parent& p2 = parents [1];
-  td << getBest (). child->name << p1. leaf->name << p2. leaf->name 
-     << triangles. size () << p1. classSize << p2. classSize
-     << hybridness_ave << getBest (). parents [0]. dissim << getBest (). parents [1]. dissim
-     << getBest (). child_hybrid 
-     << getBest (). parents [0]. hybrid 
-     << getBest (). parents [1]. hybrid
-     << (int) dissimType;
-  os << td. str () << endl;
+  os         << getBest (). child->name 
+     << '\t' << p1. leaf->name 
+     << '\t' << p2. leaf->name 
+     << '\t' << triangles. size () 
+     << '\t' << p1. classSize 
+     << '\t' << p2. classSize
+     << '\t' << hybridness_ave 
+     << '\t' << getBest (). parents [0]. dissim 
+     << '\t' << getBest (). parents [1]. dissim
+     << '\t' << getBest (). child_hybrid 
+     << '\t' << getBest (). parents [0]. hybrid 
+     << '\t' << getBest (). parents [1]. hybrid
+     << '\t' << (int) dissimType
+     << endl;
 }
 
 

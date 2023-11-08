@@ -37,6 +37,7 @@
 
 #include "dataset.hpp"
 
+#include "../tsv/tsv.hpp"
 #include "optim.hpp"
 
 
@@ -5549,18 +5550,15 @@ void Clustering::saveText (ostream &os) const
 { 
   if (mixt. getDim () == 1)
   {
-    {
-      TabDel td;
-      td << "Cluster" << "Mean" << "Var" << "P";
-      os << td. str () << endl;
-    }
+    TsvOut td (os);
+    td << "Cluster" << "Mean" << "Var" << "P";
+    td. newLn ();
     FFOR (size_t, i, mixt. components. size ())
     {
-      TabDel td;
       const MultiNormal* mn = getMultiNormal (i);
       ASSERT (mn);
       td << (i + 1) << mn->mu [0] << mn->sigmaInflated. get (false, 0, 0) << mixt. components [i] -> prob;      
-      os << td. str () << endl;
+      td. newLn ();
     }
   }
   else

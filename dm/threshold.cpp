@@ -36,6 +36,7 @@
 #include "../common.inc"
 
 #include "../common.hpp"
+#include "../tsv/tsv.hpp"
 using namespace Common_sp;
 #include "numeric.hpp"
 #include "dataset.hpp"
@@ -120,12 +121,11 @@ struct Bin : Root
   explicit Bin (Real stop_arg)
     : stop (stop_arg)
     {}    
-  void saveText (ostream &os) const
-    { TabDel td;
-      td << start << stop << classMult 
+  void saveTsvOut (TsvOut &td) const
+    { td << start << stop << classMult 
        //<< mult << grayZone_lo << grayZone_hi << merge
          ; 
-      os << td. str () << endl;
+      td. newLn ();
     }
 
 #if 0
@@ -284,12 +284,12 @@ struct ThisApplication : Application
     if (verbose ())
     {
       {
-        TabDel td;
-        td << "Start" << "End" << "ClassMult" << "mult" << "grayZone_lo" << "grayZone_hi" << "merge";
-        cout << td. str () << endl;
+        TsvOut td (cout);
+        td << "Start" << "End" << "ClassMult" << "mult" /*<< "grayZone_lo" << "grayZone_hi" << "merge"*/;
+        td. newLn ();
+        for (const Bin& bin : bins)
+          bin. saveTsvOut (td);
       }
-      for (const Bin& bin : bins)
-        bin. saveText (cout);
       cout << endl;
 
       cl. saveText (cout);

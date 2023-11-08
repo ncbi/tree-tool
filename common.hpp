@@ -1568,6 +1568,7 @@ template <typename T>
   
 
 
+#if 0
 struct TabDel
 // Usage: {<<field;}* str();
 {
@@ -1591,7 +1592,7 @@ public:
   string str () const
     { return tabDel. str (); }
 };
-
+#endif
 
 
 
@@ -1603,7 +1604,7 @@ struct OFStream : ofstream
 	          const string &extension)
 	  { open (dirName, fileName, extension); }
 	explicit OFStream (const string &pathName)
-	  { open ("", pathName, ""); }
+	  { open (noString, pathName, noString); }
 	static void create (const string &pathName)
 	  { OFStream f (pathName); }
 
