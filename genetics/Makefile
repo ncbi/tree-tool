@@ -32,6 +32,7 @@ all:	\
 	extractFastaProt \
 	fasta_prefix \
 	fasta2GC \
+	fasta2features \
 	fasta2hash \
 	fasta2len \
 	fastaAddGi \
@@ -198,6 +199,12 @@ fasta2GC.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP)
 fasta2GCOBJS=fasta2GC.o $(GEN_DIR)/seq.o $(DM_OBJ)
 fasta2GC:	$(fasta2GCOBJS)
 	$(CXX) -o $@ $(fasta2GCOBJS) $(LIBS) 
+	$(ECHO)
+
+fasta2features.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+fasta2featuresOBJS=fasta2features.o $(SEQ_OBJ)
+fasta2features:	$(fasta2featuresOBJS)
+	$(CXX) -o $@ $(fasta2featuresOBJS) $(LIBS) 
 	$(ECHO)
 
 fasta2hash.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
