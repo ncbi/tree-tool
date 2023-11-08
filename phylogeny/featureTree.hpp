@@ -590,7 +590,7 @@ public:
   string getLeafName () const final
     { return id; }
 	double getParentDistance () const final
-	  { return 0; }
+	  { return 0.0; }
   string getNewickName (bool /*minimal*/) const final
 	  { return id /*+ " " + taxName + getNameExtra ()*/; 
 	  }
