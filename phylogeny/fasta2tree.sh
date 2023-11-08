@@ -38,11 +38,11 @@ else
   fi
 fi
 
-$THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $OUT.dm
+$THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $OUT
 
 
 section "Building tree"
 # PAR
-$THIS/makeDistTree  -data $OUT.dm  -dissim_attr "dissim"  -variance pow  -variance_power 5  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 10
+$THIS/makeDistTree  -data $OUT  -dissim_attr "dissim"  -variance pow  -variance_power 5  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 10
 
 
