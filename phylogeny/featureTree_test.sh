@@ -21,9 +21,9 @@ cp $DIR/gene.tar.gz $TMP.dir/
 cp $DIR/obj.list    $TMP.dir/
 
 gunzip $TMP.dir/gene.tar.gz
-tar  -xf $TMP.dir/gene.tar  -C $TMP.dir
+tar -xf $TMP.dir/gene.tar  -C $TMP.dir
 
-$THIS/featureTree.sh $TMP.dir/obj $TMP.dir/gene
+$THIS/featureTree.sh $TMP.dir/obj.list $TMP.dir/gene 1 $TMP.dir/obj
 
 echo ""
 $THIS/makeFeatureTree  -qc  -threads 10  -input_tree $TMP.dir/obj.tree  -features $TMP.dir/gene  -input_core $TMP.dir/obj.core  -use_time | grep -v "CHRON" | grep -v "^Tree from file:" > $TMP.dir/obj.featureTree
