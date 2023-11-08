@@ -66,7 +66,7 @@ struct ThisApplication : Application
       version = VERSION;
 		  addPositional ("in", "Input FASTA file");
 		  addFlag ("aa", "Sequences are proteins, otherwise DNA");
-		  addKey ("pair", "Replacement id pairs: <redundant id> <tab> <main id>");
+		  addKey ("pair", "Output file of replacement id pairs: <redundant id> <tab> <main id>");
 	  }
 
   
