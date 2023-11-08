@@ -280,7 +280,7 @@ sim2dist:	$(sim2distOBJS)
 	$(CXX) -o $@ $(sim2distOBJS) $(LIBS)
 	$(ECHO)
 
-threshold.o:  $(DM_HPP) 
+threshold.o:  $(DM_HPP) $(TSV_DIR)/tsv.hpp
 thresholdOBJS=threshold.o $(DM_OBJ) 
 threshold:	$(thresholdOBJS)
 	$(CXX) -o $@ $(thresholdOBJS) $(LIBS)
