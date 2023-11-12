@@ -66,8 +66,14 @@ if [ -s $TMP.res ]; then
   mkdir $TMP.report.dir
   $THIS/../trav $TMP.res "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%n"  -threads 15  
   $THIS/../trav $TMP.res "cat $TMP.report.dir/%n" -noprogress > $TMP.report
-  echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $RES.neighbors.tsv
-  paste $TMP.res $TMP.report >> $RES.neighbors.tsv
+  echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $TMP.neighbors.tsv
+  paste $TMP.res $TMP.report >> $TMP.neighbors.tsv
+  if [ -e $INC/../Metadata.tsv ]; then
+   #cut -f 1,2,3,5,6,9 $INC/../Metadata.tsv > $TMP.meta
+    $THIS/../tsv/tsv_join $TMP.neighbors.tsv $INC/../Metadata.tsv -left 1> $RES.neighbors.tsv 2> /dev/null
+  else
+    cp $TMP.neighbors.tsv $RES.neighbors.tsv
+  fi  
 fi
 
 
