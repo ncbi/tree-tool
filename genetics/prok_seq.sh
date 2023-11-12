@@ -5,7 +5,7 @@ if [ $# -ne 7 ]; then
   echo "Create files for #1 in the current directory"
   echo "Invokes: prodigal"
   echo "#1: prokaryotic genome name"
-  echo "#2: DNA FASTA of a prokaryotic genome"
+  echo "#2: prokaryotic genome DNA FASTA"
   echo "#3: universal HMM library or ''"
   echo "#4: Pfam HMM library  or ''"
   echo "#5: use Pfam HMM cutoff (0/1)"

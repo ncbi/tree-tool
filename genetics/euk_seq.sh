@@ -3,6 +3,7 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 8 ]; then
   echo "Create annotation files for #1 in the current directory"
+  echo "Invokes GeneMark"
   echo "#1: eukaryotic genome name"
   echo "#2: eukaryotic DNA FASTA"
   echo "#3: kingdom: fungi|viridiplantae|''"
@@ -23,6 +24,8 @@ PFAM_CUTOFF=$6
 CORES=$7
 LOG=$8
 
+
+#set -x
 
 if [ $KINGDOM -a $KINGDOM != "fungi" -a $KINGDOM != "viridiplantae" ]; then
   error "Unknown kingdom $KINGDOM"
