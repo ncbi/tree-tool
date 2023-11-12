@@ -72,7 +72,7 @@ Update: <incremental distance tree directory>/search/")
 		  // Output
 		  addKey ("request", "Output file of the format: <obj1> <obj2>");
 		  addKey ("leaf", "Output file of the format: <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>");
-		  addKey ("result", "Output file with dissimllarity-distance pairs");
+		  addKey ("result", "Output file with dissimilarity-distance pairs");
 		}
 	
 	
