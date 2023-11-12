@@ -1763,6 +1763,7 @@ public:
   {
     // Input
     const Leaf* leaf {nullptr};
+      // !nullptr
     // Below are functions of leaf
     Real dissim {NaN};
       // Between NewLeaf and leaf

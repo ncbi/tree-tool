@@ -9768,6 +9768,19 @@ void NewLeaf::optimize ()
         location. arcLen = 0.0;
         location. absCriterion_leaf = 0.0;
         location. indiscernibleFound = true;
+        {
+          Tree::LcaBuffer buf;
+          const Tree::TreeNode* lca = nullptr;
+          for (Leaf2dissim& ld_ : leaf2dissims)
+            if (ld_. leaf == ld. leaf)
+              ld_. dist_hat = 0.0;
+            else
+            {
+              const VectorPtr<Tree::TreeNode>& path = Tree::getPath (ld. leaf, ld_. leaf, nullptr, lca, buf);
+              ld_. dist_hat = tree. path2prediction (path);
+              ld_. leafIsBelow = false;
+            }
+        }
         return;
       }
     }
