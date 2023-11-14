@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "common.inc"
 
 #include "common.hpp"
 
@@ -41,7 +40,6 @@
 #include <cstring>
 #include <regex>
 #include <csignal>  
-
 #ifndef _MSC_VER
   extern "C"
   {
@@ -56,6 +54,7 @@
   }
 #endif
 
+#include "common.inc"
 
 
 
@@ -263,6 +262,9 @@ namespace
 
   os->flush ();           
 
+  if (cxml)
+    cxml->print (string (error_caption) + ": " + msg);
+
   if (segmFault)
     abort ();
   exit (1);
@@ -313,8 +315,10 @@ string getStack ()
 
 [[noreturn]] void throwf (const string &s)  
 { 
+#if 0
   if (cxml)
     cxml->print (string (error_caption) + ": " + s);
+#endif
   throw logic_error (s + "\nStack:\n" + getStack ()); 
 }
 
@@ -1033,7 +1037,7 @@ string unpercent (const string &s)
 {
   for (const char c : s)
   	if (between (c, '\0', ' ') /*! printable (c)*/)
-  		throwf (FUNC "Non-printable character: " + to_string (uchar (c)));
+  		throw runtime_error (FUNC "Non-printable character: " + to_string (uchar (c)));
 
   string r;
   constexpr size_t hex_pos_max = 2;
@@ -1051,7 +1055,7 @@ string unpercent (const string &s)
     {
       ASSERT (hex_pos < hex_pos_max);
       if (! isHex (c))
-        throwf (FUNC "Bad hexadecimal character: " + to_string (c));
+        throw runtime_error (FUNC "Bad hexadecimal character: " + to_string (c));
       hex = uchar (hex + hex2uchar (c));
       if (! hex_pos)
       {

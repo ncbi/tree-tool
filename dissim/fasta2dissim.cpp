@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
@@ -44,6 +43,8 @@ using namespace DM_sp;
 using namespace Seq_sp;
 #include "align.hpp"
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 

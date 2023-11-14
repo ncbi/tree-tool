@@ -151,7 +151,7 @@ constexpr const char* error_caption ("*** ERROR ***");
   // For debugger
 
 [[noreturn]] void throwf (const string &s); 
-  // For debugger
+  // For debugger: should not be in-line
 
 void beep ();
   // Requires: !isRedirected()

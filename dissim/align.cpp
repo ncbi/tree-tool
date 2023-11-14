@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "align.hpp"
 
@@ -44,6 +43,7 @@
 #include "evolution.hpp"
 using namespace DM_sp;
 
+#include "../common.inc"
 
 
 

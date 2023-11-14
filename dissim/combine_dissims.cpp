@@ -33,13 +33,14 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
 #include "../dm/numeric.hpp"
 using namespace DM_sp;
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 
