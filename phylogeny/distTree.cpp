@@ -33,12 +33,13 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "distTree.hpp"
 
 #include "../dm/prediction.hpp"
 #include "../dm/optim.hpp"
+
+#include "../common.inc"
 
 
 
