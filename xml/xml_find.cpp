@@ -32,12 +32,13 @@
 */
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
 #include "xml.hpp"
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 

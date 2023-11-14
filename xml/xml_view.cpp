@@ -39,7 +39,6 @@
 
 
 #undef NDEBUG  
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
@@ -47,6 +46,8 @@ using namespace Common_sp;
 using namespace NCurses_sp;
 #include "../version.inc"
 #include "xml.hpp"
+
+#include "../common.inc"
 
 
 

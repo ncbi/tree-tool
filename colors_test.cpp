@@ -1,10 +1,11 @@
 // colors_test.cpp
 
 #undef NDEBUG
-#include "common.inc"
 
 #include "common.hpp"
 using namespace Common_sp;
+
+#include "common.inc"
 
 
 

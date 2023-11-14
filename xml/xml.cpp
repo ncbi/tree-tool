@@ -33,9 +33,10 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "xml.hpp"
+
+#include "../common.inc"
 
 
 
