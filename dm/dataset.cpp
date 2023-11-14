@@ -33,12 +33,13 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "dataset.hpp"
 
 #include "../tsv/tsv.hpp"
 #include "optim.hpp"
+
+#include "../common.inc"
 
 
 

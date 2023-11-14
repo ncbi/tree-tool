@@ -33,9 +33,10 @@
 
 
 #undef NDEBUG
-#include "common.inc"
 
 #include "graph.hpp"
+
+#include "common.inc"
 
 
 

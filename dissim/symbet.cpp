@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
@@ -45,6 +44,8 @@ using namespace DM_sp;
 using namespace Seq_sp;
 #include "nw/sm_blosum62.c"
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 

@@ -80,7 +80,8 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
           return;
         P::qc ();
         target. qc ();
-        ASSERT (& target. ds == P::sample. ds);
+        if (& target. ds != P::sample. ds)
+          throwf ("& target. ds != P::sample. ds");
       }
   
   
@@ -106,40 +107,40 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
 
 
 template <typename T /*:Prediction*/>
-T* selectAttrs (const Sample &sample,
-                Space1<typename T::Predictor> &space,
-                const typename T::Target &target,
-                Real attrImportance_min)
-// Return: final T
-// Update: space
-// Time: O(p * time(setAttrImportance))
-{ Progress prog (space. size ());
-  for (;;)
-  { unique_ptr<T> t (new T (sample, space, target));
-    t->solve ();
-    t->qc ();
-    if (verbose ())
-      cerr << t->negLogLikelihood_ave << endl;  
-    t->setAttrImportance ();
-    const typename T::Predictor* attr_bad = nullptr;
-    size_t i_bad = no_index;
-    Real importance_min = inf;
-    FOR (size_t, i, t->space. size ())
-      if (minimize (importance_min, t->attrImportance [i]))
-      { attr_bad = t->space [i];
-        i_bad = i;
+  T* selectAttrs (const Sample &sample,
+                  Space1<typename T::Predictor> &space,
+                  const typename T::Target &target,
+                  Real attrImportance_min)
+  // Return: final T
+  // Update: space
+  // Time: O(p * time(setAttrImportance))
+  { Progress prog (space. size ());
+    for (;;)
+    { unique_ptr<T> t (new T (sample, space, target));
+      t->solve ();
+      t->qc ();
+      if (verbose ())
+        cerr << t->negLogLikelihood_ave << endl;  
+      t->setAttrImportance ();
+      const typename T::Predictor* attr_bad = nullptr;
+      size_t i_bad = no_index;
+      Real importance_min = inf;
+      for (size_t i = 0; i < t->space. size (); i++)
+        if (minimize (importance_min, t->attrImportance [i]))
+        { attr_bad = t->space [i];
+          i_bad = i;
+        }
+      if (importance_min >= attrImportance_min)
+      { t->solve ();
+        return t. release ();
       }
-    if (importance_min >= attrImportance_min)
-    { t->solve ();
-      return t. release ();
+      prog (attr_bad->name);
+      if (verbose ())
+        cerr << attr_bad->name << ": " << importance_min << endl;  
+      space. eraseAt (i_bad);
     }
-    prog (attr_bad->name);
-    if (verbose ())
-      cerr << attr_bad->name << ": " << importance_min << endl;  
-    space. eraseAt (i_bad);
+    return nullptr;
   }
-  return nullptr;
-}
 
 
 
@@ -179,7 +180,7 @@ struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
       os << "Other_score_max  = " << non_target_score_max << endl;
       os << "------------------------------" << endl;
       os << "beta: value" << endl;
-      FOR (size_t, i, space. size ())
+      for (size_t i = 0; i < space. size (); i++)
         os << space [i] -> name << ": " << beta [i] << endl;
     }
 

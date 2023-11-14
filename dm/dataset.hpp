@@ -1368,17 +1368,18 @@ template <typename T/*:Attr*/>
     void qc () const
       { if (! qc_on)
           return;
-        ASSERT (! P::empty ());
+        if (P::empty ())
+          throwf ("P::empty()");
         Set<const T*> attrSet;
         for (const T* attr : *this)
-        { ASSERT (attr);
+        { if (! attr)
+            throwf ("!attr");
           if (& attr->ds != & ds)
-          { cout << & attr->ds << " " << & ds << " " << attr->name << endl;
-            ERROR;
-          }
+            throwf ("& attr->ds != & ds for " + attr->name);
           attrSet << attr;
         }
-        ASSERT (P::size () == attrSet. size ());
+        if (P::size () != attrSet. size ())
+          throwf ("P::size () != attrSet. size ()");
       }
   
   
@@ -1398,8 +1399,10 @@ template <typename T/*:Attr*/>
   
     template <typename U/*:T*/>
       Space<T>& operator<< (const U* attr)
-        { ASSERT (attr);
-          ASSERT (& attr->ds == & ds);
+        { if (! attr)
+            throwf ("!attr");
+          if  (& attr->ds != & ds)
+            throwf ("& attr->ds != & ds");
         //if (name2attr (attr->name))
           //ERROR_MSG ("Attribute " + strQuote (attr->name) + " already exists in the space");
           P::operator<< (attr);  
@@ -1481,7 +1484,8 @@ template <typename T/*:Attr1*/>
           for (const T* attr : *this)
             os << "," << (attr->isMissing (*it) ? missingStr : attr->value2str (*it)); 
           os << endl;
-          ASSERT (os. good ());
+          if (! os. good ())
+            throwf ("! os. good ()");
         }
       }
     JsonArray* toJson (const Sample &sample,
@@ -1507,7 +1511,8 @@ template <typename T/*:Attr1*/>
               j = new JsonNull (jAttr, attr->name);
             else
               j = attr->value2json (jAttr, *it); 
-            ASSERT (j);
+            if (! j)
+              throwf ("!j");
           }
         }
         return jObjs;
@@ -1638,7 +1643,8 @@ template <typename T/*:Attr1*/>
           return;
         Analysis1::qc();
         attr. qc ();
-        ASSERT (& attr. ds == sample. ds);
+        if (& attr. ds != sample. ds)
+          throwf ("& attr. ds != sample. ds");
       }
 
 
@@ -1671,9 +1677,12 @@ template <typename T/*:Attr1*/>
           return;
         Analysis1::qc();
         space. qc ();
-        ASSERT (& space. ds == sample. ds);
-        ASSERT (space. size () == variable. size ()); 
-        ASSERT (! space. empty ());
+        if (& space. ds != sample. ds)
+          throwf ("& space. ds != sample. ds");
+        if (space. size () != variable. size ())
+          throwf ("space. size () != variable. size ()");
+        if (space. empty ())
+          throwf ("space. empty ()");
       }
 
 
@@ -1684,11 +1693,11 @@ template <typename T/*:Attr1*/>
       }
 
     void data2variable (size_t objNum) const override
-      { FOR (size_t, i, variable. size ())
+      { for (size_t i = 0; i < variable. size (); i++)
           variable [i] = (* space [i]) [objNum]; 
       }
     void variable2data (size_t objNum) override
-      { FOR (size_t, i, variable. size ())
+      { for (size_t i = 0; i < variable. size (); i++)
           const_cast <T&> (* space [i]) [objNum] = variable [i]; 
       }
 
@@ -1707,14 +1716,15 @@ template <typename T/*:Attr1*/>
 	                           Matrix &attrSim,
 				                     bool vc) 
 	    // Input: vc: variance-covariance: allows missing values
-		  {	ASSERT (attrSim. rowsSize () == space. size ());
-		    FFOR_START (size_t, attrNum1, from, to)
+		  {	if (attrSim. rowsSize () != space. size ())
+		      throwf ("attrSim. rowsSize () != space. size ()");
+		    for (size_t attrNum1 = from; attrNum1 < to; attrNum1++)
 		    { const NumAttr1& a1 = * space [attrNum1];
-		  	  FFOR_START (size_t, attrNum2, attrNum1, space. size ())
+		  	  for (size_t attrNum2 = attrNum1; attrNum2 < space. size (); attrNum2)
 		      { const NumAttr1& a2 = * space [attrNum2];
 		        Real s = 0.0;
 		        Real mult_sum = 0.0;
-		        FFOR (size_t, i, sample. mult. size ())
+		        for (size_t i = 0; i < sample. mult. size (); i++)
 		          if (const Real mult = sample. mult [i])
 		          { const Real x1 = a1. getReal (i);
 		          	const Real x2 = a2. getReal (i);
@@ -1728,7 +1738,8 @@ template <typename T/*:Attr1*/>
 			          }
 		            s += x1 * x2 * mult;
 		          }
-		        ASSERT (! isNan (s));
+		        if (isNan (s))
+		          throwf ("isNan (s)");
 		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0.0) : s);
 		      }
 		   	}
@@ -1737,21 +1748,22 @@ template <typename T/*:Attr1*/>
 	  void setAttrSim (Matrix &attrSim,
 	                   bool vc) const
 	    // Input: vc: variance-covariance: allows missing values
-		  {	ASSERT (attrSim. rowsSize () == space. size ());
+		  {	if (attrSim. rowsSize () != space. size ())
+		      throwf ("attrSim. rowsSize () != space. size ()");
 		    Unverbose unv;
 		  #if 0
 		    // thread_num depends on sqrt(sample.mult.size ())
 		    arrayThreads (setAttrSim_, space. size (), std::cref (space), std::cref (sample), std::ref (attrSim), vc);
 		  #else
 		    Progress prog (space. size ());  
-		    FFOR (size_t, attrNum1, space. size ())
+		    for (size_t attrNum1 = 0; attrNum1 < space. size (); attrNum1++)
 		    { prog ();
 		      const NumAttr1& a1 = * space [attrNum1];
-		  	  FFOR_START (size_t, attrNum2, attrNum1, space. size ())
+		  	  for (size_t attrNum2 = attrNum1; attrNum2 < space. size (); attrNum2++)
 		      { const NumAttr1& a2 = * space [attrNum2];
 		        Real s = 0.0;
 		        Real mult_sum = 0.0;
-		        FFOR (size_t, i, sample. mult. size ())
+		        for (size_t i = 0; i < sample. mult. size (); i++)
 		          if (const Real mult = sample. mult [i])
 		          { const Real x1 = a1. getReal (i);
 		          	const Real x2 = a2. getReal (i);
@@ -1765,7 +1777,8 @@ template <typename T/*:Attr1*/>
 			          }
 		            s += x1 * x2 * mult;
 		          }
-		        ASSERT (! isNan (s));
+		        if (isNan (s))
+		          throwf ("isNan (s)");
 		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0.0) : s);
 		      }
 		   	}
@@ -2069,7 +2082,7 @@ struct Bernoulli : Distribution
       finish ();
     }
   void estimate () final
-    { NOT_IMPLEMENTED; }
+    { throwf ("NOT_IMPLEMENTED"); }
   bool getParamSet () const final
     { return ! isNan (p); }
   bool similar (const Distribution &distr,
@@ -2515,7 +2528,7 @@ struct UniformDiscrete : DiscreteDistribution
     }
   void estimate () final
     { if (! getParamSet ())  // ??
-    	  NOT_IMPLEMENTED; 
+    	  throwf ("NOT_IMPLEMENTED"); 
     } 
   bool getParamSet () const final
     { return min <= max; }
@@ -2614,9 +2627,9 @@ public:
 private:
   Real logPmf_ (int x) const final;
   Prob cdfDiscrete_ (int /*x*/) const final
-    { NOT_IMPLEMENTED; return NaN; }
+    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
   int randDiscrete_ () const final
-    { NOT_IMPLEMENTED; return -1; }
+    { throwf ("NOT_IMPLEMENTED"); /*return -1;*/ }
 };
 
 
@@ -2681,15 +2694,15 @@ public:
   Real stdLoBound () const final
     { return 1; }
   Real getMean () const final
-    { NOT_IMPLEMENTED; return NaN; }
+    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
   Real getVar () const final
-    { NOT_IMPLEMENTED; return NaN; }
+    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
 private:
   Prob pmf_ (int x) const final
     { return c * pow (x, - alpha); }
   Real logPmf_ (int x) const final;
   Prob cdfDiscrete_ (int /*x*/) const final
-    { NOT_IMPLEMENTED; return NaN; }
+    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
   int randDiscrete_ () const final;
 public:
 
@@ -2953,7 +2966,7 @@ public:
     
   virtual void setMeanVar (Real /*mean*/,
                            Real /*var*/) 
-    { NOT_IMPLEMENTED; }
+    { throwf ("NOT_IMPLEMENTED"); }
 };
 
 

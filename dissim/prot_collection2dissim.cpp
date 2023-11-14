@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
@@ -44,6 +43,8 @@ using namespace DM_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 
