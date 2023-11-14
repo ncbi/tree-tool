@@ -6,7 +6,7 @@ if [ $# -ne 8 ]; then
   echo "Invokes GeneMark"
   echo "#1: eukaryotic genome name"
   echo "#2: eukaryotic DNA FASTA"
-  echo "#3: kingdom: fungi|viridiplantae|''"
+  echo "#3: kingdom: Fungi|Viridiplantae|''"
   echo "#4: universal HMM library (absolute path) or ''"
   echo "#5: Pfam HMM library (absolute path) or ''"
   echo "#6: use Pfam HMM cutoff (0/1)"
@@ -27,8 +27,8 @@ LOG=$8
 
 #set -x
 
-if [ $KINGDOM -a $KINGDOM != "fungi" -a $KINGDOM != "viridiplantae" ]; then
-  error "Unknown kingdom $KINGDOM"
+if [ $KINGDOM -a $KINGDOM != "Fungi" -a $KINGDOM != "Viridiplantae" ]; then
+  error "Unknown kingdom '$KINGDOM'"
 fi
 
 
@@ -53,7 +53,7 @@ if [ ! -e $ASM.prot ]; then
 
   # genemark.gtf
   FUNGUS_PAR=""
-  if [ $KINGDOM == "fungi" ]; then
+  if [ $KINGDOM == "Fungi" ]; then
     FUNGUS_PAR="--fungus"
   fi
   $THIS/../rm_all.sh data
@@ -99,7 +99,7 @@ if [ $PFAM ]; then
   gzip $ASM.HMM
 fi
 
-if [ $UNIV -a $KINGDOM != "viridiplantae" ]; then
+if [ $UNIV -a $KINGDOM != "Viridiplantae" ]; then
   section "prots2hmm_univ.sh"
   $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
 fi
