@@ -33,9 +33,10 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "tsv.hpp"
+
+#include "../common.inc"
 
 
 
