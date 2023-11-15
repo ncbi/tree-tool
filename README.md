@@ -11,7 +11,7 @@ General data analysis tools.
 ## [Documentation at Wiki](https://github.com/ncbi/tree-tool/wiki)
 
 
-## Theoretic papers
+## Theoretical papers
 
 [Building Large Phylogenetic Trees in Log-Linear Time](https://github.com/ncbi/tree-tool/blob/master/phylogeny/doc/inc_ls_dist_tree/inc_ls_dist_tree.pdf)
 
