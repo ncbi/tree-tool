@@ -33,11 +33,12 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "numeric.hpp"
 
 #include <iostream>
+
+#include "../common.inc"
 
 
 

@@ -33,10 +33,11 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "matrix.hpp"
 using namespace Common_sp;
+
+#include "../common.inc"
 
  
 
