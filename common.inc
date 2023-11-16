@@ -28,7 +28,7 @@
 *
 * File Description:
 *   Common macros
-*   To be included into .cpp-files
+*   To be included into .cpp-files AFTER all headers
 *
 */
 

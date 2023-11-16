@@ -1921,7 +1921,7 @@ public:
     {}
     // A desrtructor should be virtual to be automatically invoked by a descendant class destructor
   virtual Root* copy () const
-    { throwf ("Root::copy() is not implemented"); return nullptr; }
+    { throwf ("Root::copy() is not implemented"); /*return nullptr;*/ }
     // Return: the same type    
   virtual void qc () const
     {}
@@ -1942,7 +1942,7 @@ public:
     { throwf ("Root::saveXml() is not implemented"); }
   virtual Json* toJson (JsonContainer* /*parent_arg*/,
                         const string& /*name_arg*/) const
-    { throwf ("Root::toJson() is not implemented"); return nullptr; }
+    { throwf ("Root::toJson() is not implemented"); /*return nullptr;*/ }
 	virtual bool empty () const
 	  { return true; }
   virtual void clear ()
