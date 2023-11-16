@@ -33,9 +33,10 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "optim.hpp"
+
+#include "../common.inc"
 
 
 
