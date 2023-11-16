@@ -1368,18 +1368,14 @@ template <typename T/*:Attr*/>
     void qc () const
       { if (! qc_on)
           return;
-        if (P::empty ())
-          throwf ("P::empty()");
+        assert (! P::empty ());
         Set<const T*> attrSet;
         for (const T* attr : *this)
-        { if (! attr)
-            throwf ("!attr");
-          if (& attr->ds != & ds)
-            throwf ("& attr->ds != & ds for " + attr->name);
+        { assert (attr);
+          assert (& attr->ds == & ds);
           attrSet << attr;
         }
-        if (P::size () != attrSet. size ())
-          throwf ("P::size () != attrSet. size ()");
+        assert (P::size () == attrSet. size ());
       }
   
   
@@ -1399,10 +1395,8 @@ template <typename T/*:Attr*/>
   
     template <typename U/*:T*/>
       Space<T>& operator<< (const U* attr)
-        { if (! attr)
-            throwf ("!attr");
-          if  (& attr->ds != & ds)
-            throwf ("& attr->ds != & ds");
+        { assert (attr);
+          assert (& attr->ds == & ds);
         //if (name2attr (attr->name))
           //ERROR_MSG ("Attribute " + strQuote (attr->name) + " already exists in the space");
           P::operator<< (attr);  
@@ -1467,7 +1461,7 @@ template <typename T/*:Attr1*/>
 
     void printCsv (const Sample &sample,
                    ostream &os) const
-      { ASSERT (sample. ds == P::dsPtr ());
+      { assert (sample. ds == P::dsPtr ());
         const bool unitMult = P::ds. getUnitMult ();
         // Header
         os << "ObjName";
@@ -1484,15 +1478,14 @@ template <typename T/*:Attr1*/>
           for (const T* attr : *this)
             os << "," << (attr->isMissing (*it) ? missingStr : attr->value2str (*it)); 
           os << endl;
-          if (! os. good ())
-            throwf ("! os. good ()");
+          assert (os. good ());
         }
       }
     JsonArray* toJson (const Sample &sample,
                        JsonContainer* parent,
                        const string& name = noString) const 
       // Element format: {objName:S,mult:R,comment:S,attr:(<attrName>:S)*}
-      { ASSERT (sample. ds == P::dsPtr ());
+      { assert (sample. ds == P::dsPtr ());
         const bool unitMult = P::ds. getUnitMult ();
         const bool commented = P::ds. objCommented ();
         auto* jObjs = new JsonArray (parent, name);
@@ -1511,15 +1504,14 @@ template <typename T/*:Attr1*/>
               j = new JsonNull (jAttr, attr->name);
             else
               j = attr->value2json (jAttr, *it); 
-            if (! j)
-              throwf ("!j");
+            assert (j);
           }
         }
         return jObjs;
       }
 
     Space1<NumAttr1> toNumAttr1 (Dataset &ds_arg) const
-      { ASSERT (P::dsPtr () == & ds_arg);
+      { assert (P::dsPtr () == & ds_arg);
         Space1<NumAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
         { const Vector<NumAttr1*> vec (attr->toNumAttr1 (ds_arg));
@@ -1530,8 +1522,8 @@ template <typename T/*:Attr1*/>
       }
     Space1<RealAttr1> standardize (const Sample &sample,
                                    Dataset &ds_arg) const
-      { ASSERT (P::dsPtr () == sample. ds);
-        ASSERT (P::dsPtr () == & ds_arg);
+      { assert (P::dsPtr () == sample. ds);
+        assert (P::dsPtr () == & ds_arg);
         Space1<RealAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
           { const Vector<RealAttr1*> vec (attr->standardize (ds_arg, sample));
@@ -1541,7 +1533,7 @@ template <typename T/*:Attr1*/>
         return sp;
       }
     Space1<BoolAttr1> toBoolAttr1 (Dataset &ds_arg) const
-      { ASSERT (P::dsPtr () == & ds_arg);
+      { assert (P::dsPtr () == & ds_arg);
         Space1<BoolAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
           if (const BoolAttr1* boolAttr = attr->asBoolAttr1 ())
@@ -1643,8 +1635,7 @@ template <typename T/*:Attr1*/>
           return;
         Analysis1::qc();
         attr. qc ();
-        if (& attr. ds != sample. ds)
-          throwf ("& attr. ds != sample. ds");
+        assert (& attr. ds == sample. ds);
       }
 
 
@@ -1677,12 +1668,9 @@ template <typename T/*:Attr1*/>
           return;
         Analysis1::qc();
         space. qc ();
-        if (& space. ds != sample. ds)
-          throwf ("& space. ds != sample. ds");
-        if (space. size () != variable. size ())
-          throwf ("space. size () != variable. size ()");
-        if (space. empty ())
-          throwf ("space. empty ()");
+        assert (& space. ds == sample. ds);
+        assert (space. size () == variable. size ());
+        assert (! space. empty ());
       }
 
 
@@ -1716,8 +1704,7 @@ template <typename T/*:Attr1*/>
 	                           Matrix &attrSim,
 				                     bool vc) 
 	    // Input: vc: variance-covariance: allows missing values
-		  {	if (attrSim. rowsSize () != space. size ())
-		      throwf ("attrSim. rowsSize () != space. size ()");
+		  {	assert (attrSim. rowsSize () == space. size ());
 		    for (size_t attrNum1 = from; attrNum1 < to; attrNum1++)
 		    { const NumAttr1& a1 = * space [attrNum1];
 		  	  for (size_t attrNum2 = attrNum1; attrNum2 < space. size (); attrNum2)
@@ -1738,8 +1725,7 @@ template <typename T/*:Attr1*/>
 			          }
 		            s += x1 * x2 * mult;
 		          }
-		        if (isNan (s))
-		          throwf ("isNan (s)");
+		        assert (! isNan (s));
 		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0.0) : s);
 		      }
 		   	}
@@ -1748,8 +1734,7 @@ template <typename T/*:Attr1*/>
 	  void setAttrSim (Matrix &attrSim,
 	                   bool vc) const
 	    // Input: vc: variance-covariance: allows missing values
-		  {	if (attrSim. rowsSize () != space. size ())
-		      throwf ("attrSim. rowsSize () != space. size ()");
+		  {	assert (attrSim. rowsSize () == space. size ());
 		    Unverbose unv;
 		  #if 0
 		    // thread_num depends on sqrt(sample.mult.size ())
@@ -1777,8 +1762,7 @@ template <typename T/*:Attr1*/>
 			          }
 		            s += x1 * x2 * mult;
 		          }
-		        if (isNan (s))
-		          throwf ("isNan (s)");
+		        assert (! isNan (s));
 		        attrSim. putSymmetric (attrNum1, attrNum2, vc ? (mult_sum ? s / mult_sum : 0.0) : s);
 		      }
 		   	}
@@ -2627,9 +2611,9 @@ public:
 private:
   Real logPmf_ (int x) const final;
   Prob cdfDiscrete_ (int /*x*/) const final
-    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
+    { throwf ("NOT_IMPLEMENTED"); }
   int randDiscrete_ () const final
-    { throwf ("NOT_IMPLEMENTED"); /*return -1;*/ }
+    { throwf ("NOT_IMPLEMENTED"); }
 };
 
 
@@ -2694,15 +2678,15 @@ public:
   Real stdLoBound () const final
     { return 1; }
   Real getMean () const final
-    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
+    { throwf ("NOT_IMPLEMENTED"); }
   Real getVar () const final
-    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
+    { throwf ("NOT_IMPLEMENTED"); }
 private:
   Prob pmf_ (int x) const final
     { return c * pow (x, - alpha); }
   Real logPmf_ (int x) const final;
   Prob cdfDiscrete_ (int /*x*/) const final
-    { throwf ("NOT_IMPLEMENTED"); /*return NaN;*/ }
+    { throwf ("NOT_IMPLEMENTED"); }
   int randDiscrete_ () const final;
 public:
 
