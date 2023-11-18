@@ -120,7 +120,6 @@ struct ThisApplication : Application
 \"%<n>\" - subitem #n (1 <= n <= 9), \
 \"%{<n>}\" - subitem #n (n >= 10), \
 \"%h\" - item hash (0.." + to_string (hash_class_max - 1) + "), \
-\"%n\" - item number, \
 \"%q\" - single quote, \
 \"%Q\" - double quote, \
 \"%D\" - $, \
