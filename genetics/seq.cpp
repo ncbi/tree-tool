@@ -33,11 +33,12 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "seq.hpp"
 
 #include <cmath>
+
+#include "../common.inc"
 
 
 
