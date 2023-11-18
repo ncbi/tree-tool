@@ -33,10 +33,10 @@
    
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "gff.hpp"
 
+#include "../common.inc"
 
 
 
