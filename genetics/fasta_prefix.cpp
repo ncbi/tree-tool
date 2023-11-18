@@ -33,12 +33,13 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
 #include "seq.hpp"
 using namespace Seq_sp;
+
+#include "../common.inc"
 
 
 

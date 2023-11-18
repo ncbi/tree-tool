@@ -33,11 +33,12 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
 #include "genbank_text.hpp"
+
+#include "../common.inc"
 
 
 
