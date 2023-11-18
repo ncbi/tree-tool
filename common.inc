@@ -33,10 +33,6 @@
 */
 
 
-#ifndef COMMON_INC
-#define COMMON_INC
-
-
 #define FOR_START(type,i,start,end)  for (type i = (start); i < (end); i++)  
 #define FOR(type,i,end)  FOR_START (type, i, 0, (end))
 // Fast FOR: precomputed end
@@ -131,5 +127,3 @@
 #define STR(s)  #s
 
 
-
-#endif
