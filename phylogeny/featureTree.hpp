@@ -740,7 +740,7 @@ public:
       return a->better (b);
     }
   virtual bool better (const Change* /*other*/) const 
-    { NEVER_CALL; }
+    { throwf ("NEVER_CALL"); }
 };
 
 

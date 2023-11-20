@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 using namespace Common_sp;
@@ -42,6 +41,8 @@ using namespace DistTree_sp;
 #include "featureTree.hpp"
 using namespace FeatureTree_sp;
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 

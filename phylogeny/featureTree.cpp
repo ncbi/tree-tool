@@ -33,11 +33,12 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "featureTree.hpp"
 
 #include "../dm/optim.hpp"
+
+#include "../common.inc"
 
 
 

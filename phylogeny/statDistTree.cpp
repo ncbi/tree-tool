@@ -33,7 +33,6 @@
 
 
 #undef NDEBUG
-#include "../common.inc"
 
 #include "../common.hpp"
 #include "../graph.hpp"
@@ -43,6 +42,8 @@ using namespace DM_sp;
 #include "distTree.hpp"
 using namespace DistTree_sp;
 #include "../version.inc"
+
+#include "../common.inc"
 
 
 
