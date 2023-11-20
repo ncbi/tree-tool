@@ -16,6 +16,7 @@ all:	\
   distTree_new \
   distTree_refresh_dissim \
   dm2feature \
+	fasta2feature \
   feature2gain_loss \
 	makeDistTree \
 	makeDistTree-dev \
@@ -59,6 +60,12 @@ distTree_refresh_dissim.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp
 distTree_refresh_dissimOBJS=distTree_refresh_dissim.o $(DISTTREE_OBJ)
 distTree_refresh_dissim:	$(distTree_refresh_dissimOBJS)
 	$(CXX) -o $@ $(distTree_refresh_dissimOBJS) $(LIBS)
+	$(ECHO)
+
+fasta2feature.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+fasta2featureOBJS=fasta2feature.o $(SEQ_OBJ)
+fasta2feature:	$(fasta2featureOBJS)
+	$(CXX) -o $@ $(fasta2featureOBJS) $(LIBS) 
 	$(ECHO)
 
 feature2gain_loss.o:  $(COMMON_HPP) $(PHYL_DIR)/featureTree.hpp 

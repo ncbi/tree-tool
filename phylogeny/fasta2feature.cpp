@@ -1,4 +1,4 @@
-// fasta2features.cpp
+// fasta2feature.cpp
 
 /*===========================================================================
 *
@@ -36,7 +36,7 @@
 
 #include "../common.hpp"
 using namespace Common_sp;
-#include "seq.hpp"
+#include "../genetics/seq.hpp"
 using namespace Seq_sp;
 #include "../version.inc"
 
