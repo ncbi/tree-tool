@@ -3078,12 +3078,12 @@ template <typename T>
 	              T el)
     { if (from == to)
     	  return;
-    	IMPLY (from, ! from->universal);
-    	IMPLY (to,   ! to  ->universal);
+    	assert (! from || ! from->universal);
+    	assert (! to   || ! to  ->universal);
     	if (from)
-    	  { EXEC_ASSERT (from->erase (el) == 1); }
+    	  from->erase (el); 
     	if (to)
-    	  { EXEC_ASSERT (to->insert (el). second); }
+    	  to->insert (el);
     }
 
 
