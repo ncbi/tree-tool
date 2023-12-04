@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Phenotypic quality of a distance tree, find root"
   echo "#1: distance tree"
-  echo "#2: target list of objects (superset) | '' - all"
+  echo "#2: target list of objects | '' - all"
   echo "#3: phen/"
   echo "#4: large directories (0/1)"
   echo "#5: find root, save RAM (0/1)"
