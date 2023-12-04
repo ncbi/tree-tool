@@ -20,6 +20,7 @@ ALL=	\
   tsv2triple \
   tsv_aggr_comp \
   tsv_cat \
+  tsv_cluster \
   tsv_comp \
   tsv_group \
   tsv_join \
@@ -81,6 +82,12 @@ tsv_cat.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
 tsv_catOBJS=tsv_cat.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 tsv_cat:	$(tsv_catOBJS)
 	$(CXX) -o $@ $(tsv_catOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_cluster.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(DISSIM_DIR)/evolution.hpp
+tsv_clusterOBJS=tsv_cluster.o $(TSV_DIR)/tsv.o $(DISSIM_DIR)/evolution.o $(DM_OBJ)
+tsv_cluster:	$(tsv_clusterOBJS)
+	$(CXX) -o $@ $(tsv_clusterOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_comp.o:  $(COMMON_HPP) 
