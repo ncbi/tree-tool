@@ -72,8 +72,8 @@ struct ThisApplication : Application
 	  addKey ("arc_length", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("dist_pairs", "Output file with all or <dist_request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
 	  addKey ("height", "Output file with interior node average heights");
-	  addKey ("closest_num", "Number of closest leaves to print", "1");
 	  addKey ("closest_out", "Output file with closest leaves: <leaf> <neighbor1> <dist1> <neighbor2> <dist2> <neighbor3> <dist3> ...");
+	  addKey ("closest_num", "Number of closest leaves to print", "1");
 	}
 
 
@@ -89,8 +89,8 @@ struct ThisApplication : Application
 		const string arc_length      = getArg ("arc_length");
 		const string dist_pairs      = getArg ("dist_pairs");
 		const string heightFName     = getArg ("height");
-		const size_t closest_num     = str2<size_t> (getArg ("closest_num"));
 		const string closestFName    = getArg ("closest_out");
+		const size_t closest_num     = str2<size_t> (getArg ("closest_num"));
 		QC_ASSERT (noise >= 0.0); 
 		QC_IMPLY (noise, ! distDmFName. empty ());
 		QC_IMPLY (sqrtP, ! distDmFName. empty ());
@@ -302,7 +302,7 @@ struct ThisApplication : Application
         if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
         {
           Vector<Tree::TreeNode::NodeDist> neighbors;  neighbors. reserve (closest_num + 1);
-          var_cast (leaf) -> getClosestLeaves (closest_num, neighbors);
+          leaf->getClosestLeaves (closest_num, neighbors);
           ASSERT (neighbors. size () == closest_num);
           f << leaf->name;
           for (const Tree::TreeNode::NodeDist& nd : neighbors)
