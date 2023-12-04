@@ -1734,7 +1734,7 @@ public:
       // "Base"
     Real anchorLen {NaN};
       // >= anchor->len
-      // Distance to the previous anchor
+      // Distance to the previous anchor, which may be not anchor->getParent()
     Real leafLen {NaN};
     Real arcLen {NaN};
       // From anchor to leaf->getParent()
@@ -1871,13 +1871,9 @@ public:
   void qc () const override;
 
 
-  void saveResult (const string &fName) const
-    { if (fName. empty ())
-        return;
-      OFStream f (fName);
-      for (const Leaf2dissim& ld : leaf2dissims)
-        f << ld. leaf->name << '\t' << ld. dissim << '\t' << ld. getDistance (location) << endl;
-    }
+  void saveResult (const string &fName,
+                   size_t closest_num) const;
+    // Print tab-delimited <closest_num> rows: <Leaf::name> <distance from location>
 };
 
 

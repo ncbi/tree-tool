@@ -10012,9 +10012,55 @@ void NewLeaf::qc () const
 
 
 
+void NewLeaf::saveResult (const string &fName,
+                          size_t closest_num) const
+{ 
+  if (fName. empty ())
+    return;
+  if (! closest_num)
+    return;
+    
+  OFStream f (fName);  
+
+  Vector<Tree::TreeNode::NodeDist> neighbors;  neighbors. reserve (closest_num + 1);
+  location. anchor->getClosestLeaves (closest_num, neighbors);
+  if (const Leaf* leaf = static_cast <const DTNode*> (location. anchor) -> asLeaf ())
+    neighbors << Tree::TreeNode::NodeDist {leaf, 0.0};
+  for (Tree::TreeNode::NodeDist& nd : neighbors)
+  {
+    ASSERT (nd. node);
+    nd. dist += location. leafLen + location. arcLen;
+  }
+  if (const DTNode* parent = static_cast <const DTNode*> (location. anchor->getParent ()))
+  {
+    Vector<Tree::TreeNode::NodeDist> neighbors2;  neighbors2. reserve (closest_num + 1);
+    parent->getClosestLeaves (closest_num, neighbors2);
+    location. anchor->getClosestLeaves (closest_num, neighbors2);
+    for (Tree::TreeNode::NodeDist& nd : neighbors2)
+    {
+      ASSERT (nd. node);
+      ASSERT (location. anchorLen >= location. arcLen);
+      nd. dist += location. leafLen + (location. anchorLen - location. arcLen);
+    }
+    neighbors << neighbors2;
+  }
+  neighbors. sort (Tree::TreeNode::NodeDist::distLess);
+  Set<const Tree::TreeNode*> nodes;
+  for (const Tree::TreeNode::NodeDist& nd : neighbors)
+  {
+    ASSERT (nd. node);
+    if (nodes. contains (nd. node))
+      continue;
+    f << nd. node->getName () << '\t' << nd. dist << endl;
+    nodes << nd. node;
+    if (nodes. size () == closest_num)
+      break;
+  }
 }
 
 
+
+}
 
 
 
