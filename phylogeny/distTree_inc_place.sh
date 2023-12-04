@@ -37,6 +37,7 @@ $INC/object2closest.sh $NAME $QUERY | grep -vw "^${NAME}$" > $TMP.closest || tru
 sed 's/$/\t'$NAME'/1' $TMP.closest > $TMP.request
 
 section "Fitting to the tree"
+# $TMP.{leaf,closest}
 cp /dev/null $TMP.dissim
 echo "FAIL" > $TMP.leaf
 VARIANCE=`cat $INC/variance`
@@ -52,29 +53,39 @@ while [ -s $TMP.request ]; do
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
-  $THIS/distTree_new  $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -result $TMP.res
+  $THIS/distTree_new  $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -closest $TMP.closest  -closest_num 100  
+    # PAR
 done
 
 section "Placement"
 cut -f 1,2,3,4 $TMP.leaf > $RES.placement
 cat $RES.placement
 
-if [ -s $TMP.res ]; then
-  section "Statistical report"
-  sort -k3,3g $TMP.res > $TMP.sort
-  head -100 $TMP.sort > $TMP.res  
-  mkdir $TMP.report.dir
-  $THIS/../trav $TMP.res "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%n"  -threads 15  
-  $THIS/../trav $TMP.res "cat $TMP.report.dir/%n" -noprogress > $TMP.report
-  echo -e "#Object\tObserved dissimilarity\tTree distance\tIdentical proteins\tUniversal proteins compared\tAAI,%" > $TMP.neighbors.tsv
-  paste $TMP.res $TMP.report >> $TMP.neighbors.tsv
-  if [ -e $INC/../Metadata.tsv ]; then
-   #cut -f 1,2,3,5,6,9 $INC/../Metadata.tsv > $TMP.meta
-    $THIS/../tsv/tsv_join $TMP.neighbors.tsv $INC/../Metadata.tsv -left 1> $RES.neighbors.tsv 2> /dev/null
-  else
-    cp $TMP.neighbors.tsv $RES.neighbors.tsv
-  fi  
-fi
+
+section "Statistical report"
+
+echo -e "#Object\tTree distance" >  $TMP.closest.tsv
+cat $TMP.closest                 >> $TMP.closest.tsv
+
+cut -f 1 $TMP.closest | sed 's/$/\t'$NAME'/1' > $TMP.request
+wc -l $TMP.request
+$INC/pairs2dissim.sh $TMP.request $QUERY/$NAME $TMP.dissim-closest $TMP.log  &> /dev/null
+echo -e "#Object\tObserved dissimilarity" >  $TMP.neighbors.tsv
+cut -f 1,3 $TMP.dissim-closest            >> $TMP.neighbors.tsv
+
+mkdir $TMP.report.dir
+$THIS/../trav $TMP.dissim-closest "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%1"  -threads 15  
+echo -e "#Object\tIdentical proteins\tUniversal proteins compared\tAAI,%"                 >  $TMP.report.tsv
+$THIS/../trav $TMP.dissim-closest "cat $TMP.report.dir/%1 | sed 's/^/%1\t/1'" -noprogress >> $TMP.report.tsv
+
+$THIS/../tsv/tsv_expand.sh $TMP.neighbors.tsv $TMP.closest.tsv -left &> /dev/null
+$THIS/../tsv/tsv_expand.sh $TMP.neighbors.tsv $TMP.report.tsv  -left &> /dev/null
+if [ -e $INC/../Metadata.tsv ]; then
+  cut -f 1,2,3,5,6,9 $INC/../Metadata.tsv > $TMP.meta
+  $THIS/../tsv/tsv_expand.sh $TMP.neighbors.tsv $TMP.meta -left &> /dev/null
+fi  
+
+$THIS/../tsv/tsv_sort.sh $TMP.neighbors.tsv '-k2,2g -k1,1' > $RES.neighbors.tsv
 
 
 rm -fr $TMP*
