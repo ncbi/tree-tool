@@ -1734,7 +1734,7 @@ public:
       // "Base"
     Real anchorLen {NaN};
       // >= anchor->len
-      // Distance to the previous anchor, which may be not anchor->getParent()
+      // Distance to the previous anchor - an ancestor of anchor
     Real leafLen {NaN};
     Real arcLen {NaN};
       // From anchor to leaf->getParent()
