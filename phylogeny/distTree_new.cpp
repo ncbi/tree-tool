@@ -73,7 +73,8 @@ Update: <incremental distance tree directory>/search/")
 		  // Output
 		  addKey ("request", "Output file of the format: <obj1> <obj2>");
 		  addKey ("leaf", "Output file of the format: <obj_new> <obj1>-<obj2> <leaf_len> <arc_len>");
-		  addKey ("result", "Output file with dissimilarity-distance pairs");
+		  addKey ("closest", "Output file with objects with closest distances");
+  	  addKey ("closest_num", "Number of closest objects to print in <closest>", "1");
 		}
 	
 	
@@ -94,7 +95,8 @@ Update: <incremental distance tree directory>/search/")
 	  const string dissimFName   = getArg ("dissim");
 	  const string requestFName  = getArg ("request");
 	  const string leafFName     = getArg ("leaf");
-	  const string resultFName   = getArg ("result");
+	  const string closestFName   = getArg ("closest");
+		const size_t closest_num   = str2<size_t> (getArg ("closest_num"));
 	   
 	   
     if (name. empty () && ! isDirName (dataDir))
@@ -110,6 +112,8 @@ Update: <incremental distance tree directory>/search/")
     QC_ASSERT (name. empty () == dissimFName.  empty ());
     QC_ASSERT (name. empty () == requestFName. empty ());
     QC_ASSERT (name. empty () == leafFName.    empty ());
+    QC_ASSERT (closest_num > 0);
+    QC_IMPLY (closest_num != 1, ! closestFName. empty ());
 
 
     if (verbose ())
@@ -145,7 +149,7 @@ Update: <incremental distance tree directory>/search/")
     {
       const NewLeaf nl (*tree, name, dissimFName, leafFName, requestFName, init);
       nl. qc ();
-      nl. saveResult (resultFName);
+      nl. saveResult (closestFName, closest_num);
     }
 	}
 };
