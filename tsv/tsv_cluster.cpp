@@ -36,6 +36,7 @@
 #include "../common.hpp"
 #include "tsv.hpp"
 using namespace Common_sp;
+#include "../dm/numeric.hpp"
 #include "../dissim/evolution.hpp"
 #include "../version.inc"
 
@@ -67,8 +68,9 @@ struct ThisApplication : Application
     : Application ("Cluster a text column of a tsv-table base on k-mers. Add numeric column <col>" + suf)
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("in", "tsv-table");
   	  addPositional ("col", "Text column");
+  	  addPositional ("out", "Output tsv-file");
   	  addKey ("k", "K-mer size", "20");
   	  addKey ("dissim", "Max. dissimlarity for single-linkage clustering", "1.0");  
   	}
@@ -77,13 +79,14 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string fName      =               getArg ("table");
+		const string inFName      =               getArg ("in");
 		const string colName    =               getArg ("col");
+		const string outFName   =               getArg ("out");
 		const size_t k          = str2<size_t> (getArg ("k"));		
 	  const Real   dissim_max = str2real     (getArg ("dissim"));	
 	  
 
-    TextTable tt (fName);
+    TextTable tt (inFName);
     tt. qc ();
     
     const TextTable::ColNum col = tt. col2num (colName);
@@ -117,26 +120,41 @@ struct ThisApplication : Application
     ASSERT (clusters. size () == tt. rows. size ());
     
     {
-      Progress prog (clusters. size () * (clusters. size () - 1) / 2, 1000);  // PAR
-      for (const auto& it1 : clusters)
-        for (const auto& it2 : clusters)
-          if (& it1 == & it2)
-            break;
-          else
-          {
-            prog ();
-            ASSERT (it1->elem > it2->elem);
-            const Real dissim = DM_sp::intersection2dissim ( (Real) it1->keys. size ()
-                                                           , (Real) it2->keys. size ()
-                                                           , (Real) it1->keys. intersectSize (it2->keys)
-                                                           , 1.0
-                                                           , 0.5
-                                                           , true
-                                                           );
-          //cout << dissim << endl;  // to determine dissim_max ??
-            if (dissim <= dissim_max)
-              var_cast (it1) -> merge (var_cast (*it2));
-          }
+      Real dissim_above = inf;
+      Real dissim_below = 0.0;
+      {
+        Progress prog (clusters. size () * (clusters. size () - 1) / 2, 1000);  // PAR
+        for (const auto& it1 : clusters)
+          for (const auto& it2 : clusters)
+            if (& it1 == & it2)
+              break;
+            else
+            {
+              prog ();
+              ASSERT (it1->elem > it2->elem);
+              const Real dissim = DM_sp::intersection2dissim ( (Real) it1->keys. size ()
+                                                             , (Real) it2->keys. size ()
+                                                             , (Real) it1->keys. intersectSize (it2->keys)
+                                                             , 1.0
+                                                             , 0.5
+                                                             , true
+                                                             );
+              if (! isNan (dissim))
+              {
+                ASSERT (dissim >= 0.0);              
+              //cout << dissim << endl;  // to determine dissim_max ??
+                if (dissim <= dissim_max)
+                {
+                  var_cast (it1) -> merge (var_cast (*it2));
+                  maximize (dissim_below, dissim);
+                }
+                else
+                  minimize (dissim_above, dissim);
+              }
+            }
+      }
+      cout << "dissim_below_max" << '\t' << dissim_below << endl;
+      cout << "dissim_above_min" << '\t' << dissim_above << endl;
     }
     
     FFOR (size_t, i, tt. rows. size ())
@@ -146,7 +164,10 @@ struct ThisApplication : Application
     }
     tt. qc ();
         
-    tt. saveText (cout);  
+    {
+      OFStream f (outFName);
+      tt. saveText (f);  
+    }
 	}
 };
 
