@@ -29,8 +29,7 @@ ALL=	\
   setRandOrd \
   splitList \
   str2hash \
-  trav \
-  unCgi
+  trav
 
 ifdef AT_NCBI
   all:	$(ALL) \
@@ -163,11 +162,5 @@ trav.o:  $(COMMON_HPP)
 travOBJS=trav.o $(CPP_DIR)/common.o
 trav:	$(travOBJS)
 	$(CXX) -o $@ $(travOBJS) $(LIBS)
-	$(ECHO)
-
-unCgi.o:  $(COMMON_HPP)  
-unCgiOBJS=unCgi.o $(CPP_DIR)/common.o
-unCgi:	$(unCgiOBJS)
-	$(CXX) -o $@ $(unCgiOBJS) $(LIBS)
 	$(ECHO)
 
