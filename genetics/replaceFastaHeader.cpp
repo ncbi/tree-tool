@@ -68,7 +68,7 @@ struct ThisApplication : Application
 	  const bool aa             = getFlag ("aa");
 	  
 
-    map<string,string> id2header;
+    KeyValue id2header;
     {
       LineInput f (headersFName);
       Istringstream iss;

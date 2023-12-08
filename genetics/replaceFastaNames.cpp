@@ -68,7 +68,7 @@ struct ThisApplication : Application
 	  const bool aa          = getFlag ("aa");
 	  
 
-    map<string,string> old2new;
+    KeyValue old2new;
     {
       PairFile f (pairFName, true, false);
       while (f. next ())
