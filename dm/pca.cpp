@@ -232,7 +232,7 @@ struct ThisApplication : Application
         cl. saveText (cout);
       cout << "# Clusters = " << cl. mixt. components. size () << endl;
       cout << "Entropy = " << cl. mixt. getEntropy_est () << endl;
-      JsonArray* jClusts = jRoot ? new JsonArray (jRoot, "clusters") : nullptr;
+      JsonArray* jClusts = jRoot ? new JsonArray (jRoot. get (), "clusters") : nullptr;
       cl. processSubclusters (clusterAttrName, mergeClose, attrsOrig, jClusts, attrPValue, clusteringDir, getFileName (inFName), ds, sp1);
     }
 
@@ -254,7 +254,7 @@ struct ThisApplication : Application
     	dsMds. saveText (osMds);
     	if (jRoot)
     	{
-        auto jMds = new JsonMap (jRoot, "attr_mds");
+        auto jMds = new JsonMap (jRoot. get (), "attr_mds");
         const Sample smMds (dsMds);
         const Space1<RealAttr1> spMds (dsMds, true);
         spMds. toJson (smMds, jMds, "objs");
@@ -282,14 +282,14 @@ struct ThisApplication : Application
 
     if (jRoot)
     {
-      new JsonDouble (outlierEValue, eValueDecimals, jRoot, "outlierEValue");
-      sp1. toJson (sm_orig, jRoot, "objs");      
+      new JsonDouble (outlierEValue, eValueDecimals, jRoot. get (), "outlierEValue");
+      sp1. toJson (sm_orig, jRoot. get (), "objs");      
         // Attributes: {PC_<N>,} <processSubclusters()>, outlierScore
-      pc. eigens. toJson (jRoot, "eigens");
+      pc. eigens. toJson (jRoot. get (), "eigens");
        // Correlations of original attributes with PC's ??
-      elr. toJson (jRoot, "eigenValueLR");  
-      new JsonString (classAttrName, jRoot, "class");  // May be ""
-      ds. comments2Json (jRoot, "comments");
+      elr. toJson (jRoot. get (), "eigenValueLR");  
+      new JsonString (classAttrName, jRoot. get (), "class");  // May be ""
+      ds. comments2Json (jRoot. get (), "comments");
     }    
     
     

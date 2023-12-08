@@ -188,7 +188,7 @@ struct ThisApplication : Application
       throw runtime_error ("Unknown format " + format);
       
     if (jRoot)
-      tree. toJson (jRoot, "nodes");
+      tree. toJson (jRoot. get (), "nodes");
 	}
 };
 

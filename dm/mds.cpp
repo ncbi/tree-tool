@@ -301,7 +301,7 @@ struct ThisApplication : Application
         cl. saveText (cout);
       cout << "# Clusters = " << cl. mixt. components. size () << endl;
       cout << "Entropy = " << cl. mixt. getEntropy_est () << endl;
-      JsonArray* jClusts = jRoot ? new JsonArray (jRoot, "clusters") : nullptr;
+      JsonArray* jClusts = jRoot ? new JsonArray (jRoot. get (), "clusters") : nullptr;
       cl. processSubclusters (clusterAttrName, mergeClose, attrsOrig, jClusts, attrPValue, clusteringDir, getFileName (fName), ds, sp1);
     }
     
@@ -318,19 +318,19 @@ struct ThisApplication : Application
     
     if (jRoot)
     {
-      sp1. toJson (sm, jRoot, "objs");
+      sp1. toJson (sm, jRoot. get (), "objs");
         // Attributes: all original [with <classAttrName>] (except <attrName>), {PC_<N>,} <processSubclusters()>
-      mds. eigens. toJson (jRoot, "eigens");
-      elr. toJson (jRoot, "eigenValueLR");
+      mds. eigens. toJson (jRoot. get (), "eigens");
+      elr. toJson (jRoot. get (), "eigenValueLR");
 
       if (! attrName. empty ())
       {
-        new JsonString (attrName, jRoot, "distAttr");  
-        new JsonInt ((int) attrType, jRoot, "distType");  
+        new JsonString (attrName, jRoot. get (), "distAttr");  
+        new JsonInt ((int) attrType, jRoot. get (), "distType");  
       }
 
-      new JsonString (classAttrName, jRoot, "class");  // May be ""
-      ds. comments2Json (jRoot, "comments");
+      new JsonString (classAttrName, jRoot. get (), "class");  // May be ""
+      ds. comments2Json (jRoot. get (), "comments");
     }
     
     if (! jRoot || verbose ())
