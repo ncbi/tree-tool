@@ -74,7 +74,6 @@
 #define ERROR_MSG(msg)                     \
   { if (! std::uncaught_exceptions ())     \
       throw runtime_error (std::string ("\"" __FILE__ "\", line ") + to_string (__LINE__) + ", in " + (FUNC) + (msg));  \
-    else {}                                \
     exit (1);                              \
   }
 #define ERROR            ERROR_MSG ("ERROR")
@@ -82,7 +81,7 @@
 #define NEVER_CALL       ERROR_MSG ("NEVER CALL")
 
 
-#define QC_ASSERT(cond)  if (! (cond)) ERROR_MSG (#cond) else {}   
+#define QC_ASSERT(cond)  { if (! (cond)) ERROR_MSG (#cond) }
 
 
 // Logic errors
