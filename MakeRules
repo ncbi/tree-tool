@@ -120,6 +120,11 @@ $(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/nume
 ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
 
 
+WEB_DIR=$(CPP_DIR)/web
+$(WEB_DIR)/cgi.o: $(WEB_DIR)/cgi.hpp $(COMMON_HPP)
+WEB_OBJ = $(WEB_DIR)/cgi.o $(CPP_DIR)/common.o 
+WEB = $(WEB_DIR)/cgi $(COMMON)
+
 
 ifdef AT_NCBI
   AMRFINDER_DIR=$(CODE_DIR)/amrfinder
