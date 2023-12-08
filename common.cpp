@@ -232,11 +232,10 @@ namespace
 	
 	// time ??
 #ifndef _MSC_VER
-	const char* hostname = getenv ("HOSTNAME");
-//const char* shell    = getenv ("SHELL");
-	const char* shell    = getenv ("SHELL");	
-	const char* pwd      = getenv ("PWD");
-	const char* path     = getenv ("PATH");
+	const string hostname (getEnv ("HOSTNAME"));
+	const string shell    (getEnv ("SHELL"));	
+	const string pwd      (getEnv ("PWD"));
+	const string path     (getEnv ("PATH"));
 #endif
   if (contains (msg, error_caption))  // msg already is the result of errorExit()
     *os << endl << msg << endl;
@@ -315,10 +314,6 @@ string getStack ()
 
 [[noreturn]] void throwf (const string &s)  
 { 
-#if 0
-  if (cxml)
-    cxml->print (string (error_caption) + ": " + s);
-#endif
   throw logic_error (s + "\nStack:\n" + getStack ()); 
 }
 
@@ -346,7 +341,7 @@ bool isRedirected (const ostream &os)
 
 void beep ()
 { 
-  if (string (getenv ("SHLVL")) != "1")
+  if (getEnv ("SHLVL") != "1")
     return;
 	constexpr char c = '\x07';
 	if (! isRedirected (cerr))
@@ -1615,7 +1610,7 @@ string which (const string &progName)
 {
   ASSERT (! progName. empty ());
 
-  const List<string> paths (str2list (getenv ("PATH"), ':'));
+  const List<string> paths (str2list (getEnv ("PATH"), ':'));
   for (const string& path : paths)
     if (   ! path. empty () 
         && fileExists (path + "/" + progName)
@@ -2840,11 +2835,34 @@ Json::Json (JsonContainer* parent,
   else if (const JsonMap* jMap = parent->asJsonMap ())
   {
     ASSERT (! name. empty ());  
-    ASSERT (! contains (jMap->data, name));
+    if (contains (jMap->data, name))
+      throw runtime_error (FUNC "Duplicate name in JSON map: " + strQuote (name));
     var_cast (jMap) -> data [name] = this;
   }
   // throw() in a child constructor will invoke terminate() if an ancestor is JsonArray or JsonMap
 }
+
+
+
+string Json::toStr (const string& s)
+{ 
+  if (isNatural (s))
+    return s;
+    
+  // https://www.json.org/json-en.html
+  string res ("\"");
+  for (const char c : s)
+    switch (c)
+    {
+      case '\"': res += "\\\""; break;
+      case '\\': res += "\\\\"; break;
+      case '\n': res += "\\n"; break;
+      case '\r': res += "\\t"; break;
+      case '\t': res += "\\t"; break;
+      default:   res += c;
+    }
+  return res + "\""; 
+} 
 
 
 
@@ -3034,7 +3052,7 @@ void JsonArray::saveText (ostream& os) const
 JsonMap::JsonMap ()
 {
   ASSERT (! jRoot);
-  jRoot = this;
+  jRoot. reset (this);
 }
 
 
@@ -3110,7 +3128,7 @@ void JsonMap::saveText (ostream& os) const
 
 
 
-JsonMap* jRoot = nullptr;
+unique_ptr<JsonMap> jRoot;
 
 
 
@@ -3941,8 +3959,7 @@ int Application::run (int argc,
   	  ASSERT (jRoot);
   		OFStream f (jsonFName);
       jRoot->saveText (f);
-      delete jRoot;
-      jRoot = nullptr;
+      jRoot. reset ();
     }
 	}
 	catch (const std::exception &e) 
@@ -3975,10 +3992,11 @@ void ShellApplication::initEnvironment ()
   // tmp
   if (useTmp)
   {
-    if (const char* s = getenv ("TMPDIR"))
-      tmp = std::move (string (s));
-    else
+    string s (getEnv ("TMPDIR"));
+    if (s. empty ())
       tmp = "/tmp";
+    else
+      tmp = std::move (s);
   }
 
   // execDir, programName

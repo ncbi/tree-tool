@@ -449,6 +449,20 @@ template <typename T /*container*/>
 
 
 
+// KeyValue
+
+typedef  map<string/*key*/,string/*value*/>  KeyValue;
+
+inline string find (const KeyValue& kv,
+                    const string& key)
+  { const auto& it = kv. find (key);
+    if (it == kv. end ())
+      throw runtime_error ("Key \"" + key + "\" is not found");
+    return it->second;
+  }
+
+
+
 // hash
 
 extern hash<string> str_hash;
@@ -572,6 +586,14 @@ inline const char* nvl (const char* s,
 
 extern const string noString;
 
+#ifndef _MSC_VER
+  inline string getEnv (const string& name)
+    { if (const char* p = getenv (name. c_str ()))
+        return p;
+      return noString;
+    }
+#endif
+  
 inline string ifS (bool cond,
                    const string &s)
   { return cond ? s : noString; }
@@ -3900,6 +3922,10 @@ struct JsonMap;
   
 
 
+extern unique_ptr<JsonMap> jRoot;
+
+
+
 struct Json : Root, Nocopy  // Heaponly
 {
 protected:
@@ -3926,8 +3952,7 @@ public:
     { return nullptr; }  
 
 protected:
-  static string toStr (const string& s)
-    { return isNatural (s) ? s : ("'" + to_c (s) + "'"); } 
+  static string toStr (const string& s);
   static void parse (CharInput &in,
                      const Token& firstToken,
                      JsonContainer* parent,
@@ -4140,9 +4165,6 @@ public:
       return keys;
     }
 };
-
-
-extern JsonMap* jRoot;
 
 
 
@@ -4526,7 +4548,7 @@ public:
   string execDir;
     // Ends with '/'
     // Physically real directory of the software
-  mutable map<string,string> prog2dir;
+  mutable KeyValue prog2dir;
   
 
   ShellApplication (const string &description_arg,
