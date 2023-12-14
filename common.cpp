@@ -594,6 +594,17 @@ bool trimTailAt (string &s,
 
 
 
+void commaize (string &s)
+{
+  trim (s);
+  replace (s, '\t', ' ');
+  replace (s, ',', ' ');
+  replaceStr (s, "  ", " ");
+  replace (s, ' ', ',');
+}
+
+
+
 string pad (const string &s,
             size_t size,
             ebool right)
@@ -846,11 +857,11 @@ void replace (string &s,
 
 
 void replace (string &s,
-              const string &fromChars,
+              const string &fromAnyChars,
               char to)
 {
   for (char& c : s)
-	  if (charInSet (c, fromChars))
+	  if (charInSet (c, fromAnyChars))
 	  	c = to;
 }
 

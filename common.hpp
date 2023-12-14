@@ -680,6 +680,9 @@ bool trimTailAt (string &s,
   // Return: trimmed
   // Update: s
 
+void commaize (string &s);
+  // ' ' --> ','
+
 inline bool isLeftBlank (const string &s,
                          size_t spaces)
   { size_t i = 0;
@@ -775,7 +778,7 @@ void replace (string &s,
               char to);
   
 void replace (string &s,
-              const string &fromChars,
+              const string &fromAnyChars,
               char to);
   
 void replaceStr (string &s,
