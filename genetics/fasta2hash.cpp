@@ -102,7 +102,7 @@ struct ThisApplication : Application
     addKey ("kmer", "Cut the sequences into k-mers of this size. 0 - do not cut", "0");
 	  addKey ("prot_len_min", "Min. protein length of input sequences", "0");
 	  addKey ("hashes_max", "Max. number of hashes to print. 0 - print all", "0");
-	  addKey ("target_hashes", "Target hashes");
+	  addKey ("target_hashes", "List of target hashes");
 	  addFlag ("named", "Save hashes with sequence names");
 	  // Output
 	  addPositional ("out", "Output file of sorted unique hashes. Sorting is numeric.");
@@ -166,7 +166,9 @@ struct ThisApplication : Application
 
     Vector<size_t> hashes;  hashes. reserve (10000);   // PAR
     size_t sequences = 0;
-    unique_ptr<OFStream> protF (out_prot. empty () ? nullptr : new OFStream (out_prot));
+    unique_ptr<OFStream> protF;
+    if (! out_prot. empty ())
+      protF. reset (new OFStream (out_prot));
     {
 		  Multifasta f (in, ! cds);
 		  while (f. next ())
