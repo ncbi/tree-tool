@@ -155,7 +155,7 @@ KeyValue unCgi ()
       }
   }
   QC_ASSERT (! special);
-  ASSERT (! isKey);
+  IMPLY (! kv. empty (), ! isKey);
   if (! key. empty ())
   {
     if (contains (kv, key))
