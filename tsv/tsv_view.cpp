@@ -74,20 +74,22 @@ bool printString (string s,
   
   
   
-size_t printRow (bool is_header,
-                 const StringVector &values,
-                 size_t col_start,
-                 const Vector<TextTable::Header> &header,
-                 size_t screen_col_max,
-                 size_t rows_max)
-// Return: Last printed column
+void printRow (bool is_header,
+               const StringVector &values,
+               const Vector<bool> &active,
+               size_t col_start,
+               const Vector<TextTable::Header> &header,
+               size_t screen_col_max,
+               size_t rows_max)
 {
+  ASSERT (header. size () == active. size ());
   ASSERT (col_start + values. size () == header. size ());
 
   size_t x = 0;
-  size_t lastCol = col_start;
   FFOR_START (size_t, col, col_start, header. size ())
   {
+    if (! active [col])
+      continue;
     ASSERT (x <= screen_col_max);
     const TextTable::Header& h = header [col];
     string value (values [col - col_start]);
@@ -118,7 +120,6 @@ size_t printRow (bool is_header,
                             : efalse;
     if (! printString (pad (value, h. len_max, right), screen_col_max, x))
       break;
-    lastCol = col;
     if (col + 1 < header. size ())
       if (! printString ("  ", screen_col_max, x))
         break;
@@ -127,10 +128,50 @@ size_t printRow (bool is_header,
   FFOR_START (size_t, i, x, screen_col_max)
     addstr (" ");
   //clrtoeol ();  // may start erasing before the cursor
-  
-  return lastCol;
 }
 
+
+
+bool moveRight (size_t &curCol,
+                const Vector<bool> &active)
+// Return: success
+{
+  ASSERT (! active. empty ());
+  ASSERT (curCol < active. size ());
+  
+  const size_t curCol_old = curCol;
+  curCol++;
+  while (curCol < active. size () && ! active [curCol])
+    curCol++;
+  if (curCol < active. size ())
+    return true;
+    
+  curCol = curCol_old;
+  return false;
+}
+                
+
+
+bool moveLeft (size_t &curCol,
+               const Vector<bool> &active)
+// Return: success
+{
+  ASSERT (! active. empty ());
+  
+  const size_t curCol_old = curCol;
+  do 
+  { 
+    if (! curCol)
+    {
+      curCol = curCol_old;
+      return false;
+    }
+    curCol--; 
+  }
+  while (! active [curCol]);
+
+  return true;
+}
   
   
 struct ThisApplication : Application
@@ -169,8 +210,9 @@ struct ThisApplication : Application
     size_t topIndex = 0;
     size_t curIndex = topIndex;
     size_t curCol = 0;
-    size_t curLastCol = curCol;
+  //size_t curLastCol = curCol;
     string what;  // For search
+    Vector<bool> active (tt. header. size (), true);
   #ifdef NUM_P
     constexpr bool numP = true;
   #else
@@ -207,7 +249,7 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. header [j]. name;
-          curLastCol = printRow (true, values, curCol, tt. header, nc. col_max, tt. rows. size ());
+          /*curLastCol =*/ printRow (true, values, active, curCol, tt. header, nc. col_max, tt. rows. size ());
         }        
         if (numP)
         {
@@ -216,13 +258,13 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << to_string (j + 1);
-          printRow (true, values, curCol, tt. header, nc. col_max, tt. rows. size ()); 
+          printRow (true, values, active, curCol, tt. header, nc. col_max, tt. rows. size ()); 
         }
         move ((int) (fieldSize + headerSize), 0);
         {
           const Attr attr (A_BOLD);
           const Background bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          const string keyS ("Up  Down  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows"
+          const string keyS ("Up  Down  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows  -:remove column  +:restore all columns"
                            #ifndef NUM_P
                              "  #:numbers"
                            #endif
@@ -247,7 +289,7 @@ struct ThisApplication : Application
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. rows [i] [j];
-          printRow (false, values, curCol, tt. header, nc. col_max, tt. rows. size ());
+          printRow (false, values, active, curCol, tt. header, nc. col_max, tt. rows. size ());
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
@@ -333,15 +375,11 @@ struct ThisApplication : Application
             }
             break;
           case KEY_LEFT:
-            if (curCol)
-              curCol--;
-            else
+            if (! moveLeft (curCol, active))
               ::beep ();            
             break;
           case KEY_RIGHT:
-            if (curLastCol + 1 < tt. header. size ())
-              curCol++;
-            else
+            if (! moveRight (curCol, active))
               ::beep ();            
             break;
           case KEY_F(3):  // search Form ??!s
@@ -414,6 +452,27 @@ struct ThisApplication : Application
               FFOR (size_t, i, rowFound. size ())
                 rowFound [i] = ! on;
             }
+            break;
+          case '-':
+            {
+              size_t actives = 0;
+              for (const bool b : active)
+                if (b)
+                  actives++;
+              ASSERT (actives);
+              if (actives == 1)
+                ::beep ();
+              else
+              {
+                active [curCol] = false;
+                if (! moveRight (curCol, active))
+                  EXEC_ASSERT (moveLeft (curCol, active));
+              }
+            }
+            break;
+          case '+':
+            FFOR (size_t, i, active. size ())
+              active [i] = true;
             break;
         #ifndef NUM_P
           case '#':   
