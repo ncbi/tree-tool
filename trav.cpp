@@ -45,6 +45,7 @@ namespace
 {
   
   
+Vector<int> goodStatuses;
 unique_ptr<OFStream> errors;
 std::mutex errorsMtx;
 
@@ -57,20 +58,22 @@ void executeCommand (const string &cmd,
   ASSERT (! cmd. empty ());
   ASSERT (! item. empty ());
   
-  const int exitStatus = system (cmd. c_str ());
+  const int c = system (cmd. c_str ());
     // "set -o pipefail && ..." does not work with dash
-  if (exitStatus)
+  const int exitStatus = WEXITSTATUS (c);
+  if (exitStatus && ! goodStatuses. contains (exitStatus))
   {
+  //cout << endl << exitStatus << endl;
     if (errors. get ())
     {
-    //cout << exitStatus << endl;  // always 256 ??
+    //cout << c << endl;  // always 256 
       errorsMtx. lock ();
     	*errors << item << endl;
-      QC_ASSERT (exitStatus != -1);
+      QC_ASSERT (c != -1);
       errorsMtx. unlock ();
     }
     else
-      throw runtime_error ("item=" + item + "  status=" + to_string (WEXITSTATUS (exitStatus)) + "\n" + cmd);
+      throw runtime_error ("item=" + item + "  status=" + to_string (exitStatus) + "\n" + cmd);
   }
 #if 0
   if (isMainThread ())
@@ -135,22 +138,24 @@ struct ThisApplication : Application
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
   	  addFlag ("print", "Print command, not execute");
   	  addFlag ("tsv", "<items> is a tsv-file");
+  	  addKey ("good_exit_codes", "Comma-delimited list of allowed exit codes", "0");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string itemsName   = getArg ("items");
-		const string cmd_orig    = getArg ("command");
-		const bool   large       = getFlag ("large");
-		const string errorsFName = getArg ("errors");
-//const uint blank_lines     = str2<uint> (getArg ("blank_lines"));
-		const uint step          = str2<uint> (getArg ("step"));
-		const uint start         = str2<uint> (getArg ("start"));
-		const bool zero          = getFlag ("zero");
-		const bool printP        = getFlag ("print");
-		const bool tsv           = getFlag ("tsv");
+		const string itemsName     = getArg ("items");
+		const string cmd_orig      = getArg ("command");
+		const bool   large         = getFlag ("large");
+		const string errorsFName   = getArg ("errors");
+//const uint blank_lines       = str2<uint> (getArg ("blank_lines"));
+		const uint step            = str2<uint> (getArg ("step"));
+		const uint start           = str2<uint> (getArg ("start"));
+		const bool zero            = getFlag ("zero");
+		const bool printP          = getFlag ("print");
+		const bool tsv             = getFlag ("tsv");
+		      string goodStatusesS = getArg ("good_exit_codes");
 
     if (itemsName. empty ())
       throw runtime_error ("Empty items list name");
@@ -231,6 +236,17 @@ struct ThisApplication : Application
           subitemsP = true;
           break;
         }
+        
+      commaize (goodStatusesS);
+      while (! goodStatusesS. empty ())
+      {
+        const string s (findSplit (goodStatusesS, ','));
+        goodStatuses << str2<int> (s);
+      }
+    #if 0
+      for (const int i : goodStatuses)
+        cout << i << endl;  
+    #endif
 
   	  string item;
   	  Istringstream iss;
