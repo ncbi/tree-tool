@@ -165,6 +165,8 @@ struct ThisApplication : Application
       throw runtime_error ("-step must be >= 1");
   //if (blank_lines && step > 1)
     //throw runtime_error ("-blank_lines requires -step to be 1");
+    if (printP && goodStatusesS != "0") 
+      throw runtime_error ("-print ignores -good_exit_codes");
 
 
 	  Vector<Command> commands;  commands. reserve (100000);  // PAR
