@@ -1588,40 +1588,22 @@ inline void section (const string &title,
 template <typename T>
   inline void report (ostream &os,
 			                const string &name,
-			                T value)
+			                const T &value)
     {	os << name << '\t' << value << endl; }
   
 
 
-#if 0
-struct TabDel
-// Usage: {<<field;}* str();
+struct IFStream : ifstream
+// Text file
 {
-private:
-  ostringstream tabDel;
-  const ONumber on;
-public:
-  
-  explicit TabDel (streamsize precision = 6,
-	                 bool scientific = false)
-	  : on (tabDel, precision, scientific)
-	  {}
-    
-  template <typename T>
-    TabDel& operator<< (const T &field)
-      { if (tabDel. tellp ())  
-          tabDel << '\t'; 
-        tabDel << field; 
-        return *this; 
-      }    
-  string str () const
-    { return tabDel. str (); }
+  IFStream () = default;
+	explicit IFStream (const string &pathName);
 };
-#endif
 
 
 
 struct OFStream : ofstream
+// Text file
 {
 	OFStream () = default;
 	OFStream (const string &dirName,
@@ -3560,7 +3542,7 @@ public:
 struct Input : Root, Nocopy
 {
 protected:
-  ifstream ifs;
+  IFStream ifs;
   istream* is {nullptr};
     // ifs.is_open() => is = &ifs
 public:
@@ -3573,7 +3555,11 @@ public:
 
 protected:	
   Input (const string &fName,
-         uint displayPeriod);
+         uint displayPeriod)
+    : ifs (fName)
+    , is (& ifs)
+    , prog (0, displayPeriod)  
+    {}
   Input (istream &is_arg,
 	       uint displayPeriod);
 public:
@@ -4201,7 +4187,7 @@ struct FileItemGenerator : ItemGenerator, Nocopy
 {
 private:
   string fName;
-  ifstream f;
+  IFStream f;
 public:
   const bool tsv;
   

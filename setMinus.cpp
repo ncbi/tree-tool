@@ -175,8 +175,8 @@ Time: O(L1 " /*"ln(L1) "*/ "+ L2 " /*"ln(L2) "*/ ") where L1=|list1|, L2=|list2|
 		const bool subset      = getFlag ("subset");
 
 
-	  ifstream f1 (list1Name);
-	  ifstream f2 (list2Name);
+	  IFStream f1 (list1Name);
+	  IFStream f2 (list2Name);
 	  constexpr size_t buf_size = 16 * 1024 * 1024;  // PAR
 	  char* buf1 = new char [buf_size];  // Not delete'd
 	  char* buf2 = new char [buf_size];  // Not delete'd

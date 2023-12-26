@@ -145,8 +145,7 @@ struct ThisApplication : Application
     }
     // Reading frequencies
     {
-      ifstream f (tripletFName. c_str ());
-      ASSERT (f. good ());
+      IFStream f (tripletFName. c_str ());
       while (! f. eof ())
       {
       	if (f. peek () == '#')

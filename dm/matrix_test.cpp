@@ -248,9 +248,7 @@ struct ThisApplication : Application
 		
 		// MATLAB: ~1000 times faster (with 8 cores)
 		{
-			ifstream f ("data/masten_60.mat");
-			if (! f. good ())
-			  throw runtime_error ("File data/masten_60.mat does not exist");
+			IFStream f ("data/masten_60.mat");
 		  Matrix mat (false, f, true);
 		  mat. psd = true;
 		  mat. qc ();

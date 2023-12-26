@@ -3678,7 +3678,7 @@ DistTree::DistTree (const string &newickFName)
 : rand (seed_global)
 { 
   {
-    ifstream f (newickFName);
+    IFStream f (newickFName);
     const Newick newick (f, *this);
   }
   ASSERT (root);

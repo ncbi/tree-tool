@@ -67,7 +67,7 @@ struct ThisApplication : Application
 		
 		Vector<size_t> starts;
 		{
-		  ifstream f (fieldFName);
+		  IFStream f (fieldFName);
 		  for (;;)
 		  {
 		    size_t n = no_index;

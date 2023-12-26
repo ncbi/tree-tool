@@ -1111,9 +1111,7 @@ public:
   Dataset () = default;
   explicit Dataset (const string &fName)
     { const string fName_ (fName + dmSuff);
-      ifstream is (fName_);
-      if (! is. good ())
-        throw runtime_error ("Cannot open file " + strQuote (fName_));
+      IFStream is (fName_);
   	  char* buf = nullptr;
 		  if (! is. rdbuf () -> pubsetbuf (buf, 1000000))   // PAR
 		  	throw runtime_error ("Cannot allocate buffer to " + strQuote (fName_));

@@ -1114,7 +1114,7 @@ string list2str (const List<string> &strList,
 bool fileExists (const string &fName)
 { 
 #ifdef _MSC_VER
-  const ifstream f (fName. c_str ());
+  const IFStream f (fName. c_str ());
   bool ok = f. good ();
 #if 0
   if (ok)
@@ -2083,18 +2083,6 @@ void TextPos::dec ()
 
 // Input
 
-Input::Input (const string &fName,
-	            uint displayPeriod)
-: ifs (fName)
-, is (& ifs)
-, prog (0, displayPeriod)  
-{ 
-  if (! ifs. good ())
-    throw runtime_error ("Cannot open file " + shellQuote (fName));
-}
- 
-
-
 Input::Input (istream &is_arg,
 	            uint displayPeriod)
 : is (& is_arg)
@@ -2736,6 +2724,26 @@ char TokenInput::getNextChar ()
 
 
 
+// IFStream
+
+IFStream::IFStream (const string &pathName)
+{ 
+  switch (getFiletype (pathName, true))
+  {
+    case Filetype::none: throw runtime_error ("Cannot open " + shellQuote (pathName));
+    case Filetype::disk: throw runtime_error ("Cannot open a disk as a file: " + shellQuote (pathName));
+    case Filetype::dir:  throw runtime_error ("Cannot open a directory as a file: " + shellQuote (pathName));
+    case Filetype::link: ERROR; break;
+    default: break;
+  }
+	open (pathName);
+  if (! good ())
+    throw runtime_error ("Cannot open file " + shellQuote (pathName));
+}
+
+
+
+
 // OFStream
 
 void OFStream::open (const string &dirName,
@@ -2752,6 +2760,7 @@ void OFStream::open (const string &dirName,
 	if (! extension. empty ())
 		pathName += "." + extension;
 		
+  exceptions (std::ios::failbit | std::ios::badbit);  // In ifstream these flags collide with eofbit
 	ofstream::open (pathName);
 
 	if (! good ())
@@ -3975,7 +3984,7 @@ int Application::run (int argc,
 	}
 	catch (const std::exception &e) 
 	{ 
-	  errorExit (e. what ());
+	  errorExit ((e. what () + ifS (errno, string (": ") + strerror (errno))). c_str ());
   }
 
 
