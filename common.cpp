@@ -1229,7 +1229,7 @@ void createDirectory (const string &dirName)
 
 void removeDirectory (const string &dirName)
 {
-  DirItemGenerator dig (0, dirName, false);
+  RawDirItemGenerator dig (0, dirName, false);
   string item;
   while (dig. next (item))
   {
@@ -1260,7 +1260,7 @@ void removeDirectory (const string &dirName)
 void concatTextDir (const string &inDirName,
                    const string &outFName)
 {
-  DirItemGenerator dig (0, inDirName, false);
+  RawDirItemGenerator dig (0, inDirName, false);
   OFStream outF (outFName);
   string item;
   while (dig. next (item))
@@ -3204,9 +3204,9 @@ bool FileItemGenerator::next (string &item)
 
 
 #ifndef _MSC_VER
-// DirItemGenerator
+// RawDirItemGenerator
 
-struct DirItemGenerator::Imp
+struct RawDirItemGenerator::Imp
 {
   DIR* dir {nullptr};
   
@@ -3225,7 +3225,7 @@ struct DirItemGenerator::Imp
 
 
 
-DirItemGenerator::DirItemGenerator (size_t progress_displayPeriod,
+RawDirItemGenerator::RawDirItemGenerator (size_t progress_displayPeriod,
                                     const string& dirName_arg,
                                     bool large_arg)
 : ItemGenerator (0, progress_displayPeriod)
@@ -3238,14 +3238,14 @@ DirItemGenerator::DirItemGenerator (size_t progress_displayPeriod,
 
 
 
-DirItemGenerator::~DirItemGenerator ()
+RawDirItemGenerator::~RawDirItemGenerator ()
 { 
   delete imp; 
 }
 
 
 
-bool DirItemGenerator::next (string &item)
+bool RawDirItemGenerator::next (string &item)
 { 
   if (! large)
     return next_ (item, true);
@@ -3257,7 +3257,7 @@ bool DirItemGenerator::next (string &item)
       string subDir;
       if (! next_ (subDir, false))
         return false;
-      dig. reset (new DirItemGenerator (0, dirName + "/" + subDir, false));
+      dig. reset (new RawDirItemGenerator (0, dirName + "/" + subDir, false));
       QC_ASSERT (dig. get ());
     }
     if (dig->next (item))
@@ -3268,8 +3268,8 @@ bool DirItemGenerator::next (string &item)
 
 
 
-bool DirItemGenerator::next_ (string &item,
-                              bool report)
+bool RawDirItemGenerator::next_ (string &item,
+                                 bool report)
 { 
   ASSERT (imp);
   for (;;)
@@ -3293,13 +3293,15 @@ bool DirItemGenerator::next_ (string &item,
 
 
 
-
-StringVector DirItemGenerator::toVector ()
+StringVector RawDirItemGenerator::toVector ()
 {
   StringVector vec;
   string s;
   while (next (s))
     vec << std::move (s);
+      
+  vec. sort ();
+  QC_ASSERT (vec. isUniq ());
     
   return vec;
 }

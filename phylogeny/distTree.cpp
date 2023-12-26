@@ -4008,12 +4008,10 @@ void DistTree::loadTreeDir (const string &dir)
   ASSERT (isDirName (dir));
 
 #ifndef _MSC_VER
-  DirItemGenerator dig (0, dir, false);
-  const StringVector fileNames (dig. toVector ());  
-  QC_ASSERT (! fileNames. empty ());
-
   Name2steiner name2steiner;
-  for (string name : fileNames)
+  DirItemGenerator dig (0, dir, false);
+  string name;
+  while (dig. next (name))
   {
     EXEC_ASSERT (trimSuffix (name, dmSuff));    
     Unverbose unv;

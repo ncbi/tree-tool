@@ -4203,30 +4203,57 @@ public:
   
 
 #ifndef _MSC_VER
-struct DirItemGenerator : ItemGenerator, Nocopy
+struct RawDirItemGenerator : ItemGenerator, Nocopy
 {
 private:
   string dirName;
   struct Imp;  
   Imp* imp {nullptr};
-  unique_ptr<DirItemGenerator> dig;
+  unique_ptr<RawDirItemGenerator> dig;
 public:
   const bool large;
   
   
-  DirItemGenerator (size_t progress_displayPeriod,
-                    const string& dirName_arg,
-                    bool large_arg);
- ~DirItemGenerator ();
+  RawDirItemGenerator (size_t progress_displayPeriod,
+                       const string& dirName_arg,
+                       bool large_arg);
+ ~RawDirItemGenerator ();
 
   
   bool next (string &item) final;
-    // Raw order
 private:
   bool next_ (string &item,
               bool report);
 public:
   StringVector toVector ();
+};
+
+
+
+struct DirItemGenerator : ItemGenerator
+{
+private:
+  StringVector vec;
+  size_t index {0};
+public:
+  
+  
+  DirItemGenerator (size_t progress_displayPeriod,
+                    const string& dirName,
+                    bool large)
+    : ItemGenerator (0, progress_displayPeriod)
+    , vec (RawDirItemGenerator (0, dirName, large). toVector ())
+    {}
+
+  
+  bool next (string &item) final
+    { if (index == vec. size ())
+        return false;
+      item = vec [index];
+      prog (item);
+      index++;      
+      return true;
+    }
 };
 #endif
 
@@ -4235,7 +4262,7 @@ public:
 struct NumberItemGenerator : ItemGenerator
 {
 private:
-  size_t i {0};
+  size_t index {0};
 public:
   
   
@@ -4246,10 +4273,10 @@ public:
   
   
   bool next (string &item) final
-    { if (i == prog. n_max)
+    { if (index == prog. n_max)
         return false;
-      i++;
-      item = to_string (i);
+      index++;
+      item = to_string (index);
       prog ();
       return true;
     }
