@@ -21,6 +21,7 @@ FORMAT=$6
 
 
 TMP=`mktemp`
+comment $TMP
 
 
 section "Preparing data"
@@ -29,7 +30,7 @@ $THIS/../dm/conversion/pairs2dm $DISSIM 1 symbet 8 -distance  > $TMP.dm
 section "Building tree"
 $THIS/makeDistTree  -data $TMP  -dissim_attr symbet  -variance $VARIANCE  -optimize  -subgraph_iter_max 5  -output_tree $TMP.tree  -threads 10
 
-section "Creating $TREE"
+section "Saving $TREE"
 $THIS/printDistTree $TMP.tree  -order  -format $FORMAT > $TREE
 
 if [ $PHEN ]; then
