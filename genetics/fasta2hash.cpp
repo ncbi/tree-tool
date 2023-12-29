@@ -263,7 +263,7 @@ struct ThisApplication : Application
             fOut << hashes [i] << endl;
         }
         else
-          for (const auto& h : hashes)
+          for (const size_t h : hashes)
             fOut << h << endl;
       }
     }
