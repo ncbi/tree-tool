@@ -3882,10 +3882,7 @@ public:
    			error (t, Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected), '\'')); 
     }
   void setLast (Token &&t)
-    { if (t. empty ())
-        throwf ("TokenInput::setLast()");
-      last = std::move (t);
-    }
+    { last = std::move (t); }
   bool getNext (char expected)
     { Token token (get ());
       if (! token. isDelimiter (expected))
