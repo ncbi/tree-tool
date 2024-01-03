@@ -53,3 +53,4 @@ echo -e "$PRT\t$UNIVS\t$AAI_PERC"
 
 
 rm -r $TMP*
+

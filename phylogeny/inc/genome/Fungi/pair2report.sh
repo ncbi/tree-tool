@@ -13,6 +13,7 @@ OBJ2=$3
 
 
 TMP=`mktemp`
+#comment $TMP
 #set -x
 
 
