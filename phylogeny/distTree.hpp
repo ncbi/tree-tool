@@ -1231,8 +1231,10 @@ public:
 	  // Time: ~ O(|area| (log(|area|) log^2(subgraph.tree.n) + (sparse ? log(|area|) : |area|)))
   DistTree () = default;
   Vector<DissimLine> getDissimLines (const string& fName,
-                                     size_t reserveSize) const;
+                                     size_t reserveSize,
+                                     bool mayBeEmpty) const;
     // Return: sort()'ed, unique
+    // Input: mayBeEmpty <=> fName contents may be empty
 private:
   void loadTreeDir (const string &dir);
 	  // Input: dir: Directory with a tree of <dmSuff>-files

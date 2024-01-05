@@ -3346,7 +3346,7 @@ DistTree::DistTree (const string &dataDirName,
     loadDissimPrepare (name2leaf. size () * getSparseDissims_size ()); 
     const string fName (dataDirName + "dissim");
     {
-      const Vector<DissimLine> dissimLines (getDissimLines (fName, dissims. capacity ()));
+      const Vector<DissimLine> dissimLines (getDissimLines (fName, dissims. capacity (), false));
       {
         Progress prog (dissimLines. size (), dissim_progress);
         for (const DissimLine &dl : dissimLines)
@@ -5149,7 +5149,8 @@ void DistTree::loadDissimPrepare (size_t pairs_max)
 
 
 Vector<DissimLine> DistTree::getDissimLines (const string& fName,
-                                             size_t reserveSize) const
+                                             size_t reserveSize,
+                                             bool mayBeEmpty) const
 {
   Vector<DissimLine> dissimLines;  dissimLines. reserve (reserveSize);
   {
@@ -5165,7 +5166,7 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
           ASSERT (dl. name1. empty ());
         }
       }
-      if (! f. lineNum)
+      if (! mayBeEmpty && ! f. lineNum)
         throw runtime_error (FUNC "Empty " + fName);
     }
     section ("Sorting dissimilarities", true);
