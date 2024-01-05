@@ -49,7 +49,7 @@ $THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
-  echo "GeneMark-ES 4.69" > annot_software
+  gmes_petap.pl | grep -w version > annot_software || true
 
   # genemark.gtf
   FUNGUS_PAR=""
@@ -63,7 +63,7 @@ if [ ! -e $ASM.prot ]; then
   rm -f gmes.log
   rm -f run.cfg
   # Approximate
-  /usr/local/gmes/4.69/bin/gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
+  gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
   echo -e "\nAnnotation finihsed!\n" >> $LOG
   $THIS/../rm_all.sh data
   $THIS/../rm_all.sh info
