@@ -78,7 +78,7 @@ struct ThisApplication : Application
     tree. qc ();
     
     const Vector<LeafPair> leafPairs (tree. getMissingLeafPairs_ancestors (sparsingDepth, true));
-    const Vector<DissimLine> dissimLines (tree. getDissimLines (dirName + "/dissim", 100000000));  // PAR
+    const Vector<DissimLine> dissimLines (tree. getDissimLines (dirName + "/dissim", 100000000, true));  // PAR
     
     OFStream fRequest (dissim_request);
     OFStream fDissim (output_dissim);
