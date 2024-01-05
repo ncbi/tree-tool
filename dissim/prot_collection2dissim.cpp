@@ -100,7 +100,7 @@ struct ThisApplication : Application
   	  addPositional ("in", "File with pairs of protein FASTA file names. Protein sequences may contain stop codons");
   	  addFlag ("blosum62", "Use BLOSUM62, otherwise PAM30");
   	  // Output
-  	  addPositional("out", "Output list of dissimilarities for each identifier in <prot_list> if -separate, or one dissimilarity otherwise");  
+  	  addPositional ("out", "Output for each pair in <in>: if -separate then a list of dissimilarities for each identifier in <prot_info>, else one dissimilarity");  
   	  addFlag ("separate", "Print scores for each target protein separately");
   	  addKey ("raw_power", "Raise raw (not averaged) dissimilarities to this power", "1.0");
   	  addKey ("coeff", "Coefficient to multiply the averaged dissimilarity by", "1.0");
@@ -212,8 +212,8 @@ struct ThisApplication : Application
   	    	if (separate)
      	  		out << '\t' << "nan";
       	}
-    if (! separate)
-      pam. qc ();
+      if (! separate)
+        pam. qc ();
 
 
     	if (! separate)
