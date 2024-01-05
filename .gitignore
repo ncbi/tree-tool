@@ -51,8 +51,10 @@
 !phylogeny/inc/genome/Chlorophyta/
 !phylogeny/inc/genome/Fungi/
 !phylogeny/inc/genome/Metazoa/
+!phylogeny/inc/genome/Metazoa-RefSeq/
 !phylogeny/inc/genome/Protists/
 !phylogeny/inc/genome/Viridiplantae/
+!phylogeny/inc/genome/Viridiplantae-RefSeq/
 !phylogeny/inc/genome/bacteria/
 !phylogeny/inc/genome/bacteria_type/
 !phylogeny/inc/genome/prokaryota/
