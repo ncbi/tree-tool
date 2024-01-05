@@ -1,21 +1,22 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
-if [ $# -ne 1 ]; then
+if [ $# -ne 2 ]; then
   echo "Input: hmm-univ.list"
   echo "#1: Genome.id"
+  echo "#2: large (0/1)"
   exit 1
 fi
 G=$1
+LARGE=$2
 
 
-H=`$THIS/../../file2hash $G`
-
-if false; then
-  set +o errexit
-  N=`grep -c ">" genome/$H/$G/$G.prot-univ`
-  set -o errexit
+H=""
+if [ $LARGE -eq 1 ]; then
+  H=`$THIS/../../file2hash $G`
 fi
+
+$THIS/../../check_file.sh genome/$H/$G/$G.prot-univ
 
 
 TMP=`mktemp`
