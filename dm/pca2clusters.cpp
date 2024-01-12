@@ -101,7 +101,7 @@ struct ThisApplication : Application
     
     FOR (size_t, i, clusters. size ())
     {
-      OFStream ofs (string (), outName + "-" + toString (i + 1), string ());
+      OFStream ofs (noString, outName + "-" + toString (i + 1), noString);
       sort (clusters [i]);
       save (ofs, clusters [i], '\n');
       ofs << endl;

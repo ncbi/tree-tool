@@ -290,7 +290,7 @@ struct ThisApplication : Application
             while (! s. empty ())
               subitems << findSplit (s, '\t');
             if (lastEmpty)
-              subitems << string ();
+              subitems << noString;
             ASSERT (subitems. size () == colNum);
           }
           else

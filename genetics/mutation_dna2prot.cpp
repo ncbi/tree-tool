@@ -240,7 +240,7 @@ struct ThisApplication : Application
             if (dnaMutTrimmed. ambig && ! prot_ref. empty ())
               protMut = Mutation (annot. name, prot_start, prot_ref, string (prot_ref. size (), 'X'), false); 
             else 
-              protMut = Mutation (annot. name, prot_start, prot_ref, string (), true); 
+              protMut = Mutation (annot. name, prot_start, prot_ref, noString, true); 
           }
           else
           {
@@ -250,7 +250,7 @@ struct ThisApplication : Application
             if (refProt. seq == mutProt. seq)
               continue;
             if (mutProt. seq. empty ())
-              protMut = Mutation (annot. name, 0, refProt. seq, string (), false);
+              protMut = Mutation (annot. name, 0, refProt. seq, noString, false);
             else
             {
               if (verbose ())

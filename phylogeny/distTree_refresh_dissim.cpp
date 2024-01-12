@@ -74,7 +74,7 @@ struct ThisApplication : Application
     QC_ASSERT (! output_dissim. empty ());
 
 		
-    const DistTree tree (dirName + "/tree", string (), string (), string ());
+    const DistTree tree (dirName + "/tree", noString, noString, noString);
     tree. qc ();
     
     const Vector<LeafPair> leafPairs (tree. getMissingLeafPairs_ancestors (sparsingDepth, true));

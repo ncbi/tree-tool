@@ -223,7 +223,7 @@ string GenbankText::name2value (const string &name,
 	  	if (! isUniq)
 	  		break;
 	  }
-  return r ? r->getValue () : string ();
+  return r ? r->getValue () : noString;
 }
 
 
@@ -244,7 +244,7 @@ string GenbankText::keyword2name (const string &keyword,
       return rec. name;
   }
   
-  return string ();
+  return noString;
 }
 
 

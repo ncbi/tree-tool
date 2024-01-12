@@ -1179,7 +1179,7 @@ public:
       names. sort ();
       return names;
     }
-  size_t appendObj (const string &objName = string ());
+  size_t appendObj (const string &objName = noString);
     // Return: objNum
   void list2ObjNames (const VectorPtr<Named> &names);
   bool objCommented () const;

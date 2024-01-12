@@ -129,7 +129,7 @@ struct ThisApplication : Application
 	  {
 	    Hmm& hmm = it. second;
   	  sort (hmm. sseqids);
-  	  OFStream ofs (dir, it. first, string ());
+  	  OFStream ofs (dir, it. first, noString);
   	  save (ofs, hmm. sseqids, '\n');
   	  ofs << endl;
 	  }

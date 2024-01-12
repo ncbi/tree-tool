@@ -80,7 +80,7 @@ struct GenbankText : Root
   string keyword2name (const string &keyword,
                        bool caseSensitive,
                        string &content) const;
-    // Return: string() <=> not found
+    // Return: empty() <=> not found
     // Output: content
 };
 

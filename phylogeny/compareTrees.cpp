@@ -243,17 +243,17 @@ struct ThisApplication : Application
 		       
     unique_ptr<Tree> tree1;
     if (treeType == "dist")
-      tree1. reset (new DistTree (input_tree1, string (), string (), string ()));
+      tree1. reset (new DistTree (input_tree1, noString, noString, noString));
     else
-      tree1. reset (new FeatureTree (input_tree1, string (), false, string (), false, true, false));
+      tree1. reset (new FeatureTree (input_tree1, noString, false, noString, false, true, false));
     if (verbose ())
       tree1->qc ();     
       
     unique_ptr<Tree> tree2;
     if (treeType == "dist")
-      tree2. reset (new DistTree (input_tree2, string (), string (), string()));
+      tree2. reset (new DistTree (input_tree2, noString, noString, noString));
     else
-      tree2. reset (new FeatureTree (input_tree2, string (), false, string (), false, true, false));
+      tree2. reset (new FeatureTree (input_tree2, noString, false, noString, false, true, false));
     if (verbose ())
       tree2->qc (); 
       

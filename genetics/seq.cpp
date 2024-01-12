@@ -288,7 +288,7 @@ string Seq::getDescription (bool trimTaxon) const
 {
 	const size_t idSize = getIdSize ();
 	if (idSize == name. size ())
-		return string ();
+		return noString;
 	ASSERT (name [idSize] == ' ');
 	string desc (name. substr (idSize + 1));
 	if (trimTaxon)

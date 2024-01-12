@@ -68,7 +68,7 @@ struct ThisApplication : Application
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
 	  addFlag ("order", "Order subtrees by the number of leaves descending");
     // Output
-	  addKey ("format", "newick|dm (Data Master format, makeDistTree output)|ASNT (textual ASN.1)", "newick");
+	  addKey ("format", "newick | dm (Data Master format, makeDistTree output) | ASNT (textual ASN.1)", "newick");
 	  addFlag ("ext_name", "Extended leaf names for newick");
 	}
 
@@ -108,7 +108,7 @@ struct ThisApplication : Application
 		  throw runtime_error ("-name_match and -name_extend cannot be used together");
 		      
 
-    DistTree tree (input_tree, dataFName, dissimAttrName, string());
+    DistTree tree (input_tree, dataFName, dissimAttrName, noString);
     tree. qc ();    
     if (order)
       tree. sort ();

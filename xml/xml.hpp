@@ -135,9 +135,9 @@ public:
   // SQL      
   string getColumnName (const Schema* rootTable) const
     { if (this == rootTable)
-        return string ();
+        return noString;
       if (! parent)
-        return string ();
+        return noString;
       string s (parent->getColumnName (rootTable));
       if (! s. empty ())
         s += "_";

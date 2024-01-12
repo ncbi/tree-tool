@@ -2792,7 +2792,7 @@ void Image::processSmall (const DTNode* center_arg,
       if (subgraph. large () && areaRadius > 1)
         tree->optimizeSmallSubgraphs (areaRadius / 2);  // PAR
       else
-        tree->optimizeWholeIter (20, string ());  // PAR
+        tree->optimizeWholeIter (20, noString);  // PAR
     }
     else if (leaves == 3)
     {
@@ -4076,7 +4076,7 @@ namespace
     const string token1 (" " + token + "=");
     const size_t pos = s1. find (token1);
     if (pos == string::npos)
-      return string ();  
+      return noString;  
       
     string valueS (s1. substr (pos + token1. size ()));
     trim (valueS);

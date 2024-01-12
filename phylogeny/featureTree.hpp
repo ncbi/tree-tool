@@ -99,7 +99,7 @@ struct Feature : Named
 	string getNominVar () const
 	  { const size_t pos = name. find (':');
 	    if (pos == string::npos)
-	      return string ();
+	      return noString;
 	    return name. substr (0, pos);
 	  }
   bool operator== (const Feature &other) const
@@ -358,7 +358,7 @@ public:
     { return this; }
 
   string getNewickName (bool /*minimal*/) const final
-    { return string (); }
+    { return noString; }
 
 	double getParentDistance () const final;
   void setWeight () final;
@@ -1228,7 +1228,7 @@ public:
     // Requires: features.empty()
 
 	void printInput (ostream& os) const;
-	void progInternal (const string& step = string ())
+	void progInternal (const string& step = noString)
 	  { if (prog_. get ()) 
 	  	  (*prog_) (step);
 	  }

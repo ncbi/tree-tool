@@ -70,7 +70,7 @@ struct ThisApplication : Application
 		const bool   discernible = getFlag ("discern");
 				
     
-    const DistTree tree (input_tree, string (), string (), string ()); 
+    const DistTree tree (input_tree, noString, noString, noString); 
     tree. qc (); 
     
     Set<string> repr;

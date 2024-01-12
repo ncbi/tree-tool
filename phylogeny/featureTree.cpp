@@ -1537,7 +1537,7 @@ void ChangeToSibling::apply_ ()
   ASSERT (from != arcEnd);
 
   // Topology
-  auto inter_ = new Fossil (var_cast (tree), arcEnd, string (), NaN);
+  auto inter_ = new Fossil (var_cast (tree), arcEnd, noString, NaN);
   inter = inter_;
   inter_->init ();
   // PAR
@@ -1894,7 +1894,7 @@ void ChangeRoot::apply_ ()
 
 
   // Topology
-  auto inter = new Fossil (var_cast (tree), const_static_cast <Fossil*> (from->getParent ()), string (), NaN);
+  auto inter = new Fossil (var_cast (tree), const_static_cast <Fossil*> (from->getParent ()), noString, NaN);
   inter->init ();
   FFOR (size_t, i, inter->core. size ())
     inter->core [i] = from->core [i];  // PAR
@@ -2591,7 +2591,7 @@ bool FeatureTree::loadPhylLines (const StringVector& lines,
 	  }
 	  else
 	  {
-  		const string id (isLeft (idS, "0x") ? string () : idS);
+  		const string id (isLeft (idS, "0x") ? noString : idS);
   		sp = new Fossil (*this, fossilParent, id, time);
     }
     ASSERT (sp);

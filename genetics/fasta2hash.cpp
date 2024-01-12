@@ -191,6 +191,10 @@ struct ThisApplication : Application
     		    Peptide pep (dna. cds2prot (11, false, false, true, false));  // gencode - PAR ??
     		    pep. qc ();
     		    QC_ASSERT (! pep. seq. empty ());
+    		  #if 0
+    		    if (gene_finder. empty () && pep. seq. front () != 'm')   // LIV ??
+    		      continue;
+    		  #endif
     		    QC_ASSERT (pep. seq. front () == 'm');
 					  QC_IMPLY (! ambig, ! pep. getXs ());  
     	      strUpper (pep. seq);  // Start codons are lowercased
@@ -213,6 +217,8 @@ struct ThisApplication : Application
     		    if (gene_finder == "GeneMark" && ! contains (pep. name, " trunc5:0 trunc3:0"))  
     		      continue;
     		    if (gene_finder == "prodigal" && ! contains (pep. name, ";partial=00"))  
+    		      continue;
+    		    if (gene_finder. empty () && pep. seq. front () != 'M')  
     		      continue;
     		  }
   		    pep. trimStop ();

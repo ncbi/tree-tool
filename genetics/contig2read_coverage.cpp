@@ -92,7 +92,7 @@ struct ThisApplication : Application
                  << TextTable::Header ("Noise");
       const Real totalMean = totalMv. getMean ();
       StringVector row;
-      row << string () << to_string (totalMv. n) << to_string (totalMean) << "0";
+      row << noString << to_string (totalMv. n) << to_string (totalMean) << "0";
       tt. rows << std::move (row);
       for (const auto& it : mvs)
       {
