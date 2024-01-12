@@ -12,6 +12,7 @@ endif
 ############################### Programs ################################
 
 ALL=	\
+  ascii \
   colors_test \
   curl_easy_test \
   connectPairs \
@@ -37,6 +38,13 @@ ifdef AT_NCBI
 else
   all:	$(ALL)
 endif
+
+
+ascii.o: $(COMMON_HPP)  
+asciiOBJS=ascii.o $(CPP_DIR)/common.o
+ascii: $(asciiOBJS)
+	$(CXX) -o $@ $(asciiOBJS) $(LIBS)
+	$(ECHO)
 
 colors_test.o: $(COMMON_HPP)  
 colors_testOBJS=colors_test.o $(CPP_DIR)/common.o
