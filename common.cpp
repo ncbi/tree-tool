@@ -2522,6 +2522,8 @@ Token TokenInput::getXmlText ()
 
     // Escaped character
     int n = c;
+    if (n < 0)
+      n += 256;
   	if (c == '&')
   	{
       if (ci. get () == '#')  // Number
@@ -3043,7 +3045,7 @@ JsonArray::JsonArray (CharInput& in,
         in. error ("\',\'");
       token = Token (in, false, false);
     }
-    parse (in, token, this, string());
+    parse (in, token, this, noString);
     first = false;
   }
 }

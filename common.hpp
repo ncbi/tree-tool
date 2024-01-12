@@ -799,7 +799,7 @@ void visualizeTrailingSpaces (string &s);
   
 string str2streamWord (const string &s,
                        size_t wordNum);
-  // Return: May be string()
+  // Return: May be empty()
   // Input: wordNum: 0-based  
 
 string str2sql (const string &s);
@@ -1633,7 +1633,8 @@ inline streamsize double2decimals (double r)
 //////////////////////////////////////////////////////////////////////////////////////
 
 void exec (const string &cmd,
-           const string &logFName = string());
+           const string &logFName = noString);
+  // Input: logFName: log file populated by cmd, to include into exception::what() if cmd fails
 
 #ifndef _MSC_VER
   string which (const string &progName);
@@ -3602,8 +3603,8 @@ struct LineInput : Input
 		  throwf ("No " + strQuote (prefix));
 		  return false;  // dummy
 		}
-	string lineStr () const
-	  { return "line " + to_string (lineNum + 1); }
+	string lineStr (bool add1 = true) const
+	  { return "line " + to_string (lineNum + add1); }
 };
 	
 
@@ -4591,7 +4592,7 @@ protected:
     // Requires: After findProg(progName)
   string exec2str (const string &cmd,
                    const string &tmpName,
-                   const string &logFName = string()) const;
+                   const string &logFName = noString) const;
     // Return: `cmd > <tmp>/tmpName && cat <tmp>/tmpName`
     // Requires: cmd produces one line
 };
