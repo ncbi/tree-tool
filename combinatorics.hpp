@@ -1,4 +1,4 @@
-// search.hpp
+// combinatorics.hpp
 
 /*===========================================================================
 *
@@ -27,13 +27,13 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Search utilities
+*   Combinatorics utilities
 *
 */
 
 
-#ifndef SEARCH_HPP_5843  // random number
-#define SEARCH_HPP_5843
+#ifndef COMBINATORICS_HPP_5843  // random number
+#define COMBINATORICS_HPP_5843
 
 
 #include "common.hpp"
@@ -41,7 +41,7 @@ using namespace Common_sp;
 
 
 
-namespace Search_sp
+namespace Cmb_sp
 {
 
 
@@ -123,7 +123,7 @@ struct Permute
 {
   Vector<size_t> vec;
     // Indexes of elements
-    // Init: 1, 2, 3, ...
+    // Init: 0, 1, 2, ...
 
   explicit Permute (size_t n);
 

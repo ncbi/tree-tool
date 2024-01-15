@@ -1,4 +1,4 @@
-// search.cpp
+// combinatorics.cpp
 
 /*===========================================================================
 *
@@ -27,20 +27,20 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   search utilities
+*   Combinatorics utilities
 *
 */
 
 
 #undef NDEBUG
 
-#include "search.hpp"
+#include "combinatorics.hpp"
 
 #include "common.inc"
 
 
 
-namespace Search_sp
+namespace Cmb_sp
 {
 
 
