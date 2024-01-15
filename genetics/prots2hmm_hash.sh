@@ -6,7 +6,7 @@ if [ $# -ne 7 ]; then
   echo "#1: Protein FASTA"
   echo "#2: HMM library"
   echo "#3: Use cut_ga (0/1)"
-  echo "#4: Output HMM signatitures of proteins"
+  echo "#4: Output HMM signatures of proteins"
   echo "#5: Output HMM hash file"
   echo "#6: number of cores"
   echo "#7: log file"
