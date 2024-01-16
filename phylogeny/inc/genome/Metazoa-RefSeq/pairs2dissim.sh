@@ -8,9 +8,9 @@ if [ $# -ne 4 ]; then
   echo "#4: error log"
   exit 1
 fi
-REQUEST=$1
+REQ=$1
 FILE_NEW="$2"
-DISSIM=$3
+OUT=$3
 LOG=$4
 
 
@@ -19,13 +19,19 @@ if [ $FILE_NEW ]; then
 fi
 
 
+INC=`dirname $0`
+GENOME=$INC/../genome
+
 TMP=`mktemp`
 
+awk '{printf "'$GENOME'/%s/%s.prot-univ '$GENOME'/%s/%s.prot-univ\n", $1, $1, $2, $2};' $REQ > $TMP
+CPP_DIR/dissim/prot_collection2dissim  $INC/hmm-univ.stat $TMP $TMP.res  -raw_power 0.6   -blosum62  -coeff 60  -log $LOG
 
-INC=`dirname $0`
-awk '{printf "'$INC'/../genome/%s/%s.prot-univ '$INC'/../genome/%s/%s.prot-univ\n", $1, $1, $2, $2};' $REQUEST > $TMP
-CPP_DIR/dissim/prot_collection2dissim  $INC/hmm-univ.stat $TMP $DISSIM  -raw_power 0.6  -blosum62  -coeff 60  -log $LOG
+cut -f 3 $TMP.res > $TMP.dissim
+paste $REQ $TMP.dissim > $OUT
 
+rm $TMP*
 
 rm -f $LOG
-rm $TMP*
+
+
