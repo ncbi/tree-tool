@@ -297,6 +297,7 @@ void Schema::printTableDdl (ostream &os,
     {
       os << "create index " << table << "_idx on " << table << "(xml_num_," << refTable << "_id_);" << endl;
       os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_) on delete cascade;" << endl;
+      os << "-- delete /*top (1000000)*/ from " << table << " with (tablock) where not exists (select null from " << refTable << " (nolock) where " << refTable << ".xml_num_ = " << table << ".xml_num_ and " << refTable << ".id_ = " << table << "." << refTable << "_id_);" << endl;
     }
     os << endl << endl;
   }
