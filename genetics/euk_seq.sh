@@ -49,7 +49,7 @@ $THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
-  gmes_petap.pl | grep -w version > annot_software || true
+  gmes_petap.pl | grep -w "version" > annot_software || true
 
   # genemark.gtf
   FUNGUS_PAR=""
