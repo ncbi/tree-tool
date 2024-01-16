@@ -296,7 +296,7 @@ void Schema::printTableDdl (ostream &os,
     if (! refTable. empty ())
     {
       os << "create index " << table << "_idx on " << table << "(xml_num_," << refTable << "_id_);" << endl;
-      os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_);" << endl;
+      os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_) on delete cascade;" << endl;
     }
     os << endl << endl;
   }
