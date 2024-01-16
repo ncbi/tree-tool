@@ -6390,8 +6390,10 @@ bool DistTree::optimizeLenWhole ()
     }
   if (covar <= 0.0)
   {
+  #if 0
     if (subDepth)
       throw runtime_error (FUNC "Strange dissimilarities");
+  #endif
     return false;
   }
   if (! predict2)
