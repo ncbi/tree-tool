@@ -63,6 +63,7 @@ section "Database"
 $INC/objects_in_tree.sh $DEL null
 
 
+section "$INC/new/"
 $THIS/distTree_inc_new_cmd.sh $INC "rm -f" $DEL
 
 
