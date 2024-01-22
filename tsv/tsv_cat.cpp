@@ -49,19 +49,23 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Concatenate tsv-tables. File names are added as the new last column")
+    : Application ("Concatenate tsv-tables")
   	{
       version = VERSION;
-  	  addPositional ("list", "List of tsv-tables with the same headers");
-  	  addPositional ("col_name", "Column name of the added file names; may be empty");
+  	  addPositional ("list", "List of tsv-tables");
+  	  addPositional ("file_name", "Column name of the file names; may be empty");
+  	  addKey ("syn", TextTable::syn_format);
+  	  addFlag ("skip_bad", "Skip bad tsv-files");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string listFName = getArg ("list");
-		const string colName   = getArg ("col_name");
+		const string listFName   = getArg ("list");
+		const string fileColName = getArg ("file_name");
+		const string synFName    = getArg ("syn");
+		const bool   skipBad     = getFlag ("skip_bad");
 		
 		
 		TextTable total;
@@ -70,38 +74,60 @@ struct ThisApplication : Application
   		LineInput li (listFName, 1);  // PAR
   		while (li. nextLine ())
   		{
-        TextTable tab (li. line);
-        tab. qc ();
-        
-        if (! colName. empty ())
-    		  if (tab. hasColumn (colName))
-    		    throw runtime_error ("Files already have column " + strQuote (colName));
-
-        // header
-        QC_ASSERT (! tab. header. empty ());
-  		  if (total. header. empty ())
-  		    total. header = tab. header;
-  		  else
-  		  {
-  		    if (total. header. size () != tab. header. size ())
-  		      throw runtime_error ("Different number of columns in files");
-  		    FFOR (size_t, i, total. header. size ())
-  		      if (total. header [i]. name != tab. header [i]. name)
-  		        throw runtime_error ("Different column #" + to_string (i + 1) + " in files");
-  		  }
-  		  
-        if (! colName. empty ())
+        unique_ptr<TextTable> tab; 
+        try 
+        { 
+          tab. reset (new TextTable (li. line, synFName));
+          tab->qc (); 
+        }
+        catch (const exception &e)
         {
+          if (skipBad)
+          {
+            cerr << li. line << ": " << e. what () << endl;
+            continue;
+          }
+          throw;
+        }        
+        QC_ASSERT (! tab->header. empty ());
+        
+        if (! fileColName. empty ())
+        {
+    		  if (tab->hasColumn (fileColName))
+    		    throw runtime_error ("Files already have column " + strQuote (fileColName));
+      		tab->header << TextTable::Header (fileColName);
     		  const string fName = getFileName (li. line);
-    		  for (StringVector& row : tab. rows)
+    		  for (StringVector& row : tab->rows)
     		    row << fName;
     		}
-  		  
-  		  total. rows << tab. rows;		  
+    		tab->qc ();
+
+        Vector<TextTable::ColNum> tab2total;  tab2total. reserve (tab->header. size ());
+ 		    for (const TextTable::Header& h : tab->header)
+ 		    {
+ 		      TextTable::ColNum i = total. col2num_ (h. name);
+ 		      if (i == no_index)
+ 		      {
+ 		        i = total. header. size ();
+ 		        total. header << TextTable::Header (h. name);
+      		  for (StringVector& row : total. rows)
+      		    row << noString;
+ 		      }
+ 		      ASSERT (i != no_index);
+ 		      tab2total << i;
+ 		    }
+ 		    ASSERT (tab2total. size () == tab->header. size ());
+ 		    total. qc ();
+
+        for (const StringVector& from : tab->rows)
+        {
+          StringVector to (total. header. size ());
+          FFOR (size_t, i, from. size ())
+            to [tab2total [i]] = from [i];
+          total. rows << std::move (to);
+        }
   		}
     }
-    if (! colName. empty ())
-  		total. header << TextTable::Header (colName);
 		total. qc ();
 
 
