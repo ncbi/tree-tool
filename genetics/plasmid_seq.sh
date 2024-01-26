@@ -7,7 +7,7 @@ if [ $# -ne 4 ]; then
   echo "Invokes: prodigal"
   echo "#1: plasmid accession"
  #echo "#2: Pfam HMM library"
-  echo "#2: iniveral HMM library"
+  echo "#2: iniversal HMM library"
   echo "#3: list of ribosomal HMMs"
   echo "#4: log file"
   echo "Time: 40 sec."

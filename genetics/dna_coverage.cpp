@@ -324,14 +324,14 @@ struct ThisApplication : Application
 If '' then print only the table header");
       addFlag ("prot", "Subject is proteins");  // ??
       addKey ("mode", "\
-combine: combine the coverages by subject DNAs\n\
+combine: combine the coverages of subject DNAs\n\
 all: report all covered segments", "all");
 // best: print only the best coverage by a subject DNA
 // missed: report non-covered query DNA segments
       addKey ("query", "Query DNA name");
       addKey ("subject", "Subject DNA name, used if mode = combine");
-      addKey ("pident_min", "Min. percent of identity", "0");
-      addKey ("align_min", "Min. alignment length", "0");
+      addKey ("pident_min", "Min. percent of identity of HSP", "0");
+      addKey ("align_min", "Min. alignment length of HSP", "0");
       addFlag ("force", "Force one-line report if there is no match");
     }
 

@@ -13,15 +13,17 @@ PL=$2
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr 
+#comment $TMP 
 
 
 # PAR
-T=90
-LEN_MIN=100
+IDENT=98
+LEN=100
+CONTIG_COV=90
+PLASMID_COV=98
 
 
-$THIS/dna_coverage.sh $DNA $PL combine $T $LEN_MIN '' 0 | tail -n +2 | awk '$6 >= '$T' && $7 >= '$T | cut -f 2,10 > $TMP.contig-pls
+$THIS/dna_coverage.sh $DNA $PL combine $IDENT $LEN '' 0 0 | tail -n +2 | awk '$5 >= '$CONTIG_COV | cut -f 2,14 > $TMP.contig-pls
 
 cut -f 1 $TMP.contig-pls > $TMP.contig
 $THIS/extractFastaDna $DNA $TMP.contig -noprogress > $TMP.contig-fa
@@ -31,20 +33,21 @@ $THIS/../trav -noprogress $TMP.pls "$THIS/fasta2len -noprogress $PL/%f" > $TMP.l
 sort -k2,2nr $TMP.len | cut -f 1 > $TMP.pls-sorted
 PLS=(`cat $TMP.pls-sorted`)
 
-echo -e "#Plasmid\tlen\tcoverage\tpcoverage\tpident\tContigs" > $TMP.res
+echo -e "#plasmid\tcontig" 
 i=0
 while [ $i -lt ${#PLS[@]} ]; do
-  $THIS/dna_coverage.sh $PL/${PLS[i]} $TMP.contig-fa combine $T $LEN_MIN '' 0 > $TMP.pl-cov
-  tail -n +2 $TMP.pl-cov | awk '$6 >= '$T' && $7 >= '$T | cut -f 10 | tr ' ' '\n' | sort > $TMP.contigs
-  if [ -s $TMP.contigs ]; then
-    tail -n +2 $TMP.pl-cov | cut -f 1,4,5,6,7,10 >> $TMP.res
-    $THIS/extractFastaDna $TMP.contig-fa $TMP.contigs -remove -noprogress > $TMP.contig-fa-new
-    mv $TMP.contig-fa-new $TMP.contig-fa
+  $THIS/dna_coverage.sh $PL/${PLS[i]} $TMP.contig-fa combine $IDENT $LEN '' 0 0 | tail -n +2 | awk '$5 >= '$PLASMID_COV > $TMP.pl-contigs-$i
+  cut -f 14 $TMP.pl-contigs-$i | tr ' ' '\n' | sort > $TMP.contigs-$i
+  if [ -s $TMP.contigs-$i ]; then
+    $THIS/extractFastaDna $TMP.contig-fa $TMP.contigs-$i -noprogress > $TMP.pl-contig.fa-$i
+    $THIS/dna_coverage.sh $TMP.pl-contig.fa-$i $PL/${PLS[i]} combine $IDENT $LEN '' 0 0 | tail -n +2 | awk '$5 >= '$CONTIG_COV | cut -f 2 > $TMP.contigs-match-$i
+    sed 's/^/'${PLS[i]}'\t/1' $TMP.contigs-match-$i 
+    $THIS/extractFastaDna $TMP.contig-fa $TMP.contigs-match-$i -remove -noprogress > $TMP.contig-fa-new-$i
+    mv $TMP.contig-fa-new-$i $TMP.contig-fa
   fi
   i=$(( $i + 1 ))
 done
 
-cat $TMP.res
-
 
 rm $TMP*  
+

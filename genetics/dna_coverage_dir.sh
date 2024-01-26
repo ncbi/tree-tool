@@ -25,7 +25,7 @@ TMP=`mktemp`
 
 
 makeblastdb  -in $SUBJ  -dbtype nucl  -blastdb_version 4  -out $TMP.db  -logfile $TMP.log
-$THIS/../trav $QUERY_DIR  -step 1  "dna_coverage.sh %d/%f $TMP.db $MODE $PIDENT_MIN $ALIGN_MIN '' 0" > $TMP
+$THIS/../trav $QUERY_DIR  -step 1  "dna_coverage.sh %d/%f $TMP.db $MODE $PIDENT_MIN $ALIGN_MIN '' 0 0" > $TMP
 $THIS/../tsv/tsv_clean.sh $TMP > $OUT
 
 

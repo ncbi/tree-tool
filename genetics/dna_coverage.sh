@@ -6,8 +6,8 @@ if [ $# != 8 ]; then
   echo "#1: query DNA FASTA file"
   echo "#2: subject DNA FASTA file (can be gzip'ped or converted into a BLAST database)"
   echo "#3: dna_coverage mode: all, combine"
-  echo "#4: min. identity percent"
-  echo "#5: min. alignment length"
+  echo "#4: min. identity percent of HSP"
+  echo "#5: min. alignment length of HSP"
   echo "#6: sequence identifier to be removed from #2 or ''"
   echo "#7: force 1 line after header: 0/1"
   echo "#8: include all query sequences: 0/1"
@@ -71,7 +71,8 @@ if [ $N -gt 0 -a $DB_EXISTS == 1 ]; then
   fi
   HEADER="qseqid sseqid length nident qstart qend qlen sstart send slen stitle"
   #       1      2      3      4      5      6    7    8      9    10   11
-  blastn  -query $QUERY  -db $DB  -dust no  -max_target_seqs 1000000  -outfmt "6 $HEADER"  -num_threads 16  $MT_MODE 2> /dev/null | sort -k1,1 -k4,4nr > $TMP.blastn
+  blastn  -query $QUERY  -db $DB  -dust no  -max_target_seqs 1000000  -outfmt "6 $HEADER"  -num_threads 16  2> /dev/null | sort -k1,1 -k4,4nr > $TMP.blastn
+    # $MT_MODE ??
     # PAR
   if [ $TO_REMOVE ]; then
     awk '$2 != "'$TO_REMOVE'"' $TMP.blastn > $TMP.blastn1
