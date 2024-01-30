@@ -53,7 +53,7 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("list", "List of tsv-tables");
-  	  addPositional ("file_name", "Column name of the file names; may be empty");
+  	  addPositional ("file_name", "Name of the added column which will contain the file names in <list>; may be empty");
   	  addKey ("syn", TextTable::syn_format);
   	  addFlag ("skip_bad", "Skip bad tsv-files");
   	}
