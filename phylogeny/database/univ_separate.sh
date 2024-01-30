@@ -1,6 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../../bash_common.sh
+source $THIS/../../qsub_env.sh
 GENOME="genome"
 if [ $# -ne 3 ]; then
   echo "Create #1-univ-separate.dm"
