@@ -1,6 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
+source $THIS/../qsub_env.sh
 COEFF=100
 if [ $# -ne 5 ]; then
   echo "Print dependence of genogroup size on genogroup barrier"

@@ -1,6 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
+source $THIS/../qsub_env.sh
 if [ $# -ne 3 ]; then
   echo "Compute requested dissimilarities"
   echo "#1: incremental tree directory"

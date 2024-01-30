@@ -1,6 +1,7 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
+source $THIS/../qsub_env.sh
 if [ $# -ne 4 ]; then
   echo "Add new objects in #1/new/ to a distance tree without the optimization of the original tree"
   echo "#1: incremental distance tree directory"
