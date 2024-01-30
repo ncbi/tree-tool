@@ -27,8 +27,10 @@ LOG=$8
 
 #set -x
 
-if [ $KINGDOM -a $KINGDOM != "Fungi" -a $KINGDOM != "Viridiplantae" ]; then
-  error "Unknown kingdom '$KINGDOM'"
+if [ $KINGDOM ]; then
+  if [ $KINGDOM != "Fungi" -a $KINGDOM != "Viridiplantae" ]; then
+    error "Unknown kingdom '$KINGDOM'"
+  fi
 fi
 
 
@@ -49,11 +51,11 @@ $THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
-  gmes_petap.pl | grep -w "version" > annot_software || true
+  gmes_petap.pl | grep -w "version" 1> annot_software 2>> $LOG || true 
 
   # genemark.gtf
   FUNGUS_PAR=""
-  if [ $KINGDOM == "Fungi" ]; then
+  if [ "$KINGDOM" == "Fungi" ]; then
     FUNGUS_PAR="--fungus"
   fi
   $THIS/../rm_all.sh data
@@ -99,7 +101,7 @@ if [ $PFAM ]; then
   gzip $ASM.HMM
 fi
 
-if [ $UNIV -a $KINGDOM != "Viridiplantae" ]; then
+if [ $UNIV -a "$KINGDOM" != "Viridiplantae" ]; then
   section "prots2hmm_univ.sh"
   $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
 fi
