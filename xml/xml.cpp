@@ -802,16 +802,20 @@ void Data::saveXml (Xml::File &f) const
 
 
 
-void Data::saveText (ostream &os) const 
+string Data::getText () const 
 {
+  string s;
+  
   if (attribute)
-    return;
+    return s;
   
   for (const Data* child : children)
-    child->saveText (os);
+    add (s, "; ", child->getText ());
     
   if (! token. empty ())
-    os << token. str () << "; ";
+    add (s, "; ", token. str ());
+    
+  return s;
 }
 
 
@@ -869,6 +873,7 @@ size_t Data::setSearchFound (const string &needle,
 
 
 TextTable Data::unify (const Data& query,
+                       const string &rowTagName,
                        const string &variableTagName) const
 {
   ASSERT (! query. parent);
@@ -887,7 +892,7 @@ TextTable Data::unify (const Data& query,
   tt. qc ();
   
   map<string,StringVector> tag2values;
-  unify_ (query, variableTagName, tag2values, tt);
+  unify_ (query, rowTagName, variableTagName, tag2values, tt);
   
   return tt;
 }
@@ -915,34 +920,46 @@ StringVector Data::tagName2texts (const string &tagName) const
 
 
 
-void Data::unify_ (const Data& query,
+bool Data::unify_ (const Data& query,
+                   const string &rowTagName,
                    const string &variableTagName,
                    map<string,StringVector> &tag2values,
                    TextTable &tt) const
 {
+  ASSERT (! rowTagName. empty ());
   ASSERT (! variableTagName. empty ());
-  ASSERT (& names == & query. names);
+  ASSERT (& names == & query. names);  
+  ASSERT (query. getName () != variableTagName);
   
   if (nameIndex != query. nameIndex)
-    return;
+    return false;
   if (   ! query. token. empty () 
       && ! (query. token == token)
      )
-    return;
+    return false;
     
   for (const Data* queryChild : query. children)
     if (queryChild->getName () != variableTagName)
     {
       ASSERT (queryChild->parent);
+      bool unified = false;
       for (const Data* dataChild : children)
-        dataChild->unify_ (*queryChild, variableTagName, tag2values, tt);
+        if (dataChild->unify_ (*queryChild, rowTagName, variableTagName, tag2values, tt))
+          unified = true;
+      if (   ! unified 
+          && ! queryChild->hasDescendantName (variableTagName)  // Otherwise the column is missed
+         )
+        return false;
     }
   
   if (const Data* columnData = query. name2child (variableTagName))
-    if (! token. empty ())
-      tag2values [columnData->token. name] << token. name;
+  {
+    const string text (getText ());
+    if (! text. empty ())
+      tag2values [columnData->token. name] << text;
+  }
     
-  if (   ! query. parent  
+  if (   query. getName () == rowTagName
       && ! tag2values. empty ()
      )
   {
@@ -952,6 +969,8 @@ void Data::unify_ (const Data& query,
     tt. rows << std::move (row);
     tag2values. clear ();
   }
+  
+  return true;
 }
 
 

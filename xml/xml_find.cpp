@@ -54,6 +54,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("target", "Target XML file");
   	  addPositional ("query", "Query XML file");
+  	  addPositional ("row_tag", "Tag name in query indicating rows in .tsv-file");
   	  addKey ("variable_tag", "Tag name in query indicating .tsv-columns.\n\
 Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable_tag \">\" goes to the column named column_name in the output .tsv-file", "q");
   	}
@@ -64,8 +65,10 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
 	{
 		const string targetFName = getArg ("target");
 		const string queryFName  = getArg ("query");
+		const string rowTag      = getArg ("row_tag");
 		const string variableTag = getArg ("variable_tag");
 		
+		QC_ASSERT (! rowTag. empty ());
 		QC_ASSERT (! variableTag. empty ());
 	
 	
@@ -80,13 +83,13 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
     query->qc ();
     if (verbose ())
     {
-      const string fName ("xml_find.xml");
-      Xml::TextFile f (fName, /*false, false,*/ "XML");  // PAR
+      const string fName ("xml_find_query.xml");
+      Xml::TextFile f (fName, "XML");  
       query->saveXml (f);
       cerr << "XML file " << strQuote (fName) << " is saved" << endl;
     }
           
-    const TextTable tt (target->unify (*query, variableTag));
+    const TextTable tt (target->unify (*query, rowTag, variableTag));  
     tt. qc ();
     tt. saveText (cout);
 	}

@@ -242,8 +242,6 @@ public:
   void clear () override;
   void qc () const override;
   void saveXml (Xml::File &f) const override;
-  void saveText (ostream &os) const override;
-    // attribute => skip
   string getName () const final
     { return nameIndex == no_index ? noString : names. num2elem [nameIndex]; }
   
@@ -266,6 +264,15 @@ public:
       for (const Data* child : children)
         n += child->getLeaves ();
       return n;
+    }
+  string getText () const;
+  bool hasDescendantName (const string &name_arg) const
+    { if (getName () == name_arg)
+        return true;
+      for (const Data* child : children)
+        if (child->hasDescendantName (name_arg))
+          return true;
+      return false;
     }
   bool contains (const string &needle,
                  bool targetNameP,
@@ -303,12 +310,14 @@ public:
       return nullptr;
     }
   TextTable unify (const Data& query,
+                   const string &rowTagName,
                    const string &variableTagName) const;
     // Text of *this unifying with "<" variableTagName ">" column_name "</" variableTagName ">" in query --> column column_name in TextTable
     // Requires: !query.parent
 private:
   StringVector tagName2texts (const string &tagName) const;
-  void unify_ (const Data& query,
+  bool unify_ (const Data& query,
+               const string &rowTagName,
                const string &variableTagName,
                map<string,StringVector> &tag2values,
                TextTable &tt) const;
