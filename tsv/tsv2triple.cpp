@@ -89,7 +89,9 @@ struct ThisApplication : Application
       if (! keyS. empty ())
         keyS += '\t';
       FFOR (size_t, i, row. size ())
-        if (! keys. contains (i))
+        if (   ! keys. contains (i)
+            && ! row [i]. empty ()
+           )
           cout << keyS << tab. header [i]. name << '\t' << row [i] << endl;
     }
 	}
