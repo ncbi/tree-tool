@@ -13,7 +13,6 @@ if [ $# -ne 5 ]; then
 fi
 PREFIX=$1
 HMM_LIB=$2
-#HMM_DIR=$3
 CUTOFF=$3
 CORES=$4
 LOG=$5
