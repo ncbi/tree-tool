@@ -4592,6 +4592,7 @@ public:
     , useTmp (useTmp_arg)
     {}
  ~ShellApplication ();
+   // Invokes: removeDirectory(tmp) if !logPtr
 
 
 protected:
