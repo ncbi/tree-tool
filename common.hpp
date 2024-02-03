@@ -1612,10 +1612,18 @@ struct OFStream : ofstream
 	  { open (dirName, fileName, extension); }
 	explicit OFStream (const string &pathName)
 	  { open (noString, pathName, noString); }
+	  
+	  
 	static void create (const string &pathName)
-	  { OFStream f (pathName); }
-
-
+	  { try { OFStream f (pathName); }
+		    catch (...) { throw runtime_error ("Cannot create output file " + strQuote (pathName)); }
+	  }
+	static void prepare (const string &pathName)
+	  { if (! pathName. empty ())
+	    { create (pathName);
+        removeFile (pathName);
+      }
+	  }
 	void open (const string &dirName,
 	           const string &fileName,
 	           const string &extension);
@@ -3326,6 +3334,9 @@ bool verbose (int inc = 0);
 
 int getVerbosity ();
 
+inline bool getQuiet ()
+  { return ! verbose (1); }
+
 
 class Verbose
 {
@@ -3399,8 +3410,8 @@ public:
  ~Chronometer_OnePass ();
     // Print to os
 };
-	
-	
+
+
 	
 
 /////////////////////////////////////// cerr //////////////////////////////////////////
@@ -3447,14 +3458,9 @@ public:
 
 struct Stderr : Singleton<Stderr>
 {
-  const bool quiet;
+  bool quiet {false};
 
   
-  explicit Stderr (bool quiet_arg)
-    : quiet (quiet_arg)
-    {}
-
-    
   template <typename T>
     Stderr& operator<< (const T& t) 
       { if (quiet)
@@ -3477,6 +3483,7 @@ private:
   Stderr& stderr;
   const OColor oc;
 public:  
+
   
   explicit Warning (Stderr &stderr_arg)
     : stderr (stderr_arg)
@@ -3487,6 +3494,15 @@ public:
 };
 
 
+
+struct Chronometer_OnePass_cerr : Chronometer_OnePass
+{
+  explicit Chronometer_OnePass_cerr (const string &name_arg)
+    : Chronometer_OnePass (name_arg, cerr, false, qc_on && ! getQuiet ())
+    {}
+};
+
+	
 
 
 ////////////////////////////////////// Input ///////////////////////////////////////////
@@ -4526,7 +4542,7 @@ protected:
 protected:
   virtual void initEnvironment ()
     {}
-  virtual void createTmp ()
+  virtual void initVar ()
     {}
   string getInstruction () const;
   virtual string getHelp () const;
@@ -4551,6 +4567,7 @@ private:
 struct ShellApplication : Application
 // Requires: SHELL=bash
 {
+protected:
   // Environment
   const bool useTmp;
   string tmp;
@@ -4558,13 +4575,15 @@ struct ShellApplication : Application
     // If log is used then tmp is printed in the log file and the temporary files are not deleted 
 private:
   bool tmpCreated {false};
-public:
+protected:
   string execDir;
     // Ends with '/'
     // Physically real directory of the software
   mutable KeyValue prog2dir;
+  mutable Stderr stderr;
+public:
   
-
+  
   ShellApplication (const string &description_arg,
                     bool needsArg_arg,
                     bool gnu_arg,
@@ -4577,7 +4596,9 @@ public:
 
 protected:
   void initEnvironment () override;
-  void createTmp () override;
+  void initVar () override;
+    // stderr << "Running: " << getCommandLine ()
+    // threads_max correction
   string getHelp () const override;
 private:
   void body () const final;
@@ -4595,6 +4616,14 @@ protected:
                    const string &logFName = noString) const;
     // Return: `cmd > <tmp>/tmpName && cat <tmp>/tmpName`
     // Requires: cmd produces one line
+  string uncompress (const string &quotedFName,
+                     const string &suffix) const;
+    // Return: quotedFName or tmp + "/" + suffix
+    // Invokes: exec("gunzip")
+  string getBlastThreadsParam (const string &blast,
+                               size_t threads_max_max) const;
+    // Input: blast: "blastp", "blastx", etc.
+    // Invokes: fullProg(blast)
 };
 #endif
 

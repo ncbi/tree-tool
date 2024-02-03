@@ -3597,6 +3597,7 @@ void Application::addDefaultArgs ()
 	  addKey ("threads", "Max. number of threads", "1", '\0', "THREADS");
 	  addFlag ("debug", "Integrity checks");
     addKey ("log", "Error log file, appended, opened on application start", "", '\0', "LOG");
+    addFlag ("quiet", "Suppress messages to STDERR", 'q');
   }
 	else
 	{ 
@@ -3970,11 +3971,15 @@ int Application::run (int argc,
   		throw runtime_error ("Cannot profile with threads");
 
 
-  	const Verbose vrb (gnu ? 0 : str2<int> (getArg ("verbose")));
+  	const Verbose vrb (gnu 
+  	                     ? getFlag ("quiet")
+  	                       ? -1
+  	                       : 0 
+  	                     : str2<int> (getArg ("verbose"))
+  	                   );
 	  	
-  
+		initVar ();
 		qc ();
-		createTmp ();
   	body ();
 
   
@@ -3988,7 +3993,7 @@ int Application::run (int argc,
 	}
 	catch (const std::exception &e) 
 	{ 
-	  errorExit ((e. what () + ifS (errno, string (": ") + strerror (errno))). c_str ());
+	  errorExit ((e. what () + ifS (errno, string ("\n") + strerror (errno))). c_str ());
   }
 
 
@@ -4044,7 +4049,7 @@ void ShellApplication::initEnvironment ()
 
 
 
-void ShellApplication::createTmp () 
+void ShellApplication::initVar () 
 {
   ASSERT (! tmpCreated);
   
@@ -4069,6 +4074,18 @@ void ShellApplication::createTmp ()
     }
     
     tmpCreated = true;
+  }
+  
+  stderr. quiet = getQuiet ();
+  stderr << "Running: " << getCommandLine () << '\n';
+
+  // threads_max
+  const size_t threads_max_max = get_threads_max_max ();
+  if (threads_max > threads_max_max)
+  {
+    stderr << "The number of threads cannot be greater than " << threads_max_max << " on this computer" << '\n'
+           << "The current number of threads is " << threads_max << ", reducing to " << threads_max_max << '\n';
+    threads_max = threads_max_max;
   }
 }
 
@@ -4140,6 +4157,86 @@ string ShellApplication::exec2str (const string &cmd,
   if (vec. size () != 1)
     throw runtime_error (cmd + "\nOne line is expected");
   return vec [0];  
+}
+
+
+
+string ShellApplication::uncompress (const string &quotedFName,
+                                     const string &suffix) const
+{
+  const string res (shellQuote (tmp + "/" + suffix));
+  QC_ASSERT (quotedFName != res);
+  const string s (unQuote (quotedFName));
+  if (isRight (s, ".gz"))  
+  {
+    exec ("gunzip -c " + quotedFName + " > " + res);
+    return res;
+  }
+  return quotedFName;  
+}
+
+
+
+string ShellApplication::getBlastThreadsParam (const string &blast,
+                                               size_t threads_max_max) const
+{
+  const size_t t = min (threads_max, threads_max_max);
+  if (t <= 1)  // One thread is main
+    return noString;
+  
+	bool num_threadsP = false;
+	bool mt_modeP = false;
+	{
+	  const string blast_help (tmp + "/blast_help");
+    exec (fullProg (blast) + " -help > " + blast_help);
+    LineInput f (blast_help);
+    while (f. nextLine ())
+    {
+      trim (f. line);
+      if (contains (f. line, "-num_threads "))
+        num_threadsP = true;
+      if (contains (f. line, "-mt_mode "))
+        mt_modeP = true;
+    }
+  }
+  
+  if (! num_threadsP)
+    return noString;
+  
+  string s ("  -num_threads " + to_string (t));
+  
+  bool mt_mode_works = true;
+#ifdef __APPLE__
+  {
+    mt_mode_works = false;
+    const string blast_version (tmp + "/blast_version");
+    exec (fullProg (blast) + " -version > " + blast_version);
+    LineInput f (blast_version);
+    while (f. nextLine ())
+    {
+      trim (f. line);
+      const string prefix (blast + ": ");
+      if (isLeft (f. line, prefix))
+      {
+        trimSuffix (f. line, "+");
+        Istringstream iss;
+        iss. reset (f. line. substr (prefix. size ()));
+        const SoftwareVersion v (iss);
+      //PRINT (v);  
+        iss. reset ("2.13.0");  // PD-4560
+        const SoftwareVersion threshold (iss);;
+      //PRINT (threshold);  
+        mt_mode_works = (threshold <= v);
+      }
+      break;
+    }
+  }
+#endif
+
+  if (mt_modeP && mt_mode_works)  
+    s += "  -mt_mode 1";
+    
+  return s;
 }
 
 
