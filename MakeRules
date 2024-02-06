@@ -130,6 +130,8 @@ ifdef AT_NCBI
   AMRFINDER_DIR=$(CODE_DIR)/amrfinder
   $(AMRFINDER_DIR)/alignment.o: $(AMRFINDER_DIR)/alignment.hpp $(COMMON_RAW_HPP)
 
+  STXTYPER_DIR=$(CODE_DIR)/stxtyper
+
   DATABASE_DIR = $(CODE_DIR)/database
   COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application 
   $(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
