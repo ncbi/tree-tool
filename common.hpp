@@ -1471,6 +1471,13 @@ struct Color
 };
   
   
+inline string colorize (const string &s,
+                        bool active)
+  { if (! active)
+      return s;
+    return Color::code (Color::white, true) + s + Color::code ();
+  }
+  
 
 class OColor
 // Output color
@@ -1628,6 +1635,26 @@ struct OFStream : ofstream
 	           const string &fileName,
 	           const string &extension);
 	  // Input: !fileName.empty()
+};
+
+
+
+struct Cout : Singleton<Cout>
+{
+  unique_ptr<OFStream> f;
+  
+  
+  explicit Cout (const string &fName)
+    { if (! fName. empty ())
+        f. reset (new OFStream (fName));
+    }
+    
+  
+  ostream& operator* ()
+    { if (f)
+        return *f;
+      return cout;
+    }
 };
 
 
@@ -3401,6 +3428,7 @@ private:
   const bool active;
 	const time_t start;
 public:
+  static constexpr Color::Type color {Color::magenta};  // PAR
   
 	
   explicit Chronometer_OnePass (const string &name_arg,
@@ -3487,7 +3515,7 @@ public:
   
   explicit Warning (Stderr &stderr_arg)
     : stderr (stderr_arg)
-    , oc (cerr, Color::yellow, true, ! stderr. quiet)
+    , oc (cerr, Color::yellow /*PAR*/, true, ! stderr. quiet)  
     { stderr << "WARNING: "; }
  ~Warning ()
     { stderr << "\n"; }
@@ -4392,6 +4420,7 @@ struct Application : Singleton<Application>, Root
   const string description;
   const bool needsArg;
   const bool gnu;
+  const bool threadsUsed;
   string version {"0.0.0"};
   static constexpr const char* helpS {"help"};
   static constexpr const char* versionS {"version"};
@@ -4475,10 +4504,12 @@ public:
 protected:
   explicit Application (const string &description_arg,
                         bool needsArg_arg = true,
-                        bool gnu_arg = false)               
+                        bool gnu_arg = false,
+                        bool threadsUsed_arg = false)   
     : description (description_arg)
     , needsArg (needsArg_arg)
     , gnu (gnu_arg)
+    , threadsUsed (threadsUsed_arg)
     {}
     // To invoke: addKey(), addFlag(), addPositional(), setRequiredGroup()
   // <Command-line parameters> ::= <arg>*
@@ -4544,8 +4575,9 @@ protected:
     {}
   virtual void initVar ()
     {}
-  string getInstruction () const;
+  string getInstruction (bool coutP) const;
   virtual string getHelp () const;
+    // Requires: must be printed to cout
   string makeKey (const string &param,
                   const string &value) const
     { if (value. empty ())
@@ -4581,14 +4613,16 @@ protected:
     // Physically real directory of the software
   mutable KeyValue prog2dir;
   mutable Stderr stderr;
+  time_t startTime {0};
 public:
   
   
   ShellApplication (const string &description_arg,
                     bool needsArg_arg,
+                    bool threadsUsed_arg,
                     bool gnu_arg,
                     bool useTmp_arg)
-    : Application (description_arg, needsArg_arg, gnu_arg)
+    : Application (description_arg, needsArg_arg, gnu_arg, threadsUsed_arg)
     , useTmp (useTmp_arg)
     {}
  ~ShellApplication ();
