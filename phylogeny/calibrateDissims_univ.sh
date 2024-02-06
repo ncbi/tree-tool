@@ -1,32 +1,32 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 10 ]; then
+if [ $# -ne 8 ]; then
   echo "Output: hmm-univ.stat, positiveAverage.out, data.dm, tree"
   echo "#1: input .dm-file without '.dm' created by univ_separate.sh"
-  echo "#2: delete hybrids (0/1)"
-  echo "#3: dissimilarity power (> 0)"
-  echo "#4: outlierSEs"
-  echo "#5: ignoreZero (0/1)"
+  echo "#2: phen/"
+  echo "#3: phen/ is large (0/1)"
+ #echo "#2: delete hybrids (0/1)"
+  echo "#4: dissimilarity power (> 0)"
+  echo "#5: outlierSEs"
+ #echo "#5: ignoreZero (0/1)"
   echo "#6: dissim_coeff: >=0 (>0 <=> variance = linExp)"
   echo "#7: variance_power (NAN <=> variance = linExp)"
   echo "#8: variance_dissim (0/1)"
-  echo "#9: phen/"
-  echo "#10: phen/ is large (0/1)"
   exit 1
 fi
 INPUT=$1
-DELETE_HYBRIDS=$2
-DISSIM_POWER=$3
-OUTLIER_SES=$4
-IGNORE_ZERO=$5
+PHEN=$2
+LARGE=$3
+DISSIM_POWER=$4
+OUTLIER_SES=$5
 DISSIM_COEFF=$6
 VAR_POWER=$7
 VARIANCE_DISSIM=$8
-PHEN=$9
-LARGE=${10}
 
 
+DELETE_HYBRIDS=0
+IGNORE_ZERO=1
 
 
 section "Estimating hmm-univ.stat"
