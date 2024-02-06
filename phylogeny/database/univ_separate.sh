@@ -28,7 +28,7 @@ fi
 
 
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 # $F.pairs.dir
