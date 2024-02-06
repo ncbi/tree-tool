@@ -15,13 +15,14 @@ fi
 
 
 DATA=$THIS/data
+#set -x
 
 
 #if false; then  
 section "mdsTree: Enterobacteriaceae"
 #rm -rf $DATA/Enterobacteriaceae.dir/
 gunzip -c $DATA/Enterobacteriaceae.dm.gz > $TMP.dm
-$THIS/../dm/mdsTree.sh $TMP Conservation 2  &> $TMP.out
+$THIS/../dm/mdsTree.sh $TMP "Conservation" 2  &> $TMP.out
 $THIS/makeDistTree  -qc -input_tree $TMP.dir/  -data $TMP  -dissim_attr "Conservation"  -variance linExp  -optimize  -output_tree Enterobacteriaceae.tree > Enterobacteriaceae.distTree
 $THIS/distTree_compare_criteria.sh Enterobacteriaceae.distTree $DATA/Enterobacteriaceae.distTree
 rm Enterobacteriaceae.distTree
