@@ -40,7 +40,7 @@ all:	\
 	mds \
 	normalCdf \
 	numeric_test \
-	objs \
+	obj2missing \
 	pca \
 	pca2clusters \
 	positiveAverage \
@@ -244,10 +244,10 @@ numeric_test:	$(numeric_testOBJS)
 	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
 	$(ECHO)
 
-objs.o:  $(DM_HPP) 
-objsOBJS=objs.o $(DM_OBJ) 
-objs:	$(objsOBJS)
-	$(CXX) -o $@ $(objsOBJS) $(LIBS)
+obj2missing.o:  $(DM_HPP) 
+obj2missingOBJS=obj2missing.o $(DM_OBJ) 
+obj2missing:	$(obj2missingOBJS)
+	$(CXX) -o $@ $(obj2missingOBJS) $(LIBS)
 	$(ECHO)
 
 pca.o:  $(PREDICT_HPP) 

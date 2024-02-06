@@ -1,4 +1,4 @@
-// objs.cpp
+// obj2missing.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Object statistics
+*   Object missings statistics
 *
 */
 
@@ -51,7 +51,7 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print object statistics of a " + dmSuff + "-file")
+    : Application ("Print object missings statistics of a " + dmSuff + "-file")
   {
     version = VERSION;
 	  addPositional ("file", dmSuff + "-file");
