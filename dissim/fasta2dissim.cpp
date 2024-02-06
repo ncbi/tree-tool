@@ -149,7 +149,7 @@ void runMatches (size_t from,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Create a dataset with a dissimilarity attribute \"" + attrName + "\" of a collection of DNA or proteins or print: <obj1> <obj2> <dissim> <score> <self-score1> <self-score2>")
+    : Application ("Create a dataset with a dissimilarity attribute \"" + attrName + "\" of a collection of DNA or proteins or print: <obj1> <obj2> <dissim> <score> <self-score1> <self-score2>", true, false, true)
     {
       version = VERSION;
   	  // Input

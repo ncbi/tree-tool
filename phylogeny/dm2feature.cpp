@@ -91,7 +91,7 @@ void savePhen (size_t from,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Create files in makeFeatureTree format forma Data Master file")
+    : Application ("Create files in makeFeatureTree format forma Data Master file", true, false, true)
     {
   	  version = VERSION;
   	  addPositional ("data", dmSuff + "-file"); 

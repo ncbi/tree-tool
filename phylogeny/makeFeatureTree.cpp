@@ -54,7 +54,7 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-  	: Application ("Optimize a feature tree")
+  	: Application ("Optimize a feature tree", true, false, true)
   	{
   	  version = VERSION;
   	  

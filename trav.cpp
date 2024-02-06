@@ -113,7 +113,7 @@ void executeCommands (size_t from,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Apply <command> to all <items>")
+    : Application ("Apply <command> to all <items>", true, false, true)
   	{
       version = VERSION;
   	  addPositional ("items", "Items container: file with items (end-of-line separated), a directory (in this case items are files in this directory in raw order), or a natural number");
