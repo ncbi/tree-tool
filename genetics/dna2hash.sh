@@ -16,7 +16,7 @@ CDS="$4"
 
 
 if [ $TARGET ]; then
-  $THIS/../check_file.sh $TARGET
+  $THIS/../check_file.sh $TARGET 1
 fi
 
 
