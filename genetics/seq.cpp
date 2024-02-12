@@ -2079,7 +2079,7 @@ Vector<Peptide> Dna::getOrfs (Frame frame,
           start = seq. size () - stop;
           stop  = seq. size () - start_;
         }
-        peps << std::move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop + 1), pepSeq, false));
+        peps << std::move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop), pepSeq, false));
       }
       start = i + 3;
       pepSeq. clear ();
@@ -2100,7 +2100,7 @@ Vector<Peptide> Dna::getOrfs (Frame frame,
       start = seq. size () - stop;
       stop  = seq. size () - start_;
     }
-    peps << std::move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop + 1), pepSeq, false));
+    peps << std::move (Peptide (getId () + ":" + to_string (start + 1) + ".." + to_string (stop), pepSeq, false));
   }
   
   return peps;
