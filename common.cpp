@@ -3725,6 +3725,8 @@ string Application::getInstruction (bool coutP) const
   if (gnu)
     instr += " or " + programName + " -" + helpS [0];
   instr += "\n" + colorize ("VERSION", coutP) + ": " + programName + " " + ifS (gnu, "-") + "-" + versionS;
+  if (gnu)
+    instr += " or " + programName + " -" + versionS [0];
 
   return instr;
 }
@@ -3851,7 +3853,7 @@ int Application::run (int argc,
             cout << getHelp () << endl;
             return 0;
           }
-          if (name == versionS)
+          if (name == versionS || (name. empty () && c == versionS [0] && gnu))
           {
             cout << version << endl;
             return 0;
