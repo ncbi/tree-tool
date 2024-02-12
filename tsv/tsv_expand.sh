@@ -15,7 +15,8 @@ F2=$2
 OPT="$3"
 
 
-$THIS/../check_file.sh $F2
+$THIS/../check_file.sh $F1 1
+$THIS/../check_file.sh $F2 1
 
 mv $F1 $F1.bak
 

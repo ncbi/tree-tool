@@ -21,6 +21,9 @@ QUAL="$6"
 
 
 $THIS/../check_tmp.sh
+$THIS/../check_file.sh $PHEN 0
+
+
 TMP=`mktemp`
 comment $TMP
 

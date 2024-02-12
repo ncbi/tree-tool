@@ -16,7 +16,7 @@ if [ $LARGE -eq 1 ]; then
   H=`$THIS/../../file2hash $G`
 fi
 
-$THIS/../../check_file.sh genome/$H/$G/$G.prot-univ
+$THIS/../../check_file.sh genome/$H/$G/$G.prot-univ 1
 
 
 TMP=`mktemp`

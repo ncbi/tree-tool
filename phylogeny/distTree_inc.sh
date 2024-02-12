@@ -23,7 +23,7 @@ RELDIR="$4"
 $THIS/../check_tmp.sh
 
 if [ $GOOD ]; then
-  $THIS/../check_file.sh $GOOD
+  $THIS/../check_file.sh $GOOD 1
 fi
 
 

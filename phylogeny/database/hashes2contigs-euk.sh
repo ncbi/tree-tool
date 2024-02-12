@@ -35,7 +35,7 @@ function run
 {
   local i=$1
   section "Making ${OUT[$i]}"
-  $THIS/../../check_file.sh $GENOME_DIR/${HASH[$i]}/${NAME[$i]}/genemark.gtf.gz
+  $THIS/../../check_file.sh $GENOME_DIR/${HASH[$i]}/${NAME[$i]}/genemark.gtf.gz 1
   zcat $GENOME_DIR/${HASH[$i]}/${NAME[$i]}/genemark.gtf.gz > $TMP.genemark.gtf.$i
   $THIS/../../genetics/GeneMark2CDS ${ASM[$i]} $TMP.genemark.gtf.$i  -gtf  -gencode 1  -cds $TMP.cds.$i  -prot_len_min 150  -complete  -qc &> /dev/null
   $THIS/../../genetics/fasta2hash  $TMP.cds.$i  $TMP.out  -gene_finder "GeneMark"  -cds  -translate  -target_hashes $TMP.hash_common  -target_seq $TMP.contig.$i  &> /dev/null
