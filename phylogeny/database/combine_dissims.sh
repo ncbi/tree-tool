@@ -31,9 +31,6 @@ COEFF=${11}
 LOG=${12}
 
 
-#set -x
-
-
 CDS=1  # d_CDS is used
 DISSIM_SCALE_LINES=`cat $DISSIM_SCALE | grep -v '^ *$' | wc -l`
 case $DISSIM_SCALE_LINES in
@@ -69,7 +66,7 @@ fi
 
 
 TMP=`mktemp`
-#echo $TMP 
+#comment $TMP 
 #set -x
 
 
