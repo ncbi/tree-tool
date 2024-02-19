@@ -7,9 +7,12 @@ set -x
 distTree_inc_save.sh $PANFS/GenBank/bacteria/inc      inc/genome/bacteria
 distTree_inc_save.sh $PANFS/GenBank/bacteria_type/inc inc/genome/bacteria_type
 distTree_inc_save.sh $PANFS/GenBank/prok/inc          inc/genome/prokaryota
+distTree_inc_save.sh $PANFS/GenBank/Alveolata/inc     inc/genome/Alveolata
+distTree_inc_save.sh $PANFS/GenBank/Euglenozoa/inc    inc/genome/Euglenozoa
 distTree_inc_save.sh $PANFS/GenBank/Chlorophyta/inc   inc/genome/Chlorophyta
 distTree_inc_save.sh $PANFS/GenBank/Fungi/inc         inc/genome/Fungi
 distTree_inc_save.sh $PANFS/GenBank/Protists/inc      inc/genome/Protists
+distTree_inc_save.sh $PANFS/GenBank/Stramenopiles/inc inc/genome/Stramenopiles
 distTree_inc_save.sh $PANFS/GenBank/Viridiplantae/inc inc/genome/Viridiplantae
 distTree_inc_save.sh $PANFS/GenBank/Covid/inc         inc/virus/SARS-CoV-2
 distTree_inc_save.sh $PANFS/RefSeq/Metazoa/inc        inc/genome/Metazoa-RefSeq
