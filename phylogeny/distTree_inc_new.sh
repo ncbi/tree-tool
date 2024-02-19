@@ -187,6 +187,7 @@ if [ -e $INC/delete_criterion_outliers ]; then
 fi
 
 HYBRID=""
+DISSIM_BOUNDARY="NAN"
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
@@ -267,6 +268,12 @@ fi
 GENOGROUP_BARRIER=`cat $INC/genogroup_barrier`
 if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   section "New genogroup outliers"
+  if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
+    COMP=`echo "$DISSIM_BOUNDARY < $GENOGROUP_BARRIER" | bc`
+    if [ $COMP == 1 ]; then
+      error "dissim_boundary ($DISSIM_BOUNDARY) < genogroup_barrier ($GENOGROUP_BARRIER)"
+    fi
+  fi
   $THIS/tree2genogroup $INC/tree  $GENOGROUP_BARRIER  -genogroup_table $INC/genogroup_table
   $INC/genogroup2db.sh $INC/genogroup_table > $INC/outlier-genogroup  
   mv $INC/genogroup_table $INC/hist/genogroup_table.$VER
