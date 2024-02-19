@@ -108,7 +108,7 @@ struct ThisApplication : Application
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
-	  addKey ("dissim_boundary", "Boundary between two merged dissmilarities causing discontinuity", toString (dissim_boundary));
+	  addKey ("dissim_boundary", "Point of discontinuity in the dissimilarity distribution (= genospecies barrier)", toString (dissim_boundary));
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
@@ -131,6 +131,8 @@ struct ThisApplication : Application
 	//addFlag ("deredundify_indiscernible", "Remove dissimilarities from the file <output_dissim> for indiscernible objects with non-smallest names in indiscernibility classes");
     addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
     addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
+    
+    documentationUrl = "https://github.com/ncbi/tree-tool";
 	}
 	
 	
