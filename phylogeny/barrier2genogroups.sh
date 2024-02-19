@@ -19,7 +19,7 @@ STEP=$4
 OUT=$5
 
 
-$THIS/../grid_wait.sh 1 > /dev/stderr
+$THIS/../grid_wait.sh 1 >> /dev/stderr
 i=$MIN
 while [ $i -le $MAX ]; do
   T=`echo "$i/$COEFF" | bc -l | sed 's/0*$//1' | sed 's/^\./0./1'`

@@ -19,7 +19,7 @@ comment $TMP
 
 
 VER=`cat $INC/version`
-echo $VER > /dev/stderr
+echo $VER >> /dev/stderr
 $THIS/tree2obj.sh $INC/hist/tree.1 > $TMP.init
 LARGE=0
 if [ -e $INC/large ]; then
@@ -32,7 +32,7 @@ N=1
 while [ $N -lt $VER ]
 do
   N=$(( $N + 1 ))
-  printf "\r%d" $N > /dev/stderr
+  printf "\r%d" $N >> /dev/stderr
   if [ -e $INC/hist/tree.$N.gz ]; then
     gunzip $INC/hist/tree.$N.gz -c > $TMP
   elif [ -e $INC/hist/tree.$N ]; then
@@ -45,7 +45,7 @@ do
   RES=`grep ' V !$' $TMP.makeFeatureTree | sed 's/^#.*: //1' | sed 's/ .*$//1'`
   echo -e "$N\t$OBJS\t$RES"
 done
-echo "" > /dev/stderr
+echo "" >> /dev/stderr
 
 
 rm $TMP*

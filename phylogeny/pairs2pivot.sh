@@ -12,7 +12,7 @@ OUT=$2
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr
+#comment $TMP 
 
 
 function make_list
@@ -20,7 +20,7 @@ function make_list
   local IN=$1
   $THIS/../dm/conversion/obj_attr2dm $IN "Real" -decimals 6 -qc > $TMP.dm
   $THIS/../dm/dm2dist $TMP "dist" -qc > $TMP.dist.dm
-  $THIS/makeDistTree  -data $TMP.dist  -dissim_attr "dist"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TMP.tree > /dev/stderr
+  $THIS/makeDistTree  -data $TMP.dist  -dissim_attr "dist"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TMP.tree >> /dev/stderr
   $THIS/tree2obj_raw.sh $TMP.tree
 }
 
