@@ -16,7 +16,7 @@ COV=$4
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr 
+#comment $TMP 
 #set -x
 
 
