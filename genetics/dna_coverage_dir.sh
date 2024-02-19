@@ -21,7 +21,7 @@ OUT=$6
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr
+#comment $TMP 
 
 
 makeblastdb  -in $SUBJ  -dbtype nucl  -blastdb_version 4  -out $TMP.db  -logfile $TMP.log

@@ -12,7 +12,7 @@ F2=$2
 
 
 TMP=`mktemp`
-#echo $TMP > /dev/stderr 
+#comment $TMP 
 #set -x
 
 

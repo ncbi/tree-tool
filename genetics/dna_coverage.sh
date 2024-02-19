@@ -32,7 +32,7 @@ fi
 
 
 TMP=`mktemp`  
-#echo $TMP > /dev/stderr
+#comment $TMP 
 #set -x
 
 
