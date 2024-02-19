@@ -259,29 +259,6 @@ struct ThisApplication : Application
      // Clusters with a small probabolity may be not coverde by a bin
 
 
-  #if 0
-    auto binIt = bins. begin ();
-    for (Iterator it (sm); it ();)  
-      if (! clusterAttr->isMissing (*it))
-      {
-        const Real score = (*scoreAttr) [*it];
-        if (score < binIt->start)
-          binIt++;
-        ASSERT (binIt != bins. end ());
-        binIt->add (score, it. mult);
-      }
-      
-    ITER (Vector<Bin>, it, bins)
-    {
-      const auto &nextIt = next (it);
-      if (nextIt == bins. end ())
-        break;
-      if (it->grayZone_lo + nextIt->grayZone_hi >= min (it->mult, nextIt->mult) * 0.2)  // PAR
-        it->merge = true;
-    }
-  #endif
-
-
     if (verbose ())
     {
       {
