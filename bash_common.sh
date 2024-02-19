@@ -64,5 +64,5 @@ function success
 function comment
 {
 	local MSG="$1"
-  echo -e "${MAGENTA}${MSG}${NOCOLOR}" > /dev/stderr
+  echo -e "${MAGENTA}${MSG}${NOCOLOR}" >> /dev/stderr
 }
