@@ -92,7 +92,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   section "distTriangle"
  #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
   mkdir $INC/clust
-  $THIS/../dm/distTriangle $INC/../data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new
+  $THIS/../dm/distTriangle $INC/../data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new > $INC/hist/distTriangle.1
   N=`ls $INC/clust/ | wc -l`
   if [ $N -gt 1 ]; then
     error "# Clusters: $N"
