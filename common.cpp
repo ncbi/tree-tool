@@ -273,7 +273,7 @@ namespace
 
 void errorExitStr (const string &msg)
 { 
-  if (! uncaught_exception ())
+  if (! std::uncaught_exception ())
     errorExit (msg. c_str ()); 
 }
 
