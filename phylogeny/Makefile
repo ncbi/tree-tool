@@ -1,3 +1,4 @@
+CODE_DIR=$(shell pwd)/../..
 include ../MakeRules
 CPPFLAGS=$(OptCPPFLAGS) 
 #CPPFLAGS=$(DebugCPPFLAGS)
