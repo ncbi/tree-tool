@@ -36,8 +36,6 @@
 
 #include "seq.hpp"
 
-#include <cmath>
-
 #include "../common.inc"
 
 
