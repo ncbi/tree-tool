@@ -136,15 +136,16 @@ ifdef AT_NCBI
   COMMON = $(CPP_DIR)/common $(DATABASE_DIR)/application 
   $(DATABASE_DIR)/application.o:	$(DATABASE_DIR)/application.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/db.o:	$(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
-  $(DATABASE_DIR)/dbPhyl.o:	$(DATABASE_DIR)/dbPhyl.hpp $(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
   $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
 
   $(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
   GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq
-
   GenBank_LIB =  xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache  bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect  
   # $(SRAREAD_LIBS) $(XFORMAT_LIBS) 
   #  ncbi_xloader_sra  xid_wgs   ncbi_id2proc_wgs 
   GenBank_LIBS = $(DL_LIBS)  -lz  $(BERKELEYDB_LIBS) -lxutil $(SDBAPI_LIBS) $(SYBASE_LIBS)  $(PSG_CLIENT_LIBS) 
+  
+  PHYLOGENY_DIR = $(CODE_DIR)/phylogeny
+  $(PHYLOGENY_DIR)/dbPhyl.o:	$(PHYLOGENY_DIR)/dbPhyl.hpp $(DATABASE_DIR)/db.hpp $(COMMON_RAW_HPP)
 endif
 
