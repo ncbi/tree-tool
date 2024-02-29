@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( realpath $( dirname $0 ) )
 source $THIS/../bash_common.sh
 if [ $# -ne 8 ]; then
   echo "Create annotation files for #1 in the current directory"

@@ -1,7 +1,6 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
-EXEC=$THIS/../..
-source $EXEC/bash_common.sh
+THIS=$( realpath $( dirname $0 ) )
+source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Input: hmm-univ.LIB, genome/#hash/#1/#1.prot.gz"
   echo "Output: genome/#hash/#1/#1.{univ,prot-univ}"
@@ -20,5 +19,5 @@ cd genome/$HASH/$ASM/
 if [ ! -e $ASM.prot ]; then
   gunzip $ASM.prot.gz
 fi
-$EXEC/genetics/prots2hmm_univ.sh $ASM ../../../hmm-univ.LIB 0 15 $LOG 
+$THIS/../genetics/prots2hmm_univ.sh $ASM ../../../hmm-univ.LIB 0 15 $LOG 
 gzip $ASM.prot

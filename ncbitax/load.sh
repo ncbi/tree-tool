@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( realpath $( dirname $0 ) )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Load NCBI taxonomy data into the database #2 on the Microsoft SQL Server server #1, schema #3"
@@ -18,7 +18,7 @@ SCHEMA=$3
 
 #if false; then
 TMP=`mktemp`
-echo $TMP
+comment $TMP
 
 
 mkdir $TMP.dmp

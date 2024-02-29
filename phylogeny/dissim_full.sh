@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( realpath $( dirname $0 ) )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Build a distance tree #2/inc/tree using precomputed pairwise dissimilarities"
