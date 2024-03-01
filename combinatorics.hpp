@@ -56,7 +56,7 @@ bool next (vector<size_t> &indexes,
            const vector<size_t> &indexes_max);
   // Return: false <=> search is finished
   // Update: indexes: 0 <= indexes[i] <= indexes_max[i]
-  // Search size = \prod_i (indexes_max [i] + 1)
+  // Search size = \prod_i (indexes_max[i] + 1)
 
 
 
@@ -83,7 +83,7 @@ struct SubsetSearch
 
 struct MinSubsetSearch
 // Search time = O(2^n)
-// Usage: MinSubsetSearch mss; ASSERT (!mss.complete()); while (mss.next()) <use mss.subset>; ASSERT (mss.subset.empty());
+// Usage: MinSubsetSearch mss; ASSERT(!mss.complete()); while (mss.next()) <use mss.subset>; ASSERT(mss.subset.empty());
 {
   const size_t n;
     // Set size
