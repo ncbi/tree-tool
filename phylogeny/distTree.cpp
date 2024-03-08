@@ -1335,8 +1335,8 @@ Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max)
   for (ClosestLeaf &cl : vec)
   {
     const DisjointCluster* dc = var_cast (cl. dc) -> getDisjointCluster ();
-    auto it = dc2dist. find (dc);
-    if (it == dc2dist. end ())
+    const auto it = dc2dist. find (dc);
+    if (it == dc2dist. cend ())
       dc2dist [dc] = cl. dist;
     else
       minimize (it->second, cl. dist);
@@ -5964,8 +5964,8 @@ void DistTree::setDissimMult (bool usePrediction)
         for (const Leaf* leaf : leaves)
           if (leaf->discernible)
           {
-            auto it = leaf2target_min. find (leaf);          
-            if (it == leaf2target_min. end ())
+            const auto it = leaf2target_min. find (leaf);          
+            if (it == leaf2target_min. cend ())
               leaf2target_min [leaf] = target_half;
             else
               minimize (it->second, target_half);
