@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 # PD-2992
 THIS=$( dirname $0 )
-source $THIS/../cpp/bash_common.sh
+source $THIS/../bash_common.sh
 HEADER="#Target\tBlastRule\tBlastRule_protein"
 if [ $# -ne 3 ]; then
   # PD-2992
