@@ -1548,7 +1548,7 @@ public:
     // Invokes: leaf->detachChildrenUp(), optimizeSmallSubgraph(), toDelete.deleteData()
     // Update: detachedLeaves
     // !leaf->getParent()->childrenDiscernible(), number of children > 1 and !optimizable() => may produce incorrect tree
-	  // Time: Time(optimizeSmallSubgraph)    
+	  // Time: Time(optimizeSmallSubgraph)    	
         
   // After optimization
   void setHeight ()
@@ -1734,6 +1734,7 @@ public:
   {
     const DTNode* anchor {nullptr};
       // "Base"
+      // !nullptr
     Real anchorLen {NaN};
       // >= anchor->len
       // Distance to the previous anchor - an ancestor of anchor
@@ -1749,7 +1750,7 @@ public:
       { const ONumber on (os, dissimDecimals, true);
         os         << anchor->getLcaName ()
            << '\t' << leafLen 
-           << '\t' << arcLen  
+           << '\t' << arcLen
            // Not used in distTree_inc.sh
            << '\t' << anchorLen
            << '\t' << anchor->len
@@ -1840,12 +1841,7 @@ private:
                 const string &leafFName,
                 const string &requestFName);
     // Invokes: saveLeaf(), saveRequest()
-  void saveLeaf (const string &leafFName) const
-    { OFStream f (leafFName);
-      f << name << '\t';
-      location. saveText (f);
-      f << endl;
-    }
+  void saveLeaf (const string &leafFName) const;
   void saveRequest (const string &requestFName) const;
     // Input: location.anchor
     // Output: file requestFName

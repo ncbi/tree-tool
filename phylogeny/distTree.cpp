@@ -9669,6 +9669,26 @@ void NewLeaf::process (bool init,
     cout << "File " << strQuote (requestFName) << " exists" << endl;
     return;
   }
+  
+#if 0
+  VectorPtr<Leaf> subset;
+  if (! subsetFName. empty ())
+  {
+    LineInput f (subsetFName);
+    while (f. nextLine ())
+    {
+      trim (f. line);
+      const Leaf* leaf = findPtr (name2leaf, f. line);
+      if (! leaf)
+        throw runtime_error (FUNC "Object " + strQuote (f. line) + " is not in the tree");
+      subset << leaf;
+    }
+    subset. sort ();
+    const size_t dup = subset. findduplicate ();
+    if (dup != no_index)
+      throw runtime_error (FUNC "Duplicate object " + strQuote (subset [dup] -> name));    
+  }
+#endif
     
   location. anchor = static_cast <const DTNode*> (tree. root);
   location. leafLen = 0.0;
@@ -9724,6 +9744,16 @@ void NewLeaf::process (bool init,
 
   saveLeaf (leafFName);
   saveRequest (requestFName);
+}
+
+
+
+void NewLeaf::saveLeaf (const string &leafFName) const
+{ 
+  OFStream f (leafFName); 
+  f << name << '\t';
+  location. saveText (f);
+  f << endl;
 }
 
 
