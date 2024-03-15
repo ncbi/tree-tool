@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
-  echo "Find the place of an object in an incremental tree"
+  echo "Find the place of an object in a released incremental tree"
   echo "Output: #3.placement: <object name> <tree node> <new leaf arc length> <tree node arc length>"
   echo "        #3.neighbors.tsv: statistical report for 100 closest objects"
   echo "#1: incremental tree directory"
@@ -33,7 +33,8 @@ if [ -s $TMP.grep ]; then
 fi
 
 section "Finding approximately closest objects"
-$INC/object2closest.sh $NAME $QUERY | grep -vw "^${NAME}$" > $TMP.closest || true
+$THIS/tree2obj.sh $TREE > $TMP.obj
+$INC/object2closest.sh $NAME $QUERY $TMP.obj | grep -vw "^${NAME}$" > $TMP.closest || true
 sed 's/$/\t'$NAME'/1' $TMP.closest > $TMP.request
 
 section "Fitting to the tree"
