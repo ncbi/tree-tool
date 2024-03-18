@@ -1,13 +1,15 @@
 #!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
-if [ $# -ne 2 ]; then
-  echo "Find closest genomes"
-  echo "#1: TypeGenome.id"
-  echo "#2: directory or ''"
+if [ $# -ne 3 ]; then
+  echo "Find closest genomes among #3"
+  echo "#1: Genome.id"
+  echo "#2: new object directory or ''"
+  echo "#3: subset of Genome.id's"
   exit 1
 fi
 GENOME=$1
 DIR="$2"
+SUBSET=$3
 
 
 INC=`dirname $0`

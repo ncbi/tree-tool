@@ -1,13 +1,15 @@
 #!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
-if [ $# -ne 2 ]; then
-  echo "Find closest virus"
+if [ $# -ne 3 ]; then
+  echo "Find closest genomes among #3"
   echo "#1: Virus.id"
-  echo "#2: directory or ''"
+  echo "#2: new object directory or ''"
+  echo "#3: subset of Genome.id's"
   exit 1
 fi
 NEW_OBJ=$1
 DIR="$2"
+SUBSET=$3
 
 
 #set -o xtrace 

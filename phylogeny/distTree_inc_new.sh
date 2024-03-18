@@ -26,12 +26,15 @@ QC=""  # -qc
 RATE=0.015   # PAR
 VARIANCE=`cat $INC/variance`
 HYBRIDNESS_MIN=`cat $INC/hybridness_min`
-OBJS=`$THIS/tree2obj.sh $INC/tree | wc -l`
+REINSERT=""
+
+$THIS/tree2obj.sh $INC/tree > $INC/tree.list
+
+OBJS=`cat $INC/tree.list | wc -l`
 ADD=`echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1'`  # PAR
 if [ $ADD == 0 ]; then
   ADD=1
 fi
-REINSERT=""
 
 N=15
 if [ -e $INC/threads ]; then
@@ -179,6 +182,7 @@ fi
 else
   VER=`cat $INC/version`
 fi
+rm $INC/tree.list
 
 
 DELETE_CRITERION_OUTLIERS=""

@@ -3,12 +3,16 @@ THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Initialize a new object for a distance tree"
+  echo "Requires: #1/tree.list"
   echo "#1: incremental distance tree directory"
   echo "#2: new object"
   exit 1
 fi
 INC=$1
-OBJ=$2
+OBJ=$3
+
+
+$THIS/../check_file.sh $INC/tree.list 1
 
 
 DIR=$INC/search/$OBJ
@@ -16,7 +20,7 @@ DIR=$INC/search/$OBJ
 
 while true; do
   set +o errexit
-	$INC/object2closest.sh $OBJ "" > $DIR/request.raw
+	$INC/object2closest.sh $OBJ "" $INC/tree.list > $DIR/request.raw
   S=$?
   set -o errexit
 	if [ $S == 0 ]; then

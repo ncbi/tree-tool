@@ -55,12 +55,12 @@ if [ ! -s $INC/search.list ]; then
 fi
 
 $THIS/tree2obj.sh $INC/tree > $INC/tree.list
+
 $THIS/../setIntersect.sh $INC/tree.list $INC/search.list 0 > $INC/tree-search.list
 if [ -s $INC/tree-search.list ]; then
   wc -l $INC/tree-search.list
   error "Added objects are already in $INC/tree"
 fi
-rm $INC/tree.list
 rm $INC/tree-search.list
 
 
@@ -115,6 +115,7 @@ if [ $N -gt 0 ]; then
   fi
   $THIS/distTree_inc_new_log.sh $INC $GRID  
 fi
+rm $INC/tree.list
 
 
 ITER=0
