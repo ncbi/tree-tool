@@ -72,8 +72,14 @@ void executeCommand (const string &cmd,
       QC_ASSERT (c != -1);
       errorsMtx. unlock ();
     }
-    else
-      throw runtime_error ("item=" + item + "  status=" + to_string (exitStatus) + "\n" + cmd);
+    else 
+    {
+      const string errMsg ("item=" + item + "  status=" + to_string (exitStatus) + "\n" + cmd);
+      if (threads_max > 1)
+        errorExitStr (errMsg);
+      else
+        throw runtime_error (errMsg);
+    }
   }
 #if 0
   if (isMainThread ())
