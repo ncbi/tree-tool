@@ -308,9 +308,9 @@ struct Tree : DiGraph
 	  size_t leaves {0};
 
 		TreeNode (Tree &tree,
-		          TreeNode* parent_arg)
+		          TreeNode* parent)
 			: DiGraph::Node (tree)
-			{ setParent (parent_arg); }
+			{ setParent (parent); }
 		  // Input: parent_arg: may be nullptr
 		void qc () const override;
    	void saveText (ostream &os) const override;
