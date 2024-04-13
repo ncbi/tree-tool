@@ -3899,7 +3899,7 @@ public:
 
 
   [[noreturn]] void error (const Token &wrongToken,
-                           const string &expected)
+                           const string &expected) const
     { throw TextPos::Error (wrongToken. tp, expected, true); }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
