@@ -3915,9 +3915,9 @@ public:
     // ... &>
   Token getXmlMarkupDeclaration ();
     // ... >
-  char getNextChar ();
+  char getNextChar (bool unget);
     // Return: '\0' <=> EOF
-    // Invokes: ci.unget()
+    // Invokes: if (unget) ci.unget()
 	void get (const string &expected)
     { const Token t (get ());
     	if (! t. isNameText (expected))
@@ -3934,9 +3934,8 @@ public:
    			error (t, Token::type2str (Token::eDouble) + " " + toString (expected)); 
     }
 	void get (char expected)
-    { const Token t (get ());
-    	if (! t. isDelimiter (expected))
-   			error (t, Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected), '\'')); 
+    { if (getNextChar (false) != expected)    
+   			error (Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected), '\'')); 
     }
   void setLast (Token &&t)
     { last = std::move (t); }
