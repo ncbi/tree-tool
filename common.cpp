@@ -2262,12 +2262,12 @@ void Token::readInput (CharInput &in,
 	}
 	else if (isDigit (c) || c == '-')
 	{
+	  bool minusPossible = true;
 		while (   ! in. eof 
 		       && (   isDigit (c)
 		           || c == '.'
-		           || c == 'e'
-		           || c == 'E'
-		           || c == '-'
+		           || toUpper (c) == 'E'
+		           || (c == '-' && minusPossible)
 		           || c == 'x'
 		           || isHex (c)
 		          )
@@ -2275,6 +2275,7 @@ void Token::readInput (CharInput &in,
 		{ 
 			name += c;
 			c = in. get (); 
+			minusPossible = (toUpper (c) == 'E');
 		}
 		if (! in. eof)
 			in. unget ();
@@ -2502,7 +2503,7 @@ Token TokenInput::getXmlText ()
 	    ci. error ("XML text is not finished: end of file\n" + t. name, false);
 	  if (c == '<')
 	  {
-	    const char nextChar = getNextChar ();
+	    const char nextChar = getNextChar (true);
 	    if (nextChar == '/')
 	    {
 	      if (htmlTags)
@@ -2707,7 +2708,7 @@ Token TokenInput::getXmlMarkupDeclaration ()
 
 
 
-char TokenInput::getNextChar () 
+char TokenInput::getNextChar (bool unget) 
 { 
   QC_ASSERT (last. empty ());
 
@@ -2718,7 +2719,8 @@ char TokenInput::getNextChar ()
 	if (ci. eof)
 		return '\0';  
 		
-  ci. unget ();
+  if (unget)
+    ci. unget ();
   return c;
 }
 

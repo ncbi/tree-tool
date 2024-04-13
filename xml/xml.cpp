@@ -439,7 +439,7 @@ void Data::readInput (TokenInput &ti)
   ASSERT (! isEnd);
   ASSERT (! xmlText);
   
-  if (ti. getNextChar () == '<')
+  if (ti. getNextChar (true) == '<')
     ti. get ('<');
   else
   {
@@ -460,7 +460,7 @@ void Data::readInput (TokenInput &ti)
     }
     else if (nameT. isDelimiter ('!'))        
     {
-      if (ti. getNextChar () == '-')
+      if (ti. getNextChar (true) == '-')
       {
         nameIndex = var_cast (names). add ("!--");
         token = std::move (ti. getXmlComment ());
@@ -533,7 +533,7 @@ void Data::readInput (TokenInput &ti)
     return;
 
   // text, children
-  if (ti. getNextChar () == '<')
+  if (ti. getNextChar (true) == '<')
     for (;;)
     {
       auto xml = new Data (var_cast (names), this, ti);
@@ -585,7 +585,7 @@ bool Data::readColonName (TokenInput &ti,
 {
   ASSERT (! name. empty ());
   
-  if (ti. getNextChar () != ':')
+  if (ti. getNextChar (true) != ':')
     return false;
   ti. get (':');
   
