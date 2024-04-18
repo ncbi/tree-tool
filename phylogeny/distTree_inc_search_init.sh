@@ -9,8 +9,10 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 INC=$1
-OBJ=$3
+OBJ=$2
 
+
+#set -x  
 
 $THIS/../check_file.sh $INC/tree.list 1
 
