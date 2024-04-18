@@ -68,10 +68,8 @@ if [ $IN ]; then
   if [ -s $INC/tree.cur ]; then
     error "$INC/tree.cur exists"
   fi
-  $THIS/tree2obj.sh $INC/tree > $INC/tree.list
-  $THIS/tree2obj.sh $IN       > $INC/tree.list1
+  $THIS/tree2obj.sh $IN > $INC/tree.list1
   if diff $INC/tree.list $INC/tree.list1; then
-    rm $INC/tree.list
     rm $INC/tree.list1
     mv $INC/tree $INC/tree.cur
     cp $IN $INC/tree
@@ -115,7 +113,6 @@ if [ $N -gt 0 ]; then
   fi
   $THIS/distTree_inc_new_log.sh $INC $GRID  
 fi
-rm $INC/tree.list
 
 
 ITER=0
@@ -158,8 +155,8 @@ while [ $ITER -le $ITER_MAX ]; do
   echo "Processing new objects"
   $THIS/distTree_new $QC $INC/  -variance $VARIANCE
 done
-#$THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim.add
 rm $INC/dissim.add
+rm $INC/tree.list
 
 
 section "leaf -> tree"
