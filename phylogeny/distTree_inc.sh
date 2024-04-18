@@ -174,8 +174,10 @@ if [ -e $INC/phen ]; then
     mkdir $RELDIR/$RELNUM
     mv disagreement_objects disagreement_nodes.txt disagreement_nodes gain_nodes qual tree.$DATE qual.raw leaf_errors.dm.gz arc_existence.dm.gz $RELDIR/$RELNUM/
     
-    ln -sf $PWD/$RELDIR/$RELNUM $RELDIR/latest
-    ln -sf $PWD/$RELDIR/$RELNUM/tree.$DATE $INC/tree.released
+    rm -f $RELDIR/latest
+    ln -s $PWD/$RELDIR/$RELNUM $RELDIR/latest
+    rm -f $INC/tree.released
+    ln -s $PWD/$RELDIR/$RELNUM/tree.$DATE $INC/tree.released
   fi
 fi
 
