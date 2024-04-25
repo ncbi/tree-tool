@@ -82,7 +82,7 @@ struct ThisApplication : Application
         continue;
    //if (contains (s, "hmmbuild -f "))  // for TnpPred_HMM_Profiles.hmm ??
       {
-        OFStream ofs (out_dir, name, "HMM");
+        OFStream ofs (out_dir, name, noString /*"HMM"*/);
         ofs << s;
         prog ();
       }
