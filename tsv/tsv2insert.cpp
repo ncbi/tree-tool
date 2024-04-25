@@ -52,7 +52,9 @@ struct ThisApplication : Application
     : Application ("Convert a tsv-table into SQL insert statements")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv_table", ".tsv-table");
+  	  addKey ("sql_table", "SQL table name (default = <tsv_table>");
+  	  addKey ("file_name_col", "Column to store the file name");  	  
   	  addFlag ("add_go", "Add 'go' at the end of the SQL statements");
   	}
   	
@@ -60,14 +62,31 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string fName = getArg ("table");
-		const bool add_go  = getFlag ("add_go");
+		const string pathName    = getArg ("tsv_table");
+		      string sqlTable    = getArg ("sql_table");
+		const string fileNameCol = getArg ("file_name_col");
+		const bool add_go        = getFlag ("add_go");
 
 
-    TextTable tt (fName);
+    TextTable tt (pathName);
     tt. qc ();
+    
+    const string fName (trimExtension (getFileName (tt. name)));
+    
+    if (! fileNameCol. empty ())
+    {
+      TextTable::Header h (fileNameCol);
+      h. numeric = false;
+      tt. header << std::move (h);
+      for (StringVector& row : tt. rows)            
+        row << fName;
+      tt. qc ();
+    }
+    
+    if (sqlTable. empty ())
+      sqlTable = fName;
 
-    string s ("insert into " + trimExtension (getFileName (tt. name)) + " (");
+    string s ("insert into " + sqlTable + " (");
     bool first = true;    
     for (const TextTable::Header& h : tt. header)
     {
@@ -99,10 +118,10 @@ struct ThisApplication : Application
         }
         first = false;
       }
-      cout << ");" << endl;      
+      cout << ")" << endl;      
+    	if (add_go)
+    	  cout << "go" << endl;
     }
-  	if (add_go)
-  	  cout << "go" << endl;
 	}
 };
 

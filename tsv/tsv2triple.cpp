@@ -54,6 +54,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("tsv", "tsv-table");
   	  addKey ("keys", "Object columns in <tsv>, comma-delimited");
+  	  addFlag ("file_name_key", "File name without extension should be added as the last key");
   	}
   	
   	
@@ -62,6 +63,7 @@ struct ThisApplication : Application
 	{
 		const string fName = getArg ("tsv");
 		const string keysS = getArg ("keys");
+		const bool   fNKey = getFlag ("file_name_key");
 
     
     const TextTable tab (fName);
@@ -88,6 +90,8 @@ struct ThisApplication : Application
       }
       if (! keyS. empty ())
         keyS += '\t';
+      if (fNKey)
+        keyS += trimExtension (getFileName (tab. name)) + "\t";  // Cf. tsv2insert.cpp
       FFOR (size_t, i, row. size ())
         if (   ! keys. contains (i)
             && ! row [i]. empty ()
