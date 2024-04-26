@@ -4185,8 +4185,6 @@ string ShellApplication::fullProg (const string &progName) const
 	ASSERT (isDirName (dir));
 	return shellQuote (dir + progName) + " ";
 }
-#endif
-
 
 
 
@@ -4282,6 +4280,7 @@ string ShellApplication::getBlastThreadsParam (const string &blast,
     
   return s;
 }
+#endif   // _MSC_VER
 
 
 
