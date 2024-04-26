@@ -91,7 +91,7 @@ struct ThisApplication : Application
       if (! keyS. empty ())
         keyS += '\t';
       if (fNKey)
-        keyS += trimExtension (getFileName (tab. name)) + "\t";  // Cf. tsv2insert.cpp
+        keyS += getFileName (tab. name) + "\t";  // Cf. tsv2insert.cpp
       FFOR (size_t, i, row. size ())
         if (   ! keys. contains (i)
             && ! row [i]. empty ()

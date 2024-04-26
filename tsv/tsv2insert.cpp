@@ -71,7 +71,7 @@ struct ThisApplication : Application
     TextTable tt (pathName);
     tt. qc ();
     
-    const string fName (trimExtension (getFileName (tt. name)));
+    const string fName (getFileName (tt. name));
     
     if (! fileNameCol. empty ())
     {
@@ -84,7 +84,7 @@ struct ThisApplication : Application
     }
     
     if (sqlTable. empty ())
-      sqlTable = fName;
+      sqlTable = trimExtension (fName);
 
     string s ("insert into " + sqlTable + " (");
     bool first = true;    
