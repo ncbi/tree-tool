@@ -33,7 +33,7 @@ Publicly Available and Validated DNA Reference Sequences Are Critical to Fungal 
 Plant Dis. 2022 Jun;106(6):1573-1596. 
 doi: 10.1094/PDIS-09-21-2083-SR. Epub 2022 May 10. PMID: [35538602](https://pubmed.ncbi.nlm.nih.gov/35538602/); PMCID: PMC9196201.
 
-[Interactive tree of _Colletotrichum_](https://apsjournals.apsnet.org/doi/suppl/10.1094/PDIS-09-21-2083-SR/suppl_file/PDIS-09-21-2083-SR_SF3.html)
+[Interactive tree of _Colletotrichum_](https://ftp.ncbi.nlm.nih.gov/pub/robberts/BLOG/ColletotrichumR19.html)
 
 Novel tool to build large phylogenetic trees with applications to NCBI genomes and rRNA sequences,
 November 2021,
