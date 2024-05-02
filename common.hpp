@@ -1261,6 +1261,13 @@ inline string shellQuote (string s)
   	return "\'" + s + "\'";
   }
 
+inline string getFileExtension (const string &path)  
+  { const size_t pos = path. rfind ('.');
+  	if (pos == string::npos)
+  		return noString;
+  	return path. substr (pos + 1);
+  }
+
 inline string trimExtension (const string &path)
   {
     const size_t pos = path. rfind ('.');
