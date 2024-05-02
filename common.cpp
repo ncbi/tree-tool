@@ -2756,8 +2756,10 @@ void OFStream::open (const string &dirName,
 	QC_ASSERT (! fileName. empty ());
 	QC_ASSERT (! is_open ());
 	
-  if (contains (fileName, '/'))
+#if 0
+  if (! dirName. empty () && contains (fileName, '/'))
     throw runtime_error ("Slash in file name: " + strQuote (fileName));
+#endif
 
 	string pathName;
 	if (! dirName. empty () && ! isDirName (dirName))
