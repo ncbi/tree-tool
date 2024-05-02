@@ -26,7 +26,8 @@ ALL=	\
   tsv_group \
   tsv_join \
   tsv_rename \
-  tsv_schema
+  tsv_schema \
+  tsv_split
 
 ifdef AT_NCBI
   all: $(ALL) \
@@ -119,6 +120,12 @@ tsv_schema.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
 tsv_schemaOBJS=tsv_schema.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 tsv_schema: $(tsv_schemaOBJS)
 	$(CXX) -o $@ $(tsv_schemaOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_split.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+tsv_splitOBJS=tsv_split.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+tsv_split:	$(tsv_splitOBJS)
+	$(CXX) -o $@ $(tsv_splitOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_view.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(CPP_DIR)/ncurses.hpp 
