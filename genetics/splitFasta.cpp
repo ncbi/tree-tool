@@ -99,6 +99,7 @@ struct ThisApplication : Application
   	  addPositional ("out_dir", "Output directory");
   	  addFlag ("aa", "Multi-FASTA file contains protein sequences, otherwise DNA sequences");
   	  addFlag ("sparse", "Sparse sequence");
+  	  addFlag ("pseudo", "Pseudo-proteins are allowed");
   	  addKey ("len_min", "Minimum sequence length", "0");
 		  addFlag ("whole", "Sequence identifiers are whole strings which should not be split by '|'");
     #ifndef _MSC_VER
@@ -116,6 +117,7 @@ struct ThisApplication : Application
 		const string out_dir     = getArg ("out_dir");
 		const bool   aa          = getFlag ("aa");
 		const bool   sparse      = getFlag ("sparse");
+		const bool   pseudo      = getFlag ("pseudo");
 		const size_t len_min     = (size_t) arg2uint ("len_min");
 	  const bool   whole       = getFlag ("whole");
   #ifndef _MSC_VER
@@ -139,7 +141,12 @@ struct ThisApplication : Application
   	  {
   	    unique_ptr<const Seq> seq;
   	    if (aa)
-  	      seq. reset (new Peptide (fa, Peptide::stdAveLen, sparse));  
+  	    {
+  	      auto pep = new Peptide (fa, Peptide::stdAveLen, sparse);
+  	      seq. reset (pep);  
+  	      if (pseudo && pep->hasInsideStop ())
+  	        pep->pseudo = true;
+  	    }
   	    else
   	      seq. reset (new Dna (fa, 128 * 1024, sparse));  
   	    seq->qc ();
