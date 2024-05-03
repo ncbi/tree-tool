@@ -49,24 +49,30 @@ struct ThisApplication : Application
 {
   ThisApplication ()
     : Application ("Partition <in> into parts of size <size> lines sequentially.\n\
-Parts are named <out_dir>/<i>")
+Parts are named <out_dir>/<prefix><i>")
   {
     version = VERSION;
 	  addPositional ("in", "Text file");
 	  addPositional ("size", "# lines in one part");
 	  addPositional ("out_dir", "Output directory");
-	  addKey ("start_part", "Start number of a part", "1");	  
+	  addKey ("start", "Start number of a part", "1");	  
+	  addFlag ("zero", "Parts strat with 0, otherwise 1");
+	  addKey ("prefix", "File name prefix");
+	  addKey ("extension", "File name extension");
 	}
 
 
 	void body () const final
 	{
-		const string in       = getArg ("in");
-		const streamsize size = str2<streamsize> (getArg ("size"));
-		const string out_dir  = getArg ("out_dir");
-		const uint start_part = str2<uint> (getArg ("start_part"));
+		const string in        =                   getArg ("in");
+		const streamsize size  = str2<streamsize> (getArg ("size"));
+		const string out_dir   =                   getArg ("out_dir");
+		const uint start_part  = str2<uint>       (getArg ("start"));
+		const bool zero        =                   getFlag ("zero");
+		const string prefix    =                   getArg ("prefix");
+		const string extension =                   getArg ("extension");
 		ASSERT (size > 0);
-		ASSERT (start_part >= 1);
+    ASSERT (start_part >= 1);
 
     LineInput inF (in);  
     OFStream outF;
@@ -82,10 +88,11 @@ Parts are named <out_dir>/<i>")
         if (outF. is_open ())
     		  outF. close ();
     		part++;
+    		ASSERT (part);
     		if (part >= start_part)
     		  writing = true;
     		if (writing)
-    		  outF. open (out_dir, toString (part), "");
+    		  outF. open (out_dir, prefix + toString (part - zero), extension);
     		n = 0;
     	}
     	if (writing)
