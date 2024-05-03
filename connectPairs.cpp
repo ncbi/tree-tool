@@ -66,7 +66,7 @@ struct ThisApplication : Application
   {
     version = VERSION;
 	  addPositional ("in", "List of pairs of connected items: <item1> <item2>\nwhere <item1>, <item2> are strings with no spaces");
-	  addPositional ("out", "Output directory with the sets of connected items. Each set is named by its lexicographycally smaller item with the added extension " + strQuote ("." + ext));
+	  addPositional ("out", "If not <pairs> then output directory with the sets of connected items. Each set is named by its lexicographycally smaller item with the added extension " + strQuote ("." + ext));
 	  addKey ("subset", "List of items. Item pairs are restricted to this list");
 	  addFlag ("pairs", "<out> is a list of pairs: <item1> <item_min>, where <item_min> is lexicographycally smallest item of the cluster");
 	}
