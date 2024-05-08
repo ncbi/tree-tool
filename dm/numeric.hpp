@@ -81,6 +81,11 @@ template <class T>
 typedef  double  Real;
   // The floating-point datatype (short and fast)
   // Platform-specific
+static_assert (numeric_limits<Real>::is_specialized);
+static_assert (! numeric_limits<Real>::is_integer);
+static_assert (numeric_limits<Real>::is_signed);
+static_assert (numeric_limits<Real>::has_infinity);
+static_assert (numeric_limits<Real>::has_quiet_NaN);
 
 string real2str (Real x,
                  streamsize decimals = 2,
@@ -88,7 +93,9 @@ string real2str (Real x,
 
 Real str2real (const string& s);
 
-const Real inf = numeric_limits<Real>::infinity ();  
+constexpr Real inf = numeric_limits<Real>::infinity ();  
+static_assert (inf / 2 == inf);
+static_assert (inf > 0.0);
 
 inline bool finite (Real x)
   { return -inf < x && x < inf; }
@@ -99,11 +106,9 @@ inline bool isNan (Real x)
 inline Real nvlReal (Real x, Real val)
   { return isNan (x) ? val : x; }
 
-//extern const Real epsilon;
 constexpr Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
   // Precision
 
-//extern const Real pi;
 constexpr Real pi = acos (-1.0);
 extern Real log_2;
 extern Real log_10;

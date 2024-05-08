@@ -46,8 +46,6 @@ namespace DM_sp
 {
  
 
-//const Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
-//const Real pi = acos (-1.0);
 Real log_2  = NaN;
 Real log_10 = NaN;
 Real sqrt_2 = NaN;
@@ -63,31 +61,21 @@ bool initNumeric ()
 #ifdef _MSC_VER
   #pragma warning (disable : 4127)
 #endif
-  // Real
-  ASSERT (numeric_limits<Real>::is_specialized);
-  ASSERT (! numeric_limits<Real>::is_integer);
-  ASSERT (numeric_limits<Real>::is_signed);
-  ASSERT (numeric_limits<Real>::has_infinity);
-  ASSERT (numeric_limits<Real>::has_quiet_NaN);
-
-  ASSERT (inf / 2 == inf);
-  ASSERT (inf > 0);
-
-  ASSERT (isNan (NaN));
-  ASSERT (isNan (inf - inf));
-  ASSERT (isNan (inf / inf));
+  QC_ASSERT (isNan (NaN));
+  QC_ASSERT (isNan (inf - inf));
+  QC_ASSERT (isNan (inf / inf));
 #ifdef _MSC_VER
   #pragma warning (default : 4127)
 #endif
 
 #ifndef _MSC_VER
-  const Real zero = 0;
-  ASSERT (isNan (zero / zero));
+  const Real zero = 0.0;
+  QC_ASSERT (isNan (zero / zero));
 #endif
 
-  log_2  = log (2);
-  log_10 = log (10);
-  sqrt_2 = sqrt (2);
+  log_2  = log (2.0);
+  log_10 = log (10.0);
+  sqrt_2 = sqrt (2.0);
   
   // Initialize local static variables
   lnFactorial (200 - 1);
