@@ -46,8 +46,8 @@ namespace DM_sp
 {
  
 
-const Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
-const Real pi = acos (-1.0);
+//const Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
+//const Real pi = acos (-1.0);
 Real log_2  = NaN;
 Real log_10 = NaN;
 Real sqrt_2 = NaN;

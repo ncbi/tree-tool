@@ -99,10 +99,12 @@ inline bool isNan (Real x)
 inline Real nvlReal (Real x, Real val)
   { return isNan (x) ? val : x; }
 
-extern const Real epsilon;
+//extern const Real epsilon;
+constexpr Real epsilon = sqrt (numeric_limits<Real>::epsilon ());  // = 1.49012e-08  
   // Precision
 
-extern const Real pi;
+//extern const Real pi;
+constexpr Real pi = acos (-1.0);
 extern Real log_2;
 extern Real log_10;
 extern Real sqrt_2;
