@@ -93,7 +93,8 @@ PREDICT = $(DM_DIR)/prediction $(DM)
 
 
 PHYL_DIR = $(CPP_DIR)/phylogeny
-$(PHYL_DIR)/distTree.o:	$(PHYL_DIR)/distTree.hpp $(PREDICT_HPP) $(CPP_DIR)/graph.hpp
+DISTTREE_HPP = $(PHYL_DIR)/distTree.hpp $(PREDICT_HPP) $(CPP_DIR)/graph.hpp
+$(PHYL_DIR)/distTree.o:	$(DISTTREE_HPP)
 DISTTREE_OBJ = $(PHYL_DIR)/distTree.o $(PREDICT_OBJ) $(CPP_DIR)/graph.o
 DISTTREE = $(PHYL_DIR)/distTree $(PREDICT) $(CPP_DIR)/graph
 $(PHYL_DIR)/featureTree.o:	$(PHYL_DIR)/featureTree.hpp $(DM_HPP) $(CPP_DIR)/graph.hpp

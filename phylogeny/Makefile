@@ -51,13 +51,13 @@ compareTrees:	$(compareTreesOBJS)
 	$(CXX) -o $@ $(compareTreesOBJS) $(LIBS)
 	$(ECHO)
 	
-distTree_new.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+distTree_new.o:  $(DISTTREE_HPP)
 distTree_newOBJS=distTree_new.o $(DISTTREE_OBJ)
 distTree_new:	$(distTree_newOBJS)
 	$(CXX) -o $@ $(distTree_newOBJS) $(LIBS)
 	$(ECHO)
 
-distTree_refresh_dissim.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+distTree_refresh_dissim.o:  $(DISTTREE_HPP)
 distTree_refresh_dissimOBJS=distTree_refresh_dissim.o $(DISTTREE_OBJ)
 distTree_refresh_dissim:	$(distTree_refresh_dissimOBJS)
 	$(CXX) -o $@ $(distTree_refresh_dissimOBJS) $(LIBS)
@@ -75,7 +75,8 @@ feature2gain_loss:	$(feature2gain_lossOBJS)
 	$(CXX) -o $@ $(feature2gain_lossOBJS) $(LIBS)
 	$(ECHO)
 
-makeDistTree.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp 
+makeDistTree.o:  $(DISTTREE_HPP)
+  # $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp 
 makeDistTreeOBJS=makeDistTree.o $(DISTTREE_OBJ)
 makeDistTree:	$(makeDistTreeOBJS)
 	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
@@ -102,43 +103,43 @@ mutation2feature:	$(mutation2featureOBJS)
 	$(CXX) -o $@ $(mutation2featureOBJS) $(LIBS)
 	$(ECHO)
 
-newick2tree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+newick2tree.o:  $(DISTTREE_HPP)
 newick2treeOBJS=newick2tree.o $(DISTTREE_OBJ)
 newick2tree:	$(newick2treeOBJS)
 	$(CXX) -o $@ $(newick2treeOBJS) $(LIBS)
 	$(ECHO)
 
-printDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+printDistTree.o:  $(DISTTREE_HPP)
 printDistTreeOBJS=printDistTree.o $(DISTTREE_OBJ)
 printDistTree:	$(printDistTreeOBJS)
 	$(CXX) -o $@ $(printDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-randomDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+randomDistTree.o:  $(DISTTREE_HPP)
 randomDistTreeOBJS=randomDistTree.o $(DISTTREE_OBJ)
 randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-statDistTree.o:  $(COMMON_HPP) $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp $(CPP_DIR)/graph.hpp
+statDistTree.o:  $(DISTTREE_HPP)
 statDistTreeOBJS=statDistTree.o $(DISTTREE_OBJ)
 statDistTree:	$(statDistTreeOBJS)
 	$(CXX) -o $@ $(statDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-testDistTree.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+testDistTree.o:  $(DISTTREE_HPP)
 testDistTreeOBJS=testDistTree.o $(DISTTREE_OBJ)
 testDistTree:	$(testDistTreeOBJS)
 	$(CXX) -o $@ $(testDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-tree2genogroup.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+tree2genogroup.o:  $(DISTTREE_HPP)
 tree2genogroupOBJS=tree2genogroup.o $(DISTTREE_OBJ)
 tree2genogroup:	$(tree2genogroupOBJS)
 	$(CXX) -o $@ $(tree2genogroupOBJS) $(LIBS)
 	$(ECHO)
 
-tree2indiscern.o:  $(COMMON_HPP) $(PHYL_DIR)/distTree.hpp 
+tree2indiscern.o:  $(DISTTREE_HPP)
 tree2indiscernOBJS=tree2indiscern.o $(DISTTREE_OBJ)
 tree2indiscern:	$(tree2indiscernOBJS)
 	$(CXX) -o $@ $(tree2indiscernOBJS) $(LIBS)
