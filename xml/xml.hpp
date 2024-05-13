@@ -144,8 +144,14 @@ public:
       return s + parent->schema2name (this);
     }
   void printTableDdl (ostream &os,
-                      const Schema* curTable) const;
+                      bool dataP,
+                      bool indexP) const
+    { printTableDdl (os, dataP, indexP, nullptr); }
 private:
+  void printTableDdl (ostream &os,
+                      bool dataP,
+                      bool indexP,
+                      const Schema* curTable) const;
   void printColumnDdl (ostream &os,
                        const Schema* curTable) const;
 public:

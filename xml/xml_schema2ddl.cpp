@@ -53,6 +53,8 @@ struct ThisApplication : Application
   	{
       version = VERSION;
   	  addPositional ("schema", "XML schema file");
+    	addFlag ("data", "'create table' etc. DDL");
+    	addFlag ("index", "'create index' etc. DDL");
   	}
   	
   	
@@ -60,17 +62,22 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string schemaFName = getArg ("schema");
+		const bool   dataP       = getFlag ("data");
+		const bool   indexP      = getFlag ("index");
 	
+	  QC_ASSERT (dataP || indexP);
 		
 	  string name;
 	  unique_ptr<Xml_sp::Schema> sch (Xml_sp::Schema::readSchema (schemaFName, name));
 	  sch->qc ();
-	  cout << name;
-	  sch->saveText (cout);
-	  cout << endl;
+	  if (verbose ())
+	  {
+  	  cout << name;
+  	  sch->saveText (cout);
+  	  cout << endl << endl << endl;
+  	}
 	  
-	  cout << endl << endl;
-	  sch->printTableDdl (cout, nullptr);
+	  sch->printTableDdl (cout, dataP, indexP);
 	}
 };
 
