@@ -1870,7 +1870,7 @@ void Dataset::load (istream &is)
 
   // Objects
   strUpper (s);
-  ASSERT (s == "OBJNUM");
+  QC_ASSERT (s == "OBJNUM");
   size_t maxObjNum;
   is >> maxObjNum;
   FOR (size_t, i, maxObjNum)
@@ -1885,7 +1885,7 @@ void Dataset::load (istream &is)
   if (s == "NAME")
   	named = true;
   else 
-  	ASSERT (s == "NONAME");
+  	QC_ASSERT (s == "NONAME");
 
   bool multP = false;
   is >> s;
@@ -1893,13 +1893,13 @@ void Dataset::load (istream &is)
   if (s == "MULT")
   	multP = true;
   else 
-  	ASSERT (s == "NOMULT");
+  	QC_ASSERT (s == "NOMULT");
 
   
   // attrs
   is >> s;
   strUpper (s);
-  ASSERT (s == "ATTRIBUTES");
+  QC_ASSERT (s == "ATTRIBUTES");
   {
     Progress prog (0, 10000);  // PAR
     string attrName;
@@ -1916,7 +1916,7 @@ void Dataset::load (istream &is)
       if (dataS == "DATA")
         break;
         
-      prog ();
+      prog (attrName);
   
       // Type name
       is >> type;
@@ -2248,18 +2248,30 @@ void Dataset::qc () const
 	Root::qc ();
 
   for (const Obj* obj: objs)
-    obj->qc ();
+  {
+    QC_ASSERT (obj);
+    try { obj->qc (); }
+      catch (const exception &e)
+      {
+        throw runtime_error (FUNC "Object " + strQuote (obj->name) + ": " + e. what ());
+      }
+  }
 
   Set<string> attrNames;
   for (const Attr* attr : attrs)
   {
-    QC_ASSERT (& attr->ds == this);
-    attr->qc ();
-    if (! attr->name. empty () && attrNames. contains (attr->name))
+    QC_ASSERT (attr);
+    try
     {
-      cout << "Duplicate: " << attr->name << '!' << endl;
-      ERROR;
+      QC_ASSERT (& attr->ds == this);    
+      attr->qc ();
     }
+    catch (const exception &e)
+    {
+      throw runtime_error (FUNC "Attribute " + strQuote (attr->name) + ": " + e. what ());
+    }
+    if (! attr->name. empty () && attrNames. contains (attr->name))
+      throw runtime_error (FUNC "Duplicate: " + attr->name);
     attrNames << attr->name;
   }
   
@@ -5552,13 +5564,13 @@ void Clustering::saveText (ostream &os) const
   if (mixt. getDim () == 1)
   {
     TsvOut td (os);
-    td << "Cluster" << "Mean" << "Var" << "P";
+    td << "Cluster" << "Mean" << "SD" << "P";
     td. newLn ();
     FFOR (size_t, i, mixt. components. size ())
     {
       const MultiNormal* mn = getMultiNormal (i);
       ASSERT (mn);
-      td << (i + 1) << mn->mu [0] << mn->sigmaInflated. get (false, 0, 0) << mixt. components [i] -> prob;      
+      td << (i + 1) << mn->mu [0] << sqrt (mn->sigmaInflated. get (false, 0, 0)) << mixt. components [i] -> prob;      
       td. newLn ();
     }
   }
