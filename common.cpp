@@ -4024,6 +4024,7 @@ int Application::run (int argc,
   	{
   	  ASSERT (jRoot);
   		OFStream f (jsonFName);
+  		jRoot->qc ();
       jRoot->saveText (f);
       jRoot. reset ();
     }
