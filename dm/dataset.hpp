@@ -1145,6 +1145,7 @@ private:
     //                  Nominal {<Category name>}+   // line may wrap if ended with "\"
     //
     // All keywords are case-insensitive
+    // Names have C identifiers format
     // Missings are coded by <missing>
     // Empty lines are allowed
     // Invokes: setName2objNum(), qc()
