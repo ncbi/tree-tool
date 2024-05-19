@@ -4216,9 +4216,9 @@ public:
 
 
 template <typename T>
-  Json* toJson (const Vector<T> &vec,
-                JsonContainer* parent,
-                const string& name = noString) 
+  Json* vec2json (const Vector<T> &vec,
+                  JsonContainer* parent,
+                  const string& name = noString) 
     { auto j = new JsonArray (parent, name);
       for (const T& t : vec)
         t. toJson (j);
