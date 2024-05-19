@@ -81,7 +81,7 @@ template <typename Pred/*Attr1*/, typename Targ/*Attr1*/>
         P::qc ();
         target. qc ();
         if (& target. ds != P::sample. ds)
-          throwf ("& target. ds != P::sample. ds");
+          throw runtime_error ("& target. ds != P::sample. ds");
       }
   
   
