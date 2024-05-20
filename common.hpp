@@ -702,7 +702,8 @@ bool goodName (const string &name);
 bool isIdentifier (const string& name,
                    bool dashInName);
 
-bool isNatural (const string& name);
+bool isNatural (const string& name,
+                bool leadingZeroAllowed);
 
 void strUpper (string &s);
 
@@ -1310,9 +1311,7 @@ void copyText (const string &inFName,
         free (p);
         return s;
       }
-      else
-        throw runtime_error ("path2canonical " + shellQuote (path));
-      return noString;  // dummy
+      throw runtime_error ("path2canonical " + shellQuote (path));
     }
   
   
@@ -1376,9 +1375,9 @@ struct Dir
 
 
 
-void setSymlink (string path,
-                 const string &fName,
-                 bool pathIsAbsolute);
+void setSymlink (string fromFName,
+                 const string &toFName,
+                 bool fromPathIsAbsolute);
 
 
 
