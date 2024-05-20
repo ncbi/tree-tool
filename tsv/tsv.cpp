@@ -82,15 +82,15 @@ bool Date::operator<= (const Date &other) const
 
 Date Date::operator- (const Date &other) const
 { 
-  Date d ( year  - other. year
-         , month - other. month
-         , day   - other. day
+  Date d ( short (year  - other. year)
+         , char  (month - other. month)
+         , char  (day   - other. day)
          );
   // Normalization 
   // day < 0 ??
   while (d. month < 0)
   {
-    d. month += 12;
+    d. month = char (d. month + 12);
     d. year --;
   }
   return d;
