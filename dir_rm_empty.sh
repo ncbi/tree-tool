@@ -10,3 +10,6 @@ DIR=$1
 
 
 trav $DIR "if [ ! -s %d/%f ]; then rm %d/%f; fi" 
+#find $DIR/  -type f  -empty   -delete
+  # -print
+  
