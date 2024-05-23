@@ -94,7 +94,12 @@ struct Date : Root
              && month == other. month
              && day   == other. day;
     }
-  bool operator<= (const Date &other) const;
+  bool less (const Date &other,
+             bool equal) const;
+  bool operator<= (const Date &other) const
+    { return less (other, true); }
+  bool operator< (const Date &other) const
+    { return less (other, false); }
   Date operator- (const Date &other) const;
     // Requires: other <= *this
 };
