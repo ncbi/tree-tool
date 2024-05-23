@@ -73,7 +73,7 @@ xml_txt2bin:	$(xml_txt2binOBJS)
 	$(CXX) -o $@ $(xml_txt2binOBJS) $(LIBS)
 	$(ECHO)
 
-xml_view.o:  $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp $(XML_DIR)/xml.hpp
+xml_view.o: $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp $(XML_DIR)/xml.hpp
 xml_viewOBJS=xml_view.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o $(XML_OBJ)
 xml_view:	$(xml_viewOBJS)
 	$(CXX) -o $@ $(xml_viewOBJS) $(LIBS) -lncursesw 
