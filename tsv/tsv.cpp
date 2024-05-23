@@ -70,12 +70,13 @@ Date Date::parse (const string &s,
 
 
 
-bool Date::operator<= (const Date &other) const
+bool Date::less (const Date &other,
+                 bool equal) const
 {
   LESS_PART (*this, other, year);
   LESS_PART (*this, other, month);
   LESS_PART (*this, other, day);
-  return true;
+  return equal;
 }
 
 
