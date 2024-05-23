@@ -36,7 +36,7 @@
 
 #include "dataset.hpp"
 
-#include "../tsv/tsv.hpp"
+#include "../tsv/tsv.hpp"  // tsv.cpp is not needed
 #include "optim.hpp"
 
 #include "../common.inc"
