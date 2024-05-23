@@ -81,8 +81,8 @@ $(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
 
 MATRIX = $(DM_DIR)/matrix $(NUMERIC)
 
-DM_HPP = $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp $(DM_DIR)/optim.hpp $(DM_DIR)/dataset.hpp
-$(DM_DIR)/dataset.o:	$(DM_HPP) $(TSV_DIR)/tsv.hpp
+DM_HPP = $(NUMERIC_HPP) $(DM_DIR)/matrix.hpp $(DM_DIR)/dataset.hpp
+$(DM_DIR)/dataset.o:	$(DM_HPP) $(TSV_DIR)/tsv.hpp $(DM_DIR)/optim.hpp
 DM_OBJ = $(NUMERIC_OBJ) $(DM_DIR)/matrix.o $(DM_DIR)/optim.o $(DM_DIR)/dataset.o
 DM = $(NUMERIC) $(DM_DIR)/matrix $(DM_DIR)/optim $(DM_DIR)/dataset
 
