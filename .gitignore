@@ -9,7 +9,9 @@
 !*.hpp
 !*.cpp
 !*.c
+!*.html
 !*.inc
+!*.js
 !*.sh
 
 # Doc

@@ -1,0 +1,3313 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  
+
+<head>  
+  <meta charset="utf-8" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+
+  <!-- If offline then edit  -->
+  <title>Distance Tree</title>
+
+  <!-- If offline then remove  -->
+  <script type='text/javascript' src='jquery-1.11.1.js'></script>
+
+  <!-- If offline then replace this with text and move to &lt;script&gt  -->
+  <script type='text/javascript' src="common.js?ver=12"></script>
+  
+  <!-- If offline then remove  -->
+  <script type='text/javascript' src="common_db.js?ver=3"></script>
+</head>
+
+  
+  
+<body font="Lucida Console" onunload="">
+  
+
+
+<script>
+
+
+// Global constants
+var treeCanvas;
+var canvasMenu;
+var ctx;
+const leafFontHeight = fontHeight * 0.8;  // was: 1.1
+const rowHeight = 2 * leafFontHeight;  
+const displayedLeaves_max = 100;  
+
+// Global variables
+var nodes = [];
+var tree = -1;
+var mainRoot = -1;  
+var curRoot = -1;  
+var node_max = -1;
+var objectType = null;
+var seqType = null;
+var species_barrier = 1;
+var hasGainLoss = false;
+var showPictures = false;
+var showOutliers = true;
+
+var canvasWidth;
+var timeFromRoot_max;
+var leavesNum;
+var maxK;
+var dX;
+var dXName;
+var dXPicture;
+const rootPictureK = 3;  // PAR    
+var dXRoot;
+
+var level_max = 0.0;
+
+//var target;
+
+
+document.write("<object id=\"initObj\"><br></object>");
+
+
+
+var remove_summaryTab  = function ()  { document.getElementById("summaryTab").innerHTML = ""; }
+
+
+
+var initGlobalVar = function ()
+{
+  nodes = [];
+  tree = -1;
+  mainRoot = -1;
+  curRoot = -1;
+  objectType = null;
+  seqType = null;
+
+  unSelect ();
+
+  document.getElementById("RootHeader").innerHTML = "";
+  ctx.clearRect (0, 0, treeCanvas.width, treeCanvas.height);  
+
+  canvasMenu.style.visibility = "hidden";  
+
+  // Remove all tables
+  remove_summaryTab ();
+}
+
+
+
+var mutCompare = function (x, y)
+{
+  const getProt = function (s)
+  {
+    const pos = s.indexOf('-');
+    if (pos == -1)
+      return "";
+    return s.substr(0,pos);
+  }
+  
+  const getNumber = function (s)
+  {
+    let start = 0;
+    while (start < s.length && ! isDigit (s.charAt(start)))
+      start++;
+      
+    let stop = s.length;
+    while (stop > 0 && ! isDigit (s.charAt(stop - 1)))
+      stop--;
+    
+    if (start >= stop)
+      return null;
+    return Number (s.substring (start, stop));
+  }
+  
+  
+  const prot_x = getProt (x.feature);
+  const prot_y = getProt (y.feature);
+  
+  if (! prot_x && prot_y)
+    return -1;
+  if (prot_x && ! prot_y)
+    return 1;
+        
+  if (prot_x < prot_y)
+    return -1;
+  if (prot_x > prot_y)
+    return 1;
+  
+  const nx = getNumber (x.feature.substr(prot_x.length));
+  const ny = getNumber (y.feature.substr(prot_y.length));
+  if (nx < ny)
+    return -1;
+  if (nx > ny)
+    return 1;
+  
+  if (x.gain < y.gain)
+    return -1;
+  if (x.gain > y.gain)
+    return 1;
+    
+  return 0;
+}
+
+
+
+var getChildren = function (node)
+{
+  if (showOutliers)
+    return node.children;
+    
+  let children = [];
+  for (const nodeId in node.children)
+    if (! nodes[nodeId].outlier)
+      children [nodeId] = 0;
+  return children;
+}
+
+
+
+var allLeavesOutliers  = function (nodeId, exceptNodeId)
+{
+//alert (nodeId + ' ' + exceptNodeId);  
+  
+  if (nodeId == exceptNodeId)
+    return true;
+    
+  const node = nodes[nodeId];
+  if (node.leaves == 1)
+    return node.outlier;
+
+  for (const nodeId_ in node.children)
+    if (! allLeavesOutliers (nodeId_, exceptNodeId))
+      return false;
+  return true;
+}
+
+
+
+var initTreeFinish = function ()
+{
+  // nodes[].children  
+  for (const nodeId in nodes)
+    nodes[nodeId].children = [];
+    
+  let crit = 0.0;
+  let crit2 = 0.0;
+  let n = 0;
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    if (node.parent)
+      nodes[node.parent].children[nodeId] = 0;     
+    node.gain_loss.sort (mutCompare);  
+    if (false)  // crit/n != 0  ??
+      if (node.error_density || node.error_density == 0)
+      {
+        crit += node.error_density;
+        crit2 += Math.pow (node.error_density, 2);
+        n++;
+      }
+    if (node.norm_criterion || node.norm_criterion == 0)
+    {
+      crit += node.norm_criterion;
+      crit2 += Math.pow (node.norm_criterion, 2);
+      n++;
+    }
+    // picture_url upward propagation
+    if (node.picture_url)
+    {
+      let parentId = node.parent;
+      while (parentId)
+      {
+        const parent = nodes[parentId];
+        if (parent.phylName)
+        {
+          if (parent.picture_url)
+            break;
+          parent.picture_url         = node.picture_url;
+          parent.picture_license     = node.picture_license;
+          parent.picture_attribution = node.picture_attribution;
+        }
+        parentId = parent.parent;
+      }
+    } 
+  }
+  const sd = Math.sqrt (crit2 / n - Math.pow (crit / n, 2));
+  level_max = sd * 4;  // PAR
+
+  initDisplay (true);
+
+  if (seqType != "Object")
+    document.getElementById("findSeqType").innerHTML = seqType;
+}
+
+
+
+var initTree = function ()
+// Output: objectType, seqType, nodes[], mainRoot, curRoot
+{
+  const loadNodes = function (node_start, node_end)
+  {
+    const rs = query ("\
+select Phyl.[node] id \
+     , Phyl.parent \
+     , Phyl.leaves \
+     , Phyl.[time] \
+     , Phyl.height_ave \
+     , Phyl.norm_criterion \
+     , Phyl.error_density \
+     , Phyl.[name] phylName\
+     , Phyl.genospecies \
+     , Phyl.closest_leaf1 \
+     , Phyl.closest_leaf2 \
+     , Phyl.closest_criterion \
+     , Phyl.indiscern \
+     , Phyl.taxon \
+     , PhylObject_vw.identifier obj_id \
+     , PhylObject_vw.internal_identifier int_obj_id \
+     , PhylObject_vw.identifier_2 obj_id_2 \
+     , PhylObject_vw.props \
+     , PhylObject_vw.removed \
+     , PhylObject_vw.in_tree \
+     , PhylObject_vw.outlier \
+     , PhylObject_vw.bad_source \
+     , PhylObject_vw.[type] \
+     , PhylObject_vw.rs_acc_ver \
+     , PhylObject_vw.tax_confirmed \
+     , PhylObject_vw.tax \
+     , PhylObject_vw.tax_name_curated \
+     , PhylObject_vw.dna_len \
+     , PhylObject_vw.univs \
+     , PhylObject_vw.prots \
+     , PhylObject_vw.bioproject \
+     , PhylObject_vw.pubmed \
+     , replace (replace (replace (PhylObject_vw.comment, char(9), ' '), char(10), ' '), char(13), ' ') comment \
+     , TaxPicture.url picture_url \
+     , TaxPicture.attribution picture_attribution \
+     , TaxPicture.license picture_license \
+     , ANI.[match] ani_match \
+     , ANI.ani \
+  from           Phyl \
+       left join PhylObject_vw on     PhylObject_vw.tree = Phyl.tree \
+                                  and PhylObject_vw.leaf = Phyl.[node] \
+                                  and Phyl.is_leaf = 1 /*redundant*/ \
+       left join Tax on Tax.[name] = case when Phyl.[name] like '%/%' then substring(Phyl.[name], charindex('/',Phyl.[name]) + 1, len(Phyl.[name])) else Phyl.[name] end \
+       left join TaxPicture on     TaxPicture.tax = Tax.id \
+                               and TaxPicture.bad = 0 \
+       left join ANI on ANI.acc_ver = PhylObject_vw.identifier \
+  where     Phyl.tree = " + tree + " \
+        and Phyl.[node] between " + node_start + " and " + node_end  + " \
+  order by Phyl.[node] \
+  option (hash join)");
+    for (const row_num in rs)
+    {
+      const row = rs[row_num];
+      nodes [row.id] = 
+        { nodeId:        row.id
+        , parent:        row.parent
+        , leaves:        row.leaves
+        , time:          row.parent ? (row.time == null ? 10/*PAR*/ : row.time) : 0
+        , height_ave:    row.height_ave
+        , norm_criterion:row.norm_criterion
+        , error_density: row.error_density
+        , phylName:      row.phylName || ifS(row.indiscern, "[identity]")
+        , props:         row.props
+        , genospecies:   row.genospecies
+        , closest_leaf1: row.closest_leaf1
+        , closest_leaf2: row.closest_leaf2
+        , closest_criterion: row.closest_criterion
+        , indiscern:     row.indiscern
+        , taxon:         row.taxon
+        , gain_loss: [/*{feature, gain (0/1), leaves, selected (Boolean)}*/]
+        //
+        , picture_url:         row.picture_url
+        , picture_license:     row.picture_license
+        , picture_attribution: row.picture_attribution
+        , picture:             null
+        , pictureVisible:      false
+          // Leaf
+        , obj_id:        String(row.obj_id)
+        , int_obj_id:    String(row.int_obj_id) 
+        , obj_id_2:      row.obj_id_2
+        , removed:       row.removed
+        , in_tree:       row.in_tree
+        , outlier:       row.outlier
+        , bad_source:    row.bad_source
+        , type:          row.type
+        , rs_acc_ver:    row.rs_acc_ver
+        , tax_confirmed: row.tax_confirmed
+        , tax:           row.tax
+        , tax_name_curated: row.tax_name_curated
+        , dna_len:       row.dna_len
+        , univs:         row.univs
+        , prots:         row.prots
+        , bioproject:    row.bioproject
+        , pubmed:        row.pubmed
+        , comment:       row.comment ? row.comment.replace(/[\n\r]/g, ' ') : null
+        , ani_match:     row.ani_match
+        , ani:           row.ani
+          // computed
+        , children: []
+        , selectedLeaves: 0  // in [0,leaves] 
+        , selectionStart: false
+        , displayNodeId:  false
+          // display
+        , displayedLeaves: 0  // in [1,leaves] 
+        , timeFromCurRoot: 0  
+        , x: 0
+        , y: 0
+        , collapsed: false
+            // true => Boolean(phylName)
+        , visible: false
+        };
+    }   
+
+    if (hasGainLoss)
+    {
+      const gainLoss_rs = query ("\
+select [node] id \
+     , feature \
+     , gain \
+     , leaves \
+  from Phylgain \
+  where     tree = " + tree + " \
+        and [node] between " + node_start + " and " + node_end + " \
+  order by [node]");
+      for (const row_num in gainLoss_rs)
+      {
+        const row = gainLoss_rs[row_num];
+        nodes [row.id]. gain_loss. push ({ feature: row.feature
+                                         , gain:    row.gain
+                                         , leaves:  row.leaves
+                                         , selected: false
+                                         }
+                                        );  
+        hasGainLoss = true;
+      }
+    }    
+  }
+  
+
+  if (mainRoot != -1)
+    alert (mainRoot);
+  
+  let rs = query ("select node from Phyl where tree = " + tree + " and parent is null");
+  mainRoot = rs[0].node;
+  curRoot = mainRoot;
+  
+  // objectType, seqType
+  rs = query ("\
+select Phyltree.object_type, Objecttype.seq_type \
+  from      Phyltree \
+       join Objecttype on Objecttype.id = Phyltree.object_type \
+  where Phyltree.id = " + tree);
+  if (rs.length != 1)  
+    alert ("Unknown tree " + tree);
+  objectType = rs[0].object_type;
+  seqType    = rs[0].seq_type;
+  
+  const gainLoss_rs = query ("select top 1 null from Phylgain where tree = " + tree);
+  hasGainLoss = (gainLoss_rs.length == 1);
+
+  // node_max, nodes[]
+  rs = query ("select max(node) node_max from Phyl where tree = " + tree);
+  node_max = rs[0].node_max;
+  let node_start = 1;
+  for (;;)
+  {
+    const node_end = node_start + (hasGainLoss ? 5000 : 10000);  // PAR  data size limit ??
+    loadNodes (node_start, node_end); 
+    if (node_end >= node_max)
+      break;
+    node_start = node_end + 1;
+  }
+
+//document.getElementById("GainLoss").innerHTML = ifS (hasGainLoss, "<form onsubmit='parent.findGainLoss(gain_loss.value);return false'>Gain/Loss (regexp): <input type='text' id=gain_loss></form>");
+
+  if (nodes.length == 0)
+  {
+    alert ("No data");
+    return false;
+  }
+
+  initTreeFinish ();  
+  
+//beep ();
+  
+  return true;
+}
+
+
+
+var isAncestor = function (descendant, ancestor)  // ids
+{
+  if (! descendant)
+    return false;
+  if (descendant == ancestor)
+    return true;
+  return isAncestor (nodes [descendant]. parent, ancestor);
+}
+
+
+
+var isLeaf = function (node)
+{
+  return ! node.children.length;
+}
+
+
+
+var isVisibleLeaf = function (node)
+{
+  return node.collapsed || isLeaf (node); 
+}
+
+
+
+var prefixNodeId = function (node, name)
+{
+  if (! node.displayNodeId)
+    return name;
+  return "#" + node.nodeId + ((" " + name) || '');
+}
+
+
+
+var node2name = function (node)
+{
+  const name = isLeaf (node)
+                 ? nvl (node.phylName, nvl (node.obj_id, "?"))  
+                 : node.phylName; 
+  return prefixNodeId (node, name);
+}
+
+
+
+var initDisplay = function (setCollapsedP)
+{
+  curRoot = mainRoot;
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    if (setCollapsedP)
+      node.collapsed = Boolean (nodeId != curRoot && node.parent && (node.phylName || isLeaf (node)));
+    node.visible = false;
+  }
+}
+
+
+
+var node2lcaName = function (nodeId)
+{
+  const node2nameExtreme = function (nodeId, first)
+  {
+    for (;;)
+    { 
+      if (nodeId == -1) 
+      	return "?";
+      const node = nodes [nodeId];
+      const nodeName = node2name (node);
+      if (nodeName)
+        return nodeName;
+      nodeId = -1;
+      for (nodeId in getChildren(node))
+        if (first)
+          break;
+    }
+  }
+  
+  const firstName = node2nameExtreme (nodeId, true);
+  const lastName  = node2nameExtreme (nodeId, false);
+  if (firstName == lastName)
+    return firstName;
+  return firstName + ' &ndash; ' + lastName;
+}
+
+
+
+var node2lcaId = function (nodeId)
+{
+  const node2idExtreme = function (nodeId, first)
+  {
+    for (;;)
+    { 
+      if (nodeId == -1) 
+      	return "?";
+      const node = nodes [nodeId];
+      const nodeName = isLeaf (node) ? node.int_obj_id : null;
+      if (nodeName)
+        return nodeName;
+      nodeId = -1;
+      for (nodeId in getChildren(node))
+        if (first)
+          break;
+    }
+  }
+  
+  const firstName = node2idExtreme (nodeId, true);
+  const lastName  = node2idExtreme (nodeId, false);
+  if (firstName == lastName)
+    return firstName;
+  return firstName + ':' + lastName;
+}
+
+
+
+var node2pathName = function (nodeId)  
+{
+  const node2path_ = function (i, pathTip)
+  {
+    let path = pathTip;
+    while (i)
+    {
+      const node = nodes[i];
+      let name = node2name (node);
+      if (name)
+      {
+        if (path)
+          path = "/" + path;
+        if (name.indexOf ("/") != -1)
+          name = '"' + name + '"';
+        path = "<a href=javascript:setRoot(" + i + ")>" + q2h (name) + "</a>" + path;
+      }
+      i = node.parent;
+    }
+    return "/" + path;
+  }
+
+  let pathTip = node2name (nodes[nodeId]) ? "" : q2h (node2lcaName (nodeId));
+  if (pathTip.indexOf ("/") != -1)
+    pathTip = '"' + pathTip + '"';
+  return node2path_ (nodeId, pathTip);
+}
+
+
+
+var node2printName = function (node, truncate)  
+{
+  let name = '';
+  
+  {  
+    let leafName = '';
+    if (isLeaf (node))
+    {
+      leafName = node.obj_id;
+      if (node.obj_id_2)
+        leafName += " (" + node.obj_id_2 + ")";
+      leafName += sPref (": ", node.props)
+      if (node.removed)
+        leafName = "[REMOVED] " + leafName;
+      if (node.type)
+        leafName = "[" + node.type + "] " + leafName;
+      if (node.rs_acc_ver)
+        leafName = "[REFSEQ] " + leafName;
+      if (node.bad_source)
+        leafName = "[" + node.bad_source + "] " + leafName;
+      if (node.outlier)
+        leafName = "[OUTLIER:" + node.outlier + "] " + leafName;
+      else if (! node.in_tree)
+        leafName = "[ADDED] " + leafName;
+      switch (node.tax_confirmed)
+      {
+        case 0: leafName = "[FIX] " + leafName; break;
+        case 1: leafName = "[OK] " + leafName; break;
+      }
+      if (node.ani)
+        leafName = node.ani_match + " ANI:" + node.ani.toFixed(1) + " | " + leafName;
+    }  
+    if (node.phylName)
+      name += node.phylName + sPref (" | ", leafName);
+    else
+      name += leafName;
+  }
+    
+  if (node.comment)
+    name += "  COMMENT: " + node.comment;
+    
+  if (truncate)
+  {
+    name = name. substr (0, 100);  // PAR 
+    if (node.collapsed && node.leaves > 1)  
+      name += " (" + ifS (node.selectedLeaves && node.selectedLeaves < node.leaves, node.selectedLeaves + "/") + node.leaves + ")";  
+  }
+  
+  return prefixNodeId (node, name);
+}
+
+
+
+
+var picture_offset = function (node, scale)
+{
+  if (! showPictures)
+    return 0;
+  if (! node.picture_url)
+    return 0;
+  if (! node.pictureVisible)
+    return 0;
+  return scale * dXPicture + dXName / 2;
+}
+
+
+
+var node2font = function (node)
+// Return: Old ctx.font
+{
+  const font_old = ctx.font;
+  if (isLeaf (node))
+    ctx.font = leafFontHeight + "px " + fontName;  // PAR
+  return font_old;
+}
+
+
+
+var drawNode = function (x, y, stnd, genospecies, taxon)
+{
+  ctx.fillStyle = stnd2color (stnd);
+  ctx.beginPath ();
+  let coeff = 0.8;  // PAR
+  if (genospecies)
+    coeff *= 2;  // PAR
+  if (taxon)
+  {
+    const radius = 1.5 * coeff * dX;  // PAR
+    ctx.fillRect (x - radius, y - radius, 2 * radius, 2 * radius);
+  }
+  else
+  {
+    ctx.arc (x, y, coeff * dX, 0, 7);  // PAR  
+    ctx.fill ()
+  }
+  ctx.fillStyle = fillStyle;
+}
+
+
+
+var rel_error2stnd = function (rel_error)
+{
+  if (rel_error == null)
+    return 0;
+  return - (rel_error / level_max) * 3;  // PAR
+}
+
+
+
+var gain_loss2str = function (gl)
+{
+  return ifS(gl.selected,">>> ") + (gl.gain ? "+" : "-") + gl.feature + ifS(gl.leaves > 1, "(" + gl.leaves + ")") + ifS(gl.selected," <<<");
+}
+
+
+
+var childSelected = function (nodeId)
+{
+  const node = nodes[nodeId];
+  for (const childId in getChildren(node))
+    if (nodes[childId]. selectedLeaves)
+      return true;
+  return false;
+}
+
+
+
+var drawTree = function ()
+// FireFox is slow with a big canvas ??
+{
+  let leavesDrawn = 0;
+  const selectStyle = 'magenta';  // PAR
+  const selectPathStyle = '#FF704A';  // PAR
+  const mainRoot_selectedNodes = nodes[mainRoot].selectedLeaves;
+    
+
+  const drawTree_ = function (nodeId)
+  // Update: ctx, node.{x,y}, leavesDrawn
+  {
+    const node = nodes[nodeId];
+    
+    if (   node.picture_url
+        && ! node.picture)
+    {
+      node.picture = new Image (dX, leafFontHeight);
+      node.picture.src = node.picture_url;
+    }
+    
+    node.visible = true;
+    
+    node.x = dXRoot;
+    if (timeFromRoot_max)
+      node.x += (node.timeFromCurRoot / timeFromRoot_max) * maxK;
+    if (nodeId != curRoot && node.x == nodes[node.parent].x)
+      node.x += 1;  // To be different from parent for mouse left-click
+    node.y = (leavesDrawn + 1) * rowHeight + ((node.displayedLeaves - 1) * rowHeight) / 2;
+    let parent_x = null;
+    if (nodeId != curRoot)
+    {
+      const parent = nodes[node.parent];
+      parent_x = parent.x;
+
+      // parent.x = node.x and parent = root and the x for all children = node.x ??
+      ctx.strokeStyle = fillStyle;  
+      ctx.beginPath ();
+      ctx.moveTo (parent.x, parent.y);
+      ctx.lineTo (parent.x, node.y);
+      ctx.stroke();
+
+      ctx.strokeStyle = stnd2color (rel_error2stnd (node.outlier ? level_max : node.error_density));  
+      ctx.beginPath ();
+      ctx.moveTo (parent.x, node.y);
+      ctx.lineTo (node.x, node.y);
+      ctx.stroke();
+
+      ctx.strokeStyle = fillStyle;
+    }
+  
+    if (showOutliers || arraySize (getChildren(node)) != 1)
+      drawNode (node.x, node.y, rel_error2stnd (node.outlier ? level_max : node.norm_criterion), node.genospecies, node.taxon); 
+      
+    let triangleX = node.x;
+    if (isVisibleLeaf (node) && node.leaves > 1 && timeFromRoot_max)
+    {
+      // Draw isosceles triangle
+      ctx.strokeStyle = fillStyle;  
+      ctx.beginPath ();
+      triangleX = dXRoot + ((node.timeFromCurRoot + node.height_ave) / timeFromRoot_max) * maxK;
+      const triangelHalfHeight = fontHeight * 0.5;  // PAR
+      ctx.moveTo (node.x, node.y);
+      ctx.lineTo (triangleX, node.y + triangelHalfHeight);
+      ctx.lineTo (triangleX, node.y - triangelHalfHeight);
+      ctx.lineTo (node.x, node.y);
+      ctx.stroke();      
+      ctx.fillStyle = frac2color (Math.log(node.leaves) / Math.log(nodes[curRoot].leaves));  
+      ctx.fill ();
+      ctx.fillStyle = fillStyle;
+    }
+
+    let nodeName = node2name (node);
+    if (nodeName)
+    {
+      ctx.fillStyle = node.selectionStart 
+                        ? selectStyle 
+                        : nodeId == curRoot && node.selectedLeaves < mainRoot_selectedNodes
+                          ? selectStyle 
+                          : nodeId != curRoot && node.selectedLeaves && (node.collapsed || node.selectedLeaves == 1)
+                            ? selectPathStyle
+                            : "blue";  // PAR
+      const font_old = node2font (node);
+      const y = node.y + fontHeight * 0.27;
+      if (nodeId == curRoot)
+      {
+        if (showPictures && node.picture_url && node.pictureVisible)
+          if (! drawImage (ctx, node.picture, 0, y - leafFontHeight * 2 * (rootPictureK - 1), dXPicture * rootPictureK, leafFontHeight * 3.5 * rootPictureK, node.picture_url))
+            node.picture_url = null;
+        ctx.fillText (nodeName, picture_offset (node, rootPictureK), y);
+      }
+      else
+      {
+        const s = node2printName (node, true) || nodeName;
+        const x = triangleX + dXName;
+        ctx.clearRect (x - dXName / 2, y - fontHeight * 0.8, picture_offset (node, 1) + ctx.measureText(s).width, fontHeight);
+        if (showPictures && node.picture_url && node.pictureVisible)
+          if (! drawImage (ctx, node.picture, x, y - leafFontHeight * 2, dXPicture, leafFontHeight * 3.5, node.picture_url))
+            node.picture_url = null;
+        ctx.fillText (s, x + picture_offset (node, 1), y);
+      }
+      ctx.font = font_old;
+      ctx.fillStyle = fillStyle;
+    }
+    
+    if (! arrayEmpty (node.gain_loss))
+    {
+      let glS = "";
+      for (const i in node.gain_loss)
+      {
+        if (glS)
+          glS += ", ";
+        glS += gain_loss2str (node.gain_loss[i]);
+      }
+      const font_old = ctx.font;
+      ctx.font = (fontHeight * 0.8) + "px " + fontName;  // PAR
+      ctx.fillStyle = /*node.phenError == 1 ? "red" :*/ "purple";  // PAR
+      ctx.fillText (glS, parent_x ? (parent_x /*+ 2 * dX*/) : 0, node.y - fontHeight * (parent_x ? 0.5 : 0.7));  // PAR
+      ctx.fillStyle = fillStyle;
+      ctx.font = font_old;
+    }
+
+    if (isVisibleLeaf (node))
+      leavesDrawn++;
+    else
+      for (const i in getChildren(node))
+        drawTree_ (i);
+  }
+  
+  
+  const leftX = dXRoot;
+
+
+  const drawTimeUnit = function ()
+  {
+    if (! timeFromRoot_max)
+      return;
+    
+    let unit = 1;
+    while (unit > timeFromRoot_max)
+      unit /= 10;
+    while (unit < timeFromRoot_max)
+      unit *= 10;
+    unit /= 10;
+        
+    ctx.beginPath ();
+    const rightX = dXRoot + (unit / timeFromRoot_max) * maxK;
+    const tickHeight = fontHeight * 0.4;  // PAR
+    const y = treeCanvas.height - tickHeight - rowHeight;
+    ctx.moveTo (leftX, y);
+    ctx.lineTo (rightX, y);
+    ctx.moveTo (leftX, y - tickHeight);
+    ctx.lineTo (leftX, y + tickHeight);
+    ctx.moveTo (rightX, y - tickHeight);
+    ctx.lineTo (rightX, y + tickHeight);
+    ctx.stroke ();  
+    
+    ctx.fillText (unit, leftX + (rightX - leftX) / 2 - 2 * dX, y - tickHeight);  
+  }
+
+
+  const drawColorlegend = function ()
+  {
+    const y = treeCanvas.height - fontHeight * 0.5;
+
+    const text = "Normalized node criterion: ";
+    let w = ctx.measureText (text). width;
+    let x = leftX;
+    ctx.fillText (text, x, y);  
+    x += w + 2 * dX;
+
+    w = ctx.measureText ("10000 "). width;
+    
+    
+    const drawColor = function (val)
+    {
+      drawNode (x, y - fontHeight * 0.3, rel_error2stnd (val), 0);
+      x += 3 * dX;
+      ctx.fillText (val.toString().padEnd(5), x, y);  
+      x += w;
+    }
+
+    const levels = [-level_max, -level_max/2, 0, level_max/2, level_max];  // PAR
+    for (const i in levels)
+      drawColor (levels [i]. toFixed (0));
+  }
+
+
+  ctx.clearRect (0, 0, treeCanvas.width, treeCanvas.height);  
+  drawTree_ (curRoot);
+  
+  // Legend
+  drawTimeUnit ();
+  if (seqType != "Object")
+    drawColorlegend ();  
+  
+  document.getElementById("makeClusters").innerHTML = 
+    ifS (nodes[curRoot].displayedLeaves > displayedLeaves_max, "<form onsubmit='parent.makeClusters();parent.changeTree();return false'><input type='submit' value='Make clusters'></form>");
+  document.getElementById("unSelect").innerHTML = 
+    ifS (mainRoot_selectedNodes, "<form onsubmit='parent.unSelect();parent.changeTree();return false'><input type='submit' value='Unhighlight'></form>");
+  document.getElementById("focusSelected").innerHTML = 
+    ifS (mainRoot_selectedNodes, "<form onsubmit='parent.focusSelected();parent.changeTree();return false'><input type='submit' value='Zoom in on highlighted'></form>");
+}
+
+
+
+var changeTree = function ()
+{
+  const setTreeTopology = function ()
+  // Input: nodes[], curRoot
+  // Output: ctx.font, canvasWidth, timeFromRoot_max, leavesNum, maxK, dX. dXName, dXRoot
+  {  
+    const initNode = function (i)
+    // Update: timeFromRoot_max, leavesNum
+    {
+      const node = nodes[i];       
+      node.timeFromCurRoot = i == curRoot ? 0 : node.time + nodes[node.parent].timeFromCurRoot;  
+    
+      let timeFromCurRoot = node.timeFromCurRoot;
+      if (isVisibleLeaf (node) && node.leaves > 1)
+        timeFromCurRoot += node.height_ave;
+    
+      if (timeFromRoot_max < timeFromCurRoot)
+        timeFromRoot_max = timeFromCurRoot;
+              
+      if (node.picture_url)
+      {
+        node.pictureVisible = true;
+        if (i != curRoot)
+        {
+          let j = node.parent;
+          for (;;)
+          {
+            const node_ = nodes[j];
+            if (node_.picture_url == node.picture_url)
+              node_.pictureVisible = false;
+            if (j == curRoot)
+              break;
+            j = node_.parent;
+          }
+        }
+      }
+
+      if (isVisibleLeaf (node))
+      {
+        node.displayedLeaves = 1;
+        leavesNum++;
+      }
+      else
+      {
+        let n = 0;  
+        for (const j in getChildren (node))
+        {
+          initNode (j);
+          n += nodes[j].displayedLeaves;
+        }
+        node.displayedLeaves = n;  // >= 2
+      }  
+    }
+
+
+    const setMaxK = function (i)
+    // Update: maxK
+    // maxK = \max_k \{ k: \foreach node [k * (timeFromCurRoot(node) / timeFromRoot_max) + nameLength <= canvasWidth - dXRoot] \}
+    {
+      const node = nodes[i];
+      
+      const font_old = node2font (node);
+      const nameLength = dXName + picture_offset (node, 1) + ctx.measureText (node2printName (node, true)). width;
+      ctx.font = font_old;
+      
+      let timeFromCurRoot = node.timeFromCurRoot;
+      if (isVisibleLeaf (node) && node.leaves > 1)
+        timeFromCurRoot += node.height_ave;
+
+      const k = Math.max (10 * dX, canvasWidth - dXRoot - nameLength) / (timeFromCurRoot / timeFromRoot_max);
+      if (maxK > k)
+        maxK = k;
+    
+      if (! isVisibleLeaf (node))
+        for (const j in getChildren(node))
+          setMaxK (j);
+    }
+
+
+    document.getElementById("RootHeader").innerHTML = /*"Tree " + tree + ": " +*/ node2pathName(curRoot);
+  
+    timeFromRoot_max = 0;
+    leavesNum = 0;
+    initNode (curRoot);
+  
+    canvasWidth = window.innerWidth * 0.97;  // PAR
+    
+    treeCanvas.width = canvasWidth;    
+    treeCanvas.height = Math.min (32767, (leavesNum + 1 + 2/*For legend*/) * rowHeight);  
+    
+    ctx.font = fontHeight + "px " + fontName;  
+      
+    // PAR
+    dX = ctx.measureText("M").width / 2;
+    dXName = 2 * dX;  
+    dXPicture = 9 * dX;
+  
+    const node = nodes [curRoot];
+    const font_old = node2font (node);
+    dXRoot = picture_offset (node, rootPictureK) + ctx.measureText (node2name (node)). width + dXName;
+    ctx.font = font_old;
+    
+    maxK = canvasWidth;
+    setMaxK (curRoot);
+    
+    for (const i in nodes)
+      nodes[i].visible = false;
+  }
+
+
+  const gainLossField = document.getElementById("GainLoss");
+  if (hasGainLoss)
+  {
+    if (gainLossField.innerHTML == "<br>")
+      gainLossField.innerHTML = "<form onsubmit='parent.findGainLoss(gain_loss.value);return false'>Gain/Loss (regexp): <input type='text' id=gain_loss></form>";
+  }
+  else
+    if (gainLossField.innerHTML != "<br>")
+      gainLossField.innerHTML = null;    
+  
+  canvasMenu.style.visibility = "hidden";  
+  setTreeTopology ();
+  drawTree ();
+}
+
+
+
+var gotoTop = function ()
+{
+  document.getElementById("makeClusters").scrollIntoView();
+}
+
+
+
+var resetTree = function (tree_arg)
+{
+  initGlobalVar ();
+  tree = tree_arg;
+  if (tree == -1)
+    return false;  
+  if (! initTree ())
+    return;
+  changeTree ();
+  gotoTop ();
+  
+  summaryTab ();
+}
+
+
+
+var resetCurTree = function ()
+{
+  initDisplay (true);
+  changeTree ();
+  gotoTop ();
+}
+
+
+
+/*
+var treeImageWindow = function ()
+{
+  if (mainRoot == -1)
+    return;
+  const win = window.open ("", "_blank");
+  if (! win)
+  {
+    alert ("Cannot open window");
+    return;
+  }
+  win.document.write("<html><head><title>Tree Image</title></head><body><img id=\"treeImg\" alt=\"Tree image to save\" crossOrigin=\"Anonymous\"></body></html>");
+  win.document.getElementById('treeImg').src = treeCanvas.toDataURL("image/jpeg", 1.0);
+}
+*/
+
+
+
+var asnWindow = function ()
+{
+  let asn = '';
+  let first = true;
+  
+  
+  const getAsn = function (nodeId)
+  // Update: asn
+  {    
+    let features = {};  // {int: string}
+
+    const asnFeatures = function ()
+    // Input: features
+    // Update: asn
+    {
+      if (! arraySize (features))
+        return;
+      asn += ",\n\
+        features {\n";
+      let firstFeature = true;
+      for (const f in features)
+      {
+        if (! firstFeature)
+          asn += ',\n';
+        asn += "\
+          {\n\
+            featureid " + f + ",\n\
+            value \"" + features [f] + "\"\n\
+          }";
+        firstFeature = false;
+      }
+      asn += "\n\
+        }";
+    }
+            
+    const node = nodes[nodeId];
+
+    if (! first)
+      asn += ',';
+    asn += "\n\
+    {\n\
+      id " + nodeId;
+    if (node.parent)
+      asn += ",\n\
+      parent " + node.parent;
+    if (node.phylName)
+      features [0] = node.phylName;
+    if (node.parent)
+      features [1] = node.time;
+    if (isLeaf (node))
+      features [2] = node.obj_id;
+    asnFeatures ();
+    asn += "\n\
+    }";
+
+    first = false;
+  
+    for (const j in getChildren(node))
+      getAsn (j);
+  }
+  
+  
+  
+  if (mainRoot == -1)
+    return;
+  
+  asn = "BioTreeContainer ::= {fdict {\n\
+    {\n\
+      id 0,\n\
+      name \"label\"\n\
+    },\n\
+    {\n\
+      id 1,\n\
+      name \"dist\"\n\
+    },\n\
+    {\n\
+      id 2,\n\
+      name \"accession-nbr\"\n\
+    }\n\
+  },\n\
+  nodes {";
+  getAsn (mainRoot);
+  asn += "\n\
+  }\n\
+}\n\
+";
+
+  const win = window.open ("", "_blank");
+  if (! win)  // null in Chrome ??
+    alert ("Cannot open window");
+  else
+    win.document.write("<html><body><pre>" + asn + "</pre></body></html>");
+}
+
+
+
+var offlineDataDump = function ()
+{
+  if (tree == -1)
+    return;
+
+if (false)   // new window
+{
+  const win = window.open ("", "_blank");
+  if (! win)
+  {
+    alert ("Cannot open window");
+    return;
+  }
+  win.document.write("<html><head><title>Distance Tree Data Dump</title></head><body>");
+  win.document.writeln("<pre>");
+
+  win.document.writeln("tree = " + tree + ";");
+  win.document.writeln("mainRoot = " + mainRoot + ";");
+  win.document.writeln("curRoot = " + curRoot + ";");
+  win.document.writeln("objectType = '" + objectType + "';");
+  win.document.writeln("seqType = '" + seqType + "';");
+  for (const nodeId in nodes)
+    win.document.writeln("nodes[" + nodeId + "]=" + json(nodes[nodeId]) + ";");
+  win.document.writeln("//END");
+  
+  win.document.writeln("</pre></body></html>");
+}
+else
+{
+  let data = "tree = " + tree + ";\n";
+  data += "mainRoot = " + mainRoot + ";\n";
+  data += "curRoot = " + curRoot + ";\n";
+  data += "objectType = '" + objectType + "';\n";
+  data += "seqType = '" + seqType + "';\n";
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    // makes the tree unusable 
+    node.children = [];  
+    node.picture = null;
+    data += "nodes[" + nodeId + "]=" + json(node) + ";\n";
+  }
+  data += "//END\n\n";
+  
+  text2file (data, 'distTree-dump.txt');
+  
+  alert ("Tree became unusable")
+}
+}
+
+
+
+var makeRoot_ = function (nodeId)
+{
+  let node = nodes[nodeId];
+  if (nodeId == curRoot)
+    while (node.parent)
+    {
+      curRoot = node.parent;
+      node = nodes[curRoot];
+      if (node2name (node))
+        break;
+    }
+  else 
+    curRoot = nodeId;
+  nodes[curRoot].collapsed = false;
+}
+
+
+
+var collapse = function (nodeId, collapseChildernP)
+{
+  const collapseChildren = function (i)
+  {
+    const node = nodes[i];
+    if (node2name (node))
+      node.collapsed = true;
+    if (node.displayedLeaves > 1)
+      for (const j in getChildren(node))
+        collapseChildren (j);
+  }
+  
+  if (collapseChildernP)
+    collapseChildren (nodeId);
+  const node = nodes[nodeId];
+  node.collapsed = (node.displayedLeaves != 1);
+  if (nodeId == curRoot)
+    makeRoot_ (nodeId);
+
+  changeTree ();
+}
+
+
+
+var makeRoot = function (nodeId)
+{
+  makeRoot_ (nodeId);
+  changeTree ();
+}
+
+
+
+var setRoot = function (nodeId)
+{
+  if (nodeId != null /*&& curRoot != nodeId*/)
+  {
+    initDisplay (false);
+	  curRoot = nodeId;
+	  nodes[curRoot].collapsed = false;
+	  changeTree ();
+	}
+}
+
+
+
+var highlightSubtree = function (nodeId)
+{
+	const iter = function (i)
+	{
+	  const node = nodes [i];
+	  if (! isLeaf (node))
+	    for (const j in getChildren(node))
+	      iter (j);
+	  else
+	  	selectGenome (i, true);
+	}
+	
+	iter (nodeId);
+  canvasMenu.style.visibility = "hidden";  
+  drawTree ();
+}
+
+
+
+var expandAllSubtree = function (nodeId)
+{
+	const iter = function (i)
+	{
+	  const node = nodes[i];
+	  node.collapsed = false;
+	  if (! isLeaf (node))
+	    for (const j in getChildren(node))
+	      iter (j);
+	}
+	
+	iter (nodeId);
+  canvasMenu.style.visibility = "hidden";  
+  changeTree ();
+}
+
+
+
+var nodeInfo = function (nodeId, pageX, pageY, dblclick)
+{
+  const visibilityOld = canvasMenu.style.visibility;
+  canvasMenu.style.visibility = "hidden";    
+
+  let innerHTML;
+  if (nodeId == -1)
+  {
+    if (visibilityOld == "hidden")
+      innerHTML = "Click on a node please!";
+    else 
+      return;
+  }
+  else
+  {
+    const node = nodes [nodeId];  
+    
+    let makeRootBox = "";
+    let collapseBox = "";
+    if (node.parent && node.leaves > 1)
+    {
+      if (dblclick)
+      {
+        if (isVisibleLeaf (node))
+          makeRoot (nodeId);
+        else if (nodeId == curRoot && node2name (node))  
+          collapse (nodeId, false);
+        return;
+      }
+        
+      makeRootBox = "<form onsubmit='parent.parent.parent.makeRoot(" + nodeId + ");return false'>" 
+                    + "<input type='submit' value='" + (nodeId == curRoot ? "Show" : "Hide") + " ancestors'></form>";
+      if (node2name (node))
+        collapseBox = "<form onsubmit='parent.parent.parent.collapse(" + nodeId + ",true);return false'>" + 
+                      "<input type='submit' value='" + (node.displayedLeaves == 1 ? "Show" : "Hide") + " descendants'></form>";
+    }
+  
+    innerHTML = "<pre>";
+  //if (! readonly ())
+      innerHTML += "nodeId: #" + nodeId + "<br>";
+    if (isLeaf (node) && seqType != "Object")
+    {
+      let url;
+      switch (seqType)
+      {
+        case "Assembly ID":       url = "datasets/genome" /*"assembly"*/;  break; 
+        case "DNA GI":            url = "nuccore";   break;
+        case "Protein accession": url = "protein";   break;
+        case "BioSample ID":      url = "biosample"; break;
+        case "Nucl. accession":   url = "nuccore";   break;
+        case "PDT accession":     url = null;   break;  // ??
+        case "UNITE ID":          url = null;   break;  // ??
+        case "Species":           url = null;   break;  // ??
+        default: alert("Unknown sequence type: " + seqType);
+      }
+      if (url)
+        innerHTML += seqType + ": <a href=https://www.ncbi.nlm.nih.gov/" + url + "/" + node.obj_id + " target=_blank>" + node.obj_id + "</a><br>";
+      else
+        innerHTML += seqType + ": " + node.obj_id + "<br>";
+      if (node.int_obj_id != node.obj_id)
+        innerHTML += "Internal " + seqType + ": " + node.int_obj_id + "<br>";       
+      if (node.obj_id_2)
+        innerHTML += "Alternative " + seqType + ": " + node.obj_id_2 + "<br>"; 
+    }
+    else
+      innerHTML += "LCA name: " + node2lcaId (nodeId) + "<br>";
+    innerHTML += "<br>";
+
+    if (node.phylName || node.obj_id)
+      innerHTML += "<b>" + q2h (node.phylName || node.obj_id) + "</b><br>"; 
+    if (node.props && node.props != nvl(node.phylName,''))
+      innerHTML += "<b>" + q2h (node.props) + "</b><br>"; 
+    if (node.genospecies)
+      innerHTML += "<b>Genospecies</b><br>";
+    if (node.taxon)
+      innerHTML += "<b>taxon: " + node.taxon + "</b><br>";
+    if (node.picture_url)
+      innerHTML +=   "<a href=" + node.picture_url + " target=_blank>Picture<a><br>"
+                   + "Picture attribution: " + (node.picture_attribution || "na") + "<br>"
+                   + "Picture license: " + (node.picture_license || "na") + "<br>";
+    if (node.ani)
+      innerHTML += "<b>" + node.ani_match + " ANI:" + node.ani.toFixed(1) + "</b><br>";
+    if (node.comment)
+      innerHTML += "COMMENT: <b>" + node.comment + "</b><br>";
+    innerHTML += "<br>";
+
+    innerHTML += "# Leaves: " + node.leaves + "<br>";
+    
+    let arcLen = node.time;
+    if (! showOutliers)
+    {
+      let node1 = node;
+      for (;;)
+      {
+        const parentId = node1.parent;
+        if (! parentId)
+          break;
+        if (! allLeavesOutliers (parentId, nodeId))
+          break;
+        node1 = nodes[parentId];
+        arcLen += node1.time;
+      }
+    }
+    innerHTML += "Arc length: " + (arcLen ? arcLen.toFixed(4) : 0) + "<br>";
+    
+    innerHTML += "Ave. height: " + node.height_ave.toFixed(4) + "<br>";
+    if (node.error_density != null)
+      innerHTML += "Norm. arc error density: " + node.error_density.toFixed(1) + "<br>";
+    if (node.norm_criterion != null)
+      innerHTML += "Norm. node criterion: " + node.norm_criterion.toFixed(1) + "<br>";
+    if (node.closest_criterion != null)
+    {
+      innerHTML += "Object deformation: " + node.closest_criterion.toFixed(3) + "<br>";
+      innerHTML += "Most deformed pair: " + nodes[node.closest_leaf1].obj_id + ":" + nodes[node.closest_leaf2].obj_id + "<br>";
+    }
+
+    if (isLeaf (node))
+    {
+      innerHTML += "<br>";
+      if (node.dna_len != null)
+        innerHTML += "Genome length: " + numberWithCommas (node.dna_len) + " bp<br>";
+      if (node.univs != null)
+        innerHTML += "# Universal proteins: " + node.univs + "<br>";
+      if (node.prots != null)
+        innerHTML += "# Long proteins: " + node.prots + "<br>";
+      if (node.bioproject)
+        innerHTML += "Bioproject: <a href=https://www.ncbi.nlm.nih.gov/bioproject/?term=" + node.bioproject + " target=_blank>" + node.bioproject + "</a><br>";
+      if (node.pubmed)
+        innerHTML += "PUBMED: <a href=https://www.ncbi.nlm.nih.gov/pubmed/?term=" + node.pubmed + " target=_blank>" + node.pubmed + "</a><br>";
+    }
+    innerHTML += "<p>";
+    
+    if (! arrayEmpty (node.gain_loss))
+    {
+      innerHTML += "Local gains/losses:<br>";
+      for (const i in node.gain_loss)
+      {
+        const gl = node.gain_loss[i];
+        innerHTML += gain_loss2str (gl) + "<br>";
+      }
+      innerHTML += "<p>";
+    }
+    
+
+    if (hasGainLoss)
+    {
+      let gls = [];
+      let thisNode = node;
+      for (;;)
+      {
+        for (const i in thisNode.gain_loss)
+        {
+          const gl = thisNode.gain_loss[i];
+          gls. push (gl);
+        }
+        if (! thisNode.parent)
+          break;
+        thisNode = nodes[thisNode.parent];
+      }
+      gls. sort (mutCompare);
+
+      let gls_uniq = [];
+      {
+        let prev = null;
+        for (const i in gls)
+        {
+          const s = gain_loss2str (gls[i]);
+          if (s == prev)
+            continue;
+          gls_uniq. push (s);
+          prev = s;
+        }
+      }
+
+      let gls_stable   = [];
+      let gls_flipping = [];
+      {
+        let feature_prev = ' ';
+        for (const i in gls_uniq)
+        {
+          const s = gls_uniq[i];
+          const feature = s.substr (1);
+          if (feature == feature_prev)
+          {
+            gls_stable.pop ();
+            feature_prev = ' ';
+            gls_flipping. push (feature);
+          }
+          else
+          {
+            gls_stable. push (s);
+            feature_prev = feature;
+          }
+        }
+      }
+
+      innerHTML += "Gloabal stable gains/losses:<br>";
+      for (const i in gls_stable)
+        innerHTML += gls_stable[i] + "<br>";
+      innerHTML += "<p>";
+
+      innerHTML += "Gloabal flipping gains/losses:<br>";
+      for (const i in gls_flipping)
+        innerHTML += gls_flipping[i] + "<br>";
+      innerHTML += "<p>";
+    }
+
+    
+    if (makeRootBox + collapseBox != "")
+      innerHTML += makeRootBox + collapseBox;
+    if (node.leaves > 1 && node.leaves > node.displayedLeaves)
+      innerHTML += "<form onsubmit='parent.parent.parent.expandAllSubtree(" + nodeId + ");return false'>" + 
+                   "<input type='submit' value='Show all descendants'></form>";
+    innerHTML += "<form onsubmit='parent.parent.parent.highlightSubtree(" + nodeId + ");return false'>" + 
+                 "<input type='submit' value='Highlight'></form>";
+  /*
+    if (isleaf(node))
+    {
+      innerHTML += "<form onsubmit='parent.parent.parent.target=" + nodeId + ";return false'><input type='submit' value='Make target'></form>";
+      innerHTML += "<form onsubmit='parent.parent.parent.pair2dist(" + nodeId + ");return false'><input type='submit' value='Similarity to target'></form>";
+    }
+  */
+    innerHTML += "<form onsubmit='parent.parent.parent.setName(" + nodeId + ");return false'><input type='submit' value='Rename'></form>";
+    if (! readonly ())
+      if (isLeaf (node))
+        if (   objectType == "Genome"
+            || objectType == "Locus"
+           )
+	        innerHTML +=   "<form onsubmit='parent.parent.parent.setTax(" + nodeId + ");return false'><input type='submit' value='Change taxon'></form>"
+	                     + "<form onsubmit='parent.parent.parent.confirmTax(" + nodeId + ");return false'><input type='submit' value='Confirm taxon'></form>"
+	                     + "<form onsubmit='parent.parent.parent.unconfirmTax(" + nodeId + ");return false'><input type='submit' value='Unconfirm taxon'></form>"
+	                     + "<form onsubmit='parent.parent.parent.setComment(" + nodeId + ");return false'><input type='submit' value='Comment'></form>";
+	  innerHTML += "<form onsubmit='parent.parent.parent.saveLeaves(" + nodeId + ",false);return false'><input type='submit' value='Save leaves info'></form>";
+	  if (node.selectedLeaves)
+  	  innerHTML += "<form onsubmit='parent.parent.parent.saveLeaves(" + nodeId + ",true);return false'><input type='submit' value='Save highlighted leaves info'></form>";
+	  if (node.leaves >= 3)
+  	  innerHTML += "<form onsubmit='parent.parent.parent.saveNewick(" + nodeId + ");return false'><input type='submit' value='Save subtree in Newick format'></form>";
+	  if (tree == -1 && node.parent)
+  	  innerHTML += "<form onsubmit='parent.parent.parent.node2root(" + nodeId + ");return false'><input type='submit' value='Set this arc as root'></form>";
+  }
+
+  canvasMenu.style.left = pageX + "px";
+  canvasMenu.style.top  = pageY + "px";
+  canvasMenu.innerHTML = innerHTML;
+  canvasMenu.style.visibility = "visible";  
+}
+
+
+
+var pendingClick = 0;
+
+
+
+var pos2node = function (evt)
+{
+  if (evt.button)  // Mouse non-left button (IE: >= 9)
+    return;
+        
+  let bestI = -1;
+  if (canvasMenu.style.visibility == "hidden")
+  {
+    const pos = getMouseCanvasPos (evt, treeCanvas);  
+    let bestNode;
+    for (const nodeId in nodes)
+    {
+      const node = nodes [nodeId];
+      if (   (      node.visible
+                 && (   Math.abs (pos.x - node.x) <= dX * 2  // PAR
+                     || isVisibleLeaf (node) && pos.x >= node.x
+                    )
+                 && Math.abs (pos.y - node.y) <= rowHeight / 3  // PAR
+              || nodeId == curRoot && pos.x <= node.x              
+             )
+          && (   bestNode === undefined
+              ||   Math.abs (bestNode.x - pos.x) + Math.abs (bestNode.y - pos.y) 
+                 > Math.abs (    node.x - pos.x) + Math.abs (    node.y - pos.y)
+             )
+         )
+      {
+        bestI = nodeId;
+        bestNode = node;
+      }
+    }
+  }
+
+  if (bestI != -1)
+  {
+    if (evt. detail == 1 && ! pendingClick) 
+    {
+      pendingClick = setTimeout (function(){pos2node(evt);}, 250);  // should match OS multi-click speed (500)
+      return;
+    }
+    clearTimeout (pendingClick);
+    pendingClick = 0;
+  }
+
+  nodeInfo (bestI, evt.pageX, evt.pageY, bestI != -1 && evt.detail >= 2);
+}
+
+
+
+var selectGenome = function (nodeId, qc)
+// Output: nodes[].{selectedLeaves,selectionStart}
+{
+  let node = nodes[nodeId];
+  if (qc && node.leaves != 1)
+    alert ("selectGenome: node.leaves != 1");
+  node.selectionStart = true;  
+  if (node.selectedLeaves)  
+    return;
+  for (;;)
+  {
+    node.selectedLeaves++;
+    if (nodeId == mainRoot)
+      break;
+    nodeId = node.parent;
+    node = nodes[nodeId];
+  }
+}
+  
+  
+
+var findGenomeList = function (obj_id_list)
+{
+  if (mainRoot == -1)
+    return;
+  obj_id_list = obj_id_list.trim(). replace (/ +/g, ':');
+  if (! obj_id_list)
+    return;
+  
+  if (obj_id_list.substr (0, 1) == '#')
+  {
+    const nodeId = Number (obj_id_list.substr(1));
+    if (nodes[nodeId])
+    {
+      selectGenome (nodeId, false);
+      nodes[nodeId].displayNodeId = true;
+    }
+    else
+	    alert ("Node " + obj_id_list + " is not found");
+  }
+  else
+    while (obj_id_list)
+    {    
+  	  let obj_id = '';
+  	  const pos = obj_id_list.indexOf(':');
+  	  if (pos == -1)
+  	  {
+  	    obj_id = obj_id_list;
+  	    obj_id_list = '';
+  	  }
+  	  else
+  	  {
+  	  	obj_id      = obj_id_list.substr (0, pos);
+  	  	obj_id_list = obj_id_list.substr (pos + 1);
+  	  }
+  	  obj_id = obj_id.trim();
+  	  obj_id_list = obj_id_list.trim();
+  	  if (! obj_id)
+  	    continue;
+  	
+  	  let found = false;
+  	  for (const nodeId in nodes)
+  	  {
+  	    const node = nodes[nodeId];
+  	    if (   isLeaf (node)
+  	        && (   node.obj_id == obj_id
+  	            || node.obj_id.indexOf(obj_id) == 0 && node.obj_id.substr(obj_id.length,1) == '.'
+  	            || node.int_obj_id == obj_id
+  	            || node.obj_id_2 && node.obj_id_2.indexOf (obj_id) == 0
+  	           )
+  	       )
+  	    {
+  	      selectGenome (nodeId, true);
+  	      found = true;
+  	    }
+  	  }
+  	  if (! found)  
+  	    alert (seqType + " " + obj_id + " is not found");
+  	}
+
+  changeTree ();
+}
+
+
+
+var findGenomes = function (name_part, bad_source, types_only)
+{
+  if (mainRoot == -1)
+    return;
+    
+  const name_part_ = name_part.trim().toLowerCase();
+  
+  let found = false;
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    if (node.leaves != 1)
+      continue;
+    if (! bad_source && node.bad_source)
+      continue;
+    if (node2printName (node,false).toLowerCase().indexOf(name_part_) != -1)
+      if (! types_only || node.type)
+      {
+        selectGenome (nodeId, true);
+        found = true;
+      }
+  }
+  
+  if (found)  
+    changeTree ();
+  else
+    alert ("Leaf names having \"..." + name_part + "...\" are not found");
+}
+
+
+
+var findPubmed = function (pubmed)
+{
+  if (mainRoot == -1)
+    return;
+
+  let found = false;
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    if (isLeaf (node) && node.pubmed == pubmed)
+    {
+      selectGenome (nodeId, true);
+      found = true;
+    }
+  }
+  
+  if (found)  
+    changeTree ();
+  else
+    alert (seqType + "(s) with PUBMED " + pubmed + " are not found");
+}
+
+
+
+var findBioProject = function (bioproject)
+{
+  if (mainRoot == -1)
+    return;
+
+  let obj_id_list = bioproject.trim(). replace (/ +/g, ':');
+  if (! obj_id_list)
+    return;
+  
+  while (obj_id_list)
+  {    
+	  let obj_id = '';
+	  const pos = obj_id_list.indexOf(':');
+	  if (pos == -1)
+	  {
+	    obj_id = obj_id_list;
+	    obj_id_list = '';
+	  }
+	  else
+	  {
+	  	obj_id      = obj_id_list.substr (0, pos);
+	  	obj_id_list = obj_id_list.substr (pos + 1);
+	  }
+	  obj_id = obj_id.trim();
+	  obj_id_list = obj_id_list.trim();
+	  if (! obj_id)
+	    continue;
+	
+    let found = false;
+    for (const nodeId in nodes)
+    {
+      const node = nodes[nodeId];
+      if (isLeaf (node) && node.bioproject == obj_id)
+      {
+        selectGenome (nodeId, true);
+        found = true;
+      }
+    }
+	  if (! found)  
+      alert (seqType + "(s) with BioProject " + obj_id + " are not found");
+	}
+
+  changeTree ();
+}
+
+
+
+var findGainLoss = function (gain_loss)
+{
+  const selectGainLossGenomes = function (gl, nodeId)
+  {
+    const node = nodes[nodeId];
+    for (const i in node.gain_loss)
+    {
+      const gl_ = node.gain_loss[i];
+      if (   gl_.feature == gl.feature 
+          && gl_.gain    != gl.gain
+         )
+        return;
+    }
+    if (isLeaf (node))
+      selectGenome (nodeId, true);
+    else
+      for (const i in getChildren(node))
+        selectGainLossGenomes (gl, i);
+  }
+  
+  
+  if (mainRoot == -1)
+    return;
+    
+  gain_loss = gain_loss. trim ();
+  if (! gain_loss)
+    return;
+    
+  let re = null;
+  try { re = new RegExp (gain_loss); } 
+    catch (e) 
+    {
+      alert ("Bad regular expression: " + gain_loss);
+      return;
+    }
+  
+  let found = false;
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    for (const i in node.gain_loss)
+    {
+      const gl = node.gain_loss[i];
+      if (re. test (gain_loss2str (gl)))
+      {
+        selectGainLossGenomes (gl, nodeId);
+        node.gain_loss[i].selected = true;
+        found = true;
+      }
+    }
+  }
+  
+  if (found)  
+    changeTree ();
+  else
+    alert (seqType + "(s) with gain/loss " + gain_loss + " are not found");
+}
+
+
+
+var str2lca = function (str)
+// Return: nodeId
+{
+  const nodeId2path = function (nodeId)
+  {
+    let path = [];
+    while (nodeId)
+    {
+      path.push(nodeId);
+      nodeId = nodes[nodeId].parent;
+    }
+    return path;
+  }
+
+
+  const pair = str.split(":");
+  if (   pair.length != 2
+      && pair.length != 1
+     )
+    return null;
+
+  let found = [];
+  for (let i = 0; i < pair.length; i++)
+  {
+    for (const nodeId in nodes)
+    {
+      const node = nodes[nodeId];
+      if (isLeaf (node))
+        if (   node.obj_id     == pair[i]
+            || node.int_obj_id == pair[i]
+           )
+        {
+          found.push (nodeId);
+          break;
+        }
+    }
+    if (found.length != i + 1)
+    {
+      alert (seqType + " " + pair[i] + " is not found");
+      return null;
+    }
+  }
+  
+  if (found.length == 1)
+    return found[0];
+  
+  const path0 = nodeId2path (found[0]);
+  const path1 = nodeId2path (found[1]);
+  let lca = null;
+  for (;;)
+  {
+    const last0 = path0.pop();
+    const last1 = path1.pop();
+    if (last0 != last1)
+      break;
+    lca = last0;
+  }
+  return lca;
+}
+
+
+
+var place = function (placement)
+{
+  if (mainRoot == -1)
+    return;
+    
+  const format = "Placement format: new_leaf_name node new_leaf_arc_length node_arc_length\nnode format: leaf_name or leaf_name:leaf_name";
+
+  const arr = placement.replace("\t"," ").replace(/ +/g, " ").split(" ");
+  if (arr.length != 4)
+  {
+    alert (format);
+    return;
+  }
+  
+  let lca = str2lca (arr[1]);
+  if (lca == null)
+  {
+    alert (format);
+    return;
+  }
+  
+  const leafTime = Number(arr[2]) / species_barrier;
+  if (leafTime == null)
+  {
+    alert (format);
+    return;
+  }
+
+  let lcaTime = Number(arr[3]) / species_barrier;
+  if (lcaTime == null)
+  {
+    alert (format);
+    return;
+  }
+
+  let lcaNode = nodes[lca];  
+  const lca_init = lca;
+  while (lcaTime > lcaNode.time)
+  {
+    const lcaParent = lcaNode.parent;
+    if (lcaParent && allLeavesOutliers (lcaParent, lca_init))
+    {
+      lcaTime -= lcaNode.time;
+      lca = lcaParent;
+      lcaNode = nodes[lca];  
+    }
+    else
+    {
+      alert ("node arc length " + lcaTime + " > arc length " + lcaNode.time + " of " + node2lcaName (lca));
+      return;
+    }
+  }
+  
+  const oldParent = lcaNode.parent;
+  
+  node_max++;
+  const inter = node_max;
+  nodes [inter] = 
+    { parent:        oldParent
+    , leaves:        lcaNode.leaves + 1
+    , time:          lcaNode.time - lcaTime
+    , height_ave:    lcaNode.height_ave - lcaTime
+    , norm_criterion:lcaNode.norm_criterion
+    , error_density: lcaNode.error_density
+  //, phylName:      row.phylName
+  //, props:         row.props
+  //, genospecies:   row.genospecies
+  //, taxon:         row.taxon
+  //, indiscern:     row.indiscern
+    , closest_leaf1: lcaNode.closest_leaf1
+    , closest_leaf2: lcaNode.closest_leaf2
+    , closest_criterion: lcaNode.closest_criterion
+    // Leaf
+    , obj_id:        null
+    , int_obj_id:    null
+    , obj_id_2:      null
+    //
+    , gain_loss: []
+      // computed
+    , children: []
+    , selectedLeaves: lcaNode.selectedLeaves  // in [0,leaves] 
+    , selectionStart: false
+      // display
+    , displayedLeaves: 0  // in [1,leaves] 
+    , timeFromCurRoot: 0  
+    , x: 0
+    , y: 0
+    , collapsed: false
+        // true => Boolean(phylName)
+    , visible: false
+    };
+    
+  lcaNode.parent = inter;
+  lcaNode.time = lcaTime;
+  nodes[oldParent].leaves++;
+
+  node_max++;
+  nodes [node_max] = 
+    { parent:        inter
+    , leaves:        1
+    , time:          leafTime
+    , height_ave:    0
+    , norm_criterion:null
+    , error_density: null
+  //, phylName:      row.phylName
+  //, props:         row.props
+  //, genospecies:   row.genospecies
+  //, taxon:         row.taxon
+  //, indiscern:     row,.indiscern
+    , closest_leaf1: null
+    , closest_leaf2: null
+    , closest_criterion: null
+      // Leaf
+    , obj_id:        arr[0]
+    , int_obj_id:    null
+    , obj_id_2:      null
+    , removed:       false
+    , bad_source:    false
+    , outlier:       null
+    , type:          null
+    , rs_acc_ver:    null
+    , tax_confirmed: null
+    //
+    , gain_loss: []
+      // computed
+    , children: []
+    , selectedLeaves: 0  // in [0,leaves] 
+    , selectionStart: false
+      // display
+    , displayedLeaves: 0  // in [1,leaves] 
+    , timeFromCurRoot: 0  
+    , x: 0
+    , y: 0
+    , collapsed: false
+        // true => Boolean(phylName)
+    , visible: false
+    };
+    
+  initTreeFinish ();
+  
+  unSelect ();
+  selectGenome (node_max, true);
+  focusSelected ();
+}
+
+
+
+var show_pictures = function (on,changeTreeP)
+{
+  if (showPictures == on)
+    return;
+  showPictures = on;
+  document.getElementById("showPictures").innerHTML = 
+    "<form onsubmit='parent.show_pictures(" + (showPictures ? "false" : "true") + ",true);return false'><input type='submit' value='" + (showPictures ? "Hide" : "Show") + " pictures'></form>";
+  if (changeTreeP)
+    changeTree ();
+}
+
+
+
+var show_outliers = function (on,changeTreeP)
+{
+  if (showOutliers == on)
+    return;
+  showOutliers = on;
+  document.getElementById("showOutliers").innerHTML = 
+    "<form onsubmit='parent.show_outliers(" + (showOutliers ? "false" : "true") + ",true);return false'><input type='submit' value='" + (showOutliers ? "Hide" : "Show") + " outliers'></form>";
+  if (changeTreeP)
+    changeTree ();
+}
+
+
+
+var unSelect = function ()
+{
+  for (const nodeId in nodes)
+  {
+    const node = nodes[nodeId];
+    node.selectedLeaves = 0;
+    node.selectionStart = false;
+    node.displayNodeId = false;
+    for (const i in node.gain_loss)
+      node.gain_loss [i]. selected = false;
+  }
+}
+
+
+
+var focusSelected = function ()
+{
+  const focusSelected_ = function (fromCurRoot)
+  {
+  	let focusNodeId = null;
+  	let selectedNodes_max = 0;
+  	let leaves_min = 10000000;  // PAR
+    for (const nodeId in nodes)
+    {
+      const node = nodes[nodeId];
+      if (isLeaf (node))
+        continue;
+      if (! node2name (node))
+        continue;
+      if (fromCurRoot && ! isAncestor (nodeId, curRoot))
+        continue;
+      const parent = nodeId == mainRoot ? null : nodes[node.parent];
+      if (   (   ! parent
+              || parent.selectedLeaves == node.selectedLeaves
+             )
+          && (   selectedNodes_max < node.selectedLeaves
+              ||    selectedNodes_max == node.selectedLeaves
+                 && leaves_min > node.leaves
+             )
+         )
+      {
+      	selectedNodes_max = node.selectedLeaves;
+      	leaves_min = node.leaves;
+        focusNodeId = nodeId;
+      }
+    }
+    return focusNodeId;
+  }
+  let focusNodeId = focusSelected_ (true);
+  if (! focusNodeId || ! nodes[focusNodeId].selectedLeaves)
+    focusNodeId = focusSelected_ (false);
+  setRoot (focusNodeId);
+}
+
+
+
+var makeClusters = function ()
+{
+  let criterion_max = 0;
+  let cluster = null;
+  let clusters = [];
+  
+  const findCluster = function (nodeId)
+  // Update: criterion_max
+  // Output: child
+  {
+    const node = nodes[nodeId];
+    for (const j in getChildren(node))
+    {
+      const child = nodes[j];
+      if (isVisibleLeaf (child))
+        continue;
+      if (! node2name (child))
+      {
+        let childIsAncestor = false;
+        for (const k in clusters)      
+          if (isAncestor (clusters[k], j))
+          {
+            childIsAncestor = true;
+            break;
+          }
+        if (! childIsAncestor)
+        {
+          const criterion = child.displayedLeaves /*leaves ??*/ * child.timeFromCurRoot;
+          if (criterion_max < criterion)
+          {
+            criterion_max = criterion;
+            cluster = j;
+          }
+        }
+      }
+      findCluster (j);
+    }
+  }
+  
+  let cluster_num = 0;
+  let displayedLeaves = nodes [curRoot]. displayedLeaves;
+  while (displayedLeaves > displayedLeaves_max)  
+  {
+    criterion_max = 0;
+    cluster = null;
+    findCluster (curRoot);
+    if (! cluster)
+      break;
+    const clusterNode = nodes[cluster];
+    cluster_num++;
+    clusterNode.phylName = "Cluster " + cluster_num;  // Not in the database!
+    clusterNode.collapsed = true;
+    clusters. push (cluster);
+    displayedLeaves -= clusterNode. displayedLeaves;
+    displayedLeaves++;
+  }
+  if (cluster_num)
+    alert ("# Clusters: " + cluster_num + " (for display only)");
+}
+
+
+
+var setName = function (nodeId)
+{
+  const node = nodes[nodeId];
+  let val = prompt ("Enter name (empty string = null):", node.phylName || "");
+  if (val == null)
+    return;
+  val = val.trim ();
+    
+  if (! offline)
+    if (readonly ())
+      alert ("Database will not be changed");
+    else
+    {  
+      const count = dml ("\
+update Phyl \
+  set [name] = '" + str2sql(val) + "' \
+  where tree = " + tree + " and node = " + nodeId);
+    if (count <= 0)
+      alert ("Database is not changed");
+    }
+    
+  node.phylName = val;  
+  if (! val)
+    node.collapsed = false;
+  
+  changeTree ();
+}
+
+
+
+var setTax = function (nodeId)
+{
+  const node = nodes[nodeId];
+  let val = prompt ("Enter taxon name (empty string = null):", "");
+  if (val == null)
+    return;
+  val = val.trim ();
+  if (val == "")
+    val = null;
+  
+/*
+  let tax = 'null';
+  if (val)
+  {
+    let rs = null;
+    if (isNaN (parseInt (val.substr(0,1), 10)))
+  	  rs = query ("select id from Tax where [name] = '" + str2sql (val) + "'");
+  	else
+  	  rs = query ("select id from Tax where id = " + str2sql (val));
+	  if (! rs.length)
+	  {
+	  	alert ("Taxon '" + val + "' is not in uniColl..Tax");
+	    return;
+	  }
+	  tax = rs[0].id;
+  }
+*/
+		
+	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
+  const identifier = idRs[0].identifier;
+		
+  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(val) + " where id = '" + identifier + "'";
+  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", " + str2sqlNull(val) + ")";
+  const count = dml (sql1 + "; " + sql2);
+  if (count <= 0)
+  {
+    alert ("Database is not changed");
+    return;
+  }
+  
+  node.tax_confirmed = null;
+  
+  if (val != null)
+  {
+    const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = '" + identifier + "'");
+    if (! taxRs.length)
+    	alert ("Cannot get Tax.name");
+    else
+    { 
+      const tax_name = taxRs[0].name;  
+      node.tax_confirmed = (tax_name == val ? 1 : 0);
+    }
+  }
+  
+  changeTree ();
+}
+
+
+
+var confirmTax = function (nodeId)
+{
+  const node = nodes[nodeId];
+
+	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
+  const identifier = idRs[0].identifier;
+		
+  const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = '" + identifier + "'");
+  if (! taxRs.length)
+  {
+  	alert ("Cannot get Tax.name");
+  	return;
+  }
+  const tax_name = taxRs[0].name;  
+
+  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(tax_name) + " where id = '" + identifier + "'";
+  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", " + str2sqlNull(tax_name) + ")";
+  const count = dml (sql1 + "; " + sql2);
+  if (count <= 0)
+  {
+    alert ("Database is not changed");
+    return;
+  }
+  
+  node.tax_confirmed = 1;
+    
+  changeTree ();
+}
+
+
+
+var unconfirmTax = function (nodeId)
+{
+  const node = nodes[nodeId];
+
+	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
+  const identifier = idRs[0].identifier;
+		
+  const sql1 = "update " + objectType + " set tax_name_curated = null, tax_curated = null where id = '" + identifier + "'";
+  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", null)";
+  const count = dml (sql1 + "; " + sql2);
+  if (count <= 0)
+  {
+    alert ("Database is not changed");
+    return;
+  }
+  
+  node.tax_confirmed = null;
+    
+  changeTree ();
+}
+
+
+
+var setComment = function (nodeId)
+{
+  const node = nodes[nodeId];
+  
+  let val = prompt ("Enter comment (empty string = null):", node.comment);
+  if (val == null)
+    return;
+  val = val.trim ().replace(/[\n\r]/g, ' ');
+  if (! val)
+    val = null;
+  
+  let sql = null;
+  switch (objectType)
+  {
+    case "Genome": sql = "\
+update Genome \
+  set comment = " + str2sqlNull (val) + " \
+  from      Phyl \
+       join Phyltree on Phyltree.id = Phyl.tree \
+       join PhylObject on     PhylObject.tree = Phyl.tree \
+                          and PhylObject.leaf = Phyl.node \
+       join Genome on Genome.id = PhylObject.identifier \
+  where     Phyltree.object_type = 'Genome' \
+        and Phyl.is_leaf = 1 \
+        and Phyl.tree = " + tree + " \
+        and Phyl.node = " + nodeId;
+       break;
+    case "Locus": sql = "\
+update Locus \
+  set comment = " + str2sqlNull (val) + " \
+  from      Phyl \
+       join Phyltree on Phyltree.id = Phyl.tree \
+       join PhylObject on     PhylObject.tree = Phyl.tree \
+                          and PhylObject.leaf = Phyl.node \
+       join Locus on Locus.id = PhylObject.identifier \
+  where     Phyltree.object_type = 'Locus' \
+        and Phyl.is_leaf = 1 \
+        and Phyl.tree = " + tree + " \
+        and Phyl.node = " + nodeId;
+       break;
+  }  
+  if (! sql)
+  {
+    alert ("setComment(): Unknown object type " + objectType);
+    return;
+  }
+  
+  node.comment = val;
+
+  const count = dml (sql);
+  if (count <= 0)
+    alert ("Database is not changed");
+
+  changeTree ();
+}
+
+
+
+var saveLeaves = function (nodeId, highlighted)
+{ 
+  let text = '#' + seqType + '\tfullasm_id\tWGS\tRefSeq_accession\tremoved\tbad_source\toutlier\ttype\tadded\tsubmitted_taxid\ttax_curated\ttax_confirmation\tANI_match\tANI\tproperties\tcomment\n';
+  
+  const leaves2text = function (nodeId)
+  // Update: text
+  {
+    const node = nodes [nodeId];
+    if (! isLeaf (node))
+      for (const childId in getChildren(node))
+        leaves2text (childId);
+    else
+      if (! highlighted || node.selectedLeaves)
+        text +=   node.obj_id + '\t'               // acc_ver
+                + node.int_obj_id + '\t'           // fullasm_id
+                + (node.obj_id_2 || '') + '\t'     // WGS
+                + (node.rs_acc_ver || '') + '\t'   
+                + ifS (node.removed, 'Yes') + '\t'
+                + ifS (node.bad_source, 'Yes') + '\t'
+                + (node.outlier || '') + '\t'
+                + (node.type || '') + '\t'
+                + (node.in_tree ? '' : 'ADDED') + '\t'
+                + node.tax + '\t'
+                + (node.tax_name_curated || '') + '\t'
+                + (node.tax_confirmed == 1 ? "OK" : (node.tax_confirmed == 0 ? "FIX" : '')) + '\t'
+                + (node.ani_match || '') + '\t'
+                + (node.ani || '')+ '\t'
+                + (node.props || '') + '\t'
+                + (node.comment || '') + '\n';
+  }
+  
+  leaves2text (nodeId);
+  text2file (text, 'tree_leaves.txt');
+  canvasMenu.style.visibility = "hidden";    
+}
+
+
+
+const newickDelimiters = " ,;():[]";  // constant
+
+
+
+var saveNewick = function (nodeId)
+{ 
+  let text = '';
+  
+  const node2newick = function (nodeId)
+  // Update: text
+  {
+    const name2newick = function (name)
+    {
+      return name. replace (/[ ,;():[\]]/g, '_');  // = newickDelimiters
+    }
+
+    const node = nodes [nodeId];
+    if (! isLeaf (node))
+    {
+      text += '(';
+      let first = true;
+      for (const childId in getChildren(node))
+      {
+        if (! first)
+          text += ',';
+        node2newick (childId);
+        first = false;
+      }
+      text += ')';
+      if (node.phylName)
+        text += name2newick (node.phylName);
+    }
+    else
+      text += name2newick (node2printName (node));
+    if (node.parent)
+      text += ':' + node.time;
+  }
+  
+  node2newick (nodeId);
+  text += ';';
+  text2file (text, 'tree.nw');
+  canvasMenu.style.visibility = "hidden";    
+}
+
+
+
+var node2root = function (nodeId)
+{
+  if (tree != -1)
+  {
+    alert ("Not implemented for database trees");
+    return;
+  }
+  
+  const time_max = nodes[nodeId].time;
+  let val = prompt ("Enter the arc length between this node and the new root (0.." + time_max + "):", time_max / 2);
+  if (val == null)
+    return;
+  val = val.trim ();
+  const time_new = Number(val);
+  if (time_new < 0 || time_new > time_max)
+  {
+    alert ("Impossible arc length");
+    return;
+  }
+  if (time_new == time_max)
+  {
+    alert ("Use the parent node");
+    return;
+  }
+  
+  if (time_new)
+  {
+    const nodeId_new = nodes.length;
+    const node = nodes [nodeId];
+    nodes [nodeId_new] = 
+        { parent:        node.parent
+        , time:          time_max - time_new
+        , gain_loss: []
+          // computed
+        , children: []
+        , selectedLeaves: 0  // in [0,leaves] 
+        , selectionStart: false
+          // display
+        , displayedLeaves: 0  // in [1,leaves] 
+        , timeFromCurRoot: 0  
+        , x: 0
+        , y: 0
+        , collapsed: false
+            // true => Boolean(phylName)
+        , visible: false
+        };
+    const node_new = nodes [nodeId_new];
+    node_new.children [nodeId] = 0;
+    node.time = time_new;
+    node.parent = nodeId_new;
+    nodeId = nodeId_new;
+  }
+
+  const node2root_ = function (nodeId_)
+  {
+    const node = nodes [nodeId_];
+    const parentId = node.parent;
+    if (! parentId)
+      return;
+    node2root_ (parentId);
+    nodes [parentId]. parent = nodeId_;
+    nodes [parentId]. time = node.time;;
+    node.parent = null;
+    node.time = 0;
+    node.phylName = null;
+    mainRoot = nodeId_;
+  }
+  node2root_ (nodeId);
+  
+  initTreeFinish ();
+  
+  const removeTransients = function (nodeId_)  
+  {
+    const node = nodes [nodeId_];
+    if (arraySize (getChildren(node)) == 1)  // node is transient
+      for (const childId in getChildren(node))
+      {
+        let children = [];
+        children [childId] = 0;
+        for (const childId_ in nodes[node.parent].children)
+          if (childId_ != nodeId_)
+            children [childId_] = 0;
+        nodes[node.parent].children = children;
+        const child = nodes [childId];
+        child.parent = node.parent;
+        child.time += node.time;
+      }      
+    for (const childId in getChildren(node))
+      removeTransients (childId);
+  }
+  removeTransients (nodeId);
+
+  const setLeavesHeight = function (nodeId_)
+  {
+    const node = nodes [nodeId_];
+    if (! isLeaf (node))
+    {
+      node.leaves = 0;
+      node.height_sum = 0;
+      node.height_weight = 0;
+      for (const childId in getChildren(node))
+      {
+        setLeavesHeight (childId);
+        const child = nodes [childId];
+        node.leaves += child.leaves;
+        node.height_weight +=  child.height_weight + child.time;
+        node.height_sum    += (child.height_weight + child.time) * (child.height_ave + child.time);
+      }
+      node.height_ave = node.height_sum / node.height_weight;
+    }
+    else
+    {
+      node.leaves = 1;
+      node.height_sum = 0;
+      node.height_weight = 0;
+      node.height_ave = 0;
+    }
+  }
+  setLeavesHeight (nodeId);
+  
+  curRoot = nodeId;
+  nodes[curRoot].collapsed = false;
+  changeTree ();
+}
+
+
+
+var summaryTab = function ()
+{
+  if (mainRoot == -1)
+    return;
+
+  let rs = query ("\
+select [name] \
+     , " + (server == "PROTEUS" ? "tax" : "pdg") + "\
+     , tree_file \
+     , object_type \
+     , comparison \
+     , species_barrier \
+     , parm \
+     , jira \
+     , create_dat \
+     , update_dat \
+     , release \
+     , latest \
+     , interiors \
+  from Phyltree_vw \
+  where id = " + tree);
+  const row = rs [0];
+  
+  rs = query ("\
+select count(*) genomes \
+  from Phyl \
+  where     tree = " + tree + " \
+        and is_leaf = 1");
+  const genomes = rs[0].genomes;
+
+  species_barrier = row.species_barrier || 1;
+
+  setObject ("summaryTab",
+    "<p>" + tableStart ("") + "\
+<!--tr><th colspan=2>Input</th></tr-->\
+<tr><th align='left'>Tree ID</th><td>" + tree + "</td></tr>\
+<tr><th align='left'>Tree name</th><td>" + row.name + "</td></tr>\
+<tr><th align='left'>" + (server == "PROTEUS" ? "Tax ID" : "PDG") + "</th><td>" + (server == "PROTEUS" ? (row.tax == 1 ? "N/A" : row.tax) : row.pdg )+ "</td></tr>\
+<tr><th align='left'>File</th><td>" + row.tree_file + "</td></tr>\
+<tr><th align='left'>Object</th><td>" + row.object_type + "</td></tr>\
+<tr><th align='left'>Comparison</th><td>" + row.comparison + "</td></tr>\
+<tr><th align='left'>Parameters</th><td>" + (row.parm || "") + "</td></tr>\
+<tr><th align='left'>Species barrier</th><td align=right>" + (row.species_barrier || "") + "</td></tr>\
+<tr><th align='left'>JIRA</th><td><a href=https://jira.ncbi.nlm.nih.gov/browse/" + row.jira + " target=_blank>" + (row.jira || "" ) + "</a></td></tr>\
+<tr><th align='left'>Release</th><td align=right>" + row.release + "</td></tr>\
+<tr><th align='left'>Latest</th><td align=right>" + (row.latest ? "Yes" : "No") + "</td></tr>\
+<tr><th align='left'>Tree made on</th><td>" + row.create_dat + "</td></tr>\
+<tr><th align='left'>Tree updated on</th><td>" + row.update_dat + "</td></tr>\
+<tr><th align='left'># Objects</th><td align='right'>" + genomes + "</td></tr>\
+<!--tr><th colspan=2>Output</th></tr-->\
+<tr><th align='left'># Interior nodes</th><td align='right'>" + row.interiors + "</td></tr>\
+</table>\
+<form onsubmit='parent.remove_summaryTab();return false'><input type='submit' value='Remove'></form>");
+}
+
+
+
+var readData = function ()
+{
+	alert ("Missing data for an offline page");
+}
+
+
+
+var newick = null;  // Text in Newick format
+var newickP = false;
+var gainInfo = null;  // Text
+var lossInfo = null;  // Text
+
+
+
+var parseNewick = function ()
+// Cf. distTree.cpp
+// Input: newick
+// Return: success
+{
+  let pos = -1;
+  let c = ' ';  // = newick.charAt(pos)
+  let nodeId = 0;
+
+
+  const error = function (txt)
+  {
+    alert (txt + " at position " + (pos + 1));
+  }
+
+  const readChar = function ()
+  // Output: c
+  // Update: pos
+  // Return: success
+  {
+    for (;;)
+    {
+      pos++;
+      if (pos >= newick.length)
+        break;
+      c = newick.charAt(pos);
+      if (   c != '\n'
+          && c != '\r'
+         )
+        return true;
+    }
+    return false;
+  }
+  
+  const skipSpaces = function ()
+  // Return: success
+  {
+    while (c == ' ')
+      if (! readChar ())
+        return false;
+    return true;
+  }
+  
+  const parseName = function ()
+  // Return: !null <=> sucess
+  {
+    if (! skipSpaces ())
+      return null;
+    let name = '';
+  /*if (c == "'")
+    {
+      for (;;)
+      {
+        if (! readChar ())
+          return null;
+        if (c == "'")
+          break;
+        name += c;
+      }
+      if (! readChar ())
+        return false;
+    }
+    else */
+      for (;;)
+      {
+        if (newickDelimiters. indexOf (c) != -1)
+          break;
+      //if (! printable (c))
+        //throw Error ("Non-printable character in name: " + toString ((int) c), *this);
+        name += c;
+        if (! readChar ())
+          return null;
+      }
+    if (! name)    
+      error ("Empty name");
+  //alert ("parseName: " + name);  
+    return name.replace(/_/g,' ').trim();
+  }
+
+  const parseNumber = function ()
+  {
+    if (! readChar ())
+      return NaN;
+    const pos_init = pos;
+    while (pos < newick.length && newickDelimiters.indexOf(newick.charAt(pos)) == -1)
+      readChar ();
+    return Number(newick.substring(pos_init,pos).replace('\n','').replace('\r',''));
+  }
+
+  const parseSubtree = function (parentId)
+  // Return: success
+  {
+  //alert ('parseSubtree: ' + parentId);  
+    const node = parseItem (parentId);
+    if (! node)
+      return false;
+    if (! skipSpaces ())
+      return false;
+    if (c == ':')
+    {
+      const time = parseNumber ();
+    //alert ("time = " + time);  
+      if (Number.isNaN(time))
+      {
+        error ("time = NaN");
+        return false;
+      }
+      node.time = Math.max (0.0, time);
+      if (newick.charAt(pos) == '[')  
+      {
+        const bootstrap = parseNumber();
+        if (newick.charAt(pos) == ']') 
+          readChar ();
+        else
+        {
+          error ("']' is expetced");
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  
+  const parseItem = function (parentId)
+  // Return: !null <=> success
+  {
+    nodeId++;
+    nodes [nodeId] = 
+      { parent:        parentId
+      , leaves:        0
+      , time:          0
+      , height_ave:    0
+        // Leaf
+      , obj_id:        null
+      , int_obj_id:    nodeId
+      , obj_id_2:      null
+      , removed:       false
+      , in_tree:       true
+      , bad_source:    false
+      , outlier:       null
+      , phylName:      null
+      //
+      , gain_loss:     []
+        // computed
+      , children: []
+      , selectedLeaves: 0  // in [0,leaves] 
+      , selectionStart: false
+        // display
+      , displayedLeaves: 0  // in [1,leaves] 
+      , timeFromCurRoot: 0  
+      , x: 0
+      , y: 0
+      , collapsed: false
+          // true => Boolean(phylName)
+      , visible: false
+      };
+    const node = nodes[nodeId];
+    if (! skipSpaces ())
+      return null;
+    if (c == '(')
+    {
+      if (! parseInterior (nodeId))
+        return null;
+    }
+    else
+    {
+      node.obj_id = parseName ();
+      if (node.obj_id)
+      {
+        const pos = node.obj_id.lastIndexOf('|');
+        if (pos >= 0)
+        {
+          node.phylName = node.obj_id.substr(0,pos).trim();
+          node.obj_id   = node.obj_id.substr(pos+1).trim();
+        }
+        node.obj_id = node.obj_id.replace(/ /g,'_');
+      }
+      else
+        return null;
+    }
+    return node;
+  }
+  
+  const parseInterior = function (parentId)
+  // Return: success
+  {
+    if (! skipSpaces ())
+      return false;
+    if (c != '(')
+    {
+      error ("'(' expected");
+      return false;
+    }
+    // List
+    for (;;)
+    {
+      if (! readChar ())
+        return false;
+    //alert ("pos = " + pos + ", c = " + c);  
+      if (! parseSubtree (parentId))
+        return false;
+      if (! skipSpaces ())
+        return false;
+      if (c == ')')
+        break;
+      if (c != ',')
+      {
+        error ("Comma expected");
+        return false;
+      }
+    }
+    if (! readChar ())
+      return false;
+    if (! skipSpaces ())
+      return false;
+    // Name
+    if (newickDelimiters.indexOf(c) == -1)
+    {
+      // bootstrap is lost ??
+      const name = parseName ();
+      if (! name)
+        return false;
+      nodes[parentId].phylName = name;  // name.substring (0, colonPos + 1);
+    }
+    return true;
+  }
+  
+  
+  // Comment
+  if (! skipSpaces ())
+    return false;
+  if (c == '[')
+  {
+    for (;;)
+    {
+      if (! readChar ())
+        return false;
+      if (c == ']')
+        break;
+    }
+    if (! readChar ())
+      return false;
+  }
+
+  if (! parseSubtree (0))
+    return false;
+
+  if (! skipSpaces ())
+    return false;
+  if (c != ';')
+  {
+    error ("No ending semicolon");
+    return false;
+  }
+  
+
+  mainRoot = 1;
+  curRoot = 1;
+  
+  newickP = true;
+  newick = null;  // clear memory
+  
+  
+  return true;
+}
+
+
+
+var init = function ()
+// Input: offline
+{
+  database = "uniColl";
+//initSystem ();
+  debug = getParams().debug;  
+
+
+  window.onresize = function ()
+  {
+    if (curRoot == -1)
+      return false;
+    changeTree ();
+  }
+
+  
+  const tree_init = offline ? -1 : getParams().tree; 
+  if (! tree_init)
+  {
+    const tree_name = getParams().name;
+    if (tree_name)
+    {
+      const rs = query ("select id from Phyltree_vw where [name] like '" + tree_name + "%' order by alien, release desc, parm, id desc");
+      tree_init = rs[0] && rs[0].id;
+      if (! tree_init)
+      {
+        alert ("Tree '" + tree_name + "' does not exist");
+        return;
+      }
+    }
+  } 
+  
+  const server_ = getParams().server;
+  if (server_)
+    server = server_;
+
+  const database_ = getParams().database;
+  if (database_)
+    database = database_;
+        
+
+  // DOM
+  let tab = '';
+if (! tree_init)
+{
+  tab += tableStart ("Trees") + "<tr>\
+<th><u>Id</u></th>\
+<th><u>Name</u></th>\
+<th><u>Object</u></th>\
+<th><u>Comparison</u></th>\
+<th>" + (server == "PROTEUS" ? "Tax_id" : "PDG") + "</th>\
+<th># Objects</th>\
+<th># Added objects</th>\
+<th>Parameters</th>\
+<th>Alien</th>\
+<th>Date</th>\
+<th>Release</th>\
+<th>To be replaced</th>\
+<th>Ticket</th>\
+</tr>";            
+  const rs = query ("\
+select id \
+     , [name] \
+     , " + (server == "PROTEUS" ? "tax" : "pdg") + "\
+     , object_type \
+     , leaves \
+     , added_leaves \
+   /*, interiors*/ \
+     , comparison \
+     , parm \
+     , alien \
+     , create_dat \
+     , release \
+     , latest \
+     , to_be_replaced \
+     , jira \
+  from Phyltree_vw \
+  order by [name], object_type, comparison, release, create_dat \
+");
+  for (const row_num in rs)
+  {
+    const row = rs[row_num];
+    const tax = server == "PROTEUS"
+                ? row.tax == 1 
+                  ? ""
+                  : "<a href=https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=" + row.tax + "&lvl=3&lin=f&keep=1&srchmode=1&unlock target=_blank>" + row.tax + "</a>"
+                : row.pdg;
+    tab +=   "<tr>" 
+           + "<td><a href=javascript:resetTree(" + row.id + ")><b>" + row.id + "</b></a></td>"
+           + "<td align=center><b>" + q2h (row.name) + "</b></td>"
+           + "<td align=center><b>" + row.object_type + "</b></td>"
+           + "<td align=center><b>" + row.comparison + "</b></td>"
+           + "<td align=center>" + tax + "</td>"
+           + "<td align=right>" + row.leaves + "</td>"
+           + "<td align=right>" + (row.added_leaves || '') + "</td>"
+           + "<td align=center>" + (row.parm || "") + "</td>"
+           + "<td align=center>" + (row.alien ? "Yes" : "") + "</td>"
+         //+ "<td align=right>" + row.interiors + "</td>"
+           + "<td>" + row.create_dat + "</td>"
+           + "<td align=center>" + ifS(row.latest,"<b>") + (row.release || '') + ifS(row.latest,"</b>") + "</td>"
+           + "<td align=center>" + yesNo (row.to_be_replaced, "Yes", "") + "</td>"
+           + "<td><a href=https://jira.ncbi.nlm.nih.gov/browse/" + row.jira + " target=_blank><b>" + (row.jira || "") + "</b></a></td>"
+           + "</tr>";
+  }
+  tab += "</table><p>";  
+}
+
+  // Buttons  
+  tab += "<table><tr>\
+<!--td><form onsubmit='parent.treeImageWindow();return false'><input type='submit' value='Image'></form></td-->\
+<td><br></td>";
+  if (debug)
+    tab += "\
+<td><form onsubmit='parent.asnWindow();return false'><input type='submit' value='ASN.1'></form></td>\
+<td><br></td>\
+<td><form onsubmit='parent.offlineDataDump();return false'><input type='submit' value='Data Dump'></form></td><td><br></td>";
+  tab += "\
+<td><form onsubmit='parent.resetCurTree();return false'><input type='submit' value='Main root'></form></td>\
+<td><br></td>\
+<td><object id='showPictures'><br></object></td>\
+<td><br></td>\
+<td><object id='showOutliers'><br></object></td>\
+<td><br></td>\
+<td><object id='makeClusters'><br></object></td>\
+<td><br></td>\
+<td><object id='unSelect'><br></object></td>\
+<td><br></td>\
+<td><object id='focusSelected'><br></object></td>\
+</tr>\
+<table><tr>\
+<td><form onsubmit='parent.findGenomeList(genomeList.value);return false'><object id='findSeqType'>Object</object>: <input type='text' id=genomeList></form></td><td><br</td>";
+  if (newickP)
+    tab += "<td><form onsubmit='parent.findGenomes(genome.value,true,false);return false'>";
+  else
+    tab += "<td><form onsubmit='parent.findGenomes(genome.value,bad_source.checked,types_only.checked);return false'>";
+  tab += "\
+Name part: <input type='text' id=genome>";
+  if (! newickP)
+    tab += "\
+&nbsp;&nbsp; with bad sources: <input type='checkbox' checked id=bad_source>\
+&nbsp;&nbsp; type strains only: <input type='checkbox' id=types_only>";
+  tab += "</form></td>\
+<td><br</td>\
+<td><object id='GainLoss'><br></object></td>";
+  if (! newickP)
+    tab += "<td><br</td>\
+<td><form onsubmit='parent.findPubmed(pubmed.value);return false'>PUBMED: <input type='text' id=pubmed></form></td>\
+<td><br</td>\
+<td><form onsubmit='parent.findBioProject(bioproject.value);return false'>BioProjects: <input type='text' id=bioproject></form></td>\
+<td><br</td>\
+<td><form onsubmit='parent.place(placement.value);return false'>Placement: <input type='text' id=placement size=50></form></td>";
+  tab += "</tr></table><p>";
+
+  tab += "<center><b><big><object id=\"RootHeader\">Tree</object></big></b></center>";    
+  tab += "<p><canvas id=\"Tree\"></canvas></p>";
+  tab += "<div id='canvasMenu' style='width:420px;border:1px solid black;background-color:#EEEEEE;visibility:hidden;position:absolute;padding-left:10px'></div>";
+  
+  tab += '<object id=\"summaryTab\"><br></object>';
+
+//tab += '<p>Made by <a href="mailto:brovervv@ncbi.nlm.nih.gov">Slava Brover</a><br>';
+
+  document.getElementById("initObj").innerHTML = tab;
+
+  show_pictures (true, false);
+  show_outliers (false, false);
+
+
+  treeCanvas = document.getElementById("Tree");  
+  treeCanvas.addEventListener('mousedown', function (evt) {pos2node (evt);}, false);   
+        
+  ctx = treeCanvas.getContext("2d");
+  
+  canvasMenu = document.getElementById("canvasMenu");  
+  
+  if (offline)
+  {
+	  initGlobalVar ();
+	  if (newick)
+	  {
+	    if (! parseNewick ())
+	      return;
+	    seqType = "Object";
+	  }
+	  else
+	    readData ();
+	  initTreeFinish ();  
+  //setRoot (2120);  // PAR
+    if (newickP)
+    {
+      const setLeavesHeight = function (nodeId)
+      {
+        const node = nodes[nodeId];
+        let height_sum = 0;
+        let n = 0;
+        let indiscernible = true;
+        for (const i in getChildren(node))
+        {
+          const child = nodes[i];
+          setLeavesHeight (i);
+          node.leaves += child.leaves;
+          height_sum += child.time + child.height_ave;
+          n++;
+          if (! (isLeaf(child) && child.time == 0))
+            indiscernible = false;
+        }
+        if (! node.leaves)
+          node.leaves = 1;
+        if (n)
+        {
+          node.height_ave = height_sum / n;
+          if (indiscernible && ! node.phylName && node.leaves > 1)
+          {
+            node.phylName = '[identity]';
+            node.collapsed = true;
+          }
+        }
+      }
+      setLeavesHeight (1);
+      
+      const parseGainLoss = function (gainLossInfo, gainLoss)
+      {
+        if (! gainLossInfo)
+          return;
+        const arr = gainLossInfo.split('\n');
+        for (const i in arr)
+        {
+          const row = arr[i].split('\t');
+          if (row.length == 3)
+          {
+            const lca = str2lca (row[0]);
+            if (! lca)
+              alert ("Unknown node " + row[0]);
+            nodes [lca]. gain_loss. push ({ feature: row[1]
+                                          , gain:    gainLoss
+                                          , leaves:  Number(row[2])
+                                          , selected: false
+                                          }
+                                         );  
+            hasGainLoss = true;
+          }
+        }
+        gainLossInfo = null; // clear memory
+      }
+      parseGainLoss (gainInfo, 1);
+      parseGainLoss (lossInfo, 0);
+    }
+
+	  changeTree ();
+	  gotoTop ();
+  }  	
+  else if (tree_init != null)
+    resetTree (tree_init);
+}
+
+
+
+if (getParams().login)
+{
+  // Authentication
+  document.getElementById("initObj").innerHTML ='\
+<b>Database authentication for editing data:</b><br>\
+<form id="authForm" onsubmit="parent.dbuser=user.value;parent.dbpassword=password.value;parent.init();return false">\
+<table>\
+<tr><td>Username:</td><td><input type="text" id="user" value="' + dbuser + '"></td></tr>\
+<tr><td>Password:</td><td><input type="password" id="password" value="' + dbpassword + '"></td></tr>\
+<tr><td><input type="submit" value="Login"></td></tr>\
+</table>\
+</form>\
+';
+  document.getElementById("user").focus();
+}
+else if (getParams().newick)
+{
+  offline = true;
+  document.getElementById("initObj").innerHTML ='\
+<form id="form" onsubmit="if(!parent.newick)parent.newick=newick.value;parent.init(true);return false">\
+<b>Tree in Newick format:</b><br>\
+<textarea id="newick" cols=120 rows=20></textarea><br>\
+<table>\
+<tr><td>Newick file:</td> <td><input type="file" id="input_newick"></td></tr>\
+<tr><td>Gains file: </td> <td><input type="file" id="input_gains"></td></tr>\
+<tr><td>Losses file:</td> <td><input type="file" id="input_losses"></td></tr>\
+<tr><td colspan=3>Gain/loss files contain in each line: &lt;LCA-node&gt; &lt;attribute&gt; &lt;number of leaves&gt;<br>where &lt;LCA-node&gt is &lt;object id&gt; or &lt;object id&gt;:&lt;object id&gt;</td></tr>\
+</table>\
+<input type="submit" value="Display">\
+</form>\
+';
+  document.getElementById('input_newick').addEventListener('change', function () 
+    {
+      const fr = new FileReader();
+      fr.onload = function () { newick = fr.result; }
+      fr.readAsText (this.files[0]);
+    });
+  document.getElementById('input_gains').addEventListener('change', function () 
+    {
+      const fr = new FileReader();
+      fr.onload = function () { gainInfo = fr.result; }
+      fr.readAsText (this.files[0]);
+    });
+  document.getElementById('input_losses').addEventListener('change', function () 
+    {
+      const fr = new FileReader();
+      fr.onload = function () { lossInfo = fr.result; }
+      fr.readAsText (this.files[0]);
+    });
+  document.getElementById("newick").focus();
+}
+else
+{
+//offline = true;
+  init ();  
+}
+
+
+</script>
+
+
+</body>
+</html> 
