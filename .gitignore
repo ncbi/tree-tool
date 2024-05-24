@@ -9,10 +9,13 @@
 !*.hpp
 !*.cpp
 !*.c
-!*.html
 !*.inc
-!*.js
 !*.sh
+
+# HTML
+!*.cgi
+!*.html
+!*.js
 
 # Doc
 !*.txt
