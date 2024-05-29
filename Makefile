@@ -59,8 +59,8 @@ connectPairs: $(connectPairsOBJS)
 	$(CXX) -o $@ $(connectPairsOBJS) $(LIBS)
 	$(ECHO)
 
-cpp_test.o: $(COMMON_HPP)  
-cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o
+cpp_test.o: $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o $(TSV_DIR)/tsv.o
 cpp_test: $(cpp_testOBJS)
 	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncursesw
 	$(ECHO)
