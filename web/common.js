@@ -554,7 +554,7 @@ var getNow = function ()
 
 
 
-var createPlot = function (plotName, innerHeightFrac, square/*Boolean*/)
+var createPlot = function (plotName, innerHeightFrac_arg, square_arg/*Boolean*/)
 // Return: object with usage: {clear(), drawAxes(); ...}*
 {
   document.writeln("<p><canvas id='" + plotName + "' style=\"border:1px solid #000000;\"></canvas>");
@@ -567,6 +567,8 @@ var createPlot = function (plotName, innerHeightFrac, square/*Boolean*/)
     ctx: null,
     canvasMenu: null,  
     dX: null,
+    innerHeightFrac: innerHeightFrac_arg,
+    square: square_arg,
     
     // set manually
     x_unit_min: 0,  
@@ -614,6 +616,13 @@ var createPlot = function (plotName, innerHeightFrac, square/*Boolean*/)
       this.y_origin = null;
   
       this.canvasMenu.style.visibility = "hidden";    
+    },
+    
+    
+    resize: function ()
+    {
+      this.canvas.height = window.innerHeight * this.innerHeightFrac;  
+      this.canvas.width  = this.square ? this.canvas.height : window.innerWidth * 0.97;  // PAR
     },
   
   
@@ -851,15 +860,15 @@ var createPlot = function (plotName, innerHeightFrac, square/*Boolean*/)
         for (y_world = this.y_origin - y_unit.unit; y_world >= this.y_plot_min; y_world -= y_unit.unit)
         {
           y = this.y_world2canvas(y_world);
-          this.ctx.moveTo(x-this.dX,y);
-          this.ctx.lineTo(x+this.dX,y);
+          this.ctx.moveTo (x-this.dX, y);
+          this.ctx.lineTo (x+this.dX, y);
           this.ctx.fillText (y_world.toFixed(y_unit.dec), x + 2 * this.dX, y + this.dX / 2); 
         }
         for (y_world = this.y_origin + y_unit.unit; y_world <= this.y_plot_max; y_world += y_unit.unit)
         {
           y = this.y_world2canvas(y_world);
-          this.ctx.moveTo(x-this.dX,y);
-          this.ctx.lineTo(x+this.dX,y);
+          this.ctx.moveTo (x-this.dX, y);
+          this.ctx.lineTo (x+this.dX, y);
           this.ctx.fillText (y_world.toFixed(y_unit.dec), x + 2 * this.dX, y + this.dX / 2); 
         }
         this.ctx.stroke();
@@ -927,8 +936,7 @@ var createPlot = function (plotName, innerHeightFrac, square/*Boolean*/)
   
   
   plot.canvas = document.getElementById(plotName);  
-  plot.canvas.height = window.innerHeight * innerHeightFrac;  
-  plot.canvas.width  = square ? plot.canvas.height : window.innerWidth * 0.97;  // PAR
+  plot.resize ();
   
   plot.ctx = plot.canvas.getContext("2d");
   plot.ctx.fillStyle = fillStyle;  // stnd2color (genomeSize_stnd);
