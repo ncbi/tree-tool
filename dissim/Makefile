@@ -25,6 +25,7 @@ all:	\
   hash2dissim \
   hash_request2dissim \
   loci_request2dissim \
+	main_ortholog \
 	mlst2dissim \
 	prot_collection2dissim \
 	prot_mat2dissim \
@@ -108,6 +109,12 @@ loci_request2dissim.o:  $(COMMON_HPP)
 loci_request2dissimOBJS=loci_request2dissim.o $(CPP_DIR)/common.o
 loci_request2dissim:	$(loci_request2dissimOBJS)
 	$(CXX) -o $@ $(loci_request2dissimOBJS) $(LIBS)
+	$(ECHO)
+
+main_ortholog.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp
+main_orthologOBJS=main_ortholog.o $(ALIGN_OBJ) 
+main_ortholog:	$(main_orthologOBJS)
+	$(CXX) -o $@ $(main_orthologOBJS) $(LIBS) 
 	$(ECHO)
 
 mlst2dissim.o:  $(DM_HPP) 
