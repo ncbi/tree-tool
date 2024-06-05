@@ -510,13 +510,13 @@ size_t Align::getDiff () const
 }
 
 
-const StringVector Align::distanceNames {"dissim", "min_edit", "diff", "mismatch_frac"};
+const StringVector Align::distanceNames {"dissim", "min_edit", "rel_min_edit", "diff", "mismatch_frac"};
   
 
 
 void Align::printDistances (ostream &os) const
 { 
-  for (const Distance d : {dist_dissim, dist_min_edit, dist_diff, dist_mismatch_frac})  // PAR
+  for (const Distance d : {dist_dissim, dist_min_edit, dist_rel_min_edit, dist_diff, dist_mismatch_frac})  
     os << distanceNames [d] << ":\t" << getDistance (d) << endl;
 	os << "identity:\t" << getIdentity () << endl;
 

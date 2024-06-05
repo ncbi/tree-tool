@@ -151,15 +151,20 @@ public:
 	size_t getDiff () const;
 	Real getMismatchFrac () const
 	  { return (Real) getDiff () / (Real) getAlignmentSize (); }
+  Real getRelMinEditDistance () const
+    { const Real self_score_ave = (Real) (self_score1 + self_score2) / 2.0;
+      return getMinEditDistance () / self_score_ave;
+    }
 	Real getIdentity () const
 	  { return 1.0 - getMismatchFrac (); } 
 	
-	enum Distance {dist_dissim, dist_min_edit, dist_diff, dist_mismatch_frac};
+	enum Distance {dist_dissim, dist_min_edit, dist_rel_min_edit, dist_diff, dist_mismatch_frac};
 	static const StringVector distanceNames;
 	Real getDistance (Distance dist) const
 	  { switch (dist)
 	    { case dist_dissim:        return getDissim ();
 	      case dist_min_edit:      return getMinEditDistance ();
+	      case dist_rel_min_edit:  return getRelMinEditDistance ();
 	      case dist_diff:          return (Real) getDiff ();	      
 	      case dist_mismatch_frac: return getMismatchFrac ();
 	    }
