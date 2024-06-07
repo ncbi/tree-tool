@@ -33,9 +33,9 @@ else
   N=2
 fi
 head -1 $TMP | grep -s '^#' > /dev/null || printf '#'
-head -1 $TMP | sed 's/$/\t'$C'/1'                       
+head -1 $TMP | sed 's/^/'"$C"'\t/1'                       
 
-$THIS/../trav $D "tail -n +$N %d/%f | sed 's/$/\t'%f'/1'" 
+$THIS/../trav $D "tail -n +$N %d/%f | sed 's/^/'%f'\t/1'" 
 
 
 rm $TMP
