@@ -178,8 +178,9 @@ struct TextTable : Named
 
   explicit TextTable (const string &tableFName,
                       const string &columnSynonymsFName = noString);
-    // columnSynonymsFName: syn_format
-    // Top lines starting with '#': comment + header
+    // Input: tableFName: format: [{'#' <comment> <EOL>}* '#'] <header> <EOL> {<row> <EOL>>}*
+    //                    empty lines are skipped
+    //        columnSynonymsFName: <syn_format>
     // Rows where number of columns < header size are added empty values
   static constexpr const char* syn_format {"Column synonyms file with the format: {<main synonym> <eol> {<synonym> <eol>}* {<eol>|<eof>}}*"};
   TextTable () = default;

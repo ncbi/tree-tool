@@ -140,40 +140,49 @@ TextTable::TextTable (const string &tableFName,
     bool dataExists = true;
     while (f. nextLine ())
     {
+      if (verbose ())
+        cerr << f. lineNum << endl;
+      trimTrailing (f. line);
       if (f. line. empty ())
-        break;
-      if (f. line. front () == '#')
+        continue;
+      const bool thisPound = (f. line. front () == '#');
+      if (thisPound)
       {
         pound = true;
         f. line. erase (0, 1);
       }
-      else
-        if (! header. empty ())
-          break;
-      header. clear ();
-      StringVector h (f. line, '\t', true);
-      for (string& s : h)
-        header << std::move (Header (std::move (s)));
-      ASSERT (! header. empty ());
-      if (! pound)
+      if (f. line. empty ())
+        continue;
+      if (header. empty () || thisPound)
       {
-        dataExists = f. nextLine ();
+        header. clear ();
+        StringVector h (f. line, '\t', true);
+        for (string& s : h)
+          header << std::move (Header (std::move (s)));
+        ASSERT (! header. empty ());
+      }
+      else
+      {
+        if (! pound)
+          dataExists = f. nextLine ();
         break;
       }
     }
     if (header. empty ())
       throw Error (*this, "Cannot read the table header");
-    if (dataExists)
-      for (;;)
+    while (dataExists)
+    {
+      trimTrailing (f. line);
+      if (! f. line. empty ())
       {
-        StringVector line (f. line, '\t', true);
-        FFOR_START (size_t, i, line. size (), header. size ())
-          line << noString;        
-        rows << std::move (line);
-        ASSERT (line. empty ());
-        if (! f. nextLine ())
-          break;
+        StringVector row (f. line, '\t', true);
+        FFOR_START (size_t, i, row. size (), header. size ())
+          row << noString;        
+        rows << std::move (row);
+        ASSERT (row. empty ());
       }
+      dataExists = f. nextLine ();
+    }
   }
   
   if (! columnSynonymsFName. empty ())
