@@ -744,9 +744,11 @@ inline void trim (string &s)
 
 void trimLeading (string &s,
                   char c);
+  // Invokes: isSpace()
 
 void trimTrailing (string &s,
                    char c);
+  // Invokes: isSpace()
 
 inline void trim (string &s,
                   char c)
