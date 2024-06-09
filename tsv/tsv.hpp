@@ -126,6 +126,7 @@ struct TextTable : Named
     bool scientific {false};
     streamsize decimals {0};
     bool null {false};
+      // = can be empty()
     static constexpr size_t choices_max {7};  // PAR
     Set<string> choices;
       // size() <= choices_max + 1
@@ -228,6 +229,7 @@ public:
     // Date column is not empty and has the same format fmt in all rows
     // Return: no_index <=> not found
     // Output: fmt, valid if return != no_index
+  bool isKey (ColNum colNum) const;
 private:
   int compare (const StringVector& row1,
                const StringVector& row2,

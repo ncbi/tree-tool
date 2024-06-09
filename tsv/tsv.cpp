@@ -445,6 +445,32 @@ TextTable::ColNum TextTable::findDate (Date::Format &fmt) const
 
 
 
+bool TextTable::isKey (ColNum colNum) const
+{
+  ASSERT (colNum < header. size ());
+
+  const Header& h = header [colNum];
+  if (h. null)
+    return false;
+  if (h. numeric)
+    if (   h. scientific
+        || h. decimals > 0
+       )
+      return false;
+    
+  unordered_set<string> values;  values. rehash (rows. size ());
+  for (const StringVector& row : rows)
+  {
+    ASSERT (! row [colNum]. empty ());
+    if (! values. insert (row [colNum]). second)
+      return false;
+  }
+      
+  return true;
+}
+
+
+
 int TextTable::compare (const StringVector& row1,
                         const StringVector& row2,
                         ColNum column) const
