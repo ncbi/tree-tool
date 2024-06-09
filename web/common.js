@@ -265,6 +265,22 @@ var numberWithCommas = function (x)
 
 
 
+var strContains = function (hay, needle, lowercaseP)
+{
+  if (! needle)
+    return true;
+  if (! hay)
+    return false;
+  if (lowercaseP)
+  {
+    hay    = hay.   toLowerCase();
+    needle = needle.toLowerCase();
+  }
+  return hay.indexOf (needle) != -1;
+}
+
+
+
 var arrayEmpty = function (arr)
 {
   for (const i in arr)
