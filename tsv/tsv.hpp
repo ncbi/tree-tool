@@ -126,6 +126,7 @@ struct TextTable : Named
     bool scientific {false};
     streamsize decimals {0};
     bool null {false};
+      // = can be empty()
     static constexpr size_t choices_max {7};  // PAR
     Set<string> choices;
       // size() <= choices_max + 1
@@ -178,8 +179,9 @@ struct TextTable : Named
 
   explicit TextTable (const string &tableFName,
                       const string &columnSynonymsFName = noString);
-    // columnSynonymsFName: syn_format
-    // Top lines starting with '#': comment + header
+    // Input: tableFName: format: [{'#' <comment> <EOL>}* '#'] <header> <EOL> {<row> <EOL>>}*
+    //                    empty lines are skipped
+    //        columnSynonymsFName: <syn_format>
     // Rows where number of columns < header size are added empty values
   static constexpr const char* syn_format {"Column synonyms file with the format: {<main synonym> <eol> {<synonym> <eol>}* {<eol>|<eof>}}*"};
   TextTable () = default;
@@ -227,6 +229,7 @@ public:
     // Date column is not empty and has the same format fmt in all rows
     // Return: no_index <=> not found
     // Output: fmt, valid if return != no_index
+  bool isKey (ColNum colNum) const;
 private:
   int compare (const StringVector& row1,
                const StringVector& row2,
