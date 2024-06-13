@@ -975,13 +975,6 @@ var createPlot = function (plotName, innerHeightFrac_arg, square_arg/*Boolean*/)
 var readonly = function ()  { return true; }
 
 
-/* 
-  Safari restrictions:
-     default parameters do not work
-     variable:
-       bit
-*/
-
 
 var text2file = function (text, filename)
 {
@@ -1023,11 +1016,30 @@ var drawImage = function (ctx, image, x, y, width, height, name)
 
 
 // https://pixabay.com/sound-effects/search/sound/
-
+/*
 var beep = function ()
 {
   const beep = new Audio('sound/interface-124464.mp3'); 
   beep.play();
+}
+*/
+
+
+
+var audioCtx = new AudioContext();
+
+
+var beep = function (freq = 400 /*520*/, duration = 200, vol = 3) 
+{
+  const oscillator = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  oscillator.connect(gain);
+  oscillator.frequency.value = freq;
+  oscillator.type = "square";
+  gain.connect(audioCtx.destination);
+  gain.gain.value = vol * 0.01;
+  oscillator.start(audioCtx.currentTime);
+  oscillator.stop(audioCtx.currentTime + duration * 0.001);
 }
 
 
@@ -1037,3 +1049,14 @@ var getMinutes = function ()
   const d = new Date ();
   return d. getHours () * 60 + d. getMinutes ();
 }
+
+
+
+/* 
+  Safari restrictions:
+     default parameters do not work
+     variable:
+       bit
+*/
+
+
