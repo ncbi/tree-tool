@@ -138,6 +138,7 @@ TextTable::TextTable (const string &tableFName,
   {
     LineInput f (tableFName);
     bool dataExists = true;
+    // header
     while (f. nextLine ())
     {
       if (verbose ())
@@ -159,9 +160,9 @@ TextTable::TextTable (const string &tableFName,
         StringVector h (f. line, '\t', true);
         for (string& s : h)
           header << std::move (Header (std::move (s)));
-        ASSERT (! header. empty ());
       }
-      else
+      ASSERT (! header. empty ());
+      if (! thisPound)
       {
         if (! pound)
           dataExists = f. nextLine ();
@@ -170,6 +171,8 @@ TextTable::TextTable (const string &tableFName,
     }
     if (header. empty ())
       throw Error (*this, "Cannot read the table header");
+    // dataExists <=> f.line is valid
+    // rows[]
     while (dataExists)
     {
       trimTrailing (f. line);
