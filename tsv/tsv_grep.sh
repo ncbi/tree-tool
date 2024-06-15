@@ -4,13 +4,12 @@ source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Select rows by grep from a tsv-file"
   echo "#1: tsv-file name"
-  echo "#2: grep selection parameters"
+  echo "#2: grep selection parameters (without '\"')"
   exit 1
 fi
 F=$1
-Q=\'
 P="$2"
 
 
 head -1 $F
-tail -n +2 $F | grep $P || true
+tail -n +2 $F | grep -P $P || true
