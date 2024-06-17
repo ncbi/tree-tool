@@ -233,7 +233,8 @@ void TextTable::setHeader ()
       throw Error (*this, "Row " + to_string (row_num) + " contains " + to_string (row. size ()) + " columns whereas header has " + to_string (header. size ()) + " columns");
     FFOR (RowNum, i, row. size ())
     {
-      const string& field = row [i];
+      string field (row [i]);
+      trim (field);
       Header& h = header [i];
       if (field. empty ())
       {
