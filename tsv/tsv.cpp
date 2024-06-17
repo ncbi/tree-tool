@@ -630,6 +630,7 @@ void TextTable::merge (RowNum toRowNum,
                        const Vector<ColNum> &aggr) 
 {
   ASSERT (toRowNum < fromRowNum);
+  
         StringVector& to   = rows [toRowNum];
   const StringVector& from = rows [fromRowNum];
 
@@ -667,6 +668,8 @@ void TextTable::merge (RowNum toRowNum,
   {
     if (from [i]. empty ())
       continue;
+    if (contains (from [i], aggr_sep))
+      throw runtime_error ("Cannot aggregate column " + header [i]. name + " for row " + to_string (fromRowNum + 1) + " because it contains " + strQuote (string (1, aggr_sep)));
     if (to [i]. empty ())
       to [i] = from [i];
     else
