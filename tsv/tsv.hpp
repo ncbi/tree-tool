@@ -106,6 +106,12 @@ struct Date : Root
     { return less (other, false); }
   Date operator- (const Date &other) const;
     // Requires: other <= *this
+  bool year_divisible () const
+    { return ! month && ! day; }
+  bool quarter_divisible () const
+    { return ! (month % 3) && ! day; }
+  bool month_divisible () const
+    { return ! day; }
 };
   
   
