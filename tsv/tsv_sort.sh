@@ -11,5 +11,13 @@ F=$1
 P="$2"
 
 
-head -1 $F
-tail -n +2 $F | sort -t $'\t' $P
+if head -1 $F | grep -s '^#'; then
+  grep    '^#' $F
+  grep -v '^#' $F | sort -t $'\t' $P
+else
+  printf '#'
+  head -1 $F
+  tail -n +2 $F | sort -t $'\t' $P
+fi
+
+
