@@ -59,7 +59,7 @@ var printProperties = function (x)
 
 var inputString = function (promptS, val_init)
 {
-  let s = prompt (promptS, val_init || '');
+  let s = prompt (promptS + ": ", val_init || '');
   if (s == null)
     return null;
   s = s.trim ();
