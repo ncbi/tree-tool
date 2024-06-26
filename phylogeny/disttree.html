@@ -2273,7 +2273,7 @@ update Phyl \
 var setTax = function (nodeId)
 {
   const node = nodes[nodeId];
-  const val = inputString ("Enter taxon name (empty string = null)", "");
+  let val = inputString ("Enter taxon name (empty string = null)", "");
   if (val == null)
     return;
   if (val == "")
