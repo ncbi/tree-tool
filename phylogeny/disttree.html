@@ -2244,7 +2244,7 @@ var makeClusters = function ()
 var setName = function (nodeId)
 {
   const node = nodes[nodeId];
-  const val = inputString ("Enter name (empty string = null):", node.phylName);
+  const val = inputString ("Enter name (empty string = null)", node.phylName);
   if (val == null)
     return;
     
@@ -2273,7 +2273,7 @@ update Phyl \
 var setTax = function (nodeId)
 {
   const node = nodes[nodeId];
-  const val = inputString ("Enter taxon name (empty string = null):", "");
+  const val = inputString ("Enter taxon name (empty string = null)", "");
   if (val == null)
     return;
   if (val == "")
@@ -2386,7 +2386,7 @@ var setComment = function (nodeId)
 {
   const node = nodes[nodeId];
   
-  let val = inputString ("Enter comment (empty string = null):", node.comment);
+  let val = inputString ("Enter comment (empty string = null)", node.comment);
   if (val == null)
     return;
   val = val.replace(/[\n\r]/g, ' ');
@@ -2533,7 +2533,7 @@ var node2root = function (nodeId)
   }
   
   const time_max = nodes[nodeId].time;
-  const val = inputString ("Enter the arc length between this node and the new root (0.." + time_max + "):", time_max / 2);
+  const val = inputString ("Enter the arc length between this node and the new root (0.." + time_max + ")", time_max / 2);
   if (val == null)
     return;
   const time_new = Number(val);
