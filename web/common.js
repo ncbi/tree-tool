@@ -83,6 +83,34 @@ var getMin = function (a, b)
 
 
 
+var minimize = function (x, field, y)
+{
+  if (y == null)
+    return false;
+  if (x [field] == null || x [field] > y)
+  {
+    x [field] = y;
+    return true;
+  }
+  return false;
+}
+
+
+
+var maximize = function (x, field, y)
+{
+  if (y == null)
+    return false;
+  if (x [field] == null || x [field] < y)
+  {
+    x [field] = y;
+    return true;
+  }
+  return false;
+}
+
+
+
 var isDigit = function (x)
 {
   return    x.length == 1
