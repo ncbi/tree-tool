@@ -1710,7 +1710,7 @@ void Xml::TextFile::tagStart (const string &tag)
 	string tag_ (tag);
 	replace (tag_, ':', '_');
 	if (! isIdentifier (tag_, true))
-    throw runtime_error (FUNC "Bad tag name: " + strQuote (tag));
+    throw runtime_error (FUNC "Bad textual XML tag name: " + strQuote (tag));
 
 	printRaw ("<" + tag + ">"); 
 }
