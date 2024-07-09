@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pub-one-record-set><pub-one-record><p1:id>pubmed_35431556</p1:id>
+<p1:pmid>pubmed_35431556</p1:pmid>
+<p1:pmcid>pmc_9008818</p1:pmcid>
+<xml:lang>en</xml:lang>
+<record-type>article</record-type>
+<source-meta><object-id><pub-id-type>nlm-journal-id</pub-id-type>
+101622216</object-id>
+<object-id><pub-id-type>nlm-ta</pub-id-type>
+Microbiol Insights</object-id>
+<object-id><pub-id-type>iso-abbrev</pub-id-type>
+Microbiol Insights</object-id>
+<object-id><pub-id-type>publisher-id</pub-id-type>
+MBI</object-id>
+<object-id><pub-id-type>hwp</pub-id-type>
+spmbi</object-id>
+<title-group><title>Microbiology insights</title>
+</title-group>
+</source-meta>
+</pub-one-record>
+</pub-one-record-set>
