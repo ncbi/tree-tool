@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Test k-mer index"
@@ -32,7 +32,7 @@ section "find"
 mkdir $TMP.out
 $THIS/../trav $TMP.seq "$THIS/kmerIndex_find $TMP.kmi %d/%f 100 -qc -self > $TMP.out/%f"
 $THIS/../trav $TMP.out 'grep -w %f %d/%f'
-$THIS/../trav $TMP.out '[ `cat %d/%f | wc -l` == 100 ]'
+$THIS/../trav $TMP.out 'cat %d/%f | wc -l | grep -w 100'
 
 
 rm -r $TMP*

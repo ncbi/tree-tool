@@ -156,6 +156,7 @@ void errorExitStr (const string &msg);
 
 void beep ();
   // Requires: !isRedirected()
+  //           SHLVL = 1 ??
     
 
 
@@ -1894,6 +1895,7 @@ struct Xml
 
   
   struct TextFile : File
+  // Tag::name: idenifier with possible '-'
   {
   private:
     struct XmlStream : OFStream
@@ -1927,7 +1929,7 @@ struct Xml
   //   <Data> ::= <nameIndex> <Data>* 0 0 <text> 0
   //     <nameIndex> ::= <byte> <byte>
   //   Number of different Tag::name's <= 2^16
-  //   Tag::name has no: '\0', '\n'
+  //   Tag::name: no '\0', '\n'
   {
   private:
   	ofstream os;
@@ -3915,8 +3917,9 @@ public:
 
 
   [[noreturn]] void error (const Token &wrongToken,
-                           const string &expected) const
-    { throw TextPos::Error (wrongToken. tp, expected, true); }
+                           const string &what,
+                           bool expected = true) const
+    { throw TextPos::Error (wrongToken. tp, what, expected); }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
 		{ ci. error (what, expected); }  
@@ -3950,7 +3953,8 @@ public:
    			error (t, Token::type2str (Token::eDouble) + " " + toString (expected)); 
     }
 	void get (char expected)
-    { if (getNextChar (false) != expected)    
+    { const Token t (get ());
+      if (! t. isDelimiter (expected))
    			error (Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected), '\'')); 
     }
   void setLast (Token &&t)
