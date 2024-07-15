@@ -1298,13 +1298,13 @@ void copyText (const string &inFName,
 #ifndef _MSC_VER
   inline void moveFile (const string &from,
                         const string &to)
-    { if (::rename (from. c_str (), to. c_str ()))
-        throw runtime_error ("Cannot move file + " + shellQuote (from) + " to " + shellQuote (to));
+    { if (const int code = ::rename (from. c_str (), to. c_str ()))
+        throw runtime_error ("Cannot move file + " + shellQuote (from) + " to " + shellQuote (to) + " (" + to_string (code) + ")");
     }
 
   inline void removeFile (const string &fName)
-    { if (::remove (fName. c_str ()))
-        throw runtime_error ("Cannot remove file + " + shellQuote (fName));
+    { if (const int code = ::remove (fName. c_str ()))
+        throw runtime_error ("Cannot remove file + " + shellQuote (fName) + " (" + to_string (code) + ")");
     }
 
       
