@@ -51,6 +51,16 @@ $THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
+  # Regina Zlotchenko <regina@genepro.com>:
+    # http://topaz.gatech.edu/GeneMark/license_download.cgi 
+    # If you have the latest version of software installed, then you can download and install the “key” file only. 
+    # You should fill in the registration form and select "I agree ..." button. 
+    # Download page will open up with links for download. 
+    # Please select “key” file matching the type of the operation system, like “gm_key_64.gz” for LINUX-64. 
+    # To install the key: 
+    # $ gunzip gm_key_64.gz 
+    # $ cp gm_key_64 ~/.gm_key 
+
   gmes_petap.pl | grep -w "version" 1> annot_software 2>> $LOG || true 
 
   # genemark.gtf
