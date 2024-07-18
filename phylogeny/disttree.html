@@ -271,6 +271,7 @@ select Phyl.[node] id \
      , PhylObject_vw.outlier \
      , PhylObject_vw.bad_source \
      , PhylObject_vw.[type] \
+     , PhylObject_vw.bad_org_source \
      , PhylObject_vw.rs_acc_ver \
      , PhylObject_vw.tax_confirmed \
      , PhylObject_vw.tax \
@@ -325,26 +326,27 @@ select Phyl.[node] id \
         , picture:             null
         , pictureVisible:      false
           // Leaf
-        , obj_id:        String(row.obj_id)
-        , int_obj_id:    String(row.int_obj_id) 
-        , obj_id_2:      row.obj_id_2
-        , removed:       row.removed
-        , in_tree:       row.in_tree
-        , outlier:       row.outlier
-        , bad_source:    row.bad_source
-        , type:          row.type
-        , rs_acc_ver:    row.rs_acc_ver
-        , tax_confirmed: row.tax_confirmed
-        , tax:           row.tax
+        , obj_id:           String(row.obj_id)
+        , int_obj_id:       String(row.int_obj_id) 
+        , obj_id_2:         row.obj_id_2
+        , removed:          row.removed
+        , in_tree:          row.in_tree
+        , outlier:          row.outlier
+        , bad_source:       row.bad_source
+        , type:             row.type
+        , bad_org_source:   row.bad_org_source
+        , rs_acc_ver:       row.rs_acc_ver
+        , tax_confirmed:    row.tax_confirmed
+        , tax:              row.tax
         , tax_name_curated: row.tax_name_curated
-        , dna_len:       row.dna_len
-        , univs:         row.univs
-        , prots:         row.prots
-        , bioproject:    row.bioproject
-        , pubmed:        row.pubmed
-        , comment:       row.comment ? row.comment.replace(/[\n\r]/g, ' ') : null
-        , ani_match:     row.ani_match
-        , ani:           row.ani
+        , dna_len:          row.dna_len
+        , univs:            row.univs
+        , prots:            row.prots
+        , bioproject:       row.bioproject
+        , pubmed:           row.pubmed
+        , comment:          row.comment ? row.comment.replace(/[\n\r]/g, ' ') : null
+        , ani_match:        row.ani_match
+        , ani:              row.ani
           // computed
         , children: []
         , selectedLeaves: 0  // in [0,leaves] 
@@ -596,6 +598,8 @@ var node2printName = function (node, truncate)
       leafName += sPref (": ", node.props)
       if (node.removed)
         leafName = "[REMOVED] " + leafName;
+      if (node.bad_org_source)
+        leafName = "[" + node.bad_org_source + "] " + leafName;
       if (node.type)
         leafName = "[" + node.type + "] " + leafName;
       if (node.rs_acc_ver)
@@ -2063,15 +2067,16 @@ var place = function (placement)
     , closest_leaf2: null
     , closest_criterion: null
       // Leaf
-    , obj_id:        arr[0]
-    , int_obj_id:    null
-    , obj_id_2:      null
-    , removed:       false
-    , bad_source:    false
-    , outlier:       null
-    , type:          null
-    , rs_acc_ver:    null
-    , tax_confirmed: null
+    , obj_id:         arr[0]
+    , int_obj_id:     null
+    , obj_id_2:       null
+    , removed:        false
+    , bad_source:     false
+    , outlier:        null
+    , type:           null
+    , bad_org_source: null
+    , rs_acc_ver:     null
+    , tax_confirmed:  null
     //
     , gain_loss: []
       // computed
@@ -2461,6 +2466,7 @@ var saveLeaves = function (nodeId, highlighted)
                 + ifS (node.bad_source, 'Yes') + '\t'
                 + (node.outlier || '') + '\t'
                 + (node.type || '') + '\t'
+              //+ (node.bad_org_source || '') + '\t'  // ??
                 + (node.in_tree ? '' : 'ADDED') + '\t'
                 + node.tax + '\t'
                 + (node.tax_name_curated || '') + '\t'
