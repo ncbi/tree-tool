@@ -12,7 +12,7 @@ DIR=$1
 TMP=`mktemp`
 
 
-ls $DIR/* > $TMP.list
+ls $DIR | sed 's|^|'$DIR'/|1' > $TMP.list 
 $THIS/tsv_cat $TMP.list "" -qc 
 
 
