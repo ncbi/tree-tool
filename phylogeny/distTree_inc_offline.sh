@@ -2,7 +2,7 @@
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "Copy $1/ to #2/ and make #2/ empty and offline"
+  echo "Copy #1/ to #2/ and make #2/ empty and offline"
   echo "#1: input incremental distance tree directory"
   echo "#2: output incremental distance tree directory"
   exit 1
