@@ -1428,6 +1428,10 @@ void Tree::printAsn (ostream &os) const
     {\n\
       id 1,\n\
       name \"dist\"\n\
+    },\n\
+    {\n\
+      id 2,\n\
+      name \"info\"\n\
     }\n\
   },\n\
   nodes {";
@@ -1445,15 +1449,29 @@ void Tree::printAsn (ostream &os) const
     if (parent)
       os << ",\n\
       parent " << node2index [parent];
-    AsnFeatures features;
+    string label;
+    string info;
     if (node->isLeaf ())
-      features [0] = n->getName ();
+    {
+      label = n->getName ();
+      const size_t pos = label. find (' ');
+      if (pos != string::npos)
+      {
+        info = label. substr (pos + 1);
+        label. erase (pos);
+      }
+    }
+    AsnFeatures features;
+    if (! label. empty ())
+      features [0] = label;
     if (parent)
     {
       ostringstream oss;
       oss << node->getParentDistance ();
       features [1] = oss. str ();
     }
+    if (! info. empty ())
+      features [2] = info;
     printAsnFeatures (os, features);
     os << "\n\
     }";

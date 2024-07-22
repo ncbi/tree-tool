@@ -62,7 +62,7 @@ struct ThisApplication : Application
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
-	  addKey ("name_extend", "File with lines: <name> <tab> <name_extension>, to extend leaf names");
+	  addKey ("name_extend", "File with lines: <name[_new]> <tab> <name_extension>, to extend leaf names");
 	  addKey ("clade_name", "File with lines: {<name>|<name1>:<name2>} <tab> <clade name>");
 	  addKey ("root_name", "Root name");
 	  addKey ("decimals", "Number of decimals in arc lengths", toString (dissimDecimals));
@@ -104,8 +104,8 @@ struct ThisApplication : Application
 		  throw runtime_error ("-clade_name does not work with the format " + strQuote (format));
 		if (! root_name. empty () && format == "dm")
 		  throw runtime_error ("-root_name does not work with the format " + strQuote (format));
-		if (! name_match. empty () && ! name_extend. empty ())
-		  throw runtime_error ("-name_match and -name_extend cannot be used together");
+	//if (! name_match. empty () && ! name_extend. empty ())
+		//throw runtime_error ("-name_match and -name_extend cannot be used together");
 		      
 
     DistTree tree (input_tree, dataFName, dissimAttrName, noString);
@@ -128,7 +128,10 @@ struct ThisApplication : Application
         QC_ASSERT (! name_old. empty ());
         QC_ASSERT (! name_new. empty ());
         if (const Leaf* leaf = findPtr (tree. name2leaf, name_old))
+        {
           var_cast (leaf) -> name = name_new;
+          tree. name2leaf [name_new] = leaf;
+        }
       }
     }
     
