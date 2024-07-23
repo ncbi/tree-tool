@@ -1,7 +1,10 @@
 #!/bin/bash --noprofile
 source $PANFS/code/cpp/bash_common.sh
-if [ $# -ne 1 ]; then
-  echo "$0"
+if [ $# -ne 3 ]; then
+  echo "Find 100 closest sequences in the tree"
+  echo "#1: new sequence"
+  echo "#2: directory of #1 or ''"  # ignored ??
+  echo "#3: subset of sequence id's"  # ignored ??
   exit 1
 fi
 NEW_OBJ=$1
