@@ -4032,7 +4032,7 @@ int Application::run (int argc,
 	}
 	catch (const std::exception &e) 
 	{ 
-	  errorExit ((e. what () + ifS (errno, string ("\n") + strerror (errno))). c_str ());
+	  errorExit ((ifS (errno, strerror (errno) + string ("\n")) + e. what ()). c_str ());
   }
 
 
