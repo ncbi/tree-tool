@@ -279,6 +279,7 @@ void Schema::printTableDdl (ostream &os,
 { 
   IMPLY (curTable, curTable->multiple);
   
+  unique_ptr<ostringstream> os_tmp;
   if (multiple)
   {
     const string table (getColumnName (nullptr));
@@ -286,16 +287,18 @@ void Schema::printTableDdl (ostream &os,
     curTable = this;
     if (dataP)
     {
+      os_tmp. reset (new ostringstream ());
       // "xml_num_", "id_" ??
-      os << "drop   table " + table << ";" << endl 
-         << "create table " + table << endl << '(' << endl
-         << "  xml_num_ int  not null" << endl
-         << ", id_ bigint  not null" << endl;  
+      *os_tmp << endl << endl;
+      *os_tmp << "drop   table " + table << ";" << endl 
+              << "create table " + table << endl << '(' << endl
+              << "  xml_num_ int  not null" << endl
+              << ", id_ bigint  not null" << endl;  
       if (! refTable. empty ())
-        os << ", " << refTable << "_id_ bigint  not null" << endl;  
-      printColumnDdl (os, curTable);  
-      os << ");" << endl;
-      os << "grant select on " << table << " to public;" << endl;
+        *os_tmp << ", " << refTable << "_id_ bigint  not null" << endl;  
+      printColumnDdl (*os_tmp, curTable);  
+      *os_tmp << ");" << endl;
+      *os_tmp << "grant select on " << table << " to public;" << endl;
     }
     if (indexP)
     {
@@ -305,13 +308,16 @@ void Schema::printTableDdl (ostream &os,
         os << "create index " << table << "_idx on " << table << "(xml_num_," << refTable << "_id_);" << endl;
         os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_) on delete cascade;" << endl;
         os << "-- delete /*top (1000000)*/ from " << table << " with (tablock) where not exists (select null from " << refTable << " (nolock) where " << refTable << ".xml_num_ = " << table << ".xml_num_ and " << refTable << ".id_ = " << table << "." << refTable << "_id_);" << endl;
+        os << endl << endl;
       }
     }
-    os << endl << endl;
   }
 
   for (const auto& it : name2schema)
     it. second->printTableDdl (os, dataP, indexP, curTable);
+    
+  if (os_tmp)
+    os << os_tmp->str ();
 }
 
 
