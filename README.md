@@ -17,7 +17,7 @@ General data analysis tools.
 
 [Epistemic Principle of a Congruence Maximization of a Phylogenetic Tree to External Classifications](https://github.com/ncbi/tree-tool/blob/master/phylogeny/doc/tax_miscongruence/tax_miscongruence.pdf)
 
-## Application papres
+## Application papers
 Shmakov SA, Barth ZK, Makarova KS, Wolf YI, Brover V, Peters JE, Koonin EV. 
 Widespread CRISPR repeat-like RNA regulatory elements in CRISPR-Cas systems. 
 bioRxiv [Preprint]. 2023 Mar 3:2023.03.03.530964. doi: 10.1101/2023.03.03.530964. 
