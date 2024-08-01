@@ -62,6 +62,8 @@ void Obj::qc () const
   Root::qc ();
 		
   QC_IMPLY (! name. empty (), goodName (name));
+  QC_ASSERT (! contains (name, ' '));
+  
   QC_ASSERT (mult >= 0.0); 
   QC_ASSERT (mult < inf);
 }
@@ -132,6 +134,8 @@ void Attr::qc () const
   Root::qc ();
   
   QC_ASSERT (*dsIt == this);
+  QC_ASSERT (! contains (name, ' '));
+  QC_IMPLY (! name. empty (), goodName (name));
 }
 
 
@@ -1241,7 +1245,7 @@ void CompactBoolAttr1::setAll (bool value)
 
 
 
-// NominAttr1::Dependene
+// NominAttr1::Dependence
 
 void NominAttr1::Dependence::qc () const
 {
@@ -1340,6 +1344,7 @@ void NominAttr1::summary (ostream & /*f*/) const
 void NominAttr1::str2value (size_t objNum,
                             const string &s)
 {
+#if 0
 	size_t index = missing;
   FFOR (size_t, i, categories. size ())
     if (categories [i] == s)
@@ -1356,6 +1361,9 @@ void NominAttr1::str2value (size_t objNum,
   }
   
 	values [objNum] = index;
+#else
+	values [objNum] = category2index (s);
+#endif
 }
 
 

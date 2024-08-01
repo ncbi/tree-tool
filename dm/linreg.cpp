@@ -70,7 +70,7 @@ struct ThisApplication : Application
     
     Dataset ds (inFName);
     if (intercept)
-      ds. addRealAttr1Unit ();
+      ds. addRealAttr1Unit ("intercept");
     ds. qc ();    
     
     const auto targetAttr = checkPtr (ds. name2attr (target)) -> asRealAttr1 ();

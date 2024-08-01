@@ -62,7 +62,8 @@ struct Obj : Root, DisjointCluster
 // Object
 {
   string name;
-    // Me be empty()
+    // May be empty()
+    // No space
   Real mult {1.0};
     // >= 0.0
     // Multiplicity (absolute frequency)
@@ -151,6 +152,7 @@ private:
 public:
   string name;
     // May be empty()
+    // No space
   bool rightAlign {false};
     // true iff the value strings are to be right-aligned 
 /*
@@ -585,6 +587,7 @@ struct BoolAttr1 : NumAttr1
 {
   typedef ebool Value;
   static const Value missing;  
+//array<bool,string> names;  ??
 
 
 protected:
