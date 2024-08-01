@@ -17,6 +17,7 @@ all:	\
   attr2_2phylip \
 	obj_attr2dm \
 	pairs2dm \
+	tsv2dm
 	
 
 attr2_2pairs.o:  $(DM_HPP) 
@@ -49,4 +50,9 @@ pairs2dm:	$(pairs2dmOBJS)
 	$(CXX) -o $@ $(pairs2dmOBJS) $(LIBS)
 	$(ECHO)
 
+tsv2dm.o:  $(DM_HPP) 
+tsv2dmOBJS=tsv2dm.o $(DM_OBJ) $(TSV_DIR)/tsv.o
+tsv2dm:	$(tsv2dmOBJS)
+	$(CXX) -o $@ $(tsv2dmOBJS) $(LIBS)
+	$(ECHO)
 
