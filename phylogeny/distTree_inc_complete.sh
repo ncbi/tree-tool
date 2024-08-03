@@ -1,15 +1,17 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
   echo "Output: #1/, #1/../data.dm"
   echo "#1: incremental distance tree directory"
   echo "#2: sorted and distinct list of objects"
+  echo "#3: overwrite existing data (0/1)"
   exit 1
 fi
 INC=$1
 OBJS=$2
+OVER=$3
 
 
 #set -x
@@ -18,30 +20,40 @@ OBJS=$2
 sort -cu $OBJS
 
 
-VER=`cat $INC/version`
-if [ $VER -ne 1 ]; then
-  error "version must be 1"
-fi
-
-SERVER=`cat $INC/server`
-
-
-#if false; then  
 section "QC $INC/"
-if [ -s $INC/tree ]; then
-  error "$INC/tree must be empty"
-fi
+VER=1
+if [ $OVER == 0 ]; then
+  VER=`cat $INC/version`
+  if [ $VER -ne 1 ]; then
+    error "version must be 1"
+  fi
 
-if [ -s $INC/dissim ]; then
-  error "$INC/dissim must be empty"
-fi
+  if [ -s $INC/tree ]; then
+    error "$INC/tree must be empty"
+  fi
 
-if [ -s $INC/dissim.bad ]; then
-  error "$INC/dissim.bad must be empty"
-fi
+  if [ -s $INC/dissim ]; then
+    error "$INC/dissim must be empty"
+  fi
 
-if [ -s $INC/indiscern ]; then
-  error "$INC/indiscern must be empty"
+  if [ -s $INC/dissim.bad ]; then
+    error "$INC/dissim.bad must be empty"
+  fi
+
+  if [ -s $INC/indiscern ]; then
+    error "$INC/indiscern must be empty"
+  fi
+
+  if [ -s $INC/runlog ]; then
+    error "$INC/runlog must be empty"
+  fi
+else
+  echo $VER >  $INC/version
+  cp /dev/null $INC/tree
+  cp /dev/null $INC/dissim
+  cp /dev/null $INC/dissim.bad
+  cp /dev/null $INC/indiscern
+  cp /dev/null $INC/runlog 
 fi
 
 TMP=`mktemp`
@@ -52,11 +64,7 @@ if [ $N -gt 0 ]; then
 fi
 rm $TMP
 
-if [ -s $INC/runlog ]; then
-  error "$INC/runlog must be empty"
-fi
-
-sort -cu $OBJS
+SERVER=`cat $INC/server`
 
 
 section "Computing dissimilarities"
