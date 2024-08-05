@@ -2979,21 +2979,24 @@ template <typename T>
   	    { operator= (other); }
   	template <typename U, typename V>
     	Set<T>& operator= (const map<U,V> &other)
-    	  { universal = false;
+    	  { P::clear ();
+    	    universal = false;
     	    for (const auto& it : other)
   	        P::insert (it. first);
   	      return *this;
     	  }
   	template <typename U, typename V>
     	Set<T>& operator= (const unordered_map<U,V> &other)
-    	  { universal = false;
+    	  { P::clear ();
+    	    universal = false;
     	    for (const auto& it : other)
   	        P::insert (it. first);
   	      return *this;
     	  }
   	template <typename U>
     	Set<T>& operator= (const vector<U> &other)
-    	  { universal = false;
+    	  { P::clear ();
+    	    universal = false;
     	    for (const U& u : other)
   	        P::insert (u);
   	      return *this;
