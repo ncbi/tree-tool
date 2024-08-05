@@ -162,6 +162,7 @@ struct Viewer
         maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
         drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search  n:Next found" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
+          // uncolor all ??
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
         FOR_START (size_t, i, topIndex, bottomIndex)
@@ -219,6 +220,7 @@ struct Viewer
 	          #endif
             }
           #else
+            // emphacise current row ?? 
             string s (row. data->token. name);
             size_t j = 0;
             while (j < s. size () && s [j] == ' ')
@@ -521,7 +523,7 @@ struct Viewer
 		constexpr size_t c4 = c3 + w3 + 1;
 		Form form (nc, c4, 4);
 		form. print (c4 / 2 - 3, 0, " Find ");
-		form. print (c0, 1, "What");
+		form. print (c0, 1, "What");  // what_xml, what_content ??
 		form. print (c1, 1, "Tag");
 		form. print (c2, 1, "Whole");
 		form. print (c3, 1, "Word");
