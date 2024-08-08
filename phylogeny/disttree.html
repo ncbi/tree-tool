@@ -255,7 +255,7 @@ select Phyl.[node] id \
      , Phyl.height_ave \
      , Phyl.norm_criterion \
      , Phyl.error_density \
-     , Phyl.[name] phylName\
+     , Phyl.[name] phylName \
      , Phyl.genospecies \
      , Phyl.closest_leaf1 \
      , Phyl.closest_leaf2 \
@@ -276,6 +276,8 @@ select Phyl.[node] id \
      , PhylObject_vw.tax_confirmed \
      , PhylObject_vw.tax \
      , PhylObject_vw.tax_name_curated \
+     , PhylObject_vw.tax_name_submitted \
+     , PhylObject_vw.strain \
      , PhylObject_vw.dna_len \
      , PhylObject_vw.univs \
      , PhylObject_vw.prots \
@@ -326,27 +328,29 @@ select Phyl.[node] id \
         , picture:             null
         , pictureVisible:      false
           // Leaf
-        , obj_id:           String(row.obj_id)
-        , int_obj_id:       String(row.int_obj_id) 
-        , obj_id_2:         row.obj_id_2
-        , removed:          row.removed
-        , in_tree:          row.in_tree
-        , outlier:          row.outlier
-        , bad_source:       row.bad_source
-        , type:             row.type
-        , bad_org_source:   row.bad_org_source
-        , rs_acc_ver:       row.rs_acc_ver
-        , tax_confirmed:    row.tax_confirmed
-        , tax:              row.tax
-        , tax_name_curated: row.tax_name_curated
-        , dna_len:          row.dna_len
-        , univs:            row.univs
-        , prots:            row.prots
-        , bioproject:       row.bioproject
-        , pubmed:           row.pubmed
-        , comment:          row.comment ? row.comment.replace(/[\n\r]/g, ' ') : null
-        , ani_match:        row.ani_match
-        , ani:              row.ani
+        , obj_id:              String(row.obj_id)
+        , int_obj_id:          String(row.int_obj_id) 
+        , obj_id_2:            row.obj_id_2
+        , removed:             row.removed
+        , in_tree:             row.in_tree
+        , outlier:             row.outlier
+        , bad_source:          row.bad_source
+        , type:                row.type
+        , bad_org_source:      row.bad_org_source
+        , rs_acc_ver:          row.rs_acc_ver
+        , tax_confirmed:       row.tax_confirmed
+        , tax:                 row.tax
+        , tax_name_curated:    row.tax_name_curated
+        , tax_name_submitted:  row.tax_name_submitted
+        , strain:              row.strain
+        , dna_len:             row.dna_len
+        , univs:               row.univs
+        , prots:               row.prots
+        , bioproject:          row.bioproject
+        , pubmed:              row.pubmed
+        , comment:             row.comment ? row.comment.replace(/[\n\r]/g, ' ') : null
+        , ani_match:           row.ani_match
+        , ani:                 row.ani
           // computed
         , children: []
         , selectedLeaves: 0  // in [0,leaves] 
@@ -586,42 +590,57 @@ var node2pathName = function (nodeId)
 
 var node2printName = function (node, truncate)  
 {
-  let name = '';
-  
+  // name 
   {  
     let leafName = '';
     if (isLeaf (node))
     {
-      leafName = node.obj_id;
-      if (node.obj_id_2)
-        leafName += " (" + node.obj_id_2 + ")";
-      leafName += sPref (": ", node.props)
-      if (node.removed)
-        leafName = "[REMOVED] " + leafName;
-      if (node.bad_org_source)
-        leafName = "[" + node.bad_org_source + "] " + leafName;
-      if (node.type)
-        leafName = "[" + node.type + "] " + leafName;
-      if (node.rs_acc_ver)
-        leafName = "[REFSEQ] " + leafName;
-      if (node.bad_source)
-        leafName = "[" + node.bad_source + "] " + leafName;
-      if (node.outlier)
-        leafName = "[OUTLIER:" + node.outlier + "] " + leafName;
-      else if (! node.in_tree)
-        leafName = "[ADDED] " + leafName;
+      let fix = '';
       switch (node.tax_confirmed)
       {
-        case 0: leafName = "[FIX] " + leafName; break;
-        case 1: leafName = "[OK] " + leafName; break;
+        case 0: fix = "[FIX of " + node.tax_name_submitted + "]"; break;
+        case 1: fix = "[OK]"; break;
       }
-      if (node.ani)
-        leafName = node.ani_match + " ANI:" + node.ani.toFixed(1) + " | " + leafName;
+      if (node.bad_org_source)
+        fix = addS (fix, ' ', "[" + node.bad_org_source + "]");
+      fix = addS (fix, ' ', node.strain);
+
+      let objName = node.obj_id;
+      if (node.obj_id_2)
+        objName += " (" + node.obj_id_2 + ")";
+
+
+      let flags = '';
+      {
+        if (node.type)
+          flags = addS (flags, ' ', "[" + node.type + "]");
+        if (node.rs_acc_ver)
+          flags = addS (flags, ' ', "[REFSEQ]");
+          
+        if (node.outlier)
+          flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
+        else if (! node.in_tree)
+          flags = addS (flags, ' ', "[ADDED]");
+        
+        if (node.ani)
+          flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
+        if (node.removed)
+          flags = addS (flags, ' ', "[REMOVED]");
+        if (node.bad_source)
+          flags = addS (flags, ' ', "[" + node.bad_source + "]");
+      }
+      
+        
+      leafName = fix;
+      leafName = addS (leafName, ' | ', objName);
+      leafName = addS (leafName, ' | ', flags);
+      leafName = addS (leafName, ' | ', node.props);
     }  
+    
     if (node.phylName)
-      name += node.phylName + sPref (" | ", leafName);
+      name = node.phylName + sPref (" | ", leafName);
     else
-      name += leafName;
+      name = leafName;
   }
     
   if (node.comment)
@@ -806,9 +825,9 @@ var drawTree = function ()
       }
       else
       {
-        const s = node2printName (node, true) || nodeName;
+        const s = node2printName (node, false /*true*/) || nodeName;
         const x = triangleX + dXName;
-        ctx.clearRect (x - dXName / 2, y - fontHeight * 0.8, picture_offset (node, 1) + ctx.measureText(s).width, fontHeight);
+        ctx.clearRect (x - dXName / 2, y - fontHeight * 0.8, canvasWidth - x /*picture_offset (node, 1) + ctx.measureText(s).width*/, fontHeight);
         if (showPictures && node.picture_url && node.pictureVisible)
           if (! drawImage (ctx, node.picture, x, y - leafFontHeight * 2, dXPicture, leafFontHeight * 3.5, node.picture_url))
             node.picture_url = null;
@@ -2517,7 +2536,7 @@ var saveNewick = function (nodeId)
         text += name2newick (node.phylName);
     }
     else
-      text += name2newick (node2printName (node));
+      text += name2newick (node2printName (node, false));
     if (node.parent)
       text += ':' + node.time;
   }
