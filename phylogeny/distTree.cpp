@@ -4914,7 +4914,7 @@ void DistTree::neighborJoin ()
           missing++;
           continue;  
         }
-        dissimTransform (leafPair. dissim);  
+        dissimTransform (leafPair. dissim);   
         leafPairs << leafPair;
       }
     }
@@ -4971,7 +4971,8 @@ void DistTree::neighborJoin ()
           // P (criterion1 < criterion2) ??
           if (minimize (criterion, leafPairs [i]. getCriterion (n)))            
             i_best = i;
-        ASSERT (i_best != no_index);
+        if (i_best == no_index)
+          throw runtime_error (FUNC "Bad dissimilarity");
         leafPair_best = leafPairs [i_best];
         if (verbose (-1))
         {
