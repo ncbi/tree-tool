@@ -4,7 +4,7 @@ source $THIS/../../bash_common.sh
 source $THIS/../../qsub_env.sh
 GENOME="genome"
 if [ $# -ne 3 ]; then
-  echo "Create #1-univ-separate.dm"
+  echo "Create #1-univ-separate.dm, hmm-missings.tsv, hmm-missings.uniKernel"
   echo "Input: #1.list, $GENOME/*/[*/]*.prot-univ, hmm-univ.list"
   echo "Temporary output: #1.pairs.dir/, #1.pairs.dir.log/, #1-univ/"
   echo "#1: list of objects (file prefix)"
@@ -31,6 +31,7 @@ TMP=`mktemp`
 comment $TMP
 
 
+#if false; then 
 # $F.pairs.dir
 $THIS/../../list2pairs $LIST > $TMP
 mkdir $F.pairs.dir
@@ -55,6 +56,13 @@ echo "ATTRIBUTES"                           >> $F-univ-separate.dm
 cat hmm-univ.list | sed 's/$/ Positive 6/1' >> $F-univ-separate.dm
 echo "DATA"                                 >> $F-univ-separate.dm
 cat $TMP.dissim | sed -e 's/\t/-/1'         >> $F-univ-separate.dm
+
+
+cat $F-univ-separate.dm | sed 's/\tinf/\t?/g' | sed 's/\tnan/\t?/g' > $TMP.nan.dm
+$THIS/../../dm/attrs $TMP.nan | cut -f 1,3 > hmm-missings.tsv
+$THIS/../../dm/conversion/cols2dm.sh hmm-missings.tsv 1 0 1 > $TMP.attrs.dm
+$THIS/../../dm/uniKernel $TMP.attrs "Missings" -qc > hmm-missings.uniKernel
+# HMM is missing in k objects => k * OBJNUM missings in $TMP.attrs.dm
 
 
 rm $TMP*
