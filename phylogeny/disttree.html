@@ -588,7 +588,7 @@ var node2pathName = function (nodeId)
 
 
 
-var node2printName = function (node, truncate)  
+var node2printName = function (node, truncate, leavesNum)  
 {
   // name 
   {  
@@ -647,11 +647,10 @@ var node2printName = function (node, truncate)
     name += "  COMMENT: " + node.comment;
     
   if (truncate)
-  {
     name = name. substr (0, 100);  // PAR 
-    if (node.collapsed && node.leaves > 1)  
-      name += " (" + ifS (node.selectedLeaves && node.selectedLeaves < node.leaves, node.selectedLeaves + "/") + node.leaves + ")";  
-  }
+
+  if (leavesNum && node.collapsed && node.leaves > 1)  
+    name += " (" + ifS (node.selectedLeaves && node.selectedLeaves < node.leaves, node.selectedLeaves + "/") + node.leaves + ")";  
   
   return prefixNodeId (node, name);
 }
@@ -825,7 +824,7 @@ var drawTree = function ()
       }
       else
       {
-        const s = node2printName (node, false /*true*/) || nodeName;
+        const s = node2printName (node, false, true) || nodeName;
         const x = triangleX + dXName;
         ctx.clearRect (x - dXName / 2, y - fontHeight * 0.8, canvasWidth - x /*picture_offset (node, 1) + ctx.measureText(s).width*/, fontHeight);
         if (showPictures && node.picture_url && node.pictureVisible)
@@ -1000,7 +999,7 @@ var changeTree = function ()
       const node = nodes[i];
       
       const font_old = node2font (node);
-      const nameLength = dXName + picture_offset (node, 1) + ctx.measureText (node2printName (node, true)). width;
+      const nameLength = dXName + picture_offset (node, 1) + ctx.measureText (node2printName (node, true, true)). width;
       ctx.font = font_old;
       
       let timeFromCurRoot = node.timeFromCurRoot;
@@ -1764,7 +1763,7 @@ var findGenomes = function (name_part, bad_source, types_only)
       continue;
     if (! bad_source && node.bad_source)
       continue;
-    if (node2printName (node,false).toLowerCase().indexOf(name_part_) != -1)
+    if (node2printName (node,false,false).toLowerCase().indexOf(name_part_) != -1)
       if (! types_only || node.type)
       {
         selectGenome (nodeId, true);
@@ -2536,7 +2535,7 @@ var saveNewick = function (nodeId)
         text += name2newick (node.phylName);
     }
     else
-      text += name2newick (node2printName (node, false));
+      text += name2newick (node2printName (node, false, false));
     if (node.parent)
       text += ':' + node.time;
   }
@@ -2734,7 +2733,8 @@ select count(*) genomes \
 
 var readData = function ()
 {
-	alert ("Missing data for an offline page");  // DOT NOT REMOVE THIS LINE: it is used in fam2tree.cgi !!!
+  // If offline then replace this line by data dump
+	alert ("Missing data for an offline page");  // DOT NOT REMOVE/MOVE THIS LINE TO BE USED IN fam2tree.cgi !!!
 }
 
 
@@ -3323,6 +3323,7 @@ else if (getParams().newick)
 }
 else
 {
+  // If offline then uncomment
 //offline = true;
   init ();  
 }
