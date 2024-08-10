@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Save the parameters and scripts of an incremental distance tree"
@@ -28,7 +28,7 @@ function bad_word
 
 rm -rf $OUT
 mkdir -p $OUT
-for F in `ls $INC/`; do
+for F in $( ls $INC/ | grep -v "\.old$" ); do
   if [ -d $INC/$F -o $F == "tree" -o $F == "dissim" ]; then
     continue;
   fi
@@ -45,7 +45,7 @@ for F in `ls $INC/`; do
   N=`cat $INC/$F | wc -l`
   if [ $N -lt 20000 ]; then  # PAR
     set +o errexit
-    EX=`file $INC/$F | grep -cw 'executable'`
+    EX=$( file $INC/$F | grep -cw 'executable' )
     set -o errexit
     if [ $EX -eq 0 ]; then
       cp $INC/$F $OUT/$F
@@ -65,7 +65,7 @@ for F in `ls $INC/`; do
       bad_word $INC/$F 1 "loadLISTC"
       bad_word $INC/$F 1 "marker"
       bad_word $INC/$F 1 "GenBank"
-      L=`grep '[^]}];' $INC/$F | grep -v 'false;' | grep -v 'true;' | grep -vw "if" || true`  # ';' in SQL
+      L=$( grep '[^]}];' $INC/$F | grep -v 'false;' | grep -v 'true;' | grep -vw "if" || true )  # ';' in SQL
       if [ "$L" ]; then
         error "$L"
       fi

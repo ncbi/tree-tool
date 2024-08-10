@@ -15,7 +15,12 @@ distTree_inc_save.sh $PANFS/GenBank/Protists/inc      inc/genome/Protists
 distTree_inc_save.sh $PANFS/GenBank/Stramenopiles/inc inc/genome/Stramenopiles
 distTree_inc_save.sh $PANFS/GenBank/Viridiplantae/inc inc/genome/Viridiplantae
 distTree_inc_save.sh $PANFS/GenBank/Covid/inc         inc/virus/SARS-CoV-2
+distTree_inc_save.sh $PANFS/RefSeq/Alveolata/inc      inc/genome/Alveolata-RefSeq
+distTree_inc_save.sh $PANFS/RefSeq/Euglenozoa/inc     inc/genome/Euglenozoa-RefSeq
+distTree_inc_save.sh $PANFS/RefSeq/Eukaryota/inc      inc/genome/Eukaryota-RefSeq
+distTree_inc_save.sh $PANFS/RefSeq/Fungi/inc          inc/genome/Fungi-RefSeq
 distTree_inc_save.sh $PANFS/RefSeq/Metazoa/inc        inc/genome/Metazoa-RefSeq
+distTree_inc_save.sh $PANFS/RefSeq/Stramenopiles/inc  inc/genome/Stramenopiles-RefSeq
 distTree_inc_save.sh $PANFS/RefSeq/Viridiplantae/inc  inc/genome/Viridiplantae-RefSeq
 distTree_inc_save.sh $PANFS/marker/Fungi/18SrRNA/inc  inc/rRNA/Fungi/18SrRNA
 distTree_inc_save.sh $PANFS/marker/Fungi/28SrRNA/inc  inc/rRNA/Fungi/28SrRNA
