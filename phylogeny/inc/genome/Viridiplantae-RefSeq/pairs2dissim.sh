@@ -28,7 +28,8 @@ GENOME=$INC/../genome
 TMP=`mktemp`
 
 awk '{printf "'$GENOME'/%s/%s.prot-univ '$GENOME'/%s/%s.prot-univ\n", $1, $1, $2, $2};' $REQ > $TMP
-CPP_DIR/dissim/prot_collection2dissim  -log $LOG  -raw_power 0.38  -blosum62  -coeff 1.0  $INC/hmm-univ.stat $TMP $TMP.res
+CPP_DIR/dissim/prot_collection2dissim  -log $LOG   -blosum62  -raw_power 0.8  -coeff 3.0  $INC/hmm-univ.stat $TMP $TMP.res
+# was: -raw_power 0.38  -coeff 1.0
 cut -f 3 $TMP.res > $TMP.dissim
 paste $REQ $TMP.dissim > $OUT
 
