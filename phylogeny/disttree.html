@@ -328,8 +328,8 @@ select Phyl.[node] id \
         , picture:             null
         , pictureVisible:      false
           // Leaf
-        , obj_id:              String(row.obj_id)
-        , int_obj_id:          String(row.int_obj_id) 
+        , obj_id:              String(row.obj_id || '')
+        , int_obj_id:          String(row.int_obj_id || '') 
         , obj_id_2:            row.obj_id_2
         , removed:             row.removed
         , in_tree:             row.in_tree
