@@ -140,6 +140,7 @@ struct ThisApplication : Application
       } 
     }
     PRINT (improvements);
+    cout << endl;
 	}
 };
 
