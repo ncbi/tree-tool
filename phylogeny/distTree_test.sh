@@ -98,6 +98,12 @@ if [ -d $DATA/inc.ITS ]; then
   $THIS/makeDistTree  -threads 10  -data $DATA/inc.ITS/  -variance linExp  -variance_dissim  -optimize  -skip_len  -reinsert  -subgraph_iter_max 1  -noqual > ITS.distTree
   $THIS/distTree_compare_criteria.sh ITS.distTree $DATA/ITS.distTree
   rm ITS.distTree
+  
+  section "distTree_new"
+  $THIS/distTree_new -qc $DATA/inc.ITS/  -variance linExp
+  diff $DATA/inc.ITS/leaf    $DATA/inc.ITS/leaf.expected
+  diff $DATA/inc.ITS/request $DATA/inc.ITS/request.expected
+  rm $DATA/inc.ITS/leaf $DATA/inc.ITS/request
 fi
 
 section "Saccharomyces hybrids"
