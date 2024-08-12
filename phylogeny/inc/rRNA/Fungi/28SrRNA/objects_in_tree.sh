@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source $PANFS/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   exit 1
 fi
@@ -14,9 +14,9 @@ fi
 INC=`dirname $0`
 
 if [ $IN_TREE == 1 ]; then
-  $PANFS/code/cpp//trav $OBJ_LIST "cat $INC/../seq/%f" >> $INC/seq.fa
+  CPP_DIR//trav $OBJ_LIST "cat $INC/../seq/%f" >> $INC/seq.fa
 else
-  $PANFS/code/cpp/genetics/extractFastaDna $INC/seq.fa $OBJ_LIST  -remove > $INC/seq.fa1
+  CPP_DIR/genetics/extractFastaDna $INC/seq.fa $OBJ_LIST  -remove > $INC/seq.fa1
   mv $INC/seq.fa1 $INC/seq.fa
 fi
 
@@ -27,7 +27,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-$PANFS/code/cpp/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Locus

@@ -1,5 +1,5 @@
 #!/bin/bash  --noprofile
-source $PANFS/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 2 ]; then
   exit 1
 fi
@@ -15,20 +15,20 @@ INC=`dirname $0`
 KMER=14
 
 if [ $IN_TREE == 1 ]; then
-  $PANFS/code/cpp/trav $OBJ_LIST "cat $INC/../seq/%h/%f" > $INC/seq.fa
+  CPP_DIR/trav $OBJ_LIST "cat $INC/../seq/%h/%f" > $INC/seq.fa
   if [ ! -e $INC/seq.kmi ]; then
-    $PANFS/code/cpp/genetics/kmerIndex_make $INC/seq.kmi $KMER -qc
+    CPP_DIR/genetics/kmerIndex_make $INC/seq.kmi $KMER -qc
   fi
-  $PANFS/code/cpp/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
+  CPP_DIR/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
 else
-  $PANFS/code/cpp/phylogeny/tree2obj.sh $INC/tree > $INC/tree.list
-  $PANFS/code/cpp/setMinus $INC/tree.list $OBJ_LIST > $INC/tree.list-new
+  CPP_DIR/phylogeny/tree2obj.sh $INC/tree > $INC/tree.list
+  CPP_DIR/setMinus $INC/tree.list $OBJ_LIST > $INC/tree.list-new
   rm $INC/tree.list
   wc -l $INC/tree.list-new
-  $PANFS/code/cpp/trav $INC/tree.list-new "cat $INC/../seq/%h/%f" > $INC/seq.fa
+  CPP_DIR/trav $INC/tree.list-new "cat $INC/../seq/%h/%f" > $INC/seq.fa
   rm $INC/tree.list-new
-  $PANFS/code/cpp/genetics/kmerIndex_make $INC/seq.kmi $KMER -qc
-  $PANFS/code/cpp/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
+  CPP_DIR/genetics/kmerIndex_make $INC/seq.kmi $KMER -qc
+  CPP_DIR/genetics/kmerIndex_add  $INC/seq.kmi $INC/seq.fa -qc
 fi
 rm $INC/seq.fa
 
@@ -37,7 +37,7 @@ SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
 BULK_REMOTE=`cat $INC/bulk_remote`
 
-$PANFS/code/cpp/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
+CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..ListC
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT 
   update Locus5_8S
