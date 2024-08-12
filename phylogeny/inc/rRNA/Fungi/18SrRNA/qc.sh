@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source $PANFS/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality control of distTree_inc_new.sh"
   echo "#1: verbose (0/1)"
@@ -15,5 +15,5 @@ fi
 
 
 INC=`dirname $0`
-$PANFS/code/cpp/phylogeny/database/LocusQC.sh $INC "Locus" "id" 4751 "18S" $VERB
+CPP_DIR/phylogeny/database/LocusQC.sh $INC "Locus" "id" 4751 "18S" $VERB
 

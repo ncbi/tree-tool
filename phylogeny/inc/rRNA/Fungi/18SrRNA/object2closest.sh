@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source $PANFS/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Find 100 closest sequences in the tree"
   echo "#1: new sequence"

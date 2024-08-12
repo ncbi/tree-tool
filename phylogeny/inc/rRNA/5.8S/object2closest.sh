@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source $PANFS/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Find 100 closest sequences in the tree"
   echo "#1: Input sequence"
@@ -16,4 +16,4 @@ if [ -z $DIR ]; then
   H=`file2hash $NEW_OBJ`
   DIR=$INC/../seq/$H
 fi
-$PANFS/code/cpp/genetics/kmerIndex_find $INC/seq.kmi $DIR/$NEW_OBJ 100 -qc
+CPP_DIR/genetics/kmerIndex_find $INC/seq.kmi $DIR/$NEW_OBJ 100 -qc
