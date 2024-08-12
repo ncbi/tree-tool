@@ -3130,25 +3130,25 @@ const DTNode* Image::getOld2new (const DTNode* old,
 
 // DistTree
 
-DistTree::DistTree (const string &treeFName,
+DistTree::DistTree (const string &treeDirFName,
                     const string &dissimFName,
                     const string &dissimAttrName,
 	                  const string &multAttrName)
 : rand (seed_global)
 {
   // Initial tree topology
-  if (isDirName (treeFName))
-    loadTreeDir (treeFName);  // Directory name
+  if (isDirName (treeDirFName))
+    loadTreeDir (treeDirFName);  // Directory name
       // no DTNode::len
   else  
-    loadTreeFile (treeFName);  
+    loadTreeFile (treeDirFName);  
   ASSERT (root);
   ASSERT (nodes. front () == root);
   ASSERT (static_cast <const DTNode*> (root) -> asSteiner ());
 
   setName2leaf ();
         
-  if (! isDirName (treeFName) && dissimFName. empty ())
+  if (! isDirName (treeDirFName) && dissimFName. empty ())
     return;
 
   loadDissimDs (dissimFName, dissimAttrName, multAttrName);
@@ -3158,7 +3158,7 @@ DistTree::DistTree (const string &treeFName,
   if (! setDiscernibles_ds ())
     return;
 
-  if (isDirName (treeFName))
+  if (isDirName (treeDirFName))
     setGlobalLen ();  // --> after dissim2Ds(), use dissims ??
 
   dissimDs2dissims ();      
@@ -9449,6 +9449,22 @@ NewLeaf::Leaf2dissim::Leaf2dissim (const Leaf* leaf_arg,
 
 
 
+void NewLeaf::Leaf2dissim::qc () const
+{
+  if (! qc_on)
+    return;
+    
+  QC_ASSERT (leaf);
+  
+  QC_ASSERT (dissim >= 0.0);
+  QC_ASSERT (DM_sp::finite (dissim));
+  
+  QC_ASSERT (mult >= 0.0);  
+  QC_ASSERT (DM_sp::finite (mult));
+}
+
+
+
 
 // DissimLine
 
@@ -9533,6 +9549,7 @@ NewLeaf::NewLeaf (const DistTree &tree_arg,
                   bool init)
 : Named (name_arg)
 , tree (tree_arg)
+, location (tree_arg)
 {
   ASSERT (isDirName (dataDir));  
   const string nameDir (dataDir + name + "/");
@@ -9564,6 +9581,7 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
 : Named (checkPtr (dtNode) -> getLcaName ())
 , tree  (checkPtr (dtNode) -> getDistTree ())
 , node_orig (dtNode)
+, location (checkPtr<const DTNode> (dtNode) -> getDistTree ())
 {
   ASSERT (dtNode);
   ASSERT (dtNode->graph);
@@ -9571,9 +9589,11 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
   ASSERT (q_max);
   ASSERT (node_orig);
 
+#if 0
   location. anchor = static_cast <const DTNode*> (tree. root);
   location. leafLen = 0.0;
   location. arcLen = 0.0;
+#endif
 
   // leaf2dissims[]
   {  
@@ -9597,7 +9617,7 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
         }
         ASSERT (index != no_index);
         ASSERT (leaf);
-        leaf2dissimMults [leaf] << DissimMult {dissim. target - leafDepths [index]. dist, dissim. mult, dissim. getAbsCriterion ()};
+        leaf2dissimMults [leaf] << DissimMult {max (0.0, dissim. target - leafDepths [index]. dist), dissim. mult, dissim. getAbsCriterion ()};
       }
     }
     for (const auto& it : leaf2dissimMults)
@@ -9654,6 +9674,20 @@ NewLeaf::NewLeaf (const DTNode* dtNode,
 
 
 
+NewLeaf::NewLeaf (const DistTree &tree_arg,
+                  Vector<NewLeaf::Leaf2dissim> &&leaf2dissims_arg)
+: Named ("root")
+, tree (tree_arg)
+, location (tree_arg)
+, leaf2dissims (std::move (leaf2dissims_arg))
+{
+  leaf2dissims. sort ();
+  ASSERT (leaf2dissims. isUniq ());
+  optimize ();
+}
+
+
+
 void NewLeaf::process (bool init,
                        const string &dissimFName,
                        const string &leafFName,
@@ -9685,15 +9719,17 @@ void NewLeaf::process (bool init,
       subset << leaf;
     }
     subset. sort ();
-    const size_t dup = subset. findduplicate ();
+    const size_t dup = subset. findDuplicate ();
     if (dup != no_index)
       throw runtime_error (FUNC "Duplicate object " + strQuote (subset [dup] -> name));    
   }
 #endif
     
+#if 0
   location. anchor = static_cast <const DTNode*> (tree. root);
   location. leafLen = 0.0;
   location. arcLen = 0.0;
+#endif
 
   if (init)
   { 
@@ -10041,6 +10077,13 @@ void NewLeaf::qc () const
     
   location. qc ();    
   QC_ASSERT (& location. anchor->getDistTree () == & tree);
+  
+  for (const Leaf2dissim& ld : leaf2dissims)
+  {
+    ld. qc ();
+    ASSERT (ld. leaf);
+    QC_ASSERT (& ld. leaf ->getDistTree () == & tree);
+  }
 }
 
 
