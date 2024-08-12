@@ -76,7 +76,7 @@ struct ThisApplication : Application
 	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
 	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
 	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
-	  addKey ("variance_min", "Min. dissimilarity variance", "0");  // ; to be added to the computed variance
+	  addKey ("variance_min", "Min. dissimilarity variance", "0");  // was: "to be added to the computed variance"
 	  
 	  addKey ("good", "List of objects, which should not be outliers");
 	  
