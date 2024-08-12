@@ -27,6 +27,7 @@ all:	\
 	newick2tree \
 	printDistTree \
 	randomDistTree \
+	replaceDistTree \
 	statDistTree \
 	testDistTree \
 	tree2genogroup \
@@ -119,6 +120,12 @@ randomDistTree.o:  $(DISTTREE_HPP)
 randomDistTreeOBJS=randomDistTree.o $(DISTTREE_OBJ)
 randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
+	$(ECHO)
+
+replaceDistTree.o:  $(DISTTREE_HPP)
+replaceDistTreeOBJS=replaceDistTree.o $(DISTTREE_OBJ)
+replaceDistTree:	$(replaceDistTreeOBJS)
+	$(CXX) -o $@ $(replaceDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
 statDistTree.o:  $(DISTTREE_HPP)
