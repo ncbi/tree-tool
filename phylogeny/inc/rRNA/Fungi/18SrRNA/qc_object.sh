@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=`dirname $0`
-source $PANFS/code/cpp/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "QC an object"
   echo "#1: file or directory with object data"
