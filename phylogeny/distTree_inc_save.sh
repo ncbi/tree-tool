@@ -69,6 +69,15 @@ for F in $( ls $INC/ | grep -v "\.old$" ); do
       if [ "$L" ]; then
         error "$L"
       fi
+      
+      set +o errexit
+      grep -w "PANFS" $INC/$F
+      S=$?
+      set -o errexit
+      if [ $S -eq 0 ]; then
+        error "PANFS is found in $INC/$F"
+      fi
+      
       sed 's|$BROVER_CPP|CPP_DIR|g' $INC/$F | sed 's/-blastdb_version 4//g' > $OUT/$F
       chmod a+x $OUT/$F
     fi
