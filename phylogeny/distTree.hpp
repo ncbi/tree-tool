@@ -1737,14 +1737,17 @@ public:
       // !nullptr
     Real anchorLen {NaN};
       // >= anchor->len
-      // Distance to the previous anchor - an ancestor of anchor
-    Real leafLen {NaN};
-    Real arcLen {NaN};
+      // Distance to the previous anchor - the ancestor of anchor
+    Real leafLen {0.0};  // was: NaN
+    Real arcLen {0.0};   // was: NaN
       // From anchor to leaf->getParent()
     Real absCriterion_leaf {inf};
       // To be minimized, >= 0
     bool indiscernibleFound {false};
       
+    explicit Location (const DistTree &tree)
+      : anchor (static_cast <const DTNode*> (tree. root))
+      {}
     void qc () const override;
     void saveText (ostream &os) const override
       { const ONumber on (os, dissimDecimals, true);
@@ -1762,7 +1765,7 @@ public:
   Location location;
 
 
-  struct Leaf2dissim
+  struct Leaf2dissim : Root
   {
     // Input
     const Leaf* leaf {nullptr};
@@ -1788,6 +1791,7 @@ public:
       : leaf (leaf_arg)
       {}
     Leaf2dissim () = default;
+    void qc () const final;
       
     Real getDelta () const
       { return dissim - dist_hat; }
@@ -1826,6 +1830,7 @@ public:
            bool init)
     : Named (name_arg)
     , tree (tree_arg)
+    , location (tree_arg)
     { process (init, dissimFName, leafFName, requestFName); }
   NewLeaf (const DTNode* dtNode,
            size_t q_max,
@@ -1835,6 +1840,9 @@ public:
     // Invokes: optimize()
     // Time: O(n + p log(n) / n)
     // Cumulative time for all DTNode's: O(n log(n) + p log(n)) = O(p log(n))
+  NewLeaf (const DistTree &tree_arg,
+           Vector<NewLeaf::Leaf2dissim> &&leaf2dissims_arg);
+    // For rerooting
 private:
   void process (bool init,
                 const string &dissimFName,
