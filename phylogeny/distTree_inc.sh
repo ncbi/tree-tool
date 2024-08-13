@@ -127,57 +127,27 @@ $THIS/distTree_inc_tree1_quality.sh $INC
 
 
 if [ -e $INC/phen ]; then
-	DATE=`date +%Y%m%d`
-
 	LARGE=0
 	if [ -e $INC/large ]; then
 	  LARGE=1
 	fi
 
-	super_section "Root and quality of whole tree"
-	$THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 1 qual.raw > $INC/hist/tree_quality_phen.$VER 
-	cat $INC/hist/tree_quality_phen.$VER 
-	OLD_ROOT=`grep '^Old root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^Old root: //1'`
-	NEW_ROOT=`grep '^New root: ' $INC/hist/tree_quality_phen.$VER | sed 's/^New root: //1'`
-
-	section "Setting root and sorting"
-  if [ ! $NEW_ROOT ]; then
-    NEW_ROOT=$OLD_ROOT
-  fi
-  # -noqual must be absent to compute quality data after reroot()
-	$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree tree.$DATE > /dev/null
-	
-	super_section "Names"
-	$THIS/tree2names.sh tree.$DATE $INC/phen $LARGE > $INC/hist/tree2names.$VER
-
+  DATE=$( date +%Y%m%d )
+  OUT_TREE=tree.$DATE
+  
+  $THIS/distTree_release.sh $INC/tree $INC/phen $LARGE 1 $OUT_TREE $RELDIR
+  
   if [ "$GOOD" ]; then
   	super_section "Quality of good quality tree"
   	$THIS/tree_quality_phen.sh $INC/tree $GOOD $INC/phen $LARGE 1 "" > $INC/hist/tree_quality_phen-good.$VER 
   	cat $INC/hist/tree_quality_phen-good.$VER 
   fi
 
-
   if [ -n "$RELDIR" ]; then
-    super_section "Release"
-    if [ ! -e $RELDIR ]; then
-      error "$RELDIR does not exist"
-    fi
-    set +o errexit
-    RELNUM=`ls $RELDIR | grep -v '[^0-9]' | sort -n -r | head -1`
-    set -o errexit
-    if [ -z "$RELNUM" ]; then
-      RELNUM=0
-    fi
-    RELNUM=$(( $RELNUM + 1 ))
-    echo "Release: $RELNUM"
-
-    mkdir $RELDIR/$RELNUM
-    mv disagreement_objects disagreement_nodes.txt disagreement_nodes gain_nodes qual tree.$DATE qual.raw leaf_errors.dm.gz arc_existence.dm.gz $RELDIR/$RELNUM/
+    mv leaf_errors.dm.gz arc_existence.dm.gz $RELDIR/$RELNUM/
     
-    rm -f $RELDIR/latest
-    ln -s $PWD/$RELDIR/$RELNUM $RELDIR/latest
     rm -f $INC/tree.released
-    ln -s $PWD/$RELDIR/$RELNUM/tree.$DATE $INC/tree.released
+    ln -s $PWD/$RELDIR/$RELNUM/$OUT_TREE $INC/tree.released
   fi
 fi
 
