@@ -101,9 +101,10 @@ if [ -d $DATA/inc.ITS ]; then
   
   section "distTree_new"
   $THIS/distTree_new -qc $DATA/inc.ITS/  -variance linExp
-  diff $DATA/inc.ITS/leaf    $DATA/inc.ITS/leaf.expected
-  diff $DATA/inc.ITS/request $DATA/inc.ITS/request.expected
-  rm $DATA/inc.ITS/leaf $DATA/inc.ITS/request
+  diff $DATA/inc.ITS/search/NR_073289.1/leaf    $DATA/inc.ITS/leaf.expected
+  diff $DATA/inc.ITS/search/NR_073289.1/request $DATA/inc.ITS/request.expected
+  rm $DATA/inc.ITS/search/NR_073289.1/leaf
+  rm $DATA/inc.ITS/search/NR_073289.1/request
 fi
 
 section "Saccharomyces hybrids"
