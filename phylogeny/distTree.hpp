@@ -468,7 +468,10 @@ public:
     // Time: O(log(n))
   void setErrorDensity (Real absCriterion_ave);
     // Output: errorDensity
-    // Time: O(|pathDissimNums|)
+    // Time: O(|pathDissimNums|)    
+  void copySubtree (Steiner &to,
+                    Real lenRatio) const;
+    // &to.getDistTree() != &getDistTree()
 private:
   void saveFeatureTree (ostream &os,
                         bool withTime,
@@ -693,9 +696,7 @@ public:
 
 
 
-
 typedef  Pair<const Leaf*>  LeafPair;
-
 
 
 
@@ -1253,7 +1254,6 @@ private:
     // Return: a child of parent has been loaded
     // Output: topology, DTNode::len, Leaf::discernible
     // Update: lineNum
-  void setName2leaf ();
   size_t getPathDissimNums_size () const
     { return 10 * (size_t) log (name2leaf. size () + 1); }  // PAR
   void loadDissimDs (const string &dissimFName,
@@ -1338,6 +1338,7 @@ public:
 	  // Invokes: getIndiscernibles()
 
 
+  void setName2leaf ();
   void deleteLeaf (TreeNode* leaf,
                    bool deleteTransientAncestor) final;
     // Requires: !optimizable()

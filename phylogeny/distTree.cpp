@@ -156,7 +156,7 @@ Triangle::Triangle (const Leaf* child_arg,
   parents [1]. leaf = parent2;
   parents [0]. dissim = parent1_dissim;
   parents [1]. dissim = parent2_dissim;
-  if (parents [0]. leaf->name > parents [1]. leaf->name)
+  if (parents [0]. leaf->getName () > parents [1]. leaf->getName ())
     swap (parents [0], parents [1]);
 }
 
@@ -187,7 +187,7 @@ void Triangle::qc () const
                )
             );
   QC_ASSERT (parents [0]. leaf->getDiscernible () != parents [1]. leaf->getDiscernible ());
-  QC_ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
+  QC_ASSERT (parents [0]. leaf->getName () < parents [1]. leaf->getName ());
   QC_ASSERT (hybridness >= DistTree_sp::hybridness_min);
 }
 
@@ -198,10 +198,10 @@ void Triangle::print (ostream &os) const
   const ONumber on (os, 3, false);  // PAR
   const Parent& p1 = parents [0];
   const Parent& p2 = parents [1];
-  os         << child->name 
+  os         << child->getName ()
      << '\t' << hybridness 
-     << '\t' << p1. leaf->name 
-     << '\t' << p2. leaf->name 
+     << '\t' << p1. leaf->getName ()
+     << '\t' << p2. leaf->getName ()
      << '\t' << p1. dissim 
      << '\t' << p2. dissim 
      << '\t' << child_hybrid 
@@ -216,9 +216,9 @@ void Triangle::print (ostream &os) const
 
 bool Triangle::operator< (const Triangle &other) const
 { 
-  LESS_PART (*this, other, child->name);
-  LESS_PART (*this, other, parents [0]. leaf->name);
-  LESS_PART (*this, other, parents [1]. leaf->name);
+  LESS_PART (*this, other, child->getName ());
+  LESS_PART (*this, other, parents [0]. leaf->getName ());
+  LESS_PART (*this, other, parents [1]. leaf->getName ());
   LESS_PART (*this, other, dissimType);
   return false;
 }
@@ -229,7 +229,7 @@ void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
 {
   if (! qc_on)
     return;
-  #define QC_MATCH_HYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << (leaf)->name << endl; print (cout); ERROR; } 
+  #define QC_MATCH_HYBRIDS(leaf,isHybrid)  if ((isHybrid) != hybrids. containsFast (leaf)) { cout << (leaf)->getName () << endl; print (cout); ERROR; } 
   QC_MATCH_HYBRIDS (child, child_hybrid);
   QC_MATCH_HYBRIDS (parents [0]. leaf, parents [0]. hybrid);
   QC_MATCH_HYBRIDS (parents [1]. leaf, parents [1]. hybrid);
@@ -292,7 +292,7 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
 {
   for (const bool i : {false, true})
     ASSERT (parents [i]. leaf);
-  ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
+  ASSERT (parents [0]. leaf->getName () < parents [1]. leaf->getName ());
   ASSERT (parentsDissim >= 0.0);
   ASSERT (DistTree_sp::hybridness_min > 1.0);
   ASSERT (triangles. empty ());
@@ -498,7 +498,7 @@ void TriangleParentPair::qc () const
 
   for (const bool i : {false, true})  
     QC_ASSERT (parents [i]. leaf);
-  QC_ASSERT (parents [0]. leaf->name < parents [1]. leaf->name);
+  QC_ASSERT (parents [0]. leaf->getName () < parents [1]. leaf->getName ());
   QC_ASSERT (parentsDissim > 0.0);
   
   if (triangles. empty ())
@@ -537,9 +537,9 @@ void TriangleParentPair::print (ostream &os) const
   const ONumber on (os, 2, false);  // PAR
   const Parent& p1 = parents [0];
   const Parent& p2 = parents [1];
-  os         << getBest (). child->name 
-     << '\t' << p1. leaf->name 
-     << '\t' << p2. leaf->name 
+  os         << getBest (). child->getName ()
+     << '\t' << p1. leaf->getName ()
+     << '\t' << p2. leaf->getName ()
      << '\t' << triangles. size () 
      << '\t' << p1. classSize 
      << '\t' << p2. classSize
@@ -569,8 +569,8 @@ bool TriangleParentPair::compareHybridness (const TriangleParentPair &tpp1,
                                             const TriangleParentPair &tpp2)
 { 
   LESS_PART (tpp2, tpp1, hybridness_ave); 
-  LESS_PART (tpp1, tpp2, parents [0]. leaf->name);
-  LESS_PART (tpp1, tpp2, parents [1]. leaf->name);
+  LESS_PART (tpp1, tpp2, parents [0]. leaf->getName ());
+  LESS_PART (tpp1, tpp2, parents [1]. leaf->getName ());
   return false;
 }
 
@@ -978,6 +978,45 @@ void DTNode::setErrorDensity (Real absCriterion_ave)
 
 
 
+void DTNode::copySubtree (Steiner &to,
+                          Real len_coeff) const
+{
+  ASSERT (& to. getDistTree() != & getDistTree());
+  ASSERT (len_coeff > 0.0);
+  ASSERT (DM_sp::finite (len_coeff));
+  ASSERT (asSteiner ());
+  ASSERT (! arcs [false]. empty ());
+  
+  DistTree& tree_to = var_cast (to. getDistTree ());
+  
+  for (const DiGraph::Arc* arc : arcs [false])
+  {
+    ASSERT (arc);
+    const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+    ASSERT (child);
+    const Real len_to = child->len * len_coeff;
+    // child_to
+    DTNode* child_to = nullptr;
+    if (const Leaf* leaf = child->asLeaf ())
+    {
+      auto leaf_to = new Leaf (tree_to, & to, len_to, leaf->getName ());
+      leaf_to->normCriterion = leaf->normCriterion;
+      child_to = leaf_to;
+    }
+    else
+    {
+      auto steiner_to = new Steiner (tree_to, & to, len_to);
+      child->copySubtree (*steiner_to, len_coeff);
+      child_to = steiner_to;
+    }      
+    ASSERT (child_to);
+    child_to->errorDensity = child->errorDensity;
+    // child->maxDeformationDissimNum ??
+  }  
+}
+
+
+
 VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
                                               size_t depth_max,
                                               bool subtractDissims,
@@ -1098,7 +1137,6 @@ void DTNode::ClosestLeaf::qc () const
 
 
 // Steiner
-
 
 Steiner::Steiner (DistTree &tree,
                   Steiner* parent_arg,
@@ -4206,11 +4244,11 @@ bool DistTree::loadLines (const StringVector &lines,
 
 void DistTree::setName2leaf ()
 {
-  ASSERT (name2leaf. empty ());
+  name2leaf. clear ();
   name2leaf. rehash (nodes. size ());
   for (const DiGraph::Node* node : nodes)
     if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
-      name2leaf [leaf->name] = leaf;
+      name2leaf [leaf->getName ()] = leaf;
 }
 
 

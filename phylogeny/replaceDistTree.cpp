@@ -103,7 +103,7 @@ struct ThisApplication : Application
     part. qc ();     
     cout << "# Objects in part tree: " << part. name2leaf. size () << endl;
       
-    Set<const DTNode*> common;  // Node's of whole
+    Set<const Leaf*> common;  // Leaf's of whole
     for (const auto& it : whole. name2leaf)
       if (contains (part. name2leaf, it. first))
         common << it. second;
@@ -141,7 +141,8 @@ struct ThisApplication : Application
           if (children. empty ())
           {
             ASSERT (parent->leaves == 1);
-            if (! common. contains (parent))
+            ASSERT (parent->asLeaf ());
+            if (! common. contains (parent->asLeaf ()))
               good = false;
           }
           else
@@ -182,6 +183,8 @@ struct ThisApplication : Application
       
     const DTNode* root = roots. front ();
     ASSERT (root);
+    ASSERT (& root->getDistTree () == & whole);
+    ASSERT (root->asSteiner ());
     
     const double wholeLen =       root->getSubtreeLength ();
     const double partLen  = part. root->getSubtreeLength ();
@@ -191,59 +194,50 @@ struct ThisApplication : Application
     QC_ASSERT (ratio > 0.0);
     cout << "Length ratio: " << ratio << endl;
   
+  
+    // part
     Vector<NewLeaf::Leaf2dissim> leaf2dissims;  leaf2dissims. reserve (common. size ());
     {  
       Tree::LcaBuffer buf;
-      for (const DTNode* node : common)
+      for (const Leaf* leaf : common)
       {
-        ASSERT (node);
+        ASSERT (leaf);
         const Tree::TreeNode* lca = nullptr;
-        VectorPtr<Tree::TreeNode>& path = Tree::getPath (root, node, root, lca, buf);
+        VectorPtr<Tree::TreeNode>& path = Tree::getPath (root, leaf, root, lca, buf);
         ASSERT (lca == root);
         const Real dissim = DistTree::path2prediction (path);
         ASSERT (dissim >= 0.0);
         ASSERT (DM_sp::finite (dissim));
-        leaf2dissims << NewLeaf::Leaf2dissim (findPtr (part. name2leaf, node->getName ()), dissim / ratio, NaN);
+        leaf2dissims << NewLeaf::Leaf2dissim (findPtr (part. name2leaf, leaf->getName ()), dissim / ratio, NaN);
       }
     }    
     ASSERT (leaf2dissims. size () == common. size ());
     
-    NewLeaf nl (part, std::move (leaf2dissims));
+    const NewLeaf nl (part, std::move (leaf2dissims));
     ASSERT (leaf2dissims. empty ());
     nl. qc ();
     cout << nl. location << endl;
+    
+    part. reroot (var_cast (nl. location. anchor), nl. location. arcLen);
+      // nl.location.leafLen is not used
+
+
+    // whole    
+    whole. node2deformationPair. clear ();
+    ASSERT (part. root);
+    static_cast <const DTNode*> (part. root) -> copySubtree (* var_cast (root->asSteiner ()), ratio);
+    
+    for (const Leaf* leaf : common)
+      whole. removeLeaf (var_cast (leaf), false);
+
+    whole. setName2leaf ();
+  //whole. setDiscernibles ();  // Requires: optimizable()
+    
     
     {
       OFStream f (outFName);
       whole. saveText (f);
     }
-
-
-  #if 0
-    if (verbose ())
-    {
-      tree->printInput (cout);
-      cout << endl;
-    }
-    
-    if (name. empty ())
-    {
-      const string newDir (dataDir + "search/");
-      DirItemGenerator dig (1, newDir, false);  // PAR
-  	  string item;
-  	  while (dig. next (item))
-      {
-        const NewLeaf nl (*tree, newDir, item, init);
-        nl. qc ();
-      }
-    }
-    else
-    {
-      const NewLeaf nl (*tree, name, dissimFName, leafFName, requestFName, init);
-      nl. qc ();
-      nl. saveResult (closestFName, closest_num);
-    }
-  #endif
 	}
 };
 
