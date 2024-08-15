@@ -88,18 +88,11 @@ struct ThisApplication : Application
 		  throw runtime_error ("-variance_power must be positive");
       
 
-    if (verbose ())
-    {
-      DistTree::printParam (cout);
-      cout << endl;
-    }
-  
-
-    DistTree whole (wholeFName, noString, noString, noString);
+    DistTree whole (DissimParam (), wholeFName, noString, noString, noString);
     whole. qc ();     
     cout << "# Objects in whole tree: " << whole. name2leaf. size () << endl;
 
-    DistTree part (partFName, noString, noString, noString);
+    DistTree part (DissimParam (), partFName, noString, noString, noString);
     part. qc ();     
     cout << "# Objects in part tree: " << part. name2leaf. size () << endl;
       
@@ -111,70 +104,76 @@ struct ThisApplication : Application
     if (common. empty ())
       throw runtime_error ("No common objects");  // Output whole as the resulk ??
     
-    // DTNode::leaves
-    var_cast (whole. root) -> setLeaves ();
-    ASSERT (whole. root->leaves == whole. name2leaf. size ());
 
-    Vector<Set<const DTNode*>> leaves2nodes;  
-      // Index = DTNode::leaves - 1
-    leaves2nodes. resize (whole. name2leaf. size ());
-    for (const DiGraph::Node* node : whole. nodes)
-    {
-      const DTNode* dtNode = static_cast <const DTNode*> (node);
-      ASSERT (dtNode);
-      ASSERT (dtNode->leaves);
-      leaves2nodes [dtNode->leaves - 1] << dtNode;
-    }    
-    
     VectorPtr<DTNode> roots;
+    // --> graph.{hpp,cpp} ??
     {
-      // Bottom-up
-      for (Set<const DTNode*>& nodes : leaves2nodes)
+      // DTNode::leaves
+      var_cast (whole. root) -> setLeaves ();
+      ASSERT (whole. root->leaves == whole. name2leaf. size ());
+
+      Vector<Set<const DTNode*>> leaves2nodes;  
+        // Index = DTNode::leaves - 1
+      leaves2nodes. resize (whole. name2leaf. size ());
+      for (const DiGraph::Node* node : whole. nodes)
       {
-        VectorPtr<DTNode> bads; bads. reserve (nodes. size ());
-        for (const DTNode* parent : nodes)
+        const DTNode* dtNode = static_cast <const DTNode*> (node);
+        ASSERT (dtNode);
+        ASSERT (dtNode->leaves);
+        leaves2nodes [dtNode->leaves - 1] << dtNode;
+      }    
+      
+      {
+        // Bottom-up
+        for (Set<const DTNode*>& nodes : leaves2nodes)
         {
-          ASSERT (parent);
-          bool good = true;
-          const VectorPtr<DiGraph::Node> children (parent->getChildren ());
-            // Current roots of subtrees
-          if (children. empty ())
+          VectorPtr<DTNode> bads; bads. reserve (nodes. size ());
+          for (const DTNode* parent : nodes)
           {
-            ASSERT (parent->leaves == 1);
-            ASSERT (parent->asLeaf ());
-            if (! common. contains (parent->asLeaf ()))
-              good = false;
-          }
-          else
-            for (const DiGraph::Node* child_ : children)
+            ASSERT (parent);
+            bool good = true;
+            const VectorPtr<DiGraph::Node> children (parent->getChildren ());
+              // Current roots of subtrees
+            if (children. empty ())
             {
-              const DTNode* child = static_cast <const DTNode*> (child_);
-              ASSERT (child);
-              ASSERT (child->leaves < parent->leaves);
-              ASSERT (child->leaves);
-              if (! leaves2nodes [child->leaves - 1]. contains (child))
-              {
+              ASSERT (parent->leaves == 1);
+              ASSERT (parent->asLeaf ());
+              if (! common. contains (parent->asLeaf ()))
                 good = false;
-                break;
+            }
+            else
+              for (const DiGraph::Node* child_ : children)
+              {
+                const DTNode* child = static_cast <const DTNode*> (child_);
+                ASSERT (child);
+                ASSERT (child->leaves < parent->leaves);
+                ASSERT (child->leaves);
+                if (! leaves2nodes [child->leaves - 1]. contains (child))
+                {
+                  good = false;
+                  break;
+                }
               }
-            }
-          if (good)
-            for (const DiGraph::Node* child_ : children)
-            {
-              const DTNode* child = static_cast <const DTNode*> (child_);
-              EXEC_ASSERT (leaves2nodes [child->leaves - 1]. erase (child) == 1);
-            }
-          else
-            bads << parent;
+            if (good)
+              for (const DiGraph::Node* child_ : children)
+              {
+                const DTNode* child = static_cast <const DTNode*> (child_);
+                EXEC_ASSERT (leaves2nodes [child->leaves - 1]. erase (child) == 1);
+              }
+            else
+              bads << parent;
+          }
+          for (const DTNode* bad : bads)
+            EXEC_ASSERT (nodes. erase (bad) == 1);
         }
-        for (const DTNode* bad : bads)
-          EXEC_ASSERT (nodes. erase (bad) == 1);
-      }
-      for (const Set<const DTNode*>& nodes : leaves2nodes)
-        for (const DTNode* node : nodes)
-          roots << node;
-    }      
-    ASSERT (! roots. empty ());
+        for (const Set<const DTNode*>& nodes : leaves2nodes)
+          for (const DTNode* node : nodes)
+            roots << node;
+      }      
+      ASSERT (! roots. empty ());
+    }
+    
+    
     cout << "Roots:" << endl;
     for (const DTNode* node : roots)
       cout << node->getLcaName () << ": " << node->leaves << " objects" << endl;        
@@ -219,7 +218,7 @@ struct ThisApplication : Application
     cout << nl. location << endl;
     
     part. reroot (var_cast (nl. location. anchor), nl. location. arcLen);
-      // nl.location.leafLen is not used
+      // nl.location.leafLen is not used ??
 
 
     // whole    
