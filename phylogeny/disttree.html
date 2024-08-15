@@ -588,68 +588,60 @@ var node2pathName = function (nodeId)
 
 
 
-var node2printName = function (node, truncate, leavesNum)  
+var node2printName = function (node, truncate, leavesNumP)  
 {
-  // name 
-  {  
-    let leafName = '';
-    if (isLeaf (node))
+  let name = '';
+  if (isLeaf (node))
+  {
+    let fix = '';
+    switch (node.tax_confirmed)
     {
-      let fix = '';
-      switch (node.tax_confirmed)
-      {
-        case 0: fix = "[FIX of " + node.tax_name_submitted + "]"; break;
-        case 1: fix = "[OK]"; break;
-      }
-      if (node.bad_org_source)
-        fix = addS (fix, ' ', "[" + node.bad_org_source + "]");
-      fix = addS (fix, ' ', node.strain);
+      case 0: fix = "[FIX of " + node.tax_name_submitted + "]"; break;
+      case 1: fix = "[OK]"; break;
+    }
+    if (node.bad_org_source)
+      fix = addS (fix, ' ', "[" + node.bad_org_source + "]");
+    fix = addS (fix, ' ', node.strain);
 
-      let objName = node.obj_id;
-      if (node.obj_id_2)
-        objName += " (" + node.obj_id_2 + ")";
+    let objName = node.obj_id;
+    if (node.obj_id_2)
+      objName += " (" + node.obj_id_2 + ")";
 
-
-      let flags = '';
-      {
-        if (node.type)
-          flags = addS (flags, ' ', "[" + node.type + "]");
-        if (node.rs_acc_ver)
-          flags = addS (flags, ' ', "[REFSEQ]");
-          
-        if (node.outlier)
-          flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
-        else if (! node.in_tree)
-          flags = addS (flags, ' ', "[ADDED]");
-        
-        if (node.ani)
-          flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
-        if (node.removed)
-          flags = addS (flags, ' ', "[REMOVED]");
-        if (node.bad_source)
-          flags = addS (flags, ' ', "[" + node.bad_source + "]");
-      }
+    let flags = '';
+    {
+      if (node.type)
+        flags = addS (flags, ' ', "[" + node.type + "]");
+      if (node.rs_acc_ver)
+        flags = addS (flags, ' ', "[REFSEQ]");        
+      if (node.ani)
+        flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
+      if (node.outlier)
+        flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
+      if (! node.in_tree)
+        flags = addS (flags, ' ', "[ADDED]");
+      if (node.removed)
+        flags = addS (flags, ' ', "[REMOVED]");
+      if (node.bad_source)
+        flags = addS (flags, ' ', "[" + node.bad_source + "]");
+    }
       
-        
-      leafName = fix;
-      leafName = addS (leafName, ' | ', objName);
-      leafName = addS (leafName, ' | ', flags);
-      leafName = addS (leafName, ' | ', node.props);
-    }  
+    let leafName = fix;
+    leafName = addS (leafName, ' | ', objName);
+    leafName = addS (leafName, ' | ', flags);
+    leafName = addS (leafName, ' | ', node.props);
     
-    if (node.phylName)
-      name = node.phylName + sPref (" | ", leafName);
-    else
-      name = leafName;
-  }
+    name = addS (node.tax_name_curated || node.tax_name_submitted, " | ", leafName);
+  }  
+  else
+    name = node.phylName;
     
   if (node.comment)
     name += "  COMMENT: " + node.comment;
     
-  if (truncate)
+  if (name && truncate)
     name = name. substr (0, 100);  // PAR 
 
-  if (leavesNum && node.collapsed && node.leaves > 1)  
+  if (leavesNumP && node.collapsed && node.leaves > 1)  
     name += " (" + ifS (node.selectedLeaves && node.selectedLeaves < node.leaves, node.selectedLeaves + "/") + node.leaves + ")";  
   
   return prefixNodeId (node, name);
