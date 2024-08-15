@@ -130,7 +130,7 @@ inline bool sameReal (Real x, Real y, Real delta = epsilon)
 	}
 
 inline bool nullReal (Real x, Real delta = epsilon)
-  { return eqReal (x, 0, delta); } 
+  { return eqReal (x, 0.0, delta); } 
 
 inline bool lessReal (Real x, Real y, Real delta = epsilon)
   { return x < y && ! eqReal (x, y, delta); }
