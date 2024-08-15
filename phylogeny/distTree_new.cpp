@@ -116,20 +116,16 @@ Update: <incremental distance tree directory>/search/")
     QC_IMPLY (closest_num != 1, ! closestFName. empty ());
 
 
-    if (verbose ())
-    {
-      DistTree::printParam (cout);
-      cout << endl;
-    }
-
     unique_ptr<const DistTree> tree (isDirName (dataDir)
-                                       ? new DistTree (dataDir, noString, false, false, false)
-                                       : new DistTree (dataDir, noString, noString, noString)
+                                       ? new DistTree (DissimParam (), dataDir, noString, false, false, false)
+                                       : new DistTree (DissimParam (), dataDir, noString, noString, noString)
                                     );
     tree->qc ();     
 
     if (verbose ())
     {
+      tree->printParam (cout);
+      cout << endl;
       tree->printInput (cout);
       cout << endl;
     }

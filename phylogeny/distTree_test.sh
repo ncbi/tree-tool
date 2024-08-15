@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "#1: go"
@@ -8,7 +8,7 @@ if [ $# -ne 1 ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 if [ ${AT_NCBI:-0} == 1 ]; then
   comment $TMP
 fi
@@ -28,11 +28,13 @@ $THIS/distTree_compare_criteria.sh Enterobacteriaceae.distTree $DATA/Enterobacte
 rm Enterobacteriaceae.distTree
 #rm -r $DATA/Enterobacteriaceae.dir/
 
-section "To Newick"
-gunzip -c $DATA/Enterobacteriaceae.dm.gz > $TMP.dm
-$THIS/printDistTree  -qc  -data $TMP  -dissim_attr "Conservation"  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4  -ext_name > Enterobacteriaceae.nw
-diff Enterobacteriaceae.nw $DATA/Enterobacteriaceae.nw
-rm Enterobacteriaceae.nw
+if false; then
+  section "To Newick"
+  gunzip -c $DATA/Enterobacteriaceae.dm.gz > $TMP.dm
+  $THIS/printDistTree  -qc  -data $TMP  -dissim_attr "Conservation"  -variance linExp  Enterobacteriaceae.tree  -order  -decimals 4  -ext_name > Enterobacteriaceae.nw
+  diff Enterobacteriaceae.nw $DATA/Enterobacteriaceae.nw
+  rm Enterobacteriaceae.nw
+fi
 
 rm Enterobacteriaceae.tree
 

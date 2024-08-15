@@ -61,13 +61,37 @@ VarianceType varianceType = varianceType_none;
 Real variancePower = NaN;
 Real variance_min = 0.0;
 
-Real dissim_power = 1.0;
-Real dissim_coeff = 1.0;
-Real hybridness_min = 1.1;
-Real dissim_boundary = NaN;
 
 
 
+// DissimParam
+
+void DissimParam::qc () const 
+{
+  if (! qc_on)
+    return;
+    
+  Root::qc ();
+
+  QC_ASSERT (coeff > 0.0);
+  QC_ASSERT (hybridness_min >= 1.0);
+  QC_IMPLY (! isNan (boundary), boundary > 0.0);    
+}
+
+
+
+void DissimParam::transform (Real &dissim) const
+{
+  ASSERT (dissim >= 0.0);  
+  if (power != 1.0)
+    dissim = pow (dissim, power);
+  dissim *= coeff;     
+}
+
+
+
+
+//
 
 #define BAD_CRITERION(func)  \
   { \
@@ -77,16 +101,6 @@ Real dissim_boundary = NaN;
     PRINT (absCriterion_old); \
     PRINT (subDepth); \
   }
-
-
-
-void dissimTransform (Real &target)
-{
-  ASSERT (target >= 0.0);  
-  if (DistTree_sp::dissim_power != 1.0)
-    target = pow (target, DistTree_sp::dissim_power);
-  target *= DistTree_sp::dissim_coeff;     
-}
 
 
 
@@ -188,7 +202,7 @@ void Triangle::qc () const
             );
   QC_ASSERT (parents [0]. leaf->getDiscernible () != parents [1]. leaf->getDiscernible ());
   QC_ASSERT (parents [0]. leaf->getName () < parents [1]. leaf->getName ());
-  QC_ASSERT (hybridness >= DistTree_sp::hybridness_min);
+  QC_ASSERT (hybridness >= getHybridness_min ());
 }
 
 
@@ -225,6 +239,14 @@ bool Triangle::operator< (const Triangle &other) const
 
 
 
+Real Triangle::getHybridness_min () const
+{
+  ASSERT (child);
+  return child->getDistTree (). dissimParam. hybridness_min;
+}
+
+
+
 void Triangle::qcMatchHybrids (const VectorPtr<Leaf> &hybrids) const
 {
   if (! qc_on)
@@ -250,6 +272,12 @@ void addTriangle (Vector<Triangle> &triangles,
                   Real target12,
                   size_t dissimType)
 {
+  ASSERT (leaf1);
+  ASSERT (leaf2);
+  ASSERT (leaf3);
+  ASSERT (& leaf1->getDistTree () == & leaf2->getDistTree ());
+  ASSERT (& leaf1->getDistTree () == & leaf3->getDistTree ());
+  
   const Triangle tr1 ( leaf1
                      , target23
                      , leaf2
@@ -277,9 +305,9 @@ void addTriangle (Vector<Triangle> &triangles,
 #ifndef NDEBUG
   const size_t size_old = triangles. size ();
 #endif
-  if (tr1. hybridness >= DistTree_sp::hybridness_min)  triangles << tr1;
-  if (tr2. hybridness >= DistTree_sp::hybridness_min)  triangles << tr2;
-  if (tr3. hybridness >= DistTree_sp::hybridness_min)  triangles << tr3;
+  if (tr1. hybridness >= tr1. getHybridness_min ())  triangles << tr1;
+  if (tr2. hybridness >= tr2. getHybridness_min ())  triangles << tr2;
+  if (tr3. hybridness >= tr3. getHybridness_min ())  triangles << tr3;
   ASSERT (triangles. size () <= size_old + 1);
 }
 
@@ -294,7 +322,7 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
     ASSERT (parents [i]. leaf);
   ASSERT (parents [0]. leaf->getName () < parents [1]. leaf->getName ());
   ASSERT (parentsDissim >= 0.0);
-  ASSERT (DistTree_sp::hybridness_min > 1.0);
+  ASSERT (getDissimParam (). hybridness_min > 1.0);
   ASSERT (triangles. empty ());
 
   Vector<Neighbor> hybridParents;  hybridParents. reserve (parents [0]. leaf->pathDissimNums. size ());
@@ -341,7 +369,7 @@ void TriangleParentPair::setTriangles (const DistTree &tree)
 
 void TriangleParentPair::triangles2hybridness_ave ()
 {
-  hybridness_ave = DistTree_sp::hybridness_min;
+  hybridness_ave = getDissimParam (). hybridness_min;
   if (triangles. empty ())
     return;
 
@@ -349,7 +377,7 @@ void TriangleParentPair::triangles2hybridness_ave ()
   for (const Triangle& tr : triangles)
     hybridness_mv << tr. hybridness;
   hybridness_ave = hybridness_mv. getMean ();
-  ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
+  ASSERT (hybridness_ave >= getDissimParam (). hybridness_min);
 }
 
 
@@ -403,8 +431,8 @@ void TriangleParentPair::finish (const DistTree &tree,
   const Real all = child_classSize + (Real) parents [0]. classSize + (Real) parents [1]. classSize;
 
   for (const bool i : {false, true})  
-    if (   best->parents [! i]. dissim > DistTree_sp::dissim_boundary
-        && best->parents [  i]. dissim < DistTree_sp::dissim_boundary
+    if (   best->parents [! i]. dissim > getDissimParam (). boundary
+        && best->parents [  i]. dissim < getDissimParam (). boundary
        ) 
     {
       const Parent& p = parents [i];    
@@ -527,7 +555,7 @@ void TriangleParentPair::qc () const
   for (const bool i : {false, true})  
     QC_ASSERT (parents [i]. classSize);
 
-  QC_ASSERT (hybridness_ave >= DistTree_sp::hybridness_min);
+  QC_ASSERT (hybridness_ave >= getDissimParam (). hybridness_min);
 }
 
 
@@ -555,6 +583,13 @@ void TriangleParentPair::print (ostream &os) const
 
 
 
+const DissimParam& TriangleParentPair::getDissimParam () const
+{
+  ASSERT (parents [0]. leaf);
+  return parents [0]. leaf -> getDistTree (). dissimParam;
+}
+
+
 bool TriangleParentPair::operator< (const TriangleParentPair &other) const
 { 
   LESS_PART (*this, other, parents [0]. leaf);
@@ -576,6 +611,19 @@ bool TriangleParentPair::compareHybridness (const TriangleParentPair &tpp1,
 
 
 
+bool TriangleParentPair::dissimError () const  
+{ 
+  if (   getBest (). parent_dissim_ratio () < 0.25  // PAR
+	    && hybridness_ave < 1.25  // PAR
+	   )
+	  return true;
+	for (const bool i : {false, true})
+	  if (getDissimParam (). at_boundary (getBest (). parents [i]. dissim))
+		  return true; 
+  return false;
+}
+
+
 size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
                                                  const Leaf* child,
                                                  const Leaf* parent,
@@ -585,7 +633,7 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
   ASSERT (parent);
   ASSERT (child != parent);
   ASSERT (parentDissim > 0.0);
-  ASSERT (DistTree_sp::hybridness_min > 1.0);
+  ASSERT (getDissimParam (). hybridness_min > 1.0);
     
   Vector<Neighbor> hybridParents;  hybridParents. reserve (child->pathDissimNums. size ());
   for (const uint dissimNum : child->pathDissimNums)
@@ -616,7 +664,7 @@ size_t TriangleParentPair::child_parent2parents (const DistTree &tree,
     if (i == no_index)
       continue;
     const Real hybridness = dissim. target / (parentDissim + hybridParents [i]. target);
-    if (hybridness >= DistTree_sp::hybridness_min)  // otherParent's may be too diverse to be all hybrid
+    if (hybridness >= getDissimParam (). hybridness_min)  // otherParent's may be too diverse to be all hybrid
       n++;
   }
 
@@ -1652,7 +1700,7 @@ void Leaf::collapse (Leaf* other)
 
 void Leaf::addHybridTriangles (Vector<Triangle> &triangles) const
 {
-  ASSERT (DistTree_sp::hybridness_min > 1.0);
+  ASSERT (getDistTree (). dissimParam. hybridness_min > 1.0);
   ASSERT (graph);
   
   const Vector<Dissim>& dissims = getDistTree (). dissims;
@@ -3168,11 +3216,13 @@ const DTNode* Image::getOld2new (const DTNode* old,
 
 // DistTree
 
-DistTree::DistTree (const string &treeDirFName,
+DistTree::DistTree (const DissimParam &dissimParam_arg,
+	                  const string &treeDirFName,
                     const string &dissimFName,
                     const string &dissimAttrName,
 	                  const string &multAttrName)
-: rand (seed_global)
+: dissimParam (dissimParam_arg)
+, rand (seed_global)
 {
   // Initial tree topology
   if (isDirName (treeDirFName))
@@ -3204,10 +3254,12 @@ DistTree::DistTree (const string &treeDirFName,
 
 
 
-DistTree::DistTree (const string &dissimFName,
+DistTree::DistTree (const DissimParam &dissimParam_arg,
+	                  const string &dissimFName,
                     const string &dissimAttrName,
 	                  const string &multAttrName)
-: rand (seed_global)
+: dissimParam (dissimParam_arg)
+, rand (seed_global)
 {
   loadDissimDs (dissimFName, dissimAttrName, multAttrName);
 
@@ -3297,12 +3349,14 @@ void processOptimizeSmallSubgraph (OptimizeSmallSubgraph &oss)
 
 
 
-DistTree::DistTree (const string &dataDirName,
+DistTree::DistTree (const DissimParam &dissimParam_arg,
+	                  const string &dataDirName,
 	                  const string &treeFName,
                     bool loadNewLeaves,
                     bool loadDissim,
                     bool optimizeP)
-: rand (seed_global)
+: dissimParam (dissimParam_arg)
+, rand (seed_global)
 {
   ASSERT (! dataDirName. empty ());
   ASSERT (dataDirName. back () == '/');
@@ -3791,7 +3845,8 @@ DistTree::DistTree (Prob branchProb,
 DistTree::DistTree (Subgraph &subgraph,
                     Node2Node &newLeaves2boundary,
                     bool sparse)
-: subDepth (subgraph. tree. subDepth + 1)
+: dissimParam (subgraph. tree. dissimParam)
+, subDepth (subgraph. tree. subDepth + 1)
 , multFixed (true)
 , rand (seed_global)
 {
@@ -4952,7 +5007,7 @@ void DistTree::neighborJoin ()
           missing++;
           continue;  
         }
-        dissimTransform (leafPair. dissim);   
+        dissimParam. transform (leafPair. dissim);   
         leafPairs << leafPair;
       }
     }
@@ -5226,8 +5281,8 @@ bool DistTree::addDissim (Leaf* leaf1,
                           Real mult,
                           size_t type)
 {
-  ASSERT (DistTree_sp::dissim_power > 0.0);
-  ASSERT (DistTree_sp::dissim_coeff > 0.0);
+  ASSERT (dissimParam. power > 0.0);
+  ASSERT (dissimParam. coeff > 0.0);
 
   ASSERT (detachedLeaves. empty ());
 
@@ -5249,7 +5304,7 @@ bool DistTree::addDissim (Leaf* leaf1,
   ASSERT (mult >= 0.0);
 //ASSERT (mult < inf);
 
-  dissimTransform (target);  
+  dissimParam. transform (target);  
     
   if (type != no_index)
     target *= dissimTypes [type]. scaleCoeff;
@@ -5486,9 +5541,8 @@ void DistTree::qc () const
   QC_ASSERT (DistTree_sp::variance_min >= 0.0);
   QC_ASSERT (! isNan (DistTree_sp::variancePower) == (DistTree_sp::varianceType == varianceType_pow));
   QC_IMPLY (! isNan (DistTree_sp::variancePower), DistTree_sp::variancePower >= 0.0);
-  QC_ASSERT (DistTree_sp::hybridness_min >= 1.0);
-  QC_ASSERT (DistTree_sp::dissim_coeff > 0.0);
-  QC_IMPLY (! isNan (DistTree_sp::dissim_boundary), DistTree_sp::dissim_boundary > 0.0);
+    
+  dissimParam. qc ();
 
 
   QC_ASSERT (nodes. size () >= 2);
@@ -8695,7 +8749,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   ASSERT (! subDepth);
   ASSERT (optimizable ());
   ASSERT (dissimOutlierEValue_max > 0.0);
-  ASSERT (DistTree_sp::hybridness_min > 1.0);
+  ASSERT (dissimParam. hybridness_min > 1.0);
 
 
 //const Chronometer_OnePass cop ("findHybrids"); 
@@ -8703,7 +8757,7 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
   Vector<TriangleParentPair> triangleParentPairs;
 
   constexpr Real hybridness_min_init = 1.0;  // PAR   
-  ASSERT (DistTree_sp::hybridness_min > hybridness_min_init);
+  ASSERT (dissimParam. hybridness_min > hybridness_min_init);
 
   for (auto& it : name2leaf)
   {

@@ -96,11 +96,6 @@ extern VarianceType varianceType;
 extern Real variancePower;
 extern Real variance_min;
 
-extern Real dissim_power;
-extern Real dissim_coeff;  // Irrelevant if varianceType = varianceType_lin
-extern Real hybridness_min;
-extern Real dissim_boundary;
-
 
 inline VarianceType str2varianceType (const string &s)
   { size_t index = 0;
@@ -139,22 +134,61 @@ inline Real dist_max ()
       case varianceType_none:   x = inf; break;
       default:                  throw logic_error ("Unknown variance function");
     }  
-    return pow (x / dissim_coeff, 1.0 / dissim_power);
+    return x;
   }
   // Solution of: dist2mult(dist_max) = epsilon
   // dist < dist_max() <=> !nullReal(dist2mult(dist))
 
 
-void dissimTransform (Real &target);
-  // Update: target
 
-
-inline bool at_dissim_boundary (Real dissim)
-  { 
-    return    dissim <= dissim_boundary
-           && dissim / dissim_boundary >= 0.95;  // PAR  
+struct DissimParam : Root
+{  
+  // For transform()
+  Real power {1.0};
+  Real coeff {1.0};  
+    // Irrelevant if varianceType = varianceType_lin
+  // Hybridness
+  static constexpr Real hybridness_min_def {1.1};
+  Real hybridness_min {hybridness_min_def};
+    // >= 1.0
+  static constexpr Real boundary_def {NaN};
+  Real boundary {boundary_def};
+  
+  
+  DissimParam (Real power_arg,
+               Real coeff_arg,
+               Real hybridness_min_arg = hybridness_min_def,
+               Real boundary_arg = boundary_def)
+    : power (power_arg)
+    , coeff (coeff_arg)
+    , hybridness_min (hybridness_min_arg)
+    , boundary (boundary_arg)
+    {}
+  DissimParam () = default;
+  DissimParam (const DissimParam &other) = default;
+  void qc () const final;
+  void saveText (ostream &os) const final
+  { os << "Max. possible distance: " << pow (dist_max () / coeff, 1.0 / power) << endl;
+    if (power != 1.0)
+      os << "Dissimilarity power: " << power << endl;
+    if (coeff != 1.0)
+      os << "Dissimilarity coefficient: " << coeff << endl;
+    if (hybridness_min != 1.0)  
+      os << "Min. hybridness: " << hybridness_min << endl;
+    if (! isNan (boundary))
+      os << "Dissimilarity boundary (for hybrids): " << boundary << endl;
   }
-  // Being true should have a small probability <= choice of dissim_boundary
+
+
+  void transform (Real &dissim) const;
+    // Update: dissim = coeff * pow (dissim, power)
+  bool at_boundary (Real dissim) const
+    { return    dissim <= boundary
+             && dissim / boundary >= 0.95;  // PAR  
+    }
+    // Should have a small probability <= choice of boundary
+};
+
 
 
 constexpr static uint dissims_max {numeric_limits<uint>::max ()};
@@ -218,6 +252,7 @@ struct Triangle
              && dissimType        == other. dissimType;
     }
 	bool operator< (const Triangle &other) const;
+	Real getHybridness_min () const;
 	Real parentsDissim () const
 	  { return (parents [0]. dissim + parents [1]. dissim) * hybridness; }
 	  // Return: d(parent1,parent2)
@@ -310,6 +345,7 @@ public:
   static constexpr const char* format {"<child> <parent1> <parent2> <# children> <# parents 1> <# parents 2> <hybridness> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> <dissimilarity type>"};
 
 
+  const DissimParam& getDissimParam () const;
   bool operator== (const TriangleParentPair &other) const
     { return    parents [0]. leaf == other. parents [0]. leaf
              && parents [1]. leaf == other. parents [1]. leaf
@@ -323,16 +359,7 @@ public:
     	  return triangles [triangle_best_index]; 
     	throw logic_error ("TriangleParentPair::getBest()");
     }
-  bool dissimError () const  
-    { if (   getBest (). parent_dissim_ratio () < 0.25  // PAR
-    	    && hybridness_ave < 1.25  // PAR
-    	   )
-    	  return true;
-			for (const bool i : {false, true})
-			  if (at_dissim_boundary (getBest (). parents [i]. dissim))
-				  return true; 
-      return false;
-    }
+  bool dissimError () const;
   Vector<Triangle> getHybridTriangles () const
     { Vector<Triangle> vec;  vec. reserve (triangles. size ());
     	for (const Triangle& tr : triangles)
@@ -1126,6 +1153,7 @@ struct DistTree : Tree
   friend Image;
   friend DissimLine;
 
+  const DissimParam dissimParam;
   const uint subDepth {0};
     // > 0 => *this is a subgraph of a tree with subDepth - 1
   typedef  unordered_map<string/*Leaf::name*/,const Leaf*>  Name2leaf;
@@ -1183,17 +1211,20 @@ public:
   // Input: dissimFName: <dmSuff>-file without <dmSuf>, contains attributes dissimAttrName and multAttrName
   //                     may contain more objects than *this contains leaves
   //        dissimFName, dissimAttrName, multAttrName: all may be empty	  
-	DistTree (const string &treeDirFName,
+	DistTree (const DissimParam &dissimParam_arg,
+	          const string &treeDirFName,
 	          const string &dissimFName,
 	          const string &dissimAttrName,
 	          const string &multAttrName);
 	  // Input: treeDirFName: if directory name then contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
-	DistTree (const string &dissimFName,
+	DistTree (const DissimParam &dissimParam_arg,
+	          const string &dissimFName,
 	          const string &dissimAttrName,
 	          const string &multAttrName);
 	  // Invokes: loadDissimDs(), dissimDs2dissims(), neighborJoin()
-	DistTree (const string &dataDirName,
+	DistTree (const DissimParam &dissimParam_arg,
+	          const string &dataDirName,
 	          const string &treeFName,
             bool loadNewLeaves,
 	          bool loadDissim,
@@ -1361,24 +1392,16 @@ public:
     // Logical leaves
   void setGoodLeaves (const string &goodFName);
     // Output: Leaf::good
-  static void printParam (ostream &os) 
+  void printParam (ostream &os) const
     { os << "PARAMETERS:" << endl;
       os << "# Threads: " << threads_max << endl;
+      os << "Subgraph radius: " << areaRadius_std << endl;
       os << "Variance function: " << varianceTypeNames [varianceType] << endl;
       if (! isNan (variancePower))
         os << "Variance power: " << variancePower << endl;
       if (DistTree_sp::variance_min)
         os << "Min. variance: " << variance_min << endl;
-      os << "Max. possible distance: " << dist_max () << endl;
-      if (dissim_power != 1.0)
-        os << "Dissimilarity power: " << dissim_power << endl;
-      if (dissim_coeff != 1.0)
-        os << "Dissimilarity coefficient: " << dissim_coeff << endl;
-      if (hybridness_min != 1.0)  // always > 1.0
-        os << "Min. hybridness: " << hybridness_min << endl;
-      if (! isNan (dissim_boundary))
-        os << "Dissimilarity boundary (for hybrids): " << dissim_boundary << endl;
-      os << "Subgraph radius: " << areaRadius_std << endl;
+      dissimParam. saveText (os);
     }
 	void printInput (ostream &os) const;
 	bool optimizable () const  

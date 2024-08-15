@@ -57,10 +57,13 @@ struct ThisApplication : Application
 	  version = VERSION;
     // Input
 	  addPositional ("input_tree", "Tree file");
+	#if 0
 	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
 	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file");
 	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
 	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
+	#endif
+	  
 	  addKey ("name_match", "File with lines: <name_old> <tab> <name_new>, to replace leaf names");
 	  addKey ("name_extend", "File with lines: <name[_new]> <tab> <name_extension>, to extend leaf names");
 	  addKey ("clade_name", "File with lines: {<name>|<name1>:<name2>} <tab> <clade name>");
@@ -77,10 +80,12 @@ struct ThisApplication : Application
 	void body () const final
   {
 	  const string input_tree     = getArg ("input_tree");
+	#if 0
 	  const string dataFName      = getArg ("data");
 	  const string dissimAttrName = getArg ("dissim_attr");
 	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
 	               variancePower  = str2real (getArg ("variance_power"));    // Global
+	#endif
 	  const string name_match     = getArg ("name_match");
 	  const string name_extend    = getArg ("name_extend");
 	  const string clade_name     = getArg ("clade_name");
@@ -92,6 +97,7 @@ struct ThisApplication : Application
 
     if (input_tree. empty ())
       throw runtime_error ("-input_tree must be present");
+  #if 0
   //if (dataFName. empty () != dissimAttrName. empty ())
     //throw runtime_error ("The both data file and the dissimilarity attribute must be present or absent");
 		if (! isNan (variancePower) && varianceType != varianceType_pow)
@@ -100,6 +106,7 @@ struct ThisApplication : Application
 		  throw runtime_error ("-variance_power is needed by -variance pow");
 		if (variancePower <= 0.0)
 		  throw runtime_error ("-variance_power must be positive");
+  #endif
 		if (! clade_name. empty () && format == "dm")
 		  throw runtime_error ("-clade_name does not work with the format " + strQuote (format));
 		if (! root_name. empty () && format == "dm")
@@ -108,12 +115,18 @@ struct ThisApplication : Application
 		//throw runtime_error ("-name_match and -name_extend cannot be used together");
 		      
 
-    DistTree tree (input_tree, dataFName, dissimAttrName, noString);
+  #if 1
+    DistTree tree (DissimParam (), input_tree, noString, noString, noString);
+  #else
+    DistTree tree (DissimParam (), input_tree, dataFName, dissimAttrName, noString);
+  #endif
     tree. qc ();    
     if (order)
       tree. sort ();
+  #if 0
     if (! dataFName. empty ())
       tree. setLeafNormCriterion ();
+  #endif
     tree. qc ();    
     
     if (! name_match. empty ())

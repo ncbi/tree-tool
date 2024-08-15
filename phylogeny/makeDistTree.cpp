@@ -104,11 +104,11 @@ struct ThisApplication : Application
 	  addKey ("delete_deformation_outliers", "Delete outliers by " + deformationOutlier_definition + " and save them in the indicated file");  
 	  addKey ("deformation_outlier_num_max", "Max. number of outliers ordered by " + deformationOutlier_definition + " descending to delete; 0 - all", "0");
 
-	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (hybridness_min));
+	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (DissimParam::hybridness_min_def));
 	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
 	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
 	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
-	  addKey ("dissim_boundary", "Point of discontinuity in the dissimilarity distribution (= genospecies barrier)", toString (dissim_boundary));
+	  addKey ("dissim_boundary", "Point of discontinuity in the dissimilarity distribution (= genospecies barrier)", toString (DissimParam::boundary_def));
 
 	  addFlag ("reroot", "Re-root");
 	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
@@ -174,7 +174,7 @@ struct ThisApplication : Application
     {
     	tr. print (hybridTrianglesOs);
     	tr. qc ();
-			ASSERT (tr. hybridness >= hybridness_min);
+			ASSERT (tr. hybridness >= tree. dissimParam. hybridness_min);
 			hybrids << tr. getHybrids (true);
     }
     hybrids. sort ();
@@ -224,8 +224,8 @@ struct ThisApplication : Application
 	  const string dataFName           = getArg ("data");
 	  const string dissimAttrName      = getArg ("dissim_attr");
 	  const string multAttrName        = getArg ("weight_attr");
-	               dissim_power        = str2real (getArg ("dissim_power"));      // Global
-	               dissim_coeff        = str2real (getArg ("dissim_coeff"));      // Global
+	  const Real   dissim_power        = str2real (getArg ("dissim_power"));      
+	  const Real   dissim_coeff        = str2real (getArg ("dissim_coeff"));      
 	               varianceType        = str2varianceType (getArg ("variance"));  // Global
 	               variancePower       = str2real (getArg ("variance_power"));    // Global
 	               variance_min        = str2real (getArg ("variance_min"));      // Global
@@ -265,8 +265,8 @@ struct ThisApplication : Application
 		const string delete_hybrids      = getArg ("delete_hybrids");
 	//const bool   delete_all_hybrids  = getFlag ("delete_all_hybrids");
 		const string hybrid_parent_pairs = getArg ("hybrid_parent_pairs");
-                 dissim_boundary     = str2real (getArg ("dissim_boundary"));
-		             hybridness_min      = str2real (getArg ("hybridness_min"));
+    const Real   dissim_boundary     = str2real (getArg ("dissim_boundary"));
+		const Real   hybridness_min      = str2real (getArg ("hybridness_min"));
 		
 		const bool   noqual              = getFlag ("noqual");
 
@@ -387,23 +387,23 @@ struct ThisApplication : Application
       throw runtime_error ("-output_data requires dissimilarities");    	
 
 
-
-    DistTree::printParam (cout);
-    cout << "Root: " << (root_topological ? "topological" : "by length") << endl;
-    cout << endl;
-
+    const DissimParam dissimParam (dissim_power, dissim_coeff, hybridness_min, dissim_boundary);
+    dissimParam. qc ();
 
     unique_ptr<DistTree> tree;
     {
       const Chronometer_OnePass cop ("Initial topology");  
       tree. reset (isDirName (dataFName)
-                     ? new DistTree (dataFName, input_tree, true, true, new_only)
+                     ? new DistTree (dissimParam, dataFName, input_tree, true, true, new_only)
                      : input_tree. empty ()
-                       ? new DistTree (            dataFName, dissimAttrName, multAttrName)
-                       : new DistTree (input_tree, dataFName, dissimAttrName, multAttrName)
+                       ? new DistTree (dissimParam,             dataFName, dissimAttrName, multAttrName)
+                       : new DistTree (dissimParam, input_tree, dataFName, dissimAttrName, multAttrName)
                   );
     }
-    ASSERT (tree. get ());
+    ASSERT (tree);
+    tree->printParam (cout);
+    cout << "Root: " << (root_topological ? "topological" : "by length") << endl;
+    cout << endl;
     if (tree->getDiscernibles (). size () == 1)
     {
       cout << "One discernible object" << endl;

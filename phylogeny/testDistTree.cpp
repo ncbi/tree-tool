@@ -82,13 +82,15 @@ struct ThisApplication : Application
 		if (variancePower <= 0.0)
 		  throw runtime_error ("-variance_power must be positive");
     
+   
+    const DissimParam dissimParam; 
 
     unique_ptr<DistTree> tree;
     tree. reset (isDirName (dataFName)
-                   ? new DistTree (dataFName, input_tree, true, true, false)
+                   ? new DistTree (dissimParam, dataFName, input_tree, true, true, false)
                    : input_tree. empty ()
-                     ? new DistTree (            dataFName, dissimAttrName, noString)
-                     : new DistTree (input_tree, dataFName, dissimAttrName, noString)
+                     ? new DistTree (dissimParam,             dataFName, dissimAttrName, noString)
+                     : new DistTree (dissimParam, input_tree, dataFName, dissimAttrName, noString)
                 );
   //tree->multFixed = true;
   //tree->setDissimMult (false);  

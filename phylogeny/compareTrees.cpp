@@ -124,15 +124,6 @@ void setNode2leaves (const Tree::TreeNode* node)
 
 
 
-#if 0
-inline bool even (size_t x)
-{
-  return x % 2 == 0;
-}
-#endif
-  
-  
-  
 void adjustNode2leaves (const Tree &tree,
                         const Leaves &allLeaves)
 // Update: node2leaves
@@ -243,7 +234,7 @@ struct ThisApplication : Application
 		       
     unique_ptr<Tree> tree1;
     if (treeType == "dist")
-      tree1. reset (new DistTree (input_tree1, noString, noString, noString));
+      tree1. reset (new DistTree (DissimParam (), input_tree1, noString, noString, noString));
     else
       tree1. reset (new FeatureTree (input_tree1, noString, false, noString, false, true, false));
     if (verbose ())
@@ -251,7 +242,7 @@ struct ThisApplication : Application
       
     unique_ptr<Tree> tree2;
     if (treeType == "dist")
-      tree2. reset (new DistTree (input_tree2, noString, noString, noString));
+      tree2. reset (new DistTree (DissimParam (), input_tree2, noString, noString, noString));
     else
       tree2. reset (new FeatureTree (input_tree2, noString, false, noString, false, true, false));
     if (verbose ())

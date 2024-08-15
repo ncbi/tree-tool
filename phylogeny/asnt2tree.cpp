@@ -309,6 +309,8 @@ void Asn::printFeatures (ostream &os) const
 
 
 
+//
+
 struct TreeAsn : Asn
 {
   DistTree& tree;

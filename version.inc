@@ -1,6 +1,7 @@
-#define VERSION "1.9.8"
+#define VERSION "1.9.9"
 
 
+// 1.9.9  08/13/2024  DissimParam
 // 1.9.8  10/28/2022  -std=gnu++17
 // 1.9.7  07/06/2022  there may be 1 indiscernible object
 // 1.9.6  10/18/2021  distTree_inc_refresh_dissim.sh
