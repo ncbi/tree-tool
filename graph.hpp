@@ -658,6 +658,9 @@ struct Tree : DiGraph
     // Output: path: sequential arcs on the path from n1 to n2 or reversed, distinct, !nullptr
     //         lca: !nullptr
     // Requires: ca is the common ancestor of n1 and n2
+  VectorPtr<TreeNode> leaves2lcas (const Set<const TreeNode*> &leaves) const;
+    // Opposite to TreeNode::getLeaves()
+    // Invokes: setLeaves()
 
   void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5

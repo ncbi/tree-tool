@@ -1844,6 +1844,97 @@ VectorPtr<Tree::TreeNode>& Tree::getPath (const TreeNode* n1,
 
 
 
+VectorPtr<Tree::TreeNode> Tree::leaves2lcas (const Set<const TreeNode*> &leaves) const
+{
+  ASSERT (root);
+  
+  VectorPtr<TreeNode> lcas;
+  
+  if (leaves. empty ())
+    return lcas;
+    
+  if (qc_on)
+    for (const TreeNode* leaf : leaves)
+    {
+      QC_ASSERT (leaf);
+      QC_ASSERT (leaf->isLeaf ());
+      QC_ASSERT (& leaf->getTree () == this);
+    }
+
+  // TreeNode::leaves
+  var_cast (root) -> setLeaves ();
+
+  Vector<Set<const TreeNode*>> leaves2nodes;  
+    // Index = TreeNode::leaves - 1
+  leaves2nodes. resize (root->leaves);
+  for (const Node* node : nodes)
+  {
+    const TreeNode* treeNode = static_cast <const TreeNode*> (node);
+    ASSERT (treeNode);
+    ASSERT (treeNode->leaves);
+    leaves2nodes [treeNode->leaves - 1] << treeNode;
+  }    
+    
+  
+  // leaves2nodes: erase()
+  // Bottom-up
+  for (Set<const TreeNode*>& treeNodes : leaves2nodes)
+  {
+    VectorPtr<TreeNode> bads;  bads. reserve (treeNodes. size ());
+    for (const TreeNode* parent : treeNodes)
+    {
+      ASSERT (parent);
+      
+      bool good = true;
+      const VectorPtr<Node> children (parent->getChildren ());
+        // Current lcas of subtrees
+      if (children. empty ())
+      {
+        ASSERT (parent->leaves == 1);
+        ASSERT (parent->isLeaf ());
+        if (! leaves. contains (parent))
+          good = false;
+      }
+      else
+        for (const Node* child_ : children)
+        {
+          const TreeNode* child = static_cast <const TreeNode*> (child_);
+          ASSERT (child);
+          ASSERT (child->leaves < parent->leaves);
+          ASSERT (child->leaves);
+          if (! leaves2nodes [child->leaves - 1]. contains (child))
+          {
+            good = false;
+            break;
+          }
+        }
+        
+      if (good)
+        for (const Node* child_ : children)
+        {
+          const TreeNode* child = static_cast <const TreeNode*> (child_);
+          EXEC_ASSERT (leaves2nodes [child->leaves - 1]. erase (child) == 1);
+        }
+      else
+        bads << parent;
+    }
+    for (const TreeNode* bad : bads)
+      EXEC_ASSERT (treeNodes. erase (bad) == 1);
+  }
+  
+  
+  // lcas
+  ASSERT (lcas. empty ());
+  for (const Set<const TreeNode*>& treeNodes : leaves2nodes)
+    for (const TreeNode* node : treeNodes)
+      lcas << node;
+  ASSERT (! lcas. empty ());
+  
+  return lcas;
+}
+
+
+
 void Tree::setFrequentChild (double rareProb)
 { 
   if (! root)
