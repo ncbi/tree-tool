@@ -296,6 +296,7 @@ public:
 
 
 struct Tree : DiGraph
+// m = n - 1
 // Parent <=> out = true
 {
 	struct TreeNode : DiGraph::Node
@@ -660,8 +661,9 @@ struct Tree : DiGraph
     // Requires: ca is the common ancestor of n1 and n2
   VectorPtr<TreeNode> leaves2lcas (const Set<const TreeNode*> &leaves) const;
     // Opposite to TreeNode::getLeaves()
+    // Return: size() = 1 => Return.front().getLeaves().contains(leaves)
     // Invokes: setLeaves()
-
+    // Time: n log(n)
   void setFrequentChild (double rareProb);
     // Input: 0 <= rareProb < 0.5
     // Output: TreeNode::frequentChild: statistically consistent estimate
