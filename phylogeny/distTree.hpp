@@ -496,9 +496,6 @@ public:
   void setErrorDensity (Real absCriterion_ave);
     // Output: errorDensity
     // Time: O(|pathDissimNums|)    
-  void copySubtree (Steiner &to,
-                    Real lenRatio) const;
-    // &to.getDistTree() != &getDistTree()
 private:
   void saveFeatureTree (ostream &os,
                         bool withTime,
@@ -602,7 +599,13 @@ public:
     // Invokes: Leaf->DisjointCluster
   Vector<ClosestLeaf> findGenogroups (Real genogroup_dist_max) final;
     // Time: O(n log(n))+
-
+  void copySubtree (Steiner &to,
+                    Real lenRatio) const;
+    // Requires: &to.getDistTree() != &getDistTree()
+  void replaceSubtree (const DistTree &from);
+    // Requires: &from != &getDistTree()
+    //           *this and from have the same Leaf::name's
+    //           after setLeaves()
 private:
   static int arcExistence_compare (const void* a, 
                                    const void* b);
@@ -1772,6 +1775,7 @@ public:
     explicit Location (const DistTree &tree)
       : anchor (static_cast <const DTNode*> (tree. root))
       {}
+    Location () = default;
     void qc () const override;
     void saveText (ostream &os) const override
       { const ONumber on (os, dissimDecimals, true);

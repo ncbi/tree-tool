@@ -1026,45 +1026,6 @@ void DTNode::setErrorDensity (Real absCriterion_ave)
 
 
 
-void DTNode::copySubtree (Steiner &to,
-                          Real len_coeff) const
-{
-  ASSERT (& to. getDistTree() != & getDistTree());
-  ASSERT (len_coeff > 0.0);
-  ASSERT (DM_sp::finite (len_coeff));
-  ASSERT (asSteiner ());
-  ASSERT (! arcs [false]. empty ());
-  
-  DistTree& tree_to = var_cast (to. getDistTree ());
-  
-  for (const DiGraph::Arc* arc : arcs [false])
-  {
-    ASSERT (arc);
-    const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
-    ASSERT (child);
-    const Real len_to = child->len * len_coeff;
-    // child_to
-    DTNode* child_to = nullptr;
-    if (const Leaf* leaf = child->asLeaf ())
-    {
-      auto leaf_to = new Leaf (tree_to, & to, len_to, leaf->getName ());
-      leaf_to->normCriterion = leaf->normCriterion;
-      child_to = leaf_to;
-    }
-    else
-    {
-      auto steiner_to = new Steiner (tree_to, & to, len_to);
-      child->copySubtree (*steiner_to, len_coeff);
-      child_to = steiner_to;
-    }      
-    ASSERT (child_to);
-    child_to->errorDensity = child->errorDensity;
-    // child->maxDeformationDissimNum ??
-  }  
-}
-
-
-
 VectorPtr<Leaf> DTNode::getSparseLeafMatches (const string &targetName,
                                               size_t depth_max,
                                               bool subtractDissims,
@@ -1438,6 +1399,107 @@ Vector<DTNode::ClosestLeaf> Steiner::findGenogroups (Real genogroup_dist_max)
   }
    
   return res;
+}
+
+
+
+void Steiner::copySubtree (Steiner &to,
+                           Real len_coeff) const
+{
+  ASSERT (len_coeff > 0.0);
+  ASSERT (DM_sp::finite (len_coeff));
+
+
+  DistTree& tree_to = var_cast (to. getDistTree ());
+  ASSERT (& tree_to != & getDistTree ());
+      
+  for (const DiGraph::Arc* arc : arcs [false])
+  {
+    ASSERT (arc);
+    const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+    ASSERT (child);
+    const Real len_to = child->len * len_coeff;
+    // child_to
+    DTNode* child_to = nullptr;
+    if (const Leaf* leaf = child->asLeaf ())
+    {
+      auto leaf_to = new Leaf (tree_to, & to, len_to, leaf->getName ());
+      leaf_to->normCriterion = leaf->normCriterion;
+      child_to = leaf_to;
+    }
+    else
+    {
+      auto steiner_to = new Steiner (tree_to, & to, len_to);
+      ASSERT (child->asSteiner ());
+      child->asSteiner () -> copySubtree (*steiner_to, len_coeff);
+      child_to = steiner_to;
+    }      
+    ASSERT (child_to);
+    child_to->errorDensity = child->errorDensity;
+    // child->maxDeformationDissimNum ??
+  }  
+}
+
+
+
+void Steiner::replaceSubtree (const DistTree &from) 
+{
+  ASSERT (& from != & getDistTree ());  
+  ASSERT (leaves);
+  
+  
+  const VectorPtr<DiGraph::Node> children (getChildren ());
+ 	for (const DiGraph::Node* child_ : children)
+ 	{
+    const DTNode* child = static_cast <const DTNode*> (child_);  
+    ASSERT (child);
+    
+    if (child->leaves <= 2)
+      continue;      
+
+    const Steiner* st = child->asSteiner ();
+    ASSERT (st);
+
+    const double subtree_len = child->getSubtreeLength ();
+    ASSERT (subtree_len >= 0.0);
+    if (! subtree_len)
+      continue;
+      
+    VectorPtr<Tree::TreeNode> leafVec;  // Subset of Leaf's of *this
+    child->getLeaves (leafVec);
+
+    Set<const Tree::TreeNode*> leaves_from;  // Subset of Leaf's of tree_from
+    for (const Tree::TreeNode* leaf : leafVec)
+    {
+      ASSERT (leaf);
+      const Tree::TreeNode* leaf_from = findPtr (from. name2leaf, leaf->getName ());
+      ASSERT (leaf_from);
+      leaves_from << leaf_from;
+    }
+    ASSERT (leafVec. size () == leaves_from. size ());
+
+    const VectorPtr<Tree::TreeNode> roots_from (from. leaves2lcas (leaves_from));
+    ASSERT (! roots_from. empty ());
+    if (roots_from. size () == 1)
+    {
+      const DTNode* root_from = static_cast <const DTNode*> (roots_from. front ());
+      ASSERT (root_from);
+
+      // ratio
+      const Real len_from = root_from->getSubtreeLength ();
+      QC_ASSERT (len_from > 0.0);
+      const Real ratio = subtree_len / len_from;
+      ASSERT (ratio >= 0.0);
+
+      ASSERT (root_from->asSteiner ());
+      root_from->asSteiner () -> copySubtree (* var_cast (st), ratio);  
+
+      for (const Tree::TreeNode* leaf : leafVec)
+        var_cast (getDistTree ()). removeLeaf (const_static_cast<Leaf*> (leaf), false);
+    }
+    else
+      var_cast (st) -> replaceSubtree (from);
+  }
 }
 
 
