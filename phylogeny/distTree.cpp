@@ -1446,6 +1446,7 @@ void Steiner::replaceSubtree (const DistTree &from)
 {
   ASSERT (& from != & getDistTree ());  
   ASSERT (leaves);
+  ASSERT (const_static_cast<DTNode*> (from. root) -> leaves == from. name2leaf. size ());
   
   
   const VectorPtr<DiGraph::Node> children (getChildren ());
@@ -1480,11 +1481,13 @@ void Steiner::replaceSubtree (const DistTree &from)
 
     const VectorPtr<Tree::TreeNode> roots_from (from. leaves2lcas (leaves_from));
     ASSERT (! roots_from. empty ());
-    if (roots_from. size () == 1)
-    {
-      const DTNode* root_from = static_cast <const DTNode*> (roots_from. front ());
-      ASSERT (root_from);
 
+    const DTNode* root_from = static_cast <const DTNode*> (roots_from. front ());
+    ASSERT (root_from);
+    if (   roots_from. size () == 1
+        && root_from->leaves == leaves_from. size ()
+       )
+    {
       // ratio
       const Real len_from = root_from->getSubtreeLength ();
       QC_ASSERT (len_from > 0.0);
@@ -3828,7 +3831,8 @@ const string Newick::delimiters (" ,;():");
 
 
 
-DistTree::DistTree (const string &newickFName)
+DistTree::DistTree (DistTree::NewickFormat,
+                    const string &newickFName)
 : rand (seed_global)
 { 
   {
