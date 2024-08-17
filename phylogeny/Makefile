@@ -27,7 +27,8 @@ all:	\
 	newick2tree \
 	printDistTree \
 	randomDistTree \
-	replaceDistTree \
+	replaceDistTree_match \
+	replaceDistTree_reroot \
 	statDistTree \
 	testDistTree \
 	tree2genogroup \
@@ -122,10 +123,16 @@ randomDistTree:	$(randomDistTreeOBJS)
 	$(CXX) -o $@ $(randomDistTreeOBJS) $(LIBS)
 	$(ECHO)
 
-replaceDistTree.o:  $(DISTTREE_HPP)
-replaceDistTreeOBJS=replaceDistTree.o $(DISTTREE_OBJ)
-replaceDistTree:	$(replaceDistTreeOBJS)
-	$(CXX) -o $@ $(replaceDistTreeOBJS) $(LIBS)
+replaceDistTree_match.o:  $(DISTTREE_HPP)
+replaceDistTree_matchOBJS=replaceDistTree_match.o $(DISTTREE_OBJ)
+replaceDistTree_match:	$(replaceDistTree_matchOBJS)
+	$(CXX) -o $@ $(replaceDistTree_matchOBJS) $(LIBS)
+	$(ECHO)
+
+replaceDistTree_reroot.o:  $(DISTTREE_HPP)
+replaceDistTree_rerootOBJS=replaceDistTree_reroot.o $(DISTTREE_OBJ)
+replaceDistTree_reroot:	$(replaceDistTree_rerootOBJS)
+	$(CXX) -o $@ $(replaceDistTree_rerootOBJS) $(LIBS)
 	$(ECHO)
 
 statDistTree.o:  $(DISTTREE_HPP)
