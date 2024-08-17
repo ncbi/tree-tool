@@ -611,7 +611,7 @@ struct ThisApplication : Application
               tree->optimizeDissimCoeffs ();  
               tree->optimizeLargeSubgraphs (nullptr);
               cout << tree->absCriterion2str () << endl; 
-              if (hybridF. get ())
+              if (hybridF)
               	deleteHybrids ( *tree
               	              , iter + 1 == iter_max
               	              , hybridParentPairsF. get ()
@@ -648,7 +648,7 @@ struct ThisApplication : Application
           { ERROR; }
       }
       else
-        if (hybridF. get ())
+        if (hybridF)
         {
           deleteHybrids (*tree, true, hybridParentPairsF. get (), *hybridF, dissim_request. empty () ? nullptr : & hybridDissimRequests);
           cout << endl;

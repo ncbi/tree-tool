@@ -107,7 +107,7 @@ struct ThisApplication : Application
     QC_ASSERT (genogroup_dist > 0.0);
 
     
-    DistTree tree (DissimParam (), input_tree, noString, noString, noString);
+    DistTree tree (input_tree);
     tree. sort ();  // For Genogroup::leader
     tree. qc ();    
       

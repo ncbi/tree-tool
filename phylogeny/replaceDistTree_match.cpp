@@ -67,17 +67,18 @@ struct ThisApplication : Application
 	
 	void body () const final
   {
-	  const string wholeFName    = getArg ("whole");
-	  const string partFName     = getArg ("part");
-	  const string outFName      = getArg ("out");
+	  const string wholeFName = getArg ("whole");
+	  const string partFName  = getArg ("part");
+	  const string outFName   = getArg ("out");
 
 	   
-    DistTree whole (DissimParam (), wholeFName, noString, noString, noString);
+    DistTree whole (wholeFName);
     whole. node2deformationPair. clear ();
     whole. qc ();     
     cout << "# Objects in whole tree: " << whole. name2leaf. size () << endl;
 
-    const DistTree part (DissimParam (), partFName, noString, noString, noString);
+    DistTree part (partFName);
+    part. setLeaves ();
     part. qc ();     
     cout << "# Objects in part tree: " << part. name2leaf. size () << endl;
       

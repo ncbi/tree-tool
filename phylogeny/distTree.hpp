@@ -605,7 +605,7 @@ public:
   void replaceSubtree (const DistTree &from);
     // Requires: &from != &getDistTree()
     //           *this and from have the same Leaf::name's
-    //           after setLeaves()
+    //           After: setLeaves(), from.setLeaves()
 private:
   static int arcExistence_compare (const void* a, 
                                    const void* b);
@@ -1221,6 +1221,9 @@ public:
 	          const string &multAttrName);
 	  // Input: treeDirFName: if directory name then contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
+	explicit DistTree (const string &treeFName)
+	  : DistTree (DissimParam (), treeFName, noString, noString, noString)
+	  {}
 	DistTree (const DissimParam &dissimParam_arg,
 	          const string &dissimFName,
 	          const string &dissimAttrName,
@@ -1249,7 +1252,9 @@ public:
 	  // Time: if loadDissim then O(p log(n) + Time(optimizeSmallSubgraph) * new_leaves)
 	  //       if !loadDissim then O(n log(n) + new_leaves)
   //  
-  explicit DistTree (const string &newickFName);
+  class NewickFormat {};  // dummy
+  DistTree (NewickFormat,
+            const string &newickFName);
     // Distances: NaN --> inf
   DistTree (Prob branchProb,
             size_t leafNum_max);

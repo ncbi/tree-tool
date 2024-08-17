@@ -118,7 +118,7 @@ Update: <incremental distance tree directory>/search/")
 
     unique_ptr<const DistTree> tree (isDirName (dataDir)
                                        ? new DistTree (DissimParam (), dataDir, noString, false, false, false)
-                                       : new DistTree (DissimParam (), dataDir, noString, noString, noString)
+                                       : new DistTree (dataDir)
                                     );
     tree->qc ();     
 

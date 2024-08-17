@@ -100,7 +100,7 @@ struct ThisApplication : Application
     QC_IMPLY (closest_num != 1, ! closestFName. empty ());
     
 
-    DistTree tree (DissimParam (), input_tree, noString, noString, noString); 
+    DistTree tree (input_tree); 
     tree. qc ();     
       
     

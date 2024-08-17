@@ -88,12 +88,12 @@ struct ThisApplication : Application
 		  throw runtime_error ("-variance_power must be positive");
       
 
-    DistTree whole (DissimParam (), wholeFName, noString, noString, noString);
+    DistTree whole (wholeFName);
     whole. node2deformationPair. clear ();
     whole. qc ();     
     cout << "# Objects in whole tree: " << whole. name2leaf. size () << endl;
 
-    DistTree part (DissimParam (), partFName, noString, noString, noString);
+    DistTree part (partFName);
     part. qc ();     
     cout << "# Objects in part tree: " << part. name2leaf. size () << endl;
       
