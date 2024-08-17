@@ -12,19 +12,18 @@ T2=$2
 
 
 TMP=$( mktemp )
-#echo $TMP
+#comment $TMP
 #set -x
 
 
-$THIS/compareTrees $T1 $T2 > $TMP.out
+$THIS/compareTrees $T1 $T2 -qc > $TMP.out
+grep -w '^match+' $TMP.out > $TMP.1 || true
+grep -w '^match-' $TMP.out > $TMP.2 || true
 
-M=( $( grep -w 'match' $TMP.out | tr '\t' ' '  | sed 's/ .*$//1' | sort | uniq -c ) )
-#   5177 match+
-#   2092 match-
-M0=${M[0]}
-M1=${M[2]}
-
-#head -20 $TMP.out
+M0=$( cat $TMP.1 | wc -l )
+M1=$( cat $TMP.2 | wc -l )
+#echo $M0
+#echo $M1
 
 P=$( echo "scale=2; $M1 * 100 / ($M0 + $M1)" | bc -l )
 echo "$1	$2	$M1 / ($M0 + $M1) = $P %"
