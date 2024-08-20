@@ -3764,9 +3764,9 @@ struct Token : Root
 	enum Type { eName
 	          , eDelimiter  
 	          , eText
-	          , eInteger   
+	          , eInteger   // 10-based or 16-based: 0xNNNN...
 	          , eDouble
-	          , eDateTime
+	          , eDateTime  // Example: 2018-08-13T16:12:54.487
 	          };
  // Valid if !empty()
 	Type type {eDelimiter};
