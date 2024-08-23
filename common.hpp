@@ -311,7 +311,7 @@ template <typename T, size_t N>
     }
 
 template <typename T, size_t N>
-  bool contains (const array<T,N> &arr, const T item)
+  inline bool contains (const array<T,N> &arr, const T item)
     { return indexOf (arr, item) != no_index; }
 
 template <typename Key, typename Value, typename KeyParent>
@@ -2069,6 +2069,18 @@ struct VirtNamed : Root
 {
 	virtual string getName () const = 0;
 };
+
+
+template <typename ParentValue/*:VirtNamed*/, typename Value/*:ParentValue*/>
+  inline bool containsNamed (const map <string, const ParentValue*> &m,
+                             const Value* t)
+    { if (! t)
+        return false;
+      const auto& it = m. find (t->getName ());
+      if (it == m. end ())
+        return false;
+      return it->second == t;
+    }
 
 
 
