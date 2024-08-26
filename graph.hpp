@@ -491,6 +491,7 @@ struct Tree : DiGraph
         return true;
 	    }
 	  void deleteSubtree ();
+	    // Does not delete *this
 	    // Postcondition: isLeaf()
 	  const TreeNode* makeRoot ();
 	    // Redirect TreeArc's so that this = getTree()->root
