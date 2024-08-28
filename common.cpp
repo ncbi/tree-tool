@@ -2728,6 +2728,31 @@ char TokenInput::getNextChar (bool unget)
 
 
 
+// BraceInput
+
+void BraceInput::skipComment ()
+{
+	get ('{');
+	size_t n = 1;
+	for (;;)
+	{
+		const Token t (get ());
+		if (t. isDelimiter ('{'))
+			n++;
+		else if (t. isDelimiter ('}'))
+		{
+			ASSERT (n);
+			n--;
+			if (! n)
+				break;
+		}
+	}
+	get (endChar);
+}
+
+
+
+
 // IFStream
 
 IFStream::IFStream (const string &pathName)

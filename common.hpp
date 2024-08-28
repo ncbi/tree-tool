@@ -3996,6 +3996,29 @@ public:
 
 
 
+struct BraceInput : TokenInput
+{
+  static constexpr char commentC {'#'};
+  static constexpr const char* commentS {"comment"};
+  static constexpr char endChar {';'};
+
+
+  explicit BraceInput (const string &fName)
+    : TokenInput (fName, commentC)
+    {}
+  explicit BraceInput (istream &is_arg)
+    : TokenInput (is_arg, commentC)
+    {}
+
+
+  static string endS ()
+    { return string (1, endChar); }
+  void skipComment ();
+};
+
+
+
+
 ///////////////////////////////////// Json //////////////////////////////////////////
 		
 extern unique_ptr<JsonMap> jRoot;
