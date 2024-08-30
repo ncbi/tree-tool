@@ -2718,6 +2718,11 @@ template <typename T /* : Root */>
         { P::operator<< (other); 
           return *this;
         }
+    template <typename U/*:<T>*/>
+      VectorPtr<T>& operator<< (VectorPtr<U> &&other)
+        { P::operator<< (std::move (other)); 
+          return *this;
+        }
   	void deleteData ()
   	  {	for (const T* t : *this)
   			  delete t;
