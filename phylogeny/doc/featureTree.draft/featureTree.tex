@@ -4,11 +4,11 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage[]{theorem}
-\usepackage{hyperref}
+%\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 %\usepackage{graphics,graphicx}
 %\usepackage{pstricks,pst-node,pst-tree}
 \usepackage[nottoc]{tocbibind}
-
 
 % Default margins are too wide all the way around. I reset them here
 \setlength{\topmargin}{-.5in}
@@ -687,6 +687,24 @@ $$ (\forall i \in \text{Genomes} : \neg (c_g(i) \And c_h(i))) \implies (\forall 
 {Let $c_g(i) \And c_h(i)$ and~$i$ have the maximum depth.
 }
 }
+
+
+\section{Quality of maximum parsimony tree}
+
+$$ gain(g) \eqdef \sum_{\ b \to a}  \bar c_g(b) \times      c_g(a). $$
+$$ loss(g) \eqdef \sum_{\ b \to a}       c_g(b) \times \bar c_g(a). $$
+$$ n_{01} = \sum_g gain(g). $$
+$$ n_{10} = \sum_g loss(g). $$
+
+If $c_g(root) = 0$ then~$gain(g)$ is the number of connected components of the nodes $ \{x : c_g(x) = 1\}$.
+
+If $c_g(root) = 1$ then~$loss(g)$ is the number of connected components of the nodes $ \{x : c_g(x) = 0\}$.
+
+The values
+$$ c_g(root) + gain(g) $$
+and
+$$ \bar c_g(root) + loss(g) $$
+do not depend on the tree root.
 
 
 

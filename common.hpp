@@ -311,7 +311,7 @@ template <typename T, size_t N>
     }
 
 template <typename T, size_t N>
-  bool contains (const array<T,N> &arr, const T item)
+  inline bool contains (const array<T,N> &arr, const T item)
     { return indexOf (arr, item) != no_index; }
 
 template <typename Key, typename Value, typename KeyParent>
@@ -2071,6 +2071,18 @@ struct VirtNamed : Root
 };
 
 
+template <typename ParentValue/*:VirtNamed*/, typename Value/*:ParentValue*/>
+  inline bool containsNamed (const map <string, const ParentValue*> &m,
+                             const Value* t)
+    { if (! t)
+        return false;
+      const auto& it = m. find (t->getName ());
+      if (it == m. end ())
+        return false;
+      return it->second == t;
+    }
+
+
 
 struct Named : VirtNamed
 {
@@ -2704,6 +2716,11 @@ template <typename T /* : Root */>
     template <typename U/*:<T>*/>
       VectorPtr<T>& operator<< (const VectorPtr<U> &other)
         { P::operator<< (other); 
+          return *this;
+        }
+    template <typename U/*:<T>*/>
+      VectorPtr<T>& operator<< (VectorPtr<U> &&other)
+        { P::operator<< (std::move (other)); 
           return *this;
         }
   	void deleteData ()
@@ -3764,9 +3781,9 @@ struct Token : Root
 	enum Type { eName
 	          , eDelimiter  
 	          , eText
-	          , eInteger   
+	          , eInteger   // 10-based or 16-based: 0xNNNN...
 	          , eDouble
-	          , eDateTime
+	          , eDateTime  // Example: 2018-08-13T16:12:54.487
 	          };
  // Valid if !empty()
 	Type type {eDelimiter};
@@ -3979,6 +3996,29 @@ public:
       }
       return true;
     }
+};
+
+
+
+
+struct BraceInput : TokenInput
+{
+  static constexpr char commentC {'#'};
+  static constexpr const char* commentS {"comment"};
+  static constexpr char endChar {';'};
+
+
+  explicit BraceInput (const string &fName)
+    : TokenInput (fName, commentC)
+    {}
+  explicit BraceInput (istream &is_arg)
+    : TokenInput (is_arg, commentC)
+    {}
+
+
+  static string endS ()
+    { return string (1, endChar); }
+  void skipComment ();
 };
 
 
