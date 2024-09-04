@@ -2220,6 +2220,22 @@ template <typename T>
             n++;
         return n;
       }
+    bool overlapStart (size_t start,
+                       const vector<T> &other) const
+      { const size_t end = min (P::size (), start + other. size ());
+        for (size_t i = start, j = 0; i < end; i++, j++)
+          if ((*this) [i] != other [j])
+            return false;
+        return true;
+      }
+    size_t overlapStart_max (const vector<T> &other) const
+      { if (P::empty ())
+          return no_index;
+        for (size_t start = P::size () - 1; start-- > 0;)
+          if (overlapStart (start, other))
+            return start;
+        return no_index;
+      }
     void checkSorted () const
       { if (! searchSorted)
       	  throw runtime_error ("Vector is not sorted for search");
