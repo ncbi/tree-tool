@@ -86,6 +86,7 @@ struct Feature : Named
 	  { os         << name 
 	       << "\t" << gains. size () 
 	       << "\t" << losses. size () 
+	       << "\t" << gains. size () + losses. size () - 1  // criterion
 	       << "\t" << genomes 
 	       << "\t" << optionalGenomes;
 	    if (! isNan (getLambda (false)))
