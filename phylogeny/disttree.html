@@ -2315,7 +2315,7 @@ var setTax = function (nodeId)
 	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
   const identifier = idRs[0].identifier;
 		
-  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(val) + " where id = '" + identifier + "'";
+  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(val) + ", tax_curated = null where id = '" + identifier + "'";
   const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", " + str2sqlNull(val) + ")";
   const count = dml (sql1 + "; " + sql2);
   if (count <= 0)
@@ -2324,8 +2324,9 @@ var setTax = function (nodeId)
     return;
   }
   
-  node.tax_confirmed = null;
+  node.tax_name_curated = val;
   
+  node.tax_confirmed = null;  
   if (val != null)
   {
     const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = '" + identifier + "'");
@@ -2358,7 +2359,7 @@ var confirmTax = function (nodeId)
   }
   const tax_name = taxRs[0].name;  
 
-  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(tax_name) + " where id = '" + identifier + "'";
+  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(tax_name) + ", tax_curated = tax where id = '" + identifier + "'";
   const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", " + str2sqlNull(tax_name) + ")";
   const count = dml (sql1 + "; " + sql2);
   if (count <= 0)
@@ -2367,6 +2368,7 @@ var confirmTax = function (nodeId)
     return;
   }
   
+  node.tax_name_curated = tax_name;
   node.tax_confirmed = 1;
     
   changeTree ();
@@ -2390,6 +2392,7 @@ var unconfirmTax = function (nodeId)
     return;
   }
   
+  node.tax_name_curated = null;
   node.tax_confirmed = null;
     
   changeTree ();
