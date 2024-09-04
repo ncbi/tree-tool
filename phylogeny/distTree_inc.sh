@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Build a distance tree incrementally"
@@ -135,7 +135,7 @@ if [ -e $INC/phen ]; then
   DATE=$( date +%Y%m%d )
   OUT_TREE=tree.$DATE
   
-  $THIS/distTree_release.sh $INC/tree $INC/phen $LARGE 1 $OUT_TREE $RELDIR
+  $THIS/distTree_release.sh $INC/tree $INC/phen $LARGE 1 $OUT_TREE $RELDIR 
   
   if [ "$GOOD" ]; then
   	super_section "Quality of good quality tree"
@@ -144,10 +144,10 @@ if [ -e $INC/phen ]; then
   fi
 
   if [ -n "$RELDIR" ]; then
-    mv leaf_errors.dm.gz arc_existence.dm.gz $RELDIR/$RELNUM/
-    
+    LATEST=$( realpath $PWD/$RELDIR/latest )
+    mv leaf_errors.dm.gz arc_existence.dm.gz $LATEST
     rm -f $INC/tree.released
-    ln -s $PWD/$RELDIR/$RELNUM/$OUT_TREE $INC/tree.released
+    ln -s $LATEST/$OUT_TREE $INC/tree.released
   fi
 fi
 
