@@ -62,12 +62,12 @@ bool printString (string s,
                   size_t &x)
 {
   bool truncated = false;
-  if (s. size () > screen_col_max - x)
+  if (s. size () > screen_col_max - x)  // UTF-8 ??
   {
     s. erase (screen_col_max - x);
     truncated = true;
   }
-  addstr (s. c_str ());
+  printw ("%s", s. c_str ());
   x += s. size ();
   return ! truncated;
 }
@@ -126,7 +126,7 @@ void printRow (bool is_header,
   }
 
   FFOR_START (size_t, i, x, screen_col_max)
-    addstr (" ");
+    printw (" ");
   //clrtoeol ();  // may start erasing before the cursor
 }
 
@@ -190,6 +190,9 @@ struct ThisApplication : Application
 	{
 		const string tableFName = getArg ("table");
 		             consistent = getFlag ("consistent");
+
+
+    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
 
 
     TextTable tt (tableFName);
