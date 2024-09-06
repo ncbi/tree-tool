@@ -131,6 +131,6 @@ tsv_split:	$(tsv_splitOBJS)
 tsv_view.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(CPP_DIR)/ncurses.hpp 
 tsv_viewOBJS=tsv_view.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o $(CPP_DIR)/ncurses.o 
 tsv_view:	$(tsv_viewOBJS)
-	$(CXX) -o $@ $(tsv_viewOBJS) $(LIBS) -lncurses
+	$(CXX) -o $@ $(tsv_viewOBJS) $(LIBS) -lncursesw
 	$(ECHO)
 
