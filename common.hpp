@@ -2231,7 +2231,7 @@ template <typename T>
     size_t overlapStart_max (const vector<T> &other) const
       { if (P::empty ())
           return no_index;
-        for (size_t start = P::size () - 1; start-- > 0;)
+        for (size_t start = P::size (); start-- > 0;)
           if (overlapStart (start, other))
             return start;
         return no_index;
@@ -3961,9 +3961,9 @@ public:
     {}
 
 
-  [[noreturn]] void error (const Token &wrongToken,
-                           const string &what,
-                           bool expected = true) const
+  [[noreturn]] static void error (const Token &wrongToken,
+                                  const string &what,
+                                  bool expected = true) 
     { throw TextPos::Error (wrongToken. tp, what, expected); }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
