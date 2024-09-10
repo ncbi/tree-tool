@@ -2220,6 +2220,14 @@ template <typename T>
             n++;
         return n;
       }
+    bool samePrefix (const vector<T> &other,
+                     size_t prefix_size) const
+      { const size_t end = min (prefix_size, min (P::size (), other. size ()));
+        for (size_t i = 0; i < end; i++)
+          if (! ((*this) [i] == other [i]))
+            return false;
+        return true;
+      }
     bool overlapStart (size_t start,
                        const vector<T> &other) const
       { const size_t end = min (P::size (), start + other. size ());
