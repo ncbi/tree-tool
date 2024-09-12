@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "QC an object"
@@ -9,7 +9,7 @@ fi
 FD=$1
 
 
-NAME=`basename $FD`
+NAME=$( basename $FD )
 PREF=$FD/$NAME
 
 function check 
