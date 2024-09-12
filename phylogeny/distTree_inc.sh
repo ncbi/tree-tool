@@ -15,9 +15,11 @@ if [ $# -ne 4 ]; then
   exit 1
 fi
 INC=$1
-NEW_PAR=$2
+NEW=$2
 GOOD="$3"
 RELDIR="$4"
+
+QC=1
 
 
 $THIS/../check_tmp.sh
@@ -26,100 +28,96 @@ if [ $GOOD ]; then
   $THIS/../check_file.sh $GOOD 1
 fi
 
-
-QC=1
-
-
 if [ $QC == 1 ]; then
   section "QC"
   $INC/qc.sh 0
 fi
 
-
-VARIANCE=`cat $INC/variance`
-
-N=15
-if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
-fi
-THREADS="-threads $N"
 
 
 if true; then   
-if [ $NEW_PAR == 1 ]; then
+  if [ $NEW == 1 ]; then
+    # Time: O(n log^4(n))
+    while true; do
+      if [ -e $INC/stop ]; then
+        warning '*** STOPPED ***'
+        exit 2
+      fi
+      
+      if [ -e $INC/skip ]; then
+        warning '*** SKIPPED ***'
+        break
+      fi
+      
+      VER=`cat $INC/version`
+      echo "$VER  `date`  `date +%s`" >> $INC/runlog  
+      pwd
+      echo ""
+      $THIS/distTree_inc_new.sh $INC 
+      if [ -e $INC/finished ]; then
+        break
+      fi
+    done
+  fi
+    
+
+  super_section "Final optimization"
+
+  VER=$( cat $INC/version )
+  echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
+  cp $INC/tree $INC/hist/tree.$VER
+  if [ $VER -gt 1 ]; then
+    gzip $INC/hist/tree.$VER
+  fi
+  #
+  VER=$(( $VER + 1 ))
+  echo $VER > $INC/version
+
+  VARIANCE=$( cat $INC/variance )
+
+  # THREADS
+  N=15
+  if [ -e $INC/threads ]; then
+    N=$( cat $INC/threads )
+  fi
+  THREADS="-threads $N"
+
+  DELETE=""
+  if [ -e $INC/outlier-genogroup ]; then
+    wc -l $INC/outlier-genogroup
+    DELETE="-delete $INC/outlier-genogroup  -check_delete"
+  fi
+
   # Time: O(n log^4(n))
-  while true; do
-    if [ -e $INC/stop ]; then
-      warning '*** STOPPED ***'
-      exit 2
-    fi
-    
-    if [ -e $INC/skip ]; then
-      warning '*** SKIPPED ***'
-      break
-    fi
-    
-    VER=`cat $INC/version`
-    echo "$VER  `date`  `date +%s`" >> $INC/runlog  
-    pwd
-    echo ""
-    $THIS/distTree_inc_new.sh $INC 
-    if [ -e $INC/finished ]; then
-      break
-    fi
-  done
-fi
-  
+  # PAR
+  $THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  $DELETE \
+    -optimize  -skip_len  -subgraph_iter_max 2 \
+    -output_tree $INC/tree.new  -leaf_errors leaf_errors  -arc_existence arc_existence  > $INC/hist/makeDistTree-final.$VER
+  mv $INC/tree.new $INC/tree
+  # -reinsert  
+  #tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
-super_section "Final optimization"
+  section "arc_existence probabilities"
+  tail -n +6 arc_existence.dm | awk '{print $3};'| $THIS/../dm/count | grep -w "count\|sum"
 
-VER=`cat $INC/version`
-echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
-cp $INC/tree $INC/hist/tree.$VER
-if [ $VER -gt 1 ]; then
-  gzip $INC/hist/tree.$VER
-fi
-#
-VER=$(( $VER + 1 ))
-echo $VER > $INC/version
+  gzip leaf_errors.dm
+  gzip arc_existence.dm
+
+  if [ -e $INC/outlier-genogroup ]; then
+    section "Database: genogroup outliers"
+    $INC/objects_in_tree.sh $INC/outlier-genogroup null
+    mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
+  fi
 
 
-DELETE=""
-if [ -e $INC/outlier-genogroup ]; then
-  wc -l $INC/outlier-genogroup
-  DELETE="-delete $INC/outlier-genogroup  -check_delete"
-fi
-
-# Time: O(n log^4(n))
-# PAR
-$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  $DELETE \
-  -optimize  -skip_len  -subgraph_iter_max 2 \
-  -output_tree $INC/tree.new  -leaf_errors leaf_errors  -arc_existence arc_existence  > $INC/hist/makeDistTree-final.$VER
-mv $INC/tree.new $INC/tree
-# -reinsert  
-#tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
-
-section "arc_existence probabilities"
-tail -n +6 arc_existence.dm | awk '{print $3};'| $THIS/../dm/count | grep -w "count\|sum"
-
-gzip leaf_errors.dm
-gzip arc_existence.dm
-
-if [ -e $INC/outlier-genogroup ]; then
-  section "Database: genogroup outliers"
-  $INC/objects_in_tree.sh $INC/outlier-genogroup null
-  mv $INC/outlier-genogroup $INC/hist/outlier-genogroup.$VER
-fi
-
-
-if [ $QC == 1 ]; then
-  section "QC"
-  $INC/qc.sh 0
-fi
-section "Tree QC"
-$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
+  if [ $QC == 1 ]; then
+    section "QC"
+    $INC/qc.sh 0
+  fi
+  section "Tree QC"
+  $THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  -qc  -noqual > $INC/hist/makeDistTree-qc.$VER
 else
-  VER=`cat $INC/version`
+  VER=$( cat $INC/version )
 fi 
 
 
