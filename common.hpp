@@ -2239,6 +2239,8 @@ template <typename T>
     size_t overlapStart_max (const vector<T> &other) const
       { if (P::empty ())
           return no_index;
+        if (other. empty ())
+          return no_index;
         for (size_t start = P::size (); start-- > 0;)
           if (overlapStart (start, other))
             return start;
