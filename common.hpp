@@ -702,6 +702,7 @@ bool goodName (const string &name);
 
 bool isIdentifier (const string& name,
                    bool dashInName);
+  // Return: true. !empty(), !dashInName => (c \in mame => isLetter(c))
 
 bool isNatural (const string& name,
                 bool leadingZeroAllowed);
