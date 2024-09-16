@@ -2747,7 +2747,7 @@ void BraceInput::skipComment ()
 				break;
 		}
 	}
-	get (endChar);
+//get (endChar);
 }
 
 

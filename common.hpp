@@ -702,6 +702,7 @@ bool goodName (const string &name);
 
 bool isIdentifier (const string& name,
                    bool dashInName);
+  // Return: true. !empty(), !dashInName => (c \in mame => isLetter(c))
 
 bool isNatural (const string& name,
                 bool leadingZeroAllowed);
@@ -2238,6 +2239,8 @@ template <typename T>
       }
     size_t overlapStart_max (const vector<T> &other) const
       { if (P::empty ())
+          return no_index;
+        if (other. empty ())
           return no_index;
         for (size_t start = P::size (); start-- > 0;)
           if (overlapStart (start, other))
