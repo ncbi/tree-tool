@@ -1066,6 +1066,10 @@ template <typename T>
       }
     void swap ()
       { std::swap (P::first, P::second); }
+    bool empty () const
+      { return    P::first  == T ()
+               && P::second == T ();
+      }
   };
 
 
@@ -2221,6 +2225,7 @@ template <typename T>
             n++;
         return n;
       }
+  #if 0
     bool samePrefix (const vector<T> &other,
                      size_t prefix_size) const
       { const size_t end = min (prefix_size, min (P::size (), other. size ()));
@@ -2229,6 +2234,7 @@ template <typename T>
             return false;
         return true;
       }
+  #endif
     bool overlapStart (size_t start,
                        const vector<T> &other) const
       { const size_t end = min (P::size (), start + other. size ());
@@ -2237,6 +2243,14 @@ template <typename T>
             return false;
         return true;
       }
+    size_t overlapStart_min (const vector<T> &other,
+                             size_t start_min) const
+      { for (size_t start = start_min; start < P::size (); start++)
+          if (overlapStart (start, other))
+            return start;
+        return P::size ();
+      }
+  #if 0
     size_t overlapStart_max (const vector<T> &other) const
       { if (P::empty ())
           return no_index;
@@ -2247,6 +2261,7 @@ template <typename T>
             return start;
         return no_index;
       }
+  #endif
     void checkSorted () const
       { if (! searchSorted)
       	  throw runtime_error ("Vector is not sorted for search");
