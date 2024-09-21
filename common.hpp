@@ -2250,6 +2250,7 @@ template <typename T>
             return start;
         return P::size ();
       }
+      // a = v.overlapStart_min(v,1), a < v.size(), v.size() % a == 0 => a is the period of v
   #if 0
     size_t overlapStart_max (const vector<T> &other) const
       { if (P::empty ())
