@@ -2470,13 +2470,17 @@ Token TokenInput::get ()
   const Token last_ (last);
   last = Token ();
   if (! last_. empty ())
+  {
+    tp = last_. tp;
     return last_;
+  }
     
   for (;;)  
   { 
     Token t (ci, dashInName, consecutiveQuotesInText);
     if (t. empty ())
       break;
+    tp = t. tp;
     if (! t. isDelimiter (commentStart))
       return t;
     ci. getLine ();

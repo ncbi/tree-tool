@@ -494,7 +494,7 @@ void Data::readInput (TokenInput &ti)
       return;
     }
     if (nameT. type != Token::eName)
-      ti. error (nameT, "Name");
+      nameT. error ("Name");
     nameIndex = var_cast (names). add (nameT. name);
     string name = getName ();
     if (readColonName (ti, name))
@@ -518,14 +518,14 @@ void Data::readInput (TokenInput &ti)
     if (attr. isDelimiter ('>'))
       break;
     if (attr. type != Token::eName)
-      ti. error (attr, "Name");
+      attr. error ("Name");
     bool colonInName_arg = false;
     if (readColonName (ti, attr. name))
       colonInName_arg = true;
     ti. get ('=');
     Token value (ti. get ());  
     if (value. type != Token::eText)
-      ti. error (value, "Text");
+      value. error ("Text");
     trim (value. name);
     for (char& c : value. name)
       if ((uchar) c >= 127)
@@ -568,10 +568,10 @@ void Data::readInput (TokenInput &ti)
         ti. get ('/');
         Token end = std::move (ti. get ());
         if (end. type != Token::eName)
-          ti. error (end, "Name");
+          end. error ("Name");
         readColonName (ti, end. name);
         if (end. name != getName ())
-          ti. error (end, "Name " + strQuote (getName ()));
+          end. error ("Name " + strQuote (getName ()));
         ti. get ('>');
         break;
       }
@@ -584,10 +584,10 @@ void Data::readInput (TokenInput &ti)
     ti. get ('/');
     Token end (ti. get ());
     if (end. type != Token::eName)
-      ti. error (end, "Name");
+      end. error ( "Name");
     readColonName (ti, end. name);
     if (end. name != getName ())
-      ti. error (end, "Name " + strQuote (getName ()));
+      end. error ("Name " + strQuote (getName ()));
     ti. get ('>');
   }
 }
@@ -605,9 +605,9 @@ bool Data::readColonName (TokenInput &ti,
   
   const Token name1 (ti. get ());
   if (name1. type != Token::eName)
-    ti. error (name1, "Name (2nd half)");
+    name1. error ("Name (2nd half)");
   if (name1. name. empty ())
-    ti. error (name1, "Name (2nd half) is empty");
+    name1. error ("Name (2nd half) is empty");
 
   name += ":" + name1. name;
   
@@ -693,7 +693,7 @@ Data* Data::load (Names &names,
       { ti. error (e. what (), false); }
     const Token t (ti. get ());
     if (! t. empty ())
-      ti. error (t, "Token after the XML end: " + strQuote (t. str ()));
+      t. error ("Token after the XML end: " + strQuote (t. str ()));
   }
   return f. release ();
 }

@@ -2225,16 +2225,6 @@ template <typename T>
             n++;
         return n;
       }
-  #if 0
-    bool samePrefix (const vector<T> &other,
-                     size_t prefix_size) const
-      { const size_t end = min (prefix_size, min (P::size (), other. size ()));
-        for (size_t i = 0; i < end; i++)
-          if (! ((*this) [i] == other [i]))
-            return false;
-        return true;
-      }
-  #endif
     bool overlapStart (size_t start,
                        const vector<T> &other) const
       { const size_t end = min (P::size (), start + other. size ());
@@ -2251,18 +2241,6 @@ template <typename T>
         return P::size ();
       }
       // a = v.overlapStart_min(v,1), a < v.size(), v.size() % a == 0 => a is the period of v
-  #if 0
-    size_t overlapStart_max (const vector<T> &other) const
-      { if (P::empty ())
-          return no_index;
-        if (other. empty ())
-          return no_index;
-        for (size_t start = P::size (); start-- > 0;)
-          if (overlapStart (start, other))
-            return start;
-        return no_index;
-      }
-  #endif
     void checkSorted () const
       { if (! searchSorted)
       	  throw runtime_error ("Vector is not sorted for search");
@@ -3676,12 +3654,12 @@ public:
 
 
   struct Error : runtime_error
-  { Error (const TextPos tp,
-           const string &what,
-		       bool expected = true)
-      : runtime_error ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
-    {}
-  };
+    { Error (const TextPos tp,
+             const string &what,
+  		       bool expected = true)
+        : runtime_error ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
+      {}
+    };
 };
 
 
@@ -3738,7 +3716,6 @@ struct LineInput : Input
 
 	bool nextLine ();
   	// Output: line
-  	// Update: tp
     // Invokes: trimTrailing()
 	bool expectPrefix (const string &prefix,
 	                   bool eofAllowed)
@@ -3900,6 +3877,9 @@ public:
 	  { *this = Token (); }
 
 
+  [[noreturn]] void error (const string &what,
+                           bool expected = true) const
+		{ throw TextPos::Error (tp, what, expected); }  
 	static string type2str (Type type) 
 	  { switch (type)
 	  	{ case eName:      return "name";
@@ -3963,6 +3943,7 @@ private:
   const bool consecutiveQuotesInText;
     // Two quotes encode one quote
   Token last;
+	TextPos tp;
 public:
 
 
@@ -3988,13 +3969,9 @@ public:
     {}
 
 
-  [[noreturn]] static void error (const Token &wrongToken,
-                                  const string &what,
-                                  bool expected = true) 
-    { throw TextPos::Error (wrongToken. tp, what, expected); }
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
-		{ ci. error (what, expected); }  
+		{ throw TextPos::Error (tp, what, expected); }  
 
   Token get ();
     // Return: empty() <=> EOF
@@ -4012,17 +3989,17 @@ public:
 	void get (const string &expected)
     { const Token t (get ());
     	if (! t. isNameText (expected))
-   			error (t, Token::type2str (Token::eName) + " " + strQuote (expected)); 
+   			t. error (Token::type2str (Token::eName) + " " + strQuote (expected)); 
     }
 	void get (int expected)
     { const Token t (get ());
     	if (! t. isInteger (expected))
-  			error (t, Token::type2str (Token::eInteger) + " " + to_string (expected)); 
+  			t. error (Token::type2str (Token::eInteger) + " " + to_string (expected)); 
     }
 	void get (double expected)
     { const Token t (get ());
     	if (! t. isDouble (expected))
-   			error (t, Token::type2str (Token::eDouble) + " " + toString (expected)); 
+   			t. error (Token::type2str (Token::eDouble) + " " + toString (expected)); 
     }
 	void get (char expected)
     { const Token t (get ());
@@ -4030,7 +4007,9 @@ public:
    			error (Token::type2str (Token::eDelimiter) + " " + strQuote (toString (expected), '\'')); 
     }
   void setLast (Token &&t)
-    { last = std::move (t); }
+    { last = std::move (t); 
+      tp = last. tp;
+    }
   bool getNext (char expected)
     { Token token (get ());
       if (! token. isDelimiter (expected))
