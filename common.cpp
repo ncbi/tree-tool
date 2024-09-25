@@ -4068,7 +4068,11 @@ int Application::run (int argc,
     if (InputError::on)
     {
       ostream* os = logPtr ? logPtr : & cout;
-      *os << e. what () << endl;
+    	{
+    	  const OColor oc (*os, Color::red, true, true);
+        *os << error_caption;
+      }
+      *os << endl << e. what () << endl;
       exit (1);
     }
 	  errorExit ((ifS (errno, strerror (errno) + string ("\n")) + e. what ()). c_str ());
