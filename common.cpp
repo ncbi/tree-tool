@@ -320,6 +320,10 @@ string getStack ()
 
 
 
+bool InputError::on = false;
+
+
+
 
 //
 
@@ -4061,6 +4065,12 @@ int Application::run (int argc,
 	}
 	catch (const std::exception &e) 
 	{ 
+    if (InputError::on)
+    {
+      ostream* os = logPtr ? logPtr : & cout;
+      *os << e. what () << endl;
+      exit (1);
+    }
 	  errorExit ((ifS (errno, strerror (errno) + string ("\n")) + e. what ()). c_str ());
   }
 
