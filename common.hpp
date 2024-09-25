@@ -102,7 +102,6 @@ bool initCommon ();
   // Invoked automaticallly
 
 
-
 // Numeric types
 
 typedef  unsigned char  uchar; 
@@ -149,10 +148,23 @@ constexpr const char* error_caption ("*** ERROR ***");
 
 void errorExitStr (const string &msg);
   // For debugger: should not be inline
+  // Invokes: beep()
 
 [[noreturn]] void throwf (const string &s); 
   // For debugger: should not be inline
-  // Invokes: logic_error
+  // Invokes: throw logic_error
+
+
+struct InputError : runtime_error
+{ 
+  static bool on;
+    // Init: false
+    
+  InputError (const string &what_arg) 
+    : runtime_error (what_arg) 
+    { on = true; } 
+};
+
 
 void beep ();
   // Requires: !isRedirected()
@@ -4701,6 +4713,7 @@ public:
   int run (int argc, 
            const char* argv []);
     // Invokes: body()
+    // if InputError::on then exit(1) else errorExit()
 private:
   virtual void body () const = 0;
     // Invokes: initEnvironment()
