@@ -3665,12 +3665,12 @@ public:
 	  { return charNum + 1 == eol_pos; }
 
 
-  struct Error : runtime_error
+  struct Error : InputError
     { Error (const TextPos tp,
              const string &what,
-  		       bool expected = true)
-        : runtime_error ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
-      {}
+        	   bool expected = true)
+        : InputError ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
+        {}
     };
 };
 
