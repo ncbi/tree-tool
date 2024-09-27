@@ -3728,7 +3728,6 @@ struct LineInput : Input
 
 	bool nextLine ();
   	// Output: line
-    // Invokes: trimTrailing()
 	bool expectPrefix (const string &prefix,
 	                   bool eofAllowed)
 		{ if (nextLine () && trimPrefix (line, prefix))
