@@ -2514,7 +2514,9 @@ var saveNewick = function (nodeId)
     }
 
     const node = nodes [nodeId];
-    if (! isLeaf (node))
+    if (isLeaf (node))
+      text += name2newick (node2printName (node, false, false));
+    else
     {
       text += '(';
       let first = true;
@@ -2529,8 +2531,6 @@ var saveNewick = function (nodeId)
       if (node.phylName)
         text += name2newick (node.phylName);
     }
-    else
-      text += name2newick (node2printName (node, false, false));
     if (node.parent)
       text += ':' + node.time;
   }
@@ -2916,7 +2916,7 @@ var parseNewick = function ()
           node.phylName = node.obj_id.substr(0,pos).trim();
           node.obj_id   = node.obj_id.substr(pos+1).trim();
         }
-        node.obj_id = node.obj_id.replace(/ /g,'_');
+        node.obj_id = node.obj_id.replace(/_/g,' ');  // was: replace(/ /g,'_') 
       }
       else
         return null;
@@ -2963,7 +2963,7 @@ var parseNewick = function ()
       const name = parseName ();
       if (! name)
         return false;
-      nodes[parentId].phylName = name;  // name.substring (0, colonPos + 1);
+      nodes[parentId].phylName = name.replace(/_/g,' ');  // name.substring (0, colonPos + 1);
     }
     return true;
   }
