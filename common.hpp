@@ -3644,15 +3644,7 @@ public:
     { return    lineNum == other. lineNum
     	       && charNum == other. charNum;
     }
-  string str () const
-	  { return "line " + to_string (lineNum + 1) + ", " +
-	  	          (eol () 
-	  	             ? "end of line" 
-	  	             : last ()
-	  	                 ?	"last position"
-	  	                 : "pos. " + to_string (charNum + 1)
-	  	          ); 
-	  }
+  string str () const;
 
 	
 	void inc (bool eol_arg);
@@ -3669,7 +3661,7 @@ public:
     { Error (const TextPos tp,
              const string &what,
         	   bool expected = true)
-        : InputError ((tp. str () + ": " + what + ifS (expected, " is expected")). c_str ())
+        : InputError ((tp. str () + what + ifS (expected, " is expected")). c_str ())
         {}
     };
 };
