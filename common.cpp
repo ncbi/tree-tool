@@ -297,7 +297,7 @@ string getStack ()
   char** strings = backtrace_symbols (buffer, nptrs);
   if (strings /*&& ! which ("addr2line"). empty ()*/) 
   {
-    FOR_START (int, i, 1, nptrs)
+    FOR_REV_END (int, i, 1, nptrs)
       s += string (strings [i]) + "\n";  
     s += "Use: addr2line -f -C -e " + programArgs [0] + "  -a <address>";
   //free (strings);
@@ -2062,6 +2062,22 @@ void Progress::report () const
 
 // TextPos
 
+string TextPos::str () const
+{ 
+  if (lineNum == -1)
+    return noString;
+  return "line " + to_string (lineNum + 1) + ", " +
+	          (eol () 
+	             ? "end of line" 
+	             : last ()
+	                 ?	"last position"
+	                 : "pos. " + to_string (charNum + 1)
+	          ) + 
+	          ": ";
+}
+
+
+
 void TextPos::inc (bool eol_arg)
 { 
  	if (eol ())
@@ -2319,7 +2335,7 @@ void Token::readInput (CharInput &in,
   qc ();
 
   if (verbose ())
-  	cout << type2str (type) << ' ' << *this << ' ' << tp. str () << endl;
+  	cout << tp. str () << type2str (type) << ' ' << *this << endl;
 }
 
 
