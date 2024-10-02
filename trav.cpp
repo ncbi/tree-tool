@@ -64,7 +64,7 @@ void executeCommand (const string &cmd,
   if (exitStatus && ! goodStatuses. contains (exitStatus))
   {
   //cout << endl << exitStatus << endl;
-    if (errors. get ())
+    if (errors)
     {
     //cout << c << endl;  // always 256 
       errorsMtx. lock ();
@@ -72,9 +72,9 @@ void executeCommand (const string &cmd,
       QC_ASSERT (c != -1);
       errorsMtx. unlock ();
     }
-    else 
+    else if (errorsMtx. try_lock ())  // To suppress messages from the other good threads which fail due to this thread
     {
-      const string errMsg ("item=" + item + "  status=" + to_string (exitStatus) + "\n" + cmd);
+      const string errMsg ("item: " + item + "\nstatus: " + to_string (exitStatus) + "\n" + cmd);
       if (threads_max > 1)
         errorExitStr (errMsg);
       else
