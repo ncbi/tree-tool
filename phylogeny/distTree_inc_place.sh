@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Find the place of an object in a released incremental tree"
@@ -18,13 +18,15 @@ RES=$3
 $INC/qc_object.sh $QUERY
 
 
-TMP=`mktemp`  
+NAME=$( basename $QUERY )
+TREE=$INC/tree.released
+
+
+#if false; then 
+TMP=$( mktemp )
 comment $TMP  
 #set -x
 
-
-NAME=`basename $QUERY`
-TREE=$INC/tree.released
 
 grep '^ *'$NAME':' $TREE > $TMP.grep || true
 if [ -s $TMP.grep ]; then
@@ -41,7 +43,7 @@ section "Fitting to the tree"
 # $TMP.{leaf,closest}
 cp /dev/null $TMP.dissim
 echo "FAIL" > $TMP.leaf
-VARIANCE=`cat $INC/variance`
+VARIANCE=$( cat $INC/variance )
 while [ -s $TMP.request ]; do
  #printf "."
   wc -l $TMP.request
@@ -54,7 +56,7 @@ while [ -s $TMP.request ]; do
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
-  $THIS/distTree_new  $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -closest $TMP.closest  -closest_num 100  
+  $THIS/distTree_new  $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -closest $TMP.closest  -closest_num 100  -qc
     # PAR
 done
 
@@ -68,16 +70,17 @@ section "Statistical report"
 echo -e "#Object\tTree distance" >  $TMP.closest.tsv
 cat $TMP.closest                 >> $TMP.closest.tsv
 
+# $TMP.neighbors.tsv
 cut -f 1 $TMP.closest | sed 's/$/\t'$NAME'/1' > $TMP.request
 wc -l $TMP.request
 $INC/pairs2dissim.sh $TMP.request $QUERY/$NAME $TMP.dissim-closest $TMP.log  &> /dev/null
 echo -e "#Object\tObserved dissimilarity" >  $TMP.neighbors.tsv
-cut -f 1,3 $TMP.dissim-closest            >> $TMP.neighbors.tsv
+sed 's/'$NAME'\t//1' $TMP.dissim-closest  >> $TMP.neighbors.tsv
 
 mkdir $TMP.report.dir
-$THIS/../trav $TMP.dissim-closest "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%1"  -threads 15  
-echo -e "#Object\tIdentical proteins\tUniversal proteins compared\tAAI,%"                 >  $TMP.report.tsv
-$THIS/../trav $TMP.dissim-closest "cat $TMP.report.dir/%1 | sed 's/^/%1\t/1'" -noprogress >> $TMP.report.tsv
+$THIS/../trav -tsv $TMP.neighbors.tsv "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%1"  -threads 15  
+echo -e "#Object\tIdentical proteins\tUniversal proteins compared\tAAI,%"                     >  $TMP.report.tsv
+$THIS/../trav -tsv $TMP.neighbors.tsv "cat $TMP.report.dir/%1 | sed 's/^/%1\t/1'" -noprogress >> $TMP.report.tsv
 
 $THIS/../tsv/tsv_expand.sh $TMP.neighbors.tsv $TMP.closest.tsv -left &> /dev/null
 $THIS/../tsv/tsv_expand.sh $TMP.neighbors.tsv $TMP.report.tsv  -left &> /dev/null
