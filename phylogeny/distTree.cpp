@@ -9618,7 +9618,7 @@ void NewLeaf::Leaf2dissim::qc () const
   QC_ASSERT (DM_sp::finite (dissim));
   
   QC_ASSERT (mult >= 0.0);  
-  QC_ASSERT (DM_sp::finite (mult));
+//QC_ASSERT (DM_sp::finite (mult));  // distTree_inc_place.sh can be used for an indiscernible object
 }
 
 
@@ -9995,6 +9995,8 @@ void NewLeaf::optimize ()
         location. leafLen = 0.0;
         location. arcLen = 0.0;
         location. absCriterion_leaf = 0.0;
+        ASSERT (location. anchor);
+        location. anchorLen = location. anchor->len;
         location. indiscernibleFound = true;
         {
           Tree::LcaBuffer buf;
@@ -10164,6 +10166,8 @@ void NewLeaf::anchor2location ()
   {
     location. leafLen = max (0.0, delta_avg);
     location. arcLen = 0.0;
+  //ASSERT (location. anchor);
+  //location. anchorLen = location. anchor->len;
   }
   if (! bad)
     location. setAbsCriterion_leaf (*this); 
