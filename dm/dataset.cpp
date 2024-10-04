@@ -765,7 +765,7 @@ void RealAttr1::histogram (ostream &f) const
   // ??
   while (delta >= range / (Real) vec. size ())
   {
-    f << delta << " " << histogramLikelihood (vec, delta) << endl;
+    f << delta << " " << histogramLikelihood (vec, delta) << '\n';
     delta /= 2;
   }
 }
@@ -1644,7 +1644,7 @@ void Attr2::save (ostream &os,
 	  		os << '\t';
 	    os << value2str (*row, *col);
 	  }
-	  os << endl;
+	  os << '\n';
 	}
 }
 
@@ -2590,7 +2590,7 @@ void Sample::save (const Vector<size_t>* objNums,
 	      col++;
 	    }
 	//ASSERT (col == widths. size ());
-    os << endl;
+    os << '\n';
   }
 
   for (const Attr* attr : attrs)
@@ -2605,7 +2605,7 @@ void Sample::save (const Vector<size_t>* objNums,
   {
     os << "COMMENT" << endl;
     for (Iterator it (*this, objNums); it ();)  
-      os << nvl (ds->objs [*it] -> comment, missingStr) << endl;
+      os << nvl (ds->objs [*it] -> comment, missingStr) << '\n';
   }
 }
 

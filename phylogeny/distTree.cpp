@@ -1846,7 +1846,7 @@ void SubPath::saveText (ostream &os) const
      << '\t' << node1
      << '\t' << node2
      << '\t' << dist_hat_tails
-     << endl;
+     << '\n';
 }
 
 
@@ -4601,7 +4601,7 @@ bool DistTree::getConnected ()
       cout << endl;
       cout << "Cluster:" << endl;
       for (const Leaf* leaf : it. second)
-        cout << leaf->name << endl;
+        cout << leaf->name << '\n';
     }
 
   return false;
@@ -4975,7 +4975,7 @@ namespace
       { os        << nodes [0] -> getLcaName () 
            << ' ' << nodes [1] -> getLcaName () 
            << ' ' << dissim 
-           << endl; 
+           << '\n'; 
       }
     bool operator== (const NodePair& other) const
       { return    nodes [0] == other. nodes [0]
@@ -5111,7 +5111,7 @@ void DistTree::neighborJoin ()
       for (const DiGraph::Arc* arc : root->arcs [false])
       {
         const DTNode* node = static_cast <const DTNode*> (arc->node [false]);
-        cout << node->getLcaName () << ": " << node->len << endl;
+        cout << node->getLcaName () << ": " << node->len << '\n';
       }     
       cout << endl << "Pairs:" << endl;
       for (const NodePair& leafPair : leafPairs)
@@ -9066,7 +9066,7 @@ struct NodeDissim
     
   void print (ostream &os) const
     { ONumber on (os, 6, true);
-      os << node->getLcaName () << '\t' << dissim_min << endl; 
+      os << node->getLcaName () << '\t' << dissim_min << '\n'; 
     }
 };
 
@@ -9518,7 +9518,7 @@ void DistTree::saveDissim (ostream &os,
       os << '\t' << dissim. prediction 
          << '\t' << dissim. getAbsCriterion ()
          << '\t' << sqr (dissim. target - dissim. prediction);
-    os << endl;
+    os << '\n';
   }
 }
 
@@ -9971,7 +9971,7 @@ void NewLeaf::saveRequest (const string &requestFName) const
     const string* n2 = & leaf->name;
     if (*n1 > *n2)
       swap (n1, n2);
-    f << *n1 << '\t' << *n2 << endl;
+    f << *n1 << '\t' << *n2 << '\n';
   }
 }
 
@@ -10289,7 +10289,7 @@ void NewLeaf::saveResult (const string &fName,
     ASSERT (nd. node);
     if (nodes. contains (nd. node))
       continue;
-    f << nd. node->getName () << '\t' << nd. dist << endl;
+    f << nd. node->getName () << '\t' << nd. dist << '\n';
     nodes << nd. node;
     if (nodes. size () == closest_num)
       break;
