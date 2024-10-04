@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 source $THIS/../qsub_env.sh
 if [ $# -ne 1 ]; then
@@ -19,26 +19,26 @@ $THIS/../check_tmp.sh
 SEED=1  # >= 1
 
 
-GRID_MIN=`cat $INC/pairs2dissim.grid`
-SEARCH_GRID_MIN=`cat $INC/object2closest.grid`  
+GRID_MIN=$( cat $INC/pairs2dissim.grid )
+SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
   # was: $GRID_MIN / 100
 QC=""  # -qc  
 RATE=0.015   # PAR
-VARIANCE=`cat $INC/variance`
-HYBRIDNESS_MIN=`cat $INC/hybridness_min`
+VARIANCE=$( cat $INC/variance )
+HYBRIDNESS_MIN=$( cat $INC/hybridness_min )
 REINSERT=""
 
 $THIS/tree2obj.sh $INC/tree > $INC/tree.list
 
-OBJS=`cat $INC/tree.list | wc -l`
-ADD=`echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1'`  # PAR
+OBJS=$( cat $INC/tree.list | wc -l )
+ADD=$( echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1' )  # PAR
 if [ $ADD == 0 ]; then
   ADD=1
 fi
 
 N=15
 if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
+  N=$( cat $INC/threads )
 fi
 THREADS="-threads $N"
 
@@ -49,7 +49,7 @@ echo ""
 echo ""
 
 
-N=`ls $INC/search/ | head -1`
+N=$( ls $INC/search/ | head -1 )
 if [ "$N" ]; then
   error "$INC/search/ is not empty"
 fi
@@ -63,7 +63,7 @@ if [ -e $INC/dissim.add ]; then
 fi
 
 
-VER_OLD=`cat $INC/version`
+VER_OLD=$( cat $INC/version )
 
 # Time: O(n log(n)) 
 cp $INC/tree $INC/hist/tree.$VER_OLD
@@ -101,7 +101,7 @@ else
 
   section "search/ -> leaf, dissim"
 
-  N=`ls $INC/search/ | wc -l`
+  N=$( ls $INC/search/ | wc -l )
   if [ $N -gt 0 ]; then
     rm -rf $INC/log/
     mkdir $INC/log
@@ -129,11 +129,11 @@ else
 
 
   ITER=0
-  ITER_MAX=`echo $OBJS | awk '{printf "%d", log($1)+3};'`
+  ITER_MAX=$( echo $OBJS | awk '{printf "%d", log($1)+3};' )
   while [ $ITER -lt $ITER_MAX ]; do
     # Time: O(log^4(n)) per one new object
     
-    N=`ls $INC/search/ | wc -l`
+    N=$( ls $INC/search/ | wc -l )
     if [ $N == 0 ]; then
       break  
     fi
@@ -141,7 +141,7 @@ else
   	ITER=$(( $ITER + 1 ))
     section "Iteration $ITER / $ITER_MAX"
     # use distTree_inc_request2dissim.sh ??
-    REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
+    REQ=$( $THIS/../trav $INC/search "cat %d/%f/request" | wc -l )
     echo "# Requests: $REQ"
     GRID=1
     if [ $REQ -lt $GRID_MIN ]; then
@@ -180,7 +180,7 @@ else
   rm $INC/dissim.add
 fi
 else
-  VER=`cat $INC/version`
+  VER=$( cat $INC/version )
 fi
 rm $INC/tree.list
 
@@ -193,7 +193,7 @@ fi
 HYBRID=""
 DISSIM_BOUNDARY="NAN"
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
-  DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
+  DISSIM_BOUNDARY=$( cat $INC/dissim_boundary )
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
   if [ ! -e $INC/delete_criterion_outliers ]; then
 	  DELETE_CRITERION_OUTLIERS="-delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_deformation_outliers $INC/outlier-deformation  -deformation_outlier_num_max 1"
@@ -269,11 +269,11 @@ if [ "$HYBRIDNESS_MIN" != 0 ]; then
 fi
 
 # Must be the last database change in this script
-GENOGROUP_BARRIER=`cat $INC/genogroup_barrier`
+GENOGROUP_BARRIER=$( cat $INC/genogroup_barrier )
 if [ "$GENOGROUP_BARRIER" != "NAN" ]; then
   section "New genogroup outliers"
   if [ "$DISSIM_BOUNDARY" != "NAN" ]; then
-    COMP=`echo "$DISSIM_BOUNDARY < $GENOGROUP_BARRIER" | bc`
+    COMP=$( echo "$DISSIM_BOUNDARY < $GENOGROUP_BARRIER" | bc )
     if [ $COMP == 1 ]; then
       error "dissim_boundary ($DISSIM_BOUNDARY) < genogroup_barrier ($GENOGROUP_BARRIER)"
     fi
@@ -312,7 +312,7 @@ $INC/qc.sh 0
 
 
 echo ""
-NEW=`$THIS/distTree_inc_new_list.sh $INC | wc -l`
+NEW=$( $THIS/distTree_inc_new_list.sh $INC | wc -l )
 echo "# New objects: $NEW"
 if [ $NEW == 0 -a -z "$REINSERT" ]; then
   touch $INC/finished

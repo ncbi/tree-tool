@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Delete a list of objects from an incremental distance tree"
@@ -22,11 +22,11 @@ sort -c -u $DEL
 
 N=15
 if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
+  N=$( cat $INC/threads )
 fi
 THREADS="-threads $N"
 
-VER=`cat $INC/version`
+VER=$( cat $INC/version )
 
 cp $INC/tree $INC/hist/tree.$VER
 if [ $VER -gt 1 ]; then
@@ -71,11 +71,7 @@ mv $DEL $INC/hist/delete.$VER
 
 
 section "QC"
-$INC/qc.sh 0 > $INC/qc.out
-if [ -s $INC/qc.out ]; then
-  exit 1
-fi
-rm $INC/qc.out
+$INC/qc.sh 0 
 
 
 $THIS/distTree_inc_tree1_quality.sh $INC

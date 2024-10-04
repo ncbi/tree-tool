@@ -49,8 +49,8 @@ if true; then
         break
       fi
       
-      VER=`cat $INC/version`
-      echo "$VER  `date`  `date +%s`" >> $INC/runlog  
+      VER=$( cat $INC/version )
+      echo "$VER  $( date )  $( date +%s )" >> $INC/runlog  
       pwd
       echo ""
       $THIS/distTree_inc_new.sh $INC 
@@ -64,7 +64,7 @@ if true; then
   super_section "Final optimization"
 
   VER=$( cat $INC/version )
-  echo "$VER  # Final optimization  `date`  `date +%s`" >> $INC/runlog  
+  echo "$VER  # Final optimization  $( date)   $( date +%s )" >> $INC/runlog  
   cp $INC/tree $INC/hist/tree.$VER
   if [ $VER -gt 1 ]; then
     gzip $INC/hist/tree.$VER
