@@ -51,6 +51,51 @@ namespace
 {
 
 
+void printPatristic (OFStream &f, 
+                     const DTNode* node,
+                     VectorPtr<Leaf> &leaves, 
+                     Vector<Real> &distances)   // Distance from leaves to node
+// By Josh Cherry: https://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/doxyhtml/tree__to__dist__mat_8cpp_source.html (has a bug)
+// Time: O(n^2)
+{
+  ASSERT (node);
+  ASSERT (node->graph);
+  ASSERT (leaves. size () == distances. size ());
+  
+  if (const Leaf* leaf = node->asLeaf ())
+  {
+    leaves << leaf;
+    distances << 0.0;
+    return;
+  }
+
+  // DFS  
+  const size_t childrenStart = leaves. size ();
+  for (const DiGraph::Arc* arc : node->arcs [false])
+  {
+    const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+    const size_t childStart = leaves. size ();
+    printPatristic (f, child, leaves, distances);
+    FFOR_START (size_t, i, childStart, leaves. size ())  // Descendants of child
+    {
+      distances [i] += child->len;
+      FFOR_START (size_t, j, childrenStart, childStart)
+      {
+        const Leaf* leaf1 = leaves [i];
+        const Leaf* leaf2 = leaves [j];
+			  if (leaf1->name > leaf2->name)
+			    swap (leaf1, leaf2);
+        f         << leaf1->name 
+          << '\t' << leaf2->name
+          << '\t' << distances [i] + distances [j]
+          << '\n';
+      }
+    }
+  }  
+}
+
+
+
 const string distName ("dissim"); 
 
 
@@ -63,7 +108,7 @@ struct ThisApplication : Application
 	  version = VERSION;
 	  // Input
 	  addPositional ("input_tree", "Distance tree file");
-	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <output_dist>");
+	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <dist_pairs>");
     // Output
 	  addKey ("dist2", "A " + dmSuff + "-file with a two-way dissimilarity attribute " + strQuote (distName) + " which equals the tree distances plus noise");
 	  addKey ("noise", strQuote (distName) + " += Normal(0,noise)", "0");
@@ -227,57 +272,45 @@ struct ThisApplication : Application
     }
 
 
-    Vector<Pair<const Leaf*>> distRequestPairs;  
-    if (! dist_request. empty ())
-    {
-    	PairFile f (dist_request, false, false);
-    	while (f. next ())
-    	{
-        const Leaf* leaf1 = findPtr (tree. name2leaf, f. name1);
-        if (! leaf1)
-        	throw runtime_error ("Object " + f. name1 + " is not found");
-        const Leaf* leaf2 = findPtr (tree. name2leaf, f. name2);
-        if (! leaf2)
-        	throw runtime_error ("Object " + f. name2 + " is not found");
-			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
-    	}
-    }
-    
-    
-    if (! dist_pairs. empty ())
-    {
-    	// distRequestPairs
-    	if (dist_request. empty ())
-    	{
+    if (! dist_pairs. empty ())   
+    {   
+    	OFStream outF (dist_pairs);
+      if (dist_request. empty ())
+      {
 	    	VectorPtr<Leaf> leaves;  leaves. reserve (tree. nodes. size ());
-	 	    for (const DiGraph::Node* node : tree. nodes)
-	        if (const Leaf* leaf = static_cast <const DTNode*> (node) -> asLeaf ())
-	          if (leaf->graph)
-	        	  leaves << leaf;
-	      FFOR (size_t, i, leaves. size ())
-	        FOR (size_t, j, i)
-	        {
-	        	const Leaf* leaf1 = leaves [i];
-	        	const Leaf* leaf2 = leaves [j];
-					  if (leaf1->name > leaf2->name)
-					    swap (leaf1, leaf2);
-					  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
-					}
-    	}
-
-    	OFStream f (dist_pairs);
-    	Tree::LcaBuffer buf;
-    	for (const auto& p : distRequestPairs)
-    	{
-    		const Leaf* leaf1 = p. first;
-    		const Leaf* leaf2 = p. second;
-			  const Tree::TreeNode* lca_ = nullptr;
-	    	const VectorPtr<Tree::TreeNode>& path = Tree::getPath (leaf1, leaf2, nullptr, lca_, buf);
-		  	f         << leaf1->name 
-		  	  << '\t' << leaf2->name
-		  	  << '\t' << DistTree::path2prediction (path)
-		  	  << endl;
-		  }
+	      Vector<Real> distances;  distances. reserve (leaves. capacity ()); 
+	      printPatristic (outF, static_cast <const DTNode*> (tree. root), leaves, distances);
+      }
+      else
+      {
+        Vector<Pair<const Leaf*>> distRequestPairs;  
+        {
+        	PairFile pf (dist_request, false, false);
+        	while (pf. next ())
+        	{
+            const Leaf* leaf1 = findPtr (tree. name2leaf, pf. name1);
+            if (! leaf1)
+            	throw runtime_error ("Object " + pf. name1 + " is not found");
+            const Leaf* leaf2 = findPtr (tree. name2leaf, pf. name2);
+            if (! leaf2)
+            	throw runtime_error ("Object " + pf. name2 + " is not found");
+    			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
+        	}
+        }
+        
+      	Tree::LcaBuffer buf;
+      	for (const auto& p : distRequestPairs)
+      	{
+      		const Leaf* leaf1 = p. first;
+      		const Leaf* leaf2 = p. second;
+  			  const Tree::TreeNode* lca_ = nullptr;
+  	    	const VectorPtr<Tree::TreeNode>& path = Tree::getPath (leaf1, leaf2, nullptr, lca_, buf);
+  		  	outF      << leaf1->name 
+  		  	  << '\t' << leaf2->name
+  		  	  << '\t' << DistTree::path2prediction (path)
+  		  	  << '\n';
+  		  }
+      }
     }
     
     
