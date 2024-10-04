@@ -80,7 +80,7 @@ struct ThisApplication : Application
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addKey ("mutation", "file for mutations");
-	  	addFlag ("ambig_start", "Replace deletions at the start of <FASTA1> by the ambiguity character");
+	  	addFlag ("ambig_start", "Replace deletions at the start of <target> by the ambiguity character");
            	  //ambig_end ??
       addFlag ("blosum62", "Use substitution matrix BLASUM62, otehrwise PAM30. valid for protein sequences");
       addFlag ("alignment", "Print alignment");
@@ -113,17 +113,17 @@ struct ThisApplication : Application
       throw runtime_error ("-blasum62 requires protein sequences");
       
 
-    unique_ptr<const Seq> targetSeq (readSeq (targetFName, aa));
-    unique_ptr<const Seq> refSeq    (readSeq (refFName,    aa));
-    ASSERT (targetSeq. get ());
-    ASSERT (refSeq. get ());
+    const unique_ptr<const Seq> targetSeq (readSeq (targetFName, aa));
+    const unique_ptr<const Seq> refSeq    (readSeq (refFName,    aa));
+    ASSERT (targetSeq);
+    ASSERT (refSeq);
 
     unique_ptr<Align_sp::Align> align;
     if (aa)
       align. reset (new Align_sp::Align (* targetSeq->asPeptide (), * refSeq->asPeptide (), ! global, match_len_min, blosum62));
     else
       align. reset (new Align_sp::Align (* targetSeq->asDna (), * refSeq->asDna (), ! global, match_len_min, 0 /*band*/));
-    ASSERT (align. get ());
+    ASSERT (align);
 		
 		if (verbose ())
 		  align->saveText (cout);
@@ -170,8 +170,8 @@ struct ThisApplication : Application
   		      const size_t len = i - mismatchStart;
   		      string ref    (align->sparse2. substr (mismatchStart, len));
   		      string allele (align->sparse1. substr (mismatchStart, len));
-  		      replaceStr (ref,      "-", "");
-  		      replaceStr (allele,   "-", "");
+  		      replaceStr (ref,    "-", "");
+  		      replaceStr (allele, "-", "");
   		      ASSERT (ref != allele);
   		      ASSERT (refStart <= refSeq->seq. size ());
   		      const bool outside =     ref. empty ()
