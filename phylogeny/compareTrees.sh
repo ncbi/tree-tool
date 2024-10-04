@@ -26,7 +26,7 @@ M1=$( cat $TMP.2 | wc -l )
 #echo $M1
 
 P=$( echo "scale=2; $M1 * 100 / ($M0 + $M1)" | bc -l )
-echo "$1	$2	$M1 / ($M0 + $M1) = $P %"
+echo -e "$T1\t$T2\t$M1\t$M0\t$P"
 
 
 rm $TMP*
