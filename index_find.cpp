@@ -72,7 +72,7 @@ Average time: O(A S (A (log A + log S) + log N)), where N is the number of objec
       addPositional ("index", "Directory with an attribute index for <dir>");
       addPositional ("attr_size_max", "Attribute file size limit; objects having only attrbutes whose index files exceed <attr_size_max> are indiscernible");
       addPositional ("target", "Target object");
-      addFlag ("large", "Directory <dir> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
+      addFlag ("large", "Directory <dir> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (small_hash_class_max - 1) + "\" which are the hashes of file names");
   	}
   	
   	
@@ -132,7 +132,7 @@ Average time: O(A S (A (log A + log S) + log N)), where N is the number of objec
       if (! bigAttrs. empty ())
         for (const string& obj : objs)
         {
-          const string objFName (dir + (large ? "/" + to_string (str2hash_class (obj)) : "") + "/" + obj);
+          const string objFName (dir + (large ? "/" + to_string (str2hash_class (obj, false)) : "") + "/" + obj);
           if (! fileExists (objFName))
             continue;
           StringVector attrs (objFName, (size_t) 1000, true); // PAR

@@ -483,10 +483,17 @@ extern hash<string> str_hash;
 
 extern hash<size_t> size_hash;
 
-constexpr size_t hash_class_max = 1000;  // PAR
+// PAR
+constexpr size_t small_hash_class_max = 1000;  
+constexpr size_t large_hash_class_max = small_hash_class_max * 100;  
 
-inline size_t str2hash_class (const string &s)
-  { return str_hash (s) % hash_class_max; }
+inline size_t str2hash_class (const string &s,
+                              bool large_hash)
+  { return str_hash (s) % (large_hash 
+                             ? large_hash_class_max 
+                             : small_hash_class_max
+                          ); 
+  }
  
 
 

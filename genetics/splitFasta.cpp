@@ -103,7 +103,7 @@ struct ThisApplication : Application
   	  addKey ("len_min", "Minimum sequence length", "0");
 		  addFlag ("whole", "Sequence identifiers are whole strings which should not be split by '|'");
     #ifndef _MSC_VER
-  	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
+  	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (small_hash_class_max - 1) + "\" which are the hashes of file names");
   	#endif
   	  addKey ("group", "Group by <group> number of sequences. Group names are sequential numbers. 1 - no grouping.", "1");
   	  addKey ("extension", "Add file extension (not compatible with -group)", "");
@@ -161,7 +161,7 @@ struct ThisApplication : Application
       #ifndef _MSC_VER
         if (large)
         {
-          dir += "/" + to_string (str2hash_class (s));
+          dir += "/" + to_string (str2hash_class (s, false));
           Dir (dir). create ();
         }
       #endif

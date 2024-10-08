@@ -1009,7 +1009,7 @@ void Genome::initDir (const string &featureDir,
   {
     string dirName (featureDir);
     if (large)
-      dirName += "/" + to_string (str2hash_class (id));
+      dirName += "/" + to_string (str2hash_class (id, false));
     LineInput f (dirName + "/" + id);
     // coreSet
     while (f. nextLine ())

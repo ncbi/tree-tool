@@ -72,7 +72,7 @@ struct ThisApplication : Application
   	  addPositional ("dnaDir", "Directory with DNA sequences");
   	  addPositional ("align_len_min", "Min. sequence length");
   	  addPositional ("out", "Output file with lines: <DNA1> <DNA2> <dissimilarity>. <DNA1> < <DNA2>. Lines match the file <pairs>");
-  	  addFlag       ("large", "DNA sequences are in subdirectoirs of <dnaDir> which are hash-codes modulo " + to_string (hash_class_max) + " of the DNA file names");
+  	  addFlag       ("large", "DNA sequences are in subdirectoirs of <dnaDir> which are hash-codes modulo " + to_string (small_hash_class_max) + " of the DNA file names");
   	  addFlag       ("global", "Global alignment, othewise semiglobal");
   	  addFlag       ("relative", "Dissimilarity relative to sequence length");
   	  addFlag       ("diff", "Dissimilarity is the number of different nucleotides");
@@ -115,8 +115,8 @@ struct ThisApplication : Application
     PairFile in (pairsFName, false, false, 1);  // PAR
     while (in. next ())
     {
-      const string h1 (large ? to_string (str2hash_class (in. name1)) + "/" : "");
-      const string h2 (large ? to_string (str2hash_class (in. name2)) + "/" : "");
+      const string h1 (large ? to_string (str2hash_class (in. name1, false)) + "/" : "");
+      const string h2 (large ? to_string (str2hash_class (in. name2, false)) + "/" : "");
       const string fName1 (in. name1 == name_new ? file_new : (dnaDir + "/" + h1 + in. name1));
       const string fName2 (in. name2 == name_new ? file_new : (dnaDir + "/" + h2 + in. name2));
       if (! contains (name2dna, in. name1))  name2dna [in. name1] = readDna (fName1);

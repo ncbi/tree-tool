@@ -67,6 +67,35 @@ Seq* readSeq (const string &fName,
 
 
 
+bool ambigClear (const string &seq,  // sparse
+                 size_t mutStart, 
+                 size_t mutSize,
+                 size_t noambigWindow,
+                 bool aa)
+{
+  ASSERT (noambigWindow != no_index);
+
+  for (size_t i = mutStart, n = 0; i-- > 0 && n < noambigWindow; )
+  {
+    if (isAmbig (seq [i], aa))
+      return false;
+    if (seq [i] != '-')
+      n++;
+  }
+
+  for (size_t i = mutStart + mutSize, n = 0; seq [i] && n < noambigWindow; i++)
+  {
+    if (isAmbig (seq [i], aa))
+      return false;
+    if (seq [i] != '-')
+      n++;
+  }
+            
+  return true;
+}
+
+
+
 struct ThisApplication : Application
 {
   
@@ -79,10 +108,11 @@ struct ThisApplication : Application
   	  addKey ("prot_name", "Protein name. Empty string means that sequences are DNA");
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
+  	  addKey ("noambig", "Min. window around a mutation with no ambiguity. -1: allow ambiguities", "-1");
   	  addKey ("mutation", "file for mutations");
 	  	addFlag ("ambig_start", "Replace deletions at the start of <target> by the ambiguity character");
            	  //ambig_end ??
-      addFlag ("blosum62", "Use substitution matrix BLASUM62, otehrwise PAM30. valid for protein sequences");
+      addFlag ("blosum62", "Use substitution matrix BLASUM62, otherwise PAM30. Valid for protein sequences");
       addFlag ("alignment", "Print alignment");
     }
 
@@ -95,6 +125,7 @@ struct ThisApplication : Application
 	  const string protName       = getArg ("prot_name");
 	  const bool global           = getFlag ("global");
 	        size_t match_len_min  = str2<size_t> (getArg ("match_len_min"));
+	  const size_t noambig        = getArg ("noambig") == "-1" ? no_index : str2<size_t> (getArg ("noambig"));
 	  const string mutFName       = getArg ("mutation");
     const bool   ambig_start    = getFlag ("ambig_start");
     const bool   blosum62       = getFlag ("blosum62");
@@ -187,6 +218,9 @@ struct ThisApplication : Application
               }
     		      const Mutation mut (protName, refStart, ref, allele);
     		      mut. qc ();
+    		      if (   noambig == no_index 
+    		          || (! mut. ambig && ambigClear (align->sparse1, mismatchStart, len, noambig, aa))
+    		         )
     		      f << mut << endl;
     		    }
   		      mismatchStart = no_index;

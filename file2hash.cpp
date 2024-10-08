@@ -46,10 +46,14 @@ namespace
 {
   
   
+bool large_hash = false;
+
+  
+  
 void process (const string &name,
               bool append)
 {
-  cout << str2hash_class (name);
+  cout << str2hash_class (name, large_hash);
   if (append)
     cout << '\t' << name;
   cout << endl;
@@ -60,21 +64,24 @@ void process (const string &name,
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Print file hash class: 0.." + to_string (hash_class_max - 1))
+    : Application ("Print file hash class 0.." + to_string (small_hash_class_max - 1) + " for small hashes or 0.." 
+                                               + to_string (large_hash_class_max - 1) + " for large hashes")
     {
       version = VERSION;
       addPositional ("name", "File name");
       addFlag ("file", "<file> is a file with names");
       addFlag ("append", "Append the file name");
+      addFlag ("large_hash", "Large hash class");
     }
 
 
 
 	void body () const final
 	{
-	  const string name = getArg ("name");
-	  const bool isFile = getFlag ("file");
-	  const bool append = getFlag ("append");
+	  const string name     = getArg ("name");
+	  const bool isFile     = getFlag ("file");
+	  const bool append     = getFlag ("append");
+	             large_hash = getFlag ("large_hash");
 	  
 	  
 	  if (isFile)
