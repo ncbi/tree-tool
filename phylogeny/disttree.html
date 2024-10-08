@@ -592,46 +592,49 @@ var node2printName = function (node, truncate, leavesNumP)
 {
   let name = '';
   if (isLeaf (node))
-  {
-    let fix = '';
-    switch (node.tax_confirmed)
+    if (newickP)
+      name = node.obj_id || "";
+    else
     {
-      case 0: fix = "[FIX of " + node.tax_name_submitted + "]"; break;
-      case 1: fix = "[OK]"; break;
-    }
-    if (node.bad_org_source)
-      fix = addS (fix, ' ', "[" + node.bad_org_source + "]");
-    fix = addS (fix, ' ', node.strain);
+      let fix = '';
+      switch (node.tax_confirmed)
+      {
+        case 0: fix = "[FIX of " + node.tax_name_submitted + "]"; break;
+        case 1: fix = "[OK]"; break;
+      }
+      if (node.bad_org_source)
+        fix = addS (fix, ' ', "[" + node.bad_org_source + "]");
+      fix = addS (fix, ' ', node.strain);
 
-    let objName = node.obj_id;
-    if (node.obj_id_2)
-      objName += " (" + node.obj_id_2 + ")";
+      let objName = node.obj_id;
+      if (node.obj_id_2)
+        objName += " (" + node.obj_id_2 + ")";
 
-    let flags = '';
-    {
-      if (node.type)
-        flags = addS (flags, ' ', "[" + node.type + "]");
-      if (node.rs_acc_ver)
-        flags = addS (flags, ' ', "[REFSEQ]");        
-      if (node.ani)
-        flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
-      if (node.outlier)
-        flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
-      if (! node.in_tree)
-        flags = addS (flags, ' ', "[ADDED]");
-      if (node.removed)
-        flags = addS (flags, ' ', "[REMOVED]");
-      if (node.bad_source)
-        flags = addS (flags, ' ', "[" + node.bad_source + "]");
-    }
+      let flags = '';
+      {
+        if (node.type)
+          flags = addS (flags, ' ', "[" + node.type + "]");
+        if (node.rs_acc_ver)
+          flags = addS (flags, ' ', "[REFSEQ]");        
+        if (node.ani)
+          flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
+        if (node.outlier)
+          flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
+        if (! node.in_tree)
+          flags = addS (flags, ' ', "[ADDED]");
+        if (node.removed)
+          flags = addS (flags, ' ', "[REMOVED]");
+        if (node.bad_source)
+          flags = addS (flags, ' ', "[" + node.bad_source + "]");
+      }
+        
+      let leafName = fix;
+      leafName = addS (leafName, ' | ', objName);
+      leafName = addS (leafName, ' | ', flags);
+      leafName = addS (leafName, ' | ', node.props);
       
-    let leafName = fix;
-    leafName = addS (leafName, ' | ', objName);
-    leafName = addS (leafName, ' | ', flags);
-    leafName = addS (leafName, ' | ', node.props);
-    
-    name = addS (node.tax_name_curated || node.tax_name_submitted, " | ", leafName);
-  }  
+      name = addS (node.tax_name_curated || node.tax_name_submitted, " | ", leafName);
+    }  
   else
     name = node.phylName;
     
@@ -1590,7 +1593,7 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
 	  if (node.selectedLeaves)
   	  innerHTML += "<form onsubmit='parent.parent.parent.saveLeaves(" + nodeId + ",true);return false'><input type='submit' value='Save highlighted leaves info'></form>";
 	  if (node.leaves >= 3)
-  	  innerHTML += "<form onsubmit='parent.parent.parent.saveNewick(" + nodeId + ");return false'><input type='submit' value='Save subtree in Newick format'></form>";
+  	  innerHTML += "<form onsubmit='parent.parent.parent.saveNewick(" + nodeId + ");return false'><input type='submit' value='Save subtree in Newick format (with" + ifS(!showOutliers,"out") + " outliers)'></form>";
 	  if (tree == -1 && node.parent)
   	  innerHTML += "<form onsubmit='parent.parent.parent.node2root(" + nodeId + ");return false'><input type='submit' value='Set this arc as root'></form>";
   }
@@ -1755,7 +1758,8 @@ var findGenomes = function (name_part, bad_source, types_only)
       continue;
     if (! bad_source && node.bad_source)
       continue;
-    if (node2printName (node,false,false).toLowerCase().indexOf(name_part_) != -1)
+    const printName = node2printName (node,false,false);
+    if (printName && printName.toLowerCase().indexOf(name_part_) != -1)
       if (! types_only || node.type)
       {
         selectGenome (nodeId, true);
@@ -2815,7 +2819,8 @@ var parseNewick = function ()
           return null;
       }
     if (! name)    
-      error ("Empty name");
+      return '';  // was: error ("Empty name");
+        // There may be "()" in the newick file
   //alert ("parseName: " + name);  
     return name.replace(/_/g,' ').trim();
   }
@@ -2908,18 +2913,12 @@ var parseNewick = function ()
     else
     {
       node.obj_id = parseName ();
-      if (node.obj_id)
+      if (node.obj_id == null)
       {
-        const pos = node.obj_id.lastIndexOf('|');
-        if (pos >= 0)
-        {
-          node.phylName = node.obj_id.substr(0,pos).trim();
-          node.obj_id   = node.obj_id.substr(pos+1).trim();
-        }
-        node.obj_id = node.obj_id.replace(/_/g,' ');  // was: replace(/ /g,'_') 
-      }
-      else
+        node.obj_id = "";
         return null;
+      }
+      node.obj_id = node.obj_id.replace(/_/g,' ');  // was: replace(/ /g,'_') 
     }
     return node;
   }
@@ -3086,7 +3085,7 @@ select id \
      , to_be_replaced \
      , jira \
   from Phyltree_vw \
-  order by [name], object_type, comparison, release, create_dat \
+  order by [name], object_type, comparison, release, create_dat, parm \
 ");
   for (const row_num in rs)
   {
