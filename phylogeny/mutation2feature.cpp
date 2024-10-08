@@ -101,7 +101,7 @@ struct ThisApplication : Application
 	  	addPositional ("feature_dir", "Output directory for 3-valued Boolean atrtributes for makeFeatrueTree");
 	  	addFlag ("aa", "Mutations of protein sequences, otherwise of DNA sequences");
 	  	addFlag ("append", "Append existing files in <feature_dir>");
-  	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
+  	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (small_hash_class_max - 1) + "\" which are the hashes of file names");
 	  }
 
 
@@ -126,7 +126,7 @@ struct ThisApplication : Application
         {
           Vector<Mutation> muts;  muts. reserve (16);  // PAR
           {
-            LineInput li (inDirName + (large ? "/" + to_string (str2hash_class (fName)) : "") + "/" + fName);
+            LineInput li (inDirName + (large ? "/" + to_string (str2hash_class (fName, false)) : "") + "/" + fName);
             while (li. nextLine ())
             {
               Mutation mut (aa, li. line);
@@ -178,7 +178,7 @@ struct ThisApplication : Application
         string dir (outDirName);
         if (large)
         {
-          dir += "/" + to_string (str2hash_class (it. first));
+          dir += "/" + to_string (str2hash_class (it. first, false));
           Dir (dir). create ();
         }
         const ios_base::openmode mode = append ? ios_base::app : ios_base::out;
