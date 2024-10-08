@@ -128,14 +128,15 @@ struct ThisApplication : Application
 \"%f\" - item, \
 \"%<n>\" - subitem #n (1 <= n <= 9), \
 \"%{<n>}\" - subitem #n (n >= 10), \
-\"%h\" - item hash (0.." + to_string (hash_class_max - 1) + "), \
+\"%h\" - small item hash (0.." + to_string (small_hash_class_max - 1) + "), \
+\"%H\" - large item hash (0.." + to_string (large_hash_class_max - 1) + "), \
 \"%q\" - single quote, \
 \"%Q\" - double quote, \
 \"%D\" - $, \
 \"%g\" - `, \
 \"%b\" - backslash, \
 \"%p\" - %");
-      addFlag ("large", "Directory <items> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (hash_class_max - 1) + "\" which are the hashes of file names");
+      addFlag ("large", "Directory <items> is large: it is subdivided into subdirectories \"0\" .. \"" + to_string (small_hash_class_max - 1) + "\" which are the hashes of file names");
   	  addKey ("errors", "Ignore errors in running items and save error items into this file");
   	    // Bug: ^C does not stop the program ??
   	//addKey ("blank_lines", "# Blank lines to be printed to stderr after each command", "0");
@@ -272,7 +273,6 @@ struct ThisApplication : Application
           continue;
           
         const string item_orig (item);
-        const size_t hash_class = str2hash_class (item_orig);
   	      
   	    if (contains (item, delChar))
   	      throw runtime_error ("Item has an ASCII 127 (DEL) character");
@@ -280,7 +280,8 @@ struct ThisApplication : Application
   	      
         string thisCmd (cmd);
         replaceStr (thisCmd, "%f", item);
-        replaceStr (thisCmd, "%h", to_string (hash_class));
+        replaceStr (thisCmd, "%h", to_string (str2hash_class (item_orig, false)));
+        replaceStr (thisCmd, "%H", to_string (str2hash_class (item_orig, true)));
         replaceStr (thisCmd, "%n", to_string (n));
 
         if (subitemsP)
