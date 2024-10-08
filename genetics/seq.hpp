@@ -103,6 +103,9 @@ extern const char* dnaWildcards;
   b = cgt
   n = acgt
 */
+inline bool isAmbigNucl (char c)
+  { return strchr (dnaWildcards, c); }
+
 
 extern const char* extDnaAlphabet;
   // = DnaAlphabet + DnaWildcards
@@ -121,6 +124,9 @@ extern const char* peptideAlphabet;
   // Amino acides
 
 extern const char* peptideWildcards;
+inline bool isAmbigAa (char c)
+  { return strchr (peptideWildcards, c); }
+
 
 extern const char* extPeptideAlphabet;
   // = PeptideAlphabet + PeptideWildcards
@@ -147,7 +153,11 @@ size_t alphabet2Pos (const char* alphabet,
                      char        c);
   // Return: position of c in alphabet[]
   // Requires: c in alphabet[]
-
+  
+  
+inline bool isAmbig (char c,
+                     bool aa)
+  { return aa ? isAmbigAa (c) : isAmbigNucl (c); }
 
 
 typedef  unsigned char  Gencode;
