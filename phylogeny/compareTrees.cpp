@@ -280,7 +280,7 @@ struct ThisApplication : Application
     }
         
 
-    VectorPtr<Tree::TreeNode> interiorArcNodes1;  interiorArcNodes1. reserve (tree1->nodes. size ());
+    VectorPtr<Tree::TreeNode> interiorArcNodes1;  interiorArcNodes1. reserve (tree1->nodes. size ());  // 1-1 relation with unordered arcs
    	for (const DiGraph::Node* node_ : tree1->nodes)  
    	{
    	  const Tree::TreeNode* node = static_cast <const Tree::TreeNode*> (node_);
@@ -300,6 +300,7 @@ struct ThisApplication : Application
           for (const DiGraph::Node* child : children)
           {
             const Tree::TreeNode* treeChild = static_cast <const Tree::TreeNode*> (child);
+            ASSERT (treeChild);
             if (! treeChild->isLeafType ())
               interiors << treeChild;
           }
@@ -336,6 +337,7 @@ struct ThisApplication : Application
       // value: not deterministic <= Leaf's in tree2 are removed 
    	for (const Tree::TreeNode* node1 : interiorArcNodes1)  
    	{
+   	  ASSERT (node1);
    		const Signature sig (leaves2signature (node2leaves [node1]));
       if (sig. leaves)
       {
