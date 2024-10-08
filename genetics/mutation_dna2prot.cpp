@@ -161,17 +161,19 @@ struct ThisApplication : Application
   	  addPositional ("annot", "File with CDS annotations in <ref>, line format: <CDS name> <start> <stop>; 1-based, <stop> is the last nucleotide position");
   	  addKey ("gencode", "NCBI genetic code", "1");
   	  addFlag ("dna_mut", "print DNA mutation");
+  	  addFlag ("annot_overlap", "Print DNA mutation and overlapping protein annotations only");
   	}
 
 
 
 	void body () const final
   {
-		const string  mutFName    = getArg ("mut");
-		const string  refFName    = getArg ("ref");
-		const string  annotFName  = getArg ("annot");
-		const Gencode gencode     = (Gencode) arg2uint ("gencode");
-		const bool    printDnaMut = getFlag ("dna_mut");
+		const string  mutFName     = getArg ("mut");
+		const string  refFName     = getArg ("ref");
+		const string  annotFName   = getArg ("annot");
+		const Gencode gencode      = (Gencode) arg2uint ("gencode");
+		const bool    printDnaMut  = getFlag ("dna_mut");
+		const bool    annotOverlap = getFlag ("annot_overlap");
 
 
     unique_ptr<const Dna> ref;
@@ -213,6 +215,7 @@ struct ThisApplication : Application
         dnaMut. qc ();
         QC_ASSERT (dnaMut. geneName. empty ());
         QC_ASSERT (dnaMut. stop () <= ref->seq. size ());
+        VectorPtr<Annot> overlappedAnnots;
         for (const Annot& annot : annots)
         {
           if (! annot. overlap (dnaMut))
@@ -220,8 +223,9 @@ struct ThisApplication : Application
           if (verbose ())
             cout << annot << endl
                  << dnaMut << endl;
+          overlappedAnnots << & annot;
           const Mutation dnaMutTrimmed (annot. trimMutation (dnaMut));
-          if (dnaMutTrimmed. ref == dnaMutTrimmed. allele)
+          if (dnaMutTrimmed. ref == dnaMutTrimmed. allele)  // Not a mutation
             continue;
           dnaMutTrimmed. qc ();
           ASSERT (annot. contains (dnaMutTrimmed));
@@ -247,7 +251,7 @@ struct ThisApplication : Application
             const Annot mutAnnot (annot. trimAnnot (dnaMutTrimmed));
             mutAnnot. qc ();
             const Peptide mutProt (mutAnnot. getOrf (mutDna). makePeptide (1/*frame*/, gencode, false, false, translationStart));
-            if (refProt. seq == mutProt. seq)
+            if (refProt. seq == mutProt. seq)  // Synonymous mutation
               continue;
             if (mutProt. seq. empty ())
               protMut = Mutation (annot. name, 0, refProt. seq, noString, false);
@@ -286,13 +290,24 @@ struct ThisApplication : Application
           }
           protMut. qc ();
           ASSERT (protMut. prot); 
-          if (! (protMut == protMut_prev))
-          {
-            if (printDnaMut)
-              cout << dnaMut << '\t';
-            cout << protMut << endl;
-          }
+          if (! annotOverlap)
+            if (! (protMut == protMut_prev))
+            {
+              if (printDnaMut)
+                cout << dnaMut << '\t';
+              cout << protMut << endl;
+            }
           protMut_prev = protMut;
+        }
+        if (   annotOverlap 
+            && ! overlappedAnnots. empty ()
+           )
+        {
+          string s;
+          for (const Annot* annot : overlappedAnnots)
+            add (s, ",", annot->name);
+          ASSERT (! s. empty ());
+          cout << dnaMut << '\t' << s << endl;
         }
       }
     }
