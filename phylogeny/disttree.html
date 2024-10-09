@@ -14,7 +14,7 @@
   <script type='text/javascript' src='jquery-1.11.1.js'></script>
 
   <!-- If offline then replace this with text and move to &lt;script&gt  -->
-  <script type='text/javascript' src="common.js?ver=13"></script>
+  <script type='text/javascript' src="common.js?ver=14"></script>
   
   <!-- If offline then remove  -->
   <script type='text/javascript' src="common_db.js?ver=3"></script>
@@ -583,7 +583,7 @@ var node2pathName = function (nodeId)
   let pathTip = node2name (nodes[nodeId]) ? "" : q2h (node2lcaName (nodeId));
   if (pathTip.indexOf ("/") != -1)
     pathTip = '"' + pathTip + '"';
-  return node2path_ (nodeId, pathTip);
+  return sSuf(newickP,': ') + node2path_ (nodeId, pathTip);
 }
 
 
@@ -2739,7 +2739,7 @@ var readData = function ()
 
 
 var newick = null;  // Text in Newick format
-var newickP = false;
+var newickP = null;  // Newick file name
 var gainInfo = null;  // Text
 var lossInfo = null;  // Text
 
@@ -2999,7 +2999,7 @@ var parseNewick = function ()
   mainRoot = 1;
   curRoot = 1;
   
-  newickP = true;
+//newickP = true;
   newick = null;  // clear memory
   
   
@@ -3299,6 +3299,7 @@ else if (getParams().newick)
     {
       const fr = new FileReader();
       fr.onload = function () { newick = fr.result; }
+      newickP = this.files[0].name;
       fr.readAsText (this.files[0]);
     });
   document.getElementById('input_gains').addEventListener('change', function () 
