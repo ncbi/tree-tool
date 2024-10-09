@@ -54,7 +54,8 @@ namespace
 void printPatristic (OFStream &f, 
                      const DTNode* node,
                      VectorPtr<Leaf> &leaves, 
-                     Vector<Real> &distances)   // Distance from leaves to node
+                     Vector<Real> &distances,
+                     Progress &prog)   // Distance from leaves to node
 // By Josh Cherry: https://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/doxyhtml/tree__to__dist__mat_8cpp_source.html (has a bug)
 // Time: O(n^2)
 {
@@ -75,7 +76,7 @@ void printPatristic (OFStream &f,
   {
     const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
     const size_t childStart = leaves. size ();
-    printPatristic (f, child, leaves, distances);
+    printPatristic (f, child, leaves, distances, prog);
     FFOR_START (size_t, i, childStart, leaves. size ())  // Descendants of child
     {
       distances [i] += child->len;
@@ -89,6 +90,7 @@ void printPatristic (OFStream &f,
           << '\t' << leaf2->name
           << '\t' << distances [i] + distances [j]
           << '\n';
+        prog ();
       }
     }
   }  
@@ -277,9 +279,10 @@ struct ThisApplication : Application
     	OFStream outF (dist_pairs);
       if (dist_request. empty ())
       {
-	    	VectorPtr<Leaf> leaves;  leaves. reserve (tree. nodes. size ());
+	    	VectorPtr<Leaf> leaves;  leaves. reserve (tree. name2leaf. size ());
 	      Vector<Real> distances;  distances. reserve (leaves. capacity ()); 
-	      printPatristic (outF, static_cast <const DTNode*> (tree. root), leaves, distances);
+	      Progress prog (leaves. capacity () * (leaves. capacity () - 1) / 2, 1000000);  // PAR
+	      printPatristic (outF, static_cast <const DTNode*> (tree. root), leaves, distances, prog);
       }
       else
       {
