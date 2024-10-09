@@ -158,6 +158,12 @@ var sPref = function (pref, s)
 }
 
 
+var sSuf = function (s, suf)
+{
+  return s ? s + suf : "";
+}
+
+
 var addS = function (s, delimiter, addition)
 {
   if (! addition)
