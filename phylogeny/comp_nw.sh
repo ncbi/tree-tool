@@ -1,14 +1,17 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Comparison of 2 trees with the same leaves by distances"
-  echo "#1: Tree 1 in Newick"
-  echo "#2: Tree 2 in Newick"
+  echo -e "Print: tree1\ttree2\tleaves\tmean\tmedian\tmax\tRF_A\tRF_B\tRF"
+  echo "#1: tree 1 in Newick"
+  echo "#2: tree 2 in Newick"
+  echo "#3: output file of pairwise distances between leaves for tree 1and tree 2 | ''"
   exit 1
 fi
 T1=$1
 T2=$2
+PAIR=$3
 
 
 $THIS/../check_file.sh $T1 1
@@ -32,19 +35,29 @@ LEAVES=$( cat $TMP.obj1 | wc -l )
 $THIS/statDistTree $TMP.tree1  -dist_pairs $TMP.pairs1 1> /dev/null
 $THIS/statDistTree $TMP.tree2  -dist_pairs $TMP.pairs2 1> /dev/null
 
-sed 's/\t/-/1' $TMP.pairs1 | sort > $TMP.out1
-sed 's/\t/-/1' $TMP.pairs2 | sort > $TMP.out2
+
+echo "Distance comparison ..." > /dev/stderr
+# Object names may include "-"
+sed 's/\t/ - /1' $TMP.pairs1 > $TMP.2col1
+sed 's/\t/ - /1' $TMP.pairs2 > $TMP.2col2
+sort  --parallel 10  -S10G  $TMP.2col1 > $TMP.out1
+sort  --parallel 10  -S10G  $TMP.2col2 > $TMP.out2
 
 # QC
 cut -f 1 $TMP.out1 > $TMP.label1
 cut -f 1 $TMP.out2 > $TMP.label2
 diff $TMP.label1 $TMP.label2
 
+if [ $PAIR ]; then
+  paste $TMP.out1 $TMP.out2 | cut -f 1,2,4 > $PAIR
+fi
+
 cut -f 2 $TMP.out1 > $TMP.dist1
 cut -f 2 $TMP.out2 > $TMP.dist2
 paste $TMP.dist1 $TMP.dist2 > $TMP.dist
 
-awk '{print $1 - $2};' $TMP.dist | sort -g > $TMP.diff
+awk '{print $1 - $2};' $TMP.dist > $TMP.diff_raw
+sort  --parallel 10  -S10G  -g  $TMP.diff_raw > $TMP.diff
 N=$( cat $TMP.diff | wc -l )
 M=$( echo "$N / 2" | bc )
 MED=$( head -$M $TMP.diff | tail -1 )
@@ -52,6 +65,8 @@ cat $TMP.diff | count > $TMP.count
 MEAN=$( grep -w "^mean" $TMP.count | cut -f 2 )
 MAX=$( grep -w "^max" $TMP.count | cut -f 2 )
 
+
+echo "Robinson-Foulds ..." > /dev/stderr
 $THIS/compareTrees $TMP.tree1 $TMP.tree2 > $TMP.comp1
 M1=$( grep -cw '^match-' $TMP.comp1 ) || M1=0
 $THIS/compareTrees $TMP.tree2 $TMP.tree1 > $TMP.comp2
