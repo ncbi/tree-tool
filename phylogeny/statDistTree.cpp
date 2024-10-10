@@ -75,6 +75,7 @@ void printPatristic (OFStream &f,
   for (const DiGraph::Arc* arc : node->arcs [false])
   {
     const DTNode* child = static_cast <const DTNode*> (arc->node [false]);
+    ASSERT (child);
     const size_t childStart = leaves. size ();
     printPatristic (f, child, leaves, distances, prog);
     FFOR_START (size_t, i, childStart, leaves. size ())  // Descendants of child
