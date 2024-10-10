@@ -6,7 +6,7 @@ if [ $# -ne 3 ]; then
   echo -e "Print: tree1\ttree2\tleaves\tmean\tmedian\tmax\tRF_A\tRF_B\tRF"
   echo "#1: tree 1 in Newick"
   echo "#2: tree 2 in Newick"
-  echo "#3: output file of pairwise distances between leaves for tree 1and tree 2 | ''"
+  echo "#3: output file of pairwise distances between leaves for tree 1and tree 2 (will be gzip'ped) | ''"
   exit 1
 fi
 T1=$1
@@ -19,8 +19,10 @@ $THIS/../check_file.sh $T2 1
 
 
 TMP=$( mktemp )
-#comment $TMP
+comment $TMP
 
+
+super_section "Distance computation"
 
 $THIS/newick2tree $T1 > $TMP.tree1
 $THIS/newick2tree $T2 > $TMP.tree2
@@ -36,7 +38,8 @@ $THIS/statDistTree $TMP.tree1  -dist_pairs $TMP.pairs1 1> /dev/null
 $THIS/statDistTree $TMP.tree2  -dist_pairs $TMP.pairs2 1> /dev/null
 
 
-echo "Distance comparison ..." > /dev/stderr
+super_section "Distance comparison"
+
 # Object names may include "-"
 sed 's/\t/ - /1' $TMP.pairs1 > $TMP.2col1
 sed 's/\t/ - /1' $TMP.pairs2 > $TMP.2col2
@@ -50,6 +53,7 @@ diff $TMP.label1 $TMP.label2
 
 if [ $PAIR ]; then
   paste $TMP.out1 $TMP.out2 | cut -f 1,2,4 > $PAIR
+  gzip $PAIR &
 fi
 
 cut -f 2 $TMP.out1 > $TMP.dist1
@@ -66,7 +70,7 @@ MEAN=$( grep -w "^mean" $TMP.count | cut -f 2 )
 MAX=$( grep -w "^max" $TMP.count | cut -f 2 )
 
 
-echo "Robinson-Foulds ..." > /dev/stderr
+super_section "Robinson-Foulds"
 $THIS/compareTrees $TMP.tree1 $TMP.tree2 > $TMP.comp1
 M1=$( grep -cw '^match-' $TMP.comp1 ) || M1=0
 $THIS/compareTrees $TMP.tree2 $TMP.tree1 > $TMP.comp2
@@ -78,4 +82,5 @@ RF=$(( M1 + M2 ))
 echo -e "$T1\t$T2\t$LEAVES\t$MEAN\t$MED\t$MAX\t$M1\t$M2\t$RF"
 
 
+wait
 rm $TMP*
