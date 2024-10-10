@@ -4465,9 +4465,11 @@ Mutation::Mutation (bool prot_arg,
       frameshift = true;
       allele. clear ();
     }
+  #if 0
     for (const char c : allele)
       if (isAmbigAa (c))
         ambig = true;
+  #endif
   }
   else
   {
@@ -4475,10 +4477,14 @@ Mutation::Mutation (bool prot_arg,
       ref. clear ();
     if (allele == "DEL")
       allele. clear ();
+  #if 0
     for (const char c : allele)
       if (isAmbigNucl (c))
         ambig = true;
+  #endif
   }
+  
+  setAmbig ();
 }
 
 
@@ -4496,6 +4502,19 @@ Mutation::Mutation (string geneName_arg,
 , frameshift (frameshift_arg)
 {
   ASSERT (! geneName. empty ());
+  setAmbig ();
+}
+
+
+
+void Mutation::setAmbig ()
+{
+  for (const char c : allele)
+    if (isAmbig (c, prot))
+    {
+      ambig = true;
+      return;
+    }
 }
 
 

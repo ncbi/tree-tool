@@ -1264,12 +1264,15 @@ struct Mutation : Root
     , pos (pos_arg)
     , ref (ref_arg)
     , allele (allele_arg)
-    {}
+    { setAmbig (); }
   Mutation (string geneName_arg,
             size_t pos_arg,
             string ref_arg,
             string allele_arg,
             bool frameshift_arg);
+private:
+  void setAmbig ();
+public:
   Mutation () = default;
   Mutation (const Mutation&) = default;
   Mutation& operator= (const Mutation&) = default;
