@@ -15,8 +15,9 @@ all:	\
   align2html \
   asm_gap \
   asnt \
-	blastmat \
 	blast_best_hits \
+	blastmat \
+	blastn2mlst \
 	blastp_merge \
 	contig2read_coverage \
 	dna2orfs \
@@ -93,16 +94,22 @@ asnt:	$(asntOBJS)
 	$(CXX) -o $@ $(asntOBJS) $(LIBS) 
 	$(ECHO)
 
+blast_best_hits.o:  $(COMMON_HPP) 
+blast_best_hitsOBJS=blast_best_hits.o $(CPP_DIR)/common.o
+blast_best_hits:	$(blast_best_hitsOBJS)
+	$(CXX) -o $@ $(blast_best_hitsOBJS) $(LIBS) 
+	$(ECHO)
+
 blastmat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
 blastmatOBJS=blastmat.o $(SEQ_OBJ)
 blastmat:	$(blastmatOBJS)
 	$(CXX) -o $@ $(blastmatOBJS) $(LIBS) 
 	$(ECHO)
 
-blast_best_hits.o:  $(COMMON_HPP) 
-blast_best_hitsOBJS=blast_best_hits.o $(CPP_DIR)/common.o
-blast_best_hits:	$(blast_best_hitsOBJS)
-	$(CXX) -o $@ $(blast_best_hitsOBJS) $(LIBS) 
+blastn2mlst.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+blastn2mlstOBJS=blastn2mlst.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+blastn2mlst:	$(blastn2mlstOBJS)
+	$(CXX) -o $@ $(blastn2mlstOBJS) $(LIBS) 
 	$(ECHO)
 
 blastp_merge.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
