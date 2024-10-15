@@ -15,8 +15,8 @@ endif
 ALL=	\
   ascii \
   colors_test \
-  curl_easy_test \
   connectPairs \
+  curl_easy_test \
   effectiveSize \
   extractPairs \
   file2hash \
