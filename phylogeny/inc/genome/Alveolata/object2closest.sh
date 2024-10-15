@@ -1,15 +1,17 @@
 #!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
   echo "Find closest genomes"
   echo "#1: Genome.id"
   echo "#2: directory or ''"
-  echo "#3: subset of Genome.id's"
+  echo "#3: subset of objects (absolute pathname)"
+  echo "#4: output file (absolute pathname)"
   exit 1
 fi
 GENOME=$1
 DIR="$2"
 SUBSET=$3
+OUT=$4
 
 
 INC=`dirname $0`
@@ -26,7 +28,7 @@ if [ -z $DIR ]; then
   fi
 fi
 
-CPP_DIR/phylogeny/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME $TAX $DIR "PRT" $SUBSET
+CPP_DIR/phylogeny/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME $TAX $DIR "PRT" $SUBSET > $OUT
 
 
 
