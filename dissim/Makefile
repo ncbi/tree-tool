@@ -17,6 +17,7 @@ all:	\
 	blast2cons \
   combine_dissims \
   conv_comb \
+  dna_align_service \
 	dna_diff \
 	dna_pair2dissim \
 	fasta2dissim \
@@ -61,6 +62,12 @@ conv_comb.o:  $(NUMERIC_HPP)
 conv_combOBJS=conv_comb.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
 conv_comb:	$(conv_combOBJS)
 	$(CXX) -o $@ $(conv_combOBJS) $(LIBS)
+	$(ECHO)
+
+dna_align_service.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_align_serviceOBJS=dna_align_service.o $(SEQ_OBJ)
+dna_align_service:	$(dna_align_serviceOBJS)
+	$(CXX) -o $@ $(dna_align_serviceOBJS) $(LIBS)
 	$(ECHO)
 
 dna_diff.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
