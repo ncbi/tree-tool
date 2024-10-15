@@ -67,10 +67,9 @@ void executeCommand (const string &cmd,
     if (errors)
     {
     //cout << c << endl;  // always 256 
-      errorsMtx. lock ();
+      const Lock lock (errorsMtx);
     	*errors << item << endl;
       QC_ASSERT (c != -1);
-      errorsMtx. unlock ();
     }
     else if (errorsMtx. try_lock ())  // To suppress messages from the other good threads which fail due to this thread
     {
