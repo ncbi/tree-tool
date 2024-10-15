@@ -2157,13 +2157,14 @@ void subPath2tree_dissim (Subgraph &subgraph,
       if (qc_on && verbose ())
         { QC_ASSERT (! st->pathDissimNums. contains (dissimNum)); }
     #ifdef MUTEX
-      if (threadsUsed)
-        st->mtx. lock ();
+      const Lock (st->mtx, threadsUsed);
+    //if (threadsUsed)
+      //st->mtx. lock ();
     #endif
       st->pathDissimNums << dissimNum;
     #ifdef MUTEX
-      if (threadsUsed)
-        st->mtx. unlock ();
+    //if (threadsUsed)
+      //st->mtx. unlock ();
     #endif
     }
   }
