@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Process new objects for a distance tree"
@@ -10,7 +10,7 @@ if [ $# -ne 2 ]; then
   echo "#2: new object"
   exit 1
 fi
-INC=$1
+INC=$( realpath $1 )
 OBJ=$2
 
 
@@ -31,12 +31,11 @@ $INC/pairs2dissim.sh $DIR/request "" $DIR/dissim.add $LOG &> $LOG.pairs2dissim
 
 # QC
 if [ ! -s $DIR/dissim.add ]; then
-  echo "Empty $DIR/dissim.add" >> $LOG
-  exit 1
+  error "Empty $DIR/dissim.add" >> $LOG
 fi
 
-N=`cat $DIR/request    | wc -l`
-M=`cat $DIR/dissim.add | wc -l`
+N=$( cat $DIR/request    | wc -l )
+M=$( cat $DIR/dissim.add | wc -l )
 if [ $N -ne $M ]; then
   wc -l $DIR/request    >> $LOG
   wc -l $DIR/dissim.add >> $LOG
