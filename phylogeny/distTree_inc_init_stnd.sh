@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Initialize an incremental distance tree directory with standard parameters for a specific biological project in #1/"
@@ -23,7 +23,7 @@ if [ ! -e $FROM/variance ]; then
   error "$FROM must be an incremental distance tree directory"
 fi
 
-if [ $SERVER ]; then
+if [ -n "$SERVER" ]; then
   ( sqsh-ms  -S $SERVER  -D $DATABASE  -m bcp  -C "select @@version" &> /dev/null ) || error "Database is not available"
 fi
 
@@ -36,7 +36,7 @@ $THIS/distTree_inc_init.sh $INC 1 "" 0 NAN NAN "" $LARGE 0 "$SERVER" "$DATABASE"
 cp $FROM/* $INC/
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 CPP_DIR=$THIS/..
 ls $FROM | grep '.sh$' > $TMP
