@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Initialize a new object for a distance tree"
@@ -8,7 +8,7 @@ if [ $# -ne 2 ]; then
   echo "#2: new object"
   exit 1
 fi
-INC=$1
+INC=$( realpath $1 )
 OBJ=$2
 
 
@@ -22,7 +22,7 @@ DIR=$INC/search/$OBJ
 
 while true; do
   set +o errexit
-	$INC/object2closest.sh $OBJ "" $INC/tree.list > $DIR/request.raw
+	$INC/object2closest.sh $OBJ "" $INC/tree.list $DIR/request.raw
   S=$?
   set -o errexit
 	if [ $S == 0 ]; then
