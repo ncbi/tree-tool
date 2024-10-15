@@ -1,15 +1,17 @@
 #!/bin/bash --noprofile
 source CPP_DIR/bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
   echo "Find closest genomes among #3"
   echo "#1: Virus.id"
   echo "#2: new object directory or ''"
-  echo "#3: subset of Genome.id's"
+  echo "#3: subset of Genome.id's (absolute pathname)"
+  echo "#4: output file (absolute pathname)"
   exit 1
 fi
 NEW_OBJ=$1
 DIR="$2"
 SUBSET=$3
+OUT=$4
 
 
 #set -o xtrace 
@@ -30,7 +32,7 @@ SIZE=30000  # = ln(tree size)  * 2000
 CPP_DIR/index_find $INC/../mut.dna $INC/../mut.index $SIZE $DIR/$NEW_OBJ -large > $TMP
 if [ -s $TMP ]; then
   grep -f $INC/../deleted.all -vx $TMP > $TMP.out
-  head -100 $TMP.out
+  head -100 $TMP.out > $OUT
 else
   if true; then  
     REAL_REF=`readlink $INC/../ref`
