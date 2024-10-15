@@ -3,8 +3,8 @@ THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Robinson-Foulds comparison"
-  echo "#1: Tree 1"
-  echo "#2: Tree 2"
+  echo "#1: tree 1"
+  echo "#2: tree 2"
   exit 1
 fi
 T1=$1
