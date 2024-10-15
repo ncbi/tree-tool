@@ -66,3 +66,15 @@ function comment
 	local MSG="$1"
   echo -e "${MAGENTA}${MSG}${NOCOLOR}" >> /dev/stderr
 }
+
+
+function file2var
+{
+  local F=$1
+  local DEFAULT="$2"
+  if [ -e $F ]; then
+    cat $F
+  else
+    echo $DEFAULT
+  fi  
+}
