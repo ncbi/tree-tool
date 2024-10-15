@@ -17,11 +17,6 @@ $THIS/../check_tmp.sh
 
 # PAR
 SEED=1  # >= 1
-
-
-GRID_MIN=$( cat $INC/pairs2dissim.grid )
-SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
-  # was: $GRID_MIN / 100
 QC=""  # -qc  
 RATE=0.015   # PAR
 VARIANCE=$( cat $INC/variance )
@@ -36,11 +31,10 @@ if [ $ADD == 0 ]; then
   ADD=1
 fi
 
-N=15
-if [ -e $INC/threads ]; then
-  N=$( cat $INC/threads )
-fi
-THREADS="-threads $N"
+GRID_MIN=$( cat $INC/pairs2dissim.grid )
+SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
+
+THREADS="-threads $( file2var $INC/threads 15 )"
 
 
 if true; then   
@@ -71,7 +65,7 @@ if [ $VER_OLD != 1 ]; then
   gzip $INC/hist/tree.$VER_OLD
 fi
 
-VER=$(( $VER_OLD + 1 ))
+VER=$(( VER_OLD + 1 ))
 echo $VER > $INC/version
 super_section "version: $VER"
 
@@ -107,8 +101,8 @@ else
     mkdir $INC/log
     $THIS/../trav  $INC/search "touch $INC/log/%f" 
     GRID=0
-    if [ $N -lt $SEARCH_GRID_MIN ]; then
-      $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" 
+    if [ -e $INC/nogrid  -o  $N -lt $SEARCH_GRID_MIN ]; then
+      $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" $THREADS
     else
       GRID=1
       $THIS/../grid_wait.sh 1
@@ -138,14 +132,16 @@ else
       break  
     fi
 
-  	ITER=$(( $ITER + 1 ))
+  	ITER=$(( ITER + 1 ))
     section "Iteration $ITER / $ITER_MAX"
     # use distTree_inc_request2dissim.sh ??
     REQ=$( $THIS/../trav $INC/search "cat %d/%f/request" | wc -l )
     echo "# Requests: $REQ"
     GRID=1
-    if [ $REQ -lt $GRID_MIN ]; then
+    THREADS_PARAM=""
+    if [ -e $INC/nogrid  -o  $REQ -lt $GRID_MIN ]; then
       GRID=0  
+      THREADS_PARAM="$THREADS"
     fi
 
     mkdir $INC/log
@@ -153,7 +149,7 @@ else
     if [ $GRID == 1 ]; then
   	  $THIS/../grid_wait.sh 1
     fi
-    $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"
+    $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search.sh $INC %f %n $GRID"  $THREADS_PARAM
     if [ $GRID == 1 ]; then
       WAIT=2000  # PAR
       if [ $GRID_MIN -le 200 ]; then  
