@@ -155,7 +155,7 @@ void errorExitStr (const string &msg);
   // Invokes: throw logic_error
 
 
-struct InputError : runtime_error
+struct InputError : runtime_error  // ??
 { 
   static bool on;
     // Init: false
@@ -164,6 +164,11 @@ struct InputError : runtime_error
     : runtime_error (what_arg) 
     { on = true; } 
 };
+
+
+
+void sleepNano (long nanoSec);
+
 
 
 void beep ();
@@ -1362,6 +1367,9 @@ void copyText (const string &inFName,
 
   void removeDirectory (const string &dirName);
     // With its contents
+                        
+  string makeTempDir ();
+    // And test
 
   void concatTextDir (const string &inDirName,
                       const string &outFName);
@@ -1718,6 +1726,29 @@ void exec (const string &cmd,
   string which (const string &progName);
     // Return: isRight(,"/") or empty() if there is no path
 #endif
+
+
+
+struct Lock
+{
+  const bool active;
+private:
+  std::mutex& mtx;
+public:
+    
+    
+  explicit Lock (std::mutex &mtx_arg,
+                 bool active_arg = true)
+    : active (active_arg)
+    , mtx (mtx_arg)
+    { if (active)
+        mtx_arg. lock (); 
+    }
+ ~Lock ()
+    { if (active)
+        mtx. unlock (); 
+    }
+};
 
 
 
@@ -3317,7 +3348,6 @@ template <typename T>
   public:
 
 
-
     explicit Heap (const CompareInt &comp_arg,
   					       const SetHeapIndex &setHeapIndex_arg = nullptr,
   					       size_t toReserve = 0)
@@ -3429,9 +3459,9 @@ template <typename T>
 
     // Test
     static void testStr ()    
-      { StringVector vec {"Moscow", "San Diego", "Los Angeles", "Paris"};
-        Heap<string> heap (strComp);
-        for (string& s : vec)
+      { const StringVector vec {"Moscow", "San Diego", "Los Angeles", "Paris"};
+        Heap<const string> heap (strComp);
+        for (const string& s : vec)
           heap << & s;
         while (! heap. empty ())  
         { cout << * heap. getMaximum () << endl;
@@ -3443,8 +3473,8 @@ template <typename T>
                         const void* s2)
       { const string& s1_ = * static_cast <const string*> (s1);
         const string& s2_ = * static_cast <const string*> (s2);
-        if (s1_ > s2_)  return -1;
         if (s1_ < s2_)  return  1;
+        if (s1_ > s2_)  return -1;
         return 0;
       }
   };
@@ -3510,8 +3540,14 @@ public:
 
   bool on () const
     { return enabled && threads_max == 1; }
+  bool started () const
+    { return startTime != noclock; }
   void start ();
+    // Requires: !started()
   void stop ();
+    // Requires: started()
+  void cancel ()
+    { startTime = noclock; }
   void print (ostream &os) const;
 };
 
@@ -4729,9 +4765,7 @@ protected:
   string tmp;
     // Temporary directory: ($TMPDIR or "/tmp") + "/" + programName + "XXXXXX"
     // If log is used then tmp is printed in the log file and the temporary files are not deleted 
-private:
-  bool tmpCreated {false};
-protected:
+    // !empty() => useTmp
   string execDir;
     // Ends with '/'
     // Physically real directory of the software
@@ -4773,7 +4807,7 @@ protected:
   string exec2str (const string &cmd,
                    const string &tmpName,
                    const string &logFName = noString) const;
-    // Return: `cmd > <tmp>/tmpName && cat <tmp>/tmpName`
+    // Return: $( cmd > <tmp>/tmpName && cat <tmp>/tmpName )
     // Requires: cmd produces one line
   string uncompress (const string &quotedFName,
                      const string &suffix) const;
