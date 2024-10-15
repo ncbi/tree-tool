@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
@@ -23,7 +23,7 @@ sort -cu $OBJS
 section "QC $INC/"
 VER=1
 if [ $OVER == 0 ]; then
-  VER=`cat $INC/version`
+  VER=$( cat $INC/version )
   if [ $VER -ne 1 ]; then
     error "version must be 1"
   fi
@@ -56,15 +56,15 @@ else
   cp /dev/null $INC/runlog 
 fi
 
-TMP=`mktemp`
+TMP=$( mktemp )
 $THIS/distTree_inc_new_list.sh $INC > $TMP || (cat $TMP && exit 1)
-N=`cat $TMP | wc -l`
+N=$( cat $TMP | wc -l )
 if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
 fi
 rm $TMP
 
-SERVER=`cat $INC/server`
+SERVER=$( cat $INC/server )
 
 
 section "Computing dissimilarities"
@@ -74,7 +74,7 @@ rm $INC/dissim_request
 $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 
 sort -k3,3g $INC/dissim > $TMP.dissim.sort
-LONGEST=`tail -1 $TMP.dissim.sort | cut -f 3`
+LONGEST=$( tail -1 $TMP.dissim.sort | cut -f 3 )
 echo "Longest dissimilarity: $LONGEST"
 wc -l $INC/dissim
 warning "# Pairs with longest dissimilarity:"
@@ -95,13 +95,13 @@ if [ $SERVER ]; then
   rm $INC/outlier-alien
 fi
 
-HYBRIDNESS_MIN=`cat $INC/hybridness_min`
+HYBRIDNESS_MIN=$( cat $INC/hybridness_min )
 if [ $HYBRIDNESS_MIN != 0 ]; then
   section "distTriangle"
  #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
   mkdir $INC/clust
   $THIS/../dm/distTriangle $INC/../data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new > $INC/hist/distTriangle.1
-  N=`ls $INC/clust/ | wc -l`
+  N=$( ls $INC/clust/ | wc -l )
   if [ $N -gt 1 ]; then
     error "# Clusters: $N"
   fi
@@ -118,10 +118,10 @@ fi
 super_section "Tree"
 HYBRID=""
 if [ $HYBRIDNESS_MIN != 0 ]; then
-  DISSIM_BOUNDARY=`cat $INC/dissim_boundary`
+  DISSIM_BOUNDARY=$( cat $INC/dissim_boundary )
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
 fi
-VARIANCE=`cat $INC/variance`
+VARIANCE=$( cat $INC/variance )
 # Cf. calibrateDissims.sh
 $THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  -output_tree_tmp $INC/tree.tmp > $INC/hist/makeDistTree-complete.1
 rm $INC/tree.tmp
