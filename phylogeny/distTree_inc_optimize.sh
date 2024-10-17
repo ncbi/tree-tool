@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Optimize a distance tree and evaluate"
@@ -15,23 +15,15 @@ VARIANCE="$3"
 OUT_TREE=$4
 
 
-if [ ! -e $INC/phen ]; then
-  error "No $INC/phen"
-fi
-
-N=15
-if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
-fi
-THREADS="-threads $N"
-
 section "Tree"
-$THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE  -optimize  -skip_len  -subgraph_iter_max 5  -output_tree $OUT_TREE
+THREADS=$( file2var $INC/threads 15 )
+$THIS/makeDistTree  -threads $THREADS  -data $INC/  -variance $VARIANCE  -optimize  -skip_len  -subgraph_iter_max 5  -output_tree $OUT_TREE
 
-super_section "Quality"
-LARGE=0
-if [ -e $INC/large ]; then
-  LARGE=1
+if [ -e $INC/phen ]; then
+  super_section "Quality"
+  LARGE=0
+  if [ -e $INC/large ]; then
+    LARGE=1
+  fi
+  $THIS/tree_quality_phen.sh $OUT_TREE "$TARGET" $INC/phen $LARGE 1 ""
 fi
-$THIS/tree_quality_phen.sh $OUT_TREE "$TARGET" $INC/phen $LARGE 1 ""
-
