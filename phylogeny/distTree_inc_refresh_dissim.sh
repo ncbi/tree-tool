@@ -1,16 +1,18 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
   echo "Update #1/dissim"
   echo "#1: incremental distance tree directory"
   echo "#2: compute dissimilarity requests (0/1)"
   echo "#3: save old #1/dissim in #1/dissim.<version>.gz (0/1)"
+  echo "#4: optimize the tree (0/1)"
   exit 1
 fi
 INC=$1
 REQ=$2
 SAVE=$3
+OPTIM=$4
 
 
 VER=$( cat $INC/version )
@@ -57,7 +59,11 @@ else
   cp $INC/tree $INC/hist/tree.$VER
   gzip $INC/hist/tree.$VER
   VARIANCE=$( cat $INC/variance )
-  $THIS/makeDistTree  -data $INC/  -output_tree $TMP.tree  -threads $THREADS  -variance $VARIANCE  -fix_discernible  -optimize  -skip_len  -subgraph_iter_max 2 > $INC/hist/makeDistTree.$VER
+  OPTIM_PARAM=""
+  if [ $OPTIM == 1 ]; then
+    OPTIM_PARAM="-optimize  -skip_len  -subgraph_iter_max 2"
+  fi
+  $THIS/makeDistTree  -data $INC/  -output_tree $TMP.tree  -threads $THREADS  -variance $VARIANCE  -fix_discernible  $OPTIM_PARAM > $INC/hist/makeDistTree.$VER
   mv $TMP.tree $INC/tree
 fi
 
