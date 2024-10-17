@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "#1: incremental distance tree directory"
@@ -12,7 +12,7 @@ COMP=$2
 VERB=$3
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 if [ $VERB == 1 ]; then
   echo $TMP
   set -x
