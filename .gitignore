@@ -73,6 +73,7 @@
 !phylogeny/inc/rRNA/bacteria/
 !phylogeny/inc/virus/
 !phylogeny/inc/virus/SARS-CoV-2/
+phylogeny/inc_save.sh
 !tsv/
 !xml/
 
