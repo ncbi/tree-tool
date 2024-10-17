@@ -95,7 +95,7 @@ void findDissim (const string fName,
     PRINT (vec. size ());
     save (cout, vec, '\n');
     cout << endl;
-    throw InputError ("dissim command requires: <input file> <output file>");
+    throw runtime_error ("dissim command requires: <input file> <output file>");
   }
 
   {  
@@ -360,7 +360,7 @@ struct ThisApplication : Application
           else if (cmd == "closest")
             th = std::move (thread (findClosest, fName, vec));
           else
-            throw InputError ("Unknown command: " + strQuote (fName));
+            throw runtime_error ("Unknown command: " + strQuote (fName));
           th. detach ();
         }
         if (found)
