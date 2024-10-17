@@ -20,10 +20,7 @@ wc -l $DEL
 sort -c -u $DEL
 
 
-N=15
-if [ -e $INC/threads ]; then
-  N=$( cat $INC/threads )
-fi
+N=$( file2var $INC/threads 15 )
 THREADS="-threads $N"
 
 VER=$( cat $INC/version )
@@ -38,7 +35,7 @@ echo $VER > $INC/version
 
 
 section "Deleting from the tree"
-VARIANCE=`cat $INC/variance`
+VARIANCE=$( cat $INC/variance )
 # Cf. distTree_inc_new.sh
 $THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE \
   -delete $DEL  \
