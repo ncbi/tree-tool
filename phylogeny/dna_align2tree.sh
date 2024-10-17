@@ -26,6 +26,7 @@ head -3000 $TMP.sort | sort > $TMP.init
 wc -l $TMP.init
 
 $THIS/distTree_inc_init_stnd.sh $INC "dna_align" '' '' '' ''
+  # remove hybrids ??
 
 
 QUERY=$TMP.query  
