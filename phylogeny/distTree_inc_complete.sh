@@ -3,7 +3,7 @@ THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Compute a complete pair-wise dissimilarity matrix and build a distance tree using the incremental tree data structure"
-  echo "Output: #1/, #1/../data.dm"
+  echo "Output: #1/, data.dm"
   echo "#1: incremental distance tree directory"
   echo "#2: sorted and distinct list of objects"
   echo "#3: overwrite existing data (0/1)"
@@ -81,11 +81,11 @@ warning "# Pairs with longest dissimilarity:"
 cut -f 3 $INC/dissim | grep -cx $LONGEST
 
 section "data.dm"
-$THIS/../dm/conversion/pairs2dm $INC/dissim 1 "dissim" 6 -distance > $INC/../data.dm
+$THIS/../dm/conversion/pairs2dm $INC/dissim 1 "dissim" 6 -distance > data.dm
 warning "nan:"
-grep -wic 'nan' $INC/../data.dm || true
+grep -wic 'nan' data.dm || true
 
-$THIS/../dm/dm2objs $INC/../data -noprogress | sort > $INC/tree.list
+$THIS/../dm/dm2objs data -noprogress | sort > $INC/tree.list
 
 if [ $SERVER ]; then
   section "Outliers"
@@ -100,18 +100,18 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   section "distTriangle"
  #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
   mkdir $INC/clust
-  $THIS/../dm/distTriangle $INC/../data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new > $INC/hist/distTriangle.1
+  $THIS/../dm/distTriangle data "dissim"  -clustering_dir $INC/clust  -hybridness_min $HYBRIDNESS_MIN  -hybrid $INC/hybrid.new > $INC/hist/distTriangle.1
   N=$( ls $INC/clust/ | wc -l )
   if [ $N -gt 1 ]; then
     error "# Clusters: $N"
   fi
-  mv $INC/clust/1/data.dm $INC/../data.dm
+  mv $INC/clust/1/data.dm data.dm
   rm -r $INC/clust/
   if [ $SERVER ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
-  	$THIS/../dm/dm2subset $INC/../data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
-  	mv $INC/data.dm $INC/../
+  	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
+  	mv $INC/data.dm .
   fi
 fi
 
@@ -123,7 +123,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
 fi
 VARIANCE=$( cat $INC/variance )
 # Cf. calibrateDissims.sh
-$THIS/makeDistTree  -threads 5  -data $INC/../data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  -output_tree_tmp $INC/tree.tmp > $INC/hist/makeDistTree-complete.1
+$THIS/makeDistTree  -threads 5  -data data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  -output_tree_tmp $INC/tree.tmp > $INC/hist/makeDistTree-complete.1
 rm $INC/tree.tmp
 
 if [ $SERVER ]; then
