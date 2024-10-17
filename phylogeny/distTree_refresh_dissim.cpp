@@ -51,7 +51,7 @@ namespace
 struct ThisApplication : Application
 {
 	ThisApplication ()
-	: Application ("Create files with representative dissimilarities")
+	: Application ("Create files with representative dissimilarities", true, false, true)
 	{
 	  version = VERSION;
 		// Input
