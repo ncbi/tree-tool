@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
-source $BROVER_CPP/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Compute dissimilarities for pairs of objects"
   echo "#1: input dissimilarity requests (pairs of objects) (absolute pathname)"

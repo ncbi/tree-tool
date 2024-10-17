@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
-source $BROVER_CPP/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Quality check"
   echo "#1: verbose (0/1)"

@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
-source $BROVER_CPP/bash_common.sh
+source CPP_DIR/bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Find closest genomes among #3"
   echo "#1: object"
