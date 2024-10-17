@@ -155,6 +155,7 @@ void errorExitStr (const string &msg);
   // Invokes: throw logic_error
 
 
+#if 0
 struct InputError : runtime_error  // ??
 { 
   static bool on;
@@ -164,6 +165,7 @@ struct InputError : runtime_error  // ??
     : runtime_error (what_arg) 
     { on = true; } 
 };
+#endif
 
 
 
@@ -3700,11 +3702,11 @@ public:
 	  { return charNum + 1 == eol_pos; }
 
 
-  struct Error : InputError
+  struct Error : runtime_error
     { Error (const TextPos tp,
              const string &what,
         	   bool expected = true)
-        : InputError ((tp. str () + what + ifS (expected, " is expected")). c_str ())
+        : runtime_error ((tp. str () + what + ifS (expected, " is expected")). c_str ())
         {}
     };
 };
@@ -4747,7 +4749,7 @@ public:
   int run (int argc, 
            const char* argv []);
     // Invokes: body()
-    // if InputError::on then exit(1) else errorExit()
+    // if runtime_error then exit(1) else errorExit()
 private:
   virtual void body () const = 0;
     // Invokes: initEnvironment()

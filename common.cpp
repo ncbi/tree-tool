@@ -320,7 +320,7 @@ string getStack ()
 
 
 
-bool InputError::on = false;
+//bool InputError::on = false;
 
 
 
