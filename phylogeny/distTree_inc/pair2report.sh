@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-source bash_common.sh
+#source bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Print dissimilarity statistics: # identical proteins, # common universal proteins, AAI%"
   echo "#1: object 1 or new object path, where the object name is basename"
