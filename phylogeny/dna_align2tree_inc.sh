@@ -45,11 +45,11 @@ if [ -s $TMP.new ]; then
   $THIS/../dissim/dna_align_service $ALIGN $QUERY  -threads 20  -log $TMP.query.log  -quiet &
   trap "if [ -e $QUERY ]; then touch $QUERY/.quit; fi" EXIT
 
-  $THIS/distTree_inc_refresh_dissim.sh $INC 0 0
+  section "Converting old dissimilarities to new ones"
+  $THIS/distTree_inc_refresh_dissim.sh $INC 0 0 0
 
   $THIS/distTree_inc_new_cmd.sh $INC "touch" $TMP.new
-  $THIS/distTree_inc.sh $INC 1 '' ''
-  rm arc_existence.dm.gz leaf_errors.dm.gz  
+  $THIS/distTree_inc.sh $INC 1 0 '' ''
 
   touch $QUERY/.quit
   wait

@@ -61,4 +61,4 @@ $THIS/distTree_inc_new_cmd.sh inc "touch" new.list
 rm new.list
 
 super_section "Incremental tree building"
-$THIS/distTree_inc.sh inc 1 ""
+$THIS/distTree_inc.sh inc 1 1 "" ""

@@ -42,7 +42,7 @@ rm data.dm
 $THIS/../setMinus $TMP.obj $TMP.init > $TMP.new
 wc -l $TMP.new
 $THIS/distTree_inc_new_cmd.sh $INC "touch" $TMP.new
-$THIS/distTree_inc.sh $INC 1 '' ''
+$THIS/distTree_inc.sh $INC 1 1 '' ''
 rm arc_existence.dm.gz leaf_errors.dm.gz
 
 touch $QUERY/.quit
