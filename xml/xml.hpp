@@ -146,7 +146,9 @@ public:
   void printTableDdl (ostream &os,
                       bool dataP,
                       bool indexP) const
-    { printTableDdl (os, dataP, indexP, nullptr); }
+    { printTableDdl (os, dataP, indexP, nullptr); 
+      os << "go" << endl;
+    }
 private:
   void printTableDdl (ostream &os,
                       bool dataP,
