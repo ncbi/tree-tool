@@ -46,6 +46,7 @@ namespace
   
   
 Vector<int> goodStatuses;
+
 unique_ptr<OFStream> errors;
 std::mutex errorsMtx;
 
