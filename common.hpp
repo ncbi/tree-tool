@@ -2953,97 +2953,6 @@ template <typename T /* : Root */>
 
 
 
-struct StringVector : Vector<string>
-{
-private:
-	typedef  Vector<string>  P;
-public:
-	
-
-  StringVector () = default;
-  explicit StringVector (initializer_list<string> init)
-    : P (init)
-    {}
-  StringVector (const string &fName,
-                size_t reserve_size,
-                bool trimP);
-  StringVector (const string &s, 
-                char sep,
-                bool trimP);
-  explicit StringVector (size_t n)
-    : P (n, noString)
-    {}
-
-
-  string toString (const string& sep) const;
-  string toString () const
-    { return toString (noString); }
-  bool same (const StringVector &vec,
-             const Vector<size_t> &indexes) const;
-  void to_xml (Xml::File &f,
-               const string &tag);
-    // XML: <tag> <item>at(0)</item> <item>at(1)</item> ... </tag>
-    // Invokes: sort(), clear()
-
-
-  struct Hasher 
-  {
-    size_t operator () (const StringVector& vec) const 
-    { size_t ret = 0;
-      for (const string& s : vec) 
-        ret ^= hash<string>() (s);
-      return ret;
-    }
-  };
-};
-
-
-
-template <typename Key /*VirtNamed*/>
-  StringVector set2vec (const set<const Key*> &s)
-    { StringVector vec;  vec. reserve (s. size ());
-	    for (const Key* key : s)
-	    { assert (key);
-	    	vec << key->getName ();
-	    }
-	    return vec;
-    }
-
-
-
-struct Csv 
-// Line of Excel .csv-file
-{
-private:
-  const string &s;
-  size_t pos {0};
-public:
-
-  
-  explicit Csv (const string &s_arg)
-    : s (s_arg)
-    {}
-  
-  
-  bool goodPos () const
-    { return pos < s. size (); }
-  string getWord ();
-    // Return: Next word
-    // Requires: goodPos()
-private:
-  void findChar (char c)
-    { while (goodPos () && s [pos] != c)
-        pos++;
-    }
-};
-
-  
-  
-StringVector csvLine2vec (const string &line);
-  // Invokes: Csv
-
-
-
 template <typename T>
   struct Set : set<T>
   {
@@ -3275,6 +3184,101 @@ template <typename T, typename U /* : T */>
           return false;
       return true;
     }
+
+
+
+struct StringVector : Vector<string>
+{
+private:
+	typedef  Vector<string>  P;
+public:
+	
+
+  StringVector () = default;
+  explicit StringVector (initializer_list<string> init)
+    : P (init)
+    {}
+  explicit StringVector (const Set<string> &from)
+    { insertAll (*this, from); 
+      searchSorted = true;
+    }
+  StringVector (const string &fName,
+                size_t reserve_size,
+                bool trimP);
+  StringVector (const string &s, 
+                char sep,
+                bool trimP);
+  explicit StringVector (size_t n)
+    : P (n, noString)
+    {}
+
+
+  string toString (const string& sep) const;
+  string toString () const
+    { return toString (noString); }
+  bool same (const StringVector &vec,
+             const Vector<size_t> &indexes) const;
+  void to_xml (Xml::File &f,
+               const string &tag);
+    // XML: <tag> <item>at(0)</item> <item>at(1)</item> ... </tag>
+    // Invokes: sort(), clear()
+
+
+  struct Hasher 
+  {
+    size_t operator () (const StringVector& vec) const 
+    { size_t ret = 0;
+      for (const string& s : vec) 
+        ret ^= hash<string>() (s);
+      return ret;
+    }
+  };
+};
+
+
+
+template <typename Key /*VirtNamed*/>
+  StringVector set2vec (const set<const Key*> &s)
+    { StringVector vec;  vec. reserve (s. size ());
+	    for (const Key* key : s)
+	    { assert (key);
+	    	vec << key->getName ();
+	    }
+	    return vec;
+    }
+
+
+
+struct Csv 
+// Line of Excel .csv-file
+{
+private:
+  const string &s;
+  size_t pos {0};
+public:
+
+  
+  explicit Csv (const string &s_arg)
+    : s (s_arg)
+    {}
+  
+  
+  bool goodPos () const
+    { return pos < s. size (); }
+  string getWord ();
+    // Return: Next word
+    // Requires: goodPos()
+private:
+  void findChar (char c)
+    { while (goodPos () && s [pos] != c)
+        pos++;
+    }
+};
+
+  
+  
+StringVector csvLine2vec (const string &line);
+  // Invokes: Csv
 
 
 
