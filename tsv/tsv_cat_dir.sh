@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "tsv_cat for a directory of .tsv-files"
@@ -9,7 +9,7 @@ fi
 DIR=$1
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
 ls $DIR | sed 's|^|'$DIR'/|1' > $TMP.list 
