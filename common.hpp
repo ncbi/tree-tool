@@ -600,6 +600,7 @@ inline bool isDelimiter (char c)
 inline bool isSpace (char c)
   { return c > '\0' && c <= ' ' && isspace (c); }
 
+string to_url (const string &s);
 
 
 // char*

@@ -546,6 +546,23 @@ string nonPrintable2str (char c)
 
 
 
+string to_url (const string &s)
+{
+  string url;
+  for (const char c : s)
+    if (   isLetter (c)
+        || isDigit (c)
+        || c == '_'
+       )
+      url += c;
+    else
+      url += "%" + uchar2hex ((uchar) c);
+      
+  return url;
+}
+
+
+
 bool isRight (const string &s,
               const string &right)
 {
