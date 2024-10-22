@@ -2822,7 +2822,7 @@ var parseNewick = function ()
       return '';  // was: error ("Empty name");
         // There may be "()" in the newick file
   //alert ("parseName: " + name);  
-    return name.replace(/_/g,' ').trim();
+    return decodeURI (name);  // name.replace(/_/g,' ').trim();
   }
 
   const parseNumber = function ()
@@ -2918,7 +2918,7 @@ var parseNewick = function ()
         node.obj_id = "";
         return null;
       }
-      node.obj_id = node.obj_id.replace(/_/g,' ');  // was: replace(/ /g,'_') 
+      node.obj_id = decodeURI (node.obj_id);  //  node.obj_id.replace(/_/g,' ');  // was: replace(/ /g,'_') 
     }
     return node;
   }
@@ -2962,7 +2962,7 @@ var parseNewick = function ()
       const name = parseName ();
       if (! name)
         return false;
-      nodes[parentId].phylName = name.replace(/_/g,' ');  // name.substring (0, colonPos + 1);
+      nodes[parentId].phylName = decodeURI (name);  // name.replace(/_/g,' ');  // name.substring (0, colonPos + 1);
     }
     return true;
   }
@@ -2999,7 +2999,6 @@ var parseNewick = function ()
   mainRoot = 1;
   curRoot = 1;
   
-//newickP = true;
   newick = null;  // clear memory
   
   
