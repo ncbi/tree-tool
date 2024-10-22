@@ -327,7 +327,8 @@ struct Tree : DiGraph
 	    // Return: -1 || >= 0
 	  virtual string getNewickName (bool /*minimal*/) const
 	    { return getName (); }
-		static string name2newick (const string &s);
+		static string name2newick (const string &s)
+		  { return to_url (s); }
 	private:
 	  void printNewick_ (ostream &os,
 	                     bool internalNames,

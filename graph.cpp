@@ -683,6 +683,7 @@ void Tree::TreeNode::printNewick_ (ostream &os,
 
 
 
+#if 0
 string Tree::TreeNode::name2newick (const string &s) 
 {
   string s1 (s);
@@ -691,6 +692,7 @@ string Tree::TreeNode::name2newick (const string &s)
 //return s1. substr (0, 100 /*50*/);  // PAR
     // Newick allowes the name length >= 50 characters, but http://www.trex.uqam.ca/ breaks with 50
 }
+#endif
 
 
 
