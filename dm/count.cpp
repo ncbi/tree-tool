@@ -49,13 +49,15 @@ namespace
 {
 	
 	
+streamsize precision = 0;
+
+	
+	
 void report (const string &attr,
              Real value)
 {	
-  unique_ptr<const ONumber> on;
-  if (isInteger (value))
-    on. reset (new ONumber (cout, 0, false));
-  cout << attr << '\t' << value << endl; 
+  const ONumber on (cout, isInteger (value) ? 0 : precision, false);
+  cout << attr << '\t' << value << '\n'; 
 }
 
 	
@@ -67,12 +69,16 @@ struct ThisApplication : Application
     : Application ("Statistics of a sequence of numbers from cin", false)
     {
       version = VERSION;
+      addKey ("decimals", "Number of decimals", "2");
     }
 
 
 
 	void body () const final
 	{
+	  precision = str2<streamsize> (getArg ("decimals"));
+	  
+	  
 		MeanVar mv;
 		string s;
 		while (cin >> s)
