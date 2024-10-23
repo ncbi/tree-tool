@@ -1,18 +1,20 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
-if [ $# -ne 4 ]; then
+if [ $# -ne 5 ]; then
   echo "Comparison of 2 trees with the same leaves by distances"
   echo "#1: tree 1 in Newick"
   echo "#2: tree 2 in Newick"
-  echo -e "#3: output file with a line: tree1\ttree2\tleaves\t#dist1>dist2\t#dist2>dist1\t\tmean\tmedian\tmax\tRF_A\tRF_B\tRF"
-  echo "#4: output file with pairwise distances between leaves for tree 1and tree 2 (will be gzip'ped) | ''"
+  echo "#3: same leaves (0/1)"
+  echo -e "#4: output file with a line: tree1\ttree2\t#common_leaves\t#dist1>dist2\t#dist2>dist1\t\tmean\tmedian\tmax\tRF_A\tRF_B\tRF"
+  echo "#5: output file with pairwise distances between leaves for tree 1and tree 2 (will be gzip'ped) | ''"
   exit 1
 fi
 T1=$1
 T2=$2
-OUT=$3
-PAIR=$4
+SAME=$3
+OUT=$4
+PAIR=$5
 
 
 $THIS/../check_file.sh $T1 1
@@ -28,9 +30,19 @@ $THIS/newick2tree $T2 > $TMP.tree2
 
 $THIS/tree2obj.sh $TMP.tree1 > $TMP.obj1
 $THIS/tree2obj.sh $TMP.tree2 > $TMP.obj2
-#wc -l $TMP.obj1
-#wc -l $TMP.obj2
-diff $TMP.obj1 $TMP.obj2
+if [ $SAME == 0 ]; then
+  wc -l $TMP.obj1
+  wc -l $TMP.obj2
+  $THIS/../setIntersect.sh $TMP.obj1 $TMP.obj2 0 > $TMP.obj
+  wc -l $TMP.obj
+  mv $TMP.obj $TMP.obj1
+  $THIS/makeDistTree  -input_tree $TMP.tree1  -keep $TMP.obj1  -output_tree $TMP.tree1.new 1> /dev/null
+  $THIS/makeDistTree  -input_tree $TMP.tree2  -keep $TMP.obj1  -output_tree $TMP.tree2.new 1> /dev/null
+  mv $TMP.tree1.new $TMP.tree1
+  mv $TMP.tree2.new $TMP.tree2
+else
+  diff $TMP.obj1 $TMP.obj2
+fi
 LEAVES=$( cat $TMP.obj1 | wc -l )
 
 
