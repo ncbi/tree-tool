@@ -3748,8 +3748,13 @@ private:
         name += c;
         readChar ();
       }
+  #if 0
     if (name. empty ())
       throw Error (string ("Empty ") + (isName ? "name" : "number"), *this);
+  #else
+    if (name. empty () && ! isName)
+      throw Error ("Empty number", *this);
+  #endif
     return name;
   }
 
