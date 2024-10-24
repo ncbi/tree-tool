@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Phenotypic quality comparison of 2 distance trees"
@@ -20,7 +20,7 @@ TARGET="$5"
 
 $THIS/../check_tmp.sh
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP 
 
 
@@ -48,17 +48,17 @@ fi
 wc -l $TMP.list1-good
 wc -l $TMP.list2-good
 
-N=`cat $TMP.list1-good | wc -l`
+N=$( cat $TMP.list1-good | wc -l )
 if [ $N -le 2 ]; then
   exit 0
 fi
 
-N=`cat $TMP.list2-good | wc -l`
+N=$( cat $TMP.list2-good | wc -l )
 if [ $N -le 2 ]; then
   exit 0
 fi
 
-N=`$THIS/../setIntersect.sh $TMP.list1-good $TMP.list2-good 0 | wc -l`
+N=$( $THIS/../setIntersect.sh $TMP.list1-good $TMP.list2-good 0 | wc -l )
 if [ $N -le 2 ]; then
   echo "Intersection = $N"
   exit 0
