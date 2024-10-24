@@ -2846,12 +2846,13 @@ var parseNewick = function ()
       return false;
     if (c == ':')
     {
-      const time = parseNumber ();
+      let time = parseNumber ();  
     //alert ("time = " + time);  
       if (Number.isNaN(time))
       {
-        error ("time = NaN");
-        return false;
+        time = 0;
+      //error ("time = NaN");
+      //return false;
       }
       node.time = Math.max (0.0, time);
       if (newick.charAt(pos) == '[')  
