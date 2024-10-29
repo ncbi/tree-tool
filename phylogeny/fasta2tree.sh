@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Create a phylogenetic tree from a FASTA files"
@@ -20,7 +20,7 @@ DIST=$5
 OUT=$6
 
 
-section "Computing dissimilarities"
+super_section "Computing dissimilarities"
 
 PAR="-distance $DIST"
 if [ $GLOB == 1 ]; then
@@ -41,8 +41,8 @@ fi
 $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $OUT
 
 
-section "Building tree"
+super_section "Building tree"
 # PAR
-$THIS/makeDistTree  -data $OUT  -dissim_attr "dissim"  -variance pow  -variance_power 5  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 10
+$THIS/makeDistTree  -data $OUT  -dissim_attr "dissim"  -variance pow  -variance_power 5  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 15
 
 
