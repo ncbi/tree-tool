@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Find ORFs by tblastn"
@@ -17,7 +17,7 @@ PROT=$4
 LOG=$5
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP 
 
 
