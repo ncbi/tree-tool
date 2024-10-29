@@ -54,7 +54,7 @@ struct ThisApplication : Application
     : Application ("Find best annotation and print proteins")
     {
       version = VERSION;
-  	  addPositional ("dna", "DNA multi-FASTA file used fro TBLASTN");
+  	  addPositional ("dna", "DNA multi-FASTA file used for TBLASTN");
   	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid length positive qstart qend sstart send slen sseq");
   	  addPositional ("gencode", "Genetic code");
     }
@@ -77,7 +77,7 @@ struct ThisApplication : Application
   	  	string sseqid;  // contig accession
   	  	string sseq;
   	  	size_t length, positive, qstart, qend /* with '*' */;  // aa
-  	  	size_t sstart, send, slen;  // na
+  	  	size_t sstart, send, slen;  // nt
   	  	{
     	  	QC_ASSERT (! in. line. empty ());
     	  	istringstream iss (in. line);
