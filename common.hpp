@@ -1518,20 +1518,25 @@ struct Color
   
 inline string colorize_raw (const string &s,
                             Color::Type color,
+                            bool bright,
                             bool screen)
   { if (! screen)
       return s;
-    return Color::code (color, true) + s + Color::code ();
+    return Color::code (color, bright) + s + Color::code ();
   }
 
 inline string colorize (const string &s,
                         bool screen)
-  { return colorize_raw (s, Color::white, screen); }
-
+  { return colorize_raw (s, Color::white, true, screen); }  
+    
 inline string colorizeUrl (const string &s,
                            bool screen)
-  { return colorize_raw (s, Color::blue, screen); }
+  { return colorize_raw (s, Color::blue, true, screen); }  
   
+inline string colorizeDir (const string &s,
+                           bool screen)
+  { return colorize_raw (s, Color::green, false, screen); }  
+
 
 class OColor
 // Output color
