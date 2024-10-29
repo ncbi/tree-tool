@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Wait until UGE is available"
@@ -23,7 +23,7 @@ while true; do
     break
   fi
   sleep 60
-  N=$(( $N + 1 ))
+  N=$(( N + 1 ))
 done
 
 if [ $N -gt 0 ]; then

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Delete #1 without 'rm -r' which is slow"
@@ -14,7 +14,7 @@ if [ ! -e "$DIR" ]; then
 fi
 
 
-TMP=`mktemp -d`
+TMP=$( mktemp -d )
 
 rsync -a --delete $TMP/ "$DIR"
 rmdir "$DIR"

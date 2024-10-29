@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Remove a suffix from a file name"
@@ -11,8 +11,8 @@ FILE=$1
 SUF=$2
 
 
-DIR=`dirname $FILE`
-OUT=`basename $FILE $SUF`
+DIR=$( dirname $FILE )
+OUT=$( basename $FILE $SUF )
 if [ "$FILE" != "$DIR/$OUT" ]; then
   mv $FILE $DIR/$OUT
 fi

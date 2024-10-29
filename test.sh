@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=$( realpath $( dirname $0 ) )
+THIS=$( realpath "$( dirname $0 )" )
 source $THIS/bash_common.sh
 
 

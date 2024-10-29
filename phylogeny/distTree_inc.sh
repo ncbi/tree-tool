@@ -74,7 +74,7 @@ if true; then
   fi
     
 
-  VER=$(( $VER + 1 ))
+  VER=$(( VER + 1 ))
   echo $VER > $INC/version
 
   THREADS=$( file2var $INC/threads 15 )

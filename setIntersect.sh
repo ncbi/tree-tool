@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 3 ]; then
   echo "#1: List1"
@@ -18,7 +18,7 @@ if [ $NUMP == 1 ]; then
   NUM="-number"
 fi
 
-TMP=`mktemp` 
+TMP=$( mktemp )
 #comment $TMP
 #set -x
 

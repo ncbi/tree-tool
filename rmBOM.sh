@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Remove UTF-8 Byte Order Mark"

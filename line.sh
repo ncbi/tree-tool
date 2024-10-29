@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "#1: File name"
@@ -10,7 +10,7 @@ F=$1
 L=$2
 
 
-N=`cat $F | wc -l`
+N=$( cat $F | wc -l )
 if [ $L -gt $N ]; then
   error "Max. line = $N"
 fi

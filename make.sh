@@ -3,7 +3,7 @@
 
 unset AT_NCBI
 
-cd `dirname $0`
+cd "$( dirname $0 )"
 source ./bash_common.sh
 export CPP_DIR=$PWD
 
