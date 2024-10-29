@@ -136,7 +136,7 @@ void runMatches (size_t from,
                  Notype /*&res*/,
                  Vector<Match> &matches)
 {
-  Progress prog (to - from);  
+  Progress prog (to - from, 1000);  // PAR
   FOR_START (size_t, i, from, to)
   {
     prog ();
