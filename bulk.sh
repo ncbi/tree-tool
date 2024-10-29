@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Bulk-insert"
@@ -20,9 +20,9 @@ TABLE=$5
 #set -x
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP 
-TMP=`basename $TMP`
+TMP=$( basename $TMP )
 
 cp $IN $BULK_LOCAL/$TMP
 unix2dos -o $BULK_LOCAL/$TMP &> /dev/null
