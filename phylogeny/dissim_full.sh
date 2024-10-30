@@ -48,7 +48,7 @@ $THIS/distTree_inc_dissim2indiscern.sh inc inc/dissim
 $THIS/../dm/conversion/pairs2dm inc/dissim 1 "dissim" 6 -distance > data.dm
 
 section "Initial tree (version: 1)"
-VARIANCE=`cat inc/variance`
+VARIANCE=$( cat inc/variance )
 $THIS/makeDistTree  -threads 5  -data data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  -output_tree inc/tree  > inc/hist/makeDistTree-complete.1
 rm data.dm
 cp inc/tree inc/hist/tree.1

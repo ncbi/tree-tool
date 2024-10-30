@@ -43,7 +43,7 @@ if [ $SAME == 0 ]; then
 else
   diff $TMP.obj1 $TMP.obj2
 fi
-LEAVES=$( cat $TMP.obj1 | wc -l )
+LEAVES=$( < $TMP.obj1 wc -l )
 
 
 D1=0
@@ -84,10 +84,10 @@ if [ -s $TMP.diff ]; then
 
   awk '{print $1 - $2};' $TMP.dist > $TMP.dist_diff_raw
   sort  --parallel 10  -S10G  -g  $TMP.dist_diff_raw > $TMP.dist_diff
-  N=$( cat $TMP.dist_diff | wc -l )
+  N=$( < $TMP.dist_diff wc -l )
   M=$( echo "$N / 2" | bc )
   MED=$( head -$M $TMP.dist_diff | tail -1 )
-  cat $TMP.dist_diff | count > $TMP.count
+  < $TMP.dist_diff count > $TMP.count
   MEAN=$( grep -w "^mean" $TMP.count | cut -f 2 )
   MAX=$( grep -w "^max" $TMP.count | cut -f 2 )
   D1=$( grep -vx "0" $TMP.dist_diff | grep -c  '^-' || true )

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 8 ]; then
   echo "Output: hmm-univ.stat, positiveAverage.out, data.dm, tree, variance"
@@ -31,7 +31,7 @@ IGNORE_ZERO=1
 
 
 section "Estimating hmm-univ.stat"
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP 
 
 # $TMP.pairs

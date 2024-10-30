@@ -22,10 +22,10 @@ OUT=$5
 $THIS/../grid_wait.sh 1 >> /dev/stderr
 i=$MIN
 while [ $i -le $MAX ]; do
-  T=`echo "$i/$COEFF" | bc -l | sed 's/0*$//1' | sed 's/^\./0./1'`
+  T=$( echo "$i/$COEFF" | bc -l | sed 's/0*$//1' | sed 's/^\./0./1' )
   $QSUB_5 -N j$i "$THIS/tree2genogroup $TREE $T  -genogroup_table $OUT/$T" > /dev/null
-  i=$(( $i + $STEP ))
+  i=$(( i + STEP ))
 done
 $THIS/../qstat_wait.sh 2000 1
 
-$THIS/../trav -noprogress $OUT 'echo "%f `cut -f 2 %d/%f | sort -u | wc -l`"'
+$THIS/../trav -noprogress $OUT 'echo "%f %gcut -f 2 %d/%f | sort -u | wc -l%g"'

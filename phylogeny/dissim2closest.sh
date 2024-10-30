@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print #2 closest objects"
@@ -15,7 +15,7 @@ NUM=$3
 FULL=$4
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
 grep -w $OBJ $INC/dissim | sort -k 3 -g > $TMP
@@ -23,7 +23,7 @@ head -$NUM $TMP > $TMP.head
 if [ $FULL == 1 ]; then
   cat $TMP.head
 else
-  cat $TMP.head | tr ' ' '\t' | cut -f 1,2 | tr '\t' '\n' | grep -vw $OBJ
+  < $TMP.head tr ' ' '\t' | cut -f 1,2 | tr '\t' '\n' | grep -vw $OBJ
 fi
 
 

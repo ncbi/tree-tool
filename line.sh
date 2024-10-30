@@ -10,7 +10,7 @@ F=$1
 L=$2
 
 
-N=$( cat $F | wc -l )
+N=$( < $F wc -l )
 if [ $L -gt $N ]; then
   error "Max. line = $N"
 fi

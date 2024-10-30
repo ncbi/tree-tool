@@ -36,8 +36,8 @@ function section
 function super_section
 {
   local MSG="$1"
-  local S=`echo '***' $MSG '***'`
-  local T=`echo "$S" | sed 's/./*/g'`
+  local S="*** $MSG ***"
+  local T=${S//?/*}  
   echo ""
   section "$T\n$S\n$T"
   date
