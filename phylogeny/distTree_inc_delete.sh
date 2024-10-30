@@ -30,7 +30,7 @@ if [ $VER -gt 1 ]; then
   gzip $INC/hist/tree.$VER
 fi
 
-VER=$(( $VER + 1 ))
+VER=$(( VER + 1 ))
 echo $VER > $INC/version
 
 

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Expand #1 by adding indiscernibile objects"
@@ -17,8 +17,8 @@ IN_TREE=$3
 sort -cu $LIST
 
 
-TMP=`mktemp`
-#echo $TMP
+TMP=$( mktemp )
+#comment $TMP
 #set -x
 
 

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Process #1/hybrid.new, #1/hybrid_parent_pairs (optional)"
@@ -9,7 +9,7 @@ fi
 INC=$1
 
 
-VER=`cat $INC/version`
+VER=$( cat $INC/version )
 
 
 wc -l $INC/hybrid.new

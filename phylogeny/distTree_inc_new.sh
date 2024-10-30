@@ -25,7 +25,7 @@ REINSERT=""
 
 $THIS/tree2obj.sh $INC/tree > $INC/tree.list
 
-OBJS=$( cat $INC/tree.list | wc -l )
+OBJS=$( < $INC/tree.list wc -l )
 ADD=$( echo "$OBJS * $RATE" | bc -l | sed 's/\..*$//1' )  # PAR
 if [ $ADD == 0 ]; then
   ADD=1
@@ -101,7 +101,7 @@ else
     mkdir $INC/log
     $THIS/../trav  $INC/search "touch $INC/log/%f" 
     GRID=0
-    if [ -e $INC/nogrid  -o  $N -lt $SEARCH_GRID_MIN ]; then
+    if [ -e $INC/nogrid ] || [ $N -lt $SEARCH_GRID_MIN ]; then
       $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" $THREADS
     else
       GRID=1
@@ -139,7 +139,7 @@ else
     echo "# Requests: $REQ"
     GRID=1
     THREADS_PARAM=""
-    if [ -e $INC/nogrid  -o  $REQ -lt $GRID_MIN ]; then
+    if [ -e $INC/nogrid ] || [ $REQ -lt $GRID_MIN ]; then
       GRID=0  
       THREADS_PARAM="$THREADS"
     fi
@@ -310,7 +310,7 @@ $INC/qc.sh 0
 echo ""
 NEW=$( $THIS/distTree_inc_new_list.sh $INC | wc -l )
 echo "# New objects: $NEW"
-if [ $NEW == 0 -a -z "$REINSERT" ]; then
+if [ $NEW == 0 ] && [ -z "$REINSERT" ]; then
   touch $INC/finished
 else
   rm -f $INC/finished

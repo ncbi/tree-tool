@@ -37,23 +37,23 @@ if [ $GRID_MIN -le 0 ]; then
   error "Bad GRID_MIN"
 fi
 
-if [ -n "$SERVER" -a -z "$DATABASE" ]; then
+if [ -n "$SERVER" ] && [ -z "$DATABASE" ]; then
   error "Database is empty"
 fi
 
-if [ -z "$SERVER" -a -n "$DATABASE" ]; then
+if [ -z "$SERVER" ] && [ -n "$DATABASE" ]; then
   error "Server is empty"
 fi
 
-if [ -n "$BULK_LOCAL" -a -z "$DATABASE" ]; then
+if [ -n "$BULK_LOCAL" ] && [ -z "$DATABASE" ]; then
   error "Bulk directory with an empty database"
 fi
 
-if [ -n "$BULK_LOCAL" -a -z "$BULK_REMOTE" ]; then
+if [ -n "$BULK_LOCAL" ] && [ -z "$BULK_REMOTE" ]; then
   error "Local bulk directory with an empty remote bulk directory"
 fi
 
-if [ -z "$BULK_LOCAL" -a -n "$BULK_REMOTE" ]; then
+if [ -z "$BULK_LOCAL" ] && [ -n "$BULK_REMOTE" ]; then
   error "Remote bulk directory with an empty local bulk directory"
 fi
 

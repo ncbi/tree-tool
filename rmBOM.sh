@@ -15,7 +15,7 @@ if [ $IN == $OUT ]; then
   error "$IN = $OUT"
 fi
 
-cat $IN | sed 's/^\xEF\xBB\xBF//1' | sed 's/^\xFE\xFF//1' | sed 's/^\xFF\xFE//1' > $OUT
+sed 's/^\xEF\xBB\xBF//1' $IN | sed 's/^\xFE\xFF//1' | sed 's/^\xFF\xFE//1' > $OUT
 rm $IN
 wc -l $OUT
 

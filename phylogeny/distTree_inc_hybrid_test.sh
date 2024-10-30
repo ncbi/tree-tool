@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Recompute hybridness"
@@ -8,11 +8,11 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 INC=$1
-LINE=($2)
+LINE=( $2 )
 
 
-TMP=`mktemp`
-#echo $TMP
+TMP=$( mktemp )
+#comment $TMP
 #set -x
 
 
@@ -26,8 +26,8 @@ echo $G1 $G3 >> $TMP.req
 
 $INC/pairs2dissim.sh $TMP.req "" $TMP.out $TMP.log &> /dev/null
 
-L=(`cut -f 3 $TMP.out | sort -n -r | tr '\n' ' '`)
-R=`echo "scale=2; ${L[0]} / (${L[1]} + ${L[2]})" | bc -l`
+L=( $( cut -f 3 $TMP.out | sort -n -r | tr '\n' ' ' ) )
+R=$( echo "scale=2; ${L[0]} / (${L[1]} + ${L[2]})" | bc -l )
 echo $G1 $G2 $G3 ${L[0]} ${L[1]} ${L[2]} $R | tr ' ' '\t'
 
 

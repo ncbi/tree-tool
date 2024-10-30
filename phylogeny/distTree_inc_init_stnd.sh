@@ -40,7 +40,7 @@ TMP=$( mktemp )
 
 CPP_DIR=$THIS/..
 ls $FROM | grep '.sh$' > $TMP
-$THIS/../trav $TMP -noprogress "sed %qs|CPP_DIR|"$CPP_DIR"|g%q $FROM/%f > $INC/%f"
+$THIS/../trav $TMP -noprogress "sed %qs|CPP_DIR|$CPP_DIR|g%q $FROM/%f > $INC/%f"
 
 rm $TMP*
 
