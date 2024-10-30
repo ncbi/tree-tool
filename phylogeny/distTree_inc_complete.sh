@@ -58,7 +58,7 @@ fi
 
 TMP=$( mktemp )
 $THIS/distTree_inc_new_list.sh $INC > $TMP || (cat $TMP && exit 1)
-N=$( cat $TMP | wc -l )
+N=$( < $TMP wc -l )
 if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
 fi

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 source $THIS/../qsub_env.sh
 if [ $# -ne 4 ]; then
@@ -18,19 +18,16 @@ PLACEMENT=$4
 
 
 # Cf. distTree_inc_new.sh
-GRID_MIN=`cat $INC/pairs2dissim.grid`
-SEARCH_GRID_MIN=`cat $INC/object2closest.grid`  
+GRID_MIN=$( cat $INC/pairs2dissim.grid )
+SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
 QC=""  # -qc  
-VARIANCE=`cat $INC/variance`
+VARIANCE=$( cat $INC/variance )
 
-N=15
-if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
-fi
+N=$( file2var $INC/threads 15 )
 THREADS="-threads $N"
 
 
-N=`ls $INC/search/ | head -1`
+N=$( ls $INC/search/ | head -1 )
 if [ "$N" ]; then
   error "$INC/search/ is not empty"
 fi
@@ -46,7 +43,7 @@ fi
 
 section "new/ -> search/"
 $THIS/distTree_inc_new_list.sh $INC > $INC/search.list
-OBJS=`cat $INC/search.list | wc -l`
+OBJS=$( < $INC/search.list wc -l )
 wc -l $INC/search.list
 if [ ! -s $INC/search.list ]; then
   warning "No objects to add"
@@ -89,7 +86,7 @@ rm $INC/search.list
 
 section "search/ -> leaf, dissim"
 
-N=`ls $INC/search/ | wc -l`
+N=$( ls $INC/search/ | wc -l )
 if [ $N -gt 0 ]; then
   rm -rf $INC/log/
   mkdir $INC/log
@@ -116,19 +113,19 @@ fi
 
 
 ITER=0
-ITER_MAX=`echo $OBJS | awk '{printf "%d", 2*log($1)+3};'`
+ITER_MAX=$( echo $OBJS | awk '{printf "%d", 2*log($1)+3};' )
 while [ $ITER -le $ITER_MAX ]; do
   # Time: O(log^4(n)) per one new object
   
-  N=`ls $INC/search/ | wc -l`
+  N=$( ls $INC/search/ | wc -l )
   if [ $N == 0 ]; then
     break  
   fi
 
-	ITER=$(( $ITER + 1 ))
+	ITER=$(( ITER + 1 ))
   section "Iteration $ITER / $ITER_MAX"
   # use distTree_inc_request2dissim.sh ??
-  REQ=`$THIS/../trav $INC/search "cat %d/%f/request" | wc -l`  
+  REQ=$( $THIS/../trav $INC/search "cat %d/%f/request" | wc -l )
   echo "# Requests: $REQ"
   GRID=1
   if [ $REQ -lt $GRID_MIN ]; then

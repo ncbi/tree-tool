@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "For #1.list compute dissimilarities #1.dm, distance tree #1.tree, quality file #1.qual and evaluate it"
@@ -22,7 +22,7 @@ fi
 
 
 section "Dissimilarities"
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP 
 
 $THIS/../list2pairs $LIST > $TMP.req
@@ -33,12 +33,9 @@ rm $TMP*
 
 
 section "Tree"
-N=15
-if [ -e $INC/threads ]; then
-  N=`cat $INC/threads`
-fi
+N=$( file2var $INC/threads 15 )
 THREADS="-threads $N"
-VARIANCE=`cat $INC/variance`
+VARIANCE=$( cat $INC/variance )
 $THIS/makeDistTree  $THREADS  -data $F  -dissim_attr "cons"  -variance $VARIANCE  -optimize  -subgraph_iter_max 5  -noqual  -output_tree $F.tree
 
 

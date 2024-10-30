@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 source $THIS/../qsub_env.sh
 if [ $# -ne 1 ]; then
@@ -18,7 +18,7 @@ if [ -e $INC/dissim.add ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 
@@ -42,7 +42,7 @@ fi
 $THIS/../grid_wait.sh 1
 $THIS/../trav  -step 1  $TMP.list "$QSUB_5$UL1  -N j%n  %Q$INC/object2closest.sh %f %q%q $TMP.list > $INC/closest/%h/%f%Q > /dev/null" 
 WAIT=2000  # PAR
-SEARCH_GRID_MIN=`cat $INC/object2closest.grid`  
+SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
 if [ $SEARCH_GRID_MIN -le 200 ]; then  
   WAIT=7200
 fi
