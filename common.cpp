@@ -2871,9 +2871,13 @@ void OFStream::open (const string &dirName,
 	pathName += fileName;
 	if (! extension. empty ())
 		pathName += "." + extension;
-		
+	
   exceptions (std::ios::failbit | std::ios::badbit);  // In ifstream these flags collide with eofbit
-	ofstream::open (pathName);
+	try {	ofstream::open (pathName); }
+    catch (const exception &e)
+    {
+      throw runtime_error ("Cannot create file " + shellQuote (pathName) + "\n" + e. what ());
+    }
 
 	if (! good ())
 	  throw runtime_error ("Cannot create file " + shellQuote (pathName));
