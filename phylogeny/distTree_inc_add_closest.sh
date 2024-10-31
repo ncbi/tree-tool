@@ -40,7 +40,7 @@ if [ -e $INC/object2closest.sql ]; then
   UL1=",ul1=30"
 fi
 $THIS/../grid_wait.sh 1
-$THIS/../trav  -step 1  $TMP.list "$QSUB_5$UL1  -N j%n  %Q$INC/object2closest.sh %f %q%q $TMP.list > $INC/closest/%h/%f%Q > /dev/null" 
+$THIS/../trav  -step 1  $TMP.list "$QSUB_5$UL1  -N j%n  %Q$INC/object2closest.sh %f %q%q $TMP.list $INC/closest/%h/%f%Q > /dev/null" 
 WAIT=2000  # PAR
 SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
 if [ $SEARCH_GRID_MIN -le 200 ]; then  

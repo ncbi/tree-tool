@@ -36,7 +36,8 @@ fi
 
 section "Finding approximately closest objects"
 $THIS/tree2obj.sh $TREE > $TMP.obj
-$INC/object2closest.sh $NAME $QUERY $TMP.obj | grep -vw "^${NAME}$" > $TMP.closest || true
+$INC/object2closest.sh $NAME $QUERY $TMP.obj $TMP.closest_raw
+grep -vw "^${NAME}$" $TMP.closest_raw > $TMP.closest || true
 sed 's/$/\t'$NAME'/1' $TMP.closest > $TMP.request
 
 section "Fitting to the tree"
