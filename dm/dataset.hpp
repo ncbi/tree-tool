@@ -3908,7 +3908,7 @@ struct Canonical : MultiVariate<NumAttr1>
 {
   typedef  MultiVariate<NumAttr1>  P;
   
-  Notype requires;
+  Notype requiresCond;
   MultiNormal between;  
   MultiNormal within;  
   Matrix choleskyInv;

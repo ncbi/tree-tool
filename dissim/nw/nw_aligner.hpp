@@ -71,9 +71,10 @@ END_SCOPE(objects)
   using namespace std;
   #define NCBI_XALGOALIGN_EXPORT
   struct CObject {};
-  typedef uint8_t  Uint1; /**< 1-byte  (8-bit) unsigned integer */
+  typedef /*uint8_t*/ unsigned char  Uint1; /**< 1-byte  (8-bit) unsigned integer */
+  static_assert (sizeof (Uint1) == 1);
   const unsigned int    kMax_UInt   = numeric_limits<unsigned int>::max ();  // UINT_MAX;    
-  #define NCBI_THROW(a,b,c)  throw runtime_error (#a ", " #b ", " #c)    
+  #define NCBI_THROW(a,b,c)  throw logic_error (#a ", " #b ", " #c)    
 #endif
 
 // Needleman-Wunsch algorithm encapsulation

@@ -6047,7 +6047,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
 
 Canonical::Canonical (const Clustering &clustering)
 : P (clustering. sample, clustering. space)
-, requires (getRequirement (clustering))
+, requiresCond (getRequirement (clustering))
 , between (getBetween (clustering))
 , within (getWithin (clustering))
 , choleskyInv (getCholeskyInv (within. sigmaExact))

@@ -2,7 +2,8 @@ ifndef CODE_DIR
   $(error no CODE_DIR)
 endif
 
-OS := $(shell uname -s)
+OS := $( shell uname -s )
+GCC_VER := $( gcc --version | head -1 | cut -f 3 -d ' ' )
 
 WarningCPPFLAGS =
 ifdef AT_NCBI
@@ -16,9 +17,12 @@ ifdef AT_NCBI
     -Wcast-align -Wdeprecated-declarations \
     -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
     -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wunused \
-    -pedantic
+    -pedantic    
   # -Wuseless-cast
-  ifeq ($(OS),Linux)  
+  ifeq ($(GCC_VER), 13.2.0)
+    WarningCPPFLAGS += -Wno-error=aggressive-loop-optimizations
+  endif
+  ifeq ($(OS), Linux)  
     # Do not work on Darwin
     WarningCPPFLAGS += -Wbool-compare -Wc++11-compat -Wc++14-compat -Wconversion -Wmaybe-uninitialized -Wmemset-elt-size -Wnonnull-compare \
       -Wopenmp-simd -Wlogical-op -Wsuggest-attribute=format
