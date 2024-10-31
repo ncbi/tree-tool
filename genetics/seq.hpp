@@ -870,8 +870,8 @@ struct PeptideOrf : Root
 
   PeptideOrf (size_t translationStart_arg,
               Strand strand_arg,
-      		     const Peptide* peptide,
-             size_t start_arg);
+      		    const Peptide* peptide,
+              size_t start_arg);
     // Input: peptide: DNA segment translation
   PeptideOrf (size_t translationStart_arg,
               Strand strand_arg,
@@ -1054,7 +1054,7 @@ inline Seq* makeSeq (Multifasta &fa,
 //
 
 struct Cds : Root
-// All lengths are in na
+// All lengths are in nt
 {
   // PAR
   static constexpr size_t peptideSize_min = 20;  // aa
