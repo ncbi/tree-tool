@@ -1,8 +1,8 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "Print a pivod table where rows and columns are ordered by distance"
+  echo "Print a pivot table where rows and columns are ordered by distance"
   echo "#1: file with numeric attribute, line format: <row_name> <col_name> <num_attr>"
   echo "#2: output .dm-file"
   exit 1
@@ -11,7 +11,7 @@ DATA=$1
 OUT=$2
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP 
 
 
@@ -19,7 +19,7 @@ function make_list
 {
   local IN=$1
   $THIS/../dm/conversion/obj_attr2dm $IN "Real" -decimals 6 -qc > $TMP.dm
-  $THIS/../dm/dm2dist $TMP "dist" -qc > $TMP.dist.dm
+  $THIS/../dm/dm2dist $TMP "dist" -standardize -qc > $TMP.dist.dm
   $THIS/makeDistTree  -data $TMP.dist  -dissim_attr "dist"  -variance "linExp"  -optimize  -subgraph_iter_max 5  -output_tree $TMP.tree >> /dev/stderr
   $THIS/tree2obj_raw.sh $TMP.tree
 }
