@@ -47,8 +47,7 @@ namespace DM_sp
 { 
 
 
-const string dmExt ("dm");
-const string dmSuff ("." + dmExt);
+const string dmSuff ("." + string (dmExt));
 
 
 
@@ -97,10 +96,6 @@ string RealScale::getAverageStrValue (StringVector &&valuesStr)
 
 
 // Attr
-
-const char* missingStr = "?";
-
-
 
 Attr::Attr (const string &name_arg,
 		        Dataset &ds_arg,
@@ -2614,7 +2609,7 @@ void Sample::save (const Vector<size_t>* objNums,
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
+PositiveAttr2* getDist2 (const Space1<NumAttr1> &space,
                          const string &attrName,
                          Dataset &ds)
 {
@@ -2627,8 +2622,9 @@ PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
     FOR (size_t, col, row)
     {
     	Real diff = 0.0;  
-    	for (const RealAttr1* attr : space)
+    	for (const NumAttr1* attr : space)
     	{
+    	  ASSERT (attr);
     	  ASSERT (& attr->ds == & ds);
     	  if (   ! attr->isMissing (row)
     	      && ! attr->isMissing (col)
@@ -5638,7 +5634,7 @@ void Clustering::splitCluster (size_t num)
 
 Space1<ProbAttr1> Clustering::createSpace (Dataset &ds) const
 {
-  ASSERT (& ds == & space. ds);
+  ASSERT (& ds == space. ds);
   
 	Space1<ProbAttr1> sp (ds, false);
 	FFOR (size_t, i, getOutDim ())
@@ -5848,7 +5844,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
 {
   ASSERT (! outGenericDm. empty ());
   ASSERT (& ds == sample. ds);
-  ASSERT (& ds == & sp1. ds);
+  ASSERT (& ds == sp1. ds);
   
 
   NominAttr1* clustNominAttr = createNominAttr (clusterAttrName, 0, ds);  
@@ -5886,7 +5882,7 @@ void Clustering::processSubclusters (const string &clusterAttrName,
     ostringstream oss;
     {
       Sample subset (sample);
-      FFOR (size_t, row, space. ds. objs. size ())
+      FFOR (size_t, row, space. ds->objs. size ())
         if ((*clustNominAttr) [row] != i)
           subset. mult [row] = 0.0;
       subset. finish ();    
