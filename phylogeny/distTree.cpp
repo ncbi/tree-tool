@@ -3755,7 +3755,7 @@ private:
     if (name. empty () && ! isName)
       throw Error ("Empty number", *this);
   #endif
-    return name;
+    return unpercent (name);
   }
 
   void parseSubtree (Steiner* parent)
