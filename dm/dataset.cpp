@@ -2645,6 +2645,8 @@ PositiveAttr2* getHammingDist (const Space1<ProbAttr1> &space,
                               Dataset &ds)
 {
   ASSERT (! space. empty ());
+  
+  // Use Obj::mult ??
 
 #if 0
   // Attributes with most (*attr)[row] \approx 0 have too big weight
