@@ -57,6 +57,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("in", "tsv-table");
   	  addPositional ("col", "Object name column");
+  	  addKey ("missing", "Replacement for missing values", missingStr);
   	}
   	
   	
@@ -65,6 +66,7 @@ struct ThisApplication : Application
 	{
 		const string inFName    = getArg ("in");
 		const string objColName = getArg ("col");
+		const string missingVal = getArg ("missing");
 	  
 
     const TextTable tt (inFName);
@@ -110,8 +112,15 @@ struct ThisApplication : Application
     //ASSERT (ds. getName2objNum (row [objCol]) == i);  // ' ' -> '_'
       FFOR (TextTable::ColNum, col, tt. header. size ())
         if (const Attr1* attr = attrs [col])
-          if (! row [col]. empty ())
+        {
+          if (row [col]. empty ())
+          {
+            if (missingVal != missingStr)
+              var_cast (attr) -> str2value (i, missingVal);
+          }
+          else
             var_cast (attr) -> str2value (i, row [col]);
+        }
     }
 
     ds. qc ();
