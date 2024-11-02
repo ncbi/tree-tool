@@ -169,7 +169,8 @@ struct LogRegFuncMult : FuncMult
 void LogisticRegression::simulateTarget (ulong seed)
 { 
   Rand rand (seed);
-  FOR (size_t, i, space. ds. objs. size ())
+  ASSERT (space. ds);
+  FOR (size_t, i, space. ds->objs. size ())
     const_cast <BoolAttr1&> (target). setBool (i, (ebool) (rand. getProb () <= predict (i)));
 }
 
@@ -349,7 +350,8 @@ bool LinearNumPrediction::solveUnconstrainedAlternate (const RealAttr1* predicti
 
   absCriterion = NaN;
   
-  Dataset& ds = const_cast <Dataset&> (space. ds);
+  ASSERT (space. ds);
+  Dataset& ds = * var_cast (space. ds);
   
   unique_ptr<RealAttr1> residual (& makeResidualAttr ("_res", predictionAttr, ds));  
 
@@ -488,7 +490,7 @@ RealAttr1& LinearNumPrediction::makeResidualAttr (const string &attrName,
                                                   const RealAttr1* predictionAttr,
                                                   Dataset &ds) const
 { 
-  IMPLY (predictionAttr, & predictionAttr->ds == & space. ds);
+  IMPLY (predictionAttr, & predictionAttr->ds == space. ds);
   ASSERT (& ds == sample. ds);
 
   auto& residual = * new RealAttr1 (attrName, ds, target. decimals); 
@@ -1129,9 +1131,9 @@ void L2LinearNumPrediction::setAbsCriterion ()
 
 
 
-void L2LinearNumPrediction::setAbsCriterion (const RealAttr1& residual)
+void L2LinearNumPrediction::setAbsCriterion (const RealAttr1 &residual)
 {
-  ASSERT (& residual. ds == & space. ds);
+  ASSERT (& residual. ds == space. ds);
   
   absCriterion = 0;
   Real mult_sum = 0;

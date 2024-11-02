@@ -204,13 +204,13 @@ struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
   Prob getCorrectPredictionFrac () const
     { return exp (- negLogLikelihood_ave); }
   RealAttr1* getScoreAttr (const string &targetNameSuffix)
-    { auto a = new RealAttr1 (target. name + "_" + targetNameSuffix, const_cast <Dataset &> (space. ds));  
+    { auto a = new RealAttr1 (target. name + "_" + targetNameSuffix, * var_cast (space. ds));  
       for (Iterator it (sample); it ();)  
         (*a) [*it] = getScore (*it);
       return a;
     }
   ProbAttr1* getPredictionAttr (const string &targetNameSuffix)
-    { auto a = new ProbAttr1 (target. name + "_" + targetNameSuffix, const_cast <Dataset &> (space. ds));  
+    { auto a = new ProbAttr1 (target. name + "_" + targetNameSuffix, * var_cast (space. ds));  
       for (Iterator it (sample); it ();)  
         (*a) [*it] = predict (*it);
       return a;
