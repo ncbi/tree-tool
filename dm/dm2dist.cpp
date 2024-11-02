@@ -58,7 +58,8 @@ struct ThisApplication : Application
 	  version = VERSION;
 	  
 	  addPositional ("file", dmSuff + "-file without the extension");	  
-	  addPositional ("dist", "Name of created 2-way sistance attribute");
+	  addPositional ("dist", "Name of created 2-way attribute of squared distance in L_2");
+	  addFlag ("standardize", "Standardize the attributes");
 	}
 	
 	
@@ -67,6 +68,7 @@ struct ThisApplication : Application
 	{
 		const string inFName      = getArg("file");
 		const string distAttrName = getArg("dist");
+		const bool   stndP        = getFlag ("standardize");
 		
     
     Dataset ds (inFName);
@@ -81,10 +83,19 @@ struct ThisApplication : Application
       throw runtime_error ("Too small data size");
 
     Space1<Attr1> spRaw (ds, true);
-
-    const Space1<RealAttr1> spStnd (spRaw. standardize (sm, ds));
+    if (spRaw. empty ())
+      throw runtime_error ("No attributes");
+    spRaw. qc ();
     
-    getDist2 (spStnd, distAttrName, ds);
+    Space1<NumAttr1> sp;
+    if (stndP)
+      sp = std::move (spRaw. standardize (sm, ds));  
+    else
+      sp = std::move (spRaw. toNumAttr1 (ds));
+        
+    sp. qc ();
+      
+    getDist2 (sp, distAttrName, ds);
     ds. qc ();
 
     ds. saveText (cout);    
