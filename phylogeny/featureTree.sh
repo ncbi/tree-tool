@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# != 4 ]; then
   echo "Output: #3[.maxParsimony].{tree,core} - feature tree"
@@ -15,7 +15,7 @@ USE_TIME=$3
 OUT=$4
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 #set -x
 
