@@ -48,9 +48,10 @@ namespace DM_sp
 
 
 
-extern const string dmExt;
+constexpr const char* dmExt {"dm"};
 extern const string dmSuff;  // = "." + dmExt
-extern const char* missingStr;
+constexpr const char* missingStr {"?"};
+
 
 
 
@@ -1349,15 +1350,16 @@ template <typename T/*:Attr*/>
   // Elements: in ds.attrs, !nullptr, all are different
   {
     typedef  VectorPtr<T>  P;
-    const Dataset& ds;
+    const Dataset* ds {nullptr};
   
   
+    Space () = default;
     Space (const Dataset &ds_arg,
            bool copyAttrs)
-      : ds (ds_arg)
+      : ds (& ds_arg)
       { if (copyAttrs)
-        { P::reserve (ds. attrs. size ());
-          for (const Attr* attr : ds. attrs)
+        { P::reserve (ds_arg. attrs. size ());
+          for (const Attr* attr : ds_arg. attrs)
             if (const T* a = T::as (attr))
               *this << a;
         }
@@ -1371,10 +1373,11 @@ template <typename T/*:Attr*/>
       { if (! qc_on)
           return;
         assert (! P::empty ());
+        assert (ds);
         Set<const T*> attrSet;
         for (const T* attr : *this)
         { assert (attr);
-          assert (& attr->ds == & ds);
+          assert (& attr->ds == ds);
           attrSet << attr;
         }
         assert (P::size () == attrSet. size ());
@@ -1398,7 +1401,7 @@ template <typename T/*:Attr*/>
     template <typename U/*:T*/>
       Space<T>& operator<< (const U* attr)
         { assert (attr);
-          assert (& attr->ds == & ds);
+          assert (& attr->ds == ds);
         //if (name2attr (attr->name))
           //ERROR_MSG ("Attribute " + strQuote (attr->name) + " already exists in the space");
           P::operator<< (attr);  
@@ -1437,10 +1440,6 @@ template <typename T/*:Attr*/>
             iter. erase ();
         return *this;
       }
-      
-  protected:
-    const Dataset* dsPtr () const
-      { return & ds; }
   };
   
     
@@ -1451,6 +1450,8 @@ template <typename T/*:Attr1*/>
     typedef  Space<T>  P;
     
         
+    Space1 () 
+      {}
     Space1 (const Dataset &ds_arg,
             bool copyAttrs)
       : P (ds_arg, copyAttrs)
@@ -1459,12 +1460,15 @@ template <typename T/*:Attr1*/>
       Space1 (const Space<U> &other)
         : P (other)
         {}
+    Space1 (Space<T> &&other)
+      : P (std::move (other))
+      {}
 
 
     void printCsv (const Sample &sample,
                    ostream &os) const
-      { assert (sample. ds == P::dsPtr ());
-        const bool unitMult = P::ds. getUnitMult ();
+      { assert (sample. ds == P::ds);
+        const bool unitMult = P::ds->getUnitMult ();
         // Header
         os << "ObjName";
         if (! unitMult)
@@ -1474,7 +1478,7 @@ template <typename T/*:Attr1*/>
         os << endl;
         // Data
         for (Iterator it (sample); it ();)  
-        { os << P::ds. objs [*it] -> name;
+        { os << P::ds->objs [*it] -> name;
           if (! unitMult)
             os << "," << scientific << sample. mult [*it];
           for (const T* attr : *this)
@@ -1487,12 +1491,12 @@ template <typename T/*:Attr1*/>
                        JsonContainer* parent,
                        const string& name = noString) const 
       // Element format: {objName:S,mult:R,comment:S,attr:(<attrName>:S)*}
-      { assert (sample. ds == P::dsPtr ());
-        const bool unitMult = P::ds. getUnitMult ();
-        const bool commented = P::ds. objCommented ();
+      { assert (sample. ds == P::ds);
+        const bool unitMult = P::ds->getUnitMult ();
+        const bool commented = P::ds->objCommented ();
         auto* jObjs = new JsonArray (parent, name);
         for (Iterator it (sample); it ();)  
-        { const Obj* obj = P::ds. objs [*it];
+        { const Obj* obj = P::ds->objs [*it];
           auto* jObj = new JsonMap (jObjs);
           new JsonString (obj->name, jObj, "objName");
           if (! unitMult)
@@ -1513,19 +1517,19 @@ template <typename T/*:Attr1*/>
       }
 
     Space1<NumAttr1> toNumAttr1 (Dataset &ds_arg) const
-      { assert (P::dsPtr () == & ds_arg);
+      { assert (P::ds == & ds_arg);
         Space1<NumAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
-        { const Vector<NumAttr1*> vec (attr->toNumAttr1 (ds_arg));
-          for (const NumAttr1* attr_new : vec)
-            sp << attr_new;
-        }
+          { const Vector<NumAttr1*> vec (attr->toNumAttr1 (ds_arg));
+            for (const NumAttr1* attr_new : vec)
+              sp << attr_new;
+          }
         return sp;
       }
     Space1<RealAttr1> standardize (const Sample &sample,
                                    Dataset &ds_arg) const
-      { assert (P::dsPtr () == sample. ds);
-        assert (P::dsPtr () == & ds_arg);
+      { assert (P::ds == sample. ds);
+        assert (P::ds == & ds_arg);
         Space1<RealAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
           { const Vector<RealAttr1*> vec (attr->standardize (ds_arg, sample));
@@ -1535,7 +1539,7 @@ template <typename T/*:Attr1*/>
         return sp;
       }
     Space1<BoolAttr1> toBoolAttr1 (Dataset &ds_arg) const
-      { assert (P::dsPtr () == & ds_arg);
+      { assert (P::ds == & ds_arg);
         Space1<BoolAttr1> sp (ds_arg, false);
         for (const T* attr : *this)
           if (const BoolAttr1* boolAttr = attr->asBoolAttr1 ())
@@ -1554,7 +1558,7 @@ template <typename T/*:Attr1*/>
 // Return: !nullptr
 // Requires: space.defined()
 
-PositiveAttr2* getDist2 (const Space1<RealAttr1> &space,
+PositiveAttr2* getDist2 (const Space1<NumAttr1> &space,
                          const string &attrName,
                          Dataset &ds);
   // Return: squared distance in L_2
@@ -1670,7 +1674,7 @@ template <typename T/*:Attr1*/>
           return;
         Analysis1::qc();
         space. qc ();
-        assert (& space. ds == sample. ds);
+        assert (space. ds == sample. ds);
         assert (space. size () == variable. size ());
         assert (! space. empty ());
       }
