@@ -49,7 +49,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert wgMLST data to a dissimilarity and print a " + dmSuff + "-file")
@@ -63,7 +63,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string biosamplesFName = getArg  ("biosamples");
 		const string pairsFName      = getArg ("pairs");

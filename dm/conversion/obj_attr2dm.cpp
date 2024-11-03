@@ -72,7 +72,7 @@ string parseLine (string line,
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert object-attribute pairs to a " + dmSuff + "-file with")
@@ -85,7 +85,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string pairsFName   =                   getArg ("pairs");
 		const string type         =                   getArg ("type");

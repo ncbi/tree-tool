@@ -633,7 +633,7 @@ bool compareMatches (const Hsp &h1,
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
   : Application ("Compute ANI-based Jukes-Cantor dissimilarity.\n\
@@ -649,7 +649,7 @@ Print: <jc_whole> [<jc_ave> <jc_sd/jc_ave>] <jc_cluster_ave>")
 
 
 
-	void body () const
+	void body () const final
 	{
     const size_t pieceLen    = str2<size_t> (getArg  ("piece_len"));   
     const bool cut           = getFlag ("cut");  

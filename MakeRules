@@ -2,8 +2,9 @@ ifndef CODE_DIR
   $(error no CODE_DIR)
 endif
 
-OS := $( shell uname -s )
-GCC_VER := $( gcc --version | head -1 | cut -f 3 -d ' ' )
+OS := $(shell uname -s )
+GCC_VER := $(shell gcc --version | head -1 | cut -f 3 -d ' ' )
+#$(info GCC version: $(GCC_VER) )
 
 WarningCPPFLAGS =
 ifdef AT_NCBI
@@ -17,9 +18,11 @@ ifdef AT_NCBI
     -Wcast-align -Wdeprecated-declarations \
     -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
     -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wunused \
-    -pedantic    
+    -pedantic \
+    -Wsuggest-override   
   # -Wuseless-cast
   ifeq ($(GCC_VER), 13.2.0)
+   #$(info $(GCC_VER) warnings )
     WarningCPPFLAGS += -Wno-error=aggressive-loop-optimizations
   endif
   ifeq ($(OS), Linux)  

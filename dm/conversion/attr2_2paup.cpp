@@ -49,7 +49,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print an Attr2 in PAUP* format")
@@ -63,7 +63,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string fName     = getArg ("file");
 		const string attr2Name = getArg ("attr2Name");
