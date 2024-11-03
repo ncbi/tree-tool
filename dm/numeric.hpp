@@ -53,7 +53,7 @@ bool initNumeric ();
   // Invokes: initCommon()
 
 
-template <class T /*:integer*/>  
+template <typename T /*:integer*/>  
   inline T divide (T n, 
                    T divisor,
                    T &remainder)
@@ -68,11 +68,11 @@ template <class T /*:integer*/>
     return result;
   }
   
-template <class T /*: number*/>  
+template <typename T /*: number*/>  
   inline int num2sign (T t)
     { return t > 0 ? 1 : (t < 0 ? -1 : 0); }
 
-template <class T>  
+template <typename T /*: number*/>  
   inline T sqr (T x)
     { return x * x; }
 
@@ -244,7 +244,7 @@ struct LogReal : Root
 
 
 
-struct Sum : Root, Nocopy
+struct Sum final : Root, Nocopy
 // Summation with better precision
 {
 private:
@@ -289,7 +289,7 @@ public:
 
 
 
-struct SumLn : Root, Nocopy
+struct SumLn final : Root, Nocopy
 // Summation of natural logarithms with better precision
 {
 private:
@@ -499,7 +499,7 @@ struct WeightedMeanVar
 
 
 
-struct MeanVar : Root
+struct MeanVar final : Root
 {
   streamsize decimals {2};
   int n {0};
@@ -601,7 +601,7 @@ struct Correlation
 
 
 
-struct Histogram : Root
+struct Histogram final : Root
 {
   Real start {NaN};
   Real stop {NaN};
@@ -611,7 +611,7 @@ struct Histogram : Root
   Histogram (Real start_arg,
              Real stop_arg,
              Real binRange_arg);
-  void saveText (ostream &os) const;
+  void saveText (ostream &os) const override;
   
   size_t getBin (Real x) const;
   Histogram& operator<< (Real x);

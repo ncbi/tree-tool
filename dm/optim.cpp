@@ -345,11 +345,9 @@ Real MoveFunc::f (Real X)
   ASSERT (! isNan (X));
   ASSERT (X >= 0.0); 
   
-
-  if (SetMFX (X))
+  if (setMFX (X))
     return MF->f (MFX); 
-  else
-    return NaN;
+  return NaN;
 }
 
 
@@ -531,7 +529,7 @@ bool FuncMult::optimizeGradient (bool         Min,
     ASSERT (dK > 0.0);
 
     // X, Gradient, dK -> K
-    const Real K = GetGradientMove (Min, PracticalOptimum, X, Gradient, dK);
+    const Real K = getGradientMove (Min, PracticalOptimum, X, Gradient, dK);
     ASSERT (K >= 0.0);
 
     // Gradient, K -> Gradient, X
@@ -565,7 +563,7 @@ bool FuncMult::optimizeGradient (bool         Min,
 
 
 
-struct GradientMoveFunc : public MoveFunc
+struct GradientMoveFunc final : MoveFunc
 {
   GradientMoveFunc (FuncMult* initMF,
                     const MVector*  initMFX0,
@@ -574,7 +572,7 @@ struct GradientMoveFunc : public MoveFunc
     {}
 
 
-  bool SetMFX (Real X)
+  bool setMFX (Real X) final
   // MFX = MFX0 + MFGradient * X
   {
     ASSERT (! isNan (X));
@@ -592,19 +590,19 @@ struct GradientMoveFunc : public MoveFunc
 
 
 
-Real FuncMult::GetGradientMove (bool         Min,
-                                 Real        PracticalOptimum,
-                                 const MVector &X,
-                                 const MVector &Gradient,
-                                 const Real  dK)
+Real FuncMult::getGradientMove (bool Min,
+                                Real PracticalOptimum,
+                                const MVector &X,
+                                const MVector &Gradient,
+                                const Real  dK)
 {
   ASSERT (X.        rowsSize (false) /*Len [false]*/ == maxArgNum);
   ASSERT (Gradient. rowsSize (false) /*Len [false]*/ == maxArgNum);
   ASSERT (finite (dK));
   ASSERT (dK > 0.0);
   
-  GradientMoveFunc MF (this, & X, & Gradient);
-  return optimizeLinear (Min, PracticalOptimum, & MF, dK, false);
+  GradientMoveFunc mf (this, & X, & Gradient);
+  return optimizeLinear (Min, PracticalOptimum, & mf, dK, false);
 }
 
 
@@ -667,7 +665,7 @@ bool FuncMult::optimizeMarquardt (bool          Min,
     dX. saveText (cout);
   #endif
 
-    if (! GetMarquardtX (Min, PracticalOptimum, X, Gradient, Hessian, dX, XNew))
+    if (! getMarquardtX (Min, PracticalOptimum, X, Gradient, Hessian, dX, XNew))
     {
       if (verbose ())
         cerr << endl << "Marquardt is inapplicable" << endl;
@@ -704,7 +702,7 @@ bool FuncMult::optimizeMarquardt (bool          Min,
 
 
 
-struct MarquardtMoveFunc : public MoveFunc
+struct MarquardtMoveFunc final : MoveFunc
 {
   const Matrix* const MFHessian;
     // Requires: Size = (MF->maxArgNum, MF->maxArgNum)
@@ -728,7 +726,7 @@ public:
     }
 
 
-  bool SetMFX (Real X)
+  bool setMFX (Real X) final
   // X -> 0.0: Linear (gradient) optimization
   // X = 0.0: MFX = MFX0
   // X -> inf: Quadratic optimization
@@ -765,11 +763,11 @@ public:
 
 
 
-bool FuncMult::GetMarquardtX (bool         Min,
-                              Real        PracticalOptimum,
+bool FuncMult::getMarquardtX (bool         Min,
+                              Real          PracticalOptimum,
                               const MVector &X0, 
                               const MVector &Gradient, 
-                              const Matrix &Hessian, 
+                              const Matrix  &Hessian, 
                               const MVector &dX,
                               MVector       &XNew)
 {

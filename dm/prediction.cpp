@@ -109,7 +109,7 @@ Real LogisticRegression::getNegLogLikelihood_ave () const
 namespace 
 {
 
-struct LogRegFuncMult : FuncMult
+struct LogRegFuncMult final : FuncMult
 {
   LogisticRegression& lr;
   
@@ -121,14 +121,14 @@ struct LogRegFuncMult : FuncMult
 
 
 
-  Real f (const MVector &x)
+  Real f (const MVector &x) final
     { 
       lr. beta = x; 
       return lr. getNegLogLikelihood_ave ();
     }
 
   void getGradient (const MVector &x,
-         				    MVector &gradient)
+         				    MVector &gradient) final
     {
       lr. beta = x; 
       gradient. putAll (0);
@@ -143,7 +143,7 @@ struct LogRegFuncMult : FuncMult
     
 
   void getHessian (const MVector &x,
-        			     Matrix &hessian)
+        			     Matrix &hessian) final
     { 
       lr. beta = x; 
       hessian. putAll (0.0);

@@ -443,7 +443,7 @@ Real lnGamma (Real x)
 
 namespace
 {
-  struct ContinuedFraction_LnComIncGamma : ContinuedFraction
+  struct ContinuedFraction_LnComIncGamma final : ContinuedFraction
   {
     Real x;
     Real a;
@@ -573,7 +573,7 @@ Real erf (Real x)
 namespace
 {
 	
-struct ZetaSeries : Series
+struct ZetaSeries final : Series
 {
 	Real s;
 	ZetaSeries (Real s_arg,
@@ -583,9 +583,9 @@ struct ZetaSeries : Series
 	  	start = start_arg; 
 	  	ASSERT (start >= 1);
 	  }
-  Real f (uint x) const 
+  Real f (uint x) const final
     { return 1 / pow (x, s); }
-  Real integral (uint x) const 
+  Real integral (uint x) const final
 	  { return 1 / (pow (x, s - 1) * (s - 1)); }
 };
 	
@@ -643,7 +643,7 @@ Real zeta (Real alpha,
 namespace
 {
 	
-struct ZetaLnSeries : Series
+struct ZetaLnSeries final : Series
 {
 	Real s;
 	ZetaLnSeries (Real s_arg,
@@ -653,9 +653,9 @@ struct ZetaLnSeries : Series
 	  	start = start_arg; 
 	  	ASSERT (start >= 1);
 	  }
-  Real f (uint x) const 
+  Real f (uint x) const final
     { return 1 / pow (x, s) * log (x); }
-  Real integral (uint x) const 
+  Real integral (uint x) const final
 	  { const Real b = 1 - s;
 	    return pow (x, b) * (1 / sqr (b) - log (x) / b);
 	  } 

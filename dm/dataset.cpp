@@ -3524,14 +3524,14 @@ void Zipf::setParamFunc ()
 
 namespace {
 
-struct Zipf_estimate_Func : Func1
+struct Zipf_estimate_Func final : Func1
 {
   uint from;
   uint to;
     // 0 <=> unlimited
   Real goal;
 
-  Real f (Real x) 
+  Real f (Real x) final
   { 
   	const Real alpha = - x;
   	if (to)
@@ -3638,10 +3638,12 @@ Analysis1* ContinuousDistribution::createAnalysis (Dataset &ds)
 namespace
 {
   
-struct ContDistrQuantile : Func1
+struct ContDistrQuantile final : Func1
 {
   const ContinuousDistribution& distr;
   Prob p;
+
+  
   ContDistrQuantile (const ContinuousDistribution &distr_arg,
                      Prob p_arg)
     : distr (distr_arg)
@@ -3918,7 +3920,7 @@ void Cauchy::qc () const
 namespace 
 {
 
-struct CauchyScaleFunc : Func1
+struct CauchyScaleFunc final : Func1
 {
 	const Cauchy::An& an;
   Real loc;
@@ -3929,7 +3931,7 @@ struct CauchyScaleFunc : Func1
     , loc (loc_arg)
     {}
 
-  Real f (Real x) 
+  Real f (Real x) final
   { 
   	const NumAttr1& attr = an. attr; 
   	const Real x2 = sqr (x);
@@ -5702,7 +5704,7 @@ ProbAttr1* Clustering::createProbAttr (const string &attrName,
 namespace 
 {
 
-struct CategoryCluster : DisjointCluster
+struct CategoryCluster final : DisjointCluster
 {
   size_t category;
   explicit CategoryCluster (size_t category_arg)

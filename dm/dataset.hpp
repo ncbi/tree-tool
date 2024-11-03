@@ -59,7 +59,7 @@ constexpr const char* missingStr {"?"};
 
 
 
-struct Obj : Root, DisjointCluster
+struct Obj final : Root, DisjointCluster
 // Object
 {
   string name;
@@ -276,7 +276,7 @@ public:
   virtual void setMissing (size_t objNum) = 0;
 
   // values: I/O
-  size_t getWidth_max () const; 
+  size_t getWidth_max () const override; 
   virtual string value2str (size_t objNum) const = 0;
     // Requires: !isMissing(objNum)
   virtual void str2value (size_t objNum,
@@ -437,7 +437,7 @@ public:
 
 
 
-struct PositiveAttr1 : RealAttr1
+struct PositiveAttr1 final : RealAttr1
 {
   PositiveAttr1 (const string &name_arg,
                  Dataset &ds_arg,
@@ -483,7 +483,7 @@ struct PositiveAttr1 : RealAttr1
 
 
 
-struct ProbAttr1 : RealAttr1
+struct ProbAttr1 final : RealAttr1
 {
   ProbAttr1 (const string &name_arg,
              Dataset &ds_arg,
@@ -520,7 +520,7 @@ struct ProbAttr1 : RealAttr1
 
 
 
-struct IntAttr1 : NumAttr1
+struct IntAttr1 final : NumAttr1
 {
   typedef int Value;
   static const Value missing;  
@@ -572,11 +572,11 @@ public:
     { values. setAll (value); }
 
   void str2value (size_t objNum,
-                  const string &s)
+                  const string &s) final
     { (*this) [objNum] = str2<Value> (s); }
   string getAverageStrValue (StringVector &&/*valuesStr*/) const final
     { throw logic_error ("Not implemented"); }
-  Real getReal (size_t objNum) const 
+  Real getReal (size_t objNum) const final
     { const Value v = (*this) [objNum];
       return v == missing ? NumAttr1::missing : (Real) v; 
     }
@@ -635,7 +635,7 @@ public:
 
 
 
-struct ExtBoolAttr1 : BoolAttr1
+struct ExtBoolAttr1 final : BoolAttr1
 {
 private:
   Vector<Value> values;
@@ -689,7 +689,7 @@ public:
 
 
 
-struct CompactBoolAttr1 : BoolAttr1
+struct CompactBoolAttr1 final : BoolAttr1
 {
 private:
   vector<bool> values;
@@ -748,7 +748,7 @@ public:
 
 
 
-struct NominAttr1 : Attr1
+struct NominAttr1 final : Attr1
 // Nominal (aka categorical, qualitative)
 // TOTEST
 {
@@ -890,7 +890,7 @@ public:
 
 
 #if 0
-struct OrdAttr1 : NominAttr1
+struct OrdAttr1 final : NominAttr1
 {
   OrdAttr1 (const string &name_arg,
             Dataset &ds_arg)
@@ -1049,7 +1049,7 @@ struct RealAttr2 : Attr2, RealScale
 
 
 
-struct PositiveAttr2 : RealAttr2
+struct PositiveAttr2 final : RealAttr2
 {
   static constexpr const char* hybrid_format {"<child> <hybridness> <parent1> <parent2> <d(child,parent1)> <d(child,parent2)> <child is hybrid> <parent1 is hybrid> <parent2 is hybrid> [<dissimilarity type>]"};
   
@@ -1097,7 +1097,7 @@ struct PositiveAttr2 : RealAttr2
 
 
 
-struct Dataset : Root
+struct Dataset final : Root
 // Object-attribute table
 // Time series: the greater objNum the later time point
 {
@@ -2030,7 +2030,7 @@ public:
 
 
 
-struct Bernoulli : Distribution 
+struct Bernoulli final : Distribution 
 {
   typedef  UniVariate<BoolAttr1>  An;
   const An* analysis {nullptr};
@@ -2100,7 +2100,7 @@ struct Bernoulli : Distribution
 
 
 
-struct Categorical : Distribution 
+struct Categorical final : Distribution 
 // Zipf property: pmf(x) = c * pow(rank(pmf(x)),-alpha)
 //                <=> rank(pmf(X)) ~ Zipf
 {
@@ -2415,7 +2415,7 @@ public:
 
 
 
-struct Binomial : DiscreteDistribution 
+struct Binomial final : DiscreteDistribution 
 // Sum of n Berboulli(p)
 {
   // Parameters
@@ -2489,7 +2489,7 @@ private:
 
 
 
-struct UniformDiscrete : DiscreteDistribution 
+struct UniformDiscrete final : DiscreteDistribution 
 // Continuous: Uniform
 {
   // Parameters
@@ -2559,7 +2559,7 @@ public:
 
 
 
-struct Geometric : DiscreteDistribution 
+struct Geometric final : DiscreteDistribution 
 // Values: >= 1
 // Continuous: Exponential
 {
@@ -2624,7 +2624,7 @@ private:
 
 
 
-struct Zipf : DiscreteDistribution   // not a distribution ??
+struct Zipf final : DiscreteDistribution   // not a distribution ??
 // = Zeta 
 // Zipf -> data -> frequency ranks ~ Zipf ??
 // Zipf -> data -> frequencies !~ Zipf
@@ -2836,7 +2836,7 @@ public:
 
 
 
-struct MinDistribution : ExtremeDistribution 
+struct MinDistribution final : ExtremeDistribution 
 {  
   MinDistribution ()
     : ExtremeDistribution ("Min")
@@ -2855,7 +2855,7 @@ private:
 
 
 
-struct MaxDistribution : ExtremeDistribution 
+struct MaxDistribution final : ExtremeDistribution 
 {  
   MaxDistribution ()
     : ExtremeDistribution ("Min")
@@ -2961,7 +2961,7 @@ public:
 
 
 
-struct Normal : LocScaleDistribution 
+struct Normal final : LocScaleDistribution 
 // getEntropy_est() = 0.5
 {
   static const Real coeff;
@@ -3030,7 +3030,7 @@ public:
 
 
 
-struct Exponential : LocScaleDistribution 
+struct Exponential final : LocScaleDistribution 
 {
   Exponential ()
     : LocScaleDistribution ("Exponential")
@@ -3082,7 +3082,7 @@ public:
 
 
 
-struct Cauchy : LocScaleDistribution 
+struct Cauchy final : LocScaleDistribution 
 // Cauchy(0,1) ~ Normal(0,1) / Normal(0,1)
 // Cauchy(loc,scale) ~ Student_1(loc,scale)
 // Cauchy(0,1) ~ tan(pi*(Uniform(0,1) - 0.5))
@@ -3133,7 +3133,7 @@ private:
 
 
 
-struct Chi2 : ContinuousDistribution 
+struct Chi2 final : ContinuousDistribution 
 {  
   // Parameters
   Real degree {NaN};
@@ -3204,7 +3204,7 @@ public:
 
 
 
-struct Beta1 : ContinuousDistribution 
+struct Beta1 final : ContinuousDistribution 
 // = Beta(alpha,1)
 // loc, scale: use ??
 {  
@@ -3274,7 +3274,7 @@ public:
 
 
 
-struct UniKernel : ContinuousDistribution 
+struct UniKernel final : ContinuousDistribution 
 // loc, scale: use ??
 // MultiVariate: use for clustering (single-linkage using halfWindow), cf. dbscan ??
 {  
@@ -3440,7 +3440,7 @@ public:
 
 
 
-struct MultiNormal : MultiDistribution
+struct MultiNormal final : MultiDistribution
 {
   // Parameters
   MVector mu;
@@ -3552,10 +3552,10 @@ private:
 
 
 
-struct Mixture : Distribution  
+struct Mixture final : Distribution  
 {
   // Parameters
-  struct Component : Root
+  struct Component final : Root
   {
     // Parameters
     Common_sp::AutoPtr<Distribution> distr;
@@ -3598,7 +3598,7 @@ struct Mixture : Distribution
     void merge (const Component* comp);     
       // Update: prob, objProb[]
   protected:
-    struct Component2Sample : SaveSample
+    struct Component2Sample final : SaveSample
     {
       Component2Sample (Sample &sample_arg,
                         const Component &comp)
@@ -3731,7 +3731,7 @@ public:
 
 ////////////////////////////////// Construction ///////////////////////////////
 
-struct PrinComp : MultiVariate<NumAttr1>
+struct PrinComp final : MultiVariate<NumAttr1>
 // Principal components
 {
   typedef  MultiVariate<NumAttr1>  P;
@@ -3802,7 +3802,7 @@ struct PrinComp : MultiVariate<NumAttr1>
 
 
 
-struct Clustering : MultiVariate<NumAttr1>
+struct Clustering final : MultiVariate<NumAttr1>
 {
   typedef  MultiVariate<NumAttr1>  P;
   
@@ -3897,7 +3897,7 @@ public:
 
 
 #if 0
-struct OneCluster : MultiVariate<NumAttr1>
+struct OneCluster final : MultiVariate<NumAttr1>
 {
   typedef  MultiVariate<NumAttr1>  P;
   
@@ -3908,7 +3908,7 @@ struct OneCluster : MultiVariate<NumAttr1>
 
 
 
-struct Canonical : MultiVariate<NumAttr1>
+struct Canonical final : MultiVariate<NumAttr1>
 {
   typedef  MultiVariate<NumAttr1>  P;
   
@@ -3960,7 +3960,7 @@ public:
 
 
 
-struct Mds : Analysis 
+struct Mds final : Analysis 
 // Linear multi-dimensional scaling
 {
   Eigens eigens;
@@ -4008,7 +4008,7 @@ struct Mds : Analysis
 
 ////////////////////////// PositiveAverage ///////////////////////////
 
-struct PositiveAverageModel : Root
+struct PositiveAverageModel final : Root
 {
 //Real varPower {1.0};  // PAR
   Real outlierSEs {NaN};
@@ -4023,7 +4023,7 @@ struct PositiveAverageModel : Root
 #endif
   
   
-	struct Component : Named
+	struct Component final : Named
 	{
 	  const PositiveAverageModel& pam;
 	//bool universal {false};
@@ -4152,7 +4152,7 @@ struct PositiveAverageModel : Root
 	
 
 
-struct PositiveAverage : MultiVariate<PositiveAttr1>
+struct PositiveAverage final : MultiVariate<PositiveAttr1>
 {
   typedef  MultiVariate<PositiveAttr1>  P;  
   PositiveAverageModel model;

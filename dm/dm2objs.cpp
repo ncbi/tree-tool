@@ -47,7 +47,7 @@ using namespace DM_sp;
 namespace
 {
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print the object names")
@@ -59,7 +59,7 @@ struct ThisApplication : Application
 	
 	
 	
-	void body () const
+	void body () const final
 	{
 		const string inFName = getArg ("file");
 		const bool comments  = getFlag ("comments");

@@ -144,7 +144,7 @@ template <typename T /*:Prediction*/>
 
 
 
-struct LogisticRegression : Prediction<NumAttr1,BoolAttr1>
+struct LogisticRegression final : Prediction<NumAttr1,BoolAttr1>
 {
   // Output
   Real negLogLikelihood_ave {NaN};
@@ -241,7 +241,7 @@ struct LinearNumPrediction;
 
 // Constraint
 
-struct Constraint : Root
+struct Constraint final : Root
 // Linear constraint on LinearNumPrediction::beta
 {
   const LinearNumPrediction& pred;
@@ -466,7 +466,7 @@ public:
 
 
 
-struct L2LinearNumPrediction : LinearNumPrediction
+struct L2LinearNumPrediction final : LinearNumPrediction
 // absCriterion = weighted sum of squares of residuals ("MSD")
 // targetConst = average of target
 {
@@ -526,7 +526,7 @@ public:
 
 
 
-struct EigensLinearRegression : Root
+struct EigensLinearRegression final : Root
 {
   Dataset ds;
   const RealAttr1& target;
@@ -577,7 +577,7 @@ public:
 /////////////////////// ExprNumPredict /////////////////////
 
 #if 0
-struct ExprNumPredict : Prediction
+struct ExprNumPredict final : Prediction
 // Non-linear regression
 {
   // INPUT

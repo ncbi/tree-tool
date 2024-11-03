@@ -141,12 +141,12 @@ protected:
 public:
 
 
-  Real f (Real x);
+  Real f (Real x) final;
     // Output: MFX
     // Return: MF->f (MFX); may be NaN
     // Requires: x >= 0.0; f(0.0) != NaN
     // Invokes: SetMFX (x)
-  virtual bool SetMFX (Real x) = 0;
+  virtual bool setMFX (Real x) = 0;
     // Output: MFX
     // Return: true if success
     // Requires: x >= 0.0; x = 0.0 => MFX = MFX0
@@ -184,11 +184,11 @@ public:
 
 
 protected:
-  Real optimizeLinear (bool       Min,
-                       Real       PracticalOptimum,
-          				     MoveFunc*  MF,
+  Real optimizeLinear (bool Min,
+                       Real PracticalOptimum,
+          				     MoveFunc* MF,
           				     const Real dK,
-          				     bool       Rough);
+          				     bool Rough);
     // Optimization in the neighborhood of MF->MFX0
     // Input: dK - corresponds to dX[]
     // Return: arg LocalExtr_K MF->f(K), s.t. K >= 0.0;
@@ -202,9 +202,9 @@ public:
   // If f is convex|concave then local extremum is global
   // Update: x - initial point and the resulting extremum
 
-  bool optimizeGradient (bool         Min,
-                         Real         PracticalOptimum,
-                     		 MVector       &x,
+  bool optimizeGradient (bool Min,
+                         Real PracticalOptimum,
+                     		 MVector &x,
                       	 const MVector &dX,
                      		 unsigned short MaxIter);
     // Gradient method to find a local extremum (method of steepest ascent|descent)
@@ -212,20 +212,20 @@ public:
     // Return: true if converged
     // Invokes: getGradient(), GetGradientMove()
 private:
-  Real GetGradientMove (bool         Min,
-                        Real         PracticalOptimum,
+  Real getGradientMove (bool Min,
+                        Real PracticalOptimum,
                      		const MVector &x,
                      		const MVector &Gradient,
-                     		const Real   dK);
+                     		const Real dK);
     // x + K * Gradient -> Min, s.t. K >= 0
     // Return: K
     // Invokes: optimizeLinear(not Rough)
 public:
 
-  bool optimizeMarquardt (bool           Min,
-                          Real           PracticalOptimum,
-                					MVector         &x,
-                					const MVector   &dX,
+  bool optimizeMarquardt (bool Min,
+                          Real PracticalOptimum,
+                					MVector &x,
+                					const MVector &dX,
                 					unsigned short MaxIter);
     // Join with optimizeGradient() -??
     // Marquardt method to find a local extremum
@@ -234,36 +234,36 @@ public:
     // Update: x
     // Invokes: getGradient(), getHessian(), GetMarquardtX()
 private:
-  bool GetMarquardtX (bool         Min,
-                      Real         PracticalOptimum,
+  bool getMarquardtX (bool Min,
+                      Real PracticalOptimum,
                       const MVector &X0, 
                       const MVector &Gradient, 
                       const Matrix &Hessian, 
             					const MVector &dX,
-                      MVector       &XNew);
+                      MVector &XNew);
     // Output: XNew
     // Return: true if success
     // Invokes: optimizeLinear(Rough)
     // Requires: dX [] > 0.0; f(X0) != NaN
 public:
 
-  bool optimizeHypercube (bool           Min,
-                   				MVector         &x,
-                   				const MVector   &XStep,
+  bool optimizeHypercube (bool Min,
+                   				MVector &x,
+                   				const MVector&XStep,
                    				unsigned short MaxIter,
-                   				Real           &YBest);	
+                   				Real &YBest);	
     // Hypercube search
     // Hypercube = x[i] + {0, XStep[i], -XStep[i]}
     // Input: XStep; > 0
     // Output: YBest = f(x)
     // Return: true if converged
-  bool optimizeHypercubeDepth (bool           Min,
-                      				 MVector         &x,
-                      				 const MVector   &XStep,
-                      				 Real           XStepCoeff,
+  bool optimizeHypercubeDepth (bool Min,
+                      				 MVector &x,
+                      				 const MVector &XStep,
+                      				 Real XStepCoeff,
                       				 unsigned short MaxIter,
                       				 unsigned short MaxDepth,
-                      				 Real           &YBest);
+                      				 Real &YBest);
     // Invokes: optimizeHypercube () MaxDepth times 
     //   multiplying XStep by XStepCoeff each time
     // Update: x

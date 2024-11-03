@@ -108,7 +108,7 @@ struct Violation
 
 
 
-struct Violator : Named
+struct Violator final : Named
 {
   // # Violation's
   size_t end {0};
@@ -124,7 +124,7 @@ struct Violator : Named
     , middle (middle_arg)
     { ASSERT (num ()); }
   Violator () = default;
-  void saveText (ostream &os) const
+  void saveText (ostream &os) const final
     { os << name << ": " << end << "+" << middle << " = " << num (); }
     
   size_t num () const
@@ -134,7 +134,7 @@ struct Violator : Named
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Find clusters of objects connected by finite distances.\n\

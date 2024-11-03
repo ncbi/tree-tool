@@ -130,7 +130,7 @@ void distribution2MeanVar (const Matrix &distribution,
 
 
 
-struct Determinant : LogReal
+struct Determinant final : LogReal
 {
   size_t size;
   
@@ -935,7 +935,7 @@ public:
 
 
 
-struct MVector : Matrix
+struct MVector final : Matrix
 {
   explicit MVector (size_t maxRow = 0,
                     Real init_val = NaN) 
@@ -996,7 +996,7 @@ struct MVector : Matrix
 
 // Eigen
 
-struct Eigen : Root
+struct Eigen final : Root
 {
   Real value;
     // Init: 0
@@ -1023,7 +1023,7 @@ struct Eigen : Root
 
 // Eigens
 
-struct Eigens : Root 
+struct Eigens final : Root 
 // For time: n = # rows in matr
 {
   // INPUT
