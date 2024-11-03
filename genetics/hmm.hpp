@@ -99,7 +99,7 @@ public:
 
 
 
-struct Hmm : Named
+struct Hmm final : Named
 // COMPO line is required
 {
   map<string/*field*/,string/*content*/> meta;
@@ -124,7 +124,7 @@ HmmLib loadHmmLib (const string &fName);
 
 
 
-struct Hmmsearch : Root
+struct Hmmsearch final : Root
 {
 private:
   LineInput li;
@@ -148,7 +148,7 @@ public:
 
 
 
-struct HmmDom : Root
+struct HmmDom final : Root
 {
 private:
   LineInput li;

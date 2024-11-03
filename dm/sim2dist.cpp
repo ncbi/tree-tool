@@ -50,7 +50,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert similarity to distance")
@@ -63,7 +63,7 @@ struct ThisApplication : Application
 
 
 
-	void body () const
+	void body () const final
 	{
 		const string fName    = getArg ("file");
 		const string attrName = getArg ("attrName");

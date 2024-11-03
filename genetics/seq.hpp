@@ -311,7 +311,7 @@ public:
 
 
 
-struct Multifasta : Root
+struct Multifasta final : Root
 /* Usage:
      { Multifasta fa (...);
        while (fa. next ())
@@ -751,7 +751,7 @@ struct Dna : Seq
 
 
 
-struct FastaDna : Dna
+struct FastaDna final : Dna
 {
   FastaDna (const string &fName,
             size_t reserveLen,
@@ -810,7 +810,7 @@ typedef  double  AlignScore;
 
 
 
-struct SubstMat : Root
+struct SubstMat final : Root
 // Substitution matrix for protein alignment
 // NCBI: e.g., /am/ftp-blast/matrices/BLOSUM62
 /*           ------ default -----
@@ -850,7 +850,7 @@ struct SubstMat : Root
 
 	
 	
-struct PeptideOrf : Root
+struct PeptideOrf final : Root
 // DNA -> translation of a segment -> ORF
 {
   size_t translationStart {no_index};
@@ -1013,7 +1013,7 @@ struct Peptide : Seq
 
 
 
-struct FastaPeptide : Peptide
+struct FastaPeptide final : Peptide
 {
   FastaPeptide (const string &fName,
                 size_t reserveLen,
@@ -1053,7 +1053,7 @@ inline Seq* makeSeq (Multifasta &fa,
 
 //
 
-struct Cds : Root
+struct Cds final : Root
 // All lengths are in nt
 {
   // PAR
@@ -1143,7 +1143,7 @@ public:
 
 
 
-struct DnaAnnot : Root
+struct DnaAnnot final : Root
 {
   Vector<Cds> cdss;  
   
@@ -1164,7 +1164,7 @@ struct DnaAnnot : Root
 
 // Align
 
-struct Align : Root
+struct Align final : Root
 // Needleman-Wunsch algorithm 
 {
 	// Output:
@@ -1235,7 +1235,7 @@ public:
 
 
 
-struct Mutation : Root
+struct Mutation final : Root
 {
   bool prot {false};
   string geneName;
@@ -1319,7 +1319,7 @@ public:
 
     
 
-struct KmerIndex : Named, Singleton<KmerIndex>
+struct KmerIndex final : Named, Singleton<KmerIndex>
 // DNA k-mer index
 // Assumptions for time: DNA sequence length is O(1)
 //                       DNA identifier length is O(1)

@@ -141,7 +141,7 @@ inline Real dist_max ()
 
 
 
-struct DissimParam : Root
+struct DissimParam final : Root
 {  
   // For transform()
   Real power {1.0};
@@ -545,7 +545,7 @@ private:
 
 
 
-struct Steiner : DTNode
+struct Steiner final : DTNode
 // Steiner node
 {
 private:
@@ -626,7 +626,7 @@ private:
 
 
 
-struct Leaf : DTNode
+struct Leaf final : DTNode
 // name: !empty()
 {
 	friend DistTree;
@@ -757,7 +757,7 @@ struct SubPath
 
 
 
-struct Subgraph : Root
+struct Subgraph final : Root
 {
   const DistTree& tree;
   // !nullptr
@@ -871,7 +871,7 @@ public:
 
 
 
-struct Change : Root
+struct Change final : Root
 // Of topology
 // *to becomes a sibling of *from
 // Enough to transform any topology to any topology. Proof: by induction by node depth descending
@@ -970,7 +970,7 @@ public:
 
 
 
-struct DissimType : Named
+struct DissimType final : Named
 {
   const PositiveAttr2* dissimAttr {nullptr};
     // In *DistTree::dissimDs
@@ -1142,7 +1142,7 @@ struct SteinerHash;
 
 
 
-struct DistTree : Tree
+struct DistTree final : Tree
 // Of DTNode*
 // Least-squares distance tree
 // Steiner tree
@@ -1750,7 +1750,7 @@ public:
 
 
 
-struct NewLeaf : Named
+struct NewLeaf final : Named
 // To become Leaf
 // name = Leaf::name
 // For Time: q = leaf2dissims.size()
@@ -1761,7 +1761,7 @@ private:
 public:
   
 
-  struct Location : Root
+  struct Location final : Root
   // Currently best for NewLeaf
   {
     const DTNode* anchor {nullptr};
@@ -1798,7 +1798,7 @@ public:
   Location location;
 
 
-  struct Leaf2dissim : Root
+  struct Leaf2dissim final : Root
   {
     // Input
     const Leaf* leaf {nullptr};

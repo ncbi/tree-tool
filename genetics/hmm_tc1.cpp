@@ -56,7 +56,7 @@ Prob error_max = NaN;
 
   
 
-struct Hit : Named
+struct Hit final : Named
 // name: sseqid
 {
   Real score1;
@@ -69,7 +69,7 @@ struct Hit : Named
     , score1 (score1_arg)
     , seed (seed_arg)
     { ASSERT (score1 > 0); }
-  void saveText (ostream &os) const
+  void saveText (ostream &os) const final
     { os << name << ' ' << score1 << ' ' << seed; }
     
   static bool compare (const Hit &h1,
@@ -79,7 +79,7 @@ struct Hit : Named
 
 
 
-struct Hmm : Named
+struct Hmm final : Named
 // name: hmmName
 {
   // PAR
@@ -98,7 +98,7 @@ struct Hmm : Named
 
   
   Hmm () = default;
-  void qc () const override
+  void qc () const final
     { if (! qc_on)
         return;
       Named::qc ();
@@ -121,7 +121,7 @@ struct Hmm : Named
 		      { QC_ASSERT_EQ ((Real) hits. size (), score. n, 1e-6); }  // PAR
       }
     }
-  void saveText (ostream &os) const override
+  void saveText (ostream &os) const final
     { os. width (4);
       { ONumber on (os, (int) decimals, false);  
   	    os << "TC1: " << floor (tc1) << " " << name;
@@ -201,7 +201,7 @@ struct Hmm : Named
   
 
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Find TC1 for an HMM")

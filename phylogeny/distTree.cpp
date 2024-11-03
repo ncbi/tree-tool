@@ -7819,7 +7819,7 @@ namespace
 {
 
   
-struct DissimCoeffFunc : Func1
+struct DissimCoeffFunc final : Func1
 {
   // Input
   const Vector<Real>& covar;

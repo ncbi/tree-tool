@@ -3129,7 +3129,7 @@ void FeatureTree::getParent2core_sum (size_t parent2core [2/*thisCore*/] [2/*par
 namespace 
 {
 
-struct LambdaCommonTimeFunc : Func1
+struct LambdaCommonTimeFunc final : Func1
 {
   Real parent2core [2/*thisCore*/] [2/*parentCore*/];
   Real a;
@@ -3147,7 +3147,7 @@ struct LambdaCommonTimeFunc : Func1
     }
 
   
-  Real f (Real x) 
+  Real f (Real x) final
   { 
     ASSERT (x > 0);
     ASSERT (x < 1);
@@ -3176,7 +3176,7 @@ Real FeatureTree::getLambda0_commonTime (const size_t parent2core [2/*thisCore*/
 namespace 
 {
   
-struct LambdaFunc : Func1
+struct LambdaFunc final : Func1
 {
   FeatureTree& tree;
   
@@ -3188,7 +3188,7 @@ struct LambdaFunc : Func1
   }
   
   
-  Real f (Real x) 
+  Real f (Real x) final
   { 
     ASSERT (x > 0);
     ASSERT (x < 1);

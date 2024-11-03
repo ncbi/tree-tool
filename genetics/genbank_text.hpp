@@ -45,9 +45,9 @@ namespace Asn_sp
 {
 
 
-struct GenbankText : Root
+struct GenbankText final : Root
 {
-  struct Record : Named
+  struct Record final : Named
   {
   	bool isFeature {false};
   private:
@@ -56,7 +56,7 @@ struct GenbankText : Root
 
   	Record (const string &name_arg,
   	        bool isFeature_arg);
-  	void saveText (ostream &os) const
+  	void saveText (ostream &os) const final
   	  { os << name << ": " << getValue () << endl; }
 
   	void addValue (const string &s);
@@ -70,7 +70,7 @@ struct GenbankText : Root
   
 
   explicit GenbankText (LineInput &f);
-  void saveText (ostream &os) const;
+  void saveText (ostream &os) const final;
   
   
   string name2value (const string &name,

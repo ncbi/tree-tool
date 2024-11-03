@@ -55,7 +55,7 @@ const string deformationOutlier_definition ("relative object deformation");
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
 	: Application ("Optimize or modify a least-squares distance tree", true, false, true)
