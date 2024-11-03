@@ -94,7 +94,7 @@ protected:
     size_t   m_LastCoordSeq2;
 
     // core dynamic programming
-    virtual TScore x_Align (CNWAligner::SAlignInOut* data);
+    /*virtual*/ TScore x_Align (CNWAligner::SAlignInOut* data) final;
 
     // backtrace
     void           x_DoBackTrace(const CBacktraceMatrix4 & backtrace,
@@ -102,7 +102,7 @@ protected:
 
     // other
     void x_CheckParameters(const SAlignInOut* data) const;
-    virtual bool x_CheckMemoryLimit(void);
+    /*virtual*/ bool x_CheckMemoryLimit(void) final;
 };
 
 
