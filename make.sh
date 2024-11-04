@@ -4,38 +4,46 @@
 unset AT_NCBI
 
 cd "$( dirname $0 )"
-source ./bash_common.sh
 export CPP_DIR=$PWD
+source ./bash_common.sh
+if [ $# -ne 1 ]; then
+  echo "Make executables"
+  echo "#1: rebuild (0/1)"
+  exit 1
+fi
+REB=$1
 
 
-make all
+function work
+{
+  local DIR=$1
+  section $DIR
+  cd $DIR
+  if [ $REB == 1 ]; then
+    rm *.o
+  fi
+  if [ -e Makefile ]; then
+    make all
+  fi
+}
 
-cd dm
-make all
 
-cd conversion
-make all
-
-cd ../../phylogeny
-make all
-
-cd ../genetics
-make all
-
-cd ../dissim
-make all
-
-cd ../tsv
-make all
-
-cd ../xml
-make all
-
-cd ..
+work $CPP_DIR
+work $CPP_DIR/dm
+work $CPP_DIR/dm/conversion
+work $CPP_DIR/phylogeny
+work $CPP_DIR/phylogeny/database
+work $CPP_DIR/genetics
+work $CPP_DIR/dissim/nw
+work $CPP_DIR/dissim
+work $CPP_DIR/ncbitax
+work $CPP_DIR/tsv
+work $CPP_DIR/web
+work $CPP_DIR/xml
 
 
 section "Software version"
-phylogeny/makeDistTree -version
+$CPP_DIR/phylogeny/makeDistTree -version
 
 
 success
