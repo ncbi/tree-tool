@@ -4,7 +4,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage[]{theorem}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 
 \usepackage{graphicx}
 
@@ -28,6 +28,8 @@
 \maketitle
 
 \tableofcontents
+
+\large
 
 
 \section{Introduction}
@@ -359,7 +361,7 @@ $ d_{ANI} = 100 \hat \lambda_{xy}$,
 where the coefficient 100 is selected to make the average of $d_{ANI}$ to be around~1 in intra-species comparisons.
 
 Since nucleotide distribution and mutation depends on whether the nucleotide is in CDS and in which codon position in CDS,
-the assumptions of this model are not accurate, but show a good fit to data in practice.
+the assumptions of this model are not accurate.
 
 Since long enough homologous segments are needed to compute ANI,
 and horizontally transferred genes should be a small fraction of all homologous matches,
@@ -708,7 +710,7 @@ see, for example, [Pele 2011], but an optimal multiple alignment is an NP-hard p
 usually requires expert knowledge in protein domains and active sites.
 }
 
-\comm{not finished}
+%\comm{not finished}
 
 
 % https://www.sharelatex.com/learn/Inserting_Images#/Changing_the_image_size_and_rotating_the_picture
