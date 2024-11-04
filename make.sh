@@ -20,11 +20,9 @@ function work
   section $DIR
   cd $DIR
   if [ $REB == 1 ]; then
-    rm *.o
+    rm *.o || true
   fi
-  if [ -e Makefile ]; then
-    make all
-  fi
+  make all
 }
 
 
@@ -32,7 +30,7 @@ work $CPP_DIR
 work $CPP_DIR/dm
 work $CPP_DIR/dm/conversion
 work $CPP_DIR/phylogeny
-work $CPP_DIR/phylogeny/database
+#work $CPP_DIR/phylogeny/database
 work $CPP_DIR/genetics
 work $CPP_DIR/dissim/nw
 work $CPP_DIR/dissim
