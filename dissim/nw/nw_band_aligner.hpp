@@ -62,12 +62,12 @@ public:
     // Null scoremat pointer indicates IUPACna coding
     CBandAligner(const char* seq1, size_t len1,
                  const char* seq2, size_t len2,
-                 const SNCBIPackedScoreMatrix* scoremat = 0,
+                 const SNCBIPackedScoreMatrix* scoremat = nullptr,
                  size_t band = 0);
 
     CBandAligner(const string& seq1,
                  const string& seq2,
-                 const SNCBIPackedScoreMatrix* scoremat = 0,
+                 const SNCBIPackedScoreMatrix* scoremat = nullptr,
                  size_t band = 0);
 
     virtual ~CBandAligner(void) {}

@@ -168,7 +168,7 @@ public:
 	      case dist_diff:          return (Real) getDiff ();	      
 	      case dist_mismatch_frac: return getMismatchFrac ();
 	    }
-	    throw logic_error ("Undefined distance: " + to_string (dist));
+	    throw logic_error ("Undefined distance: " + to_string ((int) dist));
 	  }
 	static Distance name2distance (const string &name) 
 	  { for (size_t i = 0; i < distanceNames. size (); i++)

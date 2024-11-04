@@ -1631,9 +1631,9 @@ void ChangeToSibling::commit_ ()
   ASSERT (oldParentRepr);
  	ASSERT (lca);
   if (isolatedTransientChild)
-  { ASSERT (oldParentRepr == isolatedTransientChild); }
+    { ASSERT (oldParentRepr == isolatedTransientChild); }
   else
-  { ASSERT (oldParentRepr == oldParent); }
+    { ASSERT (oldParentRepr == oldParent); }
   
   Species* fromSibling = var_cast (static_cast <const Phyl*> (inter->getOtherChild (from)) -> asSpecies ());
   ASSERT (fromSibling);
@@ -2805,11 +2805,15 @@ void FeatureTree::deleteLeaf (TreeNode* node,
   if (verbose ())
     cout << "Deleting: " << leaf->getName () << endl;
 
-  const Strain* parent = static_cast <const Phyl*> (leaf->getParent ()) -> asStrain ();
+  const Phyl* parent_ = static_cast <const Phyl*> (leaf->getParent ());
+  ASSERT (parent_);
+  const Strain* parent = parent_->asStrain ();
   ASSERT (parent);
   ASSERT (parent->isTransient ());
 
-  const Fossil* grandparent = static_cast <const Phyl*> (parent->getParent ()) -> asFossil ();
+  const Phyl* grandparent_ = static_cast <const Phyl*> (parent->getParent ());
+  ASSERT (grandparent_);
+  const Fossil* grandparent = grandparent_->asFossil ();
   ASSERT (grandparent);
   
   var_cast (leaf) -> detachChildrenUp ();

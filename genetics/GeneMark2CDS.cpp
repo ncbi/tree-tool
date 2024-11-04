@@ -216,7 +216,7 @@ public:
 	    string s;
 	  	for (const Exon& exon : exons)
 	  		s += exon. getSeq (contigDna. seq);
-	  	Dna dna (contig + "." + to_string (gene) + " trunc5:" + to_string (trunc5 ()) + " trunc3:" + to_string (trunc3 ()), s, false);
+	  	Dna dna (contig + "." + to_string (gene) + " trunc5:" + to_string ((int) trunc5 ()) + " trunc3:" + to_string ((int) trunc3 ()), s, false);
 	  	if (! strand)
 	  		dna. reverse ();
 	  	return dna;

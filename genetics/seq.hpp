@@ -403,12 +403,11 @@ char complementaryNucleotide (char wildNucleotide);
   // Possible blank is preserved
   // Requires: wildNucleotide in extDnaAlphabet
 
-char getUnionNucleotide (const string& charSet);
+char getUnionNucleotide (const string &charSet);
   // Return: in extDnaAlphabet + '-'; if empty set then ' '
   // Requires: CharSet is in extDnaAlphabet + '-'
 
-char getIntersectNucleotide (const char* charSet);
-  // GetIintersectChar
+char getIntersectNucleotide (const string &charSet);
   // Return: in extDnaAlphabet + '-'; if empty set then ' '
   // Requires: CharSet is in extDnaAlphabet + '-'
 

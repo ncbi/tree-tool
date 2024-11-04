@@ -109,7 +109,7 @@ void NCurses::resize ()
 
 AttrColor::AttrColor (NCurses::Color color,
                       bool active_arg)
-: Attr ((attr_t) COLOR_PAIR (color + 1), active_arg)
+: Attr (COLOR_PAIR (color + 1), active_arg)
 {}
 
 

@@ -1239,7 +1239,9 @@ void Steiner::setLca ()
     DTNode* child = static_cast <DTNode*> (arc->node [false]);
     child->setLca ();  // DFS
     DisjointCluster::merge (*child);
-    static_cast <DTNode*> (getDisjointCluster ()) -> tarjanLca = this;
+    DTNode* cluster = static_cast <DTNode*> (getDisjointCluster ());
+    ASSERT (cluster);
+    cluster->tarjanLca = this;
   }
 }
 
@@ -1653,7 +1655,9 @@ void Leaf::setLca ()
       continue;
     if (! other->tarjanLca)
       continue;
-    const DTNode* lca = static_cast <DTNode*> (var_cast (other) -> getDisjointCluster ()) -> tarjanLca;
+    DTNode* cluster = static_cast <DTNode*> (var_cast (other) -> getDisjointCluster ());
+    ASSERT (cluster);
+    const DTNode* lca = cluster->tarjanLca;
     ASSERT (lca);
     const Steiner* st = lca->asSteiner ();
     ASSERT (st);
@@ -1679,7 +1683,9 @@ bool Leaf::isMainIndiscernible () const
   if (discernible)
     return true;
     
-  for (const DiGraph::Arc* arc : getParent () -> arcs [false])
+  const Tree::TreeNode* parent = getParent ();
+  ASSERT (parent);
+  for (const DiGraph::Arc* arc : parent->arcs [false])
   {
     const Leaf* sibling = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
     ASSERT (sibling);
@@ -1750,9 +1756,11 @@ void Leaf::collapse (Leaf* other)
   len = 0.0;
   discernible = false;
 
-  ASSERT (getParent () == other->getParent ());
+  const Tree::TreeNode* parent = getParent ();
+  ASSERT (parent);
+  ASSERT (parent == other->getParent ());
 #ifndef NDEBUG
-  for (const DiGraph::Arc* arc : getParent () -> arcs [false])
+  for (const DiGraph::Arc* arc : parent -> arcs [false])
   {
     const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
     ASSERT (child);
@@ -3029,13 +3037,17 @@ void Image::processLarge (const Steiner* subTreeRoot,
                 break;
               }
           }
-          if (   to
-              && (   from->getParent () == to
-                  || from->getParent () == to->getParent () 
+          const Tree::TreeNode* fromParent = from->getParent ();
+          if (to)
+          {
+            const Tree::TreeNode* toParent = to->getParent ();
+            if ( (   fromParent == to
+                  || fromParent == toParent 
                  ) 
-              && from->getParent () -> arcs [false]. size () <= 2
-             )  
+                && fromParent->arcs [false]. size () <= 2
+               )  
             to = nullptr;
+          }
           if (to)
           {
             auto newChange = new Change (from, to);
@@ -4709,7 +4721,9 @@ void DistTree::leafCluster2discernibles (const Cluster2Leaves &cluster2leaves)
   //ASSERT (! DistTree_sp::variance_min);
     const Leaf* first = clusterNodes [0];
     ASSERT (first);
-    Steiner* parent = var_cast (static_cast <const DTNode*> (first->getParent ()) -> asSteiner ());
+    const DTNode* parent_ = static_cast <const DTNode*> (first->getParent ());
+    ASSERT (parent_);
+    Steiner* parent = var_cast (parent_->asSteiner ());
     ASSERT (parent);
     auto steiner = new Steiner (*this, parent, 0.0); 
     for (const Leaf* leaf_ : clusterNodes)
@@ -5799,7 +5813,9 @@ void DistTree::deleteLeaf (TreeNode* node,
 
   if (verbose ())
     cout << "Deleting: " << leaf->name << endl;
-  const Steiner* parent = static_cast <const DTNode*> (leaf->getParent ()) -> asSteiner ();
+  const DTNode* parent_ = static_cast <const DTNode*> (leaf->getParent ());
+  ASSERT (parent_);
+  const Steiner* parent = parent_->asSteiner ();
   ASSERT (parent);
   delayDeleteRetainArcs (var_cast (leaf));
   if (deleteTransientAncestor && parent->isTransient ())
@@ -5872,7 +5888,9 @@ void DistTree::setGoodLeaves (const string &goodFName)
       continue;
     if (const Leaf* leaf = findPtr (name2leaf, f. line))
     {
-      for (const DiGraph::Arc* arc : leaf->getDiscernible () -> arcs [false])
+      const DTNode* discernible = leaf->getDiscernible ();
+      ASSERT (discernible);
+      for (const DiGraph::Arc* arc : discernible->arcs [false])
       {
         const Leaf* child = static_cast <const DTNode*> (arc->node [false]) -> asLeaf ();
         ASSERT (child);
@@ -7592,7 +7610,12 @@ void DistTree::optimizeSmallSubgraphs (uint areaRadius)
           if (! node->getParent () || static_cast <const DTNode*> (node->getParent ()) -> stable)
             inCut++;
         }
-        QC_IMPLY (node != root && node->stable, static_cast <const DTNode*> (node->getParent ()) -> stable);
+        if (node != root && node->stable)
+        {
+          const DTNode* parent = static_cast <const DTNode*> (node->getParent ());
+          ASSERT (parent);
+          QC_ASSERT (parent->stable);
+        }
       }
       for (const Steiner* st : unstableCut. getVec ())
       {
@@ -8891,7 +8914,9 @@ Vector<TriangleParentPair> DistTree::findHybrids (Real dissimOutlierEValue_max,
       const Leaf* leaf = it. second;
       if (! leaf->graph)
         continue;
-      if (! leaf->getDiscernible () -> len)  
+      const DTNode* discernible = leaf->getDiscernible ();
+      ASSERT (discernible);
+      if (! discernible->len)  
         badLeaves << leaf;
     }
     Real outlier_min_excl = NaN;

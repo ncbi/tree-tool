@@ -73,16 +73,16 @@ CNWAligner::CNWAligner()
     //m_prg_callback(0),
       m_terminate(false),
       m_Seq1Vec(),
-      m_Seq1(0), m_SeqLen1(0),
+      m_Seq1(nullptr), m_SeqLen1(0),
       m_Seq2Vec(),
-      m_Seq2(0), m_SeqLen2(0),
+      m_Seq2(nullptr), m_SeqLen2(0),
       m_PositivesAsMatches(false),
       m_score(kInfMinus),
     //m_mt(false),
     //m_maxthreads(1),
       m_MaxMem(GetDefaultSpaceLimit())
 {
-    SetScoreMatrix(0);
+    SetScoreMatrix(nullptr);
 }
 
 
@@ -857,7 +857,7 @@ void CNWAligner::x_SWDoBackTrace(const CBacktraceMatrix4 & backtrace,
 void  CNWAligner::SetPattern(const vector<size_t>& guides)
 {
     size_t dim = guides.size();
-    const char* err = 0;
+    const char* err = nullptr;
     if(dim % 4 == 0) {
         for(size_t i = 0; i < dim; i += 4) {
 
@@ -1439,7 +1439,7 @@ const char* CNWAligner::x_FindFingerPrint64(
 
     if(beg + size > end) {
         err_index = 0;
-        return 0;
+        return nullptr;
     }
 
     const char* p0 = beg;
@@ -1464,7 +1464,7 @@ const char* CNWAligner::x_FindFingerPrint64(
         case 'T': code = 0x02; break;
         case 'C': code = 0x03; break;
         default:  err_index = size_t (p0 + size - 1 - beg);
-                  return 0;
+                  return nullptr;
         }
         
         fp = 0x3F & ((fp << 2) | code );
@@ -1506,13 +1506,13 @@ size_t CNWAligner::MakePattern(const size_t guide_size,
     for(size_t i = 0, seg_count = segs.size();
         beg + guide_size <= end && i < seg_count; ++i) {
 
-        const char* p = 0;
+        const char* p = nullptr;
         const char* beg0 = beg;
-        while( p == 0 && beg + guide_size <= end ) {
+        while( p == nullptr && beg + guide_size <= end ) {
 
             p = x_FindFingerPrint64( beg, end, segs[i].fp,
                                      guide_size, err_idx );
-            if(p == 0) { // incorrect char
+            if(p == nullptr) { // incorrect char
                 beg += err_idx + 1; 
             }
             else if (p < end) {// fingerprints match but check actual sequences
@@ -1541,7 +1541,7 @@ size_t CNWAligner::MakePattern(const size_t guide_size,
                 }
                 else {  // spurious match
                     beg = p + 1;
-                    p = 0;
+                    p = nullptr;
                 }
             }
         }

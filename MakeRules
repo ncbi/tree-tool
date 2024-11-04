@@ -6,37 +6,140 @@ OS := $(shell uname -s )
 GCC_VER := $(shell gcc --version | head -1 | cut -f 3 -d ' ' )
 #$(info GCC version: $(GCC_VER) )
 
+
+# https://gcc.gnu.org/onlinedocs/gcc-13.2.0/gcc/
 WarningCPPFLAGS =
 ifdef AT_NCBI
-  WarningCPPFLAGS = \
-  	-Waddress -Wbool-operation -Wchar-subscripts -Wcomment \
-    -Wformat -Wint-in-bool-context -Winit-self -Wlogical-not-parentheses -Wmemset-transposed-args \
-    -Wnarrowing -Wnonnull -Wparentheses -Wreorder -Wreturn-type \
-    -Wsequence-point -Wsign-compare -Wsizeof-pointer-memaccess -Wstrict-aliasing -Wstrict-overflow=1 -Wswitch -Wtautological-compare \
-    -Wtrigraphs -Wuninitialized -Wunknown-pragmas -Wunused-function -Wunused-label -Wunused-value -Wunused-variable -Wvolatile-register-var \
-    -Wextra \
-    -Wcast-align -Wdeprecated-declarations \
-    -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs \
-    -Woverloaded-virtual -Wpointer-arith -Wshadow -Wsign-conversion -Wunused \
-    -pedantic \
-    -Wsuggest-override   
+  WarningCPPFLAGS = -Wextra -Wpedantic 
+  
+  # C
+  WarningCPPFLAGS += \
+  	-Waddress \
+    -Warray-bounds=2 \
+    -Warray-parameter=2 \
+  	-Wbool-operation \
+    -Wcast-align \
+    -Wcast-align=strict \
+  	-Wchar-subscripts \
+  	-Wcomment \
+    -Wdangling-pointer=2 \
+    -Wdeprecated-declarations \
+    -Wduplicated-branches \
+    -Wduplicated-cond \
+    -Wenum-compare \
+    -Wformat=2 \
+    -Wformat-overflow=2 \
+    -Wformat-security \
+    -Wformat-signedness \
+    -Wformat-truncation=2 \
+    -Wfree-nonheap-object \
+    -Winfinite-recursion \
+    -Wint-in-bool-context \
+    -Winit-self \
+    -Wlogical-not-parentheses \
+    -Wmemset-transposed-args \
+    -Wmismatched-dealloc \
+    -Wmissing-braces \
+    -Wmissing-declarations \
+    -Wmissing-field-initializers \
+    -Wmissing-format-attribute \
+    -Wmissing-include-dirs \
+    -Wmultistatement-macros \
+    -Wnarrowing \
+    -Wno-builtin-declaration-mismatch \
+    -Wno-builtin-macro-redefined \
+    -Wno-self-move \
+    -Wnonnull \
+    -Wnull-dereference \
+    -Wparentheses \
+    -Wpointer-arith \
+    -Wredundant-decls \
+    -Wreturn-type \
+    -Wsequence-point \
+    -Wswitch \
+    -Wshadow \
+    -Wshadow=local \
+    -Wsign-compare \
+    -Wsign-conversion \
+    -Wsizeof-array-div \
+    -Wsizeof-pointer-div \
+    -Wsizeof-pointer-memaccess \
+    -Wstrict-aliasing \
+    -Wstrict-overflow=1 \
+    -Wstringop-overflow \
+    -Wswitch \
+    -Wtautological-compare \
+    -Wtrigraphs \
+    -Wtrivial-auto-var-init \
+    -Wuninitialized \
+    -Wunused \
+    -Wunknown-pragmas \
+    -Wunused-function \
+    -Wunused-label \
+    -Wunused-macros \
+    -Wunused-value \
+    -Wunused-variable \
+    -Wvolatile-register-var 
+    
+  # C++
+  WarningCPPFLAGS += \
+    -Wcomma-subscript \
+    -Wctad-maybe-unsupported \
+    -Wctor-dtor-privacy \
+    -Wdelete-non-virtual-dtor \
+    -Wno-deprecated-enum-enum-conversion \
+    -Wno-deprecated-enum-float-conversion \
+    -Winvalid-constexpr \
+    -Winvalid-imported-macros \
+    -Wclass-memaccess \
+    -Wreorder \
+    -Wno-pessimizing-move \
+    -Wrange-loop-construct \
+    -Wredundant-tags \
+    -Wstrict-null-sentinel \
+    -Woverloaded-virtual \
+    -Wsign-promo \
+    -Wmismatched-new-delete \
+    -Wmismatched-tags \
+    -Wzero-as-null-pointer-constant \
+    -Waligned-new \
+    -Wcatch-value=3 \
+    -Wextra-semi \
+    -Wno-invalid-offsetof \
+    -Wsuggest-override \
+    -Wuse-after-free=3 \
+    -Wuseless-cast \
+    -Woverloaded-virtual 
+      
   # -Wuseless-cast
+  
   ifeq ($(GCC_VER), 13.2.0)
    #$(info $(GCC_VER) warnings )
-    WarningCPPFLAGS += -Wno-error=aggressive-loop-optimizations
+    WarningCPPFLAGS += \
+      -Wno-error=aggressive-loop-optimizations 
   endif
+  
   ifeq ($(OS), Linux)  
-    # Do not work on Darwin
-    WarningCPPFLAGS += -Wbool-compare -Wc++11-compat -Wc++14-compat -Wconversion -Wmaybe-uninitialized -Wmemset-elt-size -Wnonnull-compare \
-      -Wopenmp-simd -Wlogical-op -Wsuggest-attribute=format
+    # Do not work on Darwin  -> 13.0.2 ??
+    WarningCPPFLAGS += \
+      -Wbool-compare \
+      -Wc++11-compat \
+      -Wc++14-compat \
+      -Wc++17-compat \
+      -Wc++20-compat \
+      -Wconversion \
+      -Wlogical-op \
+      -Wmaybe-uninitialized \
+      -Wmemset-elt-size \
+      -Wnonnull-compare 
+
+      #-Wopenmp-simd
+      #-Wsuggest-attribute=format
   endif
 endif
 
-SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fdiagnostics-color=always $(WarningCPPFLAGS)
-  # -Werror   # Will break NCBI Makefiles
-  # -Wunreachable-code  # Wrongly reports virtual functions
-  # -Woverloaded-virtual -Wpointer-arith -Wwrite-strings  
-  # -Wenum-clash -Wnested-externs -Wstrict-prototypes -Winline -Wredundant-decls -Wtraditional 
+
+SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fchar8_t -fdiagnostics-color=always $(WarningCPPFLAGS)
 	# -ffloat-store  # slows down two-fold
 	# -ffinite-math-only  # NAN problem
 

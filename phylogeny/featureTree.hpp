@@ -609,7 +609,10 @@ private:
 	void assignFeature (size_t featureIndex) final;
 public:
   const Strain* getStrain () const
-    { return static_cast <const Phyl*> (getParent ()) -> asStrain (); }
+    { if (const Phyl* p = static_cast <const Phyl*> (getParent ()))
+        return p->asStrain (); 
+      throw logic_error ("Never call");
+    }
     // Return: !nullptr
   void saveFeatures (const string &dir) const;
     // Save Feature::name's

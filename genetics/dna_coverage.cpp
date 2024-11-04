@@ -178,6 +178,9 @@ map<string/*sseqid*/,Subject> sseqid2subject;
 
 
 
+namespace
+{
+
 void reportSubjects (const string &qseqid,
                      bool force)
 {
@@ -307,6 +310,7 @@ void reportSubjects (const string &qseqid,
   }
 }
 
+}
 
 
 

@@ -1079,7 +1079,7 @@ char getUnionNucleotide (const string& charSet)
 
 
 
-char getIntersectNucleotide (const string& charSet)
+char getIntersectNucleotide (const string &charSet)
 {
   if (charSet. empty ())
     return ' ';
@@ -1342,7 +1342,7 @@ char codon2aa (const char codon [3],
       Case 11: if (                  (c[1] == 't' && c[2] == 'g')
                    || (c[0] == 'a' && c[1] == 't')               )  startcodon = true;  
       Case 25: if (    c[0] != 'c' && c[1] == 't' && c[2] == 'g' )  startcodon = true;
-      Default: throw runtime_error (FUNC "Genetic code " + to_string (gencode) + " is not implemented");
+      Default: throw runtime_error (FUNC "Genetic code " + to_string ((int) gencode) + " is not implemented");
     }
     if (startcodon)
       aa = toLower (aa);
