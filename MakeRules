@@ -22,7 +22,6 @@ ifdef AT_NCBI
     -Wcast-align=strict \
   	-Wchar-subscripts \
   	-Wcomment \
-    -Wdangling-pointer=2 \
     -Wdeprecated-declarations \
     -Wduplicated-branches \
     -Wduplicated-cond \
@@ -33,7 +32,6 @@ ifdef AT_NCBI
     -Wformat-signedness \
     -Wformat-truncation=2 \
     -Wfree-nonheap-object \
-    -Winfinite-recursion \
     -Wint-in-bool-context \
     -Winit-self \
     -Wlogical-not-parentheses \
@@ -48,7 +46,6 @@ ifdef AT_NCBI
     -Wnarrowing \
     -Wno-builtin-declaration-mismatch \
     -Wno-builtin-macro-redefined \
-    -Wno-self-move \
     -Wnonnull \
     -Wnull-dereference \
     -Wparentheses \
@@ -70,7 +67,6 @@ ifdef AT_NCBI
     -Wswitch \
     -Wtautological-compare \
     -Wtrigraphs \
-    -Wtrivial-auto-var-init \
     -Wuninitialized \
     -Wunused \
     -Wunknown-pragmas \
@@ -83,40 +79,45 @@ ifdef AT_NCBI
     
   # C++
   WarningCPPFLAGS += \
+    -Waligned-new \
+    -Wcatch-value=3 \
+    -Wclass-memaccess \
     -Wcomma-subscript \
     -Wctad-maybe-unsupported \
     -Wctor-dtor-privacy \
     -Wdelete-non-virtual-dtor \
-    -Wno-deprecated-enum-enum-conversion \
-    -Wno-deprecated-enum-float-conversion \
-    -Winvalid-constexpr \
+    -Wextra-semi \
     -Winvalid-imported-macros \
-    -Wclass-memaccess \
-    -Wreorder \
-    -Wno-pessimizing-move \
-    -Wrange-loop-construct \
-    -Wredundant-tags \
-    -Wstrict-null-sentinel \
-    -Woverloaded-virtual \
-    -Wsign-promo \
     -Wmismatched-new-delete \
     -Wmismatched-tags \
-    -Wzero-as-null-pointer-constant \
-    -Waligned-new \
-    -Wcatch-value=3 \
-    -Wextra-semi \
+    -Wno-deprecated-enum-enum-conversion \
+    -Wno-deprecated-enum-float-conversion \
     -Wno-invalid-offsetof \
+    -Wno-pessimizing-move \
+    -Woverloaded-virtual \
+    -Wrange-loop-construct \
+    -Wredundant-tags \
+    -Wreorder \
+    -Wsign-promo \
+    -Wstrict-null-sentinel \
     -Wsuggest-override \
-    -Wuse-after-free=3 \
     -Wuseless-cast \
-    -Woverloaded-virtual 
-      
-  # -Wuseless-cast
+    -Wzero-as-null-pointer-constant 
   
   ifeq ($(GCC_VER), 13.2.0)
    #$(info $(GCC_VER) warnings )
+    # C
     WarningCPPFLAGS += \
-      -Wno-error=aggressive-loop-optimizations 
+      -Wdangling-pointer=2 \
+      -Winfinite-recursion \
+      -Wno-error=aggressive-loop-optimizations \
+      -Wtrivial-auto-var-init \
+      -Wuse-after-free=3 
+      
+    # C++
+    WarningCPPFLAGS += \
+      -Winvalid-constexpr \
+      -Wno-self-move 
   endif
   
   ifeq ($(OS), Linux)  
@@ -132,16 +133,14 @@ ifdef AT_NCBI
       -Wmaybe-uninitialized \
       -Wmemset-elt-size \
       -Wnonnull-compare 
-
-      #-Wopenmp-simd
-      #-Wsuggest-attribute=format
   endif
 endif
 
 
 SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fchar8_t -fdiagnostics-color=always $(WarningCPPFLAGS)
-	# -ffloat-store  # slows down two-fold
+	# -ffloat-store       # slows down two-fold
 	# -ffinite-math-only  # NAN problem
+	# -fanalyze           # Too slow and strange messages
 
 OptCPPFLAGS   = $(SimpleCPPFLAGS) -O3 
 DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
