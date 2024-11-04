@@ -1075,7 +1075,7 @@ string unpercent (const string &s)
 {
   for (const char c : s)
   	if (between (c, '\0', ' ') /*! printable (c)*/)
-  		throw runtime_error (FUNC "Non-printable character: " + to_string (uchar (c)));
+  		throw runtime_error (FUNC "Non-printable character: " + to_string (uint (c)));
 
   string r;
   constexpr size_t hex_pos_max = 2;

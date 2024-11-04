@@ -417,7 +417,11 @@ template <typename T, typename UnaryPredicate>
 template <typename To, typename From>
   inline void insertAll (To &to,
                          const From &from)
-    { to. insert (to. begin (), from. begin (), from. end ()); }
+    { 
+      #pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
+      to. insert (to. begin (), from. begin (), from. end ()); 
+      #pragma GCC diagnostic warning "-Waggressive-loop-optimizations"
+    }
 
 template <typename To, typename From>
   inline void insertIter (To &to,
@@ -906,7 +910,7 @@ struct Rand
 {
 	static const long /*actually ulong*/ max_;
 private:
-	long seed;
+	long seed {0};
 	  // 0 < seed < max_
 public:
 	
@@ -960,11 +964,11 @@ struct DisjointCluster
 // Cormen, Leiserson, Rivest, Introduction to Algorithms, p. 449
 {
 protected:
-  DisjointCluster* parentDC;
+  DisjointCluster* parentDC {nullptr};
     // !nullptr
     // Tree
     // = this <=> root
-  size_t rankDC;
+  size_t rankDC {0};
     // Upper bound on the height of *this
     // (Height = max. # arcs between *this and a leaf)
 public:
@@ -1111,6 +1115,18 @@ template <typename T>
     template <typename U/*:<T>*/>
       explicit List (const vector<U> &other)
         { *this << other; }
+    bool empty () const
+      {
+        #pragma GCC diagnostic ignored "-Wnull-dereference"
+        return P::empty ();
+        #pragma GCC diagnostic warning "-Wnull-dereference"
+      }
+    size_t size () const
+      {
+        #pragma GCC diagnostic ignored "-Wnull-dereference"
+        return P::size ();
+        #pragma GCC diagnostic warning "-Wnull-dereference"
+      }
 
   	  
   	T at (size_t index) const
@@ -1496,7 +1512,7 @@ struct Color
 		#ifdef _MSC_VER
 		  return noString
 		#else
-    	return string ("\033[") + (bright ? "1;" : "") + to_string (color) + "m"; 
+    	return string ("\033[") + (bright ? "1;" : "") + to_string ((int) color) + "m"; 
 		#endif
     }
 };
