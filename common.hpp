@@ -998,8 +998,8 @@ struct Nocopy
 {
 protected:
 	Nocopy () = default;
-  Nocopy (const Nocopy &) = delete;
-  Nocopy (Nocopy &&) = delete;
+  explicit Nocopy (const Nocopy &) = delete;
+  explicit Nocopy (Nocopy &&) = delete;
   Nocopy& operator= (const Nocopy &) = delete;
 };
 
