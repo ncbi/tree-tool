@@ -285,6 +285,7 @@ struct ThisApplication final : Application
 		
 		const bool optimizable = isDirName (dataFName) || ! dataFName. empty ();
 		
+		
     if (isDirName (dataFName))
     {
       if (! dissimAttrName. empty ())
