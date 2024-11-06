@@ -3235,12 +3235,12 @@ void SubstMat::qc () const
   // sim[][]
   FOR (size_t, i, sim_size)
   {
-    if (! goodChar (i))
+    if (! goodIndex (i))
       continue;
     QC_IMPLY (! isAmbigAa (char (i)), sim [i] [i] >= 0.0);
     FOR (size_t, j, sim_size)
     {
-      if (! goodChar (j))
+      if (! goodIndex (j))
         continue;
       QC_ASSERT (fabs (sim [i] [j] - sim [j] [i]) < 1e-6);  // PAR
       if (sim [i] [i] < sim [i] [j])
@@ -3254,21 +3254,29 @@ void SubstMat::qc () const
 void SubstMat::saveText (ostream& os) const 
 {
   FOR (size_t, i, sim_size)
-    if (goodChar (i))
+    if (goodIndex (i))
       os << ' ' << char (i);
   os << endl;
   
   FOR (size_t, i, sim_size)
-    if (goodChar (i))
+    if (goodIndex (i))
     {
       os << char (i);
       FOR (size_t, j, sim_size)
-        if (goodChar (j))
+        if (goodIndex (j))
           os << ' ' << sim [i] [j];
       os << endl;
     }
 }
 
+
+
+size_t SubstMat::char2index (char c) const
+{ 
+  if (const char* p = strchr (chars, c))
+    return size_t (p - chars);
+  throw runtime_error (FUNC "Not an amino acid: " + string (1, c));
+}
 
 
 

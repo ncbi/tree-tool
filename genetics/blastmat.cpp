@@ -50,7 +50,7 @@ namespace
   
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
 	  : Application ("Convert a BLAST similarity matrix to a distance matrix, analyze")
@@ -85,9 +85,9 @@ struct ThisApplication : Application
     
     double dist_ave = 0.0;
     FOR (size_t, i, SubstMat::sim_size)
-      if (mat. goodChar (i))
+      if (mat. goodIndex (i))
         FOR (size_t, j, SubstMat::sim_size)
-          if (mat. goodChar (j))
+          if (mat. goodIndex (j))
           {
             dist [i] [j] = mat. getSubstitutionDist (i, j);  
             if (i != j)

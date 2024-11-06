@@ -831,13 +831,14 @@ struct SubstMat final : Root
   AlignScore sim [sim_size] [sim_size];  
   
   
+  SubstMat () = default;
   explicit SubstMat (const string &fName);
   void qc () const override;
     // Print anomalies
   void saveText (ostream& os) const override;
     
     
-  bool goodChar (size_t i) const
+  bool goodIndex (size_t i) const
     { return sim [i] [i] == sim [i] [i]; }  // Not a NaN
   AlignScore getSubstitutionDist (size_t row,
                                   size_t col) const
@@ -845,6 +846,13 @@ struct SubstMat final : Root
   AlignScore getDeletionDist (size_t row,
                               AlignScore gap_sim) const
     { return sim [row] [row] - 2 * gap_sim; }
+  AlignScore char2score (char c1,
+                         char c2) const
+    { if (c1 == '-' || c2 == '-')
+        return 0;
+      return sim [char2index (c1)] [char2index (c2)]; 
+    }
+  size_t char2index (char c) const;
 };
 
 	
