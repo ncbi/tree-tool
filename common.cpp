@@ -3796,6 +3796,31 @@ string Application::key2shortHelp (const string &name) const
 
 
 
+void Application::initEnvironment () 
+{
+  ASSERT (! programArgs. empty ());
+  
+  // execDir, programName
+	execDir = getProgramDirName ();
+	if (execDir. empty ())
+		execDir = which (programArgs. front ());
+  if (! isDirName (execDir))
+    throw logic_error ("Cannot identify the directory of the executable");
+  {
+    string s (programArgs. front ());
+    programName = rfindSplit (s, fileSlash);
+    execDir = getDirName (path2canonical (execDir + programName));
+  }
+
+  string execDir_ (execDir);
+  trimSuffix (execDir_, "/");				
+  for (Key& key : keyArgs)
+    if (! key. flag)
+      replaceStr (key. defaultValue, "$BASE", execDir_);
+}
+
+
+
 string Application::getInstruction (bool screen) const
 {
   string instr (description);
@@ -4184,25 +4209,7 @@ ShellApplication::~ShellApplication ()
 void ShellApplication::initEnvironment () 
 {
   ASSERT (tmp. empty ());
-  ASSERT (! programArgs. empty ());
-  
-  // execDir, programName
-	execDir = getProgramDirName ();
-	if (execDir. empty ())
-		execDir = which (programArgs. front ());
-  if (! isDirName (execDir))
-    throw logic_error ("Cannot identify the directory of the executable");
-  {
-    string s (programArgs. front ());
-    programName = rfindSplit (s, fileSlash);
-    execDir = getDirName (path2canonical (execDir + programName));
-  }
-
-  string execDir_ (execDir);
-  trimSuffix (execDir_, "/");				
-  for (Key& key : keyArgs)
-    if (! key. flag)
-      replaceStr (key. defaultValue, "$BASE", execDir_);
+  Application::initEnvironment ();
 }
 
 

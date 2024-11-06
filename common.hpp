@@ -4593,6 +4593,9 @@ struct Application : Singleton<Application>, Root
   const bool needsArg;
   const bool gnu;
   const bool threadsUsed;
+  string execDir;
+    // Ends with '/'
+    // Physically real directory of the software
   static constexpr const char* helpS {"help"};
   static constexpr const char* versionS {"version"};
   
@@ -4742,8 +4745,7 @@ protected:
   string getProgramDirName () const
     { return getDirName (programArgs. front ()); }
 protected:
-  virtual void initEnvironment ()
-    {}
+  virtual void initEnvironment ();
   virtual void initVar ()
     {}
   string getInstruction (bool screen) const;
@@ -4780,9 +4782,6 @@ protected:
     // Temporary directory: ($TMPDIR or "/tmp") + "/" + programName + "XXXXXX"
     // If log is used then tmp is printed in the log file and the temporary files are not deleted 
     // !empty() => useTmp
-  string execDir;
-    // Ends with '/'
-    // Physically real directory of the software
   mutable KeyValue prog2dir;
   mutable Stderr stderr;
   time_t startTime {0};
