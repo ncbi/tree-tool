@@ -49,11 +49,11 @@ namespace
 struct ThisApplication : Application
 {
   ThisApplication ()
-    : Application ("Group columns of a tsv-table")
+    : Application ("Group columns of a tsv-table, sort")
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table");
-  	  addKey ("by", "Comma-separated list of columns to group by"); 
+  	  addKey ("by", "Comma-separated list of columns to sort and group by"); 
   	  addKey ("count", "name of the added \"count\" column");
   	  addKey ("sum", "Comma-separated list of columns to sum"); 
   	  addKey ("min", "Comma-separated list of columns to find minimum"); 
