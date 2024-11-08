@@ -70,6 +70,7 @@ all:	\
 	replaceFastaNames \
 	seq_print \
 	splitFasta \
+	tblastn2annot_euk \
 	tblastn2frameshift \
 	tblastn2orfs \
 	uniqProtRef \
@@ -422,6 +423,12 @@ splitFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 splitFastaOBJS=splitFasta.o $(SEQ_OBJ)
 splitFasta:	$(splitFastaOBJS)
 	$(CXX) -o $@ $(splitFastaOBJS) $(LIBS) 
+	$(ECHO)
+
+tblastn2annot_euk.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/graph.hpp
+tblastn2annot_eukOBJS=tblastn2annot_euk.o $(SEQ_OBJ) $(CPP_DIR)/graph.o
+tblastn2annot_euk:	$(tblastn2annot_eukOBJS)
+	$(CXX) -o $@ $(tblastn2annot_eukOBJS) $(LIBS) 
 	$(ECHO)
 
 tblastn2frameshift.o:  $(COMMON_HPP) 
