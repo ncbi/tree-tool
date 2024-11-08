@@ -142,9 +142,11 @@ struct ThisApplication : Application
       FOR (TextTable::RowNum, rowNum1, t1. rows. size ())
       {
         t1. colNumsRow2values (indexColNums1, rowNum1, indexValues);
+      #if 0
         for (const string& s : indexValues)
           if (s. empty ())
             throw TextTable::Error (t1, "Empty value in index, in row " + to_string (rowNum1 + 1));
+      #endif
         if (const Vector<TextTable::RowNum>* rowNums2 = index. find (indexValues))
         {
           ASSERT (! rowNums2->empty ());
