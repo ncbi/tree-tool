@@ -3666,13 +3666,13 @@ void Application::addPositional (const string &name,
 Application::Key* Application::getKey (const string &keyName) const
 {
   if (! contains (name2arg, keyName))
-    errorExitStr ("Unknown key: " + strQuote (keyName) + "\n\n" + getInstruction (false));
+    throw runtime_error ("Unknown key: " + strQuote (keyName) + "\n\n" + getInstruction (false));
     
   Key* key = nullptr;
   if (const Arg* arg = findPtr (name2arg, keyName))  	
     key = var_cast (arg->asKey ());
   if (! key)
-    errorExitStr (strQuote (keyName) + " is not a key\n\n" + getInstruction (false));
+    throw runtime_error (strQuote (keyName) + " is not a key\n\n" + getInstruction (false));
     
   return key;
 }
@@ -3685,9 +3685,9 @@ void Application::setPositional (List<Positional>::iterator &posIt,
   if (posIt == positionalArgs. end ())
   {
   	if (isLeft (value, "-"))
-      errorExitStr (strQuote (value) + " is not a valid option\n\n" + getInstruction (false));
+      throw runtime_error (strQuote (value) + " is not a valid option\n\n" + getInstruction (false));
   	else
-      errorExitStr (strQuote (value) + " cannot be a positional parameter\n\n" + getInstruction (false));
+      throw runtime_error (strQuote (value) + " cannot be a positional parameter\n\n" + getInstruction (false));
   }
   (*posIt). value = value;
   posIt++;
@@ -3984,7 +3984,7 @@ int Application::run (int argc,
 
           const string s1 (s. substr (1));
           if (s1. empty ())
-            errorExitStr ("Dash with no key\n\n" + getInstruction (false));
+            throw runtime_error ("Dash with no key\n\n" + getInstruction (false));
 
           string name;
           const char c = s1 [0];  // Valid if name.empty()
@@ -3993,12 +3993,12 @@ int Application::run (int argc,
           	{
           		name = s1. substr (1);
 		          if (name. empty ())
-		            errorExitStr ("Dashes with no key\n\n" + getInstruction (false));
+		            throw runtime_error ("Dashes with no key\n\n" + getInstruction (false));
           	}
           	else
           	{
           		if (s1. size () != 1) 
-                errorExitStr ("Single character expected: " + strQuote (s1) + "\n\n" + getInstruction (false));
+                throw runtime_error ("Single character expected: " + strQuote (s1) + "\n\n" + getInstruction (false));
             }
           else
           	name = s1;
@@ -4028,7 +4028,7 @@ int Application::run (int argc,
 					if (key)
           {
 	          if (keysRead. contains (key))
-	            errorExitStr ("Parameter " + strQuote (key->name) + " is used more than once");
+	            throw runtime_error ("Parameter " + strQuote (key->name) + " is used more than once");
 	          else
 	            keysRead << key;
 	            
@@ -4047,7 +4047,7 @@ int Application::run (int argc,
 	      first = false;
 	    }
       if (key)
-        errorExitStr ("Key with no value: " + key->name + "\n\n" + getInstruction (false));
+        throw runtime_error ("Key with no value: " + key->name + "\n\n" + getInstruction (false));
 
 
 	    if (programArgs. size () == 1 && (! positionalArgs. empty () || needsArg))
@@ -4059,7 +4059,7 @@ int Application::run (int argc,
 	    
 
 	    if (posIt != positionalArgs. end ())
-	      errorExitStr ("Too few positional parameters\n\n" + getInstruction (false));
+	      throw runtime_error ("Too few positional parameters\n\n" + getInstruction (false));
 	  }
     
     
