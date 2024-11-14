@@ -189,7 +189,7 @@ struct Viewer
 	          size_t width = 0;
 	          if (const Xml_sp::Data* parent = row. data->parent)
 	          	width = to_string (parent->children. size ()). size ();
-            printw ("%*lu", width, row. childNum + 1);
+            printw ("%*lu", (int) width, row. childNum + 1);
           }
           {
 	          const AttrColor attrColor_tag (NCurses::colorGreen); 
