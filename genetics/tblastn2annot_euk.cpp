@@ -50,6 +50,11 @@ namespace
   
   
 SubstMat sm;
+unique_ptr<OFStream> gapF;
+
+
+struct Exon;
+map <Pair<string>/*ref,contig*/, VectorPtr<Exon>> contig2exons;
 
 
 
@@ -57,22 +62,52 @@ struct Intron;
   
 
   
+// Merge with other struct Alignment's ??
 struct Exon final : DiGraph::Node
 {
+  // Input
 	string qseqid;  // reference protein
 	string sseqid;  // contig accession
 	size_t qstart {0}, qend {0};  // aa
 	size_t sstart {0}, send {0};  // nt
 	  // sstart < send
-	string qseq, sseq;  // with '*'
+	string qseq;
+	string sseq;  
+	  // Can contain '*'
 	Strand strand {0};
 	AlignScore score {0};
+	// Output
 	AlignScore totalScore {0};
 	const Intron* bestIntron {nullptr};
 
 
-  explicit Exon (DiGraph &graph_arg,
-                 const string &line)
+  Exon (DiGraph &graph_arg,
+        const string &qseqid_arg,
+      	const string &sseqid_arg,
+      	size_t qstart_arg,
+      	size_t qend_arg,
+      	size_t sstart_arg,
+      	size_t send_arg,
+      	const string &qseq_arg,
+      	const string &sseq_arg,
+      	Strand strand_arg)
+    : DiGraph::Node (graph_arg)
+    , qseqid (qseqid_arg)
+    , sseqid (sseqid_arg)
+    , qstart (qstart_arg)
+    , qend (qend_arg)
+    , sstart (sstart_arg)
+    , send (send_arg)  
+    , qseq (qseq_arg)
+    , sseq (sseq_arg)
+    , strand (strand_arg)
+    { 
+      finish (); 
+    }	
+    
+    
+  Exon (DiGraph &graph_arg,
+        const string &line)
     : DiGraph::Node (graph_arg)
     {
 	  	QC_ASSERT (! line. empty ());
@@ -81,15 +116,13 @@ struct Exon final : DiGraph::Node
   		  iss >> qseqid >> sseqid >> qstart >> qend >> sstart >> send >> qseq >> sseq;
   		}
 	  	QC_ASSERT (! sseq. empty ());  // line is not truncated
-	    ASSERT (! qseqid. empty ());	    
-	    ASSERT (! sseqid. empty ());	    
+
 		  QC_ASSERT (qstart);
-		  QC_ASSERT (qstart < qend);
+		  qstart--;
+
 		  QC_ASSERT (sstart);
 		  QC_ASSERT (send);
 		  QC_ASSERT (sstart != send);
-		  QC_ASSERT (qseq. size () == sseq. size ());		  
-		  qstart--;
 		  strand = 1;
 		  if (sstart < send)
 		  	sstart--;
@@ -99,14 +132,36 @@ struct Exon final : DiGraph::Node
 		  	strand = -1;
 		  	swap (sstart, send);
 		  }  		  
-		  ASSERT (sstart < send);
+
+      finish ();
+    }
+    
+    
+private:
+  void finish ();
+    // Output: bestIntron
+public:
+  void saveText (ostream &os) const final;
+  
+  
+  void qc () const final
+    {
+      if (! qc_on)
+        return;
+        
+      DiGraph::Node::qc ();
+        
+	    QC_ASSERT (! qseqid. empty ());	    
+	    QC_ASSERT (! sseqid. empty ());	    
+
+		  QC_ASSERT (qstart < qend);
+		  QC_ASSERT (sstart < send);
 	    QC_ASSERT (divisible ((uint) (send - sstart), 3));	  
+
+		  QC_ASSERT (qseq. size () == sseq. size ());		  
+	  	QC_ASSERT (! qseq. empty ()); 
 	    QC_ASSERT (qLen () <= qseq. size ());
 	    QC_ASSERT (sLen () <= sseq. size ());
-	    
-	    FFOR (size_t, i, qseq. size ())
-	      score += sm. char2score (qseq [i], sseq [i]);
-	    ASSERT (score > 0);
 	    
 	    // Needed for Intron::Intron 
 	    QC_ASSERT (qseq. front () != '-');
@@ -114,9 +169,9 @@ struct Exon final : DiGraph::Node
 	    QC_ASSERT (sseq. front () != '-');
 	    QC_ASSERT (sseq. back  () != '-');
 	    
-	    QC_ASSERT (contains (qseqid, '-'));  // <gene>-<variane>
+	    QC_ASSERT (score >= 0);
+	    QC_ASSERT (totalScore >= 0);
     }
-  void saveText (ostream &os) const final;
     
     
   size_t qLen () const
@@ -139,10 +194,6 @@ struct Exon final : DiGraph::Node
     //if (same frame and overlap) return false;  // ??
       if (qCenter () >= next. qCenter ())
         return false;  // => DAG
-    #if 0
-      if (qend > next. qstart + overlap_max)
-        return false;
-    #endif
       if (qend + 20 < next. qstart)
         return false;
       if (   strand == 1 
@@ -159,6 +210,8 @@ struct Exon final : DiGraph::Node
     
     
   void setBestIntron ();
+    // Update: totalScore
+    // Output: bestIntron
   string getSeq (size_t start) const;
 };
 
@@ -169,6 +222,7 @@ struct Intron final : DiGraph::Arc
   AlignScore score {0};
     // Partial intron score
     // Minimized
+  // In Exon::sseq
   size_t prev_end {no_index};
   size_t next_start {0};
   
@@ -185,8 +239,9 @@ struct Intron final : DiGraph::Arc
       const size_t end   = min (prev->qend,   next->qCenter ());
       if (start >= end)
         return;
-        
-      const size_t len = end - start;
+      
+      // [start, end) = overlap of prev->qseq and next->qseq  
+      const size_t len = end - start;  
       ASSERT (len);
       ASSERT (len <= prev->qLen ());  
       ASSERT (len <= next->qLen ());  
@@ -282,7 +337,94 @@ struct Intron final : DiGraph::Arc
       ASSERT (node [true]);
       static_cast <const Exon*> (node [true]) -> saveText (os);
     }
+    
+    
+  AlignScore getTotalScore ()
+    {
+      const Exon* next = static_cast <const Exon*> (node [true]);
+      ASSERT (next);
+      var_cast (next) -> setBestIntron ();  // DAG => no loop 
+      return next->score - score;
+    }
 };
+
+
+
+void Exon::finish ()
+{
+  ASSERT (graph);
+  ASSERT (score == 0);
+  ASSERT (! bestIntron);
+  
+  size_t gap = 0;
+  size_t qstart_new = qstart;
+  size_t sstart_new = sstart;
+  size_t send_new   = send;
+  FFOR (size_t, i, qseq. size ())
+  {
+    if (qseq [i] == '-')
+    {
+      gap++;
+      QC_ASSERT (sseq [i] != '-');
+    }
+    else
+    {
+      QC_ASSERT (qseq [i] != '*');
+      // sseq: prohibit '*' in a non-intron gap ??
+      if (gap >= 15)  // PAR  
+      {
+        auto exon = new Exon ( * var_cast (graph)
+                             , qseqid
+                             , sseqid
+                             , qstart_new
+                             , qend
+                             , strand == 1 ? sstart_new : sstart
+                             , strand == 1 ? send       : send_new
+                             , qseq. substr (i)
+                             , sseq. substr (i)
+                             , strand
+                             );
+        qend = qstart_new;
+        const size_t intron_len = gap * 3;
+        if (strand == 1)
+        {
+          QC_ASSERT (sstart_new > intron_len);
+          send = sstart_new - intron_len;
+        }
+        else
+          sstart = send_new + intron_len;
+        ASSERT (i >= gap);
+        qseq. erase (i - gap);
+        sseq. erase (i - gap);
+        bestIntron = new Intron (this, exon);  
+        break;
+      }
+      qstart_new++;
+      gap = 0;
+    }
+
+    // sstart_new, send_new
+    if (sseq [i] != '-')
+    {
+      if (strand == 1)
+        sstart_new += 3;
+      else
+      {
+        QC_ASSERT (send_new >= 3);
+        send_new -= 3;
+      }
+    }
+  }
+  
+  FFOR (size_t, i, qseq. size ())
+    score += sm. char2score (qseq [i], sseq [i]);
+  QC_ASSERT (score > 0);
+
+  const Pair<string> p (qseqid, sseqid);
+  contig2exons [p] << this;
+  
+  qc ();
+}
 
 
 
@@ -301,30 +443,27 @@ void Exon::saveText (ostream &os) const
 
 void Exon::setBestIntron ()
 {
+  ASSERT (score > 0);
   ASSERT (totalScore >= 0);
+  
   if (totalScore > 0)
     return;
 
-  ASSERT (totalScore == 0); 
   if (arcs [true]. empty ())
-  {
     totalScore = score;
-    ASSERT (score > 0);
-    ASSERT (totalScore > 0);
-  }
   else
   {
-    for (const DiGraph::Arc* arc : arcs [true])
-    {
-      ASSERT (arc);
-      ASSERT (arc->node [false] == this);
-      const Intron* intron = static_cast <const Intron*> (arc);
-      const Exon* next = static_cast <const Exon*> (arc->node [true]);
-      var_cast (next) -> setBestIntron ();  // DAG => no loop 
-      ASSERT (next);
-      if (maximize (totalScore, score + next->score - intron->score))
-        bestIntron = intron;
-    }
+    if (bestIntron)
+      totalScore = score + var_cast (bestIntron) -> getTotalScore ();
+    else
+      for (const DiGraph::Arc* arc : arcs [true])
+      {
+        ASSERT (arc);
+        ASSERT (arc->node [false] == this);
+        const Intron* intron = static_cast <const Intron*> (arc);
+        if (maximize (totalScore, score + var_cast (intron) -> getTotalScore ()))
+          bestIntron = intron;
+      }
     ASSERT (bestIntron);
   }
   QC_ASSERT (totalScore > 0);
@@ -334,6 +473,20 @@ void Exon::setBestIntron ()
 
 string Exon::getSeq (size_t start) const
 {
+  if (gapF)
+  {
+    size_t gap = 0;
+    for (const char c : qseq)
+      if (c == '-')
+        gap++;
+      else
+      {
+        if (gap > 3)  // PAR
+          *gapF << gap << '\n';
+        gap = 0;
+      }
+  }
+  
   // s
   const size_t end = bestIntron ? bestIntron->prev_end : sseq. size (); 
   ASSERT (start <= end);
@@ -341,11 +494,11 @@ string Exon::getSeq (size_t start) const
   string s = sseq. substr (start, end - start);
   replaceStr (s, "-", noString);
   
-  string next;
   if (bestIntron)
   {
-    ASSERT (bestIntron->node [true]);    
-    s += static_cast <const Exon*> (bestIntron->node [true]) -> getSeq (bestIntron->next_start);
+    const Exon* next = static_cast <const Exon*> (bestIntron->node [true]);
+    ASSERT (next);
+    s += next->getSeq (bestIntron->next_start);
   }
   
   return s;
@@ -361,6 +514,7 @@ struct ThisApplication final : Application
     {
       version = VERSION;
   	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. qseqid = <variant>-<gene>, where <gene> has no dashes");
+  	  addKey ("gap_stats", "Output file with gap lengths");
     }
 
 
@@ -368,27 +522,22 @@ struct ThisApplication final : Application
 	void body () const final
   {
 	  const string tblastnFName = getArg ("tblastn");
+	  const string gap_stats    = getArg ("gap_stats");
   
   
     sm = SubstMat (execDir + "/matrix/BLOSUM62");  // PAR
     sm. qc ();
   
   
-	  map <Pair<string>/*ref,contig*/, VectorPtr<Exon>> contig2exons;
 	  DiGraph graph;
 	  {
   	  LineInput in (tblastnFName);
   	  while (in. nextLine ())
-  	  {
-  	    Exon* exon = nullptr;
-  	    try { exon = new Exon (graph, in. line); }
+  	    try { new Exon (graph, in. line); }
   	      catch (const exception &e)
   	        { throw runtime_error (string (e. what ()) + "\n" + in. lineStr ()); }
-  	    ASSERT (exon);
-  	    const Pair<string> p (exon->qseqid, exon->sseqid);
-  		  contig2exons [p] << exon;
-  	  }
   	}
+  	graph. qc ();
   	
   	
   	map<string/*gene*/,const Exon*> gene2exon;
@@ -417,16 +566,16 @@ struct ThisApplication final : Application
   	    if (maximize (totalScore_max, exon->totalScore))
   	      bestExon = exon;
   	  }
+  	  ASSERT (bestExon);  	  
   	  
   	  const string& ref  = it. first. first;
   	  const string& subj = it. first. second;
   	  
-  	  ASSERT (bestExon);  	  
   	  if (verbose ())
   	  {
-    	  cout << ref << '\t' << subj << '\t';
-    	  bestExon->saveText (cout);
-    	  cout << '\n';
+    	  cerr << ref << '\t' << subj << '\t';
+    	  bestExon->saveText (cerr);
+    	  cerr << endl;
     	}
     	
     	const size_t dash = ref. rfind ('-');
@@ -437,7 +586,12 @@ struct ThisApplication final : Application
     	   )
     	  exonIt = bestExon;
     }
+  	graph. qc ();
 
+
+    if (! gap_stats. empty ())
+      gapF. reset (new OFStream (gap_stats));
+          
     
     for (const auto& it : gene2exon)
     {
@@ -445,9 +599,9 @@ struct ThisApplication final : Application
       ASSERT (! s. empty ());
       if (verbose ())
       {
-        cout << it. first << '\t';
-        it. second->saveText (cout);
-        cout << '\t' << s << '\n';
+        cerr << it. first << '\t';
+        it. second->saveText (cerr);
+        cerr << '\t' << s << endl;
       }
       const Dna dna (it. first, s, false);
       dna. qc ();

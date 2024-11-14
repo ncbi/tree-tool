@@ -14,8 +14,8 @@ PROT=$3
 
 
 TMP=$( mktemp )
-comment $TMP  # ??
-set -x  # ??
+#comment $TMP  
+#set -x  
 
 
 # PAR
@@ -23,4 +23,4 @@ tblastn  -query $REF  -subject $DNA  -task tblastn-fast  -word_size 5  -evalue 1
 $THIS/tblastn2annot_euk  $DNA $TMP.tblastn   -log $TMP.log > $PROT
 
 
-#rm $TMP*  ??
+rm $TMP*  
