@@ -61,9 +61,9 @@ ifdef AT_NCBI
     -Wsizeof-array-div \
     -Wsizeof-pointer-div \
     -Wsizeof-pointer-memaccess \
+    -Wstringop-overflow=0 \
     -Wstrict-aliasing \
     -Wstrict-overflow=1 \
-    -Wstringop-overflow \
     -Wswitch \
     -Wtautological-compare \
     -Wtrigraphs \
@@ -76,6 +76,9 @@ ifdef AT_NCBI
     -Wunused-value \
     -Wunused-variable \
     -Wvolatile-register-var 
+    
+  # -Wstringop-overflow=1: works incorrectly with array's
+    
     
   # C++
   WarningCPPFLAGS += \

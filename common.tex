@@ -1,3 +1,12 @@
+% https://tex.stackexchange.com/questions/86054/how-to-remove-the-whitespace-before-itemize-enumerate
+% https://ctan.math.washington.edu/tex-archive/macros/latex/contrib/enumitem/enumitem.pdf
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep,topsep=0pt}
+%\newcommand {\beginitemize} {\begin{itemize} \setlength\itemsep{0em} }
+%\newcommand {\beginitemize} {\begin{itemize}[noitemsep,topsep=0pt]}
+\newcommand {\stopitemize} {\end{itemize} \vspace{0.5em}}
+
+
 \newcommand {\subsubsubsection} [1] {\vskip 0.5em {\bf \em #1}}
 
 %\newcommand {\comm} [1] {}
@@ -11,9 +20,6 @@
 \par
 \setlength{\leftskip}{0in}
 }
-
-
-\newcommand {\beginitemize} {\begin{itemize} \setlength\itemsep{0em}}
 
 
 \newcommand {\cond} {, & \textrm{if }}

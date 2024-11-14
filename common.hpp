@@ -418,9 +418,9 @@ template <typename To, typename From>
   inline void insertAll (To &to,
                          const From &from)
     { 
-      #pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
+    #pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
       to. insert (to. begin (), from. begin (), from. end ()); 
-      #pragma GCC diagnostic warning "-Waggressive-loop-optimizations"
+    #pragma GCC diagnostic warning "-Waggressive-loop-optimizations"
     }
 
 template <typename To, typename From>
@@ -1117,15 +1117,15 @@ template <typename T>
         { *this << other; }
     bool empty () const
       {
-        #pragma GCC diagnostic ignored "-Wnull-dereference"
+      #pragma GCC diagnostic ignored "-Wnull-dereference"
         return P::empty ();
-        #pragma GCC diagnostic warning "-Wnull-dereference"
+      #pragma GCC diagnostic warning "-Wnull-dereference"
       }
     size_t size () const
       {
-        #pragma GCC diagnostic ignored "-Wnull-dereference"
+      #pragma GCC diagnostic ignored "-Wnull-dereference"
         return P::size ();
-        #pragma GCC diagnostic warning "-Wnull-dereference"
+      #pragma GCC diagnostic warning "-Wnull-dereference"
       }
 
   	  
@@ -2806,7 +2806,7 @@ template <typename T /* : Root */>
         }
   	void deleteData ()
   	  {	for (const T* t : *this)
-  			  delete t;
+			    delete t;
   			P::clear ();
   	  }
     void erasePtr (size_t index)
@@ -2920,7 +2920,11 @@ template <typename T /* : Root */>
   	    return *this;
   	  }
    ~VectorOwn ()
-      { P::deleteData (); }
+      { 
+      #pragma GCC diagnostic ignored "-Wnull-dereference"
+        P::deleteData (); 
+      #pragma GCC diagnostic warning "-Wnull-dereference"
+      }
 
 
     VectorOwn<T>& operator<< (const T* value)
