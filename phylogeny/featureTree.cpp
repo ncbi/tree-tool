@@ -181,7 +181,7 @@ void Phyl::qc () const
 
 	for (const bool i : {false, true})
   	for (const bool j : {false, true})
-	    QC_ASSERT (weight [i] [j] >= 0);
+	    QC_ASSERT (weight [i] [j] >= 0.0);
 
 	const size_t n = core. size ();  
   QC_IMPLY (! getFeatureTree (). oneFeatureInTree, n == getFeatureTree (). features. size ())
@@ -1195,8 +1195,8 @@ void Genome::qc () const
 //QC_ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
 	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, nominals. empty ());
 	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, coreSet. empty ());
-	QC_ASSERT (nominals. searchSorted);
-	QC_ASSERT (singletons. searchSorted);
+	QC_IMPLY (! nominals. empty (), nominals. searchSorted);
+	QC_IMPLY (! singletons. empty (), singletons. searchSorted);
 /*
 	if (getFeatureTree (). coreSynced && coreNonSingletons < getCoreSize ())
 	{
@@ -2108,7 +2108,11 @@ FeatureTree::FeatureTree (const string &treeFName,
   ASSERT (static_cast <const Phyl*> (root) -> asSpecies ());
 
   if (featureDir. empty ())
+  {
+   	for (DiGraph::Node* node : nodes)  
+   		static_cast <Phyl*> (node) -> setWeight (); 		
     return;
+  }
    
   size_t genomes = 0; 
   {
@@ -2717,7 +2721,11 @@ void FeatureTree::qc () const
 		  nominVars << std::move (nominVar);
 		}
 		prevFeature = f;
-	}
+	}	
+	
+	if (! featuresExist ())
+	  return;
+	
 	QC_ASSERT (features. searchSorted);
 
 	QC_ASSERT (geReal (len, len_min));

@@ -60,7 +60,7 @@ struct Phyl;
 
 
 
-struct Feature : Named
+struct Feature final : Named
 // Boolean attribute of Genome
 // Id name: key
 {
@@ -425,7 +425,7 @@ public:
 
 
 
-struct Fossil : Species
+struct Fossil final : Species
 {
 	Fossil (FeatureTree &tree,
 	        Fossil* parent_arg,
@@ -451,7 +451,7 @@ struct Fossil : Species
 
 
 
-struct Strain : Species
+struct Strain final : Species
 // Distance from children to *this depends on Genome quality
 // Not neded for maximum parsimony ??!
 {
@@ -500,7 +500,7 @@ public:
 
 
 
-struct Genome : Phyl
+struct Genome final : Phyl
 {
   friend FeatureTree;
   
@@ -820,7 +820,7 @@ public:
 
 
 
-struct ChangeToSibling : Move
+struct ChangeToSibling final : Move
 // *to becomes a sibling of *this
 {
   // status fields
@@ -881,7 +881,7 @@ public:
 
 
 
-struct ChangeToParent : Move
+struct ChangeToParent final : Move
 // *to becomes a parent of *this
 // Redundant given ChangeToSibling 
 {
@@ -929,7 +929,7 @@ public:
 
 
 
-struct ChangeToUncle : ChangeTo
+struct ChangeToUncle final : ChangeTo
 // *to = uncle
 // Swap to->parent and this->parent
 // Includes the "swap" Change
@@ -975,7 +975,7 @@ public:
 
 
 
-struct ChangeToCousin : ChangeTo
+struct ChangeToCousin final : ChangeTo
 // *to = first cousin
 // Swap to->parent and this->parent
 {
@@ -1021,7 +1021,7 @@ public:
 
 
 
-struct ChangeRoot : Change
+struct ChangeRoot final : Change
 // tree.root = from
 // Can be used once in FeatureTree::applyChanges()
 // Requires: FeatureTree::allTimeZero
@@ -1070,7 +1070,7 @@ public:
 
 
 
-struct ChangeDel : Change
+struct ChangeDel final : Change
 // from is delete'd
 // Redundant if !tree.allTimeZero ??
 {
@@ -1124,7 +1124,7 @@ public:
 
 
 
-struct FeatureTree : Tree
+struct FeatureTree final : Tree
 // Of Phyl*
 // !allTimeZero => effectively unrooted 
 {
