@@ -742,9 +742,9 @@ inline bool charInSet (char c,
 		                   const string &charSet)
   { return charSet. find (c) != string::npos; }
 
-string::const_iterator stringInSet (const string &s,
-                    	           	  const string &charSet);
-  // Return: != s.end() => *Return is not in charSet
+size_t stringNotInSet (const string &s,
+                   	   const string &charSet);
+  // Return: index in s which is not in charSet; may be no_index
 
 size_t strCountSet (const string &s,
 		                const string &charSet);

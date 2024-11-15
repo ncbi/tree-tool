@@ -760,14 +760,13 @@ bool isLower (const string &s)
 
 
 
-string::const_iterator stringInSet (const string &s,
-                    	           	  const string &charSet)
+size_t stringNotInSet (const string &s,
+                   	   const string &charSet)
 {
-  CONST_ITER (string, it, s)
-    if (! charInSet (*it, charSet))
-      return it;
-
-  return s. end ();
+  FFOR (size_t, i, s. size ())
+    if (! charInSet (s [i], charSet))
+      return i;
+  return no_index;
 }
 
 
