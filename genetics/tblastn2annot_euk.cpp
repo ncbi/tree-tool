@@ -357,6 +357,7 @@ void Exon::finish ()
   ASSERT (! bestIntron);
   
   size_t gap = 0;
+  bool pseudo = false;
   size_t qstart_new = qstart;
   size_t sstart_new = sstart;
   size_t send_new   = send;
@@ -366,12 +367,13 @@ void Exon::finish ()
     {
       gap++;
       QC_ASSERT (sseq [i] != '-');
+      if (sseq [i] == '*')
+        pseudo = true;
     }
     else
     {
       QC_ASSERT (qseq [i] != '*');
-      // sseq: prohibit '*' in a non-intron gap ??
-      if (gap >= 15)  // PAR  
+      if (pseudo || gap >= 15)  // PAR  
       {
         auto exon = new Exon ( * var_cast (graph)
                              , qseqid
@@ -401,6 +403,7 @@ void Exon::finish ()
       }
       qstart_new++;
       gap = 0;
+      pseudo = false;
     }
 
     // sstart_new, send_new
@@ -603,9 +606,10 @@ struct ThisApplication final : Application
         it. second->saveText (cerr);
         cerr << '\t' << s << endl;
       }
-      const Dna dna (it. first, s, false);
-      dna. qc ();
-      dna. saveText (cout);
+      Peptide pep (it. first, s, false);
+      pep. pseudo = true;
+      pep. qc ();
+      pep. saveText (cout);
     }
   }
 };

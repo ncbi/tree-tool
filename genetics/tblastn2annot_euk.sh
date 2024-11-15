@@ -19,8 +19,9 @@ TMP=$( mktemp )
 
 
 # PAR
-tblastn  -query $REF  -subject $DNA  -task tblastn-fast  -word_size 5  -evalue 1e-4  -db_gencode 1  -seg no  -comp_based_stats 0  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' > $TMP.tblastn
-$THIS/tblastn2annot_euk  $DNA $TMP.tblastn   -log $TMP.log > $PROT
+tblastn  -query $REF  -subject $DNA  -db_gencode 1  -seg no  -comp_based_stats 0  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' > $TMP.tblastn
+  # -task tblastn-fast  -word_size 5  -evalue 1e-4: weak HSPs are needed!
+$THIS/tblastn2annot_euk  $TMP.tblastn  -qc  -log $TMP.log > $PROT
 
 
 rm $TMP*  
