@@ -21,7 +21,8 @@ TABLE=$5
 
 
 TMP=$( mktemp )
-#echo $TMP 
+#comment $TMP 
+rm $TMP
 TMP=$( basename $TMP )
 
 cp $IN $BULK_LOCAL/$TMP
@@ -50,6 +51,7 @@ sqsh-ms -S $SERVER  << EOT
 EOT
 
 rm $BULK_LOCAL/$TMP
+
 
 
 
