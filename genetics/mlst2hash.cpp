@@ -103,7 +103,7 @@ struct ThisApplication : Application
         if (seq. empty ())
           throw runtime_error ("End of file");
         replaceStr (seq, "-", ""); 
-        if (stringInSet (seq, dnaAlphabet) != seq. end ())
+        if (stringNotInSet (seq, dnaAlphabet) != no_index)
           continue;
         if (locus2blastn [locus]. len < seq. size ())
           locus2blastn [locus] = std::move (Blastn (std::move (seq)));
