@@ -41,7 +41,7 @@ if [ ! -s $FASTA ]; then
   error "Empty genome" >> $LOG
 fi
 
-DIR=`dirname $FASTA`
+DIR=$( dirname $FASTA )
 
 cd $DIR
 
