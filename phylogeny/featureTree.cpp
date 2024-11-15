@@ -102,7 +102,7 @@ size_t Feature::getLeaves (const Phyl* phyl,
   if (qc_on)
   {
     allLimits. sort ();
-    ASSERT (allLimits. isUniq ());
+    QC_ASSERT (allLimits. isUniq ());
   }
   
   VectorPtr<Phyl> limits;  limits. reserve (allLimits. size ());
