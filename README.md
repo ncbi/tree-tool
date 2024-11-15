@@ -22,7 +22,7 @@ Goldfarb, T., Kodali, V. K., Pujar, S., Brover, V., Robbertse, B., Farrell, C. M
 NCBI RefSeq: reference sequence standards through 25 years of curation and annotation. 
 Nucleic acids research, gkae1038. Advance online publication. PMID: [39526381](https://doi.org/10.1093/nar/gkae1038)
 
-[Interactive tree of _Eukaryota_](https://github.com/ncbi/tree-tool/blob/master/phylogeny/Trees/Eukaryota.html)
+[Interactive tree of _Eukaryota_](https://html-preview.github.io/?url=https://github.com/ncbi/tree-tool/blob/master/phylogeny/Trees/Eukaryota.html)
 
 Shmakov SA, Barth ZK, Makarova KS, Wolf YI, Brover V, Peters JE, Koonin EV. 
 Widespread CRISPR repeat-like RNA regulatory elements in CRISPR-Cas systems. 
