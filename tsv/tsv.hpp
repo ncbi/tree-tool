@@ -185,7 +185,8 @@ struct TextTable : Named
     
 
   explicit TextTable (const string &tableFName,
-                      const string &columnSynonymsFName = noString);
+                      const string &columnSynonymsFName = noString,
+                      uint displayPeriod = 0);
     // Input: tableFName: format: [{'#' <comment> <EOL>}* '#'] <header> <EOL> {<row> <EOL>>}*
     //                    empty lines are skipped
     //        columnSynonymsFName: <syn_format>
@@ -210,7 +211,7 @@ public:
     // Return: true => scientific number
   void printHeader (ostream &os) const;
   ColNum col2num_ (const string &columnName) const;
-    // Retuirn: no_index <=> no columnName
+    // Return: no_index <=> no columnName
   ColNum col2num (const string &columnName) const
     { const ColNum i = col2num_ (columnName);
       if (i == no_index)

@@ -132,11 +132,12 @@ void TextTable::Header::qc () const
 
 
 TextTable::TextTable (const string &tableFName,
-                      const string &columnSynonymsFName)
+                      const string &columnSynonymsFName,
+                      uint displayPeriod)
 : Named (tableFName)
 {  
   {
-    LineInput f (tableFName);
+    LineInput f (tableFName, displayPeriod);
     bool dataExists = true;
     // header
     while (f. nextLine ())
