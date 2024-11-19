@@ -50,7 +50,7 @@ pairs2dm:	$(pairs2dmOBJS)
 	$(CXX) -o $@ $(pairs2dmOBJS) $(LIBS)
 	$(ECHO)
 
-tsv2dm.o:  $(DM_HPP) 
+tsv2dm.o:  $(DM_HPP) $(TSV_DIR)/tsv.hpp
 tsv2dmOBJS=tsv2dm.o $(DM_OBJ) $(TSV_DIR)/tsv.o
 tsv2dm:	$(tsv2dmOBJS)
 	$(CXX) -o $@ $(tsv2dmOBJS) $(LIBS)
