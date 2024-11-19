@@ -14,13 +14,14 @@ PROT=$3
 
 
 TMP=$( mktemp )
-#comment $TMP  
+comment $TMP  
 #set -x  
 
-
-# PAR
-tblastn  -query $REF  -subject $DNA  -db_gencode 1  -seg no  -comp_based_stats 0  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' > $TMP.tblastn
+makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
+tblastn  -query $REF  -db $TMP  -db_gencode 1  -evalue 1000  -word_size 2  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads 4 > $TMP.tblastn
   # -task tblastn-fast  -word_size 5  -evalue 1e-4: weak HSPs are needed!
+  # -num_threads requires -db
+  # -seg no  -comp_based_stats 0 
 $THIS/tblastn2annot_euk  $TMP.tblastn  -qc  -log $TMP.log > $PROT
 
 

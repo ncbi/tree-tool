@@ -1,4 +1,4 @@
-// tblastn2orf.cpp
+// tblastn2annot_euk.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Find best annotation and print proteins
+*   Find best gene matches and print proteins
 *
 */
 
@@ -76,9 +76,12 @@ struct Exon final : DiGraph::Node
 	  // Can contain '*'
 	Strand strand {0};
 	AlignScore score {0};
+  bool nextExonFixed {false};
+  const bool prevExonFixed {false};
 	// Output
-	AlignScore totalScore {0};
+	bool bestIntronSet {false};
 	const Intron* bestIntron {nullptr};
+	AlignScore totalScore {- score_inf};
 
 
   Exon (DiGraph &graph_arg,
@@ -101,6 +104,7 @@ struct Exon final : DiGraph::Node
     , qseq (qseq_arg)
     , sseq (sseq_arg)
     , strand (strand_arg)
+    , prevExonFixed (true)
     { 
       finish (); 
     }	
@@ -139,39 +143,11 @@ struct Exon final : DiGraph::Node
     
 private:
   void finish ();
-    // Output: bestIntron
+    // Output: score, bestIntron
+  void trimHangingDashes ();
 public:
   void saveText (ostream &os) const final;
-  
-  
-  void qc () const final
-    {
-      if (! qc_on)
-        return;
-        
-      DiGraph::Node::qc ();
-        
-	    QC_ASSERT (! qseqid. empty ());	    
-	    QC_ASSERT (! sseqid. empty ());	    
-
-		  QC_ASSERT (qstart < qend);
-		  QC_ASSERT (sstart < send);
-	    QC_ASSERT (divisible ((uint) (send - sstart), 3));	  
-
-		  QC_ASSERT (qseq. size () == sseq. size ());		  
-	  	QC_ASSERT (! qseq. empty ()); 
-	    QC_ASSERT (qLen () <= qseq. size ());
-	    QC_ASSERT (sLen () <= sseq. size ());
-	    
-	    // Needed for Intron::Intron 
-	    QC_ASSERT (qseq. front () != '-');
-	    QC_ASSERT (qseq. back  () != '-');
-	    QC_ASSERT (sseq. front () != '-');
-	    QC_ASSERT (sseq. back  () != '-');
-	    
-	    QC_ASSERT (score >= 0);
-	    QC_ASSERT (totalScore >= 0);
-    }
+  void qc () const final;
     
     
   size_t qLen () const
@@ -179,21 +155,38 @@ public:
   size_t sLen () const
     { return (send - sstart) / 3; }
     // aa
-  size_t qCenter () const  // --> center of match density ??
+  // --> center of match density ??
+  size_t qCenter () const  
     { return (qstart + qend) / 2; }
+  size_t sCenter () const  
+    { return (sstart + send) / 2; }
+  //
   bool arcable (const Exon &next) const
     {
       ASSERT (qseqid == next. qseqid);
       ASSERT (sseqid == next. sseqid);
+      ASSERT (! nextExonFixed);
+      ASSERT (! next. prevExonFixed);
       
       // PAR
-      constexpr size_t intron_max = 10000;  // nt 
+      constexpr size_t intron_max = 30000;  // nt 
       
       if (strand != next. strand)
         return false;
     //if (same frame and overlap) return false;  // ??
+    
+      // => DAG
       if (qCenter () >= next. qCenter ())
-        return false;  // => DAG
+        return false;  
+      if (strand == 1)
+      {
+        if (sCenter () >= next. sCenter ())
+          return false;  
+      }
+      else
+        if (next. sCenter () >= sCenter ())
+          return false;  
+
       if (qend + 20 < next. qstart)
         return false;
       if (   strand == 1 
@@ -210,9 +203,47 @@ public:
     
     
   void setBestIntron ();
-    // Update: totalScore
+    // Update: bestIntronSet, totalScore
     // Output: bestIntron
   string getSeq (size_t start) const;
+  size_t pos2q (size_t pos) const
+    {
+      ASSERT (pos <= qseq. size ());
+      size_t j = qstart;
+      FFOR (size_t, i, qseq. size () + 1)
+      {
+        ASSERT (j >= qstart);
+        ASSERT (j <= qend);
+        if (i == pos)
+          return j;
+        if (qseq [i] != '-')
+          j++;
+      }
+      ERROR;
+    }
+  size_t pos2s (size_t pos) const
+    {
+      ASSERT (pos <= sseq. size ());
+      size_t j = (strand == 1 ? sstart : send);
+      FFOR (size_t, i, sseq. size () + 1)
+      {
+        ASSERT (j >= sstart);
+        ASSERT (j <= send);
+        if (i == pos)
+          return j;
+        if (sseq [i] != '-')
+        {
+          if (strand == 1)
+            j += 3;
+          else
+          {
+            ASSERT (j >= 3);
+            j -= 3;
+          }
+        }
+      }
+      ERROR;
+    }
 };
 
 
@@ -230,7 +261,7 @@ struct Intron final : DiGraph::Arc
   Intron (Exon* prev,
           Exon* next)
     : DiGraph::Arc (prev, next)
-    , prev_end (prev->qseq. size ())
+    , prev_end (prev->sseq. size ())
     {
       ASSERT (prev);
       ASSERT (next);
@@ -326,15 +357,37 @@ struct Intron final : DiGraph::Arc
       }
       ASSERT (next_start <= next->qseq. size ());
     }
+
+
+  void qc () const final
+    {
+      if (! qc_on)
+        return;
+      DiGraph::Arc::qc ();
+
+      const Exon* prev = static_cast <const Exon*> (node [false]);
+      const Exon* next = static_cast <const Exon*> (node [true]);
+      ASSERT (prev);
+      ASSERT (next);
+      QC_ASSERT (prev->qseqid == next->qseqid);
+      QC_ASSERT (prev->sseqid == next->sseqid);
+      QC_ASSERT (prev->strand == next->strand);
+
+      QC_ASSERT (prev_end   <= prev->qseq. size ());
+      QC_ASSERT (next_start <= next->qseq. size ());
+    }
     
     
   void saveText (ostream &os) const final
     {
-      os << '\t' << prev_end 
-         << '\t' << next_start
-         << '\t' << score 
-         << '\t';
+      os << "  prev_end: " << prev_end 
+         << "  next_start: " << next_start
+         << "  score: " << score;
       ASSERT (node [true]);
+
+      Offset ofs;
+      Offset::newLn (os);
+      os << "Exon:";
       static_cast <const Exon*> (node [true]) -> saveText (os);
     }
     
@@ -344,7 +397,7 @@ struct Intron final : DiGraph::Arc
       const Exon* next = static_cast <const Exon*> (node [true]);
       ASSERT (next);
       var_cast (next) -> setBestIntron ();  // DAG => no loop 
-      return next->score - score;
+      return next->totalScore - score;
     }
 };
 
@@ -355,7 +408,10 @@ void Exon::finish ()
   ASSERT (graph);
   ASSERT (score == 0);
   ASSERT (! bestIntron);
+  ASSERT (! nextExonFixed);
   
+  trimHangingDashes ();
+
   size_t gap = 0;
   bool pseudo = false;
   size_t qstart_new = qstart;
@@ -399,6 +455,8 @@ void Exon::finish ()
         qseq. erase (i - gap);
         sseq. erase (i - gap);
         bestIntron = new Intron (this, exon);  
+        nextExonFixed = true;
+        trimHangingDashes ();
         break;
       }
       qstart_new++;
@@ -418,10 +476,10 @@ void Exon::finish ()
       }
     }
   }
-  
+    
   FFOR (size_t, i, qseq. size ())
     score += sm. char2score (qseq [i], sseq [i]);
-  QC_ASSERT (score > 0);
+//QC_ASSERT (score > 0);
 
   const Pair<string> p (qseqid, sseqid);
   contig2exons [p] << this;
@@ -431,34 +489,124 @@ void Exon::finish ()
 
 
 
+void Exon::trimHangingDashes ()
+{
+  while (   ! qseq. empty ()
+         && (   qseq. front () == '-'
+             || sseq. front () == '-'
+            )
+        )
+  {
+    qseq. erase (0, 1);
+    sseq. erase (0, 1);
+    qstart++;
+    if (strand == 1)
+      sstart += 3;
+    else
+    {
+      ASSERT (send >= 3);
+      send -= 3;
+    }
+  }
+  
+  while (   ! qseq. empty ()
+         && (   qseq. back () == '-'
+             || sseq. back () == '-'
+            )
+        )
+  {
+    qseq. erase (qseq. size () - 1);
+    sseq. erase (sseq. size () - 1);
+    qend--;
+    if (strand == 1)
+    {
+      ASSERT (send >= 3);
+      send -= 3;
+    }
+    else
+      sstart += 3;
+  }
+}
+
+
+
+void Exon::qc () const 
+{
+  if (! qc_on)
+    return;
+    
+  DiGraph::Node::qc ();
+    
+  QC_ASSERT (! qseqid. empty ());	    
+  QC_ASSERT (! sseqid. empty ());	    
+
+  QC_ASSERT (qstart < qend);
+  QC_ASSERT (sstart < send);
+  QC_ASSERT (divisible ((uint) (send - sstart), 3));	  
+
+  QC_ASSERT (qseq. size () == sseq. size ());		  
+	QC_ASSERT (! qseq. empty ()); 
+  QC_ASSERT (qLen () <= qseq. size ());
+  QC_ASSERT (sLen () <= sseq. size ());
+  
+  // Needed for Intron::Intron 
+  QC_ASSERT (qseq. front () != '-');
+  QC_ASSERT (qseq. back  () != '-');
+  QC_ASSERT (sseq. front () != '-');
+  QC_ASSERT (sseq. back  () != '-');
+        
+  QC_ASSERT (pos2q (0)             == qstart);
+  QC_ASSERT (pos2q (qseq. size ()) == qend);
+  QC_ASSERT (pos2s (0)             == (strand == 1 ? sstart : send));
+  QC_ASSERT (pos2s (sseq. size ()) == (strand == 1 ? send   : sstart));
+    
+  QC_IMPLY (nextExonFixed, bestIntron);
+  QC_IMPLY (bestIntron, arcs [true]. find (var_cast (bestIntron)) != no_index);
+
+//QC_ASSERT (score >= 0);
+//QC_ASSERT (totalScore >= 0);
+}
+
+
+
 void Exon::saveText (ostream &os) const 
 {
-  os         << qstart + 1 << '(' << sstart + 1 << ')'
-     << '\t' << qend   + 1 << '(' << send   + 1 << ')'
-     << '\t' << (int) strand
-     << '\t' << score 
-     << '\t' << totalScore;
+  os        << qstart + 1 << '(' << sstart + 1 << ')'
+     << "-" << qend   + 1 << '(' << send   + 1 << ')'
+     << "  strand: " << (int) strand
+     << "  score: " << score 
+     << "  totalScore: " << totalScore;
   if (bestIntron)
+  {
+    Offset ofs;
+    Offset::newLn (os);
+    os << "Intron:";
     bestIntron->saveText (os);
+  }
 }
 
 
 
 void Exon::setBestIntron ()
 {
-  ASSERT (score > 0);
-  ASSERT (totalScore >= 0);
-  
-  if (totalScore > 0)
-    return;
+  if (bestIntronSet)
+    return;    
+  bestIntronSet = true;
+
+  ASSERT (nextExonFixed == (bool) bestIntron);
 
   if (arcs [true]. empty ())
+  {
+    ASSERT (! bestIntron);
     totalScore = score;
+  }
   else
   {
     if (bestIntron)
       totalScore = score + var_cast (bestIntron) -> getTotalScore ();
     else
+    {
+      totalScore = - score_inf;
       for (const DiGraph::Arc* arc : arcs [true])
       {
         ASSERT (arc);
@@ -467,9 +615,9 @@ void Exon::setBestIntron ()
         if (maximize (totalScore, score + var_cast (intron) -> getTotalScore ()))
           bestIntron = intron;
       }
+    }
     ASSERT (bestIntron);
   }
-  QC_ASSERT (totalScore > 0);
 }
 
 
@@ -513,7 +661,7 @@ string Exon::getSeq (size_t start) const
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Find best annotation and print proteins")
+    : Application ("Find best gene matches and print proteins")
     {
       version = VERSION;
   	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. qseqid = <variant>-<gene>, where <gene> has no dashes");
@@ -534,7 +682,7 @@ struct ThisApplication final : Application
   
 	  DiGraph graph;
 	  {
-  	  LineInput in (tblastnFName);
+  	  LineInput in (tblastnFName, 1000);  // PAR
   	  while (in. nextLine ())
   	    try { new Exon (graph, in. line); }
   	      catch (const exception &e)
@@ -544,50 +692,71 @@ struct ThisApplication final : Application
   	
   	
   	map<string/*gene*/,const Exon*> gene2exon;
-  	for (const auto& it : contig2exons)
   	{
-  	  ASSERT (! it. second. empty ());
-  	  
-  	  // new Intron
-  	  for (const Exon* next : it. second)
-  	  {
-  	    ASSERT (next);
-    	  for (const Exon* prev : it. second)
-    	    if (prev == next)
-    	      break;
-    	    else
-    	      if (prev->arcable (*next))
-    	        new Intron (var_cast (prev), var_cast (next));
-    	}
-    	
-    	AlignScore totalScore_max = 0;
-    	const Exon* bestExon = nullptr;
-  	  for (const Exon* exon : it. second)
-  	  {
-  	    var_cast (exon) -> setBestIntron ();
-  	    ASSERT (exon->totalScore > 0);
-  	    if (maximize (totalScore_max, exon->totalScore))
-  	      bestExon = exon;
-  	  }
-  	  ASSERT (bestExon);  	  
-  	  
-  	  const string& ref  = it. first. first;
-  	  const string& subj = it. first. second;
-  	  
-  	  if (verbose ())
-  	  {
-    	  cerr << ref << '\t' << subj << '\t';
-    	  bestExon->saveText (cerr);
-    	  cerr << endl;
-    	}
-    	
-    	const size_t dash = ref. rfind ('-');
-    	QC_ASSERT (dash != string::npos);
-    	auto& exonIt = gene2exon [ref. substr (dash + 1)];
-    	if (   ! exonIt 
-    	    || exonIt->totalScore < bestExon->totalScore
-    	   )
-    	  exonIt = bestExon;
+  	  Progress prog (contig2exons. size ());
+    	for (const auto& it : contig2exons)
+    	{
+    	  prog ();
+    	  ASSERT (! it. second. empty ());
+    	  
+    	  // new Intron
+    	  for (const Exon* next : it. second)
+    	  {
+    	    ASSERT (next);
+    	    if (next->prevExonFixed)
+    	      continue;
+      	  for (const Exon* prev : it. second)
+      	    if (prev == next)
+      	      break;
+      	    else
+      	      if (   ! prev->nextExonFixed 
+      	          && prev->arcable (*next)
+      	         )
+      	        new Intron (var_cast (prev), var_cast (next));
+      	}
+      	
+      	AlignScore totalScore_max = - score_inf;
+      	const Exon* bestExon = nullptr;
+    	  for (const Exon* exon : it. second)
+    	  {
+    	    var_cast (exon) -> setBestIntron ();
+    	    if (exon->totalScore <= 0)  // PAR ??
+    	      continue;
+    	    if (maximize (totalScore_max, exon->totalScore))
+    	      bestExon = exon;
+    	  }
+    	  if (! bestExon)
+    	    continue;
+    	  
+    	  const string& ref  = it. first. first;
+    	  const string& subj = it. first. second;
+    	  
+    	#if 0
+    	  if (   ref  == "IDAU-4471"
+    	      && subj == "1890392768"
+    	     )
+      	  for (const Exon* exon : it. second)
+      	  {
+      	    exon->saveText (cout);
+    	      cout << endl;
+    	    }
+    	#endif
+    	  
+    	  if (verbose ())
+    	  {
+      	  cerr << ref << '\t' << subj << '\t';
+      	  bestExon->saveText (cerr);
+      	  cerr << endl;
+      	}
+      	
+      	const size_t dash = ref. rfind ('-');  
+      	QC_ASSERT (dash != string::npos);
+      	auto& exonIt = gene2exon [ref. substr (dash + 1)];
+      	if (   ! exonIt 
+      	    || exonIt->totalScore < bestExon->totalScore
+      	   )
+      	  exonIt = bestExon;
+      }
     }
   	graph. qc ();
 
@@ -596,20 +765,51 @@ struct ThisApplication final : Application
       gapF. reset (new OFStream (gap_stats));
           
     
-    for (const auto& it : gene2exon)
-    {
-      const string s (it. second->getSeq (0));
-      ASSERT (! s. empty ());
-      if (verbose ())
+  	{
+  	  Progress prog (gene2exon. size ());
+      for (const auto& it : gene2exon)
       {
-        cerr << it. first << '\t';
-        it. second->saveText (cerr);
-        cerr << '\t' << s << endl;
+        prog ();
+        const Exon* exon = it. second;
+        ASSERT (exon);
+        const string s (exon->getSeq (0));
+        ASSERT (! s. empty ());
+        if (verbose ())
+        {
+          cerr << it. first << '\t';
+          exon->saveText (cerr);
+          cerr << '\t' << s << endl;
+        }
+
+        string ref        (" ref="        + exon->qseqid + ":");
+        string contig     (" contig="     + exon->sseqid + ":");
+        string ref_hsp    (" ref_hsp="    + exon->qseqid + ":");
+        string contig_hsp (" contig_hsp=" + exon->sseqid + ":");
+        const AlignScore totalScore = exon->totalScore;
+        size_t start = 0;
+        for (;;)
+        {
+          ASSERT (exon);
+          const size_t end = exon->bestIntron ? exon->bestIntron->prev_end : exon->sseq. size ();
+          ref        += to_string (exon->pos2q (start) + 1) + "-" + to_string (exon->pos2q (end));  
+          contig     += to_string (exon->pos2s (start) + 1) + "-" + to_string (exon->pos2s (end));  
+          ref_hsp    += to_string (exon->qstart + 1) + "-" + to_string (exon->qend);  
+          contig_hsp += to_string (exon->sstart + 1) + "-" + to_string (exon->send);
+          if (! exon->bestIntron)
+            break;
+          start = exon->bestIntron->next_start;
+          exon = static_cast <const Exon*> (exon->bestIntron->node [true]);
+          ref        += ",";
+          contig     += ",";
+          ref_hsp    += ",";
+          contig_hsp += ",";
+        }
+        const string name (it. first + ref + contig + ref_hsp + contig_hsp + " strand=" + to_string (exon->strand == 1 ? 1 : 0) + " score=" + to_string (int (totalScore)));
+        Peptide pep (name, s, false);
+        pep. pseudo = true;
+        pep. qc ();
+        pep. saveText (cout);
       }
-      Peptide pep (it. first, s, false);
-      pep. pseudo = true;
-      pep. qc ();
-      pep. saveText (cout);
     }
   }
 };
@@ -620,8 +820,8 @@ struct ThisApplication final : Application
 
 
 
-int main(int argc, 
-         const char* argv[])
+int main (int argc, 
+          const char* argv[])
 {
   ThisApplication app;
   return app. run (argc, argv);  
