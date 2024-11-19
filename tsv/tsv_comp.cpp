@@ -1,4 +1,4 @@
-// tsv_comp.cpp  // --> textTab_comp.cpp ??
+// tsv_comp.cpp  
 
 /*===========================================================================
 *
@@ -35,6 +35,7 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "tsv.hpp"
 using namespace Common_sp;
 #include "../version.inc"
 
@@ -42,102 +43,61 @@ using namespace Common_sp;
 
 
 
-struct Tsv : Root
-// --> TextTable ??
-{
-  StringVector header;
-    // empty() <=> no file
-  bool poundSign {false};
-  Vector<size_t> keySchema;
-  Vector<StringVector> rows;
-    // Element. size(0 = headrer.size()
-    
-    
-  Tsv (const string &fName,
-       const StringVector& keyNames)
-    {
-      LineInput f (fName);
-      if (! f. nextLine ())
-        return;
-      
-      if (keyNames. empty ())
-        throw runtime_error ("Key is empty");
-      
-      try 
-      {
-        // header
-        header = std::move (StringVector (f. line, '\t', true));
-        if (header. empty ())
-          return;
-        FFOR (size_t, i, header. size ())
-          if (header [i]. empty ())
-            throw runtime_error ("Header name is empty for column " + to_string (i + 1));
-        if (header [0] [0] == '#')
-        {
-          poundSign = true;
-          header [0]. erase (0, 1);
-        }
-        {
-          Set<string> headerSet;
-          for (const string& s : header)
-            if (! headerSet. insert (s). second)
-              throw runtime_error ("Duplicate header name: " + strQuote (s));
-        }
-        
-        // keySchema
-        for (const string& s : keyNames)
-        {
-          const size_t index = header. indexOf (s);
-          if (index == no_index)
-            throw runtime_error ("Key column " + strQuote (s) + " does not exist");
-          keySchema << index;
-        }
-        
-        // rows
-        while (f. nextLine ())
-        {
-          StringVector row (f. line, '\t', true);
-          if (row. size () != header. size ())
-            throw runtime_error ("Row has " + to_string (row. size ()) + " columns whereas header has " + to_string (header. size ()) + " columns");
-          rows << std::move (row);
-          ASSERT (row. empty ());
-        }
-      }
-      catch (const exception &e)
-      {
-        throw runtime_error (".tsv-file " + strQuote (fName) + ", " + f. lineStr () + ":\n" + e. what ());
-      }
-    }
-    
-    
-  StringVector row2key (size_t rowNum) const
-    {
-      StringVector key;  key. reserve (keySchema. size ());
-      for (const size_t i : keySchema)
-        key << rows [rowNum] [i];
-      return key;
-    }
-    
-  typedef  map<StringVector, size_t/*rowNum*/>  Key2row;
-  Key2row getKey2row () const
-    { 
-      Key2row key2row;
-      FFOR (size_t, i, rows. size ())
-      {
-        const StringVector key (row2key (i));
-        if (! key2row. insert (Key2row::value_type (key, i)). second)
-          throw runtime_error ("Duplicate key: " + key. toString (","));
-      }
-      return key2row;
-    }
-};
-
-
-
 namespace 
 {
+  
 
-struct ThisApplication : Application
+Vector<TextTable::ColNum> getCommonCols (const TextTable &t1,
+                                         const TextTable &t2)
+// Return: ordered by TextTable::Header::name
+// Print: column names of t1 missing in t2
+{
+  StringVector res;  res. reserve (t1. header. size ());
+  for (const TextTable::Header& h1 : t1. header)
+    if (t2. col2num_ (h1. name) == no_index)
+      cout << h1. name << endl;
+    else
+      res << h1. name;
+  cout << endl;
+  
+  res. sort ();
+  QC_ASSERT (res. isUniq ());
+
+  return t1. columns2nums (res);
+}
+  
+  
+typedef  map<string/*key*/, const StringVector* /*row*/>  Key2row;
+  
+  
+
+Key2row makeKey2row (const TextTable &tab,
+                     const Vector<TextTable::ColNum> &keyCols)
+{
+  Key2row key2row;
+  for (const StringVector& row : tab. rows)
+  {
+    string key;
+    bool first = true;
+    for (const TextTable::ColNum i : keyCols)
+    {
+      if (first)
+        first = false;
+      else
+        key += '\t';
+      key += row [i];
+      ASSERT (! contains (row [i], '\t'));
+    }
+    if (key2row [key])
+      throw runtime_error (tab. name + ": duplicate key: " + key);
+    key2row [key] = & row;
+  }
+  return key2row;
+}
+  
+  
+
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Compare two .tsv-files")
@@ -145,65 +105,68 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("in1", ".tsv-file 1");
   	  addPositional ("in2", ".tsv-file 2");
-  	  addPositional ("key", "File with key columns");
+  	  addPositional ("keys", "Key columns, comma-separated");
+  	  addPositional ("diff", "Output file with different column values");
   	}
 
 
 
 	void body () const final
   {
-	  const string fName1   = getArg ("in1");
-	  const string fName2   = getArg ("in2");
-	  const string keyFName = getArg ("key");
+	  const string fName1    = getArg ("in1");
+	  const string fName2    = getArg ("in2");
+	  const string keysS     = getArg ("keys");
+	  const string diffFName = getArg ("diff");
 	  
-	  
-	  const StringVector keyNames (keyFName, (size_t) 10, true);
-	  
-	  
-	  const Tsv f1 (fName1, keyNames);
-	  const Tsv f2 (fName2, keyNames);
-	  
-	  // header
-	  if (f1. header != f2. header)
-	    throw runtime_error ("Files have diffeernt headers");
-	  if (f1. header. empty ())
-	    return;
-	    
-	  // Key2row
-	  const Tsv::Key2row key2row1 (f1. getKey2row ());
-	  const Tsv::Key2row key2row2 (f2. getKey2row ());
 	  	  
-	  size_t deleted = 0;
-	  map<string/*column name*/,size_t> changes;
-	  for (const auto& it : key2row1)
-	  {
-	    size_t i = no_index;
-	    if (find (key2row2, it. first, i))
-	    {
-	      ASSERT (i != no_index);
-	      const StringVector& row1 = f1. rows [it. second];
-	      const StringVector& row2 = f2. rows [i];
-	      ASSERT (row1. size () == row2. size ());
-	      FFOR (size_t, col, row1. size ())
-	        if (row1 [col] != row2 [col])
-	          changes [f1. header [col]] ++;
-	    }
-	    else
-	      deleted++;
-	  }
-	  	  
-	  size_t added = 0;
-	  for (const auto& it : key2row2)
-	  {
-	    size_t i = no_index;
-	    if (! find (key2row2, it. first, i))
-	      added++;
-	  }
-	  
-	  cout << "added: " << added << endl;
-	  cout << "deleted: " << deleted << endl;
-	  for (const auto& it : changes)
-	    cout << it. first << ": " << it. second << endl;
+    const TextTable t1 (fName1, noString, 10000);  // PAR
+    cout << "# " << fName1 << " rows: " << t1. rows. size () << endl;
+    t1. qc ();
+
+    const TextTable t2 (fName2, noString, 10000);  // PAR
+    cout << "# " << fName2 << " rows: " << t2. rows. size () << endl;
+    t2. qc ();
+
+    const StringVector keysVec (keysS, ',', true);
+    const Vector<TextTable::ColNum> keyCols1 (t1. columns2nums (keysVec));
+    const Vector<TextTable::ColNum> keyCols2 (t2. columns2nums (keysVec));
+    ASSERT (keyCols1. size () == keyCols2. size ());
+    
+    cout << "Added columns:";
+    const Vector<TextTable::ColNum> commonCols1 (getCommonCols (t1, t2));
+    cout << "Deleted columns:";
+    const Vector<TextTable::ColNum> commonCols2 (getCommonCols (t2, t1));
+    ASSERT (commonCols1. size () == commonCols2. size ());
+        
+    const Key2row key2row1 (makeKey2row (t1, keyCols1));
+    const Key2row key2row2 (makeKey2row (t2, keyCols2));
+    ASSERT (key2row1. size () == t1. rows. size ());
+    ASSERT (key2row2. size () == t2. rows. size ());
+    
+    size_t added = 0;
+    for (const auto& it : key2row2)
+      if (! findPtr (key2row1, it. first))
+        added++;
+    cout << "# Rows ddded: " << added << endl;
+
+    OFStream diffF (diffFName);    
+    size_t deleted = 0;
+    for (const auto& it : key2row1)
+      if (const StringVector* row2 = findPtr (key2row2, it. first))
+      {
+        const StringVector* row1 = it. second;
+        ASSERT (row1);
+        FFOR (size_t, i, commonCols1. size ())
+        {
+          const string& val1 = (*row1) [commonCols1 [i]];
+          const string& val2 = (*row2) [commonCols2 [i]];
+          if (val1 != val2)
+            diffF << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << val2 << '\n';
+        }
+      }
+      else
+        deleted++;
+    cout << "# Rows deleted: " << deleted << endl;
 	}
 };
 
