@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert a tsv-file into an object-attribute-value table")
