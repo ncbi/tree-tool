@@ -93,9 +93,10 @@ void printRow (bool is_header,
     ASSERT (x <= screen_col_max);
     const TextTable::Header& h = header [col];
     string value (values [col - col_start]);
+    trim (value);
     if (   consistent
-        && ! value. empty ()
         && ! is_header 
+        && ! strNull (value)
         && h. numeric 
         && ! h. scientific
         && h. decimals
@@ -103,7 +104,7 @@ void printRow (bool is_header,
     {
       bool hasPoint = false;
       streamsize decimals = 0;
-      TextTable::getDecimals (value, hasPoint, decimals);
+      getScientific (value, hasPoint, decimals);
       ASSERT (h. decimals >= decimals);
       // Data modification ??
       if (! hasPoint)
