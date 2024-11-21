@@ -48,21 +48,21 @@ namespace
   
 
 Vector<TextTable::ColNum> getCommonCols (const TextTable &t1,
-                                         const TextTable &t2)
+                                         const TextTable &t2,
+                                         StringVector &missingColNames)
 // Return: ordered by TextTable::Header::name
-// Print: column names of t1 missing in t2
+// Output: missingColNames: column names of t1 missing in t2
 {
+  missingColNames. clear ();
   StringVector res;  res. reserve (t1. header. size ());
   for (const TextTable::Header& h1 : t1. header)
     if (t2. col2num_ (h1. name) == no_index)
-      cout << h1. name << endl;
+      missingColNames << h1. name;
     else
       res << h1. name;
-  cout << endl;
   
   res. sort ();
   QC_ASSERT (res. isUniq ());
-
   return t1. columns2nums (res);
 }
   
@@ -75,19 +75,16 @@ Key2row makeKey2row (const TextTable &tab,
                      const Vector<TextTable::ColNum> &keyCols)
 {
   Key2row key2row;
+  StringVector keyVec;
   for (const StringVector& row : tab. rows)
   {
-    string key;
-    bool first = true;
+    keyVec. clear ();
     for (const TextTable::ColNum i : keyCols)
     {
-      if (first)
-        first = false;
-      else
-        key += '\t';
-      key += row [i];
       ASSERT (! contains (row [i], '\t'));
+      keyVec << row [i];
     }
+    const string key (keyVec. toString ("\t"));
     if (key2row [key])
       throw runtime_error (tab. name + ": duplicate key: " + key);
     key2row [key] = & row;
@@ -100,30 +97,32 @@ Key2row makeKey2row (const TextTable &tab,
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Compare two .tsv-files")
+    : Application ("Compare two .tsv-files. Print statistics for <tsv1> vs. <tsv2>")
   	{
       version = VERSION;
-  	  addPositional ("in1", ".tsv-file 1");
-  	  addPositional ("in2", ".tsv-file 2");
+  	  addPositional ("tsv1", ".tsv-file 1");
+  	  addPositional ("tsv2", ".tsv-file 2");
   	  addPositional ("keys", "Key columns, comma-separated");
-  	  addPositional ("diff", "Output file with different column values");
+  	  addPositional ("diff", "Output tsv-file with different column values: <column name> <value in tsv1> Mvalue in tsv2> <abs. difference (for numeric column)> <key>");
+  	  addKey ("diff_min", "Min. abs. difference of numeric columns to report", "0");
   	}
 
 
 
 	void body () const final
   {
-	  const string fName1    = getArg ("in1");
-	  const string fName2    = getArg ("in2");
+	  const string fName1    = getArg ("tsv1");
+	  const string fName2    = getArg ("tsv2");
 	  const string keysS     = getArg ("keys");
 	  const string diffFName = getArg ("diff");
+	  const double diff_min  = str2<double> (getArg ("diff_min"));
 	  
 	  	  
-    const TextTable t1 (fName1, noString, 10000);  // PAR
+    const TextTable t1 (fName1, noString, 100000);  // PAR
     cout << "# " << fName1 << " rows: " << t1. rows. size () << endl;
     t1. qc ();
 
-    const TextTable t2 (fName2, noString, 10000);  // PAR
+    const TextTable t2 (fName2, noString, 100000);  // PAR
     cout << "# " << fName2 << " rows: " << t2. rows. size () << endl;
     t2. qc ();
 
@@ -132,10 +131,16 @@ struct ThisApplication final : Application
     const Vector<TextTable::ColNum> keyCols2 (t2. columns2nums (keysVec));
     ASSERT (keyCols1. size () == keyCols2. size ());
     
-    cout << "Added columns:";
-    const Vector<TextTable::ColNum> commonCols1 (getCommonCols (t1, t2));
-    cout << "Deleted columns:";
-    const Vector<TextTable::ColNum> commonCols2 (getCommonCols (t2, t1));
+    StringVector missingColNames1;
+    const Vector<TextTable::ColNum> commonCols1 (getCommonCols (t1, t2, missingColNames1));
+    cout << "# Columns added: " << missingColNames1. size () << endl;
+    save (cout, missingColNames1, '\n');
+
+    StringVector missingColNames2;
+    const Vector<TextTable::ColNum> commonCols2 (getCommonCols (t2, t1, missingColNames2));
+    cout << "# Columns deleted: " << missingColNames2. size () << endl;
+    save (cout, missingColNames2, '\n');
+
     ASSERT (commonCols1. size () == commonCols2. size ());
         
     const Key2row key2row1 (makeKey2row (t1, keyCols1));
@@ -147,9 +152,11 @@ struct ThisApplication final : Application
     for (const auto& it : key2row2)
       if (! findPtr (key2row1, it. first))
         added++;
-    cout << "# Rows ddded: " << added << endl;
+    cout << "# Rows added: " << added << endl;
 
     OFStream diffF (diffFName);    
+    // sort ??
+    diffF << "#column_\tvalue1_\tvalue2_\tdiff_\t" << keysVec. toString ("\t") << '\n';
     size_t deleted = 0;
     for (const auto& it : key2row1)
       if (const StringVector* row2 = findPtr (key2row2, it. first))
@@ -161,7 +168,23 @@ struct ThisApplication final : Application
           const string& val1 = (*row1) [commonCols1 [i]];
           const string& val2 = (*row2) [commonCols2 [i]];
           if (val1 != val2)
-            diffF << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << val2 << '\n';
+          {
+            string diffS;
+            if (   t1. header [commonCols1 [i]]. numeric 
+                && t2. header [commonCols2 [i]]. numeric 
+                && ! strNull (val1)
+                && ! strNull (val2)
+               )
+            {
+              const double diff = abs (  atof (val1. c_str ()) 
+                                       - atof (val2. c_str ())
+                                      );
+              if (diff < diff_min)
+                continue;
+              diffS = to_string (diff);
+            }
+            diffF << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << val2 << '\t' << diffS << '\t' << it. first << '\n';
+          }
         }
       }
       else
