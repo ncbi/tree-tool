@@ -724,6 +724,35 @@ bool strBlank (const string &s)
 
 
 
+bool getScientific (string numberS,
+                    bool &hasPoint,
+                    streamsize &decimals)
+{
+  strUpper (numberS);
+  const size_t ePos     = numberS. find ('E');
+  const size_t pointPos = numberS. find ('.');
+  
+  hasPoint = (pointPos != string::npos);  
+  decimals = 0;
+  if (ePos == string::npos)
+  {
+    if (hasPoint)
+      decimals = (streamoff) (numberS. size () - (pointPos + 1));
+  }
+  else
+  {
+    ASSERT (ePos != pointPos);
+    if (hasPoint && ePos < pointPos)
+      hasPoint = false;
+    if (hasPoint)
+      decimals = (streamoff) (ePos - (pointPos + 1));
+  }
+  
+  return ePos != string::npos;
+}
+
+
+
 void strUpper (string &s)
 {
   for (char& c : s)

@@ -649,6 +649,10 @@ inline string unQuote (const string &s)
 
 bool strBlank (const string &s);
 
+bool getScientific (string numberS,
+                    bool &hasPoint,
+                    streamsize &decimals);
+
 template <typename T>
   string toString (const T &t)
     { ostringstream oss;
@@ -676,28 +680,6 @@ template <typename T>
     { try { t = str2<T> (s); return true; } 
         catch (...) { return false; } 
     }
-
-inline bool isLeft (const string &s,
-                    const string &left)
-  { return s. substr (0, left. size ()) == left; }
-
-bool isRight (const string &s,
-              const string &right);
-
-bool trimPrefix (string &s,
-                 const string &prefix);
-  // Return: success
-
-bool trimSuffix (string &s,
-                 const string &suffix);
-  // Return: success
-
-void trimSuffixNonAlphaNum (string &s);
-
-bool trimTailAt (string &s,
-                 const string &tailStart);
-  // Return: trimmed
-  // Update: s
 
 void commaize (string &s);
   // ' ' --> ','
@@ -752,6 +734,28 @@ size_t strCountSet (const string &s,
 void strDeleteSet (string &s,
 		               const string &charSet);
 
+inline bool isLeft (const string &s,
+                    const string &left)
+  { return s. substr (0, left. size ()) == left; }
+
+bool isRight (const string &s,
+              const string &right);
+
+bool trimPrefix (string &s,
+                 const string &prefix);
+  // Return: success
+
+bool trimSuffix (string &s,
+                 const string &suffix);
+  // Return: success
+
+void trimSuffixNonAlphaNum (string &s);
+
+bool trimTailAt (string &s,
+                 const string &tailStart);
+  // Return: trimmed
+  // Update: s
+
 void trimLeading (string &s);
 
 void trimTrailing (string &s);
@@ -773,6 +777,17 @@ inline void trim (string &s,
                   char c)
   { trimTrailing (s, c);
     trimLeading  (s, c); 
+  }
+
+inline bool strNull (const string &s)
+  { if (strBlank (s))
+      return true;
+    string s1 (s);
+    trim (s1);
+    strUpper (s1);
+    return    s1 == "NULL"
+           || s1 == "NA"
+           || s1 == "N/A";
   }
 
 inline bool contains (const string &hay,
@@ -3225,9 +3240,7 @@ public:
     {}
 
 
-  string toString (const string& sep) const;
-  string toString () const
-    { return toString (noString); }
+  string toString (const string& sep = noString) const;
   bool same (const StringVector &vec,
              const Vector<size_t> &indexes) const;
   void to_xml (Xml::File &f,
