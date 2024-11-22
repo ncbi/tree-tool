@@ -18,10 +18,9 @@ comment $TMP
 #set -x  
 
 makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
-tblastn  -query $REF  -db $TMP  -db_gencode 1  -evalue 1000  -word_size 2  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads 4 > $TMP.tblastn
-  # -task tblastn-fast  -word_size 5  -evalue 1e-4: weak HSPs are needed!
-  # -num_threads requires -db
+tblastn  -query $REF  -db $TMP  -db_gencode 1   -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads 4 > $TMP.tblastn
   # -seg no  -comp_based_stats 0 
+  # (!) -evalue 1000  -word_size 2 
 
 # From Terence M.:
 # blastp_wnode -asn-cache ${GP_cache_dir} -backlog 1 -best_hit_overhang 0.1 -best_hit_score_edge 0.1 -comp_based_stats 0 -delay 0 -evalue 0.0001 -max-jobs 1 -seg no -service ${GP_qservice} -threshold 21 -word_size 6 -workers 4
@@ -29,7 +28,7 @@ tblastn  -query $REF  -db $TMP  -db_gencode 1  -evalue 1000  -word_size 2  -outf
 
 # Nick: -word_size 3  -evalue 100
 
-$THIS/tblastn2annot_euk  $TMP.tblastn  -qc  -log $TMP.log > $PROT
+$THIS/tblastn2marker_euk  $TMP.tblastn  -qc  -log $TMP.log > $PROT
 
 
 rm $TMP*  

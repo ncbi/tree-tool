@@ -1,4 +1,4 @@
-// tblastn2annot_euk.cpp
+// tblastn2marker_euk.cpp
 
 /*===========================================================================
 *
@@ -76,8 +76,6 @@ struct Exon final : DiGraph::Node
 	  // Can contain '*'
 	Strand strand {0};
 	AlignScore score {0};
-  bool nextExonFixed {false};
-  const bool prevExonFixed {false};
 	// Output
 	bool bestIntronSet {false};
 	const Intron* bestIntron {nullptr};
@@ -104,7 +102,6 @@ struct Exon final : DiGraph::Node
     , qseq (qseq_arg)
     , sseq (sseq_arg)
     , strand (strand_arg)
-    , prevExonFixed (true)
     { 
       finish (); 
     }	
@@ -160,14 +157,16 @@ public:
     { return (qstart + qend) / 2; }
   size_t sCenter () const  
     { return (sstart + send) / 2; }
-  //
+  
+  
   bool arcable (const Exon &next) const
     {
       ASSERT (qseqid == next. qseqid);
       ASSERT (sseqid == next. sseqid);
-      ASSERT (! nextExonFixed);
-      ASSERT (! next. prevExonFixed);
       
+      if (this == & next)
+        return false;
+        
       // PAR
       constexpr size_t intron_max = 30000;  // nt 
       
@@ -266,8 +265,8 @@ struct Intron final : DiGraph::Arc
       ASSERT (prev);
       ASSERT (next);
       
-      const size_t start = max (next->qstart, prev->qCenter ());
-      const size_t end   = min (prev->qend,   next->qCenter ());
+      const size_t start = max (next->qstart, prev->qstart);
+      const size_t end   = min (prev->qend,   next->qend);
       if (start >= end)
         return;
       
@@ -324,7 +323,31 @@ struct Intron final : DiGraph::Arc
       ASSERT (bestSuff <= len);
       
       const size_t split = start + bestSuff;
+      if (   split <  prev->qCenter ()
+          || split >= next->qCenter ()
+         )
+      {
+        score = score_inf;
+        return;
+      }
 
+    #if 0
+      if (   prev->qseqid == "VUSY-4471"
+    	    && prev->sseqid == "1890392768"
+    	    && prev->sstart == 29770405 - 1
+    	    && next->sstart == 29771103 - 1
+    	   )
+    	{
+    	  prev->saveText (cout);  cout << endl;
+    	  next->saveText (cout);  cout << endl;
+    	  FFOR (size_t, i, len + 1)
+    	    cout << i << '\t' << prevScores [i] << '\t' << nextScores [i] << endl;
+    	  PRINT (bestSuff);
+    	  PRINT (score);
+    	  PRINT (split);
+    	}
+    #endif
+      
       // prev_end
       {
         size_t pos = prev->qstart;
@@ -369,12 +392,15 @@ struct Intron final : DiGraph::Arc
       const Exon* next = static_cast <const Exon*> (node [true]);
       ASSERT (prev);
       ASSERT (next);
+      QC_ASSERT (prev != next);
       QC_ASSERT (prev->qseqid == next->qseqid);
       QC_ASSERT (prev->sseqid == next->sseqid);
       QC_ASSERT (prev->strand == next->strand);
 
       QC_ASSERT (prev_end   <= prev->qseq. size ());
       QC_ASSERT (next_start <= next->qseq. size ());
+      
+      QC_ASSERT (prev->arcable (*next));
     }
     
     
@@ -385,10 +411,19 @@ struct Intron final : DiGraph::Arc
          << "  score: " << score;
       ASSERT (node [true]);
 
+      const Exon* prev = static_cast <const Exon*> (node [false]);
+      const Exon* next = static_cast <const Exon*> (node [true]);
+      ASSERT (prev);
+      ASSERT (next);
+    #if 1  
+      if (prev->bestIntron != this)
+        return;
+    #endif
+        
       Offset ofs;
       Offset::newLn (os);
       os << "Exon:";
-      static_cast <const Exon*> (node [true]) -> saveText (os);
+      next->saveText (os);
     }
     
     
@@ -408,7 +443,6 @@ void Exon::finish ()
   ASSERT (graph);
   ASSERT (score == 0);
   ASSERT (! bestIntron);
-  ASSERT (! nextExonFixed);
   
   trimHangingDashes ();
 
@@ -455,7 +489,6 @@ void Exon::finish ()
         qseq. erase (i - gap);
         sseq. erase (i - gap);
         bestIntron = new Intron (this, exon);  
-        nextExonFixed = true;
         trimHangingDashes ();
         break;
       }
@@ -560,7 +593,6 @@ void Exon::qc () const
   QC_ASSERT (pos2s (0)             == (strand == 1 ? sstart : send));
   QC_ASSERT (pos2s (sseq. size ()) == (strand == 1 ? send   : sstart));
     
-  QC_IMPLY (nextExonFixed, bestIntron);
   QC_IMPLY (bestIntron, arcs [true]. find (var_cast (bestIntron)) != no_index);
 
 //QC_ASSERT (score >= 0);
@@ -571,17 +603,23 @@ void Exon::qc () const
 
 void Exon::saveText (ostream &os) const 
 {
-  os        << qstart + 1 << '(' << sstart + 1 << ')'
-     << "-" << qend   + 1 << '(' << send   + 1 << ')'
+  os        << qstart + 1 << '(' << sstart + size_t (  strand) << ')'
+     << "-" << qend       << '(' << send   + size_t (! strand) << ')'
      << "  strand: " << (int) strand
      << "  score: " << score 
      << "  totalScore: " << totalScore;
-  if (bestIntron)
+  for (const DiGraph::Arc* arc : arcs [true])
   {
+    ASSERT (arc);
+    ASSERT (arc->node [false] == this);
+    const Intron* intron = static_cast <const Intron*> (arc);
     Offset ofs;
     Offset::newLn (os);
-    os << "Intron:";
-    bestIntron->saveText (os);
+    os << "Intron";
+    if (intron == bestIntron)
+      os << " BEST!";
+    os << ':';
+    intron->saveText (os);
   }
 }
 
@@ -592,8 +630,6 @@ void Exon::setBestIntron ()
   if (bestIntronSet)
     return;    
   bestIntronSet = true;
-
-  ASSERT (nextExonFixed == (bool) bestIntron);
 
   if (arcs [true]. empty ())
   {
@@ -616,7 +652,7 @@ void Exon::setBestIntron ()
           bestIntron = intron;
       }
     }
-    ASSERT (bestIntron);
+  //ASSERT (bestIntron);
   }
 }
 
@@ -661,7 +697,7 @@ string Exon::getSeq (size_t start) const
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Find best gene matches and print proteins")
+    : Application ("Find best protein matches and print proteins")
     {
       version = VERSION;
   	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. qseqid = <variant>-<gene>, where <gene> has no dashes");
@@ -703,16 +739,9 @@ struct ThisApplication final : Application
     	  for (const Exon* next : it. second)
     	  {
     	    ASSERT (next);
-    	    if (next->prevExonFixed)
-    	      continue;
       	  for (const Exon* prev : it. second)
-      	    if (prev == next)
-      	      break;
-      	    else
-      	      if (   ! prev->nextExonFixed 
-      	          && prev->arcable (*next)
-      	         )
-      	        new Intron (var_cast (prev), var_cast (next));
+    	      if (prev->arcable (*next))
+    	        new Intron (var_cast (prev), var_cast (next));
       	}
       	
       	AlignScore totalScore_max = - score_inf;
@@ -731,8 +760,8 @@ struct ThisApplication final : Application
     	  const string& ref  = it. first. first;
     	  const string& subj = it. first. second;
     	  
-    	#if 0
-    	  if (   ref  == "IDAU-4471"
+    	#if 0  
+    	  if (   ref  == "VUSY-4471"
     	      && subj == "1890392768"
     	     )
       	  for (const Exon* exon : it. second)
