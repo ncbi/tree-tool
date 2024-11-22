@@ -55,7 +55,7 @@ function success
 {
   echo ""
   echo ""
-  echo -e "${BLUE}SUCCESS${NOCOLOR}"
+  echo -e "${BLUE}SUCCESS${NOCOLOR}\07\07"
   date
   exit 0
 }
