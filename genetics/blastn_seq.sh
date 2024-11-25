@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Output: #3/<name of #2>"
@@ -11,14 +11,14 @@ QUERY=$1
 SUBJ=$2
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP
 
 
-NAME=`basename $QUERY`
+NAME=$( basename $QUERY )
 
 # $TMP.fa
-GZ=`echo $SUBJ | tr '.' '\n' | tail -1`
+GZ=$( echo $SUBJ | tr '.' '\n' | tail -1 )
 if [ $GZ == "gz" ]; then
   gunzip -c $SUBJ > $TMP.fa
 else
