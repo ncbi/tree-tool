@@ -49,7 +49,7 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Test a key of a tsv-file")
+    : Application ("Test a key of a tsv-file, print column numbers (1-based)")
   	{
       version = VERSION;
   	  addPositional ("tsv", "tsv-table");
@@ -69,6 +69,18 @@ struct ThisApplication final : Application
 
     const StringVector keysVec (keysS, ',', true);
     const Vector<TextTable::ColNum> keyCols (tab. columns2nums (keysVec));
+    
+    {
+      bool first = true;
+      for (const TextTable::ColNum c : keyCols)
+      {
+        if (! first)
+          cout << ',';
+        cout << c + 1;
+        first = false;
+      }
+      cout << endl;
+    }
       
     Set<string> keys;
     for (const StringVector& row : tab. rows)
