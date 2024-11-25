@@ -162,7 +162,7 @@ size_t findClass_last (const Vector<Bin> &bins,
 
   
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Find a <score-attr> threshold separating the values of Boolean attribute <class_attr>")
