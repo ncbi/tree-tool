@@ -80,13 +80,19 @@ struct ThisApplication : Application
 	  
 	  
 		MeanVar mv;
+		size_t missing = 0;
 		string s;
 		while (cin >> s)
-		{
-			const Real x = str2real (s);
-			if (! isNan (x))
-				mv << x;
-		}
+		  if (strNull (s))
+		    missing++;
+		  else
+		  {
+  			const Real x = str2real (s);
+  			if (isNan (x))
+  			  missing++;
+  			else
+  				mv << x;
+  	  }
 		
 		report ("count",  mv. n);
 		report ("mean",   mv. getMean ());
@@ -96,6 +102,8 @@ struct ThisApplication : Application
 		report ("meanSD", mv. getSD () / sqrt (mv. n));
 	  report ("min",    mv. v_min);
 	  report ("max",    mv. v_max);
+
+		report ("missing", (Real) missing);
 	}
 };
 
