@@ -205,7 +205,7 @@ public:
     // Update: bestIntronSet, totalScore
     // Output: bestIntron
   string getSeq (size_t start) const;
-  size_t pos2q (size_t pos) const
+  size_t pos2q (size_t pos) const  // aa
     {
       ASSERT (pos <= qseq. size ());
       size_t j = qstart;
@@ -220,7 +220,7 @@ public:
       }
       ERROR;
     }
-  size_t pos2s (size_t pos) const
+  size_t pos2s (size_t pos) const  // nt
     {
       ASSERT (pos <= sseq. size ());
       size_t j = (strand == 1 ? sstart : send);
@@ -351,8 +351,8 @@ struct Intron final : DiGraph::Arc
       // prev_end
       {
         size_t pos = prev->qstart;
-        FFOR (size_t, i, prev->qseq. size ())
-          if (prev->qseq [i] != '-')
+        FFOR (size_t, i, prev->sseq. size ())
+          if (prev->sseq [i] != '-')
           {
             if (pos == split)
             {
@@ -362,13 +362,13 @@ struct Intron final : DiGraph::Arc
             pos++;
           }
       }
-      ASSERT (prev_end <= prev->qseq. size ());
+      ASSERT (prev_end <= prev->sseq. size ());
       
       // next_start
       {
         size_t pos = next->qstart;
-        FFOR (size_t, i, next->qseq. size ())
-          if (next->qseq [i] != '-')
+        FFOR (size_t, i, next->sseq. size ())
+          if (next->sseq [i] != '-')
           {
             if (pos == split)
             {
@@ -378,7 +378,7 @@ struct Intron final : DiGraph::Arc
             pos++;
           }
       }
-      ASSERT (next_start <= next->qseq. size ());
+      ASSERT (next_start <= next->sseq. size ());
     }
 
 
@@ -397,8 +397,8 @@ struct Intron final : DiGraph::Arc
       QC_ASSERT (prev->sseqid == next->sseqid);
       QC_ASSERT (prev->strand == next->strand);
 
-      QC_ASSERT (prev_end   <= prev->qseq. size ());
-      QC_ASSERT (next_start <= next->qseq. size ());
+      QC_ASSERT (prev_end   <= prev->sseq. size ());
+      QC_ASSERT (next_start <= next->sseq. size ());
       
       QC_ASSERT (prev->arcable (*next));
     }
@@ -488,8 +488,8 @@ void Exon::finish ()
         ASSERT (i >= gap);
         qseq. erase (i - gap);
         sseq. erase (i - gap);
-        bestIntron = new Intron (this, exon);  
         trimHangingDashes ();
+        bestIntron = new Intron (this, exon);  
         break;
       }
       qstart_new++;
@@ -530,16 +530,20 @@ void Exon::trimHangingDashes ()
             )
         )
   {
+    if (qseq. front () != '-')
+      qstart++;
+    if (sseq. front () != '-')
+    {
+      if (strand == 1)
+        sstart += 3;
+      else
+      {
+        ASSERT (send >= 3);
+        send -= 3;
+      }
+    }
     qseq. erase (0, 1);
     sseq. erase (0, 1);
-    qstart++;
-    if (strand == 1)
-      sstart += 3;
-    else
-    {
-      ASSERT (send >= 3);
-      send -= 3;
-    }
   }
   
   while (   ! qseq. empty ()
@@ -548,16 +552,20 @@ void Exon::trimHangingDashes ()
             )
         )
   {
+    if (qseq. back () != '-')
+      qend--;
+    if (sseq. back () != '-')
+    {
+      if (strand == 1)
+      {
+        ASSERT (send >= 3);
+        send -= 3;
+      }
+      else
+        sstart += 3;
+    }
     qseq. erase (qseq. size () - 1);
     sseq. erase (sseq. size () - 1);
-    qend--;
-    if (strand == 1)
-    {
-      ASSERT (send >= 3);
-      send -= 3;
-    }
-    else
-      sstart += 3;
   }
 }
 
@@ -701,6 +709,7 @@ struct ThisApplication final : Application
     {
       version = VERSION;
   	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. qseqid = <variant>-<gene>, where <gene> has no dashes");
+  	  addKey ("matrix", "Protein matrix", "BLOSUM62");
   	  addKey ("gap_stats", "Output file with gap lengths");
     }
 
@@ -709,10 +718,11 @@ struct ThisApplication final : Application
 	void body () const final
   {
 	  const string tblastnFName = getArg ("tblastn");
+	  const string matrix       = getArg ("matrix");
 	  const string gap_stats    = getArg ("gap_stats");
   
   
-    sm = SubstMat (execDir + "/matrix/BLOSUM62");  // PAR
+    sm = SubstMat (execDir + "/matrix/" + matrix);  
     sm. qc ();
   
   
@@ -729,7 +739,7 @@ struct ThisApplication final : Application
   	
   	map<string/*gene*/,const Exon*> gene2exon;
   	{
-  	  Progress prog (contig2exons. size ());
+  	  Progress prog (contig2exons. size (), 1000);  // PAR
     	for (const auto& it : contig2exons)
     	{
     	  prog ();
