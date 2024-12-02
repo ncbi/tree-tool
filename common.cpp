@@ -4121,7 +4121,12 @@ int Application::run (int argc,
       string logFName (getArg ("log"));
     	ASSERT (! logPtr);
       if (! logFName. empty ())
-    		logPtr = new ofstream (logFName, ios_base::app);
+      {
+    		logPtr = new ofstream (logFName, ios_base::app);    		  
+        time_t rawtime;
+        time (& rawtime);
+    		*logPtr << endl << ctime (& rawtime) << "$ " << getCommandLine () << endl;
+      }
     }
 
     string jsonFName;
