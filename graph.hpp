@@ -79,12 +79,13 @@ struct DiGraph : Root
     size_t orderDfs {0};
       // Order by depth-first search
       // 0 <=> not visited by DFS
-
   private:
     // Auxiliary      
     bool inStack {false};  
       // => orderDfs
   public:
+    bool reachable {false};
+
 
     explicit Node (DiGraph &graph_arg)
 			{ attach (graph_arg); }
@@ -104,6 +105,8 @@ struct DiGraph : Root
     void qc () const override;
     void saveText (ostream& os) const override;
       // Invokes: getName(), saveContent()
+
+
   protected:
     virtual void saveContent (ostream &/*os*/) const 
       {}
@@ -147,6 +150,10 @@ struct DiGraph : Root
         for (const Arc* arc : arcs [out])
           arc->node [out] -> getDependents (out, dependents);
       }
+    void setReachable (bool reachItself);
+      // From parent to children
+      // Output: reachable = true
+      // Invokes: setReachable(true)
   private:
     Node* setScc (size_t &visitedNum,
                   stack<Node*,vector<Node*>> &sccStack);
@@ -157,7 +164,6 @@ struct DiGraph : Root
       // Return: n s.t. n->inStack and there is a path from this to n
       // Requires: n->inStack <=> there is a path from n to this
       // Time: O(n + m) for all nodes
-
     virtual void contractContent (const Node* /*from*/) {}
       // Required time: O(1)
   public:      
@@ -190,6 +196,7 @@ struct DiGraph : Root
       // in node[b]->arcs[!b]
   public:
 
+
     Arc (Node* start,
          Node* end)
       { node [false] = nullptr;
@@ -215,6 +222,7 @@ struct DiGraph : Root
    ~Arc ();
       // Remove this from node->graph
       // Time: O(1)
+
 
     virtual void saveContent (ostream &/*os*/) const 
       {}
@@ -256,6 +264,10 @@ public:
     { deleteNodes (); }
   void qc () const override;
   void saveText (ostream &os) const override;
+  bool empty () const final
+    { return nodes. empty (); }
+  void clear () final
+    { return deleteNodes (); }
 
 
   void deleteNodes ();
@@ -273,6 +285,10 @@ public:
     // Requires: After scc()
     // Invokes: Node::contract()
     // Time: O(n + m log n)
+  void clearReachable ()
+    { for (Node* node : nodes)
+        node->reachable = false;
+    }
   VectorPtr<Node> getEnds (bool out) const;
     // Return: distinct, !nullptr
     // Input: out: false - roots

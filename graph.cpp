@@ -163,6 +163,18 @@ void DiGraph::Node::deleteNeighborhood (bool out)
 
 
 
+void DiGraph::Node::setReachable (bool reachItself)
+{
+  if (reachable)
+    return;
+  if (reachItself)
+    reachable = true;
+	for (Arc* arc : arcs [false])
+		static_cast <Node*> (arc->node [false]) -> setReachable (true);
+}
+
+
+
 DiGraph::Node* DiGraph::Node::setScc (size_t &visitedNum,
                                       stack<DiGraph::Node*,vector<DiGraph::Node*>> &sccStack)
 // Tarjan's alogorithm:
