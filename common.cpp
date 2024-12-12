@@ -790,11 +790,21 @@ bool isLower (const string &s)
 
 
 size_t stringNotInSet (const string &s,
-                   	   const string &charSet)
+                   	   const string &charSet,
+                   	   ebool uppercase)
 {
   FFOR (size_t, i, s. size ())
-    if (! charInSet (s [i], charSet))
+  {
+    char c = s [i];
+    switch (uppercase)
+    {
+      case efalse: c = toLower (c); break;
+      case etrue:  c = toUpper (c); break;
+      case enull: break;
+    }
+    if (! charInSet (c, charSet))
       return i;
+  }
   return no_index;
 }
 
@@ -1908,6 +1918,7 @@ void Root::saveFile (const string &fName) const
 
 
 
+#if 0
 void Root::trace (ostream& os,
                   const string& title) const
 { 
@@ -1917,6 +1928,7 @@ void Root::trace (ostream& os,
   os << title << ": ";
   saveText (os);
 }
+#endif
 
 
 
