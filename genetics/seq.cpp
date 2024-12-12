@@ -194,9 +194,9 @@ void Seq::qcName () const
 
 void Seq::qcAlphabet () const
 {
-  const size_t i = stringNotInSet (seq, getSeqAlphabet ());
+  const size_t i = stringNotInSet (seq, getSeqAlphabet (), etrue);
   if (i != no_index)	
-    throw runtime_error ("Bad sequence character in " + strQuote (getId ()) + ": ASCII=" + to_string (int (seq [i])) + " pos=" + to_string (i + 1));
+    throw runtime_error ("Bad sequence character in " + strQuote (getId ()) + ": ASCII=" + to_string (int (seq [i])) + " pos=" + to_string (i + 1) /*+ "\n" + seq*/);
 }
 
 
