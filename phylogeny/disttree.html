@@ -1663,13 +1663,13 @@ var selectGenome = function (nodeId, qc)
 {
   let node = nodes[nodeId];
   if (qc && node.leaves != 1)
-    alert ("selectGenome: node.leaves != 1");
+    alert ("selectGenome: node.leaves != 1"); 
   node.selectionStart = true;  
   if (node.selectedLeaves)  
     return;
   for (;;)
   {
-    node.selectedLeaves++;
+    node.selectedLeaves ++;
     if (nodeId == mainRoot)
       break;
     nodeId = node.parent;
@@ -1755,7 +1755,7 @@ var findGenomes = function (name_part, bad_source, types_only)
   {
     const node = nodes[nodeId];
     if (node.leaves != 1)
-      continue;
+      continue;   // Interior nodes cannot be found ??
     if (! bad_source && node.bad_source)
       continue;
     const printName = node2printName (node,false,false);
