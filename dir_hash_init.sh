@@ -11,6 +11,6 @@ DIR=$1
 H=$2
 
 
-mkdir -p $DIR
+mkdir $DIR
 $THIS/trav $H  -zero  -start 0  "mkdir $DIR/%n"  -threads 10  -step 1
 
