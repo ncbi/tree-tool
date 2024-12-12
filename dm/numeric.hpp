@@ -100,9 +100,6 @@ static_assert (inf > 0.0);
 inline bool finite (Real x)
   { return -inf < x && x < inf; }
 
-inline bool isNan (Real x)
-  { return x != x; }
-
 inline Real nvlReal (Real x, Real val)
   { return isNan (x) ? val : x; }
 
