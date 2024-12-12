@@ -451,6 +451,7 @@ struct ThisApplication : Application
         const VectorPtr<EuCds>& contigCdss = contig2cdss [contigDna. getId ()];
         for (const EuCds* cds : contigCdss)
         {
+          ASSERT (cds);
         	const Dna cdsDna (cds->getDna (contigDna));
         	ASSERT (! cdsDna. seq. empty ());
         	cdsDna. qc ();
@@ -458,7 +459,11 @@ struct ThisApplication : Application
         	{
 	        	Peptide pep (cdsDna. cds2prot (gencode, cds->trunc5 (), cds->trunc3 (), true, true /*'tar' etc.*/));
 	        	pep. name += " " + cdsDna. getDescription (false);
-	        	pep. qc ();
+	        	try { pep. qc (); }
+    	        catch (const exception &e)
+    	        {
+    	          throw runtime_error (e. what () + string ("\n") + pep. str ());
+    	        }	        	
 	        	if (pep. seq. size () < prot_len_min)
 	        		continue;
 	        	if (pep. seq. size () > prot_len_max)
@@ -471,12 +476,9 @@ struct ThisApplication : Application
 	        		pep. saveText (*protF);
 	        	longs++;
 	        }
-	        catch (...)
+	        catch (const exception &e)
 	        {
-	        	cds->saveText (cout);
-	        	cdsDna. saveText (cout);
-	        //if (! noerror)
-	        	  throw;
+ 	          throw runtime_error (e. what () + string ("\n") + cds->str () + "\n" + cdsDna. str ());
 	        }
 	      }
       }
