@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
-source $THIS/../cpp/bash_common.sh
+source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Dependence of dissimilarity on taxonomy rank"
   echo "#1: dissimilarity file: obj1 obj2 dissim rank"
