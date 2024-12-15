@@ -1,10 +1,10 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print a .dm-file"
   echo "#1: File with numeric columns"
-  echo "#2: #1 is a tsv-file (0/1)"
+  echo "#2: #1 is a tsv-file (0/1). For tsv-files spaces in column names are replaced by '_'"
   echo "#3: Number precision"
   echo "#4: Name column number (>= 1; 0 - no name column)"
   exit 1
@@ -15,16 +15,17 @@ PREC=$3
 NAME_COL=$4
 
 
-N=`cat $F | wc -l`
+N=$( < $F wc -l )
 if [ $N == 0 ]; then
   error "No data"
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
-H=(`head -1 $F | sed 's/^#//1'`)
+head -1 $F | sed 's/^#//1' | tr '\t' '\n' > $TMP.header
+mapfile -t H < $TMP.header
 
 NAME="noname"
 if [ $NAME_COL -ne 0 ]; then
@@ -39,7 +40,7 @@ while [ $i -le ${#H[@]} ]; do
     V=V$i
     if [ $TSV == 1 ]; then
       j=$(( $i - 1 ))
-      V=${H[$j]}
+      V=$( echo ${H[$j]} | sed 's/ /_/g' )
     fi
     echo "  $V real $PREC"
   fi
