@@ -27,6 +27,7 @@ ALL=	\
   tsv_join \
   tsv_rename \
   tsv_schema \
+  tsv_shift \
   tsv_split \
   tsv_test_key
 
@@ -121,6 +122,12 @@ tsv_schema.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
 tsv_schemaOBJS=tsv_schema.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 tsv_schema: $(tsv_schemaOBJS)
 	$(CXX) -o $@ $(tsv_schemaOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_shift.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+tsv_shiftOBJS=tsv_shift.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+tsv_shift:	$(tsv_shiftOBJS)
+	$(CXX) -o $@ $(tsv_shiftOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_split.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
