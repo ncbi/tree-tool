@@ -1,4 +1,4 @@
-// min_spanning_dag.cpp  
+// min_spanning_forest.cpp  
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Minimum spanning DAG
+*   Minimum spanning forest
 *
 */
 
@@ -91,11 +91,11 @@ struct Link final : DiGraph::Arc
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print minimum spanning DAG")
+    : Application ("Print minimum spanning forest per connected component")
     {
       version = VERSION;
   	  addPositional ("in", "File with lines: <item1> <item2> <weight>. Sorted by <weight> ascending, or descending if -max");
-  	  addFlag ("max", "<weight> must be maximized in DAG, otherwise minimized");
+  	  addFlag ("max", "<weight> must be maximized in the forest, otherwise minimized");
   	  addKey ("rename", "File with pairs: <item> <tab> <new name>");
   	}
 
@@ -136,48 +136,41 @@ struct ThisApplication final : Application
       Istringstream iss;
       while (fIn. nextLine ())
       {
-        string childName;
-        string parentName;
+        string s1;
+        string s2;
         double weight = NaN;
         iss. reset (fIn. line);
-        iss >> childName >> parentName >> weight;
-        QC_ASSERT (! parentName. empty ());
+        iss >> s1 >> s2 >> weight;
+        QC_ASSERT (! s2. empty ());
         QC_ASSERT (! isNan (weight));        
         if (     (maxP && weight > weight_prev)
             || (! maxP && weight < weight_prev)
            )
           throw runtime_error ("Weight disorder: " + fIn. lineStr ());
-        trim (childName);
-        trim (parentName);
-        if (childName == parentName)
+        trim (s1);
+        trim (s2);
+        if (s1 == s2)
           continue;
           
-        childName  = find (old2new, childName,  true);
-        parentName = find (old2new, parentName, true);
+        s1 = find (old2new, s1,  true);
+        s2 = find (old2new, s2, true);
           
-        // child, parent
-        if (! contains (items, childName))
-          items [childName] = new Item (gr, childName);
-        if (! contains (items, parentName))
-          items [parentName] = new Item (gr, parentName);
-        Item* child = items [childName];
-        Item* parent = items [parentName];
-        ASSERT (child);
-        ASSERT (parent);
-        ASSERT (child != parent);
+        // n1, n2
+        if (! contains (items, s1))
+          items [s1] = new Item (gr, s1);
+        if (! contains (items, s2))
+          items [s2] = new Item (gr, s2);
+        Item* n1 = items [s1];
+        Item* n2 = items [s2];
+        ASSERT (n1);
+        ASSERT (n2);
+        ASSERT (n1 != n2);
         
-        gr. clearReachable ();
-        child->setReachable (true);
-        if (parent->reachable)
-          continue;
-        
-        gr. clearReachable ();
-        parent->setReachable (true);
-        if (child->reachable)
-          continue;
-
-        new Link (child, parent, weight);
-        child->DisjointCluster::merge (* parent);
+        if (n1->getDisjointCluster () != n2->getDisjointCluster ())
+        {
+          new Link (n1, n2, weight);
+          n1->DisjointCluster::merge (*n2);
+        }
 
         weight_prev = weight;
       }

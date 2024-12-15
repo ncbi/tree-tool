@@ -25,7 +25,7 @@ ALL=	\
   key_test \
   list2pairs \
   mergePairs \
-  min_spanning_dag \
+  min_spanning_forest \
   random_words \
   replace_dict \
   setMinus \
@@ -126,10 +126,10 @@ mergePairs:	$(mergePairsOBJS)
 	$(CXX) -o $@ $(mergePairsOBJS) $(LIBS)
 	$(ECHO)
 
-min_spanning_dag.o: $(COMMON_HPP) $(CPP_DIR)/graph.hpp
-min_spanning_dagOBJS=min_spanning_dag.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
-min_spanning_dag: $(min_spanning_dagOBJS)
-	$(CXX) -o $@ $(min_spanning_dagOBJS) $(LIBS)
+min_spanning_forest.o: $(COMMON_HPP) $(CPP_DIR)/graph.hpp
+min_spanning_forestOBJS=min_spanning_forest.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
+min_spanning_forest: $(min_spanning_forestOBJS)
+	$(CXX) -o $@ $(min_spanning_forestOBJS) $(LIBS)
 	$(ECHO)
 
 ncurses_key_test.o: $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp
