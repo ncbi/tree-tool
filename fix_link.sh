@@ -2,11 +2,11 @@
 THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Try to fix #1 as a symbolic link"
+  echo "Try to fix symbolic links/executable permissions. Idempotent"
   echo "#1: file"
   exit 1
 fi
-F=$1
+F="$1"
 
 
 if file $F | grep -q ": ASCII text"; then
@@ -28,4 +28,9 @@ if file $F | grep -q ": ASCII text"; then
   rm $F
   set -x
   ln -s $NEW_F $F
+elif file $F | grep -q ": ELF 64-bit LSB executable"; then
+  set -x
+  chmod a+x $F
+elif file $F | grep -q ": directory"; then
+  $THIS/trav $F "$THIS/fix_link.sh %Q%d/%f%Q"
 fi
