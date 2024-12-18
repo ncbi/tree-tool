@@ -55,9 +55,12 @@ function success
 {
   echo ""
   echo ""
-  echo -e "${BLUE}SUCCESS${NOCOLOR}\07\07"
+  echo -e "${BLUE}SUCCESS${NOCOLOR}"
+  if [ $SHLVL -le 2 ]; then
+    echo -e "\07\07"
+  fi
   date
-  exit 0
+ #exit 0
 }
 
 
