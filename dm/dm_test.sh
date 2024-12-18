@@ -10,7 +10,7 @@ SEED=$1
 
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
 cd $THIS

@@ -17,7 +17,7 @@ SCHEMA=$3
 
 
 #if false; then
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 
