@@ -57,11 +57,11 @@ function success
   echo ""
   echo -e "${BLUE}SUCCESS${NOCOLOR}"
   if [ $SHLVL -le 2 ]; then
-    echo -e "\07\07"
+    printf "\07\07"
     sleep 1
-    echo -e "\07\07"
+    printf "\07\07"
     sleep 1
-    echo -e "\07\07"
+    printf "\07\07"
   fi
   date
  #exit 0
@@ -87,7 +87,7 @@ function file2var
 }
 
 
-function differ ()
+function differ 
 {
   local F1=$1
   local F2=$2
