@@ -21,13 +21,14 @@ LOG=$5
 TMP=$( mktemp )
 comment $TMP &> $LOG
 date >> $LOG
+ls -laF $DNA >> $LOG
 #set -x  
 
 MATRIX="BLOSUM62"
 
 makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
 tblastn  -query $REF  -db $TMP  -db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads $CORES  > $TMP.tblastn
-  # >12 hours:
+  # Too much time:
     # -word_size 2
     # -window_size 0
     # -threshold 10
