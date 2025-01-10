@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Cluster DNA sequences, if #1 = #2 then print representatives else print #1-#2 pairs"
@@ -21,7 +21,7 @@ PAIR=$5
 CLUST=$6
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP 
 #set -x
 
@@ -29,7 +29,7 @@ comment $TMP
 makeblastdb  -in $SUBJ   -dbtype nucl  -blastdb_version 4  -logfile /dev/null
 
 mkdir $QUERY.dir
-$THIS/splitFasta $QUERY $QUERY.dir  -group 100 
+$THIS/splitFasta $QUERY $QUERY.dir  -group_count 100 
 
 mkdir $QUERY.pairs
 $THIS/../grid_wait.sh 1

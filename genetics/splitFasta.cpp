@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Split a multi-fasta file into a set of fasta files each containing one sequence
+*   Split a multi-fasta file into a set of fasta files 
 *
 */
 
@@ -49,32 +49,59 @@ namespace
 {
   
   
+string suffix ("-split");  // PAR
+
+  
+  
 struct Group
 {
-  const size_t size_max;
+  const size_t seqCount_max;
+  const size_t seqSize_max;
   const string dir;
-  VectorOwn<const Seq> seqs;
+  VectorOwn<const Seq> seqs;  
+  size_t seqSize {0};
   size_t group {0};
   
   
-  Group (size_t size_max_arg,
+  Group (size_t seqCount_max_arg,
+         size_t seqSize_max_arg,
          const string &dir_arg)
-    : size_max (size_max_arg)
+    : seqCount_max (seqCount_max_arg ? seqCount_max_arg : numeric_limits<size_t>::max ())
+    , seqSize_max  (seqSize_max_arg  ? seqSize_max_arg  : numeric_limits<size_t>::max ())
     , dir (dir_arg)
-    { ASSERT (size_max >= 1); 
-      ASSERT (! dir. empty ());
-    }
+    { ASSERT (! dir. empty ()); }
  ~Group ()
     { save (); }
   
   
-  void add (const Seq* seq)
-    { ASSERT (size_max > 1);
-      ASSERT (seq);
-      seqs << seq;
-      ASSERT (seqs. size () <= size_max);
-      if (seqs. size () == size_max)
+  void add (Seq* seq)
+    { ASSERT (seq);
+      ASSERT (! seq->seq. empty ());
+      ASSERT (seqs. size () <= seqCount_max);
+      ASSERT (seqSize <= seqSize_max);
+      if (   seqs. size () == seqCount_max
+          || (   seqSize + seq->seq. size () > seqSize_max
+              && seqSize >= seqSize_max / 2
+             )
+         )
         save ();
+      size_t n = 0;
+      while (seqSize + seq->seq. size () > seqSize_max)
+      {
+        Seq* prefix = seq->copy ();
+        n++;
+        prefix->name = seq->getId () + ":" + to_string (n) + suffix;  
+        ASSERT (seqSize_max >= seqSize);
+        const size_t len = seqSize_max - seqSize;
+        ASSERT (len < seq->seq. size ());
+        ASSERT (len >= seqSize_max / 2);
+        prefix->seq. erase (len);
+        seqs << prefix;
+        save ();
+        seq->seq. erase (0, len);
+      }
+      seqs << seq;
+      seqSize += seq->seq. size ();
     }
   void save ()
     { if (seqs. empty ())
@@ -84,12 +111,13 @@ struct Group
       for (const Seq* seq : seqs)
         seq->saveText (f);
       seqs. deleteData ();
+      seqSize = 0;
     }
 };
   
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Split a multi-fasta file into a set of fasta files each containing one sequence")
@@ -105,8 +133,9 @@ struct ThisApplication : Application
     #ifndef _MSC_VER
   	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (small_hash_class_max - 1) + "\" which are the hashes of file names");
   	#endif
-  	  addKey ("group", "Group by <group> number of sequences. Group names are sequential numbers. 1 - no grouping.", "1");
-  	  addKey ("extension", "Add file extension (not compatible with -group)", "");
+  	  addKey ("group_count", "Group by <group_count> number of sequences. Group names are sequential numbers. 0 - no grouping.", "0");
+  	  addKey ("group_size", "Make groups of sequences with total sequence size <= <group_size> with possible splitting sequences. Group names are sequential numbers. 0 - no grouping.", "0");
+  	  addKey ("extension", "Add file extension (not compatible with -group_count or -group_size)", "");
   	}
 
 
@@ -123,23 +152,25 @@ struct ThisApplication : Application
   #ifndef _MSC_VER
 		const bool   large       = getFlag ("large");
   #endif
-    const size_t group_size = (size_t) arg2uint ("group");
-    const string ext        = getArg ("extension");
+    const size_t group_count = (size_t) arg2uint ("group_count");
+    const size_t group_size  = (size_t) arg2uint ("group_size");
+    const string ext         = getArg ("extension");
 
     QC_ASSERT (! out_dir. empty ());    
     QC_ASSERT (group_size >= 1);
   #ifndef _MSC_VER
     QC_IMPLY (large, group_size == 1);
   #endif
-    QC_IMPLY (group_size > 1, ext. empty ());
+    QC_IMPLY (group_count > 1, ext. empty ());
+    QC_IMPLY (group_size  > 1, ext. empty ());
 
 
     { // For ~Progress()      
   	  Multifasta fa (in, aa); 
-      Group group (group_size, out_dir);
+      Group group (group_count, group_size, out_dir);
   	  while (fa. next ())
   	  {
-  	    unique_ptr<const Seq> seq;
+  	    unique_ptr<Seq> seq;
   	    if (aa)
   	    {
   	      auto pep = new Peptide (fa, Peptide::stdAveLen, sparse);
@@ -151,6 +182,8 @@ struct ThisApplication : Application
   	      seq. reset (new Dna (fa, 128 * 1024, sparse));  
   	    seq->qc ();
   	    ASSERT (! seq->name. empty ());
+  	    if (isRight (seq->name, suffix))
+  	      throw runtime_error ("Suffix " + strQuote (suffix) + " is used in the file " + strQuote (in));
 		    if (seq->seq. size () < len_min)
 		    	continue;
         string s (seq->name);
@@ -165,10 +198,10 @@ struct ThisApplication : Application
           Dir (dir). create ();
         }
       #endif
-        if (group_size == 1)
-          seq->saveFile (dir + "/" + s + (ext. empty () ? "" : ("." + ext)));
-        else
+        if (group_count || group_size)
           group. add (seq. release ());
+        else
+          seq->saveFile (dir + "/" + s + (ext. empty () ? "" : ("." + ext)));
   	  }
   	}
 	}
