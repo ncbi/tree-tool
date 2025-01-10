@@ -48,7 +48,7 @@ namespace
 {
 	
 	
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print lengths of DNA or protein sequences")
@@ -83,7 +83,7 @@ struct ThisApplication : Application
 	  		seq. reset (new Dna     (faIn, 1024 * 1024, false));
 	    seq->qc ();
 	    cout << seq->getId () << '\t' << seq->seq. size () << endl;
-	    if (outF. get () && seq->seq. size () >= len_min)
+	    if (outF && seq->seq. size () >= len_min)
 	    	seq->saveText (*outF);
 	  }
   }
