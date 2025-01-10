@@ -26,8 +26,7 @@ ls -laF $DNA >> $LOG
 
 MATRIX="BLOSUM62"
 
-makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
-tblastn  -query $REF  -db $TMP  -db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads $CORES  > $TMP.tblastn
+PARM="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq'"
   # Too much time:
     # -word_size 2
     # -window_size 0
@@ -37,7 +36,10 @@ tblastn  -query $REF  -db $TMP  -db_gencode 1  -seg no  -comp_based_stats 0  -wo
   #                 -asn-cache ${GP_cache_dir}  -backlog 1  -delay 0  -max-jobs 1  -service ${GP_qservice}  -workers 4
   #   diamond  --comp-based-stats 0  --evalue 0.0001  --very-sensitive  --masking 0  --unal 0  seq-align-set  \
   #            -asn-cache ${GP_cache_dir}  -blastp-args  --sam-query-len  -diamond-executable ${GP_HOME}/third-party/diamond/diamond  -lds2 ${input.lds2.target}  -ofmt  -output-dir ${output}  -output-manifest ${output}/align.mft -output-prefix hits -query-fmt seq-ids -query-manifest ${input.query_ids} -subject-fmt seq-ids -subject-manifest ${input.subject_ids} -work-area ${tmp}
-sort $TMP.tblastn > $TMP.tblastn-sort
+#makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
+#tblastn  -query $REF  -db $TMP  -db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads $CORES  > $TMP.tblastn
+$THIS/tblastn.sh $REF $DNA "$PARM" $CORES $TMP.tblastn
+sort -k 1 $TMP.tblastn > $TMP.tblastn-sort
 
 $THIS/tblastn2marker_euk  $TMP.tblastn-sort  -matrix $MATRIX  -qc  -log $LOG > $PROT
 # Quality: 
