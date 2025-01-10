@@ -156,13 +156,14 @@ struct ThisApplication final : Application
     const size_t group_size  = (size_t) arg2uint ("group_size");
     const string ext         = getArg ("extension");
 
+
+    const bool groupP = group_count || group_size;
+
     QC_ASSERT (! out_dir. empty ());    
-    QC_ASSERT (group_size >= 1);
   #ifndef _MSC_VER
-    QC_IMPLY (large, group_size == 1);
+    QC_IMPLY (large, groupP);
   #endif
-    QC_IMPLY (group_count > 1, ext. empty ());
-    QC_IMPLY (group_size  > 1, ext. empty ());
+    QC_IMPLY (groupP, ext. empty ());
 
 
     { // For ~Progress()      
@@ -198,7 +199,7 @@ struct ThisApplication final : Application
           Dir (dir). create ();
         }
       #endif
-        if (group_count || group_size)
+        if (groupP)
           group. add (seq. release ());
         else
           seq->saveFile (dir + "/" + s + (ext. empty () ? "" : ("." + ext)));
