@@ -103,7 +103,7 @@ struct ThisApplication final : Application
   	  addPositional ("tsv1", ".tsv-file 1");
   	  addPositional ("tsv2", ".tsv-file 2");
   	  addPositional ("keys", "Key columns, comma-separated");
-  	  addPositional ("diff", "Output tsv-file with different column values: <column name> <value in tsv1> Mvalue in tsv2> <abs. difference (for numeric column)> <key>");
+  	  addPositional ("diff", "Output tsv-file with different column values: <column name> <value in tsv1> <value in tsv2> <abs. difference (for numeric column)> <key>");
   	  addKey ("diff_min", "Min. abs. difference of numeric columns to report", "0");
   	}
 
