@@ -60,6 +60,7 @@ all:	\
 	prot2fingerprints \
 	prot2triplets \
 	prot_check \
+	prot_complexity \
 	prot_consensus \
 	prot_find \
 	prot_fingerprint_grep \
@@ -351,6 +352,12 @@ prot_check.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 prot_checkOBJS=prot_check.o $(SEQ_OBJ)
 prot_check:	$(prot_checkOBJS)
 	$(CXX) -o $@ $(prot_checkOBJS) $(LIBS) 
+	$(ECHO)
+
+prot_complexity.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+prot_complexityOBJS=prot_complexity.o $(SEQ_OBJ)
+prot_complexity:	$(prot_complexityOBJS)
+	$(CXX) -o $@ $(prot_complexityOBJS) $(LIBS) 
 	$(ECHO)
 
 prot_consensus.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
