@@ -206,8 +206,7 @@ public:
     
     
   void setBestIntron ();
-    // Update: bestIntronSet, totalScore
-    // Output: bestIntron
+    // Update: bestIntronSet, totalScore, bestIntron
   string getSeq (size_t start) const;
   size_t pos2q (size_t pos) const  // aa
     {
@@ -520,11 +519,16 @@ void Exon::finish ()
   FFOR (size_t, i, qseq. size ())
     score += sm. char2score (qseq [i], sseq [i]);
 //QC_ASSERT (score > 0);
-
+    
+  qc ();
+  
+  if (contains (sseq, '*'))
+    return;  
+  const Peptide pep ("x", sseq, false);
+  if (pep. getComplexity () <= 3.0 /*Peptide::stdMinComplexity*/)  // PAR
+    return;
   const Pair<string> p (qseqid, sseqid);
   contig2exons [p] << this;
-  
-  qc ();
 }
 
 
@@ -735,7 +739,12 @@ void process (DiGraph &graph,
 	    ASSERT (next);
   	  for (const Exon* prev : it. second)
 	      if (prev->arcable (*next))
+	      {
+	        if (const Intron* intron = prev->bestIntron)
+	          if (intron->node [true] == next)
+	            continue;
 	        new Intron (var_cast (prev), var_cast (next), false);
+	      }
   	}
   	
   	const Exon* bestExon = nullptr;
