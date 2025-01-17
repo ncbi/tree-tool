@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# != 2 ]; then
   echo "#1: Genome.id"
@@ -10,6 +10,6 @@ G=$1
 SUF=$2
 
 
-H=`$THIS/../../file2hash $G`
-N=`cat genome/$H/$G/$G.hash-$SUF | wc -l`
+H=$( $THIS/../../file2hash $G )
+N=$( cat genome/$H/$G/$G.hash-$SUF | wc -l )
 echo $G $N
