@@ -714,14 +714,16 @@ string Exon::getSeq (size_t start) const
 
 
 void process (DiGraph &graph,
-              const string &gene)
+              const string &gene,
+              bool variantP,
+              double threshold)
 {
   graph. qc ();
   if (graph. empty ())
     return;
     
   ASSERT (! gene. empty ());
-	const string prefix (gene + delim);
+	const string prefix (gene + ifS (variantP, string (1, delim)));
 	
 	
 	const Exon* bestExon_gene = nullptr;
@@ -797,35 +799,38 @@ void process (DiGraph &graph,
     cerr << '\t' << s << endl;
   }
 
-  string ref        (" ref="        + bestExon_gene->qseqid + ":");
-  string contig     (" contig="     + bestExon_gene->sseqid + ":");
-  string ref_hsp    (" ref_hsp="    + bestExon_gene->qseqid + ":");
-  string contig_hsp (" contig_hsp=" + bestExon_gene->sseqid + ":");
   const AlignScore totalScore = bestExon_gene->totalScore;
-  size_t start = 0;
-  const Exon* exon = bestExon_gene;
-  for (;;)
+  if (totalScore / (double) s. size () >= threshold)
   {
-    ASSERT (exon);
-    const size_t end = exon->bestIntron ? exon->bestIntron->prev_end : exon->sseq. size ();
-    ref        += to_string (exon->pos2q (start) + 1) + "-" + to_string (exon->pos2q (end));  
-    contig     += to_string (exon->pos2s (start) + 1) + "-" + to_string (exon->pos2s (end));  
-    ref_hsp    += to_string (exon->qstart + 1) + "-" + to_string (exon->qend);  
-    contig_hsp += to_string (exon->sstart + 1) + "-" + to_string (exon->send);
-    if (! exon->bestIntron)
-      break;
-    start = exon->bestIntron->next_start;
-    exon = static_cast <const Exon*> (exon->bestIntron->node [true]);
-    ref        += ",";
-    contig     += ",";
-    ref_hsp    += ",";
-    contig_hsp += ",";
+    string ref        (" ref="        + bestExon_gene->qseqid + ":");
+    string contig     (" contig="     + bestExon_gene->sseqid + ":");
+    string ref_hsp    (" ref_hsp="    + bestExon_gene->qseqid + ":");
+    string contig_hsp (" contig_hsp=" + bestExon_gene->sseqid + ":");
+    size_t start = 0;
+    const Exon* exon = bestExon_gene;
+    for (;;)
+    {
+      ASSERT (exon);
+      const size_t end = exon->bestIntron ? exon->bestIntron->prev_end : exon->sseq. size ();
+      ref        += to_string (exon->pos2q (start) + 1) + "-" + to_string (exon->pos2q (end));  
+      contig     += to_string (exon->pos2s (start) + 1) + "-" + to_string (exon->pos2s (end));  
+      ref_hsp    += to_string (exon->qstart + 1) + "-" + to_string (exon->qend);  
+      contig_hsp += to_string (exon->sstart + 1) + "-" + to_string (exon->send);
+      if (! exon->bestIntron)
+        break;
+      start = exon->bestIntron->next_start;
+      exon = static_cast <const Exon*> (exon->bestIntron->node [true]);
+      ref        += ",";
+      contig     += ",";
+      ref_hsp    += ",";
+      contig_hsp += ",";
+    }
+    const string name (gene + ref + contig + ref_hsp + contig_hsp + " strand=" + to_string (exon->strand == 1 ? 1 : 0) + " score=" + to_string (int (totalScore)));
+    Peptide pep (name, s, false);
+    pep. pseudo = true;
+    pep. qc ();
+    pep. saveText (cout);
   }
-  const string name (gene + ref + contig + ref_hsp + contig_hsp + " strand=" + to_string (exon->strand == 1 ? 1 : 0) + " score=" + to_string (int (totalScore)));
-  Peptide pep (name, s, false);
-  pep. pseudo = true;
-  pep. qc ();
-  pep. saveText (cout);
 
   
   graph. clear ();
@@ -840,7 +845,9 @@ struct ThisApplication final : Application
     : Application ("Find best protein matches and print proteins")
     {
       version = VERSION;
-  	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. qseqid = <gene>" + string (1, delim) + "<variant>, where <gene> has no '" + delim + "'. Ordered by qseqid");
+  	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. Ordered by qseqid. If -variant then qseqid = <gene>" + string (1, delim) + "<variant>, where <gene> has no '" + delim + "'.");
+  	  addFlag ("variant", "Genes have no variants");
+  	  addKey ("threshold", "Min. protein score to length ratio to be reported", "4");
   	  addKey ("matrix", "Protein matrix", "BLOSUM62");
   	  addKey ("gap_stats", "Output file with gap lengths");
     }
@@ -850,6 +857,8 @@ struct ThisApplication final : Application
 	void body () const final
   {
 	  const string tblastnFName = getArg ("tblastn");
+	  const bool   variantP     = getFlag ("variant"); 
+	  const double threshold    = arg2double ("threshold");
 	  const string matrix       = getArg ("matrix");
 	  const string gap_stats    = getArg ("gap_stats");
   
@@ -866,23 +875,23 @@ struct ThisApplication final : Application
   	  string gene_prev;
   	  while (in. nextLine ())
   	  {
-      	const size_t dash = in. line. find (delim);  
-      	QC_ASSERT (dash != string::npos);
-      	const string gene (in. line. substr (0, dash));
+      	const size_t pos = in. line. find (variantP ? delim : '\t');
+      	QC_ASSERT (pos != string::npos);
+      	const string gene (in. line. substr (0, pos));
       	if (gene. empty ())
   	      throw runtime_error ("No gene\n" + tblastnFName + ": " + in. lineStr ()); 
       	if (gene < gene_prev)
   	      throw runtime_error ("Alphabetically disordered gene\n" + tblastnFName + ": " + in. lineStr ()); 
       	if (gene_prev != gene)
       	{
-      	  process (graph, gene_prev);
+      	  process (graph, gene_prev, variantP, threshold);
       	  gene_prev = gene;
       	}
   	    try { new Exon (graph, in. line); }
   	      catch (const exception &e)
   	        { throw runtime_error (string (e. what ()) + "\n" + tblastnFName + ": " + in. lineStr ()); }
   	  }
-   	  process (graph, gene_prev);
+   	  process (graph, gene_prev, variantP, threshold);
   	}
   }
 };

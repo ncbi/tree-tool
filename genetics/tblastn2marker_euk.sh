@@ -1,21 +1,23 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
-if [ $# -ne 5 ]; then
+if [ $# -ne 6 ]; then
   echo "Find proteins with introns by tblastn"
   echo "#1: DNA multi-FASTA file"
-  echo "#2: reference proteins, where each id=<gene>-<variant>, where <gene> has no dashes"
-  echo "#3: cores"
-  echo "#4: output protein file"
-  echo "#5: log file"
+  echo "#2: reference proteins, where if #3 = 1 then each id=<gene>-<variant>, where <gene> has no dashes"
+  echo "#3: genes have variants (0/1)"
+  echo "#4: cores"
+  echo "#5: output protein file"
+  echo "#6: log file"
   echo "Time: 1 day/3G"
   exit 1
 fi
 DNA=$1
 REF=$2
-CORES=$3
-PROT=$4
-LOG=$5
+VARIANT=$3
+CORES=$4
+PROT=$5
+LOG=$6
 
 
 TMP=$( mktemp )
@@ -41,7 +43,11 @@ PARM="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -
 $THIS/tblastn.sh $REF $DNA "$PARM" $CORES $TMP.tblastn
 sort -k 1 $TMP.tblastn > $TMP.tblastn-sort
 
-$THIS/tblastn2marker_euk  $TMP.tblastn-sort  -matrix $MATRIX  -qc  -log $LOG > $PROT
+VARIANT_PAR=""
+if [ $VARIANT == 1 ]; then
+  VARIANT_PAR="-variant"
+fi
+$THIS/tblastn2marker_euk  $TMP.tblastn-sort  $VARIANT_PAR  -matrix $MATRIX  -qc  -log $LOG > $PROT
 # Quality: 
   # grep '^>' $PROT | sed 's/^.*score=//1' | count
   # fasta2len $PROT -noprogress | cut -f 2 | count
