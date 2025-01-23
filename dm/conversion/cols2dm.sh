@@ -3,10 +3,10 @@ THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print a .dm-file"
-  echo "#1: File with numeric columns"
+  echo "#1: tab-delimited file with numeric columns (exept a 'name' column)"
   echo "#2: #1 is a tsv-file (0/1). For tsv-files spaces in column names are replaced by '_'"
-  echo "#3: Number precision"
-  echo "#4: Name column number (>= 1; 0 - no name column)"
+  echo "#3: number precision"
+  echo "#4: name column number (>= 1; 0 - no 'name' column)"
   exit 1
 fi
 F=$1
