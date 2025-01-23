@@ -1,10 +1,10 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Cluster protein sequences, if #1 = #2 then print representatives else print #1-#2 pairs"
-  echo "#1; query directory with protein sequence"
-  echo "#2; subject directory with protein sequence"
+  echo "#1: query directory with protein sequence"
+  echo "#2: subject directory with protein sequence"
   echo "#3: min. fraction of identity"
   echo "#4: min. fraction of coverage"
   echo "#5: output file with pairs of FASTA identfiers"
@@ -17,7 +17,7 @@ COV=$4
 PAIR=$5
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP 
 #set -x
 
