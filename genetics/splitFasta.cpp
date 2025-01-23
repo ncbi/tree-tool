@@ -49,7 +49,8 @@ namespace
 {
   
   
-string suffix ("-split");  // PAR
+const string splitSuffix ("-split");  // PAR
+string seqSuffix;
 
   
   
@@ -90,7 +91,7 @@ struct Group
       {
         Seq* prefix = seq->copy ();
         n++;
-        prefix->name = seq->getId () + ":" + to_string (n) + suffix;  
+        prefix->name = seq->getId () + ":" + to_string (n) + splitSuffix;  
         ASSERT (seqSize_max >= seqSize);
         const size_t len = seqSize_max - seqSize;
         ASSERT (len < seq->seq. size ());
@@ -109,7 +110,10 @@ struct Group
       group++;
       OFStream f (dir + "/" + to_string (group));
       for (const Seq* seq : seqs)
+      {
+        var_cast (seq) -> appendId (seqSuffix);
         seq->saveText (f);
+      }
       seqs. deleteData ();
       seqSize = 0;
     }
@@ -136,6 +140,7 @@ struct ThisApplication final : Application
   	  addKey ("group_count", "Group by <group_count> number of sequences. Group names are sequential numbers. 0 - no grouping.", "0");
   	  addKey ("group_size", "Make groups of sequences with total sequence size <= <group_size> with possible splitting sequences. Group names are sequential numbers. 0 - no grouping.", "0");
   	  addKey ("extension", "Add file extension (not compatible with -group_count or -group_size)", "");
+  	  addKey ("suffix", "Suffix to add to each sequence separated by dash", "");
   	}
 
 
@@ -155,6 +160,7 @@ struct ThisApplication final : Application
     const size_t group_count = (size_t) arg2uint ("group_count");
     const size_t group_size  = (size_t) arg2uint ("group_size");
     const string ext         = getArg ("extension");
+                 seqSuffix   = getArg ("suffix");
 
 
     const bool groupP = group_count || group_size;
@@ -183,8 +189,8 @@ struct ThisApplication final : Application
   	      seq. reset (new Dna (fa, 128 * 1024, sparse));  
   	    seq->qc ();
   	    ASSERT (! seq->name. empty ());
-  	    if (isRight (seq->name, suffix))
-  	      throw runtime_error ("Suffix " + strQuote (suffix) + " is used in the file " + strQuote (in));
+  	    if (isRight (seq->name, splitSuffix))
+  	      throw runtime_error ("Suffix " + strQuote (splitSuffix) + " is used in the file " + strQuote (in));
 		    if (seq->seq. size () < len_min)
 		    	continue;
         string s (seq->name);
@@ -202,7 +208,10 @@ struct ThisApplication final : Application
         if (groupP)
           group. add (seq. release ());
         else
+        {
+          seq->appendId (seqSuffix);
           seq->saveFile (dir + "/" + s + (ext. empty () ? "" : ("." + ext)));
+        }
   	  }
   	}
 	}
