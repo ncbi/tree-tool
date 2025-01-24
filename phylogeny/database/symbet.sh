@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Symmetric best hits dissimilarity by k-mers: >= 0 or nan"
@@ -15,7 +15,7 @@ ASM2=$3
 PLOIDY=$4
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP 
 
 
@@ -24,11 +24,12 @@ function prepare
   ASM=$1
   OUT=$2
   #
-  H=`$THIS/../../file2hash $ASM`
+  H=$( $THIS/../../file2hash $ASM )
   DIR=$GENOME/$H/$ASM
   gunzip $DIR/$ASM.prot.gz -c > $TMP.fa
   cut -f 1 $DIR/$ASM.univ > $TMP.univ
-  $THIS/../../genetics/extractFastaProt $TMP.fa $TMP.univ -remove > $OUT  # $TMP.out
+ #$THIS/../../genetics/extractFastaProt $TMP.fa $TMP.univ -remove > $OUT  # $TMP.out
+  $THIS/../../genetics/filterFasta $TMP.fa  -aa  -target $TMP.univ  -remove  -min_len 20  -min_complexity 3 > $OUT  # $TMP.out
  #uclust.sh $TMP.out 0.95 $OUT
 }
 

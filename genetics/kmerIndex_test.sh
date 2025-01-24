@@ -8,7 +8,7 @@ if [ $# -ne 1 ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 
@@ -24,7 +24,8 @@ $THIS/kmerIndex_stat $TMP.kmi -qc
 section "$TMP.seq/"
 $THIS/fa2list.sh $THIS/data/5_8S.fa > $TMP.acc
 $THIS/../setRandOrd $TMP.acc -sigpipe -qc | head -10 | sort > $TMP.list
-$THIS/extractFastaDna $THIS/data/5_8S.fa $TMP.list -qc > $TMP.fa
+#$THIS/extractFastaDna $THIS/data/5_8S.fa $TMP.list -qc > $TMP.fa
+$THIS/filterFasta $THIS/data/5_8S.fa  -target $TMP.list  -qc > $TMP.fa
 mkdir $TMP.seq
 $THIS/splitFasta $TMP.fa $TMP.seq -qc 
 

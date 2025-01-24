@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Input: #1.prot or #1.prot-genbank"
@@ -29,7 +29,7 @@ PROT_CUT=$PREFIX.prot-univ
 
 
 if [ -s $IN ]; then
-  TMP=`mktemp`
+  TMP=$( mktemp )
   #comment $TMP
 
   CUTOFF_PAR=""
@@ -41,7 +41,8 @@ if [ -s $IN ]; then
   $THIS/hmmsearch2besthits $TMP.hmmsearch  -domtblout $TMP.dom  -log $LOG  > $ANNOT 
   cut -f 1,2,4,5 $ANNOT > $TMP.univ
 
-  $THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
+ #$THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
+  $THIS/filterFasta $IN  -aa  -target $TMP.univ  -replace  -cut  -min_len 20  -min_complexity 3  -log $LOG  > $PROT_CUT
 
   if false; then
     mkdir $TMP.seq
