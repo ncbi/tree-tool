@@ -30,14 +30,13 @@ all:	\
 	dna_gc_skew \
 	dna_rev \
 	dna_trim \
-	extractFastaDna \
-	extractFastaProt \
 	fasta_prefix \
 	fasta2GC \
 	fasta2hash \
 	fasta2len \
 	fastaAddGi \
 	fastaDna2pairs \
+	filterFasta \
 	genbank_grep \
 	GeneMark2CDS \
 	hmm2prot \
@@ -76,6 +75,11 @@ all:	\
 	tblastn2orfs \
 	uniqProtRef \
 	uniqSeq
+
+
+# Old:
+#	extractFastaDna 
+#	extractFastaProt
 
 
 align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
@@ -232,6 +236,12 @@ fastaDna2pairs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 fastaDna2pairsOBJS=fastaDna2pairs.o $(SEQ_OBJ)
 fastaDna2pairs:	$(fastaDna2pairsOBJS)
 	$(CXX) -o $@ $(fastaDna2pairsOBJS) $(LIBS) 
+	$(ECHO)
+
+filterFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+filterFastaOBJS=filterFasta.o $(SEQ_OBJ)
+filterFasta:	$(filterFastaOBJS)
+	$(CXX) -o $@ $(filterFastaOBJS) $(LIBS) 
 	$(ECHO)
 
 genbank_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
