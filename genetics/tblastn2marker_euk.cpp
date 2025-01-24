@@ -53,6 +53,10 @@ SubstMat sm;
 unique_ptr<OFStream> gapF;
 constexpr char delim {'-'};
 
+// PAR
+constexpr double complexity_min = 3.0;  
+static_assert (complexity_min >= Peptide::stdMinComplexity);
+
 
 struct Exon;
 map <Pair<string>/*ref,contig*/, VectorPtr<Exon>> contig2exons;
@@ -525,7 +529,7 @@ void Exon::finish ()
   if (contains (sseq, '*'))
     return;  
   const Peptide pep ("x", sseq, false);
-  if (pep. getComplexity () <= 3.0 /*Peptide::stdMinComplexity*/)  // PAR
+  if (pep. getComplexity () < complexity_min)  
     return;
   const Pair<string> p (qseqid, sseqid);
   contig2exons [p] << this;
@@ -827,9 +831,10 @@ void process (DiGraph &graph,
     }
     const string name (gene + ref + contig + ref_hsp + contig_hsp + " strand=" + to_string (exon->strand == 1 ? 1 : 0) + " score=" + to_string (int (totalScore)));
     Peptide pep (name, s, false);
-    pep. pseudo = true;
+  //pep. pseudo = true;
     pep. qc ();
-    pep. saveText (cout);
+    if (pep. getComplexity () >= complexity_min)  
+      pep. saveText (cout);
   }
 
   
