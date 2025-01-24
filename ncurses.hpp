@@ -104,7 +104,7 @@ struct Attr : Root
 
 
 
-struct AttrColor : Attr
+struct AttrColor final : Attr
 {
   explicit AttrColor (NCurses::Color color,
                       bool active_arg = true);
