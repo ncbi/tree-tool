@@ -46,7 +46,7 @@ $THIS/../trav $QUERY.pairs "cat %d/%f" >> $PAIR
 
 rm -r $QUERY.pairs/ &
 
-$THIS/../connectPairs $PAIR $CLUST  -pairs 
+$THIS/../connectPairs $PAIR $CLUST  -pairs -center
 
 
 rm $TMP*

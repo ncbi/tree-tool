@@ -51,9 +51,21 @@ static const string ext ("component");
 
 struct Item : Named, DisjointCluster
 {
+  size_t n {1};
+  
+  
   explicit Item (const string &name_arg)
     : Named (name_arg)
     {}
+
+
+	static bool lessPtr (const Item* x,
+	                     const Item* y)
+	  { ASSERT (x);
+	    ASSERT (y);
+	    LESS_PART (*y, *x, n);
+	    return x->name < y->name; 
+	  }
 };
 
   
@@ -66,9 +78,10 @@ struct ThisApplication final : Application
     {
       version = VERSION;
   	  addPositional ("in", "List of pairs of connected items: <item1> <item2>\nwhere <item1>, <item2> are strings with no spaces");
-  	  addPositional ("out", "If -pairs then output file with pairs <item> <tab> <main item>, otherwise output directory with the sets of connected items, where each set is named by its lexicographycally smaller item with the added extension " + strQuote ("." + ext));
+  	  addPositional ("out", "If -pairs then output file with pairs <item> <tab> <item_min>, otherwise output directory with the sets of connected items, where each set is a file named by its lexicographycally smallest item with the added extension " + strQuote ("." + ext));
   	  addKey ("subset", "List of items. Item pairs are restricted to this list");
-  	  addFlag ("pairs", "<out> is a list of pairs: <item1> <item_min>, where <item_min> is lexicographycally smallest item of the cluster");
+  	  addFlag ("pairs", "<out> is a list of pairs: <item> <item_min>, where <item_min> is the lexicographycally smallest item of the cluster");
+  	  addFlag ("center", "<item_min> is the item with the maximum number of connected items");
   	}
 
 
@@ -77,7 +90,8 @@ struct ThisApplication final : Application
 		const string inFName     = getArg ("in");
 		const string outFName    = getArg ("out");
 		const string subsetFName = getArg ("subset");
-		const bool   pairs  = getFlag ("pairs");
+		const bool   pairsP      = getFlag ("pairs");
+		const bool   centerP     = getFlag ("center");
 
 
     unique_ptr<StringVector> subset;
@@ -102,20 +116,20 @@ struct ThisApplication final : Application
         QC_ASSERT (! s2. empty ());
         trim (s1);
         trim (s2);
-        if (s1 == s2)
-          continue;
-        if (subset. get ())
+        if (subset)
         {
           if (! subset->containsFast (s1))
             continue;
           if (! subset->containsFast (s2))
             continue;
         }
-        if (! contains (items, s1))
-          items [s1] = new Item (s1);
-        if (! contains (items, s2))
-          items [s2] = new Item (s2);
-        items [s1] -> DisjointCluster::merge (* items [s2]);
+        Item*& it1 = items [s1];
+        Item*& it2 = items [s2];
+        if (it1) it1->n++; else it1 = new Item (s1);
+        if (it2) it2->n++; else it2 = new Item (s2);
+        ASSERT (it1);
+        ASSERT (it2);
+        it1->DisjointCluster::merge (*it2 );
       }
     }
     
@@ -124,21 +138,28 @@ struct ThisApplication final : Application
       clusters [it. second->getDisjointCluster ()] << it. second;
       
     unique_ptr<OFStream> fOut;
-    if (pairs)
+    if (pairsP)
       fOut. reset (new OFStream (outFName));
     for (auto& it : clusters)
     {
       VectorPtr<Item>& cluster = it. second;
-      cluster. sort (Named::lessPtr);
+      if (centerP)
+        cluster. sort (Item::lessPtr);
+      else
+        cluster. sort (Named::lessPtr);  
       ASSERT (! cluster . empty ());
-      if (! pairs)
-        fOut. reset (new OFStream (outFName, cluster [0] -> name, ext));
+      const string repr (cluster [0] -> name);
+      if (! pairsP)  
+        fOut. reset (new OFStream (outFName, repr, ext));
+      ASSERT (fOut);
       for (const Item* item : cluster)
-        if (pairs)
-          *fOut << item->name << '\t' << cluster [0] -> name << '\n';
-        else
-          *fOut << item->name << '\n';
-      if (! pairs)
+      {
+        *fOut << item->name;
+        if (pairsP)
+          *fOut << '\t' << repr;
+        *fOut  << '\n';
+      }
+      if (! pairsP)
         fOut. reset ();
     } 
 	}
