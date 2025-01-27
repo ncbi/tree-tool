@@ -583,7 +583,7 @@ var node2pathName = function (nodeId)
   let pathTip = node2name (nodes[nodeId]) ? "" : q2h (node2lcaName (nodeId));
   if (pathTip.indexOf ("/") != -1)
     pathTip = '"' + pathTip + '"';
-  return sSuf(newickP,': ') + node2path_ (nodeId, pathTip);
+  return sSuf(newickFName,': ') + node2path_ (nodeId, pathTip);
 }
 
 
@@ -2607,7 +2607,7 @@ var node2root = function (nodeId)
       return;
     node2root_ (parentId);
     nodes [parentId]. parent = nodeId_;
-    nodes [parentId]. time = node.time;;
+    nodes [parentId]. time = node.time;
     node.parent = null;
     node.time = 0;
     node.phylName = null;
@@ -2734,12 +2734,15 @@ var readData = function ()
 {
   // If offline then replace this line by data dump
 	alert ("Missing data for an offline page");  // DOT NOT REMOVE/MOVE THIS LINE TO BE USED IN fam2tree.cgi !!!
+	//
+	return false;
 }
 
 
 
+var newickP = false;  
 var newick = null;  // Text in Newick format
-var newickP = null;  // Newick file name
+var newickFName = null;  // Newick file name
 var gainInfo = null;  // Text
 var lossInfo = null;  // Text
 
@@ -3189,10 +3192,14 @@ Name part: <input type='text' id=genome>";
 	  {
 	    if (! parseNewick ())
 	      return;
+	    newickP = true;
 	    seqType = "Object";
 	  }
 	  else
-	    readData ();
+	  {
+	    if (! readData ())
+	      return false;
+	  }
 	  initTreeFinish ();  
   //setRoot (2120);  // PAR
     if (newickP)
@@ -3283,7 +3290,7 @@ else if (getParams().newick)
 {
   offline = true;
   document.getElementById("initObj").innerHTML ='\
-<form id="form" onsubmit="if(!parent.newick)parent.newick=newick.value;parent.init(true);return false">\
+<form id="form" onsubmit="if(!parent.newick)parent.newick=newick.value;parent.init();return false">\
 <b>Tree in Newick format:</b><br>\
 <textarea id="newick" cols=120 rows=20></textarea><br>\
 <table>\
@@ -3299,7 +3306,7 @@ else if (getParams().newick)
     {
       const fr = new FileReader();
       fr.onload = function () { newick = fr.result; }
-      newickP = this.files[0].name;
+      newickFName = this.files[0].name;
       fr.readAsText (this.files[0]);
     });
   document.getElementById('input_gains').addEventListener('change', function () 
