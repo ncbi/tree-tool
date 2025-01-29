@@ -226,7 +226,7 @@ public:
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
   : Application ("Save CDSs predicted by GeneMark; FASTA description contains: trunc5:(0/1) trunc3:(0/1) ")
@@ -275,7 +275,6 @@ struct ThisApplication : Application
     	while (f. nextLine ())
     	  try
 	    	{
-	    	#if 1
 	    	        string contig      = findSplit (f. line, '\t');
 	    	  const string method      = findSplit (f. line, '\t');
 	    	  const string type        = findSplit (f. line, '\t');
@@ -286,12 +285,6 @@ struct ThisApplication : Application
 	    	  const string frame       = findSplit (f. line, '\t');
 	    	  const string gene_id_txt = findSplit (f. line, ' ');
 	    	        string gene_idS    = std::move (f. line);
-	    	#else
-	  	    iss. reset (f. line);
-	        string contig, method, type, dot, strand, frame, gene_id_txt, gene_idS;	        
-	        size_t start, stop;
-	  	    iss >> contig >> method >> type >> start >> stop >> dot >> strand >> frame >> gene_id_txt >> gene_idS;
-	  	  #endif
 	  	    
 	  	    const size_t spacePos = contig. find (' ');
 	  	    if (spacePos != string::npos)
