@@ -126,6 +126,7 @@ struct ThisApplication : Application
   	  addPositional ("command", "Text with special symbols: \
 \"%d\" = <items>, \
 \"%f\" - item, \
+\"%n\" - item number (see -zero), \
 \"%<n>\" - subitem #n (1 <= n <= 9), \
 \"%{<n>}\" - subitem #n (n >= 10), \
 \"%h\" - small item hash (0.." + to_string (small_hash_class_max - 1) + "), \
