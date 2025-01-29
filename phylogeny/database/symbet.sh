@@ -28,8 +28,7 @@ function prepare
   DIR=$GENOME/$H/$ASM
   gunzip $DIR/$ASM.prot.gz -c > $TMP.fa
   cut -f 1 $DIR/$ASM.univ > $TMP.univ
- #$THIS/../../genetics/extractFastaProt $TMP.fa $TMP.univ -remove > $OUT  # $TMP.out
-  $THIS/../../genetics/filterFasta $TMP.fa  -aa  -target $TMP.univ  -remove  -min_len 20  -min_complexity 3 > $OUT  # $TMP.out
+  $THIS/../../genetics/filterFasta $TMP.fa  -aa  -target $TMP.univ  -remove  -len_min 20  -complexity_min 3 > $OUT  # $TMP.out
  #uclust.sh $TMP.out 0.95 $OUT
 }
 

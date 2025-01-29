@@ -24,8 +24,7 @@ if [ "$UNI" ]; then
   $THIS/../dm/uniKernel $TMP "V2" -qc > $UNI
 fi
 awk '$2 > '$T $TMP.stat | cut -f 1 > $TMP.list
-#$THIS/extractFastaProt $M $TMP.list  -min_len 0 
-$THIS/filterFasta $M  -aa  -target $TMP.list  -min_len 20  -min_complexity 3
+$THIS/filterFasta $M  -aa  -target $TMP.list  -len_min 20  -complexity_min 3
 
 
 rm $TMP*  

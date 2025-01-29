@@ -94,8 +94,8 @@ struct ThisApplication final : Application
 		  addFlag ("remove", "Sequences in <target> are removed from the input file, otherwise only the sequences in <target> are saved");
 		  addFlag ("replace", "<target> file contains a replacement");
 		  addFlag ("cut", "Cut out the segment indicated by <from> <to> in replacement in <target>");
-		  addKey ("min_len", "Min. sequence length", "0");
-		  addKey ("min_complexity", "Min. sequence complexity", "0");
+		  addKey ("len_min", "Min. sequence length", "0");
+		  addKey ("complexity_min", "Min. sequence complexity", "0");
 	  }
 
   
@@ -109,8 +109,8 @@ struct ThisApplication final : Application
 	        bool   removeP        = getFlag ("remove");
 	  const bool   replaceP       = getFlag ("replace");
 	  const bool   cutP           = getFlag ("cut"); 
-	  const size_t len_min        = str2<size_t> (getArg ("min_len"));
-	  const double complexity_min = arg2double ("min_complexity");
+	  const size_t len_min        = str2<size_t> (getArg ("len_min"));
+	  const double complexity_min = arg2double ("complexity_min");
 
 	  
     if (targetFName. empty ())

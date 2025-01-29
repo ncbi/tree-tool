@@ -42,7 +42,7 @@ if [ -s $IN ]; then
   cut -f 1,2,4,5 $ANNOT > $TMP.univ
 
  #$THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
-  $THIS/filterFasta $IN  -aa  -target $TMP.univ  -replace  -cut  -min_len 20  -min_complexity 3  -log $LOG  > $PROT_CUT
+  $THIS/filterFasta $IN  -aa  -target $TMP.univ  -replace  -cut  -len_min 20  -complexity_min 3  -log $LOG  > $PROT_CUT
 
   if false; then
     mkdir $TMP.seq
