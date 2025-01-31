@@ -103,7 +103,7 @@ struct ThisApplication final : Application
   	  addPositional ("tsv1", ".tsv-file 1");
   	  addPositional ("tsv2", ".tsv-file 2");
   	  addPositional ("keys", "Key columns, comma-separated");
-  	  addPositional ("diff", "Output tsv-file with different column values: <column name> <value in tsv1> <value in tsv2> <abs. difference (for numeric column)> <key>");
+  	  addPositional ("diff", "Output tsv-file with different column values: REPLACE|DELETE|ADD <column name> <value in tsv1> <value in tsv2> <abs. difference (for numeric column)> <key>");
   	  addKey ("diff_min", "Min. abs. difference of numeric columns to report", "0");
   	}
 
@@ -148,21 +148,34 @@ struct ThisApplication final : Application
     ASSERT (key2row1. size () == t1. rows. size ());
     ASSERT (key2row2. size () == t2. rows. size ());
     
-    size_t added = 0;
-    for (const auto& it : key2row2)
-      if (! findPtr (key2row1, it. first))
-        added++;
-    cout << "# Rows added: " << added << endl;
 
     OFStream diffF (diffFName);    
     // sort ??
-    diffF << "#column_\tvalue1_\tvalue2_\tdiff_\t" << keysVec. toString ("\t") << '\n';
+    diffF << "#change_\tcolumn_\tvalue1_\tvalue2_\tdiff_\t" << keysVec. toString ("\t") << '\n';
+
     size_t deleted = 0;
+    for (const auto& it : key2row2)
+      if (! findPtr (key2row1, it. first))
+      {
+        deleted++;
+        const StringVector* row2 = it. second;
+        ASSERT (row2);
+        FFOR (size_t, i, commonCols2. size ())
+        {
+          const string& val2 = (*row2) [commonCols2 [i]];
+          if (! val2. empty ())
+            diffF << "DELETE" << '\t' << t2. header [commonCols2 [i]]. name << '\t' << '\t' << val2 << '\t' << '\t' << it. first << '\n';
+        }
+      }
+    cout << "# Rows deleted: " << deleted << endl;
+
+    size_t added = 0;
     for (const auto& it : key2row1)
+    {
+      const StringVector* row1 = it. second;
+      ASSERT (row1);
       if (const StringVector* row2 = findPtr (key2row2, it. first))
       {
-        const StringVector* row1 = it. second;
-        ASSERT (row1);
         FFOR (size_t, i, commonCols1. size ())
         {
           const string& val1 = (*row1) [commonCols1 [i]];
@@ -183,13 +196,22 @@ struct ThisApplication final : Application
                 continue;
               diffS = to_string (diff);
             }
-            diffF << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << val2 << '\t' << diffS << '\t' << it. first << '\n';
+            diffF << "REPLACE" << '\t' << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << val2 << '\t' << diffS << '\t' << it. first << '\n';
           }
         }
       }
       else
-        deleted++;
-    cout << "# Rows deleted: " << deleted << endl;
+      {
+        added++;
+        FFOR (size_t, i, commonCols1. size ())
+        {
+          const string& val1 = (*row1) [commonCols1 [i]];
+          if (! val1. empty ())
+            diffF << "ADD" << '\t' << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << '\t' << '\t' << it. first << '\n';
+        }
+      }
+    }
+    cout << "# Rows added: " << added << endl;
 	}
 };
 
