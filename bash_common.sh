@@ -91,9 +91,7 @@ function differ
 {
   local F1=$1
   local F2=$2
-  set -x
-  diff $F1 $F2
-  set +x
+  ( set -x && diff $F1 $F2 )
 }
 
 
