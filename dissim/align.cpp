@@ -245,9 +245,9 @@ Align::Align (const Dna &dna1,
 
 #ifdef WU_BLASTN
 	constexpr int match_score    =  5;
-	constexpr int mismatch_score = -4;
-	constexpr int gap_open       =  -1;  // was: 0 ??
-	constexpr int gap_extent     = -10;
+	constexpr int mismatch_score = -4;  
+	constexpr int gap_open       = -15;  // WU-BLASTN: -1  // was: -5
+	constexpr int gap_extent     = -5;   // WU-BLASTN: -10
 #else	
   // NCBI BLASTN
 	constexpr int match_score    =  2;
