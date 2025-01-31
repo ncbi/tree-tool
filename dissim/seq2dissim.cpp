@@ -96,7 +96,7 @@ bool ambigClear (const string &seq,  // sparse
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   
   ThisApplication ()
@@ -109,7 +109,7 @@ struct ThisApplication : Application
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addKey ("noambig", "Min. window around a mutation with no ambiguity. -1: allow ambiguities", "-1");
-  	  addKey ("mutation", "file for mutations");
+  	  addKey ("mutation", "File for mutations");
 	  	addFlag ("ambig_start", "Replace deletions at the start of <target> by the ambiguity character");
            	  //ambig_end ??
       addFlag ("blosum62", "Use substitution matrix BLASUM62, otherwise PAM30. Valid for protein sequences");
