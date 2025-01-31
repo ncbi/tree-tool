@@ -831,7 +831,7 @@ void process (DiGraph &graph,
     }
     const string name (gene + ref + contig + ref_hsp + contig_hsp + " strand=" + to_string (exon->strand == 1 ? 1 : 0) + " score=" + to_string (int (totalScore)));
     Peptide pep (name, s, false);
-  //pep. pseudo = true;
+    pep. pseudo = true;
     pep. qc ();
     if (pep. getComplexity () >= complexity_min)  
       pep. saveText (cout);
