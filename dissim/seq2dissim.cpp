@@ -47,8 +47,8 @@ using namespace Seq_sp;
 
 namespace 
 {
-	
-
+  
+  
 Seq* readSeq (const string &fName,
               bool aa)
 {
@@ -56,10 +56,15 @@ Seq* readSeq (const string &fName,
   EXEC_ASSERT (in. nextLine ());
   Seq* seq = nullptr;
   if (aa)
-    seq = new Peptide (in, 10 * 1024, false);  // PAR
+  {
+    auto pep = new Peptide (in, 10 * 1024, true);  
+    pep->pseudo = true;
+    seq = pep;
+  }
   else
-    seq = new Dna (in, 1024 * 1024, false);  // PAR
+    seq = new Dna (in, 1024 * 1024, true);  
   QC_ASSERT (seq);
+  seq->unSparse ();  
   seq->qc ();
   
   return seq;
