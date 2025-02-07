@@ -34,8 +34,8 @@ if [ ! -s $DIR/dissim.add ]; then
   error "Empty $DIR/dissim.add" >> $LOG
 fi
 
-N=$( cat $DIR/request    | wc -l )
-M=$( cat $DIR/dissim.add | wc -l )
+N=$( < $DIR/request     wc -l )
+M=$( < $DIR/dissim.add  wc -l )
 if [ $N -ne $M ]; then
   wc -l $DIR/request    >> $LOG
   wc -l $DIR/dissim.add >> $LOG

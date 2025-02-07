@@ -18,7 +18,7 @@ $THIS/../setIntersect.sh $INC/log.list-all $INC/search.list 0 > $INC/log.list
 rm $INC/log.list-all
 rm $INC/search.list
 
-L=$( cat $INC/log.list | wc -l )
+L=$( < $INC/log.list  wc -l )
 if [ $L -gt 0 ]; then
   warning "# Failed tasks: $L"
   if [ $GRID == 0 ]; then

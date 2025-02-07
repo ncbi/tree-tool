@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Phenotypic quality of an incremental tree: initial tree"
@@ -16,16 +16,16 @@ VER_STEP=$3
 OUT_DIR=$4
 
 
-if [ $VER_MAX < 1 ]; then
+if [ $VER_MAX -lt 1 ]; then
   exit 1
 fi
-if [ $VER_STEP < 1 ]; then  
+if [ $VER_STEP -lt 1 ]; then  
   exit 1
 fi
 
 
-TMP=`mktemp`
-#echo $TMP  
+TMP=$( mktemp )
+#comment $TMP  
 
 
 cp $INC/hist/tree.1 $TMP.tree
@@ -37,7 +37,7 @@ i=1
 while [ $i -le $VER_MAX ]
 do
 	$THIS/distTree_inc_quality_phen_step.sh $INC $TMP.init $i $TMP $OUT_DIR
-	i = $(( $i + $VER_STEP ))
+	i=$(( i + VER_STEP ))
 done
 
 

@@ -14,13 +14,13 @@ REQ=$2
 OUT=$3
 
 
-N=$( cat $REQ | wc -l )
+N=$( < $REQ  wc -l )
 echo "$N $REQ"
 
 
 # $INC/dr.res
 GRID_MIN=$( cat $INC/pairs2dissim.grid )
-if [ -e $INC/dissim_full -o $N -le $GRID_MIN ]; then 
+if [ -e $INC/dissim_full ] || [ $N -le $GRID_MIN ]; then 
   $INC/pairs2dissim.sh $REQ "" $INC/dr.res $OUT.log > /dev/null
   if [ -e $OUT.log ]; then
     if [ -s $OUT.log ]; then
@@ -65,7 +65,7 @@ else
 		
 		$THIS/../trav $INC/dr.out "cat %d/%f" > $INC/dr.res
 
-		N_new=$( cat $INC/dr.res | wc -l )
+		N_new=$( < $INC/dr.res  wc -l )
 		echo "$N_new $INC/dr.res"
 		if [ $N -eq $N_new ]; then 
 		  break

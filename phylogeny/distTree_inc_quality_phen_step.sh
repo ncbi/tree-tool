@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Phenotypic quality of an incremental tree vs. #4.tree"
@@ -39,7 +39,7 @@ $THIS/tree2obj.sh $INTREE > $TMP.target
 # QC
 $THIS/../setMinus $OBJ_LIST $TMP.target > $TMP.zero
 #if (! -z $TMP.zero)  exit 1
-N=`cat $TMP.zero | wc -l`
+N=$( < $TMP.zero  wc -l )
 echo "# Outliers deleted: $N"
 
 $THIS/../setMinus $TMP.target $OBJ_LIST > $TMP.delete

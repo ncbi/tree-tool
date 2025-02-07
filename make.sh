@@ -20,7 +20,7 @@ function work
   section $DIR
   cd $DIR
   if [ $REB == 1 ]; then
-    rm -f *.o 
+    rm -f ./*.o 
   fi
   if [ -e Makefile ]; then
     make all

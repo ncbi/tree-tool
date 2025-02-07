@@ -29,20 +29,20 @@ function bad_word
 rm -rf $OUT
 mkdir -p $OUT
 for F in $( ls $INC/ | grep -v "\.old$" ); do
-  if [ -d $INC/$F -o $F == "tree" -o $F == "dissim" ]; then
+  if [ -d $INC/$F ] || [ $F == "tree" ] || [ $F == "dissim" ]; then
     continue;
   fi
 
   if [ -s $INC/$F ]; then
     set +o errexit
-    N=`file $INC/$F | grep -c 'ASCII text'`
+    N=$( file $INC/$F | grep -c 'ASCII text' )
     set -o errexit
     if [ $N -eq 0 ]; then
       continue
     fi
   fi
   
-  N=`cat $INC/$F | wc -l`
+  N=$( < $INC/$F  wc -l )
   if [ $N -lt 20000 ]; then  # PAR
     set +o errexit
     EX=$( file $INC/$F | grep -cw 'executable' )
