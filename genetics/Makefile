@@ -19,6 +19,7 @@ all:	\
 	blastmat \
 	blastn2mlst \
 	blastp_merge \
+	blastp2exons \
 	contig2read_coverage \
 	dna2orfs \
 	dna2stat \
@@ -122,6 +123,12 @@ blastp_merge.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
 blastp_mergeOBJS=blastp_merge.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o $(DM_DIR)/matrix.o
 blastp_merge:	$(blastp_mergeOBJS)
 	$(CXX) -o $@ $(blastp_mergeOBJS) $(LIBS) 
+	$(ECHO)
+
+blastp2exons.o:  $(COMMON_HPP) 
+blastp2exonsOBJS=blastp2exons.o $(CPP_DIR)/common.o
+blastp2exons:	$(blastp2exonsOBJS)
+	$(CXX) -o $@ $(blastp2exonsOBJS) $(LIBS) 
 	$(ECHO)
 
 contig2read_coverage.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(TSV_DIR)/tsv.hpp
