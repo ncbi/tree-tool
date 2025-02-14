@@ -28,7 +28,7 @@ ls -laF $DNA >> $LOG
 
 MATRIX="BLOSUM62"
 
-PARM="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq'"
+SEARCH="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX"
   # Too much time:
     # -word_size 2
     # -window_size 0
@@ -40,14 +40,14 @@ PARM="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -
   #            -asn-cache ${GP_cache_dir}  -blastp-args  --sam-query-len  -diamond-executable ${GP_HOME}/third-party/diamond/diamond  -lds2 ${input.lds2.target}  -ofmt  -output-dir ${output}  -output-manifest ${output}/align.mft -output-prefix hits -query-fmt seq-ids -query-manifest ${input.query_ids} -subject-fmt seq-ids -subject-manifest ${input.subject_ids} -work-area ${tmp}
 #makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
 #tblastn  -query $REF  -db $TMP  -db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads $CORES  > $TMP.tblastn
-$THIS/tblastn.sh $REF $DNA "$PARM" $CORES $TMP.tblastn
+$THIS/tblastn.sh $REF $DNA "$SEARCH"  "qseqid sseqid qstart qend sstart send qseq sseq"  10000000 $CORES $TMP.tblastn
 sort -k 1 $TMP.tblastn > $TMP.tblastn-sort
 
 VARIANT_PAR=""
 if [ $VARIANT == 1 ]; then
   VARIANT_PAR="-variant"
 fi
-$THIS/tblastn2marker_euk  $TMP.tblastn-sort  $VARIANT_PAR  -matrix $MATRIX  -qc  -log $LOG > $PROT
+$THIS/tblastn2marker_euk  $TMP.tblastn-sort  $VARIANT_PAR  -matrix $MATRIX  -threshold 3.5  -qc  -log $LOG > $PROT
 # Quality: 
   # grep '^>' $PROT | sed 's/^.*score=//1' | count
   # fasta2len $PROT -noprogress | cut -f 2 | count
