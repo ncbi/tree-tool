@@ -64,7 +64,7 @@ struct ThisApplication final : Application
 		const string keysS = getArg ("keys");
 
     
-    const TextTable tab (fName, noString, 10000);  // PAR
+    const TextTable tab (fName, noString, true, 10000);  // PAR
     tab. qc ();
 
     const StringVector keysVec (keysS, ',', true);

@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert a tsv-table into SQL insert statements")

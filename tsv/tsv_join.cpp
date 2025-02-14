@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Join 2 tsv-tables by identical columns, print the result")
