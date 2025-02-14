@@ -118,11 +118,11 @@ struct ThisApplication final : Application
 	  const double diff_min  = str2<double> (getArg ("diff_min"));
 	  
 	  	  
-    const TextTable t1 (fName1, noString, 100000);  // PAR
+    const TextTable t1 (fName1, noString, true, 100000);  // PAR
     cout << "# " << fName1 << " rows: " << t1. rows. size () << endl;
     t1. qc ();
 
-    const TextTable t2 (fName2, noString, 100000);  // PAR
+    const TextTable t2 (fName2, noString, true, 100000);  // PAR
     cout << "# " << fName2 << " rows: " << t2. rows. size () << endl;
     t2. qc ();
 
@@ -164,7 +164,13 @@ struct ThisApplication final : Application
         {
           const string& val2 = (*row2) [commonCols2 [i]];
           if (! val2. empty ())
-            diffF << "DELETE" << '\t' << t2. header [commonCols2 [i]]. name << '\t' << '\t' << val2 << '\t' << '\t' << it. first << '\n';
+            diffF         << "DELETE" 
+                  << '\t' << t2. header [commonCols2 [i]]. name 
+                  << '\t' 
+                  << '\t' << val2 
+                  << '\t' 
+                  << '\t' << it. first 
+                  << '\n';
         }
       }
     cout << "# Rows deleted: " << deleted << endl;
@@ -196,7 +202,13 @@ struct ThisApplication final : Application
                 continue;
               diffS = to_string (diff);
             }
-            diffF << "REPLACE" << '\t' << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << val2 << '\t' << diffS << '\t' << it. first << '\n';
+            diffF         << "REPLACE" 
+                  << '\t' << t1. header [commonCols1 [i]]. name 
+                  << '\t' << val1 
+                  << '\t' << val2 
+                  << '\t' << diffS 
+                  << '\t' << it. first 
+                  << '\n';
           }
         }
       }
