@@ -200,7 +200,8 @@ public:
   
 
 private:
-  Data (Names &names_arg,
+  Data (bool headerP,
+        Names &names_arg,
         TokenInput &tin,
         VectorOwn<Data> &markupDeclarations);
     // Text
@@ -236,7 +237,8 @@ private:
                              string &name);
     // Update: name
 public:
-  static Data* load (Names &names,
+  static Data* load (bool headerP,
+                     Names &names,
                      const string &fName,
                      VectorOwn<Data> &markupDeclarations);
     // Text XML

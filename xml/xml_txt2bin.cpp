@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert text XML to binary XML")
@@ -70,7 +70,7 @@ struct ThisApplication : Application
 	  Names names (10000);   // PAR
 	  
 	  VectorOwn<Xml_sp::Data> targetMarkupDeclarations;
-	  unique_ptr<const Xml_sp::Data> in (Xml_sp::Data::load (names, fromFName, targetMarkupDeclarations));
+	  unique_ptr<const Xml_sp::Data> in (Xml_sp::Data::load (true /*PAR*/, names, fromFName, targetMarkupDeclarations));
     in->qc ();
 
     cxml. reset (new Xml::BinFile (toFName, in->getName ()));

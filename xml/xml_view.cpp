@@ -586,7 +586,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	  else
 	  {
 		  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  	xml = Xml_sp::Data::load (names, xmlFName, markupDeclarations);
+	  	xml = Xml_sp::Data::load (true /*PAR*/, names, xmlFName, markupDeclarations);
 	  }
     ASSERT (xml);
     xml_. reset (xml);

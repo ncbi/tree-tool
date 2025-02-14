@@ -412,25 +412,29 @@ void Schema::setFlatColumns (const Schema* curTable,
 
 // Data
 
-Data::Data (Names &names_arg,
+Data::Data (bool headerP,
+            Names &names_arg,
 	          TokenInput &ti,
             VectorOwn<Data> &markupDeclarations)
 : names (names_arg)
 , binary (false)
 , attribute (false)
 {
-  ti. get ('<');
-  ti. get ('?');
-  ti. get ("xml");
-  for (;;)
+  if (headerP)
   {
-    const Token t (ti. get ());
-    if (t. isDelimiter ('>'))
-      break;
-    if (t. empty ())
-      throw runtime_error ("XML header is not finished");
+    ti. get ('<');
+    ti. get ('?');
+    ti. get ("xml");
+    for (;;)
+    {
+      const Token t (ti. get ());
+      if (t. isDelimiter ('>'))
+        break;
+      if (t. empty ())
+        throw runtime_error ("XML header is not finished");
+    }
   }
-  
+    
   for (;;)
   {
     readInput (ti);
@@ -675,7 +679,8 @@ Data::Data (const Names &names_arg,
 
 
 
-Data* Data::load (Names &names,
+Data* Data::load (bool headerP,
+                  Names &names,
 	                const string &fName,
                   VectorOwn<Data> &markupDeclarations)
 { 
@@ -685,7 +690,7 @@ Data* Data::load (Names &names,
     try 
     { 
 		  Unverbose unv;
-    	f. reset (new Xml_sp::Data (names, ti, markupDeclarations));	
+    	f. reset (new Xml_sp::Data (headerP, names, ti, markupDeclarations));	
     }
     catch (const TextPos::Error &e)
       { throw e; }

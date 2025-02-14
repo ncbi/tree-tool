@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Generate tab-delimited files for SQL bulk insert from XML files and their XML schema")
@@ -56,6 +56,7 @@ struct ThisApplication : Application
   	  addPositional ("xml_num", "XML file number");
   	  addPositional ("schema", "XML schema file");
   	  addPositional ("out_dir", "Directory for output tab-delimited files");
+  	  addFlag ("no_xml_header", "XML file has no header");
   	}
   	
   	
@@ -66,6 +67,7 @@ struct ThisApplication : Application
 		const size_t xml_num     = str2<size_t> (getArg ("xml_num"));
 		const string schemaFName =               getArg ("schema");
 		      string dirName     =               getArg ("out_dir");
+		const bool headerP       =             ! getFlag ("no_xml_header");
 		      
 		if (! isDirName (dirName))
 		  dirName += '/';
@@ -78,7 +80,7 @@ struct ThisApplication : Application
     Names names (10000);   // PAR
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
 	#if 1
-	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (headerP, names, xmlFName, markupDeclarations));
 	#else
 	  unique_ptr<const Xml_sp::Data> xml;
 	  {

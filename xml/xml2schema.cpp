@@ -46,13 +46,14 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Analyze an XML file and print the derived schema")
   	{
       version = VERSION;
   	  addPositional ("xml", "XML file");
+  	  addFlag ("no_xml_header", "XML file has no header");
   	  addKey ("print", "Output XML file");
   	  addFlag ("store_values", "Store all field values in schema");
   	}
@@ -62,13 +63,14 @@ struct ThisApplication : Application
 	void body () const final
 	{
 		const string xmlFName   = getArg ("xml");
+		const bool headerP      = ! getFlag ("no_xml_header");
 		const string printFName = getArg ("print");
 		const bool storeValues  = getFlag ("store_values");
 	
 	
 	  Names names (10000);  // PAR
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (names, xmlFName, markupDeclarations));
+	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (headerP, names, xmlFName, markupDeclarations));
     xml->qc ();
     
     if (! printFName. empty ())
