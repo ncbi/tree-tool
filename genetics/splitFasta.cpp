@@ -131,9 +131,10 @@ struct ThisApplication final : Application
   	  addPositional ("out_dir", "Output directory");
   	  addFlag ("aa", "Multi-FASTA file contains protein sequences, otherwise DNA sequences");
   	  addFlag ("sparse", "Sparse sequence");
-  	  addFlag ("pseudo", "Pseudo-proteins are allowed");
   	  addKey ("len_min", "Minimum sequence length", "0");
 		  addFlag ("whole", "Sequence identifiers are whole strings which should not be split by '|'");
+  	  addFlag ("pseudo", "Pseudo-proteins are allowed");
+  	  addKey ("mono_nuc_max", "Mask mononucleotide repeats longer than <mono_nuc_max>. 0 = infinity", "0");
     #ifndef _MSC_VER
   	  addFlag ("large", "Create files in subdirectories \"0\" .. \"" + to_string (small_hash_class_max - 1) + "\" which are the hashes of file names");
   	#endif
@@ -147,20 +148,25 @@ struct ThisApplication final : Application
 
 	void body () const final
   {
-		const string in          = getArg ("in");
-		const string out_dir     = getArg ("out_dir");
-		const bool   aa          = getFlag ("aa");
-		const bool   sparse      = getFlag ("sparse");
-		const bool   pseudo      = getFlag ("pseudo");
-		const size_t len_min     = (size_t) arg2uint ("len_min");
-	  const bool   whole       = getFlag ("whole");
+		const string in           = getArg ("in");
+		const string out_dir      = getArg ("out_dir");
+		const bool   aa           = getFlag ("aa");
+		const bool   sparse       = getFlag ("sparse");
+		const size_t len_min      = (size_t) arg2uint ("len_min");
+	  const bool   whole        = getFlag ("whole");
+		const bool   pseudo       = getFlag ("pseudo");
+		const size_t mono_nuc_max = (size_t) arg2uint ("mono_nuc_max");
   #ifndef _MSC_VER
-		const bool   large       = getFlag ("large");
+		const bool   large        = getFlag ("large");
   #endif
-    const size_t group_count = (size_t) arg2uint ("group_count");
-    const size_t group_size  = (size_t) arg2uint ("group_size");
-    const string ext         = getArg ("extension");
-                 seqSuffix   = getArg ("suffix");
+    const size_t group_count  = (size_t) arg2uint ("group_count");
+    const size_t group_size   = (size_t) arg2uint ("group_size");
+    const string ext          = getArg ("extension");
+                 seqSuffix    = getArg ("suffix");
+
+  
+    QC_IMPLY (pseudo, aa);
+    QC_IMPLY (mono_nuc_max, ! aa);
 
 
     const bool groupP = group_count || group_size;
@@ -186,7 +192,13 @@ struct ThisApplication final : Application
   	        pep->pseudo = true;
   	    }
   	    else
-  	      seq. reset (new Dna (fa, 128 * 1024, sparse));  
+  	    {
+  	      auto dna = new Dna (fa, 128 * 1024, sparse);
+  	      dna->qc ();
+  	      if (mono_nuc_max)
+  	        dna->monoNuc2n (mono_nuc_max + 1);
+  	      seq. reset (dna);  
+  	    }
   	    seq->qc ();
   	    ASSERT (! seq->name. empty ());
   	    if (isRight (seq->name, splitSuffix))
