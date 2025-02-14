@@ -14,16 +14,16 @@ SUBSET=$3
 OUT=$4
 
 
-INC=`dirname $0`
-SERVER=`cat $INC/server`
-DATABASE=`cat $INC/database`
-BULK_REMOTE=`cat $INC/bulk_remote`
-TAX=`cat $INC/../tax_id`
+INC=$( dirname $0 )
+SERVER=$( cat $INC/server )
+DATABASE=$( cat $INC/database )
+BULK_REMOTE=$( cat $INC/bulk_remote )
+TAX=$( cat $INC/../tax_id )
 
 if [ -z $DIR ]; then
   DIR=$INC/../genome
   if [ -e $INC/large ]; then
-    H=`CPP_DIR/file2hash $GENOME`
+    H=$( CPP_DIR/file2hash $GENOME )
     DIR=$DIR/$H/$GENOME
   fi
 fi

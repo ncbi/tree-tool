@@ -10,10 +10,10 @@ OBJ_LIST=$1
 IN_TREE=$2
 
 
-INC=`dirname $0`
-SERVER=`cat $INC/server`
-DATABASE=`cat $INC/database`
-BULK_REMOTE=`cat $INC/bulk_remote`
+INC=$( dirname $0 )
+SERVER=$( cat $INC/server )
+DATABASE=$( cat $INC/database )
+BULK_REMOTE=$( cat $INC/bulk_remote )
 
 CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..List
 

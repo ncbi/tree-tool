@@ -24,7 +24,7 @@ if [ $NEW == 0 ]; then
   H1=$( CPP_DIR/file2hash $OBJ1 )
   PATH1=$GENOME/$H1/$OBJ1/$OBJ1
 else
-  PATH1=$OBJ1/`basename $OBJ1`
+  PATH1=$OBJ1/$( basename $OBJ1 )
 fi
 
 H2=$( CPP_DIR/file2hash $OBJ2 )

@@ -14,12 +14,12 @@ SUBSET=$3
 OUT=$4
 
 
-INC=`dirname $0`
+INC=$( dirname $0 )
 
 if [ -z $DIR ]; then
   DIR=$INC/../genome
   if [ -e $INC/large ]; then
-    H=`CPP_DIR/file2hash $GENOME`
+    H=$( CPP_DIR/file2hash $GENOME )
     DIR=$DIR/$H/$GENOME
   fi
 fi

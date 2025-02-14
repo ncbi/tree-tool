@@ -4,7 +4,7 @@ if [ $# -ne 4 ]; then
   echo "Compute dissimilarities for pairs of objects"
   echo "#1: input dissimilarity requests (pairs of objects)"
   echo "#2: new object path or ''. Object name is basename"
-  echo "#3: output dissimilarities added to the pairs of objects"
+  echo "#3: output dissimilarities added to the pairs of objects (absolute pathname)"
   echo "#4: error log"
   exit 1
 fi

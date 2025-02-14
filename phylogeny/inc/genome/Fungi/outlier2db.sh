@@ -8,9 +8,9 @@ if [ $# -ne 2 ]; then
 fi
 
 
-INC=`dirname $0`
-SERVER=`cat $INC/server`
-DATABASE=`cat $INC/database`
+INC=$( dirname $0 )
+SERVER=$( cat $INC/server )
+DATABASE=$( cat $INC/database )
 
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update Genome
