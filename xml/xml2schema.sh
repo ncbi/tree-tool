@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Print derived XML schema"
@@ -9,7 +9,7 @@ fi
 BIOS=$1
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 gunzip $BIOS -c > $TMP
 $THIS/xml2schema $TMP -qc 
