@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert a tsv-file of object-attribute-value triples into a tsv-file with attributes as columns")
@@ -56,6 +56,8 @@ struct ThisApplication : Application
   	  addPositional ("obj", "Object column in <table>");
   	  addPositional ("attr", "Attribute column in <table>");
   	  addPositional ("val", "Value column in <table>");  	  
+  	  addFlag ("no_header", ".tsv-file has no header");
+  	  addFlag ("aggr", "Aggregate multipel values");
   	}
   	
   	
@@ -66,6 +68,8 @@ struct ThisApplication : Application
 		const string objName  = getArg ("obj");
 		const string attrName = getArg ("attr");
 		const string valName  = getArg ("val");
+		const bool   headerP  = ! getFlag ("no_header");
+		const bool   aggrP    = getFlag ("aggr");
 
 
     {
@@ -75,7 +79,9 @@ struct ThisApplication : Application
         throw runtime_error ("Oject-attribute-value columns must be different");
     }
 
-    const TextTable tt (fName);
+    constexpr size_t displayPeriod = 10000;  // PAR
+    
+    const TextTable tt (fName, noString, headerP, displayPeriod);  
     tt. qc ();
     
     const TextTable::ColNum objCol  = tt. col2num (objName);
@@ -113,31 +119,41 @@ struct ThisApplication : Application
     }
 
 
-    for (const StringVector& row : tt. rows)
     {
-      if (   row [objCol].  empty ()
-          || row [attrCol]. empty ()
-         )
-        continue;
-
-      ASSERT (contains (obj2num, row [objCol]));
-      const size_t objNum = obj2num [row [objCol]];
-      ASSERT (objNum <= out. rows. size ());
-      if (objNum == out. rows. size ())
+      Progress prog (tt. rows. size (), displayPeriod);  
+      for (const StringVector& row : tt. rows)
       {
-        StringVector newRow (attrs. size () + 1);
-        newRow [0] = row [objCol];
-        out. rows << std::move (newRow);
+        prog ();
+        
+        if (   row [objCol].  empty ()
+            || row [attrCol]. empty ()
+           )
+          continue;
+
+        ASSERT (contains (obj2num, row [objCol]));
+        const size_t objNum = obj2num [row [objCol]];
+        ASSERT (objNum <= out. rows. size ());
+        if (objNum == out. rows. size ())
+        {
+          StringVector newRow (attrs. size () + 1);
+          newRow [0] = row [objCol];
+          out. rows << std::move (newRow);
+        }
+
+        const size_t attrNum = attr2num [row [attrCol]];
+        ASSERT (attrNum);
+
+        string& field = out. rows [objNum] [attrNum];
+        if (field. empty ())
+          field = row [valCol];
+        else
+          if (aggrP)
+            aggregate (field, row [valCol], TextTable::aggr_sep);
+          else
+            throw runtime_error ("Duplicate object/attribute: " + row [objCol] + "/" + row [attrCol]);
       }
-
-      const size_t attrNum = attr2num [row [attrCol]];
-      ASSERT (attrNum);
-
-      if (! out. rows [objNum] [attrNum]. empty ())
-        throw runtime_error ("Duplicate object/attribute: " + row [objCol] + "/" + row [attrCol]);
-      out. rows [objNum] [attrNum] = row [valCol];
     }
-    
+      
 
     out. saveText (cout);
 	}
