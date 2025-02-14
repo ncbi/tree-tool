@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Select representatives of a family"
   echo "#1: protein FASTA"
-  echo "#2: min. representatoin share (0..1)"
+  echo "#2: min. representation share (0..1)"
   echo "#3: cores"
   echo "#4: output file of representative sequences"
   exit 1
