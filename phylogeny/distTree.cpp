@@ -8365,7 +8365,7 @@ Real DistTree::getMeanResidual () const
   for (const Dissim& dissim : dissims)
     if (dissim. validMult ())
       s += dissim. mult * dissim. getResidual ();
-    ASSERT (! isNan (s));
+  ASSERT (! isNan (s));
   
   return s / mult_sum;
 }
