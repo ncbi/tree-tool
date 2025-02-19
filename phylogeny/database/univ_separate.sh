@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 source $THIS/../../qsub_env.sh
 GENOME="genome"
@@ -27,7 +27,7 @@ if [ ! -e hmm-univ.list ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 
@@ -50,15 +50,15 @@ rm -r $F.pairs.dir &
 $THIS/../../trav  $F-univ "cat %d/%f" > $TMP.dissim
 rm -r $F-univ/ &
 
-N=`cat $TMP.dissim | wc -l`
-echo "OBJNUM $N name nomult"                >  $F-univ-separate.dm
-echo "ATTRIBUTES"                           >> $F-univ-separate.dm
-cat hmm-univ.list | sed 's/$/ Positive 6/1' >> $F-univ-separate.dm
-echo "DATA"                                 >> $F-univ-separate.dm
-cat $TMP.dissim | sed -e 's/\t/-/1'         >> $F-univ-separate.dm
+N=$( < $TMP.dissim  wc -l )
+echo "OBJNUM $N name nomult"          >  $F-univ-separate.dm
+echo "ATTRIBUTES"                     >> $F-univ-separate.dm
+sed 's/$/ Positive 6/1' hmm-univ.list >> $F-univ-separate.dm
+echo "DATA"                           >> $F-univ-separate.dm
+sed -e 's/\t/-/1' $TMP.dissim         >> $F-univ-separate.dm
 
 
-cat $F-univ-separate.dm | sed 's/\tinf/\t?/g' | sed 's/\tnan/\t?/g' > $TMP.nan.dm
+sed 's/\tinf/\t?/g' $F-univ-separate.dm | sed 's/\tnan/\t?/g' > $TMP.nan.dm
 $THIS/../../dm/attrs $TMP.nan | cut -f 1,3 > hmm-missings.tsv
 $THIS/../../dm/conversion/cols2dm.sh hmm-missings.tsv 1 0 1 > $TMP.attrs.dm
 $THIS/../../dm/uniKernel $TMP.attrs "Missings" -qc > hmm-missings.uniKernel
