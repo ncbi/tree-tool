@@ -8,7 +8,7 @@ if [ $# -ne 6 ]; then
   echo "#2: #1 is proteins (0/1)"
   echo "#3: DNA strand is known (0/1)"
   echo "#4: global alignment (0/1)"
-  echo "#5: `$THIS/../dissim/fasta2dissim -help | grep ^-distance -A 1 | tail -1 | sed 's/^ *//1'`"
+  echo "#5: $( $THIS/../dissim/fasta2dissim -help | grep ^-distance -A 1 | tail -1 | sed 's/^ *//1' )"
   echo "#6: output file prefix"
   exit 1
 fi
