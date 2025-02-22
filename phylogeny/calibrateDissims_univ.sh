@@ -6,11 +6,13 @@ if [ $# -ne 8 ]; then
   echo "#1: input .dm-file without '.dm' created by univ_separate.sh"
   echo "#2: phen/"
   echo "#3: phen/ is large (0/1)"
- #echo "#2: delete hybrids (0/1)"
+  echo "   For hmm-univ.stat"
   echo "#4: dissimilarity power (> 0)"
-  echo "#5: dissim_coeff: >=0 (>0 <=> variance = linExp)"
-  echo "#6: outlierSEs"
  #echo "#5: ignoreZero (0/1)"
+  echo "#5: outlierSEs"
+  echo "  For tree"
+ #echo "#2: delete hybrids (0/1)"
+  echo "#6: dissim_coeff: >=0 (>0 <=> variance = linExp)"
   echo "#7: variance_power (NAN <=> variance = linExp)"
   echo "#8: variance_dissim (0/1)"
   exit 1
@@ -18,16 +20,15 @@ fi
 INPUT=$1
 PHEN=$2
 LARGE=$3
+# For hmm-univ.stat
 DISSIM_POWER=$4
-DISSIM_COEFF=$5
-OUTLIER_SES=$6
+IGNORE_ZERO=1  # PAR
+OUTLIER_SES=$5
+# For tree
+DELETE_HYBRIDS=0  # PAR
+DISSIM_COEFF=$6
 VAR_POWER=$7
 VARIANCE_DISSIM=$8
-
-
-# PAR
-DELETE_HYBRIDS=0
-IGNORE_ZERO=1
 
 
 section "Estimating hmm-univ.stat"
