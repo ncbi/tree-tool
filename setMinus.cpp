@@ -153,7 +153,7 @@ struct Item
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print the set-theoretic minus: <list1> \\ <list2>\n\
