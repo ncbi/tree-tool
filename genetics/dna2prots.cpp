@@ -1,4 +1,4 @@
-// dna2stat.cpp
+// dna2prots.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print all ORFs between stop codons
+*   Print all longest proteins between start and stop codons
 *
 */
 
@@ -49,42 +49,51 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print all ORFs between stop codons")
+    : Application ("Print all longest proteins between start and stop codons")
 	  {
       version = VERSION;
 	  	addPositional ("in", "Input DNA multi-FASTA file");
 	  	addPositional ("gencode", "NCBI genetic code");
-	  	addPositional ("len_min", "Min. ORF length in aa without 'X'");
+	  	addPositional ("len_min", "Min. protein length in aa");
+		  addKey ("complexity_min", "Min. protein sequence complexity", "0");
+		  addFlag ("no_x", "Suppress sequences with ambiguous aa");
 	  }
 
 
 
   void body () const final
   {
-    const string  inFName = getArg ("in");
-    const Gencode gencode = (Gencode) str2<uint> (getArg ("gencode"));
-    const size_t len_min  = str2<size_t> (getArg ("len_min"));
+    const string  inFName       = getArg ("in");
+    const Gencode gencode       = (Gencode) str2<uint> (getArg ("gencode"));
+    const size_t len_min        = str2<size_t> (getArg ("len_min"));
+	  const double complexity_min = arg2double ("complexity_min");
+	  const bool   allowX         = ! getFlag ("no_x");
 
 
     Vector<Peptide> peps;  peps. reserve (10000); // PAR
 	  {
-		  Multifasta faIn (inFName, false);
+		  Multifasta faIn (inFName, false, 1);
 		  while (faIn. next ())
 		  {
 		    Dna dna (faIn, 1e6/*PAR*/, false);
 	    	strLower (dna. seq);
 			  dna. qc ();
 			  for (const int frame : {-3, -2, -1, 1, 2, 3})
-			    peps << dna. getOrfs ((Frame) frame, gencode, len_min);
+			    peps << dna. getPeptides ((Frame) frame, gencode, len_min);
 			}
-		}		     
+		}		 
+		    
     for (const Peptide& pep : peps)
     {
-      pep. saveText (cout);
       pep. qc ();
+      ASSERT (pep. seq. size () >= len_min);
+      if (   pep. getComplexity () >= complexity_min
+          && (allowX || ! pep. getXs ())
+         )
+        pep. saveText (cout);
     }
   }  
 };
