@@ -2,7 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 8 ]; then
-  echo "Output: hmm-univ.stat, positiveAverage.out, data.dm, tree, variance"
+  echo "Output: variance, hmm-univ.stat, positiveAverage.out, data.dm, tree"
   echo "#1: input .dm-file without '.dm' created by univ_separate.sh"
   echo "#2: phen/"
   echo "#3: phen/ is large (0/1)"
