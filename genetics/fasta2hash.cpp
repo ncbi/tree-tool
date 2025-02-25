@@ -85,7 +85,7 @@ void addHash (const string &s,
   
 
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
   : Application ("Print hash codes for CDSs or proteins")
