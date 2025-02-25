@@ -173,7 +173,7 @@ struct ThisApplication final : Application
 
     QC_ASSERT (! out_dir. empty ());    
   #ifndef _MSC_VER
-    QC_IMPLY (large, groupP);
+    QC_IMPLY (groupP, ! large);
   #endif
     QC_IMPLY (groupP, ext. empty ());
 
