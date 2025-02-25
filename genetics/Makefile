@@ -21,7 +21,7 @@ all:	\
 	blastp_merge \
 	blastp2exons \
 	contig2read_coverage \
-	dna2orfs \
+	dna2prots \
 	dna2stat \
 	dna_complexity \
   dna_consensus \
@@ -60,6 +60,7 @@ all:	\
 	prot2fingerprints \
 	prot2triplets \
 	prot_check \
+	prot_clust \
 	prot_complexity \
 	prot_consensus \
 	prot_find \
@@ -76,11 +77,6 @@ all:	\
 	tblastn2orfs \
 	uniqProtRef \
 	uniqSeq
-
-
-# Old:
-#	extractFastaDna 
-#	extractFastaProt
 
 
 align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
@@ -137,10 +133,10 @@ contig2read_coverage:	$(contig2read_coverageOBJS)
 	$(CXX) -o $@ $(contig2read_coverageOBJS) $(LIBS) 
 	$(ECHO)
 
-dna2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-dna2orfsOBJS=dna2orfs.o $(SEQ_OBJ)
-dna2orfs:	$(dna2orfsOBJS)
-	$(CXX) -o $@ $(dna2orfsOBJS) $(LIBS) 
+dna2prots.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna2protsOBJS=dna2prots.o $(SEQ_OBJ)
+dna2prots:	$(dna2protsOBJS)
+	$(CXX) -o $@ $(dna2protsOBJS) $(LIBS) 
 	$(ECHO)
 
 dna2stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
@@ -195,18 +191,6 @@ dna_trim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 dna_trimOBJS=dna_trim.o $(SEQ_OBJ)
 dna_trim:	$(dna_trimOBJS)
 	$(CXX) -o $@ $(dna_trimOBJS) $(LIBS) 
-	$(ECHO)
-
-extractFastaDna.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-extractFastaDnaOBJS=extractFastaDna.o $(SEQ_OBJ)
-extractFastaDna:	$(extractFastaDnaOBJS)
-	$(CXX) -o $@ $(extractFastaDnaOBJS) $(LIBS) 
-	$(ECHO)
-
-extractFastaProt.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-extractFastaProtOBJS=extractFastaProt.o $(SEQ_OBJ)
-extractFastaProt:	$(extractFastaProtOBJS)
-	$(CXX) -o $@ $(extractFastaProtOBJS) $(LIBS) 
 	$(ECHO)
 
 fasta_prefix.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
@@ -369,6 +353,12 @@ prot_check.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 prot_checkOBJS=prot_check.o $(SEQ_OBJ)
 prot_check:	$(prot_checkOBJS)
 	$(CXX) -o $@ $(prot_checkOBJS) $(LIBS) 
+	$(ECHO)
+
+prot_clust.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+prot_clustOBJS=prot_clust.o $(SEQ_OBJ)
+prot_clust:	$(prot_clustOBJS)
+	$(CXX) -o $@ $(prot_clustOBJS) $(LIBS) 
 	$(ECHO)
 
 prot_complexity.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
