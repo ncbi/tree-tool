@@ -15,13 +15,15 @@ OVER=$3
 
 
 #set -x
+VER=1
+SERVER=$( cat $INC/server )
+HYBRIDNESS_MIN=$( cat $INC/hybridness_min )
 
 
 sort -cu $OBJS
 
 
 section "QC $INC/"
-VER=1
 if [ $OVER == 0 ]; then
   VER=$( cat $INC/version )
   if [ $VER -ne 1 ]; then
@@ -58,13 +60,11 @@ fi
 
 TMP=$( mktemp )
 $THIS/distTree_inc_new_list.sh $INC > $TMP || (cat $TMP && exit 1)
-N=$( < $TMP wc -l )
+N=$( < $TMP  wc -l )
 if [ $N -gt 0 ]; then
   error "$INC/new/ must be empty"
 fi
 rm $TMP
-
-SERVER=$( cat $INC/server )
 
 
 section "Computing dissimilarities"
@@ -95,7 +95,6 @@ if [ $SERVER ]; then
   rm $INC/outlier-alien
 fi
 
-HYBRIDNESS_MIN=$( cat $INC/hybridness_min )
 if [ $HYBRIDNESS_MIN != 0 ]; then
   section "distTriangle"
  #cat data.dm | sed 's/nan/inf/g' > $INC/data1.dm
@@ -110,8 +109,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   if [ $SERVER ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
-  	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
-  	mv $INC/data.dm .
+  	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > data.dm
   fi
 fi
 
@@ -134,6 +132,8 @@ if [ $SERVER ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC
   fi
+  section "QC"
+  $INC/qc.sh 0
 fi
 
 rm $INC/tree.list
