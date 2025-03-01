@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print assemblies with too few univesal proteins"
@@ -15,14 +15,14 @@ MIN=$3
 MAX=$4
 
 
-H=`$THIS/../../file2hash $ASM`
+H=$( $THIS/../../file2hash $ASM )
 F=genome/$H/$ASM/$ASM.hash-$HASHTYPE
 
 if [ ! -e $F ]; then
   error "$ASM No $F" 
 fi
 
-N=`cat $F | wc -l`
+N=$( < $F  wc -l )
 if [ $N -lt $MIN ]; then
   echo "$ASM small" 
   exit 0
