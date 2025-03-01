@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# != 9 ]; then
   echo "Print Genome.id's approximately closest to #1, where Genome.in_tree = 1"
@@ -25,12 +25,12 @@ TYPE=$8
 SUBSET=$9
 
 
-TMP=`mktemp`  
+TMP=$( mktemp )
 #comment $TMP
 #set -x
 
 
-NAME=`basename $TMP`
+NAME=$( basename $TMP )
 BULK_FILE=$BULK/$NAME
 FILE=$DIR/$GENOME
 
@@ -42,7 +42,7 @@ unix2dos -o $BULK_FILE &> /dev/null
 $THIS/Genome_hash_requestClosest_.sh $SERVER $DATABASE $BULK_REMOTE $GENOME $TAXROOT $TYPE $NAME $NAME.subset > $TMP
 
 if [ "$TYPE" != "PRT" ]; then
-  N=`cat $TMP | wc -l`
+  N=$( < $TMP  wc -l )
   if [ $N -lt 90 ]; then  # PAR
     cp $FILE.hash-PRT $BULK_FILE
     unix2dos -o $BULK_FILE &> /dev/null
@@ -52,7 +52,7 @@ if [ "$TYPE" != "PRT" ]; then
   fi
 fi
 
-N=`cat $TMP | wc -l`
+N=$( < $TMP  wc -l)
 if [ $N -lt 90 ]; then  # PAR
   cp $FILE.hash-HMM $BULK_FILE
   unix2dos -o $BULK_FILE &> /dev/null
