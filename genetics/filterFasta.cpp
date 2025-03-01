@@ -96,6 +96,7 @@ struct ThisApplication final : Application
 		  addFlag ("cut", "Cut out the segment indicated by <from> <to> in replacement in <target>");
 		  addKey ("len_min", "Min. sequence length", "0");
 		  addKey ("complexity_min", "Min. sequence complexity", "0");
+		  addFlag ("title", "Preserve sequence titles");
 	  }
 
   
@@ -111,6 +112,7 @@ struct ThisApplication final : Application
 	  const bool   cutP           = getFlag ("cut"); 
 	  const size_t len_min        = str2<size_t> (getArg ("len_min"));
 	  const double complexity_min = arg2double ("complexity_min");
+	  const bool   titleP         = getFlag ("title");
 
 	  
     if (targetFName. empty ())
@@ -199,6 +201,8 @@ struct ThisApplication final : Application
     	    continue;
         if (seq->getComplexity () < complexity_min)  
           continue;
+        if (! titleP)
+          seq->name. erase (seq->getIdSize ());
         seq->saveText (cout);
 		  }
 		}
