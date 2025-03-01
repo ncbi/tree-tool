@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 8 ]; then
   echo "Quality control of a locus incremental distance tree directory"
@@ -23,7 +23,7 @@ GENE=$7
 VERB=$8
 
 
-TMP=`mktemp`
+TMP=%$( mktemp )
 if [ $VERB == 1 ]; then
   echo $TMP
   set -x
@@ -41,22 +41,20 @@ diff $TMP.seq-fa $TMP.tree
 $THIS/../distTree_inc_new_list.sh $INC > $TMP.new
 $THIS/../../setIntersect.sh $TMP.new $TMP.tree 0 > $TMP.intersect
 if [ -s $TMP.intersect ]; then
-  wc -l $TMP.intersect
-  exit 1
+  error "$( wc -l $TMP.intersect )"
 fi
 
 echo ">aa" > $TMP.seq
 echo "tttttttttttttttttttttttttt" >> $TMP.seq
 blastn -query $TMP.seq  -db $INC/seq.fa | grep "Number of sequences in database:" | sed 's/,//g' | sed 's/^ *//1' > $TMP.blastn
-N=`cat $TMP.seq-fa | wc -l`
-M=(`cat $TMP.blastn`)
+N=$( < $TMP.seq-fa  wc -l )
+M=( $( cat $TMP.blastn ) )
 if [ $N -ne ${M[5]} ]; then
-  echo "$N != ${M[5]}"
-  exit 1
+  error "$N != ${M[5]}"
 fi
 
 
-sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus
+sqsh-ms -S $SERVER  -D $DB  -L bcp_rowsep="" << EOT | sort > $TMP.locus
   select $ID
     from $LOCUS
     where     taxroot = $TAXROOT
@@ -66,7 +64,7 @@ sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus
 EOT
 diff $TMP.seq-fa $TMP.locus
 
-sqsh-ms -S $SERVER  -D $DB  << EOT | sed 's/|$//1' | sort > $TMP.locus-new
+sqsh-ms -S $SERVER  -D $DB  -L bcp_rowsep="" << EOT | sort > $TMP.locus-new
   select $ID
     from $LOCUS
     where     taxroot = $TAXROOT
