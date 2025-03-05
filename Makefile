@@ -26,6 +26,7 @@ ALL=	\
   list2pairs \
   mergePairs \
   min_spanning_forest \
+  objHash_find \
   random_words \
   replace_dict \
   setMinus \
@@ -136,6 +137,12 @@ ncurses_key_test.o: $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp
 ncurses_key_testOBJS=ncurses_key_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o
 ncurses_key_test: $(ncurses_key_testOBJS)
 	$(CXX) -o $@ $(ncurses_key_testOBJS) $(LIBS) -lncursesw
+	$(ECHO)
+
+objHash_find.o:  $(COMMON_HPP) 
+objHash_findOBJS=objHash_find.o $(CPP_DIR)/common.o
+objHash_find:	$(objHash_findOBJS)
+	$(CXX) -o $@ $(objHash_findOBJS) $(LIBS) 
 	$(ECHO)
 
 random_words.o: $(COMMON_HPP)  
