@@ -9,9 +9,9 @@ if [ $# -ne 5 ]; then
   echo "Requires: large RAM, large running time"
   echo "#1: incremental distance tree directory"
   echo "#2: add new objects from #1/new/ (0/1)"
-  echo "#3: final optimization (0/1)"
-  echo "#4: list of good quality objects or ''"
-  echo "#5: release directory where subdirectories are numbers, or ''. Valid if #1/phen exists"
+  echo "#3: final optimization (0/1) (use different -variance parameters ??)"
+  echo "#4: list of good quality objects for quality evaluation | ''"
+  echo "#5: release directory where subdirectories are numbers | ''. Valid if #1/phen exists"
   echo "Time: O(n log^4(n))"
   exit 1
 fi
