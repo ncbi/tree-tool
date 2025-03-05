@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Print objects of a distance tree, sorted"
@@ -9,8 +9,7 @@ fi
 TREE=$1
 
 
-if [ -s $TREE ]; then
-  grep -v '^ *0x' $TREE | sed 's/^ *//1' | sed 's/: .*$//1' 
-fi
+$THIS/../check_file.sh $TREE 1
+grep -v '^ *0x' $TREE | sed 's/^ *//1' | sed 's/: .*$//1' 
 
 
