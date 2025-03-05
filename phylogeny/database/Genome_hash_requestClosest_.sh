@@ -26,7 +26,7 @@ SUBSET=$8
 #set -x
 #echo "$BULK_REMOTE"
 #echo "$FILE"
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
 sqsh-ms  -S $SERVER  -D $DATABASE << EOT | sed 's/|$//1' > $TMP
