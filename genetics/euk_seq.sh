@@ -6,18 +6,18 @@ if [ $# -ne 8 ]; then
   echo "Invokes GeneMark"
   echo "#1: eukaryotic genome name"
   echo "#2: eukaryotic DNA FASTA"
-  echo "#3: kingdom: Fungi|Viridiplantae|''"
+  echo "#3: kingdom: Fungi|Viridiplantae|Tracheophyta|''"
   echo "#4: universal HMM library (absolute path) or ''"
   echo "#5: Pfam HMM library (absolute path) or ''"
   echo "#6: use Pfam HMM cutoff (0/1)"
   echo "#7: number of cores"
   echo "#8: log file (absolute path)"
-  echo "Time: #1 size: 10M -1 hour; 4G - 6 days"
+  echo "Time: #1 size: 10M - 1 hour; 4G - 6 days"
   exit 1
 fi
 ASM=$1
 FASTA=$2
-KINGDOM="$3"
+KINGDOM=$3
 UNIV=$4
 PFAM=$5
 PFAM_CUTOFF=$6
@@ -27,11 +27,14 @@ LOG=$8
 
 #set -x
 
-if [ $KINGDOM ]; then
-  if [ $KINGDOM != "Fungi" -a $KINGDOM != "Viridiplantae" ]; then
-    error "Unknown kingdom '$KINGDOM'"
-  fi
-fi
+case "$KINGDOM" in 
+  "" | "Fungi" | "Viridiplantae" | "Tracheophyta")
+    ;;
+  *)
+    error "$0: Unknown kingdom '$KINGDOM'"
+    ;;
+esac
+
 
 
 if [ ! -e $FASTA ]; then
@@ -51,57 +54,64 @@ $THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
-  # Regina Zlotchenko <regina@genepro.com>:
-    # http://topaz.gatech.edu/GeneMark/license_download.cgi 
-    # If you have the latest version of software installed, then you can download and install the “key” file only. 
-    # You should fill in the registration form and select "I agree ..." button. 
-    # Download page will open up with links for download. 
-    # Please select “key” file matching the type of the operation system, like “gm_key_64.gz” for LINUX-64. 
-    # To install the key: 
-    # $ gunzip gm_key_64.gz 
-    # $ cp gm_key_64 ~/.gm_key 
+  if [ "$KINGDOM" == "Tracheophyta" ]; then
+    echo "dna2orfs 300" > annot_software
+    $THIS/dna2prots $FASTA 1 300  -complexity_min 3.5  -no_x  -qc  -log $LOG > $ASM.prot
+      # PAR  
+    $THIS/fasta2hash $ASM.prot $ASM.hash-PRT -qc  -log $LOG
+    ln -s $PWD/$ASM.hash-PRT $PWD/$ASM.hash-CDS
+  else
+    # Regina Zlotchenko <regina@genepro.com>:
+      # http://topaz.gatech.edu/GeneMark/license_download.cgi 
+      # If you have the latest version of software installed, then you can download and install the “key” file only. 
+      # You should fill in the registration form and select "I agree ..." button. 
+      # Download page will open up with links for download. 
+      # Please select “key” file matching the type of the operation system, like “gm_key_64.gz” for LINUX-64. 
+      # To install the key: 
+      # $ gunzip gm_key_64.gz 
+      # $ cp gm_key_64 ~/.gm_key 
+    gmes_petap.pl | grep -w "version" 1> annot_software 2>> $LOG || true 
 
-  gmes_petap.pl | grep -w "version" 1> annot_software 2>> $LOG || true 
+    # genemark.gtf
+    FUNGUS_PAR=""
+    if [ "$KINGDOM" == "Fungi" ]; then
+      FUNGUS_PAR="--fungus"
+    fi
+    $THIS/../rm_all.sh data
+    $THIS/../rm_all.sh info
+    $THIS/../rm_all.sh output
+    $THIS/../rm_all.sh run
+    rm -f gmes.log
+    rm -f run.cfg
+    # Approximate
+    gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
+    echo -e "\nAnnotation finihsed!\n" >> $LOG
+    $THIS/../rm_all.sh data
+    $THIS/../rm_all.sh info
+    $THIS/../rm_all.sh output
+    $THIS/../rm_all.sh run
+    rm gmes.log
+    rm run.cfg
+    rm gmhmm.mod
 
-  # genemark.gtf
-  FUNGUS_PAR=""
-  if [ "$KINGDOM" == "Fungi" ]; then
-    FUNGUS_PAR="--fungus"
+    # PAR
+    PROT_LEN=150
+
+    section "$ASM.prot"
+    $THIS/GeneMark2CDS $FASTA genemark.gtf  -gtf  -gencode 1  -prot $ASM.prot  -prot_len_min 20  -ambig 10  -log $LOG  -qc
+      # was: -prot_len_min 60
+
+    section "$ASM.cds"
+    $THIS/GeneMark2CDS $FASTA genemark.gtf  -gtf  -gencode 1  -cds $ASM.cds  -prot_len_min $PROT_LEN  -complete  -log $LOG  -qc
+    gzip genemark.gtf
+
+    section "$ASM.hash-CDS"
+    $THIS/fasta2hash $ASM.cds $ASM.hash-CDS  -cds  -gene_finder "GeneMark"  -prot_len_min $PROT_LEN  -log $LOG  -qc
+
+    section "$ASM.hash-PRT"
+    $THIS/fasta2hash $ASM.cds $ASM.hash-PRT  -cds  -gene_finder "GeneMark"  -prot_len_min $PROT_LEN  -log $LOG  -translate  -qc  
+    rm $ASM.cds
   fi
-  $THIS/../rm_all.sh data
-  $THIS/../rm_all.sh info
-  $THIS/../rm_all.sh output
-  $THIS/../rm_all.sh run
-  rm -f gmes.log
-  rm -f run.cfg
-  # Approximate
-  gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
-  echo -e "\nAnnotation finihsed!\n" >> $LOG
-  $THIS/../rm_all.sh data
-  $THIS/../rm_all.sh info
-  $THIS/../rm_all.sh output
-  $THIS/../rm_all.sh run
-  rm gmes.log
-  rm run.cfg
-  rm gmhmm.mod
-
-  # PAR
-  PROT_LEN=150
-
-  section "$ASM.prot"
-  $THIS/GeneMark2CDS $FASTA genemark.gtf  -gtf  -gencode 1  -prot $ASM.prot  -prot_len_min 20  -ambig 10  -log $LOG  -qc
-    # was: -prot_len_min 60
-
-  section "$ASM.cds"
-  $THIS/GeneMark2CDS $FASTA genemark.gtf  -gtf  -gencode 1  -cds $ASM.cds  -prot_len_min $PROT_LEN  -complete  -log $LOG  -qc
-  gzip genemark.gtf
-
-  section "$ASM.hash-CDS"
-  $THIS/fasta2hash $ASM.cds $ASM.hash-CDS  -cds  -gene_finder "GeneMark"  -prot_len_min $PROT_LEN  -log $LOG  -qc
-
-  section "$ASM.hash-PRT"
-  $THIS/fasta2hash $ASM.cds $ASM.hash-PRT  -cds  -gene_finder "GeneMark"  -prot_len_min $PROT_LEN  -log $LOG  -translate  -qc  
-  rm $ASM.cds
 fi
 
 
@@ -111,9 +121,19 @@ if [ $PFAM ]; then
   gzip $ASM.HMM
 fi
 
-if [ $UNIV -a "$KINGDOM" != "Viridiplantae" ]; then
-  section "prots2hmm_univ.sh"
-  $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
+if [ $UNIV ]; then
+  case "$KINGDOM" in
+    "Viridiplantae")
+      ;;  # ??
+    "Tracheophyta")
+      section "tblastn2marker_euk.sh"
+      $THIS/tblastn2marker_euk.sh $FASTA $UNIV 1 $CORES $ASM.prot-univ $LOG
+      ;;
+    *)
+      section "prots2hmm_univ.sh"
+      $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
+      ;;
+  esac
 fi
 
 
