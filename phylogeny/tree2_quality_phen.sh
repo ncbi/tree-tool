@@ -82,9 +82,23 @@ $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree1  -features $P
 section "$T2"
 $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree2  -features $PHEN  $LARGE_PAR  -nominal_singleton_is_optional  -output_core $TMP.core2  -qual $TMP.qual2  -gain_nodes gain2  -loss_nodes loss2  -disagreement_nodes $TMP.disagreement_nodes2
   # -prefer_gain  
+  
+# .qual:
+# name gains loss criterion objects optional_objects
+# 1    2     3    4         5       6
 
-echo -e "#Feature\tbetter_first" > qual.comp
-join -1 1 -2 1 -t$'\t' $TMP.qual1 $TMP.qual2 | awk -F '\t' '{OFS="\t"; D=($2 + $3) - ($6 + $7); if (D) print $1, D};' >> qual.comp
+# QC
+cut -f 1 $TMP.qual1 > $TMP.qual1.list
+cut -f 1 $TMP.qual2 > $TMP.qual2.list
+diff $TMP.qual1.list $TMP.qual2.list
+
+echo -e "#Feature\ttau1_less_tau2" > qual.comp
+join -1 1 -2 1 -t$'\t' $TMP.qual1 $TMP.qual2 | awk -F '\t' '{OFS="\t"; D=($2 + $3) - ($7 + $8); if (D != 0) print $1, D};' >> qual.comp
+
+    DIFF=$( tail -n +2 qual.comp | cut -f 2 |               count | grep -w '^sum' | cut -f 2 )
+DIFF_NEG=$( tail -n +2 qual.comp | cut -f 2 | grep    '^-'| count | grep -w '^sum' | cut -f 2 )
+DIFF_POS=$( tail -n +2 qual.comp | cut -f 2 | grep -v '^-'| count | grep -w '^sum' | cut -f 2 )
+echo "Difference: $DIFF = $DIFF_POS $DIFF_NEG"
 
 
 rm -f $TMP*
