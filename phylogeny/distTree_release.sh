@@ -41,7 +41,7 @@ else
 fi
 
 super_section "Names"
-$THIS/tree2names.sh $OUT_TREE $PHEN $LARGE > tree2names.out
+$THIS/tree2names.sh $OUT_TREE "" $PHEN $LARGE > tree2names.out
 
 
 if [ -n "$RELDIR" ]; then
@@ -53,12 +53,12 @@ if [ -n "$RELDIR" ]; then
 
   # RELNUM  
   set +o errexit
-  RELNUM=`ls $RELDIR | grep -v '[^0-9]' | sort -n -r | head -1`
+  RELNUM=$( ls $RELDIR | grep -v '[^0-9]' | sort -n -r | head -1 )
   set -o errexit
   if [ -z "$RELNUM" ]; then
     RELNUM=0
   fi
-  RELNUM=$(( $RELNUM + 1 ))
+  RELNUM=$(( RELNUM + 1 ))
   echo "Release: $RELNUM"
 
   mkdir $RELDIR/$RELNUM
