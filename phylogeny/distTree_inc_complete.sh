@@ -109,7 +109,8 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   if [ $SERVER ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
-  	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > data.dm
+  	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
+  	mv $INC/data.dm .
   fi
 fi
 
