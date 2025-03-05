@@ -15,10 +15,10 @@ QUERY=$2
 RES=$3
 
 
-$INC/qc_object.sh $QUERY
-
-
 NAME=$( basename $QUERY )
+$INC/qc_object.sh $QUERY/$NAME
+
+
 TREE=$INC/tree.released
 
 
@@ -79,7 +79,7 @@ echo -e "#Object\tObserved dissimilarity" >  $TMP.neighbors.tsv
 sed 's/'$NAME'\t//1' $TMP.dissim-closest  >> $TMP.neighbors.tsv
 
 mkdir $TMP.report.dir
-$THIS/../trav -tsv $TMP.neighbors.tsv "$INC/pair2report.sh $QUERY 1 %1 > $TMP.report.dir/%1"  -threads 15  
+$THIS/../trav -tsv $TMP.neighbors.tsv "$INC/pair2report.sh $QUERY/$NAME 1 %1 > $TMP.report.dir/%1"  -threads 15  
 echo -e "#Object\tIdentical proteins\tUniversal proteins compared\tAAI,%"                     >  $TMP.report.tsv
 $THIS/../trav -tsv $TMP.neighbors.tsv "cat $TMP.report.dir/%1 | sed 's/^/%1\t/1'" -noprogress >> $TMP.report.tsv
 
