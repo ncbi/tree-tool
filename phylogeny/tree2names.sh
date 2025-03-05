@@ -1,24 +1,33 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
-if [ $# -ne 3 ]; then
+if [ $# -ne 4 ]; then
   echo "Set names to a distance tree by phenotypes"
   echo "Output: core, qual, gain_nodes, disagreement_nodes, disagreement_nodes.txt"
   echo "#1: distance tree"
-  echo "#2: phen/"
-  echo "#3: large directories (0/1)"
+  echo "#2: target list of objects | '' - all"
+  echo "#3: phen/"
+  echo "#4: large directories (0/1)"
   exit 1
 fi
-INTREE=$1
-PHEN=$2
-LARGE=$3
+TREE=$1
+TARGET="$2"
+PHEN=$3
+LARGE=$4
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP
 
 
-$THIS/makeDistTree  -threads 15  -input_tree $INTREE  -noqual  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
+DELETE=""
+if [ "$TARGET" ]; then
+  sort -cu $TARGET
+  $THIS/tree2obj.sh $TREE > $TMP.cur
+  $THIS/../setMinus $TMP.cur $TARGET > $TMP.del
+  DELETE="-delete $TMP.del  -check_delete"
+fi
+$THIS/makeDistTree  -threads 15  -input_tree $TREE  $DELETE  -noqual  -output_feature_tree $TMP.feature_tree  > $TMP.distTree
 
 LARGE_PAR=""
 if [ $LARGE == 1 ]; then
