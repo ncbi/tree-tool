@@ -141,7 +141,7 @@ struct ThisApplication final : Application
   	  	if (replaceP)
   	    {
   	    	iss. reset (in. line);
-  	    	ASSERT (replacement. empty ());
+  	    	replacement. clear ();
   	    	iss >> name >> replacement;
   	    	QC_ASSERT (! replacement. empty ());
   	    	size_t from = no_index;
@@ -158,7 +158,6 @@ struct ThisApplication final : Application
   	    	}
   	    	else
     	    	name2replacement [name] = std::move (Replacement (replacement));
-  	    	ASSERT (replacement. empty ());
   	    }
   	  	else
           name2replacement [in. line];  // Replacement::empty()
