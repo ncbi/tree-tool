@@ -127,7 +127,8 @@ if [ $UNIV ]; then
       ;;  # ??
     "Tracheophyta")
       section "tblastn2marker_euk.sh"
-      $THIS/tblastn2marker_euk.sh $FASTA $UNIV 1 $CORES $ASM.prot-univ $LOG
+      UNIV_DIR=$( dirname $UNIV )
+      $THIS/tblastn2marker_euk.sh $FASTA $UNIV_DIR/univ - $CORES $ASM.prot-univ $LOG
       ;;
     *)
       section "prots2hmm_univ.sh"

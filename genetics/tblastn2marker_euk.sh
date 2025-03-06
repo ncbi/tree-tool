@@ -5,7 +5,7 @@ if [ $# -ne 6 ]; then
   echo "Find proteins with introns by tblastn"
   echo "#1: DNA multi-FASTA file"
   echo "#2: reference proteins, where if #3 = 1 then each id=<gene>-<variant>, where <gene> has no dashes"
-  echo "#3: genes have variants (0/1)"
+  echo "#3: delimiter between gene and variant | ''"
   echo "#4: cores"
   echo "#5: output protein file"
   echo "#6: log file"
@@ -14,7 +14,7 @@ if [ $# -ne 6 ]; then
 fi
 DNA=$1
 REF=$2
-VARIANT=$3
+DELIM=$3
 CORES=$4
 PROT=$5
 LOG=$6
@@ -43,11 +43,11 @@ SEARCH="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000 
 $THIS/tblastn.sh $REF $DNA "$SEARCH"  "qseqid sseqid qstart qend sstart send qseq sseq"  10000000 $CORES $TMP.tblastn
 sort -k 1 $TMP.tblastn > $TMP.tblastn-sort
 
-VARIANT_PAR=""
-if [ $VARIANT == 1 ]; then
-  VARIANT_PAR="-variant"
+DELIM_PAR=""
+if [ $DELIM ]; then
+  DELIM_PAR="-delimiter $DELIM"
 fi
-$THIS/tblastn2marker_euk  $TMP.tblastn-sort  $VARIANT_PAR  -matrix $MATRIX  -threshold 3.5  -qc  -log $LOG > $PROT
+$THIS/tblastn2marker_euk  $TMP.tblastn-sort  $DELIM_PAR  -matrix $MATRIX  -threshold 3.5  -qc  -log $LOG > $PROT
 # Quality: 
   # grep '^>' $PROT | sed 's/^.*score=//1' | count
   # fasta2len $PROT -noprogress | cut -f 2 | count

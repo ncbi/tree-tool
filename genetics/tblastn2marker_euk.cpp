@@ -51,7 +51,7 @@ namespace
   
 SubstMat sm;
 unique_ptr<OFStream> gapF;
-constexpr char delim {'-'};
+char delim {'\0'};
 
 // PAR
 constexpr double complexity_min = 3.0;  
@@ -719,7 +719,6 @@ string Exon::getSeq (size_t start) const
 
 void process (DiGraph &graph,
               const string &gene,
-              bool variantP,
               double threshold)
 {
   graph. qc ();
@@ -727,7 +726,7 @@ void process (DiGraph &graph,
     return;
     
   ASSERT (! gene. empty ());
-	const string prefix (gene + ifS (variantP, string (1, delim)));
+	const string prefix (gene + ifS (delim, string (1, delim)));
 	
 	
 	const Exon* bestExon_gene = nullptr;
@@ -850,8 +849,8 @@ struct ThisApplication final : Application
     : Application ("Find best protein matches and print proteins")
     {
       version = VERSION;
-  	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. Ordered by qseqid. If -variant then qseqid = <gene>" + string (1, delim) + "<variant>, where <gene> has no '" + delim + "'.");
-  	  addFlag ("variant", "Genes have no variants");
+  	  addPositional ("tblastn", "tblastn output in format: qseqid sseqid qstart qend sstart send qseq sseq. Ordered by qseqid. If -delimeter then qseqid = <gene><delimiter><variant>, where <gene> has no <delimiter>.");
+  	  addKey ("delimiter", "Delimiter chracater separating gene names from variant names in <tblastn>");
   	  addKey ("threshold", "Min. protein score to length ratio to be reported", "4");
   	  addKey ("matrix", "Protein matrix", "BLOSUM62");
   	  addKey ("gap_stats", "Output file with gap lengths");
@@ -862,11 +861,17 @@ struct ThisApplication final : Application
 	void body () const final
   {
 	  const string tblastnFName = getArg ("tblastn");
-	  const bool   variantP     = getFlag ("variant"); 
+	  const string delimiterS   = getArg ("delimiter"); 
 	  const double threshold    = arg2double ("threshold");
 	  const string matrix       = getArg ("matrix");
 	  const string gap_stats    = getArg ("gap_stats");
   
+  
+    if (! delimiterS. empty ())
+    {
+      QC_ASSERT (delimiterS. size () == 1);
+      delim = delimiterS [0];
+    }
   
     sm = SubstMat (execDir + "/matrix/" + matrix);  
     sm. qc ();
@@ -880,7 +885,7 @@ struct ThisApplication final : Application
   	  string gene_prev;
   	  while (in. nextLine ())
   	  {
-      	const size_t pos = in. line. find (variantP ? delim : '\t');
+      	const size_t pos = in. line. find (delim ? delim : '\t');
       	QC_ASSERT (pos != string::npos);
       	const string gene (in. line. substr (0, pos));
       	if (gene. empty ())
@@ -889,14 +894,14 @@ struct ThisApplication final : Application
   	      throw runtime_error ("Alphabetically disordered gene\n" + tblastnFName + ": " + in. lineStr ()); 
       	if (gene_prev != gene)
       	{
-      	  process (graph, gene_prev, variantP, threshold);
+      	  process (graph, gene_prev, threshold);
       	  gene_prev = gene;
       	}
   	    try { new Exon (graph, in. line); }
   	      catch (const exception &e)
   	        { throw runtime_error (string (e. what ()) + "\n" + tblastnFName + ": " + in. lineStr ()); }
   	  }
-   	  process (graph, gene_prev, variantP, threshold);
+   	  process (graph, gene_prev, threshold);
   	}
   }
 };
