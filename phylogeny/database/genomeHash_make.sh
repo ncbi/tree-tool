@@ -26,6 +26,7 @@ if [ $LARGE -eq 1 ]; then
 else
   ls $GENOME > $TMP
 fi
+wc -l $TMP
 
 function run
 {
