@@ -116,7 +116,7 @@ void executeCommands (size_t from,
 
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Apply <command> to all <items>", true, false, true)
@@ -263,7 +263,7 @@ struct ThisApplication : Application
       StringVector subitems;  
   	  while (gen->next (item))
       {
-        if (! tsv)
+      //if (! tsv)
           trim (item);
         if (item. empty ())
           continue;
