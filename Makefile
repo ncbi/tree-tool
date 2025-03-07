@@ -61,10 +61,10 @@ connectPairs: $(connectPairsOBJS)
 	$(CXX) -o $@ $(connectPairsOBJS) $(LIBS)
 	$(ECHO)
 
-cpp_test.o: $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
-cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o $(TSV_DIR)/tsv.o
+cpp_test.o: $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(CPP_DIR)/gzip.hpp
+cpp_testOBJS=cpp_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o $(CPP_DIR)/gzip.o $(TSV_DIR)/tsv.o 
 cpp_test: $(cpp_testOBJS)
-	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncursesw
+	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) -lncursesw -lz
 	$(ECHO)
 
 curl_easy_test.o: $(COMMON_HPP) $(CPP_DIR)/curl_easy.hpp

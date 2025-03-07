@@ -168,6 +168,7 @@ COMMON = $(CPP_DIR)/common
 $(CPP_DIR)/common.o:	$(COMMON_RAW_HPP)
 $(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_RAW_HPP) 
 $(CPP_DIR)/combinatorics.o:	$(CPP_DIR)/combinatorics.hpp $(COMMON_RAW_HPP) 
+$(CPP_DIR)/gzip.o:	$(CPP_DIR)/gzip.hpp $(COMMON_RAW_HPP) 
 $(CPP_DIR)/ncurses.o: $(CPP_DIR)/ncurses.hpp $(COMMON_RAW_HPP)
 $(CPP_DIR)/curl_easy.o: $(CPP_DIR)/curl_easy.hpp $(COMMON_RAW_HPP)
 
