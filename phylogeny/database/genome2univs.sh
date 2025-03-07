@@ -2,6 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 2 ]; then
+  echo "Print: <Genome.id> <univs>"
   echo "Input: hmm-univ.list"
   echo "#1: Genome.id"
   echo "#2: large (0/1)"
@@ -13,7 +14,7 @@ LARGE=$2
 
 H=""
 if [ $LARGE -eq 1 ]; then
-  H=`$THIS/../../file2hash $G`
+  H=$( $THIS/../../file2hash $G )
 fi
 
 $THIS/../../check_file.sh genome/$H/$G/$G.prot-univ 1
