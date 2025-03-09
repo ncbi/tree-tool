@@ -43,7 +43,7 @@ while [ $N -lt $MAX ]; do
       ;;
   esac
   if [ -e $DB.$SUF ]; then
-    $THIS/../../objHash_find $DB.$SUF $PREF.hash-$SUF $MIN_COMMON $MAX  -superset $SUBSET >> $TMP.out
+    $THIS/../../objHash_find $DB.$SUF $PREF.hash-$SUF $MIN_COMMON $MAX  -superset $SUBSET  -noprogress >> $TMP.out
     sort -u $TMP.out > $TMP.out1
     mv $TMP.out1 $TMP.out
     N=$( < $TMP.out  wc -l )
