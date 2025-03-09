@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
   echo "Given a dissimilarity build a tree and evaluate the quality"
@@ -20,7 +20,7 @@ TREE=$5
 FORMAT=$6
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 

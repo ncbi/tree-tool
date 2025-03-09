@@ -39,7 +39,7 @@ $THIS/makeFeatureTree  -threads 15  -input_tree $TMP.feature_tree  -features $PH
   
 cut -f 1 disagreement_nodes | sort | uniq -c | sort -n -k 1 -r > disagreement_nodes.txt
 set +o errexit
-cat disagreement_nodes.txt | grep -v ":" | grep -v ' 1 ' > disagreement_objects
+grep -v ":" disagreement_nodes.txt | grep -v ' 1 ' > disagreement_objects
 set -o errexit
 echo ""
 wc -l disagreement_nodes.txt

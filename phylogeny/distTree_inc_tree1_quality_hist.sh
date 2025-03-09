@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Print the change of quality of the initial tree"
@@ -14,11 +14,11 @@ if [ ! -e $INC/phen ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 
-VER=`cat $INC/version`
+VER=$( cat $INC/version )
 echo $VER >> /dev/stderr
 $THIS/tree2obj.sh $INC/hist/tree.1 > $TMP.init
 LARGE=0
@@ -31,7 +31,7 @@ $THIS/../setIntersect.sh $TMP.init $TMP.last 0 > $TMP.list
 N=1
 while [ $N -lt $VER ]
 do
-  N=$(( $N + 1 ))
+  N=$(( N + 1 ))
   printf "\r%d" $N >> /dev/stderr
   if [ -e $INC/hist/tree.$N.gz ]; then
     gunzip $INC/hist/tree.$N.gz -c > $TMP
@@ -41,8 +41,8 @@ do
     continue
   fi
   $THIS/tree_quality_phen.sh $TMP $TMP.list $INC/phen $LARGE 0 "" > $TMP.makeFeatureTree 2> /dev/null
-  OBJS=`grep '^# Objects: ' $TMP.makeFeatureTree | sed 's/^#.*: //1'`
-  RES=`grep ' V !$' $TMP.makeFeatureTree | sed 's/^#.*: //1' | sed 's/ .*$//1'`
+  OBJS=$( grep '^# Objects: ' $TMP.makeFeatureTree | sed 's/^#.*: //1' )
+  RES=$( grep ' V !$' $TMP.makeFeatureTree | sed 's/^#.*: //1' | sed 's/ .*$//1' )
   echo -e "$N\t$OBJS\t$RES"
 done
 echo "" >> /dev/stderr

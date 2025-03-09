@@ -26,7 +26,7 @@ DIR=$INC/search/$OBJ
 
 
 # Already done
-if [ ! -e $DIR/request -a -s $DIR/dissim ]; then
+if [ ! -e $DIR/request ] && [ -s $DIR/dissim ]; then
   exit 0
 fi
 

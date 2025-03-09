@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Information on a hybrid object"
@@ -17,7 +17,7 @@ if [ ! -e $META ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP 
 
 
@@ -29,12 +29,12 @@ grep -w $NAME $TMP.dict > $TMP || true
 if [ ! -s $TMP ]; then
   error "Object $NAME is not found in $META"
 fi
-N=`cat $TMP | wc -l`
+N=$( < $TMP  wc -l )
 if [ $N -gt 1 ]; then
   cat $TMP
   error "Object $NAME is not unique"
 fi
-OBJ=`cut -f 1 $TMP`
+OBJ=$( cut -f 1 $TMP )
 
 grep -w $OBJ $INC/hist/hybrid.* > $TMP.grep || true
 if [ ! -s $TMP.grep ]; then

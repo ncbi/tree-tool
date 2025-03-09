@@ -48,12 +48,12 @@ fi
 wc -l $TMP.list1-good
 wc -l $TMP.list2-good
 
-N=$( cat $TMP.list1-good | wc -l )
+N=$( < $TMP.list1-good  wc -l )
 if [ $N -le 2 ]; then
   exit 0
 fi
 
-N=$( cat $TMP.list2-good | wc -l )
+N=$( < $TMP.list2-good  wc -l )
 if [ $N -le 2 ]; then
   exit 0
 fi

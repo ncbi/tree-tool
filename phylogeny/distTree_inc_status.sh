@@ -26,7 +26,7 @@ fi
 TMP=$( mktemp )
 
 
-ADDED=$( cat $INC/leaf | wc -l )
+ADDED=$( < $INC/leaf  wc -l )
 if [ $ADDED -gt 0 ]; then
   echo "# Being added: $ADDED"
 fi
@@ -40,13 +40,13 @@ fi
 N=$( $THIS/distTree_inc_new_list.sh $INC | wc -l )
 if [ $N -gt 0 ]; then
   section "# New: $N"
-  echo "# To process: $(( $ADDED + $SEARCH + $N ))"
+  echo "# To process: $(( ADDED + SEARCH + N ))"
 fi
 
 if [ -e $INC/outlier-genogroup ]; then
-	N=$( cat $INC/outlier-genogroup | wc -l )
+	N=$( < $INC/outlier-genogroup  wc -l )
   section "# Genogroup outliers: $N"
-  echo "# Objects to be in tree: $(( $OBJS - $N ))"
+  echo "# Objects to be in tree: $(( OBJS - N ))"
 fi
 
 

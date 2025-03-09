@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Restore #1/search/#2/"
@@ -13,7 +13,7 @@ OBJ=$2
 
 H=""
 if [ -e $INC/large ]; then
-  H=`$THIS/../file2hash $OBJ`
+  H=$( $THIS/../file2hash $OBJ )
   H="$H/"
 fi
 touch $INC/new/$H$OBJ
