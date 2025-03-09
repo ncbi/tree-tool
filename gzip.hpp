@@ -50,7 +50,7 @@ namespace Common_sp
 {
   
   
-struct GZip : Root, Nocopy
+struct GZip final : Root, Nocopy
 {
   string line;
 private:
