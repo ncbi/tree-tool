@@ -131,7 +131,7 @@ struct ThisApplication final : Application
 
     map<string,size_t> object2freq;   
     {
-      LineInput f (objectHashFName, 100000);  
+      LineInput f (objectHashFName, 100000);  // --> GZip ??
       Istringstream iss;
       string object;
       size_t hash;
