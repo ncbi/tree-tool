@@ -29,6 +29,7 @@ LEN_MIN=$( echo "$MEAN - 2 * $SD" | bc -l | sed 's/\..*$//1' )
 NEG=$( echo "$LEN_MIN < 60" | bc -l )
 #
 if [ $NEG == 1 ]; then
+  echo "MEAN = $MEAN; SD = $SD" 
   cp /dev/null $OUT
 else
   $THIS/filterFasta $F -aa  -len_min $LEN_MIN > $TMP.fa
