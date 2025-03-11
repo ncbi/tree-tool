@@ -25,4 +25,4 @@ $THIS/../trav $TMP.seq "$THIS/blastp_seq2exons.sh %d/%f $F  1> $TMP.ex/%f  2> /d
 $THIS/../trav $TMP.ex "cat %d/%f" > $OUT
 
 
-rm $TMP*  
+rm -r $TMP*  
