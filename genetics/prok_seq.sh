@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "Create files for #1 in the current directory"
@@ -32,8 +32,8 @@ if false; then
   # GeneMarkS-2
 	$HOME/gms2_v102_ncbi/gms2.pl  --seq $FASTA  --genome-type bacteria  --mgm-type bac  --fnn $NAME.cds  &>> $LOG
 	rm log
-	rm *.lst
-	rm *.mod
+	rm ./*.lst
+	rm ./*.mod
 else
 	GENE_FINDER="prodigal"
 	prodigal  -o /dev/null  -i $FASTA  -d $NAME.cds  &>> $LOG
@@ -48,12 +48,12 @@ rm $NAME.hash-PRT1
 
 rm $NAME.cds
 
-if [ $UNIV ]; then
+if [ "$UNIV" ]; then
   section "univ"
   $THIS/prots2hmm_univ.sh $NAME $UNIV 1 $CORES $LOG
 fi
 
-if [ $PFAM ]; then
+if [ "$PFAM" ]; then
   section "Pfam"
   $THIS/prots2hmm_hash.sh $NAME.prot $PFAM $PFAM_CUTOFF $NAME.HMM $NAME.hash-HMM $CORES $LOG
   gzip $NAME.HMM
