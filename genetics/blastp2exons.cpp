@@ -181,8 +181,7 @@ struct ThisApplication final : Application
   	    align. printStat ();
   	    *statF << '\n';
   	  }
-  	  cout << '>' << it. first << '\n'; 
-  	  
+  	  cout << '>' << it. first << '\n';   	  
   	  align. setIntron (30, 0.2);  // PAR
   	  align. printExons (cout);
 	  }
