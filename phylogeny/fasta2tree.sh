@@ -2,8 +2,8 @@
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 6 ]; then
-  echo "Create a phylogenetic tree from a FASTA files"
-  echo "Output: #1.tree, #1.dm"
+  echo "Create a phylogenetic tree from a FASTA file"
+  echo "Output: #6.dm, #6.tree, #6.nw; for #2 = 1 and #5 = 'min_edit': #6.gr, #6.roots"
   echo "#1: FASTA"
   echo "#2: #1 is proteins (0/1)"
   echo "#3: DNA strand is known (0/1)"
@@ -44,5 +44,16 @@ $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $OUT
 super_section "Building tree"
 # PAR
 $THIS/makeDistTree  -data $OUT  -dissim_attr "dissim"  -variance pow  -variance_power 5  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 15
+$THIS/printDistTree $OUT.tree  -order  -qc > $OUT.nw
+
+if [ $DIST == "min_edit" ] && [ $PROT == 1 ] ; then
+  LEN_AVG=$( $THIS/../genetics/fasta2len $FASTA -aa -qc | cut -f 2 | count | grep -w '^mean' | cut -f 2 )
+  DIST_MAX=$( echo "$LEN_AVG / 370 * 4000" | bc -l )
+    # PAR
+    # For random protein sequences of length 370 aa the min_edit distance = ~4500
+  echo "DIST_MAX=$DIST_MAX"
+  $THIS/tree2genogroup $OUT.tree $DIST_MAX  -genogroup_table $OUT.gr
+  cut -f 2 $OUT.gr | sort | uniq -c > $OUT.roots
+fi
 
 
