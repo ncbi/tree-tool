@@ -94,7 +94,7 @@ struct ThisApplication final : Application
 		  addFlag ("remove", "Sequences in <target> are removed from the input file, otherwise only the sequences in <target> are saved");
 		  addFlag ("replace", "<target> file contains a replacement");
 		  addFlag ("cut", "Cut out the segment indicated by <from> <to> in replacement in <target>");
-		  addKey ("len_min", "Min. sequence length", "0");
+		  addKey ("len_min", "Min. sequence length", "1");
 		  addKey ("complexity_min", "Min. sequence complexity", "0");
 		  addFlag ("title", "Preserve sequence titles");
 	  }
@@ -175,7 +175,7 @@ struct ThisApplication final : Application
 		    else
 		      seq. reset (new Dna (fa, 100000/*PAR*/, true));
 		    ASSERT (seq);
-		    QC_ASSERT (! strBlank (seq->seq));	
+		  //QC_ASSERT (! strBlank (seq->seq));	
 		    seq->qc ();	
 		    string id (seq->getId ());
 		    const string id_ (whole ? id : findSplit (id, '|'));
