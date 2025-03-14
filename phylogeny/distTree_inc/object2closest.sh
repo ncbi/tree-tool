@@ -1,6 +1,6 @@
 #!/bin/bash --noprofile
 #source bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 4 ]; then
   echo "Find closest genomes among #3"
   echo "#1: Genome.id"
   echo "#2: new object directory or ''"
