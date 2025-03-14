@@ -2,6 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
+  echo "Add new data after dna_algin2tree.sh"
   echo "#1: incremental distance tree directory"
   echo "#2: new DNA alignment"
   echo "#3: output Newick tree"
