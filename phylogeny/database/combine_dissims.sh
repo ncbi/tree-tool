@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 12 ]; then
   echo "Compute dissimilarities"
@@ -32,7 +32,7 @@ LOG=${12}
 
 
 CDS=1  # d_CDS is used
-DISSIM_SCALE_LINES=`cat $DISSIM_SCALE | grep -v '^ *$' | wc -l`
+DISSIM_SCALE_LINES=$( grep -v '^ *$' $DISSIM_SCALE | wc -l )
 case $DISSIM_SCALE_LINES in
   2)
     CDS=0
@@ -44,19 +44,19 @@ case $DISSIM_SCALE_LINES in
     ;;
 esac
 
-# {CDS,PRT}_RAW_MAX, BARRIER
-CDS_RAW_MAX="nan"
+# PRT_RAW_MAX, BARRIER
+#CDS_RAW_MAX="nan"
 BARRIER=1
 N=0
 if [ $CDS == 1 ]; then
-  N=$(( $N + 1 ))
-  L=(`head -$N $DISSIM_SCALE | tail -1`)
-  CDS_RAW_MAX=${L[1]}
+  N=$(( N + 1 ))
+  L=( $( head -$N $DISSIM_SCALE | tail -1 ) )
+ #CDS_RAW_MAX=${L[1]}
   BARRIER=2
 fi
 #
-N=$(( $N + 1 ))
-L=(`head -$N $DISSIM_SCALE | tail -1`)
+N=$(( N + 1 ))
+L=( $( head -$N $DISSIM_SCALE | tail -1 ) )
 PRT_RAW_MAX=${L[1]}  # Species barrier
 
 BLOSUM62=""
@@ -65,7 +65,7 @@ if [ $BLOSUM62_ARG == 1 ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP 
 #set -x
 
@@ -79,7 +79,7 @@ function req2file
   cut -f $COL $REQ_ > $TMP.req2file_req
   $THIS/../../file2hash $TMP.req2file_req -file -append  -log $LOG  -noprogress | awk '{printf "'$GENOME_DIR'/%s/%s/%s.'$SUF'\n", $1, $2, $2};' > $TMP.req2file_col
   if [ $NEW_OBJ ]; then
-    local NAME=`basename $NEW_OBJ`
+    local NAME=$( basename $NEW_OBJ )
     sed 's|^\(.*/'$NAME'\.'$SUF'\)$|'$NEW_OBJ'.'$SUF'|1' $TMP.req2file_col
   else
     cat $TMP.req2file_col
