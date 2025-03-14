@@ -49,7 +49,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication () 
     : Application ("Print a " + dmSuff + "-file with merged <Similarity> attrributes of a list of " + dmSuff + "-files")

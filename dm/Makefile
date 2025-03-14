@@ -39,6 +39,7 @@ all:	\
   logreg_test \
   matrix_test \
 	mds \
+	mergeSimilarity \
 	normalCdf \
 	numeric_test \
 	obj2missing \
@@ -231,6 +232,12 @@ mds.o:  $(PREDICT_HPP)
 mdsOBJS=mds.o $(PREDICT_OBJ)
 mds:	$(mdsOBJS)
 	$(CXX) -o $@ $(mdsOBJS) $(LIBS)
+	$(ECHO)
+
+mergeSimilarity.o:  $(DM_HPP) 
+mergeSimilarityOBJS=mergeSimilarity.o $(DM_OBJ) 
+mergeSimilarity:	$(mergeSimilarityOBJS)
+	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
 	$(ECHO)
 
 normalCdf.o:  $(DM_HPP) 

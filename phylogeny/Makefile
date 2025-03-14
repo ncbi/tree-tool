@@ -22,7 +22,6 @@ all:	\
 	makeDistTree \
 	makeDistTree-dev \
 	makeFeatureTree \
-	mergeSimilarity \
 	mutation2feature \
 	newick2tree \
 	printDistTree \
@@ -91,12 +90,6 @@ makeFeatureTree.o:  $(NUMERIC_HPP) $(CPP_DIR)/graph.hpp $(PHYL_DIR)/featureTree.
 makeFeatureTreeOBJS=makeFeatureTree.o $(FEATURE_TREE_OBJ)
 makeFeatureTree:	$(makeFeatureTreeOBJS)
 	$(CXX) -o $@ $(makeFeatureTreeOBJS) $(LIBS)
-	$(ECHO)
-
-mergeSimilarity.o:  $(DM_HPP) 
-mergeSimilarityOBJS=mergeSimilarity.o $(DM_OBJ) 
-mergeSimilarity:	$(mergeSimilarityOBJS)
-	$(CXX) -o $@ $(mergeSimilarityOBJS) $(LIBS)
 	$(ECHO)
 
 mutation2feature.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
