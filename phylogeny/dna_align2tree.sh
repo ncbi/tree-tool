@@ -2,7 +2,8 @@
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
-  echo "#1: output incremental distance tree directory"
+  echo "Create #1/"
+  echo "#1: incremental distance tree directory"
   echo "#2: DNA alignment"
   echo "#3: output tree"
   exit 1
