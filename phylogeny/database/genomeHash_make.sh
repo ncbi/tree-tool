@@ -5,12 +5,13 @@ if [ $# -ne 3 ]; then
   echo "Create GenomeHash.{CDS,PRT,HMM}"
   echo "#1: distance tree directory"
   echo "#2: #1/../genome is large (0/1)"
-  echo "#3: Create Genomehash.CDS (0/1)"
+  echo "#3: Suffix: HMM, PRT, CDS"
   exit 1
 fi
 INC=$1
 LARGE=$2
-CDS=$3
+SUF=$3
+
 
 
 TMP=$( mktemp )
@@ -19,31 +20,18 @@ TMP=$( mktemp )
 GENOME=$INC/../genome
 $THIS/../../check_file.sh $GENOME 0
 
-
-# $TMP
+# $TMP, H
 if [ $LARGE -eq 1 ]; then
   $THIS/../../trav $GENOME "ls %d/%f" > $TMP
+  H="%h/"
 else
   ls $GENOME > $TMP
+  H=""
 fi
 wc -l $TMP
 
-function run
-{
-  local SUF=$1
-  H=""
-  if [ $LARGE -eq 1 ]; then
-    H="%h/"
-  fi
-  section "GenomeHash.$SUF"
-  $THIS/../../trav $TMP "cat $GENOME/$H%f/%f.hash-$SUF | sed 's/^/%f\t/1'" > GenomeHash.$SUF
-}
+$THIS/../../trav $TMP "cat $GENOME/$H%f/%f.hash-$SUF | sed 's/^/%f\t/1'" > GenomeHash.$SUF
 
-if [ $CDS -eq 1 ]; then
-  run "CDS"
-fi
-run "PRT"
-run "HMM"
 
 
 rm $TMP*
