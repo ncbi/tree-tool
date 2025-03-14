@@ -223,9 +223,9 @@ struct ThisApplication : Application
 		}
     ASSERT (seqs. size () == ds. objs. size ());
     if (ds. objs. empty ())
-    	throw runtime_error ("No DNA sequences");
+    	throw runtime_error ("No sequences");
     if (ds. objs. size () < 2)
-    	throw runtime_error ("Too few DNA sequences");
+    	throw runtime_error ("Too few sequences");
     	
     auto lenAttr = new IntAttr1 ("Length", ds);
     FFOR (size_t, objNum, seqs. size ())
