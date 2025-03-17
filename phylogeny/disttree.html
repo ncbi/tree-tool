@@ -2476,7 +2476,7 @@ var saveLeaves = function (nodeId, highlighted)
     else
       if (! highlighted || node.selectedLeaves)
         text +=   node.obj_id + '\t'               // acc_ver
-                + node.int_obj_id + '\t'           // fullasm_id
+                + (node.int_obj_id || '') + '\t'           // fullasm_id
                 + (node.obj_id_2 || '') + '\t'     // WGS
                 + (node.rs_acc_ver || '') + '\t'   
                 + ifS (node.removed, 'Yes') + '\t'
@@ -2485,7 +2485,7 @@ var saveLeaves = function (nodeId, highlighted)
                 + (node.type || '') + '\t'
               //+ (node.bad_org_source || '') + '\t'  // ??
                 + (node.in_tree ? '' : 'ADDED') + '\t'
-                + node.tax + '\t'
+                + (node.tax || '') + '\t'
                 + (node.tax_name_curated || '') + '\t'
                 + (node.tax_confirmed == 1 ? "OK" : (node.tax_confirmed == 0 ? "FIX" : '')) + '\t'
                 + (node.ani_match || '') + '\t'
@@ -2884,7 +2884,7 @@ var parseNewick = function ()
       , height_ave:    0
         // Leaf
       , obj_id:        null
-      , int_obj_id:    nodeId
+      , int_obj_id:    null // was: nodeId
       , obj_id_2:      null
       , removed:       false
       , in_tree:       true
