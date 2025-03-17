@@ -135,7 +135,9 @@ if [ -e $INC/phen ]; then
   DATE=$( date +%Y%m%d )
   OUT_TREE=tree.$DATE
   
-  $THIS/distTree_release.sh $INC/tree $INC/phen $LARGE 1 $OUT_TREE $RELDIR 
+  if [ "$RELDIR" ]; then
+    $THIS/distTree_release.sh $INC/tree $INC/phen $LARGE 1 $OUT_TREE $RELDIR 
+  fi
   
   if [ "$GOOD" ]; then
   	super_section "Quality of good quality tree"
@@ -143,7 +145,7 @@ if [ -e $INC/phen ]; then
   	cat $INC/hist/tree_quality_phen-good.$VER 
   fi
 
-  if [ -n "$RELDIR" ]; then
+  if [ "$RELDIR" ]; then
     LATEST=$( realpath $PWD/$RELDIR/latest )
     mv leaf_errors.dm.gz arc_existence.dm.gz $LATEST
     rm -f $INC/tree.released
