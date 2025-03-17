@@ -43,7 +43,7 @@ $THIS/../dissim/fasta2dissim  -threads 30  $FASTA  $PAR  -dataset $OUT
 
 super_section "Building tree"
 # PAR
-$THIS/makeDistTree  -data $OUT  -dissim_attr "dissim"  -variance pow  -variance_power 5  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 15
+$THIS/makeDistTree  -data $OUT  -dissim_attr "dissim"  -variance pow  -variance_power 5  -variance_dissim  -optimize  -subgraph_iter_max 5  -output_tree $OUT.tree  -threads 15
 $THIS/printDistTree $OUT.tree  -order  -qc > $OUT.nw
 
 if [ $DIST == "min_edit" ] && [ $PROT == 1 ] ; then
