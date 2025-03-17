@@ -26,6 +26,7 @@ ALL=	\
   list2pairs \
   mergePairs \
   min_spanning_forest \
+  multilist2subset \
   objHash_find \
   random_words \
   replace_dict \
@@ -131,6 +132,12 @@ min_spanning_forest.o: $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 min_spanning_forestOBJS=min_spanning_forest.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 min_spanning_forest: $(min_spanning_forestOBJS)
 	$(CXX) -o $@ $(min_spanning_forestOBJS) $(LIBS)
+	$(ECHO)
+
+multilist2subset.o:  $(COMMON_HPP)  
+multilist2subsetOBJS=multilist2subset.o $(CPP_DIR)/common.o
+multilist2subset:  $(multilist2subsetOBJS)
+	$(CXX) -o $@ $(multilist2subsetOBJS) $(LIBS)
 	$(ECHO)
 
 ncurses_key_test.o: $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp
