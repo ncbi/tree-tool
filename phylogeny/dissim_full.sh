@@ -32,7 +32,7 @@ awk '{if ($1 > $2)  printf "%s\t%s\t%s\n", $2, $1, $3};' $FULL >> tmp
 sort -u tmp | sed 's/\t/-/1' > dissim_full
 rm tmp
 
-$THIS/distTree_inc_init_stnd.sh inc $THIS/inc/dissim_full "" "" "" ""
+$THIS/distTree_inc_init_stnd.sh inc dissim_full "" "" "" ""
 touch inc/dissim_full
 
 section "inc/dissim"
