@@ -24,13 +24,13 @@ elif [ -d $D1 ] && [ -d $D2 ]; then
 
   $THIS/setMinus $TMP.1 $TMP.2 > $TMP.1-2
   if [ -s $TMP.1-2 ]; then
-    warning "In $D1, but not in $D2"
+    warning "In $D1, but not in $D2:"
     cat $TMP.1-2
   fi
 
   $THIS/setMinus $TMP.2 $TMP.1 > $TMP.2-1
   if [ -s $TMP.2-1 ]; then
-    warning "In $D2, but not in $D1"
+    warning "In $D2, but not in $D1:"
     cat $TMP.2-1
   fi
 
@@ -39,7 +39,7 @@ elif [ -d $D1 ] && [ -d $D2 ]; then
 else
   diff $D1 $D2 > $TMP || true
   if [ -s $TMP ]; then
-    warning "$D1 != $D2"
+    warning "diff $D1 $D2"
   fi
 fi
 
