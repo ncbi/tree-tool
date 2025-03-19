@@ -16,7 +16,7 @@ OVER=$3
 
 #set -x
 VER=1
-SERVER=$( cat $INC/server )
+SERVER=$( file2var $INC/server "" )
 HYBRIDNESS_MIN=$( cat $INC/hybridness_min )
 
 
@@ -75,9 +75,9 @@ $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 
 sort -k3,3g $INC/dissim > $TMP.dissim.sort
 LONGEST=$( tail -1 $TMP.dissim.sort | cut -f 3 )
-echo "Longest dissimilarity: $LONGEST"
+echo "Largest dissimilarity: $LONGEST"
 wc -l $INC/dissim
-warning "# Pairs with longest dissimilarity:"
+warning "# Pairs with largest dissimilarity:"
 cut -f 3 $INC/dissim | grep -cx $LONGEST
 
 section "data.dm"
