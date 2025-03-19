@@ -10,7 +10,7 @@ if [ $# -ne 12 ]; then
   echo " #5: hashes intersection_min"
   echo " #6: hashes ratio_min"
   echo " #7: dissim_scale file with dissimilarity thresholds: {CDS PRT univ} | {PRT univ}"
-  echo " #8: hmm-univ.stat"
+  echo " #8: hmm-univ.stat | ''"
   echo " #9: 1 - BLOSUM62, 0 - PAM30"
   echo "#10: raw power of universal proteins dissimilarity (before averaging)"
   echo "#11: coefficient to multiply the combined dissimilarity by"
@@ -118,8 +118,13 @@ awk    '$4 == "nan" || $4 > '$PRT_RAW_MAX    $TMP.req-dissim-PRT > $TMP.req-diss
 req2file $TMP.req-dissim-PRT_1 1 "prot-univ" > $TMP.f1
 req2file $TMP.req-dissim-PRT_1 2 "prot-univ" > $TMP.f2
 paste $TMP.f1 $TMP.f2 > $TMP.req-univ
-$THIS/../../dissim/prot_collection2dissim  -log $LOG  -raw_power $UNIV_POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
-cut -f 3 $TMP.univ > $TMP.dissim-univ_1
+# $TMP.dissim-univ_1
+if [ "$AVERAGE_MODEL" ]; then
+  $THIS/../../dissim/prot_collection2dissim  -log $LOG  -raw_power $UNIV_POWER  $BLOSUM62  $AVERAGE_MODEL  $TMP.req-univ $TMP.univ
+  cut -f 3 $TMP.univ > $TMP.dissim-univ_1
+else
+  $THIS/../../trav $TMP.req-univ "echo inf" > $TMP.dissim-univ_1
+fi
 paste $TMP.req-dissim-PRT_1 $TMP.dissim-univ_1 > $TMP.req-dissim-univ_1
 cat $TMP.req-dissim-univ_0 $TMP.req-dissim-univ_1 > $TMP.req-dissim-univ
   # column 5: d_univ
