@@ -3066,6 +3066,7 @@ if (! tree_init)
 <th># Added objects</th>\
 <th>Parameters</th>\
 <th>Alien</th>\
+<th>From tree</th>\
 <th>Date</th>\
 <th>Release</th>\
 <th>To be replaced</th>\
@@ -3082,6 +3083,7 @@ select id \
      , comparison \
      , parm \
      , alien \
+     , from_tree \
      , create_dat \
      , release \
      , latest \
@@ -3108,6 +3110,7 @@ select id \
            + "<td align=right>" + (row.added_leaves || '') + "</td>"
            + "<td align=center>" + (row.parm || "") + "</td>"
            + "<td align=center>" + (row.alien ? "Yes" : "") + "</td>"
+           + "<td align=center>" + (row.from_tree || "") + "</td>"
          //+ "<td align=right>" + row.interiors + "</td>"
            + "<td>" + row.create_dat + "</td>"
            + "<td align=center>" + ifS(row.latest,"<b>") + (row.release || '') + ifS(row.latest,"</b>") + "</td>"
