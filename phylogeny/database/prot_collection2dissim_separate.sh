@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 GENOME="genome"
 if [ $# -ne 5 ]; then
@@ -27,7 +27,7 @@ if [ $BLOSUM62_ARG == 1 ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP
 #set -x
 
