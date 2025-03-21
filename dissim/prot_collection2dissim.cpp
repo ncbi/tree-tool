@@ -89,7 +89,7 @@ struct Fasta
 	
 
 	
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Compute dissimilarity between collections of proteins")
