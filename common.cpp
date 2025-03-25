@@ -4077,21 +4077,31 @@ int Application::run (int argc,
           	else
           	{
           		if (s1. size () != 1) 
-                throw runtime_error ("Single character expected: " + strQuote (s1) + "\n\n" + getInstruction (false));
+                throw runtime_error ("Single character is expected: " + strQuote (s1) + "\n\n" + getInstruction (false));
             }
           else
           	name = s1;
 
           if (name == helpS || (name. empty () && c == helpS [0] && gnu))
           {
-	          const bool screen = ! isRedirected (cout);
-            cout << getHelp (screen) << getDocumentation (screen) << getUpdates (screen) << endl;
-            return 0;
+            if (programArgs. size () > 2) 
+              throw runtime_error ("Single keyword " + strQuote (helpS) + " is expected\n\n" + getInstruction (false));
+            else
+            {
+  	          const bool screen = ! isRedirected (cout);
+              cout << getHelp (screen) << getDocumentation (screen) << getUpdates (screen) << endl;
+              return 0;
+            }
           }
           if (name == versionS || (name. empty () && c == versionS [0] && gnu))
           {
-            cout << version << endl;
-            return 0;
+            if (programArgs. size () > 2) 
+              throw runtime_error ("Single keyword " + strQuote (versionS) + " is expected\n\n" + getInstruction (false));
+            else
+            {
+              cout << version << endl;
+              return 0;
+            }
           }
           
           // key
