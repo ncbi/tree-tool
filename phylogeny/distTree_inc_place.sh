@@ -16,7 +16,7 @@ RES=$3
 
 
 NAME=$( basename $QUERY )
-$INC/qc_object.sh $QUERY/$NAME
+$INC/qc_object.sh $QUERY/$NAME 0
 
 
 TREE=$INC/tree.released
