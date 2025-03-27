@@ -25,4 +25,5 @@ fi
 
 #CPP_DIR/phylogeny/database/Genome_hash_requestClosest.sh $SERVER $DATABASE $INC/bulk $BULK_REMOTE $GENOME 33090 $DIR PRT $SUBSET > $OUT
 CPP_DIR/phylogeny/database/genomeHash_find.sh $DIR/$GENOME $INC/../GenomeHash $SUBSET 5 $OUT
+  # PAR
 

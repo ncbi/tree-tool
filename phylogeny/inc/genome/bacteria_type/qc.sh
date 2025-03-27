@@ -8,12 +8,12 @@ fi
 VERB=$1
 
 
-INC=`dirname $0`
-SERVER=`cat $INC/server`
-DATABASE=`cat $INC/database`
+INC=$( dirname $0 )
+SERVER=$( cat $INC/server )
+DATABASE=$( cat $INC/database )
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 if [ $VERB == 1 ]; then
   echo $TMP
   set -x
@@ -54,8 +54,8 @@ diff $TMP.seq-list $TMP.tree
 echo ">aa" > $TMP.aa
 echo "GKRVLVMGLGLQGSGMAAARYAAQQGAIVRVTDMKSPDILAPSVRALAGLPIEFILGQHREEDFIWADIVIRNPGVPRTS" >> $TMP.aa
 blastp -query $TMP.aa  -db $INC/prot-univ | grep "Number of sequences in database:" | sed 's/,//g' | sed 's/^ *//1' > $TMP.blastp
-N=`cat $TMP.seq | wc -l`
-M=(`cat $TMP.blastp`)
+N=$( < $TMP.seq  wc -l )
+M=( $( cat $TMP.blastp ) )
 if [ $N -ne ${M[5]} ]; then
   error "$N != ${M[5]}"
 fi

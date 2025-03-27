@@ -11,7 +11,7 @@ VERB=$1
 INC=`dirname $0`
 SERVER=`cat $INC/server`
 DATABASE=`cat $INC/database`
-TAX=`cat $INC/../tax_id`
+TAX=`cat $INC/../taxroot`
 
 
 if [ -e $INC/good ]; then

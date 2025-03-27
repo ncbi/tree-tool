@@ -24,5 +24,5 @@ if [ -z $DIR ]; then
   fi
 fi
 
-CPP_DIR/genetics/univ2closest.sh $DIR/$GENOME.prot-univ $INC/prot-univ > $OUT
+CPP_DIR/genetics/univ2closest.sh $DIR/$GENOME.prot-univ $INC/prot-univ $SUBSET > $OUT
 

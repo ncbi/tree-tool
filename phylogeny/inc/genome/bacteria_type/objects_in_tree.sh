@@ -15,13 +15,13 @@ if [ ! -s $OBJ_LIST ]; then
 fi
 
 
-INC=`dirname $0`
+INC=$( dirname $0 )
 
 
 if [ $IN_TREE == 1 ]; then
   CPP_DIR/trav $OBJ_LIST "sed 's/^>/>%f-/1' $INC/../genome/%h/%f/%f.prot-univ" >> $INC/prot-univ
 else
-  TMP=`mktemp`
+  TMP=$( mktemp )
   CPP_DIR/trav $OBJ_LIST "CPP_DIR/genetics/fa2list.sh $INC/../genome/%h/%f/%f.prot-univ | sed 's/^/%f-/1'" > $TMP
   CPP_DIR/genetics/extractFastaProt $INC/prot-univ $TMP  -remove  -min_len 0  > $INC/prot-univ1
   rm $TMP
@@ -31,9 +31,9 @@ fi
 makeblastdb  -in $INC/prot-univ  -dbtype prot    -logfile /dev/null
 
 
-SERVER=`cat $INC/server`
-DATABASE=`cat $INC/database`
-BULK_REMOTE=`cat $INC/bulk_remote`
+SERVER=$( cat $INC/server )
+DATABASE=$( cat $INC/database )
+BULK_REMOTE=$( cat $INC/bulk_remote )
 
 CPP_DIR/bulk.sh $SERVER $INC/bulk $BULK_REMOTE $OBJ_LIST $DATABASE..List
 
