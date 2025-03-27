@@ -3,7 +3,7 @@ THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Input: #1.prot or #1.prot-genbank"
-  echo "Output: #1.{univ,prot-univ}"
+  echo "Output: #1.{univ,prot-univ.HMM,prot-univ}"
   echo "#1: assembly file prefix"
   echo "#2: HMM library"
   echo "#3: use cut_ga (0/1)"
@@ -25,7 +25,7 @@ fi
 
 
 ANNOT=$PREFIX.univ
-PROT_CUT=$PREFIX.prot-univ
+PROT_CUT=$PREFIX.prot-univ.HMM
 
 
 if [ -s $IN ]; then
@@ -41,7 +41,6 @@ if [ -s $IN ]; then
   $THIS/hmmsearch2besthits $TMP.hmmsearch  -domtblout $TMP.dom  -log $LOG  > $ANNOT 
   cut -f 1,2,4,5 $ANNOT > $TMP.univ
 
- #$THIS/extractFastaProt $IN $TMP.univ  -replace  -cut  -log $LOG  > $PROT_CUT
   $THIS/filterFasta $IN  -aa  -target $TMP.univ  -replace  -cut  -len_min 20  -complexity_min 3  -log $LOG  > $PROT_CUT
 
   if false; then
@@ -55,6 +54,10 @@ else
   cp /dev/null $ANNOT
   cp /dev/null $PROT_CUT
 fi
+
+
+rm -f $PREFIX.prot-univ
+ln -s $( realpath $PROT_CUT ) $PREFIX.prot-univ
 
 
 rm -f $LOG
