@@ -14,18 +14,20 @@ LARGE=$2
 SUF=$3
 
 
-sort -cu hmm-univ.list
-
-
+# $F
 H=""
 if [ $LARGE -eq 1 ]; then
   H=$( $THIS/../../file2hash $G )
 fi
-
 F=genome/$H/$G/$G.prot-univ.$SUF
+
+
 if [ ! -e $F ]; then
   exit 0
 fi
+
+
+sort -cu hmm-univ.list
 
 
 TMP=$( mktemp )
