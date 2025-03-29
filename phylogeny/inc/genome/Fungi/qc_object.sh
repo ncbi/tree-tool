@@ -22,37 +22,35 @@ function check
   local FILE="$2"
   local F=$PREF.$SUF
   CPP_DIR/check_file.sh $F 1
-  if [ -s $F ]; then
-    if [ "$FILE" == ": gzip compressed data" ]; then
-      file              $F | grep -q "$FILE"
-    else
-      file -m /dev/null $F | grep -q "$FILE"
+  if [ "$FILE" == "gzip compressed data" ]; then
+    file $F | grep -q ": $FILE"
+  else
+    if [ -s $F ]; then
+      file -m /dev/null $F | grep -q ": $FILE"
     fi
   fi
 }
 
 #check "hash-CDS"  ": ASCII text" || check "hash-CDS"  ": symbolic link to "  # File is not used
-check "hash-HMM"  ": ASCII text"
-check "hash-PRT"  ": ASCII text"
-check "prot-univ" ": symbolic link to "
-check "prot.gz"   ": gzip compressed data"
-check "stat"      ": ASCII text"
+check "hash-HMM"       "ASCII text"
+check "hash-PRT"       "ASCII text"
+check "univ"           "ASCII text"
+check "prot-univ"      "symbolic link to "
+check "prot-univ.HMM"  "ASCII text"
+check "prot.gz"        "gzip compressed data"
+check "stat"           "ASCII text"
 
-if [ -e $PREF.prot-univ.HMM ]; then
-  check "univ" ": ASCII text"
-  if [ -s $PREF.prot-univ.HMM ]; then
-    head -1 $PREF.prot-univ.HMM | grep -vq " ref="
-  fi
+if [ -s $PREF.prot-univ.HMM ]; then
+  head -1 $PREF.prot-univ.HMM | grep -vq " ref="
 fi
 
-if [ -e $PREF.prot-univ.tblastn ]; then
-  if [ -s $PREF.prot-univ.tblastn ]; then
-    head -1 $PREF.prot-univ.tblastn | grep -q " ref="
-  fi
+if [ -s $PREF.prot-univ.tblastn ]; then
+  head -1 $PREF.prot-univ.tblastn | grep -q " ref="
 fi
 
 PU=$PREF.prot-univ
 REF=$( basename $( realpath $PU ) )
-if [ $REF != $( basename $PU.HMM ) ] && [ $REF != $( basename $PU.tblastn ) ]; then
-  error "Strange $REF"
+if [ $REF != $( basename $PU.HMM ) ]; then
+  # && [ $REF != $( basename $PU.tblastn ) ]
+  error "Strange reference of $PU: $REF"
 fi
