@@ -18,13 +18,8 @@ H=$( $THIS/../../file2hash $G )
 grep -v '^#' genome/$H/$G/$G.busco10.tsv | cut -f 1,2 > $TMP
 C=$( awk -F '\t' '$2 == "Complete"'   $TMP | cut -f 1 | sort -u | wc -l )
 D=$( awk -F '\t' '$2 == "Duplicated"' $TMP | cut -f 1 | sort -u | wc -l )
-T=$(( C + D ))
-if [ $T == 0 ]; then
-  F="?"
-else
-  F=$( echo "$D / $T" | bc -l )
-fi
-echo -e "$G\t$C\t$D\t$T\t$F"
+F=$( awk -F '\t' '$2 == "Fragmented"' $TMP | cut -f 1 | sort -u | wc -l )
+echo -e "$G\t$C\t$D\t$F"
 
 
 rm $TMP
