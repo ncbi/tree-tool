@@ -112,6 +112,10 @@ struct ThisApplication final : Application
   	  addPositional ("reference", "FASTA file 1 with a sequence (reference)");
   	  addKey ("prot_name", "Protein name. Empty string means that sequences are DNA");
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
+  	  addKey ("match_score", "DNA match integer score, > 0", "5");
+      addKey ("mismatch_score", "DNA mismatch integer penalty, > 0", "4");
+      addKey ("gap_open", "DNA gap open integer penalty, >= 0", "15");  
+      addKey ("gap_extent", "DNA gap extent integer penalty, > 0", "5");
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addKey ("noambig", "Min. window around a mutation with no ambiguity. -1: allow ambiguities", "-1");
   	  addKey ("mutation", "File for mutations");
@@ -128,7 +132,11 @@ struct ThisApplication final : Application
 	  const string targetFName    = getArg ("target");
 	  const string refFName       = getArg ("reference");
 	  const string protName       = getArg ("prot_name");
-	  const bool global           = getFlag ("global");
+	  const bool   global         = getFlag ("global");
+	  const int    match_score    =   (int) arg2uint ("match_score");
+	  const int    mismatch_score = - (int) arg2uint ("mismatch_score");
+	  const int    gap_open       = - (int) arg2uint ("gap_open");
+	  const int    gap_extent     = - (int) arg2uint ("gap_extent");
 	        size_t match_len_min  = str2<size_t> (getArg ("match_len_min"));
 	  const size_t noambig        = getArg ("noambig") == "-1" ? no_index : str2<size_t> (getArg ("noambig"));
 	  const string mutFName       = getArg ("mutation");
@@ -148,6 +156,11 @@ struct ThisApplication final : Application
     if (! aa && blosum62)
       throw runtime_error ("-blasum62 requires protein sequences");
       
+    QC_ASSERT (match_score > 0);
+    QC_ASSERT (mismatch_score < 0);
+    QC_ASSERT (gap_open <= 0);
+    QC_ASSERT (gap_extent < 0);
+      
 
     const unique_ptr<const Seq> targetSeq (readSeq (targetFName, aa));
     const unique_ptr<const Seq> refSeq    (readSeq (refFName,    aa));
@@ -158,7 +171,7 @@ struct ThisApplication final : Application
     if (aa)
       align. reset (new Align_sp::Align (* targetSeq->asPeptide (), * refSeq->asPeptide (), ! global, match_len_min, blosum62));
     else
-      align. reset (new Align_sp::Align (* targetSeq->asDna (), * refSeq->asDna (), ! global, match_len_min, 0 /*band*/));
+      align. reset (new Align_sp::Align (* targetSeq->asDna (), * refSeq->asDna (), ! global, match_len_min, 0 /*band*/, match_score, mismatch_score, gap_open, gap_extent));
     ASSERT (align);
 		
 		if (verbose ())
