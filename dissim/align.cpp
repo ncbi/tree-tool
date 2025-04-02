@@ -47,10 +47,6 @@ using namespace DM_sp;
 
 
 
-#define WU_BLASTN 
-
-
-
 namespace Align_sp
 {
 
@@ -218,13 +214,22 @@ Align::Align (const Dna &dna1,
 	            bool semiglobal_arg,
 	            size_t match_len_min,
 	          //bool fast,
-	            size_t band)
+	            size_t band,
+    	        int match_score,
+              int mismatch_score,
+              int gap_open,
+              int gap_extent)
 : prot (false)
 , semiglobal (semiglobal_arg)
 {
   ASSERT (! dna1. sparse);
   ASSERT (! dna2. sparse);
 //IMPLY (band, ! fast);
+  ASSERT (match_score > 0);
+  ASSERT (mismatch_score < 0);
+  ASSERT (gap_open <= 0);
+  ASSERT (gap_extent < 0);	
+  
   
   unique_ptr<CNWAligner> al;
 /*if (fast)
@@ -243,23 +248,6 @@ Align::Align (const Dna &dna1,
     al. reset (new CNWAligner ());
   ASSERT (al. get ());
 
-#ifdef WU_BLASTN
-	constexpr int match_score    =  5;
-	constexpr int mismatch_score = -4;  
-	constexpr int gap_open       = -15;  // WU-BLASTN: -1  // was: -5
-	constexpr int gap_extent     = -5;   // WU-BLASTN: -10
-#else	
-  // NCBI BLASTN
-	constexpr int match_score    =  2;
-	constexpr int mismatch_score = -3;
-	constexpr int gap_open       = -5;
-	constexpr int gap_extent     = -2;
-#endif
-  static_assert (match_score > 0, "match_score");
-  static_assert (mismatch_score < 0, "mismatch_score");
-  static_assert (gap_open <= 0, "gap_open");
-  static_assert (gap_extent < 0, "gap_extent");	
-  
   al->SetWm (match_score);
   al->SetWms (mismatch_score);
   al->SetWg (gap_open);

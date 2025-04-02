@@ -50,6 +50,14 @@ namespace Align_sp
 {
 	
 	
+// Optimized on Covid-19
+constexpr int dna_match_score    { 5};
+constexpr int dna_mismatch_score {-4};
+constexpr int dna_gap_open       {-10};
+constexpr int dna_gap_extent     {-5};
+  
+
+
 struct Align : Root
 // Global alignment
 // Needleman-Wunsch algorithm 
@@ -102,8 +110,17 @@ struct Align : Root
 	       const Dna &dna2,
 	       bool semiglobal_arg,
 	       size_t match_len_min,
-	       size_t band);
+	       size_t band,
+	       int match_score    = dna_match_score,
+         int mismatch_score = dna_mismatch_score,
+         int gap_open       = dna_gap_open,
+         int gap_extent     = dna_gap_extent);
 	  // Input: band => use banded aligner
+	  //                             WU-BLASTN  NCBI-BLASTN
+	  //        match_score    >  0     5         2
+    //        mismatch_score <  0    -4        -3
+    //        gap_open       <= 0    -1        -5
+    //        gap_extent     <  0    -10       -2
 	void saveText (ostream &os) const override
 	  { os << tr << endl
 	  	   <<        score 
