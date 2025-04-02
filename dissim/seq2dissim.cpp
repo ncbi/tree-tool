@@ -112,10 +112,10 @@ struct ThisApplication final : Application
   	  addPositional ("reference", "FASTA file 1 with a sequence (reference)");
   	  addKey ("prot_name", "Protein name. Empty string means that sequences are DNA");
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
-  	  addKey ("match_score", "DNA match integer score, > 0", "5");
-      addKey ("mismatch_score", "DNA mismatch integer penalty, > 0", "4");
-      addKey ("gap_open", "DNA gap open integer penalty, >= 0", "15");  
-      addKey ("gap_extent", "DNA gap extent integer penalty, > 0", "5");
+  	  addKey ("match_score", "DNA match integer score, > 0", to_string (Align_sp::dna_match_score));
+      addKey ("mismatch_score", "DNA mismatch integer penalty, > 0", to_string (Align_sp::dna_mismatch_score));
+      addKey ("gap_open", "DNA gap open integer penalty, >= 0", to_string (Align_sp::dna_gap_open));  
+      addKey ("gap_extent", "DNA gap extent integer penalty, > 0", to_string (Align_sp::dna_gap_extent));
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addKey ("noambig", "Min. window around a mutation with no ambiguity. -1: allow ambiguities", "-1");
   	  addKey ("mutation", "File for mutations");
