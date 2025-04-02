@@ -62,10 +62,10 @@ const Dna* readDna (const string &fName)
 
 	
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Align and compute dissimilarity for a pair of DNA sequences")
+    : Application ("Align and compute dissimilarity for pairs of DNA sequences")
     {
       version = VERSION;
   	  addPositional ("pairs", "File with pairs of DNA file names");
