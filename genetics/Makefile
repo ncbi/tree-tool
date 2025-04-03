@@ -69,7 +69,6 @@ all:	\
 	prots2hmm_signature \
 	prots_pair2stat \
 	replaceFastaHeader \
-	replaceFastaNames \
 	seq_print \
 	splitFasta \
 	tblastn2marker_euk \
@@ -419,12 +418,6 @@ replaceFastaHeader.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 replaceFastaHeaderOBJS=replaceFastaHeader.o $(SEQ_OBJ)
 replaceFastaHeader:	$(replaceFastaHeaderOBJS)
 	$(CXX) -o $@ $(replaceFastaHeaderOBJS) $(LIBS) 
-	$(ECHO)
-
-replaceFastaNames.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-replaceFastaNamesOBJS=replaceFastaNames.o $(SEQ_OBJ)
-replaceFastaNames:	$(replaceFastaNamesOBJS)
-	$(CXX) -o $@ $(replaceFastaNamesOBJS) $(LIBS) 
 	$(ECHO)
 
 seq_print.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
