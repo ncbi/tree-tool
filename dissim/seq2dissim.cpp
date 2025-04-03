@@ -113,9 +113,9 @@ struct ThisApplication final : Application
   	  addKey ("prot_name", "Protein name. Empty string means that sequences are DNA");
   	  addFlag ("global", "Global alignment, otherwise semiglobal");
   	  addKey ("match_score", "DNA match integer score, > 0", to_string (Align_sp::dna_match_score));
-      addKey ("mismatch_score", "DNA mismatch integer penalty, > 0", to_string (Align_sp::dna_mismatch_score));
-      addKey ("gap_open", "DNA gap open integer penalty, >= 0", to_string (Align_sp::dna_gap_open));  
-      addKey ("gap_extent", "DNA gap extent integer penalty, > 0", to_string (Align_sp::dna_gap_extent));
+      addKey ("mismatch_score", "DNA mismatch integer penalty, > 0", to_string (- Align_sp::dna_mismatch_score));
+      addKey ("gap_open", "DNA gap open integer penalty, >= 0", to_string (- Align_sp::dna_gap_open));  
+      addKey ("gap_extent", "DNA gap extent integer penalty, > 0", to_string (- Align_sp::dna_gap_extent));
   	  addKey ("match_len_min", "Min. match length. Valid for semiglobal alignment", "60");
   	  addKey ("noambig", "Min. window around a mutation with no ambiguity. -1: allow ambiguities", "-1");
   	  addKey ("mutation", "File for mutations");
@@ -133,10 +133,10 @@ struct ThisApplication final : Application
 	  const string refFName       = getArg ("reference");
 	  const string protName       = getArg ("prot_name");
 	  const bool   global         = getFlag ("global");
-	  const int    match_score    =   (int) arg2uint ("match_score");
-	  const int    mismatch_score = - (int) arg2uint ("mismatch_score");
-	  const int    gap_open       = - (int) arg2uint ("gap_open");
-	  const int    gap_extent     = - (int) arg2uint ("gap_extent");
+	  const int    match_score    =   str2<int> (getArg ("match_score"));
+	  const int    mismatch_score = - str2<int> (getArg ("mismatch_score"));
+	  const int    gap_open       = - str2<int> (getArg ("gap_open"));
+	  const int    gap_extent     = - str2<int> (getArg ("gap_extent"));
 	        size_t match_len_min  = str2<size_t> (getArg ("match_len_min"));
 	  const size_t noambig        = getArg ("noambig") == "-1" ? no_index : str2<size_t> (getArg ("noambig"));
 	  const string mutFName       = getArg ("mutation");
