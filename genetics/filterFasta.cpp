@@ -90,7 +90,7 @@ struct ThisApplication final : Application
 		  addPositional ("in",  "Input FASTA file");
   	  addFlag ("aa", "FASTA file contains protein sequences, otherwise DNA sequences");
 		  addFlag ("whole", "Sequence identifiers are whole strings which should not be split by '|'");
-		  addKey ("target", "File with line format: <sequence id> [<replacement id> [<from> <to>]]", "");
+		  addKey ("target", "File with line format: <sequence id> [<new sequence id> [<from> <to>]]", "");
 		  addFlag ("remove", "Sequences in <target> are removed from the input file, otherwise only the sequences in <target> are saved");
 		  addFlag ("replace", "<target> file contains a replacement");
 		  addFlag ("cut", "Cut out the segment indicated by <from> <to> in replacement in <target>");
