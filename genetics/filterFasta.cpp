@@ -97,6 +97,7 @@ struct ThisApplication final : Application
 		  addKey ("len_min", "Min. sequence length", "1");
 		  addKey ("complexity_min", "Min. sequence complexity", "0");
 		  addFlag ("title", "Preserve sequence titles");
+		  addFlag ("force", "Do not stop on errors in input data");
 	  }
 
   
@@ -113,6 +114,7 @@ struct ThisApplication final : Application
 	  const size_t len_min        = str2<size_t> (getArg ("len_min"));
 	  const double complexity_min = arg2double ("complexity_min");
 	  const bool   titleP         = getFlag ("title");
+	  const bool   forceP         = getFlag ("force");
 
 	  
     if (targetFName. empty ())
@@ -126,10 +128,11 @@ struct ThisApplication final : Application
 	  QC_IMPLY (cutP, replaceP);
 
   
-    map<string/*id*/, Replacement> name2replacement;
+    map<string/*id*/, Vector<Replacement>> name2replacement;
     if (! targetFName. empty ())
     {
       LineInput in (targetFName);  
+      Set<string> replacements;
     	Istringstream iss;
     	string name;
     	string replacement;
@@ -139,34 +142,55 @@ struct ThisApplication final : Application
 	  	  if (in. line. empty ())
 	  	    continue;
   	  	if (replaceP)
-  	    {
-  	    	iss. reset (in. line);
-  	    	replacement. clear ();
-  	    	iss >> name >> replacement;
-  	    	QC_ASSERT (! replacement. empty ());
-  	    	size_t from = no_index;
-  	    	size_t to   = no_index;
-  	    	if (cutP)
-  	    	{
-  	    		iss >> from >> to;
-  	    		QC_ASSERT (to != no_index);
-  	    		if (from > to)
-  	    			throw runtime_error (name + ": from > to: " + in. line);
-  	    		QC_ASSERT (from);
-  	    		from--;
-    	    	name2replacement [name] = std::move (Replacement (replacement, from, to));
-  	    	}
-  	    	else
-    	    	name2replacement [name] = std::move (Replacement (replacement));
-  	    }
+  	      try
+  	      {
+    	    	iss. reset (in. line);
+    	    	replacement. clear ();
+    	    	iss >> name >> replacement;
+    	    	QC_ASSERT (! replacement. empty ());
+    	    	if (! replacements. insert (replacement). second)
+    	    	  throw runtime_error ("Duplicate replacement sequence id: " + strQuote (replacement));
+    	    	size_t from = no_index;
+    	    	size_t to   = no_index;
+    	    	if (cutP)
+    	    	{
+    	    		iss >> from >> to;
+    	    		QC_ASSERT (to != no_index);
+    	    		if (from > to)
+    	    			throw runtime_error (name + ": from > to: " + in. line);
+    	    		QC_ASSERT (from);
+    	    		QC_ASSERT (iss. eof ());
+    	    		from--;
+      	    	name2replacement [name] << std::move (Replacement (replacement, from, to));
+    	    	}
+    	    	else
+      	    	name2replacement [name] << std::move (Replacement (replacement));
+    	    }
+    	    catch (const exception &e)
+    	    {
+    	      reportException (in. lineStr () + "\n" + in. line, e, forceP);
+    	    }
   	  	else
-          name2replacement [in. line];  // Replacement::empty()
+          name2replacement [in. line];  // second.empty()
 	  	}      
     }
+    
+    
+    const auto process = [&] (Seq &seq)
+      {
+    	  if (seq. seq. size () < len_min)
+    	    return;
+        if (seq. getComplexity () < complexity_min)  
+          return;
+        if (! titleP)
+          seq. name. erase (seq. getIdSize ());
+        seq. saveText (cout);
+      };
 
 
 		{
 		  Multifasta fa (inFName, aa);
+		  Set<string> ids;
 		  while (fa. next ())
 		  {
 		    unique_ptr<Seq> seq;
@@ -179,30 +203,38 @@ struct ThisApplication final : Application
 		    seq->qc ();	
 		    string id (seq->getId ());
 		    const string id_ (whole ? id : findSplit (id, '|'));
+	    	if (! ids. insert (id_). second)
+	    	  throw runtime_error ("Duplicate sequence id: " + strQuote (id_));
 		    if (removeP == contains (name2replacement, id_))   
 		      continue;
 	    	if (replaceP)
 	    	{
-	    		const Replacement& repl = name2replacement [id_];
-	    		ASSERT (! repl. empty ());
-	    		if (cutP)
-	    		{
-	    			if (repl. to > seq->seq. size ())
-	    				throw runtime_error (seq->name + ": to = " + to_string (repl. to) + ", but len = " + to_string (seq->seq. size ()));
-	    			seq->seq = seq->seq. substr (repl. from, repl. size ());
-	    		}
-	    		seq->name = repl. name + " " + seq->name;
-	    		if (cutP)
-	    		  seq->name += ":" + to_string (repl. from + 1) + "-" + to_string (repl. to);
+	    		ASSERT (! name2replacement [id_]. empty ());
+	    		for (const Replacement& repl : name2replacement [id_])
+	    		  try
+  	    		{
+    	    		ASSERT (! repl. empty ());
+  	    		  unique_ptr<Seq> newSeq (seq->copy ());
+  	    		  ASSERT (newSeq);
+    	    		if (cutP)
+    	    		{
+    	    			if (repl. to > seq->seq. size ())
+    	    				throw runtime_error (seq->name + ": to = " + to_string (repl. to) + ", but len = " + to_string (seq->seq. size ()));
+    	    			newSeq->seq = seq->seq. substr (repl. from, repl. size ());
+    	    		}
+    	    		newSeq->name = repl. name + " " + seq->name;
+    	    		if (cutP)
+    	    		  newSeq->name += ":" + to_string (repl. from + 1) + "-" + to_string (repl. to);
+      	    	newSeq->qc ();
+      	    	process (*newSeq);
+    	    	}
+      	    catch (const exception &e)
+      	    {
+      	      reportException (id_ + " -> " + repl. name, e, forceP);
+      	    }    	    	
 	    	}
-	    	seq->qc ();
-    	  if (seq->seq. size () < len_min)
-    	    continue;
-        if (seq->getComplexity () < complexity_min)  
-          continue;
-        if (! titleP)
-          seq->name. erase (seq->getIdSize ());
-        seq->saveText (cout);
+	    	else
+	    	  process (*seq);
 		  }
 		}
   }
