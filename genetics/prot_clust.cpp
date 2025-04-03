@@ -138,11 +138,11 @@ double getJaccard (const HashPep &p1,
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print: <protein 1> <protein 2> <Jaccard index of protein sequence hashes>. Time: 4 hours/5.5 M sequences")
+    : Application ("Print: <protein 1> <protein 2> <Jaccard index of protein sequence hashes>. Time: 3.5 hours/5.5 M sequences")
     {
       version = VERSION;
   	  addPositional ("in", "Protein FASTA file");
-  	  addPositional ("jaccard_min", "Min. <Jaccard index>. 0.5 matches 85% identity");
+  	  addPositional ("jaccard_min", "Min. <Jaccard index>. 0.5 matches 85% identity, 0.4 - 50% identity");
   	  addPositional ("out", "Matches: <id1> <id2> <Jaccard index>");
   	  addKey ("jaccard_k", "K-mer length for Jaccard index", "4");
   	  addKey ("index_k", "K-mer length for indexing, larger than <jaccard_k>", "20");
@@ -166,11 +166,12 @@ struct ThisApplication final : Application
 	  QC_ASSERT (relFreq_max <= 1.0);
 	  
     
+    Vector<HashPep> hashPeps;  hashPeps. reserve (1000);  // PAR
+    map<size_t/*index k-mer hash*/,VectorPtr<HashPep>> kmer2hps;
     {
       OFStream fOut (outFName);
 
-
-      Vector<HashPep> hashPeps;  hashPeps. reserve (1000);  // PAR
+      // hashPeps
       {
     	  Multifasta faIn (inFName, true);
     	  while (faIn. next ())
@@ -193,7 +194,7 @@ struct ThisApplication final : Application
       cout << "# Proteins: " << hashPeps. size () << endl;
         
       section ("Indexing", false);
-      map<size_t/*index k-mer hash*/,VectorPtr<HashPep>> kmer2hps;
+      // kmer2hps
       {
         Progress prog (hashPeps. size (), 1000);  // PAR
         for (const HashPep& hp : hashPeps)
