@@ -138,11 +138,11 @@ double getJaccard (const HashPep &p1,
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Cluster proteins by Jaccard index of protein sequence hashes")
+    : Application ("Print: <protein 1> <protein 2> <Jaccard index of protein sequence hashes>. Time: 4 hours/5.5 M sequences")
     {
       version = VERSION;
   	  addPositional ("in", "Protein FASTA file");
-  	  addPositional ("jaccard_min", "Min. <Jaccard index>");
+  	  addPositional ("jaccard_min", "Min. <Jaccard index>. 0.5 matches 85% identity");
   	  addPositional ("out", "Matches: <id1> <id2> <Jaccard index>");
   	  addKey ("jaccard_k", "K-mer length for Jaccard index", "4");
   	  addKey ("index_k", "K-mer length for indexing, larger than <jaccard_k>", "20");
@@ -166,78 +166,82 @@ struct ThisApplication final : Application
 	  QC_ASSERT (relFreq_max <= 1.0);
 	  
     
-    OFStream fOut (outFName);
+    {
+      OFStream fOut (outFName);
 
 
-    Vector<HashPep> hashPeps;  hashPeps. reserve (1000);  // PAR
-    {
-  	  Multifasta faIn (inFName, true);
-  	  while (faIn. next ())
-  	  {
-    	  const Peptide peptide (faIn, 1024 * 1024, false);    	  
-  	    peptide. qc ();
-  	    fOut         << peptide. getId () 
-  	         << '\t' << peptide. getId () 
-  	         << '\t' << 1
-  	         << '\n';
-  	    if (peptide. seq. size () < index_k)
-  	      continue;  
-  	    HashPep hp (peptide, jaccard_k, index_k);
-  	    if (hp. indexHashes. empty ())
-  	      continue;  
-  	    ASSERT (! hp. jaccardHashes. empty ());
-  	    hashPeps << std::move (hp);
-    	}
-    }
-    cout << "# Proteins: " << hashPeps. size () << endl;
-      
-    section ("Indexing", false);
-    map<size_t/*index kmer hash*/,VectorPtr<HashPep>> kmer2hps;
-    {
-      Progress prog (hashPeps. size (), 1000);  // PAR
-      for (const HashPep& hp : hashPeps)
+      Vector<HashPep> hashPeps;  hashPeps. reserve (1000);  // PAR
       {
-        prog ();
-        for (const size_t h : hp. indexHashes)
-          kmer2hps [h] << & hp;
+    	  Multifasta faIn (inFName, true);
+    	  while (faIn. next ())
+    	  {
+      	  const Peptide peptide (faIn, 1024 * 1024, false);    	  
+    	    peptide. qc ();
+    	    fOut         << peptide. getId () 
+    	         << '\t' << peptide. getId () 
+    	         << '\t' << 1
+    	         << '\n';
+    	    if (peptide. seq. size () < index_k)
+    	      continue;  
+    	    HashPep hp (peptide, jaccard_k, index_k);
+    	    if (hp. indexHashes. empty ())
+    	      continue;  
+    	    ASSERT (! hp. jaccardHashes. empty ());
+    	    hashPeps << std::move (hp);
+      	}
       }
-    }
-    
-  #if 0
-    {
-      OFStream f ("hashes");
-      for (const auto& it : kmer2hps)
-        f << it. second. size () << '\n';
-    }
-  #endif
-      
-    section ("Searching", false);
-    {
-      Progress prog (hashPeps. size (), 1000);  // PAR
-      VectorPtr<HashPep> neighbors;  neighbors. reserve (1000);  // PAR
-      const size_t freq_max = size_t (relFreq_max * (double) hashPeps. size ());
-      for (const HashPep& hp1 : hashPeps)
+      cout << "# Proteins: " << hashPeps. size () << endl;
+        
+      section ("Indexing", false);
+      map<size_t/*index k-mer hash*/,VectorPtr<HashPep>> kmer2hps;
       {
-        prog ();
-        neighbors. clear ();
-        for (const size_t h : hp1. indexHashes)
-          if (kmer2hps [h]. size () < freq_max)  // Speed improvement!
-            for (const HashPep* hp2 : kmer2hps [h])
-              if (hp1. name < hp2->name)
-                neighbors << hp2;
-        neighbors. sort ();
-        neighbors. uniq ();
-        for (const HashPep* hp2 : neighbors)
+        Progress prog (hashPeps. size (), 1000);  // PAR
+        for (const HashPep& hp : hashPeps)
         {
-          const double jaccard = getJaccard (hp1, *hp2);
-          if (jaccard >= jaccard_min)
-            fOut         << hp1. name 
-                 << '\t' << hp2->name 
-                 << '\t' << jaccard
-                 << '\n';
+          prog ();
+          for (const size_t h : hp. indexHashes)
+            kmer2hps [h] << & hp;
+        }
+      }
+      
+    #if 0
+      {
+        OFStream f ("hashes");
+        for (const auto& it : kmer2hps)
+          f << it. second. size () << '\n';
+      }
+    #endif
+        
+      section ("Searching", false);
+      {
+        Progress prog (hashPeps. size (), 1000);  // PAR
+        VectorPtr<HashPep> neighbors;  neighbors. reserve (1000);  // PAR
+        const size_t freq_max = size_t (relFreq_max * (double) hashPeps. size ());
+        for (const HashPep& hp1 : hashPeps)
+        {
+          prog ();
+          neighbors. clear ();
+          for (const size_t h : hp1. indexHashes)
+            if (kmer2hps [h]. size () < freq_max)  // Speed improvement!
+              for (const HashPep* hp2 : kmer2hps [h])
+                if (hp1. name < hp2->name)
+                  neighbors << hp2;
+          neighbors. sort ();
+          neighbors. uniq ();
+          for (const HashPep* hp2 : neighbors)
+          {
+            const double jaccard = getJaccard (hp1, *hp2);
+            if (jaccard >= jaccard_min)
+              fOut         << hp1. name 
+                   << '\t' << hp2->name 
+                   << '\t' << jaccard
+                   << '\n';
+          }
         }
       }
     }
+      
+    quick_exit (0);  // Freeing memory takes too much time
   }
 };
 
