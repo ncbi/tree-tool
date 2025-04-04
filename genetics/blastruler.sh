@@ -17,7 +17,7 @@ DB=$2
 OUT=$3
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP  
 
 
@@ -45,7 +45,7 @@ TARGET_PREV=""
 PRECEDENCE_PREV=0
 while read -r LINE
 do
-  ARR=($LINE)
+  ARR=( $LINE )
   
   TARGET=${ARR[0]}
   BR=${ARR[1]}
