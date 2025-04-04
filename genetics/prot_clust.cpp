@@ -166,7 +166,7 @@ struct ThisApplication final : Application
 	  QC_ASSERT (relFreq_max <= 1.0);
 	  
     
-    Vector<HashPep> hashPeps;  hashPeps. reserve (1000);  // PAR
+    Vector<HashPep> hashPeps;  hashPeps. reserve (10000);  // PAR
     map<size_t/*index k-mer hash*/,VectorPtr<HashPep>> kmer2hps;
     {
       OFStream fOut (outFName);
