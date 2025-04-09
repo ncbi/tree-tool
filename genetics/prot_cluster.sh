@@ -15,13 +15,15 @@ OUT=$3
 
 TMP=$( mktemp )
 comment $TMP
+#set -x
 
 
 $THIS/prot_match.sh $F $F 0.8 0.8 $CORES > $TMP.match
   # PAR
-$THIS/fa2list.sh $TMP.fa | awk '{OFS="\t"; print $1, $1};' >> $TMP.match
+$THIS/fa2list.sh $F | awk '{OFS="\t"; print $1, $1};' >> $TMP.match
+
 $THIS/../connectPairs $TMP.match $TMP.pairs  -pairs -center
-cut -f 2 $TMP.pairs > $OUT
+cut -f 2 $TMP.pairs | sort -u > $OUT
 
 
 rm $TMP*  
