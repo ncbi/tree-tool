@@ -61,6 +61,7 @@ struct Hit final : Named
 {
   Real score1;
   bool seed;
+
   
   Hit (const string &sseqid,
        Real score1_arg,
@@ -71,6 +72,7 @@ struct Hit final : Named
     { ASSERT (score1 > 0); }
   void saveText (ostream &os) const final
     { os << name << ' ' << score1 << ' ' << seed; }
+
     
   static bool compare (const Hit &h1,
                        const Hit &h2)
@@ -79,7 +81,7 @@ struct Hit final : Named
 
 
 
-struct Hmm final : Named
+struct HmmData final : Named
 // name: hmmName
 {
   // PAR
@@ -97,7 +99,7 @@ struct Hmm final : Named
   size_t wrong_min {0};
 
   
-  Hmm () = default;
+  HmmData () = default;
   void qc () const final
     { if (! qc_on)
         return;
@@ -222,7 +224,7 @@ struct ThisApplication final : Application
 	  ASSERT (isProb (error_max));
 	  
 	  
-	  Hmm hmm;  
+	  HmmData hmm;  
 	  
 	  // hmm.{seedNames,len}
     { 
