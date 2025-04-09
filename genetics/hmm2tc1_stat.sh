@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Print .tsv-file with TC1/LENG statistics for an HMM library"
@@ -9,7 +9,7 @@ fi
 LIB=$1
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP
 #set -x
 
