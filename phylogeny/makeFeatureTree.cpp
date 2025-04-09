@@ -76,7 +76,7 @@ struct ThisApplication : Application
   	  addKey ("output_tree", "Output file with the tree");
   	  addKey ("newick", "Output file with the tree in the Newick format");
   	  addFlag ("min_newick_name", "Minimal leaf names in Newick");
-  	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistics per feature in the indicated tsv.-file");
+  	  addKey ("qual", "Print the summary gain/loss statistics measured by feature consistency, save gain/loss statistics for non-singleton features in the indicated tsv-file");
   	  addFlag ("qual_nonredundant", "Non-redundify features by removing identical ones for the summary gain/loss statistics");
   	  addKey ("gain_nodes", "File name to save nodes where features are gained; within a node features are ordered alphabetically");
   	  addKey ("loss_nodes", "File name to save nodes where features are lost; within a node features are ordered alphabetically");
