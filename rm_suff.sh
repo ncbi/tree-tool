@@ -4,7 +4,7 @@ source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Remove a suffix from a file name"
   echo "#1: File name"
-  echo "#2: File name suffix"
+  echo "#2: File name suffix (including '.')"
   exit 1
 fi
 FILE=$1
