@@ -146,7 +146,7 @@ struct ThisApplication final : Application
   	  addPositional ("out", "Matches: <id1> <id2> <Jaccard index>");
   	  addKey ("jaccard_k", "K-mer length for Jaccard index", "4");
   	  addKey ("index_k", "K-mer length for indexing, larger than <jaccard_k>", "20");
-  	  addKey ("freq_max", "Max. relative frequency of an index k-mer", "0.001");
+  	  addKey ("freq_max", "Max. relative frequency of an index k-mer. Set to 1 for remote matches", "0.001");
     }
 
 
@@ -160,6 +160,7 @@ struct ThisApplication final : Application
 	  const size_t index_k     = (size_t) arg2uint ("index_k");
 	  const double relFreq_max = arg2double ("freq_max");
 	  
+	  QC_ASSERT (jaccard_min >= 0.0);
 	  QC_ASSERT (jaccard_k >= 3);  // PAR
 	  QC_ASSERT (jaccard_k <= index_k);
 	  QC_ASSERT (relFreq_max > 0.0);
@@ -229,6 +230,8 @@ struct ThisApplication final : Application
                   neighbors << hp2;
           neighbors. sort ();
           neighbors. uniq ();
+          if (verbose ())
+            cerr << hp1. name << "\tneighbors=" << neighbors. size () << '\n';
           for (const HashPep* hp2 : neighbors)
           {
             const double jaccard = getJaccard (hp1, *hp2);
