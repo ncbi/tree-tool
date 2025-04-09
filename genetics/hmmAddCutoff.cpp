@@ -46,7 +46,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
 	  : Application ("Add cutoffs to an HMM library")
@@ -67,10 +67,10 @@ struct ThisApplication : Application
 		const string type       = getArg ("type");
 		const string out        = getArg ("out");
 				
-		ASSERT (   type == "TC"
-		        || type == "GA"
-		        || type == "NC"
-		       );
+		QC_ASSERT (   type == "TC"
+               || type == "GA"
+               || type == "NC"
+              );
 
 
     map<string/*hmmName*/,double> hmm2cutoff;
@@ -80,9 +80,9 @@ struct ThisApplication : Application
       {
       	istringstream iss (li. line);
       	string name;
-      	double cutoff = 0;
+      	double cutoff = NaN;
       	iss >> name >> cutoff;
-      //ASSERT (cutoff > 0);
+        QC_ASSERT (cutoff > 0);
       	cutoff = round (cutoff * 100) / 100;
         hmm2cutoff [name] = cutoff;
       }
