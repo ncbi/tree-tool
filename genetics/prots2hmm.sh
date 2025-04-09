@@ -1,14 +1,14 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Create an HMM from proteins and evaluate the HMM"
   echo "Output: files #4.{SEED,hmm,stat}"
   echo "Exit code = 2: bad HMM"
-  echo "#1: Temporary file name"  
-  echo "#2: Protein file in FASTA format (for seed)"
-  echo "#3: Protein file in FASTA format to search against"
-  echo "#4: Output file prefix"
+  echo "#1: temporary file name"  
+  echo "#2: protein multi-FASTA file (for seed)"
+  echo "#3: protein multi-FASTA file to search against"
+  echo "#4: output file prefix"
   exit 1
 fi
 TMP=$1
@@ -33,15 +33,12 @@ hmmsearch  --tblout $TMP.hmmsearch  --noali  -Z 10000  $TMP.hmm $TARGET >& /dev/
 # PAR
 # GA: must return neighboring families ??
 $THIS/hmm_tc1 -noprogress  -hmmsearch $TMP.hmmsearch  -error_max 0.01  -seqFName $SEED > $PREF.stat
-cat $OREF.stat
+cat $PREF.stat
 
-set -o errexit
-grep " good:1 " $PREF.stat > /dev/null
-S=$?
-set -o errexit
-if [ $S == 0 ]; then
-  grep '^TC1: ' $PREF.stat > $TMP.tc1
-  $THIS/hmmAddTC1 $TMP.hmm $TMP.tc1 $PREF.hmm
+if grep -q " good:1 " $PREF.stat; then
+  NAME=$( basename $PREF )
+  grep '^TC1: ' $PREF.stat | sed 's/^TC1: /'$NAME' /1' > $TMP.tc1
+  $THIS/hmmAddCutoff $TMP.hmm $TMP.tc1 "TC" $PREF.hmm
 else
   rm $PREF.SEED
   exit 2
