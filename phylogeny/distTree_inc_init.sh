@@ -132,6 +132,7 @@ if [ "$PHEN" ]; then
 fi
 
 if [ $LARGE == 1 ]; then
+  rmdir $INC/new
   $THIS/../dir_hash_init.sh $INC/new 1000
 fi
 
