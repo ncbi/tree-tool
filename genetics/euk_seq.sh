@@ -6,7 +6,7 @@ if [ $# -ne 8 ]; then
   echo "Invokes GeneMark"
   echo "#1: eukaryotic genome name"
   echo "#2: eukaryotic DNA FASTA"
-  echo "#3: kingdom: Fungi|Viridiplantae|Tracheophyta|''"
+  echo "#3: Taxroot.id | 0"
   echo "#4: universal HMM library (absolute path) or ''"
   echo "#5: Pfam HMM library (absolute path) or ''"
   echo "#6: use Pfam HMM cutoff (0/1)"
@@ -17,7 +17,7 @@ if [ $# -ne 8 ]; then
 fi
 ASM=$1
 FASTA=$2
-KINGDOM=$3
+TAXROOT=$3
 UNIV=$4
 PFAM=$5
 PFAM_CUTOFF=$6
@@ -27,11 +27,11 @@ LOG=$8
 
 #set -x
 
-case "$KINGDOM" in 
-  "" | "Fungi" | "Viridiplantae" | "Tracheophyta")
+case $TAXROOT in 
+  0 | 4751 | 33090 | 58023 )
     ;;
   *)
-    error "$0: Unknown kingdom '$KINGDOM'"
+    error "$0: Unknown Taxroot.id $TAXROOT"
     ;;
 esac
 
@@ -54,7 +54,7 @@ $THIS/dna2stat $FASTA  -log $LOG > $ASM.stat
 
 
 if [ ! -e $ASM.prot ]; then
-  if [ "$KINGDOM" == "Tracheophyta" ]; then
+  if [ $TAXROOT == 58023 ]; then
     echo "dna2orfs 300" > annot_software
     $THIS/dna2prots $FASTA 1 300  -complexity_min 3.5  -no_x  -qc  -log $LOG > $ASM.prot
       # PAR  
@@ -69,7 +69,7 @@ if [ ! -e $ASM.prot ]; then
 
     # genemark.gtf
     FUNGUS_PAR=""
-    if [ "$KINGDOM" == "Fungi" ]; then
+    if [ $TAXROOT == 4751 ]; then
       FUNGUS_PAR="--fungus"
     fi
     $THIS/../rm_all.sh data
@@ -117,10 +117,10 @@ if [ $PFAM ]; then
 fi
 
 if [ $UNIV ]; then
-  case "$KINGDOM" in
-    "Viridiplantae")
+  case $TAXROOT in
+    33090)
       ;;  # ??
-    "Tracheophyta")
+    58023)
       section "tblastn2marker_euk.sh"
       UNIV_DIR=$( dirname $UNIV )
       $THIS/tblastn2marker_euk.sh $FASTA $UNIV_DIR/univ - $CORES $ASM.prot-univ $LOG
