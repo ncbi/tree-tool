@@ -178,7 +178,7 @@ fi
 else
   VER=$( cat $INC/version )
 fi
-rm $INC/tree.list
+rm $INC/tree.list 
 
 
 DELETE_CRITERION_OUTLIERS=""
