@@ -2,7 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "Populate GenomeTaxroot.taxroot_outlier for genonogroup outliers"
+  echo "Populate GenomeTaxroot.outlier for genonogroup outliers"
   echo "#1: inc/"
   echo "#2: File genogroup_table"
   exit 1
