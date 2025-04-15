@@ -149,7 +149,7 @@ seq2dissim:	$(seq2dissimOBJS)
 	$(ECHO)
 
 symbet.o:  $(NUMERIC_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/evolution.hpp
-symbetOBJS=symbet.o $(EVOLUTION_OBJ) $(GEN_DIR)/seq.o
+symbetOBJS=symbet.o $(EVOLUTION_OBJ) $(GEN_DIR)/seq.o $(CPP_DIR)/graph.o
 symbet:	$(symbetOBJS)
 	$(CXX) -o $@ $(symbetOBJS) $(LIBS) 
 	$(ECHO)

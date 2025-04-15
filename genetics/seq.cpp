@@ -4039,6 +4039,172 @@ const Cds* DnaAnnot::run ()
 
 
 
+// Mutation
+
+Mutation::Mutation (bool prot_arg,
+                    const string& line)
+: prot (prot_arg)
+{ 
+  string s (line);
+  trim (s);
+  
+  const size_t dash_pos = s. find ('-');
+  
+  // geneName
+  if (dash_pos != string::npos)
+  {
+    geneName = s. substr (0, dash_pos);
+    QC_ASSERT (! geneName. empty ());
+  }
+
+  // ref, pos, allele
+  const size_t refStart = dash_pos == string::npos ? 0 : (dash_pos + 1);
+  size_t posStart = no_index;
+  size_t alleleStart = no_index;
+  FFOR_START (size_t, i, refStart, s. size ())
+    if (isDigit (s [i]))
+    {
+      if (posStart == no_index)
+        posStart = i;
+    }
+    else
+    {
+      if (posStart != no_index)
+        if (alleleStart == no_index)
+        {
+          alleleStart = i;
+          break;
+        }
+    }
+  QC_ASSERT (refStart < posStart);
+  QC_ASSERT (posStart < alleleStart);
+  QC_ASSERT (alleleStart < s. size ());
+  ref    =                s. substr (refStart, posStart - refStart);
+  pos    = (size_t) stoi (s. substr (posStart, alleleStart - posStart));
+  allele =                s. substr (alleleStart);
+  QC_ASSERT (pos);
+  pos--;
+
+  // frameshift, ambig 
+  if (prot)
+  {
+    if (ref == "ins")
+      ref. clear ();
+    if (allele == "del")
+      allele. clear ();
+    if (allele == "fs")
+    {
+      frameshift = true;
+      allele. clear ();
+    }
+  #if 0
+    for (const char c : allele)
+      if (isAmbigAa (c))
+        ambig = true;
+  #endif
+  }
+  else
+  {
+    if (ref == "INS")
+      ref. clear ();
+    if (allele == "DEL")
+      allele. clear ();
+  #if 0
+    for (const char c : allele)
+      if (isAmbigNucl (c))
+        ambig = true;
+  #endif
+  }
+  
+  setAmbig ();
+}
+
+
+
+Mutation::Mutation (string geneName_arg,
+                    size_t pos_arg,
+                    string ref_arg,
+                    string allele_arg,
+                    bool frameshift_arg)
+: prot (true)
+, geneName (geneName_arg)
+, pos (pos_arg)
+, ref (ref_arg)
+, allele (allele_arg)
+, frameshift (frameshift_arg)
+{
+  ASSERT (! geneName. empty ());
+  setAmbig ();
+}
+
+
+
+void Mutation::setAmbig ()
+{
+  for (const char c : allele)
+    if (isAmbig (c, prot))
+    {
+      ambig = true;
+      return;
+    }
+}
+
+
+
+void Mutation::qc () const
+{
+  if (! qc_on)
+    return;
+    
+  QC_IMPLY (! geneName. empty (), isIdentifier (geneName, false));
+  QC_ASSERT (pos != no_index);
+  
+  if (prot)
+  {
+    for (const char c : ref)
+      if (c != *terminator && ! strchr (peptideAlphabet, c))
+        throw runtime_error ("Protein mutation cannot have ambiguities in the reference sequence");
+    for (const char c : allele)
+      QC_ASSERT (strchr (extTermPeptideAlphabet, c));
+  }
+  else
+  {
+    for (const char c : ref)
+      if (! strchr (dnaAlphabet, c))
+        throw runtime_error ("DNA mutation cannot have ambiguities in the reference sequence");
+    for (const char c : allele)
+      QC_ASSERT (strchr (extDnaAlphabet, c));
+  }
+
+  QC_IMPLY (! frameshift, ref != allele);
+  QC_IMPLY (frameshift, prot && allele. empty ());
+}
+
+
+
+bool Mutation::operator< (const Mutation& other) const
+{ 
+  LESS_PART (*this, other, prot);
+  LESS_PART (*this, other, geneName);
+  LESS_PART (*this, other, pos);
+  LESS_PART (*this, other, ref);
+  LESS_PART (*this, other, allele);
+  LESS_PART (*this, other, frameshift);
+  return false;
+}
+
+
+
+void Mutation::replace (Dna &refDna) const
+{
+  ASSERT (! prot);
+  ASSERT (stop () <= refDna. seq. size ());
+  ASSERT (refDna. seq. substr (pos, ref. size ()) == ref);
+  refDna. seq. replace (pos, ref. size (), allele);
+}
+
+
+
 
 // Align
 
@@ -4495,168 +4661,616 @@ void Align::printAlignment (const string &seq1,
 
 
 
-// Mutation
+// Exon
 
-Mutation::Mutation (bool prot_arg,
-                    const string& line)
-: prot (prot_arg)
-{ 
-  string s (line);
-  trim (s);
-  
-  const size_t dash_pos = s. find ('-');
-  
-  // geneName
-  if (dash_pos != string::npos)
+Exon::Exon (DiGraph &graph_arg,
+            const SubstMat& sm_arg,
+            const string &line)
+: DiGraph::Node (graph_arg)
+, sm (sm_arg)
+, original (true)
+{
+	QC_ASSERT (! line. empty ());
+	{
+  	istringstream iss (line);
+	  iss >> qseqid >> sseqid >> qstart >> qend >> sstart >> send >> qseq >> sseq;
+	}
+	QC_ASSERT (! sseq. empty ());  // line is not truncated
+
+  QC_ASSERT (qstart);
+  qstart--;
+
+  QC_ASSERT (sstart);
+  QC_ASSERT (send);
+  QC_ASSERT (sstart != send);
+  strand = 1;
+  if (sstart < send)
+  	sstart--;
+  else
   {
-    geneName = s. substr (0, dash_pos);
-    QC_ASSERT (! geneName. empty ());
-  }
+  	send--;
+  	strand = -1;
+  	swap (sstart, send);
+  }  		  
 
-  // ref, pos, allele
-  const size_t refStart = dash_pos == string::npos ? 0 : (dash_pos + 1);
-  size_t posStart = no_index;
-  size_t alleleStart = no_index;
-  FFOR_START (size_t, i, refStart, s. size ())
-    if (isDigit (s [i]))
+  finish ();
+}
+
+
+
+void Exon::finish ()
+{
+  ASSERT (graph);
+  ASSERT (score == 0);
+  ASSERT (! bestIntron);
+  
+  trimHangingDashes ();
+
+  size_t gap = 0;
+  bool pseudo = false;
+  size_t qstart_new = qstart;
+  size_t sstart_new = sstart;
+  size_t send_new   = send;
+  FFOR (size_t, i, qseq. size ())
+  {
+    if (qseq [i] == '-')
     {
-      if (posStart == no_index)
-        posStart = i;
+      gap++;
+      QC_ASSERT (sseq [i] != '-');
+      if (sseq [i] == '*')
+        pseudo = true;
     }
     else
     {
-      if (posStart != no_index)
-        if (alleleStart == no_index)
+      QC_ASSERT (qseq [i] != '*');
+      if (pseudo || gap >= 15)  // PAR  
+      {
+        auto exon = new Exon ( * var_cast (graph)
+                             , sm
+                             , qseqid
+                             , sseqid
+                             , qstart_new
+                             , qend
+                             , strand == 1 ? sstart_new : sstart
+                             , strand == 1 ? send       : send_new
+                             , qseq. substr (i)
+                             , sseq. substr (i)
+                             , strand
+                             );
+        qend = qstart_new;
+        const size_t intron_len = gap * 3;
+        if (strand == 1)
         {
-          alleleStart = i;
-          break;
+          QC_ASSERT (sstart_new > intron_len);
+          send = sstart_new - intron_len;
         }
+        else
+          sstart = send_new + intron_len;
+        ASSERT (i >= gap);
+        qseq. erase (i - gap);
+        sseq. erase (i - gap);
+        trimHangingDashes ();
+        bestIntron = new Intron (this, exon, true);  
+        break;
+      }
+      qstart_new++;
+      gap = 0;
+      pseudo = false;
     }
-  QC_ASSERT (refStart < posStart);
-  QC_ASSERT (posStart < alleleStart);
-  QC_ASSERT (alleleStart < s. size ());
-  ref    =                s. substr (refStart, posStart - refStart);
-  pos    = (size_t) stoi (s. substr (posStart, alleleStart - posStart));
-  allele =                s. substr (alleleStart);
-  QC_ASSERT (pos);
-  pos--;
 
-  // frameshift, ambig 
-  if (prot)
-  {
-    if (ref == "ins")
-      ref. clear ();
-    if (allele == "del")
-      allele. clear ();
-    if (allele == "fs")
+    // sstart_new, send_new
+    if (sseq [i] != '-')
     {
-      frameshift = true;
-      allele. clear ();
+      if (strand == 1)
+        sstart_new += 3;
+      else
+      {
+        QC_ASSERT (send_new >= 3);
+        send_new -= 3;
+      }
     }
-  #if 0
-    for (const char c : allele)
-      if (isAmbigAa (c))
-        ambig = true;
-  #endif
   }
-  else
+    
+  FFOR (size_t, i, qseq. size ())
+    score += sm. char2score (qseq [i], sseq [i]);
+//QC_ASSERT (score > 0);
+    
+  qc ();
+}
+
+
+
+void Exon::trimHangingDashes ()
+{
+  while (   ! qseq. empty ()
+         && (   qseq. front () == '-'
+             || sseq. front () == '-'
+            )
+        )
   {
-    if (ref == "INS")
-      ref. clear ();
-    if (allele == "DEL")
-      allele. clear ();
-  #if 0
-    for (const char c : allele)
-      if (isAmbigNucl (c))
-        ambig = true;
-  #endif
+    if (qseq. front () != '-')
+      qstart++;
+    if (sseq. front () != '-')
+    {
+      if (strand == 1)
+        sstart += 3;
+      else
+      {
+        ASSERT (send >= 3);
+        send -= 3;
+      }
+    }
+    qseq. erase (0, 1);
+    sseq. erase (0, 1);
   }
   
-  setAmbig ();
-}
-
-
-
-Mutation::Mutation (string geneName_arg,
-                    size_t pos_arg,
-                    string ref_arg,
-                    string allele_arg,
-                    bool frameshift_arg)
-: prot (true)
-, geneName (geneName_arg)
-, pos (pos_arg)
-, ref (ref_arg)
-, allele (allele_arg)
-, frameshift (frameshift_arg)
-{
-  ASSERT (! geneName. empty ());
-  setAmbig ();
-}
-
-
-
-void Mutation::setAmbig ()
-{
-  for (const char c : allele)
-    if (isAmbig (c, prot))
+  while (   ! qseq. empty ()
+         && (   qseq. back () == '-'
+             || sseq. back () == '-'
+            )
+        )
+  {
+    if (qseq. back () != '-')
+      qend--;
+    if (sseq. back () != '-')
     {
-      ambig = true;
-      return;
+      if (strand == 1)
+      {
+        ASSERT (send >= 3);
+        send -= 3;
+      }
+      else
+        sstart += 3;
     }
+    qseq. erase (qseq. size () - 1);
+    sseq. erase (sseq. size () - 1);
+  }
 }
 
 
 
-void Mutation::qc () const
+void Exon::qc () const 
 {
   if (! qc_on)
     return;
     
-  QC_IMPLY (! geneName. empty (), isIdentifier (geneName, false));
-  QC_ASSERT (pos != no_index);
+  DiGraph::Node::qc ();
+    
+  QC_ASSERT (! qseqid. empty ());	    
+  QC_ASSERT (! sseqid. empty ());	    
+
+  QC_ASSERT (qstart < qend);
+  QC_ASSERT (sstart < send);
+  QC_ASSERT (divisible ((uint) (send - sstart), 3));	  
+
+  QC_ASSERT (qseq. size () == sseq. size ());		  
+	QC_ASSERT (! qseq. empty ()); 
+  QC_ASSERT (qLen () <= qseq. size ());
+  QC_ASSERT (sLen () <= sseq. size ());
   
-  if (prot)
+  // Needed for Intron::Intron 
+  QC_ASSERT (qseq. front () != '-');
+  QC_ASSERT (qseq. back  () != '-');
+  QC_ASSERT (sseq. front () != '-');
+  QC_ASSERT (sseq. back  () != '-');
+        
+  QC_ASSERT (pos2q (0)             == qstart);
+  QC_ASSERT (pos2q (qseq. size ()) == qend);
+  QC_ASSERT (pos2s (0)             == (strand == 1 ? sstart : send));
+  QC_ASSERT (pos2s (sseq. size ()) == (strand == 1 ? send   : sstart));
+    
+  QC_IMPLY (bestIntron, arcs [true]. find (var_cast (bestIntron)) != no_index);
+
+//QC_ASSERT (score >= 0);
+//QC_ASSERT (totalScore >= 0);
+}
+
+
+
+void Exon::saveText (ostream &os) const 
+{
+  os        << qstart + 1 << '(' << sstart + size_t (  strand) << ')'
+     << "-" << qend       << '(' << send   + size_t (! strand) << ')'
+     << "  strand: " << (int) strand
+     << "  score: " << score 
+     << "  totalScore: " << totalScore
+     << "  original: " << original;
+  for (const DiGraph::Arc* arc : arcs [true])
   {
-    for (const char c : ref)
-      if (c != *terminator && ! strchr (peptideAlphabet, c))
-        throw runtime_error ("Protein mutation cannot have ambiguities in the reference sequence");
-    for (const char c : allele)
-      QC_ASSERT (strchr (extTermPeptideAlphabet, c));
+    ASSERT (arc);
+    ASSERT (arc->node [false] == this);
+    const Intron* intron = static_cast <const Intron*> (arc);
+    Offset ofs;
+    Offset::newLn (os);
+    os << "Intron";
+    if (intron == bestIntron)
+      os << " BEST!";
+    os << ':';
+    intron->saveText (os);
+  }
+}
+
+
+
+void Exon::setBestIntron ()
+{
+  if (bestIntronSet)
+    return;    
+  bestIntronSet = true;
+
+  if (arcs [true]. empty ())
+  {
+    ASSERT (! bestIntron);
+    totalScore = score;
   }
   else
   {
-    for (const char c : ref)
-      if (! strchr (dnaAlphabet, c))
-        throw runtime_error ("DNA mutation cannot have ambiguities in the reference sequence");
-    for (const char c : allele)
-      QC_ASSERT (strchr (extDnaAlphabet, c));
+    if (bestIntron)
+      totalScore = score + var_cast (bestIntron) -> getTotalScore ();
+    else
+    {
+      totalScore = - score_inf;
+      for (const DiGraph::Arc* arc : arcs [true])
+      {
+        ASSERT (arc);
+        ASSERT (arc->node [false] == this);
+        const Intron* intron = static_cast <const Intron*> (arc);
+        if (maximize (totalScore, score + var_cast (intron) -> getTotalScore ()))
+          bestIntron = intron;
+      }
+    }
+  //ASSERT (bestIntron);
+  }
+}
+
+
+
+string Exon::getSeq (size_t start) const
+{
+#if 0
+  if (gapF)
+  {
+    size_t gap = 0;
+    for (const char c : qseq)
+      if (c == '-')
+        gap++;
+      else
+      {
+        if (gap > 3)  // PAR
+          *gapF << gap << '\n';
+        gap = 0;
+      }
+  }
+#endif
+  
+  // s
+  const size_t end = bestIntron ? bestIntron->prev_end : sseq. size (); 
+  ASSERT (start <= end);
+  ASSERT (end <= sseq. size ());
+  string s = sseq. substr (start, end - start);
+  replaceStr (s, "-", noString);
+  
+  if (bestIntron)
+  {
+    const Exon* next = static_cast <const Exon*> (bestIntron->node [true]);
+    ASSERT (next);
+    s += next->getSeq (bestIntron->next_start);
+  }
+  
+  return s;
+}
+
+
+
+bool Exon::arcable (const Exon &next) const
+{
+  ASSERT (qseqid == next. qseqid);
+  ASSERT (sseqid == next. sseqid);
+  
+  if (this == & next)
+    return false;
+    
+  // PAR
+  constexpr size_t intron_max = 30000;  // nt 
+  
+  if (strand != next. strand)
+    return false;
+//if (same frame and overlap) return false;  // ??
+
+  // => DAG
+  if (qCenter () >= next. qCenter ())
+    return false;  
+  if (strand == 1)
+  {
+    if (sCenter () >= next. sCenter ())
+      return false;  
+  }
+  else
+    if (next. sCenter () >= sCenter ())
+      return false;  
+
+  if (qend + 20 < next. qstart)  // PAR
+    return false;
+  if (   strand == 1 
+      && send + intron_max < next. sstart
+     )
+    return false;
+  if (   strand == -1 
+      && next. sstart + intron_max < send
+     )
+    return false;
+     
+  return true;
+}
+
+    
+
+size_t Exon::pos2q (size_t pos) const  
+{
+  ASSERT (pos <= qseq. size ());
+  size_t j = qstart;
+  FFOR (size_t, i, qseq. size () + 1)
+  {
+    ASSERT (j >= qstart);
+    ASSERT (j <= qend);
+    if (i == pos)
+      return j;
+    if (qseq [i] != '-')
+      j++;
+  }
+  ERROR;
+}
+
+
+
+size_t Exon::pos2s (size_t pos) const  
+{
+  ASSERT (pos <= sseq. size ());
+  size_t j = (strand == 1 ? sstart : send);
+  FFOR (size_t, i, sseq. size () + 1)
+  {
+    ASSERT (j >= sstart);
+    ASSERT (j <= send);
+    if (i == pos)
+      return j;
+    if (sseq [i] != '-')
+    {
+      if (strand == 1)
+        j += 3;
+      else
+      {
+        ASSERT (j >= 3);
+        j -= 3;
+      }
+    }
+  }
+  ERROR;
+}
+
+
+
+
+// Intron
+
+Intron::Intron (Exon* prev,
+                Exon* next,
+                bool splitHsp_arg)
+: DiGraph::Arc (prev, next)
+, splitHsp (splitHsp_arg)
+, prev_end (prev->sseq. size ())
+{
+  ASSERT (prev);
+  ASSERT (next);
+  
+  const size_t start = max (next->qstart, prev->qstart);
+  const size_t end   = min (prev->qend,   next->qend);
+  if (start >= end)
+    return;
+  
+  // [start, end) = overlap of prev->qseq and next->qseq  
+  const size_t len = end - start;  
+  ASSERT (len);
+  ASSERT (len <= prev->qLen ());  
+  ASSERT (len <= next->qLen ());  
+        
+  Vector<AlignScore> prevScores;  prevScores. reserve (len + 1);
+  {
+    size_t pos = prev->qstart;
+    FFOR (size_t, i, prev->qseq. size ())
+      if (prev->qseq [i] != '-')
+      {
+        if (between (pos, start, end))
+          prevScores << prev->sm. char2score ( prev->qseq [i]
+                                             , prev->sseq [i]
+                                             );
+        pos++;
+      }
+  }
+  prevScores << 0;
+  ASSERT (prevScores. size () == len + 1);
+  
+  Vector<AlignScore> nextScores;  nextScores. reserve (len + 1);
+  nextScores << 0;
+  {
+    size_t pos = next->qstart;
+    FFOR (size_t, i, next->qseq. size ())
+      if (next->qseq [i] != '-')
+      {
+        if (between (pos, start, end))
+          nextScores << prev->sm. char2score ( next->qseq [i]
+                                             , next->sseq [i]
+                                             );
+        pos++;
+      }
+  }
+  ASSERT (nextScores. size () == len + 1);
+  
+  FOR_REV (size_t, i, len)
+    prevScores [i] += prevScores [i + 1];
+  FOR_START (size_t, i, 1, len + 1)
+    nextScores [i] += nextScores [i - 1];
+    
+  // score
+  size_t bestSuff = no_index;
+  score = score_inf; 
+  FOR_REV (size_t, i, len + 1)  // Frameshift position is rightmost
+    if (minimize (score, prevScores [i] + nextScores [i]))
+      bestSuff = i;
+  ASSERT (score != score_inf);
+  ASSERT (bestSuff != no_index);
+  ASSERT (bestSuff <= len);
+  
+  const size_t split = start + bestSuff;
+  if (   split <  prev->qCenter ()
+      || split >= next->qCenter ()
+     )
+  {
+    score = score_inf;
+    return;
   }
 
-  QC_IMPLY (! frameshift, ref != allele);
-  QC_IMPLY (frameshift, prot && allele. empty ());
+#if 0
+  if (   prev->qseqid == "VUSY-4471"
+	    && prev->sseqid == "1890392768"
+	    && prev->sstart == 29770405 - 1
+	    && next->sstart == 29771103 - 1
+	   )
+	{
+	  prev->saveText (cout);  cout << endl;
+	  next->saveText (cout);  cout << endl;
+	  FFOR (size_t, i, len + 1)
+	    cout << i << '\t' << prevScores [i] << '\t' << nextScores [i] << endl;
+	  PRINT (bestSuff);
+	  PRINT (score);
+	  PRINT (split);
+	}
+#endif
+  
+  // prev_end
+  {
+    size_t pos = prev->qstart;
+    FFOR (size_t, i, prev->sseq. size ())
+      if (prev->sseq [i] != '-')
+      {
+        if (pos == split)
+        {
+          prev_end = i;
+          break;
+        }
+        pos++;
+      }
+  }
+  ASSERT (prev_end <= prev->sseq. size ());
+  
+  // next_start
+  {
+    size_t pos = next->qstart;
+    FFOR (size_t, i, next->sseq. size ())
+      if (next->sseq [i] != '-')
+      {
+        if (pos == split)
+        {
+          next_start = i;
+          break;
+        }
+        pos++;
+      }
+  }
+  ASSERT (next_start <= next->sseq. size ());
 }
 
 
 
-bool Mutation::operator< (const Mutation& other) const
-{ 
-  LESS_PART (*this, other, prot);
-  LESS_PART (*this, other, geneName);
-  LESS_PART (*this, other, pos);
-  LESS_PART (*this, other, ref);
-  LESS_PART (*this, other, allele);
-  LESS_PART (*this, other, frameshift);
-  return false;
-}
-
-
-
-void Mutation::replace (Dna &refDna) const
+void Intron::qc () const 
 {
-  ASSERT (! prot);
-  ASSERT (stop () <= refDna. seq. size ());
-  ASSERT (refDna. seq. substr (pos, ref. size ()) == ref);
-  refDna. seq. replace (pos, ref. size (), allele);
+  if (! qc_on)
+    return;
+  DiGraph::Arc::qc ();
+
+  const Exon* prev = static_cast <const Exon*> (node [false]);
+  const Exon* next = static_cast <const Exon*> (node [true]);
+  ASSERT (prev);
+  ASSERT (next);
+  QC_ASSERT (prev != next);
+  QC_ASSERT (prev->qseqid == next->qseqid);
+  QC_ASSERT (prev->sseqid == next->sseqid);
+  QC_ASSERT (prev->strand == next->strand);
+
+  QC_ASSERT (prev_end   <= prev->sseq. size ());
+  QC_ASSERT (next_start <= next->sseq. size ());
+  
+  QC_IMPLY (! splitHsp, prev->arcable (*next));
+}
+
+
+
+void Intron::saveText (ostream &os) const 
+{
+  os << "  prev_end: " << prev_end 
+     << "  next_start: " << next_start
+     << "  score: " << score;
+  ASSERT (node [true]);
+
+  const Exon* prev = static_cast <const Exon*> (node [false]);
+  const Exon* next = static_cast <const Exon*> (node [true]);
+  ASSERT (prev);
+  ASSERT (next);
+#if 1  
+  if (prev->bestIntron != this)
+    return;
+#endif
+    
+  Offset ofs;
+  Offset::newLn (os);
+  os << "Exon:";
+  next->saveText (os);
+}
+
+
+
+AlignScore Intron::getTotalScore ()
+{
+  const Exon* next = static_cast <const Exon*> (node [true]);
+  ASSERT (next);
+  var_cast (next) -> setBestIntron ();  // DAG => no loop 
+  return next->totalScore - score;
+}
+
+
+
+//
+
+const Exon* exons2bestInitial (const VectorPtr<Exon> &exons)
+{
+  for (const Exon* next : exons)
+  {
+    ASSERT (next);
+	  for (const Exon* prev : exons)
+	  {
+	    ASSERT (prev);
+	    ASSERT (prev->graph == next->graph);
+      if (prev->arcable (*next))
+      {
+        if (const Intron* intron = prev->bestIntron)
+          if (intron->node [true] == next)
+            continue;
+        new Intron (var_cast (prev), var_cast (next), false);
+      }
+    }
+	}
+	
+	const Exon* bestExon = nullptr;
+	AlignScore totalScore_max = - score_inf;
+  for (const Exon* exon : exons)
+  {
+    var_cast (exon) -> setBestIntron ();
+    if (exon->totalScore <= 0)  // PAR ??
+      continue;
+    if (maximize (totalScore_max, exon->totalScore))
+      bestExon = exon;
+  }
+  
+  return bestExon;
 }
 
 

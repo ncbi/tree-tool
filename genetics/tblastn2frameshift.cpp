@@ -35,97 +35,68 @@
 #undef NDEBUG 
 
 #include "../common.hpp"
+#include "../graph.hpp"
 using namespace Common_sp;
+#include "seq.hpp"  
+using namespace Seq_sp;
 #include "../version.inc"
 
 #include "../common.inc"
 
 
 
-namespace
+namespace 
 {
   
   
-struct Hsp : Root
+void process (DiGraph &graph,
+              VectorPtr<Exon> &exons)
 {
-  string sseqid;
-  string qseqid;
-  // bp
-  size_t sstart {0};
-  size_t send {0};
-  bool sstrand {true};
-  // aa
-  size_t qstart {0};
-  size_t qend {0};
+	graph. qc ();
+  if (exons. empty ())
+    return;
+	
+	const Exon* initExon = exons2bestInitial (exons);
+	ASSERT (initExon);
+  const Exon* exon = initExon;
+  for (;;)
+  {
+    ASSERT (exon);
+    const size_t end = exon->bestIntron ? exon->bestIntron->prev_end : exon->qseq. size ();
+    if (! exon->bestIntron)
+      break;
+    const Exon* next = static_cast <const Exon*> (exon->bestIntron->node [true]);
+    ASSERT (next);
+    if ((exon->sstart % 3) != (next->sstart % 3))
+      cout         << exon->qseqid
+           << '\t' << exon->sseqid
+           << '\t' << "fs_" + to_string (exon->pos2q (end)) 
+                      + "_" + to_string (exon->pos2s (end)) 
+                      + "_" + to_string (exon->strand == 1 ? 1 : 0)
+         << '\n';
+    exon = next;
+  }
 
+  graph. clear ();
+  exons. clear ();
+}
   
-  Hsp (Istringstream &iss)
-    { iss >> sseqid >> qseqid >> sstart >> send >> qstart >> qend;
-      QC_ASSERT (qend);
-      //
-      QC_ASSERT (sstart != send);
-      sstrand = (sstart < send);
-      if (! sstrand)
-        swap (sstart, send);
-      ASSERT (sstart < send);
-      QC_ASSERT (sstart);
-      sstart--;
-      //
-      QC_ASSERT (qstart < qend);
-      QC_ASSERT (qstart);
-      qstart--;
-      //
-      ASSERT (! empty ());
-    }
-  Hsp () = default;
-  bool empty () const override
-    { return sseqid. empty (); }
-  void saveText (ostream &os) const override
-    { os         << sseqid 
-         << '\t' << qseqid
-         << '\t' << sstart
-         << '\t' << send
-         << '\t' << sstrand
-         << '\t' << qstart
-         << '\t' << qend
-         << endl;
-    }
-    
-    
-private:
-  size_t sstart_orig () const
-    { return sstrand ? sstart + 1 : send; }
-public:
-  bool operator<= (const Hsp &other) const
-    { LESS_PART (*this, other, sseqid);
-      LESS_PART (*this, other, qseqid);
-      LESS_PART (*this, other, sstart_orig ());
-      return true;
-    }
-  long global_start () const
-    { return sstrand
-               ? (long) sstart - 3 * (long) qstart
-               : (long) send   + 3 * (long) qstart; 
-    }
-};
-
-
-
-} // namespace
- 
+  
+}
 
 
 
 // ThisApplication
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Find frame shifts using tblastn output.\nOutput: sseqid qseqid <aa pos>{ins|del}<bp length>bp")
+    : Application ("Find frame shifts using tblastn output.\nOutput: qseqid sseqid fs_<qpos>_<spos>_<sstrand(1/0)>")
     {
       version = VERSION;
       // Input
-      addPositional ("tblastn", "tblastn output in the format: sseqid qseqid sstart send qstart qend, ordered by: sseqid, qseqid, sstart"); 
+      addPositional ("tblastn", "tblastn output in the format: qseqid sseqid qstart qend sstart send qseq sseq. Ordered by qseqid, sseqid"); 
+  	  addKey ("matrix", "Protein matrix", "BLOSUM62");
     }
 
 
@@ -133,37 +104,43 @@ struct ThisApplication : Application
   void body () const final
   {
     const string blastFName = getArg ("tblastn");
+	  const string matrix     = getArg ("matrix");
 
 
-    constexpr size_t diff_max_aa = 30;  // PAR
-
-    LineInput f (blastFName);
-    Istringstream iss;
-    Hsp hsp_prev;
-	  while (f. nextLine ())
+    const SubstMat sm (execDir + "/matrix/" + matrix);  
+    sm. qc ();
+  
+    DiGraph graph;  // of Exon*
+    VectorPtr<Exon> exons;
 	  {
-	    iss. reset (f. line);
-	    Hsp hsp (iss);
-	    QC_ASSERT (hsp_prev <= hsp);
-	    if (   ! hsp_prev. empty ()
-	        && hsp_prev. sseqid  == hsp. sseqid
-	        && hsp_prev. qseqid  == hsp. qseqid
-	        && hsp_prev. sstrand == hsp. sstrand
-	        && difference (hsp_prev. send, hsp. sstart) <= 3 * diff_max_aa
-	        && (   (  hsp. sstrand && difference (hsp_prev. qend,   hsp. qstart) <= diff_max_aa)
-  	          || (! hsp. sstrand && difference (hsp_prev. qstart, hsp. qend)   <= diff_max_aa)
+  	  LineInput in (blastFName, 10000);  // PAR
+  	  string qseqid_prev;
+  	  string sseqid_prev;
+  	  while (in. nextLine ())
+  	    try 
+  	    { 
+  	      auto exon = new Exon (graph, sm, in. line); 
+  	      if (! (   qseqid_prev == exon->qseqid
+  	             && sseqid_prev == exon->sseqid
+  	            )
   	         )
-  	     )
-      {
-        const long diff = hsp. global_start () - hsp_prev. global_start ();
-        if (diff % 3)
-          cout         << hsp. sseqid 
-               << '\t' << hsp. qseqid
-               << '\t' << (hsp. sstrand ? hsp_prev. qend : hsp. qend) + 1 << (diff > 0 ? "ins" : "del") << abs (diff) << "bp" 
-                << endl;
-      }
-	    hsp_prev = std::move (hsp);
-	  }
+  	      {
+  	        process (graph, exons);
+            if (qseqid_prev > exon->qseqid)
+              throw runtime_error ("Non-sorted qseqid");
+            if (   qseqid_prev == exon->qseqid 
+                && sseqid_prev >  exon->sseqid
+               )
+              throw runtime_error ("Non-sorted sseqid");
+  	      }
+  	      exons << exon;
+  	      qseqid_prev = exon->qseqid;
+  	      sseqid_prev = exon->sseqid;
+  	    }
+	      catch (const exception &e)
+	        { throw runtime_error (string (e. what ()) + "\n" + blastFName + ": " + in. lineStr ()); }
+  	}
+  	process (graph, exons);
   }
 };
 

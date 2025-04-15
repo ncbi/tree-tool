@@ -37,6 +37,7 @@
 
 
 #include "../common.hpp"
+#include "../graph.hpp"
 using namespace Common_sp;
 
 
@@ -1169,80 +1170,6 @@ struct DnaAnnot final : Root
 
 
 
-
-// Align
-
-struct Align final : Root
-// Needleman-Wunsch algorithm 
-{
-	// Output:
-	AlignScore score {0.0};
-	  // To be maximized
-	string transformations;
-	  // Of sequence 1
-	  // '-': insertion
-	  // '_': deletion
-	  // '|': match
-	  // ' ': substitution
-	size_t matches {0};
-	  // = identities
-	  // Not ambiguities
-	size_t substitutions {0};
-	size_t insertions {0};
-		// In seq1
-	size_t deletions {0};
-		// = insertions in seq2
-	
-	size_t start1 {0};
-	size_t start2 {0};
-  size_t stop1 {0};
-	size_t stop2 {0};
-	
-	AlignScore self_score1 {0.0};
-	AlignScore self_score2 {0.0};
-	
-	
-  // Default NCBI alignment parameters
-  // Input: match_len_min: valid if semiglobal, otherwise 0
-  // !semiglobal = global
-	Align (const Peptide &pep1,
-         const Peptide &pep2,
-         const SubstMat &substMat,
-         AlignScore gapOpenCost,
-         AlignScore gapCost,
-         size_t semiglobalMatchLen_min);
-    // Global alignment <=> !semiglobalMatchLen_min
-#if 0
-  ??
-	Align (const Dna &dna1,
-	       const Dna &dna2,
-	       bool semiglobal,
-	       size_t match_len_min);
-private:
-	void finish (const Seq &seq1,
-	             const Seq &seq2,
-	             bool semiglobal,
-	             size_t match_len_min);
-public:
-#endif
-  void qc () const override;
-	
-	
-	// Sizes of the input sequences
-  size_t size1 () const
-    { return transformations. size () - insertions; }
-  size_t size2 () const
-    { return transformations. size () - deletions; }
-  //
-	AlignScore getMinEditDistance () const;
-    // Return: >= 0
-  void printAlignment (const string &seq1,
-	                     const string &seq2,
-	                     size_t line_len) const;
-};
-
-
-
 struct Mutation final : Root
 {
   bool prot {false};
@@ -1326,6 +1253,200 @@ public:
 };
 
     
+
+struct Align final : Root
+// Needleman-Wunsch algorithm 
+{
+	// Output:
+	AlignScore score {0.0};
+	  // To be maximized
+	string transformations;
+	  // Of sequence 1
+	  // '-': insertion
+	  // '_': deletion
+	  // '|': match
+	  // ' ': substitution
+	size_t matches {0};
+	  // = identities
+	  // Not ambiguities
+	size_t substitutions {0};
+	size_t insertions {0};
+		// In seq1
+	size_t deletions {0};
+		// = insertions in seq2
+	
+	size_t start1 {0};
+	size_t start2 {0};
+  size_t stop1 {0};
+	size_t stop2 {0};
+	
+	AlignScore self_score1 {0.0};
+	AlignScore self_score2 {0.0};
+	
+	
+  // Default NCBI alignment parameters
+  // Input: match_len_min: valid if semiglobal, otherwise 0
+  // !semiglobal = global
+	Align (const Peptide &pep1,
+         const Peptide &pep2,
+         const SubstMat &substMat,
+         AlignScore gapOpenCost,
+         AlignScore gapCost,
+         size_t semiglobalMatchLen_min);
+    // Global alignment <=> !semiglobalMatchLen_min
+#if 0
+  ??
+	Align (const Dna &dna1,
+	       const Dna &dna2,
+	       bool semiglobal,
+	       size_t match_len_min);
+private:
+	void finish (const Seq &seq1,
+	             const Seq &seq2,
+	             bool semiglobal,
+	             size_t match_len_min);
+public:
+#endif
+  void qc () const override;
+	
+	
+	// Sizes of the input sequences
+  size_t size1 () const
+    { return transformations. size () - insertions; }
+  size_t size2 () const
+    { return transformations. size () - deletions; }
+  //
+	AlignScore getMinEditDistance () const;
+    // Return: >= 0
+  void printAlignment (const string &seq1,
+	                     const string &seq2,
+	                     size_t line_len) const;
+};
+
+
+
+struct Intron;
+  
+
+  
+// Merge with other struct Alignment's ??
+struct Exon final : DiGraph::Node
+{
+  // Input
+  const SubstMat& sm;
+  const bool original;
+	string qseqid;  // reference protein
+	string sseqid;  // contig accession
+	size_t qstart {0}, qend {0};  // aa
+	size_t sstart {0}, send {0};  // nt
+	  // sstart < send
+	string qseq;
+	string sseq;  
+	  // Same size()
+	  // Can contain '*'
+	Strand strand {0};
+	AlignScore score {0};
+	// Output
+private:
+	bool bestIntronSet {false};
+public:
+	const Intron* bestIntron {nullptr};
+	AlignScore totalScore {- score_inf};
+
+
+  Exon (DiGraph &graph_arg,        
+        const SubstMat& sm_arg,
+        const string &qseqid_arg,
+      	const string &sseqid_arg,
+      	size_t qstart_arg,
+      	size_t qend_arg,
+      	size_t sstart_arg,
+      	size_t send_arg,
+      	const string &qseq_arg,
+      	const string &sseq_arg,
+      	Strand strand_arg)
+    : DiGraph::Node (graph_arg)
+    , sm (sm_arg)
+    , original (false)
+    , qseqid (qseqid_arg)
+    , sseqid (sseqid_arg)
+    , qstart (qstart_arg)
+    , qend (qend_arg)
+    , sstart (sstart_arg)
+    , send (send_arg)  
+    , qseq (qseq_arg)
+    , sseq (sseq_arg)
+    , strand (strand_arg)
+    { finish (); }	
+  Exon (DiGraph &graph_arg,
+        const SubstMat& sm_arg,
+        const string &line);
+    // Input: line: qseqid >> sseqid >> qstart >> qend >> sstart_orig >> send_orig >> qseq >> sseq
+private:
+  void finish ();
+    // Output: score, bestIntron
+    // Update: qend, sstart, send, qseq, sseq
+    // Invokes: trimHangingDashes(), new Exon, new Intron(,,true), qc()
+  void trimHangingDashes ();
+    // Update: qstart, qend, sstart, send, qseq, sseq
+public:
+  void saveText (ostream &os) const final;
+  void qc () const final;
+    
+    
+  size_t qLen () const
+    { return qend - qstart; }
+  size_t sLen () const
+    { return (send - sstart) / 3; }
+    // aa
+  // --> center of match density ??
+  size_t qCenter () const  
+    { return (qstart + qend) / 2; }
+  size_t sCenter () const  
+    { return (sstart + send) / 2; }
+  
+  
+  bool arcable (const Exon &next) const;
+    // Return: true => same strand
+  void setBestIntron ();
+    // Update: bestIntronSet, totalScore, bestIntron
+  string getSeq (size_t start) const;
+  // Input: pos: in qseq/sseq
+  size_t pos2q (size_t pos) const;  // aa
+  size_t pos2s (size_t pos) const;  // nt
+};
+
+
+
+struct Intron final : DiGraph::Arc
+// DAG
+{
+  const bool splitHsp;
+  AlignScore score {0};
+    // Partial intron score
+    // Minimized
+  // In Exon::sseq
+  size_t prev_end {no_index};
+  size_t next_start {0};
+  
+  
+  Intron (Exon* prev,
+          Exon* next,
+          bool splitHsp_arg);
+  void qc () const final;
+  void saveText (ostream &os) const final;
+    
+    
+  AlignScore getTotalScore ();
+    // Invokes: next->setBestIntron()
+};
+
+
+const Exon* exons2bestInitial (const VectorPtr<Exon> &exons);
+  // Return: initial Exon with maximum totalScore
+  // Invokes: new Intron(,,false)
+
+
 
 struct KmerIndex final : Named, Singleton<KmerIndex>
 // DNA k-mer index

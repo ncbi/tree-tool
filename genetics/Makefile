@@ -79,13 +79,13 @@ all:	\
 
 
 align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
-align2htmlOBJS=align2html.o $(GEN_DIR)/seq.o $(DM_OBJ)
+align2htmlOBJS=align2html.o $(GEN_DIR)/seq.o $(DM_OBJ) $(CPP_DIR)/graph.o
 align2html:	$(align2htmlOBJS)
 	$(CXX) -o $@ $(align2htmlOBJS) $(LIBS) 
 	$(ECHO)
 
 asm_gap.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
-asm_gapOBJS=asm_gap.o $(GEN_DIR)/seq.o $(DM_OBJ)
+asm_gapOBJS=asm_gap.o $(GEN_DIR)/seq.o $(DM_OBJ) $(CPP_DIR)/graph.o
 asm_gap:	$(asm_gapOBJS)
 	$(CXX) -o $@ $(asm_gapOBJS) $(LIBS) 
 	$(ECHO)
@@ -199,7 +199,7 @@ fasta_prefix:	$(fasta_prefixOBJS)
 	$(ECHO)
 
 fasta2GC.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
-fasta2GCOBJS=fasta2GC.o $(GEN_DIR)/seq.o $(DM_OBJ)
+fasta2GCOBJS=fasta2GC.o $(GEN_DIR)/seq.o $(DM_OBJ) $(CPP_DIR)/graph.o
 fasta2GC:	$(fasta2GCOBJS)
 	$(CXX) -o $@ $(fasta2GCOBJS) $(LIBS) 
 	$(ECHO)
@@ -433,13 +433,13 @@ splitFasta:	$(splitFastaOBJS)
 	$(ECHO)
 
 tblastn2marker_euk.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/graph.hpp
-tblastn2marker_eukOBJS=tblastn2marker_euk.o $(SEQ_OBJ) $(CPP_DIR)/graph.o
+tblastn2marker_eukOBJS=tblastn2marker_euk.o $(SEQ_OBJ) 
 tblastn2marker_euk:	$(tblastn2marker_eukOBJS)
 	$(CXX) -o $@ $(tblastn2marker_eukOBJS) $(LIBS) 
 	$(ECHO)
 
-tblastn2frameshift.o:  $(COMMON_HPP) 
-tblastn2frameshiftOBJS=tblastn2frameshift.o $(CPP_DIR)/common.o
+tblastn2frameshift.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/graph.hpp
+tblastn2frameshiftOBJS=tblastn2frameshift.o $(SEQ_OBJ) 
 tblastn2frameshift:	$(tblastn2frameshiftOBJS)
 	$(CXX) -o $@ $(tblastn2frameshiftOBJS) $(LIBS) 
 	$(ECHO)

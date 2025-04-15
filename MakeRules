@@ -217,10 +217,10 @@ FEATURE_TREE = $(PHYL_DIR)/featureTree $(DM) $(CPP_DIR)/graph
 
 GEN_DIR = $(CPP_DIR)/genetics
 $(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_RAW_HPP)
-$(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_RAW_HPP)
-SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o 
+$(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_RAW_HPP) $(CPP_DIR)/graph.hpp
+SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 $(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(DM_DIR)/numeric.hpp $(COMMON_RAW_HPP)
-HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
+HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(CPP_DIR)/graph.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
 $(GEN_DIR)/gff.o: $(GEN_DIR)/gff.hpp $(COMMON_RAW_HPP)
 
 
@@ -257,7 +257,7 @@ ifdef AT_NCBI
   $(DATABASE_DIR)/pig.o:	$(DATABASE_DIR)/pig.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp
 
   $(DATABASE_DIR)/genbank.o: $(DATABASE_DIR)/genbank.hpp $(COMMON_RAW_HPP) $(DATABASE_DIR)/db.hpp $(GEN_DIR)/seq.hpp 
-  GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq
+  GENBANK = $(DATABASE_DIR)/genbank $(GEN_DIR)/seq $(CPP_DIR)/graph
   GenBank_LIB =  xncbi xobjutil taxon1 $(OBJMGR_LIBS) ncbi_xloader_asn_cache asn_cache  bdb $(SDBAPI_LIB) xconnect xutil ncbi_xdbapi_ctlib$(STATIC) xid_utils$(STATIC) xxconnect  
   # $(SRAREAD_LIBS) $(XFORMAT_LIBS) 
   #  ncbi_xloader_sra  xid_wgs   ncbi_id2proc_wgs 
