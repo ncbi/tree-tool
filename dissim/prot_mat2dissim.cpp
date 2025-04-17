@@ -60,7 +60,7 @@ Peptide readPeptide (const string &fName)
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Align and compute dissimilarity for a pair of proteins given a substituion matrix")
