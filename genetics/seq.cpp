@@ -4206,6 +4206,7 @@ void Mutation::replace (Dna &refDna) const
 
 
 
+#if 0
 // Align
 
 namespace 
@@ -4299,8 +4300,8 @@ Align::Align (const Peptide &pep1,
       Cell::Dir_best& dirs_cur    = cells [row] [col]. dirs; 
       if (col)
       {
-        AlignScore&    score_cur = scores_cur [Cell::dirLeft];
-        Cell::Dir& dir_cur   = dirs_cur   [Cell::dirLeft];
+        AlignScore& score_cur = scores_cur [Cell::dirLeft];
+        Cell::Dir&  dir_cur   = dirs_cur   [Cell::dirLeft];
         const Cell::Score& prev = cells [row] [col - 1]. scores;
         if (semiglobalMatchLen_min && (! row || row == seq1. size () - 1))
         {
@@ -4657,6 +4658,7 @@ void Align::printAlignment (const string &seq1,
     cout << endl;
   }
 }
+#endif
 
 
 
@@ -4668,7 +4670,6 @@ Exon::Exon (DiGraph &graph_arg,
             const string &line)
 : DiGraph::Node (graph_arg)
 , sm (sm_arg)
-, original (true)
 {
 	QC_ASSERT (! line. empty ());
 	{
@@ -4722,7 +4723,7 @@ void Exon::finish ()
     }
     else
     {
-      QC_ASSERT (qseq [i] != '*');
+    //QC_ASSERT (qseq [i] != '*');
       if (pseudo || gap >= 15)  // PAR  
       {
         auto exon = new Exon ( * var_cast (graph)
@@ -4750,7 +4751,7 @@ void Exon::finish ()
         qseq. erase (i - gap);
         sseq. erase (i - gap);
         trimHangingDashes ();
-        bestIntron = new Intron (this, exon, true);  
+        /*bestIntron =*/ new Intron (this, exon, true);  
         break;
       }
       qstart_new++;
@@ -4873,8 +4874,7 @@ void Exon::saveText (ostream &os) const
      << "-" << qend       << '(' << send   + size_t (! strand) << ')'
      << "  strand: " << (int) strand
      << "  score: " << score 
-     << "  totalScore: " << totalScore
-     << "  original: " << original;
+     << "  totalScore: " << totalScore;
   for (const DiGraph::Arc* arc : arcs [true])
   {
     ASSERT (arc);
@@ -4898,29 +4898,16 @@ void Exon::setBestIntron ()
     return;    
   bestIntronSet = true;
 
-  if (arcs [true]. empty ())
+  totalScore = score;    
+  for (const DiGraph::Arc* arc : arcs [true])
   {
-    ASSERT (! bestIntron);
-    totalScore = score;
+    ASSERT (arc);
+    ASSERT (arc->node [false] == this);
+    const Intron* intron = static_cast <const Intron*> (arc);
+    if (maximize (totalScore, score + var_cast (intron) -> getTotalScore ()))
+      bestIntron = intron;
   }
-  else
-  {
-    if (bestIntron)
-      totalScore = score + var_cast (bestIntron) -> getTotalScore ();
-    else
-    {
-      totalScore = - score_inf;
-      for (const DiGraph::Arc* arc : arcs [true])
-      {
-        ASSERT (arc);
-        ASSERT (arc->node [false] == this);
-        const Intron* intron = static_cast <const Intron*> (arc);
-        if (maximize (totalScore, score + var_cast (intron) -> getTotalScore ()))
-          bestIntron = intron;
-      }
-    }
-  //ASSERT (bestIntron);
-  }
+//ASSERT (bestIntron);
 }
 
 
@@ -4991,6 +4978,9 @@ bool Exon::arcable (const Exon &next) const
 
   if (qend + 20 < next. qstart)  // PAR
     return false;
+  if (qend >= next. qstart + 50)  // PAR
+    return false;
+
   if (   strand == 1 
       && send + intron_max < next. sstart
      )
@@ -5045,6 +5035,52 @@ size_t Exon::pos2s (size_t pos) const
     }
   }
   ERROR;
+}
+
+
+
+const Exon* Exon::exons2bestInitial (const VectorPtr<Exon> &exons)
+// Multiple genes ??
+{
+  // new Intron()
+  for (const Exon* next : exons)
+  {
+    ASSERT (next);
+	  for (const Exon* prev : exons)
+	  {
+	    ASSERT (prev);
+	    ASSERT (prev->graph == next->graph);
+      if (prev->arcable (*next))
+      {
+        if (! (prev->bestIntron && prev->bestIntron->node [true] == next))
+          new Intron (var_cast (prev), var_cast (next), false);
+      }
+    }
+	}
+	if (verbose () && ! exons. empty ())
+	{
+	  exons. front () -> graph -> saveText (cout);
+	  cout << endl << endl;
+	}
+	  
+	
+	const Exon* bestExon = nullptr;
+	AlignScore totalScore_max = - score_inf;
+  for (const Exon* exon : exons)
+  {
+    var_cast (exon) -> setBestIntron ();
+    if (verbose ())
+    {
+      exon->saveText (cout);
+      cout << endl;
+    }
+    if (exon->totalScore <= 0)  // PAR ??
+      continue;
+    if (maximize (totalScore_max, exon->totalScore))
+      bestExon = exon;
+  }
+  
+  return bestExon;
 }
 
 
@@ -5206,16 +5242,18 @@ void Intron::qc () const
 
 void Intron::saveText (ostream &os) const 
 {
-  os << "  prev_end: " << prev_end 
-     << "  next_start: " << next_start
-     << "  score: " << score;
+  ASSERT (node [false]);
   ASSERT (node [true]);
-
   const Exon* prev = static_cast <const Exon*> (node [false]);
   const Exon* next = static_cast <const Exon*> (node [true]);
   ASSERT (prev);
   ASSERT (next);
-#if 1  
+
+  os << "  prev_end: " << prev_end 
+     << "  next_start: " << next_start
+     << "  score: " << score;
+
+#if 0
   if (prev->bestIntron != this)
     return;
 #endif
@@ -5234,43 +5272,6 @@ AlignScore Intron::getTotalScore ()
   ASSERT (next);
   var_cast (next) -> setBestIntron ();  // DAG => no loop 
   return next->totalScore - score;
-}
-
-
-
-//
-
-const Exon* exons2bestInitial (const VectorPtr<Exon> &exons)
-{
-  for (const Exon* next : exons)
-  {
-    ASSERT (next);
-	  for (const Exon* prev : exons)
-	  {
-	    ASSERT (prev);
-	    ASSERT (prev->graph == next->graph);
-      if (prev->arcable (*next))
-      {
-        if (const Intron* intron = prev->bestIntron)
-          if (intron->node [true] == next)
-            continue;
-        new Intron (var_cast (prev), var_cast (next), false);
-      }
-    }
-	}
-	
-	const Exon* bestExon = nullptr;
-	AlignScore totalScore_max = - score_inf;
-  for (const Exon* exon : exons)
-  {
-    var_cast (exon) -> setBestIntron ();
-    if (exon->totalScore <= 0)  // PAR ??
-      continue;
-    if (maximize (totalScore_max, exon->totalScore))
-      bestExon = exon;
-  }
-  
-  return bestExon;
 }
 
 

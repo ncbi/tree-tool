@@ -1254,6 +1254,7 @@ public:
 
     
 
+#if 0
 struct Align final : Root
 // Needleman-Wunsch algorithm 
 {
@@ -1322,6 +1323,7 @@ public:
 	                     const string &seq2,
 	                     size_t line_len) const;
 };
+#endif
 
 
 
@@ -1332,9 +1334,9 @@ struct Intron;
 // Merge with other struct Alignment's ??
 struct Exon final : DiGraph::Node
 {
+  friend Intron;
   // Input
   const SubstMat& sm;
-  const bool original;
 	string qseqid;  // reference protein
 	string sseqid;  // contig accession
 	size_t qstart {0}, qend {0};  // aa
@@ -1367,7 +1369,6 @@ public:
       	Strand strand_arg)
     : DiGraph::Node (graph_arg)
     , sm (sm_arg)
-    , original (false)
     , qseqid (qseqid_arg)
     , sseqid (sseqid_arg)
     , qstart (qstart_arg)
@@ -1386,7 +1387,7 @@ private:
   void finish ();
     // Output: score, bestIntron
     // Update: qend, sstart, send, qseq, sseq
-    // Invokes: trimHangingDashes(), new Exon, new Intron(,,true), qc()
+    // Invokes: trimHangingDashes(), new Exon(), new Intron(,,true), qc()
   void trimHangingDashes ();
     // Update: qstart, qend, sstart, send, qseq, sseq
 public:
@@ -1408,12 +1409,18 @@ public:
   
   bool arcable (const Exon &next) const;
     // Return: true => same strand
+private:
   void setBestIntron ();
     // Update: bestIntronSet, totalScore, bestIntron
+public:
   string getSeq (size_t start) const;
   // Input: pos: in qseq/sseq
   size_t pos2q (size_t pos) const;  // aa
   size_t pos2s (size_t pos) const;  // nt
+
+  static const Exon* exons2bestInitial (const VectorPtr<Exon> &exons);
+    // Return: initial Exon with maximum totalScore
+    // Invokes: new Intron(,,false)
 };
 
 
@@ -1440,11 +1447,6 @@ struct Intron final : DiGraph::Arc
   AlignScore getTotalScore ();
     // Invokes: next->setBestIntron()
 };
-
-
-const Exon* exons2bestInitial (const VectorPtr<Exon> &exons);
-  // Return: initial Exon with maximum totalScore
-  // Invokes: new Intron(,,false)
 
 
 
