@@ -21,7 +21,9 @@ TMP=$( mktemp )
 makeblastdb  -in $DNA  -dbtype nucl  -out $TMP  -blastdb_version 4  -logfile /dev/null
 # PAR
 tblastn  -db $TMP  -query $PROT  -show_gis  -db_gencode $GC  -seg no  -comp_based_stats 0  -max_target_seqs 10000  -word_size 3  -threshold 21  -num_threads 15  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' | sort > $TMP.blast
-$THIS/tblastn2frameshift $TMP.blast
+$THIS/tblastn2frameshift $TMP.blast -noprogress > $TMP.fs
+  # -verbose 1
+$THIS/frameshift2genesymbol $DNA $PROT $TMP.fs  -gencode $GC  -noprogress 
 
 
 rm $TMP*
