@@ -195,7 +195,11 @@ struct ThisApplication final : Application
 		  {
 		    unique_ptr<Seq> seq;
 		    if (aa)
-		      seq. reset (new Peptide (fa, 1000/*PAR*/, true));
+		    {
+		      auto pep = new Peptide (fa, 1000/*PAR*/, true);
+		      pep->pseudo = true;
+		      seq. reset (pep);
+		    }
 		    else
 		      seq. reset (new Dna (fa, 100000/*PAR*/, true));
 		    ASSERT (seq);
