@@ -56,12 +56,17 @@ void process (DiGraph &graph,
   if (exons. empty ())
     return;
 	
-	const Exon* initExon = exons2bestInitial (exons);
+	const Exon* initExon = Exon::exons2bestInitial (exons);
 	ASSERT (initExon);
   const Exon* exon = initExon;
   for (;;)
   {
     ASSERT (exon);
+    if (verbose ())
+    {
+      exon->saveText (cout);
+      cout << endl;
+    }
     const size_t end = exon->bestIntron ? exon->bestIntron->prev_end : exon->qseq. size ();
     if (! exon->bestIntron)
       break;
@@ -91,7 +96,7 @@ void process (DiGraph &graph,
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Find frame shifts using tblastn output.\nOutput: qseqid sseqid fs_<qpos>_<spos>_<sstrand(1/0)>")
+    : Application ("Find frame shifts using tblastn output.\nOutput: qseqid sseqid fs_<qpos>_<spos>_<sstrand(1/0)>, where <qpos> and <spos> are 0-based")
     {
       version = VERSION;
       // Input

@@ -93,7 +93,7 @@ void process (DiGraph &graph,
 	  const string& subj = it. first. second;
 	  ASSERT (isLeft (ref, prefix));
 	  
-  	const Exon* bestExon = exons2bestInitial (it. second);
+  	const Exon* bestExon = Exon::exons2bestInitial (it. second);
 	  if (! bestExon)
 	    continue;
 	  
