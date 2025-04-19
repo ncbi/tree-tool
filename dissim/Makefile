@@ -29,7 +29,6 @@ all:	\
 	main_ortholog \
 	mlst2dissim \
 	prot_collection2dissim \
-	prot_mat2dissim \
 	seq2dissim \
 	symbet \
 	symbet_blastp
@@ -134,12 +133,6 @@ prot_collection2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.
 prot_collection2dissimOBJS=prot_collection2dissim.o $(ALIGN_OBJ) $(DM_DIR)/dataset.o 
 prot_collection2dissim:	$(prot_collection2dissimOBJS)
 	$(CXX) -o $@ $(prot_collection2dissimOBJS) $(LIBS) 
-	$(ECHO)
-
-prot_mat2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-prot_mat2dissimOBJS=prot_mat2dissim.o $(SEQ_OBJ)
-prot_mat2dissim:	$(prot_mat2dissimOBJS)
-	$(CXX) -o $@ $(prot_mat2dissimOBJS) $(LIBS) 
 	$(ECHO)
 
 seq2dissim.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DISSIM_DIR)/align.hpp 
