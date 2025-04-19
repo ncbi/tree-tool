@@ -38,6 +38,7 @@ all:	\
 	fastaAddGi \
 	fastaDna2pairs \
 	filterFasta \
+	frameshift2genesymbol \
 	genbank_grep \
 	GeneMark2CDS \
 	hmm2prot \
@@ -232,6 +233,12 @@ filterFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 filterFastaOBJS=filterFasta.o $(SEQ_OBJ)
 filterFasta:	$(filterFastaOBJS)
 	$(CXX) -o $@ $(filterFastaOBJS) $(LIBS) 
+	$(ECHO)
+
+frameshift2genesymbol.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+frameshift2genesymbolOBJS=frameshift2genesymbol.o $(SEQ_OBJ) 
+frameshift2genesymbol:	$(frameshift2genesymbolOBJS)
+	$(CXX) -o $@ $(frameshift2genesymbolOBJS) $(LIBS) 
 	$(ECHO)
 
 genbank_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
