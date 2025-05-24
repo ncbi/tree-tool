@@ -46,7 +46,7 @@ using namespace Common_sp;
 
 
 
-struct Hsp
+struct Hsp  // : Seq_sp::Hsp ??
 {
   bool subjectProt {false};
   size_t qstart {0};
