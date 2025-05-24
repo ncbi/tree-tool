@@ -115,7 +115,7 @@ Hashes::Hashes (const string &fName)
     *this << hash;
     prev = hash;
   } 
-  searchSorted = true;
+  ascending = etrue;
 /*
   if (empty ())
     throw runtime_error ("No hashes for " + fName);
