@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Print a row of a tab-delimnietd table where the top row is a header"
@@ -11,15 +11,14 @@ TAB=$1
 ROW=$2
 
 
-L=`cat $TAB |wc -l`
+L=$( < $TAB  wc -l )
 L=$(( $L - 1 ))  # minus header
 if [ $ROW -gt $L ]; then
-  echo "Max. row = $L"
-  exit 1
+  error "Max. row = $L"
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP
 
 
