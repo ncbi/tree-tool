@@ -21,6 +21,7 @@ all:	\
 	blastp_merge \
 	blastp2exons \
 	contig2read_coverage \
+	disruption2genesymbol \
 	dna2prots \
 	dna2stat \
 	dna_complexity \
@@ -38,7 +39,6 @@ all:	\
 	fastaAddGi \
 	fastaDna2pairs \
 	filterFasta \
-	frameshift2genesymbol \
 	genbank_grep \
 	GeneMark2CDS \
 	hmm2prot \
@@ -72,11 +72,12 @@ all:	\
 	replaceFastaHeader \
 	seq_print \
 	splitFasta \
-	tblastn2marker_euk \
-	tblastn2frameshift \
+	tblastn2disruption \
+ 	tblastn2marker_euk \
 	tblastn2orfs \
 	uniqProtRef \
 	uniqSeq
+
 
 
 align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
@@ -211,8 +212,8 @@ fasta2hash:	$(fasta2hashOBJS)
 	$(CXX) -o $@ $(fasta2hashOBJS) $(LIBS) 
 	$(ECHO)
 
-fasta2len.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-fasta2lenOBJS=fasta2len.o $(SEQ_OBJ)
+fasta2len.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(TSV_DIR)/tsv.hpp
+fasta2lenOBJS=fasta2len.o $(SEQ_OBJ) $(TSV_DIR)/tsv.o
 fasta2len:	$(fasta2lenOBJS)
 	$(CXX) -o $@ $(fasta2lenOBJS) $(LIBS) 
 	$(ECHO)
@@ -235,10 +236,10 @@ filterFasta:	$(filterFastaOBJS)
 	$(CXX) -o $@ $(filterFastaOBJS) $(LIBS) 
 	$(ECHO)
 
-frameshift2genesymbol.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-frameshift2genesymbolOBJS=frameshift2genesymbol.o $(SEQ_OBJ) 
-frameshift2genesymbol:	$(frameshift2genesymbolOBJS)
-	$(CXX) -o $@ $(frameshift2genesymbolOBJS) $(LIBS) 
+disruption2genesymbol.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+disruption2genesymbolOBJS=disruption2genesymbol.o $(SEQ_OBJ) 
+disruption2genesymbol:	$(disruption2genesymbolOBJS)
+	$(CXX) -o $@ $(disruption2genesymbolOBJS) $(LIBS) 
 	$(ECHO)
 
 genbank_grep.o:	$(COMMON_HPP) $(GEN_DIR)/genbank_text.hpp
@@ -445,10 +446,10 @@ tblastn2marker_euk:	$(tblastn2marker_eukOBJS)
 	$(CXX) -o $@ $(tblastn2marker_eukOBJS) $(LIBS) 
 	$(ECHO)
 
-tblastn2frameshift.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/graph.hpp
-tblastn2frameshiftOBJS=tblastn2frameshift.o $(SEQ_OBJ) 
-tblastn2frameshift:	$(tblastn2frameshiftOBJS)
-	$(CXX) -o $@ $(tblastn2frameshiftOBJS) $(LIBS) 
+tblastn2disruption.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/graph.hpp
+tblastn2disruptionOBJS=tblastn2disruption.o $(SEQ_OBJ) 
+tblastn2disruption:	$(tblastn2disruptionOBJS)
+	$(CXX) -o $@ $(tblastn2disruptionOBJS) $(LIBS) 
 	$(ECHO)
 
 tblastn2orfs.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
