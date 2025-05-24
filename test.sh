@@ -24,3 +24,6 @@ time $THIS/phylogeny/featureTree_test.sh go
 
 super_section "xml"
 $THIS/xml/xml_test.sh 0
+
+
+success
