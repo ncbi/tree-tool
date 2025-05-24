@@ -1877,7 +1877,7 @@ void Subgraph::qc () const
     return;
     
   // area
-  QC_ASSERT (area. searchSorted);
+  QC_ASSERT (area. ascending == etrue);
   QC_ASSERT (area. isUniq ());
   for (const Tree::TreeNode* node : area)
   {
@@ -1888,7 +1888,7 @@ void Subgraph::qc () const
     
   // boundary
   QC_ASSERT (boundary. size () >= 2);
-  QC_ASSERT (boundary. searchSorted);
+  QC_ASSERT (boundary. ascending == etrue);
   QC_ASSERT (boundary. isUniq ());
   QC_ASSERT (area. containsFastAll (boundary));
   QC_ASSERT ((area. size () == 2) == (area. size () == boundary. size ()));
@@ -8097,7 +8097,7 @@ Real setDissimWeightAttrs (const Leaf* leaf1,
 Dataset DistTree::getDissimWeightDataset (Real &dissimTypeError) const
 {
   ASSERT (optimizable ());
-  ASSERT (dissims. searchSorted);
+  ASSERT (dissims. ascending == etrue);
   
   
   Dataset ds;
