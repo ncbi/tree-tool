@@ -28,7 +28,9 @@ ls -laF $DNA >> $LOG
 
 MATRIX="BLOSUM62"
 
-SEARCH="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX"
+SEARCH="-comp_based_stats 0  -seg no  -max_target_seqs 10000  -dbsize 10000  -evalue 1  -word_size 3  -matrix $MATRIX  -db_gencode 1"
+  # Cf. Hsp::blastp_slow
+                       
   # Too much time:
     # -word_size 2
     # -window_size 0
@@ -40,8 +42,8 @@ SEARCH="-db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000 
   #            -asn-cache ${GP_cache_dir}  -blastp-args  --sam-query-len  -diamond-executable ${GP_HOME}/third-party/diamond/diamond  -lds2 ${input.lds2.target}  -ofmt  -output-dir ${output}  -output-manifest ${output}/align.mft -output-prefix hits -query-fmt seq-ids -query-manifest ${input.query_ids} -subject-fmt seq-ids -subject-manifest ${input.subject_ids} -work-area ${tmp}
 #makeblastdb  -in $DNA  -out $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null 
 #tblastn  -query $REF  -db $TMP  -db_gencode 1  -seg no  -comp_based_stats 0  -word_size 3  -evalue 1000  -matrix $MATRIX  -outfmt '6 qseqid sseqid qstart qend sstart send qseq sseq' -num_threads $CORES  > $TMP.tblastn
-$THIS/tblastn.sh $REF $DNA "$SEARCH"  "qseqid sseqid qstart qend sstart send qseq sseq"  10000000 $CORES $TMP.tblastn
-sort -k 1 $TMP.tblastn > $TMP.tblastn-sort
+$THIS/tblastn.sh $REF $DNA "$SEARCH"  "qseqid sseqid qstart qend qlen sstart send slen qseq sseq"  10000000 $CORES $TMP.tblastn
+sort -k 1,2 $TMP.tblastn > $TMP.tblastn-sort
 
 DELIM_PAR=""
 if [ $DELIM ]; then
