@@ -72,21 +72,28 @@ typedef  map<string/*key*/, const StringVector* /*row*/>  Key2row;
   
 
 Key2row makeKey2row (const TextTable &tab,
-                     const Vector<TextTable::ColNum> &keyCols)
+                     const Vector<TextTable::ColNum> &keyCols,
+                     bool duplP)
 {
   Key2row key2row;
   StringVector keyVec;
-  for (const StringVector& row : tab. rows)
+  FFOR (size_t, rowNum, tab. rows. size ())
   {
+    const StringVector& row = tab. rows [rowNum];
     keyVec. clear ();
     for (const TextTable::ColNum i : keyCols)
     {
       ASSERT (! contains (row [i], '\t'));
       keyVec << row [i];
     }
-    const string key (keyVec. toString ("\t"));
+    const string key (keyVec. empty () ? to_string (rowNum + 1) : keyVec. toString ("\t"));
     if (key2row [key])
-      throw runtime_error (tab. name + ": duplicate key: " + key);
+    {
+      const string msg (tab. name + ": duplicate key: " + key);
+      if (! duplP)
+        throw runtime_error (msg);
+      cout << msg << endl;
+    }
     key2row [key] = & row;
   }
   return key2row;
@@ -102,9 +109,10 @@ struct ThisApplication final : Application
       version = VERSION;
   	  addPositional ("tsv1", ".tsv-file 1");
   	  addPositional ("tsv2", ".tsv-file 2");
-  	  addPositional ("keys", "Key columns, comma-separated");
   	  addPositional ("diff", "Output tsv-file with different column values: REPLACE|DELETE|ADD <column name> <value in tsv1> <value in tsv2> <abs. difference (for numeric column)> <key>");
+  	  addKey ("keys", "Key columns, comma-separated. If no key columns then comparison by row numbers");
   	  addKey ("diff_min", "Min. abs. difference of numeric columns to report", "0");
+  	  addFlag ("dupl", "For the rows with duplicate keys use only the first row");
   	}
 
 
@@ -116,6 +124,7 @@ struct ThisApplication final : Application
 	  const string keysS     = getArg ("keys");
 	  const string diffFName = getArg ("diff");
 	  const double diff_min  = str2<double> (getArg ("diff_min"));
+	  const bool   duplP     = getFlag ("dupl");
 	  
 	  	  
     const TextTable t1 (fName1, noString, true, 100000);  // PAR
@@ -143,15 +152,19 @@ struct ThisApplication final : Application
 
     ASSERT (commonCols1. size () == commonCols2. size ());
         
-    const Key2row key2row1 (makeKey2row (t1, keyCols1));
-    const Key2row key2row2 (makeKey2row (t2, keyCols2));
-    ASSERT (key2row1. size () == t1. rows. size ());
-    ASSERT (key2row2. size () == t2. rows. size ());
+    const Key2row key2row1 (makeKey2row (t1, keyCols1, duplP));
+    const Key2row key2row2 (makeKey2row (t2, keyCols2, duplP));
+    ASSERT (key2row1. size () <= t1. rows. size ());
+    ASSERT (key2row2. size () <= t2. rows. size ());
+    IMPLY (! duplP, key2row1. size () == t1. rows. size ());
+    IMPLY (! duplP, key2row2. size () == t2. rows. size ());
     
 
     OFStream diffF (diffFName);    
     // sort ??
-    diffF << "#change_\tcolumn_\tvalue1_\tvalue2_\tdiff_\t" << keysVec. toString ("\t") << '\n';
+    diffF << "#change_\tcolumn_\tvalue1_\tvalue2_\tdiff_\t" 
+          << (keysVec. empty () ? string ("_row_num") : keysVec. toString ("\t"))
+          << '\n';
 
     size_t deleted = 0;
     for (const auto& it : key2row2)
