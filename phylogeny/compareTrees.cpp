@@ -79,7 +79,7 @@ string getNodeName (const Tree::TreeNode* node)
   
   
 typedef  StringVector  Leaves;
-  // searchSorted
+  // ascending == etrue
 
 
 
@@ -128,7 +128,7 @@ void adjustNode2leaves (const Tree &tree,
                         const Leaves &allLeaves)
 // Update: node2leaves
 {
-  ASSERT (allLeaves. searchSorted);
+  ASSERT (allLeaves. ascending == etrue);
   
  	const size_t all = allLeaves. size ();
   for (auto& it : node2leaves)
@@ -145,11 +145,11 @@ void adjustNode2leaves (const Tree &tree,
   	   )
   	{
   	  Leaves s (allLeaves);
-      ASSERT (s. searchSorted);  
-      ASSERT (leaves. searchSorted);  
+      ASSERT (s. ascending == etrue);  
+      ASSERT (leaves. ascending == etrue);  
   	  s. setMinus (leaves);
   	  leaves = s;
-      ASSERT (leaves. searchSorted);  
+      ASSERT (leaves. ascending == etrue);  
   	}
   	ASSERT (leaves. size () <= all / 2);
   	IMPLY (even (all) && leaves. size () == all / 2, leaves. containsFast (allLeaves. front ()));
@@ -192,7 +192,7 @@ bool operator< (const Signature &a,
 
 Signature leaves2signature (const Leaves &leaves)
 {
-  ASSERT (leaves. searchSorted);
+  ASSERT (leaves. ascending == etrue);
   return leaves. empty () 
            ? Signature ()
            : Signature (leaves. size (), leaves. front (), leaves. back ());
