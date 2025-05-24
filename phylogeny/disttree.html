@@ -405,7 +405,8 @@ select [node] id \
 select Phyltree.object_type, Objecttype.seq_type \
   from      Phyltree \
        join Objecttype on Objecttype.id = Phyltree.object_type \
-  where Phyltree.id = " + tree);
+  where     dead = 0 \
+        and Phyltree.id = " + tree);
   if (rs.length != 1)  
     alert ("Unknown tree " + tree);
   objectType = rs[0].object_type;
