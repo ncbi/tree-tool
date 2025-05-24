@@ -63,8 +63,8 @@ void Feature::qc () const
 	QC_ASSERT (realGains () <= genomes);
 	QC_IMPLY (genomes, realGains ());
 	QC_IMPLY (genomes <= 1, losses. empty ());	
-	QC_IMPLY (! gains.  empty (), gains.  searchSorted);
-	QC_IMPLY (! losses. empty (), losses. searchSorted);
+	QC_IMPLY (! gains.  empty (), gains.  ascending == etrue);
+	QC_IMPLY (! losses. empty (), losses. ascending == etrue);
 	QC_IMPLY (! gains. empty () && ! losses. empty (), ! gains. intersectsFast (losses));
 }
 
@@ -1195,8 +1195,8 @@ void Genome::qc () const
 //QC_ASSERT (coreNonSingletons >= getFeatureTree (). commonCore. size ());
 	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, nominals. empty ());
 	QC_IMPLY (! getFeatureTree (). oneFeatureInTree, coreSet. empty ());
-	QC_IMPLY (! nominals. empty (), nominals. searchSorted);
-	QC_IMPLY (! singletons. empty (), singletons. searchSorted);
+	QC_IMPLY (! nominals. empty (), nominals. ascending == etrue);
+	QC_IMPLY (! singletons. empty (), singletons. ascending == etrue);
 /*
 	if (getFeatureTree (). coreSynced && coreNonSingletons < getCoreSize ())
 	{
@@ -2255,7 +2255,7 @@ FeatureTree::FeatureTree (const string &treeFName,
     	prevFeature = fId;
     #endif
     }
-    features. searchSorted = true;
+    features. ascending = etrue;
     ASSERT (features. size () == nonSingletons. size ());
     cerr << "# Features: " << features. size () << endl;
   }
@@ -2425,8 +2425,8 @@ FeatureTree::FeatureTree (const string &treeFName,
    			  g->coreNonSingletons = 1;
    			  found++;
    			}
- 			  g->coreSet. searchSorted = true;
- 			  g->singletons. searchSorted = true;
+ 			  g->coreSet.    ascending = etrue;
+ 			  g->singletons. ascending = etrue;
    		}
     ASSERT (found <= genomeVec. size ());
     if (found < genomeVec. size ())
@@ -2442,7 +2442,7 @@ FeatureTree::FeatureTree (const string &treeFName,
 
   ASSERT (features. empty ());
  	features << std::move (Feature (fId));
-  features. searchSorted = true;
+  features. ascending = etrue;
   Feature& feature = features [0];
 
   // Phyl::init()   
@@ -2482,8 +2482,8 @@ FeatureTree::FeatureTree (const string &treeFName,
     len = featureLen + static_cast <const Species*> (root) -> pooledSubtreeDistance;
   }
   
-  feature. gains.  searchSorted = true;
-  feature. losses. searchSorted = true;
+  feature. gains.  ascending = etrue;
+  feature. losses. ascending = etrue;
 
   len_min = getLength_min ();
 }
@@ -2726,7 +2726,7 @@ void FeatureTree::qc () const
 	if (! featuresExist ())
 	  return;
 	
-	QC_ASSERT (features. searchSorted);
+	QC_ASSERT (features. ascending == etrue);
 
 	QC_ASSERT (geReal (len, len_min));
 	QC_ASSERT (len_min >= 0.0);
