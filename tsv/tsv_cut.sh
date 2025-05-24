@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Select rows by awk from a .tsv-file"
@@ -13,10 +13,10 @@ C="$2"
 UNIQ=$3
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
-AWKCOL=`echo $C | sed 's/,/,$/g' | sed 's/^/$/1'`
+AWKCOL=$( echo $C | sed 's/,/,$/g' | sed 's/^/$/1' )
 
 head -1 $F    | awk -F '\t' '{OFS="\t"; print '$AWKCOL'};' 
 tail -n +2 $F | awk -F '\t' '{OFS="\t"; print '$AWKCOL'};' > $TMP
