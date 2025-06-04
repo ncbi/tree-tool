@@ -322,7 +322,7 @@ struct ThisApplication : Application
     : Application ("Print the coverage of a query DNA by subject DNAs or proteins, sorted by qseqid, as a .tsv-table")
     {
       version = VERSION;
-      string format (XSTR(FORMAT));
+      string format (XSTR (FORMAT));
       replaceStr (format, " >>", "");
       addPositional ("in", "BLASTN output in format: " + format  + ", sorted by qseqid and nident descending.\n\
 If '' then print only the table header");
