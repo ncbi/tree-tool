@@ -110,13 +110,13 @@ if [ ! -e $ASM.prot ]; then
 fi
 
 
-if [ $PFAM ]; then
+if [ "$PFAM" ]; then
   section "Pfam"
   $THIS/prots2hmm_hash.sh $ASM.prot $PFAM $PFAM_CUTOFF $ASM.HMM $ASM.hash-HMM $CORES $LOG >> $LOG
   gzip $ASM.HMM
 fi
 
-if [ $UNIV ]; then
+if [ "$UNIV" ]; then
   case $TAXROOT in
     33090)
       ;;  # ??

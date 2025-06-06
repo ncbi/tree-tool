@@ -73,7 +73,7 @@ if [ -s $TMP.diff ]; then
   cut -f 1 $TMP.out2 > $TMP.label2
   diff $TMP.label1 $TMP.label2
 
-  if [ $PAIR ]; then
+  if [ "$PAIR" ]; then
     paste $TMP.out1 $TMP.out2 | cut -f 1,2,4 > $PAIR
     gzip $PAIR &
   fi

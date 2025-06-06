@@ -33,7 +33,7 @@ $THIS/makeDistTree  -data $TMP  -dissim_attr symbet  -variance $VARIANCE  -optim
 section "Saving $TREE"
 $THIS/printDistTree $TMP.tree  -order  -format $FORMAT > $TREE
 
-if [ $PHEN ]; then
+if [ "$PHEN" ]; then
   section "Calculating miscongruence of $TREE with $PHEN"
   $THIS/tree_quality_phen.sh $TMP.tree "$EVAL_LIST" $PHEN 0 1 ''
 fi

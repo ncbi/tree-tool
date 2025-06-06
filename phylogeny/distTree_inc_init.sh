@@ -103,7 +103,7 @@ function create_script
 #echo -e "${YELLOW}Implement $INC/$NAME !${NOCOLOR}"
 }
 create_script objects_in_tree
-if [ $SERVER ]; then
+if [ "$SERVER" ]; then
   create_script outlier2db
 fi
 create_script pairs2dissim

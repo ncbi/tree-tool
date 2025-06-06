@@ -46,7 +46,7 @@ $THIS/tblastn.sh $REF $DNA "$SEARCH"  "qseqid sseqid qstart qend qlen sstart sen
 sort -k 1,2 $TMP.tblastn > $TMP.tblastn-sort
 
 DELIM_PAR=""
-if [ $DELIM ]; then
+if [ "$DELIM" ]; then
   DELIM_PAR="-delimiter $DELIM"
 fi
 $THIS/tblastn2marker_euk  $TMP.tblastn-sort  $DELIM_PAR  -matrix $MATRIX  -threshold 3.5  -qc  -log $LOG > $PROT

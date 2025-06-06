@@ -20,7 +20,7 @@ TMP=$( mktemp )
 blastn  -db $DB  -query $QUERY  -strand plus  -task blastn  -num_threads 5  -outfmt '6 sseqid nident' | sort -u > $TMP
 
 # $TMP -> $TMP.inter
-if [ $SUBSET ]; then
+if [ "$SUBSET" ]; then
   sort -cu $SUBSET
   join  -1 1  -2 1  $TMP $SUBSET | tr ' ' '\t' > $TMP.inter
 else

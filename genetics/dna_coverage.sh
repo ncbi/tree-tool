@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# != 8 ]; then
   echo "Contig coverage report"
@@ -31,18 +31,18 @@ if [ ! -e $QUERY -o -d $QUERY ]; then
 fi
 
 
-TMP=`mktemp`  
+TMP=$( mktemp )
 #comment $TMP 
 #set -x
 
 
-QUERY_NAME=`basename $QUERY`  
-SUBJ_NAME=`basename $SUBJ`
+QUERY_NAME=$( basename $QUERY )
+SUBJ_NAME=$( basename $SUBJ )
 
 
 DB=$SUBJ
 DB_EXISTS=0
-if [ -e $DB.nhr -o -e $DB.00.nhr ]; then
+if [ -e $DB.nhr ] || [ -e $DB.00.nhr ]; then
   DB_EXISTS=1
 fi
 if [ $DB_EXISTS == 0 ]; then
@@ -63,7 +63,7 @@ if [ $DB_EXISTS == 0 ]; then
 fi
 
 # $TMP.blastn
-N=`grep -c ">" $QUERY || true`
+N=$( grep -c ">" $QUERY || true )
 if [ $N -gt 0 -a $DB_EXISTS == 1 ]; then
   MT_MODE=""
   if [ $N -gt 1 ]; then
@@ -74,7 +74,7 @@ if [ $N -gt 0 -a $DB_EXISTS == 1 ]; then
   blastn  -query $QUERY  -db $DB  -dust no  -max_target_seqs 1000000  -outfmt "6 $HEADER"  -num_threads 16  2> /dev/null | sort -k1,1 -k4,4nr > $TMP.blastn
     # $MT_MODE ??
     # PAR
-  if [ $TO_REMOVE ]; then
+  if [ "$TO_REMOVE" ]; then
     awk '$2 != "'$TO_REMOVE'"' $TMP.blastn > $TMP.blastn1
     mv $TMP.blastn1 $TMP.blastn
   fi

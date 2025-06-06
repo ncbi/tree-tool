@@ -78,7 +78,7 @@ function req2file
   #
   cut -f $COL $REQ_ > $TMP.req2file_req
   $THIS/../../file2hash $TMP.req2file_req -file -append  -log $LOG  -noprogress | awk '{printf "'$GENOME_DIR'/%s/%s/%s.'$SUF'\n", $1, $2, $2};' > $TMP.req2file_col
-  if [ $NEW_OBJ ]; then
+  if [ "$NEW_OBJ" ]; then
     local NAME=$( basename $NEW_OBJ )
     sed 's|^\(.*/'$NAME'\.'$SUF'\)$|'$NEW_OBJ'.'$SUF'|1' $TMP.req2file_col
   else

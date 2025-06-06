@@ -15,16 +15,16 @@ TARGET="$3"
 CDS="$4"
 
 
-if [ $TARGET ]; then
+if [ "$TARGET" ]; then
   $THIS/../check_file.sh $TARGET 1
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP
 
 # F
-GZ=`echo $FASTA | tr '.' '\n' | tail -1`
+GZ=$( echo $FASTA | tr '.' '\n' | tail -1 )
 if [ $GZ == "gz" ]; then
   gunzip -c $FASTA > $TMP.fa
   F=$TMP.fa
@@ -35,7 +35,7 @@ prodigal  -o /dev/null  -i $F  -d $TMP.cds  &> /dev/null
 
 $THIS/fasta2hash $TMP.cds $OUT  -cds  -gene_finder "prodigal"  -target_hashes $TARGET  -target_seq $TMP.ids > /dev/null
 
-if [ $TARGET ]; then
+if [ "$TARGET" ]; then
  #$THIS/extractFastaDna $TMP.cds $TMP.ids -whole -qc > $CDS
   $THIS/filterFasta $TMP.cds  -target $TMP.ids  -whole -qc > $CDS
 fi

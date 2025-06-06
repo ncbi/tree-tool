@@ -61,7 +61,7 @@ fi
 rm $INC/tree-search.list
 
 
-if [ $IN ]; then
+if [ "$IN" ]; then
   if [ -s $INC/tree.cur ]; then
     error "$INC/tree.cur exists"
   fi
@@ -162,7 +162,7 @@ mv $INC/leaf $PLACEMENT
 cp /dev/null $INC/leaf
 
 
-if [ $IN ]; then
+if [ "$IN" ]; then
   mv $INC/tree.cur $INC/tree
 fi
 

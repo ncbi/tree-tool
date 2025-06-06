@@ -26,7 +26,7 @@ QC=1
 
 $THIS/../check_tmp.sh
 
-if [ $GOOD ]; then
+if [ "$GOOD" ]; then
   $THIS/../check_file.sh $GOOD 1
 fi
 

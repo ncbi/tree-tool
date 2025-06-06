@@ -87,7 +87,7 @@ grep -wic 'nan' data.dm || true
 
 $THIS/../dm/dm2objs data -noprogress | sort > $INC/tree.list
 
-if [ $SERVER ]; then
+if [ "$SERVER" ]; then
   section "Outliers"
   $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
   wc -l $INC/outlier-alien
@@ -106,7 +106,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   fi
   mv $INC/clust/1/data.dm data.dm
   rm -r $INC/clust/
-  if [ $SERVER ]; then
+  if [ "$SERVER" ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
   	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
@@ -125,7 +125,7 @@ VARIANCE=$( cat $INC/variance )
 $THIS/makeDistTree  -threads 5  -data data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  -output_tree_tmp $INC/tree.tmp > $INC/hist/makeDistTree-complete.1
 rm $INC/tree.tmp
 
-if [ $SERVER ]; then
+if [ "$SERVER" ]; then
   section "Database"
   $THIS/tree2obj.sh $INC/tree > $INC/tree.list
   $INC/objects_in_tree.sh $INC/tree.list 1
