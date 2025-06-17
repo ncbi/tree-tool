@@ -634,8 +634,11 @@ void trimSuffixNonAlphaNum (string &s)
 bool trimTailAt (string &s,
                  const string &tailStart)
 {
+  if (tailStart. empty ())
+    return false;
+    
   const size_t pos = s. find (tailStart);
-  const bool trimmed = pos != string::npos;
+  const bool trimmed = (pos != string::npos);
   if (trimmed)
     s. erase (pos);
   return trimmed;
@@ -2251,12 +2254,16 @@ bool LineInput::nextLine ()
         
   	const bool end = line. empty () && eof;
 
+  #if 1
+    trimTailAt (line, commentStart);
+  #else
     if (! commentStart. empty ())
     {
       const size_t pos = line. find (commentStart);
       if (pos != string::npos)
         line. erase (pos);
     }
+  #endif
   //trimTrailing (line); 
 
   	if (! end)
