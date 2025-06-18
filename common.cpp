@@ -2254,16 +2254,7 @@ bool LineInput::nextLine ()
         
   	const bool end = line. empty () && eof;
 
-  #if 1
     trimTailAt (line, commentStart);
-  #else
-    if (! commentStart. empty ())
-    {
-      const size_t pos = line. find (commentStart);
-      if (pos != string::npos)
-        line. erase (pos);
-    }
-  #endif
   //trimTrailing (line); 
 
   	if (! end)
