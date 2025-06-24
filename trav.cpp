@@ -263,7 +263,7 @@ struct ThisApplication final : Application
       StringVector subitems;  
   	  while (gen->next (item))
       {
-      //if (! tsv)
+        if (! tsv)
           trim (item);
         if (item. empty ())
           continue;
@@ -290,16 +290,9 @@ struct ThisApplication final : Application
           subitems. clear ();
           if (tsv)
           {
-          #ifndef NDEBUG
-            const size_t colNum = strCountSet (item, "\t") + 1;
-          #endif
-            string s (item);
-            const bool lastEmpty = isRight (item, "\t");
+            string s (item + "\t");
             while (! s. empty ())
               subitems << findSplit (s, '\t');
-            if (lastEmpty)
-              subitems << noString;
-            ASSERT (subitems. size () == colNum);
           }
           else
           {
