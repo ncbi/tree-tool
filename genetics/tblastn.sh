@@ -29,9 +29,10 @@ if [ -z ${DNA##*.gz} ]; then
   gunzip -c $DNA > $TMP
   DNA=$TMP
 fi
+
 mkdir $TMP.dna
 # PAR
-$THIS/splitFasta $DNA $TMP.dna  -group_size $PART  -mono_nuc_max 20
+$THIS/splitFasta $DNA $TMP.dna  -group_size $PART  -mono_nuc_max 20  
 mkdir $TMP.out
 $THIS/../trav $TMP.dna  -step 1  -threads $CORES  "tblastn  -query $PROT  -subject %d/%f  $SEARCH  -outfmt '6 $OUTFMT' > $TMP.out/%f" 
 #tblastn  -query $PROT  -subject $DNA  -comp_based_stats 0  -evalue 1e-10  -seg no  -max_target_seqs 10000  -task tblastn-fast  -threshold 100  -window_size 15  -db_gencode 11  -outfmt '6 sseqid qseqid sstart send slen qstart qend qlen nident length'
