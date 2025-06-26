@@ -1364,6 +1364,12 @@ string makeTempDir ()
 		throw runtime_error ("Cannot create a temporary directory in " + tmpDir);
 
   {
+  #if 0
+  //#include <sys/statvfs.h>
+    struct statvfs vfs;
+    if (statvfs("/tmp", &vfs) == 0) 
+      vfs.f_bsize * vfs.f_bavail  // contains the free space availab
+  #else
   	const string testFName (tmp + "/test");
     {
       ofstream f (testFName);
@@ -1372,6 +1378,7 @@ string makeTempDir ()
 		    throw runtime_error (tmpDir + " is full, make space there or use environment variable TMPDIR to change location for temporary files");
     }
     removeFile (testFName);
+  #endif
   }
 
   return tmp;  
