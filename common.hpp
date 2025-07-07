@@ -3887,6 +3887,7 @@ public:
 
 	  
 	bool next ();
+	  // Output: name1, name2
 	uint getLineNum () const
 	  { return f. lineNum; }
 	  // Requires: after next()
@@ -3919,7 +3920,6 @@ public:
   string getLine ();
     // Postcondition: tp.eol()
 	  
-
   [[noreturn]] void error (const string &what,
 	                         bool expected = true) const
 		{ throw TextPos::Error (tp, what, expected); }
@@ -3936,7 +3936,9 @@ struct Token : Root
 	          , eDouble
 	          , eDateTime  // Example: 2018-08-13T16:12:54.487
 	          };
- // Valid if !empty()
+  // Valid if !empty()
+	TextPos tp;
+    // = CharInput::tp
 	Type type {eDelimiter};
 	bool dashInName {false};
 	string name;
@@ -3949,9 +3951,7 @@ struct Token : Root
 	double d {0.0};
   // Valid if eDouble
 	streamsize decimals {0};
-	bool scientific {false};	  
-	TextPos tp;
-    // = CharInput::tp
+	bool scientific {false};	 
 
 	  
 	Token () = default;
@@ -3981,24 +3981,28 @@ struct Token : Root
 	  {}
 	Token (CharInput &in,
 	       bool dashInName_arg,
-	       bool consecutiveQuotesInText)
-	  { readInput (in, dashInName_arg, consecutiveQuotesInText); }
+	       bool consecutiveQuotesInText,
+	       bool negativeInteger)
+	  { readInput (in, dashInName_arg, consecutiveQuotesInText, negativeInteger); }
 	Token (CharInput &in,
 	       Type expected,
 	       bool dashInName_arg,
-	       bool consecutiveQuotesInText)
-    { readInput (in, dashInName_arg, consecutiveQuotesInText);
+	       bool consecutiveQuotesInText,
+	       bool negativeInteger)
+    { readInput (in, dashInName_arg, consecutiveQuotesInText, negativeInteger);
     	if (empty ())
  			  in. error ("No token", false); 
     	if (type != expected)
  			  in. error (type2str (type)); 
     }
-private:
+private:  
 	void readInput (CharInput &in,
 	                bool dashInName_arg,
-	                bool consecutiveQuotesInText);  
+	                bool consecutiveQuotesInText,
+	                bool negativeInteger);  
 	  // Input: consecutiveQuotesInText means that '' = '
     // Update: in: in.charNum = last character of *this
+    // --> TokenInput ??
 public:
 	void qc () const override;
 	void saveText (ostream &os) const override;
@@ -4069,10 +4073,13 @@ struct TokenInput : Root
 {
 private:
   CharInput ci;
+public:
   const char commentStart;
   const bool dashInName;
   const bool consecutiveQuotesInText;
     // Two quotes encode one quote
+  const bool negativeInteger;
+private:
   Token last;
 	TextPos tp;
 public:
@@ -4082,21 +4089,25 @@ public:
                        char commentStart_arg = '\0',
                        bool dashInName_arg = false,
                        bool consecutiveQuotesInText_arg = false,
+                       bool negativeInteger_arg = false,
                        uint displayPeriod = 0)
     : ci (fName, displayPeriod)
     , commentStart (commentStart_arg)
     , dashInName (dashInName_arg)
     , consecutiveQuotesInText (consecutiveQuotesInText_arg)
+    , negativeInteger (negativeInteger_arg)
     {}
   explicit TokenInput (istream &is_arg,
                        char commentStart_arg = '\0',
                        bool dashInName_arg = false,
                        bool consecutiveQuotesInText_arg = false,
+                       bool negativeInteger_arg = false,
                        uint displayPeriod = 0)
     : ci (is_arg, displayPeriod)
     , commentStart (commentStart_arg)
     , dashInName (dashInName_arg)
     , consecutiveQuotesInText (consecutiveQuotesInText_arg)
+    , negativeInteger (negativeInteger_arg)
     {}
 
 
