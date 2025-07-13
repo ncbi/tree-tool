@@ -686,7 +686,7 @@ Data* Data::load (bool headerP,
 { 
   unique_ptr<Xml_sp::Data> f;
   { 
-    TokenInput ti (fName, '\0', true, false, 10000);  // PAR 
+    TokenInput ti (fName, '\0', true, false, false, 10000);  // PAR 
     try 
     { 
 		  Unverbose unv;

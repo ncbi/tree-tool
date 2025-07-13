@@ -162,13 +162,13 @@ struct FeatureDictionary : AsnList
 private:
 	void readElement () final
 	  { expect ("id");
-	  	const Token id (asn. in, Token::eInteger, false, false);
+	  	const Token id (asn. in, Token::eInteger, false, false, true);
 	  	if (id. n < 0)
 	  	  asn. in. error ("Non-negative integer");
 	  	const size_t n = (size_t) id. n;
 	    expect (",");
 	    expect ("name");
-	    const Token text (asn. in, Token::eText, false, false);
+	    const Token text (asn. in, Token::eText, false, false, true);
 	    asn. fDict. resize (n + 1);
 	    ASSERT (asn. fDict [n]. empty ());
 	    asn. fDict [n] = text. name;
@@ -187,13 +187,13 @@ struct Features : AsnList
 private:
 	void readElement () final
 	  { expect ("featureid");
-	  	const Token id (asn. in, Token::eInteger, false, false);
+	  	const Token id (asn. in, Token::eInteger, false, false, true);
 	  	if (id. n < 0)
 	  	  asn. in. error ("Non-negative integer");
 	  	const size_t n = (size_t) id. n;
 	    expect (",");
 	    expect ("value");
-	  	const Token value (asn. in, Token::eText, false, true);
+	  	const Token value (asn. in, Token::eText, false, true, true);
 	  	ASSERT (asn. features [n]. empty ());
 	  	asn. features [n] = value. name;
 	  }
@@ -218,7 +218,7 @@ private:
 	  { 
 	    expect ("id");
 	  	{	
-	  	  const Token id (asn. in, Token::eInteger, false, false);
+	  	  const Token id (asn. in, Token::eInteger, false, false, true);
   	  	if (id. n < 0)
   	  	  asn. in. error ("Non-negative integer");
 	  	  asn. id = (uint) id. n;
@@ -230,7 +230,7 @@ private:
 	    while (expectTry (","))
 	      if (expectTry ("parent"))
 		    { 
-		      const Token parent (asn. in, Token::eInteger, false, false);
+		      const Token parent (asn. in, Token::eInteger, false, false, true);
     	  	if (parent. n < 0)
     	  	  asn. in. error ("Non-negative integer");
 	  	  	asn. parent = (uint) parent. n;
@@ -251,7 +251,7 @@ private:
 
 void Asn::asnRead ()
 {
-	const Token titleToken (in, Token::eName, false, false);
+	const Token titleToken (in, Token::eName, false, false, true);
 	title = titleToken. name;
 	expect (":");
 	expect (":");
@@ -278,7 +278,7 @@ bool Asn::expectTry (const string& text)
 	ASSERT (! text. empty ());
 	
 	if (last. empty ()) 
-		last = Token (in, true, true);
+		last = Token (in, true, true, true);
 	ASSERT (! last. empty ());
 	if (verbose ())
 	  PRINT (last);
