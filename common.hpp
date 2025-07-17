@@ -2778,6 +2778,25 @@ template <typename T>
 
 
 
+// Vector<bool>
+
+inline bool exists (const Vector<bool> &vec) 
+  { for (const bool b : vec)
+      if (b)
+        return true;
+    return false;
+  }
+
+inline size_t count (const Vector<bool> &vec) 
+  { size_t n = 0;
+    for (const bool b : vec)
+      if (b)
+        n++;
+    return n;
+  }
+
+
+
 template <typename T>
   Vector<T> diff2vec (const unordered_set<T> &a,
                       const unordered_set<T> &b)
