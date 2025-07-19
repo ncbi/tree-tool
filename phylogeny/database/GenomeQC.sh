@@ -48,6 +48,7 @@ sqsh-ms -S $SERVER  -D $DATABASE  -L bcp_rowsep=""  << EOT | sort > $TMP.genome-
     where     taxroot = $TAXROOT
           and dead = 0
           and prots is not null
+          and hybrid is null
           and outlier is null
           and in_tree is null
   go -m bcp  
