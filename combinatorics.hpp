@@ -54,8 +54,10 @@ bool next (vector<bool> &v);
 
 bool next (vector<size_t> &indexes,
            const vector<size_t> &indexes_max);
+  // indexes_max[i] = no_index <=> index[i] is ignored
+  // 0 <= indexes[i] <= indexes_max[i]
   // Return: false <=> search is finished
-  // Update: indexes: 0 <= indexes[i] <= indexes_max[i]
+  // Update: indexes
   // Search size = \prod_i (indexes_max[i] + 1)
 
 
