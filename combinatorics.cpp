@@ -70,15 +70,16 @@ bool next (vector<size_t> &indexes,
   ASSERT (indexes. size () == indexes_max. size ());
 
   FFOR (size_t, i, indexes. size ())
-  {
-    ASSERT (indexes [i] <= indexes_max [i]);
-    if (indexes [i] < indexes_max [i])
+    if (indexes_max [i] != no_index)
     {
-      indexes [i] ++;
-      return true;
+      ASSERT (indexes [i] <= indexes_max [i]);
+      if (indexes [i] < indexes_max [i])
+      {
+        indexes [i] ++;
+        return true;
+      }
+      indexes [i] = 0;
     }
-    indexes [i] = 0;
-  }
 
   return false;
 }
