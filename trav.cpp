@@ -146,6 +146,7 @@ struct ThisApplication final : Application
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
   	  addFlag ("print", "Print command, not execute");
   	  addFlag ("tsv", "<items> is a tsv-file");
+  	  addFlag ("number", "<items> is a number (not a file or directory)");
   	  addKey ("good_exit_codes", "Comma-delimited list of allowed exit codes", "0");
   	}
   	
@@ -163,6 +164,7 @@ struct ThisApplication final : Application
 		const bool zero            = getFlag ("zero");
 		const bool printP          = getFlag ("print");
 		const bool tsv             = getFlag ("tsv");
+		const bool numberP         = getFlag ("number");
 		      string goodStatusesS = getArg ("good_exit_codes");
 
     if (itemsName. empty ())
@@ -182,8 +184,8 @@ struct ThisApplication final : Application
   	  unique_ptr<ItemGenerator> gen;
   	  {
   	    const uint stepItemGen = threads_max > 1 ? 1000 : step;  // PAR
-    	  const bool isFile = fileExists (itemsName);
-    	  const bool isDir = 
+    	  const bool isFile = ! numberP && fileExists (itemsName);
+    	  const bool isDir = ! numberP && 
     	    #ifdef _MSC_VER
     	      false
     	    #else
