@@ -30,7 +30,6 @@ ALL=	\
   objHash_find \
   random_words \
   replace_dict \
-  rlimit \
   setMinus \
   setRandOrd \
   splitList \
@@ -163,12 +162,6 @@ replace_dict.o: $(COMMON_HPP)
 replace_dictOBJS=replace_dict.o $(CPP_DIR)/common.o
 replace_dict: $(replace_dictOBJS)
 	$(CXX) -o $@ $(replace_dictOBJS) $(LIBS)
-	$(ECHO)
-
-rlimit.o: $(COMMON_HPP) 
-rlimitOBJS=rlimit.o $(CPP_DIR)/common.o 
-rlimit: $(rlimitOBJS)
-	$(CXX) -o $@ $(rlimitOBJS) $(LIBS)
 	$(ECHO)
 
 setMinus.o:  $(COMMON_HPP)  
