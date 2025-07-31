@@ -275,7 +275,7 @@ select Phyl.[node] id \
      , PhylObject_vw.rs_acc_ver \
      , PhylObject_vw.tax_confirmed \
      , PhylObject_vw.tax \
-     , PhylObject_vw.tax_name_curated \
+     , PhylObject_vw.tax_name_curated_real \
      , PhylObject_vw.tax_name_submitted \
      , PhylObject_vw.strain \
      , PhylObject_vw.dna_len \
@@ -340,7 +340,7 @@ select Phyl.[node] id \
         , rs_acc_ver:          row.rs_acc_ver
         , tax_confirmed:       row.tax_confirmed
         , tax:                 row.tax
-        , tax_name_curated:    row.tax_name_curated
+        , tax_name_curated:    row.tax_name_curated_real
         , tax_name_submitted:  row.tax_name_submitted
         , strain:              row.strain
         , dna_len:             row.dna_len
