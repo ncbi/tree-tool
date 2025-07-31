@@ -168,7 +168,7 @@ replace_dict: $(replace_dictOBJS)
 rlimit.o: $(COMMON_HPP) 
 rlimitOBJS=rlimit.o $(CPP_DIR)/common.o 
 rlimit: $(rlimitOBJS)
-	$(CXX) -o $@ $(rlimitOBJS) $(LIBS) -lncursesw -lz
+	$(CXX) -o $@ $(rlimitOBJS) $(LIBS)
 	$(ECHO)
 
 setMinus.o:  $(COMMON_HPP)  
