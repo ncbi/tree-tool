@@ -2500,7 +2500,7 @@ template <typename T>
             toDelete--;
           }
         }
-    template <typename Condition /*on index*/>
+    template <typename Condition /*on value*/>
       void filterValue (const Condition cond)
         { size_t toDelete = 0;
           for (size_t i = 0, end_ = P::size (); i < end_; i++)
