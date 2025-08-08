@@ -56,11 +56,11 @@ struct GZip final : Root, Nocopy
 private:
   gzFile f;
   static constexpr size_t bufferSize {1024 * 1024};  // PAR
-  char buffer [bufferSize + 1];
+  char buffer [bufferSize + 1 /*for '\0'*/];
   size_t bufferSize_real {0};
     // <= bufferSize
   size_t start {0};
-    // < bufferSize_real
+    // <= bufferSize_real
 	Progress prog;  
 public:
   
@@ -71,7 +71,6 @@ public:
     , prog (0, displayPeriod)
     { if (! f)
         throw runtime_error ("Cannot open " + strQuote (fName));
-      buffer [bufferSize] = '\0';
       read ();
     }
     // Input: fName: gzip'ped UNIX text file
@@ -82,7 +81,7 @@ public:
   bool nextLine ();
 private:
   void read ();
-    // Output: buffer[], bufferSize_real
+    // Output: buffer[], bufferSize_real, start
 };
 
 

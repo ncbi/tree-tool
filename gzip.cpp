@@ -48,16 +48,10 @@ namespace Common_sp
 
 bool GZip::nextLine ()
 {
-  line. clear ();      
-  
-  ASSERT (start <= bufferSize_real);
-  if (start == bufferSize_real)
-    return false;
-
+  line. clear ();        
   for (;;)
   {
-    QC_ASSERT (bufferSize_real <= bufferSize);
-    ASSERT (start < bufferSize_real);
+    ASSERT (start <= bufferSize_real);
     size_t stop = start;
     while (stop < bufferSize_real && buffer [stop] != '\n')
       stop++;
@@ -72,15 +66,17 @@ bool GZip::nextLine ()
     }
     else
     {
+      // EOL is not reached
       line += & buffer [start];
-      if (bufferSize_real < bufferSize)  // Last EOL is missing
+      if (bufferSize_real < bufferSize)  
       {
         QC_ASSERT (gzeof (f));
         start = bufferSize_real;
+        if (line. empty ())
+          return false;
         prog ();
-        return true;
+        return true;  // nextLine() will return false at the next invocation
       }
-      start = 0;
       read ();
     }
   }
@@ -94,6 +90,9 @@ void GZip::read ()
   if (bytesRead < 0)
     throw runtime_error ("bytesread = " + to_string (bytesRead));
   bufferSize_real = (size_t) bytesRead;
+  QC_ASSERT (bufferSize_real <= bufferSize);
+  buffer [bufferSize_real] = '\0';
+  start = 0;
 }
 
 

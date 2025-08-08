@@ -58,6 +58,7 @@ all:	\
 	mutation_dna2prot \
 	mutation_tab \
 	orf2prot \
+	orthodb2fasta \
 	prot2fingerprints \
 	prot2triplets \
 	prot_check \
@@ -354,6 +355,12 @@ orf2prot.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 orf2protOBJS=orf2prot.o $(SEQ_OBJ)
 orf2prot:	$(orf2protOBJS)
 	$(CXX) -o $@ $(orf2protOBJS) $(LIBS) 
+	$(ECHO)
+
+orthodb2fasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/gzip.hpp
+orthodb2fastaOBJS=orthodb2fasta.o $(SEQ_OBJ) $(CPP_DIR)/gzip.o
+orthodb2fasta:	$(orthodb2fastaOBJS)
+	$(CXX) -o $@ $(orthodb2fastaOBJS) $(LIBS) -lz
 	$(ECHO)
 
 prot_check.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 

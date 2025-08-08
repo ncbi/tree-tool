@@ -21,6 +21,7 @@ ALL=	\
   extractPairs \
   file2hash \
   graph_test \
+  gzip_test \
   index_find \
   key_test \
   list2pairs \
@@ -102,6 +103,12 @@ graph_test.o:  $(COMMON_HPP) $(CPP_DIR)/graph.hpp
 graph_testOBJS=graph_test.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
 graph_test:	$(graph_testOBJS)
 	$(CXX) -o $@ $(graph_testOBJS) $(LIBS)
+	$(ECHO)
+
+gzip_test.o: $(COMMON_HPP) $(CPP_DIR)/gzip.hpp
+gzip_testOBJS=gzip_test.o $(CPP_DIR)/common.o $(CPP_DIR)/gzip.o 
+gzip_test: $(gzip_testOBJS)
+	$(CXX) -o $@ $(gzip_testOBJS) $(LIBS) -lz
 	$(ECHO)
 
 index_find.o:  $(COMMON_HPP)  
