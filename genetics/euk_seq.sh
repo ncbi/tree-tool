@@ -44,6 +44,18 @@ if [ ! -s $FASTA ]; then
   error "Empty genome" >> $LOG
 fi
 
+
+function genemark_clean
+{
+  $THIS/../rm_all.sh data
+  $THIS/../rm_all.sh info
+  $THIS/../rm_all.sh output
+  $THIS/../rm_all.sh run
+  $THIS/../rm_all.sh prothint
+  rm -f gmes.log run.cfg gmhmm.mod gmhmm_es.mod genemark_es.gtf
+}
+
+
 DIR=$( dirname $FASTA )
 
 cd $DIR
@@ -61,33 +73,33 @@ if [ ! -e $ASM.prot ]; then
     $THIS/fasta2hash $ASM.prot $ASM.hash-PRT -qc  -log $LOG
     ln -s $PWD/$ASM.hash-PRT $PWD/$ASM.hash-CDS
   else
-    # http://topaz.gatech.edu/GeneMark/license_download.cgi: GeneMark-ES/ET/EP+ ver 4.72_lic
+    genemark_clean
+
+    # http://topaz.gatech.edu/GeneMark/license_download.cgi: GeneMark-ES/ET/EP+ ver 4.73_lic
     #   fill in questionaire; press "I agree"; "Please donwload key: 64 bit"
     # $ gunzip gm_key_64.gz 
     # $ cp gm_key_64 ~/.gm_key 
     gmes_petap.pl | grep -w "version" 1> annot_software 2>> $LOG || true 
 
-    # genemark.gtf
     FUNGUS_PAR=""
     if [ $TAXROOT == 4751 ]; then
       FUNGUS_PAR="--fungus"
     fi
-    $THIS/../rm_all.sh data
-    $THIS/../rm_all.sh info
-    $THIS/../rm_all.sh output
-    $THIS/../rm_all.sh run
-    rm -f gmes.log
-    rm -f run.cfg
-    # Approximate
-    gmes_petap.pl  --ES  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
-    echo -e "\nAnnotation finihsed!\n" >> $LOG
-    $THIS/../rm_all.sh data
-    $THIS/../rm_all.sh info
-    $THIS/../rm_all.sh output
-    $THIS/../rm_all.sh run
-    rm gmes.log
-    rm run.cfg
-    rm gmhmm.mod
+    
+    GMES_TYPE="--ES"
+    if [ "$UNIV" ]; then
+      UNIV_FA=$( echo $UNIV | sed 's/\.LIB$/.fa/1' )
+      if [ -e $UNIV_FA ]; then
+        GMES_TYPE="--EP  --dbep $UNIV_FA"
+      fi
+    fi
+    echo "$GMES_TYPE" >> annot_software
+    
+    # genemark.gtf
+    gmes_petap.pl  $GMES_TYPE  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
+    echo -e "\nAnnotation finished!\n" >> $LOG
+    
+    genemark_clean
 
     # PAR
     PROT_LEN=150

@@ -2,7 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
-  echo "Input: #1.prot or #1.prot-genbank"
+  echo "Input: #1.prot or #1.prot_genbank"
   echo "Output: #1.{univ,prot-univ.HMM,prot-univ}"
   echo "#1: assembly file prefix"
   echo "#2: HMM library"

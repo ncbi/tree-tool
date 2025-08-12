@@ -550,7 +550,7 @@ var setFocusObject = function (objName, html)
 var table2DOM = function (tableName, tableHTML)
 {
   setFocusObject (tableName, 
-    "<p>" + tableHTML + "<form onsubmit='parent.remove_" + tableName + "();return false'><input type='submit' value='Remove'></form><p>");
+    /*"<p>" +*/ tableHTML + "<form onsubmit='parent.remove_" + tableName + "();return false'><input type='submit' value='Undisplay'></form><p>");
 }
 
 
