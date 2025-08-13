@@ -152,10 +152,18 @@ var nvl = function (s, nullS)
 
 
 
+var nvlNum = function (n)
+{
+  return n == null ? "" : n;
+}
+
+
+
 var sPref = function (pref, s)
 {
   return s ? pref + s : "";
 }
+
 
 
 var sSuf = function (s, suf)
