@@ -57,13 +57,28 @@ var printProperties = function (x)
 
 
 
+var isNatural = function (s)
+{
+  return /^\d+$/.test(s);
+}
+
+
+
 var inputString = function (promptS, val_init)
 {
-  let s = prompt (promptS + ": ", val_init || '');
-  if (s == null)
-    return null;
-  s = s.trim ();
-  return s;
+  let s = null;
+  for (;;)
+  {
+    s = prompt (promptS + ": ", val_init || '');
+    if (s == null)
+      return null;
+    if (   s.indexOf ("\n") == -1
+        && s.indexOf ("\r") == -1
+       )
+      break;
+    alert ("Multiple lines are not allowed");
+  }
+  return s.trim ();
 }
 
 
@@ -191,12 +206,6 @@ var yesNo = function (flag, yes = "Yes", no = "No")
 }
 
 
-var yesNo_std = function (flag)  
-{
-  return yesNo (flag, "Yes", "No");
-}
-
-
 var str_color = function (str, cond, bold)
 {
   if (! cond)
@@ -232,7 +241,8 @@ var q2h = function (s)
 {
   if (! s)
     return s;
-  return s.replace(/\'/g, "&#39;")
+  return s.replace(/&/g,  "&amp;")
+          .replace(/\'/g, "&#39;")
           .replace(/\"/g, "&#34;")
           .replace(/ /g,  "&#32;")
           .replace(/\t/g, "&#09;")

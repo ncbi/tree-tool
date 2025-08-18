@@ -1,4 +1,5 @@
 // common_db.js
+// Requires: to follow common.js
 
 
 // Global constants
@@ -12,7 +13,6 @@ var dbpassword_readonly = "allowed";
 var dbpassword = dbpassword_readonly;
 var database = 'uniColl';
 var userName = '';
-
 
 
 
@@ -175,6 +175,21 @@ var select2columns = function (sql)
 
 
 
+var table2select = function (table, defaultVal)
+{
+  let s = "<select id='" + table + "'>";
+  const rs = query ("select id from " + table + " order by id");
+  for (const row_num in rs)
+  {
+    const row = rs [row_num];
+    s += "<option value='" + row.id + "'" + (row.id == defaultVal ? " selected" : "") + ">" + row.id + "</option>";
+  }
+  s += "</select>"
+  return s;
+}
+
+
+
 var readonly = function ()
 {
   return dbuser == dbuser_readonly;
@@ -187,52 +202,51 @@ var query_ = function (server, dbuser, dbpassword, database, sql, timeout_sec)
 //           result set must have <= 10000/*??*/ rows 
 // Returns: map: 0-based numbers as strings -> map (columns -> values)
 //            numbers with very large precision are converted to strings
-{
-  if (offline) alert (sql);  
-  
-//prompt ("Enter", sql);  
-  
+{  
   var rs = [];  
-  $.ajax
-    (
-      {  
-        url: 'query.cgi'  // was: query.php
-      , data: { server: server
-              , user: dbuser // dbuser_readonly
-              , password: dbpassword  // dbpassword_readonly
-              , db: database
-              , sql: sql  
-              , dml: 0
-              , timeout: timeout_sec  // Was used in PHP
-              , log: 0  
+  if (offline) 
+    alert (sql);  
+  else
+    $.ajax
+      (
+        {  
+          url: 'query.cgi'  
+        , data: { server: server
+                , user: dbuser // dbuser_readonly
+                , password: dbpassword  // dbpassword_readonly
+                , db: database
+                , sql: sql  
+                , dml: 0
+                , timeout: timeout_sec  // Was used in PHP
+                , log: 0  
+                }
+        , type: "GET"  
+        , dataType: 'json'
+        , async: false
+        , cache: false
+        , timeout: timeout_sec * 1000
+      
+        , success: function (res)        
+            {
+              if (res.msg)
+              {
+                alert (res.msg);
+                rs = res;
               }
-      , type: "GET"  
-      , dataType: 'json'
-      , async: false
-      , cache: false
-      , timeout: timeout_sec * 1000
-    
-      , success: function (res)        
-          {
-            if (res.msg)
-            {
-              alert (res.msg);
-              rs = res;
+              else
+              {
+              //alert (res.data);  
+              //alert (encodeURIComponent(sql));
+                rs = res.data;
+              }
             }
-            else
-            {
-            //alert (res.data);  
-            //alert (encodeURIComponent(sql));
-              rs = res.data;
+          
+        , error: function (jqXHR, textStatus, errorThrown) 
+            { 
+              alert ("State: " + jqXHR.readyState + "\nStatus: " + textStatus + "\nError: " + errorThrown + "\nCannot query the database " + database + " on server " + server + "\nSQL:\n" + sql); 
             }
-          }
-        
-      , error: function (jqXHR, textStatus, errorThrown) 
-          { 
-            alert ("State: " + jqXHR.readyState + "\nStatus: " + textStatus + "\nError: " + errorThrown + "\nCannot query the database " + database + " on server " + server + "\nSQL:\n" + sql); 
-          }
-      }
-    );
+        }
+      );
     
   return rs;
 }
@@ -242,42 +256,41 @@ var query_ = function (server, dbuser, dbpassword, database, sql, timeout_sec)
 var query_sybase = function (server, dbuser, dbpassword, sql)
 // PHP is not implemented ??
 {
-  if (offline) alert (sql);  
-  
-//prompt ("Enter", sql);  
-  
   var rs = [];  
-  $.ajax
-    (
-      {  
-        url: 'query_sybase.php'
-      , data: { server: server
-              , user: dbuser // dbuser_readonly
-              , password: dbpassword  // dbpassword_readonly
-              , sql: sql
-              }
-      , type: "GET"
-      , dataType: 'json'
-      , async: false
-      , cache: false
-    
-      , success: function (res)        
-          {
-            if (res.msg)
+  if (offline) 
+    alert (sql);  
+  else
+    $.ajax
+      (
+        {  
+          url: 'query_sybase.php'
+        , data: { server: server
+                , user: dbuser // dbuser_readonly
+                , password: dbpassword  // dbpassword_readonly
+                , sql: sql
+                }
+        , type: "GET"
+        , dataType: 'json'
+        , async: false
+        , cache: false
+      
+        , success: function (res)        
             {
-              alert (res.msg);
-              rs = res;
+              if (res.msg)
+              {
+                alert (res.msg);
+                rs = res;
+              }
+              else
+                rs = res.data;
             }
-            else
-              rs = res.data;
-          }
-        
-      , error: function (jqXHR, textStatus, errorThrown) 
-          { 
-            alert ("Status: " + textStatus + "\nError: " + errorThrown + "\nCannot query the Sybase server " + server); 
-          }
-      }
-    );
+          
+        , error: function (jqXHR, textStatus, errorThrown) 
+            { 
+              alert ("Status: " + textStatus + "\nError: " + errorThrown + "\nCannot query the Sybase server " + server); 
+            }
+        }
+      );
     
   return rs;
 }
@@ -314,40 +327,41 @@ var dml_ = function (server, dbuser, dbpassword, database, sql)
 // Return: number of rows affected or -1 if there is an error
 // Input: sql: no transaction
 {
-  if (offline) alert (sql);  
-
   var count = -1;
-  $.ajax
-    (
-      {  
-        url: 'query.cgi'  // was: query.php
-      , data: { server: server
-              , user: dbuser
-              , password: dbpassword
-              , db: database
-              , sql: sql
-              , dml: 1
-              , log: 0
-              }
-      , type: "GET"
-      , dataType: 'json'
-      , async: false
-      , cache: false
-    
-      , success: function (res)        
-          {
-            if (res.msg)
-              alert (res.msg + "\n\n" + sql);
-            else
-              count = res.count;
-          }
-        
-      , error: function (jqXHR, textStatus, errorThrown) 
-          { 
-            alert ("Status: " + textStatus + "\nError: " + errorThrown + "\nCannot change data in the database " + database + " on server " + server + "\n" + sql); 
-          }
-      }
-    );
+  if (offline) 
+    alert (sql);  
+  else
+    $.ajax
+      (
+        {  
+          url: 'query.cgi'  
+        , data: { server: server
+                , user: dbuser
+                , password: dbpassword
+                , db: database
+                , sql: sql
+                , dml: 1
+                , log: 0
+                }
+        , type: "GET"
+        , dataType: 'json'
+        , async: false
+        , cache: false
+      
+        , success: function (res)        
+            {
+              if (res.msg)
+                alert (res.msg + "\n\n" + sql);
+              else
+                count = res.count;
+            }
+          
+        , error: function (jqXHR, textStatus, errorThrown) 
+            { 
+              alert ("Status: " + textStatus + "\nError: " + errorThrown + "\nCannot change data in the database " + database + " on server " + server + "\n" + sql); 
+            }
+        }
+      );
     
   return count;
 }
