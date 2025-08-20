@@ -14,10 +14,10 @@
   <script type='text/javascript' src='jquery-1.11.1.js'></script>
 
   <!-- If offline then replace this with text and move to &lt;script&gt  -->
-  <script type='text/javascript' src="common.js?ver=14"></script>
+  <script type='text/javascript' src="common.js?cachebuster=1"></script>
   
   <!-- If offline then remove  -->
-  <script type='text/javascript' src="common_db.js?ver=3"></script>
+  <script type='text/javascript' src="common_db.js?cachebuster=1"></script>
 </head>
 
   
@@ -3278,16 +3278,7 @@ Name part: <input type='text' id=genome>";
 if (getParams().login)
 {
   // Authentication
-  document.getElementById("initObj").innerHTML ='\
-<b>Database authentication for editing data:</b><br>\
-<form id="authForm" onsubmit="parent.dbuser=user.value;parent.dbpassword=password.value;parent.init();return false">\
-<table>\
-<tr><td>Username:</td><td><input type="text" id="user" value="' + dbuser + '"></td></tr>\
-<tr><td>Password:</td><td><input type="password" id="password" value="' + dbpassword + '"></td></tr>\
-<tr><td><input type="submit" value="Login"></td></tr>\
-</table>\
-</form>\
-';
+  document.getElementById("initObj").innerHTML = authentication;
   document.getElementById("user").focus();
 }
 else if (getParams().newick)

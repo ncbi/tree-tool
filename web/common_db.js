@@ -14,6 +14,17 @@ var dbpassword = dbpassword_readonly;
 var database = 'uniColl';
 var userName = '';
 
+const authentication = '\
+<b>Database authentication for editing data:</b><br>\
+<form onsubmit="parent.dbuser=user.value;parent.dbpassword=password.value;parent.init();return false">\
+<table>\
+<tr><td>Username:</td><td><input type="text" id="user" value="' + dbuser + '"></td></tr>\
+<tr><td>Password:</td><td><input type="password" id="password" value="' + dbpassword + '"></td></tr>\
+<tr><td><input type=submit value="Login"></td></tr>\
+</table>\
+</form>\
+';
+
 
 
 var str2sql = function (s)
