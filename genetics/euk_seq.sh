@@ -84,6 +84,7 @@ if [ ! -e $ASM.prot ]; then
     FUNGUS_PAR=""
     if [ $TAXROOT == 4751 ]; then
       FUNGUS_PAR="--fungus"
+        # https://pmc.ncbi.nlm.nih.gov/articles/PMC2593577/
     fi
     
     GMES_TYPE="--ES"
