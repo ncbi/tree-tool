@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Filter FASTA file
+*   Print FASTA sequences with filtering
 *
 */
 
@@ -84,7 +84,7 @@ struct Replacement final : Named
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print protein sequences which are [not] in the target list")
+    : Application ("Print FASTA sequences with filtering")
 	  {
       version = VERSION;
 		  addPositional ("in",  "Input FASTA file");

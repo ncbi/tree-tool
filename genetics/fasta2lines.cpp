@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print each sequence of a FASTA file as one line
+*   Print each FASTA sequence in one line
 *
 */
 
@@ -51,7 +51,7 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print protein sequences which are [not] in the target list")
+    : Application ("Print each FASTA sequence in one line")
 	  {
       version = VERSION;
 		  addPositional ("in",  "Input FASTA file");
@@ -73,11 +73,7 @@ struct ThisApplication final : Application
 		  {
 		    unique_ptr<Seq> seq;
 		    if (aa)
-		    {
-		      auto pep = new Peptide (fa, 1000/*PAR*/, true);
-		      pep->pseudo = true;
-		      seq. reset (pep);
-		    }
+		      seq. reset (new Peptide (fa, 1000/*PAR*/, true));
 		    else
 		      seq. reset (new Dna (fa, 100000/*PAR*/, true));
 		    ASSERT (seq);
