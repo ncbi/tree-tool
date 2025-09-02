@@ -36,6 +36,7 @@ all:	\
 	fasta2GC \
 	fasta2hash \
 	fasta2len \
+	fasta2lines \
 	fastaAddGi \
 	fastaDna2pairs \
 	filterFasta \
@@ -213,10 +214,16 @@ fasta2hash:	$(fasta2hashOBJS)
 	$(CXX) -o $@ $(fasta2hashOBJS) $(LIBS) 
 	$(ECHO)
 
-fasta2len.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(TSV_DIR)/tsv.hpp
+fasta2len.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
 fasta2lenOBJS=fasta2len.o $(SEQ_OBJ) $(TSV_DIR)/tsv.o
 fasta2len:	$(fasta2lenOBJS)
 	$(CXX) -o $@ $(fasta2lenOBJS) $(LIBS) 
+	$(ECHO)
+
+fasta2lines.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+fasta2linesOBJS=fasta2lines.o $(SEQ_OBJ) 
+fasta2lines:	$(fasta2linesOBJS)
+	$(CXX) -o $@ $(fasta2linesOBJS) $(LIBS) 
 	$(ECHO)
 
 fastaAddGi.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
