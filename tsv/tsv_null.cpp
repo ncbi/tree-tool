@@ -1,4 +1,4 @@
-// tsv_schema.cpp
+// tsv_null.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print the schema of a tsv-table: # name length type(decimals)
+*   Replace "NA" etc. by "" in a .tsv-file
 *
 */
 
@@ -49,11 +49,10 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print the schema of a tsv-table: # name length type(decimals)")
+    : Application ("Replace \"NA\" etc. by \"\" in a .tsv-file and print")
   	{
       version = VERSION;
   	  addPositional ("table", "tsv-table");
-  	  addFlag ("sql", "SQL DDL format");
   	}
   	
   	
@@ -61,26 +60,17 @@ struct ThisApplication final : Application
 	void body () const final
 	{
 		const string fName = getArg ("table");
-		const bool   sql   = getFlag ("sql");
 
-    const TextTable tt (fName);
+    TextTable tt (fName);
     tt. qc ();
-    if (sql)
-    {
-      cout << "create table " << trimExtension (getFileName (fName)) << endl;
-      cout << "( ";
-      bool first = true;
-      for (const TextTable::Header& h : tt. header)
-      {
-        if (! first)
-          cout << ", ";
-        h. saveSql (cout);
-        first = false;
-      }
-      cout << ")" << endl;
-    }
-    else
-      tt. printHeader (cout);      
+    
+    for (StringVector& row : tt. rows)
+      for (string& s : row)
+        if (strNull (s))
+          s. clear ();
+    tt. qc ();
+    
+    tt. saveText (cout);
 	}
 };
 

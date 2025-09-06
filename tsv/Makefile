@@ -26,6 +26,7 @@ ALL=	\
   tsv_comp \
   tsv_group \
   tsv_join \
+  tsv_null \
   tsv_rename \
   tsv_schema \
   tsv_shift \
@@ -117,6 +118,12 @@ tsv_join.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
 tsv_joinOBJS=tsv_join.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 tsv_join: $(tsv_joinOBJS)
 	$(CXX) -o $@ $(tsv_joinOBJS) $(LIBS)
+	$(ECHO)
+
+tsv_null.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+tsv_nullOBJS=tsv_null.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+tsv_null: $(tsv_nullOBJS)
+	$(CXX) -o $@ $(tsv_nullOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_rename.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
