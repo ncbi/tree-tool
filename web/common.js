@@ -528,6 +528,13 @@ var column2table = function (row, column, isKey)
 
 
 
+var addRadioButton = function (name, value_init, value)  
+{
+  return "<div><input type=radio name='" + name + "' value='" + value + "'" + ifS (value == value_init, " checked") + " /> <label for='" + value + "'>" + value + "</label></div>";
+}
+
+
+
 var queryRow2table = function (title, row, keyNum)
 {
   let tab = tableStart (title) + "<tbody>";
