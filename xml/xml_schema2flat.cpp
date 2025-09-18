@@ -79,33 +79,11 @@ struct ThisApplication final : Application
 	  
     Names names (10000);   // PAR
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	#if 1
 	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (headerP, names, xmlFName, markupDeclarations));
-	#else
-	  unique_ptr<const Xml_sp::Data> xml;
-	  {
-  	  TokenInput ti (xmlFName, '\0', false, false, false, 1000);  // PAR 
-      try
-      {	  
-    	  VectorOwn<Xml_sp::Data> markupDeclarations;
-        xml. reset (new Xml_sp::Data (ti, markupDeclarations));	
-      }
-      catch (const CharInput::Error &e)
-        { throw e; }
-      catch (const exception &e)
-        { ti. error (e. what (), false); }
-    }  
-  #endif  
     xml->qc ();
     
     sch->setFlatTables (dirName, nullptr);
     sch->qc ();
-    
-  #if 0
-    cout << schemaName;
-    sch->saveText (cout);
-    cout << endl;
-  #endif
     
     xml->writeFiles (xml_num, sch. get (), nullptr);
 	}

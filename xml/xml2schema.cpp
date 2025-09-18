@@ -56,6 +56,7 @@ struct ThisApplication final : Application
   	  addFlag ("no_xml_header", "XML file has no header");
   	  addKey ("print", "Output XML file");
   	  addFlag ("store_values", "Store all field values in schema");
+  	  addFlag ("js", "<xml> is Json");
   	}
   	
   	
@@ -66,19 +67,29 @@ struct ThisApplication final : Application
 		const bool headerP      = ! getFlag ("no_xml_header");
 		const string printFName = getArg ("print");
 		const bool storeValues  = getFlag ("store_values");
+		const bool jsonP        = getFlag ("js");
 	
 	
 	  Names names (10000);  // PAR
 	  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  unique_ptr<const Xml_sp::Data> xml (Xml_sp::Data::load (headerP, names, xmlFName, markupDeclarations));
-    xml->qc ();
+	  unique_ptr<const Xml_sp::Data> xml;
+	  if (jsonP)
+	  {
+      unique_ptr<JsonMap> j (new JsonMap (xmlFName));
+      j->qc ();
+	    xml. reset (new Xml_sp::Data (names, *j));
+	  }
+	  else
+	    xml. reset (Xml_sp::Data::load (headerP, names, xmlFName, markupDeclarations));
+	  ASSERT (xml);
     
     if (! printFName. empty ())
     {
-      Xml::TextFile f (printFName,"XML");  // PAR
+      Xml::TextFile f (printFName, jsonP ? noString /*Json has a named root*/: "XML"/*PAR*/); 
       xml->saveXml (f);
-      cout << endl << endl;
     }
+
+    xml->qc ();
 
     unique_ptr<Xml_sp::Schema> sch (xml->createSchema (storeValues));
     sch->qc ();

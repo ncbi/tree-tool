@@ -275,9 +275,13 @@ void Schema::merge (Schema& other)
 void Schema::printTableDdl (ostream &os,
                             bool dataP,
                             bool indexP,
+                            const string &sqlSchema,
                             const Schema* curTable) const
 { 
   IMPLY (curTable, curTable->multiple);
+  ASSERT (! isRight (sqlSchema, "."));
+  
+  const string sqlSchema_ (sqlSchema. empty () ? noString : (sqlSchema + "."));
   
   unique_ptr<ostringstream> os_tmp;
   if (multiple)
@@ -290,31 +294,31 @@ void Schema::printTableDdl (ostream &os,
       os_tmp. reset (new ostringstream ());
       // "xml_num_", "id_" ??
       *os_tmp << endl << endl;
-      *os_tmp << "drop   table " + table << ";" << endl 
-              << "create table " + table << endl << '(' << endl
+      *os_tmp << "drop   table " + sqlSchema_ + table << ";" << endl 
+              << "create table " + sqlSchema_ + table << endl << '(' << endl
               << "  xml_num_ int  not null" << endl
               << ", id_ bigint  not null" << endl;  
       if (! refTable. empty ())
         *os_tmp << ", " << refTable << "_id_ bigint  not null" << endl;  
       printColumnDdl (*os_tmp, curTable);  
       *os_tmp << ");" << endl;
-      *os_tmp << "grant select on " << table << " to public;" << endl;
+      *os_tmp << "grant select on " << sqlSchema_ << table << " to public;" << endl;
     }
     if (indexP)
     {
-      os << "alter table " << table << " add constraint " << table << "_pk primary key (xml_num_, id_);" << endl;
+      os << "alter table " << sqlSchema_ << table << " add constraint " << table << "_pk primary key (xml_num_, id_);" << endl;
       if (! refTable. empty ())
       {
-        os << "create index " << table << "_idx on " << table << "(xml_num_," << refTable << "_id_);" << endl;
-        os << "alter table " << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << refTable << "(xml_num_,id_) on delete cascade;" << endl;
-        os << "-- delete /*top (1000000)*/ from " << table << " with (tablock) where not exists (select null from " << refTable << " (nolock) where " << refTable << ".xml_num_ = " << table << ".xml_num_ and " << refTable << ".id_ = " << table << "." << refTable << "_id_);" << endl;
+        os << "create index " << table << "_idx on " << sqlSchema_ << table << "(xml_num_," << refTable << "_id_);" << endl;
+        os << "alter table " << sqlSchema_ << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << sqlSchema_ << refTable << "(xml_num_,id_) on delete cascade;" << endl;
+        os << "-- delete /*top (1000000)*/ from " << sqlSchema_ << table << " with (tablock) where not exists (select null from " << refTable << " (nolock) where " << sqlSchema_ << refTable << ".xml_num_ = " << table << ".xml_num_ and " << refTable << ".id_ = " << table << "." << refTable << "_id_);" << endl;
         os << endl << endl;
       }
     }
   }
 
   for (const auto& it : name2schema)
-    it. second->printTableDdl (os, dataP, indexP, curTable);
+    it. second->printTableDdl (os, dataP, indexP, sqlSchema, curTable);
     
   if (os_tmp)
     os << os_tmp->str ();
@@ -735,6 +739,40 @@ Data* Data::load (Names &names,
   }
   
   return d. release ();
+}
+
+
+
+Data::Data (Names &names_arg,
+            Data* parent_arg,
+            const string &name_arg,
+            const Json& json)
+: names (names_arg)
+, parent (parent_arg)
+{
+  string s (name_arg);
+  replace (s, '-', '_');
+  nameIndex = names_arg. add (s);
+  
+  if (const JsonMap* m = json. asJsonMap ())
+  {
+    const StringVector keys (m->getKeys ());
+    for (const string& key : keys)
+      if (const Json* child = m->at (key))
+        children << new Data (names_arg, this, isNatural (key, false) ? "array" : key, *child);
+  }    
+  else if (const JsonArray* a = json. asJsonArray ())
+  {
+    FFOR (size_t, i, a->size ())
+      if (const Json* child = a->at (i))
+        children << new Data (names_arg, this, "array", *child);
+  }
+  else if (json. asJsonNull ())    
+  {
+    NEVER_CALL;
+  }
+  else
+    token = std::move (json. toToken ());    
 }
 
 

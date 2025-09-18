@@ -145,14 +145,16 @@ public:
     }
   void printTableDdl (ostream &os,
                       bool dataP,
-                      bool indexP) const
-    { printTableDdl (os, dataP, indexP, nullptr); 
+                      bool indexP,
+                      const string &sqlSchema) const
+    { printTableDdl (os, dataP, indexP, sqlSchema, nullptr); 
       os << "go" << endl;
     }
 private:
   void printTableDdl (ostream &os,
                       bool dataP,
                       bool indexP,
+                      const string &sqlSchema,
                       const Schema* curTable) const;
   void printColumnDdl (ostream &os,
                        const Schema* curTable) const;
@@ -180,8 +182,8 @@ struct Data : VirtNamed
   VectorOwn<Data> children;
     // May be empty()
 
-  const bool binary;
-  const bool attribute;
+  const bool binary {false};
+  const bool attribute {false};
   bool colonInName {false};
   Token token;
     // May be empty()
@@ -210,8 +212,6 @@ private:
         TokenInput &ti)
     : names (names_arg)
     , parent (parent_arg)
-    , binary (false)
-    , attribute (false)
     { readInput (ti); }
   Data (Names &names_arg,
         Data* parent_arg,
@@ -222,7 +222,6 @@ private:
     : names (names_arg)
     , nameIndex (names_arg. add (attr))
     , parent (parent_arg)
-    , binary (false)
     , attribute (attribute_arg)
     , colonInName (colonInName_arg)
     , token (std::move (value))
@@ -236,6 +235,11 @@ private:
   static bool readColonName (TokenInput &ti,
                              string &name);
     // Update: name
+  Data (Names &names_arg,
+        Data* parent_arg,
+        const string &name_arg,
+        const Json& json);
+    // name_arg: '-' are replaced by '_'
 public:
   static Data* load (bool headerP,
                      Names &names,
@@ -249,6 +253,10 @@ public:
   static Data* load (Names &names,
                      const string &fName);
     // Binary XML, see common.hpp
+  Data (Names &names_arg,
+        const JsonMap& json)
+    : Data (names_arg, nullptr, "Json", json)
+    {}
   void clear () override;
   void qc () const override;
   void saveXml (Xml::File &f) const override;
@@ -335,7 +343,8 @@ private:
 public:
   Schema* createSchema (bool storeTokens) const;
     // Return: new, !nullptr
-    //   Data where colonInName are skipped
+    //         Data where colonInName are skipped
+    // XML tags which are not descendatnts of any table tags are ignored
   void writeFiles (size_t xmlNum,
                    const Schema* sch,
                    FlatTable* flatTable) const;
