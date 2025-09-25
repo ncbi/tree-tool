@@ -734,7 +734,7 @@ bool isIdentifier (const string& name,
   // Return: true. !empty(), !dashInName => (c \in mame => isLetter(c))
 
 bool isNatural (const string& name,
-                bool leadingZeroAllowed);
+                bool leadingZeroAllowed = true);
 
 void strUpper (string &s);
 
