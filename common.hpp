@@ -3478,6 +3478,7 @@ template <typename T>
       // !nullptr
     typedef void (*SetHeapIndex) (T &item, size_t index);
       // Example: item.heapIndex = index
+      //          item.heapIndex = no_index <=> item is not in Heap
     const SetHeapIndex setHeapIndex {nullptr};
       // Needed to invoke increaseKey()
   public:
@@ -3526,6 +3527,8 @@ template <typename T>
       // Time: O(1) amortized
       { if (arr. empty ()) 
       	  throwError ("deleteMaximum");
+        if (setHeapIndex)
+          setHeapIndex (* arr [0], no_index);      	
         T* item = arr. back ();
         var_cast (arr). pop_back ();
         if (arr. empty ())
@@ -3555,7 +3558,8 @@ template <typename T>
       { return left (index) + 1; }
     void assign (T* item,
                  size_t index)
-      { var_cast (arr) [index] = item;
+      { if (index == no_index)  throwError ("bad index");
+        var_cast (arr) [index] = item;
         if (setHeapIndex)
           setHeapIndex (*item, index);
       }
@@ -4244,7 +4248,7 @@ extern unique_ptr<JsonMap> jRoot;
 
 
 
-struct Json : Root, Nocopy  // Heaponly
+struct Json : Root, Nocopy  // Heap only
 {
 protected:
   Json (JsonContainer* parent,
