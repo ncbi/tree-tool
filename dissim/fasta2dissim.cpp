@@ -136,7 +136,8 @@ void runMatches (size_t from,
                  Notype /*&res*/,
                  Vector<Match> &matches)
 {
-  Progress prog (to - from, 1000);  // PAR
+  ASSERT (from <= to);
+  Progress prog (to - from, (size_t) pow (10, floor (log10 ((to - from) / 100/*PAR*/ + 1))));  
   FOR_START (size_t, i, from, to)
   {
     prog ();
@@ -146,7 +147,7 @@ void runMatches (size_t from,
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Create a dataset with a dissimilarity attribute \"" + attrName + "\" of a collection of DNA or proteins or print: <obj1> <obj2> <dissim> <score> <self-score1> <self-score2>", true, false, true)
