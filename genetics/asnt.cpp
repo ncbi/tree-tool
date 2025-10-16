@@ -125,7 +125,7 @@ public:
     
 
   explicit Asn (const string &fName)
-		: in (fName, '\0', true, true)  		  
+		: in (fName, '\0', true, true, true)  		  
 		{ Unverbose unv;
 		  const Token titleToken (in. get ());
 		  QC_ASSERT (titleToken. type == Token::eName);
@@ -162,6 +162,8 @@ Item::Item (TokenInput &in,
   while (! stop)
   {
     Token t (in. get ());
+    if (verbose ())
+      cout << t << '\n';
     if (t. type == Token::eName)
       names << std::move (t. name);
     else
@@ -191,6 +193,8 @@ Item::Item (TokenInput &in,
               if (delimiterChar == '\0')
               {
                 const Token delimiter (in. get ());
+                if (verbose ())
+                  cout << delimiter << '\n';
                 if (delimiter. type != Token::eDelimiter)
                   delimiter. error ("delimiter");
                 delimiterChar = delimiter. name [0];
@@ -260,7 +264,7 @@ void Item::names2values (const StringVector &names_arg,
 
 //
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Parse an ASN.1 text file.\n\
