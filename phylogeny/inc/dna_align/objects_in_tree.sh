@@ -3,7 +3,7 @@ source bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Record a list of objects in a database"
   echo "#1: list of objects"
-  echo "#2: in_tree (0/null)"
+  echo "#2: in_tree (1/null)"
   exit 1
 fi
 IN=$1
