@@ -10,6 +10,6 @@ TREE=$1
 
 
 $THIS/../check_file.sh $TREE 1
-grep -v '^ *0x' $TREE | sed 's/^ *//1' | sed 's/: .*$//1' 
+grep -v '^ *0x' $TREE | sed 's/^ *//1' | sed 's/: .*$//1' || true
 
 
