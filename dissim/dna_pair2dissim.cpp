@@ -73,7 +73,7 @@ struct ThisApplication final : Application
   	  addPositional ("align_len_min", "Min. sequence length");
   	  addPositional ("out", "Output file with lines: <DNA1> <DNA2> <dissimilarity>. <DNA1> < <DNA2>. Lines match the file <pairs>");
   	  addFlag       ("large", "DNA sequences are in subdirectoirs of <dnaDir> which are hash-codes modulo " + to_string (small_hash_class_max) + " of the DNA file names");
-  	  addFlag       ("global", "Global alignment, othewise semiglobal");
+  	  addFlag       ("global", "Global alignment, otherwise semiglobal");
   	  addFlag       ("relative", "Dissimilarity relative to sequence length");
   	  addFlag       ("diff", "Dissimilarity is the number of different nucleotides");
   	  addKey        ("band", "Alignment band; 0 - no band", "0");
