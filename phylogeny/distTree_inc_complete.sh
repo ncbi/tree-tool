@@ -23,6 +23,10 @@ HYBRIDNESS_MIN=$( cat $INC/hybridness_min )
 sort -cu $OBJS
 
 
+TMP=$( mktemp )
+
+
+#if false; then 
 section "QC $INC/"
 if [ $OVER == 0 ]; then
   VER=$( cat $INC/version )
@@ -58,13 +62,19 @@ else
   cp /dev/null $INC/runlog 
 fi
 
-TMP=$( mktemp )
-$THIS/distTree_inc_new_list.sh $INC > $TMP || (cat $TMP && exit 1)
-N=$( < $TMP  wc -l )
-if [ $N -gt 0 ]; then
-  error "$INC/new/ must be empty"
+
+section "QC"
+$INC/qc.sh 0
+
+if [ "$SERVER" ]; then
+  $THIS/distTree_inc_new_cmd.sh $INC "rm" $OBJS
+else
+  $THIS/distTree_inc_new_list.sh $INC > $TMP || (cat $TMP && exit 1)
+  N=$( < $TMP  wc -l )
+  if [ $N -gt 0 ]; then
+    error "$INC/new/ must be empty"
+  fi
 fi
-rm $TMP
 
 
 section "Computing dissimilarities"
@@ -86,6 +96,7 @@ warning "nan:"
 grep -wic 'nan' data.dm || true
 
 $THIS/../dm/dm2objs data -noprogress | sort > $INC/tree.list
+
 
 if [ "$SERVER" ]; then
   section "Outliers"
@@ -125,6 +136,7 @@ VARIANCE=$( cat $INC/variance )
 $THIS/makeDistTree  -threads 5  -data data  -dissim_attr "dissim"  -variance $VARIANCE  -optimize  -subgraph_iter_max 10  $HYBRID  -output_tree $INC/tree  -output_tree_tmp $INC/tree.tmp > $INC/hist/makeDistTree-complete.1
 rm $INC/tree.tmp
 
+
 if [ "$SERVER" ]; then
   section "Database"
   $THIS/tree2obj.sh $INC/tree > $INC/tree.list
@@ -133,11 +145,12 @@ if [ "$SERVER" ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC
   fi
-  section "QC"
-  $INC/qc.sh 0
 fi
 
 rm $INC/tree.list
+
+section "QC"
+$INC/qc.sh 0
 
 cp $INC/tree $INC/hist/tree.1
 
@@ -152,6 +165,7 @@ if [ -e $INC/phen ]; then
 fi
 
 
+rm $TMP*
 echo ""
 date
 
