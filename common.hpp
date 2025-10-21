@@ -78,6 +78,7 @@
 #include <iomanip>
 #include <memory>
 #include <algorithm>
+#include <functional>
 #include <filesystem>
 
 #include <thread>

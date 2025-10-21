@@ -131,36 +131,25 @@ struct ThisApplication : Application
 	  
     
     // TopologicalSort
-  	{
-	    DiGraph g;
-		  // Node's
-		  auto london = new City (g, "London");
-		  auto paris  = new City (g, "Paris");
-		  auto berlin = new City (g, "Berlin");
-		  auto madrid = new City (g, "Madrid");
-		  // Arc's
-      new Distance (london, paris, 100);
-      new Distance (london, berlin, 200);
-      new Distance (london, madrid, 50);
-      new Distance (berlin, paris, 30);
-      new Distance (berlin, paris, 35);
-      new Distance (berlin, berlin, 0);
-	    g. qc ();
-
-      const size_t s = g. nodes. size ();
-	    TopologicalSort ts (g, true);
-	    VectorPtr<DiGraph::Node> nodes;
-	    while (const DiGraph::Node* n = ts.  getFront ()) 
-	    	nodes << n;
-	    g. qc ();
-	    QC_ASSERT (s == g. nodes. size ());
-	    QC_ASSERT (nodes. size () == s);
-	    nodes. sort ();
-	    nodes. uniq ();
-	    QC_ASSERT (nodes. size () == s);
+	  {
+		  VectorPtr<string> vec;
+		  vec << new string ("London")
+		      << new string ("Paris")
+		      << new string ("Berlin")
+		      << new string ("Madrid");
+	    StringVector res1;
+	    {
+  	    const VectorPtr<string> res (topologicalSort (vec));
+  	    for (const string* s : res)
+  	      res1 << *s;
+  	  }
+	    StringVector res2 (res1);
+	    res2. sort ();
+	    QC_ASSERT (res1 == res2);
 	  }
   }
 };
+
 
 
 }  // namespace
