@@ -3519,6 +3519,47 @@ template <typename T>
 
 
 template <typename T>
+  struct Queue
+  {
+    const List<const T*> q;
+  private:
+    typedef bool& (*GetFlag) (T &item);
+      // Return: <=> in q
+    const GetFlag getFlag {nullptr};
+  public:
+
+
+    explicit Queue (const GetFlag &getFlag_arg)
+      : getFlag (getFlag_arg)
+      {}
+      
+      
+    // Time: O(1)
+    bool empty () const
+      { return q. empty (); }
+    bool push (T* item)
+      { assert (item);
+        bool& f = getFlag (*item);
+        if (f)
+          return false;
+        f = true;
+        var_cast (q) << item;
+        return true;
+      }
+    const T* pop ()
+      { assert (! q. empty ());
+        const T* item = var_cast (q). popFront (); 
+        assert (item);
+        bool& f = getFlag (* var_cast (item));
+        assert (f);
+        f = false;
+        return item;
+      }
+};
+
+
+
+template <typename T>
   struct Heap 
   // Priority queue
   // Heap property: comp(arr[parent(index)],arr[index]) >= 0
