@@ -464,7 +464,7 @@ struct ThisApplication final : Application
           if (! leaf)
           {
             if (check_delete)
-              throw runtime_error ("Leaf " + f. line + " not found");
+              throw runtime_error ("Leaf " + strQuote (f. line) + " not found");
             continue;
           }
           tree->removeLeaf (var_cast (leaf), false);
@@ -498,7 +498,7 @@ struct ThisApplication final : Application
           if (! leaf)
           {
             if (check_keep)
-              throw runtime_error ("Leaf " + f. line + " not found");
+              throw runtime_error ("Leaf " + strQuote (f. line) + " not found");
             continue;
           }
           toKeep << leaf;  

@@ -18,7 +18,7 @@ TAXROOT=$( cat $INC/../taxroot )
 
 $THIS/../../bulk.sh $SERVER $INC/bulk $BULK_REMOTE $TAB $DATABASE..ListC
 
-sqsh-ms  -S $SERVER  -D $DATABASE  -L exit_failcount=1  -L bcp_rowsep="" << EOF
+sqsh-ms  -S $SERVER  -D $DATABASE  -L exit_failcount=1  -L bcp_rowsep="" << EOF | grep -v "^Warning:" || true
   EXEC Genogroup2outliers $TAXROOT, 0
   go -m bcp
 EOF
