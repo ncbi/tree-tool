@@ -570,6 +570,10 @@ inline string ebool2txt (ebool choice,
 
 
 
+enum BoolOp {eIntersect, eUnion, eMinus};
+
+
+
 // char
 
 inline bool isChar (long long n)

@@ -1976,7 +1976,7 @@ var place = function (placement)
     
   const format = "Placement format: new_leaf_name node new_leaf_arc_length node_arc_length\nnode format: leaf_name or leaf_name:leaf_name";
 
-  const arr = placement.replace("\t"," ").replace(/ +/g, " ").split(" ");
+  const arr = placement.replaceAll("\t"," ").replace(/ +/g, " ").split(" ");
   if (arr.length != 4)
   {
     alert (format);
@@ -2836,7 +2836,7 @@ var parseNewick = function ()
     const pos_init = pos;
     while (pos < newick.length && newickDelimiters.indexOf(newick.charAt(pos)) == -1)
       readChar ();
-    return Number(newick.substring(pos_init,pos).replace('\n','').replace('\r',''));
+    return Number(newick.substring(pos_init,pos).replaceAll('\n','').replaceAll('\r',''));
   }
 
   const parseSubtree = function (parentId)
