@@ -3079,13 +3079,16 @@ template <typename T /* : Root */>
 
 
 
+enum SetOperation {soIntersect, soUnion, soMinus};
+
+
+
 template <typename T>
   struct Set : set<T>
   {
   private:
   	typedef  set<T>  P;
   public:
-    enum Operation {opIntersect, opUnion, opMinus};
   	bool universal {false};
   	  // true => empty()
   	
