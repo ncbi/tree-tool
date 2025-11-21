@@ -570,10 +570,6 @@ inline string ebool2txt (ebool choice,
 
 
 
-enum BoolOp {eIntersect, eUnion, eMinus};
-
-
-
 // char
 
 inline bool isChar (long long n)
@@ -3089,6 +3085,7 @@ template <typename T>
   private:
   	typedef  set<T>  P;
   public:
+    enum Operation {opIntersect, opUnion, opMinus};
   	bool universal {false};
   	  // true => empty()
   	
