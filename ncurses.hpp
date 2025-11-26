@@ -52,6 +52,10 @@ extern "C"
 
 
 
+#define CTRL(x)  ((x) & 0x1f)
+
+
+
 namespace NCurses_sp
 {
 
