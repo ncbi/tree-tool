@@ -51,10 +51,6 @@ using namespace NCurses_sp;
 
 
 
-#define CTRL(x)     ((x) & 0x1f)
-
-
-
 namespace
 {
 	
@@ -293,13 +289,13 @@ struct Viewer
             else
               ::beep ();
             break;
-          case 01016:  // ^KEY_DOWN
+          case CTRL('d'):
           	if (topIndex + 1 < rows. size ())
           		topIndex++;
           	else 
           		::beep ();
           	break;
-          case 01067:  // ^KEY_UP
+          case CTRL('u'):
           	if (topIndex)
           		topIndex--;
           	else

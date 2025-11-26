@@ -54,6 +54,7 @@ namespace
   
   
 bool consistent = false;
+size_t width_max = 0;
   
   
   
@@ -111,7 +112,11 @@ void printRow (bool is_header,
         value += ".";
       value += string ((size_t) (h. decimals - decimals), '0');  
     }
-    ASSERT (value. size () <= h. len_max);
+    if (value. size () > h. len_max)
+    {
+      value. erase (h. len_max - 3);
+      value += "...";
+    }
     const ebool right = (   rows_max > TextTable::Header::choices_max * 2  // PAR
                          && h. choices. size () < (h. numeric && ! h. scientific ? 3 : TextTable::Header::choices_max)  // PAR
                         )
@@ -175,7 +180,7 @@ bool moveLeft (size_t &curCol,
 }
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("View a tsv-table")
@@ -183,6 +188,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("table", "tsv-table");
   	  addFlag ("consistent", "Reformat numbers to make them consistent, e.g., to have the same number of decimals");
+  	  addKey ("width", "Max. column width", "30");
   	}
 
 
@@ -191,25 +197,29 @@ struct ThisApplication : Application
 	{
 		const string tableFName = getArg ("table");
 		             consistent = getFlag ("consistent");
+		             width_max  = str2<size_t> (getArg ("width"));
 
-
+    if (width_max < 4)
+      throw runtime_error ("Too small -width: " + to_string (width_max));
+   
     EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
 
 
     TextTable tt (tableFName);
     tt. qc ();
-    FFOR (size_t, i, tt. header. size ())
-    {
-      TextTable::Header& h = tt. header [i];
-      maximize (h. len_max, max (h. name. size (), to_string (i + 1). size ()));
-    }
-    
     if (tt. rows. empty ())
     {
       cout << "No data" << endl;
       return;
     }
 
+    FFOR (size_t, i, tt. header. size ())
+    {
+      TextTable::Header& h = tt. header [i];      
+      minimize (h. len_max, width_max);
+      maximize (h. len_max, max (h. name. size (), to_string (i + 1). size ()));
+    }
+    
 
     size_t topIndex = 0;
     size_t curIndex = topIndex;
@@ -308,6 +318,7 @@ struct ThisApplication : Application
       {
         const int key = NCurses_sp::getKey ();  
         keyAccepted = true;
+        // Show truncated field ??
         switch (key)  
         {
           case 'q':  
@@ -325,6 +336,12 @@ struct ThisApplication : Application
             else
               ::beep ();
             break;
+          case CTRL('d'): 
+            if (topIndex < curIndex)
+              topIndex++;
+            else
+              ::beep ();
+            break;
           case KEY_UP:
             if (curIndex)
             {
@@ -332,6 +349,14 @@ struct ThisApplication : Application
                 topIndex--;
               curIndex--;
             }
+            else
+              ::beep ();
+            break;
+          case CTRL('u'): 
+            if (   topIndex 
+                && curIndex < bottomIndex
+               )
+              topIndex--;
             else
               ::beep ();
             break;
