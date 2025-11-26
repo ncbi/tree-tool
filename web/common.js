@@ -1122,6 +1122,28 @@ var getMinutes = function ()
 
 
 
+var tickets2url = function (tickets)
+// Input: tickets: space- or comma-separated
+{
+  var s = '';
+  if (! tickets)
+    return s;
+  const arr = tickets. replaceAll ('  ', ' '). replaceAll (',', ' '). split (' ');
+  for (const i in arr)
+  {
+    const ticket = arr[i];
+    if (ticket.startsWith ('CAS') || isDigit (ticket.substr(0,1)))
+      s = addS (s, ', ', ticket);
+    else
+      s = addS (s, ', ', "<a href=https://jira.ncbi.nlm.nih.gov/browse/" + ticket + " target=_blank style='text-decoration:none';>" + ticket + "</a>");
+  }
+  return s;
+}
+
+
+
+
+
 /* 
   Safari restrictions:
      default parameters do not work
