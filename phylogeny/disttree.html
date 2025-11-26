@@ -14,10 +14,10 @@
   <script type='text/javascript' src='jquery-1.11.1.js'></script>
 
   <!-- If offline then replace this with text and move to &lt;script&gt  -->
-  <script type='text/javascript' src="common.js?cachebuster=1"></script>
+  <script type='text/javascript' src="common.js?version=1"></script>
   
   <!-- If offline then remove  -->
-  <script type='text/javascript' src="common_db.js?cachebuster=1"></script>
+  <script type='text/javascript' src="common_db.js?version=2"></script>
 </head>
 
   
@@ -283,7 +283,8 @@ select Phyl.[node] id \
      , PhylObject_vw.prots \
      , PhylObject_vw.bioproject \
      , PhylObject_vw.pubmed \
-     , replace (replace (replace (PhylObject_vw.comment, char(9), ' '), char(10), ' '), char(13), ' ') comment \
+     , PhylObject_vw.comment /*replace (replace (replace (PhylObject_vw.comment, char(9), ' '), char(10), ' '), char(13), ' ') comment*/ \
+     , PhylObject_vw.tickets \
      , TaxPicture.url picture_url \
      , TaxPicture.attribution picture_attribution \
      , TaxPicture.license picture_license \
@@ -348,7 +349,8 @@ select Phyl.[node] id \
         , prots:               row.prots
         , bioproject:          row.bioproject
         , pubmed:              row.pubmed
-        , comment:             row.comment ? row.comment.replace(/[\n\r]/g, ' ') : null
+        , comment:             row.comment ? row.comment.replace(/[\t\n\r]/g, ' ') : null
+        , tickets:             row.tickets ? row.tickets.replace(/[\t\n\r]/g, ' ') : null
         , ani_match:           row.ani_match
         , ani:                 row.ani
           // computed
@@ -641,6 +643,8 @@ var node2printName = function (node, truncate, leavesNumP)
     
   if (node.comment)
     name += "  COMMENT: " + node.comment;
+  if (node.tickets)
+    name += "  TICKETS: " + node.tickets;
     
   if (name && truncate)
     name = name. substr (0, 100);  // PAR 
@@ -1442,6 +1446,8 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
       innerHTML += "<b>" + node.ani_match + " ANI:" + node.ani.toFixed(1) + "</b><br>";
     if (node.comment)
       innerHTML += "COMMENT: <b>" + node.comment + "</b><br>";
+    if (node.tickets)
+      innerHTML += "TICKETS: <b>" + tickets2url(node.tickets) + "</b><br>";  
     innerHTML += "<br>";
 
     innerHTML += "# Leaves: " + node.leaves + "<br>";
@@ -1589,7 +1595,8 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
 	        innerHTML +=   "<form onsubmit='parent.parent.parent.setTax(" + nodeId + ");return false'><input type='submit' value='Change taxon'></form>"
 	                     + "<form onsubmit='parent.parent.parent.confirmTax(" + nodeId + ");return false'><input type='submit' value='Confirm taxon'></form>"
 	                     + "<form onsubmit='parent.parent.parent.unconfirmTax(" + nodeId + ");return false'><input type='submit' value='Unconfirm taxon'></form>"
-	                     + "<form onsubmit='parent.parent.parent.setComment(" + nodeId + ");return false'><input type='submit' value='Comment'></form>";
+	                     + "<form onsubmit='parent.parent.parent.setComment(" + nodeId + ");return false'><input type='submit' value='Comment'></form>"
+	                     + "<form onsubmit='parent.parent.parent.setTickets(" + nodeId + ");return false'><input type='submit' value='Tickets'></form>";
 	  innerHTML += "<form onsubmit='parent.parent.parent.saveLeaves(" + nodeId + ",false);return false'><input type='submit' value='Save leaves info'></form>";
 	  if (node.selectedLeaves)
   	  innerHTML += "<form onsubmit='parent.parent.parent.saveLeaves(" + nodeId + ",true);return false'><input type='submit' value='Save highlighted leaves info'></form>";
@@ -2412,7 +2419,7 @@ var setComment = function (nodeId)
   let val = inputString ("Enter comment (empty string = null)", node.comment);
   if (val == null)
     return;
-  val = val.replace(/[\n\r]/g, ' ');
+  val = val.replace(/[\t\n\r]/g, ' ');
   if (! val)
     val = null;
   
@@ -2463,9 +2470,67 @@ update Locus \
 
 
 
+var setTickets = function (nodeId)
+{
+  const node = nodes[nodeId];
+  
+  let val = inputString ("Enter tickets (empty string = null)", node.tickets);
+  if (val == null)
+    return;
+  val = val.replace(/[\t\n\r]/g, ' ');
+  if (! val)
+    val = null;
+  
+  let sql = null;
+  switch (objectType)
+  {
+    case "Genome": sql = "\
+update Genome \
+  set tickets = " + str2sqlNull (val) + " \
+  from      Phyl \
+       join Phyltree on Phyltree.id = Phyl.tree \
+       join PhylObject on     PhylObject.tree = Phyl.tree \
+                          and PhylObject.leaf = Phyl.node \
+       join Genome on Genome.id = PhylObject.identifier \
+  where     Phyltree.object_type = 'Genome' \
+        and Phyl.is_leaf = 1 \
+        and Phyl.tree = " + tree + " \
+        and Phyl.node = " + nodeId;
+       break;
+    case "Locus": sql = "\
+update Locus \
+  set tickets = " + str2sqlNull (val) + " \
+  from      Phyl \
+       join Phyltree on Phyltree.id = Phyl.tree \
+       join PhylObject on     PhylObject.tree = Phyl.tree \
+                          and PhylObject.leaf = Phyl.node \
+       join Locus on Locus.id = PhylObject.identifier \
+  where     Phyltree.object_type = 'Locus' \
+        and Phyl.is_leaf = 1 \
+        and Phyl.tree = " + tree + " \
+        and Phyl.node = " + nodeId;
+       break;
+  }  
+  if (! sql)
+  {
+    alert ("setTickets(): Unknown object type " + objectType);
+    return;
+  }
+  
+  node.tickets = val;
+
+  const count = dml (sql);
+  if (count <= 0)
+    alert ("Database is not changed");
+
+  changeTree ();
+}
+
+
+
 var saveLeaves = function (nodeId, highlighted)
 { 
-  let text = '#' + seqType + '\tfullasm_id\tWGS\tRefSeq_accession\tremoved\tbad_source\toutlier\ttype\tadded\tsubmitted_taxid\ttax_curated\ttax_confirmation\tANI_match\tANI\tproperties\tcomment\n';
+  let text = '#' + seqType + '\tfullasm_id\tWGS\tRefSeq_accession\tremoved\tbad_source\toutlier\ttype\tadded\tsubmitted_taxid\ttax_curated\ttax_confirmation\tANI_match\tANI\tproperties\tcomment\ttickets\n';
   
   const leaves2text = function (nodeId)
   // Update: text
@@ -2492,7 +2557,9 @@ var saveLeaves = function (nodeId, highlighted)
                 + (node.ani_match || '') + '\t'
                 + (node.ani || '')+ '\t'
                 + (node.props || '') + '\t'
-                + (node.comment || '') + '\n';
+                + (node.comment || '') + '\n'
+                + (node.tickets || '') + '\n'
+                ;
   }
   
   leaves2text (nodeId);
