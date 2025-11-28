@@ -206,7 +206,7 @@ template <typename T /*:number*/>
   inline bool between (T x, T low, T high)
     { return x >= low && x < high; }
 
-template <typename T/*:number*/> 
+template <typename T /*:number*/> 
   inline bool betweenEqual (T x, T low, T high)
     { return x >= low && x <= high; }
 
