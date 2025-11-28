@@ -164,7 +164,7 @@ struct Viewer
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
           const Row& row = rows [i];
-          move ((int) (i - topIndex), 0);
+          ::move ((int) (i - topIndex), 0);
           {
             const bool current = (i == curIndex);
 	          const Attr attr (A_REVERSE, current);
@@ -251,7 +251,7 @@ struct Viewer
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
-          move ((int) (i - topIndex), 0);
+          ::move ((int) (i - topIndex), 0);
           clrtoeol ();
         }
         refresh ();
@@ -289,13 +289,13 @@ struct Viewer
             else
               ::beep ();
             break;
-          case CTRL('d'):
+          case ctrl('d'):
           	if (topIndex + 1 < rows. size ())
           		topIndex++;
           	else 
           		::beep ();
           	break;
-          case CTRL('u'):
+          case ctrl('u'):
           	if (topIndex)
           		topIndex--;
           	else
@@ -344,7 +344,7 @@ struct Viewer
               topIndex = rows. size () >= fieldSize ? rows. size () - fieldSize : 0;
             }
             break;
-          case CTRL('f'):
+          case ctrl('f'):
             do
               curIndex = rows. size () - 1;
             while (open (curIndex));
@@ -456,7 +456,7 @@ struct Viewer
 	void drawMenu (size_t fieldSize, 
 	               const string &s)
 	{
-	  move ((int) fieldSize, 0);
+	  ::move ((int) fieldSize, 0);
 	  const Attr attr (A_REVERSE);
 	  const Background bkgr (nc. background | A_REVERSE);
 	  addstr (s. c_str ());
