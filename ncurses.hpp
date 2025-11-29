@@ -64,18 +64,19 @@ constexpr int ctrl (int x)
 
 
 
-struct NCurses : Singleton<NCurses>
+struct NCurses final : Singleton<NCurses>
 {
   bool hasColors {false};
   enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan, colorWhite};
     // To match NCurses::NCurses()!
   ::chtype background {0};
-  // Change after screen resizing
+  // Change after screen resize()
   size_t row_max {0};
   size_t col_max {0};
   
   
   explicit NCurses (bool hideCursor);
+    // Invokes: setlocale(LC_ALL,"en_US.UTF-8"), resize()
  ~NCurses ()
     { ::endwin (); }
 

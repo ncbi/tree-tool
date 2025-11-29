@@ -62,6 +62,8 @@ int getKey ()
 
 NCurses::NCurses (bool hideCursor)
 { 
+  EXEC_ASSERT (::setlocale (LC_ALL, "en_US.UTF-8")); 
+
   ::initscr (); 
   ::cbreak ();
   ::noecho ();
@@ -71,7 +73,9 @@ NCurses::NCurses (bool hideCursor)
   hasColors = ::has_colors ();
   if (hasColors)
     { EXEC_ASSERT (start_color () == OK); }
+    
   resize ();
+  
   constexpr short bkgdColor = COLOR_BLACK;
   ::init_pair (1, COLOR_WHITE,   bkgdColor);  // colorNone
   ::init_pair (2, COLOR_RED,     bkgdColor);
@@ -84,7 +88,7 @@ NCurses::NCurses (bool hideCursor)
   background = COLOR_PAIR (1);
   ::bkgdset (background);
   ::attron (COLOR_PAIR (1)); 
-  ::wclear (stdscr);
+  ::wclear (stdscr);    
 }
 
 
@@ -92,7 +96,7 @@ NCurses::NCurses (bool hideCursor)
 void NCurses::resize ()
 { 
   int row_max_, col_max_;
-  getmaxyx (stdscr, row_max_, col_max_); 
+  getmaxyx (::stdscr, row_max_, col_max_); 
   QC_ASSERT (row_max_ >= 0);
   QC_ASSERT (col_max_ >= 0);
   row_max = (size_t) row_max_;

@@ -203,9 +203,6 @@ struct ThisApplication final : Application
     if (width_max < 4)
       throw runtime_error ("Too small -width: " + to_string (width_max));
    
-    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
-
-
     TextTable tt (tableFName);
     tt. qc ();
     if (tt. rows. empty ())
@@ -255,7 +252,7 @@ struct ThisApplication final : Application
           ::move (0, 0);
           const Attr attr (A_BOLD);
           addstr (tableFName. c_str ());
-          clrtoeol ();
+          ::clrtoeol ();
         }
         {
           ::move (1, 0);
@@ -309,9 +306,9 @@ struct ThisApplication final : Application
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
           ::move ((int) (i - topIndex + headerSize), 0);
-          clrtoeol ();
+          ::clrtoeol ();
         }
-        refresh ();
+        ::refresh ();
       }
 
       bool keyAccepted = false;
@@ -417,13 +414,13 @@ struct ThisApplication final : Application
               constexpr size_t size = 128;  // PAR
               ASSERT (what. size () <= size);
               char search [size] = "";
-              echo ();
-              curs_set (1);
+              ::echo ();
+              ::curs_set (1);
               ::move ((int) (fieldSize + headerSize), 0);
-              clrtoeol ();
-              getstr (search);
-              curs_set (0);
-              noecho ();
+              ::clrtoeol ();
+              ::getstr (search);
+              ::curs_set (0);
+              ::noecho ();
               bool newSearch = false;
               if (*search && what != string (search))
               {

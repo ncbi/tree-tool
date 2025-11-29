@@ -568,7 +568,6 @@ At line ends: [<# children>|<# nodes in subtree>]\
     QC_ASSERT (searchTags. size () < 8);  // instruction ??
 
 
-    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
   #if USE_WCHAR
     std::wstring_convert <std::codecvt_utf8_utf16<wchar_t>> converter;
   #endif
