@@ -2536,6 +2536,19 @@ template <typename T>
             toDelete--;
           }
         }
+    Vector<T> substr (size_t from,
+                      size_t count = no_index) const
+      { Vector<T> res;  
+        if (from >= P::size ())
+          return res;
+        size_t size = P::size () - from;
+        if (count != no_index)
+          minimize (size, count);
+        res. reserve (size);
+        for (size_t i = 0; i < size; i++)
+          res << (*this) [from + i];
+        return res;
+      }
 
     void sort ()
       { if (ascending == etrue)
@@ -2686,8 +2699,7 @@ template <typename T>
         }
     template <typename U /* : T */>
       void setMinus (const Vector<U> &other)
-        { filterIndex ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }
-        
+        { filterIndex ([&] (size_t i) { return other. containsFast ((*this) [i]); }); }        
     size_t findDuplicate (bool checkSortedP = true) const
       { if (P::size () <= 1)
           return no_index;
