@@ -2536,7 +2536,7 @@ template <typename T>
             toDelete--;
           }
         }
-    Vector<T> substr (size_t from,
+    Vector<T> subvec (size_t from,
                       size_t count = no_index) const
       { Vector<T> res;  
         if (from >= P::size ())
