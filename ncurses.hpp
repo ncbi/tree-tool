@@ -122,7 +122,7 @@ struct Background
 
   
   explicit Background (::chtype background)
-		: background_old (::getbkgd (stdscr))
+		: background_old (getbkgd (stdscr))
 		{ ::bkgdset (background); }
  ~Background ()
     { ::bkgdset (background_old); }
