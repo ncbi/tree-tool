@@ -52,33 +52,33 @@ extern "C"
 
 
 
-#define CTRL(x)  ((x) & 0x1f)
-
-
 
 namespace NCurses_sp
 {
-
   
  
 int getKey ();
 
+constexpr int ctrl (int x) 
+  { return (x) & 0x1f; }
 
 
-struct NCurses : Singleton<NCurses>
+
+struct NCurses final : Singleton<NCurses>
 {
   bool hasColors {false};
   enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan, colorWhite};
     // To match NCurses::NCurses()!
-  chtype background {0};
-  // Change after screen resizing
+  ::chtype background {0};
+  // Change after screen resize()
   size_t row_max {0};
   size_t col_max {0};
   
   
   explicit NCurses (bool hideCursor);
+    // Invokes: setlocale(LC_ALL,"en_US.UTF-8"), resize()
  ~NCurses ()
-    { endwin (); }
+    { ::endwin (); }
 
 
   void resize ();
@@ -88,21 +88,21 @@ struct NCurses : Singleton<NCurses>
 
 struct Attr : Root
 {
-  const attr_t attr;
+  const ::attr_t attr;
   const bool active;
 
 
-  explicit Attr (attr_t attr_arg,
+  explicit Attr (::attr_t attr_arg,
                  bool active_arg = true)
 		: attr (attr_arg)
 		, active (active_arg)
     { if (active)
-        attron (attr); 
+        ::attron (attr); 
     }
     // A_UNDERLINE can conflict with colors, see infocmp ncv
   ~Attr ()
     { if (active)
-        attroff (attr); 
+        ::attroff (attr); 
     }
 };
 
@@ -118,14 +118,14 @@ struct AttrColor final : Attr
 
 struct Background 
 {
-  const chtype background_old;
+  const ::chtype background_old;
 
   
-  explicit Background (chtype background)
-		: background_old (getbkgd (stdscr))
-		{ bkgdset (background); }
+  explicit Background (::chtype background)
+		: background_old (::getbkgd (stdscr))
+		{ ::bkgdset (background); }
  ~Background ()
-    { bkgdset (background_old); }
+    { ::bkgdset (background_old); }
 };
 
 
@@ -139,7 +139,7 @@ struct Window
   //
   const size_t width;
   const size_t height;
-	WINDOW* win;
+	::WINDOW* win;
 	
 	
 	Window (size_t global_x_arg,
@@ -156,10 +156,10 @@ struct Window
 	  	       )
 	  {}    
  ~Window ()
-    {	//wborder (win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
-    	werase (win);
-    	wrefresh (win);
-			delwin (win);
+    {	//::wborder (win, ' ', ' ', ' ',' ',' ',' ',' ',' ');
+    	::werase (win);
+    	::wrefresh (win);
+			::delwin (win);
     }
     
     
@@ -168,13 +168,13 @@ struct Window
               const string &s) 
     { if (s. empty ())
     	  return;
-    	mvwprintw (win, (int) y, (int) x, "%s", s. c_str ());
-      wrefresh (win);
+    	::mvwprintw (win, (int) y, (int) x, "%s", s. c_str ());
+      ::wrefresh (win);
     }
   void cursor (size_t x,
                size_t y)
-    { wmove (win, (int) y, int (x));
-    	wrefresh (win);
+    { ::wmove (win, (int) y, int (x));
+    	::wrefresh (win);
     }
 };
 

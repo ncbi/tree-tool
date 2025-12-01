@@ -180,6 +180,7 @@ bool moveLeft (size_t &curCol,
 }
   
   
+  
 struct ThisApplication final : Application
 {
   ThisApplication ()
@@ -202,9 +203,6 @@ struct ThisApplication final : Application
     if (width_max < 4)
       throw runtime_error ("Too small -width: " + to_string (width_max));
    
-    EXEC_ASSERT (setlocale (LC_ALL, "en_US.UTF-8"));  
-
-
     TextTable tt (tableFName);
     tt. qc ();
     if (tt. rows. empty ())
@@ -251,13 +249,13 @@ struct ThisApplication final : Application
          )
       {
         {
-          move (0, 0);
+          ::move (0, 0);
           const Attr attr (A_BOLD);
           addstr (tableFName. c_str ());
-          clrtoeol ();
+          ::clrtoeol ();
         }
         {
-          move (1, 0);
+          ::move (1, 0);
           const Attr attr (A_BOLD);
           const Background bkgr (COLOR_PAIR (7) /*nc. background*/ | A_BOLD);
           StringVector values;
@@ -267,14 +265,14 @@ struct ThisApplication final : Application
         }        
         if (numP)
         {
-          move (2, 0);
+          ::move (2, 0);
           const Attr attr (COLOR_PAIR (4) /*| A_BOLD*/);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << to_string (j + 1);
           printRow (true, values, active, curCol, tt. header, nc. col_max, tt. rows. size ()); 
         }
-        move ((int) (fieldSize + headerSize), 0);
+        ::move ((int) (fieldSize + headerSize), 0);
         {
           const Attr attr (A_BOLD);
           const Background bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
@@ -297,7 +295,7 @@ struct ThisApplication final : Application
         }
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
-          move ((int) (i - topIndex + headerSize), 0);
+          ::move ((int) (i - topIndex + headerSize), 0);
           const Attr attrCurrent (A_REVERSE, i == curIndex);
           const Attr attrFound (A_BOLD, rowFound [i]);
           StringVector values;
@@ -307,10 +305,10 @@ struct ThisApplication final : Application
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
-          move ((int) (i - topIndex + headerSize), 0);
-          clrtoeol ();
+          ::move ((int) (i - topIndex + headerSize), 0);
+          ::clrtoeol ();
         }
-        refresh ();
+        ::refresh ();
       }
 
       bool keyAccepted = false;
@@ -336,7 +334,7 @@ struct ThisApplication final : Application
             else
               ::beep ();
             break;
-          case CTRL('d'): 
+          case ctrl('d'): 
             if (topIndex < curIndex)
               topIndex++;
             else
@@ -352,7 +350,7 @@ struct ThisApplication final : Application
             else
               ::beep ();
             break;
-          case CTRL('u'): 
+          case ctrl('u'): 
             if (   topIndex 
                 && curIndex < bottomIndex
                )
@@ -416,13 +414,13 @@ struct ThisApplication final : Application
               constexpr size_t size = 128;  // PAR
               ASSERT (what. size () <= size);
               char search [size] = "";
-              echo ();
-              curs_set (1);
-              move ((int) (fieldSize + headerSize), 0);
-              clrtoeol ();
-              getstr (search);
-              curs_set (0);
-              noecho ();
+              ::echo ();
+              ::curs_set (1);
+              ::move ((int) (fieldSize + headerSize), 0);
+              ::clrtoeol ();
+              ::getstr (search);
+              ::curs_set (0);
+              ::noecho ();
               bool newSearch = false;
               if (*search && what != string (search))
               {

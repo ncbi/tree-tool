@@ -56,7 +56,7 @@ namespace
 {
     
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("NCurses key test")
@@ -71,10 +71,10 @@ struct ThisApplication : Application
 	#ifdef USE_NC
 	  NCurses nc (false);
 	#else
-    initscr (); 
-    cbreak ();
-    noecho ();
-    keypad (stdscr, TRUE);
+    ::initscr (); 
+    ::cbreak ();
+    ::noecho ();
+    ::keypad (::stdscr, TRUE);
   #endif
 
     int key = 0;
@@ -84,7 +84,7 @@ struct ThisApplication : Application
         #ifdef USE_NC
            NCurses_sp::getKey ()
         #else
-           getch ()
+           ::getch ()
         #endif
         ;
       cout << key << '\t';
@@ -95,12 +95,12 @@ struct ThisApplication : Application
         else
           cout << key;
       }
-      cout << '\t' << keyname (key) << "\n\r";
+      cout << '\t' << keyname (key) << "\r\n";
     } 
     while (key != 'q');   
 
   #ifndef USE_NC   
-    endwin ();
+    ::endwin ();
   #endif
   }
 };

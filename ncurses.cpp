@@ -49,9 +49,9 @@ namespace NCurses_sp
 int getKey ()
 { 
   // Use wgetch(win) ?? 
-  const int escdelay_old = set_escdelay (0);  // PAR
-	const int key = getch ();  
-	set_escdelay (escdelay_old);
+  const int escdelay_old = ::set_escdelay (0);  // PAR
+	const int key = ::getch ();  
+	::set_escdelay (escdelay_old);
 	return key;
 }
 
@@ -62,29 +62,33 @@ int getKey ()
 
 NCurses::NCurses (bool hideCursor)
 { 
-  initscr (); 
-  cbreak ();
-  noecho ();
-  keypad (stdscr, TRUE);
+  EXEC_ASSERT (::setlocale (LC_ALL, "en_US.UTF-8")); 
+
+  ::initscr (); 
+  ::cbreak ();
+  ::noecho ();
+  ::keypad (::stdscr, TRUE);
   if (hideCursor)
-    curs_set (0);  
-  hasColors = has_colors ();
+    ::curs_set (0);  
+  hasColors = ::has_colors ();
   if (hasColors)
     { EXEC_ASSERT (start_color () == OK); }
+    
   resize ();
+  
   constexpr short bkgdColor = COLOR_BLACK;
-  init_pair (1, COLOR_WHITE,   bkgdColor);  // colorNone
-  init_pair (2, COLOR_RED,     bkgdColor);
-  init_pair (3, COLOR_GREEN,   bkgdColor);
-  init_pair (4, COLOR_YELLOW,  bkgdColor);
-  init_pair (5, COLOR_BLUE,    bkgdColor);
-  init_pair (6, COLOR_MAGENTA, bkgdColor);
-  init_pair (7, COLOR_CYAN,    bkgdColor);
-  init_pair (8, COLOR_WHITE,   bkgdColor);  
+  ::init_pair (1, COLOR_WHITE,   bkgdColor);  // colorNone
+  ::init_pair (2, COLOR_RED,     bkgdColor);
+  ::init_pair (3, COLOR_GREEN,   bkgdColor);
+  ::init_pair (4, COLOR_YELLOW,  bkgdColor);
+  ::init_pair (5, COLOR_BLUE,    bkgdColor);
+  ::init_pair (6, COLOR_MAGENTA, bkgdColor);
+  ::init_pair (7, COLOR_CYAN,    bkgdColor);
+  ::init_pair (8, COLOR_WHITE,   bkgdColor);  
   background = COLOR_PAIR (1);
-  bkgdset (background);
-  attron (COLOR_PAIR (1)); 
-  wclear (stdscr);
+  ::bkgdset (background);
+  ::attron (COLOR_PAIR (1)); 
+  ::wclear (stdscr);    
 }
 
 
@@ -92,7 +96,7 @@ NCurses::NCurses (bool hideCursor)
 void NCurses::resize ()
 { 
   int row_max_, col_max_;
-  getmaxyx (stdscr, row_max_, col_max_); 
+  getmaxyx (::stdscr, row_max_, col_max_); 
   QC_ASSERT (row_max_ >= 0);
   QC_ASSERT (col_max_ >= 0);
   row_max = (size_t) row_max_;
@@ -122,12 +126,12 @@ Window::Window (size_t global_x_arg,
 , global_y (global_y_arg)
 , width (width_arg)
 , height (height_arg)
-, win (newwin ((int) height, (int) width, (int) global_y, (int) global_x))
+, win (::newwin ((int) height, (int) width, (int) global_y, (int) global_x))
 {
 	ASSERT (height);
 	ASSERT (width);
 	ASSERT (win);
-	box (win, 0, 0);  // default characters for the vertical and horizontal lines	  
+	::box (win, 0, 0);  // default characters for the vertical and horizontal lines	  
 }
 
 
@@ -176,7 +180,7 @@ void Field::print () const
 Field::Exit Field::run ()
 {
 	Exit ex = fieldCancel;
- 	const int prev_visibility = curs_set (1);
+ 	const int prev_visibility = ::curs_set (1);
  	bool done = false;
   string utf8;  // One character
   while (! done)
@@ -289,7 +293,7 @@ Field::Exit Field::run ()
 	    		  pos = width - 1;
 	    		}
 	    		break;
-	    	case CTRL('k'):
+	    	case ctrl('k'):
 	    		val. eraseMany (real_pos, val. size ());
 	    		break;
 	    	case KEY_DC:
@@ -319,7 +323,7 @@ Field::Exit Field::run ()
 	    }
 	  }
   }
- 	curs_set (prev_visibility);
+ 	::curs_set (prev_visibility);
 
   return ex;
 }
