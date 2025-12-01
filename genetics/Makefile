@@ -60,14 +60,12 @@ all:	\
 	mutation_tab \
 	orf2prot \
 	orthodb2fasta \
-	prot2fingerprints \
 	prot2triplets \
 	prot_check \
 	prot_clust \
 	prot_complexity \
 	prot_consensus \
 	prot_find \
-	prot_fingerprint_grep \
 	prot_grep_short \
 	prots2hmm_signature \
 	prots_pair2stat \
@@ -400,22 +398,10 @@ prot_find:	$(prot_findOBJS)
 	$(CXX) -o $@ $(prot_findOBJS) $(LIBS) 
 	$(ECHO)
 
-prot_fingerprint_grep.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-prot_fingerprint_grepOBJS=prot_fingerprint_grep.o $(SEQ_OBJ)
-prot_fingerprint_grep:	$(prot_fingerprint_grepOBJS)
-	$(CXX) -o $@ $(prot_fingerprint_grepOBJS) $(LIBS) 
-	$(ECHO)
-
 prot_grep_short.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
 prot_grep_shortOBJS=prot_grep_short.o $(SEQ_OBJ)
 prot_grep_short:	$(prot_grep_shortOBJS)
 	$(CXX) -o $@ $(prot_grep_shortOBJS) $(LIBS) 
-	$(ECHO)
-
-prot2fingerprints.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
-prot2fingerprintsOBJS=prot2fingerprints.o $(SEQ_OBJ)
-prot2fingerprints:	$(prot2fingerprintsOBJS)
-	$(CXX) -o $@ $(prot2fingerprintsOBJS) $(LIBS) 
 	$(ECHO)
 
 prot2triplets.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
