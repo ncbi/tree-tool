@@ -195,9 +195,17 @@ struct ThisApplication final : Application
     	  if (isDir && tsv)
     	    throw runtime_error ("-tsv cannot be used if <items> is a directory");
     	  if (isFile)
+    	  {
+    	    if (zero)
+    	      throw runtime_error ("-zero is used only for numbers as items");
     	    gen. reset (new FileItemGenerator (stepItemGen, itemsName, tsv));
+    	  }
     	  else if (isDir)
+    	  {
+    	    if (zero)
+    	      throw runtime_error ("-zero is used only for numbers as items");
     	    gen. reset (new DirItemGenerator (stepItemGen, itemsName, large));
+    	  }
         else 
         {
           size_t n = 0; 
@@ -271,7 +279,7 @@ struct ThisApplication final : Application
           continue;
         
         ASSERT (gen->prog. n);
-        const size_t n = gen->prog. n - (zero ? 1 : 0);
+        const size_t n = gen->prog. n - zero;
         if (n < start)
           continue;
           
