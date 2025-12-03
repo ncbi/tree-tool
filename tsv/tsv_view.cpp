@@ -251,7 +251,7 @@ struct ThisApplication final : Application
         {
           ::move (0, 0);
           const Attr attr (A_BOLD);
-          addstr (tableFName. c_str ());
+          ::addstr (tableFName. c_str ());
           ::clrtoeol ();
         }
         {
@@ -289,9 +289,9 @@ struct ThisApplication final : Application
           const string posS ("  [Row " + to_string (curIndex + 1) + "/" + to_string (tt. rows. size ()) + "  Col " + to_string (curCol + 1) + "/" + to_string (tt. header. size ()) + "]");
         #endif
           if (nc. col_max > posS. size ())
-            addstr ((pad (keyS, nc. col_max - posS. size (), efalse) + posS). c_str ());
+            ::addstr ((pad (keyS, nc. col_max - posS. size (), efalse) + posS). c_str ());
           else
-            addstr (posS. c_str ());
+            ::addstr (posS. c_str ());
         }
         FOR_START (size_t, i, topIndex, bottomIndex)
         {
