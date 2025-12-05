@@ -276,7 +276,7 @@ struct ThisApplication final : Application
         {
           const Attr attr (A_BOLD);
           const Background bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
-          const string keyS ("Up  Down  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows  -:remove column  +:restore all columns"
+          const string keyS ("Up  Down  ^d  ^u  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows  -:remove column  +:restore all columns"
                            #ifndef NUM_P
                              "  #:numbers"
                            #endif
