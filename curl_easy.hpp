@@ -73,9 +73,10 @@ struct Curl
       // PD-5495 / https://github.com/ncbi/amr/issues/170
       if (const char *env_ca_bundle = getenv ("CURL_CA_BUNDLE"))          
         curl_easy_setopt (eh, CURLOPT_CAINFO, env_ca_bundle);  
+      curl_easy_setopt (eh, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);  // To avoid code=18 error "transfer closed with NNN bytes remaining to read"
     }
  ~Curl ()
-   { curl_easy_cleanup (eh); }
+    { curl_easy_cleanup (eh); }
 
 
   void download (const string &url,
