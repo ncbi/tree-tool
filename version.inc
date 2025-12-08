@@ -1,6 +1,7 @@
 #define VERSION "1.9.9"
 
 
+// 1.10.1 12/08/2025  inc/delete_criterion_outliers is necessary for -delete_criterion_outliers
 // 1.9.9  08/13/2024  DissimParam
 // 1.9.8  10/28/2022  -std=gnu++17
 // 1.9.7  07/06/2022  there may be 1 indiscernible object

@@ -17,10 +17,15 @@ SUF=$4
 
 $THIS/../../check_file.sh $GENOME 0
 
+OUT=GenomeHash.$SUF
+if [ ! -e $OUT ]; then
+  $THIS/genomeHash_make.sh $GENOME $LARGE $SUF
+fi
+
 H=""
 if [ $LARGE -eq 1 ]; then
   H="%h/"
 fi
 
-$THIS/../../trav $ADD "cat $GENOME/$H%f/%f.hash-$SUF | sed 's/^/%f\t/1'" >> GenomeHash.$SUF
+$THIS/../../trav $ADD "cat $GENOME/$H%f/%f.hash-$SUF | sed 's/^/%f\t/1'" >> $OUT
 

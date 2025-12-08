@@ -102,7 +102,7 @@ else
     $THIS/../trav  $INC/search "touch $INC/log/%f" 
     GRID=0
     if [ -e $INC/nogrid ] || [ $N -lt $SEARCH_GRID_MIN ]; then
-      $THIS/../trav  -step 1  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" $THREADS
+      $THIS/../trav  $INC/search "$THIS/distTree_inc_search_init.sh $INC %f" $THREADS
     else
       GRID=1
       $THIS/../grid_wait.sh 1
@@ -191,8 +191,8 @@ DISSIM_BOUNDARY="NAN"
 if [ "$HYBRIDNESS_MIN" != 0 ]; then
   DISSIM_BOUNDARY=$( cat $INC/dissim_boundary )
 	HYBRID="-hybrid_parent_pairs $INC/hybrid_parent_pairs  -delete_hybrids $INC/hybrid.new  -hybridness_min $HYBRIDNESS_MIN  -dissim_boundary $DISSIM_BOUNDARY"
-  if [ ! -e $INC/delete_criterion_outliers ]; then
-	  DELETE_CRITERION_OUTLIERS="-delete_criterion_outliers $INC/outlier-criterion  -criterion_outlier_num_max 1  -delete_deformation_outliers $INC/outlier-deformation  -deformation_outlier_num_max 1"
+  if [ -e $INC/delete_criterion_outliers ]; then
+	  DELETE_CRITERION_OUTLIERS="$DELETE_CRITERION_OUTLIERS  -criterion_outlier_num_max 1  -delete_deformation_outliers $INC/outlier-deformation  -deformation_outlier_num_max 1"
 	fi
 fi
 

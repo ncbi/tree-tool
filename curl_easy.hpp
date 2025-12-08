@@ -73,6 +73,7 @@ struct Curl
       // PD-5495 / https://github.com/ncbi/amr/issues/170
       if (const char *env_ca_bundle = getenv ("CURL_CA_BUNDLE"))          
         curl_easy_setopt (eh, CURLOPT_CAINFO, env_ca_bundle);  
+      // https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
       curl_easy_setopt (eh, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);  // To avoid code=18 error "transfer closed with NNN bytes remaining to read"
     }
  ~Curl ()

@@ -6,7 +6,7 @@ if [ $# -ne 8 ]; then
   echo "Invokes GeneMark"
   echo "#1: eukaryotic genome name"
   echo "#2: eukaryotic DNA FASTA"
-  echo "#3: Taxroot.id | 0"
+  echo "#3: Taxroot.id"
   echo "#4: universal HMM library (absolute path) or ''"
   echo "#5: Pfam HMM library (absolute path) or ''"
   echo "#6: use Pfam HMM cutoff (0/1)"
@@ -26,15 +26,6 @@ LOG=$8
 
 
 #set -x
-
-case $TAXROOT in 
-  0 | 4751 | 33090 | 58023 )
-    ;;
-  *)
-    error "$0: Unknown Taxroot.id $TAXROOT"
-    ;;
-esac
-
 
 
 if [ ! -e $FASTA ]; then
@@ -130,19 +121,14 @@ if [ "$PFAM" ]; then
 fi
 
 if [ "$UNIV" ]; then
-  case $TAXROOT in
-    33090)
-      ;;  # ??
-    58023)
-      section "tblastn2marker_euk.sh"
-      UNIV_DIR=$( dirname $UNIV )
-      $THIS/tblastn2marker_euk.sh $FASTA $UNIV_DIR/univ - $CORES $ASM.prot-univ $LOG
-      ;;
-    *)
-      section "prots2hmm_univ.sh"
-      $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
-      ;;
-  esac
+  if [ "$TAXROOT" == 58023 ]; then
+    section "tblastn2marker_euk.sh"
+    UNIV_DIR=$( dirname $UNIV )
+    $THIS/tblastn2marker_euk.sh $FASTA $UNIV_DIR/univ - $CORES $ASM.prot-univ $LOG
+  else
+    section "prots2hmm_univ.sh"
+    $THIS/prots2hmm_univ.sh $ASM $UNIV 0 $CORES $LOG >> $LOG
+  fi
 fi
 
 
