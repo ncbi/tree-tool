@@ -832,6 +832,7 @@ void Data::qc () const
     {
       QC_ASSERT (child);
       child->qc ();
+      QC_ASSERT (! attribute);
     }
   }
   catch (const exception &e)
@@ -859,19 +860,13 @@ void Data::saveXml (Xml::File &f) const
 
 
 
-string Data::getText () const 
+StringVector Data::getText () const 
 {
-  string s;
-  
-  if (attribute)
-    return s;
-  
+  StringVector s;  
   for (const Data* child : children)
-    add (s, "; ", child->getText ());
-    
+    s << child->getText ();    
   if (! token. empty ())
-    add (s, "; ", token. str ());
-    
+    s << token. str ();    
   return s;
 }
 
@@ -971,6 +966,9 @@ StringVector Data::tagName2texts (const string &tagName) const
   else
     for (const Data* child : children)
       vec << std::move (child->tagName2texts (tagName));
+        
+  vec. sort ();
+  vec. uniq ();
 
   return vec;
 }
@@ -1011,18 +1009,27 @@ bool Data::unify_ (const Data& query,
   
   if (const Data* columnData = query. name2child (variableTagName))
   {
-    const string text (getText ());
+    const StringVector text (getText ());
+    if (verbose ())
+      cout << columnData->token. name << endl;
     if (! text. empty ())
       tag2values [columnData->token. name] << text;
   }
-    
+  
   if (   query. getName () == rowTagName
       && ! tag2values. empty ()
      )
   {
     StringVector row (tt. header. size ());
     for (const auto& it : tag2values)
-      row [tt. col2num (it. first)] = it. second. toString ("; ");
+    {
+      StringVector values (it. second);
+      for (string &s : values)
+        trim (s);
+      values. sort ();
+      values. uniq ();
+      row [tt. col2num (it. first)] = values. toString ("; ");
+    }
     tt. rows << std::move (row);
     tag2values. clear ();
   }

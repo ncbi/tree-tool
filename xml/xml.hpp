@@ -225,7 +225,9 @@ private:
     , attribute (attribute_arg)
     , colonInName (colonInName_arg)
     , token (std::move (value))
-    {}
+    { if (attribute)
+        token. quote = '\0';
+    }
   Data (const Names &names_arg,
         ifstream &f,
         bool first);
@@ -283,7 +285,7 @@ public:
         n += child->getLeaves ();
       return n;
     }
-  string getText () const;
+  StringVector getText () const;
   bool hasDescendantName (const string &name_arg) const
     { if (getName () == name_arg)
         return true;
