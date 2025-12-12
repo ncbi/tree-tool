@@ -1591,6 +1591,7 @@ Leaf::Leaf (DistTree &tree,
   ASSERT (name. empty ());
   name = name_arg;
   var_cast (getDistTree ()). leafNum ++;  
+//ASSERT (! isNan (len));
 }
 
 
@@ -2154,6 +2155,7 @@ void subPath2tree_dissim (Subgraph &subgraph,
   }
   for (const Tree::TreeNode* node : path)
   {
+    ASSERT (node);
     const DTNode* dtNode = static_cast <const DTNode*> (node);
     ASSERT (dtNode != subgraph. area_root);
     if (qc_on)
@@ -3949,7 +3951,7 @@ DistTree::DistTree (Subgraph &subgraph,
   VectorPtr<TreeNode>& boundary = subgraph. boundary;
   const Steiner* &area_root     = subgraph. area_root;
   const DistTree& wholeTree     = subgraph. tree;
-  IMPLY (subgraph. area_root, subgraph. area_root->graph == & wholeTree);
+  IMPLY (area_root, area_root->graph == & wholeTree);
 
 
   // nodes
@@ -3989,7 +3991,10 @@ DistTree::DistTree (Subgraph &subgraph,
       if (children. intersectsFast_merge (area))
         node_new = new Steiner (*this, nullptr, len);
       else  
+      {
+        ASSERT (! isNan (len));
         node_new = new Leaf (*this, nullptr, len, "L" + toString (leafNum));
+      }
       ASSERT (node_new);
       old2new [node_old] = node_new;
     }
@@ -4011,10 +4016,11 @@ DistTree::DistTree (Subgraph &subgraph,
         // old2new[area_root] --> Leaf
         DTNode* child = const_static_cast <DTNode*> (children. front ());
         ASSERT (child);
+        ASSERT (! isNan (child->len));
         const TreeNode* root_ = root;                    // Old root in *this
         auto inter = new Steiner (*this, nullptr, NaN);  // New root in *this
         child->setParent (inter);
-        child->len /= 2;
+        child->len /= 2.0;
         ASSERT (root_->getChildren (). empty ());
         delete root_;
         auto leaf = new Leaf (*this, inter, child->len, "L" + toString (leafNum));
@@ -4032,6 +4038,13 @@ DistTree::DistTree (Subgraph &subgraph,
     }
   }
   ASSERT (isNan (static_cast <const DTNode*> (root) -> len));  
+  // qc
+  for (const Node* n : nodes)
+  {
+    ASSERT (n);
+    if (n != root)
+      ASSERT (! isNan (static_cast <const DTNode*> (n) -> len));
+  }
 
   
   setName2leaf ();
@@ -6114,11 +6127,23 @@ void DistTree::qcPredictionAbsCriterion () const
 
 Real DistTree::path2prediction (const VectorPtr<TreeNode> &path) 
 {
-  Real dHat = 0;
+  Real dHat = 0.0;
   for (const TreeNode* node : path)
+  {
+    ASSERT (node);
     dHat += static_cast <const DTNode*> (node) -> len;
-  ASSERT (! isNan (dHat));
-  ASSERT (dHat >= 0);
+  }
+  if (isNan (dHat))
+  {
+    for (const TreeNode* node : path)
+      cout << node 
+           << ' ' << static_cast <const DTNode*> (node) -> name
+           << ' ' << static_cast <const DTNode*> (node) -> len 
+           << endl;
+    static_cast <const DTNode*> (path. front ()) -> getDistTree (). saveFile ("aa.tree");  // ??
+    ERROR;
+  }
+  ASSERT (dHat >= 0.0);
   return dHat;
 }
 

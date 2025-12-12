@@ -1800,7 +1800,9 @@ VectorPtr<Tree::TreeNode>& Tree::getPath (const TreeNode* n1,
   }
   
   const TreeNode* n1_init = n1;
+//const TreeNode* n2_init = n2;   
   
+  // vec1[]
 	while (n1 != ca && n1 != n2)
 	{
 	  ASSERT (n1);
@@ -1812,8 +1814,9 @@ VectorPtr<Tree::TreeNode>& Tree::getPath (const TreeNode* n1,
     lca = n2;
 		return vec1;
   }
-
+  IMPLY (! n1, ! ca);
   
+  // vec2[]
 	while (n2 != ca && n2 != n1_init)
 	{
 	  ASSERT (n2);
@@ -1825,6 +1828,7 @@ VectorPtr<Tree::TreeNode>& Tree::getPath (const TreeNode* n1,
     lca = n1_init;
 		return vec2;
   }
+  IMPLY (! n2, ! ca);
 
 	ASSERT (! vec1. empty ());
 	ASSERT (! vec2. empty ());
@@ -1842,6 +1846,9 @@ VectorPtr<Tree::TreeNode>& Tree::getPath (const TreeNode* n1,
 		i1--;
 		i2--;
 	}
+	ASSERT (! vec1. empty ());
+	ASSERT (! vec2. empty ());
+	
 	if (vec1. size () < vec2. size ())
 	{
 	  CONST_ITER_REV (VectorPtr<TreeNode>, it, vec1)

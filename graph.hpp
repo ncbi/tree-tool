@@ -652,6 +652,7 @@ struct Tree : DiGraph
   struct LcaBuffer
   { VectorPtr<TreeNode> vec1;
   	VectorPtr<TreeNode> vec2;
+  	// != nullptr, distinct
   	void clear ()  
   	  { vec1. clear (); vec2. clear (); }
   };
@@ -673,7 +674,7 @@ struct Tree : DiGraph
 									                     const TreeNode* &lca,
 								                       LcaBuffer &buf);
     // Return: reference to buf (buf.vec1 or buf.vec2)
-    // Input: ca: may be nullptr
+    // Input: ca: a common ancestor of *n1 and *n2, may be nullptr
     // Output: path: sequential arcs on the path from n1 to n2 or reversed, distinct, !nullptr
     //         lca: !nullptr
     // Requires: ca is the common ancestor of n1 and n2
@@ -742,39 +743,39 @@ template <typename T>
 
 template <typename T> 
   VectorPtr<T> topologicalSort (const VectorPtr<T> &vec)
-    // Return: ascending ordering
-    // Invokes: T::operator<()
-    // Time: O(n^2)
+  // Return: ascending ordering
+  // Invokes: T::operator<()
+  // Time: O(n^2)
+  {
+    DiGraph gr;
+    VectorPtr<TypeNode<T>> nodes;  nodes. reserve (vec. size ());
+    for (const T* t : vec)
     {
-      DiGraph gr;
-      VectorPtr<TypeNode<T>> nodes;  nodes. reserve (vec. size ());
-      for (const T* t : vec)
-      {
-        assert (t);
-        auto n = new TypeNode<T> (gr, t);
-        for (const TypeNode<T>* prev : nodes)
-          if (* prev->t < *t)
-            new DiGraph::Arc (var_cast (prev), n);
-          else if (*t < * prev->t)
-            new DiGraph::Arc (n, var_cast (prev));
-        nodes << n;
-      }
-            
-      // DFS
-      VectorPtr<T> res;  res. reserve (vec. size ());
-      const function<void(TypeNode<T>* n)> process = [&] (TypeNode<T>* n) 
-        { assert (n);
-          if (n->reachable)
-            return;
-          n->reachable = true;
-          for (const DiGraph::Arc* arc : n->arcs [false])
-            process (static_cast <TypeNode<T>*> (arc->node [false]));
-          res << n->t;
-        };      
-      for (const TypeNode<T>* n : nodes)
-        process (var_cast (n));        
-      return res;
+      assert (t);
+      auto n = new TypeNode<T> (gr, t);
+      for (const TypeNode<T>* prev : nodes)
+        if (* prev->t < *t)
+          new DiGraph::Arc (var_cast (prev), n);
+        else if (*t < * prev->t)
+          new DiGraph::Arc (n, var_cast (prev));
+      nodes << n;
     }
+          
+    // DFS
+    VectorPtr<T> res;  res. reserve (vec. size ());
+    const function<void(TypeNode<T>* n)> process = [&] (TypeNode<T>* n) 
+      { assert (n);
+        if (n->reachable)
+          return;
+        n->reachable = true;
+        for (const DiGraph::Arc* arc : n->arcs [false])
+          process (static_cast <TypeNode<T>*> (arc->node [false]));
+        res << n->t;
+      };      
+    for (const TypeNode<T>* n : nodes)
+      process (var_cast (n));        
+    return res;
+  }
 
 
 }
