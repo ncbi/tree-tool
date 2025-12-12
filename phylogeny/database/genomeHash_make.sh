@@ -26,7 +26,7 @@ else
 fi
 wc -l $TMP
 
-cp /dev/null GenomeHash.$SUF
+> GenomeHash.$SUF
 $THIS/genomeHash_add.sh $GENOME $LARGE $TMP $SUF
 
 

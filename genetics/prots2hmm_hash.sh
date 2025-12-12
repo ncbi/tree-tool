@@ -36,8 +36,8 @@ if [ -s $PROT ]; then
 
   rm -f $TMP*
 else
-  cp /dev/null $SIG
-  cp /dev/null $HASH
+  > $SIG
+  > $HASH
 fi
 
   

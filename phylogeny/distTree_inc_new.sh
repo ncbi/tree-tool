@@ -82,7 +82,7 @@ else
   $THIS/distTree_inc_new_list.sh $INC > $INC/new.list
   wc -l $INC/new.list
 
-  cp /dev/null $INC/dissim.add
+  > $INC/dissim.add
 
   $THIS/../setRandOrd $INC/new.list  -seed $SEED  -sigpipe | head -$ADD | sort > $INC/search.list
   wc -l $INC/search.list
@@ -222,7 +222,7 @@ $THIS/makeDistTree $QC  $THREADS  -data $INC/  -variance $VARIANCE \
   > $INC/hist/makeDistTree.$VER
 rm $INC/tree.tmp
 mv $INC/leaf $INC/hist/leaf.$VER
-cp /dev/null $INC/leaf
+> $INC/leaf
 mv $INC/tree.new $INC/tree
 
 if [ -s $INC/hist/leaf.$VER ]; then

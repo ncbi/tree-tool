@@ -51,8 +51,8 @@ if [ -s $IN ]; then
 
   rm -fr $TMP*
 else
-  cp /dev/null $ANNOT
-  cp /dev/null $PROT_CUT
+  > $ANNOT
+  > $PROT_CUT
 fi
 
 

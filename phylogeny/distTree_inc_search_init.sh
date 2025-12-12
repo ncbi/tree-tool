@@ -35,7 +35,7 @@ grep -vx $OBJ $DIR/request.raw | sed 's/$/\t'$OBJ'/1' > $DIR/request || true
 rm $DIR/request.raw
 
 if [ -s $DIR/request ]; then
-	cp /dev/null $DIR/dissim
+	> $DIR/dissim
 else
   wc -l $DIR/request
   $INC/outlier2db.sh $OBJ "alien"

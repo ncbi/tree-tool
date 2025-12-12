@@ -53,7 +53,7 @@ if [ $REQ == 1 ]; then
   cat $TMP.dissim-add >> $INC/dissim
 else
   mv $TMP.dissim-add $INC/dissim
-  cp /dev/null $INC/indiscern
+  > $INC/indiscern
   $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
   section "Updating $INC/tree"
   cp $INC/tree $INC/hist/tree.$VER

@@ -76,7 +76,7 @@ if [ "$IN" ]; then
 fi
 
 
-cp /dev/null $INC/dissim.add
+> $INC/dissim.add
 
 
 $THIS/../trav  $THREADS  $INC/search.list "mkdir $INC/search/%f"
@@ -159,7 +159,7 @@ rm $INC/tree.list
 section "leaf -> tree"
 $THIS/makeDistTree $QC  $THREADS  -data $INC/  -variance $VARIANCE  -noqual  -output_tree $OUT
 mv $INC/leaf $PLACEMENT
-cp /dev/null $INC/leaf
+> $INC/leaf
 
 
 if [ "$IN" ]; then

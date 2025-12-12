@@ -42,7 +42,7 @@ sed 's/$/\t'$NAME'/1' $TMP.closest > $TMP.request
 
 section "Fitting to the tree"
 # $TMP.{leaf,closest}
-cp /dev/null $TMP.dissim
+> $TMP.dissim
 echo "FAIL" > $TMP.leaf
 VARIANCE=$( cat $INC/variance )
 while [ -s $TMP.request ]; do

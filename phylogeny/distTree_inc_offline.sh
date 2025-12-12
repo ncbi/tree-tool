@@ -20,16 +20,16 @@ cp -r $FROM $TO
 
 echo 1 > $TO/version
 
-cp /dev/null $TO/tree
-cp /dev/null $TO/dissim
-cp /dev/null $TO/dissim.bad
-cp /dev/null $TO/indiscern
-cp /dev/null $TO/runlog
+> $TO/tree
+> $TO/dissim
+> $TO/dissim.bad
+> $TO/indiscern
+> $TO/runlog
 rm $TO/hist/*
 rm -f $TO/tree.released
 
 # Offline
-cp /dev/null $TO/server
+> $TO/server
 rm $TO/bulk
 rm $TO/bulk_remote
 rm $TO/database

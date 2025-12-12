@@ -52,7 +52,7 @@ mv $INC/dissim.new $INC/dissim
 
 
 section "indiscern"
-cp /dev/null $INC/indiscern
+> $INC/indiscern
 $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
 
 

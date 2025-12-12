@@ -40,7 +40,7 @@ fi
 
 
 if [ -s $DIR/request ]; then
-  cp /dev/null $INC/log/$OBJ
+  > $INC/log/$OBJ
   if [ $GRID == 1 ]; then
     $QSUB_5 -N j$JOB "$THIS/distTree_inc_request.sh $INC $OBJ" > /dev/null  
       # Must be the last line of this script

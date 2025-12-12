@@ -55,11 +55,11 @@ if [ $OVER == 0 ]; then
   fi
 else
   echo $VER >  $INC/version
-  cp /dev/null $INC/tree
-  cp /dev/null $INC/dissim
-  cp /dev/null $INC/dissim.bad
-  cp /dev/null $INC/indiscern
-  cp /dev/null $INC/runlog 
+  > $INC/tree
+  > $INC/dissim
+  > $INC/dissim.bad
+  > $INC/indiscern
+  > $INC/runlog 
 fi
 
 

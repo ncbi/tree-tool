@@ -79,7 +79,7 @@ if [ $N -gt 0 -a $DB_EXISTS == 1 ]; then
     mv $TMP.blastn1 $TMP.blastn
   fi
 else
-  cp /dev/null $TMP.blastn
+  > $TMP.blastn
 fi
 
 FORCE=""
