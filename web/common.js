@@ -246,7 +246,7 @@ var q2h = function (s)
           .replace(/\"/g, "&#34;")
           .replace(/ /g,  "&#32;")
           .replace(/\t/g, "&#09;")
-          .replace(/\n/g, "&#10;")
+          .replace(/\n/g, "<br>;")
           .replace(/\r/g, "")   // For UNIX
           .replace(/</g,  "&lt;") 
           .replace(/>/g,  "&gt;") 
