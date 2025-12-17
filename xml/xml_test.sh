@@ -20,10 +20,12 @@ if [ $V == 1 ]; then
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
+
 
 $THIS/xml_txt2bin test/pubmed1.xml $TMP.binxml -qc
 $THIS/xml_bin2txt $TMP.binxml $TMP.xml -qc
-diff test/pubmed1.xml $TMP.xml
+differ $TMP.xml test/pubmed1.xml 
+
 
 rm $TMP*
