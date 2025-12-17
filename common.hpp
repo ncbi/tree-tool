@@ -615,8 +615,6 @@ inline bool isDelimiter (char c)
 inline bool isSpace (char c)
   { return c > '\0' && c <= ' ' && isspace (c); }
 
-string to_url (const string &s);
-
 
 // char*
 
@@ -980,8 +978,12 @@ inline string uchar2hex (uchar c)
     return res;
   }
  
-string unpercent (const string &s);
+string unPercent (const string &s);
   // '%HH' -> char
+
+string to_url (const string &s);
+
+string unHtml (const string &s);
 
 
 
@@ -2056,7 +2058,7 @@ struct Xml
     { 
       explicit XmlStream (const string &pathName)
         : OFStream (pathName)
-        { *this << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << endl; }  
+        { *this << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << endl; }  
     };
     XmlStream os;
   public:

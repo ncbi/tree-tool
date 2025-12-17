@@ -564,23 +564,6 @@ string nonPrintable2str (char c)
 
 
 
-string to_url (const string &s)
-{
-  string url;
-  for (const char c : s)
-    if (   isLetter (c)
-        || isDigit (c)
-        || c == '_'
-       )
-      url += c;
-    else
-      url += "%" + uchar2hex ((uchar) c);
-
-  return url;
-}
-
-
-
 bool trimPrefix (string &s,
                  const string &prefix)
 {
@@ -1121,7 +1104,7 @@ void reverse (string &s)
 
 
 
-string unpercent (const string &s)
+string unPercent (const string &s)
 {
   for (const char c : s)
   	if (between (c, '\0', ' ') /*! printable (c)*/)
@@ -1160,6 +1143,93 @@ string unpercent (const string &s)
     }
 
   return r;
+}
+
+
+
+string to_url (const string &s)
+{
+  string url;
+  for (const char c : s)
+    if (   isLetter (c)
+        || isDigit (c)
+        || c == '_'
+       )
+      url += c;
+    else
+      url += "%" + uchar2hex ((uchar) c);
+
+  return url;
+}
+
+
+
+string unHtml (const string &s)
+{
+  string r;
+  {
+    constexpr char escStart = '&';
+    string escape;
+    for (const char c : s)
+    	if (between (c, '\0', ' '))
+        r += ' ';
+      else if (escape. empty ())
+      {
+        if (c == escStart)
+          escape = string (1, escStart);
+        else
+          r += c;
+      }
+      else if (c == ';')  // Cf. TokenInput::getXmlText()
+      {
+        ASSERT (escape [0] == escStart);
+        escape. erase (0, 1);
+        if (escape. empty ())
+          throw runtime_error (FUNC "Empty HTML escape character at position " + to_string (r. size ()) + ": " + s);
+        strLower (escape);
+        if (escape [0] == '#')
+        {
+          escape. erase (0, 1);
+          if (escape. empty ())
+            throw runtime_error (FUNC "Empty numeric HTML escape character at position " + to_string (r. size ()) + ": " + s);
+          if (isNatural (escape))
+          {
+            const size_t n = str2<size_t> (escape);
+            if (n <= 255)
+              throw runtime_error (FUNC "Numeric HTML escape character at position " + to_string (r. size ()) + "  in high ASCII part is expected: " + strQuote (escape));
+            else
+              r += (char) n;  // UTF-8
+          }          
+          else
+            throw runtime_error (FUNC "Numeric HTML escape character at position " + to_string (r. size ()) + "  is expected: " + strQuote (escape));
+        } 
+        else if (escape == "amp")
+          r += "&";
+        else if (escape == "lt")
+          r += "<";
+        else if (escape == "gt")
+          r += ">";
+        else if (escape == "apos")
+          r += "\'";
+        else if (escape == "quot")
+          r += "\"";   
+        else
+          r += escape;  // Wrong escape ??
+        escape. clear ();
+      }
+      else
+      {
+        escape += c;
+        if (escape. size () >= 10)  // PAR  // Wrong escape ??   
+        {
+          r += escape;
+          escape. clear ();
+        }   
+      }
+    r += escape;  // Wrong escape ??
+  }
+
+  return r;  
 }
 
 
@@ -2698,9 +2768,9 @@ Token TokenInput::getXmlText ()
             ci. unget ();
             const Token ampToken (get ());
             if (ampToken. type != Token::eInteger)
-              ci. error ("Number after XML &");
+              ci. error ("Number after XML '&'");
             if (ampToken. n < 0)
-              ci. error ("Character number after XML &");
+              ci. error ("Character number after XML '&'");
             n = (int) ampToken. n;
           }
         }
@@ -2726,6 +2796,10 @@ Token TokenInput::getXmlText ()
 
       // t.name
       QC_ASSERT (n > 0);
+    #if 1
+      // UTF=8
+      t. name += char (n);
+    #else
   	  if (nonPrintable (n))
   			t. name += nonPrintable2str ((char) n);
       else
@@ -2735,6 +2809,7 @@ Token TokenInput::getXmlText ()
         else
           t. name += "&#" + to_string (n) + ";";
       }
+    #endif
 
   		prevSlash = (c == '/');
   	}
