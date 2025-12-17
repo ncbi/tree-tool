@@ -1025,7 +1025,12 @@ bool Data::unify_ (const Data& query,
     {
       StringVector values (it. second);
       for (string &s : values)
+      {
+        replace (s, '\t', ' ');
+        replace (s, '\n', ' ');
+        replace (s, '\r', ' ');
         trim (s);
+      }
       values. sort ();
       values. uniq ();
       row [tt. col2num (it. first)] = values. toString ("; ");

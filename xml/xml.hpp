@@ -332,7 +332,8 @@ public:
   TextTable unify (const Data& query,
                    const string &rowTagName,
                    const string &variableTagName) const;
-    // Text of *this unifying with "<" variableTagName ">" column_name "</" variableTagName ">" in query --> column column_name in TextTable
+    // Return: Text of *this unifying with "<" variableTagName ">" column_name "</" variableTagName ">" in query --> column column_name in TextTable
+    //         Text is in HTML
     // Requires: !query.parent
 private:
   StringVector tagName2texts (const string &tagName) const;
