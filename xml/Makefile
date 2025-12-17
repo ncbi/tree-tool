@@ -17,6 +17,7 @@ ALL=	\
   xml2schema \
   xml_find \
   xml_merge_schemas \
+  xml_print \
   xml_schema2ddl \
   xml_schema2flat \
   xml_bin2txt \
@@ -53,6 +54,12 @@ xml_merge_schemas.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
 xml_merge_schemasOBJS=xml_merge_schemas.o $(CPP_DIR)/common.o $(XML_OBJ)
 xml_merge_schemas:	$(xml_merge_schemasOBJS)
 	$(CXX) -o $@ $(xml_merge_schemasOBJS) $(LIBS)
+	$(ECHO)
+
+xml_print.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
+xml_printOBJS=xml_print.o $(CPP_DIR)/common.o $(XML_OBJ)
+xml_print:	$(xml_printOBJS)
+	$(CXX) -o $@ $(xml_printOBJS) $(LIBS)
 	$(ECHO)
 
 xml_schema2ddl.o:  $(COMMON_HPP) $(XML_DIR)/xml.hpp
