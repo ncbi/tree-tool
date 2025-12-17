@@ -80,11 +80,14 @@ function file2var
 {
   local F=$1
   local DEFAULT="$2"
-  if [ -e $F ]; then
-    cat $F
-  else
-    echo $DEFAULT
-  fi  
+  if [ -s $F ]; then
+    local R=$( cat $F )
+    if [ "$R" ]; then
+      echo "$R"
+      return
+    fi
+  fi
+  echo $DEFAULT
 }
 
 
