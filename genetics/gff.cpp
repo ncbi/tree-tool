@@ -128,7 +128,7 @@ namespace
   
 string unescape (const string &s)
 {
-  string r (unpercent (s));
+  string r (unPercent (s));
   trim (r);
   return r;
 }
