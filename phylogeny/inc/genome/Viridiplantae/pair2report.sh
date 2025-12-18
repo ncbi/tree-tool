@@ -29,8 +29,8 @@ H2=`CPP_DIR/file2hash $OBJ2`
 PATH2=$GENOME/$H2/$OBJ2/$OBJ2
 
 
-$INC/qc_object.sh $PATH1
-$INC/qc_object.sh $PATH2
+$INC/qc_object.sh $PATH1 0
+$INC/qc_object.sh $PATH2 0
 
 PRT=`CPP_DIR/setIntersect.sh $PATH1.hash-PRT $PATH2.hash-PRT 1 | wc -l`
 

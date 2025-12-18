@@ -1,16 +1,20 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source CPP_DIR/bash_common.sh
-if [ $# -ne 1 ]; then
+if [ $# -ne 2 ]; then
   echo "QC an object"
-  echo "#1: object path"
+  echo "#1: object prefix"
+  echo "#2: verbose: 0/1"
   exit 1
 fi
-FD=$1
+PREF=$1
+VERB=$2
 
 
-NAME=`basename $FD`
-PREF=$FD/$NAME
+if [ $VERB == 1 ]; then
+  set -x
+fi
+
 
 function check 
 {

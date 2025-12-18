@@ -17,7 +17,7 @@ TAXROOT=$( cat $INC/../taxroot )
 
 sqsh-ms -S $SERVER  -D $DATABASE  << EOT
   update GenomeTaxroot
-    set taxroot_outlier = '$OUTLIER'
+    set outlier = '$OUTLIER'
     where     genome = $GENOME
           and taxroot = $TAXROOT
   go -m bcp 
