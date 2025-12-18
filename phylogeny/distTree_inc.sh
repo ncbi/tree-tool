@@ -28,6 +28,7 @@ $THIS/../check_tmp.sh
 
 if [ "$GOOD" ]; then
   $THIS/../check_file.sh $GOOD 1
+  sort -cu $GOOD
 fi
 
 if [ $QC == 1 ]; then
