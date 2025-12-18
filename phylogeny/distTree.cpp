@@ -4630,7 +4630,7 @@ bool DistTree::getConnected ()
     if (it. first != cluster_main)
     {
       cout << endl;
-      cout << "Cluster:" << endl;
+      cout << "Non-main cluster:" << endl;
       for (const Leaf* leaf : it. second)
         cout << leaf->name << '\n';
     }
