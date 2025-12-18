@@ -6,7 +6,7 @@ if [ $# -ne 8 ]; then
   echo "#1: input .dm-file without '.dm' created by univ_separate.sh"
   echo "#2: phen/"
   echo "#3: phen/ is large (0/1)"
-  echo "   For hmm-univ.stat"
+  echo "  For hmm-univ.stat"
   echo "#4: dissimilarity power (> 0)"
  #echo "#5: ignoreZero (0/1)"
   echo "#5: outlierSEs"
