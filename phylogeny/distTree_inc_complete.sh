@@ -103,7 +103,7 @@ if [ "$SERVER" ]; then
   $THIS/../setMinus $OBJS $INC/tree.list > $INC/outlier-alien
   wc -l $INC/outlier-alien
   $THIS/../trav $INC/outlier-alien "$INC/outlier2db.sh %f alien"
-  rm $INC/outlier-alien
+  mv $INC/outlier-alien $INC/hist/outlier-alien.$VER
 fi
 
 if [ $HYBRIDNESS_MIN != 0 ]; then
@@ -120,6 +120,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   if [ "$SERVER" ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
+    $THIS/../trav $INC/hist/hybrid-indiscern.$VER "$INC/outlier2db.sh %f auto_hybrid"
   	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
   	mv $INC/data.dm .
   fi
