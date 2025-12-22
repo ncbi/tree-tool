@@ -2,7 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 1 ]; then
-  echo "Set-covering probelm (approximation)"
+  echo "Set-covering problem (approximation)"
   echo "Print a minimal covering set"
   echo "#1: list of sets: each row is a space-delimited list (set)"
   exit 1
@@ -11,7 +11,7 @@ IN=$1
 
 
 TMP=$( mktemp )
-comment $TMP
+#comment $TMP
 
 
 mkdir $TMP.sets
