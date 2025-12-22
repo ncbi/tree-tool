@@ -103,7 +103,7 @@ const string distName ("dissim");
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
 	: Application ("Compute different statistics of a distance tree without using dissimilarities")
@@ -112,16 +112,16 @@ struct ThisApplication : Application
 	  // Input
 	  addPositional ("input_tree", "Distance tree file");
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <dist_pairs>");
+	  addKey ("noise", strQuote (distName) + " += Normal(0,noise) for -dist2", "0");
+	  addFlag ("sqrt", "Apply square root to the attribute " + strQuote (distName) + " for -dist2");
+	  addKey ("closest_num", "Number of closest leaves to print for -closest_out", "1");
     // Output
 	  addKey ("dist2", "A " + dmSuff + "-file with a two-way dissimilarity attribute " + strQuote (distName) + " which equals the tree distances plus noise");
-	  addKey ("noise", strQuote (distName) + " += Normal(0,noise)", "0");
-	  addFlag ("sqrt", "Apply square root to the attribute " + strQuote (distName));
 	//addKey ("pair_residuals", "Output " + dmSuff + "-file with quality statistics for each object pair"); ??
 	  addKey ("arc_length", "Output file with arc length statistics: " + Tree::printArcLengthsColumns ());
 	  addKey ("dist_pairs", "Output file with all or <dist_request> tree distances, tab-delimited line format: <obj1> <obj2> <dist>");
 	  addKey ("height", "Output file with interior node average heights");
 	  addKey ("closest_out", "Output file with closest leaves: <leaf> <neighbor1> <dist1> <neighbor2> <dist2> <neighbor3> <dist3> ...");
-	  addKey ("closest_num", "Number of closest leaves to print", "1");
 	}
 
 
