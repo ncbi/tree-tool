@@ -25,6 +25,7 @@ N=0
 MAX=100   # PAR
 i=0
 touch $TMP.out
+DB_EXISTS=0
 while [ $N -lt $MAX ]; do  
   i=$(( i + 1 ))
   case "$i" in
@@ -43,6 +44,7 @@ while [ $N -lt $MAX ]; do
       ;;
   esac
   if [ -e $DB.$SUF ]; then
+    DB_EXISTS=1
     $THIS/../../objHash_find $DB.$SUF $PREF.hash-$SUF $MIN_COMMON $MAX  -superset $SUBSET  -noprogress >> $TMP.out
     #wc -l $TMP.out
     sort -u $TMP.out > $TMP.out1
@@ -50,6 +52,9 @@ while [ $N -lt $MAX ]; do
     N=$( < $TMP.out  wc -l )
   fi
 done
+if [ $DB_EXISTS == 0 ]; then
+  error "No hash database"
+fi
 cp $TMP.out $OUT
 
 
