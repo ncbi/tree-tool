@@ -43,4 +43,4 @@ done
 echo "" > /dev/stderr
 
 
-rm $TMP*
+rm -r $TMP*
