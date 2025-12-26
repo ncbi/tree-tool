@@ -187,6 +187,7 @@ var sSuf = function (s, suf)
 }
 
 
+
 var addS = function (s, delimiter, addition)
 {
   if (! addition)
@@ -206,6 +207,7 @@ var yesNo = function (flag, yes = "Yes", no = "No")
 }
 
 
+
 var str_color = function (str, cond, bold)
 {
   if (! cond)
@@ -222,6 +224,15 @@ var strSpaces = function (s)
     if (s [i] == ' ')
       n++;
   return n;
+}
+
+
+
+var num2str = function (num)
+{
+  if (num == null)
+    return '?';
+  return String (num);
 }
 
 
