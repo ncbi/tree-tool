@@ -121,7 +121,7 @@ if [ "$PFAM" ]; then
 fi
 
 if [ "$UNIV" ]; then
-  if [ "$TAXROOT" == 58023 ]; then
+  if [ "$TAXROOT" == 58023 ]; then  # PAR (Tracheophyta)
     section "tblastn2marker_euk.sh"
     UNIV_DIR=$( dirname $UNIV )
     $THIS/tblastn2marker_euk.sh $FASTA $UNIV_DIR/univ - $CORES $ASM.prot-univ $LOG
