@@ -12,7 +12,7 @@ if [ $# -ne 8 ]; then
   echo "#5: outlierSEs"
   echo "  For tree"
  #echo "#2: delete hybrids (0/1)"
-  echo "#6: dissim_coeff: >=0 (>0 <=> variance = linExp)"
+  echo "#6: dissim_coeff: >=0 (=0 <=> variance = pow)"
   echo "#7: variance_power (NAN <=> variance = linExp)"
   echo "#8: variance_dissim (0/1)"
   exit 1
@@ -54,14 +54,12 @@ rm $TMP*
 
 
 section "Parameters after -variance"
-VARIANCE="linExp"
-DISSIM_COEFF_OPTION="-dissim_coeff $DISSIM_COEFF"
+VARIANCE="linExp  -dissim_coeff $DISSIM_COEFF"
 if [ $DISSIM_COEFF == 0 ]; then
   VARIANCE="pow  -variance_power $VAR_POWER"
-  DISSIM_COEFF_OPTION=""
 fi
 if [ $VARIANCE_DISSIM == 1 ]; then
-  VARIANCE="$VARIANCE -variance_dissim"
+  VARIANCE="$VARIANCE  -variance_dissim"
 fi
 echo "$VARIANCE" > variance
 
@@ -70,7 +68,7 @@ if [ $DELETE_HYBRIDS -eq 1 ]; then
   HYBRID="-hybrid_parent_pairs hybrid_parent_pairs  -delete_hybrids hybrid"
 fi
 
-PARAM="$VARIANCE  $DISSIM_COEFF_OPTION  $HYBRID"
+PARAM="$VARIANCE  $HYBRID"
 warning "$PARAM"
 echo ""
 $THIS/calibrateDissims.sh data "cons" "$PARAM" 10 $PHEN $LARGE
