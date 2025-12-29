@@ -1002,16 +1002,25 @@ bool Data::unify_ (const Data& query,
         if (dataChild->unify_ (*queryChild, rowTagName, variableTagName, tag2values, tt))
           unified = true;
       if (   ! unified 
-          && ! queryChild->hasDescendantName (variableTagName)  // Otherwise the column is missed
+          && ! queryChild->hasDescendantName (variableTagName)  // Otherwise the column is missed and will go into tt
          )
         return false;
     }
   
   if (const Data* columnData = query. name2child (variableTagName))
   {
-    const StringVector text (getText ());
+    StringVector text (getText ());
     if (verbose ())
       cout << columnData->token. name << endl;
+    for (Iter<StringVector> it (text); it. next (); )
+    {
+      replace (*it, '\t', ' ');
+      replace (*it, '\n', ' ');
+      replace (*it, '\r', ' ');
+      trim (*it);
+      if ((*it). empty ())
+        it. erase ();
+    }
     if (! text. empty ())
       tag2values [columnData->token. name] << text;
   }
@@ -1024,13 +1033,6 @@ bool Data::unify_ (const Data& query,
     for (const auto& it : tag2values)
     {
       StringVector values (it. second);
-      for (string &s : values)
-      {
-        replace (s, '\t', ' ');
-        replace (s, '\n', ' ');
-        replace (s, '\r', ' ');
-        trim (s);
-      }
       values. sort ();
       values. uniq ();
       row [tt. col2num (it. first)] = values. toString ("; ");

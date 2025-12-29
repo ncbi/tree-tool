@@ -332,6 +332,7 @@ public:
   TextTable unify (const Data& query,
                    const string &rowTagName,
                    const string &variableTagName) const;
+    // Unification of query and *this by ancestors' tag names
     // Return: Text of *this unifying with "<" variableTagName ">" column_name "</" variableTagName ">" in query --> column column_name in TextTable
     //         Text is in HTML
     // Requires: !query.parent
