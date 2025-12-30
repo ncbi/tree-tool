@@ -69,14 +69,14 @@ struct ThisApplication final : Application
 	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
 	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
 
-	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
+	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
 
 	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
 	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
 	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
 	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
-	  addKey ("variance_min", "Min. dissimilarity variance", "0");  // was: "to be added to the computed variance"
+	  addKey ("variance_min", "Min. dissimilarity variance", "0");  
 	  
 	  addKey ("good", "List of objects, which should not be outliers");
 	  
