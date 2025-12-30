@@ -26,7 +26,7 @@ sort -cu $OBJS
 TMP=$( mktemp )
 
 
-#if false; then 
+#if false; then  
 section "QC $INC/"
 if [ $OVER == 0 ]; then
   VER=$( cat $INC/version )
@@ -120,7 +120,7 @@ if [ $HYBRIDNESS_MIN != 0 ]; then
   if [ "$SERVER" ]; then
     section "Hybrid"
   	$THIS/distTree_inc_hybrid.sh $INC 
-    $THIS/../trav $INC/hist/hybrid-indiscern.$VER "$INC/outlier2db.sh %f auto_hybrid"
+    $THIS/../trav $INC/hist/hybrid-indiscern.$VER "$INC/outlier2db.sh %f auto_hybrid_triangle"
   	$THIS/../dm/dm2subset data $INC/hist/hybrid-indiscern.$VER -exclude > $INC/data.dm
   	mv $INC/data.dm .
   fi
