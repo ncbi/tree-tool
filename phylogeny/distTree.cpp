@@ -9583,6 +9583,83 @@ void DistTree::saveDissim (ostream &os,
 
 //////////////////////////////////////////////////////////////////////
 
+// DissimLine
+
+DissimLine::DissimLine (string &line,
+                        uint lineNum)
+{ 
+  replace (line, '\t', ' ');
+  name1 = findSplit (line);
+  name2 = findSplit (line);
+  #define MSG  getErrorStr (lineNum) + 
+  if (name2. empty ())
+    throw runtime_error (MSG "empty name2");
+  if (name1 == name2)
+    throw runtime_error (MSG "name1 == name2");
+  if (name1 > name2)
+    swap (name1, name2);
+  dissim = str2real (line);
+  if (isNan (dissim))
+    throw runtime_error (MSG "dissimilarity is NaN");
+  if (dissim < 0.0)
+    throw runtime_error (MSG "dissimilarity is negative");
+//if (! DM_sp::finite (dissim))
+  //throw runtime_error (MSG "dissimilarity is infinite");
+  #undef MSG
+}
+
+
+
+void DissimLine::process (const DistTree::Name2leaf &name2leaf)
+{
+  ASSERT (! leaf1);
+  ASSERT (! leaf2);
+  
+  leaf1 = var_cast (findPtr (name2leaf, name1));
+  if (! leaf1)
+    return;
+  //throw runtime_error (FUNC "Tree has no object " + name1);
+  leaf1->badCriterion = -1.0;  // temporary
+
+  leaf2 = var_cast (findPtr (name2leaf, name2));
+  if (! leaf2)
+    return;
+  //throw runtime_error (FUNC "Tree has no object " + name2);
+  leaf2->badCriterion = -1.0;  // temporary
+}
+
+
+
+void DissimLine::apply (DistTree &tree) const
+{ 
+  ASSERT (! isNan (dissim));
+  ASSERT (dissim >= 0.0);
+  if (! leaf1)
+    return;
+  if (! leaf2)
+    return;
+  if (   /*! DistTree_sp::variance_min 
+      &&*/ ! dissim 
+      && ! leaf1->getCollapsed (leaf2)  // Only for new Leaf's
+     )  
+    leaf1->collapse (leaf2);
+  if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, no_index))
+    throw runtime_error (FUNC "Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
+}
+
+
+bool DissimLine::operator< (const DissimLine &other) const
+{ 
+  LESS_PART (*this, other, name1);
+  LESS_PART (*this, other, name2);
+  return false;
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////
+
 // NewLeaf::Location
 
 void NewLeaf::Location::qc () const
@@ -9675,81 +9752,6 @@ void NewLeaf::Leaf2dissim::qc () const
   
   QC_ASSERT (mult >= 0.0);  
 //QC_ASSERT (DM_sp::finite (mult));  // distTree_inc_place.sh can be used for an indiscernible object
-}
-
-
-
-
-// DissimLine
-
-DissimLine::DissimLine (string &line,
-                        uint lineNum)
-{ 
-  replace (line, '\t', ' ');
-  name1 = findSplit (line);
-  name2 = findSplit (line);
-  #define MSG  getErrorStr (lineNum) + 
-  if (name2. empty ())
-    throw runtime_error (MSG "empty name2");
-  if (name1 == name2)
-    throw runtime_error (MSG "name1 == name2");
-  if (name1 > name2)
-    swap (name1, name2);
-  dissim = str2real (line);
-  if (isNan (dissim))
-    throw runtime_error (MSG "dissimilarity is NaN");
-  if (dissim < 0.0)
-    throw runtime_error (MSG "dissimilarity is negative");
-//if (! DM_sp::finite (dissim))
-  //throw runtime_error (MSG "dissimilarity is infinite");
-  #undef MSG
-}
-
-
-
-void DissimLine::process (const DistTree::Name2leaf &name2leaf)
-{
-  ASSERT (! leaf1);
-  ASSERT (! leaf2);
-  
-  leaf1 = var_cast (findPtr (name2leaf, name1));
-  if (! leaf1)
-    return;
-  //throw runtime_error (FUNC "Tree has no object " + name1);
-  leaf1->badCriterion = -1.0;  // temporary
-
-  leaf2 = var_cast (findPtr (name2leaf, name2));
-  if (! leaf2)
-    return;
-  //throw runtime_error (FUNC "Tree has no object " + name2);
-  leaf2->badCriterion = -1.0;  // temporary
-}
-
-
-
-void DissimLine::apply (DistTree &tree) const
-{ 
-  ASSERT (! isNan (dissim));
-  ASSERT (dissim >= 0.0);
-  if (! leaf1)
-    return;
-  if (! leaf2)
-    return;
-  if (   /*! DistTree_sp::variance_min 
-      &&*/ ! dissim 
-      && ! leaf1->getCollapsed (leaf2)  // Only for new Leaf's
-     )  
-    leaf1->collapse (leaf2);
-  if (! tree. addDissim (leaf1, leaf2, dissim, 1.0/*temporary*/, no_index))
-    throw runtime_error (FUNC "Cannot add dissimilarity: " + name1 + " " + name2 + " " + toString (dissim));
-}
-
-
-bool DissimLine::operator< (const DissimLine &other) const
-{ 
-  LESS_PART (*this, other, name1);
-  LESS_PART (*this, other, name2);
-  return false;
 }
 
 
@@ -9977,6 +9979,7 @@ void NewLeaf::process (bool init,
           if (name1 != name)
             throw runtime_error (FUNC + dissimFName + " must contain " + name);
           Real dissim = str2real (dissimS);
+          tree. dissimParam. transform (dissim);  
           if (isNan (dissim))
             dissim = inf;  // To process "incomparable" objects by distTree_inc_add.sh
           if (dissim < 0.0)

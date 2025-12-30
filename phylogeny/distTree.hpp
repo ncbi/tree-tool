@@ -82,7 +82,7 @@ constexpr Real dissimCoeffProd_delta = 1e-6;
 
 
 
-// --> DistTree ??
+// --> VarianceParam, DistTree::varianceParam ??
 // Dissimilarity variance
 enum VarianceType { varianceType_lin     // Dissimilarity ~ Poisson
                   , varianceType_sqr   
@@ -1221,7 +1221,7 @@ public:
 	          const string &multAttrName);
 	  // Input: treeDirFName: if directory name then contains the result of mdsTree.sh; ends with '/'
 	  // Invokes: loadTreeFile() or loadTreeDir(), loadDissimDs(), dissimDs2dissims(), setGlobalLen()
-	explicit DistTree (const string &treeFName)
+  explicit DistTree (const string &treeFName)
 	  : DistTree (DissimParam (), treeFName, noString, noString, noString)
 	  {}
 	DistTree (const DissimParam &dissimParam_arg,
@@ -1820,6 +1820,7 @@ public:
                  Real dissim_arg,
                  Real mult_arg);
       // Input: anchor = DistTree::root
+      //        mult_arg:: isNan() => dist2mult(dissim_arg)
     explicit Leaf2dissim (const Leaf* leaf_arg)
       : leaf (leaf_arg)
       {}
