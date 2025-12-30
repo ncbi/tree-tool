@@ -4,6 +4,7 @@ source $THIS/../bash_common.sh
 source $THIS/../qsub_env.sh
 if [ $# -ne 4 ]; then
   echo "Add new objects in #1/new/ to a distance tree without the optimization of the original tree"
+  echo "Flag 'alien' outliers in the database"
   echo "#1: incremental distance tree directory"
   echo "#2: input tree ('' = #1/tree)"
   echo "#3: output tree"
@@ -43,7 +44,7 @@ fi
 
 section "new/ -> search/"
 $THIS/distTree_inc_new_list.sh $INC > $INC/search.list
-OBJS=$( < $INC/search.list wc -l )
+OBJS=$( < $INC/search.list  wc -l )
 wc -l $INC/search.list
 if [ ! -s $INC/search.list ]; then
   warning "No objects to add"
