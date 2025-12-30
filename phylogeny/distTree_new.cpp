@@ -48,25 +48,24 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
-		: Application ("Find location of new objects in a distance tree.\n\
+		: Application ("Find location of new objects in a distance tree. -variance_dissim is used.\n\
 Update: <incremental distance tree directory>/search/")
 		{
 		  version = VERSION;
 		  
 		  // Input
-		  addPositional ("data", "Directory with data ending with '\', or tree file");
+		  addPositional ("data", "Directory with data ending with '/'");
 		  addFlag ("init", "Initialize search");
 		  
-  	//addKey ("dissim_power", "Power to raise dissimilarity in", "1");
-
+  	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");  
+  	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
   	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
   	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
-  	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");  // Can be used in inc/variance
-  	  addKey ("variance_min", "Min. dissimilarity variance", "0");
-  	    	  
+  	  addKey ("variance_min", "Min. dissimilarity variance", "0");  
+
 		  addKey ("name", "Name of the object");
 		  addKey ("dissim", "File of the format: <obj1> <obj2> <dissimilarity>");
 		  
@@ -84,18 +83,17 @@ Update: <incremental distance tree directory>/search/")
 	  const string dataDir       = getArg ("data");
 	  const bool   init          = getFlag ("init");
 
-	             //dissim_power  = str2real (getArg ("dissim_power"));      // Global
-
-	               varianceType  = str2varianceType (getArg ("variance"));  // Global
-	               variancePower = str2real (getArg ("variance_power"));    // Global
-	               variance_min  = str2real (getArg ("variance_min"));      // Global
-	//const bool   variance_dissim =         getFlag ("variance_dissim");  
+	  const Real   dissim_power        = str2real (getArg ("dissim_power"));      
+	  const Real   dissim_coeff        = str2real (getArg ("dissim_coeff"));      
+	               varianceType        = str2varianceType (getArg ("variance"));  // Global
+	               variancePower       = str2real (getArg ("variance_power"));    // Global
+	               variance_min        = str2real (getArg ("variance_min"));      // Global
 
 	  const string name          = getArg ("name");
 	  const string dissimFName   = getArg ("dissim");
 	  const string requestFName  = getArg ("request");
 	  const string leafFName     = getArg ("leaf");
-	  const string closestFName   = getArg ("closest");
+	  const string closestFName  = getArg ("closest");
 		const size_t closest_num   = str2<size_t> (getArg ("closest_num"));
 	   
 	   
@@ -116,10 +114,10 @@ Update: <incremental distance tree directory>/search/")
     QC_IMPLY (closest_num != 1, ! closestFName. empty ());
 
 
-    unique_ptr<const DistTree> tree (isDirName (dataDir)
-                                       ? new DistTree (DissimParam (), dataDir, noString, false, false, false)
-                                       : new DistTree (dataDir)
-                                    );
+    const DissimParam dissimParam (dissim_power, dissim_coeff);
+    dissimParam. qc ();
+
+    unique_ptr<const DistTree> tree (new DistTree (dissimParam, dataDir, noString, false, false, false));
     tree->qc ();     
 
     if (verbose ())

@@ -52,27 +52,36 @@ namespace
 struct ThisApplication final : Application
 {
 	ThisApplication ()
-	: Application ("Test the optimiality of a tree by reinsert")
-	{
-	  version = VERSION;
-    // Input
-	  addKey ("input_tree", "Tree file");
-	  addPositional ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
-	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file");
-	  addKey ("variance", "Dissimilarity variance: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]); 
-	  addKey ("variance_power", "Power for -variance pow; > 0", "NaN");
-	}
-
+  	: Application ("Test the optimiality of a tree by reinsert")
+  	{
+  	  version = VERSION;
+  	  
+      // Input
+  	  addKey ("input_tree", "Tree file");
+  	  addPositional ("data", dmSuff + "-file without " + strQuote (dmSuff) + " to read object comments");
+  	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file");
+  	 
+  	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");  
+  	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
+  	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+  	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
+  	  addKey ("variance_min", "Min. dissimilarity variance", "0");  
+  	}
+  
 
 
 	void body () const final
   {
 	  const string input_tree     = getArg ("input_tree");
-	  const string dataFName      = getArg ("data");
+	  const string dataFName      = getArg ("data");	  
 	  const string dissimAttrName = getArg ("dissim_attr");
-	               varianceType   = str2varianceType (getArg ("variance"));  // Global    
-	               variancePower  = str2real (getArg ("variance_power"));    // Global
-
+	  
+	  const Real   dissim_power        = str2real (getArg ("dissim_power"));      
+	  const Real   dissim_coeff        = str2real (getArg ("dissim_coeff"));      
+	               varianceType        = str2varianceType (getArg ("variance"));  // Global
+	               variancePower       = str2real (getArg ("variance_power"));    // Global
+	               variance_min        = str2real (getArg ("variance_min"));      // Global
+	  
   //if (input_tree. empty ())
     //throw runtime_error ("-input_tree must be present");
 		if (! isNan (variancePower) && varianceType != varianceType_pow)
@@ -83,7 +92,8 @@ struct ThisApplication final : Application
 		  throw runtime_error ("-variance_power must be positive");
     
    
-    const DissimParam dissimParam; 
+    const DissimParam dissimParam (dissim_power, dissim_coeff);
+    dissimParam. qc ();
 
     unique_ptr<DistTree> tree;
     tree. reset (isDirName (dataFName)

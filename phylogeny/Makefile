@@ -13,7 +13,7 @@ endif
 
 all:	\
 	asnt2tree \
-  compareTrees \
+	compareTrees \
   distTree_new \
   distTree_refresh_dissim \
   dm2feature \
@@ -32,7 +32,7 @@ all:	\
 	testDistTree \
 	tree2genogroup \
 	tree2indiscern
-	
+
 
 asnt2tree.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(PHYL_DIR)/distTree.hpp 
 asnt2treeOBJS=asnt2tree.o $(DISTTREE_OBJ) 
