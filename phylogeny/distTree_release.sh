@@ -33,9 +33,7 @@ if [ $REROOT == 1 ]; then
   if [ ! $NEW_ROOT ]; then
     NEW_ROOT=$OLD_ROOT
   fi
-  # -noqual must be absent to compute quality data after reroot()
- #$THIS/makeDistTree  -data $INC/  -variance $VARIANCE  -reroot_at "$NEW_ROOT"  -output_tree $OUT_TREE > /dev/null
-  $THIS/makeDistTree  -input_tree $IN_TREE              -reroot_at "$NEW_ROOT"  -output_tree $OUT_TREE > /dev/null
+  $THIS/makeDistTree  -input_tree $IN_TREE  -reroot_at "$NEW_ROOT"  -output_tree $OUT_TREE > /dev/null
 else
   cp $IN_TREE $OUT_TREE
 fi
