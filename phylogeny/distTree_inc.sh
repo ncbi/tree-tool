@@ -139,6 +139,9 @@ if [ -e $INC/phen ]; then
   
   if [ "$RELDIR" ]; then
     $THIS/distTree_release.sh $INC/tree $INC/phen $LARGE 1 $OUT_TREE $RELDIR 
+  else
+    $THIS/tree_quality_phen.sh $INC/tree "" $INC/phen $LARGE 1 "" > tree_quality_phen.$VER     
+    cat tree_quality_phen.$VER
   fi
   
   if [ "$GOOD" ]; then
