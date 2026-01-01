@@ -49,7 +49,7 @@ namespace
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convex combinination of two dissimilarities")
