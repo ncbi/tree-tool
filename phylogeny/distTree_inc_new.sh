@@ -37,7 +37,7 @@ SEARCH_GRID_MIN=$( cat $INC/object2closest.grid )
 THREADS="-threads $( file2var $INC/threads 15 )"
 
 
-if true; then 
+if true; then   
 date
 echo ""
 echo ""
