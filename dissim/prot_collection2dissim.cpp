@@ -103,7 +103,7 @@ struct ThisApplication final : Application
   	  addPositional ("out", "Output for each pair in <in>: if -separate then a list of dissimilarities for each identifier in <prot_info>, else one dissimilarity");  
   	  addFlag ("separate", "Print scores for each target protein separately");
   	  addKey ("raw_power", "Raise raw (not averaged) dissimilarities to this power", "1.0");
-  	  addKey ("coeff", "Coefficient to multiply the averaged dissimilarity by", "1.0");
+  	//addKey ("coeff", "Coefficient to multiply the averaged dissimilarity by", "1.0");
     }
 
 
@@ -117,16 +117,16 @@ struct ThisApplication final : Application
 	  const string outFName       = getArg ("out");
 	  const bool separate         = getFlag ("separate");
 	  const Real raw_power        = str2real (getArg ("raw_power"));
-	  const Real coeff            = str2real (getArg ("coeff"));
+	//const Real coeff            = str2real (getArg ("coeff"));
 
     if (raw_power <= 0.0)
       throw runtime_error ("-raw_power must be positive");    
     if (separate && raw_power != 1.0)
     	throw runtime_error ("-raw_power must be 1 if -separate");
-	  if (coeff <= 0.0)
-      throw runtime_error ("-coeff must be positive");    
+	/*if (coeff <= 0.0)
+      throw runtime_error ("-coeff must be positive"); 
     if (separate && coeff != 1.0)
-    	throw runtime_error ("-coeff must be 1 if -separate");
+    	throw runtime_error ("-coeff must be 1 if -separate"); */
 
 
     PositiveAverageModel pam (prot_infoFName, ! separate);  
@@ -218,7 +218,7 @@ struct ThisApplication final : Application
 
     	if (! separate)
       {
-    		out << '\t' << coeff * pam. get ();
+    		out << '\t' << /* coeff * */ pam. get ();
     		if (verbose ())
     		  pam. saveText (cout);
       }
