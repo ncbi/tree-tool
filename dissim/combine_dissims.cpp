@@ -127,7 +127,7 @@ struct ThisApplication : Application
 Line format: <unit> <raw_max>\n\
 unit = 1 / <species_barrier for dissimilarity>\n\
 <raw_max> can be inf");
-  	  addKey ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");
+  	//addKey ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");
   	//addKey ("power", "Power to raise the dissimilarity in",  "1.0");
   	  addKey ("barrier", "Scale sequential number, 1-based, 0 - no barrier. If i > barrier then maximize (dissim[i-1], dissim_max[barrier-1])");
       addFlag ("print_raw", "Print raw dissimilarities");
@@ -139,11 +139,11 @@ unit = 1 / <species_barrier for dissimilarity>\n\
 	{
 		const string dissimFName = getArg ("dissims");
 		const string scaleFName  = getArg ("scales");
-	  const Real   coeff       = str2real (getArg ("coeff"));
+	//const Real   coeff       = str2real (getArg ("coeff"));
 	//const Real   power       = str2real (getArg ("power"));
 	  const size_t barrier    = (size_t) arg2uint ("barrier") - 1;
 		const bool   print_raw   = getFlag ("print_raw");		
-	  QC_ASSERT (coeff > 0.0);
+	//QC_ASSERT (coeff > 0.0);
 	//QC_ASSERT (power > 0.0);
 	  
 	  
@@ -263,7 +263,7 @@ unit = 1 / <species_barrier for dissimilarity>\n\
 
       const Real d = dissim_weighted_sum / weight_sum;
     //cout << '\t' << coeff * pow (d, power) << endl;
-      cout << '\t' << coeff * d << endl;
+      cout << '\t' << /* coeff * */ d << endl;
     }
 	}
 };
