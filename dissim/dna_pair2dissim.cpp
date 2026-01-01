@@ -77,7 +77,7 @@ struct ThisApplication final : Application
   	  addFlag       ("relative", "Dissimilarity relative to sequence length");
   	  addFlag       ("diff", "Dissimilarity is the number of different nucleotides");
   	  addKey        ("band", "Alignment band; 0 - no band", "0");
-  	  addKey        ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");
+  	  addKey        ("coeff", "Coefficient to multiply the dissimilarity by", "1.0");  // ??
   	  addKey        ("power", "Power to raise the dissimilarity in",  "1.0");
   	  addKey        ("name_new", "Name of a sequence which is not in <dnaDir>");
   	  addKey        ("file_new", "File with the sequence <name_new>");
