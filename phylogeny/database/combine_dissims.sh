@@ -1,7 +1,7 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
-if [ $# -ne 12 ]; then
+if [ $# -ne 11 ]; then
   echo "Compute dissimilarities"
   echo " #1: file with pairs <object1> <object2>"
   echo " #2: directory with: <object hash>/<object>/<object>.hash-{CDS|PRT}"
@@ -13,8 +13,8 @@ if [ $# -ne 12 ]; then
   echo " #8: hmm-univ.stat | ''"
   echo " #9: 1 - BLOSUM62, 0 - PAM30"
   echo "#10: raw power of universal proteins dissimilarity (before averaging)"
-  echo "#11: coefficient to multiply the combined dissimilarity by"
-  echo "#12: log file (delete on success)"
+ #echo "#11: coefficient to multiply the combined dissimilarity by"
+  echo "#11: log file (delete on success)"
   exit 1
 fi
 REQ=$1
@@ -27,8 +27,8 @@ DISSIM_SCALE=$7
 AVERAGE_MODEL=$8
 BLOSUM62_ARG=$9
 UNIV_POWER=${10}
-COEFF=${11}
-LOG=${12}
+#COEFF=${11}
+LOG=${11}
 
 
 CDS=1  # d_CDS is used
@@ -136,7 +136,8 @@ else
   cut -f 3  --complement $TMP.req-dissim-univ > $TMP.combo
 fi
 
-$THIS/../../dissim/combine_dissims $TMP.combo $DISSIM_SCALE  -barrier $BARRIER  -coeff $COEFF  -log $LOG  > $OUT
+$THIS/../../dissim/combine_dissims $TMP.combo $DISSIM_SCALE  -barrier $BARRIER  -log $LOG  > $OUT
+  # -coeff $COEFF 
 
 
 rm -f $LOG  
