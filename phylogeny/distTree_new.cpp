@@ -64,6 +64,7 @@ Update: <incremental distance tree directory>/search/")
   	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
   	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
   	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
+  	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");  // Not used, but can be submitted in distTree_inc_new.sh
   	  addKey ("variance_min", "Min. dissimilarity variance", "0");  
 
 		  addKey ("name", "Name of the object");
