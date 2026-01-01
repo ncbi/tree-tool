@@ -59,83 +59,83 @@ struct ThisApplication final : Application
 {
 	ThisApplication ()
 	: Application ("Optimize or modify a least-squares distance tree", true, false, true)
-	{
-	  version = VERSION;
-	  
-		// Input
-	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
-
-	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
-	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
-	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
-
-	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
-	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
-
-	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
-	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
-	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
-	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
-	  addKey ("variance_min", "Min. dissimilarity variance", "0");  
-	  
-	  addKey ("good", "List of objects, which should not be outliers");
-	  
-	  // Processing
-	  addKey ("delete", "Delete leaves whose names are in the indicated file");
-	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
-	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deleting all the other leaves");
-	  addFlag ("check_keep", "Check that the names to be kept actually exist in the tree");  
-
-	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
-	//addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
-	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
-	  addFlag ("skip_len", "Skip length-only optimization");
-	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations; works faster if hybrid objects have been removed");
-	//addFlag ("reinsert_orig_weights", "Use original weights in the reinsert optimization");  
-	  addFlag ("skip_topology", "Skip topology optimization");	  
-	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
-
-	  addFlag ("fix_discernible", "Set the indiscernible flag of objects");
-	  addFlag ("fix_transient", "Remove transient nodes (nodes with one child)");
-	  	
-	  addKey ("delete_criterion_outliers", "Delete outliers by " + criterionOutlier_definition + " and save them in the indicated file");  
-	  addKey ("criterion_outlier_num_max", "Max. number of outliers ordered by " + criterionOutlier_definition + " descending to delete; 0 - all", "0");
-	  
-	  addKey ("delete_deformation_outliers", "Delete outliers by " + deformationOutlier_definition + " and save them in the indicated file");  
-	  addKey ("deformation_outlier_num_max", "Max. number of outliers ordered by " + deformationOutlier_definition + " descending to delete; 0 - all", "0");
-
-	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (DissimParam::hybridness_min_def));
-	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
-	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
-	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
-	  addKey ("dissim_boundary", "Point of discontinuity in the dissimilarity distribution (= genospecies barrier)", toString (DissimParam::boundary_def));
-
-	  addFlag ("reroot", "Re-root");
-	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
-	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
-
-	  addKey ("arc_prob_min", "Min. arc probability to retain", "0");
-
-	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
-
-    // Output
-	  addFlag ("noqual", "Do not compute quality statistics");
-	  addKey ("output_tree", "Save the tesulting tree");
-	  addKey ("output_tree_tmp", "Save resulting trees after intermediary steps");
-	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
-	  addFlag ("feature_tree_time", "Add arc time to <output_feature_tree>");
-	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
-	  addKey ("leaf_errors", "Output Data Master file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " and " + deformationOutlier_definition + " for each leaf");
-	  addKey ("arc_existence", "Output Data Master file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
-	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissimilarity>");
-	//addFlag ("deredundify_indiscernible", "Remove dissimilarities from the file <output_dissim> for indiscernible objects with non-smallest names in indiscernibility classes");
-    addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
-    addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
-    
-    documentationUrl = "https://github.com/ncbi/tree-tool";
-	}
-	
-	
+  	{
+  	  version = VERSION;
+  	  
+  		// Input
+  	  addKey ("input_tree", "Directory with a tree of " + dmSuff + "-files ending with '/' or a tree file. If empty then neighbor-joining");
+  
+  	  addKey ("data", dmSuff + "-file without " + strQuote (dmSuff) + "; or directory with data for an incremental tree ending with '/'");
+  	  addKey ("dissim_attr", "Dissimilarity attribute name in the <data> file; if all positive two-way attributes must be used then ''");
+  	  addKey ("weight_attr", "Dissimilarity weight attribute name in the <data> file");
+  
+  	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");
+  	  addKey ("dissim_coeff", "Coefficient to multiply dissimilarity by (after dissim_power is applied)", "1");
+  
+  	  addKey ("variance", "Dissimilarity variance function: " + varianceTypeNames. toString (" | "), varianceTypeNames [varianceType]);
+  	  addKey ("variance_power", "Power for -variance pow; >= 0", "NaN");
+  	  addFlag ("variance_dissim", "Variance is computed off dissimilarities");
+  	  addFlag ("reinsert_variance_dist", "Variance is computed off tree distances for the reinsert optimization");
+  	  addKey ("variance_min", "Min. dissimilarity variance", "0");  
+  	  
+  	  addKey ("good", "List of objects, which should not be outliers");
+  	  
+  	  // Processing
+  	  addKey ("delete", "Delete leaves whose names are in the indicated file");
+  	  addFlag ("check_delete", "Check that the names to be deleted actually exist in the tree");  
+  	  addKey ("keep", "Keep only leaves whose names are in the indicated file by deleting all the other leaves");
+  	  addFlag ("check_keep", "Check that the names to be kept actually exist in the tree");  
+  
+  	  addFlag ("optimize", "Optimize topology, arc lengths and re-root");
+  	//addFlag ("whole", "Optimize whole topology, otherwise by subgraphs of radius " + toString (areaRadius_std));
+  	  addKey ("subgraph_iter_max", "Max. number of iterations of subgraph optimizations over the whole tree; 0 - unlimited", "0");
+  	  addFlag ("skip_len", "Skip length-only optimization");
+  	  addFlag ("reinsert", "Reinsert subtrees before subgraph optimizations; works faster if hybrid objects have been removed");
+  	//addFlag ("reinsert_orig_weights", "Use original weights in the reinsert optimization");  
+  	  addFlag ("skip_topology", "Skip topology optimization");	  
+  	  addFlag ("new_only", "Optimize only new objects in an incremental tree, implies not -optimize");  
+  
+  	  addFlag ("fix_discernible", "Set the indiscernible flag of objects");
+  	  addFlag ("fix_transient", "Remove transient nodes (nodes with one child)");
+  	  	
+  	  addKey ("delete_criterion_outliers", "Delete outliers by " + criterionOutlier_definition + " and save them in the indicated file");  
+  	  addKey ("criterion_outlier_num_max", "Max. number of outliers ordered by " + criterionOutlier_definition + " descending to delete; 0 - all", "0");
+  	  
+  	  addKey ("delete_deformation_outliers", "Delete outliers by " + deformationOutlier_definition + " and save them in the indicated file");  
+  	  addKey ("deformation_outlier_num_max", "Max. number of outliers ordered by " + deformationOutlier_definition + " descending to delete; 0 - all", "0");
+  
+  	  addKey ("hybridness_min", "Min. triangle inequality violation for a hybrid object: d(a,b)/(d(a,x)+d(x,b)), > 1", toString (DissimParam::hybridness_min_def));
+  	  addKey ("delete_hybrids", "Find hybrid objects with hybridness > hybridness_min, delete them from the tree and save them in the tab-delimited indicated file. Line format: " + string (PositiveAttr2::hybrid_format));
+  	//addFlag ("delete_all_hybrids", "Iteratively optimize and delete hybrids until all hybrids are deleted");
+  	  addKey ("hybrid_parent_pairs", "Save parent pairs of hybrid triangles in the tab-delimited indicated file. Line format: " + string (TriangleParentPair::format));
+  	  addKey ("dissim_boundary", "Point of discontinuity in the dissimilarity distribution (= genospecies barrier)", toString (DissimParam::boundary_def));
+  
+  	  addFlag ("reroot", "Re-root");
+  	  addFlag ("root_topological", "Root minimizes average topologcal depth, otherwise average length to leaves weighted by subtree length");
+  	  addKey  ("reroot_at", string ("Interior node denoted as \'A") + DistTree::objNameSeparator + "B\', which is the LCA of A and B. Re-root above the LCA in the middle of the arc");
+  
+  	  addKey ("arc_prob_min", "Min. arc probability to retain", "0");
+  
+  	  addKey ("dissim_request", "Output file with requests to compute needed dissimilarities, tab-delimited line format: <obj1> <obj2>");
+  
+      // Output
+  	  addFlag ("noqual", "Do not compute quality statistics");
+  	  addKey ("output_tree", "Save the tesulting tree");
+  	  addKey ("output_tree_tmp", "Save resulting trees after intermediary steps");
+  	  addKey ("output_feature_tree", "Resulting tree in feature tree format");
+  	  addFlag ("feature_tree_time", "Add arc time to <output_feature_tree>");
+  	  addKey ("output_dissim_coeff", "Save the dissimilarity coefficients for all dissimilarity types");
+  	  addKey ("leaf_errors", "Output Data Master file without " + strQuote (dmSuff) + " with " + criterionOutlier_definition + " and " + deformationOutlier_definition + " for each leaf");
+  	  addKey ("arc_existence", "Output Data Master file without " + strQuote (dmSuff) + " with length and existence probability for each arc");
+  	  addKey ("output_dissim", "Output file with dissimilarities used in the tree, tab-delimited line format: <obj1> <obj2> <dissimilarity>");
+  	//addFlag ("deredundify_indiscernible", "Remove dissimilarities from the file <output_dissim> for indiscernible objects with non-smallest names in indiscernibility classes");
+      addFlag ("output_dist_etc", "Add columns " + string (DistTree::dissimExtra) + " to the file <output_dissim>");
+      addKey ("output_data", "Dataset file without " + strQuote (dmSuff) + " with merged dissimilarity attribute and dissimilarity variance");
+      
+      documentationUrl = "https://github.com/ncbi/tree-tool";
+  	}
+  	
+  	
 	
 	void deleteHybrids (DistTree &tree,
 	                    bool optimizeLeafNeighbors,
