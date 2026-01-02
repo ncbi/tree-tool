@@ -2448,8 +2448,10 @@ template <typename T>
     void eraseAt (size_t index)
       { eraseMany (index, index + 1); }
     void eraseMany (size_t from,
-                    size_t to)
-      { if (to < from)
+                    size_t to = no_index)
+      { if (to == no_index)
+          to = P::size ();
+        if (to < from)
           throw runtime_error ("Vector::eraseMany(): to < from");
         if (to == from)
           return;
