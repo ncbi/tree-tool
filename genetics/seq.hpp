@@ -282,7 +282,7 @@ public:
 	  { return getTaxonStart (name); }
   string getId () const
     { return name. substr (0, getIdSize ()); }
-  long /*CSeq_id::TGi*/ getGi () const;
+  long /*TGi*/ getGi () const;
     // If there is no gi then throw
   void appendId (const string& suffix)
     { name. insert (getIdSize (), prependS (suffix, "-")); }

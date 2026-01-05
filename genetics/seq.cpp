@@ -200,7 +200,7 @@ size_t Seq::getTaxonStart (const string &s)
 
 
 
-long /*CSeq_id::TGi*/ Seq::getGi () const
+long /*TGi*/ Seq::getGi () const
 {
 	const char* prefix = "gi|";
 	size_t start = name. find (prefix, 0);
