@@ -26,7 +26,7 @@ ALL_QUERY=$8
 #set -x
 
 
-if [ ! -e $QUERY -o -d $QUERY ]; then
+if [ ! -e $QUERY ] || [ -d $QUERY ]; then
   error "Query file $QUERY does not exist"
 fi
 
@@ -46,7 +46,7 @@ if [ -e $DB.nhr ] || [ -e $DB.00.nhr ]; then
   DB_EXISTS=1
 fi
 if [ $DB_EXISTS == 0 ]; then
-  if [ ! -e $SUBJ -o -d $SUBJ ]; then
+  if [ ! -e $SUBJ ] || [ -d $SUBJ ]; then
     rm $TMP*
     error "Subject file $SUBJ does not exist"
   fi
@@ -64,7 +64,7 @@ fi
 
 # $TMP.blastn
 N=$( grep -c ">" $QUERY || true )
-if [ $N -gt 0 -a $DB_EXISTS == 1 ]; then
+if [ $N -gt 0 ] && [ $DB_EXISTS == 1 ]; then
   MT_MODE=""
   if [ $N -gt 1 ]; then
     MT_MODE="-mt_mode 1"

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Print <start> <end> <strand> of protein including stop codon in #2, 1-based, if matched"
@@ -15,7 +15,7 @@ ADD_STOP_CODON=$3
 DNA=$4
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP
 
 
@@ -33,7 +33,7 @@ makeblastdb  -in $TMP.dna  -dbtype nucl  -logfile /dev/null  -blastdb_version 4
 
 tblastn  -query $TMP.prot   -db $TMP.dna  -word_size 3  -seg no  -db_gencode 11  -outfmt '6 qstart qend qlen sstart send length nident sseq' 2> /dev/null | sort -k 4,4 -n | sort -k 7,7 -n -r | head -1 > $TMP.tblastn 
 #exit 2
-RES=(`cat $TMP.tblastn`)
+RES=( $( cat $TMP.tblastn ) )
 QSTART=${RES[0]}
 QEND=${RES[1]}
 QLEN=${RES[2]}
@@ -52,13 +52,13 @@ if [ $SSTART -gt $SEND ]; then
 fi
 
 if [ $QSTART == 1 ]; then
-  FIRST_CHAR=`echo $SSEQ | cut -c1`
-  if [ $FIRST_CHAR == 'L' -o $FIRST_CHAR == 'I' -o $FIRST_CHAR == 'V' ]; then
-    NIDENT=$(( $NIDENT + 1 ))
+  FIRST_CHAR=$( echo $SSEQ | cut -c1 )
+  if [ $FIRST_CHAR == 'L' ] || [ $FIRST_CHAR == 'I' ] || [ $FIRST_CHAR == 'V' ]; then
+    NIDENT=$(( NIDENT + 1 ))
   fi
 fi
 
-if [ $LENGTH == $NIDENT -a $LENGTH == $QLEN -a $QSTART == 1 -a $QEND == $QLEN ]; then
+if [ $LENGTH == $NIDENT ] && [ $LENGTH == $QLEN ] && [ $QSTART == 1 ] && [ $QEND == $QLEN ]; then
   echo "$SSTART $SEND $STRAND"  
 fi
   

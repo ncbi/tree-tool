@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# != 1 ]; then
   echo "Check if a DNA is repeated"
@@ -9,8 +9,8 @@ fi
 DNA=$1
 
 
-TMP=`mktemp`  
-#echo $TMP  
+TMP=$( mktemp )
+#comment $TMP  
 
 
 cp $DNA $TMP

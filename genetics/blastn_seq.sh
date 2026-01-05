@@ -15,8 +15,6 @@ TMP=$( mktemp )
 #echo $TMP
 
 
-NAME=$( basename $QUERY )
-
 # $TMP.fa
 GZ=$( echo $SUBJ | tr '.' '\n' | tail -1 )
 if [ $GZ == "gz" ]; then

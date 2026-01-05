@@ -77,7 +77,7 @@ struct ThisApplication : Application
     
     OFStream fOut ("", inFName, "out");
   //OFStream fMap ("", inFName, "map");
-    long /*CSeq_id::TGi*/ gi = minGi;
+    long /*TGi*/ gi = minGi;
 	  Multifasta faIn (inFName, aa);
 	  while (faIn. next ())
 	  {

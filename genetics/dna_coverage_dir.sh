@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# != 6 ]; then
   echo "Contig coverage report for a directory of queries"
@@ -20,7 +20,7 @@ OUT=$6
 
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP 
 
 

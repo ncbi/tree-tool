@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Output: #3/<name of #2>"
@@ -15,13 +15,11 @@ TAB=$3
 OUT=$4
 
 
-TMP=`mktemp`
-#echo $TMP
+TMP=$( mktemp )
+#comment $TMP
 
 
-NAME=`basename $ASM`
-
-EXT=`echo $ASM | tr '.' '\n' | tail -1`
+EXT=$( echo $ASM | tr '.' '\n' | tail -1 )
 if [ $EXT == "gz" ]; then
   cp $ASM $TMP.gz
   rm $TMP

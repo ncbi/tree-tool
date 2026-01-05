@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 7 ]; then
   echo "$0"
@@ -23,7 +23,7 @@ LOG=$7
 
 
 if [ -s $PROT ]; then
-  TMP=`mktemp`
+  TMP=$( mktemp )
  #comment $TMP
 
   CUT_GA=""

@@ -26,7 +26,7 @@ do
   if [ $R == 1 ]; then
     break
   fi
-  printf "\r$T" > /dev/stderr
+  printf '\r%s' "$T" > /dev/stderr
   $THIS/tree2genogroup $TREE $T  -genogroup_table $DIR/$T > /dev/null 
   T=$( echo "$T + $STEP" | bc -l | sed 's/^\./0./1' )
 done

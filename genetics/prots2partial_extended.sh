@@ -30,7 +30,7 @@ blastp  -task blastp-fast \
   -outfmt '6 qseqid sseqid length nident qstart qend qlen sstart send slen' \
   > $TMP.blastp
 
-cat $TMP.blastp | awk '$4 > 60 && $4/$3 > 0.95 && $5 > $8 && $8 == 1' > $TMP.partial
+awk '$4 > 60 && $4/$3 > 0.95 && $5 > $8 && $8 == 1' $TMP.blastp > $TMP.partial
 
 
 section "Processing"

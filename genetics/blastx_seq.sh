@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Output: #3/<name of #2>"
@@ -13,11 +13,11 @@ NUCL=$2
 OUT=$3
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP
 
 
-NAME=`basename $PROT`
+NAME=$( basename $PROT )
 
 cp $PROT $TMP.fa
 makeblastdb  -in $TMP.fa  -dbtype prot  -logfile /dev/null

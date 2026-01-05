@@ -85,11 +85,16 @@ if [ ! -e $ASM.prot ]; then
         GMES_TYPE="--EP  --dbep $UNIV_FA"
       fi
     fi
-    echo "$GMES_TYPE" >> annot_software
     
     # genemark.gtf
-    gmes_petap.pl  $GMES_TYPE  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
+    gmes_petap.pl  $GMES_TYPE  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG || \
+      (echo -e "\nAnnotation failed\n" >> $LOG && \
+       genemark_clean && \
+       GMES_TYPE="--ES" && \
+       gmes_petap.pl  $GMES_TYPE  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG)
     echo -e "\nAnnotation finished!\n" >> $LOG
+
+    echo "$GMES_TYPE" >> annot_software
     
     genemark_clean
 

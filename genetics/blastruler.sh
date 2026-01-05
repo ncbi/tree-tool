@@ -37,7 +37,7 @@ join  -1 6  -2 1  $TMP.blastp_br $DB/br > $TMP.blastp_br_cutoff
 #      1        2          3       4     5          6            7          8              9          10                    11                    12                 13                   14
 #     BR       ref      target  ident target_cov ref_cov      type        precedence complete_ident complete_wp_coverage  complete_br_coverage  partial_ident  partial_wp_coverage   partial_br_coverage
 
-cat $TMP.blastp_br_cutoff | awk '$4 >= $9 && $5 >= $10 && $6 >= $11' | cut -f 1,2,3,8 -d ' ' | sort -k 4 -n | awk '{print $3, $1, $2, $4};' | sort -k 1 > $TMP.pass
+awk '$4 >= $9 && $5 >= $10 && $6 >= $11' $TMP.blastp_br_cutoff | cut -f 1,2,3,8 -d ' ' | sort -k 4 -n | awk '{print $3, $1, $2, $4};' | sort -k 1 > $TMP.pass
 
 
 echo -e "$HEADER" > $OUT

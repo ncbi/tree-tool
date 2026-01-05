@@ -7,7 +7,7 @@ if [ $# -ne 10 ]; then
   echo "#1: target DNA FASTA file"
   echo "#2: target name"
   echo "#3: reference DNA FASTA file"
-  echo "#4: protein annotations in #2. Line format: <protein>\t<start>\t<stop> (1-based)"
+  echo '#4: protein annotations in #2. Line format: <protein>\t<start>\t<stop> (1-based)'
   echo "#5: match_score, > 0"
 	echo "#6: mismatch_score, > 0"
 	echo "#7: gap_open, >= 0"
@@ -40,7 +40,7 @@ fi
 
 $THIS/fasta2len $IN -qc -noprogress > $TMP.len
 LEN=$( cut -f 2 $TMP.len )
-if [ $LEN -lt 29600 -o $LEN -gt 31000 ]; then  # PAR
+if [ $LEN -lt 29600 ] || [ $LEN -gt 31000 ]; then  # PAR
   echo -e "$NAME\tBAD: length $LEN"
   exit 
 fi
