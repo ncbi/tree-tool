@@ -1,1 +1,1 @@
-pow  -variance_power 10 -variance_dissim
+linExp  -dissim_coeff 14  -variance_dissim

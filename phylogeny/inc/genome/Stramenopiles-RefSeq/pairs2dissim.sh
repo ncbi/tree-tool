@@ -19,10 +19,10 @@ if [ $FILE_NEW ]; then
 fi
 
 
-INC=`dirname $0`
+INC=$( dirname $0 )
 GENOME=$INC/../genome
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 awk '{printf "'$GENOME'/%s/%s.prot-univ '$GENOME'/%s/%s.prot-univ\n", $1, $1, $2, $2};' $REQ > $TMP
 CPP_DIR/dissim/prot_collection2dissim  $INC/hmm-univ.stat $TMP $TMP.res  -blosum62  -raw_power 0.59  -log $LOG
@@ -35,7 +35,3 @@ rm $TMP*
 rm -f $LOG
 
 
-
-
-#CPP_DIR/phylogeny/database/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 10 0.1 $INC/dissim_scale $INC/hmm-univ.stat 1 0.59 1  $LOG
-##                                                 1    2       3           4    5  6   7                 8                  9 10   11 12 

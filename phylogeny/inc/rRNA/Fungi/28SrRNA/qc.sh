@@ -13,9 +13,9 @@ if [ $VERB == 1 ]; then
   set -x
 fi
 
-INC=`dirname $0`
+INC=$( dirname $0 )
 
-SERVER=`cat $INC/server`
-DATABASE=`cat $INC/database`
+SERVER=$( cat $INC/server )
+DATABASE=$( cat $INC/database )
 CPP_DIR/phylogeny/database/LocusQC.sh $INC $SERVER $DATABASE "Locus" "id" 4751 "28S" $VERB
 

@@ -20,8 +20,8 @@ LOG=$4
 INC=`dirname $0`
 GENOME=$INC/../genome
 # PAR
-CPP_DIR/phylogeny/database/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 200 0.1 $INC/dissim_scale $INC/hmm-univ.stat 1 0.38 1  $LOG
-#                                                 1    2       3           4    5   6   7                 8                  9 10   11 12 
+CPP_DIR/phylogeny/database/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 200 0.1 $INC/dissim_scale $INC/hmm-univ.stat 1 0.38 $LOG
+#                                                 1    2       3           4    5   6   7                 8                  9 10   11
 
 rm -f $LOG
 

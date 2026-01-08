@@ -17,20 +17,15 @@ LOG=$4
 #set -x
 
 
-# PAR
-#CPP_DIR/phylogeny/database/combine_dissims.sh $REQ $GENOME "$FILE_NEW" $OUT 50 0.5 $INC/dissim_scale $INC/hmm-univ.stat 0 0.56 1  $LOG
- #                                                     1    2       3           4    5  6   7                 8                  9 10   11 12 
-
-
 if [ $FILE_NEW ]; then
   error "New object processing is not implemented"
 fi
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
-INC=`dirname $0`
+INC=$( dirname $0 )
 GENOME_DIR=$INC/../genome
 
 
