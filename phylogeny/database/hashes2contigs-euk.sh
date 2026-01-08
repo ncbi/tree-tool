@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Find contigs with identical protein hash codes in two GenBank eukaryotic assemblies"
@@ -15,7 +15,7 @@ ASM=($2 $3)
 OUT=($4 $5)
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 comment $TMP 
 #set -x
 
@@ -23,8 +23,8 @@ comment $TMP
 NAME=()
 HASH=()
 for i in {0..1}; do
-  NAME+=(`basename ${ASM[$i]}`)
-  HASH+=(`$THIS/../../file2hash ${NAME[$i]}`)
+  NAME+=( $( basename ${ASM[$i]} ) )
+  HASH+=( $( $THIS/../../file2hash ${NAME[$i]} ) )
 done
 
 $THIS/../../setIntersect.sh $GENOME_DIR/${HASH[0]}/${NAME[0]}/${NAME[0]}.hash-PRT $GENOME_DIR/${HASH[1]}/${NAME[1]}/${NAME[1]}.hash-PRT 1 > $TMP.hash_common

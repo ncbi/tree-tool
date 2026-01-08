@@ -23,7 +23,7 @@ GENE=$7
 VERB=$8
 
 
-TMP=%$( mktemp )
+TMP=$( mktemp )
 if [ $VERB == 1 ]; then
   echo $TMP
   set -x

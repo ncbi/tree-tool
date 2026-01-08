@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Add hash_request2dissim result to each line of #1"
@@ -17,7 +17,7 @@ INTERSECTION_MIN=$4
 RATIO_MIN=$5
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #comment $TMP
 
 

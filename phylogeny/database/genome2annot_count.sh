@@ -11,5 +11,5 @@ SUF=$2
 
 
 H=$( $THIS/../../file2hash $G )
-N=$( cat genome/$H/$G/$G.hash-$SUF | wc -l )
+N=$( < genome/$H/$G/$G.hash-$SUF  wc -l )
 echo $G $N

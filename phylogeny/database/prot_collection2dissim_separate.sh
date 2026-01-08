@@ -34,7 +34,7 @@ TMP=$( mktemp )
 
 # $TMP.filepair
 if [ $LARGE == 1 ]; then
-  cat $IN_DIR/$FILE | tr ' ' '\t' > $TMP.tab
+  < $IN_DIR/$FILE   tr ' ' '\t' > $TMP.tab
   cut -f 1 $TMP.tab > $TMP.1
   cut -f 2 $TMP.tab > $TMP.2
   $THIS/../../trav $TMP.1 "echo -e '%f\t%h'" -log $LOG > $TMP.1h
@@ -51,7 +51,7 @@ GENOME_SED='s|'$GENOME'/[^/]\+/||g'
 if [ $LARGE == 1 ]; then
   GENOME_SED='s|'$GENOME'/[^/]\+/[^/]\+/||g'
 fi
-cat $TMP | tr '\t' ' ' | sed 's/\.prot-univ / /g' | sed $GENOME_SED | tr ' ' '\t' > $OUT_DIR/$FILE
+< $TMP  tr '\t' ' ' | sed 's/\.prot-univ / /g' | sed $GENOME_SED | tr ' ' '\t' > $OUT_DIR/$FILE
 
 
 rm -f $LOG

@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Exit 1 if there are lineage differences between phen.old/ and phen/"
@@ -9,7 +9,7 @@ fi
 ASM=$1
 
 
-H=`$THIS/../../file2hash $ASM`
+H=$( $THIS/../../file2hash $ASM )
 
 diff phen/$H/$ASM phen.old/$H/$ASM | grep '^[><]' | sed 's/^..//1' | sed 's/:.*$//1' | sort | uniq -c | grep -v ' 1 ' 
 if [ $? == 0 ]; then

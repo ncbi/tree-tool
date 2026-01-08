@@ -32,7 +32,7 @@ LOG=${11}
 
 
 CDS=1  # d_CDS is used
-DISSIM_SCALE_LINES=$( grep -v '^ *$' $DISSIM_SCALE | wc -l )
+DISSIM_SCALE_LINES=$( grep -vc '^ *$' $DISSIM_SCALE  )
 case $DISSIM_SCALE_LINES in
   2)
     CDS=0
