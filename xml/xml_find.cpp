@@ -57,6 +57,7 @@ struct ThisApplication final : Application
   	  addPositional ("row_tag", "Tag name in query indicating rows in .tsv-file");
   	  addKey ("variable_tag", "Tag name in query indicating .tsv-columns.\n\
 Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable_tag \">\" goes to the column named column_name in the output .tsv-file", "q");
+      addKey ("width", "Max. column width; 0 - umlimited", "0");
   	}
   	
   	
@@ -67,6 +68,7 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
 		const string queryFName  = getArg ("query");
 		const string rowTag      = getArg ("row_tag");
 		const string variableTag = getArg ("variable_tag");
+		const size_t width       = str2<size_t> (getArg ("width"));
 		
 		QC_ASSERT (! rowTag. empty ());
 		QC_ASSERT (! variableTag. empty ());
@@ -89,8 +91,17 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
       cerr << "XML file " << strQuote (fName) << " is saved" << endl;
     }
           
-    const TextTable tt (target->unify (*query, rowTag, variableTag));  
+    TextTable tt (target->unify (*query, rowTag, variableTag));  
     tt. qc ();
+    if (width)
+    {
+      for (StringVector& row : tt. rows)
+        for (string& col : row)
+          if (col. size () > width)
+            col. erase (width);
+      tt. qc ();
+    }
+    
     tt. saveText (cout);
 	}
 };
