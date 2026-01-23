@@ -171,21 +171,21 @@ struct Viewer
 	          const size_t x = row. getDepth ();  
 	          FFOR (size_t, j, x)
 	          {
-	            addch ('|');
-	            addch (' ');
+	            ::addch ('|');
+	            ::addch (' ');
 	          }
 	          if (row. data->children. empty ())
-	            addch ('|');
+	            ::addch ('|');
 	          else
-	            addch (row. open ? '-' : '+');
+	            ::addch (row. open ? '-' : '+');
 	        }
-          addch (' ');
+          ::addch (' ');
           {
 	          const AttrColor attrColor (NCurses::colorBlue); 
 	          size_t width = 0;
 	          if (const Xml_sp::Data* parent = row. data->parent)
 	          	width = to_string (parent->children. size ()). size ();
-            printw ("%*lu", (int) width, row. childNum + 1);
+            ::printw ("%*lu", (int) width, row. childNum + 1);
           }
           {
 	          const AttrColor attrColor_tag (NCurses::colorGreen); 
@@ -196,7 +196,7 @@ struct Viewer
                                 	: row. data->searchFoundAll;
 	          const AttrColor attrColor_found (mask2color (mask), mask);  
 	          const AttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
-	          printw (" <%s>", row. data->getName (). c_str ());
+	          ::printw (" <%s>", row. data->getName (). c_str ());
 	        }
           if (! row. data->token. empty ())
           {
@@ -205,14 +205,14 @@ struct Viewer
           	{
           		// wchar_t stores character in UTF-16
               std::wstring wstr (converter.from_bytes (row. data->token. name));
-	            printw (" %ls", wstr. c_str ());  
+	            ::printw (" %ls", wstr. c_str ());  
             }
             catch (const exception &e)
             {
-	            printw (" %s", (row. data->token. name + "  (ERROR: " + string (e. what ()) + ")"). c_str ());
+	            ::printw (" %s", (row. data->token. name + "  (ERROR: " + string (e. what ()) + ")"). c_str ());
 	          #if 0
 	            for (const char c : row. data->token. name)
-	              printw ("  %x", c & 0xFF);
+	              ::printw ("  %x", c & 0xFF);
 	          #endif
             }
           #else
@@ -229,32 +229,32 @@ struct Viewer
             	s. erase (token_name_len);
             	s += " ...";
             }
-            printw (" %s", s. c_str ());  
+            ::printw (" %s", s. c_str ());  
           #endif
           }
           if (const size_t n = row. data->children. size ())
           {
-            printw (" ");
+            ::printw (" ");
 	          const AttrColor attrColor_suf (NCurses::colorBlue); 
-            printw (" %lu/%lu", n, row. nodes);
+            ::printw (" %lu/%lu", n, row. nodes);
           }
         #if 0
-          printw (" %s %s %s %s"
-                 , to_string (rows. size ()). c_str ()
-                 , to_string (topIndex). c_str ()
-                 , to_string (bottomIndex). c_str ()
-                 , to_string (nc. row_max). c_str ()
-                 );
+          ::printw (" %s %s %s %s"
+                   , to_string (rows. size ()). c_str ()
+                   , to_string (topIndex). c_str ()
+                   , to_string (bottomIndex). c_str ()
+                   , to_string (nc. row_max). c_str ()
+                   );
         #endif
           // Too long line ??
-          clrtoeol ();
+          ::clrtoeol ();
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
           ::move ((int) (i - topIndex), 0);
-          clrtoeol ();
+          ::clrtoeol ();
         }
-        refresh ();
+      //::refresh ();
       }
 
       bool keyAccepted = false;
@@ -459,7 +459,7 @@ struct Viewer
 	  ::move ((int) fieldSize, 0);
 	  const Attr attr (A_REVERSE);
 	  const Background bkgr (nc. background | A_REVERSE);
-	  addstr (s. c_str ());
+	  ::addstr (s. c_str ());
 	  clrtoeol ();
 	}
 
@@ -544,7 +544,7 @@ struct Viewer
 
 	
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("View an XML file.\n\

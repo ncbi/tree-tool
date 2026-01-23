@@ -308,7 +308,7 @@ struct ThisApplication final : Application
           ::move ((int) (i - topIndex + headerSize), 0);
           ::clrtoeol ();
         }
-        ::refresh ();
+      //::refresh ();
       }
 
       bool keyAccepted = false;

@@ -58,6 +58,7 @@ namespace NCurses_sp
   
  
 int getKey ();
+  // Invokes: ::getch() (and ::refresh())
 
 constexpr int ctrl (int x) 
   { return (x) & 0x1f; }
@@ -82,6 +83,7 @@ struct NCurses final : Singleton<NCurses>
 
 
   void resize ();
+    // Invokes: ::erase()
 };
 
 

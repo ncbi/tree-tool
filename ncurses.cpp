@@ -101,6 +101,7 @@ void NCurses::resize ()
   QC_ASSERT (col_max_ >= 0);
   row_max = (size_t) row_max_;
   col_max = (size_t) col_max_;
+  ::erase ();
 }
 
 	
