@@ -32,6 +32,10 @@
 */
 
 
+#ifndef NCURSES_HPP_59734  // random number
+#define NCURSES_HPP_59734
+
+
 #ifdef _MSC_VER
   #error "UNIX is required"
 #endif
@@ -84,6 +88,17 @@ struct NCurses final : Singleton<NCurses>
 
   void resize ();
     // Invokes: ::erase()
+  bool print (size_t y,
+              size_t x,
+              const string &s) const
+    { if (col_max <= x)
+        return false;
+      if (row_max <= y)
+        return false;
+      ::move ((int) y, (int) x);  
+      ::addstr (pad (s, col_max - x, efalse). c_str ());
+      return true;
+    }
 };
 
 
@@ -275,3 +290,5 @@ struct Form : Window
 }  // namespace
 
 
+
+#endif

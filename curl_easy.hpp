@@ -34,6 +34,10 @@
 */
 
 
+#ifndef CURL_EASY_HPP_75974  // random number
+#define CURL_EASY_HPP_75974
+
+
 #ifdef _MSC_VER
   #error "UNIX is required"
 #endif
@@ -94,3 +98,5 @@ private:
 }  // namespace
 
 
+
+#endif
