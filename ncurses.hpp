@@ -32,6 +32,10 @@
 */
 
 
+#ifndef NCURSES_HPP_59734  // random number
+#define NCURSES_HPP_59734
+
+
 #ifdef _MSC_VER
   #error "UNIX is required"
 #endif
@@ -58,7 +62,7 @@ namespace NCurses_sp
   
  
 int getKey ();
-  // Invokes: ::getch() (and ::refresh())
+  // Invokes: ::getch() (=> ::refresh())
 
 constexpr int ctrl (int x) 
   { return (x) & 0x1f; }
@@ -68,10 +72,12 @@ constexpr int ctrl (int x)
 struct NCurses final : Singleton<NCurses>
 {
   bool hasColors {false};
-  enum Color {colorNone, colorRed, colorGreen, colorYellow, colorBlue, colorMagenta, colorCyan, colorWhite};
-    // To match NCurses::NCurses()!
+  enum Color {white, red, green, yellow, blue, magenta, cyan, colorExtra};
+    // <color>-black ncurses color-pairs
+  static ::attr_t color2attr (Color color)
+    { return COLOR_PAIR (color + 1); }  
   ::chtype background {0};
-  // Change after screen resize()
+    
   size_t row_max {0};
   size_t col_max {0};
   
@@ -82,13 +88,30 @@ struct NCurses final : Singleton<NCurses>
     { ::endwin (); }
 
 
+  static void setColorPair (Color color,
+                            short foreColor,
+                            short backColor);
+    // Input: 1 <= num <= 8
   void resize ();
+    // Update: row_max, col_max
     // Invokes: ::erase()
+  bool print (size_t y,
+              size_t x,
+              const string &s) const
+    { if (col_max <= x)
+        return false;
+      if (row_max <= y)
+        return false;
+      ::move ((int) y, (int) x);  
+      ::addstr (pad (s, col_max - x, efalse). c_str ());
+      return true;
+    }
 };
 
 
 
 struct Attr : Root
+// { Attr a (x); Attr b (y); } = Attr c (x | y);
 {
   const ::attr_t attr;
   const bool active;
@@ -113,7 +136,9 @@ struct Attr : Root
 struct AttrColor final : Attr
 {
   explicit AttrColor (NCurses::Color color,
-                      bool active_arg = true);
+                      bool active_arg = true)
+    : Attr (NCurses::color2attr (color), active_arg)
+    {}
 };
 
 
@@ -275,3 +300,5 @@ struct Form : Window
 }  // namespace
 
 
+
+#endif
