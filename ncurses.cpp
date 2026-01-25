@@ -70,25 +70,38 @@ NCurses::NCurses (bool hideCursor)
   ::keypad (::stdscr, TRUE);
   if (hideCursor)
     ::curs_set (0);  
+
   hasColors = ::has_colors ();
   if (hasColors)
     { EXEC_ASSERT (start_color () == OK); }
-    
-  resize ();
   
   constexpr short bkgdColor = COLOR_BLACK;
-  ::init_pair (1, COLOR_WHITE,   bkgdColor);  // colorNone
-  ::init_pair (2, COLOR_RED,     bkgdColor);
-  ::init_pair (3, COLOR_GREEN,   bkgdColor);
-  ::init_pair (4, COLOR_YELLOW,  bkgdColor);
-  ::init_pair (5, COLOR_BLUE,    bkgdColor);
-  ::init_pair (6, COLOR_MAGENTA, bkgdColor);
-  ::init_pair (7, COLOR_CYAN,    bkgdColor);
-  ::init_pair (8, COLOR_WHITE,   bkgdColor);  
-  background = COLOR_PAIR (1);
+  // Order matches Color
+  setColorPair (white,      COLOR_WHITE,   bkgdColor);  
+  setColorPair (red,        COLOR_RED,     bkgdColor);
+  setColorPair (green,      COLOR_GREEN,   bkgdColor);
+  setColorPair (yellow,     COLOR_YELLOW,  bkgdColor);
+  setColorPair (blue,       COLOR_BLUE,    bkgdColor);
+  setColorPair (magenta,    COLOR_MAGENTA, bkgdColor);
+  setColorPair (cyan,       COLOR_CYAN,    bkgdColor);
+  setColorPair (colorExtra, COLOR_WHITE,   bkgdColor); 
+
+  background = color2attr (white);
   ::bkgdset (background);
-  ::attron (COLOR_PAIR (1)); 
+
   ::wclear (stdscr);    
+    
+  resize ();
+}
+
+
+
+void NCurses::setColorPair (Color color,
+                            short foreColor,
+                            short backColor)
+{
+  ASSERT (color < 8);
+  ::init_pair ((short) color + 1, foreColor, backColor);  
 }
 
 
@@ -101,21 +114,12 @@ void NCurses::resize ()
   QC_ASSERT (col_max_ >= 0);
   row_max = (size_t) row_max_;
   col_max = (size_t) col_max_;
+  
   ::erase ();
 }
 
 	
 	
-
-// AttrColor
-
-AttrColor::AttrColor (NCurses::Color color,
-                      bool active_arg)
-: Attr (COLOR_PAIR (color + 1), active_arg)
-{}
-
-
-
 
 // Window
 

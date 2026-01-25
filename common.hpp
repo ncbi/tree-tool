@@ -2215,6 +2215,8 @@ template <typename T /*Root*/>
 struct VirtNamed : Root
 {
 	virtual string getName () const = 0;
+  void saveText (ostream& os) const override
+    { os << getName (); }
 };
 
 
@@ -2251,8 +2253,6 @@ struct Named : VirtNamed
 
 
   void qc () const override;
-  void saveText (ostream& os) const override
-    { os << name; }
 	bool empty () const override
 	  { return name. empty (); }
   void clear () override
