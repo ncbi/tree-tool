@@ -67,7 +67,7 @@ struct Row
   size_t nodes {0};
   // Variable
   bool open {false};
-  NCurses::Color color {NCurses::colorNone};
+  NCurses::Color color {NCurses::white};
 
 
   Row (const Xml_sp::Data *data_arg,
@@ -88,14 +88,14 @@ struct Row
 NCurses::Color mask2color (uchar mask)
 {
   if (! mask)
-  	return NCurses::colorNone;
+  	return NCurses::white;
 	switch (byte2first (mask) % 5)
 	{
-		case 0: return NCurses::colorRed;
-		case 1: return NCurses::colorYellow;
-		case 2: return NCurses::colorMagenta;
-		case 3: return NCurses::colorCyan;
-		case 4: return NCurses::colorWhite;
+		case 0: return NCurses::red;
+		case 1: return NCurses::yellow;
+		case 2: return NCurses::magenta;
+		case 3: return NCurses::cyan;
+		case 4: return NCurses::white;
 	}
 	NEVER_CALL;
 }	
@@ -181,21 +181,21 @@ struct Viewer
 	        }
           ::addch (' ');
           {
-	          const AttrColor attrColor (NCurses::colorBlue); 
+	          const AttrColor attrColor (NCurses::blue); 
 	          size_t width = 0;
 	          if (const Xml_sp::Data* parent = row. data->parent)
 	          	width = to_string (parent->children. size ()). size ();
             ::printw ("%*lu", (int) width, row. childNum + 1);
           }
           {
-	          const AttrColor attrColor_tag (NCurses::colorGreen); 
+	          const AttrColor attrColor_tag (NCurses::green); 
 	          const uchar mask = row. data->searchFound 
                                 ? row. data->searchFound 
                                 : row. open 
                                	  ? 0
                                 	: row. data->searchFoundAll;
 	          const AttrColor attrColor_found (mask2color (mask), mask);  
-	          const AttrColor attrColor_color (row. color, row. color != NCurses::colorNone); 
+	          const AttrColor attrColor_color (row. color, row. color != NCurses::white); 
 	          ::printw (" <%s>", row. data->getName (). c_str ());
 	        }
           if (! row. data->token. empty ())
@@ -235,7 +235,7 @@ struct Viewer
           if (const size_t n = row. data->children. size ())
           {
             ::printw (" ");
-	          const AttrColor attrColor_suf (NCurses::colorBlue); 
+	          const AttrColor attrColor_suf (NCurses::blue); 
             ::printw (" %lu/%lu", n, row. nodes);
           }
         #if 0
@@ -422,14 +422,14 @@ struct Viewer
               Row& row = rows [curIndex];
               switch (getKey ())
               {
-                case 'n': row. color = NCurses::colorNone; break;
-                case 'r': row. color = NCurses::colorRed; break;
-                case 'g': row. color = NCurses::colorGreen; break;
-                case 'y': row. color = NCurses::colorYellow; break;
-                case 'b': row. color = NCurses::colorBlue; break;
-                case 'm': row. color = NCurses::colorMagenta; break;
-                case 'c': row. color = NCurses::colorCyan; break;
-                case 'w': row. color = NCurses::colorWhite; break;  
+                case 'n': row. color = NCurses::white; break;
+                case 'r': row. color = NCurses::red; break;
+                case 'g': row. color = NCurses::green; break;
+                case 'y': row. color = NCurses::yellow; break;
+                case 'b': row. color = NCurses::blue; break;
+                case 'm': row. color = NCurses::magenta; break;
+                case 'c': row. color = NCurses::cyan; break;
+                case 'w': row. color = NCurses::white; break;  
               }
             }
             break;
@@ -457,10 +457,9 @@ struct Viewer
 	               const string &s)
 	{
 	  ::move ((int) fieldSize, 0);
-	  const Attr attr (A_REVERSE);
 	  const Background bkgr (nc. background | A_REVERSE);
 	  ::addstr (s. c_str ());
-	  clrtoeol ();
+	  ::clrtoeol ();
 	}
 
 

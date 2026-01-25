@@ -257,7 +257,7 @@ struct ThisApplication final : Application
         {
           ::move (1, 0);
           const Attr attr (A_BOLD);
-          const Background bkgr (COLOR_PAIR (7) /*nc. background*/ | A_BOLD);
+          const AttrColor ac (NCurses::cyan);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << tt. header [j]. name;
@@ -266,7 +266,7 @@ struct ThisApplication final : Application
         if (numP)
         {
           ::move (2, 0);
-          const Attr attr (COLOR_PAIR (4) /*| A_BOLD*/);
+          const AttrColor ac (NCurses::yellow);
           StringVector values;
           FFOR_START (size_t, j, curCol, tt. header. size ())
             values << to_string (j + 1);
@@ -275,7 +275,7 @@ struct ThisApplication final : Application
         ::move ((int) (fieldSize + headerSize), 0);
         {
           const Attr attr (A_BOLD);
-          const Background bkgr (COLOR_PAIR (3) /*nc. background*/ | A_BOLD);
+          const AttrColor ac (NCurses::green);
           const string keyS ("Up  Down  ^d  ^u  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows  -:remove column  +:restore all columns"
                            #ifndef NUM_P
                              "  #:numbers"
