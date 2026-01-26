@@ -143,6 +143,7 @@ struct AttrColor final : Attr
 
 
 struct Background 
+// Used in ::wclear(), ::clrtoeol()
 {
   const ::chtype background_old;
 

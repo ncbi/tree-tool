@@ -133,7 +133,7 @@ void printRow (bool is_header,
 
   FFOR_START (size_t, i, x, screen_col_max)
     printw (" ");
-  //clrtoeol ();  // may start erasing before the cursor
+  //::clrtoeol ();  // may start erasing before the cursor
 }
 
 
