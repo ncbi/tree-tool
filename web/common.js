@@ -408,6 +408,20 @@ var array2string = function (arr)
 
 
 
+var keys2string = function (arr)
+{
+  let s = "";
+  for (const i in arr) 
+  {
+    if (s)
+      s += ", ";
+    s += i;
+  }
+  return s;  
+}
+
+
+
 var table_column2string = function (table, column)
 // Return: concatenated strings prefixed with " "
 {
