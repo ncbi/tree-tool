@@ -91,6 +91,7 @@ struct NCurses final : Singleton<NCurses>
   static void setColorPair (Color color,
                             short foreColor,
                             short backColor);
+    // Input: foreColor != backColor
   void resize ();
     // Update: row_max, col_max
     // Invokes: ::erase()

@@ -101,6 +101,7 @@ void NCurses::setColorPair (Color color,
                             short backColor)
 {
   ASSERT (color < 8);
+  ASSERT (foreColor != backColor);
   ::init_pair ((short) color + 1, foreColor, backColor);  
 }
 
