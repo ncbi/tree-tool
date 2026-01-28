@@ -3881,7 +3881,7 @@ void Application::addDefaultArgs ()
   }
 	else
 	{
-	  addFlag ("qc", "Integrity checks (quality control)");
+	  addFlag ("qc", "Additionally run quality control checks");
     addKey ("verbose", "Level of verbosity", "0");
     addFlag ("noprogress", "Turn off progress printout");
     addFlag ("profile", "Use chronometers to profile");
