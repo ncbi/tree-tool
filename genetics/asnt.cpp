@@ -47,6 +47,10 @@ namespace
 
 
 
+string emptyName ("_");  // PAR ??
+
+
+
 struct Value;
 
 
@@ -54,8 +58,8 @@ struct Value;
 struct Item : Root
 {
   StringVector names;
-    // !empty()
   unique_ptr<Value> value;
+    // Tree
     
 
   Item (TokenInput &in,
@@ -63,6 +67,7 @@ struct Item : Root
     // Output: followingDelimiter: '\0' | ',' | '}'
   void qc () const final;
   void saveText (ostream &os) const final;
+  void saveXml (Xml::File& f) const final;
   
   
   void names2values (const StringVector &names_arg,
@@ -76,7 +81,7 @@ struct Value : Root
   Token t;
     // t.type = eText && t.quote = '\'' then hexadecimal and followed by 'H'
   Vector<Item> items;
-  // t.empty() || items.empty()
+  // t.empty() != items.empty()
 
 
   explicit Value (const string &s)
@@ -89,7 +94,7 @@ struct Value : Root
   void qc () const final
     { if (! qc_on)
         return;
-      QC_ASSERT (t. empty () == ! items. empty ());
+      QC_ASSERT (t. empty () != items. empty ());
       t. qc ();  
       for (const Item& item : items)
         item. qc ();
@@ -108,6 +113,13 @@ struct Value : Root
       }
       else
         t. saveText (os);
+    }
+  void saveXml (Xml::File& f) const final
+    { if (t. empty ())
+        for (const Item& item : items)
+          item. saveXml (f);
+      else
+        f. print (t. name);
     }
 };
 
@@ -139,12 +151,12 @@ public:
   void qc () const final
     { if (! qc_on)
         return;
-      QC_ASSERT (item. get ());
+      QC_ASSERT (item);
       item->qc ();
     }
   void saveText (ostream &os) const final
     { os << title << " ::= ";
-      if (item. get ())
+      if (item)
         item->saveText (os);
       else
         os << "<no item>";
@@ -175,7 +187,7 @@ Item::Item (TokenInput &in,
         {
           case ',':
           case '}':
-            if (! value. get ())
+            if (! value)
             {
               if (names. size () >= 2)
                 value. reset (new Value (names. pop ()));
@@ -183,7 +195,7 @@ Item::Item (TokenInput &in,
             followingDelimiter = t. name [0];
             break;
           case '{':
-            QC_ASSERT (! value. get ());
+            QC_ASSERT (! value);
             value. reset (new Value ());
             for (;;)
             { 
@@ -213,9 +225,11 @@ Item::Item (TokenInput &in,
       }
       else
       {
-        QC_ASSERT (! value. get ());
+        QC_ASSERT (! value);
         value. reset (new Value (std::move (t)));
-        if (value->t. type == Token::eText && value->t. quote == '\'')
+        if (   value->t. type == Token::eText 
+            && value->t. quote == '\''
+           )
           in. get ("H");
         stop = true;
       }
@@ -229,7 +243,8 @@ void Item::qc () const
 { 
   if (! qc_on)
     return;
-  if (value. get ())
+    
+  if (value)
     value->qc ();
 }
 
@@ -239,7 +254,7 @@ void Item::saveText (ostream &os) const
 { 
   for (const string& s : names)
     os << s << ' ';
-  if (value. get ())
+  if (value)
     value->saveText (os);
   else
     os << "<no value>";
@@ -247,10 +262,25 @@ void Item::saveText (ostream &os) const
 
 
 
+void Item::saveXml (Xml::File& f) const 
+{ 
+  string name (names. toString ("_"));
+  if (name == emptyName)
+    throw runtime_error ("XML tag cannot be empty tag " + strQuote (emptyName));
+  if (name. empty ())
+    name = emptyName;
+  const Xml::Tag tag (f, name);
+    
+  if (value)
+    value->saveXml (f);
+}
+
+
+
 void Item::names2values (const StringVector &names_arg,
                          VectorPtr<Value> &res) const
 { 
-  if (! value. get ())
+  if (! value)
     return;
   if (names == names_arg)
     res << value. get ();
@@ -270,21 +300,23 @@ struct ThisApplication final : Application
     : Application ("Parse an ASN.1 text file.\n\
 <ASN.1> ::= <name> \"::=\" <node>\n\
 <node> ::= <name>* [<value>]\n\
-<value> ::= <name | \"<text>\" | <number> | '<hex_text>'H | { <nodes> }\n\
+<value> ::= <name> | \"<text>\" | <number> | '<hex_text>'H | { <nodes> }\n\
 <nodes> ::= <node> | <nodes>, <node>\n\
 ")
 	  {
       version = VERSION;
 	  	addPositional ("in", "Text ASN.1 file");
-	  	addPositional ("names", "Search node names"); 
+	  	addKey ("find_names", "Search node names"); 
+	  	addKey ("xml", "Output XMl file");
 	  }
 
 
 
   void body () const final
   {
-    const string inFName = getArg ("in");
-    const StringVector names (getArg ("names"), ' ', true);
+    const string       inFName  = getArg ("in");
+    const StringVector names     (getArg ("find_names"), ' ', true);
+    const string       xmlFName = getArg ("xml");
     
     const Asn asn (inFName);
     asn. qc ();
@@ -293,14 +325,24 @@ struct ThisApplication final : Application
       asn. saveText (cout);
       cout << endl;
     }
-    QC_ASSERT (asn. item. get ());
+    QC_ASSERT (asn. item);
     
-    VectorPtr<Value> values;
-    asn. item->names2values (names, values);   
-    for (const Value* v : values)
+    if (! names. empty ())
     {
-      v->saveText (cout);
-      cout << endl;
+      VectorPtr<Value> values;
+      asn. item->names2values (names, values);   
+      for (const Value* v : values)
+      {
+        v->saveText (cout);
+        cout << endl;
+      }
+    }
+
+    if (! xmlFName. empty ())
+    {
+      cxml. reset (new Xml::TextFile (xmlFName, asn. title));
+      ASSERT (asn. item);
+      asn. item->saveXml (*cxml);
     }
   }  
 };
