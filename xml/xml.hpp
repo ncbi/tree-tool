@@ -213,6 +213,11 @@ private:
     : names (names_arg)
     , parent (parent_arg)
     { readInput (ti); }
+  Data (const Names &names_arg,
+        ifstream &f,
+        bool first);
+    // Binary
+  Data (const Data &) = default;
   Data (Names &names_arg,
         Data* parent_arg,
         bool attribute_arg,
@@ -228,11 +233,6 @@ private:
     { if (attribute)
         token. quote = '\0';
     }
-  Data (const Names &names_arg,
-        ifstream &f,
-        bool first);
-    // Binary
-  Data (const Data &) = default;
   void readInput (TokenInput &ti);
   static bool readColonName (TokenInput &ti,
                              string &name);
