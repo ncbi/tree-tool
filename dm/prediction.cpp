@@ -269,7 +269,7 @@ void LogisticRegression::setAttrImportance ()
     if (i == 0)
       continue;
 
-    const NumAttr1* attr = iter. erase ();  
+    const NumAttr1* attr = iter. eraseSave ();  
     prog (attr->name);
     resize ();  
     

@@ -1331,9 +1331,11 @@ template <typename T>
       { return const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
     typename T::value_type* operator-> () const
       { return & const_cast <typename T::value_type&> (*it); }  // *set::iterator = const set::value_type
-    typename T::value_type erase ()
+    void erase ()
+      { itNext = t. erase (it); }
+    typename T::value_type eraseSave ()
       { typename T::value_type val = std::move (*it);
-        itNext = t. erase (it); 
+        erase (); 
         return val;
       }
     void insert (const typename T::value_type &val)
