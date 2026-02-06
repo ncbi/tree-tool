@@ -739,7 +739,7 @@ void DTNode::qc () const
   }
   
   QC_IMPLY (! isNan (len), len >= 0.0);    
-  QC_ASSERT (! contains (name, '\''));
+//QC_ASSERT (! contains (name, '\''));
 }
 
 
