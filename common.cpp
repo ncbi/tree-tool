@@ -3876,7 +3876,7 @@ void Application::addDefaultArgs ()
 	  if (threadsUsed)
 	    addKey ("threads", "Max. number of threads", "1", '\0', "THREADS");
 	  addFlag ("debug", "Integrity checks");
-    addKey ("log", "Error log file, appended, opened on application start", "", '\0', "LOG");
+    addKey ("log", "Error log file, appended, opened on application start. This option suppresses the deletion of the temporary files", "", '\0', "LOG");
     addFlag ("quiet", "Suppress messages to STDERR", 'q');
   }
 	else
