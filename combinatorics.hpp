@@ -83,7 +83,7 @@ struct SubsetSearch
 
 
 
-struct MinSubsetSearch
+struct MinSubsetSearch : Root
 // Search time = O(2^n)
 // Usage: MinSubsetSearch mss; ASSERT(!mss.complete()); while (mss.next()) <use mss.subset>; ASSERT(mss.subset.empty());
 {
@@ -96,7 +96,7 @@ struct MinSubsetSearch
   explicit MinSubsetSearch (size_t n_arg)
     : n (n_arg)
     { subset. reserve (n); }
-  void saveText (ostream &os) const
+  void saveText (ostream &os) const override
     { for (const size_t i : subset)
         os << ' ' << i;
     }
