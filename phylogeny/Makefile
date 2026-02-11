@@ -80,10 +80,10 @@ makeDistTree.o:  $(DISTTREE_HPP)
   # $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(DM_DIR)/dataset.hpp $(PHYL_DIR)/distTree.hpp 
 makeDistTreeOBJS=makeDistTree.o $(DISTTREE_OBJ)
 makeDistTree:	$(makeDistTreeOBJS)
-	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
+	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS) 
 	$(ECHO)
 makeDistTree-dev:	$(makeDistTreeOBJS)
-	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS)
+	$(CXX) -o $@ $(makeDistTreeOBJS) $(LIBS) 
 	$(ECHO)
 
 makeFeatureTree.o:  $(NUMERIC_HPP) $(CPP_DIR)/graph.hpp $(PHYL_DIR)/featureTree.hpp 

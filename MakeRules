@@ -53,7 +53,6 @@ ifdef AT_NCBI
     -Wredundant-decls \
     -Wreturn-type \
     -Wsequence-point \
-    -Wswitch \
     -Wshadow \
     -Wshadow=local \
     -Wsign-compare \
@@ -64,6 +63,7 @@ ifdef AT_NCBI
     -Wstringop-overflow=0 \
     -Wstrict-aliasing \
     -Wstrict-overflow=1 \
+    -Wsuggest-attribute=format \
     -Wswitch \
     -Wtautological-compare \
     -Wtrigraphs \
@@ -97,6 +97,7 @@ ifdef AT_NCBI
     -Wno-deprecated-enum-float-conversion \
     -Wno-invalid-offsetof \
     -Wno-pessimizing-move \
+    -Wnon-virtual-dtor \
     -Woverloaded-virtual \
     -Wrange-loop-construct \
     -Wredundant-tags \
@@ -138,6 +139,10 @@ ifdef AT_NCBI
       -Wnonnull-compare 
   endif
 endif
+
+
+# NCBI
+#CXXFLAGS:      -Wnon-virtual-dtor -Wall -Wextra -Wconversion -Wdeprecated-declarations -Wlogical-op -Wmissing-declarations -Wpedantic -Wshadow -Wsuggest-attribute=format -Wswitch -Wpointer-arith -Wcast-align -Wmissing-include-dirs -Winvalid-pch -Wmissing-format-attribute -fopenmp -gdwarf-4;-ggdb3 -O0 -D_DEBUG;-msse4.2
 
 
 SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fchar8_t -fdiagnostics-color=always $(WarningCPPFLAGS)
