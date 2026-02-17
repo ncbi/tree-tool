@@ -1,3 +1,50 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[]{theorem}
+\usepackage[nottoc]{tocbibind}
+\usepackage[hidelinks]{hyperref}
+\usepackage{appendix}
+\usepackage{epigraph}
+
+\usepackage{xcolor}
+\newcommand {\cg} {\color{gray}}
+\newcommand {\lassert} {\cg\assert}
+
+% https://users.ece.utexas.edu/~garg/dist/listings.pdf
+\usepackage{listings}
+\lstset
+{
+  language=C++
+  , basicstyle=\small  %\ttfamily  %\small  %\footnotesize
+  , commentstyle=\cg
+  , numbers=left
+  , stepnumber=1
+  , showstringspaces=true
+  , tabsize=1
+  , breaklines=true
+  , breakatwhitespace=false
+}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xfrac}
+\usepackage{makecell}
+\usepackage{textcomp}
+\usepackage{authblk}
+\usepackage[bottom]{footmisc}
+
+
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+
+
+
+
 % https://tex.stackexchange.com/questions/86054/how-to-remove-the-whitespace-before-itemize-enumerate
 % https://ctan.math.washington.edu/tex-archive/macros/latex/contrib/enumitem/enumitem.pdf
 \usepackage{enumitem}
@@ -91,12 +138,15 @@
 \newcommand {\qdsup}   { \nearrow  }  % \rightharpoonup
 \newcommand {\qdsdown} { \searrow }   % \rightharpoondown
 
+\newcommand {\str} [1] {\langle #1 \rangle}
+
 \providecommand{\keywords}[1]
 {
   \small
   \textbf{\textit{Keywords---}} #1
 }
 
+% left-facing vector accent
 \makeatletter
 \DeclareRobustCommand{\cev}[1]{%
   {\mathpalette\do@cev{#1}}%
