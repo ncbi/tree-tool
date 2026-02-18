@@ -138,6 +138,7 @@ Window::Window (size_t global_x_arg,
 	ASSERT (width);
 	ASSERT (win);
 	::box (win, 0, 0);  // default characters for the vertical and horizontal lines	  
+  ::refresh ();
 }
 
 

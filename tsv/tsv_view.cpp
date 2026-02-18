@@ -61,6 +61,7 @@ size_t width_max = 0;
 bool printString (string s,
                   size_t screen_col_max,
                   size_t &x)
+// Return: s is printed completely
 {
   bool truncated = false;
   if (s. size () > screen_col_max - x)  // UTF-8 ??
@@ -75,28 +76,36 @@ bool printString (string s,
   
   
   
-void printRow (bool is_header,
-               const StringVector &values,
-               const Vector<bool> &active,
-               size_t col_start,
-               const Vector<TextTable::Header> &header,
-               size_t screen_col_max,
-               size_t rows_max)
+ebool printRow (bool isHeader,
+                bool isValue,
+                const StringVector &values,
+                const Vector<bool> &active,
+                size_t leftCol,
+                size_t curCol,
+                const Vector<TextTable::Header> &header,
+                size_t screen_col_max,
+                size_t rows_max)
+// Return: etrue - curCol is displayed completely
+//         enull - curCol is displayed partially
+//         efalse - curCol is not displayed
 {
+  ASSERT (! (isHeader && isValue));
   ASSERT (header. size () == active. size ());
-  ASSERT (col_start + values. size () == header. size ());
-
+  ASSERT (values. size () == header. size ());
+  ASSERT (leftCol <= curCol);
+  
+  ebool displayed = efalse;
   size_t x = 0;
-  FFOR_START (size_t, col, col_start, header. size ())
+  FFOR_START (size_t, col, leftCol, header. size ())
   {
     if (! active [col])
       continue;
     ASSERT (x <= screen_col_max);
     const TextTable::Header& h = header [col];
-    string value (values [col - col_start]);
+    string value (values [col]);
     trim (value);
     if (   consistent
-        && ! is_header 
+        && isValue
         && ! strNull (value)
         && h. numeric 
         && ! h. scientific
@@ -112,7 +121,9 @@ void printRow (bool is_header,
         value += ".";
       value += string ((size_t) (h. decimals - decimals), '0');  
     }
-    if (value. size () > h. len_max)
+    if (   value. size () > h. len_max
+        && h. len_max > 3 
+       )
     {
       value. erase (h. len_max - 3);
       value += "...";
@@ -124,7 +135,14 @@ void printRow (bool is_header,
                           : h. numeric && ! h. scientific
                             ? etrue
                             : efalse;
-    if (! printString (pad (value, h. len_max, right), screen_col_max, x))
+    bool complete = true;
+    {
+      const Attr attr (A_REVERSE, isHeader && col == curCol);      
+      complete = printString (pad (value, h. len_max, right), screen_col_max, x);                              
+    }
+    if (col == curCol)
+      displayed = complete ? etrue : enull;
+    if (! complete)
       break;
     if (col + 1 < header. size ())
       if (! printString ("  ", screen_col_max, x))
@@ -133,7 +151,9 @@ void printRow (bool is_header,
 
   FFOR_START (size_t, i, x, screen_col_max)
     printw (" ");
-  //::clrtoeol ();  // may start erasing before the cursor
+//::clrtoeol ();  // may start erasing before the cursor
+  
+  return displayed;
 }
 
 
@@ -158,11 +178,14 @@ bool moveRight (size_t &curCol,
                 
 
 
-bool moveLeft (size_t &curCol,
+bool moveLeft (size_t &leftCol, 
+               size_t &curCol,
                const Vector<bool> &active)
 // Return: success
 {
   ASSERT (! active. empty ());
+  ASSERT (leftCol <= curCol);
+  ASSERT (curCol < active. size ());
   
   const size_t curCol_old = curCol;
   do 
@@ -175,6 +198,8 @@ bool moveLeft (size_t &curCol,
     curCol--; 
   }
   while (! active [curCol]);
+  
+  minimize (leftCol, curCol);
 
   return true;
 }
@@ -222,9 +247,15 @@ struct ThisApplication final : Application
     size_t topIndex = 0;
     size_t curIndex = topIndex;
     size_t curCol = 0;
-  //size_t curLastCol = curCol;
+    size_t leftCol = 0;
     string what;  // For search
     Vector<bool> active (tt. header. size (), true);
+    StringVector header;
+    for (const TextTable::Header& h : tt. header)
+      header << h. name;
+    StringVector numbers;
+    FFOR (size_t, i, tt. header. size ())
+      numbers << to_string (i + 1);
   #ifdef NUM_P
     constexpr bool numP = true;
   #else
@@ -236,6 +267,7 @@ struct ThisApplication final : Application
     rowFound. resize (tt. rows. size (), false);
     while (! quit)
     {
+      ASSERT (leftCol <= curCol);
       nc. resize ();
       const size_t headerSize = 2 /*file name, header*/ + (size_t) numP; 
       const size_t fieldSize = nc. row_max - (headerSize + 1 /*menu row*/); 
@@ -255,22 +287,30 @@ struct ThisApplication final : Application
           ::clrtoeol ();
         }
         {
-          ::move (1, 0);
           const Attr attr (A_BOLD);
           const AttrColor ac (NCurses::cyan);
-          StringVector values;
-          FFOR_START (size_t, j, curCol, tt. header. size ())
-            values << tt. header [j]. name;
-          /*curLastCol =*/ printRow (true, values, active, curCol, tt. header, nc. col_max, tt. rows. size ());
+          bool stop = false;
+          while (! stop)
+          {
+            ::move (1, 0);
+            switch (printRow (true, false, header, active, leftCol, curCol, tt. header, nc. col_max, tt. rows. size ()))
+            {
+              case etrue: stop = true; break;
+              case efalse: EXEC_ASSERT (moveRight (leftCol, active)); break;
+              default: 
+                if (leftCol < curCol) 
+                  { EXEC_ASSERT (moveRight (leftCol, active)); }
+                else
+                  stop = true;
+                break;
+            }
+          }
         }        
         if (numP)
         {
           ::move (2, 0);
           const AttrColor ac (NCurses::yellow);
-          StringVector values;
-          FFOR_START (size_t, j, curCol, tt. header. size ())
-            values << to_string (j + 1);
-          printRow (true, values, active, curCol, tt. header, nc. col_max, tt. rows. size ()); 
+          EXEC_ASSERT (printRow (false, false, numbers, active, leftCol, curCol, tt. header, nc. col_max, tt. rows. size ())); 
         }
         ::move ((int) (fieldSize + headerSize), 0);
         {
@@ -298,10 +338,10 @@ struct ThisApplication final : Application
           ::move ((int) (i - topIndex + headerSize), 0);
           const Attr attrCurrent (A_REVERSE, i == curIndex);
           const Attr attrFound (A_BOLD, rowFound [i]);
-          StringVector values;
-          FFOR_START (size_t, j, curCol, tt. header. size ())
-            values << tt. rows [i] [j];
-          printRow (false, values, active, curCol, tt. header, nc. col_max, tt. rows. size ());
+        /*StringVector values;
+          FFOR_START (size_t, j, leftCol, tt. header. size ())
+            values << tt. rows [i] [j];*/
+          EXEC_ASSERT (printRow (false, true, tt. rows [i], active, leftCol, curCol, tt. header, nc. col_max, tt. rows. size ()));
         }
         FFOR_START (size_t, i, bottomIndex, bottomIndex_max)
         {
@@ -402,7 +442,7 @@ struct ThisApplication final : Application
             }
             break;
           case KEY_LEFT:
-            if (! moveLeft (curCol, active))
+            if (! moveLeft (leftCol, curCol, active))
               ::beep ();            
             break;
           case KEY_RIGHT:
@@ -493,7 +533,7 @@ struct ThisApplication final : Application
               {
                 active [curCol] = false;
                 if (! moveRight (curCol, active))
-                  EXEC_ASSERT (moveLeft (curCol, active));
+                  EXEC_ASSERT (moveLeft (leftCol, curCol, active));
               }
             }
             break;

@@ -167,13 +167,14 @@ struct Window
   //
   const size_t width;
   const size_t height;
-	::WINDOW* win;
+  ::WINDOW* win {nullptr};
 	
 	
 	Window (size_t global_x_arg,
 	        size_t global_y_arg,
 	        size_t width_arg,
 	        size_t height_arg);
+	  // Invokes: ::refresh()
 	Window (const NCurses &nc,
 	        size_t width_arg,
 	        size_t height_arg)
@@ -211,7 +212,7 @@ struct Window
 inline void message (const string &text)
 	{	Window w (5, 5, text. size () + 4, 3);  // PAR
 	  w. print (2, 1, text);
-	  getKey ();
+	  ::getch ();
 	}
 
 
