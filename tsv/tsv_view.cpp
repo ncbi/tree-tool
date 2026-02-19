@@ -316,7 +316,7 @@ struct ThisApplication final : Application
         {
           const Attr attr (A_BOLD);
           const AttrColor ac (NCurses::green);
-          const string keyS ("Up  Down  ^d  ^u  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows  -:remove column  +:restore all columns"
+          const string keyS ("Up  Down  ^d  ^u  Left  Right  PgUp  PgDn  Home  End  F3:Search from cursor  m:(un)mark row  a:(un)mark all rows  -:remove column  +:restore all columns  Enter:show field"
                            #ifndef NUM_P
                              "  #:numbers"
                            #endif
@@ -356,7 +356,6 @@ struct ThisApplication final : Application
       {
         const int key = NCurses_sp::getKey ();  
         keyAccepted = true;
-        // Show truncated field ??
         switch (key)  
         {
           case 'q':  
@@ -448,6 +447,10 @@ struct ThisApplication final : Application
           case KEY_RIGHT:
             if (! moveRight (curCol, active))
               ::beep ();            
+            break;
+          case '\n':
+          case KEY_ENTER:
+            nc. message (tt. rows [curIndex] [curCol]);
             break;
           case KEY_F(3):  // search Form ??!s
             {

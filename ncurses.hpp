@@ -106,6 +106,7 @@ struct NCurses final : Singleton<NCurses>
       ::addstr (pad (s, col_max - x, efalse). c_str ());
       return true;
     }
+  void message (const string &text) const;
 };
 
 
@@ -167,7 +168,9 @@ struct Window
   //
   const size_t width;
   const size_t height;
+private:
   ::WINDOW* win {nullptr};
+public:
 	
 	
 	Window (size_t global_x_arg,
@@ -198,23 +201,13 @@ struct Window
     { if (s. empty ())
     	  return;
     	::mvwprintw (win, (int) y, (int) x, "%s", s. c_str ());
-      ::wrefresh (win);
     }
   void cursor (size_t x,
                size_t y)
-    { ::wmove (win, (int) y, int (x));
-    	::wrefresh (win);
-    }
+    { ::wmove (win, (int) y, int (x)); }
+  void refresh ()
+    { ::wrefresh (win); }
 };
-
-
-
-inline void message (const string &text)
-	{	Window w (5, 5, text. size () + 4, 3);  // PAR
-	  w. print (2, 1, text);
-	  ::getch ();
-	}
-
 
 
 

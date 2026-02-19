@@ -121,6 +121,27 @@ void NCurses::resize ()
 
 	
 	
+void NCurses::message (const string &text) const
+{
+  if (text. empty ())
+    return;
+  
+  size_t width = (size_t) (0.9 * (double) col_max);  // PAR
+  minimize (width, text. size () + 4);
+  const size_t height = (text. size () - 1) / width + 1 + 2;   
+  ASSERT (col_max >= width);  
+  ASSERT (row_max >= height);
+  Window w ((col_max - width) / 2, (row_max - height) / 2, width, height); 
+  ASSERT (width > 4);
+  const size_t width_real = width - 4;
+  FFOR (size_t, row, height - 2)
+    w. print (2, row + 1, text. substr (row * width_real, width_real));
+  w. refresh ();
+	::getch ();
+}
+
+
+
 
 // Window
 
@@ -179,7 +200,7 @@ void Field::print () const
 	    s += val [i];
 	  else
 	  	s += ' ';
-	win. print (x, y, s); 
+	win. print (x, y, s);  
 }
 
 
@@ -213,6 +234,7 @@ Field::Exit Field::run ()
 		
 		const size_t real_pos = val_start + pos;
 
+    win. refresh ();
     const int key = getKey ();  
     if (between<int> (key, ' ', 256) && key != 127)
     {
@@ -349,6 +371,7 @@ bool Form::run ()
 		ASSERT (f);
 		f->print ();
 	}
+	refresh ();
 	
 	size_t i = 0;
 	for (;;)
