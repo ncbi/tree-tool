@@ -141,3 +141,4 @@ namespace
 #define STR(s)  #s
 
 
+#define ASSIGN_PTR(x,y)  { ASSERT (! (x)); x = (y); }
