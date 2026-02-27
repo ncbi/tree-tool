@@ -14,7 +14,7 @@ CUT="$3"
 
 
 TMP=$( mktemp )
-comment $TMP
+#comment $TMP
 
 
 cut -f $CUT $F1 > $TMP.1
@@ -22,5 +22,5 @@ cut -f $CUT $F2 > $TMP.2
 differ $TMP.1 $TMP.2
 
 
-#rm $TMP*
+rm $TMP*
 
