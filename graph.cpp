@@ -342,11 +342,9 @@ void DiGraph::Arc::attach (Node* start,
   ASSERT (end);
   ASSERT (start->graph);
   ASSERT (start->graph == end->graph);
-  ASSERT (! node [false]);
-  ASSERT (! node [true]);
 
-  node [false] = start;
-  node [true]  = end;
+  ASSIGN_PTR (node [false], start);
+  ASSIGN_PTR (node [true], end);
 
 	for (const bool b : {false, true})
   {
@@ -1101,10 +1099,7 @@ const Tree::TreeNode* Tree::TreeNode::getOtherChild (const TreeNode* child) cons
 	{
 		const TreeNode* n = static_cast <TreeNode*> (arc->node [false]);
 	  if (n != child)
-	  {
-	  	ASSERT (! otherChild);
-	  	otherChild = n;
-	  }
+	  	ASSIGN_PTR (otherChild, n);
 	}
   return otherChild;
 }
