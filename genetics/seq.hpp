@@ -1301,7 +1301,7 @@ struct Hsp;
 
 
 
-struct Disruption : Root
+struct Disruption final : Root
 // For Hsp::blastx()
 {
   const Hsp* prev {nullptr};
@@ -1411,8 +1411,10 @@ struct Hsp : Root
     // = qseq.size() = sseq.size()
   size_t nident {no_index};
     // Matching ambiguities are counted
-  size_t qgap {no_index}, sgap {no_index};
-  size_t qx {no_index}, sx {no_index};  
+  size_t qgap {no_index};
+  size_t sgap {no_index};
+  size_t qx {no_index};
+  size_t sx {no_index};  
     // 
 private:
   // size() = length + 1
@@ -1631,7 +1633,7 @@ public:
     }    
 
     
-  struct Merge : Root
+  struct Merge final : Root
   // Usage: Merge m; for(;;) { Hsp hsp (m.get()); if (hsp.empty()) break; ... }
   {
     const VectorPtr<Hsp>& origHsps;
