@@ -285,7 +285,6 @@ public:
         n += child->getLeaves ();
       return n;
     }
-  StringVector getText () const;
   bool hasDescendantName (const string &name_arg) const
     { if (getName () == name_arg)
         return true;

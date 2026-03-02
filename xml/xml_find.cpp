@@ -79,6 +79,13 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
 	  VectorOwn<Xml_sp::Data> targetMarkupDeclarations;
 	  unique_ptr<const Xml_sp::Data> target (Xml_sp::Data::load (true/*PAR*/, names, targetFName, targetMarkupDeclarations));
     target->qc ();
+    if (verbose ())
+    {
+      const string fName ("xml_find_target.xml");
+      Xml::TextFile f (fName, "XML");  
+      target->saveXml (f);
+      cerr << "XML file " << strQuote (fName) << " is saved" << endl;
+    }
 
 	  VectorOwn<Xml_sp::Data> queryMarkupDeclarations;
 	  unique_ptr<const Xml_sp::Data> query (Xml_sp::Data::load (true /*??*/, names, queryFName, queryMarkupDeclarations));
@@ -98,7 +105,13 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
       for (StringVector& row : tt. rows)
         for (string& col : row)
           if (col. size () > width)
+          {
             col. erase (width);
+            while (   ! col. empty () 
+                   && col. back () >= 127  // May be a truncated UTF code
+                  )
+              col. erase (col. size () - 1);
+          }
       tt. qc ();
     }
     

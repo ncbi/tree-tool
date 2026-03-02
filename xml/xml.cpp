@@ -860,15 +860,17 @@ void Data::saveXml (Xml::File &f) const
 
 
 
+#if 0
 StringVector Data::getText () const 
 {
   StringVector s;  
   for (const Data* child : children)
-    s << child->getText ();    
+    s << child->getText (); 
   if (! token. empty ())
     s << token. str ();    
   return s;
 }
+#endif
 
 
 
@@ -1009,6 +1011,7 @@ bool Data::unify_ (const Data& query,
   
   if (const Data* columnData = query. name2child (variableTagName))
   {
+  #if 0
     StringVector text (getText ());
     if (verbose ())
       cout << columnData->token. name << endl;
@@ -1021,6 +1024,12 @@ bool Data::unify_ (const Data& query,
       if ((*it). empty ())
         it. erase ();
     }
+  #else
+    string text (token. str ());
+    replace (text, '\t', ' ');
+    replace (text, '\n', ' ');
+    replace (text, '\r', ' ');
+  #endif
     if (! text. empty ())
       tag2values [columnData->token. name] << text;
   }
