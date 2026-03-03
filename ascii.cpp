@@ -59,7 +59,9 @@ struct ThisApplication : Application
 
 	void body () const final
 	{
-	  FOR (long, i, 256)
+	  cout << "uint int hex char" << endl;
+	  cout << "=================" << endl;
+	  FOR (uint, i, 256)
 	  {
 	    const char c = (char) i;
 	    const uchar u = (uchar) i;
@@ -68,6 +70,7 @@ struct ThisApplication : Application
 			  cout << nonPrintable2str ((char) i);
 			else
 			  cout << u;
+	  //cout << ' ' << (int) (uchar) c;  
 			cout << endl;
 	  }
   }  
