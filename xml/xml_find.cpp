@@ -108,7 +108,7 @@ Text of query unifying with \"<\" variable_tag \">\" column_name \"</\" variable
           {
             col. erase (width);
             while (   ! col. empty () 
-                   && col. back () >= 127  // May be a truncated UTF code
+                   && (uchar) col. back () >= 127  // May be a truncated UTF-8 code
                   )
               col. erase (col. size () - 1);
           }
