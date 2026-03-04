@@ -19,8 +19,7 @@ PREF=$4
 
 if [ ! -e $PREF.SEED ]; then
   # PAR
- #clustalw -infile=$2 -outfile=$4.SEED -output=fasta -quicktree > /dev/null
-  muscle -sv -noanchors  -distance1 kbit20_3  -maxiters 2  -maxtrees 99  -in $SEED  -out $PREF.SEED >& /dev/null
+  $THIS/muscle.sh $SEED $PREF.SEED
     # >1 alignment ??
 fi
 
