@@ -991,7 +991,7 @@ string unHtml (const string &s);
 
 typedef size_t int_dist;  
 constexpr int_dist int_dist_inf {numeric_limits<int_dist>::max ()};  
-inline string int_dist2name (int_dist dist)
+inline string int_dist2str (int_dist dist)
   { if (dist == int_dist_inf)
       return "INF";
     return to_string (dist);
