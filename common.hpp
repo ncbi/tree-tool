@@ -2143,7 +2143,7 @@ public:
     // A desrtructor should be virtual to be automatically invoked by a descendant class destructor
   virtual Root* copy () const
     { throwf ("Root::copy() is not implemented"); }
-    // Return: the same type    
+    // Return: !nullptr; type is descendant of this->type    
   virtual void qc () const
     {}
     // Input: qc_on
