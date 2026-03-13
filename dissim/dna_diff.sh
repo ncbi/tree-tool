@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Print the difference of 2 DNA sequences by semiglobal alignment"
@@ -13,7 +13,7 @@ DNA2=$2
 LEN_MIN=$3
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP 
 
 

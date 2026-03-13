@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Symmetric best hits dissimilarity by BLASTP"
@@ -11,7 +11,7 @@ PROTGZ1=$1
 PROTGZ2=$2
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP 
 
 
@@ -32,8 +32,8 @@ function run
 
 run $TMP.1 $TMP.2 $TMP.1-2
 run $TMP.2 $TMP.1 $TMP.2-1
-N1=`grep -c "^>" $TMP.1`
-N2=`grep -c "^>" $TMP.2`
+N1=$( grep -c "^>" $TMP.1 )
+N2=$( grep -c "^>" $TMP.2 )
 $THIS/symbet_blastp $TMP.1-2 $TMP.2-1 $N1 $N2
 
 

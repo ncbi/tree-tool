@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Print a random sample of a .dm-file "
@@ -13,7 +13,7 @@ SEED=$2
 SIZE=$3
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 
 
 $THIS/dm2objs $INPUT > $TMP.list

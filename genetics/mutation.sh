@@ -7,7 +7,7 @@ if [ $# -ne 10 ]; then
   echo "#1: target DNA FASTA file"
   echo "#2: target name"
   echo "#3: reference DNA FASTA file"
-  echo '#4: protein annotations in #2. Line format: <protein>\t<start>\t<stop> (1-based)'
+  printf '#4: protein annotations in #2. Line format: <protein>\\t<start>\\t<stop> (1-based)\n'
   echo "#5: match_score, > 0"
 	echo "#6: mismatch_score, > 0"
 	echo "#7: gap_open, >= 0"

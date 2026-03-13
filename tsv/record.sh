@@ -12,7 +12,7 @@ ROW=$2
 
 
 L=$( < $TAB  wc -l )
-L=$(( $L - 1 ))  # minus header
+L=$(( L - 1 ))  # minus header
 if [ $ROW -gt $L ]; then
   error "Max. row = $L"
 fi
@@ -24,7 +24,7 @@ TMP=$( mktemp )
 
 head -1 $TAB | sed 's/^#//1' | tr '\t' '\n' > $TMP.1
 
-N=$(( $ROW + 1 ))
+N=$(( ROW + 1 ))
 head -$N $TAB | tail -1 | tr '\t' '\n' > $TMP.2
 
 paste $TMP.1 $TMP.2

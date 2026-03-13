@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "Print the conservation dissimilarity of 2 DNA sequences"
@@ -11,12 +11,12 @@ DNA1=$1
 DNA2=$2
 
 
-TMP=`mktemp`
+TMP=$( mktemp )
 #echo $TMP 
 
 
-N1=`$THIS/../genetics/fasta2len $DNA1 -noprogress | cut -f 2`
-N2=`$THIS/../genetics/fasta2len $DNA2 -noprogress | cut -f 2`
+N1=$( $THIS/../genetics/fasta2len $DNA1 -noprogress | cut -f 2 )
+N2=$( $THIS/../genetics/fasta2len $DNA2 -noprogress | cut -f 2 )
 
 cp $DNA1 $TMP
 makeblastdb  -in $TMP  -dbtype nucl  -blastdb_version 4  -logfile /dev/null

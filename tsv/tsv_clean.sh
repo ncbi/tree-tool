@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 1 ]; then
   echo "Remove comment lines"
@@ -13,7 +13,7 @@ TMP=$( mktemp )
 
 
 grep '^#' $F | sort -u > $TMP
-N=$( < $TMP wc -l )
+N=$( < $TMP  wc -l )
 if [ $N != 1 ]; then
   error "# Different headers: $N"
 fi

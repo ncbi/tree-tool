@@ -1,5 +1,5 @@
 #!/bin/bash --noprofile
-THIS=`dirname $0`
+THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
   echo "Rename a column in place, create #1.bak"
@@ -15,6 +15,4 @@ NAME="$3"
 
 mv $F $F.bak
 $THIS/tsv_rename -qc $F.bak $N "$NAME" > $F
-
-
 
