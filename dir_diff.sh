@@ -2,7 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/bash_common.sh
 if [ $# -ne 2 ]; then
-echo "Compare the files of two directories, except .-files and binary files"
+  echo "Compare the files of two directories, except .-files and binary files"
   echo "#1: file/directory 1"
   echo "#2: file/directory 2"
   exit 1
