@@ -4032,8 +4032,8 @@ struct LineInput : Input
 		  throw runtime_error ("No " + strQuote (prefix));
 		  return false;  // dummy
 		}
-	string lineStr (bool add1 = true) const
-	  { return "line " + to_string (lineNum + add1); }
+	string lineStr () const
+	  { return "line " + to_string (lineNum); }
 };
 	
 

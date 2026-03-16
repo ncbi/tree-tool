@@ -9979,11 +9979,11 @@ void NewLeaf::process (bool init,
           if (name1 != name)
             throw runtime_error (FUNC + dissimFName + " must contain " + name);
           Real dissim = str2real (dissimS);
-          tree. dissimParam. transform (dissim);  
           if (isNan (dissim))
             dissim = inf;  // To process "incomparable" objects by distTree_inc_add.sh
           if (dissim < 0.0)
             throw runtime_error (FUNC "Dissimilarity must be non-negative");
+          tree. dissimParam. transform (dissim);  
           leaf2dissims << Leaf2dissim (findPtr (tree. name2leaf, name2), dissim, NaN);
         }          
         catch (const exception &e)

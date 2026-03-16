@@ -182,6 +182,7 @@ struct DissimParam final : Root
 
   void transform (Real &dissim) const;
     // Update: dissim = coeff * pow (dissim, power)
+    // Requires: dissim >= 0
   bool at_boundary (Real dissim) const
     { return    dissim <= boundary
              && dissim / boundary >= 0.95;  // PAR  
