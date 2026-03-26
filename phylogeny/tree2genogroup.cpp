@@ -78,7 +78,7 @@ struct Genogroup
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
 		: Application ("Find genogroups in a distance tree by single linkage clustering")
