@@ -112,6 +112,7 @@ struct ThisApplication final : Application
 	  // Input
 	  addPositional ("input_tree", "Distance tree file");
 	  addKey ("dist_request", "File with requests to compute tree distances, tab-delimited line format: <obj1> <obj2>, to be printed in the file <dist_pairs>");
+	  addFlag ("force", "Do not break on non-existing objects in <dist_request>");
 	  addKey ("noise", strQuote (distName) + " += Normal(0,noise) for -dist2", "0");
 	  addFlag ("sqrt", "Apply square root to the attribute " + strQuote (distName) + " for -dist2");
 	  addKey ("closest_num", "Number of closest leaves to print for -closest_out", "1");
@@ -130,6 +131,7 @@ struct ThisApplication final : Application
   {
 		const string input_tree      = getArg ("input_tree");
 		const string dist_request    = getArg ("dist_request");
+		const bool   forceP          = getFlag ("force");
 		const string distDmFName     = getArg ("dist2");
 		const Real noise             = str2<Real> (getArg ("noise"));
 		const bool sqrtP             = getFlag ("sqrt");
@@ -291,15 +293,13 @@ struct ThisApplication final : Application
         {
         	PairFile pf (dist_request, false, false);
         	while (pf. next ())
-        	{
-            const Leaf* leaf1 = findPtr (tree. name2leaf, pf. name1);
-            if (! leaf1)
-            	throw runtime_error ("Object " + pf. name1 + " is not found");
-            const Leaf* leaf2 = findPtr (tree. name2leaf, pf. name2);
-            if (! leaf2)
-            	throw runtime_error ("Object " + pf. name2 + " is not found");
-    			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
-        	}
+            if (const Leaf* leaf1 = findPtr (tree. name2leaf, pf. name1))
+              if (const Leaf* leaf2 = findPtr (tree. name2leaf, pf. name2))
+        			  distRequestPairs << Pair<const Leaf*> (leaf1, leaf2);
+        			else
+        			  msgThrow ("Object " + strQuote (pf. name2) + " is not found", forceP);
+        	  else
+              msgThrow ("Object " + strQuote (pf. name1) + " is not found", forceP);
         }
         
       	Tree::LcaBuffer buf;
