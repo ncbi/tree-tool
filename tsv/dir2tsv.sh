@@ -35,7 +35,7 @@ else
 fi
 head -1 $TMP | grep -s '^#' > /dev/null || printf '#'
 if [ "$C" ]; then
-  head -1 $TMP | sed 's/^/'"$C"'\t/1'
+  head -1 $TMP | sed 's/^#//1' | sed 's/^/'"$C"'\t/1'
   ADD_NAME="| sed 's/^/'%f'\t/1'"
 else
   head -1 $TMP
