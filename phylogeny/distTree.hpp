@@ -534,7 +534,7 @@ private:
     const DisjointCluster* dc;
       // !nullptr
     Real dist;
-      // For single limkage:   minimum distance from a leaf of dc to getParent()
+      // For single linkage:   minimum distance from a leaf of dc to getParent()
       // For complete linkage: maximum distance from a leaf of dc to getParent()
       // >= 0
     void qc () const;
