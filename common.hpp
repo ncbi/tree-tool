@@ -3918,6 +3918,20 @@ public:
 
 
 
+inline
+  void msgThrow (const string &msg,
+                 bool force)
+    { if (force)
+      { Stderr stderr;
+        const Common_sp::Warning warning (stderr);
+        stderr << msg;
+      }
+      else
+        throw runtime_error (msg);
+    }
+   
+
+
 struct Chronometer_OnePass_cerr : Chronometer_OnePass
 {
   explicit Chronometer_OnePass_cerr (const string &name_arg)
