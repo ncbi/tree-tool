@@ -53,7 +53,7 @@ struct ThisApplication final : Application
   	{
       version = VERSION;
   	  addPositional ("tsv", "tsv-table");
-  	  addPositional ("keys", "Object columns in <tsv>, comma-delimited");
+  	  addPositional ("key", "Columns in <tsv> which make up a key, comma-delimited");
   	}
   	
   	
@@ -61,7 +61,7 @@ struct ThisApplication final : Application
 	void body () const final
 	{
 		const string fName = getArg ("tsv");
-		const string keysS = getArg ("keys");
+		const string keysS = getArg ("key");
 
     
     const TextTable tab (fName, noString, true, 10000);  // PAR
