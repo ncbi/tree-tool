@@ -1,4 +1,4 @@
-// tsv_test_key.cpp
+// tsv_check_key.cpp
 
 /*===========================================================================
 *
@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Test a key of a tsv-file
+*   Check a key of a tsv-file
 *
 */
 
@@ -49,7 +49,7 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Test a key of a tsv-file, print column numbers (1-based)")
+    : Application ("Check a key of a tsv-file, print column numbers (1-based)")
   	{
       version = VERSION;
   	  addPositional ("tsv", "tsv-table");
@@ -71,6 +71,7 @@ struct ThisApplication final : Application
     const Vector<TextTable::ColNum> keyCols (tab. columns2nums (keysVec));
     
     {
+      cout << "Key index(es): ";
       bool first = true;
       for (const TextTable::ColNum c : keyCols)
       {
@@ -113,7 +114,5 @@ int main (int argc,
   ThisApplication app;
   return app. run (argc, argv);
 }
-
-
 
 

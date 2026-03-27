@@ -22,6 +22,7 @@ ALL=	\
   tsv2triple \
   tsv_aggr_comp \
   tsv_cat \
+  tsv_check_key \
   tsv_cluster \
   tsv_comp \
   tsv_group \
@@ -30,8 +31,7 @@ ALL=	\
   tsv_rename \
   tsv_schema \
   tsv_shift \
-  tsv_split \
-  tsv_test_key
+  tsv_split
 
 ifdef AT_NCBI
   all: $(ALL) \
@@ -96,6 +96,12 @@ tsv_cat:	$(tsv_catOBJS)
 	$(CXX) -o $@ $(tsv_catOBJS) $(LIBS)
 	$(ECHO)
 
+tsv_check_key.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
+tsv_check_keyOBJS=tsv_check_key.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
+tsv_check_key:	$(tsv_check_keyOBJS)
+	$(CXX) -o $@ $(tsv_check_keyOBJS) $(LIBS)
+	$(ECHO)
+
 tsv_cluster.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(DM_DIR)/numeric.hpp $(DISSIM_DIR)/evolution.hpp
 tsv_clusterOBJS=tsv_cluster.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/numeric.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
 tsv_cluster:	$(tsv_clusterOBJS)
@@ -148,12 +154,6 @@ tsv_split.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
 tsv_splitOBJS=tsv_split.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
 tsv_split:	$(tsv_splitOBJS)
 	$(CXX) -o $@ $(tsv_splitOBJS) $(LIBS)
-	$(ECHO)
-
-tsv_test_key.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp
-tsv_test_keyOBJS=tsv_test_key.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o
-tsv_test_key:	$(tsv_test_keyOBJS)
-	$(CXX) -o $@ $(tsv_test_keyOBJS) $(LIBS)
 	$(ECHO)
 
 tsv_view.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(CPP_DIR)/ncurses.hpp 
