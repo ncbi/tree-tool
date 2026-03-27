@@ -13,9 +13,20 @@ ACCVER=$2
 TARGET=$3
 
 
+#set -x
+
+
+if grep -wq $ACCVER $TARGET; then
+  echo -e "$ACCVER\t0"
+  exit
+fi
+
+
 META=$INC/../Metadata.tsv
 TREE=$INC/tree.released
 
+
+# QC
 OBJ=$( awk -F "\t" '$2 == "'$ACCVER'"' $META | cut -f 1 )
 if [ -z "$OBJ" ]; then
   error "$ACCVER is not found in $META"
@@ -32,7 +43,7 @@ cat $TARGET    >> $TMP.target
 $THIS/../tsv/tsv_expand.sh $TMP.target $INC/../Metadata.tsv "" &> /dev/null
 
 tail -n +2 $TMP.target | cut -f 2 | sed 's/^/'$OBJ'\t/1' > $TMP.pair
-$THIS/statDistTree $TREE  -dist_request $TMP.pair  -qc  -force  -dist_pairs $TMP.dist  -noprogress > /dev/null
+$THIS/statDistTree $TREE  -dist_request $TMP.pair  -qc  -force  -dist_pairs $TMP.dist  -noprogress > $TMP.statDistTree
 
 L=( $( sort -k3g $TMP.dist | head -1 ) ) || true
 CLOSEST=${L[1]}
