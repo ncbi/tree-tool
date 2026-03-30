@@ -262,7 +262,15 @@ namespace
   os->flush ();
 
   if (cxml)
-    cxml->print (string (error_caption) + ": " + msg);
+  {
+    const Xml::Tag tag (*cxml, "ERROR"); 
+    const StringVector lines (msg, '\n', false);
+    for (const string& line : lines)
+    {
+      const Xml::Tag lineTag (*cxml, "LINE");
+      cxml->print (line);
+    }
+  }
 
   if (segmFault)
     abort ();

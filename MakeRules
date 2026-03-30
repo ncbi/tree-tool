@@ -151,7 +151,7 @@ SimpleCPPFLAGS = -std=gnu++17 -pthread -malign-double -fno-math-errno -fchar8_t 
 	# -fanalyze           # Too slow and strange messages
 
 OptCPPFLAGS   = $(SimpleCPPFLAGS) -O3 
-DebugCPPFLAGS = $(SimpleCPPFLAGS) -g
+DebugCPPFLAGS = $(SimpleCPPFLAGS) -O0 -g
 
 
 CXX=g++
