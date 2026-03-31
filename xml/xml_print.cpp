@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print an XML file wheer each tag is in one line
+*   Print an XML file where each tag is in one line
 *
 */
 
@@ -49,7 +49,7 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Find an XML context matching query and print values as a .tsv-file")
+    : Application ("Print an XML file where each tag is in one line")
   	{
       version = VERSION;
   	  addPositional ("in", "Input XML file");
