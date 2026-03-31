@@ -52,8 +52,8 @@ struct ThisApplication final : Application
     : Application ("Convert a tsv-table into SQL insert statements")
   	{
       version = VERSION;
-  	  addPositional ("tsv_table", ".tsv-table");
-  	  addKey ("sql_table", "SQL table name (default = <tsv_table>");
+  	  addPositional ("tsv", ".tsv-table");
+  	  addKey ("sql", "SQL table name (default = <tsv_table>");
   	  addKey ("file_name_col", "Column to store the file name");  	  
   	  addFlag ("add_go", "Add 'go' at the end of the SQL statements");
   	}
@@ -62,8 +62,8 @@ struct ThisApplication final : Application
  
 	void body () const final
 	{
-		const string pathName    = getArg ("tsv_table");
-		      string sqlTable    = getArg ("sql_table");
+		const string pathName    = getArg ("tsv");
+		      string sqlTable    = getArg ("sql");
 		const string fileNameCol = getArg ("file_name_col");
 		const bool add_go        = getFlag ("add_go");
 

@@ -71,7 +71,7 @@ struct ThisApplication final : Application
     const Vector<TextTable::ColNum> keyCols (tab. columns2nums (keysVec));
     
     {
-      cout << "Key index(es): ";
+      cout << "Column number(s): ";
       bool first = true;
       for (const TextTable::ColNum c : keyCols)
       {

@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print a tsv-table with a renamed column")

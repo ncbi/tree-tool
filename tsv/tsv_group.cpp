@@ -46,13 +46,13 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Group columns of a tsv-table, sort")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv", "tsv-table");
   	  addKey ("by", "Comma-separated list of columns to sort and group by"); 
   	  addKey ("count", "name of the added \"count\" column");
   	  addKey ("sum", "Comma-separated list of columns to sum"); 
@@ -65,7 +65,7 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string fName  = getArg ("table");
+		const string fName  = getArg ("tsv");
 		const string byS    = getArg ("by");
 		const string countS = getArg ("count");
 		const string sumS   = getArg ("sum");

@@ -62,7 +62,7 @@ struct TextClust : DisjointCluster
 };
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Cluster a text column of a tsv-table base on k-mers. Add numeric column <col>" + suf)
@@ -79,7 +79,7 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string inFName      =               getArg ("in");
+		const string inFName    =               getArg ("in");
 		const string colName    =               getArg ("col");
 		const string outFName   =               getArg ("out");
 		const size_t k          = str2<size_t> (getArg ("k"));		

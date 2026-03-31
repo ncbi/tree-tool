@@ -52,14 +52,14 @@ struct ThisApplication final : Application
     : Application ("Replace \"NA\" etc. by \"\" in a .tsv-file and print")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv", "tsv-table");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string fName = getArg ("table");
+		const string fName = getArg ("tsv");
 
     TextTable tt (fName);
     tt. qc ();

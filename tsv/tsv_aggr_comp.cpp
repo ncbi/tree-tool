@@ -46,7 +46,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Compare two aggregated columns (values are comma-separated) of a tsv-table")

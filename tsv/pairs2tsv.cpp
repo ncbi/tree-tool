@@ -62,7 +62,7 @@ struct Attr
 
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert a directory with attribute-value files to a tsv-table")

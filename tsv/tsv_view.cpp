@@ -212,7 +212,7 @@ struct ThisApplication final : Application
     : Application ("View a tsv-table")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv", "tsv-table");
   	  addFlag ("consistent", "Reformat numbers to make them consistent, e.g., to have the same number of decimals");
   	  addKey ("width", "Max. column width", "30");
   	}
@@ -221,7 +221,7 @@ struct ThisApplication final : Application
 
 	void body () const final
 	{
-		const string tableFName = getArg ("table");
+		const string tableFName = getArg ("tsv");
 		             consistent = getFlag ("consistent");
 		             width_max  = str2<size_t> (getArg ("width"));
 

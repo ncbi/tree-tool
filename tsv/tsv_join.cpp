@@ -52,8 +52,8 @@ struct ThisApplication final : Application
     : Application ("Join 2 tsv-tables by identical columns, print the result")
   	{
       version = VERSION;
-  	  addPositional ("table1", "tsv-table");
-  	  addPositional ("table2", "tsv-table");
+  	  addPositional ("tsv1", "tsv-table");
+  	  addPositional ("tsv2", "tsv-table");
   	  addKey ("syn", TextTable::syn_format);
   	  addFlag ("left", "SQL left join");
   	  addFlag ("remove", "Remove the rows from <table1> which are in <table2>");
@@ -64,8 +64,8 @@ struct ThisApplication final : Application
  
 	void body () const final
 	{
-		const string tab1FName   = getArg ("table1");
-		const string tab2FName   = getArg ("table2");
+		const string tab1FName   = getArg ("tsv1");
+		const string tab2FName   = getArg ("tsv2");
 		const string synFName    = getArg ("syn");
 		const bool   leftjoin    = getFlag ("left");
     const bool   remove      = getFlag ("remove");  

@@ -46,20 +46,20 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("<row_i> <nl> <row_i+1> <row_i+2> <nl> ... -> <row_i> <tab> <row_i+1> <nl> <row_i+1> <tab> <row_i+2> <nl> ...")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv", "tsv-table");
   	}
   	
   	
  
 	void body () const final
 	{
-		const string fName  = getArg ("table");
+		const string fName = getArg ("tsv");
 
 
     const TextTable tIn (fName);

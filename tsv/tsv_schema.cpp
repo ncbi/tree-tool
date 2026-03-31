@@ -52,7 +52,7 @@ struct ThisApplication final : Application
     : Application ("Print the schema of a tsv-table: # name length type(decimals)")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv", "tsv-table");
   	  addFlag ("sql", "SQL DDL format");
   	}
   	
@@ -60,7 +60,7 @@ struct ThisApplication final : Application
  
 	void body () const final
 	{
-		const string fName = getArg ("table");
+		const string fName = getArg ("tsv");
 		const bool   sql   = getFlag ("sql");
 
     const TextTable tt (fName);

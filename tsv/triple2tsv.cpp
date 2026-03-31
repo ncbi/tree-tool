@@ -52,7 +52,7 @@ struct ThisApplication final : Application
     : Application ("Convert a tsv-file of object-attribute-value triples into a tsv-file with attributes as columns")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table where <<obj>,<attr>> is a key");
+  	  addPositional ("tsv", "tsv-table where <<obj>,<attr>> is a key");
   	  addPositional ("obj", "Object column in <table>");
   	  addPositional ("attr", "Attribute column in <table>");
   	  addPositional ("val", "Value column in <table>");  	  
@@ -64,7 +64,7 @@ struct ThisApplication final : Application
  
 	void body () const final
 	{
-		const string fName    = getArg ("table");
+		const string fName    = getArg ("tsv");
 		const string objName  = getArg ("obj");
 		const string attrName = getArg ("attr");
 		const string valName  = getArg ("val");

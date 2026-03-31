@@ -46,13 +46,13 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Create tables which are a split of a source table by key columns")
   	{
       version = VERSION;
-  	  addPositional ("table", "tsv-table");
+  	  addPositional ("tsv", "tsv-table");
   	  addPositional ("by", "Column name to split by"); 
   	  addPositional ("dir", "Output directory");
   	}
@@ -61,7 +61,7 @@ struct ThisApplication : Application
  
 	void body () const final
 	{
-		const string fName  = getArg ("table");
+		const string fName  = getArg ("tsv");
 		const string byS    = getArg ("by");
 		const string outDir = getArg ("dir");
 

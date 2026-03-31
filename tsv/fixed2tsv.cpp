@@ -45,7 +45,7 @@ namespace
 {
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert a fixed-field text file to a tsv-table")
