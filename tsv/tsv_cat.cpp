@@ -77,6 +77,7 @@ struct ThisApplication final : Application
         unique_ptr<TextTable> tab; 
         try 
         { 
+          trim (li. line);
           tab. reset (new TextTable (li. line, synFName));
           tab->qc (); 
         }
