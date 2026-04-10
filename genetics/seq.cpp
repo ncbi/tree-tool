@@ -165,6 +165,14 @@ void Seq::printCase (ostream &os,
 
 
 
+bool Seq::operator< (const Seq &other) const
+{
+  LESS_PART (*this, other, name);
+  return seq < other. seq;
+}
+
+
+
 size_t Seq::getTaxonStart (const string &s) 
 {
   size_t brackets = 0;

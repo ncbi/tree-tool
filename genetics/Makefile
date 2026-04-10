@@ -33,6 +33,7 @@ all:	\
 	dna_rev \
 	dna_trim \
 	fasta_prefix \
+	fasta_sort \
 	fasta2GC \
 	fasta2hash \
 	fasta2len \
@@ -198,6 +199,12 @@ fasta_prefix.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 fasta_prefixOBJS=fasta_prefix.o $(SEQ_OBJ)
 fasta_prefix:	$(fasta_prefixOBJS)
 	$(CXX) -o $@ $(fasta_prefixOBJS) $(LIBS) 
+	$(ECHO)
+
+fasta_sort.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+fasta_sortOBJS=fasta_sort.o $(SEQ_OBJ)
+fasta_sort:	$(fasta_sortOBJS)
+	$(CXX) -o $@ $(fasta_sortOBJS) $(LIBS) 
 	$(ECHO)
 
 fasta2GC.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
