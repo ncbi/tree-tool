@@ -285,6 +285,7 @@ select Phyl.[node] id \
      , PhylObject_vw.pubmed \
      , PhylObject_vw.comment /*replace (replace (replace (PhylObject_vw.comment, char(9), ' '), char(10), ' '), char(13), ' ') comment*/ \
      , PhylObject_vw.tickets \
+     , PhylObject_vw.prots_genbank \
      , TaxPicture.url picture_url \
      , TaxPicture.attribution picture_attribution \
      , TaxPicture.license picture_license \
@@ -351,6 +352,7 @@ select Phyl.[node] id \
         , pubmed:              row.pubmed
         , comment:             row.comment ? row.comment.replace(/[\t\n\r]/g, ' ') : null
         , tickets:             row.tickets ? row.tickets.replace(/[\t\n\r]/g, ' ') : null
+        , prots_genbank:       row.prots_genbank
         , ani_match:           row.ani_match
         , ani:                 row.ani
           // computed
@@ -607,7 +609,6 @@ var node2printName = function (node, truncate, leavesNumP)
       }
       if (node.bad_org_source)
         fix = addS (fix, ' ', "[" + node.bad_org_source + "]");
-      fix = addS (fix, ' ', node.strain);
 
       let objName = node.obj_id;
       if (node.obj_id_2)
@@ -619,8 +620,10 @@ var node2printName = function (node, truncate, leavesNumP)
           flags = addS (flags, ' ', "[" + node.type + "]");
         if (node.rs_acc_ver)
           flags = addS (flags, ' ', "[REFSEQ]");        
-        if (node.ani)
+        if (node.ani_match && node.ani != null)
           flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
+        if (node.prots_genbank)
+          flags = addS (flags, ' ' , "[ANNOT]");
         if (node.outlier)
           flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
         if (! node.in_tree)
@@ -632,6 +635,7 @@ var node2printName = function (node, truncate, leavesNumP)
       }
         
       let leafName = fix;
+      leafName = addS (leafName, ' | ', node.strain);
       leafName = addS (leafName, ' | ', objName);
       leafName = addS (leafName, ' | ', flags);
       leafName = addS (leafName, ' | ', node.props);
@@ -1256,7 +1260,7 @@ else
   
   text2file (data, 'distTree-dump.txt');
   
-  alert ("Tree became unusable")
+  alert ("Tree has become unusable")
 }
 }
 
@@ -1415,7 +1419,7 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
         case "PDT accession":     url = null;   break;  // ??
         case "UNITE ID":          url = null;   break;  // ??
         case "Species":           url = null;   break;  // ??
-        default: alert("Unknown sequence type: " + seqType);
+        default: alert ("Unknown sequence type: " + seqType);
       }
       if (url)
         innerHTML += seqType + ": <a href=https://www.ncbi.nlm.nih.gov/" + url + "/" + node.obj_id + " target=_blank>" + node.obj_id + "</a><br>";
@@ -1485,6 +1489,8 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
       innerHTML += "<br>";
       if (node.dna_len != null)
         innerHTML += "Genome length: " + numberWithCommas (node.dna_len) + " bp<br>";
+      if (node.prots_genbank)
+        innerHTML += "GenBank annotation<br>"; 
       if (node.univs != null)
         innerHTML += "# Universal proteins: " + node.univs + "<br>";
       if (node.prots != null)
