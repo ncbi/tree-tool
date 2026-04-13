@@ -51,7 +51,7 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print an apphabetically sorted FASTA file")
+    : Application ("Print an alphabetically sorted FASTA file (by headers and sequences)")
     {
       version = VERSION;
   	  addPositional ("in", "FASTA file");
