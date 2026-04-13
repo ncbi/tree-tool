@@ -623,7 +623,7 @@ var node2printName = function (node, truncate, leavesNumP)
         if (node.ani_match && node.ani != null)
           flags = addS (flags, ' ', node.ani_match + " ANI:" + node.ani.toFixed(1));      
         if (node.prots_genbank)
-          flags = addS (flags, ' ' , "[ANNOT]");
+          flags = addS (flags, ' ' , "ANNOT:" + node.prots_genbank);
         if (node.outlier)
           flags = addS (flags, ' ', "[OUTLIER:" + node.outlier + "]");
         if (! node.in_tree)
@@ -1490,7 +1490,7 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
       if (node.dna_len != null)
         innerHTML += "Genome length: " + numberWithCommas (node.dna_len) + " bp<br>";
       if (node.prots_genbank)
-        innerHTML += "GenBank annotation<br>"; 
+        innerHTML += "# Proteins submitted: " + node.prots_genbank + "<br>"; 
       if (node.univs != null)
         innerHTML += "# Universal proteins: " + node.univs + "<br>";
       if (node.prots != null)
