@@ -1429,6 +1429,8 @@ var nodeInfo = function (nodeId, pageX, pageY, dblclick)
         innerHTML += "Internal " + seqType + ": " + node.int_obj_id + "<br>";       
       if (node.obj_id_2)
         innerHTML += "Alternative " + seqType + ": " + node.obj_id_2 + "<br>"; 
+      if (node.strain)
+        innerHTML += "Strain: " + node.strain + "<br>"; 
     }
     else
       innerHTML += "LCA name: " + node2lcaId (nodeId) + "<br>";
