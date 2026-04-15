@@ -45,7 +45,7 @@ using namespace Common_sp;
 namespace 
 {
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Partition <in> into parts of size <size> lines sequentially.\n\
@@ -73,6 +73,9 @@ Parts are named <out_dir>/<prefix><i>")
 		const string extension =                   getArg ("extension");
 		ASSERT (size > 0);
     ASSERT (start_part >= 1);
+    
+    QC_ASSERT (size);
+    
 
     LineInput inF (in);  
     OFStream outF;
