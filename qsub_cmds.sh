@@ -1,19 +1,20 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/bash_common.sh
-N=100  # PAR
-if [ $# -ne 4 ]; then
-  echo "Submit a list of commands to the grid in the batches of $N and create #3.tsv"
+if [ $# -ne 5 ]; then
+  echo "Submit a list of commands to the grid in the batches create #3.tsv"
   echo "#1: list of commands producing one-line output"
   echo "#2: intermediary input directory (not in /tmp, to be created)"
   echo "#3: output directory (not in /tmp, to be created)"
-  echo "#4: header file for the .tsv-output"
+  echo "#4: batch size"
+  echo "#5: header file for the .tsv-output"
   exit 1
 fi
 CMDS=$1
 IN=$2
 OUT=$3
-H=$3
+BATCH=$4
+H=$5
 
 
 TMP=$( mktemp )
@@ -21,7 +22,7 @@ comment $TMP
 
 
 mkdir $IN
-$THIS/splitList $CMDS $N $IN -qc
+$THIS/splitList $CMDS $BATCH $IN -qc
 
 mkdir $OUT
 ls $IN > $TMP.in
