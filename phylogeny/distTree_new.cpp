@@ -58,6 +58,7 @@ Update: <incremental distance tree directory>/search/")
 		  
 		  // Input
 		  addPositional ("data", "Directory with data ending with '/'");
+  	  addKey ("input_tree", "Tree file. If empty then <data>/tree is used");
 		  addFlag ("init", "Initialize search");
 		  
   	  addKey ("dissim_power", "Power to raise dissimilarity in", "1");  
@@ -82,13 +83,14 @@ Update: <incremental distance tree directory>/search/")
 	void body () const final
   {
 	  const string dataDir       = getArg ("data");
+	  const string input_tree    = getArg ("input_tree");
 	  const bool   init          = getFlag ("init");
 
-	  const Real   dissim_power        = str2real (getArg ("dissim_power"));      
-	  const Real   dissim_coeff        = str2real (getArg ("dissim_coeff"));      
-	               varianceType        = str2varianceType (getArg ("variance"));  // Global
-	               variancePower       = str2real (getArg ("variance_power"));    // Global
-	               variance_min        = str2real (getArg ("variance_min"));      // Global
+	  const Real   dissim_power  = str2real (getArg ("dissim_power"));      
+	  const Real   dissim_coeff  = str2real (getArg ("dissim_coeff"));      
+	               varianceType  = str2varianceType (getArg ("variance"));  // Global
+	               variancePower = str2real (getArg ("variance_power"));    // Global
+	               variance_min  = str2real (getArg ("variance_min"));      // Global
 
 	  const string name          = getArg ("name");
 	  const string dissimFName   = getArg ("dissim");
@@ -118,7 +120,7 @@ Update: <incremental distance tree directory>/search/")
     const DissimParam dissimParam (dissim_power, dissim_coeff);
     dissimParam. qc ();
 
-    unique_ptr<const DistTree> tree (new DistTree (dissimParam, dataDir, noString, false, false, false));
+    unique_ptr<const DistTree> tree (new DistTree (dissimParam, dataDir, input_tree, false, false, false));
     tree->qc ();     
 
     if (verbose ())

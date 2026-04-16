@@ -57,7 +57,7 @@ while [ -s $TMP.request ]; do
     break
   fi
   cat $TMP.dissim-add1 >> $TMP.dissim
-  $THIS/distTree_new  $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -closest $TMP.closest  -closest_num 100  -qc
+  $THIS/distTree_new  $INC/  -input_tree $TREE  -variance $VARIANCE  -name $NAME  -dissim $TMP.dissim  -request $TMP.request  -leaf $TMP.leaf  -closest $TMP.closest  -closest_num 100  -qc
     # PAR
 done
 
