@@ -49,7 +49,7 @@ struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Partition <in> into parts of size <size> lines sequentially.\n\
-Parts are named <out_dir>/<prefix><i>")
+Parts are files <out_dir>/<prefix><i>")
   {
     version = VERSION;
 	  addPositional ("in", "Text file");
