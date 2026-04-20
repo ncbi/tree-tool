@@ -291,7 +291,7 @@ struct ThisApplication final : Application
       {
         Vector<Pair<const Leaf*>> distRequestPairs;  
         {
-        	PairFile pf (dist_request, false, false);
+        	PairFile pf (dist_request, true, false);
         	while (pf. next ())
             if (const Leaf* leaf1 = findPtr (tree. name2leaf, pf. name1))
               if (const Leaf* leaf2 = findPtr (tree. name2leaf, pf. name2))
@@ -302,9 +302,11 @@ struct ThisApplication final : Application
               msgThrow ("Object " + strQuote (pf. name1) + " is not found", forceP);
         }
         
+        Progress prog (distRequestPairs. size (), 10000);  // PAR
       	Tree::LcaBuffer buf;
       	for (const auto& p : distRequestPairs)
       	{
+      	  prog ();
       		const Leaf* leaf1 = p. first;
       		const Leaf* leaf2 = p. second;
   			  const Tree::TreeNode* lca_ = nullptr;
