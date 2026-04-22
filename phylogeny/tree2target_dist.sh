@@ -1,8 +1,10 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
+META="Metadata.tsv"
 if [ $# -ne 4 ]; then
   echo "Print: <object> <closest target> <distance>"
+  echo "Input: $META"
   echo "#1: tree"
   echo "#2: list of target objects"
   echo "#3: target column name"
@@ -15,7 +17,7 @@ TARGET_NAME="$3"
 OUT=$4
 
 
-$THIS/../check_file.sh "Metadata.tsv" 1
+$THIS/../check_file.sh $META 1
 
 
 TMP=$( mktemp )
@@ -25,7 +27,7 @@ comment $TMP
 $THIS/tree2obj.sh $TREE > $TMP.tree
 sort -u $TARGET > $TMP.target_raw
 $THIS/../setIntersect.sh $TMP.tree $TMP.target_raw 0 > $TMP.target
-$THIS/../trav $TMP.target "sed 's/$/\t%f/1' $TMP.tree" > $TMP.pair
+$THIS/../trav $TMP.target "sed 's/$/\t%f/1' $TMP.tree" | awk '$1 != $2' > $TMP.pair
 
 section "statDistTree"
 $THIS/statDistTree $TREE  -dist_request $TMP.pair  -dist_pairs $TMP.dist  -qc 
