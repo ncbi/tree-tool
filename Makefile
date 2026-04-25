@@ -33,6 +33,7 @@ ALL=	\
   replace_dict \
   setMinus \
   setRandOrd \
+  speed_test \
   splitList \
   str2hash \
   trav
@@ -182,6 +183,11 @@ setRandOrd.o:  $(COMMON_HPP)
 setRandOrdOBJS=setRandOrd.o $(CPP_DIR)/common.o
 setRandOrd:	$(setRandOrdOBJS)
 	$(CXX) -o $@ $(setRandOrdOBJS) $(LIBS)
+	$(ECHO)
+
+speed_testOBJS=speed_test.o
+speed_test: $(speed_testOBJS)
+	$(CXX) -o $@ $(speed_testOBJS) $(LIBS)
 	$(ECHO)
 
 splitList.o:  $(COMMON_HPP)  
