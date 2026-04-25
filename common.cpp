@@ -227,16 +227,10 @@ namespace
 // alloc() may not work
 {
 	beep ();
-
+	
 	ostream* os = logPtr ? logPtr : & cout;
 
 	// time ??
-#ifndef _MSC_VER
-	const string hostname (getEnv ("HOSTNAME"));
-	const string shell    (getEnv ("SHELL"));
-	const string pwd      (getEnv ("PWD"));
-	const string path     (getEnv ("PATH"));
-#endif
   if (contains (msg, error_caption))  // msg already is the result of errorExit()
     *os << endl << msg << endl;
   else
@@ -247,17 +241,19 @@ namespace
       *os << error_caption;
     }
     *os << endl
-        << msg << endl << endl
-      #ifndef _MSC_VER
-  	    << "HOSTNAME: " << nvl (hostname, "?") << endl
-  	    << "SHELL: "    << nvl (shell,    "?") << endl
-  	    << "PWD: "      << nvl (pwd,      "?") << endl
-  	    << "PATH: "     << nvl (path,     "?") << endl
-      #endif
-  	    << "Progam name:  " << programName << endl
+        << msg << endl << endl;
+  #ifndef _MSC_VER
+    #define GETENV(var)  { if (const char* s = getenv (var)) *os << var << ": " << s << endl; }
+    GETENV ("HOSTNAME");
+    GETENV ("SHELL");
+    GETENV ("PWD");
+    GETENV ("PATH");
+    #undef GETENV
+  #endif
+  	*os << "Progam name:  " << programName << endl
   	    << "Command line: " << getCommandLine () << endl;
   }
-  //system (("env >> " + logFName). c_str ());
+//system (("env >> " + logFName). c_str ());
 
   os->flush ();
 
