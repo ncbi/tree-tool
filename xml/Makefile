@@ -15,12 +15,12 @@ endif
 
 ALL=	\
   xml2schema \
+  xml_bin2txt \
   xml_find \
   xml_merge_schemas \
   xml_print \
   xml_schema2ddl \
   xml_schema2flat \
-  xml_bin2txt \
   xml_txt2bin
 
 ifdef AT_NCBI
