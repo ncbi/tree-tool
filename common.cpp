@@ -728,15 +728,27 @@ bool strBlank (const string &s)
 
 
 bool getScientific (string numberS,
+                    bool &numberP,
                     bool &hasPoint,
                     streamsize &decimals)
 {
   strUpper (numberS);
-  const size_t ePos     = numberS. find ('E');
-  const size_t pointPos = numberS. find ('.');
-
-  hasPoint = (pointPos != string::npos);
+  
+  numberP = false;
+  hasPoint = false;
   decimals = 0;
+
+  if (numberS == "NAN")
+    return false;
+  if (isRight (numberS, "INF"))
+    return false;
+  
+  numberP = true;
+
+  const size_t ePos     = numberS. find ('E');
+  const size_t pointPos = numberS. find ('.');  
+  if (pointPos != string::npos)
+    hasPoint = true;
   if (ePos == string::npos)
   {
     if (hasPoint)

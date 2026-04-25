@@ -673,6 +673,7 @@ inline string unQuote (const string &s)
 bool strBlank (const string &s);
 
 bool getScientific (string numberS,
+                    bool &numberP,
                     bool &hasPoint,
                     streamsize &decimals);
 
