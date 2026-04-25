@@ -105,7 +105,7 @@ struct ThisApplication final : Application
         if (! first)
           cout << ", ";
         const string& f = row [i];
-        if (f. empty ())
+        if (f. empty () || f == "NULL")
           cout << "null";
         else
         {

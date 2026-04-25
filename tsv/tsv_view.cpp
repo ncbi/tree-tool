@@ -112,14 +112,18 @@ ebool printRow (bool isHeader,
         && h. decimals
        )
     {
+      bool numberP = false;
       bool hasPoint = false;
       streamsize decimals = 0;
-      getScientific (value, hasPoint, decimals);
+      EXEC_ASSERT (! getScientific (value, numberP, hasPoint, decimals));
       ASSERT (h. decimals >= decimals);
-      // Data modification ??
-      if (! hasPoint)
-        value += ".";
-      value += string ((size_t) (h. decimals - decimals), '0');  
+      if (numberP)
+      {
+        // Data modification ??      
+        if (! hasPoint)
+          value += ".";
+        value += string ((size_t) (h. decimals - decimals), '0');  
+      }
     }
     if (   value. size () > h. len_max
         && h. len_max > 3 

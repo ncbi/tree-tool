@@ -17,12 +17,18 @@ BATCH=$4
 H=$5
 
 
+if [ -e $OUT.tsv ]; then
+  error "$OUT.tsv exists"
+fi
+
+
 TMP=$( mktemp )
 comment $TMP
 
 
 mkdir $IN
-$THIS/splitList $CMDS $BATCH $IN -qc
+sort -R $CMDS > $TMP.cmds
+$THIS/splitList $TMP.cmds $BATCH $IN -qc
 
 mkdir $OUT
 ls $IN > $TMP.in
