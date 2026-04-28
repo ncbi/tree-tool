@@ -5,18 +5,19 @@
 #include <cmath>
 using namespace std;
 
-int main() {
-    auto start = std::chrono::high_resolution_clock::now();
 
-    // --- The code you want to test goes here ---
-    double d = 0.0;
-    for(int i = 0; i < 100000000; ++i) 
-      d += std::sin(i);
-    cout << d << endl;
+int main() 
+{
+  const auto start = chrono::high_resolution_clock::now ();
 
-    auto end = std::chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed = end - start;
+  double d = 0.0;
+  for (size_t i = 0; i < 100000000; i++) 
+    d += sin (i);
+  cout << d << endl;
 
-    cout << "Elapsed time: " << elapsed.count() << " seconds\n";
-    return 0;
+  const auto end = chrono::high_resolution_clock::now ();
+  chrono::duration<double> elapsed = end - start;
+  cout << "Elapsed time: " << elapsed. count () << " seconds" << endl;
+    
+  return 0;
 }
