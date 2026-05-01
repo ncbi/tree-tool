@@ -18,6 +18,10 @@ General data analysis tools.
 [Epistemic Principle of a Congruence Maximization of a Phylogenetic Tree to External Classifications](https://github.com/ncbi/tree-tool/blob/master/phylogeny/doc/tax_miscongruence/tax_miscongruence.pdf)
 
 ## Application papers
+Oh, D. H., Astashyn, A., Robbertse, B., O'leary, N. A., Anderson, W. R., Breen, L., Cox, E., Ermolaeva, O., Falk, R., Hem, V., Holmes, J. B., Masterson, P., McGarvey, K. M., Mozes, E., Torcivia, J. P., Tsuchiya, M. T. N., Wallin, C., Thibaud-Nissen, F., Murphy, T. D., & Kodali, V. K. (2025). 
+NCBI Orthologs: Public Resource and Scalable Method for Computing High-Precision Orthologs Across Eukaryotic Genomes. 
+Journal of molecular evolution, 93(6), 843–859. PMID: [40996513](https://doi.org/10.1007/s00239-025-10268-2)
+
 Goldfarb, T., Kodali, V. K., Pujar, S., Brover, V., Robbertse, B., Farrell, C. M., Oh, D. H., Astashyn, A., Ermolaeva, O., Haddad, D., Hlavina, W., Hoffman, J., Jackson, J. D., Joardar, V. S., Kristensen, D., Masterson, P., McGarvey, K. M., McVeigh, R., Mozes, E., Murphy, M. R., … Murphy, T. D. (2024). 
 NCBI RefSeq: reference sequence standards through 25 years of curation and annotation. 
 Nucleic acids research, gkae1038. Advance online publication. PMID: [39526381](https://doi.org/10.1093/nar/gkae1038)
