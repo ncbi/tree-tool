@@ -3782,6 +3782,7 @@ struct Unverbose
 
 
 struct Chronometer : Nocopy
+// For profiling
 // CPU (not astronomical) time
 // Requires: no thread is used
 {
@@ -3792,6 +3793,7 @@ struct Chronometer : Nocopy
 protected:
   clock_t startTime {noclock};
 public:
+  static constexpr Color::Type color {Color::red};  // PAR
 
 
   explicit Chronometer (const string &name_arg)

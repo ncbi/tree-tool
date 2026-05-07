@@ -403,9 +403,14 @@ void Chronometer::print (ostream &os) const
 {
   if (! on ())
     return;
-  os << "CHRON: " << name << ": ";
-  const ONumber onm (os, 2, false);
-  os << (double) time / CLOCKS_PER_SEC << " sec." << endl;
+    
+  {
+    const OColor oc (os, color, false, true);
+    os << "PROFILE: " << name << ": ";
+    const ONumber onm (os, 2, false);
+    os << (double) time / CLOCKS_PER_SEC << " sec.";
+  }
+  os << endl;
 }
 
 
