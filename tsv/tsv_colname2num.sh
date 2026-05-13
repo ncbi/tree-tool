@@ -2,7 +2,7 @@
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
-  echo "tsv_cat for a directory of .tsv-files"
+  echo "Print column number of a column name"
   echo "#1: .tsv-file"
   echo "#2: column name"
   exit 1
