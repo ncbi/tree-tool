@@ -166,18 +166,18 @@ struct ThisApplication final : Application
           << (keysVec. empty () ? string ("_row_num") : keysVec. toString ("\t"))
           << '\n';
 
-    size_t deleted = 0;
+    size_t added = 0;
     for (const auto& it : key2row2)
       if (! findPtr (key2row1, it. first))
       {
-        deleted++;
+        added++;
         const StringVector* row2 = it. second;
         ASSERT (row2);
         FFOR (size_t, i, commonCols2. size ())
         {
           const string& val2 = (*row2) [commonCols2 [i]];
           if (! val2. empty ())
-            diffF         << "DELETE" 
+            diffF         << "ADD" 
                   << '\t' << t2. header [commonCols2 [i]]. name 
                   << '\t' 
                   << '\t' << val2 
@@ -186,15 +186,14 @@ struct ThisApplication final : Application
                   << '\n';
         }
       }
-    cout << "# Rows deleted: " << deleted << endl;
+    cout << "# Rows added: " << added << endl;
 
-    size_t added = 0;
+    size_t deleted = 0;
     for (const auto& it : key2row1)
     {
       const StringVector* row1 = it. second;
       ASSERT (row1);
       if (const StringVector* row2 = findPtr (key2row2, it. first))
-      {
         FFOR (size_t, i, commonCols1. size ())
         {
           const string& val1 = (*row1) [commonCols1 [i]];
@@ -224,19 +223,18 @@ struct ThisApplication final : Application
                   << '\n';
           }
         }
-      }
       else
       {
-        added++;
+        deleted++;
         FFOR (size_t, i, commonCols1. size ())
         {
           const string& val1 = (*row1) [commonCols1 [i]];
           if (! val1. empty ())
-            diffF << "ADD" << '\t' << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << '\t' << '\t' << it. first << '\n';
+            diffF << "DELETE" << '\t' << t1. header [commonCols1 [i]]. name << '\t' << val1 << '\t' << '\t' << '\t' << it. first << '\n';
         }
       }
     }
-    cout << "# Rows added: " << added << endl;
+    cout << "# Rows deleted: " << deleted << endl;
 	}
 };
 
