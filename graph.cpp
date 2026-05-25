@@ -49,22 +49,6 @@ namespace Common_sp
 
 // DiGraph::Node
 
-void DiGraph::Node::attach (DiGraph &graph_arg)
-{
-  ASSERT (! graph);
-#ifndef NDEBUG
-	for (const bool b : {false, true})
-	  ASSERT (arcs [b]. empty ());
-#endif
-  
-  graph = & graph_arg;
-  graph_arg. nodes << this;
-  graphIt = graph_arg. nodes. end (); 
-  graphIt--;
-}
-
- 
-
 DiGraph::Node::~Node ()
 {
 	for (const bool b : {false, true})
@@ -114,6 +98,36 @@ void DiGraph::Node::saveText (ostream &os) const
 }
 
  
+
+void DiGraph::Node::attach (DiGraph &graph_arg)
+{
+  ASSERT (! graph);
+#ifndef NDEBUG
+	for (const bool b : {false, true})
+	  ASSERT (arcs [b]. empty ());
+#endif
+  
+  graph = & graph_arg;
+  graph_arg. nodes << this;
+  graphIt = graph_arg. nodes. end (); 
+  graphIt--;
+}
+
+ 
+
+void DiGraph::Node::detach ()
+{
+  ASSERT (graph);
+#ifndef NDEBUG
+	for (const bool b : {false, true})
+	  ASSERT (arcs [b]. empty ());
+#endif
+  var_cast (graph) -> nodes. erase (graphIt);  
+  graphIt = var_cast (graph) -> nodes. end (); 
+  graph = nullptr;
+}
+
+
 
 bool DiGraph::Node::isIncident (const DiGraph::Node* n,
                                 bool out) const
@@ -293,20 +307,6 @@ void DiGraph::Node::isolate ()
   		Arc* a = arcs [b]. front ();
   		delete a;
     }
-}
-
-
-
-void DiGraph::Node::detach ()
-{
-  ASSERT (graph);
-#ifndef NDEBUG
-	for (const bool b : {false, true})
-	  ASSERT (arcs [b]. empty ());
-#endif
-  var_cast (graph) -> nodes. erase (graphIt);  
-  graphIt = var_cast (graph) -> nodes. end (); 
-  graph = nullptr;
 }
 
 

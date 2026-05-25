@@ -124,6 +124,11 @@ struct DiGraph : Root
       // Requires: !graph; no Arc's
       // Invokes: graph_arg.nodes.push_back(this)
       // Time: O(1)
+    void detach ();
+      // Opposite to attach()
+      // Output: graph = nullptr
+      // Requires: No Arc's
+      // Invokes: list::erase()
 		virtual string getHumanName () const
 		  { return getName (); }
 		virtual string getLeafName () const
@@ -175,10 +180,6 @@ struct DiGraph : Root
       // Time: O(n + m log n) for all nodes
     void isolate ();
       // Make degree = 0
-    void detach ();
-      // Output: graph = nullptr
-      // Requires: No Arc's
-      // Invokes: list::erase()
     Node* copyGraph (bool out,
                      Node2Node &node2node) const;
   };
