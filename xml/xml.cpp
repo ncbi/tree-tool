@@ -76,12 +76,7 @@ void FlatTable::write (size_t xmlNum)
   { 
     f << '\t';
     if (const Token* token = row [i])
-      if (! token->name. empty ())
-      {
-      //if (! goodName (token->name))
-        //throw runtime_error ("Bad value: " + strQuote (token->name));
-        f << token->name;
-      }
+      f << str2field (token->name);
     if (i >= keys)
       row [i] = nullptr;
   }      
@@ -306,14 +301,15 @@ void Schema::printTableDdl (ostream &os,
     }
     if (indexP)
     {
+      os << "print '" << sqlSchema_ << table << "'" << endl;
       os << "alter table " << sqlSchema_ << table << " add constraint " << table << "_pk primary key (xml_num_, id_);" << endl;
       if (! refTable. empty ())
       {
         os << "create index " << table << "_idx on " << sqlSchema_ << table << "(xml_num_," << refTable << "_id_);" << endl;
         os << "alter table " << sqlSchema_ << table << " add constraint " << table << "_fk foreign key (xml_num_, " << refTable << "_id_) references " << sqlSchema_ << refTable << "(xml_num_,id_) on delete cascade;" << endl;
         os << "-- delete /*top (1000000)*/ from " << sqlSchema_ << table << " with (tablock) where not exists (select null from " << refTable << " (nolock) where " << sqlSchema_ << refTable << ".xml_num_ = " << table << ".xml_num_ and " << refTable << ".id_ = " << table << "." << refTable << "_id_);" << endl;
-        os << endl << endl;
       }
+      os << endl << endl;
     }
   }
 
@@ -1011,25 +1007,7 @@ bool Data::unify_ (const Data& query,
   
   if (const Data* columnData = query. name2child (variableTagName))
   {
-  #if 0
-    StringVector text (getText ());
-    if (verbose ())
-      cout << columnData->token. name << endl;
-    for (Iter<StringVector> it (text); it. next (); )
-    {
-      replace (*it, '\t', ' ');
-      replace (*it, '\n', ' ');
-      replace (*it, '\r', ' ');
-      trim (*it);
-      if ((*it). empty ())
-        it. erase ();
-    }
-  #else
-    string text (token. str ());
-    replace (text, '\t', ' ');
-    replace (text, '\n', ' ');
-    replace (text, '\r', ' ');
-  #endif
+    const string text (str2field (token. str ()));
     if (! text. empty ())
       tag2values [columnData->token. name] << text;
   }
