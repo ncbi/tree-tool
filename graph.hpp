@@ -223,6 +223,7 @@ struct DiGraph : Root
    ~Arc ();
       // Remove this from node->graph
       // Time: O(1)
+    void qc () const override;
 
 
     virtual void saveContent (ostream &/*os*/) const 

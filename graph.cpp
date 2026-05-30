@@ -365,6 +365,18 @@ DiGraph::Arc::~Arc ()
 
  
 
+void DiGraph::Arc::qc () const
+{
+  if (! qc_on)
+    return;
+  Root::qc ();
+      
+  QC_ASSERT (node [false]);
+  QC_ASSERT (node [true]);
+}
+
+
+
 void DiGraph::Arc::setNode (Node* newNode,
                             bool out)
 {
