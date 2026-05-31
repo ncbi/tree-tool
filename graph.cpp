@@ -65,8 +65,11 @@ void DiGraph::Node::qc () const
     return;
   Root::qc ();
     
-  QC_IMPLY (graph, *graphIt == this);
-  if (! graph)
+  if (graph)
+  {
+    QC_ASSERT (*graphIt == this);
+  }
+  else
   	for (const bool b : {false, true})
   	  { QC_ASSERT (arcs [b]. empty ()); }
 }
@@ -373,6 +376,8 @@ void DiGraph::Arc::qc () const
       
   QC_ASSERT (node [false]);
   QC_ASSERT (node [true]);
+  QC_ASSERT (node [false] -> graph);
+  QC_ASSERT (node [false] -> graph == node [true] -> graph);
 }
 
 
