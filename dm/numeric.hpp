@@ -149,7 +149,7 @@ inline bool negative (Real x, Real delta = epsilon)
   
 inline bool leRealRel (Real x, Real y, Real delta = epsilon)
   { return    leReal (x, y) 
-           || leReal (x / y, 1.0, delta);
+           || (! y || leReal (x / y, 1.0, delta));
   }
   
 inline bool geRealRel (Real x, Real y, Real delta = epsilon)
@@ -264,17 +264,12 @@ private:
   bool hasMinusInf {false};
 public:
 
+
   explicit Sum (Real initMaxAbs = NaN);
     // Invokes: reset()
  ~Sum ();
 
-private:
-  int absAddendum2index (Real a) const;
-    // Return: < n
-  void stabilize (size_t i);
-    // Time: O(n)
-  void setMaxAbs (Real intiMaxAbs);
-public:
+
   void reset (Real initMaxAbs = NaN);
     // Faster if initMaxAbs >= max |X|
   void add (Real x);
@@ -282,6 +277,12 @@ public:
     // Invokes: stabilize()
   Real get () const;
     // Return: sum bucket[]
+private:
+  int absAddendum2index (Real a) const;
+    // Return: < n
+  void stabilize (size_t i);
+    // Time: O(n)
+  void setMaxAbs (Real intiMaxAbs);
 };
 
 
