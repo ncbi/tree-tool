@@ -807,7 +807,7 @@ ORD_ATTR1* RealAttr1::MakeOrdAttr (const char* Suffix,
       if (! Attr->AddCateg (CategName))
         {
           delete Attr;
-          return NULL;
+          return nullptr;
         }
     }
   
