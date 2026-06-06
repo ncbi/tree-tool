@@ -544,7 +544,7 @@ struct ThisApplication final : Application
 
           bool predictionImproved = false;
 
-          if (! skip_len)            
+        //if (! skip_len)            
           {
             const Chronometer_OnePass cop ("Initial arc lengths");
 
@@ -553,25 +553,28 @@ struct ThisApplication final : Application
             cout << tree->absCriterion2str () << endl;
             tree->saveFile (output_tree_tmp); 
 
-            section ("Optimizing topology: arc lengths at each arc", true);
-            const size_t lenArc_deleted = tree->optimizeLenArc ();
-            cout << "# Nodes deleted = " << lenArc_deleted << endl;
-            cout << tree->absCriterion2str () << endl;
-            tree->saveFile (output_tree_tmp); 
-
-            section ("Optimizing topology: arc lengths at each node", true);
-            const size_t lenNode_deleted = tree->optimizeLenNode ();
-            cout << "# Nodes deleted = " << lenNode_deleted << endl;
-            cout << tree->absCriterion2str () << endl;
-            tree->saveFile (output_tree_tmp); 
+            if (! skip_len)            
+            {
+              section ("Optimizing topology: arc lengths at each arc", true);
+              const size_t lenArc_deleted = tree->optimizeLenArc ();
+              cout << "# Nodes deleted = " << lenArc_deleted << endl;
+              cout << tree->absCriterion2str () << endl;
+              tree->saveFile (output_tree_tmp); 
+    
+              section ("Optimizing topology: arc lengths at each node", true);
+              const size_t lenNode_deleted = tree->optimizeLenNode ();
+              cout << "# Nodes deleted = " << lenNode_deleted << endl;
+              cout << tree->absCriterion2str () << endl;
+              tree->saveFile (output_tree_tmp); 
             
+              if (lenArc_deleted || lenNode_deleted)
+                predictionImproved = true;
+            }
+              
             tree->qc ();
             if (verbose ())
               tree->saveText (cout);  
             tree->reportErrors (cout);
-            
-            if (lenArc_deleted || lenNode_deleted)
-              predictionImproved = true;
           }
           
 
