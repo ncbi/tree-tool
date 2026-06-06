@@ -17,6 +17,7 @@ ALL=	\
   colors_test \
   connectPairs \
   curl_easy_test \
+  dir_size \
   effectiveSize \
   extractPairs \
   file2hash \
@@ -75,6 +76,12 @@ curl_easy_test.o: $(COMMON_HPP) $(CPP_DIR)/curl_easy.hpp
 curl_easy_testOBJS=curl_easy_test.o $(CPP_DIR)/common.o $(CPP_DIR)/curl_easy.o
 curl_easy_test: $(curl_easy_testOBJS)
 	$(CXX) -o $@ $(curl_easy_testOBJS) $(LIBS) -lcurl
+	$(ECHO)
+
+dir_size.o: $(COMMON_HPP)  
+dir_sizeOBJS=dir_size.o $(CPP_DIR)/common.o
+dir_size: $(dir_sizeOBJS)
+	$(CXX) -o $@ $(dir_sizeOBJS) $(LIBS)
 	$(ECHO)
 
 effectiveSize.o:  $(COMMON_HPP)  
