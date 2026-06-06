@@ -4,14 +4,14 @@ source $THIS/../bash_common.sh
 if [ $# -ne 4 ]; then
   echo "Update #1/dissim"
   echo "#1: incremental distance tree directory"
-  echo "#2: compute dissimilarity requests (0/1)"
-  echo "#3: save old #1/dissim in #1/dissim.<version>.gz (0/1)"
+  echo "#2: save old #1/dissim in #1/dissim.<version>.gz (0/1)"
+  echo "#3: compute dissimilarity requests (0/1)"
   echo "#4: optimize the tree (0/1)"
   exit 1
 fi
 INC=$1
-REQ=$2
-SAVE=$3
+SAVE=$2
+REQ=$3
 OPTIM=$4
 
 
@@ -55,17 +55,18 @@ else
   mv $TMP.dissim-add $INC/dissim
   > $INC/indiscern
   $THIS/distTree_inc_dissim2indiscern.sh $INC $INC/dissim
-  section "Updating $INC/tree"
-  cp $INC/tree $INC/hist/tree.$VER
-  gzip $INC/hist/tree.$VER
-  VARIANCE=$( cat $INC/variance )
-  OPTIM_PARAM=""
-  if [ $OPTIM == 1 ]; then
-    OPTIM_PARAM="-optimize  -skip_len  -subgraph_iter_max 2"
-  fi
-  $THIS/makeDistTree  -data $INC/  -output_tree $TMP.tree  -threads $THREADS  -variance $VARIANCE  -fix_discernible  $OPTIM_PARAM > $INC/hist/makeDistTree.$VER
-  mv $TMP.tree $INC/tree
 fi
+
+section "Updating $INC/tree"
+cp $INC/tree $INC/hist/tree.$VER
+gzip $INC/hist/tree.$VER
+VARIANCE=$( cat $INC/variance )
+OPTIM_PARAM=""
+if [ $OPTIM == 1 ]; then
+  OPTIM_PARAM="-optimize  -subgraph_iter_max 5"
+fi
+$THIS/makeDistTree  -data $INC/  -output_tree $TMP.tree  -threads $THREADS  -variance $VARIANCE  -fix_discernible  $OPTIM_PARAM > $INC/hist/makeDistTree.$VER
+mv $TMP.tree $INC/tree
 
 section "QC $INC/indiscern"
 $THIS/distTree_inc_indiscern_qc.sh $INC 0 0
