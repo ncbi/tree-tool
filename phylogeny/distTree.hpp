@@ -1184,6 +1184,8 @@ public:
   Real target2_sum {NaN};
     // = sum_{dissim in dissims} dissim.target^2 * dissim.mult        
   Real absCriterion {NaN};
+    // >= 0
+    // < inf
     // = L2LinearNumPrediction::absCriterion  
 
 private:
