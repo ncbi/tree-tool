@@ -50,7 +50,7 @@ if [ -s $TMP.new ]; then
   ln -s $QUERY $INC/query
   $THIS/../dissim/dna_align_service $ALIGN $QUERY  -threads 20  -log $TMP.query.log  -quiet &
 
-  $THIS/distTree_inc_refresh_dissim.sh $INC 1 0 0
+  $THIS/distTree_inc_refresh_dissim.sh $INC 0 1 0
 
   $THIS/distTree_inc_new_cmd.sh $INC "touch" $TMP.new
   $THIS/distTree_inc.sh $INC 1 0 '' ''
