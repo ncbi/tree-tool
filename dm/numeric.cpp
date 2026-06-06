@@ -160,14 +160,13 @@ long round (Real a)
 
 Sum::Sum (Real initMaxAbs)
 // Platform dependent ??
-: n              (324),
-  step           (30),  
-
-  stepInc        (0.9),
-  logStep        (log (step)),
-  bucket         (NULL),
-  maxAbs         (NaN),
-  logStep_MaxAbs (NaN)
+: n              (324)
+, step           (30)
+, stepInc        (0.9)
+, logStep        (log (step))
+, bucket         (nullptr)
+, maxAbs         (NaN)
+, logStep_MaxAbs (NaN)
 {     
   ASSERT (n > 0);
   ASSERT (step > 2.0 * 10.0);
@@ -192,11 +191,9 @@ int Sum::absAddendum2index (Real a) const
   ASSERT (maxAbs >= 0.0);
   ASSERT (! isNan (logStep_MaxAbs));
   ASSERT (a > 0.0);
-  
-  
+    
   const int i = (int) floor (logStep_MaxAbs - log (a) / logStep);
-  ASSERT (i <= (int) n);
-      
+  ASSERT (i <= (int) n);      
 
   return i;
 }
@@ -207,9 +204,7 @@ void Sum::stabilize (size_t i)
 {
   ASSERT (i < n);
   
- 
   // If i is flagged then bucket [i] == 0.0
-
 
   if (bucket [i] == 0.0 || 
       absAddendum2index (fabs (bucket [i])) == (int) i)
@@ -265,31 +260,27 @@ void Sum::add (Real x)
     hasMinusInf = true;
     return;
   }
- 
- 
+  
   if (x == 0.0)
     return;
-      
-  
+       
   const Real a = fabs (x);
   ASSERT (a != inf);
   
-  
   if (isNan (maxAbs))
-    {
-      setMaxAbs (a * step * stepInc);
-      ASSERT (absAddendum2index (a) == 0);
-      ASSERT (bucket [0] == 0.0);
-    }
+  {
+    setMaxAbs (a * step * stepInc);
+    ASSERT (absAddendum2index (a) == 0);
+    ASSERT (bucket [0] == 0.0);
+  }
   else if (a > maxAbs)
-    {  
-      setMaxAbs (a * step * stepInc);
-      ASSERT (absAddendum2index (a) == 0);
-      // Going up may violate the bucket compatibility conditions
-      FOR_REV (size_t, i, n)
-        stabilize (i);
-    }
-
+  {  
+    setMaxAbs (a * step * stepInc);
+    ASSERT (absAddendum2index (a) == 0);
+    // Going up may violate the bucket compatibility conditions
+    FOR_REV (size_t, i, n)
+      stabilize (i);
+  }
     
   const int i = absAddendum2index (a);
   ASSERT (i >= 0);     
