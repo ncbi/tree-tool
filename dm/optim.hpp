@@ -121,13 +121,13 @@ struct FuncMult;
 struct MoveFunc : Func1, Nocopy
 // Optimization of FuncMult in 1 dimension in the neighborhood of MFX0
 {
-  FuncMult* const MF;
-    // != NULL
-  const MVector* const MFX0;
-    // != NULL
+  FuncMult* const MF {nullptr};
+    // !nullptr
+  const MVector* const MFX0 {nullptr};
+    // !nullptr
     // Requires: Size = (MF->maxArgNum, 1)
-  const MVector* const MFGradient;
-    // != NULL
+  const MVector* const MFGradient {nullptr};
+    // !nullptr
     // Requires: Size = (MF->maxArgNum, 1)
   MVector MFX;
     // x for MF->f 
