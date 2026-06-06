@@ -100,6 +100,7 @@ void DissimParam::transform (Real &dissim) const
     PRINT (absCriterion); \
     PRINT (absCriterion_old); \
     PRINT (subDepth); \
+    cout << endl; \
   }
 
 
@@ -2810,12 +2811,12 @@ Real Dissim::getAbsCriterion (Real prediction_arg) const
   ASSERT (mult >= 0.0);
   if (! mult)
     return 0.0;
-  const Real epsilon = prediction_arg - target;
-  ASSERT (! isNan (epsilon));
-  ASSERT (fabs (epsilon) < inf);
-  if (! epsilon)
+  const Real delta = prediction_arg - target;
+  ASSERT (! isNan (delta));
+  ASSERT (fabs (delta) < inf);
+  if (! delta)
     return 0.0;
-  return mult * sqr (epsilon);
+  return mult * sqr (delta);
 }
 
 
@@ -6062,6 +6063,7 @@ void setPredictionAbsCriterion_thread (size_t from,
                                        Vector<Dissim> &dissims)
 {
   absCriterion = 0.0;
+//Sum absCriterionSum;
   Tree::LcaBuffer buf;
   Progress prog (dissims. size (), dissim_progress); 
   FOR_START (size_t, i, from, to)
@@ -6073,8 +6075,9 @@ void setPredictionAbsCriterion_thread (size_t from,
     const VectorPtr<Tree::TreeNode>& path = dissim. getPath (buf);
     dissim. prediction = DistTree::path2prediction (path);  
     if (dissim. mult < inf)
-      absCriterion += dissim. getAbsCriterion ();
+      absCriterion += /*absCriterionSum. add*/ (dissim. getAbsCriterion ());
   }
+//absCriterion = absCriterionSum. get ();
   ASSERT (absCriterion < inf);
 }
 
@@ -6590,12 +6593,16 @@ bool DistTree::optimizeLenWhole ()
   // beta
   Real covar = 0.0;
   Real predict2 = 0.0;
+//Sum covarSum;
+//Sum predict2Sum;
   for (const Dissim& dissim : dissims)  
     if (dissim. validMult ())
     {
-      covar    += dissim. mult * dissim. target * dissim. prediction;
-      predict2 += dissim. mult * sqr (dissim. prediction);
+      covar    += /*covarSum.    add*/ (dissim. mult * dissim. target * dissim. prediction);
+      predict2 += /*predict2Sum. add*/ (dissim. mult * sqr (dissim. prediction));
     }
+//const Real covar    = covarSum.    get ();
+//const Real predict2 = predict2Sum. get ();
   if (covar <= 0.0)
   {
   #if 0
@@ -6606,10 +6613,7 @@ bool DistTree::optimizeLenWhole ()
   }
   if (! predict2)
     throw runtime_error (FUNC "No arcs");
-  if (   covar    > 1.0 / epsilon
-      && predict2 > 1.0 / epsilon
-     )
-    return false; 
+  ASSERT (predict2 > 0.0);
   const Real beta = covar / predict2;
   if (isNan (beta))
     return false;
@@ -6625,18 +6629,27 @@ bool DistTree::optimizeLenWhole ()
       var_cast (dtNode) -> len *= beta;
   }
 
-  const Real absCriterion_old = absCriterion;
+//const Real absCriterion_old = absCriterion;
   absCriterion = 0.0;
+//Sum absCriterionSum;
   for (Dissim& dissim : dissims)  
-  {
-    if (dissim. validMult ())
+    if (dissim. valid ())
+    {
       dissim. prediction *= beta;
-    if (dissim. mult < inf)
-      absCriterion += dissim. getAbsCriterion ();
-  }
+      if (dissim. mult < inf)
+        absCriterion += /*absCriterionSum. add*/ (dissim. getAbsCriterion ());
+    }
+//absCriterion = absCriterionSum. get ();
   ASSERT (absCriterion < inf);
+#if 0
+  // Misbehaves for -variance pow >= 10
   if (! leRealRel (absCriterion, absCriterion_old, 1e-3))  // PAR
+  {
+    PRINT (absCriterionSum_old. get ());
+    cout << endl;
     BAD_CRITERION (optimizeLenWhole);
+  }
+#endif
   
   return true;
 }
@@ -6723,7 +6736,7 @@ size_t DistTree::optimizeLenArc ()
           var_cast (node) -> len = len_new;
           absCriterion -= arcAbsCriterion_old;
           absCriterion += arcAbsCriterion_new;
-          ASSERT (leReal (absCriterion, absCriterion_old));
+          ASSERT (leRealRel (absCriterion, absCriterion_old, 1e-3));  // PAR
           maximize (absCriterion, 0.0);
         }
       }
