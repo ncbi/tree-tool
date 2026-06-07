@@ -157,7 +157,7 @@ struct Viewer
         ASSERT (topIndex < bottomIndex);
         maximize (curIndex, topIndex);
         minimize (curIndex, bottomIndex - 1);
-        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up  Down  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search  n:Next found" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
+        drawMenu (fieldSize, "[" + getFileName (xmlFName) + "]  Up/^u Down/^d  PgUp  PgDn  Home  End  ^F  Enter:Open/Close  a:Open all  F3:Search  n:Next found" + ifS (nc. hasColors, "  c:color") + "  q:Quit");
           // uncolor all ??
           // Complex keys are trapped by the treminal
           // "h": explain [a/b] ??
