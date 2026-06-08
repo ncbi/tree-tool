@@ -1322,7 +1322,6 @@ template <typename T>
       { it = itNext;
         if (it == t. end ())
           return false;
-        itNext = it;
         itNext++;
         return true;
       }
