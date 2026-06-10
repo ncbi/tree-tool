@@ -14,6 +14,7 @@ endif
 
 ALL=	\
   ascii \
+  assignment \
   colors_test \
   connectPairs \
   curl_easy_test \
@@ -51,6 +52,12 @@ ascii.o: $(COMMON_HPP)
 asciiOBJS=ascii.o $(CPP_DIR)/common.o
 ascii: $(asciiOBJS)
 	$(CXX) -o $@ $(asciiOBJS) $(LIBS)
+	$(ECHO)
+
+assignment.o: $(COMMON_HPP) $(CPP_DIR)/graph.hpp
+assignmentOBJS=assignment.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
+assignment: $(assignmentOBJS)
+	$(CXX) -o $@ $(assignmentOBJS) $(LIBS)
 	$(ECHO)
 
 colors_test.o: $(COMMON_HPP)  

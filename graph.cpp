@@ -132,8 +132,8 @@ void DiGraph::Node::detach ()
 
 
 
-bool DiGraph::Node::isIncident (const DiGraph::Node* n,
-                                bool out) const
+const DiGraph::Arc* DiGraph::Node::incident (const DiGraph::Node* n,
+                                             bool out) const
 {
 	ASSERT (n);
 	ASSERT (graph);
@@ -141,8 +141,8 @@ bool DiGraph::Node::isIncident (const DiGraph::Node* n,
 
   for (const Arc* arc : arcs [out])
     if (arc->node [out] == n)
-    	return true;
-  return false;
+    	return arc;
+  return nullptr;
 }
 
 
@@ -594,7 +594,9 @@ void DiGraph::borrowArcs (const Node2Node &other2this,
     const VectorPtr<Node> otherNeighborhood (other->getNeighborhood (true));
     for (const Node* otherNeighbor : otherNeighborhood)
       if (const Node* to = findPtr (other2this, otherNeighbor))
-        if (parallelAllowed || ! from->isIncident (to, true))
+        if (   parallelAllowed 
+            || ! from->incident (to, true)
+           )
           new Arc ( var_cast (from)
                   , var_cast (to)
                   );

@@ -133,9 +133,10 @@ struct DiGraph : Root
 		  { return getName (); }
 		virtual string getLeafName () const
 		  { return getName (); }
-    bool isIncident (const Node* n,
-                     bool out) const;
-      // Return: n is among arcs[out]->node[out]
+    const DiGraph::Arc* incident (const Node* n,
+                                  bool out) const;
+      // Return: start = this, end = n (or the other way around)
+      //         may be nullptr
     bool isIncidentExcept (const Node* n,
                            bool out) const;
     size_t getDegree () const
@@ -239,6 +240,10 @@ struct DiGraph : Root
       // Preserves the ordering of node[!out]->arcs[out]
     bool selfLoop () const
       { return node [false] == node [true]; }
+    bool attached () const
+      { return    node [false] -> graph
+               && node [true]  -> graph;
+      }
   };
 
 
