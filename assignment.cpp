@@ -225,9 +225,9 @@ struct ThisApplication final : Application
 	  
 	  // Naive algorithm ??
 	  DiGraph gr;  // Bipartite: from obj1 to obj2
+	  map<string,AssignmentNode*> obj1_2node;
 	  {
   	  LineInput f (fName);
-  	  map<string,AssignmentNode*> obj1_2node;
   	  map<string,AssignmentNode*> obj2_2node;
   	  while (f. nextLine ())
   	  {
