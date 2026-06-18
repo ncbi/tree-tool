@@ -14,7 +14,6 @@ endif
 
 ALL=	\
   ascii \
-  assignment \
   colors_test \
   connectPairs \
   count \
@@ -41,6 +40,8 @@ ALL=	\
   splitList \
   str2hash \
   trav
+
+#  assignment  ??
 
 ifdef AT_NCBI
   all:	$(ALL) \
