@@ -36,13 +36,12 @@
 #define EVOLUTION_HPP
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "../dm/numeric.hpp"
-using namespace DM_sp;
 
 
 
-namespace DM_sp
+namespace Evol_sp
 {
 
 

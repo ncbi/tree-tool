@@ -48,7 +48,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
 	ThisApplication ()
 		: Application ("Replace a subtree in a \"whole\" distance tree with a rerooted \"part\" tree")
@@ -143,7 +143,7 @@ struct ThisApplication : Application
           ASSERT (lca == root);
           const Real dissim = DistTree::path2prediction (path);
           ASSERT (dissim >= 0.0);
-          ASSERT (DM_sp::finite (dissim));
+          ASSERT (Common_sp::finite (dissim));
           leaf2dissims << NewLeaf::Leaf2dissim (findPtr (part. name2leaf, leaf->getName ()), dissim / ratio, NaN);
         }
       }    

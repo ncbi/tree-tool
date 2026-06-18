@@ -87,7 +87,7 @@ if [ -s $TMP.diff ]; then
   N=$( < $TMP.dist_diff wc -l )
   M=$( echo "$N / 2" | bc )
   MED=$( head -$M $TMP.dist_diff | tail -1 )
-  < $TMP.dist_diff count > $TMP.count
+  < $TMP.dist_diff $THIS/../count > $TMP.count
   MEAN=$( grep -w "^mean" $TMP.count | cut -f 2 )
   MAX=$( grep -w "^max" $TMP.count | cut -f 2 )
   D1=$( grep -vx "0" $TMP.dist_diff | grep -c  '^-' || true )

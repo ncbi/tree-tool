@@ -34,10 +34,11 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 #include "tsv.hpp"
 using namespace Common_sp;
-#include "../dm/numeric.hpp"
 #include "../dissim/evolution.hpp"
+using namespace Evol_sp;
 #include "../version.inc"
 
 #include "../common.inc"
@@ -132,13 +133,13 @@ struct ThisApplication final : Application
             {
               prog ();
               ASSERT (it1->elem > it2->elem);
-              const Real dissim = DM_sp::intersection2dissim ( (Real) it1->keys. size ()
-                                                             , (Real) it2->keys. size ()
-                                                             , (Real) it1->keys. intersectSize (it2->keys)
-                                                             , 1.0
-                                                             , 0.5
-                                                             , true
-                                                             );
+              const Real dissim = intersection2dissim ( (Real) it1->keys. size ()
+                                                      , (Real) it2->keys. size ()
+                                                      , (Real) it1->keys. intersectSize (it2->keys)
+                                                      , 1.0
+                                                      , 0.5
+                                                      , true
+                                                      );
               if (! isNan (dissim))
               {
                 ASSERT (dissim >= 0.0);              

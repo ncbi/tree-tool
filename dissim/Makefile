@@ -40,7 +40,7 @@ additive:	$(additiveOBJS)
 	$(CXX) -o $@ $(additiveOBJS) $(LIBS)
 	$(ECHO)
 
-blast2ani.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp
+blast2ani.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp
 blast2aniOBJS=blast2ani.o $(NUMERIC_OBJ)
 blast2ani:	$(blast2aniOBJS)
 	$(CXX) -o $@ $(blast2aniOBJS) $(LIBS) 
@@ -52,13 +52,13 @@ blast2cons:	$(blast2consOBJS)
 	$(ECHO)
 
 combine_dissims.o:  $(NUMERIC_HPP) 
-combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
+combine_dissimsOBJS=combine_dissims.o $(CPP_DIR)/common.o $(CPP_DIR)/numeric.o
 combine_dissims:	$(combine_dissimsOBJS)
 	$(CXX) -o $@ $(combine_dissimsOBJS) $(LIBS)
 	$(ECHO)
 
 conv_comb.o:  $(NUMERIC_HPP) 
-conv_combOBJS=conv_comb.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o
+conv_combOBJS=conv_comb.o $(CPP_DIR)/common.o $(CPP_DIR)/numeric.o
 conv_comb:	$(conv_combOBJS)
 	$(CXX) -o $@ $(conv_combOBJS) $(LIBS)
 	$(ECHO)

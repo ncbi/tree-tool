@@ -36,8 +36,8 @@
 #define PREDICTNUM_HPP_78455
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;

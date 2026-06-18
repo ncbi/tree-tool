@@ -37,8 +37,8 @@
 
 #include "../common.hpp"
 #include "../graph.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "../dm/numeric.hpp"
 #include "../dm/dataset.hpp"
 using namespace DM_sp;
 

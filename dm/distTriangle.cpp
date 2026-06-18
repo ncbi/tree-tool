@@ -35,8 +35,8 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
@@ -231,7 +231,7 @@ Save clusters in " + dmSuff + "-files\
       FOR (size_t, col, ds. objs. size ())
       {
         const Real r = dist->get (row, col);
-        if (   DM_sp::finite (r)
+        if (   Common_sp::finite (r)
             && row != col
            )
           distMV << r;

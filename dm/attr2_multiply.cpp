@@ -35,8 +35,8 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "matrix.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
@@ -86,7 +86,7 @@ struct ThisApplication final : Application
     }
     ASSERT (dist);
     
-    dist->decimals += (uint) max<long> (0, - DM_sp::round (log10 (coefficient)));
+    dist->decimals += (uint) max<long> (0, - Common_sp::round (log10 (coefficient)));
     
     Matrix& matr = dist->matr;
     FOR (size_t, row, ds. objs. size ())

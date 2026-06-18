@@ -387,7 +387,7 @@ Real FuncMult::optimizeLinear (bool           Min,
 {
   ASSERT (MF);
   ASSERT (dK > 0.0);
-  ASSERT (finite (dK));
+  ASSERT (Common_sp::finite (dK));
 
 
   Unverbose unv;
@@ -400,7 +400,7 @@ Real FuncMult::optimizeLinear (bool           Min,
   Real KPrevPrev = 0.0;
   Real YPrevPrev = MF->f (KPrevPrev);
   ASSERT (! isNan (YPrevPrev));
-  ASSERT (finite (YPrevPrev));
+  ASSERT (Common_sp::finite (YPrevPrev));
   if (practicallyOptimal (Min, PracticalOptimum, YPrevPrev))
     return KPrevPrev;
   
@@ -442,7 +442,7 @@ Real FuncMult::optimizeLinear (bool           Min,
     if (verbose ())      
       cerr << "  Y=" << Y << "  K=" << K << endl;
   }
-  ASSERT (finite (YPrev));
+  ASSERT (Common_sp::finite (YPrev));
   
   
   if (Rough)
@@ -450,7 +450,7 @@ Real FuncMult::optimizeLinear (bool           Min,
       return KPrev;
   
 
-  if (! finite (Y))
+  if (! Common_sp::finite (Y))
   {
     Real KL = KPrev;
     Real KU = K;
@@ -461,7 +461,7 @@ Real FuncMult::optimizeLinear (bool           Min,
       if (verbose ())      
         cerr << "  YM=" << YM << "  M=" << M << "  KL=" << KL << "  KU=" << KU << endl;
       ASSERT (! isNan (YM));
-      if (finite (YM))
+      if (Common_sp::finite (YM))
         KL = M;
       else
         KU = M;
@@ -472,7 +472,7 @@ Real FuncMult::optimizeLinear (bool           Min,
       cerr << "  Y=" << Y << "  K=" << K << endl;
   }
   ASSERT (! isNan (Y));
-  ASSERT (finite (Y));
+  ASSERT (Common_sp::finite (Y));
   if (practicallyOptimal (Min, PracticalOptimum, Y))
     return K;
 
@@ -525,7 +525,7 @@ bool FuncMult::optimizeGradient (bool         Min,
     Real dK = inf;
     FOR (unsigned short, ArgNum, maxArgNum)
       minimize (dK, dX [ArgNum] / fabs (Gradient [ArgNum]));
-    ASSERT (finite (dK));
+    ASSERT (Common_sp::finite (dK));
     ASSERT (dK > 0.0);
 
     // X, Gradient, dK -> K
@@ -598,7 +598,7 @@ Real FuncMult::getGradientMove (bool Min,
 {
   ASSERT (X.        rowsSize (false) /*Len [false]*/ == maxArgNum);
   ASSERT (Gradient. rowsSize (false) /*Len [false]*/ == maxArgNum);
-  ASSERT (finite (dK));
+  ASSERT (Common_sp::finite (dK));
   ASSERT (dK > 0.0);
   
   GradientMoveFunc mf (this, & X, & Gradient);
@@ -746,7 +746,7 @@ public:
       Q. copyShift (false, 0, 0, *MFHessian, false);
       const Real Lambda = 1.0 / X;
       const Real x1 = 1.0 + Lambda;
-      ASSERT (finite (x1));
+      ASSERT (Common_sp::finite (x1));
       FOR (size_t, Row, Q. rowsSize (false) /*Len [false]*/)
         Q. putProd (false, Row, Row, x1);
 
@@ -799,7 +799,7 @@ bool FuncMult::getMarquardtX (bool         Min,
 
   //cout << "dK = " << dK << endl;
 
-    if (! finite (dK))  // Marquardt method is inapplicable
+    if (! Common_sp::finite (dK))  // Marquardt method is inapplicable
       return false;  
       
     const Real K = optimizeLinear (Min, PracticalOptimum, & MF, dK, true);

@@ -35,8 +35,8 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "dataset.hpp"
 #include "prediction.hpp"
 using namespace DM_sp;

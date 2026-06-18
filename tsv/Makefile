@@ -9,7 +9,6 @@ endif
 
 
 
-
 ############################### Programs ################################
 
 ALL=	\
@@ -102,8 +101,8 @@ tsv_check_key:	$(tsv_check_keyOBJS)
 	$(CXX) -o $@ $(tsv_check_keyOBJS) $(LIBS)
 	$(ECHO)
 
-tsv_cluster.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(DM_DIR)/numeric.hpp $(DISSIM_DIR)/evolution.hpp
-tsv_clusterOBJS=tsv_cluster.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/numeric.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
+tsv_cluster.o:  $(COMMON_HPP) $(TSV_DIR)/tsv.hpp $(CPP_DIR)/numeric.hpp $(DISSIM_DIR)/evolution.hpp
+tsv_clusterOBJS=tsv_cluster.o $(CPP_DIR)/common.o $(TSV_DIR)/tsv.o $(DISSIM_DIR)/evolution.o $(CPP_DIR)/numeric.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
 tsv_cluster:	$(tsv_clusterOBJS)
 	$(CXX) -o $@ $(tsv_clusterOBJS) $(LIBS)
 	$(ECHO)

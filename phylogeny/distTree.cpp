@@ -1410,7 +1410,7 @@ void Steiner::copySubtree (Steiner &to,
                            Real len_coeff) const
 {
   ASSERT (len_coeff > 0.0);
-  ASSERT (DM_sp::finite (len_coeff));
+  ASSERT (Common_sp::finite (len_coeff));
 
 
   DistTree& tree_to = var_cast (to. getDistTree ());
@@ -5354,7 +5354,7 @@ Vector<DissimLine> DistTree::getDissimLines (const string& fName,
       while (f. nextLine ())
       {
         DissimLine dl (f. line, f. lineNum);
-        if (DM_sp::finite (dl. dissim))
+        if (Common_sp::finite (dl. dissim))
         {
           dissimLines << std::move (dl);
           ASSERT (dl. name1. empty ());
@@ -9761,7 +9761,7 @@ void NewLeaf::Leaf2dissim::qc () const
   QC_ASSERT (leaf);
   
   QC_ASSERT (dissim >= 0.0);
-  QC_ASSERT (DM_sp::finite (dissim));
+  QC_ASSERT (Common_sp::finite (dissim));
   
   QC_ASSERT (mult >= 0.0);  
 //QC_ASSERT (DM_sp::finite (mult));  // distTree_inc_place.sh can be used for an indiscernible object

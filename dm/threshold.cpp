@@ -35,9 +35,9 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 #include "../tsv/tsv.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "dataset.hpp"
 using namespace DM_sp;
 #include "../version.inc"

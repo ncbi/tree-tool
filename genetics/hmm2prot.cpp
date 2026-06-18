@@ -35,9 +35,8 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "../dm/numeric.hpp"
-using namespace DM_sp;
 #include "hmm.hpp"
 using namespace Hmm_sp;
 #include "../version.inc"

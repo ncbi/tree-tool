@@ -41,7 +41,7 @@
 #include "nw/nw_band_aligner.hpp"
 
 #include "evolution.hpp"
-using namespace DM_sp;
+using namespace Evol_sp;
 
 #include "../common.inc"
 

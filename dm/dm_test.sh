@@ -16,9 +16,6 @@ TMP=$( mktemp )
 cd $THIS
 
 
-section "numeric"
-$THIS/numeric_test -qc go 
-
 section "matrix"
 $THIS/matrix_test -qc go
 

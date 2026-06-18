@@ -36,8 +36,8 @@
 #define DATASET_HPP_63472
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "matrix.hpp"
 using namespace DM_sp;
 
@@ -1091,7 +1091,7 @@ struct PositiveAttr2 final : RealAttr2
                  Real distance_max) const
     // Input: distance_max: >= 0
     { const Real d = get (row, col);
-      return DM_sp::finite (d) && (! distance_max || d <= distance_max);
+      return Common_sp::finite (d) && (! distance_max || d <= distance_max);
     }
 };
 
@@ -2990,7 +2990,7 @@ struct Normal final : LocScaleDistribution
   // UniDistribution
 private:
   Prob cdf_ (Real x) const final
-    { return (erf (stnd (x) / sqrt_2) + 1.0) / 2.0; }
+    { return (Common_sp::erf (stnd (x) / sqrt_2) + 1.0) / 2.0; }
   Real rand_ () const final;
 public:
   Real getMean () const final
@@ -3365,7 +3365,7 @@ private:
     // halfWindow = 0.0 => inf or 0.0
   Prob cdf_ (Real x) const final;
   Real rand_ () const final
-    { return points [(size_t) round (randProb () * ((Real) points. size () - 1))]. value; }
+    { return points [(size_t) Common_sp::round (randProb () * ((Real) points. size () - 1))]. value; }
     // Bootstrap
 public:
   Real getMean () const final;

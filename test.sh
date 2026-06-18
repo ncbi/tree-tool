@@ -3,6 +3,9 @@ THIS=$( realpath "$( dirname $0 )" )
 source $THIS/bash_common.sh
 
 
+super_section "numeric"
+$THIS/numeric_test -qc go 
+
 super_section "graph"
 $THIS/graph_test go -qc
 

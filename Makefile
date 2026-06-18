@@ -17,6 +17,7 @@ ALL=	\
   assignment \
   colors_test \
   connectPairs \
+  count \
   curl_easy_test \
   dir_size \
   effectiveSize \
@@ -30,6 +31,7 @@ ALL=	\
   mergePairs \
   min_spanning_forest \
   multilist2subset \
+	numeric_test \
   objHash_find \
   random_words \
   replace_dict \
@@ -54,8 +56,8 @@ ascii: $(asciiOBJS)
 	$(CXX) -o $@ $(asciiOBJS) $(LIBS)
 	$(ECHO)
 
-assignment.o: $(COMMON_HPP) $(CPP_DIR)/graph.hpp
-assignmentOBJS=assignment.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
+assignment.o: $(COMMON_HPP) $(CPP_DIR)/graph.hpp $(CPP_DIR)/numeric.hpp $(CPP_DIR)/bipartite.hpp 
+assignmentOBJS=assignment.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o $(CPP_DIR)/numeric.o $(CPP_DIR)/bipartite.o
 assignment: $(assignmentOBJS)
 	$(CXX) -o $@ $(assignmentOBJS) $(LIBS)
 	$(ECHO)
@@ -70,6 +72,12 @@ connectPairs.o: $(COMMON_HPP)
 connectPairsOBJS=connectPairs.o $(CPP_DIR)/common.o
 connectPairs: $(connectPairsOBJS)
 	$(CXX) -o $@ $(connectPairsOBJS) $(LIBS)
+	$(ECHO)
+
+count.o:	$(CPP_DIR)/numeric.hpp $(COMMON_HPP) 
+countOBJS=count.o $(NUMERIC_OBJ) 
+count:	$(countOBJS)
+	$(CXX) -o $@ $(countOBJS) $(LIBS)
 	$(ECHO)
 
 cpp_test.o: $(COMMON_HPP) 
@@ -167,6 +175,12 @@ ncurses_key_test.o: $(COMMON_HPP) $(CPP_DIR)/ncurses.hpp
 ncurses_key_testOBJS=ncurses_key_test.o $(CPP_DIR)/common.o $(CPP_DIR)/ncurses.o
 ncurses_key_test: $(ncurses_key_testOBJS)
 	$(CXX) -o $@ $(ncurses_key_testOBJS) $(LIBS) -lncursesw
+	$(ECHO)
+
+numeric_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp 
+numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
+numeric_test:	$(numeric_testOBJS)
+	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
 	$(ECHO)
 
 objHash_find.o:  $(COMMON_HPP) 

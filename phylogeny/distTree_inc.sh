@@ -99,7 +99,7 @@ if true; then
     #tail -n +5 leaf_errors.dm | sort -k 2 -g -r > leaf_errors.txt
 
     section "arc_existence probabilities"
-    tail -n +6 arc_existence.dm | awk '{print $3};'| $THIS/../dm/count | grep -w "count\|sum" > $INC/hist/arc_existence-stat.$VER
+    tail -n +6 arc_existence.dm | awk '{print $3};'| $THIS/../count | grep -w "count\|sum" > $INC/hist/arc_existence-stat.$VER
     cat $INC/hist/arc_existence-stat.$VER
 
     gzip leaf_errors.dm

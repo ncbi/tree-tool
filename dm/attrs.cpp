@@ -108,7 +108,7 @@ struct ThisApplication : Application
     		      FFOR (size_t, i, sample_pure. mult. size ())
     		        if (   (*num) [i] > threshold [true]
     		        	  || (*num) [i] < threshold [false]
-    		        	  || ! DM_sp::finite ((*num) [i])
+    		        	  || ! Common_sp::finite ((*num) [i])
     		        	 )
     		        	sample_pure. mult [i] = 0.0;
     		      const UniVariate<NumAttr1> an_pure (sample_pure, *num);

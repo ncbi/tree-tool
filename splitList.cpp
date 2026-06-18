@@ -56,7 +56,7 @@ Parts are files <out_dir>/<prefix><i>")
 	  addPositional ("size", "# lines in one part");
 	  addPositional ("out_dir", "Output directory");
 	  addKey ("start", "Start number of a part", "1");	  
-	  addFlag ("zero", "Parts strat with 0, otherwise 1");
+	  addFlag ("zero", "Parts start with 0, otherwise 1");
 	  addKey ("prefix", "File name prefix");
 	  addKey ("extension", "File name extension");
 	}

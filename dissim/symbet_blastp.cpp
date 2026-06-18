@@ -35,11 +35,10 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "../dm/numeric.hpp"
-using namespace DM_sp;
 #include "evolution.hpp"
-using namespace DM_sp;
+using namespace Evol_sp;
 #include "../version.inc"
 
 #include "../common.inc"

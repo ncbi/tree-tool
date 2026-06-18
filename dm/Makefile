@@ -25,7 +25,6 @@ all:	\
   char2attr \
   clust \
   clust_binomial \
-  count \
   dataset_test \
   distTriangle \
   dm2dist \
@@ -41,7 +40,6 @@ all:	\
 	mds \
 	mergeSimilarity \
 	normalCdf \
-	numeric_test \
 	obj2missing \
 	pca \
 	pca2clusters \
@@ -51,7 +49,7 @@ all:	\
   threshold \
 	uniKernel \
 	zipf_test
-	
+
 
 attr2_2attr1.o:  $(DM_HPP) 
 attr2_2attr1OBJS=attr2_2attr1.o $(DM_OBJ) 
@@ -119,7 +117,7 @@ char2attr:	$(char2attrOBJS)
 	$(CXX) -o $@ $(char2attrOBJS) $(LIBS)
 	$(ECHO)
 
-circuit.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
+circuit.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
 circuitOBJS=circuit.o $(NUMERIC_OBJ) $(DM_DIR)/matrix.o
 circuit:	$(circuitOBJS)
 	$(CXX) -o $@ $(circuitOBJS) $(LIBS)  
@@ -142,12 +140,6 @@ convex.o:  $(PREDICT_HPP)
 convexOBJS=convex.o $(PREDICT_OBJ) 
 convex:	$(convexOBJS)
 	$(CXX) -o $@ $(convexOBJS) $(LIBS)
-	$(ECHO)
-
-count.o:	$(DM_DIR)/numeric.hpp $(COMMON_HPP) 
-countOBJS=count.o $(NUMERIC_OBJ) 
-count:	$(countOBJS)
-	$(CXX) -o $@ $(countOBJS) $(LIBS)
 	$(ECHO)
 
 dataset_test.o:  $(DM_HPP) 
@@ -222,7 +214,7 @@ logreg_test:	$(logreg_testOBJS)
 	$(CXX) -o $@ $(logreg_testOBJS) $(LIBS)
 	$(ECHO)
 
-matrix_test.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
+matrix_test.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp 
 matrix_testOBJS=matrix_test.o $(NUMERIC_OBJ) $(DM_DIR)/matrix.o
 matrix_test:	$(matrix_testOBJS)
 	$(CXX) -o $@ $(matrix_testOBJS) $(LIBS)  
@@ -246,12 +238,6 @@ normalCdf:	$(normalCdfOBJS)
 	$(CXX) -o $@ $(normalCdfOBJS) $(LIBS)
 	$(ECHO)
 
-numeric_test.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp 
-numeric_testOBJS=numeric_test.o $(NUMERIC_OBJ)
-numeric_test:	$(numeric_testOBJS)
-	$(CXX) -o $@ $(numeric_testOBJS) $(LIBS)
-	$(ECHO)
-
 obj2missing.o:  $(DM_HPP) 
 obj2missingOBJS=obj2missing.o $(DM_OBJ) 
 obj2missing:	$(obj2missingOBJS)
@@ -264,7 +250,7 @@ pca:	$(pcaOBJS)
 	$(CXX) -o $@ $(pcaOBJS) $(LIBS)
 	$(ECHO)
 
-pca2clusters.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp 
+pca2clusters.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp 
 pca2clustersOBJS=pca2clusters.o $(NUMERIC_OBJ)
 pca2clusters:	$(pca2clustersOBJS)
 	$(CXX) -o $@ $(pca2clustersOBJS) $(LIBS)

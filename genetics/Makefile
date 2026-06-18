@@ -117,8 +117,8 @@ blastn2mlst:	$(blastn2mlstOBJS)
 	$(CXX) -o $@ $(blastn2mlstOBJS) $(LIBS) 
 	$(ECHO)
 
-blastp_merge.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
-blastp_mergeOBJS=blastp_merge.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o $(DM_DIR)/matrix.o
+blastp_merge.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(DM_DIR)/matrix.hpp
+blastp_mergeOBJS=blastp_merge.o $(CPP_DIR)/common.o $(CPP_DIR)/numeric.o $(DM_DIR)/matrix.o
 blastp_merge:	$(blastp_mergeOBJS)
 	$(CXX) -o $@ $(blastp_mergeOBJS) $(LIBS) 
 	$(ECHO)
@@ -129,8 +129,8 @@ blastp2exons:	$(blastp2exonsOBJS)
 	$(CXX) -o $@ $(blastp2exonsOBJS) $(LIBS) 
 	$(ECHO)
 
-contig2read_coverage.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(TSV_DIR)/tsv.hpp
-contig2read_coverageOBJS=contig2read_coverage.o $(CPP_DIR)/common.o $(DM_DIR)/numeric.o $(TSV_DIR)/tsv.o
+contig2read_coverage.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(TSV_DIR)/tsv.hpp
+contig2read_coverageOBJS=contig2read_coverage.o $(CPP_DIR)/common.o $(CPP_DIR)/numeric.o $(TSV_DIR)/tsv.o
 contig2read_coverage:	$(contig2read_coverageOBJS)
 	$(CXX) -o $@ $(contig2read_coverageOBJS) $(LIBS) 
 	$(ECHO)
@@ -267,13 +267,13 @@ GeneMark2CDS:	$(GeneMark2CDSOBJS)
 	$(CXX) -o $@ $(GeneMark2CDSOBJS) $(LIBS) 
 	$(ECHO)
 
-hmm_tc1.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(GEN_DIR)/hmm.hpp
+hmm_tc1.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/numeric.hpp $(GEN_DIR)/hmm.hpp
 hmm_tc1OBJS=hmm_tc1.o $(HMM_OBJ) 
 hmm_tc1:	$(hmm_tc1OBJS)
 	$(CXX) -o $@ $(hmm_tc1OBJS) $(LIBS) 
 	$(ECHO)
 
-hmm2prot.o:  $(COMMON_HPP) $(DM_DIR)/numeric.hpp $(GEN_DIR)/hmm.hpp
+hmm2prot.o:  $(COMMON_HPP) $(CPP_DIR)/numeric.hpp $(GEN_DIR)/hmm.hpp
 hmm2protOBJS=hmm2prot.o $(HMM_OBJ) 
 hmm2prot:	$(hmm2protOBJS)
 	$(CXX) -o $@ $(hmm2protOBJS) $(LIBS) 
@@ -423,8 +423,8 @@ prots2hmm_signature:	$(prots2hmm_signatureOBJS)
 	$(CXX) -o $@ $(prots2hmm_signatureOBJS) $(LIBS) 
 	$(ECHO)
 
-prots_pair2stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp
-prots_pair2statOBJS=prots_pair2stat.o $(SEQ_OBJ) $(DM_DIR)/numeric.o
+prots_pair2stat.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(CPP_DIR)/numeric.hpp
+prots_pair2statOBJS=prots_pair2stat.o $(SEQ_OBJ) $(CPP_DIR)/numeric.o
 prots_pair2stat:	$(prots_pair2statOBJS)
 	$(CXX) -o $@ $(prots_pair2statOBJS) $(LIBS) 
 	$(ECHO)

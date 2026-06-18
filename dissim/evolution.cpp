@@ -37,13 +37,14 @@
 #include "evolution.hpp"
 
 #include "../dm/optim.hpp"
+using namespace DM_sp;
 
 #include "../common.inc"
 
 
 
 
-namespace DM_sp
+namespace Evol_sp
 {
 
 
@@ -260,7 +261,7 @@ FeatureVector::FeatureVector (const string &fName)
 
 //
 
-struct Func_snps2time : Func1
+struct Func_snps2time final : Func1
 {
   struct Snp 
   {

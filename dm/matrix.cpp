@@ -554,7 +554,7 @@ bool Matrix::isInteger () const
   FFOR (size_t, row, rowsSize (false))
 	  FFOR (size_t, col, rowsSize (true))
 	    if (get (false, row, col, x))
-	      if (! DM_sp::isInteger (x))
+	      if (! Common_sp::isInteger (x))
 	    	  return false;
   return true;
 }
@@ -575,7 +575,7 @@ bool Matrix::isSymmetric (size_t &row,
   if (! isSquare ())
   	return false;
 
-  const Real delta = std::max (1.0, maxAbs ()) * DM_sp::epsilon;  // PAR
+  const Real delta = std::max (1.0, maxAbs ()) * Common_sp::epsilon;  // PAR
   Real a, b;
   for (row = 0;       row < rowsSize (false); row++)
   for (col = row + 1; col < rowsSize (false); col++)
@@ -1345,23 +1345,23 @@ Real Matrix::getLnFisherExact (bool oneTail) const
   if (! oneTail)
 	  FFOR (size_t, row, rowsSize (false))
 	  FFOR (size_t, col, rowsSize (true))
-	    threshold += lnFactorial ((uint) round (get (false, row, col)));
+	    threshold += lnFactorial ((uint) Common_sp::round (get (false, row, col)));
   
   
-  const uint sum00 = (uint) round (sum ());
+  const uint sum00 = (uint) Common_sp::round (sum ());
 
 
   if (rowsSize (false) == 2 &&
       rowsSize (true)  == 2)
     {
       SumLn sumLn;
-      const uint sum01 = (uint) round (sumRow (true,  0));
-      const uint sum02 = (uint) round (sumRow (true,  1));
-      const uint sum10 = (uint) round (sumRow (false, 0));
-      const uint sum20 = (uint) round (sumRow (false, 1));
+      const uint sum01 = (uint) Common_sp::round (sumRow (true,  0));
+      const uint sum02 = (uint) Common_sp::round (sumRow (true,  1));
+      const uint sum10 = (uint) Common_sp::round (sumRow (false, 0));
+      const uint sum20 = (uint) Common_sp::round (sumRow (false, 1));
       ASSERT (sum01 + sum02 == sum00);
       ASSERT (sum10 + sum20 == sum00);
-      const uint sum11_max = oneTail ? (uint) round (get (false, 0, 0)) : std::min (sum01, sum10);
+      const uint sum11_max = oneTail ? (uint) Common_sp::round (get (false, 0, 0)) : std::min (sum01, sum10);
       FOR_START (  uint, sum11
                 , sum10 <= sum02 ? 0 : (sum10 - sum02)
                 , sum11_max + 1
@@ -1390,11 +1390,11 @@ Real Matrix::getLnFisherExact (bool oneTail) const
      )
     {
       SumLn sumLn;
-      const uint sum01 = (uint) round (sumRow (true,  0));
-      const uint sum02 = (uint) round (sumRow (true,  1));
-      const uint sum03 = (uint) round (sumRow (true,  2));
-      const uint sum10 = (uint) round (sumRow (false, 0));
-      const uint sum20 = (uint) round (sumRow (false, 1));
+      const uint sum01 = (uint) Common_sp::round (sumRow (true,  0));
+      const uint sum02 = (uint) Common_sp::round (sumRow (true,  1));
+      const uint sum03 = (uint) Common_sp::round (sumRow (true,  2));
+      const uint sum10 = (uint) Common_sp::round (sumRow (false, 0));
+      const uint sum20 = (uint) Common_sp::round (sumRow (false, 1));
       ASSERT (sum01 + sum02 + sum03 == sum00);
       ASSERT (sum10 + sum20 == sum00);
       FFOR (uint, sum11, std::min (sum01, sum10) + 1)

@@ -19,15 +19,15 @@ TMP=$( mktemp )
 function len
 {
   local F=$1
-  $THIS/../genetics/fasta2len $F -noprogress | cut -f 2 | count | grep -w "^sum" | cut -f 2
+  $THIS/../genetics/fasta2len $F -noprogress | cut -f 2 | $THIS/../count | grep -w "^sum" | cut -f 2
 }
 
 
 COV="nan"
 ANI="nan"
 $THIS/../genetics/dna_coverage.sh $DNA1 $DNA2 "combine" 0 100 '' 0 0 > $TMP
-M=$( tail -n +2 $TMP | awk -F '\t' '{print $6 * $8};' | count | grep -w ^sum | cut -f 2 )
-N=$( tail -n +2 $TMP | cut -f 6                       | count | grep -w ^sum | cut -f 2 )
+M=$( tail -n +2 $TMP | awk -F '\t' '{print $6 * $8};' | $THIS/../count | grep -w ^sum | cut -f 2 )
+N=$( tail -n +2 $TMP | cut -f 6                       | $THIS/../count | grep -w ^sum | cut -f 2 )
 if [ $N -gt 1000 ]; then  # PAR
   L1=$( len $DNA1 )  
   L2=$( len $DNA2 )

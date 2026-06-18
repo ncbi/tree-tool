@@ -172,10 +172,15 @@ COMMON_HPP = $(COMMON_RAW_HPP) $(CPP_DIR)/version.inc
 COMMON = $(CPP_DIR)/common
 $(CPP_DIR)/common.o:	$(COMMON_RAW_HPP)
 $(CPP_DIR)/graph.o:	$(CPP_DIR)/graph.hpp $(COMMON_RAW_HPP) 
+$(CPP_DIR)/bipartite.o:	$(CPP_DIR)/bipartite.hpp $(CPP_DIR)/graph.hpp $(CPP_DIR)/numeric.hpp  $(COMMON_RAW_HPP) 
 $(CPP_DIR)/combinatorics.o:	$(CPP_DIR)/combinatorics.hpp $(COMMON_RAW_HPP) 
 $(CPP_DIR)/gzip.o:	$(CPP_DIR)/gzip.hpp $(COMMON_RAW_HPP) 
 $(CPP_DIR)/ncurses.o: $(CPP_DIR)/ncurses.hpp $(COMMON_RAW_HPP)
 $(CPP_DIR)/curl_easy.o: $(CPP_DIR)/curl_easy.hpp $(COMMON_RAW_HPP)
+NUMERIC_HPP = $(CPP_DIR)/numeric.hpp $(COMMON_HPP)
+$(CPP_DIR)/numeric.o:	$(NUMERIC_HPP)
+NUMERIC_OBJ = $(CPP_DIR)/numeric.o $(CPP_DIR)/common.o
+NUMERIC = $(CPP_DIR)/numeric $(COMMON)
 
 
 TSV_DIR=$(CPP_DIR)/tsv
@@ -188,11 +193,6 @@ XML_OBJ = $(XML_DIR)/xml.o $(TSV_DIR)/tsv.o
 
 
 DM_DIR = $(CPP_DIR)/dm
-
-NUMERIC_HPP = $(DM_DIR)/numeric.hpp $(COMMON_HPP)
-$(DM_DIR)/numeric.o:	$(NUMERIC_HPP)
-NUMERIC_OBJ = $(DM_DIR)/numeric.o $(CPP_DIR)/common.o
-NUMERIC = $(DM_DIR)/numeric $(COMMON)
 
 $(DM_DIR)/matrix.o: $(DM_DIR)/matrix.hpp $(NUMERIC_HPP)
 $(DM_DIR)/optim.o:	$(DM_DIR)/optim.hpp $(DM_DIR)/matrix.hpp $(NUMERIC_HPP) 
@@ -224,7 +224,7 @@ GEN_DIR = $(CPP_DIR)/genetics
 $(GEN_DIR)/genbank_text.o:	$(GEN_DIR)/genbank_text.hpp $(COMMON_RAW_HPP)
 $(GEN_DIR)/seq.o: $(GEN_DIR)/seq.hpp $(COMMON_RAW_HPP) $(CPP_DIR)/graph.hpp
 SEQ_OBJ = $(GEN_DIR)/seq.o $(CPP_DIR)/common.o $(CPP_DIR)/graph.o
-$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(DM_DIR)/numeric.hpp $(COMMON_RAW_HPP)
+$(GEN_DIR)/hmm.o: $(GEN_DIR)/hmm.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/matrix.hpp $(CPP_DIR)/numeric.hpp $(COMMON_RAW_HPP)
 HMM_OBJ = $(GEN_DIR)/hmm.o $(GEN_DIR)/seq.o $(CPP_DIR)/graph.o $(DM_DIR)/matrix.o $(NUMERIC_OBJ)
 $(GEN_DIR)/gff.o: $(GEN_DIR)/gff.hpp $(COMMON_RAW_HPP)
 
@@ -239,8 +239,8 @@ $(NW_DIR)/nw_band_aligner.o: $(NW_DIR)/nw_band_aligner.hpp
 $(NW_DIR)/raw_scoremat.o:
 	cc  -malign-double -fno-math-errno -fdiagnostics-color=always  -O3 -c -o $(NW_DIR)/raw_scoremat.o $(NW_DIR)/raw_scoremat.c
 
-$(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(DM_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(DISSIM_DIR)/evolution.hpp $(COMMON_RAW_HPP)
-ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(DM_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
+$(DISSIM_DIR)/align.o: $(DISSIM_DIR)/align.hpp $(GEN_DIR)/seq.hpp $(CPP_DIR)/numeric.hpp $(NW_DIR)/nw_aligner.hpp $(NW_DIR)/nw_band_aligner.hpp $(DISSIM_DIR)/evolution.hpp $(COMMON_RAW_HPP)
+ALIGN_OBJ = $(DISSIM_DIR)/align.o $(SEQ_OBJ) $(CPP_DIR)/numeric.o $(NW_DIR)/nw_aligner.o $(NW_DIR)/nw_band_aligner.o $(NW_DIR)/raw_scoremat.o $(DISSIM_DIR)/evolution.o $(DM_DIR)/optim.o $(DM_DIR)/matrix.o
 
 
 WEB_DIR=$(CPP_DIR)/web

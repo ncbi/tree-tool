@@ -95,9 +95,9 @@ diff $TMP.qual1.list $TMP.qual2.list
 echo -e "#Feature\ttau1_less_tau2" > qual.comp
 join -1 1 -2 1 -t$'\t' $TMP.qual1 $TMP.qual2 | awk -F '\t' '{OFS="\t"; D=($2 + $3) - ($7 + $8); if (D != 0) print $1, D};' >> qual.comp
 
-    DIFF=$( tail -n +2 qual.comp | cut -f 2 |               count | grep -w '^sum' | cut -f 2 )
-DIFF_NEG=$( tail -n +2 qual.comp | cut -f 2 | grep    '^-'| count | grep -w '^sum' | cut -f 2 )
-DIFF_POS=$( tail -n +2 qual.comp | cut -f 2 | grep -v '^-'| count | grep -w '^sum' | cut -f 2 )
+    DIFF=$( tail -n +2 qual.comp | cut -f 2 |               $THIS/../count | grep -w '^sum' | cut -f 2 )
+DIFF_NEG=$( tail -n +2 qual.comp | cut -f 2 | grep    '^-'| $THIS/../count | grep -w '^sum' | cut -f 2 )
+DIFF_POS=$( tail -n +2 qual.comp | cut -f 2 | grep -v '^-'| $THIS/../count | grep -w '^sum' | cut -f 2 )
 echo "Difference: $DIFF = $DIFF_POS $DIFF_NEG"
 
 

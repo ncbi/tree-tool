@@ -37,8 +37,8 @@
 
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "numeric.hpp"
 #include "matrix.hpp"
 
 

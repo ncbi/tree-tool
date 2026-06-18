@@ -47,7 +47,7 @@ using namespace DM_sp;
 namespace
 {
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print a " + dmSuff + "-file adding <attr>^power named <attr>_power")

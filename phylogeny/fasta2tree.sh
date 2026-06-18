@@ -51,7 +51,7 @@ $THIS/printDistTree $OUT.tree  -order  -qc > $OUT.nw
 
 if false; then  # ??
   if [ $DIST == "min_edit" ] && [ $PROT == 1 ] ; then
-    LEN_AVG=$( $THIS/../genetics/fasta2len $FASTA -aa -qc | cut -f 2 | count | grep -w '^mean' | cut -f 2 )
+    LEN_AVG=$( $THIS/../genetics/fasta2len $FASTA -aa -qc | cut -f 2 | $THIS/../count | grep -w '^mean' | cut -f 2 )
     DIST_MAX=$( echo "$LEN_AVG / 370 * 4000" | bc -l )
       # PAR
       # For random protein sequences of length 370 aa the min_edit distance = ~4500

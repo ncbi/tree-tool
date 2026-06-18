@@ -35,13 +35,12 @@
 #undef NDEBUG
 
 #include "../common.hpp"
+#include "../numeric.hpp"
 using namespace Common_sp;
-#include "../dm/numeric.hpp"
-using namespace DM_sp;
-#include "evolution.hpp"
-using namespace DM_sp;
 #include "../genetics/seq.hpp"
 using namespace Seq_sp;
+#include "evolution.hpp"
+using namespace Evol_sp;
 #include "nw/sm_blosum62.c"
 #include "../version.inc"
 

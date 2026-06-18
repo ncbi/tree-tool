@@ -578,7 +578,7 @@ size_t RealAttr1::getInfCount () const
 {
   size_t n = 0;
   FFOR (size_t, objNum, ds. objs. size ())
-    if (! finite ((*this) [objNum]))
+    if (! Common_sp::finite ((*this) [objNum]))
       n++;
   return n;
 }
@@ -589,7 +589,7 @@ size_t RealAttr1::inf2missing ()
 {
 	size_t n = 0;
   FFOR (size_t, row, ds. objs. size ())
-    if (! finite ((*this) [row]))
+    if (! Common_sp::finite ((*this) [row]))
     {
       if (verbose ())
         cout << "Infinity:" 
@@ -609,7 +609,7 @@ void RealAttr1::multiply (Real coeff)
   FFOR (size_t, objNum, ds. objs. size ())
     if (! isMissing (objNum))
       (*this) [objNum] = (*this) [objNum] * coeff;
-  decimals += (streamsize) max<long> (0, DM_sp::round (- log10 (coeff)));
+  decimals += (streamsize) max<long> (0, Common_sp::round (- log10 (coeff)));
 }
 
 
@@ -1031,7 +1031,7 @@ void IntAttr1::qc () const
   FFOR (size_t, i, ds. objs. size ())
     if (! isMissing (i))
     {
-      QC_ASSERT (finite (values [i]));
+      QC_ASSERT (Common_sp::finite (values [i]));
     }
 }
 
@@ -1763,7 +1763,7 @@ size_t RealAttr2::getInfCount () const
   size_t n = 0;
   FFOR (size_t, row, ds. objs. size ())
     FFOR (size_t, col, ds. objs. size ())
-      if (! finite (get (row, col)))
+      if (! Common_sp::finite (get (row, col)))
         n++;
   return n;
 }
@@ -1775,7 +1775,7 @@ size_t RealAttr2::inf2missing ()
 	size_t n = 0;
   FFOR (size_t, row, ds. objs. size ())
     FFOR (size_t, col, ds. objs. size ())
-      if (! finite (get (row, col)))
+      if (! Common_sp::finite (get (row, col)))
       {
         if (verbose ())
           cout << "Infinity:" 
@@ -3179,7 +3179,7 @@ Analysis1* DiscreteDistribution::createAnalysis (Dataset &ds)
 int DiscreteDistribution::real2int (Real x)
 {
   ASSERT (isInteger (x));
-	return (int) round (x);
+	return (int) Common_sp::round (x);
 }
 
 

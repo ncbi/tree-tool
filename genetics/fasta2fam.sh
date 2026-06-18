@@ -21,7 +21,7 @@ comment $TMP
 
 # $TMP.fa
 $THIS/fasta2len $F > $TMP.len
-cut -f 2 $TMP.len | count > $TMP.count
+cut -f 2 $TMP.len | $THIS/../count > $TMP.count
 MEAN=$( grep -w "^mean" $TMP.count | cut -f 2 )
   SD=$( grep -w "^SD"   $TMP.count | cut -f 2 )
 # PAR
