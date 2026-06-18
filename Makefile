@@ -14,6 +14,7 @@ endif
 
 ALL=	\
   ascii \
+  assignment \
   colors_test \
   connectPairs \
   count \
@@ -41,7 +42,6 @@ ALL=	\
   str2hash \
   trav
 
-#  assignment  ??
 
 ifdef AT_NCBI
   all:	$(ALL) \

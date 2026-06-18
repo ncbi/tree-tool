@@ -28,7 +28,7 @@ cat $TMP >> $TMP.gr
 
 $THIS/../tsv/tsv_expand.sh $TMP.gr $TMP.species '' &> /dev/null
 cut -f 2,3 $TMP.gr | sort | uniq -c | awk -F ' ' '{OFS="\t"; print $2, $3, $1};' > $TMP.uniq
-$THIS/../dm/assignment $TMP.uniq -qc
+$THIS/../assignment $TMP.uniq -qc
 
 
 rm $TMP* 

@@ -213,7 +213,10 @@ template <typename T /*:number*/>
 template <typename T>
   inline bool lessPtr (const T* x,
                        const T* y)
-    { return *x < *y; }
+    { if (x && y)      
+        return *x < *y; 
+      return false;
+    }
 
 
 
