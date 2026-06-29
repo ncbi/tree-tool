@@ -102,13 +102,14 @@ void DiGraph::Node::saveText (ostream &os) const
 
  
 
-void DiGraph::Node::attach (DiGraph &graph_arg)
+void DiGraph::Node::attach (DiGraph &graph_arg,
+                            bool qc_arcs)
 {
   ASSERT (! graph);
-#ifndef NDEBUG
-	for (const bool b : {false, true})
-	  ASSERT (arcs [b]. empty ());
-#endif
+
+  if (qc_on && qc_arcs)
+   	for (const bool b : {false, true})
+	    QC_ASSERT (arcs [b]. empty ());
   
   graph = & graph_arg;
   graph_arg. nodes << this;
@@ -118,13 +119,14 @@ void DiGraph::Node::attach (DiGraph &graph_arg)
 
  
 
-void DiGraph::Node::detach ()
+void DiGraph::Node::detach (bool qc_arcs)
 {
   ASSERT (graph);
-#ifndef NDEBUG
-	for (const bool b : {false, true})
-	  ASSERT (arcs [b]. empty ());
-#endif
+
+  if (qc_on && qc_arcs)
+  	for (const bool b : {false, true})
+  	  QC_ASSERT (arcs [b]. empty ());
+
   var_cast (graph) -> nodes. erase (graphIt);  
   graphIt = var_cast (graph) -> nodes. end (); 
   graph = nullptr;

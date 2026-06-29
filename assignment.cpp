@@ -52,10 +52,10 @@ namespace
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Maximum assignment problem. Print maximum total score")
+    : Application ("Maximum assignment problem in a sparse graph. Print maximum total score")
     {
       version = VERSION;
-      addPositional ("in", "File with bipartite arcs: <job>\\t<worker>\\t<score>. Missing arcs assume to have score 0");
+      addPositional ("in", "File with bipartite arcs: <job>\\t<worker>\\t<score>. Missing arcs are assumed to have score 0");
     }
 
   
@@ -64,79 +64,88 @@ struct ThisApplication final : Application
 	  const string fName = getArg ("in");
 	  
 	  
-	  Bipartite gr; 
-	  Real total_hi = 0.0;
+    map<const DiGraph::Node*, Bipartite> components;
 	  {
-  	  LineInput f (fName);
-  	  map<string,BpNode*> name2job;  
-  	  map<string,BpNode*> name2worker;  
-  	  while (f. nextLine ())
+  	  Bipartite gr; 
+  	  Real total_hi = 0.0;
   	  {
-  	    string jobName    (findSplit (f. line, '\t'));
-  	    string workerName (findSplit (f. line, '\t'));
-  	    const Real score = str2<Real> (f. line);
-  	    QC_ASSERT (! isNan (score));
-  	    if (nullReal (score))
-  	      continue;
-  	    total_hi += score;
-  	    trim (jobName);
-  	    QC_ASSERT (! jobName. empty ());
-  	    trim (workerName);
-  	    QC_ASSERT (! workerName. empty ());
-  	    
-  	    BpNode* &job = name2job [jobName];
-  	    if (! job)
-  	      job = new BpNode (gr, false, jobName);
-  	      
-  	    BpNode* &worker = name2worker [workerName];
-  	    if (! worker)
-  	      worker = new BpNode (gr, true, workerName);
-  	      
-  	    if (const DiGraph::Arc* arc = job->incident (worker, true))
-  	      var_cast (static_cast <const BpArc*> (arc)) -> score += score;
-  	    else
-  	      new BpArc (job, worker, score);
-  	  }
-  	}
-    if (verbose ())
-    	cout << "total_hi = " << total_hi << endl;
-  	  	
-    
-    gr. assignmentSparse ();
-        
-      
-    size_t matched = 0;
-    const Real score = gr. getMatchScore (matched);
-    cout << score << endl;
-    if (qc_on)        
-    {
-      size_t n = 0;  // ??
-      Real score_min = inf;  // ??
-      for (const BpNode* j : gr. bpNodes [false])
-        if (   ! j->match
-            && positive (j->potential)
-           )
-        {
-          n++;
-          minimize (score_min, j->potential);
-        //cout << *j << endl;
-        //ERROR;
-        }
-      PRINT (n);
-      PRINT (score_min);
-      if (n)
-        ERROR;
-      for (const BpNode* w : gr. bpNodes [true])
+    	  LineInput f (fName);
+    	  map<string,BpNode*> name2job;  
+    	  map<string,BpNode*> name2worker;  
+    	  while (f. nextLine ())
+    	  {
+    	    string jobName    (findSplit (f. line, '\t'));
+    	    string workerName (findSplit (f. line, '\t'));
+    	    const Real score = str2<Real> (f. line);
+    	    QC_ASSERT (! isNan (score));
+    	    if (nullReal (score))
+    	      continue;
+    	    total_hi += score;
+    	    trim (jobName);
+    	    QC_ASSERT (! jobName. empty ());
+    	    trim (workerName);
+    	    QC_ASSERT (! workerName. empty ());
+    	    
+    	    BpNode* &job = name2job [jobName];
+    	    if (! job)
+    	      job = new BpNode (gr, false, jobName);
+    	      
+    	    BpNode* &worker = name2worker [workerName];
+    	    if (! worker)
+    	      worker = new BpNode (gr, true, workerName);
+    	      
+    	    if (const DiGraph::Arc* arc = job->incident (worker, true))
+    	      var_cast (static_cast <const BpArc*> (arc)) -> score += score;
+    	    else
+    	      new BpArc (job, worker, score);
+    	  }
+    	}
+      if (verbose ())
+      	cout << "total_hi = " << total_hi << endl;
+      	      
+      // --> graph.hpp ??
+      gr. connectedComponents ();
+      VectorPtr<BpNode> nodes;
+      for (const DiGraph::Node* n : gr. nodes)
+        nodes << static_cast <const BpNode*> (n);
+      for (const BpNode* n : nodes)
       {
-        ASSERT (w);
-        IMPLY (! w->match, ! w->potential);
+        ASSERT (n);
+        Bipartite& bp = components [var_cast (n) -> getDisjointCluster ()];
+        var_cast (n) -> moveTo (bp);
+        bp. bpNodes [n->out] << n;
+      }
+      ASSERT (gr. nodes. empty ());
+    }
+  	  	
+
+    // ??
+    VectorPtr<Bipartite> componentsVec;  componentsVec. reserve (components. size ());
+    for (const auto& it : components)
+      componentsVec << & it. second;
+    componentsVec. sortPtr ();
+
+
+    Real total = 0.0;
+    {
+      Progress prog (components. size ());
+    //for (auto& it : components)
+      for (const Bipartite* bp_ : componentsVec)
+      {
+        prog ();
+      //Bipartite& bp = it. second;
+        Bipartite& bp = * var_cast (bp_);  // ??
+        bp. qc ();
+        bp. assignmentSparse ();
+        size_t matched = 0;
+        total += bp. getMatchScore (matched);
+        if (verbose (-1))
+          for (const BpNode* j : bp. bpNodes [false])
+            if (j->match)
+              cout << "Match: " << * j->match << endl;  
       }
     }
-  //ASSERT (leReal (total_match_lo, score));
-    if (verbose ())
-      for (const BpNode* j : gr. bpNodes [false])
-        if (j->match)
-          cout << "Match: " << * j->match << endl;  
+    cout << total << endl;
   }  
 };
 

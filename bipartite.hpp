@@ -70,7 +70,11 @@ struct BpNode : DiGraph::Node
           bool out_arg,
           const string &name_arg);
   void qc () const override;
-  void saveText (ostream &os) const override;
+  void saveText (ostream &os) const override
+    { os << name << endl;
+      for (const DiGraph::Arc* arc : arcs [! out])
+        os << "  " << *arc << endl;
+    }
 };
 
 
@@ -135,26 +139,33 @@ struct Bipartite : DiGraph
 
  
   // Time ??
-  void expand (const VectorPtr<BpNode> &start) const;
+private:
+  void expand (const VectorPtr<BpNode> &start,
+               bool from) const;
     // Output: BpNode::prev
-  const BpArc* findAugmentingPath () const;
+  const BpArc* findAugmentingPath (bool from) const;
     // Find an augmenting path on zero()-BpArc's
     // Return: end BpArc* of the path
     //         may be nullptr
     // Invokes: expand()
-  void rematch (const BpArc* goal_arc);
-  void maximumMatching ()
-    { while (const BpArc* goal_arc = findAugmentingPath ())
-        rematch (goal_arc);
+  void rematch (const BpArc* goal_arc,
+                bool from);
+    // Input: BpNode::prev
+  void maximumMatching (bool from)
+    { while (const BpArc* goal_arc = findAugmentingPath (from))
+        rematch (goal_arc, from);
     }
     // Find a maximum matching on zero()-BpArc's
     // Fulkerson-Ford
     // Output: BpNode::prev define a minimum vertex cut    
-  void assignmentComplete ();
+public:
+  bool assignmentComplete (Real &total_match_lo);
     // Hungarian algorithm 
     // Optimal for a complete graph
+    // Return: maximumMatching( )is invoked
     // Invokes: maximumMatching()
   void assignmentSparse ();
+    // Invokes: assignmentComplete(), expand()
   Real getMatchScore (size_t &matched) const
     { Real s = 0.0;    
       matched = 0;
@@ -165,6 +176,10 @@ struct Bipartite : DiGraph
         }
       return s;
     }
+
+  // ??
+  bool operator< (const Bipartite &other) const
+    { return nodes. size () < other. nodes. size (); }
 };
 
 

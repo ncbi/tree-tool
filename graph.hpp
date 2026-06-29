@@ -120,15 +120,22 @@ struct DiGraph : Root
 
     Node* getDisjointCluster ()
       { return static_cast <Node*> (DisjointCluster::getDisjointCluster ()); }
-  	void attach (DiGraph &graph_arg);
+  	void attach (DiGraph &graph_arg,
+  	             bool qc_arcs = true);
       // Requires: !graph; no Arc's
       // Invokes: graph_arg.nodes.push_back(this)
       // Time: O(1)
-    void detach ();
+    void detach (bool qc_arcs = true);
       // Opposite to attach()
       // Output: graph = nullptr
       // Requires: No Arc's
       // Invokes: list::erase()
+    void moveTo (DiGraph &other)
+      { if (& other == graph)
+          return;
+        detach (false);
+        attach (other, false);
+      }        
 		virtual string getHumanName () const
 		  { return getName (); }
 		virtual string getLeafName () const
