@@ -103,7 +103,6 @@ struct ThisApplication final : Application
       if (verbose ())
       	cout << "total_hi = " << total_hi << endl;
       	      
-      // --> graph.hpp ??
       gr. connectedComponents ();
       VectorPtr<BpNode> nodes;
       for (const DiGraph::Node* n : gr. nodes)
@@ -119,24 +118,15 @@ struct ThisApplication final : Application
     }
   	  	
 
-    // ??
-    VectorPtr<Bipartite> componentsVec;  componentsVec. reserve (components. size ());
-    for (const auto& it : components)
-      componentsVec << & it. second;
-    componentsVec. sortPtr ();
-
-
     Real total = 0.0;
     {
       Progress prog (components. size ());
-    //for (auto& it : components)
-      for (const Bipartite* bp_ : componentsVec)
+      for (auto& it : components)
       {
         prog ();
-      //Bipartite& bp = it. second;
-        Bipartite& bp = * var_cast (bp_);  // ??
+        Bipartite& bp = it. second;
         bp. qc ();
-        bp. assignmentSparse ();
+        bp. assignment ();
         size_t matched = 0;
         total += bp. getMatchScore (matched);
         if (verbose (-1))
