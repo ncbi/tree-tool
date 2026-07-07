@@ -64,7 +64,7 @@ void BpNode::qc () const
     return;
   DiGraph::Node::qc ();
     
-  QC_ASSERT (! name. empty ());
+//QC_ASSERT (! name. empty ());
   QC_ASSERT (Common_sp::finite (potential));
 //QC_ASSERT (! negative (potential));
   if (match)
@@ -118,8 +118,7 @@ void Bipartite::qc () const
 
 
   
-void Bipartite::expand (const VectorPtr<BpNode> &start,
-                        bool from) const
+void Bipartite::expand (const VectorPtr<BpNode> &start) const
 {
   for (const DiGraph::Node* n : nodes)
      var_cast (static_cast <const BpNode*> (n)) -> prev = nullptr;
@@ -143,7 +142,7 @@ void Bipartite::expand (const VectorPtr<BpNode> &start,
         const BpArc* sa = static_cast <const BpArc*> (arc);
         ASSERT (sa);
         if (   sa->zero ()
-            && boolPow (out, ! from) == sa->matched ()
+            && out == sa->matched ()
            )
         {
           const BpNode* other = sa->getNode (! out);
@@ -161,17 +160,17 @@ void Bipartite::expand (const VectorPtr<BpNode> &start,
 
 
 
-const BpArc* Bipartite::findAugmentingPath (bool from) const
+const BpArc* Bipartite::findAugmentingPath () const
 {
   VectorPtr<BpNode> start;  
-  for (const BpNode* j : bpNodes [from])
+  for (const BpNode* j : bpNodes [false])
     if (! j->match)
       start << j;
 
-  expand (start, from);
+  expand (start);
 
   const BpArc* goal_arc = nullptr;
-  for (const BpNode* w : bpNodes [! from])
+  for (const BpNode* w : bpNodes [true])
     if (   w->prev
         && ! w->match
        )
@@ -185,15 +184,14 @@ const BpArc* Bipartite::findAugmentingPath (bool from) const
 
 
 
-void Bipartite::rematch (const BpArc* goal_arc,
-                         bool from)
+void Bipartite::rematch (const BpArc* goal_arc)
 {
   const BpArc* sa = goal_arc;
   for (;;)
   {
     ASSERT (sa);
     ASSERT (! sa->matched ());
-    const BpNode* j = sa->getNode (from);
+    const BpNode* j = sa->getNode (false);
     ASSERT (j);
     const BpArc* sa1 = j->prev;
     if (verbose (-1))
@@ -202,7 +200,7 @@ void Bipartite::rematch (const BpArc* goal_arc,
     var_cast (sa) -> use ();  // Destroys sa1->matched()
     if (! sa1)
       break;
-    const BpNode* w = sa1->getNode (! from);
+    const BpNode* w = sa1->getNode (true);
     ASSERT (w);    
     sa = w->prev;
   }
@@ -211,22 +209,26 @@ void Bipartite::rematch (const BpArc* goal_arc,
 
 
 
-bool Bipartite::assignmentComplete (Real &total_match_lo)
+void Bipartite::assignment ()
 {
 	VectorPtr<BpArc> arcs;  
 	for (const DiGraph::Node* n : nodes)
   	for (const DiGraph::Arc* arc : n->arcs [true])
   	  arcs << static_cast <const BpArc*> (arc);  	  
   if (arcs. empty ())
-    return false;
+    return;
   if (arcs. size () == 1)
   {
     var_cast (arcs [0]) -> use ();
-    return false;
+    if (verbose ())
+      cout         << "total_lo = "   << arcs [0] -> score 
+           << '\t' << "total_init = " << arcs [0] -> score
+           << endl;   
+    return;
   }
 
   arcs. sortPtr ();  		    	
-  total_match_lo = 0.0;  
+  Real total_match_lo = 0.0;  
   Real total_match_init = 0.0;
   for (const BpArc* ca : arcs)
   {
@@ -255,7 +257,18 @@ bool Bipartite::assignmentComplete (Real &total_match_lo)
          << endl;   
          
          
-  // Zero arcs
+  // Auxiliary BpNode's
+  {
+    const size_t diff = difference ( bpNodes [false]. size ()
+                                   , bpNodes [true].  size ()
+                                   );
+    const bool out = bpNodes [false]. size () > bpNodes [true]. size ();
+    FFOR (size_t, i, diff)
+      new BpNode (*this, out, noString);
+    ASSERT (bpNodes [false]. size () == bpNodes [true]. size ());
+  }
+      
+  // Auxiliary BpArc's
   for (const BpNode* a : bpNodes [false])
   {
     ASSERT (a);
@@ -267,24 +280,23 @@ bool Bipartite::assignmentComplete (Real &total_match_lo)
   }
 
 
-  const bool from = (bpNodes [false]. size () > bpNodes [true]. size ());
   for (;;)
   {
     qc (); 
-    maximumMatching (from);
+    maximumMatching ();
     qc ();  
     
     const BpArc* arc_best = nullptr;
     Real score_min = inf;
-    for (const BpNode* j : bpNodes [from])
+    for (const BpNode* j : bpNodes [false])
       if (   ! j->match
           || j->prev
          )
-        for (const DiGraph::Arc* arc : j->arcs [! from])
+        for (const DiGraph::Arc* arc : j->arcs [true])
         {
           const BpArc* sa = static_cast <const BpArc*> (arc);
           ASSERT (sa);
-          BpNode* w = var_cast (sa->getNode (! from));
+          BpNode* w = var_cast (sa->getNode (true));
           ASSERT (w);
           if (   ! w->prev
               && minimize (score_min, sa->reducedScore ())
@@ -301,150 +313,31 @@ bool Bipartite::assignmentComplete (Real &total_match_lo)
     if (verbose (-1))
       cout << "To make zero(): " << *arc_best << endl;  
     ASSERT (Common_sp::finite (score_min));
-    for (const BpNode* j : bpNodes [from])
+    for (const BpNode* j : bpNodes [false])
       if (   ! j->match
           || j->prev
          )
         var_cast (j) -> potential -= score_min;
-    for (const BpNode* w : bpNodes [! from])
+    for (const BpNode* w : bpNodes [true])
       if (w->prev)
         var_cast (w) -> potential += score_min;
     ASSERT (arc_best->zero ());
   }
   
   
-  return true;
-} 
-
-
-
-void Bipartite::assignmentSparse ()
-{
-  Real total_match_lo = NaN;
-  if (! assignmentComplete (total_match_lo))
-    return;
-    
-  if (verbose ())
-  {
-    cout << "assignmentComplete:" << endl;
-    saveText (cout);
-  }
-/*for (const BpNode* j : bpNodes [false])
-    if (j->match)
-      cout << * j->match << endl; */
-  
-  
-#if 0
-//for (const bool out : {false, true})  // ??
-  for (;;)
-  {
-    VectorPtr<BpNode> start;  
-    for (const BpNode* j : bpNodes [false])
-      if (   ! j->match
-          && ! nullReal (j->potential)
-         )
-        start << j;
-    expand (start);
-  
-    const BpArc* goal_arc = nullptr;
-    Real potential_min = inf;    
-    for (const BpNode* j : bpNodes [false])
-      if (   (   ! j->match
-              && ! nullReal (j->potential)
-             )
-          || j->prev
-         )
-      {
-        if (nullReal (j->potential))
-        {
-          ASSERT (j->match);
-          goal_arc = j->prev;
-          break;
-        }
-        minimize (potential_min, j->potential);
-      }
-      
-    if (goal_arc)
-    {
-      qc ();  // ??
-      if (verbose ())
-      {
-        cout << "Use potential=0" << endl;
-        saveText (cout);
-      }
-      ASSERT (goal_arc->matched ());
-      const BpNode* j = goal_arc->getNode (false);
-      ASSERT (j);
-      ASSERT (nullReal (j->potential));
-      var_cast (j) -> match = nullptr;
-      const BpNode* w = goal_arc->getNode (true);
-      ASSERT (w);
-      rematch (w->prev);
-    }
-    else 
-    {
-      if (potential_min == inf)
-        break;
-      qc ();  // ??      
-      ASSERT (! nullReal (potential_min));
-      // ??
-      cout << "Before: " << potential_min << endl;  
-      saveText (cout);  
-      //
-      for (const BpNode* j : bpNodes [false])
-        if (   (   ! j->match
-                && ! nullReal (j->potential)
-               )
-            || j->prev
-           )
-          var_cast (j) -> potential -= potential_min;
-      for (const BpNode* w : bpNodes [true])
-        if (w->prev)
-          var_cast (w) -> potential += potential_min;
-      // ??
-      try { qc (); }
-        catch (const exception &e)
-        {
-          cout << e. what () << endl;
-          saveText (cout);
-        }
-    }
-    
-    qc ();
-  }
-#endif
-
-
   if (qc_on)      
   {
     size_t matched = 0;
     const Real total = getMatchScore (matched);
-    if (! leReal (total_match_lo, total))
-    {
-      PRINT (total_match_lo);
-      PRINT (total);
-      cout << endl;
-      saveText (cout);
-      ERROR;
-    }
-    
-  //for (const bool out : {false, true})
-    {
-    //if (verbose ())
-      //cout << "QC " << out << endl;
-      const bool from = (bpNodes [false]. size () > bpNodes [true]. size ());
-      PRINT (from);  // ??
-      cout << endl;
-      saveText (cout);
-      //
-      for (const BpNode* w : bpNodes [from /*out*/])
+    ASSERT (leReal (total_match_lo, total));    
+    for (const bool out : {false, true})
+      for (const BpNode* w : bpNodes [out])
       {
         QC_ASSERT (w);
-        QC_IMPLY (! w->match, nullReal (w->potential));
+        QC_ASSERT (w->match);
       }
-    }
   }
-}
+} 
 
 
 

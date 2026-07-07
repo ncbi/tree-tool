@@ -58,6 +58,7 @@ struct BpNode : DiGraph::Node
 	  // false: "job"
 	  // true:  "worker"
   const string name;
+    // empty() <=> auxiliary
   bool naive_match {false};
   const BpArc* match {nullptr};
     // Incident to *this
@@ -71,7 +72,7 @@ struct BpNode : DiGraph::Node
           const string &name_arg);
   void qc () const override;
   void saveText (ostream &os) const override
-    { os << name << endl;
+    { os << nvl (name, "auxiliary") << endl;
       for (const DiGraph::Arc* arc : arcs [! out])
         os << "  " << *arc << endl;
     }
@@ -84,6 +85,7 @@ struct BpArc : DiGraph::Arc
 {
   Real score {NaN};
     // Greater is better
+    // 0.0 <=> auxiliary
   
   
   BpArc (BpNode* start,
@@ -130,6 +132,7 @@ struct BpArc : DiGraph::Arc
 
 struct Bipartite : DiGraph
 // Of BpNode* and BpArc*
+// n =def nodes.size()
 {
 	array<VectorPtr<BpNode>,2/*bool out*/> bpNodes;
 
@@ -138,34 +141,31 @@ struct Bipartite : DiGraph
   void qc () const override;
 
  
-  // Time ??
+  // https://math.mit.edu/~goemans/18433S09/matching-notes.pdf
 private:
-  void expand (const VectorPtr<BpNode> &start,
-               bool from) const;
+  void expand (const VectorPtr<BpNode> &start) const;
     // Output: BpNode::prev
-  const BpArc* findAugmentingPath (bool from) const;
+  const BpArc* findAugmentingPath () const;
     // Find an augmenting path on zero()-BpArc's
     // Return: end BpArc* of the path
     //         may be nullptr
     // Invokes: expand()
-  void rematch (const BpArc* goal_arc,
-                bool from);
+  void rematch (const BpArc* goal_arc);
     // Input: BpNode::prev
-  void maximumMatching (bool from)
-    { while (const BpArc* goal_arc = findAugmentingPath (from))
-        rematch (goal_arc, from);
+  void maximumMatching ()
+    { while (const BpArc* goal_arc = findAugmentingPath ())
+        rematch (goal_arc);
     }
     // Find a maximum matching on zero()-BpArc's
     // Fulkerson-Ford
-    // Output: BpNode::prev define a minimum vertex cut    
+    // Output: BpNode::prev define a minimum vertex cut
+    // Time: O(n^3)
 public:
-  bool assignmentComplete (Real &total_match_lo);
+  void assignment ();
     // Hungarian algorithm 
-    // Optimal for a complete graph
-    // Return: maximumMatching( )is invoked
+    // Add auxiliary BpNode's and BpArc's
     // Invokes: maximumMatching()
-  void assignmentSparse ();
-    // Invokes: assignmentComplete(), expand()
+    // Time: O(n^4)
   Real getMatchScore (size_t &matched) const
     { Real s = 0.0;    
       matched = 0;
@@ -176,10 +176,6 @@ public:
         }
       return s;
     }
-
-  // ??
-  bool operator< (const Bipartite &other) const
-    { return nodes. size () < other. nodes. size (); }
 };
 
 

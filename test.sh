@@ -9,6 +9,13 @@ $THIS/numeric_test -qc go
 super_section "graph"
 $THIS/graph_test go -qc
 
+super_section "assignment"
+N=$( $THIS/assignment -qc $THIS/assignment.txt -noprogress )
+M=$( $THIS/assignment -qc $THIS/assignment.txt -noprogress -verbose 1 | grep "total_lo" | tr '\t' ' ' | cut -f 3 -d ' ' | count | grep -w "^sum" | cut -f 2 )
+if [ $N -lt $M ]; then
+  error "assigment: $N < $M"
+fi
+
 super_section "dm"
 # Time: 31 sec.
 $THIS/dm/dm_test.sh 1
