@@ -145,7 +145,7 @@ struct ThisApplication final : Application
   	  addKey ("start", "# Item to start with", "1");
   	  addFlag ("zero", "Item numbers are 0-based, otherwise 1-based");
   	  addFlag ("print", "Print command, not execute");
-  	  addFlag ("tsv", "<items> is a tsv-file");
+  	  addFlag ("tsv", "<items> is a tsv-file, subitems are fields");
   	  addFlag ("number", "<items> is a number (not a file or directory)");
   	  addKey ("good_exit_codes", "Comma-delimited list of allowed exit codes", "0");
   	}
