@@ -3,8 +3,8 @@ THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 5 ]; then
   echo "Output pairs of similar sequences"
-  echo "#1; query   DNA FASTA"
-  echo "#2; subject DNA blast daatbase"
+  echo "#1: query   DNA FASTA"
+  echo "#2: subject DNA blast daatbase"
   echo "#3: min. fraction of identity"
   echo "#4: min. fraction of coverage"
   echo "#5: blast num_threads"

@@ -4,7 +4,7 @@ source $THIS/../bash_common.sh
 GOAL=100
 if [ $# -ne 3 ]; then
   echo "Return: top $GOAL BLASTP hits"
-  echo "#1; query protein sequence"
+  echo "#1: query protein sequence"
   echo "#2: subject protein BLAST database"
   echo "#3: restrict subject id's to this list | ''"
   exit 1

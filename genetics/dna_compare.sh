@@ -3,7 +3,7 @@ THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
 if [ $# -ne 2 ]; then
   echo "blastn 2 DNAs"
-  echo "#1; DNA 1"
+  echo "#1: DNA 1"
   echo "#2: DNA 2"
   exit 1
 fi
