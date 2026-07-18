@@ -49,7 +49,7 @@ namespace
 {
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Compute statistics for a DNA multi-FASTA file: length, ambiguities fraction, GC fraction, octamers fraction")
