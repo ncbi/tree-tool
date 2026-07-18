@@ -37,6 +37,9 @@
 using namespace Common_sp;
 #include "version.inc"
 
+#include <csignal>
+
+
 #include "common.inc"
 
 
@@ -61,31 +64,41 @@ void executeCommand (const string &cmd,
   
   const int c = system (cmd. c_str ());
     // "set -o pipefail && ..." does not work with dash
+  const bool exited = WIFEXITED (c);
   const int exitStatus = WEXITSTATUS (c);
-  if (exitStatus && ! goodStatuses. contains (exitStatus))
+/*if (   WIFSIGNALED (c)
+      && WTERMSIG (c) == SIGINT
+     )
+    exitP = true; */
+/*cout << "exit=" << exitStatus 
+       << ' ' << c
+       << ' ' << exited 
+       << endl;  */
+  if (   exited
+      && (   ! exitStatus 
+          || goodStatuses. contains (exitStatus)
+         )
+     )
+    return;
+    
+  if (errors)
   {
-  //cout << endl << exitStatus << endl;
-    if (errors)
-    {
-    //cout << c << endl;  // always 256 
-      const Lock lock (errorsMtx);
-    	*errors << item << endl;
-      QC_ASSERT (c != -1);
-    }
-    else if (errorsMtx. try_lock ())  // To suppress messages from the other good threads which fail due to this thread
-    {
-      const string errMsg ("item: " + item + "\nstatus: " + to_string (exitStatus) + "\n" + cmd);
-      if (threads_max > 1)
-        errorExitStr (errMsg);
-      else
-        throw runtime_error (errMsg);
-    }
+    const Lock lock (errorsMtx);
+  	*errors << item << endl;
+    QC_ASSERT (c != -1);
   }
-#if 0
-  if (isMainThread ())
-    FOR (uint, i, blank_lines)
-      cerr << " " << endl;
-#endif
+  else if (errorsMtx. try_lock ())  // To suppress messages from the other good threads which fail due to this thread
+  {
+    const string errMsg (  "item: " + item 
+                         + "\nstatus: " + to_string (exitStatus) 
+                         + "\nsignal: " + to_string (WTERMSIG (c)) + " (" + strsignal (WTERMSIG (c)) + ")"
+                         + "\n" + cmd
+                        );
+    if (threads_max > 1)
+      errorExitStr (errMsg);
+    else
+      throw runtime_error (errMsg);
+  }
 }
   
   
