@@ -48,7 +48,7 @@ namespace
 {
 	
 	
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Cut a segment out of a DNA sequence, make it to be in a positive strand")
@@ -56,7 +56,7 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("in", "DNA FASTA file with one sequence");
   	  addPositional ("start", "Start position of a segment, 1-based");
-  	  addPositional ("stop", "Stop position of a segment, can be equal start");
+  	  addPositional ("stop", "Stop position of a segment, can equal start");
   	  addKey ("flank", "length of flanking sequence", "0");
   	  addFlag ("excise", "Excise the segment, otherwise leave the segment");
   	  addKey ("strand", "Strand (0 or - / 1 or +)", "1");
