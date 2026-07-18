@@ -60,6 +60,7 @@ struct ThisApplication final : Application
   	  addKey ("min_len", "Min. length for output sequences in the file <out>", "0");
   	  addKey ("out", "Output FASTA file with sequences longer than <min_len>");
   	  addKey ("header", "Add comma-separated .tsv-header to the output file");
+  	  addFlag ("skip_ambig", "Skip ambiguities");
     }
 
 
@@ -71,6 +72,7 @@ struct ThisApplication final : Application
 	  const size_t len_min  = str2<size_t> (getArg ("min_len"));
 	  const string outFName = getArg ("out");
 	  const string headerS  = getArg ("header");
+	  const bool skipAmbig  = getFlag ("skip_ambig");
 
 	  
     Vector<TextTable::Header> header (TextTable::str2header (nvl (headerS, "id,len")));
@@ -94,8 +96,17 @@ struct ThisApplication final : Application
   	  		seq. reset (new Dna     (faIn, 1024 * 1024, false));
   	    seq->qc ();
   	    
+  	    size_t len = seq->seq. size ();
+  	    if (skipAmbig)
+  	    {
+  	      len = 0;
+  	      for (const char c : seq->seq)
+  	        if (! seq->isAmbiguous (c))
+  	          len++;
+  	    }
+  	    
   	    StringVector row;
-  	    row << seq->getId () << to_string (seq->seq. size ());
+  	    row << seq->getId () << to_string (len);
   	    tab. rows << std::move (row);
   	      
   	    if (outF && seq->seq. size () >= len_min)
