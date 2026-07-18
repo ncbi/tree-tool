@@ -1,14 +1,16 @@
 #!/bin/bash --noprofile
 THIS=$( dirname $0 )
 source $THIS/../bash_common.sh
-if [ $# -ne 2 ]; then
+if [ $# -ne 3 ]; then
   echo "Find and mask repeats in #1"
   echo "#1: DNA multi-FASTA"
-  echo "#2: output masked #1"  
+  echo "#2: output file with the coordinates of masked segments"
+  echo "#3: output masked #1"
   exit 1
 fi
 ASM=$1
-OUT=$2
+MSK=$2
+OUT=$3
 
 
 # PAR
@@ -45,9 +47,9 @@ $THIS/../trav $TMP.frags -step 1 "$THIS/find_repeats_.sh $TMP.frag/%h/%f $TMP.db
 if [ -s $TMP.err ]; then
   error "$TMP.err"
 fi
-trav $TMP.out "cat %d/%f" > $TMP.hits
+trav $TMP.out "cat %d/%f" > $MSK
 
-$THIS/dna_mask $ASM $TMP.hits -qc > $OUT
+$THIS/dna_mask $ASM $MSK -qc > $OUT
 
 
 rm -r $TMP*
