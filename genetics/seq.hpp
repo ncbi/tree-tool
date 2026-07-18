@@ -644,28 +644,6 @@ struct FastaDna final : Dna
 
 
 
-#if 0
-class DNA_COLLECTION: public _SEQ_COLLECTION
-// of Dna*
-{
-typedef _SEQ_COLLECTION inherited;
-
-public:
-  DNA_COLLECTION (): inherited () {}
-  DNA_COLLECTION (const char* FName,
-                  bool        GapCoded);
-
-
-  Dna* GetDna (size_t i) const
-    { return (Dna*) GetSeq (i); }
-
-  void SaveQual (const char* FName,
-                 uint        DefaultQualScore) const;
-};
-#endif
-
-
-
 
 /////////////////////////// Peptide ///////////////////////////////
 
