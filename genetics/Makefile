@@ -30,6 +30,7 @@ all:	\
 	dna_cut \
 	dna_find \
 	dna_gc_skew \
+	dna_mask \
 	dna_rev \
 	dna_trim \
 	fasta_prefix \
@@ -41,6 +42,7 @@ all:	\
 	fastaAddGi \
 	fastaDna2pairs \
 	filterFasta \
+	fragmentize \
 	genbank_grep \
 	GeneMark2CDS \
 	hmm2prot \
@@ -183,6 +185,12 @@ dna_gc_skew:	$(dna_gc_skewOBJS)
 	$(CXX) -o $@ $(dna_gc_skewOBJS) $(LIBS) 
 	$(ECHO)
 
+dna_mask.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+dna_maskOBJS=dna_mask.o $(SEQ_OBJ)
+dna_mask:	$(dna_maskOBJS)
+	$(CXX) -o $@ $(dna_maskOBJS) $(LIBS) 
+	$(ECHO)
+
 dna_rev.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
 dna_revOBJS=dna_rev.o $(SEQ_OBJ)
 dna_rev:	$(dna_revOBJS)
@@ -247,6 +255,12 @@ filterFasta.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 filterFastaOBJS=filterFasta.o $(SEQ_OBJ)
 filterFasta:	$(filterFastaOBJS)
 	$(CXX) -o $@ $(filterFastaOBJS) $(LIBS) 
+	$(ECHO)
+
+fragmentize.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
+fragmentizeOBJS=fragmentize.o $(SEQ_OBJ)
+fragmentize:	$(fragmentizeOBJS)
+	$(CXX) -o $@ $(fragmentizeOBJS) $(LIBS) 
 	$(ECHO)
 
 disruption2genesymbol.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp 
