@@ -83,6 +83,7 @@ count:	$(countOBJS)
 
 cpp_test.o: $(COMMON_HPP) 
 cpp_testOBJS=cpp_test.o $(SEQ_OBJ)
+  # $(CPP_DIR)/common.o
 cpp_test: $(cpp_testOBJS)
 	$(CXX) -o $@ $(cpp_testOBJS) $(LIBS) 
 	  # -lncursesw -lz
