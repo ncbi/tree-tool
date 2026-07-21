@@ -65,14 +65,18 @@ struct ThisApplication final : Application
       version = VERSION;
   	  addPositional ("in", "Input multi-FASTA file");
   	  addPositional ("mask_file", "File with lines: contig id\\tfrom\\to (1-based)");
+  	  addKey ("merged_mask", "File of merged mask segments");
+  	  addKey ("mask_min", "Min. masked segment length to b eincluded into <merged_mask>", "0");
   	}
 
 
 
 	void body () const final
   {
-		const string in         = getArg ("in");
-		const string maskFName  = getArg ("mask_file");
+		const string in          = getArg ("in");
+		const string maskFName   = getArg ("mask_file");
+		const string mergedFName = getArg ("merged_mask");
+		const size_t mask_min    = str2<size_t> (getArg ("mask_min"));
 	  
 
     map<string/*contig*/,Vector<Mask>> contig2masks;
@@ -95,6 +99,12 @@ struct ThisApplication final : Application
     }
 
 
+    unique_ptr<OFStream> mergedF;
+    if (! mergedFName. empty ())
+    {
+      mergedF. reset (new OFStream (mergedFName));
+      QC_ASSERT (mask_min);
+    }
     { // For ~Progress()      
   	  Multifasta fa (in, false); 
   	  while (fa. next ())
@@ -110,6 +120,23 @@ struct ThisApplication final : Application
 	      }
 	      dna. qc ();
 	      dna. saveText (cout);
+	      if (mergedF)
+	      {
+	        size_t n = 0;
+	        size_t start = 0;
+	        FFOR (size_t, i, dna. seq. size ())
+	          if (dna. isAmbiguous (dna. seq [i]))
+	            n++;
+	          else
+	          {
+	            if (n >= mask_min)
+	             *mergedF << dna. getId () << '\t' << start + 1 << '\t' << i << '\n';
+	            n = 0;
+	            start = i + 1;
+	          }
+          if (n >= mask_min)
+            *mergedF << dna. getId () << '\t' << start + 1 << '\t' << dna. seq. size () << '\n';
+	      }
   	  }
   	}
 	}
