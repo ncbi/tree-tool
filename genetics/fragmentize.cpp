@@ -49,15 +49,19 @@ namespace
 {
   
   
+constexpr double x_frac_max = 0.25;  // PAR
+
+  
+  
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Split a DNA multi-fasta file a set of contigs")
+    : Application ("Split a DNA multi-fasta file a set of contigs.\n\
+Contigs with ambiguities > " + to_string (x_frac_max * 100) + " % are skipped")
   	{
       version = VERSION;
   	  addPositional ("in", "Input multi-FASTA file");
   	  addPositional ("contig_len", "Contig length");
-  	  addFlag ("sparse", "Sparse sequence");
   	}
 
 
@@ -66,7 +70,6 @@ struct ThisApplication final : Application
   {
 		const string in         = getArg ("in");
 		const size_t contig_len = (size_t) arg2uint ("contig_len");
-		const bool   sparse     = getFlag ("sparse");
 	  
 	  QC_ASSERT (contig_len);
 
@@ -75,7 +78,7 @@ struct ThisApplication final : Application
   	  Multifasta fa (in, false); 
   	  while (fa. next ())
   	  {
-	      const Dna dna (fa, 16 * 1024 * 1024, sparse);
+	      const Dna dna (fa, 16 * 1024 * 1024, false);
 	      dna. qc ();          
         size_t start = 0; 
         bool stopP = false;
@@ -90,8 +93,13 @@ struct ThisApplication final : Application
             const size_t start_human = start + 1;
             const size_t stop_human = stop;
             const string name (dna. getId () + ":" + to_string (start_human) + "-" + to_string (stop_human) + " " + dna. getDescription (false));
-            const Dna frag (name, dna. seq. substr (start, stop - start), sparse);          
-            frag. saveText (cout);
+            Dna frag (name, dna. seq. substr (start, stop - start), false);    
+            frag. trimAmbiguous ();
+            frag. qc ();
+            if (   frag. seq. size () >= contig_len / 2  // PAR
+                && (double) frag. getXs () <= (double) frag. seq. size () * x_frac_max
+               ) 
+              frag. saveText (cout);
             start = stop;
           }
           else
