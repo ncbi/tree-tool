@@ -23,6 +23,9 @@
 !*.jpg
 !*.JPG
 
+# Data
+!*.dm
+
 
 # Directories
 !dissim/
