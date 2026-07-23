@@ -135,6 +135,6 @@ fi
 gzip $ASM.prot
 
 
-rm -f $LOG
+#rm -f $LOG
 
 
