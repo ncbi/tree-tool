@@ -41,7 +41,10 @@ while true; do
   fi
   
   N=$(( N + 1 ))
-  if [ $N -gt $PERIODS ]; then  
+  if [ $N -le $PERIODS ]; then  
+    printf "\r$GREEN%d / %d$NOCOLOR" $N $PERIODS 
+  else
+    echo ""
     N=0
     $THIS/grid_wait.sh 1
     set +o errexit
