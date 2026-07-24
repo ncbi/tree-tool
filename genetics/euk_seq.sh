@@ -11,7 +11,7 @@ if [ $# -ne 8 ]; then
   echo "#5: Pfam HMM library (absolute path) or ''"
   echo "#6: use Pfam HMM cutoff (0/1)"
   echo "#7: number of cores"
-  echo "#8: log file (absolute path)"
+  echo "#8: log file (absolute path): removed on success"
   echo "Time: #1 size: 10M - 1 hour; 4G - 6 days"
   exit 1
 fi
@@ -135,6 +135,6 @@ fi
 gzip $ASM.prot
 
 
-#rm -f $LOG
+rm -f $LOG
 
 
