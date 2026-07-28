@@ -480,24 +480,6 @@ template <typename T /*container*/>
 
 
 
-// KeyValue
-
-typedef  map<string/*key*/,string/*value*/>  KeyValue;
-
-inline string find (const KeyValue& kv,
-                    const string& key,
-                    bool force)
-  { const auto& it = kv. find (key);
-    if (it == kv. end ())
-    { if (force)
-        return key;
-      throw runtime_error ("Key \"" + key + "\" is not found");
-    }
-    return it->second;
-  }
-
-
-
 // hash
 
 extern hash<string> str_hash;
@@ -621,8 +603,9 @@ inline bool isSpace (char c)
 
 // char*
 
+constexpr const char* nvl_null = "-";
 inline const char* nvl (const char* s,
-                        const char* nullS = "-")
+                        const char* nullS = nvl_null)
   { return s ? s : nullS; }
   	
   	  	
@@ -644,7 +627,7 @@ inline string ifS (bool cond,
   { return cond ? s : noString; }
 
 inline string nvl (const string& s,
-                   const string& nullS = "-")
+                   const string& nullS = nvl_null)
   { return s. empty () ? nullS : s; }
   	
 inline string appendS (const string &s,
@@ -904,6 +887,23 @@ void reverse (string &s);
 size_t strMonth2num (const string& month);
   // Input: month: "Jan", "Feb", ... (3 characters)
 
+
+
+// KeyValue
+
+typedef  map<string/*key*/,string/*value*/>  KeyValue;
+
+inline string key2value (const KeyValue& kv,
+                         const string& key,
+                         bool force)
+  { const auto& it = kv. find (key);
+    if (it == kv. end ())
+    { if (force)
+        return noString;
+      throw runtime_error ("Key \"" + key + "\" is not found");
+    }
+    return it->second;
+  }
 
 
 // Bit operations

@@ -152,8 +152,8 @@ struct ThisApplication final : Application
         if (s1 == s2)
           continue;
           
-        s1 = find (old2new, s1,  true);
-        s2 = find (old2new, s2, true);
+        s1 = nvl (key2value (old2new, s1, true), s1);
+        s2 = nvl (key2value (old2new, s2, true), s2);
           
         // n1, n2
         if (! contains (items, s1))
