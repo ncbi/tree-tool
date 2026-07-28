@@ -7,9 +7,9 @@ var offline = false;  // PAR
 var lite = offline ? true : false /*PAR*/;
 // System
 var server = "PROTEUS";
-var dbuser_readonly = "anyone";
+var dbuser_readonly = "";  // Get from a file ??
 var dbuser = dbuser_readonly;
-var dbpassword_readonly = "allowed";
+var dbpassword_readonly = "";  // Get from a file ??
 var dbpassword = dbpassword_readonly;
 var database = 'uniColl';
 var userName = '';
@@ -27,7 +27,7 @@ const authentication = '\
 
 
 
-var str2sql = function (s)
+var str2sql = function (s)  // ??
 {
   var s1 = '';
   if (s && s.length)
@@ -38,7 +38,7 @@ var str2sql = function (s)
 
 
 
-var str2sqlNull = function (s)
+var str2sqlNull = function (s)  // ??
 {
   if (s == null)
     return 'null';
@@ -47,7 +47,7 @@ var str2sqlNull = function (s)
 
 
 
-var sqlInjected = function (sql)
+var sqlInjected = function (sql)  // ??
 {
   if (! sql || sql.indexOf("'") == -1)
     return false;
@@ -208,9 +208,26 @@ var readonly = function ()
 
 
 
-var query_ = function (server, dbuser, dbpassword, database, sql, timeout_sec)
-// Requires: sql: columns have distinct names
-//           result set must have <= 10000/*??*/ rows 
+var query_ = function ( server
+                      , dbuser
+                      , dbpassword
+                      , database
+                      , timeout_sec
+                      , sql
+                      , par_1
+                      , par_2
+                      , par_3
+                      , par_4
+                      , par_5
+                      , par_6
+                      , par_7
+                      , par_8
+                      , par_9
+                      , par_10
+                      )
+// Input: sql: columns have distinct names
+//             result set must have <= 10000/*??*/ rows 
+//        par_<i>: string parameters "@par_<i>" in sql
 // Returns: map: 0-based numbers as strings -> map (columns -> values)
 //            numbers with very large precision are converted to strings
 {  
@@ -223,13 +240,22 @@ var query_ = function (server, dbuser, dbpassword, database, sql, timeout_sec)
         {  
           url: 'query.cgi'  
         , data: { server: server
-                , user: dbuser // dbuser_readonly
-                , password: dbpassword  // dbpassword_readonly
+                , user: dbuser 
+                , password: dbpassword  
                 , db: database
                 , sql: sql  
+                , par_1: par_1
+                , par_2: par_2
+                , par_3: par_3
+                , par_4: par_4
+                , par_5: par_5
+                , par_6: par_6
+                , par_7: par_7
+                , par_8: par_8
+                , par_9: par_9
+                , par_10: par_10
                 , dml: 0
-                , timeout: timeout_sec  // Was used in PHP
-                , log: 0  
+                , log: 0 
                 }
         , type: "GET"  
         , dataType: 'json'
@@ -264,53 +290,36 @@ var query_ = function (server, dbuser, dbpassword, database, sql, timeout_sec)
 
 
 
-var query_sybase = function (server, dbuser, dbpassword, sql)
-// PHP is not implemented ??
+var query = function ( sql
+                     , par_1
+                     , par_2
+                     , par_3
+                     , par_4
+                     , par_5
+                     , par_6
+                     , par_7
+                     , par_8
+                     , par_9
+                     , par_10
+                     )
 {
-  var rs = [];  
-  if (offline) 
-    alert (sql);  
-  else
-    $.ajax
-      (
-        {  
-          url: 'query_sybase.php'
-        , data: { server: server
-                , user: dbuser // dbuser_readonly
-                , password: dbpassword  // dbpassword_readonly
-                , sql: sql
-                }
-        , type: "GET"
-        , dataType: 'json'
-        , async: false
-        , cache: false
-      
-        , success: function (res)        
-            {
-              if (res.msg)
-              {
-                alert (res.msg);
-                rs = res;
-              }
-              else
-                rs = res.data;
-            }
-          
-        , error: function (jqXHR, textStatus, errorThrown) 
-            { 
-              alert ("Status: " + textStatus + "\nError: " + errorThrown + "\nCannot query the Sybase server " + server); 
-            }
-        }
-      );
-    
-  return rs;
-}
-
-
-
-var query = function (sql)
-{
-  return query_ (server, dbuser, dbpassword, database, sql);
+  return query_ ( server
+                , dbuser
+                , dbpassword
+                , database
+                , null
+                , sql
+                , par_1
+                , par_2
+                , par_3
+                , par_4
+                , par_5
+                , par_6
+                , par_7
+                , par_8
+                , par_9
+                , par_10
+                );
 }
 
   
@@ -318,7 +327,7 @@ var query = function (sql)
   
 var check_credentials_ = function (server, dbuser, dbpassword, database)
 {
-  var rs = query_ (server, dbuser, dbpassword, database, "select 1", 3);
+  var rs = query_ (server, dbuser, dbpassword, database, 3, "select 1");
   if (rs.length == 1)
     return true;    
   alert ("Cannot connect to the database " + database + " on the server " + server);
@@ -329,14 +338,35 @@ var check_credentials_ = function (server, dbuser, dbpassword, database)
 
 var check_credentials = function ()
 {
+  if (! dbuser)
+  {
+    alert ("Empty user name");
+    return false;
+  }
   return check_credentials_ (server, dbuser, dbpassword, database);
 }
 
 
 
-var dml_ = function (server, dbuser, dbpassword, database, sql)
-// Return: number of rows affected or -1 if there is an error
+var dml_ = function ( server
+                    , dbuser
+                    , dbpassword
+                    , database
+                    , sql
+                    , par_1
+                    , par_2
+                    , par_3
+                    , par_4
+                    , par_5
+                    , par_6
+                    , par_7
+                    , par_8
+                    , par_9
+                    , par_10
+                    )
 // Input: sql: no transaction
+//        par_<i>: string parameters "@par_<i>" in sql
+// Return: number of rows affected or -1 if there is an error
 {
   var count = -1;
   if (offline) 
@@ -351,6 +381,16 @@ var dml_ = function (server, dbuser, dbpassword, database, sql)
                 , password: dbpassword
                 , db: database
                 , sql: sql
+                , par_1: par_1
+                , par_2: par_2
+                , par_3: par_3
+                , par_4: par_4
+                , par_5: par_5
+                , par_6: par_6
+                , par_7: par_7
+                , par_8: par_8
+                , par_9: par_9
+                , par_10: par_10
                 , dml: 1
                 , log: 0
                 }
@@ -379,9 +419,35 @@ var dml_ = function (server, dbuser, dbpassword, database, sql)
 
 
 
-var dml = function (sql)
+var dml = function ( sql
+                   , par_1
+                   , par_2
+                   , par_3
+                   , par_4
+                   , par_5
+                   , par_6
+                   , par_7
+                   , par_8
+                   , par_9
+                   , par_10
+                   )
 {
-  return dml_ (server, dbuser, dbpassword, database, sql);
+  return dml_ ( server
+              , dbuser
+              , dbpassword
+              , database
+              , sql
+              , par_1
+              , par_2
+              , par_3
+              , par_4
+              , par_5
+              , par_6
+              , par_7
+              , par_8
+              , par_9
+              , par_10
+              );
 }
   
 
@@ -425,9 +491,6 @@ var initSystem = function ()
     if (sqlInjected (userName))
       userName = '';
   }
-
-//if (userName && ! debug && ! lite /*&& server == "PROTEUS"*/)
-  //dml_ ("PROTEUS", "anyone", "allowed", "uniColl", "insert into WEBLOG (username, page) values ('" + userName + "', '" + location.pathname + "')");  
 }
 
 

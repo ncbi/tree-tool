@@ -57,13 +57,6 @@ var printProperties = function (x)
 
 
 
-var isNatural = function (s)
-{
-  return /^\d+$/.test(s);
-}
-
-
-
 var inputString = function (promptS, val_init)
 {
   let s = null;
@@ -82,6 +75,8 @@ var inputString = function (promptS, val_init)
 }
 
 
+
+// Min/max
 
 var getMax = function (a, b)
 {
@@ -137,6 +132,15 @@ var maximize = function (x, field, y)
 
 
 
+// Number
+
+var isNatural = function (s)
+{
+  return /^\d+$/.test(s);
+}
+
+
+
 var isDigit = function (x)
 {
   return    x.length == 1
@@ -145,6 +149,28 @@ var isDigit = function (x)
 }
 
 
+
+var numberWithCommas = function (x) 
+{
+  let parts = x.toString().split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return parts.join(".");
+}
+
+
+
+var int2hex = function (i)
+// Input: i: between 0 and 255
+{
+  var hex = Math.round(i).toString(16);
+  if (hex.length == 1)
+    hex = '0' + hex;
+  return hex;
+}
+
+
+
+// String
 
 var ifS = function (cond, s)
 {
@@ -183,7 +209,7 @@ var sPref = function (pref, s)
 
 var sSuf = function (s, suf)
 {
-  return s ? s + suf : "";
+  return s ? (s + suf) : "";
 }
 
 
@@ -237,6 +263,36 @@ var num2str = function (num)
 
 
 
+var strContains = function (hay, needle, lowercaseP)
+{
+  if (! needle)
+    return true;
+  if (! hay)
+    return false;
+  if (lowercaseP)
+  {
+    hay    = hay.   toLowerCase();
+    needle = needle.toLowerCase();
+  }
+  return hay.indexOf (needle) != -1;
+}
+
+
+
+var hasMask = function (word)
+{
+  return    typeof word == "string" 
+         && word 
+         && (   word.indexOf('%') != -1
+             || word.indexOf('_') != -1
+             || word.indexOf('[') != -1
+            );         
+}
+
+
+
+// Conversions
+
 var q2s = function (s)
 {
   if (! s)
@@ -283,6 +339,8 @@ var q2cgi = function (s)
 
 
 
+// JSON
+
 var json = function (x)
 {
   var toText = function (e)
@@ -318,42 +376,7 @@ var json = function (x)
   
   
 
-var hasMask = function (word)
-{
-  return    typeof word == "string" 
-         && word 
-         && (   word.indexOf('%') != -1
-             || word.indexOf('_') != -1
-             || word.indexOf('[') != -1
-            );         
-}
-
-
-
-var numberWithCommas = function (x) 
-{
-  let parts = x.toString().split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return parts.join(".");
-}
-
-
-
-var strContains = function (hay, needle, lowercaseP)
-{
-  if (! needle)
-    return true;
-  if (! hay)
-    return false;
-  if (lowercaseP)
-  {
-    hay    = hay.   toLowerCase();
-    needle = needle.toLowerCase();
-  }
-  return hay.indexOf (needle) != -1;
-}
-
-
+// Array
 
 var arrayEmpty = function (arr)
 {
@@ -422,6 +445,49 @@ var keys2string = function (arr)
 
 
 
+var arrayAt = function (arr, i)
+{
+  if (i < arr.length)
+    return arr[i];
+  return null;
+}
+
+
+
+// DOM
+
+var addRadioButton = function (name, value_init, value)  
+{
+  return "<div><input type=radio name='" + name + "' value='" + value + "'" + ifS (value == value_init, " checked") + " /> <label for='" + value + "'>" + value + "</label></div>";
+}
+
+
+
+var setObject = function (objName, html)
+{
+  const obj = document.getElementById (objName);
+  if (! obj)
+  {
+  	alert ("DOM object " + objName + " is not found");
+  	return null;
+  }
+  obj.innerHTML = html;
+  return obj;
+}
+
+
+
+var setFocusObject = function (objName, html)
+{
+  const obj = setObject (objName, html);
+  if (obj)
+    obj.scrollIntoView();
+}
+
+
+
+// Table
+
 var table_column2string = function (table, column)
 // Return: concatenated strings prefixed with " "
 {
@@ -453,16 +519,49 @@ var table_column2string_distinct = function (table, column)
 
 
 
-var int2hex = function (i)
-// Input: i: between 0 and 255
+var tableStart = function (caption, widthPercent, fontSize)
 {
-  var hex = Math.round(i).toString(16);
-  if (hex.length == 1)
-    hex = '0' + hex;
-  return hex;
+  const wp = widthPercent ? " style='table-layout:fixed;width:" + widthPercent + "%;'" : "";
+  const fs = fontSize ? " style='font-size:" + (fontHeight * fontSize) + "px'" : "";
+  return   "<table border=1 cellpadding=5 style='border-collapse:collapse;'" + wp + fs + ">"
+         + ifS (caption, "<caption><b><big>" + caption + "</caption>");
 }
 
 
+
+var column2table = function (row, column, isKey)
+{
+  const v = row[column];
+  if (v == '----')
+    return "<tr><td colspan=2 align=center>" + column + "</td></tr>";
+  return "<tr><td><b>" + column + "</b></td><td>" + ifS(isKey,"<b><font color=blue>") + (v == null ? "" : v) + ifS(isKey,"</b></color>") + "</td></tr>";
+}
+
+
+
+var queryRow2table = function (title, row, keyNum)
+{
+  let tab = tableStart (title) + "<tbody>";
+  let i = 0;
+  for (const col in row)
+  {
+    tab += column2table (row, col, i < keyNum);
+    i++;
+  }
+  return tab + "</tbody></table>";
+}
+
+
+
+var table2DOM = function (tableName, tableHTML)
+{
+  setFocusObject (tableName, 
+    /*"<p>" +*/ tableHTML + "<form onsubmit='parent.remove_" + tableName + "();return false'><input type='submit' value='Undisplay'></form><p>");
+}
+
+
+
+// Color
 
 var int2fillStyle = function (n)
 {
@@ -533,77 +632,7 @@ var frac2color = function (frac /*0..1*/)
 
 
 
-var tableStart = function (caption, widthPercent, fontSize)
-{
-  const wp = widthPercent ? " style='table-layout:fixed;width:" + widthPercent + "%;'" : "";
-  const fs = fontSize ? " style='font-size:" + (fontHeight * fontSize) + "px'" : "";
-  return   "<table border=1 cellpadding=5 style='border-collapse:collapse;'" + wp + fs + ">"
-         + ifS (caption, "<caption><b><big>" + caption + "</caption>");
-}
-
-
-
-var column2table = function (row, column, isKey)
-{
-  const v = row[column];
-  if (v == '----')
-    return "<tr><td colspan=2 align=center>" + column + "</td></tr>";
-  return "<tr><td><b>" + column + "</b></td><td>" + ifS(isKey,"<b><font color=blue>") + (v == null ? "" : v) + ifS(isKey,"</b></color>") + "</td></tr>";
-}
-
-
-
-var addRadioButton = function (name, value_init, value)  
-{
-  return "<div><input type=radio name='" + name + "' value='" + value + "'" + ifS (value == value_init, " checked") + " /> <label for='" + value + "'>" + value + "</label></div>";
-}
-
-
-
-var queryRow2table = function (title, row, keyNum)
-{
-  let tab = tableStart (title) + "<tbody>";
-  let i = 0;
-  for (const col in row)
-  {
-    tab += column2table (row, col, i < keyNum);
-    i++;
-  }
-  return tab + "</tbody></table>";
-}
-
-
-
-var setObject = function (objName, html)
-{
-  const obj = document.getElementById (objName);
-  if (! obj)
-  {
-  	alert ("DOM object " + objName + " is not found");
-  	return null;
-  }
-  obj.innerHTML = html;
-  return obj;
-}
-
-
-
-var setFocusObject = function (objName, html)
-{
-  const obj = setObject (objName, html);
-  if (obj)
-    obj.scrollIntoView();
-}
-
-
-
-var table2DOM = function (tableName, tableHTML)
-{
-  setFocusObject (tableName, 
-    /*"<p>" +*/ tableHTML + "<form onsubmit='parent.remove_" + tableName + "();return false'><input type='submit' value='Undisplay'></form><p>");
-}
-
-
+//
 
 var getMouseCanvasPos = function (event, canvas)
 // http://miloq.blogspot.com/2011/05/coordinates-mouse-click-canvas.html

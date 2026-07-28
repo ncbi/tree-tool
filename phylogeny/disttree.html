@@ -299,10 +299,11 @@ select Phyl.[node] id \
        left join TaxPicture on     TaxPicture.tax = Tax.id \
                                and TaxPicture.bad = 0 \
        left join ANI on ANI.acc_ver = PhylObject_vw.identifier \
-  where     Phyl.tree = " + tree + " \
-        and Phyl.[node] between " + node_start + " and " + node_end  + " \
+  where     Phyl.tree = @par_1 \
+        and Phyl.[node] between @par_2 and @par_3 \
   order by Phyl.[node] \
-  option (hash join)");
+  /*option (hash join)*/"
+, tree, node_start, node_end);
     for (const row_num in rs)
     {
       const row = rs[row_num];
@@ -379,9 +380,10 @@ select [node] id \
      , gain \
      , leaves \
   from Phylgain \
-  where     tree = " + tree + " \
-        and [node] between " + node_start + " and " + node_end + " \
-  order by [node]");
+  where     tree = @par_1 \
+        and [node] between @par_2 and @par_3 \
+  order by [node]"
+, tree, node_start, node_end);
       for (const row_num in gainLoss_rs)
       {
         const row = gainLoss_rs[row_num];
@@ -400,7 +402,7 @@ select [node] id \
   if (mainRoot != -1)
     alert (mainRoot);
   
-  let rs = query ("select node from Phyl where tree = " + tree + " and parent is null");
+  let rs = query ("select node from Phyl where tree = @par_1 and parent is null", tree);
   mainRoot = rs[0].node;
   curRoot = mainRoot;
   
@@ -410,17 +412,18 @@ select Phyltree.object_type, Objecttype.seq_type \
   from      Phyltree \
        join Objecttype on Objecttype.id = Phyltree.object_type \
   where     dead = 0 \
-        and Phyltree.id = " + tree);
+        and Phyltree.id = @par_1"
+, tree);
   if (rs.length != 1)  
     alert ("Unknown tree " + tree);
   objectType = rs[0].object_type;
   seqType    = rs[0].seq_type;
   
-  const gainLoss_rs = query ("select top 1 null from Phylgain where tree = " + tree);
+  const gainLoss_rs = query ("select top 1 null from Phylgain where tree = @par_1", tree);
   hasGainLoss = (gainLoss_rs.length == 1);
 
   // node_max, nodes[]
-  rs = query ("select max(node) node_max from Phyl where tree = " + tree);
+  rs = query ("select max(node) node_max from Phyl where tree = @par_1", tree);
   node_max = rs[0].node_max;
   let node_start = 1;
   for (;;)
@@ -431,8 +434,6 @@ select Phyltree.object_type, Objecttype.seq_type \
       break;
     node_start = node_end + 1;
   }
-
-//document.getElementById("GainLoss").innerHTML = ifS (hasGainLoss, "<form onsubmit='parent.findGainLoss(gain_loss.value);return false'>Gain/Loss (regexp): <input type='text' id=gain_loss></form>");
 
   if (nodes.length == 0)
   {
@@ -2290,8 +2291,10 @@ var setName = function (nodeId)
     {  
       const count = dml ("\
 update Phyl \
-  set [name] = '" + str2sql(val) + "' \
-  where tree = " + tree + " and node = " + nodeId);
+  set [name] = @par_1 \
+  where     tree = @par_2 \
+        and node = @par_3"
+, val, tree, nodeId);
     if (count <= 0)
       alert ("Database is not changed");
     }
@@ -2314,30 +2317,12 @@ var setTax = function (nodeId)
   if (val == "")
     val = null;
   
-/*
-  let tax = 'null';
-  if (val)
-  {
-    let rs = null;
-    if (isNaN (parseInt (val.substr(0,1), 10)))
-  	  rs = query ("select id from Tax where [name] = '" + str2sql (val) + "'");
-  	else
-  	  rs = query ("select id from Tax where id = " + str2sql (val));
-	  if (! rs.length)
-	  {
-	  	alert ("Taxon '" + val + "' is not in uniColl..Tax");
-	    return;
-	  }
-	  tax = rs[0].id;
-  }
-*/
-		
-	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
+	const idRs = query ("select identifier from PhylObject where tree = @par_1 and leaf = @par_2", tree, nodeId);
   const identifier = idRs[0].identifier;
 		
-  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(val) + ", tax_curated = null where id = '" + identifier + "'";
-  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", " + str2sqlNull(val) + ")";
-  const count = dml (sql1 + "; " + sql2);
+  const sql1 = "update " + objectType + " set tax_name_curated = @par_1, tax_curated = null where id = @par_2";
+  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', @par_2, @par_1)";
+  const count = dml (sql1 + "; " + sql2, val, identifier);
   if (count <= 0)
   {
     alert ("Database is not changed");
@@ -2349,7 +2334,7 @@ var setTax = function (nodeId)
   node.tax_confirmed = null;  
   if (val != null)
   {
-    const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = '" + identifier + "'");
+    const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = @par_1", identifier);
     if (! taxRs.length)
     	alert ("Cannot get Tax.name");
     else
@@ -2368,10 +2353,10 @@ var confirmTax = function (nodeId)
 {
   const node = nodes[nodeId];
 
-	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
+	const idRs = query ("select identifier from PhylObject where tree = @par_1 and leaf = @par_2", tree, nodeId);
   const identifier = idRs[0].identifier;
 		
-  const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = '" + identifier + "'");
+  const taxRs = query ("select Tax.[name] from " + objectType + " join Tax on Tax.id = " + objectType + ".tax where " + objectType + ".id = @par_1", identifier);
   if (! taxRs.length)
   {
   	alert ("Cannot get Tax.name");
@@ -2379,9 +2364,9 @@ var confirmTax = function (nodeId)
   }
   const tax_name = taxRs[0].name;  
 
-  const sql1 = "update " + objectType + " set tax_name_curated = " + str2sqlNull(tax_name) + ", tax_curated = tax where id = '" + identifier + "'";
-  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", " + str2sqlNull(tax_name) + ")";
-  const count = dml (sql1 + "; " + sql2);
+  const sql1 = "update " + objectType + " set tax_name_curated = @par_1, tax_curated = tax where id = @par_2";
+  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', @par_2, @par_1)";
+  const count = dml (sql1 + "; " + sql2, tax_name, identifier);
   if (count <= 0)
   {
     alert ("Database is not changed");
@@ -2400,12 +2385,12 @@ var unconfirmTax = function (nodeId)
 {
   const node = nodes[nodeId];
 
-	const idRs = query ("select identifier from PhylObject where tree = " + tree + " and leaf = " + nodeId);
+	const idRs = query ("select identifier from PhylObject where tree = @par_1 and leaf = @par_2", tree, nodeId);
   const identifier = idRs[0].identifier;
 		
-  const sql1 = "update " + objectType + " set tax_name_curated = null, tax_curated = null where id = '" + identifier + "'";
-  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', " + identifier + ", null)";
-  const count = dml (sql1 + "; " + sql2);
+  const sql1 = "update " + objectType + " set tax_name_curated = null, tax_curated = null where id = @par_1";
+  const sql2 = "insert into TaxChange (tab, id, tax_name) values ('" + objectType + "', @par_1, null)";
+  const count = dml (sql1 + "; " + sql2, identifier);
   if (count <= 0)
   {
     alert ("Database is not changed");
@@ -2436,7 +2421,7 @@ var setComment = function (nodeId)
   {
     case "Genome": sql = "\
 update Genome \
-  set comment = " + str2sqlNull (val) + " \
+  set comment = @par_1 \
   from      Phyl \
        join Phyltree on Phyltree.id = Phyl.tree \
        join PhylObject on     PhylObject.tree = Phyl.tree \
@@ -2444,12 +2429,12 @@ update Genome \
        join Genome on Genome.id = PhylObject.identifier \
   where     Phyltree.object_type = 'Genome' \
         and Phyl.is_leaf = 1 \
-        and Phyl.tree = " + tree + " \
-        and Phyl.node = " + nodeId;
+        and Phyl.tree = @par_2 \
+        and Phyl.node = @par_3";
        break;
     case "Locus": sql = "\
 update Locus \
-  set comment = " + str2sqlNull (val) + " \
+  set comment = @par_1 \
   from      Phyl \
        join Phyltree on Phyltree.id = Phyl.tree \
        join PhylObject on     PhylObject.tree = Phyl.tree \
@@ -2457,8 +2442,8 @@ update Locus \
        join Locus on Locus.id = PhylObject.identifier \
   where     Phyltree.object_type = 'Locus' \
         and Phyl.is_leaf = 1 \
-        and Phyl.tree = " + tree + " \
-        and Phyl.node = " + nodeId;
+        and Phyl.tree = @par_2 \
+        and Phyl.node = @par_3";
        break;
   }  
   if (! sql)
@@ -2469,7 +2454,7 @@ update Locus \
   
   node.comment = val;
 
-  const count = dml (sql);
+  const count = dml (sql, val, tree, nodeId);
   if (count <= 0)
     alert ("Database is not changed");
 
@@ -2494,7 +2479,7 @@ var setTickets = function (nodeId)
   {
     case "Genome": sql = "\
 update Genome \
-  set tickets = " + str2sqlNull (val) + " \
+  set tickets = @par_1 \
   from      Phyl \
        join Phyltree on Phyltree.id = Phyl.tree \
        join PhylObject on     PhylObject.tree = Phyl.tree \
@@ -2502,12 +2487,12 @@ update Genome \
        join Genome on Genome.id = PhylObject.identifier \
   where     Phyltree.object_type = 'Genome' \
         and Phyl.is_leaf = 1 \
-        and Phyl.tree = " + tree + " \
-        and Phyl.node = " + nodeId;
+        and Phyl.tree = @par_2 \
+        and Phyl.node = @par_3";
        break;
     case "Locus": sql = "\
 update Locus \
-  set tickets = " + str2sqlNull (val) + " \
+  set tickets = @par_1 \
   from      Phyl \
        join Phyltree on Phyltree.id = Phyl.tree \
        join PhylObject on     PhylObject.tree = Phyl.tree \
@@ -2515,8 +2500,8 @@ update Locus \
        join Locus on Locus.id = PhylObject.identifier \
   where     Phyltree.object_type = 'Locus' \
         and Phyl.is_leaf = 1 \
-        and Phyl.tree = " + tree + " \
-        and Phyl.node = " + nodeId;
+        and Phyl.tree = @par_2 \
+        and Phyl.node = @par_3";
        break;
   }  
   if (! sql)
@@ -2527,7 +2512,7 @@ update Locus \
   
   node.tickets = val;
 
-  const count = dml (sql);
+  const count = dml (sql, val, tree, nodeId);
   if (count <= 0)
     alert ("Database is not changed");
 
@@ -2756,7 +2741,7 @@ var summaryTab = function ()
 
   let rs = query ("\
 select [name] \
-     , " + (server == "PROTEUS" ? "tax" : "pdg") + "\
+     , tax \
      , tree_file \
      , object_type \
      , comparison \
@@ -2769,14 +2754,16 @@ select [name] \
      , latest \
      , interiors \
   from Phyltree_vw \
-  where id = " + tree);
+  where id = @par_1"
+, tree);
   const row = rs [0];
   
   rs = query ("\
 select count(*) genomes \
   from Phyl \
-  where     tree = " + tree + " \
-        and is_leaf = 1");
+  where     tree = @par_1 \
+        and is_leaf = 1"
+, tree);
   const genomes = rs[0].genomes;
 
   species_barrier = row.species_barrier || 1;
@@ -3109,7 +3096,7 @@ var init = function ()
     const tree_name = getParams().name;
     if (tree_name)
     {
-      const rs = query ("select id from Phyltree_vw where [name] like '" + tree_name + "%' order by alien, release desc, parm, id desc");
+      const rs = query ("select id from Phyltree_vw where [name] like @par_1 + '%' order by alien, release desc, parm, id desc", tree_name);
       tree_init = rs[0] && rs[0].id;
       if (! tree_init)
       {
@@ -3151,7 +3138,7 @@ if (! tree_init)
   const rs = query ("\
 select id \
      , [name] \
-     , " + (server == "PROTEUS" ? "tax" : "pdg") + "\
+     , tax \
      , object_type \
      , leaves \
      , added_leaves \
