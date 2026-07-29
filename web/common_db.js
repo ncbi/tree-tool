@@ -227,7 +227,7 @@ var query_ = function ( server
                       )
 // Input: sql: columns have distinct names
 //             result set must have <= 10000/*??*/ rows 
-//        par_<i>: string parameters "@par_<i>" in sql
+//        par_<i>: string parameters "@par_<i>" in sql; null is encoded by "@NULL"
 // Returns: map: 0-based numbers as strings -> map (columns -> values)
 //            numbers with very large precision are converted to strings
 {  
@@ -365,7 +365,7 @@ var dml_ = function ( server
                     , par_10
                     )
 // Input: sql: no transaction
-//        par_<i>: string parameters "@par_<i>" in sql
+//        par_<i>: string parameters "@par_<i>" in sql; null is encoded by "@NULL"
 // Return: number of rows affected or -1 if there is an error
 {
   var count = -1;

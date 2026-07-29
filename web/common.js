@@ -297,6 +297,7 @@ var q2s = function (s)
 {
   if (! s)
     return s;
+  s = String(s);
   return s.replace(/\'/g, "\\\'")
           .replace(/\"/g, '\\\"')
           ;
