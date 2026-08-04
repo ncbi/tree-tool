@@ -422,14 +422,14 @@ struct Viewer
               Row& row = rows [curIndex];
               switch (getKey ())
               {
-                case 'n': row. color = NCurses::white; break;
-                case 'r': row. color = NCurses::red; break;
-                case 'g': row. color = NCurses::green; break;
+                case 'n': row. color = NCurses::white; break;  // does not work ??
+                case 'r': row. color = NCurses::red; break;  // confused with search ??
+                case 'g': row. color = NCurses::green; break;  // confused with default ??
                 case 'y': row. color = NCurses::yellow; break;
                 case 'b': row. color = NCurses::blue; break;
                 case 'm': row. color = NCurses::magenta; break;
                 case 'c': row. color = NCurses::cyan; break;
-                case 'w': row. color = NCurses::white; break;  
+                case 'w': row. color = NCurses::white; break;  // does not work ??
               }
             }
             break;
