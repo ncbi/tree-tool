@@ -164,7 +164,18 @@ inline void reportException (const string &msg,
       cerr << s << endl;
     else
       throw runtime_error (s);
-  }    	    	
+  }
+  
+template <typename T>
+  void assignPtr (const T* &a,
+                  const T* b)
+    { if (a)
+      { if (a != b)
+          throwf ("a != b");
+      }
+      else
+        a = b;
+    }
 
 
 void sleepNano (long nanoSec);
@@ -1001,6 +1012,7 @@ inline string int_dist2str (int_dist dist)
     return to_string (dist);
   }
 int_dist add1 (int_dist d);
+int_dist subtract1 (int_dist d);
 
 
 
@@ -2740,6 +2752,16 @@ template <typename T>
   	  { Vector<T> other (*this);
   	    other. sort ();
   	    return other. isUniq ();
+  	  }
+  	bool addUniq (const T &value)
+  	  { if (contains (value))
+  	      return false;
+  	    (*this) << value;
+  	    return true;
+  	  }
+  	void addUniq (const Vector<T> &other)
+  	  { for (const T& value : other)
+  	      addUniq (value);
   	  }
     size_t getIntersectionSize (const Vector<T> &other) const
       // Input: *this, vec: unique

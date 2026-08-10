@@ -1271,6 +1271,19 @@ int_dist add1 (int_dist d)
 
 
 
+int_dist subtract1 (int_dist d)
+{
+  if (d == int_dist_inf)
+    return int_dist_inf;
+
+  QC_ASSERT (d);
+  return d - 1;
+}
+
+
+
+
+//
 
 List<string> str2list (const string &s,
                        char c)
