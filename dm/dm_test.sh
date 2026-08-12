@@ -17,7 +17,7 @@ cd $THIS
 
 
 section "matrix"
-$THIS/matrix_test -qc go
+$THIS/matrix_test -qc -profile go
 
 section "dataset"
 $THIS/dataset_test -qc  -seed $SEED  go
