@@ -2100,7 +2100,7 @@ FeatureTree::FeatureTree (const string &treeFName,
 	ASSERT (! treeFName. empty ());
 
 
-  const Chronometer_OnePass copInit ("Initialization");  
+  const Chronometer_Wallclock_OnePass copInit ("Initialization");  
 
  	loadPhylFile (treeFName);
   QC_ASSERT (root);
@@ -2143,7 +2143,7 @@ FeatureTree::FeatureTree (const string &treeFName,
   // Genome::coreSet: add all optional GenomeFeature's
   if (! oneFeatureInTree)
   {
-    const Chronometer_OnePass cop ("Genome: nominals to coreSet");  
+    const Chronometer_Wallclock_OnePass cop ("Genome: nominals to coreSet");  
     Progress prog (genomes, displayPeriod);
     // 86 sec./50K genomes
     // Threads ??
@@ -2309,7 +2309,7 @@ FeatureTree::FeatureTree (const string &treeFName,
  		static_cast <Phyl*> (node) -> setWeight (); 		
 
   section ("Assigning features", false);
-  const Chronometer_OnePass copFeat ("Assigning features");  
+  const Chronometer_Wallclock_OnePass copFeat ("Assigning features");  
   if (oneFeatureInTree)
   {
     {

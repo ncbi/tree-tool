@@ -3805,7 +3805,7 @@ struct Unverbose
   
 
 
-struct Chronometer : Nocopy
+struct Chronometer_CPU : Nocopy
 // For profiling
 // CPU (not astronomical) time
 // Requires: no thread is used
@@ -3820,7 +3820,7 @@ public:
   static constexpr Color::Type color {Color::magenta};  // PAR
 
 
-  explicit Chronometer (const string &name_arg)
+  explicit Chronometer_CPU (const string &name_arg)
     : name (name_arg)
     {}
 
@@ -3840,7 +3840,20 @@ public:
 
 
 
-struct Chronometer_OnePass : Nocopy
+struct Chronometer_CPU_OnePass : Chronometer_CPU
+{
+  explicit Chronometer_CPU_OnePass (const string &name_arg)
+    : Chronometer_CPU (name_arg)
+    { start (); }
+ ~Chronometer_CPU_OnePass ()
+    { stop (); 
+      print (cout); 
+    }
+};
+
+
+
+struct Chronometer_Wallclock_OnePass : Nocopy
 // Astronomical time
 {
 private:
@@ -3853,11 +3866,11 @@ public:
   static constexpr Color::Type color {Color::magenta};  // PAR
   
 	
-  explicit Chronometer_OnePass (const string &name_arg,
-                                ostream &os_arg = cout,
-                                bool addNewLine_arg = true,
-                                bool active_arg = true);
- ~Chronometer_OnePass ();
+  explicit Chronometer_Wallclock_OnePass (const string &name_arg,
+                                          ostream &os_arg = cout,
+                                          bool addNewLine_arg = true,
+                                          bool active_arg = true);
+ ~Chronometer_Wallclock_OnePass ();
     // Print to os
 };
 
@@ -3959,10 +3972,10 @@ inline
    
 
 
-struct Chronometer_OnePass_cerr : Chronometer_OnePass
+struct Chronometer_Wallclock_OnePass_cerr : Chronometer_Wallclock_OnePass
 {
-  explicit Chronometer_OnePass_cerr (const string &name_arg)
-    : Chronometer_OnePass (name_arg, cerr, false, qc_on && ! getQuiet ())
+  explicit Chronometer_Wallclock_OnePass_cerr (const string &name_arg)
+    : Chronometer_Wallclock_OnePass (name_arg, cerr, false, qc_on && ! getQuiet ())
     {}
 };
 

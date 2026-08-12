@@ -393,7 +393,7 @@ struct ThisApplication final : Application
 
     unique_ptr<DistTree> tree;
     {
-      const Chronometer_OnePass cop ("Initial topology");  
+      const Chronometer_Wallclock_OnePass cop ("Initial topology");  
       tree. reset (isDirName (dataFName)
                      ? new DistTree (dissimParam, dataFName, input_tree, true, true, new_only)
                      : input_tree. empty ()
@@ -546,7 +546,7 @@ struct ThisApplication final : Application
 
         //if (! skip_len)            
           {
-            const Chronometer_OnePass cop ("Initial arc lengths");
+            const Chronometer_Wallclock_OnePass cop ("Initial arc lengths");
 
             section ("Optimizing topology: arc lengths for the whole tree", true);
             tree->optimizeLenWhole ();
@@ -581,7 +581,7 @@ struct ThisApplication final : Application
           if (reinsert)
           {
             section ("Optimizing topology: reinsert", true);
-            const Chronometer_OnePass cop ("Topology optimization: reinsert");
+            const Chronometer_Wallclock_OnePass cop ("Topology optimization: reinsert");
             if (! tree->multFixed && ! reinsert_variance_dist)
             {
          	    tree->setDissimMult (false);   // may damage topology for big variance functions
@@ -601,7 +601,7 @@ struct ThisApplication final : Application
           if (! skip_topology)
           {
             section ("Optimizing topology: subgraphs", true);
-            const Chronometer_OnePass cop ("Topology optimization: local");
+            const Chronometer_Wallclock_OnePass cop ("Topology optimization: local");
             size_t iter_max = numeric_limits<size_t>::max ();
             if (subgraph_iter_max)
             	minimize (iter_max, subgraph_iter_max);

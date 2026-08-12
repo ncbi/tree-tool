@@ -138,7 +138,7 @@ struct ThisApplication : Application
 		                           );
 		
 		
-    const Chronometer_OnePass cop ("Total");  
+    const Chronometer_Wallclock_OnePass cop ("Total");  
 		
 		
     FeatureTree tree (input_tree, feature_dir, large, input_core, nominal_singleton_is_optional, prefer_gain, save_mem);

@@ -47,10 +47,10 @@ namespace DistTree_sp
 {
 
 
-Chronometer chron_getBestChange ("getBestChange");
-Chronometer chron_tree2subgraph ("tree2subgraph");
-Chronometer chron_subgraphOptimize ("subgraphOptimize");
-Chronometer chron_subgraph2tree ("subgraph2tree");
+Chronometer_CPU chron_getBestChange ("getBestChange");
+Chronometer_CPU chron_tree2subgraph ("tree2subgraph");
+Chronometer_CPU chron_subgraphOptimize ("subgraphOptimize");
+Chronometer_CPU chron_subgraph2tree ("subgraph2tree");
 
 
 
@@ -3568,7 +3568,7 @@ DistTree::DistTree (const DissimParam &dissimParam_arg,
 
     if (optimizeP)
     {  
-      const Chronometer_OnePass cop ("Optimizing new leaves");  
+      const Chronometer_Wallclock_OnePass cop ("Optimizing new leaves");  
       section ("Optimizing new leaves", true);
       constexpr uint radius = 2 * areaRadius_std;  // PAR
       if (threads_max > 1)
