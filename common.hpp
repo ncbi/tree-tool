@@ -164,7 +164,18 @@ inline void reportException (const string &msg,
       cerr << s << endl;
     else
       throw runtime_error (s);
-  }    	    	
+  }
+  
+template <typename T>
+  void assignPtr (const T* &a,
+                  const T* b)
+    { if (a)
+      { if (a != b)
+          throwf ("a != b");
+      }
+      else
+        a = b;
+    }
 
 
 void sleepNano (long nanoSec);
@@ -1001,6 +1012,7 @@ inline string int_dist2str (int_dist dist)
     return to_string (dist);
   }
 int_dist add1 (int_dist d);
+int_dist subtract1 (int_dist d);
 
 
 
@@ -2741,6 +2753,16 @@ template <typename T>
   	    other. sort ();
   	    return other. isUniq ();
   	  }
+  	bool addUniq (const T &value)
+  	  { if (contains (value))
+  	      return false;
+  	    (*this) << value;
+  	    return true;
+  	  }
+  	void addUniq (const Vector<T> &other)
+  	  { for (const T& value : other)
+  	      addUniq (value);
+  	  }
     size_t getIntersectionSize (const Vector<T> &other) const
       // Input: *this, vec: unique
       { if (other. empty ())
@@ -3783,7 +3805,7 @@ struct Unverbose
   
 
 
-struct Chronometer : Nocopy
+struct Chronometer_CPU : Nocopy
 // For profiling
 // CPU (not astronomical) time
 // Requires: no thread is used
@@ -3798,7 +3820,7 @@ public:
   static constexpr Color::Type color {Color::magenta};  // PAR
 
 
-  explicit Chronometer (const string &name_arg)
+  explicit Chronometer_CPU (const string &name_arg)
     : name (name_arg)
     {}
 
@@ -3818,7 +3840,20 @@ public:
 
 
 
-struct Chronometer_OnePass : Nocopy
+struct Chronometer_CPU_OnePass : Chronometer_CPU
+{
+  explicit Chronometer_CPU_OnePass (const string &name_arg)
+    : Chronometer_CPU (name_arg)
+    { start (); }
+ ~Chronometer_CPU_OnePass ()
+    { stop (); 
+      print (cout); 
+    }
+};
+
+
+
+struct Chronometer_Wallclock_OnePass : Nocopy
 // Astronomical time
 {
 private:
@@ -3831,11 +3866,11 @@ public:
   static constexpr Color::Type color {Color::magenta};  // PAR
   
 	
-  explicit Chronometer_OnePass (const string &name_arg,
-                                ostream &os_arg = cout,
-                                bool addNewLine_arg = true,
-                                bool active_arg = true);
- ~Chronometer_OnePass ();
+  explicit Chronometer_Wallclock_OnePass (const string &name_arg,
+                                          ostream &os_arg = cout,
+                                          bool addNewLine_arg = true,
+                                          bool active_arg = true);
+ ~Chronometer_Wallclock_OnePass ();
     // Print to os
 };
 
@@ -3937,10 +3972,10 @@ inline
    
 
 
-struct Chronometer_OnePass_cerr : Chronometer_OnePass
+struct Chronometer_Wallclock_OnePass_cerr : Chronometer_Wallclock_OnePass
 {
-  explicit Chronometer_OnePass_cerr (const string &name_arg)
-    : Chronometer_OnePass (name_arg, cerr, false, qc_on && ! getQuiet ())
+  explicit Chronometer_Wallclock_OnePass_cerr (const string &name_arg)
+    : Chronometer_Wallclock_OnePass (name_arg, cerr, false, qc_on && ! getQuiet ())
     {}
 };
 

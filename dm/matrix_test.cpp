@@ -271,9 +271,9 @@ struct ThisApplication : Application
 	      }
 	    }
 
-      if (Chronometer::enabled)
+      if (Chronometer_CPU::enabled)
       {
-	      const Chronometer_OnePass cop ("sqrt(matrix)");  
+	      const Chronometer_CPU_OnePass cop ("sqrt(matrix)");  
 	      FOR (size_t, i, 100)
 				  mat. getSqrt ();
 		  }
@@ -286,7 +286,7 @@ struct ThisApplication : Application
 			  cout << endl;
 		  			  	
 		  	// Choleski iterations
-	      const Chronometer_OnePass cop ("Choleski iterations");  
+	      const Chronometer_CPU_OnePass cop ("Choleski iterations");  
 	      FOR (size_t, tries, 100)
 	      {
 	        Matrix prod (mat);

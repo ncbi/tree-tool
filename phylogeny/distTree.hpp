@@ -52,10 +52,10 @@ namespace DistTree_sp
 {
 
 
-extern Chronometer chron_getBestChange;
-extern Chronometer chron_tree2subgraph;
-extern Chronometer chron_subgraphOptimize;
-extern Chronometer chron_subgraph2tree;
+extern Chronometer_CPU chron_getBestChange;
+extern Chronometer_CPU chron_tree2subgraph;
+extern Chronometer_CPU chron_subgraphOptimize;
+extern Chronometer_CPU chron_subgraph2tree;
 
 
 
