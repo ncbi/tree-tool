@@ -402,7 +402,30 @@ var dml_ = function ( server
         , success: function (res)        
             {
               if (res.msg)
-                alert (res.msg + "\n\n" + sql);
+              {
+                let pars = "";
+                if (par_1 != null)
+                  pars += "@par_1: " + par_1;
+                if (par_2 != null)
+                  pars += "@par_2: " + par_2;
+                if (par_3 != null)
+                  pars += "@par_3: " + par_3;
+                if (par_4 != null)
+                  pars += "@par_4: " + par_4;
+                if (par_5 != null)
+                  pars += "@par_5: " + par_5;
+                if (par_6 != null)
+                  pars += "@par_6: " + par_6;
+                if (par_7 != null)
+                  pars += "@par_7: " + par_7;
+                if (par_8 != null)
+                  pars += "@par_8: " + par_8;
+                if (par_9 != null)
+                  pars += "@par_9: " + par_9;
+                if (par_10 != null)
+                  pars += "@par_10: " + par_10;
+                alert (res.msg + "\n\n" + sql + "\n" + pars);
+              }
               else
                 count = res.count;
             }
