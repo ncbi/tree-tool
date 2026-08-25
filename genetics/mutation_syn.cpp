@@ -72,6 +72,29 @@ void process (const string &gene,
   for (;;)
   {
     ASSERT (gapS [start] == '-');
+    IMPLY (start, gapS [start - 1] != '-');
+    ASSERT (gapS [start + gapLen] == fullS [start + gapLen]);
+    if (fullS [start] != fullS [start + gapLen])
+      break;
+    gapS [start] = gapS [start + gapLen];
+    gapS [start + gapLen] = '-';
+    fixed = true;
+    start++;
+  }
+  if (fixed)
+  {
+    cout << "Fix:\t" << gene + Mutation::delimiter;
+    if (insertion)
+      cout << fullS [start] + to_string (start + 1) + fullS. substr (start, gapLen + 1);
+    else
+      cout << fullS. substr (start, gapLen) << to_string (start + 1) << "del";
+    cout << endl;
+  }
+  
+  for (;;)
+  {
+    ASSERT (gapS [start] == '-');
+    IMPLY (start, gapS [start - 1] != '-');
     start--;
     if (start == (size_t) -1)
       break;
@@ -82,34 +105,12 @@ void process (const string &gene,
     ASSERT (gapS [start + gapLen] == '-');
     gapS [start + gapLen] = gapS [start];
     gapS [start] = '-';
-    fixed = true;
-  }
-  if (fixed)
-  {
-    cout << "Fix:\t" << gene + Mutation::delimiter;
-    if (insertion)
-    {
-      const size_t start_ = start == (size_t) -1 ? 0 : start;
-      cout << fullS [start_] + to_string (start_ + 1) + fullS. substr (start_, gapLen + 1);
-    }
-    else
-      cout << fullS. substr (start, gapLen) << to_string (start + 1) << "del";
-    cout << endl;
-  }
-
-  for (;;)
-  {
-    start++;
-    ASSERT (gapS [start] == '-');
-    IMPLY (start, gapS [start - 1] != '-');
-    ASSERT (gapS [start + gapLen] == fullS [start + gapLen]);
-    if (fullS [start] != fullS [start + gapLen])
-      break;
-    gapS [start] = gapS [start + gapLen];
-    gapS [start + gapLen] = '-';
     cout << "Synonym:\t" << gene + Mutation::delimiter;
     if (insertion)
-      cout << fullS [start] + to_string (start + 1) + fullS. substr (start, gapLen + 1);
+    {
+      const size_t start_ = start ? start - 1 : start;
+      cout << fullS [start_] + to_string (start_ + 1) + fullS. substr (start_, gapLen + 1);
+    }
     else
       cout << fullS. substr (start, gapLen) << to_string (start + 1) << "del";
     cout << endl;
