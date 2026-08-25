@@ -4037,10 +4037,7 @@ void Mutation::parse (const string &geneMutation_std,
 
 void Mutation::setAmbig ()
 {
-  string s (allele);
-  if (! prot)
-    strLower (s);
-  for (const char c : s)
+  for (const char c : str2lower (allele, ! prot))
     if (isAmbig (c, prot))
     {
       ambig = true;
@@ -4121,10 +4118,7 @@ void Mutation::apply (string &seq) const
   if (frameshift != no_index)
     throw runtime_error ("Mutation is a frameshift");
     
-  string reference_ (reference);
-  if (! prot)
-    strLower (reference_);
-  if (seq. substr (pos_real, reference. size ()) != reference_)
+  if (seq. substr (pos_real, reference. size ()) != str2lower (reference, ! prot))
     throw runtime_error ("Mutation reference sequence does not match sequence: " + str () + "\n" + seq);
       
   if (verbose (-1))
@@ -4133,7 +4127,7 @@ void Mutation::apply (string &seq) const
          << endl << seq. substr (pos_real + reference. size ())
          << endl;
 
-  seq = seq. substr (0, pos_real) + allele + seq. substr (pos_real + reference. size ());
+  seq = seq. substr (0, pos_real) + str2lower (allele, ! prot) + seq. substr (pos_real + reference. size ());
 }
 
 

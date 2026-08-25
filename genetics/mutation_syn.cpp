@@ -48,19 +48,19 @@ namespace
 {
 
 
-void process (const string &gene,
-              bool insertion,
+void process (const Mutation &mut,
               string gapS,
               const string &fullS,
-              size_t start,
-              size_t gapLen)
+              size_t start)
 {
   ASSERT (gapS. size () == fullS. size ());
-  ASSERT (start + gapLen <= gapS. size ());
   ASSERT (! contains (fullS, '-'));
-  ASSERT (gapLen);
   ASSERT (gapS [start] == '-');
   IMPLY (start, gapS [start - 1] != '-');
+  
+  const size_t gapLen = (size_t) abs (mut. getInsertionSize ());
+  ASSERT (gapLen);
+  ASSERT (start + gapLen <= gapS. size ());
 
   if (verbose ())
   {
@@ -83,11 +83,16 @@ void process (const string &gene,
   }
   if (fixed)
   {
-    cout << "Fix:\t" << gene + Mutation::delimiter;
-    if (insertion)
-      cout << fullS [start] + to_string (start + 1) + fullS. substr (start, gapLen + 1);
+    cout << "Fix:\t" << mut. gene + Mutation::delimiter;
+    const int pos = mut. getOffset () + (int) start + 1;
+    if (mut. isInsertion ())
+      cout << str2upper (string (1, fullS [start]), ! mut. prot) 
+           << pos 
+           << str2upper (fullS. substr (start, gapLen + 1), ! mut. prot);
     else
-      cout << fullS. substr (start, gapLen) << to_string (start + 1) << "del";
+      cout << str2upper (fullS. substr (start, gapLen), ! mut. prot)
+           << pos 
+           << "del";
     cout << endl;
   }
   
@@ -105,14 +110,20 @@ void process (const string &gene,
     ASSERT (gapS [start + gapLen] == '-');
     gapS [start + gapLen] = gapS [start];
     gapS [start] = '-';
-    cout << "Synonym:\t" << gene + Mutation::delimiter;
-    if (insertion)
+    cout << "Synonym:\t" << mut. gene + Mutation::delimiter;
+    const int pos = mut. getOffset () + (int) start + 1;
+    if (mut. isInsertion ())
     {
-      const size_t start_ = start ? start - 1 : start;
-      cout << fullS [start_] + to_string (start_ + 1) + fullS. substr (start_, gapLen + 1);
+      const size_t start_ = start ? start - 1 : start;  
+      const int pos_      = start ? pos - 1 : pos;
+      cout << str2upper (string (1, fullS [start_]), ! mut. prot) 
+           << pos_
+           << str2upper (fullS. substr (start_, gapLen + 1), ! mut. prot);
     }
     else
-      cout << fullS. substr (start, gapLen) << to_string (start + 1) << "del";
+      cout << str2upper (fullS. substr (start, gapLen), ! mut. prot)
+           << pos 
+           << "del";
     cout << endl;
   }
 }
@@ -125,12 +136,12 @@ void process (const string &gene,
 struct ThisApplication final : Application
 {
   ThisApplication ()
-    : Application ("Print synonymous mutations")
+    : Application ("Print synonymous mutations for indels")
     {
       version = VERSION;
       addPositional ("seq", "Sequence file");
       addPositional ("pos", "Real mutation position (1-based)");
-      addPositional ("mut", "Mutation symbol");
+      addPositional ("mut", "Indel mutation symbol");
   	  addFlag ("aa", "Sequence is a protein, otherwise DNA");
     }
 
@@ -146,39 +157,35 @@ struct ThisApplication final : Application
 
     const Mutation mut (aa, pos_real, mutS, mutS);
     mut. qc ();
+    QC_ASSERT (! mut. ambig);
 
     Multifasta mf (seqFName, aa, 0);
     unique_ptr<Seq> seq (makeSeq (mf, false));  
-    seq->qc ();         
+    seq->qc ();    
     
     const string orig (seq->seq);
     mut. apply (seq->seq);
     
+    const size_t gapLen = (size_t) abs (mut. getInsertionSize ());
     if (mut. isInsertion ())
     {
       ASSERT (! mut. isDeletion ());
       ASSERT (mut. insertionHasRef);
-      ASSERT (mut. reference. size () == 1);
       ASSERT (mut. allele. size () > 1);
-      const size_t diff = mut. allele. size () - 1;
-      process ( mut. gene
-              , true
-              , orig. substr (0, mut. pos_real + 1) + string (diff, '-') + orig. substr (mut. pos_real + 1)
+      ASSERT (mut. reference == mut. allele. substr (0, 1));
+      process ( mut
+              , orig. substr (0, mut. pos_real + 1) + string (gapLen, '-') + orig. substr (mut. pos_real + 1)
               , seq->seq
               , mut. pos_real + 1
-              , diff
               );
     }
     else if (mut. isDeletion ())
     {
       ASSERT (mut. allele. empty ());
-      const size_t diff = mut. reference. size ();
-      process ( mut. gene
-              , false
-              , orig. substr (0, mut. pos_real) + string (diff, '-') + orig. substr (mut. pos_real + diff)
+      process ( mut
+              , orig. substr (0, mut. pos_real) + string (gapLen, '-') + orig. substr (mut. pos_real + gapLen)
               , orig
               , mut. pos_real
-              , diff
               );
     }
     else

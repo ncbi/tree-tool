@@ -1191,6 +1191,11 @@ public:
     }
   bool empty () const override
     { return geneMutation_std. empty (); }
+  bool operator< (const Mutation &other) const;
+  bool operator== (const Mutation &other) const
+    { return    prot             == other. prot
+             && geneMutation_std == other. geneMutation_std; 
+    }
 
 
   size_t getStop () const
@@ -1200,11 +1205,6 @@ public:
     // Requires: prot
   string wildtype () const
     { return gene + delimiter + nvl (reference, "ins") + to_string (pos_std + 1) + reference; }
-  bool operator< (const Mutation &other) const;
-  bool operator== (const Mutation &other) const
-    { return    prot             == other. prot
-             && geneMutation_std == other. geneMutation_std; 
-    }
   bool isDeletion () const
     { return allele. empty (); }
   bool isInsertion () const
@@ -1218,6 +1218,10 @@ public:
     // Requires: prot
   void apply (string &seq) const;
     // Update: seq
+  int getOffset () const
+    { return pos_std - (int) pos_real; }
+  int getInsertionSize ( ) const
+    { return (int) allele. size () - (int) reference. size (); }
 
   struct Hash
   { size_t operator() (const Mutation &mut) const
