@@ -234,12 +234,12 @@ struct ThisApplication final : Application
                 ASSERT (! ref. empty ());
                 allele = string (ref. size (), aa ? 'X' : 'n');
               }
-    		      const Mutation mut (protName, refStart, ref, allele);
+    		      const Mutation mut (! protName. empty (), nvl (protName, "dna"), refStart, ref, allele);
     		      mut. qc ();
     		      if (   noambig == no_index 
     		          || (! mut. ambig && ambigClear (align->sparse1, mismatchStart, len, noambig, aa))
     		         )
-    		      f << mut << endl;
+    		      f << mut. geneMutation << endl;
     		    }
   		      mismatchStart = no_index;
   		      refStart = no_index;

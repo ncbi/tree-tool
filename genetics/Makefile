@@ -59,7 +59,7 @@ all:	\
 	kmerIndex_make \
 	kmerIndex_stat \
 	mlst2hash \
-	mutation_dna2prot \
+	mutation_syn \
 	mutation_tab \
 	orf2prot \
 	orthodb2fasta \
@@ -81,6 +81,8 @@ all:	\
 	uniqProtRef \
 	uniqSeq
 
+
+# temporarily removed: mutation_dna2prot
 
 
 align2html.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp $(DM_HPP) 
@@ -369,6 +371,12 @@ mutation_dna2prot.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
 mutation_dna2protOBJS=mutation_dna2prot.o $(SEQ_OBJ)
 mutation_dna2prot:	$(mutation_dna2protOBJS)
 	$(CXX) -o $@ $(mutation_dna2protOBJS) $(LIBS) 
+	$(ECHO)
+
+mutation_syn.o:  $(COMMON_HPP) $(GEN_DIR)/seq.hpp
+mutation_synOBJS=mutation_syn.o $(SEQ_OBJ)
+mutation_syn:	$(mutation_synOBJS)
+	$(CXX) -o $@ $(mutation_synOBJS) $(LIBS) 
 	$(ECHO)
 
 mutation_tab.o:	$(COMMON_HPP) 

@@ -237,7 +237,7 @@ struct BlastAlignment
 
 // ThisApplication
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print mutations table in a tab-delimited fromat")

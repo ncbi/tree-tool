@@ -62,18 +62,18 @@ void save (const Vector<Mutation> &muts,
   for (const Mutation& mut : muts)
     if (mut. ambig)
     {
-      const Vector<Vector<Mutation>>& pos2muts = gene2pos2muts [mut. geneName];      
-      FFOR_START (size_t, i, mut. pos, min (mut. stop (), pos2muts. size ()))
+      const Vector<Vector<Mutation>>& pos2muts = gene2pos2muts [mut. gene];      
+      FFOR_START (size_t, i, mut. pos_real, min (mut. getStop (), pos2muts. size ()))
         for (const Mutation& refMut : pos2muts [i])
         {
           ASSERT (! refMut. ambig);
-          ASSERT (refMut. pos == i);
+          ASSERT (refMut. pos_real == i);
           if (muts. containsFast (refMut))
           {
             ASSERT (mut. prot);
             continue;
           }
-          if (refMut. stop () <= mut. stop ())  // refMut.ref is inside mut.ref
+          if (refMut. getStop () <= mut. getStop ())  // refMut.ref is inside mut.ref
             addedMuts << refMut;
         }
     }
@@ -91,7 +91,7 @@ void save (const Vector<Mutation> &muts,
   
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Convert mutations to 3-valued Boolean attributes of non-ambiguous mutations for makeFeatureTree")
@@ -129,13 +129,13 @@ struct ThisApplication : Application
             LineInput li (inDirName + (large ? "/" + to_string (str2hash_class (fName, false)) : "") + "/" + fName);
             while (li. nextLine ())
             {
-              Mutation mut (aa, li. line);
+              Mutation mut (aa, li. line, li. line);
               try { mut. qc (); }
                 catch (const exception &e)
                   { throw runtime_error (fName + "\n" + li. line + "\n" + e. what ()); }
               if (! mut. ambig)
               {
-                unordered_set<Mutation,Mutation::Hash>& gene_muts = gene2muts [mut. geneName];
+                unordered_set<Mutation,Mutation::Hash>& gene_muts = gene2muts [mut. gene];
                 if (gene_muts. empty ())
                   gene_muts. rehash (10000);  // PAR
                 gene_muts. insert (mut);
@@ -160,12 +160,12 @@ struct ThisApplication : Application
         for (const Mutation& mut : gene_muts)
         {
           ASSERT (mut. prot == prot);
-          maximize (pos_max, mut. pos);
+          maximize (pos_max, mut. pos_real);
         }
         Vector<Vector<Mutation>>& pos2muts = gene2pos2muts [it. first];
         pos2muts. resize (pos_max + 1);
         for (const Mutation& mut : gene_muts) 
-          pos2muts [mut. pos] << mut;
+          pos2muts [mut. pos_real] << mut;
       }
     }
     

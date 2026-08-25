@@ -95,54 +95,55 @@ struct Annot : Named
     }
   bool overlap (const Mutation &mut) const
     { ASSERT (! mut. prot);
-      return    mut. stop () > start
-             && mut. pos     < stop;
+      return    mut. getStop () > start
+             && mut. pos_real     < stop;
     }
   bool contains (const Mutation &mut) const
     { ASSERT (! mut. prot);
-      return    mut. pos     >= start
-             && mut. stop () <= stop;
+      return    mut. pos_real     >= start
+             && mut. getStop () <= stop;
     }    
   size_t getOffset5 (const Mutation &mut) const
     { ASSERT (contains (mut));
       if (strand)
-        return mut. pos - start;
-      return stop - mut. stop ();
+        return mut. pos_real - start;
+      return stop - mut. getStop ();
     }
   Mutation trimMutation (const Mutation &mut) const
     { ASSERT (overlap (mut));
       if (contains (mut))
         return mut;
       Mutation mut1 (mut);
-      if (mut1. pos < start)
-      { const size_t utr = start - mut1. pos;
-        ASSERT (mut1. ref. size () > utr);
-        mut1. ref. erase (0, utr);
-        if (mut1. allele. size () > mut1. ref. size ())
-          mut1. allele. erase (0, mut1. allele. size () - mut1. ref. size ());        
-        mut1. pos = start;
+      if (mut1. pos_real < start)
+      { const size_t utr = start - mut1. pos_real;
+        ASSERT (mut1. reference. size () > utr);
+        mut1. reference. erase (0, utr);
+        if (mut1. allele. size () > mut1. reference. size ())
+          mut1. allele. erase (0, mut1. allele. size () - mut1. reference. size ());        
+        mut1. pos_real = start;
+        mut1. pos_std = (int) mut1. pos_real;
       }
-      if (mut1. stop () > stop)
-      { ASSERT (mut1. pos < stop);
-        const size_t cds = stop - mut1. pos;
-        ASSERT (mut1. ref. size () > cds);
-        mut1. ref. erase (cds);
+      if (mut1. getStop () > stop)
+      { ASSERT (mut1. pos_real < stop);
+        const size_t cds = stop - mut1. pos_real;
+        ASSERT (mut1. reference. size () > cds);
+        mut1. reference. erase (cds);
         if (mut1. allele. size () > cds)
           mut1. allele. erase (cds);
       }
-      ASSERT (mut1. allele. size () <= mut1. ref. size ());
+      ASSERT (mut1. allele. size () <= mut1. reference. size ());
       ASSERT (contains (mut1));
       return mut1;
     }
   Annot trimAnnot (const Mutation &mut) const
     { ASSERT (contains (mut));
       Annot an (*this);
-      if (mut. ref. size () == mut. allele. size ())
+      if (mut. reference. size () == mut. allele. size ())
         return an;
-      if (mut. allele. size () > mut. ref. size ())
-        an. stop += mut. allele. size () - mut. ref. size ();
+      if (mut. allele. size () > mut. reference. size ())
+        an. stop += mut. allele. size () - mut. reference. size ();
       else
-        an. stop -= mut. ref. size () - mut. allele. size ();
+        an. stop -= mut. reference. size () - mut. allele. size ();
       return an;
     }
 };
@@ -150,7 +151,7 @@ struct Annot : Named
 
 
 
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Print protein mutations given DNA mutations and CDS annotations")
@@ -211,10 +212,10 @@ struct ThisApplication : Application
       LineInput f (mutFName);
       while (f. nextLine ())
       {
-        const Mutation dnaMut (false, f. line);
+        const Mutation dnaMut (false, 0, f. line);
         dnaMut. qc ();
-        QC_ASSERT (dnaMut. geneName. empty ());
-        QC_ASSERT (dnaMut. stop () <= ref->seq. size ());
+        QC_ASSERT (dnaMut. gene. empty ());
+        QC_ASSERT (dnaMut. getStop () <= ref->seq. size ());
         VectorPtr<Annot> overlappedAnnots;
         for (const Annot& annot : annots)
         {
@@ -225,12 +226,12 @@ struct ThisApplication : Application
                  << dnaMut << endl;
           overlappedAnnots << & annot;
           const Mutation dnaMutTrimmed (annot. trimMutation (dnaMut));
-          if (dnaMutTrimmed. ref == dnaMutTrimmed. allele)  // Not a mutation
+          if (dnaMutTrimmed. reference == dnaMutTrimmed. allele)  // Not a mutation
             continue;
           dnaMutTrimmed. qc ();
           ASSERT (annot. contains (dnaMutTrimmed));
           Dna mutDna (*ref);
-          dnaMutTrimmed. replace (mutDna);
+          dnaMutTrimmed. apply (mutDna. seq);
           size_t translationStart = 0;
           const Peptide refProt (annot. getOrf (*ref). makePeptide (1/*frame*/, gencode, false, false, translationStart));
           refProt. qc ();
@@ -240,7 +241,7 @@ struct ThisApplication : Application
           if (dnaMutTrimmed. isFrameshift ())
           {
             const size_t prot_start = annot. getOffset5 (dnaMutTrimmed) / 3;
-            const string prot_ref (refProt. seq. substr (prot_start, dna2codons_len (dnaMutTrimmed. ref. size ())));
+            const string prot_ref (refProt. seq. substr (prot_start, dna2codons_len (dnaMutTrimmed. reference. size ())));
             if (dnaMutTrimmed. ambig && ! prot_ref. empty ())
               protMut = Mutation (annot. name, prot_start, prot_ref, string (prot_ref. size (), 'X'), false); 
             else 
