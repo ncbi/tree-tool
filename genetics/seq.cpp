@@ -4127,7 +4127,7 @@ void Mutation::apply (string &seq) const
   if (seq. substr (pos_real, reference. size ()) != reference_)
     throw runtime_error ("Mutation reference sequence does not match sequence: " + str () + "\n" + seq);
       
-  if (verbose ())
+  if (verbose (-1))
     cerr         << seq. substr (0, pos_real) 
          << endl << allele 
          << endl << seq. substr (pos_real + reference. size ())
