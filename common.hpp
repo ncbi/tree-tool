@@ -737,6 +737,24 @@ void strUpper (string &s);
 
 void strLower (string &s);
 
+inline string str2upper (const string& s,
+                         bool upper)
+  { if (! upper)
+      return s;
+    string s1 (s);
+    strUpper (s1);
+    return s1;
+  }
+
+inline string str2lower (const string& s,
+                         bool lower)
+  { if (! lower)
+      return s;
+    string s1 (s);
+    strLower (s1);
+    return s1;
+  }
+
 bool isUpper (const string &s);
 
 bool isLower (const string &s);
