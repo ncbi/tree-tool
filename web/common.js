@@ -134,6 +134,15 @@ var maximize = function (x, field, y)
 
 // Number
 
+var isDigit = function (x)
+{
+  return    x.length == 1
+         && x >= '0'
+         && x <= '9';
+}
+
+
+
 var isNatural = function (s)
 {
   return /^\d+$/.test(s);
@@ -141,11 +150,9 @@ var isNatural = function (s)
 
 
 
-var isDigit = function (x)
+var isInteger = function (s)
 {
-  return    x.length == 1
-         && x >= '0'
-         && x <= '9';
+  return /^-?\d+$/.test(s);
 }
 
 
