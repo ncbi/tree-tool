@@ -27,7 +27,7 @@
 * Author: Vyacheslav Brover
 *
 * File Description:
-*   Print synonymous mutations
+*   Print synonymous mutations for indels
 *
 */
 
@@ -68,7 +68,7 @@ void process (const Mutation &mut,
     cout << fullS << endl;  
   }
 
-  bool fixed = false;
+  bool toFix = false;
   for (;;)
   {
     ASSERT (gapS [start] == '-');
@@ -78,13 +78,13 @@ void process (const Mutation &mut,
       break;
     gapS [start] = gapS [start + gapLen];
     gapS [start + gapLen] = '-';
-    fixed = true;
+    toFix = true;
     start++;
   }
-  if (fixed)
+  if (toFix)
   {
     cout << "Fix:\t" << mut. gene + Mutation::delimiter;
-    const int pos = mut. getOffset () + (int) start + 1;
+    const int pos = mut. getOffset () + (int) start + 1;  // pos = 0 is impossible ??
     if (mut. isInsertion ())
       cout << str2upper (string (1, fullS [start]), ! mut. prot) 
            << pos 
@@ -111,7 +111,7 @@ void process (const Mutation &mut,
     gapS [start + gapLen] = gapS [start];
     gapS [start] = '-';
     cout << "Synonym:\t" << mut. gene + Mutation::delimiter;
-    const int pos = mut. getOffset () + (int) start + 1;
+    const int pos = mut. getOffset () + (int) start + 1;  // pos = 0 is impossible ??
     if (mut. isInsertion ())
     {
       const size_t start_ = start ? start - 1 : start;  
@@ -189,7 +189,7 @@ struct ThisApplication final : Application
               );
     }
     else
-      throw runtime_error ("Insertion or deletion is expected");
+      throw runtime_error ("Insertion or deletion mutation is expected");
   }
 };
 
