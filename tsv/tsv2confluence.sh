@@ -13,7 +13,7 @@ U2S=$2
 TMP=$( mktemp )
 
 
-sed 's/|/\\|/g' $F | tr '\t' '|' | sed 's/^/|/1' | sed 's/$/|/1' | sed 's/||/| |/g' | sed 's/||/| |/g' > $TMP
+sed 's/|/\\|/g' $F | tr '\t' '|' | sed 's/^/|/1' | sed 's/$/|/1' | sed 's/||/| |/g' | sed 's/||/| |/g' | sed 's/(\*)/(\\*)/g' > $TMP
 head -1 $TMP | sed 's/^|#/|/1' | sed 's/|/||/g' > $TMP.head
 if [ $U2S -eq 1 ]; then
   sed 's/_/ /g' $TMP.head
