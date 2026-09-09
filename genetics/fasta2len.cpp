@@ -58,6 +58,7 @@ struct ThisApplication final : Application
   	  addPositional ("in", "FASTA file");
   	  addFlag ("aa", "Protein sequence, otherwise DNA");
   	  addKey ("min_len", "Min. length for output sequences in the file <out>", "0");
+  	  addKey ("max_len", "Max. length for output sequences in the file <out>. 0 = infinity", "0");
   	  addKey ("out", "Output FASTA file with sequences longer than <min_len>");
   	  addKey ("header", "Add comma-separated .tsv-header to the output file");
   	  addFlag ("skip_ambig", "Skip ambiguities");
@@ -70,6 +71,7 @@ struct ThisApplication final : Application
 	  const string inFName  = getArg ("in");
 	  const bool aa         = getFlag ("aa");
 	  const size_t len_min  = str2<size_t> (getArg ("min_len"));
+	  const size_t len_max  = str2<size_t> (getArg ("max_len"));
 	  const string outFName = getArg ("out");
 	  const string headerS  = getArg ("header");
 	  const bool skipAmbig  = getFlag ("skip_ambig");
@@ -109,7 +111,12 @@ struct ThisApplication final : Application
   	    row << seq->getId () << to_string (len);
   	    tab. rows << std::move (row);
   	      
-  	    if (outF && seq->seq. size () >= len_min)
+  	    if (   outF 
+  	        && seq->seq. size () >= len_min
+  	        && (   ! len_max 
+  	            || seq->seq. size () <= len_max
+  	           )
+  	       )
   	    	seq->saveText (*outF);
   	  }
   	}
