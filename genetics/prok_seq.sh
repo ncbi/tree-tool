@@ -46,7 +46,7 @@ $THIS/fasta2hash $NAME.cds $NAME.hash-PRT  -log $LOG  -cds  -gene_finder $GENE_F
 $THIS/fasta2hash $NAME.cds $NAME.hash-PRT1 -log $LOG  -cds  -gene_finder $GENE_FINDER  -translate  -prot_len_min 0  -ambig 10  -out_prot $NAME.prot
 rm $NAME.hash-PRT1
 
-rm $NAME.cds
+rm $NAME.cds 
 
 if [ "$UNIV" ]; then
   section "univ"

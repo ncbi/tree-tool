@@ -17,16 +17,12 @@ TMP=$( mktemp )
 #comment $TMP
 
 
-cp $IN $TMP.fa
-
-makeblastdb  -in $TMP.fa  -dbtype prot  -logfile /dev/null
-
 # 6 min. for 4000 proteins
 section "blastp"
 blastp  -task blastp-fast \
-  -db $TMP.fa \
-  -query $TMP.fa \
-  -show_gis -word_size 6 -threshold 21 -evalue 1e-20 -comp_based_stats 0 -num_threads 8 \
+  -subject $IN \
+  -query $IN \
+  -word_size 6 -threshold 21 -evalue 1e-20 -comp_based_stats 0 -num_threads 8 \
   -outfmt '6 qseqid sseqid length nident qstart qend qlen sstart send slen' \
   > $TMP.blastp
 

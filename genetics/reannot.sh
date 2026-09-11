@@ -21,9 +21,8 @@ TMP=$( mktemp )
 #echo $TMP 
 
 
-makeblastdb  -in $DNA  -dbtype nucl  -blastdb_version 4  -out $TMP  -logfile /dev/null 
 # PAR
-tblastn  -db $TMP  -query $REF  -show_gis  -word_size 3  -evalue 1e-4  -db_gencode $GENCODE  -seg no  -comp_based_stats 0  -outfmt '6 qseqid sseqid length positive qstart qend sstart send slen sseq' | awk '$4/$3 >= 0.85' > $TMP.tblastn
+tblastn  -subject $DNA  -query $REF  -word_size 3  -evalue 1e-4  -db_gencode $GENCODE  -seg no  -comp_based_stats 0  -outfmt '6 qseqid sseqid length positive qstart qend sstart send slen sseq' | awk '$4/$3 >= 0.85' > $TMP.tblastn
 $THIS/tblastn2orfs  -noprogress  $DNA $TMP.tblastn $GENCODE  -log $LOG > $PROT
 
 

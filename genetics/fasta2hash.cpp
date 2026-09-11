@@ -44,10 +44,8 @@ using namespace Seq_sp;
 
 
 
-
 namespace 
 {
-  
   
 
 const StringVector gene_finders {"prodigal", "GeneMark"};
@@ -77,7 +75,7 @@ void addHash (const string &s,
 	ASSERT (! s. empty ());
 	const size_t h = str_hash (s);
   hashes << h;
-  if (   targetSeqF. get ()
+  if (   targetSeqF
       && targetHashes. containsFast (h)
      )
   	*targetSeqF << seqId << endl;
@@ -198,7 +196,8 @@ struct ThisApplication final : Application
     		    QC_ASSERT (pep. seq. front () == 'm');
 					  QC_IMPLY (! ambig, ! pep. getXs ());  
     	      strUpper (pep. seq);  // Start codons are lowercased
-	  		    if (protF. get ())
+    	      pep. name += " " + to_string (str_hash (pep. seq));
+	  		    if (protF)
 	  		    	pep. saveText (*protF);
     	      if (reduce)
     	        reducePep (pep);
@@ -229,7 +228,8 @@ struct ThisApplication final : Application
   		      continue;
   		    if (contains (pep. seq, '*'))
   		      throw runtime_error ("Protein " + pep. name + " contains a stop codon");
-  		    if (protF. get ())
+   	      pep. name += " " + to_string (str_hash (pep. seq));
+  		    if (protF)
   		    	pep. saveText (*protF);
   	      if (reduce)
    	        reducePep (pep);
@@ -255,23 +255,22 @@ struct ThisApplication final : Application
 	    }
     }
     cout << "Good sequences: " << sequences << endl;
+      
     if (! named)
     {
       cout << "All hashes: " << hashes. size () << endl;
       hashes. sort ();
       hashes. uniq ();
       cout << "Unique hashes: " << hashes. size () << endl;    
+      if (hashes_max)
       {
-        if (hashes_max)
-        {
-          const size_t size = min (hashes. size (), hashes_max);
-          FOR (size_t, i, size)
-            fOut << hashes [i] << endl;
-        }
-        else
-          for (const size_t h : hashes)
-            fOut << h << endl;
+        const size_t size = min (hashes. size (), hashes_max);
+        FOR (size_t, i, size)
+          fOut << hashes [i] << endl;
       }
+      else
+        for (const size_t h : hashes)
+          fOut << h << endl;
     }
   }  
 };

@@ -41,11 +41,11 @@ if [ -s $IN ]; then
   $THIS/hmmsearch2besthits $TMP.hmmsearch  -domtblout $TMP.dom  -log $LOG  > $ANNOT 
   cut -f 1,2,4,5 $ANNOT > $TMP.univ
 
-  $THIS/filterFasta $IN  -aa  -target $TMP.univ  -replace  -cut  -len_min 20  -complexity_min 3  -log $LOG  > $PROT_CUT
+  $THIS/filterFasta $IN  -aa  -whole  -target $TMP.univ  -replace  -cut  -len_min 20  -complexity_min 3  -log $LOG  > $PROT_CUT
 
   if false; then
     mkdir $TMP.seq
-    $THIS/splitFasta -aa $PROT_CUT 25 $TMP.seq  -log $LOG
+    $THIS/splitFasta -aa -whole $PROT_CUT 25 $TMP.seq  -log $LOG
     $THIS/../trav $TMP.seq  -log $LOG  "hmmalign --amino --informat FASTA --outformat A2M $HMM_DIR/%f.HMM %d/%f" | sed '/^[^>]/ s/[a-z]//g' | sed '/^[[:space:]]*$/d' > $PREFIX.hmm-align
   fi
 

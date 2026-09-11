@@ -21,7 +21,7 @@ TMP=$( mktemp )
 #comment $TMP  
 
 
-blastp  -query $IN  -db $DB/prot  -show_gis  -comp_based_stats 0  -evalue 1e-10  -num_threads 10 \
+blastp  -query $IN  -db $DB/prot  -comp_based_stats 0  -evalue 1e-10  -num_threads 10 \
    -outfmt '6 qseqid sseqid length nident qstart qend qlen sstart send slen qseq sseq' \
    -out $TMP.blastp
 

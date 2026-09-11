@@ -23,10 +23,8 @@ else
   cp $SUBJ $TMP.fa
 fi
 
-makeblastdb  -in $TMP.fa  -dbtype nucl  -logfile /dev/null
-
-blastn  -db $TMP.fa  -query $QUERY  -show_gis  -evalue 1e-20  -dust no  -outfmt '6 qseqid sseqid length nident qstart qend qlen sstart send slen'
-#                                                                                  1      2      3      4      5      6    7    8      9    10
+blastn  -subject $TMP.fa  -query $QUERY  -evalue 1e-20  -dust no  -outfmt '6 qseqid sseqid length nident qstart qend qlen sstart send slen'
+#                                                                            1      2      3      4      5      6    7    8      9    10
 
 
 rm -f $TMP*
