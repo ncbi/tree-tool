@@ -845,7 +845,8 @@ inline bool strNull (const string &s)
     strUpper (s1);
     return    s1 == "NULL"
            || s1 == "NA"
-           || s1 == "N/A";
+           || s1 == "N/A"
+           || s1 == "MISSING";
   }
 
 inline bool contains (const string &hay,
