@@ -2867,20 +2867,27 @@ var parseNewick = function ()
     if (! skipSpaces ())
       return null;
     let name = '';
-  /*if (c == "'")
+    if (c == "'")
     {
       for (;;)
       {
+        for (;;)      
+        {
+          if (! readChar ())
+            return null;
+          if (c == "'")
+            break;
+          name += c;
+        }
         if (! readChar ())
-          return null;
+          return false;
         if (c == "'")
+          name += c;
+        else
           break;
-        name += c;
       }
-      if (! readChar ())
-        return false;
     }
-    else */
+    else 
       for (;;)
       {
         if (newickDelimiters. indexOf (c) != -1)
