@@ -870,6 +870,23 @@ StringVector Data::getText () const
 
 
 
+size_t Data::getNumOffset () const
+{ 
+  size_t offset = getOffset ();
+  if (parent)
+  { 
+    offset += to_string (parent->children. size ()). size ();
+  	const size_t parentOffset = parent->getNumOffset ();
+  	maximize (offset, parentOffset + 2);
+  }
+  else
+    offset++;  // 1 item
+    
+  return offset;
+}
+
+
+
 bool Data::find (VectorPtr<Data> &path,
                  const string &needle,
                  bool targetNameP,

@@ -271,6 +271,9 @@ public:
         return parent->getDepth () + 1;
       return 0;
     }
+  size_t getOffset ( )const
+    { return (getDepth () + 1) * 2; }      
+  size_t getNumOffset () const;
   size_t getNodes () const
     { size_t n = 1;
       for (const Data* child : children)
