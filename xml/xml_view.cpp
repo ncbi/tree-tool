@@ -550,6 +550,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
       version = VERSION;
   	  addPositional ("xml", "XML file");
   	  addFlag ("bin", "Binary XML");
+  	  addFlag ("noheader", "No XML header '<?xml ...");
   	  addKey ("search_tags", "Tag names to be searched, comma-delimited");
   	}
 
@@ -560,6 +561,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
 		const string xmlFName = getArg ("xml");
 		const bool   bin      = getFlag ("bin"); 
 		const StringVector searchTags (getArg ("search_tags"), ',', true);
+		const bool   headerP  = ! getFlag ("noheader");
 
     QC_ASSERT (searchTags. size () < 8);  // instruction ??
 
@@ -577,7 +579,7 @@ At line ends: [<# children>|<# nodes in subtree>]\
 	  else
 	  {
 		  VectorOwn<Xml_sp::Data> markupDeclarations;
-	  	xml = Xml_sp::Data::load (true /*PAR*/, names, xmlFName, markupDeclarations);
+	  	xml = Xml_sp::Data::load (headerP, names, xmlFName, markupDeclarations);
 	  }
     ASSERT (xml);
     xml_. reset (xml);
