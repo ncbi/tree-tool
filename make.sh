@@ -29,14 +29,14 @@ function work
 
 
 work $CPP_DIR
-work $CPP_DIR/dm
-work $CPP_DIR/dm/conversion
-work $CPP_DIR/phylogeny
-#work $CPP_DIR/phylogeny/database
-work $CPP_DIR/genetics
 work $CPP_DIR/dissim/nw
 work $CPP_DIR/dissim
+work $CPP_DIR/dm
+work $CPP_DIR/dm/conversion
+work $CPP_DIR/genetics
 work $CPP_DIR/ncbitax
+work $CPP_DIR/phylogeny
+#work $CPP_DIR/phylogeny/database
 work $CPP_DIR/tsv
 work $CPP_DIR/web
 work $CPP_DIR/xml
