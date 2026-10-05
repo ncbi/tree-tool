@@ -6,14 +6,14 @@
 using namespace std;
 
 
-int main() 
+int main () 
 {
   const auto start = chrono::high_resolution_clock::now ();
 
   double d = 0.0;
   for (size_t i = 0; i < 100000000; i++) 
     d += sin (i);
-  cout << d << endl;
+  cout << "Computation result: " << d << endl;
 
   const auto end = chrono::high_resolution_clock::now ();
   chrono::duration<double> elapsed = end - start;
