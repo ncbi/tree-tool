@@ -566,6 +566,23 @@ inline string ebool2txt (ebool choice,
 
 
 
+// GameColor
+
+typedef  bool  GameColor;
+inline string gameColor2name (GameColor color)
+  { return color ? "Black" : "White"; }
+inline char gameColor2char (GameColor color)
+  { return color ? '+' : '-'; }
+inline GameColor char2gameColor (char c)
+  { switch (c)
+    { case '-': return false;
+      case '+': return true;
+    }
+    throw runtime_error ("Unknown color character: " + string (1, c));
+  }
+
+
+
 // char
 
 inline bool isChar (long long n)
@@ -1106,7 +1123,7 @@ public:
 
 // Simple classes
 
-class Notype {};
+class Notype { int dummy {0}; };
 
 
 
