@@ -84,10 +84,15 @@ var select2columns = function (sql)
 // Return: [columns], [] - fail
 {
   const selectS = "SELECT ";
-  if (sql. substr (0, selectS. length). toUpperCase() != selectS)
+ 
+  sql = sql.replaceAll (' /*n*/', '');
+  
+  const selectStart = sql.lastIndexOf(';') + 1;
+  
+  if (sql. substr (selectStart, selectS. length). toUpperCase() != selectS)
     return [];
 
-  let i = selectS. length;
+  let i = selectStart + selectS. length;
 
   const fromS = "FROM ";
 
@@ -160,7 +165,7 @@ var select2columns = function (sql)
   }
   
 
-  arr = [];
+  let arr = [];
   for (;;)
   {
     const exprStart = i;
