@@ -77,8 +77,8 @@ struct SubsetSearch
   bool next ();
     // Update: subset
     // Return: false <=> search is finished
-  void complement (Vector<size_t> &disjoint) const;
-    // Output: disjoint = complement of subset
+  void getComplement (Vector<size_t> &complement) const;
+    // Output: complement of subset
 };
 
 
