@@ -61,8 +61,6 @@ if [ -s $TMP.tblastn ]; then
   if [ $LENGTH == $NIDENT ] && [ $LENGTH == $QLEN ] && [ $QSTART == 1 ] && [ $QEND == $QLEN ]; then
     echo "$SSTART $SEND $STRAND"  
   fi
-else
-  echo ""
 fi
   
 
