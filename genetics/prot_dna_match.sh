@@ -32,34 +32,37 @@ cp $DNA $TMP.dna
 makeblastdb  -in $TMP.dna  -dbtype nucl  -logfile /dev/null  -blastdb_version 4
 
 tblastn  -query $TMP.prot   -db $TMP.dna  -word_size 3  -seg no  -db_gencode 11  -outfmt '6 qstart qend qlen sstart send length nident sseq' 2> /dev/null | sort -k 4,4 -n | sort -k 7,7 -n -r | head -1 > $TMP.tblastn 
-#exit 2
-RES=( $( cat $TMP.tblastn ) )
-QSTART=${RES[0]}
-QEND=${RES[1]}
-QLEN=${RES[2]}
-SSTART=${RES[3]}
-SEND=${RES[4]}
-LENGTH=${RES[5]}
-NIDENT=${RES[6]}
-SSEQ="${RES[7]}"
-
-STRAND=1
-if [ $SSTART -gt $SEND ]; then
-  STRAND=0
-  SSTART_=$SSTART
-  SSTART=$SEND
-  SEND=$SSTART_
-fi
-
-if [ $QSTART == 1 ]; then
-  FIRST_CHAR=$( echo $SSEQ | cut -c1 )
-  if [ $FIRST_CHAR == 'L' ] || [ $FIRST_CHAR == 'I' ] || [ $FIRST_CHAR == 'V' ]; then
-    NIDENT=$(( NIDENT + 1 ))
+if [ -s $TMP.tblastn ]; then 
+  RES=( $( cat $TMP.tblastn ) )
+  QSTART=${RES[0]}
+  QEND=${RES[1]}
+  QLEN=${RES[2]}
+  SSTART=${RES[3]}
+  SEND=${RES[4]}
+  LENGTH=${RES[5]}
+  NIDENT=${RES[6]}
+  SSEQ="${RES[7]}"
+  
+  STRAND=1
+  if [ $SSTART -gt $SEND ]; then
+    STRAND=0
+    SSTART_=$SSTART
+    SSTART=$SEND
+    SEND=$SSTART_
   fi
-fi
-
-if [ $LENGTH == $NIDENT ] && [ $LENGTH == $QLEN ] && [ $QSTART == 1 ] && [ $QEND == $QLEN ]; then
-  echo "$SSTART $SEND $STRAND"  
+  
+  if [ $QSTART == 1 ]; then
+    FIRST_CHAR=$( echo $SSEQ | cut -c1 )
+    if [ $FIRST_CHAR == 'L' ] || [ $FIRST_CHAR == 'I' ] || [ $FIRST_CHAR == 'V' ]; then
+      NIDENT=$(( NIDENT + 1 ))
+    fi
+  fi
+  
+  if [ $LENGTH == $NIDENT ] && [ $LENGTH == $QLEN ] && [ $QSTART == 1 ] && [ $QEND == $QLEN ]; then
+    echo "$SSTART $SEND $STRAND"  
+  fi
+else
+  echo ""
 fi
   
 
