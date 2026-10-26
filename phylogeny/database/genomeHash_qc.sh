@@ -42,6 +42,7 @@ function qc_suf
   if [ ! -s $DB.$SUF.odd ]; then
     rm $DB.$SUF.odd
   fi
+  cut -f 1 $DB.$SUF | sort | uniq -c | sort -n | head || true
 }
 qc_suf CDS
 qc_suf PRT

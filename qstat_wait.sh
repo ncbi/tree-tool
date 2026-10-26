@@ -42,7 +42,7 @@ while true; do
   
   N=$(( N + 1 ))
   if [ $N -le $PERIODS ]; then  
-    printf "\r$GREEN%d / %d$NOCOLOR" $N $PERIODS 
+    printf "\r${BROWN}%d / %d$NOCOLOR" $N $PERIODS 
   else
     echo ""
     N=0
