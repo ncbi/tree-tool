@@ -77,6 +77,9 @@ while true; do
     break
   fi
 done
+if [ $N -ne 0 ]; then
+  echo ""
+fi
 
 
 #sync
