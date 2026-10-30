@@ -60,7 +60,7 @@ struct ThisApplication final : Application
   	  addKey ("min_len", "Min. length for output sequences in the file <out>", "0");
   	  addKey ("max_len", "Max. length for output sequences in the file <out>. 0 = infinity", "0");
   	  addKey ("out", "Output FASTA file with sequences longer than <min_len>");
-  	  addKey ("header", "Add comma-separated .tsv-header to the output file");
+  	  addKey ("header", "Add comma-separated string as a .tsv-header to the output file");
   	  addFlag ("skip_ambig", "Skip ambiguities");
     }
 
