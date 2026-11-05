@@ -41,7 +41,7 @@ CPP_DIR/genetics/splitFasta $PATH2.prot-univ $TMP.2 -aa -noprogress
 CPP_DIR/trav $TMP.1 "if [ -e $TMP.2/%f ]; then CPP_DIR/dissim/seq2dissim %d/%f $TMP.2/%f -prot_name %f -blosum62 -match_len_min 20 | grep '^identity:' | cut -f 2; fi" -noprogress > $TMP.univ
 UNIVS=$( <  $TMP.univ  wc -l )
 if [ -s $TMP.univ ]; then
-  cat $TMP.univ | CPP_DIR/dm/count > $TMP.count
+  cat $TMP.univ | CPP_DIR/count > $TMP.count
   AAI=$( grep -w '^mean' $TMP.count | cut -f 2 )
 else
   AAI=0
