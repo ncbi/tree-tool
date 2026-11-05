@@ -1,6 +1,7 @@
-#define VERSION "1.9.9"
+#define VERSION "1.10.2"
 
 
+// 1.10.2 11/03/2026  "incomparable": only if no valid dissimilarity exists
 // 1.10.1 12/08/2025  inc/delete_criterion_outliers is necessary for -delete_criterion_outliers
 // 1.9.9  08/13/2024  DissimParam
 // 1.9.8  10/28/2022  -std=gnu++17
