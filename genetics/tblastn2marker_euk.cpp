@@ -103,7 +103,7 @@ void process (const VectorPtr<Hsp> &origHsps,
               Hsp &hsp_best,
               AlignScore &score_best)
 {
-  Hsp::Merge merge (origHsps, & sm, 0, false/*bacteria*/);  
+  Hsp::Merge merge (origHsps, & sm, 0, false/*bacteria*/, false/*brokenGene*/);  
   const Hsp* origHsp = nullptr;
   AlignScore score = - score_inf;
   Hsp hsp (merge. get (origHsp, score)); 

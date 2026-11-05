@@ -54,7 +54,7 @@ void process (const VectorPtr<Hsp> &hsps,
               double ident_min,
               double coverage_min)
 {
-  Hsp::Merge merge (hsps, nullptr/*sm*/, 20, bacteria);  // PAR
+  Hsp::Merge merge (hsps, nullptr/*sm*/, 20, bacteria, true /*brokenGene*/);  // PAR
   for (;;)
   { 
     const Hsp* origHsp = nullptr;

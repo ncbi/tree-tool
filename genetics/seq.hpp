@@ -1696,8 +1696,10 @@ public:
     Merge (const VectorPtr<Hsp> &origHsps_arg,
            const SubstMat* sm,
            AlignScore intronScore_arg,
-           bool bacteria);
+           bool bacteria,
+           bool brokenGene);
       // Input: intronScore_arg >= 0
+      //        brokenGene: valid if bacteria
       // Time: n^2, where n = origHsps.size()
                             
     Hsp get (const Hsp* &origHsp,
