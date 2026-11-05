@@ -19,11 +19,14 @@ if [ ! -e $DIR/dissim ]; then
 fi
 
 awk '$3 == "nan" || $3 == "-nan"' $DIR/dissim > $DIR/dissim.bad
-
 if [ -s $DIR/dissim.bad ]; then
   flock $INC/dissim.bad -c "cat $DIR/dissim.bad >> $INC/dissim.bad"
-  $INC/outlier2db.sh $OBJ 'incomparable'
-  rm -r $DIR/
-else
-	rm $DIR/dissim.bad
+  awk '$3 != "nan" && $3 != "-nan"' $DIR/dissim > $DIR/dissim.good
+  if [ -s $DIR/dissim.good ]; then
+    mv $DIR/dissim.good $DIR/dissim
+  else
+    $INC/outlier2db.sh $OBJ 'incomparable'
+    rm -r $DIR/
+  fi
 fi
+rm $DIR/dissim.bad
