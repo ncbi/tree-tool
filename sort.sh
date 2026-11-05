@@ -8,6 +8,8 @@ fi
 F=$1
 
 
-TMP=$( mktemp )
-sed 's/^ *//1' $F | sed 's/ *$//1' | grep -vx "" | sort -u > $TMP
-mv $TMP $1
+if [ -s $F ]; then
+  TMP=$( mktemp )
+  sed 's/^ *//1' $F | sed 's/ *$//1' | grep -vx "" | sort -u > $TMP
+  mv $TMP $1
+fi
