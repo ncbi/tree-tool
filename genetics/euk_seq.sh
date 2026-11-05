@@ -62,7 +62,7 @@ if [ ! -e $ASM.prot ]; then
     $THIS/dna2prots $FASTA 1 300  -complexity_min 3.5  -no_x  -qc  -log $LOG > $ASM.prot
       # PAR  
     $THIS/fasta2hash $ASM.prot $ASM.hash-PRT -qc  -log $LOG
-    ln -s $PWD/$ASM.hash-PRT $PWD/$ASM.hash-CDS
+    ln -s $ASM.hash-PRT $ASM.hash-CDS
   else
     genemark_clean
 

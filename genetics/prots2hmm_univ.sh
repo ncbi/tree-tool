@@ -57,7 +57,7 @@ fi
 
 
 rm -f $PREFIX.prot-univ
-ln -s $( realpath $PROT_CUT ) $PREFIX.prot-univ
+ln -s $( basename $PROT_CUT ) $PREFIX.prot-univ
 
 
 rm -f $LOG
