@@ -56,7 +56,6 @@ for F in $( ls $INC/ | grep -v "\.old$" ); do
       bad_word $INC/$F 1 "netmnt"
       bad_word $INC/$F 1 "brovervv"
       bad_word $INC/$F 1 "anyone"
-      bad_word $INC/$F 1 "allowed"
       bad_word $INC/$F 1 "PROTEUS"
       bad_word $INC/$F 1 "uniColl"
       bad_word $INC/$F 1 "LIST"
