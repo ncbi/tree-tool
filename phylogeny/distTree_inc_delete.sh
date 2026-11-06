@@ -42,7 +42,8 @@ $THIS/makeDistTree  $THREADS  -data $INC/  -variance $VARIANCE \
   -optimize  -skip_len  -subgraph_iter_max 1 \
   -noqual \
   -output_dissim $INC/dissim.new \
-  -output_tree $INC/tree.new > $INC/hist/makeDistTree-delete.$VER
+  -output_tree $INC/tree.new \
+  > $INC/hist/makeDistTree-delete.$VER
   
 mv $INC/tree.new $INC/tree
 
