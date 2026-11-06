@@ -32,7 +32,7 @@ function pair2file
 pair2file 1
 pair2file 2
 paste $TMP.out.1 $TMP.out.2 > $TMP
-hash_request2dissim $TMP $TMP.out  -intersection_min $INTERSECTION_MIN  -ratio_min $RATIO_MIN 
+$THIS/../../dissim/hash_request2dissim $TMP $TMP.out  -intersection_min $INTERSECTION_MIN  -ratio_min $RATIO_MIN 
 cut -f 3 $TMP.out > $TMP.dissim
 paste $PAIRS $TMP.dissim
 
