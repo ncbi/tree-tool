@@ -68,7 +68,7 @@ struct SubsetSearch
   Vector<size_t> subset;
     // Indexes of elements
     // size() = subset_size + 1
-    // subset.last() = whole_size: fictitious element
+    // back() = whole_size: fictitious element
     // i <= subset[i] < subset[i+1]
 
   SubsetSearch (size_t whole_size,
