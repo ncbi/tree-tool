@@ -93,9 +93,11 @@ struct ThisApplication final : Application
         {
           const string err ("Error at " + f. lineStr ());
           trim (f. line);
+          if (f. line. empty ())
+            continue;
           const size_t pos = f. line. find_first_of (sep);
           if (pos == string::npos)
-            throw runtime_error (err + ": no attribute-value separator " + strQuote (sep));
+            throw runtime_error (err + ": no attribute-value separator " + strQuote (sep) + "\n" + f. line);
           string attr (f. line. substr (0, pos));
           trim (attr);
           if (attr. empty ())
@@ -142,6 +144,8 @@ struct ThisApplication final : Application
           if (! fileCol. empty ())
             row [0] = fName;
           trim (f. line);
+          if (f. line. empty ())
+            continue;
           const size_t pos = f. line. find_first_of (sep);
           ASSERT (pos != string::npos);
           string attr (f. line. substr (0, pos));
