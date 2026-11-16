@@ -69,7 +69,7 @@ struct Match
   
   
   
-struct ThisApplication : Application
+struct ThisApplication final : Application
 {
   ThisApplication ()
     : Application ("Select a best protein hit for each HMM. Print: <protein> <HMM> <score> <ali_from> <ali_to>")
@@ -77,14 +77,20 @@ struct ThisApplication : Application
       version = VERSION;
   	  addPositional ("tblout", "hmmsearch --tblout result");
   	  addKey ("domtblout", "hmmsearch --domtblout result");
+  	  addKey ("duplicate_cutoff", "Cutoff for duplicate proteins (0..1)", "0.8");
+  	  addKey ("duplicate", "Output .tsv-file for duplicate proteins where score1 / max. score >= <duplicate_cutoff>");
   	}
   
 
 
 	void body () const final
 	{
-		const string tbloutFName    = getArg ("tblout");
-		const string domtbloutFName = getArg ("domtblout");
+		const string tbloutFName     = getArg ("tblout");
+		const string domtbloutFName  = getArg ("domtblout");
+		const double duplicateCutoff = arg2double ("duplicate_cutoff");
+		const string duplicateFName  = getArg ("duplicate");
+		
+		QC_ASSERT (betweenEqual (duplicateCutoff, 0.0, 1.0));
 		
     
     map <string/*hmm*/, Match> hmm2match;  
@@ -93,6 +99,26 @@ struct ThisApplication : Application
       while (hs. next ())
         if (hmm2match [hs. hmm_name]. score < hs. score1)
         	hmm2match [hs. hmm_name] = Match (hs. prot_name, hs. score1);
+    }
+    
+    if (! duplicateFName. empty ())
+    {
+      OFStream ofs (duplicateFName);
+      ofs << "#HMM\tprotein\tscore1\tmain_score1\n";
+	    Hmmsearch hs (tbloutFName);	    
+      while (hs. next ())
+      {
+        const Match* m = findPtr (hmm2match, hs. hmm_name);
+        ASSERT (m);
+        if (   m->prot_name != hs. prot_name
+            && hs. score1 / m->score >= duplicateCutoff
+           )
+          ofs         << hs. hmm_name 
+              << '\t' << hs. prot_name 
+              << '\t' << hs. score1 
+              << '\t' << m->score
+              << '\n';
+      }
     }
     
     if (! domtbloutFName. empty ())
