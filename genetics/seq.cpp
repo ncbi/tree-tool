@@ -400,14 +400,30 @@ void _SEQ_COLLECTION::SaveDir (const char* DirName) const
 
 ///////////////////////////// MultiFasta /////////////////////////////////
 
-void Multifasta::qcNewSeq () const
+void Multifasta::qcNewSeq () 
 {
+#if 0
 	if (   ! in. eof 
 	    && ! (   ! in. line. empty () 
 	          && in. line [0] == '>'
 	         )
 	   )
 	  throw runtime_error ("Error in Multifasta, " + in. lineStr ());   
+#else
+  while (! in. eof)
+  {
+    trimTrailing (in. line);
+    if (! in. line. empty ())
+      break;
+    in. nextLine ();
+  }
+  if (in. eof)
+    return;
+
+  ASSERT (! in. line. empty ());
+  if (in. line [0] != '>')
+    throw runtime_error ("Error in Multifasta, " + in. lineStr ());   
+#endif
 }
 
 	  

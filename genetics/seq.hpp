@@ -340,10 +340,10 @@ struct Multifasta final : Root
 			qcNewSeq ();
 		}
 private:
-	void qcNewSeq () const;
+	void qcNewSeq ();
 public:
 	  
-	bool next () const
+	bool next () 
 		{ qcNewSeq ();
 			return ! in. eof;
 		}
