@@ -87,8 +87,14 @@ if [ ! -e $ASM.prot ]; then
     fi
     echo "$GMES_TYPE" >> annot_software
     
+    # RS-1634
+    INTRONLESS=""
+    if [ -e "rna" ]; then
+      INTRONLESS="--max_intron 0"
+    fi
+    
     # genemark.gtf
-    gmes_petap.pl  $GMES_TYPE  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  --cores $CORES  &>> $LOG
+    gmes_petap.pl  $GMES_TYPE  $FUNGUS_PAR  --sequence $FASTA  --soft_mask 0  $INTRONLESS  --cores $CORES  &>> $LOG
     echo -e "\nAnnotation finished!\n" >> $LOG
     
     genemark_clean
