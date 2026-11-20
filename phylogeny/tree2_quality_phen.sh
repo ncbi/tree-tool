@@ -98,9 +98,9 @@ join -1 1 -2 1 -t$'\t' $TMP.qual1 $TMP.qual2 | awk -F '\t' '{OFS="\t"; D=($2 + $
 tail -n +2 qual.comp | cut -f 2 > $TMP.qualcomp
 grep    '^-' $TMP.qualcomp > $TMP.qualcomp-minus || true
 grep -v '^-' $TMP.qualcomp > $TMP.qualcomp-plus  || true
-    DIFF=$( cat $TMP.qualcomp       | $THIS/../count | grep -w '^sum' | cut -f 2 )
-DIFF_NEG=$( cat $TMP.qualcomp-minus | $THIS/../count | grep -w '^sum' | cut -f 2 )
-DIFF_POS=$( cat $TMP.qualcomp-plus  | $THIS/../count | grep -w '^sum' | cut -f 2 )
+    DIFF=$( < $TMP.qualcomp        $THIS/../count | grep -w '^sum' | cut -f 2 )
+DIFF_NEG=$( < $TMP.qualcomp-minus  $THIS/../count | grep -w '^sum' | cut -f 2 )
+DIFF_POS=$( < $TMP.qualcomp-plus   $THIS/../count | grep -w '^sum' | cut -f 2 )
 echo "Difference: $DIFF = $DIFF_POS $DIFF_NEG"
 
 

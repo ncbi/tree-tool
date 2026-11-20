@@ -22,7 +22,7 @@ if [ $EXT == "gz" ]; then
   cp $ASM $TMP.gz
   rm $TMP
   gunzip $TMP.gz
-  DM=$TMP
+  DB=$TMP
 fi
 
 OUTFMT=""

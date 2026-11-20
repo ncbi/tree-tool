@@ -2,7 +2,7 @@
 THIS=$( realpath $( dirname $0 ) )
 source $THIS/../bash_common.sh
 if [ $# -ne 3 ]; then
-  echo "Print: <closest accver from #3>\tdistance"
+  echo "Print: <closest accver from #3><tab>distance"
   echo "#1: incremental distance tree directory"
   echo "#2: object accver"
   echo "#3: list of object accvers"

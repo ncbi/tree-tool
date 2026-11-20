@@ -17,7 +17,7 @@ TMP=$( mktemp )
 grep '^#' $F | tail -1 | sed 's/^#//1' | tr '\t' '\n' > $TMP.1
 grep "$KEY" $F | tr '\t' '\n' > $TMP.2
 N=$( < $TMP.2  wc -l )
-if [$N -ne 1 ]; then
+if [ $N -ne 1 ]; then
   cat $TMP.2
   error "Multiple rows"
 fi
