@@ -133,6 +133,15 @@ struct Permute
     { return next_permutation (vec. begin (), vec. end ()); }
     // Update: vec (in lexicographic order)
     // Return: false <=> search is finished
+  template <typename T>
+    VectorPtr<T> make (const VectorPtr<T>& from) const
+      { if (from. size () != vec. size ())
+          throwf ("from.size()");
+        VectorPtr<T> res;  res. reserve (from. size ());
+        for (size_t i = 0; i < vec. size (); i++)
+          res << from [vec [i]];
+        return res;
+      }
 };
 
 
